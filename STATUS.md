@@ -1,10 +1,11 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-10-03
-**Features completadas**: 54/59 (`feature_list.json`)
-**En progreso**: ninguna (según `feature_list.json`)
+**Features completadas**: 135/148 (`feature_list.json`)
+**En progreso**: ninguna. #147 cerrada en `feature/147-mobile-meal-schedule-editing`, PR pendiente
 
-**Pendientes**: 5 (#18, #41, #42, #53, #59).
+**Pendientes**: 13 (#18, #60, #101, #105, #115-#119, #129, #134, #144 y #148). **#147 `mobile-meal-schedule-editing` cerrada (mitad móvil de #103)**: en Horario de comidas, el dueño edita la hora de cada franja y añade franjas con el selector nativo de hora (`ExpoDateTimePicker`, `dialog`). Los controles solo los ve el dueño (`myRole` vía `petKeys.detail`); el resto ve la pantalla en solo lectura y el 403 queda de red de seguridad. Tras un éxito se refrescan el plan y la mascota, sin estado optimista y con los controles deshabilitados hasta que terminan los dos. Cada error del contrato (400, 403 y los cuatro 422) tiene su mensaje inline, y un 401 cierra sesión. Catálogo 320 → 329 claves. Móvil 88/1710 → 88/1771, y 90/1913 tras integrar #146. Codex en cinco rondas test-primero (E1-E4); el reviewer rechazó tres por cláusulas universales candadas en un solo caso y aprobó la cuarta tras un barrido exhaustivo. Prueba de humo en el dev build de Android superada (OnePlus Nord 5). iOS sin verificar mientras #60 siga aparcada
+
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
 desde 2026-08-10. Hay recursos vivos en la cuenta, aunque hoy sin coste.
@@ -36,6 +37,20 @@ docker compose up -d   # Postgres + LocalStack (solo si la sesión toca DB/AWS)
 
 `init.sh` copia `.env.example` → `.env` si falta. Docker no arranca solo:
 levántalo manualmente cuando la feature lo necesite.
+
+Con Postgres arriba, **aplica las migraciones pendientes**:
+
+```powershell
+$env:DATABASE_URL = (Select-String -Path .env -Pattern '^DATABASE_URL=').Line.Split('=',2)[1]
+pnpm -C backend-pet-tracker run db:migrate
+```
+
+`init.sh` **no** las aplica y `drizzle.config.ts` no carga `dotenv`, así que
+la variable hay que pasarla a mano (esa es la única excepción aceptada a R6:
+drizzle-kit corre como CLI fuera del runtime de NestJS). Sin este paso la BD
+deriva en silencio y las tablas nuevas fallan en runtime con
+`relation "..." does not exist` (42P01) — pasó el 2026-09-05 con
+`pet_documents`.
 
 Desde `init-env-drift-warning` (#23), `init.sh` compara además las **claves**
 de `.env` contra las de `.env.example` y avisa de las que faltan, destacando
@@ -73,7 +88,474 @@ debe listar las 4 URLs de cola.
 
 ## Estado actual
 
-- **2026-10-02**: icono de Pet Tracker creado con las referencias del usuario y la skill create-logo. PNG entregado como propuesta visual; añadido icono de notificaciones de 96×96, blanco con fondo transparente. Disponible también una variante en color de 96×96 con fondo transparente. Integración en la app pendiente. Inventario actualizado a 54/59, sin features en progreso.
+- **2026-10-03**: icono de Pet Tracker (perrito robótico violeta) aprobado por el humano y versionado como `mobile-pet-tracker/assets/images/pet-tracker-notification-color-96.png` (96×96 RGBA, fondo transparente). Sin integrar en `app.json`; la integración es #101, ampliada al icono de la app.
+
+- **`mobile-meal-schedule-editing` (#147) done** (2026-10-03, tree principal,
+  sesion Frontend): mitad móvil de #103. Editar por fila y Añadir comida en
+  meal-schedule, solo para el dueño, con refetch de plan y mascota tras el
+  éxito y errores inline. Enmiendas E1-E4; reviewer rechazado en las rondas
+  1-3 y aprobado en la 4 (`078c519b`). Prueba de humo en Android firmada por
+  el humano (`bc6a2f09`). Integra `origin/main` (#146) por merge
+  (`285e94ef`). Gate: `./init.sh` exit 0 sobre `095006c0` (unit 174/1335,
+  móvil 90/1913, e2e 28+3). PR abierta.
+- **`mobile-geofence-editor` (#146) done** (2026-10-03, `Pet-Tracker-wt-146`,
+  sesion Backend): editor de zonas seguras circulares sobre el mapa (crear,
+  editar, activar y borrar), círculos en la pestaña Mapa, límite de 5 en el
+  cliente y solo lectura para quien no es dueño. Enmienda E1: teclado sobre
+  el formulario. Tres rondas de Codex; reviewer aprobado en las rondas 2
+  (`8944dfe9`) y 3 (`330b24a3`). Gate: `./init.sh` exit 0 sobre `495319fa`
+  (unit 174/1335, móvil 90/1852, e2e 28+3). Prueba de humo en Android
+  firmada por el humano (`80845eeb`). PR #186 abierta. #148 registrada.
+- **`meal-schedule-editing` (#103) done** (2026-10-02, tree principal,
+  sesion Frontend): mitad backend de editar y añadir franjas de comida
+  (POST y PATCH de `meal-times`, migración 0018, la servida de hoy se mueve
+  con su franja). Tres rondas de Codex; reviewer aprobado sobre 0e6c0167.
+  Gate: `./init.sh` exit 0 (unit 174/1335, infra 2/14, móvil 88/1710, e2e
+  431). PR abierta; #147 lleva la mitad móvil.
+- **`mobile-weekly-chart-root-accessible-lock` (#132) done** (2026-09-29, tree
+  principal, sesion Frontend): R1 fija la tarjeta como raíz host de la gráfica
+  en sus cuatro estados internos, solo test. Dos rondas: la ronda 1 se rechazó
+  por mirar solo el primer render y la Enmienda 1 lo corrigió. Móvil
+  86/1601/1. PR abierta; #135 registrada.
+- **`mobile-source-lock-slice-blind-spots` (#122) done** (2026-09-25, tree
+  principal, sesion Frontend): los tres candados de fuente de `<` a `<`
+  aseveran que su ancla es unica (R1) y tres `it` nuevos pulsan el elemento
+  con `responderGrant` y leen `opacity: 0.8` (R2). Solo test y docs; diff de
+  produccion vacio. Gate: init.sh sobre `e078838b` (con `origin/main`
+  40ec1b46 integrado por merge) exit 0: movil 83/1494 (+0 suites, +3 tests),
+  unit 170/1298, e2e 27+3 skip. Reviewer aprobado en la ronda 1 sin
+  bloqueantes. Sin prueba de humo, firmado en la spec. PR pendiente del merge
+  humano.
+- **`mobile-home-bell-source-lock-unbounded` (#121) done** (2026-09-24,
+  tree principal, sesion Frontend): el candado de la receta de pulsado de la
+  campana `home-alerts-bell` asevera contra su tag de apertura propio, de `<`
+  a `<`, en vez de contra todo `index.tsx`. Solo test y docs; diff de
+  produccion vacio. Gate: init.sh sobre `1bb01d41` exit 0 (movil 82/1452, +0;
+  unit 170/1298; e2e 27+3 skip); tras integrar `origin/main` 70f841f3 (#84)
+  por merge, movil 82/1471 (+0 sobre main), lint y typecheck limpios. Reviewer
+  aprobado en la ronda 1 sin bloqueantes (`2de31d38`). Sin prueba de humo,
+  firmado en la spec. Mergeada (PR #161).
+- **`mobile-reminders-see-all-source-lock-nesting` (#112) done** (2026-09-24,
+  tree principal, sesion Frontend): el candado de fuente de `reminders-see-all`
+  recorta el tag de apertura propio, de `<` a `<`. Solo test y docs; diff de
+  produccion vacio (blob de `src/screens/home/index.tsx` intacto). Gate sobre
+  `8bd8e27d`: movil 82 suites / 1452 tests (+0), unit 170/1298, e2e 27+3 skip,
+  lint y typecheck limpios. Reviewer aprobado en la ronda 1 sin bloqueantes.
+  Sin prueba de humo, firmado en la spec. Mergeada (PR #159).
+- **`mobile-reminders-alerts-to-stack` (#114) done** (2026-09-23, tree principal,
+  sesion Frontend): `reminders` y `alerts` pasan de `(tabs)` al `Stack.Protected`
+  de `RootStack` con cabecera nativa (P1 = A, firmada en Notion con A13 y A14).
+  Gate de cierre sobre `93dcf3d1` (con #113 y #157 integradas por merge): movil
+  82 suites / 1452 tests (+2 / +9 de #114), unit 170/1298, e2e 27+3 skip, lint
+  y typecheck limpios. Reviewer aprobado en la ronda 1 sin bloqueantes; prueba
+  de humo del humano en dev build de Android superada (`6f6da526`). PR pendiente
+  del merge humano.
+- **`mobile-kcal-consumed-bar` (#113) done** (2026-09-23, worktree
+  `wt-backend`, sesion Backend): la tarjeta Objetivo diario pinta las kcal
+  servidas hoy con una barra animada y un `progressbar` accesible. Gate sobre
+  `436f936f`: movil 80 suites / 1443 tests (+17), unit 170/1298, e2e 27+3 skip
+  / 389+8 skip, lint y typecheck limpios. Ronda 1 rechazada (H1, estilo de
+  nodos no-texto sin candar), Enmienda E1 (R7) firmada, ronda 2 aprobada;
+  smoke del humano en dev build de Android (`9c5d8eed`). PR #156 pendiente del
+  merge humano.
+- **`mobile-detail-screens-to-stack` (#95) done** (2026-09-23, tree principal,
+  sesion Frontend): las seis pantallas de detalle salen de `(tabs)` al Stack raiz
+  (`RootStack` con `Stack.Protected`, cabecera nativa, `SelectedPetProvider`
+  ligado a la sesion). Gate sobre `7702e7eb`: movil 80 suites / 1426 tests
+  (+3 / +14), e2e 27+3 skip, lint y typecheck limpios. Ronda 1 rechazada (R5
+  solo miraba la carga), ronda 2 aprobada; prueba de humo del humano en dev
+  build de Android superada (`63796c58`). PR #155 pendiente del merge humano.
+  Registra #114 (`reminders` y `alerts` al Stack).
+- **`nutrition-kcal-consumed` (#104) cerrada, reviewer aprobado** (2026-09-23,
+  worktree `wt-backend`): `kcalConsumed` en dominio y `kcalConsumedToday` en el
+  `GET /v1/pets/:petId/nutrition-plan`. Gate: unit 170 suites / 1298 tests (+3),
+  e2e 27+3 skip / 389+8 skip (+5), movil 77 / 1412 sin cambios; lint y
+  typecheck limpios. La mitad movil es #113, bloqueada hasta el merge de esta.
+- **`design-drift-hex-guard-rid` (#108) implementada, pendiente de reviewer**
+  (2026-09-22): el átomo hex de los ocho guards vive en una constante y excluye
+  solo citas canónicas `#<id> R<n>`; las dos formas largas conservan su cobertura
+  distinta. Los dos títulos de #106 vuelven a literales enteros y la convención
+  queda documentada. Gate móvil: 77 suites / 1412 tests, design-drift 55 tests
+  en 21 describes y `tsc --noEmit` limpio. No se marca `done` hasta el
+  veredicto del reviewer.
+- **`mobile-map-staleness-single-source` (#94) y `mobile-meals-served-ui`
+  (#98) done** (2026-09-21): #98 ya está en `main` por el PR #144. La rama de
+  #94 integró esa punta con merge, sin rebase: conserva la única fuente de
+  conectividad del Mapa, la barra y acciones de comidas de #98, y todos los
+  candados compartidos. Verificación combinada: 77 suites / 1386 tests y
+  `tsc --noEmit` verdes. PR #143 pendiente del merge humano.
+- **`mobile-owner-timezone-dates` (#90) done** (2026-09-18): `weight-log.tsx`
+  deja de mandar la fecha civil del dispositivo. Helper puro
+  `civilTodayIso(timeZone, now)` (`src/utils/civil-today-iso.ts`,
+  `Intl.DateTimeFormat` + `formatToParts`, fallback al dispositivo si no hay
+  perfil o la zona no es IANA); la pantalla lee la zona de `GET /v1/me` con
+  `useQuery(userKeys.me())` inline y deriva el valor mostrado y enviado como
+  `borrador ?? civilTodayIso(zona)` en los tres puntos (inicial, blur, tras
+  guardar). El 400 `measuredAt is too far in the future` se pinta como
+  `weightLog.dateCannotBeAfterToday` (catálogo +1); un `Invalid ISO date` sigue
+  crudo (P1). `add-pet/index.tsx` no cambia: su regresión de `birthDate` queda
+  fijada por un test con mutación. Solo móvil, cero dependencias. Smoke del
+  humano en dev build de Android OK (perfil CDMX, dispositivo Tokio). Deuda sin
+  id: `health.tsx` conserva su propio «hoy» del dispositivo para la próxima
+  vacuna (solo pantalla).
+- **`meals-served-tracking` (#83) done** (2026-09-17): tabla `meal_servings`
+  (`served_on` = día civil del owner, UNIQUE por franja) con la migración
+  `0017_meal_servings`; `POST /v1/pets/:petId/meals { mealTime }` y
+  `DELETE /v1/pets/:petId/meals/:mealTime` para cualquier miembro activo (409 al
+  repetir franja, 422 sin plan o fuera del plan); `mealsToday: { served, total } | null`
+  en `GET /v1/pets/:petId` y `servedToday` en `GET nutrition-plan`, contando
+  solo franjas del plan vigente. Solo backend: el botón por franja y la barra
+  de comidas de la Home son #98. La migración se aplica en la base compartida
+  `pet_tracker` tras el merge de PR #138, con `pnpm db:migrate`.
+
+- **`drop-devices-connectivity-column` (#93) done** (2026-09-15): la columna
+  `devices.connectivity`, sin escritor desde #73, desaparece del schema Drizzle,
+  de la entidad `Device`, del puerto `ActivePetDeviceStatus`, del reader, del
+  `toDomain` y de `docs/data-model.md`, con la migración
+  `0016_drop_devices_connectivity.sql` (una sola sentencia `DROP COLUMN`). La
+  clave `connectivity` del contrato HTTP sigue derivada de `last_message_at` y
+  los e2e de claim, device y perfil no se tocaron. Codex la aplicó en la base
+  propia del worktree (`pet_tracker_wt`, journal 17, idempotente); la base
+  compartida `pet_tracker` se repara (journal en 0013) y migra **después** del
+  merge de #63, con el procedimiento de `design.md` §Aplicación en el Postgres
+  compartido. Reviewer aprobado con dos sondas de mutación.
+- **`device-telemetry-reset-on-reassign` (#92) done** (2026-09-14): `claim()`
+  deja `devices.battery_pct` y `last_message_at` en NULL en el mismo UPDATE de
+  la transacción de #7 y devuelve la fila persistida (`.returning()`), así que
+  el 201 del claim, `GET /v1/pets/:petId/device` y `device` del perfil responden
+  `batteryPct/connectivity/lastMessageAt: null` hasta el primer mensaje nuevo.
+  Reset en `claim` y no en `release` (decisión D1: el cascade de borrar mascota
+  nunca pasa por release). `release()`, el WHERE de monotonicidad del store y el
+  consumer intactos; `connectivity` sigue para #93. Solo backend, 10 ficheros,
+  sin migración. Reviewer aprobado a la primera con dos sondas de mutación.
+- **`mobile-detail-screens-state-reset` (#63) done** (2026-09-15): los formularios
+  de las pantallas de detalle dejan de conservar lo que el usuario escribió la vez
+  anterior. Las rutas viven bajo `src/app/(tabs)/`, así que Expo Router las trata
+  como pestañas: salir con `router.back()` o por la barra de tabs cambia de
+  pantalla pero **no desmonta el componente**, y su `useState` sobrevive. Reset en
+  el cleanup de `useFocusEffect`, que es el único punto por el que pasan todas las
+  salidas. Cinco pantallas: `add-reminder` (R1), `add-pet` (R2, quince `useState`,
+  la peor), `weight-log` (R3), `meal-schedule` (R4, solo `generateError`) y
+  `pairing` (R5 blur + R6 cambio de `selectedPetId`). **`docs` no tenía el
+  defecto**: cero `useState`, auditado con evidencia. Diez ficheros móviles, cero
+  backend, cero copy nueva.
+  - **D1 eligió el reset local frente al Stack**, con los cinco costes medidos
+    contra el árbol y no estimados: el Stack sube el `Redirect` y el
+    `SelectedPetProvider` al layout raíz, revierte la decisión D4 de #42, invalida
+    el `paddingBottom: insets.bottom + 96` de las seis pantallas, obliga a cambiar
+    los seis botones de volver por cabecera nativa con copy nueva, y **aun así R6
+    haría falta igual** porque cambiar de mascota no desmonta nada. Queda como
+    **#95**, pospuesta y no descartada.
+  - **R7 es un requisito de que algo NO pase**: `submitting`, `claiming` y
+    `releasing` son guardas de petición en vuelo y sobreviven al blur; si se
+    reseteasen, al volver se podría disparar un segundo POST sobre una petición
+    viva. Cerrado por mutación en dos sitios, replantadas por el reviewer.
+  - **El comando de verificación de la spec firmada estaba roto**: los paths con
+    `(tabs)` iban sin escapar y jest los trata como regex, así que `(tabs)` era un
+    grupo de captura que no casaba con nada. Daba **verde con exit 0 habiendo
+    corrido 5 suites de 7**, sin ejecutar R3 ni R4. Corregido, y la regla escrita
+    en `docs/conventions.md` junto con el prefijo de feature para los R-id cuando
+    un fichero acumula los de dos specs (`pairing/index.test.tsx` tiene ahora `R5`,
+    `R6` y `R7` de #42 y de #63).
+  - Gate humano firmado el 2026-09-15: los cinco pasos en dev build de Android,
+    incluidos los dos de `/pairing` con collar real y el cambio de mascota.
+
+- **`pet-online-pill` (#73) done** (2026-09-14): `connectivity` se deriva en
+  lectura de `devices.last_message_at` contra el reloj del servidor con
+  `DEVICE_ONLINE_THRESHOLD_MS` (120 s, elegido por el humano); el pestillo
+  `'online'` de la ingesta desaparece y la columna queda obsoleta. La API sirve
+  `online | offline | null`; la Home distingue cuatro estados (sin collar,
+  esperando señal, sin conexión, en línea) en `collar-status` y en la píldora
+  nueva del hero, con punto que pulsa solo en línea y respeta reduced motion.
+  Reviewer aprobado, smoke humano R11 firmado y **mergeada** (PR #126).
+- **`dto-dates-owner-timezone` (#89) done** (2026-09-11): los dos últimos DTOs que
+  comparaban una fecha del body con el día UTC del servidor dejan de hacerlo.
+  `measuredAt` (pesos) se compara en el use case con el día civil del owner
+  (`ownerLocalDay`) **sin el margen de +1 día**; `birthDate` con el día civil
+  del requester en POST (`requesterLocalDay`, helper nuevo) y del owner en PATCH.
+  La lógica IANA + warn queda en una sola copia (`localDayInZone`); `todayIsoDateUtc`
+  desaparece de `src`. El 400 conserva byte a byte la forma de zod. Solo backend,
+  veintidós archivos. Deuda móvil declarada sin id (dispositivo por delante de la
+  zona del owner) en la spec §Fuera de alcance; la abre la sesión Frontend.
+- **`vaccine-applied-at-owner-timezone` (#88) done** (2026-09-11): la validación
+  «`appliedAt` no puede ser futuro» sale del DTO de zod y vive en los use cases de
+  crear y editar vacuna, comparando con el **día civil en la zona del owner**
+  (`ownerLocalDay`, helper nuevo en `pets/application/` que `GetPetUseCase` de #82
+  también usa ahora). Owners en zonas positivas ya no reciben 400 por la vacuna
+  de esta mañana, y los de zonas negativas ya no pueden registrar mañana. El 400
+  conserva byte a byte la forma de zod. Solo backend, once archivos.
+  - **La premisa venía invertida**: el enunciado decía que el 400 lo sufría UTC-6
+    a las 20:00; verificado con `Intl`, ese caso pasaba. Corregido antes de
+    especificar, y una premisa mía también cayó: `UpdateVaccineUseCase` no
+    inyectaba `PetRepository`; la spec lo destapó.
+  - **Diez commits rojo→verde**, verde mínimo por commit (el helper sin IANA ni
+    warn hasta su propio rojo), refactor de #82 en commit aparte con sus tests
+    intactos como candado. Reviewer aprobado a la primera sobre dc9ee8d, con
+    rojos reproducidos en worktree desechable, M1/M2 y todos los hashes de la
+    trazabilidad verificados como ancestros de `HEAD`.
+  - **Deuda abierta**: **#89** `dto-dates-owner-timezone`, los dos DTOs que
+    siguen comparando con el hoy UTC (`weight.dto.ts` con margen +1,
+    `create-pet.dto.ts` birthDate).
+- **`vaccine-due-today-inclusive` (#82) done** (2026-09-10): `GET /v1/pets/:petId`
+  calcula `nextVaccine` con el **día civil en la zona del owner** (`users.timezone`,
+  `localDayOf`, fallback a UTC con `warn`) y el corte pasa de `gt` a **`gte`**: la
+  dosis de hoy sigue siendo la próxima hasta que acaba el día, igual que en la
+  pestaña Salud. Solo backend, diez archivos, contrato del perfil intacto.
+  - **La zona ya estaba**: el registro guarda `Intl...timeZone` en `users.timezone`
+    desde #3 y activity (#10) ya resolvía "hoy en la zona del owner". No hizo falta
+    que el móvil mandara nada: cero archivos en `mobile-pet-tracker/` mientras #87
+    reescribe Home y Salud en otro worktree.
+  - **Una parada de Codex, correcta**: la spec inventarió nueve archivos y el
+    décimo era un doble **exhaustivo** `MockOf<PetRepository>` en el spec del
+    alerts-engine que rompía el typecheck (TS2741) con jest verde. Enmienda A1
+    (una línea) firmada por el humano. En memoria: grep de `MockOf<Puerto>` antes
+    de inventariar.
+  - **Candados**: e2e de frontera hoy/ayer/mañana con el par Kiritimati/Pago_Pago
+    (25 h, rojo a cualquier hora si se usara UTC o el requester), family en otra
+    zona, owner con zona inválida. Mutaciones M1 (`gte→gt`) y M2 (zona a `null`,
+    ciega para el unitario) reproducidas por el reviewer.
+  - **Deuda abierta**: **#88** `vaccine-applied-at-owner-timezone`, el mismo
+    sesgo UTC en `appliedAt <= hoy` del DTO de vacunas (400 por la tarde en UTC-6).
+- **`e2e-audit-log-order-assert` (#76) done** (2026-09-10): el test de auditoría
+  de vacunas (`backend-pet-tracker/test/health-vaccines.e2e-spec.ts`, R12 de #14)
+  asertaba una secuencia create→update→delete sobre un `db.select()` **sin
+  `orderBy`**; pasaba por suerte y puso `init.sh` rojo en `main` (9358cc7) bajo
+  carga. Ahora ordena por `(at, id)`. Diff de un solo archivo y cero producción.
+  - **Sin commit rojo, y firmado**: el defecto es el propio test, así que no hay
+    rojo reproducible; la evidencia C4 es una mutación `asc`→`desc` no
+    versionada que Codex ejecutó y el `reviewer` reprodujo (falla solo por la
+    aserción, `Received` invertido). Excepción aceptada por el humano en la
+    misma firma de la spec.
+  - **Barrido**: es el único `select` sin `orderBy` con aserción ordenada en
+    todo `test/`; los demás son order-safe (lista en `design.md` D4).
+  - **Estabilidad**: tres corridas consecutivas de la suite e2e con el mismo
+    `Tests: 354 passed`, más `init.sh` exit 0.
+  - **Primera feature cerrada desde un worktree propio** (`Pet-Tracker-wt-backend`)
+    en paralelo con la sesión Frontend (#78/#87), coordinando el Postgres
+    compartido por `pgrep` y aviso cruzado antes de cada `init.sh`.
+- **`mobile-home-reminders-real-data` (#85) done** (2026-09-10): la Home enseña
+  la próxima vacuna como **primera fila fija** y debajo hasta **tres
+  recordatorios reales**, sólo pendientes y futuros, por fecha ascendente.
+  **Cero backend**: `GET /pets/:petId/reminders` ya existía y la Home lo
+  reutiliza, filtrando en cliente.
+  - **Ocho paradas antes de escribir código, y las ocho correctas.** Seis eran
+    descuidos de la spec: tests que medían un sujeto que el propio orden de
+    tareas no creaba hasta tres o cuatro requisitos después (A7, A9), evidencia
+    de mutación mal contada (A8, A13), premisas falsas sobre el arnés (A10,
+    A11), y dos requisitos —R9 y R10— que asertaban lo que un requisito
+    anterior ya implementaba y por tanto no podían tener rojo (A12). Ninguna
+    llegó a producir código malo.
+  - **Catorce enmiendas firmadas**, trece mutaciones y dos sondas, todas de
+    código de producción y con reversión verificada.
+  - **El smoke volvió a encontrar lo que la suite entera daba por bueno**: la
+    tarjeta "Sin vacuna próxima" se pintaba encima de tres recordatorios,
+    porque miraba sólo su propia rama. Segunda feature seguida en que el gate
+    humano destapa un defecto de este tipo — en #70 fue un título que decía
+    "Recordatorios" sobre un cuerpo de vacunas.
+  - **Hallazgo O1 del reviewer, cerrado en A14**: el `size={20}` del icono de
+    fila no tenía candado —puesto a `28`, la suite completa quedaba verde— y no
+    lo tapaba el recuento de literales de #70 R13, porque la fila nueva
+    renderiza **por variable**. El acierto de R6 abría el hueco.
+  - **Deuda abierta**: **#86** el doble posicional de `useApi` acopla el test al
+    número de peticiones de la Home; **#82** y **#84** siguen vivos y declarados
+    como defecto heredado.
+  - **Lo que dejó en el harness**: la nota de `docs/ui-guidelines.md` §Enmienda
+    #70 —*inventariar no es candar*—, escrita porque la carta nombraba "tamaño
+    de icono" y la spec lo copió en prosa sin convertirlo en `expect`.
+
+- **`mobile-home-reminders-section` (#70) done** (2026-09-09): la Home tiene una
+  sección **"Próxima vacuna"** con la vacuna más cercana —icono, nombre, fecha
+  localizada y contador `N d`— más un enlace a `/reminders`. Cero backend, cero
+  dependencias, cero ficheros nuevos de producción.
+  - **Cuatro pases de revisión, uno rechazado.** El rechazo fue por un candado
+    que no podía fallar: `process.env.TZ` asignado dentro de un `it` **no llega
+    a V8 bajo Jest**, así que con el bug de fechas de #68 reintroducido en
+    producción el gate entero pasaba en verde. La spec heredó la premisa a
+    medias de #68, donde lo que muerde no es el `TZ` sino el espía del
+    constructor `Date`. Se sustituyó el mecanismo (D5) y M1 y M2 pasaron a
+    morir en la invocación por defecto.
+  - **Ocho enmiendas firmadas.** D1 movió una aserción de cardinalidad de R1 a
+    R9, donde el sujeto que medía por fin existía —el orden de tareas aprobado
+    la hacía imposible—. D3 encontró que M1 moría **siempre** por `-0` frente a
+    `0`, no por la zona horaria: una mutación que muere siempre parece un
+    candado sano y no lo es. D7 cerró un hueco que el propio reviewer destapó
+    buscando: el candado vigilaba el objetivo pero no `now`.
+  - **Nueve pares de mutación de producción**, todos con reversión verificada
+    por `git diff` vacío.
+  - **El smoke destapó lo que ningún test podía ver** (D8): la sección se
+    titulaba "Recordatorios" y su estado vacío decía "Sin vacuna próxima". Los
+    dos textos eran los que la spec pidió, así que la suite los daba por
+    buenos. Se renombró el título a "Próxima vacuna" y el enlace a "Ver
+    recordatorios".
+  - **Deuda abierta desde aquí**: **#85**, que la sección muestre los
+    recordatorios reales —hoy solo lee `nextVaccine` del contrato del perfil, y
+    una mascota con recordatorios y sin vacuna próxima ve el estado vacío—.
+    Lleva anotado **O7**: la mitad **inglesa** de la copy no tiene candado, así
+    que D8 nació de un texto que ningún test miraba y dejó ciega la otra mitad
+    del mismo texto. Y **O6**: el **orden** de los hijos de la fila no está
+    vigilado, la cuarta dimensión destapada en cuatro rondas seguidas.
+  - **Lo que dejó en el harness**: `docs/ui-guidelines.md` §Enmienda #70, con la
+    lista completa de las doce decisiones que toma un elemento repetido, para
+    que la quinta ronda no haga falta.
+
+- **`mobile-home-quick-actions` (#71) done** (2026-09-09): la Home tiene una
+  rejilla de **tres accesos rápidos** con fondo pastel. Navegación pura: cero
+  datos, cero backend, cero dependencias.
+  - **Los destinos no son los del Make, y esa es la decisión.** El diseño pedía
+    Mapa, Actividad, Vacunas y Comidas, pero tres de ellos **son pestañas**
+    (`src/app/(tabs)/_layout.tsx:26-30`) y el tab bar flotante usa **los mismos
+    componentes de icono** `Map` y `ForkKnife`: la fila habría sido tres
+    botones duplicando navegación visible en la misma pantalla. El humano
+    decidió que los tiles apunten solo a destinos **no alcanzables desde el tab
+    bar**, y los tres salen de un filtro sobre las once rutas de la app:
+    `/weight-log`, `/add-reminder` —hoy el camino más largo, 3 toques— y
+    `/pets/[petId]/docs`. Del Make se toma la forma y ni un destino ni una
+    etiqueta.
+  - **Un rechazo que valió la feature entera**: el test de la rejilla usaba
+    lista blanca y contaba tiles sobre el fuente, así que la aserción de
+    "exactamente tres" no existía y un cuarto tile a `/pairing` dejaba la suite
+    verde. El arreglo pasó a prefijo y **seguía dejando entrar un tile sin
+    `testID`**; solo contar `children` de la fila lo cerró.
+  - **Un tile decide más cosas de las que parece.** Empezó en cuatro, la
+    primera revisión destapó la quinta (tinta del icono), la segunda la sexta
+    (color de la etiqueta) y la auditoría final la séptima (receta tipográfica,
+    ahora **#81**). La lista completa quedó escrita en el informe para que las
+    próximas specs con elementos repetidos la copien.
+  - **Estrenó el quinto punto de C4** —el rojo tiene que ser mutación de
+    producción, no del doble— y nació vivo: los rojos lo cumplen no solo en la
+    prueba de mutación sino en R2-R13.
+
+- **`mobile-home-stats-strip` (#69) done** (2026-09-08): la Home muestra la
+  **tira de cuatro celdas** sobre el hero — Peso, Actividad, Descanso,
+  Distancia — con tres divisores, en `src/screens/home/index.tsx`. Cero
+  llamadas nuevas a la API, cero backend, cero dependencias.
+  - **La celda 3 es Descanso y no Paseos**, contra lo que pedía el enunciado
+    original: `walkCount` ya se pinta desde #67 en `text-3xl` como dato
+    destacado del hero, así que esa celda habría duplicado el mismo número en
+    la misma pantalla. El descanso ocupa su sitio, que además resuelve la
+    decisión E — cero datos perdidos, cero duplicados.
+  - **Codex paró a mitad de R15 ante un delta no declarado** y no ajustó la
+    cifra por su cuenta: `language-provider.test.tsx:41` cierra la longitud del
+    catálogo y ni R14 ni `design.md` §5 lo enumeraban. Se resolvió con la
+    casilla **D1** firmada. Es la segunda vez que ese candado se omite en una
+    spec; en #68 pasó igual con un delta de +16.
+  - **El reviewer encontró la quinta y la sexta posición del discriminante**:
+    R1 decide tres cosas por celda —icono, etiqueta y valor— y solo el valor
+    estaba bajo candado, así que la app podía pintar `12.4 kg` bajo la etiqueta
+    "Distancia" sin que nada fallara. Cerrado con un refuerzo solo de test.
+  - **C4 gana un punto** a raíz de ese refuerzo: cuando un candado se añade
+    sobre código ya correcto, el rojo legítimo es la **mutación de producción**
+    versionada en el rojo y revertida en el verde; mutar un doble demuestra que
+    la aserción puede fallar, no que vigile la app.
+
+- **`mobile-home-weekly-activity` (#68) done** (2026-09-08): la Home dibuja la
+  **actividad de los siete días que ya descargaba y tiraba**, en
+  `src/screens/home/weekly-activity-chart.tsx`, con selector de métrica,
+  detalle por día, eje Y, rejilla, línea de media y tendencia. Cero llamadas
+  nuevas a la API y cero backend. Tres cosas que conviene no perder:
+  - **El discriminante de "sin dato" es `source`, nunca `null`.**
+    `missingEntry()` pone todas las métricas a `null`, pero `emptyActivity()`
+    devuelve **ceros**, así que hoy `null` equivale a `missing` **por
+    coincidencia**: ramificar por `metrica === null` pasaría todos los tests
+    siendo falso. Un cero medido es descanso confirmado y se dibuja; un
+    `missing` no. El primer veredicto **rechazó** precisamente porque el
+    candado solo vigilaba 4 de los 8 sitios de esa decisión.
+  - **Un candado que prohíbe una cadena literal no es un candado.** R4 cerraba
+    el desfase de zona horaria con `not.toContain('new Date(date)')`, y
+    renombrar el parámetro a `isoDate` dejando el mismo bug pasaba con la suite
+    entera verde. Se sustituyó por un espía de `global.Date` con
+    `Reflect.construct`, porque en un worker de `jest-expo` `process.env` es una
+    copia y reasignar `TZ` no ejecuta `tzset`.
+  - **El `SegmentedControl` nativo se abandonó por ilegible**, con la enmienda
+    D2 firmada: su wrapper no expone `fontStyle` ni `activeFontStyle` y en
+    Android `tintColor` solo pinta el contenedor activo, así que "Minutos
+    activos" saltaba de línea y el texto negro del segmento activo se perdía
+    sobre el verde. Lo sustituyen tres `Pressable` propios con píldora animada
+    (`bg-tab-pill` + `text-accent-strong`: 4,67:1 claro y 4,90:1 oscuro, frente
+    al **1,08:1 en tránsito** del par anterior). La regla de capas de la carta
+    §Decisiones fijas 5 **no se tocó**.
+  Dependencia nueva: `react-native-chart-kit` pinneada a **7.0.4 exacta** e
+  importada **solo** por su subpath `/v2` — la v1 tipa `data` como `number[]`
+  sin null y perdería en silencio la distinción sin-dato/cero.
+
+- **`mobile-pet-hero-header` (#67) done** (2026-09-07): Home y Profile abren con
+  una **cabecera fotográfica compartida**, `src/components/pet-hero-header.tsx`,
+  que sustituye a la pet-card de Home y al hero local de Profile. El componente
+  expone un **slot** superior: Home monta dentro el `pet-switcher` que ya
+  existía y Profile lo usa sin slot, así que la receta no se duplica. Sin foto
+  pinta el **blobatar** a sangre reusando `pet-avatar.tsx`. **Cuatro premisas
+  del encargo salieron falsas** y la spec las corrigió contra el árbol:
+  `backgroundImage` a secas no existe en RN 0.86.2 -solo
+  `experimental_backgroundImage`- y las clases de gradiente de Tailwind no
+  resuelven bajo uniwind, así que va por el prop `style` **sin dependencia
+  nueva**; el velo del Make deja el texto blanco en **1,98:1** sobre foto casi
+  blanca, así que el texto va sobre banda opaca (18,93:1 y 4,98:1 en claro,
+  17,81:1 y 7,45:1 en oscuro), **desviación declarada** al estilo de la de
+  `--accent` de #61; "pasos hoy" no existe en el contrato -cero ocurrencias de
+  `steps`, `activitySummary` siempre `null`- y el dato destacado pasa a
+  **paseos** (`walkCount`), que Home ya descargaba sin pintar; y Home lee
+  `photoUrl` del detalle, no del listado, así que lo que #66 desbloqueó en Home
+  fue el `pet-switcher`. **36 commits test-primero**, un `test(...)` rojo
+  nombrando el R-id antes de cada `feat(...)`. Suite móvil **975 en 65 suites**
+  contra las 932 en 63 del baseline `303fc19`; backend, infra y e2e sin cambio;
+  grep-clean intacto. Implementó el subagente `implementer` -Codex sin cuota-,
+  con la revisión cruzada más débil asumida por escrito. El reviewer replantó
+  las tres mutaciones de R9 y rechazó un candado muerto (O2): un `it` buscaba
+  la cadena `- [X] Enmienda #67`, inexistente en cualquier estado, y no podía
+  fallar nunca; se borró en `fd04356`. **R10 enmendó cinco documentos
+  aprobados** -las dos specs de `mobile-figma-polish`, la de
+  `mobile-pets-profile`, `docs/ui-guidelines.md` y `docs/conventions.md`-
+  revocando la restricción "sin gradientes ni headers hero" de #46 y corrigiendo
+  una premisa falsa que venía propagándose desde
+  `progress/explore_design-gap-vs-make.md:657-662`: que `pet-avatar` degradaba a
+  una inicial, cuando pinta `blobatar` desde la R5 de #40. Las cinco firmas del
+  humano están en `4449f31`, y el smoke en dev build de Android con foto y sin
+  foto en los dos temas quedó confirmado el 2026-09-07.
+
+- **`mobile-ui-language` (#65) done** (2026-09-06): la app habla **español por
+  defecto**, con catálogo bilingüe de **259 claves** en `src/i18n/catalog.ts`,
+  `language-provider` con `t()`, persistencia best-effort en `expo-secure-store`
+  (`language-preference.ts`, copiando el patrón de `theme-preference`) e
+  interruptor en Perfil que repinta al momento. **325 sitios** de copy resueltos
+  por clave en 19 ficheros de pantalla, cero literales sueltos, cero
+  dependencias nuevas y cero cambios de layout (160 valores distintos de
+  `className` en la base y 160 en HEAD). El inglés no se pierde: cada literal
+  que fijaron las 9 specs anteriores sigue siendo normativo como columna `en`,
+  y las 9 llevan su enmienda firmada. Implementación repartida: **Codex CLI**
+  hizo R1-R16 y el rojo de R17 antes de agotar cuota; el subagente
+  `implementer` cerró R17-R20 bajo `CLAUDE.md` §Excepciones. Informes en
+  `progress/impl_mobile-ui-language.md` y `progress/review_mobile-ui-language.md`.
+
+- **`mobile-device-pairing` (#42) done** (2026-09-04): ruta `/pairing` en
+  tabs con una pantalla de tres vistas (formulario de claim, `Tracker is
+  ready`, estado del dispositivo con plan tracked/free), clientes
+  `src/api/devices.ts` (claim/release mapeados por kind) y
+  `src/api/subscriptions.ts` (tracked/free derivado del 402 de
+  `GET /pets/:id/positions/last`; no hay endpoint de subscriptions, deuda
+  anotada), enlaces desde Home y Perfil, unpair con `Alert.alert` nativo.
+  Sin QR (el Figma no lo trae). Codex R1–R11 en 27 commits test→feat,
+  `reviewer` aprobó, G1 con collar real en Wialon (claim, mapa con posición
+  real). Informe: `progress/impl_mobile-device-pairing.md`.
+
+- **`mobile-jest-mock-hygiene` (#53) done** (2026-09-03): la suite
+  `src/screens/add-pet/index.test.tsx` fallaba de forma intermitente porque
+  `mockLaunchImageLibrary.mockResolvedValue(...)` se fijaba en un único test y
+  fugaba al resto según el orden. Fix: un `beforeEach` de nivel de archivo con
+  `mockReset()` + resultado cancelado por defecto; ningún flag global
+  (`clearMocks`/`resetMocks`/`restoreMocks`), porque `resetMocks` borraría las
+  implementaciones de `jest.fn(impl)` en 11 suites. Codex R1–R3 test-primero,
+  10/10 corridas verdes, `reviewer` aprobó, `init.sh` móvil 53/613. Informe:
+  `progress/impl_mobile-jest-mock-hygiene.md`.
+
+- **`auth-reset-deep-link` (#59) done** (2026-09-03): el correo de reset
+  lleva `https://<RESET_LINK_HOST>/reset-password?token=…`; Android la abre
+  como App Link verificado (intent filter `autoVerify` + `assetlinks.json`
+  con el fingerprint del dev build) y quien no tiene la app ve la página
+  fallback estática con botón `mobilepettracker://`. Ningún GET consume el
+  token. Codex implementó R1–R12 test-primero, `reviewer` aprobó
+  (`fb9db23`), gates humanos G1–G4 confirmados 2026-09-03 tras corregir un
+  desvío (`hosting/` subido bajo `/pet/`, revertido en `f18b4a7`). Informe:
+  `progress/impl_auth-reset-deep-link.md`.
 
 - **`auth-forgot-password` (#44) done** (2026-08-28): endpoints públicos de
   solicitud/reset con respuesta uniforme, token opaco SHA-256 de un solo uso
@@ -486,10 +968,11 @@ debe listar las 4 URLs de cola.
   main** (2026-08-01, merge `eff7361`); init.sh verde en main
   post-merge. Ver `progress/impl_devices-claim.md` y
   `progress/review_devices-claim.md`.
-- Deuda menor detectada en #3 (sigue abierta, reviewer de #7 la
-  re-señaló como NB): no existe script `db:migrate` en `package.json`
-  (solo `db:generate`), aplicar migraciones exige hoy
-  `exec drizzle-kit migrate` a mano. Candidato a tarea propia.
+- ~~Deuda menor detectada en #3 (reviewer de #7 la re-señaló como NB): no
+  existe script `db:migrate`.~~ **Cerrada el 2026-09-05**:
+  `backend-pet-tracker/package.json` ya expone `"db:migrate":
+  "drizzle-kit migrate"`. Sigue haciendo falta pasar `DATABASE_URL` en el
+  entorno (`drizzle.config.ts` no carga `dotenv`) — ver **Cómo arrancar**.
 - **`wialon-ingestion-pipeline` (#8) done**: cadena GPS completa en local —
   `src/integrations/wialon/` (puerto `WialonClient` + factory por
   ConfigService: `FakeWialonClient` determinista con `SIM_SEED`/mulberry32
@@ -823,9 +1306,356 @@ debe listar las 4 URLs de cola.
 
 ## Última sesión
 
-- **2026-10-03** — Entregada variante en color del icono de notificaciones, PNG 96×96 con fondo transparente. Guardado el recurso aprobado en `mobile-pet-tracker/assets/images/pet-tracker-notification-color-96.png` para subirlo a `docs/pet-tracker-icon-session`. Tamaño, transparencia e integridad verificados; integración pendiente.
+- **2026-10-03** — **#147 `mobile-meal-schedule-editing` cerrada** (sesion
+  Frontend, tree principal): spec firmada desde Notion (`86771e3e`), enmiendas
+  E1-E4 aprobadas en el chat. Codex, cinco rondas test-primero; rondas 1-3
+  rechazadas por cláusulas universales candadas en un solo caso, ronda 4
+  aprobada sobre `fe2505b3` tras el barrido exhaustivo del reviewer. Integra
+  `origin/main` (#146) por merge (`285e94ef`). Siguiente: merge humano de la
+  PR de #147.
+- **2026-10-03** — **#146 `mobile-geofence-editor` cerrada** (sesion
+  Backend, `Pet-Tracker-wt-146`): spec ampliada por decisión del humano y
+  firmada desde Notion (`00961ee6`). Codex, tres rondas test-primero; la
+  ronda 1 se rechazó por Z1 y Z2 de R7 y las rondas 2 y 3 se aprobaron. El
+  paso 9 de la prueba de humo falló porque el teclado tapaba Guardar. La
+  enmienda E1 (`bc917ff7`) lo arregló en el editor, y el humano repitió el
+  paso (`80845eeb`). Registra #148 (el arreglo del teclado en el resto de
+  pantallas con inputs). Siguiente: merge humano del PR #186.
+- **2026-10-02** — **#103 `meal-schedule-editing` cerrada** (sesion
+  Frontend, tree principal): spec firmada desde Notion (`2b74cd62`), enmiendas
+  E1-E4 aprobadas en el chat. Codex, tres rondas test-primero; rondas 1 y 2
+  rechazadas por huecos de candado (B1-B3), ronda 3 aprobada sobre
+  `0e6c0167`. Integra `origin/main` (#41) por merge (`49ffac05`). Siguiente:
+  merge humano del PR, `pnpm db:migrate` en `pet_tracker_wt` y la spec de
+  #147.
+- **2026-09-29** — **#132 `mobile-weekly-chart-root-accessible-lock` cerrada**
+  (sesion Frontend, tree principal): spec firmada desde Notion (`4126e990`) y
+  Enmienda 1 también (`27724fb3`). Codex, dos rondas test-primero por la vía b
+  (cuatro pares rojo/verde). Ronda 1 rechazada (`3296180d`); ronda 2 aprobada
+  (`89489048`), con `init.sh` `EXIT=0` sobre `fb3de49e`. Integra `origin/main`
+  (#100) por merge (`02128a12`). #135 registrada. Siguiente: merge humano del
+  PR.
+- **2026-09-27** — **#99 `mobile-notifications-permission-recovery` cerrada**
+  (sesion Backend, `wt-backend`): spec firmada desde Notion (`5a2c9b5a`).
+  Codex, 6 commits test-primero con rojos naturales (R1 con esqueleto).
+  Reviewer aprobado a la primera (`d6130d7b`). Smoke R4 firmado por el humano
+  en Notion y transcrito (`f1db022b`). Siguiente: merge humano del PR.
+- **2026-09-25** — **#125 `reminder-advance-already-past` cerrada** (sesion
+  Backend, `wt-backend`): spec y Enmienda E1 firmadas desde Notion
+  (`699e90cf`, `aedb89be`). Codex, dos rondas test-primero (R1-R4 con rojos
+  naturales; R6 con mutacion versionada). Reviewer aprobado en las dos rondas
+  (`5134d165`, `53c81300`). Integra `origin/main` (#122) por merge. Smoke
+  firmado por el humano (`07905716`). Siguiente: merge humano del PR.
+- **2026-09-25** — **#122 `mobile-source-lock-slice-blind-spots` cerrada**
+  (sesion Frontend, tree principal): spec firmada desde Notion (`c1db4481`).
+  Codex, 6 commits test-primero (dos pares rojo/verde con P4 y P1 de
+  produccion versionadas y revertidas, docs y evidencia) y 78/78 sondas.
+  Integra `origin/main` (#123, #125 registrada) por merge. Reviewer aprobado a
+  la primera, con los rojos rehechos y cinco sondas propias. (F) no se
+  registra. Siguiente: #124, en serie sobre el mismo fichero.
+- **2026-09-24** — **#123 `mobile-date-picker-utc-day-shift` cerrada** (sesion
+  Backend, `wt-backend`): spec firmada desde Notion (`b279cdfb`). Codex, 14
+  commits test-primero con rojos naturales. Reviewer aprobado a la primera
+  (`30f04b46`): 61/61 en 7 zonas reales y sondas de la spec rojas. Integra
+  `origin/main` (#121) por merge. Smoke firmado por el humano (`ca12fb97`).
+  Registra #125 (aviso de recordatorio que salta al guardar). La plantilla de
+  handoff ya pide la trazabilidad en un commit final. Siguiente: merge humano
+  del PR.
+- **2026-09-24** — **#121 `mobile-home-bell-source-lock-unbounded` cerrada**
+  (sesion Frontend, tree principal): spec firmada desde Notion (`6df6581f`).
+  Codex la implemento test-primero (rojo con N1 de produccion versionada,
+  verde revirtiendola) tras parar por un `rm -f` denegado; el humano autorizo
+  la Enmienda 1 (`test ! -e`). Integra `origin/main` (#84) por merge. Reviewer
+  aprobado a la primera con 16 sondas re-medidas y 5 propias. Registra #124
+  (icono de la campana contra el fichero entero) y enmienda #122.
+- **2026-09-24** — **#84 `reminder-dates-days-until-drift` cerrada** (sesion
+  Backend, `wt-backend`): spec y Enmienda E1 firmadas desde Notion (`2665ffd3`,
+  `7024a55b`). Codex, dos rondas test-primero; los rojos de R2, R3, R5 y R6
+  versionan mutaciones de produccion y sus verdes las revierten. La ronda 1 se
+  rechazo por tablas de fechas de un solo mes (leccion en memoria). Integra
+  `origin/main` (#112, #120-#122) por merge. Smoke en dev build superado por el
+  humano. Registra #123 (calendario de Android que guarda el dia anterior), P1,
+  siguiente por orden del humano. Siguiente: merge humano del PR.
+- **2026-09-24** — **#112 `mobile-reminders-see-all-source-lock-nesting` cerrada**
+  (sesion Frontend, tree principal): spec firmada desde Notion
+  (`f61260b6`). Codex la implemento test-primero, con el rojo versionando la
+  mutacion N1 de produccion y el verde revirtiendola. El reviewer planto
+  cuatro sondas propias en zona ciega; tres son verdes falsos anteriores a
+  #112 y quedan como #122. Deuda nueva: #120, #121 y #122.
+- **2026-09-23** — **#114 `mobile-reminders-alerts-to-stack` cerrada** (sesion
+  Frontend, tree principal): spec firmada desde Notion con P1 = A y las
+  enmiendas A13 y A14. Codex implemento R1-R7 test-primero en 15 commits.
+  Reviewer aprobado a la primera, con 31 mutaciones propias. El init.sh lo
+  corrio el leader. Integra `origin/main` (#113 y #157) por merge. La prueba de
+  humo necesito `google-services.json` en la maquina del humano y credenciales
+  `test` de LocalStack para el `sqs send-message`; queda en
+  `docs/verification.md`. Siguiente: merge humano del PR.
+- **2026-09-23** — **#115-#119 registradas** (sesion Backend): auditoria de
+  paridad con el Figma Make pantalla por pantalla sobre main con #113 (3 alta,
+  7 media, 5 baja, 2 ausentes; Geocercas la cubre #41). El humano pidio
+  registrar los cinco huecos sin feature y dejarlos al final de la cola; ids
+  coordinados con Frontend. Siguiente: seguir con las pending anteriores.
+- **2026-09-23** — **#113 `mobile-kcal-consumed-bar` cerrada** (sesion
+  Backend, worktree `wt-backend`): spec firmada desde Notion con D1 (barra sola,
+  sin anillo); handoff retenido hasta el merge de #95 y branch rebasada sobre
+  el antes del primer commit de Codex. Codex implemento R1-R5 en diez commits
+  rojo→verde; el reviewer rechazo la ronda 1 por H1 (`toHaveAnimatedStyle`
+  solo compara las claves esperadas). La Enmienda E1 (R7) se firmo desde
+  Notion y la ronda 2 fue aprobada. Smoke del humano superado. Siguiente:
+  merge humano del PR #156.
+- **2026-09-23** — **#95 `mobile-detail-screens-to-stack` cerrada** (sesion
+  Frontend, tree principal): spec firmada desde Notion junto con las enmiendas
+  A11 y A12. Codex implemento R1-R8 test-primero en 20 commits. El reviewer
+  rechazo la ronda 1 por R5 en estado de carga (M20-M22 sobrevivian) y aprobo
+  la ronda 2 (tres commits, sin cambio neto de produccion). El init.sh lo corrio
+  el leader con permiso del humano. Integra `origin/main` (#104) por merge. La
+  prueba de humo en dev build de Android la supero el humano (`63796c58`).
+  Siguiente: merge humano del PR #155; despues #113 (Backend) puede soltar su
+  handoff.
+- **2026-09-23** — **#104 `nutrition-kcal-consumed` cerrada** (sesion Backend,
+  worktree `wt-backend`): spec con D1 (partida en #104 backend y #113 movil),
+  firmada desde Notion; Codex implemento R1-R4 en seis commits rojo→verde; el
+  reviewer aprobo sin bloqueantes tras siete mutaciones detectadas. El init.sh
+  del reviewer lo denego el clasificador de permisos y lo corrio el leader por
+  decision explicita del humano. Siguiente: merge humano del PR y luego la spec
+  de #113.
+- **2026-09-22** — **#108 `design-drift-hex-guard-rid` implementada**
+  (worktree `wt-ui`): cuatro pares rojo→verde en orden R1, R2, R3 y R4; el
+  regex compartido distingue R-ids de colores sin unificar los dos guards
+  largos. Base 77/1398; cierre 77/1412; design-drift 41→55 tests y 17→21
+  describes; TypeScript limpio. Sondas de R1 y R2 rojas por aserción. Queda
+  `in_progress` hasta la revisión; reporte en
+  `progress/impl_design-drift-hex-guard-rid.md`.
+- **2026-09-21** — **#94, ronda 3: `origin/main` integrado en el PR #143**
+  (worktree `wt-ui`): merge de `9df7b5bc` sobre `45c30047`, con base común
+  `914905b8`; el único conflicto textual fue `progress/history.md` y se
+  conservaron completas las bitácoras de #94 y #98. Los seis ficheros
+  compartidos mantienen ambos deltas; #94 y #98 quedan `done` (88/107).
+  `bunx jest`: 77 suites / 1386 tests / 1 snapshot; `bunx tsc --noEmit`: exit
+  0. La trazabilidad de #94 conserva todos sus hashes como ancestros. El
+  humano revisa y mergea el PR; la IA no lo cerró ni lo mergeó.
+- **2026-09-18** — **#90 `mobile-owner-timezone-dates` cerrada** (sesión Backend,
+  worktree `wt-backend`, rama desde `29689598`): el explorer verificó que
+  `POST …/weights` es owner-only y que `birthDate` valida contra el requester,
+  así que la zona del perfil propio es exacta y la opción (b) del enunciado
+  (exponer la zona del owner en mascotas) sobraba; también que la ruta real es
+  `GET /v1/me`, no `/v1/users/me`. El humano cerró tres decisiones antes de la
+  spec (zona del perfil, solo `weight-log` en producción, campo de fecha libre
+  con el 400 traducido) y firmó P1 (discriminar por `path` y mensaje, para no
+  traducir un error de formato como «fecha futura»). Codex: 13 commits, un par
+  rojo/verde por requisito, mutaciones M4/M6 versionadas y revertidas.
+  Reviewer APROBADO: rojos reproducidos por commit, cinco de seis sondas
+  cazadas (la sexta, `format()` en vez de `formatToParts`, es zona ciega
+  declarada que solo cierra el smoke), `init.sh` exit 0. Smoke Android del
+  humano OK. Coordinación con Frontend (#79 en paralelo): delta i18n +1
+  declarado como suma, `init.sh` del gate lanzado solo tras su aviso explícito
+  (el `pgrep` tiene ventana de carrera). Frontend reservó #99-#101; siguiente
+  id libre 102.
+- **2026-09-17** — **#83 `meals-served-tracking` cerrada** (sesión Backend,
+  worktree `wt-backend`, rama desde `1b9efe86`, PR #138): explorer verificó que
+  la barra de comidas no existía en la Home (solo en el Make) y que `food.tsx`
+  fingía lo servido con el reloj del dispositivo (D7 de #38); el humano cerró
+  cuatro decisiones antes de la spec (partir en backend #83 y móvil #98,
+  cualquier miembro activo sirve, 409 + DELETE, contar solo franjas del plan
+  vigente). El spec_author corrigió siete premisas del encargo (seis listas de
+  claves del perfil, no cuatro; sin índice redundante bajo el UNIQUE;
+  `servedToday` solo en el `GET` del plan). Codex: 25 commits, un par
+  rojo/verde por requisito. Reviewer APROBADO: `init.sh` exit 0 sin tubería,
+  e2e 27 de 30, migración 0017 verificada en `pet_tracker_wt` (journal 18),
+  once rojos comprobados y cinco sondas de mutación caídas. Smoke `curl` del
+  humano OK el 2026-09-17 (el 500 inicial en `GET nutrition-plan` fue la base
+  local sin 0017: `db:migrate` lo resolvió). Pendiente del leader: 0017 en
+  `pet_tracker` tras el merge. El id #98 se reservó anunciándolo a la sesión
+  Frontend porque `origin/main` no lo mostraba aún.
 
-- **2026-10-02** — Creado el icono estático de Pet Tracker con imagegen: perrito robótico violeta y pin de ubicación. Entregados PNG del icono principal y del icono monocromo de notificaciones (96×96) fuera del código de la app. Verificación general interrumpida en las pruebas móviles, sin resultado final de init.sh. Siguiente: integrar el recurso si el usuario lo solicita.
+- **2026-09-15** — **#93 `drop-devices-connectivity-column` cerrada** (sesión
+  Backend, worktree `wt-backend`): spec sin explorer, corrigió dos premisas del
+  enunciado (`init.sh` no aplica migraciones; el journal de la base compartida
+  va por 0013 porque 0014/0015 entraron con psql crudo) y se enmendó antes de la
+  firma para que Codex migrase su base propia `pet_tracker_wt`, creada ese día
+  a propuesta de la sesión Frontend para dejar de compartir Postgres entre
+  worktrees. Codex: 7 commits (test→feat→docs de R1 + evidencias R2/R3);
+  reviewer aprobado con `init.sh` en primer plano (+1 unit sobre el baseline)
+  tras una primera corrida caída por el flake #72 de `add-pet`. Errata del
+  leader tras la firma: el grep de cierre excluye `*.spec.ts`. Qué sigue:
+  mergear el PR de #93; tras el merge de #63 (PR #130), reparar el journal de
+  `pet_tracker` y aplicar 0016 allí; elegir la próxima `pending`.
+- **2026-09-15** — **#63 `mobile-detail-screens-state-reset` cerrada** (sesión
+  Frontend, tree principal): los formularios de detalle dejan de conservar lo
+  tecleado la vez anterior. Sin explorer, porque el enunciado ya traía la
+  exploración. **D1 eligió el reset local frente al Stack** con los cinco costes
+  medidos contra el árbol —el Stack sube el `Redirect` y el
+  `SelectedPetProvider` al layout raíz, revierte D4 de #42, invalida el
+  `paddingBottom: insets.bottom + 96`, obliga a cabecera nativa con copy nueva, y
+  **aun así R6 haría falta igual**— y quedó registrado como **#95**, pospuesto y
+  no descartado. Cinco pantallas afectadas; `docs` auditada y descartada con
+  evidencia (cero `useState`). **R7 es un requisito de que algo NO pase**: los
+  guardas de petición en vuelo sobreviven al blur, cerrado por mutación en dos
+  sitios. Codex en 22 commits test→feat→docs, reviewer aprobado a la primera,
+  gate humano firmado con los cinco pasos en dev build de Android. PR #130
+  mergeado.
+  - **El comando de verificación de la spec ya firmada estaba roto**: los paths
+    con `(tabs)` sin escapar, que jest trata como regex, así que el grupo de
+    captura no casaba con nada. Daba **verde con exit 0 habiendo corrido 5 suites
+    de 7**, sin ejecutar R3 ni R4. Lo destapó el leader al verificar por su
+    cuenta lo que Codex había dejado en "pendiente", no el gate. Regla en
+    `docs/conventions.md`, junto con el prefijo de feature para los R-id cuando
+    un fichero acumula los de dos specs.
+  - **Coordinación entre sesiones resuelta de raíz**: una base de datos por
+    worktree (`pet_tracker_wt`) quita el cuello de botella del Postgres
+    compartido; quedan LocalStack (14 de 29 suites lo tocan) y el journal de
+    migraciones de `pet_tracker`, que tenía 14 filas para 20 tablas porque #26
+    aplicó 0014 y 0015 con `psql` crudo. Todo en `docs/conventions.md`
+    §Sesiones en paralelo.
+  - **El `init.sh` de cierre salió rojo y era flake**: `alerts/index.test.tsx`,
+    verde 5 de 5 aislado y verde entero en la segunda corrida completa. Con eso
+    el flake de **#72 pasa a afectar a dos ficheros**, no uno, con la misma firma
+    y distinto mecanismo. Registrado en #72 (criterio 4).
+  - Qué sigue: decidir entre #72 (subir a P2 por coste: obliga a repetir el
+    `init.sh` de cada cierre) y #79 `mobile-push-registration`. Sin decidir
+    todavía si `reminders` y `alerts` van a feature aparte.
+- **2026-09-14** — **#92 `device-telemetry-reset-on-reassign` cerrada** (sesión
+  Backend, worktree `wt-backend`): spec sin explorer (el contexto vivía en el
+  explore de #73), firmada el mismo día con D1 = reset en `claim` corrigiendo la
+  recomendación del enunciado (release). Codex implementó R1 en tres commits
+  test→feat→docs y dejó las evidencias de R2 (sonda) y R3 (init.sh) en un cuarto;
+  reviewer aprobado con init.sh en primer plano (+1 unit, +2 e2e sobre el
+  baseline) y las dos sondas repetidas. Incidente de arranque: la sesión empezó
+  en el tree principal, que la sesión Frontend (#63) ocupa; se movió a
+  `wt-backend` antes de escribir. Qué sigue: mergear el PR de #92; #93
+  (`drop-devices-connectivity-column`) ya tiene su decisión de columnas.
+- **2026-09-14** — **#73 `pet-online-pill` cerrada**: spec firmada el 13 con
+  dos decisiones del humano sobre los defaults (umbral 120 s en vez de 300 s;
+  pulso del punto con Reanimated + reduced motion dentro de la feature) que
+  entraron como enmiendas E1-E3 con gate propio. Codex implementó R1-R10 en 19
+  commits test→feat; reviewer aprobado con init.sh en primer plano, cinco
+  sondas de mutación reproducidas y C4 verificado en worktrees temporales; el
+  humano firmó el smoke R11 en dev build Android (8 pasos, pulso incluido).
+  Deuda nombrada, sin id: telemetría heredada tras release+claim (G8), migración
+  que borre `devices.connectivity`, alinear el umbral del mapa con el del
+  collar (G4). PR #126 mergeado el 2026-09-14; el registro de #92-#94 quedó fuera de ese merge y entró por el PR #127. Qué sigue: elegir la próxima feature `pending`.
+- **2026-09-13** — **#78 `mobile-alerts-center` cerrada**: centro de alertas y
+  campana con punto rojo en el hero de Home, 14 requisitos más **ocho enmiendas
+  E1-E8** con gate humano propio. Las enmiendas nacieron de que la spec se firmó
+  el 2026-09-10 sobre un árbol **sin** TanStack Query y #87 se mergeó al día
+  siguiente borrando `src/hooks/use-api.ts`: R4, R8, R9 y R11 se reescribieron a
+  `useInfiniteQuery` + `useQuery` con `alertKeys`, y se **descartó**
+  `invalidateQueries` por escrito con la condición que lo revive. Implementó
+  **Codex CLI**; el `reviewer` **rechazó la ronda 1** por dos candados que nadie
+  había visto en rojo —el orden de los tres textos **dentro** de la columna de la
+  fila (intercambiarlos dejaba 73 suites y 1230 tests verdes) y la receta
+  tipográfica del título—, los dos corregidos **solo con tests** y aprobados en la
+  ronda 2. El gate humano R14 (smoke en dev build de Android con una alerta
+  `geofence_exit` real) quedó firmado el 2026-09-13. PR #123. La lección que deja:
+  un candado de orden puede pararse **un nivel por encima** de la hoja que
+  protege, y la lista de la carta §Enmienda #70 no basta si la aserción se queda
+  en el envoltorio. **Deuda abierta desde el gate**: #91
+  `mobile-tab-indicator-out-of-range`, la burbuja del indicador se posiciona con
+  el índice de `state.routes` y cualquier ruta de `(tabs)/` fuera de `TABS` la
+  manda detrás de Perfil — anterior a #78, afecta también a recordatorios,
+  pairing, peso y comidas.
+- **2026-09-11 (2)** — **#89 `dto-dates-owner-timezone` cerrada**: spec, gate,
+  Codex (trece commits sin paradas), reviewer aprobado a la primera sobre
+  198d67b1 (seis rojos reproducidos por checkout, M1-M3 reproducidas, init.sh
+  verde en una corrida). Cuarta feature de backend desde el worktree
+  `Pet-Tracker-wt-backend` en paralelo con la sesión Frontend (#78 en
+  implementación con Codex en el worktree principal; turnos de Postgres con
+  `pgrep`). Premisa móvil verificada por la sesión Frontend (fecha civil del
+  dispositivo) y deuda móvil nombrada en la spec sin abrir id.
+- **2026-09-11** — **#88 `vaccine-applied-at-owner-timezone` cerrada**: spec,
+  gate, Codex (diez commits sin paradas), reviewer aprobado a la primera sobre
+  dc9ee8d. Abre **#89** (DTOs hermanos). Tercera feature de backend en dos días
+  desde el worktree `Pet-Tracker-wt-backend` en paralelo con la Frontend (#87
+  cerrada por su lado, PR pendiente). Lecciones a memoria: el `pgrep` de
+  contención debe cubrir `test:e2e`, no solo `init.sh`; y no rebasear una branch
+  tras la trazabilidad de Codex.
+- **2026-09-10 (2)** — **#82 `vaccine-due-today-inclusive` cerrada**: explorer
+  + spec + gate + Codex + una enmienda (A1, décimo archivo) + reviewer aprobado
+  a la primera sobre ba28618. Abre **#88** (deuda `appliedAt` en la zona del
+  owner). Segunda feature del día desde el worktree `Pet-Tracker-wt-backend` en
+  paralelo con la sesión Frontend (#87 en corrección tras rechazo de su reviewer).
+- **2026-09-10** — **#76 `e2e-audit-log-order-assert` cerrada** en el día:
+  spec, gate humano, Codex CLI en el worktree `Pet-Tracker-wt-backend`, y
+  `reviewer` aprobado a la primera sobre fdf81c8. Sesión Backend en paralelo
+  con la Frontend (#78 en espera, #87 en spec); dos worktrees, un Postgres,
+  cero colisiones gracias al aviso cruzado antes de cada `init.sh`. Sigue
+  **#82** (`vaccine-due-today-inclusive`) como siguiente backend sin decisión
+  humana pendiente.
+- **2026-09-06** — **#65 `mobile-ui-language` cerrada** tras tres enmiendas
+  firmadas y **un rechazo del `reviewer` que valió la pena**. El candado de
+  R18 —el que garantiza que no queda copy suelta— tenía **regiones ciegas en 11
+  de las 19 pantallas**: una plantilla con `${…}` descuadraba el lexer de
+  expresiones regulares, que tomaba la comilla invertida de cierre como de
+  apertura y se tragaba hasta **6326 bytes seguidos**. El `reviewer` lo demostró
+  plantando un literal de copy que dejó la suite **en verde**. El arreglo mueve
+  el escaneo al **AST de TypeScript** (ya era `devDependency`), con test de
+  regresión y la mutación replantada en la posición exacta del falso verde:
+  salieron a la luz **364 literales** que el escáner nunca había visto, y no
+  había copy suelta en ninguno — la migración estaba bien, solo mal vigilada.
+  Las tres enmiendas nacieron de **paradas antes de escribir código**, no de
+  arreglos a posteriori: R18 declarado requisito de verificación porque nacía
+  verde por construcción; el recuento de R17 (244 → 265) por caduco, no por
+  equivocado; y cuatro claves de copy que el inventario no vio porque barrió
+  **literales ingleses por traducir** y esas palabras se escriben igual en los
+  dos idiomas. Esa tercera enmienda cambió además el candado de **constante
+  congelada a consistencia interna**, porque era la tercera vez en dos features
+  que un número escrito a mano paraba el trabajo. Y un último defecto de diseño
+  propio: el test de R19 medía «la casilla sigue vacía» en vez de «la
+  implementación la entrega vacía», así que **la firma del humano ponía la suite
+  en rojo**; arreglado sin tocar la spec. Deuda menor anotada por el `reviewer`:
+  `canonicalAmendment()` no comprueba que `indexOf(SIGNATURE_LINE)` encuentre
+  algo, así que si §6.2 perdiera su línea de firma el `slice` truncaría en
+  silencio — una línea en la próxima feature que toque el fichero. PR #110.
+
+- **2026-09-05** — **Fix de deriva de migraciones** (fuera de feature, sin
+  spec). `GET` de documentos de mascota reventaba en local con
+  `relation "pet_documents" does not exist` (42P01) desde
+  `PetDocumentDrizzleRepository.listByPet`. No era bug de código: la BD local
+  iba tres migraciones por detrás. `drizzle.__drizzle_migrations` tenía 13
+  filas (hasta 0012) y faltaban 0013, 0014 (`pet_documents`) y 0015
+  (`password_reset_tokens`). La causa de fondo era 0013: sus tablas
+  (`nutrition_plans`, `nutrition_profiles`) **sí existían** pero sin fila en
+  el journal, así que cualquier `migrate` moría con "already exists" y nadie
+  llegaba a 0014/0015. Arreglo: baseline de 0013 (verificadas antes columna a
+  columna contra su `.sql`) + `drizzle-kit migrate` → 16/16 aplicadas,
+  `pet_documents` con PK, índice y las dos FKs. Se cerró además la deuda que
+  lo permitía: `package.json` gana `"db:migrate": "drizzle-kit migrate"`
+  (una línea, por el subagente `implementer` bajo la excepción de
+  `CLAUDE.md` §Excepciones; reporte en `progress/impl_db-migrate-script.md`).
+  **Sin commitear**: el working tree está en la branch de #64. Abierto: los
+  hashes de 0003-0008 y 0012 en la BD no coinciden con los `.sql` actuales
+  (CRLF o edición post-aplicación); no rompe nada porque el migrator compara
+  por timestamp, sin investigar. Deuda nueva: `drizzle.config.ts` sin
+  `dotenv`, `pnpm run db:migrate` a secas falla con conexión vacía.
+
+- **2026-09-04** — #42 `mobile-device-pairing` **cerrada** (57/60). Spec con
+  contratos copiados del backend (D1) y dos decisiones cerradas: tracked/free
+  por la sonda del 402 (D2) y sin QR (D3). Codex implementó R1–R11 con pares
+  test→feat; `reviewer` aprobó (`init.sh` móvil 56 suites). G1 por el humano
+  con collar real: `provision:device` exige `SIM_MODE=false` + token real y
+  el claim devuelve 402 hasta `subscription:set --status active`. Deudas:
+  endpoint propio de subscription, Node 22 en VPS/CI (aviso del AWS SDK),
+  filas de `DeviceRow` sin separador. Sigue: PR para merge humano; luego #41
+  geofences o #60 iOS.
+
+- **2026-09-03** — #53 `mobile-jest-mock-hygiene` **cerrada** (56/60). Spec
+  con evidencia de por qué no usar flags globales de jest; Codex añadió el
+  `beforeEach` de archivo (rojo `79caf8c` → verde `43183c4`), 10/10 corridas
+  verdes, `init.sh` exit 0 (móvil 53 suites / 613 tests). También se dio de
+  alta #60 `mobile-ios-support` tras auditar qué falta para iOS. Incidente:
+  otra sesión de Claude renombró la branch en el working tree principal del
+  VPS; el leader terminó la feature en el worktree `Pet-Tracker-wt-53`. Sigue:
+  PR para merge humano; luego #42 o #41 (o #60 si se prioriza iOS).
+
+- **2026-09-03** — #59 `auth-reset-deep-link` **cerrada** (55/59). Gates
+  humanos G1–G4: fingerprint del dev build en `assetlinks.json`, `hosting/`
+  servido en la raíz del dominio (200 + statement válido en la API de Digital
+  Asset Links), `RESET_LINK_HOST` fuera del repo y smoke en dev build de
+  Android con App Link verificado. Incidente: el humano subió `hosting/` a
+  `/pet/` y parcheó la URL del backend; R1 quedó en rojo y el App Link no
+  verificaba. Revertido, ficheros movidos a la raíz, G3–G4 repetidos. Docs
+  G1 corregidos: el keystore del dev build es `android/app/debug.keystore`.
+  Sigue: PR de la branch para merge humano.
 
 - **2026-08-28** — #44 `auth-forgot-password` **cerrada** (49/54). Codex
   implementó R1–R13 con TDD estricto por requisito, migración 0015, entrega

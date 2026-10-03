@@ -25,3 +25,51 @@ export class PetWeightRequiredError extends Error {
     this.name = 'PetWeightRequiredError';
   }
 }
+
+export class NutritionPlanRequiredError extends Error {
+  constructor(petId: string) {
+    super(`Nutrition plan for pet ${petId} is required`);
+    this.name = 'NutritionPlanRequiredError';
+  }
+}
+
+export class MealTimeNotInPlanError extends Error {
+  constructor(petId: string, mealTime: string) {
+    super(`Meal time ${mealTime} is not in the current plan for pet ${petId}`);
+    this.name = 'MealTimeNotInPlanError';
+  }
+}
+
+export class MealAlreadyServedError extends Error {
+  constructor(petId: string, servedOn: string, mealTime: string) {
+    super(
+      `Meal ${mealTime} for pet ${petId} was already served on ${servedOn}`,
+    );
+    this.name = 'MealAlreadyServedError';
+  }
+}
+
+export class MealServingNotFoundError extends Error {
+  constructor(petId: string, servedOn: string, mealTime: string) {
+    super(`Meal ${mealTime} for pet ${petId} was not served on ${servedOn}`);
+    this.name = 'MealServingNotFoundError';
+  }
+}
+
+export class MealTimeDuplicateError extends Error {
+  constructor(petId: string, mealTime: string) {
+    super(
+      `Meal time ${mealTime} is already in the current plan for pet ${petId}`,
+    );
+    this.name = 'MealTimeDuplicateError';
+  }
+}
+
+export class MealTimesLimitReachedError extends Error {
+  constructor(petId: string) {
+    super(
+      `Nutrition plan for pet ${petId} already has the maximum number of meal times`,
+    );
+    this.name = 'MealTimesLimitReachedError';
+  }
+}

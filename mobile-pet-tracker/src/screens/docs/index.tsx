@@ -1,23 +1,35 @@
-import { router } from 'expo-router';
+import { useQuery } from '@tanstack/react-query';
 import { Button, Skeleton } from 'heroui-native';
-import { useCallback } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { listPetDocs, type PetDocument } from '../../api/media';
 import { getPet } from '../../api/pets';
+import { mediaKeys, petKeys } from '../../api/query-keys';
 import { Card } from '../../components/card';
-import { useApi } from '../../hooks/use-api';
 import { useAuth } from '../../providers/auth-provider';
+import { useTranslate } from '../../providers/language-provider';
+import { CONTINUOUS_CORNER } from '../../theme/native-styles';
+import {
+  CATEGORY_SLOTS,
+  documentCategory,
+} from '../../utils/category-palette';
 
 function DocumentRow({ document }: { document: PetDocument }) {
+  const slot = CATEGORY_SLOTS[documentCategory(document.type)];
+
   return (
     <Card testID={`doc-${document.id}`} className="flex-row items-center gap-3">
-      <View className="size-10 items-center justify-center rounded-xl bg-accent-soft">
+      <View
+        className={`size-10 items-center justify-center rounded-xl ${slot.surface}`}
+        style={CONTINUOUS_CORNER}
+      >
         <Text className="text-lg">📄</Text>
       </View>
       <View className="flex-1 gap-1">
-        <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
+        <Text
+          className={`self-start rounded-full px-2 py-0.5 text-2xs font-bold ${slot.surface} ${slot.ink}`}
+        >
           {document.type}
         </Text>
         <Text className="font-bold text-foreground">{document.name}</Text>
@@ -30,17 +42,16 @@ function DocumentRow({ document }: { document: PetDocument }) {
 export function DocsScreen({ petId }: { petId: string }) {
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { token } = useAuth();
+  const t = useTranslate();
   const insets = useSafeAreaInsets();
-  const petFn = useCallback(
-    () => getPet(baseUrl, token ?? '', petId),
-    [baseUrl, petId, token],
-  );
-  const docsFn = useCallback(
-    () => listPetDocs(baseUrl, token ?? '', petId),
-    [baseUrl, petId, token],
-  );
-  const pet = useApi(petFn);
-  const docs = useApi(docsFn);
+  const pet = useQuery({
+    queryKey: petKeys.detail(petId),
+    queryFn: () => getPet(baseUrl, token ?? '', petId),
+  });
+  const docs = useQuery({
+    queryKey: mediaKeys.petDocs(petId),
+    queryFn: () => listPetDocs(baseUrl, token ?? '', petId),
+  });
   const petName = pet.data?.kind === 'ok' ? pet.data.pet.name : null;
 
   return (
@@ -51,32 +62,20 @@ export function DocsScreen({ petId }: { petId: string }) {
       contentContainerStyle={{
         padding: 24,
         gap: 16,
-        paddingTop: insets.top + 12,
-        paddingBottom: insets.bottom + 96,
+        paddingBottom: insets.bottom + 24,
       }}
     >
-      <View className="flex-row items-center gap-3">
-        <Pressable
-          accessibilityLabel="Back to profile"
-          accessibilityRole="button"
-          testID="docs-back"
-          className="size-10 items-center justify-center rounded-full bg-default"
-          onPress={() => router.back()}
-        >
-          <Text className="text-lg font-bold text-foreground">←</Text>
-        </Pressable>
-        <View className="flex-1 gap-1">
-          <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
-            Documentos de
+      <View className="gap-1">
+        <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
+          {t('docs.documentsOf')}
+        </Text>
+        {pet.data === undefined ? (
+          <Skeleton testID="docs-header-skeleton" className="h-8 w-36 rounded-xl" />
+        ) : (
+          <Text className="text-2xl font-black text-foreground">
+            {petName ?? t('docs.pet')}
           </Text>
-          {pet.data === undefined ? (
-            <Skeleton testID="docs-header-skeleton" className="h-8 w-36 rounded-xl" />
-          ) : (
-            <Text className="text-2xl font-black text-foreground">
-              {petName ?? 'Pet'}
-            </Text>
-          )}
-        </View>
+        )}
       </View>
 
       {docs.data === undefined ? (
@@ -89,9 +88,11 @@ export function DocsScreen({ petId }: { petId: string }) {
 
       {docs.data?.kind === 'ok' && docs.data.docs.length === 0 ? (
         <Card testID="docs-empty" className="items-center gap-2 py-8">
-          <Text className="text-lg font-bold text-foreground">No documents yet</Text>
+          <Text className="text-lg font-bold text-foreground">
+            {t('docs.noDocumentsYet')}
+          </Text>
           <Text className="text-center font-normal text-muted">
-            Medical documents will appear here.
+            {t('docs.emptyBody')}
           </Text>
         </Card>
       ) : null}
@@ -104,9 +105,11 @@ export function DocsScreen({ petId }: { petId: string }) {
 
       {docs.data && docs.data.kind !== 'ok' ? (
         <Card testID="docs-error" className="items-start gap-3">
-          <Text className="font-normal text-danger">Could not load documents</Text>
-          <Button testID="docs-retry" onPress={docs.refetch}>
-            <Button.Label>Retry</Button.Label>
+          <Text className="font-normal text-danger">
+            {t('docs.couldNotLoadDocuments')}
+          </Text>
+          <Button testID="docs-retry" onPress={() => void docs.refetch()}>
+            <Button.Label>{t('common.retry')}</Button.Label>
           </Button>
         </Card>
       ) : null}

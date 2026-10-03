@@ -1,8 +1,10 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
+import type { ReactNode } from 'react';
 
 import { login, register } from '../../../api/auth';
+import { LanguageProvider } from '../../../providers/language-provider';
 import Forgot from '../forgot';
 
 jest.mock('../../../api/auth', () => ({
@@ -16,9 +18,22 @@ jest.mock('expo-router', () => ({
   },
 }));
 
+jest.mock('react-native-safe-area-context', () => ({
+  ...jest.requireActual('react-native-safe-area-context'),
+  useSafeAreaInsets: () => ({ top: 40, right: 0, bottom: 24, left: 0 }),
+}));
+
 const mockLogin = jest.mocked(login);
 const mockRegister = jest.mocked(register);
 const mockRouter = jest.mocked(router);
+
+function AuthScreenWrapper({ children }: { children: ReactNode }) {
+  return (
+    <HeroUINativeProvider>
+      <LanguageProvider initial="es">{children}</LanguageProvider>
+    </HeroUINativeProvider>
+  );
+}
 
 describe('R9: forgot es un stub deshabilitado', () => {
   beforeEach(() => {
@@ -26,9 +41,13 @@ describe('R9: forgot es un stub deshabilitado', () => {
   });
 
   it('renders disabled controls and never calls auth APIs', async () => {
-    await render(<Forgot />, { wrapper: HeroUINativeProvider });
+    await render(<Forgot />, { wrapper: AuthScreenWrapper });
 
-    expect(screen.getByText('Password recovery coming soon')).toBeVisible();
+    expect(
+      screen.getByText(
+        'La recuperación de contraseña estará disponible pronto',
+      ),
+    ).toBeVisible();
     expect(screen.getByTestId('forgot-email')).toHaveProp('editable', false);
     expect(screen.getByTestId('forgot-submit')).toBeDisabled();
 
@@ -39,12 +58,42 @@ describe('R9: forgot es un stub deshabilitado', () => {
   });
 
   it('links back to login without a network request', async () => {
-    await render(<Forgot />, { wrapper: HeroUINativeProvider });
+    await render(<Forgot />, { wrapper: AuthScreenWrapper });
 
     await fireEvent.press(screen.getByTestId('link-login'));
 
     expect(mockRouter.push).toHaveBeenCalledWith('/login');
     expect(mockLogin).not.toHaveBeenCalled();
     expect(mockRegister).not.toHaveBeenCalled();
+  });
+});
+
+describe('#61 R8: forgot tiene contenedor de scroll con safe areas', () => {
+  it('conserva el centrado de hoy dentro de un ScrollView con insets', async () => {
+    await render(<Forgot />, { wrapper: AuthScreenWrapper });
+
+    const screenRoot = screen.getByTestId('screen-forgot');
+
+    expect(screenRoot.props.contentContainerStyle).toEqual({
+      flexGrow: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 24,
+      gap: 16,
+      paddingTop: 52,
+      paddingBottom: 48,
+    });
+    expect(screenRoot.props.keyboardShouldPersistTaps).toBe('handled');
+    expect(screenRoot.props.contentInsetAdjustmentBehavior).toBe('automatic');
+  });
+});
+
+describe('#127 R1: el botón de envío de forgot lleva su receta en el árbol', () => {
+  it('pinta forgot-submit, deshabilitado, con la clase exacta, rounded-xl y bg-accent incluidos, la vea o no el recorte de fuente', async () => {
+    await render(<Forgot />, { wrapper: AuthScreenWrapper });
+
+    expect(screen.getByTestId('forgot-submit').props.className).toBe(
+      'pressable-feedback__root button__root button__root--variant-primary button__root--size-md disabled:element-disabled w-full rounded-xl bg-accent',
+    );
   });
 });

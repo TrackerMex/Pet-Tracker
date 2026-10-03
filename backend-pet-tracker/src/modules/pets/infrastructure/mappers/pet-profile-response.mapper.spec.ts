@@ -31,7 +31,7 @@ function buildPet(
 }
 
 describe('R8: el perfil de mascota expone exactamente las claves del contrato', () => {
-  it('serializa las 24 claves fijadas, sin extras ni faltantes', () => {
+  it('serializa las 25 claves fijadas, sin extras ni faltantes', () => {
     const response = toPetProfileResponse(buildPet(), 'owner', NOW);
 
     expect(Object.keys(response).sort()).toEqual(
@@ -58,19 +58,21 @@ describe('R8: el perfil de mascota expone exactamente las claves del contrato', 
         'nextVaccine',
         'nextReminder',
         'activitySummary',
+        'mealsToday',
         'createdAt',
         'updatedAt',
       ].sort(),
     );
   });
 
-  it('device, nextVaccine, nextReminder y activitySummary estan presentes con null', () => {
+  it('device, nextVaccine, nextReminder, activitySummary y mealsToday estan presentes con null', () => {
     const response = toPetProfileResponse(buildPet(), 'owner', NOW);
 
     expect(response.device).toBeNull();
     expect(response.nextVaccine).toBeNull();
     expect(response.nextReminder).toBeNull();
     expect(response.activitySummary).toBeNull();
+    expect(response.mealsToday).toBeNull();
   });
 
   it('photoUrl es null por defecto; lastPosition y lastCommunicationAt son null mientras #8 no los alimente', () => {

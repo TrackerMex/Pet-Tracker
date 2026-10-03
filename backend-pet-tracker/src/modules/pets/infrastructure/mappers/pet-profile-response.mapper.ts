@@ -7,6 +7,7 @@ import {
   PetSpecies,
 } from '@/modules/pets/domain/entities/pet.entity';
 import { PetRole } from '@/modules/pets/domain/entities/pet-membership';
+import type { PetMealsToday } from '@/modules/pets/domain/ports/pet-meals-reader';
 import type { NextPetVaccine } from '@/modules/pets/domain/ports/pet-vaccine-reader';
 
 /**
@@ -41,6 +42,8 @@ export interface PetProfileResponse {
   device: DeviceStatusResponse | null;
   /** null hasta pet-vaccines (#14). */
   nextVaccine: NextPetVaccine | null;
+  /** { served, total } del dia del owner (#83 R10) o null sin plan. */
+  mealsToday: PetMealsToday | null;
   /** null hasta pet-reminders (#16). */
   nextReminder: null;
   /** null hasta activity-summary (#10). */
@@ -57,6 +60,7 @@ export function toPetProfileResponse(
   device: DeviceStatusResponse | null = null,
   photoUrl: string | null = null,
   nextVaccine: NextPetVaccine | null = null,
+  mealsToday: PetMealsToday | null = null,
 ): PetProfileResponse {
   return {
     id: pet.id,
@@ -81,6 +85,7 @@ export function toPetProfileResponse(
     myRole,
     device,
     nextVaccine,
+    mealsToday,
     nextReminder: null,
     activitySummary: null,
     createdAt: pet.createdAt.toISOString(),

@@ -89,6 +89,7 @@ describe('R2: POST /v1/pets responde el perfil creado con myRole owner', () => {
     expect(createExecute).toHaveBeenCalledWith(
       { name: 'Firulais', species: 'dog', birthDate: '2024-01-15' },
       USER.id,
+      expect.any(Date),
     );
   });
 
@@ -127,27 +128,96 @@ describe('R7: GET /v1/pets lista las mascotas del usuario con myRole', () => {
   });
 });
 
+describe('R2 (pets-list-response-enrichment #66): GET /v1/pets serializa el photoUrl de cada item sin alterar el contrato', () => {
+  it('conserva el photoUrl resuelto y el rol de cada item', async () => {
+    const { controller, listExecute } = buildController();
+    listExecute.mockResolvedValue([
+      {
+        pet: buildPet(),
+        role: 'owner',
+        photoUrl: 'https://signed.example/a',
+      },
+      { pet: buildPet(), role: 'family', photoUrl: null },
+    ]);
+
+    const response = await controller.list(USER);
+
+    expect(response[0].photoUrl).toBe('https://signed.example/a');
+    expect(response[1].photoUrl).toBeNull();
+    expect(response[0].myRole).toBe('owner');
+    expect(response[1].myRole).toBe('family');
+  });
+
+  it('mantiene exactamente las 25 claves y los placeholders no enriquecidos en null', async () => {
+    const { controller, listExecute } = buildController();
+    listExecute.mockResolvedValue([
+      {
+        pet: buildPet(),
+        role: 'owner',
+        photoUrl: 'https://signed.example/a',
+      },
+      { pet: buildPet(), role: 'family', photoUrl: null },
+    ]);
+
+    const response = await controller.list(USER);
+
+    expect(Object.keys(response[0]).sort()).toEqual(
+      [
+        'id',
+        'name',
+        'species',
+        'breed',
+        'sex',
+        'birthDate',
+        'approxAgeMonths',
+        'ageMonths',
+        'currentWeightKg',
+        'size',
+        'color',
+        'sterilized',
+        'microchip',
+        'photoUrl',
+        'lostMode',
+        'lastPosition',
+        'lastCommunicationAt',
+        'myRole',
+        'device',
+        'nextVaccine',
+        'nextReminder',
+        'activitySummary',
+        'mealsToday',
+        'createdAt',
+        'updatedAt',
+      ].sort(),
+    );
+    expect(response[0].device).toBeNull();
+    expect(response[0].nextVaccine).toBeNull();
+    expect(response[0].nextReminder).toBeNull();
+    expect(response[0].activitySummary).toBeNull();
+    expect(response[0].mealsToday).toBeNull();
+  });
+});
+
 describe('R8: GET /v1/pets/:petId responde el perfil con el rol de la membresia', () => {
   it('usa el petId y el rol adjuntados por PetAccessGuard', async () => {
     const { controller, getExecute } = buildController();
 
     const response = await controller.detail(buildPetRequest('vet'));
 
-    expect(getExecute).toHaveBeenCalledWith(PET_ID);
+    expect(getExecute).toHaveBeenCalledWith(PET_ID, expect.any(Date));
     expect(response.id).toBe(PET_ID);
     expect(response.myRole).toBe('vet');
   });
 });
 
-describe('R12 (devices-claim): el detalle serializa la clave device del use case', () => {
-  it('mapea el collar activo a las 5 claves del contrato de device', async () => {
+describe('R12 (devices-claim) + #73 R2: el detalle serializa la clave device del use case con connectivity derivada', () => {
+  it('deriva connectivity del lastMessageAt del use case: uno de 2026-08-01 sale offline', async () => {
     const { controller, getExecute } = buildController();
     getExecute.mockResolvedValue({
       pet: buildPet(),
       device: {
         model: 'sim-collar',
         batteryPct: null,
-        connectivity: null,
         lastMessageAt: new Date('2026-08-01T11:59:00.000Z'),
         esn: 'SIM-001',
       },
@@ -158,10 +228,44 @@ describe('R12 (devices-claim): el detalle serializa la clave device del use case
     expect(response.device).toEqual({
       model: 'sim-collar',
       batteryPct: null,
-      connectivity: null,
+      connectivity: 'offline',
       lastMessageAt: '2026-08-01T11:59:00.000Z',
       esn: 'SIM-001',
     });
+  });
+
+  it('un lastMessageAt de ahora mismo sale online', async () => {
+    const { controller, getExecute } = buildController();
+    getExecute.mockResolvedValue({
+      pet: buildPet(),
+      device: {
+        model: 'sim-collar',
+        batteryPct: 87,
+        lastMessageAt: new Date(),
+        esn: 'SIM-001',
+      },
+    });
+
+    const response = await controller.detail(buildPetRequest('owner'));
+
+    expect(response.device?.connectivity).toBe('online');
+  });
+
+  it('un collar que nunca reporto sale con connectivity null', async () => {
+    const { controller, getExecute } = buildController();
+    getExecute.mockResolvedValue({
+      pet: buildPet(),
+      device: {
+        model: 'sim-collar',
+        batteryPct: null,
+        lastMessageAt: null,
+        esn: 'SIM-001',
+      },
+    });
+
+    const response = await controller.detail(buildPetRequest('owner'));
+
+    expect(response.device?.connectivity).toBeNull();
   });
 
   it('sin collar activo la clave device sigue en null', async () => {
@@ -220,9 +324,12 @@ describe('R13: PATCH /v1/pets/:petId delega el subconjunto validado', () => {
       name: 'Firu',
     });
 
-    expect(updateExecute).toHaveBeenCalledWith(PET_ID, USER.id, {
-      name: 'Firu',
-    });
+    expect(updateExecute).toHaveBeenCalledWith(
+      PET_ID,
+      USER.id,
+      { name: 'Firu' },
+      expect.any(Date),
+    );
     expect(response.myRole).toBe('owner');
   });
 

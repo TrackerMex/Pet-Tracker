@@ -40,7 +40,7 @@ export class PetDeviceController {
 
     // @Res explicito: Nest deja el body vacio cuando el handler devuelve
     // null, y el contrato de R11 exige body JSON `null` literal.
-    response.json(device ? toDeviceStatusResponse(device) : null);
+    response.json(device ? toDeviceStatusResponse(device, new Date()) : null);
   }
 
   // R13/R14: solo el owner libera; el 404 de membresia del guard precede

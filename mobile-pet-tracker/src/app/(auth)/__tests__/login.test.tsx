@@ -1,9 +1,11 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
+import type { ReactNode } from 'react';
 
 import { login, type LoginState } from '../../../api/auth';
 import { useAuth, type AuthContextValue } from '../../../providers/auth-provider';
+import { LanguageProvider } from '../../../providers/language-provider';
 import Login from '../login';
 
 jest.mock('../../../api/auth', () => ({
@@ -21,14 +23,27 @@ jest.mock('expo-router', () => ({
   },
 }));
 
+jest.mock('react-native-safe-area-context', () => ({
+  ...jest.requireActual('react-native-safe-area-context'),
+  useSafeAreaInsets: () => ({ top: 40, right: 0, bottom: 24, left: 0 }),
+}));
+
 const apiUrl = 'http://example.test/v1';
 const mockLogin = jest.mocked(login);
 const mockUseAuth = jest.mocked(useAuth);
 const mockSignIn = jest.fn<Promise<void>, [string]>();
 const mockRouter = jest.mocked(router);
 
+function AuthScreenWrapper({ children }: { children: ReactNode }) {
+  return (
+    <HeroUINativeProvider>
+      <LanguageProvider initial="es">{children}</LanguageProvider>
+    </HeroUINativeProvider>
+  );
+}
+
 async function renderLogin() {
-  await render(<Login />, { wrapper: HeroUINativeProvider });
+  await render(<Login />, { wrapper: AuthScreenWrapper });
 }
 
 async function submit(email = 'alex@example.com', password = 'correct horse') {
@@ -65,10 +80,13 @@ describe('R7: login llama a la api y navega', () => {
   });
 
   it.each<[LoginState, string]>([
-    [{ kind: 'invalid-credentials' }, 'Invalid credentials'],
-    [{ kind: 'unreachable', message: 'network down' }, 'Cannot reach server'],
-    [{ kind: 'error' }, 'Something went wrong'],
-    [{ kind: 'missing-config' }, 'Something went wrong'],
+    [{ kind: 'invalid-credentials' }, 'Credenciales inválidas'],
+    [
+      { kind: 'unreachable', message: 'network down' },
+      'No se pudo conectar con el servidor',
+    ],
+    [{ kind: 'error' }, 'Algo salió mal'],
+    [{ kind: 'missing-config' }, 'Algo salió mal'],
   ])('shows the expected message for $kind', async (state, message) => {
     mockLogin.mockResolvedValue(state);
     await renderLogin();
@@ -107,5 +125,51 @@ describe('R7: login llama a la api y navega', () => {
       expect(mockRouter.push).toHaveBeenNthCalledWith(1, '/register');
       expect(mockRouter.push).toHaveBeenNthCalledWith(2, '/forgot');
     });
+  });
+});
+
+describe('#61 R8: login tiene contenedor de scroll con safe areas', () => {
+  it('centra el contenido dentro de un ScrollView con los insets aplicados', async () => {
+    await renderLogin();
+
+    const screenRoot = screen.getByTestId('screen-login');
+
+    expect(screenRoot.props.contentContainerStyle).toEqual({
+      flexGrow: 1,
+      justifyContent: 'center',
+      padding: 24,
+      gap: 16,
+      paddingTop: 52,
+      paddingBottom: 48,
+    });
+    expect(screenRoot.props.keyboardShouldPersistTaps).toBe('handled');
+    expect(screenRoot.props.contentInsetAdjustmentBehavior).toBe('automatic');
+  });
+
+  it('no centra horizontalmente, que no lo hacía el View de hoy', async () => {
+    await renderLogin();
+
+    expect(
+      screen.getByTestId('screen-login').props.contentContainerStyle,
+    ).not.toHaveProperty('alignItems');
+  });
+});
+
+describe('#127 R1: el botón de envío de login lleva su receta en el árbol', () => {
+  beforeEach(() => {
+    mockUseAuth.mockReturnValue({
+      status: 'unauthenticated',
+      token: null,
+      signIn: mockSignIn,
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+  });
+
+  it('pinta login-submit con la clase exacta, rounded-xl y bg-accent incluidos, la vea o no el recorte de fuente', async () => {
+    await renderLogin();
+
+    expect(screen.getByTestId('login-submit').props.className).toBe(
+      'pressable-feedback__root button__root button__root--variant-primary button__root--size-md w-full rounded-xl bg-accent',
+    );
   });
 });

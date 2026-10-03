@@ -2,13 +2,15 @@ import {
   BottomSheet,
   BottomSheetView,
 } from '@expo/ui/community/bottom-sheet';
+import { useQuery } from '@tanstack/react-query';
 import { router, type Href, useFocusEffect } from 'expo-router';
 import { Button, Skeleton } from 'heroui-native';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { listPets } from '../../api/pets';
+import { petKeys, reminderKeys } from '../../api/query-keys';
 import {
   deleteReminder,
   listReminders,
@@ -17,10 +19,18 @@ import {
 import type { Reminder } from '../../api/types';
 import { Card } from '../../components/card';
 import { PetSwitcher } from '../../components/pet-switcher';
-import { useApi } from '../../hooks/use-api';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
+import {
+  useLocale,
+  useTranslate,
+} from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
+import {
+  CONTINUOUS_CORNER,
+  TABULAR_NUMS,
+} from '../../theme/native-styles';
+import { CATEGORY_SLOTS } from '../../utils/category-palette';
 import { daysUntil } from '../../utils/reminder-dates';
 import { REMINDER_TYPE_META } from '../../utils/reminder-meta';
 
@@ -33,22 +43,20 @@ function isRemindersError(state: RemindersState): boolean {
 export function RemindersScreen() {
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { signOut, token } = useAuth();
+  const locale = useLocale();
+  const t = useTranslate();
   const { selectedPetId, selectPet } = useSelectedPet();
   const insets = useSafeAreaInsets();
-  const petsFn = useCallback(
-    () => listPets(baseUrl, token ?? ''),
-    [baseUrl, token],
-  );
-  const pets = useApi(petsFn);
-  usePetSelection(pets);
-  const remindersFn = useMemo(
-    () =>
-      selectedPetId
-        ? () => listReminders(baseUrl, token ?? '', selectedPetId)
-        : null,
-    [baseUrl, selectedPetId, token],
-  );
-  const reminders = useApi(remindersFn);
+  const pets = useQuery({
+    queryKey: petKeys.list(),
+    queryFn: () => listPets(baseUrl, token ?? ''),
+  });
+  usePetSelection({ data: pets.data, isRefreshing: pets.isRefetching });
+  const reminders = useQuery({
+    queryKey: reminderKeys.list(selectedPetId ?? ''),
+    queryFn: () => listReminders(baseUrl, token ?? '', selectedPetId!),
+    enabled: selectedPetId !== null,
+  });
   const refetchReminders = reminders.refetch;
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deleteCandidate, setDeleteCandidate] = useState<Reminder | null>(null);
@@ -57,6 +65,10 @@ export function RemindersScreen() {
   useFocusEffect(
     useCallback(() => {
       refetchReminders();
+      return () => {
+        setDeleteCandidate(null);
+        setActionError(null);
+      };
     }, [refetchReminders]),
   );
 
@@ -80,24 +92,24 @@ export function RemindersScreen() {
             refetchReminders();
             return;
           case 'forbidden':
-            setActionError('Only the owner can delete');
+            setActionError(t('reminders.errorForbidden'));
             return;
           case 'unreachable':
-            setActionError('Cannot reach server');
+            setActionError(t('common.cannotReachServer'));
             return;
           case 'unauthorized':
             await signOut();
             return;
           case 'error':
           case 'missing-config':
-            setActionError('Something went wrong');
+            setActionError(t('common.somethingWentWrong'));
         }
       } catch {
-        setActionError('Something went wrong');
+        setActionError(t('common.somethingWentWrong'));
       } finally {
         setDeletingId(null);
       }
-    }, [baseUrl, refetchReminders, selectedPetId, signOut, token],
+    }, [baseUrl, refetchReminders, selectedPetId, signOut, t, token],
   );
 
   const confirmDelete = useCallback((reminder: Reminder) => {
@@ -124,19 +136,17 @@ export function RemindersScreen() {
       contentContainerStyle={{
         padding: 24,
         gap: 16,
-        paddingTop: insets.top + 12,
-        paddingBottom: insets.bottom + 96,
+        paddingBottom: insets.bottom + 24,
       }}
     >
-      <View className="flex-row items-center justify-between gap-3">
-        <Text className="text-2xl font-black text-foreground">Reminders</Text>
+      <View testID="reminders-actions" className="flex-row justify-end">
         <Button
           testID="reminders-add-link"
           className="rounded-xl bg-accent"
           onPress={() => router.push('/add-reminder' as Href)}
         >
           <Button.Label className="font-bold text-accent-foreground">
-            New
+            {t('reminders.new')}
           </Button.Label>
         </Button>
       </View>
@@ -155,7 +165,7 @@ export function RemindersScreen() {
             <Skeleton
               key={index}
               testID={`reminder-row-skeleton-${index + 1}`}
-              className="h-20 w-full rounded-2xl"
+              className="h-20 w-full rounded-card"
             />
           ))}
         </View>
@@ -164,10 +174,13 @@ export function RemindersScreen() {
       {reminders.data && isRemindersError(reminders.data) ? (
         <View className="items-start gap-3">
           <Text testID="reminders-error" className="text-danger">
-            Something went wrong
+            {t('common.somethingWentWrong')}
           </Text>
-          <Button testID="reminders-retry" onPress={reminders.refetch}>
-            <Button.Label>Retry</Button.Label>
+          <Button
+            testID="reminders-retry"
+            onPress={() => void reminders.refetch()}
+          >
+            <Button.Label>{t('common.retry')}</Button.Label>
           </Button>
         </View>
       ) : null}
@@ -175,7 +188,7 @@ export function RemindersScreen() {
       {reminders.data?.kind === 'ok' &&
       reminders.data.reminders.length === 0 ? (
         <Text testID="reminders-empty" className="font-normal text-muted">
-          No reminders yet
+          {t('reminders.noRemindersYet')}
         </Text>
       ) : null}
 
@@ -191,22 +204,32 @@ export function RemindersScreen() {
           <View className="flex-row gap-3">
             <View
               testID="pill-active"
-              className="flex-1 items-center gap-1 rounded-2xl bg-accent-soft p-3"
+              className="flex-1 items-center gap-1 rounded-xl bg-accent-soft p-3"
+              style={CONTINUOUS_CORNER}
             >
-              <Text className="text-lg font-black text-foreground">
+              <Text
+                className="text-lg font-black text-foreground"
+                style={TABULAR_NUMS}
+              >
                 {
                   reminders.data.reminders.filter(
                     ({ status }) => status === 'scheduled',
                   ).length
                 }
               </Text>
-              <Text className="text-xs font-normal text-muted">Active</Text>
+              <Text className="text-xs font-normal text-muted">
+                {t('reminders.active')}
+              </Text>
             </View>
             <View
               testID="pill-week"
-              className="flex-1 items-center gap-1 rounded-2xl bg-default p-3"
+              className="flex-1 items-center gap-1 rounded-xl bg-default p-3"
+              style={CONTINUOUS_CORNER}
             >
-              <Text className="text-lg font-black text-foreground">
+              <Text
+                className="text-lg font-black text-foreground"
+                style={TABULAR_NUMS}
+              >
                 {
                   reminders.data.reminders.filter((reminder) => {
                     const days = daysUntil(
@@ -221,20 +244,28 @@ export function RemindersScreen() {
                   }).length
                 }
               </Text>
-              <Text className="text-xs font-normal text-muted">This week</Text>
+              <Text className="text-xs font-normal text-muted">
+                {t('reminders.thisWeek')}
+              </Text>
             </View>
             <View
               testID="pill-inactive"
-              className="flex-1 items-center gap-1 rounded-2xl bg-default p-3"
+              className="flex-1 items-center gap-1 rounded-xl bg-default p-3"
+              style={CONTINUOUS_CORNER}
             >
-              <Text className="text-lg font-black text-foreground">
+              <Text
+                className="text-lg font-black text-foreground"
+                style={TABULAR_NUMS}
+              >
                 {
                   reminders.data.reminders.filter(
                     ({ status }) => status !== 'scheduled',
                   ).length
                 }
               </Text>
-              <Text className="text-xs font-normal text-muted">Inactive</Text>
+              <Text className="text-xs font-normal text-muted">
+                {t('reminders.inactive')}
+              </Text>
             </View>
           </View>
 
@@ -250,20 +281,23 @@ export function RemindersScreen() {
                   testID={`reminder-row-${reminder.id}`}
                   className={`min-h-20 flex-row items-center gap-3${inactive ? ' opacity-50' : ''}`}
                 >
-                  <View className="size-11 items-center justify-center rounded-xl bg-accent-soft">
+                  <View
+                    className={`size-11 items-center justify-center rounded-xl ${CATEGORY_SLOTS[meta.category].surface}`}
+                    style={CONTINUOUS_CORNER}
+                  >
                     <Text className="text-xl">{meta.emoji}</Text>
                   </View>
                   <View className="min-w-0 flex-1 gap-1">
                     <View className="flex-row items-center gap-2">
                       <Text className="text-xs font-semibold text-muted">
-                        {meta.label}
+                        {t(meta.labelKey)}
                       </Text>
                       {!inactive && days >= 0 && days <= 10 ? (
                         <Text
                           testID={`reminder-upcoming-${reminder.id}`}
-                          className="rounded-full bg-warning-soft px-2 py-0.5 text-2xs font-bold text-warning"
+                          className="rounded-full bg-warning-soft px-2 py-0.5 text-2xs font-bold text-warning-strong"
                         >
-                          Upcoming!
+                          {t('reminders.upcoming')}
                         </Text>
                       ) : null}
                     </View>
@@ -272,18 +306,20 @@ export function RemindersScreen() {
                     </Text>
                     <View className="flex-row items-center gap-1">
                       <Text className="text-xs font-normal text-muted">
-                        {new Date(reminder.dueAt).toLocaleDateString()}
+                        {new Date(reminder.dueAt).toLocaleDateString(locale)}
                       </Text>
                       {inactive ? (
                         <Text
                           testID={`reminder-status-${reminder.id}`}
                           className="text-xs font-semibold text-muted"
                         >
-                          {reminder.status === 'sent' ? 'Sent' : 'Cancelled'}
+                          {reminder.status === 'sent'
+                            ? t('reminders.sent')
+                            : t('reminders.cancelled')}
                         </Text>
                       ) : (
                         <Text className="text-xs font-normal text-muted">
-                          {`· in ${days} days`}
+                          {t('reminders.dueInDays', { days })}
                         </Text>
                       )}
                     </View>
@@ -297,7 +333,7 @@ export function RemindersScreen() {
                     onPress={() => confirmDelete(reminder)}
                   >
                     <Button.Label className="font-semibold text-danger">
-                      Delete
+                      {t('reminders.delete')}
                     </Button.Label>
                   </Button>
                 </Card>
@@ -320,7 +356,7 @@ export function RemindersScreen() {
               className="gap-3 bg-surface px-6 pb-8 pt-4"
             >
               <Text className="text-xl font-bold text-foreground">
-                Delete reminder?
+                {t('reminders.deleteReminder')}
               </Text>
               <Text
                 testID="reminders-delete-reference"
@@ -329,7 +365,7 @@ export function RemindersScreen() {
                 {deleteCandidate?.title ?? ''}
               </Text>
               <Text className="text-sm font-normal text-muted">
-                This action cannot be undone.
+                {t('reminders.deleteSheetBody')}
               </Text>
               <View className="gap-2 pt-2">
                 <Button
@@ -338,8 +374,8 @@ export function RemindersScreen() {
                   variant="danger"
                   onPress={deleteSelectedReminder}
                 >
-                  <Button.Label className="font-bold text-accent-foreground">
-                    Delete
+                  <Button.Label className="font-bold text-danger-foreground">
+                    {t('reminders.delete')}
                   </Button.Label>
                 </Button>
                 <Button
@@ -348,7 +384,9 @@ export function RemindersScreen() {
                   variant="outline"
                   onPress={dismissDeleteSheet}
                 >
-                  <Button.Label className="font-semibold">Cancel</Button.Label>
+                  <Button.Label className="font-semibold">
+                    {t('reminders.cancel')}
+                  </Button.Label>
                 </Button>
               </View>
             </View>

@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
+import type { ReactNode } from 'react';
 
 import {
   login,
@@ -8,6 +9,7 @@ import {
   type RegisterState,
 } from '../../../api/auth';
 import { useAuth, type AuthContextValue } from '../../../providers/auth-provider';
+import { LanguageProvider } from '../../../providers/language-provider';
 import Register from '../register';
 
 jest.mock('../../../api/auth', () => ({
@@ -23,6 +25,11 @@ jest.mock('expo-router', () => ({
   router: {
     replace: jest.fn(),
   },
+}));
+
+jest.mock('react-native-safe-area-context', () => ({
+  ...jest.requireActual('react-native-safe-area-context'),
+  useSafeAreaInsets: () => ({ top: 40, right: 0, bottom: 24, left: 0 }),
 }));
 
 const apiUrl = 'http://example.test/v1';
@@ -43,8 +50,16 @@ const user = {
   createdAt: '2026-08-21T00:00:00.000Z',
 };
 
+function AuthScreenWrapper({ children }: { children: ReactNode }) {
+  return (
+    <HeroUINativeProvider>
+      <LanguageProvider initial="es">{children}</LanguageProvider>
+    </HeroUINativeProvider>
+  );
+}
+
 async function renderRegister() {
-  await render(<Register />, { wrapper: HeroUINativeProvider });
+  await render(<Register />, { wrapper: AuthScreenWrapper });
 }
 
 async function fillForm({ acceptTerms = true }: { acceptTerms?: boolean } = {}) {
@@ -144,7 +159,7 @@ describe('R8: register llama a la api y navega', () => {
     await submit();
 
     expect(screen.getByTestId('register-error')).toHaveTextContent(
-      'Email already registered',
+      'Ese correo ya está registrado',
     );
   });
 
@@ -174,9 +189,12 @@ describe('R8: register llama a la api y navega', () => {
   });
 
   it.each<[RegisterState, string]>([
-    [{ kind: 'unreachable', message: 'network down' }, 'Cannot reach server'],
-    [{ kind: 'error' }, 'Something went wrong'],
-    [{ kind: 'missing-config' }, 'Something went wrong'],
+    [
+      { kind: 'unreachable', message: 'network down' },
+      'No se pudo conectar con el servidor',
+    ],
+    [{ kind: 'error' }, 'Algo salió mal'],
+    [{ kind: 'missing-config' }, 'Algo salió mal'],
   ])('shows the expected general message for $kind', async (state, message) => {
     mockRegister.mockResolvedValue(state);
     await renderRegister();
@@ -185,5 +203,56 @@ describe('R8: register llama a la api y navega', () => {
     await submit();
 
     expect(screen.getByTestId('register-error')).toHaveTextContent(message);
+  });
+});
+
+describe('#61 R7: register usa las métricas de pantalla uniformes', () => {
+  it('aplica el padding del contentContainerStyle con los safe-area insets', async () => {
+    await renderRegister();
+
+    expect(
+      screen.getByTestId('screen-register').props.contentContainerStyle,
+    ).toEqual({
+      padding: 24,
+      gap: 16,
+      paddingTop: 52,
+      paddingBottom: 120,
+    });
+  });
+
+  it('declara el ajuste automático de inset del contenedor de scroll', async () => {
+    await renderRegister();
+
+    expect(
+      screen.getByTestId('screen-register').props
+        .contentInsetAdjustmentBehavior,
+    ).toBe('automatic');
+  });
+
+  it('conserva los campos del formulario como hijos directos del scroll', async () => {
+    await renderRegister();
+
+    expect(screen.getByTestId('register-first-name')).toBeVisible();
+    expect(screen.getByTestId('register-submit')).toBeVisible();
+    expect(screen.getAllByText('Crear cuenta')).toHaveLength(2);
+  });
+});
+
+describe('#127 R1: el botón de envío de register lleva su receta en el árbol', () => {
+  beforeEach(() => {
+    mockUseAuth.mockReturnValue({
+      status: 'unauthenticated',
+      token: null,
+      signIn: mockSignIn,
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+  });
+
+  it('pinta register-submit, deshabilitado al montar, con la clase exacta, rounded-xl y bg-accent incluidos, la vea o no el recorte de fuente', async () => {
+    await renderRegister();
+
+    expect(screen.getByTestId('register-submit').props.className).toBe(
+      'pressable-feedback__root button__root button__root--variant-primary button__root--size-md disabled:element-disabled w-full rounded-xl bg-accent',
+    );
   });
 });

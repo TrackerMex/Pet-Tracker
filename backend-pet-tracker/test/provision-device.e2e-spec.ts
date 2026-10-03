@@ -141,7 +141,6 @@ describe('Device provisioning (e2e)', () => {
         status: 'available',
         isSimulated: false,
         batteryPct: null,
-        connectivity: null,
         lastMessageAt: null,
         ingestWatermark: null,
       });

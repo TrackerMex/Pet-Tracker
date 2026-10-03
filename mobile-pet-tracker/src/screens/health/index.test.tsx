@@ -1,0 +1,717 @@
+import {
+  act,
+  fireEvent,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react-native';
+import { router } from 'expo-router';
+import { HeroUINativeProvider } from 'heroui-native';
+import type { ReactNode } from 'react';
+
+import {
+  listVaccines,
+  listWeights,
+  type VaccinesState,
+  type WeightsState,
+} from '../../api/health-records';
+import { listPets, type PetsState } from '../../api/pets';
+import { healthKeys, petKeys } from '../../api/query-keys';
+import type { PetProfile, Vaccine, WeightEntry } from '../../api/types';
+import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
+import { LanguageProvider } from '../../providers/language-provider';
+import { SelectedPetProvider } from '../../providers/selected-pet-provider';
+import * as selectedPetHooks from '../../providers/selected-pet-provider';
+import { HealthScreen } from '.';
+import { TOUCH_SLOP } from '../../theme/touch-target';
+import { renderWithProviders } from '../../../test/render-with-providers';
+
+let mockTheme: 'light' | 'dark' = 'light';
+
+jest.mock('../../api/pets', () => ({
+  listPets: jest.fn(),
+}));
+
+jest.mock('../../api/health-records', () => ({
+  listVaccines: jest.fn(),
+  listWeights: jest.fn(),
+}));
+
+jest.mock('../../providers/auth-provider', () => ({
+  useAuth: jest.fn(),
+}));
+
+jest.mock('expo-router', () => ({
+  router: { push: jest.fn(), back: jest.fn() },
+  useIsFocused: jest.fn(() => true),
+}));
+
+jest.mock('react-native-safe-area-context', () => ({
+  ...jest.requireActual('react-native-safe-area-context'),
+  useSafeAreaInsets: () => ({ top: 40, right: 0, bottom: 24, left: 0 }),
+}));
+
+jest.mock('reicon-react-native', () => {
+  const { View } = jest.requireActual('react-native');
+  const icon = (testID: string) =>
+    function MockIcon({ color }: { color?: string }) {
+      return <View testID={testID} style={{ color }} />;
+    };
+
+  return {
+    ChevronRight: icon('health-icon-chevron-right'),
+    HeartPulse: icon('health-icon-heart-pulse'),
+    Syringe: icon('health-icon-syringe'),
+  };
+});
+
+jest.mock(
+  '../../theme/use-theme-colors',
+  () => ({
+    useThemeColors: (tokens: string[]) =>
+      tokens.map((token) => {
+        if (token === 'warning') {
+          return mockTheme === 'dark' ? '#FBBF24' : '#F59E0B';
+        }
+        if (token === 'muted') {
+          return mockTheme === 'dark' ? '#9CA3AF' : '#6B7280';
+        }
+        return mockTheme === 'dark' ? '#F7F8FA' : '#0D1117';
+      }),
+  }),
+  { virtual: true },
+);
+
+const apiUrl = 'http://example.test/v1';
+const mockListPets = jest.mocked(listPets);
+const mockListVaccines = jest.mocked(listVaccines);
+const mockListWeights = jest.mocked(listWeights);
+const mockUseAuth = jest.mocked(useAuth);
+const mockRouter = jest.mocked(router);
+
+function makePet(overrides: Partial<PetProfile> = {}): PetProfile {
+  return {
+    id: 'pet-1',
+    name: 'Luna',
+    species: 'dog',
+    breed: 'Mixed',
+    sex: 'female',
+    birthDate: null,
+    approxAgeMonths: 30,
+    ageMonths: 30,
+    currentWeightKg: 12,
+    size: 'medium',
+    color: 'black',
+    sterilized: true,
+    microchip: null,
+    photoUrl: null,
+    lostMode: false,
+    lastPosition: null,
+    lastCommunicationAt: null,
+    myRole: 'owner',
+    device: null,
+    nextVaccine: null,
+    nextReminder: null,
+    activitySummary: null,
+    mealsToday: null,
+    createdAt: '2026-08-20T00:00:00.000Z',
+    updatedAt: '2026-08-21T00:00:00.000Z',
+    ...overrides,
+  };
+}
+
+function makeVaccine(overrides: Partial<Vaccine> = {}): Vaccine {
+  return {
+    id: 'vaccine-1',
+    petId: 'pet-1',
+    catalogId: null,
+    name: 'Rabies',
+    appliedAt: '2026-08-01',
+    nextDoseAt: '2099-08-01',
+    vetName: null,
+    clinic: null,
+    notes: null,
+    documentKey: null,
+    ...overrides,
+  };
+}
+
+function makeWeight(overrides: Partial<WeightEntry> = {}): WeightEntry {
+  return {
+    id: 'weight-1',
+    petId: 'pet-1',
+    weightKg: 12.4,
+    measuredAt: '2026-08-21',
+    bodyCondition: null,
+    variation: 0.4,
+    ...overrides,
+  };
+}
+
+function pending<T>(): Promise<T> {
+  return new Promise(() => undefined);
+}
+
+function HealthWrapper({ children }: { children: ReactNode }) {
+  return (
+    <HeroUINativeProvider>
+      <LanguageProvider initial="es">
+        <SelectedPetProvider>{children}</SelectedPetProvider>
+      </LanguageProvider>
+    </HeroUINativeProvider>
+  );
+}
+
+async function renderHealth() {
+  return renderWithProviders(<HealthScreen />, { wrapper: HealthWrapper });
+}
+
+beforeEach(() => {
+  mockTheme = 'light';
+});
+
+describe('R4: health resuelve la mascota seleccionada', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListVaccines.mockReturnValue(pending<VaccinesState>());
+    mockListWeights.mockReturnValue(pending<WeightsState>());
+  });
+
+  it('shows the hub and a loading state while pets are pending', async () => {
+    mockListPets.mockReturnValue(pending<PetsState>());
+
+    await renderHealth();
+
+    expect(screen.getByTestId('screen-health')).toBeVisible();
+    expect(screen.getByText('Salud')).toBeVisible();
+    expect(screen.getByTestId('health-loading')).toBeVisible();
+    expect(screen.getByTestId('screen-health').props.contentContainerStyle).toEqual(
+      expect.objectContaining({ padding: 24, paddingBottom: 120 }),
+    );
+  });
+
+  it('R5 (mobile-design-drift): aplica el safe area superior al contenido', async () => {
+    mockListPets.mockReturnValue(pending<PetsState>());
+
+    await renderHealth();
+
+    expect(screen.getByTestId('screen-health').props.contentContainerStyle).toEqual(
+      expect.objectContaining({ paddingTop: 52 }),
+    );
+  });
+
+  it('R8 (mobile-design-drift): reserva la altura del loading con Skeleton', async () => {
+    mockListPets.mockReturnValue(pending<PetsState>());
+
+    await renderHealth();
+
+    expect(screen.getByTestId('health-loading').props.className).toContain('h-12');
+  });
+
+  it.each([
+    { kind: 'error' } as const,
+    { kind: 'unreachable', message: 'network down' } as const,
+    { kind: 'missing-config' } as const,
+  ])('shows and retries a $kind pet-list error', async (state) => {
+    mockListPets
+      .mockResolvedValueOnce(state)
+      .mockResolvedValueOnce({ kind: 'ok', pets: [] });
+
+    await renderHealth();
+    await waitFor(() => expect(screen.getByTestId('health-error')).toBeVisible());
+
+    await fireEvent.press(screen.getByTestId('health-retry'));
+
+    await waitFor(() => expect(screen.getByTestId('health-empty')).toBeVisible());
+    expect(mockListPets).toHaveBeenCalledTimes(2);
+  });
+
+  it('shows the empty state when the account has no pets', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+
+    await renderHealth();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('health-empty')).toHaveTextContent(
+        'Aún no tienes mascotas',
+      ),
+    );
+  });
+
+  it('keeps API order and selects the first pet by default', async () => {
+    mockListPets.mockResolvedValue({
+      kind: 'ok',
+      pets: [makePet(), makePet({ id: 'pet-2', name: 'Milo' })],
+    });
+
+    await renderHealth();
+
+    await waitFor(() => {
+      expect(screen.getAllByTestId(/^pet-chip-/).map(({ props }) => props.testID)).toEqual([
+        'pet-chip-pet-1',
+        'pet-chip-pet-2',
+      ]);
+      expect(screen.getByTestId('pet-chip-pet-1').props.accessibilityState).toEqual({
+        selected: true,
+      });
+      expect(mockListPets).toHaveBeenCalledWith(apiUrl, 'jwt-token');
+      expect(mockListVaccines).toHaveBeenCalledWith(apiUrl, 'jwt-token', 'pet-1');
+      expect(mockListWeights).toHaveBeenCalledWith(
+        apiUrl,
+        'jwt-token',
+        'pet-1',
+        expect.any(Function),
+        1,
+      );
+    });
+  });
+
+  it('selects a pressed pet and reloads its health records', async () => {
+    mockListPets.mockResolvedValue({
+      kind: 'ok',
+      pets: [makePet(), makePet({ id: 'pet-2', name: 'Milo' })],
+    });
+
+    await renderHealth();
+    await waitFor(() => expect(screen.getByTestId('pet-chip-pet-1')).toBeVisible());
+    await fireEvent.press(screen.getByTestId('pet-chip-pet-2'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('pet-chip-pet-2').props.accessibilityState).toEqual({
+        selected: true,
+      });
+      expect(mockListVaccines).toHaveBeenCalledWith(apiUrl, 'jwt-token', 'pet-2');
+      expect(mockListWeights).toHaveBeenCalledWith(
+        apiUrl,
+        'jwt-token',
+        'pet-2',
+        expect.any(Function),
+        1,
+      );
+    });
+  });
+});
+
+describe('R5: vacunas con la próxima destacada', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockListWeights.mockReturnValue(pending<WeightsState>());
+  });
+
+  it('shows a skeleton while vaccines are pending', async () => {
+    mockListVaccines.mockReturnValue(pending<VaccinesState>());
+
+    await renderHealth();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('vaccines-skeleton')).toBeVisible(),
+    );
+    expect(screen.getByTestId('vaccines-section')).toBeVisible();
+    expect(screen.getByText('Vacunas')).toBeVisible();
+  });
+
+  it('highlights the nearest future dose and keeps row order', async () => {
+    const vaccines = [
+      makeVaccine({
+        id: 'vaccine-2',
+        name: 'Leptospirosis',
+        appliedAt: '2026-08-20',
+        nextDoseAt: '2099-10-01',
+      }),
+      makeVaccine({ nextDoseAt: '2099-05-01' }),
+    ];
+    mockListVaccines.mockResolvedValue({ kind: 'ok', vaccines });
+
+    await renderHealth();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('next-vaccine-card')).toBeVisible(),
+    );
+    const nextCard = within(screen.getByTestId('next-vaccine-card'));
+    expect(nextCard.getByText('Próxima dosis')).toBeVisible();
+    expect(nextCard.getByText('Rabies')).toBeVisible();
+    expect(nextCard.getByText('2099-05-01')).toBeVisible();
+    expect(screen.getAllByTestId(/^vaccine-row-/).map(({ props }) => props.testID)).toEqual([
+      'vaccine-row-vaccine-2',
+      'vaccine-row-vaccine-1',
+    ]);
+  });
+
+  it('re-resolves the syringe token when a mounted tab changes theme', async () => {
+    mockListVaccines.mockResolvedValue({
+      kind: 'ok',
+      vaccines: [makeVaccine()],
+    });
+    const view = await renderHealth();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('next-vaccine-card')).toBeVisible(),
+    );
+
+    expect(screen.getAllByTestId('health-icon-syringe')[0]).toHaveStyle({
+      color: '#F59E0B',
+    });
+
+    mockTheme = 'dark';
+    await view.rerender(<HealthScreen />);
+
+    expect(screen.getAllByTestId('health-icon-syringe')[0]).toHaveStyle({
+      color: '#FBBF24',
+    });
+  });
+
+  it('omits the next card when every dose is past or null', async () => {
+    mockListVaccines.mockResolvedValue({
+      kind: 'ok',
+      vaccines: [
+        makeVaccine({ nextDoseAt: '2000-01-01' }),
+        makeVaccine({ id: 'vaccine-2', nextDoseAt: null }),
+      ],
+    });
+
+    await renderHealth();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('vaccine-row-vaccine-1')).toBeVisible(),
+    );
+    expect(screen.queryByTestId('next-vaccine-card')).toBeNull();
+  });
+
+  it('marks an overdue next-dose date with the danger token', async () => {
+    mockListVaccines.mockResolvedValue({
+      kind: 'ok',
+      vaccines: [makeVaccine({ nextDoseAt: '2000-06-01' })],
+    });
+
+    await renderHealth();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('vaccine-row-vaccine-1')).toBeVisible(),
+    );
+    const overdueDate = screen.getByText('2000-06-01');
+    expect(overdueDate.props.className).toContain('text-danger');
+  });
+
+  it('shows the vaccines empty state', async () => {
+    mockListVaccines.mockResolvedValue({ kind: 'ok', vaccines: [] });
+
+    await renderHealth();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('vaccines-empty')).toHaveTextContent(
+        'Aún no hay vacunas',
+      ),
+    );
+  });
+
+  it.each([
+    { kind: 'error' } as const,
+    { kind: 'unreachable', message: 'network down' } as const,
+  ])('shows and retries a $kind vaccine error', async (state) => {
+    mockListVaccines
+      .mockResolvedValueOnce(state)
+      .mockResolvedValueOnce({ kind: 'ok', vaccines: [] });
+
+    await renderHealth();
+    await waitFor(() =>
+      expect(screen.getByTestId('vaccines-error')).toHaveTextContent(
+        'No se pudieron cargar las vacunas',
+      ),
+    );
+    await fireEvent.press(screen.getByTestId('vaccines-retry'));
+
+    await waitFor(() => expect(screen.getByTestId('vaccines-empty')).toBeVisible());
+    expect(mockListVaccines).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('R6: weight card enlaza al log', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockListVaccines.mockReturnValue(pending<VaccinesState>());
+  });
+
+  it('shows the current weight and opens the weight log', async () => {
+    mockListWeights.mockImplementation(
+      () =>
+        new Promise<WeightsState>((resolve) => {
+          setTimeout(
+            () => resolve({ kind: 'ok', weights: [makeWeight()] }),
+            200,
+          );
+        }),
+    );
+
+    await renderHealth();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('weight-current')).toHaveTextContent('12.4 kg'),
+    );
+    expect(screen.getByTestId('weight-card')).toBeVisible();
+    expect(screen.getByText('Peso')).toBeVisible();
+    expect(screen.getByTestId('weight-variation')).toHaveTextContent('+0.4 kg');
+
+    await fireEvent.press(screen.getByTestId('weight-log-link'));
+
+    expect(mockRouter.push).toHaveBeenCalledWith('/weight-log');
+  });
+
+  it.each([
+    [-0.2, '-0.2 kg'],
+    [0, '0 kg'],
+    [null, '—'],
+  ])('formats variation %p as %s', async (variation, expected) => {
+    mockListWeights.mockResolvedValue({
+      kind: 'ok',
+      weights: [makeWeight({ variation })],
+    });
+
+    await renderHealth();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('weight-variation')).toHaveTextContent(expected),
+    );
+  });
+
+  it('shows the empty state and keeps the log link', async () => {
+    mockListWeights.mockResolvedValue({ kind: 'ok', weights: [] });
+
+    await renderHealth();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('weight-card-empty')).toHaveTextContent(
+        'Aún no hay registros de peso',
+      ),
+    );
+    expect(screen.getByTestId('weight-log-link')).toBeVisible();
+  });
+
+  it.each([
+    { kind: 'error' } as const,
+    { kind: 'unreachable', message: 'network down' } as const,
+  ])('shows a $kind weight error and keeps the log link', async (state) => {
+    mockListWeights.mockResolvedValue(state);
+
+    await renderHealth();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('weight-card-error')).toHaveTextContent(
+        'No se pudo cargar el peso',
+      ),
+    );
+    expect(screen.getByTestId('weight-log-link')).toBeVisible();
+  });
+});
+
+describe('R10: preserva la mascota durante el refetch', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it('does not replace a new selection while the stale pet list refreshes', async () => {
+    const existingPet = makePet({ id: 'pet-old' });
+    const createdPet = makePet({ id: 'pet-new', name: 'Nala' });
+    const selectPet = jest.fn();
+    let resolvePets!: (state: PetsState) => void;
+    const revalidatedPets = new Promise<PetsState>((resolve) => {
+      resolvePets = resolve;
+    });
+    const useSelectedPet = selectedPetHooks.useSelectedPet;
+    mockListPets.mockResolvedValueOnce({ kind: 'ok', pets: [existingPet] });
+    mockListVaccines.mockReturnValue(pending<VaccinesState>());
+    mockListWeights.mockReturnValue(pending<WeightsState>());
+
+    const { queryClient, unmount } = await renderHealth();
+    await screen.findByTestId(`pet-chip-${existingPet.id}`);
+
+    const selectedPetSpy = jest
+      .spyOn(selectedPetHooks, 'useSelectedPet')
+      .mockImplementation(() => ({
+        ...useSelectedPet(),
+        selectedPetId: createdPet.id,
+        selectPet,
+      }));
+    const callsBeforeRefetch = selectedPetSpy.mock.calls.length;
+    mockListPets.mockReturnValue(revalidatedPets);
+    await act(() => {
+      void queryClient.refetchQueries({ queryKey: petKeys.list() });
+    });
+    await waitFor(() =>
+      expect(queryClient.isFetching({ queryKey: petKeys.list() })).toBe(1),
+    );
+    await waitFor(() =>
+      expect(selectedPetSpy.mock.calls.length).toBeGreaterThan(
+        callsBeforeRefetch,
+      ),
+    );
+
+    expect(selectPet).not.toHaveBeenCalled();
+    expect(screen.getByTestId(`pet-chip-${existingPet.id}`)).toBeVisible();
+
+    await act(async () => {
+      resolvePets({ kind: 'ok', pets: [existingPet, createdPet] });
+      await revalidatedPets;
+    });
+    await waitFor(() =>
+      expect(queryClient.isFetching({ queryKey: petKeys.list() })).toBe(0),
+    );
+
+    expect(selectPet).not.toHaveBeenCalled();
+    await unmount();
+  });
+});
+
+describe('#61 R10: los controles táctiles declaran TOUCH_SLOP', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockListVaccines.mockReturnValue(pending<VaccinesState>());
+  });
+
+  it('la fila de enlace al weight log llega a 44 pt sin crecer a la vista', async () => {
+    mockListWeights.mockResolvedValue({ kind: 'ok', weights: [makeWeight()] });
+
+    await renderHealth();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('weight-log-link')).toBeVisible(),
+    );
+
+    expect(screen.getByTestId('weight-log-link').props.hitSlop).toEqual(
+      TOUCH_SLOP,
+    );
+  });
+});
+
+describe('#62 R5: el título de card usa un único tratamiento', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockListVaccines.mockReturnValue(pending<VaccinesState>());
+    mockListWeights.mockResolvedValue({
+      kind: 'ok',
+      weights: [makeWeight()],
+    });
+  });
+
+  it('aplica la receta canónica a Peso', async () => {
+    await renderHealth();
+
+    expect((await screen.findByTestId('weight-card-title')).props.className).toBe(
+      'text-base font-bold text-foreground',
+    );
+  });
+});
+
+describe('#87 R13: HealthScreen lee por TanStack Query', () => {
+  it('deja mascotas, vacunas y un solo peso en sus claves canónicas', async () => {
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    const petsState: PetsState = { kind: 'ok', pets: [makePet()] };
+    const vaccinesState: VaccinesState = {
+      kind: 'ok',
+      vaccines: [makeVaccine()],
+    };
+    const weightsState: WeightsState = {
+      kind: 'ok',
+      weights: [makeWeight()],
+    };
+    mockListPets.mockResolvedValue(petsState);
+    mockListVaccines.mockResolvedValue(vaccinesState);
+    mockListWeights.mockResolvedValue(weightsState);
+
+    const { queryClient } = await renderWithProviders(<HealthScreen />, {
+      wrapper: HealthWrapper,
+    });
+    await screen.findByTestId('weight-current');
+
+    expect(queryClient.getQueryData(petKeys.list())).toEqual(petsState);
+    expect(queryClient.getQueryData(healthKeys.vaccines('pet-1'))).toEqual(
+      vaccinesState,
+    );
+    expect(queryClient.getQueryData(healthKeys.weights('pet-1', 1))).toEqual(
+      weightsState,
+    );
+  });
+});
+
+describe('#127 R2: el skeleton de vacunas lleva su receta en el árbol', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockListWeights.mockReturnValue(pending<WeightsState>());
+  });
+
+  it('pinta vaccines-skeleton con la clase exacta, rounded-card incluido, la vea o no el recorte de fuente', async () => {
+    mockListVaccines.mockReturnValue(pending<VaccinesState>());
+
+    await renderHealth();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('vaccines-skeleton')).toBeVisible(),
+    );
+    expect(screen.getByTestId('vaccines-skeleton').props.className).toBe(
+      'skeleton__root h-24 w-full rounded-card',
+    );
+  });
+});

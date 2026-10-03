@@ -49,6 +49,7 @@ describe('Pet lost mode (e2e)', () => {
     'nextVaccine',
     'nextReminder',
     'activitySummary',
+    'mealsToday',
     'createdAt',
     'updatedAt',
   ].sort();

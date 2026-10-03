@@ -23,6 +23,7 @@ import {
 } from 'reicon-react-native';
 import { useUniwind } from 'uniwind';
 
+import { useTranslate } from '../providers/language-provider';
 import { useThemeColors } from '../theme/use-theme-colors';
 
 interface TabRoute {
@@ -46,11 +47,11 @@ export interface FloatingTabBarProps {
 }
 
 const TABS = [
-  { name: 'home', label: 'Home', Icon: Home },
-  { name: 'map', label: 'Map', Icon: Map },
-  { name: 'health', label: 'Health', Icon: HeartPulse },
-  { name: 'food', label: 'Food', Icon: ForkKnife },
-  { name: 'profile', label: 'Profile', Icon: Profile },
+  { name: 'home', labelKey: 'tabs.home', Icon: Home },
+  { name: 'map', labelKey: 'tabs.map', Icon: Map },
+  { name: 'health', labelKey: 'tabs.health', Icon: HeartPulse },
+  { name: 'food', labelKey: 'tabs.food', Icon: ForkKnife },
+  { name: 'profile', labelKey: 'tabs.profile', Icon: Profile },
 ] as const;
 
 export const TAB_INDICATOR_SPRING = {
@@ -60,17 +61,19 @@ export const TAB_INDICATOR_SPRING = {
 } as const;
 
 export function FloatingTabBar({ state, navigation }: FloatingTabBarProps) {
+  const t = useTranslate();
   const [accent, muted, tabPill] = useThemeColors([
-    'accent',
+    'accent-strong',
     'muted',
     'tab-pill',
   ]);
   const insets = useSafeAreaInsets();
   const { theme } = useUniwind();
   const [containerWidth, setContainerWidth] = useState(0);
-  const translateX = useSharedValue(0);
-  const lastPositionedIndex = useRef(state.index);
   const activeRouteName = state.routes[state.index]?.name;
+  const activeTabIndex = TABS.findIndex((tab) => tab.name === activeRouteName);
+  const translateX = useSharedValue(0);
+  const lastPositionedIndex = useRef(activeTabIndex);
   const hasLiquidGlass = isLiquidGlassAvailable();
   const tabWidth = (containerWidth - 16) / TABS.length;
   const indicatorAnimatedStyle = useAnimatedStyle(() => ({
@@ -78,18 +81,22 @@ export function FloatingTabBar({ state, navigation }: FloatingTabBarProps) {
   }));
 
   useEffect(() => {
-    if (
-      containerWidth <= 0 ||
-      lastPositionedIndex.current === state.index
-    ) {
+    if (containerWidth <= 0 || lastPositionedIndex.current === activeTabIndex) {
       return;
     }
 
-    lastPositionedIndex.current = state.index;
+    const previousIndex = lastPositionedIndex.current;
+    lastPositionedIndex.current = activeTabIndex;
+
+    if (activeTabIndex < 0) {
+      return;
+    }
+
+    const nextX = activeTabIndex * tabWidth;
     translateX.set(
-      withSpring(state.index * tabWidth, TAB_INDICATOR_SPRING),
+      previousIndex < 0 ? nextX : withSpring(nextX, TAB_INDICATOR_SPRING),
     );
-  }, [containerWidth, state.index, tabWidth, translateX]);
+  }, [activeTabIndex, containerWidth, tabWidth, translateX]);
 
   function handleLayout(event: LayoutChangeEvent) {
     const { width } = event.nativeEvent.layout;
@@ -100,8 +107,12 @@ export function FloatingTabBar({ state, navigation }: FloatingTabBarProps) {
     }
 
     const nextTabWidth = (width - 16) / TABS.length;
-    translateX.set(state.index * nextTabWidth);
-    lastPositionedIndex.current = state.index;
+
+    if (activeTabIndex >= 0) {
+      translateX.set(activeTabIndex * nextTabWidth);
+    }
+
+    lastPositionedIndex.current = activeTabIndex;
     setContainerWidth(width);
   }
 
@@ -132,7 +143,7 @@ export function FloatingTabBar({ state, navigation }: FloatingTabBarProps) {
           />
         </BlurView>
       )}
-      {containerWidth > 0 ? (
+      {containerWidth > 0 && activeTabIndex >= 0 ? (
         <Animated.View
           testID="tab-indicator"
           style={[
@@ -150,7 +161,7 @@ export function FloatingTabBar({ state, navigation }: FloatingTabBarProps) {
         />
       ) : null}
       <View className="flex-row items-center justify-around px-2 py-3">
-        {TABS.map(({ name, label, Icon }) => {
+        {TABS.map(({ name, labelKey, Icon }) => {
           const route = state.routes.find(
             (candidate) => candidate.name === name,
           );
@@ -188,11 +199,11 @@ export function FloatingTabBar({ state, navigation }: FloatingTabBarProps) {
               <Text
                 className={
                   isActive
-                    ? 'text-2xs font-semibold text-accent'
+                    ? 'text-2xs font-semibold text-accent-strong'
                     : 'text-2xs font-semibold text-muted'
                 }
               >
-                {label}
+                {t(labelKey)}
               </Text>
             </Pressable>
           );

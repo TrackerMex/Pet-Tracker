@@ -1,9 +1,11 @@
+import { useQuery } from '@tanstack/react-query';
 import { router, type Href, useFocusEffect } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { Button, Skeleton } from 'heroui-native';
-import { useCallback, useMemo, useState } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { useCallback, useState } from 'react';
+import { Linking, Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ChevronRight } from 'reicon-react-native';
 import { useUniwind } from 'uniwind';
 
 import {
@@ -12,58 +14,65 @@ import {
   uploadPhotoToUrl,
 } from '../../api/media';
 import { getPet, listPets } from '../../api/pets';
+import { petKeys, userKeys } from '../../api/query-keys';
 import type { PetProfile } from '../../api/types';
 import { getMe } from '../../api/users';
 import { Card } from '../../components/card';
-import { PetAvatar } from '../../components/pet-avatar';
+import { PetHeroHeader } from '../../components/pet-hero-header';
 import { PetSwitcher } from '../../components/pet-switcher';
-import { useApi } from '../../hooks/use-api';
 import { usePetSelection } from '../../hooks/use-pet-selection';
+import { useNotificationsBlocked } from '../../hooks/use-push-registration';
 import { useAuth } from '../../providers/auth-provider';
+import {
+  useLanguage,
+  useLocale,
+  useTranslate,
+} from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
+import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { useThemeTransition } from '../../theme/theme-transition';
+import { TOUCH_SLOP } from '../../theme/touch-target';
+import { useThemeColors } from '../../theme/use-theme-colors';
 
-function InfoRow({ label, value }: { label: string; value: string | null }) {
+function InfoRow({
+  isLast = false,
+  label,
+  value,
+}: {
+  isLast?: boolean;
+  label: string;
+  value: string | null;
+}) {
+  const t = useTranslate();
+
   return (
-    <View className="flex-row items-center justify-between gap-4 border-b border-separator py-3 last:border-b-0">
+    <View
+      className={
+        isLast
+          ? 'flex-row items-center justify-between gap-4 py-3'
+          : 'flex-row items-center justify-between gap-4 border-b border-separator py-3'
+      }
+    >
       <Text className="text-sm font-normal text-muted">{label}</Text>
       <Text className="flex-1 text-right text-sm font-semibold text-foreground">
-        {value ?? 'No registrado'}
+        {value ?? t('profile.notRegistered')}
       </Text>
     </View>
   );
 }
 
-function PetHero({ pet }: { pet: PetProfile }) {
-  return (
-    <View className="h-56 overflow-hidden rounded-card bg-default">
-      <View className="h-full w-full items-center justify-center bg-accent-soft">
-        <PetAvatar
-          name={pet.name}
-          photoUrl={pet.photoUrl}
-          size={224}
-          testID="profile-pet-photo"
-        />
-      </View>
-      <View className="absolute inset-x-0 bottom-0 gap-1 bg-surface/90 p-4">
-        <Text className="text-2xl font-black text-foreground">{pet.name}</Text>
-        {pet.breed ? (
-          <Text className="font-semibold text-muted">{pet.breed}</Text>
-        ) : null}
-      </View>
-    </View>
-  );
-}
-
 function PetPills({ pet }: { pet: PetProfile }) {
+  const t = useTranslate();
   const pills = [
     pet.sex,
     pet.sterilized === null
       ? null
       : pet.sterilized
-        ? 'Sterilized'
-        : 'Not sterilized',
-    Number.isFinite(pet.ageMonths) ? `${pet.ageMonths} months` : null,
+        ? t('profile.sterilized')
+        : t('profile.notSterilized'),
+    Number.isFinite(pet.ageMonths)
+      ? t('profile.ageMonths', { months: pet.ageMonths })
+      : null,
     pet.currentWeightKg === null ? null : `${pet.currentWeightKg} kg`,
   ].filter((value): value is string => value !== null);
 
@@ -81,31 +90,31 @@ function PetPills({ pet }: { pet: PetProfile }) {
 export function ProfileScreen() {
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { signOut, token } = useAuth();
+  const { language, setLanguage } = useLanguage();
+  const locale = useLocale();
+  const t = useTranslate();
   const { selectedPetId, selectPet } = useSelectedPet();
   const { theme } = useUniwind();
   const switchTheme = useThemeTransition();
   const insets = useSafeAreaInsets();
+  const [muted] = useThemeColors(['muted']);
   const [photoUploading, setPhotoUploading] = useState(false);
   const [photoError, setPhotoError] = useState<string | null>(null);
-  const meFn = useCallback(
-    () => getMe(baseUrl, token ?? ''),
-    [baseUrl, token],
-  );
-  const petsFn = useCallback(
-    () => listPets(baseUrl, token ?? ''),
-    [baseUrl, token],
-  );
-  const detailFn = useMemo(
-    () =>
-      selectedPetId
-        ? () => getPet(baseUrl, token ?? '', selectedPetId)
-        : null,
-    [baseUrl, selectedPetId, token],
-  );
-  const me = useApi(meFn);
-  const pets = useApi(petsFn);
-  usePetSelection(pets);
-  const detail = useApi(detailFn);
+  const notificationsBlocked = useNotificationsBlocked();
+  const me = useQuery({
+    queryKey: userKeys.me(),
+    queryFn: () => getMe(baseUrl, token ?? ''),
+  });
+  const pets = useQuery({
+    queryKey: petKeys.list(),
+    queryFn: () => listPets(baseUrl, token ?? ''),
+  });
+  usePetSelection({ data: pets.data, isRefreshing: pets.isRefetching });
+  const detail = useQuery({
+    queryKey: petKeys.detail(selectedPetId ?? ''),
+    queryFn: () => getPet(baseUrl, token ?? '', selectedPetId!),
+    enabled: selectedPetId !== null,
+  });
   const refetchPets = pets.refetch;
   const refetchDetail = detail.refetch;
 
@@ -132,7 +141,7 @@ export function ProfileScreen() {
     const asset = picked.assets[0];
     const contentType = resolvePhotoContentType(asset.mimeType, asset.uri);
     if (!contentType) {
-      setPhotoError('Choose a JPEG, PNG, or WebP image');
+      setPhotoError(t('profile.errorPhotoFormat'));
       return;
     }
 
@@ -149,7 +158,7 @@ export function ProfileScreen() {
         return;
       }
       if (requested.kind !== 'ok') {
-        setPhotoError('Could not upload photo');
+        setPhotoError(t('profile.couldNotUploadPhoto'));
         return;
       }
 
@@ -161,13 +170,13 @@ export function ProfileScreen() {
         contentType,
       );
       if (uploaded.kind !== 'ok') {
-        setPhotoError('Could not upload photo');
+        setPhotoError(t('profile.couldNotUploadPhoto'));
         return;
       }
 
       detail.refetch();
     } catch {
-      setPhotoError('Could not upload photo');
+      setPhotoError(t('profile.couldNotUploadPhoto'));
     } finally {
       setPhotoUploading(false);
     }
@@ -186,7 +195,9 @@ export function ProfileScreen() {
       }}
     >
       <View className="flex-row items-center justify-between gap-3">
-        <Text className="text-2xl font-black text-foreground">Profile</Text>
+        <Text className="text-2xl font-black text-foreground">
+          {t('profile.profile')}
+        </Text>
         <Button
           testID="profile-add-pet"
           className="rounded-xl bg-accent"
@@ -194,10 +205,24 @@ export function ProfileScreen() {
           onPress={() => router.push('/pets/add' as Href)}
         >
           <Button.Label className="font-bold text-accent-foreground">
-            Add pet
+            {t('profile.addPet')}
           </Button.Label>
         </Button>
       </View>
+
+      {notificationsBlocked ? (
+        <Card testID="notifications-blocked-notice" className="items-start gap-3">
+          <Text className="font-normal text-foreground">
+            {t('profile.notificationsBlocked')}
+          </Text>
+          <Button
+            testID="notifications-open-settings"
+            onPress={() => void Linking.openSettings()}
+          >
+            <Button.Label>{t('profile.openSettings')}</Button.Label>
+          </Button>
+        </Card>
+      ) : null}
 
       {pets.data?.kind === 'ok' && pets.data.pets.length > 0 ? (
         <PetSwitcher
@@ -209,35 +234,38 @@ export function ProfileScreen() {
 
       {pets.data?.kind === 'ok' && pets.data.pets.length === 0 ? (
         <Text testID="profile-pets-empty" className="font-normal text-muted">
-          No pets yet
+          {t('common.noPetsYet')}
         </Text>
       ) : null}
 
       {pets.data && ['error', 'unreachable', 'missing-config'].includes(pets.data.kind) ? (
         <Text testID="profile-pets-error" className="font-normal text-danger">
-          Could not load pets
+          {t('profile.couldNotLoadPets')}
         </Text>
       ) : null}
 
       {petLoading ? (
         <>
-          <Skeleton testID="profile-hero-skeleton" className="h-56 w-full rounded-card" />
+          <Skeleton testID="profile-hero-skeleton" className="h-80 w-full rounded-card" />
           <Skeleton testID="pet-info-skeleton" className="h-52 w-full rounded-card" />
         </>
       ) : null}
 
       {detail.data && ['error', 'unreachable', 'missing-config'].includes(detail.data.kind) ? (
         <Card testID="profile-pet-error" className="items-start gap-3">
-          <Text className="text-danger">Could not load pet profile</Text>
-          <Button testID="profile-pet-retry" onPress={detail.refetch}>
-            <Button.Label>Retry</Button.Label>
+          <Text className="text-danger">{t('profile.couldNotLoadPet')}</Text>
+          <Button
+            testID="profile-pet-retry"
+            onPress={() => void detail.refetch()}
+          >
+            <Button.Label>{t('common.retry')}</Button.Label>
           </Button>
         </Card>
       ) : null}
 
       {pet ? (
         <>
-          <PetHero pet={pet} />
+          <PetHeroHeader pet={pet} variant="card" />
           <PetPills pet={pet} />
           <Button
             testID="change-photo"
@@ -246,8 +274,8 @@ export function ProfileScreen() {
             isDisabled={photoUploading}
             onPress={() => void handleChangePhoto()}
           >
-            <Button.Label className="font-bold text-accent">
-              Change photo
+            <Button.Label className="font-bold text-accent-strong">
+              {t('profile.changePhoto')}
             </Button.Label>
           </Button>
           {photoError ? (
@@ -257,17 +285,21 @@ export function ProfileScreen() {
           ) : null}
 
           <Card testID="pet-info-card" className="gap-0">
-            <Text className="pb-2 text-lg font-bold text-foreground">
-              Información
+            <Text className="pb-2 text-xs font-semibold uppercase tracking-widest text-muted">
+              {t('profile.information')}
             </Text>
-            <InfoRow label="Raza" value={pet.breed} />
-            <InfoRow label="Microchip" value={pet.microchip} />
-            <InfoRow label="Dispositivo GPS" value={pet.device?.model ?? null} />
+            <InfoRow label={t('profile.breed')} value={pet.breed} />
+            <InfoRow label={t('profile.microchip')} value={pet.microchip} />
             <InfoRow
-              label="Última señal"
+              label={t('profile.gpsDevice')}
+              value={pet.device?.model ?? null}
+            />
+            <InfoRow
+              isLast
+              label={t('profile.lastSignal')}
               value={
                 pet.lastCommunicationAt
-                  ? new Date(pet.lastCommunicationAt).toLocaleString()
+                  ? new Date(pet.lastCommunicationAt).toLocaleString(locale)
                   : null
               }
             />
@@ -276,11 +308,42 @@ export function ProfileScreen() {
           <Pressable
             accessibilityRole="button"
             testID="documents-link"
+            hitSlop={TOUCH_SLOP}
             className="flex-row items-center justify-between rounded-xl bg-default px-3 py-2"
+            style={CONTINUOUS_CORNER}
             onPress={() => router.push(`/pets/${pet.id}/docs` as Href)}
           >
-            <Text className="font-semibold text-foreground">Documentos</Text>
-            <Text className="text-lg font-semibold text-muted">›</Text>
+            <Text className="font-semibold text-foreground">
+              {t('profile.documents')}
+            </Text>
+            <ChevronRight size={20} color={muted} />
+          </Pressable>
+
+          <Pressable
+            accessibilityRole="button"
+            testID="pairing-link"
+            className="flex-row items-center justify-between rounded-xl bg-default px-3 py-2"
+            style={CONTINUOUS_CORNER}
+            onPress={() => router.push('/pairing' as Href)}
+          >
+            <Text className="font-semibold text-foreground">
+              {t('profile.gpsSettings')}
+            </Text>
+            <ChevronRight size={20} color={muted} />
+          </Pressable>
+
+          <Pressable
+            accessibilityRole="button"
+            testID="geofences-link"
+            hitSlop={TOUCH_SLOP}
+            className="flex-row items-center justify-between rounded-xl bg-default px-3 py-2"
+            style={CONTINUOUS_CORNER}
+            onPress={() => router.push(`/pets/${pet.id}/geofences` as Href)}
+          >
+            <Text className="font-semibold text-foreground">
+              {t('geofences.title')}
+            </Text>
+            <ChevronRight size={20} color={muted} />
           </Pressable>
         </>
       ) : null}
@@ -288,16 +351,20 @@ export function ProfileScreen() {
       <Pressable
         accessibilityRole="button"
         testID="reminders-link"
+        hitSlop={TOUCH_SLOP}
         className="flex-row items-center justify-between rounded-xl bg-default px-3 py-2"
+        style={CONTINUOUS_CORNER}
         onPress={() => router.push('/reminders' as Href)}
       >
-        <Text className="font-semibold text-foreground">Reminders</Text>
-        <Text className="text-lg font-semibold text-muted">›</Text>
+        <Text className="font-semibold text-foreground">
+          {t('profile.reminders')}
+        </Text>
+        <ChevronRight size={20} color={muted} />
       </Pressable>
 
       <Card testID="me-card" className="gap-2">
         <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
-          Account
+          {t('profile.account')}
         </Text>
         {me.data === undefined ? (
           <Skeleton testID="me-card-skeleton" className="h-12 w-full rounded-xl" />
@@ -312,7 +379,7 @@ export function ProfileScreen() {
         ) : null}
         {me.data && me.data.kind !== 'ok' && me.data.kind !== 'unauthorized' ? (
           <Text testID="me-card-state" className="font-normal text-muted">
-            Account unavailable
+            {t('profile.accountUnavailable')}
           </Text>
         ) : null}
         <Button
@@ -322,7 +389,22 @@ export function ProfileScreen() {
           onPress={() => switchTheme(theme === 'dark' ? 'light' : 'dark')}
         >
           <Button.Label className="font-semibold text-foreground">
-            {theme === 'dark' ? 'Use light theme' : 'Use dark theme'}
+            {theme === 'dark'
+              ? t('profile.useLightTheme')
+              : t('profile.useDarkTheme')}
+          </Button.Label>
+        </Button>
+        <Button
+          testID="language-toggle"
+          accessibilityLabel={t('profile.changeLanguage')}
+          className="mt-2 rounded-xl bg-default"
+          variant="secondary"
+          onPress={() => setLanguage(language === 'es' ? 'en' : 'es')}
+        >
+          <Button.Label className="font-semibold text-foreground">
+            {language === 'es'
+              ? t('profile.languageEnglish')
+              : t('profile.languageSpanish')}
           </Button.Label>
         </Button>
       </Card>
@@ -333,7 +415,9 @@ export function ProfileScreen() {
         variant="danger-soft"
         onPress={() => void signOut()}
       >
-        <Button.Label className="font-bold text-danger">Sign out</Button.Label>
+        <Button.Label className="font-bold text-danger">
+          {t('profile.signOut')}
+        </Button.Label>
       </Button>
     </ScrollView>
   );

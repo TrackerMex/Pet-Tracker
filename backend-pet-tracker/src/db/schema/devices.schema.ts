@@ -19,10 +19,11 @@ import { pets } from './pets.schema';
 // permiten busquedas internas. `status` es cache de presentacion — la
 // disponibilidad real
 // se deriva de la fila activa en `pet_devices` (decision D3, R15).
-// `battery_pct`/`connectivity`/`last_message_at` quedan NULL hasta que el
-// pipeline de ingesta (#8) los alimente; `ingest_watermark` arranca en el
-// claim (R3) y lo avanza el poller de #8. `wialon_unit_id` es text: id
-// externo sin aritmetica, no se asume el formato de Wialon.
+// `battery_pct`/`last_message_at` quedan NULL hasta que ingesta (#8) los
+// alimente y vuelven a NULL en cada claim (#92).
+// `ingest_watermark` arranca en el claim (R3) y lo avanza el poller de #8.
+// `wialon_unit_id` es text: id externo sin aritmetica, no se asume el formato
+// de Wialon.
 export const devices = pgTable(
   'devices',
   {
@@ -35,7 +36,6 @@ export const devices = pgTable(
     model: varchar('model', { length: 120 }),
     status: varchar('status', { length: 10 }).notNull().default('available'),
     batteryPct: integer('battery_pct'),
-    connectivity: varchar('connectivity', { length: 20 }),
     lastMessageAt: timestamp('last_message_at', { withTimezone: true }),
     ingestWatermark: timestamp('ingest_watermark', { withTimezone: true }),
     isSimulated: boolean('is_simulated').notNull().default(false),

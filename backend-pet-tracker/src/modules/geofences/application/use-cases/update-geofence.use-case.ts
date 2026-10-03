@@ -50,7 +50,9 @@ export class UpdateGeofenceUseCase {
       return existing;
     }
 
-    const updated = await this.geofences.update(geofenceId, dto);
+    const updated = await this.geofences.update(geofenceId, dto, {
+      resetEvaluation: resetsEvaluation(existing, dto),
+    });
 
     await this.auditLogger.record({
       userId,
@@ -63,4 +65,10 @@ export class UpdateGeofenceUseCase {
 
     return updated;
   }
+}
+
+function resetsEvaluation(existing: Geofence, dto: UpdateGeofenceDto): boolean {
+  return (['active', 'centerLat', 'centerLng', 'radiusM'] as const).some(
+    (key) => dto[key] !== undefined && dto[key] !== existing[key],
+  );
 }

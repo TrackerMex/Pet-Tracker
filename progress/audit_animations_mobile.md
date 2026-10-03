@@ -123,3 +123,14 @@ Convenciones para todas: solo `transform`/`opacity`; entering/layout animations 
 La app tiene hoy exactamente el motion que le regalan sus librerías y nada más. No necesita mucho: es un dashboard funcional, no una app juguetona. Las tres alta cubren lo que de verdad se nota: (1) el press feedback unificado — la mayor palanca, un componente nuevo de ~30 líneas que iguala las superficies propias con los Button de HeroUI; (2) el momento "Generate plan", único lugar donde el presupuesto de delight está justificado; y (3) el marker del mapa, donde el teleport contradice la propuesta de valor de "live tracking". Todo lo demás es puente de 200ms o menos. Si solo se implementa una: **A1**.
 
 Cada propuesta es autosuficiente para handoff a Codex (archivo:línea, valores exactos, patrón uniwind-seguro en A1, guard de salto en A3, semántica de keys en M2). Conteo: 3 alta, 3 media, 1 baja; 7 rechazos.
+
+## Nota de #106 (2026-09-21)
+
+- La cabecera quedó caducada: `expo-haptics` está instalado desde #106 y el
+  runtime de smoke es el dev build de Android desde 2026-08-27, no Expo Go.
+- El rechazo R5 queda superado solo para el resultado de la operación de R4:
+  `notificationAsync(Success|Error)` tras servir o deshacer. El feedback de
+  pulsado general sigue siendo visual y no gana háptico.
+- La premisa de R7 quedó caducada con #98: ahora el usuario cambia el estado
+  Served/Pending al pulsar y presencia el cambio. Esta nota no añade la
+  animación de filas al alcance de #106.

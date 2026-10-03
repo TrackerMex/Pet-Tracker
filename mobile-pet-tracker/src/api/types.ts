@@ -12,6 +12,12 @@ export interface LoginRequest {
   password: string;
 }
 
+export interface ResetPasswordRequest {
+  token: string;
+  password: string;
+  passwordConfirmation: string;
+}
+
 export interface RegisterRequest {
   firstName: string;
   lastName: string;
@@ -43,6 +49,17 @@ export interface DeviceStatus {
   esn: string | null;
 }
 
+export interface NextVaccine {
+  id: string;
+  name: string;
+  nextDoseAt: string;
+}
+
+export interface MealsToday {
+  served: number;
+  total: number;
+}
+
 export interface PetProfile {
   id: string;
   name: string;
@@ -63,9 +80,10 @@ export interface PetProfile {
   lastCommunicationAt: string | null;
   myRole: 'owner' | 'family' | 'walker' | 'vet';
   device: DeviceStatus | null;
-  nextVaccine: unknown;
+  nextVaccine: NextVaccine | null;
   nextReminder: unknown;
   activitySummary: unknown;
+  mealsToday: MealsToday | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -181,6 +199,8 @@ export interface NutritionPlan {
   warnings: NutritionWarning[];
   aiExplanation: string | null;
   generatedAt: string;
+  servedToday: string[];
+  kcalConsumedToday: number;
 }
 
 export type ReminderType =
@@ -202,4 +222,20 @@ export interface Reminder {
   dueAt: string;
   advanceMinutes: number;
   status: ReminderStatus;
+}
+
+export type AlertType = 'geofence_exit' | 'battery_low';
+export type AlertStatus = 'open' | 'acked' | 'closed';
+
+export interface Alert {
+  id: string;
+  petId: string;
+  petName: string;
+  type: string;
+  status: string;
+  geofenceId: string | null;
+  payload: Record<string, unknown>;
+  openedAt: string;
+  ackedAt: string | null;
+  closedAt: string | null;
 }

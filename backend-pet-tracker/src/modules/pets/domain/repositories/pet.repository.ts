@@ -44,6 +44,9 @@ export interface PetRepository {
    */
   findMembership(petId: string, userId: string): Promise<PetMembership | null>;
 
+  /** Primer owner activo por created_at; columna cruda o null sin owner. */
+  findOwnerTimezone(petId: string): Promise<string | null>;
+
   findById(petId: string): Promise<Pet | null>;
 
   /**

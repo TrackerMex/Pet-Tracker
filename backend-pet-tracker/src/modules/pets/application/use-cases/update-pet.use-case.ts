@@ -1,8 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { AUDIT_LOGGER } from '@/audit/audit-log.repository';
 import type { AuditLogger } from '@/audit/audit-log.repository';
+import { ownerLocalDay } from '@/modules/pets/application/owner-local-day';
 import { Pet } from '@/modules/pets/domain/entities/pet.entity';
-import { PetNotFoundError } from '@/modules/pets/domain/errors/pet.errors';
+import {
+  PetBirthDateInFutureError,
+  PetNotFoundError,
+} from '@/modules/pets/domain/errors/pet.errors';
 import { PET_REPOSITORY } from '@/modules/pets/domain/repositories/pet.repository';
 import type {
   PetFieldChanges,
@@ -14,6 +18,7 @@ import { UpdatePetDto } from '../dto/update-pet.dto';
  * PATCH /v1/pets/:petId (R13, R14, R15). La validacion completa ya corrio
  * en el borde HTTP (UpdatePetSchema): aqui nunca llega un campo invalido a
  * medio persistir. Mismo patron de no-op y auditoria que PATCH /v1/me (#4).
+ * #89: birthDate se compara con el dia civil del owner cuando viene.
  */
 @Injectable()
 export class UpdatePetUseCase {
@@ -28,7 +33,15 @@ export class UpdatePetUseCase {
     petId: string,
     userId: string,
     dto: UpdatePetDto,
+    now: Date,
   ): Promise<Pet> {
+    if (
+      dto.birthDate !== undefined &&
+      dto.birthDate > (await ownerLocalDay(this.pets, petId, now))
+    ) {
+      throw new PetBirthDateInFutureError();
+    }
+
     const fieldsPresent = Object.keys(dto) as (keyof UpdatePetDto)[];
 
     if (fieldsPresent.length === 0) {

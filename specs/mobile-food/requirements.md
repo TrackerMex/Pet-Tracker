@@ -303,10 +303,12 @@ Todo lo demás (R1–R8) sigue TDD estricto con test rojo primero.
 
 - **Crear/editar el perfil nutricional desde la app** (formulario PUT):
   el smoke lo crea vía curl; feature móvil futura.
-- **Marcar comida como servida / tracking de raciones consumidas**: el
+- ~~**Marcar comida como servida / tracking de raciones consumidas**: el
   backend no persiste servings — el estado Served/Pending se deriva de la
   hora local (§D7). Los botones `Marcar servido` / `Editar horario` /
-  `Añadir comida` del diseño no son implementables sin backend nuevo.
+  `Añadir comida` del diseño no son implementables sin backend nuevo.~~
+  **Retirado por la Enmienda #98:** #83 añadió la persistencia y #98 permite
+  marcar y deshacer una comida servida.
 - Selector editable de `Alimento principal` (el perfil solo guarda
   `foodType`/`kcalPer100g`; el catálogo de marcas del diseño no existe).
 - Recordatorios/notificaciones de comidas (la card `Recordatorios
@@ -322,16 +324,60 @@ Todo lo demás (R1–R8) sigue TDD estricto con test rojo primero.
 
 ## Decisiones del gate (resueltas por humano, 2026-08-24)
 
-- **D7 — Served/Pending por hora local**: APROBADO tal como está en
+- ~~**D7 — Served/Pending por hora local**: APROBADO tal como está en
   [[design]] §D7 (badge derivado comparando `HH:MM` local). R5 se
-  mantiene íntegro.
+  mantiene íntegro.~~ **Retirado por la Enmienda #98.**
 - **D9 — sin generate en Food**: APROBADO — el botón `Generate plan`
   vive solo en MealSchedule; el empty de Food (`No meal plan yet`)
   dirige ahí vía el link `Meal schedule`.
 - Menores (porción `Math.round(dailyGrams / mealsPerDay)` informativa,
-  UI en inglés con warnings del backend en español tal cual, perfil
+  ~~UI en inglés~~ UI en los dos idiomas desde #65, español por defecto
+  (ver §Enmienda #65) con warnings del backend en español tal cual, perfil
   nutricional en MealSchedule y no en Food): sin objeción, quedan como
   están.
+
+## Enmienda #65 — idioma de la UI
+
+El 2026-09-04 el humano decidió que la UI móvil va en español, y el 2026-09-05
+que la feature sea un **catálogo de dos idiomas con interruptor en Profile y
+español por defecto** (`progress/explore_design-gap-vs-make.md` §4, decisión A
+y su ampliación). Esta spec ratificó el inglés en su día; esa parte queda
+**enmendada**.
+
+- **Qué cambia**: el literal de UI que esta spec fija deja de estar escrito en
+  la pantalla y pasa a resolverse por clave contra el catálogo. El idioma por
+  defecto es el español.
+- **Qué NO cambia**: **el literal inglés de esta spec sigue siendo normativo**
+  como columna `en` de su clave — un usuario que elija inglés lo sigue viendo
+  palabra por palabra. Y no cambia ningún requisito `R<n>`, ningún `testID`,
+  ninguna conducta, ningún contrato de API ni ninguna decisión visual. La
+  trazabilidad `R-id ↔ test` de `mobile-food` sigue siendo válida.
+- **Fuente única del literal y de la clave**:
+  `specs/mobile-ui-language/design.md` §2. Si esta spec y esa tabla discrepan,
+  **manda la tabla**.
+- **Los mensajes de validación del backend siguen en inglés en los dos
+  idiomas** y esta enmienda no los toca
+  (`specs/mobile-ui-language/requirements.md` §Fuera de alcance 1).
+
+- [X] Enmienda aprobada por humano (fecha: 2026-09-06)
+
+## Enmienda #98 — la comida servida deja de derivarse del reloj
+
+El backend de #83 persiste las comidas servidas y expone `servedToday` en el
+plan. Por ello #98 sustituye la decisión D7 y retira «Marcar comida como
+servida / tracking de raciones consumidas» de §Fuera de alcance.
+
+- **Qué cambia:** Food decide `Served` / `Pending` exclusivamente con
+  `plan.servedToday`, permite marcar o deshacer cada franja mediante el backend
+  y, tras cada operación, refresca plan y detalle para pintar la respuesta del
+  servidor. No mantiene estado optimista.
+- **Qué NO cambia:** R5 de #38 sigue vigente en todo lo demás: contador,
+  horarios, porciones, warnings, recetas visuales y estados de carga/error.
+- **Fuente normativa nueva:**
+  `specs/mobile-meals-served-ui/requirements.md` R4–R6. El detalle del retiro
+  de D7 queda también en `specs/mobile-food/design.md` §D7.
+
+- [X] Enmienda aprobada por humano
 
 ## Aprobación
 

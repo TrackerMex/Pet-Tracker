@@ -1,56 +1,64 @@
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import * as Haptics from 'expo-haptics';
 import { router, type Href } from 'expo-router';
-import { Button, Card as HeroUICard, Skeleton, Spinner } from 'heroui-native';
-import { useCallback, useMemo } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { Button, Skeleton, Spinner } from 'heroui-native';
+import { useEffect, useState } from 'react';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Animated, { Easing, ReduceMotion, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { ChevronRight, Clock, ForkKnife, Sparkles } from 'reicon-react-native';
 
-import { getNutritionPlan } from '../../api/nutrition';
+import {
+  getNutritionPlan,
+  serveMeal,
+  unserveMeal,
+} from '../../api/nutrition';
 import { listPets, type PetsState } from '../../api/pets';
+import { nutritionKeys, petKeys } from '../../api/query-keys';
 import { Card } from '../../components/card';
 import { PetSwitcher } from '../../components/pet-switcher';
-import { useApi } from '../../hooks/use-api';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
+import { useTranslate } from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
+import { CONTINUOUS_CORNER, TABULAR_NUMS } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
+
+const AnimatedView = Animated.createAnimatedComponent(View);
+const KCAL_BAR_TIMING = {
+  duration: 250,
+  easing: Easing.bezier(0.77, 0, 0.175, 1),
+  reduceMotion: ReduceMotion.System,
+};
 
 function isPetsError(state: PetsState): boolean {
   return ['error', 'unreachable', 'missing-config'].includes(state.kind);
 }
 
-function localTimeHhmm(): string {
-  const now = new Date();
-  const hours = String(now.getHours()).padStart(2, '0');
-  const minutes = String(now.getMinutes()).padStart(2, '0');
-  return `${hours}:${minutes}`;
-}
-
 export default function FoodScreen() {
   const [muted, accent, foreground] = useThemeColors([
     'muted',
-    'accent',
+    'accent-strong',
     'foreground',
   ]);
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { token } = useAuth();
+  const t = useTranslate();
   const { selectedPetId, selectPet } = useSelectedPet();
+  const queryClient = useQueryClient();
+  const [pendingMealTime, setPendingMealTime] = useState<string | null>(null);
+  const [mealError, setMealError] = useState<string | null>(null);
   const insets = useSafeAreaInsets();
-  const petsFn = useCallback(
-    () => listPets(baseUrl, token ?? ''),
-    [baseUrl, token],
-  );
-  const pets = useApi(petsFn);
-  usePetSelection(pets);
-  const planFn = useMemo(
-    () =>
-      selectedPetId
-        ? () => getNutritionPlan(baseUrl, token ?? '', selectedPetId)
-        : null,
-    [baseUrl, selectedPetId, token],
-  );
-  const plan = useApi(planFn);
-  const hhmm = localTimeHhmm();
+  const pets = useQuery({
+    queryKey: petKeys.list(),
+    queryFn: () => listPets(baseUrl, token ?? ''),
+  });
+  usePetSelection({ data: pets.data, isRefreshing: pets.isRefetching });
+  const plan = useQuery({
+    queryKey: nutritionKeys.plan(selectedPetId ?? ''),
+    queryFn: () => getNutritionPlan(baseUrl, token ?? '', selectedPetId!),
+    enabled: selectedPetId !== null,
+  });
   const loadedPlan = plan.data?.kind === 'ok' ? plan.data.plan : null;
   const waitingForPetSelection =
     selectedPetId === null &&
@@ -59,10 +67,52 @@ export default function FoodScreen() {
   const showPlanSkeletons =
     waitingForPetSelection ||
     (selectedPetId !== null && plan.data === undefined);
-  const servedMeals =
-    loadedPlan !== null
-      ? loadedPlan.mealTimes.filter((mealTime) => mealTime <= hhmm).length
+  const servedMeals = loadedPlan?.servedToday.length ?? 0;
+  const kcalPct =
+    loadedPlan !== null && loadedPlan.merKcal > 0
+      ? Math.round((loadedPlan.kcalConsumedToday / loadedPlan.merKcal) * 100)
       : 0;
+  const kcalBarWidth = useSharedValue(kcalPct);
+  const kcalBarStyle = useAnimatedStyle(() => ({
+    width: `${kcalBarWidth.get()}%` as `${number}%`,
+  }));
+  useEffect(() => {
+    kcalBarWidth.set(withTiming(kcalPct, KCAL_BAR_TIMING));
+  }, [kcalBarWidth, kcalPct]);
+
+  async function toggleMeal(mealTime: string, served: boolean) {
+    if (pendingMealTime !== null || selectedPetId === null) {
+      return;
+    }
+
+    setPendingMealTime(mealTime);
+    setMealError(null);
+    try {
+      const result = await (served ? unserveMeal : serveMeal)(
+        baseUrl,
+        token ?? '',
+        selectedPetId,
+        mealTime,
+      );
+      const failed = !['ok', 'already-served', 'not-served'].includes(
+        result.kind,
+      );
+      if (failed) {
+        setMealError(t('food.couldNotUpdateMeal'));
+      }
+      await plan.refetch();
+      await queryClient.refetchQueries({
+        queryKey: petKeys.detail(selectedPetId),
+      });
+      void Haptics.notificationAsync(
+        failed
+          ? Haptics.NotificationFeedbackType.Error
+          : Haptics.NotificationFeedbackType.Success,
+      );
+    } finally {
+      setPendingMealTime(null);
+    }
+  }
 
   return (
     <ScrollView
@@ -76,7 +126,9 @@ export default function FoodScreen() {
         paddingBottom: insets.bottom + 96,
       }}
     >
-      <Text className="text-2xl font-black text-foreground">Food</Text>
+      <Text className="text-2xl font-black text-foreground">
+        {t('food.food')}
+      </Text>
 
       {pets.data === undefined ? (
         <View className="h-10 items-center justify-center">
@@ -87,17 +139,20 @@ export default function FoodScreen() {
       {pets.data && isPetsError(pets.data) ? (
         <View className="items-start gap-3">
           <Text testID="food-error" className="text-danger">
-            Something went wrong
+            {t('common.somethingWentWrong')}
           </Text>
-          <Button testID="food-retry" onPress={pets.refetch}>
-            Retry
+          <Button
+            testID="food-retry"
+            onPress={() => void pets.refetch()}
+          >
+            {t('common.retry')}
           </Button>
         </View>
       ) : null}
 
       {pets.data?.kind === 'ok' && pets.data.pets.length === 0 ? (
         <Text testID="food-empty" className="text-muted">
-          No pets yet
+          {t('common.noPetsYet')}
         </Text>
       ) : null}
 
@@ -113,7 +168,7 @@ export default function FoodScreen() {
         <View className="gap-4">
           <Skeleton
             testID="food-plan-skeleton"
-            className="h-32 w-full rounded-card"
+            className="h-40 w-full rounded-card"
           />
           <Skeleton
             testID="food-meals-skeleton"
@@ -139,24 +194,67 @@ export default function FoodScreen() {
               >
                 <View className="flex-row items-center justify-between gap-4">
                   <View className="flex-1 gap-1">
-                    <Text className="text-xs font-semibold uppercase tracking-widest text-accent-foreground opacity-70">
-                      Daily target
+                    <Text className="text-xs font-semibold uppercase tracking-widest text-accent-foreground">
+                      {t('food.dailyTarget')}
                     </Text>
                     <Text
                       testID="food-plan-kcal"
                       className="text-3xl font-black text-accent-foreground"
                     >
-                      {loadedPlan.merKcal} kcal / day
+                      {t('food.dailyKcal', { kcal: loadedPlan.merKcal })}
                     </Text>
                     <Text
                       testID="food-plan-grams"
-                      className="font-semibold text-accent-foreground opacity-80"
+                      className="font-semibold text-accent-foreground"
                     >
-                      {loadedPlan.dailyGrams} g / day
+                      {t('food.dailyGrams', {
+                        grams: loadedPlan.dailyGrams,
+                      })}
                     </Text>
                   </View>
-                  <View className="size-14 items-center justify-center rounded-2xl bg-surface-secondary">
+                  <View
+                    className="size-14 items-center justify-center rounded-xl bg-surface-secondary"
+                    style={CONTINUOUS_CORNER}
+                  >
                     <ForkKnife size={26} color={accent} />
+                  </View>
+                </View>
+                <View
+                  testID="food-plan-progress"
+                  className="gap-1.5"
+                  accessible
+                  accessibilityRole="progressbar"
+                  accessibilityLabel={t('food.kcalConsumedOfTarget', {
+                    consumed: loadedPlan.kcalConsumedToday,
+                    target: loadedPlan.merKcal,
+                  })}
+                  accessibilityValue={{ min: 0, max: 100, now: kcalPct }}
+                >
+                  <View className="flex-row items-center justify-between">
+                    <Text
+                      testID="food-plan-consumed"
+                      className="text-xs font-normal text-accent-foreground"
+                      style={TABULAR_NUMS}
+                    >
+                      {loadedPlan.kcalConsumedToday} kcal
+                    </Text>
+                    <Text
+                      testID="food-plan-percent"
+                      className="text-xs font-normal text-accent-foreground"
+                      style={TABULAR_NUMS}
+                    >
+                      {kcalPct}%
+                    </Text>
+                  </View>
+                  <View
+                    testID="food-plan-track"
+                    className="h-2 overflow-hidden rounded-full bg-accent-foreground/20"
+                  >
+                    <AnimatedView
+                      testID="food-plan-fill"
+                      className="h-full rounded-full bg-accent-foreground"
+                      style={kcalBarStyle}
+                    />
                   </View>
                 </View>
               </Card>
@@ -166,7 +264,12 @@ export default function FoodScreen() {
                 className="gap-3"
               >
                 <View className="flex-row items-center justify-between gap-3">
-                  <Text className="font-bold text-foreground">Meals today</Text>
+                  <Text
+                    testID="food-meals-title"
+                    className="text-base font-bold text-foreground"
+                  >
+                    {t('food.mealsToday')}
+                  </Text>
                   <Text
                     testID="food-meals-progress"
                     className="text-xs font-semibold text-muted"
@@ -176,7 +279,7 @@ export default function FoodScreen() {
                 </View>
 
                 {loadedPlan.mealTimes.map((mealTime, index) => {
-                  const served = mealTime <= hhmm;
+                  const served = loadedPlan.servedToday.includes(mealTime);
                   const portionGrams = Math.round(
                     loadedPlan.dailyGrams / loadedPlan.mealsPerDay,
                   );
@@ -185,6 +288,7 @@ export default function FoodScreen() {
                     <View
                       key={`${mealTime}-${index}`}
                       testID={`meal-row-${index}`}
+                      style={CONTINUOUS_CORNER}
                       className={
                         served
                           ? 'flex-row items-center gap-3 rounded-xl bg-surface-secondary p-3'
@@ -202,31 +306,58 @@ export default function FoodScreen() {
                           {portionGrams} g
                         </Text>
                       </View>
-                      <Text
-                        testID={
+                      <Pressable
+                        testID={`meal-toggle-${index}`}
+                        accessibilityRole="button"
+                        accessibilityLabel={
                           served
-                            ? `meal-served-${index}`
-                            : `meal-pending-${index}`
+                            ? t('food.undoServed', { time: mealTime })
+                            : t('food.markServed', { time: mealTime })
                         }
-                        className={
-                          served
-                            ? 'rounded-full bg-surface px-2 py-1 text-2xs font-bold text-accent'
-                            : 'rounded-full bg-surface px-2 py-1 text-2xs font-bold text-muted'
-                        }
+                        disabled={pendingMealTime === mealTime}
+                        className="min-h-11 justify-center"
+                        style={({ pressed }) => ({
+                          opacity: pressed ? 0.8 : 1,
+                        })}
+                        onPress={() => void toggleMeal(mealTime, served)}
                       >
-                        {served ? 'Served' : 'Pending'}
-                      </Text>
+                        <Text
+                          testID={
+                            served
+                              ? `meal-served-${index}`
+                              : `meal-pending-${index}`
+                          }
+                          className={
+                            served
+                              ? 'rounded-full bg-surface px-2 py-1 text-2xs font-bold text-accent-strong'
+                              : 'rounded-full bg-surface px-2 py-1 text-2xs font-bold text-muted'
+                          }
+                        >
+                          {served ? t('food.served') : t('food.pending')}
+                        </Text>
+                      </Pressable>
                     </View>
                   );
                 })}
+
+                {mealError !== null ? (
+                  <Text
+                    testID="food-meal-error"
+                    selectable
+                    className="text-danger"
+                  >
+                    {mealError}
+                  </Text>
+                ) : null}
               </Card>
 
               {loadedPlan.warnings.length > 0 ? (
                 <View className="gap-2">
                   {loadedPlan.warnings.map((warning) => (
-                    <HeroUICard
+                    <Card
                       key={warning.code}
-                      className="rounded-2xl border border-border bg-default p-4"
+                      testID={`warning-card-${warning.code}`}
+                      className="bg-default"
                     >
                       <Text
                         testID={`plan-warning-${warning.code}`}
@@ -234,7 +365,7 @@ export default function FoodScreen() {
                       >
                         {warning.message}
                       </Text>
-                    </HeroUICard>
+                    </Card>
                   ))}
                 </View>
               ) : null}
@@ -247,8 +378,11 @@ export default function FoodScreen() {
                 >
                   <View className="flex-row items-center gap-2">
                     <Sparkles size={18} color={accent} />
-                    <Text className="font-bold text-foreground">
-                      AI recommendation
+                    <Text
+                      testID="food-ai-title"
+                      className="text-base font-bold text-foreground"
+                    >
+                      {t('food.aiRecommendation')}
                     </Text>
                   </View>
                   <Text className="text-sm font-normal leading-5 text-muted">
@@ -261,7 +395,7 @@ export default function FoodScreen() {
 
           {plan.data?.kind === 'not-found' ? (
             <Text testID="food-plan-empty" className="font-normal text-muted">
-              No meal plan yet
+              {t('food.noMealPlanYet')}
             </Text>
           ) : null}
 
@@ -270,10 +404,13 @@ export default function FoodScreen() {
           plan.data?.kind === 'missing-config' ? (
             <View className="items-start gap-3">
               <Text testID="food-plan-error" className="text-danger">
-                Could not load meal plan
+                {t('food.couldNotLoadPlan')}
               </Text>
-              <Button testID="food-plan-retry" onPress={plan.refetch}>
-                Retry
+              <Button
+                testID="food-plan-retry"
+                onPress={() => void plan.refetch()}
+              >
+                {t('common.retry')}
               </Button>
             </View>
           ) : null}
@@ -284,9 +421,14 @@ export default function FoodScreen() {
             onPress={() => router.push('/meal-schedule' as Href)}
           >
             <View className="gap-1">
-              <Text className="font-bold text-foreground">Meal schedule</Text>
+              <Text
+                testID="meal-schedule-link-title"
+                className="text-base font-bold text-foreground"
+              >
+                {t('food.mealSchedule')}
+              </Text>
               <Text className="text-xs font-normal text-muted">
-                View nutrition profile and times
+                {t('food.mealScheduleLinkSubtitle')}
               </Text>
             </View>
             <ChevronRight size={20} color={foreground} />

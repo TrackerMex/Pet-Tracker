@@ -1,8 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, asc, count, eq } from 'drizzle-orm';
+import { and, asc, count, eq, ne } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { uuidv7 } from 'uuidv7';
 import { DRIZZLE } from '@/db/drizzle.constants';
+import { alertEvents } from '@/db/schema/alerts.schema';
 import { GeofenceCircleColumn, geofences } from '@/db/schema/geofences.schema';
 import {
   Geofence,
@@ -90,7 +91,11 @@ export class GeofenceDrizzleRepository implements GeofenceRepository {
     return rows[0] ? toDomain(rows[0]) : null;
   }
 
-  async update(id: string, changes: GeofenceFieldChanges): Promise<Geofence> {
+  async update(
+    id: string,
+    changes: GeofenceFieldChanges,
+    options: { resetEvaluation: boolean },
+  ): Promise<Geofence> {
     const { centerLat, centerLng, radiusM, ...columns } = changes;
     const geometryChanges =
       centerLat !== undefined ||
@@ -104,25 +109,39 @@ export class GeofenceDrizzleRepository implements GeofenceRepository {
       ? await this.mergedGeometry(id, { centerLat, centerLng, radiusM })
       : undefined;
 
-    try {
-      const [row] = await this.db
-        .update(geofences)
-        .set({
-          ...columns,
-          ...(geometry ? { geometry } : {}),
-          updatedAt: new Date(),
-        })
-        .where(eq(geofences.id, id))
-        .returning();
+    const now = new Date();
 
-      return toDomain(row);
+    try {
+      return await this.db.transaction(async (tx) => {
+        const [row] = await tx
+          .update(geofences)
+          .set({
+            ...columns,
+            ...(geometry ? { geometry } : {}),
+            ...(options.resetEvaluation
+              ? { geofenceState: { state: 'unknown', updatedAt: null } }
+              : {}),
+            updatedAt: now,
+          })
+          .where(eq(geofences.id, id))
+          .returning();
+
+        if (options.resetEvaluation) {
+          await closeOpenAlerts(tx, id, now);
+        }
+
+        return toDomain(row);
+      });
     } catch (error) {
       throw translateUniqueViolation(error, undefined, columns.name);
     }
   }
 
   async delete(id: string): Promise<void> {
-    await this.db.delete(geofences).where(eq(geofences.id, id));
+    await this.db.transaction(async (tx) => {
+      await closeOpenAlerts(tx, id, new Date());
+      await tx.delete(geofences).where(eq(geofences.id, id));
+    });
   }
 
   private async mergedGeometry(
@@ -143,6 +162,22 @@ export class GeofenceDrizzleRepository implements GeofenceRepository {
       radiusM: partial.radiusM ?? row.geometry.radiusM,
     };
   }
+}
+
+function closeOpenAlerts(
+  db: Pick<NodePgDatabase, 'update'>,
+  geofenceId: string,
+  closedAt: Date,
+) {
+  return db
+    .update(alertEvents)
+    .set({ status: 'closed', closedAt })
+    .where(
+      and(
+        eq(alertEvents.geofenceId, geofenceId),
+        ne(alertEvents.status, 'closed'),
+      ),
+    );
 }
 
 function toDomain(row: GeofenceRow): Geofence {

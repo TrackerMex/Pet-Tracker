@@ -6,6 +6,9 @@ import {
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { AWS_RESOURCE_NAMES, SQS_CLIENT } from '@/aws/aws.constants';
 import type { AwsResourceNames } from '@/aws/resource-names';
+import { PET_REPOSITORY } from '@/modules/pets/domain/repositories/pet.repository';
+import type { PetRepository } from '@/modules/pets/domain/repositories/pet.repository';
+import { reminderPushBody } from '@/modules/reminders/application/reminder-push-body';
 import { REMINDER_REPOSITORY } from '@/modules/reminders/domain/repositories/reminder.repository';
 import type { ReminderRepository } from '@/modules/reminders/domain/repositories/reminder.repository';
 import { REMINDERS_SCOPE } from './reminders.constants';
@@ -20,6 +23,7 @@ export class RemindersDispatchService {
     @Inject(AWS_RESOURCE_NAMES) private readonly names: AwsResourceNames,
     @Inject(REMINDER_REPOSITORY)
     private readonly reminders: ReminderRepository,
+    @Inject(PET_REPOSITORY) private readonly pets: PetRepository,
   ) {}
 
   async dispatchOnce(): Promise<void> {
@@ -37,6 +41,7 @@ export class RemindersDispatchService {
     const dueReminders = await this.reminders.findDue(new Date());
     for (const reminder of dueReminders) {
       try {
+        const timeZone = await this.pets.findOwnerTimezone(reminder.petId);
         await this.sqs.send(
           new SendMessageCommand({
             QueueUrl: queueUrl,
@@ -47,7 +52,7 @@ export class RemindersDispatchService {
               petId: reminder.petId,
               scheduleName: reminder.scheduleName,
               title: reminder.title,
-              body: `Recordatorio: ${reminder.title}`,
+              body: reminderPushBody(reminder.title, reminder.dueAt, timeZone),
               data: { petId: reminder.petId, reminderId: reminder.id },
             }),
           }),

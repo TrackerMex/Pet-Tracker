@@ -19,6 +19,7 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
     "provision:local": "ts-node -r tsconfig-paths/register scripts/provision-local.ts",
     "provision:device": "ts-node -r tsconfig-paths/register scripts/provision-device.ts",
     "seed:devices": "ts-node -r tsconfig-paths/register scripts/seed-devices.ts",

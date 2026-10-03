@@ -16,7 +16,10 @@ import { ZodType } from 'zod';
 import { toDeviceStatusResponse } from '@/modules/devices/infrastructure/mappers/device-status.mapper';
 import { CurrentUser } from '@/modules/auth/infrastructure/decorators/current-user.decorator';
 import type { CurrentUserPayload } from '@/modules/auth/infrastructure/decorators/current-user.decorator';
-import { PetNotFoundError } from '@/modules/pets/domain/errors/pet.errors';
+import {
+  PetBirthDateInFutureError,
+  PetNotFoundError,
+} from '@/modules/pets/domain/errors/pet.errors';
 import {
   CreatePetDto,
   CreatePetSchema,
@@ -60,21 +63,27 @@ export class PetsController {
     @Body() body: unknown,
   ): Promise<PetProfileResponse> {
     const dto = parseBody<CreatePetDto>(CreatePetSchema, body);
-    const pet = await this.createPet.execute(dto, user.id);
+    const now = new Date();
 
-    // R2: el creador siempre queda como owner de su mascota recien creada.
-    return toPetProfileResponse(pet, 'owner');
+    try {
+      const pet = await this.createPet.execute(dto, user.id, now);
+
+      // R2: el creador siempre queda como owner de su mascota recien creada.
+      return toPetProfileResponse(pet, 'owner');
+    } catch (error) {
+      throw mapPetError(error);
+    }
   }
 
   @Get()
   async list(
     @CurrentUser() user: CurrentUserPayload,
   ): Promise<PetProfileResponse[]> {
-    const memberships = await this.listPets.execute(user.id);
+    const items = await this.listPets.execute(user.id);
     const now = new Date();
 
-    return memberships.map(({ pet, role }) =>
-      toPetProfileResponse(pet, role, now),
+    return items.map(({ pet, role, photoUrl }) =>
+      toPetProfileResponse(pet, role, now, null, photoUrl),
     );
   }
 
@@ -85,19 +94,21 @@ export class PetsController {
     const { petId, role } = request.petMembership;
 
     try {
+      const now = new Date();
       // devices-claim (#7) R12: mismo mapper de estado de device que el
       // claim y GET .../device — la forma del contrato no cambia.
       // pet-photos-s3 (#6) R6/R7: photoUrl ya viene resuelto (o null).
-      const { pet, device, photoUrl, nextVaccine } =
-        await this.getPet.execute(petId);
+      const { pet, device, photoUrl, nextVaccine, mealsToday } =
+        await this.getPet.execute(petId, now);
 
       return toPetProfileResponse(
         pet,
         role,
-        new Date(),
-        device ? toDeviceStatusResponse(device) : null,
+        now,
+        device ? toDeviceStatusResponse(device, now) : null,
         photoUrl,
         nextVaccine,
+        mealsToday,
       );
     } catch (error) {
       throw mapPetError(error);
@@ -117,8 +128,9 @@ export class PetsController {
     const { petId, role } = request.petMembership;
 
     try {
+      const now = new Date();
       return toPetProfileResponse(
-        await this.updatePet.execute(petId, request.user.id, dto),
+        await this.updatePet.execute(petId, request.user.id, dto, now),
         role,
       );
     } catch (error) {
@@ -166,6 +178,13 @@ export class PetsController {
  * error de dominio se traduce al mismo 404 generico que emite el guard.
  */
 function mapPetError(error: unknown): unknown {
+  if (error instanceof PetBirthDateInFutureError) {
+    return new BadRequestException({
+      statusCode: HttpStatus.BAD_REQUEST,
+      message: 'Validation failed',
+      errors: [{ path: 'birthDate', message: error.message }],
+    });
+  }
   return error instanceof PetNotFoundError ? new NotFoundException() : error;
 }
 

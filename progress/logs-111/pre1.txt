@@ -1,0 +1,276 @@
+FAIL src/app/(tabs)/__tests__/health.test.tsx (14.028 s)
+  ● R6: weight card enlaza al log › shows the current weight and opens the weight log
+
+    Unable to find an element with testID: weight-current
+
+    [36m<RNCSafeAreaProvider>[39m
+      [36m<RCTScrollView[39m
+        [33mtestID[39m=[32m"screen-health"[39m
+      [36m>[39m
+        [36m<View>[39m
+          [36m<Text>[39m
+            [0mSalud[0m
+          [36m</Text>[39m
+          [36m<RCTScrollView>[39m
+            [36m<View>[39m
+              [36m<View>[39m
+                [36m<View[39m
+                  [33maccessibilityLabel[39m=[32m"Luna"[39m
+                  [33maccessibilityRole[39m=[32m"button"[39m
+                  [33maccessibilityState[39m=[32m{
+                    {
+                      "selected": true,
+                    }
+                  }[39m
+                  [33maccessible[39m=[32m{true}[39m
+                  [33mtestID[39m=[32m"pet-chip-pet-1"[39m
+                [36m>[39m
+                  [36m<View>[39m
+                    [36m<View[39m
+                      [33maria-label[39m=[32m"Avatar"[39m
+                      [33mrole[39m=[32m"img"[39m
+                      [33mtestID[39m=[32m"pet-avatar-fallback-pet-1"[39m
+                    [36m>[39m
+                      [36m<Text>[39m
+                        [0mL[0m
+                      [36m</Text>[39m
+                    [36m</View>[39m
+                  [36m</View>[39m
+                [36m</View>[39m
+              [36m</View>[39m
+            [36m</View>[39m
+          [36m</RCTScrollView>[39m
+          [36m<View[39m
+            [33mtestID[39m=[32m"vaccines-section"[39m
+          [36m>[39m
+            [36m<View>[39m
+              [36m<View[39m
+                [33mtestID[39m=[32m"health-icon-heart-pulse"[39m
+              [36m/>[39m
+              [36m<Text>[39m
+                [0mVacunas[0m
+              [36m</Text>[39m
+            [36m</View>[39m
+            [36m<View[39m
+              [33mtestID[39m=[32m"vaccines-skeleton"[39m
+            [36m/>[39m
+          [36m</View>[39m
+          [36m<View[39m
+            [33mtestID[39m=[32m"weight-card"[39m
+          [36m>[39m
+            [36m<View>[39m
+              [36m<Text[39m
+                [33mtestID[39m=[32m"weight-card-title"[39m
+              [36m>[39m
+                [0mPeso[0m
+              [36m</Text>[39m
+            [36m</View>[39m
+            [36m<View[39m
+              [33maccessibilityRole[39m=[32m"button"[39m
+              [33maccessible[39m=[32m{true}[39m
+              [33mtestID[39m=[32m"weight-log-link"[39m
+            [36m>[39m
+              [36m<Text>[39m
+                [0mRegistro de peso[0m
+              [36m</Text>[39m
+              [36m<View[39m
+                [33mtestID[39m=[32m"health-icon-chevron-right"[39m
+              [36m/>[39m
+            [36m</View>[39m
+          [36m</View>[39m
+        [36m</View>[39m
+      [36m</RCTScrollView>[39m
+    [36m</RNCSafeAreaProvider>[39m
+
+      465 |     await waitFor(() => expect(screen.getByTestId('weight-card')).toBeVisible());
+      466 |     expect(screen.getByText('Peso')).toBeVisible();
+    > 467 |     expect(screen.getByTestId('weight-current')).toHaveTextContent('12.4 kg');
+          |                   ^
+      468 |     expect(screen.getByTestId('weight-variation')).toHaveTextContent('+0.4 kg');
+      469 |
+      470 |     await fireEvent.press(screen.getByTestId('weight-log-link'));
+
+      at Object.getByTestId (/home/claude/sites/Pet-Tracker-wt-ui/mobile-pet-tracker/src/app/(tabs)../../../../../__tests__/health.test.tsx:467:19)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+PASS src/app/(tabs)/__tests__/map.test.tsx (20.642 s)
+PASS src/app/(tabs)/__tests__/meal-schedule.test.tsx (8.335 s)
+PASS src/app/(tabs)/__tests__/weight-log.test.tsx (29.437 s)
+PASS src/screens/home/weekly-activity-chart.test.tsx (5.172 s)
+PASS src/screens/pairing/index.test.tsx (22.707 s)
+PASS src/screens/profile/index.test.tsx (11.696 s)
+PASS src/hooks/use-push-registration.navigation.test.tsx
+PASS src/app/(tabs)/__tests__/food.test.tsx (5.93 s)
+PASS src/screens/alerts/index.test.tsx
+PASS src/app/(tabs)/__tests__/layout.test.tsx
+PASS src/screens/reminders/index.test.tsx (6.72 s)
+PASS src/app/(auth)/__tests__/register.test.tsx
+PASS src/screens/home/index.test.tsx (42.741 s)
+PASS src/screens/add-reminder/index.test.tsx (9.406 s)
+PASS src/screens/docs/index.test.tsx (6.798 s)
+PASS src/screens/add-pet/index.test.tsx (9.344 s)
+PASS src/app/(auth)/__tests__/forgot.test.tsx (6.799 s)
+PASS src/app/(tabs)/__tests__/screens.test.tsx (10.199 s)
+PASS src/components/__tests__/floating-tab-bar.test.tsx (10.805 s)
+PASS src/app/(auth)/__tests__/login.test.tsx (5.791 s)
+PASS src/screens/reset-password/index.test.tsx
+PASS src/__tests__/heroui-smoke.test.tsx
+PASS src/app/__tests__/tabs-layout.test.tsx
+PASS src/api/__tests__/alerts.test.ts
+PASS src/api/__tests__/positions.test.ts
+PASS src/utils/device-connectivity.test.ts
+PASS src/__tests__/ui-language.test.ts
+PASS src/app/(tabs)/__tests__/profile.test.tsx
+PASS test/__tests__/render-with-providers.test.tsx
+PASS src/components/__tests__/pet-hero-header.test.tsx (5.643 s)
+PASS src/components/__tests__/pet-switcher.test.tsx
+PASS src/app/__tests__/layout.test.tsx
+PASS src/components/__tests__/pet-avatar.test.tsx
+PASS src/components/__tests__/weight-chart.test.tsx
+PASS src/hooks/use-push-registration.test.tsx
+PASS src/theme/__tests__/global-css.test.ts
+PASS src/utils/language-preference.test.ts
+PASS src/providers/__tests__/language-provider.test.tsx
+PASS src/screens/home/format.test.ts
+PASS src/providers/__tests__/auth-provider.test.tsx
+PASS src/app/__tests__/index.test.tsx
+PASS src/app/(tabs)/__tests__/alerts.test.tsx
+PASS src/providers/__tests__/query-provider.test.tsx
+PASS src/api/__tests__/push-tokens.test.ts
+PASS src/api/__tests__/devices.test.ts
+PASS src/__tests__/design-drift.test.ts
+PASS src/api/__tests__/reminders.test.ts
+PASS src/api/__tests__/users.test.ts
+PASS src/api/__tests__/trips.test.ts
+PASS src/api/__tests__/health-records.test.ts
+PASS src/theme/__tests__/theme-transition.test.tsx
+PASS src/__tests__/consistency-classnames.test.ts
+PASS src/hooks/use-pet-selection.test.tsx
+PASS src/__tests__/legibility-classnames.test.ts
+PASS src/components/__tests__/card.test.tsx
+PASS src/app/(auth)/__tests__/layout.test.tsx
+PASS src/components/__tests__/pet-map.test.tsx
+PASS src/api/__tests__/pets.test.ts
+PASS src/api/__tests__/media.test.ts
+PASS src/__tests__/ui-copy-table.ts
+PASS src/theme/__tests__/font-registration.test.ts
+PASS src/theme/__tests__/use-theme-colors.test.tsx
+PASS src/theme/__tests__/theme-transition.degraded.test.tsx
+PASS src/providers/__tests__/selected-pet-provider.test.tsx
+PASS src/utils/civil-today-iso.test.ts
+PASS src/api/__tests__/nutrition.test.ts
+PASS src/api/__tests__/auth.test.ts
+PASS src/api/__tests__/query-keys.test.ts
+PASS src/__tests__/hero-header-amendments.test.ts
+PASS ./app.config.test.ts
+PASS src/__tests__/hosting-artifacts.test.ts
+PASS src/api/__tests__/activity.test.ts
+PASS src/utils/__tests__/category-palette.test.ts
+PASS src/utils/theme-preference.test.ts
+PASS src/api/__tests__/subscriptions.test.ts
+PASS src/utils/reminder-dates.test.ts
+A worker process has failed to exit gracefully and has been force exited. This is likely caused by tests leaking due to improper teardown. Try running with --detectOpenHandles to find leaks. Active timers can also cause this, ensure that .unref() was called on them.
+
+Summary of all failing tests
+FAIL src/app/(tabs)/__tests__/health.test.tsx (14.028 s)
+  ● R6: weight card enlaza al log › shows the current weight and opens the weight log
+
+    Unable to find an element with testID: weight-current
+
+    [36m<RNCSafeAreaProvider>[39m
+      [36m<RCTScrollView[39m
+        [33mtestID[39m=[32m"screen-health"[39m
+      [36m>[39m
+        [36m<View>[39m
+          [36m<Text>[39m
+            [0mSalud[0m
+          [36m</Text>[39m
+          [36m<RCTScrollView>[39m
+            [36m<View>[39m
+              [36m<View>[39m
+                [36m<View[39m
+                  [33maccessibilityLabel[39m=[32m"Luna"[39m
+                  [33maccessibilityRole[39m=[32m"button"[39m
+                  [33maccessibilityState[39m=[32m{
+                    {
+                      "selected": true,
+                    }
+                  }[39m
+                  [33maccessible[39m=[32m{true}[39m
+                  [33mtestID[39m=[32m"pet-chip-pet-1"[39m
+                [36m>[39m
+                  [36m<View>[39m
+                    [36m<View[39m
+                      [33maria-label[39m=[32m"Avatar"[39m
+                      [33mrole[39m=[32m"img"[39m
+                      [33mtestID[39m=[32m"pet-avatar-fallback-pet-1"[39m
+                    [36m>[39m
+                      [36m<Text>[39m
+                        [0mL[0m
+                      [36m</Text>[39m
+                    [36m</View>[39m
+                  [36m</View>[39m
+                [36m</View>[39m
+              [36m</View>[39m
+            [36m</View>[39m
+          [36m</RCTScrollView>[39m
+          [36m<View[39m
+            [33mtestID[39m=[32m"vaccines-section"[39m
+          [36m>[39m
+            [36m<View>[39m
+              [36m<View[39m
+                [33mtestID[39m=[32m"health-icon-heart-pulse"[39m
+              [36m/>[39m
+              [36m<Text>[39m
+                [0mVacunas[0m
+              [36m</Text>[39m
+            [36m</View>[39m
+            [36m<View[39m
+              [33mtestID[39m=[32m"vaccines-skeleton"[39m
+            [36m/>[39m
+          [36m</View>[39m
+          [36m<View[39m
+            [33mtestID[39m=[32m"weight-card"[39m
+          [36m>[39m
+            [36m<View>[39m
+              [36m<Text[39m
+                [33mtestID[39m=[32m"weight-card-title"[39m
+              [36m>[39m
+                [0mPeso[0m
+              [36m</Text>[39m
+            [36m</View>[39m
+            [36m<View[39m
+              [33maccessibilityRole[39m=[32m"button"[39m
+              [33maccessible[39m=[32m{true}[39m
+              [33mtestID[39m=[32m"weight-log-link"[39m
+            [36m>[39m
+              [36m<Text>[39m
+                [0mRegistro de peso[0m
+              [36m</Text>[39m
+              [36m<View[39m
+                [33mtestID[39m=[32m"health-icon-chevron-right"[39m
+              [36m/>[39m
+            [36m</View>[39m
+          [36m</View>[39m
+        [36m</View>[39m
+      [36m</RCTScrollView>[39m
+    [36m</RNCSafeAreaProvider>[39m
+
+      465 |     await waitFor(() => expect(screen.getByTestId('weight-card')).toBeVisible());
+      466 |     expect(screen.getByText('Peso')).toBeVisible();
+    > 467 |     expect(screen.getByTestId('weight-current')).toHaveTextContent('12.4 kg');
+          |                   ^
+      468 |     expect(screen.getByTestId('weight-variation')).toHaveTextContent('+0.4 kg');
+      469 |
+      470 |     await fireEvent.press(screen.getByTestId('weight-log-link'));
+
+      at Object.getByTestId (/home/claude/sites/Pet-Tracker-wt-ui/mobile-pet-tracker/src/app/(tabs)../../../../../__tests__/health.test.tsx:467:19)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+
+Test Suites: 1 failed, 76 passed, 77 total
+Tests:       1 failed, 1385 passed, 1386 total
+Snapshots:   1 passed, 1 total
+Time:        113.863 s, estimated 156 s

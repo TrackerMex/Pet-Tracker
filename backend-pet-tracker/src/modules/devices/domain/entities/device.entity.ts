@@ -14,11 +14,9 @@ interface DeviceProps {
    * por si mismo (R8/R15).
    */
   status: DeviceStatus;
-  /** NULL hasta que el pipeline de ingesta (#8) lo alimente. */
+  /** NULL hasta ingesta (#8); vuelve a NULL en cada claim (#92). */
   batteryPct: number | null;
-  /** NULL hasta que el pipeline de ingesta (#8) lo alimente. */
-  connectivity: string | null;
-  /** NULL hasta que el pipeline de ingesta (#8) lo alimente. */
+  /** NULL hasta ingesta (#8); vuelve a NULL en cada claim (#92). */
   lastMessageAt: Date | null;
   /** Arranca en el claim como now-10min (R3); lo avanza el poller de #8. */
   ingestWatermark: Date | null;
@@ -38,7 +36,6 @@ export class Device {
   readonly model: string | null;
   readonly status: DeviceStatus;
   readonly batteryPct: number | null;
-  readonly connectivity: string | null;
   readonly lastMessageAt: Date | null;
   readonly ingestWatermark: Date | null;
   readonly isSimulated: boolean;
@@ -55,7 +52,6 @@ export class Device {
     this.model = props.model;
     this.status = props.status;
     this.batteryPct = props.batteryPct;
-    this.connectivity = props.connectivity;
     this.lastMessageAt = props.lastMessageAt;
     this.ingestWatermark = props.ingestWatermark;
     this.isSimulated = props.isSimulated;

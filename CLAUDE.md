@@ -92,14 +92,34 @@ El contenido no viaja por chat — vive en disco y queda versionado.
 - Cambios en `docs/`, `progress/`, `specs/`, `feature_list.json` → puedes editarlos tú mismo
 - Correcciones en archivos del harness (este archivo, AGENTS.md, etc.) → puedes editarlos tú
 
+## Gate de specs vía Notion
+
+Desde 2026-09-22 el humano aprueba las specs **desde Notion**, no abriendo el
+repo. El leader espeja `specs/<feature>/requirements.md` a la base *Specs* del
+`Panel de Proyectos — Harness SDD` y, cuando el humano pone `Estado del gate`
+= Aprobado, hace él el commit de firma citando la página, la hora y la cuenta.
+
+**El repo sigue siendo la fuente de verdad y la firma sigue siendo un commit**
+— cambia quién lo teclea, no qué es. El espejo va en una sola dirección y el
+handoff a Codex no se mueve a Notion. Detalle en `.claude/agents/leader.md`
+§Gate de aprobación vía Notion.
+
 ## UI móvil
 
 Todo trabajo sobre `mobile-pet-tracker/` (specs, handoffs, reviews) se rige
 por `docs/ui-guidelines.md`. Carga la skill `expo:expo-overview` al empezar
 tarea móvil y las específicas que la carta indica; instruye lo mismo a
-subagentes. Codex CLI tiene el mismo contenido vía su plugin `expo`
-(`codex plugin add expo@openai-curated`, ya instalado) — el handoff debe
-pedirle cargarlas.
+subagentes.
+
+**Codex NO tiene el mismo contenido.** Es la deuda **B5**, que mordió en #106 y
+reincidió en #109. Su plugin `expo@openai-curated` es la **v1.0.2 con 13
+skills**; el nuestro es otra generación con más del doble y **otros nombres**.
+Pedirle por nombre una skill que no existe **no da error: da silencio**, y el
+`reviewer` lo descubre al final.
+
+La tabla de equivalencias y los huecos están en `.claude/agents/leader.md`
+§Catálogo real de skills de Codex. **Nombra en el handoff los nombres de
+Codex, no los nuestros.**
 
 ## graphify
 

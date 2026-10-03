@@ -43,14 +43,17 @@ duplica.
 | `docs/conventions.md` | Convenciones de estilo del proyecto (naming, errores, DTOs, tests, commits) | Antes de escribir código |
 | `docs/ui-guidelines.md` | Carta de UI móvil: tokens, componentes compartidos, @expo/ui, animación, grep-clean | Antes de cualquier trabajo en `mobile-pet-tracker/` |
 | `docs/verification.md` | Cómo verificar que una feature funciona correctamente + disciplina TDD | Antes de declarar done |
+| `docs/demo-runbook.md` | Runbook de demo: arranque del entorno local en Windows, IP LAN, datos y guion (hasta #69) | Antes de mostrar la app a alguien |
 | `docs/specs.md` | El proceso SDD completo: estados, gates, cuándo se escribe cada spec | Antes de escribir o aprobar una spec |
 | `docs/obsidian.md` | Cómo usar este proyecto como vault de Obsidian | Si usas Obsidian para navegar el proyecto |
 | `CHECKPOINTS.md` | Criterios objetivos de "estado final correcto" (C1..C6) | Para auto-evaluarte |
 | `.claude/agents/` | Definiciones de subagentes (leader, spec_author, explorer, implementer, reviewer) | Si orquestas trabajo |
 | `.claude/skills/` | Skills reutilizables, un nivel plano (`<track>-<nombre>/SKILL.md`) — ver `.claude/skills/README.md` | Antes de repetir una tarea ya resuelta en otro proyecto |
 | `env-drift.mjs` | Diff de claves entre `.env` y `.env.example` que usa `init.sh` §2 (#23) | Si `init.sh` avisa de claves faltantes |
+| `init-e2e-gate.test.mjs` | Candado del gate E2E de CI y de `init.sh` §6b (#96) | Si cambias el arranque, las guardas o el setup E2E |
 | `init.config.sh` | Comandos de build/test/lint específicos de este proyecto | Antes de correr `init.sh` por primera vez |
 | `mobile-pet-tracker/` | App móvil Expo SDK 57 (Expo Router + TypeScript + bun) | Para implementar o verificar el cliente móvil |
+| `hosting/` | Artefactos estáticos de App Links y fallback web de reset | Para revisar o desplegar `assetlinks.json` y la página de `/reset-password` |
 | `docker-compose.yml` | Infra local: Postgres + LocalStack (`docker compose up -d`) | Antes de trabajar features con persistencia o AWS |
 | `.github/workflows/ci.yml` | CI: ejecuta `init.sh` en cada PR y push a main | Si CI falla en un PR |
 | ver `docs/architecture.md` | Dónde vive el código de la aplicación y cómo se organiza | Para implementar |

@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; base-uri 'none'; form-action 'none'"
+    />
+    <title>Restablecer contraseña — Pet Tracker</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+        background: #f5f7fa;
+        color: #172033;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        min-height: 100vh;
+        margin: 0;
+        display: grid;
+        place-items: center;
+        padding: 24px;
+      }
+
+      main {
+        width: min(100%, 560px);
+        display: grid;
+        gap: 20px;
+        padding: 32px;
+        border: 1px solid #dce2eb;
+        border-radius: 20px;
+        background: #ffffff;
+        box-shadow: 0 12px 40px rgb(20 35 60 / 10%);
+      }
+
+      h1,
+      p {
+        margin: 0;
+      }
+
+      h1 {
+        font-size: clamp(1.75rem, 5vw, 2.25rem);
+        line-height: 1.15;
+      }
+
+      p {
+        color: #536079;
+        line-height: 1.6;
+      }
+
+      .button {
+        min-height: 48px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px 20px;
+        border-radius: 999px;
+        background: #1677d2;
+        color: #ffffff;
+        font-weight: 700;
+        text-decoration: none;
+      }
+
+      .token-panel {
+        display: grid;
+        gap: 8px;
+        padding: 16px;
+        border-radius: 12px;
+        background: #eef3f9;
+      }
+
+      .token-label {
+        color: #536079;
+        font-size: 0.875rem;
+        font-weight: 700;
+      }
+
+      code {
+        overflow-wrap: anywhere;
+        color: #172033;
+        font-size: 0.95rem;
+        line-height: 1.5;
+        user-select: all;
+      }
+
+      .notice {
+        font-size: 0.875rem;
+      }
+
+      [hidden] {
+        display: none;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          background: #0f1521;
+          color: #f3f6fb;
+        }
+
+        main {
+          border-color: #303b4f;
+          background: #182131;
+          box-shadow: none;
+        }
+
+        p,
+        .token-label {
+          color: #b3bfd2;
+        }
+
+        .token-panel {
+          background: #222e42;
+        }
+
+        code {
+          color: #f3f6fb;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Restablecer contraseña — Pet Tracker</h1>
+      <p>
+        Este enlace intenta abrir Pet Tracker automáticamente. Si estás viendo
+        esta página, toca el botón para volver a intentarlo desde tu teléfono.
+      </p>
+
+      <a
+        id="open-app"
+        class="button"
+        href="mobilepettracker://reset-password"
+      >
+        Abrir en la app
+      </a>
+
+      <section class="token-panel" aria-labelledby="token-label">
+        <span id="token-label" class="token-label">Tu token de un solo uso</span>
+        <code id="reset-token">Leyendo el enlace…</code>
+      </section>
+
+      <p id="status" class="notice">
+        El token caduca en 1 hora. Si necesitas copiarlo, mantén pulsado el
+        bloque anterior. No lo compartas con nadie.
+      </p>
+      <p>
+        Si Pet Tracker no está instalada, instálala y vuelve a abrir el enlace
+        original que recibiste por correo.
+      </p>
+    </main>
+
+    <script>
+      const params = new URLSearchParams(window.location.search);
+      const token = params.get('token')?.trim() ?? '';
+      const openApp = document.getElementById('open-app');
+      const tokenBlock = document.getElementById('reset-token');
+      const status = document.getElementById('status');
+
+      if (token) {
+        tokenBlock.textContent = token;
+        openApp.href = `mobilepettracker://reset-password?token=${encodeURIComponent(token)}`;
+      } else {
+        tokenBlock.textContent = 'El enlace no incluye un token.';
+        status.textContent =
+          'Vuelve al correo de restablecimiento y abre el enlace completo.';
+        openApp.hidden = true;
+      }
+    </script>
+  </body>
+</html>

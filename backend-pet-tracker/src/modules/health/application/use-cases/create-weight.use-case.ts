@@ -6,21 +6,32 @@ import {
   WeightEntry,
   weightDelta,
 } from '@/modules/health/application/weight-variation';
+import { WeightMeasuredInFutureError } from '@/modules/health/domain/errors/weight.errors';
 import { WEIGHT_REPOSITORY } from '@/modules/health/domain/repositories/weight.repository';
 import type { WeightRepository } from '@/modules/health/domain/repositories/weight.repository';
+import { ownerLocalDay } from '@/modules/pets/application/owner-local-day';
+import { PET_REPOSITORY } from '@/modules/pets/domain/repositories/pet.repository';
+import type { PetRepository } from '@/modules/pets/domain/repositories/pet.repository';
 
 @Injectable()
 export class CreateWeightUseCase {
   constructor(
     @Inject(WEIGHT_REPOSITORY) private readonly weights: WeightRepository,
+    @Inject(PET_REPOSITORY) private readonly pets: PetRepository,
     @Inject(AUDIT_LOGGER) private readonly audit: AuditLogger,
   ) {}
 
+  /** #89: measuredAt se compara con el dia civil del owner, sin margen. */
   async execute(
     petId: string,
     dto: CreateWeightDto,
     userId: string,
+    now: Date,
   ): Promise<WeightEntry> {
+    if (dto.measuredAt > (await ownerLocalDay(this.pets, petId, now))) {
+      throw new WeightMeasuredInFutureError();
+    }
+
     const weight = await this.weights.create({
       petId,
       weightKg: dto.weightKg,

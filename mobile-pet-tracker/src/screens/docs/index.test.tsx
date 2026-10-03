@@ -1,17 +1,24 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
-import { router } from 'expo-router';
+import {
+  fireEvent,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react-native';
 import { HeroUINativeProvider } from 'heroui-native';
 
 import { listPetDocs, type PetDocsState } from '../../api/media';
 import { getPet, type PetState } from '../../api/pets';
+import { mediaKeys, petKeys } from '../../api/query-keys';
 import type { PetProfile } from '../../api/types';
+import { es } from '../../i18n/catalog';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
+import { LanguageProvider } from '../../providers/language-provider';
 import { DocsScreen } from '.';
+import { renderWithProviders } from '../../../test/render-with-providers';
 
 jest.mock('../../api/media', () => ({ listPetDocs: jest.fn() }));
 jest.mock('../../api/pets', () => ({ getPet: jest.fn() }));
 jest.mock('../../providers/auth-provider', () => ({ useAuth: jest.fn() }));
-jest.mock('expo-router', () => ({ router: { back: jest.fn() } }));
 jest.mock('react-native-safe-area-context', () => ({
   ...jest.requireActual('react-native-safe-area-context'),
   useSafeAreaInsets: () => ({ top: 40, right: 0, bottom: 24, left: 0 }),
@@ -21,7 +28,6 @@ const apiUrl = 'http://example.test/v1';
 const mockListPetDocs = jest.mocked(listPetDocs);
 const mockGetPet = jest.mocked(getPet);
 const mockUseAuth = jest.mocked(useAuth);
-const mockRouter = jest.mocked(router);
 
 function pending<T>(): Promise<T> {
   return new Promise(() => undefined);
@@ -51,15 +57,18 @@ function makePet(): PetProfile {
     nextVaccine: null,
     nextReminder: null,
     activitySummary: null,
+    mealsToday: null,
     createdAt: '2026-08-20T00:00:00.000Z',
     updatedAt: '2026-08-21T00:00:00.000Z',
   };
 }
 
 async function renderDocs() {
-  return render(
+  return renderWithProviders(
     <HeroUINativeProvider>
-      <DocsScreen petId="pet-1" />
+      <LanguageProvider initial="es">
+        <DocsScreen petId="pet-1" />
+      </LanguageProvider>
     </HeroUINativeProvider>,
   );
 }
@@ -139,13 +148,157 @@ describe('R8: pantalla Docs', () => {
     await waitFor(() => expect(mockListPetDocs).toHaveBeenCalledTimes(2));
   });
 
-  it('navigates back from the header', async () => {
+});
+
+describe('#62 R10: el tipo de documento se lee como badge', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet() });
+    mockListPetDocs.mockResolvedValue({
+      kind: 'ok',
+      docs: [
+        {
+          id: 'doc-1',
+          type: 'Vacunación',
+          name: 'Antirrábica',
+          date: '2026-07-12',
+        },
+      ],
+    });
+  });
+
+  it('aplica la receta monocroma al tipo sin cambiar su texto', async () => {
+    await renderDocs();
+
+    expect((await screen.findByText('Vacunación')).props.className).toBe(
+      'self-start rounded-full px-2 py-0.5 text-2xs font-bold bg-category-blue text-category-blue-strong',
+    );
+  });
+});
+
+describe('#64 R8: la fila de documento pinta icono y badge con el color de su tipo', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet() });
+    mockListPetDocs.mockResolvedValue({
+      kind: 'ok',
+      docs: [
+        {
+          id: 'vaccine',
+          type: 'Vacunación',
+          name: 'Antirrábica',
+          date: '2026-07-12',
+        },
+        {
+          id: 'unknown',
+          type: 'Radiografía',
+          name: 'Cadera',
+          date: '2026-06-03',
+        },
+      ],
+    });
+  });
+
+  it('aplica el hueco conocido y conserva neutral para texto libre', async () => {
+    await renderDocs();
+
+    const vaccineRow = within(await screen.findByTestId('doc-vaccine'));
+    const unknownRow = within(screen.getByTestId('doc-unknown'));
+    const vaccineTile = vaccineRow.getByText('📄').parent;
+    const unknownTile = unknownRow.getByText('📄').parent;
+
+    expect(vaccineTile?.props.className).toContain('bg-category-blue');
+    expect(vaccineTile?.props.className).not.toContain('bg-accent-soft');
+    expect(vaccineRow.getByText('Vacunación').props.className).toBe(
+      'self-start rounded-full px-2 py-0.5 text-2xs font-bold bg-category-blue text-category-blue-strong',
+    );
+    expect(unknownTile?.props.className).toContain('bg-default');
+    expect(unknownTile?.props.className).not.toContain('bg-accent-soft');
+    expect(unknownRow.getByText('Radiografía').props.className).toBe(
+      'self-start rounded-full px-2 py-0.5 text-2xs font-bold bg-default text-muted',
+    );
+    expect(vaccineRow.getByText('📄')).toBeVisible();
+    expect(unknownRow.getByText('📄')).toBeVisible();
+  });
+});
+
+describe('#87 R9: DocsScreen lee por TanStack Query', () => {
+  it('deja cada recurso en la caché bajo su clave', async () => {
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    });
+    const petState: PetState = { kind: 'ok', pet: makePet() };
+    const docsState: PetDocsState = {
+      kind: 'ok',
+      docs: [
+        {
+          id: 'doc-cache',
+          type: 'Vacunación',
+          name: 'Antirrábica',
+          date: '2026-07-12',
+        },
+      ],
+    };
+    mockGetPet.mockResolvedValue(petState);
+    mockListPetDocs.mockResolvedValue(docsState);
+
+    const { queryClient } = await renderWithProviders(
+      <HeroUINativeProvider>
+        <LanguageProvider initial="es">
+          <DocsScreen petId="pet-1" />
+        </LanguageProvider>
+      </HeroUINativeProvider>,
+    );
+    await screen.findByTestId('doc-doc-cache');
+
+    expect(queryClient.getQueryData(petKeys.detail('pet-1'))).toEqual(
+      petState,
+    );
+    expect(queryClient.getQueryData(mediaKeys.petDocs('pet-1'))).toEqual(
+      docsState,
+    );
+  });
+});
+
+describe('#95 R5: la pantalla no dibuja cabecera propia', () => {
+  it('retira el botón y conserva Documentos de', async () => {
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() });
     mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet() });
     mockListPetDocs.mockResolvedValue({ kind: 'ok', docs: [] });
     await renderDocs();
+    await waitFor(() => expect(screen.getByText(es['docs.documentsOf'])).toBeVisible());
+    expect(screen.queryByTestId('docs-back')).toBeNull();
+  });
+});
 
-    fireEvent.press(screen.getByTestId('docs-back'));
-
-    expect(mockRouter.back).toHaveBeenCalledTimes(1);
+describe('#95 R6: métricas bajo cabecera nativa', () => {
+  it('usa solo el inset inferior del dispositivo', async () => {
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() });
+    mockGetPet.mockReturnValue(pending<PetState>());
+    mockListPetDocs.mockReturnValue(pending<PetDocsState>());
+    await renderDocs();
+    expect(screen.getByTestId('screen-docs').props.contentContainerStyle).toEqual({
+      padding: 24, gap: 16, paddingBottom: 48,
+    });
   });
 });

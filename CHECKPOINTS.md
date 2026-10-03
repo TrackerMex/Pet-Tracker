@@ -43,7 +43,34 @@
       equivalente en el framework de test del stack)
 - [ ] El historial de commits de la feature muestra el patrón test-primero
       (test rojo → implementación → verde → refactor), no todo en un commit
+- [ ] **Si algún requisito es de verificación** —solo *asevera una propiedad* de
+      artefactos que otro requisito anterior ya dejó en el árbol— la spec lo
+      declaró **por escrito antes del handoff** y eligió una de las dos vías, y
+      el historial la respeta:
+      **(a)** su test se escribe **antes** que la implementación que verifica, y
+      entonces su rojo es real; o
+      **(b)** se declara requisito de verificación y su cierre se prueba por
+      **mutación**: romper a propósito el valor y ver el test rojo **por su
+      aserción**, con la evidencia en el reporte del `reviewer`
+- [ ] **Ningún commit rojo falla por un `ReferenceError`** de un helper de test
+      que aún no existe. Eso no es rojo legítimo: no demuestra que el candado
+      esté vivo, solo que el símbolo falta
+- [ ] **Ningún commit rojo falla por una mutación del doble de test.** Cuando un
+      candado se añade sobre código **ya correcto** —el hueco es la ausencia de
+      test, no un defecto—, el rojo legítimo es la **mutación de producción**:
+      se versiona en el commit rojo y se revierte en el verde. Mutar un mock
+      demuestra que la aserción puede fallar, no que vigile la app
 
+> Los puntos tercero y cuarto salieron de #64 (2026-09-06), donde el orden que
+> la propia spec fijó hacía imposible el rojo de R3, R4 y R9, y hubo que
+> cerrarlos con una excepción firmada por el humano más prueba de mutación.
+>
+> El quinto salió de #69 (2026-09-08): al cerrar un hueco de candado sobre
+> código correcto, el rojo intercambió dos iconos **dentro del doble de
+> `reicon`** y el verde los desintercambió, sin que producción cambiara en
+> ningún momento. Se argumentó que no había rojo honesto disponible, y era
+> falso: el patrón correcto se había usado tres commits antes en la misma
+> feature (`1586d07` → `6c170da`, la mutación de R6 versionada en el rojo).
 ---
 
 ## C5 — Trazabilidad: R → test → commit

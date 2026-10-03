@@ -1,7 +1,6 @@
 import {
   act,
   fireEvent,
-  render,
   screen,
   waitFor,
   within,
@@ -11,6 +10,7 @@ import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
 
 import { listPets } from '../../api/pets';
+import { petKeys, reminderKeys } from '../../api/query-keys';
 import {
   deleteReminder,
   listReminders,
@@ -18,9 +18,12 @@ import {
   type RemindersState,
 } from '../../api/reminders';
 import type { PetProfile, Reminder } from '../../api/types';
+import { es } from '../../i18n/catalog';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
+import { LanguageProvider } from '../../providers/language-provider';
 import { SelectedPetProvider } from '../../providers/selected-pet-provider';
 import { RemindersScreen } from '.';
+import { renderWithProviders } from '../../../test/render-with-providers';
 
 jest.mock('../../api/pets', () => ({
   listPets: jest.fn(),
@@ -102,6 +105,7 @@ function makePet(overrides: Partial<PetProfile> = {}): PetProfile {
     nextVaccine: null,
     nextReminder: null,
     activitySummary: null,
+    mealsToday: null,
     createdAt: '2026-08-20T00:00:00.000Z',
     updatedAt: '2026-08-21T00:00:00.000Z',
     ...overrides,
@@ -128,13 +132,17 @@ function makeReminder(overrides: Partial<Reminder> = {}): Reminder {
 function RemindersWrapper({ children }: { children: ReactNode }) {
   return (
     <HeroUINativeProvider>
-      <SelectedPetProvider>{children}</SelectedPetProvider>
+      <LanguageProvider initial="es">
+        <SelectedPetProvider>{children}</SelectedPetProvider>
+      </LanguageProvider>
     </HeroUINativeProvider>
   );
 }
 
 async function renderReminders() {
-  return render(<RemindersScreen />, { wrapper: RemindersWrapper });
+  return renderWithProviders(<RemindersScreen />, {
+    wrapper: RemindersWrapper,
+  });
 }
 
 async function confirmDelete(reminderId: string) {
@@ -152,7 +160,7 @@ async function confirmDelete(reminderId: string) {
   );
   expect(sheet.props.isPresented).toBeUndefined();
   expect(within(sheet).getByTestId('reminders-delete-sheet')).toBeVisible();
-  expect(screen.getByText('Delete reminder?')).toBeVisible();
+  expect(screen.getByText('¿Eliminar recordatorio?')).toBeVisible();
   expect(screen.getByTestId('reminders-delete-reference')).toHaveTextContent(
     'Rabies booster',
   );
@@ -161,6 +169,27 @@ async function confirmDelete(reminderId: string) {
   ).toContain('bg-danger');
 
   await fireEvent.press(screen.getByTestId('reminders-delete-confirm'));
+}
+
+async function focusScreen(): Promise<(() => void)[]> {
+  let cleanups: (() => void)[] = [];
+
+  await act(async () => {
+    cleanups = mockUseFocusEffect.mock.calls.flatMap(([callback]) => {
+      const cleanup = callback();
+      return typeof cleanup === 'function' ? [cleanup] : [];
+    });
+    await Promise.resolve();
+  });
+
+  return cleanups;
+}
+
+async function blurScreen(cleanups: (() => void)[]) {
+  await act(async () => {
+    cleanups.forEach((cleanup) => cleanup());
+    await Promise.resolve();
+  });
 }
 
 describe('R5: reminders monta con métricas y estados', () => {
@@ -176,20 +205,37 @@ describe('R5: reminders monta con métricas y estados', () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
   });
 
-  it('uses uniform metrics, selects the first pet, and shows row skeletons', async () => {
+  describe('#114 R5: el título vive en la cabecera nativa', () => {
+    it('deja Nuevo en su fila y no pinta título en carga ni con filas', async () => {
+      let resolveReminders!: (state: RemindersState) => void;
+      mockListReminders.mockReturnValue(new Promise((resolve) => { resolveReminders = resolve; }));
+      await renderReminders();
+
+      await screen.findByTestId('reminders-loading');
+      expect(screen.queryByText(es['reminders.reminders'])).toBeNull();
+      const actions = screen.getByTestId('reminders-actions');
+      expect(actions.props.className).toBe('flex-row justify-end');
+      expect(within(actions).getByTestId('reminders-add-link')).toBeVisible();
+
+      await act(async () => resolveReminders({ kind: 'ok', reminders: [makeReminder()] }));
+      await screen.findByTestId(`reminder-row-${makeReminder().id}`);
+      expect(screen.queryByText(es['reminders.reminders'])).toBeNull();
+      expect(screen.getByTestId('reminders-add-link')).toBeVisible();
+    });
+  });
+
+  it('uses the metrics under the native header, selects the first pet, and shows row skeletons (#114 R6)', async () => {
     mockListReminders.mockReturnValue(pending<RemindersState>());
 
     await renderReminders();
 
     expect(screen.getByTestId('screen-reminders')).toBeVisible();
-    expect(screen.getByText('Reminders')).toBeVisible();
     expect(
       screen.getByTestId('screen-reminders').props.contentContainerStyle,
     ).toEqual({
       padding: 24,
       gap: 16,
-      paddingTop: 52,
-      paddingBottom: 120,
+      paddingBottom: 48,
     });
     await waitFor(() =>
       expect(screen.getByTestId('pet-chip-pet-1').props.accessibilityState).toEqual({
@@ -222,7 +268,7 @@ describe('R5: reminders monta con métricas y estados', () => {
 
     await waitFor(() =>
       expect(screen.getByTestId('reminders-empty')).toHaveTextContent(
-        'No reminders yet',
+        'Aún no hay recordatorios',
       ),
     );
   });
@@ -240,7 +286,7 @@ describe('R5: reminders monta con métricas y estados', () => {
     await renderReminders();
     await waitFor(() =>
       expect(screen.getByTestId('reminders-error')).toHaveTextContent(
-        'Something went wrong',
+        'Algo salió mal',
       ),
     );
     await fireEvent.press(screen.getByTestId('reminders-retry'));
@@ -323,7 +369,7 @@ describe('R6: lista con pills, badges y refetch on focus', () => {
     expect(within(screen.getByTestId('pill-active')).getByText('2')).toBeVisible();
     expect(within(screen.getByTestId('pill-week')).getByText('1')).toBeVisible();
     expect(
-      within(screen.getByTestId('pill-week')).getByText('This week'),
+      within(screen.getByTestId('pill-week')).getByText('Esta semana'),
     ).toBeVisible();
     expect(
       within(screen.getByTestId('pill-inactive')).getByText('2'),
@@ -339,26 +385,30 @@ describe('R6: lista con pills, badges y refetch on focus', () => {
 
     const upcoming = within(screen.getByTestId('reminder-row-upcoming'));
     expect(upcoming.getByText('💉')).toBeVisible();
-    expect(upcoming.getByText('Vaccine')).toBeVisible();
+    expect(upcoming.getByText('Vacuna')).toBeVisible();
     expect(upcoming.getByText('Rabies booster')).toBeVisible();
     expect(
-      upcoming.getByText(new Date(reminders[2].dueAt).toLocaleDateString()),
+      upcoming.getByText(
+        new Date(reminders[2].dueAt).toLocaleDateString('es-MX'),
+      ),
     ).toBeVisible();
-    expect(upcoming.getByText('· in 3 days')).toBeVisible();
+    expect(upcoming.getByText('· en 3 días')).toBeVisible();
     expect(screen.getByTestId('reminder-upcoming-upcoming')).toHaveTextContent(
-      'Upcoming!',
+      '¡Próximo!',
     );
     expect(screen.queryByTestId('reminder-upcoming-later')).toBeNull();
 
     expect(screen.getByTestId('reminder-row-sent').props.className).toContain(
       'opacity-50',
     );
-    expect(screen.getByTestId('reminder-status-sent')).toHaveTextContent('Sent');
+    expect(screen.getByTestId('reminder-status-sent')).toHaveTextContent(
+      'Enviado',
+    );
     expect(
       screen.getByTestId('reminder-row-cancelled').props.className,
     ).toContain('opacity-50');
     expect(screen.getByTestId('reminder-status-cancelled')).toHaveTextContent(
-      'Cancelled',
+      'Cancelado',
     );
   });
 
@@ -376,6 +426,39 @@ describe('R6: lista con pills, badges y refetch on focus', () => {
     });
 
     await waitFor(() => expect(mockListReminders).toHaveBeenCalledTimes(2));
+  });
+});
+
+describe('#65 R15: la fecha del recordatorio se formatea con el locale del idioma', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockListReminders.mockResolvedValue({
+      kind: 'ok',
+      reminders: [makeReminder()],
+    });
+  });
+
+  it('passes es-MX explicitly to the date formatter', async () => {
+    const formatDate = jest.spyOn(Date.prototype, 'toLocaleDateString');
+
+    try {
+      await renderReminders();
+      await waitFor(() =>
+        expect(screen.getByTestId('reminder-row-reminder-1')).toBeVisible(),
+      );
+
+      expect(formatDate).toHaveBeenCalledWith('es-MX');
+    } finally {
+      formatDate.mockRestore();
+    }
   });
 });
 
@@ -467,10 +550,10 @@ describe('R7: borrar recordatorio con confirmación', () => {
   });
 
   it.each([
-    [{ kind: 'forbidden' }, 'Only the owner can delete'],
-    [{ kind: 'unreachable', message: 'offline' }, 'Cannot reach server'],
-    [{ kind: 'error' }, 'Something went wrong'],
-    [{ kind: 'missing-config' }, 'Something went wrong'],
+    [{ kind: 'forbidden' }, 'Solo el dueño puede eliminar'],
+    [{ kind: 'unreachable', message: 'offline' }, 'No se pudo conectar con el servidor'],
+    [{ kind: 'error' }, 'Algo salió mal'],
+    [{ kind: 'missing-config' }, 'Algo salió mal'],
   ] as [DeleteReminderState, string][]) (
     'shows the action error for $state.kind',
     async (deleteState, message) => {
@@ -514,5 +597,401 @@ describe('R7: borrar recordatorio con confirmación', () => {
     expect(
       screen.getByTestId('reminder-delete-reminder-2').props.accessibilityState,
     ).toEqual(expect.objectContaining({ disabled: false }));
+  });
+});
+
+describe('#64 R7: la fila de recordatorio pinta el icono con el color de su tipo', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+  });
+
+  it('mantiene emoji y etiqueta junto a superficies distintas', async () => {
+    mockListReminders.mockResolvedValue({
+      kind: 'ok',
+      reminders: [
+        makeReminder({ id: 'vaccine', type: 'vaccine' }),
+        makeReminder({
+          id: 'medication',
+          type: 'medication',
+          title: 'Monthly medication',
+        }),
+      ],
+    });
+
+    await renderReminders();
+    await waitFor(() =>
+      expect(screen.getByTestId('reminder-row-vaccine')).toBeVisible(),
+    );
+
+    const vaccineRow = within(screen.getByTestId('reminder-row-vaccine'));
+    const medicationRow = within(
+      screen.getByTestId('reminder-row-medication'),
+    );
+    const vaccineTile = vaccineRow.getByText('💉').parent;
+    const medicationTile = medicationRow.getByText('💊').parent;
+
+    expect(vaccineTile?.props.className).toContain('bg-category-blue');
+    expect(medicationTile?.props.className).toContain('bg-category-amber');
+    expect(vaccineTile?.props.className).not.toContain('bg-accent-soft');
+    expect(medicationTile?.props.className).not.toContain('bg-accent-soft');
+    expect(vaccineRow.getByText('💉')).toBeVisible();
+    expect(vaccineRow.getByText('Vacuna')).toBeVisible();
+    expect(medicationRow.getByText('💊')).toBeVisible();
+    expect(medicationRow.getByText('Medicamento')).toBeVisible();
+  });
+});
+
+describe('#87 R14: RemindersScreen lee por TanStack Query', () => {
+  it('deja mascotas y recordatorios en sus claves canónicas', async () => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    const petsState = { kind: 'ok' as const, pets: [makePet()] };
+    const remindersState: RemindersState = {
+      kind: 'ok',
+      reminders: [makeReminder()],
+    };
+    mockListPets.mockResolvedValue(petsState);
+    mockListReminders.mockResolvedValue(remindersState);
+
+    const { queryClient } = await renderWithProviders(<RemindersScreen />, {
+      wrapper: RemindersWrapper,
+    });
+    await screen.findByTestId('reminder-row-reminder-1');
+
+    expect(queryClient.getQueryData(petKeys.list())).toEqual(petsState);
+    expect(queryClient.getQueryData(reminderKeys.list('pet-1'))).toEqual(
+      remindersState,
+    );
+  });
+});
+
+describe(
+  '#97 R1: la confirmación de borrado no sobrevive a la pérdida de foco',
+  () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+      process.env.EXPO_PUBLIC_API_URL = apiUrl;
+      mockUseAuth.mockReturnValue({
+        status: 'authenticated',
+        token: 'jwt-token',
+        signIn: jest.fn(),
+        signOut: jest.fn(),
+      } satisfies AuthContextValue);
+      mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+      mockListReminders.mockResolvedValue({
+        kind: 'ok',
+        reminders: [makeReminder()],
+      });
+    });
+
+    it('cierra el sheet y elimina su contenido accesible al perder foco', async () => {
+      await renderReminders();
+      await waitFor(() =>
+        expect(screen.getByTestId('reminder-row-reminder-1')).toBeVisible(),
+      );
+      const cleanups = await focusScreen();
+
+      await fireEvent.press(screen.getByTestId('reminder-delete-reminder-1'));
+      expect(screen.getByTestId('community-bottom-sheet')).toBeVisible();
+
+      await blurScreen(cleanups);
+
+      await waitFor(() => {
+        expect(screen.queryByTestId('community-bottom-sheet')).toBeNull();
+        expect(screen.queryByTestId('reminders-delete-sheet')).toBeNull();
+        expect(screen.queryByTestId('reminders-delete-confirm')).toBeNull();
+      });
+    });
+  },
+);
+
+describe(
+  '#97 R2: el error de acción no sobrevive a la pérdida de foco',
+  () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+      process.env.EXPO_PUBLIC_API_URL = apiUrl;
+      mockUseAuth.mockReturnValue({
+        status: 'authenticated',
+        token: 'jwt-token',
+        signIn: jest.fn(),
+        signOut: jest.fn(),
+      } satisfies AuthContextValue);
+      mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+      mockListReminders.mockResolvedValue({
+        kind: 'ok',
+        reminders: [makeReminder()],
+      });
+      mockDeleteReminder.mockResolvedValue({ kind: 'error' });
+    });
+
+    it('borra el error visible al perder foco', async () => {
+      await renderReminders();
+      await waitFor(() =>
+        expect(screen.getByTestId('reminder-delete-reminder-1')).toBeVisible(),
+      );
+      const cleanups = await focusScreen();
+
+      await confirmDelete('reminder-1');
+      await waitFor(() =>
+        expect(screen.getByTestId('reminders-action-error')).toBeVisible(),
+      );
+
+      await blurScreen(cleanups);
+
+      await waitFor(() =>
+        expect(screen.queryByTestId('reminders-action-error')).toBeNull(),
+      );
+    });
+  },
+);
+
+describe(
+  '#97 R3: el guarda del borrado en vuelo sobrevive a la pérdida de foco',
+  () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+      process.env.EXPO_PUBLIC_API_URL = apiUrl;
+      mockUseAuth.mockReturnValue({
+        status: 'authenticated',
+        token: 'jwt-token',
+        signIn: jest.fn(),
+        signOut: jest.fn(),
+      } satisfies AuthContextValue);
+      mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+      mockListReminders.mockResolvedValue({
+        kind: 'ok',
+        reminders: [makeReminder(), makeReminder({ id: 'reminder-2' })],
+      });
+      mockDeleteReminder.mockReturnValue(pending<DeleteReminderState>());
+    });
+
+    it('mantiene deshabilitada solo la fila cuyo delete sigue pendiente', async () => {
+      await renderReminders();
+      await waitFor(() =>
+        expect(screen.getByTestId('reminder-delete-reminder-1')).toBeVisible(),
+      );
+      const cleanups = await focusScreen();
+
+      await confirmDelete('reminder-1');
+      await waitFor(() =>
+        expect(
+          screen.getByTestId('reminder-delete-reminder-1').props
+            .accessibilityState.disabled,
+        ).toBe(true),
+      );
+      expect(
+        screen.getByTestId('reminder-delete-reminder-2').props
+          .accessibilityState.disabled,
+      ).toBe(false);
+
+      await blurScreen(cleanups);
+
+      expect(
+        screen.getByTestId('reminder-delete-reminder-1').props
+          .accessibilityState.disabled,
+      ).toBe(true);
+      expect(
+        screen.getByTestId('reminder-delete-reminder-2').props
+          .accessibilityState.disabled,
+      ).toBe(false);
+    });
+  },
+);
+
+describe('#84 R3: recordatorios cuenta días de calendario en la píldora, el badge y la etiqueta', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date(2026, 8, 10, 8, 0));
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it('08:00 del 10 de septiembre: hoy a las 20:00, +7 y +10 días a las 09:00 cuentan 0, 7 y 10', async () => {
+    const reminders = [
+      makeReminder({ id: 'today-later', dueAt: new Date(2026, 8, 10, 20, 0).toISOString() }),
+      makeReminder({ id: 'week-edge', dueAt: new Date(2026, 8, 17, 9, 0).toISOString() }),
+      makeReminder({ id: 'badge-edge', dueAt: new Date(2026, 8, 20, 9, 0).toISOString() }),
+    ];
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders });
+
+    await renderReminders();
+    await waitFor(() => expect(screen.getByTestId('reminder-row-badge-edge')).toBeVisible());
+
+    const today = within(screen.getByTestId('reminder-row-today-later'));
+    const week = within(screen.getByTestId('reminder-row-week-edge'));
+    const badge = within(screen.getByTestId('reminder-row-badge-edge'));
+    expect(today.getByText('· en 0 días')).toBeVisible();
+    expect(week.getByText('· en 7 días')).toBeVisible();
+    expect(badge.getByText('· en 10 días')).toBeVisible();
+    expect(today.getByTestId('reminder-upcoming-today-later')).toBeVisible();
+    expect(week.getByTestId('reminder-upcoming-week-edge')).toBeVisible();
+    expect(badge.getByTestId('reminder-upcoming-badge-edge')).toBeVisible();
+    expect(within(screen.getByTestId('pill-week')).getByText('2')).toBeVisible();
+  });
+
+  it('08:00 del 10 de septiembre: ayer a las 09:00 no es de esta semana ni próximo', async () => {
+    mockListReminders.mockResolvedValue({
+      kind: 'ok',
+      reminders: [makeReminder({ id: 'yesterday-later', dueAt: new Date(2026, 8, 9, 9, 0).toISOString() })],
+    });
+
+    await renderReminders();
+    await waitFor(() => expect(screen.getByTestId('reminder-row-yesterday-later')).toBeVisible());
+
+    const yesterday = within(screen.getByTestId('reminder-row-yesterday-later'));
+    expect(yesterday.getByText('· en -1 días')).toBeVisible();
+    expect(yesterday.queryByTestId('reminder-upcoming-yesterday-later')).toBeNull();
+    expect(within(screen.getByTestId('pill-week')).getByText('0')).toBeVisible();
+  });
+});
+
+describe('#84 R6: los umbrales de la píldora y del badge no se aflojan (Enmienda E1)', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date(2026, 8, 10, 8, 0));
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it('08:00 del 10 de septiembre: +8 días queda fuera de la semana con badge y +11 días queda sin badge', async () => {
+    mockListReminders.mockResolvedValue({
+      kind: 'ok',
+      reminders: [
+        makeReminder({ id: 'plus-eight', dueAt: new Date(2026, 8, 18, 9, 0).toISOString() }),
+        makeReminder({ id: 'plus-eleven', dueAt: new Date(2026, 8, 21, 9, 0).toISOString() }),
+      ],
+    });
+
+    await renderReminders();
+    await waitFor(() => expect(screen.getByTestId('reminder-row-plus-eleven')).toBeVisible());
+
+    expect(within(screen.getByTestId('reminder-row-plus-eight')).getByText('· en 8 días')).toBeVisible();
+    expect(screen.getByTestId('reminder-upcoming-plus-eight')).toBeVisible();
+    expect(within(screen.getByTestId('reminder-row-plus-eleven')).getByText('· en 11 días')).toBeVisible();
+    expect(screen.queryByTestId('reminder-upcoming-plus-eleven')).toBeNull();
+    expect(within(screen.getByTestId('pill-week')).getByText('0')).toBeVisible();
+  });
+});
+
+describe('#127 R3: las tres píldoras de resumen llevan su receta en el árbol', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+  });
+
+  it('pinta cada píldora con su clase exacta, rounded-xl incluido, y la esquina continua, las vea o no el recorte de fuente', async () => {
+    mockListReminders.mockResolvedValue({
+      kind: 'ok',
+      reminders: [makeReminder()],
+    });
+
+    await renderReminders();
+    await waitFor(() =>
+      expect(screen.getByTestId('reminder-row-reminder-1')).toBeVisible(),
+    );
+
+    expect(
+      ['pill-active', 'pill-week', 'pill-inactive'].map((testID) => {
+        const { className, style } = screen.getByTestId(testID).props;
+
+        return { testID, className, style };
+      }),
+    ).toStrictEqual([
+      {
+        testID: 'pill-active',
+        className: 'flex-1 items-center gap-1 rounded-xl bg-accent-soft p-3',
+        style: { borderCurve: 'continuous' },
+      },
+      {
+        testID: 'pill-week',
+        className: 'flex-1 items-center gap-1 rounded-xl bg-default p-3',
+        style: { borderCurve: 'continuous' },
+      },
+      {
+        testID: 'pill-inactive',
+        className: 'flex-1 items-center gap-1 rounded-xl bg-default p-3',
+        style: { borderCurve: 'continuous' },
+      },
+    ]);
+  });
+});
+
+describe('#128 R4: el botón destructivo del sheet y su etiqueta llevan su receta en el árbol', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+  });
+
+  it('pinta reminders-delete-confirm con la variante danger y bg-danger, y su única etiqueta Eliminar con text-danger-foreground, haya o no un señuelo en la fuente', async () => {
+    mockListReminders.mockResolvedValue({
+      kind: 'ok',
+      reminders: [makeReminder()],
+    });
+
+    await renderReminders();
+    await waitFor(() =>
+      expect(screen.getByTestId('reminder-row-reminder-1')).toBeVisible(),
+    );
+    await fireEvent.press(screen.getByTestId('reminder-delete-reminder-1'));
+
+    const confirm = screen.getByTestId('reminders-delete-confirm');
+
+    expect(confirm.props.className).toBe(
+      'pressable-feedback__root button__root button__root--variant-danger button__root--size-md w-full rounded-xl bg-danger',
+    );
+    expect(within(confirm).getByText('Eliminar').props.className).toBe(
+      'button__label button__label--variant-danger button__label--size-md font-bold text-danger-foreground',
+    );
   });
 });

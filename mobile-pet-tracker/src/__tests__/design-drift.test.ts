@@ -4,6 +4,7 @@ interface DirectoryEntry {
 }
 
 declare function require(moduleName: 'fs'): {
+  existsSync: (path: string) => boolean;
   readdirSync: (
     path: string,
     options: { withFileTypes: true },
@@ -15,11 +16,27 @@ declare function require(moduleName: 'path'): {
   join: (...paths: string[]) => string;
 };
 
-const { readdirSync, readFileSync } = require('fs');
+const { existsSync, readdirSync, readFileSync } = require('fs');
 const { join } = require('path');
 
 const sourceRoot = join(process.cwd(), 'src');
 const projectRoot = process.cwd();
+
+const HEX_LITERAL = String.raw`#(?!\d{2,3} R\d)[\da-f]{3,8}\b`;
+const ARBITRARY_CLASS = String.raw`[A-Za-z0-9_-]+-\[[^\]]+\]`;
+const SHADOW_ESCAPES = String.raw`shadowColor|shadowOffset|shadowOpacity|shadowRadius|\belevation\s*:`;
+const FEATURE_STYLE_ESCAPES = new RegExp(
+  String.raw`text-\[10px\]|${HEX_LITERAL}|StyleSheet`,
+  'i',
+);
+const PAIRING_STYLE_ESCAPES = new RegExp(
+  String.raw`${HEX_LITERAL}|${ARBITRARY_CLASS}|StyleSheet\.create|${SHADOW_ESCAPES}`,
+  'i',
+);
+const MEALS_BAR_STYLE_ESCAPES = new RegExp(
+  String.raw`${HEX_LITERAL}|${ARBITRARY_CLASS}|StyleSheet(?:\.create)?|${SHADOW_ESCAPES}`,
+  'i',
+);
 
 function sourceFiles(directory: string): string[] {
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
@@ -30,6 +47,18 @@ function sourceFiles(directory: string): string[] {
     }
 
     return /\.tsx?$/.test(entry.name) ? [path] : [];
+  });
+}
+
+function allTypeScriptFiles(directory: string): string[] {
+  return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const path = join(directory, entry.name);
+
+    return entry.isDirectory()
+      ? allTypeScriptFiles(path)
+      : /\.tsx?$/.test(entry.name)
+        ? [path]
+        : [];
   });
 }
 
@@ -68,9 +97,9 @@ describe('R3: Card compartido elimina rounded arbitrario', () => {
     'map',
   ])('%s importa el Card compartido', (screen) => {
     const contents = readFileSync(
-      screen === 'profile'
-        ? join(sourceRoot, 'screens', 'profile', 'index.tsx')
-        : join(sourceRoot, 'app', '(tabs)', `${screen}.tsx`),
+      screen === 'food'
+        ? join(sourceRoot, 'app', '(tabs)', `${screen}.tsx`)
+        : join(sourceRoot, 'screens', screen, 'index.tsx'),
       'utf8',
     );
 
@@ -91,6 +120,7 @@ describe('R9: mobile-pets-profile sin drift', () => {
     'api/media.ts',
     'api/users.ts',
     'components/pet-avatar.tsx',
+    'components/pet-hero-header.tsx',
     'screens/add-pet/index.tsx',
     'screens/docs/index.tsx',
     'screens/profile/index.tsx',
@@ -100,7 +130,7 @@ describe('R9: mobile-pets-profile sin drift', () => {
   it('keeps arbitrary text, hex colors, and StyleSheet out of feature sources', () => {
     const violations = featureFiles.flatMap((relativePath) => {
       const contents = readFileSync(join(sourceRoot, relativePath), 'utf8');
-      return /text-\[10px\]|#[\da-f]{3,8}\b|StyleSheet/i.test(contents)
+      return FEATURE_STYLE_ESCAPES.test(contents)
         ? [relativePath]
         : [];
     });
@@ -108,11 +138,12 @@ describe('R9: mobile-pets-profile sin drift', () => {
     expect(violations).toEqual([]);
   });
 
-  it('keeps the three Expo Router entrypoints thin', () => {
+  it('keeps the four Expo Router entrypoints thin', () => {
     const routes = [
+      'app/(tabs)/home.tsx',
       'app/(tabs)/profile.tsx',
-      'app/(tabs)/pets/add.tsx',
-      'app/(tabs)/pets/[petId]/docs.tsx',
+      'app/pets/add.tsx',
+      'app/pets/[petId]/docs.tsx',
     ];
 
     const routeLengths = routes.map((relativePath) => ({
@@ -131,7 +162,7 @@ describe('R9: mobile-pets-profile sin drift', () => {
     routeLengths.forEach(({ lines }) => expect(lines).toBeLessThan(10));
   });
 
-  it('contains dependencies to the two approved additions', () => {
+  it('contains the approved dependencies', () => {
     const packageJson = JSON.parse(
       readFileSync(join(projectRoot, 'package.json'), 'utf8'),
     ) as { dependencies: Record<string, string> };
@@ -140,6 +171,7 @@ describe('R9: mobile-pets-profile sin drift', () => {
     expect(packageJson.dependencies['expo-image-picker']).toBe('~57.0.13');
     expect(packageJson.dependencies['@blobatar/react']).toBeUndefined();
     expect(packageJson.dependencies['@gorhom/bottom-sheet']).toBe('^5.2.14');
+    expect(packageJson.dependencies['react-native-chart-kit']).toBe('7.0.4');
   });
 
   it('has an implementation trace instead of a pending R9 row', () => {
@@ -153,5 +185,480 @@ describe('R9: mobile-pets-profile sin drift', () => {
 
     expect(r9Row).toBeDefined();
     expect(r9Row).not.toContain('pendiente');
+  });
+});
+
+describe('R11 (mobile-device-pairing): pairing usa el Card compartido y las dimensiones uniformes', () => {
+  const pairingSource = readFileSync(
+    join(sourceRoot, 'screens', 'pairing', 'index.tsx'),
+    'utf8',
+  );
+
+  it('imports the shared Card and PetSwitcher', () => {
+    expect(pairingSource).toContain("from '../../components/card'");
+    expect(pairingSource).toContain("from '../../components/pet-switcher'");
+  });
+
+  it.each([
+    'padding: 24',
+    'gap: 16',
+    'insets.bottom + 24',
+  ])('keeps the uniform screen metric %s', (metric) => {
+    expect(pairingSource).toContain(metric);
+  });
+
+  it('#95 R6: pairing no reserva el inset superior ni la banda del FloatingTabBar', () => {
+    expect(pairingSource).not.toContain('insets.top + 12');
+    expect(pairingSource).not.toContain('insets.bottom + 96');
+  });
+
+  it('keeps pairing free of forbidden styling escapes', () => {
+    expect(pairingSource).not.toMatch(PAIRING_STYLE_ESCAPES);
+  });
+});
+
+describe('#68 R18: la actividad semanal no mete drift de estilo', () => {
+  const featureFiles = [
+    'app/(tabs)/home.tsx',
+    'i18n/catalog.ts',
+    'screens/home/format.ts',
+    'screens/home/index.test.tsx',
+    'screens/home/index.tsx',
+    'screens/home/weekly-activity-chart.test.tsx',
+    'screens/home/weekly-activity-chart.tsx',
+    'screens/pairing/index.test.tsx',
+    'screens/pairing/index.tsx',
+    'utils/device-connectivity.test.ts',
+    'utils/device-connectivity.ts',
+  ];
+
+  it('keeps arbitrary text, hex colors, and StyleSheet out of feature sources', () => {
+    const violations = featureFiles.flatMap((relativePath) => {
+      const contents = readFileSync(join(sourceRoot, relativePath), 'utf8');
+      return FEATURE_STYLE_ESCAPES.test(contents)
+        ? [relativePath]
+        : [];
+    });
+
+    expect(violations).toEqual([]);
+  });
+
+  it('keeps the resolved token theme and rejects chart presets', () => {
+    const chartSource = readFileSync(
+      join(sourceRoot, 'screens', 'home', 'weekly-activity-chart.tsx'),
+      'utf8',
+    );
+
+    expect(chartSource).toContain('series: [accentStrong]');
+    expect(chartSource).toContain('grid: border');
+    expect(chartSource).toContain('axis: border');
+    expect(chartSource).toContain('text: foreground');
+    expect(chartSource).toContain('mutedText: muted');
+    expect(chartSource).toContain('background: surface');
+    expect(chartSource).toContain('plotBackground: surface');
+    expect(chartSource).toContain(
+      'typography: { axisLabelSize: CHART_AXIS_LABEL_SIZE }',
+    );
+    expect(chartSource).not.toMatch(/\bpreset=/);
+  });
+});
+
+describe('#69 R13: la tira de estadísticas no mete drift de estilo', () => {
+  const featureFiles = [
+    'i18n/catalog.ts',
+    'screens/home/format.ts',
+    'screens/home/format.test.ts',
+    'screens/home/index.test.tsx',
+    'screens/home/index.tsx',
+  ];
+
+  it('mantiene sus cinco ficheros sin escapes de estilo literales', () => {
+    const violations = featureFiles.flatMap((relativePath) => {
+      const contents = readFileSync(join(sourceRoot, relativePath), 'utf8');
+      return FEATURE_STYLE_ESCAPES.test(contents)
+        ? [relativePath]
+        : [];
+    });
+
+    expect(violations).toEqual([]);
+  });
+});
+
+describe('#71 R13: la rejilla de accesos rápidos no mete drift de estilo', () => {
+  const featureFiles = [
+    'i18n/catalog.ts',
+    'screens/home/index.test.tsx',
+    'screens/home/index.tsx',
+  ];
+
+  it('mantiene sus tres ficheros sin escapes de estilo literales', () => {
+    const violations = featureFiles.flatMap((relativePath) => {
+      const contents = readFileSync(join(sourceRoot, relativePath), 'utf8');
+      return FEATURE_STYLE_ESCAPES.test(contents)
+        ? [relativePath]
+        : [];
+    });
+
+    expect(violations).toEqual([]);
+  });
+});
+
+describe('#70 R17: la sección de recordatorios no mete drift de estilo', () => {
+  const featureFiles = [
+    'api/types.ts',
+    'i18n/catalog.ts',
+    'screens/home/format.test.ts',
+    'screens/home/format.ts',
+    'screens/home/index.test.tsx',
+    'screens/home/index.tsx',
+  ];
+
+  it('mantiene sus ficheros sin escapes de estilo literales', () => {
+    const violations = featureFiles.flatMap((relativePath) => {
+      const contents = readFileSync(join(sourceRoot, relativePath), 'utf8');
+      return FEATURE_STYLE_ESCAPES.test(contents)
+        ? [relativePath]
+        : [];
+    });
+
+    expect(violations).toEqual([]);
+  });
+});
+
+describe('#85 R12: la sección de recordatorios reales no mete drift de estilo', () => {
+  const featureFiles = [
+    'i18n/catalog.ts',
+    'screens/home/format.test.ts',
+    'screens/home/format.ts',
+    'screens/home/index.test.tsx',
+    'screens/home/index.tsx',
+  ];
+
+  it('mantiene sus ficheros sin escapes de estilo literales', () => {
+    const violations = featureFiles.flatMap((relativePath) => {
+      const contents = readFileSync(join(sourceRoot, relativePath), 'utf8');
+      return FEATURE_STYLE_ESCAPES.test(contents)
+        ? [relativePath]
+        : [];
+    });
+
+    expect(violations).toEqual([]);
+  });
+});
+
+describe('#98 R10: la barra de comidas no mete drift de estilo', () => {
+  const featureFiles = [
+    'api/nutrition.ts',
+    'api/types.ts',
+    'i18n/catalog.ts',
+    'app/(tabs)/food.tsx',
+    'screens/home/index.tsx',
+  ];
+
+  it('mantiene sus ficheros sin escapes de estilo literales', () => {
+    const violations = featureFiles.flatMap((relativePath) => {
+      const contents = readFileSync(join(sourceRoot, relativePath), 'utf8');
+      return MEALS_BAR_STYLE_ESCAPES.test(contents)
+        ? [relativePath]
+        : [];
+    });
+
+    expect(violations).toEqual([]);
+  });
+});
+
+describe('#68 E1: la carta retira connectivity de los enum crudos', () => {
+  const charter = readFileSync(
+    join(projectRoot, '..', 'docs', 'ui-guidelines.md'),
+    'utf8',
+  );
+  const start = charter.indexOf(
+    '- **Los valores de enum que la API devuelve se pintan crudos**:',
+  );
+  const end = charter.indexOf('\n\n## Checklist de autocrítica', start);
+  const corollary = charter.slice(start, end);
+  const rawEnumList = corollary.slice(0, corollary.indexOf('. Siguen'));
+
+  it('conserva crudos solo los cuatro ámbitos aún pendientes', () => {
+    expect(rawEnumList).toContain('`pet.sex`');
+    expect(rawEnumList).toContain('`document.type`');
+    expect(rawEnumList).toContain('`foodType`');
+    expect(rawEnumList).toContain('`activityLevel`');
+    expect(rawEnumList).not.toContain('`device.connectivity`');
+  });
+
+  it('registra que connectivity se resuelve por catálogo desde R16', () => {
+    expect(corollary).toContain(
+      '`device.connectivity` dejó de pintarse crudo en la feature #68 (R16)',
+    );
+    expect(corollary).toContain('`src/utils/device-connectivity.ts`');
+  });
+});
+
+describe('#87 R1: la dependencia queda declarada y fijada', () => {
+  const packageJson = JSON.parse(
+    readFileSync(join(projectRoot, 'package.json'), 'utf8'),
+  ) as {
+    dependencies: Record<string, string>;
+    jest: { transformIgnorePatterns: string[] };
+  };
+  const version = packageJson.dependencies['@tanstack/react-query'];
+
+  it('declares exactly version 5.102.8', () => {
+    expect(version).toBe('5.102.8');
+  });
+
+  it('does not use a semver range', () => {
+    expect(version).not.toMatch(/^[\^~]/);
+  });
+
+  it('keeps TanStack out of transformIgnorePatterns', () => {
+    expect(packageJson.jest.transformIgnorePatterns[0]).not.toContain(
+      '@tanstack',
+    );
+  });
+});
+
+describe('#79 R1: expo-notifications queda declarada y fijada', () => {
+  const packageJson = JSON.parse(
+    readFileSync(join(projectRoot, 'package.json'), 'utf8'),
+  ) as {
+    dependencies?: Record<string, string>;
+    devDependencies?: Record<string, string>;
+    jest?: { transformIgnorePatterns?: string[] };
+  };
+
+  it('declara la versión compatible con Expo SDK 57 como dependencia de producción', () => {
+    expect(packageJson.dependencies?.['expo-notifications']).toBe('~57.0.19');
+  });
+
+  it('no duplica la dependencia ni añade una excepción literal de transformación', () => {
+    expect(packageJson.devDependencies?.['expo-notifications']).toBeUndefined();
+    expect(packageJson.jest?.transformIgnorePatterns?.join(' ')).not.toContain(
+      'expo-notifications',
+    );
+  });
+});
+
+describe('#87 R19: use-' + 'api no deja huella', () => {
+  const legacyModule = ['use', 'api'].join('-');
+  const legacyIdentifier = ['use', 'Api'].join('');
+  const screenSignOutCalls: Record<string, number> = {
+    'app/(tabs)/food.tsx': 0,
+    'screens/health/index.tsx': 0,
+    'screens/map/index.tsx': 0,
+    'screens/meal-schedule/index.tsx': 2, // #147 R8: el 401 de la edición de franjas
+    'screens/weight-log/index.tsx': 1,
+    'screens/docs/index.tsx': 0,
+    'screens/alerts/index.tsx': 1,
+    'screens/alert-detail/index.tsx': 1,
+    'screens/geofences/index.tsx': 1,
+    'screens/geofence-editor/index.tsx': 1,
+    'screens/home/index.tsx': 0,
+    'screens/pairing/index.tsx': 2,
+    'screens/profile/index.tsx': 2,
+    'screens/reminders/index.tsx': 1,
+  };
+
+  it('removes both legacy hook files', () => {
+    expect(
+      existsSync(join(sourceRoot, 'hooks', `${legacyModule}.ts`)),
+    ).toBe(false);
+    expect(
+      existsSync(
+        join(sourceRoot, 'hooks', '__tests__', `${legacyModule}.test.tsx`),
+      ),
+    ).toBe(false);
+  });
+
+  it('leaves only the weekly activity guard mentioning the legacy hook', () => {
+    const testRoot = join(projectRoot, 'test');
+    const files = [
+      ...allTypeScriptFiles(sourceRoot).map((path) => ({
+        path,
+        relativePath: path.slice(sourceRoot.length + 1),
+      })),
+      ...allTypeScriptFiles(testRoot).map((path) => ({
+        path,
+        relativePath: `test/${path.slice(testRoot.length + 1)}`,
+      })),
+    ];
+    const footprints = files
+      .filter(({ path }) => {
+        const contents = readFileSync(path, 'utf8');
+
+        return (
+          contents.includes(legacyModule) ||
+          contents.includes(legacyIdentifier)
+        );
+      })
+      .map(({ relativePath }) => relativePath);
+
+    expect(footprints).toEqual([
+      'screens/home/weekly-activity-chart.test.tsx',
+    ]);
+  });
+
+  it('keeps literal query keys out of every migrated screen', () => {
+    const violations = Object.keys(screenSignOutCalls).filter((relativePath) =>
+      /queryKey:\s*\[/.test(
+        readFileSync(join(sourceRoot, relativePath), 'utf8'),
+      ),
+    );
+
+    expect(violations).toEqual([]);
+  });
+
+  it('preserves every mutation sign-out with zero delta', () => {
+    const actual = Object.fromEntries(
+      Object.keys(screenSignOutCalls).map((relativePath) => {
+        const contents = readFileSync(
+          join(sourceRoot, relativePath),
+          'utf8',
+        );
+
+        return [relativePath, contents.split('signOut(').length - 1];
+      }),
+    );
+
+    expect(actual).toEqual(screenSignOutCalls);
+  });
+});
+
+describe('#94 R5: el umbral de frescura no vive en el móvil', () => {
+  const productionFilesMatching = (pattern: RegExp) =>
+    filesMatching(pattern).filter((path) => !/\.test\.tsx?$/.test(path));
+
+  it('no declara el identificador STALE_SECONDS en producción', () => {
+    expect(productionFilesMatching(/\bSTALE_SECONDS\b/)).toEqual([]);
+  });
+
+  it('no compara staleSeconds con ningún umbral', () => {
+    expect(
+      productionFilesMatching(
+        /\bstaleSeconds\s*(?:<=|>=|<|>)|(?:<=|>=|<|>)\s*\bstaleSeconds\b/,
+      ),
+    ).toEqual([]);
+  });
+});
+
+describe('#94 R10: la antigüedad de la posición se lee en un solo sitio', () => {
+  const staleSecondsReads: Record<string, number> = {
+    'api/types.ts': 1,
+    'screens/map/index.tsx': 1,
+  };
+
+  it('inventaría cada lectura de staleSeconds en producción', () => {
+    const actual = Object.fromEntries(
+      allTypeScriptFiles(sourceRoot)
+        .map((path) => ({
+          path,
+          relativePath: path
+            .slice(sourceRoot.length + 1)
+            .replace(/\\/g, '/'),
+        }))
+        .filter(
+          ({ relativePath }) =>
+            !/(^|\/)__tests__\//.test(relativePath) &&
+            !/\.test\.tsx?$/.test(relativePath),
+        )
+        .map(({ path, relativePath }) => {
+          const contents = readFileSync(path, 'utf8');
+
+          return [
+            relativePath,
+            (contents.match(/\bstaleSeconds\b/g) ?? []).length,
+          ] as const;
+        })
+        .filter(([, count]) => count >= 1),
+    );
+
+    expect(actual).toEqual(staleSecondsReads);
+  });
+});
+
+describe('#108 R1: los patrones compartidos se declaran una sola vez', () => {
+  const source = readFileSync(
+    join(sourceRoot, '__tests__', 'design-drift.test.ts'),
+    'utf8',
+  );
+
+  it.each([
+    ['[\\d', 'a-f]{3,8}'].join(''),
+    ['shadowColor|shadowOffset', '|shadowOpacity|shadowRadius'].join(''),
+  ])('declara una sola vez %s', (needle) => {
+    expect(source.split(needle).length - 1).toBe(1);
+  });
+});
+
+describe('#108 R2: el guard de estilo distingue un R-id de un color hex', () => {
+  it.each([
+    [
+      "describe('#106 R2: la barra de comidas transiciona su ancho', () => {",
+      false,
+    ],
+    [
+      "describe('#98 R10: la barra de comidas no mete drift de estilo', () => {",
+      false,
+    ],
+    ['#fff', true],
+    ['#1DA868', true],
+    ['#000', true],
+    ['backgroundColor: #1DA868;', true],
+    ['ver el hilo #106, gracias', true],
+    ['#106 R2 usa el token y no #fff', true],
+  ])('%s', (sample, expected) => {
+    expect(FEATURE_STYLE_ESCAPES.test(sample)).toBe(expected);
+    expect(PAIRING_STYLE_ESCAPES.test(sample)).toBe(expected);
+    expect(MEALS_BAR_STYLE_ESCAPES.test(sample)).toBe(expected);
+  });
+});
+
+describe('#108 R3: los títulos de #106 vuelven a ser literales enteros', () => {
+  const homeTestSource = readFileSync(
+    join(sourceRoot, 'screens', 'home', 'index.test.tsx'),
+    'utf8',
+  );
+
+  it.each([
+    "describe('#106 R2: la barra de comidas transiciona su ancho'",
+    "describe('#106 R3: reduce motion deja la barra sin animación'",
+  ])('contiene %s', (title) => {
+    expect(homeTestSource).toContain(title);
+  });
+
+  it('no parte el prefijo de #106', () => {
+    const splitTitlePrefix = ["'#' + '", '106'].join('');
+
+    expect(homeTestSource).not.toContain(splitTitlePrefix);
+  });
+});
+
+describe('#108 R4: la convención de cita del guard está documentada', () => {
+  const conventions = readFileSync(
+    join(projectRoot, '..', 'docs', 'conventions.md'),
+    'utf8',
+  );
+  const start = conventions.indexOf(
+    '### Prefijo de feature cuando un fichero acumula R-ids de dos specs',
+  );
+  const end = conventions.indexOf('\n### ', start + 1);
+  const section = conventions.slice(start, end);
+
+  it('documenta el guard y la forma canónica', () => {
+    expect(section).toContain('design-drift.test.ts');
+    expect(section).toContain('`#108 R1`');
+  });
+});
+
+describe('#146 R17: el centro por defecto del mapa vive en un solo sitio', () => {
+  const productionFilesMatching = (pattern: RegExp) =>
+    filesMatching(pattern).filter((path) => !/\.test\.tsx?$/.test(path));
+
+  it('declara DEFAULT_CENTER solo en el componente del mapa', () => {
+    expect(productionFilesMatching(/\bconst DEFAULT_CENTER\b/)).toEqual([join('components', 'pet-map.tsx')]);
+  });
+  it('escribe las coordenadas por defecto solo en el componente del mapa', () => {
+    expect(productionFilesMatching(/19\.4326|-99\.1332/)).toEqual([join('components', 'pet-map.tsx')]);
   });
 });

@@ -98,6 +98,22 @@ Tres límites, no negociables:
    ScrollView mismo). Overlays absolutos usan `insets.top + 12`, jamás
    top fijo. `contentInsetAdjustmentBehavior="automatic"` NO sustituye el
    paddingTop (no-op en Android).
+   **Excepción nombrada, enmienda A9 de #67**: si el primer hijo del scroll es
+   una **cabecera a sangre**, el `contentContainerStyle` conserva `gap` y
+   `paddingBottom`, el padding horizontal de 24 baja a un envoltorio interior,
+   y el `paddingTop: insets.top + 12` lo asume la cabecera vía su slot. Las
+   ramas de estado sin cabecera llevan su propio envoltorio con ese
+   `paddingTop`.
+
+   **Excepción nombrada (enmienda A11 de #95, 2026-09-23)**: una pantalla empujada
+   sobre el Stack raíz con cabecera nativa (`headerShown: true`) —hoy
+   `add-reminder`, `pets/add`, `pets/[petId]/docs`, `weight-log`,
+   `meal-schedule`, `pairing`, `reminders`, `alerts` (estas dos por la enmienda A13 de #114, 2026-09-23), `alerts/[alertId]` (por la enmienda A15 de #100, 2026-09-28), `pets/[petId]/geofences` (por la enmienda A18 de #41, 2026-10-02) y `pets/[petId]/geofence-editor` (por la enmienda A19 de #146, 2026-10-02)— no lleva `paddingTop: insets.top + 12`, porque
+   el inset superior lo consume la cabecera, ni `paddingBottom: insets.bottom +
+   96`, porque sobre ella no flota el `FloatingTabBar`. Su
+   `contentContainerStyle` es `padding: 24`, `gap: 16` y `paddingBottom:
+   insets.bottom + 24`, la misma holgura inferior que `(auth)` y
+   `reset-password`.
 7. **Estados de carga**: Skeleton de heroui dimensionado como el contenido
    final. Prohibido Spinner suelto que salte el layout.
 8. **Estructura**: route delgado en `src/app/` + pantalla en `src/screens/`
@@ -112,6 +128,41 @@ Tres límites, no negociables:
     mapa puede declarar fondo opaco (`bg-*`). El mapa se compone por detrás de
     la ventana y un fondo encima lo tapa sin producir ningún error. Los estados
     sin mapa declaran su fondo cada uno.
+11. **Desviación declarada del Figma en el acento** (feature #61,
+    2026-09-03). `--accent` vale **`#178255`**, no el `#2AB87C` que #46 R1
+    tomó del Make. El verde del diseño da 2,55:1 con etiqueta blanca encima y
+    no hay forma de pasar AA conservándolo: o se oscurece el relleno o se
+    oscurece la letra, y el humano eligió lo primero para que el CTA siga
+    siendo verde con letra blanca. Se conserva el hue (154,7°, el mismo del
+    Make) y se baja la luminancia hasta **4,82:1** con blanco. Consecuencia
+    asumida: los rellenos ya **no** coinciden 1:1 con el Make y el smoke lado
+    a lado lo verá; es esperado, no un defecto. El acento como **tinta**
+    (texto, enlaces, iconos, trazos) es `--accent-strong`, que en dark
+    recupera el `#2AB87C` original porque sobre fondo oscuro un verde oscuro
+    es ilegible. Regla mecánica: **fondo ⇒ `--accent`; encima de otra cosa ⇒
+    `--accent-strong`.**
+12. **Escala de radios** (feature #62, 2026-09-04). Tres radios, uno por rol,
+    y ninguno más:
+    - **Superficie de card** → `rounded-card` (token `--radius-card`, 20 px).
+      Se obtiene usando `src/components/card.tsx`, no repitiendo la clase.
+    - **Control, tile, input, botón y píldora de dato** → `rounded-xl`
+      (12 px), que es el mismo valor que `--field-radius: 0.75rem`, de modo
+      que botón e input comparten esquina dentro de un formulario.
+    - **Cápsula** (chip, avatar, píldora de pestaña, botón circular de
+      volver) → `rounded-full`.
+
+    `rounded-2xl`, `rounded-lg`, `rounded-md` y `rounded-sm` quedan
+    **prohibidos en `mobile-pet-tracker/src/`**: no son un cuarto rol, son
+    drift. El grep que lo verifica vive en
+    `src/__tests__/consistency-classnames.test.ts`.
+
+    Dos corolarios mecánicos: todo `Skeleton` lleva el radio del contenido
+    que sustituye (card ⇒ `rounded-card`, control ⇒ `rounded-xl`), y toda
+    esquina no-cápsula **que el repo dibuja por su cuenta** (`View`,
+    `Pressable`, `TextInput`, el `Card` compartido) declara
+    `style={CONTINUOUS_CORNER}` de `src/theme/native-styles.ts` — los
+    componentes de heroui-native ya lo traen de fábrica y no se envuelven
+    para añadírselo.
 
 ## Animación (decisiones por defecto)
 
@@ -127,8 +178,12 @@ Tres límites, no negociables:
 - Interrumpible siempre: un gesto puede cortar cualquier animación en curso.
 - `prefers-reduced-motion` respetado (Reanimated `ReducedMotionConfig` o
   guard equivalente).
-- expo-haptics NO está instalado; toda propuesta que lo requiera lo declara
-  como dependencia nueva en su spec.
+- expo-haptics está instalado desde #106 (2026-09-21), autorizado por el
+  humano en el gate de specs/mobile-meals-bar-motion/. Se usa con la tabla de
+  la skill expo-animation §8: selectionAsync para un detent, impactAsync para
+  un commit de gesto, notificationAsync(Success|Error) para una operación que
+  termina bien o mal. Tres reglas absolutas: mismo frame que el visual, uno
+  por acción del usuario, y nunca el único feedback.
 - El runtime de smoke del humano es el dev build de Android desde 2026-08-27;
   `expo-maps` no está disponible en Expo Go.
 - Backlog priorizado con valores exactos: `progress/audit_animations_mobile.md`.
@@ -144,6 +199,105 @@ Tres límites, no negociables:
   componente heroui que ya lo trae); touch target ≥ 44pt.
 - Títulos de pantalla: header del stack cuando exista, no Text suelto.
 
+## Dirección de arte
+
+> Añadida el 2026-09-04 tras `progress/explore_design-gap-vs-make.md`. Hasta
+> aquí esta carta era un sistema de estilos —tokens, radios, componentes— y no
+> decía nada sobre qué debe *parecer* ni qué debe *responder* una pantalla. El
+> brief del producto sí lo dice, y las specs no lo estaban leyendo.
+
+**1. Paleta pastel categórica.** El brief pide un producto "amigable, lúdico,
+con colores pastel". Cuando una pantalla distingue **categorías** —tipos de
+recordatorio, tipos de documento, destinos de acceso rápido— cada categoría
+lleva su propio fondo pastel, no el mismo `accent-soft` para todas. Esos
+fondos son **tokens de `global.css`**, nunca hex sueltos ni clases arbitrarias:
+la regla de §Decisiones fijas 3 no tiene excepción por ser "un color de
+adorno". Los valores del Make son de tema claro y no traen equivalente
+oscuro: el dark se diseña, no se copia, y cada par texto/superficie se
+verifica AA con contraste **calculado**, como fijó #61.
+
+Los seis huecos, cerrados (feature #64, 2026-09-04). Toda sección categórica
+consume estos tokens; ninguna inventa un hex ni una clase arbitraria:
+
+| Hueco | Superficie | Tinta | Tipos que lo ocupan |
+|---|---|---|---|
+| azul | `bg-category-blue` | `text-category-blue-strong` | recordatorio `vaccine`; documento de vacunación |
+| ámbar | `bg-category-amber` | `text-category-amber-strong` | recordatorio `medication`; documento de desparasitación |
+| verde | `bg-category-green` | `text-category-green-strong` | recordatorio `appointment`; documento de consulta |
+| violeta | `bg-category-violet` | `text-category-violet-strong` | recordatorio `deworming`; documento de análisis |
+| rosa | `bg-category-rose` | `text-category-rose-strong` | recordatorio `food` |
+| neutral | `bg-default` | `text-muted` | recordatorio `weight` y `custom`; cualquier tipo de documento desconocido |
+
+El reparto vive en `src/utils/category-palette.ts` y es el **único** sitio donde
+se escriben esos nombres de clase. El color nunca es el único portador de la
+categoría: la superficie siempre acompaña a un emoji y a un texto.
+
+**2. Fotografía y su respaldo.** Las cabeceras fotográficas asumen que la
+mascota tiene foto. Cuando no la tiene, el respaldo es el **blobatar**
+determinista de la mascota, que es lo que `pet-avatar` pinta de verdad. Ni
+ilustración por especie ni foto obligatoria en el alta. Y sea cual sea la
+imagen, **el texto que va encima pasa AA**.
+
+> **Enmendado por #67 (A8) — corrección de un hecho falso.** Hasta el
+> 2026-09-06 este punto decía *"el respaldo es degradado con la inicial —el
+> patrón que ya usa `pet-avatar`—, decidido por el humano el 2026-09-04"*.
+> Era falso de origen: `src/components/pet-avatar.tsx` pinta `blobatar(name)`
+> con `SvgXml` y nunca una inicial, y la R5 aprobada de #40 (2026-08-21)
+> sustituyó explícitamente el fallback de inicial por el blobatar. El error
+> venía de `progress/explore_design-gap-vs-make.md` y se propagó también al
+> enunciado de #67 en `feature_list.json`. Y la garantía de AA no la da el
+> degradado: la da la **banda opaca** bajo el texto (#67 R3), porque ningún
+> velo sobre una foto arbitraria llega a 4,5:1.
+
+**3. Las siete preguntas de la Home.** El brief fija qué debe responder la
+pantalla principal: ¿está segura?, ¿dónde está?, ¿el collar está conectado?,
+¿tiene batería?, ¿tiene algún recordatorio pendiente?, ¿cómo fue su actividad
+hoy?, ¿hay alguna alerta? Toda spec que toque la Home **declara cuáles de las
+siete responde y cuáles no**, y por qué. No es decoración: es el criterio de
+aceptación de la pantalla.
+
+**4. Nada de jerga del proveedor.** El brief lo prohíbe explícitamente: los
+términos técnicos de Wialon no se muestran al usuario final. Si un dato solo
+se puede explicar con vocabulario de la integración, se traduce o no se
+enseña.
+
+**5. Fidelidad no es pérdida de información.** El diseño oculta datos que la
+app ya sirve (la rejilla del mapa, el perfil nutricional, los avisos de plan)
+y no dibuja estados que existen de verdad, como el 402 de "sin suscripción".
+Parecerse al diseño **no** autoriza a borrar un dato útil: la spec que se
+encuentre con uno o lo conserva, o escribe por qué se va.
+
+**6. Idioma: catálogo de dos idiomas, español por defecto.** Decidido por el
+humano el 2026-09-04 (español) y el 2026-09-05 (catálogo + interruptor), y
+ejecutado por la feature #65. **Ninguna pantalla escribe texto**: todo lo que
+ve el usuario —títulos, etiquetas, placeholders, `accessibilityLabel`,
+mensajes de error, botones de `Alert`— se resuelve con `t('<ámbito>.<clave>')`
+contra `mobile-pet-tracker/src/i18n/catalog.ts`. Toda spec que introduzca copy
+nueva **añade su clave en los dos idiomas** en el mismo gate y la registra en
+la tabla de `specs/mobile-ui-language/design.md` §2; una clave que exista en un
+idioma y no en el otro no compila. Donde el diseño del Make da la palabra en
+español se usa **la del diseño**. **No hay librería de i18n y no se instala
+una**, ni `expo-localization`: el idioma es elección explícita del usuario en
+Profile, no detección del idioma del teléfono. Las fechas y las horas siguen al
+idioma elegido (`es-MX` / `en-US`), no al locale del sistema.
+
+Tres corolarios que nadie debe confundir con lo anterior:
+
+- **El idioma del código no cambia.** Nombres de variables, funciones, tipos,
+  ficheros, `testID`, rutas y **las claves del catálogo** siguen en inglés, y
+  los mensajes de commit también (`docs/conventions.md` §Commits).
+- **El backend sigue devolviendo validaciones en inglés, en los dos idiomas.**
+  Se ve en `login-error`, `register-*-error`, `weight-form-error` y
+  `reset-error`, porque son mensajes de Zod de `backend-pet-tracker/`.
+  Traducirlos es una feature de backend. Al revés, las advertencias
+  nutricionales del backend ya llegan en español y se muestran tal cual — y en
+  inglés también, porque tampoco se traducen.
+- **Los valores de enum que la API devuelve se pintan crudos**: `pet.sex`,
+  `document.type`, `foodType`, `activityLevel`. Siguen en inglés en los dos
+  idiomas. Mapearlos es cambio de conducta y va a feature propia.
+  `device.connectivity` dejó de pintarse crudo en la feature #68 (R16): se
+  resuelve por catálogo en `src/utils/device-connectivity.ts`.
+
 ## Checklist de autocrítica (cierra toda pantalla nueva o modificada)
 
 Screenshot mental (o real en smoke) contra: jerarquía (lo importante
@@ -151,3 +305,109 @@ primero), proximidad (relacionado más cerca), repetición (esquinas/sombras/
 acentos iguales = tokens), alineación (bordes comparten ejes). Si una
 pantalla falla el mismo check dos veces, el fix va al theme o a un
 componente — no a la pantalla.
+
+## Enmienda #67 — cabecera fotográfica compartida
+
+`mobile-pet-hero-header` (#67) modifica una decisión que esta spec dejó
+aprobada. La spec de origen es `specs/mobile-pet-hero-header/`; el detalle de
+la enmienda está en su `requirements.md` §R10.
+
+- Spec enmendada: `docs/ui-guidelines.md`
+- Qué cambia: `enmiendas A8 y A9 de la tabla de #67 §R10`
+- Qué NO cambia: ningún otro requisito de esta spec, ni su estado de
+  aprobación, ni los tests que ya la cubren.
+
+- [X] Enmienda aprobada por humano
+
+## Enmienda #70 — elementos repetidos: qué hay que candar
+
+> Añadida el 2026-09-09. Tres features seguidas —#69, #71, #70— cerraron con el
+> mismo patrón: la revisión destapa una dimensión sin vigilar, se cierra, y la
+> siguiente revisión destapa otra por el mismo mecanismo. Cuatro rondas, cuatro
+> dimensiones. Esta lista existe para que la quinta no haga falta.
+
+Cuando una pantalla pinta un **elemento repetido** —una celda de una tira, un
+tile de una rejilla, una fila de una lista— la spec enumera **todas** las
+decisiones que ese elemento toma, y el criterio de aceptación es siempre el
+mismo: **cruzar cualquiera de ellas entre dos elementos pone la suite roja**,
+observado con `within(elemento)`.
+
+**Decisiones de conducta, una por elemento:**
+
+1. el **dato que muestra** — el más olvidado;
+2. componente de icono;
+3. etiqueta visible / clave de copy;
+4. **nombre accesible** — se cruza igual en un elemento solo-icono, donde
+   ninguna aserción de texto lo ve;
+5. color o hueco de fondo;
+6. **tinta del icono**;
+7. **color y receta tipográfica de cada texto** — no solo del principal;
+8. destino de navegación;
+9. **condición de render** — mueve la cardinalidad, así que el recuento se
+   verifica en más de un escenario;
+10. **forma del contenedor** (`flex-row items-center gap-*`) — y en **todas** sus
+    ramas, no solo la cargada: si el estado vacío promete "la misma anatomía de
+    fila", eso es una aserción, no una frase del título del test;
+11. **envoltorios de agrupación** (`flex-1` y equivalentes) que reparten el
+    espacio;
+12. **orden de los hijos**. `within(row).getByTestId(...)` es **agnóstico al
+    orden**: intercambiar dos textos deja la suite entera verde. Se cierra
+    fijando la posición, p. ej.
+    `expect(row.children[1]).toHaveProperty('props.className', 'flex-1')`.
+
+**Estructurales, del contenedor:** identidad, orden y cardinalidad. El recuento
+se cierra con `children.length`, **nunca contando coincidencias de `testID`** —
+un recuento por prefijo deja pasar cualquier hijo sin `testID`.
+
+**Invariantes compartidos, a inventariar aparte:** tamaño de icono, objetivo
+táctil y reparto, radio, rol y agrupación accesible, sitio de render, y feedback
+de pulsado.
+
+> **Inventariar no es candar.** Añadido el 2026-09-09 tras #85: la spec copió
+> esta lista en prosa —incluido "tamaño de icono"— y aun así el `size={20}` del
+> icono de fila quedó sin una sola aserción: ponerlo a `28` dejó la suite móvil
+> completa verde. Cada invariante de esta lista necesita **un `expect`**, no una
+> mención. Y ojo con el caso que lo produjo: un `size` renderizado **por
+> variable** no lo ve ningún recuento de literales en el fuente.
+
+**Método**: cada candado se demuestra con una sonda —cruzar el valor en
+producción, ver el rojo, restaurar con `git diff` vacío— y la evidencia se
+escribe. Un candado que nadie vio fallar no es un candado.
+
+## Enmienda #98 — la barra de comidas de la Home
+
+`mobile-meals-served-ui` (#98) añade a la sección de recordatorios una barra
+informativa de las comidas servidas hoy. Se pinta solo con detalle cargado y
+`mealsToday !== null`, inmediatamente después de la próxima vacuna y antes del
+estado vacío o de las filas de recordatorio.
+
+**Decisiones de conducta de la barra:**
+
+1. el dato es `mealsToday.served` de `mealsToday.total`;
+2. el icono es `ForkKnife`, con `size={20}`;
+3. el título usa la clave `food.mealsToday`;
+4. el contador usa como nombre accesible la clave
+   `food.mealsServedOfTotal`, con `served` y `total`;
+5. el disco del icono ocupa el hueco **rosa** de la paleta categórica:
+   `bg-category-rose`, asignado al tipo `food`;
+6. la tinta del icono es `category-rose-strong` resuelta por
+   `useThemeColors`;
+7. el título usa `text-sm font-semibold text-foreground` y el contador
+   `text-xs font-normal text-muted` con cifras tabulares;
+8. no navega ni lleva `onPress`;
+9. solo se renderiza cuando el detalle es `ok` y `mealsToday !== null`;
+10. el `Card` compone una fila `flex-row items-center gap-3`;
+11. el contenido se agrupa en una columna `flex-1 gap-1.5`, con cabecera y
+    carril;
+12. el orden es disco del icono y columna; dentro de la columna, cabecera y
+    carril; dentro de la cabecera, título y contador.
+
+**Estructura e invariantes:** la fila tiene dos hijos, igual que la columna y
+la cabecera; el carril tiene un único relleno. El disco es una cápsula de
+36 px, el carril usa `h-1.5 overflow-hidden rounded-full bg-default` y el
+relleno usa `h-full rounded-full bg-accent`. Esto último aplica la regla fija
+**fondo ⇒ `bg-accent`**; `bg-accent-strong` sería tinta, no fondo. El ancho se
+calcula como el porcentaje redondeado de `served / total`, o `0%` si el total
+es cero.
+
+- [X] Enmienda aprobada por humano

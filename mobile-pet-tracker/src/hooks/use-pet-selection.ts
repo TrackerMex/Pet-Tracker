@@ -3,9 +3,13 @@ import { useEffect } from 'react';
 
 import type { PetsState } from '../api/pets';
 import { useSelectedPet } from '../providers/selected-pet-provider';
-import type { ApiResult } from './use-api';
 
-export function usePetSelection(pets: ApiResult<PetsState>): void {
+export interface PetSelectionSource {
+  data: PetsState | undefined;
+  isRefreshing: boolean;
+}
+
+export function usePetSelection(pets: PetSelectionSource): void {
   const isFocused = useIsFocused();
   const { selectedPetId, selectPet } = useSelectedPet();
 

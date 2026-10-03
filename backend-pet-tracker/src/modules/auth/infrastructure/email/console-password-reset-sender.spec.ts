@@ -1,5 +1,6 @@
 import { Logger } from '@nestjs/common';
 import { PasswordResetMessage } from '@/modules/auth/domain/ports/password-reset-sender';
+import { buildPasswordResetUrl } from './password-reset-link';
 import { ConsolePasswordResetSender } from './console-password-reset-sender';
 
 const message: PasswordResetMessage = {
@@ -47,6 +48,57 @@ describe('R10: con EMAIL_ENABLED=false el token de reset se loguea en vez de env
         expiresAt: message.expiresAt.toISOString(),
       });
       expect(warnLines).toHaveLength(0);
+    },
+  );
+});
+
+describe('R2 (auth-reset-deep-link): con RESET_LINK_HOST el log incluye resetUrl', () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it('conserva los cinco campos existentes y agrega la URL normalizada', async () => {
+    const log = jest.spyOn(Logger.prototype, 'log').mockImplementation();
+    const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+    const resetLinkHost = 'reset.example.test/';
+
+    await new ConsolePasswordResetSender(resetLinkHost).send(message);
+
+    expect(log).toHaveBeenCalledTimes(1);
+    expect(JSON.parse(String(log.mock.calls[0]?.[0]))).toEqual({
+      event: 'auth.password_reset.issued',
+      userId: message.userId,
+      email: message.email,
+      token: message.token,
+      expiresAt: message.expiresAt.toISOString(),
+      resetUrl: buildPasswordResetUrl(resetLinkHost, message.token),
+    });
+    expect(warn).not.toHaveBeenCalled();
+  });
+});
+
+describe('R2 (auth-reset-deep-link): sin RESET_LINK_HOST el log queda como en #44', () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it.each([[undefined], [null], ['']])(
+    'omite resetUrl para el valor %s sin avisar ni fallar',
+    async (resetLinkHost) => {
+      const log = jest.spyOn(Logger.prototype, 'log').mockImplementation();
+      const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+
+      await new ConsolePasswordResetSender(resetLinkHost).send(message);
+
+      expect(log).toHaveBeenCalledTimes(1);
+      expect(JSON.parse(String(log.mock.calls[0]?.[0]))).toEqual({
+        event: 'auth.password_reset.issued',
+        userId: message.userId,
+        email: message.email,
+        token: message.token,
+        expiresAt: message.expiresAt.toISOString(),
+      });
+      expect(warn).not.toHaveBeenCalled();
     },
   );
 });

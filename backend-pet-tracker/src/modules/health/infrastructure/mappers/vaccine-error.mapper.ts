@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import {
+  VaccineAppliedInFutureError,
   VaccineCatalogNotFoundError,
   VaccineNotFoundError,
   VaccineSpeciesMismatchError,
@@ -29,6 +30,13 @@ export function mapVaccineError(error: unknown): unknown {
       statusCode: HttpStatus.NOT_FOUND,
       code: 'VACCINE_NOT_FOUND',
       message: 'Vaccine not found',
+    });
+  }
+  if (error instanceof VaccineAppliedInFutureError) {
+    return new BadRequestException({
+      statusCode: HttpStatus.BAD_REQUEST,
+      message: 'Validation failed',
+      errors: [{ path: 'appliedAt', message: error.message }],
     });
   }
   return error;

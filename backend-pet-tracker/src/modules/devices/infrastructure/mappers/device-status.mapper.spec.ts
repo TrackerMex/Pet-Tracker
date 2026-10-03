@@ -1,20 +1,25 @@
+import { DEVICE_ONLINE_THRESHOLD_MS } from '@/pipeline/constants';
 import { toDeviceStatusResponse } from './device-status.mapper';
 
-describe('R11: el estado de device expone exactamente las 5 claves del contrato', () => {
-  it('serializa lastMessageAt a ISO y conserva los null de telemetria', () => {
-    const response = toDeviceStatusResponse({
-      model: 'sim-collar',
-      batteryPct: 87,
-      connectivity: 'lte',
-      lastMessageAt: new Date('2026-08-01T11:59:00.000Z'),
-      esn: 'SIM-001',
-    });
+describe('#73 R2 (R11 de devices-claim): el estado de device deriva connectivity de lastMessageAt contra now y conserva las 5 claves', () => {
+  const now = new Date('2026-09-13T12:00:00.000Z');
+
+  it('un lastMessageAt reciente sale como online, serializado a ISO, con las 5 claves exactas', () => {
+    const response = toDeviceStatusResponse(
+      {
+        model: 'sim-collar',
+        batteryPct: 87,
+        lastMessageAt: new Date(now.getTime() - 30_000),
+        esn: 'SIM-001',
+      },
+      now,
+    );
 
     expect(response).toEqual({
       model: 'sim-collar',
       batteryPct: 87,
-      connectivity: 'lte',
-      lastMessageAt: '2026-08-01T11:59:00.000Z',
+      connectivity: 'online',
+      lastMessageAt: '2026-09-13T11:59:30.000Z',
       esn: 'SIM-001',
     });
     expect(Object.keys(response).sort()).toEqual(
@@ -22,14 +27,32 @@ describe('R11: el estado de device expone exactamente las 5 claves del contrato'
     );
   });
 
-  it('telemetria sin alimentar (#8) viaja como null', () => {
-    const response = toDeviceStatusResponse({
-      model: 'sim-collar',
-      batteryPct: null,
-      connectivity: null,
-      lastMessageAt: null,
-      esn: 'SIM-001',
-    });
+  it('un lastMessageAt mas viejo que el umbral sale como offline', () => {
+    const response = toDeviceStatusResponse(
+      {
+        model: 'sim-collar',
+        batteryPct: 20,
+        lastMessageAt: new Date(
+          now.getTime() - DEVICE_ONLINE_THRESHOLD_MS - 1_000,
+        ),
+        esn: 'SIM-001',
+      },
+      now,
+    );
+
+    expect(response.connectivity).toBe('offline');
+  });
+
+  it('telemetria sin alimentar viaja como null: batteryPct, connectivity y lastMessageAt', () => {
+    const response = toDeviceStatusResponse(
+      {
+        model: 'sim-collar',
+        batteryPct: null,
+        lastMessageAt: null,
+        esn: 'SIM-001',
+      },
+      now,
+    );
 
     expect(response.batteryPct).toBeNull();
     expect(response.connectivity).toBeNull();

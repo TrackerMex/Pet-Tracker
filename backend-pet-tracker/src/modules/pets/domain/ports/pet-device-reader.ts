@@ -7,7 +7,6 @@ export const PET_DEVICE_READER = Symbol('PetDeviceReader');
 export interface ActivePetDeviceStatus {
   model: string | null;
   batteryPct: number | null;
-  connectivity: string | null;
   lastMessageAt: Date | null;
   esn: string | null;
 }

@@ -1,32 +1,51 @@
 import { router } from 'expo-router';
-import {
-  Button,
-  Input,
-  Label,
-  LinkButton,
-  TextField,
-  useThemeColor,
-} from 'heroui-native';
-import { Text, View } from 'react-native';
+import { Button, Input, Label, LinkButton, TextField } from 'heroui-native';
+import { ScrollView, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Lock } from 'reicon-react-native';
 
+import { useTranslate } from '../../providers/language-provider';
+import { CONTINUOUS_CORNER } from '../../theme/native-styles';
+import { useThemeColors } from '../../theme/use-theme-colors';
+
 export default function Forgot() {
-  const [accent] = useThemeColor(['accent']);
+  const [accentStrong] = useThemeColors(['accent-strong']);
+  const insets = useSafeAreaInsets();
+  const t = useTranslate();
 
   return (
-    <View className="flex-1 items-center justify-center gap-4 bg-background p-6">
-      <View className="size-16 items-center justify-center rounded-2xl bg-accent-soft">
-        <Lock size={28} color={accent} />
+    <ScrollView
+      testID="screen-forgot"
+      className="flex-1 bg-background"
+      keyboardShouldPersistTaps="handled"
+      contentInsetAdjustmentBehavior="automatic"
+      contentContainerStyle={{
+        flexGrow: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 24,
+        gap: 16,
+        paddingTop: insets.top + 12,
+        paddingBottom: insets.bottom + 24,
+      }}
+    >
+      <View
+        className="size-16 items-center justify-center rounded-xl bg-accent-soft"
+        style={CONTINUOUS_CORNER}
+      >
+        <Lock size={28} color={accentStrong} />
       </View>
       <Text className="text-center text-2xl font-black text-foreground">
-        Forgot password
+        {t('forgot.forgotPassword')}
       </Text>
       <Text className="text-center font-normal text-muted">
-        Password recovery coming soon
+        {t('forgot.comingSoon')}
       </Text>
 
       <TextField className="w-full" isDisabled>
-        <Label className="text-xs font-semibold text-foreground">Email</Label>
+        <Label className="text-xs font-semibold text-foreground">
+          {t('forgot.email')}
+        </Label>
         <Input
           testID="forgot-email"
           className="rounded-xl bg-default"
@@ -38,19 +57,19 @@ export default function Forgot() {
 
       <Button
         testID="forgot-submit"
-        className="w-full rounded-2xl bg-accent"
+        className="w-full rounded-xl bg-accent"
         isDisabled
       >
         <Button.Label className="font-bold text-accent-foreground">
-          Send recovery link
+          {t('forgot.sendRecoveryLink')}
         </Button.Label>
       </Button>
 
       <LinkButton testID="link-login" onPress={() => router.push('/login')}>
-        <LinkButton.Label className="font-semibold text-accent">
-          Back to sign in
+        <LinkButton.Label className="font-semibold text-accent-strong">
+          {t('forgot.backToSignIn')}
         </LinkButton.Label>
       </LinkButton>
-    </View>
+    </ScrollView>
   );
 }

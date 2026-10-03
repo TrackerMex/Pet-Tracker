@@ -37,11 +37,17 @@ export interface DeviceRepository {
 
   /**
    * Transaccion de claim (R3): INSERT pet_devices activo + UPDATE devices a
-   * status 'assigned' con ingest_watermark. Si el indice unico parcial
-   * rechaza el INSERT (carrera, 23505) traduce a DeviceAlreadyAssignedError
-   * o PetAlreadyHasDeviceError segun el indice violado — nunca un 500 (R8).
+   * status 'assigned' con ingest_watermark; devuelve la fila como quedo tras
+   * la transaccion, con battery_pct y last_message_at en NULL (#92 R1). Si el
+   * indice unico parcial rechaza el INSERT (carrera, 23505) traduce a
+   * DeviceAlreadyAssignedError o PetAlreadyHasDeviceError segun el indice
+   * violado — nunca un 500 (R8).
    */
-  claim(deviceId: string, petId: string, ingestWatermark: Date): Promise<void>;
+  claim(
+    deviceId: string,
+    petId: string,
+    ingestWatermark: Date,
+  ): Promise<Device>;
 
   /**
    * Transaccion de release (R13): UPDATE released_at = now() de la fila

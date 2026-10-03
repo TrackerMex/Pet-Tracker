@@ -154,6 +154,200 @@ dejar que un error de Drizzle/pg llegue crudo al cliente.
 describe('R1: <resumen del requisito>', () => { ... })
 ```
 
+### Prefijo de feature cuando un fichero acumula R-ids de dos specs
+
+Un R-id solo es único **dentro de su spec**. En cuanto una segunda feature
+añade requisitos al mismo fichero de test, el título desnudo deja de
+identificar nada: tras #63, `src/screens/pairing/index.test.tsx` tiene `R5`,
+`R6` y `R7` **dos veces** —los viejos de #42, los nuevos de #63—, y lo mismo
+pasa en `add-pet`, `weight-log` y `meal-schedule`.
+
+Cuando el fichero ya contenga R-ids de otra spec, **prefija con el id de la
+feature**:
+
+```
+describe('#63 R5: <resumen del requisito>', () => { ... })
+```
+
+El repo ya lo resolvió así tres veces de forma suelta (`#87 R15`, `#61 R10`,
+`R1 (mobile-jest-mock-hygiene)`); esta es la forma canónica. La responsabilidad
+es del `spec_author`: si `tasks.md` prescribe títulos desnudos, el implementador
+los copia literalmente y la colisión llega hasta el reviewer.
+
+No rompe la trazabilidad retroactivamente —`traceability.md` desambigua por
+título completo— pero un `-t 'R7'` sí selecciona los dos.
+
+El prefijo, además, es **contrato con una máquina**. Desde #108,
+`src/__tests__/design-drift.test.ts` ignora un `#` seguido de dos o tres
+dígitos **solo cuando le sigue ` R<dígito>`**: esa es la única forma de cita
+que sus guards de color hex distinguen de un color. Una cita suelta —`#108`,
+`#108)`, `#108:`— dentro de un fichero que alguna lista `featureFiles`
+enumere se sigue leyendo como hex y pone el guard en rojo. Cítalo siempre
+como `#108 R1`. La exclusión es deliberadamente contextual y no léxica:
+ignorar todo `#` de tres dígitos decimales dejaría pasar `#000`, `#111` y
+`#999`, que son colores de verdad.
+
+### Filtros de jest con rutas que llevan paréntesis
+
+Los argumentos posicionales de `jest` son **regex**, no rutas. Las pantallas de
+Expo Router viven en `src/app/(tabs)/`, así que un filtro literal trata
+`(tabs)` como grupo de captura, casa con `src/app/tabs/` —que no existe— y
+**salta el fichero en silencio, con exit 0 y sin aviso**:
+
+```bash
+bunx jest "src/app/(tabs)/__tests__/food"      # ❌ no corre nada, exit 0
+bunx jest 'src/app/\(tabs\)/__tests__/food'    # ✅
+bunx jest --runTestsByPath 'src/app/(tabs)/__tests__/food.test.tsx'  # ✅
+```
+
+En #63 el comando de verificación de la spec —ya firmada— llevaba dos rutas sin
+escapar: daba verde con exit 0 habiendo corrido 5 suites de 7, sin ejecutar dos
+requisitos. **Comprueba siempre que el número de suites que imprime jest
+coincide con el de ficheros que el filtro pretendía coger.**
+
+### Recortes del tag de apertura en candados de fuente
+
+Para aislar el tag de apertura de un elemento, recorta de `<` a `<` alrededor
+de un ancla que viva dentro de ese mismo tag; no recortes de `<Tag>` a
+`</Tag>`. Encoger la ventana produce un rojo seguro, mientras que ensancharla
+puede incluir propiedades de un hijo o hermano y fabricar un verde falso.
+
+El recorte da por hecho que el ancla es **única** en el fichero. Con dos copias
+(un señuelo `{false && …}`, las dos ramas de un ternario o un comentario con el
+mismo `testID`), `indexOf` recorta la primera, que puede no ser el elemento
+vigilado. Asevéralo en el mismo `it`, antes de la receta:
+
+```ts
+expect(source.lastIndexOf('testID="…"')).toBe(anchor);
+```
+
+Con el ancla única quedan **tres** límites conocidos, y solo el primero avisa:
+
+1. Un `<` dentro del propio tag (por ejemplo, `disabled={a < b}`) adelanta el
+   corte. **Falla hacia rojo**.
+2. Todo lo que viva entre el `>` que cierra el tag y el primer hijo **elemento**
+   entra en el bloque. Una cadena hija con la receta rompe el render, pero un
+   comentario JSX `{/* … */}` o un `{false && '…'}` no se renderizan: dan un
+   **verde falso** con la suite entera en verde.
+3. La regex lee texto, no código. Una receta comentada con `//` o `/* */`, o
+   metida en una cadena, **dentro** del propio tag también da un verde falso.
+
+Hay además un hueco que no es del recorte, sino de todo candado de fuente: la
+receta puede estar de verdad en el tag y no correr, porque un `{...override}`
+posterior cuyo `style` es opcional la pisa, y `tsc` no lo para.
+
+Hasta #122, el límite 2 se dejaba sin defensa porque «en la práctica rompe
+media suite al intentarlo». Eso vale para una cadena hija, pero es falso para un
+comentario. Los límites 2 y 3 y el `{...override}` los cierra lo mismo: una
+**pata de árbol que pulse** el elemento y lea su opacidad, porque mira lo que
+corre y no el texto:
+
+```ts
+await fireEvent(element, 'responderGrant', {
+  nativeEvent: {},
+  persist: () => undefined,
+});
+
+expect(element).toHaveStyle({ opacity: 0.8 });
+```
+
+`responderGrant` es el primer evento de `userEvent.press`, y parar ahí deja el
+`Pressable` pulsado. `fireEvent(element, 'pressIn')` **no** sirve: busca un
+`onPressIn` en las props, el `Pressable` no tiene ninguno propio, el evento no
+llega a nadie y la opacidad se queda en 1. La pata solo ve el estado que
+renderiza el test. La otra rama de un ternario la ve la unicidad del ancla, y
+por eso las dos defensas van juntas.
+
+El patrón vive en estos candados. Localízalos por contenido y no por número de
+línea, porque los números se desplazan con cada merge:
+
+- `mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts`, la
+  implementación de referencia: `grep -n "lastIndexOf('<', use.index)"`.
+  Recorre todos los usos de un símbolo y no tiene ancla de `testID`, así que la
+  unicidad no aplica.
+- `mobile-pet-tracker/src/app/(tabs)/__tests__/food.test.tsx`, el
+  `meal-toggle` (#109): `grep -n "lastIndexOf('<', anchor)"`.
+- `mobile-pet-tracker/src/screens/home/index.test.tsx`, la campana
+  `home-alerts-bell` (#121) y el `reminders-see-all` (#112): el mismo grep.
+- `mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts` y
+  `legibility-classnames.test.ts`, los candados de clases por `testID` (#120):
+  `grep -n "function openingTagWithTestId"`. El grep de `anchor` también los
+  encuentra, dentro del helper.
+
+Los tres de `food.test.tsx` y `home/index.test.tsx` aseveran su unicidad y
+tienen al lado su pata que pulsa (#122):
+`grep -rn "'responderGrant'" mobile-pet-tracker/src`.
+
+No queda ningún recorte de `<Tag` a `</Tag>` por migrar:
+`grep -rn "lastIndexOf('<[A-Z]" mobile-pet-tracker/src` no devuelve nada.
+
+Los candados de clases por `testID` (#120) meten la unicidad dentro del helper
+y añaden un corte: si el elemento se cierra solo, el recorte acaba en su `/>`.
+Sin ese corte, el hueco entre el `/>` y el siguiente `<` del fichero entra en
+la ventana, y un comentario JSX o un `{false && '…'}` en ese hueco dan un
+verde falso. El comentario que sigue al skeleton de `pet-hero-header.tsx` vive
+ahí. Esos candados solo leen fuente, así que los límites 2 y 3 los cierra el
+árbol: cada uno de los nueve elementos tiene, en el test de su pantalla o de su
+componente, una pata que asevera con `toBe` su `className` entero, y su `style`
+donde lo lleva (#127 R1 a R3): `grep -rn "#127 R" mobile-pet-tracker/src`. En
+los `Button`, ese `className` incluye las clases que añade heroui-native
+(`pressable-feedback__root button__root …`): al subir su versión hay que volver
+a medir esos literales. `legibility-classnames.test.ts` conserva a propósito
+`elementWithTestId`, que va del ancla al `</Button>` con los hijos dentro, para
+lo que es de los hijos del botón destructivo: la etiqueta, su texto y el veto
+del token del acento en todo el botón. Ese bloque tiene su propio hueco: un
+señuelo `{false && (…)}` con la etiqueta correcta delante de la real da un
+verde falso. Lo cierra el árbol (#128 R4):
+`grep -n "#128 R4" mobile-pet-tracker/src/screens/reminders/index.test.tsx`
+abre el sheet, busca la etiqueta con `within` dentro del botón y asevera con
+`toBe` su `className` y el del propio botón. Un señuelo que no se renderiza no
+está en el árbol, y uno que se renderiza da dos etiquetas y rompe la consulta.
+
+Tampoco vale aseverar la receta contra el fichero entero. Si otro elemento del
+mismo fichero la repite, esa copia da el verde aunque el elemento vigilado la
+pierda: así pasaba con la campana hasta #121. Ancla en el propio tag y recorta
+como arriba.
+
+Un **hijo** del elemento, como el icono de la campana, queda fuera de ese
+recorte: vive después del `>` que cierra el tag. Contra el fichero entero tiene
+el mismo agujero que la receta, y acotarlo por posición al primer hijo sigue
+leyendo texto (un comentario `{/* … */}` delante lo engaña). Su prop se asevera
+en el **árbol**: con `jest.spyOn(Uniwind, 'getCSSVariable')` devolviendo el
+nombre que recibe, cada token pinta un color distinto, y el valor esperado es un
+literal del test (`'--color-muted'`), nunca uno sacado de `useThemeColors`. El
+árbol solo ve el estado que renderiza, así que el test monta los estados que
+cambian el elemento. Así lo hace la campana (#124):
+`grep -n "se pinta con la tinta muted" mobile-pet-tracker/src/screens/home/index.test.tsx`.
+
+Si el elemento se **repite**, como los cuatro iconos de la tira de hoy, contar
+sus copias en el fichero entero tampoco lo acota: un señuelo en cualquier sitio
+repone la cuenta. El árbol ancla cada icono a su celda, que es el padre del
+valor que la celda pinta, y cierra la celda por sus hijos: cuántos tiene, cuál
+va primero y las props exactas del icono (componente, tamaño y tinta), con
+`toEqual`. Los estados que monta son los que cambian los datos de las celdas.
+Así lo hace la tira (#126):
+`grep -n "pinta su propio icono" mobile-pet-tracker/src/screens/home/index.test.tsx`.
+
+### Esperas sobre el árbol renderizado
+
+La condición que termina una espera debe ser la misma observación que hacen las
+aserciones posteriores. Si el test asevera el árbol, espera al árbol: esperar a
+la caché de Query o al contador de un mock y consultar el DOM después introduce
+una carrera. Una aserción de ausencia se ancla primero a la aparición o al estado
+final de un nodo positivo del mismo escenario.
+
+### Inventario de dobles de HeroUI y Reanimated (#110)
+
+- `src/components/__tests__/pet-hero-header.test.tsx:71` repite el mismo
+  `default: { ...actual.default, View }` y también es peso muerto: quitarlo deja
+  36/36 verde, por lo que el comentario de `:70` queda desmentido. Es ajeno a
+  #110 y requiere su propio cambio.
+- El doble de `Skeleton` de ese fichero (`:44-58`) sí es load-bearing: quitarlo
+  deja 4 tests rojos, así que hoy es legítimo y no es el mismo caso.
+- Los dobles de Reanimated de `theme-transition.test.tsx:18` y
+  `weekly-activity-chart.test.tsx:58` son legítimos: ninguno toca
+  `default.View`.
+
 ---
 
 ## Commits
@@ -202,6 +396,111 @@ push directo. Lo que no toca código de la app (harness, `docs/`, `specs/`,
 
 ---
 
+## Sesiones en paralelo: un worktree, una base de datos
+
+Dos sesiones de IA trabajando a la vez usan `git worktree` (uno por feature),
+pero el HEAD separado no separa la **infraestructura**: `docker-compose.yml`
+levanta **un** Postgres y **un** LocalStack para toda la máquina. Dos
+`./init.sh` simultáneos se borran filas entre sí y producen **e2e rojos falsos**
+que parecen bugs de código y se investigan durante media hora. Ya costó dos
+corridas completas en el cierre de #64.
+
+### Postgres: una base por worktree (elimina la coordinación)
+
+Un servidor Postgres aloja varias bases. Cada worktree usa la suya y el
+problema desaparece — no hay que avisar a nadie para correr tests que solo
+tocan Postgres:
+
+```bash
+# 1. crear la base (docker exec, NO docker compose exec: desde el worktree el
+#    proyecto compose se llama distinto y no encuentra el contenedor)
+docker exec pet-tracker-postgres \
+  psql -U pet_tracker -d postgres \
+  -c 'CREATE DATABASE pet_tracker_wt OWNER pet_tracker;'
+
+# 2. apuntar el .env del worktree (gitignorado, local a ese worktree)
+#    DATABASE_URL=postgresql://pet_tracker:<pass>@localhost:5433/pet_tracker_wt
+
+# 3. aplicar migraciones
+cd backend-pet-tracker && pnpm run db:migrate
+```
+
+`drizzle.config.ts:17` carga `../.env` por su cuenta con `dotenv`, así que el
+paso 3 **no** necesita exportar variables a mano. Y `init.sh` solo copia
+`.env.example` **si `.env` no existe** (`init.sh:58`): nunca lo sobrescribe, el
+apunte sobrevive.
+
+Validado el 2026-09-14 en `Pet-Tracker-wt-backend`: suite e2e completa exit 0
+con los mismos números que el baseline, y `pg_stat_database` confirmó que los
+inserts fueron a la base nueva y no a la compartida.
+
+### El puerto es 5433 en el VPS, y eso es correcto
+
+`docker-compose.yml` mapea `5432:5432` y `.env.example` dice 5432 — es el valor
+por defecto y no se toca. En el VPS algo ocupa `127.0.0.1:5432`, así que hay un
+**`docker-compose.override.yml` gitignorado** que remapea a 5433. Ese es el
+mecanismo previsto: cada máquina ajusta lo suyo en el override, no en el fichero
+versionado.
+
+### LocalStack sigue compartido: ahí el aviso previo se mantiene
+
+SQS, DynamoDB y S3 viven en un único LocalStack en `:4566`. Separar Postgres no
+lo separa. **14 de las 31 suites e2e lo tocan** y siguen necesitando aviso a la
+otra sesión antes de correr:
+
+`activity`, `alerts-center-notifier`, `alerts-engine`, `aws-real-ingest`,
+`aws-real-media`, `aws-real-smoke`, `device-subscriptions`, `ingestion`,
+`localstack-provisioning`, `media`, `media-docs`, `pet-reminders`, `positions`,
+`resource-isolation`
+
+Las otras 17 solo tocan Postgres: con base propia, se solapan sin avisar.
+
+### Antes de lanzar un gate, comprueba que no hay otro
+
+```bash
+pgrep -af 'init\.sh|test:e2e|jest-e2e' | grep -v pgrep
+```
+
+`pgrep -f 'bash ./init.sh'` **se encuentra a sí mismo** —el patrón está en la
+línea de comando del shell que lo lanza— y da falsos positivos. Ante un pid
+dudoso, mira su antigüedad con `ps -o etime= -p <pid>`: uno de 00:00 es el
+propio `pgrep`.
+
+### Nunca apliques una migración con `psql` crudo
+
+`pnpm run db:migrate` hace dos cosas: ejecuta el `.sql` **y** escribe su fila en
+`drizzle.__drizzle_migrations`. Aplicarlo a mano con `psql` hace solo la
+primera, y el journal queda mintiendo: la siguiente migración que alguien añada
+hace que drizzle reintente desde la primera fila que falta, el `CREATE TABLE`
+choca con la tabla que ya existe y **toda la migración nueva se va en el
+rollback**.
+
+Es un fallo latente: no lo detecta ningún gate, porque `init.sh` **no corre
+`db:migrate`** (`init.config.sh` solo tiene install, build, test, lint y
+typecheck) y los e2e pasan contra el esquema que ya está puesto. Se descubre
+meses después, cuando otra feature añade una migración.
+
+Pasó en #26 (`progress/impl_auth-forgot-password.md:70-72`): 0014 y 0015 se
+aplicaron con `psql` y no entraron en el journal de la base compartida del VPS.
+
+Si por lo que sea hay que aplicarlo a mano, la fila va detrás, con el `sha256`
+del `.sql` y el `when` que ese `tag` tiene en `meta/_journal.json`:
+
+```sql
+INSERT INTO drizzle.__drizzle_migrations (hash, created_at)
+VALUES ('<sha256sum del fichero .sql>', <when de meta/_journal.json>);
+```
+
+### Migraciones destructivas
+
+Una migración que borra o renombra una columna rompe a **toda** sesión cuyo
+código aún la declare, con un error que no tiene nada que ver con su feature
+(`column X does not exist`). Aplícala sobre la base compartida solo cuando la
+otra sesión haya **mergeado** su branch, no cuando termine su gate: entre el
+veredicto y el merge todavía quedan corridas de `init.sh`.
+
+---
+
 ## Variables de entorno
 
 Toda variable nueva se añade a esta tabla y a `.env.example` en el mismo
@@ -213,6 +512,12 @@ El `.env` vive en la **raíz del repo** (docker-compose e `init.sh` lo leen
 desde ahí). Como la app corre en `backend-pet-tracker/`, el `ConfigModule`
 debe cargarlo con `envFilePath: ['../.env']`.
 
+Las migraciones se aplican con `pnpm db:migrate` desde `backend-pet-tracker/`
+(y se generan con `pnpm db:generate`). drizzle-kit corre fuera de Nest, así
+que `drizzle.config.ts` carga el `.env` raíz vía dotenv (excepción
+documentada, la misma que `scripts/provision-local.ts`) y aborta con mensaje
+claro si `DATABASE_URL` falta o está vacía — no hace falta exportarla a mano.
+
 | Variable | Para qué | Estado |
 |---|---|---|
 | `DATABASE_URL` | Connection string de Postgres (Docker local) | en `.env.example` — la app la consume desde la primera feature con persistencia |
@@ -223,6 +528,7 @@ debe cargarlo con `envFilePath: ['../.env']`.
 | `EMAIL_ENABLED` | Selección de adaptadores de email de auth. Solo el literal `true` activa `ResendEmailVerificationSender` y `ResendPasswordResetSender`; cualquier otro valor (default local `false`) conserva los adaptadores de consola | en `.env.example` — consumida desde `auth-email-delivery` (#58) en `src/modules/auth/auth.module.ts` vía `ConfigService` |
 | `RESEND_API_KEY` | Credencial del API HTTP de Resend; obligatoria y no vacía cuando `EMAIL_ENABLED=true`. El valor real vive solo en el entorno y nunca se versiona | nombre vacío en `.env.example` — consumida desde `auth-email-delivery` (#58) en `src/modules/auth/auth.module.ts` vía `ConfigService` |
 | `RESEND_FROM` | Remitente verificado usado por Resend; obligatorio y no vacío cuando `EMAIL_ENABLED=true` | nombre vacío en `.env.example` — consumida desde `auth-email-delivery` (#58) en `src/modules/auth/auth.module.ts` vía `ConfigService` |
+| `RESET_LINK_HOST` | Host pelado del App Link de restablecimiento (`app.midominio.tld`), sin esquema, path ni slash final. El valor real nunca se versiona; debe coincidir en los dos entornos | nombre vacío en `.env.example` raíz y móvil — consumida desde `auth-reset-deep-link` (#59) por `AuthModule` vía `ConfigService` y en build time por `mobile-pet-tracker/app.config.ts` |
 | `JWT_SECRET` | Clave HS256 para firmar/verificar los `access_token` del login propio | en `.env.example` — consumida desde `auth-login-me` (#4): `src/modules/auth/infrastructure/security/jwt-token-service.ts` vía `ConfigService` |
 | `SIM_MODE` | Selección del cliente Wialon: cualquier valor distinto de `false` ⇒ simulador `FakeWialonClient` (default dev: fake) | en `.env.example` — consumida desde `wialon-ingestion-pipeline` (#8): `src/integrations/wialon/wialon.factory.ts` vía `ConfigService` |
 | `SIM_SEED` | Semilla entera del simulador determinista (default 1) — misma semilla + intervalo ⇒ mismas posiciones | en `.env.example` — consumida desde #8, misma vía que `SIM_MODE` |
@@ -246,6 +552,14 @@ debe cargarlo con `envFilePath: ['../.env']`.
 La app Expo vive en `mobile-pet-tracker/` como una isla gestionada con **bun**;
 sus dependencias, scripts y lockfile se administran desde esa carpeta, sin
 mezclarlos con el workspace pnpm de backend e infraestructura.
+
+En la práctica eso significa **bun también para ejecutar**, no solo para
+instalar: `bun add <pkg>`, `bunx expo install <pkg>` (que además fija el rango
+que el SDK recomienda), `bunx jest`, `bunx tsc --noEmit`, y `bunx <cli>@latest`
+para una herramienta puntual como `eas-cli`. Nada de `npm`, `npx` ni `npm i -g`:
+lo global no queda versionado y `npm` escribiría un `package-lock.json` que
+compite con `bun.lock`. `init.sh` ya corre la parte móvil con
+`bun run --cwd mobile-pet-tracker`.
 
 > **Carta de UI**: las decisiones de diseño visual, tokens, componentes
 > compartidos, `@expo/ui` y animación viven en `docs/ui-guidelines.md`
@@ -275,6 +589,15 @@ mezclarlos con el workspace pnpm de backend e infraestructura.
     nuevas se colocan junto al screen body.
   - Las pantallas anteriores a #39 NO se migran en frío: se mueven a este
     patrón solo cuando una feature las toque de fondo.
+    **Excepción nombrada (enmienda A10 de #102, 2026-09-22)**: se admite una
+    migración en frío si, y solo si, la feature que la pide cumple las cuatro
+    condiciones a la vez — (1) es un refactor puro, sin un solo cambio de
+    aserción ni de comportamiento; (2) declara el recuento de tests por suite
+    antes y después, y ambos son idénticos; (3) no solapa ficheros con
+    ninguna feature `in_progress`; y (4) su spec trae la enmienda a esta
+    viñeta con su propia casilla de firma humana. Una migración en frío que
+    no cumpla las cuatro sigue prohibida, y "ya que estamos" nunca es
+    justificación: la regla por defecto no cambia.
 - **Dimensiones de pantalla uniformes** (pedido del humano en el smoke de
   #38, 2026-08-25): toda pantalla nueva usa las mismas métricas de layout
   que `home.tsx` — `contentContainerStyle` con `paddingTop: insets.top + 12`,
@@ -283,3 +606,33 @@ mezclarlos con el workspace pnpm de backend e infraestructura.
   como el contenido final, nunca un spinner suelto que haga saltar el
   layout. El selector de mascota es siempre el componente compartido
   `src/components/pet-switcher.tsx`.
+  **Excepción nombrada (enmienda A9 de #67, 2026-09-07)**: si el primer hijo
+  del scroll es una **cabecera a sangre**, el `contentContainerStyle` conserva
+  `gap: 16` y `paddingBottom: insets.bottom + 96`, el `padding: 24` baja a un
+  envoltorio interior como `paddingHorizontal: 24`, y el
+  `paddingTop: insets.top + 12` lo asume la cabecera vía su slot. Las ramas de
+  estado que se pintan sin cabecera llevan su propio envoltorio con ese
+  `paddingTop`.
+
+  **Excepción nombrada (enmienda A11 de #95, 2026-09-23)**: una pantalla empujada
+  sobre el Stack raíz con cabecera nativa (`headerShown: true`) —hoy
+  `add-reminder`, `pets/add`, `pets/[petId]/docs`, `weight-log`,
+  `meal-schedule`, `pairing`, `reminders`, `alerts` (estas dos por la enmienda A13 de #114, 2026-09-23), `alerts/[alertId]` (por la enmienda A15 de #100, 2026-09-28), `pets/[petId]/geofences` (por la enmienda A18 de #41, 2026-10-02) y `pets/[petId]/geofence-editor` (por la enmienda A19 de #146, 2026-10-02)— no lleva `paddingTop: insets.top + 12`, porque
+  el inset superior lo consume la cabecera, ni `paddingBottom: insets.bottom +
+  96`, porque sobre ella no flota el `FloatingTabBar`. Su
+  `contentContainerStyle` es `padding: 24`, `gap: 16` y `paddingBottom:
+  insets.bottom + 24`, la misma holgura inferior que `(auth)` y
+  `reset-password`.
+
+## Enmienda #67 — cabecera fotográfica compartida
+
+`mobile-pet-hero-header` (#67) modifica una decisión que esta spec dejó
+aprobada. La spec de origen es `specs/mobile-pet-hero-header/`; el detalle de
+la enmienda está en su `requirements.md` §R10.
+
+- Spec enmendada: `docs/conventions.md`
+- Qué cambia: `enmienda A9 de la tabla de #67 §R10`
+- Qué NO cambia: ningún otro requisito de esta spec, ni su estado de
+  aprobación, ni los tests que ya la cubren.
+
+- [X] Enmienda aprobada por humano

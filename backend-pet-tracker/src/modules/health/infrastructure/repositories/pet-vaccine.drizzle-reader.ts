@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, asc, eq, gt } from 'drizzle-orm';
+import { and, asc, eq, gte } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DRIZZLE } from '@/db/drizzle.constants';
 import { petVaccines } from '@/db/schema/health.schema';
@@ -14,7 +14,7 @@ export class PetVaccineDrizzleReader implements PetVaccineReader {
 
   async findNextVaccine(
     petId: string,
-    after: string,
+    from: string,
   ): Promise<NextPetVaccine | null> {
     const [row] = await this.db
       .select({
@@ -24,7 +24,7 @@ export class PetVaccineDrizzleReader implements PetVaccineReader {
       })
       .from(petVaccines)
       .where(
-        and(eq(petVaccines.petId, petId), gt(petVaccines.nextDoseAt, after)),
+        and(eq(petVaccines.petId, petId), gte(petVaccines.nextDoseAt, from)),
       )
       .orderBy(asc(petVaccines.nextDoseAt))
       .limit(1);

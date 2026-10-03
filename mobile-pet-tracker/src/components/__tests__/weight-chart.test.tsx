@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react-native';
 import { HeroUINativeProvider } from 'heroui-native';
 
 import type { WeightEntry } from '../../api/types';
+import { LanguageProvider } from '../../providers/language-provider';
 import { WeightChart } from '../weight-chart';
 
 jest.mock('react-native-svg', () => {
@@ -31,17 +32,25 @@ function makeWeight(overrides: Partial<WeightEntry> = {}): WeightEntry {
   };
 }
 
+function WeightChartWrapper({ children }: { children: ReactNode }) {
+  return (
+    <HeroUINativeProvider>
+      <LanguageProvider initial="es">{children}</LanguageProvider>
+    </HeroUINativeProvider>
+  );
+}
+
 describe('R8: la gráfica degrada con <2 puntos', () => {
   it.each([
     { count: 0, entries: [] },
     { count: 1, entries: [makeWeight()] },
   ])('renders the empty fallback for $count entries', async ({ entries }) => {
     await render(<WeightChart entries={entries} />, {
-      wrapper: HeroUINativeProvider,
+      wrapper: WeightChartWrapper,
     });
 
     expect(screen.getByTestId('weight-chart-empty')).toHaveTextContent(
-      'Not enough data yet',
+      'Aún no hay datos suficientes',
     );
     expect(screen.queryByTestId('weight-chart')).toBeNull();
   });
@@ -54,7 +63,7 @@ describe('R8: la gráfica degrada con <2 puntos', () => {
     ];
 
     await render(<WeightChart entries={entries} />, {
-      wrapper: HeroUINativeProvider,
+      wrapper: WeightChartWrapper,
     });
 
     expect(screen.getByTestId('weight-chart').props).toEqual(
@@ -77,7 +86,7 @@ describe('R8: la gráfica degrada con <2 puntos', () => {
           makeWeight({ id: 'weight-1' }),
         ]}
       />,
-      { wrapper: HeroUINativeProvider },
+      { wrapper: WeightChartWrapper },
     );
 
     expect(screen.getByTestId('weight-chart-line').props.points).toBe(

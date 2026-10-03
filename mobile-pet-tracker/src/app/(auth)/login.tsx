@@ -1,17 +1,21 @@
 import { router } from 'expo-router';
 import { Button, Input, Label, LinkButton, TextField } from 'heroui-native';
 import { useState } from 'react';
-import { Text, View } from 'react-native';
+import { ScrollView, Text } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { login } from '../../api/auth';
 import { useAuth } from '../../providers/auth-provider';
+import { useTranslate } from '../../providers/language-provider';
 
 export default function Login() {
+  const insets = useSafeAreaInsets();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { signIn } = useAuth();
+  const t = useTranslate();
 
   async function handleSubmit() {
     setSubmitting(true);
@@ -26,33 +30,48 @@ export default function Login() {
           router.replace('/home');
           return;
         case 'invalid-credentials':
-          setError('Invalid credentials');
+          setError(t('login.invalidCredentials'));
           return;
         case 'unreachable':
-          setError('Cannot reach server');
+          setError(t('common.cannotReachServer'));
           return;
         case 'validation':
           setError(result.errors.map(({ message }) => message).join('\n'));
           return;
         case 'error':
         case 'missing-config':
-          setError('Something went wrong');
+          setError(t('common.somethingWentWrong'));
       }
     } catch {
-      setError('Something went wrong');
+      setError(t('common.somethingWentWrong'));
     } finally {
       setSubmitting(false);
     }
   }
 
   return (
-    <View className="flex-1 justify-center gap-4 bg-background p-6">
+    <ScrollView
+      testID="screen-login"
+      className="flex-1 bg-background"
+      keyboardShouldPersistTaps="handled"
+      contentInsetAdjustmentBehavior="automatic"
+      contentContainerStyle={{
+        flexGrow: 1,
+        justifyContent: 'center',
+        padding: 24,
+        gap: 16,
+        paddingTop: insets.top + 12,
+        paddingBottom: insets.bottom + 24,
+      }}
+    >
       <Text className="text-center text-2xl font-black text-foreground">
-        Sign in
+        {t('login.signIn')}
       </Text>
 
       <TextField>
-        <Label className="text-xs font-semibold text-foreground">Email</Label>
+        <Label className="text-xs font-semibold text-foreground">
+          {t('login.email')}
+        </Label>
         <Input
           testID="login-email"
           className="rounded-xl bg-default"
@@ -65,7 +84,7 @@ export default function Login() {
 
       <TextField>
         <Label className="text-xs font-semibold text-foreground">
-          Password
+          {t('login.password')}
         </Label>
         <Input
           testID="login-password"
@@ -84,12 +103,12 @@ export default function Login() {
 
       <Button
         testID="login-submit"
-        className="w-full rounded-2xl bg-accent"
+        className="w-full rounded-xl bg-accent"
         isDisabled={submitting}
         onPress={() => void handleSubmit()}
       >
         <Button.Label className="font-bold text-accent-foreground">
-          Sign in
+          {t('login.signIn')}
         </Button.Label>
       </Button>
 
@@ -98,8 +117,8 @@ export default function Login() {
         className="self-center"
         onPress={() => router.push('/register')}
       >
-        <LinkButton.Label className="font-semibold text-accent">
-          Create account
+        <LinkButton.Label className="font-semibold text-accent-strong">
+          {t('login.createAccount')}
         </LinkButton.Label>
       </LinkButton>
       <LinkButton
@@ -107,10 +126,10 @@ export default function Login() {
         className="self-center"
         onPress={() => router.push('/forgot')}
       >
-        <LinkButton.Label className="font-semibold text-accent">
-          Forgot password?
+        <LinkButton.Label className="font-semibold text-accent-strong">
+          {t('login.forgotPassword')}
         </LinkButton.Label>
       </LinkButton>
-    </View>
+    </ScrollView>
   );
 }

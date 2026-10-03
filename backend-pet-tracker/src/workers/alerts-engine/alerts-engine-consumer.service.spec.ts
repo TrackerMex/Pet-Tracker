@@ -111,6 +111,7 @@ function petsStub(name = 'Firulais'): MockOf<PetRepository> {
     createWithOwner: jest.fn(),
     findAllByMember: jest.fn(),
     findMembership: jest.fn(),
+    findOwnerTimezone: jest.fn(),
     findById: jest.fn().mockResolvedValue({ id: PET_ID, name }),
     update: jest.fn(),
     delete: jest.fn(),

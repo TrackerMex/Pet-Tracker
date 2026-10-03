@@ -27,9 +27,13 @@ $TEST_CMD
 ### 3. Init verde
 
 ```bash
+docker compose up -d
 ./init.sh
 # Debe terminar con "✅ Todo verde"
 ```
+
+`./init.sh` requiere Postgres y LocalStack levantados. Si falta cualquiera de
+los destinos derivados del `.env`, aborta en vez de saltarse los E2E.
 
 ---
 
@@ -276,6 +280,52 @@ pnpm -C backend-pet-tracker run test:e2e
 # Esperado: los tres recuentos idénticos a los del paso 2.
 ```
 
+### Feature 42 — mobile-device-pairing
+
+Prerrequisitos: `docker compose up -d`, `.env` raíz con `SIM_MODE=true`
+(default) y `POLLER_ENABLED=true`; backend arriba; dev build de Android
+instalado con `EXPO_PUBLIC_API_URL` apuntando a la IP LAN
+(`docs/verification.md` §Feature 52/54 para regenerar el build). Un
+usuario con **dos mascotas** (A y B) sin collar.
+
+```bash
+cd backend-pet-tracker
+pnpm run seed:devices            # SIM-001..003 / ACT-001..003, suscripción grandfathered activa
+```
+
+1. **Código inválido**: Home → collar card `Pair a collar` (o Perfil →
+   `Configuración del Dispositivo GPS`) → mascota A → `ACT-999` → `Pair
+   collar` → mensaje `Invalid activation code…`; el botón vuelve a estar
+   habilitado.
+2. **Éxito**: `ACT-001` → vista `Tracker is ready` con `Model sim-collar`
+   y `ESN SIM-001` → `View on map` → el tab Map muestra posiciones del
+   simulador en ≤ 2 min de cron.
+3. **Ya reclamado**: mascota B → `ACT-001` → `This collar is already paired
+   to another pet.`
+4. **Tracked**: volver a `/pairing` con A → vista `GPS device` con pill
+   `GPS tracking active`.
+5. **Free**: en otra terminal
+   `pnpm run subscription:set -- --unit-id 900001 --status canceled`
+   → salir y volver a `/pairing` (refetch en foco) → bloque `Free plan —
+   health only…`; el tab Map muestra `Live tracking requires a collar`.
+   Reactivar: `pnpm run subscription:set -- --unit-id 900001 --status active`
+   → pill `GPS tracking active` y posiciones de nuevo **sin re-claim**
+   (R5/R6 de #25).
+6. **Sin plan al reclamar (402)**:
+   `pnpm run subscription:set -- --unit-id 900003 --status canceled` →
+   mascota B → `ACT-003` → `This collar has no active plan…`.
+7. **Unpair**: mascota A → `Unpair collar` → diálogo nativo → `Cancel` no
+   hace nada; `Unpair` → vuelve al formulario; Home muestra `Free`; nuevo
+   claim de `ACT-001` en B → `Tracker is ready` (el collar quedó
+   `available`).
+8. **Solo owner** (opcional si hay segunda cuenta con rol `family` sobre A):
+   claim → `Only the owner can pair a collar.`
+
+Collar real (opcional): con `WIALON_TOKEN` real y `SIM_MODE=false`,
+`pnpm run provision:device -- --unit-id <wialon_unit_id>` imprime el
+`activation_code`; repetir el paso 2 con él. Registrar solo resultados y
+status en `progress/impl_mobile-device-pairing.md`.
+
 ### Feature 44 — auth-forgot-password
 
 Usa una cuenta local ya registrada y verificada cuyo password anterior
@@ -448,7 +498,7 @@ este runbook no cambian.
    `android/app/debug.keystore`. La config avisa por consola, pero no aborta:
 
    ```bash
-   cd mobile-pet-tracker && npx expo prebuild --clean --platform android
+   cd mobile-pet-tracker && bunx expo prebuild --clean --platform android
    ```
 
 2. Obtén la SHA-1 del keystore de debug desde el proyecto Android generado:
@@ -487,7 +537,7 @@ este runbook no cambian.
    durante el prebuild:
 
    ```bash
-   npx expo prebuild --clean --platform android
+   bunx expo prebuild --clean --platform android
    grep -c "com.google.android.geo.API_KEY" android/app/src/main/AndroidManifest.xml
    bunx expo run:android
    ```
@@ -533,7 +583,7 @@ Go:
 
 ```bash
 cd mobile-pet-tracker
-npx expo prebuild --clean --platform android
+bunx expo prebuild --clean --platform android
 grep -c "com.google.android.geo.API_KEY" android/app/src/main/AndroidManifest.xml
 bunx expo run:android
 ```
@@ -705,6 +755,255 @@ repositorio o al reporte.
 El humano registra G1, G2, G3-reset, G3-verificación y G4 como confirmados, con
 fecha, en `progress/impl_auth-email-delivery.md`, sin secretos ni tokens. El
 reviewer no aprueba la feature mientras cualquiera de ellos siga pendiente.
+
+### Feature 59 — auth-reset-deep-link
+
+Estos cuatro gates los ejecuta una persona, en orden. Requieren el dev build
+de Android; Expo Go no puede validar App Links. Sustituye los placeholders
+solo en los entornos indicados y nunca copies el dominio real, fingerprints,
+direcciones de correo, contraseñas ni tokens al reporte.
+
+1. **G1 — obtener y publicar el fingerprint SHA-256 del dev build.**
+
+   El dev build local (`bunx expo run:android`) se firma con el keystore que
+   genera el prebuild en `mobile-pet-tracker/android/app/debug.keystore`, no
+   con `~/.android/debug.keystore` de Android Studio. Desde
+   `mobile-pet-tracker/android` ejecuta:
+
+   ```bash
+   keytool -list -v -J-Duser.language=en -keystore app/debug.keystore -alias androiddebugkey -storepass android -keypass android
+   ```
+
+   En Windows usa `app\debug.keystore` (PowerShell y cmd no expanden `~`
+   para programas externos). El flag `-J-Duser.language=en` evita el
+   `MissingFormatArgumentException` con locale español. Alternativa:
+   `gradlew signingReport` (`gradlew.bat` en Windows) y lee la variante
+   `debug`.
+
+   Copia el valor `SHA256` completo, no el `SHA1`, y sustituye
+   `REPLACE_WITH_DEV_BUILD_SHA256` en
+   `hosting/.well-known/assetlinks.json`. Debe conservar los 32 pares
+   hexadecimales separados por `:` y el fichero debe seguir conteniendo un
+   único statement para `com.trackermex.pettracker`.
+
+2. **G2 — subir los artefactos estáticos a Hostinger.**
+
+   Sube el contenido de `hosting/` tal cual a `public_html/`, incluida la
+   carpeta oculta `.well-known`. Con el host real sustituido localmente en los
+   comandos, confirma:
+
+   ```bash
+   curl -fsSI https://<RESET_LINK_HOST>/.well-known/assetlinks.json
+   curl -fsS 'https://<RESET_LINK_HOST>/reset-password?token=TEST_ONLY'
+   ```
+
+   La primera ruta debe responder 200 con `Content-Type: application/json` y
+   la segunda debe servir la página fallback. Su carga no debe efectuar
+   ninguna petición adicional ni consumir el token de prueba.
+
+3. **G3 — configurar el mismo host en backend y móvil.**
+
+   Define `RESET_LINK_HOST=<host real>` tanto en el `.env` gitignoreado de la
+   raíz como en `mobile-pet-tracker/.env`. Usa solo el host pelado: sin
+   `https://`, path ni slash final. Reinicia el backend para recargar
+   `ConfigService` y regenera el dev build de Android para que el intent
+   filter quede escrito en la aplicación. Ninguno de los dos `.env` se
+   commitea.
+
+4. **G4 — smoke completo y de un solo uso.**
+
+   - Con el backend levantado y una cuenta propia, ejecuta un
+     `POST /v1/auth/forgot-password`; debe responder 200 y el correo debe
+     llegar con el enlace HTTPS.
+   - Abre el enlace dos veces antes de enviar el formulario. Las dos aperturas
+     deben entrar en `/reset-password` del dev build con el token intacto; no
+     debe existir petición de reset durante el montaje.
+   - Completa el formulario una vez y confirma el 200. Reabre el mismo enlace
+     e intenta repetirlo: el segundo `POST /v1/auth/reset-password` debe
+     responder 400.
+   - Confirma que el login con la contraseña anterior responde 401 y con la
+     nueva responde 200.
+   - En un dispositivo o perfil sin la app instalada, abre el enlace y
+     confirma que aparece la página fallback de Hostinger.
+
+Registra únicamente los resultados y status en
+`progress/impl_auth-reset-deep-link.md`. G1–G4 siguen pendientes hasta esa
+confirmación humana; las suites automáticas no los sustituyen.
+
+### Feature 79 — mobile-push-registration: `google-services.json` del dev build
+
+El registro del push token falla en un dev build **local** si Firebase no está
+inicializado en el APK. El síntoma exacto, con el diagnóstico de R13 puesto:
+
+```
+[push] registration failed [Error: Unable to get Firebase Messaging instance.
+Did you configure `googleServicesFile` path in app config? …
+Default FirebaseApp is not initialized in this process com.trackermex.pettracker]
+```
+
+**Por qué pasa aunque las credenciales FCM V1 estén subidas a EAS**: esas
+credenciales las inyecta **EAS Build**. Un dev build compilado en la máquina del
+humano con `bunx expo run:android` no pasa por EAS, así que necesita el fichero
+de configuración de Firebase en el proyecto.
+
+**Cómo obtenerlo** (una vez por máquina):
+
+1. Consola de Firebase → el proyecto ligado a la credencial FCM V1 de esta app.
+2. Configuración del proyecto → tus apps → la app de Android con
+   `applicationId` **`com.trackermex.pettracker`**. Si no existe, añadirla con ese
+   mismo id.
+3. Descargar `google-services.json` y dejarlo en `mobile-pet-tracker/`.
+
+**El fichero NO se versiona**: está en `mobile-pet-tracker/.gitignore` porque
+identifica el proyecto de Firebase del humano. Cada máquina que compile un dev
+build de Android lo descarga por su cuenta.
+
+**Después de colocarlo**, el build nativo hay que rehacerlo — la configuración
+entra en el `AndroidManifest.xml` durante el prebuild:
+
+```bash
+cd mobile-pet-tracker
+bunx expo prebuild --clean --platform android
+bunx expo run:android
+```
+
+Si el fichero falta, `app.config.ts` **no** declara `googleServicesFile` y avisa
+por consola remitiendo a esta sección (R14). Eso es deliberado: sin el aviso, el
+build salía adelante y el fallo aparecía mucho más tarde, en forma de un push que
+nunca llega.
+
+#### Disparar la notificación a mano desde Windows (añadido en #114, 2026-09-23)
+
+La ruta alternativa determinista de la prueba de humo de #79 (`aws sqs
+send-message` contra la cola `notifications`) falla de dos formas en la máquina
+del humano:
+
+- **Pide `aws login`.** El comando apunta a LocalStack, que no necesita la
+  cuenta real, pero la CLI exige credenciales de todos modos. Se usan las
+  mismas de relleno que `.env.example` (`test`/`test`, `us-east-1`). **No inicies
+  sesión en la cuenta real** para esto.
+- **PowerShell rompe las comillas** del JSON al pasarlo a `aws`. El cuerpo va en
+  un fichero y se pasa con `file://`.
+
+```powershell
+$env:AWS_ACCESS_KEY_ID = "test"
+$env:AWS_SECRET_ACCESS_KEY = "test"
+$env:AWS_DEFAULT_REGION = "us-east-1"
+$pet = "<petId>"   # una mascota de tu cuenta: pets ⋈ pet_users ⋈ users por email
+$q = aws --endpoint-url http://localhost:4566 sqs get-queue-url --queue-name notifications --query QueueUrl --output text
+$id = [guid]::NewGuid().ToString()   # cualquier UUID: el notifier resuelve por petId
+@{ version = 1; kind = "alert"; alertId = $id; petId = $pet; title = "Smoke"; body = "Prueba de toque"; data = @{ petId = $pet; alertId = $id } } |
+  ConvertTo-Json -Compress | Set-Content -Encoding ascii msg.json
+aws --endpoint-url http://localhost:4566 sqs send-message --queue-url $q --message-body file://msg.json
+```
+
+Antes de disparar nada, comprueba que el dev build de **esa** máquina tiene
+`google-services.json` (la sección de arriba). Sin él, el registro avisa con
+`[push] registration failed` y no llega ningún push. En #114 la spec daba por
+hecho que no hacía falta regenerar el dev build, y en esa máquina no era cierto.
+
+### Push en un build de producción — lo que habrá que resolver (nota, 2026-09-18)
+
+Nada de esto aplica todavía: no hay build de producción. Se anota aquí al
+descubrirse durante el gate de #79, para no volver a deducirlo.
+
+1. **El `google-services.json` no está en el repo** (`.gitignore`), así que un
+   build de EAS no lo encuentra solo. Hay que subirlo como *file secret*
+   (`eas secret:create --type file`) y referenciarlo en el perfil de build. Si
+   falta, el APK de producción falla **igual que en local pero en silencio**: el
+   aviso de R13 está guardado por `__DEV__`.
+2. **Credenciales FCM V1 por perfil.** La clave de service account se subió para
+   el perfil `development`; verificar con `eas credentials` que el perfil de
+   producción también la tiene.
+3. **El fichero está atado al `applicationId`.** Si producción usa un id distinto
+   de `com.trackermex.pettracker`, hace falta una **segunda app** en el proyecto
+   de Firebase y su propio `google-services.json`.
+4. **Un registro fallido es invisible para el usuario y para nosotros.** No da
+   error: simplemente no llega ningún push. La señal explotable está en el
+   backend — un usuario sin fila en `push_tokens` es un registro que falló. Vale
+   una feature de observabilidad antes del lanzamiento.
+5. **El backend de producción necesita `PUSH_ENABLED=true` y la cola
+   `notifications` creada en la cuenta AWS real**, no solo en LocalStack.
+6. **iOS no usa FCM**: va por APNs con su propia clave, y entra por #60
+   `mobile-ios-support`.
+
+### Feature 96 — harness-e2e-nunca-corre-en-ci
+
+`./init.sh` ya requiere Postgres y LocalStack levantados con
+`docker compose up -d`; si alguna URL de infraestructura del `.env` no
+responde, termina con error antes de los E2E. En CI, el workflow levanta el
+Compose versionado y espera sus healthchecks antes de ejecutar el harness.
+
+Las tres suites `aws-real-*` se saltan por diseño con `AWS_MODE=local`: el
+verde correcto ejecuta todas las suites menos esas tres. No congeles el
+recuento; comprueba en el commit evaluado que:
+
+```text
+suites ejecutadas = ficheros test/*.e2e-spec.ts - ficheros test/aws-real-*.e2e-spec.ts
+```
+
+El resultado debe ser distinto de cero. Nunca cambies CI a `AWS_MODE=aws` para
+forzar las suites reales.
+
+**G1 — demostrar que un CI verde ejecuta los E2E (solo humano):**
+
+1. Abre el PR de `feature/96-harness-e2e-nunca-corre-en-ci` contra `main` y
+   espera al job `verify`.
+2. En el log confirma la sección `→ Tests e2e...` y la línea de resumen
+   `Test Suites: …` de Jest.
+3. Recuenta los dos globs del commit y verifica la igualdad anterior: el
+   número de suites ejecutadas debe ser distinto de cero.
+4. Confirma que el job termina verde y registra su URL en
+   `progress/impl_harness-e2e-nunca-corre-en-ci.md`.
+
+Si el rojo procede del flake móvil conocido de `add-pet` o `alerts`, relanza el
+job: ese fallo no demuestra nada sobre este gate.
+
+**G2 — demostrar que un E2E rojo pone el PR en rojo (solo humano, después de
+G1):**
+
+1. Crea la rama temporal `test/96-ci-red-probe` desde la rama de la feature.
+2. En `backend-pet-tracker/test/app.e2e-spec.ts`, cambia únicamente el
+   `.expect(401)` del único test por `.expect(418)` y commitea con
+   `test(ci): probe deliberado de rojo e2e (no mergear)`.
+3. Publica la rama y abre un PR en borrador contra `main`.
+4. Comprueba que el check queda rojo, que falla el paso
+   `Harness verification (init.sh)` dentro de `→ Tests e2e...`, y que el log
+   nombra `app.e2e-spec.ts` y `expected 418`.
+5. Cierra el PR sin mergear y borra la rama temporal local y remota.
+6. Registra en el reporte la URL de esta corrida roja, su línea de fallo y la
+   URL verde de G1.
+
+G1 y G2 son gates humanos: ninguna suite automática ni reviewer los cierra.
+
+**Techo conocido del candado de `AWS_MODE` (enmienda E1).** El candado cuenta
+las claves YAML `AWS_MODE:` **a principio de línea** y prohíbe `AWS_MODE=` en
+cualquier `run:`. Eso cubre las formas que se escriben en la práctica, pero no
+un mapping de flujo:
+
+```yaml
+env: { AWS_MODE: aws }     # la suite sigue verde
+```
+
+Medido por el reviewer el 2026-09-15. No se cerró porque hacerlo exige parsear
+YAML de verdad, y el gasto está además cortado aguas abajo por el guard
+`runSmoke` de las tres suites `aws-real-*`. Si algún día se edita `ci.yml` con
+esa forma, el candado no lo va a parar: cerrarlo pide una enmienda nueva con su
+propia firma.
+
+**Ruido esperado en el log, que no es un fallo de la guarda.** La corrida
+imprime varias líneas `ERROR [PollerService] ... connect ECONNREFUSED
+127.0.0.1:4566`. No son LocalStack caído: salen de un `mockRejectedValue(new
+Error('connect ECONNREFUSED 127.0.0.1:4566'))` en
+`backend-pet-tracker/src/workers/poller.service.spec.ts`, el test que comprueba
+que el ciclo del poller se salta sin tumbar el proceso cuando SQS falla. Ya
+aparecían antes de la feature 96. Si la guarda nueva fuese la que falla, la
+línea sería otra y la corrida no llegaría a los E2E:
+
+```
+Infra e2e caída: <host>:<puerto> no responde (derivado de <CLAVE> en .env).
+Levántala con: docker compose up -d
+```
 
 ---
 

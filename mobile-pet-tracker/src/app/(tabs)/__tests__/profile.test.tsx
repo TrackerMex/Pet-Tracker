@@ -1,6 +1,7 @@
-import { render, screen } from '@testing-library/react-native';
+import { screen } from '@testing-library/react-native';
 
 import ProfileRoute from '../profile';
+import { renderWithProviders } from '../../../../test/render-with-providers';
 
 jest.mock('../../../screens/profile', () => {
   const React = jest.requireActual<typeof import('react')>('react');
@@ -15,7 +16,7 @@ jest.mock('../../../screens/profile', () => {
 
 describe('R2: route Profile delgada', () => {
   it('only delegates rendering to the screen body', async () => {
-    await render(<ProfileRoute />);
+    await renderWithProviders(<ProfileRoute />);
 
     expect(screen.getByTestId('profile-screen-body')).toBeVisible();
   });

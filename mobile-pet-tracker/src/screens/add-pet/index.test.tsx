@@ -2,12 +2,16 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/rea
 import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import * as ImagePicker from 'expo-image-picker';
+import { Platform } from 'react-native';
 
 import { requestPhotoUploadUrl, uploadPhotoToUrl } from '../../api/media';
 import { createPet } from '../../api/pets';
+import { es } from '../../i18n/catalog';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
+import { LanguageProvider } from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
 import { AddPetScreen } from '.';
+import { TOUCH_SLOP } from '../../theme/touch-target';
 
 jest.mock('../../api/pets', () => ({ createPet: jest.fn() }));
 jest.mock('../../api/media', () => ({
@@ -17,7 +21,7 @@ jest.mock('../../api/media', () => ({
 }));
 jest.mock('expo-image-picker', () => ({
   launchImageLibraryAsync: jest.fn(),
-}), { virtual: true });
+}));
 jest.mock('../../providers/auth-provider', () => ({ useAuth: jest.fn() }));
 jest.mock('../../providers/selected-pet-provider', () => ({
   useSelectedPet: jest.fn(),
@@ -68,10 +72,26 @@ function pending<T>(): Promise<T> {
 async function renderAddPet() {
   return render(
     <HeroUINativeProvider>
-      <AddPetScreen />
+      <LanguageProvider initial="es">
+        <AddPetScreen />
+      </LanguageProvider>
     </HeroUINativeProvider>,
   );
 }
+
+async function pressPickPhoto(): Promise<void> {
+  if (mockLaunchImageLibrary.getMockImplementation() === undefined) {
+    throw new Error(
+      'PICKER_MOCK_UNARMED: launchImageLibraryAsync must be rearmed by the root beforeEach in add-pet/index.test.tsx',
+    );
+  }
+  await fireEvent.press(screen.getByTestId('add-pet-photo'));
+}
+
+beforeEach(() => {
+  mockLaunchImageLibrary.mockReset();
+  mockLaunchImageLibrary.mockResolvedValue({ canceled: true, assets: null });
+});
 
 describe('R6: alta de mascota', () => {
   beforeEach(() => {
@@ -101,7 +121,7 @@ describe('R6: alta de mascota', () => {
     expect(screen.getByTestId('size-large')).toBeVisible();
     expect(screen.getByTestId('sterilized-true')).toBeVisible();
     expect(screen.getByTestId('microchip-input')).toBeVisible();
-    expect(screen.getByTestId('pet-avatar').props.name).toBe('Pet');
+    expect(screen.getByTestId('pet-avatar').props.name).toBe('Mascota');
   });
 
   it('uses Host + community DateTimePicker and keeps exactly birthDate', async () => {
@@ -166,7 +186,9 @@ describe('R6: alta de mascota', () => {
     await fireEvent.changeText(screen.getByTestId('name-input'), 'Luna');
     await fireEvent.press(screen.getByTestId('add-pet-submit'));
 
-    expect(screen.getByTestId('add-pet-error')).toHaveTextContent('Choose a birth date');
+    expect(screen.getByTestId('add-pet-error')).toHaveTextContent(
+      'Elige una fecha de nacimiento',
+    );
     expect(mockCreatePet).not.toHaveBeenCalled();
   });
 
@@ -233,7 +255,7 @@ describe('R7: foto opcional tras alta', () => {
     }) as unknown as typeof fetch;
     await renderAddPet();
 
-    await fireEvent.press(screen.getByTestId('add-pet-photo'));
+    await pressPickPhoto();
     await waitFor(() =>
       expect(screen.getByTestId('pet-avatar').props.photoUrl).toBe(
         'file:///new-pet.jpg',
@@ -258,5 +280,275 @@ describe('R7: foto opcional tras alta', () => {
     );
     expect(mockRouter.back).toHaveBeenCalledTimes(1);
     expect(mockRouter.replace).not.toHaveBeenCalled();
+  });
+});
+
+describe('R1 (mobile-jest-mock-hygiene): el mock del picker se reinicializa por test', () => {
+  it('uses a canceled default without inheriting another test', async () => {
+    await expect(mockLaunchImageLibrary()).resolves.toEqual({
+      canceled: true,
+      assets: null,
+    });
+    expect(mockLaunchImageLibrary).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('#72 R4: el fallo del picker nombra el invariante roto', () => {
+  it('#72 R4: falla con PICKER_MOCK_UNARMED si el mock está desarmado', async () => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockUseSelectedPet.mockReturnValue({ selectedPetId: null, selectPet });
+    mockCreatePet.mockReturnValue(pending());
+    await renderAddPet();
+    mockLaunchImageLibrary.mockReset();
+
+    await expect(pressPickPhoto()).rejects.toThrow(/PICKER_MOCK_UNARMED/);
+  });
+});
+
+describe('#90 R6: birthDate manda el día civil local del picker, no el UTC', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2026-09-17T23:30:00Z'));
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockUseSelectedPet.mockReturnValue({ selectedPetId: 'pet-1', selectPet });
+    mockCreatePet.mockReturnValue(pending());
+  });
+
+  afterEach(() => jest.useRealTimers());
+
+  it('envía los getters locales aunque los getters UTC estén en el día siguiente', async () => {
+    mockCreatePet.mockResolvedValue({
+      kind: 'ok',
+      pet: { id: 'pet-new', name: 'Nala' } as never,
+    });
+    const birthDate = Object.assign(new Date(2026, 8, 17, 23, 30), {
+      getUTCFullYear: () => 2026,
+      getUTCMonth: () => 8,
+      getUTCDate: () => 18,
+    });
+
+    await renderAddPet();
+    await fireEvent.changeText(screen.getByTestId('name-input'), 'Nala');
+    await fireEvent.press(screen.getByTestId('birth-date-field'));
+    const picker = within(
+      screen.getByTestId('expo-ui-picker-host'),
+    ).getByTestId('birth-date-picker');
+    await fireEvent(picker, 'onValueChange', {}, birthDate);
+    await fireEvent.press(screen.getByTestId('add-pet-submit'));
+
+    await waitFor(() =>
+      expect(mockCreatePet).toHaveBeenCalledWith(
+        'http://example.test/v1',
+        'jwt-token',
+        expect.objectContaining({ birthDate: '2026-09-17' }),
+      ),
+    );
+  });
+});
+
+describe('#61 R10: los controles táctiles declaran TOUCH_SLOP', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockUseSelectedPet.mockReturnValue({ selectedPetId: 'pet-1', selectPet });
+    mockCreatePet.mockReturnValue(pending());
+  });
+
+  it.each([
+    'species-dog',
+    'sex-female',
+    'size-small',
+    'sterilized-true',
+    'age-mode-date',
+  ])('%s llega a 44 pt sin crecer a la vista', async (testID) => {
+    await renderAddPet();
+
+    await waitFor(() => expect(screen.getByTestId(testID)).toBeVisible());
+
+    expect(screen.getByTestId(testID).props.hitSlop).toEqual(TOUCH_SLOP);
+  });
+});
+
+describe('#62 R11: los chips de especie usan la receta única de chip', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockUseSelectedPet.mockReturnValue({ selectedPetId: 'pet-1', selectPet });
+    mockCreatePet.mockReturnValue(pending());
+  });
+
+  it.each([
+    ['species-dog', 'Perro'],
+    ['species-cat', 'Gato'],
+  ])('%s coincide con los demás chips del formulario', async (testID, label) => {
+    await renderAddPet();
+
+    const chip = screen.getByTestId(testID);
+
+    expect(chip.props.className).toContain('px-3 py-2');
+    expect(chip.props.className).not.toContain('px-4');
+    expect(within(chip).getByText(label).props.className).toBe(
+      'text-sm font-semibold text-foreground',
+    );
+    expect(chip.props.hitSlop).toEqual(TOUCH_SLOP);
+  });
+});
+
+describe('#62 R12: el placeholder del formulario sale del tema', () => {
+  const muted = '#667085';
+  const themeColors = jest.requireActual<
+    typeof import('../../theme/use-theme-colors')
+  >('../../theme/use-theme-colors');
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    jest.spyOn(themeColors, 'useThemeColors').mockImplementation(
+      ((tokens: readonly string[]) =>
+        tokens.map((token) => (token === 'muted' ? muted : '#0D1117'))) as typeof themeColors.useThemeColors,
+    );
+    process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockUseSelectedPet.mockReturnValue({ selectedPetId: 'pet-1', selectPet });
+    mockCreatePet.mockReturnValue(pending());
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it('usa muted en los cuatro TextInput con placeholder', async () => {
+    await renderAddPet();
+
+    for (const testID of ['name-input', 'breed-input', 'microchip-input']) {
+      expect(screen.getByTestId(testID).props.placeholderTextColor).toBe(muted);
+    }
+
+    await fireEvent.press(screen.getByTestId('age-mode-months'));
+
+    expect(screen.getByTestId('approx-age-input').props.placeholderTextColor).toBe(
+      muted,
+    );
+  });
+});
+
+describe('#95 R5: la pantalla no dibuja cabecera propia', () => {
+  it('retira el botón y el título del cuerpo', async () => {
+    process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
+    mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() });
+    mockUseSelectedPet.mockReturnValue({ selectedPetId: 'pet-1', selectPet });
+    await renderAddPet();
+    expect(screen.queryByTestId('add-pet-back')).toBeNull();
+    expect(screen.queryByText(es['addPet.addPet'])).toBeNull();
+  });
+});
+
+describe('#95 R6: métricas bajo cabecera nativa', () => {
+  it('usa solo el inset inferior del dispositivo', async () => {
+    process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
+    mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() });
+    mockUseSelectedPet.mockReturnValue({ selectedPetId: 'pet-1', selectPet });
+    await renderAddPet();
+    expect(screen.getByTestId('screen-add-pet').props.contentContainerStyle).toEqual({
+      padding: 24, gap: 16, paddingBottom: 48,
+    });
+  });
+});
+
+const originalPlatform = Platform.OS;
+
+function setPlatform(os: string): void {
+  Object.defineProperty(Platform, 'OS', { configurable: true, value: os });
+}
+
+function wallClock(local: number[], utc: number[]): Date {
+  return Object.assign(new Date(local[0], local[1], local[2], local[3], local[4]), {
+    getUTCFullYear: () => utc[0],
+    getUTCMonth: () => utc[1],
+    getUTCDate: () => utc[2],
+  });
+}
+
+describe('#123: picker de nacimiento de Añadir mascota en Android a las 20:00 del 24 de septiembre', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date(2026, 8, 24, 20, 0));
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockUseSelectedPet.mockReturnValue({ selectedPetId: 'pet-1', selectPet });
+    mockCreatePet.mockResolvedValue({ kind: 'ok', pet: { id: 'pet-new', name: 'Nala' } as never });
+    setPlatform('android');
+  });
+
+  afterEach(() => {
+    setPlatform(originalPlatform);
+    jest.useRealTimers();
+  });
+
+  describe('#123 R6: Añadir mascota muestra y manda el día de nacimiento elegido', () => {
+    it.each([
+      ['elegir hoy (24 de septiembre de 2026) manda 2026-09-24', [2026, 8, 23, 18, 0], [2026, 8, 24], '24/9/2026', '2026-09-24'],
+      ['elegir el 1 de octubre de 2025 manda 2025-10-01 (cruce de mes)', [2025, 8, 30, 18, 0], [2025, 9, 1], '1/10/2025', '2025-10-01'],
+      ['elegir el 1 de enero de 2026 manda 2026-01-01 (cruce de año)', [2025, 11, 31, 18, 0], [2026, 0, 1], '1/1/2026', '2026-01-01'],
+    ] as [string, number[], number[], string, string][])('%s', async (_title, local, utc, etiqueta, birthDate) => {
+      await renderAddPet();
+      await fireEvent.changeText(screen.getByTestId('name-input'), 'Nala');
+      await fireEvent.press(screen.getByTestId('birth-date-field'));
+      const picker = within(screen.getByTestId('expo-ui-picker-host')).getByTestId('birth-date-picker');
+      await fireEvent(picker, 'onValueChange', {}, wallClock(local, utc));
+      expect(within(screen.getByTestId('birth-date-field')).getByText(etiqueta)).toBeVisible();
+      await fireEvent.press(screen.getByTestId('add-pet-submit'));
+      await waitFor(() => expect(mockCreatePet).toHaveBeenCalledWith(
+        'http://example.test/v1',
+        'jwt-token',
+        { name: 'Nala', species: 'dog', birthDate },
+      ));
+    });
+  });
+
+  describe('#123 R7: el calendario de nacimiento abre en el día local y el máximo no se convierte', () => {
+    it('abre en el 24, con el máximo en el instante actual', async () => {
+      await renderAddPet();
+      await fireEvent.press(screen.getByTestId('birth-date-field'));
+      const picker = within(screen.getByTestId('expo-ui-picker-host')).getByTestId('birth-date-picker');
+      expect((picker.props.value as Date).toISOString()).toBe('2026-09-24T00:00:00.000Z');
+      expect((picker.props.maximumDate as Date).getTime()).toBe(new Date(2026, 8, 24, 20, 0).getTime());
+    });
   });
 });

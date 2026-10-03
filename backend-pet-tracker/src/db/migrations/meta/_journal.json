@@ -113,6 +113,27 @@
       "when": 1787957375434,
       "tag": "0015_auth_password_reset_tokens",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1789440631931,
+      "tag": "0016_drop_devices_connectivity",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1789493838553,
+      "tag": "0017_meal_servings",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1790958857290,
+      "tag": "0018_nutrition_plans_engine_meals",
+      "breakpoints": true
     }
   ]
 }

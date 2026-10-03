@@ -1,9 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, eq } from 'drizzle-orm';
+import { and, asc, eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { uuidv7 } from 'uuidv7';
 import { DRIZZLE } from '@/db/drizzle.constants';
 import { pets, petUsers } from '@/db/schema/pets.schema';
+import { users } from '@/db/schema/users.schema';
 import {
   Pet,
   PetSex,
@@ -108,6 +109,24 @@ export class PetDrizzleRepository implements PetRepository {
       .limit(1);
 
     return rows[0] ? toDomain(rows[0]) : null;
+  }
+
+  async findOwnerTimezone(petId: string): Promise<string | null> {
+    const rows = await this.db
+      .select({ timezone: users.timezone })
+      .from(petUsers)
+      .innerJoin(users, eq(users.id, petUsers.userId))
+      .where(
+        and(
+          eq(petUsers.petId, petId),
+          eq(petUsers.role, 'owner'),
+          eq(petUsers.status, 'active'),
+        ),
+      )
+      .orderBy(asc(petUsers.createdAt))
+      .limit(1);
+
+    return rows[0]?.timezone ?? null;
   }
 
   async update(petId: string, changes: PetFieldChanges): Promise<Pet> {

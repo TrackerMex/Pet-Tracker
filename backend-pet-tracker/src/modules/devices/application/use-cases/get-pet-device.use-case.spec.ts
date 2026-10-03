@@ -16,7 +16,6 @@ function buildDevice(): Device {
     model: 'sim-collar',
     status: 'assigned',
     batteryPct: null,
-    connectivity: null,
     lastMessageAt: null,
     ingestWatermark: null,
     isSimulated: true,

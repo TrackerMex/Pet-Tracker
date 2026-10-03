@@ -5,11 +5,13 @@ import { CreateVaccineDto } from '@/modules/health/application/dto/vaccine.dto';
 import { addCalendarMonths } from '@/modules/health/application/vaccine-date';
 import { PetVaccine } from '@/modules/health/domain/entities/vaccine.entity';
 import {
+  VaccineAppliedInFutureError,
   VaccineCatalogNotFoundError,
   VaccineSpeciesMismatchError,
 } from '@/modules/health/domain/errors/vaccine.errors';
 import { VACCINE_REPOSITORY } from '@/modules/health/domain/repositories/vaccine.repository';
 import type { VaccineRepository } from '@/modules/health/domain/repositories/vaccine.repository';
+import { ownerLocalDay } from '@/modules/pets/application/owner-local-day';
 import { PET_REPOSITORY } from '@/modules/pets/domain/repositories/pet.repository';
 import type { PetRepository } from '@/modules/pets/domain/repositories/pet.repository';
 
@@ -21,11 +23,17 @@ export class CreateVaccineUseCase {
     @Inject(AUDIT_LOGGER) private readonly audit: AuditLogger,
   ) {}
 
+  /** #88: appliedAt se compara con el dia civil del owner. */
   async execute(
     petId: string,
     dto: CreateVaccineDto,
     userId: string,
+    now: Date,
   ): Promise<PetVaccine> {
+    if (dto.appliedAt > (await ownerLocalDay(this.pets, petId, now))) {
+      throw new VaccineAppliedInFutureError();
+    }
+
     const catalog = dto.catalogId
       ? await this.vaccines.findCatalogById(dto.catalogId)
       : null;

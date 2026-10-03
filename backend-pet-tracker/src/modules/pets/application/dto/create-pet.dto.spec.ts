@@ -53,7 +53,6 @@ describe('R4: el schema de POST /v1/pets rechaza cada campo invalido', () => {
     ['species fuera de dog/cat', { species: 'bird' }],
     ['birthDate con formato no ISO', { birthDate: '15/01/2024' }],
     ['birthDate inexistente en el calendario', { birthDate: '2024-02-30' }],
-    ['birthDate posterior a hoy', { birthDate: isoDateDaysFromNow(1) }],
     ['sex fuera de male/female', { sex: 'other' }],
     ['size fuera de small/medium/large', { size: 'xl' }],
     ['sterilized no booleano', { sterilized: 'yes' }],

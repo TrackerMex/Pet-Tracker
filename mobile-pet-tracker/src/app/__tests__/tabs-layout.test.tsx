@@ -25,10 +25,6 @@ jest.mock('../../providers/auth-provider', () => ({
   useAuth: () => ({ status: 'authenticated' }),
 }));
 
-jest.mock('../../providers/selected-pet-provider', () => ({
-  SelectedPetProvider: ({ children }: { children: ReactNode }) => children,
-}));
-
 describe('R6: Tabs declara animation fade en screenOptions', () => {
   beforeEach(() => {
     jest.clearAllMocks();

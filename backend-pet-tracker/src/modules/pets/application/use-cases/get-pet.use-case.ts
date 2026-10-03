@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { ownerLocalDay } from '@/modules/pets/application/owner-local-day';
 import { Pet } from '@/modules/pets/domain/entities/pet.entity';
 import { PetNotFoundError } from '@/modules/pets/domain/errors/pet.errors';
 import { PET_DEVICE_READER } from '@/modules/pets/domain/ports/pet-device-reader';
@@ -8,6 +9,11 @@ import type {
 } from '@/modules/pets/domain/ports/pet-device-reader';
 import { PET_PHOTO_URL_RESOLVER } from '@/modules/pets/domain/ports/pet-photo-url-resolver';
 import type { PetPhotoUrlResolver } from '@/modules/pets/domain/ports/pet-photo-url-resolver';
+import { PET_MEALS_READER } from '@/modules/pets/domain/ports/pet-meals-reader';
+import type {
+  PetMealsReader,
+  PetMealsToday,
+} from '@/modules/pets/domain/ports/pet-meals-reader';
 import { PET_VACCINE_READER } from '@/modules/pets/domain/ports/pet-vaccine-reader';
 import type {
   NextPetVaccine,
@@ -26,6 +32,7 @@ export interface PetProfile {
   /** URL GET prefirmada (R6) o null si la mascota no tiene foto (R7). */
   photoUrl: string | null;
   nextVaccine: NextPetVaccine | null;
+  mealsToday: PetMealsToday | null;
 }
 
 /**
@@ -35,6 +42,8 @@ export interface PetProfile {
  * activo via el puerto PET_DEVICE_READER. Desde pet-photos-s3 (#6 R6/R7)
  * resuelve `photoUrl` via PET_PHOTO_URL_RESOLVER solo cuando `photoKey` no
  * es nulo — evita una firma S3 innecesaria cuando no hay foto.
+ * Desde vaccine-due-today-inclusive (#82), usa el dia civil del owner.
+ * Desde #88, delega la resolucion de ese dia a ownerLocalDay.
  */
 @Injectable()
 export class GetPetUseCase {
@@ -47,9 +56,11 @@ export class GetPetUseCase {
     private readonly photoUrlResolver: PetPhotoUrlResolver,
     @Inject(PET_VACCINE_READER)
     private readonly vaccineReader: PetVaccineReader,
+    @Inject(PET_MEALS_READER)
+    private readonly mealsReader: PetMealsReader,
   ) {}
 
-  async execute(petId: string): Promise<PetProfile> {
+  async execute(petId: string, now: Date): Promise<PetProfile> {
     const pet = await this.pets.findById(petId);
 
     if (!pet) {
@@ -63,15 +74,14 @@ export class GetPetUseCase {
             PHOTO_DOWNLOAD_URL_EXPIRES_IN_SECONDS,
           )
         : null;
+    const today = await ownerLocalDay(this.pets, petId, now);
 
     return {
       pet,
       device: await this.deviceReader.findActiveDevice(petId),
       photoUrl,
-      nextVaccine: await this.vaccineReader.findNextVaccine(
-        petId,
-        new Date().toISOString().slice(0, 10),
-      ),
+      nextVaccine: await this.vaccineReader.findNextVaccine(petId, today),
+      mealsToday: await this.mealsReader.findMealsToday(petId, today),
     };
   }
 }

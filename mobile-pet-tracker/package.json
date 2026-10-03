@@ -5,6 +5,7 @@
   "dependencies": {
     "@expo/ui": "~57.0.11",
     "@gorhom/bottom-sheet": "^5.2.14",
+    "@tanstack/react-query": "5.102.8",
     "blobatar": "^2.5.0",
     "expo": "~57.0.14",
     "expo-blur": "~57.0.2",
@@ -13,10 +14,12 @@
     "expo-device": "~57.0.1",
     "expo-font": "~57.0.1",
     "expo-glass-effect": "~57.0.1",
+    "expo-haptics": "~57.0.3",
     "expo-image": "~57.0.3",
     "expo-image-picker": "~57.0.13",
     "expo-linking": "~57.0.6",
     "expo-maps": "~57.0.1",
+    "expo-notifications": "~57.0.19",
     "expo-router": "~57.0.14",
     "expo-secure-store": "~57.0.1",
     "expo-splash-screen": "~57.0.7",
@@ -28,6 +31,7 @@
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-native": "0.86.2",
+    "react-native-chart-kit": "7.0.4",
     "react-native-gesture-handler": "~2.32.0",
     "react-native-nitro-modules": "0.37.0",
     "react-native-nitro-theme-transition": "1.0.0",
@@ -65,7 +69,7 @@
   "jest": {
     "preset": "jest-expo",
     "transformIgnorePatterns": [
-      "node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@sentry/react-native|native-base|react-native-svg|uniwind|heroui-native|reicon-react-native|tailwind-variants|tailwind-merge|@gorhom/bottom-sheet|blobatar|react-native-nitro-theme-transition|react-native-nitro-modules)"
+      "node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@sentry/react-native|native-base|react-native-svg|react-native-chart-kit|paths-js|uniwind|heroui-native|reicon-react-native|tailwind-variants|tailwind-merge|@gorhom/bottom-sheet|blobatar|react-native-nitro-theme-transition|react-native-nitro-modules)"
     ],
     "moduleNameMapper": {
       "\\.css$": "<rootDir>/test/css-stub.js",

@@ -11,6 +11,7 @@ import { pets, petUsers } from '@/db/schema/pets.schema';
 import { users } from '@/db/schema/users.schema';
 import { TOKEN_SERVICE } from '@/modules/auth/domain/ports/token-service';
 import type { TokenService } from '@/modules/auth/domain/ports/token-service';
+import { localDayOf, shiftDay } from '@/pipeline/local-day';
 import { AppModule } from './../src/app.module';
 
 /** Shape del contrato R8 tal como viaja por HTTP (todo serializado). */
@@ -83,6 +84,7 @@ describe('Pets CRUD (e2e)', () => {
     'nextVaccine',
     'nextReminder',
     'activitySummary',
+    'mealsToday',
     'createdAt',
     'updatedAt',
   ].sort();
@@ -100,7 +102,7 @@ describe('Pets CRUD (e2e)', () => {
     token: string;
   }
 
-  async function seedUser(label: string): Promise<TestUser> {
+  async function seedUser(label: string, timezone = 'UTC'): Promise<TestUser> {
     const id = uuidv7();
     const email = `pets-e2e-${label}-${RUN_ID}@example.com`;
 
@@ -112,7 +114,7 @@ describe('Pets CRUD (e2e)', () => {
       lastName: label,
       phone: '+525512345678',
       country: 'MX',
-      timezone: 'UTC',
+      timezone,
       termsAcceptedAt: new Date(),
     });
     createdUserIds.push(id);
@@ -300,6 +302,73 @@ describe('Pets CRUD (e2e)', () => {
     });
   });
 
+  describe('R6 (dto-dates-owner-timezone #89): birthDate se compara con el dia civil del requester en POST y del owner en PATCH', () => {
+    const timezones = ['Pacific/Kiritimati', 'Pacific/Pago_Pago'];
+
+    it('POST acepta hoy y rechaza manana en la zona del requester para Pacific/Kiritimati y Pacific/Pago_Pago (R6)', async () => {
+      for (const [index, timezone] of timezones.entries()) {
+        const requester = await seedUser(`r6-post-${index}`, timezone);
+        const today = localDayOf(Date.now(), timezone);
+
+        const created = await createPetViaApi(requester, {
+          birthDate: today,
+        });
+        expect(created.birthDate).toBe(today);
+
+        const rejected = await api()
+          .post('/v1/pets')
+          .set('Authorization', `Bearer ${requester.token}`)
+          .send({
+            name: `Manana-${RUN_ID}`,
+            species: 'dog',
+            birthDate: shiftDay(today, 1),
+          })
+          .expect(400);
+        expect(rejected.body).toEqual({
+          statusCode: 400,
+          message: 'Validation failed',
+          errors: [
+            {
+              path: 'birthDate',
+              message: 'birthDate cannot be in the future',
+            },
+          ],
+        });
+      }
+    });
+
+    it('PATCH acepta hoy y rechaza manana en la zona del owner para Pacific/Kiritimati y Pacific/Pago_Pago (R6)', async () => {
+      for (const [index, timezone] of timezones.entries()) {
+        const owner = await seedUser(`r6-patch-${index}`, timezone);
+        const pet = await createPetViaApi(owner);
+        const today = localDayOf(Date.now(), timezone);
+
+        const updated = await api()
+          .patch(`/v1/pets/${pet.id}`)
+          .set('Authorization', `Bearer ${owner.token}`)
+          .send({ birthDate: today })
+          .expect(200);
+        expect(profileBody(updated).birthDate).toBe(today);
+
+        const rejected = await api()
+          .patch(`/v1/pets/${pet.id}`)
+          .set('Authorization', `Bearer ${owner.token}`)
+          .send({ birthDate: shiftDay(today, 1) })
+          .expect(400);
+        expect(rejected.body).toEqual({
+          statusCode: 400,
+          message: 'Validation failed',
+          errors: [
+            {
+              path: 'birthDate',
+              message: 'birthDate cannot be in the future',
+            },
+          ],
+        });
+      }
+    });
+  });
+
   describe('R7: GET /v1/pets lista solo membresias activas con myRole', () => {
     it('devuelve exclusivamente las mascotas del usuario', async () => {
       const owner = await seedUser('r7-owner');
@@ -343,7 +412,7 @@ describe('Pets CRUD (e2e)', () => {
   });
 
   describe('R8: GET /v1/pets/:petId devuelve el contrato completo', () => {
-    it('responde exactamente las 24 claves con los placeholders en null', async () => {
+    it('responde exactamente las 25 claves con los placeholders en null', async () => {
       const owner = await seedUser('r8-owner');
       const pet = await createPetViaApi(owner, { name: `R8-${RUN_ID}` });
 
@@ -641,6 +710,50 @@ describe('Pets CRUD (e2e)', () => {
         .set('Authorization', `Bearer ${owner.token}`)
         .expect(200);
       expect(listBody(list).some((item) => item.id === pet.id)).toBe(false);
+    });
+  });
+
+  describe('R3 (pets-list-response-enrichment #66): GET /v1/pets devuelve photoUrl prefirmada para la mascota con photo_key', () => {
+    it('firma la misma clave que el detalle y deja null en la mascota sin foto', async () => {
+      const owner = await seedUser('enrichment-r3-owner');
+      const petA = await createPetViaApi(owner, {
+        name: `Enrichment-R3a-${RUN_ID}`,
+      });
+      const petB = await createPetViaApi(owner, {
+        name: `Enrichment-R3b-${RUN_ID}`,
+      });
+      const photoKey = `pets/${petA.id}/e2e-photo-${RUN_ID}`;
+      await db.update(pets).set({ photoKey }).where(eq(pets.id, petA.id));
+
+      const listResponse = await api()
+        .get('/v1/pets')
+        .set('Authorization', `Bearer ${owner.token}`)
+        .expect(200);
+
+      const items = listBody(listResponse);
+      const withPhoto = items.find((item) => item.id === petA.id);
+      const withoutPhoto = items.find((item) => item.id === petB.id);
+      expect(withPhoto).toBeDefined();
+      expect(withoutPhoto).toBeDefined();
+      expect(typeof withPhoto?.photoUrl).toBe('string');
+      expect(withoutPhoto?.photoUrl).toBeNull();
+      expect(Object.keys(withPhoto ?? {}).sort()).toEqual(PROFILE_KEYS);
+      expect(Object.keys(withoutPhoto ?? {}).sort()).toEqual(PROFILE_KEYS);
+
+      const listPhotoUrl = new URL(withPhoto?.photoUrl ?? '');
+      expect(listPhotoUrl.searchParams.get('X-Amz-Signature')).toBeTruthy();
+      expect(listPhotoUrl.searchParams.get('X-Amz-Expires')).toBe('3600');
+      expect(listPhotoUrl.pathname.endsWith(`/${photoKey}`)).toBe(true);
+
+      const detailResponse = await api()
+        .get(`/v1/pets/${petA.id}`)
+        .set('Authorization', `Bearer ${owner.token}`)
+        .expect(200);
+      const detailPhotoUrl = profileBody(detailResponse).photoUrl;
+      expect(typeof detailPhotoUrl).toBe('string');
+      expect(new URL(detailPhotoUrl ?? '').pathname).toBe(
+        listPhotoUrl.pathname,
+      );
     });
   });
 });

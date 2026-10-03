@@ -1,29 +1,47 @@
 import { Host } from '@expo/ui';
 import ExpoDateTimePicker from '@expo/ui/community/datetime-picker';
-import { Redirect, router, type Href } from 'expo-router';
+import { router, type Href } from 'expo-router';
 import { Button } from 'heroui-native';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { createReminder } from '../../api/reminders';
 import type { ReminderType } from '../../api/types';
 import { useAuth } from '../../providers/auth-provider';
+import {
+  useLocale,
+  useTranslate,
+} from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
+import { fromPickerValue, toPickerValue } from '../../utils/date-picker-value';
 import { combineDateAndTime } from '../../utils/reminder-dates';
 import { REMINDER_TYPE_META } from '../../utils/reminder-meta';
+import { CONTINUOUS_CORNER } from '../../theme/native-styles';
+import { TOUCH_SLOP } from '../../theme/touch-target';
+import { useThemeColors } from '../../theme/use-theme-colors';
 
 const ADVANCE_OPTIONS = [
-  { minutes: 0, label: 'Same day' },
-  { minutes: 1440, label: '1 day before' },
-  { minutes: 4320, label: '3 days before' },
-  { minutes: 10080, label: '7 days before' },
+  { minutes: 0, labelKey: 'addReminder.advanceSameDay' },
+  { minutes: 1440, labelKey: 'addReminder.advance1Day' },
+  { minutes: 4320, labelKey: 'addReminder.advance3Days' },
+  { minutes: 10080, labelKey: 'addReminder.advance7Days' },
 ] as const;
 
 const REMINDER_TYPES = Object.entries(REMINDER_TYPE_META) as [
   ReminderType,
-  { label: string; emoji: string },
+  (typeof REMINDER_TYPE_META)[ReminderType],
 ][];
+
+function isAdvancePast(dueAt: Date | null, minutes: number, now: number): boolean {
+  return dueAt !== null && dueAt.getTime() - minutes * 60_000 <= now;
+}
+
+function effectiveAdvance(dueAt: Date | null, preferred: number, now: number): number {
+  return ADVANCE_OPTIONS.filter(
+    ({ minutes }) => minutes <= preferred && !isAdvancePast(dueAt, minutes, now),
+  ).pop()?.minutes ?? preferred;
+}
 
 function initialTime(): Date {
   const time = new Date();
@@ -34,12 +52,16 @@ function initialTime(): Date {
 function AddReminderContent({ petId }: { petId: string }) {
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { signOut, token } = useAuth();
+  const locale = useLocale();
+  const t = useTranslate();
   const insets = useSafeAreaInsets();
+  const [muted] = useThemeColors(['muted']);
   const [type, setType] = useState<ReminderType>('vaccine');
   const [title, setTitle] = useState('');
   const [date, setDate] = useState<Date | null>(null);
   const [time, setTime] = useState(initialTime);
   const [advanceMinutes, setAdvanceMinutes] = useState(10080);
+  const [now, setNow] = useState(Date.now);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -48,17 +70,17 @@ function AddReminderContent({ petId }: { petId: string }) {
   async function handleSubmit() {
     const trimmedTitle = title.trim();
     if (!trimmedTitle) {
-      setFormError('Title is required');
+      setFormError(t('addReminder.titleIsRequired'));
       return;
     }
     if (!date) {
-      setFormError('Pick a date');
+      setFormError(t('addReminder.pickDate'));
       return;
     }
 
     const dueAt = combineDateAndTime(date, time);
     if (dueAt.getTime() <= Date.now()) {
-      setFormError('Date must be in the future');
+      setFormError(t('addReminder.dateMustBeFuture'));
       return;
     }
 
@@ -70,7 +92,7 @@ function AddReminderContent({ petId }: { petId: string }) {
         type,
         title: trimmedTitle,
         dueAt: dueAt.toISOString(),
-        advanceMinutes,
+        advanceMinutes: effectiveAdvance(dueAt, advanceMinutes, Date.now()),
       });
 
       switch (result.kind) {
@@ -78,27 +100,30 @@ function AddReminderContent({ petId }: { petId: string }) {
           router.back();
           return;
         case 'forbidden':
-          setFormError('Only the owner can create reminders');
+          setFormError(t('addReminder.errorForbidden'));
           return;
         case 'invalid':
-          setFormError('Date must be in the future');
+          setFormError(t('addReminder.dateMustBeFuture'));
           return;
         case 'unreachable':
-          setFormError('Cannot reach server');
+          setFormError(t('common.cannotReachServer'));
           return;
         case 'unauthorized':
           await signOut();
           return;
         case 'error':
         case 'missing-config':
-          setFormError('Something went wrong');
+          setFormError(t('common.somethingWentWrong'));
       }
     } catch {
-      setFormError('Something went wrong');
+      setFormError(t('common.somethingWentWrong'));
     } finally {
       setSubmitting(false);
     }
   }
+
+  const pickedDueAt = date ? combineDateAndTime(date, time) : null;
+  const selectedAdvance = effectiveAdvance(pickedDueAt, advanceMinutes, now);
 
   return (
     <ScrollView
@@ -108,28 +133,12 @@ function AddReminderContent({ petId }: { petId: string }) {
       contentContainerStyle={{
         padding: 24,
         gap: 16,
-        paddingTop: insets.top + 12,
-        paddingBottom: insets.bottom + 96,
+        paddingBottom: insets.bottom + 24,
       }}
     >
-      <View className="flex-row items-center gap-3">
-        <Pressable
-          accessibilityLabel="Back to reminders"
-          accessibilityRole="button"
-          testID="add-reminder-back"
-          className="size-10 items-center justify-center rounded-full bg-default"
-          onPress={() => router.back()}
-        >
-          <Text className="text-lg font-bold text-foreground">←</Text>
-        </Pressable>
-        <Text className="text-2xl font-black text-foreground">
-          Add reminder
-        </Text>
-      </View>
-
       <View className="gap-2">
         <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
-          Type
+          {t('addReminder.type')}
         </Text>
         <View className="flex-row flex-wrap gap-2">
           {REMINDER_TYPES.map(([reminderType, meta]) => {
@@ -141,6 +150,7 @@ function AddReminderContent({ petId }: { petId: string }) {
                 accessibilityRole="button"
                 accessibilityState={{ selected }}
                 testID={`type-chip-${reminderType}`}
+                hitSlop={TOUCH_SLOP}
                 className={
                   selected
                     ? 'rounded-full border border-accent bg-accent-soft px-3 py-2'
@@ -149,7 +159,7 @@ function AddReminderContent({ petId }: { petId: string }) {
                 onPress={() => setType(reminderType)}
               >
                 <Text className="text-sm font-semibold text-foreground">
-                  {`${meta.emoji} ${meta.label}`}
+                  {`${meta.emoji} ${t(meta.labelKey)}`}
                 </Text>
               </Pressable>
             );
@@ -159,13 +169,15 @@ function AddReminderContent({ petId }: { petId: string }) {
 
       <View className="gap-2">
         <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
-          Title
+          {t('addReminder.title')}
         </Text>
         <TextInput
           testID="title-input"
-          className="rounded-xl border border-border bg-default px-4 py-3 text-foreground"
+          className="rounded-xl bg-default px-4 py-3 text-foreground"
+          style={CONTINUOUS_CORNER}
           maxLength={120}
-          placeholder="Reminder title"
+          placeholder={t('addReminder.reminderTitle')}
+          placeholderTextColor={muted}
           value={title}
           onChangeText={setTitle}
         />
@@ -174,31 +186,35 @@ function AddReminderContent({ petId }: { petId: string }) {
       <View className="flex-row gap-3">
         <View className="flex-1 gap-2">
           <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
-            Date
+            {t('addReminder.date')}
           </Text>
           <Pressable
             accessibilityRole="button"
             testID="date-field"
             className="rounded-xl border border-border bg-default px-4 py-3"
+            style={CONTINUOUS_CORNER}
             onPress={() => setShowDatePicker(true)}
           >
             <Text className={date ? 'text-foreground' : 'text-muted'}>
-              {date ? date.toLocaleDateString() : 'Select a date'}
+              {date
+                ? date.toLocaleDateString(locale)
+                : t('addReminder.selectDate')}
             </Text>
           </Pressable>
         </View>
         <View className="flex-1 gap-2">
           <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
-            Time
+            {t('addReminder.time')}
           </Text>
           <Pressable
             accessibilityRole="button"
             testID="time-field"
             className="rounded-xl border border-border bg-default px-4 py-3"
+            style={CONTINUOUS_CORNER}
             onPress={() => setShowTimePicker(true)}
           >
             <Text className="text-foreground">
-              {time.toLocaleTimeString([], {
+              {time.toLocaleTimeString(locale, {
                 hour: '2-digit',
                 minute: '2-digit',
               })}
@@ -214,10 +230,11 @@ function AddReminderContent({ petId }: { petId: string }) {
             mode="date"
             minimumDate={new Date()}
             presentation="dialog"
-            value={date ?? new Date()}
+            value={toPickerValue(date ?? new Date())}
             onDismiss={() => setShowDatePicker(false)}
             onValueChange={(_event, selectedDate) => {
-              setDate(selectedDate);
+              setDate(fromPickerValue(selectedDate));
+              setNow(Date.now());
               setShowDatePicker(false);
             }}
           />
@@ -234,6 +251,7 @@ function AddReminderContent({ petId }: { petId: string }) {
             onDismiss={() => setShowTimePicker(false)}
             onValueChange={(_event, selectedTime) => {
               setTime(selectedTime);
+              setNow(Date.now());
               setShowTimePicker(false);
             }}
           />
@@ -242,11 +260,12 @@ function AddReminderContent({ petId }: { petId: string }) {
 
       <View className="gap-2">
         <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
-          Alert
+          {t('addReminder.alert')}
         </Text>
         <View className="flex-row flex-wrap gap-2">
           {ADVANCE_OPTIONS.map((option) => {
-            const selected = advanceMinutes === option.minutes;
+            const selected = selectedAdvance === option.minutes;
+            const disabled = isAdvancePast(pickedDueAt, option.minutes, now);
 
             return (
               <Pressable
@@ -254,15 +273,13 @@ function AddReminderContent({ petId }: { petId: string }) {
                 accessibilityRole="button"
                 accessibilityState={{ selected }}
                 testID={`advance-chip-${option.minutes}`}
-                className={
-                  selected
-                    ? 'rounded-full border border-accent bg-accent-soft px-3 py-2'
-                    : 'rounded-full border border-border bg-default px-3 py-2'
-                }
+                hitSlop={TOUCH_SLOP}
+                disabled={disabled}
+                className={`${selected ? 'rounded-full border border-accent bg-accent-soft px-3 py-2' : 'rounded-full border border-border bg-default px-3 py-2'}${disabled ? ' opacity-50' : ''}`}
                 onPress={() => setAdvanceMinutes(option.minutes)}
               >
                 <Text className="text-sm font-semibold text-foreground">
-                  {option.label}
+                  {t(option.labelKey)}
                 </Text>
               </Pressable>
             );
@@ -277,7 +294,7 @@ function AddReminderContent({ petId }: { petId: string }) {
         onPress={() => void handleSubmit()}
       >
         <Button.Label className="font-bold text-accent-foreground">
-          Save reminder
+          {t('addReminder.saveReminder')}
         </Button.Label>
       </Button>
 
@@ -293,9 +310,10 @@ function AddReminderContent({ petId }: { petId: string }) {
 export function AddReminderScreen() {
   const { selectedPetId } = useSelectedPet();
 
-  if (selectedPetId === null) {
-    return <Redirect href={'/reminders' as Href} />;
-  }
+  useEffect(() => {
+    if (selectedPetId === null) router.dismissTo('/reminders' as Href);
+  }, [selectedPetId]);
 
+  if (selectedPetId === null) return null;
   return <AddReminderContent petId={selectedPetId} />;
 }
