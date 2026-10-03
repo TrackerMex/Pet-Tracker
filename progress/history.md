@@ -7215,3 +7215,135 @@ con #103 y #147 en el tree principal.
 - Causa del paso 9 (explore, verificado por el leader): edge-to-edge con targetSdk 35 o mas; `adjustResize` ya no encoge la raiz y ninguna pantalla consume el inset del IME. El explore proponia `UNSAFE_getByType`, que RNTL 14 elimino; el leader midio con una sonda aislada que un evento `keyboardWillShow` simulado da `paddingBottom` 291 en el host. Enmienda E1 escrita en 0620b801: la raiz del editor pasa a `KeyboardAvoidingView` (`behavior="padding"`, offset de `HeaderHeightContext`), se refuerza R6 it 18 sin cambiar el recuento (68 / +142), hay 4 mutaciones y solo se repite el paso 9. El arreglo transversal queda como deuda candidata. Espejo en Notion y gate humano pendientes; el handoff (Reanudacion 5) se escribe despues de la aprobacion.
 - E1 aprobada por el humano via Notion (pagina en Aprobado, page_last_edited_at 2026-10-02T22:53:57Z; confirmado en chat). Firma en bc917ff7. El humano marco tambien en Notion la casilla "Paso 9 repetido y superado tras E1", que no se copio a disco porque E1 aun no esta implementada; en Notion se desmarco. Reanudacion 5 para Codex en 7e7b16b9 (rojo de it 18, verde en index.tsx, mutaciones E1-a a E1-d y cierre en 90 / 1852). Notion: Rol actual = Implementer. Siguiente: Codex, despues init.sh (preguntando «¿Libre?» a Frontend), reviewer ronda 3 y el humano repite el paso 9.
 - Codex implemento E1 (b493f04d rojo, caffb588 verde, 495319fa trazabilidad). El leader corrio init.sh sobre 495319fa con exit=0 (movil 90 / 1852), coordinado con Frontend. El reviewer aprobo la ronda 3 en 330b24a3 con cuatro observaciones no bloqueantes. RV-5 (`behavior` solo en iOS pasa en jest, que corre como iOS) la cierra unicamente el paso 9 en Android. Pendiente: el humano repite el paso 9 en el dev build de Android y marca la casilla de E1.4.
+
+## #147 `mobile-meal-schedule-editing` — editar y añadir franjas de comida (mitad móvil) — 2026-10-03
+
+Sesion Frontend, tree principal, branch `feature/147-mobile-meal-schedule-editing`
+desde `origin/main` cb14497c (merge de #103, PR #185). Recibio `origin/main`
+60ae4fa4 (#146, PR #186) por merge, con los tres conflictos previstos. En
+paralelo: Backend con #146 en `Pet-Tracker-wt-146`.
+
+### Spec y gates
+
+- Spec del `spec_author` (4e37fd19) sobre cb14497c, sin explorer: las
+  decisiones de UI quedaron cerradas al partir #103. El leader saco
+  `./init.sh` de los pasos de Codex (50622f21). Espejada en Notion (pagina
+  `3ed6115a9b27810cae6dc0200db0593b`), aprobada alli y firmada por el leader
+  en 86771e3e.
+- Handoff a Codex en b367ed44 (H0). Base movil 88/1710; objetivo 88/1759.
+- **Enmienda E1**: tres candados globales que la spec no movia (signOut en
+  `design-drift`, `bg-accent-soft` en `consistency-classnames`). Lista
+  cerrada de 11 a 13 ficheros y tecnica TZ corregida (jest copia
+  `process.env`).
+- **Enmiendas E2, E3 y E4**: candados de R3, R5, R7 y R8 que faltaban, una
+  por rechazo del reviewer. E4 salio del barrido exhaustivo y cerro cinco
+  ramas de golpe. Todas aprobadas por el humano en el chat.
+
+### Que se hizo
+
+- **Produccion** (`mobile-pet-tracker/src/`):
+  - `api/nutrition.ts`: `addMealTime` (POST `meal-times`) y `moveMealTime`
+    (PATCH `meal-times/:mealTime`), que traducen la respuesta a
+    `EditMealTimeState` por `kind`; solo 201 y 200 son `ok`.
+  - `screens/meal-schedule/index.tsx`: consulta `petKeys.detail` y, solo
+    para el dueño, pinta Editar en cada fila y Añadir comida bajo la lista.
+    El selector es `ExpoDateTimePicker` en `dialog`, con la hora de la fila
+    o 12:00. Tras un `ok` refetchea el plan y la mascota, con los controles
+    deshabilitados hasta que acaban los dos y sin estado optimista. Cada
+    error tiene su `meal-time-error` inline; un 401 cierra sesion.
+  - Catalogo 320 → 329 claves (`mealSchedule.*`).
+- **Tests**: movil 88/1710 → 88/1771 (+61). Tras el merge de #146, 90/1913.
+  Codex hizo 34 commits test-primero en cinco rondas.
+
+### Revision
+
+- Ronda 1 RECHAZADA sobre d05d8725: dos clausulas de R7 sin candado (13
+  sondas verdes). Enmienda E2.
+- Ronda 2 RECHAZADA sobre c918e756: «rehabilitar cuando terminen los dos»
+  solo retenia el refetch del plan. Enmienda E3.
+- Ronda 3 RECHAZADA sobre 57757499: el WHILE de R7 en Editar y el «o» de R8.
+  El leader pidio un barrido exhaustivo antes de firmar; aparecieron tres
+  ramas mas. Enmienda E4 con las cinco.
+- Ronda 4 APROBADA sobre fe2505b3 (078c519b), con `./init.sh` verde del leader.
+- Prueba de humo del humano en el dev build de Android (2026-10-02, OnePlus
+  Nord 5), firmada en bc6a2f09.
+
+### Integracion con main
+
+- Merge de `origin/main` (#146) en 285e94ef, con el subagente `implementer`
+  como fallback trivial: los dos recuentos de acento en
+  `consistency-classnames`, la suma del catalogo `… + 11 + 12 + 2 + 9`, y la
+  seccion de #147 renumerada a §2.17 en `mobile-ui-language/design.md`.
+  Informe en `progress/impl_mobile-meal-schedule-editing.md`.
+- `./init.sh` del leader sobre 095006c0: exit 0, unit 174/1335, infra 2/14,
+  movil 90/1913, e2e 28+3.
+
+### Resultado
+
+- Estado final: `done`. Notion: `Estado del gate` = Implementado, `Rol
+  actual` = Completado.
+- iOS sin verificar mientras #60 siga aparcada.
+
+### Deuda y apuntes
+
+- Deuda candidata sin id (requirements.md §Fuera de alcance): borrar una
+  franja (el backend no tiene ruta) y refetch tras error.
+- Observaciones no bloqueantes del review, sin id registrado: ronda 1, obs. 3 y 4
+  (`<Host matchContents>` nuevo en el repo, doble linea en blanco en
+  `nutrition.ts`); los cuatro «no bloqueante» del barrido E4; ronda 4, 2-4
+  (prosa «pendiente» en traceability R8, E4-e solo en `meal-time-edit-0`,
+  aviso de worker de jest).
+- Las referencias a «§2.16» de la spec de #147 quedan como historicas tras
+  la renumeracion a §2.17.
+- **Lecciones** (memoria): `clausulas-universales-candadas-en-un-caso`,
+  `jest-process-env-tz-ciego` y `candado-catalogo-omitido-en-specs`.
+
+### Bitacora de la sesion
+
+- feature: #147 `mobile-meal-schedule-editing` (in_progress, handoff a Codex)
+- inicio: 2026-10-02, sesión Frontend, tree principal, branch `feature/147-mobile-meal-schedule-editing` desde `origin/main` cb14497c (merge de #103, PR #185)
+- elección: el humano elige #147 por AskUserQuestion frente a #105, #18 y #101
+- plan: tabla de escalado, «feature `pending` sin spec». Las decisiones de UI quedaron cerradas al partir #103 (entrada de `feature_list.json`), así que no hay explorer: `spec_author` y gate en Notion.
+- 2026-10-02: premisas de la entrada verificadas contra cb14497c: `patchJson` existe en `src/api/http.ts`; `ExpoDateTimePicker` se usa en `src/screens/add-reminder/`; `canSetLostMode` está en `src/screens/map/index.tsx`; `toggleMeal` refresca con `plan.refetch()` y `refetchQueries` en `src/app/(tabs)/food.tsx`. `src/screens/meal-schedule/index.tsx` tiene 302 líneas. El catálogo de `language-provider.test.tsx` es una suma literal que no se copia a la spec: hay que medirlo. **Choque previsible con #146** (Codex en `wt-146`): su branch toca `src/i18n/catalog.ts` y `language-provider.test.tsx`, los mismos candados de catálogo. La que mergee segunda tendrá que rehacer la suma.
+- 2026-10-02: aviso a Backend del merge de #103. `pet_tracker_wt` sigue en 18 migraciones y le toca `pnpm db:migrate` en `wt-backend`. Backend da turno («Libre»), y el leader lanza el `./init.sh` de arranque sobre cb14497c, con log en el scratchpad (`init147/`).
+- 2026-10-02: el `./init.sh` de arranque sobre cb14497c (19:32–19:36Z) sale con exit 0. Las bases para #147 son: unit 174/1335, infra 2/14, **móvil 88/1710**, e2e 28+3 / 423+8 (431). Se avisa a Backend del fin. Se lanza el `spec_author`, que solo lee y escribe en `specs/mobile-meal-schedule-editing/`.
+- 2026-10-02: Backend toma el turno para el `./init.sh` de #146 en `wt-146` (pet_tracker_wt; también aplica allí la 0018). Frontend no lanza init.sh ni e2e hasta su aviso de fin. El spec_author de #147 sigue en marcha: solo lee.
+- 2026-10-02: Backend termina el `./init.sh` de #146 en `wt-146` (exit 0). Postgres y LocalStack quedan libres. `pet_tracker_wt` ya tiene la 0018 (19 migraciones), así que la tarea posmerge de #103 está cerrada. El siguiente paso de Backend es el reviewer de #146, que corre jest móvil dirigido.
+- 2026-10-02: el spec_author entrega la spec en `4e37fd19` (`status: draft`, base congelada en cb14497c; 9 claves nuevas, catálogo 320→329, `R6_FOOD` 38→41→50, móvil 88/1710→88/1759). Revisión del leader: premisas verificadas en el árbol (`petState`/`childTestIds` en la suite de geofences, `wallClock` y los mocks de `@expo/ui` en add-reminder, precedente TZ en weekly-activity-chart, `petKeys.detail` en `src/api/query-keys.ts`, `R6_FOOD` en 38). Única corrección: tasks.md §Cifras y §Cierre pedían a Codex `./init.sh`, que comparte Postgres y LocalStack con Backend. Ahora le piden `bun run test`/`lint`/`typecheck` en `mobile-pet-tracker/` con `pgrep` previo. `./init.sh` lo corre el leader antes del reviewer.
+- 2026-10-02: espejo en Notion para el gate: https://app.notion.com/p/3ed6115a9b27810cae6dc0200db0593b (base *Specs*, `Estado del gate` = En revisión, `Rol actual` = Spec Author). El cuerpo es `requirements.md` en `4e37fd19`. **Para** hasta que el humano ponga `Estado del gate` = Aprobado.
+- 2026-10-02: Backend pide turno de `./init.sh` en `wt-146` (ronda 2 del reviewer de #146, pet_tracker_wt). Frontend no tiene nada en vuelo (pgrep vacío) y le da turno. No lanza init.sh ni e2e hasta su aviso de fin.
+- 2026-10-02: Backend termina el `./init.sh` de #146 ronda 2 en `wt-146` (exit 0). Postgres y LocalStack quedan libres.
+- 2026-10-02: el humano aprueba en Notion. El leader verifica la página: `Estado del gate` = Aprobado, `page_last_edited_at` 2026-10-02T20:16:14.524Z. Firma en `86771e3e`: frontmatter `approved` en los cuatro ficheros y casilla de §Aprobación marcada. En Notion, `Rol actual` pasa a Implementer.
+- 2026-10-02: handoff a Codex en `progress/handoff_mobile-meal-schedule-editing.md`; H0 es el commit que lo añade, con padre `86771e3e`. El leader repite sobre `86771e3e` las medidas de tasks.md §Arranque y todas dan su valor: la suma en `language-provider.test.tsx:56`, `R6_FOOD` en `ui-language.test.ts:142`, los literales `common.*` y los recuentos 4/1; `router.d.ts` no existe. `origin/main` sigue en cb14497c y #146 aún no ha mergeado. Se piden 19 commits literales y cierre en 88/1759. Skills de Codex: `building-native-ui`, `native-data-fetching`, `expo-ui-jetpack-compose` y `appllama-app-design-skill`. #147 pasa a `in_progress`. **Para** hasta que el humano confirme que Codex terminó.
+- 2026-10-02: Codex para en §Cierre con HEAD `b5d46054`: 20 commits (los 18 C4 más dos refactors) y el informe sin trackear. `bun run test` da 88/1759 con exit 1 y 3 rojos en candados globales que la spec no movía: `#87 R19` (signOut de meal-schedule 1→2), `#98 R10` y `#64 R9` (`bg-accent-soft` 16→18). El leader los reproduce: 3 rojos de 108 en esos dos ficheros. La producción cumple la spec. El leader redacta la **Enmienda E1**: la lista cerrada pasa de 11 a 13 ficheros, dos commits de test y la técnica TZ corregida (jest copia `process.env`, `2c873c47`). La casilla de E1 queda sin marcar: **para** hasta que el humano la apruebe.
+- 2026-10-02: el humano aprueba la Enmienda E1 en el chat y confirma que fue él quien autorizó a Codex el cambio de técnica TZ de `2c873c47`. Se marca la casilla de E1 y se añade la «Reanudación 1» al handoff. H0 sigue en `b367ed44`. Le toca a Codex: E1-a, E1-b, §Cierre y la trazabilidad, 23 commits suyos en total. **Para** hasta que el humano confirme que Codex terminó.
+- 2026-10-02: Codex termina la Reanudación 1 con HEAD `d05d8725`: E1-a `1526db05` (solo `consistency-classnames.test.ts`), E1-b `e8789628` (solo `design-drift.test.ts`) y la trazabilidad. Su §Cierre da 88/1759 con exit 0, lint y typecheck con exit 0, y los tres grep-clean vacíos. El leader lo verifica: 25 commits desde H0 (23 de Codex y 2 del leader), 18 rutas (13 de Codex y 5 del leader), tree limpio, `git diff d8edb20e HEAD` sin producción, y traceability cita E1-a en R4 y E1-b en R8. Pide a Backend turno de `./init.sh`.
+- 2026-10-02: Backend da turno y avisa que el humano está con la prueba de humo de #146. El humano confirma que su dev build no usa el Postgres ni el LocalStack del VPS. El leader corre `./init.sh` sobre `d05d8725` (22:21:52–22:26:09Z) y sale con exit 0: unit 174/1335, infra 2/14, **móvil 88/1759**, e2e 28+3 / 423+8, lint y typecheck verdes. El log está en el scratchpad (`init147/init-review.log`). Se avisa a Backend del fin y se lanza el `reviewer`.
+- 2026-10-02: el `reviewer` **rechaza** en `d05d8725` (`progress/review_mobile-meal-schedule-editing.md`). Motivo único: dos cláusulas de R7 no tienen candado, y 13 sondas de producción quedan verdes, 51/51. El flujo Añadir no tiene test de R7, y «ningún refetch si no es ok» solo está candado para `MEAL_TIME_DUPLICATE`. La producción cumple; el hueco viene de tasks.md §R7. Las observaciones 2-4 no bloquean. El leader redacta la **Enmienda E2**: dos commits de test sobre `index.test.tsx`, 13 sondas más un control, y las cifras 88/1759→88/1762. La casilla queda sin marcar: **para** hasta que el humano la apruebe.
+- 2026-10-02: el humano aprueba la Enmienda E2 en el chat. Se marca su casilla y se añade la «Reanudación 2» al handoff. El commit de firma incluye el veredicto del reviewer. H0 sigue en `b367ed44`. Le toca a Codex: E2-a, E2-b, las sondas, §Cierre (88/1762) y la trazabilidad, 26 commits suyos en total. **Para** hasta que el humano confirme que Codex terminó.
+- 2026-10-02: Codex termina la Reanudación 2 con HEAD `c918e756`: E2-a `e277b810` y E2-b `bf81642a`, los dos solo en `index.test.tsx`, y la trazabilidad. Las 13 sondas y el control salen rojos por matcher, y ninguno por consulta. Su §Cierre da 88/1762 con exit 0, lint y typecheck con exit 0, y los grep-clean vacíos. El leader lo verifica: 19 rutas desde H0 (13 de Codex y 6 del leader) y ninguna producción en `f26f85fd..HEAD`. Backend tenía pedido turno de `./init.sh` para #146 (ronda 3) y lo toma primero. Frontend espera su aviso para correr el suyo y relanzar el reviewer.
+- 2026-10-02: Backend termina su `./init.sh` de #146 en `wt-146` (exit 0) y da turno. El leader corre `./init.sh` sobre `c918e756` (23:39:12Z–23:43:28Z), con exit 0: unit 174/1335, infra 2/14, **móvil 88/1762**, e2e 28+3 / 423+8, lint y typecheck verdes. El log está en el scratchpad (`init147/init-review2.log`). Se avisa a Backend y se relanza el `reviewer` (ronda 2).
+- 2026-10-02: el `reviewer` **rechaza** la ronda 2 en `c918e756` (`progress/review_mobile-meal-schedule-editing.md` §Ronda 2). E2 cierra sus 13 sondas y el control, y no hay regresiones (46 rojas). Queda una tercera cláusula de R7 sin candado: «rehabilitar solo cuando hayan terminado los dos». Dos sondas quedan verdes, 54/54: `setEditing(false)` entre los dos refetch, y el refetch de la mascota sin `await`. Ningún test retiene la segunda llamada a `getPet`. El reviewer reconoce que el hueco ya estaba en `d05d8725`. El leader redacta la **Enmienda E3**: un commit de test con dos `it` gemelos, uno por flujo, que retienen esa llamada; 2 sondas; cifras 88/1762→88/1764; la lista cerrada sigue en 13. Antes de pedir la firma, el reviewer pre-verifica el bloque de forma temporal contra las sondas. La casilla de E3 queda sin marcar.
+- 2026-10-03: el reviewer pre-verifica el borrador E3 en `c918e756` (§Ronda 2, «Pre-verificación del borrador E3»). Con los dos `it` pegados de forma temporal, la suite da 56/56 en tres corridas, y tsc y eslint salen con exit 0. Las sondas 1 y 2 salen rojas en los dos `it`, por matcher sobre `disabled: true`, en dos corridas cada una. La muestra de sondas R7 no pierde rojos. Después se restaura: `diff --cached` vacío. **Para** hasta que el humano apruebe E3.
+- 2026-10-03: el humano aprueba la Enmienda E3 en el chat. Se marca su casilla y se añade la «Reanudación 3» al handoff. H0 sigue en `b367ed44`. Le toca a Codex: E3-a, las 2 sondas, §Cierre (88/1764) y la trazabilidad, 28 commits suyos en total. **Para** hasta que el humano confirme que Codex terminó.
+- 2026-10-03: Codex termina la Reanudación 3 con HEAD `0b0f856c`. E3-a es `e184ab68`, solo en `index.test.tsx`, con +48 líneas idénticas al bloque de tasks.md. Le sigue la trazabilidad. Las 2 sondas caen en los dos `it` por matcher. Su §Cierre da 88/1764 con exit 0, lint y typecheck con exit 0, y los grep-clean vacíos. Verificación del leader: 33 commits desde H0 (28 de Codex y 5 del leader), 19 rutas, tree limpio, ninguna producción en `39174fe7..HEAD`, y traceability cita E3-a en R7. Push hecho. Se pide a Backend turno de `./init.sh`.
+- 2026-10-03: Backend da turno («Libre»). El leader corre `./init.sh` sobre `0b0f856c` (03:38:11Z–03:42:48Z), con exit 0: unit 174/1335, infra 2/14, **móvil 88/1764**, e2e 28+3 / 423+8, lint y typecheck verdes. El log está en el scratchpad (`init147/init-review3.log`). Se avisa a Backend del fin y se relanza el `reviewer` (ronda 3).
+- 2026-10-03: el `reviewer` **rechaza** la ronda 3 en `57757499` (`progress/review_mobile-meal-schedule-editing.md` §Ronda 3). E3 cierra sus 2 sondas por matcher, y en las 18 sondas de regresión no hay pérdidas. Quedan dos ramas sin candado, con 56/56 en verde: el WHILE de R7 en el flujo Editar (un parche de caché tras el ok no se detecta) y la cláusula de R8 «nueva llamada de R5 o R6 retira el error», que solo tiene candado con R5. Es la tercera ronda de la misma familia. Antes de firmar, el leader pide al reviewer pre-verificar el borrador E4 y hacer un **barrido exhaustivo** de R1–R9 y E1–E3 (§Pre-verificación del borrador E4 y barrido de cláusulas).
+- 2026-10-03: el barrido (04:07–04:22Z, HEAD `57757499`) reproduce el borrador E4 tal como está redactado (56/56 y 57/57, las 2 sondas rojas por matcher) y encuentra 3 ramas más, cada una con su candado medido:
+  - R3 «la misma tabla de R2»: 4 filas de 422;
+  - R5 «fila i»: solo se prueba con la última fila;
+  - R8 IF 401: solo se prueba en Editar.
+
+  Se clasifican 4 puntos como no bloqueantes, y el reviewer se compromete a no bloquear por ellos en la ronda 4; entre ellos, el orden plan → mascota. Con los cinco candados no queda ninguna rama sin candado. El leader amplía E4 a cinco commits de test (E4-a…E4-e) y 8 sondas. Las cifras pasan de 88/1764 a 88/1771. La lista cerrada sigue en 13. La casilla de E4 queda sin marcar: **para** hasta que el humano la apruebe.
+- 2026-10-03: el humano aprueba la Enmienda E4 en el chat. Se marca su casilla y se añade la «Reanudación 4» al handoff. H0 sigue en `b367ed44`. Le toca a Codex: E4-a…E4-e, las 8 sondas, §Cierre (88/1771) y la trazabilidad. En total serán 34 commits suyos. **Para** hasta que el humano confirme que Codex terminó.
+- 2026-10-03: Codex termina la Reanudación 4 con HEAD `2f00b54e`. Los cinco commits E4 son literales: `a9406528` R7, `12730ded` R8, `f170159f` R3, `81e26781` R5 y `0e56c182` R8. Cada uno toca un solo fichero de test, y todos los bloques de tasks.md aparecen en el diff. Después viene la trazabilidad (R3, R5, R7 y R8 citan E4). Las 8 sondas caen solo en su `it` o fila, por matcher. El §Cierre da 88/1771 con exit 0; lint y typecheck, exit 0; los grep-clean, vacíos. Verificación del leader: 42 commits desde H0 (34 de Codex y 8 del leader), 19 rutas, tree limpio y ninguna producción en `f64a3c60..HEAD`. Se pide turno de `./init.sh` a Backend.
+- 2026-10-03: Backend da turno («Libre»). El leader corre `./init.sh` sobre `4f988319` (04:48:57Z–04:52:54Z). Sale con exit 0: unit 174/1335, infra 2/14, **móvil 88/1771**, e2e 28+3 / 423+8, y lint y typecheck en verde. El log está en el scratchpad (`init147/init-review4.log`). Se avisa a Backend del fin y se relanza el `reviewer` para la ronda 4.
+- 2026-10-03: el `reviewer` **aprueba** la ronda 4 sobre `fe2505b3` (`progress/review_mobile-meal-schedule-editing.md` §Ronda 4). E4 cierra los 5 huecos: sus 8 sondas y las 2 de la ronda 3 salen rojas por matcher, cada una solo en su `it`. De las 37 sondas de regresión, ninguna pierde un rojo. El barrido no deja ningún hueco bloqueante. El veredicto queda commiteado en `078c519b`. Falta el gate humano propio: la **prueba de humo en dev build de Android** (requirements.md §Prueba de humo). #147 sigue `in_progress` hasta que el humano la firme. Al cerrar hay que comprobar el drift desde `fe2505b3`, actualizar Notion y abrir la PR.
+- 2026-10-03: el humano firma la prueba de humo en `bc6a2f09` (dev build de Android, OnePlus Nord 5). Entre el veredicto `fe2505b3` y `bc6a2f09` no hay drift de código: solo la casilla de requirements.md y logs del leader. `origin/main` avanzó a `60ae4fa4` con el merge de #146 (PR #186), y quedaron los 3 conflictos previstos en design.md §Conflicto previsto con #146. **Fallback al subagente `implementer`** (CLAUDE.md §Excepciones, cambio trivial: merge con la resolución prescrita, sin diseño nuevo) en lugar de Codex. Merge, no rebase, en `285e94ef`:
+  - consistency-classnames: `13 + 1 + 1` (#146) y `16 + 2` (#147);
+  - language-provider: suma `… + 11 + 12 + 2 + 9`;
+  - mobile-ui-language/design.md: la sección de #147 pasa a §2.17.
+
+  Las referencias a «§2.16» en la spec de #147 quedan como históricas. `bun run test` da 90/1913 (88 + 2 suites de #146) con exit 0; lint y typecheck, exit 0. Informe en `progress/impl_mobile-meal-schedule-editing.md` §Merge de origin/main (#146). Se pide turno de `./init.sh` a Backend.
+- 2026-10-03: Backend da turno («Libre»). El leader corre `./init.sh` sobre `095006c0` (05:58:12Z–06:02:40Z), con exit 0: unit 174/1335, infra 2/14, **móvil 90/1913**, e2e 28+3 / 423+8, lint y typecheck verdes. El log está en el scratchpad (`init147/init-close.log`). Se avisa a Backend del fin.
+- 2026-10-03: cierre. #147 pasa a `done` en `feature_list.json` (`files_affected` gana los tres tests que tocó: `nutrition.test.ts`, `consistency-classnames.test.ts` y `design-drift.test.ts`). STATUS.md queda en 135/148. Notion: `Estado del gate` = Implementado y `Rol actual` = Completado.

@@ -1,10 +1,10 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-10-03
-**Features completadas**: 134/148 (`feature_list.json`)
-**En progreso**: ninguna en esta rama. #146 cerrada en `feature/146-mobile-geofence-editor`, PR pendiente. #147 (la mitad móvil de #103) avanza en la sesión Frontend, branch `feature/147-mobile-meal-schedule-editing`
+**Features completadas**: 135/148 (`feature_list.json`)
+**En progreso**: ninguna. #147 cerrada en `feature/147-mobile-meal-schedule-editing`, PR pendiente
 
-**Pendientes**: 14 (#18, #60, #101, #105, #115-#119, #129, #134, #144, #147 y #148). **#146 `mobile-geofence-editor` cerrada**: el dueño crea y edita zonas seguras circulares sobre el mapa. Un toque fija el centro y un slider de 20 a 2000 m, de 10 en 10, fija el radio, con el círculo de previsualización. Desde el editor también se activa, desactiva y borra la zona. Quien no es dueño la ve en solo lectura. Las zonas activas se dibujan en la pestaña Mapa y en la pantalla de zonas. Con 5 zonas, «Añadir zona» se deshabilita y muestra un aviso. La enmienda E1 aparta el teclado del formulario (`KeyboardAvoidingView`, edge-to-edge). Móvil 88/1710 → 90/1852. Codex en tres rondas test-primero; el reviewer rechazó la primera (Z1 y Z2 de R7 sin candado) y aprobó la segunda y la tercera (E1). Prueba de humo en el dev build de Android superada, paso 9 repetido tras E1. iOS sin verificar mientras #60 siga aparcada. #148 registrada: el mismo arreglo del teclado en el resto de pantallas con inputs
+**Pendientes**: 13 (#18, #60, #101, #105, #115-#119, #129, #134, #144 y #148). **#147 `mobile-meal-schedule-editing` cerrada (mitad móvil de #103)**: en Horario de comidas, el dueño edita la hora de cada franja y añade franjas con el selector nativo de hora (`ExpoDateTimePicker`, `dialog`). Los controles solo los ve el dueño (`myRole` vía `petKeys.detail`); el resto ve la pantalla en solo lectura y el 403 queda de red de seguridad. Tras un éxito se refrescan el plan y la mascota, sin estado optimista y con los controles deshabilitados hasta que terminan los dos. Cada error del contrato (400, 403 y los cuatro 422) tiene su mensaje inline, y un 401 cierra sesión. Catálogo 320 → 329 claves. Móvil 88/1710 → 88/1771, y 90/1913 tras integrar #146. Codex en cinco rondas test-primero (E1-E4); el reviewer rechazó tres por cláusulas universales candadas en un solo caso y aprobó la cuarta tras un barrido exhaustivo. Prueba de humo en el dev build de Android superada (OnePlus Nord 5). iOS sin verificar mientras #60 siga aparcada
 
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
@@ -88,6 +88,14 @@ debe listar las 4 URLs de cola.
 
 ## Estado actual
 
+- **`mobile-meal-schedule-editing` (#147) done** (2026-10-03, tree principal,
+  sesion Frontend): mitad móvil de #103. Editar por fila y Añadir comida en
+  meal-schedule, solo para el dueño, con refetch de plan y mascota tras el
+  éxito y errores inline. Enmiendas E1-E4; reviewer rechazado en las rondas
+  1-3 y aprobado en la 4 (`078c519b`). Prueba de humo en Android firmada por
+  el humano (`bc6a2f09`). Integra `origin/main` (#146) por merge
+  (`285e94ef`). Gate: `./init.sh` exit 0 sobre `095006c0` (unit 174/1335,
+  móvil 90/1913, e2e 28+3). PR abierta.
 - **`mobile-geofence-editor` (#146) done** (2026-10-03, `Pet-Tracker-wt-146`,
   sesion Backend): editor de zonas seguras circulares sobre el mapa (crear,
   editar, activar y borrar), círculos en la pestaña Mapa, límite de 5 en el
@@ -1296,6 +1304,13 @@ debe listar las 4 URLs de cola.
 
 ## Última sesión
 
+- **2026-10-03** — **#147 `mobile-meal-schedule-editing` cerrada** (sesion
+  Frontend, tree principal): spec firmada desde Notion (`86771e3e`), enmiendas
+  E1-E4 aprobadas en el chat. Codex, cinco rondas test-primero; rondas 1-3
+  rechazadas por cláusulas universales candadas en un solo caso, ronda 4
+  aprobada sobre `fe2505b3` tras el barrido exhaustivo del reviewer. Integra
+  `origin/main` (#146) por merge (`285e94ef`). Siguiente: merge humano de la
+  PR de #147.
 - **2026-10-03** — **#146 `mobile-geofence-editor` cerrada** (sesion
   Backend, `Pet-Tracker-wt-146`): spec ampliada por decisión del humano y
   firmada desde Notion (`00961ee6`). Codex, tres rondas test-primero; la
