@@ -30,3 +30,14 @@ describe('#101 R2: icono de la app', () => {
     });
   });
 });
+
+describe('#101 R8: favicon', () => {
+  it('favicon.png (web.favicon) mide 48x48 RGBA', () => {
+    expect(readIhdr(appJson.expo.web.favicon)).toEqual({
+      width: 48,
+      height: 48,
+      bitDepth: 8,
+      colorType: 6,
+    });
+  });
+});

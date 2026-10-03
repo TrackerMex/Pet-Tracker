@@ -232,6 +232,12 @@ describe('#101 R2: icono de la app', () => {
   });
 });
 
+describe('#101 R8: favicon', () => {
+  it('web.favicon es ./assets/images/favicon.png', () => {
+    expect(appJson.expo.web.favicon).toBe('./assets/images/favicon.png');
+  });
+});
+
 describe('#79 R14: google-services.json se declara solo cuando existe', () => {
   const originalApiKey = process.env.GOOGLE_MAPS_API_KEY_ANDROID;
   const originalResetLinkHost = process.env.RESET_LINK_HOST;
