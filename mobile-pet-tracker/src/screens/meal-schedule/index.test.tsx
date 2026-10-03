@@ -690,6 +690,16 @@ describe('#147 R5: Editar abre el selector en la hora de la fila y publica el PA
     expect(jest.mocked(addMealTime)?.mock.calls ?? []).toEqual([]);
     await waitFor(() => expect(screen.getByTestId('meal-time-edit-0').props.accessibilityState).not.toEqual(expect.objectContaining({ disabled: true })));
   });
+
+  it('Editar en la primera fila abre el selector con su hora y la publica como origen', async () => {
+    await renderMealSchedule();
+    await fireEvent.press(await screen.findByTestId('meal-time-edit-0'));
+    const picker = screen.getByTestId('meal-time-picker');
+    expect([picker.props.value.getHours(), picker.props.value.getMinutes()]).toEqual([7, 30]);
+    await fireEvent(picker, 'onValueChange', {}, new Date(2026, 9, 2, 8, 5));
+    await waitFor(() => expect(mockMoveMealTime).toHaveBeenCalledWith('http://example.test/v1', 'jwt-token', 'pet-1', '07:30', '08:05'));
+    await waitFor(() => expect(screen.getByTestId('meal-time-edit-0').props.accessibilityState).not.toEqual(expect.objectContaining({ disabled: true })));
+  });
 });
 
 
