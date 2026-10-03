@@ -1431,7 +1431,7 @@ salvo en el paso 10. iOS queda fuera (§Coordinación).
       otro radio y guarda: la lista muestra el radio nuevo.
 - [X] 8. **Sin rebote.** En el editor, arrastra el mapa lejos del círculo y
       toca un punto: el centro se mueve y la cámara **no** vuelve atrás.
-- [ ] 9. **Teclado.** Toca el nombre: con el teclado abierto, Guardar sigue
+- [X] 9. **Teclado.** Toca el nombre: con el teclado abierto, Guardar sigue
       alcanzable haciendo scroll en el formulario.
 - [X] 10. **Tema e idioma.** En tema oscuro, mapa oscuro y círculos visibles.
       En inglés, "Safe zone", "Add zone" y "Save".
@@ -1653,4 +1653,4 @@ P-E1. La segunda cierra la feature junto con la de §Prueba de humo, que
 el humano ya marcó con el paso 9 pendiente.
 
 - [x] Enmienda E1 aprobada por humano, P-E1 incluida (fecha: 2026-10-02)
-- [ ] Paso 9 repetido y superado tras E1, en el dev build de Android (fecha: ____)
+- [X] Paso 9 repetido y superado tras E1, en el dev build de Android (fecha: 2026-10-02)
