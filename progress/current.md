@@ -6,7 +6,7 @@
 ## Feature #101 — mobile-app-and-notification-icons
 
 - **Branch:** `feature/101-mobile-app-and-notification-icons` (worktree `Pet-Tracker-wt-icon`; base `d29d49d5`)
-- **Estado:** `in_progress` — handoff entregado a Codex CLI, esperando a que el humano confirme que terminó
+- **Estado:** `in_progress` — Codex terminó (16 commits, `a1c7feef..7e8cfe50`); **reviewer aprobado** R1–R9 sobre HEAD `3bb824e9` (`progress/review_mobile-app-and-notification-icons.md`, sin hallazgos bloqueantes, 6 observaciones). Falta solo R10 (humano).
 - **Spec:** `specs/mobile-app-and-notification-icons/` (borrador `c112367c`; enmienda D7 `7e315531`; **firma de aprobación `add2dade`**, 2026-10-03)
 - **Espejo Notion:** https://app.notion.com/p/3ee6115a9b27811d9920ded211b9c8f8 — `Estado del gate = Aprobado`, `Rol actual = Implementer` (2026-10-03)
 - **Handoff:** `progress/handoff_mobile-app-and-notification-icons.md` (sin skills de expo; un rojo y un verde por R en el orden R2, R8, R3, R4, R5, R6, R7, R9; trazabilidad en un `docs` final)
@@ -15,8 +15,8 @@
 
 ### Bloqueado por el humano
 
-1. Lanzar Codex CLI con el handoff y avisar cuando termine (`progress/impl_mobile-app-and-notification-icons.md`).
+1. Prueba de humo R10 en dev build de Android (`design.md` §Prueba de humo: desinstalar, `bunx expo prebuild --clean --platform android`, `bunx expo run:android`, comprobar launcher / splash / notificación) y firmar las tres casillas «Smoke R10» de `requirements.md` §Aprobación con dispositivo y fecha.
 
 ### Siguiente paso del leader (cuando Codex termine)
 
-Pedir turno de `./init.sh` (compartido con Frontend) → lanzar `reviewer` (lee el log + HEAD; verificaciones de `design.md` §Verificaciones del reviewer) → con veredicto aprobado: humano corre `design.md` §Prueba de humo y firma las tres casillas «Smoke R10» → Notion `Estado del gate = Implementado`, `Rol actual = Completado` → `status: done` → `gh pr create`.
+Con las tres casillas firmadas: verificar drift (`git diff origin/main...HEAD` solo lo esperado; `3bb824e9` ancestro de HEAD) → `status: done` en `feature_list.json` → Notion `Estado del gate = Implementado`, `Rol actual = Completado` → mover esta sesión a `progress/history.md` y actualizar `STATUS.md` → `gh pr create` (el humano mergea). `init.sh` ya corrió en `3bb824e9` (exit 0, log `progress/init_101.log`, ignorado por git).
