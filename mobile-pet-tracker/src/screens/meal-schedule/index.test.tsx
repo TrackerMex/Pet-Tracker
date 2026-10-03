@@ -877,6 +877,54 @@ describe('#147 R7: tras un éxito refetchea plan y mascota, sin estado optimista
     await act(async () => resolve({ kind: 'ok', plan: makePlan({ mealTimes: ['07:30', '08:05', '19:30'] }) }));
     await waitFor(() => expect(screen.getByTestId('meal-time-edit-0').props.accessibilityState).not.toEqual(expect.objectContaining({ disabled: true })));
   });
+
+  it('los controles siguen deshabilitados hasta que termina también el refetch de la mascota', async () => {
+    let resolvePet!: (state: PetState) => void;
+    mockGetNutritionPlan
+      .mockResolvedValueOnce({ kind: 'ok', plan: makePlan() })
+      .mockResolvedValueOnce({ kind: 'ok', plan: makePlan({ mealTimes: ['07:30', '20:05'] }) });
+    mockGetPet.mockResolvedValueOnce(petState('owner'))
+      .mockReturnValueOnce(new Promise((done) => { resolvePet = done; }));
+    await renderMealSchedule();
+    await fireEvent.press(await screen.findByTestId('meal-time-edit-1'));
+    await fireEvent(screen.getByTestId('meal-time-picker'), 'onValueChange', {}, new Date(2026, 9, 2, 20, 5));
+    await waitFor(() => {
+      for (const id of ['meal-time-edit-0', 'meal-time-edit-1', 'add-meal-time-button']) {
+        expect(screen.getByTestId(id).props.accessibilityState).toEqual(expect.objectContaining({ disabled: true }));
+      }
+      expect(mockGetPet).toHaveBeenCalledTimes(2);
+    });
+    await waitFor(() => expect(within(screen.getByTestId('meal-time-row-1')).queryByText('20:05')).not.toBeNull());
+    for (const id of ['meal-time-edit-0', 'meal-time-edit-1', 'add-meal-time-button']) {
+      expect(screen.getByTestId(id).props.accessibilityState).toEqual(expect.objectContaining({ disabled: true }));
+    }
+    await act(async () => resolvePet(petState('owner')));
+    await waitFor(() => expect(screen.getByTestId('meal-time-edit-0').props.accessibilityState).not.toEqual(expect.objectContaining({ disabled: true })));
+  });
+
+  it('tras ok de Añadir los controles siguen deshabilitados hasta que termina también el refetch de la mascota', async () => {
+    let resolvePet!: (state: PetState) => void;
+    mockGetNutritionPlan
+      .mockResolvedValueOnce({ kind: 'ok', plan: makePlan() })
+      .mockResolvedValueOnce({ kind: 'ok', plan: makePlan({ mealTimes: ['07:30', '08:05', '19:30'] }) });
+    mockGetPet.mockResolvedValueOnce(petState('owner'))
+      .mockReturnValueOnce(new Promise((done) => { resolvePet = done; }));
+    await renderMealSchedule();
+    await fireEvent.press(await screen.findByTestId('add-meal-time-button'));
+    await fireEvent(screen.getByTestId('meal-time-picker'), 'onValueChange', {}, new Date(2026, 9, 2, 8, 5));
+    await waitFor(() => {
+      for (const id of ['meal-time-edit-0', 'meal-time-edit-1', 'add-meal-time-button']) {
+        expect(screen.getByTestId(id).props.accessibilityState).toEqual(expect.objectContaining({ disabled: true }));
+      }
+      expect(mockGetPet).toHaveBeenCalledTimes(2);
+    });
+    await waitFor(() => expect(within(screen.getByTestId('meal-time-row-1')).queryByText('08:05')).not.toBeNull());
+    for (const id of ['meal-time-edit-0', 'meal-time-edit-1', 'meal-time-edit-2', 'add-meal-time-button']) {
+      expect(screen.getByTestId(id).props.accessibilityState).toEqual(expect.objectContaining({ disabled: true }));
+    }
+    await act(async () => resolvePet(petState('owner')));
+    await waitFor(() => expect(screen.getByTestId('meal-time-edit-0').props.accessibilityState).not.toEqual(expect.objectContaining({ disabled: true })));
+  });
 });
 
 
