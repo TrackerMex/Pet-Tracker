@@ -351,6 +351,14 @@ export const en = {
   "mealsHistory.noMealsOnDay": "No meals were served this day",
   "mealsHistory.servedOne": "1 meal served",
   "mealsHistory.servedMany": "{{count}} meals served",
+  'welcome.brand': 'Pet Tracker',
+  'welcome.chipGps': 'GPS',
+  'welcome.chipHealth': 'Health',
+  'welcome.chipNutrition': 'Nutrition',
+  'welcome.tagline': 'Your smart hub for canine wellness, tracking and nutrition',
+  'welcome.getStarted': 'Get started',
+  'welcome.haveAccount': 'I already have an account',
+  'welcome.legalNotice': 'By continuing you accept our Terms and Privacy Policy',
 } as const;
 
 export type TranslationKey = keyof typeof en;
@@ -708,6 +716,14 @@ export const es: Record<TranslationKey, string> = {
   "mealsHistory.noMealsOnDay": "Ese día no se sirvió ninguna comida",
   "mealsHistory.servedOne": "1 comida servida",
   "mealsHistory.servedMany": "{{count}} comidas servidas",
+  'welcome.brand': 'Pet Tracker',
+  'welcome.chipGps': 'GPS',
+  'welcome.chipHealth': 'Salud',
+  'welcome.chipNutrition': 'Nutrición',
+  'welcome.tagline': 'Tu centro inteligente de bienestar, rastreo y nutrición canina profesional',
+  'welcome.getStarted': 'Comenzar ahora',
+  'welcome.haveAccount': 'Ya tengo una cuenta',
+  'welcome.legalNotice': 'Al continuar aceptas nuestros Términos y Política de privacidad',
 };
 
 export const LOCALES = { es: 'es-MX', en: 'en-US' } as const;
