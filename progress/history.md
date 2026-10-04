@@ -7363,3 +7363,88 @@ paralelo: Backend con #146 en `Pet-Tracker-wt-146`.
 - El usuario aprobó la variante en color y pidió subirla a docs/pet-tracker-icon-session. Recurso copiado a mobile-pet-tracker/assets/images/pet-tracker-notification-color-96.png; SHA-256 idéntico al PNG aprobado, tamaño 96×96 y transparencia verificados. Configuración de la app sin cambios.
 - Merge de `main` en la rama (2026-10-03, sesión leader): `STATUS.md` y `history.md` se resolvieron conservando la versión de `main` (la rama partía de 37d0c8b3, inventario 54/59 ya caduco) y añadiendo solo estas dos entradas y la línea de «Estado actual». El PNG no tuvo conflicto.
 - Continuación: el usuario pidió subir el primer icono de la app y su imagen adjunta. Copiados a assets/images/pet-tracker-app-icon.png y assets/images/pet-tracker-notification-monochrome-original.png en la misma rama; integridad SHA-256 verificada para ambos. Se conserva el contenido original de los PNG. Rebase sobre la actualización remota ae68ec4b; conflictos de STATUS.md e history.md resueltos conservando la versión remota y añadiendo solo esta entrega.
+
+## #101 `mobile-app-and-notification-icons` — icono de la app, adaptive icon, splash, favicon e icono de notificación — 2026-10-04
+
+Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
+`feature/101-mobile-app-and-notification-icons` desde `origin/main` d29d49d5
+(merge del PR #187 con las tres fuentes del humano). En paralelo: Frontend con
+#105 en el tree principal (`feature/105-meals-history`); sin solape de ficheros.
+`origin/main` no se movió durante la feature: cierre sin merge ni rebase.
+
+### Spec y gates
+
+- Ampliación de la entrada por el humano (6e751e74): de «icono de
+  notificación» a icono de la app, adaptive icon y splash, con las decisiones
+  cerradas en el chat (tinte `#9460FC`, fondo plano, iOS intacto).
+- Spec del `spec_author` (c112367c) sobre d29d49d5, sin explorer. Espejada en
+  Notion (página `3ee6115a9b27811d9920ded211b9c8f8`, b43337cb). Enmienda D7
+  (7e315531): no hay cuarto asset; el foreground es el icono completo reducido
+  a la zona segura del 66 %. Aprobada desde Notion y firmada por el leader en
+  add2dade (2026-10-03).
+- Handoff a Codex en bcd3000b, sin skills de expo (nada en `src/`). Base móvil
+  medida por el leader en add2dade: 90/1913.
+- Errata de la spec corregida por el leader (3bb824e9): decía +16 tests y nueve
+  `describe` en `app.config.test.ts`; los literales de R2-R9 son ocho y el
+  delta real es +15.
+
+### Qué se hizo
+
+- **`app.json`** (cuatro ediciones): `android.adaptiveIcon.backgroundColor`
+  `#E6F4FE` → `#9460FC` y sin `backgroundImage`; `expo-splash-screen` con
+  `backgroundColor #9460FC`, `image ./assets/images/splash-icon.png` e
+  `imageWidth 200`; `expo-notifications` con `icon
+  ./assets/images/pet-tracker-notification-96.png`, `color #9460FC` y el
+  `defaultChannel` que ya existía. `ios.icon` y `assets/expo.icon` intactos (R9).
+- **Assets derivados** con `scripts/make-icons.mjs` (one-off, `jimp-compact`
+  transitiva, cero dependencias nuevas): `icon.png` y `favicon.png`
+  regenerados desde `pet-tracker-app-icon.png`; `android-icon-foreground.png`
+  1024 con el icono a 676 px compuesto en (174, 174); `android-icon-monochrome.png`
+  desde el monocromo original con umbral de alfa ≥ 128 a 1254 antes de
+  reducir; `splash-icon.png` copia byte a byte del foreground;
+  `pet-tracker-notification-96.png` blanco con alfa. `android-icon-background.png`
+  borrado (R5). Las tres fuentes `pet-tracker-*` sin tocar (R1).
+- **Tests**: `app.assets.test.ts` nuevo (helper `readIhdr`, siete `describe`
+  `#101 R2`-`R8`, un fichero por `it`, fs real) y ocho `describe` nuevos en
+  `app.config.test.ts` (R2-R9) más las dos relajaciones previstas en `#79 R2`.
+  Móvil 90/1913 → 91/1928 (+1 suite, +15 tests). Codex hizo 16 commits
+  test-primero (a1c7feef..7e8cfe50) en el orden R2, R8, R3, R4, R5, R6, R7,
+  R9, con la trazabilidad en un `docs` final.
+
+### Revisión
+
+- Ronda única APROBADA sobre 3bb824e9 (veredicto en c14a77dd): lista cerrada
+  de 13 ficheros respetada, los tres `git diff --stat d29d49d5` vacíos, las
+  sondas de zona ciega caen cada una en su `it`, bbox del foreground exacto y
+  del monochrome dentro de [174, 850]. Seis observaciones no bloqueantes; la
+  que importa: el candado «splash = foreground byte a byte» vive en el `cmp`
+  del reviewer, no en jest (decisión de la spec).
+- `./init.sh` del leader sobre 3bb824e9 (turno acordado con Frontend): exit 0,
+  unit 174/1335, infra 2/14, móvil 91/1928, e2e 28+3 / 423+8. El worktree no
+  tenía `.env` en la raíz: copiado del de `wt-backend` (`pet_tracker_wt`).
+  Log en `progress/init_101.log` (ignorado por git).
+- Prueba de humo R10 del humano en el dev build de Android (launcher, splash
+  y notificación push real), firmada en d9af8ec8 y da73641d (OnePlus Nord 5,
+  2026-10-03). Entre el veredicto y la firma no hay drift: solo las tres
+  casillas de `requirements.md`.
+
+### Resultado
+
+- Estado final: `done` (136/148). Notion: `Estado del gate` = Implementado,
+  `Rol actual` = Completado; casillas R10 marcadas en el espejo citando
+  d9af8ec8. `files_affected` gana `app.assets.test.ts` y
+  `scripts/make-icons.mjs`.
+- Requiere rebuild nativo en cada máquina (`bunx expo prebuild --clean`): los
+  iconos no viajan por Metro ni por OTA.
+
+### Deuda y apuntes
+
+- `pet-tracker-notification-color-96.png` queda en el árbol sin uso (D2):
+  Android tinta el alfa y descarta el color.
+- iOS entero (`ios.icon`, splash de iOS) aparcado en #60.
+- Candado byte a byte splash = foreground solo en el `cmp` del reviewer
+  (observación 2): si una feature futura regenera los PNG, un
+  `readFileSync(...).equals(...)` lo cerraría en jest.
+- Observaciones 1, 3-6 del review sin id: guard `toBeDefined` extra en
+  `app.assets.test.ts`, `checkout` que no borra el PNG nuevo en la sonda de
+  R7, bbox 818 frente a ≈ 817, aviso de worker de jest en la base.

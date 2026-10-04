@@ -208,21 +208,86 @@ describe('#79 R2: app.json declara el plugin de notificaciones y POST_NOTIFICATI
     expect(expo.plugins).toContain('expo-secure-store');
     expect(expo.plugins).toContainEqual([
       'expo-splash-screen',
-      {
-        backgroundColor: '#208AEF',
-        image: './assets/images/splash-icon.png',
-        imageWidth: 76,
-      },
+      expect.any(Object),
     ]);
     expect(expo.plugins).toContainEqual([
       'expo-notifications',
-      { defaultChannel: 'default' },
+      expect.objectContaining({ defaultChannel: 'default' }),
     ]);
   });
 
   it('declara el permiso de Android sin cambiar el package', () => {
     expect(expo.android.permissions).toContain('POST_NOTIFICATIONS');
     expect(expo.android.package).toBe('com.trackermex.pettracker');
+  });
+});
+
+describe('#101 R2: icono de la app', () => {
+  it('expo.icon es ./assets/images/icon.png', () => {
+    expect(appJson.expo.icon).toBe('./assets/images/icon.png');
+  });
+});
+
+describe('#101 R8: favicon', () => {
+  it('web.favicon es ./assets/images/favicon.png', () => {
+    expect(appJson.expo.web.favicon).toBe('./assets/images/favicon.png');
+  });
+});
+
+describe('#101 R3: foreground del adaptive icon', () => {
+  it('android.adaptiveIcon.foregroundImage es ./assets/images/android-icon-foreground.png', () => {
+    expect(appJson.expo.android.adaptiveIcon.foregroundImage).toBe(
+      './assets/images/android-icon-foreground.png',
+    );
+  });
+});
+
+describe('#101 R4: monochrome del adaptive icon', () => {
+  it('android.adaptiveIcon.monochromeImage es ./assets/images/android-icon-monochrome.png', () => {
+    expect(appJson.expo.android.adaptiveIcon.monochromeImage).toBe(
+      './assets/images/android-icon-monochrome.png',
+    );
+  });
+});
+
+describe('#101 R5: fondo plano del adaptive icon', () => {
+  it('android.adaptiveIcon.backgroundColor es #9460FC y no declara backgroundImage', () => {
+    expect(appJson.expo.android.adaptiveIcon.backgroundColor).toBe('#9460FC');
+    expect(
+      (appJson.expo.android.adaptiveIcon as { backgroundImage?: string }).backgroundImage,
+    ).toBeUndefined();
+  });
+});
+
+describe('#101 R6: splash con el perrito sobre violeta', () => {
+  it('el plugin expo-splash-screen declara splash-icon.png sobre #9460FC con imageWidth 200', () => {
+    expect(appJson.expo.plugins).toContainEqual([
+      'expo-splash-screen',
+      {
+        backgroundColor: '#9460FC',
+        image: './assets/images/splash-icon.png',
+        imageWidth: 200,
+      },
+    ]);
+  });
+});
+
+describe('#101 R7: icono de notificación blanco tintado', () => {
+  it('el plugin expo-notifications declara icon pet-tracker-notification-96.png, color #9460FC y defaultChannel default', () => {
+    expect(appJson.expo.plugins).toContainEqual([
+      'expo-notifications',
+      {
+        icon: './assets/images/pet-tracker-notification-96.png',
+        color: '#9460FC',
+        defaultChannel: 'default',
+      },
+    ]);
+  });
+});
+
+describe('#101 R9: iOS intacto', () => {
+  it('ios.icon sigue siendo ./assets/expo.icon', () => {
+    expect(appJson.expo.ios.icon).toBe('./assets/expo.icon');
   });
 });
 
