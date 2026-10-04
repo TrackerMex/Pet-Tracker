@@ -7448,3 +7448,40 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
 - Observaciones 1, 3-6 del review sin id: guard `toBeDefined` extra en
   `app.assets.test.ts`, `checkout` que no borra el PNG nuevo en la sonda de
   R7, bbox 818 frente a ≈ 817, aviso de worker de jest en la base.
+
+## #148 `mobile-keyboard-avoiding-forms` — formularios que se apartan del teclado en Android — 2026-10-04
+
+### Qué se hizo
+
+- Siete pantallas con inputs (login, register, reset-password, add-pet,
+  add-reminder, pairing, weight-log) envuelven su ScrollView en una
+  `KeyboardAvoidingView` raíz calcada de #146 E1 (`behavior="padding"`,
+  `keyboardVerticalOffset` desde `HeaderHeightContext`). El `testID` migra a
+  la KAV y el ScrollView pasa a `<x>-form` con sus métricas intactas.
+  `keyboardShouldPersistTaps="handled"` en add-pet, add-reminder, pairing y
+  weight-log (R8). reset-password: KAV solo en la rama formulario.
+- Flujo: explorer → spec_author → espejo en Notion → firma `faa72f2e` →
+  Codex (16 commits test→feat por pantalla, `eba7309..5052dde`) →
+  reviewer aprobado (`a32c5aa`).
+
+### Verificación
+
+- Reviewer: 16 ficheros dentro de D9, candados globales intactos, 12 suites /
+  387 tests verdes (+11 sobre la base 376), `tsc` y `expo lint` exit 0, tres
+  sondas de reversión rojas (R1, R7, R8).
+- `./init.sh` **no se ejecutó**: Postgres/LocalStack compartidos con #105 y
+  sin autorización del humano. Solo se corrieron los checks móviles.
+- Prueba de humo R10 en el dev build de Android: el humano la declaró
+  superada en la sesión (2026-10-04) sin detalle por pantalla ni dispositivo;
+  las siete casillas de `requirements.md` §Prueba de humo se marcaron citando
+  ese mensaje.
+
+### Resultado
+
+- Estado final: `done` (137/148). `files_affected` sin cambios.
+
+### Deuda y apuntes
+
+- Orden de imports en los siete ficheros (M1 del review), solo estético.
+- iOS sin verificar mientras #60 siga aparcada; `forgot` queda fuera (input
+  deshabilitado).
