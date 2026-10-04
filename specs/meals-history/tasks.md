@@ -94,7 +94,15 @@ Comprobación del bloque backend: `pnpm test` y `pnpm test:e2e` verdes;
    `#65 R6` en `+ 11 // #105 R5` con las 11 filas nuevas en `ui-copy-table.ts`
    (E1: incluida `{ file: 'src/app/_layout.tsx', key: 'mealsHistory.mealsHistory' }`;
    rojo hasta que existan las llamadas `t('…')` de R8–R14: **se acepta** ese
-   rojo transitorio porque `checkUses` grepea los ficheros destino).
+   rojo transitorio porque `checkUses` grepea los ficheros destino) y, en el
+   mismo commit, el de `#65 R18` `expect(SCREEN_FILES).toHaveLength(…)` en
+   `+ 1 // #105 R5` (E2). Rojos transitorios **autorizados** en `#65 R18`
+   desde este commit, y solo estos dos:
+   `it('resuelve cada ocurrencia de la tabla contra la clave exacta')`
+   (`checkUses(ALL_USES)`, mismas filas y mismo final que `#65 R6`: R14) e
+   `it('no deja ningún valor fijo del catálogo como literal entero en las pantallas')`
+   (su bucle hace `readFileSync` de `src/screens/meals-history/index.tsx`:
+   ENOENT hasta que R8 lo cree). Ningún otro `it` ajeno cambia.
    `bunx jest src/providers/__tests__/language-provider.test.tsx src/__tests__/ui-language.test.ts`
 2. Mínimo: 9 claves en `catalog.ts` (`en` y `es`), §2.18 en
    `specs/mobile-ui-language/design.md`.

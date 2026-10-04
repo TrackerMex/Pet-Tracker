@@ -27,6 +27,26 @@ tags: [harness, spec]
 > literales, tests de R5 ni ningún otro requisito. Backend R1–R3 ya están
 > en verde y R4 en rojo; la reanudación de Codex parte de ahí.
 
+> **Enmienda E2 (2026-10-04, casilla propia en §Aprobación):** R5 y E1 solo
+> autorizaban el rojo transitorio del candado `#65 R6`. En
+> `src/__tests__/ui-language.test.ts` el `describe('#65 R18: …')` tiene dos
+> `it` agregados que también se mueven al tocar la tabla:
+> `it('resuelve cada ocurrencia de la tabla contra la clave exacta')` hace
+> `checkUses(ALL_USES)` (la suma de todas las tablas), así que queda en rojo
+> por las mismas 11 filas y hasta el mismo punto que `#65 R6`; e
+> `it('no deja ningún valor fijo del catálogo como literal entero en las pantallas')`
+> candaba `expect(SCREEN_FILES).toHaveLength(19 + 2 + 1 + 1 + 1 + 1 + 1 + 1)`
+> (27) y pasa a 28 porque `src/screens/meals-history/index.tsx` entra en
+> `ALL_USES`; su bucle lee cada fichero de `SCREEN_FILES` con `readFileSync`,
+> así que da ENOENT hasta que R8 cree la pantalla. Codex paró en R5 con 13
+> `it` en rojo (los 9 de `#105 R5`, `#65 R12`, `#65 R6` y esos dos de
+> `#65 R18`) y el humano mantuvo la parada. Cambian: R5 (candado
+> `+ 1 // #105 R5` en `SCREEN_FILES` y los dos rojos transitorios
+> autorizados), [[design]] D8/§Candados y [[tasks]] R5. No cambian claves,
+> literales, tests de R5 ni ningún otro requisito. Backend R1–R4 en verde;
+> Codex retoma en [[tasks]] R5 paso 1 con el parche conservado en
+> `progress/impl_meals-history.md`.
+
 ## Contexto
 
 Caso de uso cerrado por el humano (2026-10-03, no reabrir): el usuario quiere
@@ -266,6 +286,15 @@ El error y el reintento reutilizan `common.somethingWentWrong` y
   `expect(R6_FOOD).toHaveLength(35 + 3 + … + 11)`). **(E1)** La tabla sí
   registra `src/app/_layout.tsx` (`grep -c "_layout" src/__tests__/ui-copy-table.ts`
   = 9 en `d29d49d5`), así que `mealsHistory.mealsHistory` lleva fila.
+  **(E2)** *Candado heredado*: `#65 R18`. `SCREEN_FILES` pasa a
+  `toHaveLength(19 + 2 + 1 + 1 + 1 + 1 + 1 + 1 + 1); // #100 R10, #41 R10, #146 R10, #105 R5`
+  porque `src/screens/meals-history/index.tsx` entra en `ALL_USES`. Rojos
+  transitorios **autorizados** en `#65 R18` desde el commit rojo de R5, y
+  solo estos dos: `it('resuelve cada ocurrencia de la tabla contra la clave exacta')`
+  (`checkUses(ALL_USES)`: mismas 11 filas y mismo final que `#65 R6`, R14) e
+  `it('no deja ningún valor fijo del catálogo como literal entero en las pantallas')`
+  (su bucle hace `readFileSync` de `src/screens/meals-history/index.tsx`:
+  ENOENT hasta que R8 lo cree).
 - **Test:** `src/providers/__tests__/language-provider.test.tsx`,
   `describe('#105 R5: …')` copiando el patrón de `#147 R1`: para cada clave
   `english[key]` y `spanish[key]` iguales a los literales de la tabla, y
@@ -708,6 +737,7 @@ Clasificado viñeta a viñeta; cada una con su razón.
 
 - [x] Aprobado por humano (fecha: 2026-10-03, desde Notion: página `3ee6115a-9b27-81b8-b100-c70a69cfbb64`, `Estado del gate` = Aprobado, `page_last_edited_at` 2026-10-03T19:07:08.029Z) ← gate obligatorio antes de implementar
 - [x] **Enmienda E1** aprobada por humano (fecha: 2026-10-04, desde Notion: página `3ee6115a-9b27-81b8-b100-c70a69cfbb64`, `Estado del gate` = Aprobado tras volver a En revisión el 2026-10-04, `page_last_edited_at` 2026-10-04T00:24:21.926Z) ← gate propio de E1; Codex no reanuda sin él
+- [ ] **Enmienda E2** aprobada por humano (fecha: —, desde Notion: página `3ee6115a-9b27-81b8-b100-c70a69cfbb64`, `Estado del gate` = Aprobado tras volver a En revisión el 2026-10-04, `page_last_edited_at` —) ← gate propio de E2; Codex no reanuda sin él
 
 Decisiones que esta spec cerró por su cuenta y el humano puede objetar aquí:
 (1) rejilla lunes-primero para ambos idiomas; (2) `today` del backend manda
