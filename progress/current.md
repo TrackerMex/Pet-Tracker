@@ -43,7 +43,17 @@
   `feature_list.json` en `spec_ready`. Espejada en Notion (base Specs,
   Estado del gate = En revisión, commit citado `08631f9e`):
   https://app.notion.com/p/3ef6115a9b27811c8cd6e29408fdfe4c
-  Gate humano pendiente: parada hasta la firma.
+  Aprobada por el humano el 2026-10-04 (Estado del gate = Aprobado,
+  page_last_edited_at 2026-10-04T20:26:30.168Z, confirmado por chat);
+  commit de firma `6a85ea5c`; `Rol actual` = Implementer en Notion;
+  `feature_list.json` en `in_progress`.
+- Implementación: Codex CLI en este mismo worktree
+  (`/home/claude/sites/Pet-Tracker-wt-backend`), handoff en
+  `progress/handoff_mobile-forgot-password.md` (H0 = el commit que lo añade).
+  Base medida el 2026-10-04 sobre `6a85ea5c`: 8 suites / 243 tests / exit 0,
+  typecheck exit 0, lint exit 0. Mientras Codex implementa, esta sesión no
+  toca el working tree; al terminar: `./init.sh` aquí (avisando a Frontend)
+  y `reviewer`.
 - #118 (relatado por Frontend 2026-10-04): spec firmada en `16c8e565`, ya
   `in_progress`; Codex implementa en `/home/claude/sites/Pet-Tracker-wt-118`
   sobre `feature/118-mobile-welcome-splash`; el worktree principal volvió a
