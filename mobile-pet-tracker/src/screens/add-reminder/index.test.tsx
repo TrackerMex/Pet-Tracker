@@ -1,4 +1,6 @@
+import { HeaderHeightContext } from 'expo-router/react-navigation';
 import {
+  act,
   fireEvent,
   render,
   screen,
@@ -8,7 +10,7 @@ import {
 import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import { useEffect } from 'react';
-import { Platform } from 'react-native';
+import { DeviceEventEmitter, Platform } from 'react-native';
 
 import {
   createReminder,
@@ -97,7 +99,9 @@ async function renderAddReminder(selected = true) {
       <LanguageProvider initial="es">
         <SelectedPetProvider>
           {selected ? <SelectionProbe /> : null}
-          <AddReminderScreen />
+          <HeaderHeightContext.Provider value={91}>
+            <AddReminderScreen />
+          </HeaderHeightContext.Provider>
         </SelectedPetProvider>
       </LanguageProvider>
     </HeroUINativeProvider>,
@@ -160,7 +164,7 @@ describe('R8: formulario de alta con chips y pickers', () => {
       expect(screen.getByTestId('screen-add-reminder')).toBeVisible(),
     );
     expect(
-      screen.getByTestId('screen-add-reminder').props.contentContainerStyle,
+      screen.getByTestId('add-reminder-form').props.contentContainerStyle,
     ).toEqual({
       padding: 24,
       gap: 16,
@@ -761,5 +765,57 @@ describe('#125: avisos que ya pasaron en Nuevo recordatorio', () => {
       expect(screen.getByTestId('add-reminder-error')).toHaveTextContent('La fecha debe ser futura');
       expect(mockCreateReminder).not.toHaveBeenCalled();
     });
+  });
+});
+
+describe('#148 R5: add-reminder se aparta del teclado en Android', () => {
+  afterEach(() => {
+    setPlatform(originalPlatform);
+  });
+
+  it('el host screen-add-reminder añade paddingBottom 291 al abrir el teclado', async () => {
+    setPlatform('android');
+    process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockCreateReminder.mockReturnValue(pending());
+    await renderAddReminder();
+    await waitFor(() => expect(screen.getByTestId('screen-add-reminder')).toBeVisible());
+
+    const host = screen.getByTestId('screen-add-reminder');
+    expect(host).toHaveStyle({ paddingBottom: 0 });
+    await fireEvent(host, 'layout', {
+      persist() {},
+      nativeEvent: { layout: { x: 0, y: 0, width: 400, height: 700 } },
+    });
+    await act(async () => {
+      DeviceEventEmitter.emit('keyboardDidShow', {
+        startCoordinates: { screenX: 0, screenY: 800, width: 400, height: 0 },
+        endCoordinates: { screenX: 0, screenY: 500, width: 400, height: 300 },
+        duration: 0, easing: 'keyboard', isEventFromThisApp: true,
+      });
+    });
+    await waitFor(() => expect(screen.getByTestId('screen-add-reminder')).toHaveStyle({ paddingBottom: 291 }));
+  });
+});
+
+describe('#148 R8: add-reminder entrega el primer toque con el teclado abierto', () => {
+  it('el scroll add-reminder-form declara keyboardShouldPersistTaps handled', async () => {
+    process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockCreateReminder.mockReturnValue(pending());
+    await renderAddReminder();
+    await waitFor(() => expect(screen.getByTestId('screen-add-reminder')).toBeVisible());
+
+    expect(screen.getByTestId('add-reminder-form').props.keyboardShouldPersistTaps).toBe('handled');
   });
 });
