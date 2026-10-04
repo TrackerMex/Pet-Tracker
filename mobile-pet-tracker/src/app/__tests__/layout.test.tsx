@@ -306,7 +306,7 @@ describe('#95 R2: el layout raíz monta el provider y el Stack de detalle', () =
     const props = jest.mocked(Stack).mock.calls.at(-1)?.[0];
     expect(props?.screenOptions).toEqual({ headerShown: false });
     const children = Children.toArray(props?.children);
-    expect(children).toHaveLength(5);
+    expect(children).toHaveLength(5 + 1); // #118 R3
     expect(children.slice(0, 4).map((child) =>
       isValidElement<{ name: string; options?: unknown }>(child)
         ? [child.type, child.props.name, child.props.options]
