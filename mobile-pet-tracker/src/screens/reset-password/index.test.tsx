@@ -1,3 +1,4 @@
+import { DeviceEventEmitter, Platform } from 'react-native';
 import {
   act,
   fireEvent,
@@ -27,6 +28,8 @@ jest.mock('react-native-safe-area-context', () => ({
   ...jest.requireActual('react-native-safe-area-context'),
   useSafeAreaInsets: () => ({ top: 40, right: 0, bottom: 24, left: 0 }),
 }));
+
+const originalOS = Platform.OS;
 
 const mockRouter = jest.mocked(router);
 const mockUseLocalSearchParams = jest.mocked(useLocalSearchParams);
@@ -258,7 +261,7 @@ describe('#61 R8: las tres ramas de reset tienen contenedor de scroll', () => {
   it('la rama del formulario no centra en horizontal', async () => {
     await renderRoute('token-123');
 
-    const screenRoot = screen.getByTestId('screen-reset-password');
+    const screenRoot = screen.getByTestId('reset-password-form');
 
     expect(screenRoot.props.contentContainerStyle).toEqual(metrics);
     expect(screenRoot.props.keyboardShouldPersistTaps).toBe('handled');
@@ -276,5 +279,31 @@ describe('#127 R1: el botón de envío de reset-password lleva su receta en el �
     expect(screen.getByTestId('reset-submit').props.className).toBe(
       'pressable-feedback__root button__root button__root--variant-primary button__root--size-md w-full rounded-xl bg-accent',
     );
+  });
+});
+
+describe('#148 R3: reset-password se aparta del teclado en Android', () => {
+  afterEach(() => {
+    (Platform as { OS: string }).OS = originalOS;
+  });
+
+  it('el host screen-reset-password añade paddingBottom 200 al abrir el teclado', async () => {
+    (Platform as { OS: string }).OS = 'android';
+    await renderRoute('token-148');
+
+    const host = screen.getByTestId('screen-reset-password');
+    expect(host).toHaveStyle({ paddingBottom: 0 });
+    await fireEvent(host, 'layout', {
+      persist() {},
+      nativeEvent: { layout: { x: 0, y: 0, width: 400, height: 700 } },
+    });
+    await act(async () => {
+      DeviceEventEmitter.emit('keyboardDidShow', {
+        startCoordinates: { screenX: 0, screenY: 800, width: 400, height: 0 },
+        endCoordinates: { screenX: 0, screenY: 500, width: 400, height: 300 },
+        duration: 0, easing: 'keyboard', isEventFromThisApp: true,
+      });
+    });
+    await waitFor(() => expect(screen.getByTestId('screen-reset-password')).toHaveStyle({ paddingBottom: 200 }));
   });
 });
