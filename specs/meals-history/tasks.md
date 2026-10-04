@@ -91,8 +91,9 @@ Comprobación del bloque backend: `pnpm test` y `pnpm test:e2e` verdes;
    la tabla de R5 y `languageDesign` contiene la fila `← añadida por #105 (R5)`.
    Falla por `undefined` vs literal. Sube en el mismo commit el candado
    `#65 R12` en `+ 9 // #105 R5` (queda rojo hasta añadir las claves) y el de
-   `#65 R6` en `+ 10 // #105 R5` con las 10 filas nuevas en `ui-copy-table.ts`
-   (rojo hasta que existan las llamadas `t('…')` de R9–R14: **se acepta** ese
+   `#65 R6` en `+ 11 // #105 R5` con las 11 filas nuevas en `ui-copy-table.ts`
+   (E1: incluida `{ file: 'src/app/_layout.tsx', key: 'mealsHistory.mealsHistory' }`;
+   rojo hasta que existan las llamadas `t('…')` de R8–R14: **se acepta** ese
    rojo transitorio porque `checkUses` grepea los ficheros destino).
    `bunx jest src/providers/__tests__/language-provider.test.tsx src/__tests__/ui-language.test.ts`
 2. Mínimo: 9 claves en `catalog.ts` (`en` y `es`), §2.18 en

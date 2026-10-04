@@ -13,6 +13,19 @@ tags: [harness, spec]
 > Base congelada: `origin/main d29d49d5` (2026-10-03). Toda ruta y símbolo de
 > esta spec se verificó contra ese árbol. Las anclas son por contenido
 > grepeable (ruta + símbolo o literal), nunca por número de línea.
+>
+> **Enmienda E1 (2026-10-04, pendiente de aprobación en Notion, casilla
+> propia en §Aprobación):** R5 afirmaba que `ui-copy-table.ts` no registra
+> `src/app/_layout.tsx` (`grep -c "_layout"` = 0) y que `mealsHistory.mealsHistory`
+> no lleva fila. Es falso: en `d29d49d5` ese grep da **9** (una fila por
+> título de pantalla registrado en `_layout.tsx`, p. ej. `mealSchedule.mealSchedule`
+> de #95 R4, primera fila de `R6_FOOD`). Codex paró en la verificación de
+> anclas, como exige el handoff; el leader la había dado por verificada sin
+> contrastar la cuenta. Cambian: R5 (una fila más, `+ 11` en `#65 R6`),
+> [[design]] D8/§Archivos/§Candados y [[tasks]] R5 (11 filas; el rojo
+> transitorio del candado dura hasta R8, no hasta R9). No cambian claves,
+> literales, tests de R5 ni ningún otro requisito. Backend R1–R3 ya están
+> en verde y R4 en rojo; la reanudación de Codex parte de ahí.
 
 ## Contexto
 
@@ -241,15 +254,18 @@ El error y el reintento reutilizan `common.somethingWentWrong` y
   `expect(englishKeys).toHaveLength(260 + 16 + … + 9)`) en `+ 9 // #105 R5`.
 - SHALL añadir a `R6_FOOD` en `src/__tests__/ui-copy-table.ts` **una fila por
   llamada `t('…')` nueva**: 2 de `src/app/(tabs)/food.tsx`
-  (`food.mealsHistory`, `food.mealsHistoryLinkSubtitle`) y 8 de
+  (`food.mealsHistory`, `food.mealsHistoryLinkSubtitle`), 1 de
+  `src/app/_layout.tsx` (`mealsHistory.mealsHistory`, con el formato de la
+  fila `{ file: 'src/app/_layout.tsx', key: 'mealSchedule.mealSchedule' }, // #95 R4`
+  que ya encabeza `R6_FOOD`; comentario `// #105 R5`) y 8 de
   `src/screens/meals-history/index.tsx` (`mealsHistory.previousMonth`,
   `mealsHistory.nextMonth`, `mealsHistory.emptyMonth`,
   `mealsHistory.noMealsOnDay`, `mealsHistory.servedOne`,
   `mealsHistory.servedMany`, `common.somethingWentWrong`, `common.retry`);
-  total `+ 10` en `src/__tests__/ui-language.test.ts` (`#65 R6`,
-  `expect(R6_FOOD).toHaveLength(35 + 3 + … + 10)`). La tabla no registra
-  `src/app/_layout.tsx` (`grep -c "_layout" src/__tests__/ui-copy-table.ts` = 0),
-  así que `mealsHistory.mealsHistory` no lleva fila.
+  total `+ 11` en `src/__tests__/ui-language.test.ts` (`#65 R6`,
+  `expect(R6_FOOD).toHaveLength(35 + 3 + … + 11)`). **(E1)** La tabla sí
+  registra `src/app/_layout.tsx` (`grep -c "_layout" src/__tests__/ui-copy-table.ts`
+  = 9 en `d29d49d5`), así que `mealsHistory.mealsHistory` lleva fila.
 - **Test:** `src/providers/__tests__/language-provider.test.tsx`,
   `describe('#105 R5: …')` copiando el patrón de `#147 R1`: para cada clave
   `english[key]` y `spanish[key]` iguales a los literales de la tabla, y
@@ -691,6 +707,7 @@ Clasificado viñeta a viñeta; cada una con su razón.
 ## Aprobación
 
 - [x] Aprobado por humano (fecha: 2026-10-03, desde Notion: página `3ee6115a-9b27-81b8-b100-c70a69cfbb64`, `Estado del gate` = Aprobado, `page_last_edited_at` 2026-10-03T19:07:08.029Z) ← gate obligatorio antes de implementar
+- [ ] **Enmienda E1** aprobada por humano (fecha: —, desde Notion: `Estado del gate` = Aprobado tras volver a En revisión el 2026-10-04) ← gate propio de E1; Codex no reanuda sin él
 
 Decisiones que esta spec cerró por su cuenta y el humano puede objetar aquí:
 (1) rejilla lunes-primero para ambos idiomas; (2) `today` del backend manda

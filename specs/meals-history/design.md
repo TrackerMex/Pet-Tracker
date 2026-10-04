@@ -19,7 +19,7 @@ tags: [harness, spec, design]
 | D5 | Punto si ≥ 1 servicio; sin colores ni números en la celda | Densidad mínima legible en 44 pt |
 | D6 | Sin futuro: el mes de `today` es el tope del botón "siguiente"; los días posteriores a `today` dentro del mes van `disabled`. Sin límite inferior | El backend acepta `to` futuro (lo necesita el mes en curso) y devuelve `[]` |
 | D7 | Cuatro estados (Skeleton, error + reintentar, mes vacío, sin mascota → `Redirect /food`), `placeholderData: keepPreviousData`, skeleton solo en la primera carga | "Every Screen Has Four States" (skill `expo-data-fetching`); el estado vacío conserva la rejilla para poder navegar |
-| D8 | Nueve claves en/es desde R5, §2.18 en `specs/mobile-ui-language/design.md`, filas en `ui-copy-table.ts`; error y reintento reutilizan `common.*` | Lección #146 R9: el literal va en la spec, no lo inventa Codex |
+| D8 | Nueve claves en/es desde R5, §2.18 en `specs/mobile-ui-language/design.md`, 11 filas en `ui-copy-table.ts` (E1: incluida la de `src/app/_layout.tsx`); error y reintento reutilizan `common.*` | Lección #146 R9: el literal va en la spec, no lo inventa Codex |
 | D9 | Entrada = `Card` nuevo en `src/app/(tabs)/food.tsx` tras `meal-schedule-link`, `router.push('/meals-history')` | Caso de uso cerrado: pantalla de pila, no pestaña |
 | D10 | Detalle inline con `useState<string | null>` | Un panel de 1–6 líneas no justifica ruta ni sheet |
 | D11 | `describe('#105 R<n>: …')` propio por fichero; nunca se renombra un `it` ajeno; cada candado de inventario se sube con `+ N // #105 R<n>` (tabla abajo) | Lecciones #147 E1 y #65 |
@@ -67,7 +67,7 @@ No se tocan: `PetMealsReader`, `pet-meals.drizzle-reader.ts`, `GetNutritionPlanU
 | Capa | Fichero | Cambio | R-id |
 |---|---|---|---|
 | i18n | `src/i18n/catalog.ts` | 9 claves en `en` y `es` | R5 |
-| i18n | `src/__tests__/ui-copy-table.ts` | 10 filas en `R6_FOOD` | R5 |
+| i18n | `src/__tests__/ui-copy-table.ts` | 11 filas en `R6_FOOD` (E1) | R5 |
 | api | `src/api/types.ts` | `MealsHistoryDay`, `MealsHistory` | R6 |
 | api | `src/api/nutrition.ts` | `getMealsHistory`, `MealsHistoryState` | R6 |
 | api | `src/api/query-keys.ts` | `nutritionKeys.mealsHistory` | R7 |
@@ -83,7 +83,7 @@ No se tocan: `PetMealsReader`, `pet-meals.drizzle-reader.ts`, `GetNutritionPlanU
 | tests | `src/api/__tests__/nutrition.test.ts`, `src/api/__tests__/query-keys.test.ts` | `describe('#105 R6')`, `describe('#105 R7')` | R6, R7 |
 | tests | `src/app/(tabs)/__tests__/food.test.tsx` | `describe('#105 R14')` | R14 |
 | tests | `src/providers/__tests__/language-provider.test.tsx` | candado `+ 9`; `describe('#105 R5')` | R5 |
-| tests | `src/__tests__/ui-language.test.ts` | candado `+ 10` | R5 |
+| tests | `src/__tests__/ui-language.test.ts` | candado `+ 11` (E1) | R5 |
 | tests | `src/__tests__/consistency-classnames.test.ts` | fila en `counters` + total `+ 2`; `bg-accent-soft` `+ 1` (dos sitios) | R11 |
 | tests | `src/__tests__/design-drift.test.ts` | `'meals-history'` en `R3`; fila en `screenSignOutCalls`; `describe('#105 R15')` | R15 |
 | docs | `specs/mobile-ui-language/design.md` | `### §2.18 — Añadidos por #105 — Historial de comidas` | R5 |
@@ -100,7 +100,7 @@ delta. El delta se escribe al final de la suma con `// #105 R<n>`.
 | `src/app/__tests__/layout.test.tsx` | `#41 R4` 'décimo hijo' | `toHaveLength(10 + 1)` | `+ 1 // #105 R8` |
 | `src/app/__tests__/layout.test.tsx` | `#146 R5` 'undécimo hijo' | `toHaveLength(11)` | `+ 1 // #105 R8` |
 | `src/providers/__tests__/language-provider.test.tsx` | `#65 R12` `expect(englishKeys).toHaveLength(260 + 16 + …)` | termina en `+ 9)` (#147) | `+ 9 // #105 R5` |
-| `src/__tests__/ui-language.test.ts` | `#65 R6` `expect(R6_FOOD).toHaveLength(35 + 3 + 1 - 2 + 1 + 3 + 9)` | 10 filas nuevas en `ui-copy-table.ts` | `+ 10 // #105 R5` |
+| `src/__tests__/ui-language.test.ts` | `#65 R6` `expect(R6_FOOD).toHaveLength(35 + 3 + 1 - 2 + 1 + 3 + 9)` | 11 filas nuevas en `ui-copy-table.ts` (E1) | `+ 11 // #105 R5` |
 | `src/__tests__/consistency-classnames.test.ts` | `#62 R15` `counters` + total `toBe(14 + 4 + 1 + 1 + 1 + 1 + 1, // #146 R18)` | fila `[join('screens', 'meals-history', 'index.tsx'), 2]` | `+ 2 // #105 R11` |
 | `src/__tests__/consistency-classnames.test.ts` | `#98 R10` 'deja CONTINUOUS_CORNER, bg-accent-soft y el acento donde estaban' | `count(/bg-accent-soft/g)).toBe(16 + 2)` | `+ 1 // #105 R11` |
 | `src/__tests__/consistency-classnames.test.ts` | `#64 R9` `accentSoftCount` | `toBe(16 + 2)` | `+ 1 // #105 R11` |
