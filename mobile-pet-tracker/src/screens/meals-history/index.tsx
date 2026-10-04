@@ -43,7 +43,7 @@ function DayCell({ date, today, mealTimes, selected, locale, onPress }: {
       style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
     >
       {date === today ? (
-        <DayNumber testID="meals-history-today" date={date} className="text-sm font-bold text-accent" />
+        <DayNumber testID="meals-history-today" date={date} className="text-sm font-bold text-accent-strong" />
       ) : (
         <DayNumber date={date} className={disabled ? 'text-sm font-semibold text-muted' : 'text-sm font-semibold text-foreground'} />
       )}
