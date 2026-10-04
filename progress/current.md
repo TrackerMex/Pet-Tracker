@@ -40,6 +40,21 @@
      `reviewer` → `progress/review_meals-history.md`
   8. Con veredicto aprobado: `done`, `history.md`, Notion `Implementado` /
      `Completado`, `gh pr create`. La prueba de humo H1 es del humano.
-- **Estado al parar:** esperando a que el humano pegue el handoff en Codex
-  CLI y avise cuando termine. El leader no toca `backend-pet-tracker/` ni
-  `mobile-pet-tracker/` mientras tanto.
+  6b. **Parada de Codex en el ancla R5 (2026-10-04):** Codex implementó
+     R2, R1, R3 (verde) y el rojo de R4 (`430b232a`), y paró en la
+     verificación de anclas porque `grep -c "_layout" ui-copy-table.ts`
+     da 9 y la spec decía 0 (`progress/impl_meals-history.md`). El leader
+     confirmó la evidencia: la premisa de R5 era falsa y su propia pasada
+     de anclas no la contrastó. **Enmienda E1** escrita en
+     `requirements.md` (R5, casilla propia), `design.md` y `tasks.md`
+     (commit `e0f133a1`): fila de `src/app/_layout.tsx` para
+     `mealsHistory.mealsHistory` en `R6_FOOD`, candado `#65 R6` en
+     `+ 11`. Página de Notion re-espejada, `Estado del gate` =
+     En revisión, `Rol actual` = Leader. **Pendiente del humano:**
+     aprobar E1 en Notion. Después: commit de firma de E1,
+     `Rol actual = Implementer`, sección «Reanudación 1» en
+     `progress/handoff_meals-history.md` (Codex retoma en R4 verde con
+     las cifras de E1), push, handoff al humano.
+- **Estado al parar:** esperando la aprobación de E1 en Notion. Codex
+  en pausa con HEAD `52757187` + el commit de E1. El leader no toca
+  `backend-pet-tracker/` ni `mobile-pet-tracker/`.
