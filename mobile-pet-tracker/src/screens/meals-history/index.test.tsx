@@ -1,4 +1,7 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react-native';
+import { readFileSync } from 'fs';
+import { join } from 'path';
+
+import { fireEvent, screen, waitFor, within } from '@testing-library/react-native';
 import { HeroUINativeProvider } from 'heroui-native';
 import { useEffect } from 'react';
 
@@ -146,5 +149,88 @@ describe('#105 R9: meals history preserves the four screen states', () => {
     await renderHistory();
     await waitFor(() => expect(screen.getByTestId('meals-history-grid')).toBeVisible());
     expect(screen.queryByTestId('meals-history-empty')).toBeNull();
+  });
+});
+
+
+describe('#105 R11: the civil month grid renders six decisions per day', () => {
+  it('starts the seven weekday headers with Monday', async () => {
+    await renderHistory();
+    await waitFor(() => expect(screen.getByTestId('meals-history-grid')).toBeVisible());
+    const weekdays = screen.getByTestId('meals-history-weekdays');
+    expect(weekdays.children).toHaveLength(7);
+    const monday = new Date(Date.UTC(2024, 0, 1)).toLocaleDateString('es-MX', { weekday: 'short', timeZone: 'UTC' });
+    expect(within(weekdays).getByText(monday)).toBeVisible();
+    const first = weekdays.children[0];
+    expect(typeof first === 'string' ? first : first.children[0]).toBe(monday);
+  });
+
+  it('renders five rows of seven cells including four empty fillers', async () => {
+    await renderHistory();
+    await waitFor(() => expect(screen.getByTestId('meals-history-grid')).toBeVisible());
+    const rows = screen.getByTestId('meals-history-grid').children;
+    expect(rows).toHaveLength(5);
+    for (const row of rows) {
+      expect(typeof row).not.toBe('string');
+      if (typeof row !== 'string') expect(row.children).toHaveLength(7);
+    }
+    const fillers = screen.getAllByTestId('meals-history-filler');
+    expect(fillers).toHaveLength(4);
+    for (const filler of fillers) expect(filler.children).toHaveLength(0);
+    const first = rows[0];
+    if (typeof first !== 'string') {
+      expect(first.children.slice(0, 3).map(cell => typeof cell === 'string' ? cell : cell.props.testID))
+        .toEqual(['meals-history-filler', 'meals-history-filler', 'meals-history-filler']);
+    }
+  });
+
+  it('adds exactly one dot only to each served day', async () => {
+    await renderHistory();
+    await waitFor(() => expect(screen.getByTestId('meals-history-grid')).toBeVisible());
+    const served = screen.getByTestId('meals-history-day-2026-01-05');
+    expect(served.children).toHaveLength(2);
+    expect(within(served).getByTestId('meals-history-dot')).toBeVisible();
+    const empty = screen.getByTestId('meals-history-day-2026-01-06');
+    expect(empty.children).toHaveLength(1);
+    expect(within(empty).queryByTestId('meals-history-dot')).toBeNull();
+    expect(screen.getAllByTestId('meals-history-dot')).toHaveLength(2);
+  });
+
+  it('disables the sixteen future dates but allows today', async () => {
+    await renderHistory();
+    await waitFor(() => expect(screen.getByTestId('meals-history-grid')).toBeVisible());
+    expect(screen.getByTestId('meals-history-day-2026-01-16')).toBeDisabled();
+    expect(screen.getByTestId('meals-history-day-2026-01-15')).not.toBeDisabled();
+    expect(screen.getAllByTestId(/^meals-history-day-/).filter(cell => cell.props.accessibilityState?.disabled)).toHaveLength(16);
+  });
+
+  it('marks today exactly once inside its own cell', async () => {
+    await renderHistory();
+    await waitFor(() => expect(screen.getByTestId('meals-history-grid')).toBeVisible());
+    const today = screen.getByTestId('meals-history-day-2026-01-15');
+    expect(within(today).getByTestId('meals-history-today')).toHaveTextContent('15');
+    expect(screen.getAllByTestId('meals-history-today')).toHaveLength(1);
+  });
+
+  it('labels each day as a button with its civil long date', async () => {
+    await renderHistory();
+    await waitFor(() => expect(screen.getByTestId('meals-history-grid')).toBeVisible());
+    expect(screen.getByTestId('meals-history-day-2026-01-05')).toHaveProp('accessibilityLabel', 'lunes, 5 de enero');
+    expect(screen.getByTestId('meals-history-day-2026-01-05')).toHaveProp('accessibilityRole', 'button');
+    expect(screen.getByTestId('meals-history-day-2026-01-05')).toHaveProp('accessibilityState', { disabled: false, selected: false });
+  });
+
+  it('keeps the agreed capsule colors and tabular source anchors', () => {
+    const source = readFileSync(join(process.cwd(), 'src/screens/meals-history/index.tsx'), 'utf8');
+    function opening(testID: string) {
+      const anchor = source.indexOf(`testID="${testID}"`);
+      expect(anchor).toBeGreaterThan(-1);
+      expect(source.lastIndexOf(`testID="${testID}"`)).toBe(anchor);
+      return source.slice(source.lastIndexOf('<', anchor), source.indexOf('<', anchor)).split('/>')[0];
+    }
+    expect(opening('meals-history-today')).toContain('text-sm font-bold text-accent');
+    expect(opening('meals-history-dot')).toContain('h-1.5 w-1.5 rounded-full bg-accent');
+    expect(source.match(/bg-accent-soft/g)).toHaveLength(1);
+    expect(source.match(/style=\{TABULAR_NUMS\}/g)).toHaveLength(2);
   });
 });
