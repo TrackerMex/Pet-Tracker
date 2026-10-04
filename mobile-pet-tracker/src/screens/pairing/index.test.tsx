@@ -1,3 +1,4 @@
+import { HeaderHeightContext } from 'expo-router/react-navigation';
 import {
   act,
   fireEvent,
@@ -7,7 +8,7 @@ import {
 import { router, useFocusEffect } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
-import { Alert } from 'react-native';
+import { Alert, DeviceEventEmitter, Platform } from 'react-native';
 
 import {
   claimDevice,
@@ -55,6 +56,8 @@ jest.mock('react-native-safe-area-context', () => ({
   ...jest.requireActual('react-native-safe-area-context'),
   useSafeAreaInsets: () => ({ top: 40, right: 0, bottom: 24, left: 0 }),
 }));
+
+const originalOS = Platform.OS;
 
 const apiUrl = 'http://example.test/v1';
 const mockClaimDevice = jest.mocked(claimDevice);
@@ -117,7 +120,11 @@ function PairingWrapper({ children }: { children: ReactNode }) {
   return (
     <HeroUINativeProvider>
       <LanguageProvider initial="es">
-        <SelectedPetProvider>{children}</SelectedPetProvider>
+        <SelectedPetProvider>
+          <HeaderHeightContext.Provider value={91}>
+            {children}
+          </HeaderHeightContext.Provider>
+        </SelectedPetProvider>
       </LanguageProvider>
     </HeroUINativeProvider>
   );
@@ -198,7 +205,7 @@ describe('R4: /pairing monta en el Stack raíz con selector de mascota y estados
     await renderPairing();
 
     expect(screen.getByTestId('screen-pairing')).toBeVisible();
-    expect(screen.getByTestId('screen-pairing').props.contentContainerStyle).toEqual({
+    expect(screen.getByTestId('pairing-form').props.contentContainerStyle).toEqual({
       padding: 24,
       gap: 16,
       paddingBottom: 48,
@@ -921,5 +928,55 @@ describe('#95 R5: la pantalla no dibuja cabecera propia', () => {
     await renderPairing();
     await waitFor(() => expect(screen.getByTestId('screen-pairing')).toBeVisible());
     expect(screen.queryByTestId(['pairing', 'back'].join('-'))).toBeNull();
+  });
+});
+
+describe('#148 R6: pairing se aparta del teclado en Android', () => {
+  afterEach(() => {
+    (Platform as { OS: string }).OS = originalOS;
+  });
+
+  it('el host screen-pairing añade paddingBottom 291 al abrir el teclado', async () => {
+    (Platform as { OS: string }).OS = 'android';
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockReturnValue(pending<PetsState>());
+    await renderPairing();
+
+    const host = screen.getByTestId('screen-pairing');
+    expect(host).toHaveStyle({ paddingBottom: 0 });
+    await fireEvent(host, 'layout', {
+      persist() {},
+      nativeEvent: { layout: { x: 0, y: 0, width: 400, height: 700 } },
+    });
+    await act(async () => {
+      DeviceEventEmitter.emit('keyboardDidShow', {
+        startCoordinates: { screenX: 0, screenY: 800, width: 400, height: 0 },
+        endCoordinates: { screenX: 0, screenY: 500, width: 400, height: 300 },
+        duration: 0, easing: 'keyboard', isEventFromThisApp: true,
+      });
+    });
+    await waitFor(() => expect(screen.getByTestId('screen-pairing')).toHaveStyle({ paddingBottom: 291 }));
+  });
+});
+
+describe('#148 R8: pairing entrega el primer toque con el teclado abierto', () => {
+  it('el scroll pairing-form declara keyboardShouldPersistTaps handled', async () => {
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockReturnValue(pending<PetsState>());
+    await renderPairing();
+
+    expect(screen.getByTestId('pairing-form').props.keyboardShouldPersistTaps).toBe('handled');
   });
 });

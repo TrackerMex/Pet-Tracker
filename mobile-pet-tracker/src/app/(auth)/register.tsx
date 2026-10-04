@@ -1,3 +1,4 @@
+import { HeaderHeightContext } from 'expo-router/react-navigation';
 import { router } from 'expo-router';
 import {
   Button,
@@ -7,8 +8,8 @@ import {
   Label,
   TextField,
 } from 'heroui-native';
-import { useState } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { useContext, useState } from 'react';
+import { KeyboardAvoidingView, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { login, register } from '../../api/auth';
@@ -70,6 +71,7 @@ function deviceTimezone(): string | undefined {
 }
 
 export default function Register() {
+  const headerHeight = useContext(HeaderHeightContext);
   const insets = useSafeAreaInsets();
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -142,149 +144,156 @@ export default function Register() {
   }
 
   return (
-    <ScrollView
+    <KeyboardAvoidingView
       testID="screen-register"
-      className="flex-1 bg-background"
-      keyboardShouldPersistTaps="handled"
-      contentInsetAdjustmentBehavior="automatic"
-      contentContainerStyle={{
-        padding: 24,
-        gap: 16,
-        paddingTop: insets.top + 12,
-        paddingBottom: insets.bottom + 96,
-      }}
+      className="flex-1"
+      behavior="padding"
+      keyboardVerticalOffset={headerHeight}
     >
-      <Text className="text-center text-2xl font-black text-foreground">
-        {t('register.createAccount')}
-      </Text>
-
-      <TextField isInvalid={Boolean(fieldErrors.firstName)}>
-        <Label className="text-xs font-semibold text-foreground">
-          {t('register.firstName')}
-        </Label>
-        <Input
-          testID="register-first-name"
-          className="rounded-xl bg-default"
-          value={firstName}
-          onChangeText={setFirstName}
-        />
-        <FieldError testID="register-first-name-error">
-          {fieldErrors.firstName}
-        </FieldError>
-      </TextField>
-
-      <TextField isInvalid={Boolean(fieldErrors.lastName)}>
-        <Label className="text-xs font-semibold text-foreground">
-          {t('register.lastName')}
-        </Label>
-        <Input
-          testID="register-last-name"
-          className="rounded-xl bg-default"
-          value={lastName}
-          onChangeText={setLastName}
-        />
-        <FieldError testID="register-last-name-error">{fieldErrors.lastName}</FieldError>
-      </TextField>
-
-      <TextField isInvalid={Boolean(fieldErrors.email)}>
-        <Label className="text-xs font-semibold text-foreground">
-          {t('register.email')}
-        </Label>
-        <Input
-          testID="register-email"
-          className="rounded-xl bg-default"
-          autoCapitalize="none"
-          keyboardType="email-address"
-          value={email}
-          onChangeText={setEmail}
-        />
-        <FieldError testID="register-email-error">{fieldErrors.email}</FieldError>
-      </TextField>
-
-      <TextField isInvalid={Boolean(fieldErrors.phone)}>
-        <Label className="text-xs font-semibold text-foreground">
-          {t('register.phone')}
-        </Label>
-        <Input
-          testID="register-phone"
-          className="rounded-xl bg-default"
-          keyboardType="phone-pad"
-          value={phone}
-          onChangeText={setPhone}
-        />
-        <FieldError testID="register-phone-error">{fieldErrors.phone}</FieldError>
-      </TextField>
-
-      <TextField isInvalid={Boolean(fieldErrors.password)}>
-        <Label className="text-xs font-semibold text-foreground">
-          {t('register.password')}
-        </Label>
-        <Input
-          testID="register-password"
-          className="rounded-xl bg-default"
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-        />
-        <FieldError testID="register-password-error">{fieldErrors.password}</FieldError>
-      </TextField>
-
-      <TextField isInvalid={Boolean(fieldErrors.passwordConfirmation)}>
-        <Label className="text-xs font-semibold text-foreground">
-          {t('register.confirmPassword')}
-        </Label>
-        <Input
-          testID="register-password-confirmation"
-          className="rounded-xl bg-default"
-          secureTextEntry
-          value={passwordConfirmation}
-          onChangeText={setPasswordConfirmation}
-        />
-        <FieldError testID="register-password-confirmation-error">
-          {fieldErrors.passwordConfirmation}
-        </FieldError>
-      </TextField>
-
-      <TextField isInvalid={Boolean(fieldErrors.country)}>
-        <Label className="text-xs font-semibold text-foreground">
-          {t('register.country')}
-        </Label>
-        <Input
-          testID="register-country"
-          className="rounded-xl bg-default"
-          autoCapitalize="characters"
-          maxLength={2}
-          value={country}
-          onChangeText={(value) => setCountry(value.toUpperCase())}
-        />
-        <FieldError testID="register-country-error">{fieldErrors.country}</FieldError>
-      </TextField>
-
-      <View className="flex-row items-center gap-3">
-        <Checkbox
-          testID="register-terms"
-          isSelected={terms}
-          onSelectedChange={setTerms}
-        />
-        <Text className="text-foreground">{t('register.iAcceptTerms')}</Text>
-      </View>
-
-      {generalError ? (
-        <Text testID="register-error" className="text-danger">
-          {generalError}
-        </Text>
-      ) : null}
-
-      <Button
-        testID="register-submit"
-        className="w-full rounded-xl bg-accent"
-        isDisabled={!terms || submitting}
-        onPress={() => void handleSubmit()}
+      <ScrollView
+        testID="register-form"
+        className="flex-1 bg-background"
+        keyboardShouldPersistTaps="handled"
+        contentInsetAdjustmentBehavior="automatic"
+        contentContainerStyle={{
+          padding: 24,
+          gap: 16,
+          paddingTop: insets.top + 12,
+          paddingBottom: insets.bottom + 96,
+        }}
       >
-        <Button.Label className="font-bold text-accent-foreground">
+        <Text className="text-center text-2xl font-black text-foreground">
           {t('register.createAccount')}
-        </Button.Label>
-      </Button>
-    </ScrollView>
+        </Text>
+
+        <TextField isInvalid={Boolean(fieldErrors.firstName)}>
+          <Label className="text-xs font-semibold text-foreground">
+            {t('register.firstName')}
+          </Label>
+          <Input
+            testID="register-first-name"
+            className="rounded-xl bg-default"
+            value={firstName}
+            onChangeText={setFirstName}
+          />
+          <FieldError testID="register-first-name-error">
+            {fieldErrors.firstName}
+          </FieldError>
+        </TextField>
+
+        <TextField isInvalid={Boolean(fieldErrors.lastName)}>
+          <Label className="text-xs font-semibold text-foreground">
+            {t('register.lastName')}
+          </Label>
+          <Input
+            testID="register-last-name"
+            className="rounded-xl bg-default"
+            value={lastName}
+            onChangeText={setLastName}
+          />
+          <FieldError testID="register-last-name-error">{fieldErrors.lastName}</FieldError>
+        </TextField>
+
+        <TextField isInvalid={Boolean(fieldErrors.email)}>
+          <Label className="text-xs font-semibold text-foreground">
+            {t('register.email')}
+          </Label>
+          <Input
+            testID="register-email"
+            className="rounded-xl bg-default"
+            autoCapitalize="none"
+            keyboardType="email-address"
+            value={email}
+            onChangeText={setEmail}
+          />
+          <FieldError testID="register-email-error">{fieldErrors.email}</FieldError>
+        </TextField>
+
+        <TextField isInvalid={Boolean(fieldErrors.phone)}>
+          <Label className="text-xs font-semibold text-foreground">
+            {t('register.phone')}
+          </Label>
+          <Input
+            testID="register-phone"
+            className="rounded-xl bg-default"
+            keyboardType="phone-pad"
+            value={phone}
+            onChangeText={setPhone}
+          />
+          <FieldError testID="register-phone-error">{fieldErrors.phone}</FieldError>
+        </TextField>
+
+        <TextField isInvalid={Boolean(fieldErrors.password)}>
+          <Label className="text-xs font-semibold text-foreground">
+            {t('register.password')}
+          </Label>
+          <Input
+            testID="register-password"
+            className="rounded-xl bg-default"
+            secureTextEntry
+            value={password}
+            onChangeText={setPassword}
+          />
+          <FieldError testID="register-password-error">{fieldErrors.password}</FieldError>
+        </TextField>
+
+        <TextField isInvalid={Boolean(fieldErrors.passwordConfirmation)}>
+          <Label className="text-xs font-semibold text-foreground">
+            {t('register.confirmPassword')}
+          </Label>
+          <Input
+            testID="register-password-confirmation"
+            className="rounded-xl bg-default"
+            secureTextEntry
+            value={passwordConfirmation}
+            onChangeText={setPasswordConfirmation}
+          />
+          <FieldError testID="register-password-confirmation-error">
+            {fieldErrors.passwordConfirmation}
+          </FieldError>
+        </TextField>
+
+        <TextField isInvalid={Boolean(fieldErrors.country)}>
+          <Label className="text-xs font-semibold text-foreground">
+            {t('register.country')}
+          </Label>
+          <Input
+            testID="register-country"
+            className="rounded-xl bg-default"
+            autoCapitalize="characters"
+            maxLength={2}
+            value={country}
+            onChangeText={(value) => setCountry(value.toUpperCase())}
+          />
+          <FieldError testID="register-country-error">{fieldErrors.country}</FieldError>
+        </TextField>
+
+        <View className="flex-row items-center gap-3">
+          <Checkbox
+            testID="register-terms"
+            isSelected={terms}
+            onSelectedChange={setTerms}
+          />
+          <Text className="text-foreground">{t('register.iAcceptTerms')}</Text>
+        </View>
+
+        {generalError ? (
+          <Text testID="register-error" className="text-danger">
+            {generalError}
+          </Text>
+        ) : null}
+
+        <Button
+          testID="register-submit"
+          className="w-full rounded-xl bg-accent"
+          isDisabled={!terms || submitting}
+          onPress={() => void handleSubmit()}
+        >
+          <Button.Label className="font-bold text-accent-foreground">
+            {t('register.createAccount')}
+          </Button.Label>
+        </Button>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }

@@ -1,8 +1,10 @@
+import { HeaderHeightContext } from 'expo-router/react-navigation';
 import { useQuery } from '@tanstack/react-query';
 import { router, useFocusEffect } from 'expo-router';
 import { Button, Skeleton } from 'heroui-native';
-import { useCallback, useEffect, useState } from 'react';
+import { useContext, useCallback, useEffect, useState } from 'react';
 import {
+  KeyboardAvoidingView,
   Alert,
   Pressable,
   ScrollView,
@@ -61,6 +63,7 @@ function DeviceRow({
 }
 
 export function PairingScreen() {
+  const headerHeight = useContext(HeaderHeightContext);
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { signOut, token } = useAuth();
   const locale = useLocale();
@@ -235,257 +238,265 @@ export function PairingScreen() {
   }
 
   return (
-    <ScrollView
+    <KeyboardAvoidingView
       testID="screen-pairing"
-      className="flex-1 bg-background"
-      contentInsetAdjustmentBehavior="automatic"
-      contentContainerStyle={{
-        padding: 24,
-        gap: 16,
-        paddingBottom: insets.bottom + 24,
-      }}
+      className="flex-1"
+      behavior="padding"
+      keyboardVerticalOffset={headerHeight}
     >
-      {pets.data === undefined ? (
-        <View testID="pairing-skeleton" className="gap-3">
-          <Skeleton
-            testID="pairing-content-skeleton-1"
-            className="h-11 w-36 rounded-full"
-          />
-          <Skeleton
-            testID="pairing-content-skeleton-2"
-            className="h-32 w-full rounded-card"
-          />
-          <Skeleton
-            testID="pairing-content-skeleton-3"
-            className="h-12 w-full rounded-xl"
-          />
-        </View>
-      ) : null}
-
-      {pets.data && isPetsError(pets.data) ? (
-        <View className="items-start gap-3">
-          <Text testID="pairing-error-pets" className="text-danger" selectable>
-            {t('common.somethingWentWrong')}
-          </Text>
-          <Button
-            testID="pairing-retry"
-            onPress={() => void pets.refetch()}
-          >
-            <Button.Label>{t('common.retry')}</Button.Label>
-          </Button>
-        </View>
-      ) : null}
-
-      {pets.data?.kind === 'ok' && pets.data.pets.length === 0 ? (
-        <Text testID="pairing-no-pets" className="font-normal text-muted">
-          {t('pairing.addPetFirst')}
-        </Text>
-      ) : null}
-
-      {pets.data?.kind === 'ok' && pets.data.pets.length > 0 ? (
-        <PetSwitcher
-          pets={pets.data.pets}
-          selectedPetId={selectedPetId}
-          onSelect={selectPet}
-        />
-      ) : null}
-
-      {actionError ? (
-        <Text testID="pairing-error" className="text-danger" selectable>
-          {actionError}
-        </Text>
-      ) : null}
-
-      {phase === 'ready' && readyDevice && selectedPet ? (
-        <View testID="pairing-ready" className="items-center gap-4">
-          <View className="size-16 items-center justify-center rounded-full bg-accent-soft">
-            <Text className="text-3xl font-black text-success">✓</Text>
-          </View>
-          <View className="items-center gap-2">
-            <Text className="text-2xl font-black text-foreground">
-              {t('pairing.trackerIsReady')}
-            </Text>
-            <Text className="text-center font-normal text-muted" selectable>
-              {t('pairing.readySubtitle', { petName: selectedPet.name })}
-            </Text>
-          </View>
-
-          <Card className="w-full">
-            <View className="gap-4">
-              <DeviceRow
-                label={t('pairing.model')}
-                testID="ready-model"
-                value={readyDevice.model ?? '—'}
-              />
-              <DeviceRow
-                label={t('pairing.esn')}
-                testID="ready-esn"
-                value={readyDevice.esn ?? '—'}
-              />
-            </View>
-          </Card>
-
-          <Button
-            testID="ready-map"
-            className="min-h-11 w-full rounded-xl bg-accent"
-            onPress={() => leaveReady('map')}
-          >
-            <Button.Label className="font-bold text-accent-foreground">
-              {t('pairing.viewOnMap')}
-            </Button.Label>
-          </Button>
-          <Pressable
-            accessibilityRole="button"
-            testID="ready-done"
-            className="min-h-11 w-full items-center justify-center rounded-xl"
-            style={CONTINUOUS_CORNER}
-            onPress={() => leaveReady('back')}
-          >
-            <Text className="font-bold text-foreground">
-              {t('pairing.done')}
-            </Text>
-          </Pressable>
-        </View>
-      ) : null}
-
-      {phase === 'idle' && selectedPet?.device === null ? (
-        <View className="gap-4">
-          <Text className="text-2xl font-black text-foreground">
-            {t('pairing.pairCollar')}
-          </Text>
-
-          <Card variant="secondary">
-            <Text
-              testID="pairing-plan-free"
-              className="text-sm font-normal text-foreground"
-              selectable
-            >
-              {t('pairing.freePlanPairPrompt')}
-            </Text>
-          </Card>
-
-          <View className="gap-2">
-            <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
-              {t('pairing.activationCode')}
-            </Text>
-            <TextInput
-              testID="activation-code-input"
-              className="min-h-12 rounded-xl bg-default px-4 py-3 text-foreground"
-              style={CONTINUOUS_CORNER}
-              autoCapitalize="characters"
-              autoCorrect={false}
-              maxLength={64}
-              value={code}
-              onChangeText={setCode}
-            />
-            <Text className="text-sm font-normal text-muted">
-              {t('pairing.printedOnCollarBox')}
-            </Text>
-          </View>
-
-          <Button
-            testID="pairing-submit"
-            className="min-h-11 w-full rounded-xl bg-accent"
-            isDisabled={code.trim() === '' || claiming}
-            onPress={() => void handleClaim()}
-          >
-            <Button.Label className="font-bold text-accent-foreground">
-              {t('pairing.pairCollar')}
-            </Button.Label>
-          </Button>
-        </View>
-      ) : null}
-
-      {phase === 'idle' && selectedPet?.device ? (
-        <View className="gap-4">
-          <Text className="text-2xl font-black text-foreground">
-            {t('pairing.gpsDevice')}
-          </Text>
-
-          <Card testID="device-status-card">
-            <View className="gap-4">
-              <DeviceRow
-                label={t('pairing.model')}
-                testID="device-model"
-                value={selectedPet.device.model ?? '—'}
-              />
-              <DeviceRow
-                label={t('pairing.battery')}
-                testID="device-battery"
-                value={
-                  selectedPet.device.batteryPct === null
-                    ? '—'
-                    : `${selectedPet.device.batteryPct}%`
-                }
-              />
-              <DeviceRow
-                label={t('pairing.connection')}
-                testID="device-connectivity"
-                value={connectivityKey === null ? '—' : t(connectivityKey)}
-              />
-              <DeviceRow
-                label={t('pairing.lastMessage')}
-                testID="device-last-message"
-                value={
-                  selectedPet.device.lastMessageAt
-                    ? new Date(
-                        selectedPet.device.lastMessageAt,
-                      ).toLocaleString(locale)
-                    : t('pairing.noMessagesYet')
-                }
-              />
-              <DeviceRow
-                label={t('pairing.esn')}
-                testID="device-esn"
-                value={selectedPet.device.esn ?? '—'}
-              />
-            </View>
-          </Card>
-
-          {tracking.data === undefined ? (
+      <ScrollView
+        testID="pairing-form"
+        className="flex-1 bg-background"
+        keyboardShouldPersistTaps="handled"
+        contentInsetAdjustmentBehavior="automatic"
+        contentContainerStyle={{
+          padding: 24,
+          gap: 16,
+          paddingBottom: insets.bottom + 24,
+        }}
+      >
+        {pets.data === undefined ? (
+          <View testID="pairing-skeleton" className="gap-3">
             <Skeleton
-              testID="plan-skeleton"
-              className="h-8 w-44 rounded-full"
+              testID="pairing-content-skeleton-1"
+              className="h-11 w-36 rounded-full"
             />
-          ) : null}
+            <Skeleton
+              testID="pairing-content-skeleton-2"
+              className="h-32 w-full rounded-card"
+            />
+            <Skeleton
+              testID="pairing-content-skeleton-3"
+              className="h-12 w-full rounded-xl"
+            />
+          </View>
+        ) : null}
 
-          {tracking.data?.kind === 'ok' && tracking.data.tracked ? (
-            <View
-              testID="plan-tracked"
-              className="self-start rounded-full bg-accent-soft px-3 py-2"
+        {pets.data && isPetsError(pets.data) ? (
+          <View className="items-start gap-3">
+            <Text testID="pairing-error-pets" className="text-danger" selectable>
+              {t('common.somethingWentWrong')}
+            </Text>
+            <Button
+              testID="pairing-retry"
+              onPress={() => void pets.refetch()}
             >
-              <Text className="font-semibold text-success">
-                {t('pairing.gpsTrackingActive')}
+              <Button.Label>{t('common.retry')}</Button.Label>
+            </Button>
+          </View>
+        ) : null}
+
+        {pets.data?.kind === 'ok' && pets.data.pets.length === 0 ? (
+          <Text testID="pairing-no-pets" className="font-normal text-muted">
+            {t('pairing.addPetFirst')}
+          </Text>
+        ) : null}
+
+        {pets.data?.kind === 'ok' && pets.data.pets.length > 0 ? (
+          <PetSwitcher
+            pets={pets.data.pets}
+            selectedPetId={selectedPetId}
+            onSelect={selectPet}
+          />
+        ) : null}
+
+        {actionError ? (
+          <Text testID="pairing-error" className="text-danger" selectable>
+            {actionError}
+          </Text>
+        ) : null}
+
+        {phase === 'ready' && readyDevice && selectedPet ? (
+          <View testID="pairing-ready" className="items-center gap-4">
+            <View className="size-16 items-center justify-center rounded-full bg-accent-soft">
+              <Text className="text-3xl font-black text-success">✓</Text>
+            </View>
+            <View className="items-center gap-2">
+              <Text className="text-2xl font-black text-foreground">
+                {t('pairing.trackerIsReady')}
+              </Text>
+              <Text className="text-center font-normal text-muted" selectable>
+                {t('pairing.readySubtitle', { petName: selectedPet.name })}
               </Text>
             </View>
-          ) : null}
 
-          {tracking.data?.kind === 'ok' && !tracking.data.tracked ? (
-            <Card testID="plan-free" variant="secondary">
-              <Text className="font-normal text-foreground" selectable>
-                {t('pairing.freePlanNoActivePlan')}
+            <Card className="w-full">
+              <View className="gap-4">
+                <DeviceRow
+                  label={t('pairing.model')}
+                  testID="ready-model"
+                  value={readyDevice.model ?? '—'}
+                />
+                <DeviceRow
+                  label={t('pairing.esn')}
+                  testID="ready-esn"
+                  value={readyDevice.esn ?? '—'}
+                />
+              </View>
+            </Card>
+
+            <Button
+              testID="ready-map"
+              className="min-h-11 w-full rounded-xl bg-accent"
+              onPress={() => leaveReady('map')}
+            >
+              <Button.Label className="font-bold text-accent-foreground">
+                {t('pairing.viewOnMap')}
+              </Button.Label>
+            </Button>
+            <Pressable
+              accessibilityRole="button"
+              testID="ready-done"
+              className="min-h-11 w-full items-center justify-center rounded-xl"
+              style={CONTINUOUS_CORNER}
+              onPress={() => leaveReady('back')}
+            >
+              <Text className="font-bold text-foreground">
+                {t('pairing.done')}
+              </Text>
+            </Pressable>
+          </View>
+        ) : null}
+
+        {phase === 'idle' && selectedPet?.device === null ? (
+          <View className="gap-4">
+            <Text className="text-2xl font-black text-foreground">
+              {t('pairing.pairCollar')}
+            </Text>
+
+            <Card variant="secondary">
+              <Text
+                testID="pairing-plan-free"
+                className="text-sm font-normal text-foreground"
+                selectable
+              >
+                {t('pairing.freePlanPairPrompt')}
               </Text>
             </Card>
-          ) : null}
 
-          {tracking.data && isTrackingError(tracking.data) ? (
-            <Text testID="plan-unknown" className="text-muted" selectable>
-              {t('pairing.planStatusUnavailable')}
+            <View className="gap-2">
+              <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
+                {t('pairing.activationCode')}
+              </Text>
+              <TextInput
+                testID="activation-code-input"
+                className="min-h-12 rounded-xl bg-default px-4 py-3 text-foreground"
+                style={CONTINUOUS_CORNER}
+                autoCapitalize="characters"
+                autoCorrect={false}
+                maxLength={64}
+                value={code}
+                onChangeText={setCode}
+              />
+              <Text className="text-sm font-normal text-muted">
+                {t('pairing.printedOnCollarBox')}
+              </Text>
+            </View>
+
+            <Button
+              testID="pairing-submit"
+              className="min-h-11 w-full rounded-xl bg-accent"
+              isDisabled={code.trim() === '' || claiming}
+              onPress={() => void handleClaim()}
+            >
+              <Button.Label className="font-bold text-accent-foreground">
+                {t('pairing.pairCollar')}
+              </Button.Label>
+            </Button>
+          </View>
+        ) : null}
+
+        {phase === 'idle' && selectedPet?.device ? (
+          <View className="gap-4">
+            <Text className="text-2xl font-black text-foreground">
+              {t('pairing.gpsDevice')}
             </Text>
-          ) : null}
 
-          <Button
-            testID="device-unpair"
-            className="min-h-11 w-full rounded-xl bg-danger"
-            isDisabled={releasing}
-            onPress={confirmRelease}
-          >
-            <Button.Label className="font-bold text-accent-foreground">
-              {t('pairing.unpairCollar')}
-            </Button.Label>
-          </Button>
-        </View>
-      ) : null}
-    </ScrollView>
+            <Card testID="device-status-card">
+              <View className="gap-4">
+                <DeviceRow
+                  label={t('pairing.model')}
+                  testID="device-model"
+                  value={selectedPet.device.model ?? '—'}
+                />
+                <DeviceRow
+                  label={t('pairing.battery')}
+                  testID="device-battery"
+                  value={
+                    selectedPet.device.batteryPct === null
+                      ? '—'
+                      : `${selectedPet.device.batteryPct}%`
+                  }
+                />
+                <DeviceRow
+                  label={t('pairing.connection')}
+                  testID="device-connectivity"
+                  value={connectivityKey === null ? '—' : t(connectivityKey)}
+                />
+                <DeviceRow
+                  label={t('pairing.lastMessage')}
+                  testID="device-last-message"
+                  value={
+                    selectedPet.device.lastMessageAt
+                      ? new Date(
+                          selectedPet.device.lastMessageAt,
+                        ).toLocaleString(locale)
+                      : t('pairing.noMessagesYet')
+                  }
+                />
+                <DeviceRow
+                  label={t('pairing.esn')}
+                  testID="device-esn"
+                  value={selectedPet.device.esn ?? '—'}
+                />
+              </View>
+            </Card>
+
+            {tracking.data === undefined ? (
+              <Skeleton
+                testID="plan-skeleton"
+                className="h-8 w-44 rounded-full"
+              />
+            ) : null}
+
+            {tracking.data?.kind === 'ok' && tracking.data.tracked ? (
+              <View
+                testID="plan-tracked"
+                className="self-start rounded-full bg-accent-soft px-3 py-2"
+              >
+                <Text className="font-semibold text-success">
+                  {t('pairing.gpsTrackingActive')}
+                </Text>
+              </View>
+            ) : null}
+
+            {tracking.data?.kind === 'ok' && !tracking.data.tracked ? (
+              <Card testID="plan-free" variant="secondary">
+                <Text className="font-normal text-foreground" selectable>
+                  {t('pairing.freePlanNoActivePlan')}
+                </Text>
+              </Card>
+            ) : null}
+
+            {tracking.data && isTrackingError(tracking.data) ? (
+              <Text testID="plan-unknown" className="text-muted" selectable>
+                {t('pairing.planStatusUnavailable')}
+              </Text>
+            ) : null}
+
+            <Button
+              testID="device-unpair"
+              className="min-h-11 w-full rounded-xl bg-danger"
+              isDisabled={releasing}
+              onPress={confirmRelease}
+            >
+              <Button.Label className="font-bold text-accent-foreground">
+                {t('pairing.unpairCollar')}
+              </Button.Label>
+            </Button>
+          </View>
+        ) : null}
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }

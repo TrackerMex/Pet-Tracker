@@ -1,10 +1,11 @@
+import { HeaderHeightContext } from 'expo-router/react-navigation';
 import { Host } from '@expo/ui';
 import ExpoDateTimePicker from '@expo/ui/community/datetime-picker';
 import { router } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { Button } from 'heroui-native';
-import { useState } from 'react';
-import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { useContext, useState } from 'react';
+import { KeyboardAvoidingView, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
@@ -80,6 +81,7 @@ function FieldLabel({ children }: { children: string }) {
 }
 
 export function AddPetScreen() {
+  const headerHeight = useContext(HeaderHeightContext);
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { signOut, token } = useAuth();
   const locale = useLocale();
@@ -221,228 +223,236 @@ export function AddPetScreen() {
   }
 
   return (
-    <ScrollView
+    <KeyboardAvoidingView
       testID="screen-add-pet"
-      className="flex-1 bg-background"
-      contentInsetAdjustmentBehavior="automatic"
-      contentContainerStyle={{
-        padding: 24,
-        gap: 16,
-        paddingBottom: insets.bottom + 24,
-      }}
+      className="flex-1"
+      behavior="padding"
+      keyboardVerticalOffset={headerHeight}
     >
-      <View className="items-center gap-2">
-        <PetAvatar
-          name={name.trim() || t('addPet.pet')}
-          photoUrl={photoAsset?.uri ?? null}
-          size={104}
-          testID="pet-avatar"
-        />
-        <Text className="font-semibold text-muted">
-          {t('addPet.avatarPreview')}
-        </Text>
-        <Button
-          testID="add-pet-photo"
-          className="rounded-xl bg-accent-soft"
-          variant="secondary"
-          isDisabled={submitting}
-          onPress={() => void handlePickPhoto()}
-        >
-          <Button.Label className="font-bold text-accent-strong">
-            {t('addPet.choosePhoto')}
-          </Button.Label>
-        </Button>
-        {photoError ? (
-          <Text testID="photo-upload-error" className="text-danger">
-            {photoError}
+      <ScrollView
+        testID="add-pet-form"
+        className="flex-1 bg-background"
+        keyboardShouldPersistTaps="handled"
+        contentInsetAdjustmentBehavior="automatic"
+        contentContainerStyle={{
+          padding: 24,
+          gap: 16,
+          paddingBottom: insets.bottom + 24,
+        }}
+      >
+        <View className="items-center gap-2">
+          <PetAvatar
+            name={name.trim() || t('addPet.pet')}
+            photoUrl={photoAsset?.uri ?? null}
+            size={104}
+            testID="pet-avatar"
+          />
+          <Text className="font-semibold text-muted">
+            {t('addPet.avatarPreview')}
           </Text>
-        ) : null}
-      </View>
-
-      <Text className="text-lg font-bold text-foreground">
-        {t('addPet.basicDetails')}
-      </Text>
-
-      <View className="gap-2">
-        <FieldLabel>{t('addPet.species')}</FieldLabel>
-        <View className="flex-row gap-2">
-          {(['dog', 'cat'] as const).map((value) => (
-            <Pressable
-              key={value}
-              accessibilityRole="button"
-              accessibilityState={{ selected: species === value }}
-              testID={`species-${value}`}
-              hitSlop={TOUCH_SLOP}
-              className={
-                species === value
-                  ? 'rounded-full border border-accent bg-accent-soft px-3 py-2'
-                  : 'rounded-full border border-border bg-default px-3 py-2'
-              }
-              onPress={() => setSpecies(value)}
-            >
-              <Text className="text-sm font-semibold text-foreground">
-                {value === 'dog' ? t('addPet.dog') : t('addPet.cat')}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
-      </View>
-
-      <View className="gap-2">
-        <FieldLabel>{t('addPet.name')}</FieldLabel>
-        <TextInput
-          testID="name-input"
-          className="rounded-xl bg-default px-4 py-3 text-foreground"
-          style={CONTINUOUS_CORNER}
-          maxLength={120}
-          placeholder={t('addPet.petName')}
-          placeholderTextColor={muted}
-          value={name}
-          onChangeText={setName}
-        />
-      </View>
-
-      <View className="gap-2">
-        <FieldLabel>{t('addPet.breed')}</FieldLabel>
-        <TextInput
-          testID="breed-input"
-          className="rounded-xl bg-default px-4 py-3 text-foreground"
-          style={CONTINUOUS_CORNER}
-          maxLength={120}
-          placeholder={t('addPet.optional')}
-          placeholderTextColor={muted}
-          value={breed}
-          onChangeText={setBreed}
-        />
-      </View>
-
-      <View className="gap-2">
-        <FieldLabel>{t('addPet.sex')}</FieldLabel>
-        <View className="flex-row gap-2">
-          <OptionalChip current={sex} label={t('addPet.female')} testID="sex-female" value="female" onSelect={setSex} />
-          <OptionalChip current={sex} label={t('addPet.male')} testID="sex-male" value="male" onSelect={setSex} />
-        </View>
-      </View>
-
-      <View className="gap-2">
-        <FieldLabel>{t('addPet.size')}</FieldLabel>
-        <View className="flex-row flex-wrap gap-2">
-          <OptionalChip current={size} label={t('addPet.small')} testID="size-small" value="small" onSelect={setSize} />
-          <OptionalChip current={size} label={t('addPet.medium')} testID="size-medium" value="medium" onSelect={setSize} />
-          <OptionalChip current={size} label={t('addPet.large')} testID="size-large" value="large" onSelect={setSize} />
-        </View>
-      </View>
-
-      <Text className="text-lg font-bold text-foreground">
-        {t('addPet.medicalDetails')}
-      </Text>
-
-      <View className="gap-2">
-        <FieldLabel>{t('addPet.age')}</FieldLabel>
-        <View className="flex-row gap-2">
-          {([
-            ['birthDate', t('addPet.birthDate')],
-            ['months', t('addPet.approxMonths')],
-          ] as const).map(([value, label]) => (
-            <Pressable
-              key={value}
-              accessibilityRole="button"
-              accessibilityState={{ selected: ageMode === value }}
-              testID={`age-mode-${value === 'birthDate' ? 'date' : value}`}
-              hitSlop={TOUCH_SLOP}
-              className={
-                ageMode === value
-                  ? 'rounded-full border border-accent bg-accent-soft px-3 py-2'
-                  : 'rounded-full border border-border bg-default px-3 py-2'
-              }
-              onPress={() => setAgeMode(value)}
-            >
-              <Text className="text-sm font-semibold text-foreground">{label}</Text>
-            </Pressable>
-          ))}
-        </View>
-        {ageMode === 'birthDate' ? (
-          <Pressable
-            accessibilityRole="button"
-            testID="birth-date-field"
-            className="rounded-xl border border-border bg-default px-4 py-3"
-            style={CONTINUOUS_CORNER}
-            onPress={() => setShowDatePicker(true)}
+          <Button
+            testID="add-pet-photo"
+            className="rounded-xl bg-accent-soft"
+            variant="secondary"
+            isDisabled={submitting}
+            onPress={() => void handlePickPhoto()}
           >
-            <Text className={birthDate ? 'text-foreground' : 'text-muted'}>
-              {birthDate
-                ? birthDate.toLocaleDateString(locale)
-                : t('addPet.selectBirthDate')}
+            <Button.Label className="font-bold text-accent-strong">
+              {t('addPet.choosePhoto')}
+            </Button.Label>
+          </Button>
+          {photoError ? (
+            <Text testID="photo-upload-error" className="text-danger">
+              {photoError}
             </Text>
-          </Pressable>
-        ) : (
+          ) : null}
+        </View>
+
+        <Text className="text-lg font-bold text-foreground">
+          {t('addPet.basicDetails')}
+        </Text>
+
+        <View className="gap-2">
+          <FieldLabel>{t('addPet.species')}</FieldLabel>
+          <View className="flex-row gap-2">
+            {(['dog', 'cat'] as const).map((value) => (
+              <Pressable
+                key={value}
+                accessibilityRole="button"
+                accessibilityState={{ selected: species === value }}
+                testID={`species-${value}`}
+                hitSlop={TOUCH_SLOP}
+                className={
+                  species === value
+                    ? 'rounded-full border border-accent bg-accent-soft px-3 py-2'
+                    : 'rounded-full border border-border bg-default px-3 py-2'
+                }
+                onPress={() => setSpecies(value)}
+              >
+                <Text className="text-sm font-semibold text-foreground">
+                  {value === 'dog' ? t('addPet.dog') : t('addPet.cat')}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+
+        <View className="gap-2">
+          <FieldLabel>{t('addPet.name')}</FieldLabel>
           <TextInput
-            testID="approx-age-input"
+            testID="name-input"
             className="rounded-xl bg-default px-4 py-3 text-foreground"
             style={CONTINUOUS_CORNER}
-            inputMode="numeric"
-            maxLength={3}
-            placeholder={t('addPet.months')}
+            maxLength={120}
+            placeholder={t('addPet.petName')}
             placeholderTextColor={muted}
-            value={approxAgeMonths}
-            onChangeText={setApproxAgeMonths}
+            value={name}
+            onChangeText={setName}
           />
-        )}
-      </View>
-
-      {showDatePicker ? (
-        <Host>
-          <ExpoDateTimePicker
-            testID="birth-date-picker"
-            mode="date"
-            maximumDate={new Date()}
-            presentation="dialog"
-            value={toPickerValue(birthDate ?? new Date())}
-            onDismiss={() => setShowDatePicker(false)}
-            onValueChange={(_event, selectedDate) => {
-              setBirthDate(fromPickerValue(selectedDate));
-              setShowDatePicker(false);
-            }}
-          />
-        </Host>
-      ) : null}
-
-      <View className="gap-2">
-        <FieldLabel>{t('addPet.sterilized')}</FieldLabel>
-        <View className="flex-row gap-2">
-          <OptionalChip current={sterilized} label={t('addPet.yes')} testID="sterilized-true" value={true} onSelect={setSterilized} />
-          <OptionalChip current={sterilized} label={t('addPet.no')} testID="sterilized-false" value={false} onSelect={setSterilized} />
         </View>
-      </View>
 
-      <View className="gap-2">
-        <FieldLabel>{t('addPet.microchip')}</FieldLabel>
-        <TextInput
-          testID="microchip-input"
-          className="rounded-xl bg-default px-4 py-3 text-foreground"
-          style={CONTINUOUS_CORNER}
-          maxLength={32}
-          placeholder={t('addPet.optional')}
-          placeholderTextColor={muted}
-          value={microchip}
-          onChangeText={setMicrochip}
-        />
-      </View>
+        <View className="gap-2">
+          <FieldLabel>{t('addPet.breed')}</FieldLabel>
+          <TextInput
+            testID="breed-input"
+            className="rounded-xl bg-default px-4 py-3 text-foreground"
+            style={CONTINUOUS_CORNER}
+            maxLength={120}
+            placeholder={t('addPet.optional')}
+            placeholderTextColor={muted}
+            value={breed}
+            onChangeText={setBreed}
+          />
+        </View>
 
-      <Button
-        testID="add-pet-submit"
-        className="rounded-xl bg-accent"
-        isDisabled={submitting}
-        onPress={() => void handleSubmit()}
-      >
-        <Button.Label className="font-bold text-accent-foreground">
-          {t('addPet.savePet')}
-        </Button.Label>
-      </Button>
+        <View className="gap-2">
+          <FieldLabel>{t('addPet.sex')}</FieldLabel>
+          <View className="flex-row gap-2">
+            <OptionalChip current={sex} label={t('addPet.female')} testID="sex-female" value="female" onSelect={setSex} />
+            <OptionalChip current={sex} label={t('addPet.male')} testID="sex-male" value="male" onSelect={setSex} />
+          </View>
+        </View>
 
-      {formError ? (
-        <Text testID="add-pet-error" className="text-danger">{formError}</Text>
-      ) : null}
-    </ScrollView>
+        <View className="gap-2">
+          <FieldLabel>{t('addPet.size')}</FieldLabel>
+          <View className="flex-row flex-wrap gap-2">
+            <OptionalChip current={size} label={t('addPet.small')} testID="size-small" value="small" onSelect={setSize} />
+            <OptionalChip current={size} label={t('addPet.medium')} testID="size-medium" value="medium" onSelect={setSize} />
+            <OptionalChip current={size} label={t('addPet.large')} testID="size-large" value="large" onSelect={setSize} />
+          </View>
+        </View>
+
+        <Text className="text-lg font-bold text-foreground">
+          {t('addPet.medicalDetails')}
+        </Text>
+
+        <View className="gap-2">
+          <FieldLabel>{t('addPet.age')}</FieldLabel>
+          <View className="flex-row gap-2">
+            {([
+              ['birthDate', t('addPet.birthDate')],
+              ['months', t('addPet.approxMonths')],
+            ] as const).map(([value, label]) => (
+              <Pressable
+                key={value}
+                accessibilityRole="button"
+                accessibilityState={{ selected: ageMode === value }}
+                testID={`age-mode-${value === 'birthDate' ? 'date' : value}`}
+                hitSlop={TOUCH_SLOP}
+                className={
+                  ageMode === value
+                    ? 'rounded-full border border-accent bg-accent-soft px-3 py-2'
+                    : 'rounded-full border border-border bg-default px-3 py-2'
+                }
+                onPress={() => setAgeMode(value)}
+              >
+                <Text className="text-sm font-semibold text-foreground">{label}</Text>
+              </Pressable>
+            ))}
+          </View>
+          {ageMode === 'birthDate' ? (
+            <Pressable
+              accessibilityRole="button"
+              testID="birth-date-field"
+              className="rounded-xl border border-border bg-default px-4 py-3"
+              style={CONTINUOUS_CORNER}
+              onPress={() => setShowDatePicker(true)}
+            >
+              <Text className={birthDate ? 'text-foreground' : 'text-muted'}>
+                {birthDate
+                  ? birthDate.toLocaleDateString(locale)
+                  : t('addPet.selectBirthDate')}
+              </Text>
+            </Pressable>
+          ) : (
+            <TextInput
+              testID="approx-age-input"
+              className="rounded-xl bg-default px-4 py-3 text-foreground"
+              style={CONTINUOUS_CORNER}
+              inputMode="numeric"
+              maxLength={3}
+              placeholder={t('addPet.months')}
+              placeholderTextColor={muted}
+              value={approxAgeMonths}
+              onChangeText={setApproxAgeMonths}
+            />
+          )}
+        </View>
+
+        {showDatePicker ? (
+          <Host>
+            <ExpoDateTimePicker
+              testID="birth-date-picker"
+              mode="date"
+              maximumDate={new Date()}
+              presentation="dialog"
+              value={toPickerValue(birthDate ?? new Date())}
+              onDismiss={() => setShowDatePicker(false)}
+              onValueChange={(_event, selectedDate) => {
+                setBirthDate(fromPickerValue(selectedDate));
+                setShowDatePicker(false);
+              }}
+            />
+          </Host>
+        ) : null}
+
+        <View className="gap-2">
+          <FieldLabel>{t('addPet.sterilized')}</FieldLabel>
+          <View className="flex-row gap-2">
+            <OptionalChip current={sterilized} label={t('addPet.yes')} testID="sterilized-true" value={true} onSelect={setSterilized} />
+            <OptionalChip current={sterilized} label={t('addPet.no')} testID="sterilized-false" value={false} onSelect={setSterilized} />
+          </View>
+        </View>
+
+        <View className="gap-2">
+          <FieldLabel>{t('addPet.microchip')}</FieldLabel>
+          <TextInput
+            testID="microchip-input"
+            className="rounded-xl bg-default px-4 py-3 text-foreground"
+            style={CONTINUOUS_CORNER}
+            maxLength={32}
+            placeholder={t('addPet.optional')}
+            placeholderTextColor={muted}
+            value={microchip}
+            onChangeText={setMicrochip}
+          />
+        </View>
+
+        <Button
+          testID="add-pet-submit"
+          className="rounded-xl bg-accent"
+          isDisabled={submitting}
+          onPress={() => void handleSubmit()}
+        >
+          <Button.Label className="font-bold text-accent-foreground">
+            {t('addPet.savePet')}
+          </Button.Label>
+        </Button>
+
+        {formError ? (
+          <Text testID="add-pet-error" className="text-danger">{formError}</Text>
+        ) : null}
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }

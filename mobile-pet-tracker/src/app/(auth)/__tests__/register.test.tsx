@@ -1,4 +1,5 @@
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { DeviceEventEmitter, Platform } from 'react-native';
+import { act, waitFor, fireEvent, render, screen } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
@@ -31,6 +32,8 @@ jest.mock('react-native-safe-area-context', () => ({
   ...jest.requireActual('react-native-safe-area-context'),
   useSafeAreaInsets: () => ({ top: 40, right: 0, bottom: 24, left: 0 }),
 }));
+
+const originalOS = Platform.OS;
 
 const apiUrl = 'http://example.test/v1';
 const mockLogin = jest.mocked(login);
@@ -211,7 +214,7 @@ describe('#61 R7: register usa las métricas de pantalla uniformes', () => {
     await renderRegister();
 
     expect(
-      screen.getByTestId('screen-register').props.contentContainerStyle,
+      screen.getByTestId('register-form').props.contentContainerStyle,
     ).toEqual({
       padding: 24,
       gap: 16,
@@ -224,7 +227,7 @@ describe('#61 R7: register usa las métricas de pantalla uniformes', () => {
     await renderRegister();
 
     expect(
-      screen.getByTestId('screen-register').props
+      screen.getByTestId('register-form').props
         .contentInsetAdjustmentBehavior,
     ).toBe('automatic');
   });
@@ -254,5 +257,31 @@ describe('#127 R1: el botón de envío de register lleva su receta en el árbol'
     expect(screen.getByTestId('register-submit').props.className).toBe(
       'pressable-feedback__root button__root button__root--variant-primary button__root--size-md disabled:element-disabled w-full rounded-xl bg-accent',
     );
+  });
+});
+
+describe('#148 R2: register se aparta del teclado en Android', () => {
+  afterEach(() => {
+    (Platform as { OS: string }).OS = originalOS;
+  });
+
+  it('el host screen-register añade paddingBottom 200 al abrir el teclado', async () => {
+    (Platform as { OS: string }).OS = 'android';
+    await renderRegister();
+
+    const host = screen.getByTestId('screen-register');
+    expect(host).toHaveStyle({ paddingBottom: 0 });
+    await fireEvent(host, 'layout', {
+      persist() {},
+      nativeEvent: { layout: { x: 0, y: 0, width: 400, height: 700 } },
+    });
+    await act(async () => {
+      DeviceEventEmitter.emit('keyboardDidShow', {
+        startCoordinates: { screenX: 0, screenY: 800, width: 400, height: 0 },
+        endCoordinates: { screenX: 0, screenY: 500, width: 400, height: 300 },
+        duration: 0, easing: 'keyboard', isEventFromThisApp: true,
+      });
+    });
+    await waitFor(() => expect(screen.getByTestId('screen-register')).toHaveStyle({ paddingBottom: 200 }));
   });
 });

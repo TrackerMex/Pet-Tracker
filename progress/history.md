@@ -7475,3 +7475,50 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
 - Observaciones 1, 3-6 del review sin id: guard `toBeDefined` extra en
   `app.assets.test.ts`, `checkout` que no borra el PNG nuevo en la sonda de
   R7, bbox 818 frente a ≈ 817, aviso de worker de jest en la base.
+
+## #148 `mobile-keyboard-avoiding-forms` — formularios que se apartan del teclado en Android — 2026-10-04
+
+### Qué se hizo
+
+- Siete pantallas con inputs (login, register, reset-password, add-pet,
+  add-reminder, pairing, weight-log) envuelven su ScrollView en una
+  `KeyboardAvoidingView` raíz calcada de #146 E1 (`behavior="padding"`,
+  `keyboardVerticalOffset` desde `HeaderHeightContext`). El `testID` migra a
+  la KAV y el ScrollView pasa a `<x>-form` con sus métricas intactas.
+  `keyboardShouldPersistTaps="handled"` en add-pet, add-reminder, pairing y
+  weight-log (R8). reset-password: KAV solo en la rama formulario.
+- Flujo: explorer → spec_author → espejo en Notion → firma `faa72f2e` →
+  Codex (16 commits test→feat por pantalla, `eba7309..5052dde`) →
+  reviewer aprobado (`a32c5aa`).
+
+### Verificación
+
+- Reviewer: 16 ficheros dentro de D9, candados globales intactos, 12 suites /
+  387 tests verdes (+11 sobre la base 376), `tsc` y `expo lint` exit 0, tres
+  sondas de reversión rojas (R1, R7, R8).
+- `./init.sh` del leader sobre `fda0468` (autorizado por el humano), exit=1
+  **por infra, no por código**: build ok, unit 174/1335, infra 2/14, móvil
+  91/1939 (91/1928 + 11 de #148), y la etapa e2e abortó con «Infra e2e caída:
+  localhost:5432 no responde» porque el contenedor cloud no tiene daemon de
+  Docker. e2e sin ejecutar (backend no tocado por #148). Log en
+  `progress/init_148.log` (ignorado por git).
+- `./init.sh` del humano en Windows sobre `27ac5ed`: exit=1 en la etapa
+  móvil (1933 verdes, resto rojo); lint, typecheck y e2e no corrieron porque
+  el gate abortó ahí. Las siete suites de #148 pasan (login, register,
+  reset-password, add-pet, add-reminder, pairing y weight-log) y ningún fallo
+  toca sus ficheros, según el humano. El mismo HEAD pasó verde en Linux
+  (91/1939). Las suites rojas de Windows no se identificaron en el repo
+  (log local `progress/init_148.log`, ignorado por git): deuda aparte,
+  atribuida por el humano al entorno Windows.
+- Prueba de humo R10 en el dev build de Android (Android 15): siete casillas
+  firmadas por el humano en `96a412c` (fecha 2026-10-03 en su hora local).
+
+### Resultado
+
+- Estado final: `done` (137/148). `files_affected` sin cambios.
+
+### Deuda y apuntes
+
+- Orden de imports en los siete ficheros (M1 del review), solo estético.
+- iOS sin verificar mientras #60 siga aparcada; `forgot` queda fuera (input
+  deshabilitado).

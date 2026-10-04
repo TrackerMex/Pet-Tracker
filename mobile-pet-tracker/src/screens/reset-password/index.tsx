@@ -1,13 +1,15 @@
+import { HeaderHeightContext } from 'expo-router/react-navigation';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Button, Input, Label, LinkButton, TextField } from 'heroui-native';
-import { useState } from 'react';
-import { ScrollView, Text } from 'react-native';
+import { useContext, useState } from 'react';
+import { KeyboardAvoidingView, ScrollView, Text } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { resetPassword } from '../../api/auth';
 import { useTranslate } from '../../providers/language-provider';
 
 export function ResetPasswordScreen() {
+  const headerHeight = useContext(HeaderHeightContext);
   const { token } = useLocalSearchParams<{ token?: string }>();
   const insets = useSafeAreaInsets();
   const t = useTranslate();
@@ -133,70 +135,77 @@ export function ResetPasswordScreen() {
   }
 
   return (
-    <ScrollView
+    <KeyboardAvoidingView
       testID="screen-reset-password"
-      className="flex-1 bg-background"
-      keyboardShouldPersistTaps="handled"
-      contentInsetAdjustmentBehavior="automatic"
-      contentContainerStyle={{
-        flexGrow: 1,
-        justifyContent: 'center',
-        padding: 24,
-        gap: 16,
-        paddingTop: insets.top + 12,
-        paddingBottom: insets.bottom + 24,
-      }}
+      className="flex-1"
+      behavior="padding"
+      keyboardVerticalOffset={headerHeight}
     >
-      <Text className="text-center text-2xl font-black text-foreground">
-        {t('resetPassword.resetPassword')}
-      </Text>
-
-      <TextField>
-        <Label className="text-xs font-semibold text-foreground">
-          {t('resetPassword.newPassword')}
-        </Label>
-        <Input
-          testID="reset-password"
-          className="rounded-xl bg-default"
-          autoCapitalize="none"
-          autoComplete="new-password"
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-        />
-      </TextField>
-
-      <TextField>
-        <Label className="text-xs font-semibold text-foreground">
-          {t('resetPassword.confirmNewPassword')}
-        </Label>
-        <Input
-          testID="reset-password-confirm"
-          className="rounded-xl bg-default"
-          autoCapitalize="none"
-          autoComplete="new-password"
-          secureTextEntry
-          value={passwordConfirmation}
-          onChangeText={setPasswordConfirmation}
-        />
-      </TextField>
-
-      {error ? (
-        <Text testID="reset-error" className="text-danger" selectable>
-          {error}
-        </Text>
-      ) : null}
-
-      <Button
-        testID="reset-submit"
-        className="w-full rounded-xl bg-accent"
-        isDisabled={submitting}
-        onPress={() => void handleSubmit()}
+      <ScrollView
+        testID="reset-password-form"
+        className="flex-1 bg-background"
+        keyboardShouldPersistTaps="handled"
+        contentInsetAdjustmentBehavior="automatic"
+        contentContainerStyle={{
+          flexGrow: 1,
+          justifyContent: 'center',
+          padding: 24,
+          gap: 16,
+          paddingTop: insets.top + 12,
+          paddingBottom: insets.bottom + 24,
+        }}
       >
-        <Button.Label className="font-bold text-accent-foreground">
-          {t('resetPassword.updatePassword')}
-        </Button.Label>
-      </Button>
-    </ScrollView>
+        <Text className="text-center text-2xl font-black text-foreground">
+          {t('resetPassword.resetPassword')}
+        </Text>
+
+        <TextField>
+          <Label className="text-xs font-semibold text-foreground">
+            {t('resetPassword.newPassword')}
+          </Label>
+          <Input
+            testID="reset-password"
+            className="rounded-xl bg-default"
+            autoCapitalize="none"
+            autoComplete="new-password"
+            secureTextEntry
+            value={password}
+            onChangeText={setPassword}
+          />
+        </TextField>
+
+        <TextField>
+          <Label className="text-xs font-semibold text-foreground">
+            {t('resetPassword.confirmNewPassword')}
+          </Label>
+          <Input
+            testID="reset-password-confirm"
+            className="rounded-xl bg-default"
+            autoCapitalize="none"
+            autoComplete="new-password"
+            secureTextEntry
+            value={passwordConfirmation}
+            onChangeText={setPasswordConfirmation}
+          />
+        </TextField>
+
+        {error ? (
+          <Text testID="reset-error" className="text-danger" selectable>
+            {error}
+          </Text>
+        ) : null}
+
+        <Button
+          testID="reset-submit"
+          className="w-full rounded-xl bg-accent"
+          isDisabled={submitting}
+          onPress={() => void handleSubmit()}
+        >
+          <Button.Label className="font-bold text-accent-foreground">
+            {t('resetPassword.updatePassword')}
+          </Button.Label>
+        </Button>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }

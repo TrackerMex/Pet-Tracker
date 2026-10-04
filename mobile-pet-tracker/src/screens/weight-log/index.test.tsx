@@ -1,4 +1,7 @@
+import { HeaderHeightContext } from 'expo-router/react-navigation';
+import { DeviceEventEmitter, Platform } from 'react-native';
 import {
+  act,
   fireEvent,
   screen,
   waitFor,
@@ -59,6 +62,8 @@ jest.mock('react-native-safe-area-context', () => ({
   ...jest.requireActual('react-native-safe-area-context'),
   useSafeAreaInsets: () => ({ top: 40, right: 0, bottom: 24, left: 0 }),
 }));
+
+const originalOS = Platform.OS;
 
 const apiUrl = 'http://example.test/v1';
 const mockCreateWeight = jest.mocked(createWeight);
@@ -126,7 +131,9 @@ async function renderWeightLog(selected = true) {
       <LanguageProvider initial="es">
         <SelectedPetProvider>
           {selected ? <SelectionProbe /> : null}
-          <WeightLogScreen />
+          <HeaderHeightContext.Provider value={91}>
+            <WeightLogScreen />
+          </HeaderHeightContext.Provider>
         </SelectedPetProvider>
       </LanguageProvider>
     </HeroUINativeProvider>,
@@ -166,7 +173,7 @@ describe('R7: weight log lista el historial', () => {
     );
     expect(screen.getByTestId('weight-log-loading')).toBeVisible();
     expect(
-      screen.getByTestId('screen-weight-log').props.contentContainerStyle,
+      screen.getByTestId('weight-log-form').props.contentContainerStyle,
     ).toEqual({ padding: 24, gap: 16, paddingBottom: 48 });
 
   });
@@ -180,7 +187,7 @@ describe('R7: weight log lista el historial', () => {
       expect(screen.getByTestId('screen-weight-log')).toBeVisible(),
     );
     expect(
-      screen.getByTestId('screen-weight-log').props.contentContainerStyle,
+      screen.getByTestId('weight-log-form').props.contentContainerStyle,
     ).not.toHaveProperty('paddingTop');
   });
 
@@ -673,5 +680,59 @@ describe('#95 R5: la pantalla no dibuja cabecera propia', () => {
     await screen.findByTestId('weight-chart-card');
     expect(screen.queryByTestId('weight-log-back')).toBeNull();
     expect(screen.queryByText(es['weightLog.weightLog'])).toBeNull();
+  });
+});
+
+describe('#148 R7: weight-log se aparta del teclado en Android', () => {
+  afterEach(() => {
+    (Platform as { OS: string }).OS = originalOS;
+  });
+
+  it('el host screen-weight-log añade paddingBottom 291 al abrir el teclado', async () => {
+    (Platform as { OS: string }).OS = 'android';
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockCreateWeight.mockReturnValue(pending());
+    mockListWeights.mockReturnValue(pending<WeightsState>());
+    await renderWeightLog();
+    await waitFor(() => expect(screen.getByTestId('screen-weight-log')).toBeVisible());
+
+    const host = screen.getByTestId('screen-weight-log');
+    expect(host).toHaveStyle({ paddingBottom: 0 });
+    await fireEvent(host, 'layout', {
+      persist() {},
+      nativeEvent: { layout: { x: 0, y: 0, width: 400, height: 700 } },
+    });
+    await act(async () => {
+      DeviceEventEmitter.emit('keyboardDidShow', {
+        startCoordinates: { screenX: 0, screenY: 800, width: 400, height: 0 },
+        endCoordinates: { screenX: 0, screenY: 500, width: 400, height: 300 },
+        duration: 0, easing: 'keyboard', isEventFromThisApp: true,
+      });
+    });
+    await waitFor(() => expect(screen.getByTestId('screen-weight-log')).toHaveStyle({ paddingBottom: 291 }));
+  });
+});
+
+describe('#148 R8: weight-log entrega el primer toque con el teclado abierto', () => {
+  it('el scroll weight-log-form declara keyboardShouldPersistTaps handled', async () => {
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockCreateWeight.mockReturnValue(pending());
+    mockListWeights.mockReturnValue(pending<WeightsState>());
+    await renderWeightLog();
+    await waitFor(() => expect(screen.getByTestId('screen-weight-log')).toBeVisible());
+
+    expect(screen.getByTestId('weight-log-form').props.keyboardShouldPersistTaps).toBe('handled');
   });
 });
