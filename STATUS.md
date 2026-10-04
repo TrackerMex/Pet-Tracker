@@ -1,10 +1,10 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-10-04
-**Features completadas**: 136/148 (`feature_list.json`)
-**En progreso**: ninguna. #105 cerrada en `feature/105-meals-history`, PR pendiente (#147 sigue su propio PR)
+**Features completadas**: 137/148 (`feature_list.json`)
+**En progreso**: ninguna. #105 cerrada en `feature/105-meals-history` (PR #190 pendiente de merge humano); #101 ya está en `main`
 
-**Pendientes**: 12 (#18, #60, #101, #115-#119, #129, #134, #144 y #148). **#147 `mobile-meal-schedule-editing` cerrada (mitad móvil de #103)**: en Horario de comidas, el dueño edita la hora de cada franja y añade franjas con el selector nativo de hora (`ExpoDateTimePicker`, `dialog`). Los controles solo los ve el dueño (`myRole` vía `petKeys.detail`); el resto ve la pantalla en solo lectura y el 403 queda de red de seguridad. Tras un éxito se refrescan el plan y la mascota, sin estado optimista y con los controles deshabilitados hasta que terminan los dos. Cada error del contrato (400, 403 y los cuatro 422) tiene su mensaje inline, y un 401 cierra sesión. Catálogo 320 → 329 claves. Móvil 88/1710 → 88/1771, y 90/1913 tras integrar #146. Codex en cinco rondas test-primero (E1-E4); el reviewer rechazó tres por cláusulas universales candadas en un solo caso y aprobó la cuarta tras un barrido exhaustivo. Prueba de humo en el dev build de Android superada (OnePlus Nord 5). iOS sin verificar mientras #60 siga aparcada
+**Pendientes**: 11 (#18, #60, #115-#119, #129, #134, #144 y #148). **#105 `meals-history` cerrada** (historial de comidas servidas con calendario mes a mes; ver «Estado actual»). **#101 `mobile-app-and-notification-icons` cerrada**: la app estrena su icono (perrito robótico violeta) en el launcher de Android, el adaptive icon con fondo plano `#9460FC` y el icono completo en la zona segura del 66 %, el monocromo para temas, el splash violeta con el perrito en lugar del logo de Expo, el favicon y el icono blanco de notificación tintado `#9460FC`. Todo derivado de las tres fuentes del humano con un script one-off (`scripts/make-icons.mjs`, `jimp-compact` transitiva, cero dependencias nuevas) y candado por cabecera PNG (IHDR) en `app.assets.test.ts`. `ios.icon` intacto: iOS sigue en #60. Móvil 90/1913 → 91/1928. Codex en una ronda test-primero (16 commits); reviewer aprobado a la primera. Prueba de humo en el dev build de Android (launcher, splash y push real) firmada por el humano. Requiere `bunx expo prebuild --clean` en cada máquina: los iconos no viajan por Metro ni por OTA. **#147 `mobile-meal-schedule-editing` cerrada (mitad móvil de #103)**: en Horario de comidas, el dueño edita la hora de cada franja y añade franjas con el selector nativo de hora (`ExpoDateTimePicker`, `dialog`). Los controles solo los ve el dueño (`myRole` vía `petKeys.detail`); el resto ve la pantalla en solo lectura y el 403 queda de red de seguridad. Tras un éxito se refrescan el plan y la mascota, sin estado optimista y con los controles deshabilitados hasta que terminan los dos. Cada error del contrato (400, 403 y los cuatro 422) tiene su mensaje inline, y un 401 cierra sesión. Catálogo 320 → 329 claves. Móvil 88/1710 → 88/1771, y 90/1913 tras integrar #146. Codex en cinco rondas test-primero (E1-E4); el reviewer rechazó tres por cláusulas universales candadas en un solo caso y aprobó la cuarta tras un barrido exhaustivo. Prueba de humo en el dev build de Android superada (OnePlus Nord 5). iOS sin verificar mientras #60 siga aparcada
 
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
@@ -104,6 +104,17 @@ debe listar las 4 URLs de cola.
 
 - **2026-10-03**: icono de Pet Tracker (perrito robótico violeta) aprobado por el humano y versionado como `mobile-pet-tracker/assets/images/pet-tracker-notification-color-96.png` (96×96 RGBA, fondo transparente). Sin integrar en `app.json`; la integración es #101, ampliada al icono de la app.
 
+- **`mobile-app-and-notification-icons` (#101) done** (2026-10-04,
+  `Pet-Tracker-wt-icon`, sesion Backend): icono de la app, adaptive icon
+  (fondo plano `#9460FC`, foreground en zona segura), monocromo, splash
+  violeta, favicon e icono blanco de notificación tintado `#9460FC`, todo
+  derivado de las tres fuentes del humano con `scripts/make-icons.mjs` y
+  candado por IHDR en `app.assets.test.ts`. Spec firmada desde Notion
+  (`add2dade`); enmienda D7 sin cuarto asset. Codex, una ronda test-primero
+  (16 commits); reviewer aprobado sobre `3bb824e9` (`c14a77dd`). Gate:
+  `./init.sh` exit 0 sobre `3bb824e9` (unit 174/1335, infra 2/14, móvil
+  91/1928, e2e 28+3). Prueba de humo en Android firmada por el humano
+  (`d9af8ec8`). PR abierta.
 - **`mobile-meal-schedule-editing` (#147) done** (2026-10-03, tree principal,
   sesion Frontend): mitad móvil de #103. Editar por fila y Añadir comida en
   meal-schedule, solo para el dueño, con refetch de plan y mascota tras el
@@ -1324,10 +1335,21 @@ debe listar las 4 URLs de cola.
   firmada desde Notion (`35b21a0d`), enmiendas E1-E3 aprobadas por el
   humano, implementación por Codex hasta `2a5919c`, B1 (lint del e2e)
   corregido en `723eb95`, reviewer APROBADO en la segunda revisión y H1
-  firmada por el humano (`7a91a26`). Siguiente: `gh pr create` de la branch
-  y merge humano; quien mergee segundo de #105/#148 rebasea
-  `feature_list.json` y `STATUS.md`.
+  firmada por el humano (`7a91a26`). PR #190 abierto; siguiente: merge humano. Se resolvió el
+  conflicto con `main` (#101 ya mergeada) fusionando `STATUS.md`,
+  `history.md` y `feature_list.json`; #148 rebasea `feature_list.json` y
+  `STATUS.md` si mergea después.
 
+- **2026-10-04** — **#101 `mobile-app-and-notification-icons` cerrada** (sesion
+  Backend, `Pet-Tracker-wt-icon`): entrada ampliada por el humano al icono de
+  la app y al splash; spec firmada desde Notion (`add2dade`) con la enmienda
+  D7 (sin cuarto asset). Codex, una ronda test-primero (16 commits,
+  `a1c7feef..7e8cfe50`); reviewer aprobado a la primera sobre `3bb824e9`
+  (`c14a77dd`), `./init.sh` verde (móvil 91/1928). Prueba de humo en el dev
+  build de Android firmada en `d9af8ec8` y `da73641d` (OnePlus Nord 5).
+  `origin/main` sigue en `d29d49d5`:
+  sin merge. Siguiente: merge humano de la PR de #101; #105 sigue en curso
+  con Frontend.
 - **2026-10-03** — Subidos el primer icono de la app y la imagen adjunta a `docs/pet-tracker-icon-session`. Copias idénticas por SHA-256 a sus originales. Incorporada la actualización remota de la rama conservando el inventario actual de 135/148 y el historial del equipo.
 
 - **2026-10-03** — **#147 `mobile-meal-schedule-editing` cerrada** (sesion
