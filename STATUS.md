@@ -1331,6 +1331,8 @@ debe listar las 4 URLs de cola.
 
 ## Última sesión
 
+- **2026-10-04** — Seguimiento de #105 tras el merge del PR #190 (`60d19989`): `docs/ui-guidelines.md` §Decisiones fijas 6 nombra `meals-history` en la excepción A11 (enmienda A20); la «Reanudación 4» del handoff de #105 queda marcada como obsoleta (Codex ya había corregido B1 en `723eb95`). Solo documentación; `design-drift`, `consistency-classnames`, `ui-language`, `hero-header-amendments` y `food` verdes.
+
 - **2026-10-04** — **#105 `meals-history` cerrada** (tree principal): spec
   firmada desde Notion (`35b21a0d`), enmiendas E1-E3 aprobadas por el
   humano, implementación por Codex hasta `2a5919c`, B1 (lint del e2e)
