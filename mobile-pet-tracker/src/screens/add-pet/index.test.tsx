@@ -1,8 +1,9 @@
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react-native';
+import { HeaderHeightContext } from 'expo-router/react-navigation';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import * as ImagePicker from 'expo-image-picker';
-import { Platform } from 'react-native';
+import { DeviceEventEmitter, Platform } from 'react-native';
 
 import { requestPhotoUploadUrl, uploadPhotoToUrl } from '../../api/media';
 import { createPet } from '../../api/pets';
@@ -73,7 +74,9 @@ async function renderAddPet() {
   return render(
     <HeroUINativeProvider>
       <LanguageProvider initial="es">
-        <AddPetScreen />
+        <HeaderHeightContext.Provider value={91}>
+            <AddPetScreen />
+          </HeaderHeightContext.Provider>
       </LanguageProvider>
     </HeroUINativeProvider>,
   );
@@ -479,7 +482,7 @@ describe('#95 R6: métricas bajo cabecera nativa', () => {
     mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() });
     mockUseSelectedPet.mockReturnValue({ selectedPetId: 'pet-1', selectPet });
     await renderAddPet();
-    expect(screen.getByTestId('screen-add-pet').props.contentContainerStyle).toEqual({
+    expect(screen.getByTestId('add-pet-form').props.contentContainerStyle).toEqual({
       padding: 24, gap: 16, paddingBottom: 48,
     });
   });
@@ -550,5 +553,55 @@ describe('#123: picker de nacimiento de Añadir mascota en Android a las 20:00 d
       expect((picker.props.value as Date).toISOString()).toBe('2026-09-24T00:00:00.000Z');
       expect((picker.props.maximumDate as Date).getTime()).toBe(new Date(2026, 8, 24, 20, 0).getTime());
     });
+  });
+});
+
+describe('#148 R4: add-pet se aparta del teclado en Android', () => {
+  afterEach(() => {
+    setPlatform(originalPlatform);
+  });
+
+  it('el host screen-add-pet añade paddingBottom 291 al abrir el teclado', async () => {
+    setPlatform('android');
+    process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockUseSelectedPet.mockReturnValue({ selectedPetId: 'pet-1', selectPet });
+    await renderAddPet();
+
+    const host = screen.getByTestId('screen-add-pet');
+    expect(host).toHaveStyle({ paddingBottom: 0 });
+    await fireEvent(host, 'layout', {
+      persist() {},
+      nativeEvent: { layout: { x: 0, y: 0, width: 400, height: 700 } },
+    });
+    await act(async () => {
+      DeviceEventEmitter.emit('keyboardDidShow', {
+        startCoordinates: { screenX: 0, screenY: 800, width: 400, height: 0 },
+        endCoordinates: { screenX: 0, screenY: 500, width: 400, height: 300 },
+        duration: 0, easing: 'keyboard', isEventFromThisApp: true,
+      });
+    });
+    await waitFor(() => expect(screen.getByTestId('screen-add-pet')).toHaveStyle({ paddingBottom: 291 }));
+  });
+});
+
+describe('#148 R8: add-pet entrega el primer toque con el teclado abierto', () => {
+  it('el scroll add-pet-form declara keyboardShouldPersistTaps handled', async () => {
+    process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockUseSelectedPet.mockReturnValue({ selectedPetId: 'pet-1', selectPet });
+    await renderAddPet();
+
+    expect(screen.getByTestId('add-pet-form').props.keyboardShouldPersistTaps).toBe('handled');
   });
 });
