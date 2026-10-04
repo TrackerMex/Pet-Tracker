@@ -14,7 +14,7 @@ import { useLocale, useTranslate } from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
 import { TABULAR_NUMS } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
-import { currentMonth, longDayLabel, monthGrid, monthRange, monthTitle, weekdayHeaders } from '../../utils/month-grid';
+import { currentMonth, longDayLabel, monthGrid, monthOf, monthRange, monthTitle, shiftMonth, weekdayHeaders } from '../../utils/month-grid';
 
 function DayCell({ date, today, mealTimes, selected, locale }: {
   date: string; today: string; mealTimes: string[]; selected: boolean; locale: string;
@@ -50,10 +50,10 @@ function MealsHistoryContent({ petId }: { petId: string }) {
   const { token, signOut } = useAuth();
   const t = useTranslate();
   const locale = useLocale();
-  const [foreground] = useThemeColors(['foreground', 'muted']);
-  const [selectedDay] = useState<string | null>(null);
+  const [foreground, muted] = useThemeColors(['foreground', 'muted']);
+  const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const insets = useSafeAreaInsets();
-  const visibleMonth = currentMonth(new Date());
+  const [visibleMonth, setVisibleMonth] = useState(() => currentMonth(new Date()));
   const { from, to } = monthRange(visibleMonth);
   const { data, refetch } = useQuery({
     queryKey: nutritionKeys.mealsHistory(petId, from, to),
@@ -67,6 +67,9 @@ function MealsHistoryContent({ petId }: { petId: string }) {
     },
     placeholderData: keepPreviousData,
   });
+
+  const capMonth = data?.kind === 'ok' ? monthOf(data.history.today) : currentMonth(new Date());
+  const nextDisabled = visibleMonth >= capMonth;
 
   let content;
   if (data === undefined) {
@@ -95,14 +98,14 @@ function MealsHistoryContent({ petId }: { petId: string }) {
         content = (
           <Card className="gap-4">
             <View className="flex-row items-center justify-between">
-              <Pressable testID="meals-history-prev" accessibilityRole="button" accessibilityLabel={t('mealsHistory.previousMonth')} className="h-11 w-11 items-center justify-center rounded-full" style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}>
+              <Pressable testID="meals-history-prev" onPress={() => { setVisibleMonth(shiftMonth(visibleMonth, -1)); setSelectedDay(null); }} accessibilityRole="button" accessibilityLabel={t('mealsHistory.previousMonth')} className="h-11 w-11 items-center justify-center rounded-full" style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}>
                 <ChevronLeft size={20} color={foreground} />
               </Pressable>
               <Text testID="meals-history-title" className="text-base font-bold text-foreground">
                 {monthTitle(visibleMonth, locale)}
               </Text>
-              <Pressable testID="meals-history-next" accessibilityRole="button" accessibilityLabel={t('mealsHistory.nextMonth')} className="h-11 w-11 items-center justify-center rounded-full" style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}>
-                <ChevronRight size={20} color={foreground} />
+              <Pressable testID="meals-history-next" disabled={nextDisabled} accessibilityState={{ disabled: nextDisabled }} onPress={() => { setVisibleMonth(shiftMonth(visibleMonth, 1)); setSelectedDay(null); }} accessibilityRole="button" accessibilityLabel={t('mealsHistory.nextMonth')} className="h-11 w-11 items-center justify-center rounded-full" style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}>
+                <ChevronRight size={20} color={nextDisabled ? muted : foreground} />
               </Pressable>
             </View>
             <View testID="meals-history-weekdays" className="flex-row">
