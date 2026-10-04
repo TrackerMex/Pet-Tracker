@@ -1,3 +1,4 @@
+import { HeaderHeightContext } from 'expo-router/react-navigation';
 import { Redirect } from 'expo-router';
 import {
   Button,
@@ -8,8 +9,8 @@ import {
   TextField,
 } from 'heroui-native';
 import { useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { useContext, useState } from 'react';
+import { KeyboardAvoidingView, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Minus, TrendDown, TrendUp } from 'reicon-react-native';
 
@@ -45,6 +46,7 @@ function isWeightsError(state: WeightsState): boolean {
 }
 
 function WeightLogContent({ petId }: { petId: string }) {
+  const headerHeight = useContext(HeaderHeightContext);
   const [success, danger, muted] = useThemeColors([
     'success',
     'danger',
@@ -130,173 +132,181 @@ function WeightLogContent({ petId }: { petId: string }) {
   }
 
   return (
-    <ScrollView
+    <KeyboardAvoidingView
       testID="screen-weight-log"
-      className="flex-1 bg-background"
-      contentInsetAdjustmentBehavior="automatic"
-      contentContainerStyle={{
-        padding: 24,
-        gap: 16,
-        paddingBottom: insets.bottom + 24,
-      }}
+      className="flex-1"
+      behavior="padding"
+      keyboardVerticalOffset={headerHeight}
     >
-      {weights.data?.kind === 'ok' ? (
-        <Card testID="weight-chart-card">
-          <WeightChart entries={weights.data.weights} />
-        </Card>
-      ) : null}
+      <ScrollView
+        testID="weight-log-form"
+        className="flex-1 bg-background"
+        keyboardShouldPersistTaps="handled"
+        contentInsetAdjustmentBehavior="automatic"
+        contentContainerStyle={{
+          padding: 24,
+          gap: 16,
+          paddingBottom: insets.bottom + 24,
+        }}
+      >
+        {weights.data?.kind === 'ok' ? (
+          <Card testID="weight-chart-card">
+            <WeightChart entries={weights.data.weights} />
+          </Card>
+        ) : null}
 
-      {weights.data?.kind === 'ok' ? (
-        <Card className="gap-4">
-          <TextField>
-            <Label className="text-2xs font-semibold text-foreground">
-              {t('weightLog.weight')}
-            </Label>
-            <Input
-              testID="weight-input"
-              className="rounded-xl bg-default"
-              keyboardType="decimal-pad"
-              placeholder={t('weightLog.weightKg')}
-              value={weightText}
-              onChangeText={setWeightText}
-            />
-          </TextField>
-          <TextField>
-            <Label className="text-2xs font-semibold text-foreground">
-              {t('weightLog.measuredAt')}
-            </Label>
-            <Input
-              testID="weight-date-input"
-              className="rounded-xl bg-default"
-              placeholder={t('weightLog.yyyyMmDd')}
-              value={measuredAt}
-              onChangeText={setMeasuredAtDraft}
-            />
-          </TextField>
-          <TextField>
-            <Label className="text-2xs font-semibold text-foreground">
-              {t('weightLog.bodyCondition')}
-            </Label>
-            <Input
-              testID="weight-bc-input"
-              className="rounded-xl bg-default"
-              keyboardType="number-pad"
-              placeholder={t('weightLog.bodyConditionPlaceholder')}
-              value={bodyConditionText}
-              onChangeText={setBodyConditionText}
-            />
-          </TextField>
+        {weights.data?.kind === 'ok' ? (
+          <Card className="gap-4">
+            <TextField>
+              <Label className="text-2xs font-semibold text-foreground">
+                {t('weightLog.weight')}
+              </Label>
+              <Input
+                testID="weight-input"
+                className="rounded-xl bg-default"
+                keyboardType="decimal-pad"
+                placeholder={t('weightLog.weightKg')}
+                value={weightText}
+                onChangeText={setWeightText}
+              />
+            </TextField>
+            <TextField>
+              <Label className="text-2xs font-semibold text-foreground">
+                {t('weightLog.measuredAt')}
+              </Label>
+              <Input
+                testID="weight-date-input"
+                className="rounded-xl bg-default"
+                placeholder={t('weightLog.yyyyMmDd')}
+                value={measuredAt}
+                onChangeText={setMeasuredAtDraft}
+              />
+            </TextField>
+            <TextField>
+              <Label className="text-2xs font-semibold text-foreground">
+                {t('weightLog.bodyCondition')}
+              </Label>
+              <Input
+                testID="weight-bc-input"
+                className="rounded-xl bg-default"
+                keyboardType="number-pad"
+                placeholder={t('weightLog.bodyConditionPlaceholder')}
+                value={bodyConditionText}
+                onChangeText={setBodyConditionText}
+              />
+            </TextField>
 
-          {formError ? (
-            <Text testID="weight-form-error" className="text-danger">
-              {formError}
+            {formError ? (
+              <Text testID="weight-form-error" className="text-danger">
+                {formError}
+              </Text>
+            ) : null}
+
+            <Button
+              testID="weight-submit"
+              className="rounded-xl bg-accent"
+              isDisabled={submitting}
+              onPress={() => void handleSubmit()}
+            >
+              <Button.Label className="font-bold text-accent-foreground">
+                {t('weightLog.logWeight')}
+              </Button.Label>
+            </Button>
+          </Card>
+        ) : null}
+
+        {weights.data === undefined ? (
+          <Skeleton
+            testID="weight-log-loading"
+            className="h-40 w-full rounded-card"
+          />
+        ) : null}
+
+        {weights.data && isWeightsError(weights.data) ? (
+          <View className="items-start gap-3">
+            <Text testID="weight-log-error" className="text-danger">
+              {t('common.somethingWentWrong')}
             </Text>
-          ) : null}
+            <Button
+              testID="weight-log-retry"
+              onPress={() => void weights.refetch()}
+            >
+              {t('common.retry')}
+            </Button>
+          </View>
+        ) : null}
 
-          <Button
-            testID="weight-submit"
-            className="rounded-xl bg-accent"
-            isDisabled={submitting}
-            onPress={() => void handleSubmit()}
-          >
-            <Button.Label className="font-bold text-accent-foreground">
-              {t('weightLog.logWeight')}
-            </Button.Label>
-          </Button>
-        </Card>
-      ) : null}
-
-      {weights.data === undefined ? (
-        <Skeleton
-          testID="weight-log-loading"
-          className="h-40 w-full rounded-card"
-        />
-      ) : null}
-
-      {weights.data && isWeightsError(weights.data) ? (
-        <View className="items-start gap-3">
-          <Text testID="weight-log-error" className="text-danger">
-            {t('common.somethingWentWrong')}
+        {weights.data?.kind === 'ok' && weights.data.weights.length === 0 ? (
+          <Text testID="weight-log-empty" className="text-muted">
+            {t('weightLog.noWeightEntriesYet')}
           </Text>
-          <Button
-            testID="weight-log-retry"
-            onPress={() => void weights.refetch()}
-          >
-            {t('common.retry')}
-          </Button>
-        </View>
-      ) : null}
+        ) : null}
 
-      {weights.data?.kind === 'ok' && weights.data.weights.length === 0 ? (
-        <Text testID="weight-log-empty" className="text-muted">
-          {t('weightLog.noWeightEntriesYet')}
-        </Text>
-      ) : null}
+        {weights.data?.kind === 'ok'
+          ? weights.data.weights.map((entry) => {
+              const tileClassName =
+                entry.variation === null || entry.variation === 0
+                  ? 'bg-default'
+                  : entry.variation > 0
+                    ? 'bg-danger-soft'
+                    : 'bg-success-soft';
+              const variationClassName =
+                entry.variation === null || entry.variation === 0
+                  ? 'text-muted'
+                  : entry.variation > 0
+                    ? 'text-danger'
+                    : 'text-success';
 
-      {weights.data?.kind === 'ok'
-        ? weights.data.weights.map((entry) => {
-            const tileClassName =
-              entry.variation === null || entry.variation === 0
-                ? 'bg-default'
-                : entry.variation > 0
-                  ? 'bg-danger-soft'
-                  : 'bg-success-soft';
-            const variationClassName =
-              entry.variation === null || entry.variation === 0
-                ? 'text-muted'
-                : entry.variation > 0
-                  ? 'text-danger'
-                  : 'text-success';
-
-            return (
-              <HeroUICard
-                key={entry.id}
-                testID={`weight-row-${entry.id}`}
-                className="flex-row items-center gap-3 rounded-xl border border-border bg-surface px-3.5 py-3 shadow-sm"
-              >
-                <View
-                  className={`size-8 shrink-0 items-center justify-center rounded-xl ${tileClassName}`}
-                  style={CONTINUOUS_CORNER}
+              return (
+                <HeroUICard
+                  key={entry.id}
+                  testID={`weight-row-${entry.id}`}
+                  className="flex-row items-center gap-3 rounded-xl border border-border bg-surface px-3.5 py-3 shadow-sm"
                 >
-                  {entry.variation === null || entry.variation === 0 ? (
-                    <Minus size={15} color={muted} />
-                  ) : entry.variation > 0 ? (
-                    <TrendUp size={15} color={danger} />
-                  ) : (
-                    <TrendDown size={15} color={success} />
-                  )}
-                </View>
-                <View className="min-w-0 flex-1 gap-1">
-                  <View className="flex-row items-baseline gap-1.5">
-                    <Text
-                      className="font-bold text-foreground"
-                      style={TABULAR_NUMS}
-                    >
-                      {entry.weightKg} kg
-                    </Text>
-                    <Text
-                      className={`text-xs font-semibold ${variationClassName}`}
-                      style={TABULAR_NUMS}
-                    >
-                      {fmtVariation(entry.variation)}
-                    </Text>
+                  <View
+                    className={`size-8 shrink-0 items-center justify-center rounded-xl ${tileClassName}`}
+                    style={CONTINUOUS_CORNER}
+                  >
+                    {entry.variation === null || entry.variation === 0 ? (
+                      <Minus size={15} color={muted} />
+                    ) : entry.variation > 0 ? (
+                      <TrendUp size={15} color={danger} />
+                    ) : (
+                      <TrendDown size={15} color={success} />
+                    )}
                   </View>
-                  {entry.bodyCondition !== null ? (
-                    <Text className="text-xs font-normal text-muted">
-                      {t('weightLog.bodyConditionValue', {
-                        value: entry.bodyCondition,
-                      })}
-                    </Text>
-                  ) : null}
-                </View>
-                <Text className="shrink-0 text-xs font-normal text-muted">
-                  {entry.measuredAt}
-                </Text>
-              </HeroUICard>
-            );
-          })
-        : null}
-    </ScrollView>
+                  <View className="min-w-0 flex-1 gap-1">
+                    <View className="flex-row items-baseline gap-1.5">
+                      <Text
+                        className="font-bold text-foreground"
+                        style={TABULAR_NUMS}
+                      >
+                        {entry.weightKg} kg
+                      </Text>
+                      <Text
+                        className={`text-xs font-semibold ${variationClassName}`}
+                        style={TABULAR_NUMS}
+                      >
+                        {fmtVariation(entry.variation)}
+                      </Text>
+                    </View>
+                    {entry.bodyCondition !== null ? (
+                      <Text className="text-xs font-normal text-muted">
+                        {t('weightLog.bodyConditionValue', {
+                          value: entry.bodyCondition,
+                        })}
+                      </Text>
+                    ) : null}
+                  </View>
+                  <Text className="shrink-0 text-xs font-normal text-muted">
+                    {entry.measuredAt}
+                  </Text>
+                </HeroUICard>
+              );
+            })
+          : null}
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
