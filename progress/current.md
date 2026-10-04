@@ -15,7 +15,7 @@
 
 ### Bloqueado por el humano
 
-- **Gate de la spec en Notion** (base *Specs* del Panel de Proyectos — Harness SDD): el humano pone `Estado del gate` = Aprobado; el leader hace el commit de firma citando página, hora y cuenta.
+- **Gate de la spec en Notion** (base *Specs* del Panel de Proyectos — Harness SDD): página `#148 mobile-keyboard-avoiding-forms` (id `3ef6115a-9b27-8106-a6af-ea461087bb27`, https://app.notion.com/p/3ef6115a9b278106a6afea461087bb27), creada el 2026-10-04 con `Estado del gate` = En revisión y `Rol actual` = Spec Author; cuerpo = espejo de `requirements.md` en `7a075020`. El humano pone `Estado del gate` = Aprobado; el leader lee la página (valor + `page_last_edited_at`), pasa los cuatro ficheros de la spec a `status: approved` y hace el commit de firma citando página y hora. Lista cerrada de ficheros enviada a Frontend el 2026-10-04.
 
 ### Siguiente paso del leader
 
