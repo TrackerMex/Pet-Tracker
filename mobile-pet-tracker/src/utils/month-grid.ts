@@ -44,6 +44,7 @@ export function longDayLabel(day: string, locale: string): string {
   return new Date(Date.UTC(year, month - 1, date)).toLocaleDateString(locale, {
     weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC',
   });
+}
 
 export function currentMonth(now: Date): string {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
