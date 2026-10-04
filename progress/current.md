@@ -44,3 +44,14 @@
   Estado del gate = En revisión, commit citado `08631f9e`):
   https://app.notion.com/p/3ef6115a9b27811c8cd6e29408fdfe4c
   Gate humano pendiente: parada hasta la firma.
+- #118 (relatado por Frontend 2026-10-04): spec firmada en `16c8e565`, ya
+  `in_progress`; Codex implementa en `/home/claude/sites/Pet-Tracker-wt-118`
+  sobre `feature/118-mobile-welcome-splash`; el worktree principal volvió a
+  `main` (`b2a9c2aa`) para la spec de #116. Sus deltas compartidos: catálogo
+  +8 (`welcome.*`), `ui-language` +1 bloque `R16_WELCOME` tras
+  `R15_GEOFENCE_EDITOR`, `SCREEN_FILES` +1 (`screens/welcome/index.tsx`),
+  consistency `13 + 1 + 1` pasa a `+ 1` en las dos cuentas, layout
+  `toHaveLength(5)` +1, legibility fila `[join('screens','welcome','index.tsx'), 2]`,
+  `design.md` §2.19 nueva. Si #118 mergea antes, el handoff de #117 debe
+  decirle a Codex que mida la base y aplique los deltas de la spec como
+  diferencia sobre esos valores.
