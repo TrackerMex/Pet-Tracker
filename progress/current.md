@@ -56,8 +56,31 @@
      `progress/handoff_meals-history.md` en el mismo commit (es el commit
      de firma de E1), `Rol actual = Implementer`, bloqueador limpiado.
      Codex retoma en tasks.md R4 paso 2 con las cifras de E1.
-- **Estado al parar:** esperando a que el humano pegue la «Reanudación 1»
-  en Codex CLI y confirme el final. Backend R1–R3 verde, R4 rojo
-  (`430b232a`); móvil sin tocar. #101 cerró (PR #189) y liberó Postgres y
-  LocalStack. El leader no toca `backend-pet-tracker/` ni
+  6c. **Segunda parada de Codex, en R5 (2026-10-04):** con la Reanudación 1
+     Codex cerró R4 en verde y el bloque backend entero (`pnpm test` 176
+     suites / 1348 tests; `pnpm test:e2e` 29 suites / 438 tests, 8
+     skipped; último commit `32825cd5`). En el rojo de R5 fallaron 13 `it`:
+     los 9 de `#105 R5`, `#65 R12` y `#65 R6` (autorizados) y **dos de
+     `#65 R18`** que ni la spec ni E1 movían: `checkUses(ALL_USES)` (suma
+     de todas las tablas) y el candado `SCREEN_FILES` 27 → 28 con bucle
+     `readFileSync` (ENOENT hasta que R8 cree la pantalla). El humano
+     mantuvo la parada («Mantener la parada para corregir la spec»); Codex
+     conservó el parche de R5 en el reporte y restauró el árbol sin
+     commit. **Enmienda E2** escrita en `requirements.md` (bloque de
+     cabecera, R5, casilla propia), `design.md` (D8, dos filas en
+     §Candados) y `tasks.md` R5: `SCREEN_FILES` `+ 1 // #105 R5` y los dos
+     rojos transitorios de `#65 R18` autorizados (ALL_USES hasta R14,
+     SCREEN_FILES hasta R8). Notion re-espejada, `Estado del gate` =
+     En revisión, `Rol actual` = Leader, bloqueador escrito. Lección en
+     memoria: los candados agregados de `#65 R18` se mueven con cualquier
+     fila nueva de `ui-copy-table.ts`.
+- **Estado al parar:** esperando a que el humano apruebe E2 en Notion.
+  Después: firmar la casilla E2 con `page_last_edited_at`, añadir
+  «Reanudación 2» al handoff (retoma en tasks.md R5 paso 1 reaplicando el
+  parche conservado más `+ 1` en `SCREEN_FILES`), `Rol actual` =
+  Implementer. Backend R1–R4 verde; móvil sin tocar. #148 (sesión
+  `Backend`, worktree `Pet-Tracker-wt-148`) no toca ningún fichero de
+  #105 según su reparto provisional; posible roce solo en
+  `design-drift.test.ts` y `consistency-classnames.test.ts`, avisará
+  antes de su handoff. El leader no toca `backend-pet-tracker/` ni
   `mobile-pet-tracker/`.
