@@ -13,10 +13,10 @@ tags: [harness, spec, traceability]
 
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
-| R1 | `backend-pet-tracker/test/meals-history.e2e-spec.ts::#105 R1` | `46c18d51 feat(nutrition): list served meals in an inclusive range (#105 R1)` — tsc verde; pendiente verde e2e en R4 |
-| R2 | `backend-pet-tracker/src/modules/nutrition/infrastructure/mappers/nutrition-error.mapper.spec.ts::#105 R2` | `059aa339 feat(nutrition): map meals history range errors (#105 R2)` — 4/4 unit verde; pendiente verde HTTP en R4 |
+| R1 | `backend-pet-tracker/test/meals-history.e2e-spec.ts::#105 R1` | `46c18d51 feat(nutrition): list served meals in an inclusive range (#105 R1)` — tsc y e2e verdes en `929465c7` (R4) |
+| R2 | `backend-pet-tracker/src/modules/nutrition/infrastructure/mappers/nutrition-error.mapper.spec.ts::#105 R2` | `059aa339 feat(nutrition): map meals history range errors (#105 R2)` — 4/4 unit y HTTP verde en `929465c7` (R4) |
 | R3 | `backend-pet-tracker/src/modules/nutrition/application/use-cases/get-meals-history.use-case.spec.ts::#105 R3` | `0fe5f788 feat(nutrition): return meals history by owner civil day (#105 R3)` — 9/9 verde |
-| R4 | `backend-pet-tracker/test/meals-history.e2e-spec.ts::#105 R4` | pendiente |
+| R4 | `backend-pet-tracker/test/meals-history.e2e-spec.ts::#105 R4` | `929465c7 feat(nutrition): expose strict meals history endpoint (#105 R4)` — 15/15 e2e verde (R1/R2/R4) |
 | R5 | `mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx::#105 R5` (+ candados `#65 R12`, `#65 R6`) | pendiente |
 | R6 | `mobile-pet-tracker/src/api/__tests__/nutrition.test.ts::#105 R6` | pendiente |
 | R7 | `mobile-pet-tracker/src/api/__tests__/query-keys.test.ts::#105 R7` | pendiente |
@@ -31,3 +31,5 @@ tags: [harness, spec, traceability]
 | H1 | Prueba de humo en dev build Android (gate humano, `requirements.md` § Entorno de la prueba de humo) | pendiente (humano) |
 
 Sesión detenida al descubrir el ancla R5 discrepante (9 usos `_layout` en H0 frente a 0 declarado); ver `progress/impl_meals-history.md`. R4 conserva el rojo `430b232a`, sin implementación. No hay cierre de R15 ni H1.
+
+Reanudación 1: E1 corrige el ancla de R5; R4 se cierra en verde, incluido el bloque backend completo (176 suites / 1348 unit; 29 suites / 438 e2e passed, mismos 3 suites / 8 tests skipped que la base). Se vuelve a parar en R5 por dos it ajenos #65 R18: ALL_USES usa las nuevas filas y SCREEN_FILES pasa de 27 a 28. El humano mantiene la parada para corregir la spec. Tests R5 sin commit, restaurados; parche y evidencia en progress/impl_meals-history.md. R5–R15 y H1 siguen pendientes.

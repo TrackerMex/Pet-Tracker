@@ -916,3 +916,576 @@ backend-pet-tracker/test/meals-history.e2e-spec.ts
 progress/impl_meals-history.md
 specs/meals-history/traceability.md
 ```
+
+## Reanudacion 1
+
+```text
+$ pwd
+/home/claude/sites/Pet-Tracker
+$ git branch --show-current
+feature/105-meals-history
+$ git rev-parse --short HEAD
+c93ccd5c
+$ git rev-parse --short HEAD~1
+1fe7d4df
+$ git rev-parse --short HEAD~3
+52757187
+$ git status --short
+(salida vacía)
+```
+
+Guardas de reanudación correctas. H0 sigue siendo `2edf8c38`. E1 aprobada por el leader en HEAD; sin reescritura de commits existentes.
+
+```text
+$ grep -c "_layout" mobile-pet-tracker/src/__tests__/ui-copy-table.ts
+9
+exit=0
+```
+
+Ancla E1 coincide. Reanudo en R4 paso 2; no repito la base ya medida. El rojo transitorio #65 R6 se documentará hasta R14, conforme a esta reanudación (prevalece sobre el resumen de cabecera de E1 que dice «hasta R8»).
+
+### R4 verde
+
+Comando (sin pipe): `pnpm test:e2e -- test/meals-history.e2e-spec.ts` → `/tmp/meals105-r4-green.log`, exit=0.
+
+```text
+Test Suites: 1 passed, 1 total
+Tests:       15 passed, 15 total
+Snapshots:   0 total
+Time:        2.911 s
+Ran all test suites matching test/meals-history.e2e-spec.ts.
+
+```
+
+### R5 — comprobación de literales antes del rojo
+
+Nueve pares copiados directamente de la tabla de requirements R5; sin traducción inferida.
+
+```text
+$ grep -n -F 'Meals history' specs/meals-history/requirements.md
+196:- **Test:** `test/meals-history.e2e-spec.ts`, `describe('Meals history (e2e)')`
+236:| `food.mealsHistory` | `Meals history` | `Historial de comidas` |
+238:| `mealsHistory.mealsHistory` | `Meals history` | `Historial de comidas` |
+667:  ("Meals history", "January 2026"); modo oscuro → fondo y punto con tokens
+exit=0
+$ grep -n -F 'Historial de comidas' specs/meals-history/requirements.md
+236:| `food.mealsHistory` | `Meals history` | `Historial de comidas` |
+238:| `mealsHistory.mealsHistory` | `Meals history` | `Historial de comidas` |
+249:- SHALL añadir la sección `### §2.18 — Añadidos por #105 — Historial de comidas`
+604:  fichero: `meals-history-link-title` con texto `'Historial de comidas'`;
+663:- **Recorrido:** Food → card "Historial de comidas" → la pantalla abre con el
+exit=0
+$ grep -n -F 'See which days meals were served' specs/meals-history/requirements.md
+237:| `food.mealsHistoryLinkSubtitle` | `See which days meals were served` | `Ver qué días se sirvieron comidas` |
+exit=0
+$ grep -n -F 'Ver qué días se sirvieron comidas' specs/meals-history/requirements.md
+237:| `food.mealsHistoryLinkSubtitle` | `See which days meals were served` | `Ver qué días se sirvieron comidas` |
+exit=0
+$ grep -n -F 'Meals history' specs/meals-history/requirements.md
+196:- **Test:** `test/meals-history.e2e-spec.ts`, `describe('Meals history (e2e)')`
+236:| `food.mealsHistory` | `Meals history` | `Historial de comidas` |
+238:| `mealsHistory.mealsHistory` | `Meals history` | `Historial de comidas` |
+667:  ("Meals history", "January 2026"); modo oscuro → fondo y punto con tokens
+exit=0
+$ grep -n -F 'Historial de comidas' specs/meals-history/requirements.md
+236:| `food.mealsHistory` | `Meals history` | `Historial de comidas` |
+238:| `mealsHistory.mealsHistory` | `Meals history` | `Historial de comidas` |
+249:- SHALL añadir la sección `### §2.18 — Añadidos por #105 — Historial de comidas`
+604:  fichero: `meals-history-link-title` con texto `'Historial de comidas'`;
+663:- **Recorrido:** Food → card "Historial de comidas" → la pantalla abre con el
+exit=0
+$ grep -n -F 'Previous month' specs/meals-history/requirements.md
+239:| `mealsHistory.previousMonth` | `Previous month` | `Mes anterior` |
+exit=0
+$ grep -n -F 'Mes anterior' specs/meals-history/requirements.md
+239:| `mealsHistory.previousMonth` | `Previous month` | `Mes anterior` |
+exit=0
+$ grep -n -F 'Next month' specs/meals-history/requirements.md
+240:| `mealsHistory.nextMonth` | `Next month` | `Mes siguiente` |
+exit=0
+$ grep -n -F 'Mes siguiente' specs/meals-history/requirements.md
+240:| `mealsHistory.nextMonth` | `Next month` | `Mes siguiente` |
+exit=0
+$ grep -n -F 'No meals were served this month' specs/meals-history/requirements.md
+241:| `mealsHistory.emptyMonth` | `No meals were served this month` | `Este mes no se sirvió ninguna comida` |
+exit=0
+$ grep -n -F 'Este mes no se sirvió ninguna comida' specs/meals-history/requirements.md
+241:| `mealsHistory.emptyMonth` | `No meals were served this month` | `Este mes no se sirvió ninguna comida` |
+670:  mascota sin servicios → "Este mes no se sirvió ninguna comida" con la rejilla
+exit=0
+$ grep -n -F 'No meals were served this day' specs/meals-history/requirements.md
+242:| `mealsHistory.noMealsOnDay` | `No meals were served this day` | `Ese día no se sirvió ninguna comida` |
+exit=0
+$ grep -n -F 'Ese día no se sirvió ninguna comida' specs/meals-history/requirements.md
+242:| `mealsHistory.noMealsOnDay` | `No meals were served this day` | `Ese día no se sirvió ninguna comida` |
+585:    `'Ese día no se sirvió ninguna comida'` y 0 `meals-history-detail-time`.
+exit=0
+$ grep -n -F '1 meal served' specs/meals-history/requirements.md
+243:| `mealsHistory.servedOne` | `1 meal served` | `1 comida servida` |
+exit=0
+$ grep -n -F '1 comida servida' specs/meals-history/requirements.md
+243:| `mealsHistory.servedOne` | `1 meal served` | `1 comida servida` |
+582:  - pulsar `…-2026-01-14` → `['12:00']` y `'1 comida servida'`; la celda del
+exit=0
+$ grep -n -F '{{count}} meals served' specs/meals-history/requirements.md
+244:| `mealsHistory.servedMany` | `{{count}} meals served` | `{{count}} comidas servidas` |
+exit=0
+$ grep -n -F '{{count}} comidas servidas' specs/meals-history/requirements.md
+244:| `mealsHistory.servedMany` | `{{count}} meals served` | `{{count}} comidas servidas` |
+exit=0
+```
+
+### R5 rojo; parada por it ajenos #65 R18
+
+Comando (sin pipe): `bunx jest 'src/providers/__tests__/language-provider.test.tsx' 'src/__tests__/ui-language.test.ts'` → `/tmp/meals105-r5-red.log`, exit=1.
+
+```text
+Test Suites: 2 failed, 2 total
+Tests:       13 failed, 38 passed, 51 total
+Snapshots:   0 total
+Time:        4.074 s
+Ran all test suites matching /src\/providers\/__tests__\/language-provider.test.tsx|src\/__tests__\/ui-language.test.ts/i.
+  ● #65 R12: el catálogo tiene los dos idiomas y t resuelve claves y parámetros › mantiene la base más las claves de #68 y los mismos marcadores en ambos idiomas
+
+    expect(received).toHaveLength(expected)
+
+    Expected length: 352
+    Received length: 343
+    Received array:  ["addPet.addPet", "addPet.age", "addPet.approxMonths", "addPet.avatarPreview", "addPet.basicDetails", "addPet.birthDate", "addPet.breed", "addPet.cat", "addPet.checkPetDetails", "addPet.chooseBirthDate", …]
+
+      53 |     const spanishKeys = Object.keys(es).sort();
+      54 |
+    > 55 |     expect(englishKeys).toHaveLength(
+         |                         ^
+      56 |       260 + 16 + 1 + 4 + 7 + 14 + 2 + 1 + 4 - 6 + 1 + 2 + 3 + 11 + 12 + 2 + 9 + 9, // #105 R5
+      57 |     );
+      58 |     expect(spanishKeys).toEqual(englishKeys);
+
+      at Object.toHaveLength (src/providers/__tests__/language-provider.test.tsx:55:25)
+
+  ● #105 R5: meals history copy matches the approved bilingual table › registers food.mealsHistory in both languages and the design table
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "Meals history"
+    Received: undefined
+
+      423 |     const spanish = es as Record<string, string>;
+      424 |     const languageDesign = readFileSync(join(process.cwd(), '../specs/mobile-ui-language/design.md'), 'utf8');
+    > 425 |     expect(english[key]).toBe(englishValue);
+          |                          ^
+      426 |     expect(spanish[key]).toBe(spanishValue);
+      427 |     expect(languageDesign).toMatch(new RegExp('\\| — \\| `' + escapeRegExp(key) + '`[^\\n]*← añadida por #105 \\(R5\\)'));
+      428 |   });
+
+      at toBe (src/providers/__tests__/language-provider.test.tsx:425:26)
+
+  ● #105 R5: meals history copy matches the approved bilingual table › registers food.mealsHistoryLinkSubtitle in both languages and the design table
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "See which days meals were served"
+    Received: undefined
+
+      423 |     const spanish = es as Record<string, string>;
+      424 |     const languageDesign = readFileSync(join(process.cwd(), '../specs/mobile-ui-language/design.md'), 'utf8');
+    > 425 |     expect(english[key]).toBe(englishValue);
+          |                          ^
+      426 |     expect(spanish[key]).toBe(spanishValue);
+      427 |     expect(languageDesign).toMatch(new RegExp('\\| — \\| `' + escapeRegExp(key) + '`[^\\n]*← añadida por #105 \\(R5\\)'));
+      428 |   });
+
+      at toBe (src/providers/__tests__/language-provider.test.tsx:425:26)
+
+  ● #105 R5: meals history copy matches the approved bilingual table › registers mealsHistory.mealsHistory in both languages and the design table
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "Meals history"
+    Received: undefined
+
+      423 |     const spanish = es as Record<string, string>;
+      424 |     const languageDesign = readFileSync(join(process.cwd(), '../specs/mobile-ui-language/design.md'), 'utf8');
+    > 425 |     expect(english[key]).toBe(englishValue);
+          |                          ^
+      426 |     expect(spanish[key]).toBe(spanishValue);
+      427 |     expect(languageDesign).toMatch(new RegExp('\\| — \\| `' + escapeRegExp(key) + '`[^\\n]*← añadida por #105 \\(R5\\)'));
+      428 |   });
+
+      at toBe (src/providers/__tests__/language-provider.test.tsx:425:26)
+
+  ● #105 R5: meals history copy matches the approved bilingual table › registers mealsHistory.previousMonth in both languages and the design table
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "Previous month"
+    Received: undefined
+
+      423 |     const spanish = es as Record<string, string>;
+      424 |     const languageDesign = readFileSync(join(process.cwd(), '../specs/mobile-ui-language/design.md'), 'utf8');
+    > 425 |     expect(english[key]).toBe(englishValue);
+          |                          ^
+      426 |     expect(spanish[key]).toBe(spanishValue);
+      427 |     expect(languageDesign).toMatch(new RegExp('\\| — \\| `' + escapeRegExp(key) + '`[^\\n]*← añadida por #105 \\(R5\\)'));
+      428 |   });
+
+      at toBe (src/providers/__tests__/language-provider.test.tsx:425:26)
+
+  ● #105 R5: meals history copy matches the approved bilingual table › registers mealsHistory.nextMonth in both languages and the design table
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "Next month"
+    Received: undefined
+
+      423 |     const spanish = es as Record<string, string>;
+      424 |     const languageDesign = readFileSync(join(process.cwd(), '../specs/mobile-ui-language/design.md'), 'utf8');
+    > 425 |     expect(english[key]).toBe(englishValue);
+          |                          ^
+      426 |     expect(spanish[key]).toBe(spanishValue);
+      427 |     expect(languageDesign).toMatch(new RegExp('\\| — \\| `' + escapeRegExp(key) + '`[^\\n]*← añadida por #105 \\(R5\\)'));
+      428 |   });
+
+      at toBe (src/providers/__tests__/language-provider.test.tsx:425:26)
+
+  ● #105 R5: meals history copy matches the approved bilingual table › registers mealsHistory.emptyMonth in both languages and the design table
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "No meals were served this month"
+    Received: undefined
+
+      423 |     const spanish = es as Record<string, string>;
+      424 |     const languageDesign = readFileSync(join(process.cwd(), '../specs/mobile-ui-language/design.md'), 'utf8');
+    > 425 |     expect(english[key]).toBe(englishValue);
+          |                          ^
+      426 |     expect(spanish[key]).toBe(spanishValue);
+      427 |     expect(languageDesign).toMatch(new RegExp('\\| — \\| `' + escapeRegExp(key) + '`[^\\n]*← añadida por #105 \\(R5\\)'));
+      428 |   });
+
+      at toBe (src/providers/__tests__/language-provider.test.tsx:425:26)
+
+  ● #105 R5: meals history copy matches the approved bilingual table › registers mealsHistory.noMealsOnDay in both languages and the design table
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "No meals were served this day"
+    Received: undefined
+
+      423 |     const spanish = es as Record<string, string>;
+      424 |     const languageDesign = readFileSync(join(process.cwd(), '../specs/mobile-ui-language/design.md'), 'utf8');
+    > 425 |     expect(english[key]).toBe(englishValue);
+          |                          ^
+      426 |     expect(spanish[key]).toBe(spanishValue);
+      427 |     expect(languageDesign).toMatch(new RegExp('\\| — \\| `' + escapeRegExp(key) + '`[^\\n]*← añadida por #105 \\(R5\\)'));
+      428 |   });
+
+      at toBe (src/providers/__tests__/language-provider.test.tsx:425:26)
+
+  ● #105 R5: meals history copy matches the approved bilingual table › registers mealsHistory.servedOne in both languages and the design table
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "1 meal served"
+    Received: undefined
+
+      423 |     const spanish = es as Record<string, string>;
+      424 |     const languageDesign = readFileSync(join(process.cwd(), '../specs/mobile-ui-language/design.md'), 'utf8');
+    > 425 |     expect(english[key]).toBe(englishValue);
+          |                          ^
+      426 |     expect(spanish[key]).toBe(spanishValue);
+      427 |     expect(languageDesign).toMatch(new RegExp('\\| — \\| `' + escapeRegExp(key) + '`[^\\n]*← añadida por #105 \\(R5\\)'));
+      428 |   });
+
+      at toBe (src/providers/__tests__/language-provider.test.tsx:425:26)
+
+  ● #105 R5: meals history copy matches the approved bilingual table › registers mealsHistory.servedMany in both languages and the design table
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "{{count}} meals served"
+    Received: undefined
+
+      423 |     const spanish = es as Record<string, string>;
+      424 |     const languageDesign = readFileSync(join(process.cwd(), '../specs/mobile-ui-language/design.md'), 'utf8');
+    > 425 |     expect(english[key]).toBe(englishValue);
+          |                          ^
+      426 |     expect(spanish[key]).toBe(spanishValue);
+      427 |     expect(languageDesign).toMatch(new RegExp('\\| — \\| `' + escapeRegExp(key) + '`[^\\n]*← añadida por #105 \\(R5\\)'));
+      428 |   });
+
+      at toBe (src/providers/__tests__/language-provider.test.tsx:425:26)
+
+  ● #65 R6: Food resuelve su copy por clave › resuelve las 50 ocurrencias normativas
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Object {
+        "file": "src/app/_layout.tsx",
+        "key": "mealsHistory.mealsHistory",
+    -   "uses": 1,
+    +   "uses": 0,
+      }
+
+      59 |       (directCalls?.length ?? 0) + (keyedConstants?.length ?? 0);
+      60 |
+    > 61 |     expect({ file, key, uses: resolvedUses }).toEqual({
+         |                                               ^
+      62 |       file,
+      63 |       key,
+      64 |       uses: expected,
+
+      at toEqual (src/__tests__/ui-language.test.ts:61:47)
+      at Object.checkUses (src/__tests__/ui-language.test.ts:144:5)
+
+  ● #65 R18: los sitios resuelven por clave y no queda copy suelta › resuelve cada ocurrencia de la tabla contra la clave exacta
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Object {
+        "file": "src/app/_layout.tsx",
+        "key": "mealsHistory.mealsHistory",
+    -   "uses": 1,
+    +   "uses": 0,
+      }
+
+      59 |       (directCalls?.length ?? 0) + (keyedConstants?.length ?? 0);
+      60 |
+    > 61 |     expect({ file, key, uses: resolvedUses }).toEqual({
+         |                                               ^
+      62 |       file,
+      63 |       key,
+      64 |       uses: expected,
+
+      at toEqual (src/__tests__/ui-language.test.ts:61:47)
+      at Object.checkUses (src/__tests__/ui-language.test.ts:486:5)
+
+  ● #65 R18: los sitios resuelven por clave y no queda copy suelta › no deja ningún valor fijo del catálogo como literal entero en las pantallas
+
+    expect(received).toHaveLength(expected)
+
+    Expected length: 27
+    Received length: 28
+    Received array:  ["src/app/(auth)/login.tsx", "src/app/(auth)/forgot.tsx", "src/app/(auth)/register.tsx", "src/components/floating-tab-bar.tsx", "src/screens/home/index.tsx", "src/screens/home/weekly-activity-chart.tsx", "src/screens/map/index.tsx", "src/app/_layout.tsx", "src/screens/health/index.tsx", "src/screens/weight-log/index.tsx", …]
+
+      488 |
+      489 |   it('no deja ningún valor fijo del catálogo como literal entero en las pantallas', () => {
+    > 490 |     expect(SCREEN_FILES).toHaveLength(19 + 2 + 1 + 1 + 1 + 1 + 1 + 1); // #100 R10, #41 R10, #146 R10
+          |                          ^
+      491 |
+      492 |     for (const file of SCREEN_FILES) {
+      493 |       const literals = wholeLiterals(readFileSync(join(SOURCE_ROOT, file), 'utf8'));
+
+      at Object.toHaveLength (src/__tests__/ui-language.test.ts:490:26)
+```
+
+### Bloque backend unit verde
+
+Comando (sin pipe): `pnpm test` → `/tmp/meals105-backend-block-unit.log`, exit=0.
+
+```text
+Test Suites: 176 passed, 176 total
+Tests:       1348 passed, 1348 total
+Snapshots:   0 total
+Time:        15.59 s, estimated 23 s
+Ran all test suites.
+
+```
+
+### Parada R5 por dos `it` ajenos fuera de la excepción
+
+R5 ejecuta las 2 suites pedidas: 13 failed, 38 passed, 51 total, exit=1. Diez rojos previstos en language-provider (9 literales undefined + longitud 343 vs 352) y #65 R6 rojo transitorio previsto. Además fallan dos it #65 R18 no autorizados como transitorios en el handoff:
+- «resuelve cada ocurrencia de la tabla contra la clave exacta»: `checkUses(ALL_USES)` incluye las once filas nuevas; expected uses=1, received uses=0 para `_layout.tsx` / `mealsHistory.mealsHistory`.
+- «no deja ningún valor fijo del catálogo como literal entero en las pantallas»: `SCREEN_FILES` incorpora el nuevo fichero a partir de ALL_USES. Received length=28 frente al candado ajeno 27, antes de intentar leer la pantalla aún inexistente. No se modifica este candado: no está en la tabla de deltas autorizados.
+
+Implementación R5 detenida antes de catalog/design. Pregunta enviada al humano sobre los rojos #65 R18; no se interpreta tiempo transcurrido como autorización. Ninguna aserción ajena ajustada.
+
+### Bloque backend e2e verde
+
+Comando (sin pipe): `pnpm test:e2e` → `/tmp/meals105-backend-block-e2e.log`, exit=0.
+
+```text
+Test Suites: 3 skipped, 29 passed, 29 of 32 total
+Tests:       8 skipped, 438 passed, 446 total
+Snapshots:   0 total
+Time:        103.923 s
+Ran all test suites.
+
+```
+
+Precisión tras inspeccionar el bloque ● completo: el segundo it #65 R18 falla por la longitud SCREEN_FILES (Expected 27, Received 28), no por ENOENT. La primera comunicación y pregunta lo describieron como lectura del fichero ausente; quedan corregidas aquí. Este rojo es permanente con el delta autorizado actual; requiere un `+ 1 // #105 R5` adicional en el candado SCREEN_FILES. Se envió una segunda pregunta corregida: autorizar ese delta y el rojo transitorio del agregado ALL_USES hasta R14. Sin respuesta no se modifica el candado ni se implementa R5.
+
+### Decisión humana de parada
+
+El humano respondió «No; mantener la parada» y, a la pregunta corregida, «Mantener la parada para corregir la spec». No se autoriza el delta SCREEN_FILES ni la excepción ALL_USES. No se implementa catalog/design, no se continúa con R10, y no se cambia ninguna aserción ajena.
+
+Para dejar el árbol limpio sin versionar un rojo que viola el gate, se conserva el parche exacto de los tres ficheros de R5 aquí y se restauran únicamente esos cambios propios con `git checkout HEAD -- <rutas>`, conforme al handoff. R5 no tiene commit y se retoma con spec corregida; su evidencia roja permanece.
+
+```diff
+diff --git a/mobile-pet-tracker/src/__tests__/ui-copy-table.ts b/mobile-pet-tracker/src/__tests__/ui-copy-table.ts
+index 00611e3d..a1d611fa 100644
+--- a/mobile-pet-tracker/src/__tests__/ui-copy-table.ts
++++ b/mobile-pet-tracker/src/__tests__/ui-copy-table.ts
+@@ -204,6 +204,17 @@ export const R6_FOOD: UseRow[] = [
+   { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.errorTimeNotInPlan' },
+   { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.errorDuplicateTime' },
+   { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.errorMealLimit' },
++  { file: 'src/app/_layout.tsx', key: 'mealsHistory.mealsHistory' }, // #105 R5
++  { file: 'src/app/(tabs)/food.tsx', key: 'food.mealsHistory' }, // #105 R5
++  { file: 'src/app/(tabs)/food.tsx', key: 'food.mealsHistoryLinkSubtitle' }, // #105 R5
++  { file: 'src/screens/meals-history/index.tsx', key: 'mealsHistory.previousMonth' }, // #105 R5
++  { file: 'src/screens/meals-history/index.tsx', key: 'mealsHistory.nextMonth' }, // #105 R5
++  { file: 'src/screens/meals-history/index.tsx', key: 'mealsHistory.emptyMonth' }, // #105 R5
++  { file: 'src/screens/meals-history/index.tsx', key: 'mealsHistory.noMealsOnDay' }, // #105 R5
++  { file: 'src/screens/meals-history/index.tsx', key: 'mealsHistory.servedOne' }, // #105 R5
++  { file: 'src/screens/meals-history/index.tsx', key: 'mealsHistory.servedMany' }, // #105 R5
++  { file: 'src/screens/meals-history/index.tsx', key: 'common.somethingWentWrong' }, // #105 R5
++  { file: 'src/screens/meals-history/index.tsx', key: 'common.retry' }, // #105 R5
+ ];
+ 
+ export const R7_PROFILE: UseRow[] = [
+diff --git a/mobile-pet-tracker/src/__tests__/ui-language.test.ts b/mobile-pet-tracker/src/__tests__/ui-language.test.ts
+index 4270274e..b6bdc73e 100644
+--- a/mobile-pet-tracker/src/__tests__/ui-language.test.ts
++++ b/mobile-pet-tracker/src/__tests__/ui-language.test.ts
+@@ -140,7 +140,7 @@ describe('#65 R5: Health resuelve su copy por clave', () => {
+ 
+ describe('#65 R6: Food resuelve su copy por clave', () => {
+   it('resuelve las 50 ocurrencias normativas', () => {
+-    expect(R6_FOOD).toHaveLength(35 + 3 + 1 - 2 + 1 + 3 + 9); // +1 #95 R4, -2 #95 R5, +1 #113 R3, +3 #147 R8, +9 #147 R9
++    expect(R6_FOOD).toHaveLength(35 + 3 + 1 - 2 + 1 + 3 + 9 + 11); // #105 R5; +1 #95 R4, -2 #95 R5, +1 #113 R3, +3 #147 R8, +9 #147 R9
+     checkUses(R6_FOOD);
+   });
+ });
+diff --git a/mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx b/mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx
+index f9197c63..b32aa569 100644
+--- a/mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx
++++ b/mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx
+@@ -53,7 +53,7 @@ describe('#65 R12: el catálogo tiene los dos idiomas y t resuelve claves y par
+     const spanishKeys = Object.keys(es).sort();
+ 
+     expect(englishKeys).toHaveLength(
+-      260 + 16 + 1 + 4 + 7 + 14 + 2 + 1 + 4 - 6 + 1 + 2 + 3 + 11 + 12 + 2 + 9,
++      260 + 16 + 1 + 4 + 7 + 14 + 2 + 1 + 4 - 6 + 1 + 2 + 3 + 11 + 12 + 2 + 9 + 9, // #105 R5
+     );
+     expect(spanishKeys).toEqual(englishKeys);
+     for (const key of englishKeys) {
+@@ -369,3 +369,61 @@ describe('#147 R1: el catálogo trae las nueve claves del horario editable', ()
+     }
+   });
+ });
++
++describe('#105 R5: meals history copy matches the approved bilingual table', () => {
++  const translations = [
++  [
++    "food.mealsHistory",
++    "Meals history",
++    "Historial de comidas"
++  ],
++  [
++    "food.mealsHistoryLinkSubtitle",
++    "See which days meals were served",
++    "Ver qué días se sirvieron comidas"
++  ],
++  [
++    "mealsHistory.mealsHistory",
++    "Meals history",
++    "Historial de comidas"
++  ],
++  [
++    "mealsHistory.previousMonth",
++    "Previous month",
++    "Mes anterior"
++  ],
++  [
++    "mealsHistory.nextMonth",
++    "Next month",
++    "Mes siguiente"
++  ],
++  [
++    "mealsHistory.emptyMonth",
++    "No meals were served this month",
++    "Este mes no se sirvió ninguna comida"
++  ],
++  [
++    "mealsHistory.noMealsOnDay",
++    "No meals were served this day",
++    "Ese día no se sirvió ninguna comida"
++  ],
++  [
++    "mealsHistory.servedOne",
++    "1 meal served",
++    "1 comida servida"
++  ],
++  [
++    "mealsHistory.servedMany",
++    "{{count}} meals served",
++    "{{count}} comidas servidas"
++  ]
++] as const;
++  it.each(translations)('registers %s in both languages and the design table', (key, englishValue, spanishValue) => {
++    const english = en as Record<string, string>;
++    const spanish = es as Record<string, string>;
++    const languageDesign = readFileSync(join(process.cwd(), '../specs/mobile-ui-language/design.md'), 'utf8');
++    expect(english[key]).toBe(englishValue);
++    expect(spanish[key]).toBe(spanishValue);
++    expect(languageDesign).toMatch(new RegExp('\\| — \\| `' + escapeRegExp(key) + '`[^\\n]*← añadida por #105 \\(R5\\)'));
++  });
++});
+```
+
+### Reanudación 1 cierre backend tsc
+
+Comando (sin pipe): `pnpm exec tsc --noEmit` → `/tmp/meals105-resume1-backend-tsc.log`, exit=0.
+
+```text
+
+
+```
+
+### Cierre de Reanudacion 1 (bloqueada en R5)
+
+- `929465c7 feat(nutrition): expose strict meals history endpoint (#105 R4)` cierra el rojo existente `430b232a`; no se reescribe ningún commit.
+- R4 paso 3: no hace falta extraer helper; `parseQuery` reutiliza `validationError` existente, como `parseBody`. Sin cambios de contrato respecto a la spec.
+- Backend: tsc exit=0, pnpm test exit=0, pnpm test:e2e exit=0; e2e focal 15/15 exit=0. Sin regresión ni skipped nuevos.
+- Móvil R5 rojo: 2 suites / 51 tests; 13 failed, 38 passed, exit=1. Nueve tests nuevos escritos, sin commit; parche preservado y archivos restaurados. No se declara verde ni se ejecuta R15.
+- Delta final sobre la base de la primera sesión: backend unit +2 suites / +13 tests (`nutrition-error.mapper.spec.ts` +4, `get-meals-history.use-case.spec.ts` +9); backend e2e +1 suite / +15 tests (`meals-history.e2e-spec.ts`); móvil +0 suites / +0 tests versionados. Skipped +0.
+- Base móvil retenida: 90 suites / 1913 tests / 1 snapshot. No hay cambios móviles versionados; no se repiten sus typecheck/lint/Jest de cierre, porque el humano ordenó mantener la parada antes de implementar R5.
+- Skills ya cargadas en la primera sesión se mantienen: ponytail, building-native-ui, native-data-fetching y appllama-app-design-skill del repo. No se instalan otras.
+- El delta `+ 1` de SCREEN_FILES y la excepción roja de ALL_USES quedan para la corrección de la spec; ninguna decisión de producto nueva.
+- H1 sigue sin marcar. Sin init.sh, Docker, push, PR, dependencias, migración ni cambio de rama. No se tocaron los worktrees prohibidos ni el bookkeeping del leader.
+
+`git diff --stat origin/main -- '*package.json' '*bun.lock' '*pnpm-lock.yaml'`: salida vacía, exit=0.
+
+`git diff --name-only 2edf8c38 HEAD` del cierre documental (contrastado después del commit contra el índice):
+
+```text
+backend-pet-tracker/src/modules/nutrition/application/dto/meal.dto.ts
+backend-pet-tracker/src/modules/nutrition/application/use-cases/get-meals-history.use-case.spec.ts
+backend-pet-tracker/src/modules/nutrition/application/use-cases/get-meals-history.use-case.ts
+backend-pet-tracker/src/modules/nutrition/domain/errors/nutrition.errors.ts
+backend-pet-tracker/src/modules/nutrition/domain/nutrition.constants.ts
+backend-pet-tracker/src/modules/nutrition/domain/repositories/meal-serving.repository.ts
+backend-pet-tracker/src/modules/nutrition/infrastructure/mappers/nutrition-error.mapper.spec.ts
+backend-pet-tracker/src/modules/nutrition/infrastructure/mappers/nutrition-error.mapper.ts
+backend-pet-tracker/src/modules/nutrition/infrastructure/mappers/nutrition.mapper.ts
+backend-pet-tracker/src/modules/nutrition/infrastructure/meals.controller.ts
+backend-pet-tracker/src/modules/nutrition/infrastructure/repositories/meal-serving.drizzle.repository.ts
+backend-pet-tracker/src/modules/nutrition/nutrition.module.ts
+backend-pet-tracker/test/meals-history.e2e-spec.ts
+progress/current.md
+progress/handoff_meals-history.md
+progress/impl_meals-history.md
+specs/meals-history/design.md
+specs/meals-history/requirements.md
+specs/meals-history/tasks.md
+specs/meals-history/traceability.md
+```
+
+Las diferencias de requirements.md, design.md y tasks.md de meals-history pertenecen a los commits E1 del leader, no a esta implementación.
