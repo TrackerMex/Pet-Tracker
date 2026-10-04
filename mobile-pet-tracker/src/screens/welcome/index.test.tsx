@@ -7,6 +7,7 @@ import type { TestInstance } from 'test-renderer';
 
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import { LanguageProvider } from '../../providers/language-provider';
+import { useThemeColors } from '../../theme/use-theme-colors';
 import { WelcomeScreen } from './index';
 
 const { readFileSync } = jest.requireActual<typeof import('fs')>('fs');
@@ -161,5 +162,93 @@ describe('R9', () => {
     expect(screen.getByText('Get started')).toBeOnTheScreen();
     expect(screen.getByText('I already have an account')).toBeOnTheScreen();
     expect(screen.getByText('By continuing you accept our Terms and Privacy Policy')).toBeOnTheScreen();
+  });
+});
+
+
+describe('R6', () => {
+  const chipIds = ['welcome-chip-gps', 'welcome-chip-health', 'welcome-chip-nutrition'];
+  const iconIds = ['icon-map', 'icon-stethoscope', 'icon-fork-knife'];
+  const labels = ['GPS', 'Salud', 'Nutrición'];
+
+  it('asigna el testID de cada chip', async () => {
+    await renderWelcome();
+    const chips = screen.getByTestId('welcome-chips').children as TestInstance[];
+    chips.forEach((chip, index) => expect(chip.props.testID).toBe(chipIds[index]));
+  });
+
+  it('aplica la misma clase a cada chip', async () => {
+    await renderWelcome();
+    const chips = screen.getByTestId('welcome-chips').children as TestInstance[];
+    expect(screen.getByTestId('welcome-chips').props.className).toBe('flex-row justify-center gap-2');
+    chips.forEach((chip) => expect(chip.props.className).toBe('flex-row items-center gap-1.5 rounded-full bg-surface-secondary px-3 py-1.5'));
+  });
+
+  it('pinta el icono de cada chip', async () => {
+    await renderWelcome();
+    const chips = screen.getByTestId('welcome-chips').children as TestInstance[];
+    chips.forEach((chip, index) => expect((chip.children[0] as TestInstance).props.testID).toBe(iconIds[index]));
+  });
+
+  it('usa iconos de 14 puntos', async () => {
+    await renderWelcome();
+    const chips = screen.getByTestId('welcome-chips').children as TestInstance[];
+    chips.forEach((chip) => expect((chip.children[0] as TestInstance).props.size).toBe(14));
+  });
+
+  it('resuelve la tinta accent-strong de cada icono', async () => {
+    await renderWelcome();
+    const chips = screen.getByTestId('welcome-chips').children as TestInstance[];
+    expect(jest.mocked(useThemeColors)).toHaveBeenCalledWith(['accent-strong']);
+    chips.forEach((chip) => expect((chip.children[0] as TestInstance).props.color).toBe('accent-strong-ink'));
+  });
+
+  it('resuelve la etiqueta de cada chip por su clave', async () => {
+    await renderWelcome();
+    const chips = screen.getByTestId('welcome-chips').children as TestInstance[];
+    chips.forEach((chip, index) => expect((chip.children[1] as TestInstance).children).toEqual([labels[index]]));
+  });
+
+  it('aplica la clase de tinta a cada etiqueta', async () => {
+    await renderWelcome();
+    const chips = screen.getByTestId('welcome-chips').children as TestInstance[];
+    chips.forEach((chip) => expect((chip.children[1] as TestInstance).props.className).toBe('text-xs font-semibold text-accent-strong'));
+  });
+
+  it('ordena GPS, Salud y Nutrición', async () => {
+    await renderWelcome();
+    const chips = screen.getByTestId('welcome-chips').children as TestInstance[];
+    chips.forEach((chip, index) => expect(screen.getByTestId(chipIds[index])).toBe(chip));
+  });
+
+  it('deja dos hijos por chip, icono y etiqueta', async () => {
+    await renderWelcome();
+    const chips = screen.getByTestId('welcome-chips').children as TestInstance[];
+    chips.forEach((chip, index) => {
+      expect(chip.children).toHaveLength(2);
+      expect((chip.children[0] as TestInstance).props.testID).toBe(iconIds[index]);
+      expect((chip.children[1] as TestInstance).children).toEqual([labels[index]]);
+    });
+  });
+
+  it('deja cada chip sin pulsación ni rol de botón', async () => {
+    await renderWelcome();
+    const chips = screen.getByTestId('welcome-chips').children as TestInstance[];
+    chips.forEach((chip) => {
+      expect(chip.props.onPress).toBeUndefined();
+      expect(chip.props.accessibilityRole).not.toBe('button');
+    });
+  });
+
+  it('recorre WELCOME_CHIPS con map y comparte la clase de etiqueta', () => {
+    const source = readSource('screens/welcome/index.tsx');
+    expect(source).toContain('const WELCOME_CHIPS =');
+    expect(source).toContain('WELCOME_CHIPS.map');
+    expect(source.match(/text-accent-strong\b/g)).toHaveLength(2);
+  });
+
+  it('contiene exactamente tres chips', async () => {
+    await renderWelcome();
+    expect(screen.getByTestId('welcome-chips').children).toHaveLength(3);
   });
 });
