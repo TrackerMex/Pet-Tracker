@@ -36,22 +36,22 @@ export function WelcomeScreen() {
   const opacity = useSharedValue(0);
   const translateY = useSharedValue(reduceMotion ? 0 : 16);
   const entranceStyle = useAnimatedStyle(() => ({
-    opacity: opacity.value,
-    transform: [{ translateY: translateY.value }],
+    opacity: opacity.get(),
+    transform: [{ translateY: translateY.get() }],
   }));
 
   useEffect(() => {
-    opacity.value = withTiming(1, {
+    opacity.set(withTiming(1, {
       duration: WELCOME_ENTRANCE_MS,
       easing: WELCOME_ENTRANCE_EASING,
       // Reduce Motion keeps this fade while removing the spatial motion below.
       reduceMotion: ReduceMotion.Never,
-    });
+    }));
     if (!reduceMotion) {
-      translateY.value = withTiming(0, {
+      translateY.set(withTiming(0, {
         duration: WELCOME_ENTRANCE_MS,
         easing: WELCOME_ENTRANCE_EASING,
-      });
+      }));
     }
   }, [opacity, translateY, reduceMotion]);
 
