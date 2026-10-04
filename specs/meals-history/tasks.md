@@ -174,15 +174,19 @@ Comprobación del bloque backend: `pnpm test` y `pnpm test:e2e` verdes;
 1. Rojo: `describe('#105 R11: …')` en el mismo test, casos de R11 (cabecera
    de 7, filas 5×7, rellenos 4, celdas con 1 o 2 hijos, 16 futuras
    `toBeDisabled`, `meals-history-today` único, `accessibilityLabel`,
-   candados de clases por grep del fuente). Fallan por conteos `0` y
-   `Unable to find an element with testID meals-history-weekdays`.
+   candados de clases por grep del fuente: `meals-history-today` contiene
+   `text-sm font-bold text-accent-strong` (E3; `text-accent` suelto lo
+   prohíbe `#61 R4` de `legibility-classnames.test.ts`)). Fallan por
+   conteos `0` y `Unable to find an element with testID meals-history-weekdays`.
    Sube en el mismo commit `#62 R15` (fila + `+ 2 // #105 R11`), `#98 R10`
    `bg-accent-soft` `+ 1 // #105 R11` y `#64 R9` `+ 1 // #105 R11` en
    `consistency-classnames.test.ts`.
    `bunx jest src/screens/meals-history/index.test.tsx src/__tests__/consistency-classnames.test.ts`
 2. Mínimo: cabecera de mes (título + dos `Pressable` aún sin lógica de
    navegación), fila de días de la semana, filas de celdas con las seis
-   decisiones (a–f) de R11; `selectedDay` existe pero nada lo cambia todavía.
+   decisiones (a–f) de R11 (el número de hoy con
+   `text-sm font-bold text-accent-strong`, E3); `selectedDay` existe pero
+   nada lo cambia todavía.
 3. Refactor: extraer `DayCell` como función local **en el mismo fichero** si
    la celda supera ~25 líneas (sin fichero nuevo: no mover inventarios).
 

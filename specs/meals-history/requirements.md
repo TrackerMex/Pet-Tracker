@@ -47,6 +47,24 @@ tags: [harness, spec]
 > Codex retoma en [[tasks]] R5 paso 1 con el parche conservado en
 > `progress/impl_meals-history.md`.
 
+> **Enmienda E3 (2026-10-04, casilla propia en §Aprobación):** R11.e
+> prescribía `text-sm font-bold text-accent` para el número de hoy. Es
+> tinta, no fondo: la carta (`docs/ui-guidelines.md` §Color, «fondo ⇒
+> `--accent`; encima de otra cosa ⇒ `--accent-strong`») y el guard global
+> `#61 R4` de `src/__tests__/legibility-classnames.test.ts`
+> (`it('no deja ningún text-accent suelto en las fuentes')`,
+> `filesMatching(/text-accent(?![-\w])/)` → `[]`) lo prohíben. Codex cerró
+> R5–R15 con todo verde (móvil 92 suites / 1981 tests; backend 176 / 1348
+> unit y 29 / 438 e2e) salvo ese único `it`, que recibe
+> `["screens/meals-history/index.tsx"]`, y paró sin tocarlo. Cambian: R11.e,
+> la tabla de clases del número y el candado de fuente de R11
+> (`text-sm font-bold text-accent-strong`), [[design]] §Candados (fila
+> `#61 R4`, sin delta) y [[tasks]] R11. `bg-accent` del punto no cambia (es
+> fondo) y `inkSites` de `#61 R4` no se toca. No cambian claves, literales
+> ni ningún otro requisito. Codex retoma en [[tasks]] R11 con un par
+> test/feat de corrección sobre los commits existentes, sin reescribir
+> historia.
+
 ## Contexto
 
 Caso de uso cerrado por el humano (2026-10-03, no reabrir): el usuario quiere
@@ -501,12 +519,20 @@ WHEN `data.kind === 'ok'` THEN THE SYSTEM SHALL renderizar dentro de un `Card`:
      `bg-accent-soft` (única ocurrencia literal del fichero) y
      `accessibilityState.selected === true`.
    - e. hoy: IF `date === today` THEN el número lleva
-     `testID="meals-history-today"` y clase `font-bold text-accent` en vez de
-     `font-semibold text-foreground`.
+     `testID="meals-history-today"` y clase `font-bold text-accent-strong` en
+     vez de `font-semibold text-foreground`. **(E3)** Tinta, no fondo: la
+     carta (`docs/ui-guidelines.md` §Color, «fondo ⇒ `--accent`; encima de
+     otra cosa ⇒ `--accent-strong`») y el guard `#61 R4` de
+     `src/__tests__/legibility-classnames.test.ts`
+     (`it('no deja ningún text-accent suelto en las fuentes')`,
+     `filesMatching(/text-accent(?![-\w])/)` debe dar `[]`) prohíben
+     `text-accent` suelto en un texto. `inkSites` de ese `describe` **no** se
+     toca (inventario no exhaustivo: `meal-schedule/index.tsx` tampoco
+     figura); el candado de fuente de R11 (abajo) cubre esta clase.
    - f. accesibilidad: `accessibilityRole="button"`,
      `accessibilityLabel={longDayLabel(date, locale)}`.
    Clase del número: `text-sm font-semibold text-foreground` (base),
-   `text-sm font-semibold text-muted` (futuro), `text-sm font-bold text-accent` (hoy).
+   `text-sm font-semibold text-muted` (futuro), `text-sm font-bold text-accent-strong` (hoy, E3).
 - Candados de inventario que esto mueve (todos en `design.md` § Candados):
   `#62 R15 counters` (+1 fila `[join('screens', 'meals-history', 'index.tsx'), 2]`:
   R11.a y los horarios de R13; total `+ 2 // #105 R11`); `#98 R10`
@@ -537,7 +563,7 @@ WHEN `data.kind === 'ok'` THEN THE SYSTEM SHALL renderizar dentro de un `Card`:
     y `props.accessibilityRole === 'button'`.
   - candado de clases por grep de fuente (patrón `openingTagWithTestId` de
     `src/__tests__/consistency-classnames.test.ts`): la etiqueta con
-    `testID="meals-history-today"` contiene `text-sm font-bold text-accent`; la
+    `testID="meals-history-today"` contiene `text-sm font-bold text-accent-strong` (E3); la
     etiqueta con `testID="meals-history-dot"` contiene
     `h-1.5 w-1.5 rounded-full bg-accent`; el fuente contiene exactamente una
     ocurrencia de `bg-accent-soft` y dos de `style={TABULAR_NUMS}`.
@@ -738,6 +764,7 @@ Clasificado viñeta a viñeta; cada una con su razón.
 - [x] Aprobado por humano (fecha: 2026-10-03, desde Notion: página `3ee6115a-9b27-81b8-b100-c70a69cfbb64`, `Estado del gate` = Aprobado, `page_last_edited_at` 2026-10-03T19:07:08.029Z) ← gate obligatorio antes de implementar
 - [x] **Enmienda E1** aprobada por humano (fecha: 2026-10-04, desde Notion: página `3ee6115a-9b27-81b8-b100-c70a69cfbb64`, `Estado del gate` = Aprobado tras volver a En revisión el 2026-10-04, `page_last_edited_at` 2026-10-04T00:24:21.926Z) ← gate propio de E1; Codex no reanuda sin él
 - [x] **Enmienda E2** aprobada por humano (fecha: 2026-10-04, desde Notion: página `3ee6115a-9b27-81b8-b100-c70a69cfbb64`, `Estado del gate` = Aprobado tras volver a En revisión el 2026-10-04, `page_last_edited_at` 2026-10-04T00:46:39.817Z) ← gate propio de E2; Codex no reanuda sin él
+- [ ] **Enmienda E3** aprobada por humano (fecha: —, desde Notion: página `3ee6115a-9b27-81b8-b100-c70a69cfbb64`, `Estado del gate` = Aprobado tras volver a En revisión el 2026-10-04, `page_last_edited_at` —) ← gate propio de E3; Codex no reanuda sin él
 
 Decisiones que esta spec cerró por su cuenta y el humano puede objetar aquí:
 (1) rejilla lunes-primero para ambos idiomas; (2) `today` del backend manda

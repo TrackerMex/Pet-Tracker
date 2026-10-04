@@ -106,6 +106,7 @@ delta. El delta se escribe al final de la suma con `// #105 R<n>`.
 | `src/__tests__/consistency-classnames.test.ts` | `#62 R15` `counters` + total `toBe(14 + 4 + 1 + 1 + 1 + 1 + 1, // #146 R18)` | fila `[join('screens', 'meals-history', 'index.tsx'), 2]` | `+ 2 // #105 R11` |
 | `src/__tests__/consistency-classnames.test.ts` | `#98 R10` 'deja CONTINUOUS_CORNER, bg-accent-soft y el acento donde estaban' | `count(/bg-accent-soft/g)).toBe(16 + 2)` | `+ 1 // #105 R11` |
 | `src/__tests__/consistency-classnames.test.ts` | `#64 R9` `accentSoftCount` | `toBe(16 + 2)` | `+ 1 // #105 R11` |
+| `src/__tests__/legibility-classnames.test.ts` | `#61 R4` 'no deja ningún text-accent suelto en las fuentes' | `filesMatching(/text-accent(?![-\w])/)` → `[]` | sin delta (E3: el número de hoy es `text-accent-strong`; `inkSites` no se toca) |
 | `src/__tests__/design-drift.test.ts` | `R3` it.each '%s importa el Card compartido' | lista `['home', 'food', 'meal-schedule', …]` | `+ 'meals-history'` |
 | `src/__tests__/design-drift.test.ts` | `#87 R19` `screenSignOutCalls` | mapa `'screens/meal-schedule/index.tsx': 2`, … | `+ 'screens/meals-history/index.tsx': 1` |
 
