@@ -348,7 +348,7 @@ OnePlus Nord 5 (nunca Expo Go); basta recargar el bundle, no hace falta
 rebuild. El teléfono sale dos veces en `adb devices` (IP y mDNS): usar
 siempre `adb -s <ip:puerto>`.
 
-Dispositivo/serial: `__________`  Fecha: `__________`  Cuenta: `__________`
+Dispositivo/serial: `Android 15`  Fecha: `2026-10-03`  Cuenta: `Alex Mireles`
 Versión del bundle (commit): `__________`
 
 Observable común, en cada casilla: *con el teclado abierto sobre el último
@@ -359,30 +359,30 @@ falta un primer toque para cerrar el teclado).*
 1. **login (R1)** — precondición: sesión cerrada. Abrir `/login`, tocar
    `login-password` (último campo), teclado abierto → `login-submit`
    (`login.signIn`) alcanzable y un toque lo pulsa.
-   - [x] Superada (fecha: 2026-10-04)
+   - [X] Superada (fecha: 2026-10-03)
 2. **register (R2)** — precondición: sesión cerrada. Abrir `/register` desde
    `link-register`, tocar `register-country` (último campo, o el último que
    abra teclado), teclado abierto → `register-submit`
    (`register.createAccount`) alcanzable desplazando y un toque lo pulsa.
-   - [x] Superada (fecha: 2026-10-04)
+   - [X] Superada (fecha: 2026-10-03)
 3. **reset-password (R3)** — precondición: app instalada, da igual la sesión.
    Abrir por deep link:
    `adb -s <ip:puerto> shell am start -a android.intent.action.VIEW -d "mobilepettracker://reset-password?token=<cualquiera>"`.
    Tocar `reset-password-confirm`, teclado abierto → `reset-submit`
    (`resetPassword.updatePassword`) alcanzable y un toque lo pulsa.
-   - [x] Superada (fecha: 2026-10-04)
+   - [X] Superada (fecha: 2026-10-03)
 4. **add-pet (R4)** — precondición: sesión iniciada. Abrir `/pets/add`, tocar
    `microchip-input` (último campo de texto), teclado abierto →
    `add-pet-submit` (`addPet.savePet`) alcanzable desplazando y un toque lo
    pulsa.
-   - [x] Superada (fecha: 2026-10-04)
+   - [X] Superada (fecha: 2026-10-03)
 5. **add-reminder (R5)** — precondición: sesión iniciada **y mascota
    seleccionada** (sin ella la pantalla vuelve a `/reminders`). Abrir
    `/add-reminder` desde Recordatorios, tocar `title-input`, teclado abierto →
    `add-reminder-submit` (`addReminder.saveReminder`) alcanzable y un toque lo
    pulsa.
-   - [x] Precondición cumplida (mascota seleccionada)
-   - [x] Superada (fecha: 2026-10-04)
+   - [X] Precondición cumplida (mascota seleccionada)
+   - [X] Superada (fecha: 2026-10-03)
 6. **pairing (R6)** — precondición: sesión iniciada, mascota seleccionada en
    **plan free y sin collar emparejado** (es la única rama que muestra
    `activation-code-input`; con collar emparejado o plan tracked no hay
@@ -390,15 +390,15 @@ falta un primer toque para cerrar el teclado).*
    `pairing-submit` (`pairing.pairCollar`) alcanzable y un toque lo pulsa
    (puede fallar la petición con un código inventado; lo que se mide es que
    el toque llega).
-   - [x] Precondición cumplida (plan free, collar sin emparejar)
-   - [x] Superada (fecha: 2026-10-04)
+   - [X] Precondición cumplida (plan free, collar sin emparejar)
+   - [X] Superada (fecha: 2026-10-03)
 7. **weight-log (R7)** — precondición: sesión iniciada **y mascota
    seleccionada** (sin ella redirige a `/health`). Abrir `/weight-log` desde
    Salud, tocar `weight-bc-input` (último campo), teclado abierto →
    `weight-submit` (`weightLog.logWeight`) alcanzable desplazando (está en
    mitad del scroll, sobre el historial) y un toque lo pulsa.
-   - [x] Precondición cumplida (mascota seleccionada)
-   - [x] Superada (fecha: 2026-10-04)
+   - [X] Precondición cumplida (mascota seleccionada)
+   - [X] Superada (fecha: 2026-10-03)
 
 Si alguna casilla falla, el humano anota la pantalla y lo que vio en
 `progress/impl_mobile-keyboard-avoiding-forms.md` y la feature no pasa a
