@@ -109,7 +109,7 @@ describe('#105 R9: meals history preserves the four screen states', () => {
     await waitFor(() => expect(screen.getByTestId('meals-history-error')).toHaveTextContent(es['common.somethingWentWrong']));
     expect(screen.queryByTestId('meals-history-grid')).toBeNull();
     expect(screen.getByTestId('meals-history-retry')).toHaveTextContent(es['common.retry']);
-    fireEvent.press(screen.getByTestId('meals-history-retry'));
+    await fireEvent.press(screen.getByTestId('meals-history-retry'));
     await waitFor(() => expect(screen.getByTestId('meals-history-grid')).toBeVisible());
     expect(mockGetMealsHistory).toHaveBeenCalledTimes(2);
     expect(mockGetMealsHistory).toHaveBeenLastCalledWith('http://example.test/v1', 'jwt-token', 'pet-1', '2026-01-01', '2026-01-31');
