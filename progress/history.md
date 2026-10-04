@@ -7475,6 +7475,14 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
   localhost:5432 no responde» porque el contenedor cloud no tiene daemon de
   Docker. e2e sin ejecutar (backend no tocado por #148). Log en
   `progress/init_148.log` (ignorado por git).
+- `./init.sh` del humano en Windows sobre `27ac5ed`: exit=1 en la etapa
+  móvil (1933 verdes, resto rojo); lint, typecheck y e2e no corrieron porque
+  el gate abortó ahí. Las siete suites de #148 pasan (login, register,
+  reset-password, add-pet, add-reminder, pairing y weight-log) y ningún fallo
+  toca sus ficheros, según el humano. El mismo HEAD pasó verde en Linux
+  (91/1939). Las suites rojas de Windows no se identificaron en el repo
+  (log local `progress/init_148.log`, ignorado por git): deuda aparte,
+  atribuida por el humano al entorno Windows.
 - Prueba de humo R10 en el dev build de Android (Android 15): siete casillas
   firmadas por el humano en `96a412c` (fecha 2026-10-03 en su hora local).
 
