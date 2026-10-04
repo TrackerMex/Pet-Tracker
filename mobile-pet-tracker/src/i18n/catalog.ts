@@ -342,6 +342,15 @@ export const en = {
   'profile.languageSpanish': 'Español',
   'profile.languageEnglish': 'English',
   'profile.changeLanguage': 'Change language',
+  "food.mealsHistory": "Meals history",
+  "food.mealsHistoryLinkSubtitle": "See which days meals were served",
+  "mealsHistory.mealsHistory": "Meals history",
+  "mealsHistory.previousMonth": "Previous month",
+  "mealsHistory.nextMonth": "Next month",
+  "mealsHistory.emptyMonth": "No meals were served this month",
+  "mealsHistory.noMealsOnDay": "No meals were served this day",
+  "mealsHistory.servedOne": "1 meal served",
+  "mealsHistory.servedMany": "{{count}} meals served",
 } as const;
 
 export type TranslationKey = keyof typeof en;
@@ -690,6 +699,15 @@ export const es: Record<TranslationKey, string> = {
   'profile.languageSpanish': 'Español',
   'profile.languageEnglish': 'English',
   'profile.changeLanguage': 'Cambiar idioma',
+  "food.mealsHistory": "Historial de comidas",
+  "food.mealsHistoryLinkSubtitle": "Ver qué días se sirvieron comidas",
+  "mealsHistory.mealsHistory": "Historial de comidas",
+  "mealsHistory.previousMonth": "Mes anterior",
+  "mealsHistory.nextMonth": "Mes siguiente",
+  "mealsHistory.emptyMonth": "Este mes no se sirvió ninguna comida",
+  "mealsHistory.noMealsOnDay": "Ese día no se sirvió ninguna comida",
+  "mealsHistory.servedOne": "1 comida servida",
+  "mealsHistory.servedMany": "{{count}} comidas servidas",
 };
 
 export const LOCALES = { es: 'es-MX', en: 'en-US' } as const;

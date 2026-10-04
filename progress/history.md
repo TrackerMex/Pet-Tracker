@@ -7364,6 +7364,33 @@ paralelo: Backend con #146 en `Pet-Tracker-wt-146`.
 - Merge de `main` en la rama (2026-10-03, sesión leader): `STATUS.md` y `history.md` se resolvieron conservando la versión de `main` (la rama partía de 37d0c8b3, inventario 54/59 ya caduco) y añadiendo solo estas dos entradas y la línea de «Estado actual». El PNG no tuvo conflicto.
 - Continuación: el usuario pidió subir el primer icono de la app y su imagen adjunta. Copiados a assets/images/pet-tracker-app-icon.png y assets/images/pet-tracker-notification-monochrome-original.png en la misma rama; integridad SHA-256 verificada para ambos. Se conserva el contenido original de los PNG. Rebase sobre la actualización remota ae68ec4b; conflictos de STATUS.md e history.md resueltos conservando la versión remota y añadiendo solo esta entrega.
 
+## Sesión 2026-10-04 — meals-history (id: 105)
+
+- **Feature:** historial de comidas servidas: calendario navegable mes a mes
+  con marcador por día y detalle al tocar, como subpantalla del stack desde
+  la pestaña de comidas; endpoint de rango arbitrario
+  (`GET /v1/pets/:petId/meals?from=&to=`) y método de rango en
+  `MealServingRepository`.
+- **Spec:** [[specs/meals-history/requirements|spec]] (firmada desde Notion
+  el 2026-10-03; enmiendas E1, E2 y E3 aprobadas por el humano en Notion).
+- **Acciones:** `explorer` (dos premisas del brief eran falsas y se
+  corrigieron), `spec_author`, gate humano, handoff a Codex CLI. Codex paró
+  tres veces por errores de la spec (ancla de `_layout` en R5, candados
+  agregados de `#65 R18`, tinta de hoy contra `#61 R4`) y cada parada cerró
+  con una enmienda firmada. Primer `reviewer`: RECHAZADO (B1: el e2e nuevo
+  fallaba el lint backend con 23 errores; B2: infra e2e no disponible en su
+  sandbox). Codex arregló B1 en `723eb95` sin tocar comportamiento; segundo
+  `reviewer` con la infra levantada (`docker compose up -d`): APROBADO.
+  Prueba de humo H1 superada por el humano en dev build de Android
+  (commit `7a91a26`).
+- **Resultado:** `./init.sh` EXIT=0 — backend unit 176/1348, infra 2/14,
+  móvil 92/1981, e2e 29 suites / 438 passed (8 skipped), lint y typecheck
+  verdes. Revisión en `progress/review_meals-history.md` (Revisión 2).
+- **Commits:** spec firmada `35b21a0d`; enmiendas `c93ccd5` (E1),
+  `67cb02c` (E2), `19b3ef7` (E3); Codex hasta `2a5919c`, B1 `723eb95`;
+  aprobación del reviewer `566d868`; H1 `7a91a26`.
+- **Estado final:** done
+
 ## #101 `mobile-app-and-notification-icons` — icono de la app, adaptive icon, splash, favicon e icono de notificación — 2026-10-04
 
 Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch

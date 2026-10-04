@@ -91,6 +91,7 @@ describe('R3: Card compartido elimina rounded arbitrario', () => {
     'home',
     'food',
     'meal-schedule',
+    'meals-history', // #105 R15
     'health',
     'weight-log',
     'profile',
@@ -448,6 +449,7 @@ describe('#87 R19: use-' + 'api no deja huella', () => {
     'screens/health/index.tsx': 0,
     'screens/map/index.tsx': 0,
     'screens/meal-schedule/index.tsx': 2, // #147 R8: el 401 de la edición de franjas
+    'screens/meals-history/index.tsx': 1, // #105 R15
     'screens/weight-log/index.tsx': 1,
     'screens/docs/index.tsx': 0,
     'screens/alerts/index.tsx': 1,
@@ -660,5 +662,23 @@ describe('#146 R17: el centro por defecto del mapa vive en un solo sitio', () =>
   });
   it('escribe las coordenadas por defecto solo en el componente del mapa', () => {
     expect(productionFilesMatching(/19\.4326|-99\.1332/)).toEqual([join('components', 'pet-map.tsx')]);
+  });
+});
+
+
+describe('#105 R15: meals history keeps the approved styling boundaries', () => {
+  const featureFiles = [
+    'app/meals-history.tsx',
+    'screens/meals-history/index.tsx',
+    'utils/month-grid.ts',
+  ];
+
+  it('keeps the three new sources free of styling escapes', () => {
+    const violations = featureFiles.flatMap(relativePath =>
+      MEALS_BAR_STYLE_ESCAPES.test(readFileSync(join(sourceRoot, relativePath), 'utf8'))
+        ? [relativePath]
+        : [],
+    );
+    expect(violations).toEqual([]);
   });
 });

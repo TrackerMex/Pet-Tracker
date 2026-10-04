@@ -1235,3 +1235,27 @@ describe('#113 R7: los nodos no-texto de la barra no llevan más estilo que el a
     expect(screen.getByTestId('food-plan-track').props.style).toBeUndefined();
   });
 });
+
+describe('#105 R14: Food opens served meals history', () => {
+  beforeEach(() => {
+    mockListPets.mockReset();
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetNutritionPlan.mockReset();
+    mockGetNutritionPlan.mockResolvedValue({ kind: 'ok', plan: makePlan() });
+  });
+
+  it('shows the history card immediately after the schedule and pushes its route', async () => {
+    await renderFood();
+    await waitFor(() => expect(screen.getByTestId('meals-history-link')).toBeVisible());
+    const card = screen.getByTestId('meals-history-link');
+    expect(screen.getByTestId('meals-history-link-title')).toHaveTextContent('Historial de comidas');
+    expect(screen.getByTestId('meals-history-link-title')).toHaveProp('className', 'text-base font-bold text-foreground');
+    expect(within(card).getByText('Ver qué días se sirvieron comidas')).toBeVisible();
+    expect(within(card).getByTestId('food-icon-chevron-right')).toHaveStyle({ color: 'foreground' });
+    const siblings = card.parent?.children ?? [];
+    const previous = siblings[siblings.indexOf(card) - 1];
+    expect(typeof previous === 'string' ? previous : previous?.props.testID).toBe('meal-schedule-link');
+    await fireEvent.press(card);
+    expect(mockRouter.push).toHaveBeenCalledWith('/meals-history');
+  });
+});

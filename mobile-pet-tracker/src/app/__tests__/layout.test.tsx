@@ -384,7 +384,7 @@ describe('#114 R1: la guarda de RootStack declara reminders y alerts tras las se
     const group = Children.toArray(stack?.children)[4];
     if (!isValidElement<{ children: ReactNode }>(group)) throw new Error('Expected protected group');
     const children = Children.toArray(group.props.children);
-    expect(children).toHaveLength(8 + 1 + 1 + 1); // #100 R2, #41 R4, #146 R5
+    expect(children).toHaveLength(8 + 1 + 1 + 1 + 1); // #100 R2, #41 R4, #146 R5, #105 R8
     expect(children.slice(6, 8).map((child) =>
       isValidElement<{ name: string; dangerouslySingular?: boolean }>(child)
         ? [child.type, child.props.name, child.props.dangerouslySingular]
@@ -410,7 +410,7 @@ describe('#100 R2: la guarda de RootStack declara el detalle de alerta tras aler
     const group = Children.toArray(stack?.children)[4];
     if (!isValidElement<{ children: ReactNode }>(group)) throw new Error('Expected protected group');
     const children = Children.toArray(group.props.children);
-    expect(children).toHaveLength(9 + 1 + 1); // #41 R4, #146 R5
+    expect(children).toHaveLength(9 + 1 + 1 + 1); // #41 R4, #146 R5, #105 R8
     const detail = children[8];
     expect(isValidElement<{ name: string; dangerouslySingular?: boolean }>(detail)
       ? [detail.type, detail.props.name, detail.props.dangerouslySingular]
@@ -449,7 +449,7 @@ describe('#41 R4: la guarda de RootStack declara las zonas seguras tras el detal
     const group = Children.toArray(stack?.children)[4];
     if (!isValidElement<{ children: ReactNode }>(group)) throw new Error('Expected protected group');
     const children = Children.toArray(group.props.children);
-    expect(children).toHaveLength(10 + 1); // #146 R5
+    expect(children).toHaveLength(10 + 1 + 1); // #146 R5, #105 R8
     const detail = children[9];
     expect(isValidElement<{ name: string; dangerouslySingular?: boolean }>(detail)
       ? [detail.type, detail.props.name, detail.props.dangerouslySingular]
@@ -488,7 +488,7 @@ describe('#146 R5: la guarda de RootStack declara el editor de zonas tras la lis
     const group = Children.toArray(stack?.children)[4];
     if (!isValidElement<{ children: ReactNode }>(group)) throw new Error('Expected protected group');
     const children = Children.toArray(group.props.children);
-    expect(children).toHaveLength(11);
+    expect(children).toHaveLength(11 + 1); // #105 R8
     const detail = children[10];
     expect(isValidElement<{ name: string; dangerouslySingular?: boolean }>(detail)
       ? [detail.type, detail.props.name, detail.props.dangerouslySingular]
@@ -540,5 +540,29 @@ describe('#114 R4: reminders y alerts declaran su cabecera nativa', () => {
       headerTitleStyle: { fontFamily: 'Inter-Bold' },
       headerShadowVisible: false,
     });
+  });
+});
+
+
+describe('#105 R8: meals history is the last protected detail', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockGetStoredTheme.mockResolvedValue(undefined);
+    mockGetStoredLanguage.mockResolvedValue(undefined);
+  });
+
+  it('declara meals-history como duodécimo hijo con cabecera nativa', async () => {
+    await render(<RootLayout />);
+    await waitFor(() => expect(screen.getByTestId('root-stack')).toBeTruthy());
+    const stack = jest.mocked(Stack).mock.calls.at(-1)?.[0];
+    const group = Children.toArray(stack?.children)[4];
+    if (!isValidElement<{ children: ReactNode }>(group)) throw new Error('Expected protected group');
+    const detail = Children.toArray(group.props.children)[11];
+    expect(isValidElement<{ name: string }>(detail)
+      ? [detail.type, detail.props.name]
+      : undefined).toEqual([Stack.Screen, 'meals-history']);
+    expect(isValidElement<{ options?: unknown }>(detail)
+      ? detail.props.options
+      : undefined).toMatchObject({ headerShown: true, title: 't:mealsHistory.mealsHistory' });
   });
 });

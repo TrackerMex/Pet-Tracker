@@ -204,6 +204,17 @@ export const R6_FOOD: UseRow[] = [
   { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.errorTimeNotInPlan' },
   { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.errorDuplicateTime' },
   { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.errorMealLimit' },
+  { file: 'src/app/_layout.tsx', key: 'mealsHistory.mealsHistory' }, // #105 R5
+  { file: 'src/app/(tabs)/food.tsx', key: 'food.mealsHistory' }, // #105 R5
+  { file: 'src/app/(tabs)/food.tsx', key: 'food.mealsHistoryLinkSubtitle' }, // #105 R5
+  { file: 'src/screens/meals-history/index.tsx', key: 'mealsHistory.previousMonth' }, // #105 R5
+  { file: 'src/screens/meals-history/index.tsx', key: 'mealsHistory.nextMonth' }, // #105 R5
+  { file: 'src/screens/meals-history/index.tsx', key: 'mealsHistory.emptyMonth' }, // #105 R5
+  { file: 'src/screens/meals-history/index.tsx', key: 'mealsHistory.noMealsOnDay' }, // #105 R5
+  { file: 'src/screens/meals-history/index.tsx', key: 'mealsHistory.servedOne' }, // #105 R5
+  { file: 'src/screens/meals-history/index.tsx', key: 'mealsHistory.servedMany' }, // #105 R5
+  { file: 'src/screens/meals-history/index.tsx', key: 'common.somethingWentWrong' }, // #105 R5
+  { file: 'src/screens/meals-history/index.tsx', key: 'common.retry' }, // #105 R5
 ];
 
 export const R7_PROFILE: UseRow[] = [

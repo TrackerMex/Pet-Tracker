@@ -3,6 +3,7 @@ import {
   moveMealTime,
   generateNutritionPlan,
   getNutritionPlan,
+  getMealsHistory,
   getNutritionProfile,
   serveMeal,
   unserveMeal,
@@ -495,5 +496,33 @@ describe('#147 R3: moveMealTime publica el PATCH y mapea por kind', () => {
   ])('PATCH mapea $label como la tabla de R2', async ({ backend, expected }) => {
     const fetchFn = jest.fn().mockResolvedValue(backend) as unknown as typeof fetch;
     await expect(moveMealTime(baseUrl, 'jwt-token', 'pet-1', '19:30', '20:05', fetchFn)).resolves.toEqual(expected);
+  });
+});
+
+describe('#105 R6: meals history API states', () => {
+  const from = '2026-01-01';
+  const to = '2026-01-31';
+  it('requests the exact range URL with a bearer token and returns the body', async () => {
+    const history = { from, to, today: '2026-01-15', days: [{ date: from, mealTimes: ['08:00'] }] };
+    const fetchFn = jest.fn().mockResolvedValue(response(200, history));
+    await expect(getMealsHistory(baseUrl, 'jwt-token', 'p1', from, to, fetchFn)).resolves.toEqual({ kind: 'ok', history });
+    expect(fetchFn).toHaveBeenCalledWith('http://example.test/v1/pets/p1/meals?from=2026-01-01&to=2026-01-31', { headers: { Authorization: 'Bearer jwt-token' } });
+  });
+  it.each([[401, 'unauthorized'], [404, 'not-found'], [400, 'error']] as const)('maps HTTP %i', async (status, kind) => {
+    const fetchFn = jest.fn().mockResolvedValue(response(status, {}));
+    await expect(getMealsHistory(baseUrl, 'jwt-token', 'p1', from, to, fetchFn)).resolves.toEqual({ kind });
+  });
+  it('avoids fetch when config is missing', async () => {
+    const fetchFn = jest.fn();
+    await expect(getMealsHistory(undefined, 'jwt-token', 'p1', from, to, fetchFn)).resolves.toEqual({ kind: 'missing-config' });
+    expect(fetchFn).not.toHaveBeenCalled();
+  });
+  it.each([invalidJsonResponse(200), response(200, null), response(200, [])])('rejects a non object or invalid JSON success body', async (result) => {
+    const fetchFn = jest.fn().mockResolvedValue(result);
+    await expect(getMealsHistory(baseUrl, 'jwt-token', 'p1', from, to, fetchFn)).resolves.toEqual({ kind: 'error' });
+  });
+  it('preserves an unreachable network result', async () => {
+    const fetchFn = jest.fn().mockRejectedValue(new Error('network down'));
+    await expect(getMealsHistory(baseUrl, 'jwt-token', 'p1', from, to, fetchFn)).resolves.toEqual({ kind: 'unreachable', message: 'network down' });
   });
 });

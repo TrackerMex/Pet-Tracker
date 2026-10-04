@@ -855,6 +855,20 @@ copy completa en cada una.
 | — | `mealSchedule.errorDuplicateTime` | `There is already a meal at that time` | `Ya hay una comida a esa hora` | ← añadida por #147 (R1)
 | — | `mealSchedule.errorMealLimit` | `The plan already has the maximum of 6 meals` | `El plan ya tiene el máximo de 6 comidas` | ← añadida por #147 (R1)
 
+### §2.18 — Añadidos por #105 — Historial de comidas
+
+| # | Clave | `en` | `es` | Origen |
+|---|---|---|---|---|
+| — | `food.mealsHistory` | `Meals history` | `Historial de comidas` | ← añadida por #105 (R5) |
+| — | `food.mealsHistoryLinkSubtitle` | `See which days meals were served` | `Ver qué días se sirvieron comidas` | ← añadida por #105 (R5) |
+| — | `mealsHistory.mealsHistory` | `Meals history` | `Historial de comidas` | ← añadida por #105 (R5) |
+| — | `mealsHistory.previousMonth` | `Previous month` | `Mes anterior` | ← añadida por #105 (R5) |
+| — | `mealsHistory.nextMonth` | `Next month` | `Mes siguiente` | ← añadida por #105 (R5) |
+| — | `mealsHistory.emptyMonth` | `No meals were served this month` | `Este mes no se sirvió ninguna comida` | ← añadida por #105 (R5) |
+| — | `mealsHistory.noMealsOnDay` | `No meals were served this day` | `Ese día no se sirvió ninguna comida` | ← añadida por #105 (R5) |
+| — | `mealsHistory.servedOne` | `1 meal served` | `1 comida servida` | ← añadida por #105 (R5) |
+| — | `mealsHistory.servedMany` | `{{count}} meals served` | `{{count}} comidas servidas` | ← añadida por #105 (R5) |
+
 ## 3. La infraestructura
 
 ### 3.1 Decisiones

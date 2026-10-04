@@ -336,6 +336,7 @@ describe('#62 R15: todo contador usa cifras tabulares', () => {
     [join('screens', 'weight-log', 'index.tsx'), 2],
     [join('screens', 'reminders', 'index.tsx'), 3],
     [join('screens', 'geofence-editor', 'index.tsx'), 1],
+    [join('screens', 'meals-history', 'index.tsx'), 2], // #105 R11
   ] as const;
 
   it.each(counters)('%s aplica TABULAR_NUMS a sus %i valores', (path, count) => {
@@ -349,7 +350,7 @@ describe('#62 R15: todo contador usa cifras tabulares', () => {
 
   it('#69 R10: mantiene la base cerrada más los deltas medidos', () => {
     expect(counters.reduce((total, [, count]) => total + count, 0)).toBe(
-      14 + 4 + 1 + 1 + 1 + 1 + 1, // #146 R18
+      14 + 4 + 1 + 1 + 1 + 1 + 1 + 2, // #146 R18, #105 R11
     );
   });
 
@@ -396,7 +397,7 @@ describe('#98 R10: los candados que esta feature no mueve', () => {
     expect(food.match(/style=\{CONTINUOUS_CORNER\}/g)).toHaveLength(2);
     expect(count(/style=\{CONTINUOUS_CORNER\}/g)).toBe(31 + 1); // #41 R9: geofences-link
     expect(count(/rounded-xl bg-accent(?=[\s'"`])/g)).toBe(13 + 1 + 1); // #146 R8, #146 R9
-    expect(count(/bg-accent-soft/g)).toBe(16 + 2); // #147 R4: meal-time-edit y add-meal-time-button
+    expect(count(/bg-accent-soft/g)).toBe(16 + 2 + 1); // #147 R4: meal-time-edit y add-meal-time-button; #105 R11
     expect(home.match(/text-accent-strong\b/g)).toHaveLength(2);
     expect(food.match(/text-accent-strong\b/g)).toHaveLength(1);
     expect(filesMatching(/\brounded-(?:2xl|lg|md|sm)\b/)).toEqual([]);
@@ -462,7 +463,7 @@ describe('#64 R9: el color categórico solo se nombra en el módulo de paleta', 
     const reminders = readSource(join('screens', 'reminders', 'index.tsx'));
     const docs = readSource(join('screens', 'docs', 'index.tsx'));
 
-    expect(accentSoftCount).toBe(16 + 2); // #147 R4
+    expect(accentSoftCount).toBe(16 + 2 + 1); // #147 R4, #105 R11
     expect(reminders.match(/bg-accent-soft/g)).toHaveLength(1);
     expect(docs.match(/bg-accent-soft/g)).toBeNull();
   });

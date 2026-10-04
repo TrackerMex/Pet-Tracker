@@ -53,7 +53,7 @@ describe('#65 R12: el catálogo tiene los dos idiomas y t resuelve claves y par�
     const spanishKeys = Object.keys(es).sort();
 
     expect(englishKeys).toHaveLength(
-      260 + 16 + 1 + 4 + 7 + 14 + 2 + 1 + 4 - 6 + 1 + 2 + 3 + 11 + 12 + 2 + 9,
+      260 + 16 + 1 + 4 + 7 + 14 + 2 + 1 + 4 - 6 + 1 + 2 + 3 + 11 + 12 + 2 + 9 + 9, // #105 R5
     );
     expect(spanishKeys).toEqual(englishKeys);
     for (const key of englishKeys) {
@@ -367,5 +367,63 @@ describe('#147 R1: el catálogo trae las nueve claves del horario editable', () 
         ),
       );
     }
+  });
+});
+
+describe('#105 R5: meals history copy matches the approved bilingual table', () => {
+  const translations = [
+  [
+    "food.mealsHistory",
+    "Meals history",
+    "Historial de comidas"
+  ],
+  [
+    "food.mealsHistoryLinkSubtitle",
+    "See which days meals were served",
+    "Ver qué días se sirvieron comidas"
+  ],
+  [
+    "mealsHistory.mealsHistory",
+    "Meals history",
+    "Historial de comidas"
+  ],
+  [
+    "mealsHistory.previousMonth",
+    "Previous month",
+    "Mes anterior"
+  ],
+  [
+    "mealsHistory.nextMonth",
+    "Next month",
+    "Mes siguiente"
+  ],
+  [
+    "mealsHistory.emptyMonth",
+    "No meals were served this month",
+    "Este mes no se sirvió ninguna comida"
+  ],
+  [
+    "mealsHistory.noMealsOnDay",
+    "No meals were served this day",
+    "Ese día no se sirvió ninguna comida"
+  ],
+  [
+    "mealsHistory.servedOne",
+    "1 meal served",
+    "1 comida servida"
+  ],
+  [
+    "mealsHistory.servedMany",
+    "{{count}} meals served",
+    "{{count}} comidas servidas"
+  ]
+] as const;
+  it.each(translations)('registers %s in both languages and the design table', (key, englishValue, spanishValue) => {
+    const english = en as Record<string, string>;
+    const spanish = es as Record<string, string>;
+    const languageDesign = readFileSync(join(process.cwd(), '../specs/mobile-ui-language/design.md'), 'utf8');
+    expect(english[key]).toBe(englishValue);
+    expect(spanish[key]).toBe(spanishValue);
+    expect(languageDesign).toMatch(new RegExp('\\| — \\| `' + escapeRegExp(key) + '`[^\\n]*← añadida por #105 \\(R5\\)'));
   });
 });
