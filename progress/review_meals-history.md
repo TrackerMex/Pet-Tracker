@@ -1,4 +1,42 @@
 # review: meals-history (#105)
+
+Veredicto vigente: APROBADO (Revisión 2). H1 sigue pendiente (humano).
+
+## Revisión 2
+Fecha: 2026-10-04
+Veredicto: APROBADO
+
+Rama `feature/105-meals-history`, HEAD `5cbb507` (código hasta `723eb95`). Revisión de los bloqueos B1 y B2 de la Revisión 1; el resto del checklist C2-C7 no cambió y se reafirma.
+
+### B1 — resuelto
+- `git diff dc1a0c5 723eb95` toca un único fichero: `backend-pet-tracker/test/meals-history.e2e-spec.ts` (30 inserciones, 24 borrados). Leí el diff completo: ningún `it`/`describe` cambió de nombre (los `#105 R<n>` intactos), ninguna aserción cambió de valor. Solo: import de tipo `MealsHistoryResponse`, `const body = response.body as MealsHistoryResponse` en lugar de acceder a `response.body` sin tipar, `expect.any(String) as unknown`, quitar `owner` no usado en `allows an active family member`, y reformateo prettier de la cadena `db.insert(users).values({...})`.
+- `grep eslint-disable` sobre ese fichero: sin coincidencias (no se usó).
+- `pnpm exec eslint "{src,apps,libs,test}/**/*.ts"` en `backend-pet-tracker` SIN `--fix`: exit=0, 0 problemas.
+- Cambios de `723eb95..HEAD` fuera del e2e: solo `progress/*` y `specs/meals-history/traceability.md` (fila R4, texto; sin filas pendientes nuevas).
+
+### B2 — resuelto
+- `docker ps`: `pet-tracker-postgres` (healthy) y `pet-tracker-localstack` (healthy) arriba antes de correr.
+- `./init.sh` completo corrido por mí: EXIT=0. Build OK; backend 176 suites / 1348 tests; infra 2 suites / 14; scripts `node --test` verdes (28, 5 y 15 pass, 0 fail); móvil 92 suites / 1981 tests / 1 snapshot; e2e 29 suites passed (3 skipped) / 438 passed + 8 skipped; Lint (backend con `--fix`, infra, móvil) sin errores; Typecheck sin errores; "Todo verde".
+- `git status --short` tras `init.sh` limpio: el `--fix` de lint no modificó nada (confirma que el árbol ya era lint-clean).
+
+### Aislamiento
+`git diff --name-only f43c8487 HEAD -- backend-pet-tracker/` contiene únicamente `backend-pet-tracker/test/meals-history.e2e-spec.ts` (el arreglo de B1). Sin cambios de código de aplicación backend.
+
+### Checklist (reafirmado)
+- [x] C2 Estado coherente (1 `in_progress`, `progress/current.md` actualizado)
+- [x] C3 Arquitectura (sin cambios desde Revisión 1)
+- [x] C4 TDD: cada R1-R15 con test que lo nombra; el commit de B1 es posterior y solo de tipado/formato de test
+- [x] C5 Trazabilidad: sin filas pendientes salvo H1 (`pendiente (humano)`), que no marco ni ejecuto
+- [x] C6 Spec aprobada (`status: approved`, casillas base, E1, E2, E3)
+- [x] C7 N/A: la feature no reemplaza nada existente
+- Las observaciones 1-6 de la Revisión 1 siguen vigentes y no bloquean (incl. el commit intermedio `5a19d59` no compilable y el tamaño de `impl_meals-history.md`).
+
+### Pendiente fuera del reviewer
+H1 (prueba humana) sigue abierta en `specs/meals-history/traceability.md` y `requirements.md`.
+
+---
+
+## Revisión 1
 Fecha: 2026-10-04
 Veredicto: RECHAZADO
 
