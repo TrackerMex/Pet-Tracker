@@ -1,6 +1,6 @@
 ---
 feature: "mobile-forgot-password"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec, mobile]
 ---
 
@@ -724,4 +724,4 @@ no pasa a `done`.
 
 ## Aprobación
 
-- [ ] Aprobado por humano
+- [x] Aprobado por humano
