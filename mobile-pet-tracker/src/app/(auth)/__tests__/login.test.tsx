@@ -1,7 +1,8 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
+import { DeviceEventEmitter, Platform } from 'react-native';
 
 import { login, type LoginState } from '../../../api/auth';
 import { useAuth, type AuthContextValue } from '../../../providers/auth-provider';
@@ -29,6 +30,7 @@ jest.mock('react-native-safe-area-context', () => ({
 }));
 
 const apiUrl = 'http://example.test/v1';
+const originalOS = Platform.OS;
 const mockLogin = jest.mocked(login);
 const mockUseAuth = jest.mocked(useAuth);
 const mockSignIn = jest.fn<Promise<void>, [string]>();
@@ -132,7 +134,7 @@ describe('#61 R8: login tiene contenedor de scroll con safe areas', () => {
   it('centra el contenido dentro de un ScrollView con los insets aplicados', async () => {
     await renderLogin();
 
-    const screenRoot = screen.getByTestId('screen-login');
+    const screenRoot = screen.getByTestId('login-form');
 
     expect(screenRoot.props.contentContainerStyle).toEqual({
       flexGrow: 1,
@@ -150,7 +152,7 @@ describe('#61 R8: login tiene contenedor de scroll con safe areas', () => {
     await renderLogin();
 
     expect(
-      screen.getByTestId('screen-login').props.contentContainerStyle,
+      screen.getByTestId('login-form').props.contentContainerStyle,
     ).not.toHaveProperty('alignItems');
   });
 });
@@ -171,5 +173,31 @@ describe('#127 R1: el botón de envío de login lleva su receta en el árbol', (
     expect(screen.getByTestId('login-submit').props.className).toBe(
       'pressable-feedback__root button__root button__root--variant-primary button__root--size-md w-full rounded-xl bg-accent',
     );
+  });
+});
+
+describe('#148 R1: login se aparta del teclado en Android', () => {
+  afterEach(() => {
+    (Platform as { OS: string }).OS = originalOS;
+  });
+
+  it('el host screen-login añade paddingBottom 200 al abrir el teclado', async () => {
+    (Platform as { OS: string }).OS = 'android';
+    await renderLogin();
+
+    const host = screen.getByTestId('screen-login');
+    expect(host).toHaveStyle({ paddingBottom: 0 });
+    await fireEvent(host, 'layout', {
+      persist() {},
+      nativeEvent: { layout: { x: 0, y: 0, width: 400, height: 700 } },
+    });
+    await act(async () => {
+      DeviceEventEmitter.emit('keyboardDidShow', {
+        startCoordinates: { screenX: 0, screenY: 800, width: 400, height: 0 },
+        endCoordinates: { screenX: 0, screenY: 500, width: 400, height: 300 },
+        duration: 0, easing: 'keyboard', isEventFromThisApp: true,
+      });
+    });
+    await waitFor(() => expect(screen.getByTestId('screen-login')).toHaveStyle({ paddingBottom: 200 }));
   });
 });
