@@ -1,20 +1,57 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { Redirect } from 'expo-router';
 import { Button, Skeleton } from 'heroui-native';
-import { ScrollView, Text, View } from 'react-native';
+import { useState } from 'react';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ChevronLeft, ChevronRight } from 'reicon-react-native';
 
 import { getMealsHistory } from '../../api/nutrition';
 import { nutritionKeys } from '../../api/query-keys';
 import { Card } from '../../components/card';
 import { useAuth } from '../../providers/auth-provider';
-import { useTranslate } from '../../providers/language-provider';
+import { useLocale, useTranslate } from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
-import { currentMonth, monthRange } from '../../utils/month-grid';
+import { TABULAR_NUMS } from '../../theme/native-styles';
+import { useThemeColors } from '../../theme/use-theme-colors';
+import { currentMonth, longDayLabel, monthGrid, monthRange, monthTitle, weekdayHeaders } from '../../utils/month-grid';
+
+function DayCell({ date, today, mealTimes, selected, locale }: {
+  date: string; today: string; mealTimes: string[]; selected: boolean; locale: string;
+}) {
+  const disabled = date > today;
+  return (
+    <Pressable
+      testID={`meals-history-day-${date}`}
+      className={`h-11 flex-1 items-center justify-center rounded-full${selected ? ' bg-accent-soft' : ''}`}
+      disabled={disabled}
+      accessibilityState={{ disabled, selected }}
+      accessibilityRole="button"
+      accessibilityLabel={longDayLabel(date, locale)}
+      style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+    >
+      {date === today ? (
+        <Text testID="meals-history-today" style={TABULAR_NUMS} className="text-sm font-bold text-accent">
+          {Number(date.slice(8))}
+        </Text>
+      ) : (
+        <Text style={TABULAR_NUMS} className={disabled ? 'text-sm font-semibold text-muted' : 'text-sm font-semibold text-foreground'}>
+          {Number(date.slice(8))}
+        </Text>
+      )}
+      {mealTimes.length >= 1 ? (
+        <View testID="meals-history-dot" className="mt-0.5 h-1.5 w-1.5 rounded-full bg-accent" />
+      ) : null}
+    </Pressable>
+  );
+}
 
 function MealsHistoryContent({ petId }: { petId: string }) {
   const { token, signOut } = useAuth();
   const t = useTranslate();
+  const locale = useLocale();
+  const [foreground] = useThemeColors(['foreground', 'muted']);
+  const [selectedDay] = useState<string | null>(null);
   const insets = useSafeAreaInsets();
   const visibleMonth = currentMonth(new Date());
   const { from, to } = monthRange(visibleMonth);
@@ -57,7 +94,33 @@ function MealsHistoryContent({ petId }: { petId: string }) {
       case 'ok':
         content = (
           <Card className="gap-4">
-            <View testID="meals-history-grid" className="gap-1" />
+            <View className="flex-row items-center justify-between">
+              <Pressable testID="meals-history-prev" accessibilityRole="button" accessibilityLabel={t('mealsHistory.previousMonth')} className="h-11 w-11 items-center justify-center rounded-full" style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}>
+                <ChevronLeft size={20} color={foreground} />
+              </Pressable>
+              <Text testID="meals-history-title" className="text-base font-bold text-foreground">
+                {monthTitle(visibleMonth, locale)}
+              </Text>
+              <Pressable testID="meals-history-next" accessibilityRole="button" accessibilityLabel={t('mealsHistory.nextMonth')} className="h-11 w-11 items-center justify-center rounded-full" style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}>
+                <ChevronRight size={20} color={foreground} />
+              </Pressable>
+            </View>
+            <View testID="meals-history-weekdays" className="flex-row">
+              {weekdayHeaders(locale).map(day => (
+                <Text key={day} className="flex-1 text-center text-xs font-normal text-muted">{day}</Text>
+              ))}
+            </View>
+            <View testID="meals-history-grid" className="gap-1">
+              {Array.from({ length: monthGrid(visibleMonth).length / 7 }, (_, row) => (
+                <View key={row} className="flex-row">
+                  {monthGrid(visibleMonth).slice(row * 7, row * 7 + 7).map((date, column) => date === null ? (
+                    <View key={column} testID="meals-history-filler" className="h-11 flex-1" />
+                  ) : (
+                    <DayCell key={date} date={date} today={data.history.today} locale={locale} selected={date === selectedDay} mealTimes={data.history.days.find(day => day.date === date)?.mealTimes ?? []} />
+                  ))}
+                </View>
+              ))}
+            </View>
             {data.history.days.every(day => day.mealTimes.length === 0) ? (
               <Text testID="meals-history-empty" className="text-sm text-muted">
                 {t('mealsHistory.emptyMonth')}
