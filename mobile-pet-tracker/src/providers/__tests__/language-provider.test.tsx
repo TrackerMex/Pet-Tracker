@@ -427,3 +427,31 @@ describe('#105 R5: meals history copy matches the approved bilingual table', () 
     expect(languageDesign).toMatch(new RegExp('\\| — \\| `' + escapeRegExp(key) + '`[^\\n]*← añadida por #105 \\(R5\\)'));
   });
 });
+
+
+describe('#117 R1: el catálogo trae las claves de recuperar contraseña', () => {
+  it('registra las seis claves en los dos idiomas, con {{email}} en forgot.sentTo, y en la tabla de la spec de idioma', () => {
+    const english = en as Record<string, string>;
+    const spanish = es as Record<string, string>;
+    const languageDesign = readFileSync(
+      join(process.cwd(), '../specs/mobile-ui-language/design.md'),
+      'utf8',
+    );
+    const translations = [
+      ["forgot.instructions", "Enter the email linked to your account and we'll send you a link to reset your password.", "Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña."],
+      ["forgot.checkYourEmail", "Check your email", "Revisa tu correo"],
+      ["forgot.sentTo", "If an account exists for {{email}}, we sent a link to reset your password. Check your inbox and spam folder.", "Si existe una cuenta para {{email}}, te enviamos un enlace para restablecer tu contraseña. Revisa tu bandeja de entrada y la carpeta de spam."],
+      ["forgot.resend", "Resend", "Reenviar"],
+      ["forgot.invalidEmail", "Enter a valid email address", "Ingresa un correo electrónico válido"],
+      ["forgot.tooManyAttempts", "Too many attempts. Try again later.", "Demasiados intentos. Inténtalo más tarde."],
+    ] as const;
+
+    for (const [key, englishValue, spanishValue] of translations) {
+      expect(english[key]).toBe(englishValue);
+      expect(spanish[key]).toBe(spanishValue);
+      expect(languageDesign).toContain(key);
+    }
+    expect(markerNames(english['forgot.sentTo'])).toEqual(['email']);
+    expect(markerNames(spanish['forgot.sentTo'])).toEqual(['email']);
+  });
+});
