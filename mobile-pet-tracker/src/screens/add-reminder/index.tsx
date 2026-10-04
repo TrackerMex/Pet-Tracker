@@ -1,9 +1,10 @@
+import { HeaderHeightContext } from 'expo-router/react-navigation';
 import { Host } from '@expo/ui';
 import ExpoDateTimePicker from '@expo/ui/community/datetime-picker';
 import { router, type Href } from 'expo-router';
 import { Button } from 'heroui-native';
-import { useEffect, useState } from 'react';
-import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { useContext, useEffect, useState } from 'react';
+import { KeyboardAvoidingView, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { createReminder } from '../../api/reminders';
@@ -50,6 +51,7 @@ function initialTime(): Date {
 }
 
 function AddReminderContent({ petId }: { petId: string }) {
+  const headerHeight = useContext(HeaderHeightContext);
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { signOut, token } = useAuth();
   const locale = useLocale();
@@ -126,184 +128,192 @@ function AddReminderContent({ petId }: { petId: string }) {
   const selectedAdvance = effectiveAdvance(pickedDueAt, advanceMinutes, now);
 
   return (
-    <ScrollView
+    <KeyboardAvoidingView
       testID="screen-add-reminder"
-      className="flex-1 bg-background"
-      contentInsetAdjustmentBehavior="automatic"
-      contentContainerStyle={{
-        padding: 24,
-        gap: 16,
-        paddingBottom: insets.bottom + 24,
-      }}
+      className="flex-1"
+      behavior="padding"
+      keyboardVerticalOffset={headerHeight}
     >
-      <View className="gap-2">
-        <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
-          {t('addReminder.type')}
-        </Text>
-        <View className="flex-row flex-wrap gap-2">
-          {REMINDER_TYPES.map(([reminderType, meta]) => {
-            const selected = type === reminderType;
-
-            return (
-              <Pressable
-                key={reminderType}
-                accessibilityRole="button"
-                accessibilityState={{ selected }}
-                testID={`type-chip-${reminderType}`}
-                hitSlop={TOUCH_SLOP}
-                className={
-                  selected
-                    ? 'rounded-full border border-accent bg-accent-soft px-3 py-2'
-                    : 'rounded-full border border-border bg-default px-3 py-2'
-                }
-                onPress={() => setType(reminderType)}
-              >
-                <Text className="text-sm font-semibold text-foreground">
-                  {`${meta.emoji} ${t(meta.labelKey)}`}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
-      </View>
-
-      <View className="gap-2">
-        <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
-          {t('addReminder.title')}
-        </Text>
-        <TextInput
-          testID="title-input"
-          className="rounded-xl bg-default px-4 py-3 text-foreground"
-          style={CONTINUOUS_CORNER}
-          maxLength={120}
-          placeholder={t('addReminder.reminderTitle')}
-          placeholderTextColor={muted}
-          value={title}
-          onChangeText={setTitle}
-        />
-      </View>
-
-      <View className="flex-row gap-3">
-        <View className="flex-1 gap-2">
-          <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
-            {t('addReminder.date')}
-          </Text>
-          <Pressable
-            accessibilityRole="button"
-            testID="date-field"
-            className="rounded-xl border border-border bg-default px-4 py-3"
-            style={CONTINUOUS_CORNER}
-            onPress={() => setShowDatePicker(true)}
-          >
-            <Text className={date ? 'text-foreground' : 'text-muted'}>
-              {date
-                ? date.toLocaleDateString(locale)
-                : t('addReminder.selectDate')}
-            </Text>
-          </Pressable>
-        </View>
-        <View className="flex-1 gap-2">
-          <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
-            {t('addReminder.time')}
-          </Text>
-          <Pressable
-            accessibilityRole="button"
-            testID="time-field"
-            className="rounded-xl border border-border bg-default px-4 py-3"
-            style={CONTINUOUS_CORNER}
-            onPress={() => setShowTimePicker(true)}
-          >
-            <Text className="text-foreground">
-              {time.toLocaleTimeString(locale, {
-                hour: '2-digit',
-                minute: '2-digit',
-              })}
-            </Text>
-          </Pressable>
-        </View>
-      </View>
-
-      {showDatePicker ? (
-        <Host>
-          <ExpoDateTimePicker
-            testID="date-picker"
-            mode="date"
-            minimumDate={new Date()}
-            presentation="dialog"
-            value={toPickerValue(date ?? new Date())}
-            onDismiss={() => setShowDatePicker(false)}
-            onValueChange={(_event, selectedDate) => {
-              setDate(fromPickerValue(selectedDate));
-              setNow(Date.now());
-              setShowDatePicker(false);
-            }}
-          />
-        </Host>
-      ) : null}
-
-      {showTimePicker ? (
-        <Host>
-          <ExpoDateTimePicker
-            testID="time-picker"
-            mode="time"
-            presentation="dialog"
-            value={time}
-            onDismiss={() => setShowTimePicker(false)}
-            onValueChange={(_event, selectedTime) => {
-              setTime(selectedTime);
-              setNow(Date.now());
-              setShowTimePicker(false);
-            }}
-          />
-        </Host>
-      ) : null}
-
-      <View className="gap-2">
-        <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
-          {t('addReminder.alert')}
-        </Text>
-        <View className="flex-row flex-wrap gap-2">
-          {ADVANCE_OPTIONS.map((option) => {
-            const selected = selectedAdvance === option.minutes;
-            const disabled = isAdvancePast(pickedDueAt, option.minutes, now);
-
-            return (
-              <Pressable
-                key={option.minutes}
-                accessibilityRole="button"
-                accessibilityState={{ selected }}
-                testID={`advance-chip-${option.minutes}`}
-                hitSlop={TOUCH_SLOP}
-                disabled={disabled}
-                className={`${selected ? 'rounded-full border border-accent bg-accent-soft px-3 py-2' : 'rounded-full border border-border bg-default px-3 py-2'}${disabled ? ' opacity-50' : ''}`}
-                onPress={() => setAdvanceMinutes(option.minutes)}
-              >
-                <Text className="text-sm font-semibold text-foreground">
-                  {t(option.labelKey)}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
-      </View>
-
-      <Button
-        testID="add-reminder-submit"
-        className="rounded-xl bg-accent"
-        isDisabled={submitting}
-        onPress={() => void handleSubmit()}
+      <ScrollView
+        testID="add-reminder-form"
+        className="flex-1 bg-background"
+        keyboardShouldPersistTaps="handled"
+        contentInsetAdjustmentBehavior="automatic"
+        contentContainerStyle={{
+          padding: 24,
+          gap: 16,
+          paddingBottom: insets.bottom + 24,
+        }}
       >
-        <Button.Label className="font-bold text-accent-foreground">
-          {t('addReminder.saveReminder')}
-        </Button.Label>
-      </Button>
+        <View className="gap-2">
+          <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
+            {t('addReminder.type')}
+          </Text>
+          <View className="flex-row flex-wrap gap-2">
+            {REMINDER_TYPES.map(([reminderType, meta]) => {
+              const selected = type === reminderType;
 
-      {formError ? (
-        <Text testID="add-reminder-error" className="text-danger">
-          {formError}
-        </Text>
-      ) : null}
-    </ScrollView>
+              return (
+                <Pressable
+                  key={reminderType}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected }}
+                  testID={`type-chip-${reminderType}`}
+                  hitSlop={TOUCH_SLOP}
+                  className={
+                    selected
+                      ? 'rounded-full border border-accent bg-accent-soft px-3 py-2'
+                      : 'rounded-full border border-border bg-default px-3 py-2'
+                  }
+                  onPress={() => setType(reminderType)}
+                >
+                  <Text className="text-sm font-semibold text-foreground">
+                    {`${meta.emoji} ${t(meta.labelKey)}`}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
+
+        <View className="gap-2">
+          <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
+            {t('addReminder.title')}
+          </Text>
+          <TextInput
+            testID="title-input"
+            className="rounded-xl bg-default px-4 py-3 text-foreground"
+            style={CONTINUOUS_CORNER}
+            maxLength={120}
+            placeholder={t('addReminder.reminderTitle')}
+            placeholderTextColor={muted}
+            value={title}
+            onChangeText={setTitle}
+          />
+        </View>
+
+        <View className="flex-row gap-3">
+          <View className="flex-1 gap-2">
+            <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
+              {t('addReminder.date')}
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              testID="date-field"
+              className="rounded-xl border border-border bg-default px-4 py-3"
+              style={CONTINUOUS_CORNER}
+              onPress={() => setShowDatePicker(true)}
+            >
+              <Text className={date ? 'text-foreground' : 'text-muted'}>
+                {date
+                  ? date.toLocaleDateString(locale)
+                  : t('addReminder.selectDate')}
+              </Text>
+            </Pressable>
+          </View>
+          <View className="flex-1 gap-2">
+            <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
+              {t('addReminder.time')}
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              testID="time-field"
+              className="rounded-xl border border-border bg-default px-4 py-3"
+              style={CONTINUOUS_CORNER}
+              onPress={() => setShowTimePicker(true)}
+            >
+              <Text className="text-foreground">
+                {time.toLocaleTimeString(locale, {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}
+              </Text>
+            </Pressable>
+          </View>
+        </View>
+
+        {showDatePicker ? (
+          <Host>
+            <ExpoDateTimePicker
+              testID="date-picker"
+              mode="date"
+              minimumDate={new Date()}
+              presentation="dialog"
+              value={toPickerValue(date ?? new Date())}
+              onDismiss={() => setShowDatePicker(false)}
+              onValueChange={(_event, selectedDate) => {
+                setDate(fromPickerValue(selectedDate));
+                setNow(Date.now());
+                setShowDatePicker(false);
+              }}
+            />
+          </Host>
+        ) : null}
+
+        {showTimePicker ? (
+          <Host>
+            <ExpoDateTimePicker
+              testID="time-picker"
+              mode="time"
+              presentation="dialog"
+              value={time}
+              onDismiss={() => setShowTimePicker(false)}
+              onValueChange={(_event, selectedTime) => {
+                setTime(selectedTime);
+                setNow(Date.now());
+                setShowTimePicker(false);
+              }}
+            />
+          </Host>
+        ) : null}
+
+        <View className="gap-2">
+          <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
+            {t('addReminder.alert')}
+          </Text>
+          <View className="flex-row flex-wrap gap-2">
+            {ADVANCE_OPTIONS.map((option) => {
+              const selected = selectedAdvance === option.minutes;
+              const disabled = isAdvancePast(pickedDueAt, option.minutes, now);
+
+              return (
+                <Pressable
+                  key={option.minutes}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected }}
+                  testID={`advance-chip-${option.minutes}`}
+                  hitSlop={TOUCH_SLOP}
+                  disabled={disabled}
+                  className={`${selected ? 'rounded-full border border-accent bg-accent-soft px-3 py-2' : 'rounded-full border border-border bg-default px-3 py-2'}${disabled ? ' opacity-50' : ''}`}
+                  onPress={() => setAdvanceMinutes(option.minutes)}
+                >
+                  <Text className="text-sm font-semibold text-foreground">
+                    {t(option.labelKey)}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
+
+        <Button
+          testID="add-reminder-submit"
+          className="rounded-xl bg-accent"
+          isDisabled={submitting}
+          onPress={() => void handleSubmit()}
+        >
+          <Button.Label className="font-bold text-accent-foreground">
+            {t('addReminder.saveReminder')}
+          </Button.Label>
+        </Button>
+
+        {formError ? (
+          <Text testID="add-reminder-error" className="text-danger">
+            {formError}
+          </Text>
+        ) : null}
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
