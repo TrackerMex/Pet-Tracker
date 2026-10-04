@@ -7,8 +7,9 @@ import type { TestInstance } from 'test-renderer';
 
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import { LanguageProvider } from '../../providers/language-provider';
+import { WelcomeScreen } from './index';
 
-const { existsSync, readFileSync } = jest.requireActual<typeof import('fs')>('fs');
+const { readFileSync } = jest.requireActual<typeof import('fs')>('fs');
 const { join } = jest.requireActual<typeof import('path')>('path');
 const sourceRoot = join(process.cwd(), 'src');
 
@@ -53,14 +54,8 @@ jest.mock('heroui-native', () => {
   };
 });
 
-// T3 red can query an absent screen without failing module resolution.
-const { WelcomeScreen } = existsSync(join(sourceRoot, 'screens/welcome/index.tsx'))
-  ? jest.requireActual('./index')
-  : { WelcomeScreen: () => null };
-
 function readSource(path: string): string {
-  const file = join(sourceRoot, path);
-  return existsSync(file) ? readFileSync(file, 'utf8') : '';
+  return readFileSync(join(sourceRoot, path), 'utf8');
 }
 
 const mockUseAuth = jest.mocked(useAuth);
