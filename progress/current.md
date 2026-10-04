@@ -54,6 +54,14 @@
   typecheck exit 0, lint exit 0. Mientras Codex implementa, esta sesión no
   toca el working tree; al terminar: `./init.sh` aquí (avisando a Frontend)
   y `reviewer`.
+- Primera corrida de Codex (2026-10-04): paró antes de T1, correctamente,
+  porque dos anclas del handoff transcribían filas de §1 de
+  `specs/mobile-ui-language/design.md` sin sus backticks. Base jest medida
+  por Codex igual a la del leader (8 suites / 243 tests, exit 0). El leader
+  reescribió las anclas como 27 comandos `grep` ejecutados contra el árbol
+  (27/27) y añadió dos avisos verificados: los contadores globales de
+  consistency y legibility excluyen `*.test.tsx`, y design-drift sí lee la
+  suite co-ubicada nueva. Nuevo H0 = el commit que corrige el handoff.
 - #118 (relatado por Frontend 2026-10-04): spec firmada en `16c8e565`, ya
   `in_progress`; Codex implementa en `/home/claude/sites/Pet-Tracker-wt-118`
   sobre `feature/118-mobile-welcome-splash`; el worktree principal volvió a

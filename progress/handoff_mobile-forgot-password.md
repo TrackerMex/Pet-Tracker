@@ -15,6 +15,14 @@ Antes de tocar nada, ejecuta `pwd`, `git branch --show-current` y
 progress/impl_mobile-forgot-password.md. El hash es H0 (HEAD al arrancar,
 el ultimo commit docs del leader): todos los `git diff --name-only` se miden contra el. Para si
 la branch no es feature/117-mobile-forgot-password.
+REANUDACION (2026-10-04): la primera corrida paro antes de T1 porque dos
+anclas de este handoff transcribian filas de specs/mobile-ui-language/design.md
+sin los backticks del fichero. Parada correcta. El leader ha reescrito la
+seccion de anclas como comandos verificados y ha commiteado el cambio: el
+HEAD actual es el NUEVO H0. Anadelo al impl existente debajo del anterior
+(no borres lo escrito), vuelve a ejecutar las anclas y sigue desde T1. La
+base jest ya medida (8 suites / 243 tests, exit=0) sigue valiendo:
+mobile-pet-tracker/ no ha cambiado; mide typecheck y lint, que faltaron.
 No toques /home/claude/sites/Pet-Tracker (#116), Pet-Tracker-wt-118 (#118,
 otro Codex), ni ningun otro worktree, ni cambies de branch en ninguno.
 node_modules ya esta instalado en mobile-pet-tracker/ (jest, typecheck y
@@ -126,57 +134,87 @@ R7 6 contando las 5 filas del it.each, R8 1, R9 1 nuevo + 2 reapuntados,
 R11 1). Cero `it` perdidos: los 4 de la suite eliminada se reapuntan o se
 invierten como dice §Aserciones existentes.
 
-Anclas (valores medidos sobre 6a85ea5c; anclas por CONTENIDO, los numeros
-de linea son orientativos). Verifica cada una al arrancar con grep y copia
-la salida al impl; si alguna no da EXACTAMENTE lo esperado, PARA y avisa:
-  language-provider.test.tsx: la suma de englishKeys termina en
-    `+ 9 + 9, // #105 R5` (1 coincidencia, linea ~56) -> T2 le anade
-    `+ 6` y T3 `- 1`; al cierre `+ 9 + 9 + 6 - 1, // #105 R5; #117 R1`
-  ui-language.test.ts: `expect(R1_AUTH).toHaveLength(29)` y el titulo
-    `'resuelve las 29 ocurrencias normativas'` (lineas ~70-71) -> T5
-    `29 + 3 // #117 R10` (titulo 32), T6 `29 + 7 // #117 R10` (titulo 36)
-  ui-language.test.ts: `toHaveLength(19 + 2 + 1 + 1 + 1 + 1 + 1 + 1 + 1)`
-    (1, linea ~490) -> `+ 1 - 1` con comentario
+Anclas. Son COMANDOS, no transcripciones: ejecutalos tal cual desde la
+raiz del worktree (/home/claude/sites/Pet-Tracker-wt-backend), uno a uno,
+y copia cada salida al impl. El valor tras `#` es la salida esperada; el
+leader los ejecuto todos sobre H0 y dieron exactamente eso (27 de 27). Si
+alguno da otra cosa, PARA. Ninguna otra cita de este handoff es ancla: el
+resto es descripcion y, ante cualquier diferencia de puntuacion, backticks
+o tildes entre este texto y el fichero, manda el fichero.
+
+M=mobile-pet-tracker/src
+grep -cF '+ 9 + 9, // #105 R5' $M/providers/__tests__/language-provider.test.tsx   # 1
+grep -cF 'expect(R1_AUTH).toHaveLength(29);' $M/__tests__/ui-language.test.ts    # 1
+grep -cF "it('resuelve las 29 ocurrencias normativas'" $M/__tests__/ui-language.test.ts   # 1
+grep -cF 'toHaveLength(19 + 2 + 1 + 1 + 1 + 1 + 1 + 1 + 1); // #100 R10, #41 R10, #146 R10, #105 R5' $M/__tests__/ui-language.test.ts   # 1
+grep -cF 'const SCREEN_FILES = ALL_USES.map((use) => use.file).filter(' $M/__tests__/ui-language.test.ts   # 1
+grep -ci 'forgot' $M/__tests__/ui-language.test.ts   # 0
+grep -cF "{ file: 'src/app/(auth)/forgot.tsx', key: 'forgot." $M/__tests__/ui-copy-table.ts   # 5
+grep -cF "join('app', '(auth)', 'forgot.tsx')" $M/__tests__/consistency-classnames.test.ts   # 4
+grep -cF 'expect(primaryRadius).toHaveLength(13 + 1 + 1); // #146 R8, #146 R9' $M/__tests__/consistency-classnames.test.ts   # 1
+grep -cF ')).toBe(13 + 1 + 1); // #146 R8, #146 R9' $M/__tests__/consistency-classnames.test.ts   # 1
+grep -cF 'expect(count(/style=\{CONTINUOUS_CORNER\}/g)).toBe(31 + 1); // #41 R9: geofences-link' $M/__tests__/consistency-classnames.test.ts   # 1
+grep -cF 'expect(count(/bg-accent-soft/g)).toBe(16 + 2 + 1);' $M/__tests__/consistency-classnames.test.ts   # 1
+grep -cF "[join('app', '(auth)', 'forgot.tsx'), 1]," $M/__tests__/legibility-classnames.test.ts   # 1
+grep -cF ').toBe(13 + 1 + 1);' $M/__tests__/legibility-classnames.test.ts   # 1
+grep -cF "it('no deja ningún text-accent suelto en las fuentes'" $M/__tests__/legibility-classnames.test.ts   # 1
+grep -ci 'forgot' $M/__tests__/design-drift.test.ts   # 0
+grep -c "^  'forgot\." $M/i18n/catalog.ts   # 10
+grep -cF "'forgot.comingSoon'" $M/i18n/catalog.ts   # 2
+grep -cF "import { HeaderHeightContext } from 'expo-router/react-navigation';" $M/screens/reset-password/index.tsx   # 1
+grep -cF '| `src/app/(auth)/forgot.tsx` | 5 | R1 |' specs/mobile-ui-language/design.md   # 1
+grep -cF '| `src/app/(auth)/__tests__/forgot.test.tsx` | 1 |' specs/mobile-ui-language/design.md   # 1
+grep -cF '**`mobile-pet-tracker/src/app/(auth)/forgot.tsx`** — 5 ocurrencias' specs/mobile-ui-language/design.md   # 1
+grep -cF '### §2.1 — R1 — grupo `(auth)` (29 ocurrencias, 23 claves)' specs/mobile-ui-language/design.md   # 1
+grep -cF "describe('#61 R8: forgot tiene contenedor de scroll con safe areas'" 'mobile-pet-tracker/src/app/(auth)/__tests__/forgot.test.tsx'   # 1
+grep -cF "describe('#127 R1: el botón de envío de forgot lleva su receta en el árbol'" 'mobile-pet-tracker/src/app/(auth)/__tests__/forgot.test.tsx'   # 1
+test ! -e $M/screens/forgot; echo "exit=$?"   # exit=0
+test ! -e mobile-pet-tracker/.expo/types/router.d.ts; echo "exit=$?"   # exit=0
+
+Que hace cada una durante la feature (deltas, no absolutos):
+  language-provider: T2 anade `+ 6` al final de la suma de englishKeys y
+    T3 `- 1`; al cierre la linea termina en
+    `+ 9 + 9 + 6 - 1, // #105 R5; #117 R1`
+  ui-language R1_AUTH: T5 `29 + 3 // #117 R10` (titulo con 32), T6
+    `29 + 7 // #117 R10` (titulo con 36)
+  ui-language SCREEN_FILES: `+ 1 - 1` con comentario
     `#117 R10: sale app/(auth)/forgot.tsx, entra screens/forgot/index.tsx`.
-    OJO: SCREEN_FILES se DERIVA de ALL_USES (`ALL_USES.map((use) => use.file)`
-    con dedupe, linea ~404): al mover las 5 filas de ui-copy-table.ts el
-    valor no cambia; el `+ 1 - 1` es declaracion, no ajuste
-  ui-copy-table.ts › R1_AUTH: 5 filas `file: 'src/app/(auth)/forgot.tsx'`
-    (lineas ~16-20: forgotPassword, comingSoon, email, sendRecoveryLink,
-    backToSignIn) -> T3 las 5 pasan a `src/screens/forgot/index.tsx`
-    (comingSoon se cambia por instructions); T5 +3 (checkYourEmail,
-    sentTo, resend); T6 +4 (invalidEmail, tooManyAttempts,
-    common.cannotReachServer, common.somethingWentWrong x1). Al cierre 12
-    filas de la pantalla y `grep -c "src/app/(auth)/forgot.tsx"` = 0.
-    checkUses exige igualdad fila/llamada `t(` POR COMMIT: cada fila entra
-    en el verde que anade su `t(`
-  consistency-classnames.test.ts: `join('app', '(auth)', 'forgot.tsx')`
-    = 4 coincidencias -> T3 las 4 pasan a
-    `join('screens', 'forgot', 'index.tsx')`; literales `toContain` sin
-    cambio; totales (CONTINUOUS_CORNER, `rounded-xl bg-accent`,
-    bg-accent-soft, directUses) sin cambio; al cierre grep = 0
-  legibility-classnames.test.ts: fila
-    `[join('app', '(auth)', 'forgot.tsx'), 1],` en inkSites (1, linea ~148)
-    -> ruta a `join('screens', 'forgot', 'index.tsx')`, cuenta sigue 1;
-    suma `13 + 1 + 1` y guards sin cambio; al cierre grep = 0
-  design-drift.test.ts: `grep -ci forgot` = 0 -> sigue 0 (nada se anade)
-  ui-language.test.ts: `grep -ci forgot` = 0 -> solo el comentario del
-    delta de SCREEN_FILES, nada en codigo ni tablas
-  src/i18n/catalog.ts: 5 claves `'forgot.` en `en` (lineas ~10-14) y 5 en
-    `es` (~367-371), comingSoon incluida en ambas
-  src/screens/reset-password/index.tsx: `import { HeaderHeightContext }
-    from 'expo-router/react-navigation';` (linea 1)
-  specs/mobile-ui-language/design.md: `| src/app/(auth)/forgot.tsx | 5 | R1 |`
-    (§1, ~81), `| src/app/(auth)/__tests__/forgot.test.tsx | 1 |` (~105),
-    `**mobile-pet-tracker/src/app/(auth)/forgot.tsx** — 5 ocurrencias`
-    (§2.1, ~231) y la cabecera de §2.1, cuyo literal real es
-    `### §2.1 — R1 — grupo `(auth)` (29 ocurrencias, 23 claves)` (con
-    backticks alrededor de (auth); la fila de §Candados globales de
-    requirements.md los omite: localizala con
-    `grep -n "29 ocurrencias, 23 claves"`, 1 coincidencia, linea ~214)
-    -> §Candados globales de requirements.md dice que pasa a ser cada una
-  src/screens/forgot/ NO existe
-  mobile-pet-tracker/.expo/types/router.d.ts NO existe
+    SCREEN_FILES se DERIVA de ALL_USES con dedupe: al mover las filas el
+    valor no cambia; el `+ 1 - 1` es declaracion, no ajuste. Fuera de ese
+    comentario, `grep -ci forgot` sigue en 0 en ui-language.test.ts
+  ui-copy-table.ts › R1_AUTH: las 5 filas de forgot pasan en T3 a
+    `src/screens/forgot/index.tsx` (comingSoon se cambia por
+    instructions); T5 +3 (checkYourEmail, sentTo, resend); T6 +4
+    (invalidEmail, tooManyAttempts, common.cannotReachServer,
+    common.somethingWentWrong x1). Al cierre 12 filas de la pantalla y 0 de
+    `src/app/(auth)/forgot.tsx`. No se toca el array `blocks` de ese
+    fichero. checkUses exige igualdad fila/llamada `t(` POR COMMIT: cada
+    fila entra en el verde que anade su `t(`
+  consistency-classnames: las 4 rutas pasan en T3 a
+    `join('screens', 'forgot', 'index.tsx')`, literales `toContain` sin
+    cambio. Las cuatro cuentas globales de arriba (primaryRadius,
+    `rounded-xl bg-accent`, CONTINUOUS_CORNER, bg-accent-soft) NO cambian:
+    su sourceFiles barre todo src/ y excluye `*.test.tsx`. Al cierre la
+    ruta vieja da 0
+  legibility-classnames: la fila de inkSites cambia de ruta en T3 a
+    `join('screens', 'forgot', 'index.tsx')` con cuenta 1; no se anade
+    fila (0 `it` nuevos); `13 + 1 + 1` y el guard de text-accent suelto
+    sin cambio. Al cierre la ruta vieja da 0
+  design-drift: no se toca y `grep -ci forgot` sigue en 0. OJO: su
+    sourceFiles SI lee los `*.test.tsx` co-ubicados (solo excluye carpetas
+    `__tests__`), asi que la suite nueva src/screens/forgot/index.test.tsx
+    entra en sus barridos C8 de clases con corchetes, `rounded-[...]` y
+    `text-[...]` arbitrarios. No escribas en ella ningun literal con
+    guion seguido de corchete (por ejemplo una regex `/rounded-[a-z]+/`):
+    aserta por className exacto o por toContain
+  catalog.ts: T2 +6 claves forgot.* por idioma; T3 retira comingSoon de
+    los dos (al cierre 20 lineas `^  'forgot.`, 10 por idioma, y 0 comingSoon)
+  specs/mobile-ui-language/design.md: las cuatro filas ancladas cambian
+    como dice §Candados globales de requirements.md
+  src/app/(auth)/__tests__/forgot.test.tsx: se elimina en T3; sus
+    describe `#61 R8` y `#127 R1` se reapuntan a la suite nueva con los
+    mismos titulos; los dos `it` de R9 se reapuntan o invierten como dice
+    §Aserciones existentes que se reapuntan
 Los `+N` de la spec son DELTAS sobre lo que midas, nunca absolutos.
 
 == COMMITS ==
