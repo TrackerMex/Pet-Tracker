@@ -11399,3 +11399,263 @@ Se actualizan únicamente las filas R10, R11 y R15 y la nota «Reanudacion 3» e
 
 
 Comprobación documental antes del último commit, desde la raíz y sin pipe: `git diff --check 2edf8c38 > /tmp/meals105-resume3-close-docs-working-check.log 2>&1; echo "exit=$?"` → exit=0, vacío (incluye las ediciones del informe y de trazabilidad). Repetición final de aislamiento de backend: `git diff --name-only f43c8487 HEAD -- backend-pet-tracker/ > /tmp/meals105-resume3-final-backend-diff.log 2>&1; echo "exit=$?"` → exit=0, vacío.
+
+
+## Rebote B1
+
+### Guardas iniciales: parada obligatoria
+
+Comandos ejecutados antes de cualquier edición, desde la raíz; todos exit=0:
+
+```text
+$ pwd
+/home/claude/sites/Pet-Tracker
+$ git branch --show-current
+feature/105-meals-history
+$ git rev-parse --short HEAD
+dc1a0c57
+$ git rev-parse --short HEAD~1
+2a5919cd
+$ git status --short
+```
+
+Branch correcta y status inicialmente vacío, pero falla la guarda de ascendencia: HEAD~1 es `2a5919cd`, no el commit exigido `dc1a0c5` (`dc1a0c57`). HEAD sigue siendo el cierre documental de Reanudacion 3; no está presente como HEAD el commit del leader que añade B1.
+
+Se aplica la orden «PARA»: no se mide lint ni se modifica el e2e, mobile, src, specs o trazabilidad; no se cambia de branch ni se trae o reescribe historia. Se registra exclusivamente esta evidencia en el informe, sin commit, para conservar HEAD y señalar la guarda incumplida. H0 sigue siendo `2edf8c38`; H1 humano permanece pendiente. B1 no se ha implementado ni validado.
+
+
+## Rebote B1
+
+### Reanudación con las guardas corregidas
+
+Se conserva arriba el registro de la parada inicial. El handoff corregido es autosuficiente: el commit del leader no llegó a esta branch y no se busca ningún fichero adicional de handoff o veredicto.
+
+Comandos ejecutados antes de cualquier edición de esta continuación, desde la raíz; todos exit=0:
+
+```text
+$ pwd
+/home/claude/sites/Pet-Tracker
+$ git branch --show-current
+feature/105-meals-history
+$ git rev-parse --short HEAD
+dc1a0c57
+$ git rev-parse --short HEAD~1
+2a5919cd
+$ git status --short
+ M progress/impl_meals-history.md
+```
+
+Coinciden las guardas corregidas: HEAD `dc1a0c5` y su padre `2a5919c` (prefijos de los hashes mostrados); el único fichero sucio es el informe, autorizado para conservar la parada anterior. H0 sigue siendo `2edf8c38`. Alcance de B1: exclusivamente test/meals-history.e2e-spec.ts y, al cerrar, este informe y la fila R4 de traceability.md. Sin cambios de comportamiento, sin tests nuevos, sin par rojo/verde; H1 sigue reservado al humano.
+
+### B1 paso 1: medida inicial de lint, sin --fix
+
+Desde backend-pet-tracker/, sin pipe:
+`pnpm exec eslint "{src,apps,libs,test}/**/*.ts" > /tmp/meals105-b1-lint-before.log 2>&1; echo "exit=$?"` → exit=1.
+
+Medida propia: 23 errores y 0 advertencias, todos en test/meals-history.e2e-spec.ts. Coincide con los 23 del reviewer; difiere de los 12 de la reproducción del leader posterior a --fix. No se ejecuta pnpm run lint ni --fix. Salida completa de ESLint:
+
+```text
+/home/claude/sites/Pet-Tracker/backend-pet-tracker/test/meals-history.e2e-spec.ts
+   39:13  error  Replace `⏎······.insert(users)⏎······` with `.insert(users)`  prettier/prettier
+   42:7   error  Delete `··`                                                   prettier/prettier
+   43:1   error  Replace `········` with `······`                              prettier/prettier
+   44:1   error  Delete `··`                                                   prettier/prettier
+   45:1   error  Delete `··`                                                   prettier/prettier
+   46:7   error  Delete `··`                                                   prettier/prettier
+   47:1   error  Delete `··`                                                   prettier/prettier
+   48:7   error  Delete `··`                                                   prettier/prettier
+   49:1   error  Delete `··`                                                   prettier/prettier
+   50:7   error  Delete `··`                                                   prettier/prettier
+   51:1   error  Delete `··`                                                   prettier/prettier
+  125:28  error  Unsafe member access .days on an `any` value                  @typescript-eslint/no-unsafe-member-access
+  142:28  error  Unsafe member access .days on an `any` value                  @typescript-eslint/no-unsafe-member-access
+  188:28  error  Unsafe member access .days on an `any` value                  @typescript-eslint/no-unsafe-member-access
+  201:28  error  Unsafe member access .days on an `any` value                  @typescript-eslint/no-unsafe-member-access
+  215:28  error  Unsafe member access .days on an `any` value                  @typescript-eslint/no-unsafe-member-access
+  229:28  error  Unsafe member access .from on an `any` value                  @typescript-eslint/no-unsafe-member-access
+  230:28  error  Unsafe member access .days on an `any` value                  @typescript-eslint/no-unsafe-member-access
+  240:30  error  Unsafe assignment of an `any` value                           @typescript-eslint/no-unsafe-assignment
+  250:28  error  Unsafe member access .days on an `any` value                  @typescript-eslint/no-unsafe-member-access
+  251:14  error  Unsafe call of an `any` typed value                           @typescript-eslint/no-unsafe-call
+  251:28  error  Unsafe member access .days on an `any` value                  @typescript-eslint/no-unsafe-member-access
+  257:15  error  'owner' is assigned a value but never used                    @typescript-eslint/no-unused-vars
+
+✖ 23 problems (23 errors, 0 warnings)
+  11 errors and 0 warnings potentially fixable with the `--fix` option.
+```
+
+Se leyó entero el fichero afectado y test/meals.e2e-spec.ts como referencia de tipado. Se verificó el tipo ya exportado MealsHistoryResponse en nutrition.mapper.ts, sin editar src. Desglose de esta medida: 11 prettier/prettier; 9 no-unsafe-member-access; 1 no-unsafe-assignment; 1 no-unsafe-call; 1 no-unused-vars. El no-unsafe-assignment de la línea 240 corresponde al matcher expect.any(String), no a la lectura del cuerpo: se conserva su runtime y se tipa como unknown. La variable owner sin usar está en «allows an active family member»: fixture crea al dueño y la mascota; la petición usa el miembro activo. No falta ninguna aserción de owner: basta conservar el pet de fixture, sin cambiar el setup ni la petición.
+
+### B1 paso 2: corrección manual y comprobación de formato
+
+Se corrigió únicamente test/meals-history.e2e-spec.ts: bloque db.insert(users) con el formato del test de referencia; import type de MealsHistoryResponse y siete cuerpos de respuesta HTTP 200 tipados antes de leer days/from; matcher expect.any(String) tipado como unknown sin cambiar su objeto ni significado; destructuring de fixture('member') conserva solo pet. Los datos sembrados, pet del dueño, alta del miembro, peticiones HTTP, resultados esperados y todos los it se conservan. No se usó --fix, --write, eslint-disable, @ts-ignore ni as any. No hay literales nuevos de copy ni cambios de src, mobile o configuración.
+
+Comprobación de formato del candidato, desde backend-pet-tracker/ y sin pipe:
+`pnpm exec prettier --check test/meals-history.e2e-spec.ts > /tmp/meals105-b1-prettier-candidate.log 2>&1; echo "exit=$?"` → exit=0.
+
+```text
+Checking formatting...
+All matched files use Prettier code style!
+```
+
+El e2e se verifica antes de crear el único commit de corrección, para no commitear un candidato con it fallidos. No corresponde un par rojo/verde porque B1 cambia formato y tipos, no comportamiento. El lint inicial es evidencia del bloqueo, no un test de conducta nuevo.
+
+### B1 cierre: e2e history y meals sin regresión
+
+Comando (sin pipe): `pnpm test:e2e -- test/meals-history.e2e-spec.ts test/meals.e2e-spec.ts` → `/tmp/meals105-b1-e2e.log`, exit=0.
+
+```text
+Test Suites: 2 passed, 2 total
+Tests:       37 passed, 37 total
+Snapshots:   0 total
+Time:        11.225 s
+Ran all test suites matching test/meals-history.e2e-spec.ts|test/meals.e2e-spec.ts.
+
+```
+
+### B1 cierre: lint, tsc, Prettier e infra
+
+Desde backend-pet-tracker/, cada comando sin pipe y con redirección y exit independientes:
+
+```text
+$ pnpm exec eslint "{src,apps,libs,test}/**/*.ts" > /tmp/meals105-b1-lint-after.log 2>&1; echo "exit=$?"
+exit=0
+(log vacío: 0 errores, 0 advertencias)
+$ pnpm exec tsc --noEmit > /tmp/meals105-b1-tsc.log 2>&1; echo "exit=$?"
+exit=0
+(log vacío)
+$ pnpm exec prettier --check test/meals-history.e2e-spec.ts > /tmp/meals105-b1-prettier-close.log 2>&1; echo "exit=$?"
+exit=0
+Checking formatting...
+All matched files use Prettier code style!
+$ pnpm test:e2e -- test/meals-history.e2e-spec.ts test/meals.e2e-spec.ts > /tmp/meals105-b1-e2e.log 2>&1; echo "exit=$?"
+exit=0
+```
+
+E2e: las dos suites pedidas, 37 tests verdes: 15 de #105 (R1: 2; R2: 5, incluyendo las tres fechas parametrizadas; R4: 8) y 22 de meals.e2e-spec.ts. Ningún it falla; 0 skipped. No cambian los nombres, escenarios ni resultados esperados de los 15 de #105. No hay tests nuevos.
+
+Se amplían en este informe los comandos del cierre R15 para incluir los dos lints de LINT_CMD, sin editar tasks.md ni otra spec. Desde la raíz, sin pipe:
+
+```text
+$ pnpm -C infra run lint > /tmp/meals105-b1-infra-lint.log 2>&1; echo "exit=$?"
+exit=0
+> pet-tracker-infra@0.0.1 lint /home/claude/sites/Pet-Tracker/infra
+> eslint "{bin,lib,test}/**/*.ts"
+```
+
+Infra lint: 0 errores y 0 advertencias. Solo se ejecuta lint, sin CDK ni crear recursos.
+
+### B1 cierre: backend unit verde
+
+Comando (sin pipe): `pnpm test` → `/tmp/meals105-b1-unit.log`, exit=0.
+
+```text
+Test Suites: 176 passed, 176 total
+Tests:       1348 passed, 1348 total
+Snapshots:   0 total
+Time:        18.758 s, estimated 19 s
+Ran all test suites.
+
+```
+
+### B1 paso 3: único commit de corrección
+
+`723eb955 test(nutrition): lint-clean meals history e2e (#105 R4)`.
+
+Cuerpo literal del commit: «sin cambio de comportamiento; 15 e2e conservados».
+
+El commit contiene solo backend-pet-tracker/test/meals-history.e2e-spec.ts. Se comprobó que los describe/it y las filas de it.each coinciden con HEAD anterior. No se añade ni elimina ningún test; no hay par rojo/verde porque la corrección es de formato y tipos. La aceptación y los resultados esperados son los mismos.
+
+### B1 cierre: unit y aislamiento de cambios
+
+Desde backend-pet-tracker/, sin pipe: `pnpm test > /tmp/meals105-b1-unit.log 2>&1; echo "exit=$?"` → exit=0, 176 suites / 1348 tests (resumen arriba). Cero regresiones y 0 skipped nuevos. Delta de B1: +0 suites / +0 tests en backend unit, e2e y móvil. Los deltas globales de #105 respecto a la base siguen siendo backend unit +2/+13, e2e +1/+15 y móvil +2/+68.
+
+Desde la raíz, cada comando sin pipe y con su exit independiente:
+
+```text
+$ git diff --name-only dc1a0c5 HEAD > /tmp/meals105-b1-name-only-code.log 2>&1; echo "exit=$?"
+exit=0
+backend-pet-tracker/test/meals-history.e2e-spec.ts
+$ git diff --check 2edf8c38 HEAD > /tmp/meals105-b1-diff-check.log 2>&1; echo "exit=$?"
+exit=0
+(log vacío)
+```
+
+HEAD de esa medición es 723eb955. Los únicos cambios pendientes para el commit documental son este informe (incluye la parada por guarda conservada) y traceability.md, donde se edita exclusivamente la fila R4 para añadir 723eb955 y e2e lint-clean. No se edita tasks.md, mobile, src ni otro test.
+
+Comando adicional de cierre R15 desde la raíz, sin pipe:
+`pnpm -C backend-pet-tracker exec eslint "{src,apps,libs,test}/**/*.ts" > /tmp/meals105-b1-root-backend-lint.log 2>&1; echo "exit=$?"` → exit=0, log vacío, 0 errores y 0 advertencias. Quedan medidos los dos comandos de lint omitidos anteriormente: backend sin --fix e infra run lint.
+
+### B1 cierre desde H0 y ficheros protegidos
+
+Desde la raíz, comandos sin pipe y con exit independientes:
+
+```text
+$ git diff --name-only dc1a0c5 HEAD -- mobile-pet-tracker/ backend-pet-tracker/src/ > /tmp/meals105-b1-protected-diff.log 2>&1; echo "exit=$?"
+exit=0
+(log vacío: mobile y src intactos)
+$ git diff --stat origin/main -- '*package.json' '*bun.lock' '*pnpm-lock.yaml' > /tmp/meals105-b1-dependencies.log 2>&1; echo "exit=$?"
+exit=0
+(log vacío)
+$ git diff --name-only 2edf8c38 HEAD > /tmp/meals105-b1-name-only-h0.log 2>&1; echo "exit=$?"
+exit=0
+```
+
+Salida completa desde H0 en 723eb955 (la lista no cambia respecto a Reanudacion 3):
+
+```text
+backend-pet-tracker/src/modules/nutrition/application/dto/meal.dto.ts
+backend-pet-tracker/src/modules/nutrition/application/use-cases/get-meals-history.use-case.spec.ts
+backend-pet-tracker/src/modules/nutrition/application/use-cases/get-meals-history.use-case.ts
+backend-pet-tracker/src/modules/nutrition/domain/errors/nutrition.errors.ts
+backend-pet-tracker/src/modules/nutrition/domain/nutrition.constants.ts
+backend-pet-tracker/src/modules/nutrition/domain/repositories/meal-serving.repository.ts
+backend-pet-tracker/src/modules/nutrition/infrastructure/mappers/nutrition-error.mapper.spec.ts
+backend-pet-tracker/src/modules/nutrition/infrastructure/mappers/nutrition-error.mapper.ts
+backend-pet-tracker/src/modules/nutrition/infrastructure/mappers/nutrition.mapper.ts
+backend-pet-tracker/src/modules/nutrition/infrastructure/meals.controller.ts
+backend-pet-tracker/src/modules/nutrition/infrastructure/repositories/meal-serving.drizzle.repository.ts
+backend-pet-tracker/src/modules/nutrition/nutrition.module.ts
+backend-pet-tracker/test/meals-history.e2e-spec.ts
+mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+mobile-pet-tracker/src/__tests__/design-drift.test.ts
+mobile-pet-tracker/src/__tests__/ui-copy-table.ts
+mobile-pet-tracker/src/__tests__/ui-language.test.ts
+mobile-pet-tracker/src/api/__tests__/nutrition.test.ts
+mobile-pet-tracker/src/api/__tests__/query-keys.test.ts
+mobile-pet-tracker/src/api/nutrition.ts
+mobile-pet-tracker/src/api/query-keys.ts
+mobile-pet-tracker/src/api/types.ts
+mobile-pet-tracker/src/app/(tabs)/__tests__/food.test.tsx
+mobile-pet-tracker/src/app/(tabs)/food.tsx
+mobile-pet-tracker/src/app/__tests__/detail-stack.guard.test.tsx
+mobile-pet-tracker/src/app/__tests__/detail-stack.navigation.test.tsx
+mobile-pet-tracker/src/app/__tests__/detail-stack.test.tsx
+mobile-pet-tracker/src/app/__tests__/layout.test.tsx
+mobile-pet-tracker/src/app/_layout.tsx
+mobile-pet-tracker/src/app/meals-history.tsx
+mobile-pet-tracker/src/i18n/catalog.ts
+mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx
+mobile-pet-tracker/src/screens/meals-history/index.test.tsx
+mobile-pet-tracker/src/screens/meals-history/index.tsx
+mobile-pet-tracker/src/utils/__tests__/month-grid.test.ts
+mobile-pet-tracker/src/utils/month-grid.ts
+progress/current.md
+progress/handoff_meals-history.md
+progress/impl_meals-history.md
+specs/meals-history/design.md
+specs/meals-history/requirements.md
+specs/meals-history/tasks.md
+specs/meals-history/traceability.md
+specs/mobile-ui-language/design.md
+```
+
+Los ficheros del leader presentes en ese diff desde H0 conservan la atribución documentada en las reanudaciones anteriores. B1 cambia solo el e2e ya autorizado; el commit documental añade exclusivamente las ediciones de este informe y la fila R4 de trazabilidad. Los deltas por fichero de la tabla de Reanudacion 3 quedan iguales: el único test editado en B1, meals-history.e2e-spec.ts, conserva sus 15 tests y su suite, sin nuevos tests ni suites. El it extra de R3 permanece intacto.
+
+### B1 paso 5: cierre documental
+
+Commit documental: `docs(meals-history): note lint-clean e2e in #105 R4 traceability`, exclusivamente progress/impl_meals-history.md (parada por guarda y cierre del rebote) y specs/meals-history/traceability.md (solo fila R4).
+
+B1 resuelto en el ámbito pedido: 23 errores iniciales → 0 errores y 0 advertencias; typecheck y Prettier exit=0; 15 e2e de #105 y 22 de meals verdes; backend unit 176/1348 verde; infra lint exit=0; diff-check desde H0 exit=0. No se rehace ningún bloque ni se altera comportamiento. No se ejecuta init.sh: el reviewer vuelve a correr ese gate. H1 humano sigue pendiente y no se marca. No se hace push ni se abre PR en esta ronda.
+
+Comprobación de las ediciones documentales antes de su commit, desde la raíz y sin pipe: `git diff --check 2edf8c38 > /tmp/meals105-b1-docs-working-check.log 2>&1; echo "exit=$?"` → exit=0, log vacío. La comprobación de trazabilidad contra dc1a0c5 confirma una única fila distinta: R4; el resto permanece idéntico.
