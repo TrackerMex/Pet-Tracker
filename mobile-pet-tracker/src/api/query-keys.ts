@@ -6,6 +6,8 @@ export const petKeys = {
 export const nutritionKeys = {
   plan: (petId: string) => ['nutrition', 'plan', petId] as const,
   profile: (petId: string) => ['nutrition', 'profile', petId] as const,
+  mealsHistory: (petId: string, from: string, to: string) =>
+    ['nutrition', 'meals-history', petId, { from, to }] as const,
 };
 
 export const healthKeys = {
