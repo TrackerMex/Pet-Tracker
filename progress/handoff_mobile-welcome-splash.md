@@ -5,6 +5,13 @@
 > 2026-10-04T20:08:35Z). Feature móvil. La prueba de humo en el dev build de
 > Android (R13, ocho casillas) es del humano y cierra la feature, no la spec.
 
+> **Corrección del 2026-10-04 (tras la parada de Codex antes de T1).** El
+> handoff original decía que el array `blocks` estaba en `ui-language.test.ts`
+> (está en `ui-copy-table.ts`) y que legibility no sumaba `it` (su fila nueva
+> es un caso más del `it.each`: +1). La spec firmada era correcta en los dos
+> puntos; el error era solo de este handoff. Corregidas las anclas y los
+> deltas; el nuevo H0 es el commit de esta corrección.
+
 ---
 
 ```
@@ -85,14 +92,18 @@ mobile-pet-tracker/, `bunx jest --runTestsByPath --maxWorkers=2` de las
   src/app/__tests__/layout.test.tsx                  25
   src/providers/__tests__/language-provider.test.tsx 22
   src/__tests__/ui-language.test.ts                  29
-  src/__tests__/ui-copy-table.ts                      (helper, sin it propios)
+  src/__tests__/ui-copy-table.ts                      (sin suite propia: sus
+                                                      2 it corren dentro de
+                                                      ui-language.test.ts,
+                                                      ya incluidos en sus 29)
   src/__tests__/consistency-classnames.test.ts       55
   src/__tests__/legibility-classnames.test.ts        26
   src/__tests__/design-drift.test.ts                 59
 Tu medida manda: mide al arrancar y anota antes/despues en el impl.
 Delta esperado al cierre: index 0 (un it renombrado), layout +1,
-ui-language +1, design-drift +N (el describe #118 R11), language-provider,
-legibility y consistency 0 (cambian sumas, no its); suite NUEVA
+ui-language +1, design-drift +1 (el describe #118 R11 con un solo it, como
+#98 R10), legibility +1 (la fila nueva de inkSites es un caso mas del
+it.each), language-provider y consistency 0 (cambian sumas, no its); suite NUEVA
 src/screens/welcome/index.test.tsx con 28 it (R3 2, R4 1, R5 3, R6 12,
 R7 2, R8 2, R9 2, R10 4). Cero it borrados.
 
@@ -107,9 +118,14 @@ al impl; si alguna no da EXACTAMENTE lo esperado, PARA y avisa:
     #98 R10) -> `+ 1 // #118 R7` en las DOS
   layout.test.tsx: `expect(children).toHaveLength(5)` (1) -> `+ 1 // #118 R3`
   index.test.tsx: it 'redirects an unauthenticated session to login' (1)
-  ui-copy-table.ts: `R15_GEOFENCE_EDITOR` es el ultimo bloque de ALL_USES;
-    ui-language.test.ts tiene el array `blocks` con R15_GEOFENCE_EDITOR al
-    final -> R16_WELCOME detras en los dos
+  ui-copy-table.ts: `R15_GEOFENCE_EDITOR` es el ultimo bloque de ALL_USES
+    Y del array `blocks` del it 'cuadra ALL_USES con la suma de sus
+    bloques' (los DOS en ui-copy-table.ts) -> R16_WELCOME detras en los dos
+  ui-language.test.ts NO tiene array `blocks`: importa R15_GEOFENCE_EDITOR
+    de './ui-copy-table' y tiene un describe por bloque (el ultimo,
+    `#146 R10: ...`, llama a checkUses(R15_GEOFENCE_EDITOR)). Ahi anades el
+    import de R16_WELCOME y `describe('#118 R1: welcome resuelve su copy
+    por clave')` -> checkUses(R16_WELCOME) (tasks.md T8.1)
   legibility-classnames.test.ts: tabla inkSites (ultima fila
     `[join('components', 'pet-hero-header.tsx'), 1]`) -> fila nueva
     `[join('screens', 'welcome', 'index.tsx'), 2]` y `+ 2 // #118 R11`
@@ -247,4 +263,17 @@ que cae y su asercion o consulta; el cierre (las 7 suites + la nueva,
 typecheck, lint) con exit; R12 (`git diff` vacio); `git diff --name-only
 H0 HEAD` (17 ficheros); el delta final por fichero; y cualquier decision
 que la spec no cerrara literalmente.
+
+== REANUDACION (tras la parada antes de T1) ==
+
+Ya escribiste progress/impl_mobile-welcome-splash.md (sin commitear) con la
+parada. NO lo borres: anade al final una seccion «Reanudacion tras la
+correccion del handoff» con pwd, branch y el nuevo H0 (`git rev-parse
+--short HEAD`, el commit que corrige este handoff). Desde ahi todos los
+`git diff --name-only` se miden contra el nuevo H0. Las anclas que ya
+verificaste siguen valiendo; repite solo la de ui-copy-table.ts /
+ui-language.test.ts y la de legibility con el texto corregido. La base de
+jest que mediste (7 suites / 219 / exit=0) vale: el arbol de
+mobile-pet-tracker/ no cambia con esta correccion. Faltan typecheck y lint
+de base: correlos antes de T1. Luego sigue con T1.
 ```
