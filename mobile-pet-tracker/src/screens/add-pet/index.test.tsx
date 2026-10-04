@@ -75,8 +75,8 @@ async function renderAddPet() {
     <HeroUINativeProvider>
       <LanguageProvider initial="es">
         <HeaderHeightContext.Provider value={91}>
-            <AddPetScreen />
-          </HeaderHeightContext.Provider>
+          <AddPetScreen />
+        </HeaderHeightContext.Provider>
       </LanguageProvider>
     </HeroUINativeProvider>,
   );
