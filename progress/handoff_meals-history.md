@@ -510,3 +510,84 @@ cualquier typecheck movil: `test ! -e
 mobile-pet-tracker/.expo/types/router.d.ts` (si existe, PARA y dilo; no
 lo borres tu). Esperas en tests: docs/conventions.md §Esperas.
 ```
+
+## Reanudación 4: rechazo del reviewer por lint backend (2026-10-04)
+
+> Con la Reanudación 3 Codex cerró E3 y los dos pendientes de formato
+> (último commit de código `2a5919cd`, informe y trazabilidad en `dc1a0c5`).
+> El `reviewer` corrió `./init.sh` y emitió **RECHAZADO**
+> (`progress/review_meals-history.md`, léelo entero). Un único defecto de
+> código (B1): `backend-pet-tracker/test/meals-history.e2e-spec.ts` falla el
+> lint del repo con 23 errores sin `--fix` (11 `prettier/prettier` en
+> L39-51 autofixables; `no-unsafe-member-access` en `response.body.days` /
+> `.from`, `no-unsafe-assignment` L240, `no-unsafe-call` L251 y
+> `no-unused-vars` de `owner` en L257, que `--fix` no arregla). Nada de
+> esto estaba en tu informe porque el handoff solo pedía el lint móvil.
+> **No hay enmienda de spec**: es un cambio solo de test, sin tocar su
+> comportamiento ni ningún R-id. El resto (R1–R15, E1–E3, aislamiento,
+> carta de UI) el reviewer lo dio por cumplido. B2 (infra e2e caída en el
+> sandbox del reviewer) no es tuyo: lo repite el humano en el VPS.
+
+Pegar en Codex CLI:
+
+```
+Worktree: /home/claude/sites/Pet-Tracker   <- PRIMERA LINEA. Trabaja AQUI y en ningun otro sitio
+Reanudacion 4 de #105 tras el RECHAZADO del reviewer por lint backend (B1).
+Ejecuta y pega en el informe, bajo una seccion nueva «## Reanudacion 4»:
+  pwd
+  git branch --show-current
+  git rev-parse --short HEAD
+  git rev-parse --short HEAD~1
+  git rev-parse --short HEAD~2
+  git status --short
+PARA si:
+- la branch no es feature/105-meals-history;
+- HEAD~1 no es dc1a0c5 (tu ultimo commit, la trazabilidad) o HEAD~2 no es
+  2a5919c (tu ultimo commit de codigo);
+- `git status --short` muestra algo.
+HEAD es el commit del leader que anade el review y esta reanudacion.
+Siguen en vigor todas las reglas del handoff original y de las
+Reanudaciones 1 a 3. H0 sigue siendo 2edf8c38. Esta reanudacion toca UN
+solo fichero de codigo: backend-pet-tracker/test/meals-history.e2e-spec.ts.
+Cualquier otro cambio en backend-pet-tracker/ o mobile-pet-tracker/ es
+motivo de PARA.
+
+Lee antes de tocar nada: progress/review_meals-history.md §B1 y §B2.
+
+Que haces, y solo esto:
+1. Reproduce el fallo ANTES de arreglar, sin --fix y sin pipe, desde la
+   raiz, y pega comando, exit y cuenta:
+     pnpm -C backend-pet-tracker exec eslint "{src,apps,libs,test}/**/*.ts"
+   Espera 23 errores, todos en test/meals-history.e2e-spec.ts. Si la
+   cuenta o el fichero son otros, PARA y dilo.
+2. Corrige solo ese fichero, con un commit propio, sin par rojo (no cambia
+   comportamiento; dilo en el mensaje):
+   - tipa `response.body` como hacen los e2e vecinos
+     (test/meals.e2e-spec.ts, test/meal-times.e2e-spec.ts,
+     test/activity.e2e-spec.ts): mira como lo hacen y copia el patron, no
+     inventes uno nuevo ni uses `eslint-disable`;
+   - quita `owner` no usado en it('allows an active family member');
+   - formatea con prettier la cadena `.insert(users).values({...})`
+     (L39-51), sin tocar nada mas.
+   No cambies ni borres ningun `it`, ni sus nombres `#105 R<n>`, ni sus
+   aserciones. Mensaje: test(backend): fix e2e lint without behavior
+   change (#105 R4).
+3. Verifica, sin pipe, pegando comando, exit y cuenta:
+     pnpm -C backend-pet-tracker exec eslint "{src,apps,libs,test}/**/*.ts"
+       (sin --fix; espera 0 problemas en todo el backend)
+     pnpm -C backend-pet-tracker exec tsc --noEmit        (exit 0)
+     pnpm -C backend-pet-tracker test                     (176 / 1348)
+     pnpm -C backend-pet-tracker test:e2e                 (29 / 438, 8 skipped)
+   Los e2e necesitan `docker compose up -d`; si la infra no esta arriba,
+   levantala tu como en las reanudaciones anteriores. Si no puedes, PARA
+   y dilo; no declares verde lo que no corriste.
+   Despues `git diff --name-only dc1a0c5 HEAD` debe listar SOLO
+   backend-pet-tracker/test/meals-history.e2e-spec.ts (mas progress/ y
+   specs/ del propio cierre).
+4. Informe: continua progress/impl_meals-history.md bajo «## Reanudacion 4»
+   con lo anterior (comandos sin pipe, exit, cuentas, el diff del
+   fichero). NO pegues logs crudos de candidatas fallidas: el informe ya
+   pesa ~500 KB y el reviewer lo marco como obstaculo; resume. Anade una
+   nota «Reanudacion 4» a traceability.md (sin cambiar filas: ningun R-id
+   cambia). No hagas push ni abras PR.
+```

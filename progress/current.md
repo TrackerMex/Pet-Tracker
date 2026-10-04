@@ -108,8 +108,17 @@
      tests `detail-stack.*`, refactor `array-type` en `month-grid.ts`, y
      repite el cierre de R15 (solo móvil; backend sin cambios desde
      `f43c8487`).
-- **Estado al parar:** Codex implementa la Reanudación 3 en este
-  worktree. Luego paso 7 del plan (permiso para `./init.sh`, `reviewer`).
+  6e. **Reviewer RECHAZADO (2026-10-04):** `progress/review_meals-history.md`.
+     B1: el e2e nuevo `backend-pet-tracker/test/meals-history.e2e-spec.ts`
+     falla el lint del repo (23 errores sin `--fix`); defecto de código, sin
+     enmienda de spec. B2: `init.sh` EXIT=1 por infra e2e caída en el
+     sandbox del reviewer (sin Docker); lo repite el humano en el VPS.
+     Todo lo demás (R1–R15, E1–E3, C2–C7, aislamiento, carta de UI) cumple;
+     H1 sigue pendiente. Leader añadió «Reanudación 4» al handoff (un solo
+     fichero de test, sin par rojo). Tras Codex: humano corre
+     `docker compose up -d` + `./init.sh` completo y se relanza el reviewer.
+- **Estado al parar:** Codex implementa la Reanudación 4 (lint del e2e) en
+  este worktree. Luego `./init.sh` completo en el VPS y `reviewer` otra vez.
   **Reparto con #148 cerrado (2026-10-04):** la sesión
   `Backend` (worktree `Pet-Tracker-wt-148`, spec en `7a075020` sobre
   `origin/main` `9cf45204`, gate en Notion) limita a su Codex a 14
