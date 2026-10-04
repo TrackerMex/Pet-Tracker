@@ -80,10 +80,32 @@
      de firma de E2), `Rol actual = Implementer`, bloqueador limpiado.
      Codex retoma en tasks.md R5 paso 1 reaplicando el parche conservado
      más `+ 1 // #105 R5` en `SCREEN_FILES`; espera 13 rojos exactos.
-- **Estado al parar:** esperando a que el humano pegue la «Reanudación 2»
-  en Codex y a que Codex termine R5–R15. Después: paso 7 del plan (leer
-  reporte, permiso para `./init.sh`, `reviewer`). Backend R1–R4 verde;
-  móvil sin tocar. **Reparto con #148 cerrado (2026-10-04):** la sesión
+  6d. **Tercera parada de Codex, en el cierre (2026-10-04):** con la
+     Reanudación 2 Codex cerró R5–R15 (26 commits test-primero, último
+     de código `0864d891`, informe en `f43c8487`): móvil 92 suites / 1981
+     tests, backend 176 / 1348 unit y 29 / 438 e2e, lockfiles sin diff,
+     typecheck y lint 0 errores. Un único `it` ajeno rojo:
+     `legibility-classnames.test.ts` `#61 R4` 'no deja ningún text-accent
+     suelto en las fuentes' recibe `["screens/meals-history/index.tsx"]`
+     porque R11.e prescribía `text-sm font-bold text-accent` para el
+     número de hoy, contra la carta («fondo ⇒ accent; encima de otra cosa
+     ⇒ accent-strong»). Error de la spec, no de Codex. **Enmienda E3**
+     escrita en `requirements.md` (bloque de cabecera, R11.e, tabla de
+     clases, candado de fuente, casilla propia), `design.md` (fila `#61 R4`
+     en §Candados, sin delta) y `tasks.md` R11: `text-accent-strong`;
+     `inkSites` no se toca. Pendientes que Codex dejó anotados para la
+     Reanudación 3: `git diff --check` exit 2 por línea en blanco final en
+     `detail-stack.guard.test.tsx` y `detail-stack.navigation.test.tsx`;
+     1 advertencia `array-type` de lint en `month-grid.ts` (refactor
+     probado y descartado al parar). Notion re-espejada, `Estado del
+     gate` = En revisión, `Rol actual` = Leader, bloqueador escrito.
+- **Estado al parar:** esperando a que el humano apruebe E3 en Notion.
+  Después: firmar la casilla E3 con `page_last_edited_at`, añadir
+  «Reanudación 3» al handoff (retoma en tasks.md R11: par test/feat de
+  corrección de clase, línea final de los dos tests, refactor array-type,
+  y repetir el cierre de R15), `Rol actual` = Implementer. Luego paso 7
+  del plan (permiso para `./init.sh`, `reviewer`). **Reparto con #148
+  cerrado (2026-10-04):** la sesión
   `Backend` (worktree `Pet-Tracker-wt-148`, spec en `7a075020` sobre
   `origin/main` `9cf45204`, gate en Notion) limita a su Codex a 14
   ficheros móviles (7 formularios de producción: `(auth)/login.tsx`,
