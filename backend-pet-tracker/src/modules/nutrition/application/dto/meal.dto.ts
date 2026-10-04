@@ -15,3 +15,9 @@ export const EditMealTimeSchema = z.strictObject({
     .regex(STRICT_MEAL_TIME_PATTERN, 'mealTime must be a valid HH:MM time'),
 });
 export type EditMealTimeDto = z.infer<typeof EditMealTimeSchema>;
+
+export const ListMealsQuerySchema = z.strictObject({
+  from: z.string().optional(),
+  to: z.string().optional(),
+});
+export type ListMealsQueryDto = z.infer<typeof ListMealsQuerySchema>;

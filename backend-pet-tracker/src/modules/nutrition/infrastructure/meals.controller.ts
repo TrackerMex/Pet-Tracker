@@ -1,8 +1,10 @@
+import { GetMealsHistoryUseCase } from '@/modules/nutrition/application/use-cases/get-meals-history.use-case';
 import {
   BadRequestException,
   Body,
   Controller,
   Delete,
+  Get,
   HttpCode,
   HttpStatus,
   Param,
@@ -12,6 +14,8 @@ import {
 } from '@nestjs/common';
 import { ZodType } from 'zod';
 import {
+  ListMealsQueryDto,
+  ListMealsQuerySchema,
   ServeMealDto,
   ServeMealSchema,
 } from '@/modules/nutrition/application/dto/meal.dto';
@@ -19,6 +23,7 @@ import { ServeMealUseCase } from '@/modules/nutrition/application/use-cases/serv
 import { UnserveMealUseCase } from '@/modules/nutrition/application/use-cases/unserve-meal.use-case';
 import { mapNutritionError } from '@/modules/nutrition/infrastructure/mappers/nutrition-error.mapper';
 import {
+  MealsHistoryResponse,
   MealServingResponse,
   toMealServingResponse,
 } from '@/modules/nutrition/infrastructure/mappers/nutrition.mapper';
@@ -29,9 +34,25 @@ import type { PetAccessRequest } from '@/modules/pets/infrastructure/guards/pet-
 @UseGuards(PetAccessGuard)
 export class MealsController {
   constructor(
+    private readonly getMealsHistory: GetMealsHistoryUseCase,
     private readonly serveMeal: ServeMealUseCase,
     private readonly unserveMeal: UnserveMealUseCase,
   ) {}
+
+  @Get()
+  async history(
+    @Req() request: PetAccessRequest,
+  ): Promise<MealsHistoryResponse> {
+    const query = parseQuery(request.query);
+    try {
+      return await this.getMealsHistory.execute(
+        { petId: request.petMembership.petId, ...query },
+        new Date(),
+      );
+    } catch (error) {
+      throw mapNutritionError(error);
+    }
+  }
 
   @Post()
   async serve(
@@ -72,6 +93,12 @@ export class MealsController {
       throw mapNutritionError(error);
     }
   }
+}
+
+function parseQuery(query: unknown): ListMealsQueryDto {
+  const parsed = ListMealsQuerySchema.safeParse(query);
+  if (!parsed.success) throw validationError(parsed.error.issues);
+  return parsed.data;
 }
 
 function parseBody<T>(schema: ZodType<T>, body: unknown): T {
