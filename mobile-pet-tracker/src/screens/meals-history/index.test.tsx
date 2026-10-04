@@ -20,8 +20,10 @@ jest.mock('expo-router', () => {
   const React = jest.requireActual<typeof import('react')>('react');
   const { View } = jest.requireActual<typeof import('react-native')>('react-native');
   return {
-    Redirect: ({ href }: { href: string }) =>
-      React.createElement(View, { testID: 'meals-history-redirect', href }),
+    Redirect: ({ href }: { href: string }) => {
+      const props = { testID: 'meals-history-redirect', href };
+      return React.createElement(View, props);
+    },
   };
 });
 jest.mock('react-native-safe-area-context', () => ({
@@ -29,9 +31,9 @@ jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 40, right: 0, bottom: 24, left: 0 }),
 }));
 jest.mock('reicon-react-native', () => {
-  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
   const icon = (testID: string) => function MockIcon({ color }: { color?: string }) {
-    return <View testID={testID} style={{ color }} />;
+    return <Text testID={testID} style={{ color }} />;
   };
   return {
     ChevronLeft: icon('meals-history-icon-prev'),
