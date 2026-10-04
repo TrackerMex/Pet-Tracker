@@ -87,3 +87,12 @@ describe('#95 R7: el reset de #63 queda solo donde no lo cubre el Stack', () => 
     }
   });
 });
+
+
+describe('#105 R8: meals history has a thin root route', () => {
+  it('es un route delgado que importa la pantalla de src/screens/meals-history', () => {
+    const source = readFileSync(join(app, 'meals-history.tsx'), 'utf8');
+    expect(source).toContain("from '../screens/meals-history'");
+    expect(source).toContain('return <MealsHistoryScreen />;');
+  });
+});

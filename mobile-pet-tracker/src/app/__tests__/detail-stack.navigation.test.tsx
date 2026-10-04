@@ -15,6 +15,12 @@ const mockAuthListeners = new Set<() => void>();
 let mockAddReminderMounts = 0;
 
 jest.mock('standard-navigation', () => ({}));
+jest.mock('expo-linking', () => ({
+  ...jest.requireActual('expo-linking'),
+  createURL: (path: string) => `yourscheme://${path}`,
+  resolveScheme: () => 'yourscheme',
+}));
+
 jest.mock('expo-font', () => ({ useFonts: () => [true] }));
 jest.mock('../../utils/theme-preference', () => ({
   getStoredTheme: jest.fn().mockResolvedValue(undefined),
@@ -76,6 +82,23 @@ function rootStack(app: ReturnType<typeof renderRouter>) {
   return app.getRouterState()?.routes[0]?.state?.routes.map((route) => route.name) ?? [];
 }
 
+describe('#105 R8: meals history pushes above tabs', () => {
+  afterEach(() => jest.useRealTimers());
+
+  it('apila meals-history y vuelve a tabs sin duplicarlo', async () => {
+    mockAuthState = { status: 'authenticated', token: 'token-a' };
+    const app = renderRouter(routes(), { initialUrl: '/home' });
+    await app;
+    await waitFor(() => expect(app.getPathname()).toBe('/home'));
+    await act(async () => router.push('/meals-history' as Href));
+    await waitFor(() => expect(rootStack(app)).toEqual(['(tabs)', 'meals-history']));
+    expect(app.getPathname()).toBe('/meals-history');
+    await act(async () => router.back());
+    await waitFor(() => expect(app.getPathname()).toBe('/home'));
+    expect(rootStack(app)).toEqual(['(tabs)']);
+  });
+});
+
 describe('#95 R2: push y back apilan y desapilan sobre (tabs)', () => {
   afterEach(() => jest.useRealTimers());
 
@@ -115,3 +138,5 @@ describe('#95 R2: push y back apilan y desapilan sobre (tabs)', () => {
     expect(rootStack(app)).toEqual(['(tabs)']);
   });
 });
+
+

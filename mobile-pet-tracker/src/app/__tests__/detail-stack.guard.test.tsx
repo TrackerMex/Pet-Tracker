@@ -17,6 +17,12 @@ const mockAuthListeners = new Set<() => void>();
 let mockAddReminderMounts = 0;
 
 jest.mock('standard-navigation', () => ({}));
+jest.mock('expo-linking', () => ({
+  ...jest.requireActual('expo-linking'),
+  createURL: (path: string) => `yourscheme://${path}`,
+  resolveScheme: () => 'yourscheme',
+}));
+
 jest.mock('expo-font', () => ({ useFonts: () => [true] }));
 jest.mock('../../utils/theme-preference', () => ({
   getStoredTheme: jest.fn().mockResolvedValue(undefined),
@@ -78,6 +84,23 @@ function rootStack(app: ReturnType<typeof renderRouter>) {
   return app.getRouterState()?.routes[0]?.state?.routes.map((route) => route.name) ?? [];
 }
 
+describe('#105 R8: meals history requires a session', () => {
+  afterEach(() => jest.useRealTimers());
+
+  it('mantiene login al intentar meals-history sin sesión', async () => {
+    mockAuthState = { status: 'unauthenticated', token: null };
+    const app = renderRouter(routes(), { initialUrl: '/login' });
+    await app;
+    await waitFor(() => expect(app.getPathname()).toBe('/login'));
+    await act(async () => router.push('/meals-history' as Href));
+    await act(async () => {
+      for (let pass = 0; pass < 3; pass += 1) jest.runOnlyPendingTimers();
+    });
+    await waitFor(() => expect(rootStack(app)).toEqual(['(auth)']));
+    expect(app.getPathname()).toBe('/login');
+  });
+});
+
 describe('#95 R3: la guarda protege las seis y deja libres (auth) y reset-password', () => {
   afterEach(() => jest.useRealTimers());
 
@@ -116,3 +139,5 @@ describe('#95 R3: la guarda protege las seis y deja libres (auth) y reset-passwo
     expect(rootStack(app)).toEqual(['(auth)', 'reset-password']);
   });
 });
+
+
