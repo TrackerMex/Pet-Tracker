@@ -1,7 +1,7 @@
 ---
 feature: mobile-welcome-splash
 id: 118
-status: draft
+status: approved
 tags: [harness, spec, mobile, ui]
 ---
 

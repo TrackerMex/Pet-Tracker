@@ -1,7 +1,7 @@
 ---
 feature: mobile-welcome-splash
 id: 118
-status: draft
+status: approved
 tags: [harness, spec, mobile, ui]
 base: 711cfd19 (origin/main b2a9c2aa)
 ---
@@ -380,5 +380,5 @@ Cada comprobación tiene su casilla. El gate de cierre exige las ocho.
 
 ## Aprobación
 
-- [ ] Spec aprobada por humano (gate: nadie implementa antes de marcar esta casilla)
+- [x] Spec aprobada por humano (gate: nadie implementa antes de marcar esta casilla)
 - [ ] R13 S1–S8 firmadas por humano en dev build de Android
