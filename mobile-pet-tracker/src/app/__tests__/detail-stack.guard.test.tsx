@@ -139,5 +139,3 @@ describe('#95 R3: la guarda protege las seis y deja libres (auth) y reset-passwo
     expect(rootStack(app)).toEqual(['(auth)', 'reset-password']);
   });
 });
-
-

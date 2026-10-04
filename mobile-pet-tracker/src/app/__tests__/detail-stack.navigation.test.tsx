@@ -138,5 +138,3 @@ describe('#95 R2: push y back apilan y desapilan sobre (tabs)', () => {
     expect(rootStack(app)).toEqual(['(tabs)']);
   });
 });
-
-
