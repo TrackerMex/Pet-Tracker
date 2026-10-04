@@ -271,3 +271,20 @@ describe('R7', () => {
     expect(screen.getByText('Comenzar ahora').props.className).toBe('font-bold text-accent-foreground');
   });
 });
+
+
+describe('R8', () => {
+  it('empuja a login sin reemplazar', async () => {
+    await renderWelcome();
+    await fireEvent.press(screen.getByTestId('welcome-have-account'));
+    expect(mockRouter.push).toHaveBeenCalledTimes(1);
+    expect(mockRouter.push).toHaveBeenCalledWith('/login');
+    expect(mockRouter.replace).not.toHaveBeenCalled();
+  });
+
+  it('es un botón hueco con tinta accent-strong', async () => {
+    await renderWelcome();
+    expect(screen.getByTestId('welcome-have-account').props.className).toBe('w-full rounded-xl border border-accent bg-transparent');
+    expect(screen.getByText('Ya tengo una cuenta').props.className).toBe('font-semibold text-accent-strong');
+  });
+});
