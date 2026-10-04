@@ -53,7 +53,8 @@ describe('#65 R12: el cat√°logo tiene los dos idiomas y t resuelve claves y par√
     const spanishKeys = Object.keys(es).sort();
 
     expect(englishKeys).toHaveLength(
-      260 + 16 + 1 + 4 + 7 + 14 + 2 + 1 + 4 - 6 + 1 + 2 + 3 + 11 + 12 + 2 + 9 + 9, // #105 R5
+      260 + 16 + 1 + 4 + 7 + 14 + 2 + 1 + 4 - 6 + 1 + 2 + 3 + 11 + 12 + 2 + 9 + 9 // #105 R5
+        + 8, // #118 R1
     );
     expect(spanishKeys).toEqual(englishKeys);
     for (const key of englishKeys) {
