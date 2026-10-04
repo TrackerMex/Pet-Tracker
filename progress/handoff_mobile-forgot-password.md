@@ -12,8 +12,8 @@
 Worktree: /home/claude/sites/Pet-Tracker-wt-backend   <- PRIMERA LINEA. Trabaja AQUI y en ningun otro sitio
 Antes de tocar nada, ejecuta `pwd`, `git branch --show-current` y
 `git rev-parse --short HEAD` y pega las tres salidas al principio de
-progress/impl_mobile-forgot-password.md. El hash es H0 (el commit que anade
-este handoff): todos los `git diff --name-only` se miden contra el. Para si
+progress/impl_mobile-forgot-password.md. El hash es H0 (HEAD al arrancar,
+el ultimo commit docs del leader): todos los `git diff --name-only` se miden contra el. Para si
 la branch no es feature/117-mobile-forgot-password.
 No toques /home/claude/sites/Pet-Tracker (#116), Pet-Tracker-wt-118 (#118,
 otro Codex), ni ningun otro worktree, ni cambies de branch en ninguno.
@@ -169,7 +169,11 @@ la salida al impl; si alguna no da EXACTAMENTE lo esperado, PARA y avisa:
   specs/mobile-ui-language/design.md: `| src/app/(auth)/forgot.tsx | 5 | R1 |`
     (§1, ~81), `| src/app/(auth)/__tests__/forgot.test.tsx | 1 |` (~105),
     `**mobile-pet-tracker/src/app/(auth)/forgot.tsx** — 5 ocurrencias`
-    (§2.1, ~231) y la cabecera `grupo (auth) (29 ocurrencias, 23 claves)`
+    (§2.1, ~231) y la cabecera de §2.1, cuyo literal real es
+    `### §2.1 — R1 — grupo `(auth)` (29 ocurrencias, 23 claves)` (con
+    backticks alrededor de (auth); la fila de §Candados globales de
+    requirements.md los omite: localizala con
+    `grep -n "29 ocurrencias, 23 claves"`, 1 coincidencia, linea ~214)
     -> §Candados globales de requirements.md dice que pasa a ser cada una
   src/screens/forgot/ NO existe
   mobile-pet-tracker/.expo/types/router.d.ts NO existe
