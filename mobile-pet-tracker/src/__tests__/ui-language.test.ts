@@ -18,6 +18,7 @@ import {
   R13_ALERT_DETAIL,
   R14_GEOFENCES,
   R15_GEOFENCE_EDITOR,
+  R16_WELCOME,
   type UseRow,
 } from './ui-copy-table';
 
@@ -272,6 +273,10 @@ describe('#146 R10: el editor de zonas resuelve su copy por clave', () => {
     )).toBe(true);
     checkUses(R15_GEOFENCE_EDITOR);
   });
+});
+
+describe('#118 R1: welcome resuelve su copy por clave', () => {
+  it('resuelve las 8 ocurrencias de welcome', () => checkUses(R16_WELCOME));
 });
 
 const REPOSITORY_ROOT = join(SOURCE_ROOT, '..');
