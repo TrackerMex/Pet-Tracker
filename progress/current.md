@@ -6,7 +6,8 @@
 ## Feature #148 — mobile-keyboard-avoiding-forms
 
 - **Branch:** `feature/148-mobile-keyboard-avoiding-forms` (worktree `Pet-Tracker-wt-148`, antes `wt-icon`; base `origin/main` `9cf45204`, merge de #101)
-- **Estado:** `pending` — fase de spec. Elegida por el humano el 2026-10-04 (única P2; fallo visto en el teléfono en Login y Registro de peso).
+- **Estado:** `spec_ready` — spec escrita por `spec_author` (2026-10-04) y revisada por el leader contra el árbol en `9cf45204` (anclas de símbolos, `it` y testIDs: 1 coincidencia cada una; sonda RV-5 medida en explore §H). Elegida por el humano el 2026-10-04 (única P2; fallo visto en el teléfono en Login y Registro de peso).
+- **Spec:** `specs/mobile-keyboard-avoiding-forms/` (requirements R1–R10, design D1–D9, tasks por pantalla, traceability). Siete pantallas (login, register, reset-password, add-pet, add-reminder, pairing, weight-log); forgot fuera (input deshabilitado). 14 ficheros de código, ningún candado global se mueve.
 - **Sesión paralela:** Frontend lleva #105 (`feature/105-meals-history`) en el worktree principal; Postgres/LocalStack compartidos, avisar antes de cada `./init.sh`.
 - **Reparto con #105 (acordado por chat entre sesiones, 2026-10-04):** #148 no toca `catalog.ts`, `ui-copy-table.ts`, `ui-language.test.ts`, `language-provider.test.tsx`, `src/app/_layout.tsx`, `layout.test.tsx` ni `(tabs)/food.tsx`. #105 mueve en `consistency-classnames.test.ts` el total de `#62 R15 counters` (+2, fila `screens/meals-history/index.tsx`) y los conteos de `bg-accent-soft` (`#98 R10`, `#64 R9`, +1 cada uno); en `design-drift.test.ts` añade `meals-history` al `it.each` de R3, la fila `screens/meals-history/index.tsx: 1` en `screenSignOutCalls` (#87 R19) y un `describe('#105 R15')`. Si la spec de #148 mueve alguno de esos `describe`, avisar a Frontend con el `it` exacto; mergea quien mergee segundo conservando los dos deltas.
 - **Plan:** `explorer` (inventario pantalla a pantalla en `progress/explore_mobile-keyboard-avoiding-forms.md`) → `spec_author` → espejo en Notion → gate humano → handoff a Codex.
@@ -14,8 +15,8 @@
 
 ### Bloqueado por el humano
 
-- Nada todavía (la spec llegará a Notion para el gate).
+- **Gate de la spec en Notion** (base *Specs* del Panel de Proyectos — Harness SDD): el humano pone `Estado del gate` = Aprobado; el leader hace el commit de firma citando página, hora y cuenta.
 
 ### Siguiente paso del leader
 
-Con el inventario escrito, lanzar `spec_author` (verificando las premisas del explore contra el árbol) y espejar `requirements.md` en la base *Specs* de Notion.
+Tras la aprobación en Notion: commit de firma (`status: approved` en los cuatro ficheros de la spec), prompt de handoff a Codex CLI (plantilla de `.claude/agents/leader.md`, nombres de skills de Codex, commits test-primero, §Esperas, lista cerrada de 16 ficheros, base medida sin pipe), y al terminar Codex, `reviewer` (pedir permiso al humano para `init.sh` y avisar a Frontend antes).
