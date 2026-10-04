@@ -98,14 +98,19 @@
      `detail-stack.guard.test.tsx` y `detail-stack.navigation.test.tsx`;
      1 advertencia `array-type` de lint en `month-grid.ts` (refactor
      probado y descartado al parar). Notion re-espejada, `Estado del
-     gate` = En revisión, `Rol actual` = Leader, bloqueador escrito.
-- **Estado al parar:** esperando a que el humano apruebe E3 en Notion.
-  Después: firmar la casilla E3 con `page_last_edited_at`, añadir
-  «Reanudación 3» al handoff (retoma en tasks.md R11: par test/feat de
-  corrección de clase, línea final de los dos tests, refactor array-type,
-  y repetir el cierre de R15), `Rol actual` = Implementer. Luego paso 7
-  del plan (permiso para `./init.sh`, `reviewer`). **Reparto con #148
-  cerrado (2026-10-04):** la sesión
+     gate` = En revisión, `Rol actual` = Leader, bloqueador escrito. El
+     humano aprobó E3 en Notion el 2026-10-04 (`page_last_edited_at`
+     2026-10-04T01:37:28.664Z); el leader firmó la casilla de E3 y añadió
+     «Reanudación 3» a `progress/handoff_meals-history.md` en el mismo
+     commit (es el commit de firma de E3), `Rol actual = Implementer`,
+     bloqueador limpiado. Codex retoma en tasks.md R11 con un par
+     test/feat de corrección de clase, quita la línea final de los dos
+     tests `detail-stack.*`, refactor `array-type` en `month-grid.ts`, y
+     repite el cierre de R15 (solo móvil; backend sin cambios desde
+     `f43c8487`).
+- **Estado al parar:** Codex implementa la Reanudación 3 en este
+  worktree. Luego paso 7 del plan (permiso para `./init.sh`, `reviewer`).
+  **Reparto con #148 cerrado (2026-10-04):** la sesión
   `Backend` (worktree `Pet-Tracker-wt-148`, spec en `7a075020` sobre
   `origin/main` `9cf45204`, gate en Notion) limita a su Codex a 14
   ficheros móviles (7 formularios de producción: `(auth)/login.tsx`,

@@ -388,3 +388,125 @@ reviewer. Antes de cualquier typecheck movil: `test ! -e
 mobile-pet-tracker/.expo/types/router.d.ts` (si existe, PARA y dilo; no
 lo borres tu). Esperas en tests: docs/conventions.md §Esperas.
 ```
+
+## Reanudación 3: parada en el cierre por `#61 R4` (2026-10-04)
+
+> Con la Reanudación 2 Codex cerró R5–R15 enteros (26 commits test-primero,
+> último de código `0864d891`, informe y trazabilidad en `f43c8487`): móvil
+> 92 suites / 1981 tests, backend 176 / 1348 unit y 29 / 438 e2e, typecheck
+> y lint sin errores, lockfiles sin diff. Un único `it` ajeno rojo en el
+> `bunx jest` de cierre: `src/__tests__/legibility-classnames.test.ts`
+> `#61 R4` `it('no deja ningún text-accent suelto en las fuentes')` recibe
+> `["screens/meals-history/index.tsx"]` porque R11.e prescribía
+> `text-sm font-bold text-accent` para el número de hoy. Error de la spec:
+> la carta dice fondo ⇒ `accent`, tinta ⇒ `accent-strong`. La parada fue
+> correcta; Codex no tocó el `it` ajeno ni la spec.
+>
+> **Enmienda E3** (commit `ba3fd1ec`, aprobada por el humano en Notion el
+> 2026-10-04, `page_last_edited_at` 2026-10-04T01:37:28.664Z): el número de
+> hoy lleva `text-sm font-bold text-accent-strong` en R11.e, en la tabla de
+> clases y en el candado de fuente de R11; `design.md` §Candados gana la fila
+> `#61 R4` «sin delta»; `tasks.md` R11 lo repite. `bg-accent` del punto no
+> cambia (es fondo) y `inkSites` de `#61 R4` no se toca. Nada más cambia.
+> La firma de E3 es el commit que añade esta reanudación. Quedan además los
+> dos pendientes que Codex dejó anotados al parar: `git diff --check
+> 2edf8c38 HEAD` exit 2 por una línea en blanco final en
+> `src/app/__tests__/detail-stack.guard.test.tsx` y
+> `src/app/__tests__/detail-stack.navigation.test.tsx`, y la advertencia
+> `@typescript-eslint/array-type` en `src/utils/month-grid.ts:16`.
+
+Pegar en Codex CLI:
+
+```
+Worktree: /home/claude/sites/Pet-Tracker   <- PRIMERA LINEA. Trabaja AQUI y en ningun otro sitio
+Reanudacion 3 de #105 tras tu parada en el cierre por el `it` ajeno #61 R4.
+Ejecuta y pega en el informe, bajo una seccion nueva «## Reanudacion 3»:
+  pwd
+  git branch --show-current
+  git rev-parse --short HEAD
+  git rev-parse --short HEAD~1
+  git rev-parse --short HEAD~2
+  git rev-parse --short HEAD~3
+  git rev-parse --short HEAD~5
+  git status --short
+PARA si:
+- la branch no es feature/105-meals-history;
+- HEAD~1 no es 74356a90 (bitacora del leader), HEAD~2 no es ba3fd1ec
+  (Enmienda E3), HEAD~3 no es f43c8487 (tu ultimo commit, la trazabilidad)
+  o HEAD~5 no es 0864d891 (tu ultimo commit de codigo, R15);
+- `git status --short` muestra algo.
+HEAD es el commit del leader que firma E3 y anade esta reanudacion.
+Siguen en vigor todas las reglas del handoff original y de las
+Reanudaciones 1 y 2. H0 sigue siendo 2edf8c38: los diffs de cierre se
+miden contra el. Esta reanudacion no toca backend-pet-tracker/.
+
+Lee antes de tocar nada: requirements.md §Enmienda E3 (bloque de cabecera,
+R11.e, tabla de clases y candado de fuente de R11), design.md §Candados
+(fila #61 R4), tasks.md R11, y esta seccion del handoff.
+
+Lo que cambia respecto al handoff original + E1 + E2, y solo esto:
+- R11.e: el numero de hoy lleva `text-sm font-bold text-accent-strong`, no
+  `text-accent`. El punto sigue con `bg-accent`. inkSites de #61 R4 no se
+  toca. Ningun otro `it` ajeno cambia; cualquier rojo fuera de los que
+  nombra este bloque sigue siendo motivo de PARA.
+
+Donde retomas: tasks.md R11, como par de correccion sobre los commits
+existentes (no reescribas ni rebasees nada):
+1. Rojo. En src/screens/meals-history/index.test.tsx, dentro de
+   describe('#105 R11: …'), cambia
+     expect(opening('meals-history-today')).toContain('text-sm font-bold text-accent');
+   por
+     expect(opening('meals-history-today')).toContain('text-sm font-bold text-accent-strong');
+   Corre
+     bunx jest src/screens/meals-history/index.test.tsx
+   y espera exactamente un `it` rojo, el que contiene esa linea. Si el
+   conjunto rojo es otro, PARA. Commitea como
+   test(mobile): … (#105 R11).
+2. Verde minimo. En src/screens/meals-history/index.tsx cambia
+     className="text-sm font-bold text-accent"
+   del <DayNumber testID="meals-history-today" …> por
+     className="text-sm font-bold text-accent-strong"
+   Corre
+     bunx jest src/screens/meals-history/index.test.tsx src/__tests__/legibility-classnames.test.ts src/__tests__/consistency-classnames.test.ts
+   y espera todo verde, incluido #61 R4. Commitea como
+   feat(mobile): … (#105 R11).
+3. Pendientes que dejaste anotados, cada uno en su commit y sin par rojo
+   (no cambian comportamiento; dilo en el mensaje):
+   - quita la linea en blanco final de
+     src/app/__tests__/detail-stack.guard.test.tsx y de
+     src/app/__tests__/detail-stack.navigation.test.tsx, hasta que
+     `git diff --check 2edf8c38 HEAD` de exit 0. Mensaje
+     style(mobile): … (#105 R15).
+   - en src/utils/month-grid.ts escribe el tipo de retorno de monthGrid
+     como (string | null)[] en vez de Array<string | null>. Corre
+     bunx jest src/utils/__tests__/month-grid.test.ts (verde) y
+     bun run lint (0 errores, 0 advertencias). Mensaje
+     refactor(mobile): … (#105 R10).
+4. Repite el cierre de tasks.md R15 paso 2 en mobile-pet-tracker/ y pega
+   comando, exit y cuentas, sin pipe:
+     test ! -e .expo/types/router.d.ts
+     bun run typecheck
+     bun run lint
+     bunx jest
+     git diff --check 2edf8c38 HEAD
+     git diff --stat origin/main -- '*package.json' '*bun.lock' '*pnpm-lock.yaml'
+   Espera 0 `it` rojos (la cuenta de tests no sube: no hay `it` nuevos).
+   Backend: comprueba que `git diff --name-only f43c8487 HEAD --
+   backend-pet-tracker/` esta vacio y cita con ese dato los logs del cierre
+   de la Reanudacion 2; no hace falta repetir pnpm test ni pnpm test:e2e.
+   Si no esta vacio, PARA y dilo.
+
+Commits: igual que antes, mensajes `test(<scope>): … (#105 R<n>)` /
+`feat(<scope>): … (#105 R<n>)` mas los dos de arriba. No reescribas ni
+rebasees los commits existentes.
+
+Informe: continua progress/impl_meals-history.md bajo «## Reanudacion 3»
+con lo mismo que pide el handoff original (comandos sin pipe, cuentas,
+exit, bloque `●` del rojo del paso 1, cierre, `git diff --name-only
+2edf8c38 HEAD`, delta por fichero actualizado). Actualiza traceability.md
+(filas R10, R11 y R15, y una nota «Reanudacion 3» como las anteriores).
+Manten el `it` extra que anadiste en R3: lo juzga el reviewer. Antes de
+cualquier typecheck movil: `test ! -e
+mobile-pet-tracker/.expo/types/router.d.ts` (si existe, PARA y dilo; no
+lo borres tu). Esperas en tests: docs/conventions.md §Esperas.
+```
