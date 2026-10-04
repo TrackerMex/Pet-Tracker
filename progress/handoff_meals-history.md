@@ -209,3 +209,83 @@ literalmente. Copia de jest solo las lineas de resumen y los bloques `●`
 de cada `it` rojo; NO pegues console.info de HeroUI ni console.warn de
 Uniwind.
 ```
+
+## Reanudación 1: parada en el ancla R5 (2026-10-04)
+
+> Codex paró en la verificación de anclas con HEAD `52757187`, como exige
+> el handoff («si alguna no da su contenido, PARA»): R5 decía que
+> `ui-copy-table.ts` no registra `src/app/_layout.tsx` (`grep -c "_layout"`
+> = 0) y el grep da 9. La parada fue correcta; la premisa era falsa y el
+> leader no la había contrastado. Backend R2, R1 y R3 están en verde y el
+> rojo de R4 está commiteado (`430b232a`, 13 de 15 fallan con `404`); no se
+> escribió producción de R4 ni nada de móvil.
+>
+> **Enmienda E1** (commit `e0f133a1`, aprobada por el humano en Notion el
+> 2026-10-04, `page_last_edited_at` 2026-10-04T00:24:21.926Z): R5 lleva una
+> fila más en `R6_FOOD` (`src/app/_layout.tsx` / `mealsHistory.mealsHistory`),
+> el candado `#65 R6` sube `+ 11` en vez de `+ 10`, y el rojo transitorio de
+> ese candado va de R5 a R14 porque la llamada de `_layout.tsx` nace en R8.
+> Nada más cambia: ni claves, ni literales, ni tests de R5, ni otro
+> requisito. La firma de E1 es el commit que añade esta reanudación.
+
+Pegar en Codex CLI:
+
+```
+Worktree: /home/claude/sites/Pet-Tracker   <- PRIMERA LINEA. Trabaja AQUI y en ningun otro sitio
+Reanudacion 1 de #105 tras tu parada en el ancla R5. Ejecuta y pega en el
+informe, bajo una seccion nueva «## Reanudacion 1»:
+  pwd
+  git branch --show-current
+  git rev-parse --short HEAD
+  git rev-parse --short HEAD~1
+  git rev-parse --short HEAD~3
+  git status --short
+PARA si:
+- la branch no es feature/105-meals-history;
+- HEAD~1 no es 1fe7d4df (bitacora del leader) o HEAD~3 no es 52757187
+  (tu ultimo commit, la trazabilidad);
+- `git status --short` muestra algo.
+HEAD es el commit del leader que firma E1 y anade esta reanudacion.
+Siguen en vigor todas las reglas del handoff original. H0 sigue siendo
+2edf8c38: los diffs de cierre se miden contra el.
+
+Lee antes de tocar nada: requirements.md §Enmienda E1 (bloque de cabecera
+y R5), design.md D8 / §Archivos / §Candados (filas marcadas E1), tasks.md
+R5, y esta seccion del handoff.
+
+Anclas: repite SOLO esta, con su cifra:
+  grep -c "_layout" mobile-pet-tracker/src/__tests__/ui-copy-table.ts
+Esperado 9. Si no da 9, PARA. El resto de anclas ya las verificaste y no
+han cambiado (ningun commit desde 52757187 toca codigo).
+
+Lo que cambia respecto al handoff original, y solo esto:
+- R5: en R6_FOOD van 11 filas nuevas, no 10. La de _layout.tsx es
+    { file: 'src/app/_layout.tsx', key: 'mealsHistory.mealsHistory' }, // #105 R5
+  con el formato de la fila `mealSchedule.mealSchedule` que encabeza
+  R6_FOOD. Las 11 van juntas, al final de R6_FOOD, con la de _layout.tsx
+  la primera de las once. El candado `#65 R6` de ui-language.test.ts sube
+  `+ 11 // #105 R5` (no `+ 10`).
+- El rojo transitorio de `#65 R6` dura de R5 a R14: la llamada
+  `t('mealsHistory.mealsHistory')` de _layout.tsx nace en R8, las de
+  food.tsx en R14. Anotalo en cada corrida intermedia y comprueba que
+  vuelve a verde en R14 (donde decia «R9-R14», lee «R8-R14»).
+
+Donde retomas: tasks.md R4 paso 2 (produccion minima del endpoint) sobre
+el rojo que ya tienes en 430b232a; luego R4 paso 3 y la comprobacion del
+bloque backend (pnpm test y pnpm test:e2e verdes, lockfile sin diff).
+Despues el bloque movil entero en el orden de tasks.md (R5, R10, R6, R7,
+R8, R9, R11, R12, R13, R14, R15) con las cifras de E1. Postgres y
+LocalStack estan libres: la sesion de #101 ya cerro.
+
+Commits: igual que antes, test rojo primero y feat minimo despues, un
+R-id por par, mensajes `test(<scope>): … (#105 R<n>)` /
+`feat(<scope>): … (#105 R<n>)`. No reescribas ni rebasees los commits
+existentes.
+
+Informe: continua progress/impl_meals-history.md bajo «## Reanudacion 1»
+con lo mismo que pide el handoff original (comandos sin pipe, cuentas,
+exit, bloques `●` de cada rojo, grep de literales de R5, cierre, `git
+diff --name-only 2edf8c38 HEAD`, delta por fichero). Actualiza
+traceability.md. Mantén el `it` extra que anadiste en R3 (orden de
+validacion con `to` por defecto): lo juzga el reviewer.
+```

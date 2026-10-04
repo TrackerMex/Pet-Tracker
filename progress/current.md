@@ -50,11 +50,14 @@
      (commit `e0f133a1`): fila de `src/app/_layout.tsx` para
      `mealsHistory.mealsHistory` en `R6_FOOD`, candado `#65 R6` en
      `+ 11`. Página de Notion re-espejada, `Estado del gate` =
-     En revisión, `Rol actual` = Leader. **Pendiente del humano:**
-     aprobar E1 en Notion. Después: commit de firma de E1,
-     `Rol actual = Implementer`, sección «Reanudación 1» en
-     `progress/handoff_meals-history.md` (Codex retoma en R4 verde con
-     las cifras de E1), push, handoff al humano.
-- **Estado al parar:** esperando la aprobación de E1 en Notion. Codex
-  en pausa con HEAD `52757187` + el commit de E1. El leader no toca
-  `backend-pet-tracker/` ni `mobile-pet-tracker/`.
+     En revisión, `Rol actual` = Leader. El humano aprobó E1 en Notion el
+     2026-10-04 (`page_last_edited_at` 2026-10-04T00:24:21.926Z); el
+     leader firmó la casilla de E1 y añadió «Reanudación 1» a
+     `progress/handoff_meals-history.md` en el mismo commit (es el commit
+     de firma de E1), `Rol actual = Implementer`, bloqueador limpiado.
+     Codex retoma en tasks.md R4 paso 2 con las cifras de E1.
+- **Estado al parar:** esperando a que el humano pegue la «Reanudación 1»
+  en Codex CLI y confirme el final. Backend R1–R3 verde, R4 rojo
+  (`430b232a`); móvil sin tocar. #101 cerró (PR #189) y liberó Postgres y
+  LocalStack. El leader no toca `backend-pet-tracker/` ni
+  `mobile-pet-tracker/`.

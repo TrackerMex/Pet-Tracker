@@ -14,7 +14,7 @@ tags: [harness, spec]
 > esta spec se verificó contra ese árbol. Las anclas son por contenido
 > grepeable (ruta + símbolo o literal), nunca por número de línea.
 >
-> **Enmienda E1 (2026-10-04, pendiente de aprobación en Notion, casilla
+> **Enmienda E1 (2026-10-04, aprobada en Notion el mismo día, casilla
 > propia en §Aprobación):** R5 afirmaba que `ui-copy-table.ts` no registra
 > `src/app/_layout.tsx` (`grep -c "_layout"` = 0) y que `mealsHistory.mealsHistory`
 > no lleva fila. Es falso: en `d29d49d5` ese grep da **9** (una fila por
@@ -707,7 +707,7 @@ Clasificado viñeta a viñeta; cada una con su razón.
 ## Aprobación
 
 - [x] Aprobado por humano (fecha: 2026-10-03, desde Notion: página `3ee6115a-9b27-81b8-b100-c70a69cfbb64`, `Estado del gate` = Aprobado, `page_last_edited_at` 2026-10-03T19:07:08.029Z) ← gate obligatorio antes de implementar
-- [ ] **Enmienda E1** aprobada por humano (fecha: —, desde Notion: `Estado del gate` = Aprobado tras volver a En revisión el 2026-10-04) ← gate propio de E1; Codex no reanuda sin él
+- [x] **Enmienda E1** aprobada por humano (fecha: 2026-10-04, desde Notion: página `3ee6115a-9b27-81b8-b100-c70a69cfbb64`, `Estado del gate` = Aprobado tras volver a En revisión el 2026-10-04, `page_last_edited_at` 2026-10-04T00:24:21.926Z) ← gate propio de E1; Codex no reanuda sin él
 
 Decisiones que esta spec cerró por su cuenta y el humano puede objetar aquí:
 (1) rejilla lunes-primero para ambos idiomas; (2) `today` del backend manda
