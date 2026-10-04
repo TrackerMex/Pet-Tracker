@@ -230,7 +230,7 @@ describe('#105 R11: the civil month grid renders six decisions per day', () => {
       expect(source.lastIndexOf(`testID="${testID}"`)).toBe(anchor);
       return source.slice(source.lastIndexOf('<', anchor), source.indexOf('<', anchor)).split('/>')[0];
     }
-    expect(opening('meals-history-today')).toContain('text-sm font-bold text-accent');
+    expect(opening('meals-history-today')).toContain('text-sm font-bold text-accent-strong');
     expect(opening('meals-history-dot')).toContain('h-1.5 w-1.5 rounded-full bg-accent');
     expect(source.match(/bg-accent-soft/g)).toHaveLength(1);
     expect(source.match(/style=\{TABULAR_NUMS\}/g)).toHaveLength(2);
