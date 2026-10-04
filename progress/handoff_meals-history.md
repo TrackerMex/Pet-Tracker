@@ -513,6 +513,14 @@ lo borres tu). Esperas en tests: docs/conventions.md §Esperas.
 
 ## Reanudación 4: rechazo del reviewer por lint backend (2026-10-04)
 
+> **OBSOLETA — NO PEGAR EN CODEX.** Superada antes de usarse: Codex corrigió B1
+> por su cuenta en `723eb95` (`test(nutrition): lint-clean meals history e2e
+> (#105 R4)`, informe en «Rebote B1» de `progress/impl_meals-history.md`). El
+> reviewer aprobó en su Revisión 2 y #105 se mergeó en `main` con el PR #190.
+> Los anclajes de commit de abajo (`dc1a0c5`, `2a5919c`) ya no coinciden con
+> ningún HEAD, así que el prompt pararía en su primera verificación. Se conserva
+> solo como registro de lo que se había preparado.
+
 > Con la Reanudación 3 Codex cerró E3 y los dos pendientes de formato
 > (último commit de código `2a5919cd`, informe y trazabilidad en `dc1a0c5`).
 > El `reviewer` corrió `./init.sh` y emitió **RECHAZADO**
