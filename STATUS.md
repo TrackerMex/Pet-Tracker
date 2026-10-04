@@ -100,9 +100,10 @@ debe listar las 4 URLs de cola.
   scroll ganan `keyboardShouldPersistTaps="handled"`. Spec firmada desde
   Notion (`faa72f2e`). Codex, una ronda test-primero (16 commits,
   `eba7309..5052dde`); reviewer aprobado (`a32c5aa`, 12 suites / 387
-  tests, tsc y lint exit 0). `./init.sh` no se ejecuto (infra compartida con
-  #105, sin autorizacion). Prueba de humo en el dev build de Android
-  firmada por el humano (`96a412c`, Android 15). PR abierta.
+  tests, tsc y lint exit 0). `./init.sh` sobre `fda0468`: build, unit 174/1335,
+  infra 2/14 y móvil 91/1939 verdes; e2e sin ejecutar (sin Docker en el
+  contenedor cloud, exit=1 por infra). Prueba de humo en el dev build de Android
+  firmada por el humano (`96a412c`, Android 15). PR #192 abierta.
 - **`mobile-app-and-notification-icons` (#101) done** (2026-10-04,
   `Pet-Tracker-wt-icon`, sesion Backend): icono de la app, adaptive icon
   (fondo plano `#9460FC`, foreground en zona segura), monocromo, splash
@@ -1333,7 +1334,7 @@ debe listar las 4 URLs de cola.
 - **2026-10-04** — **#148 `mobile-keyboard-avoiding-forms` cerrada** (sesion
   Backend, `Pet-Tracker-wt-148`): spec firmada desde Notion (`faa72f2e`),
   Codex en una ronda test-primero (16 commits), reviewer aprobado (`a32c5aa`)
-  y prueba de humo en Android firmada por el humano (`96a412c`). `./init.sh` no corrio. PR abierta.
+  y prueba de humo en Android firmada por el humano (`96a412c`). `./init.sh` verde salvo e2e (sin Docker en el cloud). PR #192 abierta.
 
 - **2026-10-04** — **#101 `mobile-app-and-notification-icons` cerrada** (sesion
   Backend, `Pet-Tracker-wt-icon`): entrada ampliada por el humano al icono de
