@@ -1,6 +1,6 @@
 ---
 feature: "mobile-keyboard-avoiding-forms"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec, mobile]
 ---
 
@@ -409,4 +409,4 @@ Si alguna casilla falla, el humano anota la pantalla y lo que vio en
 Dos gates, dos casillas: esta autoriza implementar (firma D1–D9 de
 [[design]]); las de §Prueba de humo cierran la feature.
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [x] Aprobado por humano (fecha: 2026-10-04, 01:38 UTC; el humano anotó 2026-10-03 en su hora local) ← gate obligatorio antes de implementar. **Firmado vía Notion:** página `#148 mobile-keyboard-avoiding-forms` (`3ef6115a-9b27-8106-a6af-ea461087bb27`) con `Estado del gate` = Aprobado y `page_last_edited_at` = `2026-10-04T01:38:50.149Z`, leída por el leader antes del commit de firma. La API no devuelve la cuenta que editó; la firma es el commit.
