@@ -239,3 +239,15 @@ export interface Alert {
   ackedAt: string | null;
   closedAt: string | null;
 }
+
+export interface MealsHistoryDay {
+  date: string;
+  mealTimes: string[];
+}
+
+export interface MealsHistory {
+  from: string;
+  to: string;
+  today: string;
+  days: MealsHistoryDay[];
+}

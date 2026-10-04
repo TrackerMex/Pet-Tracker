@@ -1,5 +1,5 @@
 import { deleteJson, getJson, patchJson, postJson, readJson } from './http';
-import type { NutritionPlan, NutritionProfile } from './types';
+import type { MealsHistory, NutritionPlan, NutritionProfile } from './types';
 
 export type NutritionProfileState =
   | { kind: 'ok'; profile: NutritionProfile }
@@ -119,6 +119,54 @@ export async function getNutritionPlan(
   const body = await readJson(result.response);
   return isObjectBody(body)
     ? { kind: 'ok', plan: body as unknown as NutritionPlan }
+    : { kind: 'error' };
+}
+
+export type MealsHistoryState =
+  | { kind: 'ok'; history: MealsHistory }
+  | { kind: 'not-found' }
+  | { kind: 'unauthorized' }
+  | { kind: 'error' }
+  | { kind: 'unreachable'; message: string }
+  | { kind: 'missing-config' };
+
+export async function getMealsHistory(
+  baseUrl: string | undefined,
+  token: string,
+  petId: string,
+  from: string,
+  to: string,
+  fetchFn: typeof fetch = fetch,
+): Promise<MealsHistoryState> {
+  if (!baseUrl) {
+    return { kind: 'missing-config' };
+  }
+
+  const result = await getJson(
+    baseUrl,
+    `/pets/${petId}/meals?from=${from}&to=${to}`,
+    token,
+    fetchFn,
+  );
+  if (result.kind === 'unreachable') {
+    return result;
+  }
+
+  if (result.response.status === 404) {
+    return { kind: 'not-found' };
+  }
+
+  if (result.response.status === 401) {
+    return { kind: 'unauthorized' };
+  }
+
+  if (result.response.status !== 200) {
+    return { kind: 'error' };
+  }
+
+  const body = await readJson(result.response);
+  return isObjectBody(body)
+    ? { kind: 'ok', history: body as unknown as MealsHistory }
     : { kind: 'error' };
 }
 

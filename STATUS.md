@@ -1,10 +1,10 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-10-04
-**Features completadas**: 137/148 (`feature_list.json`)
-**En progreso**: #105 `meals-history` (sesión Frontend, tree principal). #101 cerrada en `feature/101-mobile-app-and-notification-icons`, PR pendiente. #148 cerrada en `feature/148-mobile-keyboard-avoiding-forms`, PR pendiente
+**Features completadas**: 138/148 (`feature_list.json`)
+**En progreso**: ninguna. #148 cerrada en `feature/148-mobile-keyboard-avoiding-forms` (PR #192 pendiente de merge humano); #105 y #101 ya están en `main`
 
-**Pendientes**: 11 (#18, #60, #105, #115-#119, #129, #134 y #144). **#148 `mobile-keyboard-avoiding-forms` cerrada**: siete pantallas con inputs (login, register, reset-password, add-pet, add-reminder, pairing y weight-log) se apartan del teclado en Android con la `KeyboardAvoidingView` de #146 E1, sin dependencias nuevas. Móvil 91/1928 → 91/1939. Prueba de humo en el dev build de Android firmada por el humano. **#101 `mobile-app-and-notification-icons` cerrada**: la app estrena su icono (perrito robótico violeta) en el launcher de Android, el adaptive icon con fondo plano `#9460FC` y el icono completo en la zona segura del 66 %, el monocromo para temas, el splash violeta con el perrito en lugar del logo de Expo, el favicon y el icono blanco de notificación tintado `#9460FC`. Todo derivado de las tres fuentes del humano con un script one-off (`scripts/make-icons.mjs`, `jimp-compact` transitiva, cero dependencias nuevas) y candado por cabecera PNG (IHDR) en `app.assets.test.ts`. `ios.icon` intacto: iOS sigue en #60. Móvil 90/1913 → 91/1928. Codex en una ronda test-primero (16 commits); reviewer aprobado a la primera. Prueba de humo en el dev build de Android (launcher, splash y push real) firmada por el humano. Requiere `bunx expo prebuild --clean` en cada máquina: los iconos no viajan por Metro ni por OTA. **#147 `mobile-meal-schedule-editing` cerrada (mitad móvil de #103)**: en Horario de comidas, el dueño edita la hora de cada franja y añade franjas con el selector nativo de hora (`ExpoDateTimePicker`, `dialog`). Los controles solo los ve el dueño (`myRole` vía `petKeys.detail`); el resto ve la pantalla en solo lectura y el 403 queda de red de seguridad. Tras un éxito se refrescan el plan y la mascota, sin estado optimista y con los controles deshabilitados hasta que terminan los dos. Cada error del contrato (400, 403 y los cuatro 422) tiene su mensaje inline, y un 401 cierra sesión. Catálogo 320 → 329 claves. Móvil 88/1710 → 88/1771, y 90/1913 tras integrar #146. Codex en cinco rondas test-primero (E1-E4); el reviewer rechazó tres por cláusulas universales candadas en un solo caso y aprobó la cuarta tras un barrido exhaustivo. Prueba de humo en el dev build de Android superada (OnePlus Nord 5). iOS sin verificar mientras #60 siga aparcada
+**Pendientes**: 10 (#18, #60, #115-#119, #129, #134 y #144). **#148 `mobile-keyboard-avoiding-forms` cerrada**: siete pantallas con inputs (login, register, reset-password, add-pet, add-reminder, pairing y weight-log) se apartan del teclado en Android con la `KeyboardAvoidingView` de #146 E1, sin dependencias nuevas. Móvil +11 tests. Prueba de humo en el dev build de Android firmada por el humano. **#105 `meals-history` cerrada** (historial de comidas servidas con calendario mes a mes; ver «Estado actual»). **#101 `mobile-app-and-notification-icons` cerrada**: la app estrena su icono (perrito robótico violeta) en el launcher de Android, el adaptive icon con fondo plano `#9460FC` y el icono completo en la zona segura del 66 %, el monocromo para temas, el splash violeta con el perrito en lugar del logo de Expo, el favicon y el icono blanco de notificación tintado `#9460FC`. Todo derivado de las tres fuentes del humano con un script one-off (`scripts/make-icons.mjs`, `jimp-compact` transitiva, cero dependencias nuevas) y candado por cabecera PNG (IHDR) en `app.assets.test.ts`. `ios.icon` intacto: iOS sigue en #60. Móvil 90/1913 → 91/1928. Codex en una ronda test-primero (16 commits); reviewer aprobado a la primera. Prueba de humo en el dev build de Android (launcher, splash y push real) firmada por el humano. Requiere `bunx expo prebuild --clean` en cada máquina: los iconos no viajan por Metro ni por OTA. **#147 `mobile-meal-schedule-editing` cerrada (mitad móvil de #103)**: en Horario de comidas, el dueño edita la hora de cada franja y añade franjas con el selector nativo de hora (`ExpoDateTimePicker`, `dialog`). Los controles solo los ve el dueño (`myRole` vía `petKeys.detail`); el resto ve la pantalla en solo lectura y el 403 queda de red de seguridad. Tras un éxito se refrescan el plan y la mascota, sin estado optimista y con los controles deshabilitados hasta que terminan los dos. Cada error del contrato (400, 403 y los cuatro 422) tiene su mensaje inline, y un 401 cierra sesión. Catálogo 320 → 329 claves. Móvil 88/1710 → 88/1771, y 90/1913 tras integrar #146. Codex en cinco rondas test-primero (E1-E4); el reviewer rechazó tres por cláusulas universales candadas en un solo caso y aprobó la cuarta tras un barrido exhaustivo. Prueba de humo en el dev build de Android superada (OnePlus Nord 5). iOS sin verificar mientras #60 siga aparcada
 
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
@@ -87,6 +87,18 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Estado actual
+
+- **`meals-history` (#105) done** (2026-10-04, tree principal): historial de
+  comidas servidas. Backend: `GET /v1/pets/:petId/meals` con rango
+  arbitrario (`from`/`to`, tope por «hoy» del dueño) y el método de rango en
+  `MealServingRepository`. Móvil: subpantalla `meals-history` del stack,
+  entrada desde la pestaña Food, calendario mes a mes con marcador por día y
+  detalle inline al tocar el día (cuatro estados, `keepPreviousData`). Móvil
+  90/1913 → 92/1981; backend unit 174/1335 → 176/1348; e2e 28/423 → 29/438.
+  Cero dependencias nuevas. Codex test-primero con tres paradas (enmiendas
+  E1-E3 de spec); el reviewer rechazó una vez (lint del e2e) y aprobó la
+  segunda con `init.sh` EXIT=0. Prueba de humo en dev build de Android
+  superada. iOS sin verificar mientras #60 siga aparcada.
 
 - **2026-10-03**: añadidos el primer icono de la app (`pet-tracker-app-icon.png`) y el PNG monocromo adjuntado por el usuario (`pet-tracker-notification-monochrome-original.png`) a `mobile-pet-tracker/assets/images/`, conservando los archivos originales. Integración pendiente en #101.
 
@@ -1330,6 +1342,17 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Última sesión
+
+- **2026-10-04** — Seguimiento de #105 tras el merge del PR #190 (`60d19989`): `docs/ui-guidelines.md` §Decisiones fijas 6 nombra `meals-history` en la excepción A11 (enmienda A20); la «Reanudación 4» del handoff de #105 queda marcada como obsoleta (Codex ya había corregido B1 en `723eb95`). Solo documentación; `design-drift`, `consistency-classnames`, `ui-language`, `hero-header-amendments` y `food` verdes.
+
+- **2026-10-04** — **#105 `meals-history` cerrada** (tree principal): spec
+  firmada desde Notion (`35b21a0d`), enmiendas E1-E3 aprobadas por el
+  humano, implementación por Codex hasta `2a5919c`, B1 (lint del e2e)
+  corregido en `723eb95`, reviewer APROBADO en la segunda revisión y H1
+  firmada por el humano (`7a91a26`). PR #190 abierto; siguiente: merge humano. Se resolvió el
+  conflicto con `main` (#101 ya mergeada) fusionando `STATUS.md`,
+  `history.md` y `feature_list.json`; #148 rebasea `feature_list.json` y
+  `STATUS.md` si mergea después.
 
 - **2026-10-04** — **#148 `mobile-keyboard-avoiding-forms` cerrada** (sesion
   Backend, `Pet-Tracker-wt-148`): spec firmada desde Notion (`faa72f2e`),

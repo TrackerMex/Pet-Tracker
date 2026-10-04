@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, eq } from 'drizzle-orm';
+import { and, asc, eq, gte, lte } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { uuidv7 } from 'uuidv7';
 import { DRIZZLE } from '@/db/drizzle.constants';
@@ -57,6 +57,27 @@ export class MealServingDrizzleRepository implements MealServingRepository {
       .returning();
 
     return row ? toDomain(row) : null;
+  }
+
+  async listServedBetween(
+    petId: string,
+    fromDay: string,
+    toDay: string,
+  ): Promise<Array<{ servedOn: string; mealTime: string }>> {
+    return this.db
+      .select({
+        servedOn: mealServings.servedOn,
+        mealTime: mealServings.mealTime,
+      })
+      .from(mealServings)
+      .where(
+        and(
+          eq(mealServings.petId, petId),
+          gte(mealServings.servedOn, fromDay),
+          lte(mealServings.servedOn, toDay),
+        ),
+      )
+      .orderBy(asc(mealServings.servedOn), asc(mealServings.mealTime));
   }
 
   async listTimesServedOn(petId: string, servedOn: string): Promise<string[]> {

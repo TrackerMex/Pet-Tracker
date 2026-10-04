@@ -1,3 +1,4 @@
+import type { MealsHistoryResult } from '@/modules/nutrition/application/use-cases/get-meals-history.use-case';
 import type { NutritionProfile } from '@/modules/nutrition/domain/entities/nutrition-profile.entity';
 import type { NutritionPlan } from '@/modules/nutrition/domain/entities/nutrition-plan.entity';
 import type { NutritionPlanToday } from '@/modules/nutrition/application/use-cases/get-nutrition-plan.use-case';
@@ -101,3 +102,5 @@ export function toMealServingResponse(
     createdBy: serving.createdBy,
   };
 }
+
+export type MealsHistoryResponse = MealsHistoryResult;

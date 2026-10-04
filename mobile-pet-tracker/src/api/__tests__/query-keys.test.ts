@@ -144,3 +144,12 @@ describe('#41 R2: la lista de zonas seguras tiene su propia clave por mascota', 
     expect(geofenceKeys.list('p1')).not.toEqual(geofenceKeys.list('p2'));
   });
 });
+
+describe('#105 R7: meals history query keys include the civil range', () => {
+  it('returns the exact namespaced key', () => {
+    expect(nutritionKeys.mealsHistory('p1', '2026-01-01', '2026-01-31')).toEqual(['nutrition', 'meals-history', 'p1', { from: '2026-01-01', to: '2026-01-31' }]);
+  });
+  it('keeps separate months apart', () => {
+    expect(nutritionKeys.mealsHistory('p1', '2026-01-01', '2026-01-31')).not.toEqual(nutritionKeys.mealsHistory('p1', '2025-12-01', '2025-12-31'));
+  });
+});

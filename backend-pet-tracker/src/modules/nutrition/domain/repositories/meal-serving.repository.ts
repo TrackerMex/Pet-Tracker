@@ -16,5 +16,10 @@ export interface MealServingRepository {
     servedOn: string,
     mealTime: string,
   ): Promise<MealServing | null>;
+  listServedBetween(
+    petId: string,
+    fromDay: string,
+    toDay: string,
+  ): Promise<Array<{ servedOn: string; mealTime: string }>>;
   listTimesServedOn(petId: string, servedOn: string): Promise<string[]>;
 }

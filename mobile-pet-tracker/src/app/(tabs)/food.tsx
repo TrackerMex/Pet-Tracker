@@ -433,6 +433,24 @@ export default function FoodScreen() {
             </View>
             <ChevronRight size={20} color={foreground} />
           </Card>
+          <Card
+            testID="meals-history-link"
+            className="flex-row items-center justify-between"
+            onPress={() => router.push('/meals-history' as Href)}
+          >
+            <View className="gap-1">
+              <Text
+                testID="meals-history-link-title"
+                className="text-base font-bold text-foreground"
+              >
+                {t('food.mealsHistory')}
+              </Text>
+              <Text className="text-xs font-normal text-muted">
+                {t('food.mealsHistoryLinkSubtitle')}
+              </Text>
+            </View>
+            <ChevronRight size={20} color={foreground} />
+          </Card>
         </View>
       ) : null}
     </ScrollView>

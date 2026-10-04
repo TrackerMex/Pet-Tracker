@@ -31,6 +31,7 @@ export const BODY_CONDITION_UNDERWEIGHT_MAX = 3;
 
 /** C-5: comidas diarias por etapa y excepción de gato adulto activo. */
 export const MAX_MEALS_PER_DAY = 6;
+export const MEALS_HISTORY_MAX_RANGE_DAYS = 31;
 export const MEALS_PUPPY = 4;
 export const MEALS_YOUNG = 3;
 export const MEALS_ADULT = 2;
