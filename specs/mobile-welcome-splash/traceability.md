@@ -1,0 +1,39 @@
+---
+feature: mobile-welcome-splash
+id: 118
+status: draft
+tags: [harness, spec, mobile, ui]
+---
+
+# Trazabilidad — #118 mobile-welcome-splash
+
+| Requisito | Test (archivo::nombre) | Commit |
+| --- | --- | --- |
+| R1 | `src/providers/__tests__/language-provider.test.tsx::mantiene la base más las claves de #68 y los mismos marcadores en ambos idiomas` (+8) | pendiente |
+| R1 | `src/__tests__/ui-language.test.ts::#118 R1: welcome resuelve su copy por clave › resuelve las 8 ocurrencias de welcome` | pendiente |
+| R1 | `src/__tests__/ui-language.test.ts::no deja ningún valor fijo del catálogo como literal entero en las pantallas` (`SCREEN_FILES` +1) | pendiente |
+| R1 | `src/__tests__/ui-copy-table.ts::cuadra ALL_USES con la suma de sus bloques` (`R16_WELCOME`) | pendiente |
+| R2 | `src/app/__tests__/index.test.tsx::#118 R2: redirects an unauthenticated session to welcome` | pendiente |
+| R3 | `src/screens/welcome/index.test.tsx::R3 › registra welcome bajo su propio guard de no autenticado` | pendiente |
+| R3 | `src/screens/welcome/index.test.tsx::R3 › deja el route de welcome delgado` | pendiente |
+| R3 | `src/app/__tests__/layout.test.tsx::#118 R3: RootStack declara welcome bajo su propia guarda` (+ `toHaveLength(5 + 1)` en `#95 R2`) | pendiente |
+| R4 | `src/screens/welcome/index.test.tsx::R4 › con sesión redirige a home y no pinta la pantalla` | pendiente |
+| R5 | `src/screens/welcome/index.test.tsx::R5 › aplica las dimensiones del grupo sin tab bar` | pendiente |
+| R5 | `src/screens/welcome/index.test.tsx::R5 › apila los siete bloques en orden` | pendiente |
+| R5 | `src/screens/welcome/index.test.tsx::R5 › pinta hero, marca, tagline y legal con sus clases` | pendiente |
+| R6 | `src/screens/welcome/index.test.tsx::R6 › filas 1–10 (un it por fila), cardinalidad (fila 12), candado de fuente (fila 11)` | pendiente |
+| R7 | `src/screens/welcome/index.test.tsx::R7 › empuja a registro sin reemplazar` | pendiente |
+| R7 | `src/screens/welcome/index.test.tsx::R7 › es el botón primario del repo` | pendiente |
+| R7 | `src/__tests__/consistency-classnames.test.ts::#62 R1 › deja todos los botones primarios sólidos en un único radio` (+1) y `#98 R10` (+1) | pendiente |
+| R8 | `src/screens/welcome/index.test.tsx::R8 › empuja a login sin reemplazar` | pendiente |
+| R8 | `src/screens/welcome/index.test.tsx::R8 › es un botón hueco con tinta accent-strong` | pendiente |
+| R9 | `src/screens/welcome/index.test.tsx::R9 › muestra el copy en español` | pendiente |
+| R9 | `src/screens/welcome/index.test.tsx::R9 › muestra el copy en inglés` | pendiente |
+| R10 | `src/screens/welcome/index.test.tsx::R10 › fija la duración y la curva` | pendiente |
+| R10 | `src/screens/welcome/index.test.tsx::R10 › arranca invisible y desplazado sin Reduce Motion` | pendiente |
+| R10 | `src/screens/welcome/index.test.tsx::R10 › termina visible y en su sitio sin Reduce Motion` | pendiente |
+| R10 | `src/screens/welcome/index.test.tsx::R10 › con Reduce Motion no se desplaza` | pendiente |
+| R11 | `src/__tests__/design-drift.test.ts::#118 R11: la bienvenida no mete drift de estilo` | pendiente |
+| R11 | `src/__tests__/legibility-classnames.test.ts::#61 R4 › screens/welcome/index.tsx pinta con text-accent-strong (2)` (+2 en la suma) | pendiente |
+| R12 | reviewer: `git diff origin/main -- mobile-pet-tracker/package.json mobile-pet-tracker/bun.lock` vacío | pendiente |
+| R13 | humano: S1–S8 en dev build de Android (casillas en `requirements.md`) | pendiente |

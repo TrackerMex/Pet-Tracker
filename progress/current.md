@@ -13,4 +13,4 @@
   `docs/ui-guidelines.md` §appllama límite 3 (MCP contratado).
 - Reparto con la sesión Backend: #117 mobile-forgot-password en su propio
   worktree; comparte el explore y la enmienda de la carta vía esta branch.
-- Estado: `spec_author` lanzado para #118; espejo a Notion y gate humano pendientes.
+- Estado: spec de #118 en `spec_ready` (specs/mobile-welcome-splash/); espejo a Notion hecho, gate humano pendiente.
