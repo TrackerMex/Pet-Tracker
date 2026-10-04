@@ -1,10 +1,10 @@
 # pet-tracker — Status
 
-**Última actualización**: 2026-10-03
-**Features completadas**: 135/148 (`feature_list.json`)
-**En progreso**: ninguna. #147 cerrada en `feature/147-mobile-meal-schedule-editing`, PR pendiente
+**Última actualización**: 2026-10-04
+**Features completadas**: 136/148 (`feature_list.json`)
+**En progreso**: ninguna. #105 cerrada en `feature/105-meals-history`, PR pendiente (#147 sigue su propio PR)
 
-**Pendientes**: 13 (#18, #60, #101, #105, #115-#119, #129, #134, #144 y #148). **#147 `mobile-meal-schedule-editing` cerrada (mitad móvil de #103)**: en Horario de comidas, el dueño edita la hora de cada franja y añade franjas con el selector nativo de hora (`ExpoDateTimePicker`, `dialog`). Los controles solo los ve el dueño (`myRole` vía `petKeys.detail`); el resto ve la pantalla en solo lectura y el 403 queda de red de seguridad. Tras un éxito se refrescan el plan y la mascota, sin estado optimista y con los controles deshabilitados hasta que terminan los dos. Cada error del contrato (400, 403 y los cuatro 422) tiene su mensaje inline, y un 401 cierra sesión. Catálogo 320 → 329 claves. Móvil 88/1710 → 88/1771, y 90/1913 tras integrar #146. Codex en cinco rondas test-primero (E1-E4); el reviewer rechazó tres por cláusulas universales candadas en un solo caso y aprobó la cuarta tras un barrido exhaustivo. Prueba de humo en el dev build de Android superada (OnePlus Nord 5). iOS sin verificar mientras #60 siga aparcada
+**Pendientes**: 12 (#18, #60, #101, #115-#119, #129, #134, #144 y #148). **#147 `mobile-meal-schedule-editing` cerrada (mitad móvil de #103)**: en Horario de comidas, el dueño edita la hora de cada franja y añade franjas con el selector nativo de hora (`ExpoDateTimePicker`, `dialog`). Los controles solo los ve el dueño (`myRole` vía `petKeys.detail`); el resto ve la pantalla en solo lectura y el 403 queda de red de seguridad. Tras un éxito se refrescan el plan y la mascota, sin estado optimista y con los controles deshabilitados hasta que terminan los dos. Cada error del contrato (400, 403 y los cuatro 422) tiene su mensaje inline, y un 401 cierra sesión. Catálogo 320 → 329 claves. Móvil 88/1710 → 88/1771, y 90/1913 tras integrar #146. Codex en cinco rondas test-primero (E1-E4); el reviewer rechazó tres por cláusulas universales candadas en un solo caso y aprobó la cuarta tras un barrido exhaustivo. Prueba de humo en el dev build de Android superada (OnePlus Nord 5). iOS sin verificar mientras #60 siga aparcada
 
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
@@ -87,6 +87,18 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Estado actual
+
+- **`meals-history` (#105) done** (2026-10-04, tree principal): historial de
+  comidas servidas. Backend: `GET /v1/pets/:petId/meals` con rango
+  arbitrario (`from`/`to`, tope por «hoy» del dueño) y el método de rango en
+  `MealServingRepository`. Móvil: subpantalla `meals-history` del stack,
+  entrada desde la pestaña Food, calendario mes a mes con marcador por día y
+  detalle inline al tocar el día (cuatro estados, `keepPreviousData`). Móvil
+  90/1913 → 92/1981; backend unit 174/1335 → 176/1348; e2e 28/423 → 29/438.
+  Cero dependencias nuevas. Codex test-primero con tres paradas (enmiendas
+  E1-E3 de spec); el reviewer rechazó una vez (lint del e2e) y aprobó la
+  segunda con `init.sh` EXIT=0. Prueba de humo en dev build de Android
+  superada. iOS sin verificar mientras #60 siga aparcada.
 
 - **2026-10-03**: añadidos el primer icono de la app (`pet-tracker-app-icon.png`) y el PNG monocromo adjuntado por el usuario (`pet-tracker-notification-monochrome-original.png`) a `mobile-pet-tracker/assets/images/`, conservando los archivos originales. Integración pendiente en #101.
 
@@ -1307,6 +1319,14 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Última sesión
+
+- **2026-10-04** — **#105 `meals-history` cerrada** (tree principal): spec
+  firmada desde Notion (`35b21a0d`), enmiendas E1-E3 aprobadas por el
+  humano, implementación por Codex hasta `2a5919c`, B1 (lint del e2e)
+  corregido en `723eb95`, reviewer APROBADO en la segunda revisión y H1
+  firmada por el humano (`7a91a26`). Siguiente: `gh pr create` de la branch
+  y merge humano; quien mergee segundo de #105/#148 rebasea
+  `feature_list.json` y `STATUS.md`.
 
 - **2026-10-03** — Subidos el primer icono de la app y la imagen adjunta a `docs/pet-tracker-icon-session`. Copias idénticas por SHA-256 a sus originales. Incorporada la actualización remota de la rama conservando el inventario actual de 135/148 y el historial del equipo.
 

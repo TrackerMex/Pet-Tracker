@@ -28,7 +28,7 @@ tags: [harness, spec, traceability]
 | R13 | `mobile-pet-tracker/src/screens/meals-history/index.test.tsx::#105 R13` | `39d5759b feat(mobile): show and toggle the inline served day detail (#105 R13)` — 83/83 pantalla + clases; refactor verde `77935e16` |
 | R14 | `mobile-pet-tracker/src/app/(tabs)/__tests__/food.test.tsx::#105 R14` | `ab693851 feat(mobile): open served meals history from Food (#105 R14)` — 57/57 Food y 51/51 idioma; cero rojos E2 |
 | R15 | `mobile-pet-tracker/src/__tests__/design-drift.test.ts::#105 R15` (+ `R3` Card, `#87 R19`) y comandos de cierre | `ef3a2a85 test(mobile): candados de drift para meals-history (#105 R15)` nace verde (59/59); `0864d891` corrige tipos de dobles; `40bb583f style(mobile): trim trailing blank lines without behavior change (#105 R15)` limpia EOF. Cierre en `2a5919cd`: mobile 92/1981/1 snapshot, typecheck, lint (0 errores/advertencias) y diff-check exit=0; backend sin cambios respecto a `f43c8487`, cierre Reanudacion 2 reutilizado (tsc/unit/e2e exit=0) |
-| H1 | Prueba de humo en dev build Android (gate humano, `requirements.md` § Entorno de la prueba de humo) | pendiente (humano) |
+| H1 | Prueba de humo en dev build Android (gate humano, `requirements.md` § Entorno de la prueba de humo) | superada (humano, commit `7a91a26`) |
 
 Sesión detenida al descubrir el ancla R5 discrepante (9 usos `_layout` en H0 frente a 0 declarado); ver `progress/impl_meals-history.md`. R4 conserva el rojo `430b232a`, sin implementación. No hay cierre de R15 ni H1.
 
