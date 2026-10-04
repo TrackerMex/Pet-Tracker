@@ -13,7 +13,7 @@ export function monthRange(month: string): { from: string; to: string } {
   return { from: `${month}-01`, to: `${month}-${days}` };
 }
 
-export function monthGrid(month: string): Array<string | null> {
+export function monthGrid(month: string): (string | null)[] {
   const [year, number] = month.split('-').map(Number);
   const leading = (new Date(Date.UTC(year, number - 1, 1)).getUTCDay() + 6) % 7;
   const days = Number(monthRange(month).to.slice(8));
