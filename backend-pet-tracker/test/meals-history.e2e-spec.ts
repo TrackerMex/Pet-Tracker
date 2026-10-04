@@ -14,6 +14,7 @@ import {
   TOKEN_SERVICE,
   type TokenService,
 } from '@/modules/auth/domain/ports/token-service';
+import type { MealsHistoryResponse } from '@/modules/nutrition/infrastructure/mappers/nutrition.mapper';
 import { localDayOf, shiftDay } from '@/pipeline/local-day';
 import { AppModule } from '../src/app.module';
 
@@ -36,19 +37,17 @@ describe('Meals history (e2e)', () => {
   ): Promise<UserFixture> {
     const id = uuidv7();
     const email = `history-${label}-${runId}@example.com`;
-    await db
-      .insert(users)
-      .values({
-        id,
-        email,
-        passwordHash: 'not-used',
-        firstName: 'E2e',
-        lastName: label,
-        phone: '+525512345678',
-        country: 'MX',
-        timezone,
-        termsAcceptedAt: new Date(),
-      });
+    await db.insert(users).values({
+      id,
+      email,
+      passwordHash: 'not-used',
+      firstName: 'E2e',
+      lastName: label,
+      phone: '+525512345678',
+      country: 'MX',
+      timezone,
+      termsAcceptedAt: new Date(),
+    });
     userIds.push(id);
     return { id, token: tokens.sign({ sub: id, email }) };
   }
@@ -122,7 +121,8 @@ describe('Meals history (e2e)', () => {
         from: '2025-12-29',
         to: '2026-01-03',
       }).expect(200);
-      expect(response.body.days).toEqual([
+      const body = response.body as MealsHistoryResponse;
+      expect(body.days).toEqual([
         { date: '2025-12-29', mealTimes: ['08:00'] },
         { date: '2025-12-30', mealTimes: [] },
         { date: '2025-12-31', mealTimes: [] },
@@ -139,7 +139,8 @@ describe('Meals history (e2e)', () => {
         from: '2025-12-30',
         to: '2025-12-30',
       }).expect(200);
-      expect(response.body.days).toEqual([
+      const body = response.body as MealsHistoryResponse;
+      expect(body.days).toEqual([
         { date: '2025-12-30', mealTimes: ['08:00', '12:00'] },
       ]);
     });
@@ -185,20 +186,22 @@ describe('Meals history (e2e)', () => {
         from: shiftDay(to, -30),
         to,
       }).expect(200);
-      expect(accepted.body.days).toHaveLength(31);
+      const body = accepted.body as MealsHistoryResponse;
+      expect(body.days).toHaveLength(31);
     });
   });
   describe('#105 R4: strict GET history endpoint for pet members', () => {
     it('defaults to 31 days ending today in UTC', async () => {
       const { owner, pet } = await fixture('default');
       const response = await history(owner, pet.id).expect(200);
+      const body = response.body as MealsHistoryResponse;
       const to = localDayOf(Date.now(), 'UTC');
       expect(response.body).toMatchObject({
         from: shiftDay(to, -30),
         to,
         today: to,
       });
-      expect(response.body.days).toHaveLength(31);
+      expect(body.days).toHaveLength(31);
     });
     it('fills six days crossing a year with sorted hours scoped to pet', async () => {
       const { owner, pet } = await fixture('gaps');
@@ -212,7 +215,8 @@ describe('Meals history (e2e)', () => {
         from: '2025-12-29',
         to: '2026-01-03',
       }).expect(200);
-      expect(response.body.days).toEqual([
+      const body = response.body as MealsHistoryResponse;
+      expect(body.days).toEqual([
         { date: '2025-12-29', mealTimes: [] },
         { date: '2025-12-30', mealTimes: ['08:00', '12:00'] },
         { date: '2025-12-31', mealTimes: [] },
@@ -226,8 +230,9 @@ describe('Meals history (e2e)', () => {
       const response = await history(owner, pet.id, {
         to: '2026-01-31',
       }).expect(200);
-      expect(response.body.from).toBe('2026-01-01');
-      expect(response.body.days).toHaveLength(31);
+      const body = response.body as MealsHistoryResponse;
+      expect(body.from).toBe('2026-01-01');
+      expect(body.days).toHaveLength(31);
     });
     it('rejects unknown query keys with the validation shape', async () => {
       const { owner, pet } = await fixture('strict');
@@ -237,7 +242,7 @@ describe('Meals history (e2e)', () => {
       expect(response.body).toMatchObject({
         statusCode: 400,
         message: 'Validation failed',
-        errors: [{ path: '', message: expect.any(String) }],
+        errors: [{ path: '', message: expect.any(String) as unknown }],
       });
     });
     it('accepts future days as empty', async () => {
@@ -247,14 +252,15 @@ describe('Meals history (e2e)', () => {
         from: shiftDay(today, -2),
         to: shiftDay(today, 2),
       }).expect(200);
-      expect(response.body.days).toHaveLength(5);
-      expect(response.body.days.slice(3)).toEqual([
+      const body = response.body as MealsHistoryResponse;
+      expect(body.days).toHaveLength(5);
+      expect(body.days.slice(3)).toEqual([
         { date: shiftDay(today, 1), mealTimes: [] },
         { date: shiftDay(today, 2), mealTimes: [] },
       ]);
     });
     it('allows an active family member', async () => {
-      const { owner, pet } = await fixture('member');
+      const { pet } = await fixture('member');
       const member = await seedUser('family');
       await addMember(pet.id, member.id);
       await history(member, pet.id).expect(200);
