@@ -11140,3 +11140,262 @@ Ran all test suites matching /src\/screens\/meals-history\/index.test.tsx/i.
 ### Estado final de esta parada
 
 Implementación detenida en el cierre de R15 por la regla del handoff «Si falla otro it ajeno, PARA y reportalo». R1–R14 tienen sus tests propios verdes; el cierre global no es verde. No se ha editado legibility-classnames.test.ts ni re-anclado ningún candado. La próxima continuación necesita una enmienda aprobada del conflicto R11/#61 R4. H1 se reserva al humano. El commit documental de cierre contiene exclusivamente traceability.md y este informe.
+
+
+## Reanudacion 3
+
+### Identidad y guardas iniciales
+
+Comandos ejecutados antes de cualquier edición, en el orden del handoff:
+
+```text
+$ pwd
+/home/claude/sites/Pet-Tracker
+$ git branch --show-current
+feature/105-meals-history
+$ git rev-parse --short HEAD
+19b3ef77
+$ git rev-parse --short HEAD~1
+74356a90
+$ git rev-parse --short HEAD~2
+ba3fd1ec
+$ git rev-parse --short HEAD~3
+f43c8487
+$ git rev-parse --short HEAD~5
+0864d891
+$ git status --short
+```
+
+Todos los comandos exit=0; status vacío. Las guardas coinciden. H0 sigue siendo `2edf8c38`; no se cambia de branch ni se reescribe ningún commit.
+
+Antes de editar se leyó requirements.md (cabecera, Enmienda E3 aprobada, R11.e, tabla de clases y candado de fuente), design.md §Candados (fila #61 R4), tasks.md R11 y el handoff de Reanudacion 3. Se consultó docs/conventions.md §Esperas sobre el árbol renderizado. Siguen aplicándose las skills ya cargadas: building-native-ui, native-data-fetching, appllama-app-design-skill y ponytail. No se introducen tests ni literales de copy nuevos; la corrección afecta una aserción de clase y su producción conforme a E3. El punto conserva `bg-accent` y no se toca `inkSites` ni ninguna aserción ajena.
+
+Comprobación inicial de backend, sin pipe:
+`git diff --name-only f43c8487 HEAD -- backend-pet-tracker/ > /tmp/meals105-resume3-backend-diff.log 2>&1; echo "exit=$?"` → exit=0, salida vacía. Esta reanudación no edita backend.
+
+### R11 E3: rojo de la clase de hoy
+
+Comando (sin pipe): `bunx jest 'src/screens/meals-history/index.test.tsx'` → `/tmp/meals105-resume3-r11-red.log`, exit=1.
+
+```text
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 27 passed, 28 total
+Snapshots:   0 total
+Time:        4.363 s
+Ran all test suites matching /src\/screens\/meals-history\/index.test.tsx/i.
+  ● #105 R11: the civil month grid renders six decisions per day › keeps the agreed capsule colors and tabular source anchors
+
+    expect(received).toContain(expected) // indexOf
+
+    Expected substring: "text-sm font-bold text-accent-strong"
+    Received string:    "<DayNumber testID=\"meals-history-today\" date={date} className=\"text-sm font-bold text-accent\" "
+
+      231 |       return source.slice(source.lastIndexOf('<', anchor), source.indexOf('<', anchor)).split('/>')[0];
+      232 |     }
+    > 233 |     expect(opening('meals-history-today')).toContain('text-sm font-bold text-accent-strong');
+          |                                            ^
+      234 |     expect(opening('meals-history-dot')).toContain('h-1.5 w-1.5 rounded-full bg-accent');
+      235 |     expect(source.match(/bg-accent-soft/g)).toHaveLength(1);
+      236 |     expect(source.match(/style=\{TABULAR_NUMS\}/g)).toHaveLength(2);
+
+      at Object.toContain (src/screens/meals-history/index.test.tsx:233:44)
+```
+
+Antes del commit rojo: no hay literales nuevos de copy (R5) que contrastar: se sustituye exclusivamente el token de clase autorizado por E3. Comprobación de fuente aprobada, sin pipe: `rg -n 'text-sm font-bold text-accent-strong|Enmienda E3|inkSites' specs/meals-history/requirements.md specs/meals-history/design.md` → exit=0; coincidencias de requirements.md 61, 535 y 566 contienen `text-sm font-bold text-accent-strong`; design.md 109 exige cero delta de #61 R4 e `inkSites` intacto. Conjunto rojo exacto: un it propio R11; 27 pasan, ninguna aserción ajena roja. Delta de tests de E3: cero.
+
+### R11 E3: verde mínimo, incluidos #61 R4 y candados de clases
+
+Comando (sin pipe): `bunx jest 'src/screens/meals-history/index.test.tsx' 'src/__tests__/legibility-classnames.test.ts' 'src/__tests__/consistency-classnames.test.ts'` → `/tmp/meals105-resume3-r11-green.log`, exit=0.
+
+```text
+Test Suites: 3 passed, 3 total
+Tests:       109 passed, 109 total
+Snapshots:   0 total
+Time:        4.799 s, estimated 5 s
+Ran all test suites matching /src\/screens\/meals-history\/index.test.tsx|src\/__tests__\/legibility-classnames.test.ts|src\/__tests__\/consistency-classnames.test.ts/i.
+
+```
+
+### R15: limpieza de EOF sin cambio de comportamiento
+
+El primer intento de preparación no editó nada: una aserción auxiliar esperaba una sola línea en blanco y detectó dos en cada EOF (exit=1); el intento de commit vacío no creó commit (exit=1). `git diff --check 2edf8c38 HEAD` seguía dando exit=2 por los dos EOF ya documentados en Reanudacion 2. Se quitaron exclusivamente las líneas vacías finales, conservando la última línea terminada en newline. No se modificó ninguna aserción ni conducta y, como autoriza el handoff, no hay par rojo nuevo.
+
+Comprobación del árbol corregido, sin pipe: `git diff --check 2edf8c38 > /tmp/meals105-resume3-style-working-check.log 2>&1; echo "exit=$?"` → exit=0, vacío. Commit `40bb583f style(mobile): trim trailing blank lines without behavior change (#105 R15)`. Comprobación después del commit, sin pipe: `git diff --check 2edf8c38 HEAD > /tmp/meals105-resume3-style-check.log 2>&1; echo "exit=$?"` → exit=0, vacío.
+
+### R10: notación de tipo sin cambio de comportamiento
+
+Se cambia únicamente el retorno de `monthGrid` de `Array<string | null>` a `(string | null)[]`, como autoriza la reanudación. No cambian su cuerpo, tests ni comportamiento; no corresponde un par rojo nuevo.
+
+### R10: month-grid verde tras el cambio de notación
+
+Comando (sin pipe): `bunx jest 'src/utils/__tests__/month-grid.test.ts'` → `/tmp/meals105-resume3-r10-green.log`, exit=0.
+
+```text
+Test Suites: 1 passed, 1 total
+Tests:       12 passed, 12 total
+Snapshots:   0 total
+Time:        1.27 s
+Ran all test suites matching /src\/utils\/__tests__\/month-grid.test.ts/i.
+
+```
+
+Comprobación adicional, sin pipe y desde mobile-pet-tracker/: `bun run lint > /tmp/meals105-resume3-r10-lint.log 2>&1; echo "exit=$?"` → exit=0, 0 errores y 0 advertencias. Única línea del log: `$ expo lint`. Month-grid conserva sus 12 tests; cero tests nuevos.
+
+### Commits de Reanudacion 3
+
+| R-id | Hash | Mensaje | Alcance |
+|---|---|---|---|
+| R11 rojo E3 | `c487b14e` | `test(mobile): require strong accent ink for today (#105 R11)` | una aserción de fuente, solo index.test.tsx |
+| R11 verde E3 | `621035c4` | `feat(mobile): render today with strong accent ink (#105 R11)` | una clase de DayNumber, solo index.tsx |
+| R15 formato | `40bb583f` | `style(mobile): trim trailing blank lines without behavior change (#105 R15)` | EOF de guard/navigation; sin cambio de comportamiento |
+| R10 formato | `2a5919cd` | `refactor(mobile): use array type notation without behavior change (#105 R10)` | notación de retorno; sin cambio de comportamiento |
+
+### Cierre móvil: guardas, typecheck y lint
+
+Comandos desde mobile-pet-tracker/, todos sin pipe y con redirección y exit independientes:
+
+```text
+$ test ! -e .expo/types/router.d.ts > /tmp/meals105-resume3-close-router-guard.log 2>&1; echo "exit=$?"
+exit=0
+(log vacío; no se borra ningún fichero)
+$ bun run typecheck > /tmp/meals105-resume3-close-mobile-typecheck.log 2>&1; echo "exit=$?"
+exit=0
+$ tsc --noEmit
+$ bun run lint > /tmp/meals105-resume3-close-mobile-lint.log 2>&1; echo "exit=$?"
+exit=0
+$ expo lint
+```
+
+Typecheck verde. Lint: 0 errores y 0 advertencias. No ha sido necesario otro typecheck ni recrear/borrar router.d.ts.
+
+### Backend: cierre reutilizado por ausencia de cambios
+
+Desde la raíz, sin pipe: `git diff --name-only f43c8487 HEAD -- backend-pet-tracker/ > /tmp/meals105-resume3-close-backend-diff-root.log 2>&1; echo "exit=$?"` → exit=0, salida vacía. Reanudacion 3 no modifica backend. Se reutilizan, conforme al handoff, los logs de cierre de Reanudacion 2; no se repiten tests pnpm:
+
+- `pnpm exec tsc --noEmit` → `/tmp/meals105-close-backend-tsc.log`, exit=0, vacío.
+- `pnpm test` → `/tmp/meals105-close-backend-unit.log`, exit=0.
+- `pnpm test:e2e` → `/tmp/meals105-close-backend-e2e.log`, exit=0.
+
+Resumen unit reutilizado:
+
+```text
+Test Suites: 176 passed, 176 total
+Tests:       1348 passed, 1348 total
+Snapshots:   0 total
+Time:        20.719 s
+Ran all test suites.
+```
+
+Resumen e2e reutilizado:
+
+```text
+Test Suites: 3 skipped, 29 passed, 29 of 32 total
+Tests:       8 skipped, 438 passed, 446 total
+Snapshots:   0 total
+Time:        114.148 s
+Ran all test suites.
+```
+
+### Cierre: diffs contra H0 y dependencias
+
+Desde mobile-pet-tracker/, sin pipe: `git diff --check 2edf8c38 HEAD > /tmp/meals105-resume3-close-diff-check.log 2>&1; echo "exit=$?"` → exit=0, salida vacía.
+
+Desde la raíz (para abarcar ambos paquetes), sin pipe: `git diff --stat origin/main -- '*package.json' '*bun.lock' '*pnpm-lock.yaml' > /tmp/meals105-resume3-close-dependencies-root.log 2>&1; echo "exit=$?"` → exit=0, salida vacía. La misma comprobación desde mobile-pet-tracker/ también dio exit=0 y vacío. No hay dependencias nuevas.
+
+Desde la raíz, sin pipe: `git diff --name-only 2edf8c38 HEAD > /tmp/meals105-resume3-close-name-only-root.log 2>&1; echo "exit=$?"` → exit=0. Salida en el HEAD de código `2a5919cd`:
+
+```text
+backend-pet-tracker/src/modules/nutrition/application/dto/meal.dto.ts
+backend-pet-tracker/src/modules/nutrition/application/use-cases/get-meals-history.use-case.spec.ts
+backend-pet-tracker/src/modules/nutrition/application/use-cases/get-meals-history.use-case.ts
+backend-pet-tracker/src/modules/nutrition/domain/errors/nutrition.errors.ts
+backend-pet-tracker/src/modules/nutrition/domain/nutrition.constants.ts
+backend-pet-tracker/src/modules/nutrition/domain/repositories/meal-serving.repository.ts
+backend-pet-tracker/src/modules/nutrition/infrastructure/mappers/nutrition-error.mapper.spec.ts
+backend-pet-tracker/src/modules/nutrition/infrastructure/mappers/nutrition-error.mapper.ts
+backend-pet-tracker/src/modules/nutrition/infrastructure/mappers/nutrition.mapper.ts
+backend-pet-tracker/src/modules/nutrition/infrastructure/meals.controller.ts
+backend-pet-tracker/src/modules/nutrition/infrastructure/repositories/meal-serving.drizzle.repository.ts
+backend-pet-tracker/src/modules/nutrition/nutrition.module.ts
+backend-pet-tracker/test/meals-history.e2e-spec.ts
+mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+mobile-pet-tracker/src/__tests__/design-drift.test.ts
+mobile-pet-tracker/src/__tests__/ui-copy-table.ts
+mobile-pet-tracker/src/__tests__/ui-language.test.ts
+mobile-pet-tracker/src/api/__tests__/nutrition.test.ts
+mobile-pet-tracker/src/api/__tests__/query-keys.test.ts
+mobile-pet-tracker/src/api/nutrition.ts
+mobile-pet-tracker/src/api/query-keys.ts
+mobile-pet-tracker/src/api/types.ts
+mobile-pet-tracker/src/app/(tabs)/__tests__/food.test.tsx
+mobile-pet-tracker/src/app/(tabs)/food.tsx
+mobile-pet-tracker/src/app/__tests__/detail-stack.guard.test.tsx
+mobile-pet-tracker/src/app/__tests__/detail-stack.navigation.test.tsx
+mobile-pet-tracker/src/app/__tests__/detail-stack.test.tsx
+mobile-pet-tracker/src/app/__tests__/layout.test.tsx
+mobile-pet-tracker/src/app/_layout.tsx
+mobile-pet-tracker/src/app/meals-history.tsx
+mobile-pet-tracker/src/i18n/catalog.ts
+mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx
+mobile-pet-tracker/src/screens/meals-history/index.test.tsx
+mobile-pet-tracker/src/screens/meals-history/index.tsx
+mobile-pet-tracker/src/utils/__tests__/month-grid.test.ts
+mobile-pet-tracker/src/utils/month-grid.ts
+progress/current.md
+progress/handoff_meals-history.md
+progress/impl_meals-history.md
+specs/meals-history/design.md
+specs/meals-history/requirements.md
+specs/meals-history/tasks.md
+specs/meals-history/traceability.md
+specs/mobile-ui-language/design.md
+```
+
+La lista incluye documentación/bookkeeping ajeno ya explicado en las reanudaciones anteriores. En Reanudacion 3, los cambios de progress/current.md, progress/handoff_meals-history.md y specs/meals-history/{requirements,design,tasks}.md proceden exclusivamente de los commits del leader `ba3fd1ec`, `74356a90` y `19b3ef77`; `git log --oneline f43c8487..HEAD --` sobre esas rutas lo confirma. Este agente no los edita. Sus cuatro commits nuevos cambian exclusivamente los cinco ficheros móviles autorizados; el último commit documental actualizará solo traceability.md y este informe, ya presentes en la lista.
+
+### Cierre móvil completo de Reanudacion 3: Jest verde
+
+Comando (sin pipe): `bunx jest` → `/tmp/meals105-resume3-close-mobile-jest.log`, exit=0.
+
+```text
+Test Suites: 92 passed, 92 total
+Tests:       1981 passed, 1981 total
+Snapshots:   1 passed, 1 total
+Time:        47.569 s, estimated 58 s
+Ran all test suites.
+
+```
+
+La ejecución completa desde mobile-pet-tracker/ se midió sin pipe: `bunx jest > /tmp/meals105-resume3-close-mobile-jest.log 2>&1; echo "exit=$?"` → exit=0. Cero it rojos, incluidos #61 R4 y todos los candados E1/E2. Se conserva una advertencia de proceso worker forzado al salir, ya observada en el cierre anterior; no hay test fallido y el exit es 0. No se copia salida console.info de HeroUI ni console.warn de Uniwind.
+
+### Delta por fichero sobre la base medida
+
+| Fichero de test | R-id | Tests nuevos | Suites nuevas |
+|---|---|---:|---:|
+| backend `nutrition-error.mapper.spec.ts` | R2 | 4 | 1 |
+| backend `get-meals-history.use-case.spec.ts` | R3 | 9 | 1 |
+| backend `test/meals-history.e2e-spec.ts` | R1/R2/R4 | 15 | 1 |
+| mobile `src/providers/__tests__/language-provider.test.tsx` | R5 | 9 | 0 |
+| mobile `src/utils/__tests__/month-grid.test.ts` | R10 | 12 | 1 |
+| mobile `src/api/__tests__/nutrition.test.ts` | R6 | 9 | 0 |
+| mobile `src/api/__tests__/query-keys.test.ts` | R7 | 2 | 0 |
+| mobile `src/app/__tests__/layout.test.tsx` | R8 | 1 | 0 |
+| mobile `src/app/__tests__/detail-stack.test.tsx` | R8 | 1 | 0 |
+| mobile `src/app/__tests__/detail-stack.navigation.test.tsx` | R8 | 1 | 0 |
+| mobile `src/app/__tests__/detail-stack.guard.test.tsx` | R8 | 1 | 0 |
+| mobile `src/screens/meals-history/index.test.tsx` | R9/R11/R12/R13 (9/7/5/7) | 28 | 1 |
+| mobile `src/__tests__/consistency-classnames.test.ts` | R11 (fila parametrizada) | 1 | 0 |
+| mobile `src/app/(tabs)/__tests__/food.test.tsx` | R14 | 1 | 0 |
+| mobile `src/__tests__/design-drift.test.ts` | R15 (it propio + fila Card) | 2 | 0 |
+
+
+Los valores de la tabla se conservan: Reanudacion 3 añade 0 tests y 0 suites en cada fichero. Base medida: mobile 90 suites / 1913 tests / 1 snapshot → cierre 92 suites / 1981 tests / 1 snapshot, todos verdes (+2 suites / +68 tests). Backend unit 174 / 1335 → 176 / 1348 (+2 / +13). E2e base del leader 28 passed +3 skipped / 423 passed +8 skipped → 29 passed +3 skipped / 438 passed +8 skipped (+1 suite / +15 tests). 0 skipped nuevos en los tres ámbitos. Los dos tsc de la base dieron exit=0; móvil cierre exit=0, backend cierre anterior exit=0 sin cambios posteriores.
+
+### Decisiones y estado de cierre de Reanudacion 3
+
+No se toma ninguna decisión funcional adicional: se aplican literalmente E3 y las dos correcciones de formato autorizadas. R15 conserva su origen verde porque es un candado de inventario/drift y no una conducta nueva. El it extra de R3 (orden de validación con `to` por defecto) permanece intacto para el reviewer. R1–R15 tienen validación automatizada verde; H1 no se ejecuta ni se marca, sigue reservado al humano. No se modifica bookkeeping del leader, no se corre init.sh/docker/CDK y no se hace push ni se abre PR.
+
+Se actualizan únicamente las filas R10, R11 y R15 y la nota «Reanudacion 3» en traceability.md. Commit documental de cierre: `docs(meals-history): fill #105 traceability`, exclusivamente con traceability.md y este informe. La lista de ficheros desde H0 se mantiene después de ese commit, porque ambos ya figuraban en ella.
+
+
+Comprobación documental antes del último commit, desde la raíz y sin pipe: `git diff --check 2edf8c38 > /tmp/meals105-resume3-close-docs-working-check.log 2>&1; echo "exit=$?"` → exit=0, vacío (incluye las ediciones del informe y de trazabilidad). Repetición final de aislamiento de backend: `git diff --name-only f43c8487 HEAD -- backend-pet-tracker/ > /tmp/meals105-resume3-final-backend-diff.log 2>&1; echo "exit=$?"` → exit=0, vacío.
