@@ -289,3 +289,102 @@ diff --name-only 2edf8c38 HEAD`, delta por fichero). Actualiza
 traceability.md. Mantén el `it` extra que anadiste en R3 (orden de
 validacion con `to` por defecto): lo juzga el reviewer.
 ```
+
+## Reanudación 2: parada en R5 por `#65 R18` (2026-10-04)
+
+> Con la Reanudación 1 Codex cerró R4 y el bloque backend entero en verde
+> (último commit `32825cd5`, la trazabilidad). En el rojo de R5 fallaron 13
+> `it`: los 9 de `#105 R5`, `#65 R12` y `#65 R6` (autorizados) y dos de
+> `#65 R18` que ni la spec ni E1 movían: `checkUses(ALL_USES)` (suma de
+> todas las tablas) y `expect(SCREEN_FILES).toHaveLength(…)` 27 → 28 con su
+> bucle `readFileSync` (ENOENT hasta que exista la pantalla). La parada fue
+> correcta; el humano la mantuvo para corregir la spec. Codex conservó el
+> parche de R5 en `progress/impl_meals-history.md` («### Decisión humana de
+> parada») y restauró el árbol sin commit.
+>
+> **Enmienda E2** (commit `54c4b1a7`, aprobada por el humano en Notion el
+> 2026-10-04, `page_last_edited_at` 2026-10-04T00:46:39.817Z): el candado
+> `SCREEN_FILES` de `#65 R18` sube `+ 1 // #105 R5` en el mismo commit rojo
+> de R5, y quedan **autorizados** exactamente dos rojos transitorios en
+> `#65 R18`: `checkUses(ALL_USES)` de R5 a R14 (mismas filas y mismo final
+> que `#65 R6`) y el bucle de `SCREEN_FILES` de R5 a R8 (ENOENT hasta que R8
+> cree `src/screens/meals-history/index.tsx`). Nada más cambia: ni claves,
+> ni literales, ni tests de R5, ni otro requisito. La firma de E2 es el
+> commit que añade esta reanudación.
+
+Pegar en Codex CLI:
+
+```
+Worktree: /home/claude/sites/Pet-Tracker   <- PRIMERA LINEA. Trabaja AQUI y en ningun otro sitio
+Reanudacion 2 de #105 tras tu parada en R5 por los dos `it` de #65 R18.
+Ejecuta y pega en el informe, bajo una seccion nueva «## Reanudacion 2»:
+  pwd
+  git branch --show-current
+  git rev-parse --short HEAD
+  git rev-parse --short HEAD~1
+  git rev-parse --short HEAD~2
+  git rev-parse --short HEAD~3
+  git status --short
+PARA si:
+- la branch no es feature/105-meals-history;
+- HEAD~1 no es 0652903a (bitacora del leader), HEAD~2 no es 54c4b1a7
+  (Enmienda E2) o HEAD~3 no es 32825cd5 (tu ultimo commit, la
+  trazabilidad);
+- `git status --short` muestra algo.
+HEAD es el commit del leader que firma E2 y anade esta reanudacion.
+Siguen en vigor todas las reglas del handoff original y de la Reanudacion
+1. H0 sigue siendo 2edf8c38: los diffs de cierre se miden contra el.
+
+Lee antes de tocar nada: requirements.md §Enmienda E2 (bloque de cabecera
+y R5), design.md D8 / §Candados (dos filas marcadas E2), tasks.md R5, y
+esta seccion del handoff.
+
+Anclas: ninguna que repetir. Ningun commit desde 32825cd5 toca codigo;
+las cifras que verificaste en la Reanudacion 1 siguen valiendo.
+
+Lo que cambia respecto al handoff original + E1, y solo esto:
+- R5 paso 1: en el mismo commit rojo, el candado de #65 R18 en
+  ui-language.test.ts pasa de
+    expect(SCREEN_FILES).toHaveLength(19 + 2 + 1 + 1 + 1 + 1 + 1 + 1); // #100 R10, #41 R10, #146 R10
+  a
+    expect(SCREEN_FILES).toHaveLength(19 + 2 + 1 + 1 + 1 + 1 + 1 + 1 + 1); // #100 R10, #41 R10, #146 R10, #105 R5
+- Rojos transitorios AUTORIZADOS en #65 R18 desde ese commit, y solo
+  estos dos:
+  * it('resuelve cada ocurrencia de la tabla contra la clave exacta')
+    (checkUses(ALL_USES)): rojo por las mismas 11 filas que #65 R6 y
+    verde en el mismo punto, R14 (ultima llamada t('…') de food.tsx).
+  * it('no deja ningun valor fijo del catalogo como literal entero en las
+    pantallas'): rojo por ENOENT en src/screens/meals-history/index.tsx
+    hasta que R8 paso 2 cree el fichero; verde desde R8.
+- Ningun otro `it` ajeno cambia. Cualquier otro rojo fuera de #105 R5,
+  #65 R12, #65 R6 y esos dos de #65 R18 sigue siendo motivo de PARA.
+
+Donde retomas: tasks.md R5 paso 1. Reaplica el parche que conservaste en
+progress/impl_meals-history.md («### Decision humana de parada»: los tres
+diffs de ui-copy-table.ts, ui-language.test.ts y
+language-provider.test.tsx) mas el delta de SCREEN_FILES de arriba.
+Corre
+  bunx jest src/providers/__tests__/language-provider.test.tsx src/__tests__/ui-language.test.ts
+y espera exactamente 13 `it` en rojo: los 9 de #105 R5, #65 R12, #65 R6 y
+los dos de #65 R18. Si el conjunto rojo es otro, PARA. Commitea ese rojo
+como test(mobile): … (#105 R5). Luego R5 paso 2 y 3, y el resto del
+bloque movil en el orden de tasks.md (R10, R6, R7, R8, R9, R11, R12, R13,
+R14, R15) con las cifras de E1 y E2. En cada corrida intermedia anota que
+rojos autorizados quedan; comprueba que el de SCREEN_FILES vuelve a verde
+en R8 y que checkUses(ALL_USES) y #65 R6 vuelven a verde en R14.
+Postgres y LocalStack estan libres.
+
+Commits: igual que antes, test rojo primero y feat minimo despues, un
+R-id por par, mensajes `test(<scope>): … (#105 R<n>)` /
+`feat(<scope>): … (#105 R<n>)`. No reescribas ni rebasees los commits
+existentes.
+
+Informe: continua progress/impl_meals-history.md bajo «## Reanudacion 2»
+con lo mismo que pide el handoff original (comandos sin pipe, cuentas,
+exit, bloques `●` de cada rojo, grep de literales de R5, cierre, `git
+diff --name-only 2edf8c38 HEAD`, delta por fichero). Actualiza
+traceability.md. Manten el `it` extra que anadiste en R3: lo juzga el
+reviewer. Antes de cualquier typecheck movil: `test ! -e
+mobile-pet-tracker/.expo/types/router.d.ts` (si existe, PARA y dilo; no
+lo borres tu). Esperas en tests: docs/conventions.md §Esperas.
+```

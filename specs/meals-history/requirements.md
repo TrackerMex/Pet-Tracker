@@ -737,7 +737,7 @@ Clasificado viñeta a viñeta; cada una con su razón.
 
 - [x] Aprobado por humano (fecha: 2026-10-03, desde Notion: página `3ee6115a-9b27-81b8-b100-c70a69cfbb64`, `Estado del gate` = Aprobado, `page_last_edited_at` 2026-10-03T19:07:08.029Z) ← gate obligatorio antes de implementar
 - [x] **Enmienda E1** aprobada por humano (fecha: 2026-10-04, desde Notion: página `3ee6115a-9b27-81b8-b100-c70a69cfbb64`, `Estado del gate` = Aprobado tras volver a En revisión el 2026-10-04, `page_last_edited_at` 2026-10-04T00:24:21.926Z) ← gate propio de E1; Codex no reanuda sin él
-- [ ] **Enmienda E2** aprobada por humano (fecha: —, desde Notion: página `3ee6115a-9b27-81b8-b100-c70a69cfbb64`, `Estado del gate` = Aprobado tras volver a En revisión el 2026-10-04, `page_last_edited_at` —) ← gate propio de E2; Codex no reanuda sin él
+- [x] **Enmienda E2** aprobada por humano (fecha: 2026-10-04, desde Notion: página `3ee6115a-9b27-81b8-b100-c70a69cfbb64`, `Estado del gate` = Aprobado tras volver a En revisión el 2026-10-04, `page_last_edited_at` 2026-10-04T00:46:39.817Z) ← gate propio de E2; Codex no reanuda sin él
 
 Decisiones que esta spec cerró por su cuenta y el humano puede objetar aquí:
 (1) rejilla lunes-primero para ambos idiomas; (2) `today` del backend manda

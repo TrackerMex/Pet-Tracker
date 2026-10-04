@@ -73,12 +73,17 @@
      SCREEN_FILES hasta R8). Notion re-espejada, `Estado del gate` =
      En revisión, `Rol actual` = Leader, bloqueador escrito. Lección en
      memoria: los candados agregados de `#65 R18` se mueven con cualquier
-     fila nueva de `ui-copy-table.ts`.
-- **Estado al parar:** esperando a que el humano apruebe E2 en Notion.
-  Después: firmar la casilla E2 con `page_last_edited_at`, añadir
-  «Reanudación 2» al handoff (retoma en tasks.md R5 paso 1 reaplicando el
-  parche conservado más `+ 1` en `SCREEN_FILES`), `Rol actual` =
-  Implementer. Backend R1–R4 verde; móvil sin tocar. #148 (sesión
+     fila nueva de `ui-copy-table.ts`. El humano aprobó E2 en Notion el
+     2026-10-04 (`page_last_edited_at` 2026-10-04T00:46:39.817Z); el
+     leader firmó la casilla de E2 y añadió «Reanudación 2» a
+     `progress/handoff_meals-history.md` en el mismo commit (es el commit
+     de firma de E2), `Rol actual = Implementer`, bloqueador limpiado.
+     Codex retoma en tasks.md R5 paso 1 reaplicando el parche conservado
+     más `+ 1 // #105 R5` en `SCREEN_FILES`; espera 13 rojos exactos.
+- **Estado al parar:** esperando a que el humano pegue la «Reanudación 2»
+  en Codex y a que Codex termine R5–R15. Después: paso 7 del plan (leer
+  reporte, permiso para `./init.sh`, `reviewer`). Backend R1–R4 verde;
+  móvil sin tocar. #148 (sesión
   `Backend`, worktree `Pet-Tracker-wt-148`) no toca ningún fichero de
   #105 según su reparto provisional; posible roce solo en
   `design-drift.test.ts` y `consistency-classnames.test.ts`, avisará
