@@ -311,6 +311,6 @@ de color) = `tipo`. Tipo 6 = RGBA.
 
 ### Smoke R10 (gate humano propio, antes de `done`)
 
-- [X] Launcher con el icono completo recortado por la forma del launcher, orejas enteras (dispositivo: ________, fecha: ____)
+- [X] Launcher con el icono completo recortado por la forma del launcher, orejas enteras (dispositivo: OnePlus Nord 5, fecha: 2026-10-03)
 - [X] Splash `#9460FC` con el icono, sin logo de Expo
 - [X] Notificación push real con icono blanco tintado `#9460FC` (no el icono de la app)
