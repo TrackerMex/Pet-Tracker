@@ -234,3 +234,84 @@ describe('#105 R11: the civil month grid renders six decisions per day', () => {
     expect(source.match(/style=\{TABULAR_NUMS\}/g)).toHaveLength(2);
   });
 });
+
+function historyRange(from: string, to: string): MealsHistory {
+  return {
+    from, to, today: '2026-01-15',
+    days: Array.from({ length: Number(to.slice(8)) }, (_, index) => ({
+      date: `${from.slice(0, 7)}-${String(index + 1).padStart(2, '0')}`,
+      mealTimes: [],
+    })),
+  };
+}
+
+describe('#105 R12: month navigation stops at the owner current month', () => {
+  beforeEach(() => {
+    mockGetMealsHistory.mockImplementation(async (_url, _token, _pet, from, to) => ({ kind: 'ok', history: historyRange(from, to) }));
+  });
+
+  it('starts in January and disables only the next button', async () => {
+    await renderHistory();
+    await waitFor(() => expect(screen.getByTestId('meals-history-grid')).toBeVisible());
+    expect(screen.getByTestId('meals-history-title')).toHaveTextContent('enero de 2026');
+    expect(screen.getByTestId('meals-history-next')).toBeDisabled();
+    expect(screen.getByTestId('meals-history-prev')).not.toBeDisabled();
+    expect(screen.getByTestId('meals-history-next')).toHaveProp('accessibilityState', { disabled: true });
+    expect(screen.getByTestId('meals-history-icon-next')).toHaveStyle({ color: 'token:muted' });
+    expect(screen.getByTestId('meals-history-prev')).toHaveProp('accessibilityLabel', 'Mes anterior');
+    expect(screen.getByTestId('meals-history-next')).toHaveProp('accessibilityLabel', 'Mes siguiente');
+    expect(mockGetMealsHistory).toHaveBeenCalledTimes(1);
+    expect(mockGetMealsHistory).toHaveBeenLastCalledWith('http://example.test/v1', 'jwt-token', 'pet-1', '2026-01-01', '2026-01-31');
+  });
+
+  it('moves to December with its range and no leading fillers', async () => {
+    await renderHistory();
+    await waitFor(() => expect(screen.getByTestId('meals-history-grid')).toBeVisible());
+    await fireEvent.press(screen.getByTestId('meals-history-prev'));
+    await waitFor(() => expect(screen.getByTestId('meals-history-title')).toHaveTextContent('diciembre de 2025'));
+    expect(mockGetMealsHistory).toHaveBeenCalledTimes(2);
+    expect(mockGetMealsHistory).toHaveBeenLastCalledWith('http://example.test/v1', 'jwt-token', 'pet-1', '2025-12-01', '2025-12-31');
+    expect(screen.getByTestId('meals-history-next')).not.toBeDisabled();
+    const row = screen.getByTestId('meals-history-grid').children[0];
+    if (typeof row !== 'string') {
+      const first = row.children[0];
+      expect(typeof first === 'string' ? first : first.props.testID).toMatch(/^meals-history-day-/);
+    }
+  });
+
+  it('keeps the new month grid without skeleton or old dots while loading', async () => {
+    mockGetMealsHistory.mockResolvedValueOnce({ kind: 'ok', history: history() });
+    mockGetMealsHistory.mockReturnValueOnce(new Promise<MealsHistoryState>(() => undefined));
+    await renderHistory();
+    await waitFor(() => expect(screen.getByTestId('meals-history-grid')).toBeVisible());
+    expect(screen.getAllByTestId('meals-history-dot')).toHaveLength(2);
+    await fireEvent.press(screen.getByTestId('meals-history-prev'));
+    await waitFor(() => expect(screen.getByTestId('meals-history-title')).toHaveTextContent('diciembre de 2025'));
+    expect(screen.getByTestId('meals-history-grid')).toBeVisible();
+    expect(screen.queryByTestId('meals-history-skeleton')).toBeNull();
+    expect(screen.queryAllByTestId('meals-history-dot')).toHaveLength(0);
+  });
+
+  it('moves back without a lower bound and forward to November', async () => {
+    await renderHistory();
+    await waitFor(() => expect(screen.getByTestId('meals-history-grid')).toBeVisible());
+    for (const title of ['diciembre de 2025', 'noviembre de 2025', 'octubre de 2025']) {
+      await fireEvent.press(screen.getByTestId('meals-history-prev'));
+      await waitFor(() => expect(screen.getByTestId('meals-history-title')).toHaveTextContent(title));
+    }
+    expect(mockGetMealsHistory).toHaveBeenCalledTimes(4);
+    expect(mockGetMealsHistory).toHaveBeenLastCalledWith('http://example.test/v1', 'jwt-token', 'pet-1', '2025-10-01', '2025-10-31');
+    await fireEvent.press(screen.getByTestId('meals-history-next'));
+    await waitFor(() => expect(screen.getByTestId('meals-history-title')).toHaveTextContent('noviembre de 2025'));
+    expect(mockGetMealsHistory).toHaveBeenCalledTimes(5);
+    expect(mockGetMealsHistory).toHaveBeenLastCalledWith('http://example.test/v1', 'jwt-token', 'pet-1', '2025-11-01', '2025-11-30');
+  });
+
+  it('allows all December dates because the backend today is in January', async () => {
+    await renderHistory();
+    await waitFor(() => expect(screen.getByTestId('meals-history-grid')).toBeVisible());
+    await fireEvent.press(screen.getByTestId('meals-history-prev'));
+    await waitFor(() => expect(screen.getByTestId('meals-history-title')).toHaveTextContent('diciembre de 2025'));
+    for (const day of screen.getAllByTestId(/^meals-history-day-/)) expect(day).not.toBeDisabled();
+  });
+});
