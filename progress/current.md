@@ -83,9 +83,17 @@
 - **Estado al parar:** esperando a que el humano pegue la «Reanudación 2»
   en Codex y a que Codex termine R5–R15. Después: paso 7 del plan (leer
   reporte, permiso para `./init.sh`, `reviewer`). Backend R1–R4 verde;
-  móvil sin tocar. #148 (sesión
-  `Backend`, worktree `Pet-Tracker-wt-148`) no toca ningún fichero de
-  #105 según su reparto provisional; posible roce solo en
-  `design-drift.test.ts` y `consistency-classnames.test.ts`, avisará
-  antes de su handoff. El leader no toca `backend-pet-tracker/` ni
-  `mobile-pet-tracker/`.
+  móvil sin tocar. **Reparto con #148 cerrado (2026-10-04):** la sesión
+  `Backend` (worktree `Pet-Tracker-wt-148`, spec en `7a075020` sobre
+  `origin/main` `9cf45204`, gate en Notion) limita a su Codex a 14
+  ficheros móviles (7 formularios de producción: `(auth)/login.tsx`,
+  `(auth)/register.tsx`, `screens/{reset-password,add-pet,add-reminder,pairing,weight-log}/index.tsx`,
+  y sus 7 tests) más su `traceability.md` e `impl_*.md`; su R9 le prohíbe
+  tocar `design-drift.test.ts`, `consistency-classnames.test.ts`,
+  `ui-language.test.ts`, `ui-copy-table.ts`, `catalog.ts`,
+  `language-provider.test.tsx`, `_layout.tsx`, `layout.test.tsx` y
+  `food.tsx`. Verificado por el leader: intersección vacía con lo que
+  #105 ya tocó (`git diff --name-only 2edf8c38 HEAD`) y con todo fichero
+  nombrado en `specs/meals-history/` y el handoff. Sin roce; quien
+  mergee segundo rebasea. Avisos mutuos antes de cada `./init.sh`. El
+  leader no toca `backend-pet-tracker/` ni `mobile-pet-tracker/`.
