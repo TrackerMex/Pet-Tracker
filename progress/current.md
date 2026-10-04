@@ -40,5 +40,7 @@
   429 tampoco revela existencia). Token con TTL de 1 h, no publicado en la
   respuesta.
 - Estado: spec escrita por `spec_author` y verificada contra `b2a9c2aa`;
-  `feature_list.json` en `spec_ready`. Espejo a Notion (Specs, En revisión)
-  y gate humano pendientes.
+  `feature_list.json` en `spec_ready`. Espejada en Notion (base Specs,
+  Estado del gate = En revisión, commit citado `08631f9e`):
+  https://app.notion.com/p/3ef6115a9b27811c8cd6e29408fdfe4c
+  Gate humano pendiente: parada hasta la firma.
