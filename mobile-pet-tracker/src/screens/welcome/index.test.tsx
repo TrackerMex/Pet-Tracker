@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { Redirect, router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
@@ -8,11 +8,12 @@ import type { TestInstance } from 'test-renderer';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import { LanguageProvider } from '../../providers/language-provider';
 import { useThemeColors } from '../../theme/use-theme-colors';
-import { WelcomeScreen } from './index';
+import { WelcomeScreen, WELCOME_ENTRANCE_MS, WELCOME_ENTRANCE_EASING } from './index';
 
 const { readFileSync } = jest.requireActual<typeof import('fs')>('fs');
 const { join } = jest.requireActual<typeof import('path')>('path');
 const sourceRoot = join(process.cwd(), 'src');
+const mockUseReducedMotion = jest.fn<boolean, []>(() => false);
 
 jest.mock('../../providers/auth-provider', () => ({ useAuth: jest.fn() }));
 jest.mock('expo-router', () => ({
@@ -26,6 +27,10 @@ jest.mock('react-native-safe-area-context', () => ({
 jest.mock('../../theme/use-theme-colors', () => ({
   useThemeColors: jest.fn(() => ['accent-strong-ink']),
 }));
+jest.mock('react-native-reanimated', () => {
+  const actual = jest.requireActual<typeof import('react-native-reanimated')>('react-native-reanimated');
+  return { ...actual, __esModule: true, useReducedMotion: () => mockUseReducedMotion() };
+});
 jest.mock('reicon-react-native', () => {
   const actual = jest.requireActual<typeof import('reicon-react-native')>('reicon-react-native');
   const React = jest.requireActual<typeof import('react')>('react');
@@ -77,6 +82,7 @@ async function renderWelcome(language: 'en' | 'es' = 'es') {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  mockUseReducedMotion.mockReturnValue(false);
   mockUseAuth.mockReturnValue({
     status: 'unauthenticated', token: null, signIn: jest.fn(), signOut: jest.fn(),
   } satisfies AuthContextValue);
@@ -286,5 +292,50 @@ describe('R8', () => {
     await renderWelcome();
     expect(screen.getByTestId('welcome-have-account').props.className).toBe('w-full rounded-xl border border-accent bg-transparent');
     expect(screen.getByText('Ya tengo una cuenta').props.className).toBe('font-semibold text-accent-strong');
+  });
+});
+
+
+describe('R10', () => {
+  beforeEach(() => jest.useFakeTimers());
+  afterEach(() => jest.useRealTimers());
+
+  it('fija la duración y la curva', () => {
+    expect(WELCOME_ENTRANCE_MS).toBe(240);
+    expect(WELCOME_ENTRANCE_EASING).toBeDefined();
+  });
+
+  it('arranca invisible y desplazado sin Reduce Motion', async () => {
+    await renderWelcome();
+    expect(screen.getByTestId('welcome-content')).toHaveAnimatedStyle({
+      opacity: 0, transform: [{ translateY: 16 }],
+    });
+  });
+
+  it('termina visible y en su sitio sin Reduce Motion', async () => {
+    await renderWelcome();
+    expect(screen.getByTestId('welcome-content')).toHaveAnimatedStyle({
+      opacity: 0, transform: [{ translateY: 16 }],
+    });
+    await act(async () => {
+      jest.advanceTimersByTime(WELCOME_ENTRANCE_MS * 2 + 100);
+    });
+    expect(screen.getByTestId('welcome-content')).toHaveAnimatedStyle({
+      opacity: 1, transform: [{ translateY: 0 }],
+    });
+  });
+
+  it('con Reduce Motion no se desplaza', async () => {
+    mockUseReducedMotion.mockReturnValue(true);
+    await renderWelcome();
+    expect(screen.getByTestId('welcome-content')).toHaveAnimatedStyle({
+      opacity: 0, transform: [{ translateY: 0 }],
+    });
+    await act(async () => {
+      jest.advanceTimersByTime(WELCOME_ENTRANCE_MS * 2 + 100);
+    });
+    expect(screen.getByTestId('welcome-content')).toHaveAnimatedStyle({
+      opacity: 1, transform: [{ translateY: 0 }],
+    });
   });
 });
