@@ -315,3 +315,72 @@ describe('#105 R12: month navigation stops at the owner current month', () => {
     for (const day of screen.getAllByTestId(/^meals-history-day-/)) expect(day).not.toBeDisabled();
   });
 });
+
+describe('#105 R13: tapping a served day reveals its inline detail', () => {
+  it('starts without a selected day or detail', async () => {
+    await renderHistory();
+    await waitFor(() => expect(screen.getByTestId('meals-history-grid')).toBeVisible());
+    expect(screen.queryByTestId('meals-history-detail')).toBeNull();
+  });
+
+  it('shows both served times in order and selects the fifth day', async () => {
+    await renderHistory();
+    await waitFor(() => expect(screen.getByTestId('meals-history-grid')).toBeVisible());
+    await fireEvent.press(screen.getByTestId('meals-history-day-2026-01-05'));
+    await waitFor(() => expect(screen.getByTestId('meals-history-detail')).toBeVisible());
+    expect(screen.getByTestId('meals-history-detail-title')).toHaveTextContent('lunes, 5 de enero');
+    expect(screen.getAllByTestId('meals-history-detail-time').map(time => time.children.join(''))).toEqual(['08:00', '18:30']);
+    expect(screen.getByTestId('meals-history-detail-count')).toHaveTextContent('{{count}} comidas servidas'.replace('{{count}}', '2'));
+    expect(screen.getByTestId('meals-history-day-2026-01-05')).toBeSelected();
+  });
+
+  it('switches to a single served meal and deselects the previous day', async () => {
+    await renderHistory();
+    await waitFor(() => expect(screen.getByTestId('meals-history-grid')).toBeVisible());
+    await fireEvent.press(screen.getByTestId('meals-history-day-2026-01-05'));
+    await waitFor(() => expect(screen.getByTestId('meals-history-detail')).toBeVisible());
+    await fireEvent.press(screen.getByTestId('meals-history-day-2026-01-14'));
+    await waitFor(() => expect(screen.getByTestId('meals-history-detail-count')).toHaveTextContent('1 comida servida'));
+    expect(screen.getAllByTestId('meals-history-detail-time').map(time => time.children.join(''))).toEqual(['12:00']);
+    expect(screen.getByTestId('meals-history-day-2026-01-05')).not.toBeSelected();
+    expect(screen.getByTestId('meals-history-day-2026-01-14')).toBeSelected();
+  });
+
+  it('shows a day without meals and hides the detail on the second tap', async () => {
+    await renderHistory();
+    await waitFor(() => expect(screen.getByTestId('meals-history-grid')).toBeVisible());
+    await fireEvent.press(screen.getByTestId('meals-history-day-2026-01-06'));
+    await waitFor(() => expect(screen.getByTestId('meals-history-detail-empty')).toHaveTextContent('Ese día no se sirvió ninguna comida'));
+    expect(screen.queryAllByTestId('meals-history-detail-time')).toHaveLength(0);
+    await fireEvent.press(screen.getByTestId('meals-history-day-2026-01-06'));
+    await waitFor(() => expect(screen.getByTestId('meals-history-day-2026-01-06')).not.toBeSelected());
+    expect(screen.queryByTestId('meals-history-detail')).toBeNull();
+  });
+
+  it('ignores future days without showing a detail', async () => {
+    await renderHistory();
+    await waitFor(() => expect(screen.getByTestId('meals-history-grid')).toBeVisible());
+    await fireEvent.press(screen.getByTestId('meals-history-day-2026-01-20'));
+    expect(screen.queryByTestId('meals-history-detail')).toBeNull();
+  });
+
+  it('keeps the selected detail when a future day is tapped', async () => {
+    await renderHistory();
+    await waitFor(() => expect(screen.getByTestId('meals-history-grid')).toBeVisible());
+    await fireEvent.press(screen.getByTestId('meals-history-day-2026-01-05'));
+    await waitFor(() => expect(screen.getByTestId('meals-history-detail')).toBeVisible());
+    await fireEvent.press(screen.getByTestId('meals-history-day-2026-01-20'));
+    expect(screen.getByTestId('meals-history-detail-title')).toHaveTextContent('lunes, 5 de enero');
+    expect(screen.getByTestId('meals-history-day-2026-01-05')).toBeSelected();
+  });
+
+  it('clears the selected detail when moving to the previous month', async () => {
+    await renderHistory();
+    await waitFor(() => expect(screen.getByTestId('meals-history-grid')).toBeVisible());
+    await fireEvent.press(screen.getByTestId('meals-history-day-2026-01-05'));
+    await waitFor(() => expect(screen.getByTestId('meals-history-detail')).toBeVisible());
+    await fireEvent.press(screen.getByTestId('meals-history-prev'));
+    await waitFor(() => expect(screen.getByTestId('meals-history-title')).toHaveTextContent('diciembre de 2025'));
+    expect(screen.queryByTestId('meals-history-detail')).toBeNull();
+  });
+});
