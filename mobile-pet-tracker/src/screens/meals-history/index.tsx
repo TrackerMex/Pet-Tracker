@@ -16,8 +16,12 @@ import { TABULAR_NUMS } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { currentMonth, longDayLabel, monthGrid, monthOf, monthRange, monthTitle, shiftMonth, weekdayHeaders } from '../../utils/month-grid';
 
-function DayCell({ date, today, mealTimes, selected, locale }: {
-  date: string; today: string; mealTimes: string[]; selected: boolean; locale: string;
+function DayNumber({ date, testID, className }: { date: string; testID?: string; className: string }) {
+  return <Text testID={testID} style={TABULAR_NUMS} className={className}>{Number(date.slice(8))}</Text>;
+}
+
+function DayCell({ date, today, mealTimes, selected, locale, onPress }: {
+  date: string; today: string; mealTimes: string[]; selected: boolean; locale: string; onPress: () => void;
 }) {
   const disabled = date > today;
   return (
@@ -25,19 +29,16 @@ function DayCell({ date, today, mealTimes, selected, locale }: {
       testID={`meals-history-day-${date}`}
       className={`h-11 flex-1 items-center justify-center rounded-full${selected ? ' bg-accent-soft' : ''}`}
       disabled={disabled}
+      onPress={onPress}
       accessibilityState={{ disabled, selected }}
       accessibilityRole="button"
       accessibilityLabel={longDayLabel(date, locale)}
       style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
     >
       {date === today ? (
-        <Text testID="meals-history-today" style={TABULAR_NUMS} className="text-sm font-bold text-accent">
-          {Number(date.slice(8))}
-        </Text>
+        <DayNumber testID="meals-history-today" date={date} className="text-sm font-bold text-accent" />
       ) : (
-        <Text style={TABULAR_NUMS} className={disabled ? 'text-sm font-semibold text-muted' : 'text-sm font-semibold text-foreground'}>
-          {Number(date.slice(8))}
-        </Text>
+        <DayNumber date={date} className={disabled ? 'text-sm font-semibold text-muted' : 'text-sm font-semibold text-foreground'} />
       )}
       {mealTimes.length >= 1 ? (
         <View testID="meals-history-dot" className="mt-0.5 h-1.5 w-1.5 rounded-full bg-accent" />
@@ -94,7 +95,8 @@ function MealsHistoryContent({ petId }: { petId: string }) {
           </View>
         );
         break;
-      case 'ok':
+      case 'ok': {
+        const selectedTimes = data.history.days.find(day => day.date === selectedDay)?.mealTimes ?? [];
         content = (
           <Card className="gap-4">
             <View className="flex-row items-center justify-between">
@@ -119,18 +121,42 @@ function MealsHistoryContent({ petId }: { petId: string }) {
                   {monthGrid(visibleMonth).slice(row * 7, row * 7 + 7).map((date, column) => date === null ? (
                     <View key={column} testID="meals-history-filler" className="h-11 flex-1" />
                   ) : (
-                    <DayCell key={date} date={date} today={data.history.today} locale={locale} selected={date === selectedDay} mealTimes={data.history.days.find(day => day.date === date)?.mealTimes ?? []} />
+                    <DayCell key={date} onPress={() => setSelectedDay(current => current === date ? null : date)} date={date} today={data.history.today} locale={locale} selected={date === selectedDay} mealTimes={data.history.days.find(day => day.date === date)?.mealTimes ?? []} />
                   ))}
                 </View>
               ))}
             </View>
-            {data.history.days.every(day => day.mealTimes.length === 0) ? (
+            {selectedDay !== null ? (
+              <View testID="meals-history-detail" className="gap-2">
+                <Text testID="meals-history-detail-title" className="text-base font-bold text-foreground">
+                  {longDayLabel(selectedDay, locale)}
+                </Text>
+                {selectedTimes.length === 0 ? (
+                  <Text testID="meals-history-detail-empty" className="text-sm text-muted">
+                    {t('mealsHistory.noMealsOnDay')}
+                  </Text>
+                ) : (
+                  <>
+                    {selectedTimes.map(time => (
+                      <Text key={time} testID="meals-history-detail-time" selectable style={TABULAR_NUMS} className="text-sm font-semibold text-foreground">
+                        {time}
+                      </Text>
+                    ))}
+                    <Text testID="meals-history-detail-count" className="text-xs font-normal text-muted">
+                      {selectedTimes.length === 1 ? t('mealsHistory.servedOne') : t('mealsHistory.servedMany', { count: selectedTimes.length })}
+                    </Text>
+                  </>
+                )}
+              </View>
+            ) : data.history.days.every(day => day.mealTimes.length === 0) ? (
               <Text testID="meals-history-empty" className="text-sm text-muted">
                 {t('mealsHistory.emptyMonth')}
               </Text>
             ) : null}
           </Card>
         );
+        break;
+      }
     }
   }
 
