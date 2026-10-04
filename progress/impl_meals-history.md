@@ -1348,14 +1348,14 @@ index 00611e3d..a1d611fa 100644
 +  { file: 'src/screens/meals-history/index.tsx', key: 'common.somethingWentWrong' }, // #105 R5
 +  { file: 'src/screens/meals-history/index.tsx', key: 'common.retry' }, // #105 R5
  ];
- 
+
  export const R7_PROFILE: UseRow[] = [
 diff --git a/mobile-pet-tracker/src/__tests__/ui-language.test.ts b/mobile-pet-tracker/src/__tests__/ui-language.test.ts
 index 4270274e..b6bdc73e 100644
 --- a/mobile-pet-tracker/src/__tests__/ui-language.test.ts
 +++ b/mobile-pet-tracker/src/__tests__/ui-language.test.ts
 @@ -140,7 +140,7 @@ describe('#65 R5: Health resuelve su copy por clave', () => {
- 
+
  describe('#65 R6: Food resuelve su copy por clave', () => {
    it('resuelve las 50 ocurrencias normativas', () => {
 -    expect(R6_FOOD).toHaveLength(35 + 3 + 1 - 2 + 1 + 3 + 9); // +1 #95 R4, -2 #95 R5, +1 #113 R3, +3 #147 R8, +9 #147 R9
@@ -1369,7 +1369,7 @@ index f9197c63..b32aa569 100644
 +++ b/mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx
 @@ -53,7 +53,7 @@ describe('#65 R12: el catálogo tiene los dos idiomas y t resuelve claves y par
      const spanishKeys = Object.keys(es).sort();
- 
+
      expect(englishKeys).toHaveLength(
 -      260 + 16 + 1 + 4 + 7 + 14 + 2 + 1 + 4 - 6 + 1 + 2 + 3 + 11 + 12 + 2 + 9,
 +      260 + 16 + 1 + 4 + 7 + 14 + 2 + 1 + 4 - 6 + 1 + 2 + 3 + 11 + 12 + 2 + 9 + 9, // #105 R5
@@ -1489,3 +1489,5 @@ specs/meals-history/traceability.md
 ```
 
 Las diferencias de requirements.md, design.md y tasks.md de meals-history pertenecen a los commits E1 del leader, no a esta implementación.
+
+`git diff --check 2edf8c38 HEAD`: el primer cierre detectó tres espacios de líneas de contexto en el parche Markdown; se normalizaron solo esos espacios. Repetido tras el cierre documental: exit=0. Árbol limpio.
