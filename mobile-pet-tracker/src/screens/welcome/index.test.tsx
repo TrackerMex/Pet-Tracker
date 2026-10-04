@@ -1,5 +1,5 @@
-import { render, screen } from '@testing-library/react-native';
-import { Redirect } from 'expo-router';
+import { fireEvent, render, screen } from '@testing-library/react-native';
+import { Redirect, router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
 import { StyleSheet } from 'react-native';
@@ -61,6 +61,7 @@ function readSource(path: string): string {
 
 const mockUseAuth = jest.mocked(useAuth);
 const mockRedirect = jest.mocked(Redirect);
+const mockRouter = jest.mocked(router);
 
 function WelcomeWrapper({ children, language = 'es' }: { children: ReactNode; language?: 'en' | 'es' }) {
   return (
@@ -250,5 +251,23 @@ describe('R6', () => {
   it('contiene exactamente tres chips', async () => {
     await renderWelcome();
     expect(screen.getByTestId('welcome-chips').children).toHaveLength(3);
+  });
+});
+
+
+describe('R7', () => {
+  it('empuja a registro sin reemplazar', async () => {
+    await renderWelcome();
+    await fireEvent.press(screen.getByTestId('welcome-get-started'));
+    expect(mockRouter.push).toHaveBeenCalledTimes(1);
+    expect(mockRouter.push).toHaveBeenCalledWith('/register');
+    expect(mockRouter.replace).not.toHaveBeenCalled();
+  });
+
+  it('es el botón primario del repo', async () => {
+    await renderWelcome();
+    expect(screen.getByTestId('welcome-get-started').props.className).toBe('w-full rounded-xl bg-accent');
+    expect(screen.getByText('Comenzar ahora')).toBeOnTheScreen();
+    expect(screen.getByText('Comenzar ahora').props.className).toBe('font-bold text-accent-foreground');
   });
 });
