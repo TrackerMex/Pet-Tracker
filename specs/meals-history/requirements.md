@@ -705,7 +705,7 @@ y `<ChevronRight size={20} color={foreground} />` (import ya presente).
 > casilla propia (abajo); los tests no lo ven.
 
 - **Dispositivo:** dev build de Android (no Expo Go), instalada desde la
-  última build de desarrollo; `adb -s <ip:puerto>` si el teléfono sale dos
+  última build de desarrollo; `adb -s 192.168.1.7:40501` si el teléfono sale dos
   veces por Wi-Fi.
 - **Backend:** local (`./init.sh` o `pnpm start:dev` con la base migrada),
   LocalStack con credenciales `test`/`test`; `EXPO_PUBLIC_API_URL` apuntando a
@@ -725,7 +725,7 @@ y `<ChevronRight size={20} color={foreground} />` (import ya presente).
   mascota sin servicios → "Este mes no se sirvió ninguna comida" con la rejilla
   visible.
 
-- [ ] **H1 — Prueba de humo en dev build Android superada** (humano, fecha: ____)
+- [X] **H1 — Prueba de humo en dev build Android superada** (humano, fecha: 2026-10-03)
 
 ---
 
