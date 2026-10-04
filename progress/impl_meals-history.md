@@ -1491,3 +1491,11 @@ specs/meals-history/traceability.md
 Las diferencias de requirements.md, design.md y tasks.md de meals-history pertenecen a los commits E1 del leader, no a esta implementación.
 
 `git diff --check 2edf8c38 HEAD`: el primer cierre detectó tres espacios de líneas de contexto en el parche Markdown; se normalizaron solo esos espacios. Repetido tras el cierre documental: exit=0. Árbol limpio.
+
+Tras el commit documental `9df5acd6`, `git status --short` muestra un directorio nuevo ajeno a #105:
+
+```text
+?? Pet-Tracker-wt-148/
+```
+
+No existía en las guardas iniciales ni en el status anterior al cierre. No lo creé ni lo inspeccioné ni lo modifiqué; no se elimina ni se añade al índice. Los cambios propios de #105 están todos commiteados. La afirmación anterior de árbol limpio se refiere al status previo a la aparición de este directorio concurrente.
