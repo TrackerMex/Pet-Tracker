@@ -6,6 +6,7 @@ import { KeyboardAvoidingView, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Lock } from 'reicon-react-native';
 
+import { forgotPassword } from '../../api/auth';
 import { useTranslate } from '../../providers/language-provider';
 import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
@@ -16,6 +17,22 @@ export function ForgotScreen() {
   const insets = useSafeAreaInsets();
   const t = useTranslate();
   const [email, setEmail] = useState('');
+  const [submittedEmail, setSubmittedEmail] = useState('');
+  const [sent, setSent] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  async function send(target: string) {
+    setSubmitting(true);
+    try {
+      const result = await forgotPassword(process.env.EXPO_PUBLIC_API_URL, { email: target });
+      if (result.kind === 'ok') {
+        setSubmittedEmail(target);
+        setSent(true);
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  }
 
   return (
     <KeyboardAvoidingView
@@ -46,37 +63,55 @@ export function ForgotScreen() {
           <Lock size={28} color={accentStrong} />
         </View>
         <Text testID="forgot-title" className="text-center text-2xl font-black text-foreground">
-          {t('forgot.forgotPassword')}
+          {sent ? t('forgot.checkYourEmail') : t('forgot.forgotPassword')}
         </Text>
         <Text testID="forgot-body" className="text-center font-normal text-muted">
-          {t('forgot.instructions')}
+          {sent ? t('forgot.sentTo', { email: submittedEmail }) : t('forgot.instructions')}
         </Text>
 
-        <TextField className="w-full">
-          <Label className="text-xs font-semibold text-foreground">
-            {t('forgot.email')}
-          </Label>
-          <Input
-            testID="forgot-email"
-            className="rounded-xl bg-default"
-            autoCapitalize="none"
-            keyboardType="email-address"
-            autoComplete="email"
-            textContentType="emailAddress"
-            value={email}
-            onChangeText={setEmail}
-          />
-        </TextField>
+        {!sent ? (
+          <TextField className="w-full">
+            <Label className="text-xs font-semibold text-foreground">
+              {t('forgot.email')}
+            </Label>
+            <Input
+              testID="forgot-email"
+              className="rounded-xl bg-default"
+              autoCapitalize="none"
+              keyboardType="email-address"
+              autoComplete="email"
+              textContentType="emailAddress"
+              value={email}
+              onChangeText={setEmail}
+            />
+          </TextField>
+        ) : null}
 
-        <Button
-          testID="forgot-submit"
-          className="w-full rounded-xl bg-accent"
-          isDisabled={email.trim() === ''}
-        >
-          <Button.Label className="font-bold text-accent-foreground">
-            {t('forgot.sendRecoveryLink')}
-          </Button.Label>
-        </Button>
+        {!sent ? (
+          <Button
+            testID="forgot-submit"
+            className="w-full rounded-xl bg-accent"
+            isDisabled={email.trim() === '' || submitting}
+            onPress={() => void send(email.trim())}
+          >
+            <Button.Label className="font-bold text-accent-foreground">
+              {t('forgot.sendRecoveryLink')}
+            </Button.Label>
+          </Button>
+        ) : null}
+
+        {sent ? (
+          <Button
+            testID="forgot-resend"
+            variant="secondary"
+            className="w-full rounded-xl"
+            isDisabled={submitting}
+          >
+            <Button.Label className="font-bold text-foreground">
+              {t('forgot.resend')}
+            </Button.Label>
+          </Button>
+        ) : null}
 
         <LinkButton testID="link-login" onPress={() => router.push('/login')}>
           <LinkButton.Label className="font-semibold text-accent-strong">

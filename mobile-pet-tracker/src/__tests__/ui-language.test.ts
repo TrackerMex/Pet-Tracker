@@ -67,8 +67,8 @@ function checkUses(uses: UseRow[]) {
 }
 
 describe('#65 R1: el grupo (auth) resuelve su copy por clave', () => {
-  it('resuelve las 29 ocurrencias normativas', () => {
-    expect(R1_AUTH).toHaveLength(29);
+  it('resuelve las 32 ocurrencias normativas', () => {
+    expect(R1_AUTH).toHaveLength(29 + 3); // #117 R10
     checkUses(R1_AUTH);
   });
 });

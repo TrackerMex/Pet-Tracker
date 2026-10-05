@@ -13,6 +13,9 @@ export const R1_AUTH: UseRow[] = [
   { file: 'src/app/(auth)/login.tsx', key: 'login.signIn' },
   { file: 'src/app/(auth)/login.tsx', key: 'login.createAccount' },
   { file: 'src/app/(auth)/login.tsx', key: 'login.forgotPassword' },
+  { file: 'src/screens/forgot/index.tsx', key: 'forgot.checkYourEmail' }, // #117 R5
+  { file: 'src/screens/forgot/index.tsx', key: 'forgot.sentTo' }, // #117 R5
+  { file: 'src/screens/forgot/index.tsx', key: 'forgot.resend' }, // #117 R5
   { file: 'src/screens/forgot/index.tsx', key: 'forgot.forgotPassword' }, // #117 R10
   { file: 'src/screens/forgot/index.tsx', key: 'forgot.instructions' }, // #117 R10
   { file: 'src/screens/forgot/index.tsx', key: 'forgot.email' }, // #117 R10
