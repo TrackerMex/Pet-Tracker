@@ -135,3 +135,7 @@
   alargan un paso, sin `it` nuevos, y entran las sondas M7-n, M6-k y M7-o.
   Cifras finales: forgot 31, 8 suites 287, global 93 / 2051. Lista cerrada: 3
   ficheros. Siguiente: espejo en Notion, firma humana, handoff de la ronda 3.
+- Notion (2026-10-05): enmienda E2 espejada al final de la página (tras la
+  casilla de E1), Estado del gate = En revisión, Bloqueadores = gate de la
+  enmienda E2 citando `2e8eda78`. Esperando la aprobación humana; tras ella,
+  commit de firma y handoff de la ronda 3.
