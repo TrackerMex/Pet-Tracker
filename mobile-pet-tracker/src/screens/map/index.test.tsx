@@ -10,6 +10,7 @@ import { join } from 'node:path';
 
 import { HeroUINativeProvider } from 'heroui-native';
 import { useEffect, type ReactNode } from 'react';
+import type { TestInstance } from 'test-renderer';
 
 import { listGeofences, type Geofence, type GeofenceListState } from '../../api/geofences';
 import {
@@ -52,6 +53,7 @@ import { renderWithProviders } from '../../../test/render-with-providers';
 
 let mockFocusCleanup: (() => void) | undefined;
 let mockTheme: 'light' | 'dark' = 'light';
+let mockIsFocused = true;
 
 jest.mock('../../api/geofences', () => ({ listGeofences: jest.fn() }));
 
@@ -76,7 +78,7 @@ jest.mock('../../providers/auth-provider', () => ({
 
 jest.mock('expo-router', () => ({
   router: { push: jest.fn() },
-  useIsFocused: () => true,
+  useIsFocused: () => mockIsFocused,
   useFocusEffect: (callback: () => void | (() => void)) => {
     const React = jest.requireActual<typeof import('react')>('react');
     React.useEffect(() => {
@@ -217,6 +219,12 @@ function makeStoredPosition(
   };
 }
 
+function elementChild(node: TestInstance, index: number): TestInstance {
+  const child = node.children[index];
+  if (typeof child === 'string') throw new Error('Expected an element child');
+  return child;
+}
+
 function pending<T>(): Promise<T> {
   return new Promise(() => undefined);
 }
@@ -256,6 +264,7 @@ beforeEach(() => {
   mockFocusCleanup = undefined;
   mockTheme = 'light';
   initialSelectedPetId = null;
+  mockIsFocused = true;
   process.env.EXPO_PUBLIC_API_URL = apiUrl;
   mockUseAuth.mockReturnValue({
     status: 'authenticated',
@@ -1593,5 +1602,78 @@ describe('#116 R1: el estado activo usa la palabra del Make', () => {
     expect(design).toMatch(
       /\| 198 \| `map\.live` \| `GPS active` \| `GPS activo`[^\n]*← literal cambiado por #116 \(R1\)/,
     );
+  });
+});
+
+
+describe('#116 R2: la píldora existe encima de la tarjeta de stats', () => {
+  beforeEach(() => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetLastPosition.mockResolvedValue({ kind: 'ok', position: makeLastPosition() });
+  });
+
+  it('pinta la píldora como hijo 0 de map-stats y la tarjeta como hijo 1', async () => {
+    await renderMap();
+    await waitFor(() => expect(screen.getByTestId('map-pet-pill')).toBeVisible());
+
+    const stats = screen.getByTestId('map-stats');
+    expect(elementChild(stats, 0).props.testID).toBe('map-pet-pill');
+    expect(within(elementChild(stats, 1)).getByTestId('stat-speed')).toBeVisible();
+  });
+
+  it('compone la cápsula con la receta exacta y sin esquina continua', async () => {
+    await renderMap();
+    await waitFor(() => expect(screen.getByTestId('map-pet-pill')).toBeVisible());
+
+    const pill = screen.getByTestId('map-pet-pill');
+    expect(pill.props.className).toBe(
+      'flex-row items-center gap-2 self-start rounded-full border border-border bg-surface px-3 py-2 shadow-sm',
+    );
+    expect(pill.props.style).toBeUndefined();
+  });
+
+  it('no pinta la píldora mientras la selección no está en la lista', async () => {
+    mockIsFocused = false;
+    initialSelectedPetId = 'removed-pet';
+
+    await renderMap();
+    await waitFor(() => expect(screen.getByTestId('stat-speed')).toBeVisible());
+
+    expect(screen.queryByTestId('map-pet-pill')).toBeNull();
+  });
+});
+
+describe('#116 R3: la píldora muestra avatar y nombre', () => {
+  beforeEach(() => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetLastPosition.mockResolvedValue({ kind: 'ok', position: makeLastPosition() });
+  });
+
+  it('pinta el avatar de 24 sin foto', async () => {
+    await renderMap();
+    await waitFor(() => expect(screen.getByTestId('map-pet-pill')).toBeVisible());
+
+    const avatar = elementChild(screen.getByTestId('map-pet-pill'), 0);
+    expect(avatar.props.testID).toBe('map-pet-pill-avatar');
+    expect(avatar.props.width).toBe(24);
+    expect(avatar.props.height).toBe(24);
+  });
+
+  it('pinta la foto de la lista con su cacheKey', async () => {
+    mockListPets.mockResolvedValue({
+      kind: 'ok',
+      pets: [makePet({ photoUrl: 'https://cdn.example/luna.jpg' })],
+    });
+    mockGetPet.mockResolvedValue({
+      kind: 'ok',
+      pet: makePet({ photoUrl: null, device: makeDevice('online') }),
+    });
+
+    await renderMap();
+    await waitFor(() => expect(screen.getByTestId('map-pet-pill')).toBeVisible());
+
+    const avatar = elementChild(screen.getByTestId('map-pet-pill'), 0);
+    expect(avatar.props.source).toEqual([{ uri: 'https://cdn.example/luna.jpg', cacheKey: 'pet-1' }]);
+    expect(avatar.props.style).toEqual({ width: 24, height: 24, borderRadius: 12 });
   });
 });
