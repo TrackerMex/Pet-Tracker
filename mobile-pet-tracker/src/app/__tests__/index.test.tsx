@@ -47,12 +47,12 @@ describe('R5: splash navega según sesión', () => {
     expect(screen.queryByTestId('splash-logo')).not.toBeOnTheScreen();
   });
 
-  it('redirects an unauthenticated session to login', async () => {
+  it('#118 R2: redirects an unauthenticated session to welcome', async () => {
     mockUseAuth.mockReturnValue(authValue('unauthenticated'));
 
     await render(<Index />);
 
-    expect(mockRedirect.mock.calls[0]?.[0]).toEqual({ href: '/login' });
+    expect(mockRedirect.mock.calls[0]?.[0]).toEqual({ href: '/welcome' });
     expect(screen.queryByTestId('splash-logo')).not.toBeOnTheScreen();
   });
 });

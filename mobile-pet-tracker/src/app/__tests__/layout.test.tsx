@@ -306,7 +306,7 @@ describe('#95 R2: el layout raíz monta el provider y el Stack de detalle', () =
     const props = jest.mocked(Stack).mock.calls.at(-1)?.[0];
     expect(props?.screenOptions).toEqual({ headerShown: false });
     const children = Children.toArray(props?.children);
-    expect(children).toHaveLength(5);
+    expect(children).toHaveLength(5 + 1); // #118 R3
     expect(children.slice(0, 4).map((child) =>
       isValidElement<{ name: string; options?: unknown }>(child)
         ? [child.type, child.props.name, child.props.options]
@@ -564,5 +564,27 @@ describe('#105 R8: meals history is the last protected detail', () => {
     expect(isValidElement<{ options?: unknown }>(detail)
       ? detail.props.options
       : undefined).toMatchObject({ headerShown: true, title: 't:mealsHistory.mealsHistory' });
+  });
+});
+
+describe('#118 R3: RootStack declara welcome bajo su propia guarda', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockGetStoredTheme.mockResolvedValue(undefined);
+    mockGetStoredLanguage.mockResolvedValue(undefined);
+  });
+
+  it('declara welcome como sexto hijo bajo Stack.Protected', async () => {
+    await render(<RootLayout />);
+    await waitFor(() => expect(screen.getByTestId('root-stack')).toBeVisible());
+    const stack = jest.mocked(Stack).mock.calls.at(-1)?.[0];
+    const group = Children.toArray(stack?.children)[5];
+    expect(isValidElement<{ guard: boolean; children: ReactNode }>(group)).toBe(true);
+    if (!isValidElement<{ guard: boolean; children: ReactNode }>(group)) return;
+    expect(group.type).toBe(Stack.Protected);
+    expect(group.props.guard).toBe(false);
+    expect(Children.toArray(group.props.children).map((child) =>
+      isValidElement<{ name: string }>(child) ? [child.type, child.props.name] : null,
+    )).toEqual([[Stack.Screen, 'welcome']]);
   });
 });

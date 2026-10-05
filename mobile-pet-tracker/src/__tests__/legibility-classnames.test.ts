@@ -154,6 +154,7 @@ describe('#61 R4: el acento como tinta usa accent-strong', () => {
     [join('screens', 'profile', 'index.tsx'), 1],
     [join('screens', 'add-pet', 'index.tsx'), 1],
     [join('components', 'pet-hero-header.tsx'), 1],
+    [join('screens', 'welcome', 'index.tsx'), 2],
   ];
 
   it.each(inkSites)('%s pinta con text-accent-strong (%i)', (path, sites) => {
@@ -163,7 +164,10 @@ describe('#61 R4: el acento como tinta usa accent-strong', () => {
   it('suma las trece ocurrencias que enumera la spec', () => {
     expect(
       inkSites.reduce((total, [, sites]) => total + sites, 0),
-    ).toBe(13 + 1 + 1);
+    ).toBe(
+      13 + 1 + 1
+        + 2, // #118 R11
+    );
   });
 
   it('no deja ningún text-accent suelto en las fuentes', () => {

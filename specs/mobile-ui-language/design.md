@@ -877,6 +877,19 @@ copy completa en cada una.
 | — | `mealsHistory.servedOne` | `1 meal served` | `1 comida servida` | ← añadida por #105 (R5) |
 | — | `mealsHistory.servedMany` | `{{count}} meals served` | `{{count}} comidas servidas` | ← añadida por #105 (R5) |
 
+### §2.19 — Añadidos por #118 — Bienvenida
+
+| # | Clave | `en` | `es` | Origen |
+|---|---|---|---|---|
+| — | `welcome.brand` | `Pet Tracker` | `Pet Tracker` | ← añadida por #118 (R1) |
+| — | `welcome.chipGps` | `GPS` | `GPS` | ← añadida por #118 (R1) |
+| — | `welcome.chipHealth` | `Health` | `Salud` | ← añadida por #118 (R1) |
+| — | `welcome.chipNutrition` | `Nutrition` | `Nutrición` | ← añadida por #118 (R1) |
+| — | `welcome.tagline` | `Your smart hub for canine wellness, tracking and nutrition` | `Tu centro inteligente de bienestar, rastreo y nutrición canina profesional` | ← añadida por #118 (R1) |
+| — | `welcome.getStarted` | `Get started` | `Comenzar ahora` | ← añadida por #118 (R1) |
+| — | `welcome.haveAccount` | `I already have an account` | `Ya tengo una cuenta` | ← añadida por #118 (R1) |
+| — | `welcome.legalNotice` | `By continuing you accept our Terms and Privacy Policy` | `Al continuar aceptas nuestros Términos y Política de privacidad` | ← añadida por #118 (R1) |
+
 ## 3. La infraestructura
 
 ### 3.1 Decisiones

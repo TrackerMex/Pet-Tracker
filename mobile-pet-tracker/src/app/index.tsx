@@ -12,7 +12,7 @@ export default function Index() {
   }
 
   if (status === 'unauthenticated') {
-    return <Redirect href="/login" />;
+    return <Redirect href="/welcome" />;
   }
 
   return (

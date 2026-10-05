@@ -516,6 +516,17 @@ export const R15_GEOFENCE_EDITOR: UseRow[] = [
   { file: 'src/screens/geofence-editor/index.tsx', key: 'geofenceEditor.ownerOnly' },
 ];
 
+export const R16_WELCOME: UseRow[] = [
+  { file: 'src/screens/welcome/index.tsx', key: 'welcome.brand' },
+  { file: 'src/screens/welcome/index.tsx', key: 'welcome.chipGps' },
+  { file: 'src/screens/welcome/index.tsx', key: 'welcome.chipHealth' },
+  { file: 'src/screens/welcome/index.tsx', key: 'welcome.chipNutrition' },
+  { file: 'src/screens/welcome/index.tsx', key: 'welcome.tagline' },
+  { file: 'src/screens/welcome/index.tsx', key: 'welcome.getStarted' },
+  { file: 'src/screens/welcome/index.tsx', key: 'welcome.haveAccount' },
+  { file: 'src/screens/welcome/index.tsx', key: 'welcome.legalNotice' },
+];
+
 export const ALL_USES: UseRow[] = [
   ...R1_AUTH,
   ...R2_TABS,
@@ -532,6 +543,7 @@ export const ALL_USES: UseRow[] = [
   ...R13_ALERT_DETAIL,
   ...R14_GEOFENCES,
   ...R15_GEOFENCE_EDITOR,
+  ...R16_WELCOME,
 ];
 
 describe('#65: la tabla de uso de copy está disponible al runner', () => {
@@ -546,6 +558,7 @@ describe('#65: la tabla de uso de copy está disponible al runner', () => {
       R1_AUTH, R2_TABS, R3_HOME, R4_MAP, R5_HEALTH, R6_FOOD,
       R7_PROFILE, R8_REMINDERS, R9_ADD_PET, R10_PAIRING, R11_RESET,
       R12_ALERTS, R13_ALERT_DETAIL, R14_GEOFENCES, R15_GEOFENCE_EDITOR,
+      R16_WELCOME,
     ];
 
     expect(ALL_USES).toHaveLength(
