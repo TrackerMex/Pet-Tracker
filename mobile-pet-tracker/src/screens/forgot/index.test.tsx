@@ -274,3 +274,26 @@ describe('#117 R9: las métricas del stub sobreviven al cambio de estado', () =>
     expect(screen.getByTestId('forgot-form').props.keyboardShouldPersistTaps).toBe('handled');
   });
 });
+
+
+describe('#117 R11: la pantalla de éxito es la misma para cualquier correo', () => {
+  it('dos correos distintos reciben «Revisa tu correo» con el mismo cuerpo salvo el correo citado', async () => {
+    mockForgotPassword.mockResolvedValue({ kind: 'ok' });
+    const titles: string[] = [];
+    const bodies: string[] = [];
+    for (const email of ['existe@example.com', 'nadie-117@example.com']) {
+      await renderRoute();
+      await submitForgot(email);
+      expect(await screen.findByText('Revisa tu correo')).toBeVisible();
+      const title = screen.getByTestId('forgot-title').props.children;
+      const body = screen.getByTestId('forgot-body').props.children;
+      expect(body).toBe(`Si existe una cuenta para ${email}, te enviamos un enlace para restablecer tu contraseña. Revisa tu bandeja de entrada y la carpeta de spam.`);
+      titles.push(title);
+      bodies.push(body.replace(email, '{{email}}'));
+      await screen.unmount();
+    }
+    expect(titles[0]).toBe('Revisa tu correo');
+    expect(titles[1]).toBe(titles[0]);
+    expect(bodies[1]).toBe(bodies[0]);
+  });
+});

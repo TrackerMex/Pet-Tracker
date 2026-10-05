@@ -333,3 +333,24 @@ describe('#117 R2: forgotPassword mapea la respuesta por kind', () => {
     expect(fetchFn).not.toHaveBeenCalled();
   });
 });
+
+
+describe('#117 R11: ok no depende del cuerpo', () => {
+  const body = { email: 'ana@example.com' };
+
+  it.each([{ requested: false }, {}])('mapea 200 con body %p a ok sin leer el body', async (responseBody) => {
+    const res = response(200, responseBody);
+    const fetchFn = jest.fn().mockResolvedValue(res) as unknown as typeof fetch;
+
+    await expect(forgotPassword(baseUrl, body, fetchFn)).resolves.toEqual({ kind: 'ok' });
+    expect(res.json).not.toHaveBeenCalled();
+  });
+
+  it('mapea 200 con JSON inválido a ok', async () => {
+    const res = invalidJsonResponse(200);
+    const fetchFn = jest.fn().mockResolvedValue(res) as unknown as typeof fetch;
+
+    await expect(forgotPassword(baseUrl, body, fetchFn)).resolves.toEqual({ kind: 'ok' });
+    expect(res.json).not.toHaveBeenCalled();
+  });
+});
