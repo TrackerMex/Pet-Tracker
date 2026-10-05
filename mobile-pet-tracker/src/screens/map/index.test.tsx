@@ -5,8 +5,12 @@ import {
   waitFor,
   within,
 } from '@testing-library/react-native';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { HeroUINativeProvider } from 'heroui-native';
 import { useEffect, type ReactNode } from 'react';
+import type { TestInstance } from 'test-renderer';
 
 import { listGeofences, type Geofence, type GeofenceListState } from '../../api/geofences';
 import {
@@ -37,6 +41,7 @@ import type {
   StoredPosition,
   TripDetail,
 } from '../../api/types';
+import { en, es } from '../../i18n/catalog';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import { LanguageProvider } from '../../providers/language-provider';
 import {
@@ -48,6 +53,7 @@ import { renderWithProviders } from '../../../test/render-with-providers';
 
 let mockFocusCleanup: (() => void) | undefined;
 let mockTheme: 'light' | 'dark' = 'light';
+let mockIsFocused = true;
 
 jest.mock('../../api/geofences', () => ({ listGeofences: jest.fn() }));
 
@@ -72,7 +78,7 @@ jest.mock('../../providers/auth-provider', () => ({
 
 jest.mock('expo-router', () => ({
   router: { push: jest.fn() },
-  useIsFocused: () => true,
+  useIsFocused: () => mockIsFocused,
   useFocusEffect: (callback: () => void | (() => void)) => {
     const React = jest.requireActual<typeof import('react')>('react');
     React.useEffect(() => {
@@ -213,6 +219,12 @@ function makeStoredPosition(
   };
 }
 
+function elementChild(node: TestInstance, index: number): TestInstance {
+  const child = node.children[index];
+  if (typeof child === 'string') throw new Error('Expected an element child');
+  return child;
+}
+
 function pending<T>(): Promise<T> {
   return new Promise(() => undefined);
 }
@@ -252,6 +264,7 @@ beforeEach(() => {
   mockFocusCleanup = undefined;
   mockTheme = 'light';
   initialSelectedPetId = null;
+  mockIsFocused = true;
   process.env.EXPO_PUBLIC_API_URL = apiUrl;
   mockUseAuth.mockReturnValue({
     status: 'authenticated',
@@ -597,7 +610,7 @@ describe('R8: stats calculadas de positions y trips', () => {
       expect(screen.getByTestId('stat-speed')).toHaveTextContent('12.3 km/h');
       expect(screen.getByTestId('stat-distance')).toHaveTextContent('2.0 km');
       expect(screen.getByTestId('stat-updated')).toHaveTextContent('Justo ahora');
-      expect(screen.getByTestId('stat-gps')).toHaveTextContent('En vivo');
+      expect(screen.getByTestId('map-pet-pill-status')).toHaveTextContent('GPS activo');
     });
     expect(screen.getByTestId('map-stats').props.style).toEqual(
       expect.objectContaining({
@@ -628,7 +641,7 @@ describe('R8: stats calculadas de positions y trips', () => {
     await renderMap();
 
     await waitFor(() => {
-      expect(screen.getByTestId('stat-gps')).toHaveTextContent('En vivo');
+      expect(screen.getByTestId('map-pet-pill-status')).toHaveTextContent('GPS activo');
       expect(screen.getByTestId('stat-speed')).toHaveTextContent('—');
       expect(screen.getByTestId('stat-distance')).toHaveTextContent('0.0 km');
       expect(screen.getByTestId('stat-updated')).toHaveTextContent('hace 2 min');
@@ -706,7 +719,7 @@ describe('R8: stats calculadas de positions y trips', () => {
     await renderMap();
 
     await waitFor(() => {
-      expect(screen.getByTestId('stat-gps')).toHaveTextContent('Sin señal');
+      expect(screen.getByTestId('map-pet-pill-status')).toHaveTextContent('Sin señal');
     });
     expect(screen.getByTestId('stat-updated')).toHaveTextContent('—');
   });
@@ -1119,7 +1132,7 @@ describe('#61 R11: el overlay de stats reparte los cuatro tiles en 2x2 sin envol
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
   });
 
-  it.each(['stat-speed', 'stat-distance', 'stat-updated', 'stat-gps'])(
+  it.each(['stat-speed', 'stat-distance', 'stat-updated', 'stat-battery'])(
     '%s se queda en una sola línea',
     async (testID) => {
       mockGetLastPosition.mockResolvedValue({
@@ -1174,7 +1187,7 @@ describe('#61 R11: el overlay de stats reparte los cuatro tiles en 2x2 sin envol
 
     await renderMap();
 
-    await waitFor(() => expect(screen.getByTestId('stat-speed')).toBeVisible());
+    await waitFor(() => expect(screen.getByTestId('stat-battery')).toBeVisible());
 
     expect(statsIn(statRow('stat-speed'))).toEqual([
       'stat-speed',
@@ -1182,7 +1195,7 @@ describe('#61 R11: el overlay de stats reparte los cuatro tiles en 2x2 sin envol
     ]);
     expect(statsIn(statRow('stat-updated'))).toEqual([
       'stat-updated',
-      'stat-gps',
+      'stat-battery',
     ]);
   });
 
@@ -1198,11 +1211,11 @@ describe('#61 R11: el overlay de stats reparte los cuatro tiles en 2x2 sin envol
 
     expect(screen.getByTestId('stat-distance')).toBeVisible();
     expect(screen.getByTestId('stat-updated')).toBeVisible();
-    expect(screen.getByTestId('stat-gps')).toBeVisible();
+    expect(screen.getByTestId('stat-battery')).toBeVisible();
     expect(screen.getByText('Velocidad')).toBeVisible();
     expect(screen.getByText('Distancia')).toBeVisible();
     expect(screen.getByText('Actualizado')).toBeVisible();
-    expect(screen.getByText('Conexión')).toBeVisible();
+    expect(screen.getByText('Batería')).toBeVisible();
     expect(screen.getByTestId('map-stats').props.style).toEqual(
       expect.objectContaining({
         position: 'absolute',
@@ -1258,7 +1271,10 @@ describe('#62 R15: el overlay del mapa usa cifras tabulares', () => {
     expect(speed.props.style).toEqual(
       expect.objectContaining({ fontVariant: ['tabular-nums'] }),
     );
-    expect(screen.getByTestId('stat-gps').props.style).not.toEqual(
+    expect(screen.getByTestId('stat-battery').props.style).toEqual(
+      expect.objectContaining({ fontVariant: ['tabular-nums'] }),
+    );
+    expect(screen.getByTestId('map-pet-pill-status').props.style).not.toEqual(
       expect.objectContaining({ fontVariant: ['tabular-nums'] }),
     );
   });
@@ -1325,7 +1341,7 @@ describe('#94 R2: el tile de conexión sigue al collar', () => {
     });
   });
 
-  it('muestra En vivo aunque después falte la posición', async () => {
+  it('muestra GPS activo aunque después falte la posición', async () => {
     mockGetPet.mockResolvedValue({
       kind: 'ok',
       pet: makePet({ device: makeDevice('online') }),
@@ -1334,7 +1350,7 @@ describe('#94 R2: el tile de conexión sigue al collar', () => {
     const { queryClient } = await renderMap();
 
     await waitFor(() =>
-      expect(screen.getByTestId('stat-gps')).toHaveTextContent('En vivo'),
+      expect(screen.getByTestId('map-pet-pill-status')).toHaveTextContent('GPS activo'),
     );
 
     await act(async () => {
@@ -1348,7 +1364,7 @@ describe('#94 R2: el tile de conexión sigue al collar', () => {
     await waitFor(() =>
       expect(screen.getByTestId('stat-updated')).toHaveTextContent('—'),
     );
-    expect(screen.getByTestId('stat-gps')).toHaveTextContent('En vivo');
+    expect(screen.getByTestId('map-pet-pill-status')).toHaveTextContent('GPS activo');
   });
 
   it('muestra Desactualizado para un collar offline', async () => {
@@ -1360,7 +1376,7 @@ describe('#94 R2: el tile de conexión sigue al collar', () => {
     await renderMap();
 
     await waitFor(() =>
-      expect(screen.getByTestId('stat-gps')).toHaveTextContent(
+      expect(screen.getByTestId('map-pet-pill-status')).toHaveTextContent(
         'Desactualizado',
       ),
     );
@@ -1375,7 +1391,7 @@ describe('#94 R2: el tile de conexión sigue al collar', () => {
     await renderMap();
 
     await waitFor(() =>
-      expect(screen.getByTestId('stat-gps')).toHaveTextContent('Sin señal'),
+      expect(screen.getByTestId('map-pet-pill-status')).toHaveTextContent('Sin señal'),
     );
   });
 
@@ -1388,7 +1404,7 @@ describe('#94 R2: el tile de conexión sigue al collar', () => {
     await renderMap();
 
     await waitFor(() =>
-      expect(screen.getByTestId('stat-gps')).toHaveTextContent('Sin señal'),
+      expect(screen.getByTestId('map-pet-pill-status')).toHaveTextContent('Sin señal'),
     );
   });
 });
@@ -1411,7 +1427,7 @@ describe('#94 R3: sin detalle el tile de conexión cae al guion', () => {
       expect(screen.getByTestId('stat-speed')).toBeVisible(),
     );
     expect(screen.getByTestId('stat-distance')).toBeVisible();
-    expect(screen.getByTestId('stat-gps')).toHaveTextContent('—');
+    expect(screen.getByTestId('map-pet-pill-status')).toHaveTextContent('—');
   });
 
   it('muestra el guion cuando el detalle falla', async () => {
@@ -1420,7 +1436,7 @@ describe('#94 R3: sin detalle el tile de conexión cae al guion', () => {
     await renderMap();
 
     await waitFor(() =>
-      expect(screen.getByTestId('stat-gps')).toHaveTextContent('—'),
+      expect(screen.getByTestId('map-pet-pill-status')).toHaveTextContent('—'),
     );
   });
 });
@@ -1440,14 +1456,14 @@ describe('#94 R4: la antigüedad y la conexión son datos independientes', () =>
     await renderMap();
 
     await waitFor(() =>
-      expect(screen.getByTestId('stat-gps')).toHaveTextContent('En vivo'),
+      expect(screen.getByTestId('map-pet-pill-status')).toHaveTextContent('GPS activo'),
     );
     expect(screen.getByTestId('stat-updated')).toHaveTextContent('hace 2 min');
   });
 });
 
-describe('#94 R6: el tile de conexión se rotula como en Pairing', () => {
-  it('muestra Conexión y retira GPS', async () => {
+describe('#94 R6 (enmienda #116): el mapa ya no rotula la conexión', () => {
+  it('retira Conexión y GPS y rotula Batería', async () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
     mockGetLastPosition.mockResolvedValue({
       kind: 'ok',
@@ -1456,8 +1472,10 @@ describe('#94 R6: el tile de conexión se rotula como en Pairing', () => {
 
     await renderMap();
 
-    await waitFor(() => expect(screen.getByText('Conexión')).toBeVisible());
+    await waitFor(() => expect(screen.getByTestId('stat-speed')).toBeVisible());
+    expect(screen.queryByText('Conexión')).toBeNull();
     expect(screen.queryByText('GPS')).toBeNull();
+    expect(screen.getByText('Batería')).toBeVisible();
   });
 });
 
@@ -1506,7 +1524,7 @@ describe('#94 R7: el poll refresca también el detalle', () => {
     });
 
     await waitFor(() =>
-      expect(screen.getByTestId('stat-gps')).toHaveTextContent('En vivo'),
+      expect(screen.getByTestId('map-pet-pill-status')).toHaveTextContent('GPS activo'),
     );
     const initialDetailCalls = mockGetPet.mock.calls.length;
 
@@ -1517,7 +1535,7 @@ describe('#94 R7: el poll refresca también el detalle', () => {
     });
 
     await waitFor(() =>
-      expect(screen.getByTestId('stat-gps')).toHaveTextContent(
+      expect(screen.getByTestId('map-pet-pill-status')).toHaveTextContent(
         'Desactualizado',
       ),
     );
@@ -1574,5 +1592,349 @@ describe('#146 R11: la pestaña Mapa dibuja las zonas activas de la mascota', ()
       await act(async () => { jest.advanceTimersByTime(15000); await Promise.resolve(); await Promise.resolve(); });
       expect(mockListGeofences).toHaveBeenCalledTimes(initialCalls);
     } finally { mockFocusCleanup?.(); jest.useRealTimers(); }
+  });
+});
+
+
+describe('#116 R1: el estado activo usa la palabra del Make', () => {
+  it('resuelve map.live a GPS active y GPS activo y lo registra en la tabla de copy', () => {
+    expect(en['map.live']).toBe('GPS active');
+    expect(es['map.live']).toBe('GPS activo');
+    const design = readFileSync(
+      join(process.cwd(), '..', 'specs', 'mobile-ui-language', 'design.md'),
+      'utf8',
+    );
+    expect(design).toMatch(
+      /\| 198 \| `map\.live` \| `GPS active` \| `GPS activo`[^\n]*← literal cambiado por #116 \(R1\)/,
+    );
+  });
+});
+
+
+describe('#116 R2: la píldora existe encima de la tarjeta de stats', () => {
+  beforeEach(() => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetLastPosition.mockResolvedValue({ kind: 'ok', position: makeLastPosition() });
+  });
+
+  it('pinta la píldora como hijo 0 de map-stats y la tarjeta como hijo 1', async () => {
+    await renderMap();
+    await waitFor(() => expect(screen.getByTestId('map-pet-pill')).toBeVisible());
+
+    const stats = screen.getByTestId('map-stats');
+    expect(elementChild(stats, 0).props.testID).toBe('map-pet-pill');
+    expect(within(elementChild(stats, 1)).getByTestId('stat-speed')).toBeVisible();
+  });
+
+  it('compone la cápsula con la receta exacta y sin esquina continua', async () => {
+    await renderMap();
+    await waitFor(() => expect(screen.getByTestId('map-pet-pill')).toBeVisible());
+
+    const pill = screen.getByTestId('map-pet-pill');
+    expect(pill.props.className).toBe(
+      'flex-row items-center gap-2 self-start rounded-full border border-border bg-surface px-3 py-2 shadow-sm',
+    );
+    expect(pill.props.style).toBeUndefined();
+  });
+
+  it('no pinta la píldora mientras la selección no está en la lista', async () => {
+    mockIsFocused = false;
+    initialSelectedPetId = 'removed-pet';
+
+    await renderMap();
+    await waitFor(() => expect(screen.getByTestId('stat-speed')).toBeVisible());
+
+    expect(screen.queryByTestId('map-pet-pill')).toBeNull();
+  });
+});
+
+describe('#116 R3: la píldora muestra avatar y nombre', () => {
+  beforeEach(() => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetLastPosition.mockResolvedValue({ kind: 'ok', position: makeLastPosition() });
+  });
+
+  it('pinta el avatar de 24 sin foto', async () => {
+    await renderMap();
+    await waitFor(() => expect(screen.getByTestId('map-pet-pill')).toBeVisible());
+
+    const avatar = elementChild(screen.getByTestId('map-pet-pill'), 0);
+    expect(avatar.props.testID).toBe('map-pet-pill-avatar');
+    expect(avatar.props.width).toBe(24);
+    expect(avatar.props.height).toBe(24);
+  });
+
+  it('pinta la foto de la lista con su cacheKey', async () => {
+    mockListPets.mockResolvedValue({
+      kind: 'ok',
+      pets: [makePet({ photoUrl: 'https://cdn.example/luna.jpg' })],
+    });
+    mockGetPet.mockResolvedValue({
+      kind: 'ok',
+      pet: makePet({ photoUrl: null, device: makeDevice('online') }),
+    });
+
+    await renderMap();
+    await waitFor(() => expect(screen.getByTestId('map-pet-pill')).toBeVisible());
+
+    const avatar = elementChild(screen.getByTestId('map-pet-pill'), 0);
+    expect(avatar.props.source).toEqual([{ uri: 'https://cdn.example/luna.jpg', cacheKey: 'pet-1' }]);
+    expect(avatar.props.style).toEqual({ width: 24, height: 24, borderRadius: 12 });
+  });
+
+  it('rotula el nombre de la lista en una línea', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ name: 'Luna' })] });
+    mockGetPet.mockResolvedValue({
+      kind: 'ok',
+      pet: makePet({ name: 'Nala', device: makeDevice('online') }),
+    });
+
+    await renderMap();
+    await waitFor(() =>
+      expect(screen.getByTestId('map-pet-pill-status')).toHaveTextContent('GPS activo'),
+    );
+
+    const name = elementChild(screen.getByTestId('map-pet-pill'), 1);
+    expect(name.props.testID).toBe('map-pet-pill-name');
+    expect(name).toHaveTextContent('Luna');
+    expect(name.props.className).toBe('shrink text-xs font-bold text-foreground');
+    expect(name.props.numberOfLines).toBe(1);
+  });
+
+});
+
+
+describe('#116 R4: la píldora muestra el estado del GPS', () => {
+  beforeEach(() => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetLastPosition.mockResolvedValue({ kind: 'ok', position: makeLastPosition() });
+  });
+
+  it.each([
+    ['online', makeDevice('online'), 'GPS activo', 'bg-success', 'text-accent-strong'],
+    ['offline', makeDevice('offline'), 'Desactualizado', 'bg-warning-strong', 'text-warning-strong'],
+    ['unknown', makeDevice('mystery'), 'Sin señal', 'bg-muted', 'text-muted'],
+    ['sin collar', null, 'Sin señal', 'bg-muted', 'text-muted'],
+    ['detalle pendiente', null, '—', 'bg-muted', 'text-muted'],
+    ['detalle con error', null, '—', 'bg-muted', 'text-muted'],
+  ] as const)('%s: rotula su estado con su punto y su tinta', async (scenario, device, label, dotClass, textClass) => {
+    if (scenario === 'detalle pendiente') {
+      mockGetPet.mockReturnValue(pending<PetState>());
+    } else if (scenario === 'detalle con error') {
+      mockGetPet.mockResolvedValue({ kind: 'error' });
+    } else {
+      mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet({ device }) });
+    }
+
+    await renderMap();
+    if (scenario === 'detalle pendiente' || scenario === 'detalle con error') {
+      await waitFor(() => expect(screen.getByTestId('stat-speed')).toBeVisible());
+    }
+    if (scenario !== 'detalle pendiente') {
+      await waitFor(() =>
+        expect(screen.getByTestId('map-pet-pill-status')).toHaveTextContent(label),
+      );
+    }
+
+    const status = screen.getByTestId('map-pet-pill-status');
+    expect(status).toHaveTextContent(label);
+    expect(screen.getByTestId('map-pet-pill-dot').props.className).toBe(`size-2 rounded-full ${dotClass}`);
+    expect(status.props.className).toBe(`text-2xs font-semibold ${textClass}`);
+    expect(screen.getByTestId('map-pet-pill').props.accessibilityLabel).toBe(`Luna, ${label}`);
+  });
+
+  it('fija cuatro hijos en orden: avatar, nombre, punto, estado', async () => {
+    await renderMap();
+    await waitFor(() =>
+      expect(screen.getByTestId('map-pet-pill-status')).toHaveTextContent('GPS activo'),
+    );
+
+    const pill = screen.getByTestId('map-pet-pill');
+    expect(pill.children).toHaveLength(4);
+    expect([0, 1, 2, 3].map((index) => elementChild(pill, index).props.testID)).toEqual([
+      'map-pet-pill-avatar', 'map-pet-pill-name', 'map-pet-pill-dot', 'map-pet-pill-status',
+    ]);
+  });
+
+  it('agrupa la píldora para el lector de pantalla y deja el estado en una línea sin cifras tabulares', async () => {
+    await renderMap();
+    await waitFor(() =>
+      expect(screen.getByTestId('map-pet-pill-status')).toHaveTextContent('GPS activo'),
+    );
+
+    expect(screen.getByTestId('map-pet-pill').props.accessible).toBe(true);
+    const status = screen.getByTestId('map-pet-pill-status');
+    expect(status.props.numberOfLines).toBe(1);
+    expect(status.props.style).toBeUndefined();
+  });
+});
+
+
+describe('#116 R5: la batería sustituye al tile de conexión', () => {
+  beforeEach(() => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetLastPosition.mockResolvedValue({ kind: 'ok', position: makeLastPosition() });
+  });
+
+  it('monta el tile de batería con valor y rótulo en ese orden', async () => {
+    await renderMap();
+    await waitFor(() => expect(screen.getByTestId('stat-battery')).toBeVisible());
+
+    let tile: TestInstance | null = screen.getByTestId('stat-battery');
+    while (tile && tile.props.className !== 'flex-1 items-center rounded-xl bg-default p-3') {
+      tile = tile.parent;
+    }
+    if (!tile) throw new Error('La batería no cuelga de su tile');
+
+    expect(tile.children.length).toBe(2);
+    expect(elementChild(tile, 0).props.testID).toBe('stat-battery');
+    expect(elementChild(tile, 1)).toHaveTextContent('Batería');
+    expect(elementChild(tile, 1).props.className).toBe('mt-1 text-2xs font-normal text-muted');
+  });
+
+  it('retira stat-gps del mapa', async () => {
+    await renderMap();
+    await waitFor(() => expect(screen.getByTestId('stat-battery')).toBeVisible());
+
+    expect(screen.queryByTestId('stat-gps')).toBeNull();
+  });
+});
+
+describe('#116 R6: la batería se lee con formato entero y tinta por umbral', () => {
+  beforeEach(() => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetLastPosition.mockResolvedValue({ kind: 'ok', position: makeLastPosition() });
+  });
+
+  it.each([
+    [100, '100%', 'text-base font-black text-accent-strong'],
+    [82, '82%', 'text-base font-black text-accent-strong'],
+    [61, '61%', 'text-base font-black text-accent-strong'],
+    [60, '60%', 'text-base font-black text-warning-strong'],
+    [15, '15%', 'text-base font-black text-warning-strong'],
+    [0, '0%', 'text-base font-black text-warning-strong'],
+  ] as const)('%i se lee %s con %s', async (batteryPct, value, className) => {
+    mockGetPet.mockResolvedValue({
+      kind: 'ok',
+      pet: makePet({ device: { ...makeDevice('online'), batteryPct } }),
+    });
+
+    await renderMap();
+    await waitFor(() => expect(screen.getByTestId('stat-battery')).toHaveTextContent(value));
+
+    expect(screen.getByTestId('stat-battery').props.className).toBe(className);
+  });
+});
+
+describe('#116 R7: la batería cae al guion y solo la lee el detalle', () => {
+  beforeEach(() => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetLastPosition.mockResolvedValue({ kind: 'ok', position: makeLastPosition() });
+  });
+
+  it('muestra el guion mientras el detalle está pendiente', async () => {
+    mockGetPet.mockReturnValue(pending<PetState>());
+
+    await renderMap();
+    await waitFor(() => expect(screen.getByTestId('stat-speed')).toBeVisible());
+
+    const battery = screen.getByTestId('stat-battery');
+    expect(battery).toHaveTextContent('—');
+    expect(battery.props.className).toBe('text-base font-black text-muted');
+  });
+
+  it('muestra el guion cuando el detalle falla', async () => {
+    mockGetPet.mockResolvedValue({ kind: 'error' });
+
+    await renderMap();
+    await waitFor(() => expect(screen.getByTestId('stat-speed')).toBeVisible());
+    await waitFor(() => expect(screen.getByTestId('stat-battery')).toHaveTextContent('—'));
+
+    expect(screen.getByTestId('stat-battery').props.className).toBe('text-base font-black text-muted');
+  });
+
+  it('muestra el guion sin collar', async () => {
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet({ device: null }) });
+
+    await renderMap();
+    await waitFor(() => expect(screen.getByTestId('map-pet-pill-status')).toHaveTextContent('Sin señal'));
+
+    const battery = screen.getByTestId('stat-battery');
+    expect(battery).toHaveTextContent('—');
+    expect(battery.props.className).toBe('text-base font-black text-muted');
+  });
+
+  it('ignora la batería de la última posición cuando el collar no la trae', async () => {
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet({ device: makeDevice('online') }) });
+    mockGetLastPosition.mockResolvedValue({ kind: 'ok', position: makeLastPosition({ battery: 82 }) });
+
+    await renderMap();
+    await waitFor(() => expect(screen.getByTestId('map-pet-pill-status')).toHaveTextContent('GPS activo'));
+
+    const battery = screen.getByTestId('stat-battery');
+    expect(battery).toHaveTextContent('—');
+    expect(battery.props.className).toBe('text-base font-black text-muted');
+  });
+
+  it('lee la batería del detalle y no de la lista', async () => {
+    mockListPets.mockResolvedValue({
+      kind: 'ok',
+      pets: [makePet({ device: { ...makeDevice('online'), batteryPct: 10 } })],
+    });
+    mockGetPet.mockResolvedValue({
+      kind: 'ok',
+      pet: makePet({ device: { ...makeDevice('online'), batteryPct: 82 } }),
+    });
+
+    await renderMap();
+    await waitFor(() => expect(screen.getByTestId('stat-battery')).toHaveTextContent('82%'));
+
+    expect(screen.getByTestId('stat-battery').props.className).toBe('text-base font-black text-accent-strong');
+  });
+
+  it('repinta la batería con el poll de 15 segundos', async () => {
+    jest.useFakeTimers({ doNotFake: ['requestAnimationFrame'] });
+    mockGetPet
+      .mockResolvedValueOnce({
+        kind: 'ok',
+        pet: makePet({ device: { ...makeDevice('online'), batteryPct: 82 } }),
+      })
+      .mockResolvedValue({
+        kind: 'ok',
+        pet: makePet({ device: { ...makeDevice('online'), batteryPct: 40 } }),
+      });
+    try {
+      await renderMap();
+      await act(async () => {
+        await Promise.resolve();
+        await Promise.resolve();
+        await Promise.resolve();
+        await Promise.resolve();
+      });
+      await waitFor(() => expect(screen.getByTestId('stat-battery')).toHaveTextContent('82%'));
+
+      await act(async () => {
+        jest.advanceTimersByTime(15000);
+        await Promise.resolve();
+        await Promise.resolve();
+      });
+      await waitFor(() => expect(screen.getByTestId('stat-battery')).toHaveTextContent('40%'));
+
+      expect(screen.getByTestId('stat-battery').props.className).toBe('text-base font-black text-warning-strong');
+    } finally {
+      mockFocusCleanup?.();
+      jest.useRealTimers();
+    }
+  });
+});
+
+describe('#116 R8: el mapa no estrena animación', () => {
+  it('no importa Reanimated ni anima el punto', () => {
+    const source = readFileSync(
+      join(process.cwd(), 'src', 'screens', 'map', 'index.tsx'),
+      'utf8',
+    );
+    expect(source).not.toContain('react-native-reanimated');
+    expect(source).not.toMatch(/\bAnimated\b/);
   });
 });

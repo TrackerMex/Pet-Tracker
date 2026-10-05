@@ -322,7 +322,7 @@ describe('#62 R15: todo contador usa cifras tabulares', () => {
   const HOME_TABULAR_DELTA_85 = 1;
   const HOME_TABULAR_DELTA_98 = 1;
   const counters = [
-    [join('screens', 'map', 'index.tsx'), 3],
+    [join('screens', 'map', 'index.tsx'), 3 + 1], // #116 R5
     [
       join('screens', 'home', 'index.tsx'),
       HOME_TABULAR_AT_9358CC7 +
@@ -350,7 +350,7 @@ describe('#62 R15: todo contador usa cifras tabulares', () => {
 
   it('#69 R10: mantiene la base cerrada más los deltas medidos', () => {
     expect(counters.reduce((total, [, count]) => total + count, 0)).toBe(
-      14 + 4 + 1 + 1 + 1 + 1 + 1 + 2, // #146 R18, #105 R11
+      14 + 4 + 1 + 1 + 1 + 1 + 1 + 2 + 1, // #146 R18, #105 R11, #116 R5
     );
   });
 

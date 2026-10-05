@@ -547,3 +547,48 @@ declararlo es leerlo, no tocarlo.
 ### Aprobación de E2
 
 - [X] Enmienda E2 aprobada por humano (fecha: 2026-09-21)
+
+---
+
+## Enmienda #116 — el estado de conexión pasa del tile a la píldora del mapa
+
+Origen: `specs/mobile-map-gps-pill-battery/` (#116). La feature mueve el estado
+de conexión del cuarto tile de la rejilla de stats a una píldora nueva encima
+de la tarjeta, y el cuarto tile pasa a mostrar la batería del collar.
+
+### Lo que cambia
+
+- **Nodo**: el tile `stat-gps` desaparece. El estado que R1..R4 y R7 describen
+  como «tile de estado» o «tile de conexión» se pinta desde #116 en
+  `map-pet-pill-status`. La fuente (`deviceConnectionState` sobre
+  `detail.data.pet.device`), las etiquetas (`MAP_CONNECTION_LABEL_KEY`), el
+  guion `—` de R3 y el refresco de R7 **no cambian**.
+- **Literal**: el estado online deja de decir `Live` / `En vivo` y dice
+  `GPS active` / `GPS activo` (misma clave `map.live`; #116 R1).
+- **R6 queda invertido**: el mapa ya no rotula la conexión con
+  `pairing.connection`. El cuarto tile se rotula `pairing.battery`. El test de
+  R6 pasa a `describe('#94 R6 (enmienda #116): el mapa ya no rotula la conexión')`
+  › `it('retira Conexión y GPS y rotula Batería')`.
+- **Retítulo en R2**: `it('muestra En vivo aunque después falte la posición')`
+  → `it('muestra GPS activo aunque después falte la posición')`.
+- **R9, fila del Mapa en `R4_MAP`**: la fila
+  `{ file: 'src/screens/map/index.tsx', key: 'pairing.connection' }` se
+  sustituye 1:1, en la misma posición, por la de `pairing.battery` (#116 R10).
+  `R4_MAP` sigue en 17 filas; las filas de `map.live`, `map.stale` y
+  `map.noSignal` en `device-connectivity.ts` no se tocan.
+- **§Criterios de aceptación, radios del tile**: el cuarto tile conserva
+  `rounded-xl` + `CONTINUOUS_CORNER`; la píldora es una cápsula
+  (`rounded-full`, sin `CONTINUOUS_CORNER`).
+
+### Lo que NO cambia
+
+- Los demás títulos de `describe` e `it` de #94 que dicen «tile de conexión»
+  conservan su literal (esta spec y su trazabilidad los citan). Desde #116,
+  «tile de conexión» en esos títulos designa `map-pet-pill-status`.
+- R5 y R10 (candados de fuente sobre `staleSeconds`) no se mueven: #116 no
+  añade lecturas ni comparaciones de `staleSeconds`.
+- R8 (smoke) queda cerrado como se firmó; el smoke de #116 cubre lo nuevo.
+
+### Aprobación de la Enmienda #116
+
+- [x] Enmienda #116 aprobada por humano (fecha: 2026-10-04)
