@@ -92,3 +92,13 @@
   ramas sin candado (regla tras el primer rechazo); el resultado se añade al
   final del fichero de review. Después: espejo en Notion, gate = En revisión,
   firma humana de la enmienda, handoff de la ronda 2 a Codex.
+- Barrido previo a la firma (`18c06d0e`): seis ramas más sin candado (R2 `3xx`,
+  R3 `link-login` desde el estado enviado, R4 `forgot-resend` en vuelo, R5
+  tile `Lock`, R6 cuerpo y petición tras un reenvío fallido) y una redacción
+  de R4 que choca con R7. Todo integrado en la enmienda E1 (`5f417797`, tareas
+  T12-T18). Cifras nuevas: auth 44, forgot 29, 8 suites 285, global
+  93 / 2049. Sigue siendo solo de tests; la lista cerrada no cambia.
+- Notion (2026-10-05): enmienda espejada al final de la página, Estado del
+  gate = En revisión, Bloqueadores = gate de la enmienda E1. Branch empujada
+  (`origin/feature/117-mobile-forgot-password`). Esperando la aprobación
+  humana de la enmienda; tras ella, commit de firma y handoff de la ronda 2.
