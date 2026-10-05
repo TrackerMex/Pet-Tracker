@@ -244,6 +244,8 @@ describe('R6', () => {
     const chips = screen.getByTestId('welcome-chips').children as TestInstance[];
     chips.forEach((chip) => {
       expect(chip.props.onPress).toBeUndefined();
+      expect(chip.props.onClick).toBeUndefined();
+      expect(chip.props.accessible).toBeUndefined();
       expect(chip.props.accessibilityRole).not.toBe('button');
     });
   });
