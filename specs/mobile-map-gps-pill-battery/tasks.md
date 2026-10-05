@@ -114,8 +114,15 @@ tags: [harness, spec, mobile, ui]
      `pairing.battery` con su comentario.
    - Esperado: rojo **por consulta** (`stat-battery`) en R5, R6, R7, `#61 R11`
      y `#62 R15`; **por aserción** en `#94 R6` (`Conexión` sigue visible:
-     sus ausencias van antes que `getByText('Batería')`), en `counters` (3 ≠ 4), en
-     `#69 R10` y en `checkUses(R4_MAP)` (`pairing.battery` 0).
+     sus ausencias van antes que `getByText('Batería')`), en la fila del mapa
+     de `counters` (`toHaveLength`: 4 esperados, 3 recibidos) y en
+     `checkUses(R4_MAP)` (`pairing.battery` 0).
+   - `#69 R10` **nace verde** y no es un rojo de T4: es un candado contable
+     que suma la tabla `counters` y no mide el fuente, así que con la fila
+     del mapa y la suma subiendo juntas (26 = 26) no puede caer. Quien
+     vigila el fuente es la fila del mapa de `counters`. Sin sonda propia.
+     (Corrección del leader del 2026-10-05, tras la parada de Codex: la
+     versión firmada lo listaba entre los rojos por aserción.)
 2. **Verde** — `feat(mobile-map): #116 R5 R6 R7 battery tile from device detail`
    - `src/screens/map/index.tsx`: el cuarto tile pasa a `stat-battery` con
      `batteryPct`, `battery`, `batteryTone`, `style={TABULAR_NUMS}` y rótulo

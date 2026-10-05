@@ -160,7 +160,9 @@ verde; un commit con todo incumple C4 (paso en #19):
       <- incluye el `export` de pet-hero-header.tsx y nada mas en ese fichero
   test(mobile-map): #116 R5 R6 R7 red, battery tile replaces connection
       <- incluye los deltas de R10 (consistency-classnames.test.ts y
-         ui-copy-table.ts): sus rojos son parte de este rojo
+         ui-copy-table.ts): sus rojos (fila del mapa en `counters` y
+         checkUses(R4_MAP)) son parte de este rojo; `#69 R10` nace verde
+         (ver CORRECCION 1 al final)
   feat(mobile-map): #116 R5 R6 R7 battery tile from device detail
   test(mobile-map): #116 R8 lock map without reanimated
       <- nace verde; la sonda NO se commitea (ver abajo)
@@ -284,4 +286,50 @@ el it que cae, su asercion y los dos `git diff --quiet` en 0; el cierre
 (typecheck, lint, jest entero) con exit; las tres salidas de R11;
 `git diff --name-only H0 HEAD` (9 ficheros); el delta final por suite; y
 cualquier decision que la spec no cerrara literalmente.
+```
+
+## CORRECCION 1 (leader, 2026-10-05): `#69 R10` nace verde en T4
+
+Codex paró antes de la producción de T2 (impl, sección «PARADA»): tasks.md T4
+pedía rojo por aserción en `#69 R10` aplicando a la vez la fila del mapa
+`3 + 1` y el `+ 1` de la suma. Tiene razón: ese `it` suma la tabla `counters`
+contra una constante, no mide el fuente, y nace verde (26 = 26). El rojo del
+delta de R10 lo da la fila del mapa de `counters` (`toHaveLength`, 4 frente
+a 3) y `checkUses(R4_MAP)`. requirements.md no cambia: R10 ya decía «verdes
+en la corrida de R11». Corregidos tasks.md T4 y la nota de COMMITS de arriba.
+
+El commit de esta corrección (H1) cambia HEAD pero no H0. Al cerrar,
+`git diff --name-only H0 HEAD` da 11 ficheros: los 9 de arriba más
+`specs/mobile-map-gps-pill-battery/tasks.md` y
+`progress/handoff_mobile-map-gps-pill-battery.md`, que son del leader y NO
+tocas.
+
+Paste de reanudación para Codex:
+
+```text
+Worktree: /home/claude/sites/Pet-Tracker   <- PRIMERA LINEA. Trabaja AQUI.
+Reanudas #116 donde paraste. Lee progress/handoff_mobile-map-gps-pill-battery.md
+entero, incluida la sección final «CORRECCION 1», y tasks.md T4 corregido.
+
+Antes de tocar nada, con salida al impl (sección nueva «Reanudación 1»):
+  pwd; git branch --show-current            -> feature/116-mobile-map-gps-pill-battery
+  git log --oneline -1                      -> el commit de la corrección del leader (H1)
+  git merge-base --is-ancestor cb8b0e79 HEAD; echo "exit=$?"   -> 0
+  git status --short                        -> SOLO tus dos ficheros:
+       M mobile-pet-tracker/src/screens/map/index.test.tsx
+      ?? progress/impl_mobile-map-gps-pill-battery.md
+  grep -cF 'nace verde** y no es un rojo de T4' specs/mobile-map-gps-pill-battery/tasks.md   -> 1
+PARA si algo no coincide.
+
+Sigue desde T2 con tus tests sin commitear tal como están:
+1. Repite la corrida del rojo de T2 (mismo comando, sin pipe) y anota que
+   siguen 4 rojos por consulta de map-pet-pill, 66 verdes, 70 total.
+2. Commitea el rojo de T2 con su mensaje literal y continúa T2 verde, M25,
+   T3, T4, T5 y T6 según tasks.md y el handoff.
+3. En T4, `#69 R10` nace verde: NO es motivo de parada. Sí lo sería que no
+   cayera la fila del mapa de `counters` o `checkUses(R4_MAP)`.
+4. El cierre espera 11 ficheros en `git diff --name-only H0 HEAD` (H0 =
+   a89aeaf0): los 9 tuyos más tasks.md y el handoff del leader.
+
+Commits test-primero, rojo antes que verde, igual que antes. Sin push ni PR.
 ```

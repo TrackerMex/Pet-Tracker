@@ -37,6 +37,11 @@
   `retira stat-gps del mapa` deja 2 líneas (título y consulta). Manda R5; el
   handoff lo dice. No es enmienda: la columna es informativa y ningún R la exige.
 - Estado: `in_progress`, esperando a Codex.
+- Parada de Codex (2026-10-05) tras T1 (`16b93ef8`, `cb8b0e79`) con T2 rojo sin
+  commitear: tasks.md T4 esperaba rojo por aserción en `#69 R10`, que nace verde
+  (candado contable: tabla y suma suben juntas). Corregidos tasks.md T4 y el
+  handoff («CORRECCION 1», con paste de reanudación); requirements.md no cambia,
+  así que sin gate nuevo. Codex estaba parado cuando el leader commiteó aquí.
 - Observación para después (no es deuda abierta todavía): `collar-battery` de
   la Home pinta `> 60` con `text-success` (≈ 3,31:1 sobre `bg-default` claro,
   falla AA). Verificado en `src/screens/home/index.tsx`; solo ese tile.
