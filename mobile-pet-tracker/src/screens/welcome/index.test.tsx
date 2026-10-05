@@ -313,6 +313,8 @@ describe('R10', () => {
     expect(source.match(/duration: WELCOME_ENTRANCE_MS,\s*easing: WELCOME_ENTRANCE_EASING,/g) ?? []).toHaveLength(2);
     expect(source.match(/\b(duration|easing):/g) ?? []).toHaveLength(4);
     expect(source.match(/reduceMotion: ReduceMotion\.Never/g) ?? []).toHaveLength(1);
+    expect(source.match(/\breduceMotion:/g) ?? []).toHaveLength(1);
+    expect(source).toMatch(/opacity\.set\(withTiming\(1, \{[^}]*reduceMotion: ReduceMotion\.Never,[^}]*\}\)\)/);
   });
 
   it('arranca invisible y desplazado sin Reduce Motion', async () => {
