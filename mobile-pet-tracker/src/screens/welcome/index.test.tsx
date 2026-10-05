@@ -143,6 +143,7 @@ describe('R5', () => {
     expect(StyleSheet.flatten(screen.getByTestId('welcome-content').props.style)).toMatchObject({ alignItems: 'center', gap: 16 });
     expect(screen.getByTestId('welcome-hero').props.contentFit).toBe('contain');
     expect(screen.getByTestId('welcome-hero').props.style).toEqual({ width: 160, height: 160 });
+    expect(screen.getByTestId('welcome-hero').props.source).toEqual([expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/splash-icon\.png$/) })]);
   });
 });
 
