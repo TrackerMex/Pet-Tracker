@@ -37,7 +37,22 @@
   mutación por candado; el bloque comprueba la casilla de la enmienda antes
   de arrancar. M2 (`Easing.linear`) cae por TypeError declarado; M2b
   (otra bezier) cubre el rojo por aserción.
-- Siguiente paso: Aprobado en Notion, commit de firma de la enmienda, pasar
-  el bloque de la ronda 2 al humano para Codex, init.sh con permiso y
-  reviewer ronda 2. R13 S1–S8 sigue siendo smoke humano en dev build de
-  Android.
+- Enmienda E1–E5 firmada en `4ff4c247`; ronda 2 de Codex en `3932781d` a
+  `f23345c3`; init.sh exit 0 sobre `f23345c3` (lo lanzó el leader con
+  permiso; el reviewer leyó el log).
+- Review ronda 2: **rechazado** (`7dbef381`). E1, E3, E4 y E5 cerrados; E6
+  bloqueante: el candado de `ReduceMotion.Never` que prescribía la Enmienda
+  E2 cuenta en todo el fichero (X1 y X2 verdes). Defecto de spec, no de
+  Codex. obs. 2 (X7, `role="button"`) entra en la misma enmienda como E7.
+- Enmienda E6–E7 escrita (`3ce82306`: requirements R6, R10 y §Aprobación con
+  casilla propia; design §2 con X1, X2, X7 y la fila de M2 alineada; tasks
+  T13). Espejada en la página Notion de #118; `Estado del gate` = En
+  revisión, `Rol actual` = Leader.
+- Handoff de la ronda 3 escrito (`progress/handoff_mobile-welcome-splash.md`
+  §Ronda 3): solo `index.test.tsx` + trazabilidad, sondas X1, X2, M3 y X7;
+  anclas verificadas sobre `f23345c3` y las de cierre sobre una copia con
+  las tres líneas añadidas.
+- Siguiente paso: Aprobado en Notion, commit de firma de E6–E7 (será H0 de
+  la ronda 3), bloque de la ronda 3 al humano para Codex, init.sh con
+  permiso y reviewer ronda 3. R13 S1–S8 sigue siendo smoke humano en dev
+  build de Android.

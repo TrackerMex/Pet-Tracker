@@ -487,3 +487,189 @@ mobile-pet-tracker/src/screens/welcome/index.tsx` debe salir VACIO.
   `git diff --name-only H0 HEAD`; y cualquier decision que la spec no
   cerrara literalmente.
 ```
+
+# Ronda 3 — Enmienda E6–E7 (solo tests)
+
+> El `reviewer` rechazó la ronda 2 (`progress/review_mobile-welcome-splash.md`
+> §Ronda 2, commit `7dbef381`) por E6: el candado de `ReduceMotion.Never` que
+> la Enmienda E2 prescribía cuenta en todo el fichero y no lo ata al fade.
+> E1, E3, E4 y E5 quedaron cerrados. La Enmienda E6–E7 (`3ce82306`) añade dos
+> líneas en R10 y una en R6 fila 10. Pegar el bloque de abajo en Codex **solo
+> después** de que el humano apruebe la Enmienda y el leader haga el commit de
+> firma. El bloque lo comprueba él mismo (ancla 0) y para si la casilla no
+> está marcada. Anclas 1–13 verificadas por el leader sobre `f23345c3`; las de
+> cierre, sobre una copia del test con las tres líneas añadidas.
+
+```
+== RONDA 3 (Enmienda E6-E7, solo tests) ==
+
+Worktree: /home/claude/sites/Pet-Tracker-wt-118   <- PRIMERA LINEA. Trabaja AQUI y en ningun otro sitio
+Antes de tocar nada, ejecuta `pwd`, `git branch --show-current`,
+`git rev-parse --short HEAD`, `git status --short` y `git log -1 --format=%s`
+y pega las cinco salidas en una seccion NUEVA al final de
+progress/impl_mobile-welcome-splash.md titulada «Ronda 3 — Enmienda E6–E7».
+No borres nada de las rondas 1 y 2. El hash es H0 (debe ser el commit de
+firma de la Enmienda E6–E7, el ultimo del leader): todos los
+`git diff --name-only` de esta ronda se miden contra el. Para si la branch no
+es feature/118-mobile-welcome-splash o si `git status --short` no sale vacio.
+No toques /home/claude/sites/Pet-Tracker (alli trabaja otra sesion de Codex
+en #116), Pet-Tracker-wt-backend (#117), ni ningun otro worktree, ni cambies
+de branch en ninguno.
+
+Que paso: el reviewer rechazo la ronda 2 por UN candado que la spec te
+prescribia al pie de la letra: `ReduceMotion.Never` se contaba en todo el
+fichero, asi que moverlo al withTiming de translateY quedaba verde. No es un
+error tuyo. La produccion cumple y NO cambia. Solo cambian tres lineas de
+mobile-pet-tracker/src/screens/welcome/index.test.tsx.
+
+Lee enteros:
+- specs/mobile-welcome-splash/requirements.md: §«Enmienda E6–E7», el bloque
+  «(Enmienda E6)» dentro de R10 (test 'fija la duración y la curva') y el
+  bloque «(Enmienda E7)» de R6. El texto de cada asercion esta ahi literal:
+  copialo, no lo reescribas.
+- specs/mobile-welcome-splash/design.md §2, filas (E6, X1), (E6, X2) y (E7, X7).
+- specs/mobile-welcome-splash/tasks.md T13 (tu guion). T11 es del humano.
+- progress/review_mobile-welcome-splash.md §Ronda 2 › «Hallazgo bloqueante»
+  E6 y obs. 2 (el reviewer ya valido los arreglos).
+
+== ANCLAS (ejecutalas desde mobile-pet-tracker/ antes de tocar nada) ==
+
+Si alguna salida difiere de la esperada, PARA y reportalo en el impl.
+
+0. grep -cF -- '- [x] Enmienda E6–E7 aprobada por humano' ../specs/mobile-welcome-splash/requirements.md   -> 1
+   (si da 0, la ronda 3 NO esta autorizada: PARA)
+1. grep -cF "expect(source.match(/reduceMotion: ReduceMotion\.Never/g) ?? []).toHaveLength(1);" src/screens/welcome/index.test.tsx   -> 1
+2. grep -cF '\breduceMotion:/g' src/screens/welcome/index.test.tsx   -> 0
+3. grep -cF 'opacity\.set\(withTiming' src/screens/welcome/index.test.tsx   -> 0
+4. grep -cF "chip.props.role" src/screens/welcome/index.test.tsx   -> 0
+5. grep -cF "expect(chip.props.accessibilityRole).not.toBe('button');" src/screens/welcome/index.test.tsx   -> 1
+6. grep -cF "it('fija la duración y la curva'" src/screens/welcome/index.test.tsx   -> 1
+7. grep -cF "it('deja cada chip sin pulsación ni rol de botón'" src/screens/welcome/index.test.tsx   -> 1
+8. grep -cF "reduceMotion: ReduceMotion.Never," src/screens/welcome/index.tsx   -> 1
+9. grep -cF "opacity.set(withTiming(1, {" src/screens/welcome/index.tsx   -> 1
+10. grep -cF "translateY.set(withTiming(0, {" src/screens/welcome/index.tsx   -> 1
+11. grep -cF "reduceMotion:" src/screens/welcome/index.tsx   -> 1
+12. grep -cE "^\s*it(\.each\(.*\))?\(" src/screens/welcome/index.test.tsx   -> 28
+13. grep -cF "ReduceMotion.Always" src/screens/welcome/index.tsx   -> 0
+
+== BASE (antes del primer cambio) ==
+
+Las mismas ocho suites de la ronda 2, sin pipe:
+
+bunx jest --runTestsByPath --maxWorkers=2 src/app/__tests__/index.test.tsx src/app/__tests__/layout.test.tsx src/providers/__tests__/language-provider.test.tsx src/__tests__/ui-language.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/legibility-classnames.test.ts src/__tests__/design-drift.test.ts src/screens/welcome/index.test.tsx > /tmp/118-r3-base-jest.log 2>&1; echo "exit=$?"
+
+Esperado: «Test Suites: 8 passed, 8 total», «Tests: 251 passed, 251 total»,
+exit=0. Despues `test ! -e .expo/types/router.d.ts; echo "guard_exit=$?"`
+(guard_exit=0; si no, PARA y pide al humano que lo borre, nunca rm -f),
+`bun run typecheck` y `bun run lint`, cada uno sin pipe y con su exit.
+Copia las lineas de resumen al impl. Esta ronda no anade ni quita ningun
+`it`: 251 se mantiene en todas las mediciones.
+
+== TEST PRIMERO EN ESTA RONDA (C4) ==
+
+Igual que la ronda 2: los candados NACEN VERDES y el rojo de C4 lo da la
+SONDA DE MUTACION. Plantas la mutacion en src/screens/welcome/index.tsx SIN
+commitearla, corres la suite de welcome, compruebas que cae EXACTAMENTE el
+it de la tabla por la causa declarada, y deshaces. NUNCA commitees una
+mutacion.
+
+Por cada sonda, en este orden:
+  a. Planta la mutacion en src/screens/welcome/index.tsx.
+  b. bunx jest --runTestsByPath src/screens/welcome/index.test.tsx > /tmp/118-r3-<sonda>.log 2>&1; echo "exit=$?"
+     -> exit=1, y SOLO cae el it de la tabla.
+  c. Copia al impl: la mutacion (diff), las cuentas, el exit y el it rojo
+     con su matcher, Expected y Received.
+  d. git checkout HEAD -- src/screens/welcome/index.tsx
+     git diff --quiet HEAD -- src/screens/welcome/index.tsx; echo "worktree_exit=$?"   -> 0
+     git diff --cached --quiet; echo "index_exit=$?"   -> 0
+  e. Vuelve a correr la suite de welcome: verde, exit=0.
+Si cae un it que no esta en la tabla, o cae por otra causa, PARA y
+reportalo. No ajustes la asercion para que cuadre.
+
+== COMMITS (uno por enmienda, en este orden) ==
+
+1. E6 (R10). En it('fija la duración y la curva'), JUSTO DESPUES de la linea
+   del ancla 1 (que se queda, igual que las otras dos regex de cableado),
+   anade estas dos lineas, literales de R10 «(Enmienda E6)»:
+     expect(source.match(/\breduceMotion:/g) ?? []).toHaveLength(1);
+     expect(source).toMatch(/opacity\.set\(withTiming\(1, \{[^}]*reduceMotion: ReduceMotion\.Never,[^}]*\}\)\)/);
+   Commit: test(mobile): tie reduceMotion to the welcome fade (#118 R10, E6)
+2. E7 (R6 fila 10). En it('deja cada chip sin pulsación ni rol de botón'),
+   dentro del forEach, JUSTO DESPUES de la linea del ancla 5, anade:
+     expect(chip.props.role).toBeUndefined();
+   Commit: test(mobile): reject a role=button welcome chip (#118 R6, E7)
+3. Trazabilidad (ultimo commit: specs/mobile-welcome-splash/traceability.md
+   y progress/impl_mobile-welcome-splash.md): en la fila de R6
+   «deja cada chip sin pulsación ni rol de botón» (fila 10) y en la de R10
+   «fija la duración y la curva», anade al final de la ultima celda
+   «; ronda 3 `<hash>` (nace verde; sonda E<n> documentada)» con el hash del
+   commit de su enmienda. No toques las demas filas. No rebasees despues de
+   escribir hashes.
+   Commit: docs(mobile): trace the #118 round 3 locks to their commits
+
+Mensajes de commit en ingles, como en las rondas 1 y 2. Los commits 1 y 2
+llevan SOLO index.test.tsx: comprueba `git diff --cached --name-only` antes
+de cada uno.
+
+== SONDAS (todas en src/screens/welcome/index.tsx) ==
+
+| Tras commit | Sonda | it que debe caer | Causa declarada |
+| 1 (E6) | X1: mueve la linea `reduceMotion: ReduceMotion.Never,` del withTiming del fade (opacity) al withTiming de translateY, justo despues de su `easing: WELCOME_ENTRANCE_EASING,` | R10 › fija la duración y la curva | el `toMatch` nuevo (opacity.set(withTiming(1, {...Never...}))) no casa. Las tres regex de cableado y el recuento de `\breduceMotion:` siguen pasando |
+| 1 (E6) | X2: anade `reduceMotion: ReduceMotion.Always,` al withTiming de translateY, justo despues de su `easing: WELCOME_ENTRANCE_EASING,` (el del fade no cambia) | R10 › fija la duración y la curva | toHaveLength(1) de `\breduceMotion:`, Received 2 |
+| 1 (E6) | M3: quita la linea `reduceMotion: ReduceMotion.Never,` del fade | R10 › fija la duración y la curva | toHaveLength(1) de ReduceMotion.Never (regex de cableado ya existente), Received 0: es la primera asercion que falla |
+| 2 (E7) | X7: anade `role="button"` al `<View key={testID} testID={testID} ...>` de cada chip (es un solo View dentro del map), sin onPress | R6 › deja cada chip sin pulsación ni rol de botón | toBeUndefined sobre props.role, Received "button" |
+
+== REGLAS CRITICAS (las de las rondas 1 y 2 siguen; las que aplican aqui) ==
+
+- Titulos de it LITERALES: no renombres ningun it ni describe.
+- Esperas: docs/conventions.md §Esperas. Esta ronda no cambia ninguna
+  espera ni ventana de timers.
+- Mocks: no toques ningun jest.mock del fichero.
+- Skills (catalogo de Codex): del plugin expo, `building-native-ui`; del
+  repo (.agents/skills/), `animate-expo` (R10). Di en el impl cuales
+  cargaste. No pidas expo-overview, expo-animation ni expo-router: no
+  existen en tu catalogo (silencio, no error).
+- Jest: siempre `--runTestsByPath` desde mobile-pet-tracker/. El numero de
+  suites que imprime jest debe ser el de ficheros pedidos.
+- Typecheck: `test ! -e .expo/types/router.d.ts` antes de CADA
+  `bun run typecheck`. Si existe, PARA y pide al humano que lo borre.
+  Nunca `rm -f` (tu sandbox lo deniega).
+- Mide SIN pipe: `cmd > fichero 2>&1; echo "exit=$?"`.
+- R12: ni `bun add`, ni cambios en package.json, bun.lock ni app.json.
+  Todo con bun/bunx, nunca npm/npx.
+- NO lances ./init.sh ni toques Postgres ni LocalStack.
+- NO son tuyos: progress/history.md, progress/current.md, STATUS.md,
+  feature_list.json, requirements.md, design.md, tasks.md y las casillas de
+  §Aprobacion. Todo lo que tengas que contar va en
+  progress/impl_mobile-welcome-splash.md.
+- Si el sandbox te deniega un comando, PARA y reportalo. No lo sustituyas
+  por otro que haga lo mismo con otra herramienta.
+- NO hagas push ni abras la PR.
+
+Ficheros que TU cambias, medidos desde H0 (`git diff --name-only H0 HEAD`):
+mobile-pet-tracker/src/screens/welcome/index.test.tsx,
+specs/mobile-welcome-splash/traceability.md y
+progress/impl_mobile-welcome-splash.md (3). Nada mas.
+`git diff H0 HEAD -- mobile-pet-tracker/src/screens/welcome/index.tsx` debe
+salir VACIO.
+
+== CIERRE (igual que T10) ==
+
+- Las ocho suites de la BASE, sin pipe: «Test Suites: 8 passed, 8 total»,
+  «Tests: 251 passed, 251 total», exit=0.
+- guard + `bun run typecheck` exit=0; `bun run lint` exit=0.
+- `git diff origin/main -- mobile-pet-tracker/package.json
+  mobile-pet-tracker/bun.lock` vacio (R12).
+- Anclas de cierre desde mobile-pet-tracker/:
+  grep -cF "expect(source.match(/\breduceMotion:/g) ?? []).toHaveLength(1);" src/screens/welcome/index.test.tsx   -> 1
+  grep -cF "expect(source).toMatch(/opacity\.set\(withTiming\(1, \{[^}]*reduceMotion: ReduceMotion\.Never,[^}]*\}\)\)/);" src/screens/welcome/index.test.tsx   -> 1
+  grep -cF "expect(chip.props.role).toBeUndefined();" src/screens/welcome/index.test.tsx   -> 1
+  grep -cF "expect(source.match(/reduceMotion: ReduceMotion\.Never/g) ?? []).toHaveLength(1);" src/screens/welcome/index.test.tsx   -> 1
+  grep -cE "^\s*it(\.each\(.*\))?\(" src/screens/welcome/index.test.tsx   -> 28
+- En el impl, seccion «Ronda 3»: pwd/branch/H0; skills cargadas; anclas
+  con su salida; base; cada commit con hash y E-id; cada sonda (tabla de
+  arriba) con mutacion, cuentas, exit, it rojo y matcher/Expected/Received,
+  y los dos exit de la restauracion; el cierre con exit; R12;
+  `git diff --name-only H0 HEAD`; y cualquier decision que la spec no
+  cerrara literalmente.
+```
