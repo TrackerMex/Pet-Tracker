@@ -306,6 +306,13 @@ THE SYSTEM SHALL cumplir, medido por el reviewer desde la raíz del repo:
 - `git diff --name-only <HEAD del handoff>` ⊆ la lista cerrada de `design.md` §1.2
   (contra el HEAD del handoff, no contra `origin/main`: la spec, la enmienda de
   #94 y `feature_list.json` los commitea el leader antes del handoff).
+  Lectura aprobada por el humano el 2026-10-05, en el chat del leader («sí,
+  excluye esos 3 ficheros en R11»): se excluyen los ficheros que solo tocan
+  los commits del leader posteriores al handoff (`e3a47e38`, `6ccb9ca9`,
+  `1bd3159d`), es decir `specs/mobile-map-gps-pill-battery/tasks.md`,
+  `progress/handoff_mobile-map-gps-pill-battery.md` y `progress/current.md`.
+  Con esa exclusión el diff da exactamente los 9 ficheros de §1.2 (reviewer,
+  `progress/review_mobile-map-gps-pill-battery.md` §R11, obs. 1).
 - `git diff origin/main -- mobile-pet-tracker/src/components/pet-hero-header.tsx`
   cambia exactamente una línea: `const STATUS_TONE_CLASSES: Record<` →
   `export const STATUS_TONE_CLASSES: Record<`.
