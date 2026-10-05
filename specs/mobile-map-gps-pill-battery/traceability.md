@@ -1,7 +1,7 @@
 ---
 feature: mobile-map-gps-pill-battery
 id: 116
-status: draft
+status: approved
 tags: [harness, spec, mobile, ui]
 ---
 

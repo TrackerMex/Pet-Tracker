@@ -1,7 +1,7 @@
 ---
 feature: mobile-map-gps-pill-battery
 id: 116
-status: draft
+status: approved
 tags: [harness, spec, mobile, ui]
 base: 8f22c8d2 (origin/main b2a9c2aa)
 ---
@@ -361,4 +361,4 @@ enmienda antes del handoff:
 
 ## Aprobación
 
-- [ ] Spec aprobada por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [x] Spec aprobada por humano (fecha: 2026-10-04) ← gate obligatorio antes de implementar
