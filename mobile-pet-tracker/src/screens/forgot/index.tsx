@@ -20,14 +20,30 @@ export function ForgotScreen() {
   const [submittedEmail, setSubmittedEmail] = useState('');
   const [sent, setSent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function send(target: string) {
     setSubmitting(true);
+    setError(null);
     try {
       const result = await forgotPassword(process.env.EXPO_PUBLIC_API_URL, { email: target });
-      if (result.kind === 'ok') {
-        setSubmittedEmail(target);
-        setSent(true);
+      switch (result.kind) {
+        case 'ok':
+          setSubmittedEmail(target);
+          setSent(true);
+          return;
+        case 'validation':
+          setError(t('forgot.invalidEmail'));
+          return;
+        case 'rate-limited':
+          setError(t('forgot.tooManyAttempts'));
+          return;
+        case 'unreachable':
+          setError(t('common.cannotReachServer'));
+          return;
+        case 'error':
+        case 'missing-config':
+          setError(t('common.somethingWentWrong'));
       }
     } finally {
       setSubmitting(false);
@@ -85,6 +101,12 @@ export function ForgotScreen() {
               onChangeText={setEmail}
             />
           </TextField>
+        ) : null}
+
+        {error ? (
+          <Text testID="forgot-error" className="text-danger" selectable>
+            {error}
+          </Text>
         ) : null}
 
         {!sent ? (

@@ -78,7 +78,7 @@ ocupa un texto JSX partido). **320 de 320 filas verifican** contra `a44925f`.
 | `src/app/(auth)/login.tsx` | 10 | R1 |
 | `src/screens/docs/index.tsx` | 7 | R7 |
 | `src/utils/reminder-meta.ts` | 7 | R8 |
-| `src/screens/forgot/index.tsx` (movida por #117) | 8 | R1 |
+| `src/screens/forgot/index.tsx` (movida por #117) | 12 | R1 |
 | `src/components/floating-tab-bar.tsx` | 5 | R2 |
 | `src/components/weight-chart.tsx` | 1 | R5 |
 
@@ -211,7 +211,7 @@ cabecera las incluye, así que **la suma de los grupos es mayor que 252**; el
 total sin repetir es 252 + 3 del interruptor = **255**.
 
 
-### §2.1 — R1 — grupo `(auth)` (32 ocurrencias, 28 claves)
+### §2.1 — R1 — grupo `(auth)` (36 ocurrencias, 28 claves)
 
 **`mobile-pet-tracker/src/app/(auth)/login.tsx`** — 10 ocurrencias
 
@@ -228,7 +228,7 @@ total sin repetir es 252 + 3 del interruptor = **255**.
 | 117 | `login.createAccount` | `Create account` | `Crear cuenta` |
 | 126 | `login.forgotPassword` | `Forgot password?` | `¿Olvidaste tu contraseña?` |
 
-**`mobile-pet-tracker/src/screens/forgot/index.tsx`** — 8 ocurrencias (movido por #117 desde src/app/(auth)/forgot.tsx)
+**`mobile-pet-tracker/src/screens/forgot/index.tsx`** — 12 ocurrencias (movido por #117 desde src/app/(auth)/forgot.tsx)
 
 | Línea | Clave | `en` | `es` |
 |---|---|---|---|
@@ -243,6 +243,8 @@ total sin repetir es 252 + 3 del interruptor = **255**.
 | — | `forgot.resend` ← añadida por #117 (R1) | `Resend` | `Reenviar` |
 | — | `forgot.invalidEmail` ← añadida por #117 (R1) | `Enter a valid email address` | `Ingresa un correo electrónico válido` |
 | — | `forgot.tooManyAttempts` ← añadida por #117 (R1) | `Too many attempts. Try again later.` | `Demasiados intentos. Inténtalo más tarde.` |
+| — | `common.cannotReachServer` ← uso añadido por #117 (R7) | `Cannot reach server` | `No se pudo conectar con el servidor` |
+| — | `common.somethingWentWrong` ← uso añadido por #117 (R7) | `Something went wrong` | `Algo salió mal` |
 
 **`mobile-pet-tracker/src/app/(auth)/register.tsx`** — 14 ocurrencias
 
