@@ -410,6 +410,9 @@ Cada comprobación tiene su casilla. El gate de cierre exige las ocho.
 - [X] S8 — Cerrar sesión desde perfil: anotar en `progress/impl_mobile-welcome-splash.md`
       dónde aterriza (si no es welcome, se registra como deuda; no bloquea
       esta feature).
+      Resultado: aterriza en **login**, no en welcome (confirmado por el
+      humano en el chat del leader el 2026-10-05). Deuda registrada en
+      `progress/impl_mobile-welcome-splash.md` §R13.
 
 ## Enmienda E1–E5 (review de la ronda 1, 2026-10-05)
 
@@ -492,4 +495,4 @@ rol de botón'`. Los textos normativos están en R6 y R10, marcados
 
 ### Prueba de humo
 
-- [ ] R13 S1–S8 firmadas por humano en dev build de Android
+- [x] R13 S1–S8 firmadas por humano en dev build de Android (`11d49f49`, 2026-10-05)

@@ -4563,8 +4563,22 @@ $ git status --short
 (salida vacía)
 ```
 
-## Cerrar sesión desde perfil
-
-Al cerrar sesión desde el perfil, el usuario es redirigido a la pantalla de bienvenida (welcome).
 La salida medida sobre HEAD se incorpora al mismo tercer commit documental.
 No cambian los hashes de E6/E7 ni se hace rebase.
+
+## R13 — Smoke humano (dev build de Android, 2026-10-05)
+
+El humano marcó S1–S8 en `11d49f49` («Prueba de humo superada»), después del
+veredicto APROBADO de la ronda 3 (`2ceccef4`).
+
+### S8 — Cerrar sesión desde perfil
+
+Aterriza en **login**, no en welcome. Lo confirmó el humano en el chat del
+leader el 2026-10-05, corrigiendo la frase de `11d49f49`, que decía welcome.
+Según R13 queda como deuda y no bloquea #118.
+
+Origen probable, visto por grep y sin probarlo: `src/app/(tabs)/_layout.tsx`
+devuelve `<Redirect href="/login" />` cuando no hay sesión, y #118 solo cambió
+el destino de `src/app/index.tsx`, por el que no pasa el cierre de sesión
+desde `src/screens/profile/index.tsx`. Si se registra como feature, lo decide
+el humano.
