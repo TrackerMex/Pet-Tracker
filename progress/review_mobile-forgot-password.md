@@ -563,3 +563,248 @@ En ese caso las cifras no cambiarían: 2 suites / 73, global 93 / 2049. La forma
 - HEAD `49de71b6`, branch `feature/117-mobile-forgot-password`.
 - `mobile-pet-tracker/.expo/types/router.d.ts` sigue ausente.
 - No corrí `./init.sh` ni la suite global, y no hice push.
+
+## Barrido previo a la firma de E2
+
+Fecha: 2026-10-05. HEAD 2f058cdd. Barrido cerrado.
+
+Veredicto del barrido: REQUIERE CAMBIOS
+
+Resumen: el spike de E2 compila y pasa (29/29, tsc y lint en 0) y las 16 sondas de T19 y T20 (27 corridas: 11 sobre `spike-t19` y 16 sobre `spike-full`) caen donde dice tasks.md, sin divergencias. Pero el barrido estado × flujo encuentra cinco defectos: D2, D4 y D5 son ramas sin candado que una mutación plausible deja en verde (Y-4, Y-8, Y-10, Y-11, medidas); D1 y D3 son anclas sin recuento y afirmaciones falsas de tasks.md sobre la cobertura del helper. Las correcciones con código (D2, D4, D5) están verificadas juntas en `spike-fix`: 31/31, tsc 0, lint 0, y cada sonda cae en la línea propuesta. Las sondas nuevas de D3 están medidas sobre `spike-full`.
+
+### 1. Spike de E2.4 y E2.5
+
+Método:
+- `build.py` (scratchpad `e2/`) parte de `git show HEAD:…/index.test.tsx` y aplica el código literal de E2.4 justo después de `submitForgot`, las 13 líneas de E2.5 y los 3 cambios de línea. Cada edición se localiza por el título literal del `it` y por la ancla literal dentro de ese `it`.
+- Dos variantes: `spike-t19` (estado intermedio de T19: sin `expectSentState` ni P3, P7-P13) y `spike-full` (E2 entera).
+- Jest: el spike vive en el scratchpad y se copia como `src/screens/forgot/e2spike.test.tsx` sin seguimiento solo durante cada corrida; se borra en el `finally`.
+- `tsc` y lint: superposición temporal sobre `index.test.tsx`, restaurada con `git checkout HEAD --`; `git diff --quiet -- mobile-pet-tracker` = 0 y `git diff --cached --quiet` = 0 tras cada una.
+
+| Comprobación | `spike-t19` | `spike-full` |
+|---|---|---|
+| `bunx jest --runTestsByPath` | 29 / 29, exit 0 | 29 / 29, exit 0 |
+| `test ! -e .expo/types/router.d.ts` | 0 (antes y después) | 0 (antes y después) |
+| `bunx tsc --noEmit` | exit 0 | exit 0 |
+| `bun run lint` | exit 0, sin warnings | exit 0, sin warnings |
+
+`mockRouter.push.mockClear()` tipa: `tsc` exit 0 con el helper literal.
+
+Anclas de E2.5, medidas con `grep -cF` sobre `index.test.tsx` en HEAD:
+
+| Ancla | En el fichero | Dentro de su `it` | Desambiguada en la spec |
+|---|---:|---:|---|
+| P2 `expect(screen.getByTestId('forgot-email')).toBeVisible();` | 1 | 1 | sí |
+| P5 `await waitFor(() => expect(screen.getByTestId('forgot-submit')).not.toBeDisabled());` | **2** | 1 | por título del `it` («el primer» sobra: solo hay uno en el `it`) |
+| P6 `expect(screen.queryByTestId('forgot-resend')).toBeNull();` | **3** | 1 | por título del `it` |
+| P8 `expect(mockForgotPassword.mock.calls[1][1]).toEqual(mockForgotPassword.mock.calls[0][1]);` | 1 | 1 | sí |
+| P12 `expect(screen.queryByTestId('forgot-error')).toBeNull();` | **7** | **2** | por título y ordinal («el primer…, el que va antes del `act`») |
+| Cambio 1 y 3 `await submitForgot();` | **9** | 1 y 1 | por título del `it` |
+| Cambio 2 `expect(screen.getByTestId('forgot-email').props.value).toBe('ana@example.com');` | 1 | 1 | sí |
+| E2.4 `async function submitForgot(` | 1 | — | sí |
+| E2.4 `describe('#117 R5: enviar pasa la pantalla a «Revisa tu correo»'` | 1 | — | sí |
+| Los 9 títulos de `it` citados en E2.5 | 1 cada uno | — | sí |
+
+Todas existen y son inequívocas leídas con su `it`. Las de recuento ≠ 1 en el fichero van al defecto D1 (§Defectos).
+
+
+### 2. Sondas de T19 y T20
+
+Cada sonda se planta sobre `index.tsx` con su ancla en recuento 1 y se corre contra el spike con `bunx jest --runTestsByPath … --json --outputFile`. Tras cada una: `git checkout HEAD --` del fichero de producción, `git diff --quiet -- mobile-pet-tracker` = 0 y `git diff --cached --quiet` = 0. Las 27 corridas revirtieron en 0/0/0.
+
+T19, contra `spike-t19`:
+
+| Sonda | Esperado (tasks.md) | Medido | Modo | Verdes exigidos |
+|---|---|---|---|---|
+| X-a | P2, P6 | R5 `it` 1 (P2), E1.3 `it` 1 (P6) | aserción | — |
+| X-b | P2, P6 | P2, P6 | aserción | — |
+| X-c | P4 ×5, P5 | las 5 filas de R7 (P4), E1.3 `it` 1 (P5) | aserción | — |
+| X-d | P2, P6 | P2, P6 | consulta | `it` de R3 en verde |
+| X-e | P4 ×5, P5 | P4 ×5, P5 | consulta | `it` de R3 en verde |
+| X-f | P4 ×5, P5 | P4 ×5, P5 | consulta | R4 `it` 1 en verde |
+| M3-f | P2, P6 | P2, P6, en la línea del recuento de `push` | aserción | `it` de R3 en verde |
+| M4-g | fila `validation`, cambio 2 | solo esa fila, en el cambio 2 | aserción | las otras 4 filas en verde |
+| M4-h | P2, cambio 2 ×5, P5 | P2, las 5 filas en el cambio 2, P5 | aserción | — |
+| M5-h | P2, P6 | P2, P6 | aserción | `it` del tile en verde |
+| M7-k | P2 y las esperas de E1.3 | P2, E1.3 `it` 1 (l.245 en HEAD), E1.3 `it` 2 (l.266) | aserción | — |
+
+T20, contra `spike-full`:
+
+| Sonda | Esperado (tasks.md) | Medido | Modo |
+|---|---|---|---|
+| X-g | P10, P11 ×4 | P10, P11 ×4, en el cuerpo | aserción |
+| X-h | P10, P11 ×4 | P10, P11 ×4, en `forgot-submit` nulo | aserción |
+| X-i | P8, P12 | P8, P12 | aserción |
+| M5-i | 9 `it` | P3, P7, P8, P10, P11 ×4, P12, en el `Label` nulo | aserción |
+| M7-j | P10, P11 ×4 | P10, P11 ×4, en `selectable` | aserción |
+| X-d | lo de T19 más P8, P12 | ídem | consulta |
+| X-e | lo de T19 más P10, P11 | ídem | consulta |
+| M3-f | lo de T19 más P8, P12 | ídem | aserción |
+| M5-h | lo de T19 más P8, P12 | ídem | aserción |
+| M7-k | lo de T19 más P8 | ídem | aserción |
+| X-a, X-b, X-c, X-f, M4-g, M4-h | igual que en T19 | igual que en T19 | igual |
+
+Divergencias: ninguna. Todas las sondas de tasks.md caen donde dicen, por la vía que dicen, y dejan en verde lo que exigen.
+
+### 3. Barrido estado × flujo
+
+Las líneas «l.N» son de `index.test.tsx` en HEAD 2f058cdd. «Y-n» son sondas propias del barrido, plantadas igual que las de §2. Su código exacto está en §Defectos.
+
+| Cláusula y rama | Candado | Sonda que lo prueba | Estado |
+|---|---|---|---|
+| R4: `forgot-submit` deshabilitado con vacío en A1 | R4 `it` 2 (l.128), `#127 R1` (l.100) | M4-a (ronda 1) | ok |
+| R4: `forgot-submit` deshabilitado con vacío en A3 | **ninguno** | Y-8: **verde** 29/29 | **D4** |
+| E2.1: `forgot-submit` deshabilitado en A2 | l.163 | aserción directa sobre el nodo | ok |
+| E2.1: `forgot-submit` habilitado en A3 | l.220 ×5, l.241 | aserción directa | ok |
+| E2.1: `forgot-submit` deshabilitado en A4 | l.244 | aserción directa | ok |
+| E2.1: `forgot-submit` habilitado en A3 alcanzado desde A4 | **ninguno**: ningún `it` llega a A3 desde A4 | Y-4: **verde** | **D5** |
+| R7: copy del nuevo `kind` en A3 desde A4 | **ninguno** | Y-11: **verde** | **D5** |
+| E2.1: sin `forgot-resend` en A1 | R4 `it` 3 (l.141) | — | ok |
+| E2.1: sin `forgot-resend` en A2 | solo el helper (P2) | M4-f cae en P2 | ok, pero sin sonda en tasks.md: **D3a** |
+| E2.1: sin `forgot-resend` en A3 | l.221 ×5, P4, P5 | Y-6 cae en l.221 ×5 y P5 | ok |
+| E2.1: sin `forgot-resend` en A4 | l.246, P6 | M4-f cae en l.246 | ok |
+| E2.2: `forgot-resend` habilitado en B1 sin error previo | l.180 | aserción directa | ok |
+| E2.2: `forgot-resend` habilitado en B1 tras error | **ninguno**: P7 solo mira presencia | Y-4: **verde** 29/29 | **D2** |
+| E2.2: `forgot-resend` deshabilitado en B2 | l.286 | aserción directa | ok |
+| E2.2: `forgot-resend` habilitado en B3 | l.304, l.322, l.261 | aserción directa | ok |
+| E2.2: `forgot-resend` deshabilitado en B4 | l.264 | aserción directa | ok |
+| E2.2: `forgot-resend` habilitado en B5 | l.290, l.268 | aserción directa | ok |
+| R6/E1.2: copy del nuevo `kind` en B3 desde B4 | **ninguno** | Y-10: **verde** | **D5** |
+| E2.2: sin `forgot-email` en B1 y B3 | l.178, l.303, l.321 | — | ok |
+| E2.2: sin `forgot-email` en B2 y B4 | solo el helper (P8, P12) | Y-1 cae en P8 y P12 | ok, pero tasks.md lo da por cubierto por esperas existentes: **D3b** |
+| E2.3: texto de `link-login` en los 9 flujos | solo los helpers | Y-2 cae en P2, P6, P8, P12 | ok, sin sonda en tasks.md: **D3c** |
+| E2.3: `link-login` navega sin POST nuevo | R3 `it` 2 y 3, helper en P1-P13 | M3-f (push); Y-3 (recuento) cae en P4 ×5, P5, P10, P11 ×4 | ok, el recuento sin sonda en tasks.md: **D3d** |
+| R5: correo citado tras reenvío | cuerpo en P9, P13, l.271; argumento del POST en l.288, l.265 | X-g | ok |
+| R5: correo enviado tras error, recortado | P7 (cuerpo) | Y-9 (`send(error ? email : email.trim())`) cae en P7 | ok |
+| R7: `selectable` en A3 | l.217 ×5, P4, P5 | aserción directa sobre la prop en las 5 filas | ok |
+| E2.2: `selectable` en B3 | P10, P11 ×4 | M7-j | ok |
+
+Respuestas a los puntos señalados por el leader:
+
+- **`forgot-submit` por flujo A.** Candado en A1, A2, A3 y A4. Faltan A3 con el campo vaciado (D4) y A3 alcanzado desde A4 (D5).
+- **`forgot-resend` deshabilitado en B2 y B4.** Candado en l.286 y l.264. El hueco está en el habilitado de B1 tras error (D2).
+- **Correo enviado tras un reenvío.** El cuerpo está candado en P9, P13 y l.271, y el argumento del POST en l.288 y l.265. No se prueba un reenvío desde B5 (tercer POST). Riesgo bajo: el cuerpo de P13 ya ata `submittedEmail` y el reenvío lee esa misma variable.
+- **`selectable`.** A3 está candado por l.217 y P4/P5, B3 por P10/P11. A3 se apoya en la aserción directa de las 5 filas (l.217); B3 tiene sonda en E2 (M7-j).
+- **`link-login` desde todos los flujos.** Los 9 flujos pasan por P1-P13. La navegación tiene sonda (M3-f). El texto y el recuento no la tienen en tasks.md (D3c, D3d), aunque Y-2 e Y-3 prueban que esas líneas no son ciegas.
+- **`expectLinkLoginNavigates` a mitad de `it` (P2, P5, P6, P8, P12).** No altera lo que el resto del `it` asevera:
+  - `onPress` solo llama a `router.push`, un `jest.fn` que el helper limpia antes;
+  - ninguno de esos `it` asevera sobre `mockRouter` después del punto;
+  - las aserciones de recuento del mock de red (l.287, l.265) van antes del punto;
+  - la promesa pendiente sigue sin resolver, así que el `act` del `press` no vacía nada;
+  - el spike pasa 29/29.
+
+  Solo un `onPress` que mutase estado arrastraría algo, y eso es justo lo que Y-3 detecta.
+
+### 4. Cifras de E2
+
+| Cifra | Declarada en E2 | Comprobación | Resultado |
+|---|---|---|---|
+| `forgot/index.test.tsx` | 29 → 29 | `spike-full` 29/29 | coincide |
+| Suite de `auth` | 44, intacta | E2 no la toca | coincide |
+| Las 8 suites del handoff | 285 → 285 | impl ronda 2 («Tests: 285 passed, 285 total») y la tabla de este review; E2 no añade `it` | coincide (no recorrida: veto del leader) |
+| Global | 93 / 2049 → 93 / 2049 | `init-117-r2.log` de la ronda 2; +0 `it` | coincide (no recorrida: veto del leader) |
+| Lista cerrada | 3 ficheros (T21) | el spike solo toca `index.test.tsx` | coincide |
+| Candados globales | no se mueven | consistency y legibility excluyen `*.test.tsx`; design-drift no casa nada en el spike (0 `-[`, 0 `signOut(`) | coincide |
+
+Si se acepta la corrección de D5 (dos `it` nuevos), las cifras pasan a forgot 29 → 31, 8 suites 285 → 287 y global 93 / 2049 → 93 / 2051. La lista cerrada no cambia: es el mismo fichero.
+
+### Defectos
+
+**D1: las anclas de E2.5 no declaran su recuento.**
+- P5, P6, P12 y `await submitForgot();` no son únicas en el fichero (2, 3, 7 y 9; ver la tabla de §1). La spec las desambigua con prosa («el primer…», el título del `it`), pero no da ningún `grep -cF` esperado, que es lo que paró a Codex en #118 y #117.
+- Corrección: junto a cada ancla de E2.5, escribir «`grep -cF '<ancla>' mobile-pet-tracker/src/screens/forgot/index.test.tsx` → N; dentro del `it` → 1». Los valores: P2 1, P5 2, P6 3, P8 1, P12 7 (dentro del `it`: 2, se usa el primero), cambio 2 1, `await submitForgot();` 9. Quitar «el primer» de P5: dentro de su `it` solo hay uno.
+
+**D2: E2.2 afirma «habilitado en B1» y es falso para B1 tras error.**
+- En el `it` 'un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver', P7 solo comprueba que `forgot-resend` existe. Ninguna espera existente mira si está habilitado.
+- Sonda Y-4 en `index.tsx`:
+  `    } finally {\n      setSubmitting(false);` → `    } finally {\n      if (!error || sent) setSubmitting(false);`
+  Es un cierre obsoleto: tras error → ok, `submitting` se queda en `true` y `forgot-resend` sigue deshabilitado. Contra `spike-full`: **29/29 en verde**.
+- Corrección en E2.5: en ese `it`, justo antes de P7, añadir:
+  `await waitFor(() => expect(screen.getByTestId('forgot-resend')).not.toBeDisabled());`
+- Ancla: la línea va tras `await act(async () => { resolveRequest({ kind: 'ok' }); });`, que da `grep -cF` 4 en el fichero y 1 dentro del `it`. Después vienen `findByText('Revisa tu correo')` y el segundo `queryByTestId('forgot-error')).toBeNull()` del `it`.
+- Sonda nueva en la tabla de T20: Y-4, que cae en ese `it` en la línea nueva, por aserción (`not.toBeDisabled`). Medido en `spike-fix`.
+- Corregir también el texto de E2.2: «habilitado en B1 (con y sin error previo), B3 y B5».
+
+**D3: tasks.md afirma «una sonda por línea del helper» y «las líneas sin sonda propia están cubiertas de antemano por las esperas existentes». No es cierto para cuatro líneas.**
+- a) `expectFormState` → `expect(screen.queryByTestId('forgot-resend')).toBeNull();`. En A2 (P2) es el único candado. Añadir a la tabla de T19 la sonda M4-f: en el bloque de `forgot-resend`, `{sent ? (` → `{sent || submitting ? (`. Esperado: cae en P2 y en la espera existente l.246, por aserción. Medido así.
+- b) `expectSentState` → `expect(screen.queryByTestId('forgot-email')).toBeNull();`. Las esperas existentes solo cubren B1 (l.178) y B3 (l.303, l.321); en B2 y B4 el único candado es el helper. Añadir a la tabla de T20 la sonda Y-1: `{!sent ? (\n          <TextField className="w-full">` → `{!sent || submitting ? (` en el `TextField`, y el `Label` envuelto en `{!sent && (…)}` para aislar la línea. Esperado: cae en P8 y P12, por aserción. Medido así.
+- c) La línea de texto de `link-login` en los dos helpers. Añadir a T19 y T20 la sonda Y-2: `{t('forgot.backToSignIn')}` → `{submitting ? t('forgot.resend') : t('forgot.backToSignIn')}`. Esperado: cae en P2 y P6 (T19), y en P8 y P12 (T20), por aserción (`toHaveTextContent`). Medido así.
+- d) `expect(mockForgotPassword).toHaveBeenCalledTimes(requests)` en `expectLinkLoginNavigates`. Añadir a T20 la sonda Y-3: `onPress={() => router.push('/login')}` → `onPress={() => { if (error) void send(submittedEmail); router.push('/login'); }}`.
+  - Esperado: cae en P4 ×5 y P5 por aserción en el recuento.
+  - También en P10 y P11 ×4, por `TypeError` del mock sin valor. Son 11 `it`. Medido así.
+- Reescribir la frase de tasks.md así:
+  - `forgot-submit` presente: esperas existentes en A1-A4.
+  - `forgot-resend` presente: esperas existentes salvo en B1 tras error, que cubre la línea nueva de D2.
+  - `forgot-email` ausente: esperas existentes solo en B1 y B3; en B2 y B4, sonda Y-1.
+
+**D4: R4 «WHILE `email.trim() === ''` … `forgot-submit` `isDisabled`» solo tiene candado en A1.**
+- Es una cláusula universal sobre todo `sent === false`, pero ningún `it` vacía el campo en A3. E2.1 la enumera solo como «deshabilitado en A1 mientras el campo está vacío».
+- Sonda Y-8: `isDisabled={email.trim() === '' || submitting}` → `isDisabled={(email.trim() === '' && !error) || submitting}`. Contra `spike-full`: **29/29 en verde**.
+- Corrección en E2.5: en el `it.each` de R7, tras P4, añadir:
+  ```
+  await fireEvent.changeText(screen.getByTestId('forgot-email'), '   ');
+  expect(screen.getByTestId('forgot-submit')).toBeDisabled();
+  ```
+  El ancla es P4 misma: `await expectFormState('  Ana@Example.com ', copy);` da `grep -cF` 1 en el spike.
+- Sonda Y-8: esperado, cae en las 5 filas en la línea nueva, por aserción. Medido así en `spike-fix`.
+- Corregir E2.1: «deshabilitado en A1 y A3 mientras el campo está vacío, y en A2 y A4».
+- El hueco existe desde la ronda 1, pero E2.1 es la cláusula que dice enumerar el estado de `forgot-submit` por flujo.
+
+**D5: R7 (WHEN en el estado (a) el resultado tiene un `kind` distinto de `ok`) y R6/E1.2 (reenvío distinto de `ok`) nunca se ejercitan tras un error previo.**
+- Ningún `it` llega a A3 desde A4 ni a B3 desde B4. E2.1 y E2.2 definen A3 y B3 «tras un resultado distinto de `ok`», sin excluir el segundo.
+- Sondas, todas en verde 29/29 contra `spike-full`:
+  - Y-11: `          setError(t('forgot.tooManyAttempts'));` → `          if (!error) setError(t('forgot.tooManyAttempts'));`. El segundo fallo deja la pantalla sin `forgot-error`.
+  - Y-10: lo mismo con `          setError(t('common.somethingWentWrong'));`.
+  - Y-4 (de D2): tras error → error, `forgot-submit` se queda deshabilitado.
+- Corrección: dos `it` nuevos.
+  - Uno en `describe('#117 R7: …')`, antes de `it('un envío posterior que resuelve ok limpia forgot-error`:
+    ```
+    it('un reintento desde el formulario que vuelve a fallar pinta el copy del nuevo kind', async () => {
+      mockForgotPassword.mockResolvedValueOnce({ kind: 'error' }).mockResolvedValueOnce({ kind: 'rate-limited' });
+      await renderRoute();
+      await submitForgot();
+      expect(await screen.findByTestId('forgot-error')).toHaveTextContent('Algo salió mal');
+      await waitFor(() => expect(screen.getByTestId('forgot-submit')).not.toBeDisabled());
+      await fireEvent.press(screen.getByTestId('forgot-submit'));
+      await waitFor(() => expect(screen.getByTestId('forgot-error')).toHaveTextContent('Demasiados intentos. Inténtalo más tarde.'));
+      await waitFor(() => expect(screen.getByTestId('forgot-submit')).not.toBeDisabled());
+      await expectFormState('ana@example.com', 'Demasiados intentos. Inténtalo más tarde.');
+    });
+    ```
+  - Otro en `describe('#117 R6: …')`, tras su `it.each`, antes de `describe('#117 R8: forgot se aparta del teclado en Android'` (`grep -cF` 1):
+    ```
+    it('un segundo reenvío que vuelve a fallar pinta el copy del nuevo kind', async () => {
+      mockForgotPassword
+        .mockResolvedValueOnce({ kind: 'ok' })
+        .mockResolvedValueOnce({ kind: 'rate-limited' })
+        .mockResolvedValueOnce({ kind: 'error' });
+      await renderRoute();
+      await submitForgot();
+      expect(await screen.findByText('Revisa tu correo')).toBeVisible();
+      await fireEvent.press(screen.getByTestId('forgot-resend'));
+      expect(await screen.findByTestId('forgot-error')).toHaveTextContent('Demasiados intentos. Inténtalo más tarde.');
+      await waitFor(() => expect(screen.getByTestId('forgot-resend')).not.toBeDisabled());
+      await fireEvent.press(screen.getByTestId('forgot-resend'));
+      await waitFor(() => expect(screen.getByTestId('forgot-error')).toHaveTextContent('Algo salió mal'));
+      await waitFor(() => expect(screen.getByTestId('forgot-resend')).not.toBeDisabled());
+      await expectSentState('ana@example.com', 'Algo salió mal');
+    });
+    ```
+- Sondas nuevas y esperado, medido así en `spike-fix`. En el spike los dos `it` van en el `describe` de R7; el reparto por `describe` propuesto no cambia lo que asevera cada uno.
+  - Y-11: cae en el `it` del formulario, por consulta (`forgot-error` ausente).
+  - Y-10: cae en el `it` del reenvío, por consulta.
+  - Y-4: cae en el `it` del formulario, por aserción (`not.toBeDisabled`).
+- Corregir E2.1 (A3) y E2.2 (B3): «… distinto de `ok`, también cuando lo precede otro error (A4 → A3, B4 → B3)».
+- Actualizar las cifras: forgot 29 → 31, 8 suites 285 → 287, global 93 / 2049 → 93 / 2051.
+- Verificación conjunta de D2, D4 y D5 en `spike-fix` (sobre `spike-full`):
+  - jest 31/31, exit 0;
+  - `tsc --noEmit` exit 0 (con `router.d.ts` ausente);
+  - `bun run lint` exit 0;
+  - restaurado con `git checkout HEAD --`, diff 0 y cached 0.
+
+### Observaciones (no bloquean)
+
+- **E2.6.** Que las props de estilo y de teclado no se comprueben por flujo no es defecto. R8 y R9 ya las miran en los dos estados, y ninguna rama de estado las condiciona en `index.tsx`. No esconde riesgo real.
+- **Reenvío desde B5 (tercer POST).** No se prueba. El cuerpo de P13 ata `submittedEmail` y el reenvío lee esa misma variable. Riesgo bajo.
+- **Nombres de sonda.** Y-1 a Y-4, Y-6 y Y-8 a Y-11 son nombres del barrido. Al pasarlas a tasks.md conviene renombrarlas en la serie M/X de la spec.
+
+Ficheros del barrido (scratchpad, fuera del repo): `e2/build.py`, `e2/build_fix.py`, `e2/probe.py`, `e2/probes.py`, `e2/spike-{t19,full,fix}.test.tsx` y `e2/out-*.json`.

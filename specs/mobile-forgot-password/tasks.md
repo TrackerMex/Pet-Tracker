@@ -312,12 +312,13 @@ Comando de T13-T17: `cd mobile-pet-tracker && bunx jest src/screens/forgot` (29 
 ## Enmienda E2 — el render de cada estado en todos sus flujos
 
 > Ronda 3, tras el rechazo del reviewer en `49de71b6`
-> (`progress/review_mobile-forgot-password.md` §Ronda 2). Los requisitos están
-> en `requirements.md` §Enmienda E2.
+> (`progress/review_mobile-forgot-password.md` §Ronda 2) y con los defectos
+> D1-D5 del barrido previo a la firma ya integrados. Los requisitos están en
+> `requirements.md` §Enmienda E2.
 >
-> - **No hay código de producción que tocar.** No hay `it` nuevos: se añaden
->   helpers y llamadas a ellos dentro de `it` existentes, más los tres cambios
->   de línea de E2.5.
+> - **No hay código de producción que tocar.** Se añaden helpers, llamadas a
+>   ellos dentro de `it` existentes, los tres cambios de línea de E2.5 y los
+>   dos `it` nuevos de E2.7.
 > - Todo nace verde, así que no hay commit rojo→verde. Antes de cada commit
 >   se plantan las sondas de la tarea, igual que en la ronda 2:
 >   1. Se planta la sonda en producción.
@@ -326,15 +327,22 @@ Comando de T13-T17: `cd mobile-pet-tracker && bunx jest src/screens/forgot` (29 
 >   4. Se comprueba que `git diff --quiet -- <ruta>` y
 >      `git diff --cached --quiet` salen 0.
 > - Cada resultado se anota en `progress/impl_mobile-forgot-password.md`
->   §Ronda 3: los `it` que cayeron, y si cayeron por consulta (`getBy…` lanza)
->   o por aserción (`expect` falla).
-> - Una sonda por línea del helper demuestra que esa línea no está ciega. La
+>   §Ronda 3: los `it` que cayeron y cómo cayeron. Hay tres modos:
+>   - consulta: un `getBy…` lanza;
+>   - aserción: un `expect` falla;
+>   - excepción: el `it` cae por una excepción del propio código, por ejemplo
+>     un `TypeError`.
+> - Cada línea de los helpers que no tiene otro candado tiene su sonda. La
 >   tabla de puntos de E2.5 demuestra que el helper se llama en cada flujo.
 >   Entre las dos cubren la matriz entera.
-> - Las líneas del helper sin sonda propia están cubiertas de antemano por
->   las esperas existentes, que caen antes que el helper:
->   - `forgot-submit` y `forgot-resend` presentes;
->   - `forgot-email` ausente en el estado enviado.
+> - Las líneas del helper sin sonda propia están cubiertas de antemano por las
+>   esperas existentes:
+>   - `forgot-submit` presente: esperas existentes en A1-A4.
+>   - `forgot-resend` presente: esperas existentes en todos los flujos B,
+>     salvo B1 tras un error, que cubre P7a.
+>
+>   `forgot-email` ausente solo está cubierto por las esperas existentes en
+>   B1 y B3. En B2 y B4 lo prueba la sonda M5-j.
 >
 > Lista cerrada de ficheros de la ronda, medida con
 > `git diff --name-only <H0 del handoff de la ronda 3>..HEAD`:
@@ -343,14 +351,30 @@ Comando de T13-T17: `cd mobile-pet-tracker && bunx jest src/screens/forgot` (29 
 > - `specs/mobile-forgot-password/traceability.md`
 > - `progress/impl_mobile-forgot-password.md`
 
+Nombres cortos de los `it` en las tablas:
+
+| Nombre | Título literal |
+|---|---|
+| R5 `it` 1 | `envía el correo recortado una sola vez y deshabilita forgot-submit mientras vuela la petición` |
+| R7 ×5 | las 5 filas de `mapea %p a «%s» en forgot-error, seleccionable, y deja el formulario en pie` |
+| E1.3 `it` 1 | `un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver` |
+| E1.3 `it` 2 | `un nuevo reenvío retira forgot-error en cuanto arranca y no lo repinta al resolver ok` |
+| R6 `it` 1 | `forgot-resend repite el POST con el mismo correo y se deshabilita mientras vuela` |
+| R6 429 | `un 429 al reenviar pinta forgot-error sin salir de «Revisa tu correo»` |
+| R6 ×4 | las 4 filas de `un %p al reenviar pinta «%s» en forgot-error sin salir de «Revisa tu correo»` |
+| E2.7a | `un reintento desde el formulario que vuelve a fallar pinta el copy del nuevo kind` |
+| E2.7b | `un segundo reenvío que vuelve a fallar pinta el copy del nuevo kind` |
+
 ### Antes de empezar (ronda 3)
 
 - [ ] `test ! -e mobile-pet-tracker/.expo/types/router.d.ts`.
 - [ ] Medir la base sin pipe:
       `cd mobile-pet-tracker && bunx jest --runTestsByPath src/screens/forgot/index.test.tsx`.
       Debe dar 1 suite / 29 tests, exit 0. Anotarla.
+- [ ] Ejecutar los `grep -cF` de §E2.5 «Recuento de las anclas» y comparar
+      con los valores declarados. Ante una diferencia, parar.
 
-### T19 — E2.1, E2.3 y E2.4: el formulario en sus cuatro flujos (R4, R3)
+### T19 — E2.1, E2.3, E2.4 y E2.7a: el formulario en sus cuatro flujos (R4, R7, R3)
 
 1. Añadir en `src/screens/forgot/index.test.tsx`, justo después de
    `async function submitForgot(…) { … }`, estas piezas de E2.4, con el código
@@ -362,88 +386,102 @@ Comando de T13-T17: `cd mobile-pet-tracker && bunx jest src/screens/forgot` (29 
    - `expectFormState`.
 
    `expectSentState` no se añade todavía, porque sin uso rompería el lint.
-2. Añadir las llamadas P1, P2, P4, P5 y P6 de E2.5, y hacer sus tres cambios de
-   línea:
-   - `submitForgot('  Ana@Example.com ')` en el `it.each` de R7 y en el `it` de
-     P5;
+2. Añadir los puntos P1, P2, P4, P4b, P5 y P6 de E2.5, y hacer sus tres cambios
+   de línea:
+   - `submitForgot('  Ana@Example.com ')` en el `it.each` de R7 y en E1.3 `it` 1;
    - el valor `'  Ana@Example.com '` en la aseveración de `forgot-email` del
      `it.each` de R7.
-3. Plantar las sondas en `mobile-pet-tracker/src/screens/forgot/index.tsx`.
-   «E1.3 `it` 1» es
-   `un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver`,
-   y «E1.3 `it` 2» es
-   `un nuevo reenvío retira forgot-error en cuanto arranca y no lo repinta al resolver ok`.
+3. Añadir el `it` E2.7a, con el código literal y en el sitio que da la spec.
+4. Plantar las sondas en `mobile-pet-tracker/src/screens/forgot/index.tsx`:
 
    | Sonda | Cambio | Debe caer | Modo | Debe seguir verde |
    |---|---|---|---|---|
-   | X-a | `{sent \|\| submitting ? t('forgot.checkYourEmail') : t('forgot.forgotPassword')}` en `forgot-title` | R5 `it` 1 (P2) y E1.3 `it` 1 (P6) | aserción | — |
-   | X-b | `{sent \|\| submitting ? t('forgot.sentTo', { email: submittedEmail }) : t('forgot.instructions')}` en `forgot-body` | R5 `it` 1 (P2) y E1.3 `it` 1 (P6) | aserción | — |
-   | X-c | `{sent ? t('forgot.sentTo', { email: submittedEmail }) : error ?? t('forgot.instructions')}` en `forgot-body` | las 5 filas de R7 (P4) y E1.3 `it` 1 (P5) | aserción | — |
-   | X-d | envolver el `<LinkButton testID="link-login" …>…</LinkButton>` en `{!submitting && (…)}` | R5 `it` 1 (P2) y E1.3 `it` 1 (P6) | consulta | los dos `it` de R3 |
-   | X-e | envolver el mismo `LinkButton` en `{!error && (…)}` | las 5 filas de R7 (P4) y E1.3 `it` 1 (P5) | consulta | los dos `it` de R3 |
-   | X-f | envolver el `<Label …>…</Label>` en `{!error && (…)}` | las 5 filas de R7 (P4) y E1.3 `it` 1 (P5) | consulta | R4 `it` 1 |
-   | M3-f | `onPress={() => { if (!submitting) router.push('/login'); }}` en `link-login` | R5 `it` 1 (P2) y E1.3 `it` 1 (P6) | aserción (`toHaveBeenCalledTimes(1)`) | los dos `it` de R3 |
-   | M4-g | `setEmail(target);` justo antes de `setError(t('forgot.invalidEmail'));` | solo la fila `validation` de R7, en la aseveración del valor (cambio 2 de E2.5) | aserción | las otras 4 filas de R7 |
-   | M4-h | `setEmail(target);` justo después del `setError(null);` de la cabecera de `send` | R5 `it` 1 (P2), las 5 filas de R7 (cambio 2 de E2.5) y E1.3 `it` 1 (P5) | aserción | — |
-   | M5-h | envolver el `<View className="size-16 items-center justify-center rounded-xl bg-accent-soft" …>` en `{!submitting && (…)}` | R5 `it` 1 (P2) y E1.3 `it` 1 (P6) | aserción (`toBeDefined`) | `el tile Lock sigue en pie en los dos estados` |
-   | M7-k | `{error \|\| submitting ? (` en lugar de `{error ? (` en el bloque de `forgot-error` | R5 `it` 1 (P2), y los `toBeNull` que ya existían en vuelo en E1.3 `it` 1 y E1.3 `it` 2 | aserción | — |
+   | X-a | `{sent \|\| submitting ? t('forgot.checkYourEmail') : t('forgot.forgotPassword')}` en `forgot-title` | R5 `it` 1 (P2), E1.3 `it` 1 (P6) | aserción | — |
+   | X-b | `{sent \|\| submitting ? t('forgot.sentTo', { email: submittedEmail }) : t('forgot.instructions')}` en `forgot-body` | R5 `it` 1 (P2), E1.3 `it` 1 (P6) | aserción | — |
+   | X-c | `{sent ? t('forgot.sentTo', { email: submittedEmail }) : error ?? t('forgot.instructions')}` en `forgot-body` | R7 ×5 (P4), E1.3 `it` 1 (P5), E2.7a | aserción | — |
+   | X-d | envolver el `<LinkButton testID="link-login" …>…</LinkButton>` en `{!submitting && (…)}` | R5 `it` 1 (P2), E1.3 `it` 1 (P6) | consulta | los dos `it` de R3 |
+   | X-e | envolver el mismo `LinkButton` en `{!error && (…)}` | R7 ×5 (P4), E1.3 `it` 1 (P5), E2.7a | consulta | los dos `it` de R3 |
+   | X-f | envolver el `<Label …>…</Label>` en `{!error && (…)}` | R7 ×5 (P4), E1.3 `it` 1 (P5), E2.7a | consulta | R4 `it` 1 |
+   | M3-f | `onPress={() => { if (!submitting) router.push('/login'); }}` en `link-login` | R5 `it` 1 (P2), E1.3 `it` 1 (P6) | aserción (`toHaveBeenCalledTimes(1)`) | los dos `it` de R3 |
+   | M3-g | `{submitting ? t('forgot.resend') : t('forgot.backToSignIn')}` en el texto de `link-login` | R5 `it` 1 (P2), E1.3 `it` 1 (P6) | aserción (`toHaveTextContent`) | los dos `it` de R3 |
+   | M3-h | `onPress={() => { if (error) void send(submittedEmail); router.push('/login'); }}` en `link-login` | R7 ×5 (P4), E1.3 `it` 1 (P5), E2.7a | aserción en el recuento de `mockForgotPassword`; en E2.7a, anotar el modo medido | los dos `it` de R3 |
+   | M4-f | `{sent \|\| submitting ? (` en lugar del `{sent ? (` del bloque de `forgot-resend` | R5 `it` 1 (P2), E1.3 `it` 1 (en su `toBeNull` de `forgot-resend` ya existente) | aserción | — |
+   | M4-g | `setEmail(target);` justo antes de `setError(t('forgot.invalidEmail'));` | solo la fila `validation` de R7 ×5, en la aseveración del valor (cambio 2 de E2.5) | aserción | las otras 4 filas de R7 |
+   | M4-h | `setEmail(target);` justo después del `setError(null);` de la cabecera de `send` | R5 `it` 1 (P2), R7 ×5 (cambio 2), E1.3 `it` 1 (P5) | aserción | E2.7a |
+   | M4-i | `isDisabled={(email.trim() === '' && !error) \|\| submitting}` en `forgot-submit` | R7 ×5 (P4b) | aserción (`toBeDisabled`) | R4 `it` 2 |
+   | M5-h | envolver el `<View className="size-16 items-center justify-center rounded-xl bg-accent-soft" …>` en `{!submitting && (…)}` | R5 `it` 1 (P2), E1.3 `it` 1 (P6) | aserción (`toBeDefined`) | `el tile Lock sigue en pie en los dos estados` |
+   | M7-k | `{error \|\| submitting ? (` en lugar de `{error ? (` en el bloque de `forgot-error` | R5 `it` 1 (P2), E1.3 `it` 1 y E1.3 `it` 2 (en sus `toBeNull` ya existentes en vuelo) | aserción | E2.7a |
+   | M7-l | `if (!error \|\| sent) setSubmitting(false);` en lugar de `setSubmitting(false);` en el `finally` de `send` | E2.7a | aserción (`not.toBeDisabled`) | — |
+   | M7-m | `if (!error) setError(t('forgot.tooManyAttempts'));` en lugar de `setError(t('forgot.tooManyAttempts'));` | E2.7a | consulta | la fila `rate-limited` de R7 ×5 |
 
-   M4-g es la prueba de que el valor del campo estaba ciego antes de E2: con
-   `'ana@example.com'`, el valor escrito y el recortado coincidían.
-4. `test ! -e .expo/types/router.d.ts && bunx tsc --noEmit`, exit 0, y
+   Notas:
+   - M4-g prueba que el valor del campo estaba ciego antes de E2: con
+     `'ana@example.com'`, el valor escrito y el recortado coincidían.
+   - M7-l es un cierre obsoleto: el `finally` lee el `error` del render en que
+     arrancó el envío, así que tras un error previo no rehabilita el botón.
+5. `test ! -e .expo/types/router.d.ts && bunx tsc --noEmit`, exit 0, y
    `bun run lint`, exit 0, antes del commit.
-5. Commit: `test(mobile): lock the form render in every unsent flow (#117 R4, R3, E2)`.
+6. Commit: `test(mobile): lock the form render in every unsent flow (#117 R4, R7, R3, E2)`.
 
-### T20 — E2.2, E2.3 y E2.4: el estado enviado en sus cinco flujos (R5, R6, R3)
+### T20 — E2.2, E2.3, E2.4 y E2.7b: el estado enviado en sus cinco flujos (R5, R6, R3)
 
 1. Añadir `expectSentState` de E2.4 justo después de `expectFormState`, con el
    código literal de la spec.
-2. Añadir las llamadas P3, P7, P8, P9, P10, P11, P12 y P13 de E2.5.
-3. Plantar las sondas en `mobile-pet-tracker/src/screens/forgot/index.tsx`. Las
-   cinco primeras son nuevas. Las cinco últimas repiten sondas de T19, para
-   anotar los `it` del estado enviado que ahora también caen.
+2. Añadir los puntos P3, P7a, P7, P8, P9, P10, P11, P12 y P13 de E2.5.
+3. Añadir el `it` E2.7b, con el código literal y en el sitio que da la spec.
+4. Plantar las sondas en `mobile-pet-tracker/src/screens/forgot/index.tsx`.
+   Las seis primeras son nuevas. Las demás repiten sondas de T19 para anotar
+   los `it` del estado enviado que ahora también caen.
 
    | Sonda | Cambio | Debe caer | Modo |
    |---|---|---|---|
-   | X-g | `{sent && !error ? t('forgot.sentTo', { email: submittedEmail }) : t('forgot.instructions')}` en `forgot-body` | R6 `it` del 429 (P10) y las 4 filas del `it.each` de R6 (P11) | aserción |
-   | X-h | `{!sent \|\| error ? (` en lugar del `{!sent ? (` del bloque de `forgot-submit` | R6 `it` del 429 (P10) y las 4 filas de R6 (P11) | aserción |
-   | X-i | `{sent && !submitting ? t('forgot.checkYourEmail') : t('forgot.forgotPassword')}` en `forgot-title` | R6 `it` 1 (P8) y E1.3 `it` 2 (P12) | aserción |
-   | M5-i | dos cambios a la vez: `{true ? (` en lugar del `{!sent ? (` del bloque de `TextField`, y `testID={sent ? undefined : 'forgot-email'}` en `Input`. El `Label` queda en el estado enviado y `forgot-email` desaparece | R5 `it` 2 (P3), E1.3 `it` 1 (P7), R6 `it` 1 (P8), R6 `it` del 429 (P10), las 4 filas de R6 (P11) y E1.3 `it` 2 (P12) | aserción (`queryByText('Correo electrónico')` no es `null`) |
-   | M7-j | `selectable={!sent}` en lugar de `selectable` en `forgot-error` | R6 `it` del 429 (P10) y las 4 filas de R6 (P11) | aserción |
+   | X-g | `{sent && !error ? t('forgot.sentTo', { email: submittedEmail }) : t('forgot.instructions')}` en `forgot-body` | R6 429 (P10), R6 ×4 (P11), E2.7b | aserción |
+   | X-h | `{!sent \|\| error ? (` en lugar del `{!sent ? (` del bloque de `forgot-submit` | R6 429 (P10), R6 ×4 (P11), E2.7b | aserción |
+   | X-i | `{sent && !submitting ? t('forgot.checkYourEmail') : t('forgot.forgotPassword')}` en `forgot-title` | R6 `it` 1 (P8), E1.3 `it` 2 (P12) | aserción |
+   | M5-i | dos cambios a la vez: `{true ? (` en lugar del `{!sent ? (` del bloque de `TextField`, y `testID={sent ? undefined : 'forgot-email'}` en `Input` | R5 `it` 2 (P3), E1.3 `it` 1 (P7), R6 `it` 1 (P8), R6 429 (P10), R6 ×4 (P11), E1.3 `it` 2 (P12), E2.7b | aserción (`queryByText('Correo electrónico')` no es `null`) |
+   | M5-j | dos cambios a la vez: `{!sent \|\| submitting ? (` en lugar del `{!sent ? (` del bloque de `TextField`, y el `<Label …>…</Label>` envuelto en `{!sent && (…)}` | R6 `it` 1 (P8), E1.3 `it` 2 (P12) | aserción (`forgot-email` no es `null`) |
+   | M7-j | `selectable={!sent}` en lugar de `selectable` en `forgot-error` | R6 429 (P10), R6 ×4 (P11), E2.7b | aserción |
+   | M6-j | `if (!error) setError(t('common.somethingWentWrong'));` en lugar de `setError(t('common.somethingWentWrong'));` | E2.7b | consulta |
+   | M7-l | la de T19 | lo de T19, más E1.3 `it` 1 (P7a) | aserción |
    | X-d | la de T19 | lo de T19, más R6 `it` 1 (P8) y E1.3 `it` 2 (P12) | consulta |
-   | X-e | la de T19 | lo de T19, más R6 `it` del 429 (P10) y las 4 filas de R6 (P11) | consulta |
+   | X-e | la de T19 | lo de T19, más R6 429 (P10), R6 ×4 (P11) y E2.7b | consulta |
    | M3-f | la de T19 | lo de T19, más R6 `it` 1 (P8) y E1.3 `it` 2 (P12) | aserción |
+   | M3-g | la de T19 | lo de T19, más R6 `it` 1 (P8) y E1.3 `it` 2 (P12) | aserción |
+   | M3-h | la de T19 | lo de T19, más R6 429 (P10), R6 ×4 (P11) y E2.7b | anotar el modo medido: en el barrido, R6 429 y R6 ×4 cayeron por excepción (`TypeError`) |
    | M5-h | la de T19 | lo de T19, más R6 `it` 1 (P8) y E1.3 `it` 2 (P12) | aserción |
    | M7-k | la de T19 | lo de T19, más R6 `it` 1 (P8) | aserción |
 
-   Las sondas X-h y M5-i cambian un `{!sent ? (` distinto cada una, y en el
-   fichero hay dos. Las dos se distinguen por la línea que les sigue:
+   Las sondas X-h, M5-i y M5-j cambian uno de los dos `{!sent ? (` del
+   fichero. Se distinguen por la línea que les sigue:
    - el de `TextField` va seguido de `<TextField className="w-full">`;
    - el de `forgot-submit` va seguido de `<Button` con `testID="forgot-submit"`.
-4. `test ! -e .expo/types/router.d.ts && bunx tsc --noEmit`, exit 0, y
+5. `test ! -e .expo/types/router.d.ts && bunx tsc --noEmit`, exit 0, y
    `bun run lint`, exit 0, antes del commit.
-5. Commit: `test(mobile): lock the sent-state render in every flow (#117 R5, R6, R3, E2)`.
+6. Commit: `test(mobile): lock the sent-state render in every flow (#117 R5, R6, R3, E2)`.
 
 Comando de T19 y T20: `cd mobile-pet-tracker && bunx jest --runTestsByPath src/screens/forgot/index.test.tsx`.
-Da 29 tests antes y después.
+Da 29 tests en la base, 30 tras T19 y 31 tras T20.
+
+Si una sonda cae en un `it` que su fila no nombra, se anota y se sigue; no es
+motivo para parar. Si no cae en un `it` que su fila nombra, se para y se
+anota en el impl.
 
 ### T21 — cierre de la ronda 3
 
 - [ ] Suite global **sin pipe**: `cd mobile-pet-tracker && bunx jest`, exit 0,
-      93 suites / 2049 tests. Si la base medida al arrancar es otra, E2 le
-      suma 0.
-- [ ] Las 8 suites del handoff de la ronda 1: 285 tests, exit 0.
+      93 suites / 2051 tests. Si la base medida al arrancar es otra, E2 le
+      suma 2 `it`.
+- [ ] Las 8 suites del handoff de la ronda 1: 287 tests, exit 0.
 - [ ] `test ! -e .expo/types/router.d.ts && bunx tsc --noEmit`, exit 0.
 - [ ] `bun run lint`, exit 0.
 - [ ] `traceability.md`: añadir el hash de su commit de E2 a las filas de R3,
-      R4, R5, R6 y R7. La de R7 entra por el cambio de valor del `it.each`. Sin
-      rebasear después.
+      R4, R5, R6 y R7. Sin rebasear después.
 - [ ] `progress/impl_mobile-forgot-password.md` §Ronda 3:
   - la base;
   - las tablas de sondas de T19 y T20 con su resultado;
   - las cifras finales;
-  - `git diff --numstat` del fichero de test: debe dar solo adiciones,
-    salvo las 3 líneas cambiadas de E2.5;
+  - `git diff --numstat` del fichero de test: solo adiciones, salvo las 3
+    líneas cambiadas de E2.5;
   - la lista de ficheros medida con `git diff --name-only`.
 - [ ] Commit: `docs(mobile): trace #117 amendment E2 to its tests and commits`.
 
@@ -452,7 +490,7 @@ Da 29 tests antes y después.
 - No tocar `src/screens/forgot/index.tsx` ni ningún otro fichero de
   producción. Las sondas se revierten antes de cada commit.
 - No tocar `src/api/__tests__/auth.test.ts`.
-- No crear `it` nuevos ni renombrar los que existen.
+- No crear más `it` que los dos de E2.7, y no renombrar los que existen.
 - En las líneas que ya existen, no cambiar nada salvo los tres cambios de
   E2.5. El `it` del tile de E1.7 no se reescribe con `lockTile()`.
 - No esperar sobre el contador del mock: §Esperas.

@@ -991,10 +991,19 @@ a ese flujo (E2.5). Así cualquier elemento de la lista queda comprobado en
 todos los flujos, no solo los nueve de la tabla.
 
 Ningún requisito cambia de comportamiento y **no hay cambios de producción**.
-E2.2 añade una cláusula que el código ya cumple. No hay `it` nuevos: los
-helpers se llaman desde `it` existentes, y E2.5 permite tres cambios puntuales
-en líneas que ya existen. Cada candado se demuestra con una sonda que lo tumba
-(tabla de [[tasks]] §Enmienda E2).
+E2.2 añade una cláusula que el código ya cumple. Los helpers se llaman desde
+`it` existentes, y E2.5 permite tres cambios puntuales en líneas que ya
+existen. Solo hay dos `it` nuevos (E2.7), para los dos flujos que ningún `it`
+recorría: un error tras otro error, desde el formulario y desde el reenvío.
+Cada candado se demuestra con una sonda que lo tumba (tabla de [[tasks]]
+§Enmienda E2).
+
+El barrido previo a la firma
+(`progress/review_mobile-forgot-password.md` §Barrido previo a la firma de E2)
+encontró cinco defectos en el primer borrador (D1-D5). Esta versión los
+integra: D1 en §E2.5 (recuentos de las anclas), D2 en E2.2 y E2.5 (punto P7a),
+D3 en [[tasks]] (sondas por línea de helper), D4 en E2.1 y E2.5 (punto P4b) y
+D5 en E2.1, E2.2 y E2.7.
 
 ### E2.1 — R4: el formulario en sus cuatro flujos
 
@@ -1002,7 +1011,8 @@ R4 viñeta 1 vale en todos los flujos con `sent === false`:
 
 - **A1**: antes del primer envío;
 - **A2**: con el primer envío en vuelo;
-- **A3**: tras un resultado distinto de `ok`, en los cinco `kind` de R7;
+- **A3**: tras un resultado distinto de `ok`, en los cinco `kind` de R7,
+  también cuando lo precede otro error (A4 → A3);
 - **A4**: con un envío nuevo en vuelo tras ese error.
 
 **WHILE** `sent === false`, en cualquiera de esos cuatro flujos, **THE SYSTEM
@@ -1023,13 +1033,18 @@ Y **no** renderizará `forgot-resend`.
 - ausente en A1, A2 y A4;
 - presente en A3, con su copy y `selectable`.
 
-El estado de `forgot-submit` ya está candado en cada flujo por las esperas que
-los `it` existentes hacen antes del punto de observación:
+El estado de `forgot-submit` en cada flujo:
 
-- deshabilitado en A1 mientras el campo está vacío, y en A2 y A4;
-- habilitado en A3.
+- deshabilitado en A1 y en A3 mientras el campo está vacío o solo tiene
+  espacios;
+- deshabilitado en A2 y A4;
+- habilitado en A3 con el campo escrito, también cuando A3 viene de A4.
 
-E2.1 no cambia nada de eso.
+Las esperas de los `it` existentes ya candan casi todo eso, antes del punto de
+observación. Faltan dos casos:
+
+- A3 con el campo vaciado, que añade el punto P4b de E2.5;
+- A3 tras A4, que añade el primer `it` de E2.7.
 
 ### E2.2 — R5 y R6: el estado enviado en sus cinco flujos
 
@@ -1038,7 +1053,8 @@ Cláusula nueva, simétrica de R4 viñeta 1. El estado enviado tiene cinco flujo
 - **B1**: tras el `ok` de un envío desde el formulario, haya habido o no un
   error antes;
 - **B2**: con un reenvío en vuelo;
-- **B3**: tras un reenvío distinto de `ok`, en los cinco `kind`;
+- **B3**: tras un reenvío distinto de `ok`, en los cinco `kind`, también
+  cuando lo precede otro error (B4 → B3);
 - **B4**: con un reenvío nuevo en vuelo tras ese error;
 - **B5**: tras un reenvío `ok`.
 
@@ -1063,11 +1079,15 @@ Esta cláusula amplía el paréntesis de R6 viñeta 3. «Permanecer en el estado
 enviado» significa esta lista completa, no solo título, `forgot-resend` y la
 ausencia de `forgot-email`.
 
-El estado de `forgot-resend` ya está candado en cada flujo por las esperas de
-los `it` existentes:
+El estado de `forgot-resend` en cada flujo:
 
-- habilitado en B1, B3 y B5;
+- habilitado en B1 (con y sin error previo), B3 y B5;
 - deshabilitado en B2 y B4.
+
+Las esperas de los `it` existentes ya candan casi todo eso. Faltan dos casos:
+
+- B1 tras un error, que añade el punto P7a de E2.5;
+- B3 tras B4, que añade el segundo `it` de E2.7.
 
 ### E2.3 — R3: `link-login` navega desde los nueve flujos
 
@@ -1170,15 +1190,40 @@ puntos de `it` que ya existen. Los títulos van literales y no cambian.
 | P2 | A2 | R5 `envía el correo recortado una sola vez y deshabilita forgot-submit mientras vuela la petición` | después de `expect(screen.getByTestId('forgot-email')).toBeVisible();`, antes del `act` | `await expectFormState('  Ana@Example.com ', null);` |
 | P3 | B1 | R5 `tras ok muestra cabecera y cuerpo con el correo, forgot-resend y link-login, y retira forgot-email y forgot-submit` | al final | `await expectSentState('Ana@Example.com', null);` |
 | P4 | A3, ×5 | R7 `mapea %p a «%s» en forgot-error, seleccionable, y deja el formulario en pie` | al final | `await expectFormState('  Ana@Example.com ', copy);` |
-| P5 | A3 | R7 `un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver` | después del primer `await waitFor(() => expect(screen.getByTestId('forgot-submit')).not.toBeDisabled());`, antes de pulsar | `await expectFormState('  Ana@Example.com ', 'Algo salió mal');` |
+| P4b | A3 con el campo vaciado, ×5 | el mismo `it.each` que P4 | justo después de P4, al final | las dos líneas de la nota de P4b, abajo |
+| P5 | A3 | R7 `un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver` | después de `await waitFor(() => expect(screen.getByTestId('forgot-submit')).not.toBeDisabled());` (hay uno solo en este `it`), antes de pulsar | `await expectFormState('  Ana@Example.com ', 'Algo salió mal');` |
 | P6 | A4 | el mismo `it` que P5 | después de `expect(screen.queryByTestId('forgot-resend')).toBeNull();`, antes del `act` | `await expectFormState('  Ana@Example.com ', null);` |
-| P7 | B1 tras un error | el mismo `it` que P5 | al final | `await expectSentState('Ana@Example.com', null);` |
+| P7a | B1 tras un error | el mismo `it` que P5 | al final, antes de P7 | `await waitFor(() => expect(screen.getByTestId('forgot-resend')).not.toBeDisabled());` |
+| P7 | B1 tras un error | el mismo `it` que P5 | al final, después de P7a | `await expectSentState('Ana@Example.com', null);` |
 | P8 | B2 | R6 `forgot-resend repite el POST con el mismo correo y se deshabilita mientras vuela` | después de `expect(mockForgotPassword.mock.calls[1][1]).toEqual(mockForgotPassword.mock.calls[0][1]);`, antes del `act` | `await expectSentState('Ana@Example.com', null);` |
 | P9 | B5 | el mismo `it` que P8 | al final | `await expectSentState('Ana@Example.com', null);` |
 | P10 | B3 | R6 `un 429 al reenviar pinta forgot-error sin salir de «Revisa tu correo»` | al final | `await expectSentState('ana@example.com', 'Demasiados intentos. Inténtalo más tarde.');` |
 | P11 | B3, ×4 | R6 `un %p al reenviar pinta «%s» en forgot-error sin salir de «Revisa tu correo»` | al final | `await expectSentState('ana@example.com', copy);` |
 | P12 | B4 | R7 `un nuevo reenvío retira forgot-error en cuanto arranca y no lo repinta al resolver ok` | después del primer `expect(screen.queryByTestId('forgot-error')).toBeNull();` (el que va antes del `act`) | `await expectSentState('Ana@Example.com', null);` |
 | P13 | B5 tras un error | el mismo `it` que P12 | al final | `await expectSentState('Ana@Example.com', null);` |
+
+P4b son dos líneas, en este orden:
+
+```ts
+await fireEvent.changeText(screen.getByTestId('forgot-email'), '   ');
+expect(screen.getByTestId('forgot-submit')).toBeDisabled();
+```
+
+**Recuento de las anclas.** Varias anclas de la tabla se repiten en el
+fichero. Cada una se identifica por el título de su `it` y, dentro de él, es
+única, salvo la de P12, que aparece dos veces en su `it` y se usa la primera.
+Valores medidos en `index.test.tsx` en `2f058cdd`, el fichero que Codex
+encontrará al arrancar la ronda 3:
+
+```sh
+grep -cF "expect(screen.getByTestId('forgot-email')).toBeVisible();" mobile-pet-tracker/src/screens/forgot/index.test.tsx   # 1 (P2)
+grep -cF "await waitFor(() => expect(screen.getByTestId('forgot-submit')).not.toBeDisabled());" mobile-pet-tracker/src/screens/forgot/index.test.tsx   # 2 (P5; 1 dentro de su it)
+grep -cF "expect(screen.queryByTestId('forgot-resend')).toBeNull();" mobile-pet-tracker/src/screens/forgot/index.test.tsx   # 3 (P6; 1 dentro de su it)
+grep -cF "expect(mockForgotPassword.mock.calls[1][1]).toEqual(mockForgotPassword.mock.calls[0][1]);" mobile-pet-tracker/src/screens/forgot/index.test.tsx   # 1 (P8)
+grep -cF "expect(screen.queryByTestId('forgot-error')).toBeNull();" mobile-pet-tracker/src/screens/forgot/index.test.tsx   # 7 (P12; 2 dentro de su it, se usa el primero)
+grep -cF "await submitForgot();" mobile-pet-tracker/src/screens/forgot/index.test.tsx   # 9 (cambios 1 y 3; 1 dentro de cada it)
+grep -cF "expect(screen.getByTestId('forgot-email').props.value).toBe('ana@example.com');" mobile-pet-tracker/src/screens/forgot/index.test.tsx   # 1 (cambio 2)
+```
 
 Además de añadir esas líneas, E2 cambia tres líneas que ya existen:
 
@@ -1220,17 +1265,86 @@ corta ahí para no multiplicar las sondas por cada prop de estilo.
 Si el humano quiere también ese candado por flujo, lo dice al firmar y se
 añade a los helpers en la misma ronda.
 
+### E2.7 — Un error tras otro error
+
+R7 dice que **WHEN** el resultado de un envío desde el formulario tiene un
+`kind` distinto de `ok`, la pantalla pinta su copy en `forgot-error`. E1.2
+dice lo mismo para un reenvío. Ninguna de las dos cláusulas excluye que ese
+resultado llegue tras otro error, pero ningún `it` recorre A4 → A3 ni B4 → B3.
+Una mutación que no repinta el segundo error
+(`if (!error) setError(t('forgot.tooManyAttempts'));`) pasa hoy en verde.
+
+**WHEN** un envío desde el formulario o un reenvío resuelve con un `kind`
+distinto de `ok` y ya había un error en pantalla, **THE SYSTEM SHALL**:
+
+- pintar el copy del `kind` nuevo en `forgot-error`;
+- volver a habilitar el botón del estado: `forgot-submit` en el formulario,
+  `forgot-resend` en el estado enviado;
+- dejar el resto del estado como piden E2.1 y E2.2.
+
+Dos `it` nuevos, con el código literal que sigue.
+
+**(a)** En `describe('#117 R7: cada kind distinto de ok pinta su copy en forgot-error'`,
+justo antes de
+`it('un envío posterior que resuelve ok limpia forgot-error y pasa a «Revisa tu correo»'`
+(`grep -cF` da 1):
+
+```ts
+  it('un reintento desde el formulario que vuelve a fallar pinta el copy del nuevo kind', async () => {
+    mockForgotPassword.mockResolvedValueOnce({ kind: 'error' }).mockResolvedValueOnce({ kind: 'rate-limited' });
+    await renderRoute();
+    await submitForgot();
+    expect(await screen.findByTestId('forgot-error')).toHaveTextContent('Algo salió mal');
+    await waitFor(() => expect(screen.getByTestId('forgot-submit')).not.toBeDisabled());
+    await fireEvent.press(screen.getByTestId('forgot-submit'));
+    await waitFor(() => expect(screen.getByTestId('forgot-error')).toHaveTextContent('Demasiados intentos. Inténtalo más tarde.'));
+    await waitFor(() => expect(screen.getByTestId('forgot-submit')).not.toBeDisabled());
+    await expectFormState('ana@example.com', 'Demasiados intentos. Inténtalo más tarde.');
+  });
+```
+
+**(b)** En `describe('#117 R6: reenviar repite la misma petición'`, como último
+`it`: después del `it.each` cuyo título empieza por
+`un %p al reenviar pinta «%s» en forgot-error` y antes del `});` que cierra el
+`describe`. Ese cierre es el que precede a
+`describe('#117 R8: forgot se aparta del teclado en Android'` (`grep -cF` da 1):
+
+```ts
+  it('un segundo reenvío que vuelve a fallar pinta el copy del nuevo kind', async () => {
+    mockForgotPassword
+      .mockResolvedValueOnce({ kind: 'ok' })
+      .mockResolvedValueOnce({ kind: 'rate-limited' })
+      .mockResolvedValueOnce({ kind: 'error' });
+    await renderRoute();
+    await submitForgot();
+    expect(await screen.findByText('Revisa tu correo')).toBeVisible();
+    await fireEvent.press(screen.getByTestId('forgot-resend'));
+    expect(await screen.findByTestId('forgot-error')).toHaveTextContent('Demasiados intentos. Inténtalo más tarde.');
+    await waitFor(() => expect(screen.getByTestId('forgot-resend')).not.toBeDisabled());
+    await fireEvent.press(screen.getByTestId('forgot-resend'));
+    await waitFor(() => expect(screen.getByTestId('forgot-error')).toHaveTextContent('Algo salió mal'));
+    await waitFor(() => expect(screen.getByTestId('forgot-resend')).not.toBeDisabled());
+    await expectSentState('ana@example.com', 'Algo salió mal');
+  });
+```
+
+Los dos `waitFor` sobre el copy nuevo esperan sobre el árbol, como pide
+§Esperas. Mientras vuela la segunda petición, `forgot-error` no existe, y la
+espera reintenta hasta que aparece con el copy nuevo. Los dos copys de cada
+`it` son distintos, así que el primero no puede satisfacer la espera.
+
 ### Cifras y alcance
 
 | Suite | Antes de E2 | Después de E2 |
 |---|---:|---:|
 | `src/api/__tests__/auth.test.ts` | 44 | 44 |
-| `src/screens/forgot/index.test.tsx` | 29 | 29 (sin `it` nuevos) |
-| Las 8 suites del handoff | 285 | 285 |
-| Suite global de `mobile-pet-tracker` | 93 suites / 2049 | 93 suites / 2049 |
+| `src/screens/forgot/index.test.tsx` | 29 | 31 (los dos `it` de E2.7) |
+| Las 8 suites del handoff | 285 | 287 |
+| Suite global de `mobile-pet-tracker` | 93 suites / 2049 | 93 suites / 2051 |
 
 Si `origin/main` ha cambiado cuando arranque la ronda 3, cuenta como cifra la
-base que se mida entonces. E2 suma 0 a esa base.
+base que se mida entonces. E2 suma 2 `it` a esa base, los dos en
+`src/screens/forgot/index.test.tsx`.
 
 Ningún candado global se mueve:
 
