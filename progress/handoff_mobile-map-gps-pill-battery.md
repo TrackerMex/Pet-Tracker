@@ -333,3 +333,58 @@ Sigue desde T2 con tus tests sin commitear tal como están:
 
 Commits test-primero, rojo antes que verde, igual que antes. Sin push ni PR.
 ```
+
+## CORRECCION 2 (leader, 2026-10-05): el cierre son 12 ficheros, no 11
+
+Codex paró otra vez (impl, «PARADA 2») y con razón: H1 `e3a47e38` tocó
+también `progress/current.md`, y CORRECCION 1 contaba solo tasks.md y el
+handoff. `progress/current.md` es del leader, así que entra en la lista y
+no se restaura. Esto sustituye el «11» de CORRECCION 1 y el «(9 ficheros)»
+del informe de cierre de arriba.
+
+`git diff --name-only H0 HEAD` (H0 = `a89aeaf0`) al cerrar debe dar
+exactamente estos 12, ni uno más:
+  mobile-pet-tracker/src/screens/map/index.tsx
+  mobile-pet-tracker/src/components/pet-hero-header.tsx
+  mobile-pet-tracker/src/i18n/catalog.ts
+  mobile-pet-tracker/src/screens/map/index.test.tsx
+  mobile-pet-tracker/src/__tests__/ui-copy-table.ts
+  mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+  specs/mobile-ui-language/design.md
+  specs/mobile-map-gps-pill-battery/traceability.md
+  progress/impl_mobile-map-gps-pill-battery.md
+  specs/mobile-map-gps-pill-battery/tasks.md              <- leader, no lo tocas
+  progress/handoff_mobile-map-gps-pill-battery.md         <- leader, no lo tocas
+  progress/current.md                                     <- leader, no lo tocas
+
+Los nueve primeros son los tuyos de siempre. Los tres últimos son del
+leader. Si el leader vuelve a commitear antes del cierre, solo tocará esos
+tres, así que la lista no se mueve. Un fichero del leader que no esté en
+esta lista sí es motivo de parada.
+
+Paste de reanudación para Codex:
+
+```text
+Worktree: /home/claude/sites/Pet-Tracker   <- PRIMERA LINEA. Trabaja AQUI.
+Reanudas #116 tras tu PARADA 2. Lee la sección final «CORRECCION 2» de
+progress/handoff_mobile-map-gps-pill-battery.md: el cierre son 12 ficheros
+(tus 9 más tasks.md, el handoff y progress/current.md del leader).
+
+Antes de tocar nada, con salida al impl (sección nueva «Reanudación 2»):
+  git log --oneline -1                      -> el commit de CORRECCION 2 (H2)
+  git merge-base --is-ancestor e3a47e38 HEAD; echo "exit=$?"   -> 0
+  git show --stat --format= HEAD            -> solo el handoff y progress/current.md
+  git status --short                        -> SOLO tus dos ficheros:
+       M mobile-pet-tracker/src/screens/map/index.test.tsx
+      ?? progress/impl_mobile-map-gps-pill-battery.md
+  grep -cF 'el cierre son 12 ficheros, no 11' progress/handoff_mobile-map-gps-pill-battery.md   -> 2
+PARA si algo no coincide.
+
+Tu rojo de T2 ya está medido en «Reanudación 1» (4 rojos por consulta de
+map-pet-pill, 66 verdes, 70 total): no lo repitas. Commitéalo con su mensaje
+literal y sigue con T2 verde, M25, T3, T4 (con `#69 R10` naciendo verde),
+T5 y T6 según tasks.md y el handoff. Al cerrar, `git diff --name-only H0 HEAD`
+(H0 = a89aeaf0) debe dar los 12 de CORRECCION 2.
+
+Commits test-primero, rojo antes que verde. Sin push ni PR.
+```

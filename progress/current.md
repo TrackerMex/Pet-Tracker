@@ -42,6 +42,9 @@
   (candado contable: tabla y suma suben juntas). Corregidos tasks.md T4 y el
   handoff («CORRECCION 1», con paste de reanudación); requirements.md no cambia,
   así que sin gate nuevo. Codex estaba parado cuando el leader commiteó aquí.
+- Segunda parada de Codex: H1 tocó también `progress/current.md` y la
+  corrección hablaba de 11 ficheros. «CORRECCION 2» del handoff fija el cierre en
+  12 (los 9 de Codex más tasks.md, el handoff y current.md, los tres del leader).
 - Observación para después (no es deuda abierta todavía): `collar-battery` de
   la Home pinta `> 60` con `text-success` (≈ 3,31:1 sobre `bg-default` claro,
   falla AA). Verificado en `src/screens/home/index.tsx`; solo ese tile.
