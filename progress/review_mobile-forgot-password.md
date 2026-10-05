@@ -996,3 +996,166 @@ Además, la casilla de M3-h en E2.7a y E2.7b pasaría a «aserción en el recuen
 Ficheros de esta remedición (scratchpad, fuera del repo): `e2/build2.py`, `e2/spike-{t19,t20,t19fix,t20fix}.test.tsx`, `e2/out-i_*.json` y `e2/{tsc,lint}-i-*.log`.
 
 Veredicto del barrido: REQUIERE CAMBIOS
+
+## Ronda 3
+Fecha: 2026-10-05. HEAD `c9d67ddd`. H0 `68ad1bb2`. Rango revisado: `68ad1bb2..c9d67ddd` (3 commits de Codex).
+Veredicto: APROBADO
+
+En una frase: Codex aplicó la enmienda E2 al pie de la letra (helpers, P1-P13 con P4b y P7a, y los dos `it` de E2.7 idénticos a la spec, sin tocar producción), las 27 sondas de `tasks.md` §Enmienda E2 caen exactamente donde dicen al replantarlas yo una a una, y el barrido de cierre no deja ninguna cláusula de R3-R7, E1 o E2 sin candado medido.
+
+### Alcance
+- Commits del rango:
+  - `c783b41e` test(mobile): lock the form render in every unsent flow (#117 R4, R7, R3, E2)
+  - `a7d0fcae` test(mobile): lock the sent-state render in every flow (#117 R5, R6, R3, E2)
+  - `c9d67ddd` docs(mobile): trace #117 amendment E2 to its tests and commits
+- `git diff --name-only 68ad1bb2 c9d67ddd` toca exactamente los 3 ficheros de la lista cerrada:
+  - `mobile-pet-tracker/src/screens/forgot/index.test.tsx`: +114 / −3
+  - `progress/impl_mobile-forgot-password.md`: +6940 / −0
+  - `specs/mobile-forgot-password/traceability.md`: +15 / −5
+- Producción (`src/screens/forgot/index.tsx`), `src/api/auth.ts` y `src/api/__tests__/auth.test.ts`: diff 0.
+- Las 3 bajas del test son exactamente los 3 cambios de línea de E2.5: los dos `await submitForgot();` que pasan a la forma con aseveración y el `toBe('ana@example.com')` del valor del campo.
+- `c783b41e` solo toca el test (+70 / −3); `a7d0fcae` solo toca el test (+44 / −0).
+
+### Literalidad (E2.4, E2.5, E2.7)
+- Bloque de helpers de E2.4 (`LOCK_TILE_CLASS`, `lockTile`, `expectForgotError`, `expectLinkLoginNavigates`, `expectFormState`, `expectSentState`): comparado como subcadena exacta contra el bloque de `requirements.md`, 1 aparición.
+- P1-P13, P4b y P7a: cada uno en el `it` y en el sitio que fija la tabla de E2.5.
+- Las 53 anclas `grep -cF` de base del handoff §Ronda 3 dan su cifra sobre H0 (53 / 53). Sobre HEAD cambian 5, y los 5 deltas son los de E2:
+  - `not.toBeDisabled` de `forgot-submit` dentro de `waitFor`: 2 → 5.
+  - `toBeNull` de `forgot-resend`: 3 → 4.
+  - `toBeNull` de `forgot-error`: 7 → 8.
+  - `props.value).toBe('ana@example.com')`: 1 → 0, por el cambio de línea de E2.5.
+  - `vuelve a fallar pinta el copy del nuevo kind`: 0 → 2, que son E2.7a y E2.7b.
+- E2.7a (`un reintento desde el formulario que vuelve a fallar pinta el copy del nuevo kind`) está en el `describe` de R7, antes de `un envío posterior…`. E2.7b (`un segundo reenvío que vuelve a fallar pinta el copy del nuevo kind`) es el último `it` del `describe` de R6, antes de R8. Los dos bloques coinciden literalmente con `requirements.md`.
+- El diff de títulos de `it` contra H0 solo añade esos dos. No hay renombrados, reordenados ni `describe` nuevos. El `it` del tile de E1.7 es idéntico a H0.
+- §Esperas: todas las esperas nuevas miran el árbol. Hay 0 esperas nuevas sobre `mockForgotPassword.mock.calls` o su recuento.
+
+## Checklist C2 — Estado coherente (ronda 3)
+- [x] Solo 1 feature in_progress: `grep -c '"status": "in_progress"' feature_list.json` da 1, y es #117.
+- [x] `progress/current.md` recoge la firma de E2 (`ca95f2f0`) y el handoff de la ronda 3 (H0 `68ad1bb2`).
+
+## Checklist C3 — Arquitectura (ronda 3)
+- [x] No aplica cambio: la producción es la misma que aprobó C3 en la ronda 1, porque el diff de producción es 0.
+
+## Checklist C4 — TDD (ronda 3)
+- [x] Los dos `it` nuevos viven en `describe` que nombran su R-id (`#117 R7` y `#117 R6`). Los puntos P1-P13 entran en `it` existentes de `#117 R4`, `#117 R5`, `#117 R6` y `#117 R7`.
+- [x] Ronda solo de tests sobre código verde: no hay historial rojo→verde que exigir. El rojo lo sustituyen las sondas de `tasks.md` §Enmienda E2, replantadas por mí (tabla abajo). Un commit por tarea (T19, T20, T21), con la etiqueta `E2`.
+
+## Checklist C5 — Trazabilidad (ronda 3)
+- [x] `traceability.md` no tiene filas "pendiente" (`grep -c pendiente` = 0).
+- [x] Las filas R3-R7 tienen sus entradas `E2:` con `c783b41e` (T19) y `a7d0fcae` (T20). Los dos pasan `git merge-base --is-ancestor <h> HEAD` = 0.
+- [x] E2.7a figura en la fila R7 y E2.7b en la fila R6.
+- [x] Las 5 líneas retiradas son las filas R3-R7 de las rondas 1 y 2, que vuelven con sus celdas intactas más la entrada E2. Se añade la sección `## Enmienda E2 — ronda 3`.
+- [x] Los 25 hashes distintos que cita `traceability.md` dan `git cat-file -t` = `commit` y son ancestros de HEAD.
+- [x] Formato de los commits: `test(mobile): <desc> (#117 Rn…, E2)` y `docs(mobile): …`.
+
+## Checklist C6 — Spec aprobada (ronda 3)
+- [x] `requirements.md` está en `status: approved`.
+- [x] La casilla de §Enmienda E2 está marcada. Commit de firma `ca95f2f0`, aprobación vía Notion, ancestro de HEAD.
+
+## Checklist C7 — Sin código huérfano (ronda 3)
+- [x] N/A en esta ronda. No reemplaza nada, y la retirada del stub de la ronda 1 sigue intacta.
+
+## Checklist C8 — UI móvil (ronda 3)
+- [x] Sin cambio de UI.
+- [x] Hay 0 `-[` en las líneas añadidas bajo `mobile-pet-tracker/`, y `git diff --check 68ad1bb2 c9d67ddd` sale vacío (exit 0).
+- [x] Antes del typecheck, `test ! -e mobile-pet-tracker/.expo/types/router.d.ts` = 0. No lo borré.
+- [x] `bun run typecheck` (`tsc --noEmit`): exit 0. `bun run lint` (`expo lint`): exit 0.
+- [ ] Smoke S1-S9 en dev build de Android: sigue pendiente del humano. Este veredicto ni lo marca ni lo bloquea.
+
+### Corridas independientes (todas desde `mobile-pet-tracker/`, sin pipe, árbol sin mutar)
+- Suite de forgot, base antes de las sondas: exit 0, 1 suite, 31 / 31.
+- Las 8 suites del handoff (comando literal de §Ronda 3): exit 0, 8 suites, 287 / 287.
+- Global, la última, tras `pgrep -f '[i]nit.sh'` = exit 1 (nadie corría init.sh) y con `git diff --quiet -- src` = 0: `bunx jest --maxWorkers=2`, exit 0, `Test Suites: 93 passed, 93 total`, `Tests: 2051 passed, 2051 total` (15:49:45Z a 15:50:47Z).
+- Ninguna corrida sobre el árbol sin mutar salió roja, así que no hizo falta repetir ninguna.
+
+### Sondas de mutación de E2 (replantadas por mí)
+Una cada vez sobre `src/screens/forgot/index.tsx`, con la suite de forgot como dice el handoff. Tras cada una: `git checkout HEAD -- mobile-pet-tracker/src/screens/forgot/index.tsx`, y luego `git diff --quiet -- <ruta>` = 0 y `git diff --cached --quiet` = 0. Las 27 dieron exit 1 y revert 0/0. Cada sonda repetida en T19 y T20 se corrió una vez y se comparó con la suma de las dos filas. Las líneas son de `index.test.tsx` en `c9d67ddd`.
+
+| Sonda | Mutación (`tasks.md` §Enmienda E2) | Cae | Línea | Modo | Debe seguir verde |
+|---|---|---|---|---|---|
+| X-a | `sent \|\| submitting` en `forgot-title` | R5 `it` 1 (P2), E1.3 `it` 1 (P6): 2 | `:222`, `:327` | aserción | — |
+| X-b | `sent \|\| submitting` en `forgot-body` | P2, P6: 2 | `:222`, `:327` | aserción | — |
+| X-c | `error ?? instrucciones` en `forgot-body` | R7 ×5 (P4), E2.7a, P5: 7 | `:279`, `:296`, `:321` | aserción | — |
+| X-d | `link-login` en `{!submitting && …}` | P2, P6, P12, P8: 4 | `:222`, `:327`, `:350`, `:374` | consulta | los dos `it` de R3: verdes |
+| X-e | `link-login` en `{!error && …}` | R7 ×5, E2.7a, P5, R6 429 (P10), R6 ×4 (P11), E2.7b: 13 | `:279`, `:296`, `:321`, `:392`, `:411`, `:429` | consulta | los dos `it` de R3: verdes |
+| X-f | `Label` en `{!error && …}` | R7 ×5, E2.7a, P5: 7 | `:279`, `:296`, `:321` | consulta | R4 `it` 1: verde |
+| M3-f | `if (!submitting) router.push` | P2, P6, P8, P12: 4 | `:180` | aserción | R3: verdes |
+| M3-g | texto de `link-login` según `submitting` | P2, P6, P8, P12: 4 | helper | aserción | R3: verdes |
+| M3-h | `if (error) void send(…)` antes del `push` | R7 ×5, E2.7a, P5, R6 429, R6 ×4, E2.7b: 13 | `:182` (en R6 429 y ×4, además `TypeError` por el mock agotado) | aserción | R3: verdes |
+| M4-f | `{sent \|\| submitting ? (` en `forgot-resend` | P2, E1.3 `it` 1: 2 | `:222`, `:326` | aserción | — |
+| M4-g | `setEmail(target)` antes de `forgot.invalidEmail` | solo la fila `validation` de R7 ×5: 1 | `:276` | aserción | las otras 4 filas: verdes |
+| M4-h | `setEmail(target)` tras `setError(null)` | P2, R7 ×5, P5: 7 | `:222`, `:276`, `:321` | aserción | E2.7a: verde |
+| M4-i | `(email.trim() === '' && !error) \|\| submitting` | R7 ×5 (P4b): 5 | `:281` | aserción | R4 `it` 2: verde |
+| M5-h | tile en `{!submitting && …}` | P2, P6, P12, P8: 4 | helper | aserción | `el tile Lock sigue en pie…`: verde |
+| M7-k | `{error \|\| submitting ? (` en `forgot-error` | R5 `it` 1, E1.3 `it` 1, E1.3 `it` 2, R6 `it` 1: 4 | `:325`, `:349` | aserción | E2.7a: verde |
+| M7-l | `if (!error \|\| sent) setSubmitting(false)` | E2.7a, E1.3 `it` 1 (P7a): 2 | `:295`, `:331` | aserción | — |
+| M7-m | `if (!error)` ante `forgot.tooManyAttempts` | E2.7a: 1 | `:294` | consulta | fila `rate-limited`: verde |
+| M7-n | `if (!error)` ante `forgot.invalidEmail` | E2.7a: 1 | `:298` | consulta | fila `validation`: verde |
+| X-g | `sent && !error` en `forgot-body` | R6 429, R6 ×4, E2.7b: 6 | `:392`, `:411`, `:429` | aserción | — |
+| X-h | `{!sent \|\| error ? (` en `forgot-submit` | R6 429, R6 ×4, E2.7b: 6 | `:392`, `:411`, `:429` | aserción | — |
+| X-i | `sent && !submitting` en `forgot-title` | P12, P8: 2 | `:350`, `:374` | aserción | — |
+| M5-i | `TextField` siempre en pie y `Input` sin `testID` en enviado | P3, P7, P8, P10, P11 ×4, P12, E2.7b: 10 | `:239`, `:332`, … | aserción | — |
+| M5-j | `TextField` en vuelo del reenvío y `Label` en `{!sent && …}` | P12, P8: 2 | `:350`, `:374` | aserción | — |
+| M7-j | `selectable={!sent}` en `forgot-error` | R6 429, R6 ×4, E2.7b: 6 | `:392`, `:411`, `:429` | aserción | — |
+| M6-j | `if (!error)` ante `common.somethingWentWrong` | E2.7b: 1 | `:427` | consulta | — |
+| M6-k | `if (!error)` ante `common.cannotReachServer` | E2.7b: 1 | `:431` | consulta | — |
+| M7-o | `if (!error \|\| !sent) setSubmitting(false)` | E1.3 `it` 2, E2.7b: 2 | `:352`, `:428` | aserción | — |
+
+Resultado: 27 / 27 coinciden con su fila de `tasks.md` (o con la suma T19 + T20) y con el reporte de Codex. Ninguna divergencia.
+
+### Barrido de cierre (R3-R7, E1 y E2)
+Matriz de E2: cada elemento del render de R4 (título, instrucciones, `Label`, `forgot-email`, `forgot-submit`, `link-login`, tile) y de R5/R6 (cabecera, cuerpo con el correo, `forgot-resend`, `link-login`, tile, ausencia de `forgot-email` y `forgot-submit`) en cada flujo A1-A4 y B1-B5. Además de las 27 sondas de la tabla, planté 11 sondas propias en las celdas que la tabla no ataca de forma directa. Todas cayeron, todas con revert 0/0:
+
+| Sonda | Mutación | Celda | Cae | Modo |
+|---|---|---|---|---|
+| Y1 | `sent \|\| error` en `forgot-title` | A3 título | R7 ×5, E2.7a, P5: 7 | aserción |
+| Y2 | `Label` en `{!submitting && …}` | A2/A4 `Label` | P2, P6: 2 | consulta |
+| Y3 | texto de `link-login` según `error` | A3/B3 `link-login` | R7 ×5, E2.7a, P5, R6 429, R6 ×4, E2.7b: 13 | aserción |
+| Y4 | tile en `{!error && …}` | A3/B3 tile | los mismos 13 | aserción |
+| Y5 | `sent && !submitting` en `forgot-body` | B2/B4 cuerpo | P12, P8: 2 | aserción |
+| Y6 | `{!sent \|\| submitting ? (` en `forgot-submit` | B2/B4 `forgot-submit` | P12, P8: 2 | aserción |
+| Y7 | `push` solo si `!error \|\| sent` | A3 navegación | R7 ×5, E2.7a, P5: 7 | aserción |
+| Y8 | `push` solo si `!error \|\| !sent` | B3 navegación | R6 429, R6 ×4, E2.7b: 6 | aserción |
+| Y9 | `if (sent) setError(…)` en `case 'ok'` | B5 error tras reenvío ok | P9 (`:378`), E1.3 `it` 2 (`:353`): 2 | aserción |
+| Y10 | `setSubmittedEmail(sent ? target.toUpperCase() : target)` | B5 cuerpo | P9 (`:378`), P13 (`:355`): 2 | aserción |
+| Y11 | `setSubmitting(sent)` en el `finally` | B2-B5 `forgot-resend` | P12, P8, R6 429, R6 ×4, E2.7b: 8 | aserción |
+
+Cláusulas estáticas sin cambio de producción en esta ronda:
+- R3 `grep -c "Platform" src/screens/forgot/index.tsx` = 0: sigue en 0.
+- R5 «ningún temporizador ni TTL»: 0 `setTimeout` en producción.
+
+Conclusión: ninguna cláusula de un R-id aprobado, de E1 ni de E2 queda sin candado medido.
+
+## Observaciones (ronda 3)
+
+### Defectos
+Ninguno.
+
+### Informativas (no bloquean)
+1. La guarda cruzada con `sent` y las props de estilo por flujo siguen fuera de la letra, porque E2.6 las excluye de forma expresa. Las mutaciones que solo tienen sentido con una rama que la producción no tiene (por ejemplo, una cuenta de reenvíos para separar B5 de B1) no tienen candado propio. Hoy B5 y B1 comparten estado en producción, y Y9/Y10 muestran que P9 y P13 cazan cualquier diferencia de render que se pueda plantar sin estado nuevo.
+2. M3-h en R6 429 y R6 ×4 cae por dos vías: la aserción del recuento en `:182` y un `TypeError` por el mock agotado (`reading 'kind'`). Está documentado en el reporte de Codex. El modo esperado (aserción en el recuento) se cumple.
+3. El reporte de Codex de la ronda 3 suma 6940 líneas, casi todo registros por sonda. No es un defecto, pero sí un coste de lectura que conviene tener en cuenta en futuras rondas.
+
+### Sobre el trabajo de Codex en esta ronda
+Sin divergencias («Divergencias: Ninguna» en el reporte, y lo confirmo). Las cifras de su reporte (forgot 31, 8 suites 287, global 93 / 2051, typecheck y lint en 0) coinciden con las mías.
+
+### Estado del árbol al terminar
+- Todas las sondas están revertidas. `git diff --quiet -- mobile-pet-tracker/src/screens/forgot/index.tsx` = 0 y `git diff --cached --quiet` = 0.
+- Antes del commit, el único cambio es este fichero de review.
+
+## Output de ./init.sh (ronda 3)
+No lo ejecuté: el clasificador lo deniega a subagentes y la otra sesión comparte LocalStack/Postgres. Lo corrió el leader sobre `c9d67ddd`. Leí la evidencia en el scratchpad:
+- `init-r3.start`: `2026-10-05T15:31:31Z`, HEAD `c9d67ddd`.
+- `init-r3.exit`: `exit=0`, fin `2026-10-05T15:38:21Z`, HEAD `c9d67ddd`. HEAD sigue en `c9d67ddd` al cerrar esta revisión.
+- `init-r3.log`:
+```
+backend:  Test Suites: 176 passed   Tests: 1348 passed
+infra:    Test Suites: 2 passed     Tests: 14 passed
+mobile:   Test Suites: 93 passed, 93 total
+          Tests:       2051 passed, 2051 total
+e2e:      Test Suites: 3 skipped, 29 passed, 29 of 32 total
+          Tests:       8 skipped, 438 passed, 446 total
+✅ Lint sin errores
+✅ Typecheck sin errores
+✅ Todo verde. Listo para trabajar.
+```
