@@ -919,3 +919,184 @@ typecheck, lint, cada uno con exit); `git diff --name-only <H0> HEAD`
 (3 ficheros), el diff vacio de produccion y el numstat; y cualquier
 decision que la spec no cerrara literalmente.
 ```
+
+## Ronda 4 — Integración de origin/main (#118)
+
+> Pegar en Codex CLI el bloque de abajo, no el de las rondas anteriores. La
+> ronda 3 terminó en `c9d67ddd` y el `reviewer` la aprobó en `715495f4`.
+> #118 entró en `main` con la PR #193 (`8b7caf25`). Orden pactado con la
+> sesión Frontend: #118 primero, #117 segundo; integra quien mergea segundo,
+> con un commit de merge y sin rebase, porque la trazabilidad cita hashes
+> de las rondas 1-3. El leader midió la integración entera en un worktree
+> desechable (los dos conflictos, la resolución de abajo, 8 suites 290,
+> global 94 / 2083, typecheck y lint con exit 0). No hay código nuevo ni
+> spec nueva: los deltas de #117 sobre los candados compartidos se aplican
+> como diferencia sobre la expresión de `main`, como pide
+> `requirements.md` §Coordinación con #118 («todo delta de esta spec es una
+> diferencia sobre lo que haya en `origin/main`, nunca un absoluto»). Esa
+> sección dice «rebasea»; se integra con merge porque un rebase reescribe
+> los hashes que cita `traceability.md`.
+
+```
+Worktree: /home/claude/sites/Pet-Tracker-wt-backend   <- PRIMERA LINEA. Trabaja AQUI y en ningun otro sitio
+RONDA 4 de #117: integrar origin/main (#118) con un commit de merge.
+Antes de tocar nada, ejecuta `pwd`, `git branch --show-current` y
+`git rev-parse --short HEAD` y pega las tres salidas al FINAL de
+progress/impl_mobile-forgot-password.md, bajo un encabezado nuevo
+`## Ronda 4` (no borres nada de las rondas 1-3). El hash es H0 de la
+ronda 4 (el commit del leader que anade esta seccion al handoff). Para si
+la branch no es feature/117-mobile-forgot-password.
+No toques /home/claude/sites/Pet-Tracker (#116), Pet-Tracker-wt-118 ni
+ningun otro worktree, ni cambies de branch en ninguno.
+node_modules ya esta instalado en mobile-pet-tracker/.
+
+Feature: mobile-forgot-password (#117), ronda 4
+Branch: feature/117-mobile-forgot-password
+Commit a integrar: 8b7caf25 (origin/main, PR #193 de #118). Ya esta en
+tu repo local: NO hagas `git fetch` ni `git pull`.
+
+== QUE HACES ==
+
+Un merge de 8b7caf25 en la branch, sin rebase, con dos conflictos de una
+linea cada uno en tests de candado. Nada de produccion, ningun test nuevo,
+ninguna asercion nueva. En este orden:
+
+  1. Anclas PRE (abajo). Si alguna da otra cosa, PARA.
+  2. git merge --no-ff 8b7caf25
+     Esperado: exit 1 con CONFLICT (content) en exactamente estos dos
+     ficheros, y Auto-merging limpio en el resto:
+       mobile-pet-tracker/src/__tests__/ui-language.test.ts
+       mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx
+     Si hay un tercer conflicto, o ninguno, PARA: `git merge --abort` y
+     anotalo.
+  3. Resuelve cada conflicto sustituyendo el bloque ENTERO, desde la linea
+     `<<<<<<<` hasta la linea `>>>>>>>` incluidas, por las lineas
+     LITERALES de abajo (sangria con espacios, tal cual). La regla: el
+     lado de main se queda entero y se le inserta, tras su primera linea
+     de suma, la linea con el delta de #117. Ningun numero se recalcula.
+
+     ui-language.test.ts, dentro de
+     it('no deja ningún valor fijo del catálogo como literal entero en las pantallas':
+    expect(SCREEN_FILES).toHaveLength(
+      19 + 2 + 1 + 1 + 1 + 1 + 1 + 1 + 1 // #100 R10, #41 R10, #146 R10, #105 R5
+        + 1 - 1 // #117 R10: sale app/(auth)/forgot.tsx, entra screens/forgot/index.tsx
+        + 1, // #118 R1
+    );
+
+     language-provider.test.tsx, dentro de `expect(englishKeys).toHaveLength(`
+     (la linea `expect(englishKeys).toHaveLength(` y el `);` que la
+     cierra quedan FUERA del bloque de conflicto y no se tocan):
+      260 + 16 + 1 + 4 + 7 + 14 + 2 + 1 + 4 - 6 + 1 + 2 + 3 + 11 + 12 + 2 + 9 + 9 // #105 R5
+        + 6 - 1 // #117 R1
+        + 8, // #118 R1
+
+  4. git add de esos dos ficheros, y nada mas. Comprueba
+     `git diff --name-only --diff-filter=U | wc -l` -> 0.
+  5. Commit del merge con este mensaje LITERAL:
+       git commit -m "Merge origin/main into feature/117-mobile-forgot-password (integrates #118, PR #193)"
+  6. Anclas POST (abajo), sobre ese commit. Si alguna da otra cosa, PARA:
+     no corrijas nada, no hagas reset, anotalo.
+  7. Mediciones (abajo). Si algo sale rojo, PARA y anota Expected y
+     Received: no ajustes ninguna asercion ni ningun numero.
+  8. Segundo y ultimo commit, SOLO progress/impl_mobile-forgot-password.md,
+     con este mensaje LITERAL:
+       docs(mobile): record #117 integration of origin/main (#118)
+
+== ANCLAS ==
+
+Son COMANDOS: ejecutalos tal cual desde la raiz del worktree, uno a uno, y
+copia cada salida al impl. El valor tras `#` es la salida esperada; el
+leader los ejecuto todos (PRE sobre H0, POST sobre el merge de su worktree
+desechable) y dieron exactamente eso. Ninguna otra cita de este handoff es
+ancla.
+
+PRE (antes del paso 2):
+M=mobile-pet-tracker/src
+git status --porcelain | wc -l   # 0
+git diff --quiet c9d67ddd HEAD -- mobile-pet-tracker; echo "exit=$?"   # exit=0
+test ! -e mobile-pet-tracker/.expo/types/router.d.ts; echo "exit=$?"   # exit=0
+git rev-parse --short '8b7caf25^{commit}'   # 8b7caf25
+git merge-base HEAD 8b7caf25 | cut -c1-8   # b2a9c2aa
+git merge-base --is-ancestor 8b7caf25 HEAD; echo "exit=$?"   # exit=1
+git merge-tree --write-tree --name-only --no-messages HEAD 8b7caf25 | tail -n +2 | tr '\n' ' '   # mobile-pet-tracker/src/__tests__/ui-language.test.ts mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx
+grep -cF "    expect(SCREEN_FILES).toHaveLength(19 + 2 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 - 1); // #100 R10, #41 R10, #146 R10, #105 R5; #117 R10: sale app/(auth)/forgot.tsx, entra screens/forgot/index.tsx" $M/__tests__/ui-language.test.ts   # 1
+grep -cF "      260 + 16 + 1 + 4 + 7 + 14 + 2 + 1 + 4 - 6 + 1 + 2 + 3 + 11 + 12 + 2 + 9 + 9 + 6 - 1, // #105 R5; #117 R1" $M/providers/__tests__/language-provider.test.tsx   # 1
+git show 8b7caf25:$M/__tests__/ui-language.test.ts | grep -cF "        + 1, // #118 R1"   # 1
+git show 8b7caf25:$M/providers/__tests__/language-provider.test.tsx | grep -cF "        + 8, // #118 R1"   # 1
+
+POST (tras el paso 5; HEAD es el commit de merge):
+M=mobile-pet-tracker/src
+git rev-parse --short HEAD^2   # 8b7caf25
+git show --remerge-diff --format= --name-only HEAD | tr '\n' ' '   # mobile-pet-tracker/src/__tests__/ui-language.test.ts mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx
+git show --remerge-diff --format= HEAD | grep -c '^+[^+]'   # 2
+git show --remerge-diff --format= HEAD | grep -c '^-[^-]'   # 8
+git grep -lE '^(<<<<<<<|>>>>>>>)( |$)' HEAD -- . | wc -l   # 0
+grep -cF "        + 1 - 1 // #117 R10: sale app/(auth)/forgot.tsx, entra screens/forgot/index.tsx" $M/__tests__/ui-language.test.ts   # 1
+grep -cF "        + 6 - 1 // #117 R1" $M/providers/__tests__/language-provider.test.tsx   # 1
+grep -cF "+ 1 + 1 - 1); // #100 R10" $M/__tests__/ui-language.test.ts   # 0
+grep -cF "+ 9 + 9 + 6 - 1, // #105 R5; #117 R1" $M/providers/__tests__/language-provider.test.tsx   # 0
+diff <(git diff --name-only b2a9c2aa c9d67ddd -- mobile-pet-tracker) <(git diff --name-only 8b7caf25 HEAD -- mobile-pet-tracker); echo "exit=$?"   # exit=0
+bun -e "JSON.parse(require('fs').readFileSync('feature_list.json', 'utf8'))"; echo "exit=$?"   # exit=0
+
+Notas: la remerge-diff compara el merge grabado con el que git habria
+hecho solo; +2 son las dos lineas de #117 insertadas y -8 son los 6
+marcadores de conflicto mas las 2 lineas viejas de HEAD. Si sale otro
+fichero u otra cuenta, tocaste algo fuera de la resolucion. El `diff` de
+listas prueba que, tras el merge, la branch cambia respecto de main los
+mismos ficheros moviles que cambiaba respecto de su base.
+
+== MEDICIONES ==
+
+Desde mobile-pet-tracker/, sin pipe. Antes de las 8 suites y de la
+global, `pgrep -f '[i]nit.sh'; echo "exit=$?"`: si exit=0 (otra sesion
+corre init.sh con LocalStack y Postgres compartidos), espera a que
+termine y vuelve a mirar; si sigue tras 30 minutos, PARA y anotalo. Si el
+sandbox deniega pgrep, anotalo y sigue.
+  bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx > /tmp/117-r4-forgot.log 2>&1; echo "exit=$?"
+    -> 1 suite / 31 tests, exit=0
+  bunx jest --runTestsByPath --maxWorkers=2 src/api/__tests__/auth.test.ts src/providers/__tests__/language-provider.test.tsx src/__tests__/ui-language.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/legibility-classnames.test.ts src/__tests__/design-drift.test.ts src/screens/reset-password/index.test.tsx src/screens/forgot/index.test.tsx > /tmp/117-r4-ocho.log 2>&1; echo "exit=$?"
+    -> 8 suites / 290 tests, exit=0 (ronda 3: 287; #118 suma 3 en estas
+       suites). auth.test.ts sigue en 44.
+  bunx jest --maxWorkers=2 > /tmp/117-r4-global.log 2>&1; echo "exit=$?"
+    -> 94 suites / 2083 tests, exit=0 (ronda 3: 93 / 2051; #118 suma su
+       suite de welcome y sus tests)
+  test ! -e .expo/types/router.d.ts; echo "exit=$?"   -> exit=0, y despues:
+  bun run typecheck > /tmp/117-r4-tsc.log 2>&1; echo "exit=$?"   -> exit=0
+  bun run lint > /tmp/117-r4-lint.log 2>&1; echo "exit=$?"   -> exit=0
+Copia al impl las lineas Test Suites / Tests y el exit de cada una.
+Comprueba que jest imprime tantas suites como ficheros pediste.
+
+== REGLAS CRITICAS ==
+
+- NUNCA `git rebase`, `git reset`, `git pull`, `git fetch`, `git push` ni
+  `gh pr create`. Un solo merge, el de 8b7caf25.
+- Fuera de los dos bloques de conflicto no editas ningun fichero de
+  mobile-pet-tracker/, ni de specs/, ni feature_list.json, ni docs/: lo
+  que git auto-mergeo se queda como git lo dejo. Si un auto-merge te
+  parece mal, anotalo y sigue; no lo corrijas.
+- traceability.md no cambia en esta ronda: el merge no cambia ningun
+  test de R-id.
+- Si router.d.ts existe, PARA y pide al humano que lo borre. Nunca
+  `rm -f` (tu sandbox lo deniega).
+- Todo con bun/bunx; nunca npm/npx/yarn. Ni `bun add` ni `bun install`.
+- NO lances ./init.sh ni toques Postgres ni LocalStack. `graphify update .`
+  lo corre el leader.
+- Skills: ninguna; no hay UI ni produccion que escribir.
+- NO son tuyos, no los toques: progress/history.md, progress/current.md,
+  progress/review_mobile-forgot-password.md, progress/handoff_*.md,
+  STATUS.md, requirements.md, tasks.md, design.md y las casillas de
+  §Prueba de humo y §Aprobacion.
+- Si el sandbox te deniega un comando, PARA y reportalo. No lo sustituyas
+  por otro que haga lo mismo con otra herramienta.
+
+Ficheros: el commit de merge trae los de #118 (eso es esperado). Lo que
+TU escribes a mano son los dos bloques de conflicto y el impl. Al cierre,
+copia al impl:
+  git log --oneline -3
+  git diff --name-only HEAD^ HEAD   -> solo progress/impl_mobile-forgot-password.md
+
+Al terminar, el impl §Ronda 4 lleva: pwd, branch y H0; la salida de cada
+ancla PRE y POST; la salida del `git merge` (lineas CONFLICT y
+Auto-merging); el hash del commit de merge; cada medicion con su comando,
+cuenta y exit; el `git log --oneline -3`; y cualquier cosa que no cuadre.
+```

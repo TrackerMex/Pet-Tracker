@@ -151,3 +151,32 @@
   tablas de sondas de tasks.md (M7-n, M6-k, M7-o) recuperan su sangría (solo
   espacios). Mientras Codex trabaja, esta sesión no toca el working tree; al
   terminar: `./init.sh` (avisando a Frontend) y `reviewer` ronda 3.
+- Ronda 3 de Codex terminada (relatado por el humano el 2026-10-05): HEAD
+  `c9d67ddd`. `./init.sh` corrido por el leader sobre `c9d67ddd` (avisando
+  antes a Frontend): exit 0.
+- `reviewer` ronda 3: **aprobado** (`715495f4`,
+  `progress/review_mobile-forgot-password.md` §Ronda 3). Sin defectos; tres
+  observaciones informativas (exclusiones de E2.6, doble modo de caída de
+  M3-h, longitud del impl).
+- #118 mergeado a `main` (PR #193, `8b7caf25`). Orden pactado con Frontend:
+  #118 primero, #117 segundo, así que #117 integra `origin/main` con un
+  commit de merge (sin rebase: la trazabilidad cita hashes). Medido por el
+  leader en un worktree desechable: dos conflictos de una línea
+  (`ui-language.test.ts` `SCREEN_FILES` y `language-provider.test.tsx`
+  longitud del catálogo), resueltos dejando el lado de `main` e insertando
+  el delta de #117 como diferencia; 8 suites 290, global 94 / 2083,
+  typecheck y lint exit 0.
+- Handoff de la ronda 4: `progress/handoff_mobile-forgot-password.md`
+  §Ronda 4 — Integración de origin/main (#118) (H0 = el commit que añade
+  esa sección). 11 anclas PRE y 11 POST ejecutadas por el leader (PRE sobre
+  el árbol, POST sobre el merge del worktree desechable). Al terminar:
+  `./init.sh` (avisando a Frontend), `reviewer` ronda 4 ligera sobre la
+  integración y prueba de humo humana sobre el árbol integrado (con #118 la
+  bienvenida va antes del login).
+- #116 (Frontend) cerrado con la PR #194 abierta (`fccdc33e`), que ya
+  integra #118. Si #194 mergea antes que #117, hará falta un segundo merge
+  de `main`: el leader lo midió sobre el merge de la ronda 4 (merge de
+  `fccdc33e` encima) y entra sin conflictos; global 94 / 2113, typecheck y
+  lint exit 0 (#116 suma 30 tests a los 2083). Frontend
+  avisa: el id #151 queda tomado por #151 `mobile-map-pill-name-locks`; el
+  siguiente libre es #152.
