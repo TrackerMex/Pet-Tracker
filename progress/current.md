@@ -194,3 +194,20 @@
   94 / 2113). El clasificador de permisos denegó al leader el `git merge`:
   decide el humano quién lo hace. `./init.sh`, `reviewer` y la prueba de
   humo esperan a ese merge.
+- Segundo merge de `main` hecho por el humano (2026-10-05): `588a777a`
+  (padres `97dba61c` y `8afae724`), sin conflictos. Verificado por el
+  leader: remerge-diff vacío y `mobile-pet-tracker` idéntico al merge
+  medido en el worktree desechable.
+- `./init.sh` ronda 4 sobre `588a777a`, exit 0 (16:58–17:04 UTC): backend
+  176 suites / 1348 tests, infra 2 / 14, mobile 94 / 2113, e2e 29 suites /
+  438 tests.
+- `reviewer` ronda 4: APROBADO (`5d3529b7`), sin defectos. Dos
+  observaciones informativas: (1) una línea de log `DrizzleQueryError` por
+  FK en la fase e2e, dentro de una suite verde y ajena a #117; (2) las
+  sumas absolutas de los candados (29 `SCREEN_FILES`, 365 claves) solo
+  valen en este HEAD: el próximo merge de `main` reabre los dos bloques y
+  se resuelven igual (lado de `main` más la línea del delta de #117).
+- Siguiente: prueba de humo humana en dev build de Android (S1–S9 de
+  `specs/mobile-forgot-password/requirements.md` §Prueba de humo), con el
+  resultado en `docs/verification.md` §#117 y la casilla firmada. Después,
+  cierre.
