@@ -955,4 +955,4 @@ cambia: los commits de E1 tocan `src/api/__tests__/auth.test.ts`,
 `src/screens/forgot/index.test.tsx`, `traceability.md` y
 `progress/impl_mobile-forgot-password.md`, que ya estaban en ella.
 
-- [ ] Enmienda E1 aprobada por humano (fecha: ____, commit de firma: el que marca esta casilla)
+- [x] Enmienda E1 aprobada por humano (fecha: 2026-10-04, commit de firma: el que marca esta casilla)
