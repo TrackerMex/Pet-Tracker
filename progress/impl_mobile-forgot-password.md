@@ -3137,3 +3137,1695 @@ specs/mobile-ui-language/design.md
 | `specs/mobile-ui-language/design.md` | 17 | 9 |
 
 El impl es nuevo respecto a H0; su recuento incluye este bloque. La suite nueva tiene 20 it/casos normativos, y las sumas de tests y métricas están arriba. `git diff --check`: exit=0. Ningún TODO sin contexto ni log de debug añadido.
+
+## Ronda 2
+
+Arranque de la ronda 2 (2026-10-05). H0 de esta ronda: `453d0cd8`.
+
+```text
+$ pwd
+/home/claude/sites/Pet-Tracker-wt-backend
+$ git branch --show-current
+feature/117-mobile-forgot-password
+$ git rev-parse --short HEAD
+453d0cd8
+```
+
+Sin skills adicionales: esta ronda cambia solo tests; las decisiones de UI y producción permanecen cerradas.
+
+### Anclas de arranque
+
+```text
+$ M=mobile-pet-tracker/src
+$ git diff --quiet d39a9ea5 HEAD -- mobile-pet-tracker; echo "exit=$?"
+exit=0
+$ test ! -e mobile-pet-tracker/.expo/types/router.d.ts; echo "exit=$?"
+exit=0
+$ grep -cF "describe('#117 R2: forgotPassword mapea la respuesta por kind'" $M/api/__tests__/auth.test.ts
+1
+$ grep -cF "it('mapea 500 a error'" $M/api/__tests__/auth.test.ts
+1
+$ grep -cF 'function response(status: number, body: unknown): Response {' $M/api/__tests__/auth.test.ts
+1
+$ grep -cF '.mockResolvedValueOnce(invalidJsonResponse(400))' $M/api/__tests__/auth.test.ts
+1
+$ grep -cF 'mapea %i a error' $M/api/__tests__/auth.test.ts
+0
+$ grep -cF 'export async function forgotPassword(' $M/api/auth.ts
+1
+$ grep -cF 'switch (result.response.status) {' $M/api/auth.ts
+1
+$ grep -cF "describe('#117 R3: la ruta forgot delega en ForgotScreen'" $M/screens/forgot/index.test.tsx
+1
+$ grep -cF "it('link-login navega a /login sin petición de red'" $M/screens/forgot/index.test.tsx
+1
+$ grep -cF "describe('#117 R5: enviar pasa la pantalla a «Revisa tu correo»'" $M/screens/forgot/index.test.tsx
+1
+$ grep -cF "describe('#117 R6: reenviar repite la misma petición'" $M/screens/forgot/index.test.tsx
+1
+$ grep -cF "it('un 429 al reenviar pinta forgot-error sin salir de «Revisa tu correo»'" $M/screens/forgot/index.test.tsx
+1
+$ grep -cF "describe('#117 R7: cada kind distinto de ok pinta su copy en forgot-error'" $M/screens/forgot/index.test.tsx
+1
+$ grep -cF "it('un envío posterior que resuelve ok limpia forgot-error y pasa a «Revisa tu correo»'" $M/screens/forgot/index.test.tsx
+1
+$ grep -cF "describe('#117 R9: las métricas del stub sobreviven al cambio de estado'" $M/screens/forgot/index.test.tsx
+1
+$ grep -cF 'let resolveRequest!: (state: ForgotPasswordState) => void;' $M/screens/forgot/index.test.tsx
+2
+$ grep -cF 'const pending = new Promise<ForgotPasswordState>((resolve) => { resolveRequest = resolve; });' $M/screens/forgot/index.test.tsx
+1
+$ grep -cF 'const mockRouter = jest.mocked(router);' $M/screens/forgot/index.test.tsx
+1
+$ grep -cF "async function submitForgot(email = 'ana@example.com') {" $M/screens/forgot/index.test.tsx
+1
+$ grep -cF 'al reenviar pinta «%s» en forgot-error' $M/screens/forgot/index.test.tsx
+0
+$ grep -cF 'retira forgot-error en cuanto arranca' $M/screens/forgot/index.test.tsx
+0
+$ grep -cF 'de la spec en los dos estados' $M/screens/forgot/index.test.tsx
+0
+$ grep -cF 'también desde «Revisa tu correo»' $M/screens/forgot/index.test.tsx
+0
+$ grep -cF 'el tile Lock sigue en pie' $M/screens/forgot/index.test.tsx
+0
+$ grep -cF 'setError(null);' $M/screens/forgot/index.tsx
+1
+$ grep -cF "setError(t('forgot.invalidEmail'));" $M/screens/forgot/index.tsx
+1
+$ grep -cF "setError(t('common.cannotReachServer'));" $M/screens/forgot/index.tsx
+1
+$ grep -cF "setError(t('common.somethingWentWrong'));" $M/screens/forgot/index.tsx
+1
+$ grep -cF "case 'ok':" $M/screens/forgot/index.tsx
+1
+$ grep -cF 'setSubmittedEmail(target);' $M/screens/forgot/index.tsx
+1
+$ grep -cF 'setSent(false);' $M/screens/forgot/index.tsx
+0
+$ grep -cF '{sent ? (' $M/screens/forgot/index.tsx
+1
+$ grep -cF 'onPress={() => void send(submittedEmail)}' $M/screens/forgot/index.tsx
+1
+$ grep -cF 'className="flex-1 bg-background"' $M/screens/forgot/index.tsx
+1
+$ grep -cF 'contentInsetAdjustmentBehavior="automatic"' $M/screens/forgot/index.tsx
+1
+$ grep -cF "onPress={() => router.push('/login')}" $M/screens/forgot/index.tsx
+1
+$ grep -cF 'className="size-16 items-center justify-center rounded-xl bg-accent-soft"' $M/screens/forgot/index.tsx
+1
+$ grep -cF "'common.somethingWentWrong': 'Algo salió mal'," $M/i18n/catalog.ts
+1
+$ grep -cF "'common.cannotReachServer': 'No se pudo conectar con el servidor'," $M/i18n/catalog.ts
+1
+$ grep -cF 'Ingresa un correo electrónico válido' $M/i18n/catalog.ts
+1
+$ grep -cF 'Demasiados intentos. Inténtalo más tarde.' $M/i18n/catalog.ts
+1
+$ grep -cF 'Si existe una cuenta para {{email}}, te enviamos un enlace para restablecer tu contraseña. Revisa tu bandeja de entrada y la carpeta de spam.' $M/i18n/catalog.ts
+1
+$ grep -cF '.parent' $M/screens/docs/index.test.tsx
+2
+```
+
+45 anclas verificadas; todas coinciden.
+
+### Base medida
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/api/__tests__/auth.test.ts src/screens/forgot/index.test.tsx > /tmp/117-r2-base.log 2>&1; echo "exit=$?"
+Test Suites: 2 passed, 2 total
+Tests:       60 passed, 60 total
+Snapshots:   0 total
+Time:        6.015 s
+exit=0
+```
+
+Lecturas completas: requirements.md §Enmienda E1 (E1.1–E1.8), tasks.md §Enmienda E1 (T12–T18 y No hacer), review (veredicto y barrido), tests existentes, producción y convenciones de esperas/commits. Sin decisiones nuevas de comportamiento.
+
+#### T12-verde-inicial
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/api/__tests__/auth.test.ts --json --outputFile /tmp/117-r2-T12-verde-inicial.json > /tmp/117-r2-T12-verde-inicial.log 2>&1; echo "exit=$?"
+Test Suites: 1 passed, 1 total
+Tests:       44 passed, 44 total
+Snapshots:   0 total
+Time:        1.974 s, estimated 2 s
+exit=0
+```
+
+### Sonda M2-f
+
+Cambio temporal en `mobile-pet-tracker/src/api/auth.ts`; no se añade al índice.
+
+#### M2-f
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/api/__tests__/auth.test.ts --json --outputFile /tmp/117-r2-M2-f.json > /tmp/117-r2-M2-f.log 2>&1; echo "exit=$?"
+Test Suites: 1 failed, 1 total
+Tests:       3 failed, 41 passed, 44 total
+Snapshots:   0 total
+Time:        1.52 s, estimated 2 s
+exit=1
+```
+
+`#117 R2: forgotPassword mapea la respuesta por kind mapea 201 a error`
+
+```text
+Error: expect(received).resolves.toEqual(expected) // deep equality
+
+- Expected  - 1
++ Received  + 1
+
+  Object {
+-   "kind": "error",
++   "kind": "ok",
+  }
+    at Object.toEqual (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@jest/expect/node_modules/expect/build/index.js:174:22)
+    at toEqual (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/api/__tests__/auth.test.ts:326:67)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/api/__tests__/auth.test.ts:327:4)
+    at Object.<anonymous> (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-each/build/bind.js:81:13)
+    at Promise.then.completed (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (<anonymous>)
+    at callAsyncCircusFn (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-circus/build/run.js:316:40)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at _runTest (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-circus/build/run.js:121:9)
+    at run (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-runner/build/runTest.js:444:34)
+```
+
+`#117 R2: forgotPassword mapea la respuesta por kind mapea 302 a error`
+
+```text
+Error: expect(received).resolves.toEqual(expected) // deep equality
+
+- Expected  - 1
++ Received  + 1
+
+  Object {
+-   "kind": "error",
++   "kind": "ok",
+  }
+    at Object.toEqual (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@jest/expect/node_modules/expect/build/index.js:174:22)
+    at toEqual (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/api/__tests__/auth.test.ts:326:67)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/api/__tests__/auth.test.ts:327:4)
+    at Object.<anonymous> (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-each/build/bind.js:81:13)
+    at Promise.then.completed (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (<anonymous>)
+    at callAsyncCircusFn (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-circus/build/run.js:316:40)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at _runTest (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-circus/build/run.js:121:9)
+    at run (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-runner/build/runTest.js:444:34)
+```
+
+`#117 R2: forgotPassword mapea la respuesta por kind mapea 404 a error`
+
+```text
+Error: expect(received).resolves.toEqual(expected) // deep equality
+
+- Expected  - 1
++ Received  + 1
+
+  Object {
+-   "kind": "error",
++   "kind": "ok",
+  }
+    at Object.toEqual (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@jest/expect/node_modules/expect/build/index.js:174:22)
+    at toEqual (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/api/__tests__/auth.test.ts:326:67)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/api/__tests__/auth.test.ts:327:4)
+    at Object.<anonymous> (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-each/build/bind.js:81:13)
+    at Promise.then.completed (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (<anonymous>)
+    at callAsyncCircusFn (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-circus/build/run.js:316:40)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at _runTest (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-circus/build/run.js:121:9)
+    at run (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-runner/build/runTest.js:444:34)
+```
+
+| Sonda | it que cayó | Modo / matcher / Expected y Received | Debe seguir verde (medido) |
+|---|---|---|---|
+| M2-f | `mapea 201 a error`<br>`mapea 302 a error`<br>`mapea 404 a error` | aserción, `resolves.toEqual`. Expected kind: 'error'; Received kind: 'ok' | — (sin cláusula en la tabla) |
+
+```text
+$ git checkout HEAD -- mobile-pet-tracker/src/api/auth.ts
+exit=0
+$ git diff --quiet -- mobile-pet-tracker/src/api/auth.ts; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+```
+
+### Sonda M2-g
+
+Cambio temporal en `mobile-pet-tracker/src/api/auth.ts`; no se añade al índice.
+
+#### M2-g
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/api/__tests__/auth.test.ts --json --outputFile /tmp/117-r2-M2-g.json > /tmp/117-r2-M2-g.log 2>&1; echo "exit=$?"
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 43 passed, 44 total
+Snapshots:   0 total
+Time:        1.319 s, estimated 2 s
+exit=1
+```
+
+`#117 R2: forgotPassword mapea la respuesta por kind mapea 201 a error`
+
+```text
+Error: expect(received).resolves.toEqual(expected) // deep equality
+
+- Expected  - 1
++ Received  + 1
+
+  Object {
+-   "kind": "error",
++   "kind": "ok",
+  }
+    at Object.toEqual (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@jest/expect/node_modules/expect/build/index.js:174:22)
+    at toEqual (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/api/__tests__/auth.test.ts:326:67)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/api/__tests__/auth.test.ts:327:4)
+    at Object.<anonymous> (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-each/build/bind.js:81:13)
+    at Promise.then.completed (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (<anonymous>)
+    at callAsyncCircusFn (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-circus/build/run.js:316:40)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at _runTest (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-circus/build/run.js:121:9)
+    at run (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-runner/build/runTest.js:444:34)
+```
+
+| Sonda | it que cayó | Modo / matcher / Expected y Received | Debe seguir verde (medido) |
+|---|---|---|---|
+| M2-g | `mapea 201 a error` | aserción, `resolves.toEqual`. Expected kind: 'error'; Received kind: 'ok' | — (sin cláusula en la tabla) |
+
+```text
+$ git checkout HEAD -- mobile-pet-tracker/src/api/auth.ts
+exit=0
+$ git diff --quiet -- mobile-pet-tracker/src/api/auth.ts; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+```
+
+### Sonda M2-h
+
+Cambio temporal en `mobile-pet-tracker/src/api/auth.ts`; no se añade al índice.
+
+#### M2-h
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/api/__tests__/auth.test.ts --json --outputFile /tmp/117-r2-M2-h.json > /tmp/117-r2-M2-h.log 2>&1; echo "exit=$?"
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 43 passed, 44 total
+Snapshots:   0 total
+Time:        1.336 s, estimated 2 s
+exit=1
+```
+
+`#117 R2: forgotPassword mapea la respuesta por kind mapea 503 a error`
+
+```text
+Error: expect(received).resolves.toEqual(expected) // deep equality
+
+- Expected  - 1
++ Received  + 1
+
+  Object {
+-   "kind": "error",
++   "kind": "ok",
+  }
+    at Object.toEqual (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@jest/expect/node_modules/expect/build/index.js:174:22)
+    at toEqual (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/api/__tests__/auth.test.ts:326:67)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/api/__tests__/auth.test.ts:327:4)
+    at Object.<anonymous> (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-each/build/bind.js:81:13)
+    at Promise.then.completed (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (<anonymous>)
+    at callAsyncCircusFn (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-circus/build/run.js:316:40)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at _runTest (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-circus/build/run.js:121:9)
+    at run (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-runner/build/runTest.js:444:34)
+```
+
+| Sonda | it que cayó | Modo / matcher / Expected y Received | Debe seguir verde (medido) |
+|---|---|---|---|
+| M2-h | `mapea 503 a error` | aserción, `resolves.toEqual`. Expected kind: 'error'; Received kind: 'ok' | — (sin cláusula en la tabla) |
+
+```text
+$ git checkout HEAD -- mobile-pet-tracker/src/api/auth.ts
+exit=0
+$ git diff --quiet -- mobile-pet-tracker/src/api/auth.ts; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+```
+
+### Sonda M2-i
+
+Cambio temporal en `mobile-pet-tracker/src/api/auth.ts`; no se añade al índice.
+
+#### M2-i
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/api/__tests__/auth.test.ts --json --outputFile /tmp/117-r2-M2-i.json > /tmp/117-r2-M2-i.log 2>&1; echo "exit=$?"
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 43 passed, 44 total
+Snapshots:   0 total
+Time:        1.299 s, estimated 2 s
+exit=1
+```
+
+`#117 R2: forgotPassword mapea la respuesta por kind mapea 302 a error`
+
+```text
+Error: expect(received).resolves.toEqual(expected) // deep equality
+
+- Expected  - 1
++ Received  + 1
+
+  Object {
+-   "kind": "error",
++   "kind": "ok",
+  }
+    at Object.toEqual (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@jest/expect/node_modules/expect/build/index.js:174:22)
+    at toEqual (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/api/__tests__/auth.test.ts:326:67)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/api/__tests__/auth.test.ts:327:4)
+    at Object.<anonymous> (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-each/build/bind.js:81:13)
+    at Promise.then.completed (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (<anonymous>)
+    at callAsyncCircusFn (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-circus/build/run.js:316:40)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at _runTest (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-circus/build/run.js:121:9)
+    at run (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/jest-runner/build/runTest.js:444:34)
+```
+
+| Sonda | it que cayó | Modo / matcher / Expected y Received | Debe seguir verde (medido) |
+|---|---|---|---|
+| M2-i | `mapea 302 a error` | aserción, `resolves.toEqual`. Expected kind: 'error'; Received kind: 'ok' | — (sin cláusula en la tabla) |
+
+```text
+$ git checkout HEAD -- mobile-pet-tracker/src/api/auth.ts
+exit=0
+$ git diff --quiet -- mobile-pet-tracker/src/api/auth.ts; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+```
+
+#### T12-verde-final
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/api/__tests__/auth.test.ts --json --outputFile /tmp/117-r2-T12-verde-final.json > /tmp/117-r2-T12-verde-final.log 2>&1; echo "exit=$?"
+Test Suites: 1 passed, 1 total
+Tests:       44 passed, 44 total
+Snapshots:   0 total
+Time:        1.351 s, estimated 2 s
+exit=0
+```
+
+Commit T12: `a3426e90` test(mobile): lock every other status as error in the forgot client (#117 R2, E1). Solo `mobile-pet-tracker/src/api/__tests__/auth.test.ts`.
+
+#### T13-verde-inicial
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r2-T13-verde-inicial.json > /tmp/117-r2-T13-verde-inicial.log 2>&1; echo "exit=$?"
+Test Suites: 1 passed, 1 total
+Tests:       24 passed, 24 total
+Snapshots:   0 total
+Time:        6.439 s
+exit=0
+```
+
+### Sonda M6-e
+
+Cambio temporal en `mobile-pet-tracker/src/screens/forgot/index.tsx`; no se añade al índice.
+
+#### M6-e
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r2-M6-e.json > /tmp/117-r2-M6-e.log 2>&1; echo "exit=$?"
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 23 passed, 24 total
+Snapshots:   0 total
+Time:        6.646 s, estimated 7 s
+exit=1
+```
+
+`#117 R6: reenviar repite la misma petición un {"errors": [Array], "kind": "validation"} al reenviar pinta «Ingresa un correo electrónico válido» en forgot-error sin salir de «Revisa tu correo»`
+
+```text
+Error: Unable to find an element with text: Revisa tu correo
+
+<RNCSafeAreaProvider>
+  <View
+    testID="screen-forgot"
+  >
+    <RCTScrollView
+      testID="forgot-form"
+    >
+      <View>
+        <View>
+          <RNSVGSvgView>
+            <RNSVGGroup>
+              <RNSVGPath />
+            </RNSVGGroup>
+          </RNSVGSvgView>
+        </View>
+        <Text
+          testID="forgot-title"
+        >
+          Recuperar contraseña
+        </Text>
+        <Text
+          testID="forgot-body"
+        >
+          Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.
+        </Text>
+        <View>
+          <View
+            accessible={true}
+          >
+            <Text>
+              Correo electrónico
+            </Text>
+          </View>
+          <TextInput
+            editable={true}
+            testID="forgot-email"
+            value="ana@example.com"
+          />
+        </View>
+        <Text
+          testID="forgot-error"
+        >
+          Ingresa un correo electrónico válido
+        </Text>
+        <View
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "disabled": false,
+            }
+          }
+          accessible={true}
+          testID="forgot-submit"
+        >
+          <View
+            pointerEvents="none"
+            style={
+              {
+                "opacity": 0,
+              }
+            }
+          />
+          <Text>
+            Enviar enlace de recuperación
+          </Text>
+        </View>
+        <View
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "disabled": false,
+            }
+          }
+          accessible={true}
+          testID="link-login"
+        >
+          <Text>
+            Volver al inicio de sesión
+          </Text>
+        </View>
+      </View>
+    </RCTScrollView>
+  </View>
+</RNCSafeAreaProvider>
+    at getByText (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:253:19)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+| Sonda | it que cayó | Modo / matcher / Expected y Received | Debe seguir verde (medido) |
+|---|---|---|---|
+| M6-e | `un {"errors": [Array], "kind": "validation"} al reenviar pinta «Ingresa un correo electrónico válido» en forgot-error sin salir de «Revisa tu correo»` | consulta, `getByText`. Consulta getByText('Revisa tu correo'): Unable to find an element with text: Revisa tu correo | un 429 al reenviar pinta forgot-error sin salir de «Revisa tu correo»: passed |
+
+```text
+$ git checkout HEAD -- mobile-pet-tracker/src/screens/forgot/index.tsx
+exit=0
+$ git diff --quiet -- mobile-pet-tracker/src/screens/forgot/index.tsx; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+```
+
+### Sonda M6-f
+
+Cambio temporal en `mobile-pet-tracker/src/screens/forgot/index.tsx`; no se añade al índice.
+
+#### M6-f
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r2-M6-f.json > /tmp/117-r2-M6-f.log 2>&1; echo "exit=$?"
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 23 passed, 24 total
+Snapshots:   0 total
+Time:        5.464 s, estimated 7 s
+exit=1
+```
+
+`#117 R6: reenviar repite la misma petición un {"kind": "unreachable", "message": "network down"} al reenviar pinta «No se pudo conectar con el servidor» en forgot-error sin salir de «Revisa tu correo»`
+
+```text
+Error: Unable to find an element with text: Revisa tu correo
+
+<RNCSafeAreaProvider>
+  <View
+    testID="screen-forgot"
+  >
+    <RCTScrollView
+      testID="forgot-form"
+    >
+      <View>
+        <View>
+          <RNSVGSvgView>
+            <RNSVGGroup>
+              <RNSVGPath />
+            </RNSVGGroup>
+          </RNSVGSvgView>
+        </View>
+        <Text
+          testID="forgot-title"
+        >
+          Recuperar contraseña
+        </Text>
+        <Text
+          testID="forgot-body"
+        >
+          Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.
+        </Text>
+        <View>
+          <View
+            accessible={true}
+          >
+            <Text>
+              Correo electrónico
+            </Text>
+          </View>
+          <TextInput
+            editable={true}
+            testID="forgot-email"
+            value="ana@example.com"
+          />
+        </View>
+        <Text
+          testID="forgot-error"
+        >
+          No se pudo conectar con el servidor
+        </Text>
+        <View
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "disabled": false,
+            }
+          }
+          accessible={true}
+          testID="forgot-submit"
+        >
+          <View
+            pointerEvents="none"
+            style={
+              {
+                "opacity": 0,
+              }
+            }
+          />
+          <Text>
+            Enviar enlace de recuperación
+          </Text>
+        </View>
+        <View
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "disabled": false,
+            }
+          }
+          accessible={true}
+          testID="link-login"
+        >
+          <Text>
+            Volver al inicio de sesión
+          </Text>
+        </View>
+      </View>
+    </RCTScrollView>
+  </View>
+</RNCSafeAreaProvider>
+    at getByText (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:253:19)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+| Sonda | it que cayó | Modo / matcher / Expected y Received | Debe seguir verde (medido) |
+|---|---|---|---|
+| M6-f | `un {"kind": "unreachable", "message": "network down"} al reenviar pinta «No se pudo conectar con el servidor» en forgot-error sin salir de «Revisa tu correo»` | consulta, `getByText`. Consulta getByText('Revisa tu correo'): Unable to find an element with text: Revisa tu correo | un 429 al reenviar pinta forgot-error sin salir de «Revisa tu correo»: passed |
+
+```text
+$ git checkout HEAD -- mobile-pet-tracker/src/screens/forgot/index.tsx
+exit=0
+$ git diff --quiet -- mobile-pet-tracker/src/screens/forgot/index.tsx; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+```
+
+### Sonda M6-g
+
+Cambio temporal en `mobile-pet-tracker/src/screens/forgot/index.tsx`; no se añade al índice.
+
+#### M6-g
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r2-M6-g.json > /tmp/117-r2-M6-g.log 2>&1; echo "exit=$?"
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 22 passed, 24 total
+Snapshots:   0 total
+Time:        5.486 s, estimated 6 s
+exit=1
+```
+
+`#117 R6: reenviar repite la misma petición un {"kind": "error"} al reenviar pinta «Algo salió mal» en forgot-error sin salir de «Revisa tu correo»`
+
+```text
+Error: Unable to find an element with text: Revisa tu correo
+
+<RNCSafeAreaProvider>
+  <View
+    testID="screen-forgot"
+  >
+    <RCTScrollView
+      testID="forgot-form"
+    >
+      <View>
+        <View>
+          <RNSVGSvgView>
+            <RNSVGGroup>
+              <RNSVGPath />
+            </RNSVGGroup>
+          </RNSVGSvgView>
+        </View>
+        <Text
+          testID="forgot-title"
+        >
+          Recuperar contraseña
+        </Text>
+        <Text
+          testID="forgot-body"
+        >
+          Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.
+        </Text>
+        <View>
+          <View
+            accessible={true}
+          >
+            <Text>
+              Correo electrónico
+            </Text>
+          </View>
+          <TextInput
+            editable={true}
+            testID="forgot-email"
+            value="ana@example.com"
+          />
+        </View>
+        <Text
+          testID="forgot-error"
+        >
+          Algo salió mal
+        </Text>
+        <View
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "disabled": false,
+            }
+          }
+          accessible={true}
+          testID="forgot-submit"
+        >
+          <View
+            pointerEvents="none"
+            style={
+              {
+                "opacity": 0,
+              }
+            }
+          />
+          <Text>
+            Enviar enlace de recuperación
+          </Text>
+        </View>
+        <View
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "disabled": false,
+            }
+          }
+          accessible={true}
+          testID="link-login"
+        >
+          <Text>
+            Volver al inicio de sesión
+          </Text>
+        </View>
+      </View>
+    </RCTScrollView>
+  </View>
+</RNCSafeAreaProvider>
+    at getByText (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:253:19)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R6: reenviar repite la misma petición un {"kind": "missing-config"} al reenviar pinta «Algo salió mal» en forgot-error sin salir de «Revisa tu correo»`
+
+```text
+Error: Unable to find an element with text: Revisa tu correo
+
+<RNCSafeAreaProvider>
+  <View
+    testID="screen-forgot"
+  >
+    <RCTScrollView
+      testID="forgot-form"
+    >
+      <View>
+        <View>
+          <RNSVGSvgView>
+            <RNSVGGroup>
+              <RNSVGPath />
+            </RNSVGGroup>
+          </RNSVGSvgView>
+        </View>
+        <Text
+          testID="forgot-title"
+        >
+          Recuperar contraseña
+        </Text>
+        <Text
+          testID="forgot-body"
+        >
+          Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.
+        </Text>
+        <View>
+          <View
+            accessible={true}
+          >
+            <Text>
+              Correo electrónico
+            </Text>
+          </View>
+          <TextInput
+            editable={true}
+            testID="forgot-email"
+            value="ana@example.com"
+          />
+        </View>
+        <Text
+          testID="forgot-error"
+        >
+          Algo salió mal
+        </Text>
+        <View
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "disabled": false,
+            }
+          }
+          accessible={true}
+          testID="forgot-submit"
+        >
+          <View
+            pointerEvents="none"
+            style={
+              {
+                "opacity": 0,
+              }
+            }
+          />
+          <Text>
+            Enviar enlace de recuperación
+          </Text>
+        </View>
+        <View
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "disabled": false,
+            }
+          }
+          accessible={true}
+          testID="link-login"
+        >
+          <Text>
+            Volver al inicio de sesión
+          </Text>
+        </View>
+      </View>
+    </RCTScrollView>
+  </View>
+</RNCSafeAreaProvider>
+    at getByText (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:253:19)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+| Sonda | it que cayó | Modo / matcher / Expected y Received | Debe seguir verde (medido) |
+|---|---|---|---|
+| M6-g | `un {"kind": "error"} al reenviar pinta «Algo salió mal» en forgot-error sin salir de «Revisa tu correo»`<br>`un {"kind": "missing-config"} al reenviar pinta «Algo salió mal» en forgot-error sin salir de «Revisa tu correo»` | consulta, `getByText`. Consulta getByText('Revisa tu correo'): Unable to find an element with text: Revisa tu correo | un 429 al reenviar pinta forgot-error sin salir de «Revisa tu correo»: passed |
+
+```text
+$ git checkout HEAD -- mobile-pet-tracker/src/screens/forgot/index.tsx
+exit=0
+$ git diff --quiet -- mobile-pet-tracker/src/screens/forgot/index.tsx; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+```
+
+#### T13-verde-final
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r2-T13-verde-final.json > /tmp/117-r2-T13-verde-final.log 2>&1; echo "exit=$?"
+Test Suites: 1 passed, 1 total
+Tests:       24 passed, 24 total
+Snapshots:   0 total
+Time:        5.803 s, estimated 6 s
+exit=0
+```
+
+Commit T13: `7c2937e2` test(mobile): lock resend errors for every non-ok kind (#117 R6, E1). Solo `mobile-pet-tracker/src/screens/forgot/index.test.tsx`.
+
+#### T14-verde-inicial
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r2-T14-verde-inicial.json > /tmp/117-r2-T14-verde-inicial.log 2>&1; echo "exit=$?"
+Test Suites: 1 passed, 1 total
+Tests:       26 passed, 26 total
+Snapshots:   0 total
+Time:        6.494 s
+exit=0
+```
+
+### Sonda M7-h
+
+Cambio temporal en `mobile-pet-tracker/src/screens/forgot/index.tsx`; no se añade al índice.
+
+#### M7-h
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r2-M7-h.json > /tmp/117-r2-M7-h.log 2>&1; echo "exit=$?"
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 24 passed, 26 total
+Snapshots:   0 total
+Time:        6.237 s, estimated 7 s
+exit=1
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver`
+
+```text
+Error: expect(received).toBeNull()
+
+Received: <Text className="text-danger" selectable={true} testID="forgot-error">Algo salió mal</Text>
+    at Object.toBeNull (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:218:50)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error un nuevo reenvío retira forgot-error en cuanto arranca y no lo repinta al resolver ok`
+
+```text
+Error: expect(received).toBeNull()
+
+Received: <Text className="text-danger" selectable={true} testID="forgot-error">Demasiados intentos. Inténtalo más tarde.</Text>
+    at Object.toBeNull (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:239:50)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+| Sonda | it que cayó | Modo / matcher / Expected y Received | Debe seguir verde (medido) |
+|---|---|---|---|
+| M7-h | `un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver`<br>`un nuevo reenvío retira forgot-error en cuanto arranca y no lo repinta al resolver ok` | aserción, `toBeNull`. Expected: null; Received: nodo Text forgot-error con el error anterior mientras vuela la petición | un envío posterior que resuelve ok limpia forgot-error y pasa a «Revisa tu correo»: passed |
+
+```text
+$ git checkout HEAD -- mobile-pet-tracker/src/screens/forgot/index.tsx
+exit=0
+$ git diff --quiet -- mobile-pet-tracker/src/screens/forgot/index.tsx; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+```
+
+### Sonda M7-i
+
+Cambio temporal en `mobile-pet-tracker/src/screens/forgot/index.tsx`; no se añade al índice.
+
+#### M7-i
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r2-M7-i.json > /tmp/117-r2-M7-i.log 2>&1; echo "exit=$?"
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 25 passed, 26 total
+Snapshots:   0 total
+Time:        5.734 s, estimated 7 s
+exit=1
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error un nuevo reenvío retira forgot-error en cuanto arranca y no lo repinta al resolver ok`
+
+```text
+Error: expect(received).toBeNull()
+
+Received: <Text className="text-danger" selectable={true} testID="forgot-error">Demasiados intentos. Inténtalo más tarde.</Text>
+    at Object.toBeNull (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:239:50)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+| Sonda | it que cayó | Modo / matcher / Expected y Received | Debe seguir verde (medido) |
+|---|---|---|---|
+| M7-i | `un nuevo reenvío retira forgot-error en cuanto arranca y no lo repinta al resolver ok` | aserción, `toBeNull`. Expected: null; Received: nodo Text forgot-error con Demasiados intentos. Inténtalo más tarde. | un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver: passed |
+
+```text
+$ git checkout HEAD -- mobile-pet-tracker/src/screens/forgot/index.tsx
+exit=0
+$ git diff --quiet -- mobile-pet-tracker/src/screens/forgot/index.tsx; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+```
+
+### Sonda M4-f
+
+Cambio temporal en `mobile-pet-tracker/src/screens/forgot/index.tsx`; no se añade al índice.
+
+#### M4-f
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r2-M4-f.json > /tmp/117-r2-M4-f.log 2>&1; echo "exit=$?"
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 25 passed, 26 total
+Snapshots:   0 total
+Time:        6 s
+exit=1
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver`
+
+```text
+Error: expect(received).toBeNull()
+
+Received: <View accessibilityRole="button" accessibilityState={{"busy": undefined, "checked": undefined, "disabled": true, "expanded": undefined, "selected": undefined}} accessibilityValue={{"max": undefined, "min": undefined, "now": undefined, "text": undefined}} accessible={true} className="pressable-feedback__root button__root button__root--variant-secondary button__root--size-md disabled:element-disabled w-full rounded-xl" collapsable={false} focusable={true} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"transform": [{"scale": {"callStart": null, "callback": undefined, "current": 1, "easing": [Function reactNativeReanimated_EasingJs19], "onFrame": [Function timing], "onStart": [Function anonymous], "progress": 0, "reduceMotion": false, "startTime": undefined, "startValue": 1, "timestamp": undefined, "toValue": 1, "type": "timing"}}]}}} jestInlineStyle={[{"borderCurve": "continuous"}, [{"borderCurve": "continuous"}, undefined]]} onBlur={[Function onBlur]} onClick={[Function onClick]} onFocus={[Function onFocus]} onLayout={[Function anonymous]} onResponderGrant={[Function onResponderGrant]} onResponderMove={[Function onResponderMove]} onResponderRelease={[Function onResponderRelease]} onResponderTerminate={[Function onResponderTerminate]} onResponderTerminationRequest={[Function onResponderTerminationRequest]} onStartShouldSetResponder={[Function onStartShouldSetResponder]} style={[{"borderCurve": "continuous"}, {"transform": [{"scale": 1}]}, {"borderCurve": "continuous"}, undefined]} testID="forgot-resend"><View className="pressable-feedback__highlight" collapsable={false} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"backgroundColor": "invalid", "opacity": {"callStart": null, "callback": undefined, "current": NaN, "easing": [Function reactNativeReanimated_EasingJs21], "onFrame": [Function timing], "onStart": [Function anonymous], "progress": 0, "reduceMotion": false, "startTime": undefined, "startValue": 0, "timestamp": undefined, "toValue": 0, "type": "timing"}}}} jestInlineStyle={[undefined]} pointerEvents="none" style={[{"backgroundColor": "invalid", "opacity": 0}, undefined]} /><Text className="button__label button__label--variant-secondary button__label--size-md font-bold text-foreground">Reenviar</Text></View>
+    at Object.toBeNull (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:219:51)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+| Sonda | it que cayó | Modo / matcher / Expected y Received | Debe seguir verde (medido) |
+|---|---|---|---|
+| M4-f | `un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver` | aserción, `toBeNull`. Expected: null; Received: nodo forgot-resend durante el envío del formulario | — (sin cláusula en la tabla) |
+
+```text
+$ git checkout HEAD -- mobile-pet-tracker/src/screens/forgot/index.tsx
+exit=0
+$ git diff --quiet -- mobile-pet-tracker/src/screens/forgot/index.tsx; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+```
+
+### Sonda M6-h
+
+Cambio temporal en `mobile-pet-tracker/src/screens/forgot/index.tsx`; no se añade al índice.
+
+#### M6-h
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r2-M6-h.json > /tmp/117-r2-M6-h.log 2>&1; echo "exit=$?"
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 25 passed, 26 total
+Snapshots:   0 total
+Time:        5.912 s, estimated 6 s
+exit=1
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error un nuevo reenvío retira forgot-error en cuanto arranca y no lo repinta al resolver ok`
+
+```text
+Error: expect(instance).toHaveTextContent()
+
+Expected instance to have text content:
+  Si existe una cuenta para Ana@Example.com, te enviamos un enlace para restablecer tu contraseña. Revisa tu bandeja de entrada y la carpeta de spam.
+Received:
+  Si existe una cuenta para , te enviamos un enlace para restablecer tu contraseña. Revisa tu bandeja de entrada y la carpeta de spam.
+    at Object.toHaveTextContent (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:244:47)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+| Sonda | it que cayó | Modo / matcher / Expected y Received | Debe seguir verde (medido) |
+|---|---|---|---|
+| M6-h | `un nuevo reenvío retira forgot-error en cuanto arranca y no lo repinta al resolver ok` | aserción, `toHaveTextContent`. Expected: Si existe una cuenta para Ana@Example.com, te enviamos un enlace para restablecer tu contraseña. Revisa tu bandeja de entrada y la carpeta de spam.; Received: Si existe una cuenta para , te enviamos un enlace para restablecer tu contraseña. Revisa tu bandeja de entrada y la carpeta de spam. | — (sin cláusula en la tabla) |
+
+```text
+$ git checkout HEAD -- mobile-pet-tracker/src/screens/forgot/index.tsx
+exit=0
+$ git diff --quiet -- mobile-pet-tracker/src/screens/forgot/index.tsx; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+```
+
+### Sonda M6-i
+
+Cambio temporal en `mobile-pet-tracker/src/screens/forgot/index.tsx`; no se añade al índice.
+
+#### M6-i
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r2-M6-i.json > /tmp/117-r2-M6-i.log 2>&1; echo "exit=$?"
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 25 passed, 26 total
+Snapshots:   0 total
+Time:        5.817 s, estimated 6 s
+exit=1
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error un nuevo reenvío retira forgot-error en cuanto arranca y no lo repinta al resolver ok`
+
+```text
+Error: expect(received).toEqual(expected) // deep equality
+
+- Expected  - 1
++ Received  + 1
+
+  Object {
+-   "email": "Ana@Example.com",
++   "email": "  Ana@Example.com ",
+  }
+    at Object.toEqual (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:238:49)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+| Sonda | it que cayó | Modo / matcher / Expected y Received | Debe seguir verde (medido) |
+|---|---|---|---|
+| M6-i | `un nuevo reenvío retira forgot-error en cuanto arranca y no lo repinta al resolver ok` | aserción, `toEqual`. Expected: { email: 'Ana@Example.com' }; Received: { email: '  Ana@Example.com ' } | — (sin cláusula en la tabla) |
+
+```text
+$ git checkout HEAD -- mobile-pet-tracker/src/screens/forgot/index.tsx
+exit=0
+$ git diff --quiet -- mobile-pet-tracker/src/screens/forgot/index.tsx; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+```
+
+#### T14-verde-final
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r2-T14-verde-final.json > /tmp/117-r2-T14-verde-final.log 2>&1; echo "exit=$?"
+Test Suites: 1 passed, 1 total
+Tests:       26 passed, 26 total
+Snapshots:   0 total
+Time:        5.86 s, estimated 6 s
+exit=0
+```
+
+Commit T14: `2ad3fb99` test(mobile): lock forgot-error clearing as soon as a new request starts (#117 R7, E1). Solo `mobile-pet-tracker/src/screens/forgot/index.test.tsx`.
+
+#### T15-verde-inicial
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r2-T15-verde-inicial.json > /tmp/117-r2-T15-verde-inicial.log 2>&1; echo "exit=$?"
+Test Suites: 1 passed, 1 total
+Tests:       27 passed, 27 total
+Snapshots:   0 total
+Time:        6.278 s
+exit=0
+```
+
+### Sonda M9-e
+
+Cambio temporal en `mobile-pet-tracker/src/screens/forgot/index.tsx`; no se añade al índice.
+
+#### M9-e
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r2-M9-e.json > /tmp/117-r2-M9-e.log 2>&1; echo "exit=$?"
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 26 passed, 27 total
+Snapshots:   0 total
+Time:        6.216 s, estimated 7 s
+exit=1
+```
+
+`#117 R9: las métricas del stub sobreviven al cambio de estado forgot-form lleva className y contentInsetAdjustmentBehavior de la spec en los dos estados`
+
+```text
+Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: "flex-1 bg-background"
+Received: "flex-1"
+    at Object.toBe (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:343:63)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+| Sonda | it que cayó | Modo / matcher / Expected y Received | Debe seguir verde (medido) |
+|---|---|---|---|
+| M9-e | `forgot-form lleva className y contentInsetAdjustmentBehavior de la spec en los dos estados` | aserción, `toBe`. Segunda aserción className. Expected: flex-1 bg-background; Received: flex-1 | — (sin cláusula en la tabla) |
+
+```text
+$ git checkout HEAD -- mobile-pet-tracker/src/screens/forgot/index.tsx
+exit=0
+$ git diff --quiet -- mobile-pet-tracker/src/screens/forgot/index.tsx; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+```
+
+### Sonda M9-f
+
+Cambio temporal en `mobile-pet-tracker/src/screens/forgot/index.tsx`; no se añade al índice.
+
+#### M9-f
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r2-M9-f.json > /tmp/117-r2-M9-f.log 2>&1; echo "exit=$?"
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 26 passed, 27 total
+Snapshots:   0 total
+Time:        6.564 s, estimated 7 s
+exit=1
+```
+
+`#117 R9: las métricas del stub sobreviven al cambio de estado forgot-form lleva className y contentInsetAdjustmentBehavior de la spec en los dos estados`
+
+```text
+Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: "automatic"
+Received: "never"
+    at Object.toBe (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:344:84)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+| Sonda | it que cayó | Modo / matcher / Expected y Received | Debe seguir verde (medido) |
+|---|---|---|---|
+| M9-f | `forgot-form lleva className y contentInsetAdjustmentBehavior de la spec en los dos estados` | aserción, `toBe`. Segunda aserción contentInsetAdjustmentBehavior. Expected: automatic; Received: never | — (sin cláusula en la tabla) |
+
+```text
+$ git checkout HEAD -- mobile-pet-tracker/src/screens/forgot/index.tsx
+exit=0
+$ git diff --quiet -- mobile-pet-tracker/src/screens/forgot/index.tsx; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+```
+
+### Sonda M9-g
+
+Cambio temporal en `mobile-pet-tracker/src/screens/forgot/index.tsx`; no se añade al índice.
+
+#### M9-g
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r2-M9-g.json > /tmp/117-r2-M9-g.log 2>&1; echo "exit=$?"
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 26 passed, 27 total
+Snapshots:   0 total
+Time:        6.496 s, estimated 7 s
+exit=1
+```
+
+`#117 R9: las métricas del stub sobreviven al cambio de estado forgot-form lleva className y contentInsetAdjustmentBehavior de la spec en los dos estados`
+
+```text
+Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: "flex-1 bg-background"
+Received: "flex-1"
+    at Object.toBe (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:339:63)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+| Sonda | it que cayó | Modo / matcher / Expected y Received | Debe seguir verde (medido) |
+|---|---|---|---|
+| M9-g | `forgot-form lleva className y contentInsetAdjustmentBehavior de la spec en los dos estados` | aserción, `toBe`. Primera aserción className. Expected: flex-1 bg-background; Received: flex-1 | — (sin cláusula en la tabla) |
+
+```text
+$ git checkout HEAD -- mobile-pet-tracker/src/screens/forgot/index.tsx
+exit=0
+$ git diff --quiet -- mobile-pet-tracker/src/screens/forgot/index.tsx; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+```
+
+#### T15-verde-final
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r2-T15-verde-final.json > /tmp/117-r2-T15-verde-final.log 2>&1; echo "exit=$?"
+Test Suites: 1 passed, 1 total
+Tests:       27 passed, 27 total
+Snapshots:   0 total
+Time:        6.021 s, estimated 7 s
+exit=0
+```
+
+Commit T15: `3f347525` test(mobile): lock the forgot scroll container props in both states (#117 R9, E1). Solo `mobile-pet-tracker/src/screens/forgot/index.test.tsx`.
+
+#### T16-verde-inicial
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r2-T16-verde-inicial.json > /tmp/117-r2-T16-verde-inicial.log 2>&1; echo "exit=$?"
+Test Suites: 1 passed, 1 total
+Tests:       28 passed, 28 total
+Snapshots:   0 total
+Time:        6.903 s
+exit=0
+```
+
+### Sonda M3-e
+
+Cambio temporal en `mobile-pet-tracker/src/screens/forgot/index.tsx`; no se añade al índice.
+
+#### M3-e
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r2-M3-e.json > /tmp/117-r2-M3-e.log 2>&1; echo "exit=$?"
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 27 passed, 28 total
+Snapshots:   0 total
+Time:        7.04 s
+exit=1
+```
+
+`#117 R3: la ruta forgot delega en ForgotScreen link-login navega a /login también desde «Revisa tu correo», sin petición nueva`
+
+```text
+Error: expect(jest.fn()).toHaveBeenCalledWith(...expected)
+
+Expected: "/login"
+Received: "/"
+
+Number of calls: 1
+    at Object.toHaveBeenCalledWith (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:74:29)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+| Sonda | it que cayó | Modo / matcher / Expected y Received | Debe seguir verde (medido) |
+|---|---|---|---|
+| M3-e | `link-login navega a /login también desde «Revisa tu correo», sin petición nueva` | aserción, `toHaveBeenCalledWith`. Expected: /login; Received: / | link-login navega a /login sin petición de red: passed |
+
+```text
+$ git checkout HEAD -- mobile-pet-tracker/src/screens/forgot/index.tsx
+exit=0
+$ git diff --quiet -- mobile-pet-tracker/src/screens/forgot/index.tsx; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+```
+
+#### T16-verde-final
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r2-T16-verde-final.json > /tmp/117-r2-T16-verde-final.log 2>&1; echo "exit=$?"
+Test Suites: 1 passed, 1 total
+Tests:       28 passed, 28 total
+Snapshots:   0 total
+Time:        7.126 s
+exit=0
+```
+
+Commit T16: `99c5b354` test(mobile): lock link-login from the sent state (#117 R3, E1). Solo `mobile-pet-tracker/src/screens/forgot/index.test.tsx`.
+
+#### T17-verde-inicial
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r2-T17-verde-inicial.json > /tmp/117-r2-T17-verde-inicial.log 2>&1; echo "exit=$?"
+Test Suites: 1 passed, 1 total
+Tests:       29 passed, 29 total
+Snapshots:   0 total
+Time:        7.252 s
+exit=0
+```
+
+### Sonda M5-g
+
+Cambio temporal en `mobile-pet-tracker/src/screens/forgot/index.tsx`; no se añade al índice.
+
+#### M5-g
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r2-M5-g.json > /tmp/117-r2-M5-g.log 2>&1; echo "exit=$?"
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 28 passed, 29 total
+Snapshots:   0 total
+Time:        6.742 s, estimated 8 s
+exit=1
+```
+
+`#117 R5: enviar pasa la pantalla a «Revisa tu correo» el tile Lock sigue en pie en los dos estados`
+
+```text
+Error: expect(received).toBeDefined()
+
+Received: undefined
+    at Object.toBeDefined (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:198:8)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+| Sonda | it que cayó | Modo / matcher / Expected y Received | Debe seguir verde (medido) |
+|---|---|---|---|
+| M5-g | `el tile Lock sigue en pie en los dos estados` | aserción, `toBeDefined`. Segunda comprobación del tile. Expected: defined; Received: undefined | — (sin cláusula en la tabla) |
+
+```text
+$ git checkout HEAD -- mobile-pet-tracker/src/screens/forgot/index.tsx
+exit=0
+$ git diff --quiet -- mobile-pet-tracker/src/screens/forgot/index.tsx; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+```
+
+#### T17-verde-final
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r2-T17-verde-final.json > /tmp/117-r2-T17-verde-final.log 2>&1; echo "exit=$?"
+Test Suites: 1 passed, 1 total
+Tests:       29 passed, 29 total
+Snapshots:   0 total
+Time:        6.105 s, estimated 7 s
+exit=0
+```
+
+#### Guard de router antes de typecheck-T17
+
+```text
+$ test ! -e .expo/types/router.d.ts; echo "exit=$?"
+exit=0
+```
+
+#### typecheck-T17
+
+```text
+$ bun run typecheck > /tmp/117-r2-typecheck-T17.log 2>&1; echo "exit=$?"
+$ tsc --noEmit
+exit=0
+```
+
+Commit T17: `2c6a2210` test(mobile): lock the Lock tile in both states (#117 R5, E1). Solo `mobile-pet-tracker/src/screens/forgot/index.test.tsx`.
+
+#### Guard de carga antes de ocho
+
+```text
+$ pgrep -f init.sh; echo "exit=$?"
+exit=1
+```
+
+#### ocho
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/api/__tests__/auth.test.ts src/providers/__tests__/language-provider.test.tsx src/__tests__/ui-language.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/legibility-classnames.test.ts src/__tests__/design-drift.test.ts src/screens/reset-password/index.test.tsx src/screens/forgot/index.test.tsx > /tmp/117-r2-ocho.log 2>&1; echo "exit=$?"
+Test Suites: 8 passed, 8 total
+Tests:       285 passed, 285 total
+Snapshots:   0 total
+Time:        7.077 s
+exit=0
+```
+
+#### Guard de carga antes de global
+
+```text
+$ pgrep -f init.sh; echo "exit=$?"
+exit=1
+```
+
+#### global
+
+```text
+$ bunx jest --maxWorkers=2 > /tmp/117-r2-global.log 2>&1; echo "exit=$?"
+Test Suites: 93 passed, 93 total
+Tests:       2049 passed, 2049 total
+Snapshots:   1 passed, 1 total
+Time:        62.499 s, estimated 66 s
+exit=0
+```
+
+### Resumen por tarea de E1
+
+Los comandos, resúmenes Jest y fallos completos se conservan arriba. Todas las reversiones dieron 0 en el diff de producción y 0 en el diff del índice antes del commit.
+
+#### T12
+
+Verde inicial y final: 1 suite / 44 tests, exit=0 en ambos.
+
+| Sonda | it que cayó | Consulta / aserción; matcher y Expected/Received | Debe seguir verde (resultado) | Reversión producción / índice |
+|---|---|---|---|---|
+| M2-f | `mapea 201 a error`<br>`mapea 302 a error`<br>`mapea 404 a error` | aserción, `resolves.toEqual`; Expected kind: 'error'; Received kind: 'ok' | — | exit=0 / exit=0 |
+| M2-g | `mapea 201 a error` | aserción, `resolves.toEqual`; Expected kind: 'error'; Received kind: 'ok' | — | exit=0 / exit=0 |
+| M2-h | `mapea 503 a error` | aserción, `resolves.toEqual`; Expected kind: 'error'; Received kind: 'ok' | — | exit=0 / exit=0 |
+| M2-i | `mapea 302 a error` | aserción, `resolves.toEqual`; Expected kind: 'error'; Received kind: 'ok' | — | exit=0 / exit=0 |
+
+Commit: `a3426e90` test(mobile): lock every other status as error in the forgot client (#117 R2, E1).
+
+#### T13
+
+Verde inicial y final: 1 suite / 24 tests, exit=0 en ambos.
+
+| Sonda | it que cayó | Consulta / aserción; matcher y Expected/Received | Debe seguir verde (resultado) | Reversión producción / índice |
+|---|---|---|---|---|
+| M6-e | `un {"errors": [Array], "kind": "validation"} al reenviar pinta «Ingresa un correo electrónico válido» en forgot-error sin salir de «Revisa tu correo»` | consulta, `getByText`; Consulta getByText('Revisa tu correo'): Unable to find an element with text: Revisa tu correo | `un 429 al reenviar pinta forgot-error sin salir de «Revisa tu correo»`: verde | exit=0 / exit=0 |
+| M6-f | `un {"kind": "unreachable", "message": "network down"} al reenviar pinta «No se pudo conectar con el servidor» en forgot-error sin salir de «Revisa tu correo»` | consulta, `getByText`; Consulta getByText('Revisa tu correo'): Unable to find an element with text: Revisa tu correo | `un 429 al reenviar pinta forgot-error sin salir de «Revisa tu correo»`: verde | exit=0 / exit=0 |
+| M6-g | `un {"kind": "error"} al reenviar pinta «Algo salió mal» en forgot-error sin salir de «Revisa tu correo»`<br>`un {"kind": "missing-config"} al reenviar pinta «Algo salió mal» en forgot-error sin salir de «Revisa tu correo»` | consulta, `getByText`; Consulta getByText('Revisa tu correo'): Unable to find an element with text: Revisa tu correo | `un 429 al reenviar pinta forgot-error sin salir de «Revisa tu correo»`: verde | exit=0 / exit=0 |
+
+Commit: `7c2937e2` test(mobile): lock resend errors for every non-ok kind (#117 R6, E1).
+
+#### T14
+
+Verde inicial y final: 1 suite / 26 tests, exit=0 en ambos.
+
+| Sonda | it que cayó | Consulta / aserción; matcher y Expected/Received | Debe seguir verde (resultado) | Reversión producción / índice |
+|---|---|---|---|---|
+| M7-h | `un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver`<br>`un nuevo reenvío retira forgot-error en cuanto arranca y no lo repinta al resolver ok` | aserción, `toBeNull`; Expected: null; Received: nodo Text forgot-error con el error anterior mientras vuela la petición | `un envío posterior que resuelve ok limpia forgot-error y pasa a «Revisa tu correo»`: verde | exit=0 / exit=0 |
+| M7-i | `un nuevo reenvío retira forgot-error en cuanto arranca y no lo repinta al resolver ok` | aserción, `toBeNull`; Expected: null; Received: nodo Text forgot-error con Demasiados intentos. Inténtalo más tarde. | `un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver`: verde | exit=0 / exit=0 |
+| M4-f | `un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver` | aserción, `toBeNull`; Expected: null; Received: nodo forgot-resend durante el envío del formulario | — | exit=0 / exit=0 |
+| M6-h | `un nuevo reenvío retira forgot-error en cuanto arranca y no lo repinta al resolver ok` | aserción, `toHaveTextContent`; Expected: Si existe una cuenta para Ana@Example.com, te enviamos un enlace para restablecer tu contraseña. Revisa tu bandeja de entrada y la carpeta de spam.; Received: Si existe una cuenta para , te enviamos un enlace para restablecer tu contraseña. Revisa tu bandeja de entrada y la carpeta de spam. | — | exit=0 / exit=0 |
+| M6-i | `un nuevo reenvío retira forgot-error en cuanto arranca y no lo repinta al resolver ok` | aserción, `toEqual`; Expected: { email: 'Ana@Example.com' }; Received: { email: '  Ana@Example.com ' } | — | exit=0 / exit=0 |
+
+Commit: `2ad3fb99` test(mobile): lock forgot-error clearing as soon as a new request starts (#117 R7, E1).
+
+#### T15
+
+Verde inicial y final: 1 suite / 27 tests, exit=0 en ambos.
+
+| Sonda | it que cayó | Consulta / aserción; matcher y Expected/Received | Debe seguir verde (resultado) | Reversión producción / índice |
+|---|---|---|---|---|
+| M9-e | `forgot-form lleva className y contentInsetAdjustmentBehavior de la spec en los dos estados` | aserción, `toBe`; Segunda aserción className. Expected: flex-1 bg-background; Received: flex-1 | — | exit=0 / exit=0 |
+| M9-f | `forgot-form lleva className y contentInsetAdjustmentBehavior de la spec en los dos estados` | aserción, `toBe`; Segunda aserción contentInsetAdjustmentBehavior. Expected: automatic; Received: never | — | exit=0 / exit=0 |
+| M9-g | `forgot-form lleva className y contentInsetAdjustmentBehavior de la spec en los dos estados` | aserción, `toBe`; Primera aserción className. Expected: flex-1 bg-background; Received: flex-1 | — | exit=0 / exit=0 |
+
+Commit: `3f347525` test(mobile): lock the forgot scroll container props in both states (#117 R9, E1).
+
+#### T16
+
+Verde inicial y final: 1 suite / 28 tests, exit=0 en ambos.
+
+| Sonda | it que cayó | Consulta / aserción; matcher y Expected/Received | Debe seguir verde (resultado) | Reversión producción / índice |
+|---|---|---|---|---|
+| M3-e | `link-login navega a /login también desde «Revisa tu correo», sin petición nueva` | aserción, `toHaveBeenCalledWith`; Expected: /login; Received: / | `link-login navega a /login sin petición de red`: verde | exit=0 / exit=0 |
+
+Commit: `99c5b354` test(mobile): lock link-login from the sent state (#117 R3, E1).
+
+#### T17
+
+Verde inicial y final: 1 suite / 29 tests, exit=0 en ambos.
+
+| Sonda | it que cayó | Consulta / aserción; matcher y Expected/Received | Debe seguir verde (resultado) | Reversión producción / índice |
+|---|---|---|---|---|
+| M5-g | `el tile Lock sigue en pie en los dos estados` | aserción, `toBeDefined`; Segunda comprobación del tile. Expected: defined; Received: undefined | — | exit=0 / exit=0 |
+
+Commit: `2c6a2210` test(mobile): lock the Lock tile in both states (#117 R5, E1).
+
+### Decisiones y alcance de E1
+
+Sin decisiones nuevas de comportamiento. En T17 se filtran los hijos string antes de leer props, se compara className por igualdad estricta y se reacquiere forgot-title tras enviar; casts mínimos `unknown[]` y `{ props: { className?: string } }`, sin any explícito, validados por tsc antes del commit.
+
+E1.5 conserva intacto el it existente y registra `7ba0b3a9`; E1.8 no añade it ni commit. Ningún it existente se modificó, renombró o reordenó: los diffs de tests son solo adiciones (+6/−0 en auth y +97/−0 en forgot). No se cargaron skills adicionales en esta ronda. Los guards pgrep se ejecutan literalmente por stdin de bash para evitar que la línea del propio shell se identifique como init.sh. No se lanzó init.sh, expo, graphify, push ni PR; smoke y bookkeeping siguen a cargo del humano/leader.
+
+#### Guard de router antes de typecheck
+
+```text
+$ test ! -e .expo/types/router.d.ts; echo "exit=$?"
+exit=0
+```
+
+#### lint
+
+```text
+$ bun run lint > /tmp/117-r2-lint.log 2>&1; echo "exit=$?"
+$ expo lint
+exit=0
+```
+
+#### typecheck
+
+```text
+$ bun run typecheck > /tmp/117-r2-typecheck.log 2>&1; echo "exit=$?"
+$ tsc --noEmit
+exit=0
+```
+
+### T18 — cierre verificado
+
+| Suite | Base ronda 2 | Cierre | Delta |
+|---|---:|---:|---:|
+| auth.test.ts | 40 | 44 | +4 |
+| screens/forgot/index.test.tsx | 20 | 29 | +9 |
+| language-provider.test.tsx | 24 | 24 | 0 |
+| ui-language.test.ts | 29 | 29 | 0 |
+| consistency-classnames.test.ts | 55 | 55 | 0 |
+| legibility-classnames.test.ts | 26 | 26 | 0 |
+| design-drift.test.ts | 59 | 59 | 0 |
+| screens/reset-password/index.test.tsx | 19 | 19 | 0 |
+| 8 suites | 272 | 285 | +13 |
+| Global (93 suites) | 2036 | 2049 | +13 |
+
+Typecheck previo a T17 y de cierre: exit=0, con router.d.ts ausente en cada guard. Lint: exit=0. Los 17 fallos de sonda y sus dos guards de reversión coinciden con las tablas de T12–T17; los seis verdes iniciales y finales pasan. Los seis commits test llevan solo su fichero de test. El cierre documental lleva solo traceability e impl; su hash se identifica con `git log -1` para evitar una autorreferencia que lo cambiaría.
+
+### Alcance final contra H0 de ronda 2
+
+Medición contra HEAD tras el commit documental; se comprueba de nuevo la misma lista en el HEAD definitivo al añadir este registro al cierre. Los hashes de los seis commits test no cambian.
+
+```text
+$ git diff --name-only 453d0cd8 HEAD
+mobile-pet-tracker/src/api/__tests__/auth.test.ts
+mobile-pet-tracker/src/screens/forgot/index.test.tsx
+progress/impl_mobile-forgot-password.md
+specs/mobile-forgot-password/traceability.md
+$ git diff --quiet 453d0cd8 HEAD -- mobile-pet-tracker/src/screens/forgot/index.tsx mobile-pet-tracker/src/api/auth.ts; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+$ git diff --check 453d0cd8 HEAD; echo "exit=$?"
+exit=0
+$ git status --short
+ M progress/impl_mobile-forgot-password.md
+exit=1 (script de registro; AssertionError al exigir status vacío mientras el impl se escribía)
+```
+
+La secuencia se detuvo al recibir exit=1; no se lanzó ninguna medición dependiente. Los cuatro checks anteriores del alcance pasaron: lista exacta de 4 ficheros, producción sin diff, índice vacío y diff --check exit=0. El status mostrado corresponde al propio registro aún sin añadir al cierre, no a un cambio extra. Se cierra este bloque y se incorpora el registro al mismo commit documental; la limpieza se comprueba después de ese commit, sin volver a escribir en el impl.
+
+Ronda 2: 6 commits test y un cierre documental, 13 casos nuevos y 17 sondas revertidas. 8 suites / 285 tests y global 93 / 2049, typecheck y lint con exit=0. Sin cambios de dependencias ni candados globales. Lista cerrada de cuatro ficheros respetada; el smoke humano sigue sin marcar.
