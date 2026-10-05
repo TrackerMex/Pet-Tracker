@@ -22,6 +22,10 @@ import { geofenceKeys, petKeys, positionKeys, tripKeys } from '../../api/query-k
 import { getDayRoute } from '../../api/trips';
 import { Card } from '../../components/card';
 import { PetAvatar } from '../../components/pet-avatar';
+import {
+  STATUS_TONE_CLASSES,
+  type PetHeroStatusTone,
+} from '../../components/pet-hero-header';
 import { DEFAULT_CENTER, PetMap } from '../../components/pet-map';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
@@ -34,6 +38,7 @@ import {
 import {
   deviceConnectionState,
   MAP_CONNECTION_LABEL_KEY,
+  type DeviceConnectionState,
 } from '../../utils/device-connectivity';
 
 function isPetsError(state: PetsState): boolean {
@@ -81,6 +86,13 @@ function fmtAgo(
 }
 
 const POLL_MS = 15000;
+
+const MAP_CONNECTION_TONE: Record<DeviceConnectionState, PetHeroStatusTone> = {
+  none: 'muted',
+  unknown: 'muted',
+  offline: 'warning',
+  online: 'success',
+};
 
 export function MapScreen() {
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
@@ -213,14 +225,16 @@ export function MapScreen() {
       ? route.data.trips.reduce((total, trip) => total + trip.distanceM, 0)
       : null;
   const updated = position ? fmtAgo(position.staleSeconds, t) : '—';
-  const gps =
+  const connection =
     detail.data?.kind === 'ok'
-      ? t(
-          MAP_CONNECTION_LABEL_KEY[
-            deviceConnectionState(detail.data.pet.device)
-          ].labelKey,
-        )
+      ? deviceConnectionState(detail.data.pet.device)
+      : null;
+  const gps = connection
+      ? t(MAP_CONNECTION_LABEL_KEY[connection].labelKey)
       : '—';
+  const gpsTone = STATUS_TONE_CLASSES[
+    connection ? MAP_CONNECTION_TONE[connection] : 'muted'
+  ];
 
   return (
     <View testID="screen-map" className="flex-1">
@@ -314,6 +328,8 @@ export function MapScreen() {
             {selectedPet ? (
               <View
                 testID="map-pet-pill"
+                accessible
+                accessibilityLabel={`${selectedPet.name}, ${gps}`}
                 className="flex-row items-center gap-2 self-start rounded-full border border-border bg-surface px-3 py-2 shadow-sm"
               >
                 <PetAvatar
@@ -329,6 +345,17 @@ export function MapScreen() {
                   numberOfLines={1}
                 >
                   {selectedPet.name}
+                </Text>
+                <View
+                  testID="map-pet-pill-dot"
+                  className={`size-2 rounded-full ${gpsTone.dot}`}
+                />
+                <Text
+                  testID="map-pet-pill-status"
+                  className={`text-2xs font-semibold ${gpsTone.text}`}
+                  numberOfLines={1}
+                >
+                  {gps}
                 </Text>
               </View>
             ) : null}

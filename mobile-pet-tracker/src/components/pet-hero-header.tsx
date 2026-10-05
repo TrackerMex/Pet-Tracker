@@ -54,7 +54,7 @@ export interface PetHeroStatus {
   tone: PetHeroStatusTone;
 }
 
-const STATUS_TONE_CLASSES: Record<
+export const STATUS_TONE_CLASSES: Record<
   PetHeroStatusTone,
   { surface: string; dot: string; text: string }
 > = {
