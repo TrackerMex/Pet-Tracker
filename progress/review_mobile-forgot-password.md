@@ -1159,3 +1159,166 @@ e2e:      Test Suites: 3 skipped, 29 passed, 29 of 32 total
 ✅ Typecheck sin errores
 ✅ Todo verde. Listo para trabajar.
 ```
+
+## Ronda 4 — Integración de main (#118, #116)
+Fecha: 2026-10-05. HEAD `588a777a`. Rango revisado: `f7a9f896..588a777a`.
+Veredicto: APROBADO
+
+En una frase: los dos merges de `main` traen #118 y #116 sin perder ni cambiar nada de #117. Los únicos cambios a mano son los dos bloques de suma que pacta el handoff, idénticos a su texto literal. Los dos candados compartidos dan exactamente lo que tiene el árbol (29 ficheros y 365 claves), con el delta de #117 sumado una sola vez. Todas las corridas salen verdes.
+
+### Alcance
+- Commits del rango (first-parent):
+  - `9cf76d7c` (Codex): merge de `8b7caf25`, que es #118 (PR #193). Tuvo dos conflictos de una línea.
+  - `97dba61c` (Codex): solo `progress/impl_mobile-forgot-password.md` (+399).
+  - `56867267` (leader): solo `progress/current.md` (+14).
+  - `588a777a` (humano): merge de `8afae724`, que es #116 (PR #194). Sin conflictos.
+- No hay spec nueva ni código nuevo de #117. Revisión ligera según el encargo, sin barrido de la spec.
+
+## Checklist C2 — Estado coherente (ronda 4)
+- [x] Solo 1 feature in_progress: `grep -c '"status": "in_progress"' feature_list.json` da 1, y es #117.
+- [x] `progress/current.md` recoge el handoff de la ronda 4, el cierre de #116 con la PR #194 y el init.sh del leader sobre el merge (`56867267`).
+
+## Checklist C3 — Arquitectura (ronda 4)
+- [x] Sin cambio: los ficheros que solo toca #117 (producción incluida) son idénticos a `c9d67ddd`, que ya aprobó C3 (punto 2).
+
+## Checklist C4 — TDD (ronda 4)
+- [x] No hay tests ni código nuevos de #117. Los dos bloques resueltos solo reformatean la suma, sin recalcular nada. Los `describe` de los candados siguen nombrando su R-id (`#65 R12`, `#65 R18`, `#117 R1`).
+
+## Checklist C5 — Trazabilidad (ronda 4)
+- [x] `traceability.md` no tiene filas "pendiente" (`grep -c pendiente` = 0) y es idéntico a `c9d67ddd` (`git diff --quiet` = 0).
+- [x] Cita 25 hashes distintos. Los 25 dan `git cat-file -t` = `commit` y `git merge-base --is-ancestor <h> HEAD` = 0 (punto 6).
+- [x] Los commits del rango siguen el formato: `docs(mobile): …`, `docs(progress): …` y los mensajes estándar de merge.
+
+## Checklist C6 — Spec aprobada (ronda 4)
+- [x] `requirements.md` está en `status: approved`, con las casillas de aprobación, E1 y E2 marcadas. Sin cambios en esta ronda.
+
+## Checklist C7 — Sin código huérfano (ronda 4)
+- [x] La retirada de `src/app/(auth)/__tests__/forgot.test.tsx` y del contenido del stub sigue igual que en `c9d67ddd`. Los merges no lo reintroducen, porque los ficheros que solo toca #117 tienen diff 0.
+
+## Checklist C8 — UI móvil (ronda 4)
+- [x] Sin cambio de UI de #117.
+- [x] `git diff --check f7a9f896 588a777a -- mobile-pet-tracker` sale vacío (exit 0).
+- [x] Antes del typecheck, `test ! -e mobile-pet-tracker/.expo/types/router.d.ts` = 0. No lo borré.
+- [x] `bun run typecheck` y `bun run lint`: los dos con exit 0 (punto 7).
+- [ ] Smoke S1-S9 en dev build de Android: sigue pendiente del humano. Este veredicto ni lo marca ni lo bloquea.
+
+### 1. Sin ediciones manuales fuera de lo pactado
+- `git show --remerge-diff --format= --stat 9cf76d7c` toca 2 ficheros, con 2 inserciones y 8 borrados:
+  - `mobile-pet-tracker/src/__tests__/ui-language.test.ts`: +1 / −4
+  - `mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx`: +1 / −4
+  - Fuera quedan los 6 marcadores (`<<<<<<<`, `=======` y `>>>>>>>` en cada fichero) y las 2 líneas viejas de HEAD (las sumas absolutas con `+ 1 - 1` y `+ 6 - 1` al final). Dentro entran las 2 líneas de #117.
+- Las líneas resultantes en HEAD coinciden carácter a carácter con los bloques literales de `progress/handoff_mobile-forgot-password.md` §Ronda 4:
+  - `ui-language.test.ts:495-499`: `19 + 2 + 1 + 1 + 1 + 1 + 1 + 1 + 1 // #100 R10, …` / `+ 1 - 1 // #117 R10: …` / `+ 1, // #118 R1`
+  - `language-provider.test.tsx:55-59`: `260 + … + 9 + 9 // #105 R5` / `+ 6 - 1 // #117 R1` / `+ 8, // #118 R1`
+  - Anclas del handoff: `grep -cF "        + 1 - 1 // #117 R10: …"` = 1, `grep -cF "        + 6 - 1 // #117 R1"` = 1, y la forma vieja `grep -cF "+ 9 + 9 + 6 - 1, // #105 R5; #117 R1"` = 0.
+- `git show --remerge-diff --format= 588a777a` sale vacío (0 bytes).
+- `git grep -lE '^(<<<<<<<|>>>>>>>)( |$)' HEAD -- .` sale vacío (exit 1).
+
+### 2. #117 llega entero
+- `git diff --name-only b2a9c2aa c9d67ddd -- mobile-pet-tracker` lista 13 ficheros. 6 son compartidos y 7 solo los toca #117. `git diff --quiet c9d67ddd HEAD -- <los 7>` da exit 0. Los 7 son:
+  - `src/api/__tests__/auth.test.ts`
+  - `src/api/auth.ts`
+  - `src/api/types.ts`
+  - `src/app/(auth)/__tests__/forgot.test.tsx`
+  - `src/app/(auth)/forgot.tsx`
+  - `src/screens/forgot/index.test.tsx`
+  - `src/screens/forgot/index.tsx`
+- `design-drift.test.ts` no aparece en la lista: #117 no lo toca.
+- En los compartidos, comparé las líneas +/− de `git diff -U0 b2a9c2aa c9d67ddd -- <f>` con las de `git diff -U0 8afae724 HEAD -- <f>`:
+
+  | fichero | +/− #117 | +/− tras integrar | diferencia |
+  |---|---|---|---|
+  | `consistency-classnames.test.ts` | 8 | 8 | ninguna |
+  | `legibility-classnames.test.ts` | 2 | 2 | ninguna |
+  | `ui-copy-table.ts` | 17 | 17 | ninguna |
+  | `i18n/catalog.ts` | 14 | 14 | ninguna |
+  | `ui-language.test.ts` | 6 | 5 | solo la línea de suma reformateada (una `−` vieja/`+` nueva pasa a una `+` de delta) |
+  | `language-provider.test.tsx` | 37 | 36 | ídem |
+
+- `specs/mobile-ui-language/design.md` §2 conserva las filas de #117 (`:231-247`, más las del inventario `:81` y `:105`), junto a la de #116 (`:360`, `map.live`) y a §2.19 de #118 (`:880-889`). Las ocurrencias de `#117` son 12 en `c9d67ddd` y 12 en HEAD, y `git diff c9d67ddd HEAD` no añade ni quita ninguna línea con `#117`.
+
+### 3. Candados compartidos, aritmética
+Conté el árbol con un script de bun que importa `ALL_USES` de `ui-copy-table.ts` y `en`/`es` de `catalog.ts` (`review-r4/count.ts` en el scratchpad del leader):
+- `SCREEN_FILES` real = 29 ficheros únicos, y la expresión vale 29. La única entrada `forgot` es `src/screens/forgot/index.tsx`. `+ 1 - 1 // #117 R10` aparece una sola vez.
+- Claves del catálogo: `en` = 365 y `es` = 365, y la expresión vale 365. `+ 6 - 1 // #117 R1` aparece una sola vez. Hay 10 claves `forgot.*`, y `forgot.comingSoon` ya no está.
+- `main` (`8afae724`) sin #117 da 360. El diff de `catalog.ts` entre `8afae724` y HEAD es exactamente el de #117 (+6 −1 por idioma), así que 360 + 5 = 365 cuadra.
+- #116 en ficheros que #117 también toca (diff `8b7caf25..8afae724`). Ninguno se pisa con #117:
+  - `consistency-classnames.test.ts`: `[join('screens','map','index.tsx'), 3 + 1], // #116 R5` (`:325`) y el agregado `14 + 4 + 1 + 1 + 1 + 1 + 1 + 2 + 1, // … #116 R5` (`:353`), los dos en `#62 R15`. Las 4 líneas de #117 caen en `#62 R1`, `#62 R4`, `#62 R13` y `#62 R14`, y solo cambian rutas, no recuentos.
+  - `ui-copy-table.ts`: `pairing.connection` pasa a `pairing.battery` en `R4_MAP` (`:118`). Las filas de #117 están en `R1_AUTH` (`:16-24`).
+  - `catalog.ts`: solo cambian los valores de `map.live` en `en` y `es` (`:129`, `:499`), sin claves nuevas. Por eso el recuento de #116 sobre el catálogo es 0 y no toca la expresión.
+
+### 4. Sonda de candado
+- Borré `'forgot.resend'` en `en` (`:16`) y en `es` (`:386`) de `src/i18n/catalog.ts` y corrí `language-provider.test.tsx`: exit 1, 2 fallidos y 22 pasados de 24.
+  - Cae `#65 R12 › mantiene la base más las claves de #68 y los mismos marcadores en ambos idiomas` con `Expected length: 365` / `Received length: 364`. Es el candado de longitud.
+  - Cae también `#117 R1 › registra las seis claves en los dos idiomas…`, el candado nominal de la clave.
+- Revertí con `git checkout HEAD -- mobile-pet-tracker/src/i18n/catalog.ts`. Después, `git diff --quiet -- mobile-pet-tracker` = 0 y `git diff --cached --quiet` = 0. El `git diff --quiet` global da 1 solo por este fichero de review, sin commitear en ese momento.
+
+### 5. Harness
+- `feature_list.json` es JSON válido (`json.load` en python). Tiene 151 entradas con ids 1-151, sin huecos ni duplicados, igual que `8afae724`.
+  - Estados: #117 en `in_progress`, #116 y #118 en `done`, y #149, #150 y #151 en `pending`, cada uno una sola vez.
+  - Contra `main`, el único diff es `"status": "pending"` → `"in_progress"` en #117.
+- `STATUS.md` es idéntico a `main` (`git diff 8afae724 HEAD -- STATUS.md` vacío). El merge no lo tocó y init.sh dice `STATUS.md sincronizado con feature_list.json`. Tiene 4 líneas repetidas (cierres de bloque de código y una línea de `impl_auth-forgot-password.md`), pero ya estaban en `main`: no las trae el merge.
+
+### 6. Trazabilidad
+- `specs/mobile-forgot-password/traceability.md` cita 25 hashes distintos. Los 25 son commits y los 25 son ancestros de HEAD (`git merge-base --is-ancestor` = 0). Ninguno falla.
+
+### 7. Cifras
+Todas desde `mobile-pet-tracker/`, sin pipe y con `--maxWorkers=2`, sobre el árbol sin mutar. Antes de cada suite grande, `pgrep -f '[i]nit.sh'` dio exit 1.
+
+| corrida | resultado | exit | esperado |
+|---|---|---|---|
+| `src/screens/forgot/index.test.tsx` | 1 suite / 31 tests | 0 | 1 / 31 |
+| 8 suites del handoff §Ronda 4 §MEDICIONES (comando literal) | 8 suites / 290 tests | 0 | 290 |
+| global `bunx jest --maxWorkers=2` | 94 suites / 2113 tests, 1 snapshot | 0 | 94 / 2113 |
+| `bun run typecheck` (`tsc --noEmit`), con `test ! -e .expo/types/router.d.ts` = 0 antes | — | 0 | 0 |
+| `bun run lint` (`expo lint`) | — | 0 | 0 |
+
+- 290 es la misma cifra de Codex sobre `9cf76d7c`. #116 no mueve el número de tests de esas 8 suites porque en `consistency-classnames` solo cambia valores de filas que ya existían (`3` pasa a `3 + 1`, y el agregado `+ 1`).
+- Global: 2083 (Codex, ronda 4) + 30 de #116 = 2113. Ningún rojo, así que no hizo falta repetir corridas.
+
+## Observaciones (ronda 4)
+
+### Defectos
+Ninguno.
+
+### Informativas (no bloquean)
+1. En la fase e2e de `init-r4.log` hay un `ERROR [ExceptionsHandler] DrizzleQueryError` de Nest: FK `pet_users_user_id_users_id_fk` (`23503`) al crear una mascota con un `user_id` que no existe. Es log del servidor dentro de una suite que pasa (e2e 438 pasados, 8 omitidos, `✅ Tests e2e pasados`). No viene de #117, que no toca backend.
+2. Los recuentos absolutos de los candados (29 y 365) solo son ciertos en este HEAD. El siguiente merge de `main` que añada claves o pantallas volverá a abrir estos dos bloques de suma. Se resuelve igual: el lado de `main` más la línea de delta de #117.
+
+### Sobre el trabajo de Codex en esta ronda
+Sin divergencias, y lo confirmo. Sus dos bloques resueltos son literalmente los del handoff, y sus cifras sobre `9cf76d7c` (forgot 31, 8 suites 290, global 94 / 2083) cuadran con las mías más los 30 tests de #116.
+
+### Estado del árbol al terminar
+- La sonda está revertida: `git diff --quiet -- mobile-pet-tracker` = 0 y `git diff --cached --quiet` = 0.
+- Antes del commit, el único cambio es este fichero de review.
+
+## Output de ./init.sh (ronda 4)
+No lo ejecuté: el clasificador lo deniega a subagentes y la otra sesión comparte LocalStack/Postgres. Lo corrió el leader sobre `588a777a`. Leí la evidencia en el scratchpad:
+- `init-r4.start`: `2026-10-05T16:58:50Z` (UTC).
+- `init-r4.end`: `2026-10-05 17:04:07` (hora local del VPS).
+- `init-r4.exit`: `0`.
+- `init-r4.head`: `588a777a`. HEAD sigue en `588a777a` al cerrar esta revisión.
+- `init-r4.log` (26085 líneas), resumen por fase:
+```
+→ Verificando entorno...            ✅ node / pnpm / bun disponibles
+→ Verificando variables de entorno  ✅ .env encontrado
+→ Instalando dependencias...        ✅ Dependencias instaladas
+→ Coherencia del harness            ✅ Archivos del harness presentes
+                                    ✅ STATUS.md sincronizado con feature_list.json
+→ Build...                          ✅ Build exitoso
+→ Ejecutando tests...
+backend:  Test Suites: 176 passed, 176 total   Tests: 1348 passed, 1348 total
+infra:    Test Suites: 2 passed, 2 total       Tests: 14 passed, 14 total
+mobile:   Test Suites: 94 passed, 94 total
+          Tests:       2113 passed, 2113 total
+          Snapshots:   1 passed, 1 total
+✅ Tests pasados
+→ Tests e2e...                      ✅ Esquema y recursos e2e listos
+e2e:      Test Suites: 3 skipped, 29 passed, 29 of 32 total
+          Tests:       8 skipped, 438 passed, 446 total
+✅ Tests e2e pasados
+→ Lint...                           ✅ Lint sin errores
+→ Typecheck...                      ✅ Typecheck sin errores
+✅ Todo verde. Listo para trabajar.
+  Features: 140/151 completadas | 10 pendientes
+```
