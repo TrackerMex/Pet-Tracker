@@ -1927,3 +1927,14 @@ describe('#116 R7: la batería cae al guion y solo la lee el detalle', () => {
     }
   });
 });
+
+describe('#116 R8: el mapa no estrena animación', () => {
+  it('no importa Reanimated ni anima el punto', () => {
+    const source = readFileSync(
+      join(process.cwd(), 'src', 'screens', 'map', 'index.tsx'),
+      'utf8',
+    );
+    expect(source).not.toContain('react-native-reanimated');
+    expect(source).not.toMatch(/\bAnimated\b/);
+  });
+});
