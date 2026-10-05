@@ -13,11 +13,11 @@ export const R1_AUTH: UseRow[] = [
   { file: 'src/app/(auth)/login.tsx', key: 'login.signIn' },
   { file: 'src/app/(auth)/login.tsx', key: 'login.createAccount' },
   { file: 'src/app/(auth)/login.tsx', key: 'login.forgotPassword' },
-  { file: 'src/app/(auth)/forgot.tsx', key: 'forgot.forgotPassword' },
-  { file: 'src/app/(auth)/forgot.tsx', key: 'forgot.comingSoon' },
-  { file: 'src/app/(auth)/forgot.tsx', key: 'forgot.email' },
-  { file: 'src/app/(auth)/forgot.tsx', key: 'forgot.sendRecoveryLink' },
-  { file: 'src/app/(auth)/forgot.tsx', key: 'forgot.backToSignIn' },
+  { file: 'src/screens/forgot/index.tsx', key: 'forgot.forgotPassword' }, // #117 R10
+  { file: 'src/screens/forgot/index.tsx', key: 'forgot.instructions' }, // #117 R10
+  { file: 'src/screens/forgot/index.tsx', key: 'forgot.email' }, // #117 R10
+  { file: 'src/screens/forgot/index.tsx', key: 'forgot.sendRecoveryLink' }, // #117 R10
+  { file: 'src/screens/forgot/index.tsx', key: 'forgot.backToSignIn' }, // #117 R10
   { file: 'src/app/(auth)/register.tsx', key: 'register.emailAlreadyRegistered' },
   { file: 'src/app/(auth)/register.tsx', key: 'common.cannotReachServer' },
   { file: 'src/app/(auth)/register.tsx', key: 'common.somethingWentWrong' },

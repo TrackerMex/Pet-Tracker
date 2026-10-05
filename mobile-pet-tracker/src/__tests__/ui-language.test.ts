@@ -487,7 +487,7 @@ describe('#65 R18: los sitios resuelven por clave y no queda copy suelta', () =>
   });
 
   it('no deja ningún valor fijo del catálogo como literal entero en las pantallas', () => {
-    expect(SCREEN_FILES).toHaveLength(19 + 2 + 1 + 1 + 1 + 1 + 1 + 1 + 1); // #100 R10, #41 R10, #146 R10, #105 R5
+    expect(SCREEN_FILES).toHaveLength(19 + 2 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 - 1); // #100 R10, #41 R10, #146 R10, #105 R5; #117 R10: sale app/(auth)/forgot.tsx, entra screens/forgot/index.tsx
 
     for (const file of SCREEN_FILES) {
       const literals = wholeLiterals(readFileSync(join(SOURCE_ROOT, file), 'utf8'));

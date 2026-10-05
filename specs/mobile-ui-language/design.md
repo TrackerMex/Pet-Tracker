@@ -78,7 +78,7 @@ ocupa un texto JSX partido). **320 de 320 filas verifican** contra `a44925f`.
 | `src/app/(auth)/login.tsx` | 10 | R1 |
 | `src/screens/docs/index.tsx` | 7 | R7 |
 | `src/utils/reminder-meta.ts` | 7 | R8 |
-| `src/app/(auth)/forgot.tsx` | 5 | R1 |
+| `src/screens/forgot/index.tsx` (movida por #117) | 5 | R1 |
 | `src/components/floating-tab-bar.tsx` | 5 | R2 |
 | `src/components/weight-chart.tsx` | 1 | R5 |
 
@@ -102,7 +102,7 @@ ocupa un texto JSX partido). **320 de 320 filas verifican** contra `a44925f`.
 | `src/screens/add-pet/index.test.tsx` | 4 |
 | `src/screens/profile/index.test.tsx` | 3 |
 | `src/__tests__/legibility-classnames.test.ts` | 1 |
-| `src/app/(auth)/__tests__/forgot.test.tsx` | 1 |
+| `src/screens/forgot/index.test.tsx` (movida por #117) | 1 |
 | `src/app/(tabs)/__tests__/screens.test.tsx` | 1 |
 | `src/components/__tests__/weight-chart.test.tsx` | 1 |
 
@@ -211,7 +211,7 @@ cabecera las incluye, así que **la suma de los grupos es mayor que 252**; el
 total sin repetir es 252 + 3 del interruptor = **255**.
 
 
-### §2.1 — R1 — grupo `(auth)` (29 ocurrencias, 23 claves)
+### §2.1 — R1 — grupo `(auth)` (29 ocurrencias, 28 claves)
 
 **`mobile-pet-tracker/src/app/(auth)/login.tsx`** — 10 ocurrencias
 
@@ -228,15 +228,15 @@ total sin repetir es 252 + 3 del interruptor = **255**.
 | 117 | `login.createAccount` | `Create account` | `Crear cuenta` |
 | 126 | `login.forgotPassword` | `Forgot password?` | `¿Olvidaste tu contraseña?` |
 
-**`mobile-pet-tracker/src/app/(auth)/forgot.tsx`** — 5 ocurrencias
+**`mobile-pet-tracker/src/screens/forgot/index.tsx`** — 5 ocurrencias (movido por #117 desde src/app/(auth)/forgot.tsx)
 
 | Línea | Clave | `en` | `es` |
 |---|---|---|---|
-| 37 | `forgot.forgotPassword` | `Forgot password` | `Recuperar contraseña` |
-| 40 | `forgot.comingSoon` | `Password recovery coming soon` | `La recuperación de contraseña estará disponible pronto` |
-| 44 | `forgot.email` | `Email` | `Correo electrónico` |
-| 60 | `forgot.sendRecoveryLink` | `Send recovery link` | `Enviar enlace de recuperación` |
-| 66 | `forgot.backToSignIn` | `Back to sign in` | `Volver al inicio de sesión` |
+| — | `forgot.forgotPassword` | `Forgot password` | `Recuperar contraseña` |
+| — | `forgot.comingSoon` ← retirada por #117 (R1) | `Password recovery coming soon` | `La recuperación de contraseña estará disponible pronto` |
+| — | `forgot.email` | `Email` | `Correo electrónico` |
+| — | `forgot.sendRecoveryLink` | `Send recovery link` | `Enviar enlace de recuperación` |
+| — | `forgot.backToSignIn` | `Back to sign in` | `Volver al inicio de sesión` |
 | — | `forgot.instructions` ← añadida por #117 (R1) | `Enter the email linked to your account and we'll send you a link to reset your password.` | `Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.` |
 | — | `forgot.checkYourEmail` ← añadida por #117 (R1) | `Check your email` | `Revisa tu correo` |
 | — | `forgot.sentTo` ← añadida por #117 (R1) | `If an account exists for {{email}}, we sent a link to reset your password. Check your inbox and spam folder.` | `Si existe una cuenta para {{email}}, te enviamos un enlace para restablecer tu contraseña. Revisa tu bandeja de entrada y la carpeta de spam.` |
