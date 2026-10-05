@@ -195,6 +195,19 @@ async function expectFormState(value: string, error: string | null) {
   await expectLinkLoginNavigates();
 }
 
+async function expectSentState(email: string, error: string | null) {
+  expect(screen.getByTestId('forgot-title')).toHaveTextContent('Revisa tu correo');
+  expect(screen.getByTestId('forgot-body')).toHaveTextContent(`Si existe una cuenta para ${email}, te enviamos un enlace para restablecer tu contraseña. Revisa tu bandeja de entrada y la carpeta de spam.`);
+  expect(screen.queryByText('Correo electrónico')).toBeNull();
+  expect(screen.queryByTestId('forgot-email')).toBeNull();
+  expect(screen.queryByTestId('forgot-submit')).toBeNull();
+  expect(screen.getByTestId('forgot-resend')).toBeOnTheScreen();
+  expect(screen.getByTestId('link-login')).toHaveTextContent('Volver al inicio de sesión');
+  expect(lockTile()).toBeDefined();
+  expectForgotError(error);
+  await expectLinkLoginNavigates();
+}
+
 describe('#117 R5: enviar pasa la pantalla a «Revisa tu correo»', () => {
   it('envía el correo recortado una sola vez y deshabilita forgot-submit mientras vuela la petición', async () => {
     let resolveRequest!: (state: ForgotPasswordState) => void;
@@ -223,6 +236,7 @@ describe('#117 R5: enviar pasa la pantalla a «Revisa tu correo»', () => {
     expect(screen.getByTestId('forgot-resend')).not.toBeDisabled();
     expect(screen.getByTestId('link-login')).toBeVisible();
     expect(screen.queryByTestId('forgot-error')).toBeNull();
+    await expectSentState('Ana@Example.com', null);
   });
 
   it('el tile Lock sigue en pie en los dos estados', async () => {
@@ -314,6 +328,8 @@ describe('#117 R7: cada kind distinto de ok pinta su copy en forgot-error', () =
     await act(async () => { resolveRequest({ kind: 'ok' }); });
     expect(await screen.findByText('Revisa tu correo')).toBeVisible();
     expect(screen.queryByTestId('forgot-error')).toBeNull();
+    await waitFor(() => expect(screen.getByTestId('forgot-resend')).not.toBeDisabled());
+    await expectSentState('Ana@Example.com', null);
   });
 
   it('un nuevo reenvío retira forgot-error en cuanto arranca y no lo repinta al resolver ok', async () => {
@@ -331,11 +347,13 @@ describe('#117 R7: cada kind distinto de ok pinta su copy en forgot-error', () =
     await waitFor(() => expect(screen.getByTestId('forgot-resend')).toBeDisabled());
     expect(mockForgotPassword.mock.calls[2][1]).toEqual(mockForgotPassword.mock.calls[0][1]);
     expect(screen.queryByTestId('forgot-error')).toBeNull();
+    await expectSentState('Ana@Example.com', null);
     await act(async () => { resolveRequest({ kind: 'ok' }); });
     await waitFor(() => expect(screen.getByTestId('forgot-resend')).not.toBeDisabled());
     expect(screen.queryByTestId('forgot-error')).toBeNull();
     expect(screen.getByText('Revisa tu correo')).toBeVisible();
     expect(screen.getByTestId('forgot-body')).toHaveTextContent('Si existe una cuenta para Ana@Example.com, te enviamos un enlace para restablecer tu contraseña. Revisa tu bandeja de entrada y la carpeta de spam.');
+    await expectSentState('Ana@Example.com', null);
   });
 });
 
@@ -353,9 +371,11 @@ describe('#117 R6: reenviar repite la misma petición', () => {
     await waitFor(() => expect(screen.getByTestId('forgot-resend')).toBeDisabled());
     expect(mockForgotPassword).toHaveBeenCalledTimes(2);
     expect(mockForgotPassword.mock.calls[1][1]).toEqual(mockForgotPassword.mock.calls[0][1]);
+    await expectSentState('Ana@Example.com', null);
     await act(async () => { resolveRequest({ kind: 'ok' }); });
     await waitFor(() => expect(screen.getByTestId('forgot-resend')).not.toBeDisabled());
     expect(screen.getByText('Revisa tu correo')).toBeVisible();
+    await expectSentState('Ana@Example.com', null);
   });
 
   it('un 429 al reenviar pinta forgot-error sin salir de «Revisa tu correo»', async () => {
@@ -369,6 +389,7 @@ describe('#117 R6: reenviar repite la misma petición', () => {
     expect(screen.getByText('Revisa tu correo')).toBeVisible();
     expect(screen.queryByTestId('forgot-email')).toBeNull();
     await waitFor(() => expect(screen.getByTestId('forgot-resend')).not.toBeDisabled());
+    await expectSentState('ana@example.com', 'Demasiados intentos. Inténtalo más tarde.');
   });
 
   it.each<[ForgotPasswordState, string]>([
@@ -387,6 +408,29 @@ describe('#117 R6: reenviar repite la misma petición', () => {
     expect(screen.getByText('Revisa tu correo')).toBeVisible();
     expect(screen.queryByTestId('forgot-email')).toBeNull();
     await waitFor(() => expect(screen.getByTestId('forgot-resend')).not.toBeDisabled());
+    await expectSentState('ana@example.com', copy);
+  });
+
+  it('un segundo reenvío que vuelve a fallar pinta el copy del nuevo kind', async () => {
+    mockForgotPassword
+      .mockResolvedValueOnce({ kind: 'ok' })
+      .mockResolvedValueOnce({ kind: 'rate-limited' })
+      .mockResolvedValueOnce({ kind: 'error' })
+      .mockResolvedValueOnce({ kind: 'unreachable', message: 'network down' });
+    await renderRoute();
+    await submitForgot();
+    expect(await screen.findByText('Revisa tu correo')).toBeVisible();
+    await fireEvent.press(screen.getByTestId('forgot-resend'));
+    expect(await screen.findByTestId('forgot-error')).toHaveTextContent('Demasiados intentos. Inténtalo más tarde.');
+    await waitFor(() => expect(screen.getByTestId('forgot-resend')).not.toBeDisabled());
+    await fireEvent.press(screen.getByTestId('forgot-resend'));
+    await waitFor(() => expect(screen.getByTestId('forgot-error')).toHaveTextContent('Algo salió mal'));
+    await waitFor(() => expect(screen.getByTestId('forgot-resend')).not.toBeDisabled());
+    await expectSentState('ana@example.com', 'Algo salió mal');
+    await fireEvent.press(screen.getByTestId('forgot-resend'));
+    await waitFor(() => expect(screen.getByTestId('forgot-error')).toHaveTextContent('No se pudo conectar con el servidor'));
+    await waitFor(() => expect(screen.getByTestId('forgot-resend')).not.toBeDisabled());
+    await expectSentState('ana@example.com', 'No se pudo conectar con el servidor');
   });
 });
 
