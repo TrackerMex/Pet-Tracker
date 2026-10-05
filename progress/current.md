@@ -23,7 +23,16 @@
   `feature/118-mobile-welcome-splash`, node_modules instalado con
   `bun install --frozen-lockfile`). Este worktree principal queda libre para
   #116 (próxima spec) sobre `main`.
-- Siguiente paso del leader: cuando el humano confirme que Codex terminó,
-  pedir permiso para `./init.sh` y lanzar `reviewer` (lee
-  `progress/impl_mobile-welcome-splash.md`). R13 S1–S8 es smoke humano en dev
-  build de Android.
+- Ronda 1 de Codex: 17 commits hasta `7789f722`. `./init.sh` r2 exit=0 sobre
+  ese HEAD (la r1 falló por entorno: wt-118 sin `.env`; el leader copió el del
+  tree principal, base `pet_tracker`).
+- Review ronda 1: **rechazado** (`progress/review_mobile-welcome-splash.md`,
+  `e1690ede`). Cinco candados ciegos que la propia spec prescribía (E1–E5 en
+  R5, R6 y R10); producción correcta y sin cambios.
+- Enmienda E1–E5 escrita en `specs/mobile-welcome-splash/` (requirements R5,
+  R6, R10 y §Aprobación con casilla propia; design §1.5 y §2; tasks T12).
+  Espejada en la página Notion de #118; `Estado del gate` = En revisión.
+- Siguiente paso: Aprobado en Notion, commit de firma de la enmienda, handoff
+  de la ronda 2 a Codex (solo `index.test.tsx`), init.sh con permiso y
+  reviewer ronda 2. R13 S1–S8 sigue siendo smoke humano en dev build de
+  Android.

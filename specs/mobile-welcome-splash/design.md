@@ -134,7 +134,7 @@ welcome ahí, R3 ya lo cubre).
 | Propiedades | `opacity` 0→1, `transform: [{ translateY }]` 16→0 (solo transform/opacity: hilo UI, sin layout) |
 | Curva | `Easing.bezier(0.23, 1, 0.32, 1)` (ease-out fuerte de la carta/skill) |
 | Duración | 240 ms (< 300 ms) |
-| Disparo | `useEffect` al montar, una sola escritura: `opacity.value = withTiming(1, { duration: WELCOME_ENTRANCE_MS, easing: WELCOME_ENTRANCE_EASING })`; `translateY.value = withTiming(0, …)` solo si `!reduceMotion` |
+| Disparo | `useEffect` al montar, una sola escritura: `opacity.set(withTiming(1, { duration: WELCOME_ENTRANCE_MS, easing: WELCOME_ENTRANCE_EASING, reduceMotion: ReduceMotion.Never }))`; `translateY.set(withTiming(0, { duration: WELCOME_ENTRANCE_MS, easing: WELCOME_ENTRANCE_EASING }))` solo si `!reduceMotion` (Enmiendas E1 y E2 de requirements.md) |
 | Reduce Motion | `useReducedMotion()`: `translateY` nace en 0 (`useSharedValue(reduceMotion ? 0 : 16)`) y no se anima; `opacity` sí |
 | Press en CTAs | el de heroui `Button` (`feedbackVariant` por defecto `scale-highlight`, escala 0.985 en 300 ms según `button.styles.js`); **sin código propio** |
 | Hápticos | ninguno |
@@ -169,12 +169,14 @@ pie de welcome solo informa.
 | `paddingBottom: insets.bottom + 96` | `R5 aplica las dimensiones del grupo sin tab bar` | `props.contentContainerStyle` `toEqual` |
 | Quitar el legal / cambiar orden de bloques | `R5 apila los siete bloques en orden` | `children.length`, `children[i].props.testID` |
 | Hero a 120 px | `R5 pinta hero, marca, tagline y legal con sus clases` | `props.style` `toEqual({ width: 160, height: 160 })` |
+| Hero con `logo-glow.png` (E5) | `R5 pinta hero, marca, tagline y legal con sus clases` | `props.source` `toEqual([expect.objectContaining({ testUri: … splash-icon.png })])` |
 | Dos chips / cuarto chip | `R6 cardinalidad` | `getByTestId('welcome-chips').children.length` |
 | Chips en otro orden | `R6 fila 1 (testID) y fila 3 (icono)` | `children[i].props.testID`, `children[i].children[0].props.testID` (`icon-map`, `icon-stethoscope`, `icon-fork-knife` del mock) |
 | Icono a 20 px | `R6 fila 4` | `children[i].children[0].props.size` |
 | Icono con `color={muted}` | `R6 fila 5` | `props.color` igual al valor devuelto por el mock de `useThemeColors` y `useThemeColors` llamado con `['accent-strong']` |
 | Etiqueta con `text-accent` suelto | `legibility-classnames::no deja ningún text-accent suelto` y `R6 fila 7` | `filesMatching(/text-accent(?![-\w])/)`; `children[i].children[1].props.className` |
-| Chip pulsable | `R6 fila 10` | `children[i].props.onPress` `toBeUndefined()` |
+| Chip pulsable (`View` con `onPress`) | `R6 fila 10` | `children[i].props.onPress` `toBeUndefined()` |
+| Chip como `Pressable` con `onPress` (E4) | `R6 fila 10` | `children[i].props.onClick` y `props.accessible` `toBeUndefined()` |
 | Tres chips escritos a mano (sin `map`) | `R6 fila 11` | recuento de `text-accent-strong` en el fuente ≠ 2 |
 | CTA primario con `router.replace` | `R7 empuja a registro sin reemplazar` | `mockRouter.replace` llamado |
 | CTA primario a `/login` | `R7 empuja a registro sin reemplazar` | `mockRouter.push.mock.calls[0][0]` |
@@ -187,6 +189,12 @@ pie de welcome solo informa.
 | `translateY` inicial 24 | `R10 arranca invisible y desplazado sin Reduce Motion` | `toHaveAnimatedStyle({ opacity: 0, transform: [{ translateY: 16 }] })` |
 | Reduce Motion ignorado | `R10 con Reduce Motion no se desplaza` | `toHaveAnimatedStyle(... translateY: 0)` antes de avanzar |
 | Duración 400 ms | `R10 fija la duración y la curva` | `toBe(240)` |
+| `duration: 400` a mano en un `withTiming`, constante intacta (E1) | `R10 fija la duración y la curva` | `source.match(/duration: WELCOME_ENTRANCE_MS,\s*easing: WELCOME_ENTRANCE_EASING,/g)` `toHaveLength(2)` |
+| `WELCOME_ENTRANCE_EASING = Easing.linear` (E1) | `R10 fija la duración y la curva` | `factory()(point)` `toBeCloseTo` la referencia literal en 9 puntos |
+| `easing: Easing.linear` solo en el fade (E1) | `R10 fija la duración y la curva` | regex de cableado `toHaveLength(2)` |
+| Fade sin `reduceMotion: ReduceMotion.Never` (E2) | `R10 fija la duración y la curva` | `source.match(/reduceMotion: ReduceMotion\.Never/g)` `toHaveLength(1)` |
+| Fade con `duration: reduceMotion ? 0 : WELCOME_ENTRANCE_MS` (E2) | `R10 fija la duración y la curva` | regex de cableado `toHaveLength(2)` |
+| Clave animada extra `marginTop: translateY.get()` (E3) | `R10 arranca…`, `R10 termina…` y `R10 con Reduce Motion…` | `toHaveAnimatedStyle(…, { shouldMatchAllProps: true })` |
 | Animación nunca llega a 1 | `R10 termina visible y en su sitio` | `toHaveAnimatedStyle({ opacity: 1, … })` tras la ventana |
 | Hex o `StyleSheet.create` en la pantalla | `design-drift::#118 R11` | regex por fichero |
 | `import … from 'expo-linear-gradient'` | `design-drift::#118 R11` y `bun.lock` sin diff (R12) | `not.toMatch`; `git diff` |

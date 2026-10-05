@@ -183,7 +183,10 @@ Tests (`src/screens/welcome/index.test.tsx`, describe `R5`, insets mockeados
   lleva `className`: ningún `Animated.View` del repo la usa, y el estilo de
   layout va inline como el `style` del `splash-logo`); `welcome-hero` tiene
   `props.contentFit === 'contain'` y `props.style` `toEqual({ width: 160,
-  height: 160 })`.
+  height: 160 })`; y **(Enmienda E5)** `welcome-hero` `props.source`
+  `toEqual([expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/splash-icon\.png$/) })])`.
+  Sin esta aserción, el hero con `logo-glow.png` (descartado arriba) queda
+  verde.
 
 ### R6 — Tres chips, idénticos salvo icono y etiqueta
 
@@ -219,6 +222,13 @@ es ese nodo y el hijo 1 la etiqueta. La tinta (fila 5) se sonda mockeando
 `../../theme/use-theme-colors` para que `useThemeColors` devuelva
 `['accent-strong-ink']` y aseverando `props.color === 'accent-strong-ink'` y
 `useThemeColors` llamado con `['accent-strong']`.
+
+**(Enmienda E4)** El `it` de la fila 10 asevera, por cada hijo de
+`welcome-chips`, `props.onPress`, `props.onClick` y `props.accessible`
+`toBeUndefined()`, y `props.accessibilityRole` `not.toBe('button')`. Un
+`Pressable` con `onPress` no pasa `onPress` a su nodo host, pero sí `onClick` y
+`accessible: true`: sin esas dos aserciones, el chip convertido en `Pressable`
+queda verde.
 
 ### R7 — CTA primario «Comenzar ahora» → registro
 
@@ -291,6 +301,13 @@ El cuerpo exporta `WELCOME_ENTRANCE_MS = 240` y
 `WELCOME_ENTRANCE_EASING = Easing.bezier(0.23, 1, 0.32, 1)`; la animación se
 dispara en un `useEffect` y escribe en los shared values una sola vez.
 
+**(Enmiendas E1 y E2)** Los dos `withTiming` (fade y `translateY`) llevan
+`duration: WELCOME_ENTRANCE_MS` y `easing: WELCOME_ENTRANCE_EASING`, nunca
+literales. El del fade lleva además `reduceMotion: ReduceMotion.Never`: sin
+él, con Reduce Motion de sistema activo Reanimated salta el fade a 1 sin
+animar, y la rama WHILE de arriba deja de cumplirse. El de `translateY` no lo
+lleva (bajo Reduce Motion no se dispara).
+
 Tests (`describe('R10')`, `jest.useFakeTimers()` por `it`; mock parcial de
 `react-native-reanimated` que **solo** sustituye `useReducedMotion` (como
 `src/screens/home/index.test.tsx`) y deja `withTiming` real — precedente de
@@ -299,8 +316,21 @@ Tests (`describe('R10')`, `jest.useFakeTimers()` por `it`; mock parcial de
 `WELCOME_ENTRANCE_MS * 2 + 100` ms — derivada de la duración real con margen;
 si hiciera falta se amplía la ventana, nunca la aserción):
 
-- `'fija la duración y la curva'`: `expect(WELCOME_ENTRANCE_MS).toBe(240)`;
-  `expect(WELCOME_ENTRANCE_EASING).toBeDefined()`.
+- `'fija la duración y la curva'` **(Enmiendas E1 y E2)**:
+  `expect(WELCOME_ENTRANCE_MS).toBe(240)`; la curva contra una referencia
+  construida en el test con los coeficientes **literales** (nunca contra un
+  símbolo importado de producción), en nueve puntos, como
+  `src/app/(tabs)/__tests__/food.test.tsx` (`expectKcalBarTiming`):
+  `const expected = jest.requireActual<typeof import('react-native-reanimated')>('react-native-reanimated').Easing.bezier(0.23, 1, 0.32, 1).factory();`
+  y, para cada `point` de `[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]`,
+  `expect(WELCOME_ENTRANCE_EASING.factory()(point)).toBeCloseTo(expected(point), 6)`.
+  Y un candado de cableado sobre `readSource('screens/welcome/index.tsx')`
+  (el helper que ya usa el fichero):
+  `source.match(/duration: WELCOME_ENTRANCE_MS,\s*easing: WELCOME_ENTRANCE_EASING,/g)`
+  `toHaveLength(2)`; `source.match(/\b(duration|easing):/g)` `toHaveLength(4)`;
+  `source.match(/reduceMotion: ReduceMotion\.Never/g)` `toHaveLength(1)`.
+  `toBeDefined()` pasaba con cualquier curva, y `toBe(240)` miraba una
+  constante que los `withTiming` podían no usar.
 - `'arranca invisible y desplazado sin Reduce Motion'`: antes de avanzar
   timers, `welcome-content` `toHaveAnimatedStyle({ opacity: 0, transform:
   [{ translateY: 16 }] })`.
@@ -311,6 +341,12 @@ si hiciera falta se amplía la ventana, nunca la aserción):
   antes de avanzar, `toHaveAnimatedStyle({ opacity: 0, transform: [{
   translateY: 0 }] })`; tras la ventana, `{ opacity: 1, transform: [{
   translateY: 0 }] }`.
+- **(Enmienda E3)** Las **cinco** llamadas a `toHaveAnimatedStyle` de este
+  describe añaden `alignItems: 'center', gap: 16` al objeto esperado y pasan
+  `{ shouldMatchAllProps: true }` como segundo argumento (precedente:
+  `food-plan-fill` en `src/app/(tabs)/__tests__/food.test.tsx`). Sin eso,
+  `toHaveAnimatedStyle` solo compara las claves que se le pasan y una clave
+  animada extra (p. ej. `marginTop`, que la carta prohíbe animar) queda verde.
 
 ### R11 — Grep-clean y candados de carta
 
@@ -362,6 +398,25 @@ Cada comprobación tiene su casilla. El gate de cierre exige las ocho.
       dónde aterriza (si no es welcome, se registra como deuda; no bloquea
       esta feature).
 
+## Enmienda E1–E5 (review de la ronda 1, 2026-10-05)
+
+El `reviewer` rechazó la ronda 1 (`progress/review_mobile-welcome-splash.md`,
+commit `e1690ede`) por cinco candados ciegos que esta spec prescribía al pie
+de la letra. El código de producción cumple R1–R12 y **no cambia**: la
+ronda 2 solo toca `src/screens/welcome/index.test.tsx` (más la trazabilidad y
+el reporte). Los cinco arreglos ya se validaron en verde sobre `7789f722` y en
+rojo contra su mutación.
+
+| Id | Requisito | Hueco | Mutación que quedaba verde |
+| --- | --- | --- | --- |
+| E1 | R10 | duración y curva no ligadas a la animación | `duration: 400` a mano en los `withTiming`; `Easing.linear` |
+| E2 | R10 (WHILE Reduce Motion) | el fade bajo Reduce Motion sin candado | quitar `ReduceMotion.Never`; fade de 0 ms con Reduce Motion |
+| E3 | R10 | `toHaveAnimatedStyle` solo mira las claves pasadas | clave animada extra `marginTop` |
+| E4 | R6 fila 10 | un `Pressable` no expone `onPress` en el host | chip como `Pressable` con `onPress` |
+| E5 | R5 | `source` del hero sin aserción | hero con `logo-glow.png` |
+
+Los textos normativos están en R5, R6 y R10, marcados «Enmienda E<n>».
+
 ## Fuera de alcance
 
 - Flag de «primer arranque» o persistencia de haber visto la bienvenida
@@ -380,5 +435,18 @@ Cada comprobación tiene su casilla. El gate de cierre exige las ocho.
 
 ## Aprobación
 
+> Tres casillas, tres gates (lección `gate-humano-sin-casilla-donde-firmar`).
+> La de la spec autorizó la ronda 1; la de la Enmienda E1–E5 autoriza la
+> ronda 2 de Codex; la de R13 cierra la feature.
+
+### Aprobación de la spec
+
 - [x] Spec aprobada por humano (gate: nadie implementa antes de marcar esta casilla)
+
+### Enmienda E1–E5 — candados de R5, R6 y R10 tras la review de la ronda 1
+
+- [ ] Enmienda E1–E5 aprobada por humano (fecha: ) ← gate obligatorio antes de la ronda 2 de Codex
+
+### Prueba de humo
+
 - [ ] R13 S1–S8 firmadas por humano en dev build de Android

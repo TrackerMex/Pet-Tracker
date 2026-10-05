@@ -78,6 +78,32 @@ en curso o una anterior ya crea.
 - `git diff origin/main -- mobile-pet-tracker/package.json mobile-pet-tracker/bun.lock` vacío (R12).
 - `progress/impl_mobile-welcome-splash.md` con la tabla R → `it` → commit, y la lista de ficheros tocados (debe coincidir con `design.md` §1.2).
 
+## T12 — Ronda 2: Enmienda E1–E5 (solo tests)
+
+Producción **no cambia**: el único fichero de código que se toca es
+`mobile-pet-tracker/src/screens/welcome/index.test.tsx`. Los candados nacen
+verdes porque la producción ya cumple, así que cada uno lleva su sonda de
+mutación documentada en `progress/impl_mobile-welcome-splash.md` (mutación
+plantada, rojo obtenido, `git checkout HEAD -- <fichero>` y
+`git diff --cached --quiet` después). Un commit `test(...)` por enmienda, en
+este orden:
+
+1. E5 (R5): aserción de `welcome-hero` `props.source`. Sonda: hero con
+   `logo-glow.png`.
+2. E4 (R6 fila 10): `props.onClick` y `props.accessible` `toBeUndefined()`.
+   Sonda: chip como `Pressable` con `onPress`.
+3. E1 y E2 (R10): curva contra referencia literal en 9 puntos y candado de
+   cableado de las tres regex. Sondas: `duration: 400` a mano en los dos
+   `withTiming`; `Easing.linear` en la constante; quitar
+   `reduceMotion: ReduceMotion.Never`.
+4. E3 (R10): `alignItems: 'center', gap: 16` y `{ shouldMatchAllProps: true }`
+   en las cinco llamadas a `toHaveAnimatedStyle`. Sonda: clave animada extra
+   `marginTop: translateY.get()`.
+5. Trazabilidad: añadir los commits de la ronda 2 a las filas de R5, R6
+   (fila 10) y R10 de `traceability.md`.
+
+Cierre igual que T10 (`bunx jest` sin pipe, typecheck, lint).
+
 ## T11 — Humano (no Codex)
 
 - R13 S1–S8 en dev build de Android; casillas en `requirements.md`.
