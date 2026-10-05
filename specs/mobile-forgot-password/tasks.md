@@ -313,7 +313,7 @@ Comando de T13-T17: `cd mobile-pet-tracker && bunx jest src/screens/forgot` (29 
 
 > Ronda 3, tras el rechazo del reviewer en `49de71b6`
 > (`progress/review_mobile-forgot-password.md` §Ronda 2) y con los defectos
-> D1-D5 del barrido previo a la firma ya integrados. Los requisitos están en
+> D1-D6 del barrido previo a la firma ya integrados. Los requisitos están en
 > `requirements.md` §Enmienda E2.
 >
 > - **No hay código de producción que tocar.** Se añaden helpers, llamadas a
@@ -404,7 +404,7 @@ Nombres cortos de los `it` en las tablas:
    | X-f | envolver el `<Label …>…</Label>` en `{!error && (…)}` | R7 ×5 (P4), E1.3 `it` 1 (P5), E2.7a | consulta | R4 `it` 1 |
    | M3-f | `onPress={() => { if (!submitting) router.push('/login'); }}` en `link-login` | R5 `it` 1 (P2), E1.3 `it` 1 (P6) | aserción (`toHaveBeenCalledTimes(1)`) | los dos `it` de R3 |
    | M3-g | `{submitting ? t('forgot.resend') : t('forgot.backToSignIn')}` en el texto de `link-login` | R5 `it` 1 (P2), E1.3 `it` 1 (P6) | aserción (`toHaveTextContent`) | los dos `it` de R3 |
-   | M3-h | `onPress={() => { if (error) void send(submittedEmail); router.push('/login'); }}` en `link-login` | R7 ×5 (P4), E1.3 `it` 1 (P5), E2.7a | aserción en el recuento de `mockForgotPassword`; en E2.7a, anotar el modo medido | los dos `it` de R3 |
+   | M3-h | `onPress={() => { if (error) void send(submittedEmail); router.push('/login'); }}` en `link-login` | R7 ×5 (P4), E1.3 `it` 1 (P5), E2.7a | aserción en el recuento de `mockForgotPassword` | los dos `it` de R3 |
    | M4-f | `{sent \|\| submitting ? (` en lugar del `{sent ? (` del bloque de `forgot-resend` | R5 `it` 1 (P2), E1.3 `it` 1 (en su `toBeNull` de `forgot-resend` ya existente) | aserción | — |
    | M4-g | `setEmail(target);` justo antes de `setError(t('forgot.invalidEmail'));` | solo la fila `validation` de R7 ×5, en la aseveración del valor (cambio 2 de E2.5) | aserción | las otras 4 filas de R7 |
    | M4-h | `setEmail(target);` justo después del `setError(null);` de la cabecera de `send` | R5 `it` 1 (P2), R7 ×5 (cambio 2), E1.3 `it` 1 (P5) | aserción | E2.7a |
@@ -413,6 +413,7 @@ Nombres cortos de los `it` en las tablas:
    | M7-k | `{error \|\| submitting ? (` en lugar de `{error ? (` en el bloque de `forgot-error` | R5 `it` 1 (P2), E1.3 `it` 1 y E1.3 `it` 2 (en sus `toBeNull` ya existentes en vuelo) | aserción | E2.7a |
    | M7-l | `if (!error \|\| sent) setSubmitting(false);` en lugar de `setSubmitting(false);` en el `finally` de `send` | E2.7a | aserción (`not.toBeDisabled`) | — |
    | M7-m | `if (!error) setError(t('forgot.tooManyAttempts'));` en lugar de `setError(t('forgot.tooManyAttempts'));` | E2.7a | consulta | la fila `rate-limited` de R7 ×5 |
+| M7-n | `if (!error) setError(t('forgot.invalidEmail'));` en lugar de `setError(t('forgot.invalidEmail'));` | E2.7a | consulta | la fila `validation` de R7 ×5 |
 
    Notas:
    - M4-g prueba que el valor del campo estaba ciego antes de E2: con
@@ -430,7 +431,7 @@ Nombres cortos de los `it` en las tablas:
 2. Añadir los puntos P3, P7a, P7, P8, P9, P10, P11, P12 y P13 de E2.5.
 3. Añadir el `it` E2.7b, con el código literal y en el sitio que da la spec.
 4. Plantar las sondas en `mobile-pet-tracker/src/screens/forgot/index.tsx`.
-   Las seis primeras son nuevas. Las demás repiten sondas de T19 para anotar
+   Las nueve primeras son nuevas. Las demás repiten sondas de T19 para anotar
    los `it` del estado enviado que ahora también caen.
 
    | Sonda | Cambio | Debe caer | Modo |
@@ -442,12 +443,14 @@ Nombres cortos de los `it` en las tablas:
    | M5-j | dos cambios a la vez: `{!sent \|\| submitting ? (` en lugar del `{!sent ? (` del bloque de `TextField`, y el `<Label …>…</Label>` envuelto en `{!sent && (…)}` | R6 `it` 1 (P8), E1.3 `it` 2 (P12) | aserción (`forgot-email` no es `null`) |
    | M7-j | `selectable={!sent}` en lugar de `selectable` en `forgot-error` | R6 429 (P10), R6 ×4 (P11), E2.7b | aserción |
    | M6-j | `if (!error) setError(t('common.somethingWentWrong'));` en lugar de `setError(t('common.somethingWentWrong'));` | E2.7b | consulta |
+| M6-k | `if (!error) setError(t('common.cannotReachServer'));` en lugar de `setError(t('common.cannotReachServer'));` | E2.7b | consulta |
+| M7-o | `if (!error \|\| !sent) setSubmitting(false);` en lugar de `setSubmitting(false);` en el `finally` de `send` | E1.3 `it` 2, E2.7b | aserción |
    | M7-l | la de T19 | lo de T19, más E1.3 `it` 1 (P7a) | aserción |
    | X-d | la de T19 | lo de T19, más R6 `it` 1 (P8) y E1.3 `it` 2 (P12) | consulta |
    | X-e | la de T19 | lo de T19, más R6 429 (P10), R6 ×4 (P11) y E2.7b | consulta |
    | M3-f | la de T19 | lo de T19, más R6 `it` 1 (P8) y E1.3 `it` 2 (P12) | aserción |
    | M3-g | la de T19 | lo de T19, más R6 `it` 1 (P8) y E1.3 `it` 2 (P12) | aserción |
-   | M3-h | la de T19 | lo de T19, más R6 429 (P10), R6 ×4 (P11) y E2.7b | anotar el modo medido: en el barrido, R6 429 y R6 ×4 cayeron por excepción (`TypeError`) |
+   | M3-h | la de T19 | lo de T19, más R6 429 (P10), R6 ×4 (P11) y E2.7b | aserción en R7 ×5, P5, E2.7a y E2.7b; excepción (`TypeError`) en R6 429 y R6 ×4 |
    | M5-h | la de T19 | lo de T19, más R6 `it` 1 (P8) y E1.3 `it` 2 (P12) | aserción |
    | M7-k | la de T19 | lo de T19, más R6 `it` 1 (P8) | aserción |
 

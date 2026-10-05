@@ -1000,10 +1000,10 @@ Cada candado se demuestra con una sonda que lo tumba (tabla de [[tasks]]
 
 El barrido previo a la firma
 (`progress/review_mobile-forgot-password.md` §Barrido previo a la firma de E2)
-encontró cinco defectos en el primer borrador (D1-D5). Esta versión los
-integra: D1 en §E2.5 (recuentos de las anclas), D2 en E2.2 y E2.5 (punto P7a),
+encontró cinco defectos en el primer borrador (D1-D5), y su remedición uno
+más (D6). Esta versión los integra: D1 en §E2.5 (recuentos de las anclas), D2 en E2.2 y E2.5 (punto P7a),
 D3 en [[tasks]] (sondas por línea de helper), D4 en E2.1 y E2.5 (punto P4b) y
-D5 en E2.1, E2.2 y E2.7.
+D5 y D6 en E2.1, E2.2 y E2.7.
 
 ### E2.1 — R4: el formulario en sus cuatro flujos
 
@@ -1282,6 +1282,16 @@ distinto de `ok` y ya había un error en pantalla, **THE SYSTEM SHALL**:
   `forgot-resend` en el estado enviado;
 - dejar el resto del estado como piden E2.1 y E2.2.
 
+En `send()`, cada `kind` distinto de `ok` tiene su propia línea `setError(…)`.
+Son cuatro, porque `error` y `missing-config` comparten una. Cada línea es su
+propia rama, así que entre los dos `it` las recorren las cuatro con un error
+previo en pantalla:
+
+- (a) `tooManyAttempts` e `invalidEmail`;
+- (b) `somethingWentWrong` y `cannotReachServer`.
+
+Lo pidió el defecto D6 de la remedición del barrido.
+
 Dos `it` nuevos, con el código literal que sigue.
 
 **(a)** En `describe('#117 R7: cada kind distinto de ok pinta su copy en forgot-error'`,
@@ -1291,7 +1301,10 @@ justo antes de
 
 ```ts
   it('un reintento desde el formulario que vuelve a fallar pinta el copy del nuevo kind', async () => {
-    mockForgotPassword.mockResolvedValueOnce({ kind: 'error' }).mockResolvedValueOnce({ kind: 'rate-limited' });
+    mockForgotPassword
+      .mockResolvedValueOnce({ kind: 'error' })
+      .mockResolvedValueOnce({ kind: 'rate-limited' })
+      .mockResolvedValueOnce({ kind: 'validation', errors: [{ path: 'email', message: 'Invalid email' }] });
     await renderRoute();
     await submitForgot();
     expect(await screen.findByTestId('forgot-error')).toHaveTextContent('Algo salió mal');
@@ -1300,6 +1313,10 @@ justo antes de
     await waitFor(() => expect(screen.getByTestId('forgot-error')).toHaveTextContent('Demasiados intentos. Inténtalo más tarde.'));
     await waitFor(() => expect(screen.getByTestId('forgot-submit')).not.toBeDisabled());
     await expectFormState('ana@example.com', 'Demasiados intentos. Inténtalo más tarde.');
+    await fireEvent.press(screen.getByTestId('forgot-submit'));
+    await waitFor(() => expect(screen.getByTestId('forgot-error')).toHaveTextContent('Ingresa un correo electrónico válido'));
+    await waitFor(() => expect(screen.getByTestId('forgot-submit')).not.toBeDisabled());
+    await expectFormState('ana@example.com', 'Ingresa un correo electrónico válido');
   });
 ```
 
@@ -1314,7 +1331,8 @@ justo antes de
     mockForgotPassword
       .mockResolvedValueOnce({ kind: 'ok' })
       .mockResolvedValueOnce({ kind: 'rate-limited' })
-      .mockResolvedValueOnce({ kind: 'error' });
+      .mockResolvedValueOnce({ kind: 'error' })
+      .mockResolvedValueOnce({ kind: 'unreachable', message: 'network down' });
     await renderRoute();
     await submitForgot();
     expect(await screen.findByText('Revisa tu correo')).toBeVisible();
@@ -1325,13 +1343,18 @@ justo antes de
     await waitFor(() => expect(screen.getByTestId('forgot-error')).toHaveTextContent('Algo salió mal'));
     await waitFor(() => expect(screen.getByTestId('forgot-resend')).not.toBeDisabled());
     await expectSentState('ana@example.com', 'Algo salió mal');
+    await fireEvent.press(screen.getByTestId('forgot-resend'));
+    await waitFor(() => expect(screen.getByTestId('forgot-error')).toHaveTextContent('No se pudo conectar con el servidor'));
+    await waitFor(() => expect(screen.getByTestId('forgot-resend')).not.toBeDisabled());
+    await expectSentState('ana@example.com', 'No se pudo conectar con el servidor');
   });
 ```
 
 Los dos `waitFor` sobre el copy nuevo esperan sobre el árbol, como pide
 §Esperas. Mientras vuela la segunda petición, `forgot-error` no existe, y la
-espera reintenta hasta que aparece con el copy nuevo. Los dos copys de cada
-`it` son distintos, así que el primero no puede satisfacer la espera.
+espera reintenta hasta que aparece con el copy nuevo. En cada `it`, cada
+copy es distinto del anterior, así que el copy viejo no puede satisfacer la
+espera.
 
 ### Cifras y alcance
 

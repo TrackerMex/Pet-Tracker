@@ -808,3 +808,191 @@ Si se acepta la corrección de D5 (dos `it` nuevos), las cifras pasan a forgot 2
 - **Nombres de sonda.** Y-1 a Y-4, Y-6 y Y-8 a Y-11 son nombres del barrido. Al pasarlas a tasks.md conviene renombrarlas en la serie M/X de la spec.
 
 Ficheros del barrido (scratchpad, fuera del repo): `e2/build.py`, `e2/build_fix.py`, `e2/probe.py`, `e2/probes.py`, `e2/spike-{t19,full,fix}.test.tsx` y `e2/out-*.json`.
+
+### Remedición tras integrar D1-D5
+
+Fecha: 2026-10-05. Medido contra el texto de la spec y de tasks.md en HEAD 6f7298a6.
+
+**Método.** Los dos estados intermedios se construyen con `e2/build2.py <t19|t20>` (scratchpad). El script extrae de `git show 6f7298a6:specs/mobile-forgot-password/requirements.md` los helpers, las líneas P, P4b, P7a, los 3 cambios y el código literal de E2.7a y E2.7b, y los coloca donde dice la spec.
+
+- El spike se copia como `src/screens/forgot/e2spike.test.tsx` (sin seguimiento) solo durante cada corrida.
+- Se ejecuta únicamente con `bunx jest --runTestsByPath`.
+- Después se borra y se restaura `index.tsx` con `git checkout HEAD --`.
+- Cada corrida comprueba revert, diff y cached, y en todas dieron 0/0/0.
+- No se corrió `init.sh` ni la suite global.
+
+#### Bases
+
+| Estado | jest | tsc --noEmit | lint |
+|---|---|---|---|
+| T19 (helpers sin `expectSentState`; P1, P2, P4, P4b, P5, P6; 3 cambios; E2.7a en R7) | 30/30, exit 0 | 0 | 0, sin avisos |
+| T20 (todo, con E2.7b como último `it` de R6) | 31/31, exit 0 | 0 | 0, sin avisos |
+
+Notas sobre la medición:
+
+- tsc y lint se midieron superponiendo el spike sobre `index.test.tsx`, que después se restauró con `git checkout HEAD --` (diff 0, cached 0).
+- `router.d.ts` estuvo ausente durante toda la medición.
+
+#### Sondas de T19 contra el estado T19 (17 de 17 coinciden)
+
+| Sonda | Debe caer (tasks.md) | Medido | Modo medido | Debe seguir verde: medido |
+|---|---|---|---|---|
+| X-a | P2, P6 | P2, P6 | aserción | — |
+| X-b | P2, P6 | P2, P6 | aserción | — |
+| X-c | R7 ×5, P5, E2.7a | R7 ×5, P5, E2.7a | aserción | — |
+| X-d | P2, P6 | P2, P6 | consulta | los dos `it` de R3 verdes |
+| X-e | R7 ×5, P5, E2.7a | R7 ×5, P5, E2.7a | consulta | los dos `it` de R3 verdes |
+| X-f | R7 ×5, P5, E2.7a | R7 ×5, P5, E2.7a | consulta | R4 `it` 1 verde |
+| M3-f | P2, P6 | P2, P6 | aserción | los dos `it` de R3 verdes |
+| M3-g | P2, P6 | P2, P6 | aserción | los dos `it` de R3 verdes |
+| M3-h | R7 ×5, P5, E2.7a | R7 ×5, P5, E2.7a | R7 ×5 y P5 por aserción en el recuento; E2.7a por excepción, `TypeError: Cannot read properties of undefined (reading 'kind')` | los dos `it` de R3 verdes |
+| M4-f | P2, E1.3 `it` 1 | P2, E1.3 `it` 1 (en su `toBeNull` existente) | aserción | — |
+| M4-g | la fila `validation` de R7 (cambio 2) | solo esa fila | aserción | las otras 4 filas verdes |
+| M4-h | P2, R7 ×5 (cambio 2), P5 | P2, R7 ×5, P5 | aserción | E2.7a verde |
+| M4-i | R7 ×5 (P4b) | R7 ×5 en P4b | aserción | R4 `it` 2 verde |
+| M5-h | P2, P6 | P2, P6 | aserción | `it` de la tile verde |
+| M7-k | P2, E1.3 `it` 1, E1.3 `it` 2 | P2, E1.3 `it` 1, E1.3 `it` 2 | aserción | E2.7a verde |
+| M7-l | E2.7a | E2.7a (segundo `not.toBeDisabled`) | aserción | — |
+| M7-m | E2.7a | E2.7a | consulta | fila `rate-limited` de R7 verde |
+
+#### Sondas de T20 contra el estado T20 (15 de 15 coinciden)
+
+| Sonda | Debe caer (tasks.md) | Medido | Modo medido |
+|---|---|---|---|
+| X-g | P10, P11 ×4, E2.7b | P10, P11 ×4, E2.7b | aserción |
+| X-h | P10, P11 ×4, E2.7b | P10, P11 ×4, E2.7b | aserción |
+| X-i | P12, P8 | P12, P8 | aserción |
+| M5-i | P3, P7, P8, P10, P11 ×4, P12, E2.7b (10 `it`) | los mismos 10 | aserción |
+| M5-j | P12, P8 | P12, P8 | aserción |
+| M7-j | P10, P11 ×4, E2.7b | P10, P11 ×4, E2.7b | aserción |
+| M6-j | E2.7b | E2.7b | consulta |
+| M7-l | E2.7a, P7a | E2.7a, P7a | aserción |
+| X-d | lo de T19, más P12 y P8 | 4 `it`: P2, P6, P12, P8 | consulta |
+| X-e | lo de T19, más P10, P11 ×4 y E2.7b | 13 `it` | consulta |
+| M3-f | lo de T19, más P12 y P8 | 4 `it` | aserción |
+| M3-g | lo de T19, más P12 y P8 | 4 `it` | aserción |
+| M3-h | lo de T19, más P10, P11 ×4 y E2.7b | 13 `it` | R7 ×5 y P5 por aserción; E2.7a, P10, P11 ×4 y E2.7b por excepción (`TypeError`) |
+| M5-h | lo de T19, más P12 y P8 | 4 `it` | aserción |
+| M7-k | lo de T19, más P8 | 4 `it` | aserción |
+
+Las sondas de T19 que no figuran en la tabla de T20 son X-a, X-b, X-c, X-f, M4-f, M4-g, M4-h, M4-i y M7-m. En el estado T20 dan el mismo recuento que en T19, así que ninguna cae además en un `it` del estado enviado.
+
+#### Divergencias
+
+| Sonda o ancla | Esperado | Medido |
+|---|---|---|
+
+Sin divergencias. Las casillas que el leader había derivado sin medirlas se confirman todas:
+
+- X-c, X-e, X-f y M3-h en E2.7a;
+- X-g, X-h, M5-i, M7-j, X-e y M3-h en E2.7b;
+- «debe seguir verde» de M4-h y M7-k (E2.7a) y de M7-m (fila `rate-limited`).
+
+Para la casilla «anotar el modo medido» de M3-h:
+
+- sin D6: E2.7a cae por excepción (`TypeError`), y en T20 también E2.7b;
+- con el arreglo de D6, E2.7a y E2.7b pasan a caer por aserción en `expect(mockForgotPassword).toHaveBeenCalledTimes(requests);` de los helpers, porque la llamada de más consume el mock siguiente en vez de recibir `undefined`;
+- P10 y P11 ×4 siguen cayendo por excepción.
+
+#### Anclas
+
+El bloque `grep -cF` de §E2.5 «Recuento de las anclas», ejecutado contra `index.test.tsx` en HEAD, da `1, 2, 3, 1, 7, 9, 1`, igual que lo declarado.
+
+Las dos anclas de colocación de E2.7 dan 1 cada una:
+
+- `it('un envío posterior que resuelve ok limpia forgot-error y pasa a «Revisa tu correo»'`
+- `describe('#117 R8: forgot se aparta del teclado en Android'`
+
+También dan 1 los `describe` de R5, R6 y R7, el título del `it.each` `un %p al reenviar pinta «%s» en forgot-error` y `async function submitForgot(`.
+
+#### Defecto nuevo D6: E2.7 solo candada en dos de sus cuatro líneas de copy
+
+E2.7 dice **WHEN** «un envío desde el formulario o un reenvío resuelve con un `kind` distinto de `ok` y ya había un error en pantalla». Es universal sobre el `kind` nuevo. En `send()`, cada `kind` distinto de `ok` tiene su propia línea `setError(...)`, y son cuatro, porque `error` y `missing-config` comparten una. E2.7a solo recorre la de `tooManyAttempts`, y E2.7b solo la de `somethingWentWrong`.
+
+Las otras dos líneas admiten la misma mutación que motivó E2.7 y pasan en verde en el estado T20 (31/31):
+
+| Sonda | Cambio en `index.tsx` | Resultado en T20 |
+|---|---|---|
+| Z-val | `if (!error) setError(t('forgot.invalidEmail'));` en lugar de `setError(t('forgot.invalidEmail'));` | verde 31/31 |
+| Z-unr | `if (!error) setError(t('common.cannotReachServer'));` en lugar de `setError(t('common.cannotReachServer'));` | verde 31/31 |
+
+Es una rama real sin candado, porque cada `case` del `switch` es su propia rama. No reabre el límite de E2.6.
+
+**Arreglo propuesto, ya medido.** Alargar los dos `it` de E2.7 con un paso más, sin añadir `it`. Así se respeta «No crear más `it` que los dos de E2.7», y las cifras no cambian: 30 tras T19, 31 tras T20, 287 en las 8 suites, 93 / 2051 en la global. El código literal queda así.
+
+E2.7a:
+
+```ts
+  it('un reintento desde el formulario que vuelve a fallar pinta el copy del nuevo kind', async () => {
+    mockForgotPassword
+      .mockResolvedValueOnce({ kind: 'error' })
+      .mockResolvedValueOnce({ kind: 'rate-limited' })
+      .mockResolvedValueOnce({ kind: 'validation', errors: [{ path: 'email', message: 'Invalid email' }] });
+    await renderRoute();
+    await submitForgot();
+    expect(await screen.findByTestId('forgot-error')).toHaveTextContent('Algo salió mal');
+    await waitFor(() => expect(screen.getByTestId('forgot-submit')).not.toBeDisabled());
+    await fireEvent.press(screen.getByTestId('forgot-submit'));
+    await waitFor(() => expect(screen.getByTestId('forgot-error')).toHaveTextContent('Demasiados intentos. Inténtalo más tarde.'));
+    await waitFor(() => expect(screen.getByTestId('forgot-submit')).not.toBeDisabled());
+    await expectFormState('ana@example.com', 'Demasiados intentos. Inténtalo más tarde.');
+    await fireEvent.press(screen.getByTestId('forgot-submit'));
+    await waitFor(() => expect(screen.getByTestId('forgot-error')).toHaveTextContent('Ingresa un correo electrónico válido'));
+    await waitFor(() => expect(screen.getByTestId('forgot-submit')).not.toBeDisabled());
+    await expectFormState('ana@example.com', 'Ingresa un correo electrónico válido');
+  });
+```
+
+E2.7b:
+
+```ts
+  it('un segundo reenvío que vuelve a fallar pinta el copy del nuevo kind', async () => {
+    mockForgotPassword
+      .mockResolvedValueOnce({ kind: 'ok' })
+      .mockResolvedValueOnce({ kind: 'rate-limited' })
+      .mockResolvedValueOnce({ kind: 'error' })
+      .mockResolvedValueOnce({ kind: 'unreachable', message: 'network down' });
+    await renderRoute();
+    await submitForgot();
+    expect(await screen.findByText('Revisa tu correo')).toBeVisible();
+    await fireEvent.press(screen.getByTestId('forgot-resend'));
+    expect(await screen.findByTestId('forgot-error')).toHaveTextContent('Demasiados intentos. Inténtalo más tarde.');
+    await waitFor(() => expect(screen.getByTestId('forgot-resend')).not.toBeDisabled());
+    await fireEvent.press(screen.getByTestId('forgot-resend'));
+    await waitFor(() => expect(screen.getByTestId('forgot-error')).toHaveTextContent('Algo salió mal'));
+    await waitFor(() => expect(screen.getByTestId('forgot-resend')).not.toBeDisabled());
+    await expectSentState('ana@example.com', 'Algo salió mal');
+    await fireEvent.press(screen.getByTestId('forgot-resend'));
+    await waitFor(() => expect(screen.getByTestId('forgot-error')).toHaveTextContent('No se pudo conectar con el servidor'));
+    await waitFor(() => expect(screen.getByTestId('forgot-resend')).not.toBeDisabled());
+    await expectSentState('ana@example.com', 'No se pudo conectar con el servidor');
+  });
+```
+
+Con esto, cada una de las cuatro líneas `setError` de un `kind` distinto de `ok` queda recorrida al menos una vez con un error previo en pantalla. Cada pareja de copys consecutivos sigue siendo distinta, así que la frase de E2.7 sobre las esperas se mantiene si se dice «cada copy es distinto del anterior».
+
+Medición del arreglo, en `spike-t19fix` y `spike-t20fix`, que son T19 y T20 con E2.7a y E2.7b sustituidos por el código de arriba:
+
+- Bases: 30/30 y 31/31, exit 0; tsc 0 y lint 0 en los dos.
+- Restauración en las dos: diff 0, cached 0.
+- Z-val cae solo en E2.7a, por consulta (`forgot-error` ausente en la espera de «Ingresa un correo electrónico válido»), en T19 y en T20.
+- Z-unr cae solo en E2.7b, por consulta, en T20. En T19 sigue verde, porque E2.7b aún no existe.
+- Las 17 sondas de T19 y las 15 de T20, más las adicionales, dan los mismos `it` caídos que sin el arreglo. El único cambio es el modo de M3-h en E2.7a y E2.7b, descrito arriba.
+
+Filas que habría que añadir a tasks.md, con nombres propuestos en la serie de la spec:
+
+| Sonda | Cambio | Tabla | Debe caer | Modo |
+|---|---|---|---|---|
+| M7-n (Z-val) | `if (!error) setError(t('forgot.invalidEmail'));` en lugar de `setError(t('forgot.invalidEmail'));` | T19 (y sigue igual en T20) | E2.7a | consulta |
+| M6-k (Z-unr) | `if (!error) setError(t('common.cannotReachServer'));` en lugar de `setError(t('common.cannotReachServer'));` | T20 | E2.7b | consulta |
+
+Además, la casilla de M3-h en E2.7a y E2.7b pasaría a «aserción en el recuento de `mockForgotPassword`».
+
+#### Informativas (no bloquean)
+
+- **Z-res.** El cambio es `if (!error || !sent) setSubmitting(false);` en el `finally` de `send`. Cae en E1.3 `it` 2 y en E2.7b, por aserción. La rehabilitación de `forgot-resend` tras un segundo error ya tiene candado, aunque tasks.md no lista una sonda para ella. Si se quiere, puede añadirse como M7-o a la tabla de T20.
+- **Guarda cruzada con `sent` por `kind`.** Una guarda como `if (!(error && sent)) setError(t('forgot.invalidEmail'));` seguiría verde tras el arreglo, porque cada línea `setError` queda recorrida en un solo flujo. En `index.tsx`, el `switch` de `send` no lee `sent`, así que esa rama no existe en producción. Su exclusión entra en el mismo razonamiento que E2.6, y no pido cambio.
+
+Ficheros de esta remedición (scratchpad, fuera del repo): `e2/build2.py`, `e2/spike-{t19,t20,t19fix,t20fix}.test.tsx`, `e2/out-i_*.json` y `e2/{tsc,lint}-i-*.log`.
+
+Veredicto del barrido: REQUIERE CAMBIOS

@@ -127,3 +127,11 @@
   existentes, sin `it` nuevos: forgot 29→29, global 93 / 2049. Lista cerrada:
   3 ficheros. Siguiente: barrido previo a la firma por un `reviewer` (spike
   fuera del árbol), espejo en Notion, firma humana, handoff de la ronda 3.
+- Barrido previo a la firma de E2 (`reviewer`, 2026-10-05): el primer borrador
+  tenía cinco defectos (D1-D5), integrados en `6f7298a6`. La remedición de
+  las tablas no dio divergencias, pero encontró D6: dos de las cuatro líneas
+  `setError` de un `kind` distinto de `ok` seguían sin recorrer con un error
+  previo. Arreglo medido por el reviewer e integrado: los dos `it` de E2.7 se
+  alargan un paso, sin `it` nuevos, y entran las sondas M7-n, M6-k y M7-o.
+  Cifras finales: forgot 31, 8 suites 287, global 93 / 2051. Lista cerrada: 3
+  ficheros. Siguiente: espejo en Notion, firma humana, handoff de la ronda 3.
