@@ -725,3 +725,152 @@ no pasa a `done`.
 ## Aprobación
 
 - [x] Aprobado por humano
+
+## Enmienda E1 — cuatro cláusulas universales con una sola rama candada
+
+El reviewer rechazó #117 en `d39a9ea5`
+(`progress/review_mobile-forgot-password.md` §Observaciones 1-4). La
+producción cumple R2, R6, R7 y R9. El hueco está en las listas de **Test** de
+esta spec, que prescribieron un solo caso para cláusulas que valen para varias
+ramas. Codex las cumplió al pie de la letra. Con cada una de estas mutaciones,
+las 8 suites del handoff quedan verdes:
+
+| Cláusula | Mutación que hoy pasa en verde | Rama candada hoy |
+|---|---|---|
+| R2: «WHEN `status` es cualquier otro (`500`, `404`, `503`…) THE SYSTEM SHALL devolver `{ kind: 'error' }`» | `default: return result.response.status >= 500 ? { kind: 'error' } : { kind: 'ok' };` en `src/api/auth.ts`. Un 404 de una ruta mal configurada se pinta como «Revisa tu correo» | solo `500` |
+| R6: «IF el reenvío resuelve un `kind` distinto de `ok` THEN … permanecer en el estado enviado» | `setSent(false);` en `case 'unreachable':` de `send` en `src/screens/forgot/index.tsx`. Un corte de red al reenviar devuelve al formulario | solo `rate-limited` |
+| R7: «WHEN arranca un envío nuevo THE SYSTEM SHALL limpiar `forgot-error`» | `if (!sent) setError(null);` en lugar de `setError(null);`. Tras un 429 al reenviar, el reenvío siguiente deja «Demasiados intentos…» a la vista | solo el envío desde el formulario, y solo tras resolver `ok` |
+| R9: «un único `ScrollView` … para los dos estados» | `className={sent ? 'flex-1' : 'flex-1 bg-background'}` o `contentInsetAdjustmentBehavior={sent ? 'never' : 'automatic'}` | solo `contentContainerStyle` y `keyboardShouldPersistTaps` |
+
+Ningún requisito cambia. La enmienda solo añade los candados que faltaban y
+recoge por escrito una aserción que Codex ya añadió (E1.5). **No hay cambios de
+producción**: los `it` nuevos nacen verdes y cada uno se demuestra con una
+sonda que lo tumba (tabla de [[tasks]] §Enmienda E1).
+
+### E1.1 — R2: un caso por clase de «cualquier otro status»
+
+**WHEN** se cierra #117, **THE SYSTEM SHALL** tener en
+`describe('#117 R2: forgotPassword mapea la respuesta por kind')` de
+`src/api/__tests__/auth.test.ts` un `it.each` nuevo, después de
+`it('mapea 500 a error')`:
+
+```
+it.each([201, 404, 503])('mapea %i a error', …)
+```
+
+Cada fila monta `response(status, {})` con el helper del fichero y asevera
+`resolves.toEqual({ kind: 'error' })`. Las tres filas cubren las tres clases
+que el `500` no cubre: otro `2xx`, otro `4xx` y otro `5xx`.
+
+### E1.2 — R6: el reenvío conserva el estado enviado en todos los kinds que no son ok
+
+**WHEN** se cierra #117, **THE SYSTEM SHALL** tener en
+`describe('#117 R6: reenviar repite la misma petición')` de
+`src/screens/forgot/index.test.tsx` un `it.each` nuevo, después del `it` del
+429, con las cuatro filas que faltan:
+
+```
+it.each<[ForgotPasswordState, string]>([
+  [{ kind: 'validation', errors: [{ path: 'email', message: 'Invalid email' }] }, 'Ingresa un correo electrónico válido'],
+  [{ kind: 'error' }, 'Algo salió mal'],
+  [{ kind: 'unreachable', message: 'network down' }, 'No se pudo conectar con el servidor'],
+  [{ kind: 'missing-config' }, 'Algo salió mal'],
+])('un %p al reenviar pinta «%s» en forgot-error sin salir de «Revisa tu correo»', …)
+```
+
+Cada fila hace lo mismo que el `it` del 429:
+
+1. Fija `mockResolvedValueOnce({ kind: 'ok' }).mockResolvedValueOnce(state)`.
+2. `await renderRoute()`, `await submitForgot()` y
+   `await screen.findByText('Revisa tu correo')`.
+3. Pulsa `forgot-resend`.
+4. Asevera:
+   - `await screen.findByTestId('forgot-error')` con `toHaveTextContent(copy)`;
+   - `screen.getByText('Revisa tu correo')` visible;
+   - `screen.queryByTestId('forgot-email')` `toBeNull()`;
+   - `await waitFor(() => expect(screen.getByTestId('forgot-resend')).not.toBeDisabled())`.
+
+### E1.3 — R7: `forgot-error` se retira en cuanto arranca un envío nuevo, desde los dos botones
+
+**WHEN** se cierra #117, **THE SYSTEM SHALL** tener en
+`describe('#117 R7: cada kind distinto de ok pinta su copy en forgot-error')`
+dos `it` nuevos, después del `it` del envío posterior. Los dos retienen la
+petición con una promesa controlada, el mismo patrón `resolveRequest` que ya
+usan R5 y R6 en el fichero, y miran el error **mientras la petición vuela**,
+no solo al resolver.
+
+1. `it('un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver')`:
+   1. Fija `mockResolvedValueOnce({ kind: 'error' }).mockReturnValueOnce(pending)`.
+   2. `await renderRoute()` y `await submitForgot()`.
+   3. `await screen.findByTestId('forgot-error')` con `toHaveTextContent('Algo salió mal')`.
+   4. Pulsa `forgot-submit`.
+   5. `await waitFor(() => expect(screen.getByTestId('forgot-submit')).toBeDisabled())`:
+      la petición está en vuelo.
+   6. `expect(screen.queryByTestId('forgot-error')).toBeNull()`.
+   7. Resuelve `{ kind: 'ok' }` dentro de `act`.
+   8. `await screen.findByText('Revisa tu correo')` y otra vez
+      `queryByTestId('forgot-error')` `toBeNull()`.
+2. `it('un nuevo reenvío retira forgot-error en cuanto arranca y no lo repinta al resolver ok')`:
+   1. Fija `mockResolvedValueOnce({ kind: 'ok' }).mockResolvedValueOnce({ kind: 'rate-limited' }).mockReturnValueOnce(pending)`.
+   2. `await renderRoute()`, `await submitForgot()` y `await screen.findByText('Revisa tu correo')`.
+   3. Pulsa `forgot-resend`.
+   4. `await screen.findByTestId('forgot-error')` con
+      `toHaveTextContent('Demasiados intentos. Inténtalo más tarde.')`.
+   5. `await waitFor(() => expect(screen.getByTestId('forgot-resend')).not.toBeDisabled())`.
+   6. Pulsa `forgot-resend` otra vez.
+   7. `await waitFor(() => expect(screen.getByTestId('forgot-resend')).toBeDisabled())`.
+   8. `expect(screen.queryByTestId('forgot-error')).toBeNull()`.
+   9. Resuelve `{ kind: 'ok' }` dentro de `act`.
+   10. `await waitFor(() => expect(screen.getByTestId('forgot-resend')).not.toBeDisabled())`,
+       `queryByTestId('forgot-error')` `toBeNull()` y
+       `screen.getByText('Revisa tu correo')` visible.
+
+Las esperas siguen `docs/conventions.md` §Esperas: se espera sobre el árbol
+(`toBeDisabled` del botón), nunca sobre el contador del mock.
+
+### E1.4 — R9: el `ScrollView` conserva sus props literales en los dos estados
+
+**WHEN** se cierra #117, **THE SYSTEM SHALL** tener en
+`describe('#117 R9: las métricas del stub sobreviven al cambio de estado')` un
+`it` nuevo:
+
+```
+it('forgot-form lleva className y contentInsetAdjustmentBehavior de la spec en los dos estados', …)
+```
+
+1. Fija `mockResolvedValue({ kind: 'ok' })` y `await renderRoute()`.
+2. Sobre `screen.getByTestId('forgot-form')`, asevera `props.className`
+   `toBe('flex-1 bg-background')` y `props.contentInsetAdjustmentBehavior`
+   `toBe('automatic')`.
+3. `await submitForgot()` y `await screen.findByText('Revisa tu correo')`.
+4. Repite las dos aseveraciones sobre un `getByTestId('forgot-form')` nuevo.
+
+`props.className` del `ScrollView` ya se asevera así en
+`src/screens/geofences/index.test.tsx` y `src/screens/alert-detail/index.test.tsx`.
+
+### E1.5 — R2 `it` 4 cubre también el JSON inválido
+
+La lista de **Test** de R2 pedía en `it('mapea un 400 sin errors a error')`
+solo `response(400, {})`. La EARS dice «sin `errors` (o con JSON inválido)», y
+Codex añadió en ese mismo `it` una segunda llamada con
+`invalidJsonResponse(400)` que también asevera `{ kind: 'error' }`. Esta
+enmienda la da por buena tal como está en `7ba0b3a9`. No se toca y no genera
+commit.
+
+### Cifras y alcance
+
+| Suite | Antes de E1 | Después de E1 |
+|---|---:|---:|
+| `src/api/__tests__/auth.test.ts` | 40 | 43 (+3 de E1.1) |
+| `src/screens/forgot/index.test.tsx` | 20 | 27 (+4 de E1.2, +2 de E1.3, +1 de E1.4) |
+| Las 8 suites del handoff | 272 | 282 |
+| Suite global de `mobile-pet-tracker` | 93 suites / 2036 | 93 suites / 2046 |
+
+Ningún candado global se mueve. Consistency y legibility no leen `*.test.tsx`.
+Design-drift sí los lee, pero los literales nuevos no llevan clases
+arbitrarias (`-[…]`). La lista cerrada de [[design]] §Archivos afectados no
+cambia: los commits de E1 tocan `src/api/__tests__/auth.test.ts`,
+`src/screens/forgot/index.test.tsx`, `traceability.md` y
+`progress/impl_mobile-forgot-password.md`, que ya estaban en ella.
+
+- [ ] Enmienda E1 aprobada por humano (fecha: ____, commit de firma: el que marca esta casilla)

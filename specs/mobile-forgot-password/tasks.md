@@ -157,3 +157,131 @@ suite `forgot` ahí).
   `reset-password`.
 - No añadir dependencias. No `npx`. No `rm -f` sobre `.expo/`.
 - No rebasear tras rellenar `traceability.md`.
+
+## Enmienda E1 — candados de las ramas que faltaban
+
+> Ronda 2, tras el rechazo del reviewer en `d39a9ea5`
+> (`progress/review_mobile-forgot-password.md`). Requisitos en
+> `requirements.md` §Enmienda E1. **No hay código de producción que tocar.**
+> Cada `it` nuevo nace verde, así que no hay commit rojo→verde: hay un commit
+> `test(...)` por tarea y, antes de commitear, una sonda por fila o por `it`
+> que lo tumba. La sonda se planta, se corre, se revierte con
+> `git checkout HEAD -- <ruta>` y se comprueba que `git diff --cached --quiet`
+> y `git diff --quiet -- <ruta de producción>` salen 0. El resultado se anota
+> en `progress/impl_mobile-forgot-password.md` §Ronda 2: el `it` que cayó, y si
+> cayó por consulta (`getBy…`/`findBy…` lanza) o por aserción (`expect` falla).
+>
+> Lista cerrada de ficheros de la ronda, medida con
+> `git diff --name-only <H0 del handoff de la ronda 2>..HEAD`:
+>
+> - `mobile-pet-tracker/src/api/__tests__/auth.test.ts`
+> - `mobile-pet-tracker/src/screens/forgot/index.test.tsx`
+> - `specs/mobile-forgot-password/traceability.md`
+> - `progress/impl_mobile-forgot-password.md`
+
+### Antes de empezar (ronda 2)
+
+- [ ] `test ! -e mobile-pet-tracker/.expo/types/router.d.ts`.
+- [ ] Base sin pipe: `cd mobile-pet-tracker && bunx jest src/api/__tests__/auth.test.ts src/screens/forgot/index.test.tsx`
+      da 2 suites / 60 tests (40 + 20), exit 0. Anotarla.
+
+### T12 — E1.1, R2: el resto de status
+
+1. Añadir en `describe('#117 R2: forgotPassword mapea la respuesta por kind')`,
+   justo después de `it('mapea 500 a error')`, el
+   `it.each([201, 404, 503])('mapea %i a error', …)` de E1.1, con
+   `response(status, {})` y `resolves.toEqual({ kind: 'error' })`.
+2. Sondas en `mobile-pet-tracker/src/api/auth.ts`, dentro del `switch` de
+   `forgotPassword`, todas por aserción:
+
+   | Sonda | Cambio | Debe caer |
+   |---|---|---|
+   | M2-f | `default:` devuelve `result.response.status >= 500 ? { kind: 'error' } : { kind: 'ok' }` | filas 201 y 404 |
+   | M2-g | `case 201:` justo debajo de `case 200:` | fila 201 |
+   | M2-h | `case 503: return { kind: 'ok' };` antes de `default:` | fila 503 |
+
+3. Commit: `test(mobile): lock every other status as error in the forgot client (#117 R2, E1)`.
+
+Comando: `cd mobile-pet-tracker && bunx jest src/api/__tests__/auth.test.ts` (43 tests).
+
+### T13 — E1.2, R6: el reenvío con cada kind que no es ok
+
+1. Añadir en `describe('#117 R6: reenviar repite la misma petición')`, justo
+   después de `it('un 429 al reenviar pinta forgot-error sin salir de «Revisa tu correo»')`,
+   el `it.each` de cuatro filas de E1.2. El cuerpo calca el del `it` del 429,
+   cambiando el segundo `mockResolvedValueOnce` por `state` y el copy por `copy`.
+2. Sondas en `mobile-pet-tracker/src/screens/forgot/index.tsx`, dentro de
+   `send`. Todas caen **por consulta** en `screen.getByText('Revisa tu correo')`,
+   porque `forgot-error` sí existe en el formulario:
+
+   | Sonda | Cambio | Debe caer | Debe seguir verde |
+   |---|---|---|---|
+   | M6-e | `setSent(false);` antes de `setError(t('forgot.invalidEmail'));` | fila `validation` | el `it` del 429 |
+   | M6-f | `setSent(false);` antes de `setError(t('common.cannotReachServer'));` | fila `unreachable` | el `it` del 429 |
+   | M6-g | `setSent(false);` antes de `setError(t('common.somethingWentWrong'));` | filas `error` y `missing-config` | el `it` del 429 |
+
+3. Commit: `test(mobile): lock resend errors for every non-ok kind (#117 R6, E1)`.
+
+### T14 — E1.3, R7: el error se retira al arrancar, desde los dos botones
+
+1. Añadir en `describe('#117 R7: cada kind distinto de ok pinta su copy en forgot-error')`,
+   justo después de `it('un envío posterior que resuelve ok limpia forgot-error y pasa a «Revisa tu correo»')`,
+   los dos `it` de E1.3 con sus pasos literales. La promesa controlada se
+   declara dentro de cada `it` igual que en el primer `it` de R6:
+   `let resolveRequest!: (state: ForgotPasswordState) => void;` y
+   `const pending = new Promise<ForgotPasswordState>((resolve) => { resolveRequest = resolve; });`.
+   Esperas según `docs/conventions.md` §Esperas: sobre `toBeDisabled` del
+   botón, nunca sobre `mockForgotPassword.mock.calls`.
+2. Sondas en `send` de `mobile-pet-tracker/src/screens/forgot/index.tsx`, todas
+   por aserción en `expect(screen.queryByTestId('forgot-error')).toBeNull()`
+   del paso «en vuelo»:
+
+   | Sonda | Cambio | Debe caer | Debe seguir verde |
+   |---|---|---|---|
+   | M7-h | quitar `setError(null);` de la cabecera de `send` y ponerlo como primera línea de `case 'ok':` | los dos `it` nuevos | `it('un envío posterior que resuelve ok limpia forgot-error…')` |
+   | M7-i | `if (!sent) setError(null);` en lugar de `setError(null);` | el `it` del reenvío | el `it` del formulario |
+
+   La columna «Debe seguir verde» es la prueba de que el candado anterior
+   estaba ciego: anotarla también.
+3. Commit: `test(mobile): lock forgot-error clearing as soon as a new request starts (#117 R7, E1)`.
+
+### T15 — E1.4, R9: props literales del ScrollView en los dos estados
+
+1. Añadir en `describe('#117 R9: las métricas del stub sobreviven al cambio de estado')`,
+   después del `it` que ya tiene, el `it` de E1.4.
+2. Sondas sobre el `ScrollView` de `testID="forgot-form"` en
+   `mobile-pet-tracker/src/screens/forgot/index.tsx`, todas por aserción:
+
+   | Sonda | Cambio | Debe caer en |
+   |---|---|---|
+   | M9-e | `className={sent ? 'flex-1' : 'flex-1 bg-background'}` | la segunda aseveración de `className` |
+   | M9-f | `contentInsetAdjustmentBehavior={sent ? 'never' : 'automatic'}` | la segunda aseveración de `contentInsetAdjustmentBehavior` |
+   | M9-g | `className="flex-1"` | la primera aseveración de `className` |
+
+3. Commit: `test(mobile): lock the forgot scroll container props in both states (#117 R9, E1)`.
+
+Comando de T13-T15: `cd mobile-pet-tracker && bunx jest src/screens/forgot` (27 tests).
+
+### T16 — cierre de la ronda 2
+
+- [ ] Suite global **sin pipe**: `cd mobile-pet-tracker && bunx jest`, exit 0,
+      93 suites / 2046 tests. Si la base de `origin/main` cambió desde
+      `d39a9ea5`, se aplica el +10 como diferencia sobre la base medida.
+- [ ] Las 8 suites del handoff de la ronda 1: 282 tests, exit 0.
+- [ ] `test ! -e .expo/types/router.d.ts && bunx tsc --noEmit`, exit 0.
+- [ ] `bun run lint`, exit 0.
+- [ ] `traceability.md`: añadir a las filas de R2, R6, R7 y R9 el `it` nuevo y
+      el hash de su commit de E1, y una fila E1.5 que cite `7ba0b3a9`. Sin
+      rebasear después.
+- [ ] `progress/impl_mobile-forgot-password.md` §Ronda 2: base, sondas (tabla
+      de cada tarea con su resultado), cifras finales y la lista de ficheros
+      medida con `git diff --name-only`.
+- [ ] Commit: `docs(mobile): trace #117 amendment E1 to its tests and commits`.
+- [ ] `graphify update .`.
+
+### No hacer (ronda 2)
+
+- No tocar `src/screens/forgot/index.tsx`, `src/api/auth.ts` ni ningún otro
+  fichero de producción. Las sondas se revierten antes de cada commit.
+- No modificar ni renombrar los `it` existentes. E1.5 no genera commit.
+- No rebasear.
