@@ -128,6 +128,7 @@ export function ForgotScreen() {
             variant="secondary"
             className="w-full rounded-xl"
             isDisabled={submitting}
+            onPress={() => void send(submittedEmail)}
           >
             <Button.Label className="font-bold text-foreground">
               {t('forgot.resend')}
