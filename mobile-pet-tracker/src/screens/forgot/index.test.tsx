@@ -92,3 +92,43 @@ describe('#127 R1: el botón de envío de forgot lleva su receta en el árbol', 
     );
   });
 });
+
+
+describe('#117 R4: el formulario pide el correo', () => {
+  it('pinta título, instrucciones y forgot-email editable con sus props de teclado', async () => {
+    mockForgotPassword.mockResolvedValue({ kind: 'ok' });
+    await renderRoute();
+
+    expect(screen.getByTestId('forgot-title')).toHaveTextContent('Recuperar contraseña');
+    expect(screen.getByTestId('forgot-body')).toHaveTextContent('Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.');
+    expect(screen.getByText('Correo electrónico')).toBeVisible();
+    const { props } = screen.getByTestId('forgot-email');
+    expect(props.editable).not.toBe(false);
+    expect(props.autoCapitalize).toBe('none');
+    expect(props.keyboardType).toBe('email-address');
+    expect(props.autoComplete).toBe('email');
+    expect(props.textContentType).toBe('emailAddress');
+    expect(props.placeholder).toBeUndefined();
+  });
+
+  it('deshabilita forgot-submit con el correo vacío o solo espacios y lo habilita al escribir', async () => {
+    mockForgotPassword.mockResolvedValue({ kind: 'ok' });
+    await renderRoute();
+
+    expect(screen.getByTestId('forgot-submit')).toBeDisabled();
+    await fireEvent.changeText(screen.getByTestId('forgot-email'), '   ');
+    expect(screen.getByTestId('forgot-submit')).toBeDisabled();
+    await fireEvent.changeText(screen.getByTestId('forgot-email'), 'ana@example.com');
+    expect(screen.getByTestId('forgot-submit')).not.toBeDisabled();
+    await fireEvent.changeText(screen.getByTestId('forgot-email'), '');
+    expect(screen.getByTestId('forgot-submit')).toBeDisabled();
+  });
+
+  it('sin enviar no existen forgot-resend ni forgot-error', async () => {
+    mockForgotPassword.mockResolvedValue({ kind: 'ok' });
+    await renderRoute();
+
+    expect(screen.queryByTestId('forgot-resend')).toBeNull();
+    expect(screen.queryByTestId('forgot-error')).toBeNull();
+  });
+});
