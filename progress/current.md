@@ -32,7 +32,12 @@
 - Enmienda E1–E5 escrita en `specs/mobile-welcome-splash/` (requirements R5,
   R6, R10 y §Aprobación con casilla propia; design §1.5 y §2; tasks T12).
   Espejada en la página Notion de #118; `Estado del gate` = En revisión.
-- Siguiente paso: Aprobado en Notion, commit de firma de la enmienda, handoff
-  de la ronda 2 a Codex (solo `index.test.tsx`), init.sh con permiso y
+- Handoff de la ronda 2 escrito (`progress/handoff_mobile-welcome-splash.md`
+  §Ronda 2, `f4b16803`): solo `index.test.tsx` + trazabilidad, una sonda de
+  mutación por candado; el bloque comprueba la casilla de la enmienda antes
+  de arrancar. M2 (`Easing.linear`) cae por TypeError declarado; M2b
+  (otra bezier) cubre el rojo por aserción.
+- Siguiente paso: Aprobado en Notion, commit de firma de la enmienda, pasar
+  el bloque de la ronda 2 al humano para Codex, init.sh con permiso y
   reviewer ronda 2. R13 S1–S8 sigue siendo smoke humano en dev build de
   Android.
