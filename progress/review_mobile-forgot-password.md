@@ -383,3 +383,183 @@ R4 viñeta 3 dice: «WHILE no se ha enviado THE SYSTEM SHALL no renderizar `forg
 - Propuesta para la enmienda: reescribir la cláusula como «WHILE `sent === false` THE SYSTEM SHALL no renderizar `forgot-resend`; antes del primer envío tampoco `forgot-error` (R7 lo pinta tras un resultado distinto de `ok`)».
 
 Barrido: 6 huecos
+
+## Ronda 2
+Fecha: 2026-10-05. HEAD `49de71b6`. H0 `453d0cd8`. Rango revisado: `453d0cd8..49de71b6` (7 commits de Codex).
+Veredicto: RECHAZADO
+
+En una frase: Codex cumplió la enmienda E1 al pie de la letra y sin desvíos, y el rechazo viene de una cláusula universal que E1 no cubría. R4 viñeta 1 dice «WHILE no se ha enviado (`sent === false`) THE SYSTEM SHALL renderizar título, instrucciones, `Label` y `link-login`», y ningún test la comprueba en dos de sus flujos: con la petición en vuelo y tras un error. El hueco está en la spec y en mi barrido previo a la firma, no en la ejecución.
+
+### Alcance
+- Commits del rango:
+  - `a3426e90` test(mobile): lock every other status as error in the forgot client (#117 R2, E1)
+  - `7c2937e2` test(mobile): lock resend errors for every non-ok kind (#117 R6, E1)
+  - `2ad3fb99` test(mobile): lock forgot-error clearing as soon as a new request starts (#117 R7, E1)
+  - `3f347525` test(mobile): lock the forgot scroll container props in both states (#117 R9, E1)
+  - `99c5b354` test(mobile): lock link-login from the sent state (#117 R3, E1)
+  - `2c6a2210` test(mobile): lock the Lock tile in both states (#117 R5, E1)
+  - `49de71b6` docs(mobile): trace #117 amendment E1 to its tests and commits
+- `git diff --numstat 453d0cd8..49de71b6` toca exactamente los 4 ficheros de la lista cerrada:
+  - `mobile-pet-tracker/src/api/__tests__/auth.test.ts`: +6 / −0
+  - `mobile-pet-tracker/src/screens/forgot/index.test.tsx`: +97 / −0
+  - `progress/impl_mobile-forgot-password.md`: +1692 / −0
+  - `specs/mobile-forgot-password/traceability.md`: +17 / −7
+- Producción: 0 líneas, tanto desde `453d0cd8` como desde `d39a9ea5`. `git diff d39a9ea5..49de71b6 -- mobile-pet-tracker` solo toca los dos ficheros de test.
+- Los dos diffs de test son solo adiciones (−0).
+- E1.5 y E1.8 no tienen commit, como pide la enmienda. E1.5 ya lo cumplía `7ba0b3a9` de la ronda 1, y E1.8 solo cambia la lectura de la spec.
+
+## Checklist C2 — Estado coherente (ronda 2)
+- [x] Solo 1 feature in_progress: `grep -c '"status": "in_progress"' feature_list.json` da 1, y es #117.
+- [x] `progress/current.md` recoge la firma de E1 (`75cb3104`) y el handoff de la ronda 2 (`453d0cd8`).
+
+## Checklist C3 — Arquitectura (ronda 2)
+- [x] No aplica cambio: la producción es la misma que aprobó C3 en la ronda 1, porque el diff de producción es 0.
+
+## Checklist C4 — TDD (ronda 2)
+- [x] Cada `it` nuevo vive en un `describe` que nombra su R-id: `#117 R2`, `#117 R3`, `#117 R5`, `#117 R6`, `#117 R7` y `#117 R9`. Medido con `grep -cF` sobre los títulos exactos de E1.1-E1.4: 1 cada uno.
+- [x] La ronda es solo de tests sobre un código que ya estaba verde, así que no hay historial rojo→verde que exigir. El rojo lo sustituyen las 17 sondas de `tasks.md` §Enmienda E1, que replanté yo (tabla abajo). Hay un commit por R-id, y cada uno incluye la etiqueta `E1`.
+
+## Checklist C5 — Trazabilidad (ronda 2)
+- [x] `traceability.md` no tiene filas "pendiente".
+- [x] Los 23 hashes citados pasan `git cat-file -t` = `commit` y `git merge-base --is-ancestor <h> HEAD`.
+- [x] La fila E1.5 cita `7ba0b3a9`.
+- [x] Formato de los commits: `test(mobile): <desc> (#117 Rn, E1)` y `docs(mobile): …`.
+
+## Checklist C6 — Spec aprobada (ronda 2)
+- [x] `requirements.md` está en `status: approved`.
+- [x] La casilla de §Enmienda E1 está marcada. Commit de firma `75cb3104`, aprobación vía Notion.
+
+## Checklist C7 — Sin código huérfano (ronda 2)
+- [x] N/A en esta ronda. No reemplaza nada, y la retirada del stub de la ronda 1 sigue intacta.
+
+## Checklist C8 — UI móvil (ronda 2)
+- [x] Sin cambio de UI.
+- [x] Hay 0 `-[` en las líneas añadidas y `git diff --check 453d0cd8..49de71b6` sale vacío.
+- [x] Typecheck `tsc --noEmit` en `mobile-pet-tracker/`: exit 0. Antes y después, `test ! -e mobile-pet-tracker/.expo/types/router.d.ts` = 0. No lo borré.
+- [ ] Smoke S1-S9 en dev build de Android: sigue pendiente del humano. Este veredicto ni lo marca ni lo bloquea.
+
+### Evidencia de `./init.sh` (leída, no ejecutada)
+El leader corrió `./init.sh` porque el clasificador se lo deniega al subagente. Yo leí la evidencia en el scratchpad de la sesión:
+- `init-117-r2.exit` = `0`.
+- `init-117-r2.head` = `49de71b6`. HEAD sigue en `49de71b6` al cerrar esta revisión.
+- `init-117-r2.log`:
+  - backend: `Test Suites: 176 passed`, `Tests: 1348 passed`.
+  - infra: `Test Suites: 2 passed`, `Tests: 14 passed`.
+  - mobile: `Test Suites: 93 passed, 93 total`, `Tests: 2049 passed, 2049 total`. Coincide con la cifra global de E1 (93 / 2049).
+  - e2e: `Test Suites: 3 skipped, 29 passed, 29 of 32 total`, `Tests: 8 skipped, 438 passed, 446 total`.
+  - lint (backend, infra, `expo lint`) y `tsc --noEmit` verdes.
+  - Termina en `✅ Todo verde. Listo para trabajar.`
+
+### Corrida independiente
+- `bunx jest --runTestsByPath src/api/__tests__/auth.test.ts src/screens/forgot/index.test.tsx`, desde `mobile-pet-tracker/` y sin pipe: exit 0 con 73 / 73. Son 44 de auth más 29 de forgot, las cifras de E1.
+- No corrí la suite global ni las otras 6 suites del handoff, por instrucción del leader. Su verde viene de `init-117-r2.log`.
+
+### Sondas de mutación de E1 (replantadas por mí)
+Método de cada sonda:
+- Reemplazo literal en producción, con recuento de ancla = 1.
+- `bunx jest --runTestsByPath` sobre las dos suites, con `--json`.
+- Revertido con `git checkout HEAD -- <ruta>`. Después, `git diff --quiet -- <ruta>` = 0 y `git diff --cached --quiet` = 0. Las 17 sondas revirtieron con 0 / 0 / 0.
+
+| Sonda | Mutación (`tasks.md` §Enmienda E1) | Cae | Línea | Modo | Debe seguir verde |
+|---|---|---|---|---|---|
+| M2-f | `default:` devuelve `ok` si status < 500 | filas 201, 302 y 404 de E1.1 | `auth.test.ts:326` | aserción | fila 503 y `mapea 500 a error`: verdes |
+| M2-g | `case 201:` junto a `case 200:` | fila 201 | `auth.test.ts:326` | aserción | — |
+| M2-h | `case 503: return { kind: 'ok' }` | fila 503 | `auth.test.ts:326` | aserción | — |
+| M2-i | `if (3xx) return { kind: 'ok' }` antes del `switch` | fila 302 | `auth.test.ts:326` | aserción | — |
+| M6-e | `setSent(false)` antes de `forgot.invalidEmail` | fila `validation` de E1.2 | `index.test.tsx:320` | consulta | `it` del 429: verde |
+| M6-f | `setSent(false)` antes de `common.cannotReachServer` | fila `unreachable` | `:320` | consulta | `it` del 429: verde |
+| M6-g | `setSent(false)` antes de `common.somethingWentWrong` | filas `error` y `missing-config` | `:320` | consulta | `it` del 429: verde |
+| M7-h | `setError(null)` movido a `case 'ok':` | los dos `it` de E1.3 | `:245` y `:266` | aserción | `un envío posterior que resuelve ok…`: verde |
+| M7-i | `if (!sent) setError(null)` | solo el `it` del reenvío | `:266` | aserción | `it` del formulario: verde |
+| M4-f | `{sent \|\| submitting ? (` en `forgot-resend` | `it` del formulario | `:246` | aserción | — |
+| M6-h | `setSubmittedEmail(sent ? '' : target)` | `it` del reenvío | `:271` | aserción | — |
+| M6-i | `send(error ? email : submittedEmail)` en `forgot-resend` | `it` del reenvío | `:265` | aserción | — |
+| M9-e | `className={sent ? 'flex-1' : 'flex-1 bg-background'}` | `it` de E1.4 | `:370` | aserción | — |
+| M9-f | `contentInsetAdjustmentBehavior={sent ? 'never' : 'automatic'}` | `it` de E1.4 | `:371` | aserción | — |
+| M9-g | `className="flex-1"` | `it` de E1.4 | `:366` | aserción | — |
+| M3-e | `router.push(sent ? '/' : '/login')` | `it` nuevo de R3 | `:74` | aserción | `link-login navega a /login sin petición de red`: verde |
+| M5-g | tile `Lock` envuelto en `{!sent && (…)}` | `it` del tile, segunda comprobación | `:198` | aserción | — |
+
+Las 17 caen donde y como dice `tasks.md`, y todo lo que debía seguir verde siguió verde. Coinciden con la tabla de Codex en `progress/impl_mobile-forgot-password.md` §Ronda 2.
+
+### Barrido exhaustivo de cláusulas universales (R1-R11 y E1)
+Las filas en OK del barrido previo a la firma (§Barrido de la enmienda E1, tabla 1) siguen en OK, porque la producción no cambió y los tests solo crecieron.
+
+Los seis huecos de ese barrido quedan cerrados:
+
+| Hueco | Rama | Candado ahora | Sonda que lo prueba |
+|---|---|---|---|
+| H1 | R2 «cualquier otro status», 3xx | E1.1, fila 302 | M2-f, M2-i |
+| H2 | R3 `link-login` desde el estado enviado | `link-login navega a /login también desde «Revisa tu correo», sin petición nueva` | M3-e |
+| H3 | R4 `forgot-resend` en vuelo | E1.3 `it` 1, `toBeNull` de `forgot-resend` en vuelo | M4-f |
+| H4 | R5 tile `Lock` en el estado enviado | `el tile Lock sigue en pie en los dos estados` | M5-g |
+| H5 | R6 cuerpo tras un reenvío ok | E1.3 `it` 2, literal de `forgot-body` con `Ana@Example.com` | M6-h |
+| H6 | R6 argumento del reenvío tras un error | E1.3 `it` 2, `mock.calls[2][1]` contra `calls[0][1]` | M6-i |
+
+También quedan en OK las ramas que nombra la propia E1: E1.1 cubre 2xx, 3xx, 4xx y 5xx; E1.2 los cuatro kinds; E1.3 los dos botones; E1.4 los dos estados. Cada rama tiene sonda propia en la tabla de arriba.
+
+Ramas nuevas sin candado. Todas las mutaciones dejan las dos suites en 73 / 73 con exit 0 y revierten con 0 / 0 / 0:
+
+| R | Cláusula | Rama | Sonda | Mutación | Efecto visible | Estado |
+|---|---|---|---|---|---|---|
+| R4 v1 | WHILE `sent === false`: `forgot-title` = «Recuperar contraseña» | en vuelo | X-a | `{sent \|\| submitting ? t('forgot.checkYourEmail') : …}` | cabecera de éxito «Revisa tu correo» antes de saber el resultado; si falla, el usuario vio éxito y vuelve el formulario | **sin candado, bloquea** |
+| R4 v1 | WHILE `sent === false`: `forgot-body` = instrucciones | en vuelo | X-b | `{sent \|\| submitting ? t('forgot.sentTo', …) : …}` | cuerpo «Si existe una cuenta para , te enviamos…» con el correo vacío | **sin candado, bloquea** |
+| R4 v1 | WHILE `sent === false`: `forgot-body` = instrucciones | tras un error | X-c | `{sent ? sentTo : error ?? t('forgot.instructions')}` | el error sustituye a las instrucciones y sale dos veces | **sin candado, bloquea** |
+| R4 v1 | WHILE `sent === false`: `link-login` | en vuelo | X-d | `link-login` envuelto en `{!submitting && (…)}` | sin vuelta a «Iniciar sesión» mientras vuela; con red lenta, hasta el timeout | **sin candado, bloquea** |
+| R4 v1 | WHILE `sent === false`: `link-login` | tras un error | X-e | `link-login` envuelto en `{!error && (…)}` | sin vuelta a «Iniciar sesión» tras cualquier error | **sin candado, bloquea** |
+| R4 v1 | WHILE `sent === false`: `Label` «Correo electrónico» | tras un error | X-f | `Label` envuelto en `{!error && (…)}` | el campo pierde su etiqueta visible | sin candado, menor |
+| R6 v3 | IF el reenvío no es ok: «permanecer en el estado enviado» | cuerpo | X-g | `{sent && !error ? sentTo : instructions}` | tras un reenvío fallido, título «Revisa tu correo» con las instrucciones del formulario | fuera de la letra, informativa |
+| R6 v3 | IF el reenvío no es ok: «permanecer en el estado enviado» | `forgot-submit` | X-h | `{!sent \|\| error ? (` en `forgot-submit` | `forgot-submit` aparece tras un reenvío fallido | fuera de la letra, informativa |
+| R6 v1/v2 | reenvío en vuelo | `forgot-title` | X-i | `{sent && !submitting ? t('forgot.checkYourEmail') : …}` | el título pasa a «Recuperar contraseña» mientras vuela el reenvío | fuera de la letra, informativa |
+
+Por qué X-g, X-h y X-i quedan fuera de la letra:
+- El paréntesis de R6 viñeta 3 enumera qué es «el estado enviado»: título `Revisa tu correo`, `forgot-resend` presente y habilitado, y sin `forgot-email`. No incluye el cuerpo ni la ausencia de `forgot-submit`, y ese paréntesis está candado en sus 5 kinds.
+- El render del estado enviado lo da R5 viñeta 3, que es un WHEN (`WHEN el resultado es ok`) y no un WHILE.
+- R6 viñeta 2 habla de «al resolver ok», no del tramo en vuelo.
+
+R4 viñeta 1, en cambio, es un WHILE que enumera cada elemento. Sus ramas «en vuelo» y «tras un error» son del mismo tipo que H3/M4-f (un elemento de un WHILE sin candado en un flujo del mismo estado), que el humano firmó dentro de E1 para cerrarlo.
+
+## Observaciones (ronda 2)
+
+### Defectos (motivo del rechazo)
+1. **R4 viñeta 1 sin candado con la petición en vuelo (X-a, X-b, X-d).**
+   - La cláusula es «WHILE no se ha enviado (`sent === false`) THE SYSTEM SHALL renderizar `forgot-title` con `t('forgot.forgotPassword')`, `forgot-body` con `t('forgot.instructions')`, `TextField` con `Label`, … `LinkButton testID="link-login"`». Mientras vuela la primera petición, `sent` sigue en `false`.
+   - Hay dos `it` con ventana en vuelo desde el formulario, y en ninguno se comprueban título, cuerpo ni `link-login`:
+     - R5 `it` 1, `envía el correo recortado una sola vez y deshabilita forgot-submit mientras vuela la petición`. Tras el `waitFor` de `index.test.tsx:163` solo comprueba las llamadas al mock y `forgot-email` visible. El `findByText('Revisa tu correo')` posterior no distingue la mutación, porque con X-a el texto ya estaba antes de resolver.
+     - E1.3 `it` 1, `un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver`. Tras el `waitFor` de `:244` solo comprueba la ausencia de `forgot-error` y `forgot-resend`.
+   - El riesgo más alto es X-a: una cabecera de éxito optimista. Es un patrón habitual de UI, y si la petición falla el usuario ya ha leído «Revisa tu correo».
+2. **R4 viñeta 1 sin candado tras un error (X-c, X-e).**
+   - Las 5 filas de R7, `mapea %p a «%s» en forgot-error, seleccionable, y deja el formulario en pie` (`index.test.tsx:204-222`), comprueban `forgot-error`, `selectable`, `forgot-title`, el valor de `forgot-email`, `forgot-submit` habilitado y la ausencia de `forgot-resend`.
+   - No comprueban `forgot-body` = instrucciones, ni que `link-login` exista, ni el `Label` «Correo electrónico».
+   - R7 viñeta 3 («conservar el formulario») no enumera esos tres elementos, pero R4 viñeta 1 sí, y es la cláusula que rige mientras `sent === false`.
+   - Ningún otro `it` llega a ese estado y comprueba esos elementos. `un envío posterior que resuelve ok…` y E1.3 `it` 1 pasan por él sin mirar cuerpo ni enlace.
+
+Codex no tiene ninguna culpa aquí. E1 no le pedía nada de esto, y mi barrido previo a la firma (§Barrido de la enmienda E1, tabla 1) solo partió R4 por sus viñetas 2 y 3: la viñeta 1 no tiene fila. Cerrarlo necesita una enmienda E2 del leader que el humano firme. Por lo leído, bastaría con añadir aseveraciones a `it` existentes:
+- en los dos `it` en vuelo de arriba: título, cuerpo y `link-login`;
+- en las filas de R7: cuerpo, `link-login` y `Label`.
+
+En ese caso las cifras no cambiarían: 2 suites / 73, global 93 / 2049. La forma exacta y sus sondas son decisión de la enmienda, no de este veredicto.
+
+### Huecos menores (no bastan solos para rechazar)
+- X-f: el `Label` desaparece tras un error. La mutación es poco plausible, pero el campo se queda sin etiqueta visible. Si E2 toca las filas de R7, entra con coste 0.
+
+### Informativas (fuera de la letra de la spec)
+- X-g, X-h y X-i: el estado enviado no tiene un WHILE que enumere su render.
+  - R5 viñeta 3 es un WHEN `ok`.
+  - R6 viñeta 3 define «permanecer en el estado enviado» con un paréntesis de tres elementos.
+  - R6 viñeta 2 no cubre el tramo en vuelo del reenvío.
+- Si el leader quiere simetría con R4, la enmienda podría añadir «WHILE `sent === true` THE SYSTEM SHALL renderizar …» con su lista. No es un incumplimiento de la spec firmada.
+
+### Sobre el trabajo de Codex en esta ronda
+- Lista cerrada respetada, diff de producción 0 y tests solo con adiciones.
+- Los literales y títulos de E1.1-E1.4 están tal cual: `grep -cF` da 1 en cada título nuevo.
+- Las 17 sondas son reproducibles y caen en el `it`, la línea y el modo que dice `tasks.md`.
+- Las esperas siguen §Esperas: espera sobre el árbol (`toBeDisabled`) antes de comprobar `mock.calls[2][1]`.
+- Trazabilidad completa con hashes ancestros, y typecheck y lint verdes.
+- Si E2 se limita a aseveraciones nuevas en `it` existentes, la ronda 3 es mecánica.
+
+### Estado del árbol al terminar
+- `git status --short` vacío, `git diff --quiet` = 0 y `git diff --cached --quiet` = 0 antes de este commit.
+- HEAD `49de71b6`, branch `feature/117-mobile-forgot-password`.
+- `mobile-pet-tracker/.expo/types/router.d.ts` sigue ausente.
+- No corrí `./init.sh` ni la suite global, y no hice push.
