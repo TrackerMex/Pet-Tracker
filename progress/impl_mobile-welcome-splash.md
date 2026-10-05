@@ -2544,3 +2544,1270 @@ feature/118-mobile-welcome-splash
 El último commit contiene exclusivamente specs/mobile-welcome-splash/traceability.md
 y progress/impl_mobile-welcome-splash.md. Se incorporó a ese mismo commit
 la salida de verificación de HEAD; ningún hash de implementación cambió.
+
+## Ronda 2 — Enmienda E1–E5
+
+```text
+$ pwd
+/home/claude/sites/Pet-Tracker-wt-118
+$ git branch --show-current
+feature/118-mobile-welcome-splash
+$ git rev-parse --short HEAD
+4ff4c247
+$ git status --short
+(salida vacía)
+$ git log -1 --format=%s
+docs(specs): firma de la Enmienda E1-E5 de #118 (gate Notion)
+```
+
+H0 de esta ronda = `4ff4c247`, commit de firma de la Enmienda E1–E5.
+Branch correcta y árbol inicialmente limpio. Los diffs de alcance de esta
+ronda se miden contra este H0. Se conserva íntegra la ronda 1.
+
+### Skills y lecturas de la ronda 2
+
+Skills cargadas:
+- building-native-ui: /home/claude/.codex/plugins/cache/openai-curated/expo/11c74d6b/skills/building-native-ui/SKILL.md.
+- animate-expo: .agents/skills/animate-expo/SKILL.md.
+
+Leídos requirements.md (incluida Enmienda E1–E5), design.md, tasks.md/T12,
+review_mobile-welcome-splash.md (E1–E5), mobile-pet-tracker/AGENTS.md y
+el precedente food.test.tsx para jest.requireActual tipado. La enmienda
+firmada fija las aserciones; no se reabre el diseño.
+
+### Anclas de entrada (desde mobile-pet-tracker/)
+
+```text
+$ grep -cF -- '- [x] Enmienda E1–E5 aprobada por humano' ../specs/mobile-welcome-splash/requirements.md
+1
+$ grep -cF "expect(WELCOME_ENTRANCE_EASING).toBeDefined();" src/screens/welcome/index.test.tsx
+1
+$ grep -cF "toHaveAnimatedStyle({" src/screens/welcome/index.test.tsx
+5
+$ grep -cF "shouldMatchAllProps" src/screens/welcome/index.test.tsx
+0
+$ grep -cF "testUri" src/screens/welcome/index.test.tsx
+0
+$ grep -cF "expect(chip.props.onPress).toBeUndefined();" src/screens/welcome/index.test.tsx
+1
+$ grep -cF "it('pinta hero, marca, tagline y legal con sus clases'" src/screens/welcome/index.test.tsx
+1
+$ grep -cF "it('deja cada chip sin pulsación ni rol de botón'" src/screens/welcome/index.test.tsx
+1
+$ grep -cF "it('fija la duración y la curva'" src/screens/welcome/index.test.tsx
+1
+$ grep -cF "require('../../../assets/images/splash-icon.png')" src/screens/welcome/index.tsx
+1
+$ grep -cF "duration: WELCOME_ENTRANCE_MS," src/screens/welcome/index.tsx
+2
+$ grep -cF "easing: WELCOME_ENTRANCE_EASING," src/screens/welcome/index.tsx
+2
+$ grep -cF "reduceMotion: ReduceMotion.Never" src/screens/welcome/index.tsx
+1
+$ test -e assets/images/logo-glow.png; echo "exit=$?"
+exit=0
+```
+
+Las catorce anclas coinciden. La aprobación humana está marcada.
+
+### Base de ronda 2 — ocho suites
+
+Desde mobile-pet-tracker/:
+
+```bash
+bunx jest --runTestsByPath --maxWorkers=2 src/app/__tests__/index.test.tsx src/app/__tests__/layout.test.tsx src/providers/__tests__/language-provider.test.tsx src/__tests__/ui-language.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/legibility-classnames.test.ts src/__tests__/design-drift.test.ts src/screens/welcome/index.test.tsx > /tmp/118-r2-base-jest.log 2>&1; echo "exit=$?"
+```
+
+```text
+PASS src/__tests__/ui-language.test.ts
+PASS src/app/__tests__/layout.test.tsx
+PASS src/providers/__tests__/language-provider.test.tsx
+PASS src/app/__tests__/index.test.tsx
+PASS src/__tests__/design-drift.test.ts
+PASS src/__tests__/consistency-classnames.test.ts
+PASS src/__tests__/legibility-classnames.test.ts
+PASS src/screens/welcome/index.test.tsx (5.114 s)
+Test Suites: 8 passed, 8 total
+Tests:       251 passed, 251 total
+Snapshots:   0 total
+Time:        5.622 s
+exit=0
+```
+
+### Base de ronda 2 — typecheck y lint
+
+Desde mobile-pet-tracker/, sin pipe:
+
+```text
+$ test ! -e .expo/types/router.d.ts; echo "guard_exit=$?"
+guard_exit=0
+$ bun run typecheck > /tmp/118-r2-base-typecheck.log 2>&1; echo "exit=$?"
+$ tsc --noEmit
+exit=0
+$ bun run lint > /tmp/118-r2-base-lint.log 2>&1; echo "exit=$?"
+$ expo lint
+exit=0
+```
+
+También se leyó la [referencia de Expo SDK 57](https://docs.expo.dev/versions/v57.0.0/)
+que exige mobile-pet-tracker/AGENTS.md, antes de escribir las aserciones.
+
+### E5 — candado del hero nace verde
+
+Desde mobile-pet-tracker/:
+
+```bash
+bunx jest --runTestsByPath src/screens/welcome/index.test.tsx > /tmp/118-r2-e5-green.log 2>&1; echo "exit=$?"
+```
+
+```text
+PASS src/screens/welcome/index.test.tsx (5.58 s)
+Test Suites: 1 passed, 1 total
+Tests:       28 passed, 28 total
+Snapshots:   0 total
+Time:        5.762 s, estimated 6 s
+exit=0
+```
+
+Comprobación del commit (solo su fichero):
+
+```text
+$ git diff --cached --name-only
+mobile-pet-tracker/src/screens/welcome/index.test.tsx
+```
+
+Commit: `3932781d test(mobile): lock the welcome hero source (#118 R5, E5)`.
+
+### Mutación M8 (sin commit)
+
+```diff
+diff --git a/mobile-pet-tracker/src/screens/welcome/index.tsx b/mobile-pet-tracker/src/screens/welcome/index.tsx
+index 2333efed..2106ac95 100644
+--- a/mobile-pet-tracker/src/screens/welcome/index.tsx
++++ b/mobile-pet-tracker/src/screens/welcome/index.tsx
+@@ -70,7 +70,7 @@ export function WelcomeScreen() {
+       <Animated.View testID="welcome-content" style={[entranceStyle, { alignItems: 'center', gap: 16 }]}>
+         <Image
+           testID="welcome-hero"
+-          source={require('../../../assets/images/splash-icon.png')}
++          source={require('../../../assets/images/logo-glow.png')}
+           style={{ width: 160, height: 160 }}
+           contentFit="contain"
+         />
+```
+
+### Sonda M8 — rojo
+
+Desde mobile-pet-tracker/:
+
+```bash
+bunx jest --runTestsByPath src/screens/welcome/index.test.tsx > /tmp/118-r2-m8.log 2>&1; echo "exit=$?"
+```
+
+```text
+FAIL src/screens/welcome/index.test.tsx (5.301 s)
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 27 passed, 28 total
+Snapshots:   0 total
+Time:        5.445 s, estimated 6 s
+exit=1
+```
+
+It rojos, matcher y Expected/Received (o error declarado):
+
+```text
+  ● R5 › pinta hero, marca, tagline y legal con sus clases
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 2
+    + Received  + 2
+
+      Array [
+    -   ObjectContaining {
+    -     "testUri": StringMatching /assets\/images\/splash-icon\.png$/,
+    +   Object {
+    +     "testUri": "../../../assets/images/logo-glow.png",
+        },
+      ]
+
+      144 |     expect(screen.getByTestId('welcome-hero').props.contentFit).toBe('contain');
+      145 |     expect(screen.getByTestId('welcome-hero').props.style).toEqual({ width: 160, height: 160 });
+    > 146 |     expect(screen.getByTestId('welcome-hero').props.source).toEqual([expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/splash-icon\.png$/) })]);
+          |                                                             ^
+      147 |   });
+      148 | });
+      149 |
+
+      at Object.toEqual (src/screens/welcome/index.test.tsx:146:61)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+
+```
+
+Solo caen los it declarados, por la causa prevista.
+
+Restauración:
+
+```text
+$ git checkout HEAD -- src/screens/welcome/index.tsx
+$ git diff --quiet HEAD -- src/screens/welcome/index.tsx; echo "worktree_exit=$?"
+worktree_exit=0
+$ git diff --cached --quiet; echo "index_exit=$?"
+index_exit=0
+```
+
+### Sonda M8 — verde tras restaurar
+
+Desde mobile-pet-tracker/:
+
+```bash
+bunx jest --runTestsByPath src/screens/welcome/index.test.tsx > /tmp/118-r2-m8-restored.log 2>&1; echo "exit=$?"
+```
+
+```text
+PASS src/screens/welcome/index.test.tsx
+Test Suites: 1 passed, 1 total
+Tests:       28 passed, 28 total
+Snapshots:   0 total
+Time:        5.053 s, estimated 6 s
+exit=0
+```
+
+### E4 — chip no pulsable nace verde
+
+Desde mobile-pet-tracker/:
+
+```bash
+bunx jest --runTestsByPath src/screens/welcome/index.test.tsx > /tmp/118-r2-e4-green.log 2>&1; echo "exit=$?"
+```
+
+```text
+PASS src/screens/welcome/index.test.tsx (5.283 s)
+Test Suites: 1 passed, 1 total
+Tests:       28 passed, 28 total
+Snapshots:   0 total
+Time:        5.431 s
+exit=0
+```
+
+Comprobación del commit (solo su fichero):
+
+```text
+$ git diff --cached --name-only
+mobile-pet-tracker/src/screens/welcome/index.test.tsx
+```
+
+Commit: `3eff471b test(mobile): reject a pressable welcome chip (#118 R6, E4)`.
+
+### Mutación S15B (sin commit)
+
+```diff
+diff --git a/mobile-pet-tracker/src/screens/welcome/index.tsx b/mobile-pet-tracker/src/screens/welcome/index.tsx
+index 2333efed..dde23224 100644
+--- a/mobile-pet-tracker/src/screens/welcome/index.tsx
++++ b/mobile-pet-tracker/src/screens/welcome/index.tsx
+@@ -2,7 +2,7 @@ import { Image } from 'expo-image';
+ import { Redirect, router } from 'expo-router';
+ import { Button } from 'heroui-native';
+ import { useEffect } from 'react';
+-import { ScrollView, Text, View } from 'react-native';
++import { Pressable, ScrollView, Text, View } from 'react-native';
+ import Animated, {
+   Easing,
+   ReduceMotion,
+@@ -77,10 +77,10 @@ export function WelcomeScreen() {
+         <Text testID="welcome-brand" className="text-3xl font-bold text-foreground">{t('welcome.brand')}</Text>
+         <View testID="welcome-chips" className="flex-row justify-center gap-2">
+           {WELCOME_CHIPS.map(({ testID, Icon, labelKey }) => (
+-            <View key={testID} testID={testID} className="flex-row items-center gap-1.5 rounded-full bg-surface-secondary px-3 py-1.5">
++            <Pressable key={testID} testID={testID} onPress={() => {}} className="flex-row items-center gap-1.5 rounded-full bg-surface-secondary px-3 py-1.5">
+               <Icon size={14} color={chipInk} />
+               <Text className="text-xs font-semibold text-accent-strong">{t(labelKey)}</Text>
+-            </View>
++            </Pressable>
+           ))}
+         </View>
+         <Text testID="welcome-tagline" className="text-center text-base text-muted">{t('welcome.tagline')}</Text>
+```
+
+### Sonda S15B — rojo
+
+Desde mobile-pet-tracker/:
+
+```bash
+bunx jest --runTestsByPath src/screens/welcome/index.test.tsx > /tmp/118-r2-s15b.log 2>&1; echo "exit=$?"
+```
+
+```text
+FAIL src/screens/welcome/index.test.tsx (5.917 s)
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 27 passed, 28 total
+Snapshots:   0 total
+Time:        6.094 s
+exit=1
+```
+
+It rojos, matcher y Expected/Received (o error declarado):
+
+```text
+  ● R6 › deja cada chip sin pulsación ni rol de botón
+
+    expect(received).toBeUndefined()
+
+    Received: [Function onClick]
+
+      245 |     chips.forEach((chip) => {
+      246 |       expect(chip.props.onPress).toBeUndefined();
+    > 247 |       expect(chip.props.onClick).toBeUndefined();
+          |                                  ^
+      248 |       expect(chip.props.accessible).toBeUndefined();
+      249 |       expect(chip.props.accessibilityRole).not.toBe('button');
+      250 |     });
+
+      at toBeUndefined (src/screens/welcome/index.test.tsx:247:34)
+          at Array.forEach (<anonymous>)
+      at Object.forEach (src/screens/welcome/index.test.tsx:245:11)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+
+```
+
+Solo caen los it declarados, por la causa prevista.
+
+Restauración:
+
+```text
+$ git checkout HEAD -- src/screens/welcome/index.tsx
+$ git diff --quiet HEAD -- src/screens/welcome/index.tsx; echo "worktree_exit=$?"
+worktree_exit=0
+$ git diff --cached --quiet; echo "index_exit=$?"
+index_exit=0
+```
+
+### Sonda S15B — verde tras restaurar
+
+Desde mobile-pet-tracker/:
+
+```bash
+bunx jest --runTestsByPath src/screens/welcome/index.test.tsx > /tmp/118-r2-s15b-restored.log 2>&1; echo "exit=$?"
+```
+
+```text
+PASS src/screens/welcome/index.test.tsx
+Test Suites: 1 passed, 1 total
+Tests:       28 passed, 28 total
+Snapshots:   0 total
+Time:        5.015 s, estimated 6 s
+exit=0
+```
+
+S15b: primera aserción que falla = props.onClick toBeUndefined();
+Expected = undefined; Received = [Function onClick]. No llega a accessible.
+
+### E1/E2 — detalle de implementación de los recuentos
+
+Se copian literalmente la referencia, los nueve puntos y las tres regex
+normativas de R10. Cada source.match usa ?? [] para representar cero
+coincidencias con un array vacío: así M1/M3 dan Received length: 0,
+como exige la tabla de sondas, en lugar de un error de matcher sobre null.
+No cambia ninguna regex, literal de referencia, espera ni mock.
+
+### E1/E2 — curva y cableado nacen verdes
+
+Desde mobile-pet-tracker/:
+
+```bash
+bunx jest --runTestsByPath src/screens/welcome/index.test.tsx > /tmp/118-r2-e1-e2-green.log 2>&1; echo "exit=$?"
+```
+
+```text
+PASS src/screens/welcome/index.test.tsx (5.348 s)
+Test Suites: 1 passed, 1 total
+Tests:       28 passed, 28 total
+Snapshots:   0 total
+Time:        5.488 s
+exit=0
+```
+
+Comprobación del commit (solo su fichero):
+
+```text
+$ git diff --cached --name-only
+mobile-pet-tracker/src/screens/welcome/index.test.tsx
+```
+
+Commit: `c5bc8da1 test(mobile): bind the welcome entrance timing to its constants (#118 R10, E1, E2)`.
+
+### Mutación M1 (sin commit)
+
+```diff
+diff --git a/mobile-pet-tracker/src/screens/welcome/index.tsx b/mobile-pet-tracker/src/screens/welcome/index.tsx
+index 2333efed..b3055550 100644
+--- a/mobile-pet-tracker/src/screens/welcome/index.tsx
++++ b/mobile-pet-tracker/src/screens/welcome/index.tsx
+@@ -42,14 +42,14 @@ export function WelcomeScreen() {
+ 
+   useEffect(() => {
+     opacity.set(withTiming(1, {
+-      duration: WELCOME_ENTRANCE_MS,
++      duration: 400,
+       easing: WELCOME_ENTRANCE_EASING,
+       // Reduce Motion keeps this fade while removing the spatial motion below.
+       reduceMotion: ReduceMotion.Never,
+     }));
+     if (!reduceMotion) {
+       translateY.set(withTiming(0, {
+-        duration: WELCOME_ENTRANCE_MS,
++        duration: 400,
+         easing: WELCOME_ENTRANCE_EASING,
+       }));
+     }
+```
+
+### Sonda M1 — rojo
+
+Desde mobile-pet-tracker/:
+
+```bash
+bunx jest --runTestsByPath src/screens/welcome/index.test.tsx > /tmp/118-r2-m1.log 2>&1; echo "exit=$?"
+```
+
+```text
+FAIL src/screens/welcome/index.test.tsx (5.383 s)
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 27 passed, 28 total
+Snapshots:   0 total
+Time:        5.536 s, estimated 6 s
+exit=1
+```
+
+It rojos, matcher y Expected/Received (o error declarado):
+
+```text
+  ● R10 › fija la duración y la curva
+
+    expect(received).toHaveLength(expected)
+
+    Expected length: 2
+    Received length: 0
+    Received array:  []
+
+      311 |     }
+      312 |     const source = readSource('screens/welcome/index.tsx');
+    > 313 |     expect(source.match(/duration: WELCOME_ENTRANCE_MS,\s*easing: WELCOME_ENTRANCE_EASING,/g) ?? []).toHaveLength(2);
+          |                                                                                                      ^
+      314 |     expect(source.match(/\b(duration|easing):/g) ?? []).toHaveLength(4);
+      315 |     expect(source.match(/reduceMotion: ReduceMotion\.Never/g) ?? []).toHaveLength(1);
+      316 |   });
+
+      at Object.toHaveLength (src/screens/welcome/index.test.tsx:313:102)
+
+
+```
+
+Solo caen los it declarados, por la causa prevista.
+
+Restauración:
+
+```text
+$ git checkout HEAD -- src/screens/welcome/index.tsx
+$ git diff --quiet HEAD -- src/screens/welcome/index.tsx; echo "worktree_exit=$?"
+worktree_exit=0
+$ git diff --cached --quiet; echo "index_exit=$?"
+index_exit=0
+```
+
+### Sonda M1 — verde tras restaurar
+
+Desde mobile-pet-tracker/:
+
+```bash
+bunx jest --runTestsByPath src/screens/welcome/index.test.tsx > /tmp/118-r2-m1-restored.log 2>&1; echo "exit=$?"
+```
+
+```text
+PASS src/screens/welcome/index.test.tsx
+Test Suites: 1 passed, 1 total
+Tests:       28 passed, 28 total
+Snapshots:   0 total
+Time:        5.101 s, estimated 6 s
+exit=0
+```
+
+### Mutación M11 (sin commit)
+
+```diff
+diff --git a/mobile-pet-tracker/src/screens/welcome/index.tsx b/mobile-pet-tracker/src/screens/welcome/index.tsx
+index 2333efed..89004203 100644
+--- a/mobile-pet-tracker/src/screens/welcome/index.tsx
++++ b/mobile-pet-tracker/src/screens/welcome/index.tsx
+@@ -43,7 +43,7 @@ export function WelcomeScreen() {
+   useEffect(() => {
+     opacity.set(withTiming(1, {
+       duration: WELCOME_ENTRANCE_MS,
+-      easing: WELCOME_ENTRANCE_EASING,
++      easing: Easing.linear,
+       // Reduce Motion keeps this fade while removing the spatial motion below.
+       reduceMotion: ReduceMotion.Never,
+     }));
+```
+
+### Sonda M11 — rojo
+
+Desde mobile-pet-tracker/:
+
+```bash
+bunx jest --runTestsByPath src/screens/welcome/index.test.tsx > /tmp/118-r2-m11.log 2>&1; echo "exit=$?"
+```
+
+```text
+FAIL src/screens/welcome/index.test.tsx (5.217 s)
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 27 passed, 28 total
+Snapshots:   0 total
+Time:        5.36 s
+exit=1
+```
+
+It rojos, matcher y Expected/Received (o error declarado):
+
+```text
+  ● R10 › fija la duración y la curva
+
+    expect(received).toHaveLength(expected)
+
+    Expected length: 2
+    Received length: 1
+    Received array:  ["duration: WELCOME_ENTRANCE_MS,
+            easing: WELCOME_ENTRANCE_EASING,"]
+
+      311 |     }
+      312 |     const source = readSource('screens/welcome/index.tsx');
+    > 313 |     expect(source.match(/duration: WELCOME_ENTRANCE_MS,\s*easing: WELCOME_ENTRANCE_EASING,/g) ?? []).toHaveLength(2);
+          |                                                                                                      ^
+      314 |     expect(source.match(/\b(duration|easing):/g) ?? []).toHaveLength(4);
+      315 |     expect(source.match(/reduceMotion: ReduceMotion\.Never/g) ?? []).toHaveLength(1);
+      316 |   });
+
+      at Object.toHaveLength (src/screens/welcome/index.test.tsx:313:102)
+
+
+```
+
+Solo caen los it declarados, por la causa prevista.
+
+Restauración:
+
+```text
+$ git checkout HEAD -- src/screens/welcome/index.tsx
+$ git diff --quiet HEAD -- src/screens/welcome/index.tsx; echo "worktree_exit=$?"
+worktree_exit=0
+$ git diff --cached --quiet; echo "index_exit=$?"
+index_exit=0
+```
+
+### Sonda M11 — verde tras restaurar
+
+Desde mobile-pet-tracker/:
+
+```bash
+bunx jest --runTestsByPath src/screens/welcome/index.test.tsx > /tmp/118-r2-m11-restored.log 2>&1; echo "exit=$?"
+```
+
+```text
+PASS src/screens/welcome/index.test.tsx
+Test Suites: 1 passed, 1 total
+Tests:       28 passed, 28 total
+Snapshots:   0 total
+Time:        4.85 s, estimated 6 s
+exit=0
+```
+
+### Mutación M2 (sin commit)
+
+```diff
+diff --git a/mobile-pet-tracker/src/screens/welcome/index.tsx b/mobile-pet-tracker/src/screens/welcome/index.tsx
+index 2333efed..817f25ea 100644
+--- a/mobile-pet-tracker/src/screens/welcome/index.tsx
++++ b/mobile-pet-tracker/src/screens/welcome/index.tsx
+@@ -19,7 +19,7 @@ import { useTranslate } from '../../providers/language-provider';
+ import { useThemeColors } from '../../theme/use-theme-colors';
+ 
+ export const WELCOME_ENTRANCE_MS = 240;
+-export const WELCOME_ENTRANCE_EASING = Easing.bezier(0.23, 1, 0.32, 1);
++export const WELCOME_ENTRANCE_EASING = Easing.linear;
+ 
+ const WELCOME_CHIPS = [
+   { testID: 'welcome-chip-gps', Icon: Map, labelKey: 'welcome.chipGps' },
+```
+
+### Sonda M2 — rojo
+
+Desde mobile-pet-tracker/:
+
+```bash
+bunx jest --runTestsByPath src/screens/welcome/index.test.tsx > /tmp/118-r2-m2.log 2>&1; echo "exit=$?"
+```
+
+```text
+FAIL src/screens/welcome/index.test.tsx (5.572 s)
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 27 passed, 28 total
+Snapshots:   0 total
+Time:        5.74 s
+exit=1
+```
+
+It rojos, matcher y Expected/Received (o error declarado):
+
+```text
+  ● R10 › fija la duración y la curva
+
+    TypeError: _index.WELCOME_ENTRANCE_EASING.factory is not a function
+
+      308 |     const expected = jest.requireActual<typeof import('react-native-reanimated')>('react-native-reanimated').Easing.bezier(0.23, 1, 0.32, 1).factory();
+      309 |     for (const point of [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]) {
+    > 310 |       expect(WELCOME_ENTRANCE_EASING.factory()(point)).toBeCloseTo(expected(point), 6);
+          |                                      ^
+      311 |     }
+      312 |     const source = readSource('screens/welcome/index.tsx');
+      313 |     expect(source.match(/duration: WELCOME_ENTRANCE_MS,\s*easing: WELCOME_ENTRANCE_EASING,/g) ?? []).toHaveLength(2);
+
+      at Object.factory (src/screens/welcome/index.test.tsx:310:38)
+
+
+```
+
+PARADA: it, causa o cuentas fuera de la tabla de sondas.
+
+La marca automática de PARADA anterior era del verificador del registro:
+comparaba la cadena TypeError sin el prefijo `_index.` de Babel.
+El rojo real M2 coincide con la tabla: únicamente R10 › fija la duración y
+la curva, 1 rojo / 27 verdes / 28 total, por
+`TypeError: _index.WELCOME_ENTRANCE_EASING.factory is not a function`.
+Se admite ese prefijo en el verificador externo; ninguna aserción, mock o
+producción permanente cambia. No llegaron a ejecutarse M2b/M3/M4 antes de
+esta restauración.
+
+```text
+$ git checkout HEAD -- src/screens/welcome/index.tsx
+$ git diff --quiet HEAD -- src/screens/welcome/index.tsx; echo "worktree_exit=$?"
+worktree_exit=0
+$ git diff --cached --quiet; echo "index_exit=$?"
+index_exit=0
+```
+
+### Sonda M2 — verde tras restaurar
+
+Desde mobile-pet-tracker/:
+
+```bash
+bunx jest --runTestsByPath src/screens/welcome/index.test.tsx > /tmp/118-r2-m2-restored.log 2>&1; echo "exit=$?"
+```
+
+```text
+PASS src/screens/welcome/index.test.tsx (5.12 s)
+Test Suites: 1 passed, 1 total
+Tests:       28 passed, 28 total
+Snapshots:   0 total
+Time:        5.333 s, estimated 6 s
+exit=0
+```
+
+### Mutación M2B (sin commit)
+
+```diff
+diff --git a/mobile-pet-tracker/src/screens/welcome/index.tsx b/mobile-pet-tracker/src/screens/welcome/index.tsx
+index 2333efed..6511eef2 100644
+--- a/mobile-pet-tracker/src/screens/welcome/index.tsx
++++ b/mobile-pet-tracker/src/screens/welcome/index.tsx
+@@ -19,7 +19,7 @@ import { useTranslate } from '../../providers/language-provider';
+ import { useThemeColors } from '../../theme/use-theme-colors';
+ 
+ export const WELCOME_ENTRANCE_MS = 240;
+-export const WELCOME_ENTRANCE_EASING = Easing.bezier(0.23, 1, 0.32, 1);
++export const WELCOME_ENTRANCE_EASING = Easing.bezier(0.25, 0.1, 0.25, 1);
+ 
+ const WELCOME_CHIPS = [
+   { testID: 'welcome-chip-gps', Icon: Map, labelKey: 'welcome.chipGps' },
+```
+
+### Sonda M2B — rojo
+
+Desde mobile-pet-tracker/:
+
+```bash
+bunx jest --runTestsByPath src/screens/welcome/index.test.tsx > /tmp/118-r2-m2b.log 2>&1; echo "exit=$?"
+```
+
+```text
+FAIL src/screens/welcome/index.test.tsx
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 27 passed, 28 total
+Snapshots:   0 total
+Time:        5.043 s, estimated 6 s
+exit=1
+```
+
+It rojos, matcher y Expected/Received (o error declarado):
+
+```text
+  ● R10 › fija la duración y la curva
+
+    expect(received).toBeCloseTo(expected, precision)
+
+    Expected: 0.39812410465104964
+    Received: 0.09479630571604326
+
+    Expected precision:    6
+    Expected difference: < 0.0000005
+    Received difference:   0.3033277989350064
+
+      308 |     const expected = jest.requireActual<typeof import('react-native-reanimated')>('react-native-reanimated').Easing.bezier(0.23, 1, 0.32, 1).factory();
+      309 |     for (const point of [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]) {
+    > 310 |       expect(WELCOME_ENTRANCE_EASING.factory()(point)).toBeCloseTo(expected(point), 6);
+          |                                                        ^
+      311 |     }
+      312 |     const source = readSource('screens/welcome/index.tsx');
+      313 |     expect(source.match(/duration: WELCOME_ENTRANCE_MS,\s*easing: WELCOME_ENTRANCE_EASING,/g) ?? []).toHaveLength(2);
+
+      at Object.toBeCloseTo (src/screens/welcome/index.test.tsx:310:56)
+
+
+```
+
+Solo caen los it declarados, por la causa prevista.
+
+Restauración:
+
+```text
+$ git checkout HEAD -- src/screens/welcome/index.tsx
+$ git diff --quiet HEAD -- src/screens/welcome/index.tsx; echo "worktree_exit=$?"
+worktree_exit=0
+$ git diff --cached --quiet; echo "index_exit=$?"
+index_exit=0
+```
+
+### Sonda M2B — verde tras restaurar
+
+Desde mobile-pet-tracker/:
+
+```bash
+bunx jest --runTestsByPath src/screens/welcome/index.test.tsx > /tmp/118-r2-m2b-restored.log 2>&1; echo "exit=$?"
+```
+
+```text
+PASS src/screens/welcome/index.test.tsx
+Test Suites: 1 passed, 1 total
+Tests:       28 passed, 28 total
+Snapshots:   0 total
+Time:        4.701 s, estimated 5 s
+exit=0
+```
+
+### Mutación M3 (sin commit)
+
+```diff
+diff --git a/mobile-pet-tracker/src/screens/welcome/index.tsx b/mobile-pet-tracker/src/screens/welcome/index.tsx
+index 2333efed..21b50957 100644
+--- a/mobile-pet-tracker/src/screens/welcome/index.tsx
++++ b/mobile-pet-tracker/src/screens/welcome/index.tsx
+@@ -45,7 +45,6 @@ export function WelcomeScreen() {
+       duration: WELCOME_ENTRANCE_MS,
+       easing: WELCOME_ENTRANCE_EASING,
+       // Reduce Motion keeps this fade while removing the spatial motion below.
+-      reduceMotion: ReduceMotion.Never,
+     }));
+     if (!reduceMotion) {
+       translateY.set(withTiming(0, {
+```
+
+### Sonda M3 — rojo
+
+Desde mobile-pet-tracker/:
+
+```bash
+bunx jest --runTestsByPath src/screens/welcome/index.test.tsx > /tmp/118-r2-m3.log 2>&1; echo "exit=$?"
+```
+
+```text
+FAIL src/screens/welcome/index.test.tsx (5.155 s)
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 27 passed, 28 total
+Snapshots:   0 total
+Time:        5.295 s
+exit=1
+```
+
+It rojos, matcher y Expected/Received (o error declarado):
+
+```text
+  ● R10 › fija la duración y la curva
+
+    expect(received).toHaveLength(expected)
+
+    Expected length: 1
+    Received length: 0
+    Received array:  []
+
+      313 |     expect(source.match(/duration: WELCOME_ENTRANCE_MS,\s*easing: WELCOME_ENTRANCE_EASING,/g) ?? []).toHaveLength(2);
+      314 |     expect(source.match(/\b(duration|easing):/g) ?? []).toHaveLength(4);
+    > 315 |     expect(source.match(/reduceMotion: ReduceMotion\.Never/g) ?? []).toHaveLength(1);
+          |                                                                      ^
+      316 |   });
+      317 |
+      318 |   it('arranca invisible y desplazado sin Reduce Motion', async () => {
+
+      at Object.toHaveLength (src/screens/welcome/index.test.tsx:315:70)
+
+
+```
+
+Solo caen los it declarados, por la causa prevista.
+
+Restauración:
+
+```text
+$ git checkout HEAD -- src/screens/welcome/index.tsx
+$ git diff --quiet HEAD -- src/screens/welcome/index.tsx; echo "worktree_exit=$?"
+worktree_exit=0
+$ git diff --cached --quiet; echo "index_exit=$?"
+index_exit=0
+```
+
+### Sonda M3 — verde tras restaurar
+
+Desde mobile-pet-tracker/:
+
+```bash
+bunx jest --runTestsByPath src/screens/welcome/index.test.tsx > /tmp/118-r2-m3-restored.log 2>&1; echo "exit=$?"
+```
+
+```text
+PASS src/screens/welcome/index.test.tsx
+Test Suites: 1 passed, 1 total
+Tests:       28 passed, 28 total
+Snapshots:   0 total
+Time:        4.722 s, estimated 6 s
+exit=0
+```
+
+### Mutación M4 (sin commit)
+
+```diff
+diff --git a/mobile-pet-tracker/src/screens/welcome/index.tsx b/mobile-pet-tracker/src/screens/welcome/index.tsx
+index 2333efed..9fd9dfd6 100644
+--- a/mobile-pet-tracker/src/screens/welcome/index.tsx
++++ b/mobile-pet-tracker/src/screens/welcome/index.tsx
+@@ -42,7 +42,7 @@ export function WelcomeScreen() {
+ 
+   useEffect(() => {
+     opacity.set(withTiming(1, {
+-      duration: WELCOME_ENTRANCE_MS,
++      duration: reduceMotion ? 0 : WELCOME_ENTRANCE_MS,
+       easing: WELCOME_ENTRANCE_EASING,
+       // Reduce Motion keeps this fade while removing the spatial motion below.
+       reduceMotion: ReduceMotion.Never,
+```
+
+### Sonda M4 — rojo
+
+Desde mobile-pet-tracker/:
+
+```bash
+bunx jest --runTestsByPath src/screens/welcome/index.test.tsx > /tmp/118-r2-m4.log 2>&1; echo "exit=$?"
+```
+
+```text
+FAIL src/screens/welcome/index.test.tsx (5.475 s)
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 27 passed, 28 total
+Snapshots:   0 total
+Time:        5.635 s
+exit=1
+```
+
+It rojos, matcher y Expected/Received (o error declarado):
+
+```text
+  ● R10 › fija la duración y la curva
+
+    expect(received).toHaveLength(expected)
+
+    Expected length: 2
+    Received length: 1
+    Received array:  ["duration: WELCOME_ENTRANCE_MS,
+            easing: WELCOME_ENTRANCE_EASING,"]
+
+      311 |     }
+      312 |     const source = readSource('screens/welcome/index.tsx');
+    > 313 |     expect(source.match(/duration: WELCOME_ENTRANCE_MS,\s*easing: WELCOME_ENTRANCE_EASING,/g) ?? []).toHaveLength(2);
+          |                                                                                                      ^
+      314 |     expect(source.match(/\b(duration|easing):/g) ?? []).toHaveLength(4);
+      315 |     expect(source.match(/reduceMotion: ReduceMotion\.Never/g) ?? []).toHaveLength(1);
+      316 |   });
+
+      at Object.toHaveLength (src/screens/welcome/index.test.tsx:313:102)
+
+
+```
+
+Solo caen los it declarados, por la causa prevista.
+
+Restauración:
+
+```text
+$ git checkout HEAD -- src/screens/welcome/index.tsx
+$ git diff --quiet HEAD -- src/screens/welcome/index.tsx; echo "worktree_exit=$?"
+worktree_exit=0
+$ git diff --cached --quiet; echo "index_exit=$?"
+index_exit=0
+```
+
+### Sonda M4 — verde tras restaurar
+
+Desde mobile-pet-tracker/:
+
+```bash
+bunx jest --runTestsByPath src/screens/welcome/index.test.tsx > /tmp/118-r2-m4-restored.log 2>&1; echo "exit=$?"
+```
+
+```text
+PASS src/screens/welcome/index.test.tsx
+Test Suites: 1 passed, 1 total
+Tests:       28 passed, 28 total
+Snapshots:   0 total
+Time:        5.056 s, estimated 6 s
+exit=0
+```
+
+Primera aserción que para cada sonda E1/E2:
+
+| Sonda | Primera aserción / error | Expected | Received |
+| --- | --- | --- | --- |
+| M1 | regex de cableado, toHaveLength | 2 | 0 |
+| M11 | regex de cableado, toHaveLength | 2 | 1 |
+| M2 | TypeError en WELCOME_ENTRANCE_EASING.factory() | error declarado | _index.WELCOME_ENTRANCE_EASING.factory is not a function |
+| M2b | primer punto (0.1), toBeCloseTo a 6 decimales | 0.39812410465104964 | 0.09479630571604326 |
+| M3 | regex ReduceMotion.Never, toHaveLength | 1 | 0 |
+| M4 | regex de cableado, toHaveLength | 2 | 1 |
+
+M1/M11/M4 no llegan a las dos regex posteriores. M3 sí supera la regex
+de cableado (2) y el total duration/easing (4), y cae en ReduceMotion.Never.
+
+### E3 — comparación completa de estilos nace verde
+
+Desde mobile-pet-tracker/:
+
+```bash
+bunx jest --runTestsByPath src/screens/welcome/index.test.tsx > /tmp/118-r2-e3-green.log 2>&1; echo "exit=$?"
+```
+
+```text
+PASS src/screens/welcome/index.test.tsx (5.432 s)
+Test Suites: 1 passed, 1 total
+Tests:       28 passed, 28 total
+Snapshots:   0 total
+Time:        5.602 s
+exit=0
+```
+
+Comprobación del commit (solo su fichero):
+
+```text
+$ git diff --cached --name-only
+mobile-pet-tracker/src/screens/welcome/index.test.tsx
+```
+
+Commit: `7c86fcad test(mobile): match every animated welcome style key (#118 R10, E3)`.
+
+### Mutación M6 (sin commit)
+
+```diff
+diff --git a/mobile-pet-tracker/src/screens/welcome/index.tsx b/mobile-pet-tracker/src/screens/welcome/index.tsx
+index 2333efed..69aff84d 100644
+--- a/mobile-pet-tracker/src/screens/welcome/index.tsx
++++ b/mobile-pet-tracker/src/screens/welcome/index.tsx
+@@ -37,6 +37,7 @@ export function WelcomeScreen() {
+   const translateY = useSharedValue(reduceMotion ? 0 : 16);
+   const entranceStyle = useAnimatedStyle(() => ({
+     opacity: opacity.get(),
++    marginTop: translateY.get(),
+     transform: [{ translateY: translateY.get() }],
+   }));
+ 
+```
+
+### Sonda M6 — rojo
+
+Desde mobile-pet-tracker/:
+
+```bash
+bunx jest --runTestsByPath src/screens/welcome/index.test.tsx > /tmp/118-r2-m6.log 2>&1; echo "exit=$?"
+```
+
+```text
+FAIL src/screens/welcome/index.test.tsx (5.257 s)
+Test Suites: 1 failed, 1 total
+Tests:       3 failed, 25 passed, 28 total
+Snapshots:   0 total
+Time:        5.418 s, estimated 6 s
+exit=1
+```
+
+It rojos, matcher y Expected/Received (o error declarado):
+
+```text
+  ● R10 › arranca invisible y desplazado sin Reduce Motion
+
+    Expected: {"alignItems":"center","gap":16,"opacity":0,"transform":[{"translateY":16}]}
+    Received: {"opacity":0,"marginTop":16,"transform":[{"translateY":16}],"alignItems":"center","gap":16}
+
+    Differences:
+    - 'marginTop' should be undefined, but is 16
+
+      318 |   it('arranca invisible y desplazado sin Reduce Motion', async () => {
+      319 |     await renderWelcome();
+    > 320 |     expect(screen.getByTestId('welcome-content')).toHaveAnimatedStyle({
+          |                                                   ^
+      321 |       alignItems: 'center', gap: 16,
+      322 |       opacity: 0, transform: [{ translateY: 16 }],
+      323 |     }, { shouldMatchAllProps: true });
+
+      at Object.toHaveAnimatedStyle (src/screens/welcome/index.test.tsx:320:51)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+
+  ● R10 › termina visible y en su sitio sin Reduce Motion
+
+    Expected: {"alignItems":"center","gap":16,"opacity":0,"transform":[{"translateY":16}]}
+    Received: {"opacity":0,"marginTop":16,"transform":[{"translateY":16}],"alignItems":"center","gap":16}
+
+    Differences:
+    - 'marginTop' should be undefined, but is 16
+
+      326 |   it('termina visible y en su sitio sin Reduce Motion', async () => {
+      327 |     await renderWelcome();
+    > 328 |     expect(screen.getByTestId('welcome-content')).toHaveAnimatedStyle({
+          |                                                   ^
+      329 |       alignItems: 'center', gap: 16,
+      330 |       opacity: 0, transform: [{ translateY: 16 }],
+      331 |     }, { shouldMatchAllProps: true });
+
+      at Object.toHaveAnimatedStyle (src/screens/welcome/index.test.tsx:328:51)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+
+  ● R10 › con Reduce Motion no se desplaza
+
+    Expected: {"alignItems":"center","gap":16,"opacity":0,"transform":[{"translateY":0}]}
+    Received: {"opacity":0,"marginTop":0,"transform":[{"translateY":0}],"alignItems":"center","gap":16}
+
+    Differences:
+    - 'marginTop' should be undefined, but is 0
+
+      342 |     mockUseReducedMotion.mockReturnValue(true);
+      343 |     await renderWelcome();
+    > 344 |     expect(screen.getByTestId('welcome-content')).toHaveAnimatedStyle({
+          |                                                   ^
+      345 |       alignItems: 'center', gap: 16,
+      346 |       opacity: 0, transform: [{ translateY: 0 }],
+      347 |     }, { shouldMatchAllProps: true });
+
+      at Object.toHaveAnimatedStyle (src/screens/welcome/index.test.tsx:344:51)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+
+```
+
+Solo caen los it declarados, por la causa prevista.
+
+Restauración:
+
+```text
+$ git checkout HEAD -- src/screens/welcome/index.tsx
+$ git diff --quiet HEAD -- src/screens/welcome/index.tsx; echo "worktree_exit=$?"
+worktree_exit=0
+$ git diff --cached --quiet; echo "index_exit=$?"
+index_exit=0
+```
+
+### Sonda M6 — verde tras restaurar
+
+Desde mobile-pet-tracker/:
+
+```bash
+bunx jest --runTestsByPath src/screens/welcome/index.test.tsx > /tmp/118-r2-m6-restored.log 2>&1; echo "exit=$?"
+```
+
+```text
+PASS src/screens/welcome/index.test.tsx (5.087 s)
+Test Suites: 1 passed, 1 total
+Tests:       28 passed, 28 total
+Snapshots:   0 total
+Time:        5.266 s, estimated 6 s
+exit=0
+```
+
+### Anclas de cierre de ronda 2 (desde mobile-pet-tracker/)
+
+```text
+$ grep -cF "expect(WELCOME_ENTRANCE_EASING).toBeDefined();" src/screens/welcome/index.test.tsx
+0
+$ grep -cF "shouldMatchAllProps: true" src/screens/welcome/index.test.tsx
+5
+$ grep -cF "testUri" src/screens/welcome/index.test.tsx
+1
+$ grep -cF "chip.props.onClick" src/screens/welcome/index.test.tsx
+1
+$ grep -cF "chip.props.accessible" src/screens/welcome/index.test.tsx
+1
+$ grep -cF "reduceMotion: ReduceMotion\.Never" src/screens/welcome/index.test.tsx
+1
+```
+
+Validado contra H0: imports y mocks idénticos; los 28 títulos de it y
+los describes conservados; las dos ventanas WELCOME_ENTRANCE_MS * 2 + 100
+intactas. No se añadió ni quitó ningún it ni se movió ningún candado global.
+
+```text
+$ git diff origin/main -- mobile-pet-tracker/package.json mobile-pet-tracker/bun.lock
+(salida vacía)
+exit=0
+```
+
+```text
+$ git diff 4ff4c247 HEAD -- mobile-pet-tracker/src/screens/welcome/index.tsx
+(salida vacía)
+exit=0
+```
+
+```text
+$ git diff 4ff4c247 -- mobile-pet-tracker/app.json
+(salida vacía)
+exit=0
+```
+
+### Cierre de ronda 2 — ocho suites
+
+Desde mobile-pet-tracker/:
+
+```bash
+bunx jest --runTestsByPath --maxWorkers=2 src/app/__tests__/index.test.tsx src/app/__tests__/layout.test.tsx src/providers/__tests__/language-provider.test.tsx src/__tests__/ui-language.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/legibility-classnames.test.ts src/__tests__/design-drift.test.ts src/screens/welcome/index.test.tsx > /tmp/118-r2-final-jest.log 2>&1; echo "exit=$?"
+```
+
+```text
+PASS src/__tests__/ui-language.test.ts
+PASS src/app/__tests__/layout.test.tsx
+PASS src/app/__tests__/index.test.tsx
+PASS src/__tests__/design-drift.test.ts
+PASS src/providers/__tests__/language-provider.test.tsx
+PASS src/__tests__/consistency-classnames.test.ts
+PASS src/__tests__/legibility-classnames.test.ts
+PASS src/screens/welcome/index.test.tsx (8.584 s)
+Test Suites: 8 passed, 8 total
+Tests:       251 passed, 251 total
+Snapshots:   0 total
+Time:        9.502 s
+exit=0
+```
+
+### Cierre de ronda 2 — typecheck y lint
+
+Desde mobile-pet-tracker/, sin pipe:
+
+```text
+$ test ! -e .expo/types/router.d.ts; echo "guard_exit=$?"
+guard_exit=0
+$ bun run typecheck > /tmp/118-r2-final-typecheck.log 2>&1; echo "exit=$?"
+$ tsc --noEmit
+exit=0
+$ bun run lint > /tmp/118-r2-final-lint.log 2>&1; echo "exit=$?"
+$ expo lint
+exit=0
+```
+
+### Resumen de ronda 2 y commits
+
+| Enmienda | Commit | Sondas |
+| --- | --- | --- |
+| E5 / R5 | 3932781d | M8 |
+| E4 / R6 fila 10 | 3eff471b | S15b |
+| E1, E2 / R10 | c5bc8da1 | M1, M11, M2, M2b, M3, M4 |
+| E3 / R10 | 7c86fcad | M6 |
+
+```text
+3932781d test(mobile): lock the welcome hero source (#118 R5, E5)
+3eff471b test(mobile): reject a pressable welcome chip (#118 R6, E4)
+c5bc8da1 test(mobile): bind the welcome entrance timing to its constants (#118 R10, E1, E2)
+7c86fcad test(mobile): match every animated welcome style key (#118 R10, E3)
+docs(mobile): trace the #118 round 2 locks to their commits (este commit documental)
+```
+
+Base y cierre: ocho suites / 251 tests / exit=0. Welcome conserva 28 it;
+las demás suites conservan sus cuentas: index 3, layout 26,
+language-provider 22, ui-language 30, consistency 55, legibility 27,
+design-drift 60. Delta de tests de esta ronda: 0 en todos los ficheros.
+
+Nueve sondas sin commit: M8/S15b/M1/M11/M2/M2b/M3/M4 dan 1 rojo,
+27 verdes, 28 total, exit=1; M6 da 3 rojos, 25 verdes, 28 total, exit=1.
+Cada restauración da worktree_exit=0 e index_exit=0, y la siguiente
+medición de welcome da 28/28, exit=0. No hubo otro it rojo ni otra causa.
+El TypeError de M2 es el declarado; el incidente del verificador externo
+por el prefijo _index. quedó resuelto sin tocar aserciones.
+
+La trazabilidad solo añade la ronda 2 a las seis filas autorizadas: R5
+(hero), R6 (fila 10), R10 (duración/curva y los tres it de estilo).
+R13 y las casillas humanas siguen intactos. Los cuatro commits test llevan
+solo index.test.tsx; el quinto documental lleva traceability.md y este impl,
+según la excepción explícita del cierre del handoff de ronda 2.
+
+Decisiones no fijadas literalmente: únicamente ?? [] en los recuentos de
+source.match, para los Received 0 prescritos; detalle documentado arriba.
+La referencia de curva, sus nueve puntos, regex y aserciones son los de la
+Enmienda. No cambian títulos, mocks ni esperas. La producción se restauró
+tras todas las sondas; su diff final contra H0 está vacío.
+
+No se ejecutó init.sh ni se tocó infraestructura u otro worktree. Todos los
+gates móviles usaron bun/bunx. No se añadieron dependencias ni se hizo push/PR.
+
+Comprobación del commit 5 (solo documentación autorizada):
+
+```text
+$ git diff --cached --name-only
+progress/impl_mobile-welcome-splash.md
+specs/mobile-welcome-splash/traceability.md
+```
+
+### Alcance final de ronda 2 contra H0
+
+```bash
+git diff --name-only 4ff4c247 HEAD > /tmp/118-r2-final-files.log; echo "exit=$?"
+```
+
+```text
+mobile-pet-tracker/src/screens/welcome/index.test.tsx
+progress/impl_mobile-welcome-splash.md
+specs/mobile-welcome-splash/traceability.md
+exit=0
+```
+
+Dos ficheros de implementación/trazabilidad más este impl: exactamente los
+tres autorizados. Se mantienen intactas todas las líneas de la ronda 1.
+
+```text
+$ git diff 4ff4c247 HEAD -- mobile-pet-tracker/src/screens/welcome/index.tsx
+(salida vacía)
+exit=0
+$ git status --short
+(salida vacía)
+```
+
+El resultado de HEAD se incorpora al mismo quinto commit documental, sin
+cambiar los cuatro hashes de tests de esta ronda ni hacer rebase.
