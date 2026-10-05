@@ -650,3 +650,272 @@ la reversion); los commits con hash; el cierre (8 suites 285, global
 HEAD` (4 ficheros) y el diff vacio de produccion; y cualquier decision
 que la spec no cerrara literalmente.
 ```
+
+## Ronda 3 — Enmienda E2 (solo tests)
+
+> Pegar en Codex CLI el bloque de abajo, no el de las rondas 1 ni 2. La
+> enmienda E2 está firmada (commit de firma `ca95f2f0`, aprobación vía Notion
+> con page_last_edited_at 2026-10-05T14:21:28Z, casilla del humano fechada
+> 2026-10-05). Ronda 2 terminó en `49de71b6`; el `reviewer` la rechazó en
+> `e37ee575`. El humano no pidió extender E2.6.
+
+```
+Worktree: /home/claude/sites/Pet-Tracker-wt-backend   <- PRIMERA LINEA. Trabaja AQUI y en ningun otro sitio
+RONDA 3 de #117. Antes de tocar nada, ejecuta `pwd`, `git branch --show-current`
+y `git rev-parse --short HEAD` y pega las tres salidas al FINAL de
+progress/impl_mobile-forgot-password.md, bajo un encabezado nuevo
+`## Ronda 3` (no borres nada de las rondas 1 y 2). El hash es H0 de la
+ronda 3 (el commit del leader que anade esta seccion al handoff): la lista
+cerrada de ficheros se mide contra el. Para si la branch no es
+feature/117-mobile-forgot-password.
+No toques /home/claude/sites/Pet-Tracker (#116), Pet-Tracker-wt-118 (#118),
+ni ningun otro worktree, ni cambies de branch en ninguno.
+node_modules ya esta instalado en mobile-pet-tracker/.
+
+Feature: mobile-forgot-password (#117), ronda 3
+Branch: feature/117-mobile-forgot-password
+Spec: specs/mobile-forgot-password/requirements.md §Enmienda E2 (E2.1-E2.7,
+firmada en ca95f2f0). Guion: specs/mobile-forgot-password/tasks.md
+§Enmienda E2 (T19-T21), entero, incluidas sus dos tablas de sondas, sus
+notas y §No hacer (ronda 3). Contexto del rechazo:
+progress/review_mobile-forgot-password.md §Ronda 2 y §Barrido previo a la
+firma de E2 (con su §Remedicion).
+
+== QUE HACES ==
+
+Solo tests, y solo en mobile-pet-tracker/src/screens/forgot/index.test.tsx.
+La produccion cumple; lo que faltaba era comprobar la pantalla entera de
+cada estado en todos sus flujos (en vuelo, tras un error, tras reenviar).
+En este orden:
+  T19  helpers LOCK_TILE_CLASS, lockTile, expectForgotError,
+       expectLinkLoginNavigates y expectFormState (E2.4, SIN expectSentState);
+       puntos P1, P2, P4, P4b, P5 y P6 (E2.5); los 3 cambios de linea de
+       E2.5; el `it` E2.7a. Sondas de la tabla de T19.
+  T20  expectSentState justo despues de expectFormState; puntos P3, P7a,
+       P7, P8-P13; el `it` E2.7b. Sondas de la tabla de T20.
+  T21  cierre: suites, typecheck, lint, traceability, impl.
+El codigo de los helpers (E2.4), las lineas de cada punto (tabla de E2.5 y
+nota de P4b) y los dos `it` de E2.7 son LITERALES de requirements.md:
+copialos de sus bloques de codigo, no los reescribas, ni traduzcas, ni
+reordenes. Los titulos de `it` existentes no cambian.
+
+Pistas verificadas por el leader (no son spec; ante diferencia manda la
+spec y el arbol):
+- Cada linea de punto va dentro del `it` que nombra la tabla de E2.5, con
+  la sangria de su cuerpo (4 espacios). Ubica cada `it` por su titulo
+  (anclas); dentro de el, el ancla del punto es unica salvo en P12, que
+  aparece dos veces y se usa la PRIMERA (la que va antes del `act`).
+- P4b son dos lineas justo despues de P4. P7a y despues P7 van al final
+  de E1.3 `it` 1 (titulo `un nuevo envio desde el formulario retira
+  forgot-error en cuanto arranca, antes de resolver`).
+- E2.7a va entre el `});` que cierra el it.each `mapea %p a «%s» ...` y
+  it('un envío posterior que resuelve ok ...'. E2.7b va despues del
+  it.each `un %p al reenviar pinta «%s» ...` y antes del `});` que cierra
+  el describe de R6, el que precede a describe('#117 R8: ...'.
+- `mockRouter.push.mockClear()` tipa: jest.mocked es profundo (el
+  barrido lo midio con tsc exit=0).
+- T19 no anade expectSentState porque sin uso rompe el lint.
+- Las sondas X-h, M5-i y M5-j cambian uno de los dos `{!sent ? (` de
+  index.tsx: el de TextField va seguido de `<TextField className="w-full">`;
+  el de forgot-submit, de un `<Button` con testID="forgot-submit".
+- M5-i y M5-j son DOS cambios a la vez: plantalos juntos, una sola
+  corrida, una sola reversion.
+- tasks.md: las filas M7-n (tabla de T19), M6-k y M7-o (tabla de T20)
+  son parte de sus tablas.
+
+== BASE ==
+
+La rama no cambio mobile-pet-tracker/ desde 49de71b6 (fin de la ronda 2):
+solo specs/ y progress/. origin/main sigue en b2a9c2aa. Al arrancar, mide
+desde mobile-pet-tracker/, sin pipe:
+  bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx > /tmp/117-r3-base.log 2>&1; echo "exit=$?"
+Esperado: 1 suite / 29 tests, exit=0. Si da otra cosa, PARA y anotalo.
+Cuentas tras cada commit (mismo comando): T19 30 | T20 31.
+Al cierre (T21):
+  8 suites del handoff de la ronda 1: 287 tests, exit=0. Comando literal
+  (desde mobile-pet-tracker/):
+  bunx jest --runTestsByPath --maxWorkers=2 src/api/__tests__/auth.test.ts src/providers/__tests__/language-provider.test.tsx src/__tests__/ui-language.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/legibility-classnames.test.ts src/__tests__/design-drift.test.ts src/screens/reset-password/index.test.tsx src/screens/forgot/index.test.tsx > /tmp/117-r3-ocho.log 2>&1; echo "exit=$?"
+  Suite global: `bunx jest --maxWorkers=2 > /tmp/117-r3-global.log 2>&1;
+  echo "exit=$?"` -> 93 suites / 2051 tests, exit=0 (ronda 2: 93 / 2049;
+  E2 suma 2). auth.test.ts sigue en 44. Ningun candado global se mueve.
+
+Anclas. Son COMANDOS, no transcripciones: ejecutalos tal cual desde la
+raiz del worktree (/home/claude/sites/Pet-Tracker-wt-backend), uno a uno,
+y copia cada salida al impl. El valor tras `#` es la salida esperada; el
+leader los ejecuto todos sobre H0 y dieron exactamente eso (56/56). Si
+alguno da otra cosa, PARA. Ninguna otra cita de este handoff es ancla:
+ante cualquier diferencia de puntuacion, comillas o tildes entre este
+texto y el fichero, manda el fichero.
+
+M=mobile-pet-tracker/src
+git diff --quiet 49de71b6 HEAD -- mobile-pet-tracker; echo "exit=$?"   # exit=0
+test ! -e mobile-pet-tracker/.expo/types/router.d.ts; echo "exit=$?"   # exit=0
+grep -cF "expect(screen.getByTestId('forgot-email')).toBeVisible();" $M/screens/forgot/index.test.tsx   # 1
+grep -cF "await waitFor(() => expect(screen.getByTestId('forgot-submit')).not.toBeDisabled());" $M/screens/forgot/index.test.tsx   # 2
+grep -cF "expect(screen.queryByTestId('forgot-resend')).toBeNull();" $M/screens/forgot/index.test.tsx   # 3
+grep -cF "expect(mockForgotPassword.mock.calls[1][1]).toEqual(mockForgotPassword.mock.calls[0][1]);" $M/screens/forgot/index.test.tsx   # 1
+grep -cF "expect(screen.queryByTestId('forgot-error')).toBeNull();" $M/screens/forgot/index.test.tsx   # 7
+grep -cF "await submitForgot();" $M/screens/forgot/index.test.tsx   # 9
+grep -cF "expect(screen.getByTestId('forgot-email').props.value).toBe('ana@example.com');" $M/screens/forgot/index.test.tsx   # 1
+grep -cF "async function submitForgot(email = 'ana@example.com') {" $M/screens/forgot/index.test.tsx   # 1
+grep -cF "const mockForgotPassword = jest.mocked(forgotPassword);" $M/screens/forgot/index.test.tsx   # 1
+grep -cF "const mockRouter = jest.mocked(router);" $M/screens/forgot/index.test.tsx   # 1
+grep -cF "describe('#117 R5: enviar pasa la pantalla a «Revisa tu correo»'" $M/screens/forgot/index.test.tsx   # 1
+grep -cF "describe('#117 R7: cada kind distinto de ok pinta su copy en forgot-error'" $M/screens/forgot/index.test.tsx   # 1
+grep -cF "describe('#117 R6: reenviar repite la misma petición'" $M/screens/forgot/index.test.tsx   # 1
+grep -cF "describe('#117 R8: forgot se aparta del teclado en Android'" $M/screens/forgot/index.test.tsx   # 1
+grep -cF "it('un envío posterior que resuelve ok limpia forgot-error y pasa a «Revisa tu correo»'" $M/screens/forgot/index.test.tsx   # 1
+grep -cF "it('pinta título, instrucciones y forgot-email editable con sus props de teclado'" $M/screens/forgot/index.test.tsx   # 1
+grep -cF "it('deshabilita forgot-submit con el correo vacío o solo espacios y lo habilita al escribir'" $M/screens/forgot/index.test.tsx   # 1
+grep -cF "it('envía el correo recortado una sola vez y deshabilita forgot-submit mientras vuela la petición'" $M/screens/forgot/index.test.tsx   # 1
+grep -cF "it('tras ok muestra cabecera y cuerpo con el correo, forgot-resend y link-login, y retira forgot-email y forgot-submit'" $M/screens/forgot/index.test.tsx   # 1
+grep -cF "it('el tile Lock sigue en pie en los dos estados'" $M/screens/forgot/index.test.tsx   # 1
+grep -cF "('mapea %p a «%s» en forgot-error, seleccionable, y deja el formulario en pie'" $M/screens/forgot/index.test.tsx   # 1
+grep -cF "it('un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver'" $M/screens/forgot/index.test.tsx   # 1
+grep -cF "it('un nuevo reenvío retira forgot-error en cuanto arranca y no lo repinta al resolver ok'" $M/screens/forgot/index.test.tsx   # 1
+grep -cF "it('forgot-resend repite el POST con el mismo correo y se deshabilita mientras vuela'" $M/screens/forgot/index.test.tsx   # 1
+grep -cF "it('un 429 al reenviar pinta forgot-error sin salir de «Revisa tu correo»'" $M/screens/forgot/index.test.tsx   # 1
+grep -cF "('un %p al reenviar pinta «%s» en forgot-error sin salir de «Revisa tu correo»'" $M/screens/forgot/index.test.tsx   # 1
+grep -cF "it('link-login navega a /login sin petición de red'" $M/screens/forgot/index.test.tsx   # 1
+grep -cF "it('link-login navega a /login también desde «Revisa tu correo», sin petición nueva'" $M/screens/forgot/index.test.tsx   # 1
+grep -cE "expectFormState|expectSentState|expectForgotError|expectLinkLoginNavigates|lockTile|LOCK_TILE_CLASS" $M/screens/forgot/index.test.tsx   # 0
+grep -cF "vuelve a fallar pinta el copy del nuevo kind" $M/screens/forgot/index.test.tsx   # 0
+grep -cF -- "-[" $M/screens/forgot/index.test.tsx   # 0
+grep -cF "{sent ? t('forgot.checkYourEmail') : t('forgot.forgotPassword')}" $M/screens/forgot/index.tsx   # 1
+grep -cF "{sent ? t('forgot.sentTo', { email: submittedEmail }) : t('forgot.instructions')}" $M/screens/forgot/index.tsx   # 1
+grep -cF "{!sent ? (" $M/screens/forgot/index.tsx   # 2
+grep -cF "{sent ? (" $M/screens/forgot/index.tsx   # 1
+grep -cF "{error ? (" $M/screens/forgot/index.tsx   # 1
+grep -cF '<TextField className="w-full">' $M/screens/forgot/index.tsx   # 1
+grep -cF '<Label className="text-xs font-semibold text-foreground">' $M/screens/forgot/index.tsx   # 1
+grep -cF 'testID="forgot-email"' $M/screens/forgot/index.tsx   # 1
+grep -cF 'testID="forgot-submit"' $M/screens/forgot/index.tsx   # 1
+grep -cF "isDisabled={email.trim() === '' || submitting}" $M/screens/forgot/index.tsx   # 1
+grep -cF '<Text testID="forgot-error" className="text-danger" selectable>' $M/screens/forgot/index.tsx   # 1
+grep -cF "<LinkButton testID=\"link-login\" onPress={() => router.push('/login')}>" $M/screens/forgot/index.tsx   # 1
+grep -cF '</LinkButton>' $M/screens/forgot/index.tsx   # 1
+grep -cF "{t('forgot.backToSignIn')}" $M/screens/forgot/index.tsx   # 1
+grep -cF 'className="size-16 items-center justify-center rounded-xl bg-accent-soft"' $M/screens/forgot/index.tsx   # 1
+grep -cF 'setError(null);' $M/screens/forgot/index.tsx   # 1
+grep -cF "setError(t('forgot.invalidEmail'));" $M/screens/forgot/index.tsx   # 1
+grep -cF "setError(t('forgot.tooManyAttempts'));" $M/screens/forgot/index.tsx   # 1
+grep -cF "setError(t('common.somethingWentWrong'));" $M/screens/forgot/index.tsx   # 1
+grep -cF "setError(t('common.cannotReachServer'));" $M/screens/forgot/index.tsx   # 1
+grep -cF '} finally {' $M/screens/forgot/index.tsx   # 1
+grep -cF 'setSubmitting(false);' $M/screens/forgot/index.tsx   # 1
+grep -cF 'setEmail(' $M/screens/forgot/index.tsx   # 0
+
+Notas sobre las anclas: las siete primeras de index.test.tsx son el
+«Recuento de las anclas» de E2.5. `setEmail(` en 0 es lo que plantan
+M4-g y M4-h. `-[` en 0: design-drift lee esta suite; ningun literal
+nuevo lleva guion seguido de corchete.
+
+== COMMITS ==
+
+Uno por tarea, mensajes LITERALES de tasks.md, en este orden:
+  test(mobile): lock the form render in every unsent flow (#117 R4, R7, R3, E2)
+  test(mobile): lock the sent-state render in every flow (#117 R5, R6, R3, E2)
+  docs(mobile): trace #117 amendment E2 to its tests and commits
+Aqui NO hay par rojo->verde: todo nace verde porque la produccion ya
+cumple, y lo que prueba que el candado mira es la sonda.
+Ciclo de T19 y de T20, en este orden:
+  1. Anade los helpers, los puntos, los cambios de linea y el `it` de la
+     tarea. Corre la suite: verde con la cuenta de arriba. Si algo nace
+     ROJO, PARA y anotalo con Expected y Received: la produccion esta
+     fuera de tu lista, no la arregles.
+  2. Planta UNA sonda de la tabla de la tarea en
+     mobile-pet-tracker/src/screens/forgot/index.tsx, corre la suite
+     entera de forgot (comando de BASE, con el log en
+     /tmp/117-r3-<sonda>.log) y anota cada `it` que cayo, con el matcher
+     y Expected/Received, o la consulta que lanzo.
+  3. Revierte: `git checkout HEAD -- mobile-pet-tracker/src/screens/forgot/index.tsx`.
+     Comprueba `git diff --quiet -- mobile-pet-tracker/src/screens/forgot/index.tsx; echo "exit=$?"`
+     y `git diff --cached --quiet; echo "exit=$?"`, los dos exit=0.
+     NUNCA `git checkout <hash> -- ruta`: deja el cambio en el indice.
+  4. Repite 2-3 con cada sonda de la tabla de esa tarea (T19: 18 sondas;
+     T20: 17 filas, 9 nuevas y 8 repetidas de T19).
+  5. Corre la suite otra vez: verde. Typecheck y lint (ver REGLAS), los
+     dos exit=0. Commit SOLO del fichero de test.
+Regla de parada de las sondas (tasks.md, tras la tabla de T20):
+  - Si una sonda NO cae en un `it` que su fila nombra, PARA y anotalo.
+  - Si cae ademas en un `it` que su fila no nombra, o cae en un `it` de
+    «Debe seguir verde», anotalo y SIGUE.
+  - Si cae por consulta donde la fila dice asercion o al reves, anotalo
+    y SIGUE.
+  - Si cae por excepcion (TypeError, ReferenceError, SyntaxError, import
+    roto) donde la fila no dice excepcion, PARA. La unica excepcion
+    esperada es M3-h en R6 429 y R6 x4, en T20.
+No ajustes ninguna asercion ni ningun `it` para que cuadre. Ninguna sonda
+se commitea. El ultimo commit lleva SOLO
+specs/mobile-forgot-password/traceability.md y
+progress/impl_mobile-forgot-password.md.
+
+== REGLAS CRITICAS ==
+
+- Convenciones: docs/conventions.md. No crees describe nuevos. No
+  modifiques, renombres ni reordenes ningun `it` existente; las unicas
+  lineas existentes que cambian son las 3 de E2.5. El `it` del tile de
+  E1.7 no se reescribe con lockTile().
+- Esperas: docs/conventions.md §Esperas, sobre el arbol renderizado
+  (findBy*, waitFor sobre el copy de forgot-error o sobre
+  toBeDisabled/not.toBeDisabled del boton), NUNCA sobre el contador del
+  mock. Los helpers se llaman cuando el arbol ya esta en el flujo que
+  nombran, detras de las esperas que ya existen o de las que da la spec
+  (P7a). expectLinkLoginNavigates lee mock.calls.length en el mismo tick:
+  es una asercion, no una espera (nota de E2.4).
+- Jest: siempre `--runTestsByPath` desde mobile-pet-tracker/. Comprueba
+  que jest imprime tantas suites como ficheros pediste.
+- Mide SIN pipe: `cmd > fichero 2>&1; echo "exit=$?"`. Copia al impl las
+  lineas de resumen (Test Suites / Tests) y el exit.
+- Antes de la suite global y de las 8 suites, `pgrep -f init.sh; echo
+  "exit=$?"`: si exit=0 (otra sesion corre init.sh con LocalStack y
+  Postgres compartidos), espera a que termine y vuelve a mirar; la carga
+  da rojos falsos. Si sigue tras 30 minutos, PARA y anotalo. Si el
+  sandbox deniega pgrep, anotalo y sigue.
+- Typecheck: `test ! -e .expo/types/router.d.ts` antes de CADA
+  `bun run typecheck` (= tsc --noEmit), desde mobile-pet-tracker/. T19 y
+  T20 exigen typecheck exit=0 y `bun run lint` exit=0 ANTES de su commit.
+  Si router.d.ts existe, PARA y pide al humano que lo borre. Nunca
+  `rm -f` (tu sandbox lo deniega).
+- Todo con bun/bunx; nunca npm/npx/yarn. Ni `bun add`, ni cambios en
+  package.json, bun.lock ni app.json.
+- NO lances ./init.sh ni toques Postgres ni LocalStack.
+- `graphify update .` lo corre el leader (graphify-out/ esta
+  gitignorado): no lo lances.
+- Skills: no cambia ni UI ni produccion. Si cargas alguna, que sea
+  `building-native-ui` del plugin expo de Codex, y dilo en el impl. No
+  pidas skills por otros nombres (expo-overview, expo-router no existen
+  en Codex: silencio, no error).
+- traceability.md, solo en el ultimo commit: en las filas R3, R4, R5, R6
+  y R7 anade una entrada `E2:` con el hash + mensaje del commit de E2 que
+  las toca (R4 y R7: T19; R5 y R6: T20; R3: los dos), y en R7 y R6 el
+  titulo literal de E2.7a y E2.7b respectivamente. No toques las celdas
+  de las rondas 1 y 2 salvo para anadir. No rebasees despues.
+- NO son tuyos, no los toques: progress/history.md, progress/current.md,
+  progress/review_mobile-forgot-password.md, progress/handoff_*.md,
+  STATUS.md, feature_list.json, requirements.md, tasks.md, design.md y
+  las casillas de §Prueba de humo y §Aprobacion. Todo lo que tengas que
+  contar va al impl.
+- Si el sandbox te deniega un comando, PARA y reportalo. No lo sustituyas
+  por otro que haga lo mismo con otra herramienta.
+- NO hagas push ni abras la PR.
+
+Ficheros que TU cambias, medidos desde el H0 de la ronda 3
+(`git diff --name-only <H0> HEAD`), 3 en total:
+  mobile-pet-tracker/src/screens/forgot/index.test.tsx
+  specs/mobile-forgot-password/traceability.md
+  progress/impl_mobile-forgot-password.md
+Nada mas. Al cierre, copia al impl:
+  git diff --quiet <H0> HEAD -- mobile-pet-tracker/src/screens/forgot/index.tsx mobile-pet-tracker/src/api/auth.ts mobile-pet-tracker/src/api/__tests__/auth.test.ts; echo "exit=$?"   -> exit=0
+  git diff --numstat <H0> HEAD -- mobile-pet-tracker/src/screens/forgot/index.test.tsx   -> borradas = 3 (los 3 cambios de linea de E2.5)
+
+Al terminar, el impl §Ronda 3 lleva: pwd, branch y H0; la salida de
+cada ancla; la base (29, exit); por tarea, el comando, la cuenta y el
+exit del verde, typecheck y lint, y la tabla de sus sondas (sonda, cada
+`it` que cayo, consulta/asercion/excepcion con Expected/Received, los
+`it` de «Debe seguir verde» y su estado, los dos exit de la reversion);
+los commits con hash; el cierre (8 suites 287, global 93/2051,
+typecheck, lint, cada uno con exit); `git diff --name-only <H0> HEAD`
+(3 ficheros), el diff vacio de produccion y el numstat; y cualquier
+decision que la spec no cerrara literalmente.
+```

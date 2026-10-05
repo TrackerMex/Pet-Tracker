@@ -139,3 +139,15 @@
   casilla de E1), Estado del gate = En revisión, Bloqueadores = gate de la
   enmienda E2 citando `2e8eda78`. Esperando la aprobación humana; tras ella,
   commit de firma y handoff de la ronda 3.
+- Enmienda E2 aprobada por el humano en Notion (Estado del gate = Aprobado,
+  page_last_edited_at 2026-10-05T14:21:28Z; casilla fechada 2026-10-05; sin
+  comentarios, E2.6 sin cambios). Commit de firma `ca95f2f0`. Notion: Rol
+  actual = Implementer, Bloqueadores vacío.
+- Handoff de la ronda 3: `progress/handoff_mobile-forgot-password.md`
+  §Ronda 3 — Enmienda E2 (H0 = el commit que añade esa sección). Tareas
+  T19-T21, solo tests, lista cerrada de 3 ficheros, 56 anclas `grep`
+  ejecutadas contra el árbol (56/56). Base forgot 29; T19 30, T20 31; cierre
+  8 suites 287, global 93 / 2051. En el mismo commit, tres filas de las
+  tablas de sondas de tasks.md (M7-n, M6-k, M7-o) recuperan su sangría (solo
+  espacios). Mientras Codex trabaja, esta sesión no toca el working tree; al
+  terminar: `./init.sh` (avisando a Frontend) y `reviewer` ronda 3.

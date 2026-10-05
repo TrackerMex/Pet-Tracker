@@ -413,7 +413,7 @@ Nombres cortos de los `it` en las tablas:
    | M7-k | `{error \|\| submitting ? (` en lugar de `{error ? (` en el bloque de `forgot-error` | R5 `it` 1 (P2), E1.3 `it` 1 y E1.3 `it` 2 (en sus `toBeNull` ya existentes en vuelo) | aserción | E2.7a |
    | M7-l | `if (!error \|\| sent) setSubmitting(false);` en lugar de `setSubmitting(false);` en el `finally` de `send` | E2.7a | aserción (`not.toBeDisabled`) | — |
    | M7-m | `if (!error) setError(t('forgot.tooManyAttempts'));` en lugar de `setError(t('forgot.tooManyAttempts'));` | E2.7a | consulta | la fila `rate-limited` de R7 ×5 |
-| M7-n | `if (!error) setError(t('forgot.invalidEmail'));` en lugar de `setError(t('forgot.invalidEmail'));` | E2.7a | consulta | la fila `validation` de R7 ×5 |
+   | M7-n | `if (!error) setError(t('forgot.invalidEmail'));` en lugar de `setError(t('forgot.invalidEmail'));` | E2.7a | consulta | la fila `validation` de R7 ×5 |
 
    Notas:
    - M4-g prueba que el valor del campo estaba ciego antes de E2: con
@@ -443,8 +443,8 @@ Nombres cortos de los `it` en las tablas:
    | M5-j | dos cambios a la vez: `{!sent \|\| submitting ? (` en lugar del `{!sent ? (` del bloque de `TextField`, y el `<Label …>…</Label>` envuelto en `{!sent && (…)}` | R6 `it` 1 (P8), E1.3 `it` 2 (P12) | aserción (`forgot-email` no es `null`) |
    | M7-j | `selectable={!sent}` en lugar de `selectable` en `forgot-error` | R6 429 (P10), R6 ×4 (P11), E2.7b | aserción |
    | M6-j | `if (!error) setError(t('common.somethingWentWrong'));` en lugar de `setError(t('common.somethingWentWrong'));` | E2.7b | consulta |
-| M6-k | `if (!error) setError(t('common.cannotReachServer'));` en lugar de `setError(t('common.cannotReachServer'));` | E2.7b | consulta |
-| M7-o | `if (!error \|\| !sent) setSubmitting(false);` en lugar de `setSubmitting(false);` en el `finally` de `send` | E1.3 `it` 2, E2.7b | aserción |
+   | M6-k | `if (!error) setError(t('common.cannotReachServer'));` en lugar de `setError(t('common.cannotReachServer'));` | E2.7b | consulta |
+   | M7-o | `if (!error \|\| !sent) setSubmitting(false);` en lugar de `setSubmitting(false);` en el `finally` de `send` | E1.3 `it` 2, E2.7b | aserción |
    | M7-l | la de T19 | lo de T19, más E1.3 `it` 1 (P7a) | aserción |
    | X-d | la de T19 | lo de T19, más R6 `it` 1 (P8) y E1.3 `it` 2 (P12) | consulta |
    | X-e | la de T19 | lo de T19, más R6 429 (P10), R6 ×4 (P11) y E2.7b | consulta |
