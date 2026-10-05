@@ -73,3 +73,22 @@
   `design.md` §2.19 nueva. Si #118 mergea antes, el handoff de #117 debe
   decirle a Codex que mida la base y aplique los deltas de la spec como
   diferencia sobre esos valores.
+- Ronda 1 de Codex terminada (relatado por el humano el 2026-10-05): 18
+  commits sobre el H0 `90a19d86`, HEAD `d39a9ea5`, rojo→verde por R-id y
+  trazabilidad con hashes. `./init.sh` corrido por el leader en este worktree
+  sobre `d39a9ea5` (avisando antes a Frontend): exit 0 (log en el scratchpad
+  de la sesión).
+- `reviewer` ronda 1: **rechazado** (`progress/review_mobile-forgot-password.md`,
+  commit `33f261ba`). La producción cumple, pero cuatro cláusulas universales
+  (R2 «cualquier otro status», R6 «kind distinto de ok» al reenviar, R7
+  «arranca un envío nuevo» desde los dos botones, R9 «los dos estados» del
+  ScrollView) tenían candado en una sola rama, porque así lo prescribía la
+  spec. Las sondas P4-P8 sobreviven. Notion: Estado del gate = Bloqueado, con
+  el motivo en Bloqueadores.
+- Enmienda E1, solo de tests (`5362da73`): requirements.md §Enmienda E1 y
+  tasks.md §Enmienda E1 (T12-T16). Cifras esperadas: auth 40→43, forgot
+  20→27, 8 suites 272→282, global 93 / 2036→2046. Lista cerrada: 4 ficheros.
+  Antes de la firma humana, un `reviewer` barre la enmienda en busca de más
+  ramas sin candado (regla tras el primer rechazo); el resultado se añade al
+  final del fichero de review. Después: espejo en Notion, gate = En revisión,
+  firma humana de la enmienda, handoff de la ronda 2 a Codex.
