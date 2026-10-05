@@ -1,8 +1,8 @@
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 
-import { forgotPassword } from '../../api/auth';
+import { forgotPassword, type ForgotPasswordState } from '../../api/auth';
 import ForgotRoute from '../../app/(auth)/forgot';
 import { LanguageProvider } from '../../providers/language-provider';
 
@@ -129,6 +129,42 @@ describe('#117 R4: el formulario pide el correo', () => {
     await renderRoute();
 
     expect(screen.queryByTestId('forgot-resend')).toBeNull();
+    expect(screen.queryByTestId('forgot-error')).toBeNull();
+  });
+});
+
+
+async function submitForgot(email = 'ana@example.com') {
+  await fireEvent.changeText(screen.getByTestId('forgot-email'), email);
+  await fireEvent.press(screen.getByTestId('forgot-submit'));
+}
+
+describe('#117 R5: enviar pasa la pantalla a «Revisa tu correo»', () => {
+  it('envía el correo recortado una sola vez y deshabilita forgot-submit mientras vuela la petición', async () => {
+    let resolveRequest!: (state: ForgotPasswordState) => void;
+    mockForgotPassword.mockReturnValue(new Promise((resolve) => { resolveRequest = resolve; }));
+    await renderRoute();
+    await submitForgot('  Ana@Example.com ');
+
+    await waitFor(() => expect(screen.getByTestId('forgot-submit')).toBeDisabled());
+    expect(mockForgotPassword).toHaveBeenCalledTimes(1);
+    expect(mockForgotPassword).toHaveBeenCalledWith(apiUrl, { email: 'Ana@Example.com' });
+    expect(screen.getByTestId('forgot-email')).toBeVisible();
+    await act(async () => { resolveRequest({ kind: 'ok' }); });
+    expect(await screen.findByText('Revisa tu correo')).toBeVisible();
+  });
+
+  it('tras ok muestra cabecera y cuerpo con el correo, forgot-resend y link-login, y retira forgot-email y forgot-submit', async () => {
+    mockForgotPassword.mockResolvedValue({ kind: 'ok' });
+    await renderRoute();
+    await submitForgot('  Ana@Example.com ');
+    expect(await screen.findByText('Revisa tu correo')).toBeVisible();
+
+    expect(screen.getByTestId('forgot-body')).toHaveTextContent('Si existe una cuenta para Ana@Example.com, te enviamos un enlace para restablecer tu contraseña. Revisa tu bandeja de entrada y la carpeta de spam.');
+    expect(screen.queryByTestId('forgot-email')).toBeNull();
+    expect(screen.queryByTestId('forgot-submit')).toBeNull();
+    expect(screen.getByTestId('forgot-resend')).not.toBeDisabled();
+    expect(screen.getByTestId('link-login')).toBeVisible();
     expect(screen.queryByTestId('forgot-error')).toBeNull();
   });
 });
