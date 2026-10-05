@@ -1,7 +1,7 @@
 import { HeaderHeightContext } from 'expo-router/react-navigation';
 import { router } from 'expo-router';
 import { Button, Input, Label, LinkButton, TextField } from 'heroui-native';
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import { KeyboardAvoidingView, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Lock } from 'reicon-react-native';
@@ -15,6 +15,7 @@ export function ForgotScreen() {
   const [accentStrong] = useThemeColors(['accent-strong']);
   const insets = useSafeAreaInsets();
   const t = useTranslate();
+  const [email, setEmail] = useState('');
 
   return (
     <KeyboardAvoidingView
@@ -51,7 +52,7 @@ export function ForgotScreen() {
           {t('forgot.instructions')}
         </Text>
 
-        <TextField className="w-full" isDisabled>
+        <TextField className="w-full">
           <Label className="text-xs font-semibold text-foreground">
             {t('forgot.email')}
           </Label>
@@ -59,15 +60,18 @@ export function ForgotScreen() {
             testID="forgot-email"
             className="rounded-xl bg-default"
             autoCapitalize="none"
-            editable={false}
             keyboardType="email-address"
+            autoComplete="email"
+            textContentType="emailAddress"
+            value={email}
+            onChangeText={setEmail}
           />
         </TextField>
 
         <Button
           testID="forgot-submit"
           className="w-full rounded-xl bg-accent"
-          isDisabled
+          isDisabled={email.trim() === ''}
         >
           <Button.Label className="font-bold text-accent-foreground">
             {t('forgot.sendRecoveryLink')}
