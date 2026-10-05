@@ -177,6 +177,7 @@ pie de welcome solo informa.
 | Etiqueta con `text-accent` suelto | `legibility-classnames::no deja ningún text-accent suelto` y `R6 fila 7` | `filesMatching(/text-accent(?![-\w])/)`; `children[i].children[1].props.className` |
 | Chip pulsable (`View` con `onPress`) | `R6 fila 10` | `children[i].props.onPress` `toBeUndefined()` |
 | Chip como `Pressable` con `onPress` (E4) | `R6 fila 10` | `children[i].props.onClick` y `props.accessible` `toBeUndefined()` |
+| `role="button"` en los tres chips, sin `onPress` (E7, X7) | `R6 fila 10` | `children[i].props.role` `toBeUndefined()` (recibe `"button"`) |
 | Tres chips escritos a mano (sin `map`) | `R6 fila 11` | recuento de `text-accent-strong` en el fuente ≠ 2 |
 | CTA primario con `router.replace` | `R7 empuja a registro sin reemplazar` | `mockRouter.replace` llamado |
 | CTA primario a `/login` | `R7 empuja a registro sin reemplazar` | `mockRouter.push.mock.calls[0][0]` |
@@ -190,10 +191,13 @@ pie de welcome solo informa.
 | Reduce Motion ignorado | `R10 con Reduce Motion no se desplaza` | `toHaveAnimatedStyle(... translateY: 0)` antes de avanzar |
 | Duración 400 ms | `R10 fija la duración y la curva` | `toBe(240)` |
 | `duration: 400` a mano en un `withTiming`, constante intacta (E1) | `R10 fija la duración y la curva` | `source.match(/duration: WELCOME_ENTRANCE_MS,\s*easing: WELCOME_ENTRANCE_EASING,/g)` `toHaveLength(2)` |
-| `WELCOME_ENTRANCE_EASING = Easing.linear` (E1) | `R10 fija la duración y la curva` | `factory()(point)` `toBeCloseTo` la referencia literal en 9 puntos |
+| `WELCOME_ENTRANCE_EASING = Easing.linear` (E1, M2) | `R10 fija la duración y la curva` | `TypeError: … WELCOME_ENTRANCE_EASING.factory is not a function` (`Easing.linear` no tiene `.factory`) |
+| `WELCOME_ENTRANCE_EASING = Easing.bezier(0.25, 0.1, 0.25, 1)` (E1, M2b) | `R10 fija la duración y la curva` | `factory()(point)` `toBeCloseTo` la referencia literal en 9 puntos |
 | `easing: Easing.linear` solo en el fade (E1) | `R10 fija la duración y la curva` | regex de cableado `toHaveLength(2)` |
-| Fade sin `reduceMotion: ReduceMotion.Never` (E2) | `R10 fija la duración y la curva` | `source.match(/reduceMotion: ReduceMotion\.Never/g)` `toHaveLength(1)` |
+| Fade sin `reduceMotion: ReduceMotion.Never` (E2) | `R10 fija la duración y la curva` | `source.match(/reduceMotion: ReduceMotion\.Never/g) ?? []` `toHaveLength(1)` |
 | Fade con `duration: reduceMotion ? 0 : WELCOME_ENTRANCE_MS` (E2) | `R10 fija la duración y la curva` | regex de cableado `toHaveLength(2)` |
+| `reduceMotion: ReduceMotion.Never` movido del fade al `withTiming` de `translateY` (E6, X1) | `R10 fija la duración y la curva` | `expect(source).toMatch(/opacity\.set\(withTiming\(1, \{[^}]*reduceMotion: ReduceMotion\.Never,[^}]*\}\)\)/)` no casa |
+| `reduceMotion: ReduceMotion.Always` añadido al `withTiming` de `translateY` (E6, X2) | `R10 fija la duración y la curva` | `source.match(/\breduceMotion:/g) ?? []` `toHaveLength(1)` (recibe 2) |
 | Clave animada extra `marginTop: translateY.get()` (E3) | `R10 arranca…`, `R10 termina…` y `R10 con Reduce Motion…` | `toHaveAnimatedStyle(…, { shouldMatchAllProps: true })` |
 | Animación nunca llega a 1 | `R10 termina visible y en su sitio` | `toHaveAnimatedStyle({ opacity: 1, … })` tras la ventana |
 | Hex o `StyleSheet.create` en la pantalla | `design-drift::#118 R11` | regex por fichero |

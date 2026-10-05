@@ -230,6 +230,11 @@ es ese nodo y el hijo 1 la etiqueta. La tinta (fila 5) se sonda mockeando
 `accessible: true`: sin esas dos aserciones, el chip convertido en `Pressable`
 queda verde.
 
+**(Enmienda E7)** El mismo `it` asevera además, por cada hijo,
+`props.role` `toBeUndefined()`. `role="button"` es el prop moderno de RN y
+tiene precedencia sobre `accessibilityRole`: sin esa aserción, los tres chips
+con `role="button"` y sin `onPress` quedan verdes.
+
 ### R7 — CTA primario «Comenzar ahora» → registro
 
 WHEN el usuario pulsa `welcome-get-started` THEN THE SYSTEM SHALL llamar
@@ -316,7 +321,7 @@ Tests (`describe('R10')`, `jest.useFakeTimers()` por `it`; mock parcial de
 `WELCOME_ENTRANCE_MS * 2 + 100` ms — derivada de la duración real con margen;
 si hiciera falta se amplía la ventana, nunca la aserción):
 
-- `'fija la duración y la curva'` **(Enmiendas E1 y E2)**:
+- `'fija la duración y la curva'` **(Enmiendas E1, E2 y E6)**:
   `expect(WELCOME_ENTRANCE_MS).toBe(240)`; la curva contra una referencia
   construida en el test con los coeficientes **literales** (nunca contra un
   símbolo importado de producción), en nueve puntos, como
@@ -325,12 +330,20 @@ si hiciera falta se amplía la ventana, nunca la aserción):
   y, para cada `point` de `[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]`,
   `expect(WELCOME_ENTRANCE_EASING.factory()(point)).toBeCloseTo(expected(point), 6)`.
   Y un candado de cableado sobre `readSource('screens/welcome/index.tsx')`
-  (el helper que ya usa el fichero):
-  `source.match(/duration: WELCOME_ENTRANCE_MS,\s*easing: WELCOME_ENTRANCE_EASING,/g)`
-  `toHaveLength(2)`; `source.match(/\b(duration|easing):/g)` `toHaveLength(4)`;
-  `source.match(/reduceMotion: ReduceMotion\.Never/g)` `toHaveLength(1)`.
-  `toBeDefined()` pasaba con cualquier curva, y `toBe(240)` miraba una
-  constante que los `withTiming` podían no usar.
+  (el helper que ya usa el fichero), cada `source.match` con `?? []` para que
+  el rojo diga «Received 0» y no un `TypeError` sobre `null`:
+  `expect(source.match(/duration: WELCOME_ENTRANCE_MS,\s*easing: WELCOME_ENTRANCE_EASING,/g) ?? []).toHaveLength(2);`
+  `expect(source.match(/\b(duration|easing):/g) ?? []).toHaveLength(4);`
+  `expect(source.match(/reduceMotion: ReduceMotion\.Never/g) ?? []).toHaveLength(1);`
+  **(Enmienda E6)** Y, en el mismo `it`, dos líneas que atan `reduceMotion`
+  a su `withTiming`, una por rama de la cláusula (el fade lo lleva, el de
+  `translateY` no lleva ninguno):
+  `expect(source.match(/\breduceMotion:/g) ?? []).toHaveLength(1);`
+  `expect(source).toMatch(/opacity\.set\(withTiming\(1, \{[^}]*reduceMotion: ReduceMotion\.Never,[^}]*\}\)\)/);`
+  `toBeDefined()` pasaba con cualquier curva, `toBe(240)` miraba una
+  constante que los `withTiming` podían no usar, y el recuento global de
+  `ReduceMotion.Never` quedaba verde con la opción movida al `withTiming` de
+  `translateY`.
 - `'arranca invisible y desplazado sin Reduce Motion'`: antes de avanzar
   timers, `welcome-content` `toHaveAnimatedStyle({ opacity: 0, transform:
   [{ translateY: 16 }] })`.
@@ -417,6 +430,31 @@ rojo contra su mutación.
 
 Los textos normativos están en R5, R6 y R10, marcados «Enmienda E<n>».
 
+## Enmienda E6–E7 (review de la ronda 2, 2026-10-05)
+
+El `reviewer` rechazó la ronda 2 (`progress/review_mobile-welcome-splash.md`
+§Ronda 2, commit `7dbef381`) por un candado que la Enmienda E2 prescribía al
+pie de la letra: contaba `ReduceMotion.Never` en todo el fichero sin atarlo
+al fade. E1, E3, E4 y E5 quedaron cerrados. Producción **no cambia**: la
+ronda 3 solo toca `src/screens/welcome/index.test.tsx` (más la trazabilidad
+y el reporte). El arreglo de E6 se validó con node sobre el fuente de
+`f23345c3` contra X1, X2, M3, M4, M1 y M11; el de E7, en el spike del
+reviewer (verde en `f23345c3`, rojo en X7 con `Received: "button"`).
+
+| Id | Requisito | Hueco | Mutación que quedaba verde |
+| --- | --- | --- | --- |
+| E6 | R10 (E2: dónde va `reduceMotion`) | el recuento de `ReduceMotion.Never` es global | X1: `Never` movido al `withTiming` de `translateY`; X2: `reduceMotion: ReduceMotion.Always` añadido al de `translateY` |
+| E7 | R6 fila 10 | `role` sin aserción | X7: `role="button"` en los tres chips, sin `onPress` |
+
+Comportamiento medido por el reviewer: con X1 y Reduce Motion de sistema
+activo, el fade salta a 1 sin animar; con X2 y sin Reduce Motion,
+`translateY` salta a 0. Las dos incumplen R10.
+
+La suite sigue en **28** `it`: E6 añade dos líneas dentro de `'fija la
+duración y la curva'` y E7 una dentro de `'deja cada chip sin pulsación ni
+rol de botón'`. Los textos normativos están en R6 y R10, marcados
+«Enmienda E<n>».
+
 ## Fuera de alcance
 
 - Flag de «primer arranque» o persistencia de haber visto la bienvenida
@@ -435,9 +473,10 @@ Los textos normativos están en R5, R6 y R10, marcados «Enmienda E<n>».
 
 ## Aprobación
 
-> Tres casillas, tres gates (lección `gate-humano-sin-casilla-donde-firmar`).
-> La de la spec autorizó la ronda 1; la de la Enmienda E1–E5 autoriza la
-> ronda 2 de Codex; la de R13 cierra la feature.
+> Cuatro casillas, cuatro gates (lección `gate-humano-sin-casilla-donde-firmar`).
+> La de la spec autorizó la ronda 1; la de la Enmienda E1–E5, la ronda 2; la
+> de la Enmienda E6–E7 autoriza la ronda 3 de Codex; la de R13 cierra la
+> feature.
 
 ### Aprobación de la spec
 
@@ -446,6 +485,10 @@ Los textos normativos están en R5, R6 y R10, marcados «Enmienda E<n>».
 ### Enmienda E1–E5 — candados de R5, R6 y R10 tras la review de la ronda 1
 
 - [x] Enmienda E1–E5 aprobada por humano (fecha: 2026-10-05) ← gate obligatorio antes de la ronda 2 de Codex
+
+### Enmienda E6–E7 — candados de R10 y R6 tras la review de la ronda 2
+
+- [ ] Enmienda E6–E7 aprobada por humano (fecha: ) ← gate obligatorio antes de la ronda 3 de Codex
 
 ### Prueba de humo
 

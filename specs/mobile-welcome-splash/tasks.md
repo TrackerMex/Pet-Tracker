@@ -104,6 +104,25 @@ este orden:
 
 Cierre igual que T10 (`bunx jest` sin pipe, typecheck, lint).
 
+## T13 — Ronda 3: Enmienda E6–E7 (solo tests)
+
+Producción **no cambia**: el único fichero de código que se toca es
+`mobile-pet-tracker/src/screens/welcome/index.test.tsx`. Mismo método que T12:
+el candado nace verde, la sonda va documentada en el impl y se deshace con
+`git checkout HEAD -- <fichero>`, seguido de `git diff --quiet -- <fichero>` y
+`git diff --cached --quiet`. Un commit `test(...)` por enmienda, en este
+orden:
+
+1. E6 (R10): las dos líneas de R10 «(Enmienda E6)» dentro de
+   `'fija la duración y la curva'`, sin tocar las tres regex que ya hay.
+   Sondas: X1, X2 y M3 (quitar `reduceMotion: ReduceMotion.Never`).
+2. E7 (R6 fila 10): `expect(chip.props.role).toBeUndefined();` dentro de
+   `'deja cada chip sin pulsación ni rol de botón'`. Sonda: X7.
+3. Trazabilidad: añadir los commits de la ronda 3 a las filas de R6 (fila 10)
+   y R10 (`fija la duración y la curva`) de `traceability.md`.
+
+Cierre igual que T10. La suite sigue en 28 `it`.
+
 ## T11 — Humano (no Codex)
 
 - R13 S1–S8 en dev build de Android; casillas en `requirements.md`.
