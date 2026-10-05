@@ -260,3 +260,17 @@ describe('#117 R8: forgot se aparta del teclado en Android', () => {
     await waitFor(() => expect(screen.getByTestId('screen-forgot')).toHaveStyle({ paddingBottom: 200 }));
   });
 });
+
+
+describe('#117 R9: las métricas del stub sobreviven al cambio de estado', () => {
+  it('«Revisa tu correo» conserva el mismo contentContainerStyle y keyboardShouldPersistTaps', async () => {
+    mockForgotPassword.mockResolvedValue({ kind: 'ok' });
+    await renderRoute();
+    const before = screen.getByTestId('forgot-form').props.contentContainerStyle;
+    await submitForgot();
+    expect(await screen.findByText('Revisa tu correo')).toBeVisible();
+
+    expect(screen.getByTestId('forgot-form').props.contentContainerStyle).toEqual(before);
+    expect(screen.getByTestId('forgot-form').props.keyboardShouldPersistTaps).toBe('handled');
+  });
+});
