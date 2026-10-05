@@ -181,6 +181,22 @@ describe('#117 R5: enviar pasa la pantalla a «Revisa tu correo»', () => {
     expect(screen.getByTestId('link-login')).toBeVisible();
     expect(screen.queryByTestId('forgot-error')).toBeNull();
   });
+
+  it('el tile Lock sigue en pie en los dos estados', async () => {
+    mockForgotPassword.mockResolvedValue({ kind: 'ok' });
+    await renderRoute();
+    const before = (screen.getByTestId('forgot-title').parent?.children ?? []) as unknown[];
+
+    expect(before.filter((c) => typeof c !== 'string').find(
+      (c) => (c as { props: { className?: string } }).props.className === 'size-16 items-center justify-center rounded-xl bg-accent-soft',
+    )).toBeDefined();
+    await submitForgot();
+    expect(await screen.findByText('Revisa tu correo')).toBeVisible();
+    const after = (screen.getByTestId('forgot-title').parent?.children ?? []) as unknown[];
+    expect(after.filter((c) => typeof c !== 'string').find(
+      (c) => (c as { props: { className?: string } }).props.className === 'size-16 items-center justify-center rounded-xl bg-accent-soft',
+    )).toBeDefined();
+  });
 });
 
 
