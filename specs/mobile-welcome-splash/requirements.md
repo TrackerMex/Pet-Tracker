@@ -395,19 +395,19 @@ mobile-pet-tracker/bun.lock` vacío). Verificación del reviewer, no test.
 
 Cada comprobación tiene su casilla. El gate de cierre exige las ocho.
 
-- [ ] S1 — Arranque en frío **sin sesión**: aparece welcome tras el splash
+- [X] S1 — Arranque en frío **sin sesión**: aparece welcome tras el splash
       nativo; en ningún frame se ve la pantalla de login.
-- [ ] S2 — «Comenzar ahora» abre registro; back hardware vuelve a welcome.
-- [ ] S3 — «Ya tengo una cuenta» abre login; back hardware vuelve a welcome.
-- [ ] S4 — Login correcto aterriza en home; back hardware desde home **sale
+- [X] S2 — «Comenzar ahora» abre registro; back hardware vuelve a welcome.
+- [X] S3 — «Ya tengo una cuenta» abre login; back hardware vuelve a welcome.
+- [X] S4 — Login correcto aterriza en home; back hardware desde home **sale
       de la app** (no muestra welcome ni login).
-- [ ] S5 — Arranque en frío **con sesión**: home directo; welcome no se ve
+- [X] S5 — Arranque en frío **con sesión**: home directo; welcome no se ve
       en ningún frame.
-- [ ] S6 — Ajustes → Accesibilidad → «Eliminar animaciones» activado: welcome
+- [X] S6 — Ajustes → Accesibilidad → «Eliminar animaciones» activado: welcome
       aparece por fundido, sin desplazamiento vertical.
-- [ ] S7 — Modo oscuro: marca, tagline, chips, los dos CTAs y el legal son
+- [X] S7 — Modo oscuro: marca, tagline, chips, los dos CTAs y el legal son
       legibles; el CTA hueco muestra su borde.
-- [ ] S8 — Cerrar sesión desde perfil: anotar en `progress/impl_mobile-welcome-splash.md`
+- [X] S8 — Cerrar sesión desde perfil: anotar en `progress/impl_mobile-welcome-splash.md`
       dónde aterriza (si no es welcome, se registra como deuda; no bloquea
       esta feature).
 

@@ -4563,5 +4563,8 @@ $ git status --short
 (salida vacía)
 ```
 
+## Cerrar sesión desde perfil
+
+Al cerrar sesión desde el perfil, el usuario es redirigido a la pantalla de bienvenida (welcome).
 La salida medida sobre HEAD se incorpora al mismo tercer commit documental.
 No cambian los hashes de E6/E7 ni se hace rebase.
