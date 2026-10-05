@@ -305,7 +305,14 @@ describe('R10', () => {
 
   it('fija la duración y la curva', () => {
     expect(WELCOME_ENTRANCE_MS).toBe(240);
-    expect(WELCOME_ENTRANCE_EASING).toBeDefined();
+    const expected = jest.requireActual<typeof import('react-native-reanimated')>('react-native-reanimated').Easing.bezier(0.23, 1, 0.32, 1).factory();
+    for (const point of [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]) {
+      expect(WELCOME_ENTRANCE_EASING.factory()(point)).toBeCloseTo(expected(point), 6);
+    }
+    const source = readSource('screens/welcome/index.tsx');
+    expect(source.match(/duration: WELCOME_ENTRANCE_MS,\s*easing: WELCOME_ENTRANCE_EASING,/g) ?? []).toHaveLength(2);
+    expect(source.match(/\b(duration|easing):/g) ?? []).toHaveLength(4);
+    expect(source.match(/reduceMotion: ReduceMotion\.Never/g) ?? []).toHaveLength(1);
   });
 
   it('arranca invisible y desplazado sin Reduce Motion', async () => {
