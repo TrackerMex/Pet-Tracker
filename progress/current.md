@@ -52,7 +52,13 @@
   §Ronda 3): solo `index.test.tsx` + trazabilidad, sondas X1, X2, M3 y X7;
   anclas verificadas sobre `f23345c3` y las de cierre sobre una copia con
   las tres líneas añadidas.
-- Siguiente paso: Aprobado en Notion, commit de firma de E6–E7 (será H0 de
-  la ronda 3), bloque de la ronda 3 al humano para Codex, init.sh con
-  permiso y reviewer ronda 3. R13 S1–S8 sigue siendo smoke humano en dev
-  build de Android.
+- Firma de E6–E7: `595b20b2` (H0 de la ronda 3). Codex: `e8300219` (R10, E6),
+  `5f6ebf76` (R6, E7) y `ee715533` (trazabilidad); producción sin cambios
+  desde la ronda 1. init.sh del leader con permiso: exit 0 sobre `ee715533`.
+- Reviewer ronda 3: APROBADO (código), `2ceccef4`. Observaciones no
+  bloqueantes: obs. 1 (los candados `readSource` no quitan comentarios: es
+  deuda del repo, no de #118), obs. 2 (`withDelay` en `translateY`) y obs. 3
+  (`onTouchEnd` en el chip).
+- Siguiente paso: R13 S1–S8, smoke humano en dev build de Android (sin cambios
+  nativos: vale el dev build instalado con Metro sobre esta branch). Después,
+  Notion Implementado / Completado, `gh pr create` y `done`.
