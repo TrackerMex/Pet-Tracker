@@ -102,3 +102,14 @@
   gate = En revisión, Bloqueadores = gate de la enmienda E1. Branch empujada
   (`origin/feature/117-mobile-forgot-password`). Esperando la aprobación
   humana de la enmienda; tras ella, commit de firma y handoff de la ronda 2.
+- Enmienda E1 aprobada por el humano en Notion (Estado del gate = Aprobado,
+  leído el 2026-10-05T03:13:01Z; casilla fechada 2026-10-04, hora local).
+  Commit de firma `75cb3104`. Notion: Rol actual = Implementer, Bloqueadores
+  vacío.
+- Handoff de la ronda 2: `progress/handoff_mobile-forgot-password.md`
+  §Ronda 2 — Enmienda E1 (H0 = el commit que añade esa sección). Tareas
+  T12-T18, solo tests, lista cerrada de 4 ficheros, 45 anclas `grep`
+  ejecutadas contra el árbol (45/45). Base 2 suites / 60; cierre 8 suites
+  285, global 93 / 2049. Mientras Codex trabaja, esta sesión no toca el
+  working tree; al terminar: `./init.sh` (avisando a Frontend) y `reviewer`
+  ronda 2.
