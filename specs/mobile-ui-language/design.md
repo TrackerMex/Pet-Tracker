@@ -357,7 +357,7 @@ añadidas por #68, registradas como delta sobre la tabla existente
 | 61 | `map.agoMinutes` **(param)** | `{{minutes}}m ago` | `hace {{minutes}} min` |
 | 62 | `map.agoHours` **(param)** | `{{hours}}h ago` | `hace {{hours}} h` |
 | 196 | `map.noSignal` | `No signal` | `Sin señal` |
-| 198 | `map.live` | `Live` | `En vivo` |
+| 198 | `map.live` | `GPS active` | `GPS activo` ← literal cambiado por #116 (R1); antes `Live` / `En vivo` |
 | 199 | `map.stale` | `Stale` | `Desactualizado` |
 | 210 | `common.somethingWentWrong` | `Something went wrong` | `Algo salió mal` |
 | 213 | `common.retry` | `Retry` | `Reintentar` |
