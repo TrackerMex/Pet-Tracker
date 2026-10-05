@@ -113,3 +113,17 @@
   285, global 93 / 2049. Mientras Codex trabaja, esta sesión no toca el
   working tree; al terminar: `./init.sh` (avisando a Frontend) y `reviewer`
   ronda 2.
+- Ronda 2 de Codex terminada (relatado por el humano el 2026-10-05): 7
+  commits sobre el H0 `453d0cd8`, HEAD `49de71b6`. `./init.sh` corrido por el
+  leader sobre `49de71b6` (avisando antes a Frontend): exit 0.
+- `reviewer` ronda 2: **rechazado** (`e37ee575`,
+  `progress/review_mobile-forgot-password.md` §Ronda 2). Nueve ramas sin
+  candado (X-a..X-i): el render de cada estado (título, cuerpo, Label,
+  `link-login`, botones) solo se asevera en el flujo inicial, no en vuelo, ni
+  tras un error, ni tras un reenvío. Producción sigue cumpliendo.
+- Enmienda E2, solo de tests (borrador 2026-10-05): requirements.md
+  §Enmienda E2 (E2.1-E2.6) y tasks.md §Enmienda E2 (T19-T21). Helpers
+  `expectFormState` / `expectSentState` llamados en 13 puntos de `it`
+  existentes, sin `it` nuevos: forgot 29→29, global 93 / 2049. Lista cerrada:
+  3 ficheros. Siguiente: barrido previo a la firma por un `reviewer` (spike
+  fuera del árbol), espejo en Notion, firma humana, handoff de la ronda 3.

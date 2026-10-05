@@ -956,3 +956,296 @@ cambia: los commits de E1 tocan `src/api/__tests__/auth.test.ts`,
 `progress/impl_mobile-forgot-password.md`, que ya estaban en ella.
 
 - [x] Enmienda E1 aprobada por humano (fecha: 2026-10-04, commit de firma: el que marca esta casilla)
+
+## Enmienda E2 — el render de cada estado en todos sus flujos
+
+El reviewer rechazó la ronda 2 en `49de71b6`
+(`progress/review_mobile-forgot-password.md` §Ronda 2). Codex cumplió E1 al
+pie de la letra y la producción sigue cumpliendo. El hueco vuelve a estar en
+la spec: R4 viñeta 1 es un WHILE (`sent === false`) que enumera cada elemento
+del formulario, y solo tiene candado en el flujo inicial. Mientras vuela una
+petición, o tras un error, nadie comprueba título, cuerpo, `Label` ni
+`link-login`. El estado enviado tiene el mismo hueco, pero sin cláusula que lo
+cubra: R5 viñeta 3 es un WHEN `ok`, y el paréntesis de R6 viñeta 3 solo
+enumera tres elementos.
+
+Con cada una de estas mutaciones, las dos suites de la pantalla quedan en
+73 / 73 en verde:
+
+| Sonda | Mutación que hoy pasa en verde | Estado y flujo | Cierra |
+|---|---|---|---|
+| X-a | `{sent \|\| submitting ? t('forgot.checkYourEmail') : t('forgot.forgotPassword')}` | formulario, en vuelo: cabecera de éxito antes de saber el resultado | E2.1 |
+| X-b | `{sent \|\| submitting ? t('forgot.sentTo', { email: submittedEmail }) : t('forgot.instructions')}` | formulario, en vuelo | E2.1 |
+| X-c | `{sent ? t('forgot.sentTo', { email: submittedEmail }) : error ?? t('forgot.instructions')}` | formulario, tras un error | E2.1 |
+| X-d | `link-login` envuelto en `{!submitting && (…)}` | formulario, en vuelo | E2.1, E2.3 |
+| X-e | `link-login` envuelto en `{!error && (…)}` | formulario, tras un error | E2.1, E2.3 |
+| X-f | `Label` envuelto en `{!error && (…)}` | formulario, tras un error | E2.1 |
+| X-g | `{sent && !error ? t('forgot.sentTo', …) : t('forgot.instructions')}` | enviado, tras un reenvío fallido | E2.2 |
+| X-h | `{!sent \|\| error ? (` en el bloque de `forgot-submit` | enviado, tras un reenvío fallido | E2.2 |
+| X-i | `{sent && !submitting ? t('forgot.checkYourEmail') : t('forgot.forgotPassword')}` | enviado, con el reenvío en vuelo | E2.2 |
+
+Esta vez la enmienda no cierra fila a fila. Enumera los flujos de cada estado
+(E2.1 y E2.2), escribe en dos helpers la lista completa de cada estado (E2.4)
+y llama al helper en cada punto de la pantalla donde un `it` existente ya llega
+a ese flujo (E2.5). Así cualquier elemento de la lista queda comprobado en
+todos los flujos, no solo los nueve de la tabla.
+
+Ningún requisito cambia de comportamiento y **no hay cambios de producción**.
+E2.2 añade una cláusula que el código ya cumple. No hay `it` nuevos: los
+helpers se llaman desde `it` existentes, y E2.5 permite tres cambios puntuales
+en líneas que ya existen. Cada candado se demuestra con una sonda que lo tumba
+(tabla de [[tasks]] §Enmienda E2).
+
+### E2.1 — R4: el formulario en sus cuatro flujos
+
+R4 viñeta 1 vale en todos los flujos con `sent === false`:
+
+- **A1**: antes del primer envío;
+- **A2**: con el primer envío en vuelo;
+- **A3**: tras un resultado distinto de `ok`, en los cinco `kind` de R7;
+- **A4**: con un envío nuevo en vuelo tras ese error.
+
+**WHILE** `sent === false`, en cualquiera de esos cuatro flujos, **THE SYSTEM
+SHALL** renderizar:
+
+- `forgot-title` = `Recuperar contraseña`;
+- `forgot-body` = `t('forgot.instructions')`;
+- el `Label` `Correo electrónico`;
+- `forgot-email` con el valor escrito, **sin recortar**;
+- `forgot-submit`;
+- `link-login` con `Volver al inicio de sesión`;
+- el tile `Lock`.
+
+Y **no** renderizará `forgot-resend`.
+
+`forgot-error` sigue a R7 y a E1.8:
+
+- ausente en A1, A2 y A4;
+- presente en A3, con su copy y `selectable`.
+
+El estado de `forgot-submit` ya está candado en cada flujo por las esperas que
+los `it` existentes hacen antes del punto de observación:
+
+- deshabilitado en A1 mientras el campo está vacío, y en A2 y A4;
+- habilitado en A3.
+
+E2.1 no cambia nada de eso.
+
+### E2.2 — R5 y R6: el estado enviado en sus cinco flujos
+
+Cláusula nueva, simétrica de R4 viñeta 1. El estado enviado tiene cinco flujos:
+
+- **B1**: tras el `ok` de un envío desde el formulario, haya habido o no un
+  error antes;
+- **B2**: con un reenvío en vuelo;
+- **B3**: tras un reenvío distinto de `ok`, en los cinco `kind`;
+- **B4**: con un reenvío nuevo en vuelo tras ese error;
+- **B5**: tras un reenvío `ok`.
+
+**WHILE** `sent === true`, en cualquiera de esos cinco flujos, **THE SYSTEM
+SHALL** renderizar:
+
+- `forgot-title` = `Revisa tu correo`;
+- `forgot-body` = `t('forgot.sentTo', { email: submittedEmail })`;
+- `forgot-resend`;
+- `link-login` con `Volver al inicio de sesión`;
+- el tile `Lock`.
+
+Y **no** renderizará el `TextField`: ni el `Label` `Correo electrónico` ni
+`forgot-email`. Tampoco `forgot-submit`.
+
+`forgot-error`:
+
+- ausente en B1, B2, B4 y B5;
+- presente en B3, con su copy y `selectable`.
+
+Esta cláusula amplía el paréntesis de R6 viñeta 3. «Permanecer en el estado
+enviado» significa esta lista completa, no solo título, `forgot-resend` y la
+ausencia de `forgot-email`.
+
+El estado de `forgot-resend` ya está candado en cada flujo por las esperas de
+los `it` existentes:
+
+- habilitado en B1, B3 y B5;
+- deshabilitado en B2 y B4.
+
+### E2.3 — R3: `link-login` navega desde los nueve flujos
+
+**WHEN** se pulsa `link-login`, en cualquiera de los flujos de E2.1 y E2.2,
+**THE SYSTEM SHALL**:
+
+- llamar **una vez** a `router.push('/login')`;
+- **no** invocar `forgotPassword`.
+
+E1.6 lo candó en A1 y B1. Una mutación como
+`onPress={() => { if (!submitting) router.push('/login'); }}` deja el enlace a
+la vista pero muerto mientras vuela la petición, y hoy pasa en verde.
+
+### E2.4 — Helpers de `src/screens/forgot/index.test.tsx`
+
+**WHEN** se cierra #117, **THE SYSTEM SHALL** tener en
+`src/screens/forgot/index.test.tsx` estas funciones, con este código, justo
+después de `async function submitForgot(…) { … }` y antes de
+`describe('#117 R5: enviar pasa la pantalla a «Revisa tu correo»', …)`:
+
+```ts
+const LOCK_TILE_CLASS = 'size-16 items-center justify-center rounded-xl bg-accent-soft';
+
+function lockTile() {
+  const siblings = (screen.getByTestId('forgot-title').parent?.children ?? []) as unknown[];
+  return siblings.filter((c) => typeof c !== 'string').find(
+    (c) => (c as { props: { className?: string } }).props.className === LOCK_TILE_CLASS,
+  );
+}
+
+function expectForgotError(error: string | null) {
+  if (error === null) {
+    expect(screen.queryByTestId('forgot-error')).toBeNull();
+    return;
+  }
+  const node = screen.getByTestId('forgot-error');
+  expect(node).toHaveTextContent(error);
+  expect(node.props.selectable).toBe(true);
+}
+
+async function expectLinkLoginNavigates() {
+  const requests = mockForgotPassword.mock.calls.length;
+  mockRouter.push.mockClear();
+  await fireEvent.press(screen.getByTestId('link-login'));
+  expect(mockRouter.push).toHaveBeenCalledTimes(1);
+  expect(mockRouter.push).toHaveBeenCalledWith('/login');
+  expect(mockForgotPassword).toHaveBeenCalledTimes(requests);
+}
+
+async function expectFormState(value: string, error: string | null) {
+  expect(screen.getByTestId('forgot-title')).toHaveTextContent('Recuperar contraseña');
+  expect(screen.getByTestId('forgot-body')).toHaveTextContent('Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.');
+  expect(screen.getByText('Correo electrónico')).toBeOnTheScreen();
+  expect(screen.getByTestId('forgot-email').props.value).toBe(value);
+  expect(screen.getByTestId('forgot-submit')).toBeOnTheScreen();
+  expect(screen.queryByTestId('forgot-resend')).toBeNull();
+  expect(screen.getByTestId('link-login')).toHaveTextContent('Volver al inicio de sesión');
+  expect(lockTile()).toBeDefined();
+  expectForgotError(error);
+  await expectLinkLoginNavigates();
+}
+
+async function expectSentState(email: string, error: string | null) {
+  expect(screen.getByTestId('forgot-title')).toHaveTextContent('Revisa tu correo');
+  expect(screen.getByTestId('forgot-body')).toHaveTextContent(`Si existe una cuenta para ${email}, te enviamos un enlace para restablecer tu contraseña. Revisa tu bandeja de entrada y la carpeta de spam.`);
+  expect(screen.queryByText('Correo electrónico')).toBeNull();
+  expect(screen.queryByTestId('forgot-email')).toBeNull();
+  expect(screen.queryByTestId('forgot-submit')).toBeNull();
+  expect(screen.getByTestId('forgot-resend')).toBeOnTheScreen();
+  expect(screen.getByTestId('link-login')).toHaveTextContent('Volver al inicio de sesión');
+  expect(lockTile()).toBeDefined();
+  expectForgotError(error);
+  await expectLinkLoginNavigates();
+}
+```
+
+Notas sobre el código:
+
+- `toHaveTextContent` compara el texto exacto en RNTL 14 (`exact = true` por
+  defecto en `dist/matches.js`), así que el título y el cuerpo no se quedan en
+  una subcadena.
+- `toBeOnTheScreen()` comprueba solo presencia. No usa `toBeVisible()`, para
+  no depender de la opacidad con la que `heroui-native` pinta un botón
+  deshabilitado en vuelo.
+- El `it` del tile de E1.7 no se toca. `lockTile()` repite su búsqueda en un
+  solo sitio para los demás.
+- `expectLinkLoginNavigates` pulsa el enlace sin salir de la pantalla: el
+  router es un mock. Cuenta las peticiones antes y después, en el mismo tick.
+  Es una aserción sobre el mock, no una espera, así que no choca con
+  `docs/conventions.md` §Esperas sobre el árbol renderizado.
+
+### E2.5 — Puntos de observación
+
+**WHEN** se cierra #117, **THE SYSTEM SHALL** llamar a los helpers en estos
+puntos de `it` que ya existen. Los títulos van literales y no cambian.
+
+| Punto | Flujo | `it` | Dónde | Línea que se añade |
+|---|---|---|---|---|
+| P1 | A1 | R4 `pinta título, instrucciones y forgot-email editable con sus props de teclado` | al final | `await expectFormState('', null);` |
+| P2 | A2 | R5 `envía el correo recortado una sola vez y deshabilita forgot-submit mientras vuela la petición` | después de `expect(screen.getByTestId('forgot-email')).toBeVisible();`, antes del `act` | `await expectFormState('  Ana@Example.com ', null);` |
+| P3 | B1 | R5 `tras ok muestra cabecera y cuerpo con el correo, forgot-resend y link-login, y retira forgot-email y forgot-submit` | al final | `await expectSentState('Ana@Example.com', null);` |
+| P4 | A3, ×5 | R7 `mapea %p a «%s» en forgot-error, seleccionable, y deja el formulario en pie` | al final | `await expectFormState('  Ana@Example.com ', copy);` |
+| P5 | A3 | R7 `un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver` | después del primer `await waitFor(() => expect(screen.getByTestId('forgot-submit')).not.toBeDisabled());`, antes de pulsar | `await expectFormState('  Ana@Example.com ', 'Algo salió mal');` |
+| P6 | A4 | el mismo `it` que P5 | después de `expect(screen.queryByTestId('forgot-resend')).toBeNull();`, antes del `act` | `await expectFormState('  Ana@Example.com ', null);` |
+| P7 | B1 tras un error | el mismo `it` que P5 | al final | `await expectSentState('Ana@Example.com', null);` |
+| P8 | B2 | R6 `forgot-resend repite el POST con el mismo correo y se deshabilita mientras vuela` | después de `expect(mockForgotPassword.mock.calls[1][1]).toEqual(mockForgotPassword.mock.calls[0][1]);`, antes del `act` | `await expectSentState('Ana@Example.com', null);` |
+| P9 | B5 | el mismo `it` que P8 | al final | `await expectSentState('Ana@Example.com', null);` |
+| P10 | B3 | R6 `un 429 al reenviar pinta forgot-error sin salir de «Revisa tu correo»` | al final | `await expectSentState('ana@example.com', 'Demasiados intentos. Inténtalo más tarde.');` |
+| P11 | B3, ×4 | R6 `un %p al reenviar pinta «%s» en forgot-error sin salir de «Revisa tu correo»` | al final | `await expectSentState('ana@example.com', copy);` |
+| P12 | B4 | R7 `un nuevo reenvío retira forgot-error en cuanto arranca y no lo repinta al resolver ok` | después del primer `expect(screen.queryByTestId('forgot-error')).toBeNull();` (el que va antes del `act`) | `await expectSentState('Ana@Example.com', null);` |
+| P13 | B5 tras un error | el mismo `it` que P12 | al final | `await expectSentState('Ana@Example.com', null);` |
+
+Además de añadir esas líneas, E2 cambia tres líneas que ya existen:
+
+1. En el `it.each` de R7 (P4), `await submitForgot();` pasa a
+   `await submitForgot('  Ana@Example.com ');`.
+2. En ese mismo `it.each`, la aseveración del valor del campo pasa de
+   `expect(screen.getByTestId('forgot-email').props.value).toBe('ana@example.com');`
+   a `expect(screen.getByTestId('forgot-email').props.value).toBe('  Ana@Example.com ');`.
+3. En el `it` de P5, `await submitForgot();` pasa a
+   `await submitForgot('  Ana@Example.com ');`.
+
+Los tres cambios valen para lo mismo. R7 viñeta 3 pide `forgot-email` «con el
+valor escrito», pero con `'ana@example.com'` el valor escrito y el recortado
+coinciden. Una mutación que recorta el campo tras un error (`setEmail(target)`)
+pasaría en verde. Ningún otro `expect` de esos dos `it` depende del correo.
+
+El primer `waitFor` de cada punto ya existe. Los helpers se llaman cuando el
+árbol ya está en el flujo que nombran, como pide §Esperas.
+
+### E2.6 — Lo que E2 no extiende a cada flujo
+
+E2 lleva a cada flujo la presencia, el copy, el valor del campo, `forgot-error`
+con su `selectable` y la navegación de `link-login`. **No** lleva a cada flujo:
+
+- las props de estilo: `className` de cada elemento y `variant` de
+  `forgot-resend`;
+- las props de teclado de `forgot-email`.
+
+Hoy se candan una vez, en el primer flujo de su estado:
+
+- R4 `it` 1;
+- `#127 R1`;
+- E1.4;
+- el `it` del tile de E1.7.
+
+En el fuente son literales que ninguna cláusula hace depender del flujo. E2
+corta ahí para no multiplicar las sondas por cada prop de estilo.
+
+Si el humano quiere también ese candado por flujo, lo dice al firmar y se
+añade a los helpers en la misma ronda.
+
+### Cifras y alcance
+
+| Suite | Antes de E2 | Después de E2 |
+|---|---:|---:|
+| `src/api/__tests__/auth.test.ts` | 44 | 44 |
+| `src/screens/forgot/index.test.tsx` | 29 | 29 (sin `it` nuevos) |
+| Las 8 suites del handoff | 285 | 285 |
+| Suite global de `mobile-pet-tracker` | 93 suites / 2049 | 93 suites / 2049 |
+
+Si `origin/main` ha cambiado cuando arranque la ronda 3, cuenta como cifra la
+base que se mida entonces. E2 suma 0 a esa base.
+
+Ningún candado global se mueve:
+
+- consistency y legibility no leen `*.test.tsx`;
+- design-drift sí los lee, pero los literales nuevos no llevan clases
+  arbitrarias (`-[…]`);
+- `LOCK_TILE_CLASS` repite una clase que el fichero ya contiene.
+
+Los commits de E2 tocan tres ficheros, todos ya presentes en la lista cerrada
+de [[design]] §Archivos afectados:
+
+- `src/screens/forgot/index.test.tsx`;
+- `traceability.md`;
+- `progress/impl_mobile-forgot-password.md`.
+
+`src/api/__tests__/auth.test.ts` no se toca.
+
+- [ ] Enmienda E2 aprobada por humano (fecha: , commit de firma: el que marca esta casilla)
