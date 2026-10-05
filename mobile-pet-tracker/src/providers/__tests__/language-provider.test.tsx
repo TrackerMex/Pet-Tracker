@@ -454,4 +454,11 @@ describe('#117 R1: el catálogo trae las claves de recuperar contraseña', () =>
     expect(markerNames(english['forgot.sentTo'])).toEqual(['email']);
     expect(markerNames(spanish['forgot.sentTo'])).toEqual(['email']);
   });
+
+  it('retira forgot.comingSoon de los dos idiomas', () => {
+    const english = en as Record<string, string>;
+    const spanish = es as Record<string, string>;
+    expect(english['forgot.comingSoon']).toBeUndefined();
+    expect(spanish['forgot.comingSoon']).toBeUndefined();
+  });
 });
