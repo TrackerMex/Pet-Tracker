@@ -21,6 +21,7 @@ import {
 import { geofenceKeys, petKeys, positionKeys, tripKeys } from '../../api/query-keys';
 import { getDayRoute } from '../../api/trips';
 import { Card } from '../../components/card';
+import { PetAvatar } from '../../components/pet-avatar';
 import { DEFAULT_CENTER, PetMap } from '../../components/pet-map';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
@@ -310,6 +311,27 @@ export function MapScreen() {
             }}
             className="gap-2"
           >
+            {selectedPet ? (
+              <View
+                testID="map-pet-pill"
+                className="flex-row items-center gap-2 self-start rounded-full border border-border bg-surface px-3 py-2 shadow-sm"
+              >
+                <PetAvatar
+                  testID="map-pet-pill-avatar"
+                  size={24}
+                  name={selectedPet.name}
+                  photoUrl={selectedPet.photoUrl}
+                  cacheKey={selectedPet.id}
+                />
+                <Text
+                  testID="map-pet-pill-name"
+                  className="shrink text-xs font-bold text-foreground"
+                  numberOfLines={1}
+                >
+                  {selectedPet.name}
+                </Text>
+              </View>
+            ) : null}
             <Card className="p-3">
               <View className="gap-2">
                 <View className="flex-row gap-2">
