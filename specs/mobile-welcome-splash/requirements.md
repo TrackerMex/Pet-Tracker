@@ -488,7 +488,7 @@ rol de botón'`. Los textos normativos están en R6 y R10, marcados
 
 ### Enmienda E6–E7 — candados de R10 y R6 tras la review de la ronda 2
 
-- [ ] Enmienda E6–E7 aprobada por humano (fecha: ) ← gate obligatorio antes de la ronda 3 de Codex
+- [x] Enmienda E6–E7 aprobada por humano (fecha: 2026-10-05) ← gate obligatorio antes de la ronda 3 de Codex
 
 ### Prueba de humo
 
