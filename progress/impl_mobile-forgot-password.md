@@ -11769,3 +11769,402 @@ $ git status --short
 ```
 
 3 ficheros exactos; diff de producción, API y auth.test.ts vacío; numstat del test +114/−3, correspondientes a las tres únicas sustituciones de E2.5. Índice vacío, diff --check exit=0 y árbol limpio en la medición. Se revalida después del commit sin escribir de nuevo en el impl. Ronda 3 completa para revisión del leader; smoke humano pendiente, sin marcar.
+
+
+## Ronda 4
+
+```text
+$ pwd
+/home/claude/sites/Pet-Tracker-wt-backend
+$ git branch --show-current
+feature/117-mobile-forgot-password
+$ git rev-parse --short HEAD
+f7a9f896
+```
+
+H0: `f7a9f896`.
+
+### Anclas PRE
+
+Desde la raíz del worktree; `M=mobile-pet-tracker/src`.
+Las salidas iniciales y las anclas PRE se recogieron antes de añadir este registro, para medir el árbol limpio exigido por la primera ancla.
+
+```sh
+git status --porcelain | wc -l
+```
+
+```text
+0
+```
+
+```sh
+git diff --quiet c9d67ddd HEAD -- mobile-pet-tracker; echo "exit=$?"
+```
+
+```text
+exit=0
+```
+
+```sh
+test ! -e mobile-pet-tracker/.expo/types/router.d.ts; echo "exit=$?"
+```
+
+```text
+exit=0
+```
+
+```sh
+git rev-parse --short '8b7caf25^{commit}'
+```
+
+```text
+8b7caf25
+```
+
+```sh
+git merge-base HEAD 8b7caf25 | cut -c1-8
+```
+
+```text
+b2a9c2aa
+```
+
+```sh
+git merge-base --is-ancestor 8b7caf25 HEAD; echo "exit=$?"
+```
+
+```text
+exit=1
+```
+
+```sh
+git merge-tree --write-tree --name-only --no-messages HEAD 8b7caf25 | tail -n +2 | tr '\n' ' '
+```
+
+```text
+mobile-pet-tracker/src/__tests__/ui-language.test.ts mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx
+```
+
+```sh
+grep -cF "    expect(SCREEN_FILES).toHaveLength(19 + 2 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 - 1); // #100 R10, #41 R10, #146 R10, #105 R5; #117 R10: sale app/(auth)/forgot.tsx, entra screens/forgot/index.tsx" $M/__tests__/ui-language.test.ts
+```
+
+```text
+1
+```
+
+```sh
+grep -cF "      260 + 16 + 1 + 4 + 7 + 14 + 2 + 1 + 4 - 6 + 1 + 2 + 3 + 11 + 12 + 2 + 9 + 9 + 6 - 1, // #105 R5; #117 R1" $M/providers/__tests__/language-provider.test.tsx
+```
+
+```text
+1
+```
+
+```sh
+git show 8b7caf25:$M/__tests__/ui-language.test.ts | grep -cF "        + 1, // #118 R1"
+```
+
+```text
+1
+```
+
+```sh
+git show 8b7caf25:$M/providers/__tests__/language-provider.test.tsx | grep -cF "        + 8, // #118 R1"
+```
+
+```text
+1
+```
+
+Todas las anclas PRE coinciden con las salidas esperadas.
+
+
+### Merge de origin/main (#118, PR #193)
+
+```sh
+git merge --no-ff 8b7caf25
+```
+
+```text
+Auto-merging feature_list.json
+Auto-merging mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+Auto-merging mobile-pet-tracker/src/__tests__/legibility-classnames.test.ts
+Auto-merging mobile-pet-tracker/src/__tests__/ui-copy-table.ts
+Auto-merging mobile-pet-tracker/src/__tests__/ui-language.test.ts
+CONFLICT (content): Merge conflict in mobile-pet-tracker/src/__tests__/ui-language.test.ts
+Auto-merging mobile-pet-tracker/src/i18n/catalog.ts
+Auto-merging mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx
+CONFLICT (content): Merge conflict in mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx
+Auto-merging specs/mobile-ui-language/design.md
+Automatic merge failed; fix conflicts and then commit the result.
+exit=1
+```
+
+Conflictos exactos, sin terceros:
+
+```text
+$ git diff --name-only --diff-filter=U
+mobile-pet-tracker/src/__tests__/ui-language.test.ts
+mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx
+```
+
+Se sustituyeron únicamente los dos bloques completos de conflicto por las líneas literales de la orden. Los auto-merges quedaron intactos.
+
+```text
+$ git add mobile-pet-tracker/src/__tests__/ui-language.test.ts mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx
+exit=0
+$ git diff --name-only --diff-filter=U | wc -l
+0
+$ git commit -m "Merge origin/main into feature/117-mobile-forgot-password (integrates #118, PR #193)"
+[feature/117-mobile-forgot-password 9cf76d7c] Merge origin/main into feature/117-mobile-forgot-password (integrates #118, PR #193)
+exit=0
+$ git rev-parse --short HEAD
+9cf76d7c
+```
+
+Commit de merge: `9cf76d7c`. El impl queda fuera del commit de merge.
+
+### Anclas POST
+
+Ejecutadas sobre HEAD = `9cf76d7c`; `M=mobile-pet-tracker/src`.
+
+```sh
+git rev-parse --short HEAD^2
+```
+
+```text
+8b7caf25
+```
+
+```sh
+git show --remerge-diff --format= --name-only HEAD | tr '\n' ' '
+```
+
+```text
+mobile-pet-tracker/src/__tests__/ui-language.test.ts mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx
+```
+
+```sh
+git show --remerge-diff --format= HEAD | grep -c '^+[^+]'
+```
+
+```text
+2
+```
+
+```sh
+git show --remerge-diff --format= HEAD | grep -c '^-[^-]'
+```
+
+```text
+8
+```
+
+```sh
+git grep -lE '^(<<<<<<<|>>>>>>>)( |$)' HEAD -- . | wc -l
+```
+
+```text
+0
+```
+
+```sh
+grep -cF "        + 1 - 1 // #117 R10: sale app/(auth)/forgot.tsx, entra screens/forgot/index.tsx" $M/__tests__/ui-language.test.ts
+```
+
+```text
+1
+```
+
+```sh
+grep -cF "        + 6 - 1 // #117 R1" $M/providers/__tests__/language-provider.test.tsx
+```
+
+```text
+1
+```
+
+```sh
+grep -cF "+ 1 + 1 - 1); // #100 R10" $M/__tests__/ui-language.test.ts
+```
+
+```text
+0
+```
+
+```sh
+grep -cF "+ 9 + 9 + 6 - 1, // #105 R5; #117 R1" $M/providers/__tests__/language-provider.test.tsx
+```
+
+```text
+0
+```
+
+```sh
+diff <(git diff --name-only b2a9c2aa c9d67ddd -- mobile-pet-tracker) <(git diff --name-only 8b7caf25 HEAD -- mobile-pet-tracker); echo "exit=$?"
+```
+
+```text
+exit=0
+```
+
+```sh
+bun -e "JSON.parse(require('fs').readFileSync('feature_list.json', 'utf8'))"; echo "exit=$?"
+```
+
+```text
+exit=0
+```
+
+Todas las anclas POST coinciden con las salidas esperadas.
+
+
+### Mediciones
+
+Desde `mobile-pet-tracker/`, con bun/bunx y sin pipe en los comandos de medición.
+
+#### Forgot
+
+```sh
+bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx > /tmp/117-r4-forgot.log 2>&1; echo "exit=$?"
+```
+
+```text
+Test Suites: 1 passed, 1 total
+Tests:       31 passed, 31 total
+exit=0
+```
+
+1 fichero solicitado y 1 suite impresa; 31 tests.
+
+#### Guard antes de las 8 suites
+
+```text
+$ pgrep -f '[i]nit.sh'; echo "exit=$?"
+exit=1
+```
+
+Sin init.sh activo; no fue necesario esperar.
+
+
+#### Ocho suites
+
+```sh
+bunx jest --runTestsByPath --maxWorkers=2 src/api/__tests__/auth.test.ts src/providers/__tests__/language-provider.test.tsx src/__tests__/ui-language.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/legibility-classnames.test.ts src/__tests__/design-drift.test.ts src/screens/reset-password/index.test.tsx src/screens/forgot/index.test.tsx > /tmp/117-r4-ocho.log 2>&1; echo "exit=$?"
+```
+
+```text
+PASS src/__tests__/ui-language.test.ts
+PASS src/screens/reset-password/index.test.tsx
+PASS src/providers/__tests__/language-provider.test.tsx
+PASS src/__tests__/legibility-classnames.test.ts
+PASS src/screens/forgot/index.test.tsx (6.354 s)
+PASS src/__tests__/design-drift.test.ts
+PASS src/api/__tests__/auth.test.ts
+PASS src/__tests__/consistency-classnames.test.ts
+Test Suites: 8 passed, 8 total
+Tests:       290 passed, 290 total
+exit=0
+```
+
+8 ficheros solicitados y 8 líneas PASS: Jest imprimió exactamente las 8 suites pedidas.
+Auth mantiene sus 44 tests de la ronda 3: el fichero no cambia y su suite pasa en esta medición.
+
+```text
+$ git diff --quiet c9d67ddd HEAD -- mobile-pet-tracker/src/api/__tests__/auth.test.ts; echo "exit=$?"
+exit=0
+```
+
+#### Guard antes de la global
+
+```text
+$ pgrep -f '[i]nit.sh'; echo "exit=$?"
+exit=1
+```
+
+Sin init.sh activo; no fue necesario esperar.
+
+
+#### Global
+
+```sh
+bunx jest --maxWorkers=2 > /tmp/117-r4-global.log 2>&1; echo "exit=$?"
+```
+
+```text
+Test Suites: 94 passed, 94 total
+Tests:       2083 passed, 2083 total
+exit=0
+```
+
+94 líneas PASS; ninguna FAIL. Coincide con las 94 suites y los 2083 tests previstos tras integrar #118.
+
+#### Guard de router antes de typecheck
+
+```text
+$ test ! -e .expo/types/router.d.ts; echo "exit=$?"
+exit=0
+```
+
+
+#### Typecheck
+
+```sh
+bun run typecheck > /tmp/117-r4-tsc.log 2>&1; echo "exit=$?"
+```
+
+```text
+$ tsc --noEmit
+exit=0
+```
+
+#### Lint
+
+```sh
+bun run lint > /tmp/117-r4-lint.log 2>&1; echo "exit=$?"
+```
+
+```text
+$ expo lint
+exit=0
+```
+
+### Cierre de la ronda 4
+
+Sin divergencias en PRE, POST, conflictos ni mediciones; ningún Expected/Received rojo ni comando denegado. No se recalculó ningún número ni se añadieron tests o aserciones. Sin ediciones manuales fuera de los dos bloques y este impl. Los cambios automáticos de #118 se conservaron íntegros; las rondas 1–3 de este documento también.
+
+Log recogido al cerrar las mediciones, antes del segundo y último commit documental, para evitar incluir el hash del documento dentro del propio documento:
+
+```text
+$ git log --oneline -3
+9cf76d7c Merge origin/main into feature/117-mobile-forgot-password (integrates #118, PR #193)
+f7a9f896 docs(progress): #117 round 4 handoff, integrate origin/main after #118
+715495f4 docs(review): #117 round 3 verdict on amendment E2
+```
+
+El segundo commit usa únicamente `progress/impl_mobile-forgot-password.md` y el mensaje literal:
+
+```sh
+git commit -m "docs(mobile): record #117 integration of origin/main (#118)"
+```
+
+Alcance del cierre documental: se comprueba la lista del índice antes de hacer el commit y se revalida esta salida después, sin una tercera escritura ni commit:
+
+```text
+$ git diff --name-only HEAD^ HEAD
+progress/impl_mobile-forgot-password.md
+```
+
+El log definitivo y la limpieza del árbol se comprueban después de ese commit y se comunican en el cierre. El hash documental se obtiene con `git log -1`, sin autorreferencia. Sin fetch, pull, rebase, reset, push, PR, init.sh, graphify, instalación de dependencias ni operaciones en otros worktrees, Postgres o LocalStack. No se marcaron casillas humanas ni se hizo bookkeeping del leader.
+
+
+#### Incidencia documental antes del commit
+
+La comprobación adicional de conservación del documento dio exit=1: Expected original_preserved=true; Received original_preserved=false. El parche del cierre había encontrado un contexto repetido de router en una ronda anterior e insertado allí sus 52 líneas. Se movió únicamente ese bloque documental al final de Ronda 4; las rondas 1–3 se conservaron byte por byte desde H0. No falló ninguna ancla PRE/POST ni medición Jest/typecheck/lint, y no se tocó ninguna aserción o número.
+
+Salida después de colocar el bloque al final:
+
+```text
+original_preserved=true
+```
