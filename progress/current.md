@@ -180,3 +180,17 @@
   lint exit 0 (#116 suma 30 tests a los 2083). Frontend
   avisa: el id #151 queda tomado por #151 `mobile-map-pill-name-locks`; el
   siguiente libre es #152.
+- Ronda 4 de Codex terminada (relatado por el humano el 2026-10-05): merge
+  `9cf76d7c` (padres `f7a9f896` y `8b7caf25`) y commit del impl `97dba61c`.
+  Verificado por el leader: el árbol de `9cf76d7c` es idéntico al del merge
+  medido en el worktree desechable (`git diff --quiet` en
+  `mobile-pet-tracker`, `specs`, `docs`, `feature_list.json` y `STATUS.md`);
+  remerge-diff con 2 ficheros, +2 / -8; sin marcadores; impl con 399 líneas
+  añadidas al final y 0 borradas. Cifras de Codex: forgot 31, 8 suites 290,
+  global 94 / 2083, typecheck y lint exit 0.
+- #194 (#116) mergeado a `main` el 2026-10-05T16:30:19Z (`8afae724`, árbol
+  igual a `fccdc33e`). Hace falta un segundo merge de `main`, que entra
+  limpio (`git merge-tree` sin conflictos) y que el leader ya midió (global
+  94 / 2113). El clasificador de permisos denegó al leader el `git merge`:
+  decide el humano quién lo hace. `./init.sh`, `reviewer` y la prueba de
+  humo esperan a ese merge.
