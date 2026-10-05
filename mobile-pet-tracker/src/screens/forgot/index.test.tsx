@@ -203,6 +203,46 @@ describe('#117 R7: cada kind distinto de ok pinta su copy en forgot-error', () =
     expect(await screen.findByText('Revisa tu correo')).toBeVisible();
     expect(screen.queryByTestId('forgot-error')).toBeNull();
   });
+
+  it('un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver', async () => {
+    let resolveRequest!: (state: ForgotPasswordState) => void;
+    const pending = new Promise<ForgotPasswordState>((resolve) => { resolveRequest = resolve; });
+    mockForgotPassword.mockResolvedValueOnce({ kind: 'error' }).mockReturnValueOnce(pending);
+    await renderRoute();
+    await submitForgot();
+    expect(await screen.findByTestId('forgot-error')).toHaveTextContent('Algo salió mal');
+    await waitFor(() => expect(screen.getByTestId('forgot-submit')).not.toBeDisabled());
+    await fireEvent.press(screen.getByTestId('forgot-submit'));
+
+    await waitFor(() => expect(screen.getByTestId('forgot-submit')).toBeDisabled());
+    expect(screen.queryByTestId('forgot-error')).toBeNull();
+    expect(screen.queryByTestId('forgot-resend')).toBeNull();
+    await act(async () => { resolveRequest({ kind: 'ok' }); });
+    expect(await screen.findByText('Revisa tu correo')).toBeVisible();
+    expect(screen.queryByTestId('forgot-error')).toBeNull();
+  });
+
+  it('un nuevo reenvío retira forgot-error en cuanto arranca y no lo repinta al resolver ok', async () => {
+    let resolveRequest!: (state: ForgotPasswordState) => void;
+    const pending = new Promise<ForgotPasswordState>((resolve) => { resolveRequest = resolve; });
+    mockForgotPassword.mockResolvedValueOnce({ kind: 'ok' }).mockResolvedValueOnce({ kind: 'rate-limited' }).mockReturnValueOnce(pending);
+    await renderRoute();
+    await submitForgot('  Ana@Example.com ');
+    expect(await screen.findByText('Revisa tu correo')).toBeVisible();
+    await fireEvent.press(screen.getByTestId('forgot-resend'));
+    expect(await screen.findByTestId('forgot-error')).toHaveTextContent('Demasiados intentos. Inténtalo más tarde.');
+    await waitFor(() => expect(screen.getByTestId('forgot-resend')).not.toBeDisabled());
+    await fireEvent.press(screen.getByTestId('forgot-resend'));
+
+    await waitFor(() => expect(screen.getByTestId('forgot-resend')).toBeDisabled());
+    expect(mockForgotPassword.mock.calls[2][1]).toEqual(mockForgotPassword.mock.calls[0][1]);
+    expect(screen.queryByTestId('forgot-error')).toBeNull();
+    await act(async () => { resolveRequest({ kind: 'ok' }); });
+    await waitFor(() => expect(screen.getByTestId('forgot-resend')).not.toBeDisabled());
+    expect(screen.queryByTestId('forgot-error')).toBeNull();
+    expect(screen.getByText('Revisa tu correo')).toBeVisible();
+    expect(screen.getByTestId('forgot-body')).toHaveTextContent('Si existe una cuenta para Ana@Example.com, te enviamos un enlace para restablecer tu contraseña. Revisa tu bandeja de entrada y la carpeta de spam.');
+  });
 });
 
 
