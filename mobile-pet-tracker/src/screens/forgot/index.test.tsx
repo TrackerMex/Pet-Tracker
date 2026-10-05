@@ -168,3 +168,36 @@ describe('#117 R5: enviar pasa la pantalla a «Revisa tu correo»', () => {
     expect(screen.queryByTestId('forgot-error')).toBeNull();
   });
 });
+
+
+describe('#117 R7: cada kind distinto de ok pinta su copy en forgot-error', () => {
+  it.each<[ForgotPasswordState, string]>([
+    [{ kind: 'validation', errors: [{ path: 'email', message: 'Invalid email' }] }, 'Ingresa un correo electrónico válido'],
+    [{ kind: 'rate-limited' }, 'Demasiados intentos. Inténtalo más tarde.'],
+    [{ kind: 'error' }, 'Algo salió mal'],
+    [{ kind: 'unreachable', message: 'network down' }, 'No se pudo conectar con el servidor'],
+    [{ kind: 'missing-config' }, 'Algo salió mal'],
+  ])('mapea %p a «%s» en forgot-error, seleccionable, y deja el formulario en pie', async (state, copy) => {
+    mockForgotPassword.mockResolvedValue(state);
+    await renderRoute();
+    await submitForgot();
+    const error = await screen.findByTestId('forgot-error');
+
+    expect(error).toHaveTextContent(copy);
+    expect(error.props.selectable).toBe(true);
+    expect(screen.getByTestId('forgot-title')).toHaveTextContent('Recuperar contraseña');
+    expect(screen.getByTestId('forgot-email').props.value).toBe('ana@example.com');
+    await waitFor(() => expect(screen.getByTestId('forgot-submit')).not.toBeDisabled());
+    expect(screen.queryByTestId('forgot-resend')).toBeNull();
+  });
+
+  it('un envío posterior que resuelve ok limpia forgot-error y pasa a «Revisa tu correo»', async () => {
+    mockForgotPassword.mockResolvedValueOnce({ kind: 'error' }).mockResolvedValueOnce({ kind: 'ok' });
+    await renderRoute();
+    await submitForgot();
+    expect(await screen.findByTestId('forgot-error')).toHaveTextContent('Algo salió mal');
+    await fireEvent.press(screen.getByTestId('forgot-submit'));
+    expect(await screen.findByText('Revisa tu correo')).toBeVisible();
+    expect(screen.queryByTestId('forgot-error')).toBeNull();
+  });
+});
