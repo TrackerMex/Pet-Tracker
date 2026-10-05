@@ -331,6 +331,18 @@ describe('#117 R9: las métricas del stub sobreviven al cambio de estado', () =>
     expect(screen.getByTestId('forgot-form').props.contentContainerStyle).toEqual(before);
     expect(screen.getByTestId('forgot-form').props.keyboardShouldPersistTaps).toBe('handled');
   });
+
+  it('forgot-form lleva className y contentInsetAdjustmentBehavior de la spec en los dos estados', async () => {
+    mockForgotPassword.mockResolvedValue({ kind: 'ok' });
+    await renderRoute();
+
+    expect(screen.getByTestId('forgot-form').props.className).toBe('flex-1 bg-background');
+    expect(screen.getByTestId('forgot-form').props.contentInsetAdjustmentBehavior).toBe('automatic');
+    await submitForgot();
+    expect(await screen.findByText('Revisa tu correo')).toBeVisible();
+    expect(screen.getByTestId('forgot-form').props.className).toBe('flex-1 bg-background');
+    expect(screen.getByTestId('forgot-form').props.contentInsetAdjustmentBehavior).toBe('automatic');
+  });
 });
 
 
