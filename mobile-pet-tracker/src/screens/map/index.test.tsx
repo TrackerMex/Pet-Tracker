@@ -5,6 +5,9 @@ import {
   waitFor,
   within,
 } from '@testing-library/react-native';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { HeroUINativeProvider } from 'heroui-native';
 import { useEffect, type ReactNode } from 'react';
 
@@ -37,6 +40,7 @@ import type {
   StoredPosition,
   TripDetail,
 } from '../../api/types';
+import { en, es } from '../../i18n/catalog';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import { LanguageProvider } from '../../providers/language-provider';
 import {
@@ -597,7 +601,7 @@ describe('R8: stats calculadas de positions y trips', () => {
       expect(screen.getByTestId('stat-speed')).toHaveTextContent('12.3 km/h');
       expect(screen.getByTestId('stat-distance')).toHaveTextContent('2.0 km');
       expect(screen.getByTestId('stat-updated')).toHaveTextContent('Justo ahora');
-      expect(screen.getByTestId('stat-gps')).toHaveTextContent('En vivo');
+      expect(screen.getByTestId('stat-gps')).toHaveTextContent('GPS activo');
     });
     expect(screen.getByTestId('map-stats').props.style).toEqual(
       expect.objectContaining({
@@ -628,7 +632,7 @@ describe('R8: stats calculadas de positions y trips', () => {
     await renderMap();
 
     await waitFor(() => {
-      expect(screen.getByTestId('stat-gps')).toHaveTextContent('En vivo');
+      expect(screen.getByTestId('stat-gps')).toHaveTextContent('GPS activo');
       expect(screen.getByTestId('stat-speed')).toHaveTextContent('—');
       expect(screen.getByTestId('stat-distance')).toHaveTextContent('0.0 km');
       expect(screen.getByTestId('stat-updated')).toHaveTextContent('hace 2 min');
@@ -1325,7 +1329,7 @@ describe('#94 R2: el tile de conexión sigue al collar', () => {
     });
   });
 
-  it('muestra En vivo aunque después falte la posición', async () => {
+  it('muestra GPS activo aunque después falte la posición', async () => {
     mockGetPet.mockResolvedValue({
       kind: 'ok',
       pet: makePet({ device: makeDevice('online') }),
@@ -1334,7 +1338,7 @@ describe('#94 R2: el tile de conexión sigue al collar', () => {
     const { queryClient } = await renderMap();
 
     await waitFor(() =>
-      expect(screen.getByTestId('stat-gps')).toHaveTextContent('En vivo'),
+      expect(screen.getByTestId('stat-gps')).toHaveTextContent('GPS activo'),
     );
 
     await act(async () => {
@@ -1348,7 +1352,7 @@ describe('#94 R2: el tile de conexión sigue al collar', () => {
     await waitFor(() =>
       expect(screen.getByTestId('stat-updated')).toHaveTextContent('—'),
     );
-    expect(screen.getByTestId('stat-gps')).toHaveTextContent('En vivo');
+    expect(screen.getByTestId('stat-gps')).toHaveTextContent('GPS activo');
   });
 
   it('muestra Desactualizado para un collar offline', async () => {
@@ -1440,7 +1444,7 @@ describe('#94 R4: la antigüedad y la conexión son datos independientes', () =>
     await renderMap();
 
     await waitFor(() =>
-      expect(screen.getByTestId('stat-gps')).toHaveTextContent('En vivo'),
+      expect(screen.getByTestId('stat-gps')).toHaveTextContent('GPS activo'),
     );
     expect(screen.getByTestId('stat-updated')).toHaveTextContent('hace 2 min');
   });
@@ -1506,7 +1510,7 @@ describe('#94 R7: el poll refresca también el detalle', () => {
     });
 
     await waitFor(() =>
-      expect(screen.getByTestId('stat-gps')).toHaveTextContent('En vivo'),
+      expect(screen.getByTestId('stat-gps')).toHaveTextContent('GPS activo'),
     );
     const initialDetailCalls = mockGetPet.mock.calls.length;
 
@@ -1574,5 +1578,20 @@ describe('#146 R11: la pestaña Mapa dibuja las zonas activas de la mascota', ()
       await act(async () => { jest.advanceTimersByTime(15000); await Promise.resolve(); await Promise.resolve(); });
       expect(mockListGeofences).toHaveBeenCalledTimes(initialCalls);
     } finally { mockFocusCleanup?.(); jest.useRealTimers(); }
+  });
+});
+
+
+describe('#116 R1: el estado activo usa la palabra del Make', () => {
+  it('resuelve map.live a GPS active y GPS activo y lo registra en la tabla de copy', () => {
+    expect(en['map.live']).toBe('GPS active');
+    expect(es['map.live']).toBe('GPS activo');
+    const design = readFileSync(
+      join(process.cwd(), '..', 'specs', 'mobile-ui-language', 'design.md'),
+      'utf8',
+    );
+    expect(design).toMatch(
+      /\| 198 \| `map\.live` \| `GPS active` \| `GPS activo`[^\n]*← literal cambiado por #116 \(R1\)/,
+    );
   });
 });
