@@ -63,6 +63,17 @@ describe('#117 R3: la ruta forgot delega en ForgotScreen', () => {
     expect(mockRouter.push).toHaveBeenCalledWith('/login');
     expect(mockForgotPassword).not.toHaveBeenCalled();
   });
+
+  it('link-login navega a /login también desde «Revisa tu correo», sin petición nueva', async () => {
+    mockForgotPassword.mockResolvedValue({ kind: 'ok' });
+    await renderRoute();
+    await submitForgot();
+    expect(await screen.findByText('Revisa tu correo')).toBeVisible();
+    await fireEvent.press(screen.getByTestId('link-login'));
+
+    expect(mockRouter.push).toHaveBeenCalledWith('/login');
+    expect(mockForgotPassword).toHaveBeenCalledTimes(1);
+  });
 });
 
 describe('#61 R8: forgot tiene contenedor de scroll con safe areas', () => {
