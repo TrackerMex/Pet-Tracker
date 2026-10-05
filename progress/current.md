@@ -26,7 +26,17 @@
 - Espejo Notion: https://app.notion.com/p/3ef6115a9b2781938bf8e4901bf3fd33
   (base Specs, `Estado del gate` = En revisión, `Rol actual` = Spec Author).
   Incluye como anexo la Enmienda #116 a #94: el Aprobado cubre las dos casillas.
-- Estado: gate humano pendiente; sin handoff a Codex hasta Aprobado en Notion.
+- Gate: Aprobado en Notion; firma `1e47c058` (spec y Enmienda #116 a #94).
+- Handoff a Codex: `progress/handoff_mobile-map-gps-pill-battery.md`; H0 = el
+  commit que lo añade. Codex trabaja en este árbol (`/home/claude/sites/Pet-Tracker`):
+  mientras implementa, el leader no commitea aquí (el cierre de #118 va en wt-118).
+- Base medida por el leader sobre H0: 8 suites / 461 tests, exit 0; las 29
+  anclas del handoff ejecutadas y coinciden; `router.d.ts` ausente.
+- Nota para el reviewer: la columna «Tras #116» de requirements.md
+  §Medidas en la base dice `stat-gps` en el test = 0, pero el `it` de R5
+  `retira stat-gps del mapa` deja 2 líneas (título y consulta). Manda R5; el
+  handoff lo dice. No es enmienda: la columna es informativa y ningún R la exige.
+- Estado: `in_progress`, esperando a Codex.
 - Observación para después (no es deuda abierta todavía): `collar-battery` de
   la Home pinta `> 60` con `text-success` (≈ 3,31:1 sobre `bg-default` claro,
   falla AA). Verificado en `src/screens/home/index.tsx`; solo ese tile.
