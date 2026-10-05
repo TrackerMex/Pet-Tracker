@@ -2949,5 +2949,40 @@
       "mobile-pet-tracker/src/screens/pairing/index.test.tsx",
       "mobile-pet-tracker/src/screens/weight-log/index.test.tsx"
     ]
+  },
+  {
+    "id": 149,
+    "name": "mobile-sign-out-lands-on-welcome",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Registrada el 2026-10-05 por decision del humano al cerrar #118 (smoke R13 S8, progress/impl_mobile-welcome-splash.md §R13; el humano lo confirmo en el chat del leader y corrige su commit 11d49f49). En el dev build de Android, Cerrar sesion desde Perfil aterriza en login y no en welcome. #118 dejo fuera el flujo de signOut a proposito: S8 solo observaba. Causa probable, vista por grep en d6ba857a y no probada: src/app/(tabs)/_layout.tsx devuelve <Redirect href=\"/login\" /> con status unauthenticated, mientras que src/app/index.tsx (cold start) redirige a /welcome; signOut se llama en src/screens/profile/index.tsx (boton profile.signOut y la rama unauthorized de la subida de foto) y no navega, asi que manda el Redirect del layout de tabs. Ese destino esta candado hoy: src/app/(tabs)/__tests__/layout.test.tsx «redirects an unauthenticated session to login» espera { href: '/login' }, y src/app/__tests__/detail-stack.guard.test.tsx espera /login para las rutas de detalle sin sesion; la spec decide cuales cambian y lo declara. Limites: solo esta confirmado el cierre desde Perfil; la spec verifica contra main si la sesion caducada (401) debe ir tambien a welcome o seguir en login. Fuera: router.replace('/login') de (auth)/register.tsx y el push de reset-password, que son navegacion intencional a login y no salida de sesion. Sin dependencias nuevas. Depende del merge de #118 (PR #193): la ruta welcome solo existe ahi.",
+    "acceptance_criteria": [
+      "Tras Cerrar sesion desde Perfil la app aterriza en welcome, no en login, en el dev build de Android",
+      "Un test con su R-id ejecuta signOut con la app autenticada en tabs y asevera welcome; falla si el layout de tabs vuelve a redirigir a /login",
+      "Los candados que hoy esperan /login (tabs/__tests__/layout.test.tsx, detail-stack.guard.test.tsx) cambian solo donde la spec lo declara, y el resto sigue verde",
+      "Cold start sin sesion sigue en welcome y con sesion en home: tests de #118 verdes sin cambio; suite movil verde medida sin pipe",
+      "Gate humano: smoke en dev build de Android con casilla propia"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/app/(tabs)/_layout.tsx",
+      "mobile-pet-tracker/src/app/(tabs)/__tests__/layout.test.tsx",
+      "mobile-pet-tracker/src/app/__tests__/detail-stack.guard.test.tsx"
+    ]
+  },
+  {
+    "id": 150,
+    "name": "mobile-source-locks-strip-comments",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Registrada el 2026-10-05 por decision del humano al cerrar #118. Es la obs. 1 de la ronda 3 del reviewer de #118 (progress/review_mobile-welcome-splash.md, Ronda 3 §4 y §Observaciones). Los candados de texto que leen el fuente con readFileSync no quitan comentarios: en src/screens/welcome/index.test.tsx (it de R10), comentar `reduceMotion: ReduceMotion.Never,` en el fade (sonda Y1) o `duration: WELCOME_ENTRANCE_MS,` en el withTiming de translateY (sonda Y1b) deja la suite en 28/28. El reviewer valido fuera del arbol que quitar comentarios con .replace(/\\/\\*[\\s\\S]*?\\*\\//g, '').replace(/\\/\\/.*$/gm, '') (precedente: src/__tests__/consistency-classnames.test.ts, que lo hace para evitar falsos positivos) vuelve rojas Y1 e Y1b y deja HEAD y las sondas declaradas igual. Limites: solo esta medido en welcome R10. readSource no es un helper compartido: son cuatro funciones locales con ese nombre (pet-hero-header.test.tsx, legibility-classnames.test.ts, consistency-classnames.test.ts, welcome/index.test.tsx), y 21 ficheros de test usan readFileSync (grep en d6ba857a). No todos son candados de presencia: en algunos quitar comentarios no cambia nada, y el //.*$ recortaria cadenas que contengan ://, cosa que la spec mide fichero a fichero. La spec decide el alcance (solo welcome R10, o cada candado de presencia donde una sonda comentada quede verde) y lo justifica con sondas medidas, no con el recuento de este registro. Cero cambio en produccion. Depende del merge de #118 (PR #193): welcome/index.test.tsx solo existe ahi.",
+    "acceptance_criteria": [
+      "Con Y1 o Y1b plantada en src/screens/welcome/index.tsx, un it de R10 FALLA por asercion",
+      "Cada fichero que la spec incluya trae una sonda comentada que antes quedaba verde y ahora cae; los que excluya quedan excluidos por escrito",
+      "HEAD y las sondas declaradas por las specs previas no cambian de resultado; suite movil verde medida sin pipe; delta de tests declarado",
+      "Cero cambio en produccion"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/screens/welcome/index.test.tsx"
+    ]
   }
 ]

@@ -7587,6 +7587,8 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
 - Cierre: #118 `done`, Notion `Estado del gate` = Implementado y `Rol actual`
   = Completado, PR a `main` pendiente de merge humano. Móvil 93/2007 →
   94/2039 (+1 suite, +32 tests) sobre `ee715533`, `./init.sh` exit 0.
-- Deuda sin registrar como feature (decide el humano): S8 (cerrar sesión
-  aterriza en login) y obs. 1 del reviewer (los candados `readSource` no
-  quitan comentarios).
+- Deuda registrada como feature por decisión del humano (2026-10-05): S8
+  (cerrar sesión aterriza en login) es #149 `mobile-sign-out-lands-on-welcome`
+  y obs. 1 del reviewer (los candados `readSource` no quitan comentarios) es
+  #150 `mobile-source-locks-strip-comments`. Las dos dependen del merge de
+  esta PR.
