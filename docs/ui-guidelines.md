@@ -47,11 +47,19 @@ Tres límites, no negociables:
    humo que corre el humano en Android (dev build o Expo Go según la
    feature). El checklist de la skill sirve como guion de esa prueba, no
    como comando a ejecutar.
-3. **`appllama-usage` no se instala.** Depende del MCP de pago
-   `mcp.appllama.io`. Si algún día se contrata, la fase "estudiar 20-30
-   pantallas reales antes de diseñar" pasa a estar disponible; hasta
-   entonces esa fase se sustituye por el diseño de Figma del proyecto y las
-   decisiones fijas de abajo.
+3. **`appllama-usage` sí está disponible, pero solo en Claude Code.** El
+   MCP `mcp.appllama.io` se contrató el 2026-10-04 (plan Pro: 1500 créditos
+   al mes, cada llamada gasta uno, `get_credits` es gratis) y la skill
+   `appllama-usage` está instalada en Claude. La fase «estudiar 20-30
+   pantallas reales antes de diseñar» la corre el **leader** antes de
+   lanzar al `spec_author` y deja el resultado en
+   `progress/explore_<tema>.md` con ids durables de app y pantalla (las URL
+   de imagen caducan en una hora, así que nunca se enlazan). Del material se
+   toma el patrón, no los píxeles; se ignora la marca de agua y no se barre
+   el catálogo. **Codex no tiene el MCP** (mismo hueco que B5): el handoff
+   le pasa el fichero de explore y la spec, nunca le pide que investigue.
+   El primer explore de este tipo es `progress/explore_ui-appllama.md`
+   (#115-#119).
 
 ## Decisiones fijas de este repo (no re-litigar)
 

@@ -682,3 +682,20 @@ describe('#105 R15: meals history keeps the approved styling boundaries', () => 
     expect(violations).toEqual([]);
   });
 });
+
+describe('#118 R11: la bienvenida no mete drift de estilo', () => {
+  const featureFiles = ['src/app/welcome.tsx', 'src/screens/welcome/index.tsx'];
+
+  it('mantiene sus ficheros sin escapes de estilo literales', () => {
+    const violations = featureFiles.flatMap((relativePath) => {
+      const source = readFileSync(join(projectRoot, relativePath), 'utf8');
+      expect(source).not.toMatch(/expo-linear-gradient|expo-symbols/);
+      expect(source).not.toMatch(/\buseThemeColor\b|\p{Extended_Pictographic}/u);
+      return MEALS_BAR_STYLE_ESCAPES.test(source) ||
+        /\brounded-(?:2xl|lg|md|sm)\b|text-accent(?![-\w])/.test(source)
+        ? [relativePath]
+        : [];
+    });
+    expect(violations).toEqual([]);
+  });
+});
