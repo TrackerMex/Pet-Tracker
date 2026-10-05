@@ -104,6 +104,9 @@ function RootStack() {
         <Stack.Screen name="pets/[petId]/geofence-editor" options={{ ...headerOptions, title: t('geofenceEditor.title') }} />
         <Stack.Screen name="meals-history" options={{ ...headerOptions, title: t('mealsHistory.mealsHistory') }} />
       </Stack.Protected>
+      <Stack.Protected guard={status !== 'authenticated'}>
+        <Stack.Screen name="welcome" />
+      </Stack.Protected>
     </Stack>
   );
 }
