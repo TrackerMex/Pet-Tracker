@@ -4829,3 +4829,6943 @@ exit=1 (script de registro; AssertionError al exigir status vacío mientras el i
 La secuencia se detuvo al recibir exit=1; no se lanzó ninguna medición dependiente. Los cuatro checks anteriores del alcance pasaron: lista exacta de 4 ficheros, producción sin diff, índice vacío y diff --check exit=0. El status mostrado corresponde al propio registro aún sin añadir al cierre, no a un cambio extra. Se cierra este bloque y se incorpora el registro al mismo commit documental; la limpieza se comprueba después de ese commit, sin volver a escribir en el impl.
 
 Ronda 2: 6 commits test y un cierre documental, 13 casos nuevos y 17 sondas revertidas. 8 suites / 285 tests y global 93 / 2049, typecheck y lint con exit=0. Sin cambios de dependencias ni candados globales. Lista cerrada de cuatro ficheros respetada; el smoke humano sigue sin marcar.
+
+## Ronda 3
+
+Arranque (2026-10-05). H0 de ronda 3: `68ad1bb2`.
+
+```text
+$ pwd
+/home/claude/sites/Pet-Tracker-wt-backend
+$ git branch --show-current
+feature/117-mobile-forgot-password
+$ git rev-parse --short HEAD
+68ad1bb2
+```
+
+Sin skills adicionales: esta ronda cambia solo tests, con helpers y puntos cerrados por E2.
+
+### Anclas de arranque
+
+```text
+$ M=mobile-pet-tracker/src
+$ git diff --quiet 49de71b6 HEAD -- mobile-pet-tracker; echo "exit=$?"
+exit=0
+$ test ! -e mobile-pet-tracker/.expo/types/router.d.ts; echo "exit=$?"
+exit=0
+$ grep -cF "expect(screen.getByTestId('forgot-email')).toBeVisible();" $M/screens/forgot/index.test.tsx
+1
+$ grep -cF "await waitFor(() => expect(screen.getByTestId('forgot-submit')).not.toBeDisabled());" $M/screens/forgot/index.test.tsx
+2
+$ grep -cF "expect(screen.queryByTestId('forgot-resend')).toBeNull();" $M/screens/forgot/index.test.tsx
+3
+$ grep -cF "expect(mockForgotPassword.mock.calls[1][1]).toEqual(mockForgotPassword.mock.calls[0][1]);" $M/screens/forgot/index.test.tsx
+1
+$ grep -cF "expect(screen.queryByTestId('forgot-error')).toBeNull();" $M/screens/forgot/index.test.tsx
+7
+$ grep -cF "await submitForgot();" $M/screens/forgot/index.test.tsx
+9
+$ grep -cF "expect(screen.getByTestId('forgot-email').props.value).toBe('ana@example.com');" $M/screens/forgot/index.test.tsx
+1
+$ grep -cF "async function submitForgot(email = 'ana@example.com') {" $M/screens/forgot/index.test.tsx
+1
+$ grep -cF "const mockForgotPassword = jest.mocked(forgotPassword);" $M/screens/forgot/index.test.tsx
+1
+$ grep -cF "const mockRouter = jest.mocked(router);" $M/screens/forgot/index.test.tsx
+1
+$ grep -cF "describe('#117 R5: enviar pasa la pantalla a «Revisa tu correo»'" $M/screens/forgot/index.test.tsx
+1
+$ grep -cF "describe('#117 R7: cada kind distinto de ok pinta su copy en forgot-error'" $M/screens/forgot/index.test.tsx
+1
+$ grep -cF "describe('#117 R6: reenviar repite la misma petición'" $M/screens/forgot/index.test.tsx
+1
+$ grep -cF "describe('#117 R8: forgot se aparta del teclado en Android'" $M/screens/forgot/index.test.tsx
+1
+$ grep -cF "it('un envío posterior que resuelve ok limpia forgot-error y pasa a «Revisa tu correo»'" $M/screens/forgot/index.test.tsx
+1
+$ grep -cF "it('pinta título, instrucciones y forgot-email editable con sus props de teclado'" $M/screens/forgot/index.test.tsx
+1
+$ grep -cF "it('deshabilita forgot-submit con el correo vacío o solo espacios y lo habilita al escribir'" $M/screens/forgot/index.test.tsx
+1
+$ grep -cF "it('envía el correo recortado una sola vez y deshabilita forgot-submit mientras vuela la petición'" $M/screens/forgot/index.test.tsx
+1
+$ grep -cF "it('tras ok muestra cabecera y cuerpo con el correo, forgot-resend y link-login, y retira forgot-email y forgot-submit'" $M/screens/forgot/index.test.tsx
+1
+$ grep -cF "it('el tile Lock sigue en pie en los dos estados'" $M/screens/forgot/index.test.tsx
+1
+$ grep -cF "('mapea %p a «%s» en forgot-error, seleccionable, y deja el formulario en pie'" $M/screens/forgot/index.test.tsx
+1
+$ grep -cF "it('un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver'" $M/screens/forgot/index.test.tsx
+1
+$ grep -cF "it('un nuevo reenvío retira forgot-error en cuanto arranca y no lo repinta al resolver ok'" $M/screens/forgot/index.test.tsx
+1
+$ grep -cF "it('forgot-resend repite el POST con el mismo correo y se deshabilita mientras vuela'" $M/screens/forgot/index.test.tsx
+1
+$ grep -cF "it('un 429 al reenviar pinta forgot-error sin salir de «Revisa tu correo»'" $M/screens/forgot/index.test.tsx
+1
+$ grep -cF "('un %p al reenviar pinta «%s» en forgot-error sin salir de «Revisa tu correo»'" $M/screens/forgot/index.test.tsx
+1
+$ grep -cF "it('link-login navega a /login sin petición de red'" $M/screens/forgot/index.test.tsx
+1
+$ grep -cF "it('link-login navega a /login también desde «Revisa tu correo», sin petición nueva'" $M/screens/forgot/index.test.tsx
+1
+$ grep -cE "expectFormState|expectSentState|expectForgotError|expectLinkLoginNavigates|lockTile|LOCK_TILE_CLASS" $M/screens/forgot/index.test.tsx
+0
+$ grep -cF "vuelve a fallar pinta el copy del nuevo kind" $M/screens/forgot/index.test.tsx
+0
+$ grep -cF -- "-[" $M/screens/forgot/index.test.tsx
+0
+$ grep -cF "{sent ? t('forgot.checkYourEmail') : t('forgot.forgotPassword')}" $M/screens/forgot/index.tsx
+1
+$ grep -cF "{sent ? t('forgot.sentTo', { email: submittedEmail }) : t('forgot.instructions')}" $M/screens/forgot/index.tsx
+1
+$ grep -cF "{!sent ? (" $M/screens/forgot/index.tsx
+2
+$ grep -cF "{sent ? (" $M/screens/forgot/index.tsx
+1
+$ grep -cF "{error ? (" $M/screens/forgot/index.tsx
+1
+$ grep -cF '<TextField className="w-full">' $M/screens/forgot/index.tsx
+1
+$ grep -cF '<Label className="text-xs font-semibold text-foreground">' $M/screens/forgot/index.tsx
+1
+$ grep -cF 'testID="forgot-email"' $M/screens/forgot/index.tsx
+1
+$ grep -cF 'testID="forgot-submit"' $M/screens/forgot/index.tsx
+1
+$ grep -cF "isDisabled={email.trim() === '' || submitting}" $M/screens/forgot/index.tsx
+1
+$ grep -cF '<Text testID="forgot-error" className="text-danger" selectable>' $M/screens/forgot/index.tsx
+1
+$ grep -cF "<LinkButton testID=\"link-login\" onPress={() => router.push('/login')}>" $M/screens/forgot/index.tsx
+1
+$ grep -cF '</LinkButton>' $M/screens/forgot/index.tsx
+1
+$ grep -cF "{t('forgot.backToSignIn')}" $M/screens/forgot/index.tsx
+1
+$ grep -cF 'className="size-16 items-center justify-center rounded-xl bg-accent-soft"' $M/screens/forgot/index.tsx
+1
+$ grep -cF 'setError(null);' $M/screens/forgot/index.tsx
+1
+$ grep -cF "setError(t('forgot.invalidEmail'));" $M/screens/forgot/index.tsx
+1
+$ grep -cF "setError(t('forgot.tooManyAttempts'));" $M/screens/forgot/index.tsx
+1
+$ grep -cF "setError(t('common.somethingWentWrong'));" $M/screens/forgot/index.tsx
+1
+$ grep -cF "setError(t('common.cannotReachServer'));" $M/screens/forgot/index.tsx
+1
+$ grep -cF '} finally {' $M/screens/forgot/index.tsx
+1
+$ grep -cF 'setSubmitting(false);' $M/screens/forgot/index.tsx
+1
+$ grep -cF 'setEmail(' $M/screens/forgot/index.tsx
+0
+```
+
+56 anclas verificadas; todas coinciden.
+
+### Base medida
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx > /tmp/117-r3-base.log 2>&1; echo "exit=$?"
+Test Suites: 1 passed, 1 total
+Tests:       29 passed, 29 total
+Snapshots:   0 total
+Time:        7.477 s
+exit=0
+```
+
+Lecturas completas: requirements.md §E2 (E2.1–E2.7), tasks.md §E2 (T19–T21, notas y No hacer), review §Ronda 2 y §Barrido previo a la firma de E2 con su Remedición, suite y producción actuales; convención de esperas sobre el árbol.
+
+### Generación de T19 — comprobación del script temporal
+
+`python3 /tmp/117-r3-build.py T19`: exit=1 antes de TEST.write_text; ninguna edición del test ni medición dependiente. La validación leía l[1:] de ndiff, conservando el espacio separador de "- ". Expected: 4 espacios de sangría en las tres bajas; Received: 5. Se corrige únicamente el lector temporal a l[2:], conservando el candado de exactamente las tres bajas prescritas. No se modifica ninguna aserción de la suite.
+
+#### T19-verde-inicial
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r3-T19-verde-inicial.json > /tmp/117-r3-T19-verde-inicial.log 2>&1; echo "exit=$?"
+Test Suites: 1 passed, 1 total
+Tests:       30 passed, 30 total
+Snapshots:   0 total
+Time:        6.999 s, estimated 8 s
+exit=0
+```
+
+#### T19 — X-a
+
+Sonda temporal en `mobile-pet-tracker/src/screens/forgot/index.tsx`, sin staging.
+
+#### X-a
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r3-X-a.json > /tmp/117-r3-X-a.log 2>&1; echo "exit=$?"
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 28 passed, 30 total
+Snapshots:   0 total
+Time:        8.341 s
+exit=1
+```
+
+`#117 R5: enviar pasa la pantalla a «Revisa tu correo» envía el correo recortado una sola vez y deshabilita forgot-submit mientras vuela la petición`
+
+```text
+Error: expect(instance).toHaveTextContent()
+
+Expected instance to have text content:
+  Recuperar contraseña
+Received:
+  Revisa tu correo
+    at toHaveTextContent (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:186:46)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:185:31)
+    at Object.expectFormState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:209:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver`
+
+```text
+Error: expect(instance).toHaveTextContent()
+
+Expected instance to have text content:
+  Recuperar contraseña
+Received:
+  Revisa tu correo
+    at toHaveTextContent (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:186:46)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:185:31)
+    at Object.expectFormState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:313:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+| Sonda | Cada it que cayó | Modo medido / matcher / Expected y Received | Correspondencia con la fila |
+|---|---|---|---|
+| X-a | `envía el correo recortado una sola vez y deshabilita forgot-submit mientras vuela la petición` | aserción: Error: expect(instance).toHaveTextContent()<br><br>Expected instance to have text content:<br>  Recuperar contraseña<br>Received:<br>  Revisa tu correo<br>    at toHaveTextContent (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:186:46)<br>    at Generator.next (<anonymous>) | exigido |
+| X-a | `un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver` | aserción: Error: expect(instance).toHaveTextContent()<br><br>Expected instance to have text content:<br>  Recuperar contraseña<br>Received:<br>  Revisa tu correo<br>    at toHaveTextContent (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:186:46)<br>    at Generator.next (<anonymous>) | exigido |
+
+| Debe seguir verde | Estado medido |
+|---|---|
+| — | La fila no prescribe it verde |
+
+Todos los it exigidos cayeron; resultado apto para continuar según la regla de E2.
+
+```text
+$ git checkout HEAD -- mobile-pet-tracker/src/screens/forgot/index.tsx
+exit=0
+$ git diff --quiet -- mobile-pet-tracker/src/screens/forgot/index.tsx; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+```
+
+#### T19 — X-b
+
+Sonda temporal en `mobile-pet-tracker/src/screens/forgot/index.tsx`, sin staging.
+
+#### X-b
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r3-X-b.json > /tmp/117-r3-X-b.log 2>&1; echo "exit=$?"
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 28 passed, 30 total
+Snapshots:   0 total
+Time:        9.929 s
+exit=1
+```
+
+`#117 R5: enviar pasa la pantalla a «Revisa tu correo» envía el correo recortado una sola vez y deshabilita forgot-submit mientras vuela la petición`
+
+```text
+Error: expect(instance).toHaveTextContent()
+
+Expected instance to have text content:
+  Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.
+Received:
+  Si existe una cuenta para , te enviamos un enlace para restablecer tu contraseña. Revisa tu bandeja de entrada y la carpeta de spam.
+    at toHaveTextContent (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:187:45)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:185:31)
+    at Object.expectFormState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:209:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver`
+
+```text
+Error: expect(instance).toHaveTextContent()
+
+Expected instance to have text content:
+  Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.
+Received:
+  Si existe una cuenta para , te enviamos un enlace para restablecer tu contraseña. Revisa tu bandeja de entrada y la carpeta de spam.
+    at toHaveTextContent (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:187:45)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:185:31)
+    at Object.expectFormState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:313:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+| Sonda | Cada it que cayó | Modo medido / matcher / Expected y Received | Correspondencia con la fila |
+|---|---|---|---|
+| X-b | `envía el correo recortado una sola vez y deshabilita forgot-submit mientras vuela la petición` | aserción: Error: expect(instance).toHaveTextContent()<br><br>Expected instance to have text content:<br>  Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.<br>Received:<br>  Si existe una cuenta para , te enviamos un enlace para restablecer tu contraseña. Revisa tu bandeja de entrada y la carpeta de spam.<br>    at toHaveTextContent (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:187:45)<br>    at Generator.next (<anonymous>) | exigido |
+| X-b | `un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver` | aserción: Error: expect(instance).toHaveTextContent()<br><br>Expected instance to have text content:<br>  Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.<br>Received:<br>  Si existe una cuenta para , te enviamos un enlace para restablecer tu contraseña. Revisa tu bandeja de entrada y la carpeta de spam.<br>    at toHaveTextContent (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:187:45)<br>    at Generator.next (<anonymous>) | exigido |
+
+| Debe seguir verde | Estado medido |
+|---|---|
+| — | La fila no prescribe it verde |
+
+Todos los it exigidos cayeron; resultado apto para continuar según la regla de E2.
+
+```text
+$ git checkout HEAD -- mobile-pet-tracker/src/screens/forgot/index.tsx
+exit=0
+$ git diff --quiet -- mobile-pet-tracker/src/screens/forgot/index.tsx; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+```
+
+#### T19 — X-c
+
+Sonda temporal en `mobile-pet-tracker/src/screens/forgot/index.tsx`, sin staging.
+
+#### X-c
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r3-X-c.json > /tmp/117-r3-X-c.log 2>&1; echo "exit=$?"
+Test Suites: 1 failed, 1 total
+Tests:       7 failed, 23 passed, 30 total
+Snapshots:   0 total
+Time:        12.68 s
+exit=1
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error mapea {"errors": [Array], "kind": "validation"} a «Ingresa un correo electrónico válido» en forgot-error, seleccionable, y deja el formulario en pie`
+
+```text
+Error: expect(instance).toHaveTextContent()
+
+Expected instance to have text content:
+  Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.
+Received:
+  Ingresa un correo electrónico válido
+    at toHaveTextContent (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:187:45)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:185:31)
+    at expectFormState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:265:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error mapea {"kind": "rate-limited"} a «Demasiados intentos. Inténtalo más tarde.» en forgot-error, seleccionable, y deja el formulario en pie`
+
+```text
+Error: expect(instance).toHaveTextContent()
+
+Expected instance to have text content:
+  Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.
+Received:
+  Demasiados intentos. Inténtalo más tarde.
+    at toHaveTextContent (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:187:45)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:185:31)
+    at expectFormState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:265:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error mapea {"kind": "error"} a «Algo salió mal» en forgot-error, seleccionable, y deja el formulario en pie`
+
+```text
+Error: expect(instance).toHaveTextContent()
+
+Expected instance to have text content:
+  Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.
+Received:
+  Algo salió mal
+    at toHaveTextContent (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:187:45)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:185:31)
+    at expectFormState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:265:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error mapea {"kind": "unreachable", "message": "network down"} a «No se pudo conectar con el servidor» en forgot-error, seleccionable, y deja el formulario en pie`
+
+```text
+Error: expect(instance).toHaveTextContent()
+
+Expected instance to have text content:
+  Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.
+Received:
+  No se pudo conectar con el servidor
+    at toHaveTextContent (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:187:45)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:185:31)
+    at expectFormState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:265:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error mapea {"kind": "missing-config"} a «Algo salió mal» en forgot-error, seleccionable, y deja el formulario en pie`
+
+```text
+Error: expect(instance).toHaveTextContent()
+
+Expected instance to have text content:
+  Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.
+Received:
+  Algo salió mal
+    at toHaveTextContent (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:187:45)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:185:31)
+    at expectFormState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:265:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error un reintento desde el formulario que vuelve a fallar pinta el copy del nuevo kind`
+
+```text
+Error: expect(instance).toHaveTextContent()
+
+Expected instance to have text content:
+  Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.
+Received:
+  Demasiados intentos. Inténtalo más tarde.
+    at toHaveTextContent (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:187:45)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:185:31)
+    at Object.expectFormState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:282:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver`
+
+```text
+Error: expect(instance).toHaveTextContent()
+
+Expected instance to have text content:
+  Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.
+Received:
+  Algo salió mal
+    at toHaveTextContent (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:187:45)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:185:31)
+    at Object.expectFormState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:307:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+| Sonda | Cada it que cayó | Modo medido / matcher / Expected y Received | Correspondencia con la fila |
+|---|---|---|---|
+| X-c | `mapea {"errors": [Array], "kind": "validation"} a «Ingresa un correo electrónico válido» en forgot-error, seleccionable, y deja el formulario en pie` | aserción: Error: expect(instance).toHaveTextContent()<br><br>Expected instance to have text content:<br>  Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.<br>Received:<br>  Ingresa un correo electrónico válido<br>    at toHaveTextContent (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:187:45)<br>    at Generator.next (<anonymous>) | exigido |
+| X-c | `mapea {"kind": "rate-limited"} a «Demasiados intentos. Inténtalo más tarde.» en forgot-error, seleccionable, y deja el formulario en pie` | aserción: Error: expect(instance).toHaveTextContent()<br><br>Expected instance to have text content:<br>  Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.<br>Received:<br>  Demasiados intentos. Inténtalo más tarde.<br>    at toHaveTextContent (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:187:45)<br>    at Generator.next (<anonymous>) | exigido |
+| X-c | `mapea {"kind": "error"} a «Algo salió mal» en forgot-error, seleccionable, y deja el formulario en pie` | aserción: Error: expect(instance).toHaveTextContent()<br><br>Expected instance to have text content:<br>  Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.<br>Received:<br>  Algo salió mal<br>    at toHaveTextContent (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:187:45)<br>    at Generator.next (<anonymous>) | exigido |
+| X-c | `mapea {"kind": "unreachable", "message": "network down"} a «No se pudo conectar con el servidor» en forgot-error, seleccionable, y deja el formulario en pie` | aserción: Error: expect(instance).toHaveTextContent()<br><br>Expected instance to have text content:<br>  Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.<br>Received:<br>  No se pudo conectar con el servidor<br>    at toHaveTextContent (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:187:45)<br>    at Generator.next (<anonymous>) | exigido |
+| X-c | `mapea {"kind": "missing-config"} a «Algo salió mal» en forgot-error, seleccionable, y deja el formulario en pie` | aserción: Error: expect(instance).toHaveTextContent()<br><br>Expected instance to have text content:<br>  Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.<br>Received:<br>  Algo salió mal<br>    at toHaveTextContent (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:187:45)<br>    at Generator.next (<anonymous>) | exigido |
+| X-c | `un reintento desde el formulario que vuelve a fallar pinta el copy del nuevo kind` | aserción: Error: expect(instance).toHaveTextContent()<br><br>Expected instance to have text content:<br>  Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.<br>Received:<br>  Demasiados intentos. Inténtalo más tarde.<br>    at toHaveTextContent (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:187:45)<br>    at Generator.next (<anonymous>) | exigido |
+| X-c | `un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver` | aserción: Error: expect(instance).toHaveTextContent()<br><br>Expected instance to have text content:<br>  Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.<br>Received:<br>  Algo salió mal<br>    at toHaveTextContent (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:187:45)<br>    at Generator.next (<anonymous>) | exigido |
+
+| Debe seguir verde | Estado medido |
+|---|---|
+| — | La fila no prescribe it verde |
+
+Todos los it exigidos cayeron; resultado apto para continuar según la regla de E2.
+
+```text
+$ git checkout HEAD -- mobile-pet-tracker/src/screens/forgot/index.tsx
+exit=0
+$ git diff --quiet -- mobile-pet-tracker/src/screens/forgot/index.tsx; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+```
+
+#### T19 — X-d
+
+Sonda temporal en `mobile-pet-tracker/src/screens/forgot/index.tsx`, sin staging.
+
+#### X-d
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r3-X-d.json > /tmp/117-r3-X-d.log 2>&1; echo "exit=$?"
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 28 passed, 30 total
+Snapshots:   0 total
+Time:        9.689 s, estimated 13 s
+exit=1
+```
+
+`#117 R5: enviar pasa la pantalla a «Revisa tu correo» envía el correo recortado una sola vez y deshabilita forgot-submit mientras vuela la petición`
+
+```text
+Error: Unable to find an element with testID: link-login
+
+<RNCSafeAreaProvider>
+  <View
+    testID="screen-forgot"
+  >
+    <RCTScrollView
+      testID="forgot-form"
+    >
+      <View>
+        <View>
+          <RNSVGSvgView>
+            <RNSVGGroup>
+              <RNSVGPath />
+            </RNSVGGroup>
+          </RNSVGSvgView>
+        </View>
+        <Text
+          testID="forgot-title"
+        >
+          Recuperar contraseña
+        </Text>
+        <Text
+          testID="forgot-body"
+        >
+          Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.
+        </Text>
+        <View>
+          <View
+            accessible={true}
+          >
+            <Text>
+              Correo electrónico
+            </Text>
+          </View>
+          <TextInput
+            editable={true}
+            testID="forgot-email"
+            value="  Ana@Example.com "
+          />
+        </View>
+        <View
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "disabled": true,
+            }
+          }
+          accessible={true}
+          testID="forgot-submit"
+        >
+          <View
+            pointerEvents="none"
+            style={
+              {
+                "opacity": 0,
+              }
+            }
+          />
+          <Text>
+            Enviar enlace de recuperación
+          </Text>
+        </View>
+      </View>
+    </RCTScrollView>
+  </View>
+</RNCSafeAreaProvider>
+    at getByTestId (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:192:17)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:185:31)
+    at Object.expectFormState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:209:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver`
+
+```text
+Error: Unable to find an element with testID: link-login
+
+<RNCSafeAreaProvider>
+  <View
+    testID="screen-forgot"
+  >
+    <RCTScrollView
+      testID="forgot-form"
+    >
+      <View>
+        <View>
+          <RNSVGSvgView>
+            <RNSVGGroup>
+              <RNSVGPath />
+            </RNSVGGroup>
+          </RNSVGSvgView>
+        </View>
+        <Text
+          testID="forgot-title"
+        >
+          Recuperar contraseña
+        </Text>
+        <Text
+          testID="forgot-body"
+        >
+          Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.
+        </Text>
+        <View>
+          <View
+            accessible={true}
+          >
+            <Text>
+              Correo electrónico
+            </Text>
+          </View>
+          <TextInput
+            editable={true}
+            testID="forgot-email"
+            value="  Ana@Example.com "
+          />
+        </View>
+        <View
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "disabled": true,
+            }
+          }
+          accessible={true}
+          testID="forgot-submit"
+        >
+          <View
+            pointerEvents="none"
+            style={
+              {
+                "opacity": 0,
+              }
+            }
+          />
+          <Text>
+            Enviar enlace de recuperación
+          </Text>
+        </View>
+      </View>
+    </RCTScrollView>
+  </View>
+</RNCSafeAreaProvider>
+    at getByTestId (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:192:17)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:185:31)
+    at Object.expectFormState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:313:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+| Sonda | Cada it que cayó | Modo medido / matcher / Expected y Received | Correspondencia con la fila |
+|---|---|---|---|
+| X-d | `envía el correo recortado una sola vez y deshabilita forgot-submit mientras vuela la petición` | consulta: Error: Unable to find an element with testID: link-login<br><br><RNCSafeAreaProvider><br>  <View | exigido |
+| X-d | `un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver` | consulta: Error: Unable to find an element with testID: link-login<br><br><RNCSafeAreaProvider><br>  <View | exigido |
+
+| Debe seguir verde | Estado medido |
+|---|---|
+| `link-login navega a /login sin petición de red` | passed |
+| `link-login navega a /login también desde «Revisa tu correo», sin petición nueva` | passed |
+
+Todos los it exigidos cayeron; resultado apto para continuar según la regla de E2.
+
+```text
+$ git checkout HEAD -- mobile-pet-tracker/src/screens/forgot/index.tsx
+exit=0
+$ git diff --quiet -- mobile-pet-tracker/src/screens/forgot/index.tsx; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+```
+
+#### T19 — X-e
+
+Sonda temporal en `mobile-pet-tracker/src/screens/forgot/index.tsx`, sin staging.
+
+#### X-e
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r3-X-e.json > /tmp/117-r3-X-e.log 2>&1; echo "exit=$?"
+Test Suites: 1 failed, 1 total
+Tests:       7 failed, 23 passed, 30 total
+Snapshots:   0 total
+Time:        9.562 s, estimated 10 s
+exit=1
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error mapea {"errors": [Array], "kind": "validation"} a «Ingresa un correo electrónico válido» en forgot-error, seleccionable, y deja el formulario en pie`
+
+```text
+Error: Unable to find an element with testID: link-login
+
+<RNCSafeAreaProvider>
+  <View
+    testID="screen-forgot"
+  >
+    <RCTScrollView
+      testID="forgot-form"
+    >
+      <View>
+        <View>
+          <RNSVGSvgView>
+            <RNSVGGroup>
+              <RNSVGPath />
+            </RNSVGGroup>
+          </RNSVGSvgView>
+        </View>
+        <Text
+          testID="forgot-title"
+        >
+          Recuperar contraseña
+        </Text>
+        <Text
+          testID="forgot-body"
+        >
+          Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.
+        </Text>
+        <View>
+          <View
+            accessible={true}
+          >
+            <Text>
+              Correo electrónico
+            </Text>
+          </View>
+          <TextInput
+            editable={true}
+            testID="forgot-email"
+            value="  Ana@Example.com "
+          />
+        </View>
+        <Text
+          testID="forgot-error"
+        >
+          Ingresa un correo electrónico válido
+        </Text>
+        <View
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "disabled": false,
+            }
+          }
+          accessible={true}
+          testID="forgot-submit"
+        >
+          <View
+            pointerEvents="none"
+            style={
+              {
+                "opacity": 0,
+              }
+            }
+          />
+          <Text>
+            Enviar enlace de recuperación
+          </Text>
+        </View>
+      </View>
+    </RCTScrollView>
+  </View>
+</RNCSafeAreaProvider>
+    at getByTestId (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:192:17)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:185:31)
+    at expectFormState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:265:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error mapea {"kind": "rate-limited"} a «Demasiados intentos. Inténtalo más tarde.» en forgot-error, seleccionable, y deja el formulario en pie`
+
+```text
+Error: Unable to find an element with testID: link-login
+
+<RNCSafeAreaProvider>
+  <View
+    testID="screen-forgot"
+  >
+    <RCTScrollView
+      testID="forgot-form"
+    >
+      <View>
+        <View>
+          <RNSVGSvgView>
+            <RNSVGGroup>
+              <RNSVGPath />
+            </RNSVGGroup>
+          </RNSVGSvgView>
+        </View>
+        <Text
+          testID="forgot-title"
+        >
+          Recuperar contraseña
+        </Text>
+        <Text
+          testID="forgot-body"
+        >
+          Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.
+        </Text>
+        <View>
+          <View
+            accessible={true}
+          >
+            <Text>
+              Correo electrónico
+            </Text>
+          </View>
+          <TextInput
+            editable={true}
+            testID="forgot-email"
+            value="  Ana@Example.com "
+          />
+        </View>
+        <Text
+          testID="forgot-error"
+        >
+          Demasiados intentos. Inténtalo más tarde.
+        </Text>
+        <View
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "disabled": false,
+            }
+          }
+          accessible={true}
+          testID="forgot-submit"
+        >
+          <View
+            pointerEvents="none"
+            style={
+              {
+                "opacity": 0,
+              }
+            }
+          />
+          <Text>
+            Enviar enlace de recuperación
+          </Text>
+        </View>
+      </View>
+    </RCTScrollView>
+  </View>
+</RNCSafeAreaProvider>
+    at getByTestId (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:192:17)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:185:31)
+    at expectFormState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:265:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error mapea {"kind": "error"} a «Algo salió mal» en forgot-error, seleccionable, y deja el formulario en pie`
+
+```text
+Error: Unable to find an element with testID: link-login
+
+<RNCSafeAreaProvider>
+  <View
+    testID="screen-forgot"
+  >
+    <RCTScrollView
+      testID="forgot-form"
+    >
+      <View>
+        <View>
+          <RNSVGSvgView>
+            <RNSVGGroup>
+              <RNSVGPath />
+            </RNSVGGroup>
+          </RNSVGSvgView>
+        </View>
+        <Text
+          testID="forgot-title"
+        >
+          Recuperar contraseña
+        </Text>
+        <Text
+          testID="forgot-body"
+        >
+          Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.
+        </Text>
+        <View>
+          <View
+            accessible={true}
+          >
+            <Text>
+              Correo electrónico
+            </Text>
+          </View>
+          <TextInput
+            editable={true}
+            testID="forgot-email"
+            value="  Ana@Example.com "
+          />
+        </View>
+        <Text
+          testID="forgot-error"
+        >
+          Algo salió mal
+        </Text>
+        <View
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "disabled": false,
+            }
+          }
+          accessible={true}
+          testID="forgot-submit"
+        >
+          <View
+            pointerEvents="none"
+            style={
+              {
+                "opacity": 0,
+              }
+            }
+          />
+          <Text>
+            Enviar enlace de recuperación
+          </Text>
+        </View>
+      </View>
+    </RCTScrollView>
+  </View>
+</RNCSafeAreaProvider>
+    at getByTestId (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:192:17)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:185:31)
+    at expectFormState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:265:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error mapea {"kind": "unreachable", "message": "network down"} a «No se pudo conectar con el servidor» en forgot-error, seleccionable, y deja el formulario en pie`
+
+```text
+Error: Unable to find an element with testID: link-login
+
+<RNCSafeAreaProvider>
+  <View
+    testID="screen-forgot"
+  >
+    <RCTScrollView
+      testID="forgot-form"
+    >
+      <View>
+        <View>
+          <RNSVGSvgView>
+            <RNSVGGroup>
+              <RNSVGPath />
+            </RNSVGGroup>
+          </RNSVGSvgView>
+        </View>
+        <Text
+          testID="forgot-title"
+        >
+          Recuperar contraseña
+        </Text>
+        <Text
+          testID="forgot-body"
+        >
+          Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.
+        </Text>
+        <View>
+          <View
+            accessible={true}
+          >
+            <Text>
+              Correo electrónico
+            </Text>
+          </View>
+          <TextInput
+            editable={true}
+            testID="forgot-email"
+            value="  Ana@Example.com "
+          />
+        </View>
+        <Text
+          testID="forgot-error"
+        >
+          No se pudo conectar con el servidor
+        </Text>
+        <View
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "disabled": false,
+            }
+          }
+          accessible={true}
+          testID="forgot-submit"
+        >
+          <View
+            pointerEvents="none"
+            style={
+              {
+                "opacity": 0,
+              }
+            }
+          />
+          <Text>
+            Enviar enlace de recuperación
+          </Text>
+        </View>
+      </View>
+    </RCTScrollView>
+  </View>
+</RNCSafeAreaProvider>
+    at getByTestId (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:192:17)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:185:31)
+    at expectFormState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:265:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error mapea {"kind": "missing-config"} a «Algo salió mal» en forgot-error, seleccionable, y deja el formulario en pie`
+
+```text
+Error: Unable to find an element with testID: link-login
+
+<RNCSafeAreaProvider>
+  <View
+    testID="screen-forgot"
+  >
+    <RCTScrollView
+      testID="forgot-form"
+    >
+      <View>
+        <View>
+          <RNSVGSvgView>
+            <RNSVGGroup>
+              <RNSVGPath />
+            </RNSVGGroup>
+          </RNSVGSvgView>
+        </View>
+        <Text
+          testID="forgot-title"
+        >
+          Recuperar contraseña
+        </Text>
+        <Text
+          testID="forgot-body"
+        >
+          Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.
+        </Text>
+        <View>
+          <View
+            accessible={true}
+          >
+            <Text>
+              Correo electrónico
+            </Text>
+          </View>
+          <TextInput
+            editable={true}
+            testID="forgot-email"
+            value="  Ana@Example.com "
+          />
+        </View>
+        <Text
+          testID="forgot-error"
+        >
+          Algo salió mal
+        </Text>
+        <View
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "disabled": false,
+            }
+          }
+          accessible={true}
+          testID="forgot-submit"
+        >
+          <View
+            pointerEvents="none"
+            style={
+              {
+                "opacity": 0,
+              }
+            }
+          />
+          <Text>
+            Enviar enlace de recuperación
+          </Text>
+        </View>
+      </View>
+    </RCTScrollView>
+  </View>
+</RNCSafeAreaProvider>
+    at getByTestId (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:192:17)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:185:31)
+    at expectFormState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:265:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error un reintento desde el formulario que vuelve a fallar pinta el copy del nuevo kind`
+
+```text
+Error: Unable to find an element with testID: link-login
+
+<RNCSafeAreaProvider>
+  <View
+    testID="screen-forgot"
+  >
+    <RCTScrollView
+      testID="forgot-form"
+    >
+      <View>
+        <View>
+          <RNSVGSvgView>
+            <RNSVGGroup>
+              <RNSVGPath />
+            </RNSVGGroup>
+          </RNSVGSvgView>
+        </View>
+        <Text
+          testID="forgot-title"
+        >
+          Recuperar contraseña
+        </Text>
+        <Text
+          testID="forgot-body"
+        >
+          Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.
+        </Text>
+        <View>
+          <View
+            accessible={true}
+          >
+            <Text>
+              Correo electrónico
+            </Text>
+          </View>
+          <TextInput
+            editable={true}
+            testID="forgot-email"
+            value="ana@example.com"
+          />
+        </View>
+        <Text
+          testID="forgot-error"
+        >
+          Demasiados intentos. Inténtalo más tarde.
+        </Text>
+        <View
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "disabled": false,
+            }
+          }
+          accessible={true}
+          testID="forgot-submit"
+        >
+          <View
+            pointerEvents="none"
+            style={
+              {
+                "opacity": 0,
+              }
+            }
+          />
+          <Text>
+            Enviar enlace de recuperación
+          </Text>
+        </View>
+      </View>
+    </RCTScrollView>
+  </View>
+</RNCSafeAreaProvider>
+    at getByTestId (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:192:17)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:185:31)
+    at Object.expectFormState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:282:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver`
+
+```text
+Error: Unable to find an element with testID: link-login
+
+<RNCSafeAreaProvider>
+  <View
+    testID="screen-forgot"
+  >
+    <RCTScrollView
+      testID="forgot-form"
+    >
+      <View>
+        <View>
+          <RNSVGSvgView>
+            <RNSVGGroup>
+              <RNSVGPath />
+            </RNSVGGroup>
+          </RNSVGSvgView>
+        </View>
+        <Text
+          testID="forgot-title"
+        >
+          Recuperar contraseña
+        </Text>
+        <Text
+          testID="forgot-body"
+        >
+          Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.
+        </Text>
+        <View>
+          <View
+            accessible={true}
+          >
+            <Text>
+              Correo electrónico
+            </Text>
+          </View>
+          <TextInput
+            editable={true}
+            testID="forgot-email"
+            value="  Ana@Example.com "
+          />
+        </View>
+        <Text
+          testID="forgot-error"
+        >
+          Algo salió mal
+        </Text>
+        <View
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "disabled": false,
+            }
+          }
+          accessible={true}
+          testID="forgot-submit"
+        >
+          <View
+            pointerEvents="none"
+            style={
+              {
+                "opacity": 0,
+              }
+            }
+          />
+          <Text>
+            Enviar enlace de recuperación
+          </Text>
+        </View>
+      </View>
+    </RCTScrollView>
+  </View>
+</RNCSafeAreaProvider>
+    at getByTestId (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:192:17)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:185:31)
+    at Object.expectFormState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:307:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+| Sonda | Cada it que cayó | Modo medido / matcher / Expected y Received | Correspondencia con la fila |
+|---|---|---|---|
+| X-e | `mapea {"errors": [Array], "kind": "validation"} a «Ingresa un correo electrónico válido» en forgot-error, seleccionable, y deja el formulario en pie` | consulta: Error: Unable to find an element with testID: link-login<br><br><RNCSafeAreaProvider><br>  <View | exigido |
+| X-e | `mapea {"kind": "rate-limited"} a «Demasiados intentos. Inténtalo más tarde.» en forgot-error, seleccionable, y deja el formulario en pie` | consulta: Error: Unable to find an element with testID: link-login<br><br><RNCSafeAreaProvider><br>  <View | exigido |
+| X-e | `mapea {"kind": "error"} a «Algo salió mal» en forgot-error, seleccionable, y deja el formulario en pie` | consulta: Error: Unable to find an element with testID: link-login<br><br><RNCSafeAreaProvider><br>  <View | exigido |
+| X-e | `mapea {"kind": "unreachable", "message": "network down"} a «No se pudo conectar con el servidor» en forgot-error, seleccionable, y deja el formulario en pie` | consulta: Error: Unable to find an element with testID: link-login<br><br><RNCSafeAreaProvider><br>  <View | exigido |
+| X-e | `mapea {"kind": "missing-config"} a «Algo salió mal» en forgot-error, seleccionable, y deja el formulario en pie` | consulta: Error: Unable to find an element with testID: link-login<br><br><RNCSafeAreaProvider><br>  <View | exigido |
+| X-e | `un reintento desde el formulario que vuelve a fallar pinta el copy del nuevo kind` | consulta: Error: Unable to find an element with testID: link-login<br><br><RNCSafeAreaProvider><br>  <View | exigido |
+| X-e | `un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver` | consulta: Error: Unable to find an element with testID: link-login<br><br><RNCSafeAreaProvider><br>  <View | exigido |
+
+| Debe seguir verde | Estado medido |
+|---|---|
+| `link-login navega a /login sin petición de red` | passed |
+| `link-login navega a /login también desde «Revisa tu correo», sin petición nueva` | passed |
+
+Todos los it exigidos cayeron; resultado apto para continuar según la regla de E2.
+
+```text
+$ git checkout HEAD -- mobile-pet-tracker/src/screens/forgot/index.tsx
+exit=0
+$ git diff --quiet -- mobile-pet-tracker/src/screens/forgot/index.tsx; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+```
+
+#### T19 — X-f
+
+Sonda temporal en `mobile-pet-tracker/src/screens/forgot/index.tsx`, sin staging.
+
+#### X-f
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r3-X-f.json > /tmp/117-r3-X-f.log 2>&1; echo "exit=$?"
+Test Suites: 1 failed, 1 total
+Tests:       7 failed, 23 passed, 30 total
+Snapshots:   0 total
+Time:        8.757 s, estimated 10 s
+exit=1
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error mapea {"errors": [Array], "kind": "validation"} a «Ingresa un correo electrónico válido» en forgot-error, seleccionable, y deja el formulario en pie`
+
+```text
+Error: Unable to find an element with text: Correo electrónico
+
+<RNCSafeAreaProvider>
+  <View
+    testID="screen-forgot"
+  >
+    <RCTScrollView
+      testID="forgot-form"
+    >
+      <View>
+        <View>
+          <RNSVGSvgView>
+            <RNSVGGroup>
+              <RNSVGPath />
+            </RNSVGGroup>
+          </RNSVGSvgView>
+        </View>
+        <Text
+          testID="forgot-title"
+        >
+          Recuperar contraseña
+        </Text>
+        <Text
+          testID="forgot-body"
+        >
+          Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.
+        </Text>
+        <View>
+          <TextInput
+            editable={true}
+            testID="forgot-email"
+            value="  Ana@Example.com "
+          />
+        </View>
+        <Text
+          testID="forgot-error"
+        >
+          Ingresa un correo electrónico válido
+        </Text>
+        <View
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "disabled": false,
+            }
+          }
+          accessible={true}
+          testID="forgot-submit"
+        >
+          <View
+            pointerEvents="none"
+            style={
+              {
+                "opacity": 0,
+              }
+            }
+          />
+          <Text>
+            Enviar enlace de recuperación
+          </Text>
+        </View>
+        <View
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "disabled": false,
+            }
+          }
+          accessible={true}
+          testID="link-login"
+        >
+          <Text>
+            Volver al inicio de sesión
+          </Text>
+        </View>
+      </View>
+    </RCTScrollView>
+  </View>
+</RNCSafeAreaProvider>
+    at getByText (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:188:17)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:185:31)
+    at expectFormState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:265:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error mapea {"kind": "rate-limited"} a «Demasiados intentos. Inténtalo más tarde.» en forgot-error, seleccionable, y deja el formulario en pie`
+
+```text
+Error: Unable to find an element with text: Correo electrónico
+
+<RNCSafeAreaProvider>
+  <View
+    testID="screen-forgot"
+  >
+    <RCTScrollView
+      testID="forgot-form"
+    >
+      <View>
+        <View>
+          <RNSVGSvgView>
+            <RNSVGGroup>
+              <RNSVGPath />
+            </RNSVGGroup>
+          </RNSVGSvgView>
+        </View>
+        <Text
+          testID="forgot-title"
+        >
+          Recuperar contraseña
+        </Text>
+        <Text
+          testID="forgot-body"
+        >
+          Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.
+        </Text>
+        <View>
+          <TextInput
+            editable={true}
+            testID="forgot-email"
+            value="  Ana@Example.com "
+          />
+        </View>
+        <Text
+          testID="forgot-error"
+        >
+          Demasiados intentos. Inténtalo más tarde.
+        </Text>
+        <View
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "disabled": false,
+            }
+          }
+          accessible={true}
+          testID="forgot-submit"
+        >
+          <View
+            pointerEvents="none"
+            style={
+              {
+                "opacity": 0,
+              }
+            }
+          />
+          <Text>
+            Enviar enlace de recuperación
+          </Text>
+        </View>
+        <View
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "disabled": false,
+            }
+          }
+          accessible={true}
+          testID="link-login"
+        >
+          <Text>
+            Volver al inicio de sesión
+          </Text>
+        </View>
+      </View>
+    </RCTScrollView>
+  </View>
+</RNCSafeAreaProvider>
+    at getByText (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:188:17)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:185:31)
+    at expectFormState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:265:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error mapea {"kind": "error"} a «Algo salió mal» en forgot-error, seleccionable, y deja el formulario en pie`
+
+```text
+Error: Unable to find an element with text: Correo electrónico
+
+<RNCSafeAreaProvider>
+  <View
+    testID="screen-forgot"
+  >
+    <RCTScrollView
+      testID="forgot-form"
+    >
+      <View>
+        <View>
+          <RNSVGSvgView>
+            <RNSVGGroup>
+              <RNSVGPath />
+            </RNSVGGroup>
+          </RNSVGSvgView>
+        </View>
+        <Text
+          testID="forgot-title"
+        >
+          Recuperar contraseña
+        </Text>
+        <Text
+          testID="forgot-body"
+        >
+          Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.
+        </Text>
+        <View>
+          <TextInput
+            editable={true}
+            testID="forgot-email"
+            value="  Ana@Example.com "
+          />
+        </View>
+        <Text
+          testID="forgot-error"
+        >
+          Algo salió mal
+        </Text>
+        <View
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "disabled": false,
+            }
+          }
+          accessible={true}
+          testID="forgot-submit"
+        >
+          <View
+            pointerEvents="none"
+            style={
+              {
+                "opacity": 0,
+              }
+            }
+          />
+          <Text>
+            Enviar enlace de recuperación
+          </Text>
+        </View>
+        <View
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "disabled": false,
+            }
+          }
+          accessible={true}
+          testID="link-login"
+        >
+          <Text>
+            Volver al inicio de sesión
+          </Text>
+        </View>
+      </View>
+    </RCTScrollView>
+  </View>
+</RNCSafeAreaProvider>
+    at getByText (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:188:17)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:185:31)
+    at expectFormState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:265:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error mapea {"kind": "unreachable", "message": "network down"} a «No se pudo conectar con el servidor» en forgot-error, seleccionable, y deja el formulario en pie`
+
+```text
+Error: Unable to find an element with text: Correo electrónico
+
+<RNCSafeAreaProvider>
+  <View
+    testID="screen-forgot"
+  >
+    <RCTScrollView
+      testID="forgot-form"
+    >
+      <View>
+        <View>
+          <RNSVGSvgView>
+            <RNSVGGroup>
+              <RNSVGPath />
+            </RNSVGGroup>
+          </RNSVGSvgView>
+        </View>
+        <Text
+          testID="forgot-title"
+        >
+          Recuperar contraseña
+        </Text>
+        <Text
+          testID="forgot-body"
+        >
+          Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.
+        </Text>
+        <View>
+          <TextInput
+            editable={true}
+            testID="forgot-email"
+            value="  Ana@Example.com "
+          />
+        </View>
+        <Text
+          testID="forgot-error"
+        >
+          No se pudo conectar con el servidor
+        </Text>
+        <View
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "disabled": false,
+            }
+          }
+          accessible={true}
+          testID="forgot-submit"
+        >
+          <View
+            pointerEvents="none"
+            style={
+              {
+                "opacity": 0,
+              }
+            }
+          />
+          <Text>
+            Enviar enlace de recuperación
+          </Text>
+        </View>
+        <View
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "disabled": false,
+            }
+          }
+          accessible={true}
+          testID="link-login"
+        >
+          <Text>
+            Volver al inicio de sesión
+          </Text>
+        </View>
+      </View>
+    </RCTScrollView>
+  </View>
+</RNCSafeAreaProvider>
+    at getByText (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:188:17)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:185:31)
+    at expectFormState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:265:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error mapea {"kind": "missing-config"} a «Algo salió mal» en forgot-error, seleccionable, y deja el formulario en pie`
+
+```text
+Error: Unable to find an element with text: Correo electrónico
+
+<RNCSafeAreaProvider>
+  <View
+    testID="screen-forgot"
+  >
+    <RCTScrollView
+      testID="forgot-form"
+    >
+      <View>
+        <View>
+          <RNSVGSvgView>
+            <RNSVGGroup>
+              <RNSVGPath />
+            </RNSVGGroup>
+          </RNSVGSvgView>
+        </View>
+        <Text
+          testID="forgot-title"
+        >
+          Recuperar contraseña
+        </Text>
+        <Text
+          testID="forgot-body"
+        >
+          Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.
+        </Text>
+        <View>
+          <TextInput
+            editable={true}
+            testID="forgot-email"
+            value="  Ana@Example.com "
+          />
+        </View>
+        <Text
+          testID="forgot-error"
+        >
+          Algo salió mal
+        </Text>
+        <View
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "disabled": false,
+            }
+          }
+          accessible={true}
+          testID="forgot-submit"
+        >
+          <View
+            pointerEvents="none"
+            style={
+              {
+                "opacity": 0,
+              }
+            }
+          />
+          <Text>
+            Enviar enlace de recuperación
+          </Text>
+        </View>
+        <View
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "disabled": false,
+            }
+          }
+          accessible={true}
+          testID="link-login"
+        >
+          <Text>
+            Volver al inicio de sesión
+          </Text>
+        </View>
+      </View>
+    </RCTScrollView>
+  </View>
+</RNCSafeAreaProvider>
+    at getByText (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:188:17)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:185:31)
+    at expectFormState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:265:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error un reintento desde el formulario que vuelve a fallar pinta el copy del nuevo kind`
+
+```text
+Error: Unable to find an element with text: Correo electrónico
+
+<RNCSafeAreaProvider>
+  <View
+    testID="screen-forgot"
+  >
+    <RCTScrollView
+      testID="forgot-form"
+    >
+      <View>
+        <View>
+          <RNSVGSvgView>
+            <RNSVGGroup>
+              <RNSVGPath />
+            </RNSVGGroup>
+          </RNSVGSvgView>
+        </View>
+        <Text
+          testID="forgot-title"
+        >
+          Recuperar contraseña
+        </Text>
+        <Text
+          testID="forgot-body"
+        >
+          Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.
+        </Text>
+        <View>
+          <TextInput
+            editable={true}
+            testID="forgot-email"
+            value="ana@example.com"
+          />
+        </View>
+        <Text
+          testID="forgot-error"
+        >
+          Demasiados intentos. Inténtalo más tarde.
+        </Text>
+        <View
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "disabled": false,
+            }
+          }
+          accessible={true}
+          testID="forgot-submit"
+        >
+          <View
+            pointerEvents="none"
+            style={
+              {
+                "opacity": 0,
+              }
+            }
+          />
+          <Text>
+            Enviar enlace de recuperación
+          </Text>
+        </View>
+        <View
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "disabled": false,
+            }
+          }
+          accessible={true}
+          testID="link-login"
+        >
+          <Text>
+            Volver al inicio de sesión
+          </Text>
+        </View>
+      </View>
+    </RCTScrollView>
+  </View>
+</RNCSafeAreaProvider>
+    at getByText (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:188:17)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:185:31)
+    at Object.expectFormState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:282:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver`
+
+```text
+Error: Unable to find an element with text: Correo electrónico
+
+<RNCSafeAreaProvider>
+  <View
+    testID="screen-forgot"
+  >
+    <RCTScrollView
+      testID="forgot-form"
+    >
+      <View>
+        <View>
+          <RNSVGSvgView>
+            <RNSVGGroup>
+              <RNSVGPath />
+            </RNSVGGroup>
+          </RNSVGSvgView>
+        </View>
+        <Text
+          testID="forgot-title"
+        >
+          Recuperar contraseña
+        </Text>
+        <Text
+          testID="forgot-body"
+        >
+          Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.
+        </Text>
+        <View>
+          <TextInput
+            editable={true}
+            testID="forgot-email"
+            value="  Ana@Example.com "
+          />
+        </View>
+        <Text
+          testID="forgot-error"
+        >
+          Algo salió mal
+        </Text>
+        <View
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "disabled": false,
+            }
+          }
+          accessible={true}
+          testID="forgot-submit"
+        >
+          <View
+            pointerEvents="none"
+            style={
+              {
+                "opacity": 0,
+              }
+            }
+          />
+          <Text>
+            Enviar enlace de recuperación
+          </Text>
+        </View>
+        <View
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "disabled": false,
+            }
+          }
+          accessible={true}
+          testID="link-login"
+        >
+          <Text>
+            Volver al inicio de sesión
+          </Text>
+        </View>
+      </View>
+    </RCTScrollView>
+  </View>
+</RNCSafeAreaProvider>
+    at getByText (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:188:17)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:185:31)
+    at Object.expectFormState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:307:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+| Sonda | Cada it que cayó | Modo medido / matcher / Expected y Received | Correspondencia con la fila |
+|---|---|---|---|
+| X-f | `mapea {"errors": [Array], "kind": "validation"} a «Ingresa un correo electrónico válido» en forgot-error, seleccionable, y deja el formulario en pie` | consulta: Error: Unable to find an element with text: Correo electrónico<br><br><RNCSafeAreaProvider><br>  <View | exigido |
+| X-f | `mapea {"kind": "rate-limited"} a «Demasiados intentos. Inténtalo más tarde.» en forgot-error, seleccionable, y deja el formulario en pie` | consulta: Error: Unable to find an element with text: Correo electrónico<br><br><RNCSafeAreaProvider><br>  <View | exigido |
+| X-f | `mapea {"kind": "error"} a «Algo salió mal» en forgot-error, seleccionable, y deja el formulario en pie` | consulta: Error: Unable to find an element with text: Correo electrónico<br><br><RNCSafeAreaProvider><br>  <View | exigido |
+| X-f | `mapea {"kind": "unreachable", "message": "network down"} a «No se pudo conectar con el servidor» en forgot-error, seleccionable, y deja el formulario en pie` | consulta: Error: Unable to find an element with text: Correo electrónico<br><br><RNCSafeAreaProvider><br>  <View | exigido |
+| X-f | `mapea {"kind": "missing-config"} a «Algo salió mal» en forgot-error, seleccionable, y deja el formulario en pie` | consulta: Error: Unable to find an element with text: Correo electrónico<br><br><RNCSafeAreaProvider><br>  <View | exigido |
+| X-f | `un reintento desde el formulario que vuelve a fallar pinta el copy del nuevo kind` | consulta: Error: Unable to find an element with text: Correo electrónico<br><br><RNCSafeAreaProvider><br>  <View | exigido |
+| X-f | `un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver` | consulta: Error: Unable to find an element with text: Correo electrónico<br><br><RNCSafeAreaProvider><br>  <View | exigido |
+
+| Debe seguir verde | Estado medido |
+|---|---|
+| `pinta título, instrucciones y forgot-email editable con sus props de teclado` | passed |
+
+Todos los it exigidos cayeron; resultado apto para continuar según la regla de E2.
+
+```text
+$ git checkout HEAD -- mobile-pet-tracker/src/screens/forgot/index.tsx
+exit=0
+$ git diff --quiet -- mobile-pet-tracker/src/screens/forgot/index.tsx; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+```
+
+#### T19 — M3-f
+
+Sonda temporal en `mobile-pet-tracker/src/screens/forgot/index.tsx`, sin staging.
+
+#### M3-f
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r3-M3-f.json > /tmp/117-r3-M3-f.log 2>&1; echo "exit=$?"
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 28 passed, 30 total
+Snapshots:   0 total
+Time:        6.335 s, estimated 9 s
+exit=1
+```
+
+`#117 R5: enviar pasa la pantalla a «Revisa tu correo» envía el correo recortado una sola vez y deshabilita forgot-submit mientras vuela la petición`
+
+```text
+Error: expect(jest.fn()).toHaveBeenCalledTimes(expected)
+
+Expected number of calls: 1
+Received number of calls: 0
+    at toHaveBeenCalledTimes (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:180:27)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver`
+
+```text
+Error: expect(jest.fn()).toHaveBeenCalledTimes(expected)
+
+Expected number of calls: 1
+Received number of calls: 0
+    at toHaveBeenCalledTimes (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:180:27)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+| Sonda | Cada it que cayó | Modo medido / matcher / Expected y Received | Correspondencia con la fila |
+|---|---|---|---|
+| M3-f | `envía el correo recortado una sola vez y deshabilita forgot-submit mientras vuela la petición` | aserción: Error: expect(jest.fn()).toHaveBeenCalledTimes(expected)<br><br>Expected number of calls: 1<br>Received number of calls: 0<br>    at toHaveBeenCalledTimes (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:180:27)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17) | exigido |
+| M3-f | `un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver` | aserción: Error: expect(jest.fn()).toHaveBeenCalledTimes(expected)<br><br>Expected number of calls: 1<br>Received number of calls: 0<br>    at toHaveBeenCalledTimes (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:180:27)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17) | exigido |
+
+| Debe seguir verde | Estado medido |
+|---|---|
+| `link-login navega a /login sin petición de red` | passed |
+| `link-login navega a /login también desde «Revisa tu correo», sin petición nueva` | passed |
+
+Todos los it exigidos cayeron; resultado apto para continuar según la regla de E2.
+
+```text
+$ git checkout HEAD -- mobile-pet-tracker/src/screens/forgot/index.tsx
+exit=0
+$ git diff --quiet -- mobile-pet-tracker/src/screens/forgot/index.tsx; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+```
+
+#### T19 — M3-g
+
+Sonda temporal en `mobile-pet-tracker/src/screens/forgot/index.tsx`, sin staging.
+
+#### M3-g
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r3-M3-g.json > /tmp/117-r3-M3-g.log 2>&1; echo "exit=$?"
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 28 passed, 30 total
+Snapshots:   0 total
+Time:        6.536 s, estimated 7 s
+exit=1
+```
+
+`#117 R5: enviar pasa la pantalla a «Revisa tu correo» envía el correo recortado una sola vez y deshabilita forgot-submit mientras vuela la petición`
+
+```text
+Error: expect(instance).toHaveTextContent()
+
+Expected instance to have text content:
+  Volver al inicio de sesión
+Received:
+  Reenviar
+    at toHaveTextContent (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:192:44)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:185:31)
+    at Object.expectFormState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:209:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver`
+
+```text
+Error: expect(instance).toHaveTextContent()
+
+Expected instance to have text content:
+  Volver al inicio de sesión
+Received:
+  Reenviar
+    at toHaveTextContent (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:192:44)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:185:31)
+    at Object.expectFormState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:313:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+| Sonda | Cada it que cayó | Modo medido / matcher / Expected y Received | Correspondencia con la fila |
+|---|---|---|---|
+| M3-g | `envía el correo recortado una sola vez y deshabilita forgot-submit mientras vuela la petición` | aserción: Error: expect(instance).toHaveTextContent()<br><br>Expected instance to have text content:<br>  Volver al inicio de sesión<br>Received:<br>  Reenviar<br>    at toHaveTextContent (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:192:44)<br>    at Generator.next (<anonymous>) | exigido |
+| M3-g | `un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver` | aserción: Error: expect(instance).toHaveTextContent()<br><br>Expected instance to have text content:<br>  Volver al inicio de sesión<br>Received:<br>  Reenviar<br>    at toHaveTextContent (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:192:44)<br>    at Generator.next (<anonymous>) | exigido |
+
+| Debe seguir verde | Estado medido |
+|---|---|
+| `link-login navega a /login sin petición de red` | passed |
+| `link-login navega a /login también desde «Revisa tu correo», sin petición nueva` | passed |
+
+Todos los it exigidos cayeron; resultado apto para continuar según la regla de E2.
+
+```text
+$ git checkout HEAD -- mobile-pet-tracker/src/screens/forgot/index.tsx
+exit=0
+$ git diff --quiet -- mobile-pet-tracker/src/screens/forgot/index.tsx; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+```
+
+#### T19 — M3-h
+
+Sonda temporal en `mobile-pet-tracker/src/screens/forgot/index.tsx`, sin staging.
+
+#### M3-h
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r3-M3-h.json > /tmp/117-r3-M3-h.log 2>&1; echo "exit=$?"
+Test Suites: 1 failed, 1 total
+Tests:       7 failed, 23 passed, 30 total
+Snapshots:   0 total
+Time:        6.324 s, estimated 7 s
+exit=1
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error mapea {"errors": [Array], "kind": "validation"} a «Ingresa un correo electrónico válido» en forgot-error, seleccionable, y deja el formulario en pie`
+
+```text
+Error: expect(jest.fn()).toHaveBeenCalledTimes(expected)
+
+Expected number of calls: 1
+Received number of calls: 2
+    at toHaveBeenCalledTimes (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:182:30)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error mapea {"kind": "rate-limited"} a «Demasiados intentos. Inténtalo más tarde.» en forgot-error, seleccionable, y deja el formulario en pie`
+
+```text
+Error: expect(jest.fn()).toHaveBeenCalledTimes(expected)
+
+Expected number of calls: 1
+Received number of calls: 2
+    at toHaveBeenCalledTimes (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:182:30)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error mapea {"kind": "error"} a «Algo salió mal» en forgot-error, seleccionable, y deja el formulario en pie`
+
+```text
+Error: expect(jest.fn()).toHaveBeenCalledTimes(expected)
+
+Expected number of calls: 1
+Received number of calls: 2
+    at toHaveBeenCalledTimes (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:182:30)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error mapea {"kind": "unreachable", "message": "network down"} a «No se pudo conectar con el servidor» en forgot-error, seleccionable, y deja el formulario en pie`
+
+```text
+Error: expect(jest.fn()).toHaveBeenCalledTimes(expected)
+
+Expected number of calls: 1
+Received number of calls: 2
+    at toHaveBeenCalledTimes (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:182:30)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error mapea {"kind": "missing-config"} a «Algo salió mal» en forgot-error, seleccionable, y deja el formulario en pie`
+
+```text
+Error: expect(jest.fn()).toHaveBeenCalledTimes(expected)
+
+Expected number of calls: 1
+Received number of calls: 2
+    at toHaveBeenCalledTimes (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:182:30)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error un reintento desde el formulario que vuelve a fallar pinta el copy del nuevo kind`
+
+```text
+Error: expect(jest.fn()).toHaveBeenCalledTimes(expected)
+
+Expected number of calls: 2
+Received number of calls: 3
+    at toHaveBeenCalledTimes (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:182:30)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver`
+
+```text
+Error: expect(jest.fn()).toHaveBeenCalledTimes(expected)
+
+Expected number of calls: 1
+Received number of calls: 2
+    at toHaveBeenCalledTimes (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:182:30)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+| Sonda | Cada it que cayó | Modo medido / matcher / Expected y Received | Correspondencia con la fila |
+|---|---|---|---|
+| M3-h | `mapea {"errors": [Array], "kind": "validation"} a «Ingresa un correo electrónico válido» en forgot-error, seleccionable, y deja el formulario en pie` | aserción: Error: expect(jest.fn()).toHaveBeenCalledTimes(expected)<br><br>Expected number of calls: 1<br>Received number of calls: 2<br>    at toHaveBeenCalledTimes (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:182:30)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17) | exigido |
+| M3-h | `mapea {"kind": "rate-limited"} a «Demasiados intentos. Inténtalo más tarde.» en forgot-error, seleccionable, y deja el formulario en pie` | aserción: Error: expect(jest.fn()).toHaveBeenCalledTimes(expected)<br><br>Expected number of calls: 1<br>Received number of calls: 2<br>    at toHaveBeenCalledTimes (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:182:30)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17) | exigido |
+| M3-h | `mapea {"kind": "error"} a «Algo salió mal» en forgot-error, seleccionable, y deja el formulario en pie` | aserción: Error: expect(jest.fn()).toHaveBeenCalledTimes(expected)<br><br>Expected number of calls: 1<br>Received number of calls: 2<br>    at toHaveBeenCalledTimes (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:182:30)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17) | exigido |
+| M3-h | `mapea {"kind": "unreachable", "message": "network down"} a «No se pudo conectar con el servidor» en forgot-error, seleccionable, y deja el formulario en pie` | aserción: Error: expect(jest.fn()).toHaveBeenCalledTimes(expected)<br><br>Expected number of calls: 1<br>Received number of calls: 2<br>    at toHaveBeenCalledTimes (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:182:30)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17) | exigido |
+| M3-h | `mapea {"kind": "missing-config"} a «Algo salió mal» en forgot-error, seleccionable, y deja el formulario en pie` | aserción: Error: expect(jest.fn()).toHaveBeenCalledTimes(expected)<br><br>Expected number of calls: 1<br>Received number of calls: 2<br>    at toHaveBeenCalledTimes (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:182:30)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17) | exigido |
+| M3-h | `un reintento desde el formulario que vuelve a fallar pinta el copy del nuevo kind` | aserción: Error: expect(jest.fn()).toHaveBeenCalledTimes(expected)<br><br>Expected number of calls: 2<br>Received number of calls: 3<br>    at toHaveBeenCalledTimes (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:182:30)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17) | exigido |
+| M3-h | `un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver` | aserción: Error: expect(jest.fn()).toHaveBeenCalledTimes(expected)<br><br>Expected number of calls: 1<br>Received number of calls: 2<br>    at toHaveBeenCalledTimes (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:182:30)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17) | exigido |
+
+| Debe seguir verde | Estado medido |
+|---|---|
+| `link-login navega a /login sin petición de red` | passed |
+| `link-login navega a /login también desde «Revisa tu correo», sin petición nueva` | passed |
+
+Todos los it exigidos cayeron; resultado apto para continuar según la regla de E2.
+
+```text
+$ git checkout HEAD -- mobile-pet-tracker/src/screens/forgot/index.tsx
+exit=0
+$ git diff --quiet -- mobile-pet-tracker/src/screens/forgot/index.tsx; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+```
+
+#### T19 — M4-f
+
+Sonda temporal en `mobile-pet-tracker/src/screens/forgot/index.tsx`, sin staging.
+
+#### M4-f
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r3-M4-f.json > /tmp/117-r3-M4-f.log 2>&1; echo "exit=$?"
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 28 passed, 30 total
+Snapshots:   0 total
+Time:        6.466 s, estimated 7 s
+exit=1
+```
+
+`#117 R5: enviar pasa la pantalla a «Revisa tu correo» envía el correo recortado una sola vez y deshabilita forgot-submit mientras vuela la petición`
+
+```text
+Error: expect(received).toBeNull()
+
+Received: <View accessibilityRole="button" accessibilityState={{"busy": undefined, "checked": undefined, "disabled": true, "expanded": undefined, "selected": undefined}} accessibilityValue={{"max": undefined, "min": undefined, "now": undefined, "text": undefined}} accessible={true} className="pressable-feedback__root button__root button__root--variant-secondary button__root--size-md disabled:element-disabled w-full rounded-xl" collapsable={false} focusable={true} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"transform": [{"scale": 1}]}}} jestInlineStyle={[{"borderCurve": "continuous"}, [{"borderCurve": "continuous"}, undefined]]} onBlur={[Function onBlur]} onClick={[Function onClick]} onFocus={[Function onFocus]} onLayout={[Function anonymous]} onResponderGrant={[Function onResponderGrant]} onResponderMove={[Function onResponderMove]} onResponderRelease={[Function onResponderRelease]} onResponderTerminate={[Function onResponderTerminate]} onResponderTerminationRequest={[Function onResponderTerminationRequest]} onStartShouldSetResponder={[Function onStartShouldSetResponder]} style={[{"borderCurve": "continuous"}, {"transform": [{"scale": 1}]}, {"borderCurve": "continuous"}, undefined]} testID="forgot-resend"><View className="pressable-feedback__highlight" collapsable={false} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"backgroundColor": "invalid", "opacity": NaN}}} jestInlineStyle={[undefined]} pointerEvents="none" style={[{"backgroundColor": "invalid", "opacity": 0}, undefined]} /><Text className="button__label button__label--variant-secondary button__label--size-md font-bold text-foreground">Reenviar</Text></View>
+    at toBeNull (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:191:49)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:185:31)
+    at Object.expectFormState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:209:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver`
+
+```text
+Error: expect(received).toBeNull()
+
+Received: <View accessibilityRole="button" accessibilityState={{"busy": undefined, "checked": undefined, "disabled": true, "expanded": undefined, "selected": undefined}} accessibilityValue={{"max": undefined, "min": undefined, "now": undefined, "text": undefined}} accessible={true} className="pressable-feedback__root button__root button__root--variant-secondary button__root--size-md disabled:element-disabled w-full rounded-xl" collapsable={false} focusable={true} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"transform": [{"scale": 1}]}}} jestInlineStyle={[{"borderCurve": "continuous"}, [{"borderCurve": "continuous"}, undefined]]} onBlur={[Function onBlur]} onClick={[Function onClick]} onFocus={[Function onFocus]} onLayout={[Function anonymous]} onResponderGrant={[Function onResponderGrant]} onResponderMove={[Function onResponderMove]} onResponderRelease={[Function onResponderRelease]} onResponderTerminate={[Function onResponderTerminate]} onResponderTerminationRequest={[Function onResponderTerminationRequest]} onStartShouldSetResponder={[Function onStartShouldSetResponder]} style={[{"borderCurve": "continuous"}, {"transform": [{"scale": 1}]}, {"borderCurve": "continuous"}, undefined]} testID="forgot-resend"><View className="pressable-feedback__highlight" collapsable={false} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"backgroundColor": "invalid", "opacity": 0}}} jestInlineStyle={[undefined]} pointerEvents="none" style={[{"backgroundColor": "invalid", "opacity": 0}, undefined]} /><Text className="button__label button__label--variant-secondary button__label--size-md font-bold text-foreground">Reenviar</Text></View>
+    at Object.toBeNull (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:312:51)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+| Sonda | Cada it que cayó | Modo medido / matcher / Expected y Received | Correspondencia con la fila |
+|---|---|---|---|
+| M4-f | `envía el correo recortado una sola vez y deshabilita forgot-submit mientras vuela la petición` | aserción: Error: expect(received).toBeNull()<br><br>Received: <View accessibilityRole="button" accessibilityState={{"busy": undefined, "checked": undefined, "disabled": true, "expanded": undefined, "selected": undefined}} accessibilityValue={{"max": undefined, "min": undefined, "now": undefined, "text": undefined}} accessible={true} className="pressable-feedback__root button__root button__root--variant-secondary button__root--size-md disabled:element-disabled w-full rounded-xl" collapsable={false} focusable={true} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"transform": [{"scale": 1}]}}} jestInlineStyle={[{"borderCurve": "continuous"}, [{"borderCurve": "continuous"}, undefined]]} onBlur={[Function onBlur]} onClick={[Function onClick]} onFocus={[Function onFocus]} onLayout={[Function anonymous]} onResponderGrant={[Function onResponderGrant]} onResponderMove={[Function onResponderMove]} onResponderRelease={[Function onResponderRelease]} onResponderTerminate={[Function onResponderTerminate]} onResponderTerminationRequest={[Function onResponderTerminationRequest]} onStartShouldSetResponder={[Function onStartShouldSetResponder]} style={[{"borderCurve": "continuous"}, {"transform": [{"scale": 1}]}, {"borderCurve": "continuous"}, undefined]} testID="forgot-resend"><View className="pressable-feedback__highlight" collapsable={false} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"backgroundColor": "invalid", "opacity": NaN}}} jestInlineStyle={[undefined]} pointerEvents="none" style={[{"backgroundColor": "invalid", "opacity": 0}, undefined]} /><Text className="button__label button__label--variant-secondary button__label--size-md font-bold text-foreground">Reenviar</Text></View><br>    at toBeNull (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:191:49)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/as | exigido |
+| M4-f | `un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver` | aserción: Error: expect(received).toBeNull()<br><br>Received: <View accessibilityRole="button" accessibilityState={{"busy": undefined, "checked": undefined, "disabled": true, "expanded": undefined, "selected": undefined}} accessibilityValue={{"max": undefined, "min": undefined, "now": undefined, "text": undefined}} accessible={true} className="pressable-feedback__root button__root button__root--variant-secondary button__root--size-md disabled:element-disabled w-full rounded-xl" collapsable={false} focusable={true} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"transform": [{"scale": 1}]}}} jestInlineStyle={[{"borderCurve": "continuous"}, [{"borderCurve": "continuous"}, undefined]]} onBlur={[Function onBlur]} onClick={[Function onClick]} onFocus={[Function onFocus]} onLayout={[Function anonymous]} onResponderGrant={[Function onResponderGrant]} onResponderMove={[Function onResponderMove]} onResponderRelease={[Function onResponderRelease]} onResponderTerminate={[Function onResponderTerminate]} onResponderTerminationRequest={[Function onResponderTerminationRequest]} onStartShouldSetResponder={[Function onStartShouldSetResponder]} style={[{"borderCurve": "continuous"}, {"transform": [{"scale": 1}]}, {"borderCurve": "continuous"}, undefined]} testID="forgot-resend"><View className="pressable-feedback__highlight" collapsable={false} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"backgroundColor": "invalid", "opacity": 0}}} jestInlineStyle={[undefined]} pointerEvents="none" style={[{"backgroundColor": "invalid", "opacity": 0}, undefined]} /><Text className="button__label button__label--variant-secondary button__label--size-md font-bold text-foreground">Reenviar</Text></View><br>    at Object.toBeNull (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:312:51)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpe | exigido |
+
+| Debe seguir verde | Estado medido |
+|---|---|
+| — | La fila no prescribe it verde |
+
+Todos los it exigidos cayeron; resultado apto para continuar según la regla de E2.
+
+```text
+$ git checkout HEAD -- mobile-pet-tracker/src/screens/forgot/index.tsx
+exit=0
+$ git diff --quiet -- mobile-pet-tracker/src/screens/forgot/index.tsx; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+```
+
+#### T19 — M4-g
+
+Sonda temporal en `mobile-pet-tracker/src/screens/forgot/index.tsx`, sin staging.
+
+#### M4-g
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r3-M4-g.json > /tmp/117-r3-M4-g.log 2>&1; echo "exit=$?"
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 29 passed, 30 total
+Snapshots:   0 total
+Time:        7.606 s
+exit=1
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error mapea {"errors": [Array], "kind": "validation"} a «Ingresa un correo electrónico válido» en forgot-error, seleccionable, y deja el formulario en pie`
+
+```text
+Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: "  Ana@Example.com "
+Received: "Ana@Example.com"
+    at toBe (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:262:60)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+| Sonda | Cada it que cayó | Modo medido / matcher / Expected y Received | Correspondencia con la fila |
+|---|---|---|---|
+| M4-g | `mapea {"errors": [Array], "kind": "validation"} a «Ingresa un correo electrónico válido» en forgot-error, seleccionable, y deja el formulario en pie` | aserción: Error: expect(received).toBe(expected) // Object.is equality<br><br>Expected: "  Ana@Example.com "<br>Received: "Ana@Example.com"<br>    at toBe (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:262:60)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17) | exigido |
+
+| Debe seguir verde | Estado medido |
+|---|---|
+| `mapea {"kind": "rate-limited"} a «Demasiados intentos. Inténtalo más tarde.» en forgot-error, seleccionable, y deja el formulario en pie` | passed |
+| `mapea {"kind": "error"} a «Algo salió mal» en forgot-error, seleccionable, y deja el formulario en pie` | passed |
+| `mapea {"kind": "unreachable", "message": "network down"} a «No se pudo conectar con el servidor» en forgot-error, seleccionable, y deja el formulario en pie` | passed |
+| `mapea {"kind": "missing-config"} a «Algo salió mal» en forgot-error, seleccionable, y deja el formulario en pie` | passed |
+
+Todos los it exigidos cayeron; resultado apto para continuar según la regla de E2.
+
+```text
+$ git checkout HEAD -- mobile-pet-tracker/src/screens/forgot/index.tsx
+exit=0
+$ git diff --quiet -- mobile-pet-tracker/src/screens/forgot/index.tsx; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+```
+
+#### T19 — M4-h
+
+Sonda temporal en `mobile-pet-tracker/src/screens/forgot/index.tsx`, sin staging.
+
+#### M4-h
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r3-M4-h.json > /tmp/117-r3-M4-h.log 2>&1; echo "exit=$?"
+Test Suites: 1 failed, 1 total
+Tests:       7 failed, 23 passed, 30 total
+Snapshots:   0 total
+Time:        9.148 s
+exit=1
+```
+
+`#117 R5: enviar pasa la pantalla a «Revisa tu correo» envía el correo recortado una sola vez y deshabilita forgot-submit mientras vuela la petición`
+
+```text
+Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: "  Ana@Example.com "
+Received: "Ana@Example.com"
+    at toBe (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:189:58)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:185:31)
+    at Object.expectFormState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:209:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error mapea {"errors": [Array], "kind": "validation"} a «Ingresa un correo electrónico válido» en forgot-error, seleccionable, y deja el formulario en pie`
+
+```text
+Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: "  Ana@Example.com "
+Received: "Ana@Example.com"
+    at toBe (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:262:60)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error mapea {"kind": "rate-limited"} a «Demasiados intentos. Inténtalo más tarde.» en forgot-error, seleccionable, y deja el formulario en pie`
+
+```text
+Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: "  Ana@Example.com "
+Received: "Ana@Example.com"
+    at toBe (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:262:60)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error mapea {"kind": "error"} a «Algo salió mal» en forgot-error, seleccionable, y deja el formulario en pie`
+
+```text
+Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: "  Ana@Example.com "
+Received: "Ana@Example.com"
+    at toBe (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:262:60)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error mapea {"kind": "unreachable", "message": "network down"} a «No se pudo conectar con el servidor» en forgot-error, seleccionable, y deja el formulario en pie`
+
+```text
+Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: "  Ana@Example.com "
+Received: "Ana@Example.com"
+    at toBe (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:262:60)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error mapea {"kind": "missing-config"} a «Algo salió mal» en forgot-error, seleccionable, y deja el formulario en pie`
+
+```text
+Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: "  Ana@Example.com "
+Received: "Ana@Example.com"
+    at toBe (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:262:60)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver`
+
+```text
+Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: "  Ana@Example.com "
+Received: "Ana@Example.com"
+    at toBe (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:189:58)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:185:31)
+    at Object.expectFormState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:307:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+| Sonda | Cada it que cayó | Modo medido / matcher / Expected y Received | Correspondencia con la fila |
+|---|---|---|---|
+| M4-h | `envía el correo recortado una sola vez y deshabilita forgot-submit mientras vuela la petición` | aserción: Error: expect(received).toBe(expected) // Object.is equality<br><br>Expected: "  Ana@Example.com "<br>Received: "Ana@Example.com"<br>    at toBe (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:189:58)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17) | exigido |
+| M4-h | `mapea {"errors": [Array], "kind": "validation"} a «Ingresa un correo electrónico válido» en forgot-error, seleccionable, y deja el formulario en pie` | aserción: Error: expect(received).toBe(expected) // Object.is equality<br><br>Expected: "  Ana@Example.com "<br>Received: "Ana@Example.com"<br>    at toBe (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:262:60)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17) | exigido |
+| M4-h | `mapea {"kind": "rate-limited"} a «Demasiados intentos. Inténtalo más tarde.» en forgot-error, seleccionable, y deja el formulario en pie` | aserción: Error: expect(received).toBe(expected) // Object.is equality<br><br>Expected: "  Ana@Example.com "<br>Received: "Ana@Example.com"<br>    at toBe (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:262:60)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17) | exigido |
+| M4-h | `mapea {"kind": "error"} a «Algo salió mal» en forgot-error, seleccionable, y deja el formulario en pie` | aserción: Error: expect(received).toBe(expected) // Object.is equality<br><br>Expected: "  Ana@Example.com "<br>Received: "Ana@Example.com"<br>    at toBe (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:262:60)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17) | exigido |
+| M4-h | `mapea {"kind": "unreachable", "message": "network down"} a «No se pudo conectar con el servidor» en forgot-error, seleccionable, y deja el formulario en pie` | aserción: Error: expect(received).toBe(expected) // Object.is equality<br><br>Expected: "  Ana@Example.com "<br>Received: "Ana@Example.com"<br>    at toBe (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:262:60)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17) | exigido |
+| M4-h | `mapea {"kind": "missing-config"} a «Algo salió mal» en forgot-error, seleccionable, y deja el formulario en pie` | aserción: Error: expect(received).toBe(expected) // Object.is equality<br><br>Expected: "  Ana@Example.com "<br>Received: "Ana@Example.com"<br>    at toBe (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:262:60)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17) | exigido |
+| M4-h | `un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver` | aserción: Error: expect(received).toBe(expected) // Object.is equality<br><br>Expected: "  Ana@Example.com "<br>Received: "Ana@Example.com"<br>    at toBe (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:189:58)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17) | exigido |
+
+| Debe seguir verde | Estado medido |
+|---|---|
+| `un reintento desde el formulario que vuelve a fallar pinta el copy del nuevo kind` | passed |
+
+Todos los it exigidos cayeron; resultado apto para continuar según la regla de E2.
+
+```text
+$ git checkout HEAD -- mobile-pet-tracker/src/screens/forgot/index.tsx
+exit=0
+$ git diff --quiet -- mobile-pet-tracker/src/screens/forgot/index.tsx; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+```
+
+#### T19 — M4-i
+
+Sonda temporal en `mobile-pet-tracker/src/screens/forgot/index.tsx`, sin staging.
+
+#### M4-i
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r3-M4-i.json > /tmp/117-r3-M4-i.log 2>&1; echo "exit=$?"
+Test Suites: 1 failed, 1 total
+Tests:       5 failed, 25 passed, 30 total
+Snapshots:   0 total
+Time:        7.107 s, estimated 9 s
+exit=1
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error mapea {"errors": [Array], "kind": "validation"} a «Ingresa un correo electrónico válido» en forgot-error, seleccionable, y deja el formulario en pie`
+
+```text
+Error: expect(instance).toBeDisabled()
+
+Received instance is not disabled:
+  <View
+    accessibilityRole="button"
+    accessibilityState={
+      {
+        "disabled": false,
+      }
+    }
+    accessible={true}
+    testID="forgot-submit"
+  />
+    at toBeDisabled (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:267:49)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error mapea {"kind": "rate-limited"} a «Demasiados intentos. Inténtalo más tarde.» en forgot-error, seleccionable, y deja el formulario en pie`
+
+```text
+Error: expect(instance).toBeDisabled()
+
+Received instance is not disabled:
+  <View
+    accessibilityRole="button"
+    accessibilityState={
+      {
+        "disabled": false,
+      }
+    }
+    accessible={true}
+    testID="forgot-submit"
+  />
+    at toBeDisabled (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:267:49)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error mapea {"kind": "error"} a «Algo salió mal» en forgot-error, seleccionable, y deja el formulario en pie`
+
+```text
+Error: expect(instance).toBeDisabled()
+
+Received instance is not disabled:
+  <View
+    accessibilityRole="button"
+    accessibilityState={
+      {
+        "disabled": false,
+      }
+    }
+    accessible={true}
+    testID="forgot-submit"
+  />
+    at toBeDisabled (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:267:49)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error mapea {"kind": "unreachable", "message": "network down"} a «No se pudo conectar con el servidor» en forgot-error, seleccionable, y deja el formulario en pie`
+
+```text
+Error: expect(instance).toBeDisabled()
+
+Received instance is not disabled:
+  <View
+    accessibilityRole="button"
+    accessibilityState={
+      {
+        "disabled": false,
+      }
+    }
+    accessible={true}
+    testID="forgot-submit"
+  />
+    at toBeDisabled (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:267:49)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error mapea {"kind": "missing-config"} a «Algo salió mal» en forgot-error, seleccionable, y deja el formulario en pie`
+
+```text
+Error: expect(instance).toBeDisabled()
+
+Received instance is not disabled:
+  <View
+    accessibilityRole="button"
+    accessibilityState={
+      {
+        "disabled": false,
+      }
+    }
+    accessible={true}
+    testID="forgot-submit"
+  />
+    at toBeDisabled (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:267:49)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+| Sonda | Cada it que cayó | Modo medido / matcher / Expected y Received | Correspondencia con la fila |
+|---|---|---|---|
+| M4-i | `mapea {"errors": [Array], "kind": "validation"} a «Ingresa un correo electrónico válido» en forgot-error, seleccionable, y deja el formulario en pie` | aserción: Error: expect(instance).toBeDisabled()<br><br>Received instance is not disabled:<br>  <View<br>    accessibilityRole="button"<br>    accessibilityState={ | exigido |
+| M4-i | `mapea {"kind": "rate-limited"} a «Demasiados intentos. Inténtalo más tarde.» en forgot-error, seleccionable, y deja el formulario en pie` | aserción: Error: expect(instance).toBeDisabled()<br><br>Received instance is not disabled:<br>  <View<br>    accessibilityRole="button"<br>    accessibilityState={ | exigido |
+| M4-i | `mapea {"kind": "error"} a «Algo salió mal» en forgot-error, seleccionable, y deja el formulario en pie` | aserción: Error: expect(instance).toBeDisabled()<br><br>Received instance is not disabled:<br>  <View<br>    accessibilityRole="button"<br>    accessibilityState={ | exigido |
+| M4-i | `mapea {"kind": "unreachable", "message": "network down"} a «No se pudo conectar con el servidor» en forgot-error, seleccionable, y deja el formulario en pie` | aserción: Error: expect(instance).toBeDisabled()<br><br>Received instance is not disabled:<br>  <View<br>    accessibilityRole="button"<br>    accessibilityState={ | exigido |
+| M4-i | `mapea {"kind": "missing-config"} a «Algo salió mal» en forgot-error, seleccionable, y deja el formulario en pie` | aserción: Error: expect(instance).toBeDisabled()<br><br>Received instance is not disabled:<br>  <View<br>    accessibilityRole="button"<br>    accessibilityState={ | exigido |
+
+| Debe seguir verde | Estado medido |
+|---|---|
+| `deshabilita forgot-submit con el correo vacío o solo espacios y lo habilita al escribir` | passed |
+
+Todos los it exigidos cayeron; resultado apto para continuar según la regla de E2.
+
+```text
+$ git checkout HEAD -- mobile-pet-tracker/src/screens/forgot/index.tsx
+exit=0
+$ git diff --quiet -- mobile-pet-tracker/src/screens/forgot/index.tsx; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+```
+
+#### T19 — M5-h
+
+Sonda temporal en `mobile-pet-tracker/src/screens/forgot/index.tsx`, sin staging.
+
+#### M5-h
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r3-M5-h.json > /tmp/117-r3-M5-h.log 2>&1; echo "exit=$?"
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 28 passed, 30 total
+Snapshots:   0 total
+Time:        7.828 s
+exit=1
+```
+
+`#117 R5: enviar pasa la pantalla a «Revisa tu correo» envía el correo recortado una sola vez y deshabilita forgot-submit mientras vuela la petición`
+
+```text
+Error: expect(received).toBeDefined()
+
+Received: undefined
+    at toBeDefined (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:193:22)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:185:31)
+    at Object.expectFormState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:209:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver`
+
+```text
+Error: expect(received).toBeDefined()
+
+Received: undefined
+    at toBeDefined (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:193:22)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:185:31)
+    at Object.expectFormState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:313:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+| Sonda | Cada it que cayó | Modo medido / matcher / Expected y Received | Correspondencia con la fila |
+|---|---|---|---|
+| M5-h | `envía el correo recortado una sola vez y deshabilita forgot-submit mientras vuela la petición` | aserción: Error: expect(received).toBeDefined()<br><br>Received: undefined<br>    at toBeDefined (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:193:22)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17) | exigido |
+| M5-h | `un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver` | aserción: Error: expect(received).toBeDefined()<br><br>Received: undefined<br>    at toBeDefined (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:193:22)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17) | exigido |
+
+| Debe seguir verde | Estado medido |
+|---|---|
+| `el tile Lock sigue en pie en los dos estados` | passed |
+
+Todos los it exigidos cayeron; resultado apto para continuar según la regla de E2.
+
+```text
+$ git checkout HEAD -- mobile-pet-tracker/src/screens/forgot/index.tsx
+exit=0
+$ git diff --quiet -- mobile-pet-tracker/src/screens/forgot/index.tsx; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+```
+
+#### T19 — M7-k
+
+Sonda temporal en `mobile-pet-tracker/src/screens/forgot/index.tsx`, sin staging.
+
+#### M7-k
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r3-M7-k.json > /tmp/117-r3-M7-k.log 2>&1; echo "exit=$?"
+Test Suites: 1 failed, 1 total
+Tests:       3 failed, 27 passed, 30 total
+Snapshots:   0 total
+Time:        6.521 s, estimated 8 s
+exit=1
+```
+
+`#117 R5: enviar pasa la pantalla a «Revisa tu correo» envía el correo recortado una sola vez y deshabilita forgot-submit mientras vuela la petición`
+
+```text
+Error: expect(received).toBeNull()
+
+Received: <Text className="text-danger" selectable={true} testID="forgot-error" />
+    at toBeNull (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:168:50)
+    at expectForgotError (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:194:3)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:185:31)
+    at Object.expectFormState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:209:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver`
+
+```text
+Error: expect(received).toBeNull()
+
+Received: <Text className="text-danger" selectable={true} testID="forgot-error" />
+    at Object.toBeNull (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:311:50)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error un nuevo reenvío retira forgot-error en cuanto arranca y no lo repinta al resolver ok`
+
+```text
+Error: expect(received).toBeNull()
+
+Received: <Text className="text-danger" selectable={true} testID="forgot-error" />
+    at Object.toBeNull (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:333:50)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+| Sonda | Cada it que cayó | Modo medido / matcher / Expected y Received | Correspondencia con la fila |
+|---|---|---|---|
+| M7-k | `envía el correo recortado una sola vez y deshabilita forgot-submit mientras vuela la petición` | aserción: Error: expect(received).toBeNull()<br><br>Received: <Text className="text-danger" selectable={true} testID="forgot-error" /><br>    at toBeNull (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:168:50)<br>    at expectForgotError (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:194:3)<br>    at Generator.next (<anonymous>) | exigido |
+| M7-k | `un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver` | aserción: Error: expect(received).toBeNull()<br><br>Received: <Text className="text-danger" selectable={true} testID="forgot-error" /><br>    at Object.toBeNull (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:311:50)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17) | exigido |
+| M7-k | `un nuevo reenvío retira forgot-error en cuanto arranca y no lo repinta al resolver ok` | aserción: Error: expect(received).toBeNull()<br><br>Received: <Text className="text-danger" selectable={true} testID="forgot-error" /><br>    at Object.toBeNull (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:333:50)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17) | exigido |
+
+| Debe seguir verde | Estado medido |
+|---|---|
+| `un reintento desde el formulario que vuelve a fallar pinta el copy del nuevo kind` | passed |
+
+Todos los it exigidos cayeron; resultado apto para continuar según la regla de E2.
+
+```text
+$ git checkout HEAD -- mobile-pet-tracker/src/screens/forgot/index.tsx
+exit=0
+$ git diff --quiet -- mobile-pet-tracker/src/screens/forgot/index.tsx; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+```
+
+#### T19 — M7-l
+
+Sonda temporal en `mobile-pet-tracker/src/screens/forgot/index.tsx`, sin staging.
+
+#### M7-l
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r3-M7-l.json > /tmp/117-r3-M7-l.log 2>&1; echo "exit=$?"
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 29 passed, 30 total
+Snapshots:   0 total
+Time:        8.223 s
+exit=1
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error un reintento desde el formulario que vuelve a fallar pinta el copy del nuevo kind`
+
+```text
+Error: expect(instance).not.toBeDisabled()
+
+Received instance is disabled:
+  <View
+    accessibilityRole="button"
+    accessibilityState={
+      {
+        "disabled": true,
+      }
+    }
+    accessible={true}
+    testID="forgot-submit"
+  />
+    at Object.<anonymous> (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:281:18)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+| Sonda | Cada it que cayó | Modo medido / matcher / Expected y Received | Correspondencia con la fila |
+|---|---|---|---|
+| M7-l | `un reintento desde el formulario que vuelve a fallar pinta el copy del nuevo kind` | aserción: Error: expect(instance).not.toBeDisabled()<br><br>Received instance is disabled:<br>  <View<br>    accessibilityRole="button"<br>    accessibilityState={ | exigido |
+
+| Debe seguir verde | Estado medido |
+|---|---|
+| — | La fila no prescribe it verde |
+
+Todos los it exigidos cayeron; resultado apto para continuar según la regla de E2.
+
+```text
+$ git checkout HEAD -- mobile-pet-tracker/src/screens/forgot/index.tsx
+exit=0
+$ git diff --quiet -- mobile-pet-tracker/src/screens/forgot/index.tsx; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+```
+
+#### T19 — M7-m
+
+Sonda temporal en `mobile-pet-tracker/src/screens/forgot/index.tsx`, sin staging.
+
+#### M7-m
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r3-M7-m.json > /tmp/117-r3-M7-m.log 2>&1; echo "exit=$?"
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 29 passed, 30 total
+Snapshots:   0 total
+Time:        15.016 s
+exit=1
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error un reintento desde el formulario que vuelve a fallar pinta el copy del nuevo kind`
+
+```text
+Error: Unable to find an element with testID: forgot-error
+
+<RNCSafeAreaProvider>
+  <View
+    testID="screen-forgot"
+  >
+    <RCTScrollView
+      testID="forgot-form"
+    >
+      <View>
+        <View>
+          <RNSVGSvgView>
+            <RNSVGGroup>
+              <RNSVGPath />
+            </RNSVGGroup>
+          </RNSVGSvgView>
+        </View>
+        <Text
+          testID="forgot-title"
+        >
+          Recuperar contraseña
+        </Text>
+        <Text
+          testID="forgot-body"
+        >
+          Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.
+        </Text>
+        <View>
+          <View
+            accessible={true}
+          >
+            <Text>
+              Correo electrónico
+            </Text>
+          </View>
+          <TextInput
+            editable={true}
+            testID="forgot-email"
+            value="ana@example.com"
+          />
+        </View>
+        <View
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "disabled": false,
+            }
+          }
+          accessible={true}
+          testID="forgot-submit"
+        >
+          <View
+            pointerEvents="none"
+            style={
+              {
+                "opacity": 0,
+              }
+            }
+          />
+          <Text>
+            Enviar enlace de recuperación
+          </Text>
+        </View>
+        <View
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "disabled": false,
+            }
+          }
+          accessible={true}
+          testID="link-login"
+        >
+          <Text>
+            Volver al inicio de sesión
+          </Text>
+        </View>
+      </View>
+    </RCTScrollView>
+  </View>
+</RNCSafeAreaProvider>
+    at Object.<anonymous> (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:280:18)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+| Sonda | Cada it que cayó | Modo medido / matcher / Expected y Received | Correspondencia con la fila |
+|---|---|---|---|
+| M7-m | `un reintento desde el formulario que vuelve a fallar pinta el copy del nuevo kind` | consulta: Error: Unable to find an element with testID: forgot-error<br><br><RNCSafeAreaProvider><br>  <View | exigido |
+
+| Debe seguir verde | Estado medido |
+|---|---|
+| `mapea {"kind": "rate-limited"} a «Demasiados intentos. Inténtalo más tarde.» en forgot-error, seleccionable, y deja el formulario en pie` | passed |
+
+Todos los it exigidos cayeron; resultado apto para continuar según la regla de E2.
+
+```text
+$ git checkout HEAD -- mobile-pet-tracker/src/screens/forgot/index.tsx
+exit=0
+$ git diff --quiet -- mobile-pet-tracker/src/screens/forgot/index.tsx; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+```
+
+#### T19 — M7-n
+
+Sonda temporal en `mobile-pet-tracker/src/screens/forgot/index.tsx`, sin staging.
+
+#### M7-n
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r3-M7-n.json > /tmp/117-r3-M7-n.log 2>&1; echo "exit=$?"
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 29 passed, 30 total
+Snapshots:   0 total
+Time:        9.928 s, estimated 15 s
+exit=1
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error un reintento desde el formulario que vuelve a fallar pinta el copy del nuevo kind`
+
+```text
+Error: Unable to find an element with testID: forgot-error
+
+<RNCSafeAreaProvider>
+  <View
+    testID="screen-forgot"
+  >
+    <RCTScrollView
+      testID="forgot-form"
+    >
+      <View>
+        <View>
+          <RNSVGSvgView>
+            <RNSVGGroup>
+              <RNSVGPath />
+            </RNSVGGroup>
+          </RNSVGSvgView>
+        </View>
+        <Text
+          testID="forgot-title"
+        >
+          Recuperar contraseña
+        </Text>
+        <Text
+          testID="forgot-body"
+        >
+          Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.
+        </Text>
+        <View>
+          <View
+            accessible={true}
+          >
+            <Text>
+              Correo electrónico
+            </Text>
+          </View>
+          <TextInput
+            editable={true}
+            testID="forgot-email"
+            value="ana@example.com"
+          />
+        </View>
+        <View
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "disabled": false,
+            }
+          }
+          accessible={true}
+          testID="forgot-submit"
+        >
+          <View
+            pointerEvents="none"
+            style={
+              {
+                "opacity": 0,
+              }
+            }
+          />
+          <Text>
+            Enviar enlace de recuperación
+          </Text>
+        </View>
+        <View
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "disabled": false,
+            }
+          }
+          accessible={true}
+          testID="link-login"
+        >
+          <Text>
+            Volver al inicio de sesión
+          </Text>
+        </View>
+      </View>
+    </RCTScrollView>
+  </View>
+</RNCSafeAreaProvider>
+    at Object.<anonymous> (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:284:18)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+| Sonda | Cada it que cayó | Modo medido / matcher / Expected y Received | Correspondencia con la fila |
+|---|---|---|---|
+| M7-n | `un reintento desde el formulario que vuelve a fallar pinta el copy del nuevo kind` | consulta: Error: Unable to find an element with testID: forgot-error<br><br><RNCSafeAreaProvider><br>  <View | exigido |
+
+| Debe seguir verde | Estado medido |
+|---|---|
+| `mapea {"errors": [Array], "kind": "validation"} a «Ingresa un correo electrónico válido» en forgot-error, seleccionable, y deja el formulario en pie` | passed |
+
+Todos los it exigidos cayeron; resultado apto para continuar según la regla de E2.
+
+```text
+$ git checkout HEAD -- mobile-pet-tracker/src/screens/forgot/index.tsx
+exit=0
+$ git diff --quiet -- mobile-pet-tracker/src/screens/forgot/index.tsx; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+```
+
+#### T19-verde-final
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r3-T19-verde-final.json > /tmp/117-r3-T19-verde-final.log 2>&1; echo "exit=$?"
+Test Suites: 1 passed, 1 total
+Tests:       30 passed, 30 total
+Snapshots:   0 total
+Time:        7.713 s, estimated 10 s
+exit=0
+```
+
+#### Guard de router antes de typecheck-T19
+
+```text
+$ test ! -e .expo/types/router.d.ts; echo "exit=$?"
+exit=0
+```
+
+#### typecheck-T19
+
+```text
+$ bun run typecheck > /tmp/117-r3-typecheck-T19.log 2>&1; echo "exit=$?"
+$ tsc --noEmit
+exit=0
+```
+
+#### lint-T19
+
+```text
+$ bun run lint > /tmp/117-r3-lint-T19.log 2>&1; echo "exit=$?"
+$ expo lint
+exit=0
+```
+
+Commit T19: `c783b41e` test(mobile): lock the form render in every unsent flow (#117 R4, R7, R3, E2). Solo `mobile-pet-tracker/src/screens/forgot/index.test.tsx`.
+
+#### T20-verde-inicial
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r3-T20-verde-inicial.json > /tmp/117-r3-T20-verde-inicial.log 2>&1; echo "exit=$?"
+Test Suites: 1 passed, 1 total
+Tests:       31 passed, 31 total
+Snapshots:   0 total
+Time:        9.162 s
+exit=0
+```
+
+#### T20 — X-g
+
+Sonda temporal en `mobile-pet-tracker/src/screens/forgot/index.tsx`, sin staging.
+
+#### X-g
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r3-X-g.json > /tmp/117-r3-X-g.log 2>&1; echo "exit=$?"
+Test Suites: 1 failed, 1 total
+Tests:       6 failed, 25 passed, 31 total
+Snapshots:   0 total
+Time:        11.267 s
+exit=1
+```
+
+`#117 R6: reenviar repite la misma petición un 429 al reenviar pinta forgot-error sin salir de «Revisa tu correo»`
+
+```text
+Error: expect(instance).toHaveTextContent()
+
+Expected instance to have text content:
+  Si existe una cuenta para ana@example.com, te enviamos un enlace para restablecer tu contraseña. Revisa tu bandeja de entrada y la carpeta de spam.
+Received:
+  Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.
+    at toHaveTextContent (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:200:45)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:198:31)
+    at Object.expectSentState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:392:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R6: reenviar repite la misma petición un {"errors": [Array], "kind": "validation"} al reenviar pinta «Ingresa un correo electrónico válido» en forgot-error sin salir de «Revisa tu correo»`
+
+```text
+Error: expect(instance).toHaveTextContent()
+
+Expected instance to have text content:
+  Si existe una cuenta para ana@example.com, te enviamos un enlace para restablecer tu contraseña. Revisa tu bandeja de entrada y la carpeta de spam.
+Received:
+  Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.
+    at toHaveTextContent (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:200:45)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:198:31)
+    at expectSentState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:411:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R6: reenviar repite la misma petición un {"kind": "error"} al reenviar pinta «Algo salió mal» en forgot-error sin salir de «Revisa tu correo»`
+
+```text
+Error: expect(instance).toHaveTextContent()
+
+Expected instance to have text content:
+  Si existe una cuenta para ana@example.com, te enviamos un enlace para restablecer tu contraseña. Revisa tu bandeja de entrada y la carpeta de spam.
+Received:
+  Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.
+    at toHaveTextContent (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:200:45)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:198:31)
+    at expectSentState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:411:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R6: reenviar repite la misma petición un {"kind": "unreachable", "message": "network down"} al reenviar pinta «No se pudo conectar con el servidor» en forgot-error sin salir de «Revisa tu correo»`
+
+```text
+Error: expect(instance).toHaveTextContent()
+
+Expected instance to have text content:
+  Si existe una cuenta para ana@example.com, te enviamos un enlace para restablecer tu contraseña. Revisa tu bandeja de entrada y la carpeta de spam.
+Received:
+  Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.
+    at toHaveTextContent (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:200:45)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:198:31)
+    at expectSentState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:411:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R6: reenviar repite la misma petición un {"kind": "missing-config"} al reenviar pinta «Algo salió mal» en forgot-error sin salir de «Revisa tu correo»`
+
+```text
+Error: expect(instance).toHaveTextContent()
+
+Expected instance to have text content:
+  Si existe una cuenta para ana@example.com, te enviamos un enlace para restablecer tu contraseña. Revisa tu bandeja de entrada y la carpeta de spam.
+Received:
+  Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.
+    at toHaveTextContent (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:200:45)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:198:31)
+    at expectSentState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:411:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R6: reenviar repite la misma petición un segundo reenvío que vuelve a fallar pinta el copy del nuevo kind`
+
+```text
+Error: expect(instance).toHaveTextContent()
+
+Expected instance to have text content:
+  Si existe una cuenta para ana@example.com, te enviamos un enlace para restablecer tu contraseña. Revisa tu bandeja de entrada y la carpeta de spam.
+Received:
+  Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.
+    at toHaveTextContent (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:200:45)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:198:31)
+    at Object.expectSentState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:429:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+| Sonda | Cada it que cayó | Modo medido / matcher / Expected y Received | Correspondencia con la fila |
+|---|---|---|---|
+| X-g | `un 429 al reenviar pinta forgot-error sin salir de «Revisa tu correo»` | aserción: Error: expect(instance).toHaveTextContent()<br><br>Expected instance to have text content:<br>  Si existe una cuenta para ana@example.com, te enviamos un enlace para restablecer tu contraseña. Revisa tu bandeja de entrada y la carpeta de spam.<br>Received:<br>  Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.<br>    at toHaveTextContent (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:200:45)<br>    at Generator.next (<anonymous>) | exigido |
+| X-g | `un {"errors": [Array], "kind": "validation"} al reenviar pinta «Ingresa un correo electrónico válido» en forgot-error sin salir de «Revisa tu correo»` | aserción: Error: expect(instance).toHaveTextContent()<br><br>Expected instance to have text content:<br>  Si existe una cuenta para ana@example.com, te enviamos un enlace para restablecer tu contraseña. Revisa tu bandeja de entrada y la carpeta de spam.<br>Received:<br>  Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.<br>    at toHaveTextContent (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:200:45)<br>    at Generator.next (<anonymous>) | exigido |
+| X-g | `un {"kind": "error"} al reenviar pinta «Algo salió mal» en forgot-error sin salir de «Revisa tu correo»` | aserción: Error: expect(instance).toHaveTextContent()<br><br>Expected instance to have text content:<br>  Si existe una cuenta para ana@example.com, te enviamos un enlace para restablecer tu contraseña. Revisa tu bandeja de entrada y la carpeta de spam.<br>Received:<br>  Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.<br>    at toHaveTextContent (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:200:45)<br>    at Generator.next (<anonymous>) | exigido |
+| X-g | `un {"kind": "unreachable", "message": "network down"} al reenviar pinta «No se pudo conectar con el servidor» en forgot-error sin salir de «Revisa tu correo»` | aserción: Error: expect(instance).toHaveTextContent()<br><br>Expected instance to have text content:<br>  Si existe una cuenta para ana@example.com, te enviamos un enlace para restablecer tu contraseña. Revisa tu bandeja de entrada y la carpeta de spam.<br>Received:<br>  Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.<br>    at toHaveTextContent (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:200:45)<br>    at Generator.next (<anonymous>) | exigido |
+| X-g | `un {"kind": "missing-config"} al reenviar pinta «Algo salió mal» en forgot-error sin salir de «Revisa tu correo»` | aserción: Error: expect(instance).toHaveTextContent()<br><br>Expected instance to have text content:<br>  Si existe una cuenta para ana@example.com, te enviamos un enlace para restablecer tu contraseña. Revisa tu bandeja de entrada y la carpeta de spam.<br>Received:<br>  Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.<br>    at toHaveTextContent (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:200:45)<br>    at Generator.next (<anonymous>) | exigido |
+| X-g | `un segundo reenvío que vuelve a fallar pinta el copy del nuevo kind` | aserción: Error: expect(instance).toHaveTextContent()<br><br>Expected instance to have text content:<br>  Si existe una cuenta para ana@example.com, te enviamos un enlace para restablecer tu contraseña. Revisa tu bandeja de entrada y la carpeta de spam.<br>Received:<br>  Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.<br>    at toHaveTextContent (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:200:45)<br>    at Generator.next (<anonymous>) | exigido |
+
+| Debe seguir verde | Estado medido |
+|---|---|
+| — | La fila no prescribe it verde |
+
+Todos los it exigidos cayeron; resultado apto para continuar según la regla de E2.
+
+```text
+$ git checkout HEAD -- mobile-pet-tracker/src/screens/forgot/index.tsx
+exit=0
+$ git diff --quiet -- mobile-pet-tracker/src/screens/forgot/index.tsx; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+```
+
+#### T20 — X-h
+
+Sonda temporal en `mobile-pet-tracker/src/screens/forgot/index.tsx`, sin staging.
+
+### Auditoría literal de E2 (solo lectura)
+
+El bloque completo de helpers E2.4 y ambos bloques E2.7 están copiados literalmente en la suite. Todos los títulos existentes conservan su orden; solo se añaden E2.7a y E2.7b. Las únicas líneas retiradas contra H0 son los tres cambios prescritos en E2.5 (dos submitForgot y un valor de forgot-email). No hay literales de clases arbitrarias. Numstat actual del test: +114 / −3.
+
+#### X-h
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r3-X-h.json > /tmp/117-r3-X-h.log 2>&1; echo "exit=$?"
+Test Suites: 1 failed, 1 total
+Tests:       6 failed, 25 passed, 31 total
+Snapshots:   0 total
+Time:        15.179 s
+exit=1
+```
+
+`#117 R6: reenviar repite la misma petición un 429 al reenviar pinta forgot-error sin salir de «Revisa tu correo»`
+
+```text
+Error: expect(received).toBeNull()
+
+Received: <View accessibilityRole="button" accessibilityState={{"busy": undefined, "checked": undefined, "disabled": false, "expanded": undefined, "selected": undefined}} accessibilityValue={{"max": undefined, "min": undefined, "now": undefined, "text": undefined}} accessible={true} className="pressable-feedback__root button__root button__root--variant-primary button__root--size-md w-full rounded-xl bg-accent" collapsable={false} focusable={true} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"transform": [{"scale": 1}]}}} jestInlineStyle={[{"borderCurve": "continuous"}, [{"borderCurve": "continuous"}, undefined]]} onBlur={[Function onBlur]} onClick={[Function onClick]} onFocus={[Function onFocus]} onLayout={[Function anonymous]} onResponderGrant={[Function onResponderGrant]} onResponderMove={[Function onResponderMove]} onResponderRelease={[Function onResponderRelease]} onResponderTerminate={[Function onResponderTerminate]} onResponderTerminationRequest={[Function onResponderTerminationRequest]} onStartShouldSetResponder={[Function onStartShouldSetResponder]} style={[{"borderCurve": "continuous"}, {"transform": [{"scale": 1}]}, {"borderCurve": "continuous"}, undefined]} testID="forgot-submit"><View className="pressable-feedback__highlight" collapsable={false} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"backgroundColor": "invalid", "opacity": NaN}}} jestInlineStyle={[undefined]} pointerEvents="none" style={[{"backgroundColor": "invalid", "opacity": 0}, undefined]} /><Text className="button__label button__label--variant-primary button__label--size-md font-bold text-accent-foreground">Enviar enlace de recuperación</Text></View>
+    at toBeNull (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:203:49)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:198:31)
+    at Object.expectSentState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:392:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R6: reenviar repite la misma petición un {"errors": [Array], "kind": "validation"} al reenviar pinta «Ingresa un correo electrónico válido» en forgot-error sin salir de «Revisa tu correo»`
+
+```text
+Error: expect(received).toBeNull()
+
+Received: <View accessibilityRole="button" accessibilityState={{"busy": undefined, "checked": undefined, "disabled": false, "expanded": undefined, "selected": undefined}} accessibilityValue={{"max": undefined, "min": undefined, "now": undefined, "text": undefined}} accessible={true} className="pressable-feedback__root button__root button__root--variant-primary button__root--size-md w-full rounded-xl bg-accent" collapsable={false} focusable={true} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"transform": [{"scale": 1}]}}} jestInlineStyle={[{"borderCurve": "continuous"}, [{"borderCurve": "continuous"}, undefined]]} onBlur={[Function onBlur]} onClick={[Function onClick]} onFocus={[Function onFocus]} onLayout={[Function anonymous]} onResponderGrant={[Function onResponderGrant]} onResponderMove={[Function onResponderMove]} onResponderRelease={[Function onResponderRelease]} onResponderTerminate={[Function onResponderTerminate]} onResponderTerminationRequest={[Function onResponderTerminationRequest]} onStartShouldSetResponder={[Function onStartShouldSetResponder]} style={[{"borderCurve": "continuous"}, {"transform": [{"scale": 1}]}, {"borderCurve": "continuous"}, undefined]} testID="forgot-submit"><View className="pressable-feedback__highlight" collapsable={false} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"backgroundColor": "invalid", "opacity": NaN}}} jestInlineStyle={[undefined]} pointerEvents="none" style={[{"backgroundColor": "invalid", "opacity": 0}, undefined]} /><Text className="button__label button__label--variant-primary button__label--size-md font-bold text-accent-foreground">Enviar enlace de recuperación</Text></View>
+    at toBeNull (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:203:49)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:198:31)
+    at expectSentState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:411:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R6: reenviar repite la misma petición un {"kind": "error"} al reenviar pinta «Algo salió mal» en forgot-error sin salir de «Revisa tu correo»`
+
+```text
+Error: expect(received).toBeNull()
+
+Received: <View accessibilityRole="button" accessibilityState={{"busy": undefined, "checked": undefined, "disabled": false, "expanded": undefined, "selected": undefined}} accessibilityValue={{"max": undefined, "min": undefined, "now": undefined, "text": undefined}} accessible={true} className="pressable-feedback__root button__root button__root--variant-primary button__root--size-md w-full rounded-xl bg-accent" collapsable={false} focusable={true} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"transform": [{"scale": {"callStart": null, "callback": undefined, "current": 1, "easing": [Function reactNativeReanimated_EasingJs19], "onFrame": [Function timing], "onStart": [Function anonymous], "progress": 0, "reduceMotion": false, "startTime": undefined, "startValue": 1, "timestamp": undefined, "toValue": 1, "type": "timing"}}]}}} jestInlineStyle={[{"borderCurve": "continuous"}, [{"borderCurve": "continuous"}, undefined]]} onBlur={[Function onBlur]} onClick={[Function onClick]} onFocus={[Function onFocus]} onLayout={[Function anonymous]} onResponderGrant={[Function onResponderGrant]} onResponderMove={[Function onResponderMove]} onResponderRelease={[Function onResponderRelease]} onResponderTerminate={[Function onResponderTerminate]} onResponderTerminationRequest={[Function onResponderTerminationRequest]} onStartShouldSetResponder={[Function onStartShouldSetResponder]} style={[{"borderCurve": "continuous"}, {"transform": [{"scale": 1}]}, {"borderCurve": "continuous"}, undefined]} testID="forgot-submit"><View className="pressable-feedback__highlight" collapsable={false} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"backgroundColor": "invalid", "opacity": NaN}}} jestInlineStyle={[undefined]} pointerEvents="none" style={[{"backgroundColor": "invalid", "opacity": 0}, undefined]} /><Text className="button__label button__label--variant-primary button__label--size-md font-bold text-accent-foreground">Enviar enlace de recuperación</Text></View>
+    at toBeNull (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:203:49)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:198:31)
+    at expectSentState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:411:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R6: reenviar repite la misma petición un {"kind": "unreachable", "message": "network down"} al reenviar pinta «No se pudo conectar con el servidor» en forgot-error sin salir de «Revisa tu correo»`
+
+```text
+Error: expect(received).toBeNull()
+
+Received: <View accessibilityRole="button" accessibilityState={{"busy": undefined, "checked": undefined, "disabled": false, "expanded": undefined, "selected": undefined}} accessibilityValue={{"max": undefined, "min": undefined, "now": undefined, "text": undefined}} accessible={true} className="pressable-feedback__root button__root button__root--variant-primary button__root--size-md w-full rounded-xl bg-accent" collapsable={false} focusable={true} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"transform": [{"scale": 1}]}}} jestInlineStyle={[{"borderCurve": "continuous"}, [{"borderCurve": "continuous"}, undefined]]} onBlur={[Function onBlur]} onClick={[Function onClick]} onFocus={[Function onFocus]} onLayout={[Function anonymous]} onResponderGrant={[Function onResponderGrant]} onResponderMove={[Function onResponderMove]} onResponderRelease={[Function onResponderRelease]} onResponderTerminate={[Function onResponderTerminate]} onResponderTerminationRequest={[Function onResponderTerminationRequest]} onStartShouldSetResponder={[Function onStartShouldSetResponder]} style={[{"borderCurve": "continuous"}, {"transform": [{"scale": 1}]}, {"borderCurve": "continuous"}, undefined]} testID="forgot-submit"><View className="pressable-feedback__highlight" collapsable={false} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"backgroundColor": "invalid", "opacity": NaN}}} jestInlineStyle={[undefined]} pointerEvents="none" style={[{"backgroundColor": "invalid", "opacity": 0}, undefined]} /><Text className="button__label button__label--variant-primary button__label--size-md font-bold text-accent-foreground">Enviar enlace de recuperación</Text></View>
+    at toBeNull (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:203:49)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:198:31)
+    at expectSentState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:411:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R6: reenviar repite la misma petición un {"kind": "missing-config"} al reenviar pinta «Algo salió mal» en forgot-error sin salir de «Revisa tu correo»`
+
+```text
+Error: expect(received).toBeNull()
+
+Received: <View accessibilityRole="button" accessibilityState={{"busy": undefined, "checked": undefined, "disabled": false, "expanded": undefined, "selected": undefined}} accessibilityValue={{"max": undefined, "min": undefined, "now": undefined, "text": undefined}} accessible={true} className="pressable-feedback__root button__root button__root--variant-primary button__root--size-md w-full rounded-xl bg-accent" collapsable={false} focusable={true} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"transform": [{"scale": 1}]}}} jestInlineStyle={[{"borderCurve": "continuous"}, [{"borderCurve": "continuous"}, undefined]]} onBlur={[Function onBlur]} onClick={[Function onClick]} onFocus={[Function onFocus]} onLayout={[Function anonymous]} onResponderGrant={[Function onResponderGrant]} onResponderMove={[Function onResponderMove]} onResponderRelease={[Function onResponderRelease]} onResponderTerminate={[Function onResponderTerminate]} onResponderTerminationRequest={[Function onResponderTerminationRequest]} onStartShouldSetResponder={[Function onStartShouldSetResponder]} style={[{"borderCurve": "continuous"}, {"transform": [{"scale": 1}]}, {"borderCurve": "continuous"}, undefined]} testID="forgot-submit"><View className="pressable-feedback__highlight" collapsable={false} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"backgroundColor": "invalid", "opacity": NaN}}} jestInlineStyle={[undefined]} pointerEvents="none" style={[{"backgroundColor": "invalid", "opacity": 0}, undefined]} /><Text className="button__label button__label--variant-primary button__label--size-md font-bold text-accent-foreground">Enviar enlace de recuperación</Text></View>
+    at toBeNull (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:203:49)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:198:31)
+    at expectSentState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:411:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R6: reenviar repite la misma petición un segundo reenvío que vuelve a fallar pinta el copy del nuevo kind`
+
+```text
+Error: expect(received).toBeNull()
+
+Received: <View accessibilityRole="button" accessibilityState={{"busy": undefined, "checked": undefined, "disabled": false, "expanded": undefined, "selected": undefined}} accessibilityValue={{"max": undefined, "min": undefined, "now": undefined, "text": undefined}} accessible={true} className="pressable-feedback__root button__root button__root--variant-primary button__root--size-md w-full rounded-xl bg-accent" collapsable={false} focusable={true} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"transform": [{"scale": 1}]}}} jestInlineStyle={[{"borderCurve": "continuous"}, [{"borderCurve": "continuous"}, undefined]]} onBlur={[Function onBlur]} onClick={[Function onClick]} onFocus={[Function onFocus]} onLayout={[Function anonymous]} onResponderGrant={[Function onResponderGrant]} onResponderMove={[Function onResponderMove]} onResponderRelease={[Function onResponderRelease]} onResponderTerminate={[Function onResponderTerminate]} onResponderTerminationRequest={[Function onResponderTerminationRequest]} onStartShouldSetResponder={[Function onStartShouldSetResponder]} style={[{"borderCurve": "continuous"}, {"transform": [{"scale": 1}]}, {"borderCurve": "continuous"}, undefined]} testID="forgot-submit"><View className="pressable-feedback__highlight" collapsable={false} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"backgroundColor": "invalid", "opacity": NaN}}} jestInlineStyle={[undefined]} pointerEvents="none" style={[{"backgroundColor": "invalid", "opacity": 0}, undefined]} /><Text className="button__label button__label--variant-primary button__label--size-md font-bold text-accent-foreground">Enviar enlace de recuperación</Text></View>
+    at toBeNull (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:203:49)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:198:31)
+    at Object.expectSentState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:429:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+| Sonda | Cada it que cayó | Modo medido / matcher / Expected y Received | Correspondencia con la fila |
+|---|---|---|---|
+| X-h | `un 429 al reenviar pinta forgot-error sin salir de «Revisa tu correo»` | aserción: Error: expect(received).toBeNull()<br><br>Received: <View accessibilityRole="button" accessibilityState={{"busy": undefined, "checked": undefined, "disabled": false, "expanded": undefined, "selected": undefined}} accessibilityValue={{"max": undefined, "min": undefined, "now": undefined, "text": undefined}} accessible={true} className="pressable-feedback__root button__root button__root--variant-primary button__root--size-md w-full rounded-xl bg-accent" collapsable={false} focusable={true} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"transform": [{"scale": 1}]}}} jestInlineStyle={[{"borderCurve": "continuous"}, [{"borderCurve": "continuous"}, undefined]]} onBlur={[Function onBlur]} onClick={[Function onClick]} onFocus={[Function onFocus]} onLayout={[Function anonymous]} onResponderGrant={[Function onResponderGrant]} onResponderMove={[Function onResponderMove]} onResponderRelease={[Function onResponderRelease]} onResponderTerminate={[Function onResponderTerminate]} onResponderTerminationRequest={[Function onResponderTerminationRequest]} onStartShouldSetResponder={[Function onStartShouldSetResponder]} style={[{"borderCurve": "continuous"}, {"transform": [{"scale": 1}]}, {"borderCurve": "continuous"}, undefined]} testID="forgot-submit"><View className="pressable-feedback__highlight" collapsable={false} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"backgroundColor": "invalid", "opacity": NaN}}} jestInlineStyle={[undefined]} pointerEvents="none" style={[{"backgroundColor": "invalid", "opacity": 0}, undefined]} /><Text className="button__label button__label--variant-primary button__label--size-md font-bold text-accent-foreground">Enviar enlace de recuperación</Text></View><br>    at toBeNull (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:203:49)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/h | exigido |
+| X-h | `un {"errors": [Array], "kind": "validation"} al reenviar pinta «Ingresa un correo electrónico válido» en forgot-error sin salir de «Revisa tu correo»` | aserción: Error: expect(received).toBeNull()<br><br>Received: <View accessibilityRole="button" accessibilityState={{"busy": undefined, "checked": undefined, "disabled": false, "expanded": undefined, "selected": undefined}} accessibilityValue={{"max": undefined, "min": undefined, "now": undefined, "text": undefined}} accessible={true} className="pressable-feedback__root button__root button__root--variant-primary button__root--size-md w-full rounded-xl bg-accent" collapsable={false} focusable={true} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"transform": [{"scale": 1}]}}} jestInlineStyle={[{"borderCurve": "continuous"}, [{"borderCurve": "continuous"}, undefined]]} onBlur={[Function onBlur]} onClick={[Function onClick]} onFocus={[Function onFocus]} onLayout={[Function anonymous]} onResponderGrant={[Function onResponderGrant]} onResponderMove={[Function onResponderMove]} onResponderRelease={[Function onResponderRelease]} onResponderTerminate={[Function onResponderTerminate]} onResponderTerminationRequest={[Function onResponderTerminationRequest]} onStartShouldSetResponder={[Function onStartShouldSetResponder]} style={[{"borderCurve": "continuous"}, {"transform": [{"scale": 1}]}, {"borderCurve": "continuous"}, undefined]} testID="forgot-submit"><View className="pressable-feedback__highlight" collapsable={false} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"backgroundColor": "invalid", "opacity": NaN}}} jestInlineStyle={[undefined]} pointerEvents="none" style={[{"backgroundColor": "invalid", "opacity": 0}, undefined]} /><Text className="button__label button__label--variant-primary button__label--size-md font-bold text-accent-foreground">Enviar enlace de recuperación</Text></View><br>    at toBeNull (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:203:49)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/h | exigido |
+| X-h | `un {"kind": "error"} al reenviar pinta «Algo salió mal» en forgot-error sin salir de «Revisa tu correo»` | aserción: Error: expect(received).toBeNull()<br><br>Received: <View accessibilityRole="button" accessibilityState={{"busy": undefined, "checked": undefined, "disabled": false, "expanded": undefined, "selected": undefined}} accessibilityValue={{"max": undefined, "min": undefined, "now": undefined, "text": undefined}} accessible={true} className="pressable-feedback__root button__root button__root--variant-primary button__root--size-md w-full rounded-xl bg-accent" collapsable={false} focusable={true} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"transform": [{"scale": {"callStart": null, "callback": undefined, "current": 1, "easing": [Function reactNativeReanimated_EasingJs19], "onFrame": [Function timing], "onStart": [Function anonymous], "progress": 0, "reduceMotion": false, "startTime": undefined, "startValue": 1, "timestamp": undefined, "toValue": 1, "type": "timing"}}]}}} jestInlineStyle={[{"borderCurve": "continuous"}, [{"borderCurve": "continuous"}, undefined]]} onBlur={[Function onBlur]} onClick={[Function onClick]} onFocus={[Function onFocus]} onLayout={[Function anonymous]} onResponderGrant={[Function onResponderGrant]} onResponderMove={[Function onResponderMove]} onResponderRelease={[Function onResponderRelease]} onResponderTerminate={[Function onResponderTerminate]} onResponderTerminationRequest={[Function onResponderTerminationRequest]} onStartShouldSetResponder={[Function onStartShouldSetResponder]} style={[{"borderCurve": "continuous"}, {"transform": [{"scale": 1}]}, {"borderCurve": "continuous"}, undefined]} testID="forgot-submit"><View className="pressable-feedback__highlight" collapsable={false} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"backgroundColor": "invalid", "opacity": NaN}}} jestInlineStyle={[undefined]} pointerEvents="none" style={[{"backgroundColor": "invalid", "opacity": 0}, undefined]} /><Text className="button__label button__label--variant-primary button__label--size-md font-bold text-accent-foreground">Enviar en | exigido |
+| X-h | `un {"kind": "unreachable", "message": "network down"} al reenviar pinta «No se pudo conectar con el servidor» en forgot-error sin salir de «Revisa tu correo»` | aserción: Error: expect(received).toBeNull()<br><br>Received: <View accessibilityRole="button" accessibilityState={{"busy": undefined, "checked": undefined, "disabled": false, "expanded": undefined, "selected": undefined}} accessibilityValue={{"max": undefined, "min": undefined, "now": undefined, "text": undefined}} accessible={true} className="pressable-feedback__root button__root button__root--variant-primary button__root--size-md w-full rounded-xl bg-accent" collapsable={false} focusable={true} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"transform": [{"scale": 1}]}}} jestInlineStyle={[{"borderCurve": "continuous"}, [{"borderCurve": "continuous"}, undefined]]} onBlur={[Function onBlur]} onClick={[Function onClick]} onFocus={[Function onFocus]} onLayout={[Function anonymous]} onResponderGrant={[Function onResponderGrant]} onResponderMove={[Function onResponderMove]} onResponderRelease={[Function onResponderRelease]} onResponderTerminate={[Function onResponderTerminate]} onResponderTerminationRequest={[Function onResponderTerminationRequest]} onStartShouldSetResponder={[Function onStartShouldSetResponder]} style={[{"borderCurve": "continuous"}, {"transform": [{"scale": 1}]}, {"borderCurve": "continuous"}, undefined]} testID="forgot-submit"><View className="pressable-feedback__highlight" collapsable={false} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"backgroundColor": "invalid", "opacity": NaN}}} jestInlineStyle={[undefined]} pointerEvents="none" style={[{"backgroundColor": "invalid", "opacity": 0}, undefined]} /><Text className="button__label button__label--variant-primary button__label--size-md font-bold text-accent-foreground">Enviar enlace de recuperación</Text></View><br>    at toBeNull (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:203:49)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/h | exigido |
+| X-h | `un {"kind": "missing-config"} al reenviar pinta «Algo salió mal» en forgot-error sin salir de «Revisa tu correo»` | aserción: Error: expect(received).toBeNull()<br><br>Received: <View accessibilityRole="button" accessibilityState={{"busy": undefined, "checked": undefined, "disabled": false, "expanded": undefined, "selected": undefined}} accessibilityValue={{"max": undefined, "min": undefined, "now": undefined, "text": undefined}} accessible={true} className="pressable-feedback__root button__root button__root--variant-primary button__root--size-md w-full rounded-xl bg-accent" collapsable={false} focusable={true} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"transform": [{"scale": 1}]}}} jestInlineStyle={[{"borderCurve": "continuous"}, [{"borderCurve": "continuous"}, undefined]]} onBlur={[Function onBlur]} onClick={[Function onClick]} onFocus={[Function onFocus]} onLayout={[Function anonymous]} onResponderGrant={[Function onResponderGrant]} onResponderMove={[Function onResponderMove]} onResponderRelease={[Function onResponderRelease]} onResponderTerminate={[Function onResponderTerminate]} onResponderTerminationRequest={[Function onResponderTerminationRequest]} onStartShouldSetResponder={[Function onStartShouldSetResponder]} style={[{"borderCurve": "continuous"}, {"transform": [{"scale": 1}]}, {"borderCurve": "continuous"}, undefined]} testID="forgot-submit"><View className="pressable-feedback__highlight" collapsable={false} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"backgroundColor": "invalid", "opacity": NaN}}} jestInlineStyle={[undefined]} pointerEvents="none" style={[{"backgroundColor": "invalid", "opacity": 0}, undefined]} /><Text className="button__label button__label--variant-primary button__label--size-md font-bold text-accent-foreground">Enviar enlace de recuperación</Text></View><br>    at toBeNull (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:203:49)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/h | exigido |
+| X-h | `un segundo reenvío que vuelve a fallar pinta el copy del nuevo kind` | aserción: Error: expect(received).toBeNull()<br><br>Received: <View accessibilityRole="button" accessibilityState={{"busy": undefined, "checked": undefined, "disabled": false, "expanded": undefined, "selected": undefined}} accessibilityValue={{"max": undefined, "min": undefined, "now": undefined, "text": undefined}} accessible={true} className="pressable-feedback__root button__root button__root--variant-primary button__root--size-md w-full rounded-xl bg-accent" collapsable={false} focusable={true} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"transform": [{"scale": 1}]}}} jestInlineStyle={[{"borderCurve": "continuous"}, [{"borderCurve": "continuous"}, undefined]]} onBlur={[Function onBlur]} onClick={[Function onClick]} onFocus={[Function onFocus]} onLayout={[Function anonymous]} onResponderGrant={[Function onResponderGrant]} onResponderMove={[Function onResponderMove]} onResponderRelease={[Function onResponderRelease]} onResponderTerminate={[Function onResponderTerminate]} onResponderTerminationRequest={[Function onResponderTerminationRequest]} onStartShouldSetResponder={[Function onStartShouldSetResponder]} style={[{"borderCurve": "continuous"}, {"transform": [{"scale": 1}]}, {"borderCurve": "continuous"}, undefined]} testID="forgot-submit"><View className="pressable-feedback__highlight" collapsable={false} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"backgroundColor": "invalid", "opacity": NaN}}} jestInlineStyle={[undefined]} pointerEvents="none" style={[{"backgroundColor": "invalid", "opacity": 0}, undefined]} /><Text className="button__label button__label--variant-primary button__label--size-md font-bold text-accent-foreground">Enviar enlace de recuperación</Text></View><br>    at toBeNull (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:203:49)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/h | exigido |
+
+| Debe seguir verde | Estado medido |
+|---|---|
+| — | La fila no prescribe it verde |
+
+Todos los it exigidos cayeron; resultado apto para continuar según la regla de E2.
+
+```text
+$ git checkout HEAD -- mobile-pet-tracker/src/screens/forgot/index.tsx
+exit=0
+$ git diff --quiet -- mobile-pet-tracker/src/screens/forgot/index.tsx; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+```
+
+#### T20 — X-i
+
+Sonda temporal en `mobile-pet-tracker/src/screens/forgot/index.tsx`, sin staging.
+
+#### X-i
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r3-X-i.json > /tmp/117-r3-X-i.log 2>&1; echo "exit=$?"
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 29 passed, 31 total
+Snapshots:   0 total
+Time:        10.25 s, estimated 15 s
+exit=1
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error un nuevo reenvío retira forgot-error en cuanto arranca y no lo repinta al resolver ok`
+
+```text
+Error: expect(instance).toHaveTextContent()
+
+Expected instance to have text content:
+  Revisa tu correo
+Received:
+  Recuperar contraseña
+    at toHaveTextContent (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:199:46)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:198:31)
+    at Object.expectSentState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:350:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R6: reenviar repite la misma petición forgot-resend repite el POST con el mismo correo y se deshabilita mientras vuela`
+
+```text
+Error: expect(instance).toHaveTextContent()
+
+Expected instance to have text content:
+  Revisa tu correo
+Received:
+  Recuperar contraseña
+    at toHaveTextContent (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:199:46)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:198:31)
+    at Object.expectSentState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:374:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+| Sonda | Cada it que cayó | Modo medido / matcher / Expected y Received | Correspondencia con la fila |
+|---|---|---|---|
+| X-i | `un nuevo reenvío retira forgot-error en cuanto arranca y no lo repinta al resolver ok` | aserción: Error: expect(instance).toHaveTextContent()<br><br>Expected instance to have text content:<br>  Revisa tu correo<br>Received:<br>  Recuperar contraseña<br>    at toHaveTextContent (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:199:46)<br>    at Generator.next (<anonymous>) | exigido |
+| X-i | `forgot-resend repite el POST con el mismo correo y se deshabilita mientras vuela` | aserción: Error: expect(instance).toHaveTextContent()<br><br>Expected instance to have text content:<br>  Revisa tu correo<br>Received:<br>  Recuperar contraseña<br>    at toHaveTextContent (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:199:46)<br>    at Generator.next (<anonymous>) | exigido |
+
+| Debe seguir verde | Estado medido |
+|---|---|
+| — | La fila no prescribe it verde |
+
+Todos los it exigidos cayeron; resultado apto para continuar según la regla de E2.
+
+```text
+$ git checkout HEAD -- mobile-pet-tracker/src/screens/forgot/index.tsx
+exit=0
+$ git diff --quiet -- mobile-pet-tracker/src/screens/forgot/index.tsx; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+```
+
+#### T20 — M5-i
+
+Sonda temporal en `mobile-pet-tracker/src/screens/forgot/index.tsx`, sin staging.
+
+#### M5-i
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r3-M5-i.json > /tmp/117-r3-M5-i.log 2>&1; echo "exit=$?"
+Test Suites: 1 failed, 1 total
+Tests:       10 failed, 21 passed, 31 total
+Snapshots:   0 total
+Time:        10.016 s
+exit=1
+```
+
+`#117 R5: enviar pasa la pantalla a «Revisa tu correo» tras ok muestra cabecera y cuerpo con el correo, forgot-resend y link-login, y retira forgot-email y forgot-submit`
+
+```text
+Error: expect(received).toBeNull()
+
+Received: <Text className="font-normal label__text" style={[undefined, undefined]}>Correo electrónico</Text>
+    at toBeNull (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:201:52)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:209:2)
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:198:31)
+    at Object.expectSentState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:239:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver`
+
+```text
+Error: expect(received).toBeNull()
+
+Received: <Text className="font-normal label__text" style={[undefined, undefined]}>Correo electrónico</Text>
+    at toBeNull (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:201:52)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:198:31)
+    at Object.expectSentState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:332:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error un nuevo reenvío retira forgot-error en cuanto arranca y no lo repinta al resolver ok`
+
+```text
+Error: expect(received).toBeNull()
+
+Received: <Text className="font-normal label__text" style={[undefined, undefined]}>Correo electrónico</Text>
+    at toBeNull (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:201:52)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:198:31)
+    at Object.expectSentState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:350:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R6: reenviar repite la misma petición forgot-resend repite el POST con el mismo correo y se deshabilita mientras vuela`
+
+```text
+Error: expect(received).toBeNull()
+
+Received: <Text className="font-normal label__text" style={[undefined, undefined]}>Correo electrónico</Text>
+    at toBeNull (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:201:52)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:198:31)
+    at Object.expectSentState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:374:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R6: reenviar repite la misma petición un 429 al reenviar pinta forgot-error sin salir de «Revisa tu correo»`
+
+```text
+Error: expect(received).toBeNull()
+
+Received: <Text className="font-normal label__text" style={[undefined, undefined]}>Correo electrónico</Text>
+    at toBeNull (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:201:52)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:198:31)
+    at Object.expectSentState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:392:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R6: reenviar repite la misma petición un {"errors": [Array], "kind": "validation"} al reenviar pinta «Ingresa un correo electrónico válido» en forgot-error sin salir de «Revisa tu correo»`
+
+```text
+Error: expect(received).toBeNull()
+
+Received: <Text className="font-normal label__text" style={[undefined, undefined]}>Correo electrónico</Text>
+    at toBeNull (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:201:52)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:198:31)
+    at expectSentState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:411:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R6: reenviar repite la misma petición un {"kind": "error"} al reenviar pinta «Algo salió mal» en forgot-error sin salir de «Revisa tu correo»`
+
+```text
+Error: expect(received).toBeNull()
+
+Received: <Text className="font-normal label__text" style={[undefined, undefined]}>Correo electrónico</Text>
+    at toBeNull (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:201:52)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:198:31)
+    at expectSentState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:411:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R6: reenviar repite la misma petición un {"kind": "unreachable", "message": "network down"} al reenviar pinta «No se pudo conectar con el servidor» en forgot-error sin salir de «Revisa tu correo»`
+
+```text
+Error: expect(received).toBeNull()
+
+Received: <Text className="font-normal label__text" style={[undefined, undefined]}>Correo electrónico</Text>
+    at toBeNull (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:201:52)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:198:31)
+    at expectSentState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:411:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R6: reenviar repite la misma petición un {"kind": "missing-config"} al reenviar pinta «Algo salió mal» en forgot-error sin salir de «Revisa tu correo»`
+
+```text
+Error: expect(received).toBeNull()
+
+Received: <Text className="font-normal label__text" style={[undefined, undefined]}>Correo electrónico</Text>
+    at toBeNull (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:201:52)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:198:31)
+    at expectSentState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:411:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R6: reenviar repite la misma petición un segundo reenvío que vuelve a fallar pinta el copy del nuevo kind`
+
+```text
+Error: expect(received).toBeNull()
+
+Received: <Text className="font-normal label__text" style={[undefined, undefined]}>Correo electrónico</Text>
+    at toBeNull (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:201:52)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:198:31)
+    at Object.expectSentState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:429:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+| Sonda | Cada it que cayó | Modo medido / matcher / Expected y Received | Correspondencia con la fila |
+|---|---|---|---|
+| M5-i | `tras ok muestra cabecera y cuerpo con el correo, forgot-resend y link-login, y retira forgot-email y forgot-submit` | aserción: Error: expect(received).toBeNull()<br><br>Received: <Text className="font-normal label__text" style={[undefined, undefined]}>Correo electrónico</Text><br>    at toBeNull (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:201:52)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17) | exigido |
+| M5-i | `un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver` | aserción: Error: expect(received).toBeNull()<br><br>Received: <Text className="font-normal label__text" style={[undefined, undefined]}>Correo electrónico</Text><br>    at toBeNull (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:201:52)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17) | exigido |
+| M5-i | `un nuevo reenvío retira forgot-error en cuanto arranca y no lo repinta al resolver ok` | aserción: Error: expect(received).toBeNull()<br><br>Received: <Text className="font-normal label__text" style={[undefined, undefined]}>Correo electrónico</Text><br>    at toBeNull (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:201:52)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17) | exigido |
+| M5-i | `forgot-resend repite el POST con el mismo correo y se deshabilita mientras vuela` | aserción: Error: expect(received).toBeNull()<br><br>Received: <Text className="font-normal label__text" style={[undefined, undefined]}>Correo electrónico</Text><br>    at toBeNull (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:201:52)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17) | exigido |
+| M5-i | `un 429 al reenviar pinta forgot-error sin salir de «Revisa tu correo»` | aserción: Error: expect(received).toBeNull()<br><br>Received: <Text className="font-normal label__text" style={[undefined, undefined]}>Correo electrónico</Text><br>    at toBeNull (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:201:52)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17) | exigido |
+| M5-i | `un {"errors": [Array], "kind": "validation"} al reenviar pinta «Ingresa un correo electrónico válido» en forgot-error sin salir de «Revisa tu correo»` | aserción: Error: expect(received).toBeNull()<br><br>Received: <Text className="font-normal label__text" style={[undefined, undefined]}>Correo electrónico</Text><br>    at toBeNull (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:201:52)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17) | exigido |
+| M5-i | `un {"kind": "error"} al reenviar pinta «Algo salió mal» en forgot-error sin salir de «Revisa tu correo»` | aserción: Error: expect(received).toBeNull()<br><br>Received: <Text className="font-normal label__text" style={[undefined, undefined]}>Correo electrónico</Text><br>    at toBeNull (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:201:52)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17) | exigido |
+| M5-i | `un {"kind": "unreachable", "message": "network down"} al reenviar pinta «No se pudo conectar con el servidor» en forgot-error sin salir de «Revisa tu correo»` | aserción: Error: expect(received).toBeNull()<br><br>Received: <Text className="font-normal label__text" style={[undefined, undefined]}>Correo electrónico</Text><br>    at toBeNull (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:201:52)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17) | exigido |
+| M5-i | `un {"kind": "missing-config"} al reenviar pinta «Algo salió mal» en forgot-error sin salir de «Revisa tu correo»` | aserción: Error: expect(received).toBeNull()<br><br>Received: <Text className="font-normal label__text" style={[undefined, undefined]}>Correo electrónico</Text><br>    at toBeNull (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:201:52)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17) | exigido |
+| M5-i | `un segundo reenvío que vuelve a fallar pinta el copy del nuevo kind` | aserción: Error: expect(received).toBeNull()<br><br>Received: <Text className="font-normal label__text" style={[undefined, undefined]}>Correo electrónico</Text><br>    at toBeNull (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:201:52)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17) | exigido |
+
+| Debe seguir verde | Estado medido |
+|---|---|
+| — | La fila no prescribe it verde |
+
+Todos los it exigidos cayeron; resultado apto para continuar según la regla de E2.
+
+```text
+$ git checkout HEAD -- mobile-pet-tracker/src/screens/forgot/index.tsx
+exit=0
+$ git diff --quiet -- mobile-pet-tracker/src/screens/forgot/index.tsx; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+```
+
+#### T20 — M5-j
+
+Sonda temporal en `mobile-pet-tracker/src/screens/forgot/index.tsx`, sin staging.
+
+#### M5-j
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r3-M5-j.json > /tmp/117-r3-M5-j.log 2>&1; echo "exit=$?"
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 29 passed, 31 total
+Snapshots:   0 total
+Time:        11.079 s
+exit=1
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error un nuevo reenvío retira forgot-error en cuanto arranca y no lo repinta al resolver ok`
+
+```text
+Error: expect(received).toBeNull()
+
+Received: <TextInput autoCapitalize="none" autoComplete="email" className="input__input ios:outline-2 ios:outline-transparent ios:focus:outline-accent android:border-[1.5px] android:border-transparent android:focus:border-accent rtl:text-right input__input--variant-primary ios:shadow-field android:shadow-sm rounded-xl bg-default" editable={true} keyboardType="email-address" onChangeText={[Function bound dispatchSetState]} placeholderTextColorClassName="accent-field-placeholder" selectionColorClassName="accent-accent" style={[{"borderCurve": "continuous"}, undefined]} testID="forgot-email" textContentType="emailAddress" value="  Ana@Example.com " />
+    at toBeNull (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:202:48)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:198:31)
+    at Object.expectSentState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:350:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R6: reenviar repite la misma petición forgot-resend repite el POST con el mismo correo y se deshabilita mientras vuela`
+
+```text
+Error: expect(received).toBeNull()
+
+Received: <TextInput autoCapitalize="none" autoComplete="email" className="input__input ios:outline-2 ios:outline-transparent ios:focus:outline-accent android:border-[1.5px] android:border-transparent android:focus:border-accent rtl:text-right input__input--variant-primary ios:shadow-field android:shadow-sm rounded-xl bg-default" editable={true} keyboardType="email-address" onChangeText={[Function bound dispatchSetState]} placeholderTextColorClassName="accent-field-placeholder" selectionColorClassName="accent-accent" style={[{"borderCurve": "continuous"}, undefined]} testID="forgot-email" textContentType="emailAddress" value="  Ana@Example.com " />
+    at toBeNull (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:202:48)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:198:31)
+    at Object.expectSentState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:374:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+| Sonda | Cada it que cayó | Modo medido / matcher / Expected y Received | Correspondencia con la fila |
+|---|---|---|---|
+| M5-j | `un nuevo reenvío retira forgot-error en cuanto arranca y no lo repinta al resolver ok` | aserción: Error: expect(received).toBeNull()<br><br>Received: <TextInput autoCapitalize="none" autoComplete="email" className="input__input ios:outline-2 ios:outline-transparent ios:focus:outline-accent android:border-[1.5px] android:border-transparent android:focus:border-accent rtl:text-right input__input--variant-primary ios:shadow-field android:shadow-sm rounded-xl bg-default" editable={true} keyboardType="email-address" onChangeText={[Function bound dispatchSetState]} placeholderTextColorClassName="accent-field-placeholder" selectionColorClassName="accent-accent" style={[{"borderCurve": "continuous"}, undefined]} testID="forgot-email" textContentType="emailAddress" value="  Ana@Example.com " /><br>    at toBeNull (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:202:48)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17) | exigido |
+| M5-j | `forgot-resend repite el POST con el mismo correo y se deshabilita mientras vuela` | aserción: Error: expect(received).toBeNull()<br><br>Received: <TextInput autoCapitalize="none" autoComplete="email" className="input__input ios:outline-2 ios:outline-transparent ios:focus:outline-accent android:border-[1.5px] android:border-transparent android:focus:border-accent rtl:text-right input__input--variant-primary ios:shadow-field android:shadow-sm rounded-xl bg-default" editable={true} keyboardType="email-address" onChangeText={[Function bound dispatchSetState]} placeholderTextColorClassName="accent-field-placeholder" selectionColorClassName="accent-accent" style={[{"borderCurve": "continuous"}, undefined]} testID="forgot-email" textContentType="emailAddress" value="  Ana@Example.com " /><br>    at toBeNull (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:202:48)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17) | exigido |
+
+| Debe seguir verde | Estado medido |
+|---|---|
+| — | La fila no prescribe it verde |
+
+Todos los it exigidos cayeron; resultado apto para continuar según la regla de E2.
+
+```text
+$ git checkout HEAD -- mobile-pet-tracker/src/screens/forgot/index.tsx
+exit=0
+$ git diff --quiet -- mobile-pet-tracker/src/screens/forgot/index.tsx; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+```
+
+#### T20 — M7-j
+
+Sonda temporal en `mobile-pet-tracker/src/screens/forgot/index.tsx`, sin staging.
+
+#### M7-j
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r3-M7-j.json > /tmp/117-r3-M7-j.log 2>&1; echo "exit=$?"
+Test Suites: 1 failed, 1 total
+Tests:       6 failed, 25 passed, 31 total
+Snapshots:   0 total
+Time:        10.819 s, estimated 11 s
+exit=1
+```
+
+`#117 R6: reenviar repite la misma petición un 429 al reenviar pinta forgot-error sin salir de «Revisa tu correo»`
+
+```text
+Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: true
+Received: false
+    at toBe (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:173:33)
+    at expectForgotError (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:207:3)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:198:31)
+    at Object.expectSentState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:392:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R6: reenviar repite la misma petición un {"errors": [Array], "kind": "validation"} al reenviar pinta «Ingresa un correo electrónico válido» en forgot-error sin salir de «Revisa tu correo»`
+
+```text
+Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: true
+Received: false
+    at toBe (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:173:33)
+    at expectForgotError (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:207:3)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:198:31)
+    at expectSentState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:411:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R6: reenviar repite la misma petición un {"kind": "error"} al reenviar pinta «Algo salió mal» en forgot-error sin salir de «Revisa tu correo»`
+
+```text
+Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: true
+Received: false
+    at toBe (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:173:33)
+    at expectForgotError (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:207:3)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:198:31)
+    at expectSentState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:411:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R6: reenviar repite la misma petición un {"kind": "unreachable", "message": "network down"} al reenviar pinta «No se pudo conectar con el servidor» en forgot-error sin salir de «Revisa tu correo»`
+
+```text
+Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: true
+Received: false
+    at toBe (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:173:33)
+    at expectForgotError (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:207:3)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:198:31)
+    at expectSentState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:411:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R6: reenviar repite la misma petición un {"kind": "missing-config"} al reenviar pinta «Algo salió mal» en forgot-error sin salir de «Revisa tu correo»`
+
+```text
+Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: true
+Received: false
+    at toBe (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:173:33)
+    at expectForgotError (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:207:3)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:198:31)
+    at expectSentState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:411:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R6: reenviar repite la misma petición un segundo reenvío que vuelve a fallar pinta el copy del nuevo kind`
+
+```text
+Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: true
+Received: false
+    at toBe (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:173:33)
+    at expectForgotError (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:207:3)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:198:31)
+    at Object.expectSentState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:429:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+| Sonda | Cada it que cayó | Modo medido / matcher / Expected y Received | Correspondencia con la fila |
+|---|---|---|---|
+| M7-j | `un 429 al reenviar pinta forgot-error sin salir de «Revisa tu correo»` | aserción: Error: expect(received).toBe(expected) // Object.is equality<br><br>Expected: true<br>Received: false<br>    at toBe (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:173:33)<br>    at expectForgotError (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:207:3)<br>    at Generator.next (<anonymous>) | exigido |
+| M7-j | `un {"errors": [Array], "kind": "validation"} al reenviar pinta «Ingresa un correo electrónico válido» en forgot-error sin salir de «Revisa tu correo»` | aserción: Error: expect(received).toBe(expected) // Object.is equality<br><br>Expected: true<br>Received: false<br>    at toBe (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:173:33)<br>    at expectForgotError (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:207:3)<br>    at Generator.next (<anonymous>) | exigido |
+| M7-j | `un {"kind": "error"} al reenviar pinta «Algo salió mal» en forgot-error sin salir de «Revisa tu correo»` | aserción: Error: expect(received).toBe(expected) // Object.is equality<br><br>Expected: true<br>Received: false<br>    at toBe (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:173:33)<br>    at expectForgotError (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:207:3)<br>    at Generator.next (<anonymous>) | exigido |
+| M7-j | `un {"kind": "unreachable", "message": "network down"} al reenviar pinta «No se pudo conectar con el servidor» en forgot-error sin salir de «Revisa tu correo»` | aserción: Error: expect(received).toBe(expected) // Object.is equality<br><br>Expected: true<br>Received: false<br>    at toBe (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:173:33)<br>    at expectForgotError (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:207:3)<br>    at Generator.next (<anonymous>) | exigido |
+| M7-j | `un {"kind": "missing-config"} al reenviar pinta «Algo salió mal» en forgot-error sin salir de «Revisa tu correo»` | aserción: Error: expect(received).toBe(expected) // Object.is equality<br><br>Expected: true<br>Received: false<br>    at toBe (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:173:33)<br>    at expectForgotError (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:207:3)<br>    at Generator.next (<anonymous>) | exigido |
+| M7-j | `un segundo reenvío que vuelve a fallar pinta el copy del nuevo kind` | aserción: Error: expect(received).toBe(expected) // Object.is equality<br><br>Expected: true<br>Received: false<br>    at toBe (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:173:33)<br>    at expectForgotError (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:207:3)<br>    at Generator.next (<anonymous>) | exigido |
+
+| Debe seguir verde | Estado medido |
+|---|---|
+| — | La fila no prescribe it verde |
+
+Todos los it exigidos cayeron; resultado apto para continuar según la regla de E2.
+
+```text
+$ git checkout HEAD -- mobile-pet-tracker/src/screens/forgot/index.tsx
+exit=0
+$ git diff --quiet -- mobile-pet-tracker/src/screens/forgot/index.tsx; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+```
+
+#### T20 — M6-j
+
+Sonda temporal en `mobile-pet-tracker/src/screens/forgot/index.tsx`, sin staging.
+
+#### M6-j
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r3-M6-j.json > /tmp/117-r3-M6-j.log 2>&1; echo "exit=$?"
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 30 passed, 31 total
+Snapshots:   0 total
+Time:        9.561 s, estimated 11 s
+exit=1
+```
+
+`#117 R6: reenviar repite la misma petición un segundo reenvío que vuelve a fallar pinta el copy del nuevo kind`
+
+```text
+Error: Unable to find an element with testID: forgot-error
+
+<RNCSafeAreaProvider>
+  <View
+    testID="screen-forgot"
+  >
+    <RCTScrollView
+      testID="forgot-form"
+    >
+      <View>
+        <View>
+          <RNSVGSvgView>
+            <RNSVGGroup>
+              <RNSVGPath />
+            </RNSVGGroup>
+          </RNSVGSvgView>
+        </View>
+        <Text
+          testID="forgot-title"
+        >
+          Revisa tu correo
+        </Text>
+        <Text
+          testID="forgot-body"
+        >
+          Si existe una cuenta para ana@example.com, te enviamos un enlace para restablecer tu contraseña. Revisa tu bandeja de entrada y la carpeta de spam.
+        </Text>
+        <View
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "disabled": false,
+            }
+          }
+          accessible={true}
+          testID="forgot-resend"
+        >
+          <View
+            pointerEvents="none"
+            style={
+              {
+                "opacity": 0,
+              }
+            }
+          />
+          <Text>
+            Reenviar
+          </Text>
+        </View>
+        <View
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "disabled": false,
+            }
+          }
+          accessible={true}
+          testID="link-login"
+        >
+          <Text>
+            Volver al inicio de sesión
+          </Text>
+        </View>
+      </View>
+    </RCTScrollView>
+  </View>
+</RNCSafeAreaProvider>
+    at Object.<anonymous> (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:427:18)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+| Sonda | Cada it que cayó | Modo medido / matcher / Expected y Received | Correspondencia con la fila |
+|---|---|---|---|
+| M6-j | `un segundo reenvío que vuelve a fallar pinta el copy del nuevo kind` | consulta: Error: Unable to find an element with testID: forgot-error<br><br><RNCSafeAreaProvider><br>  <View | exigido |
+
+| Debe seguir verde | Estado medido |
+|---|---|
+| — | La fila no prescribe it verde |
+
+Todos los it exigidos cayeron; resultado apto para continuar según la regla de E2.
+
+```text
+$ git checkout HEAD -- mobile-pet-tracker/src/screens/forgot/index.tsx
+exit=0
+$ git diff --quiet -- mobile-pet-tracker/src/screens/forgot/index.tsx; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+```
+
+#### T20 — M6-k
+
+Sonda temporal en `mobile-pet-tracker/src/screens/forgot/index.tsx`, sin staging.
+
+#### M6-k
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r3-M6-k.json > /tmp/117-r3-M6-k.log 2>&1; echo "exit=$?"
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 30 passed, 31 total
+Snapshots:   0 total
+Time:        9.449 s, estimated 10 s
+exit=1
+```
+
+`#117 R6: reenviar repite la misma petición un segundo reenvío que vuelve a fallar pinta el copy del nuevo kind`
+
+```text
+Error: Unable to find an element with testID: forgot-error
+
+<RNCSafeAreaProvider>
+  <View
+    testID="screen-forgot"
+  >
+    <RCTScrollView
+      testID="forgot-form"
+    >
+      <View>
+        <View>
+          <RNSVGSvgView>
+            <RNSVGGroup>
+              <RNSVGPath />
+            </RNSVGGroup>
+          </RNSVGSvgView>
+        </View>
+        <Text
+          testID="forgot-title"
+        >
+          Revisa tu correo
+        </Text>
+        <Text
+          testID="forgot-body"
+        >
+          Si existe una cuenta para ana@example.com, te enviamos un enlace para restablecer tu contraseña. Revisa tu bandeja de entrada y la carpeta de spam.
+        </Text>
+        <View
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "disabled": false,
+            }
+          }
+          accessible={true}
+          testID="forgot-resend"
+        >
+          <View
+            pointerEvents="none"
+            style={
+              {
+                "opacity": 0,
+              }
+            }
+          />
+          <Text>
+            Reenviar
+          </Text>
+        </View>
+        <View
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "disabled": false,
+            }
+          }
+          accessible={true}
+          testID="link-login"
+        >
+          <Text>
+            Volver al inicio de sesión
+          </Text>
+        </View>
+      </View>
+    </RCTScrollView>
+  </View>
+</RNCSafeAreaProvider>
+    at Object.<anonymous> (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:431:18)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+| Sonda | Cada it que cayó | Modo medido / matcher / Expected y Received | Correspondencia con la fila |
+|---|---|---|---|
+| M6-k | `un segundo reenvío que vuelve a fallar pinta el copy del nuevo kind` | consulta: Error: Unable to find an element with testID: forgot-error<br><br><RNCSafeAreaProvider><br>  <View | exigido |
+
+| Debe seguir verde | Estado medido |
+|---|---|
+| — | La fila no prescribe it verde |
+
+Todos los it exigidos cayeron; resultado apto para continuar según la regla de E2.
+
+```text
+$ git checkout HEAD -- mobile-pet-tracker/src/screens/forgot/index.tsx
+exit=0
+$ git diff --quiet -- mobile-pet-tracker/src/screens/forgot/index.tsx; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+```
+
+#### T20 — M7-o
+
+Sonda temporal en `mobile-pet-tracker/src/screens/forgot/index.tsx`, sin staging.
+
+#### M7-o
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r3-M7-o.json > /tmp/117-r3-M7-o.log 2>&1; echo "exit=$?"
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 29 passed, 31 total
+Snapshots:   0 total
+Time:        8.956 s, estimated 10 s
+exit=1
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error un nuevo reenvío retira forgot-error en cuanto arranca y no lo repinta al resolver ok`
+
+```text
+Error: expect(instance).not.toBeDisabled()
+
+Received instance is disabled:
+  <View
+    accessibilityRole="button"
+    accessibilityState={
+      {
+        "disabled": true,
+      }
+    }
+    accessible={true}
+    testID="forgot-resend"
+  />
+    at Object.<anonymous> (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:352:18)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R6: reenviar repite la misma petición un segundo reenvío que vuelve a fallar pinta el copy del nuevo kind`
+
+```text
+Error: expect(instance).not.toBeDisabled()
+
+Received instance is disabled:
+  <View
+    accessibilityRole="button"
+    accessibilityState={
+      {
+        "disabled": true,
+      }
+    }
+    accessible={true}
+    testID="forgot-resend"
+  />
+    at Object.<anonymous> (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:428:18)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+| Sonda | Cada it que cayó | Modo medido / matcher / Expected y Received | Correspondencia con la fila |
+|---|---|---|---|
+| M7-o | `un nuevo reenvío retira forgot-error en cuanto arranca y no lo repinta al resolver ok` | aserción: Error: expect(instance).not.toBeDisabled()<br><br>Received instance is disabled:<br>  <View<br>    accessibilityRole="button"<br>    accessibilityState={ | exigido |
+| M7-o | `un segundo reenvío que vuelve a fallar pinta el copy del nuevo kind` | aserción: Error: expect(instance).not.toBeDisabled()<br><br>Received instance is disabled:<br>  <View<br>    accessibilityRole="button"<br>    accessibilityState={ | exigido |
+
+| Debe seguir verde | Estado medido |
+|---|---|
+| — | La fila no prescribe it verde |
+
+Todos los it exigidos cayeron; resultado apto para continuar según la regla de E2.
+
+```text
+$ git checkout HEAD -- mobile-pet-tracker/src/screens/forgot/index.tsx
+exit=0
+$ git diff --quiet -- mobile-pet-tracker/src/screens/forgot/index.tsx; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+```
+
+#### T20 — M7-l
+
+Sonda temporal en `mobile-pet-tracker/src/screens/forgot/index.tsx`, sin staging.
+
+#### M7-l
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r3-M7-l.json > /tmp/117-r3-M7-l.log 2>&1; echo "exit=$?"
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 29 passed, 31 total
+Snapshots:   0 total
+Time:        8.609 s, estimated 9 s
+exit=1
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error un reintento desde el formulario que vuelve a fallar pinta el copy del nuevo kind`
+
+```text
+Error: expect(instance).not.toBeDisabled()
+
+Received instance is disabled:
+  <View
+    accessibilityRole="button"
+    accessibilityState={
+      {
+        "disabled": true,
+      }
+    }
+    accessible={true}
+    testID="forgot-submit"
+  />
+    at Object.<anonymous> (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:295:18)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver`
+
+```text
+Error: expect(instance).not.toBeDisabled()
+
+Received instance is disabled:
+  <View
+    accessibilityRole="button"
+    accessibilityState={
+      {
+        "disabled": true,
+      }
+    }
+    accessible={true}
+    testID="forgot-resend"
+  />
+    at Object.<anonymous> (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:331:18)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+| Sonda | Cada it que cayó | Modo medido / matcher / Expected y Received | Correspondencia con la fila |
+|---|---|---|---|
+| M7-l | `un reintento desde el formulario que vuelve a fallar pinta el copy del nuevo kind` | aserción: Error: expect(instance).not.toBeDisabled()<br><br>Received instance is disabled:<br>  <View<br>    accessibilityRole="button"<br>    accessibilityState={ | exigido |
+| M7-l | `un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver` | aserción: Error: expect(instance).not.toBeDisabled()<br><br>Received instance is disabled:<br>  <View<br>    accessibilityRole="button"<br>    accessibilityState={ | exigido |
+
+| Debe seguir verde | Estado medido |
+|---|---|
+| — | La fila no prescribe it verde |
+
+Todos los it exigidos cayeron; resultado apto para continuar según la regla de E2.
+
+```text
+$ git checkout HEAD -- mobile-pet-tracker/src/screens/forgot/index.tsx
+exit=0
+$ git diff --quiet -- mobile-pet-tracker/src/screens/forgot/index.tsx; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+```
+
+#### T20 — X-d
+
+Sonda temporal en `mobile-pet-tracker/src/screens/forgot/index.tsx`, sin staging.
+
+#### X-d
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r3-X-d.json > /tmp/117-r3-X-d.log 2>&1; echo "exit=$?"
+Test Suites: 1 failed, 1 total
+Tests:       4 failed, 27 passed, 31 total
+Snapshots:   0 total
+Time:        6.544 s, estimated 9 s
+exit=1
+```
+
+`#117 R5: enviar pasa la pantalla a «Revisa tu correo» envía el correo recortado una sola vez y deshabilita forgot-submit mientras vuela la petición`
+
+```text
+Error: Unable to find an element with testID: link-login
+
+<RNCSafeAreaProvider>
+  <View
+    testID="screen-forgot"
+  >
+    <RCTScrollView
+      testID="forgot-form"
+    >
+      <View>
+        <View>
+          <RNSVGSvgView>
+            <RNSVGGroup>
+              <RNSVGPath />
+            </RNSVGGroup>
+          </RNSVGSvgView>
+        </View>
+        <Text
+          testID="forgot-title"
+        >
+          Recuperar contraseña
+        </Text>
+        <Text
+          testID="forgot-body"
+        >
+          Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.
+        </Text>
+        <View>
+          <View
+            accessible={true}
+          >
+            <Text>
+              Correo electrónico
+            </Text>
+          </View>
+          <TextInput
+            editable={true}
+            testID="forgot-email"
+            value="  Ana@Example.com "
+          />
+        </View>
+        <View
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "disabled": true,
+            }
+          }
+          accessible={true}
+          testID="forgot-submit"
+        >
+          <View
+            pointerEvents="none"
+            style={
+              {
+                "opacity": 0,
+              }
+            }
+          />
+          <Text>
+            Enviar enlace de recuperación
+          </Text>
+        </View>
+      </View>
+    </RCTScrollView>
+  </View>
+</RNCSafeAreaProvider>
+    at getByTestId (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:192:17)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:185:31)
+    at Object.expectFormState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:222:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver`
+
+```text
+Error: Unable to find an element with testID: link-login
+
+<RNCSafeAreaProvider>
+  <View
+    testID="screen-forgot"
+  >
+    <RCTScrollView
+      testID="forgot-form"
+    >
+      <View>
+        <View>
+          <RNSVGSvgView>
+            <RNSVGGroup>
+              <RNSVGPath />
+            </RNSVGGroup>
+          </RNSVGSvgView>
+        </View>
+        <Text
+          testID="forgot-title"
+        >
+          Recuperar contraseña
+        </Text>
+        <Text
+          testID="forgot-body"
+        >
+          Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.
+        </Text>
+        <View>
+          <View
+            accessible={true}
+          >
+            <Text>
+              Correo electrónico
+            </Text>
+          </View>
+          <TextInput
+            editable={true}
+            testID="forgot-email"
+            value="  Ana@Example.com "
+          />
+        </View>
+        <View
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "disabled": true,
+            }
+          }
+          accessible={true}
+          testID="forgot-submit"
+        >
+          <View
+            pointerEvents="none"
+            style={
+              {
+                "opacity": 0,
+              }
+            }
+          />
+          <Text>
+            Enviar enlace de recuperación
+          </Text>
+        </View>
+      </View>
+    </RCTScrollView>
+  </View>
+</RNCSafeAreaProvider>
+    at getByTestId (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:192:17)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:185:31)
+    at Object.expectFormState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:327:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error un nuevo reenvío retira forgot-error en cuanto arranca y no lo repinta al resolver ok`
+
+```text
+Error: Unable to find an element with testID: link-login
+
+<RNCSafeAreaProvider>
+  <View
+    testID="screen-forgot"
+  >
+    <RCTScrollView
+      testID="forgot-form"
+    >
+      <View>
+        <View>
+          <RNSVGSvgView>
+            <RNSVGGroup>
+              <RNSVGPath />
+            </RNSVGGroup>
+          </RNSVGSvgView>
+        </View>
+        <Text
+          testID="forgot-title"
+        >
+          Revisa tu correo
+        </Text>
+        <Text
+          testID="forgot-body"
+        >
+          Si existe una cuenta para Ana@Example.com, te enviamos un enlace para restablecer tu contraseña. Revisa tu bandeja de entrada y la carpeta de spam.
+        </Text>
+        <View
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "disabled": true,
+            }
+          }
+          accessible={true}
+          testID="forgot-resend"
+        >
+          <View
+            pointerEvents="none"
+            style={
+              {
+                "opacity": 0,
+              }
+            }
+          />
+          <Text>
+            Reenviar
+          </Text>
+        </View>
+      </View>
+    </RCTScrollView>
+  </View>
+</RNCSafeAreaProvider>
+    at getByTestId (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:205:17)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:198:31)
+    at Object.expectSentState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:350:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R6: reenviar repite la misma petición forgot-resend repite el POST con el mismo correo y se deshabilita mientras vuela`
+
+```text
+Error: Unable to find an element with testID: link-login
+
+<RNCSafeAreaProvider>
+  <View
+    testID="screen-forgot"
+  >
+    <RCTScrollView
+      testID="forgot-form"
+    >
+      <View>
+        <View>
+          <RNSVGSvgView>
+            <RNSVGGroup>
+              <RNSVGPath />
+            </RNSVGGroup>
+          </RNSVGSvgView>
+        </View>
+        <Text
+          testID="forgot-title"
+        >
+          Revisa tu correo
+        </Text>
+        <Text
+          testID="forgot-body"
+        >
+          Si existe una cuenta para Ana@Example.com, te enviamos un enlace para restablecer tu contraseña. Revisa tu bandeja de entrada y la carpeta de spam.
+        </Text>
+        <View
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "disabled": true,
+            }
+          }
+          accessible={true}
+          testID="forgot-resend"
+        >
+          <View
+            pointerEvents="none"
+            style={
+              {
+                "opacity": 0,
+              }
+            }
+          />
+          <Text>
+            Reenviar
+          </Text>
+        </View>
+      </View>
+    </RCTScrollView>
+  </View>
+</RNCSafeAreaProvider>
+    at getByTestId (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:205:17)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:198:31)
+    at Object.expectSentState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:374:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+| Sonda | Cada it que cayó | Modo medido / matcher / Expected y Received | Correspondencia con la fila |
+|---|---|---|---|
+| X-d | `envía el correo recortado una sola vez y deshabilita forgot-submit mientras vuela la petición` | consulta: Error: Unable to find an element with testID: link-login<br><br><RNCSafeAreaProvider><br>  <View | exigido |
+| X-d | `un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver` | consulta: Error: Unable to find an element with testID: link-login<br><br><RNCSafeAreaProvider><br>  <View | exigido |
+| X-d | `un nuevo reenvío retira forgot-error en cuanto arranca y no lo repinta al resolver ok` | consulta: Error: Unable to find an element with testID: link-login<br><br><RNCSafeAreaProvider><br>  <View | exigido |
+| X-d | `forgot-resend repite el POST con el mismo correo y se deshabilita mientras vuela` | consulta: Error: Unable to find an element with testID: link-login<br><br><RNCSafeAreaProvider><br>  <View | exigido |
+
+| Debe seguir verde | Estado medido |
+|---|---|
+| `link-login navega a /login sin petición de red` | passed |
+| `link-login navega a /login también desde «Revisa tu correo», sin petición nueva` | passed |
+
+Todos los it exigidos cayeron; resultado apto para continuar según la regla de E2.
+
+```text
+$ git checkout HEAD -- mobile-pet-tracker/src/screens/forgot/index.tsx
+exit=0
+$ git diff --quiet -- mobile-pet-tracker/src/screens/forgot/index.tsx; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+```
+
+#### T20 — X-e
+
+Sonda temporal en `mobile-pet-tracker/src/screens/forgot/index.tsx`, sin staging.
+
+#### X-e
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r3-X-e.json > /tmp/117-r3-X-e.log 2>&1; echo "exit=$?"
+Test Suites: 1 failed, 1 total
+Tests:       13 failed, 18 passed, 31 total
+Snapshots:   0 total
+Time:        6.585 s, estimated 7 s
+exit=1
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error mapea {"errors": [Array], "kind": "validation"} a «Ingresa un correo electrónico válido» en forgot-error, seleccionable, y deja el formulario en pie`
+
+```text
+Error: Unable to find an element with testID: link-login
+
+<RNCSafeAreaProvider>
+  <View
+    testID="screen-forgot"
+  >
+    <RCTScrollView
+      testID="forgot-form"
+    >
+      <View>
+        <View>
+          <RNSVGSvgView>
+            <RNSVGGroup>
+              <RNSVGPath />
+            </RNSVGGroup>
+          </RNSVGSvgView>
+        </View>
+        <Text
+          testID="forgot-title"
+        >
+          Recuperar contraseña
+        </Text>
+        <Text
+          testID="forgot-body"
+        >
+          Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.
+        </Text>
+        <View>
+          <View
+            accessible={true}
+          >
+            <Text>
+              Correo electrónico
+            </Text>
+          </View>
+          <TextInput
+            editable={true}
+            testID="forgot-email"
+            value="  Ana@Example.com "
+          />
+        </View>
+        <Text
+          testID="forgot-error"
+        >
+          Ingresa un correo electrónico válido
+        </Text>
+        <View
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "disabled": false,
+            }
+          }
+          accessible={true}
+          testID="forgot-submit"
+        >
+          <View
+            pointerEvents="none"
+            style={
+              {
+                "opacity": 0,
+              }
+            }
+          />
+          <Text>
+            Enviar enlace de recuperación
+          </Text>
+        </View>
+      </View>
+    </RCTScrollView>
+  </View>
+</RNCSafeAreaProvider>
+    at getByTestId (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:192:17)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:185:31)
+    at expectFormState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:279:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error mapea {"kind": "rate-limited"} a «Demasiados intentos. Inténtalo más tarde.» en forgot-error, seleccionable, y deja el formulario en pie`
+
+```text
+Error: Unable to find an element with testID: link-login
+
+<RNCSafeAreaProvider>
+  <View
+    testID="screen-forgot"
+  >
+    <RCTScrollView
+      testID="forgot-form"
+    >
+      <View>
+        <View>
+          <RNSVGSvgView>
+            <RNSVGGroup>
+              <RNSVGPath />
+            </RNSVGGroup>
+          </RNSVGSvgView>
+        </View>
+        <Text
+          testID="forgot-title"
+        >
+          Recuperar contraseña
+        </Text>
+        <Text
+          testID="forgot-body"
+        >
+          Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.
+        </Text>
+        <View>
+          <View
+            accessible={true}
+          >
+            <Text>
+              Correo electrónico
+            </Text>
+          </View>
+          <TextInput
+            editable={true}
+            testID="forgot-email"
+            value="  Ana@Example.com "
+          />
+        </View>
+        <Text
+          testID="forgot-error"
+        >
+          Demasiados intentos. Inténtalo más tarde.
+        </Text>
+        <View
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "disabled": false,
+            }
+          }
+          accessible={true}
+          testID="forgot-submit"
+        >
+          <View
+            pointerEvents="none"
+            style={
+              {
+                "opacity": 0,
+              }
+            }
+          />
+          <Text>
+            Enviar enlace de recuperación
+          </Text>
+        </View>
+      </View>
+    </RCTScrollView>
+  </View>
+</RNCSafeAreaProvider>
+    at getByTestId (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:192:17)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:185:31)
+    at expectFormState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:279:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error mapea {"kind": "error"} a «Algo salió mal» en forgot-error, seleccionable, y deja el formulario en pie`
+
+```text
+Error: Unable to find an element with testID: link-login
+
+<RNCSafeAreaProvider>
+  <View
+    testID="screen-forgot"
+  >
+    <RCTScrollView
+      testID="forgot-form"
+    >
+      <View>
+        <View>
+          <RNSVGSvgView>
+            <RNSVGGroup>
+              <RNSVGPath />
+            </RNSVGGroup>
+          </RNSVGSvgView>
+        </View>
+        <Text
+          testID="forgot-title"
+        >
+          Recuperar contraseña
+        </Text>
+        <Text
+          testID="forgot-body"
+        >
+          Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.
+        </Text>
+        <View>
+          <View
+            accessible={true}
+          >
+            <Text>
+              Correo electrónico
+            </Text>
+          </View>
+          <TextInput
+            editable={true}
+            testID="forgot-email"
+            value="  Ana@Example.com "
+          />
+        </View>
+        <Text
+          testID="forgot-error"
+        >
+          Algo salió mal
+        </Text>
+        <View
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "disabled": false,
+            }
+          }
+          accessible={true}
+          testID="forgot-submit"
+        >
+          <View
+            pointerEvents="none"
+            style={
+              {
+                "opacity": 0,
+              }
+            }
+          />
+          <Text>
+            Enviar enlace de recuperación
+          </Text>
+        </View>
+      </View>
+    </RCTScrollView>
+  </View>
+</RNCSafeAreaProvider>
+    at getByTestId (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:192:17)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:185:31)
+    at expectFormState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:279:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error mapea {"kind": "unreachable", "message": "network down"} a «No se pudo conectar con el servidor» en forgot-error, seleccionable, y deja el formulario en pie`
+
+```text
+Error: Unable to find an element with testID: link-login
+
+<RNCSafeAreaProvider>
+  <View
+    testID="screen-forgot"
+  >
+    <RCTScrollView
+      testID="forgot-form"
+    >
+      <View>
+        <View>
+          <RNSVGSvgView>
+            <RNSVGGroup>
+              <RNSVGPath />
+            </RNSVGGroup>
+          </RNSVGSvgView>
+        </View>
+        <Text
+          testID="forgot-title"
+        >
+          Recuperar contraseña
+        </Text>
+        <Text
+          testID="forgot-body"
+        >
+          Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.
+        </Text>
+        <View>
+          <View
+            accessible={true}
+          >
+            <Text>
+              Correo electrónico
+            </Text>
+          </View>
+          <TextInput
+            editable={true}
+            testID="forgot-email"
+            value="  Ana@Example.com "
+          />
+        </View>
+        <Text
+          testID="forgot-error"
+        >
+          No se pudo conectar con el servidor
+        </Text>
+        <View
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "disabled": false,
+            }
+          }
+          accessible={true}
+          testID="forgot-submit"
+        >
+          <View
+            pointerEvents="none"
+            style={
+              {
+                "opacity": 0,
+              }
+            }
+          />
+          <Text>
+            Enviar enlace de recuperación
+          </Text>
+        </View>
+      </View>
+    </RCTScrollView>
+  </View>
+</RNCSafeAreaProvider>
+    at getByTestId (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:192:17)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:185:31)
+    at expectFormState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:279:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error mapea {"kind": "missing-config"} a «Algo salió mal» en forgot-error, seleccionable, y deja el formulario en pie`
+
+```text
+Error: Unable to find an element with testID: link-login
+
+<RNCSafeAreaProvider>
+  <View
+    testID="screen-forgot"
+  >
+    <RCTScrollView
+      testID="forgot-form"
+    >
+      <View>
+        <View>
+          <RNSVGSvgView>
+            <RNSVGGroup>
+              <RNSVGPath />
+            </RNSVGGroup>
+          </RNSVGSvgView>
+        </View>
+        <Text
+          testID="forgot-title"
+        >
+          Recuperar contraseña
+        </Text>
+        <Text
+          testID="forgot-body"
+        >
+          Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.
+        </Text>
+        <View>
+          <View
+            accessible={true}
+          >
+            <Text>
+              Correo electrónico
+            </Text>
+          </View>
+          <TextInput
+            editable={true}
+            testID="forgot-email"
+            value="  Ana@Example.com "
+          />
+        </View>
+        <Text
+          testID="forgot-error"
+        >
+          Algo salió mal
+        </Text>
+        <View
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "disabled": false,
+            }
+          }
+          accessible={true}
+          testID="forgot-submit"
+        >
+          <View
+            pointerEvents="none"
+            style={
+              {
+                "opacity": 0,
+              }
+            }
+          />
+          <Text>
+            Enviar enlace de recuperación
+          </Text>
+        </View>
+      </View>
+    </RCTScrollView>
+  </View>
+</RNCSafeAreaProvider>
+    at getByTestId (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:192:17)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:185:31)
+    at expectFormState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:279:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error un reintento desde el formulario que vuelve a fallar pinta el copy del nuevo kind`
+
+```text
+Error: Unable to find an element with testID: link-login
+
+<RNCSafeAreaProvider>
+  <View
+    testID="screen-forgot"
+  >
+    <RCTScrollView
+      testID="forgot-form"
+    >
+      <View>
+        <View>
+          <RNSVGSvgView>
+            <RNSVGGroup>
+              <RNSVGPath />
+            </RNSVGGroup>
+          </RNSVGSvgView>
+        </View>
+        <Text
+          testID="forgot-title"
+        >
+          Recuperar contraseña
+        </Text>
+        <Text
+          testID="forgot-body"
+        >
+          Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.
+        </Text>
+        <View>
+          <View
+            accessible={true}
+          >
+            <Text>
+              Correo electrónico
+            </Text>
+          </View>
+          <TextInput
+            editable={true}
+            testID="forgot-email"
+            value="ana@example.com"
+          />
+        </View>
+        <Text
+          testID="forgot-error"
+        >
+          Demasiados intentos. Inténtalo más tarde.
+        </Text>
+        <View
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "disabled": false,
+            }
+          }
+          accessible={true}
+          testID="forgot-submit"
+        >
+          <View
+            pointerEvents="none"
+            style={
+              {
+                "opacity": 0,
+              }
+            }
+          />
+          <Text>
+            Enviar enlace de recuperación
+          </Text>
+        </View>
+      </View>
+    </RCTScrollView>
+  </View>
+</RNCSafeAreaProvider>
+    at getByTestId (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:192:17)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:185:31)
+    at Object.expectFormState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:296:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver`
+
+```text
+Error: Unable to find an element with testID: link-login
+
+<RNCSafeAreaProvider>
+  <View
+    testID="screen-forgot"
+  >
+    <RCTScrollView
+      testID="forgot-form"
+    >
+      <View>
+        <View>
+          <RNSVGSvgView>
+            <RNSVGGroup>
+              <RNSVGPath />
+            </RNSVGGroup>
+          </RNSVGSvgView>
+        </View>
+        <Text
+          testID="forgot-title"
+        >
+          Recuperar contraseña
+        </Text>
+        <Text
+          testID="forgot-body"
+        >
+          Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.
+        </Text>
+        <View>
+          <View
+            accessible={true}
+          >
+            <Text>
+              Correo electrónico
+            </Text>
+          </View>
+          <TextInput
+            editable={true}
+            testID="forgot-email"
+            value="  Ana@Example.com "
+          />
+        </View>
+        <Text
+          testID="forgot-error"
+        >
+          Algo salió mal
+        </Text>
+        <View
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "disabled": false,
+            }
+          }
+          accessible={true}
+          testID="forgot-submit"
+        >
+          <View
+            pointerEvents="none"
+            style={
+              {
+                "opacity": 0,
+              }
+            }
+          />
+          <Text>
+            Enviar enlace de recuperación
+          </Text>
+        </View>
+      </View>
+    </RCTScrollView>
+  </View>
+</RNCSafeAreaProvider>
+    at getByTestId (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:192:17)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:185:31)
+    at Object.expectFormState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:321:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R6: reenviar repite la misma petición un 429 al reenviar pinta forgot-error sin salir de «Revisa tu correo»`
+
+```text
+Error: Unable to find an element with testID: link-login
+
+<RNCSafeAreaProvider>
+  <View
+    testID="screen-forgot"
+  >
+    <RCTScrollView
+      testID="forgot-form"
+    >
+      <View>
+        <View>
+          <RNSVGSvgView>
+            <RNSVGGroup>
+              <RNSVGPath />
+            </RNSVGGroup>
+          </RNSVGSvgView>
+        </View>
+        <Text
+          testID="forgot-title"
+        >
+          Revisa tu correo
+        </Text>
+        <Text
+          testID="forgot-body"
+        >
+          Si existe una cuenta para ana@example.com, te enviamos un enlace para restablecer tu contraseña. Revisa tu bandeja de entrada y la carpeta de spam.
+        </Text>
+        <Text
+          testID="forgot-error"
+        >
+          Demasiados intentos. Inténtalo más tarde.
+        </Text>
+        <View
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "disabled": false,
+            }
+          }
+          accessible={true}
+          testID="forgot-resend"
+        >
+          <View
+            pointerEvents="none"
+            style={
+              {
+                "opacity": 0,
+              }
+            }
+          />
+          <Text>
+            Reenviar
+          </Text>
+        </View>
+      </View>
+    </RCTScrollView>
+  </View>
+</RNCSafeAreaProvider>
+    at getByTestId (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:205:17)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:198:31)
+    at Object.expectSentState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:392:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R6: reenviar repite la misma petición un {"errors": [Array], "kind": "validation"} al reenviar pinta «Ingresa un correo electrónico válido» en forgot-error sin salir de «Revisa tu correo»`
+
+```text
+Error: Unable to find an element with testID: link-login
+
+<RNCSafeAreaProvider>
+  <View
+    testID="screen-forgot"
+  >
+    <RCTScrollView
+      testID="forgot-form"
+    >
+      <View>
+        <View>
+          <RNSVGSvgView>
+            <RNSVGGroup>
+              <RNSVGPath />
+            </RNSVGGroup>
+          </RNSVGSvgView>
+        </View>
+        <Text
+          testID="forgot-title"
+        >
+          Revisa tu correo
+        </Text>
+        <Text
+          testID="forgot-body"
+        >
+          Si existe una cuenta para ana@example.com, te enviamos un enlace para restablecer tu contraseña. Revisa tu bandeja de entrada y la carpeta de spam.
+        </Text>
+        <Text
+          testID="forgot-error"
+        >
+          Ingresa un correo electrónico válido
+        </Text>
+        <View
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "disabled": false,
+            }
+          }
+          accessible={true}
+          testID="forgot-resend"
+        >
+          <View
+            pointerEvents="none"
+            style={
+              {
+                "opacity": 0,
+              }
+            }
+          />
+          <Text>
+            Reenviar
+          </Text>
+        </View>
+      </View>
+    </RCTScrollView>
+  </View>
+</RNCSafeAreaProvider>
+    at getByTestId (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:205:17)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:198:31)
+    at expectSentState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:411:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R6: reenviar repite la misma petición un {"kind": "error"} al reenviar pinta «Algo salió mal» en forgot-error sin salir de «Revisa tu correo»`
+
+```text
+Error: Unable to find an element with testID: link-login
+
+<RNCSafeAreaProvider>
+  <View
+    testID="screen-forgot"
+  >
+    <RCTScrollView
+      testID="forgot-form"
+    >
+      <View>
+        <View>
+          <RNSVGSvgView>
+            <RNSVGGroup>
+              <RNSVGPath />
+            </RNSVGGroup>
+          </RNSVGSvgView>
+        </View>
+        <Text
+          testID="forgot-title"
+        >
+          Revisa tu correo
+        </Text>
+        <Text
+          testID="forgot-body"
+        >
+          Si existe una cuenta para ana@example.com, te enviamos un enlace para restablecer tu contraseña. Revisa tu bandeja de entrada y la carpeta de spam.
+        </Text>
+        <Text
+          testID="forgot-error"
+        >
+          Algo salió mal
+        </Text>
+        <View
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "disabled": false,
+            }
+          }
+          accessible={true}
+          testID="forgot-resend"
+        >
+          <View
+            pointerEvents="none"
+            style={
+              {
+                "opacity": 0,
+              }
+            }
+          />
+          <Text>
+            Reenviar
+          </Text>
+        </View>
+      </View>
+    </RCTScrollView>
+  </View>
+</RNCSafeAreaProvider>
+    at getByTestId (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:205:17)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:198:31)
+    at expectSentState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:411:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R6: reenviar repite la misma petición un {"kind": "unreachable", "message": "network down"} al reenviar pinta «No se pudo conectar con el servidor» en forgot-error sin salir de «Revisa tu correo»`
+
+```text
+Error: Unable to find an element with testID: link-login
+
+<RNCSafeAreaProvider>
+  <View
+    testID="screen-forgot"
+  >
+    <RCTScrollView
+      testID="forgot-form"
+    >
+      <View>
+        <View>
+          <RNSVGSvgView>
+            <RNSVGGroup>
+              <RNSVGPath />
+            </RNSVGGroup>
+          </RNSVGSvgView>
+        </View>
+        <Text
+          testID="forgot-title"
+        >
+          Revisa tu correo
+        </Text>
+        <Text
+          testID="forgot-body"
+        >
+          Si existe una cuenta para ana@example.com, te enviamos un enlace para restablecer tu contraseña. Revisa tu bandeja de entrada y la carpeta de spam.
+        </Text>
+        <Text
+          testID="forgot-error"
+        >
+          No se pudo conectar con el servidor
+        </Text>
+        <View
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "disabled": false,
+            }
+          }
+          accessible={true}
+          testID="forgot-resend"
+        >
+          <View
+            pointerEvents="none"
+            style={
+              {
+                "opacity": 0,
+              }
+            }
+          />
+          <Text>
+            Reenviar
+          </Text>
+        </View>
+      </View>
+    </RCTScrollView>
+  </View>
+</RNCSafeAreaProvider>
+    at getByTestId (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:205:17)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:198:31)
+    at expectSentState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:411:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R6: reenviar repite la misma petición un {"kind": "missing-config"} al reenviar pinta «Algo salió mal» en forgot-error sin salir de «Revisa tu correo»`
+
+```text
+Error: Unable to find an element with testID: link-login
+
+<RNCSafeAreaProvider>
+  <View
+    testID="screen-forgot"
+  >
+    <RCTScrollView
+      testID="forgot-form"
+    >
+      <View>
+        <View>
+          <RNSVGSvgView>
+            <RNSVGGroup>
+              <RNSVGPath />
+            </RNSVGGroup>
+          </RNSVGSvgView>
+        </View>
+        <Text
+          testID="forgot-title"
+        >
+          Revisa tu correo
+        </Text>
+        <Text
+          testID="forgot-body"
+        >
+          Si existe una cuenta para ana@example.com, te enviamos un enlace para restablecer tu contraseña. Revisa tu bandeja de entrada y la carpeta de spam.
+        </Text>
+        <Text
+          testID="forgot-error"
+        >
+          Algo salió mal
+        </Text>
+        <View
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "disabled": false,
+            }
+          }
+          accessible={true}
+          testID="forgot-resend"
+        >
+          <View
+            pointerEvents="none"
+            style={
+              {
+                "opacity": 0,
+              }
+            }
+          />
+          <Text>
+            Reenviar
+          </Text>
+        </View>
+      </View>
+    </RCTScrollView>
+  </View>
+</RNCSafeAreaProvider>
+    at getByTestId (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:205:17)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:198:31)
+    at expectSentState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:411:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R6: reenviar repite la misma petición un segundo reenvío que vuelve a fallar pinta el copy del nuevo kind`
+
+```text
+Error: Unable to find an element with testID: link-login
+
+<RNCSafeAreaProvider>
+  <View
+    testID="screen-forgot"
+  >
+    <RCTScrollView
+      testID="forgot-form"
+    >
+      <View>
+        <View>
+          <RNSVGSvgView>
+            <RNSVGGroup>
+              <RNSVGPath />
+            </RNSVGGroup>
+          </RNSVGSvgView>
+        </View>
+        <Text
+          testID="forgot-title"
+        >
+          Revisa tu correo
+        </Text>
+        <Text
+          testID="forgot-body"
+        >
+          Si existe una cuenta para ana@example.com, te enviamos un enlace para restablecer tu contraseña. Revisa tu bandeja de entrada y la carpeta de spam.
+        </Text>
+        <Text
+          testID="forgot-error"
+        >
+          Algo salió mal
+        </Text>
+        <View
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "disabled": false,
+            }
+          }
+          accessible={true}
+          testID="forgot-resend"
+        >
+          <View
+            pointerEvents="none"
+            style={
+              {
+                "opacity": 0,
+              }
+            }
+          />
+          <Text>
+            Reenviar
+          </Text>
+        </View>
+      </View>
+    </RCTScrollView>
+  </View>
+</RNCSafeAreaProvider>
+    at getByTestId (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:205:17)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:198:31)
+    at Object.expectSentState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:429:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+| Sonda | Cada it que cayó | Modo medido / matcher / Expected y Received | Correspondencia con la fila |
+|---|---|---|---|
+| X-e | `mapea {"errors": [Array], "kind": "validation"} a «Ingresa un correo electrónico válido» en forgot-error, seleccionable, y deja el formulario en pie` | consulta: Error: Unable to find an element with testID: link-login<br><br><RNCSafeAreaProvider><br>  <View | exigido |
+| X-e | `mapea {"kind": "rate-limited"} a «Demasiados intentos. Inténtalo más tarde.» en forgot-error, seleccionable, y deja el formulario en pie` | consulta: Error: Unable to find an element with testID: link-login<br><br><RNCSafeAreaProvider><br>  <View | exigido |
+| X-e | `mapea {"kind": "error"} a «Algo salió mal» en forgot-error, seleccionable, y deja el formulario en pie` | consulta: Error: Unable to find an element with testID: link-login<br><br><RNCSafeAreaProvider><br>  <View | exigido |
+| X-e | `mapea {"kind": "unreachable", "message": "network down"} a «No se pudo conectar con el servidor» en forgot-error, seleccionable, y deja el formulario en pie` | consulta: Error: Unable to find an element with testID: link-login<br><br><RNCSafeAreaProvider><br>  <View | exigido |
+| X-e | `mapea {"kind": "missing-config"} a «Algo salió mal» en forgot-error, seleccionable, y deja el formulario en pie` | consulta: Error: Unable to find an element with testID: link-login<br><br><RNCSafeAreaProvider><br>  <View | exigido |
+| X-e | `un reintento desde el formulario que vuelve a fallar pinta el copy del nuevo kind` | consulta: Error: Unable to find an element with testID: link-login<br><br><RNCSafeAreaProvider><br>  <View | exigido |
+| X-e | `un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver` | consulta: Error: Unable to find an element with testID: link-login<br><br><RNCSafeAreaProvider><br>  <View | exigido |
+| X-e | `un 429 al reenviar pinta forgot-error sin salir de «Revisa tu correo»` | consulta: Error: Unable to find an element with testID: link-login<br><br><RNCSafeAreaProvider><br>  <View | exigido |
+| X-e | `un {"errors": [Array], "kind": "validation"} al reenviar pinta «Ingresa un correo electrónico válido» en forgot-error sin salir de «Revisa tu correo»` | consulta: Error: Unable to find an element with testID: link-login<br><br><RNCSafeAreaProvider><br>  <View | exigido |
+| X-e | `un {"kind": "error"} al reenviar pinta «Algo salió mal» en forgot-error sin salir de «Revisa tu correo»` | consulta: Error: Unable to find an element with testID: link-login<br><br><RNCSafeAreaProvider><br>  <View | exigido |
+| X-e | `un {"kind": "unreachable", "message": "network down"} al reenviar pinta «No se pudo conectar con el servidor» en forgot-error sin salir de «Revisa tu correo»` | consulta: Error: Unable to find an element with testID: link-login<br><br><RNCSafeAreaProvider><br>  <View | exigido |
+| X-e | `un {"kind": "missing-config"} al reenviar pinta «Algo salió mal» en forgot-error sin salir de «Revisa tu correo»` | consulta: Error: Unable to find an element with testID: link-login<br><br><RNCSafeAreaProvider><br>  <View | exigido |
+| X-e | `un segundo reenvío que vuelve a fallar pinta el copy del nuevo kind` | consulta: Error: Unable to find an element with testID: link-login<br><br><RNCSafeAreaProvider><br>  <View | exigido |
+
+| Debe seguir verde | Estado medido |
+|---|---|
+| `link-login navega a /login sin petición de red` | passed |
+| `link-login navega a /login también desde «Revisa tu correo», sin petición nueva` | passed |
+
+Todos los it exigidos cayeron; resultado apto para continuar según la regla de E2.
+
+```text
+$ git checkout HEAD -- mobile-pet-tracker/src/screens/forgot/index.tsx
+exit=0
+$ git diff --quiet -- mobile-pet-tracker/src/screens/forgot/index.tsx; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+```
+
+#### T20 — M3-f
+
+Sonda temporal en `mobile-pet-tracker/src/screens/forgot/index.tsx`, sin staging.
+
+#### M3-f
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r3-M3-f.json > /tmp/117-r3-M3-f.log 2>&1; echo "exit=$?"
+Test Suites: 1 failed, 1 total
+Tests:       4 failed, 27 passed, 31 total
+Snapshots:   0 total
+Time:        6.283 s, estimated 7 s
+exit=1
+```
+
+`#117 R5: enviar pasa la pantalla a «Revisa tu correo» envía el correo recortado una sola vez y deshabilita forgot-submit mientras vuela la petición`
+
+```text
+Error: expect(jest.fn()).toHaveBeenCalledTimes(expected)
+
+Expected number of calls: 1
+Received number of calls: 0
+    at toHaveBeenCalledTimes (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:180:27)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver`
+
+```text
+Error: expect(jest.fn()).toHaveBeenCalledTimes(expected)
+
+Expected number of calls: 1
+Received number of calls: 0
+    at toHaveBeenCalledTimes (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:180:27)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error un nuevo reenvío retira forgot-error en cuanto arranca y no lo repinta al resolver ok`
+
+```text
+Error: expect(jest.fn()).toHaveBeenCalledTimes(expected)
+
+Expected number of calls: 1
+Received number of calls: 0
+    at toHaveBeenCalledTimes (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:180:27)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R6: reenviar repite la misma petición forgot-resend repite el POST con el mismo correo y se deshabilita mientras vuela`
+
+```text
+Error: expect(jest.fn()).toHaveBeenCalledTimes(expected)
+
+Expected number of calls: 1
+Received number of calls: 0
+    at toHaveBeenCalledTimes (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:180:27)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+| Sonda | Cada it que cayó | Modo medido / matcher / Expected y Received | Correspondencia con la fila |
+|---|---|---|---|
+| M3-f | `envía el correo recortado una sola vez y deshabilita forgot-submit mientras vuela la petición` | aserción: Error: expect(jest.fn()).toHaveBeenCalledTimes(expected)<br><br>Expected number of calls: 1<br>Received number of calls: 0<br>    at toHaveBeenCalledTimes (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:180:27)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17) | exigido |
+| M3-f | `un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver` | aserción: Error: expect(jest.fn()).toHaveBeenCalledTimes(expected)<br><br>Expected number of calls: 1<br>Received number of calls: 0<br>    at toHaveBeenCalledTimes (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:180:27)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17) | exigido |
+| M3-f | `un nuevo reenvío retira forgot-error en cuanto arranca y no lo repinta al resolver ok` | aserción: Error: expect(jest.fn()).toHaveBeenCalledTimes(expected)<br><br>Expected number of calls: 1<br>Received number of calls: 0<br>    at toHaveBeenCalledTimes (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:180:27)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17) | exigido |
+| M3-f | `forgot-resend repite el POST con el mismo correo y se deshabilita mientras vuela` | aserción: Error: expect(jest.fn()).toHaveBeenCalledTimes(expected)<br><br>Expected number of calls: 1<br>Received number of calls: 0<br>    at toHaveBeenCalledTimes (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:180:27)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17) | exigido |
+
+| Debe seguir verde | Estado medido |
+|---|---|
+| `link-login navega a /login sin petición de red` | passed |
+| `link-login navega a /login también desde «Revisa tu correo», sin petición nueva` | passed |
+
+Todos los it exigidos cayeron; resultado apto para continuar según la regla de E2.
+
+```text
+$ git checkout HEAD -- mobile-pet-tracker/src/screens/forgot/index.tsx
+exit=0
+$ git diff --quiet -- mobile-pet-tracker/src/screens/forgot/index.tsx; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+```
+
+#### T20 — M3-g
+
+Sonda temporal en `mobile-pet-tracker/src/screens/forgot/index.tsx`, sin staging.
+
+#### M3-g
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r3-M3-g.json > /tmp/117-r3-M3-g.log 2>&1; echo "exit=$?"
+Test Suites: 1 failed, 1 total
+Tests:       4 failed, 27 passed, 31 total
+Snapshots:   0 total
+Time:        6.913 s, estimated 7 s
+exit=1
+```
+
+`#117 R5: enviar pasa la pantalla a «Revisa tu correo» envía el correo recortado una sola vez y deshabilita forgot-submit mientras vuela la petición`
+
+```text
+Error: expect(instance).toHaveTextContent()
+
+Expected instance to have text content:
+  Volver al inicio de sesión
+Received:
+  Reenviar
+    at toHaveTextContent (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:192:44)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:185:31)
+    at Object.expectFormState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:222:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver`
+
+```text
+Error: expect(instance).toHaveTextContent()
+
+Expected instance to have text content:
+  Volver al inicio de sesión
+Received:
+  Reenviar
+    at toHaveTextContent (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:192:44)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:185:31)
+    at Object.expectFormState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:327:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error un nuevo reenvío retira forgot-error en cuanto arranca y no lo repinta al resolver ok`
+
+```text
+Error: expect(instance).toHaveTextContent()
+
+Expected instance to have text content:
+  Volver al inicio de sesión
+Received:
+  Reenviar
+    at toHaveTextContent (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:205:44)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:198:31)
+    at Object.expectSentState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:350:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R6: reenviar repite la misma petición forgot-resend repite el POST con el mismo correo y se deshabilita mientras vuela`
+
+```text
+Error: expect(instance).toHaveTextContent()
+
+Expected instance to have text content:
+  Volver al inicio de sesión
+Received:
+  Reenviar
+    at toHaveTextContent (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:205:44)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:198:31)
+    at Object.expectSentState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:374:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+| Sonda | Cada it que cayó | Modo medido / matcher / Expected y Received | Correspondencia con la fila |
+|---|---|---|---|
+| M3-g | `envía el correo recortado una sola vez y deshabilita forgot-submit mientras vuela la petición` | aserción: Error: expect(instance).toHaveTextContent()<br><br>Expected instance to have text content:<br>  Volver al inicio de sesión<br>Received:<br>  Reenviar<br>    at toHaveTextContent (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:192:44)<br>    at Generator.next (<anonymous>) | exigido |
+| M3-g | `un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver` | aserción: Error: expect(instance).toHaveTextContent()<br><br>Expected instance to have text content:<br>  Volver al inicio de sesión<br>Received:<br>  Reenviar<br>    at toHaveTextContent (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:192:44)<br>    at Generator.next (<anonymous>) | exigido |
+| M3-g | `un nuevo reenvío retira forgot-error en cuanto arranca y no lo repinta al resolver ok` | aserción: Error: expect(instance).toHaveTextContent()<br><br>Expected instance to have text content:<br>  Volver al inicio de sesión<br>Received:<br>  Reenviar<br>    at toHaveTextContent (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:205:44)<br>    at Generator.next (<anonymous>) | exigido |
+| M3-g | `forgot-resend repite el POST con el mismo correo y se deshabilita mientras vuela` | aserción: Error: expect(instance).toHaveTextContent()<br><br>Expected instance to have text content:<br>  Volver al inicio de sesión<br>Received:<br>  Reenviar<br>    at toHaveTextContent (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:205:44)<br>    at Generator.next (<anonymous>) | exigido |
+
+| Debe seguir verde | Estado medido |
+|---|---|
+| `link-login navega a /login sin petición de red` | passed |
+| `link-login navega a /login también desde «Revisa tu correo», sin petición nueva` | passed |
+
+Todos los it exigidos cayeron; resultado apto para continuar según la regla de E2.
+
+```text
+$ git checkout HEAD -- mobile-pet-tracker/src/screens/forgot/index.tsx
+exit=0
+$ git diff --quiet -- mobile-pet-tracker/src/screens/forgot/index.tsx; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+```
+
+#### T20 — M3-h
+
+Sonda temporal en `mobile-pet-tracker/src/screens/forgot/index.tsx`, sin staging.
+
+#### M3-h
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r3-M3-h.json > /tmp/117-r3-M3-h.log 2>&1; echo "exit=$?"
+Test Suites: 1 failed, 1 total
+Tests:       13 failed, 18 passed, 31 total
+Snapshots:   0 total
+Time:        6.549 s, estimated 7 s
+exit=1
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error mapea {"errors": [Array], "kind": "validation"} a «Ingresa un correo electrónico válido» en forgot-error, seleccionable, y deja el formulario en pie`
+
+```text
+Error: expect(jest.fn()).toHaveBeenCalledTimes(expected)
+
+Expected number of calls: 1
+Received number of calls: 2
+    at toHaveBeenCalledTimes (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:182:30)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error mapea {"kind": "rate-limited"} a «Demasiados intentos. Inténtalo más tarde.» en forgot-error, seleccionable, y deja el formulario en pie`
+
+```text
+Error: expect(jest.fn()).toHaveBeenCalledTimes(expected)
+
+Expected number of calls: 1
+Received number of calls: 2
+    at toHaveBeenCalledTimes (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:182:30)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error mapea {"kind": "error"} a «Algo salió mal» en forgot-error, seleccionable, y deja el formulario en pie`
+
+```text
+Error: expect(jest.fn()).toHaveBeenCalledTimes(expected)
+
+Expected number of calls: 1
+Received number of calls: 2
+    at toHaveBeenCalledTimes (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:182:30)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error mapea {"kind": "unreachable", "message": "network down"} a «No se pudo conectar con el servidor» en forgot-error, seleccionable, y deja el formulario en pie`
+
+```text
+Error: expect(jest.fn()).toHaveBeenCalledTimes(expected)
+
+Expected number of calls: 1
+Received number of calls: 2
+    at toHaveBeenCalledTimes (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:182:30)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error mapea {"kind": "missing-config"} a «Algo salió mal» en forgot-error, seleccionable, y deja el formulario en pie`
+
+```text
+Error: expect(jest.fn()).toHaveBeenCalledTimes(expected)
+
+Expected number of calls: 1
+Received number of calls: 2
+    at toHaveBeenCalledTimes (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:182:30)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error un reintento desde el formulario que vuelve a fallar pinta el copy del nuevo kind`
+
+```text
+Error: expect(jest.fn()).toHaveBeenCalledTimes(expected)
+
+Expected number of calls: 2
+Received number of calls: 3
+    at toHaveBeenCalledTimes (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:182:30)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver`
+
+```text
+Error: expect(jest.fn()).toHaveBeenCalledTimes(expected)
+
+Expected number of calls: 1
+Received number of calls: 2
+    at toHaveBeenCalledTimes (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:182:30)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R6: reenviar repite la misma petición un 429 al reenviar pinta forgot-error sin salir de «Revisa tu correo»`
+
+```text
+TypeError: Cannot read properties of undefined (reading 'kind')
+    at kind (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.tsx:30:22)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+Error: expect(jest.fn()).toHaveBeenCalledTimes(expected)
+
+Expected number of calls: 2
+Received number of calls: 3
+    at toHaveBeenCalledTimes (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:182:30)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R6: reenviar repite la misma petición un {"errors": [Array], "kind": "validation"} al reenviar pinta «Ingresa un correo electrónico válido» en forgot-error sin salir de «Revisa tu correo»`
+
+```text
+TypeError: Cannot read properties of undefined (reading 'kind')
+    at kind (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.tsx:30:22)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+Error: expect(jest.fn()).toHaveBeenCalledTimes(expected)
+
+Expected number of calls: 2
+Received number of calls: 3
+    at toHaveBeenCalledTimes (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:182:30)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R6: reenviar repite la misma petición un {"kind": "error"} al reenviar pinta «Algo salió mal» en forgot-error sin salir de «Revisa tu correo»`
+
+```text
+TypeError: Cannot read properties of undefined (reading 'kind')
+    at kind (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.tsx:30:22)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+Error: expect(jest.fn()).toHaveBeenCalledTimes(expected)
+
+Expected number of calls: 2
+Received number of calls: 3
+    at toHaveBeenCalledTimes (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:182:30)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R6: reenviar repite la misma petición un {"kind": "unreachable", "message": "network down"} al reenviar pinta «No se pudo conectar con el servidor» en forgot-error sin salir de «Revisa tu correo»`
+
+```text
+TypeError: Cannot read properties of undefined (reading 'kind')
+    at kind (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.tsx:30:22)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+Error: expect(jest.fn()).toHaveBeenCalledTimes(expected)
+
+Expected number of calls: 2
+Received number of calls: 3
+    at toHaveBeenCalledTimes (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:182:30)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R6: reenviar repite la misma petición un {"kind": "missing-config"} al reenviar pinta «Algo salió mal» en forgot-error sin salir de «Revisa tu correo»`
+
+```text
+TypeError: Cannot read properties of undefined (reading 'kind')
+    at kind (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.tsx:30:22)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+Error: expect(jest.fn()).toHaveBeenCalledTimes(expected)
+
+Expected number of calls: 2
+Received number of calls: 3
+    at toHaveBeenCalledTimes (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:182:30)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R6: reenviar repite la misma petición un segundo reenvío que vuelve a fallar pinta el copy del nuevo kind`
+
+```text
+Error: expect(jest.fn()).toHaveBeenCalledTimes(expected)
+
+Expected number of calls: 3
+Received number of calls: 4
+    at toHaveBeenCalledTimes (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:182:30)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+| Sonda | Cada it que cayó | Modo medido / matcher / Expected y Received | Correspondencia con la fila |
+|---|---|---|---|
+| M3-h | `mapea {"errors": [Array], "kind": "validation"} a «Ingresa un correo electrónico válido» en forgot-error, seleccionable, y deja el formulario en pie` | aserción: Error: expect(jest.fn()).toHaveBeenCalledTimes(expected)<br><br>Expected number of calls: 1<br>Received number of calls: 2<br>    at toHaveBeenCalledTimes (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:182:30)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17) | exigido |
+| M3-h | `mapea {"kind": "rate-limited"} a «Demasiados intentos. Inténtalo más tarde.» en forgot-error, seleccionable, y deja el formulario en pie` | aserción: Error: expect(jest.fn()).toHaveBeenCalledTimes(expected)<br><br>Expected number of calls: 1<br>Received number of calls: 2<br>    at toHaveBeenCalledTimes (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:182:30)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17) | exigido |
+| M3-h | `mapea {"kind": "error"} a «Algo salió mal» en forgot-error, seleccionable, y deja el formulario en pie` | aserción: Error: expect(jest.fn()).toHaveBeenCalledTimes(expected)<br><br>Expected number of calls: 1<br>Received number of calls: 2<br>    at toHaveBeenCalledTimes (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:182:30)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17) | exigido |
+| M3-h | `mapea {"kind": "unreachable", "message": "network down"} a «No se pudo conectar con el servidor» en forgot-error, seleccionable, y deja el formulario en pie` | aserción: Error: expect(jest.fn()).toHaveBeenCalledTimes(expected)<br><br>Expected number of calls: 1<br>Received number of calls: 2<br>    at toHaveBeenCalledTimes (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:182:30)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17) | exigido |
+| M3-h | `mapea {"kind": "missing-config"} a «Algo salió mal» en forgot-error, seleccionable, y deja el formulario en pie` | aserción: Error: expect(jest.fn()).toHaveBeenCalledTimes(expected)<br><br>Expected number of calls: 1<br>Received number of calls: 2<br>    at toHaveBeenCalledTimes (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:182:30)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17) | exigido |
+| M3-h | `un reintento desde el formulario que vuelve a fallar pinta el copy del nuevo kind` | aserción: Error: expect(jest.fn()).toHaveBeenCalledTimes(expected)<br><br>Expected number of calls: 2<br>Received number of calls: 3<br>    at toHaveBeenCalledTimes (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:182:30)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17) | exigido |
+| M3-h | `un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver` | aserción: Error: expect(jest.fn()).toHaveBeenCalledTimes(expected)<br><br>Expected number of calls: 1<br>Received number of calls: 2<br>    at toHaveBeenCalledTimes (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:182:30)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17) | exigido |
+| M3-h | `un 429 al reenviar pinta forgot-error sin salir de «Revisa tu correo»` | excepción: TypeError: Cannot read properties of undefined (reading 'kind')<br>    at kind (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.tsx:30:22)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)<br>Error: expect(jest.fn()).toHaveBeenCalledTimes(expected)<br><br>Expected number of calls: 2<br>Received number of calls: 3<br>    at toHaveBeenCalledTimes (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:182:30) | exigido |
+| M3-h | `un {"errors": [Array], "kind": "validation"} al reenviar pinta «Ingresa un correo electrónico válido» en forgot-error sin salir de «Revisa tu correo»` | excepción: TypeError: Cannot read properties of undefined (reading 'kind')<br>    at kind (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.tsx:30:22)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)<br>Error: expect(jest.fn()).toHaveBeenCalledTimes(expected)<br><br>Expected number of calls: 2<br>Received number of calls: 3<br>    at toHaveBeenCalledTimes (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:182:30) | exigido |
+| M3-h | `un {"kind": "error"} al reenviar pinta «Algo salió mal» en forgot-error sin salir de «Revisa tu correo»` | excepción: TypeError: Cannot read properties of undefined (reading 'kind')<br>    at kind (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.tsx:30:22)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)<br>Error: expect(jest.fn()).toHaveBeenCalledTimes(expected)<br><br>Expected number of calls: 2<br>Received number of calls: 3<br>    at toHaveBeenCalledTimes (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:182:30) | exigido |
+| M3-h | `un {"kind": "unreachable", "message": "network down"} al reenviar pinta «No se pudo conectar con el servidor» en forgot-error sin salir de «Revisa tu correo»` | excepción: TypeError: Cannot read properties of undefined (reading 'kind')<br>    at kind (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.tsx:30:22)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)<br>Error: expect(jest.fn()).toHaveBeenCalledTimes(expected)<br><br>Expected number of calls: 2<br>Received number of calls: 3<br>    at toHaveBeenCalledTimes (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:182:30) | exigido |
+| M3-h | `un {"kind": "missing-config"} al reenviar pinta «Algo salió mal» en forgot-error sin salir de «Revisa tu correo»` | excepción: TypeError: Cannot read properties of undefined (reading 'kind')<br>    at kind (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.tsx:30:22)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)<br>Error: expect(jest.fn()).toHaveBeenCalledTimes(expected)<br><br>Expected number of calls: 2<br>Received number of calls: 3<br>    at toHaveBeenCalledTimes (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:182:30) | exigido |
+| M3-h | `un segundo reenvío que vuelve a fallar pinta el copy del nuevo kind` | aserción: Error: expect(jest.fn()).toHaveBeenCalledTimes(expected)<br><br>Expected number of calls: 3<br>Received number of calls: 4<br>    at toHaveBeenCalledTimes (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:182:30)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17) | exigido |
+
+| Debe seguir verde | Estado medido |
+|---|---|
+| `link-login navega a /login sin petición de red` | passed |
+| `link-login navega a /login también desde «Revisa tu correo», sin petición nueva` | passed |
+
+Todos los it exigidos cayeron; resultado apto para continuar según la regla de E2.
+
+```text
+$ git checkout HEAD -- mobile-pet-tracker/src/screens/forgot/index.tsx
+exit=0
+$ git diff --quiet -- mobile-pet-tracker/src/screens/forgot/index.tsx; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+```
+
+#### T20 — M5-h
+
+Sonda temporal en `mobile-pet-tracker/src/screens/forgot/index.tsx`, sin staging.
+
+#### M5-h
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r3-M5-h.json > /tmp/117-r3-M5-h.log 2>&1; echo "exit=$?"
+Test Suites: 1 failed, 1 total
+Tests:       4 failed, 27 passed, 31 total
+Snapshots:   0 total
+Time:        6.134 s, estimated 7 s
+exit=1
+```
+
+`#117 R5: enviar pasa la pantalla a «Revisa tu correo» envía el correo recortado una sola vez y deshabilita forgot-submit mientras vuela la petición`
+
+```text
+Error: expect(received).toBeDefined()
+
+Received: undefined
+    at toBeDefined (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:193:22)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:185:31)
+    at Object.expectFormState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:222:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver`
+
+```text
+Error: expect(received).toBeDefined()
+
+Received: undefined
+    at toBeDefined (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:193:22)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:185:31)
+    at Object.expectFormState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:327:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error un nuevo reenvío retira forgot-error en cuanto arranca y no lo repinta al resolver ok`
+
+```text
+Error: expect(received).toBeDefined()
+
+Received: undefined
+    at toBeDefined (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:206:22)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:198:31)
+    at Object.expectSentState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:350:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R6: reenviar repite la misma petición forgot-resend repite el POST con el mismo correo y se deshabilita mientras vuela`
+
+```text
+Error: expect(received).toBeDefined()
+
+Received: undefined
+    at toBeDefined (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:206:22)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:198:31)
+    at Object.expectSentState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:374:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+| Sonda | Cada it que cayó | Modo medido / matcher / Expected y Received | Correspondencia con la fila |
+|---|---|---|---|
+| M5-h | `envía el correo recortado una sola vez y deshabilita forgot-submit mientras vuela la petición` | aserción: Error: expect(received).toBeDefined()<br><br>Received: undefined<br>    at toBeDefined (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:193:22)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17) | exigido |
+| M5-h | `un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver` | aserción: Error: expect(received).toBeDefined()<br><br>Received: undefined<br>    at toBeDefined (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:193:22)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17) | exigido |
+| M5-h | `un nuevo reenvío retira forgot-error en cuanto arranca y no lo repinta al resolver ok` | aserción: Error: expect(received).toBeDefined()<br><br>Received: undefined<br>    at toBeDefined (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:206:22)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17) | exigido |
+| M5-h | `forgot-resend repite el POST con el mismo correo y se deshabilita mientras vuela` | aserción: Error: expect(received).toBeDefined()<br><br>Received: undefined<br>    at toBeDefined (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:206:22)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17) | exigido |
+
+| Debe seguir verde | Estado medido |
+|---|---|
+| `el tile Lock sigue en pie en los dos estados` | passed |
+
+Todos los it exigidos cayeron; resultado apto para continuar según la regla de E2.
+
+```text
+$ git checkout HEAD -- mobile-pet-tracker/src/screens/forgot/index.tsx
+exit=0
+$ git diff --quiet -- mobile-pet-tracker/src/screens/forgot/index.tsx; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+```
+
+#### T20 — M7-k
+
+Sonda temporal en `mobile-pet-tracker/src/screens/forgot/index.tsx`, sin staging.
+
+#### M7-k
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r3-M7-k.json > /tmp/117-r3-M7-k.log 2>&1; echo "exit=$?"
+Test Suites: 1 failed, 1 total
+Tests:       4 failed, 27 passed, 31 total
+Snapshots:   0 total
+Time:        6.218 s
+exit=1
+```
+
+`#117 R5: enviar pasa la pantalla a «Revisa tu correo» envía el correo recortado una sola vez y deshabilita forgot-submit mientras vuela la petición`
+
+```text
+Error: expect(received).toBeNull()
+
+Received: <Text className="text-danger" selectable={true} testID="forgot-error" />
+    at toBeNull (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:168:50)
+    at expectForgotError (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:194:3)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:185:31)
+    at Object.expectFormState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:222:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver`
+
+```text
+Error: expect(received).toBeNull()
+
+Received: <Text className="text-danger" selectable={true} testID="forgot-error" />
+    at Object.toBeNull (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:325:50)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R7: cada kind distinto de ok pinta su copy en forgot-error un nuevo reenvío retira forgot-error en cuanto arranca y no lo repinta al resolver ok`
+
+```text
+Error: expect(received).toBeNull()
+
+Received: <Text className="text-danger" selectable={true} testID="forgot-error" />
+    at Object.toBeNull (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:349:50)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+`#117 R6: reenviar repite la misma petición forgot-resend repite el POST con el mismo correo y se deshabilita mientras vuela`
+
+```text
+Error: expect(received).toBeNull()
+
+Received: <Text className="text-danger" selectable={true} testID="forgot-error" />
+    at toBeNull (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:168:50)
+    at expectForgotError (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:207:3)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+    at new Promise (<anonymous>)
+    at /home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12
+    at apply (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:198:31)
+    at Object.expectSentState (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:374:11)
+    at Generator.next (<anonymous>)
+    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+| Sonda | Cada it que cayó | Modo medido / matcher / Expected y Received | Correspondencia con la fila |
+|---|---|---|---|
+| M7-k | `envía el correo recortado una sola vez y deshabilita forgot-submit mientras vuela la petición` | aserción: Error: expect(received).toBeNull()<br><br>Received: <Text className="text-danger" selectable={true} testID="forgot-error" /><br>    at toBeNull (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:168:50)<br>    at expectForgotError (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:194:3)<br>    at Generator.next (<anonymous>) | exigido |
+| M7-k | `un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver` | aserción: Error: expect(received).toBeNull()<br><br>Received: <Text className="text-danger" selectable={true} testID="forgot-error" /><br>    at Object.toBeNull (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:325:50)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17) | exigido |
+| M7-k | `un nuevo reenvío retira forgot-error en cuanto arranca y no lo repinta al resolver ok` | aserción: Error: expect(received).toBeNull()<br><br>Received: <Text className="text-danger" selectable={true} testID="forgot-error" /><br>    at Object.toBeNull (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:349:50)<br>    at Generator.next (<anonymous>)<br>    at asyncGeneratorStep (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17) | exigido |
+| M7-k | `forgot-resend repite el POST con el mismo correo y se deshabilita mientras vuela` | aserción: Error: expect(received).toBeNull()<br><br>Received: <Text className="text-danger" selectable={true} testID="forgot-error" /><br>    at toBeNull (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:168:50)<br>    at expectForgotError (/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker/src/screens/forgot/index.test.tsx:207:3)<br>    at Generator.next (<anonymous>) | exigido |
+
+| Debe seguir verde | Estado medido |
+|---|---|
+| `un reintento desde el formulario que vuelve a fallar pinta el copy del nuevo kind` | passed |
+
+Todos los it exigidos cayeron; resultado apto para continuar según la regla de E2.
+
+```text
+$ git checkout HEAD -- mobile-pet-tracker/src/screens/forgot/index.tsx
+exit=0
+$ git diff --quiet -- mobile-pet-tracker/src/screens/forgot/index.tsx; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+```
+
+#### T20-verde-final
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/screens/forgot/index.test.tsx --json --outputFile /tmp/117-r3-T20-verde-final.json > /tmp/117-r3-T20-verde-final.log 2>&1; echo "exit=$?"
+Test Suites: 1 passed, 1 total
+Tests:       31 passed, 31 total
+Snapshots:   0 total
+Time:        5.934 s, estimated 7 s
+exit=0
+```
+
+#### Guard de router antes de typecheck-T20
+
+```text
+$ test ! -e .expo/types/router.d.ts; echo "exit=$?"
+exit=0
+```
+
+#### typecheck-T20
+
+```text
+$ bun run typecheck > /tmp/117-r3-typecheck-T20.log 2>&1; echo "exit=$?"
+$ tsc --noEmit
+exit=0
+```
+
+#### lint-T20
+
+```text
+$ bun run lint > /tmp/117-r3-lint-T20.log 2>&1; echo "exit=$?"
+$ expo lint
+exit=0
+```
+
+Commit T20: `a7d0fcae` test(mobile): lock the sent-state render in every flow (#117 R5, R6, R3, E2). Solo `mobile-pet-tracker/src/screens/forgot/index.test.tsx`.
+
+#### Guard de carga antes de ocho
+
+```text
+$ pgrep -f init.sh; echo "exit=$?"
+exit=1
+```
+
+#### ocho
+
+```text
+$ bunx jest --runTestsByPath --maxWorkers=2 src/api/__tests__/auth.test.ts src/providers/__tests__/language-provider.test.tsx src/__tests__/ui-language.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/legibility-classnames.test.ts src/__tests__/design-drift.test.ts src/screens/reset-password/index.test.tsx src/screens/forgot/index.test.tsx > /tmp/117-r3-ocho.log 2>&1; echo "exit=$?"
+Test Suites: 8 passed, 8 total
+Tests:       287 passed, 287 total
+Snapshots:   0 total
+Time:        8.246 s
+exit=0
+```
+
+#### Guard de carga antes de global
+
+```text
+$ pgrep -f init.sh; echo "exit=$?"
+exit=1
+```
+
+### Tablas consolidadas de T19 y T20
+
+Cada fallo, su matcher y Expected/Received (o consulta/excepción), comando y resumen Jest figuran en los registros individuales anteriores. Las tablas siguientes reúnen los resultados por tarea; cada reversión se midió con los dos comandos quiet y dio exit=0 / exit=0. Los JSON/logs de las sondas repetidas se archivaron por tarea antes de sobrescribir el nombre de log pedido por el handoff.
+
+#### T19 — resumen
+
+Verdes inicial y final: 1 suite / 30 tests, exit=0. Typecheck y lint previos al commit: exit=0, con router.d.ts ausente en el guard de typecheck.
+
+| Sonda | Cada it que cayó | Modos medidos | Debe seguir verde y estado | Reversión producción / índice |
+|---|---|---|---|---|
+| X-a | `envía el correo recortado una sola vez y deshabilita forgot-submit mientras vuela la petición`<br>`un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver` | aserción ×2 | — | exit=0 / exit=0 |
+| X-b | `envía el correo recortado una sola vez y deshabilita forgot-submit mientras vuela la petición`<br>`un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver` | aserción ×2 | — | exit=0 / exit=0 |
+| X-c | `mapea {"errors": [Array], "kind": "validation"} a «Ingresa un correo electrónico válido» en forgot-error, seleccionable, y deja el formulario en pie`<br>`mapea {"kind": "rate-limited"} a «Demasiados intentos. Inténtalo más tarde.» en forgot-error, seleccionable, y deja el formulario en pie`<br>`mapea {"kind": "error"} a «Algo salió mal» en forgot-error, seleccionable, y deja el formulario en pie`<br>`mapea {"kind": "unreachable", "message": "network down"} a «No se pudo conectar con el servidor» en forgot-error, seleccionable, y deja el formulario en pie`<br>`mapea {"kind": "missing-config"} a «Algo salió mal» en forgot-error, seleccionable, y deja el formulario en pie`<br>`un reintento desde el formulario que vuelve a fallar pinta el copy del nuevo kind`<br>`un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver` | aserción ×7 | — | exit=0 / exit=0 |
+| X-d | `envía el correo recortado una sola vez y deshabilita forgot-submit mientras vuela la petición`<br>`un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver` | consulta ×2 | `link-login navega a /login sin petición de red`: passed<br>`link-login navega a /login también desde «Revisa tu correo», sin petición nueva`: passed | exit=0 / exit=0 |
+| X-e | `mapea {"errors": [Array], "kind": "validation"} a «Ingresa un correo electrónico válido» en forgot-error, seleccionable, y deja el formulario en pie`<br>`mapea {"kind": "rate-limited"} a «Demasiados intentos. Inténtalo más tarde.» en forgot-error, seleccionable, y deja el formulario en pie`<br>`mapea {"kind": "error"} a «Algo salió mal» en forgot-error, seleccionable, y deja el formulario en pie`<br>`mapea {"kind": "unreachable", "message": "network down"} a «No se pudo conectar con el servidor» en forgot-error, seleccionable, y deja el formulario en pie`<br>`mapea {"kind": "missing-config"} a «Algo salió mal» en forgot-error, seleccionable, y deja el formulario en pie`<br>`un reintento desde el formulario que vuelve a fallar pinta el copy del nuevo kind`<br>`un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver` | consulta ×7 | `link-login navega a /login sin petición de red`: passed<br>`link-login navega a /login también desde «Revisa tu correo», sin petición nueva`: passed | exit=0 / exit=0 |
+| X-f | `mapea {"errors": [Array], "kind": "validation"} a «Ingresa un correo electrónico válido» en forgot-error, seleccionable, y deja el formulario en pie`<br>`mapea {"kind": "rate-limited"} a «Demasiados intentos. Inténtalo más tarde.» en forgot-error, seleccionable, y deja el formulario en pie`<br>`mapea {"kind": "error"} a «Algo salió mal» en forgot-error, seleccionable, y deja el formulario en pie`<br>`mapea {"kind": "unreachable", "message": "network down"} a «No se pudo conectar con el servidor» en forgot-error, seleccionable, y deja el formulario en pie`<br>`mapea {"kind": "missing-config"} a «Algo salió mal» en forgot-error, seleccionable, y deja el formulario en pie`<br>`un reintento desde el formulario que vuelve a fallar pinta el copy del nuevo kind`<br>`un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver` | consulta ×7 | `pinta título, instrucciones y forgot-email editable con sus props de teclado`: passed | exit=0 / exit=0 |
+| M3-f | `envía el correo recortado una sola vez y deshabilita forgot-submit mientras vuela la petición`<br>`un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver` | aserción ×2 | `link-login navega a /login sin petición de red`: passed<br>`link-login navega a /login también desde «Revisa tu correo», sin petición nueva`: passed | exit=0 / exit=0 |
+| M3-g | `envía el correo recortado una sola vez y deshabilita forgot-submit mientras vuela la petición`<br>`un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver` | aserción ×2 | `link-login navega a /login sin petición de red`: passed<br>`link-login navega a /login también desde «Revisa tu correo», sin petición nueva`: passed | exit=0 / exit=0 |
+| M3-h | `mapea {"errors": [Array], "kind": "validation"} a «Ingresa un correo electrónico válido» en forgot-error, seleccionable, y deja el formulario en pie`<br>`mapea {"kind": "rate-limited"} a «Demasiados intentos. Inténtalo más tarde.» en forgot-error, seleccionable, y deja el formulario en pie`<br>`mapea {"kind": "error"} a «Algo salió mal» en forgot-error, seleccionable, y deja el formulario en pie`<br>`mapea {"kind": "unreachable", "message": "network down"} a «No se pudo conectar con el servidor» en forgot-error, seleccionable, y deja el formulario en pie`<br>`mapea {"kind": "missing-config"} a «Algo salió mal» en forgot-error, seleccionable, y deja el formulario en pie`<br>`un reintento desde el formulario que vuelve a fallar pinta el copy del nuevo kind`<br>`un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver` | aserción ×7 | `link-login navega a /login sin petición de red`: passed<br>`link-login navega a /login también desde «Revisa tu correo», sin petición nueva`: passed | exit=0 / exit=0 |
+| M4-f | `envía el correo recortado una sola vez y deshabilita forgot-submit mientras vuela la petición`<br>`un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver` | aserción ×2 | — | exit=0 / exit=0 |
+| M4-g | `mapea {"errors": [Array], "kind": "validation"} a «Ingresa un correo electrónico válido» en forgot-error, seleccionable, y deja el formulario en pie` | aserción ×1 | `mapea {"kind": "rate-limited"} a «Demasiados intentos. Inténtalo más tarde.» en forgot-error, seleccionable, y deja el formulario en pie`: passed<br>`mapea {"kind": "error"} a «Algo salió mal» en forgot-error, seleccionable, y deja el formulario en pie`: passed<br>`mapea {"kind": "unreachable", "message": "network down"} a «No se pudo conectar con el servidor» en forgot-error, seleccionable, y deja el formulario en pie`: passed<br>`mapea {"kind": "missing-config"} a «Algo salió mal» en forgot-error, seleccionable, y deja el formulario en pie`: passed | exit=0 / exit=0 |
+| M4-h | `envía el correo recortado una sola vez y deshabilita forgot-submit mientras vuela la petición`<br>`mapea {"errors": [Array], "kind": "validation"} a «Ingresa un correo electrónico válido» en forgot-error, seleccionable, y deja el formulario en pie`<br>`mapea {"kind": "rate-limited"} a «Demasiados intentos. Inténtalo más tarde.» en forgot-error, seleccionable, y deja el formulario en pie`<br>`mapea {"kind": "error"} a «Algo salió mal» en forgot-error, seleccionable, y deja el formulario en pie`<br>`mapea {"kind": "unreachable", "message": "network down"} a «No se pudo conectar con el servidor» en forgot-error, seleccionable, y deja el formulario en pie`<br>`mapea {"kind": "missing-config"} a «Algo salió mal» en forgot-error, seleccionable, y deja el formulario en pie`<br>`un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver` | aserción ×7 | `un reintento desde el formulario que vuelve a fallar pinta el copy del nuevo kind`: passed | exit=0 / exit=0 |
+| M4-i | `mapea {"errors": [Array], "kind": "validation"} a «Ingresa un correo electrónico válido» en forgot-error, seleccionable, y deja el formulario en pie`<br>`mapea {"kind": "rate-limited"} a «Demasiados intentos. Inténtalo más tarde.» en forgot-error, seleccionable, y deja el formulario en pie`<br>`mapea {"kind": "error"} a «Algo salió mal» en forgot-error, seleccionable, y deja el formulario en pie`<br>`mapea {"kind": "unreachable", "message": "network down"} a «No se pudo conectar con el servidor» en forgot-error, seleccionable, y deja el formulario en pie`<br>`mapea {"kind": "missing-config"} a «Algo salió mal» en forgot-error, seleccionable, y deja el formulario en pie` | aserción ×5 | `deshabilita forgot-submit con el correo vacío o solo espacios y lo habilita al escribir`: passed | exit=0 / exit=0 |
+| M5-h | `envía el correo recortado una sola vez y deshabilita forgot-submit mientras vuela la petición`<br>`un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver` | aserción ×2 | `el tile Lock sigue en pie en los dos estados`: passed | exit=0 / exit=0 |
+| M7-k | `envía el correo recortado una sola vez y deshabilita forgot-submit mientras vuela la petición`<br>`un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver`<br>`un nuevo reenvío retira forgot-error en cuanto arranca y no lo repinta al resolver ok` | aserción ×3 | `un reintento desde el formulario que vuelve a fallar pinta el copy del nuevo kind`: passed | exit=0 / exit=0 |
+| M7-l | `un reintento desde el formulario que vuelve a fallar pinta el copy del nuevo kind` | aserción ×1 | — | exit=0 / exit=0 |
+| M7-m | `un reintento desde el formulario que vuelve a fallar pinta el copy del nuevo kind` | consulta ×1 | `mapea {"kind": "rate-limited"} a «Demasiados intentos. Inténtalo más tarde.» en forgot-error, seleccionable, y deja el formulario en pie`: passed | exit=0 / exit=0 |
+| M7-n | `un reintento desde el formulario que vuelve a fallar pinta el copy del nuevo kind` | consulta ×1 | `mapea {"errors": [Array], "kind": "validation"} a «Ingresa un correo electrónico válido» en forgot-error, seleccionable, y deja el formulario en pie`: passed | exit=0 / exit=0 |
+
+18 sondas sobre la suite entera; todas produjeron exit=1.
+
+#### T20 — resumen
+
+Verdes inicial y final: 1 suite / 31 tests, exit=0. Typecheck y lint previos al commit: exit=0, con router.d.ts ausente en el guard de typecheck.
+
+| Sonda | Cada it que cayó | Modos medidos | Debe seguir verde y estado | Reversión producción / índice |
+|---|---|---|---|---|
+| X-g | `un 429 al reenviar pinta forgot-error sin salir de «Revisa tu correo»`<br>`un {"errors": [Array], "kind": "validation"} al reenviar pinta «Ingresa un correo electrónico válido» en forgot-error sin salir de «Revisa tu correo»`<br>`un {"kind": "error"} al reenviar pinta «Algo salió mal» en forgot-error sin salir de «Revisa tu correo»`<br>`un {"kind": "unreachable", "message": "network down"} al reenviar pinta «No se pudo conectar con el servidor» en forgot-error sin salir de «Revisa tu correo»`<br>`un {"kind": "missing-config"} al reenviar pinta «Algo salió mal» en forgot-error sin salir de «Revisa tu correo»`<br>`un segundo reenvío que vuelve a fallar pinta el copy del nuevo kind` | aserción ×6 | — | exit=0 / exit=0 |
+| X-h | `un 429 al reenviar pinta forgot-error sin salir de «Revisa tu correo»`<br>`un {"errors": [Array], "kind": "validation"} al reenviar pinta «Ingresa un correo electrónico válido» en forgot-error sin salir de «Revisa tu correo»`<br>`un {"kind": "error"} al reenviar pinta «Algo salió mal» en forgot-error sin salir de «Revisa tu correo»`<br>`un {"kind": "unreachable", "message": "network down"} al reenviar pinta «No se pudo conectar con el servidor» en forgot-error sin salir de «Revisa tu correo»`<br>`un {"kind": "missing-config"} al reenviar pinta «Algo salió mal» en forgot-error sin salir de «Revisa tu correo»`<br>`un segundo reenvío que vuelve a fallar pinta el copy del nuevo kind` | aserción ×6 | — | exit=0 / exit=0 |
+| X-i | `un nuevo reenvío retira forgot-error en cuanto arranca y no lo repinta al resolver ok`<br>`forgot-resend repite el POST con el mismo correo y se deshabilita mientras vuela` | aserción ×2 | — | exit=0 / exit=0 |
+| M5-i | `tras ok muestra cabecera y cuerpo con el correo, forgot-resend y link-login, y retira forgot-email y forgot-submit`<br>`un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver`<br>`un nuevo reenvío retira forgot-error en cuanto arranca y no lo repinta al resolver ok`<br>`forgot-resend repite el POST con el mismo correo y se deshabilita mientras vuela`<br>`un 429 al reenviar pinta forgot-error sin salir de «Revisa tu correo»`<br>`un {"errors": [Array], "kind": "validation"} al reenviar pinta «Ingresa un correo electrónico válido» en forgot-error sin salir de «Revisa tu correo»`<br>`un {"kind": "error"} al reenviar pinta «Algo salió mal» en forgot-error sin salir de «Revisa tu correo»`<br>`un {"kind": "unreachable", "message": "network down"} al reenviar pinta «No se pudo conectar con el servidor» en forgot-error sin salir de «Revisa tu correo»`<br>`un {"kind": "missing-config"} al reenviar pinta «Algo salió mal» en forgot-error sin salir de «Revisa tu correo»`<br>`un segundo reenvío que vuelve a fallar pinta el copy del nuevo kind` | aserción ×10 | — | exit=0 / exit=0 |
+| M5-j | `un nuevo reenvío retira forgot-error en cuanto arranca y no lo repinta al resolver ok`<br>`forgot-resend repite el POST con el mismo correo y se deshabilita mientras vuela` | aserción ×2 | — | exit=0 / exit=0 |
+| M7-j | `un 429 al reenviar pinta forgot-error sin salir de «Revisa tu correo»`<br>`un {"errors": [Array], "kind": "validation"} al reenviar pinta «Ingresa un correo electrónico válido» en forgot-error sin salir de «Revisa tu correo»`<br>`un {"kind": "error"} al reenviar pinta «Algo salió mal» en forgot-error sin salir de «Revisa tu correo»`<br>`un {"kind": "unreachable", "message": "network down"} al reenviar pinta «No se pudo conectar con el servidor» en forgot-error sin salir de «Revisa tu correo»`<br>`un {"kind": "missing-config"} al reenviar pinta «Algo salió mal» en forgot-error sin salir de «Revisa tu correo»`<br>`un segundo reenvío que vuelve a fallar pinta el copy del nuevo kind` | aserción ×6 | — | exit=0 / exit=0 |
+| M6-j | `un segundo reenvío que vuelve a fallar pinta el copy del nuevo kind` | consulta ×1 | — | exit=0 / exit=0 |
+| M6-k | `un segundo reenvío que vuelve a fallar pinta el copy del nuevo kind` | consulta ×1 | — | exit=0 / exit=0 |
+| M7-o | `un nuevo reenvío retira forgot-error en cuanto arranca y no lo repinta al resolver ok`<br>`un segundo reenvío que vuelve a fallar pinta el copy del nuevo kind` | aserción ×2 | — | exit=0 / exit=0 |
+| M7-l | `un reintento desde el formulario que vuelve a fallar pinta el copy del nuevo kind`<br>`un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver` | aserción ×2 | — | exit=0 / exit=0 |
+| X-d | `envía el correo recortado una sola vez y deshabilita forgot-submit mientras vuela la petición`<br>`un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver`<br>`un nuevo reenvío retira forgot-error en cuanto arranca y no lo repinta al resolver ok`<br>`forgot-resend repite el POST con el mismo correo y se deshabilita mientras vuela` | consulta ×4 | `link-login navega a /login sin petición de red`: passed<br>`link-login navega a /login también desde «Revisa tu correo», sin petición nueva`: passed | exit=0 / exit=0 |
+| X-e | `mapea {"errors": [Array], "kind": "validation"} a «Ingresa un correo electrónico válido» en forgot-error, seleccionable, y deja el formulario en pie`<br>`mapea {"kind": "rate-limited"} a «Demasiados intentos. Inténtalo más tarde.» en forgot-error, seleccionable, y deja el formulario en pie`<br>`mapea {"kind": "error"} a «Algo salió mal» en forgot-error, seleccionable, y deja el formulario en pie`<br>`mapea {"kind": "unreachable", "message": "network down"} a «No se pudo conectar con el servidor» en forgot-error, seleccionable, y deja el formulario en pie`<br>`mapea {"kind": "missing-config"} a «Algo salió mal» en forgot-error, seleccionable, y deja el formulario en pie`<br>`un reintento desde el formulario que vuelve a fallar pinta el copy del nuevo kind`<br>`un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver`<br>`un 429 al reenviar pinta forgot-error sin salir de «Revisa tu correo»`<br>`un {"errors": [Array], "kind": "validation"} al reenviar pinta «Ingresa un correo electrónico válido» en forgot-error sin salir de «Revisa tu correo»`<br>`un {"kind": "error"} al reenviar pinta «Algo salió mal» en forgot-error sin salir de «Revisa tu correo»`<br>`un {"kind": "unreachable", "message": "network down"} al reenviar pinta «No se pudo conectar con el servidor» en forgot-error sin salir de «Revisa tu correo»`<br>`un {"kind": "missing-config"} al reenviar pinta «Algo salió mal» en forgot-error sin salir de «Revisa tu correo»`<br>`un segundo reenvío que vuelve a fallar pinta el copy del nuevo kind` | consulta ×13 | `link-login navega a /login sin petición de red`: passed<br>`link-login navega a /login también desde «Revisa tu correo», sin petición nueva`: passed | exit=0 / exit=0 |
+| M3-f | `envía el correo recortado una sola vez y deshabilita forgot-submit mientras vuela la petición`<br>`un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver`<br>`un nuevo reenvío retira forgot-error en cuanto arranca y no lo repinta al resolver ok`<br>`forgot-resend repite el POST con el mismo correo y se deshabilita mientras vuela` | aserción ×4 | `link-login navega a /login sin petición de red`: passed<br>`link-login navega a /login también desde «Revisa tu correo», sin petición nueva`: passed | exit=0 / exit=0 |
+| M3-g | `envía el correo recortado una sola vez y deshabilita forgot-submit mientras vuela la petición`<br>`un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver`<br>`un nuevo reenvío retira forgot-error en cuanto arranca y no lo repinta al resolver ok`<br>`forgot-resend repite el POST con el mismo correo y se deshabilita mientras vuela` | aserción ×4 | `link-login navega a /login sin petición de red`: passed<br>`link-login navega a /login también desde «Revisa tu correo», sin petición nueva`: passed | exit=0 / exit=0 |
+| M3-h | `mapea {"errors": [Array], "kind": "validation"} a «Ingresa un correo electrónico válido» en forgot-error, seleccionable, y deja el formulario en pie`<br>`mapea {"kind": "rate-limited"} a «Demasiados intentos. Inténtalo más tarde.» en forgot-error, seleccionable, y deja el formulario en pie`<br>`mapea {"kind": "error"} a «Algo salió mal» en forgot-error, seleccionable, y deja el formulario en pie`<br>`mapea {"kind": "unreachable", "message": "network down"} a «No se pudo conectar con el servidor» en forgot-error, seleccionable, y deja el formulario en pie`<br>`mapea {"kind": "missing-config"} a «Algo salió mal» en forgot-error, seleccionable, y deja el formulario en pie`<br>`un reintento desde el formulario que vuelve a fallar pinta el copy del nuevo kind`<br>`un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver`<br>`un 429 al reenviar pinta forgot-error sin salir de «Revisa tu correo»`<br>`un {"errors": [Array], "kind": "validation"} al reenviar pinta «Ingresa un correo electrónico válido» en forgot-error sin salir de «Revisa tu correo»`<br>`un {"kind": "error"} al reenviar pinta «Algo salió mal» en forgot-error sin salir de «Revisa tu correo»`<br>`un {"kind": "unreachable", "message": "network down"} al reenviar pinta «No se pudo conectar con el servidor» en forgot-error sin salir de «Revisa tu correo»`<br>`un {"kind": "missing-config"} al reenviar pinta «Algo salió mal» en forgot-error sin salir de «Revisa tu correo»`<br>`un segundo reenvío que vuelve a fallar pinta el copy del nuevo kind` | aserción ×8; excepción ×5 | `link-login navega a /login sin petición de red`: passed<br>`link-login navega a /login también desde «Revisa tu correo», sin petición nueva`: passed | exit=0 / exit=0 |
+| M5-h | `envía el correo recortado una sola vez y deshabilita forgot-submit mientras vuela la petición`<br>`un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver`<br>`un nuevo reenvío retira forgot-error en cuanto arranca y no lo repinta al resolver ok`<br>`forgot-resend repite el POST con el mismo correo y se deshabilita mientras vuela` | aserción ×4 | `el tile Lock sigue en pie en los dos estados`: passed | exit=0 / exit=0 |
+| M7-k | `envía el correo recortado una sola vez y deshabilita forgot-submit mientras vuela la petición`<br>`un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver`<br>`un nuevo reenvío retira forgot-error en cuanto arranca y no lo repinta al resolver ok`<br>`forgot-resend repite el POST con el mismo correo y se deshabilita mientras vuela` | aserción ×4 | `un reintento desde el formulario que vuelve a fallar pinta el copy del nuevo kind`: passed | exit=0 / exit=0 |
+
+17 sondas sobre la suite entera; todas produjeron exit=1.
+
+#### Divergencias de sondas
+
+Ninguna: todos los it exigidos cayeron, sin fallos adicionales; todos los it de Debe seguir verde pasaron y cada modo coincide con la tabla. M3-h en T20 tiene 8 aserciones y 5 excepciones TypeError declaradas (R6 429 y R6 ×4).
+
+### Decisiones de implementación de la ronda 3
+
+No hubo decisiones nuevas de comportamiento: helpers, puntos y dos it copiados de los bloques y filas de E2. Los dos cambios de M5-i y M5-j se plantaron juntos, en una corrida y con una reversión por fila. No se reescribió el it del tile de E1.7, ni se añadieron describe ni más it. Las lecturas de contadores se limitan a las aserciones literales del helper; las esperas permanecen sobre el árbol. Se añadieron flags --json/--outputFile al comando de la suite completa para registrar cada caso, sin -t ni filtros. Sin skills adicionales ni cambios de producción, API, dependencias o candados globales.
+
+#### global
+
+```text
+$ bunx jest --maxWorkers=2 > /tmp/117-r3-global.log 2>&1; echo "exit=$?"
+Test Suites: 93 passed, 93 total
+Tests:       2051 passed, 2051 total
+Snapshots:   1 passed, 1 total
+Time:        63.79 s, estimated 68 s
+exit=0
+```
+
+#### Guard de router antes de typecheck
+
+```text
+$ test ! -e .expo/types/router.d.ts; echo "exit=$?"
+exit=0
+```
+
+#### typecheck
+
+```text
+$ bun run typecheck > /tmp/117-r3-typecheck.log 2>&1; echo "exit=$?"
+$ tsc --noEmit
+exit=0
+```
+
+#### lint
+
+```text
+$ bun run lint > /tmp/117-r3-lint.log 2>&1; echo "exit=$?"
+$ expo lint
+exit=0
+```
+
+### T21 — cierre verificado
+
+| Medida | Base ronda 3 | Cierre | Exit |
+|---|---:|---:|---:|
+| forgot/index.test.tsx | 29 | 31 | 0 |
+| auth.test.ts (sin cambios) | 44 | 44 | 0 (en las 8 suites y global) |
+| 8 suites del handoff | 285 | 287 | 0 |
+| Global (93 suites) | 2049 | 2051 | 0 |
+| Typecheck | — | tsc --noEmit | 0 |
+| Lint | — | expo lint | 0 |
+
+Los guards pgrep antes de ambos barridos dieron exit=1 (sin init.sh activo). Router.d.ts estuvo ausente antes de cada typecheck (T19, T20 y T21). Ningún candado global se movió.
+
+| Tarea | Hash | Mensaje literal |
+|---|---|---|
+| T19 | `c783b41e` | test(mobile): lock the form render in every unsent flow (#117 R4, R7, R3, E2) |
+| T20 | `a7d0fcae` | test(mobile): lock the sent-state render in every flow (#117 R5, R6, R3, E2) |
+| T21 | identificable con git log -1 | docs(mobile): trace #117 amendment E2 to its tests and commits |
+
+T19 y T20 llevan solo la suite de forgot; el cierre lleva únicamente traceability e impl. El hash del propio documento se obtiene mediante git log -1 para evitar una autorreferencia que lo cambiaría. Las celdas de trazabilidad históricas y el contenido íntegro de rondas 1 y 2 se conservan. Sin cambios de dependencias, producción ni API; sin init.sh, Expo, graphify, push ni PR. El smoke y el bookkeeping pertenecen al humano/leader y no se marcaron.
+
+### Alcance final contra H0 de ronda 3
+
+Medido contra HEAD del cierre documental; se verifica la misma lista en el HEAD definitivo al incorporar este registro al cierre. Los hashes de T19 y T20 permanecen intactos. Todos los checks, incluido status, se midieron antes de escribir este registro.
+
+```text
+$ git diff --name-only 68ad1bb2 HEAD
+mobile-pet-tracker/src/screens/forgot/index.test.tsx
+progress/impl_mobile-forgot-password.md
+specs/mobile-forgot-password/traceability.md
+$ git diff --quiet 68ad1bb2 HEAD -- mobile-pet-tracker/src/screens/forgot/index.tsx mobile-pet-tracker/src/api/auth.ts mobile-pet-tracker/src/api/__tests__/auth.test.ts; echo "exit=$?"
+exit=0
+$ git diff --numstat 68ad1bb2 HEAD -- mobile-pet-tracker/src/screens/forgot/index.test.tsx
+114	3	mobile-pet-tracker/src/screens/forgot/index.test.tsx
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+$ git diff --check 68ad1bb2 HEAD; echo "exit=$?"
+exit=0
+$ git status --short
+```
+
+3 ficheros exactos; diff de producción, API y auth.test.ts vacío; numstat del test +114/−3, correspondientes a las tres únicas sustituciones de E2.5. Índice vacío, diff --check exit=0 y árbol limpio en la medición. Se revalida después del commit sin escribir de nuevo en el impl. Ronda 3 completa para revisión del leader; smoke humano pendiente, sin marcar.
