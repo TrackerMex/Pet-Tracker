@@ -328,16 +328,16 @@ WHEN la suite está verde, THE SYSTEM SHALL pasar este smoke en el **dev build
 de Android** (nunca Expo Go: `expo-maps` no existe ahí). Cada casilla la marca
 **solo el humano**:
 
-- [ ] S1. Con un collar en línea, el mapa muestra la píldora encima de la
+- [X] S1. Con un collar en línea, el mapa muestra la píldora encima de la
   tarjeta de stats: avatar, nombre, punto verde y «GPS activo». No tapa la
   barra de pestañas ni el botón de Modo perdido.
-- [ ] S2. El tile «Batería» muestra `NN%` (anotar el valor) en verde si
+- [X] S2. El tile «Batería» muestra `NN%` (anotar el valor) en verde si
   supera 60 y en ámbar si no; coincide con el tile de batería de la Home.
-- [ ] S3. Tema oscuro: la píldora y el tile se leen bien sobre el mapa oscuro.
-- [ ] S4. Idioma inglés: «GPS active» y «Battery».
-- [ ] S5. Con una mascota sin posiciones, el aviso de arriba
+- [X] S3. Tema oscuro: la píldora y el tile se leen bien sobre el mapa oscuro.
+- [X] S4. Idioma inglés: «GPS active» y «Battery».
+- [X] S5. Con una mascota sin posiciones, el aviso de arriba
   (`map-empty-overlay`) y la píldora de abajo no se solapan.
-- [ ] S6. Si se puede provocar (collar apagado o mascota sin collar): la
+- [X] S6. Si se puede provocar (collar apagado o mascota sin collar): la
   píldora pasa a «Desactualizado» en ámbar o «Sin señal» en gris, y la batería
   a `—` sin collar. Si no se puede provocar, anotarlo aquí.
 
