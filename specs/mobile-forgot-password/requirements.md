@@ -1385,4 +1385,4 @@ de [[design]] §Archivos afectados:
 
 `src/api/__tests__/auth.test.ts` no se toca.
 
-- [ ] Enmienda E2 aprobada por humano (fecha: , commit de firma: el que marca esta casilla)
+- [x] Enmienda E2 aprobada por humano (fecha: 2026-10-05, commit de firma: el que marca esta casilla)
