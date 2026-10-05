@@ -237,6 +237,12 @@ total sin repetir es 252 + 3 del interruptor = **255**.
 | 44 | `forgot.email` | `Email` | `Correo electrónico` |
 | 60 | `forgot.sendRecoveryLink` | `Send recovery link` | `Enviar enlace de recuperación` |
 | 66 | `forgot.backToSignIn` | `Back to sign in` | `Volver al inicio de sesión` |
+| — | `forgot.instructions` ← añadida por #117 (R1) | `Enter the email linked to your account and we'll send you a link to reset your password.` | `Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.` |
+| — | `forgot.checkYourEmail` ← añadida por #117 (R1) | `Check your email` | `Revisa tu correo` |
+| — | `forgot.sentTo` ← añadida por #117 (R1) | `If an account exists for {{email}}, we sent a link to reset your password. Check your inbox and spam folder.` | `Si existe una cuenta para {{email}}, te enviamos un enlace para restablecer tu contraseña. Revisa tu bandeja de entrada y la carpeta de spam.` |
+| — | `forgot.resend` ← añadida por #117 (R1) | `Resend` | `Reenviar` |
+| — | `forgot.invalidEmail` ← añadida por #117 (R1) | `Enter a valid email address` | `Ingresa un correo electrónico válido` |
+| — | `forgot.tooManyAttempts` ← añadida por #117 (R1) | `Too many attempts. Try again later.` | `Demasiados intentos. Inténtalo más tarde.` |
 
 **`mobile-pet-tracker/src/app/(auth)/register.tsx`** — 14 ocurrencias
 
