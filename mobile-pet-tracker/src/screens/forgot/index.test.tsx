@@ -236,6 +236,24 @@ describe('#117 R6: reenviar repite la misma petición', () => {
     expect(screen.queryByTestId('forgot-email')).toBeNull();
     await waitFor(() => expect(screen.getByTestId('forgot-resend')).not.toBeDisabled());
   });
+
+  it.each<[ForgotPasswordState, string]>([
+    [{ kind: 'validation', errors: [{ path: 'email', message: 'Invalid email' }] }, 'Ingresa un correo electrónico válido'],
+    [{ kind: 'error' }, 'Algo salió mal'],
+    [{ kind: 'unreachable', message: 'network down' }, 'No se pudo conectar con el servidor'],
+    [{ kind: 'missing-config' }, 'Algo salió mal'],
+  ])('un %p al reenviar pinta «%s» en forgot-error sin salir de «Revisa tu correo»', async (state, copy) => {
+    mockForgotPassword.mockResolvedValueOnce({ kind: 'ok' }).mockResolvedValueOnce(state);
+    await renderRoute();
+    await submitForgot();
+    expect(await screen.findByText('Revisa tu correo')).toBeVisible();
+    await fireEvent.press(screen.getByTestId('forgot-resend'));
+
+    expect(await screen.findByTestId('forgot-error')).toHaveTextContent(copy);
+    expect(screen.getByText('Revisa tu correo')).toBeVisible();
+    expect(screen.queryByTestId('forgot-email')).toBeNull();
+    await waitFor(() => expect(screen.getByTestId('forgot-resend')).not.toBeDisabled());
+  });
 });
 
 
