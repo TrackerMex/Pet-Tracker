@@ -1,3 +1,4 @@
+import { DeviceEventEmitter, Platform } from 'react-native';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
@@ -19,6 +20,7 @@ jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 40, right: 0, bottom: 24, left: 0 }),
 }));
 
+const originalOS = Platform.OS;
 const apiUrl = 'http://api.test/v1';
 const originalApiUrl = process.env.EXPO_PUBLIC_API_URL;
 const mockForgotPassword = jest.mocked(forgotPassword);
@@ -30,6 +32,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  (Platform as { OS: string }).OS = originalOS;
   if (originalApiUrl === undefined) delete process.env.EXPO_PUBLIC_API_URL;
   else process.env.EXPO_PUBLIC_API_URL = originalApiUrl;
 });
@@ -232,5 +235,28 @@ describe('#117 R6: reenviar repite la misma petición', () => {
     expect(screen.getByText('Revisa tu correo')).toBeVisible();
     expect(screen.queryByTestId('forgot-email')).toBeNull();
     await waitFor(() => expect(screen.getByTestId('forgot-resend')).not.toBeDisabled());
+  });
+});
+
+
+describe('#117 R8: forgot se aparta del teclado en Android', () => {
+  it('el host screen-forgot añade paddingBottom 200 al abrir el teclado', async () => {
+    (Platform as { OS: string }).OS = 'android';
+    mockForgotPassword.mockResolvedValue({ kind: 'ok' });
+    await renderRoute();
+    const host = screen.getByTestId('screen-forgot');
+    expect(host).toHaveStyle({ paddingBottom: 0 });
+    await fireEvent(host, 'layout', {
+      persist() {},
+      nativeEvent: { layout: { x: 0, y: 0, width: 400, height: 700 } },
+    });
+    await act(async () => {
+      DeviceEventEmitter.emit('keyboardDidShow', {
+        startCoordinates: { screenX: 0, screenY: 800, width: 400, height: 0 },
+        endCoordinates: { screenX: 0, screenY: 500, width: 400, height: 300 },
+        duration: 0, easing: 'keyboard', isEventFromThisApp: true,
+      });
+    });
+    await waitFor(() => expect(screen.getByTestId('screen-forgot')).toHaveStyle({ paddingBottom: 200 }));
   });
 });
