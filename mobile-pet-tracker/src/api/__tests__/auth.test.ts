@@ -320,6 +320,12 @@ describe('#117 R2: forgotPassword mapea la respuesta por kind', () => {
     await expect(forgotPassword(baseUrl, body, fetchFn)).resolves.toEqual({ kind: 'error' });
   });
 
+  it.each([201, 302, 404, 503])('mapea %i a error', async (status) => {
+    const fetchFn = jest.fn().mockResolvedValue(response(status, {})) as unknown as typeof fetch;
+
+    await expect(forgotPassword(baseUrl, body, fetchFn)).resolves.toEqual({ kind: 'error' });
+  });
+
   it('mapea un rechazo de fetch a unreachable', async () => {
     const fetchFn = jest.fn().mockRejectedValue(new Error('network down')) as unknown as typeof fetch;
 
