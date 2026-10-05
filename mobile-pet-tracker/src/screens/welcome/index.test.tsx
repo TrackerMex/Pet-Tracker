@@ -247,6 +247,7 @@ describe('R6', () => {
       expect(chip.props.onClick).toBeUndefined();
       expect(chip.props.accessible).toBeUndefined();
       expect(chip.props.accessibilityRole).not.toBe('button');
+      expect(chip.props.role).toBeUndefined();
     });
   });
 
