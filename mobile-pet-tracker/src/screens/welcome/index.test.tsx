@@ -318,34 +318,39 @@ describe('R10', () => {
   it('arranca invisible y desplazado sin Reduce Motion', async () => {
     await renderWelcome();
     expect(screen.getByTestId('welcome-content')).toHaveAnimatedStyle({
+      alignItems: 'center', gap: 16,
       opacity: 0, transform: [{ translateY: 16 }],
-    });
+    }, { shouldMatchAllProps: true });
   });
 
   it('termina visible y en su sitio sin Reduce Motion', async () => {
     await renderWelcome();
     expect(screen.getByTestId('welcome-content')).toHaveAnimatedStyle({
+      alignItems: 'center', gap: 16,
       opacity: 0, transform: [{ translateY: 16 }],
-    });
+    }, { shouldMatchAllProps: true });
     await act(async () => {
       jest.advanceTimersByTime(WELCOME_ENTRANCE_MS * 2 + 100);
     });
     expect(screen.getByTestId('welcome-content')).toHaveAnimatedStyle({
+      alignItems: 'center', gap: 16,
       opacity: 1, transform: [{ translateY: 0 }],
-    });
+    }, { shouldMatchAllProps: true });
   });
 
   it('con Reduce Motion no se desplaza', async () => {
     mockUseReducedMotion.mockReturnValue(true);
     await renderWelcome();
     expect(screen.getByTestId('welcome-content')).toHaveAnimatedStyle({
+      alignItems: 'center', gap: 16,
       opacity: 0, transform: [{ translateY: 0 }],
-    });
+    }, { shouldMatchAllProps: true });
     await act(async () => {
       jest.advanceTimersByTime(WELCOME_ENTRANCE_MS * 2 + 100);
     });
     expect(screen.getByTestId('welcome-content')).toHaveAnimatedStyle({
+      alignItems: 'center', gap: 16,
       opacity: 1, transform: [{ translateY: 0 }],
-    });
+    }, { shouldMatchAllProps: true });
   });
 });
