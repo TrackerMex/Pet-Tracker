@@ -30,7 +30,7 @@ tags: [harness, spec, mobile, ui]
 | R6 | `src/screens/welcome/index.test.tsx::R6 › aplica la clase de tinta a cada etiqueta` (fila 7) | `f5ebec6c` (nace verde; sonda R6 documentada) |
 | R6 | `src/screens/welcome/index.test.tsx::R6 › ordena GPS, Salud y Nutrición` (fila 8) | `f5ebec6c` (nace verde; sonda R6 documentada) |
 | R6 | `src/screens/welcome/index.test.tsx::R6 › deja dos hijos por chip, icono y etiqueta` (fila 9) | `f5ebec6c` (nace verde; sonda R6 documentada) |
-| R6 | `src/screens/welcome/index.test.tsx::R6 › deja cada chip sin pulsación ni rol de botón` (fila 10) | `f5ebec6c` (nace verde; sonda R6 documentada); ronda 2 `3eff471b` (nace verde; sonda E4 documentada) |
+| R6 | `src/screens/welcome/index.test.tsx::R6 › deja cada chip sin pulsación ni rol de botón` (fila 10) | `f5ebec6c` (nace verde; sonda R6 documentada); ronda 2 `3eff471b` (nace verde; sonda E4 documentada); ronda 3 `5f6ebf76` (nace verde; sonda E7 documentada) |
 | R6 | `src/screens/welcome/index.test.tsx::R6 › recorre WELCOME_CHIPS con map y comparte la clase de etiqueta` (fila 11) | `f5ebec6c` (nace verde; sonda R6 documentada) |
 | R6 | `src/screens/welcome/index.test.tsx::R6 › contiene exactamente tres chips` (fila 12) | `f5ebec6c` (nace verde; sonda R6 documentada) |
 | R7 | `src/screens/welcome/index.test.tsx::R7 › empuja a registro sin reemplazar` | `a81147d9` (nace verde; sonda R7 documentada) |
@@ -40,7 +40,7 @@ tags: [harness, spec, mobile, ui]
 | R8 | `src/screens/welcome/index.test.tsx::R8 › es un botón hueco con tinta accent-strong` | `2a4f2376` (nace verde; sonda R8 documentada) |
 | R9 | `src/screens/welcome/index.test.tsx::R9 › muestra el copy en español` | `a7c3a656` → `431894bc` |
 | R9 | `src/screens/welcome/index.test.tsx::R9 › muestra el copy en inglés` | `a7c3a656` → `431894bc` |
-| R10 | `src/screens/welcome/index.test.tsx::R10 › fija la duración y la curva` | `58961dcf` → `fecffd30`; refactor `80250ef2`; ronda 2 `c5bc8da1` (nace verde; sondas E1 y E2 documentadas) |
+| R10 | `src/screens/welcome/index.test.tsx::R10 › fija la duración y la curva` | `58961dcf` → `fecffd30`; refactor `80250ef2`; ronda 2 `c5bc8da1` (nace verde; sondas E1 y E2 documentadas); ronda 3 `e8300219` (nace verde; sonda E6 documentada) |
 | R10 | `src/screens/welcome/index.test.tsx::R10 › arranca invisible y desplazado sin Reduce Motion` | `58961dcf` → `fecffd30`; refactor `80250ef2`; ronda 2 `7c86fcad` (nace verde; sonda E3 documentada) |
 | R10 | `src/screens/welcome/index.test.tsx::R10 › termina visible y en su sitio sin Reduce Motion` | `58961dcf` → `fecffd30`; refactor `80250ef2`; ronda 2 `7c86fcad` (nace verde; sonda E3 documentada) |
 | R10 | `src/screens/welcome/index.test.tsx::R10 › con Reduce Motion no se desplaza` | `58961dcf` → `fecffd30`; refactor `80250ef2`; ronda 2 `7c86fcad` (nace verde; sonda E3 documentada) |
