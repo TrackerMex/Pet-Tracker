@@ -2323,7 +2323,7 @@
   {
     "id": 116,
     "name": "mobile-map-gps-pill-battery",
-    "status": "in_progress",
+    "status": "done",
     "priority": "P3",
     "description": "ORDEN DEL HUMANO (2026-09-23): es de UI y va AL FINAL, despues de TODAS las pending registradas antes de #115; no se especifica hasta que esas esten cerradas. Registrada el 2026-09-23 por la sesion Backend a peticion del humano, desde la auditoria de paridad con el Figma Make (specs/mobile-figma-polish/design-src/App.tsx) sobre c71d8068 (main con #113). Premisas verificadas contra ese arbol; anclas por contenido grepeable, nunca por numero de linea. El Mapa (src/screens/map/index.tsx) no pinta dos cosas del MapScreen del Make que ya tienen dato: (1) la pildora flotante con avatar, nombre y \"GPS activo\" (grep \"GPS activo\" en el Make); la Home ya pinta una pildora de conectividad desde #73 (clave home.online); (2) la bateria del collar: el Make la pone en sus estadisticas (label \"Bateria\"), y la app pinta stat-speed, stat-distance, stat-updated y stat-gps sin bateria. El dato ya llega: getPet devuelve device: DeviceStatus | null con batteryPct, y LastPosition trae battery (src/api/types.ts). OJO: docs/ui-guidelines.md (Direccion de arte 5) pide conservar la rejilla de estadisticas actual; la spec decide si la bateria se anade o sustituye a una y lo justifica. FUERA: direccion literal (necesita geocodificacion de pago, decision abierta) y los botones Compartir y Recorrido (necesitan backend). Si anade copy, su spec TIENE que recontar como delta el candado de longitud del catalogo (expect(englishKeys).toHaveLength(...) en src/providers/__tests__/language-provider.test.tsx) y registrar las filas en src/__tests__/ui-copy-table.ts y specs/mobile-ui-language/design.md.",
     "acceptance_criteria": [
@@ -2983,6 +2983,22 @@
     ],
     "files_affected": [
       "mobile-pet-tracker/src/screens/welcome/index.test.tsx"
+    ]
+  },
+  {
+    "id": 151,
+    "name": "mobile-map-pill-name-locks",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Registrada el 2026-10-05 por decision del humano al cerrar #116. Son las observaciones 2 y 3 del reviewer de #116 (progress/review_mobile-map-gps-pill-battery.md §Sondas de mutacion y §Observaciones), dos zonas ciegas de la pildora del mapa en src/screens/map/index.test.tsx; la produccion es correcta en las dos. (Z1) R3 dice que el PetAvatar de la pildora recibe name, photoUrl y cacheKey de selectedPet, pero la tabla de tests de R3 solo asevera testID, width/height, source y style: con name=\"zz\" la suite queda 94/94 en verde. Si regresa, el blobatar de la pildora deja de coincidir con el del heroe para la misma mascota. (Z2) Las 6 filas de R4 usan Luna en la lista y en el detalle, asi que si el accessibilityLabel de la pildora toma el nombre del detalle en vez de selectedPet.name la suite sigue en verde; el unico it de R3 que separa los nombres (Luna en la lista, Nala en el detalle) no mira la etiqueta. Limites: solo estas dos mutaciones estan medidas; el reviewer no barrio otras props del avatar. Los esperados deben ser literales del test o el xml del avatar del heroe renderizado, nunca blobatar() importado de produccion (candado tautologico). Cero cambio en produccion. Toca el mismo test que #116; cualquier it nuevo mueve el recuento y la spec lo declara.",
+    "acceptance_criteria": [
+      "Con name=\"zz\" en el PetAvatar de la pildora (sonda Z1 del reviewer de #116), un it FALLA por asercion",
+      "Con el accessibilityLabel de la pildora tomando el nombre del detalle en vez de selectedPet.name (sonda Z2), un it FALLA por asercion, con lista y detalle de nombres distintos",
+      "Los esperados son literales del test o el avatar del heroe renderizado, nunca importados de produccion",
+      "Cero cambio en produccion; suite movil verde medida sin pipe; delta de tests declarado"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/screens/map/index.test.tsx"
     ]
   }
 ]
