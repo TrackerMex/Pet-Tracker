@@ -445,7 +445,7 @@ Los textos normativos están en R5, R6 y R10, marcados «Enmienda E<n>».
 
 ### Enmienda E1–E5 — candados de R5, R6 y R10 tras la review de la ronda 1
 
-- [ ] Enmienda E1–E5 aprobada por humano (fecha: ) ← gate obligatorio antes de la ronda 2 de Codex
+- [x] Enmienda E1–E5 aprobada por humano (fecha: 2026-10-05) ← gate obligatorio antes de la ronda 2 de Codex
 
 ### Prueba de humo
 
