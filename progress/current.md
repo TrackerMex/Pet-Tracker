@@ -45,6 +45,10 @@
 - Segunda parada de Codex: H1 tocó también `progress/current.md` y la
   corrección hablaba de 11 ficheros. «CORRECCION 2» del handoff fija el cierre en
   12 (los 9 de Codex más tasks.md, el handoff y current.md, los tres del leader).
+- Tercera parada de Codex, en el rojo de T4: cae también `#65 R18`
+  (`checkUses(ALL_USES)` expande `R4_MAP`), y T4 no lo listaba. Es la misma
+  causa que `#65 R4`. «CORRECCION 3» lo añade: 22 rojos esperados en 3 suites.
+  Commits de Codex hasta aquí: `6fadb48b`, `f41e1b05`, `762c74c8`, `4c10a90a`.
 - Observación para después (no es deuda abierta todavía): `collar-battery` de
   la Home pinta `> 60` con `text-success` (≈ 3,31:1 sobre `bg-default` claro,
   falla AA). Verificado en `src/screens/home/index.tsx`; solo ese tile.

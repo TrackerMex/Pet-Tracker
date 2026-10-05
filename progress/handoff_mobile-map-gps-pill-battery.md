@@ -388,3 +388,61 @@ T5 y T6 según tasks.md y el handoff. Al cerrar, `git diff --name-only H0 HEAD`
 
 Commits test-primero, rojo antes que verde. Sin push ni PR.
 ```
+
+## CORRECCION 3 (leader, 2026-10-05): `#65 R18` también cae en el rojo de T4
+
+Codex paró en el rojo de T4 (impl, «PARADA 3») y con razón: además de
+`checkUses(R4_MAP)` cae `#65 R18` › `resuelve cada ocurrencia de la tabla
+contra la clave exacta`. Ese `it` llama a `checkUses(ALL_USES)`, y
+`ALL_USES` expande `...R4_MAP`, así que la fila `pairing.battery` cae otra
+vez por la misma causa (`uses: 0`). tasks.md T4 lo omitía y ya lo lista.
+
+El rojo de T4 esperado queda en 22 `it`, todos ya medidos en tu «t4-red»:
+  mapa 19: `#61 R11` 3, `#62 R15` 1, R5 2, R6 6 y R7 6 por consulta
+           (`stat-battery`); `#94 R6` 1 por aserción (`Conexión` visible).
+  consistency-classnames 1: la fila del mapa de `counters`, `toHaveLength`
+           4 frente a 3.
+  ui-language 2: `#65 R4` y `#65 R18`, `toEqual` con `uses: 0` en
+           `pairing.battery`.
+`#69 R10` en verde, como fija CORRECCION 1.
+
+Esta corrección solo toca los tres ficheros del leader de CORRECCION 2;
+el cierre sigue siendo de 12 ficheros.
+
+R11, tercer punto («`git diff --name-only <HEAD del handoff>` ⊆ la lista
+cerrada de design.md §1.2»), y su casilla en tasks.md T6: su paréntesis deja
+fuera lo que commitea el leader, y las tres correcciones del leader son
+posteriores a H0. Mídelo así, desde la raíz del repo, y copia la salida al
+impl. Debe dar solo ficheros de design §1.2 (al cerrar, los 9):
+  git diff --name-only a89aeaf0 HEAD -- . ':!specs/mobile-map-gps-pill-battery/tasks.md' ':!progress/handoff_mobile-map-gps-pill-battery.md' ':!progress/current.md'
+Que en el `git diff --name-only a89aeaf0 HEAD` sin filtro aparezcan esos
+tres no es motivo de parada. Sí lo es cualquier otro fichero.
+
+Paste de reanudación para Codex:
+
+```text
+Worktree: /home/claude/sites/Pet-Tracker   <- PRIMERA LINEA. Trabaja AQUI.
+Reanudas #116 tras tu PARADA 3. Lee la sección final «CORRECCION 3» de
+progress/handoff_mobile-map-gps-pill-battery.md y tasks.md T4 corregido:
+`#65 R18` (checkUses(ALL_USES)) es un rojo esperado de T4.
+
+Antes de tocar nada, con salida al impl (sección nueva «Reanudación 3»):
+  git log --oneline -1                      -> el commit de CORRECCION 3 (H3)
+  git merge-base --is-ancestor 4c10a90a HEAD; echo "exit=$?"   -> 0
+  git show --stat --format= HEAD            -> solo tasks.md, el handoff y progress/current.md
+  git status --short                        -> SOLO tus cuatro ficheros:
+       M mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+       M mobile-pet-tracker/src/__tests__/ui-copy-table.ts
+       M mobile-pet-tracker/src/screens/map/index.test.tsx
+      ?? progress/impl_mobile-map-gps-pill-battery.md
+  grep -cF 'cae otra vez por la misma causa' specs/mobile-map-gps-pill-battery/tasks.md   -> 1
+PARA si algo no coincide.
+
+Tu rojo de T4 ya está medido en «t4-red» (22 rojos en 3 suites, que
+coinciden con CORRECCION 3): no lo repitas. Commitéalo con su mensaje
+literal y sigue con T4 verde, T5 (sonda M13) y T6 según tasks.md y el
+handoff. El cierre sigue siendo de 12 ficheros (CORRECCION 2). El tercer
+punto de R11 se mide con el comando con exclusiones de CORRECCION 3.
+
+Commits test-primero, rojo antes que verde. Sin push ni PR.
+```

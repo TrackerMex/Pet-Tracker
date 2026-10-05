@@ -115,8 +115,14 @@ tags: [harness, spec, mobile, ui]
    - Esperado: rojo **por consulta** (`stat-battery`) en R5, R6, R7, `#61 R11`
      y `#62 R15`; **por aserción** en `#94 R6` (`Conexión` sigue visible:
      sus ausencias van antes que `getByText('Batería')`), en la fila del mapa
-     de `counters` (`toHaveLength`: 4 esperados, 3 recibidos) y en
-     `checkUses(R4_MAP)` (`pairing.battery` 0).
+     de `counters` (`toHaveLength`: 4 esperados, 3 recibidos), en
+     `checkUses(R4_MAP)` (`#65 R4`, `pairing.battery` con `uses: 0`) y en
+     `#65 R18` › `resuelve cada ocurrencia de la tabla contra la clave
+     exacta`, que llama a `checkUses(ALL_USES)`: `ALL_USES` expande
+     `...R4_MAP`, así que la misma fila cae otra vez por la misma causa.
+     En total, 22 rojos en 3 suites: mapa 19, `consistency-classnames` 1 y
+     `ui-language` 2. (Corrección del leader del 2026-10-05, tras la tercera
+     parada de Codex: la versión anterior omitía `#65 R18`.)
    - `#69 R10` **nace verde** y no es un rojo de T4: es un candado contable
      que suma la tabla `counters` y no mide el fuente, así que con la fila
      del mapa y la suma subiendo juntas (26 = 26) no puede caer. Quien
@@ -149,7 +155,10 @@ tags: [harness, spec, mobile, ui]
       toques.
 - [ ] R10: anclas negativas con el valor de la base (requirements R10).
 - [ ] R11: los seis puntos de requirements R11, medidos sin pipe;
-      `git diff --name-only <HEAD del handoff>` ⊆ design §1.2.
+      `git diff --name-only <HEAD del handoff>` ⊆ design §1.2, medido desde
+      la raíz sin los tres ficheros de las correcciones del leader posteriores
+      al handoff (CORRECCION 3 del handoff):
+      `git diff --name-only a89aeaf0 HEAD -- . ':!specs/mobile-map-gps-pill-battery/tasks.md' ':!progress/handoff_mobile-map-gps-pill-battery.md' ':!progress/current.md'`.
 - [ ] `bun run typecheck`, `bun run lint`, `bunx jest` con exit 0.
       Mientras corre la suite entera, no lances otra.
 
