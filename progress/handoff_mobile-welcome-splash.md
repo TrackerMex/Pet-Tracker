@@ -277,3 +277,213 @@ jest que mediste (7 suites / 219 / exit=0) vale: el arbol de
 mobile-pet-tracker/ no cambia con esta correccion. Faltan typecheck y lint
 de base: correlos antes de T1. Luego sigue con T1.
 ```
+
+---
+
+# Ronda 2 — Enmienda E1–E5 (solo tests)
+
+> El `reviewer` rechazó la ronda 1 (`progress/review_mobile-welcome-splash.md`,
+> commit `e1690ede`) por cinco candados ciegos que la propia spec prescribía.
+> La producción cumple y no cambia. La Enmienda E1–E5 (`d9542786`) reescribe
+> esos candados; pegar el bloque de abajo en Codex **solo después** de que el
+> humano apruebe la Enmienda y el leader haga el commit de firma. El bloque
+> lo comprueba él mismo (ancla 0) y para si la casilla no está marcada.
+
+```
+== RONDA 2 (Enmienda E1-E5, solo tests) ==
+
+Worktree: /home/claude/sites/Pet-Tracker-wt-118   <- PRIMERA LINEA. Trabaja AQUI y en ningun otro sitio
+Antes de tocar nada, ejecuta `pwd`, `git branch --show-current`,
+`git rev-parse --short HEAD`, `git status --short` y `git log -1 --format=%s`
+y pega las cinco salidas en una seccion NUEVA al final de
+progress/impl_mobile-welcome-splash.md titulada «Ronda 2 — Enmienda E1–E5».
+No borres nada de la ronda 1. El hash es H0 (debe ser el commit de firma de
+la Enmienda, el ultimo del leader): todos los `git diff --name-only` de esta
+ronda se miden contra el. Para si la branch no es
+feature/118-mobile-welcome-splash o si `git status --short` no sale vacio.
+No toques /home/claude/sites/Pet-Tracker (sesion del leader),
+Pet-Tracker-wt-backend (#117), ni ningun otro worktree, ni cambies de
+branch en ninguno.
+
+Que paso: el reviewer rechazo la ronda 1 porque cinco candados que la spec
+te prescribia al pie de la letra quedaban verdes contra mutaciones reales.
+No es un error tuyo: la spec esta enmendada. La produccion cumple R1-R12 y
+NO cambia en esta ronda. Solo cambian las aserciones de
+mobile-pet-tracker/src/screens/welcome/index.test.tsx.
+
+Lee enteros:
+- specs/mobile-welcome-splash/requirements.md: §«Enmienda E1–E5» y los
+  bloques marcados «(Enmienda E5)» en R5, «(Enmienda E4)» en R6 y
+  «(Enmiendas E1 y E2)» / «(Enmienda E3)» en R10. El texto de cada
+  asercion esta ahi literal: copialo, no lo reescribas.
+- specs/mobile-welcome-splash/design.md §2, las filas marcadas (E1)-(E5).
+- specs/mobile-welcome-splash/tasks.md T12 (tu guion). T11 es del humano.
+- progress/review_mobile-welcome-splash.md §«Hallazgos bloqueantes» E1-E5
+  (contexto: el reviewer ya valido cada arreglo verde en la base y rojo en
+  su mutacion).
+
+== ANCLAS (ejecutalas desde mobile-pet-tracker/ antes de tocar nada) ==
+
+Si alguna salida difiere de la esperada, PARA y reportalo en el impl.
+
+0. grep -cF -- '- [x] Enmienda E1–E5 aprobada por humano' ../specs/mobile-welcome-splash/requirements.md   -> 1
+   (si da 0, la ronda 2 NO esta autorizada: PARA)
+1. grep -cF "expect(WELCOME_ENTRANCE_EASING).toBeDefined();" src/screens/welcome/index.test.tsx   -> 1
+2. grep -cF "toHaveAnimatedStyle({" src/screens/welcome/index.test.tsx   -> 5
+3. grep -cF "shouldMatchAllProps" src/screens/welcome/index.test.tsx   -> 0
+4. grep -cF "testUri" src/screens/welcome/index.test.tsx   -> 0
+5. grep -cF "expect(chip.props.onPress).toBeUndefined();" src/screens/welcome/index.test.tsx   -> 1
+6. grep -cF "it('pinta hero, marca, tagline y legal con sus clases'" src/screens/welcome/index.test.tsx   -> 1
+7. grep -cF "it('deja cada chip sin pulsación ni rol de botón'" src/screens/welcome/index.test.tsx   -> 1
+8. grep -cF "it('fija la duración y la curva'" src/screens/welcome/index.test.tsx   -> 1
+9. grep -cF "require('../../../assets/images/splash-icon.png')" src/screens/welcome/index.tsx   -> 1
+10. grep -cF "duration: WELCOME_ENTRANCE_MS," src/screens/welcome/index.tsx   -> 2
+11. grep -cF "easing: WELCOME_ENTRANCE_EASING," src/screens/welcome/index.tsx   -> 2
+12. grep -cF "reduceMotion: ReduceMotion.Never" src/screens/welcome/index.tsx   -> 1
+13. test -e assets/images/logo-glow.png; echo "exit=$?"   -> exit=0
+
+== BASE (antes del primer cambio) ==
+
+Las mismas ocho suites del cierre de la ronda 1, sin pipe:
+
+bunx jest --runTestsByPath --maxWorkers=2 src/app/__tests__/index.test.tsx src/app/__tests__/layout.test.tsx src/providers/__tests__/language-provider.test.tsx src/__tests__/ui-language.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/legibility-classnames.test.ts src/__tests__/design-drift.test.ts src/screens/welcome/index.test.tsx > /tmp/118-r2-base-jest.log 2>&1; echo "exit=$?"
+
+Esperado: «Test Suites: 8 passed, 8 total», «Tests: 251 passed, 251 total»,
+exit=0. Despues `test ! -e .expo/types/router.d.ts; echo "guard_exit=$?"`
+(guard_exit=0; si no, PARA y pide al humano que lo borre, nunca rm -f),
+`bun run typecheck` y `bun run lint`, cada uno sin pipe y con su exit.
+Copia las lineas de resumen al impl. Esta ronda no anade ni quita ningun
+`it`: 251 se mantiene en todas las mediciones.
+
+== TEST PRIMERO EN ESTA RONDA (C4) ==
+
+Los candados nuevos NACEN VERDES: la produccion ya cumple. No hay commit
+feat ni refactor en esta ronda. El rojo de C4 lo da la SONDA DE MUTACION:
+plantas la mutacion en src/screens/welcome/index.tsx SIN commitearla,
+corres la suite de welcome, compruebas que cae EXACTAMENTE el it de la
+tabla por la causa declarada, y deshaces. NUNCA commitees una mutacion.
+
+Por cada sonda, en este orden:
+  a. Planta la mutacion en src/screens/welcome/index.tsx.
+  b. bunx jest --runTestsByPath src/screens/welcome/index.test.tsx > /tmp/118-r2-<sonda>.log 2>&1; echo "exit=$?"
+     -> exit=1, y SOLO caen los it de la tabla.
+  c. Copia al impl: la mutacion (diff), las cuentas, el exit y cada it
+     rojo con su matcher, Expected y Received (o el error declarado).
+  d. git checkout HEAD -- src/screens/welcome/index.tsx
+     git diff --quiet HEAD -- src/screens/welcome/index.tsx; echo "worktree_exit=$?"   -> 0
+     git diff --cached --quiet; echo "index_exit=$?"   -> 0
+  e. Vuelve a correr la suite de welcome: verde, exit=0.
+Si cae un it que no esta en la tabla, o cae por otra causa, PARA y
+reportalo. No ajustes la asercion para que cuadre.
+
+== COMMITS (uno por enmienda, solo index.test.tsx, en este orden) ==
+
+1. E5 (R5). En it('pinta hero, marca, tagline y legal con sus clases') anade
+   la asercion de props.source de requirements.md R5 «(Enmienda E5)».
+   Commit: test(mobile): lock the welcome hero source (#118 R5, E5)
+2. E4 (R6 fila 10). En it('deja cada chip sin pulsación ni rol de botón'),
+   dentro del forEach, anade props.onClick y props.accessible
+   toBeUndefined() segun R6 «(Enmienda E4)». Las dos aserciones que ya
+   estan (onPress y accessibilityRole) se quedan.
+   Commit: test(mobile): reject a pressable welcome chip (#118 R6, E4)
+3. E1 y E2 (R10). En it('fija la duración y la curva'): conserva
+   toBe(240); sustituye `expect(WELCOME_ENTRANCE_EASING).toBeDefined();`
+   por la referencia literal en NUEVE puntos; anade
+   `const source = readSource('screens/welcome/index.tsx');` y las tres
+   regex de cableado. Todo literal de R10 «(Enmiendas E1 y E2)». El
+   precedente de `jest.requireActual<typeof import(...)>` esta en
+   src/app/(tabs)/__tests__/food.test.tsx linea 31 (ruta con parentesis:
+   entre comillas si la pasas a un comando).
+   Commit: test(mobile): bind the welcome entrance timing to its constants (#118 R10, E1, E2)
+4. E3 (R10). En las CINCO llamadas a toHaveAnimatedStyle del describe R10
+   anade `alignItems: 'center', gap: 16` al objeto esperado y
+   `{ shouldMatchAllProps: true }` como segundo argumento.
+   Commit: test(mobile): match every animated welcome style key (#118 R10, E3)
+5. Trazabilidad (ultimo commit, solo specs/mobile-welcome-splash/traceability.md):
+   en las filas de R5 (pinta hero...), R6 fila 10 y las cuatro de R10,
+   anade «; ronda 2 `<hash>` (nace verde; sonda E<n> documentada)» con el
+   hash del commit de su enmienda. No toques las demas filas. No rebasees
+   despues de escribir hashes.
+   Commit: docs(mobile): trace the #118 round 2 locks to their commits
+
+Mensajes de commit en ingles, como en la ronda 1. Cada commit lleva SOLO
+su fichero: comprueba `git diff --cached --name-only` antes de cada uno.
+
+== SONDAS (todas en src/screens/welcome/index.tsx) ==
+
+| Tras commit | Sonda | it que debe caer | Causa declarada |
+| 1 (E5) | M8: `splash-icon.png` -> `logo-glow.png` en el require del hero | R5 › pinta hero, marca, tagline y legal con sus clases | toEqual sobre props.source (testUri no termina en splash-icon.png) |
+| 2 (E4) | S15b: el `<View key={testID} testID={testID} className=...>` del chip pasa a `<Pressable ... onPress={() => {}}>` (importa Pressable de react-native) | R6 › deja cada chip sin pulsación ni rol de botón | toBeUndefined sobre props.onClick o props.accessible |
+| 3 (E1) | M1: `duration: 400` a mano en los DOS withTiming (constante intacta) | R10 › fija la duración y la curva | toHaveLength(2) del cableado, Received 0 |
+| 3 (E1) | M11: `easing: Easing.linear` solo en el withTiming del fade | R10 › fija la duración y la curva | toHaveLength(2) del cableado, Received 1 |
+| 3 (E1) | M2: `WELCOME_ENTRANCE_EASING = Easing.linear` | R10 › fija la duración y la curva | TypeError: `WELCOME_ENTRANCE_EASING.factory is not a function` (Easing.linear es una funcion, no tiene factory). Es el rojo DECLARADO de esta sonda |
+| 3 (E1) | M2b: `WELCOME_ENTRANCE_EASING = Easing.bezier(0.25, 0.1, 0.25, 1)` | R10 › fija la duración y la curva | toBeCloseTo en el primer punto que difiere |
+| 3 (E2) | M3: quitar la linea `reduceMotion: ReduceMotion.Never,` del fade | R10 › fija la duración y la curva | toHaveLength(1) de ReduceMotion.Never, Received 0 |
+| 3 (E2) | M4: `duration: reduceMotion ? 0 : WELCOME_ENTRANCE_MS,` en el fade | R10 › fija la duración y la curva | toHaveLength(2) del cableado, Received 1 |
+| 4 (E3) | M6: `marginTop: translateY.get(),` como clave extra en useAnimatedStyle | R10 › arranca invisible..., R10 › termina visible..., R10 › con Reduce Motion no se desplaza (los tres) | toHaveAnimatedStyle con shouldMatchAllProps |
+
+En M3/M4/M1/M11 el `it` se para en la primera asercion que falla: anota
+cual es. M2 da TypeError y no asercion porque la referencia necesita
+`.factory()`; por eso existe M2b, que debe caer por asercion.
+
+== REGLAS CRITICAS (las de la ronda 1 siguen; las que aplican aqui) ==
+
+- Titulos de it LITERALES: no renombres ningun it ni describe.
+- Esperas: docs/conventions.md §Esperas. Esta ronda no cambia ninguna
+  espera ni la ventana `WELCOME_ENTRANCE_MS * 2 + 100`: solo cambian los
+  objetos esperados y el segundo argumento de toHaveAnimatedStyle.
+- Mocks: no toques ningun jest.mock del fichero. El mock parcial de
+  reanimated ya expande `...actual`; la referencia de E1 usa
+  jest.requireActual a proposito (nunca el simbolo importado de
+  produccion).
+- Skills (catalogo de Codex): del plugin expo, `building-native-ui`; del
+  repo (.agents/skills/), `animate-expo` (R10). Di en el impl cuales
+  cargaste. No pidas expo-overview, expo-animation ni expo-router: no
+  existen en tu catalogo (silencio, no error).
+- Jest: siempre `--runTestsByPath` desde mobile-pet-tracker/. El numero de
+  suites que imprime jest debe ser el de ficheros pedidos.
+- Typecheck: `test ! -e .expo/types/router.d.ts` antes de CADA
+  `bun run typecheck`. Si existe, PARA y pide al humano que lo borre.
+  Nunca `rm -f` (tu sandbox lo deniega).
+- Mide SIN pipe: `cmd > fichero 2>&1; echo "exit=$?"`.
+- R12: ni `bun add`, ni cambios en package.json, bun.lock ni app.json.
+  Todo con bun/bunx, nunca npm/npx.
+- NO lances ./init.sh ni toques Postgres ni LocalStack.
+- Candados globales (R11) que NO se mueven: no tocas ningun fichero
+  global en esta ronda.
+- NO son tuyos: progress/history.md, progress/current.md, STATUS.md,
+  feature_list.json, requirements.md, design.md, tasks.md y las casillas de
+  §Aprobacion. Todo lo que tengas que contar va en
+  progress/impl_mobile-welcome-splash.md.
+- Si el sandbox te deniega un comando, PARA y reportalo. No lo sustituyas
+  por otro que haga lo mismo con otra herramienta.
+- NO hagas push ni abras la PR.
+
+Ficheros que TU cambias, medidos desde H0 (`git diff --name-only H0 HEAD`):
+mobile-pet-tracker/src/screens/welcome/index.test.tsx y
+specs/mobile-welcome-splash/traceability.md (2). Mas
+progress/impl_mobile-welcome-splash.md, que commiteas junto a la
+trazabilidad en el commit 5. Nada mas. `git diff H0 HEAD --
+mobile-pet-tracker/src/screens/welcome/index.tsx` debe salir VACIO.
+
+== CIERRE (igual que T10) ==
+
+- Las ocho suites de la BASE, sin pipe: «Test Suites: 8 passed, 8 total»,
+  «Tests: 251 passed, 251 total», exit=0.
+- guard + `bun run typecheck` exit=0; `bun run lint` exit=0.
+- `git diff origin/main -- mobile-pet-tracker/package.json
+  mobile-pet-tracker/bun.lock` vacio (R12).
+- Anclas de cierre desde mobile-pet-tracker/:
+  grep -cF "expect(WELCOME_ENTRANCE_EASING).toBeDefined();" src/screens/welcome/index.test.tsx   -> 0
+  grep -cF "shouldMatchAllProps: true" src/screens/welcome/index.test.tsx   -> 5
+  grep -cF "testUri" src/screens/welcome/index.test.tsx   -> 1
+  grep -cF "chip.props.onClick" src/screens/welcome/index.test.tsx   -> 1
+  grep -cF "chip.props.accessible" src/screens/welcome/index.test.tsx   -> 1
+  grep -cF "reduceMotion: ReduceMotion\.Never" src/screens/welcome/index.test.tsx   -> 1
+- En el impl, seccion «Ronda 2»: pwd/branch/H0; skills cargadas; anclas
+  con su salida; base; cada commit con hash y E-id; cada sonda (tabla de
+  arriba) con mutacion, cuentas, exit, it rojo y matcher/Expected/Received,
+  y los dos exit de la restauracion; el cierre con exit; R12;
+  `git diff --name-only H0 HEAD`; y cualquier decision que la spec no
+  cerrara literalmente.
+```
