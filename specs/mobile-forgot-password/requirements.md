@@ -726,26 +726,40 @@ no pasa a `done`.
 
 - [x] Aprobado por humano
 
-## Enmienda E1 — cuatro cláusulas universales con una sola rama candada
+## Enmienda E1 — cláusulas universales con una sola rama candada
 
 El reviewer rechazó #117 en `d39a9ea5`
 (`progress/review_mobile-forgot-password.md` §Observaciones 1-4). La
 producción cumple R2, R6, R7 y R9. El hueco está en las listas de **Test** de
 esta spec, que prescribieron un solo caso para cláusulas que valen para varias
-ramas. Codex las cumplió al pie de la letra. Con cada una de estas mutaciones,
-las 8 suites del handoff quedan verdes:
+ramas, y Codex las cumplió al pie de la letra. Antes de la firma, un segundo
+`reviewer` barrió R1-R11 rama por rama
+(`progress/review_mobile-forgot-password.md` §Barrido de la enmienda E1) y
+encontró seis ramas más sin candado, en R2, R3, R4, R5 y R6. Las dos listas se
+cierran aquí.
 
-| Cláusula | Mutación que hoy pasa en verde | Rama candada hoy |
-|---|---|---|
-| R2: «WHEN `status` es cualquier otro (`500`, `404`, `503`…) THE SYSTEM SHALL devolver `{ kind: 'error' }`» | `default: return result.response.status >= 500 ? { kind: 'error' } : { kind: 'ok' };` en `src/api/auth.ts`. Un 404 de una ruta mal configurada se pinta como «Revisa tu correo» | solo `500` |
-| R6: «IF el reenvío resuelve un `kind` distinto de `ok` THEN … permanecer en el estado enviado» | `setSent(false);` en `case 'unreachable':` de `send` en `src/screens/forgot/index.tsx`. Un corte de red al reenviar devuelve al formulario | solo `rate-limited` |
-| R7: «WHEN arranca un envío nuevo THE SYSTEM SHALL limpiar `forgot-error`» | `if (!sent) setError(null);` en lugar de `setError(null);`. Tras un 429 al reenviar, el reenvío siguiente deja «Demasiados intentos…» a la vista | solo el envío desde el formulario, y solo tras resolver `ok` |
-| R9: «un único `ScrollView` … para los dos estados» | `className={sent ? 'flex-1' : 'flex-1 bg-background'}` o `contentInsetAdjustmentBehavior={sent ? 'never' : 'automatic'}` | solo `contentContainerStyle` y `keyboardShouldPersistTaps` |
+Con cada una de estas mutaciones, las 8 suites del handoff quedan verdes:
 
-Ningún requisito cambia. La enmienda solo añade los candados que faltaban y
-recoge por escrito una aserción que Codex ya añadió (E1.5). **No hay cambios de
-producción**: los `it` nuevos nacen verdes y cada uno se demuestra con una
-sonda que lo tumba (tabla de [[tasks]] §Enmienda E1).
+| Cláusula | Mutación que hoy pasa en verde | Rama candada hoy | Cierra |
+|---|---|---|---|
+| R2: «WHEN `status` es cualquier otro (`500`, `404`, `503`…) THE SYSTEM SHALL devolver `{ kind: 'error' }`» | `default: return result.response.status >= 500 ? { kind: 'error' } : { kind: 'ok' };` en `src/api/auth.ts`. Un 404 de una ruta mal configurada se pinta como «Revisa tu correo» | solo `500` | E1.1 |
+| R2, la misma cláusula, clase `3xx` | `if (result.response.status >= 300 && result.response.status < 400) return { kind: 'ok' };` antes del `switch` | ninguna | E1.1 |
+| R6: «IF el reenvío resuelve un `kind` distinto de `ok` THEN … permanecer en el estado enviado» | `setSent(false);` en `case 'unreachable':` de `send` en `src/screens/forgot/index.tsx`. Un corte de red al reenviar devuelve al formulario | solo `rate-limited` | E1.2 |
+| R7: «WHEN arranca un envío nuevo THE SYSTEM SHALL limpiar `forgot-error`» | `if (!sent) setError(null);` en lugar de `setError(null);`. Tras un 429 al reenviar, el reenvío siguiente deja «Demasiados intentos…» a la vista | solo el envío desde el formulario, y solo tras resolver `ok` | E1.3 |
+| R4: «WHILE no se ha enviado … no renderizar `forgot-resend`» | `{sent \|\| submitting ? (` en el bloque de `forgot-resend`: «Reenviar» aparece mientras vuela el primer envío | solo antes del primer envío y tras un error | E1.3 |
+| R6: reenvío `ok` con el «mismo título y cuerpo» | `setSubmittedEmail(sent ? '' : target);` en `case 'ok':`. Tras reenviar, el cuerpo cita un correo vacío | solo el título | E1.3 |
+| R6: el reenvío repite el mismo segundo argumento | `onPress={() => void send(error ? email : submittedEmail)}`. Con el correo por defecto, `email` y `submittedEmail` coinciden y nadie lo ve | solo el primer reenvío | E1.3 |
+| R9: «un único `ScrollView` … para los dos estados» | `className={sent ? 'flex-1' : 'flex-1 bg-background'}` o `contentInsetAdjustmentBehavior={sent ? 'never' : 'automatic'}` | solo `contentContainerStyle` y `keyboardShouldPersistTaps` | E1.4 |
+| R3: «WHEN se pulsa `link-login` THE SYSTEM SHALL `router.push('/login')` sin invocar `forgotPassword`» | `onPress={() => router.push(sent ? '/' : '/login')}` | solo el estado (a) | E1.6 |
+| R5: «El tile `Lock` se conserva» | envolver el `<View className="size-16 …">` en `{!sent && …}`. El literal del fuente no cambia, así que los candados de clases no lo ven | ninguna | E1.7 |
+
+Ningún requisito cambia de comportamiento. La enmienda añade los candados que
+faltaban, recoge por escrito una aserción que Codex ya añadió (E1.5) y aclara
+una redacción que choca con R7 (E1.8). **No hay cambios de producción**: los
+`it` nuevos y las aseveraciones nuevas nacen verdes, y cada uno se demuestra
+con una sonda que lo tumba (tabla de [[tasks]] §Enmienda E1). El barrido ya
+plantó cada sonda sobre un spike fuera del árbol y cayó exactamente lo que
+dicen las tablas.
 
 ### E1.1 — R2: un caso por clase de «cualquier otro status»
 
@@ -755,12 +769,14 @@ sonda que lo tumba (tabla de [[tasks]] §Enmienda E1).
 `it('mapea 500 a error')`:
 
 ```
-it.each([201, 404, 503])('mapea %i a error', …)
+it.each([201, 302, 404, 503])('mapea %i a error', …)
 ```
 
 Cada fila monta `response(status, {})` con el helper del fichero y asevera
-`resolves.toEqual({ kind: 'error' })`. Las tres filas cubren las tres clases
-que el `500` no cubre: otro `2xx`, otro `4xx` y otro `5xx`.
+`resolves.toEqual({ kind: 'error' })`. Las cuatro filas cubren las cuatro
+clases que el `500` no cubre: otro `2xx`, un `3xx` (fetch entrega un `304` o
+un `3xx` sin `Location`), otro `4xx` y otro `5xx`. La clase `1xx` no se
+prueba: fetch no entrega respuestas informativas.
 
 ### E1.2 — R6: el reenvío conserva el estado enviado en todos los kinds que no son ok
 
@@ -790,40 +806,53 @@ Cada fila hace lo mismo que el `it` del 429:
    - `screen.queryByTestId('forgot-email')` `toBeNull()`;
    - `await waitFor(() => expect(screen.getByTestId('forgot-resend')).not.toBeDisabled())`.
 
-### E1.3 — R7: `forgot-error` se retira en cuanto arranca un envío nuevo, desde los dos botones
+### E1.3 — R7, R4 y R6: `forgot-error` se retira en cuanto arranca un envío nuevo, desde los dos botones
 
 **WHEN** se cierra #117, **THE SYSTEM SHALL** tener en
 `describe('#117 R7: cada kind distinto de ok pinta su copy en forgot-error')`
 dos `it` nuevos, después del `it` del envío posterior. Los dos retienen la
 petición con una promesa controlada, el mismo patrón `resolveRequest` que ya
-usan R5 y R6 en el fichero, y miran el error **mientras la petición vuela**,
-no solo al resolver.
+usan R5 y R6 en el fichero, y miran la pantalla **mientras la petición
+vuela**, no solo al resolver. Cada `it` cierra también las ramas de R4 y R6
+que se observan en ese mismo recorrido.
 
 1. `it('un nuevo envío desde el formulario retira forgot-error en cuanto arranca, antes de resolver')`:
    1. Fija `mockResolvedValueOnce({ kind: 'error' }).mockReturnValueOnce(pending)`.
    2. `await renderRoute()` y `await submitForgot()`.
    3. `await screen.findByTestId('forgot-error')` con `toHaveTextContent('Algo salió mal')`.
-   4. Pulsa `forgot-submit`.
-   5. `await waitFor(() => expect(screen.getByTestId('forgot-submit')).toBeDisabled())`:
+   4. `await waitFor(() => expect(screen.getByTestId('forgot-submit')).not.toBeDisabled())`:
+      la primera petición ya terminó, así que el paso 6 observa la nueva.
+   5. Pulsa `forgot-submit`.
+   6. `await waitFor(() => expect(screen.getByTestId('forgot-submit')).toBeDisabled())`:
       la petición está en vuelo.
-   6. `expect(screen.queryByTestId('forgot-error')).toBeNull()`.
-   7. Resuelve `{ kind: 'ok' }` dentro de `act`.
-   8. `await screen.findByText('Revisa tu correo')` y otra vez
+   7. `expect(screen.queryByTestId('forgot-error')).toBeNull()` y
+      `expect(screen.queryByTestId('forgot-resend')).toBeNull()` (R4: sin
+      `forgot-resend` mientras `sent === false`, también en vuelo).
+   8. Resuelve `{ kind: 'ok' }` dentro de `act`.
+   9. `await screen.findByText('Revisa tu correo')` y otra vez
       `queryByTestId('forgot-error')` `toBeNull()`.
 2. `it('un nuevo reenvío retira forgot-error en cuanto arranca y no lo repinta al resolver ok')`:
    1. Fija `mockResolvedValueOnce({ kind: 'ok' }).mockResolvedValueOnce({ kind: 'rate-limited' }).mockReturnValueOnce(pending)`.
-   2. `await renderRoute()`, `await submitForgot()` y `await screen.findByText('Revisa tu correo')`.
+   2. `await renderRoute()`, `await submitForgot('  Ana@Example.com ')` y
+      `await screen.findByText('Revisa tu correo')`. El correo con
+      mayúsculas y espacios es el de R6 `it` 1: distingue el valor del campo
+      del correo citado.
    3. Pulsa `forgot-resend`.
    4. `await screen.findByTestId('forgot-error')` con
       `toHaveTextContent('Demasiados intentos. Inténtalo más tarde.')`.
    5. `await waitFor(() => expect(screen.getByTestId('forgot-resend')).not.toBeDisabled())`.
    6. Pulsa `forgot-resend` otra vez.
    7. `await waitFor(() => expect(screen.getByTestId('forgot-resend')).toBeDisabled())`.
-   8. `expect(screen.queryByTestId('forgot-error')).toBeNull()`.
-   9. Resuelve `{ kind: 'ok' }` dentro de `act`.
-   10. `await waitFor(() => expect(screen.getByTestId('forgot-resend')).not.toBeDisabled())`,
-       `queryByTestId('forgot-error')` `toBeNull()` y
-       `screen.getByText('Revisa tu correo')` visible.
+   8. `expect(mockForgotPassword.mock.calls[2][1]).toEqual(mockForgotPassword.mock.calls[0][1])`
+      (R6: el reenvío tras un error repite el mismo cuerpo). Va después de
+      la espera sobre el árbol, como en R6 `it` 1.
+   9. `expect(screen.queryByTestId('forgot-error')).toBeNull()`.
+   10. Resuelve `{ kind: 'ok' }` dentro de `act`.
+   11. `await waitFor(() => expect(screen.getByTestId('forgot-resend')).not.toBeDisabled())`,
+       `queryByTestId('forgot-error')` `toBeNull()`,
+       `screen.getByText('Revisa tu correo')` visible y
+       `expect(screen.getByTestId('forgot-body')).toHaveTextContent('Si existe una cuenta para Ana@Example.com, te enviamos un enlace para restablecer tu contraseña. Revisa tu bandeja de entrada y la carpeta de spam.')`
+       (R6: mismo cuerpo tras el reenvío).
 
 Las esperas siguen `docs/conventions.md` §Esperas: se espera sobre el árbol
 (`toBeDisabled` del botón), nunca sobre el contador del mock.
@@ -857,14 +886,67 @@ Codex añadió en ese mismo `it` una segunda llamada con
 enmienda la da por buena tal como está en `7ba0b3a9`. No se toca y no genera
 commit.
 
+### E1.6 — R3: `link-login` desde «Revisa tu correo»
+
+**WHEN** se cierra #117, **THE SYSTEM SHALL** tener en
+`describe('#117 R3: la ruta forgot delega en ForgotScreen')` un `it` nuevo,
+después de `it('link-login navega a /login sin petición de red')`:
+
+```
+it('link-login navega a /login también desde «Revisa tu correo», sin petición nueva', …)
+```
+
+1. Fija `mockResolvedValue({ kind: 'ok' })`.
+2. `await renderRoute()`, `await submitForgot()` y
+   `await screen.findByText('Revisa tu correo')`.
+3. Pulsa `link-login`.
+4. `expect(mockRouter.push).toHaveBeenCalledWith('/login')` y
+   `expect(mockForgotPassword).toHaveBeenCalledTimes(1)`.
+
+### E1.7 — R5: el tile `Lock` sigue en pie en los dos estados
+
+**WHEN** se cierra #117, **THE SYSTEM SHALL** tener en
+`describe('#117 R5: enviar pasa la pantalla a «Revisa tu correo»')` un `it`
+nuevo, al final del `describe`:
+
+```
+it('el tile Lock sigue en pie en los dos estados', …)
+```
+
+El tile no lleva `testID` y esta enmienda no toca producción para dárselo. Se
+localiza como el hijo de `screen.getByTestId('forgot-title').parent` cuyo
+`props.className` es exactamente
+`'size-16 items-center justify-center rounded-xl bg-accent-soft'` (patrón
+`.parent` de `src/screens/docs/index.test.tsx`).
+
+1. Fija `mockResolvedValue({ kind: 'ok' })` y `await renderRoute()`.
+2. El tile existe.
+3. `await submitForgot()` y `await screen.findByText('Revisa tu correo')`.
+4. El tile existe, buscado otra vez desde un `getByTestId('forgot-title')`
+   nuevo.
+
+El tipado lo decide `tsc --noEmit` con exit 0. Si la búsqueda necesita un
+cast, se usa el mínimo, sin `any` explícito.
+
+### E1.8 — R4: lectura de «ni `forgot-error`»
+
+R4 dice «WHILE no se ha enviado THE SYSTEM SHALL no renderizar
+`forgot-resend` ni `forgot-error`», y define «no se ha enviado» como
+`sent === false`. R7 exige `forgot-error` justo con `sent === false`, tras un
+resultado distinto de `ok`. La producción sigue a R7. Esta enmienda fija la
+lectura de R4: **WHILE `sent === false` THE SYSTEM SHALL no renderizar
+`forgot-resend`; antes del primer envío, tampoco `forgot-error`**. R7 pinta
+`forgot-error` tras un resultado distinto de `ok`. Es solo texto: no genera
+commit ni cambia ningún `it`.
+
 ### Cifras y alcance
 
 | Suite | Antes de E1 | Después de E1 |
 |---|---:|---:|
-| `src/api/__tests__/auth.test.ts` | 40 | 43 (+3 de E1.1) |
-| `src/screens/forgot/index.test.tsx` | 20 | 27 (+4 de E1.2, +2 de E1.3, +1 de E1.4) |
-| Las 8 suites del handoff | 272 | 282 |
-| Suite global de `mobile-pet-tracker` | 93 suites / 2036 | 93 suites / 2046 |
+| `src/api/__tests__/auth.test.ts` | 40 | 44 (+4 de E1.1) |
+| `src/screens/forgot/index.test.tsx` | 20 | 29 (+4 de E1.2, +2 de E1.3, +1 de E1.4, +1 de E1.6, +1 de E1.7) |
+| Las 8 suites del handoff | 272 | 285 |
+| Suite global de `mobile-pet-tracker` | 93 suites / 2036 | 93 suites / 2049 |
 
 Ningún candado global se mueve. Consistency y legibility no leen `*.test.tsx`.
 Design-drift sí los lee, pero los literales nuevos no llevan clases
