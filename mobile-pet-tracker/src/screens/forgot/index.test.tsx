@@ -201,3 +201,36 @@ describe('#117 R7: cada kind distinto de ok pinta su copy en forgot-error', () =
     expect(screen.queryByTestId('forgot-error')).toBeNull();
   });
 });
+
+
+describe('#117 R6: reenviar repite la misma petición', () => {
+  it('forgot-resend repite el POST con el mismo correo y se deshabilita mientras vuela', async () => {
+    let resolveRequest!: (state: ForgotPasswordState) => void;
+    const pending = new Promise<ForgotPasswordState>((resolve) => { resolveRequest = resolve; });
+    mockForgotPassword.mockResolvedValueOnce({ kind: 'ok' }).mockReturnValueOnce(pending);
+    await renderRoute();
+    await submitForgot('  Ana@Example.com ');
+    expect(await screen.findByText('Revisa tu correo')).toBeVisible();
+    await fireEvent.press(screen.getByTestId('forgot-resend'));
+
+    await waitFor(() => expect(screen.getByTestId('forgot-resend')).toBeDisabled());
+    expect(mockForgotPassword).toHaveBeenCalledTimes(2);
+    expect(mockForgotPassword.mock.calls[1][1]).toEqual(mockForgotPassword.mock.calls[0][1]);
+    await act(async () => { resolveRequest({ kind: 'ok' }); });
+    await waitFor(() => expect(screen.getByTestId('forgot-resend')).not.toBeDisabled());
+    expect(screen.getByText('Revisa tu correo')).toBeVisible();
+  });
+
+  it('un 429 al reenviar pinta forgot-error sin salir de «Revisa tu correo»', async () => {
+    mockForgotPassword.mockResolvedValueOnce({ kind: 'ok' }).mockResolvedValueOnce({ kind: 'rate-limited' });
+    await renderRoute();
+    await submitForgot();
+    expect(await screen.findByText('Revisa tu correo')).toBeVisible();
+    await fireEvent.press(screen.getByTestId('forgot-resend'));
+
+    expect(await screen.findByTestId('forgot-error')).toHaveTextContent('Demasiados intentos. Inténtalo más tarde.');
+    expect(screen.getByText('Revisa tu correo')).toBeVisible();
+    expect(screen.queryByTestId('forgot-email')).toBeNull();
+    await waitFor(() => expect(screen.getByTestId('forgot-resend')).not.toBeDisabled());
+  });
+});
