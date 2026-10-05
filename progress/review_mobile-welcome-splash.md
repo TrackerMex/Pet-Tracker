@@ -529,3 +529,252 @@ exit=0
 que coincide con head y head_end del log. El log corrió en
 `/home/claude/sites/Pet-Tracker-wt-118`. Las líneas `ERROR` de Nest del log
 son trazas esperadas de tests de error, no fallos (las suites pasan).
+
+# Ronda 3
+
+# review: mobile-welcome-splash (#118), ronda 3
+Fecha: 2026-10-05T04:12Z
+HEAD revisado: `ee715533` (H0 de la ronda: `595b20b2`, firma de la Enmienda E6–E7; `origin/main` `b2a9c2aa` es ancestro)
+Veredicto ronda 3: APROBADO (código). R13, el smoke S1–S8 en dev build de Android, sigue siendo gate humano y no entra en este veredicto.
+
+Resumen: Codex vuelve a cumplir al pie de la letra. Toca solo los tres
+ficheros autorizados y la producción no cambia desde la ronda 1. Las tres
+líneas nuevas son literales de la spec y están en el `it` y en el sitio
+prescritos. La suite sigue en 28 `it`. Repetí las cinco sondas (X1, X2, M3,
+X7 y M2b): cada una tumba exactamente el `it` declarado y por la causa
+declarada. E6 y E7 quedan cerrados. El barrido de zona ciega encuentra una
+clase de mutación que queda verde: comentar la opción (Y1 y Y1b, obs. 1).
+Afecta igual a todos los candados `readSource` del repo, incluidos los de E1
+que aprobé en la ronda 2. No es un hueco propio de E6, así que no lo hago
+bloqueante. Dejo el arreglo validado por si el leader o el humano lo quieren.
+
+## Checklist C2 — Estado coherente
+- [x] Solo 1 feature in_progress (`feature_list.json`: solo #118)
+- [x] progress/current.md actualizado con el handoff y el plan de la ronda 3. Le falta registrar la firma `595b20b2` y los commits de Codex (obs. 4)
+
+## Checklist C3 — Arquitectura
+- [x] domain sin imports de infrastructure (N/A en móvil)
+- [x] repositories/contratos en domain son interfaces puras (N/A)
+- [x] application depende de interfaces, no implementaciones (N/A)
+- [x] infrastructure sin lógica de negocio (N/A)
+- [x] Sin cambios de producción en esta ronda (punto 1)
+
+## Checklist C4 — TDD
+- [x] Los R-id tocados se nombran en su `describe` (`R6`, `R10`). Ningún `it` añadido, quitado ni renombrado: 28 en welcome, y 2039 en la suite móvil del init.sh, igual que en la ronda 2
+- [x] Dos commits `test(...)`, cada uno con solo index.test.tsx, más uno de trazabilidad. Los candados nacen verdes y el rojo viene de las sondas documentadas (punto 5), que repetí (punto 3)
+- [x] Las sondas propias del reviewer sobre la cláusula de E6 (X1, X2) caen rojas. Y1, Y1b, Y3 y Z1 quedan verdes y no bloquean (Observaciones)
+
+## Checklist C5 — Trazabilidad
+- [x] traceability.md sin filas «pendiente» salvo R13 (smoke humano, línea 50)
+- [x] R6 fila 10 cita `5f6ebf76` y R10 › fija la duración y la curva cita `e8300219`. Los dos son ancestros de HEAD y ninguna otra fila cambia (punto 6)
+- [x] Formato de commits igual que en las rondas 1 y 2, con los mensajes literales del handoff
+
+## Checklist C6 — Spec aprobada
+- [x] `status: approved`. Las tres casillas de gate previo a Codex están marcadas (spec, E1–E5 y E6–E7). La firma de E6–E7 es `595b20b2`: solo cambia esa casilla, cita la página Notion y la hora, y es ancestro de HEAD. Después de la firma no cambia ningún fichero de `specs/` salvo traceability.md
+
+## Checklist C7 — Sin código huérfano
+- [x] N/A — la ronda 3 no reemplaza nada
+
+## Checklist C8 — Carta de UI
+- [x] Sin cambios de UI en esta ronda. Producción idéntica a la revisada en la ronda 1
+
+## 1. Alcance desde H0 y R12
+
+```
+$ git diff --name-only 595b20b2 HEAD
+mobile-pet-tracker/src/screens/welcome/index.test.tsx
+progress/impl_mobile-welcome-splash.md
+specs/mobile-welcome-splash/traceability.md
+$ git diff --numstat 595b20b2 HEAD
+3   0   mobile-pet-tracker/src/screens/welcome/index.test.tsx
+754 0   progress/impl_mobile-welcome-splash.md
+2   2   specs/mobile-welcome-splash/traceability.md
+$ git diff --quiet 595b20b2 HEAD -- mobile-pet-tracker/src/screens/welcome/index.tsx   → exit 0 (vacío)
+$ git diff --quiet origin/main -- mobile-pet-tracker/package.json mobile-pet-tracker/bun.lock   → exit 0 (vacío)
+```
+`e8300219` (2+) y `5f6ebf76` (1+) llevan solo index.test.tsx. `ee715533`
+lleva solo impl y traceability. El test tiene 3 inserciones y 0 borrados
+desde H0: ningún mock, espera, ventana ni título cambia.
+
+## 2. Las tres líneas frente a la spec
+
+| Enmienda | Línea (HEAD) | `it` | `grep -cF` spec / test | ¿Coincide? |
+| --- | --- | --- | --- | --- |
+| E7 | 250 `expect(chip.props.role).toBeUndefined();`, dentro del `forEach`, justo después de `accessibilityRole` | R6 › deja cada chip sin pulsación ni rol de botón | 1 / 1 | ✔ |
+| E6 | 317 `expect(source.match(/\breduceMotion:/g) ?? []).toHaveLength(1);`, justo después del recuento de `Never` (316) | R10 › fija la duración y la curva | 1 / 1 | ✔ |
+| E6 | 318 `expect(source).toMatch(/opacity\.set\(withTiming\(1, \{[^}]*reduceMotion: ReduceMotion\.Never,[^}]*\}\)\)/);` | R10 › fija la duración y la curva | 1 / 1 | ✔ |
+
+Las tres regex de cableado de E1/E2 (314–316) siguen intactas.
+`grep -cE "^\s*it\("` da 28.
+
+## 3. Sondas repetidas por el reviewer
+
+Desde `mobile-pet-tracker/`, con
+`bunx jest --runTestsByPath src/screens/welcome/index.test.tsx > <log> 2>&1; echo jest_exit=$?`,
+sin pipe. Cada mutación se restauró con
+`git checkout HEAD -- src/screens/welcome/index.tsx`, y después
+`git diff --quiet HEAD -- …index.tsx` y `git diff --cached --quiet` dieron
+exit 0 las dos veces, en todas las sondas. Welcome en HEAD antes de las
+sondas: 28/28, exit=0. Logs y diffs en el scratchpad de la sesión
+(`r3probes/<sonda>.{log,diff}`).
+
+| Sonda | Mutación | exit | Cuentas | `it` rojo | Causa (línea de HEAD) | ¿Como se declaró? |
+| --- | --- | --- | --- | --- | --- | --- |
+| X1 | `reduceMotion: ReduceMotion.Never,` movido del fade al `withTiming` de `translateY` | 1 | 1 failed / 27 passed | R10 › fija la duración y la curva | `toMatch`, Expected pattern `/opacity\.set\(withTiming\(1, …Never,…\)\)/`, Received el fuente (318) | ✔ |
+| X2 | `reduceMotion: ReduceMotion.Always,` añadido al de `translateY` | 1 | 1 / 27 | R10 › fija la duración y la curva | `toHaveLength` Expected 1, Received 2 `["reduceMotion:", "reduceMotion:"]` (317) | ✔ |
+| M3 | sin `reduceMotion: ReduceMotion.Never,` en el fade | 1 | 1 / 27 | R10 › fija la duración y la curva | `toHaveLength` Expected 1, Received 0 (316, regex ya existente) | ✔ |
+| X7 | `role="button"` en el `View` de cada chip, sin `onPress` | 1 | 1 / 27 | R6 › deja cada chip sin pulsación ni rol de botón | `toBeUndefined`, Received `"button"` (250) | ✔ |
+| M2b | `WELCOME_ENTRANCE_EASING = Easing.bezier(0.25, 0.1, 0.25, 1)` | 1 | 1 / 27 | R10 › fija la duración y la curva | `toBeCloseTo` Expected 0.39812410465104964, Received 0.09479630571604326 (311) | ✔ |
+
+Las cinco coinciden con design.md §2, con la tabla del handoff y con el
+impl. Los números de línea del impl en X2 y M3 (315/316) van uno por debajo
+de los míos porque Codex sondó sobre `e8300219`, antes de que E7 añadiera la
+línea 250. Es coherente.
+
+## 4. Barrido de zona ciega (sondas propias)
+
+Mismo procedimiento y la misma restauración, con exit 0 en worktree e
+índice después de cada una.
+
+| # | Rama / cláusula | Mutación en `index.tsx` | Resultado |
+| --- | --- | --- | --- |
+| Y1 | R10 E2/E6: el fade lleva `Never` | la línea del fade comentada: `// reduceMotion: ReduceMotion.Never,` | **verde 28/28** (obs. 1) |
+| Y1b | R10 E1: los dos `withTiming` llevan `duration: WELCOME_ENTRANCE_MS` | `// duration: WELCOME_ENTRANCE_MS,` en el de `translateY` (Reanimated usa su 300 ms por defecto) | **verde 28/28** (obs. 1) |
+| Y3 | R10 WHEN: «hasta … `translateY: 0` en 240 ms» | `translateY.set(withDelay(100, withTiming(0, {…})))` | verde 28/28 (obs. 2) |
+| Z1 | R6 fila 10: «Pulsable: no» | `onTouchEnd={() => router.push("/register")}` en el `View` de cada chip | verde 28/28 (obs. 3) |
+| Z5 | R6 fila 10 | el chip como `TouchableOpacity` con `onPress` | rojo: fila 10 (`onClick`, 247) y fila 2 (`className` undefined, 192) ✔ |
+
+Con esto, la cláusula de E6 tiene candado en sus dos ramas: el fade lleva
+`Never` (X1, M3) y el de `translateY` no lleva ningún `reduceMotion` (X2).
+Fila 10 también: `onPress`/`onClick`/`accessible` (S15b de la ronda 2, Z5),
+`accessibilityRole` (X6 de la ronda 2) y `role` (X7).
+
+### Validación del arreglo de obs. 1 (node, fuera del árbol)
+
+Apliqué a copias del fuente las mutaciones HEAD, M3, X1, X2, Y1, Y1b e Y3
+(`r3probes/variants/`) y evalué las ocho aserciones de texto de welcome
+sobre ellas: las cinco de R10 y las tres de R6 fila 11. Lo hice dos veces:
+una con el fuente crudo y otra quitando antes los comentarios con
+`.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '')` (precedente:
+`src/__tests__/consistency-classnames.test.ts:416-418`). 1 = pasa.
+
+```
+HEAD.tsx  raw 11111111  stripped 11111111
+M3.tsx    raw 11000111  stripped 11000111
+X1.tsx    raw 11110111  stripped 11110111
+X2.tsx    raw 11101111  stripped 11101111
+Y1.tsx    raw 11111111  stripped 11000111
+Y1b.tsx   raw 11111111  stripped 00111111
+Y3.tsx    raw 11111111  stripped 11111111
+```
+Quitar los comentarios deja HEAD verde, no cambia el resultado de las sondas
+declaradas y vuelve rojas Y1 e Y1b. Ninguno de los tres ficheros que lee
+`readSource` en welcome contiene `://`, así que el `//.*$` no recorta
+ninguna cadena.
+
+## 5. C4 en el impl
+
+La sección «Ronda 3 — Enmienda E6–E7» del impl documenta lo siguiente:
+- pwd, branch, H0 `595b20b2` y árbol limpio;
+- las skills de su catálogo (`building-native-ui`, `animate-expo`);
+- las 14 anclas de entrada;
+- la base de 8 suites con 251 tests, exit 0, más guard, typecheck y lint con exit 0;
+- «nace verde» de E6 y de E7 (28/28, exit 0), cada uno con `git diff --cached --name-only` de un solo fichero;
+- cada sonda (X1, X2, M3, X7) con su diff, cuentas, exit 1, `it` rojo, matcher y Expected/Received, `worktree_exit=0`, `index_exit=0` y la corrida verde después de restaurar;
+- el cierre de 8 suites con 251 tests, typecheck y lint, todos con exit 0;
+- el alcance contra H0.
+
+Las cifras coinciden con mis corridas.
+
+## 6. Trazabilidad
+
+```
+R6  › deja cada chip sin pulsación ni rol de botón (fila 10) → …; ronda 3 `5f6ebf76` (nace verde; sonda E7 documentada)
+R10 › fija la duración y la curva → …; ronda 3 `e8300219` (nace verde; sonda E6 documentada)
+```
+`git merge-base --is-ancestor` da exit 0 para `e8300219`, `5f6ebf76` y
+`595b20b2`. El diff de traceability.md desde H0 tiene 2+/2-, solo esas dos
+filas. No hubo rebase.
+
+## 7. init.sh (lo corrió el leader con permiso del humano) y estado final
+
+No lo corre el subagente: LocalStack y Postgres se comparten con otra sesión.
+Log: `init_118_round3.log` en el scratchpad de la sesión.
+
+```
+head=ee715533d2b757ffe9f4c726e672c790badfdf62
+start=2026-10-05T04:00:59Z
+Test Suites: 176 passed, 176 total          # backend unit
+Tests:       1348 passed, 1348 total
+Test Suites: 2 passed, 2 total               # infra
+Tests:       14 passed, 14 total
+PASS src/screens/welcome/index.test.tsx      # (línea 2929)
+Test Suites: 94 passed, 94 total             # móvil (jest)
+Tests:       2039 passed, 2039 total
+Snapshots:   1 passed, 1 total
+Test Suites: 3 skipped, 29 passed, 29 of 32 total   # e2e
+Tests:       8 skipped, 438 passed, 446 total
+✅ Lint sin errores
+✅ Typecheck sin errores
+✅ Todo verde. Listo para trabajar.
+exit=0
+head_end=ee715533d2b757ffe9f4c726e672c790badfdf62
+end=2026-10-05T04:05:44Z
+```
+head y head_end coinciden con `git rev-parse HEAD` de wt-118. Las líneas
+`ERROR` de Nest son trazas esperadas de tests de error, igual que en las
+rondas 1 y 2. También corrí `test ! -e .expo/types/router.d.ts` →
+guard_exit=0. No lancé typecheck propio: el del init.sh es sobre el mismo
+HEAD. Al terminar las sondas, `git status --short` sale vacío.
+
+## Observaciones
+
+Ninguna bloquea.
+
+- **obs. 1 — Los candados de texto no ven los comentarios (Y1, Y1b).**
+  Comentar `reduceMotion: ReduceMotion.Never,` en el fade deja la suite en
+  28/28. En dispositivo se comporta igual que M3: con Reduce Motion de
+  sistema activo, el fade salta a 1 (medido en el spike de la ronda 2).
+  Comentar `duration: WELCOME_ENTRANCE_MS,` en el `withTiming` de
+  `translateY` también queda verde. Las dos mutaciones incumplen el texto
+  normativo de E1/E2. No lo hago bloqueante por tres motivos:
+  - Es el límite de cualquier candado sobre `readFileSync` sin quitar
+    comentarios, que es la convención del repo. El único sitio que los
+    quita, `consistency-classnames.test.ts:416-418`, lo hace para evitar
+    falsos positivos, no como guarda.
+  - Afecta por igual a los candados de E1 que aprobé en la ronda 2. En las
+    rondas 1 y 2 no barrí esta clase de mutación.
+  - Lo que E6 pedía, atar `Never` al fade y no contarlo en todo el fichero,
+    está cumplido (X1 y X2 caen).
+
+  Si el leader o el humano lo quieren cerrado, el arreglo es una sola línea
+  en el `it` de R10:
+  `const source = readSource('screens/welcome/index.tsx').replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');`
+  Está validado arriba (Y1 e Y1b caen; HEAD y las sondas declaradas no
+  cambian). Encaja mejor como deuda del repo («los candados `readSource` no
+  quitan comentarios») que como cuarta ronda de #118.
+- **obs. 2 — `withDelay` en `translateY` (Y3).** Con
+  `withDelay(100, withTiming(0, {…}))`, `translateY` llega a 0 a los
+  340 ms. Los tests solo miran el principio y el final, y la ventana de
+  580 ms es holgada a propósito. Que esto viole R10 depende de cómo se lea
+  «en 240 ms» (¿duración del `withTiming`, o tiempo desde que se monta?), así
+  que no lo reclamo. Si se quiere cerrar,
+  `expect(source).toMatch(/translateY\.set\(withTiming\(0, \{[^}]*\}\)\)/)`
+  casa en HEAD y no en Y3.
+- **obs. 3 — Chip que responde al toque sin `onPress` (Z1).**
+  `onTouchEnd` en el `View` del chip deja la suite en 28/28. Cumple al pie
+  de la letra el paréntesis de la fila 10 («`View`, sin `onPress`, sin
+  `accessibilityRole="button"`»), pero no su «Pulsable: no». Es una mutación
+  rebuscada: en RN nadie hace pulsable algo así. Solo lo anoto.
+- **obs. 4 — progress/current.md se quedó en «Siguiente paso: … commit de
+  firma de E6–E7».** No registra `595b20b2` ni los commits de Codex
+  `e8300219`, `5f6ebf76` y `ee715533`. Lo debe poner al día el leader al
+  cerrar.
+- **obs. 5 — La firma `595b20b2` cita la página y la hora de Notion, pero no
+  la cuenta.** Es lo mismo que la obs. 4 de la ronda 2: la API no devuelve
+  la cuenta.
+- **obs. 6 — R13 (smoke humano S1–S8 en dev build de Android) sigue
+  pendiente del humano.** Es el gate de cierre de la feature.
+- **obs. 7 — La obs. 3 de la ronda 2 está resuelta:** design.md §2 da a M2
+  el `TypeError` declarado y a M2b el rojo por `toBeCloseTo`. Las obs. 3, 4
+  y 5 de la ronda 1 siguen igual. Esta ronda no las tocaba.
