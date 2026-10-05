@@ -235,6 +235,13 @@ export function MapScreen() {
   const gpsTone = STATUS_TONE_CLASSES[
     connection ? MAP_CONNECTION_TONE[connection] : 'muted'
   ];
+  const batteryPct = detail.data?.kind === 'ok'
+    ? detail.data.pet.device?.batteryPct ?? null
+    : null;
+  const battery = batteryPct === null ? '—' : `${batteryPct}%`;
+  const batteryTone = STATUS_TONE_CLASSES[
+    batteryPct === null ? 'muted' : batteryPct > 60 ? 'success' : 'warning'
+  ];
 
   return (
     <View testID="screen-map" className="flex-1">
@@ -417,14 +424,15 @@ export function MapScreen() {
                     style={CONTINUOUS_CORNER}
                   >
                     <Text
-                      testID="stat-gps"
-                      className="text-base font-black text-muted"
+                      testID="stat-battery"
+                      className={`text-base font-black ${batteryTone.text}`}
                       numberOfLines={1}
+                      style={TABULAR_NUMS}
                     >
-                      {gps}
+                      {battery}
                     </Text>
                     <Text className="mt-1 text-2xs font-normal text-muted">
-                      {t('pairing.connection')}
+                      {t('pairing.battery')}
                     </Text>
                   </View>
                 </View>
