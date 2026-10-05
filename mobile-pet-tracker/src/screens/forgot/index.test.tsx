@@ -123,6 +123,7 @@ describe('#117 R4: el formulario pide el correo', () => {
     expect(props.autoComplete).toBe('email');
     expect(props.textContentType).toBe('emailAddress');
     expect(props.placeholder).toBeUndefined();
+    await expectFormState('', null);
   });
 
   it('deshabilita forgot-submit con el correo vacío o solo espacios y lo habilita al escribir', async () => {
@@ -153,6 +154,47 @@ async function submitForgot(email = 'ana@example.com') {
   await fireEvent.press(screen.getByTestId('forgot-submit'));
 }
 
+const LOCK_TILE_CLASS = 'size-16 items-center justify-center rounded-xl bg-accent-soft';
+
+function lockTile() {
+  const siblings = (screen.getByTestId('forgot-title').parent?.children ?? []) as unknown[];
+  return siblings.filter((c) => typeof c !== 'string').find(
+    (c) => (c as { props: { className?: string } }).props.className === LOCK_TILE_CLASS,
+  );
+}
+
+function expectForgotError(error: string | null) {
+  if (error === null) {
+    expect(screen.queryByTestId('forgot-error')).toBeNull();
+    return;
+  }
+  const node = screen.getByTestId('forgot-error');
+  expect(node).toHaveTextContent(error);
+  expect(node.props.selectable).toBe(true);
+}
+
+async function expectLinkLoginNavigates() {
+  const requests = mockForgotPassword.mock.calls.length;
+  mockRouter.push.mockClear();
+  await fireEvent.press(screen.getByTestId('link-login'));
+  expect(mockRouter.push).toHaveBeenCalledTimes(1);
+  expect(mockRouter.push).toHaveBeenCalledWith('/login');
+  expect(mockForgotPassword).toHaveBeenCalledTimes(requests);
+}
+
+async function expectFormState(value: string, error: string | null) {
+  expect(screen.getByTestId('forgot-title')).toHaveTextContent('Recuperar contraseña');
+  expect(screen.getByTestId('forgot-body')).toHaveTextContent('Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.');
+  expect(screen.getByText('Correo electrónico')).toBeOnTheScreen();
+  expect(screen.getByTestId('forgot-email').props.value).toBe(value);
+  expect(screen.getByTestId('forgot-submit')).toBeOnTheScreen();
+  expect(screen.queryByTestId('forgot-resend')).toBeNull();
+  expect(screen.getByTestId('link-login')).toHaveTextContent('Volver al inicio de sesión');
+  expect(lockTile()).toBeDefined();
+  expectForgotError(error);
+  await expectLinkLoginNavigates();
+}
+
 describe('#117 R5: enviar pasa la pantalla a «Revisa tu correo»', () => {
   it('envía el correo recortado una sola vez y deshabilita forgot-submit mientras vuela la petición', async () => {
     let resolveRequest!: (state: ForgotPasswordState) => void;
@@ -164,6 +206,7 @@ describe('#117 R5: enviar pasa la pantalla a «Revisa tu correo»', () => {
     expect(mockForgotPassword).toHaveBeenCalledTimes(1);
     expect(mockForgotPassword).toHaveBeenCalledWith(apiUrl, { email: 'Ana@Example.com' });
     expect(screen.getByTestId('forgot-email')).toBeVisible();
+    await expectFormState('  Ana@Example.com ', null);
     await act(async () => { resolveRequest({ kind: 'ok' }); });
     expect(await screen.findByText('Revisa tu correo')).toBeVisible();
   });
@@ -210,15 +253,37 @@ describe('#117 R7: cada kind distinto de ok pinta su copy en forgot-error', () =
   ])('mapea %p a «%s» en forgot-error, seleccionable, y deja el formulario en pie', async (state, copy) => {
     mockForgotPassword.mockResolvedValue(state);
     await renderRoute();
-    await submitForgot();
+    await submitForgot('  Ana@Example.com ');
     const error = await screen.findByTestId('forgot-error');
 
     expect(error).toHaveTextContent(copy);
     expect(error.props.selectable).toBe(true);
     expect(screen.getByTestId('forgot-title')).toHaveTextContent('Recuperar contraseña');
-    expect(screen.getByTestId('forgot-email').props.value).toBe('ana@example.com');
+    expect(screen.getByTestId('forgot-email').props.value).toBe('  Ana@Example.com ');
     await waitFor(() => expect(screen.getByTestId('forgot-submit')).not.toBeDisabled());
     expect(screen.queryByTestId('forgot-resend')).toBeNull();
+    await expectFormState('  Ana@Example.com ', copy);
+    await fireEvent.changeText(screen.getByTestId('forgot-email'), '   ');
+    expect(screen.getByTestId('forgot-submit')).toBeDisabled();
+  });
+
+  it('un reintento desde el formulario que vuelve a fallar pinta el copy del nuevo kind', async () => {
+    mockForgotPassword
+      .mockResolvedValueOnce({ kind: 'error' })
+      .mockResolvedValueOnce({ kind: 'rate-limited' })
+      .mockResolvedValueOnce({ kind: 'validation', errors: [{ path: 'email', message: 'Invalid email' }] });
+    await renderRoute();
+    await submitForgot();
+    expect(await screen.findByTestId('forgot-error')).toHaveTextContent('Algo salió mal');
+    await waitFor(() => expect(screen.getByTestId('forgot-submit')).not.toBeDisabled());
+    await fireEvent.press(screen.getByTestId('forgot-submit'));
+    await waitFor(() => expect(screen.getByTestId('forgot-error')).toHaveTextContent('Demasiados intentos. Inténtalo más tarde.'));
+    await waitFor(() => expect(screen.getByTestId('forgot-submit')).not.toBeDisabled());
+    await expectFormState('ana@example.com', 'Demasiados intentos. Inténtalo más tarde.');
+    await fireEvent.press(screen.getByTestId('forgot-submit'));
+    await waitFor(() => expect(screen.getByTestId('forgot-error')).toHaveTextContent('Ingresa un correo electrónico válido'));
+    await waitFor(() => expect(screen.getByTestId('forgot-submit')).not.toBeDisabled());
+    await expectFormState('ana@example.com', 'Ingresa un correo electrónico válido');
   });
 
   it('un envío posterior que resuelve ok limpia forgot-error y pasa a «Revisa tu correo»', async () => {
@@ -236,14 +301,16 @@ describe('#117 R7: cada kind distinto de ok pinta su copy en forgot-error', () =
     const pending = new Promise<ForgotPasswordState>((resolve) => { resolveRequest = resolve; });
     mockForgotPassword.mockResolvedValueOnce({ kind: 'error' }).mockReturnValueOnce(pending);
     await renderRoute();
-    await submitForgot();
+    await submitForgot('  Ana@Example.com ');
     expect(await screen.findByTestId('forgot-error')).toHaveTextContent('Algo salió mal');
     await waitFor(() => expect(screen.getByTestId('forgot-submit')).not.toBeDisabled());
+    await expectFormState('  Ana@Example.com ', 'Algo salió mal');
     await fireEvent.press(screen.getByTestId('forgot-submit'));
 
     await waitFor(() => expect(screen.getByTestId('forgot-submit')).toBeDisabled());
     expect(screen.queryByTestId('forgot-error')).toBeNull();
     expect(screen.queryByTestId('forgot-resend')).toBeNull();
+    await expectFormState('  Ana@Example.com ', null);
     await act(async () => { resolveRequest({ kind: 'ok' }); });
     expect(await screen.findByText('Revisa tu correo')).toBeVisible();
     expect(screen.queryByTestId('forgot-error')).toBeNull();
