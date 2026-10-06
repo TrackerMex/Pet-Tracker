@@ -3004,7 +3004,7 @@
   {
     "id": 152,
     "name": "mobile-home-motion-foundations",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P2",
     "description": "Registrada el 2026-10-06 por decision del humano en el chat («puedes continuar»), tras la investigacion Appllama de progress/explore_ui-delight-appllama.md (candidata C de §4; patrones P7 de §3). Es la primera del bloque de deleite visual (welcome con mascota, vacios ilustrados, celebraciones) y la unica que no depende del set de ilustraciones de la mascota (candidata A, que produce el humano). Alcance: movimiento de la Home (src/screens/home/index.tsx) y los cimientos reutilizables que despues usaran B, D y E. (1) Entrada coreografiada de los bloques de la Home una sola vez por montaje: stagger corto (~60 ms) con spring de Reanimated, nunca en refetch ni al volver a la pestana. (2) Transicion del Skeleton al contenido por fundido, no salto. (3) Revelado de los datos del resumen y relleno animado de la bateria del collar. (4) Cimientos: el preset de entrada y las duraciones de la carta (150/250/400 ms) en un unico sitio reutilizable; la carta dice que si se repiten se promueven a tokens --motion-* de global.css, pero tambien prohibe pasar var CSS a estilos de Reanimated y crear un theme.ts paralelo: la spec resuelve esa tension por escrito o la eleva al humano. Premisas a verificar contra el arbol antes de especificar (progress/audit_animations_mobile.md es de 2026-08-24 y esta parcialmente obsoleto; #136 ya dio pressed a los accesos rapidos). Reduce-motion respetado en todo. Fuera de alcance: mascota, ilustraciones, celebraciones, vacios ilustrados, rediseno del hero (candidatas A, B, D, E, F del explore).",
     "acceptance_criteria": [
@@ -3015,8 +3015,14 @@
       "Gate humano: smoke en dev build de Android (nunca Expo Go). No delegable a IA"
     ],
     "files_affected": [
+      "mobile-pet-tracker/src/theme/motion.ts",
+      "mobile-pet-tracker/src/theme/__tests__/motion.test.ts",
+      "mobile-pet-tracker/src/screens/home/home-entrance.tsx",
+      "mobile-pet-tracker/src/screens/home/home-entrance.test.tsx",
+      "mobile-pet-tracker/src/screens/home/collar-battery-bar.tsx",
       "mobile-pet-tracker/src/screens/home/index.tsx",
-      "mobile-pet-tracker/src/theme/global.css",
+      "mobile-pet-tracker/src/screens/home/index.test.tsx",
+      "mobile-pet-tracker/src/__tests__/design-drift.test.ts",
       "docs/ui-guidelines.md"
     ]
   }
