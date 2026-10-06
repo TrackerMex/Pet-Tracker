@@ -754,6 +754,7 @@ describe('#115 R2: Salud abre con el hero a sangre (A9)', () => {
     const hero = screen.getByTestId('pet-hero');
     const content = screen.getByTestId('health-content');
     expect(hero.parent).toBe(content.parent);
+    expect(hero.parent!.parent).toBe(screen.getByTestId('screen-health'));
     expect(hero.parent!.children).toHaveLength(2);
     expect(elementChild(hero.parent!, 0)).toBe(hero);
     expect(elementChild(hero.parent!, 1)).toBe(content);
