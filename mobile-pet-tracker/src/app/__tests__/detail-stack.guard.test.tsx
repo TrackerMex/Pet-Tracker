@@ -114,8 +114,8 @@ describe('#95 R3: la guarda protege las seis y deja libres (auth) y reset-passwo
     await act(async () => {
       for (const listener of mockAuthListeners) listener();
     });
-    await waitFor(() => expect(app.getPathname()).toBe('/login'));
-    expect(rootStack(app)).toEqual(['(auth)']);
+    await waitFor(() => expect(app.getPathname()).toBe('/welcome'));
+    expect(rootStack(app)).toEqual(['welcome']);
 
     for (const href of [
       '/add-reminder',
@@ -129,14 +129,14 @@ describe('#95 R3: la guarda protege las seis y deja libres (auth) y reset-passwo
       await act(async () => {
         for (let pass = 0; pass < 3; pass += 1) jest.runOnlyPendingTimers();
       });
-      expect(app.getPathname()).toBe('/login');
-      expect(rootStack(app)).toEqual(['(auth)']);
+      expect(app.getPathname()).toBe('/welcome');
+      expect(rootStack(app)).toEqual(['welcome']);
     }
     expect(mockAddReminderMounts).toBe(0);
 
     await act(async () => router.push('/reset-password?token=abc'));
     await waitFor(() => expect(app.getPathname()).toBe('/reset-password'));
-    expect(rootStack(app)).toEqual(['(auth)', 'reset-password']);
+    expect(rootStack(app)).toEqual(['welcome', 'reset-password']);
   });
 });
 
@@ -152,6 +152,47 @@ describe('#149 R2: cerrar sesión en una tab aterriza en welcome', () => {
     mockAuthState = { status: 'unauthenticated', token: null };
     await act(async () => {
       for (const listener of mockAuthListeners) listener();
+    });
+    await waitFor(() => expect(app.getPathname()).toBe('/welcome'));
+    expect(rootStack(app)).toEqual(['welcome']);
+  });
+});
+
+describe('#149 R3: cerrar sesión en un detalle aterriza en welcome', () => {
+  afterEach(() => jest.useRealTimers());
+
+  it.each([
+    '/add-reminder',
+    '/pets/add',
+    '/pets/pet-1/docs',
+    '/weight-log',
+    '/meal-schedule',
+    '/pairing',
+    '/reminders',
+    '/alerts',
+    '/alerts/alert-1',
+    '/pets/pet-1/geofences',
+    '/pets/pet-1/geofence-editor',
+    '/meals-history',
+  ])('#149 R3: cierra sesión en %s, aterriza en welcome y no reabre el detalle', async (href) => {
+    mockAuthState = { status: 'authenticated', token: 'token-a' };
+    const app = renderRouter(routes(), { initialUrl: '/home' });
+    await app;
+    await waitFor(() => expect(app.getPathname()).toBe('/home'));
+
+    await act(async () => router.push(href as Href));
+    await waitFor(() => expect(app.getPathname()).toBe(href));
+
+    mockAuthState = { status: 'unauthenticated', token: null };
+    await act(async () => {
+      for (const listener of mockAuthListeners) listener();
+    });
+    await waitFor(() => expect(app.getPathname()).toBe('/welcome'));
+    expect(rootStack(app)).toEqual(['welcome']);
+
+    await act(async () => router.push(href as Href));
+    await act(async () => {
+      for (let pass = 0; pass < 3; pass += 1) jest.runOnlyPendingTimers();
     });
     await waitFor(() => expect(app.getPathname()).toBe('/welcome'));
     expect(rootStack(app)).toEqual(['welcome']);
