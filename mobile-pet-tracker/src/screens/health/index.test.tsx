@@ -984,28 +984,37 @@ describe('#115 R6: la próxima vacuna dice fecha y días restantes', () => {
     }
   });
 
-  it('ordena la card en icono, columna y días, con la fecha en la columna', async () => {
+  const NEXT_CARD_BRANCHES = [
+    { branch: 'días', next: '2099-05-01', text: '26419 d' },
+    { branch: 'hoy', next: '2026-12-31', text: 'Hoy' },
+  ] as const;
+
+  it.each(NEXT_CARD_BRANCHES)('ordena la card en icono, columna y días, con la fecha en la columna ($branch)', async ({ next, text }) => {
     jest.useFakeTimers();
     jest.setSystemTime(new Date(2026, 12 - 1, 31, 12, 0));
-    mockListVaccines.mockResolvedValue({ kind: 'ok', vaccines: [makeVaccine({ nextDoseAt: '2099-05-01' })] });
+    mockListVaccines.mockResolvedValue({ kind: 'ok', vaccines: [makeVaccine({ nextDoseAt: next })] });
     await renderHealth();
-    const card = await screen.findByTestId('next-vaccine-card');
+    await waitFor(() => expect(screen.getByTestId('next-vaccine-days')).toHaveTextContent(text, { exact: true }));
+    const card = screen.getByTestId('next-vaccine-card');
 
     expect(card.children).toHaveLength(3);
     expect(elementChild(card, 2).props.testID).toBe('next-vaccine-days');
     const column = elementChild(card, 1);
     expect(column.props.className).toBe('flex-1 gap-1');
     expect(column.children).toHaveLength(3);
+    expect(elementChild(column, 0)).toHaveTextContent('Próxima dosis', { exact: true });
+    expect(elementChild(column, 1)).toHaveTextContent('Rabies', { exact: true });
     expect(elementChild(column, 2).props.testID).toBe('next-vaccine-date');
     expect(within(elementChild(card, 0)).getByTestId('health-icon-syringe')).toBeVisible();
   });
 
-  it('pinta los días con la receta exacta', async () => {
+  it.each(NEXT_CARD_BRANCHES)('pinta los días con la receta exacta ($branch)', async ({ next, text }) => {
     jest.useFakeTimers();
     jest.setSystemTime(new Date(2026, 12 - 1, 31, 12, 0));
-    mockListVaccines.mockResolvedValue({ kind: 'ok', vaccines: [makeVaccine({ nextDoseAt: '2099-05-01' })] });
+    mockListVaccines.mockResolvedValue({ kind: 'ok', vaccines: [makeVaccine({ nextDoseAt: next })] });
     await renderHealth();
-    const days = await screen.findByTestId('next-vaccine-days');
+    await waitFor(() => expect(screen.getByTestId('next-vaccine-days')).toHaveTextContent(text, { exact: true }));
+    const days = screen.getByTestId('next-vaccine-days');
 
     expect(days.props.className).toBe('text-lg font-black text-warning-strong');
     expect(days.props.style).toEqual({ fontVariant: ['tabular-nums'] });
