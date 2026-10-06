@@ -62,3 +62,21 @@
 - Siguiente: el humano lanza Codex; al terminar, drift check contra H0,
   `./init.sh` del leader (avisando a Frontend), `reviewer` con sondas M1-M7
   y prueba de humo del humano.
+- Codex paró en el verde común (2026-10-06, evidencia en
+  `progress/impl_mobile-sign-out-lands-on-welcome.md`, sin commitear): HEAD
+  `7881d642` con los cuatro rojos, más la línea verde de
+  `src/app/(tabs)/_layout.tsx` sin commitear (el leader no la toca; E1 manda
+  descartarla). La guarda dio 17 fallos con `Received: "/reset-password"` en
+  el primer `waitFor`. Causa medida por el leader en un spike fuera del árbol:
+  el `it` de `#95 R3` no hace `await app;` y su router se filtra a los `it`
+  siguientes. El rojo de R3 (`e414fa6f`) fallaba por esa misma fuga, no por
+  la aserción. Spike: a (welcome, sin await) 17 failed; b (welcome, con
+  await) 19 passed; c (login, con await) 18 failed con 18 `Expected:
+  "/welcome"` / `Received: "/login"`. Defecto de la spec, no de Codex.
+- Enmienda E1 commiteada en `980e20bf` (requirements, design, tasks):
+  `await app;` en `#95 R3` y un rojo nuevo
+  `test(mobile-auth): #149 R2-R3 red, await the #95 R3 render`; producción y
+  cifras sin cambios. Espejo de Notion re-hecho con E1 y `Estado del gate` =
+  En revisión (2026-10-06). Espera: el humano aprueba E1; luego commit de
+  firma, CORRECCIÓN 1 en el handoff (anclas ejecutadas por el leader) y
+  prompt a Codex.
