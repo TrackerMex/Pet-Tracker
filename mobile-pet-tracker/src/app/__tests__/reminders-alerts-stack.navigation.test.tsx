@@ -140,15 +140,15 @@ describe('#114 R2: reminders y alerts se apilan y desapilan sobre (tabs)', () =>
       mockAuthState = { status: 'unauthenticated', token: null };
       mockAuthListeners.forEach((listener) => listener());
     });
-    await waitFor(() => expect(app.getPathname()).toBe('/login'));
-    expect(rootStack(app)).toEqual(['(auth)']);
+    await waitFor(() => expect(app.getPathname()).toBe('/welcome'));
+    expect(rootStack(app)).toEqual(['welcome']);
     for (const href of ['/reminders', '/alerts']) {
       await act(async () => {
         router.push(href as Href);
         for (let i = 0; i < 3; i += 1) jest.runOnlyPendingTimers();
       });
-      expect(app.getPathname()).toBe('/login');
-      expect(rootStack(app)).toEqual(['(auth)']);
+      expect(app.getPathname()).toBe('/welcome');
+      expect(rootStack(app)).toEqual(['welcome']);
     }
   });
 });
