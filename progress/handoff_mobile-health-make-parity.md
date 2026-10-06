@@ -424,3 +424,156 @@ Cambios sobre el handoff:
 Despues sigue la CORRECCION 1 desde su paso 1, con su regla de commits
 (registrador && git commit), y luego T4, T5 y T6.
 ```
+
+---
+
+## CORRECCION 3 — ronda 2, Enmienda E1–E2 (2026-10-06)
+
+> Pegar este bloque en Codex CLI. La Enmienda E1–E2 está firmada en
+> `52bfe254`. El guion es `tasks.md` T8; este bloque fija base, anclas,
+> regla de fechas nueva y la parada del PNG. CORRECCION 1 y 2 siguen
+> vigentes (registrador && commit; lista cerrada desde `origin/main...HEAD`).
+
+```
+Retoma #115 en /home/claude/sites/Pet-Tracker, branch
+feature/115-mobile-health-make-parity, en el VPS (Linux). Ronda 2: el
+reviewer rechazo la ronda 1 y el humano aprobo la Enmienda E1-E2 (firma
+52bfe254). Lee primero, enteros:
+- specs/mobile-health-make-parity/requirements.md: R2, R6 (columna TZ y
+  fila h), R8, R9, R10 y la seccion «Enmienda E1–E2».
+- specs/mobile-health-make-parity/design.md: §1.2 (lista cerrada de 10),
+  §1.8 (readAlpha y countAlpha: copialos tal cual) y §2 M23-M28.
+- specs/mobile-health-make-parity/tasks.md: T8, pasos 1 a 10. Es tu guion.
+- progress/review_mobile-health-make-parity.md: por que se rechazo.
+Anota H2 = git rev-parse HEAD al arrancar; es el HEAD de este handoff.
+
+Skills: del plugin expo (1.0.2) building-native-ui; $imagegen para el arte;
+del repo (.agents/skills/) appllama-app-design-skill y su
+references/image-assets.md (fondo transparente, sin halo blanco ni mate).
+
+BASE (medida por el leader sobre esta branch, origin/main e002a4a5):
+desde la raiz:
+  git merge-base --is-ancestor origin/main HEAD; echo "exit=$?"   -> exit=0
+  grep -cF -- '- [x] Enmienda E1–E2 aprobada por humano (fecha: 2026-10-06' specs/mobile-health-make-parity/requirements.md   -> 1
+desde mobile-pet-tracker/:
+  test ! -e .expo/types/router.d.ts; echo "exit=$?"   -> exit=0
+  bunx jest src/screens/health/index.test.tsx app.assets.test.ts   -> exit 0, 62 passed (Salud 55 + app.assets 7)
+  git diff --name-only origin/main...HEAD -- assets/   -> vacio
+  sha256sum assets/images/splash-icon.png   -> 8767ad5e565a736a433627a3b9f0f96f7c888e68b023338dd9d0b59efacf2913 (igual que android-icon-foreground.png)
+Si algo no cuadra, para y anotalo en el impl.
+
+ANCLAS (desde mobile-pet-tracker/; mide antes y despues y escribe el valor
+medido al lado del declarado):
+ E1.1, src/screens/health/index.test.tsx:
+  grep -cF "expect(hero.parent!.parent).toBe(screen.getByTestId('screen-health'));" src/screens/health/index.test.tsx   -> 0 antes, 1 despues
+  grep -cF "expect(hero.parent).toBe(content.parent);" src/screens/health/index.test.tsx   -> 1 y 1 (la linea nueva va justo debajo)
+ E1.2, mismo fichero:
+  grep -cF "process.getBuiltinModule('process')" src/screens/health/index.test.tsx   -> 0 / 1
+  grep -cF "America/Mexico_City" src/screens/health/index.test.tsx   -> 0 / 1 (solo la fila h)
+  grep -c "row: '" src/screens/health/index.test.tsx   -> 7 / 8
+  grep -cF "jest.setSystemTime(new Date(year, month - 1, day, 12, 0));" src/screens/health/index.test.tsx   -> 1 / 0
+ R10:
+  grep -cF "import { inflateSync } from 'node:zlib';" app.assets.test.ts   -> 0 / 1
+  grep -cF "#115 R10" app.assets.test.ts   -> 0 / 1
+  grep -c 'splash-icon' scripts/make-icons.mjs   -> 1 / 0
+  grep -c "node:fs" scripts/make-icons.mjs   -> 1 / 0
+  git diff --name-only origin/main...HEAD -- assets/   -> vacio / solo mobile-pet-tracker/assets/images/splash-icon.png
+ Produccion de Salud intacta en toda la ronda:
+  git diff --quiet $H2 HEAD -- src/screens/health/index.tsx; echo "exit=$?"   -> exit=0 al cerrar
+
+REGLA DE FECHAS NUEVA: la regla «Fechas (R6)» del handoff original
+(setSystemTime con 12, 0) queda sustituida por requirements R6 (Enmienda
+E1.2): <ahora> con la hora y el minuto de la columna «Ahora», y la TZ de la
+fila fijada antes de jest.useFakeTimers() con
+  const hostProcess = process.getBuiltinModule('process');
+  hostProcess.env.TZ = <TZ de la fila>
+y restaurada en un finally del propio it. process.env.TZ a secas no sirve
+(jest copia process.env y Date no se entera). Patron vivo:
+src/screens/meal-schedule/index.test.tsx (#147 E1.2). Los dos it de R6 que
+fijan 2026-12-31 12:00 a mano (orden de la card y receta) no cambian.
+
+COMMITS (literales de tasks T8, cada uno como <registrador> && git commit):
+ 1. test(mobile-health): #115 E1.1 lock hero and content under the scroll
+    Salud 55 verdes; sonda M25 antes del commit (cae ese it por asercion).
+ 2. test(mobile-health): #115 E1.2 time zone row for next vaccine days
+    Salud 56 verdes; sondas M23 (cae solo la fila h) y M24 (caen a-h).
+ 3. test(mobile-assets): #115 R10 red, splash without square or pin
+    Rojo previsto, como el de T4 en la ronda 1: Jest exit=1 con exactamente
+    2 fallos, «esquinas» ([676, 676, 676, 676]) y «pin» (1600), los dos por
+    asercion; «fuera», «cara» y los 7 it de #101 en verde. Registrador exit=0.
+ Sondas M23-M25 sobre src/screens/health/index.tsx; restaurar con
+   git checkout HEAD -- src/screens/health/index.tsx
+   git diff --quiet -- src/screens/health/index.tsx; echo "exit=$?"   -> 0
+   git diff --cached --quiet; echo "exit=$?"   -> 0
+
+CANDIDATO (T8 paso 4; receta de requirements R10, pasos 1-3, todo en
+/tmp/115-splash/, nada de eso se commitea):
+ - $imagegen edita assets/images/pet-tracker-app-icon.png (1254x1254 RGB)
+   con este prompt, literal:
+     Edit this image. Keep the exact same robot puppy mascot: same pose,
+     proportions, colors, lighting and position on the canvas. Remove
+     everything else: the violet square background, the gradient, the glow,
+     the white location pin and its halo, and any drop shadow. Output a
+     square PNG with a fully transparent background (real alpha), clean
+     anti-aliased edges, no white halo and no colored matte.
+ - Si la salida no es cuadrada, para. Si no trae alfa real (tipo de color
+   distinto de 6, o las esquinas con alfa > 0), repite el mismo prompt
+   cambiando la ultima frase por «on a flat pure #00FFFF background» y quita
+   ese fondo en el script de composicion antes de redimensionar (el cian no
+   aparece en la mascota: morado, blanco, gris, verde y rojo). Anota en el
+   impl si usaste este respaldo.
+ - jimp-compact: redimensiona a 676x676 con Jimp.RESIZE_BICUBIC y compon en
+   (174, 174) sobre lienzo 1024x1024 0x00000000; escribe
+   assets/images/splash-icon.png. Previews de 1024x1024 en /tmp/115-splash/:
+   preview-splash.png (#9460FC), preview-welcome-light.png (#FFFFFF) y
+   preview-welcome-dark.png (#0D1117).
+ - bunx jest app.assets.test.ts   -> exit 0, 11 passed.
+ - No ejecutes scripts/make-icons.mjs ni expo prebuild.
+
+PARADA DEL PNG (T8 paso 5). Escribe en el impl una seccion «Ronda 2 —
+PARADA del PNG» con: H2, los tres commits con su hash, el sha256sum del
+candidato, las rutas de la salida de imagegen y de las tres previews, y si
+usaste el respaldo cian. Deja el candidato en el arbol sin stage
+(git diff --cached --quiet -> exit 0) y PARA. El humano lo mira y firma la
+casilla «PNG del splash» de requirements.md en el repo; la marca de Notion
+no cuenta. Cuando te diga que sigas, desde mobile-pet-tracker/:
+  grep -cF -- "- [x] Candidato de \`splash-icon.png\` aprobado" ../specs/mobile-health-make-parity/requirements.md   -> 1
+  grep -cF "$(sha256sum assets/images/splash-icon.png | cut -c1-64)" ../specs/mobile-health-make-parity/requirements.md   -> 1
+Si el humano lo rechaza, te pegara el motivo: anota motivo y sha256sum del
+rechazado en el impl y vuelve a CANDIDATO.
+
+DESPUES DE LA FIRMA: T8 pasos 6 a 10 tal cual.
+ 6. feat(mobile-assets): #115 R10 transparent splash with the mascot alone
+    Solo assets/images/splash-icon.png y scripts/make-icons.mjs. Antes, en
+    verde y con exit 0: app.assets.test.ts, app.config.test.ts y
+    src/screens/welcome/index.test.tsx.
+ 7. Sondas M26-M28 (los PNG de M27 y M28 en /tmp/115-splash/); restaurar con
+    git checkout HEAD -- assets/images/splash-icon.png y los dos
+    git diff --quiet de arriba con ese path, exit 0.
+ 8. Anclas de R10 con el valor medido al lado.
+ 9. Cierre, cada comando sin pipe y con su exit:
+    - Lista cerrada R8 (desde la raiz), exactamente los 10 de design §1.2:
+      git diff --name-only origin/main...HEAD -- . ':!feature_list.json' ':!STATUS.md' ':!progress/current.md' ':!progress/handoff_mobile-health-make-parity.md' ':!progress/review_mobile-health-make-parity.md' ':!specs/mobile-health-make-parity/requirements.md' ':!specs/mobile-health-make-parity/design.md' ':!specs/mobile-health-make-parity/tasks.md' ':!.claude/agents/leader.md'
+      Hoy da 7. Cualquier fichero fuera de los 10 es motivo de parada.
+    - bun run typecheck, bun run lint y bunx jest: exit 0. Salud 56,
+      app.assets 11, las otras seis suites de control sin cambio, total de
+      Jest 2139 + 5 = 2144 si origin/main sigue en e002a4a5.
+ 10. docs(mobile-health-make-parity): trace #115 E1-E2 and R10
+    traceability.md (R2 y R6 con su commit de E1; fila R10 con rojo y verde;
+    §Verificacion R8 con la lista de 10; R9 pasa a S1..S11) e impl con la
+    seccion «Ronda 2» de T8 paso 10.
+
+Ficheros que puedes tocar en esta ronda, y ninguno mas:
+  mobile-pet-tracker/src/screens/health/index.test.tsx
+  mobile-pet-tracker/app.assets.test.ts
+  mobile-pet-tracker/assets/images/splash-icon.png
+  mobile-pet-tracker/scripts/make-icons.mjs
+  specs/mobile-health-make-parity/traceability.md
+  progress/impl_mobile-health-make-parity.md
+src/screens/health/index.tsx solo para sondas, siempre restaurado.
+
+Prohibido: ./init.sh (lo coordina el leader con la otra sesion), push,
+rebase, merge, amend y reset. Si origin/main avanza, para: el merge es del
+leader. Ningun commit si el registrador o jest dio un exit distinto del
+previsto en ese paso.
+```

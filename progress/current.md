@@ -47,11 +47,19 @@
   jest-expo: los tres mutantes de E1 mueren y la base sigue verde; el
   candado de R10 da rojo sobre el splash actual y verde sobre un candidato
   sintético.
-- Siguiente: gate de la Enmienda E1–E2 en Notion (En revisión). Tras la
-  firma, CORRECCION 3 del handoff (ronda 2, T8) en el VPS, con parada para
-  que el humano apruebe el PNG mirándolo. Después reviewer, smoke R9 S1–S11
-  (S10 exige `bunx expo prebuild --clean` y reinstalar el dev build) y
-  cierre (Notion Implementado/Completado antes de la PR).
+- Enmienda E1–E2 aprobada en Notion (`page_last_edited_at`
+  2026-10-06T17:15:50.400Z); firma en `52bfe254`. El humano marcó también la
+  casilla del PNG en Notion sin candidato: no cuenta, se firma en el repo con
+  el `sha256` del PNG que apruebe mirándolo.
+- CORRECCION 3 del handoff (ronda 2, T8) escrita. Base medida por el leader:
+  Salud 55 + app.assets 7 = 62, exit=0; todas sus anclas en su valor «antes»;
+  lista cerrada R8 en 7 de 10.
+- Siguiente: Codex corre la ronda 2 hasta la PARADA del PNG. El leader pasa
+  candidato y previews al humano; con su aprobación firma la casilla «PNG del
+  splash» (fecha + `sha256`) y Codex sigue. Después reviewer, smoke R9
+  S1–S11 (S10 exige `bunx expo prebuild --clean` y reinstalar el dev build)
+  y cierre (Notion Implementado/Completado antes de la PR).
+- Pendiente del humano: obs. 7 de la review (¿autorizó `bd2f67d9`?).
 
 ## Ampliación solicitada: icono de inicio sin fondo — 2026-10-06
 
