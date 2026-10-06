@@ -330,3 +330,55 @@ cuentas y exit; las 22 sondas con el it que cae, como cae y los dos
 exit; las tres salidas de R8; el delta final por suite; y cualquier
 decision que la spec no cerrara literalmente.
 ```
+
+---
+
+## CORRECCION 1 — parada en T3 (2026-10-06)
+
+> Pegar este bloque en Codex CLI para retomar. Sustituye solo el cierre de
+> T3; el resto del handoff sigue vigente.
+
+```
+Retoma #115 en /home/claude/sites/Pet-Tracker, branch
+feature/115-mobile-health-make-parity. Lee primero
+progress/impl_mobile-health-make-parity.md (tu propio informe, sigue sin
+commit) y esta CORRECCION 1 del handoff.
+
+Diagnostico (verificado por el leader en HEAD b6c08b2a: 45 passed, 1 failed):
+el requisito R5 dice «[2] es o contiene weight-chart». Tu test de
+src/screens/health/index.test.tsx usa
+  expect(within(elementChild(card, 2)).queryByTestId('weight-chart')).not.toBeNull();
+y within() excluye el nodo raiz. La raiz de WeightChart ya es weight-chart
+(src/components/weight-chart.tsx), asi que el hijo [2] ES el nodo y within no
+lo ve. La implementacion es correcta; el test no cubre la rama «es».
+
+Que haces, sin reescribir historia (nada de reset, amend ni rebase; b6c08b2a
+se queda como commit no verde documentado):
+
+1. En ese it («con dos o mas registros, pasa el historial entero y en orden
+   entre la variacion y el enlace»), cambia esa linea por la forma simetrica
+   del it de un registro:
+     expect(elementChild(card, 2).props.testID).toBe('weight-chart');
+   Ancla antes del cambio y despues (desde mobile-pet-tracker/):
+     grep -cF "expect(within(elementChild(card, 2)).queryByTestId('weight-chart')).not.toBeNull();" src/screens/health/index.test.tsx   -> 1 antes, 0 despues
+     grep -cF "expect(elementChild(card, 2).props.testID).toBe('weight-chart');" src/screens/health/index.test.tsx   -> 0 antes, 1 despues
+2. En src/screens/health/index.tsx, b6c08b2a dejo mal sangrados el bloque de
+   WeightChart y la linea siguiente (weight-card-empty) a 14 espacios; sus
+   hermanos del weight-card van a 16. Devuelvelos a 16 espacios (las
+   lineas interiores un nivel mas). Sin otro cambio en ese fichero.
+3. Mide el verde de T3 como dice el handoff (46 passed, 0 failed en Salud) y
+   registralo en el impl. Solo si el registrador da exit=0 y la cuenta
+   coincide, un unico commit con los dos ficheros:
+     fix(mobile-health): #115 R5 green, assert the chart slot itself
+   REGLA NUEVA para todo lo que queda: ningun git commit si el registrador o
+   jest devolvio exit distinto de 0 o «Cuenta y suites esperadas: False».
+   Encadenalo: <registrador> && git commit ...
+4. La sonda M4 sigue cayendo por asercion en [1] y [2] con este cambio;
+   M2, M3 y M5 no dependen de esa linea.
+5. En traceability.md, R5 cita el red 7e7f4a90 y como verde ESTE commit de
+   fix; anota b6c08b2a como «impl, no verde: asercion de test corregida en
+   <hash del fix>». En el impl deja la parada tal cual y anade la seccion
+   «T3 — verde tras CORRECCION 1».
+6. Continua con T4, T5 y T6 segun el handoff. La lista cerrada de R8 no
+   cambia: este fix toca los mismos dos ficheros de produccion y test.
+```
