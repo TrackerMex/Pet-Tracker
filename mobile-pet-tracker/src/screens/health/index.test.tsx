@@ -858,7 +858,7 @@ describe('#115 R5: la weight card dibuja la evolución con WeightChart', () => {
     expect(card.children).toHaveLength(4);
     expect(elementChild(card, 1).props.className).toBe('flex-row justify-end');
     expect(within(elementChild(card, 1)).getByTestId('weight-variation')).toHaveTextContent('+0.4 kg');
-    expect(within(elementChild(card, 2)).queryByTestId('weight-chart')).not.toBeNull();
+    expect(elementChild(card, 2).props.testID).toBe('weight-chart');
     expect(elementChild(card, 3).props.testID).toBe('weight-log-link');
     expect(screen.getByTestId('weight-current')).toHaveTextContent('12.4 kg');
     const props = mockWeightChart.mock.calls.at(-1)![0];
