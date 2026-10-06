@@ -523,11 +523,11 @@ Los textos normativos están en R2, R6, R8, R9 y R10, marcados «Enmienda E<n>»
 
 ### Enmienda E1–E2 — candados de R2 y R6, y splash sin fondo ni pin
 
-- [ ] Enmienda E1–E2 aprobada por humano (fecha: ____) ← gate obligatorio antes de la ronda 2 de Codex
+- [x] Enmienda E1–E2 aprobada por humano (fecha: 2026-10-06, desde Notion: página `3f06115a-9b27-811f-802d-c7a05058341d`, `Estado del gate` = Aprobado, `page_last_edited_at` 2026-10-06T17:15:50.400Z, espejo de `0d6c22b9`) ← gate obligatorio antes de la ronda 2 de Codex
 
 ### PNG del splash
 
-- [ ] Candidato de `splash-icon.png` aprobado por humano mirándolo (fecha: ____, `sha256`: ____) ← gate obligatorio antes del commit verde de R10
+- [ ] Candidato de `splash-icon.png` aprobado por humano mirándolo (fecha: ____, `sha256`: ____) ← gate obligatorio antes del commit verde de R10. En el espejo de Notion el humano la marcó el 2026-10-06 junto con la Enmienda, sin candidato todavía: no cuenta; se firma aquí con el `sha256` del PNG que el humano apruebe mirándolo
 
 ### Prueba de humo
 
