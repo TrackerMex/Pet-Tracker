@@ -19,6 +19,7 @@ import {
 import { listPets, type PetsState } from '../../api/pets';
 import { healthKeys, petKeys } from '../../api/query-keys';
 import type { PetProfile, Vaccine, WeightEntry } from '../../api/types';
+import { WeightChart } from '../../components/weight-chart';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import { LanguageProvider } from '../../providers/language-provider';
 import { SelectedPetProvider } from '../../providers/selected-pet-provider';
@@ -37,6 +38,16 @@ jest.mock('../../api/health-records', () => ({
   listVaccines: jest.fn(),
   listWeights: jest.fn(),
 }));
+
+jest.mock('../../components/weight-chart', () => {
+  const actual = jest.requireActual<typeof import('../../components/weight-chart')>(
+    '../../components/weight-chart',
+  );
+  return {
+    ...actual,
+    WeightChart: jest.fn(actual.WeightChart),
+  };
+});
 
 jest.mock('../../providers/auth-provider', () => ({
   useAuth: jest.fn(),
@@ -89,6 +100,7 @@ const mockListVaccines = jest.mocked(listVaccines);
 const mockListWeights = jest.mocked(listWeights);
 const mockUseAuth = jest.mocked(useAuth);
 const mockRouter = jest.mocked(router);
+const mockWeightChart = jest.mocked(WeightChart);
 
 function makePet(overrides: Partial<PetProfile> = {}): PetProfile {
   return {
@@ -818,5 +830,84 @@ describe('#115 R3: el hero muestra la mascota seleccionada de la lista', () => {
     await waitFor(() => expect(within(screen.getByTestId('pet-hero')).getByTestId('pet-hero-name')).toHaveTextContent('Luna'));
     await fireEvent.press(screen.getByTestId('pet-chip-pet-2'));
     await waitFor(() => expect(within(screen.getByTestId('pet-hero')).getByTestId('pet-hero-name')).toHaveTextContent('Max'));
+  });
+});
+
+describe('#115 R5: la weight card dibuja la evolución con WeightChart', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockListVaccines.mockResolvedValue({ kind: 'ok', vaccines: [] });
+  });
+
+  it('con dos o más registros, pasa el historial entero y en orden entre la variación y el enlace', async () => {
+    const weights = [
+      makeWeight({ id: 'weight-3', weightKg: 12.4, measuredAt: '2026-08-21', variation: 0.4 }),
+      makeWeight({ id: 'weight-2', weightKg: 12.0, measuredAt: '2026-08-14' }),
+      makeWeight({ id: 'weight-1', weightKg: 11.8, measuredAt: '2026-08-07' }),
+    ];
+    mockListWeights.mockResolvedValue({ kind: 'ok', weights });
+    await renderHealth();
+    await screen.findByTestId('weight-chart');
+
+    const card = screen.getByTestId('weight-card');
+    expect(card.children).toHaveLength(4);
+    expect(elementChild(card, 1).props.className).toBe('flex-row justify-end');
+    expect(within(elementChild(card, 1)).getByTestId('weight-variation')).toHaveTextContent('+0.4 kg');
+    expect(within(elementChild(card, 2)).queryByTestId('weight-chart')).not.toBeNull();
+    expect(elementChild(card, 3).props.testID).toBe('weight-log-link');
+    expect(screen.getByTestId('weight-current')).toHaveTextContent('12.4 kg');
+    const props = mockWeightChart.mock.calls.at(-1)![0];
+    expect(props.entries.map(({ id }) => id)).toEqual(['weight-3', 'weight-2', 'weight-1']);
+  });
+
+  it('con un registro, muestra el aviso de datos insuficientes de WeightChart', async () => {
+    mockListWeights.mockResolvedValue({ kind: 'ok', weights: [makeWeight()] });
+    await renderHealth();
+    await waitFor(() => expect(screen.getByTestId('weight-chart-empty')).toHaveTextContent('Aún no hay datos suficientes'));
+
+    const card = screen.getByTestId('weight-card');
+    expect(card.children).toHaveLength(4);
+    expect(elementChild(card, 2).props.testID).toBe('weight-chart-empty');
+    expect(screen.queryByTestId('weight-chart')).toBeNull();
+  });
+
+  it('sin registros, deja el estado vacío y el enlace sin gráfica', async () => {
+    mockListWeights.mockResolvedValue({ kind: 'ok', weights: [] });
+    await renderHealth();
+    await screen.findByTestId('weight-card-empty');
+
+    const card = screen.getByTestId('weight-card');
+    expect(screen.queryByTestId('weight-chart')).toBeNull();
+    expect(screen.queryByTestId('weight-chart-empty')).toBeNull();
+    expect(card.children).toHaveLength(3);
+    expect(elementChild(card, 1).props.testID).toBe('weight-card-empty');
+    expect(elementChild(card, 2).props.testID).toBe('weight-log-link');
+  });
+
+  it.each([
+    { kind: 'error' } as const,
+    { kind: 'unreachable', message: 'network down' } as const,
+  ])('con error de peso ($kind), no pinta gráfica', async (state) => {
+    mockListWeights.mockResolvedValue(state);
+    await renderHealth();
+    await screen.findByTestId('weight-card-error');
+
+    expect(screen.queryByTestId('weight-chart')).toBeNull();
+    expect(screen.queryByTestId('weight-chart-empty')).toBeNull();
+  });
+
+  it('mientras el peso carga, no pinta gráfica', async () => {
+    mockListWeights.mockReturnValue(pending<WeightsState>());
+    await renderHealth();
+    await screen.findByTestId('weight-log-link');
+
+    expect(screen.getByTestId('weight-card').children).toHaveLength(2);
+    expect(screen.queryByTestId('weight-chart')).toBeNull();
+    expect(screen.queryByTestId('weight-chart-empty')).toBeNull();
   });
 });
