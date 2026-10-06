@@ -604,4 +604,4 @@ plural de la fila n se queda en Fuera de alcance.
 
 ### Prueba de humo
 
-- [ ] La casilla «Smoke aprobado por humano» de R9 (S1–S11)
+- [x] La casilla «Smoke aprobado por humano» de R9 (S1–S11) (fecha: 2026-10-06, OnePlus Nord 5, `5bb934a8`)
