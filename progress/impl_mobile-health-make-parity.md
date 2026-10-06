@@ -4491,3 +4491,254 @@ Sin init.sh, push, rebase, merge, amend, reset, make-icons ni expo prebuild.
 Se entrega al leader/reviewer la ronda 2; R9 S1–S11 lo firma el humano.
 La feature sigue in_progress hasta review y smoke; no se cambia bookkeeping
 fuera de los seis ficheros autorizados para esta ronda.
+
+
+## Ronda 3 — Enmienda E3 (T9)
+
+H3 del handoff: `723621d363e56b7ed7a378c83b471f987373b8c1`.
+Branch: `feature/115-mobile-health-make-parity`; VPS Linux.
+`origin/main`: `37f6362ca563f76ac50b3142b9de2c5dfa7c6ae8`, sin avance
+tras `git fetch origin` (exit=0). Leídos R2/R6 y Enmienda E3 completos,
+design §2, T9 y las observaciones de ronda 2 y el barrido previo a la firma.
+Skill building-native-ui del plugin expo 1.0.2 ya leído y aplicado.
+Esta ronda solo cambia tests de Salud y documentación; producción únicamente
+se muta para las sondas, con restauración tras cada ejecución.
+
+### T9 — base y anclas antes
+
+| Comando | Declarado | Medido |
+|---|---|---|
+| `grep -cF -- '- [x] Enmienda E3 aprobada por humano' specs/mobile-health-make-parity/requirements.md` | 1 | 1, exit=0 |
+| `git merge-base --is-ancestor origin/main HEAD` | exit=0 | exit=0 |
+| `git diff --quiet 92c4e5d6 HEAD -- mobile-pet-tracker/src/screens/health/index.tsx` | exit=0 | exit=0 |
+| `test ! -e .expo/types/router.d.ts` (mobile) | exit=0 | exit=0 |
+| `bunx jest src/screens/health/index.test.tsx` (mobile) | 56 passed, exit=0 | 56 passed / 56 total, exit=0 |
+
+Log base: `/tmp/115-r3-base-jest.log`. No discrepancias en la base.
+Anclas ejecutadas desde mobile; `T = src/screens/health/index.test.tsx`.
+Cada ancla usa `grep -cF` salvo `row: '` (`grep -c`). Un recuento cero
+produce exit=1 de grep; el valor medido coincide con lo declarado.
+
+| Literal en T | Antes declarado | Antes medido | Después declarado | Después medido |
+|---|---|---|---|---|
+| `row: '` | 8 | 8 | 14 | 14 |
+| `{ row: 'i', language: 'es', tz: 'UTC', now: '2026-12-31 06:00'` | 0 | 0 | 1 | 1 |
+| `{ row: 'j', language: 'es', tz: 'UTC', now: '2026-12-31 06:00'` | 0 | 0 | 1 | 1 |
+| `{ row: 'k', language: 'es', tz: 'America/New_York', now: '2027-03-13 23:30'` | 0 | 0 | 1 | 1 |
+| `{ row: 'l', language: 'es', tz: 'Pacific/Auckland', now: '2027-01-01 10:00'` | 0 | 0 | 1 | 1 |
+| `{ row: 'm', language: 'es', tz: 'America/New_York', now: '2027-11-06 12:00'` | 0 | 0 | 1 | 1 |
+| `{ row: 'n', language: 'es', tz: 'UTC', now: '2026-12-31 12:00'` | 0 | 0 | 1 | 1 |
+| `America/New_York` | 0 | 0 | 2 | 2 |
+| `Pacific/Auckland` | 0 | 0 | 1 | 1 |
+| `Faltan 1 días` | 0 | 0 | 1 | 1 |
+| `const NEXT_CARD_BRANCHES = [` | 0 | 0 | 1 | 1 |
+| `it.each(NEXT_CARD_BRANCHES)` | 0 | 0 | 2 | 2 |
+| `it.each` | 7 | 7 | 9 | 9 |
+| `con la fecha en la columna ($branch)'` | 0 | 0 | 1 | 1 |
+| `con la receta exacta ($branch)'` | 0 | 0 | 1 | 1 |
+| `toHaveTextContent(text, { exact: true })` | 0 | 0 | 2 | 2 |
+| `toHaveTextContent('Próxima dosis', { exact: true })` | 0 | 0 | 1 | 1 |
+| `toHaveTextContent('Rabies', { exact: true })` | 0 | 0 | 1 | 1 |
+| `.props.className).toBe('text-2xl font-black text-foreground');` | 0 | 0 | 1 | 1 |
+| `jest.setSystemTime(new Date(2026, 12 - 1, 31, 12, 0));` | 2 | 2 | 2 | 2 |
+
+M23: Jest `bunx jest --runInBand src/screens/health/index.test.tsx`, exit=1; (3, 58, 61); caen `#115 R6: la próxima vacuna dice fecha y días restantes › fila h: hoy 2026-12-31 20:00, próxima 2027-01-02`; `#115 R6: la próxima vacuna dice fecha y días restantes › fila k: hoy 2027-03-13 23:30, próxima 2027-03-15`; `#115 R6: la próxima vacuna dice fecha y días restantes › fila l: hoy 2027-01-01 10:00, próxima 2027-01-03`. Por aserción: sí. Coincide exactamente: sí. Log `/tmp/115-r3-M23.log`. Restauración `git checkout HEAD -- src/screens/health/index.tsx`, diff exit=0, cached exit=0.
+
+M29: Jest `bunx jest --runInBand src/screens/health/index.test.tsx`, exit=1; (3, 58, 61); caen `#115 R6: la próxima vacuna dice fecha y días restantes › fila i: hoy 2026-12-31 06:00, próxima 2026-12-31`; `#115 R6: la próxima vacuna dice fecha y días restantes › fila j: hoy 2026-12-31 06:00, próxima 2027-01-02`; `#115 R6: la próxima vacuna dice fecha y días restantes › fila l: hoy 2027-01-01 10:00, próxima 2027-01-03`. Por aserción: sí. Coincide exactamente: sí. Log `/tmp/115-r3-M29.log`. Restauración `git checkout HEAD -- src/screens/health/index.tsx`, diff exit=0, cached exit=0.
+
+M30: Jest `bunx jest --runInBand src/screens/health/index.test.tsx`, exit=1; (3, 58, 61); caen `#115 R6: la próxima vacuna dice fecha y días restantes › fila i: hoy 2026-12-31 06:00, próxima 2026-12-31`; `#115 R6: la próxima vacuna dice fecha y días restantes › fila j: hoy 2026-12-31 06:00, próxima 2027-01-02`; `#115 R6: la próxima vacuna dice fecha y días restantes › fila l: hoy 2027-01-01 10:00, próxima 2027-01-03`. Por aserción: sí. Coincide exactamente: sí. Log `/tmp/115-r3-M30.log`. Restauración `git checkout HEAD -- src/screens/health/index.tsx`, diff exit=0, cached exit=0.
+
+M31: Jest `bunx jest --runInBand src/screens/health/index.test.tsx`, exit=1; (1, 60, 61); caen `#115 R6: la próxima vacuna dice fecha y días restantes › fila k: hoy 2027-03-13 23:30, próxima 2027-03-15`. Por aserción: sí. Coincide exactamente: sí. Log `/tmp/115-r3-M31.log`. Restauración `git checkout HEAD -- src/screens/health/index.tsx`, diff exit=0, cached exit=0.
+
+M32: Jest `bunx jest --runInBand src/screens/health/index.test.tsx`, exit=1; (1, 60, 61); caen `#115 R6: la próxima vacuna dice fecha y días restantes › fila k: hoy 2027-03-13 23:30, próxima 2027-03-15`. Por aserción: sí. Coincide exactamente: sí. Log `/tmp/115-r3-M32.log`. Restauración `git checkout HEAD -- src/screens/health/index.tsx`, diff exit=0, cached exit=0.
+
+M33: Jest `bunx jest --runInBand src/screens/health/index.test.tsx`, exit=1; (1, 60, 61); caen `#115 R6: la próxima vacuna dice fecha y días restantes › fila l: hoy 2027-01-01 10:00, próxima 2027-01-03`. Por aserción: sí. Coincide exactamente: sí. Log `/tmp/115-r3-M33.log`. Restauración `git checkout HEAD -- src/screens/health/index.tsx`, diff exit=0, cached exit=0.
+
+M34: Jest `bunx jest --runInBand src/screens/health/index.test.tsx`, exit=1; (1, 60, 61); caen `#115 R6: la próxima vacuna dice fecha y días restantes › fila l: hoy 2027-01-01 10:00, próxima 2027-01-03`. Por aserción: sí. Coincide exactamente: sí. Log `/tmp/115-r3-M34.log`. Restauración `git checkout HEAD -- src/screens/health/index.tsx`, diff exit=0, cached exit=0.
+
+M40: Jest `bunx jest --runInBand src/screens/health/index.test.tsx`, exit=1; (1, 60, 61); caen `#115 R6: la próxima vacuna dice fecha y días restantes › fila m: hoy 2027-11-06 12:00, próxima 2027-11-08`. Por aserción: sí. Coincide exactamente: sí. Log `/tmp/115-r3-M40.log`. Restauración `git checkout HEAD -- src/screens/health/index.tsx`, diff exit=0, cached exit=0.
+
+T9.1 / E3.1: verde previo 61/61, exit=0 (`/tmp/115-r3-e31-green.log`).
+Las ocho sondas M23, M29–M34 y M40 coinciden; los demás it siguen verdes.
+Registrador `bunx jest src/screens/health/index.test.tsx > /tmp/115-r3-e31-registrar.log 2>&1 && git commit -m 'test(mobile-health): #115 E3.1 next vaccine days at more hours and zones'`: Jest exit=0, 61/61; commit exit=0.
+Hash `28ad97120fe9b99dd0a895414af4e0dc4acac94c`; solo el test de Salud,
+5 filas literales i–m. Diff de producción, cached y diff --check antes
+del stage: 0/0/0; cached después del commit: exit=0.
+
+M35: Jest `bunx jest --runInBand src/screens/health/index.test.tsx`, exit=1; (1, 62, 63); caen `#115 R6: la próxima vacuna dice fecha y días restantes › pinta los días con la receta exacta (hoy)`. Por aserción: sí. Coincide exactamente: sí. Log `/tmp/115-r3-M35.log`. Restauración `git checkout HEAD -- src/screens/health/index.tsx`, diff exit=0, cached exit=0.
+
+M36: Jest `bunx jest --runInBand src/screens/health/index.test.tsx`, exit=1; (1, 62, 63); caen `#115 R6: la próxima vacuna dice fecha y días restantes › pinta los días con la receta exacta (hoy)`. Por aserción: sí. Coincide exactamente: sí. Log `/tmp/115-r3-M36.log`. Restauración `git checkout HEAD -- src/screens/health/index.tsx`, diff exit=0, cached exit=0.
+
+M37: Jest `bunx jest --runInBand src/screens/health/index.test.tsx`, exit=1; (1, 62, 63); caen `#115 R6: la próxima vacuna dice fecha y días restantes › ordena la card en icono, columna y días, con la fecha en la columna (hoy)`. Por aserción: sí. Coincide exactamente: sí. Log `/tmp/115-r3-M37.log`. Restauración `git checkout HEAD -- src/screens/health/index.tsx`, diff exit=0, cached exit=0.
+
+M38: Jest `bunx jest --runInBand src/screens/health/index.test.tsx`, exit=1; (1, 62, 63); caen `#115 R6: la próxima vacuna dice fecha y días restantes › pinta los días con la receta exacta (hoy)`. Por aserción: sí. Coincide exactamente: sí. Log `/tmp/115-r3-M38.log`. Restauración `git checkout HEAD -- src/screens/health/index.tsx`, diff exit=0, cached exit=0.
+
+M41: Jest `bunx jest --runInBand src/screens/health/index.test.tsx`, exit=1; (2, 61, 63); caen `#115 R6: la próxima vacuna dice fecha y días restantes › ordena la card en icono, columna y días, con la fecha en la columna (días)`; `#115 R6: la próxima vacuna dice fecha y días restantes › ordena la card en icono, columna y días, con la fecha en la columna (hoy)`. Por aserción: sí. Coincide exactamente: sí. Log `/tmp/115-r3-M41.log`. Restauración `git checkout HEAD -- src/screens/health/index.tsx`, diff exit=0, cached exit=0.
+
+M42: Jest `bunx jest --runInBand src/screens/health/index.test.tsx`, exit=1; (1, 62, 63); caen `#115 R6: la próxima vacuna dice fecha y días restantes › ordena la card en icono, columna y días, con la fecha en la columna (hoy)`. Por aserción: sí. Coincide exactamente: sí. Log `/tmp/115-r3-M42.log`. Restauración `git checkout HEAD -- src/screens/health/index.tsx`, diff exit=0, cached exit=0.
+
+T9.2 / E3.2: verde previo 63/63, exit=0 (`/tmp/115-r3-e32-green.log`).
+M35–M38, M41 y M42 coinciden exactamente por aserción.
+Registrador `bunx jest src/screens/health/index.test.tsx > /tmp/115-r3-e32-registrar.log 2>&1 && git commit -m 'test(mobile-health): #115 E3.2 lock next vaccine card on the today branch'`: Jest exit=0, 63/63; commit exit=0.
+Hash `236798ff4cd97121077a0a58f357519357033a36`; solo el test de Salud.
+Se conservan los dos relojes manuales y todas las aserciones previas;
+la espera fija cada rama antes de leer card/days con getByTestId.
+Diff de producción, cached y diff --check antes del stage: 0/0/0.
+
+M39: Jest `bunx jest --runInBand src/screens/health/index.test.tsx`, exit=1; (5, 58, 63); caen `#115 R2: Salud abre con el hero a sangre (A9) › sin contenido (pendiente), agrupa título y rama en health-states sin hero`; `#115 R2: Salud abre con el hero a sangre (A9) › sin contenido (error), agrupa título y rama en health-states sin hero`; `#115 R2: Salud abre con el hero a sangre (A9) › sin contenido (unreachable), agrupa título y rama en health-states sin hero`; `#115 R2: Salud abre con el hero a sangre (A9) › sin contenido (missing-config), agrupa título y rama en health-states sin hero`; `#115 R2: Salud abre con el hero a sangre (A9) › sin contenido (vacía), agrupa título y rama en health-states sin hero`. Por aserción: sí. Coincide exactamente: sí. Log `/tmp/115-r3-M39.log`. Restauración `git checkout HEAD -- src/screens/health/index.tsx`, diff exit=0, cached exit=0.
+
+T9.3 / E3.3: verde previo 63/63, exit=0 (`/tmp/115-r3-e33-green.log`).
+M39 tumba exactamente las cinco filas de estados, todas por toBe del
+className; las otras 58 siguen verdes.
+Registrador `bunx jest src/screens/health/index.test.tsx > /tmp/115-r3-e33-registrar.log 2>&1 && git commit -m 'test(mobile-health): #115 E3.3 lock the health states title recipe'`: Jest exit=0, 63/63; commit exit=0.
+Hash `b67ab50287adda6ead730d0384ddded190cbc004`; solo una aserción en el
+test de Salud, justo debajo de la visibilidad del título.
+Diff de producción, cached y diff --check antes del stage: 0/0/0.
+
+M43: Jest `bunx jest --runInBand src/screens/health/index.test.tsx`, exit=1; (1, 63, 64); caen `#115 R6: la próxima vacuna dice fecha y días restantes › fila n: hoy 2026-12-31 12:00, próxima 2027-01-01`. Por aserción: sí. Coincide exactamente: sí. Log `/tmp/115-r3-M43.log`. Restauración `git checkout HEAD -- src/screens/health/index.tsx`, diff exit=0, cached exit=0.
+
+M44: Jest `bunx jest --runInBand src/screens/health/index.test.tsx`, exit=1; (1, 63, 64); caen `#115 R6: la próxima vacuna dice fecha y días restantes › fila n: hoy 2026-12-31 12:00, próxima 2027-01-01`. Por aserción: sí. Coincide exactamente: sí. Log `/tmp/115-r3-M44.log`. Restauración `git checkout HEAD -- src/screens/health/index.tsx`, diff exit=0, cached exit=0.
+
+M24: Jest `bunx jest --runInBand src/screens/health/index.test.tsx`, exit=1; (15, 49, 64); caen `#115 R6: la próxima vacuna dice fecha y días restantes › fila a: hoy 2026-12-31 12:00, próxima 2026-12-31`; `#115 R6: la próxima vacuna dice fecha y días restantes › fila b: hoy 2026-12-31 12:00, próxima 2027-01-02`; `#115 R6: la próxima vacuna dice fecha y días restantes › fila c: hoy 2027-01-01 12:00, próxima 2027-01-01`; `#115 R6: la próxima vacuna dice fecha y días restantes › fila d: hoy 2027-01-30 12:00, próxima 2027-02-03`; `#115 R6: la próxima vacuna dice fecha y días restantes › fila e: hoy 2026-12-31 12:00, próxima 2027-12-31`; `#115 R6: la próxima vacuna dice fecha y días restantes › fila f: hoy 2026-12-31 12:00, próxima 2027-01-02`; `#115 R6: la próxima vacuna dice fecha y días restantes › fila g: hoy 2027-01-01 12:00, próxima 2027-01-01`; `#115 R6: la próxima vacuna dice fecha y días restantes › fila h: hoy 2026-12-31 20:00, próxima 2027-01-02`; `#115 R6: la próxima vacuna dice fecha y días restantes › fila k: hoy 2027-03-13 23:30, próxima 2027-03-15`; `#115 R6: la próxima vacuna dice fecha y días restantes › fila m: hoy 2027-11-06 12:00, próxima 2027-11-08`; `#115 R6: la próxima vacuna dice fecha y días restantes › fila n: hoy 2026-12-31 12:00, próxima 2027-01-01`; `#115 R6: la próxima vacuna dice fecha y días restantes › ordena la card en icono, columna y días, con la fecha en la columna (días)`; `#115 R6: la próxima vacuna dice fecha y días restantes › ordena la card en icono, columna y días, con la fecha en la columna (hoy)`; `#115 R6: la próxima vacuna dice fecha y días restantes › pinta los días con la receta exacta (días)`; `#115 R6: la próxima vacuna dice fecha y días restantes › pinta los días con la receta exacta (hoy)`. Por aserción: sí. Coincide exactamente: sí. Log `/tmp/115-r3-M24.log`. Restauración `git checkout HEAD -- src/screens/health/index.tsx`, diff exit=0, cached exit=0.
+
+T9.4 / E3.4: verde previo 64/64, exit=0 (`/tmp/115-r3-e34-green.log`).
+M43 y M44 caen solo en n; M24 cae exactamente en a–h, k, m, n y las
+cuatro filas de E3.2 (15 failed, 49 passed). i, j y l quedan verdes.
+Registrador `bunx jest src/screens/health/index.test.tsx > /tmp/115-r3-e34-registrar.log 2>&1 && git commit -m 'test(mobile-health): #115 E3.4 next vaccine days at the one day boundary'`: Jest exit=0, 64/64; commit exit=0.
+Hash `d27a475979549c282bbf1693db7ed69b8dc17aea`; solo la fila n del test.
+`Faltan 1 días` se conserva deliberadamente según requirements R6.
+Diff de producción, cached y diff --check antes del stage: 0/0/0.
+
+### T9 — commits de implementación
+
+| Paso | Hash | Mensaje | Registrador Jest |
+|---|---|---|---|
+| T9.1 | `28ad97120fe9b99dd0a895414af4e0dc4acac94c` | `test(mobile-health): #115 E3.1 next vaccine days at more hours and zones` | 61/61, exit=0 |
+| T9.2 | `236798ff4cd97121077a0a58f357519357033a36` | `test(mobile-health): #115 E3.2 lock next vaccine card on the today branch` | 63/63, exit=0 |
+| T9.3 | `b67ab50287adda6ead730d0384ddded190cbc004` | `test(mobile-health): #115 E3.3 lock the health states title recipe` | 63/63, exit=0 |
+| T9.4 | `d27a475979549c282bbf1693db7ed69b8dc17aea` | `test(mobile-health): #115 E3.4 next vaccine days at the one day boundary` | 64/64, exit=0 |
+
+Cada commit solo lleva `mobile-pet-tracker/src/screens/health/index.test.tsx`.
+Todos nacen verdes; no se commitea ningún rojo ni mutación de producción.
+
+### T9 — tabla de sondas M23, M24 y M29–M44
+
+Todas las mutaciones copian el literal de design §2. Comando, desde mobile:
+`bunx jest --runInBand src/screens/health/index.test.tsx`.
+Las caídas se comparan por nombre exacto y recuento; cada una da Jest
+exit=1 previsto, por aserción. No hay fallos de consulta ni excepciones.
+«orden» y «receta» son los títulos completos de los dos it.each de E3.2;
+«estados» es `sin contenido ($name), agrupa título y rama en health-states sin hero`.
+
+| Sonda | Caídas declaradas | Caídas medidas | Cómo (aserción) | Failed / passed / total | Jest exit |
+|---|---|---|---|---|---|
+| M23 | h, k, l | h, k, l | texto: 1 d, 1 d y 3 d frente a 2 d | 3 / 58 / 61 | 1 |
+| M24 | a–h, k, m, n; orden(días/hoy) y receta(días/hoy) | a–h, k, m, n; orden(días/hoy) y receta(días/hoy) | texto: −1/1/3/364/26418 d y Hoy frente al literal esperado | 15 / 49 / 64 | 1 |
+| M29 | i, j, l | i, j, l | texto: 1 d frente a Hoy; 3 d frente a 2 d | 3 / 58 / 61 | 1 |
+| M30 | i, j, l | i, j, l | texto: 1 d frente a Hoy; 3 d frente a 2 d | 3 / 58 / 61 | 1 |
+| M31 | k | k | texto: 1 d frente a 2 d | 1 / 60 / 61 | 1 |
+| M32 | k | k | texto: 1 d frente a 2 d | 1 / 60 / 61 | 1 |
+| M33 | l | l | texto: 3 d frente a 2 d | 1 / 60 / 61 | 1 |
+| M34 | l | l | texto: 3 d frente a 2 d | 1 / 60 / 61 | 1 |
+| M35 | receta(hoy) | receta(hoy) | toBe className: text-success frente a text-warning-strong | 1 / 62 / 63 | 1 |
+| M36 | receta(hoy) | receta(hoy) | toEqual style: undefined frente a TABULAR_NUMS | 1 / 62 / 63 | 1 |
+| M37 | orden(hoy) | orden(hoy) | toHaveLength de card: 4 frente a 3 | 1 / 62 / 63 | 1 |
+| M38 | receta(hoy) | receta(hoy) | toBe className fecha: text-foreground frente a text-muted | 1 / 62 / 63 | 1 |
+| M39 | estados: pendiente, error, unreachable, missing-config, vacía | estados: pendiente, error, unreachable, missing-config, vacía | toBe className título: text-xl frente a text-2xl | 5 / 58 / 63 | 1 |
+| M40 | m | m | texto: 3 d frente a 2 d | 1 / 60 / 61 | 1 |
+| M41 | orden(días), orden(hoy) | orden(días), orden(hoy) | texto [0]: Rabies frente a Próxima dosis | 2 / 61 / 63 | 1 |
+| M42 | orden(hoy) | orden(hoy) | texto [0]: Próxima dosis 2026-12-31 frente a Próxima dosis | 1 / 62 / 63 | 1 |
+| M43 | n | n | texto: Hoy frente a 1 d | 1 / 63 / 64 | 1 |
+| M44 | n | n | toBe label: undefined frente a Faltan 1 días | 1 / 63 / 64 | 1 |
+
+El resto de los it sigue verde en cada sonda. Logs y nombres completos:
+`/tmp/115-r3-M<número>.log`; registro verificado por sonda en los `.json`
+con el mismo prefijo. Script de ejecución temporal:
+`/tmp/115-r3-probe.py` (ninguno se añade al repo).
+Tras cada una se ejecutó `git checkout HEAD -- src/screens/health/index.tsx`,
+`git diff --quiet -- src/screens/health/index.tsx` y
+`git diff --cached --quiet`: exit=0 en la restauración y 0/0 en los dos
+checks, en las 18 sondas. La salida estándar y --runInBand preservan los
+nombres de los it y sus diagnósticos; no se exportan ReactTestInstance a JSON.
+
+Anclas finales ejecutadas antes del cierre: todas coinciden con la tabla
+anterior (14 filas; 9 it.each; los dos relojes manuales siguen en 2).
+Log de valores en `/tmp/115-r3-anchors-after.json`; todos los grep finales
+exit=0. Base documentada en `/tmp/115-r3-anchors-before.json`.
+
+### T9.5 — cierre de ronda 3
+
+`origin/main` continúa en `37f6362ca563f76ac50b3142b9de2c5dfa7c6ae8`
+después del fetch de cierre (exit=0); ancestry exit=0.
+Lista cerrada R8, comando exacto desde la raíz, sin pipe:
+
+```bash
+git diff --name-only origin/main...HEAD -- . ':!feature_list.json' ':!STATUS.md' ':!progress/current.md' ':!progress/handoff_mobile-health-make-parity.md' ':!progress/review_mobile-health-make-parity.md' ':!specs/mobile-health-make-parity/requirements.md' ':!specs/mobile-health-make-parity/design.md' ':!specs/mobile-health-make-parity/tasks.md' ':!.claude/agents/leader.md'
+```
+
+Salida medida (`/tmp/115-r3-final-scope.log`), exactamente los 10 de design §1.2:
+
+```text
+mobile-pet-tracker/app.assets.test.ts
+mobile-pet-tracker/assets/images/splash-icon.png
+mobile-pet-tracker/scripts/make-icons.mjs
+mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+mobile-pet-tracker/src/__tests__/ui-copy-table.ts
+mobile-pet-tracker/src/__tests__/ui-language.test.ts
+mobile-pet-tracker/src/screens/health/index.test.tsx
+mobile-pet-tracker/src/screens/health/index.tsx
+progress/impl_mobile-health-make-parity.md
+specs/mobile-health-make-parity/traceability.md
+exit=0
+```
+
+`git diff origin/main -- mobile-pet-tracker/package.json mobile-pet-tracker/bun.lock`
+y `git diff --stat origin/main -- backend-pet-tracker/` dan salida vacía,
+exit=0 cada uno. No hay ficheros fuera de la lista.
+
+Comandos de cierre desde mobile, sin pipe, con exit individual:
+
+```bash
+bun run typecheck > /tmp/115-r3-final-typecheck.log 2>&1; echo "exit=$?"
+bun run lint > /tmp/115-r3-final-lint.log 2>&1; echo "exit=$?"
+bunx jest > /tmp/115-r3-final-jest.log 2>&1; echo "exit=$?"
+git diff --quiet 723621d363e56b7ed7a378c83b471f987373b8c1 HEAD -- src/screens/health/index.tsx; echo "exit=$?"
+```
+
+| Comando | Declarado | Medido |
+|---|---|---|
+| bun run typecheck | exit=0 | exit=0 |
+| bun run lint | exit=0 | exit=0 |
+| bunx jest | 94 suites / 2170 tests, exit=0 | 94 suites / 2170 tests / 1 snapshot verdes, exit=0 |
+| diff H3 HEAD de producción de Salud | exit=0 | exit=0 |
+| test ! -e .expo/types/router.d.ts | exit=0 | exit=0 |
+| git diff --quiet -- src/screens/health/index.tsx | exit=0 | exit=0 |
+| git diff --cached --quiet (antes de stage documental) | exit=0 | exit=0 |
+
+Salud: 56 → 61 → 63 → 63 → 64, todos en verde antes de cada commit.
+app.assets: 11/11, medido con `bunx jest app.assets.test.ts`, exit=0;
+log `/tmp/115-r3-final-assets.log`. Jest entero: 2162 + 8 = 2170 sobre
+la base integrada del leader; todas las otras suites pasan. El log de
+Jest completo conserva el aviso de worker que no termina y es forzado al
+cerrar, ya presente en las rondas 1 y 2. No altera el exit ni el recuento.
+
+Los cuatro hashes de implementación se verificaron como ancestros de HEAD
+(exit=0); diff-tree de cada uno da únicamente el test de Salud.
+También se midió `git diff --quiet 92c4e5d6 HEAD -- mobile-pet-tracker/src/screens/health/index.tsx`
+(exit=0): producción no cambia desde el verde de R10 ni desde H3.
+No se registró ninguna caída distinta de design §2 ni un rojo imprevisto.
+
+### T9.6 — trazabilidad y entrega
+
+R2 añade su commit E3.3; R6 añade E3.1, E3.2 y E3.4, con las filas a–n,
+los dos it.each y las sondas actuales. R8 conserva la lista de 10 y añade
+este cierre; R9 sigue como gate humano S1–S11 tras la nueva review.
+El commit `docs(mobile-health-make-parity): trace #115 E3` solo lleva este
+impl y traceability, con el registrador requerido:
+`bunx jest src/screens/health/index.test.tsx > /tmp/115-r3-docs-registrar.log 2>&1 && git commit -m 'docs(mobile-health-make-parity): trace #115 E3'`.
+
+No se ejecutó init.sh, push, rebase, merge, amend ni reset. No se usó
+imagegen. Los scripts y logs de sondas están en /tmp; no hay temporales en
+el repo. La feature sigue in_progress; revisión, init.sh y smoke humano
+los coordina el leader. Solo se modifican los tres ficheros autorizados
+y producción se restaura tras cada sonda.

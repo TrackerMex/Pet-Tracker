@@ -10,21 +10,33 @@ tags: [harness, spec, mobile, ui]
 | R | Requisito | Test (fichero › describe › it) | Commit rojo | Commit verde | Estado |
 |---|---|---|---|---|---|
 | R1 | Copy: 0 claves nuevas, 3 claves de Home reusadas | `src/__tests__/ui-language.test.ts` › `#65 R5: Health resuelve su copy por clave` › `resuelve las 32 ocurrencias normativas` y `#65 R18: los sitios resuelven por clave y no queda copy suelta` › `resuelve cada ocurrencia de la tabla contra la clave exacta`; literales en las filas de R6 | `a88ce6c8` — `test(mobile-health): #115 R6 red, next vaccine date and countdown` | `08d106e2` — `feat(mobile-health): #115 R6 show next dose date and days left` | verificado |
-| R2 | Hero a sangre con el patrón A9 | `src/screens/health/index.test.tsx` › `#115 R2: Salud abre con el hero a sangre (A9)` (3 `it` + `it.each` de 5: 8 casos) + 2 `it` adaptados de `R4: health resuelve la mascota seleccionada`; E1.1 liga el padre común a `screen-health` en `con mascotas, pet-hero y health-content son los únicos hijos del scroll, en ese orden` | `78a2a0cd` — `test(mobile-health): #115 R2 R3 red, bleed hero and A9 wrappers` | `3cbdc49b` — `feat(mobile-health): #115 R2 R3 bleed pet hero with A9 layout`; E1.1: `6c8baf9a` — `test(mobile-health): #115 E1.1 lock hero and content under the scroll` | verificado tras E1.1; M25 por aserción |
+| R2 | Hero a sangre con el patrón A9 | `src/screens/health/index.test.tsx` › `#115 R2: Salud abre con el hero a sangre (A9)` (3 `it` + `it.each` de 5: 8 casos) + 2 `it` adaptados de `R4: health resuelve la mascota seleccionada`; E1.1 liga el padre común a `screen-health` en `con mascotas, pet-hero y health-content son los únicos hijos del scroll, en ese orden`; E3.3 fija el className del título en las 5 filas `sin contenido ($name)` | `78a2a0cd` — `test(mobile-health): #115 R2 R3 red, bleed hero and A9 wrappers` | `3cbdc49b` — `feat(mobile-health): #115 R2 R3 bleed pet hero with A9 layout`; E1.1: `6c8baf9a` — `test(mobile-health): #115 E1.1 lock hero and content under the scroll`; E3.3: `b67ab502` — `test(mobile-health): #115 E3.3 lock the health states title recipe` | verificado tras E3.3; M25 (ronda 2) y M39 por aserción |
 | R3 | El hero muestra la mascota seleccionada | `src/screens/health/index.test.tsx` › `#115 R3: el hero muestra la mascota seleccionada de la lista` (3 `it`) | `78a2a0cd` — `test(mobile-health): #115 R2 R3 red, bleed hero and A9 wrappers` | `3cbdc49b` — `feat(mobile-health): #115 R2 R3 bleed pet hero with A9 layout` | verificado |
 | R4 | Historial de peso con la clave de weight-log | `src/screens/health/index.test.tsx` › 2 `it` adaptados de `R4: health resuelve la mascota seleccionada` + `#87 R13: HealthScreen lee por TanStack Query` › `deja mascotas, vacunas y el historial de peso en sus claves canónicas` | `4763b520` — `test(mobile-health): #115 R4 red, weights without limit` | `4157d681` — `feat(mobile-health): #115 R4 share the weight-log query` | verificado |
 | R5 | WeightChart en la weight card | `src/screens/health/index.test.tsx` › `#115 R5: la weight card dibuja la evolución con WeightChart` (4 `it` + `it.each` de 2: 6 casos) | `7e7f4a90` — `test(mobile-health): #115 R5 red, weight chart in the card` | `1ae2b78f` — `fix(mobile-health): #115 R5 green, assert the chart slot itself` | verificado tras CORRECCIÓN 1 |
-| R6 | Fecha y días de la próxima vacuna | `src/screens/health/index.test.tsx` › `#115 R6: la próxima vacuna dice fecha y días restantes` (`it.each` a..h + 2 `it`) + `R5: vacunas con la próxima destacada` › `highlights the nearest future dose and keeps row order`; E1.2 usa hora/minuto y TZ por fila, con restauración en finally | `a88ce6c8` — `test(mobile-health): #115 R6 red, next vaccine date and countdown` | `08d106e2` — `feat(mobile-health): #115 R6 show next dose date and days left`; E1.2: `6ac7346d` — `test(mobile-health): #115 E1.2 time zone row for next vaccine days` | verificado tras E1.2; M23 solo h y M24 a–h por aserción |
+| R6 | Fecha y días de la próxima vacuna | `src/screens/health/index.test.tsx` › `#115 R6: la próxima vacuna dice fecha y días restantes` (`it.each` a..n + 2 `it.each` de 2 ramas cada uno) + `R5: vacunas con la próxima destacada` › `highlights the nearest future dose and keeps row order`; E1.2 usa hora/minuto y TZ por fila, con restauración en finally; E3.1 añade horas y zonas (i–m), E3.2 estructura/receta en días y Hoy y textos [0]/[1] de la columna, E3.4 frontera de 1 día (n) | `a88ce6c8` — `test(mobile-health): #115 R6 red, next vaccine date and countdown` | `08d106e2` — `feat(mobile-health): #115 R6 show next dose date and days left`; E1.2: `6ac7346d` — `test(mobile-health): #115 E1.2 time zone row for next vaccine days`; E3.1: `28ad9712` — `test(mobile-health): #115 E3.1 next vaccine days at more hours and zones`; E3.2: `236798ff` — `test(mobile-health): #115 E3.2 lock next vaccine card on the today branch`; E3.4: `d27a4759` — `test(mobile-health): #115 E3.4 next vaccine days at the one day boundary` | verificado tras E3; M23, M24, M29–M38 y M40–M44 por aserción |
 | R7 | Candados globales: deltas y anclas negativas | `src/__tests__/consistency-classnames.test.ts` › `#62 R15: todo contador usa cifras tabulares` › `screens/health/index.tsx aplica TABULAR_NUMS a sus 3 valores` y `#69 R10: mantiene la base cerrada más los deltas medidos`; `src/__tests__/ui-language.test.ts` › `#65 R5: Health resuelve su copy por clave` › `resuelve las 32 ocurrencias normativas`; comandos R7 de abajo | `a88ce6c8` — `test(mobile-health): #115 R6 red, next vaccine date and countdown` | `08d106e2` — `feat(mobile-health): #115 R6 show next dose date and days left` | verificado; #69 R10 nace verde |
-| R8 | Alcance cerrado | comandos R8 de abajo: lista exacta de 10, diff, grep-clean, typecheck, lint y Jest entero; sin test nuevo | — (verificación de alcance) | `08d106e2` — `feat(mobile-health): #115 R6 show next dose date and days left`; E2: `92c4e5d6` — `feat(mobile-assets): #115 R10 transparent splash with the mascot alone`; evidencia T8.9 en el impl | verificado en ronda 2 |
+| R8 | Alcance cerrado | comandos R8 de abajo: lista exacta de 10, diff, grep-clean, typecheck, lint y Jest entero; sin test nuevo | — (verificación de alcance) | `08d106e2` — `feat(mobile-health): #115 R6 show next dose date and days left`; E2: `92c4e5d6` — `feat(mobile-assets): #115 R10 transparent splash with the mascot alone`; evidencia T8.9 y T9.5 en el impl | verificado en ronda 3 |
 | R9 | Smoke humano en dev build de Android | gate humano (S1..S11; S10–S11 por la Enmienda E2) | — | — | gate humano |
 | R10 | Splash y bienvenida: la mascota sola sobre transparente (Enmienda E2) | `app.assets.test.ts` › `#115 R10: el splash es la mascota sola sobre transparente` › `no hay alfa fuera de la zona segura [174, 850)`, `las cuatro esquinas del antiguo cuadrado son transparentes`, `la punta del pin es transparente`, `la cara de la mascota es opaca` | `45198dd4` — `test(mobile-assets): #115 R10 red, splash without square or pin` | `92c4e5d6` — `feat(mobile-assets): #115 R10 transparent splash with the mascot alone` | verificado; PNG firmado; M26–M28 por aserción |
 
-E1.1 y E1.2 nacen verdes: producción ya cumple los requisitos. M25 mata la
-aserción nueva de R2; M23 mata solo h y M24 mata a–h de R6. Salud pasa de
-55 a 56 casos. H2 = `07851dc4ba27c211aafbb4ed14428a2668460268`; el diff de
+En la ronda 2, E1.1 y E1.2 nacieron verdes: producción ya cumplía los
+requisitos. M25 mató la aserción nueva de R2; M23 mató solo h y M24 a–h
+con aquella tabla de R6. Salud pasó de 55 a 56 casos. H2 = `07851dc4ba27c211aafbb4ed14428a2668460268`; el diff de
 producción de Salud entre H2 y el cierre es vacío. El informe conserva
 cada sonda, su caída por aserción y su restauración.
+
+E3 también nace verde: `28ad9712` (i–m, 61 casos), `236798ff`
+(dos ramas de estructura/receta, 63), `b67ab502` (título de estados, 63)
+y `d27a4759` (n, 64). Cada commit solo cambia el test de Salud y encadena
+`bunx jest src/screens/health/index.test.tsx && git commit` con exit=0.
+Las 18 sondas de T9 coinciden exactamente con design §2 por aserción;
+M24 tumba a–h, k, m, n y las cuatro filas de E3.2 (15 failed / 49 passed),
+mientras i, j y l siguen verdes. M39 tumba las cinco filas de estados.
+H3 = `723621d363e56b7ed7a378c83b471f987373b8c1`; producción de Salud
+intacta frente a H3. Tabla completa, anclas antes/después y restauraciones
+en el informe §Ronda 3. El literal `Faltan 1 días` de n sigue la decisión
+explícita de requirements R6; no cambia el catálogo.
 
 R5 conserva `b6c08b2a` — `feat(mobile-health): #115 R5 render WeightChart history`
 como **impl, no verde: aserción de test corregida en `1ae2b78f`**. El hijo
@@ -68,7 +80,7 @@ de H0 y las 48 de cierre, con comandos y salidas, constan en el
 ## Verificación R8
 
 Desde la raíz, los dos primeros comandos dieron salida vacía y exit=0.
-La base de la ronda 2 sigue en `origin/main` `e002a4a5`; la CORRECCIÓN 2
+En la ronda 2 la base era `origin/main` `e002a4a5`; la CORRECCIÓN 2
 integró #117 con `a3548767`, y E2 amplía la lista cerrada a 10:
 
 ```bash
@@ -123,6 +135,27 @@ otras siete suites de control mantienen sus recuentos: ui-language 30,
 pet-hero-header 37, design-drift 60, weight-chart 4, consistency 55,
 language-provider 24 y legibility 27. No se borró ningún `it`.
 
+Cierre de la ronda 3 sobre `origin/main` `37f6362c`, integrado por el
+leader antes de H3: la misma lista exacta de 10, exit=0; dependencias y
+backend sin diff. `git fetch origin` de cierre dio exit=0 y no avanzó main;
+`git merge-base --is-ancestor origin/main HEAD` dio exit=0.
+
+```bash
+bun run typecheck > /tmp/115-r3-final-typecheck.log 2>&1; echo "exit=$?"
+bun run lint > /tmp/115-r3-final-lint.log 2>&1; echo "exit=$?"
+bunx jest > /tmp/115-r3-final-jest.log 2>&1; echo "exit=$?"
+git diff --quiet 723621d363e56b7ed7a378c83b471f987373b8c1 HEAD -- src/screens/health/index.tsx; echo "exit=$?"
+```
+
+Los cuatro exits son 0. Jest: **94 suites, 2170 tests y 1 snapshot verdes**;
+2162 + 8 desde el merge de #149. Salud 56 → 64; app.assets conserva 11
+(medidos también con `bunx jest app.assets.test.ts`, exit=0).
+Producción de Salud intacta frente a H3 y a `92c4e5d6`, sin mutaciones
+commiteadas. Anclas de T9 medidas antes y después, todas coinciden.
+Router.d.ts sigue ausente. El aviso de worker forzado al salir ya existía
+en rondas anteriores y se conserva en el log completo; no altera el exit
+ni los recuentos.
+
 ## Verificación R10
 
 Rojo de `45198dd4`: exactamente dos fallos por aserción, esquinas
@@ -157,6 +190,6 @@ se conserva el SHA256 firmado. Anclas de R10 (declarado / medido):
 | diff assets/ origin/main...HEAD | vacío / vacío | solo splash-icon.png / solo mobile-pet-tracker/assets/images/splash-icon.png |
 
 R9 y sus casillas S1–S11 quedan al humano en el dev build de Android,
-tras la review de ronda 2. S10 exige prebuild y reinstalar el dev build;
+tras la review de ronda 3. S10 exige prebuild y reinstalar el dev build;
 S11 comprueba bienvenida en ambos temas y splash-logo. No se hizo push ni
 se abrió PR por instrucción del handoff; no se marca la feature done.
