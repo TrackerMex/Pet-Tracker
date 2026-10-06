@@ -91,6 +91,16 @@
   UTC con hoy a medianoche local (solo la mata una zona al este de UTC,
   fila l). Siguiente: barrido del `reviewer` antes del gate (lección
   `clausulas-universales-candadas-en-un-caso`), espejo en Notion y firma.
+- Barrido del `reviewer` antes de la firma (sección nueva en
+  `progress/review_mobile-health-make-parity.md`): la primera versión de E3
+  (`d42596a5`) dejaba vivos V1 (`Math.ceil` entre medianoches locales), V2
+  y V3 (textos `[0]` y `[1]` de la columna sin candado) y V4 (frontera de
+  `days > 0`), y M24 declaraba menos filas de las que tumba. E3 revisada:
+  fila m (día de 25 h en Nueva York), fila n como E3.4, textos de la
+  columna en `ordena… ($branch)`, sondas M40–M44. Decisión del leader en
+  V4: la fila n canda el literal actual `Faltan 1 días` (plural roto,
+  Fuera de alcance); se avisa al humano en el gate. Recuentos: Salud 64,
+  Jest 94/2170.
 
 ## Ampliación solicitada: icono de inicio sin fondo — 2026-10-06
 

@@ -708,3 +708,227 @@ edición del leader en `progress/current.md`. Las 15 ejecuciones de sonda (M23�
 M25 con workers y M25 en banda) se restauraron con diff y cached en 0/0.
 
 Veredicto ronda 2: **RECHAZADO**
+
+## Barrido previo a la firma de la Enmienda E3 (2026-10-06)
+
+Esto no es una ronda: es un barrido de la Enmienda E3 antes de la firma
+humana. No hay veredicto APROBADO/RECHAZADO; la conclusión va al final.
+
+- HEAD: `d42596a5` (`feature/115-mobile-health-make-parity`). Codex parado.
+- `test ! -e mobile-pet-tracker/.expo/types/router.d.ts` → 0, antes de la
+  primera ejecución de jest y al final.
+- No se corrió `./init.sh` ni jest entero. Todo jest con `--runInBand`, en
+  primer plano y con el exit medido sin pipe.
+- Script de sondas y logs: scratchpad del leader, `e3sweep/probe.py` y
+  `e3sweep/*.txt` / `*.json`.
+
+### Spike de E3 tal como la prescribe la spec
+
+Copia sin seguimiento de `src/screens/health/index.test.tsx` en
+`src/screens/health/index.e3spike.test.tsx`, con:
+
+- E3.1: las filas i, j, k y l de requirements R6, literales copiados de la
+  tabla.
+- E3.2: los dos `it` pasan a `it.each` sobre `{ branch: 'días', next: '2099-05-01', text: '26419 d' }`
+  y `{ branch: 'hoy', next: '2026-12-31', text: 'Hoy' }`, con una vacuna. Primero
+  `waitFor(… toHaveTextContent(text, { exact: true }))` y luego las
+  aserciones de siempre. El cuerpo de `ordena…` se conservó entero, también
+  `column.props.className === 'flex-1 gap-1'`.
+- E3.3: `expect(within(states).getByText('Salud').props.className).toBe('text-2xl font-black text-foreground')`
+  en el `it.each` `sin contenido ($name)`.
+
+Producción sin mutar: **62/62 en verde, exit 0** (7,7 s).
+
+**Literales de la spec: ninguno está mal.** Todos pasan con `exact: true`
+sobre la producción:
+- `26419 d` y `Hoy`;
+- filas i–l: `Hoy`, `2 d`, `Faltan 2 días`, `31 dic 2026`, `2 ene 2027`,
+  `15 mar 2027` y `3 ene 2027`;
+- `America/New_York` 23:30 y `Pacific/Auckland` 10:00;
+- el `className` de E3.3.
+
+Las cuentas de la explicación «Filas h–l» (0,92; −0,25 y 1,75; 19,5 h y
+23,5 h; 2,54 días) cuadran con lo observado.
+
+### Sondas de design §2 (spike de E3, `--runInBand`)
+
+| # | Declarado en design §2 | Observado | Cómo | ¿Cuadra? |
+|---|---|---|---|---|
+| M23 | filas h, k y l | h, k, l (59/62) | aserción | sí |
+| M24 | filas a–h y k | a–h, k **y las 4 filas de E3.2**: `ordena… (días)`, `ordena… (hoy)`, `receta… (días)`, `receta… (hoy)` (49/62) | aserción | **no**, ver D4 |
+| M29 | filas i, j y l | i, j, l (59/62) | aserción | sí |
+| M30 | filas i, j y l | i, j, l (59/62) | aserción | sí |
+| M31 | fila k | k (61/62) | aserción | sí |
+| M32 | fila k | k (61/62) | aserción | sí |
+| M33 | fila l | l (61/62) | aserción | sí |
+| M34 | fila l | l (61/62) | aserción | sí |
+| M35 | receta (hoy) | `receta… (hoy)` (61/62) | aserción | sí |
+| M36 | receta (hoy) | `receta… (hoy)` (61/62) | aserción | sí |
+| M37 | orden (hoy) | `ordena… (hoy)` (61/62) | aserción | sí |
+| M38 | receta (hoy) | `receta… (hoy)` (61/62) | aserción | sí |
+| M39 | las 5 filas de `sin contenido` | las 5 (57/62) | aserción | sí |
+
+Restauración tras cada sonda:
+- `git checkout HEAD -- src/screens/health/index.tsx`.
+- Después, `git diff --quiet -- mobile-pet-tracker` y
+  `git diff --cached --quiet`: 0/0 en las 13 sondas y en todas las del
+  barrido.
+- El `git diff` va acotado a `mobile-pet-tracker` porque este informe está
+  modificado en el árbol.
+
+### Barrido exhaustivo (spike de E3 sin cambios)
+
+Muertas (ningún hueco):
+
+| # | Mutación sobre `days` o el árbol | Caen |
+|---|---|---|
+| S2 | `Math.floor` entre medianoches locales (`new Date(next + 'T00:00')` − `setHours(0, 0, 0, 0)`) | k |
+| S4 | hoy UTC: `Date.parse(new Date().toISOString().slice(0, 10))` | h, k, l |
+| S5 | hoy con `getUTCFullYear/Month/Date` | h, k, l |
+| S6 | día local de `new Date(nextDoseAt)` (UTC) en `calendarDaysUntil` | h, k |
+| S7 | `calendarDaysUntil(next, new Date(today))` | h, k |
+| S8, S9 | `Math.round` / `Math.floor` de medianoche local de la dosis − `Date.parse(today)` | l |
+| S10 | `Math.round` de ms hasta la medianoche local | a–h, k y las 4 de E3.2 |
+| S11 | `Math.floor` ms UTC `+ 1` | h, k, l |
+| S12 | `Math.round` hasta el mediodía local de la dosis | k |
+| S13, S14 | `Math.ceil` / `Math.floor(…) + 1` de dosis UTC − mediodía local de hoy | l |
+| S15 | `Math.trunc` ms UTC `+ 1` | a, c, g, h, i, k, l y las 2 `(hoy)` |
+| S16 | `Math.floor` de M33 | h, k |
+| S17 | `Math.ceil` de medianoche local − fin del día local | k |
+| S20 | solo `getDate()` | b, d, e, f, h, j y las 2 `(días)` |
+| S24 | `className` de la columna distinto solo con `days === 0` | `ordena… (hoy)` |
+| S26, S27 | `accessibilityLabel` `''` o el ISO con `days === 0` | a, c, g, i |
+| S29 | título de `health-states` en `text-xl` solo en las ramas de error | error, unreachable, missing-config |
+| S30 | el ISO en `next-vaccine-date` solo con `days === 0` | a, c, g, i |
+| S32 | `today` en UTC (`toISOString().slice(0, 10)`) en el filtro | l |
+| S33 | `Math.round` ms locales `+ 0.5` | k |
+| S34 | `new Date(next).setHours(0, 0, 0, 0)` − `setHours` de hoy, `Math.round` | h, k |
+
+Todas caen por aserción.
+
+Sobreviven y **cuentan** (piden cambio):
+
+**V1. `Math.ceil` entre medianoches locales.** Sobrevive 62/62. Se probó en
+dos formas:
+- S1: `Math.ceil((new Date(nextVaccine.nextDoseAt! + 'T00:00').getTime() - new Date().setHours(0, 0, 0, 0)) / 86400000)`
+- S35: la misma cuenta con `new Date(y, m - 1, d)` y `new Date(new Date().toDateString())`
+
+Es la fórmula «días hasta» más común. Falla en el día de 25 horas del fin
+del horario de verano: 49 h / 24 = 2,04 → `3 d` cuando faltan dos días.
+- La fila k es el cambio de primavera (23 h) y mata solo la familia
+  `floor`.
+- Ninguna fila cruza un cambio de otoño, así que la familia `ceil` entre
+  medianoches no tiene candado.
+- Fila que la mata (medida: verde sobre la producción, 63/63; S1 y S35 caen
+  solo en ella, por aserción):
+
+| Fila | Idioma | TZ | Ahora (local) | Vacunas | Texto | `accessibilityLabel` | Fecha | Cruza |
+|---|---|---|---|---|---|---|---|---|
+| m | es | `America/New_York` | 2027-11-06 12:00 | Parvo `2027-11-05`, Rabies `2027-11-08` | `2 d` | `Faltan 2 días` | `8 nov 2027` | un día de 25 horas: el 2027-11-07 atrasa la hora |
+
+**V2. `health.nextDue` y el nombre, intercambiados en la columna.** Sobrevive
+62/62.
+- S21 lo intercambia en las dos ramas; S22, solo con `days === 0`.
+- R6 lo enuncia (`[0] health.nextDue, [1] el nombre`), pero la tabla de
+  `ordena… ($branch)` solo mira `[2]`.
+- El orden ya estaba en la base (`8afae724:…/health/index.tsx:152-155`),
+  como B6, pero es texto EARS de R6.
+- Arreglo medido (mata S21 en `(días)` y `(hoy)`, y S22 en `(hoy)`): en
+  `ordena… ($branch)`, añadir
+  `expect(elementChild(column, 0)).toHaveTextContent('Próxima dosis', { exact: true });`
+  y `expect(elementChild(column, 1)).toHaveTextContent('Rabies', { exact: true });`.
+
+**V3. El ISO pegado al texto de `health.nextDue`, solo en `Hoy`.** Sobrevive
+62/62.
+- S23: `{days === 0 ? `${t('health.nextDue')} ${nextVaccine.nextDoseAt}` : t('health.nextDue')}`.
+- Rompe «nunca la fecha ISO». `card.queryByText(next)` es exacto y no ve
+  el ISO dentro de otro texto.
+- El `getByText('Próxima dosis')` del `it` adaptado de R5 solo cubre
+  `days > 0`.
+- El arreglo de V2 la mata (`ordena… (hoy)`, medido). Alternativa:
+  `card.queryByText(next, { exact: false })` en la tabla.
+
+**V4. Frontera `days = 1`.** Sobreviven 62/62 y también 63/63 con la fila m:
+- S36: `{days <= 1 ? t('home.nextVaccineToday') : …}`
+- S37: `accessibilityLabel={days > 1 ? … : undefined}`
+- S38: 1 → 2
+
+La cláusula «WHEN `days > 0`» solo se muestrea con 2, 4, 365 y 26419. La
+spec decide «No hay fila de 1 día» por el plural, y así deja viva la
+frontera.
+
+Fila que las mata (medida: verde sobre la producción, 64/64; S36, S37 y S38
+caen solo en ella, por aserción):
+
+| Fila | Idioma | TZ | Ahora (local) | Vacunas | Texto | `accessibilityLabel` | Fecha | Cruza |
+|---|---|---|---|---|---|---|---|---|
+| n | es | `UTC` | 2026-12-31 12:00 | Parvo `2026-12-30`, Rabies `2027-01-01` | `1 d` | `Faltan 1 días` | `1 ene 2027` | mes y año; frontera de `days > 0` |
+
+`Faltan 1 días` es lo que la producción pinta hoy: la observación del plural
+de Fuera de alcance. Hay dos salidas:
+- candar el literal y cambiarlo cuando se arregle el plural;
+- mantener la decisión y aceptar V4 por escrito en la spec.
+
+Decide el leader. Hoy la spec no lo dice.
+
+Sobreviven y **no cuentan**:
+- S3: `Math.round` entre medianoches locales. Es equivalente: el horario de
+  verano mueve como mucho 1 h, muy por debajo de las 12 h.
+- S18 (`Math.ceil(x + 0.1)`) y S19 (`Math.round(x + 0.6)`), con x = ms hasta
+  la medianoche local. Son constantes arbitrarias.
+  - Con la tabla a–l siguen vivos estos intervalos de c: `ceil(x + c)` con
+    c ∈ (0,021, 0,25], `round(x + c)` con c ∈ [0,521, 0,75) y
+    `floor(x + c)` con c ∈ [1,021, 1,25).
+  - Sobre ms UTC (`Date.parse`), las filas i, j, k y l no dejan ninguna c
+    viva (analítico).
+  - La spec ya lo admite («ninguna tabla finita…») y mantiene el ancla
+    `calendarDaysUntil(` = 1.
+- S25 (`className` del tile del icono solo en `Hoy`) y S31 (color de
+  `Syringe` solo en `Hoy`). R6 no fija ni la receta del tile ni el color
+  del icono.
+- S28 (título de `health-states` después de la rama). El WHILE de R2 no fija
+  el orden.
+
+### Más observaciones de la spec
+
+- **D4. M24 en design §2.**
+  - Tras E3.2, M24 tumba también las 4 filas de E3.2: `26418 d` en `(días)`
+    y `-1 d` en `(hoy)`. Caen 13 `it`, no 9.
+  - En T9.1 lo declarado es exacto, porque los `it` viejos no esperan el
+    texto. En el estado final, no.
+  - Hay que añadir «y, desde E3.2, las cuatro filas de `ordena…` y
+    `receta…`». Con la fila m, M24 tumba también m (medido: 49/63).
+- La fila `ordena… ($branch)` de la tabla de tests de R6 no nombra
+  `column.props.className === 'flex-1 gap-1'`.
+  - El test actual sí lo asevera, y S24 muere solo porque el spike lo
+    conservó.
+  - Conviene ponerlo en «Asevera», para que la conversión a `it.each` no lo
+    pierda.
+- Recuentos, si entran m y n:
+  - Salud: 60 tras E3.1 pasa a 62, y 62 tras E3.2 pasa a 64.
+  - Jest entero: 2168 pasa a 2170.
+  - Hay que tocar Consecuencias de E3 y T9.1/T9.2.
+  - No se midió jest entero (fuera del encargo).
+- `design-drift` recorre también los tests colocados. Se corrió con los tres
+  spikes presentes: 61/61, exit 0. Los literales nuevos de E3 no lo
+  disparan.
+
+### Árbol al terminar
+
+- Los spikes (`index.e3spike*.test.tsx`) se borraron.
+- `git diff --quiet -- mobile-pet-tracker` 0 y `git diff --cached --quiet` 0.
+- `git status --short` muestra solo ` M progress/review_mobile-health-make-parity.md`,
+  que es este informe y no se commitea.
+- El `?? progress/explore_ui-delight-appllama.md` que había al empezar
+  desapareció de este worktree durante el barrido. Ahora está en
+  `/home/claude/sites/Pet-Tracker-wt-152/progress/`: el mtime de `progress/`
+  es 18:47 y el worktree `feature/152` es de otra sesión. El reviewer no lo
+  tocó.
+
+**Conclusión: E3 necesita cambios:**
+- fila m (fin del horario de verano en Nueva York) contra `Math.ceil` entre
+  medianoches locales;
+- aserción de los textos `[0]` y `[1]` de la columna en
+  `ordena… ($branch)`;
+- decisión explícita sobre la fila de 1 día (V4);
+- M24 de design §2 con las 4 filas de E3.2.

@@ -262,8 +262,10 @@ e. Para las filas en inglés, `renderHealth` acepta un idioma opcional
 | j | es | `UTC` | 2026-12-31 06:00 | Parvo `2026-12-30`, Rabies `2027-01-02` | `2 d` | `Faltan 2 días` | `2 ene 2027` | mes y año (Enmienda E3.1: fracción de día 0,25) |
 | k | es | `America/New_York` | 2027-03-13 23:30 | Parvo `2027-03-12`, Rabies `2027-03-15` | `2 d` | `Faltan 2 días` | `15 mar 2027` | un día de 23 horas: el 2027-03-14 adelanta la hora a las 02:00 (Enmienda E3.1) |
 | l | es | `Pacific/Auckland` | 2027-01-01 10:00 | Parvo `2026-12-31`, Rabies `2027-01-03` | `2 d` | `Faltan 2 días` | `3 ene 2027` | año, al este de UTC (UTC+13 en verano): el día UTC sigue en 2026-12-31 (Enmienda E3.1) |
+| m | es | `America/New_York` | 2027-11-06 12:00 | Parvo `2027-11-05`, Rabies `2027-11-08` | `2 d` | `Faltan 2 días` | `8 nov 2027` | un día de 25 horas: el 2027-11-07 atrasa la hora a las 02:00 (Enmienda E3.1) |
+| n | es | `UTC` | 2026-12-31 12:00 | Parvo `2026-12-30`, Rabies `2027-01-01` | `1 d` | `Faltan 1 días` | `1 ene 2027` | mes y año; frontera de `days > 0` (Enmienda E3.4) |
 
-Filas h–l (**Enmiendas E1.2 y E3.1**): una cuenta en milisegundos hasta la
+Filas h–n (**Enmiendas E1.2, E3.1 y E3.4**): una cuenta en milisegundos hasta la
 medianoche de `nextDoseAt` solo coincide con los días de calendario según
 la fracción del día en que cae «Ahora» y según la zona. Las filas a–g están
 todas a las 12:00 en `UTC`: cualquier fórmula que lleve −0,5 a 0 y 1,5 a 2
@@ -283,19 +285,28 @@ R6-a). Cada fila nueva muestrea una zona ciega distinta:
   UTC están al oeste. Restar `Date.parse(nextDoseAt)` a la medianoche
   local de hoy (`setHours(0, 0, 0, 0)`) da 2,54 días: `Math.round` y
   `Math.ceil` dan 3.
+- m: en Nueva York el 2027-11-07 dura 25 horas. Entre la medianoche local
+  de hoy y la del 8 hay 49 horas: `Math.ceil` de la resta de las dos
+  medianoches locales da 3. Es la cuenta «días hasta» más común, y la
+  fila k (23 horas) no la ve.
+- n: la frontera de `days > 0`. Con 2, 4, 365 y 26419 días, `days <= 1`
+  para `Hoy` o `days > 1` para el `accessibilityLabel` siguen verdes.
 
 `calendarDaysUntil` da el valor de la tabla en todas. Ninguna tabla finita
 prueba una cuenta para todas las horas: estas filas matan las familias que
-lista `design.md` §2 (M23, M24 y M29–M34), y el ancla
+lista `design.md` §2 (M23, M24, M29–M34, M40, M43 y M44), y el ancla
 `grep -c 'calendarDaysUntil(' src/screens/health/index.tsx` = 1 sigue.
 
-No hay fila de 1 día: el plural de `home.nextVaccineDaysLeft` diría "Faltan 1
-días" (observación en Fuera de alcance).
+Fila n (**Enmienda E3.4**): `Faltan 1 días` es lo que pinta hoy la
+producción, con el plural roto de `home.nextVaccineDaysLeft` (observación
+en Fuera de alcance). La fila canda ese literal a propósito: quien arregle
+el plural cambia esta fila a la vez que Home. Antes de E3 la spec omitía la
+fila de 1 día por el plural, y eso dejaba viva la frontera de `days > 0`.
 
 | Test (describe › it) | Fixture | Asevera |
 |---|---|---|
 | `#115 R6: la próxima vacuna dice fecha y días restantes › fila $row: hoy $now, próxima $next` (`it.each` de la tabla; título sin la TZ) | la fila, en su `TZ` y a su hora | espera `next-vaccine-days` con su texto; `props.accessibilityLabel` es el de la fila; `next-vaccine-date` tiene la fecha; `within(next-vaccine-card)` tiene `Rabies` y no tiene el ISO de la próxima |
-| `… › ordena la card en icono, columna y días, con la fecha en la columna ($branch)` (`it.each`, **Enmienda E3.2**) | ahora local `new Date(2026, 12 - 1, 31, 12, 0)` sin cambiar la TZ; dos filas: `{ branch: 'días', next: '2099-05-01', text: '26419 d' }` y `{ branch: 'hoy', next: '2026-12-31', text: 'Hoy' }`; una sola vacuna `makeVaccine({ nextDoseAt: next })` | primero espera `next-vaccine-days` con `toHaveTextContent(text, { exact: true })` (fija la rama); después `next-vaccine-card` tiene 3 hijos; `[2]` es `next-vaccine-days`; `[1]` tiene 3 hijos y su `[2]` es `next-vaccine-date`; `[0]` contiene `health-icon-syringe` (el testID del mock del icono `Syringe`) |
+| `… › ordena la card en icono, columna y días, con la fecha en la columna ($branch)` (`it.each`, **Enmienda E3.2**) | ahora local `new Date(2026, 12 - 1, 31, 12, 0)` sin cambiar la TZ; dos filas: `{ branch: 'días', next: '2099-05-01', text: '26419 d' }` y `{ branch: 'hoy', next: '2026-12-31', text: 'Hoy' }`; una sola vacuna `makeVaccine({ nextDoseAt: next })` | primero espera `next-vaccine-days` con `toHaveTextContent(text, { exact: true })` (fija la rama); después `next-vaccine-card` tiene 3 hijos; `[2]` es `next-vaccine-days`; `[1]` tiene `props.className === 'flex-1 gap-1'` y 3 hijos: `[0]` con `toHaveTextContent('Próxima dosis', { exact: true })` y `[1]` con `toHaveTextContent('Rabies', { exact: true })` (**Enmienda E3.2**), y `[2]` es `next-vaccine-date`; `[0]` de la card contiene `health-icon-syringe` (el testID del mock del icono `Syringe`) |
 | `… › pinta los días con la receta exacta ($branch)` (`it.each`, **Enmienda E3.2**) | las mismas dos filas | la misma espera de `text`; después `next-vaccine-days.props.className === 'text-lg font-black text-warning-strong'`; `props.style` `toEqual({ fontVariant: ['tabular-nums'] })`; `next-vaccine-date.props.className === 'font-normal text-muted'` |
 | `R5: vacunas con la próxima destacada › highlights the nearest future dose and keeps row order` (adaptado) | existente | `nextCard.getByText('2099-05-01')` pasa a `nextCard.getByText('1 may 2099')`, más `nextCard.queryByText('2099-05-01')` `toBeNull()` |
 
@@ -516,24 +527,29 @@ quedaron bien candados.
 
 | Id | Requisito | Hueco | Mutaciones que quedaban verdes (`design.md` §2) | Arreglo |
 |---|---|---|---|---|
-| E3.1 | R6 | filas a–g a las 12:00 en `UTC` y una sola fila fuera de UTC, al oeste | M29 (B1), M30 (B2), M31, M32, M33 y M34; la explicación de la fila h decía en falso que «cualquier cuenta en milisegundos da 1» | filas i, j, k y l |
-| E3.2 | R6 | los dos `it` de estructura y receta usaban solo `nextDoseAt: '2099-05-01'` (rama `days > 0`) | M35 (B4), M36 (B5), M37 (B7) y M38 (B8), todas solo con `days === 0` | los dos `it` pasan a `it.each` sobre la rama de días y la de `Hoy` |
+| E3.1 | R6 | filas a–g a las 12:00 en `UTC` y una sola fila fuera de UTC, al oeste y sin cambio de hora | M29 (B1), M30 (B2), M31, M32, M33, M34 y, del barrido previo a la firma, M40 (`Math.ceil` entre medianoches locales); la explicación de la fila h decía en falso que «cualquier cuenta en milisegundos da 1» | filas i, j, k, l y m |
+| E3.2 | R6 | los dos `it` de estructura y receta usaban solo `nextDoseAt: '2099-05-01'` (rama `days > 0`), y de la columna solo miraban `[2]` | M35 (B4), M36 (B5), M37 (B7) y M38 (B8), todas solo con `days === 0`; del barrido, M41 (`health.nextDue` y el nombre intercambiados) y M42 (el ISO pegado a `health.nextDue` con `days === 0`) | los dos `it` pasan a `it.each` sobre la rama de días y la de `Hoy`, y `ordena…` asevera los textos `[0]` y `[1]` de la columna |
 | E3.3 | R2 | el `className` del título de `health-states` no tenía candado (observación B6; ya era así en la base `8afae724`) | M39 (B6): `text-2xl` → `text-xl` | una aserción en el `it.each` `sin contenido ($name)` |
+| E3.4 | R6 | sin fila de 1 día, la frontera de `days > 0` no tenía candado | M43 (`days <= 1` para `Hoy`) y M44 (`days > 1` para el `accessibilityLabel`) | fila n, con el literal `Faltan 1 días` |
 
 Consecuencias:
 
-- `src/screens/health/index.test.tsx` pasa de 56 a 62 `it`: 4 filas en el
-  `it.each` de fechas y 1 fila más en cada uno de los dos `it.each` de E3.2.
-  E3.3 añade una línea, no un `it`.
+- `src/screens/health/index.test.tsx` pasa de 56 a 64 `it`: 6 filas en el
+  `it.each` de fechas (i–n) y 1 fila más en cada uno de los dos `it.each`
+  de E3.2. E3.3 y los textos de la columna de E3.2 añaden líneas, no `it`.
 - Jest entero, sobre la base tras el merge de #149 (`664a8d2d`: 94 suites,
-  2162 tests): 94 suites y 2168 tests.
+  2162 tests): 94 suites y 2170 tests.
+- Antes de la firma, el `reviewer` barrió E3 sobre un spike
+  (`progress/review_mobile-health-make-parity.md` §Barrido previo a la
+  firma de la Enmienda E3). M40–M44 y la fila n salen de ese barrido.
 - R8: la lista cerrada sigue en 10 ficheros; E3 no añade ninguno.
 - R9 y R10 no cambian. La casilla del PNG sigue firmada.
 - Observación R2-c de la review (M25 con workers de Jest no nombra el `it`
   caído): no pide cambio. Las sondas de `design.md` §2 que caen en un `toBe`
   de nodos se corren con `--runInBand`.
 
-Los textos normativos están en R2 y R6, marcados «Enmienda E3.<n>».
+Los textos normativos están en R2 y R6, marcados «Enmienda E3.<n>». El
+plural de la fila n se queda en Fuera de alcance.
 
 ## Fuera de alcance
 
@@ -546,7 +562,7 @@ Los textos normativos están en R2 y R6, marcados «Enmienda E3.<n>».
 | Las filas de vacunas siguen mostrando la fecha ISO | Delimitación | Solo cambia la card de la próxima. |
 | Mover `calendarDaysUntil` y `fmtDate` a un módulo compartido | Delimitación | Se importan tal cual de `../home/format`; ningún candado lo prohíbe. |
 | Skeleton de la weight card mientras carga | Delimitación | No existe en la base y no lo pide el Make. |
-| "Faltan 1 días" en Home, y desde esta feature también en el `accessibilityLabel` de Salud | Observación | Plural ausente en `home.nextVaccineDaysLeft`; no se toca aquí y R6 no tiene fila de 1 día. Si se arregla, se arregla una vez para las dos pantallas. |
+| "Faltan 1 días" en Home, y desde esta feature también en el `accessibilityLabel` de Salud | Observación | Plural ausente en `home.nextVaccineDaysLeft`; no se toca aquí. Desde la Enmienda E3.4 la fila n de R6 canda el literal actual `Faltan 1 días`. Si se arregla, se arregla una vez para las dos pantallas y esa fila cambia con Home. |
 | Cambiar el icono del launcher, el foreground, el monocromo, el favicon o el de notificación (Enmienda E2) | Delimitación | Solo cambia `splash-icon.png`; R10 lo ancla con el diff de `assets/`. |
 | Regenerar los iconos con `make-icons.mjs` (Enmienda E2) | Delimitación | El script solo pierde la línea del splash; ejecutarlo reescribiría los otros PNG. |
 | Splash en iOS (Enmienda E2) | Delimitación | iOS sigue aparcado en #60; el PNG es el mismo para las dos plataformas. |
