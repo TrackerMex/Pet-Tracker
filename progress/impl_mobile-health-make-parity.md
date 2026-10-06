@@ -3598,3 +3598,896 @@ $ git diff --cached --name-only
 Validación de cierre: True; registrador exit=0. Los cinco ficheros de código/tests siguen idénticos al verde 08d106e2 usado para las sondas y el Jest entero. Solo quedan los dos documentos del cierre literal.
 
 El commit final `docs(mobile-health-make-parity): trace #115 R1-R8` se encadena al registrador del Jest entero con `&& git commit`, después de comprobar que el índice contiene exclusivamente este impl y traceability. Los resultados reales son typecheck 0, lint 0, Jest 0 (94 suites / 2139 tests), las ocho suites 292 (Salud 55), las 48 anclas coincidentes y las 22 sondas detectadas/restauradas. Las salidas R8 de los siete ficheros constan arriba. No hay decisiones de producto adicionales a la spec; solo las correcciones del handoff y la autorización documental quedan anotadas.
+
+## Ronda 2 — arranque (2026-10-06 UTC)
+
+H2 = `07851dc4ba27c211aafbb4ed14428a2668460268` (`git rev-parse HEAD` al arrancar).
+Branch `feature/115-mobile-health-make-parity`; árbol y staging inicialmente limpios.
+`origin/main` = `e002a4a5596f235f73ba7876de4ebb1e4cf332ee` antes y después de
+`git fetch origin` (exit=0). `git merge-base --is-ancestor origin/main HEAD`: exit=0.
+Firma de Enmienda E1–E2 `52bfe254`; casilla medida 1 (declarado 1).
+
+Leídos enteros requirements, design, tasks y review de la ronda 1. Guion T8;
+producción de Salud solo se tocará para sondas y se restaurará. Leídos también
+progress/current.md, feature_list.json (#115 única in_progress), arquitectura,
+convenciones (esperas), verificación y carta de UI; mobile/AGENTS.md y su
+referencia versionada https://docs.expo.dev/versions/v57.0.0/ antes de código.
+Skills: building-native-ui del plugin Expo 1.0.2 (frontmatter de skill 1.0.1),
+appllama-app-design-skill y references/image-assets.md del repo, imagegen
+builtin (background-extraction, prompt literal del handoff) y ponytail.
+La investigación UI del leader ya existe; R9 S1–S11 sigue siendo gate humano.
+No se ejecutan init.sh, make-icons.mjs ni expo prebuild, ni push/rebase/merge/amend/reset.
+
+Base medida desde mobile-pet-tracker/: router.d.ts ausente, exit=0;
+`bunx jest src/screens/health/index.test.tsx app.assets.test.ts --json --outputFile=/tmp/115-r2-base.json > /tmp/115-r2-base.log 2>&1`
+exit=0, 2 suites, 62 passed (Salud 55; app.assets 7).
+Splash y foreground sha256 medido idéntico al declarado:
+`8767ad5e565a736a433627a3b9f0f96f7c888e68b023338dd9d0b59efacf2913`.
+`git diff --name-only origin/main...HEAD -- assets/`: vacío, exit=0.
+R8 con las exclusiones exactas del handoff da 7 ficheros de la lista cerrada de 10, exit=0.
+
+| Ancla (grep desde mobile-pet-tracker/) | Declarado antes | Medido antes | Declarado después |
+|---|---|---|---|
+| E1.1 `expect(hero.parent!.parent).toBe(screen.getByTestId('screen-health'));` | 0 | 0 | 1 |
+| E1.1 `expect(hero.parent).toBe(content.parent);` | 1 | 1 | 1 |
+| E1.2 `process.getBuiltinModule('process')` | 0 | 0 | 1 |
+| E1.2 `America/Mexico_City` (solo fila h) | 0 | 0 | 1 |
+| E1.2 `row: '` | 7 | 7 | 8 |
+| E1.2 `jest.setSystemTime(new Date(year, month - 1, day, 12, 0));` | 1 | 1 | 0 |
+| R10 `import { inflateSync } from 'node:zlib';` | 0 | 0 | 1 |
+| R10 `#115 R10` | 0 | 0 | 1 |
+| R10 `splash-icon` en make-icons.mjs | 1 | 1 | 0 |
+| R10 `node:fs` en make-icons.mjs | 1 | 1 | 0 |
+| diff assets/ origin/main...HEAD | vacío | vacío | solo splash-icon.png |
+
+Los grep que dan 0 devuelven exit=1; los demás, exit=0. Sin discrepancias de base.
+
+### Ronda 2 — e11-green
+
+Comando y exit reales en `/tmp/115-r2-e11-green.command` y `/tmp/115-r2-e11-green.exit`.
+```bash
+bunx jest src/screens/health/index.test.tsx --json --outputFile=/tmp/115-r2-e11-green.json > /tmp/115-r2-e11-green.log 2>&1; health115_exit=$?; echo "$health115_exit" > /tmp/115-r2-e11-green.exit; echo "exit=$health115_exit"
+```
+```text
+Test Suites: 1 passed, 1 total
+Tests:       55 passed, 55 total
+Snapshots:   0 total
+Time:        7.86 s, estimated 8 s
+exit=0
+```
+
+Esperado: 55 tests, 0 fallos, exit=0.
+Registrador exit=0.
+
+### Ronda 2 — M25: incidencia del exportador JSON (sin commit)
+
+Primera ejecución con `--json --outputFile=/tmp/115-r2-m25.json`: Jest dio
+1 fallo por aserción en el it esperado (1 failed, 54 passed, 55 total), exit=1,
+y después el exportador falló con `TypeError: Converting circular structure to JSON`
+(`children`/`parent` del TestInstance). No creó JSON; el registrador devolvió
+exit=1 al no encontrarlo. No hubo commit. Producción restaurada por checkout;
+`git diff --quiet -- src/screens/health/index.tsx` y cached dieron exit=0.
+Se repite la misma sonda sin exportar JSON, patrón ya empleado en M7 de ronda 1.
+
+### Ronda 2 — M25 (salida estándar)
+
+```bash
+bunx jest src/screens/health/index.test.tsx > /tmp/115-r2-m25-plain.log 2>&1; health115_exit=$?; echo "$health115_exit" > /tmp/115-r2-m25-plain.exit; echo "exit=$health115_exit"
+```
+```text
+● #115 R2: Salud abre con el hero a sangre (A9) › con mascotas, pet-hero y health-content son los únicos hijos del scroll, en ese orden
+
+    expect(received).toBe(expected) // Object.is equality
+
+    - Expected  - 12
+    + Received  +  0
+
+    @@ -1,16 +1,5 @@
+    - <RCTScrollView
+    -   className="flex-1 bg-background"
+    -   contentContainerStyle={
+    -     Object {
+    -       "gap": 16,
+    -       "paddingBottom": 120,
+    -     }
+    -   }
+    -   contentInsetAdjustmentBehavior="automatic"
+    -   testID="screen-health"
+    - >
+      <View>
+        <View>
+          <View
+            className="overflow-hidden bg-default"
+            style={
+    @@ -410,6 +399,5 @@
+              </View>
+            </View>
+          </View>
+        </View>
+      </View>
+    - </RCTScrollView>
+
+      755 |     const content = screen.getByTestId('health-content');
+      756 |     expect(hero.parent).toBe(content.parent);
+    > 757 |     expect(hero.parent!.parent).toBe(screen.getByTestId('screen-health'));
+          |                                 ^
+      758 |     expect(hero.parent!.children).toHaveLength(2);
+      759 |     expect(elementChild(hero.parent!, 0)).toBe(hero);
+      760 |     expect(elementChild(hero.parent!, 1)).toBe(content);
+
+      at Object.toBe (src/screens/health/index.test.tsx:757:33)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 54 passed, 55 total
+exit=1
+```
+Rojo esperado y visto: solo R2 › hijos, por aserción toBe.
+Restauración: checkout HEAD; diff de producción exit=0; cached exit=0 (medido antes de stage).
+Registrador exit=0.
+
+### Ronda 2 — e12-green
+
+Comando y exit reales en `/tmp/115-r2-e12-green.command` y `/tmp/115-r2-e12-green.exit`.
+```bash
+bunx jest src/screens/health/index.test.tsx --json --outputFile=/tmp/115-r2-e12-green.json > /tmp/115-r2-e12-green.log 2>&1; health115_exit=$?; echo "$health115_exit" > /tmp/115-r2-e12-green.exit; echo "exit=$health115_exit"
+```
+```text
+Test Suites: 1 passed, 1 total
+Tests:       56 passed, 56 total
+Snapshots:   0 total
+Time:        7.457 s, estimated 8 s
+exit=0
+```
+
+Esperado: 56 tests, 0 fallos, exit=0.
+Registrador exit=0.
+
+### Ronda 2 — m23
+
+Comando y exit reales en `/tmp/115-r2-m23.command` y `/tmp/115-r2-m23.exit`.
+```bash
+bunx jest src/screens/health/index.test.tsx --json --outputFile=/tmp/115-r2-m23.json > /tmp/115-r2-m23.log 2>&1; health115_exit=$?; echo "$health115_exit" > /tmp/115-r2-m23.exit; echo "exit=$health115_exit"
+```
+```text
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 55 passed, 56 total
+Snapshots:   0 total
+Time:        7.002 s, estimated 8 s
+exit=1
+```
+
+- `#115 R6: la próxima vacuna dice fecha y días restantes fila h: hoy 2026-12-31 20:00, próxima 2027-01-02` — aserción.
+```text
+Error: expect(instance).toHaveTextContent()
+
+Expected instance to have text content:
+  2 d
+Received:
+  1 d
+```
+Esperado: 56 tests, 1 fallos, exit=1.
+Registrador exit=0.
+
+### Ronda 2 — m24
+
+Comando y exit reales en `/tmp/115-r2-m24.command` y `/tmp/115-r2-m24.exit`.
+```bash
+bunx jest src/screens/health/index.test.tsx --json --outputFile=/tmp/115-r2-m24.json > /tmp/115-r2-m24.log 2>&1; health115_exit=$?; echo "$health115_exit" > /tmp/115-r2-m24.exit; echo "exit=$health115_exit"
+```
+```text
+Test Suites: 1 failed, 1 total
+Tests:       8 failed, 48 passed, 56 total
+Snapshots:   0 total
+Time:        6.731 s, estimated 7 s
+exit=1
+```
+
+- `#115 R6: la próxima vacuna dice fecha y días restantes fila a: hoy 2026-12-31 12:00, próxima 2026-12-31` — aserción.
+```text
+Error: expect(instance).toHaveTextContent()
+
+Expected instance to have text content:
+  Hoy
+Received:
+  -1 d
+```
+- `#115 R6: la próxima vacuna dice fecha y días restantes fila b: hoy 2026-12-31 12:00, próxima 2027-01-02` — aserción.
+```text
+Error: expect(instance).toHaveTextContent()
+
+Expected instance to have text content:
+  2 d
+Received:
+  1 d
+```
+- `#115 R6: la próxima vacuna dice fecha y días restantes fila c: hoy 2027-01-01 12:00, próxima 2027-01-01` — aserción.
+```text
+Error: expect(instance).toHaveTextContent()
+
+Expected instance to have text content:
+  Hoy
+Received:
+  -1 d
+```
+- `#115 R6: la próxima vacuna dice fecha y días restantes fila d: hoy 2027-01-30 12:00, próxima 2027-02-03` — aserción.
+```text
+Error: expect(instance).toHaveTextContent()
+
+Expected instance to have text content:
+  4 d
+Received:
+  3 d
+```
+- `#115 R6: la próxima vacuna dice fecha y días restantes fila e: hoy 2026-12-31 12:00, próxima 2027-12-31` — aserción.
+```text
+Error: expect(instance).toHaveTextContent()
+
+Expected instance to have text content:
+  365 d
+Received:
+  364 d
+```
+- `#115 R6: la próxima vacuna dice fecha y días restantes fila f: hoy 2026-12-31 12:00, próxima 2027-01-02` — aserción.
+```text
+Error: expect(instance).toHaveTextContent()
+
+Expected instance to have text content:
+  2 d
+Received:
+  1 d
+```
+- `#115 R6: la próxima vacuna dice fecha y días restantes fila g: hoy 2027-01-01 12:00, próxima 2027-01-01` — aserción.
+```text
+Error: expect(instance).toHaveTextContent()
+
+Expected instance to have text content:
+  Today
+Received:
+  -1 d
+```
+- `#115 R6: la próxima vacuna dice fecha y días restantes fila h: hoy 2026-12-31 20:00, próxima 2027-01-02` — aserción.
+```text
+Error: expect(instance).toHaveTextContent()
+
+Expected instance to have text content:
+  2 d
+Received:
+  1 d
+```
+Esperado: 56 tests, 8 fallos, exit=1.
+Registrador exit=0.
+
+### Ronda 2 — e12-green
+
+Comando y exit reales en `/tmp/115-r2-e12-green.command` y `/tmp/115-r2-e12-green.exit`.
+```bash
+bunx jest src/screens/health/index.test.tsx --json --outputFile=/tmp/115-r2-e12-green.json > /tmp/115-r2-e12-green.log 2>&1; health115_exit=$?; echo "$health115_exit" > /tmp/115-r2-e12-green.exit; echo "exit=$health115_exit"
+```
+```text
+Test Suites: 1 passed, 1 total
+Tests:       56 passed, 56 total
+Snapshots:   0 total
+Time:        7.457 s, estimated 8 s
+exit=0
+```
+
+Esperado: 56 tests, 0 fallos, exit=0.
+Registrador exit=0.
+
+### Ronda 2 — E1 commits, restauración y anclas después
+
+- `6c8baf9ac9afdbb8d1316bd794366970aa9aee35` — `test(mobile-health): #115 E1.1 lock hero and content under the scroll`.
+- `6ac7346db449ac0e582d9d2f2ee7d022b7604160` — `test(mobile-health): #115 E1.2 time zone row for next vaccine days`.
+
+M23 y M24 restauradas con `git checkout HEAD -- src/screens/health/index.tsx`.
+Después de cada sonda: `git diff --quiet -- src/screens/health/index.tsx`
+exit=0 y `git diff --cached --quiet` exit=0, antes de stage de los tests.
+Los dos it de R6 que fijan 2026-12-31 12:00 (orden y receta) no cambian.
+TZ se fija en hostProcess antes de useFakeTimers y se restaura en finally.
+
+| Ancla | Declarado después | Medido después |
+|---|---|---|
+| E1.1 `expect(hero.parent!.parent).toBe(screen.getByTestId('screen-health'));` | 1 | 1 |
+| E1.1 `expect(hero.parent).toBe(content.parent);` | 1 | 1 |
+| E1.2 `process.getBuiltinModule('process')` | 1 | 1 |
+| E1.2 `America/Mexico_City` (solo fila h) | 1 | 1 |
+| E1.2 `row: '` | 8 | 8 |
+| E1.2 `jest.setSystemTime(new Date(year, month - 1, day, 12, 0));` | 0 | 0 |
+
+`git diff --quiet H2 HEAD -- src/screens/health/index.tsx`: exit=0 (tras E1).
+
+### Ronda 2 — r10-red
+
+Comando y exit reales en `/tmp/115-r2-r10-red.command` y `/tmp/115-r2-r10-red.exit`.
+```bash
+bunx jest app.assets.test.ts --json --outputFile=/tmp/115-r2-r10-red.json > /tmp/115-r2-r10-red.log 2>&1; health115_exit=$?; echo "$health115_exit" > /tmp/115-r2-r10-red.exit; echo "exit=$health115_exit"
+```
+```text
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 9 passed, 11 total
+Snapshots:   0 total
+Time:        14.887 s
+exit=1
+```
+
+- `#115 R10: el splash es la mascota sola sobre transparente las cuatro esquinas del antiguo cuadrado son transparentes` — aserción.
+```text
+Error: expect(received).toEqual(expected) // deep equality
+
+- Expected  - 4
++ Received  + 4
+
+  Array [
+-   0,
+-   0,
+-   0,
+-   0,
++   676,
++   676,
++   676,
++   676,
+  ]
+```
+- `#115 R10: el splash es la mascota sola sobre transparente la punta del pin es transparente` — aserción.
+```text
+Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: 0
+Received: 1600
+```
+Esperado: 11 tests, 2 fallos, exit=1.
+Registrador exit=0.
+
+### Ronda 2 — R10 rojo y comienzo del candidato
+
+Commit rojo `45198dd4bea97abe6caa49d2d7e05ccadb65d349` —
+`test(mobile-assets): #115 R10 red, splash without square or pin`.
+Helpers readAlpha y countAlpha copiados byte a byte del bloque TS de design §1.8.
+Anclas después: import inflateSync declarado 1 / medido 1; #115 R10 declarado 1 / medido 1.
+Registrador exit=0; staging vacío tras commit, exit=0.
+
+Imagegen builtin, modo edit/background-extraction. Fuente vista antes de editar:
+`mobile-pet-tracker/assets/images/pet-tracker-app-icon.png`, 1254×1254 RGB,
+8 bits, tipo de color 2 (medido). Prompt literal del handoff guardado en
+`/tmp/115-splash/prompt.txt`; sin añadidos. Se pide transparencia real.
+La salida generada se copiará desde su destino builtin a /tmp/115-splash/;
+composición y previews fuera del repo. Solo splash-icon.png recibirá el candidato.
+
+### Ronda 2 — candidate
+
+Comando y exit reales en `/tmp/115-r2-candidate.command` y `/tmp/115-r2-candidate.exit`.
+```bash
+bunx jest app.assets.test.ts --json --outputFile=/tmp/115-r2-candidate.json > /tmp/115-r2-candidate.log 2>&1; health115_exit=$?; echo "$health115_exit" > /tmp/115-r2-candidate.exit; echo "exit=$health115_exit"
+```
+```text
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 10 passed, 11 total
+Snapshots:   0 total
+Time:        13.665 s, estimated 15 s
+exit=1
+```
+
+- `#115 R10: el splash es la mascota sola sobre transparente la cara de la mascota es opaca` — aserción.
+```text
+Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: 255
+Received: 252
+```
+Esperado: 11 tests, 0 fallos, exit=0.
+Registrador exit=1.
+
+### Ronda 2 — primer candidato: no llega al gate visual
+
+Salida builtin `/home/claude/.codex/generated_images/01a11221-0ebb-7a13-b1fd-88da5bfa6f36/exec-9c44b69a-c93b-484b-96a0-bff61880500a.png`,
+copia `/tmp/115-splash/imagegen-transparent.png`.
+Medida: 1254×1254 (cuadrada), 8 bits, tipo de color 6, esquinas alfa [0,0,0,0].
+No se usó respaldo cian. Composición exacta de la receta, exit=0.
+SHA256 del primer candidato: `b96fe4ea5d60d397966fb420cac0ba0bba7c7cc605363f5feb814f6942a9e1c1`.
+Previews vistas en violeta/blanco/oscuro: identidad conservada, sin cuadrado ni pin.
+Falla 1 it de R10 por aserción: la cara alfa 252 en vez de 255; 10 passed,
+11 total, Jest exit=1; registrador exit=1. No es rechazo humano: no se
+presenta para firma hasta cumplir R10. Sin commit ni stage. Se investiga
+la opacidad de la fuente y del redimensionado antes de decidir la iteración.
+
+Diagnóstico del primer candidato: la fuente ya tiene alfa 252 en
+(626,715), (627,715), (627,716), (512,560) y (627,627). Redimensionado
+(338,386) = 252; compuesto (512,560) = 252. La pérdida de opacidad viene
+de imagegen, no de Jimp. Se conserva el PNG fallido en
+`/tmp/115-splash/candidate-1.png` (mismo sha256). Se repite imagegen desde
+la fuente original con el mismo prompt literal y transparent_background=true;
+no se retoca el alfa ni el decoder para pasar el candado.
+
+### Ronda 2 — segundo intento transparente y respaldo cian
+
+Segundo output builtin:
+`/home/claude/.codex/generated_images/01a11221-0ebb-7a13-b1fd-88da5bfa6f36/exec-2992268c-e14f-480e-bcff-7678be2b9153.png`,
+copia `/tmp/115-splash/imagegen-transparent-2.png`.
+1254×1254, 8 bits, tipo 6, esquinas [0,0,0,0]; cara fuente alfa 252 y
+cara redimensionada alfa 252 de nuevo. No se compone ni presenta un segundo
+PNG que repita el fallo. El problema no está en las esquinas o el IHDR,
+sino en la opacidad interior exigida por R10. Se usa el respaldo cian del
+handoff para resolver este defecto de alfa de imagegen, dejando explícito
+este motivo (las dos condiciones de fondo indicadas en el handoff sí pasan).
+Se vuelve a la fuente RGB original con el mismo prompt salvo la última frase:
+`Output a square PNG on a flat pure #00FFFF background.`. El script quitará
+ese fondo antes de redimensionar, como prescribe el respaldo. Sin cambios
+al test ni al decoder; sin stage ni nuevos commits.
+
+Primera composición del respaldo cian: el generador produce un fondo cercano
+al hex pedido (esquinas RGB 6/248/252, 7/249/251, 8/248/251, 5/250/252),
+1254×1254 RGB tipo 2, cara alfa 255. El umbral inicial de extracción de cian
+245 no incluye esas variantes: la aserción de transparencia previa al
+redimensionado falla (alfa 13), composición exit=1, antes de escribir el
+asset. El Jest que seguía en ese mismo comando midió el PNG anterior, volvió
+a dar cara 252 (exit=1); no es evidencia de un candidato cian. Log preservado
+`/tmp/115-r2-cyan-composition-failed.log`. No hubo commit. Se ajusta el umbral
+al cian real medido antes de componer de nuevo; no se altera la mascota.
+
+Extracción cian: muestras de fondo en las cuatro esquinas de 50×50 de la
+fuente dan min/max de `min(G,B)-R`: TL 242/253, TR 242/253, BL 240/253,
+BR 245/253; área del pin 249/253. Umbral de fondo ajustado a 235, con
+unmixing del cian en bordes parciales antes del resize; composición exit=0.
+El PNG candidato se escribe RGBA, 1024×1024, con la receta Jimp original.
+Las tres previews actualizadas se han visto; sin cuadrado ni pin, sin halo
+blanco ni mate cian apreciable sobre oscuro/blanco. Inspección de bordes
+4× en `/tmp/115-splash/edge-review-4x.png` (artefacto auxiliar fuera del repo).
+
+### Ronda 2 — candidate-cyan
+
+Comando y exit reales en `/tmp/115-r2-candidate-cyan.command` y `/tmp/115-r2-candidate-cyan.exit`.
+```bash
+bunx jest app.assets.test.ts --json --outputFile=/tmp/115-r2-candidate-cyan.json > /tmp/115-r2-candidate-cyan.log 2>&1; health115_exit=$?; echo "$health115_exit" > /tmp/115-r2-candidate-cyan.exit; echo "exit=$health115_exit"
+```
+```text
+Test Suites: 1 passed, 1 total
+Tests:       11 passed, 11 total
+Snapshots:   0 total
+Time:        13.347 s, estimated 15 s
+exit=0
+```
+
+Esperado: 11 tests, 0 fallos, exit=0.
+Registrador exit=0.
+
+## Ronda 2 — PARADA del PNG
+
+T8 pasos 1–5 completados; aquí se para. No se hace el commit verde de R10
+ni se ejecutan T8 pasos 6–10 hasta la firma del candidato en el repo.
+
+- H2 (HEAD del handoff): `07851dc4ba27c211aafbb4ed14428a2668460268`.
+- HEAD de esta parada: `45198dd4bea97abe6caa49d2d7e05ccadb65d349`.
+- `origin/main` sigue en `e002a4a5596f235f73ba7876de4ebb1e4cf332ee`.
+
+| Paso | Commit | Mensaje literal | Evidencia antes del commit |
+|---|---|---|---|
+| T8.1 E1.1 | `6c8baf9ac9afdbb8d1316bd794366970aa9aee35` | `test(mobile-health): #115 E1.1 lock hero and content under the scroll` | Salud 55 verdes; M25 cae solo R2 › hijos por aserción; registrador exit=0 |
+| T8.2 E1.2 | `6ac7346db449ac0e582d9d2f2ee7d022b7604160` | `test(mobile-health): #115 E1.2 time zone row for next vaccine days` | Salud 56 verdes; M23 solo h, M24 a–h, por aserción; registrador exit=0 |
+| T8.3 R10 rojo | `45198dd4bea97abe6caa49d2d7e05ccadb65d349` | `test(mobile-assets): #115 R10 red, splash without square or pin` | exactamente 2 fallos: esquinas [676,676,676,676] y pin 1600; por aserción; 9 verdes; Jest exit=1 esperado y registrador exit=0 |
+
+Los commits contienen solo sus tests. El impl permanece sin stage para el
+commit de docs de T8.10. Cada commit se ejecutó con registrador && git commit.
+
+Candidato listo para la revisión visual humana:
+
+- Asset en el árbol, sin stage: `mobile-pet-tracker/assets/images/splash-icon.png`.
+- SHA256: `087c1eaa69e8324ac46e98073897ddc261d3f25b764f00d6216fb5014c05e56d`.
+- Copia idéntica: `/tmp/115-splash/candidate.png`.
+- Salida original imagegen builtin (respaldo cian):
+  `/home/claude/.codex/generated_images/01a11221-0ebb-7a13-b1fd-88da5bfa6f36/exec-45c694c8-0461-498a-827f-bdf9d448a0d2.png`.
+- Copia local de la salida: `/tmp/115-splash/imagegen-cyan.png`.
+- Extracción antes de redimensionar: `/tmp/115-splash/imagegen-cyan-keyed.png`.
+- Composición: `/tmp/115-splash/compose.mjs`.
+- Preview splash (#9460FC): `/tmp/115-splash/preview-splash.png`.
+- Preview bienvenida clara (#FFFFFF): `/tmp/115-splash/preview-welcome-light.png`.
+- Preview bienvenida oscura (#0D1117): `/tmp/115-splash/preview-welcome-dark.png`.
+- Todas las previews miden 1024×1024. Inspección auxiliar 4×:
+  `/tmp/115-splash/edge-review-4x.png`.
+- Respaldo cian: **sí**. Dos intentos transparentes daban cara alfa 252 en
+  la fuente; se recurrió al respaldo para cumplir el alfa 255 de R10,
+  aun pasando IHDR y esquinas. Diagnóstico y primer hash fallido arriba.
+- Prompts: `/tmp/115-splash/prompt.txt` (literal original del handoff) y
+  `/tmp/115-splash/prompt-cyan.txt` (mismo prompt salvo última frase de fondo).
+- Jimp.RESIZE_BICUBIC a 676×676, compuesto en (174,174) sobre 1024×1024
+  0x00000000; composición final exit=0.
+- `bunx jest app.assets.test.ts`: 11 passed, 11 total, exit=0 (log final
+  `/tmp/115-r2-candidate-cyan.log`; comando completo y registrador arriba).
+
+| Sonda | Rojo esperado | Rojo visto | Restauración |
+|---|---|---|---|
+| M25 | solo R2 › hijos | 1 fallo por aserción toBe; 54 verdes, Jest exit=1 | checkout HEAD de Salud; diff exit=0 y cached exit=0 |
+| M23 | solo fila h | 1 fallo por aserción de texto (1 d ≠ 2 d); 55 verdes, Jest exit=1 | checkout HEAD de Salud; diff exit=0 y cached exit=0 |
+| M24 | filas a–h | 8 fallos por aserción de texto; 48 verdes, Jest exit=1 | checkout HEAD de Salud; diff exit=0 y cached exit=0 |
+| M26–M28 | se ejecutan tras firma y commit verde | reservadas a T8.7 | no ejecutadas antes del gate |
+
+Estado de anclas R10 a esta parada (las de final solo se vuelven a medir
+tras T8.6–T8.8):
+
+| Ancla | Declarado antes / medido antes | Declarado final | Medido a la parada |
+|---|---|---|---|
+| inflateSync en app.assets | 0 / 0 | 1 | 1 |
+| #115 R10 en app.assets | 0 / 0 | 1 | 1 |
+| splash-icon en make-icons | 1 / 1 | 0 | 1 (se borra tras firma, T8.6) |
+| node:fs en make-icons | 1 / 1 | 0 | 1 (se borra tras firma, T8.6) |
+| assets/ en origin/main...HEAD | vacío / vacío | solo splash-icon.png | vacío (el candidato sigue sin commit) |
+
+R8 con los pathspecs exactos da ahora 8 de los 10 ficheros, exit=0;
+los otros dos son el PNG y make-icons, reservados al commit aprobado.
+Ningún fichero fuera de la lista cerrada. Desde H2 a HEAD, solo
+`mobile-pet-tracker/app.assets.test.ts` y
+`mobile-pet-tracker/src/screens/health/index.test.tsx`.
+Cambios sin stage: solo PNG e impl, ambos permitidos.
+
+Guardas de la parada, medidas desde mobile-pet-tracker/:
+
+```bash
+git diff --cached --quiet; echo "exit=$?"
+# exit=0
+git diff --quiet 07851dc4ba27c211aafbb4ed14428a2668460268 HEAD -- src/screens/health/index.tsx; echo "exit=$?"
+# exit=0
+git diff --quiet -- src/screens/health/index.tsx; echo "exit=$?"
+# exit=0
+```
+
+`git diff --check` exit=0. Producción de Salud intacta en toda la ronda.
+No init.sh, push, rebase, merge, amend, reset, make-icons ni expo prebuild.
+No se marca #115 done; traceability, typecheck/lint/Jest completos y R9
+quedan para los pasos posteriores al gate.
+
+Para continuar, el humano firma «PNG del splash» en requirements.md con
+fecha y el sha256 del candidato de arriba (Notion no cuenta). Antes de
+T8.6, se comprobarán las dos anclas de firma del handoff: cada grep debe dar
+1 y el sha256 firmado debe coincidir con el asset del árbol. Si se rechaza,
+se registrará aquí el motivo humano y el hash y se volverá a T8.4.
+
+## Ronda 2 — continuación tras la firma del PNG (2026-10-06 UTC)
+
+HEAD al retomar: `35476758983db4011f8b48180b732ecfca526491`.
+H2 se conserva: `07851dc4ba27c211aafbb4ed14428a2668460268`.
+El humano pidió continuar T8.6–T8.10. Casilla del candidato en requirements.md
+marcada y con el SHA256 `087c1eaa69e8324ac46e98073897ddc261d3f25b764f00d6216fb5014c05e56d`.
+Desde mobile-pet-tracker/ las dos anclas de firma del handoff dieron 1,
+exit=0 cada una. SHA256 real del asset coincide. No se escribe la firma
+ni se autoaprueba ningún gate.
+
+`git fetch origin` exit=0, `origin/main` sigue en
+`e002a4a5596f235f73ba7876de4ebb1e4cf332ee`;
+`git merge-base --is-ancestor origin/main HEAD` exit=0.
+Staging vacío, exit=0. Solo PNG e impl modificados.
+Guarda router.d.ts ausente exit=0; producción Salud H2..HEAD intacta exit=0.
+Se continúa el guion: commit verde solo PNG + script; M26–M28 con
+restauración; anclas; lista cerrada y typecheck/lint/Jest; commit de docs.
+Persisten las prohibiciones del handoff (init.sh, push, rebase, merge,
+amend, reset, ejecutar make-icons y expo prebuild). R9 sigue al humano.
+
+### Ronda 2 — r10-green
+
+Comando y exit reales en `/tmp/115-r2-r10-green.command` y `/tmp/115-r2-r10-green.exit`.
+```bash
+bunx jest app.assets.test.ts app.config.test.ts src/screens/welcome/index.test.tsx --json --outputFile=/tmp/115-r2-r10-green.json > /tmp/115-r2-r10-green.log 2>&1; health115_exit=$?; echo "$health115_exit" > /tmp/115-r2-r10-green.exit; echo "exit=$health115_exit"
+```
+```text
+Test Suites: 3 passed, 3 total
+Tests:       60 passed, 60 total
+Snapshots:   0 total
+Time:        14.758 s, estimated 15 s
+exit=0
+```
+
+Esperado: 60 tests, 0 fallos, exit=0.
+Registrador exit=0.
+
+### T8.6 — R10 verde aprobado
+
+`92c4e5d6397170716ec0fbd733087aa41922920e` —
+`feat(mobile-assets): #115 R10 transparent splash with the mascot alone`.
+Solo contiene `assets/images/splash-icon.png` y `scripts/make-icons.mjs`:
+el PNG firmado y la eliminación de copyFileSync + import fs; script no ejecutado.
+Antes del commit: 3 suites, 60 passed (assets 11, app.config 21, bienvenida 28),
+Jest exit=0 y registrador exit=0. Comando registrador && git commit.
+Staging vacío tras commit, exit=0. El SHA256 firmado permanece idéntico.
+
+### Ronda 2 — m26
+
+Comando y exit reales en `/tmp/115-r2-m26.command` y `/tmp/115-r2-m26.exit`.
+```bash
+bunx jest app.assets.test.ts --json --outputFile=/tmp/115-r2-m26.json > /tmp/115-r2-m26.log 2>&1; health115_exit=$?; echo "$health115_exit" > /tmp/115-r2-m26.exit; echo "exit=$health115_exit"
+```
+```text
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 9 passed, 11 total
+Snapshots:   0 total
+Time:        13.478 s, estimated 15 s
+exit=1
+```
+
+- `#115 R10: el splash es la mascota sola sobre transparente las cuatro esquinas del antiguo cuadrado son transparentes` — aserción.
+```text
+Error: expect(received).toEqual(expected) // deep equality
+
+- Expected  - 4
++ Received  + 4
+
+  Array [
+-   0,
+-   0,
+-   0,
+-   0,
++   676,
++   676,
++   676,
++   676,
+  ]
+```
+- `#115 R10: el splash es la mascota sola sobre transparente la punta del pin es transparente` — aserción.
+```text
+Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: 0
+Received: 1600
+```
+Esperado: 11 tests, 2 fallos, exit=1.
+Registrador exit=0.
+
+### Ronda 2 — m27
+
+Comando y exit reales en `/tmp/115-r2-m27.command` y `/tmp/115-r2-m27.exit`.
+```bash
+bunx jest app.assets.test.ts --json --outputFile=/tmp/115-r2-m27.json > /tmp/115-r2-m27.log 2>&1; health115_exit=$?; echo "$health115_exit" > /tmp/115-r2-m27.exit; echo "exit=$health115_exit"
+```
+```text
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 10 passed, 11 total
+Snapshots:   0 total
+Time:        13.02 s, estimated 14 s
+exit=1
+```
+
+- `#115 R10: el splash es la mascota sola sobre transparente la cara de la mascota es opaca` — aserción.
+```text
+Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: 255
+Received: 0
+```
+Esperado: 11 tests, 1 fallos, exit=1.
+Registrador exit=0.
+
+### T8.7 — construcción y restauración de sondas de assets
+
+M26 sustituye el PNG por `git show origin/main:mobile-pet-tracker/assets/images/splash-icon.png`.
+M27 generado como `new Jimp(1024,1024,0x00000000)` en
+`/tmp/115-splash/m27-empty.png` y copiado al asset.
+M28 usa la salida keyed conservada en `/tmp/115-splash/`, redimensionada
+con RESIZE_BICUBIC a 676×676 y compuesta en (0,0), en
+`/tmp/115-splash/m28-origin.png` antes de copiarla al asset. Generación exit=0.
+El píxel desplazado (512,560) cae fuera de la mascota (alfa 0, medido antes
+ de la sonda), por lo que además de «fuera» de design §2 cae también «cara».
+No se cambia el mutante para evitar esa segunda caída válida.
+
+Después de M26 y M27: `git checkout HEAD -- assets/images/splash-icon.png`;
+`git diff --quiet -- assets/images/splash-icon.png` exit=0 y
+`git diff --cached --quiet` exit=0, cada vez. M26 restaura exactamente
+el hash firmado `087c1eaa69e8324ac46e98073897ddc261d3f25b764f00d6216fb5014c05e56d`.
+
+### Ronda 2 — m28
+
+Comando y exit reales en `/tmp/115-r2-m28.command` y `/tmp/115-r2-m28.exit`.
+```bash
+bunx jest app.assets.test.ts --json --outputFile=/tmp/115-r2-m28.json > /tmp/115-r2-m28.log 2>&1; health115_exit=$?; echo "$health115_exit" > /tmp/115-r2-m28.exit; echo "exit=$health115_exit"
+```
+```text
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 9 passed, 11 total
+Snapshots:   0 total
+Time:        13.366 s
+exit=1
+```
+
+- `#115 R10: el splash es la mascota sola sobre transparente no hay alfa fuera de la zona segura [174, 850)` — aserción.
+```text
+Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: 0
+Received: 38317
+```
+- `#115 R10: el splash es la mascota sola sobre transparente la cara de la mascota es opaca` — aserción.
+```text
+Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: 255
+Received: 0
+```
+Esperado: 11 tests, 2 fallos, exit=1.
+Registrador exit=0.
+
+### T8.8 — anclas finales medidas
+
+| Ancla | Declarado antes / medido antes | Declarado después / medido después | grep exit |
+|---|---|---|---|
+| E1.1 padre ligado al scroll | 0 / 0 | 1 / 1 | 0 |
+| E1.1 padre común | 1 / 1 | 1 / 1 | 0 |
+| E1.2 proceso real | 0 / 0 | 1 / 1 | 0 |
+| E1.2 TZ solo fila h | 0 / 0 | 1 / 1 | 0 |
+| E1.2 filas | 7 / 7 | 8 / 8 | 0 |
+| E1.2 mediodía fijo retirado de tabla | 1 / 1 | 0 / 0 | 1 |
+| R10 import inflateSync | 0 / 0 | 1 / 1 | 0 |
+| R10 describe | 0 / 0 | 1 / 1 | 0 |
+| R10 generación splash retirada | 1 / 1 | 0 / 0 | 1 |
+| R10 import fs retirado | 1 / 1 | 0 / 0 | 1 |
+| R10 diff assets/ origin/main...HEAD | vacío / vacío | solo splash-icon.png / solo mobile-pet-tracker/assets/images/splash-icon.png | git exit=0 |
+
+```text
+mobile-pet-tracker/assets/images/splash-icon.png
+exit=0
+```
+M28 restaurado por checkout HEAD; diff del PNG y cached exit=0.
+SHA256 después de M26–M28 idéntico al firmado: `087c1eaa69e8324ac46e98073897ddc261d3f25b764f00d6216fb5014c05e56d`.
+Registrador de anclas exit=0.
+
+### T8.9 — alcance cerrado antes de los checks completos
+
+Desde raíz, lista R8 con todas las exclusiones literales del handoff:
+
+```bash
+git diff --name-only origin/main...HEAD -- . ':!feature_list.json' ':!STATUS.md' ':!progress/current.md' ':!progress/handoff_mobile-health-make-parity.md' ':!progress/review_mobile-health-make-parity.md' ':!specs/mobile-health-make-parity/requirements.md' ':!specs/mobile-health-make-parity/design.md' ':!specs/mobile-health-make-parity/tasks.md' ':!.claude/agents/leader.md'
+```
+
+```text
+mobile-pet-tracker/app.assets.test.ts
+mobile-pet-tracker/assets/images/splash-icon.png
+mobile-pet-tracker/scripts/make-icons.mjs
+mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+mobile-pet-tracker/src/__tests__/ui-copy-table.ts
+mobile-pet-tracker/src/__tests__/ui-language.test.ts
+mobile-pet-tracker/src/screens/health/index.test.tsx
+mobile-pet-tracker/src/screens/health/index.tsx
+progress/impl_mobile-health-make-parity.md
+specs/mobile-health-make-parity/traceability.md
+exit=0
+```
+
+Exactamente los 10 ficheros de design §1.2. Registrador de alcance exit=0.
+`git diff origin/main -- mobile-pet-tracker/package.json mobile-pet-tracker/bun.lock`
+y `git diff --stat origin/main -- backend-pet-tracker/`: salida vacía y exit=0 cada uno.
+`git diff --quiet H2 HEAD -- mobile-pet-tracker/src/screens/health/index.tsx`: exit=0.
+Se ejecutan a continuación typecheck/lint/Jest sin pipe, con logs y exits separados.
+
+Typecheck completado: `bun run typecheck > /tmp/115-r2-final-typecheck.log 2>&1; health115_exit=$?; echo "$health115_exit" > /tmp/115-r2-final-typecheck.exit; echo "exit=$health115_exit"`
+Salida `$ tsc --noEmit`, exit=0. Lint y Jest completos aún en ejecución.
+
+Verificación adicional de alcance: `git diff --quiet origin/main --` sobre
+app.json, app.config.test.ts, welcome/, src/app/index.tsx, weight-chart,
+pet-hero-header, pet-switcher, home/, weight-log/, i18n/catalog, api/,
+legibility-classnames, design-drift, language-provider y mobile-ui-language/design:
+exit=0. Los commits E1.1, E1.2, R10 rojo/verde y firma del PNG son todos
+ancestros de HEAD (`git merge-base --is-ancestor`, exit=0 cada uno).
+
+### T8.9 — checks completos de la ronda 2
+
+```bash
+bun run typecheck > /tmp/115-r2-final-typecheck.log 2>&1; health115_exit=$?; echo "$health115_exit" > /tmp/115-r2-final-typecheck.exit; echo "exit=$health115_exit"
+```
+```text
+$ tsc --noEmit
+exit=0
+```
+
+```bash
+bun run lint > /tmp/115-r2-final-lint.log 2>&1; health115_exit=$?; echo "$health115_exit" > /tmp/115-r2-final-lint.exit; echo "exit=$health115_exit"
+```
+```text
+$ expo lint
+exit=0
+```
+
+```bash
+bunx jest --maxWorkers=2 --json --outputFile=/tmp/115-r2-final-jest.json > /tmp/115-r2-final-jest.log 2>&1; health115_exit=$?; echo "$health115_exit" > /tmp/115-r2-final-jest.exit; echo "exit=$health115_exit"
+```
+```text
+Test Suites: 94 passed, 94 total
+Tests:       2144 passed, 2144 total
+Snapshots:   1 passed, 1 total
+Time:        95.974 s
+exit=0
+```
+
+| Suite de control | Ronda 1 | Ronda 2 medida | Delta esperado |
+|---|---|---|---|
+| `src/screens/health/index.test.tsx` | 55 | 56 | +1 |
+| `app.assets.test.ts` | 7 | 11 | +4 |
+| `src/__tests__/ui-language.test.ts` | 30 | 30 | +0 |
+| `src/components/__tests__/pet-hero-header.test.tsx` | 37 | 37 | +0 |
+| `src/__tests__/design-drift.test.ts` | 60 | 60 | +0 |
+| `src/components/__tests__/weight-chart.test.tsx` | 4 | 4 | +0 |
+| `src/__tests__/consistency-classnames.test.ts` | 55 | 55 | +0 |
+| `src/providers/__tests__/language-provider.test.tsx` | 24 | 24 | +0 |
+| `src/__tests__/legibility-classnames.test.ts` | 27 | 27 | +0 |
+
+Total: 2139 + 5 = 2144, 94 suites y 1 snapshot verdes; las siete suites de control ajenas a Salud no cambian.
+Registrador final exit=0.
+
+## Ronda 2 — cierre de T8.6–T8.10
+
+H2 del handoff: `07851dc4ba27c211aafbb4ed14428a2668460268`.
+HEAD de producción verificado: `92c4e5d6397170716ec0fbd733087aa41922920e`.
+Firma humana del candidato: `35476758983db4011f8b48180b732ecfca526491`.
+`origin/main` sigue en `e002a4a5596f235f73ba7876de4ebb1e4cf332ee` después
+ del fetch de cierre (exit=0). La firma conserva el hash del PNG real:
+`087c1eaa69e8324ac46e98073897ddc261d3f25b764f00d6216fb5014c05e56d`.
+
+Commits de implementación de la ronda:
+
+| Paso | Hash | Mensaje |
+|---|---|---|
+| T8.1 | `6c8baf9ac9afdbb8d1316bd794366970aa9aee35` | `test(mobile-health): #115 E1.1 lock hero and content under the scroll` |
+| T8.2 | `6ac7346db449ac0e582d9d2f2ee7d022b7604160` | `test(mobile-health): #115 E1.2 time zone row for next vaccine days` |
+| T8.3 | `45198dd4bea97abe6caa49d2d7e05ccadb65d349` | `test(mobile-assets): #115 R10 red, splash without square or pin` |
+| T8.6 | `92c4e5d6397170716ec0fbd733087aa41922920e` | `feat(mobile-assets): #115 R10 transparent splash with the mascot alone` |
+
+E1 nace verde: 55/55 después de E1.1; 56/56 después de E1.2. R10 rojo
+esperado y visto: exactamente esquinas [676,676,676,676] y pin 1600 por
+aserción, 9 passed / 11 total, Jest exit=1 y registrador exit=0.
+R10 verde firmado: 3 suites / 60 passed (assets 11, config 21, bienvenida 28),
+Jest exit=0 y registrador exit=0 antes del commit exclusivo PNG + script.
+
+| Sonda | Caída requerida por design §2 | Vista | Categoría | Restauración |
+|---|---|---|---|---|
+| M23 | fila h | solo h, 1 failed / 55 passed | aserción de texto | checkout de Salud; diff=0, cached=0 |
+| M24 | filas a–h | a–h, 8 failed / 48 passed | aserción de texto | checkout de Salud; diff=0, cached=0 |
+| M25 | R2 › hijos | solo ese it, 1 failed / 54 passed | aserción toBe | checkout de Salud; diff=0, cached=0 |
+| M26 | esquinas y pin | ambos, 2 failed / 9 passed | aserción | checkout del PNG; diff=0, cached=0 |
+| M27 | cara | solo cara, 1 failed / 10 passed | aserción (0 ≠ 255) | checkout del PNG; diff=0, cached=0 |
+| M28 | fuera | fuera (38317 ≠ 0) y también cara (0 ≠ 255), 2 failed / 9 passed | aserción | checkout del PNG; diff=0, cached=0 |
+
+Todas las sondas dan Jest exit=1; sus registradores, exit=0. No hay caídas
+por consulta ni errores de configuración. La excepción técnica de exportar
+M25 a JSON se corrigió usando salida estándar antes de commitear E1.1,
+como consta arriba. M28 también vacía el píxel de cara por el desplazamiento;
+se conserva y declara esa segunda caída, no se modifica el mutante.
+
+Candidatos: el primero `b96fe4ea5d60d397966fb420cac0ba0bba7c7cc605363f5feb814f6942a9e1c1`
+falló técnicamente por cara alfa 252. El segundo intento transparente también
+traía cara 252 y no se compuso. El candidato del respaldo cian (hash firmado
+arriba) pasó 11/11 y fue aprobado por el humano. Diagnóstico, prompts,
+outputs, composición, previews y borde 4× quedan en la sección «PARADA del PNG»;
+no hay rechazo visual humano ni candidatos rechazados por el humano.
+
+Anclas finales: todas coinciden, con valores declarados y medidos en T8.8.
+R10: splash-icon y node:fs en make-icons 0/0; diff de assets solo el PNG.
+Grep-clean de Salud medido otra vez al cerrar: 0 react-native-reanimated,
+0 StyleSheet.create, 0 hex, 0 clases arbitrarias (grep exit=1 al dar 0).
+Router.d.ts ausente: exit=0.
+
+Cierre R8: lista exacta de 10, sin ficheros ajenos; dependencias/backend
+sin diff; typecheck, lint y Jest enteros sin pipe, exit=0 los tres.
+94 suites, 2144 tests y 1 snapshot verdes. Salud 56 y app.assets 11;
+las siete suites de control restantes conservan sus recuentos (tabla T8.9).
+El log de Jest trae la advertencia de worker que no termina y es forzado
+al cerrar; también está en el log final de la ronda 1
+(`/tmp/115-final-jest.txt:25471`, ronda 2 `/tmp/115-r2-final-jest.log:25573`).
+No altera los exits ni los recuentos; no se abre trabajo fuera del alcance.
+
+T8.10: traceability actualizada: R2/R6 con los commits E1; R10 rojo/verde
+con sus tests y sondas; R8 con los 10 ficheros y el cierre actual; R9 S1–S11.
+10 filas, 0 «pendiente»; hashes citados comprobados como ancestros, exit=0.
+Solo impl y traceability van al commit
+`docs(mobile-health-make-parity): trace #115 E1-E2 and R10`, con
+`python3 /tmp/115-r2-final-register.py gate && git commit ...`.
+
+Guarda final de producción de Salud (desde mobile-pet-tracker/):
+
+```bash
+git diff --quiet 07851dc4ba27c211aafbb4ed14428a2668460268 HEAD -- src/screens/health/index.tsx; echo "exit=$?"
+git diff --quiet -- src/screens/health/index.tsx; echo "exit=$?"
+git diff --cached --quiet; echo "exit=$?"
+```
+
+Los tres exits son 0 antes de stage de docs. Producción de Salud intacta
+frente a H2 en toda la ronda. Revisión del diff documental sin errores
+(`git diff --check`, exit=0); ningún script temporal ni PNG de sonda en el repo.
+Sin init.sh, push, rebase, merge, amend, reset, make-icons ni expo prebuild.
+Se entrega al leader/reviewer la ronda 2; R9 S1–S11 lo firma el humano.
+La feature sigue in_progress hasta review y smoke; no se cambia bookkeeping
+fuera de los seis ficheros autorizados para esta ronda.
