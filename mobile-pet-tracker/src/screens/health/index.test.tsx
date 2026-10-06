@@ -955,6 +955,7 @@ describe('#115 R6: la próxima vacuna dice fecha y días restantes', () => {
     { row: 'k', language: 'es', tz: 'America/New_York', now: '2027-03-13 23:30', past: '2027-03-12', next: '2027-03-15', days: '2 d', label: 'Faltan 2 días', date: '15 mar 2027' },
     { row: 'l', language: 'es', tz: 'Pacific/Auckland', now: '2027-01-01 10:00', past: '2026-12-31', next: '2027-01-03', days: '2 d', label: 'Faltan 2 días', date: '3 ene 2027' },
     { row: 'm', language: 'es', tz: 'America/New_York', now: '2027-11-06 12:00', past: '2027-11-05', next: '2027-11-08', days: '2 d', label: 'Faltan 2 días', date: '8 nov 2027' },
+    { row: 'n', language: 'es', tz: 'UTC', now: '2026-12-31 12:00', past: '2026-12-30', next: '2027-01-01', days: '1 d', label: 'Faltan 1 días', date: '1 ene 2027' },
   ] as const)('fila $row: hoy $now, próxima $next', async ({ language, tz, now, past, next, days, label, date }) => {
     // Jest copies process.env; Node's environment makes Date observe TZ.
     const hostProcess = process.getBuiltinModule('process');
