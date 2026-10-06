@@ -171,18 +171,28 @@ function elementChild(node: TestInstance, index: number): TestInstance {
   return child;
 }
 
-function HealthWrapper({ children }: { children: ReactNode }) {
+function HealthWrapper({
+  children,
+  language = 'es',
+}: {
+  children: ReactNode;
+  language?: 'es' | 'en';
+}) {
   return (
     <HeroUINativeProvider>
-      <LanguageProvider initial="es">
+      <LanguageProvider initial={language}>
         <SelectedPetProvider>{children}</SelectedPetProvider>
       </LanguageProvider>
     </HeroUINativeProvider>
   );
 }
 
-async function renderHealth() {
-  return renderWithProviders(<HealthScreen />, { wrapper: HealthWrapper });
+async function renderHealth(language: 'es' | 'en' = 'es') {
+  return renderWithProviders(<HealthScreen />, {
+    wrapper: ({ children }) => (
+      <HealthWrapper language={language}>{children}</HealthWrapper>
+    ),
+  });
 }
 
 beforeEach(() => {
@@ -352,7 +362,8 @@ describe('R5: vacunas con la próxima destacada', () => {
     const nextCard = within(screen.getByTestId('next-vaccine-card'));
     expect(nextCard.getByText('Próxima dosis')).toBeVisible();
     expect(nextCard.getByText('Rabies')).toBeVisible();
-    expect(nextCard.getByText('2099-05-01')).toBeVisible();
+    expect(nextCard.getByText('1 may 2099')).toBeVisible();
+    expect(nextCard.queryByText('2099-05-01')).toBeNull();
     expect(screen.getAllByTestId(/^vaccine-row-/).map(({ props }) => props.testID)).toEqual([
       'vaccine-row-vaccine-2',
       'vaccine-row-vaccine-1',
@@ -909,5 +920,77 @@ describe('#115 R5: la weight card dibuja la evolución con WeightChart', () => {
     expect(screen.getByTestId('weight-card').children).toHaveLength(2);
     expect(screen.queryByTestId('weight-chart')).toBeNull();
     expect(screen.queryByTestId('weight-chart-empty')).toBeNull();
+  });
+});
+
+describe('#115 R6: la próxima vacuna dice fecha y días restantes', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockListWeights.mockResolvedValue({ kind: 'ok', weights: [] });
+  });
+
+  afterEach(() => jest.useRealTimers());
+
+  it.each([
+    { row: 'a', language: 'es', now: '2026-12-31 12:00', past: '2026-12-30', next: '2026-12-31', days: 'Hoy', label: undefined, date: '31 dic 2026' },
+    { row: 'b', language: 'es', now: '2026-12-31 12:00', past: '2026-12-30', next: '2027-01-02', days: '2 d', label: 'Faltan 2 días', date: '2 ene 2027' },
+    { row: 'c', language: 'es', now: '2027-01-01 12:00', past: '2026-12-31', next: '2027-01-01', days: 'Hoy', label: undefined, date: '1 ene 2027' },
+    { row: 'd', language: 'es', now: '2027-01-30 12:00', past: '2027-01-29', next: '2027-02-03', days: '4 d', label: 'Faltan 4 días', date: '3 feb 2027' },
+    { row: 'e', language: 'es', now: '2026-12-31 12:00', past: undefined, next: '2027-12-31', days: '365 d', label: 'Faltan 365 días', date: '31 dic 2027' },
+    { row: 'f', language: 'en', now: '2026-12-31 12:00', past: '2026-12-30', next: '2027-01-02', days: '2 d', label: 'In 2 days', date: 'Jan 2, 2027' },
+    { row: 'g', language: 'en', now: '2027-01-01 12:00', past: '2026-12-31', next: '2027-01-01', days: 'Today', label: undefined, date: 'Jan 1, 2027' },
+  ] as const)('fila $row: hoy $now, próxima $next', async ({ language, now, past, next, days, label, date }) => {
+    jest.useFakeTimers();
+    const [year, month, day] = now.split(' ')[0].split('-').map(Number);
+    jest.setSystemTime(new Date(year, month - 1, day, 12, 0));
+    const vaccines = [
+      ...(past ? [makeVaccine({ id: 'vaccine-past', name: 'Parvo', nextDoseAt: past })] : []),
+      makeVaccine({ nextDoseAt: next }),
+    ];
+    mockListVaccines.mockResolvedValue({ kind: 'ok', vaccines });
+    await renderHealth(language);
+    await waitFor(() => expect(screen.getByTestId('next-vaccine-days')).toHaveTextContent(days, { exact: true }));
+
+    expect(screen.getByTestId('next-vaccine-days').props.accessibilityLabel).toBe(label);
+    expect(screen.getByTestId('next-vaccine-date')).toHaveTextContent(date, { exact: true });
+    const card = within(screen.getByTestId('next-vaccine-card'));
+    expect(card.getByText('Rabies')).toBeVisible();
+    expect(card.queryByText(next)).toBeNull();
+  });
+
+  it('ordena la card en icono, columna y días, con la fecha en la columna', async () => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date(2026, 12 - 1, 31, 12, 0));
+    mockListVaccines.mockResolvedValue({ kind: 'ok', vaccines: [makeVaccine({ nextDoseAt: '2099-05-01' })] });
+    await renderHealth();
+    const card = await screen.findByTestId('next-vaccine-card');
+
+    expect(card.children).toHaveLength(3);
+    expect(elementChild(card, 2).props.testID).toBe('next-vaccine-days');
+    const column = elementChild(card, 1);
+    expect(column.props.className).toBe('flex-1 gap-1');
+    expect(column.children).toHaveLength(3);
+    expect(elementChild(column, 2).props.testID).toBe('next-vaccine-date');
+    expect(within(elementChild(card, 0)).getByTestId('health-icon-syringe')).toBeVisible();
+  });
+
+  it('pinta los días con la receta exacta', async () => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date(2026, 12 - 1, 31, 12, 0));
+    mockListVaccines.mockResolvedValue({ kind: 'ok', vaccines: [makeVaccine({ nextDoseAt: '2099-05-01' })] });
+    await renderHealth();
+    const days = await screen.findByTestId('next-vaccine-days');
+
+    expect(days.props.className).toBe('text-lg font-black text-warning-strong');
+    expect(days.props.style).toEqual({ fontVariant: ['tabular-nums'] });
+    expect(screen.getByTestId('next-vaccine-date').props.className).toBe('font-normal text-muted');
   });
 });
