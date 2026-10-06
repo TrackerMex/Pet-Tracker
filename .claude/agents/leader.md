@@ -209,20 +209,23 @@ No era teórico. Confirmado en dos features más, además de #106 y #109:
 
 ### Cómo se vuelve a medir
 
-El catálogo está cacheado y caduca:
+Lo que cuenta es lo **instalado**, no el catálogo remoto:
 
 ```bash
-python3 -c "
-import json
-d=json.load(open('$HOME/.codex/cache/remote_plugin_catalog/f787738308dab44d.json'))
-p=[x for x in d['plugins'] if x.get('name')=='expo'][0]
-print(p['release']['version'])
-[print(' -', s['name']) for s in p['release']['skills']]
-"
+grep -h '"version"' ~/.codex/plugins/cache/openai-curated/expo/*/.codex-plugin/plugin.json
+ls ~/.codex/plugins/cache/openai-curated/expo/*/skills/
 ```
 
-El nombre del fichero es un hash y cambia. Si no está, busca el `.json` más
-grande de ese directorio.
+Medido el 2026-10-06 (#115): sigue la `1.0.2` con las 13 de arriba.
+
+El script anterior leía `~/.codex/cache/remote_plugin_catalog/` buscando un
+plugin llamado `expo`, y desde el refresco del 2026-10-05 ya no lo encuentra
+(`IndexError`): ese catálogo lista ahora un plugin `app-6a90…` en `1.13.7` con
+24 skills **con nuestros nombres** (`expo-overview`, `expo-native-ui`,
+`expo-animation`…), pero **no está instalado** — `config.toml` sigue
+habilitando `expo@openai-curated`. Si algún día lo instalan, la tabla de
+equivalencias y los huecos de arriba caducan: vuelve a medir y reescribe esta
+sección.
 
 ## Gate de aprobación vía Notion
 
