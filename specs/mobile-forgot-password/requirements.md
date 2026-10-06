@@ -682,7 +682,8 @@ no pasa a `done`.
       (literal), `RESEND_API_KEY` y `RESEND_FROM` (`docs/verification.md` #58
       G1–G2). **Ruta B (sin Resend)**: `EMAIL_ENABLED` ≠ `true`; el backend
       imprime la línea JSON `auth.password_reset.issued` con `resetUrl`.
-      Marcar cuál se usa: ____
+      Marcar cuál se usa: A (relatada por el humano en el chat el
+      2026-10-06; la anota el leader)
 - [X] `RESET_LINK_HOST` fijado en `.env` raíz **y** en `mobile-pet-tracker/.env`,
       backend reiniciado y dev build **regenerado** (#59 G3) — sin esto el
       enlace no abre la app.

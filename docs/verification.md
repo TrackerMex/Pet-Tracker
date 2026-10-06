@@ -1005,6 +1005,22 @@ Infra e2e caída: <host>:<puerto> no responde (derivado de <CLAVE> en .env).
 Levántala con: docker compose up -d
 ```
 
+### Feature 117 — mobile-forgot-password
+
+Prueba de humo en el dev build de Android, firmada por el humano el
+2026-10-06 en `specs/mobile-forgot-password/requirements.md` §Prueba de humo
+(commit `ea802d9b`).
+
+- Fecha: 2026-10-06.
+- Build: dev build de Android de `feature/117-mobile-forgot-password`. El
+  humano no relató el commit del build; el código de `mobile-pet-tracker/` es
+  el mismo desde el merge con #116 (`588a777a`) hasta la firma.
+- Ruta: A (correo real por Resend), relatada por el humano en el chat.
+- Resultado: S1-S9 OK, relatado por el humano («todos los pasos ok»): S1
+  formulario, S2 envío, S3 enlace y reset con login 200, S4 reenvío, S5 429 a
+  la cuarta petición, S6 correo inválido, S7 anti-enumeración, S8 sin red y
+  S9 teclado.
+
 ---
 
 ## Notas para el implementer
