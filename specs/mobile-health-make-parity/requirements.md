@@ -600,7 +600,7 @@ plural de la fila n se queda en Fuera de alcance.
 
 ### Enmienda E3 — candados de R6 en todas las horas y en la rama Hoy
 
-- [ ] Enmienda E3 aprobada por humano ← gate obligatorio antes de la ronda 3 de Codex
+- [x] Enmienda E3 aprobada por humano (fecha: 2026-10-06, desde Notion: página `3f06115a-9b27-811f-802d-c7a05058341d`, `Estado del gate` = Aprobado, `page_last_edited_at` 2026-10-06T19:17:49.123Z, espejo de `33e8bcd5`) ← gate obligatorio antes de la ronda 3 de Codex
 
 ### Prueba de humo
 

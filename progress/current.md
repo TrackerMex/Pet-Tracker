@@ -108,6 +108,12 @@
   medidas sobre `33e8bcd5`: filas i–n literales, `NEXT_CARD_BRANCHES`,
   sondas con `--runInBand`. Codex arranca solo tras la firma de E3 (el
   primer grep de su BASE la exige).
+- Enmienda E3 aprobada en Notion (`page_last_edited_at`
+  2026-10-06T19:17:49.123Z; el único cambio de contenido frente al espejo
+  es la casilla de E3) y firmada en el repo. Siguiente: el humano pega la
+  CORRECCION 4 en Codex CLI; al terminar, el leader valida anclas y
+  commits, corre `./init.sh` (aviso a Backend antes) y lanza el
+  `reviewer` de la ronda 3.
 
 ## Ampliación solicitada: icono de inicio sin fondo — 2026-10-06
 
