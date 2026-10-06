@@ -298,7 +298,7 @@ Pasos:
 
 ### Prueba de humo
 
-- [ ] P1–P4 y S1–S5 firmadas por humano en dev build de Android (fecha: ____)
+- [x] P1–P4 y S1–S5 firmadas por humano en dev build de Android (fecha: 2026-10-06, `afa6a8ff`)
 
 ## Enmienda E1 — el render sin `await` de `#95 R3` contamina las filas nuevas
 
