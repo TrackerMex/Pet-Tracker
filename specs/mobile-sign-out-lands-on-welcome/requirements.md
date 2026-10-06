@@ -1,7 +1,7 @@
 ---
 feature: mobile-sign-out-lands-on-welcome
 id: 149
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec, mobile, navigation]
 base: e002a4a5 (origin/main con #117)
 ---
@@ -76,7 +76,7 @@ Home, map, health y food no llaman a `signOut`: dependen del 401 global.
   motivo, y tocar las 17 llamadas para pasarlo. Es otra feature de tamaño
   medio, con su propia matriz de candados.
 
-- [ ] D1 = welcome para todos los orígenes (recomendado)
+- [x] D1 = welcome para todos los orígenes (recomendado)
 - [ ] D1 = login para 401 y welcome para el botón de Perfil (invalida R1–R4; enmienda)
 
 ### D2 — Rutas de detalle bajo `Stack.Protected` sin sesión: ¿welcome o login? (Decisión del humano en el gate)
@@ -91,7 +91,7 @@ Home, map, health y food no llaman a `signOut`: dependen del 401 global.
   (c).
 - **Alternativa: login.** Solo tiene sentido junto a la alternativa de D1.
 
-- [ ] D2 = welcome (recomendado)
+- [x] D2 = welcome (recomendado)
 - [ ] D2 = login (invalida R3; enmienda)
 
 ### D3 — Dónde vive el cambio (cerrada por el spec_author)
@@ -290,11 +290,11 @@ Pasos:
 
 ### Decisiones D1 y D2
 
-- [ ] D1 y D2 decididas por humano (casillas de §Decisiones para el gate humano)
+- [x] D1 y D2 decididas por humano (casillas de §Decisiones para el gate humano). En el espejo de Notion quedaron marcadas las dos opciones de cada decisión; el humano lo aclaró en el chat de la sesión Backend el 2026-10-06: D1 = welcome para todos los orígenes, D2 = welcome. R1–R4 quedan tal cual
 
 ### Aprobación de la spec
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [x] Aprobado por humano (fecha: 2026-10-06, desde Notion: página `3f16115a-9b27-817d-b737-cb4face9d519`, `Estado del gate` = Aprobado, `page_last_edited_at` 2026-10-06T16:26:29.921Z) ← gate obligatorio antes de implementar
 
 ### Prueba de humo
 
