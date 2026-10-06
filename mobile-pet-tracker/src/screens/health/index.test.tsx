@@ -798,6 +798,7 @@ describe('#115 R2: Salud abre con el hero a sangre (A9)', () => {
     const states = screen.getByTestId('health-states');
     expect(states.props.style).toEqual({ paddingHorizontal: 24, paddingTop: 52, gap: 16 });
     expect(within(states).getByText('Salud')).toBeVisible();
+    expect(within(states).getByText('Salud').props.className).toBe('text-2xl font-black text-foreground');
     expect(screen.getByTestId('screen-health').props.contentContainerStyle).toEqual({ gap: 16, paddingBottom: 120 });
     if (branch === 'health-error') expect(within(states).getByTestId('health-retry')).toBeVisible();
     expect(screen.queryByTestId('pet-hero')).toBeNull();
