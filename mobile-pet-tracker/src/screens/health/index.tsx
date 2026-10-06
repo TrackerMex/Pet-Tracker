@@ -11,6 +11,7 @@ import { healthKeys, petKeys } from '../../api/query-keys';
 import { Card } from '../../components/card';
 import { PetHeroHeader } from '../../components/pet-hero-header';
 import { PetSwitcher } from '../../components/pet-switcher';
+import { WeightChart } from '../../components/weight-chart';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
@@ -223,7 +224,11 @@ export function HealthScreen() {
                   </View>
                 ) : null}
 
-                {weight.data?.kind === 'ok' && weight.data.weights.length === 0 ? (
+              {weight.data?.kind === 'ok' && weight.data.weights.length > 0 ? (
+                <WeightChart entries={weight.data.weights} />
+              ) : null}
+
+              {weight.data?.kind === 'ok' && weight.data.weights.length === 0 ? (
                   <Text testID="weight-card-empty" className="font-normal text-muted">
                     {t('health.noWeightEntriesYet')}
                   </Text>
