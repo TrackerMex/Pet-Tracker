@@ -1,6 +1,6 @@
 ---
 feature: "mobile-home-motion-foundations"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [mobile, ui, motion, spec]
 ---
 
@@ -587,7 +587,7 @@ conocida.
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [x] Aprobado por humano (fecha: 2026-10-06, vía Notion: página 3f16115a-9b27-8135-a964-f9a857f75cd8, `page_last_edited_at` 2026-10-06T21:46:24.330Z) ← gate obligatorio antes de implementar
 
 Al marcar esta casilla el humano firma también, explícitamente, las decisiones
 D1-D6 con sus valores por defecto y la enmienda A21 a `docs/ui-guidelines.md`
