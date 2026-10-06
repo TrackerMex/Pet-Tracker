@@ -155,7 +155,7 @@ Sin cambios (anclas negativas, ver R7): longitud del catálogo en
 
 | Test (describe › it) | Fixture | Asevera |
 |---|---|---|
-| `#115 R2: Salud abre con el hero a sangre (A9) › con mascotas, pet-hero y health-content son los únicos hijos del scroll, en ese orden` | 1 mascota, vacunas y peso `ok` | espera `pet-hero-name`; `hero.parent === content.parent`; ese padre tiene `children.length === 2`, `[0]` es `pet-hero` y `[1]` es `health-content`; `pet-hero.props.className === 'overflow-hidden bg-default'`; `health-states` es `null` |
+| `#115 R2: Salud abre con el hero a sangre (A9) › con mascotas, pet-hero y health-content son los únicos hijos del scroll, en ese orden` | 1 mascota, vacunas y peso `ok` | espera `pet-hero-name`; `hero.parent === content.parent`; ese padre tiene `children.length === 2`, `[0]` es `pet-hero` y `[1]` es `health-content`; **(Enmienda E1.1)** el padre de ese padre es el scroll: `expect(hero.parent!.parent).toBe(screen.getByTestId('screen-health'))`, en la línea siguiente a `expect(hero.parent).toBe(content.parent);`; `pet-hero.props.className === 'overflow-hidden bg-default'`; `health-states` es `null` |
 | `… › saca el padding horizontal a health-content y deja gap y paddingBottom en el scroll` | igual | `contentContainerStyle` `toEqual({ gap: 16, paddingBottom: 120 })`; `health-content` style `toEqual({ paddingHorizontal: 24, gap: 16 })`; `within(health-content)` contiene `vaccines-section` y `weight-card` |
 | `… › con contenido no pinta el título Salud` | igual | tras ver `pet-hero-name`, `queryByText('Salud')` es `null` |
 | `… › sin contenido ($name), agrupa título y rama en health-states sin hero` (`it.each`) | 5 filas: pendiente (`pending()`), `{ kind: 'error' }`, `{ kind: 'unreachable', message: 'network down' }`, `{ kind: 'missing-config' }`, `{ kind: 'ok', pets: [] }` | espera la rama (`health-loading`, `health-error` o `health-empty`) dentro de `health-states`; `health-states` style `toEqual({ paddingHorizontal: 24, paddingTop: 52, gap: 16 })`; `within(health-states).getByText('Salud')`; `contentContainerStyle` `toEqual({ gap: 16, paddingBottom: 120 })`; `pet-hero` y `health-content` son `null` |
@@ -231,27 +231,48 @@ nodo en el árbol.
 
 Tabla de fechas: `jest.useFakeTimers()` + `jest.setSystemTime(<ahora>)` en
 el `it`, y `jest.useRealTimers()` en `afterEach` del `describe`. `<ahora>` se
-construye en hora local con `new Date(año, mes - 1, día, 12, 0)`. Cada fila
-usa dos vacunas, "Parvo" (la pasada) y "Rabies" (la próxima), salvo la fila
+construye en hora local con `new Date(año, mes - 1, día, hora, minuto)`, con
+la hora y el minuto leídos de la columna «Ahora» (**Enmienda E1.2**: antes se
+fijaba `12, 0` y la hora de la columna no se usaba).
+
+Columna `TZ` (**Enmienda E1.2**): zona horaria del proceso durante el `it`.
+Se fija antes de `jest.useFakeTimers()` con
+`const hostProcess = process.getBuiltinModule('process');` y
+`hostProcess.env.TZ = <TZ>`, y se restaura en un `finally` del propio `it`
+(`if (previousTZ === undefined) delete hostProcess.env.TZ; else hostProcess.env.TZ = previousTZ;`),
+como `src/screens/meal-schedule/index.test.tsx` (#147 E1.2).
+`process.env.TZ` no sirve: jest copia `process.env` y el cambio no llega a
+`Date`.
+
+Cada fila usa dos vacunas, "Parvo" (la pasada) y "Rabies" (la próxima), salvo la fila
 e. Para las filas en inglés, `renderHealth` acepta un idioma opcional
 (`'es'` por defecto) que llega a `LanguageProvider initial`.
 
-| Fila | Idioma | Ahora (local) | Vacunas (`nextDoseAt`) | Texto de días | `accessibilityLabel` | Fecha | Cruza |
-|---|---|---|---|---|---|---|---|
-| a | es | 2026-12-31 12:00 | Parvo `2026-12-30`, Rabies `2026-12-31` | `Hoy` | `undefined` | `31 dic 2026` | — |
-| b | es | 2026-12-31 12:00 | Parvo `2026-12-30`, Rabies `2027-01-02` | `2 d` | `Faltan 2 días` | `2 ene 2027` | mes y año |
-| c | es | 2027-01-01 12:00 | Parvo `2026-12-31`, Rabies `2027-01-01` | `Hoy` | `undefined` | `1 ene 2027` | año (el filtro descarta la del año anterior) |
-| d | es | 2027-01-30 12:00 | Parvo `2027-01-29`, Rabies `2027-02-03` | `4 d` | `Faltan 4 días` | `3 feb 2027` | mes |
-| e | es | 2026-12-31 12:00 | Rabies `2027-12-31` | `365 d` | `Faltan 365 días` | `31 dic 2027` | año, mismo mes y día |
-| f | en | 2026-12-31 12:00 | Parvo `2026-12-30`, Rabies `2027-01-02` | `2 d` | `In 2 days` | `Jan 2, 2027` | mes y año |
-| g | en | 2027-01-01 12:00 | Parvo `2026-12-31`, Rabies `2027-01-01` | `Today` | `undefined` | `Jan 1, 2027` | año |
+| Fila | Idioma | TZ | Ahora (local) | Vacunas (`nextDoseAt`) | Texto de días | `accessibilityLabel` | Fecha | Cruza |
+|---|---|---|---|---|---|---|---|---|
+| a | es | `UTC` | 2026-12-31 12:00 | Parvo `2026-12-30`, Rabies `2026-12-31` | `Hoy` | `undefined` | `31 dic 2026` | — |
+| b | es | `UTC` | 2026-12-31 12:00 | Parvo `2026-12-30`, Rabies `2027-01-02` | `2 d` | `Faltan 2 días` | `2 ene 2027` | mes y año |
+| c | es | `UTC` | 2027-01-01 12:00 | Parvo `2026-12-31`, Rabies `2027-01-01` | `Hoy` | `undefined` | `1 ene 2027` | año (el filtro descarta la del año anterior) |
+| d | es | `UTC` | 2027-01-30 12:00 | Parvo `2027-01-29`, Rabies `2027-02-03` | `4 d` | `Faltan 4 días` | `3 feb 2027` | mes |
+| e | es | `UTC` | 2026-12-31 12:00 | Rabies `2027-12-31` | `365 d` | `Faltan 365 días` | `31 dic 2027` | año, mismo mes y día |
+| f | en | `UTC` | 2026-12-31 12:00 | Parvo `2026-12-30`, Rabies `2027-01-02` | `2 d` | `In 2 days` | `Jan 2, 2027` | mes y año |
+| g | en | `UTC` | 2027-01-01 12:00 | Parvo `2026-12-31`, Rabies `2027-01-01` | `Today` | `undefined` | `Jan 1, 2027` | año |
+| h | es | `America/Mexico_City` | 2026-12-31 20:00 | Parvo `2026-12-30`, Rabies `2027-01-02` | `2 d` | `Faltan 2 días` | `2 ene 2027` | mes y año, con el día UTC ya en 2027-01-01 (Enmienda E1.2) |
+
+Fila h (**Enmienda E1.2**): a las 20:00 de Ciudad de México (UTC−6, sin
+horario de verano desde 2022) `Date.now()` es `2027-01-01T02:00Z`. Hasta
+`Date.parse('2027-01-02')`, medianoche UTC, faltan 22 horas: cualquier
+cuenta en milisegundos da 1 (`Math.ceil` y `Math.round` de la diferencia),
+y la de días de calendario locales (`calendarDaysUntil`) da 2. En `UTC` a
+las 12:00 las dos cuentas coinciden, por eso las filas a–g no distinguen
+una de otra.
 
 No hay fila de 1 día: el plural de `home.nextVaccineDaysLeft` diría "Faltan 1
 días" (observación en Fuera de alcance).
 
 | Test (describe › it) | Fixture | Asevera |
 |---|---|---|
-| `#115 R6: la próxima vacuna dice fecha y días restantes › fila $row: hoy $now, próxima $next` (`it.each` de la tabla) | la fila | espera `next-vaccine-days` con su texto; `props.accessibilityLabel` es el de la fila; `next-vaccine-date` tiene la fecha; `within(next-vaccine-card)` tiene `Rabies` y no tiene el ISO de la próxima |
+| `#115 R6: la próxima vacuna dice fecha y días restantes › fila $row: hoy $now, próxima $next` (`it.each` de la tabla; título sin la TZ) | la fila, en su `TZ` y a su hora | espera `next-vaccine-days` con su texto; `props.accessibilityLabel` es el de la fila; `next-vaccine-date` tiene la fecha; `within(next-vaccine-card)` tiene `Rabies` y no tiene el ISO de la próxima |
 | `… › ordena la card en icono, columna y días, con la fecha en la columna` | `makeVaccine({ nextDoseAt: '2099-05-01' })` | `next-vaccine-card` tiene 3 hijos; `[2]` es `next-vaccine-days`; `[1]` tiene 3 hijos y su `[2]` es `next-vaccine-date`; `[0]` contiene `health-icon-syringe` (el testID del mock del icono `Syringe`) |
 | `… › pinta los días con la receta exacta` | igual | `next-vaccine-days.props.className === 'text-lg font-black text-warning-strong'`; `props.style` `toEqual({ fontVariant: ['tabular-nums'] })`; `next-vaccine-date.props.className === 'font-normal text-muted'` |
 | `R5: vacunas con la próxima destacada › highlights the nearest future dose and keeps row order` (adaptado) | existente | `nextCard.getByText('2099-05-01')` pasa a `nextCard.getByText('1 may 2099')`, más `nextCard.queryByText('2099-05-01')` `toBeNull()` |
@@ -298,11 +319,13 @@ THE SYSTEM SHALL cumplir, medido por el reviewer desde la raíz del repo:
 - `git diff origin/main -- mobile-pet-tracker/package.json mobile-pet-tracker/bun.lock`
   vacío.
 - `git diff --stat origin/main -- backend-pet-tracker/` vacío.
-- `git diff --name-only <HEAD del handoff> -- . ':!feature_list.json' ':!progress/current.md' ':!progress/handoff_mobile-health-make-parity.md' ':!specs/mobile-health-make-parity/requirements.md' ':!specs/mobile-health-make-parity/design.md' ':!specs/mobile-health-make-parity/tasks.md'`
-  da exactamente los 7 ficheros de `design.md` §1.2. Se mide contra el HEAD
-  del handoff, no contra `origin/main`, porque la spec y `feature_list.json`
-  los commitea el leader; los pathspecs excluyen solo ficheros que toca el
-  leader.
+- `git diff --name-only origin/main...HEAD -- . ':!feature_list.json' ':!STATUS.md' ':!progress/current.md' ':!progress/handoff_mobile-health-make-parity.md' ':!progress/review_mobile-health-make-parity.md' ':!specs/mobile-health-make-parity/requirements.md' ':!specs/mobile-health-make-parity/design.md' ':!specs/mobile-health-make-parity/tasks.md' ':!.claude/agents/leader.md'`
+  da exactamente los 10 ficheros de `design.md` §1.2 (**Enmienda E2**:
+  antes eran 7, medidos contra el HEAD del handoff; la CORRECCION 2 del
+  handoff pasó la base a `origin/main...HEAD` tras el merge de #117). Los
+  pathspecs excluyen solo ficheros que tocan commits del leader o del
+  humano (`STATUS.md` y `progress/current.md` los tocó también el commit
+  `5ee9d45f` del humano).
 - En `H`: 0 hex, 0 clases arbitrarias `[...]`, 0 `StyleSheet.create` (carta
   §Decisiones fijas 3).
 - Desde `mobile-pet-tracker/`: `bun run typecheck`, `bun run lint` y
@@ -338,8 +361,126 @@ hecho por el humano. Cada casilla se marca a mano:
   el peso actual ya están al día sin tirar para refrescar.
 - [ ] S9 — Con TalkBack, los días de la próxima vacuna se leen como "Faltan N
   días" (o "Hoy").
+- [ ] S10 — (Enmienda E2) Splash en arranque en frío, tras
+  `bunx expo prebuild --clean` y reinstalar el dev build (los assets del
+  splash no viajan por Metro): la mascota sola sobre `#9460FC`, sin cuadrado
+  más claro ni pin blanco detrás. En Android 12+ el sistema recorta el icono
+  a un disco (#101 D3/D7): basta con que dentro del disco no se vea el borde
+  de ningún cuadrado.
+- [ ] S11 — (Enmienda E2) Bienvenida en tema claro y en oscuro, y la
+  pantalla de carga de sesión (`splash-logo`) si llega a verse: la mascota
+  sin cuadrado violeta ni pin, con bordes limpios (sin halo blanco sobre el
+  fondo oscuro ni mate violeta sobre el claro). Viaja por Metro.
 
 - [ ] Smoke aprobado por humano (fecha: ____, dispositivo: ____)
+
+### R10 — Splash y bienvenida: la mascota sola, sin fondo ni pin (Enmienda E2)
+
+Petición del humano del 2026-10-06 (commit `5ee9d45f`, `progress/current.md`
+§Ampliación), cerrada en el chat con dos decisiones: el arte lo genera Codex
+con imagegen a partir del original, y el pin blanco se quita (queda solo la
+mascota). Sustituye a #101 D4 (`splash-icon.png` como copia byte a byte de
+`android-icon-foreground.png`).
+
+- THE SYSTEM SHALL servir en `mobile-pet-tracker/assets/images/splash-icon.png`
+  un PNG de 1024×1024, 8 bits, RGBA (tipo de color 6) y sin entrelazado, con
+  la mascota robótica sola sobre fondo transparente: sin el cuadrado
+  violeta, sin degradado ni resplandor y sin el pin blanco ni su halo.
+- THE SYSTEM SHALL mantener la geometría de #101: la mascota dentro de la
+  zona segura `[174, 850)` en x y en y (el 66 % central del lienzo), con
+  alfa 0 en todo píxel fuera de ella.
+- THE SYSTEM SHALL dejar con alfa 0 los cuatro bloques de 26×26 en las
+  esquinas del antiguo cuadrado (`x` e `y` en `[174, 200)` o en
+  `[824, 850)`) y el bloque de la punta del pin (`x` en `[492, 532)`, `y` en
+  `[790, 830)`), y con alfa 255 el píxel `(512, 560)`, en la cara de la
+  mascota.
+- THE SYSTEM SHALL dejar de generar `splash-icon.png` en
+  `mobile-pet-tracker/scripts/make-icons.mjs`: se borran la línea
+  ``fs.copyFileSync(`${images}/android-icon-foreground.png`, `${images}/splash-icon.png`);``
+  y `import fs from 'node:fs';`, que solo usaba ella. Así una regeneración de
+  los iconos ya no pisa el splash. El script no se ejecuta en esta feature.
+- THE SYSTEM SHALL no cambiar nada más: el plugin `expo-splash-screen` sigue
+  en `{ backgroundColor: '#9460FC', image: './assets/images/splash-icon.png', imageWidth: 200 }`
+  (candado `#101 R6` de `app.config.test.ts`); `welcome-hero` y `splash-logo`
+  siguen apuntando a `splash-icon.png` (candado de #118 en
+  `src/screens/welcome/index.test.tsx`), y ningún otro fichero de
+  `mobile-pet-tracker/assets/` cambia.
+
+Receta del candidato (la sigue Codex; la aprobación es del humano):
+
+1. imagegen edita `mobile-pet-tracker/assets/images/pet-tracker-app-icon.png`
+   (la fuente de #101) pidiendo: la misma mascota, con la misma pose,
+   proporciones y posición en el lienzo; fondo totalmente transparente; sin
+   degradado, sin resplandor, sin el pin ni su halo blanco, sin sombra
+   proyectada; bordes limpios, sin halo blanco ni mate de color.
+2. Con `jimp-compact` (ya instalado; es el que usa `make-icons.mjs`), el
+   resultado se redimensiona a 676×676 con `Jimp.RESIZE_BICUBIC` y se
+   compone en `(174, 174)` sobre un lienzo de 1024×1024 transparente
+   (`0x00000000`), igual que `android-icon-foreground.png` en
+   `make-icons.mjs`. La salida es
+   `mobile-pet-tracker/assets/images/splash-icon.png`. El script de
+   composición y la salida de imagegen viven en `/tmp/115-splash/` y no se
+   commitean.
+3. Previews de 1024×1024 en `/tmp/115-splash/`, sin commitear:
+   `preview-splash.png` (el candidato sobre `#9460FC`),
+   `preview-welcome-light.png` (sobre `#FFFFFF`) y `preview-welcome-dark.png`
+   (sobre `#0D1117`, el `--background` oscuro de `global.css`).
+4. Parada para el humano: `sha256sum` del candidato en el impl, y nada se
+   commitea hasta que el humano lo apruebe mirándolo (casilla «PNG del
+   splash» de §Aprobación). Si lo rechaza, otra iteración desde el paso 1
+   con su comentario; cada candidato rechazado deja su `sha256sum` y el
+   motivo en el impl.
+
+Helper y tests: `design.md` §1.8.
+
+| Test (describe › it) | Fichero | Asevera |
+|---|---|---|
+| `#115 R10: el splash es la mascota sola sobre transparente › no hay alfa fuera de la zona segura [174, 850)` | `app.assets.test.ts` | recuento de píxeles con alfa > 0 fuera de `[174, 850)²` `toBe(0)` |
+| `… › las cuatro esquinas del antiguo cuadrado son transparentes` | igual | recuentos de alfa > 0 en los cuatro bloques `toEqual([0, 0, 0, 0])` |
+| `… › la punta del pin es transparente` | igual | recuento de alfa > 0 en el bloque del pin `toBe(0)` |
+| `… › la cara de la mascota es opaca` | igual | `alpha(512, 560)` `toBe(255)` |
+
+Los cuatro `it` llaman a `readAlpha('assets/images/splash-icon.png')`, que
+además asevera 8 bits, tipo de color 6 y sin entrelazado. Sobre el
+`splash-icon.png` de la base, «esquinas» y «pin» caen
+(`[676, 676, 676, 676]` y 1600) y «fuera» y «cara» pasan.
+
+| Ancla (desde `mobile-pet-tracker/`) | Base | Después |
+|---|---|---|
+| `grep -c 'splash-icon' scripts/make-icons.mjs` | 1 | 0 |
+| `grep -c "node:fs" scripts/make-icons.mjs` | 1 | 0 |
+| `git diff --name-only origin/main...HEAD -- assets/` | vacío | solo `mobile-pet-tracker/assets/images/splash-icon.png` |
+
+## Enmienda E1–E2 (review de la ronda 1 y petición del humano, 2026-10-06)
+
+El `reviewer` rechazó la ronda 1 (`progress/review_mobile-health-make-parity.md`,
+HEAD revisado `0e39d7b5`) por dos candados ciegos que esta spec prescribía al
+pie de la letra. El código de producción de Salud cumple R1–R8 y **no
+cambia**: E1 solo toca `src/screens/health/index.test.tsx`. El mismo día el
+humano pidió meter en #115 el icono de inicio sin fondo (`5ee9d45f`), que
+entra como E2. Los arreglos de E1 y el candado de E2 se validaron en un spike
+fuera del árbol, verdes sobre `0e39d7b5` y rojos contra su mutación.
+
+| Id | Requisito | Hueco o cambio | Mutación que quedaba verde | Validación |
+|---|---|---|---|---|
+| E1.1 | R2 | la aserción de padres compara hero y contenido entre sí, no contra el scroll | M25: `<View>` en lugar del fragmento que envuelve hero y contenido | verde en la base; con M25 cae `con mascotas, pet-hero y health-content son los únicos hijos del scroll, en ese orden` |
+| E1.2 | R6 | todas las filas a las 12:00 en UTC, y la hora de la tabla ignorada: días en milisegundos y días de calendario coinciden | M23: `Math.ceil((Date.parse(nextVaccine.nextDoseAt!) - Date.now()) / 86400000)`. M24 (`Math.round`) caía solo por accidente (obs. 6 de la review) | fila h verde en la base; con M23 cae solo la fila h; con M24, a–h |
+| E2 | R10 (nuevo), R8 y R9 | splash y bienvenida con la mascota sola sobre transparente | — | decoder dentro de jest-expo: rojo sobre el `splash-icon.png` actual, verde sobre un candidato sintético compuesto con `jimp-compact` |
+
+Consecuencias:
+
+- `src/screens/health/index.test.tsx` pasa de 55 a 56 `it` (la fila h).
+  E1.1 añade una línea al `it` de R2.
+- `app.assets.test.ts` gana el helper `readAlpha` y un `describe` de 4 `it`.
+- R8: la lista cerrada pasa de 7 a 10 ficheros (`design.md` §1.2).
+- R9: S10 y S11.
+- Observaciones de la review: la 3 y la 4 las cierra el leader
+  (`progress/current.md` y frontmatter); la 5, la 8, la 10 y la 11 no piden
+  cambio; la 7 (autorización de `bd2f67d9`) la confirma el humano; la 9
+  (línea en blanco en `src/screens/health/index.tsx`) no se toca para no
+  abrir producción en E1.
+
+Los textos normativos están en R2, R6, R8, R9 y R10, marcados «Enmienda E<n>».
 
 ## Fuera de alcance
 
@@ -353,6 +494,9 @@ hecho por el humano. Cada casilla se marca a mano:
 | Mover `calendarDaysUntil` y `fmtDate` a un módulo compartido | Delimitación | Se importan tal cual de `../home/format`; ningún candado lo prohíbe. |
 | Skeleton de la weight card mientras carga | Delimitación | No existe en la base y no lo pide el Make. |
 | "Faltan 1 días" en Home, y desde esta feature también en el `accessibilityLabel` de Salud | Observación | Plural ausente en `home.nextVaccineDaysLeft`; no se toca aquí y R6 no tiene fila de 1 día. Si se arregla, se arregla una vez para las dos pantallas. |
+| Cambiar el icono del launcher, el foreground, el monocromo, el favicon o el de notificación (Enmienda E2) | Delimitación | Solo cambia `splash-icon.png`; R10 lo ancla con el diff de `assets/`. |
+| Regenerar los iconos con `make-icons.mjs` (Enmienda E2) | Delimitación | El script solo pierde la línea del splash; ejecutarlo reescribiría los otros PNG. |
+| Splash en iOS (Enmienda E2) | Delimitación | iOS sigue aparcado en #60; el PNG es el mismo para las dos plataformas. |
 | La explore estimaba 4-6 claves nuevas | Observación | Falso: son 0 (D11). La explore tampoco contaba que la fila de variación y el estado vacío con CTA ya existen. |
 
 ## Preguntas
@@ -368,4 +512,23 @@ hecho por el humano. Cada casilla se marca a mano:
 
 ## Aprobación
 
+> Cuatro casillas, cuatro gates (lección `gate-humano-sin-casilla-donde-firmar`).
+> La de la spec autorizó la ronda 1; la de la Enmienda E1–E2 autoriza la
+> ronda 2 de Codex; la del PNG autoriza el commit verde de R10; la de R9
+> cierra la feature.
+
+### Aprobación de la spec
+
 - [x] Spec aprobada por humano (fecha: 2026-10-06, desde Notion: página `3f06115a-9b27-811f-802d-c7a05058341d`, `Estado del gate` = Aprobado, `page_last_edited_at` 2026-10-06T14:06:26.286Z)
+
+### Enmienda E1–E2 — candados de R2 y R6, y splash sin fondo ni pin
+
+- [ ] Enmienda E1–E2 aprobada por humano (fecha: ____) ← gate obligatorio antes de la ronda 2 de Codex
+
+### PNG del splash
+
+- [ ] Candidato de `splash-icon.png` aprobado por humano mirándolo (fecha: ____, `sha256`: ____) ← gate obligatorio antes del commit verde de R10
+
+### Prueba de humo
+
+- [ ] La casilla «Smoke aprobado por humano» de R9 (S1–S11)

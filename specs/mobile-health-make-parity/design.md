@@ -1,7 +1,7 @@
 ---
 feature: mobile-health-make-parity
 id: 115
-status: spec_ready
+status: approved
 tags: [harness, spec, mobile, ui]
 base: 8afae724
 ---
@@ -49,6 +49,12 @@ Docs:
 6. `specs/mobile-health-make-parity/traceability.md` — la rellena Codex.
 7. `progress/impl_mobile-health-make-parity.md` — reporte de Codex.
 
+Enmienda E2 (R10):
+
+8. `mobile-pet-tracker/assets/images/splash-icon.png` — el candidato aprobado por el humano.
+9. `mobile-pet-tracker/scripts/make-icons.mjs` — sin la copia al splash ni `import fs`.
+10. `mobile-pet-tracker/app.assets.test.ts` — helper `readAlpha` y `describe` de R10.
+
 **No se tocan** (anclas negativas): `src/components/weight-chart.tsx`,
 `src/components/pet-hero-header.tsx`, `src/components/pet-switcher.tsx`,
 `src/screens/home/` (incluido `format.ts`), `src/screens/weight-log/`,
@@ -56,7 +62,9 @@ Docs:
 `src/__tests__/design-drift.test.ts`,
 `src/providers/__tests__/language-provider.test.tsx`,
 `specs/mobile-ui-language/design.md`, `docs/ui-guidelines.md`,
-`package.json`, `bun.lock`, `backend-pet-tracker/`.
+`package.json`, `bun.lock`, `backend-pet-tracker/`, `app.config.test.ts`,
+`app.json`, `src/screens/welcome/`, `src/app/index.tsx` y cualquier otro
+fichero de `assets/` (Enmienda E2).
 
 ### 1.3 Árbol
 
@@ -131,6 +139,80 @@ card de la próxima vacuna es única; sus decisiones son las de R6 (3 hijos,
 orden, receta de `next-vaccine-days` y de `next-vaccine-date`, texto y
 `accessibilityLabel` por rama).
 
+### 1.8 Decoder de alfa para R10 (Enmienda E2)
+
+En `app.assets.test.ts`, añadir `import { inflateSync } from 'node:zlib';`
+junto a los imports de `node:` y, debajo de `readIhdr`, estos dos helpers.
+Validados dentro de jest-expo en el spike de la enmienda (filtros PNG 0-4;
+el candidato que escribe `jimp-compact` usa filtrado adaptativo):
+
+```ts
+function readAlpha(relativePath: string) {
+  const buf = readFileSync(join(__dirname, relativePath));
+  const { width, height, bitDepth, colorType } = readIhdr(relativePath);
+
+  expect([bitDepth, colorType, buf[28]]).toEqual([8, 6, 0]);
+
+  const idat: Buffer[] = [];
+  for (let at = 8; at < buf.length; at += 12 + buf.readUInt32BE(at)) {
+    if (buf.toString('latin1', at + 4, at + 8) === 'IDAT') {
+      idat.push(buf.subarray(at + 8, at + 8 + buf.readUInt32BE(at)));
+    }
+  }
+
+  const raw = inflateSync(Buffer.concat(idat));
+  const stride = width * 4;
+  const px = Buffer.alloc(height * stride);
+  for (let y = 0; y < height; y++) {
+    const filter = raw[y * (stride + 1)];
+    for (let i = 0; i < stride; i++) {
+      const a = i >= 4 ? px[y * stride + i - 4] : 0;
+      const b = y > 0 ? px[(y - 1) * stride + i] : 0;
+      const c = i >= 4 && y > 0 ? px[(y - 1) * stride + i - 4] : 0;
+      const p = a + b - c;
+      const paeth =
+        Math.abs(p - a) <= Math.abs(p - b) && Math.abs(p - a) <= Math.abs(p - c)
+          ? a
+          : Math.abs(p - b) <= Math.abs(p - c)
+            ? b
+            : c;
+      const predictor = [0, a, b, (a + b) >> 1, paeth][filter];
+      px[y * stride + i] = (raw[y * (stride + 1) + 1 + i] + predictor) & 0xff;
+    }
+  }
+
+  return (x: number, y: number) => px[(y * width + x) * 4 + 3];
+}
+
+function countAlpha(
+  alpha: (x: number, y: number) => number,
+  [x0, y0, x1, y1]: [number, number, number, number],
+) {
+  let count = 0;
+  for (let y = y0; y < y1; y++) {
+    for (let x = x0; x < x1; x++) {
+      if (alpha(x, y) > 0) count++;
+    }
+  }
+
+  return count;
+}
+```
+
+Cada `it` de R10 empieza con
+`const alpha = readAlpha('assets/images/splash-icon.png');`:
+
+- fuera: recorre el lienzo entero y cuenta `alpha(x, y) > 0` con
+  `x < 174 || x >= 850 || y < 174 || y >= 850`; `toBe(0)`.
+- esquinas: `countAlpha` de `[174, 174, 200, 200]`, `[824, 174, 850, 200]`,
+  `[174, 824, 200, 850]` y `[824, 824, 850, 850]`, en un array;
+  `toEqual([0, 0, 0, 0])`.
+- pin: `countAlpha(alpha, [492, 790, 532, 830])` `toBe(0)`.
+- cara: `alpha(512, 560)` `toBe(255)`.
+
+Sin dependencias nuevas: `node:zlib` es de Node, como `node:fs` y
+`node:path`, que ya usa el fichero.
+
 ## 2. Mutaciones y sondas
 
 Cada fila es una mutación sobre la implementación verde. «Aserción» = la
@@ -161,6 +243,18 @@ porque el nodo no existe.
 | M20 | sin `TABULAR_NUMS` en los días | R6 › receta y `#62 R15` (3 ≠ 2) | aserción |
 | M21 | `next-vaccine-days` dentro de la columna | R6 › orden (3 hijos y `[2]`) | aserción |
 | M22 | `t('home.nextVaccineToday')` dos veces (texto y label) | R1 (`checkUses` 2 ≠ 1 en `#65 R5` y en `#65 R18`) y R6 filas a, c, g | aserción |
+| M23 | (E1.2) `calendarDaysUntil(nextVaccine.nextDoseAt!, new Date())` → `Math.ceil((Date.parse(nextVaccine.nextDoseAt!) - Date.now()) / 86400000)` | R6 fila h (`1 d` ≠ `2 d`); a–g siguen verdes | aserción |
+| M24 | (E1.2) lo mismo con `Math.round` | R6 filas a–h (h por la TZ; a–g por el reloj que adelanta `waitFor`, obs. 6 de la review) | aserción |
+| M25 | (E1.1) `<View>` / `</View>` en lugar del fragmento `<>` / `</>` que envuelve `PetHeroHeader` y `health-content` | R2 › hijos (`hero.parent!.parent` no es `screen-health`) | aserción |
+| M26 | (E2) `splash-icon.png` de la base: `git show origin/main:mobile-pet-tracker/assets/images/splash-icon.png > assets/images/splash-icon.png` | R10 › esquinas y pin | aserción |
+| M27 | (E2) lienzo vacío: `new Jimp(1024, 1024, 0x00000000)` escrito en `assets/images/splash-icon.png` | R10 › cara | aserción |
+| M28 | (E2) el candidato compuesto en `(0, 0)` en vez de `(174, 174)` | R10 › fuera | aserción |
+
+M23–M25 se restauran con `git checkout HEAD -- src/screens/health/index.tsx`
+y M26–M28 con `git checkout HEAD -- assets/images/splash-icon.png`; después
+de cada una, `git diff --quiet -- <ruta>` y `git diff --cached --quiet` con
+exit 0. Los PNG de M27 y M28 se generan en `/tmp/115-splash/` y se copian
+encima; no se commitean.
 
 ## 3. Alternativas descartadas
 
@@ -180,4 +274,5 @@ porque el nodo no existe.
 Para quien implemente (nombres de Claude Code; el leader los traduce a los de
 Codex en el handoff, deuda B5): `expo:expo-overview`, `expo-native-ui`,
 `expo-design-system` y `expo-animation` (solo la puerta de frecuencia, que
-aquí decide **no** animar).
+aquí decide **no** animar). Enmienda E2: el generador de imágenes de Codex
+(imagegen), el mismo que hizo el icono de #101.

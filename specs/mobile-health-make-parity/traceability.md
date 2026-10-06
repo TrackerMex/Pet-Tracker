@@ -1,7 +1,7 @@
 ---
 feature: mobile-health-make-parity
 id: 115
-status: spec_ready
+status: approved
 tags: [harness, spec, mobile, ui]
 ---
 
@@ -17,7 +17,8 @@ tags: [harness, spec, mobile, ui]
 | R6 | Fecha y días de la próxima vacuna | `src/screens/health/index.test.tsx` › `#115 R6: la próxima vacuna dice fecha y días restantes` (`it.each` a..g + 2 `it`) + `R5: vacunas con la próxima destacada` › `highlights the nearest future dose and keeps row order` | `a88ce6c8` — `test(mobile-health): #115 R6 red, next vaccine date and countdown` | `08d106e2` — `feat(mobile-health): #115 R6 show next dose date and days left` | verificado |
 | R7 | Candados globales: deltas y anclas negativas | `src/__tests__/consistency-classnames.test.ts` › `#62 R15: todo contador usa cifras tabulares` › `screens/health/index.tsx aplica TABULAR_NUMS a sus 3 valores` y `#69 R10: mantiene la base cerrada más los deltas medidos`; `src/__tests__/ui-language.test.ts` › `#65 R5: Health resuelve su copy por clave` › `resuelve las 32 ocurrencias normativas`; comandos R7 de abajo | `a88ce6c8` — `test(mobile-health): #115 R6 red, next vaccine date and countdown` | `08d106e2` — `feat(mobile-health): #115 R6 show next dose date and days left` | verificado; #69 R10 nace verde |
 | R8 | Alcance cerrado | comandos R8 de abajo: diff, grep-clean, typecheck, lint y Jest entero; sin test nuevo | — (verificación de alcance) | `08d106e2` — `feat(mobile-health): #115 R6 show next dose date and days left`; evidencia en `bd2f67d9` — `docs(mobile-health-make-parity): record #115 implementation evidence` | verificado |
-| R9 | Smoke humano en dev build de Android | gate humano (S1..S9) | — | — | gate humano |
+| R9 | Smoke humano en dev build de Android | gate humano (S1..S11; S10–S11 por la Enmienda E2) | — | — | gate humano |
+| R10 | Splash y bienvenida: la mascota sola sobre transparente (Enmienda E2) | `app.assets.test.ts` › `#115 R10: el splash es la mascota sola sobre transparente` (4 `it`) | pendiente (ronda 2) | pendiente (ronda 2, tras aprobar el PNG) | pendiente |
 
 R5 conserva `b6c08b2a` — `feat(mobile-health): #115 R5 render WeightChart history`
 como **impl, no verde: aserción de test corregida en `1ae2b78f`**. El hijo

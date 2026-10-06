@@ -1,7 +1,7 @@
 ---
 feature: mobile-health-make-parity
 id: 115
-status: spec_ready
+status: approved
 tags: [harness, spec, mobile, ui]
 ---
 
@@ -173,3 +173,66 @@ tags: [harness, spec, mobile, ui]
       vistos por tarea, tabla de sondas (sonda → `it` caído → aserción o
       consulta), anclas medidas, typecheck/lint/jest con exit, y avisos
       (`router.d.ts`, delta aplicado sobre una expresión distinta).
+
+## T8 — Ronda 2: Enmienda E1–E2
+
+Arranca solo con la casilla «Enmienda E1–E2» de requirements §Aprobación
+marcada. Se ejecuta en el VPS (Linux), no en Windows. Antes de tocar nada,
+`test ! -e .expo/types/router.d.ts; echo "exit=$?"` = 0 y Jest de
+`src/screens/health/index.test.tsx` y `app.assets.test.ts` en verde con
+55 y 7 `it`. Regla de la ronda 1 que sigue en vigor: ningún `git commit` si
+el registrador o Jest devolvió exit distinto de 0; encadenar
+`<registrador> && git commit ...`.
+
+E1 solo toca tests y nace verde: producción ya hace lo correcto, y la
+mordida de cada candado se demuestra con su sonda (rojo por mutación), como
+en #147 E1–E4.
+
+1. **E1.1 (R2)**: la línea de requirements R2 en el `it` de los hijos del
+   scroll. Salud 55 verdes. Sonda M25: cae ese `it` por aserción; restaurar.
+   Commit `test(mobile-health): #115 E1.1 lock hero and content under the scroll`.
+2. **E1.2 (R6)**: columna `TZ`, `<ahora>` con hora y minuto, y la fila h, con
+   el patrón `hostProcess` de requirements R6 (`process.env.TZ` a secas no
+   cambia `Date` dentro de Jest). Salud 56 verdes. Sondas M23 (cae solo la
+   fila h) y M24 (caen a–h); restaurar.
+   Commit `test(mobile-health): #115 E1.2 time zone row for next vaccine days`.
+3. **R10 rojo**: import de `inflateSync`, helpers `readAlpha` y
+   `countAlpha` y el `describe` de R10 (design §1.8). Rojo esperado en
+   `app.assets.test.ts`: exactamente «esquinas» (`[676, 676, 676, 676]`) y
+   «pin» (1600), los dos por aserción; «fuera», «cara» y los 7 `it` de #101
+   en verde. Commit `test(mobile-assets): #115 R10 red, splash without square or pin`.
+4. **Candidato**: receta de requirements R10, pasos 1–3, en
+   `/tmp/115-splash/`. Con el candidato copiado en
+   `assets/images/splash-icon.png` (sin commitear), `app.assets.test.ts`
+   11 de 11 en verde. Anotar en el impl el `sha256sum` del candidato y las
+   rutas de las tres previews.
+5. **PARADA**: no se commitea nada más hasta que la casilla «PNG del splash»
+   de requirements §Aprobación lleve un `sha256` igual al del candidato que
+   está en el árbol (`sha256sum assets/images/splash-icon.png`). Si el humano
+   lo rechaza, el motivo y el `sha256sum` del rechazado van al impl, y se
+   vuelve al paso 4.
+6. **R10 verde**: borrar de `scripts/make-icons.mjs` la línea del
+   `copyFileSync` a `splash-icon.png` e `import fs from 'node:fs';`. No
+   ejecutar el script ni `expo prebuild`. Correr `app.assets.test.ts`,
+   `app.config.test.ts` y `src/screens/welcome/index.test.tsx` en verde.
+   Commit, solo con esos dos ficheros:
+   `feat(mobile-assets): #115 R10 transparent splash with the mascot alone`.
+7. **Sondas M26–M28** de design §2 sobre el verde; anotar el `it` que cae y
+   si cae por aserción o por consulta, y restaurar con
+   `git checkout HEAD -- assets/images/splash-icon.png`, `git diff --quiet
+   -- assets/images/splash-icon.png` y `git diff --cached --quiet`, los dos
+   con exit 0.
+8. **Anclas**: las tres de la tabla de R10, con el valor medido al lado del
+   declarado.
+9. **Cierre de la ronda 2**, medido sin pipe:
+   - R8: la lista cerrada da exactamente los 10 ficheros de design §1.2.
+   - `bun run typecheck`, `bun run lint` y `bunx jest` con exit 0.
+   - Recuentos esperados: Salud 56, `app.assets` 11, las otras seis suites
+     de control sin cambio, y el total de Jest +5 sobre los 2139 de la
+     ronda 1 si `origin/main` sigue en `e002a4a5`.
+10. `docs(mobile-health-make-parity): trace #115 E1-E2 and R10`:
+    - `traceability.md`: R2 y R6 añaden su commit de E1; fila R10 con rojo y
+      verde; §Verificación R8 con la lista de 10; R9 pasa a S1..S11.
+    - Impl: sección «Ronda 2» con el HEAD del handoff, rojos esperados y
+      vistos, candidatos con su `sha256`, tabla de sondas M23–M28, anclas y
+      exits.

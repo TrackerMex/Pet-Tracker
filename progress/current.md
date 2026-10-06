@@ -28,37 +28,43 @@
   Codex escribe `progress/impl_mobile-health-make-parity.md`. Mientras
   implementa, el leader solo toca `docs/`, `specs/`, `progress/` y
   `feature_list.json`.
-- Siguiente: reviewer cuando el humano confirme que Codex terminó (pedir
-  permiso para que el leader corra `./init.sh`; coordinar antes con Backend
-  por el smoke de #117). Después, smoke R9 del humano y cierre (Notion
-  Implementado/Completado antes de la PR).
+- Ronda 1 de Codex: dos paradas resueltas por el leader. CORRECCION 1 (T3:
+  `within()` excluye la raíz del slot de WeightChart) y CORRECCION 2 (tras
+  mergear #117 en main, el leader integró `origin/main` con el merge
+  `a3548767`; la lista cerrada pasa a `origin/main...HEAD` con exclusiones).
+  Codex terminó en `0e39d7b5` (R1–R8 trazados).
+- Review ronda 1: **rechazado** (`progress/review_mobile-health-make-parity.md`).
+  Los candados de R2 (padres del hero) y R6 (días con todas las filas a las
+  12:00 UTC) los prescribía la spec y no muerden M25 ni M23. Observaciones 3
+  y 4 las cierra el leader; 7 (commit `bd2f67d9` del impl) espera
+  confirmación del humano.
+- Ampliación del splash (abajo) entra en #115 por decisión del humano en el
+  chat («metelo dentro de #115»), como Enmienda E2 (R10). Decisiones del
+  humano: el arte lo genera Codex con imagegen desde el original, con la
+  misma geometría, y **el pin se quita** (queda la mascota sola).
+- Enmienda E1–E2 escrita en la spec (requirements R2, R6, R8, R9, R10;
+  design §1.2, §1.8 y M23–M28; tasks T8). Validada en un spike dentro de
+  jest-expo: los tres mutantes de E1 mueren y la base sigue verde; el
+  candado de R10 da rojo sobre el splash actual y verde sobre un candidato
+  sintético.
+- Siguiente: gate de la Enmienda E1–E2 en Notion (En revisión). Tras la
+  firma, CORRECCION 3 del handoff (ronda 2, T8) en el VPS, con parada para
+  que el humano apruebe el PNG mirándolo. Después reviewer, smoke R9 S1–S11
+  (S10 exige `bunx expo prebuild --clean` y reinstalar el dev build) y
+  cierre (Notion Implementado/Completado antes de la PR).
 
 ## Ampliación solicitada: icono de inicio sin fondo — 2026-10-06
 
-- El humano pidió en este chat: «va, va agrega esa recomendacion y trabajalo
-  la ram #115». Rama comprobada: `feature/115-mobile-health-make-parity`,
-  HEAD `ca3e3f14`. Esta solicitud añade el ajuste del splash a #115.
-- Recomendación aceptada: conservar la mascota robótica y el pin blanco;
-  retirar únicamente el degradado morado y el resplandor rectangular del
-  asset de inicio; exportar PNG RGBA de 1024×1024 con transparencia real y
-  bordes suaves. Mantener fondo del splash `#9460FC`, `imageWidth: 200` y
-  los iconos del launcher, iOS, favicon y notificaciones.
-- Archivo revisado: `mobile-pet-tracker/assets/images/splash-icon.png`.
-  El cuadrado visible está incorporado en la imagen: el pipeline actual
-  (`mobile-pet-tracker/scripts/make-icons.mjs`) copia el foreground del
-  launcher al splash, incluyendo el fondo del arte original. Al implementar,
-  conservar una fuente transparente independiente para el splash y evitar
-  que una regeneración de los iconos vuelva a introducir ese fondo.
-- Bloqueo previo a implementación: `./init.sh` con Git Bash y pnpm 12.9.1
-  terminó con exit 1 al instalar `infra`: `ERR_PNPM_IGNORED_BUILDS`, script
-  bloqueado de `unrs-resolver@1.12.2`; pnpm solicita `pnpm approve-builds`.
-  No se han cambiado aprobaciones de dependencias ni assets ni código.
-  La ejecución fuera del sandbox permitió usar el pnpm instalado del usuario;
-  el fallback del sandbox era 11.19.0 y no correspondía a las dependencias.
-- Pendiente: resolver la aprobación de instalación de infra, repetir init
-  hasta verde, incorporar la enmienda de alcance a la spec (incluido R8),
-  preparar el PNG con imagegen y verificarlo sobre el morado de la pantalla.
-  El arranque en frío requiere rebuild nativo y smoke en Android; la prueba
-  no se verifica solo mediante Metro. #115 continúa `in_progress`.
+- El humano pidió: «va, va agrega esa recomendacion y trabajalo la ram
+  #115» (commit `5ee9d45f`). Recomendación original: retirar el degradado
+  morado y el resplandor rectangular de `splash-icon.png` y exportar PNG
+  RGBA 1024×1024 con transparencia real. El pin blanco se conservaba; el
+  humano decidió después quitarlo (ver arriba).
+- Causa: `mobile-pet-tracker/scripts/make-icons.mjs` copia el foreground
+  del launcher al splash, con el fondo del arte original. R10 borra esa
+  copia para que regenerar los iconos no vuelva a pisar el splash.
+- El bloqueo de `./init.sh` (`ERR_PNPM_IGNORED_BUILDS` de
+  `unrs-resolver@1.12.2` con pnpm 12.9.1) fue en Windows; en el VPS
+  `./init.sh` está verde. La ronda 2 corre en el VPS.
 - Los dos `.claude/settings.local.json` sin seguimiento ya existían al inicio
   de esta revisión y no se modificaron.
