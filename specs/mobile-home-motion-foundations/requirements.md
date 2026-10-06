@@ -442,6 +442,15 @@ Observable con `index.test.tsx`, describe
    `mockWithTiming` tiene una llamada con primer argumento `81` cuya config es
    `toBe(MOTION_FILL_TIMING)`, y
    `toHaveAnimatedStyle({ width: '81%' }, { shouldMatchAllProps: true })`.
+8. `bajo reduce motion salta al nuevo valor al refrescar` — el mismo
+   recorrido que el 7 con `mockUseReducedMotion` devolviendo `true`. El
+   relleno es `toBe` el guardado, ninguna llamada a `mockWithTiming` tiene
+   `81` como primer argumento, y
+   `toHaveAnimatedStyle({ width: '81%' }, { shouldMatchAllProps: true })`.
+   Cierra la rama «el efecto le asigna `pct` directamente» en una
+   actualización, no solo en el montaje que cubre el 4: una barra que bajo
+   reduce motion solo nace en `pct` y luego no se mueve pasaría el 4 en verde.
+   El test devuelve el mock a `false` al terminar.
 
 ### R9 — El movimiento de la Home no mete drift de estilo
 

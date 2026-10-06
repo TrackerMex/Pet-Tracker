@@ -15,7 +15,7 @@ tags: [mobile, ui, motion, spec]
 | R5 | `src/screens/home/index.test.tsx::#152 R5: la Home envuelve cada bloque en su entrada escalonada` (7 `it`) y los cuatro tests de orden movidos de P8 | pendiente |
 | R6 | `src/screens/home/index.test.tsx::#152 R6: la entrada se reproduce una vez por montaje` (2 `it`) | pendiente |
 | R7 | `src/screens/home/index.test.tsx::#152 R7: las cifras del resumen aparecen con un fundido` (3 `it`) | pendiente |
-| R8 | `src/screens/home/index.test.tsx::#152 R8: la batería del collar se dibuja como barra` (10 casos: `it.each` de 4 filas y 6 `it`) | pendiente |
+| R8 | `src/screens/home/index.test.tsx::#152 R8: la batería del collar se dibuja como barra` (11 casos: `it.each` de 4 filas y 7 `it`) | pendiente |
 | R9 | `src/__tests__/design-drift.test.ts::#152 R9: el movimiento de la Home no mete drift de estilo` › `mantiene sus ficheros sin escapes de estilo literales` | pendiente |
 | R10 | Smoke humano en dev build de Android (`requirements.md` §Gate humano) | pendiente (humano) |
 

@@ -240,8 +240,8 @@ Di en el reporte qué skills cargaste.
 ### R8 — La batería del collar se dibuja como barra
 
 - [ ] (1) **Test rojo (A).** Añade a `index.test.tsx` el describe `#152 R8`
-  con los `it` 1 (`it.each`, cuatro filas), 2, 3, 4 y 7.
-  - `-t '#152 R8'` → 8 fallos, **por consulta** (`collar-battery-track` o
+  con los `it` 1 (`it.each`, cuatro filas), 2, 3, 4, 7 y 8.
+  - `-t '#152 R8'` → 9 fallos, **por consulta** (`collar-battery-track` o
     `collar-battery-fill`).
   - Commit: `test(mobile-home): #152 R8 red, collar battery bar`.
 - [ ] (2) **Implementación mínima (A).**
@@ -254,7 +254,7 @@ Di en el reporte qué skills cargaste.
     `{detail.data.pet.device.batteryPct !== null ? <CollarBatteryBar pct={detail.data.pet.device.batteryPct} /> : null}`.
 
   Comandos:
-  - `-t '#152 R8'` → 8 de 8.
+  - `-t '#152 R8'` → 9 de 9.
   - `bunx jest src/screens/home/index.test.tsx -t '#106'; echo "exit=$?"` →
     todo verde. Incluye `#106 R3`, cuyo `expect(mockWithTiming).not.toHaveBeenCalled()`
     exige que la barra no llame a `withTiming` bajo reduce motion.
@@ -273,7 +273,7 @@ Di en el reporte qué skills cargaste.
     también `<CollarBatteryBar pct={0} />` (envuelve los dos en un fragmento).
 
   Comandos y ancla:
-  - `-t '#152 R8'` → 2 fallos de 10, **por aserción**: se esperaba `null` en
+  - `-t '#152 R8'` → 2 fallos de 11, **por aserción**: se esperaba `null` en
     `collar-battery-track`. El 5 cae por (a) y el 6 por (b).
   - Si cae algún otro test del fichero con estas mutaciones, anota su nombre
     en el reporte. No lo arregles.
@@ -281,7 +281,7 @@ Di en el reporte qué skills cargaste.
 
   Commit: `test(mobile-home): #152 R8 red, no bar without percentage or collar`.
 - [ ] (2) **Implementación mínima (B).** Revierte las dos mutaciones.
-  - `-t '#152 R8'` → 10 de 10.
+  - `-t '#152 R8'` → 11 de 11.
   - Ancla: `grep -cF '<CollarBatteryBar' src/screens/home/index.tsx` → `1`.
   - Commit: `feat(mobile-home): #152 R8 bar only with a numeric percentage`.
 - [ ] (3) **Refactor.** Ninguno previsto. `MEALS_BAR_TIMING` no se toca:
@@ -359,6 +359,7 @@ queda vacío.
 | M9 | `MOTION_FILL_TIMING` → `MOTION_FADE_TIMING` en `collar-battery-bar.tsx` | `llena la barra desde vacía con el preset de barra` | aserción |
 | M10 | el valor compartido de la barra nace en `pct` también sin reduce motion | `llena la barra desde vacía con el preset de barra` | aserción |
 | M11 | el efecto de la barra se ejecuta solo al montar (`[]` en vez de `[pct, …]`) | `anima del valor anterior al nuevo al refrescar` | aserción |
+| M12 | bajo reduce motion el efecto de la barra no asigna nada (el valor solo nace en `pct`) | `bajo reduce motion salta al nuevo valor al refrescar` | aserción |
 
 En M5 y M6, `detail` (el `useQuery` del detalle) y `selectedPetId` (de
 `useSelectedPet()`) son los nombres que la base `37f6362c` ya tiene en

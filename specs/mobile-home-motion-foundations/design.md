@@ -8,6 +8,12 @@ tags: [mobile, ui, motion, spec]
 
 > Ver [[requirements]] para los requisitos que este diseño implementa y
 > [[../../docs/architecture|architecture]] para las reglas de capas del proyecto.
+>
+> Referencia visual, no normativa: artboard *Inicio* del canvas de propuesta
+> (https://claude.ai/artifact/VqaQQsRTtis9Dbttqy3z7j), dirección que el humano
+> aprobó el 2026-10-06. De ese artboard esta spec solo toma la entrada
+> escalonada y la barra de batería; colores, copy, mascota y botones son de
+> features posteriores. Donde el canvas y esta spec difieran, manda la spec.
 
 ## Decisiones técnicas
 
