@@ -374,38 +374,38 @@ THE SYSTEM SHALL cumplir, medido por el reviewer desde la raíz del repo:
 THE SYSTEM SHALL pasar este smoke en el **dev build de Android** (no Expo Go),
 hecho por el humano. Cada casilla se marca a mano:
 
-- [ ] S1 — Tema claro, ES: el hero sale a sangre bajo la barra de estado, con
+- [X] S1 — Tema claro, ES: el hero sale a sangre bajo la barra de estado, con
   el `PetSwitcher` arriba y nombre y raza abajo; no hay título "Salud";
   vacunas y peso van debajo con el margen lateral de 24 de las demás pestañas.
-- [ ] S2 — Tema oscuro: igual que S1; los degradados del hero no dejan banda
+- [X] S2 — Tema oscuro: igual que S1; los degradados del hero no dejan banda
   gris y los días de la próxima vacuna se leen en ámbar.
-- [ ] S3 — EN: la fecha de la próxima vacuna sale como `Jan 2, 2027` (formato
+- [X] S3 — EN: la fecha de la próxima vacuna sale como `Jan 2, 2027` (formato
   inglés), y "Today" o `N d` según toque.
-- [ ] S4 — Peso con 0 registros: texto vacío y enlace al log, sin gráfica.
+- [X] S4 — Peso con 0 registros: texto vacío y enlace al log, sin gráfica.
   Con 1 registro: "Aún no hay datos suficientes". Con 2 o más: la curva.
-- [ ] S5 — Mascota sin foto: el hero muestra el blobatar. Mascota con foto:
+- [X] S5 — Mascota sin foto: el hero muestra el blobatar. Mascota con foto:
   la foto.
-- [ ] S6 — Próxima vacuna con fecha de hoy: "Hoy". Con fecha futura: `N d`.
+- [X] S6 — Próxima vacuna con fecha de hoy: "Hoy". Con fecha futura: `N d`.
   Si se puede provocar, una dosis pasada no sale como próxima y su fila sigue
   en rojo.
-- [ ] S7 — Cambiar de mascota en el `PetSwitcher` cambia nombre y foto del
+- [X] S7 — Cambiar de mascota en el `PetSwitcher` cambia nombre y foto del
   hero, las vacunas y el peso.
-- [ ] S8 — Registrar un peso en el weight log y volver a Salud: la gráfica y
+- [X] S8 — Registrar un peso en el weight log y volver a Salud: la gráfica y
   el peso actual ya están al día sin tirar para refrescar.
-- [ ] S9 — Con TalkBack, los días de la próxima vacuna se leen como "Faltan N
+- [X] S9 — Con TalkBack, los días de la próxima vacuna se leen como "Faltan N
   días" (o "Hoy").
-- [ ] S10 — (Enmienda E2) Splash en arranque en frío, tras
+- [X] S10 — (Enmienda E2) Splash en arranque en frío, tras
   `bunx expo prebuild --clean` y reinstalar el dev build (los assets del
   splash no viajan por Metro): la mascota sola sobre `#9460FC`, sin cuadrado
   más claro ni pin blanco detrás. En Android 12+ el sistema recorta el icono
   a un disco (#101 D3/D7): basta con que dentro del disco no se vea el borde
   de ningún cuadrado.
-- [ ] S11 — (Enmienda E2) Bienvenida en tema claro y en oscuro, y la
+- [X] S11 — (Enmienda E2) Bienvenida en tema claro y en oscuro, y la
   pantalla de carga de sesión (`splash-logo`) si llega a verse: la mascota
   sin cuadrado violeta ni pin, con bordes limpios (sin halo blanco sobre el
   fondo oscuro ni mate violeta sobre el claro). Viaja por Metro.
 
-- [ ] Smoke aprobado por humano (fecha: ____, dispositivo: ____)
+- [X] Smoke aprobado por humano (fecha: 2026-10-06, dispositivo: OnePlus Nord 5)
 
 ### R10 — Splash y bienvenida: la mascota sola, sin fondo ni pin (Enmienda E2)
 
