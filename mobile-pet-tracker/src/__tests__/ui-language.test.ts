@@ -68,8 +68,8 @@ function checkUses(uses: UseRow[]) {
 }
 
 describe('#65 R1: el grupo (auth) resuelve su copy por clave', () => {
-  it('resuelve las 29 ocurrencias normativas', () => {
-    expect(R1_AUTH).toHaveLength(29);
+  it('resuelve las 36 ocurrencias normativas', () => {
+    expect(R1_AUTH).toHaveLength(29 + 7); // #117 R10
     checkUses(R1_AUTH);
   });
 });
@@ -494,6 +494,7 @@ describe('#65 R18: los sitios resuelven por clave y no queda copy suelta', () =>
   it('no deja ningún valor fijo del catálogo como literal entero en las pantallas', () => {
     expect(SCREEN_FILES).toHaveLength(
       19 + 2 + 1 + 1 + 1 + 1 + 1 + 1 + 1 // #100 R10, #41 R10, #146 R10, #105 R5
+        + 1 - 1 // #117 R10: sale app/(auth)/forgot.tsx, entra screens/forgot/index.tsx
         + 1, // #118 R1
     );
 

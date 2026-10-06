@@ -65,7 +65,7 @@ function openingTagWithTestId(source: string, testId: string): string {
 describe('#62 R1: la escala de radios está declarada y el botón primario tiene un solo radio', () => {
   const primaryButtons = [
     [join('app', '(auth)', 'login.tsx'), 'login-submit'],
-    [join('app', '(auth)', 'forgot.tsx'), 'forgot-submit'],
+    [join('screens', 'forgot', 'index.tsx'), 'forgot-submit'], // #117 R10
     [join('app', '(auth)', 'register.tsx'), 'register-submit'],
     [join('screens', 'reset-password', 'index.tsx'), 'reset-submit'],
   ] as const;
@@ -163,7 +163,7 @@ describe('#62 R4: la app solo usa los radios de la escala declarada', () => {
     expect(readSource(join('app', '(tabs)', 'food.tsx'))).toContain(
       'size-14 items-center justify-center rounded-xl bg-surface-secondary',
     );
-    expect(readSource(join('app', '(auth)', 'forgot.tsx'))).toContain(
+    expect(readSource(join('screens', 'forgot', 'index.tsx'))).toContain( // #117 R10
       'size-16 items-center justify-center rounded-xl bg-accent-soft',
     );
     expect(readSource(join('screens', 'weight-log', 'index.tsx'))).toContain(
@@ -233,7 +233,7 @@ describe('#62 R13: el color imperativo sale siempre de useThemeColors del repo',
   });
 
   it('resuelve el Lock de Forgot con accent-strong', () => {
-    const forgot = readSource(join('app', '(auth)', 'forgot.tsx'));
+    const forgot = readSource(join('screens', 'forgot', 'index.tsx')); // #117 R10
 
     expect(forgot).toContain(
       "import { useThemeColors } from '../../theme/use-theme-colors';",
@@ -247,7 +247,7 @@ describe('#62 R13: el color imperativo sale siempre de useThemeColors del repo',
 
 describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () => {
   const directUses = [
-    [join('app', '(auth)', 'forgot.tsx'), 1],
+    [join('screens', 'forgot', 'index.tsx'), 1], // #117 R10
     [join('components', 'pet-hero-header.tsx'), 1],
     // #136 R3 and #138 R3: the quick action tiles and collar-pair-link spread
     // the corner inside their pressed style, so the Home keeps no direct use.

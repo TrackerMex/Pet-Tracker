@@ -1,5 +1,6 @@
 import type {
   FieldError,
+  ForgotPasswordRequest,
   LoginRequest,
   RegisterRequest,
   ResetPasswordRequest,
@@ -17,6 +18,14 @@ export type LoginState =
 export type RegisterState =
   | { kind: 'ok'; user: UserResponse }
   | { kind: 'email-taken' }
+  | { kind: 'validation'; errors: FieldError[] }
+  | { kind: 'error' }
+  | { kind: 'unreachable'; message: string }
+  | { kind: 'missing-config' };
+
+export type ForgotPasswordState =
+  | { kind: 'ok' }
+  | { kind: 'rate-limited' }
   | { kind: 'validation'; errors: FieldError[] }
   | { kind: 'error' }
   | { kind: 'unreachable'; message: string }
@@ -220,4 +229,33 @@ export async function resetPassword(
   }
 
   return { kind: 'error' };
+}
+
+
+export async function forgotPassword(
+  baseUrl: string | undefined,
+  body: ForgotPasswordRequest,
+  fetchFn: typeof fetch = fetch,
+): Promise<ForgotPasswordState> {
+  if (!baseUrl) {
+    return { kind: 'missing-config' };
+  }
+
+  const result = await postJson(baseUrl, '/auth/forgot-password', body, fetchFn);
+  if (result.kind === 'unreachable') {
+    return result;
+  }
+
+  switch (result.response.status) {
+    case 200:
+      return { kind: 'ok' };
+    case 429:
+      return { kind: 'rate-limited' };
+    case 400: {
+      const errors = validationErrors(await readJson(result.response));
+      return errors ? { kind: 'validation', errors } : { kind: 'error' };
+    }
+    default:
+      return { kind: 'error' };
+  }
 }
