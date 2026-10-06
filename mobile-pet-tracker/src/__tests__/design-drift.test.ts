@@ -699,3 +699,40 @@ describe('#118 R11: la bienvenida no mete drift de estilo', () => {
     expect(violations).toEqual([]);
   });
 });
+
+describe('#149 R4: solo cuatro ficheros de producción navegan a login', () => {
+  const loginRoutes: Record<string, number> = {
+    'app/(auth)/register.tsx': 1,
+    'screens/forgot/index.tsx': 1,
+    'screens/reset-password/index.tsx': 2,
+    'screens/welcome/index.tsx': 1,
+  };
+
+  it('#149 R4: inventaría cada ruta a login en producción', () => {
+    const actual = Object.fromEntries(
+      allTypeScriptFiles(sourceRoot)
+        .map((path) => ({
+          path,
+          relativePath: path
+            .slice(sourceRoot.length + 1)
+            .replace(/\\/g, '/'),
+        }))
+        .filter(
+          ({ relativePath }) =>
+            !/(^|\/)__tests__\//.test(relativePath) &&
+            !/\.test\.tsx?$/.test(relativePath),
+        )
+        .map(({ path, relativePath }) => {
+          const contents = readFileSync(path, 'utf8');
+
+          return [
+            relativePath,
+            (contents.match(/['"`]\/(?:\(auth\)\/)?login\b/g) ?? []).length,
+          ] as const;
+        })
+        .filter(([, count]) => count >= 1),
+    );
+
+    expect(actual).toEqual(loginRoutes);
+  });
+});
