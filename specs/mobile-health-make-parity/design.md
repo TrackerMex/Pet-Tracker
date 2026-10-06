@@ -243,18 +243,33 @@ porque el nodo no existe.
 | M20 | sin `TABULAR_NUMS` en los días | R6 › receta y `#62 R15` (3 ≠ 2) | aserción |
 | M21 | `next-vaccine-days` dentro de la columna | R6 › orden (3 hijos y `[2]`) | aserción |
 | M22 | `t('home.nextVaccineToday')` dos veces (texto y label) | R1 (`checkUses` 2 ≠ 1 en `#65 R5` y en `#65 R18`) y R6 filas a, c, g | aserción |
-| M23 | (E1.2) `calendarDaysUntil(nextVaccine.nextDoseAt!, new Date())` → `Math.ceil((Date.parse(nextVaccine.nextDoseAt!) - Date.now()) / 86400000)` | R6 fila h (`1 d` ≠ `2 d`); a–g siguen verdes | aserción |
-| M24 | (E1.2) lo mismo con `Math.round` | R6 filas a–h (h por la TZ; a–g por el reloj que adelanta `waitFor`, obs. 6 de la review) | aserción |
+| M23 | (E1.2) `calendarDaysUntil(nextVaccine.nextDoseAt!, new Date())` → `Math.ceil((Date.parse(nextVaccine.nextDoseAt!) - Date.now()) / 86400000)` | R6 filas h, k y l (`1 d`, `1 d` y `3 d` ≠ `2 d`); a–g, i y j siguen verdes (E3.1) | aserción |
+| M24 | (E1.2) lo mismo con `Math.round` | R6 filas a–h y k (h y k por la TZ; a–g por el reloj que adelanta `waitFor`, obs. 6 de la review) | aserción |
 | M25 | (E1.1) `<View>` / `</View>` en lugar del fragmento `<>` / `</>` que envuelve `PetHeroHeader` y `health-content` | R2 › hijos (`hero.parent!.parent` no es `screen-health`) | aserción |
 | M26 | (E2) `splash-icon.png` de la base: `git show origin/main:mobile-pet-tracker/assets/images/splash-icon.png > assets/images/splash-icon.png` | R10 › esquinas y pin | aserción |
 | M27 | (E2) lienzo vacío: `new Jimp(1024, 1024, 0x00000000)` escrito en `assets/images/splash-icon.png` | R10 › cara | aserción |
 | M28 | (E2) el candidato compuesto en `(0, 0)` en vez de `(174, 174)` | R10 › fuera | aserción |
+| M29 | (E3.1, B1 de la review) el `calendarDaysUntil(…)` de M23 → `Math.round((Date.parse(nextVaccine.nextDoseAt!) - Date.now()) / 86400000) + 1` | R6 filas i (`1 d` ≠ `Hoy`), j (`3 d` ≠ `2 d`) y l (`3 d`); a–h y k siguen verdes | aserción |
+| M30 | (E3.1, B2 de la review) → `Math.ceil((Date.parse(nextVaccine.nextDoseAt!) - Date.now()) / 86400000 + 0.5)` | R6 filas i, j y l, como M29 | aserción |
+| M31 | (E3.1) medianoche local: → `Math.ceil((new Date(nextVaccine.nextDoseAt! + 'T00:00').getTime() - Date.now()) / 86400000)` | R6 fila k (`1 d` ≠ `2 d`); el resto siguen verdes | aserción |
+| M32 | (E3.1) → `Math.floor((new Date(nextVaccine.nextDoseAt! + 'T00:00').getTime() - Date.now()) / 86400000) + 1` | R6 fila k, como M31 | aserción |
+| M33 | (E3.1) hoy a medianoche local y la dosis en UTC: → `Math.round((Date.parse(nextVaccine.nextDoseAt!) - new Date().setHours(0, 0, 0, 0)) / 86400000)` | R6 fila l (`3 d` ≠ `2 d`); el resto siguen verdes | aserción |
+| M34 | (E3.1) lo mismo con `Math.ceil` | R6 fila l, como M33 | aserción |
+| M35 | (E3.2, B4) `className` de `next-vaccine-days` → `{days === 0 ? 'text-lg font-black text-success' : 'text-lg font-black text-warning-strong'}` | R6 › receta (hoy) | aserción |
+| M36 | (E3.2, B5) `style` de `next-vaccine-days` → `{days === 0 ? undefined : TABULAR_NUMS}` | R6 › receta (hoy) | aserción |
+| M37 | (E3.2, B7) `{days === 0 ? <View /> : null}` en `next-vaccine-card`, justo antes de `next-vaccine-days` | R6 › orden (hoy) (4 ≠ 3) | aserción |
+| M38 | (E3.2, B8) `className` de `next-vaccine-date` → `{days === 0 ? 'font-normal text-foreground' : 'font-normal text-muted'}` | R6 › receta (hoy) | aserción |
+| M39 | (E3.3, B6) título de `health-states`: `text-2xl font-black text-foreground` → `text-xl font-black text-foreground` | R2 › sin contenido (las 5 filas) | aserción |
 
-M23–M25 se restauran con `git checkout HEAD -- src/screens/health/index.tsx`
+M23–M25 y M29–M39 se restauran con `git checkout HEAD -- src/screens/health/index.tsx`
 y M26–M28 con `git checkout HEAD -- assets/images/splash-icon.png`; después
 de cada una, `git diff --quiet -- <ruta>` y `git diff --cached --quiet` con
 exit 0. Los PNG de M27 y M28 se generan en `/tmp/115-splash/` y se copian
 encima; no se commitean.
+
+Las sondas se corren con `--runInBand`: con workers, un `toBe` de nodos
+fallido sale como `Jest worker encountered 4 child process exceptions` y
+no nombra el `it` (observación R2-c de la ronda 2).
 
 ## 3. Alternativas descartadas
 

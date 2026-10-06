@@ -158,7 +158,7 @@ Sin cambios (anclas negativas, ver R7): longitud del catálogo en
 | `#115 R2: Salud abre con el hero a sangre (A9) › con mascotas, pet-hero y health-content son los únicos hijos del scroll, en ese orden` | 1 mascota, vacunas y peso `ok` | espera `pet-hero-name`; `hero.parent === content.parent`; ese padre tiene `children.length === 2`, `[0]` es `pet-hero` y `[1]` es `health-content`; **(Enmienda E1.1)** el padre de ese padre es el scroll: `expect(hero.parent!.parent).toBe(screen.getByTestId('screen-health'))`, en la línea siguiente a `expect(hero.parent).toBe(content.parent);`; `pet-hero.props.className === 'overflow-hidden bg-default'`; `health-states` es `null` |
 | `… › saca el padding horizontal a health-content y deja gap y paddingBottom en el scroll` | igual | `contentContainerStyle` `toEqual({ gap: 16, paddingBottom: 120 })`; `health-content` style `toEqual({ paddingHorizontal: 24, gap: 16 })`; `within(health-content)` contiene `vaccines-section` y `weight-card` |
 | `… › con contenido no pinta el título Salud` | igual | tras ver `pet-hero-name`, `queryByText('Salud')` es `null` |
-| `… › sin contenido ($name), agrupa título y rama en health-states sin hero` (`it.each`) | 5 filas: pendiente (`pending()`), `{ kind: 'error' }`, `{ kind: 'unreachable', message: 'network down' }`, `{ kind: 'missing-config' }`, `{ kind: 'ok', pets: [] }` | espera la rama (`health-loading`, `health-error` o `health-empty`) dentro de `health-states`; `health-states` style `toEqual({ paddingHorizontal: 24, paddingTop: 52, gap: 16 })`; `within(health-states).getByText('Salud')`; `contentContainerStyle` `toEqual({ gap: 16, paddingBottom: 120 })`; `pet-hero` y `health-content` son `null` |
+| `… › sin contenido ($name), agrupa título y rama en health-states sin hero` (`it.each`) | 5 filas: pendiente (`pending()`), `{ kind: 'error' }`, `{ kind: 'unreachable', message: 'network down' }`, `{ kind: 'missing-config' }`, `{ kind: 'ok', pets: [] }` | espera la rama (`health-loading`, `health-error` o `health-empty`) dentro de `health-states`; `health-states` style `toEqual({ paddingHorizontal: 24, paddingTop: 52, gap: 16 })`; `within(health-states).getByText('Salud')`; **(Enmienda E3.3)** su `props.className` `toBe('text-2xl font-black text-foreground')`; `contentContainerStyle` `toEqual({ gap: 16, paddingBottom: 120 })`; `pet-hero` y `health-content` son `null` |
 | `R4: health resuelve la mascota seleccionada › shows the hub and a loading state while pets are pending` (adaptado) | existente | `objectContaining({ padding: 24, paddingBottom: 120 })` pasa a `toEqual({ gap: 16, paddingBottom: 120 })` |
 | `R4: … › R5 (mobile-design-drift): aplica el safe area superior al contenido` (adaptado) | existente | la aserción de `paddingTop: 52` pasa de `contentContainerStyle` a `health-states.props.style` (`toEqual` del objeto completo de arriba) |
 
@@ -258,14 +258,36 @@ e. Para las filas en inglés, `renderHealth` acepta un idioma opcional
 | f | en | `UTC` | 2026-12-31 12:00 | Parvo `2026-12-30`, Rabies `2027-01-02` | `2 d` | `In 2 days` | `Jan 2, 2027` | mes y año |
 | g | en | `UTC` | 2027-01-01 12:00 | Parvo `2026-12-31`, Rabies `2027-01-01` | `Today` | `undefined` | `Jan 1, 2027` | año |
 | h | es | `America/Mexico_City` | 2026-12-31 20:00 | Parvo `2026-12-30`, Rabies `2027-01-02` | `2 d` | `Faltan 2 días` | `2 ene 2027` | mes y año, con el día UTC ya en 2027-01-01 (Enmienda E1.2) |
+| i | es | `UTC` | 2026-12-31 06:00 | Parvo `2026-12-30`, Rabies `2026-12-31` | `Hoy` | `undefined` | `31 dic 2026` | — (Enmienda E3.1: fracción de día 0,25) |
+| j | es | `UTC` | 2026-12-31 06:00 | Parvo `2026-12-30`, Rabies `2027-01-02` | `2 d` | `Faltan 2 días` | `2 ene 2027` | mes y año (Enmienda E3.1: fracción de día 0,25) |
+| k | es | `America/New_York` | 2027-03-13 23:30 | Parvo `2027-03-12`, Rabies `2027-03-15` | `2 d` | `Faltan 2 días` | `15 mar 2027` | un día de 23 horas: el 2027-03-14 adelanta la hora a las 02:00 (Enmienda E3.1) |
+| l | es | `Pacific/Auckland` | 2027-01-01 10:00 | Parvo `2026-12-31`, Rabies `2027-01-03` | `2 d` | `Faltan 2 días` | `3 ene 2027` | año, al este de UTC (UTC+13 en verano): el día UTC sigue en 2026-12-31 (Enmienda E3.1) |
 
-Fila h (**Enmienda E1.2**): a las 20:00 de Ciudad de México (UTC−6, sin
-horario de verano desde 2022) `Date.now()` es `2027-01-01T02:00Z`. Hasta
-`Date.parse('2027-01-02')`, medianoche UTC, faltan 22 horas: cualquier
-cuenta en milisegundos da 1 (`Math.ceil` y `Math.round` de la diferencia),
-y la de días de calendario locales (`calendarDaysUntil`) da 2. En `UTC` a
-las 12:00 las dos cuentas coinciden, por eso las filas a–g no distinguen
-una de otra.
+Filas h–l (**Enmiendas E1.2 y E3.1**): una cuenta en milisegundos hasta la
+medianoche de `nextDoseAt` solo coincide con los días de calendario según
+la fracción del día en que cae «Ahora» y según la zona. Las filas a–g están
+todas a las 12:00 en `UTC`: cualquier fórmula que lleve −0,5 a 0 y 1,5 a 2
+las pasa, también `Math.round(…) + 1` (review de la ronda 2, defecto
+R6-a). Cada fila nueva muestrea una zona ciega distinta:
+
+- h: a las 20:00 de Ciudad de México (UTC−6, sin horario de verano desde
+  2022) `Date.now()` es `2027-01-01T02:00Z`. Hasta `Date.parse('2027-01-02')`
+  faltan 0,92 días: `Math.ceil` y `Math.round` dan 1, y `getUTC*` ve el día
+  UTC ya en el 1 de enero.
+- i y j: a las 06:00 en `UTC` faltan −0,25 y 1,75 días. `Math.round(…) + 1`
+  y `Math.ceil(… + 0.5)` dan 1 y 3.
+- k: en Nueva York el 2027-03-14 dura 23 horas. A las 23:30 del día 13
+  faltan 19,5 horas hasta la medianoche UTC del 15 y 23,5 hasta la local:
+  `Math.ceil` y `Math.floor(…) + 1` dan 1 sobre las dos medianoches.
+- l: en Auckland es UTC+13, al este de UTC, y el resto de filas fuera de
+  UTC están al oeste. Restar `Date.parse(nextDoseAt)` a la medianoche
+  local de hoy (`setHours(0, 0, 0, 0)`) da 2,54 días: `Math.round` y
+  `Math.ceil` dan 3.
+
+`calendarDaysUntil` da el valor de la tabla en todas. Ninguna tabla finita
+prueba una cuenta para todas las horas: estas filas matan las familias que
+lista `design.md` §2 (M23, M24 y M29–M34), y el ancla
+`grep -c 'calendarDaysUntil(' src/screens/health/index.tsx` = 1 sigue.
 
 No hay fila de 1 día: el plural de `home.nextVaccineDaysLeft` diría "Faltan 1
 días" (observación en Fuera de alcance).
@@ -273,8 +295,8 @@ días" (observación en Fuera de alcance).
 | Test (describe › it) | Fixture | Asevera |
 |---|---|---|
 | `#115 R6: la próxima vacuna dice fecha y días restantes › fila $row: hoy $now, próxima $next` (`it.each` de la tabla; título sin la TZ) | la fila, en su `TZ` y a su hora | espera `next-vaccine-days` con su texto; `props.accessibilityLabel` es el de la fila; `next-vaccine-date` tiene la fecha; `within(next-vaccine-card)` tiene `Rabies` y no tiene el ISO de la próxima |
-| `… › ordena la card en icono, columna y días, con la fecha en la columna` | `makeVaccine({ nextDoseAt: '2099-05-01' })` | `next-vaccine-card` tiene 3 hijos; `[2]` es `next-vaccine-days`; `[1]` tiene 3 hijos y su `[2]` es `next-vaccine-date`; `[0]` contiene `health-icon-syringe` (el testID del mock del icono `Syringe`) |
-| `… › pinta los días con la receta exacta` | igual | `next-vaccine-days.props.className === 'text-lg font-black text-warning-strong'`; `props.style` `toEqual({ fontVariant: ['tabular-nums'] })`; `next-vaccine-date.props.className === 'font-normal text-muted'` |
+| `… › ordena la card en icono, columna y días, con la fecha en la columna ($branch)` (`it.each`, **Enmienda E3.2**) | ahora local `new Date(2026, 12 - 1, 31, 12, 0)` sin cambiar la TZ; dos filas: `{ branch: 'días', next: '2099-05-01', text: '26419 d' }` y `{ branch: 'hoy', next: '2026-12-31', text: 'Hoy' }`; una sola vacuna `makeVaccine({ nextDoseAt: next })` | primero espera `next-vaccine-days` con `toHaveTextContent(text, { exact: true })` (fija la rama); después `next-vaccine-card` tiene 3 hijos; `[2]` es `next-vaccine-days`; `[1]` tiene 3 hijos y su `[2]` es `next-vaccine-date`; `[0]` contiene `health-icon-syringe` (el testID del mock del icono `Syringe`) |
+| `… › pinta los días con la receta exacta ($branch)` (`it.each`, **Enmienda E3.2**) | las mismas dos filas | la misma espera de `text`; después `next-vaccine-days.props.className === 'text-lg font-black text-warning-strong'`; `props.style` `toEqual({ fontVariant: ['tabular-nums'] })`; `next-vaccine-date.props.className === 'font-normal text-muted'` |
 | `R5: vacunas con la próxima destacada › highlights the nearest future dose and keeps row order` (adaptado) | existente | `nextCard.getByText('2099-05-01')` pasa a `nextCard.getByText('1 may 2099')`, más `nextCard.queryByText('2099-05-01')` `toBeNull()` |
 
 ### R7 — Candados globales: deltas y anclas negativas
@@ -482,6 +504,37 @@ Consecuencias:
 
 Los textos normativos están en R2, R6, R8, R9 y R10, marcados «Enmienda E<n>».
 
+## Enmienda E3 (review de la ronda 2, 2026-10-06)
+
+El `reviewer` rechazó la ronda 2 (`progress/review_mobile-health-make-parity.md`
+§Ronda 2, HEAD revisado `b7692d34`) solo por R6. Los dos defectos vienen de
+candados que esta spec prescribía, no de Codex: la tabla de E1.2 seguía
+muestreando la hora en dos puntos, y la receta y la estructura de la card
+solo se candaban con `days > 0`. La producción de Salud cumple R6 y **no
+cambia**: E3 solo toca `src/screens/health/index.test.tsx`. R2, R8 y R10
+quedaron bien candados.
+
+| Id | Requisito | Hueco | Mutaciones que quedaban verdes (`design.md` §2) | Arreglo |
+|---|---|---|---|---|
+| E3.1 | R6 | filas a–g a las 12:00 en `UTC` y una sola fila fuera de UTC, al oeste | M29 (B1), M30 (B2), M31, M32, M33 y M34; la explicación de la fila h decía en falso que «cualquier cuenta en milisegundos da 1» | filas i, j, k y l |
+| E3.2 | R6 | los dos `it` de estructura y receta usaban solo `nextDoseAt: '2099-05-01'` (rama `days > 0`) | M35 (B4), M36 (B5), M37 (B7) y M38 (B8), todas solo con `days === 0` | los dos `it` pasan a `it.each` sobre la rama de días y la de `Hoy` |
+| E3.3 | R2 | el `className` del título de `health-states` no tenía candado (observación B6; ya era así en la base `8afae724`) | M39 (B6): `text-2xl` → `text-xl` | una aserción en el `it.each` `sin contenido ($name)` |
+
+Consecuencias:
+
+- `src/screens/health/index.test.tsx` pasa de 56 a 62 `it`: 4 filas en el
+  `it.each` de fechas y 1 fila más en cada uno de los dos `it.each` de E3.2.
+  E3.3 añade una línea, no un `it`.
+- Jest entero, sobre la base tras el merge de #149 (`664a8d2d`: 94 suites,
+  2162 tests): 94 suites y 2168 tests.
+- R8: la lista cerrada sigue en 10 ficheros; E3 no añade ninguno.
+- R9 y R10 no cambian. La casilla del PNG sigue firmada.
+- Observación R2-c de la review (M25 con workers de Jest no nombra el `it`
+  caído): no pide cambio. Las sondas de `design.md` §2 que caen en un `toBe`
+  de nodos se corren con `--runInBand`.
+
+Los textos normativos están en R2 y R6, marcados «Enmienda E3.<n>».
+
 ## Fuera de alcance
 
 | Viñeta | Clase | Premisa verificada |
@@ -512,10 +565,10 @@ Los textos normativos están en R2, R6, R8, R9 y R10, marcados «Enmienda E<n>»
 
 ## Aprobación
 
-> Cuatro casillas, cuatro gates (lección `gate-humano-sin-casilla-donde-firmar`).
-> La de la spec autorizó la ronda 1; la de la Enmienda E1–E2 autoriza la
-> ronda 2 de Codex; la del PNG autoriza el commit verde de R10; la de R9
-> cierra la feature.
+> Cinco casillas, cinco gates (lección `gate-humano-sin-casilla-donde-firmar`).
+> La de la spec autorizó la ronda 1; la de la Enmienda E1–E2 autorizó la
+> ronda 2 de Codex; la del PNG autorizó el commit verde de R10; la de la
+> Enmienda E3 autoriza la ronda 3; la de R9 cierra la feature.
 
 ### Aprobación de la spec
 
@@ -528,6 +581,10 @@ Los textos normativos están en R2, R6, R8, R9 y R10, marcados «Enmienda E<n>»
 ### PNG del splash
 
 - [x] Candidato de `splash-icon.png` aprobado por humano mirándolo (fecha: 2026-10-06, `sha256`: `087c1eaa69e8324ac46e98073897ddc261d3f25b764f00d6216fb5014c05e56d`; aprobado en el chat de la sesión del leader tras ver las tres previews y el zoom de bordes; candidato de la CORRECCION 3 con el respaldo cian) ← gate obligatorio antes del commit verde de R10. En el espejo de Notion el humano la marcó el 2026-10-06 junto con la Enmienda, sin candidato todavía: esa marca no cuenta; cuenta esta firma
+
+### Enmienda E3 — candados de R6 en todas las horas y en la rama Hoy
+
+- [ ] Enmienda E3 aprobada por humano ← gate obligatorio antes de la ronda 3 de Codex
 
 ### Prueba de humo
 

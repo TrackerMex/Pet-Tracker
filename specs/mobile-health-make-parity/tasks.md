@@ -236,3 +236,43 @@ en #147 E1–E4.
     - Impl: sección «Ronda 2» con el HEAD del handoff, rojos esperados y
       vistos, candidatos con su `sha256`, tabla de sondas M23–M28, anclas y
       exits.
+
+## T9 — Ronda 3: Enmienda E3
+
+Arranca solo con la casilla «Enmienda E3» de requirements §Aprobación
+marcada. Se ejecuta en el VPS. Antes de tocar nada,
+`test ! -e .expo/types/router.d.ts; echo "exit=$?"` = 0 y Jest de
+`src/screens/health/index.test.tsx` en verde con 56 `it`. Sigue en vigor:
+ningún `git commit` si el registrador o Jest devolvió exit distinto de 0;
+encadenar `<registrador> && git commit ...`.
+
+E3 solo toca `src/screens/health/index.test.tsx` y nace verde: la
+producción ya cumple R2 y R6. La mordida de cada candado se demuestra con su
+sonda de design §2, que se corre con `--runInBand`.
+
+1. **E3.1 (R6)**: filas i, j, k y l de la tabla de fechas de requirements
+   R6, con el patrón `hostProcess` que ya usa la fila h. Salud 60 verdes.
+   Sondas M23, M24 y M29–M34: cada una tumba exactamente las filas que dice
+   design §2, por aserción; restaurar tras cada una.
+   Commit `test(mobile-health): #115 E3.1 next vaccine days at more hours and zones`.
+2. **E3.2 (R6)**: los `it` `ordena la card…` y `pinta los días con la
+   receta exacta` pasan a `it.each` con las dos filas de requirements R6
+   (`días` y `hoy`), con la espera del texto antes de las aserciones. Salud
+   62 verdes. Sondas M35–M38: caen las filas `(hoy)` que dice design §2 y
+   las `(días)` siguen verdes; restaurar.
+   Commit `test(mobile-health): #115 E3.2 lock next vaccine card on the today branch`.
+3. **E3.3 (R2)**: la aserción del `className` del título en el `it.each`
+   `sin contenido ($name)`. Salud 62 verdes. Sonda M39: caen las 5 filas;
+   restaurar.
+   Commit `test(mobile-health): #115 E3.3 lock the health states title recipe`.
+4. **Cierre de la ronda 3**, medido sin pipe:
+   - R8: la lista cerrada sigue en los 10 ficheros de design §1.2.
+   - `bun run typecheck`, `bun run lint` y `bunx jest` con exit 0.
+   - Recuentos: Salud 62, `app.assets` 11, y Jest 94 suites y 2168 tests
+     si `origin/main` sigue en `37f6362c`.
+   - `git diff --quiet <HEAD del handoff> -- src/screens/health/index.tsx`
+     con exit 0: la producción no cambió.
+5. `docs(mobile-health-make-parity): trace #115 E3`:
+   - `traceability.md`: R2 y R6 añaden sus commits de E3.
+   - Impl: sección «Ronda 3» con el HEAD del handoff, la tabla de sondas
+     M23, M24 y M29–M39 (filas que caen y cómo), y los exits.

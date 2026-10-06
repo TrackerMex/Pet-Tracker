@@ -74,8 +74,23 @@
   midió la lista cerrada R8 (exactamente los 10 de design §1.2),
   typecheck/lint exit=0, Jest 94 suites y 2144 tests con exit=0, las anclas
   de make-icons en 0, en `assets/` solo cambia el splash, y la producción de
-  Salud no cambió desde H2. Push hecho. Siguiente: `./init.sh` tras el aviso
-  de Backend, y después la review de la ronda 2.
+  Salud no cambió desde H2. Push hecho.
+- `./init.sh` sobre `b7692d34` tras el aviso de Backend («libre»): exit=0
+  (2026-10-06, fin 18:16:42Z), medido sin pipe; log en el scratchpad.
+- Review ronda 2: **rechazado solo por R6** (commit `4b06c417`). R6-a: las
+  filas a–g a las 12:00 UTC dejan vivas cuentas en milisegundos (B1, B2).
+  R6-b: receta y estructura de la card solo candadas con `days > 0` (B4,
+  B5, B7, B8). R2, R8 y R10 bien. Los dos huecos los prescribía la spec.
+- `origin/main` (#149, `37f6362c`) integrada en la branch con el merge
+  `664a8d2d`; conflicto solo en `STATUS.md`. Base de Jest tras el merge:
+  94 suites, 2162 tests, exit=0 (Salud 56, app.assets 11).
+- Enmienda E3 escrita (requirements R2, R6, §Enmienda E3 y casilla nueva;
+  design §2 M29–M39; tasks T9). El leader calculó la matriz fila × mutante
+  fuera de Jest: además de B1 y B2 vivían una cuenta sobre la medianoche
+  local (solo la mata un día de 23 h, fila k) y una que mezcla la dosis en
+  UTC con hoy a medianoche local (solo la mata una zona al este de UTC,
+  fila l). Siguiente: barrido del `reviewer` antes del gate (lección
+  `clausulas-universales-candadas-en-un-caso`), espejo en Notion y firma.
 
 ## Ampliación solicitada: icono de inicio sin fondo — 2026-10-06
 
