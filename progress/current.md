@@ -33,8 +33,10 @@
   ficheros y 17 llamadas a `signOut` confirmados; package
   `com.trackermex.pettracker` en `app.json`; base de T0 medida sin pipe:
   6 suites, 97 tests, exit 0.
-- Siguiente: espejo en Notion (Specs, En revisión) y gate humano de D1, D2 y
-  la spec.
+- Spec commiteada en `0f3f611b` y branch publicada. Espejo en Notion
+  (2026-10-06): página `#149 mobile-sign-out-lands-on-welcome` de la base
+  Specs, https://app.notion.com/p/3f16115a9b27817db737cb4face9d519, con
+  Estado del gate = En revisión. Espera: el humano decide D1 y D2 y aprueba.
 - Frontend (2026-10-06): #115 no toca ningún fichero de #149, así que no
   hace falta reparto. #115 toca `src/screens/health/`, `ui-copy-table.ts`
   (filas `R5_HEALTH`), `ui-language.test.ts` (línea de longitud de
@@ -43,3 +45,20 @@
   `ui-language.test.ts` (#65 R18) y `language-provider.test.tsx`. Misma regla
   de siempre: quien mergea segundo deja la expresión de `main` y añade su
   línea de delta debajo. Frontend avisará antes de su `init.sh`.
+- Gate de la spec (2026-10-06): página de Notion en `Estado del gate` =
+  Aprobado (`page_last_edited_at` 2026-10-06T16:26:29.921Z). El espejo
+  tenía marcadas las dos opciones de D1 y las dos de D2; el leader lo
+  preguntó en el chat y el humano respondió D1 = welcome y D2 = welcome (las
+  recomendadas), así que R1-R4 no cambian. Commit de firma `d361a8bb`.
+- Handoff a Codex en `progress/handoff_mobile-sign-out-lands-on-welcome.md`
+  (H0 = el commit que lo añade). Las 25 anclas ejecutadas por el leader
+  sacándolas del propio handoff: todas OK. Cada commit de Codex va
+  encadenado con `&&` a su verificación (cuenta de jest, sin excepciones en
+  el log, typecheck, lint y ficheros en stage). #149 pasa a `in_progress`.
+- Plan: cuatro rojos (R1-R4), un verde común de una línea en
+  `src/app/(tabs)/_layout.tsx` (`href="/login"` a `href="/welcome"`) y un
+  commit docs con traceability e impl. Mientras Codex trabaja, el leader no
+  toca el worktree.
+- Siguiente: el humano lanza Codex; al terminar, drift check contra H0,
+  `./init.sh` del leader (avisando a Frontend), `reviewer` con sondas M1-M7
+  y prueba de humo del humano.
