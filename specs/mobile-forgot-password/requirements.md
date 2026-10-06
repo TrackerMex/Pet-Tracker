@@ -673,54 +673,54 @@ no pasa a `done`.
 
 ### Prerrequisitos de entorno (una casilla cada uno)
 
-- [ ] `mobile-pet-tracker/.env` → `EXPO_PUBLIC_API_URL` apunta a la IP LAN de
+- [X] `mobile-pet-tracker/.env` → `EXPO_PUBLIC_API_URL` apunta a la IP LAN de
       la máquina del backend con sufijo `/v1` y el teléfono la alcanza
       (`adb shell curl -s <url>/health` o abrir desde el navegador del teléfono).
-- [ ] Backend levantado con `./init.sh` en esa máquina; existe una cuenta
+- [X] Backend levantado con `./init.sh` en esa máquina; existe una cuenta
       registrada y verificada (#44/#58) con un buzón que el humano puede leer.
-- [ ] **Ruta A (correo real)**: `.env` raíz con `EMAIL_ENABLED=true`
+- [X] **Ruta A (correo real)**: `.env` raíz con `EMAIL_ENABLED=true`
       (literal), `RESEND_API_KEY` y `RESEND_FROM` (`docs/verification.md` #58
       G1–G2). **Ruta B (sin Resend)**: `EMAIL_ENABLED` ≠ `true`; el backend
       imprime la línea JSON `auth.password_reset.issued` con `resetUrl`.
       Marcar cuál se usa: ____
-- [ ] `RESET_LINK_HOST` fijado en `.env` raíz **y** en `mobile-pet-tracker/.env`,
+- [X] `RESET_LINK_HOST` fijado en `.env` raíz **y** en `mobile-pet-tracker/.env`,
       backend reiniciado y dev build **regenerado** (#59 G3) — sin esto el
       enlace no abre la app.
-- [ ] Dev build instalado; `adb devices` muestra un solo transporte (si hay
+- [X] Dev build instalado; `adb devices` muestra un solo transporte (si hay
       dos, todos los `adb` con `-s <ip:puerto>`).
 
 ### Pasos (D9)
 
-- [ ] S1 — Login → «¿Olvidaste tu contraseña?» → se ve el tile `Lock`,
+- [X] S1 — Login → «¿Olvidaste tu contraseña?» → se ve el tile `Lock`,
       «Recuperar contraseña», las instrucciones, el campo de correo y el botón
       **deshabilitado** hasta escribir. No aparece «disponible pronto».
-- [ ] S2 — Correo de la cuenta real → «Enviar enlace de recuperación» → la
+- [X] S2 — Correo de la cuenta real → «Enviar enlace de recuperación» → la
       pantalla pasa a «Revisa tu correo» citando ese correo, con «Reenviar» y
       «Volver al inicio de sesión».
-- [ ] S3 — Llega el correo (Ruta A) o la línea `auth.password_reset.issued`
+- [X] S3 — Llega el correo (Ruta A) o la línea `auth.password_reset.issued`
       (Ruta B: `rg 'auth\.password_reset\.issued'` sobre el log, copiar
       `resetUrl` y abrirlo con
       `adb shell am start -a android.intent.action.VIEW -d "<resetUrl>"`).
       El enlace abre la pantalla de #59; se completa el reset; login con la
       contraseña nueva responde 200.
-- [ ] S4 — «Reenviar» una vez → segundo correo / segunda línea; la pantalla
+- [X] S4 — «Reenviar» una vez → segundo correo / segunda línea; la pantalla
       sigue en «Revisa tu correo».
-- [ ] S5 — Forzar 429: con el mismo correo, la **cuarta** petición dentro de
+- [X] S5 — Forzar 429: con el mismo correo, la **cuarta** petición dentro de
       la hora (S2 + S4 + dos «Reenviar» más; el contador vive en memoria del
       backend: no reiniciarlo entre medias) → «Demasiados intentos. Inténtalo
       más tarde.» bajo el cuerpo, sin salir de «Revisa tu correo».
-- [ ] S6 — «Volver al inicio de sesión» → «¿Olvidaste tu contraseña?» de nuevo
+- [X] S6 — «Volver al inicio de sesión» → «¿Olvidaste tu contraseña?» de nuevo
       (formulario limpio) → escribir `ana@` → enviar → «Ingresa un correo
       electrónico válido»; el formulario sigue en pie con `ana@` escrito.
-- [ ] S7 — Correo `nadie-117@example.com` → «Revisa tu correo» idéntico (sin
+- [X] S7 — Correo `nadie-117@example.com` → «Revisa tu correo» idéntico (sin
       correo enviado: en Ruta B no aparece línea `issued`).
-- [ ] S8 — Modo avión → enviar → «No se pudo conectar con el servidor».
-- [ ] S9 — Con el campo enfocado y el teclado abierto, el botón y «Volver al
+- [X] S8 — Modo avión → enviar → «No se pudo conectar con el servidor».
+- [X] S9 — Con el campo enfocado y el teclado abierto, el botón y «Volver al
       inicio de sesión» quedan visibles por encima del teclado.
-- [ ] Resultado anotado en `docs/verification.md` (sección #117: fecha,
+- [X] Resultado anotado en `docs/verification.md` (sección #117: fecha,
       build, ruta A/B, resultado de cada paso).
 
-- [ ] **Prueba de humo firmada por humano** (fecha, cuenta): ____
+- [X] **Prueba de humo firmada por humano** (fecha: 2026-10-06, cuenta: trackermex67@gmail.com):
 
 ## Aprobación
 
