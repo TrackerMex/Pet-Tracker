@@ -7992,3 +7992,160 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
   medio del mensaje de commit (prescrito así por tasks.md) y la reentrada de
   R3 con `waitFor`.
 - Estado: `done`. PR abierta; siguiente: merge humano.
+
+## #115 `mobile-health-make-parity` — Salud con hero a sangre, gráfica de peso y días a la próxima vacuna — 2026-10-06
+
+- Sesión: Frontend (Claude Code, leader). Fecha de inicio: 2026-10-05.
+- Branch: `feature/115-mobile-health-make-parity` desde `origin/main` `8afae724`
+  (main con #118 y #116).
+- Orden: el humano fijó #118 → #117 → #116 → #115 → #119 para el bloque de UI.
+  Esa orden sustituye a la nota «va AL FINAL» de la descripción de #115.
+- `./init.sh` sobre `8afae724`: EXIT=0 (2026-10-05 17:11-17:15 UTC; móvil
+  94/2069, e2e 29 de 32 suites, 438 tests). Lanzado tras el aviso de Backend
+  (#117 sin init.sh ni jest en vuelo). Log en el scratchpad de la sesión.
+- Investigación Appllama ya hecha: `progress/explore_ui-appllama.md` §4.
+- Spec: `spec_author` la escribió en `specs/mobile-health-make-parity/` (spec_ready). Revisión del leader: añadido el candado agregado `#65 R18 › checkUses(ALL_USES)` a R1, T4, M22 y trazabilidad; §3 corregido en P1; la observación del plural cubre ya Salud. Gate humano vía Notion pendiente (P1-P3).
+- Gate: aprobada en Notion el 2026-10-06 (página `3f06115a-9b27-811f-802d-c7a05058341d`,
+  `Estado del gate` = Aprobado, `page_last_edited_at` 2026-10-06T14:06:26.286Z);
+  commit de firma `2bfd4477`. P1-P3 quedan como las cierra la spec.
+- Antes del handoff: `tasks.md` T4 corregido (`#69 R10` nace verde, como la
+  CORRECCION 1 de #116); `.claude/agents/leader.md` §Cómo se vuelve a medir
+  reescrito (el catálogo remoto de Codex cambió el 2026-10-05; lo instalado
+  sigue en `expo@openai-curated` 1.0.2 con 13 skills).
+- Base medida por el leader sobre la branch: 45 anclas del handoff en verde;
+  8 suites de T0, 264 tests, exit=0.
+- `in_progress`. Handoff a Codex: `progress/handoff_mobile-health-make-parity.md`.
+  Codex escribe `progress/impl_mobile-health-make-parity.md`. Mientras
+  implementa, el leader solo toca `docs/`, `specs/`, `progress/` y
+  `feature_list.json`.
+- Ronda 1 de Codex: dos paradas resueltas por el leader. CORRECCION 1 (T3:
+  `within()` excluye la raíz del slot de WeightChart) y CORRECCION 2 (tras
+  mergear #117 en main, el leader integró `origin/main` con el merge
+  `a3548767`; la lista cerrada pasa a `origin/main...HEAD` con exclusiones).
+  Codex terminó en `0e39d7b5` (R1–R8 trazados).
+- Review ronda 1: **rechazado** (`progress/review_mobile-health-make-parity.md`).
+  Los candados de R2 (padres del hero) y R6 (días con todas las filas a las
+  12:00 UTC) los prescribía la spec y no muerden M25 ni M23. Observaciones 3
+  y 4 las cierra el leader; 7 (commit `bd2f67d9` del impl) espera
+  confirmación del humano.
+- Ampliación del splash (abajo) entra en #115 por decisión del humano en el
+  chat («metelo dentro de #115»), como Enmienda E2 (R10). Decisiones del
+  humano: el arte lo genera Codex con imagegen desde el original, con la
+  misma geometría, y **el pin se quita** (queda la mascota sola).
+- Enmienda E1–E2 escrita en la spec (requirements R2, R6, R8, R9, R10;
+  design §1.2, §1.8 y M23–M28; tasks T8). Validada en un spike dentro de
+  jest-expo: los tres mutantes de E1 mueren y la base sigue verde; el
+  candado de R10 da rojo sobre el splash actual y verde sobre un candidato
+  sintético.
+- Enmienda E1–E2 aprobada en Notion (`page_last_edited_at`
+  2026-10-06T17:15:50.400Z); firma en `52bfe254`. El humano marcó también la
+  casilla del PNG en Notion sin candidato: no cuenta, se firma en el repo con
+  el `sha256` del PNG que apruebe mirándolo.
+- CORRECCION 3 del handoff (ronda 2, T8) escrita. Base medida por el leader:
+  Salud 55 + app.assets 7 = 62, exit=0; todas sus anclas en su valor «antes»;
+  lista cerrada R8 en 7 de 10.
+- Siguiente: Codex corre la ronda 2 hasta la PARADA del PNG. El leader pasa
+  candidato y previews al humano; con su aprobación firma la casilla «PNG del
+  splash» (fecha + `sha256`) y Codex sigue. Después reviewer, smoke R9
+  S1–S11 (S10 exige `bunx expo prebuild --clean` y reinstalar el dev build)
+  y cierre (Notion Implementado/Completado antes de la PR).
+- Codex llegó a la PARADA del PNG (HEAD `45198dd4`: E1.1, E1.2 y R10 rojo).
+  El leader midió Salud 56 + app.assets 11 = 67 verdes con el candidato en
+  el árbol, y 0 píxeles de borde con tinte cian. imagegen con fondo
+  transparente dejaba la mascota translúcida (cara alfa 252, 488 píxeles
+  opacos); el candado de la cara lo cazó y Codex usó el respaldo cian.
+- PNG aprobado por el humano en el chat el 2026-10-06 (`sha256`
+  `087c1eaa…e56d`); casilla firmada en requirements. Codex sigue con T8
+  pasos 6–10.
+- Obs. 7 de la review: el humano confirmó en el chat el 2026-10-06 que
+  autorizó `bd2f67d9`.
+- Codex terminó la ronda 2: R10 en verde en `92c4e5d6` (el PNG commiteado
+  coincide con el `sha256` firmado) y trazabilidad en `b7692d34`. El leader
+  midió la lista cerrada R8 (exactamente los 10 de design §1.2),
+  typecheck/lint exit=0, Jest 94 suites y 2144 tests con exit=0, las anclas
+  de make-icons en 0, en `assets/` solo cambia el splash, y la producción de
+  Salud no cambió desde H2. Push hecho.
+- `./init.sh` sobre `b7692d34` tras el aviso de Backend («libre»): exit=0
+  (2026-10-06, fin 18:16:42Z), medido sin pipe; log en el scratchpad.
+- Review ronda 2: **rechazado solo por R6** (commit `4b06c417`). R6-a: las
+  filas a–g a las 12:00 UTC dejan vivas cuentas en milisegundos (B1, B2).
+  R6-b: receta y estructura de la card solo candadas con `days > 0` (B4,
+  B5, B7, B8). R2, R8 y R10 bien. Los dos huecos los prescribía la spec.
+- `origin/main` (#149, `37f6362c`) integrada en la branch con el merge
+  `664a8d2d`; conflicto solo en `STATUS.md`. Base de Jest tras el merge:
+  94 suites, 2162 tests, exit=0 (Salud 56, app.assets 11).
+- Enmienda E3 escrita (requirements R2, R6, §Enmienda E3 y casilla nueva;
+  design §2 M29–M39; tasks T9). El leader calculó la matriz fila × mutante
+  fuera de Jest: además de B1 y B2 vivían una cuenta sobre la medianoche
+  local (solo la mata un día de 23 h, fila k) y una que mezcla la dosis en
+  UTC con hoy a medianoche local (solo la mata una zona al este de UTC,
+  fila l). Siguiente: barrido del `reviewer` antes del gate (lección
+  `clausulas-universales-candadas-en-un-caso`), espejo en Notion y firma.
+- Barrido del `reviewer` antes de la firma (sección nueva en
+  `progress/review_mobile-health-make-parity.md`): la primera versión de E3
+  (`d42596a5`) dejaba vivos V1 (`Math.ceil` entre medianoches locales), V2
+  y V3 (textos `[0]` y `[1]` de la columna sin candado) y V4 (frontera de
+  `days > 0`), y M24 declaraba menos filas de las que tumba. E3 revisada:
+  fila m (día de 25 h en Nueva York), fila n como E3.4, textos de la
+  columna en `ordena… ($branch)`, sondas M40–M44. Decisión del leader en
+  V4: la fila n canda el literal actual `Faltan 1 días` (plural roto,
+  Fuera de alcance); se avisa al humano en el gate. Recuentos: Salud 64,
+  Jest 94/2170.
+- E3 revisada espejada en Notion el 2026-10-06 (página entera reescrita
+  desde `33e8bcd5`; `Estado del gate` = En revisión, `Rol actual` = Leader).
+  Al humano se le avisa de la fila n («Faltan 1 días» a propósito).
+- CORRECCION 4 del handoff (ronda 3, T9) escrita y con sus anclas «antes»
+  medidas sobre `33e8bcd5`: filas i–n literales, `NEXT_CARD_BRANCHES`,
+  sondas con `--runInBand`. Codex arranca solo tras la firma de E3 (el
+  primer grep de su BASE la exige).
+- Enmienda E3 aprobada en Notion (`page_last_edited_at`
+  2026-10-06T19:17:49.123Z; el único cambio de contenido frente al espejo
+  es la casilla de E3) y firmada en el repo. Siguiente: el humano pega la
+  CORRECCION 4 en Codex CLI; al terminar, el leader valida anclas y
+  commits, corre `./init.sh` (aviso a Backend antes) y lanza el
+  `reviewer` de la ronda 3.
+- Codex terminó la ronda 3 (H3 `723621d3`): cuatro commits de test E3.1–E3.4
+  (`28ad9712`, `236798ff`, `b67ab502`, `d27a4759`), solo el test de Salud
+  cada uno, y trazabilidad en `9b2bd8a3`. El leader verificó las 20 anclas
+  en su valor «después», las seis filas i–n literales (n solo desde E3.4),
+  la producción de Salud intacta desde H3 y `origin/main` en `37f6362c`.
+  Las 18 sondas coinciden con design §2 según el impl. Push hecho.
+- `./init.sh` sobre `9b2bd8a3` tras el «libre» de Backend: EXIT=0
+  (2026-10-06 20:20:43Z–20:25:23Z), medido sin pipe; backend 176/1348,
+  móvil 94/2170, e2e 29 de 32 suites y 438 tests. Log en el scratchpad.
+  Backend avisado del fin. `reviewer` de la ronda 3 lanzado: lee el log,
+  no corre init.sh.
+
+### Ampliación solicitada: icono de inicio sin fondo — 2026-10-06
+
+- El humano pidió: «va, va agrega esa recomendacion y trabajalo la ram
+  #115» (commit `5ee9d45f`). Recomendación original: retirar el degradado
+  morado y el resplandor rectangular de `splash-icon.png` y exportar PNG
+  RGBA 1024×1024 con transparencia real. El pin blanco se conservaba; el
+  humano decidió después quitarlo (ver arriba).
+- Causa: `mobile-pet-tracker/scripts/make-icons.mjs` copia el foreground
+  del launcher al splash, con el fondo del arte original. R10 borra esa
+  copia para que regenerar los iconos no vuelva a pisar el splash.
+- El bloqueo de `./init.sh` (`ERR_PNPM_IGNORED_BUILDS` de
+  `unrs-resolver@1.12.2` con pnpm 12.9.1) fue en Windows; en el VPS
+  `./init.sh` está verde. La ronda 2 corre en el VPS.
+- Los dos `.claude/settings.local.json` sin seguimiento ya existían al inicio
+  de esta revisión y no se modificaron.
+- Review ronda 3: **aprobado** (R2, R6; código y tests). El reviewer
+  re-midió las 18 sondas de design §2 (coinciden, todas por aserción),
+  cerró V1–V4 del barrido previo y no encontró defectos. R9 (smoke S1–S11
+  en dev build de Android) queda pendiente del humano; sin su firma no hay
+  `done`.
+
+- Prueba de humo S1–S11 en dev build de Android (OnePlus Nord 5) superada y
+  firmada por el humano (`5bb934a8`, 2026-10-06). Drift de código entre el
+  veredicto (`ac24db40` sobre `9b2bd8a3`) y la firma: 0 ficheros; `5bb934a8`
+  solo toca `requirements.md`. El leader marcó la casilla de cierre de
+  §Prueba de humo y la fila R9 de la trazabilidad.
+- Notion: `Estado del gate` = Implementado, `Rol actual` = Completado.
+- Observaciones del reviewer de la ronda 3 anotadas, no registradas como
+  deuda: X4 muere en `ui-language.test.ts` y no en Salud, X12 cae por
+  consulta, los logs de Codex viven en `/tmp` y el intervalo de constantes
+  arbitrarias lo admite la spec. La fila n canda a propósito el plural roto
+  «Faltan 1 días» (Fuera de alcance de la spec).
+- Estado: `done`. PR abierta; siguiente: merge humano.
