@@ -577,3 +577,150 @@ rebase, merge, amend y reset. Si origin/main avanza, para: el merge es del
 leader. Ningun commit si el registrador o jest dio un exit distinto del
 previsto en ese paso.
 ```
+
+## CORRECCION 4 — ronda 3, Enmienda E3 (2026-10-06)
+
+> Pegar este bloque en Codex CLI **solo cuando la casilla «Enmienda E3» de
+> requirements §Aprobación esté marcada** (el primer grep de BASE lo
+> comprueba). El guion es `tasks.md` T9; este bloque fija base, literales,
+> anclas y sondas. CORRECCION 1–3 siguen vigentes (registrador && commit;
+> lista cerrada desde `origin/main...HEAD`; regla de fechas con
+> `hostProcess`).
+
+```
+Retoma #115 en /home/claude/sites/Pet-Tracker, branch
+feature/115-mobile-health-make-parity, en el VPS (Linux). Ronda 3: el
+reviewer rechazo la ronda 2 solo por R6 y el humano aprobo la Enmienda E3.
+La produccion NO cambia: esta ronda solo toca el test de Salud. Lee
+primero, enteros:
+- specs/mobile-health-make-parity/requirements.md: R2 (fila «sin
+  contenido» con E3.3), R6 (tabla a-n, «Filas h-n», «Fila n» y los dos
+  it.each de E3.2) y la seccion «Enmienda E3».
+- specs/mobile-health-make-parity/design.md: §2, filas M23, M24 y M29-M44,
+  y el parrafo de restauracion y --runInBand de debajo.
+- specs/mobile-health-make-parity/tasks.md: T9, pasos 1 a 6. Es tu guion.
+- progress/review_mobile-health-make-parity.md: «Observaciones (ronda 2)»
+  y «Barrido previo a la firma de la Enmienda E3».
+Anota H3 = git rev-parse HEAD al arrancar; es el HEAD de este handoff.
+
+Skill: del plugin expo (1.0.2) building-native-ui. No hace falta $imagegen.
+
+BASE (medida por el leader sobre esta branch, origin/main 37f6362c):
+desde la raiz:
+  grep -cF -- '- [x] Enmienda E3 aprobada por humano' specs/mobile-health-make-parity/requirements.md   -> 1 (si da 0, PARA: no hay firma)
+  git merge-base --is-ancestor origin/main HEAD; echo "exit=$?"   -> exit=0
+  git diff --quiet 92c4e5d6 HEAD -- mobile-pet-tracker/src/screens/health/index.tsx; echo "exit=$?"   -> exit=0
+desde mobile-pet-tracker/:
+  test ! -e .expo/types/router.d.ts; echo "exit=$?"   -> exit=0
+  bunx jest src/screens/health/index.test.tsx   -> exit 0, 56 passed
+Si algo no cuadra, para y anotalo en el impl.
+
+LITERALES. Las seis filas nuevas van al final del it.each de fechas, justo
+debajo de la fila h y en este orden, tal cual (mismo formato que a-h):
+    { row: 'i', language: 'es', tz: 'UTC', now: '2026-12-31 06:00', past: '2026-12-30', next: '2026-12-31', days: 'Hoy', label: undefined, date: '31 dic 2026' },
+    { row: 'j', language: 'es', tz: 'UTC', now: '2026-12-31 06:00', past: '2026-12-30', next: '2027-01-02', days: '2 d', label: 'Faltan 2 días', date: '2 ene 2027' },
+    { row: 'k', language: 'es', tz: 'America/New_York', now: '2027-03-13 23:30', past: '2027-03-12', next: '2027-03-15', days: '2 d', label: 'Faltan 2 días', date: '15 mar 2027' },
+    { row: 'l', language: 'es', tz: 'Pacific/Auckland', now: '2027-01-01 10:00', past: '2026-12-31', next: '2027-01-03', days: '2 d', label: 'Faltan 2 días', date: '3 ene 2027' },
+    { row: 'm', language: 'es', tz: 'America/New_York', now: '2027-11-06 12:00', past: '2027-11-05', next: '2027-11-08', days: '2 d', label: 'Faltan 2 días', date: '8 nov 2027' },
+    { row: 'n', language: 'es', tz: 'UTC', now: '2026-12-31 12:00', past: '2026-12-30', next: '2027-01-01', days: '1 d', label: 'Faltan 1 días', date: '1 ene 2027' },
+i-m entran en el commit 1 y n en el commit 4. «Faltan 1 días» es a
+proposito (plural roto que pinta hoy la produccion; requirements R6
+«Fila n»): no lo corrijas.
+
+E3.2: una constante en el describe de R6, justo encima del it «ordena…»:
+  const NEXT_CARD_BRANCHES = [
+    { branch: 'días', next: '2099-05-01', text: '26419 d' },
+    { branch: 'hoy', next: '2026-12-31', text: 'Hoy' },
+  ] as const;
+y los dos it pasan a it.each(NEXT_CARD_BRANCHES) con titulos
+  'ordena la card en icono, columna y días, con la fecha en la columna ($branch)'
+  'pinta los días con la receta exacta ($branch)'
+Cada uno conserva sus dos primeras lineas (useFakeTimers y setSystemTime
+con 2026-12-31 12:00, sin tocar la TZ), usa una sola vacuna
+makeVaccine({ nextDoseAt: next }), y antes de cualquier otra asercion
+espera
+  await waitFor(() => expect(screen.getByTestId('next-vaccine-days')).toHaveTextContent(text, { exact: true }));
+(en vez del findByTestId de ahora). «ordena…» conserva todas sus
+aserciones y anade, justo debajo de expect(column.children).toHaveLength(3);
+  expect(elementChild(column, 0)).toHaveTextContent('Próxima dosis', { exact: true });
+  expect(elementChild(column, 1)).toHaveTextContent('Rabies', { exact: true });
+«pinta…» conserva sus tres aserciones; card y days se leen con getByTestId
+despues de la espera.
+
+E3.3: en el it.each 'sin contenido ($name), …' de R2, justo debajo de
+expect(within(states).getByText('Salud')).toBeVisible();
+  expect(within(states).getByText('Salud').props.className).toBe('text-2xl font-black text-foreground');
+
+ANCLAS (desde mobile-pet-tracker/, T = src/screens/health/index.test.tsx;
+ejecutalas antes de empezar y al cerrar, y escribe el valor medido al lado
+del declarado en el impl):
+  grep -c "row: '" $T   -> 8 antes, 14 despues
+  grep -cF "{ row: 'i', language: 'es', tz: 'UTC', now: '2026-12-31 06:00'" $T   -> 0 / 1 (igual para j, k, l, m, n con su prefijo)
+  grep -cF "America/New_York" $T   -> 0 / 2
+  grep -cF "Pacific/Auckland" $T   -> 0 / 1
+  grep -cF "Faltan 1 días" $T   -> 0 / 1
+  grep -cF "const NEXT_CARD_BRANCHES = [" $T   -> 0 / 1
+  grep -cF "it.each(NEXT_CARD_BRANCHES)" $T   -> 0 / 2
+  grep -cF "it.each" $T   -> 7 / 9
+  grep -cF "con la fecha en la columna ($branch)'" $T   -> 0 / 1
+  grep -cF "con la receta exacta ($branch)'" $T   -> 0 / 1
+  grep -cF "toHaveTextContent(text, { exact: true })" $T   -> 0 / 2
+  grep -cF "toHaveTextContent('Próxima dosis', { exact: true })" $T   -> 0 / 1
+  grep -cF "toHaveTextContent('Rabies', { exact: true })" $T   -> 0 / 1
+  grep -cF ".props.className).toBe('text-2xl font-black text-foreground');" $T   -> 0 / 1
+  grep -cF "jest.setSystemTime(new Date(2026, 12 - 1, 31, 12, 0));" $T   -> 2 / 2
+ Produccion de Salud intacta en toda la ronda:
+  git diff --quiet $H3 HEAD -- src/screens/health/index.tsx; echo "exit=$?"   -> exit=0 al cerrar
+
+SONDAS (design §2): cada mutacion sobre src/screens/health/index.tsx,
+literal de la tabla, y despues
+  bunx jest --runInBand src/screens/health/index.test.tsx
+Anota en el impl los it que caen y si caen por asercion (no por consulta
+ni por excepcion). Tienen que caer exactamente los que dice design §2, y
+el resto seguir verde. Tras cada una, restaurar y comprobar:
+  git checkout HEAD -- src/screens/health/index.tsx
+  git diff --quiet -- src/screens/health/index.tsx; echo "exit=$?"   -> 0
+  git diff --cached --quiet; echo "exit=$?"   -> 0
+Nunca git checkout <commit> -- ni rm -f. Si una sonda deja verde un it que
+design §2 dice que cae, o tumba uno que dice que sigue verde, PARA y
+anotalo: es un defecto de la spec, no lo arregles en el test.
+
+COMMITS (literales de tasks T9, cada uno como <registrador> && git commit,
+y el registrador es bunx jest src/screens/health/index.test.tsx con exit 0):
+ 1. test(mobile-health): #115 E3.1 next vaccine days at more hours and zones
+    Filas i-m. Salud 61 verdes. Sondas M23, M29, M30, M31, M32, M33, M34 y
+    M40.
+ 2. test(mobile-health): #115 E3.2 lock next vaccine card on the today branch
+    Salud 63 verdes. Sondas M35, M36, M37, M38, M41 y M42.
+ 3. test(mobile-health): #115 E3.3 lock the health states title recipe
+    Salud 63 verdes. Sonda M39 (caen las 5 filas).
+ 4. test(mobile-health): #115 E3.4 next vaccine days at the one day boundary
+    Fila n. Salud 64 verdes. Sondas M43, M44 y M24 (M24 tumba a-h, k, m, n
+    y las dos filas de los dos it.each de E3.2; i, j y l siguen verdes).
+ Cada commit solo lleva src/screens/health/index.test.tsx. Todos nacen
+ verdes: la mordida la demuestran las sondas, no un rojo.
+
+CIERRE (T9 paso 5), cada comando sin pipe y con su exit:
+ - Lista cerrada R8 (desde la raiz), exactamente los 10 de design §1.2:
+   git diff --name-only origin/main...HEAD -- . ':!feature_list.json' ':!STATUS.md' ':!progress/current.md' ':!progress/handoff_mobile-health-make-parity.md' ':!progress/review_mobile-health-make-parity.md' ':!specs/mobile-health-make-parity/requirements.md' ':!specs/mobile-health-make-parity/design.md' ':!specs/mobile-health-make-parity/tasks.md' ':!.claude/agents/leader.md'
+ - bun run typecheck, bun run lint y bunx jest: exit 0. Salud 64,
+   app.assets 11, total de Jest 94 suites y 2170 tests si origin/main
+   sigue en 37f6362c.
+ - git diff --quiet $H3 HEAD -- src/screens/health/index.tsx -> exit=0.
+ 5. docs(mobile-health-make-parity): trace #115 E3
+    traceability.md (R2 y R6 anaden sus commits de E3) e impl con la
+    seccion «Ronda 3»: H3, los cuatro commits con hash, la tabla de sondas
+    M23, M24 y M29-M44 (it que caen y como), las anclas con su valor medido
+    y los exits del cierre.
+
+Ficheros que puedes tocar en esta ronda, y ninguno mas:
+  mobile-pet-tracker/src/screens/health/index.test.tsx
+  specs/mobile-health-make-parity/traceability.md
+  progress/impl_mobile-health-make-parity.md
+src/screens/health/index.tsx solo para sondas, siempre restaurado.
+
+Prohibido: ./init.sh (lo coordina el leader con la otra sesion), push,
+rebase, merge, amend y reset. Si origin/main avanza, para: el merge es del
+leader. Ningun commit si el registrador o jest dio un exit distinto del
+previsto en ese paso.
+```

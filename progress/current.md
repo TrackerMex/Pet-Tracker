@@ -101,6 +101,13 @@
   V4: la fila n canda el literal actual `Faltan 1 días` (plural roto,
   Fuera de alcance); se avisa al humano en el gate. Recuentos: Salud 64,
   Jest 94/2170.
+- E3 revisada espejada en Notion el 2026-10-06 (página entera reescrita
+  desde `33e8bcd5`; `Estado del gate` = En revisión, `Rol actual` = Leader).
+  Al humano se le avisa de la fila n («Faltan 1 días» a propósito).
+- CORRECCION 4 del handoff (ronda 3, T9) escrita y con sus anclas «antes»
+  medidas sobre `33e8bcd5`: filas i–n literales, `NEXT_CARD_BRANCHES`,
+  sondas con `--runInBand`. Codex arranca solo tras la firma de E3 (el
+  primer grep de su BASE la exige).
 
 ## Ampliación solicitada: icono de inicio sin fondo — 2026-10-06
 
