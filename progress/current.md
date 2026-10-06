@@ -80,3 +80,12 @@
   En revisión (2026-10-06). Espera: el humano aprueba E1; luego commit de
   firma, CORRECCIÓN 1 en el handoff (anclas ejecutadas por el leader) y
   prompt a Codex.
+- E1 aprobada en Notion (`Estado del gate` = Aprobado y casilla marcada,
+  `page_last_edited_at` 2026-10-06T16:55:34.495Z). Commit de firma
+  `25f3664d`. Corrección 1 añadida al handoff (paso 0 que descarta la línea
+  verde, anclas C0-C9, rojo de E1 encadenado, control, verde y cierre sin
+  cambios salvo ancla 16 en 4 y doble rojo en traceability para R2 y R3). El
+  leader ejecutó C0-C9 sacándolas del handoff sobre un `git archive` de
+  `25f3664d`: todas OK. También simuló E1.1 en esa copia (C3-C6 dan
+  4/4/4/2) y pasó la cadena de greps del rojo sobre el log del spike c: OK.
+  Siguiente: el humano pega a Codex el bloque de §Corrección 1.

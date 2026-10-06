@@ -289,3 +289,116 @@ su reparto por suite, typecheck y lint; el cierre (jest entero con exit,
 NR1-NR5, backend/infra vacios, lista cerrada); y cualquier decision que
 la spec no cerrara literalmente.
 ```
+
+---
+
+## Corrección 1 — Enmienda E1 (firma `25f3664d`)
+
+> Codex paró en el verde común: la guarda dio 17 fallos con
+> `Received: "/reset-password"` en el primer `waitFor`. Causa medida por el
+> leader en un spike: el `it` de `#95 R3` no hace `await app;` y su router se
+> filtra a los `it` siguientes. Defecto de la spec, no de Codex. La Enmienda E1
+> (`requirements.md` y `tasks.md` §Enmienda E1) añade esa línea en un rojo
+> nuevo. Producción y cifras no cambian. Pegar en Codex **solo** el bloque de
+> abajo: retoma donde paró, con el mismo contexto de arriba. H1 = el commit que
+> añade esta sección. El leader ejecutó las anclas C0-C9 sobre el árbol de
+> `25f3664d` (igual al de H1 en `mobile-pet-tracker/` y `specs/`).
+
+```
+Worktree: /home/claude/sites/Pet-Tracker-wt-backend   <- PRIMERA LINEA. Trabaja AQUI y en ningun otro sitio
+Retomas #149 donde paraste (impl, §Estado al parar). Lee entero
+progress/handoff_mobile-sign-out-lands-on-welcome.md: todo lo de arriba
+sigue vigente (reglas criticas, 7 ficheros, cadenas, cierre) salvo lo que
+cambia esta correccion. Lee tambien la §Enmienda E1 de
+specs/mobile-sign-out-lands-on-welcome/requirements.md y la de tasks.md.
+
+Antes de tocar nada, ejecuta `pwd`, `git branch --show-current`,
+`git rev-parse --short HEAD` y `git status --short` y pega las cuatro
+salidas en el impl bajo un titulo nuevo `## Correccion 1`. El hash es H1.
+`git status --short` debe dar EXACTAMENTE estas dos lineas:
+   M mobile-pet-tracker/src/app/(tabs)/_layout.tsx
+  ?? progress/impl_mobile-sign-out-lands-on-welcome.md
+Si da otra cosa, o la branch no es feature/149-mobile-sign-out-lands-on-welcome,
+PARA. H0 sigue siendo a8118da0 para la lista cerrada del Cierre.
+`git fetch origin` y `git merge-base --is-ancestor origin/main HEAD; echo "exit=$?"`
+al impl; igual que arriba, si da 1 no pares.
+
+Por que: el it de #95 R3 llama a renderRouter sin `await app;` y su
+router se filtra a todos los it siguientes del fichero. Tu rojo de R3
+(e414fa6f) cayo en el primer waitFor por esa fuga, no por la asercion,
+y el verde dio 17 fallos por lo mismo. No es error tuyo: la spec solo
+pedia el await en las filas nuevas. NO reescribas commits ya hechos
+(ni rebase, ni amend, ni reset).
+
+== PASO 0: descartar la linea verde sin commitear ==
+
+Desde mobile-pet-tracker/:
+  git checkout HEAD -- 'src/app/(tabs)/_layout.tsx' && git diff --quiet && git diff --cached --quiet && grep -cF 'href="/login"' 'src/app/(tabs)/_layout.tsx'
+    -> imprime 1 (y la cadena sale con exit 0)
+Esa linea vuelve en el verde comun, que no cambia.
+
+== ANCLAS C0-C9 (tras el paso 0, desde mobile-pet-tracker/) ==
+
+Copia la salida al impl. Si alguna no da EXACTAMENTE lo esperado, PARA.
+C0. grep -cF -- '- [x] Enmienda E1 aprobada por humano (fecha: 2026-10-06' ../specs/mobile-sign-out-lands-on-welcome/requirements.md   -> 1
+C1. grep -cF 'href="/login"' 'src/app/(tabs)/_layout.tsx'   -> 1
+C2. grep -cF 'href="/welcome"' 'src/app/(tabs)/_layout.tsx'   -> 0
+C3. grep -cF 'await app;' src/app/__tests__/detail-stack.guard.test.tsx   -> 3
+C4. grep -cF 'renderRouter(' src/app/__tests__/detail-stack.guard.test.tsx   -> 4
+C5. grep -A1 -F 'renderRouter(' src/app/__tests__/detail-stack.guard.test.tsx | grep -cF 'await app;'   -> 3
+C6. grep -cF "const app = renderRouter(routes(), { initialUrl: '/home' });" src/app/__tests__/detail-stack.guard.test.tsx   -> 2
+C7. grep -cF "describe('#95 R3: la guarda protege las seis y deja libres (auth) y reset-password'" src/app/__tests__/detail-stack.guard.test.tsx   -> 1
+C8. git log --format=%s e002a4a5..HEAD | grep -cE '^test\(mobile-auth\): #149 R[1-4] red'   -> 4
+C9. git log --format=%s e002a4a5..HEAD | grep -cE '^fix\(mobile-auth\): #149'   -> 0
+C6 da 2: la primera aparicion es la de #95 R3 (sin await); la segunda es
+la de #149 R3 y ya lleva su await. Tras E1: C3 -> 4, C4 -> 4, C5 -> 4,
+C6 -> 2.
+
+== E1: ROJO NUEVO ==
+
+En describe('#95 R3: la guarda protege las seis y deja libres (auth) y reset-password')
+de src/app/__tests__/detail-stack.guard.test.tsx, en la linea siguiente a
+`const app = renderRouter(routes(), { initialUrl: '/home' });` anade
+`await app;` (misma indentacion). Nada mas: ni en ese it, ni en #105 R8,
+ni en los describe de #149, ni en ningun otro fichero.
+
+  FORCE_COLOR=0 bunx jest src/app/__tests__/detail-stack.guard.test.tsx > /tmp/149-e1.txt 2>&1; echo "exit=$?"
+    -> exit=1 y `Tests:       18 failed, 1 passed, 19 total`
+       (5 de R2 + 12 de R3 + #95 R3, todos Expected "/welcome",
+       Received "/login"; el que pasa es #105 R8)
+  grep -qE '^Tests: +18 failed, 1 passed, 19 total$' /tmp/149-e1.txt \
+    && test "$(grep -cF 'Expected: "/welcome"' /tmp/149-e1.txt)" = 18 \
+    && test "$(grep -cF 'Received: "/login"' /tmp/149-e1.txt)" = 18 \
+    && test "$(grep -cE '^ +Expected:' /tmp/149-e1.txt)" = 18 \
+    && ! grep -qE 'TypeError|ReferenceError|SyntaxError|Cannot find module' /tmp/149-e1.txt \
+    && test "$(grep -A1 -F 'renderRouter(' src/app/__tests__/detail-stack.guard.test.tsx | grep -cF 'await app;')" = 4 \
+    && test ! -e .expo/types/router.d.ts && bun run typecheck && bun run lint \
+    && git add src/app/__tests__/detail-stack.guard.test.tsx \
+    && test "$(git diff --cached --name-only)" = 'mobile-pet-tracker/src/app/__tests__/detail-stack.guard.test.tsx' \
+    && git commit -m 'test(mobile-auth): #149 R2-R3 red, await the #95 R3 render'
+  Al impl: el comando, la linea `Tests:`, el exit y cada uno de los 18 it
+  rojos con su matcher, Expected y Received.
+
+== CONTROL, VERDE Y CIERRE ==
+
+Control antes del verde (sin commit): el comando de T0 debe dar exit=1 y
+`Tests:       21 failed, 94 passed, 115 total`, como arriba.
+
+Verde comun: la cadena "Verde comun" de §COMMITS de arriba, SIN cambios
+(rehaces la linea de produccion `href="/login"` -> `href="/welcome"`).
+Reparto esperado igual: guarda 19.
+
+Cierre: igual que §CIERRE de arriba, con dos cambios:
+- En los "Valores al cerrar" de §ANCLAS, el ancla 16 cierra en 4 (no 3):
+  las dos filas nuevas mas #105 R8 mas #95 R3.
+- En traceability.md, R2 y R3 citan DOS rojos: el suyo (6314f88f para R2,
+  e414fa6f para R3) y el de E1, con hash y mensaje.
+La lista cerrada sigue en 7 ficheros contra H0 = a8118da0, con los mismos
+pathspecs de exclusion (los commits del leader 980e20bf, b4935fed,
+25f3664d y H1 solo tocan ficheros excluidos).
+
+El impl suma, bajo `## Correccion 1`: pwd, branch, H1 y status; el exit
+de is-ancestor; la salida del paso 0; C0-C9 antes y C3-C6 despues de E1;
+el rojo de E1 completo; y luego control, verde y cierre como pide el
+final del bloque de arriba. No borres lo que ya escribiste.
+```
