@@ -114,6 +114,17 @@
   CORRECCION 4 en Codex CLI; al terminar, el leader valida anclas y
   commits, corre `./init.sh` (aviso a Backend antes) y lanza el
   `reviewer` de la ronda 3.
+- Codex terminó la ronda 3 (H3 `723621d3`): cuatro commits de test E3.1–E3.4
+  (`28ad9712`, `236798ff`, `b67ab502`, `d27a4759`), solo el test de Salud
+  cada uno, y trazabilidad en `9b2bd8a3`. El leader verificó las 20 anclas
+  en su valor «después», las seis filas i–n literales (n solo desde E3.4),
+  la producción de Salud intacta desde H3 y `origin/main` en `37f6362c`.
+  Las 18 sondas coinciden con design §2 según el impl. Push hecho.
+- `./init.sh` sobre `9b2bd8a3` tras el «libre» de Backend: EXIT=0
+  (2026-10-06 20:20:43Z–20:25:23Z), medido sin pipe; backend 176/1348,
+  móvil 94/2170, e2e 29 de 32 suites y 438 tests. Log en el scratchpad.
+  Backend avisado del fin. `reviewer` de la ronda 3 lanzado: lee el log,
+  no corre init.sh.
 
 ## Ampliación solicitada: icono de inicio sin fondo — 2026-10-06
 
@@ -130,3 +141,8 @@
   `./init.sh` está verde. La ronda 2 corre en el VPS.
 - Los dos `.claude/settings.local.json` sin seguimiento ya existían al inicio
   de esta revisión y no se modificaron.
+- Review ronda 3: **aprobado** (R2, R6; código y tests). El reviewer
+  re-midió las 18 sondas de design §2 (coinciden, todas por aserción),
+  cerró V1–V4 del barrido previo y no encontró defectos. R9 (smoke S1–S11
+  en dev build de Android) queda pendiente del humano; sin su firma no hay
+  `done`.

@@ -932,3 +932,223 @@ Sobreviven y **no cuentan**:
   `ordena… ($branch)`;
 - decisión explícita sobre la fila de 1 día (V4);
 - M24 de design §2 con las 4 filas de E3.2.
+
+## Revisión ronda 3 (2026-10-06)
+
+Fecha: 2026-10-06
+Veredicto: APROBADO (código; R9 pendiente del humano)
+
+- HEAD revisado: `9b2bd8a3` (`feature/115-mobile-health-make-parity`, igual a
+  `origin/feature/115-…`). H3 = `723621d3`. `origin/main` = `37f6362c`,
+  ancestro de HEAD (exit 0) tras `git fetch`.
+- `test ! -e mobile-pet-tracker/.expo/types/router.d.ts` → 0.
+- Jest siempre `bunx jest --runInBand src/screens/health/index.test.tsx`
+  desde `mobile-pet-tracker/`, en primer plano, exit medido sin pipe.
+  Script y logs: scratchpad del reviewer, `r3probe/probe.py` y
+  `r3probe/*.log` (la mutación se aplica por sustitución literal con ancla
+  única; si el ancla no aparece exactamente una vez, no se corre).
+- Verde sin mutar: **64 passed, 64 total, exit 0**.
+
+### Sondas de design §2 (medidas por el reviewer)
+
+Restauración tras cada una: `git checkout HEAD -- src/screens/health/index.tsx`,
+luego `git diff --quiet -- src/screens/health/index.tsx` y
+`git diff --cached --quiet`: **0 / 0 / 0 en las 18**. Ningún log contiene
+`Unable to find`, `TypeError`, `ReferenceError` ni `child process exceptions`.
+
+| # | Declarado (design §2) | Medido | Cómo | Failed / passed (64) |
+|---|---|---|---|---|
+| M23 | h, k, l | h, k, l | aserción | 3 / 61 |
+| M24 | a–h, k, m, n + orden(días/hoy) + receta(días/hoy); i, j, l verdes | exactamente esas 15; i, j, l verdes | aserción | 15 / 49 |
+| M29 | i, j, l | i, j, l | aserción | 3 / 61 |
+| M30 | i, j, l | i, j, l | aserción | 3 / 61 |
+| M31 | k | k | aserción | 1 / 63 |
+| M32 | k | k | aserción | 1 / 63 |
+| M33 | l | l | aserción | 1 / 63 |
+| M34 | l | l | aserción | 1 / 63 |
+| M35 | receta (hoy) | receta (hoy) | aserción (`toBe` className) | 1 / 63 |
+| M36 | receta (hoy) | receta (hoy) | aserción (`toEqual` style) | 1 / 63 |
+| M37 | orden (hoy) | orden (hoy) | aserción (`toHaveLength` 4 ≠ 3) | 1 / 63 |
+| M38 | receta (hoy) | receta (hoy) | aserción (`toBe` className fecha) | 1 / 63 |
+| M39 | las 5 de `sin contenido` | pendiente, error, unreachable, missing-config, vacía | aserción (`toBe` `text-xl` ≠ `text-2xl`) | 5 / 59 |
+| M40 | m | m | aserción | 1 / 63 |
+| M41 | orden (días) y orden (hoy) | orden (días) y orden (hoy) | aserción (`toHaveTextContent` `[0]`) | 2 / 62 |
+| M42 | orden (hoy) | orden (hoy) | aserción (`toHaveTextContent` `[0]`) | 1 / 63 |
+| M43 | n | n | aserción | 1 / 63 |
+| M44 | n | n | aserción (`toBe` undefined ≠ `Faltan 1 días`) | 1 / 63 |
+
+Las 18 cuadran con design §2 y con la tabla de Codex en el impl §Ronda 3.
+M24 ya cuenta las 4 filas de E3.2 y m y n (D4 del barrido, cerrado).
+
+### Huecos del barrido previo a la firma (V1–V4) y barrido de lo nuevo de E3
+
+Mismo procedimiento (literal, `--runInBand`, restauración 0/0/0 en todas).
+Todas sobre el test tal como está commiteado en `9b2bd8a3`.
+
+| # | Mutación | Caen | Cómo |
+|---|---|---|---|
+| V1 = M40 | `Math.ceil` entre medianoches locales (`'T00:00'` − `setHours(0, 0, 0, 0)`) | m | aserción |
+| V1 = S35 | la misma cuenta con `new Date(y, m - 1, d)` − `new Date(new Date().toDateString())` | m | aserción |
+| V2 = M41 | `health.nextDue` y el nombre intercambiados en las dos ramas | orden (días), orden (hoy) | aserción |
+| V2 = S22 | intercambiados solo con `days === 0` | orden (hoy) | aserción |
+| V3 = M42 | ISO pegado a `health.nextDue` solo con `days === 0` | orden (hoy) | aserción |
+| V4 = M43 | `days <= 1` para `Hoy` | n | aserción |
+| V4 = M44 | `days > 1` para el `accessibilityLabel` | n | aserción |
+| V4 = S38 | `days` 1 → 2 (`(d) => d === 1 ? 2 : d`) | n | aserción |
+| X1 | `[0]` de la columna con otra clave (`health.health`) solo en `Hoy` | orden (hoy) | aserción |
+| X2 | `[1]` (nombre) en mayúsculas solo en `Hoy` | a, c, g, i, orden (hoy) | aserción (orden) y consulta (`card.getByText('Rabies')` de la tabla) |
+| X3 | ISO pegado al nombre solo en `Hoy` | a, c, g, i, orden (hoy) | ídem |
+| X5 | un 4.º `Text` con el ISO en la columna solo en `Hoy` | a, c, g, i, orden (hoy) | aserción |
+| X11 | `className` de la columna distinto solo en `Hoy` | orden (hoy) | aserción |
+| X12 | sin `Syringe` solo en `Hoy` | orden (hoy) | consulta (`getByTestId('health-icon-syringe')`) |
+| X13 | ISO pegado a `health.nextDue` solo con `days > 0` | orden (días), R5 adaptado | aserción |
+| X14 | ISO pegado a la fecha formateada solo en `Hoy` | a, c, g, i | aserción |
+| X6 | título de `health-states` en `text-xl` solo en pendiente | sin contenido (pendiente) | aserción |
+| X7 | título en `font-bold` solo con lista `ok` vacía | sin contenido (vacía) | aserción |
+| X8 | plural arreglado solo para 1 (`Falta 1 día`) | n | aserción |
+| X9 | label con `Math.max(days, 2)` | n | aserción |
+| X10 | `days === 1` pinta `Hoy` (rama anidada en el texto) | n | aserción |
+| X4 | `{'Próxima dosis'}` literal en vez de `t('health.nextDue')` | **ninguno en Salud (64/64)**; en `src/__tests__/ui-language.test.ts` caen 3 `it` (`resuelve las 32 ocurrencias normativas`, `… contra la clave exacta`, `no deja ningún valor fijo del catálogo como literal…`) | aserción |
+
+Conclusión del barrido:
+- V1, V2, V3 y V4 están muertos con el test commiteado. D4 (recuento de
+  M24) está corregido en design §2 y medido: 15 / 49.
+- La rama `hoy` de `NEXT_CARD_BRANCHES` canda por separado cada decisión
+  de la card que R6 enuncia de forma universal (tres hijos, columna y su
+  `className`, textos `[0]` y `[1]`, fecha, receta y estilo de los días,
+  icono): cada mutante restringido a `Hoy` cae en un `(hoy)`, y los
+  restringidos a `days > 0` caen en un `(días)`.
+- El título de E3.3 se canda en las 5 ramas del `it.each`: un mutante por
+  rama (X6, X7, M39) cae solo en la suya.
+- `Faltan 1 días` de la fila n canda la frontera por texto (M43, X10),
+  por label (M44, X8, X9) y por valor (S38).
+- X4 vive en Salud pero muere en el candado de copy (`ui-language`), que
+  es su sitio; no cuenta.
+- X12 cae por consulta, no por aserción: la tabla de R6 prescribe
+  `within([0]).getByTestId('health-icon-syringe')`, que es una consulta. No
+  es una sonda de design §2 y el mutante muere; no cuenta.
+
+### Higiene de commits, lista R8 y producción
+
+- Commits de la ronda (`723621d3..9b2bd8a3`), `git diff-tree --name-only`:
+  - `28ad9712` E3.1, `236798ff` E3.2, `b67ab502` E3.3 y `d27a4759` E3.4:
+    cada uno **solo** `mobile-pet-tracker/src/screens/health/index.test.tsx`.
+  - `9b2bd8a3`: solo `traceability.md` e `impl_mobile-health-make-parity.md`.
+  - `git diff --name-only 723621d3 HEAD`: exactamente los 3 ficheros
+    autorizados de la ronda.
+- Filas i–n: `diff` de las 6 líneas del handoff (CORRECCION 4 §LITERALES)
+  contra las del test → **0** (idénticas). i–m entran en `28ad9712` y n en
+  `d27a4759`, como pide el handoff. E3.2 y E3.3 cuadran con sus literales
+  (constante encima de `ordena…`, espera `toHaveTextContent(text, { exact: true })`
+  antes de toda aserción, todas las aserciones previas conservadas, E3.3 en
+  la línea siguiente al `toBeVisible()` del título).
+- Anclas de CORRECCION 4 re-medidas en HEAD: todas con el valor «después»
+  declarado (14 filas, 9 `it.each`, 2 `it.each(NEXT_CARD_BRANCHES)`, 2
+  relojes manuales, etc.). `grep -c 'calendarDaysUntil(' src/screens/health/index.tsx` = 1.
+- `git diff --quiet 723621d3 HEAD -- mobile-pet-tracker/src/screens/health/index.tsx` → **0**.
+- Lista cerrada R8 (comando de CORRECCION 4 §CIERRE, sin pipe, exit 0):
+  **exactamente los 10 de design §1.2**.
+- `git fetch origin` → 0; `origin/main` = `37f6362c`, ancestro de HEAD (0).
+
+### Gate completo
+
+- `./init.sh` no lo corrió el reviewer (coordinado por el leader).
+  Leídos el log y el `.meta` del leader:
+  - `.meta`: start `2026-10-06T20:20:43Z`, HEAD `9b2bd8a37b0935fb425f4f89a1791d578adb9494`,
+    `EXIT=0`, end `2026-10-06T20:25:23Z`. El HEAD coincide con el revisado.
+  - Backend: 176 suites / 1348 tests, todos verdes (más 2 suites / 14
+    tests y los TAP 28 + 5 + 15, todos `fail 0`).
+  - Móvil: **94 suites / 2170 tests**, todos verdes; `PASS` para
+    `src/screens/health/index.test.tsx`, `app.assets.test.ts`,
+    `ui-language.test.ts` y `consistency-classnames.test.ts`.
+  - e2e: 29 de 32 suites (3 skipped), 438 passed / 8 skipped / 446.
+  - Lint y typecheck verdes; cierre «Todo verde».
+  - Cifras idénticas a las que leyó el leader.
+- Desde `mobile-pet-tracker/`, en primer plano y sin pipe:
+  `bun run typecheck` → **0**; `bun run lint` → **0** (sin avisos).
+- Salud aislado, sin mutar (`--runInBand`): 64 passed / 64, exit 0.
+
+### Checklist
+
+C2 — Estado coherente
+- [x] Solo 1 feature `in_progress` en `feature_list.json` (#115).
+- [x] `progress/current.md` actualizado por el leader hasta la firma de E3 y
+  el handoff de la ronda 3 (modificado sin commitear en el árbol; es del
+  leader).
+
+C3 — Arquitectura
+- [x] Producción sin cambios en la ronda (diff H3..HEAD vacío); lo revisado
+  en las rondas 1–2 sigue en pie.
+- [x] domain/application/infrastructure: N/A, sin cambios de backend (R8).
+
+C4 — TDD
+- [x] Cada R-id con test que lo nombra: los `it` nuevos viven en
+  `#115 R6: la próxima vacuna dice fecha y días restantes` y
+  `#115 R2: Salud abre con el hero a sangre (A9)`.
+- [x] Nacen verdes por la vía (b): `tasks.md` T9 lo declaró por escrito antes
+  del handoff (`33e8bcd5`, ancestro de H3: «E3 … nace verde … La mordida de
+  cada candado se demuestra con su sonda de design §2»). La evidencia de
+  mutación está arriba: 18 sondas re-ejecutadas por el reviewer, todas por
+  aserción.
+- [x] Ningún commit rojo en la ronda, así que ni `ReferenceError` ni
+  mutación del doble.
+
+C5 — Trazabilidad
+- [x] `traceability.md` sin filas «pendiente» (`grep -i pendiente` vacío).
+  R9 sigue con «—», que es su gate humano.
+- [x] R2 lista E3.3 (`b67ab502`); R6 lista E3.1 (`28ad9712`), E3.2
+  (`236798ff`) y E3.4 (`d27a4759`). Todos son ancestros de HEAD.
+- [x] Formato de commit: `test(mobile-health): #115 E3.<n> …`, el literal
+  que fijaron T9 y el handoff, igual que E1.x en la ronda 2.
+
+C6 — Spec aprobada
+- [x] `status: approved`; casilla «Enmienda E3» marcada (Notion,
+  `page_last_edited_at` 2026-10-06T19:17:49.123Z, firma `723621d3`).
+
+C7 — Sin código huérfano
+- [x] N/A: E3 no reemplaza nada. Los dos `it` sueltos de estructura y receta
+  pasaron a `it.each` sin dejar copia vieja: `grep -cF "con la fecha en la columna'"`
+  = 0 y `grep -cF "con la receta exacta'"` = 0; solo queda 1 de cada con
+  `($branch)`.
+
+C8 — Carta de UI
+- [x] Producción móvil sin cambios en la ronda; lo verificado en las rondas
+  1–2 sigue en pie. El test no lleva hex, clases arbitrarias ni
+  `StyleSheet.create`.
+
+### Defectos que bloquean
+
+Ninguno.
+
+### Observaciones (no bloquean)
+
+1. X4 (`'Próxima dosis'` literal en Salud) sobrevive en el test de Salud y
+   muere en `ui-language.test.ts`. Es el reparto correcto: el copy lo
+   canda R1/`#65`, no R6.
+2. X12 (sin `Syringe` solo en `Hoy`) cae por consulta, no por aserción,
+   porque la tabla de R6 prescribe `getByTestId` dentro de `[0]`. No es
+   una sonda de design §2 y el mutante muere.
+3. Los logs y scripts de sondas de Codex están en `/tmp/115-r3-*`, fuera
+   del repo y del scratchpad, como en las rondas anteriores. La evidencia
+   que cuenta es la de este informe.
+4. Queda vivo, por construcción y ya admitido en la spec («Ninguna tabla
+   finita…»), el intervalo de constantes arbitrarias de S18/S19 del
+   barrido previo. No pide cambio.
+
+### R9 — gate humano
+
+R9 (smoke S1–S11 en **dev build de Android**) sigue **pendiente del humano**:
+la casilla «Smoke aprobado por humano» de requirements §Aprobación está sin
+marcar. Este veredicto cubre el código y los tests; la feature no puede
+pasar a `done` hasta que el humano firme R9.
+
+### Árbol al terminar
+
+- `git diff --quiet -- mobile-pet-tracker` → 0; `git diff --cached --quiet` → 0.
+- `test ! -e mobile-pet-tracker/.expo/types/router.d.ts` → 0.
+- `git status --porcelain`: ` M progress/current.md` (del leader, ya estaba
+  al empezar) y ` M progress/review_mobile-health-make-parity.md` (este
+  informe, sin commitear).
+
+**Veredicto ronda 3: APROBADO** (R2, R6; código y tests). R9 queda
+pendiente del smoke humano.
