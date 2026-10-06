@@ -91,6 +91,15 @@ await app;
 
 Se mantiene el `afterEach(() => jest.useRealTimers())` que ya tiene el fichero.
 
+**Enmienda E1.** La fuga no viene solo de la fila anterior del mismo
+`it.each`: cualquier `it` anterior del fichero que no haga `await app`
+contamina a todos los que vienen detrás. En este fichero, ese `it` es
+`#95 R3`, y los `describe` de #149 van justo después. Por eso `#95 R3` también
+lleva `await app;` (ver [[requirements]] §Enmienda E1, con el spike de tres
+variantes). Regla para cualquier fichero que monte el router en varios `it`:
+**todos** hacen `await app;`, no solo los nuevos. Y el spike que valida filas
+nuevas las corre detrás de los `it` que ya existen en el fichero, no aisladas.
+
 ## Riesgos
 
 - **Comentario con `'/login'` en producción**: R4 lo cuenta (rojo buscado).

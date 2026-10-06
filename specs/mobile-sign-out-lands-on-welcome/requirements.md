@@ -299,3 +299,69 @@ Pasos:
 ### Prueba de humo
 
 - [ ] P1–P4 y S1–S5 firmadas por humano en dev build de Android (fecha: ____)
+
+## Enmienda E1 — el render sin `await` de `#95 R3` contamina las filas nuevas
+
+Codex paró en el verde común (`progress/impl_mobile-sign-out-lands-on-welcome.md`,
+§Verde común R1–R4). Con el `href` ya en `/welcome`, la guarda dio 17 fallos: las 5 filas
+de `#149 R2` y las 12 de `#149 R3` caen en el **primer** `waitFor` (el de la
+ruta inicial) con `Received: "/reset-password"`, que es la ruta en la que
+termina `#95 R3`. En el rojo de R3 (`e414fa6f`) esas mismas filas ya habían
+caído en ese primer `waitFor`, con `Received: "/login"`. La cuenta (19) cuadró,
+pero los fallos no venían de la aserción de R2 y R3. Solo el rojo aislado de R2
+(`6314f88f`, con `-t '#149 R2'`) falló por la aserción correcta.
+
+**Causa.** El `it` de `#95 R3` llama a `renderRouter(...)` sin `await app;`.
+[[design]] §Hallazgo pedía `await app` solo en las filas nuevas. Pero la fuga
+también sale de un `it` anterior del mismo fichero que no lo hace, y [[tasks]]
+colocó los `describe` de #149 justo detrás de `#95 R3`. El spike de la spec
+corrió las filas sin `#95 R3` delante. El defecto está en la spec, no en Codex.
+
+Spike fuera del árbol sobre `7881d642` (HEAD de Codex), con el fichero de
+guarda copiado tal cual y los imports pasados a rutas absolutas:
+
+| Variante | `href` del layout de tabs | `await app;` en `#95 R3` | Resultado de la guarda |
+|---|---|---|---|
+| a | `/welcome` | no | `17 failed, 2 passed, 19 total`; las 17 filas con `Received: "/reset-password"` en el primer `waitFor` (reproduce el paro) |
+| b | `/welcome` | sí | `19 passed, 19 total` |
+| c | `/login` | sí | `18 failed, 1 passed, 19 total`; 18 × `Expected: "/welcome"` / `Received: "/login"` (las 17 filas y `#95 R3`); `#105 R8` en verde |
+
+Ningún requisito cambia de comportamiento y no hay cambio de producción.
+
+### E1.1 — `#95 R3` espera su render
+
+En `describe('#95 R3: la guarda protege las seis y deja libres (auth) y reset-password')`
+de `src/app/__tests__/detail-stack.guard.test.tsx`, la línea que sigue a
+`const app = renderRouter(routes(), { initialUrl: '/home' });` pasa a ser
+`await app;`. Nada más cambia en ese `it`, ni en `#105 R8`, ni en los
+`describe` de #149.
+
+- Ancla: `grep -cF 'await app;' src/app/__tests__/detail-stack.guard.test.tsx`
+  da `3` en `7881d642` y `4` después de E1.1. Por eso el ancla 16 del handoff
+  cierra en `4`, no en `3`.
+
+### E1.2 — Rojo válido para R2 y R3
+
+Los commits rojos ya hechos no se reescriben (sin rebase). E1.1 entra en un
+commit rojo nuevo, con producción todavía en `/login`, que aporta la evidencia
+por aserción que le faltaba a R3 y, en el fichero entero, a R2:
+
+- Antes del commit se descarta la línea verde que Codex dejó sin commitear en
+  `src/app/(tabs)/_layout.tsx`. Se vuelve a escribir en el verde común, que no
+  cambia.
+- Comando: `bunx jest src/app/__tests__/detail-stack.guard.test.tsx`. Resultado
+  esperado: `18 failed, 1 passed, 19 total`, con 18 líneas
+  `Expected: "/welcome"`, 18 `Received: "/login"` y ninguna otra línea
+  `Expected:`. `#105 R8` en verde.
+- Commit: `test(mobile-auth): #149 R2-R3 red, await the #95 R3 render`.
+- En [[traceability]], R2 y R3 citan como rojo su commit y también este.
+
+### Cifras y alcance
+
+Las cuentas no se mueven. El control antes del verde sigue siendo
+`21 failed, 94 passed, 115 total`. El verde común sigue en 6 suites y 115
+tests, con 19 en la guarda. La lista cerrada de 7 ficheros de [[design]] no
+cambia, porque E1 solo toca `detail-stack.guard.test.tsx`, que ya estaba en
+ella. Las sondas M1–M7 del reviewer corren ahora sobre un fichero sin fuga.
+
+- [ ] Enmienda E1 aprobada por humano (fecha: ____, commit de firma: el que marca esta casilla)

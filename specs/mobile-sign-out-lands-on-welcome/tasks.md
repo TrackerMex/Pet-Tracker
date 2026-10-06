@@ -191,6 +191,26 @@ vacío):
 | M5 | `src/screens/weight-log/index.tsx`: `router.replace('/(auth)/login')` tras su `signOut` | `#149 R4` | aserción (esperado, no medido) |
 | M6 | `src/providers/query-provider.tsx`: el callback del 401 hace también `router.replace('/login')` | `#149 R4` | aserción (esperado, no medido) |
 
+## Enmienda E1 — `await app` en `#95 R3` (tras R4, antes del verde común)
+
+Ver [[requirements]] §Enmienda E1. Codex la aplica sobre `7881d642` (rojo de R4).
+
+- [ ] (0) Descarta la línea verde sin commitear (desde `mobile-pet-tracker/`):
+  `git checkout HEAD -- 'src/app/(tabs)/_layout.tsx'`; después
+  `git diff --quiet` y `git diff --cached --quiet` (exit 0 los dos) y
+  `grep -cF 'href="/login"' 'src/app/(tabs)/_layout.tsx'` → `1`.
+- [ ] (1) **Test rojo.** En `describe('#95 R3: …')` de
+  `src/app/__tests__/detail-stack.guard.test.tsx`, añade `await app;` en la
+  línea siguiente a `const app = renderRouter(routes(), { initialUrl: '/home' });`.
+  Nada más.
+  - Ancla: `grep -cF 'await app;' src/app/__tests__/detail-stack.guard.test.tsx` → `4`.
+  - Comando: `bunx jest src/app/__tests__/detail-stack.guard.test.tsx`
+    → `18 failed, 1 passed, 19 total`: las 5 filas de R2, las 12 de R3 y
+    `#95 R3`, todas con `Expected: "/welcome"` y `Received: "/login"`;
+    ninguna otra línea `Expected:`; `#105 R8` en verde.
+  - Commit: `test(mobile-auth): #149 R2-R3 red, await the #95 R3 render`.
+- [ ] (2) Control antes del verde sin cambios: `21 failed, 94 passed, 115 total`.
+
 ## Verde común (R1–R4)
 
 - [ ] En `src/app/(tabs)/_layout.tsx`, `<Redirect href="/login" />` →
