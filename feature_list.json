@@ -2953,7 +2953,7 @@
   {
     "id": 149,
     "name": "mobile-sign-out-lands-on-welcome",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P2",
     "description": "Registrada el 2026-10-05 por decision del humano al cerrar #118 (smoke R13 S8, progress/impl_mobile-welcome-splash.md §R13; el humano lo confirmo en el chat del leader y corrige su commit 11d49f49). En el dev build de Android, Cerrar sesion desde Perfil aterriza en login y no en welcome. #118 dejo fuera el flujo de signOut a proposito: S8 solo observaba. Causa probable, vista por grep en d6ba857a y no probada: src/app/(tabs)/_layout.tsx devuelve <Redirect href=\"/login\" /> con status unauthenticated, mientras que src/app/index.tsx (cold start) redirige a /welcome; signOut se llama en src/screens/profile/index.tsx (boton profile.signOut y la rama unauthorized de la subida de foto) y no navega, asi que manda el Redirect del layout de tabs. Ese destino esta candado hoy: src/app/(tabs)/__tests__/layout.test.tsx «redirects an unauthenticated session to login» espera { href: '/login' }, y src/app/__tests__/detail-stack.guard.test.tsx espera /login para las rutas de detalle sin sesion; la spec decide cuales cambian y lo declara. Limites: solo esta confirmado el cierre desde Perfil; la spec verifica contra main si la sesion caducada (401) debe ir tambien a welcome o seguir en login. Fuera: router.replace('/login') de (auth)/register.tsx y el push de reset-password, que son navegacion intencional a login y no salida de sesion. Sin dependencias nuevas. Depende del merge de #118 (PR #193): la ruta welcome solo existe ahi.",
     "acceptance_criteria": [
