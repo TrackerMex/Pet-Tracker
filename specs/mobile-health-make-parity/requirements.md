@@ -1,7 +1,7 @@
 ---
 feature: mobile-health-make-parity
 id: 115
-status: spec_ready
+status: approved
 tags: [harness, spec, mobile, ui]
 base: 8afae724
 ---
@@ -368,4 +368,4 @@ hecho por el humano. Cada casilla se marca a mano:
 
 ## Aprobación
 
-- [ ] Spec aprobada por humano (fecha: ____)
+- [x] Spec aprobada por humano (fecha: 2026-10-06, desde Notion: página `3f06115a-9b27-811f-802d-c7a05058341d`, `Estado del gate` = Aprobado, `page_last_edited_at` 2026-10-06T14:06:26.286Z)
