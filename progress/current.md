@@ -32,3 +32,33 @@
   permiso para que el leader corra `./init.sh`; coordinar antes con Backend
   por el smoke de #117). Después, smoke R9 del humano y cierre (Notion
   Implementado/Completado antes de la PR).
+
+## Ampliación solicitada: icono de inicio sin fondo — 2026-10-06
+
+- El humano pidió en este chat: «va, va agrega esa recomendacion y trabajalo
+  la ram #115». Rama comprobada: `feature/115-mobile-health-make-parity`,
+  HEAD `ca3e3f14`. Esta solicitud añade el ajuste del splash a #115.
+- Recomendación aceptada: conservar la mascota robótica y el pin blanco;
+  retirar únicamente el degradado morado y el resplandor rectangular del
+  asset de inicio; exportar PNG RGBA de 1024×1024 con transparencia real y
+  bordes suaves. Mantener fondo del splash `#9460FC`, `imageWidth: 200` y
+  los iconos del launcher, iOS, favicon y notificaciones.
+- Archivo revisado: `mobile-pet-tracker/assets/images/splash-icon.png`.
+  El cuadrado visible está incorporado en la imagen: el pipeline actual
+  (`mobile-pet-tracker/scripts/make-icons.mjs`) copia el foreground del
+  launcher al splash, incluyendo el fondo del arte original. Al implementar,
+  conservar una fuente transparente independiente para el splash y evitar
+  que una regeneración de los iconos vuelva a introducir ese fondo.
+- Bloqueo previo a implementación: `./init.sh` con Git Bash y pnpm 12.9.1
+  terminó con exit 1 al instalar `infra`: `ERR_PNPM_IGNORED_BUILDS`, script
+  bloqueado de `unrs-resolver@1.12.2`; pnpm solicita `pnpm approve-builds`.
+  No se han cambiado aprobaciones de dependencias ni assets ni código.
+  La ejecución fuera del sandbox permitió usar el pnpm instalado del usuario;
+  el fallback del sandbox era 11.19.0 y no correspondía a las dependencias.
+- Pendiente: resolver la aprobación de instalación de infra, repetir init
+  hasta verde, incorporar la enmienda de alcance a la spec (incluido R8),
+  preparar el PNG con imagegen y verificarlo sobre el morado de la pantalla.
+  El arranque en frío requiere rebuild nativo y smoke en Android; la prueba
+  no se verifica solo mediante Metro. #115 continúa `in_progress`.
+- Los dos `.claude/settings.local.json` sin seguimiento ya existían al inicio
+  de esta revisión y no se modificaron.
