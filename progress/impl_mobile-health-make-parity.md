@@ -3532,3 +3532,69 @@ Desde mobile-pet-tracker/. El número identifica el comando literal del handoff.
 1 (esperado 1; grep exit=0)
 ```
 Coinciden todas: True.
+
+## R8 — salidas reales tras el commit previo autorizado
+
+Commit previo: `bd2f67d9` — `docs(mobile-health-make-parity): record #115 implementation evidence` (solo impl). Registrador: cuenta y suites esperadas True, exit=0; Jest entero exit=0. Árbol limpio tras ese commit.
+
+Desde la raíz del repo. La CORRECCIÓN 2 sustituye H0 por `origin/main...HEAD` y añade la exclusión de `.claude/agents/leader.md`. `origin/main` sigue en `e002a4a5`; `git fetch origin` y la comprobación de ancestro se repitieron antes de medir (exit=0).
+
+```bash
+git diff origin/main -- mobile-pet-tracker/package.json mobile-pet-tracker/bun.lock
+```
+```text
+(salida vacía)
+exit=0
+```
+
+```bash
+git diff --stat origin/main -- backend-pet-tracker/
+```
+```text
+(salida vacía)
+exit=0
+```
+
+```bash
+git diff --name-only origin/main...HEAD -- . ':!feature_list.json' ':!progress/current.md' ':!progress/handoff_mobile-health-make-parity.md' ':!specs/mobile-health-make-parity/requirements.md' ':!specs/mobile-health-make-parity/design.md' ':!specs/mobile-health-make-parity/tasks.md' ':!.claude/agents/leader.md'
+```
+```text
+mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+mobile-pet-tracker/src/__tests__/ui-copy-table.ts
+mobile-pet-tracker/src/__tests__/ui-language.test.ts
+mobile-pet-tracker/src/screens/health/index.test.tsx
+mobile-pet-tracker/src/screens/health/index.tsx
+progress/impl_mobile-health-make-parity.md
+specs/mobile-health-make-parity/traceability.md
+exit=0
+```
+
+Dependencias vacías, backend vacío y lista exacta de siete: True. Registrador R8 exit=0.
+
+Las anclas 28–31 están en 0; las 39–44 conservan su valor de H0. No se tocaron app.json, componentes compartidos, Home/format, catálogos, API ni los tests prohibidos. El delta de language-provider (+2) procede del merge #117 del leader. No se lanzó init.sh ni se tocó infraestructura, otro worktree o branch.
+
+## Cierre de Codex — R1–R8
+
+T0–T6 completos. T7/R9 queda al humano; sus casillas no se marcaron. Traceability cita cada rojo y verde con hash y mensaje literal; R5 cita el fix 1ae2b78f y conserva b6c08b2a como impl no verde. Los hashes y mensajes se contrastaron con git show y se comprobó que todos son ancestros de HEAD.
+
+Comprobaciones previas al último commit, desde la raíz:
+
+```text
+$ git branch --show-current
+feature/115-mobile-health-make-parity
+$ git merge-base --is-ancestor origin/main HEAD; echo "exit=$?"
+exit=0
+$ git diff --check
+(salida vacía; exit=0)
+$ git diff --quiet 08d106e2 -- mobile-pet-tracker/src/screens/health/index.tsx mobile-pet-tracker/src/screens/health/index.test.tsx mobile-pet-tracker/src/__tests__/ui-copy-table.ts mobile-pet-tracker/src/__tests__/ui-language.test.ts mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts; echo "exit=$?"
+exit=0
+$ git diff --name-only
+progress/impl_mobile-health-make-parity.md
+specs/mobile-health-make-parity/traceability.md
+$ git diff --cached --name-only
+(salida vacía)
+```
+
+Validación de cierre: True; registrador exit=0. Los cinco ficheros de código/tests siguen idénticos al verde 08d106e2 usado para las sondas y el Jest entero. Solo quedan los dos documentos del cierre literal.
+
+El commit final `docs(mobile-health-make-parity): trace #115 R1-R8` se encadena al registrador del Jest entero con `&& git commit`, después de comprobar que el índice contiene exclusivamente este impl y traceability. Los resultados reales son typecheck 0, lint 0, Jest 0 (94 suites / 2139 tests), las ocho suites 292 (Salud 55), las 48 anclas coincidentes y las 22 sondas detectadas/restauradas. Las salidas R8 de los siete ficheros constan arriba. No hay decisiones de producto adicionales a la spec; solo las correcciones del handoff y la autorización documental quedan anotadas.
