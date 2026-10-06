@@ -256,33 +256,33 @@ Clasificadas viñeta a viñeta. «Delimitación» = no es trabajo pendiente;
 
 Prerrequisitos:
 
-- [ ] P1 — Dev build de Android instalado en el teléfono y Metro sirviendo esta
+- [X] P1 — Dev build de Android instalado en el teléfono y Metro sirviendo esta
       branch (`bunx expo start --dev-client` desde `mobile-pet-tracker/`).
-- [ ] P2 — Backend levantado y alcanzable desde el teléfono en la URL de
+- [X] P2 — Backend levantado y alcanzable desde el teléfono en la URL de
       `EXPO_PUBLIC_API_URL` del `.env` del móvil (el login funciona).
-- [ ] P3 — Cuenta verificada para iniciar sesión.
-- [ ] P4 — `adb devices` muestra un solo transporte, o se usa
+- [X] P3 — Cuenta verificada para iniciar sesión.
+- [X] P4 — `adb devices` muestra un solo transporte, o se usa
       `adb -s <ip:puerto>` en cada comando.
 
 Pasos:
 
-- [ ] S1 — Con sesión, Perfil → «Cerrar sesión»: aparece **welcome**; en ningún
+- [X] S1 — Con sesión, Perfil → «Cerrar sesión»: aparece **welcome**; en ningún
       frame se ve login.
-- [ ] S2 — Desde ese welcome, botón atrás de Android: sale de la app (no vuelve
+- [X] S2 — Desde ese welcome, botón atrás de Android: sale de la app (no vuelve
       a Perfil ni a ninguna tab).
-- [ ] S3 — Sesión caducada (cubre D1 = welcome): con sesión iniciada, cierra la
+- [X] S3 — Sesión caducada (cubre D1 = welcome): con sesión iniciada, cierra la
       app; reinicia el backend con otro `JWT_SECRET` (por ejemplo, añadiendo
       `-149` al valor que use tu backend); abre la app: home pide datos, el
       backend responde 401 y la app aterriza en **welcome**. Después,
       **restaura** el `JWT_SECRET` original y reinicia el backend.
-- [ ] S4 — Regresión, arranque en frío **sin sesión**:
-      `adb -s <ip:puerto> shell am force-stop com.trackermex.pettracker` y abrir
+- [X] S4 — Regresión, arranque en frío **sin sesión**:
+      `adb -s 192.168.1.111:42573 shell am force-stop com.trackermex.pettracker` y abrir
       la app: welcome.
-- [ ] S5 — Regresión, arranque en frío **con sesión**: welcome → «Ya tengo una
+- [X] S5 — Regresión, arranque en frío **con sesión**: welcome → «Ya tengo una
       cuenta» → login correcto → home; atrás desde home sale de la app;
       `force-stop` y abrir: home directo, sin frame de welcome ni de login.
 
-- [ ] Prueba de humo firmada por humano (fecha: ____, cuenta: ____)
+- [X] Prueba de humo firmada por humano (fecha: 2026-10-06, cuenta: trackermex67@gmail.com)
 
 ## Aprobación
 
