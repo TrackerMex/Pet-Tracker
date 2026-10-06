@@ -14,7 +14,7 @@ import { PetSwitcher } from '../../components/pet-switcher';
 import { WeightChart } from '../../components/weight-chart';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
-import { useTranslate } from '../../providers/language-provider';
+import { useLocale, useTranslate } from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
 import {
   CONTINUOUS_CORNER,
@@ -22,6 +22,7 @@ import {
 } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { TOUCH_SLOP } from '../../theme/touch-target';
+import { calendarDaysUntil, fmtDate } from '../home/format';
 
 function isPetsError(state: PetsState): boolean {
   return ['error', 'unreachable', 'missing-config'].includes(state.kind);
@@ -44,6 +45,7 @@ export function HealthScreen() {
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { token } = useAuth();
   const t = useTranslate();
+  const locale = useLocale();
   const { selectedPetId, selectPet } = useSelectedPet();
   const insets = useSafeAreaInsets();
   const pets = useQuery({
@@ -76,6 +78,9 @@ export function HealthScreen() {
             (a.nextDoseAt ?? '').localeCompare(b.nextDoseAt ?? ''),
           )[0]
       : undefined;
+  const days = nextVaccine
+    ? calendarDaysUntil(nextVaccine.nextDoseAt!, new Date())
+    : 0;
 
   return (
     <ScrollView
@@ -131,10 +136,22 @@ export function HealthScreen() {
                       <Text className="font-bold text-foreground">
                         {nextVaccine.name}
                       </Text>
-                      <Text className="font-normal text-muted">
-                        {nextVaccine.nextDoseAt}
+                      <Text testID="next-vaccine-date" className="font-normal text-muted">
+                        {fmtDate(nextVaccine.nextDoseAt!, locale)}
                       </Text>
                     </View>
+                    <Text
+                      testID="next-vaccine-days"
+                      className="text-lg font-black text-warning-strong"
+                      style={TABULAR_NUMS}
+                      accessibilityLabel={
+                        days > 0 ? t('home.nextVaccineDaysLeft', { days }) : undefined
+                      }
+                    >
+                      {days === 0
+                        ? t('home.nextVaccineToday')
+                        : t('home.nextVaccineDays', { days })}
+                    </Text>
                   </Card>
                 ) : null}
 
