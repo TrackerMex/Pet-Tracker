@@ -69,6 +69,13 @@
   pasos 6–10.
 - Obs. 7 de la review: el humano confirmó en el chat el 2026-10-06 que
   autorizó `bd2f67d9`.
+- Codex terminó la ronda 2: R10 en verde en `92c4e5d6` (el PNG commiteado
+  coincide con el `sha256` firmado) y trazabilidad en `b7692d34`. El leader
+  midió la lista cerrada R8 (exactamente los 10 de design §1.2),
+  typecheck/lint exit=0, Jest 94 suites y 2144 tests con exit=0, las anclas
+  de make-icons en 0, en `assets/` solo cambia el splash, y la producción de
+  Salud no cambió desde H2. Push hecho. Siguiente: `./init.sh` tras el aviso
+  de Backend, y después la review de la ronda 2.
 
 ## Ampliación solicitada: icono de inicio sin fondo — 2026-10-06
 
