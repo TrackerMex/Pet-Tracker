@@ -89,3 +89,25 @@
   `25f3664d`: todas OK. También simuló E1.1 en esa copia (C3-C6 dan
   4/4/4/2) y pasó la cadena de greps del rojo sobre el log del spike c: OK.
   Siguiente: el humano pega a Codex el bloque de §Corrección 1.
+- Codex terminó la Corrección 1 (2026-10-06, HEAD `36bfbd9f`): rojo de E1
+  en `f9f83b9d`, verde en `00d43733`, docs en `36bfbd9f`. Drift check del
+  leader limpio: status limpio, contra H0 solo los 7 ficheros de la lista
+  cerrada más `specs/` y `progress/` de los commits del leader, y
+  `origin/main` sigue en `e002a4a5` (is-ancestor 0).
+- `./init.sh` del leader (Frontend avisada antes y después): exit 0 en
+  `36bfbd9f`, medido sin pipe. Móvil: 94 suites, 2131 tests; backend: 176
+  suites, 1348 tests; e2e: 29 suites pasadas y 3 saltadas, 438 tests pasados
+  y 8 saltados.
+- `reviewer` lanzado con las sondas M1-M7 y los rojos por commit en un
+  worktree de scratchpad, sin init.sh propio (lee el log del leader).
+  Veredicto en `progress/review_mobile-sign-out-lands-on-welcome.md`.
+- Veredicto del `reviewer` (2026-10-06): APROBADO, sin bloqueantes, en
+  `progress/review_mobile-sign-out-lands-on-welcome.md`. Rojos por aserción
+  verificados commit a commit; M1, M2 y M4-M7 coinciden con lo declarado, y
+  M8 y M9 (extras) prueban los candados de reentrada y de pila exacta. La fila
+  M3 de la tabla de R2 en tasks.md estaba mal planteada: el hook dentro de la
+  rama da rojo por excepción, y el layout de tabs ve `usePathname() === "/"`
+  al redirigir. Es un defecto de la sonda y no deja zona ciega. Queda como
+  observación, sin enmienda.
+- Siguiente: el humano hace la prueba de humo P1-P4/S1-S5 en dev build de
+  Android y marca sus casillas en requirements.md; después, el cierre.
