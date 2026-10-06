@@ -949,6 +949,11 @@ describe('#115 R6: la próxima vacuna dice fecha y días restantes', () => {
     { row: 'f', language: 'en', tz: 'UTC', now: '2026-12-31 12:00', past: '2026-12-30', next: '2027-01-02', days: '2 d', label: 'In 2 days', date: 'Jan 2, 2027' },
     { row: 'g', language: 'en', tz: 'UTC', now: '2027-01-01 12:00', past: '2026-12-31', next: '2027-01-01', days: 'Today', label: undefined, date: 'Jan 1, 2027' },
     { row: 'h', language: 'es', tz: 'America/Mexico_City', now: '2026-12-31 20:00', past: '2026-12-30', next: '2027-01-02', days: '2 d', label: 'Faltan 2 días', date: '2 ene 2027' },
+    { row: 'i', language: 'es', tz: 'UTC', now: '2026-12-31 06:00', past: '2026-12-30', next: '2026-12-31', days: 'Hoy', label: undefined, date: '31 dic 2026' },
+    { row: 'j', language: 'es', tz: 'UTC', now: '2026-12-31 06:00', past: '2026-12-30', next: '2027-01-02', days: '2 d', label: 'Faltan 2 días', date: '2 ene 2027' },
+    { row: 'k', language: 'es', tz: 'America/New_York', now: '2027-03-13 23:30', past: '2027-03-12', next: '2027-03-15', days: '2 d', label: 'Faltan 2 días', date: '15 mar 2027' },
+    { row: 'l', language: 'es', tz: 'Pacific/Auckland', now: '2027-01-01 10:00', past: '2026-12-31', next: '2027-01-03', days: '2 d', label: 'Faltan 2 días', date: '3 ene 2027' },
+    { row: 'm', language: 'es', tz: 'America/New_York', now: '2027-11-06 12:00', past: '2027-11-05', next: '2027-11-08', days: '2 d', label: 'Faltan 2 días', date: '8 nov 2027' },
   ] as const)('fila $row: hoy $now, próxima $next', async ({ language, tz, now, past, next, days, label, date }) => {
     // Jest copies process.env; Node's environment makes Date observe TZ.
     const hostProcess = process.getBuiltinModule('process');
