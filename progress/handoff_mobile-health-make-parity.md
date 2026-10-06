@@ -382,3 +382,45 @@ se queda como commit no verde documentado):
 6. Continua con T4, T5 y T6 segun el handoff. La lista cerrada de R8 no
    cambia: este fix toca los mismos dos ficheros de produccion y test.
 ```
+
+---
+
+## CORRECCION 2 — merge de origin/main tras #117 (2026-10-06)
+
+> Pegar este bloque en Codex CLI para retomar. La CORRECCION 1 sigue
+> vigente entera; esta solo cambia la base y el comando de la lista cerrada.
+
+```
+Retoma #115 en /home/claude/sites/Pet-Tracker, branch
+feature/115-mobile-health-make-parity. Paraste bien: origin/main avanzo a
+e002a4a5 (#117) y el merge era del leader. Ya esta hecho:
+
+  a3548767 Merge origin/main (e002a4a5, #117) into feature/115-mobile-health-make-parity
+
+Merge sin conflictos. Comprueba antes de tocar nada:
+  git merge-base --is-ancestor origin/main HEAD; echo "exit=$?"   -> exit=0
+
+Medido por el leader despues del merge:
+- Anclas 32-35 y 39-44 (ficheros compartidos que toco #117): mismo valor
+  que en H0. Las anclas de $H y de index.test.tsx ya muestran T1-T3 y
+  coinciden con sus valores de cierre.
+- Anclas de la CORRECCION 1: 1 y 0, sin cambios.
+- Las otras 7 suites: 237 tests, exit=0. Cambia una sola:
+    src/providers/__tests__/language-provider.test.tsx   22 -> 24 (#117)
+  Las demas igual que en T0.
+
+Cambios sobre el handoff:
+1. Total de cierre: Salud 55 + 237 = 292 (antes 290). language-provider
+   cierra en 24, no en 22. Ese fichero sigue prohibido para ti.
+2. La lista cerrada ya NO se mide desde H0 (el merge mete los ficheros de
+   #117). Comando nuevo, desde la raiz del repo:
+     git diff --name-only origin/main...HEAD -- . ':!feature_list.json' ':!progress/current.md' ':!progress/handoff_mobile-health-make-parity.md' ':!specs/mobile-health-make-parity/requirements.md' ':!specs/mobile-health-make-parity/design.md' ':!specs/mobile-health-make-parity/tasks.md' ':!.claude/agents/leader.md'
+   Ahora da 3 (health/index.tsx, health/index.test.tsx, traceability.md).
+   Al cerrar, exactamente los 7 ficheros de la lista del handoff.
+   Cualquier otro fichero es motivo de parada.
+3. Si origin/main vuelve a avanzar, para otra vez igual: el merge es del
+   leader. No rebasees.
+
+Despues sigue la CORRECCION 1 desde su paso 1, con su regla de commits
+(registrador && git commit), y luego T4, T5 y T6.
+```
