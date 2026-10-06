@@ -1,0 +1,566 @@
+# Handoff a Codex CLI — #152 mobile-home-motion-foundations
+
+> Pegar el bloque de abajo en Codex CLI. La spec está firmada (commit de firma
+> `faee3b23`, aprobación vía Notion el 2026-10-06). Es la primera feature del
+> bloque de deleite visual: `src/theme/motion.ts` con las constantes de
+> movimiento, la enmienda A21 de la carta, la entrada escalonada de la Home,
+> el fundido de las cifras del resumen y la barra de batería del collar. Son 22
+> commits, de R1 a R9 más la trazabilidad. La prueba de humo de R10, en un dev
+> build de Android, es del humano y cierra la feature. Las sondas de mutación
+> M1-M12 de tasks.md las planta el reviewer, no Codex.
+>
+> `node_modules` ya está instalado en `Pet-Tracker-wt-152/mobile-pet-tracker`
+> (`bun install --frozen-lockfile`, sin cambios en el lockfile). La branch ya
+> incluye `origin/main` 66aaf981 (#115), mergeado en 9ecc70bb antes de H0.
+
+---
+
+```
+Worktree: /home/claude/sites/Pet-Tracker-wt-152   <- PRIMERA LINEA. Trabaja AQUI y en ningun otro sitio
+Antes de tocar nada, ejecuta `pwd`, `git branch --show-current`,
+`git rev-parse --short HEAD` y `git status --short` y pega las cuatro
+salidas al principio de progress/impl_mobile-home-motion-foundations.md.
+El hash es H0 (el commit que anade este handoff). En todos los comandos de
+abajo, sustituye `<H0>` por ese hash literal: todos los `git diff` se miden
+contra el. PARA si la branch no es feature/152-mobile-home-motion-foundations
+o si `git status --short` no sale vacio. No toques /home/claude/sites/Pet-Tracker,
+Pet-Tracker-wt-118, Pet-Tracker-wt-146, Pet-Tracker-wt-148,
+Pet-Tracker-wt-backend, Pet-Tracker-wt-ui, pet-tracker-43, pt-skills ni
+ningun otro worktree, ni cambies de branch en ninguno.
+
+Feature: mobile-home-motion-foundations (#152)
+Branch: feature/152-mobile-home-motion-foundations
+Spec aprobada: specs/mobile-home-motion-foundations/requirements.md
+(status: approved, firma faee3b23). Todas las decisiones estan cerradas
+(D1-D6, design.md): no reabras ninguna.
+Lee tambien, enteros: specs/mobile-home-motion-foundations/design.md,
+tasks.md y traceability.md. tasks.md es tu guion (Arranque, R1-R9, Cierre).
+Los titulos de describe e it son LITERALES de requirements.md (cada R dice
+su describe y sus it): copialos tal cual, con sus tildes.
+
+== QUE HACES ==
+
+Los 22 commits de tasks.md, en su orden exacto: rojo antes de cada verde,
+y R6 (verificacion) escrito antes del verde de R5. Donde tasks.md pide una
+mutacion de produccion versionada en el commit rojo (R2, R7 B, R8 B, R9),
+el verde la revierte. Nunca mutes un doble de test. Si escribes un verde
+antes que su rojo, ese requisito nace verde y pierde su historial (C4 de
+CHECKPOINTS.md); en #19 se metio todo en un solo commit y no vale.
+
+== BASE ==
+
+origin/main = 66aaf981 al escribir este handoff, y la branch ya lo
+incluye (merge 9ecc70bb, antes de H0): lo esperado es exit=0. Al arrancar:
+`git fetch origin` y `git merge-base --is-ancestor origin/main HEAD; echo "exit=$?"`.
+Anota el exit en el impl. Si da 1 (otra feature mergeo antes), NO pares:
+trabajas sobre H0 igual y el merge de main en la branch lo hace el leader.
+Nunca rebasees ni mergees.
+
+Desde mobile-pet-tracker/:
+- `test -d node_modules && echo presente` -> presente. Si no sale,
+  `bun install --frozen-lockfile`; si el sandbox te lo deniega, PARA.
+- `test ! -e .expo/types/router.d.ts; echo "exit=$?"` -> exit=0. Va en
+  cada cadena de commit; si un dia da 1, PARA y pide al humano que lo
+  borre. Nunca `rm -f` (tu sandbox lo deniega).
+- `pgrep -af '[i]nit\.sh'` sin pipe: si sale algo, otra sesion usa la
+  maquina; espera a que salga vacio antes de la suite entera del Cierre.
+
+Base medida por el leader el 2026-10-06 en este worktree, tras el merge
+de main y con el arbol de H0, con el comando de tasks.md Arranque 5, sin
+pipe:
+  Test Suites: 3 passed, 3 total
+  Tests:       281 passed, 281 total
+  exit=0
+  Reparto: home/index 169, design-drift 61, global-css 51.
+Tu medida manda: repitela con `FORCE_COLOR=0` y anotala en el impl.
+
+== ANCLAS ==
+
+Ejecutalas TODAS desde mobile-pet-tracker/ antes de tocar nada y copia la
+salida al impl. Incluyen las premisas P1-P10 de requirements.md. Solo
+estos comandos son anclas; los numeros de linea no lo son. Si alguna no
+da EXACTAMENTE lo esperado, PARA y avisa (ante una diferencia manda el
+fichero, no el handoff). El leader las ha ejecutado todas en H0
+sacandolas de este mismo fichero.
+
+ 0. grep -cF -- '- [x] Aprobado por humano (fecha: 2026-10-06, vía Notion' ../specs/mobile-home-motion-foundations/requirements.md   -> 1
+ 1. grep -rlF 'entering=' src | wc -l   -> 0
+ 2. test -e src/theme/motion.ts; echo $?   -> 1
+ 3. grep -cF -- '--motion' src/theme/global.css   -> 0
+ 4. grep -rlF 'home-entrance' src | wc -l   -> 0
+ 5. grep -cF 'promueven a tokens `--motion-*` en global.css' ../docs/ui-guidelines.md   -> 1
+ 6. grep -cF 'unmountOnBlur' 'src/app/(tabs)/_layout.tsx'   -> 0
+ 7. grep -cF "expect(mockWithTiming).not.toHaveBeenCalled()" src/screens/home/index.test.tsx   -> 1
+ 8. grep -cF '.children.flatMap((child) =>' src/screens/home/index.test.tsx   -> 4
+ 9. grep -cF 'BAR_ENTRY_STAGGER_MS = 40' src/screens/home/weekly-activity-chart.tsx   -> 1
+10. grep -cF "dot: 'bg-success'" src/components/pet-hero-header.tsx   -> 1
+11. grep -cF "dot: 'bg-warning-strong'" src/components/pet-hero-header.tsx   -> 1
+12. test -e src/screens/home/home-entrance.tsx; echo $?   -> 1
+13. test -e src/screens/home/home-entrance.test.tsx; echo $?   -> 1
+14. test -e src/screens/home/collar-battery-bar.tsx; echo $?   -> 1
+15. test -e src/theme/__tests__/motion.test.ts; echo $?   -> 1
+16. grep -cF 'testID="home-content"' src/screens/home/index.tsx   -> 1
+17. grep -cF 'className="flex-row"' src/screens/home/index.tsx   -> 1
+18. grep -cF 'testID="summary-skeleton"' src/screens/home/index.tsx   -> 1
+19. grep -cF 'testID="collar-battery"' src/screens/home/index.tsx   -> 1
+20. grep -cF "t('home.noCollar')" src/screens/home/index.tsx   -> 1
+21. grep -cF 'const detail = useQuery({' src/screens/home/index.tsx   -> 1
+22. grep -cF 'const { selectedPetId, selectPet } = useSelectedPet();' src/screens/home/index.tsx   -> 1
+23. grep -cF 'MEALS_BAR_TIMING' src/screens/home/index.tsx   -> 2
+24. grep -cF "describe('R10: refetch al foco'" src/screens/home/index.test.tsx   -> 1
+25. grep -cF "it('selects a pressed pet and reloads its detail and activity'" src/screens/home/index.test.tsx   -> 1
+26. grep -cF "it('queda entre el resumen y la última posición en el árbol'" src/screens/home/index.test.tsx   -> 1
+27. grep -cF "it('coloca la tira sobre la tarjeta del collar'" src/screens/home/index.test.tsx   -> 1
+28. grep -cF "it('coloca la rejilla entre el collar y la actividad semanal'" src/screens/home/index.test.tsx   -> 1
+29. grep -cF "it('coloca la sección entre la actividad semanal y la última posición'" src/screens/home/index.test.tsx   -> 1
+30. grep -cF 'const mockWithTiming = jest.fn(' src/screens/home/index.test.tsx   -> 1
+31. grep -cF 'const mockUseReducedMotion = jest.fn' src/screens/home/index.test.tsx   -> 1
+32. grep -cF 'withDelay: jest.fn(' src/screens/home/index.test.tsx   -> 1
+33. grep -cF "describe('#152" src/screens/home/index.test.tsx   -> 0
+34. grep -cF "describe('#152" src/__tests__/design-drift.test.ts   -> 0
+35. grep -cF 'const MEALS_BAR_STYLE_ESCAPES = new RegExp(' src/__tests__/design-drift.test.ts   -> 1
+36. grep -cF "describe('#98 R10: la barra de comidas no mete drift de estilo'" src/__tests__/design-drift.test.ts   -> 2
+37. grep -cF '## Enmienda #152' ../docs/ui-guidelines.md   -> 0
+38. grep -cF 'Enmienda aprobada por humano' ../docs/ui-guidelines.md   -> 2
+39. grep -cF -- '- [ ] Enmienda aprobada por humano' ../docs/ui-guidelines.md   -> 0
+40. test ! -e .expo/types/router.d.ts; echo $?   -> 0
+
+36 da 2 porque el it.each de #108 R2 cita ese describe como cadena: es
+una sola describe. 26-29 son los cuatro tests de orden que mueve R5.
+
+Valores al cerrar (copialos al impl): 0 sin cambios, 1 -> 2, 2 -> 0,
+3 -> 0, 4 no se fija (anota el valor), 5 -> 0, 6 sin cambios, 7 no menos
+de 1, 8 no menos de 4, 9-11 sin cambios, 12-15 -> 0, 16-32 sin cambios,
+33 -> 4, 34 -> 1, 35-36 sin cambios, 37 -> 1, 38 -> 3, 39 -> 1, 40 sin
+cambios. Y en positivo al cerrar:
+  grep -cF 'export const MOTION_' src/theme/motion.ts   -> 8
+  grep -cF "'worklet'" src/screens/home/home-entrance.tsx   -> 1
+  grep -cF '<HomeEntrance' src/screens/home/index.tsx   -> 6
+  grep -cF 'testID="summary-reveal"' src/screens/home/index.tsx   -> 1
+  grep -cF 'homeEntering(0, 0)' src/screens/home/index.tsx   -> 1
+  grep -cF '<CollarBatteryBar' src/screens/home/index.tsx   -> 1
+  grep -cF '`src/theme/motion.ts` (enmienda A21 de #152)' ../docs/ui-guidelines.md   -> 1
+  grep -cF "describe('#152 R9" src/__tests__/design-drift.test.ts   -> 1
+
+== COMMITS ==
+
+Todo desde mobile-pet-tracker/. Cada commit va ENCADENADO con && a su
+verificacion: si cualquier eslabon falla, el commit no se hace. Nunca
+commitees fuera de estas cadenas ni con un exit distinto de 0 en la
+cadena (en #115 se commiteo un verde con el registrador en exit=1). Si
+una cadena no llega al commit, PARA y reporta en el impl el eslabon que
+fallo y la salida.
+
+Mide SIN pipe (`cmd | tail` devuelve el exit de tail). FORCE_COLOR=0 deja
+la linea de resumen de jest en texto plano. Formato medido por el leader
+en H0: `Tests:       165 skipped, 4 passed, 169 total`, y si todos los it
+quedan filtrados, `Tests:       169 skipped, 169 total`. Con fallos, el
+orden es `X failed, Y skipped, Z passed, T total`.
+
+Rojos: cada uno cae EXACTAMENTE como dice tasks.md: por ASERCION
+(Expected/Received) o por CONSULTA (`Unable to find an element with
+testID: ...`) donde tasks.md lo dice. Nunca por SyntaxError,
+ReferenceError, import roto ni un helper de test sin definir. Las dos
+unicas excepciones las declara tasks.md y su cadena las acota: R3 cae por
+`TypeError` porque falta la funcion de produccion, y R4 por
+`Element type is invalid` porque falta el componente. La cadena
+comprueba la cuenta; tu ademas abres el log y copias al impl cada it rojo
+con su matcher y su Expected/Received (o la consulta que fallo).
+
+Typecheck en los rojos R1, R3 y R4: el sujeto nuevo es `export {};`, asi
+que tsc falla con TS2305 (`Module '"..."' has no exported member 'X'`)
+en el fichero de test y SOLO ahi. La cadena lo acota asi: todo
+`error TS` del log tiene que ser un TS2305 de ese fichero. En los demas
+commits, `bun run typecheck` va normal.
+
+R1 rojo (motion.test.ts con el describe #152 R1; motion.ts con solo `export {};`):
+  FORCE_COLOR=0 bunx jest src/theme/__tests__/motion.test.ts > /tmp/152-r1.txt 2>&1; echo "exit=$?"
+    -> exit=1 y `Tests:       6 failed, 6 total`
+  grep -qE '^Tests: +6 failed, 6 total$' /tmp/152-r1.txt \
+    && ! grep -qE 'TypeError|ReferenceError|SyntaxError|Cannot find module' /tmp/152-r1.txt \
+    && test ! -e .expo/types/router.d.ts \
+    && { bun run typecheck > /tmp/152-r1-tsc.txt 2>&1 || true; } \
+    && test "$(grep -c 'error TS' /tmp/152-r1-tsc.txt)" = "$(grep -cE '^src/theme/__tests__/motion\.test\.ts\([0-9]+,[0-9]+\): error TS2305:' /tmp/152-r1-tsc.txt)" \
+    && bun run lint \
+    && git add src/theme/__tests__/motion.test.ts src/theme/motion.ts \
+    && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'mobile-pet-tracker/src/theme/__tests__/motion.test.ts mobile-pet-tracker/src/theme/motion.ts ' \
+    && git commit -m 'test(mobile-home): #152 R1 red, motion constants'
+
+R1 verde:
+  FORCE_COLOR=0 bunx jest src/theme/__tests__/motion.test.ts > /tmp/152-g1.txt 2>&1; echo "exit=$?"
+  grep -qE '^Tests: +6 passed, 6 total$' /tmp/152-g1.txt \
+    && test "$(grep -cF 'export const MOTION_' src/theme/motion.ts)" = 8 \
+    && test ! -e .expo/types/router.d.ts && bun run typecheck && bun run lint \
+    && git add src/theme/motion.ts \
+    && test "$(git diff --cached --name-only)" = 'mobile-pet-tracker/src/theme/motion.ts' \
+    && git commit -m 'feat(mobile-home): #152 R1 motion constants in theme/motion.ts'
+
+R2 rojo (describe #152 R2 en motion.test.ts; `/* --motion */` al final de global.css):
+  FORCE_COLOR=0 bunx jest src/theme/__tests__/motion.test.ts > /tmp/152-r2.txt 2>&1; echo "exit=$?"
+    -> exit=1 y `Tests:       3 failed, 6 passed, 9 total`
+  Sin commit, informativo: corre tambien
+  `FORCE_COLOR=0 bunx jest src/theme/__tests__/global-css.test.ts src/__tests__/design-drift.test.ts > /tmp/152-r2-info.txt 2>&1; echo "exit=$?"`
+  y anota en el impl cualquier it que caiga con la mutacion. No lo arregles.
+  grep -qE '^Tests: +3 failed, 6 passed, 9 total$' /tmp/152-r2.txt \
+    && ! grep -qE 'TypeError|ReferenceError|SyntaxError|Cannot find module' /tmp/152-r2.txt \
+    && test ! -e .expo/types/router.d.ts && bun run typecheck && bun run lint \
+    && git add src/theme/__tests__/motion.test.ts src/theme/global.css \
+    && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'mobile-pet-tracker/src/theme/__tests__/motion.test.ts mobile-pet-tracker/src/theme/global.css ' \
+    && git commit -m 'test(mobile-home): #152 R2 red, charter points to motion.ts'
+
+R2 verde (frase de §Animacion + seccion final con la casilla SIN marcar; quita la mutacion):
+  FORCE_COLOR=0 bunx jest src/theme/__tests__/motion.test.ts > /tmp/152-g2.txt 2>&1; echo "exit=$?"
+  grep -qE '^Tests: +9 passed, 9 total$' /tmp/152-g2.txt \
+    && test "$(grep -cF '`src/theme/motion.ts` (enmienda A21 de #152)' ../docs/ui-guidelines.md)" = 1 \
+    && test "$(grep -cF 'promueven a tokens' ../docs/ui-guidelines.md)" = 0 \
+    && test "$(grep -cF -- '--motion' src/theme/global.css)" = 0 \
+    && test "$(grep -cF -- '- [ ] Enmienda aprobada por humano' ../docs/ui-guidelines.md)" = 1 \
+    && test -z "$(git diff --stat <H0> -- src/theme/global.css)" \
+    && test ! -e .expo/types/router.d.ts && bun run typecheck && bun run lint \
+    && git add ../docs/ui-guidelines.md src/theme/global.css \
+    && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'docs/ui-guidelines.md mobile-pet-tracker/src/theme/global.css ' \
+    && git commit -m 'docs(mobile-home): #152 R2 charter amendment A21 for motion.ts'
+
+R3 rojo (home-entrance.test.tsx con el describe #152 R3 y sus dobles; home-entrance.tsx con solo `export {};`):
+  FORCE_COLOR=0 bunx jest src/screens/home/home-entrance.test.tsx > /tmp/152-r3.txt 2>&1; echo "exit=$?"
+    -> exit=1 y `Tests:       2 failed, 2 total`, los dos con
+       `TypeError: (0 , _homeEntrance.homeEntering) is not a function`
+  grep -qE '^Tests: +2 failed, 2 total$' /tmp/152-r3.txt \
+    && test "$(grep -cE 'TypeError: .*homeEntering\)? is not a function' /tmp/152-r3.txt)" -ge 2 \
+    && test "$(grep -c 'TypeError' /tmp/152-r3.txt)" = "$(grep -cE 'TypeError: .*homeEntering\)? is not a function' /tmp/152-r3.txt)" \
+    && ! grep -qE 'ReferenceError|SyntaxError|Cannot find module' /tmp/152-r3.txt \
+    && test ! -e .expo/types/router.d.ts \
+    && { bun run typecheck > /tmp/152-r3-tsc.txt 2>&1 || true; } \
+    && test "$(grep -c 'error TS' /tmp/152-r3-tsc.txt)" = "$(grep -cE '^src/screens/home/home-entrance\.test\.tsx\([0-9]+,[0-9]+\): error TS2305:' /tmp/152-r3-tsc.txt)" \
+    && bun run lint \
+    && git add src/screens/home/home-entrance.test.tsx src/screens/home/home-entrance.tsx \
+    && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'mobile-pet-tracker/src/screens/home/home-entrance.test.tsx mobile-pet-tracker/src/screens/home/home-entrance.tsx ' \
+    && git commit -m 'test(mobile-home): #152 R3 red, home entrance recipe'
+
+R3 verde:
+  FORCE_COLOR=0 bunx jest src/screens/home/home-entrance.test.tsx > /tmp/152-g3.txt 2>&1; echo "exit=$?"
+  grep -qE '^Tests: +2 passed, 2 total$' /tmp/152-g3.txt \
+    && test "$(grep -cF "'worklet'" src/screens/home/home-entrance.tsx)" = 1 \
+    && test ! -e .expo/types/router.d.ts && bun run typecheck && bun run lint \
+    && git add src/screens/home/home-entrance.tsx \
+    && test "$(git diff --cached --name-only)" = 'mobile-pet-tracker/src/screens/home/home-entrance.tsx' \
+    && git commit -m 'feat(mobile-home): #152 R3 homeEntering worklet'
+
+R4 rojo (describe #152 R4 en home-entrance.test.tsx):
+  FORCE_COLOR=0 bunx jest src/screens/home/home-entrance.test.tsx > /tmp/152-r4.txt 2>&1; echo "exit=$?"
+    -> exit=1 y `Tests:       4 failed, 2 passed, 6 total`
+  grep -qE '^Tests: +4 failed, 2 passed, 6 total$' /tmp/152-r4.txt \
+    && test "$(grep -cF 'Element type is invalid' /tmp/152-r4.txt)" -ge 4 \
+    && ! grep -qE 'TypeError|ReferenceError|SyntaxError|Cannot find module' /tmp/152-r4.txt \
+    && test ! -e .expo/types/router.d.ts \
+    && { bun run typecheck > /tmp/152-r4-tsc.txt 2>&1 || true; } \
+    && test "$(grep -c 'error TS' /tmp/152-r4-tsc.txt)" = "$(grep -cE '^src/screens/home/home-entrance\.test\.tsx\([0-9]+,[0-9]+\): error TS2305:' /tmp/152-r4-tsc.txt)" \
+    && bun run lint \
+    && git add src/screens/home/home-entrance.test.tsx \
+    && test "$(git diff --cached --name-only)" = 'mobile-pet-tracker/src/screens/home/home-entrance.test.tsx' \
+    && git commit -m 'test(mobile-home): #152 R4 red, staggered HomeEntrance'
+
+R4 verde:
+  FORCE_COLOR=0 bunx jest src/screens/home/home-entrance.test.tsx > /tmp/152-g4.txt 2>&1; echo "exit=$?"
+  grep -qE '^Tests: +6 passed, 6 total$' /tmp/152-g4.txt \
+    && test ! -e .expo/types/router.d.ts && bun run typecheck && bun run lint \
+    && git add src/screens/home/home-entrance.tsx \
+    && test "$(git diff --cached --name-only)" = 'mobile-pet-tracker/src/screens/home/home-entrance.tsx' \
+    && git commit -m 'feat(mobile-home): #152 R4 HomeEntrance wrapper'
+
+Filtro de los cuatro tests de orden (R5): va escrito entero en los dos
+comandos que lo usan. El leader lo midio en H0:
+`Tests:       165 skipped, 4 passed, 169 total`.
+
+R5 rojo (describe #152 R5 con sus 7 it + los 4 tests de orden movidos):
+  FORCE_COLOR=0 bunx jest src/screens/home/index.test.tsx -t '#152 R5' > /tmp/152-r5.txt 2>&1; echo "exit=$?"
+    -> exit=1 y `Tests:       7 failed, 169 skipped, 176 total`
+  FORCE_COLOR=0 bunx jest src/screens/home/index.test.tsx -t 'queda entre el resumen y la última posición|coloca la tira sobre la tarjeta del collar|coloca la rejilla entre el collar y la actividad semanal|coloca la sección entre la actividad semanal y la última posición' > /tmp/152-r5-order.txt 2>&1; echo "exit=$?"
+    -> exit=1 y `Tests:       4 failed, 172 skipped, 176 total`
+  grep -qE '^Tests: +7 failed, 169 skipped, 176 total$' /tmp/152-r5.txt \
+    && test "$(grep -cF 'Unable to find an element with testID: home-entrance-' /tmp/152-r5.txt)" -ge 6 \
+    && grep -qE '^Tests: +4 failed, 172 skipped, 176 total$' /tmp/152-r5-order.txt \
+    && ! grep -qE 'TypeError|ReferenceError|SyntaxError|Cannot find module' /tmp/152-r5.txt /tmp/152-r5-order.txt \
+    && test ! -e .expo/types/router.d.ts && bun run typecheck && bun run lint \
+    && git add src/screens/home/index.test.tsx \
+    && test "$(git diff --cached --name-only)" = 'mobile-pet-tracker/src/screens/home/index.test.tsx' \
+    && git commit -m 'test(mobile-home): #152 R5 red, staggered Home blocks'
+
+R6 rojo (describe #152 R6 con sus 2 it, ANTES del verde de R5):
+  FORCE_COLOR=0 bunx jest src/screens/home/index.test.tsx -t '#152 R6' > /tmp/152-r6.txt 2>&1; echo "exit=$?"
+    -> exit=1 y `Tests:       2 failed, 176 skipped, 178 total`
+  grep -qE '^Tests: +2 failed, 176 skipped, 178 total$' /tmp/152-r6.txt \
+    && test "$(grep -cF 'Unable to find an element with testID: ' /tmp/152-r6.txt)" -ge 2 \
+    && ! grep -qE 'TypeError|ReferenceError|SyntaxError|Cannot find module' /tmp/152-r6.txt \
+    && test ! -e .expo/types/router.d.ts && bun run typecheck && bun run lint \
+    && git add src/screens/home/index.test.tsx \
+    && test "$(git diff --cached --name-only)" = 'mobile-pet-tracker/src/screens/home/index.test.tsx' \
+    && git commit -m 'test(mobile-home): #152 R6 red, entrance plays once per mount'
+
+R5 verde (los seis HomeEntrance en index.tsx; R6 SIGUE rojo, ahora por summary-reveal, que crea R7):
+  FORCE_COLOR=0 bunx jest src/screens/home/index.test.tsx -t '#152 R5' > /tmp/152-g5.txt 2>&1; echo "exit=$?"
+  FORCE_COLOR=0 bunx jest src/screens/home/index.test.tsx -t 'queda entre el resumen y la última posición|coloca la tira sobre la tarjeta del collar|coloca la rejilla entre el collar y la actividad semanal|coloca la sección entre la actividad semanal y la última posición' > /tmp/152-g5-order.txt 2>&1; echo "exit=$?"
+  FORCE_COLOR=0 bunx jest src/screens/home/index.test.tsx -t '#152 R6' > /tmp/152-g5-r6.txt 2>&1; echo "exit=$?"
+  FORCE_COLOR=0 bunx jest src/screens/home/index.test.tsx > /tmp/152-g5-all.txt 2>&1; echo "exit=$?"
+  grep -qE '^Tests: +171 skipped, 7 passed, 178 total$' /tmp/152-g5.txt \
+    && grep -qE '^Tests: +174 skipped, 4 passed, 178 total$' /tmp/152-g5-order.txt \
+    && grep -qE '^Tests: +2 failed, 176 skipped, 178 total$' /tmp/152-g5-r6.txt \
+    && test "$(grep -cF 'Unable to find an element with testID: summary-reveal' /tmp/152-g5-r6.txt)" -ge 2 \
+    && grep -qE '^Tests: +2 failed, 176 passed, 178 total$' /tmp/152-g5-all.txt \
+    && test "$(grep -cF '<HomeEntrance' src/screens/home/index.tsx)" = 6 \
+    && test ! -e .expo/types/router.d.ts && bun run typecheck && bun run lint \
+    && git add src/screens/home/index.tsx \
+    && test "$(git diff --cached --name-only)" = 'mobile-pet-tracker/src/screens/home/index.tsx' \
+    && git commit -m 'feat(mobile-home): #152 R5 wrap Home blocks in HomeEntrance'
+
+R7 rojo A (describe #152 R7 con sus dos primeros it):
+  FORCE_COLOR=0 bunx jest src/screens/home/index.test.tsx -t '#152 R7' > /tmp/152-r7a.txt 2>&1; echo "exit=$?"
+    -> exit=1 y `Tests:       2 failed, 178 skipped, 180 total`
+  FORCE_COLOR=0 bunx jest src/screens/home/index.test.tsx > /tmp/152-r7a-all.txt 2>&1; echo "exit=$?"
+    -> exit=1 y `Tests:       4 failed, 176 passed, 180 total` (2 de R6 + 2 de R7)
+  grep -qE '^Tests: +2 failed, 178 skipped, 180 total$' /tmp/152-r7a.txt \
+    && test "$(grep -cF 'Unable to find an element with testID: summary-reveal' /tmp/152-r7a.txt)" -ge 2 \
+    && grep -qE '^Tests: +4 failed, 176 passed, 180 total$' /tmp/152-r7a-all.txt \
+    && ! grep -qE 'TypeError|ReferenceError|SyntaxError|Cannot find module' /tmp/152-r7a.txt \
+    && test ! -e .expo/types/router.d.ts && bun run typecheck && bun run lint \
+    && git add src/screens/home/index.test.tsx \
+    && test "$(git diff --cached --name-only)" = 'mobile-pet-tracker/src/screens/home/index.test.tsx' \
+    && git commit -m 'test(mobile-home): #152 R7 red, summary reveal fade'
+
+R7 verde A (R6 queda verde aqui):
+  FORCE_COLOR=0 bunx jest src/screens/home/index.test.tsx -t '#152 R(6|7)' > /tmp/152-g7a.txt 2>&1; echo "exit=$?"
+  FORCE_COLOR=0 bunx jest src/screens/home/index.test.tsx > /tmp/152-g7a-all.txt 2>&1; echo "exit=$?"
+  grep -qE '^Tests: +176 skipped, 4 passed, 180 total$' /tmp/152-g7a.txt \
+    && grep -qE '^Tests: +180 passed, 180 total$' /tmp/152-g7a-all.txt \
+    && test "$(grep -cF 'testID="summary-reveal"' src/screens/home/index.tsx)" = 1 \
+    && test "$(grep -cF 'homeEntering(0, 0)' src/screens/home/index.tsx)" = 1 \
+    && test ! -e .expo/types/router.d.ts && bun run typecheck && bun run lint \
+    && git add src/screens/home/index.tsx \
+    && test "$(git diff --cached --name-only)" = 'mobile-pet-tracker/src/screens/home/index.tsx' \
+    && git commit -m 'feat(mobile-home): #152 R7 fade in the summary row'
+
+R7 rojo B (tercer it + mutacion: segundo summary-reveal envolviendo el Skeleton de summary-skeleton):
+  FORCE_COLOR=0 bunx jest src/screens/home/index.test.tsx -t '#152 R7' > /tmp/152-r7b.txt 2>&1; echo "exit=$?"
+    -> exit=1 y `Tests:       1 failed, 178 skipped, 2 passed, 181 total`
+  Sin commit, informativo: el fichero entero a /tmp/152-r7b-all.txt; anota
+  en el impl cualquier otro it que caiga con la mutacion. No lo arregles.
+  grep -qE '^Tests: +1 failed, 178 skipped, 2 passed, 181 total$' /tmp/152-r7b.txt \
+    && ! grep -qE 'TypeError|ReferenceError|SyntaxError|Cannot find module' /tmp/152-r7b.txt \
+    && test "$(grep -cF 'testID="summary-reveal"' src/screens/home/index.tsx)" = 2 \
+    && test ! -e .expo/types/router.d.ts && bun run typecheck && bun run lint \
+    && git add src/screens/home/index.test.tsx src/screens/home/index.tsx \
+    && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'mobile-pet-tracker/src/screens/home/index.test.tsx mobile-pet-tracker/src/screens/home/index.tsx ' \
+    && git commit -m 'test(mobile-home): #152 R7 red, no fade over the skeleton'
+
+R7 verde B (revierte la mutacion):
+  FORCE_COLOR=0 bunx jest src/screens/home/index.test.tsx -t '#152 R7' > /tmp/152-g7b.txt 2>&1; echo "exit=$?"
+  FORCE_COLOR=0 bunx jest src/screens/home/index.test.tsx > /tmp/152-g7b-all.txt 2>&1; echo "exit=$?"
+  grep -qE '^Tests: +178 skipped, 3 passed, 181 total$' /tmp/152-g7b.txt \
+    && grep -qE '^Tests: +181 passed, 181 total$' /tmp/152-g7b-all.txt \
+    && test "$(grep -cF 'testID="summary-reveal"' src/screens/home/index.tsx)" = 1 \
+    && test ! -e .expo/types/router.d.ts && bun run typecheck && bun run lint \
+    && git add src/screens/home/index.tsx \
+    && test "$(git diff --cached --name-only)" = 'mobile-pet-tracker/src/screens/home/index.tsx' \
+    && git commit -m 'feat(mobile-home): #152 R7 keep the skeleton without fade'
+
+R8 rojo A (describe #152 R8 con los it 1 (it.each de 4 filas), 2, 3, 4, 7 y 8):
+  FORCE_COLOR=0 bunx jest src/screens/home/index.test.tsx -t '#152 R8' > /tmp/152-r8a.txt 2>&1; echo "exit=$?"
+    -> exit=1 y `Tests:       9 failed, 181 skipped, 190 total`
+  grep -qE '^Tests: +9 failed, 181 skipped, 190 total$' /tmp/152-r8a.txt \
+    && test "$(grep -cE 'Unable to find an element with testID: collar-battery-(track|fill)' /tmp/152-r8a.txt)" -ge 9 \
+    && ! grep -qE 'TypeError|ReferenceError|SyntaxError|Cannot find module' /tmp/152-r8a.txt \
+    && test ! -e .expo/types/router.d.ts && bun run typecheck && bun run lint \
+    && git add src/screens/home/index.test.tsx \
+    && test "$(git diff --cached --name-only)" = 'mobile-pet-tracker/src/screens/home/index.test.tsx' \
+    && git commit -m 'test(mobile-home): #152 R8 red, collar battery bar'
+
+R8 verde A (collar-battery-bar.tsx nuevo + la barra condicional en index.tsx):
+  FORCE_COLOR=0 bunx jest src/screens/home/index.test.tsx -t '#152 R8' > /tmp/152-g8a.txt 2>&1; echo "exit=$?"
+  FORCE_COLOR=0 bunx jest src/screens/home/index.test.tsx -t '#106' > /tmp/152-g8a-106.txt 2>&1; echo "exit=$?"
+  FORCE_COLOR=0 bunx jest src/screens/home/index.test.tsx > /tmp/152-g8a-all.txt 2>&1; echo "exit=$?"
+  grep -qE '^Tests: +181 skipped, 9 passed, 190 total$' /tmp/152-g8a.txt \
+    && grep -qE '^Tests: +188 skipped, 2 passed, 190 total$' /tmp/152-g8a-106.txt \
+    && grep -qE '^Tests: +190 passed, 190 total$' /tmp/152-g8a-all.txt \
+    && test "$(grep -cF '<CollarBatteryBar' src/screens/home/index.tsx)" = 1 \
+    && test ! -e .expo/types/router.d.ts && bun run typecheck && bun run lint \
+    && git add src/screens/home/collar-battery-bar.tsx src/screens/home/index.tsx \
+    && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'mobile-pet-tracker/src/screens/home/collar-battery-bar.tsx mobile-pet-tracker/src/screens/home/index.tsx ' \
+    && git commit -m 'feat(mobile-home): #152 R8 collar battery bar'
+
+R8 rojo B (it 5 y 6 + mutaciones (a) y (b) de tasks.md en index.tsx):
+  FORCE_COLOR=0 bunx jest src/screens/home/index.test.tsx -t '#152 R8' > /tmp/152-r8b.txt 2>&1; echo "exit=$?"
+    -> exit=1 y `Tests:       2 failed, 181 skipped, 9 passed, 192 total`
+  Sin commit, informativo: el fichero entero a /tmp/152-r8b-all.txt; anota
+  en el impl cualquier otro it que caiga con las mutaciones. No lo arregles.
+  grep -qE '^Tests: +2 failed, 181 skipped, 9 passed, 192 total$' /tmp/152-r8b.txt \
+    && ! grep -qE 'TypeError|ReferenceError|SyntaxError|Cannot find module' /tmp/152-r8b.txt \
+    && test "$(grep -cF '<CollarBatteryBar' src/screens/home/index.tsx)" = 2 \
+    && test ! -e .expo/types/router.d.ts && bun run typecheck && bun run lint \
+    && git add src/screens/home/index.test.tsx src/screens/home/index.tsx \
+    && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'mobile-pet-tracker/src/screens/home/index.test.tsx mobile-pet-tracker/src/screens/home/index.tsx ' \
+    && git commit -m 'test(mobile-home): #152 R8 red, no bar without percentage or collar'
+
+R8 verde B (revierte las dos mutaciones):
+  FORCE_COLOR=0 bunx jest src/screens/home/index.test.tsx -t '#152 R8' > /tmp/152-g8b.txt 2>&1; echo "exit=$?"
+  FORCE_COLOR=0 bunx jest src/screens/home/index.test.tsx > /tmp/152-g8b-all.txt 2>&1; echo "exit=$?"
+  grep -qE '^Tests: +181 skipped, 11 passed, 192 total$' /tmp/152-g8b.txt \
+    && grep -qE '^Tests: +192 passed, 192 total$' /tmp/152-g8b-all.txt \
+    && test "$(grep -cF '<CollarBatteryBar' src/screens/home/index.tsx)" = 1 \
+    && test ! -e .expo/types/router.d.ts && bun run typecheck && bun run lint \
+    && git add src/screens/home/index.tsx \
+    && test "$(git diff --cached --name-only)" = 'mobile-pet-tracker/src/screens/home/index.tsx' \
+    && git commit -m 'feat(mobile-home): #152 R8 bar only with a numeric percentage'
+
+R9 rojo (describe #152 R9 al final de design-drift; mutacion: primera linea de collar-battery-bar.tsx `// #152 barra de batería del collar`):
+  FORCE_COLOR=0 bunx jest src/__tests__/design-drift.test.ts -t '#152 R9' > /tmp/152-r9.txt 2>&1; echo "exit=$?"
+    -> exit=1 y `Tests:       1 failed, 61 skipped, 62 total`
+  Sin commit, informativo: design-drift entero a /tmp/152-r9-all.txt (algun
+  guard global de hex puede caer tambien); anotalo en el impl.
+  grep -qE '^Tests: +1 failed, 61 skipped, 62 total$' /tmp/152-r9.txt \
+    && grep -qF '"screens/home/collar-battery-bar.tsx"' /tmp/152-r9.txt \
+    && ! grep -qE 'TypeError|ReferenceError|SyntaxError|Cannot find module' /tmp/152-r9.txt \
+    && test ! -e .expo/types/router.d.ts && bun run typecheck && bun run lint \
+    && git add src/__tests__/design-drift.test.ts src/screens/home/collar-battery-bar.tsx \
+    && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'mobile-pet-tracker/src/__tests__/design-drift.test.ts mobile-pet-tracker/src/screens/home/collar-battery-bar.tsx ' \
+    && git commit -m 'test(mobile-home): #152 R9 red, no style drift in Home motion'
+
+R9 verde (el comentario pasa a `// #152 R8: barra de batería del collar`):
+  FORCE_COLOR=0 bunx jest src/__tests__/design-drift.test.ts -t '#152 R9' > /tmp/152-g9.txt 2>&1; echo "exit=$?"
+  FORCE_COLOR=0 bunx jest src/__tests__/design-drift.test.ts > /tmp/152-g9-all.txt 2>&1; echo "exit=$?"
+  grep -qE '^Tests: +61 skipped, 1 passed, 62 total$' /tmp/152-g9.txt \
+    && grep -qE '^Tests: +62 passed, 62 total$' /tmp/152-g9-all.txt \
+    && test "$(grep -cF "describe('#152 R9" src/__tests__/design-drift.test.ts)" = 1 \
+    && test ! -e .expo/types/router.d.ts && bun run typecheck && bun run lint \
+    && git add src/screens/home/collar-battery-bar.tsx \
+    && test "$(git diff --cached --name-only)" = 'mobile-pet-tracker/src/screens/home/collar-battery-bar.tsx' \
+    && git commit -m 'fix(mobile-home): #152 R9 cite the feature with its R-id'
+
+== CIERRE ==
+
+Desde mobile-pet-tracker/, sin pipe, con salida al impl:
+- La base mas los dos ficheros nuevos (es la comparacion con la base; el
+  jest entero no lo es, porque la base solo mide tres ficheros):
+  FORCE_COLOR=0 bunx jest src/screens/home/index.test.tsx src/__tests__/design-drift.test.ts src/theme/__tests__/global-css.test.ts src/theme/__tests__/motion.test.ts src/screens/home/home-entrance.test.tsx > /tmp/152-five.txt 2>&1; echo "exit=$?"
+    -> exit=0, `Test Suites: 5 passed, 5 total` y `Tests:       320 passed, 320 total`
+       (281 de la base + 39 nuevos. Reparto: home/index 192, design-drift 62,
+       global-css 51, motion 9, home-entrance 6)
+- `pgrep -af '[i]nit\.sh'` vacio; despues
+  `FORCE_COLOR=0 bunx jest > /tmp/152-all.txt 2>&1; echo "exit=$?"` -> exit=0.
+  Copia las lineas `Test Suites:` y `Tests:`. Mientras corre, no lances
+  otra cosa.
+- `bun run typecheck; echo "exit=$?"` -> exit=0 y `bun run lint; echo "exit=$?"` -> exit=0.
+- `grep -rlF 'entering=' src --include='*.tsx' | LC_ALL=C sort` -> exactamente
+  src/screens/home/home-entrance.tsx y src/screens/home/index.tsx.
+- `git diff --stat <H0> -- src/i18n src/theme/global.css src/components src/screens/home/weekly-activity-chart.tsx src/__tests__/ui-copy-table.ts package.json bun.lock`
+  -> vacio. Esta spec no anade copy, tokens ni dependencias.
+- Las anclas 0-40 y las 8 positivas, con sus valores de cierre.
+Desde la raiz del repo:
+  git diff --stat <H0> -- backend-pet-tracker/ infra-pet-tracker/   -> vacio
+  git diff --name-only <H0> HEAD -- mobile-pet-tracker/   -> exactamente los 8 de mobile-pet-tracker/ de la lista de abajo
+
+Despues rellena specs/mobile-home-motion-foundations/traceability.md
+(test, y hash + mensaje de rojo y verde por R1-R9; R6 cita su rojo y el
+verde de R7 A; la fila R10 se queda `pendiente (humano)`) y termina el
+impl. Commit final, desde la raiz:
+  git add specs/mobile-home-motion-foundations/traceability.md progress/impl_mobile-home-motion-foundations.md \
+    && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'progress/impl_mobile-home-motion-foundations.md specs/mobile-home-motion-foundations/traceability.md ' \
+    && git commit -m 'docs(mobile-home-motion-foundations): #152 traceability'
+Y la lista cerrada, con salida al impl:
+  git diff --name-only <H0> HEAD -- . ':!feature_list.json' ':!progress/current.md' ':!progress/handoff_mobile-home-motion-foundations.md' ':!specs/mobile-home-motion-foundations/requirements.md' ':!specs/mobile-home-motion-foundations/design.md' ':!specs/mobile-home-motion-foundations/tasks.md'
+    -> exactamente los 11 ficheros de abajo
+No rebasees despues de escribir hashes.
+
+== REGLAS CRITICAS ==
+
+- UI movil: docs/ui-guidelines.md manda (carta). Cero hex, cero
+  `StyleSheet.create`, cero clases arbitrarias, cero `style` salvo el
+  animado del relleno de la barra. Las clases de la barra son literales
+  completos (`bg-success`, `bg-warning-strong`), nunca compuestas.
+- Skills: carga `building-native-ui` (tu plugin expo) y, de .agents/skills/
+  del repo, `animate-expo`, `animation-vocabulary`, `review-animations` y
+  `emil-design-eng`. Tu plugin expo no trae ninguna de animacion: las
+  decisiones de movimiento ya estan cerradas en la spec y mandan sobre
+  cualquier skill. Descartado: los presets de Reanimated (`FadeInDown`,
+  `FadeIn`...) en vez de `homeEntering`, animar `height`, y hex,
+  `StyleSheet.create` o clases arbitrarias. Di en el impl cuales cargaste.
+- Convenciones: docs/conventions.md, en particular §Tests y §Esperas sobre
+  el arbol renderizado. Se espera a un texto o nodo visible (`findByTestId`,
+  `waitFor` sobre `getByTestId(...)`/`getByText`), NUNCA al contador de un
+  mock. Ejemplo: en R6 y R8 (7 y 8) se espera a que `collar-battery`
+  muestre `81%`, no a que `getPet` se haya llamado. Una ausencia se ancla
+  siempre a un nodo positivo presente en el mismo render.
+- Valores esperados LITERALES en los tests (`250`, `'bg-success'`,
+  `[0.23, 1, 0.32, 1]`), nunca el simbolo importado de produccion. Las
+  unicas excepciones son R8.3 y R8.7 (`toBe(MOTION_FILL_TIMING)`), que
+  ademas llevan sus literales.
+- Imports en los tests nuevos: NOMBRADOS (`import { homeEntering } from './home-entrance'`),
+  nunca `import * as` (eslint `import/namespace` es error y tumbaria la
+  cadena). Para `require('../motion')` de R1 y para fs/path de R2, declara
+  `require` con sobrecargas `declare function require(moduleName: '...'): ...;`
+  como en src/__tests__/consistency-classnames.test.ts (tsconfig solo
+  carga los tipos de jest). En index.test.tsx esas declaraciones ya
+  existen: reutilizalas, no las dupliques.
+- index.test.tsx: reutiliza `mockWithTiming`, `mockUseReducedMotion`, el
+  `withDelay: jest.fn(...)` del mock de reanimated del fichero, el
+  callback de foco de `R10: refetch al foco` y la pulsacion de
+  `selects a pressed pet and reloads its detail and activity`. Cero mocks
+  nuevos de modulo en ese fichero. Todo test que ponga
+  `mockUseReducedMotion` a `true` lo devuelve a `false` al terminar.
+- `toHaveAnimatedStyle` SIEMPRE con `{ shouldMatchAllProps: true }`.
+- docs/ui-guidelines.md: la cadena `` `src/theme/motion.ts` (enmienda A21 de #152) ``
+  va ENTERA en una sola linea (el test usa toContain y el ancla grep -F;
+  un salto de linea en medio rompe los dos). La casilla
+  `- [ ] Enmienda aprobada por humano` queda SIN marcar: la marca el humano.
+- Comentarios: toda cita a la feature en motion.ts, home-entrance.tsx,
+  collar-battery-bar.tsx e index.tsx se escribe `#152 R<n>` (R9 la vigila).
+  La unica excepcion es la mutacion del rojo de R9, que el verde corrige.
+- Ni `bun add`, ni cambios en package.json, bun.lock ni app.json. Todo
+  con bun/bunx, nunca npm/npx.
+- NO lances ./init.sh ni toques Postgres ni LocalStack: los comparten
+  otras sesiones y el gate lo corre el leader.
+- No toques ningun fichero fuera de la lista de abajo. En particular, NO:
+  src/components/ (card.tsx, pet-hero-header.tsx),
+  src/screens/home/weekly-activity-chart.tsx, src/i18n/ (catalog.ts),
+  src/__tests__/ui-copy-table.ts, ni las constantes de movimiento
+  anteriores (`MEALS_BAR_TIMING` y compania): migrarlas es otra feature.
+- NO son tuyos, no los toques: progress/history.md, progress/current.md,
+  STATUS.md, feature_list.json, las casillas de §Gate humano y
+  §Aprobacion de requirements.md, y la casilla de la enmienda #152 de la
+  carta. Los escribe el leader o el humano. Todo lo que tengas que contar
+  va en progress/impl_mobile-home-motion-foundations.md.
+- Si el sandbox te deniega un comando, PARA y reportalo. No lo sustituyas
+  por otro que haga lo mismo con otra herramienta.
+- NO hagas push ni abras la PR: lo hace el leader al cerrar.
+
+Ficheros que TU cambias (11, ni uno mas; global.css se toca en R2 y
+queda sin diff neto, por eso no esta):
+  docs/ui-guidelines.md
+  mobile-pet-tracker/src/__tests__/design-drift.test.ts
+  mobile-pet-tracker/src/screens/home/collar-battery-bar.tsx
+  mobile-pet-tracker/src/screens/home/home-entrance.test.tsx
+  mobile-pet-tracker/src/screens/home/home-entrance.tsx
+  mobile-pet-tracker/src/screens/home/index.test.tsx
+  mobile-pet-tracker/src/screens/home/index.tsx
+  mobile-pet-tracker/src/theme/__tests__/motion.test.ts
+  mobile-pet-tracker/src/theme/motion.ts
+  progress/impl_mobile-home-motion-foundations.md
+  specs/mobile-home-motion-foundations/traceability.md
+Si el leader commitea en mitad (una correccion), solo tocara ficheros
+excluidos por los pathspecs de arriba; cualquier otro fichero ajeno en
+`git diff --name-only <H0> HEAD` es motivo de parada.
+
+Criterios de aceptacion: R1-R9 de requirements.md. La prueba de humo de
+R10 (dev build de Android) es del humano: no la marques.
+
+Al terminar, progress/impl_mobile-home-motion-foundations.md debe tener:
+pwd, branch, H0 y status; el exit de is-ancestor; node_modules (presente
+o instalado); skills cargadas; la salida de las 41 anclas en H0 y la de
+cierre (mas las 8 positivas); la base con su exit; los commits con hash
+y R-id; por cada rojo, el comando, la linea `Tests:`, el exit y cada it
+rojo con su matcher y Expected/Received o la consulta que fallo; los
+informativos de R2, R7 B, R8 B y R9 (que cayo de mas con cada mutacion);
+cada verde con sus lineas `Tests:`, typecheck y lint; el cierre (los 5
+ficheros con 320, jest entero con exit, typecheck, lint, entering=, NR,
+backend/infra vacios, lista cerrada); y cualquier decision que la spec no
+cerrara literalmente.
+```
