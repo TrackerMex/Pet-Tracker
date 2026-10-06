@@ -941,30 +941,42 @@ describe('#115 R6: la próxima vacuna dice fecha y días restantes', () => {
   afterEach(() => jest.useRealTimers());
 
   it.each([
-    { row: 'a', language: 'es', now: '2026-12-31 12:00', past: '2026-12-30', next: '2026-12-31', days: 'Hoy', label: undefined, date: '31 dic 2026' },
-    { row: 'b', language: 'es', now: '2026-12-31 12:00', past: '2026-12-30', next: '2027-01-02', days: '2 d', label: 'Faltan 2 días', date: '2 ene 2027' },
-    { row: 'c', language: 'es', now: '2027-01-01 12:00', past: '2026-12-31', next: '2027-01-01', days: 'Hoy', label: undefined, date: '1 ene 2027' },
-    { row: 'd', language: 'es', now: '2027-01-30 12:00', past: '2027-01-29', next: '2027-02-03', days: '4 d', label: 'Faltan 4 días', date: '3 feb 2027' },
-    { row: 'e', language: 'es', now: '2026-12-31 12:00', past: undefined, next: '2027-12-31', days: '365 d', label: 'Faltan 365 días', date: '31 dic 2027' },
-    { row: 'f', language: 'en', now: '2026-12-31 12:00', past: '2026-12-30', next: '2027-01-02', days: '2 d', label: 'In 2 days', date: 'Jan 2, 2027' },
-    { row: 'g', language: 'en', now: '2027-01-01 12:00', past: '2026-12-31', next: '2027-01-01', days: 'Today', label: undefined, date: 'Jan 1, 2027' },
-  ] as const)('fila $row: hoy $now, próxima $next', async ({ language, now, past, next, days, label, date }) => {
-    jest.useFakeTimers();
-    const [year, month, day] = now.split(' ')[0].split('-').map(Number);
-    jest.setSystemTime(new Date(year, month - 1, day, 12, 0));
-    const vaccines = [
-      ...(past ? [makeVaccine({ id: 'vaccine-past', name: 'Parvo', nextDoseAt: past })] : []),
-      makeVaccine({ nextDoseAt: next }),
-    ];
-    mockListVaccines.mockResolvedValue({ kind: 'ok', vaccines });
-    await renderHealth(language);
-    await waitFor(() => expect(screen.getByTestId('next-vaccine-days')).toHaveTextContent(days, { exact: true }));
+    { row: 'a', language: 'es', tz: 'UTC', now: '2026-12-31 12:00', past: '2026-12-30', next: '2026-12-31', days: 'Hoy', label: undefined, date: '31 dic 2026' },
+    { row: 'b', language: 'es', tz: 'UTC', now: '2026-12-31 12:00', past: '2026-12-30', next: '2027-01-02', days: '2 d', label: 'Faltan 2 días', date: '2 ene 2027' },
+    { row: 'c', language: 'es', tz: 'UTC', now: '2027-01-01 12:00', past: '2026-12-31', next: '2027-01-01', days: 'Hoy', label: undefined, date: '1 ene 2027' },
+    { row: 'd', language: 'es', tz: 'UTC', now: '2027-01-30 12:00', past: '2027-01-29', next: '2027-02-03', days: '4 d', label: 'Faltan 4 días', date: '3 feb 2027' },
+    { row: 'e', language: 'es', tz: 'UTC', now: '2026-12-31 12:00', past: undefined, next: '2027-12-31', days: '365 d', label: 'Faltan 365 días', date: '31 dic 2027' },
+    { row: 'f', language: 'en', tz: 'UTC', now: '2026-12-31 12:00', past: '2026-12-30', next: '2027-01-02', days: '2 d', label: 'In 2 days', date: 'Jan 2, 2027' },
+    { row: 'g', language: 'en', tz: 'UTC', now: '2027-01-01 12:00', past: '2026-12-31', next: '2027-01-01', days: 'Today', label: undefined, date: 'Jan 1, 2027' },
+    { row: 'h', language: 'es', tz: 'America/Mexico_City', now: '2026-12-31 20:00', past: '2026-12-30', next: '2027-01-02', days: '2 d', label: 'Faltan 2 días', date: '2 ene 2027' },
+  ] as const)('fila $row: hoy $now, próxima $next', async ({ language, tz, now, past, next, days, label, date }) => {
+    // Jest copies process.env; Node's environment makes Date observe TZ.
+    const hostProcess = process.getBuiltinModule('process');
+    const previousTZ = hostProcess.env.TZ;
+    try {
+      hostProcess.env.TZ = tz;
+      jest.useFakeTimers();
+      const [localDate, localTime] = now.split(' ');
+      const [year, month, day] = localDate.split('-').map(Number);
+      const [hour, minute] = localTime.split(':').map(Number);
+      jest.setSystemTime(new Date(year, month - 1, day, hour, minute));
+      const vaccines = [
+        ...(past ? [makeVaccine({ id: 'vaccine-past', name: 'Parvo', nextDoseAt: past })] : []),
+        makeVaccine({ nextDoseAt: next }),
+      ];
+      mockListVaccines.mockResolvedValue({ kind: 'ok', vaccines });
+      await renderHealth(language);
+      await waitFor(() => expect(screen.getByTestId('next-vaccine-days')).toHaveTextContent(days, { exact: true }));
 
-    expect(screen.getByTestId('next-vaccine-days').props.accessibilityLabel).toBe(label);
-    expect(screen.getByTestId('next-vaccine-date')).toHaveTextContent(date, { exact: true });
-    const card = within(screen.getByTestId('next-vaccine-card'));
-    expect(card.getByText('Rabies')).toBeVisible();
-    expect(card.queryByText(next)).toBeNull();
+      expect(screen.getByTestId('next-vaccine-days').props.accessibilityLabel).toBe(label);
+      expect(screen.getByTestId('next-vaccine-date')).toHaveTextContent(date, { exact: true });
+      const card = within(screen.getByTestId('next-vaccine-card'));
+      expect(card.getByText('Rabies')).toBeVisible();
+      expect(card.queryByText(next)).toBeNull();
+    } finally {
+      if (previousTZ === undefined) delete hostProcess.env.TZ;
+      else hostProcess.env.TZ = previousTZ;
+    }
   });
 
   it('ordena la card en icono, columna y días, con la fecha en la columna', async () => {
