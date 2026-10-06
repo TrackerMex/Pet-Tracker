@@ -261,16 +261,10 @@ describe('R4: health resuelve la mascota seleccionada', () => {
       expect(screen.getByTestId('pet-chip-pet-1').props.accessibilityState).toEqual({
         selected: true,
       });
-      expect(mockListPets).toHaveBeenCalledWith(apiUrl, 'jwt-token');
-      expect(mockListVaccines).toHaveBeenCalledWith(apiUrl, 'jwt-token', 'pet-1');
-      expect(mockListWeights).toHaveBeenCalledWith(
-        apiUrl,
-        'jwt-token',
-        'pet-1',
-        expect.any(Function),
-        1,
-      );
     });
+    expect(mockListPets).toHaveBeenCalledWith(apiUrl, 'jwt-token');
+    expect(mockListVaccines).toHaveBeenCalledWith(apiUrl, 'jwt-token', 'pet-1');
+    expect(mockListWeights).toHaveBeenCalledWith(apiUrl, 'jwt-token', 'pet-1');
   });
 
   it('selects a pressed pet and reloads its health records', async () => {
@@ -287,15 +281,9 @@ describe('R4: health resuelve la mascota seleccionada', () => {
       expect(screen.getByTestId('pet-chip-pet-2').props.accessibilityState).toEqual({
         selected: true,
       });
-      expect(mockListVaccines).toHaveBeenCalledWith(apiUrl, 'jwt-token', 'pet-2');
-      expect(mockListWeights).toHaveBeenCalledWith(
-        apiUrl,
-        'jwt-token',
-        'pet-2',
-        expect.any(Function),
-        1,
-      );
     });
+    expect(mockListVaccines).toHaveBeenCalledWith(apiUrl, 'jwt-token', 'pet-2');
+    expect(mockListWeights).toHaveBeenCalledWith(apiUrl, 'jwt-token', 'pet-2');
   });
 });
 
@@ -652,7 +640,7 @@ describe('#62 R5: el título de card usa un único tratamiento', () => {
 });
 
 describe('#87 R13: HealthScreen lee por TanStack Query', () => {
-  it('deja mascotas, vacunas y un solo peso en sus claves canónicas', async () => {
+  it('deja mascotas, vacunas y el historial de peso en sus claves canónicas', async () => {
     process.env.EXPO_PUBLIC_API_URL = apiUrl;
     mockUseAuth.mockReturnValue({
       status: 'authenticated',
@@ -682,9 +670,10 @@ describe('#87 R13: HealthScreen lee por TanStack Query', () => {
     expect(queryClient.getQueryData(healthKeys.vaccines('pet-1'))).toEqual(
       vaccinesState,
     );
-    expect(queryClient.getQueryData(healthKeys.weights('pet-1', 1))).toEqual(
+    expect(queryClient.getQueryData(healthKeys.weights('pet-1', undefined))).toEqual(
       weightsState,
     );
+    expect(queryClient.getQueryData(healthKeys.weights('pet-1', 1))).toBeUndefined();
   });
 });
 
