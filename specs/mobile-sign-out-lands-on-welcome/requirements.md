@@ -364,4 +364,4 @@ tests, con 19 en la guarda. La lista cerrada de 7 ficheros de [[design]] no
 cambia, porque E1 solo toca `detail-stack.guard.test.tsx`, que ya estaba en
 ella. Las sondas M1–M7 del reviewer corren ahora sobre un fichero sin fuga.
 
-- [ ] Enmienda E1 aprobada por humano (fecha: ____, commit de firma: el que marca esta casilla)
+- [x] Enmienda E1 aprobada por humano (fecha: 2026-10-06, desde Notion: página `3f16115a-9b27-817d-b737-cb4face9d519`, `Estado del gate` = Aprobado y casilla marcada en el espejo, `page_last_edited_at` 2026-10-06T16:55:34.495Z; commit de firma: el que marca esta casilla)
