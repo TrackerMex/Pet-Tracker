@@ -55,9 +55,8 @@ export function HealthScreen() {
     enabled: selectedPetId !== null,
   });
   const weight = useQuery({
-    queryKey: healthKeys.weights(selectedPetId ?? '', 1),
-    queryFn: () =>
-      listWeights(baseUrl, token ?? '', selectedPetId!, fetch, 1),
+    queryKey: healthKeys.weights(selectedPetId ?? '', undefined),
+    queryFn: () => listWeights(baseUrl, token ?? '', selectedPetId!),
     enabled: selectedPetId !== null,
   });
   const today = localTodayIso();
