@@ -59,7 +59,16 @@
   splash» (fecha + `sha256`) y Codex sigue. Después reviewer, smoke R9
   S1–S11 (S10 exige `bunx expo prebuild --clean` y reinstalar el dev build)
   y cierre (Notion Implementado/Completado antes de la PR).
-- Pendiente del humano: obs. 7 de la review (¿autorizó `bd2f67d9`?).
+- Codex llegó a la PARADA del PNG (HEAD `45198dd4`: E1.1, E1.2 y R10 rojo).
+  El leader midió Salud 56 + app.assets 11 = 67 verdes con el candidato en
+  el árbol, y 0 píxeles de borde con tinte cian. imagegen con fondo
+  transparente dejaba la mascota translúcida (cara alfa 252, 488 píxeles
+  opacos); el candado de la cara lo cazó y Codex usó el respaldo cian.
+- PNG aprobado por el humano en el chat el 2026-10-06 (`sha256`
+  `087c1eaa…e56d`); casilla firmada en requirements. Codex sigue con T8
+  pasos 6–10.
+- Obs. 7 de la review: el humano confirmó en el chat el 2026-10-06 que
+  autorizó `bd2f67d9`.
 
 ## Ampliación solicitada: icono de inicio sin fondo — 2026-10-06
 

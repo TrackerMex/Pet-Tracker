@@ -527,7 +527,7 @@ Los textos normativos están en R2, R6, R8, R9 y R10, marcados «Enmienda E<n>»
 
 ### PNG del splash
 
-- [ ] Candidato de `splash-icon.png` aprobado por humano mirándolo (fecha: ____, `sha256`: ____) ← gate obligatorio antes del commit verde de R10. En el espejo de Notion el humano la marcó el 2026-10-06 junto con la Enmienda, sin candidato todavía: no cuenta; se firma aquí con el `sha256` del PNG que el humano apruebe mirándolo
+- [x] Candidato de `splash-icon.png` aprobado por humano mirándolo (fecha: 2026-10-06, `sha256`: `087c1eaa69e8324ac46e98073897ddc261d3f25b764f00d6216fb5014c05e56d`; aprobado en el chat de la sesión del leader tras ver las tres previews y el zoom de bordes; candidato de la CORRECCION 3 con el respaldo cian) ← gate obligatorio antes del commit verde de R10. En el espejo de Notion el humano la marcó el 2026-10-06 junto con la Enmienda, sin candidato todavía: esa marca no cuenta; cuenta esta firma
 
 ### Prueba de humo
 
