@@ -107,6 +107,7 @@ describe('#95 R3: la guarda protege las seis y deja libres (auth) y reset-passwo
   it('expulsa el detalle al cerrar sesión y no agrega rutas protegidas al historial', async () => {
     mockAuthState = { status: 'authenticated', token: 'token-a' };
     const app = renderRouter(routes(), { initialUrl: '/home' });
+    await app;
     await waitFor(() => expect(app.getPathname()).toBe('/home'));
     await act(async () => router.push('/pairing'));
     await waitFor(() => expect(app.getPathname()).toBe('/pairing'));
