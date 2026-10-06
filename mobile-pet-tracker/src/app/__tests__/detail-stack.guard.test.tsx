@@ -139,3 +139,21 @@ describe('#95 R3: la guarda protege las seis y deja libres (auth) y reset-passwo
     expect(rootStack(app)).toEqual(['(auth)', 'reset-password']);
   });
 });
+
+describe('#149 R2: cerrar sesión en una tab aterriza en welcome', () => {
+  afterEach(() => jest.useRealTimers());
+
+  it.each(['/home', '/map', '/health', '/food', '/profile'])('#149 R2: cierra sesión en %s y aterriza en welcome', async (href) => {
+    mockAuthState = { status: 'authenticated', token: 'token-a' };
+    const app = renderRouter(routes(), { initialUrl: href });
+    await app;
+    await waitFor(() => expect(app.getPathname()).toBe(href));
+
+    mockAuthState = { status: 'unauthenticated', token: null };
+    await act(async () => {
+      for (const listener of mockAuthListeners) listener();
+    });
+    await waitFor(() => expect(app.getPathname()).toBe('/welcome'));
+    expect(rootStack(app)).toEqual(['welcome']);
+  });
+});
