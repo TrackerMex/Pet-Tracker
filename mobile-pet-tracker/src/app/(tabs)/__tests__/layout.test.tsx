@@ -60,12 +60,12 @@ describe('R1: (tabs) exige sesión', () => {
     expect(mockTabs).not.toHaveBeenCalled();
   });
 
-  it('redirects an unauthenticated session to login', async () => {
+  it('#149 R1: redirects an unauthenticated session to welcome', async () => {
     mockUseAuth.mockReturnValue(authValue('unauthenticated'));
 
     await render(<TabsLayout />);
 
-    expect(mockRedirect.mock.calls[0]?.[0]).toEqual({ href: '/login' });
+    expect(mockRedirect.mock.calls[0]?.[0]).toEqual({ href: '/welcome' });
     expect(mockTabs).not.toHaveBeenCalled();
   });
 
