@@ -130,8 +130,11 @@ tags: [harness, spec, mobile, ui]
      `#65 R5 › resuelve las 32 ocurrencias normativas` (`checkUses` 0 ≠ 1),
      en `#65 R18 › resuelve cada ocurrencia de la tabla contra la clave exacta`
      (`checkUses(ALL_USES)` 0 ≠ 1, mismo motivo),
-     en `#62 R15 › screens/health/index.tsx aplica TABULAR_NUMS a sus 3 valores`
-     (2 ≠ 3) y en `#69 R10` (suma).
+     y en `#62 R15 › screens/health/index.tsx aplica TABULAR_NUMS a sus 3 valores`
+     (2 ≠ 3). `#69 R10` nace **verde**: suma la tabla `counters` contra una
+     constante, no mide el fuente, y la fila de Salud y la suma suben juntas
+     en este commit (corregido por el leader antes del handoff; mismo caso
+     que la CORRECCION 1 de #116).
 2. **Verde** — `feat(mobile-health): #115 R6 show next dose date and days left`
    - `H`: imports de design §1.1, `next-vaccine-date` con `fmtDate`,
      `next-vaccine-days` como tercer hijo de la card (design §1.3), una sola

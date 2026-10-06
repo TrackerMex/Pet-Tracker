@@ -15,3 +15,20 @@
   (#117 sin init.sh ni jest en vuelo). Log en el scratchpad de la sesión.
 - Investigación Appllama ya hecha: `progress/explore_ui-appllama.md` §4.
 - Spec: `spec_author` la escribió en `specs/mobile-health-make-parity/` (spec_ready). Revisión del leader: añadido el candado agregado `#65 R18 › checkUses(ALL_USES)` a R1, T4, M22 y trazabilidad; §3 corregido en P1; la observación del plural cubre ya Salud. Gate humano vía Notion pendiente (P1-P3).
+- Gate: aprobada en Notion el 2026-10-06 (página `3f06115a-9b27-811f-802d-c7a05058341d`,
+  `Estado del gate` = Aprobado, `page_last_edited_at` 2026-10-06T14:06:26.286Z);
+  commit de firma `2bfd4477`. P1-P3 quedan como las cierra la spec.
+- Antes del handoff: `tasks.md` T4 corregido (`#69 R10` nace verde, como la
+  CORRECCION 1 de #116); `.claude/agents/leader.md` §Cómo se vuelve a medir
+  reescrito (el catálogo remoto de Codex cambió el 2026-10-05; lo instalado
+  sigue en `expo@openai-curated` 1.0.2 con 13 skills).
+- Base medida por el leader sobre la branch: 45 anclas del handoff en verde;
+  8 suites de T0, 264 tests, exit=0.
+- `in_progress`. Handoff a Codex: `progress/handoff_mobile-health-make-parity.md`.
+  Codex escribe `progress/impl_mobile-health-make-parity.md`. Mientras
+  implementa, el leader solo toca `docs/`, `specs/`, `progress/` y
+  `feature_list.json`.
+- Siguiente: reviewer cuando el humano confirme que Codex terminó (pedir
+  permiso para que el leader corra `./init.sh`; coordinar antes con Backend
+  por el smoke de #117). Después, smoke R9 del humano y cierre (Notion
+  Implementado/Completado antes de la PR).
