@@ -608,8 +608,9 @@ alcanzaban. La tercera (§Pre-verificación E4 (ronda 1d)) dio H5-H7 y X42 por
 cerrados y encontró dos más (H8 y H9), de nuevo porque los candados de H6 y H7
 se paraban antes que su cláusula. La cuarta (§Pre-verificación E4 (ronda 1e))
 dio H8 y H9 por cerrados y encontró cuatro más (H10-H13); el leader añadió
-H14, que el reviewer dejó como no bloqueante. La producción cumple R5, R7 y
-R8.
+H14, que el reviewer dejó como no bloqueante. La quinta (§Pre-verificación E4
+(ronda 1f)) dio H10-H14 por cerrados y encontró dos más (H15 y H16). La
+producción cumple R5, R7 y R8.
 El hueco está en las listas de `it` de esta spec, que candan cada cláusula en
 una sola rama o en ninguna. Con cada una de estas mutaciones,
 `src/screens/home/index.test.tsx` sigue en 192/192:
@@ -633,6 +634,8 @@ una sola rama o en ninguna. Con cada una de estas mutaciones,
 | R7: «sus celdas siguen siendo sus hijos directos», sin reduce motion (H12) | Las celdas de descanso y distancia. #69 R12 solo cuenta cuatro hijos, #69 R1 mira la de actividad y R7 la de peso | X45s (la celda de descanso dentro de un `View`, solo sin reduce motion) |
 | R8: «el lector de pantalla sigue leyendo `collar-battery`» (H13) | `screenReaderFocusable`, `focusable` y `tabIndex`, que en Android agrupan igual que `accessible`. La regex de E4.11 no los casa | X46r, X46f y X46t (en `collar-card`), X37s (en la fila) y X30f (`focusable` en la pista) |
 | R7: «El skeleton se desmonta en el acto» (H14) | Con la actividad en `error`: el `waitFor` de E4.2 lo mira con los otros cuatro `kind` | X50e (el skeleton también con `error`) |
+| R7: «El skeleton se desmonta en el acto» (H15) | Con `ok` y reduce motion. E4.7 corre sin él, y `funde igual bajo reduce motion` no mira el skeleton | X50r (el skeleton también con reduce motion) |
+| R8: «el lector de pantalla sigue leyendo `collar-battery`» (H16) | `hasTVPreferredFocus`, que en Android también hace enfocable el nodo. La regex de E4.11 no la casa | X46v (en `collar-card`) y X37v (en la fila) |
 
 R5, R7 y R8 no cambian, salvo una precisión de lectura en R7 (E4.12). Esta
 enmienda solo añade los candados que les faltaban.
@@ -792,7 +795,7 @@ siendo la fila.
 
 - `collar-battery-fill` sin hijos: `fill.children` es `toEqual([])`;
 - en la pista, en el relleno y en la fila (`track.parent`), ninguna prop cuyo
-  nombre case con `/^(accessib|aria-|role$|importantForAccessibility|screenReaderFocusable$|focusable$|tabIndex$)/`.
+  nombre case con `/^(accessib|aria-|role$|importantForAccessibility|screenReaderFocusable$|focusable$|tabIndex$|hasTVPreferredFocus$)/`.
 
 En producción no hay ninguna: la pista lleva `testID`, `className` y
 `children`; el relleno, `testID`, `className`, `style` y las props del mock
@@ -807,6 +810,16 @@ RN 0.86, Android los trata como `accessible`: `focusable` y
 convierte `tabIndex` en `focusable`. TalkBack lee entonces el nodo agrupado en
 vez de `collar-battery`, y en la pista añaden una parada vacía. Caen X46r,
 X46f, X46t, X37s y X30f.
+
+También incluye `hasTVPreferredFocus` (H16). `setTVPreferredFocus` de
+`ReactViewManager.kt` pone el nodo enfocable aunque el dispositivo no sea una
+tele. Con ella, la regex cubre todos los setters de RN 0.86 que hacen
+enfocable una vista: `accessible`, `focusable`, `tabIndex`,
+`screenReaderFocusable` y `hasTVPreferredFocus`. Caen X46v, X37v y X30tv
+(`hasTVPreferredFocus` en la pista). Queda fuera
+`experimental_accessibilityOrder`: solo actúa con el feature flag
+`enableAccessibilityOrder`, que por defecto está apagado en RN 0.86 y que la
+app no enciende.
 
 ### E4.12 — R7: el skeleton no estrena fundido de salida (X42, H10, H11)
 
@@ -842,11 +855,16 @@ tocado nada, y el arreglo es actualizar el valor esperado.
 Cada fila fija `mockUseReducedMotion` a su valor y llama a `renderMotionHome`.
 Después comprueba que los hijos no-`string` de la fila (`summary-weight` →
 `.parent?.parent`) son `toEqual` a los padres de `summary-weight`,
-`summary-activity`, `summary-sleep` y `summary-distance`, en ese orden.
+`summary-activity`, `summary-sleep` y `summary-distance`, en ese orden. Al
+final comprueba que `summary-skeleton` ya no está (`queryByTestId` →
+`toBeNull()`).
 
 Cubre la cláusula entera con `ok`, con reduce motion (H8) y sin él (H12). Cae
 un envoltorio de cualquier celda, aunque no cambie el número de hijos: X45r,
-X45a, X45s, X45n y X45d.
+X45a, X45s, X45n y X45d. La última comprobación cubre «el skeleton se
+desmonta en el acto» con `ok`, con reduce motion y sin él (H15). Con E4.7 y el
+`waitFor` de `unauthorized`, esa cláusula queda candada en todos sus `kind`.
+Caen X50r y X50q (el skeleton solo con `ok` y reduce motion).
 
 ### E4.14 — R8: ningún ancestro de la barra agrupa la fila (H9)
 
@@ -868,7 +886,7 @@ nodos por encima. Caen X46c, X46e y, además, X46h y X46s (nombre propio en
 
 Las ediciones literales, los mensajes de commit y la mutación del rojo están
 en `progress/handoff_mobile-home-motion-foundations.md` §Enmienda E4. El
-leader las verificó en un worktree desechable sobre `75fea066`, cuyo `src/` es
+leader las verificó en un worktree desechable sobre `9cb2242c`, cuyo `src/` es
 el de `c7ac5ceb`:
 
 - **Verde:**
@@ -898,6 +916,8 @@ el de `c7ac5ceb`:
   - X42f (`exiting` `FadeOut` en el `Skeleton` solo bajo reduce motion) pasa,
     pero no cambia nada: heroui-native anula el `exiting` desde la raíz con
     reduce motion. Es un mutante equivalente, no un hueco.
+  - Las de H15-H16 (X50r, X50q, X46v, X37v y X30tv) caen una a una, todas por
+    aserción, y las de H8-H14 siguen cayendo.
 
 Cifras:
 

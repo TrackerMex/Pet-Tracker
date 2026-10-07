@@ -831,9 +831,10 @@ CAMBIA EN EL RESTO DEL HANDOFF:
 > bloqueantes B1-B3), y su pre-verificación de esta enmienda encontró cuatro
 > huecos más (H1-H4, §Pre-verificación E4 (ronda 1b)), en una segunda
 > otros tres (H5-H7, §Pre-verificación E4 (ronda 1c)), en una tercera
-> dos más (H8-H9, §Pre-verificación E4 (ronda 1d)) y, en una cuarta, otros
+> dos más (H8-H9, §Pre-verificación E4 (ronda 1d)), en una cuarta otros
 > cuatro (H10-H13, §Pre-verificación E4 (ronda 1e)), a los que el leader sumó
-> H14. Tu código cumple la
+> H14, y, en una quinta, dos más (H15-H16, §Pre-verificación E4 (ronda 1f)).
+> Tu código cumple la
 > spec; lo que faltaba eran candados, y la spec los añade en
 > `requirements.md` §Enmienda E4 (firmada por el humano). Para reanudar, el humano pega en Codex: «Lee la §Enmienda E4 de
 > progress/handoff_mobile-home-motion-foundations.md y reanuda desde ahí. Todo
@@ -859,9 +860,10 @@ con nombre accesible propio (X46c, X46e, X46h, X46s, X37l), un fundido de salida
 propio en el skeleton o un reveal vacio junto a el bajo reduce motion (X42e,
 X42r, X49r), las celdas de descanso o distancia envueltas sin reduce motion
 (X45s, X45d), props que agrupan en Android en la tarjeta, la fila o la pista
-(X46r, X46f, X46t, X37s, X30f) y el skeleton montado con la actividad en error
-(X50e). El hueco es de la spec, no tuyo.
-Medido por el leader en un worktree desechable sobre 75fea066 (src/ = c7ac5ceb),
+(X46r, X46f, X46t, X37s, X30f), el skeleton montado con la actividad en error
+(X50e) o bajo reduce motion (X50r, X50q) y hasTVPreferredFocus en la tarjeta,
+la fila o la pista (X46v, X37v, X30tv). El hueco es de la spec, no tuyo.
+Medido por el leader en un worktree desechable sobre 9cb2242c (src/ = c7ac5ceb),
 con el texto EXACTO de abajo:
   - tests de E4.2 + produccion de c7ac5ceb:  218 passed, 218 total
   - tests de E4.2 + mutacion de E4.3:       26 failed, 192 passed, 218 total
@@ -1059,6 +1061,7 @@ E4.2 En src/screens/home/index.test.tsx, tres inserciones y un cambio en una
           (id) => screen.getByTestId(id).parent,
         ),
       );
+      expect(screen.queryByTestId('summary-skeleton')).toBeNull();
     },
   );
 
@@ -1091,7 +1094,7 @@ E4.2 En src/screens/home/index.test.tsx, tres inserciones y un cambio en una
         .toEqual(['testID', 'className']);
     }
     for (const node of [track, fill, track.parent]) {
-      expect(Object.keys(node?.props ?? {}).filter((key) => /^(accessib|aria-|role$|importantForAccessibility|screenReaderFocusable$|focusable$|tabIndex$)/.test(key)))
+      expect(Object.keys(node?.props ?? {}).filter((key) => /^(accessib|aria-|role$|importantForAccessibility|screenReaderFocusable$|focusable$|tabIndex$|hasTVPreferredFocus$)/.test(key)))
         .toEqual([]);
     }
     for (
@@ -1099,7 +1102,7 @@ E4.2 En src/screens/home/index.test.tsx, tres inserciones y un cambio en una
       node;
       node = node.parent
     ) {
-      expect(Object.keys(node.props).filter((key) => /^(accessib|aria-|role$|importantForAccessibility|screenReaderFocusable$|focusable$|tabIndex$)/.test(key)))
+      expect(Object.keys(node.props).filter((key) => /^(accessib|aria-|role$|importantForAccessibility|screenReaderFocusable$|focusable$|tabIndex$|hasTVPreferredFocus$)/.test(key)))
         .toEqual([]);
     }
   });
@@ -1109,7 +1112,7 @@ E4.2 En src/screens/home/index.test.tsx, tres inserciones y un cambio en una
   makeAlert, renderHome y renderMotionHome ya estan.
 
   T=src/screens/home/index.test.tsx
-  test "$(git diff --numstat -- $T | cut -f1,2)" = "$(printf '202\t1')"; echo "exit=$?"           -> exit=0
+  test "$(git diff --numstat -- $T | cut -f1,2)" = "$(printf '203\t1')"; echo "exit=$?"           -> exit=0
   grep -cF "it('no pinta ningún envoltorio sin mascota seleccionada'" $T                       -> 1
   grep -cF "])('no pinta el envoltorio de la actividad con \$kind'" $T                          -> 1
   grep -cF "como hijo directo de home-content y sin entrada'" $T                                -> 2
@@ -1124,7 +1127,8 @@ E4.2 En src/screens/home/index.test.tsx, tres inserciones y un cambio en una
   grep -cF "'deja las cuatro celdas como hijos directos de la fila (reduce motion: %s)'" $T -> 1
   grep -cF "toBe(reduceMotion ? undefined : FadeOut)" $T                                     -> 1
   grep -cxF "import { Easing, FadeOut, ReduceMotion, withDelay } from 'react-native-reanimated';" $T -> 1
-  grep -cF '|screenReaderFocusable$|focusable$|tabIndex$)/' $T                              -> 2
+  grep -cF '|screenReaderFocusable$|focusable$|tabIndex$|hasTVPreferredFocus$)/' $T          -> 2
+  grep -cF "expect(screen.queryByTestId('summary-skeleton')).toBeNull();" $T                  -> 3
   grep -cF "enteringIds(screen.container)).toEqual(homeEnteringIds)" $T                         -> 2
   grep -cF "expectRowUntouched(reveal);" $T                                                     -> 2
   grep -cF "['summary-weight', 'summary-activity', 'summary-sleep', 'summary-distance'].map(" $T -> 1
