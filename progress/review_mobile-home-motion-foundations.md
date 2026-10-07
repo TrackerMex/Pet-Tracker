@@ -354,3 +354,283 @@ leyendo `collar-battery`».**
   - Las dos clases del relleno son literales completos.
 - **Cifras de E4.** `index.test.tsx` 201 verificado. No verificadas por mí,
   porque exigen la suite entera: 2218 y 329.
+
+## Pre-verificación E4 (ronda 1c)
+
+Fecha: 2026-10-07. Objeto: la Enmienda E4 ampliada en `a81f01cd`, es decir,
+la spec §Enmienda E4 (E4.5-E4.8 y las filas H1-H4) y el handoff §Enmienda E4
+(pasos E4.2-E4.6). Su `src/` es idéntico al de `c7ac5ceb`.
+
+Método:
+
+- Un worktree desechable en detached HEAD sobre `a81f01cd`.
+- Apliqué literalmente los bloques (a), (b) y (c) del handoff y los commiteé
+  en local, para que `git checkout HEAD --` los conserve. Las comprobaciones
+  del handoff cuadran: los grep dan 1, 1, 2, 1, 1, 1, 1, 1, 1 y 4, y el
+  fichero termina en `});`.
+- Apliqué la mutación del rojo (E4.3 ampliada) por anclas de línea completa:
+  - `index.tsx`: numstat `9	2`, `<HomeEntrance` = 11;
+  - `collar-battery-bar.tsx`: numstat `1	0`.
+- Solo corrí `bunx jest <fichero>` dirigido, `bun run typecheck` y
+  `bun run lint`. No corrí `./init.sh` ni la suite entera.
+- Revertí cada sonda con `git checkout HEAD -- <fichero>`. Tras cada una el
+  árbol quedó limpio y `git diff --cached` vacío. El worktree está eliminado.
+
+**Resultado: E4 cierra H1-H4 tal como los rechacé en la ronda 1b. El barrido
+de R5, R7 y R8 encuentra tres cláusulas más con ramas sin candado (H5-H7):
+16 sondas que dejan `index.test.tsx` en 213/213. E4 es insuficiente.**
+
+H6 y H7 son las mismas cláusulas que H2 y H4. El fallo en ese alcance es mío,
+no de E4: mis propuestas de candado de la ronda 1b eran más estrechas que las
+cláusulas, y E4.7 y E4.8 las copiaron (ver §3, «Origen»).
+
+### 1. E4 contra H1-H4
+
+Base, con los tests de E4 y `index.tsx` de `c7ac5ceb`:
+`Tests: 213 passed, 213 total`, exit 0.
+
+| Sonda | Falla con E4 | Motivo |
+|---|---|---|
+| X23u, X24u | E4.5, fila `unreachable` (1 ✕ cada una) | `toBeNull()` |
+| X23a, X24a | E4.5, fila `unauthorized` (1 ✕ cada una) | `toBeNull()` |
+| X23m, X24m | E4.5, fila `missing-config` (1 ✕ cada una) | `toBeNull()` |
+| X25 | E4.7, las 4 filas | `toEqual` |
+| X25w | E4.7, las 4 filas | Por consulta («Unable to find» `summary-reveal`). Es lo esperado, porque la sonda quita el `testID` |
+| X27 | E4.6 «solo da entrada a los envoltorios, al fundido y al avatar del selector» | `toEqual` |
+| X28 | E4.6 «no da entrada a home-states con %s», las 3 filas | `toEqual` |
+| X30t | E4.8 | `toBe` (Object.is) |
+| X30a | E4.8 | `toEqual` |
+
+Cada sonda tumba solo sus propios `it`; los demás pasan. Hay 0 `TypeError` en
+todas y 0 «Unable to find» fuera de X25w.
+
+Rojo combinado:
+
+- `index.test.tsx`: exit 1, `Tests: 21 failed, 192 passed, 213 total`.
+- Fallan exactamente los 21 `it` de E4:
+  - 1 «sin mascota»;
+  - 4 «actividad con»;
+  - 3 «deja el»;
+  - 3 «detalle en»;
+  - 1 «solo da entrada»;
+  - 3 «home-states»;
+  - 1 «funde igual bajo reduce motion»;
+  - 4 «funde igual la fila»;
+  - 1 «no añade texto ni nombre accesible».
+- No aparece ninguna de estas cadenas: `TypeError`, `ReferenceError`,
+  `SyntaxError`, «Unable to find» ni «Cannot find module».
+- Guards design-drift, legibility-classnames y consistency-classnames, más
+  ui-language: `Tests: 174 passed, 174 total`.
+- `bun run typecheck` y `bun run lint`: exit 0.
+- `.expo/types/router.d.ts` no existe.
+
+Verde: al revertir la mutación se vuelve a la base, 213/213.
+
+**H1-H4 quedan cerrados.**
+
+### 2. Barrido de R5, R7 y R8
+
+«Candado» es el `it` que cae con la sonda. En negrita, las ramas que
+sobreviven.
+
+| Req. | Cláusula / rama | Candado | Sonda | Resultado |
+|---|---|---|---|---|
+| R5 | índice y espera de cada envoltorio | R5 «escalona…» | M1, M4 | Cubierto |
+| R5 | misma condición: sin mascota | E4.1 | X2, X2b, X2c, X2d | Cubierto |
+| R5 | misma condición: weekly con cada `kind` que no es `ok` | R5 `error` + E4.2 | X21 | Cubierto |
+| R5 | misma condición: collar y última posición con el detalle en `error`, `unauthorized`, `unreachable`, `missing-config` o pendiente, y sin collar | R5, E4.5, R6 | X23e/a/u/m/p, X24e/a/u/m/p/n | Cubierto (H1 cerrado) |
+| R5 | condición más estricta que la del bloque | tests previos | Y1-Y6 | Cubierto |
+| R5 | skeleton y gráfica en la misma posición de JSX | R6 «al cambiar…» | X3 | Cubierto |
+| R5 | `pet-hero-error` (`error`, `unreachable`) y mapa del día como hijos directos, sin envoltorio | E4.3 | X18, X17 | Cubierto |
+| R5 | **`pet-hero-error` y mapa del día «no reciben entrada», con la entrada dentro del nodo o en el propio nodo** | — | X18i, X18p, X17i, X17p | **Sobreviven 213/213 (H5)** |
+| R5 | hero «no cambia», sin alertas abiertas | E4.6, lista exacta | X27 | Cubierto (H3 cerrado) |
+| R5 | **hero «no cambia», con alertas abiertas (rama `hasOpenAlerts` de `home-alerts-dot`, dentro del hero en `index.tsx`)** | — | X27d | **Sobrevive 213/213 (H5)** |
+| R5 | `home-states` en carga, error y vacío | E4.6 `it.each` | X28 | Cubierto (H3 cerrado) |
+| R7 | WHEN la fila sustituye al skeleton: `entering` con `ok`, `no-tracking`, `error`, `unreachable` y `missing-config` | R7 «funde sin espera…» + E4.7 | M7, X25, X25w | Cubierto (H2 cerrado) |
+| R7 | «igual con o sin reduce motion»: `entering` | E4.4 | X1 | Cubierto |
+| R7 | sin `style` ni `className`, con `ok` y sin reduce motion | R7 «envuelve…» | X19 | Cubierto |
+| R7 | **sin `style` ni `className`, con los `kind` que no son `ok`** | — | X39s2, X39c | **Sobreviven 213/213 (H6)** |
+| R7 | **sin `style` ni `className`, con reduce motion** | — | X39r2, X39c2 | **Sobreviven 213/213 (H6)** |
+| R7 | envuelve la fila desde fuera (fila `flex-row`, hijo único), con `ok` y sin reduce motion | R7 «envuelve…» | ronda 1 | Cubierto |
+| R7 | envuelve la fila desde fuera, con los `kind` que no son `ok`: clase de la fila | #77 R2 «compone la celda y la nota en una sola fila» (4 `it`) | X39f | Cubierto |
+| R7 | **envuelve la fila desde fuera, con los `kind` que no son `ok`: hijo único** | — | X43s | **Sobrevive 213/213 (H6)** |
+| R7 | **envuelve la fila desde fuera, con reduce motion: hijo único y clase de la fila** | — | X43r, X44r | **Sobreviven 213/213 (H6)** |
+| R7 | no monta el fundido mientras está el skeleton | R7 «no monta…» | Y3 | Cubierto |
+| R7 | «el skeleton se desmonta en el acto, sin fundido cruzado» | — | X42 | Sobrevive. Es una imprecisión de la premisa, no un hueco (ver §4) |
+| R8 | umbral `> 60` / `<= 60`, clases literales | R8.1 | M8 | Cubierto |
+| R8 | WHILE reduce motion desactivado o activado, y el refresco | R8.3, R8.4, R8.7, R8.8 | M9-M12, X8 | Cubierto |
+| R8 | misma fila, detrás del texto, último hijo | R8.2 + E4.8 | X7, X7b, X30b, X30t | Cubierto |
+| R8 | IF `batteryPct` nulo / sin collar | R8.5 / R8.6 | Y7 / Y6 | Cubierto |
+| R8 | no añade texto: `<Text>` hermano detrás de la pista; `accessibilityLabel` en la pista | E4.8 | X30t, X30a | Cubierto (H4 cerrado) |
+| R8 | **no añade texto: `<Text>` dentro del relleno** | — | X30x | **Sobrevive 213/213 (H7)** |
+| R8 | **no añade copy al lector: props de accesibilidad que no son string en la pista** | — | X30v, X30n | **Sobreviven 213/213 (H7)** |
+| R8 | **«el lector de pantalla sigue leyendo `collar-battery`»: fila agrupada con nombre propio** | — | X37r | **Sobrevive 213/213 (H7)** |
+| R8 | «sigue leyendo `collar-battery`»: `collar-battery` oculto | 25 `it` | X37h | Cubierto. Cae por consulta, lo esperado: RNTL excluye los nodos ocultos |
+
+### 3. Huecos que E4 no cierra (bloqueantes)
+
+Cada sonda superviviente es una mutación de un solo punto en producción que
+deja `index.test.tsx` en 213/213.
+
+Para descartar ramas inalcanzables o que no se puedan probar, añadí en el
+worktree desechable un describe de sonda. No está en ningún commit del repo.
+
+- En producción sin mutar pasa 11/11, y `bun run typecheck` da exit 0 con él
+  dentro.
+- Con cada una de las 16 sondas de H5-H7, y con X42, cae por aserción. Hay 0 `TypeError` y
+  0 «Unable to find».
+- X40 lo deja en verde (ver §4).
+
+**H5 — R5: el hero, `pet-hero-error` y `weekly-activity-day-map` «no reciben
+entrada», en las ramas que E4.3 y E4.6 no pintan.**
+
+- La cláusula está en §Fuera de alcance: «El hero (`PetHeroHeader`),
+  `pet-hero-error`, `home-states` y `weekly-activity-day-map` no reciben
+  entrada (R5)».
+- E4.6 da el criterio: «Se recorre el árbol entero y no solo los ancestros.
+  Una entrada dentro del hero (X27i) o dentro de una sola rama de
+  `home-states` (X28e, X28l) también cambia lo que R5 dice que no cambia».
+- Ese criterio no llega a estos nodos:
+  - E4.3 solo mira el `.parent` de `pet-hero-error` y del mapa del día.
+  - E4.6 pinta el hero sin alertas abiertas, sin detalle fallido y sin pulsar
+    ningún día.
+- Sondas (213/213 cada una):
+  - X18i: un `<Animated.View entering={homeEntering(0, 0)}>` envuelve el
+    contenido de `pet-hero-error`.
+  - X18p: `entering={homeEntering(0, 0)}` en el `HeroUICard` de
+    `pet-hero-error`. Llega al nodo host.
+  - X17i: un `<Animated.View entering={homeEntering(0, 0)}>` envuelve el
+    `Button.Label` del mapa del día.
+  - X17p: `entering={homeEntering(0, 0)}` en el `Button` de
+    `weekly-activity-day-map`. Llega al nodo host.
+  - X27d: `home-alerts-dot` pasa a ser
+    `<Animated.View entering={homeEntering(0, 0)} …/>`. El punto solo se
+    pinta con alertas abiertas, y la base de `index.test.tsx` deja
+    `listAlerts` con `items: []`.
+- Se puede candar con `enteringIds` (verificado en el spike):
+  - Con `pet-hero-error` en `error` y en `unreachable`,
+    `enteringIds(await findByTestId('pet-hero-error'))` es `toEqual([])`.
+    Caen X18i y X18p, en las dos filas.
+  - Tras pulsar `weekly-activity-day-2026-08-21`,
+    `enteringIds(getByTestId('weekly-activity-day-map'))` es `toEqual([])`.
+    Caen X17i y X17p.
+  - Con
+    `mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert()], nextCursor: null })`,
+    `renderMotionHome` y `findByTestId('home-alerts-dot')`, la misma lista
+    exacta de 8 de E4.6. Cae X27d.
+
+**H6 — R7: «sin `style` ni `className`» y «envuelve la fila desde fuera: la
+fila conserva su `View` con `className="flex-row"`», con los `kind` que no son
+`ok` y con reduce motion.**
+
+- El WHEN de R7 cubre los cinco `kind` que pintan la fila (H2), y «igual con o
+  sin reduce motion» nombra la otra dimensión.
+- E4.4 y E4.7 solo comprueban `entering` en esas ramas. Las comprobaciones
+  estructurales de «envuelve la fila del resumen sin tocarla» solo corren con
+  `ok` y sin reduce motion.
+- Sondas (213/213 cada una). Las de `style` usan un spread condicional: el mock
+  de reanimated convierte un `style={undefined}` explícito en un `style` host.
+  Por eso `style={cond ? x : undefined}` cae en el test actual por un
+  artefacto, no por candado, y descarté X39r y X39s.
+  - X39s2: `{...(activity.data.kind === 'ok' ? {} : { style: { opacity: 0.6 } })}`
+    en `summary-reveal`.
+  - X39c: `className={activity.data.kind === 'ok' ? undefined : 'opacity-60'}`
+    en `summary-reveal`.
+  - X39r2: `{...(reduceMotion ? { style: { opacity: 1 } } : {})}`.
+  - X39c2: `{...(reduceMotion ? { className: 'opacity-90' } : {})}`.
+  - X43s: `{activity.data.kind === 'ok' ? null : <View />}` como primer hijo
+    del reveal.
+  - X43r: `{reduceMotion ? <View /> : null}` como primer hijo del reveal.
+  - X44r: la fila pasa a
+    `className={reduceMotion ? 'flex-row gap-1' : 'flex-row'}`. La misma
+    mutación con el `kind` (X39f) la caza #77 R2; con reduce motion no la
+    caza nadie.
+- Se puede candar (verificado en el spike): E4.4 y cada fila de E4.7 repiten
+  las cinco comprobaciones de «envuelve la fila del resumen sin tocarla»:
+  - `row.props.className` es `'flex-row'`;
+  - `row.parent` es `toBe(reveal)`;
+  - el reveal tiene un único hijo no-string, `row`;
+  - `reveal.props.style` es `toBeUndefined()`;
+  - `reveal.props.className` es `toBeUndefined()`.
+
+  Con los `kind` que no son `ok`, `summary-weight.parent.parent` sigue siendo
+  la fila. Caen las 7 sondas.
+
+**H7 — R8: «La barra no añade texto ni copy; el lector de pantalla sigue
+leyendo `collar-battery`», por canales que E4.8 no ve.**
+
+- E4.8 dice «Así cae cualquier canal de copy», pero solo mira las props de
+  tipo string de la pista y del relleno, y la posición de la pista. No ve:
+  - un `<Text>` dentro del relleno, porque los hijos del relleno no son props
+    string;
+  - las props de accesibilidad que no son string: `accessibilityValue` es un
+    objeto que TalkBack y VoiceOver leen, y `accessible` es un booleano;
+  - la fila agrupada con nombre propio, que hace que el lector lea la fila en
+    vez de `collar-battery`.
+- Sondas (213/213 cada una):
+  - X30x: `<Text>{`${pct}%`}</Text>` como hijo de `collar-battery-fill`; el
+    relleno deja de ser autocerrado.
+  - X30v: `accessibilityValue={{ text: `${pct}%` }}` en la pista.
+  - X30n: `accessible` + `accessibilityValue={{ min: 0, max: 100, now: pct }}`
+    en la pista.
+  - X37r: `accessible accessibilityLabel={String(detail.data.pet.device.batteryPct)}`
+    en la fila `<View className="flex-row items-center gap-2">` de
+    `index.tsx`.
+- Se puede candar (verificado en el spike):
+  - `fill.children` es `toEqual([])`.
+  - En la pista, en el relleno y en `track.parent`, la lista de props cuyo
+    nombre casa con `/^(accessib|aria-|role$|importantForAccessibility)/` es
+    `toEqual([])`.
+
+  En producción ninguno de los tres nodos tiene ninguna:
+  - pista: `testID`, `className`, `children`;
+  - relleno: `testID`, `className`, `style` y las props del mock;
+  - fila: `className`, `children`.
+
+  Caen las 4 sondas.
+
+**Origen.** H6 y H7 nacen en mi ronda 1b, no en E4:
+
+- En el barrido de la ronda 1b marqué «R7, reveal sin style/className» como
+  «Cubierto (actividad `ok`)» sin señalar las demás ramas.
+- El «Se puede candar» de H2 solo pedía `entering`.
+- El de H4 solo pedía el último hijo y `accessibilityLabel`.
+- E4.7 y E4.8 los copiaron (E4.8 incluso los amplió).
+
+H5 es la clase de hueco de H3 (recorrer el árbol entero) aplicada a las ramas
+que E4.6 no pinta.
+
+### 4. No bloqueantes
+
+- **X42 (R7, «El skeleton se desmonta en el acto, sin fundido cruzado»).**
+  Envolver `summary-skeleton` en un `Animated.View` con `exiting` sobrevive
+  213/213. Pero el `Skeleton` de heroui-native ya trae por defecto `entering`
+  FadeIn y `exiting` FadeOut (`skeleton.animation.js`), y `summary-skeleton`
+  tiene `exiting` en su nodo host en producción.
+  - Leída al pie de la letra, la frase no la cumple la producción desde antes
+    de #152. Es una imprecisión de la premisa, no un hueco de candado.
+  - Decide el leader si reformula R7, por ejemplo: «#152 no añade un fundido
+    de salida al skeleton».
+  - Si quiere candado: con la actividad pendiente,
+    `(await findByTestId('summary-skeleton')).parent` es
+    `toBe(getByTestId('summary-card'))`. En el spike caza X42.
+- **X40 (con `unauthorized`, un `summary-reveal` vacío).** Sobrevive también
+  al spike. Ninguna cláusula de R7 lo cubre, porque el WHEN solo habla de
+  cuando la fila sustituye al skeleton; #77 R3 cubre que la fila no se pinta.
+  Es informativo.
+- **Conjunciones con una dimensión que la cláusula no nombra.** No las
+  candé ni las propongo:
+  - `entering` del reveal con reduce motion y un `kind` que no es `ok`: la
+    producción no tiene esa rama, y cada variable tiene su candado.
+  - Las clases de R8 con reduce motion: R8 nombra reduce motion solo para el
+    ancho.
+  - Una entrada en un hijo del hero que dependa del estado del detalle: en
+    `index.tsx` el hero no se ramifica por el detalle, y `pet-hero-header.tsx`
+    está fuera de la lista cerrada.
+- **Mutantes equivalentes.** X20, X31 y X32 siguen como en las rondas 1 y 1b.
+- **Cifras de E4.** Verifiqué 213, 21/192/213 y 174. No verifiqué 341
+  (comparación de cierre) ni 2230 (jest entero), porque exigen la suite
+  entera.
+- **Estabilidad.** La espera de E4.5 (`reminders-section` visible y
+  `reminders-section-skeleton` ausente en el mismo `waitFor`) fue estable en
+  todas las corridas del fichero.
