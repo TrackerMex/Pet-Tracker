@@ -1049,3 +1049,227 @@ worktrees desechables; no están en ningún commit del repo.
 - **Conjunciones.** Siguen igual que en la ronda 1c, §4. Por ejemplo, las
   celdas con reduce motion y un `kind` que no es `ok`, o la regex de R8 con
   reduce motion.
+
+## Pre-verificación E4 (ronda 1f)
+
+Fecha: 2026-10-07. Objeto: `f093528e`, que amplía E4 con H10-H14. Cambios
+desde `75fea066`:
+
+- E4.7 comprueba que `summary-skeleton` ya no está (H14, X50e).
+- E4.11 y E4.14 amplían la regex con `screenReaderFocusable$`, `focusable$`
+  y `tabIndex$` (H13).
+- E4.12 pasa a `it.each` sobre reduce motion (H10, H11).
+- E4.13 pasa a `it.each` propio (H8, H12).
+
+`src/` sigue igual a `c7ac5ceb`.
+
+Método:
+
+- Worktree desechable en `f093528e`. Copié literales los bloques de E4.2 del
+  handoff, con el import que ahora trae `FadeOut`.
+  - `index.test.tsx` da numstat `202 1`.
+  - Las 21 anclas `grep -cF` dan lo que dice el handoff.
+- Base: 218/218.
+- Cada sonda corre sola contra `index.test.tsx` entero y se revierte con
+  `git checkout HEAD -- src`. Después de cada una, el árbol y
+  `git diff --cached` quedan vacíos.
+- No corrí `init.sh`, ni la suite entera, ni el rojo de E4.3. Las cifras
+  26/192/218, 346, 2235 y los 12 casos de R7 las midió el leader.
+- El worktree desechable ya está eliminado y el `node_modules` de wt-152
+  sigue intacto (723 entradas).
+- Barrido como en la ronda 1e: para cada candado, el mío incluido, enumeré
+  las ramas hermanas de la cláusula entera. Las conjunciones siguen fuera de
+  alcance (ronda 1c, §4).
+
+**Resultado: E4 insuficiente, 2 huecos (H15 y H16).** H10-H14 quedan
+cerrados. Los dos huecos nuevos son ramas de cláusulas que E4 ya canda en
+otra rama:
+
+- **H15** sale de la cláusula que el leader adoptó en H14 («se desmonta»),
+  en su rama de reduce motion.
+- **H16** es error mío de la ronda 1e. Di por completa la lista de props que
+  agrupan en Android sin leer entero `ReactViewManager.kt`.
+
+### 1. ¿Cierra E4 los huecos H10-H14?
+
+Sí. Las 19 sondas del leader caen por aserción, con 0 `TypeError`,
+`ReferenceError`, `SyntaxError` y «Unable to find».
+
+| Sonda | Hueco | Falla en | Aserción |
+|---|---|---|---|
+| X42e | H10 | E4.12, `reduce motion: false` | `toBe` |
+| X42r | H11 | E4.12, `reduce motion: true` | `toBe` |
+| X49r | H11 | E4.12, `reduce motion: true` | `toBeNull` |
+| X45s, X45d | H12 | E4.13, `reduce motion: false` | `toEqual` |
+| X45a, X45r | H8 | E4.13, `reduce motion: true` | `toEqual` |
+| X45n | H12 | #69 R1 `keeps the row flush without spacing utilities` y E4.13, `reduce motion: false` | `toBe` y `toEqual` |
+| X50e | H14 | `funde igual la fila con la actividad en error` | `toBeNull` |
+| X46r, X46f, X46t, X37s, X30f | H13 | `no añade texto ni nombre accesible a la fila` | `toEqual` |
+| X46c, X46e, X46h, X46s, X37l | H9 | ídem | `toEqual` |
+
+Sondas mías sobre los candados nuevos:
+
+- **X42d.** Un `exiting={FadeOut.duration(400)}` directo en el `Skeleton`,
+  solo con `reduceMotion`. Cae en E4.12, `reduce motion: true` (`toBe`).
+- **X42f.** El mismo fundido por la prop
+  `animation={{ exiting: { value: … } }}`, solo con `reduceMotion`. Sobrevive
+  218/218 y es equivalente, como dice el leader:
+  - bajo reduce motion, `heroui-native` anula la config de `animation` desde
+    la raíz;
+  - el host queda sin `exiting`, que es justo lo que asevera
+    `toBe(undefined)`.
+
+### 2. Barrido cláusula × rama × candado × sonda
+
+**R5.** El diff `75fea066..f093528e` solo toca los bloques de R7 y R8 y el
+import. El barrido de R5 de la ronda 1d (§2) sigue valiendo.
+
+**R7, «sus celdas siguen siendo sus hijos directos».**
+
+| Rama | Candado | Estado |
+|---|---|---|
+| `ok` sin reduce motion | E4.13, `reduce motion: false` (`toEqual` contra los 4 padres) | X45s, X45d y X45n caen |
+| `ok` con reduce motion | E4.13, `reduce motion: true` | X45a y X45r caen |
+| Los 4 `kind` que no son `ok`, sin reduce motion | #77 R2 | cubierta; no la repetí (ronda 1e) |
+
+**R7, «no envuelve `summary-skeleton` ni le añade un fundido de salida
+propio»** (E4.12).
+
+| Rama | Candado | Estado |
+|---|---|---|
+| Envoltorio, con reduce motion y sin él | E4.12 (`parent` `toBe` `summary-card`) | X42r cae; X42 cayó en la ronda 1d y no la repetí |
+| Fundido propio sin reduce motion | E4.12 (`toBe(FadeOut)`) | X42e cae |
+| Fundido propio con reduce motion, por prop directa | E4.12 (`toBe(undefined)`) | X42d cae |
+| Fundido propio con reduce motion, por `animation` | — | X42f es equivalente (§1) |
+| Fundido mientras el skeleton está montado, con reduce motion y sin él | E4.12 (`summary-reveal` ausente) y R7 | X49r cae |
+
+**R7, «El skeleton se desmonta en el acto»**, la cláusula que el leader
+adoptó en H14.
+
+| Rama | Candado | Sonda | Estado |
+|---|---|---|---|
+| Los `kind` `no-tracking`, `error`, `unreachable` y `missing-config`, sin reduce motion | E4.7 (`toBeNull` al final) | X50e | cae |
+| `unauthorized` | `waitFor` de `no pinta la fila con la sesión caducada` | — | cubierta |
+| `ok` sin reduce motion | ninguno explícito. Solo los `enteringIds` de `solo da entrada a los envoltorios, al fundido y al avatar del selector` y `no da entrada al hero con alertas abiertas` | X50o | cae de rebote (`toEqual`) |
+| **`ok` con reduce motion** | **ninguno** | **X50r** | **sobrevive 218/218: H15** |
+
+R7 nombra reduce motion («igual con o sin reduce motion»), así que la
+cláusula × reduce motion es una rama, con el mismo criterio que H6, H8 y
+H11. Los `kind` que no son `ok` con reduce motion son conjunción, igual que
+en las celdas (ronda 1e, §2).
+
+**R8, «el lector de pantalla sigue leyendo `collar-battery`»** (E4.11 y
+E4.14).
+
+| Rama | Candado | Sonda | Estado |
+|---|---|---|---|
+| Nodo agrupado con `accessible` o nombre, de la pista a la raíz | E4.11 y E4.14 | X46c, X46e, X46h, X46s y X37l caen; X30a cayó en la ronda 1d y no la repetí | cae |
+| Nodo agrupado con `screenReaderFocusable`, `focusable` o `tabIndex` | E4.11 y E4.14 | X46r, X46f, X46t, X37s y X30f | cae |
+| **Nodo hecho enfocable con `hasTVPreferredFocus`** | **ninguno**: la regex no casa esa prop | **X46v** (`collar-card`) y **X37v** (la fila) | **sobreviven 218/218: H16** |
+
+### 3. Huecos que E4 no cierra (bloqueantes)
+
+**H15: R7, «El skeleton se desmonta en el acto», con reduce motion.**
+
+- Sonda X50r: `{activity.data === undefined || reduceMotion ? (` en la
+  condición de `summary-skeleton`. Con reduce motion, el skeleton se queda
+  montado junto a la fila ya pintada, con cualquier `kind`. Sobrevive
+  218/218.
+- Ningún `it` mira que el skeleton se vaya bajo reduce motion:
+  - E4.7 corre sin reduce motion;
+  - `funde igual bajo reduce motion` no mira el skeleton;
+  - los `enteringIds` que cazan X50o no lo ven, porque bajo reduce motion
+    `heroui-native` no le pone `entering`.
+- Candado: una línea al final del `it.each` de E4.13,
+  `deja las cuatro celdas como hijos directos de la fila (reduce motion: %s)`,
+  justo después del `toEqual`:
+
+```ts
+      expect(screen.queryByTestId('summary-skeleton')).toBeNull();
+```
+
+- Así cubre `ok` con reduce motion y sin él, y deja explícita la rama de
+  X50o, que hoy solo cae de rebote.
+- Con E4.7 y el `waitFor` de `unauthorized`, la cláusula queda candada en
+  todas sus ramas.
+
+**H16: la regex de E4.11 y E4.14 no casa `hasTVPreferredFocus`.**
+
+- Sondas: X46v (`hasTVPreferredFocus` en `collar-card`) y X37v (lo mismo en
+  la fila). Las dos sobreviven 218/218.
+- En RN 0.86, `ReactViewManager.kt` pone `view.isFocusable = true` en
+  `setTVPreferredFocus` y además llama a `requestFocus()`.
+  - No mira si el dispositivo es una tele, así que en un teléfono el nodo
+    queda enfocable y TalkBack lo agrupa igual que con `focusable`.
+  - El tipo `ViewProps` acepta la prop vía `TVViewPropsIOS`, así que
+    compila.
+- Para no repetir la ronda 1e, leí todos los setters de props de RN 0.86 que
+  hacen enfocable una vista:
+
+  | Prop | Dónde | ¿La casa la regex de E4? |
+  |---|---|---|
+  | `accessible` | `ReactViewManager.kt`, `setAccessible` | sí (`accessib`) |
+  | `focusable` | `ReactViewManager.kt`, `setFocusable` | sí |
+  | `tabIndex` | se convierte en `focusable` en `View.js` | sí |
+  | `screenReaderFocusable` | `BaseViewManager.java`, `setScreenReaderFocusable` | sí |
+  | `hasTVPreferredFocus` | `ReactViewManager.kt`, `setTVPreferredFocus` | **no** |
+
+  No hay más en `views/view` ni en `uimanager`. El resto de props de
+  accesibilidad ya caen en `accessib`, `aria-`, `role` e
+  `importantForAccessibility`.
+- Candado: en los dos sitios del handoff, el bucle de E4.11 y el recorrido de
+  E4.14, la regex pasa a:
+
+```ts
+/^(accessib|aria-|role$|importantForAccessibility|screenReaderFocusable$|focusable$|tabIndex$|hasTVPreferredFocus$)/
+```
+
+- Con esto, la regex cubre todos los setters de la tabla y no solo los que ya
+  probaron las sondas. En producción, ningún nodo del camino la casa.
+- Hay que volver a medir las anclas `grep -cF` del handoff que citen la regex.
+
+**Verificación (spike).** Metí los dos candados en el worktree desechable;
+no están en ningún commit del repo.
+
+- En producción `index.test.tsx` da 218/218.
+- Cada sonda cae por aserción, con 0 `TypeError`, `ReferenceError`,
+  `SyntaxError` y «Unable to find»:
+
+| Candado | Sonda | Falla en | Aserción |
+|---|---|---|---|
+| H15 | X50r | E4.13, `reduce motion: true` | `toBeNull` |
+| H15 | X50q (como X50r, pero solo con `ok`) | ídem | `toBeNull` |
+| H15 | X50o | E4.13 en las dos filas y los dos `it` de `enteringIds` | `toBeNull` y `toEqual` |
+| H16 | X46v, X37v y X30v (`hasTVPreferredFocus` en la pista) | `no añade texto ni nombre accesible a la fila` | `toEqual` |
+| H16 | X46r y X37s (control de la regex ampliada) | ídem | `toEqual` |
+
+- Sin el spike, X50q no la medí. Lo deduzco: X50r pinta igual que X50q en el
+  caso `ok` con reduce motion, y X50r sobrevive.
+- Con el spike en el fichero, `tsc --noEmit` y `bunx eslint` sobre
+  `index.test.tsx` dan exit 0.
+
+**Cifras.** Las dos cosas amplían `it` que ya existen, así que no se mueven:
+
+- los 218 de `index.test.tsx`;
+- el cierre, 346;
+- Jest móvil, 2235;
+- los 12 casos de R7.
+
+El numstat del handoff pasa de `202 1` a `203 1`: la línea de H15. La regex
+cambia dentro de líneas que el bloque ya añade.
+
+El rojo de E4.3 (26/192/218) no debería moverse. La línea nueva solo puede
+fallar si el rojo deja montado el skeleton, y la regex solo si el rojo pone
+`hasTVPreferredFocus`, que no aparece en `src/`. Lo deduzco, no lo medí: que
+lo mida el leader.
+
+### 4. No bloqueantes
+
+- **E4.12 queda atado al `FadeOut` de serie de `heroui-native`**, como ya
+  avisa el leader. Si una versión nueva lo cambia, el `it` se pone rojo sin
+  que #152 haya tocado nada.
+- **El recorrido de E4.14 llega a nodos del arnés**, como en la ronda 1e, §4.
+- **Conjunciones.** Siguen igual que en la ronda 1c, §4. Por ejemplo:
+  - el skeleton con reduce motion y un `kind` que no es `ok`;
+  - las celdas con reduce motion y un `kind` que no es `ok`;
+  - la regex de R8 con reduce motion.
