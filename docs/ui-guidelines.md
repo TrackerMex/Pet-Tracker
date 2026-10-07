@@ -177,8 +177,8 @@ Tres límites, no negociables:
 - Reanimated 4 en UI thread; nada que dependa de JS thread para gestos.
 - Springs sobre timings para elementos que entran/salen o responden a
   gesto; timings solo para opacidad/color. Duraciones: 150ms feedback,
-  250ms transición, 400ms superficies grandes — si se repiten, se
-  promueven a tokens `--motion-*` en global.css.
+  250ms transición, 400ms superficies grandes — viven en
+  `src/theme/motion.ts` (enmienda A21 de #152).
 - Entering/exiting de Reanimated para cambios de estado visibles
   (aparición de cards, resultados de fetch).
 - Nunca pasar valores `Color`/`PlatformColor`/var CSS a estilos de
@@ -419,3 +419,22 @@ calcula como el porcentaje redondeado de `served / total`, o `0%` si el total
 es cero.
 
 - [X] Enmienda aprobada por humano
+
+
+## Enmienda #152 — el movimiento vive en src/theme/motion.ts
+
+Enmienda A21: Reanimated consume números y §Animación prohíbe pasarle
+variables CSS. Las duraciones y configuraciones compartidas de movimiento
+viven en `src/theme/motion.ts`.
+
+`motion.ts` no es un segundo sistema de estilos en el sentido de
+§Decisiones fijas 1: no contiene colores, espaciados, radios ni clases,
+solo duraciones y configuraciones de Reanimated. Tiene los precedentes
+`native-styles.ts` y `touch-target.ts` en la misma carpeta.
+
+Las constantes anteriores a #152 (`MEALS_BAR_TIMING`, `KCAL_BAR_TIMING`,
+`WELCOME_ENTRANCE_MS`, `BAR_ENTRY_*`, `METRIC_TAB_SPRING` y
+`TAB_INDICATOR_SPRING`) migran a `motion.ts` en una feature posterior,
+fuera del alcance de esta.
+
+- [ ] Enmienda aprobada por humano
