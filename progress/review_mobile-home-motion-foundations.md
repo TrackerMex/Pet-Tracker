@@ -812,3 +812,240 @@ no deberían moverse. Lo deduzco, no lo medí.
 - **X30s.** Ver §2: cae, no es un hueco.
 - **Conjunciones.** Siguen igual que en la ronda 1c, §4. Por ejemplo, las
   celdas con reduce motion y un `kind` que no es `ok`.
+
+## Pre-verificación E4 (ronda 1e)
+
+Fecha: 2026-10-07. Objeto: `54b168c9`, que añade E4.13 (H8) y E4.14 (H9) en
+`requirements.md` y amplía los bloques (b) y (c) del handoff. `src/` sigue
+igual a `c7ac5ceb`.
+
+Método:
+
+- Worktree desechable en `54b168c9`. Copié literales los bloques de E4.2 del
+  handoff. `index.test.tsx` da numstat `186 0`, y las 18 anclas de `grep -cF`,
+  las dos nuevas incluidas, dan lo que dice el handoff.
+- Base: 215/215.
+- Cada sonda corre sola contra `index.test.tsx` entero y se revierte con
+  `git checkout HEAD --`. Después de cada una, el árbol y `git diff --cached`
+  quedan vacíos. Todas las sondas pasan `bun run typecheck` con exit 0, así que
+  son código válido y no rojos por tipos.
+- No corrí `init.sh`, ni la suite entera, ni el rojo de E4.3. Las cifras 215,
+  23/192/215, 174, 2232 y 343 las midió el leader. Los dos worktrees
+  desechables ya están eliminados.
+- Esta vez apliqué la lección de las rondas 1b-1d. Para cada candado, el mío
+  incluido, enumeré las ramas hermanas de la cláusula entera: otros ancestros,
+  otras celdas, otros `kind`, reduce motion y otras props con el mismo efecto.
+  No miré solo la rama de la sonda. Las conjunciones siguen fuera de alcance
+  (ronda 1c, §4).
+
+**Resultado: E4 insuficiente, 4 huecos (H10-H13).** H8 y H9 quedan cerrados.
+Los cuatro huecos nuevos son ramas de cláusulas que E4 ya canda en otra rama.
+Uno (H12) es error mío de la ronda 1d: di por cubierta una rama con un
+candado que solo cuenta hijos.
+
+### 1. ¿E4.13 y E4.14 cierran H8 y H9?
+
+Sí. Las seis sondas de H8-H9 y X45a caen por aserción, con 0 `TypeError`,
+`ReferenceError`, `SyntaxError` y «Unable to find».
+
+| Sonda | Hueco | Falla en | Aserción |
+|---|---|---|---|
+| X45r (3 celdas en un `View` solo bajo reduce motion) | H8 | `funde igual bajo reduce motion` | `toEqual` |
+| X45a (solo la celda de actividad envuelta bajo reduce motion, el recuento no cambia) | H8 | ídem | `toEqual` |
+| X46c (`collar-card` agrupado con nombre) | H9 | `no añade texto ni nombre accesible a la fila` | `toEqual` |
+| X46e (`HomeEntrance` agrupado con nombre) | H9 | ídem | `toEqual` |
+| X46h (`home-content` con nombre) | H9 | ídem | `toEqual` |
+| X46s (`screen-home` con nombre) | H9 | ídem | `toEqual` |
+| X37l (`accessibilityLabel` en el propio `collar-battery`) | H9 | ídem | `toEqual` |
+
+X45a importa porque conserva el número de hijos de la fila. E4.13 la caza
+porque compara con `toEqual` contra los padres de los cuatro valores, no
+porque cuente.
+
+### 2. Barrido cláusula × rama × candado × sonda
+
+**R5.** Ni los `it` de R5 ni la producción cambian desde la ronda 1d, porque el
+diff `f2bc714c..54b168c9` solo toca los bloques de R7 y R8. El barrido de R5 de
+la ronda 1d (§2) sigue valiendo y no repetí sondas.
+
+**R7, «sus celdas siguen siendo sus hijos directos».**
+
+| Rama | Candado | Sonda | Estado |
+|---|---|---|---|
+| `ok` con reduce motion | E4.13 (`toEqual` contra los 4 padres) | X45r, X45a | cae |
+| Los 4 `kind` que no son `ok`, sin reduce motion | #77 R2 (`rowChildren[0]` `toBe` la celda y `rowChildren[1]` es `summary-note`) | — | cubierta |
+| `ok` sin reduce motion, celda de peso | R7 `envuelve la fila del resumen sin tocarla` (`row` = abuelo de `summary-weight`) | — | cubierta |
+| `ok` sin reduce motion, celda de actividad | #69 R1 `keeps the row flush without spacing utilities` (clase del abuelo de `summary-activity`) | X45n | cae (`toBe`) |
+| **`ok` sin reduce motion, celdas de descanso y distancia** | **ninguno**: #69 R12 solo cuenta 4 hijos | **X45s** | **sobrevive 215/215: H12** |
+
+**R7, «El skeleton se desmonta en el acto, sin fundido cruzado»**, en la
+lectura de E4.12: «#152 no envuelve `summary-skeleton` ni le añade un fundido
+de salida propio».
+
+| Rama | Candado | Sonda | Estado |
+|---|---|---|---|
+| Envoltorio sin reduce motion | E4.12 (`parent` `toBe` `summary-card`) | X42 (ronda 1d) | cae |
+| **Envoltorio solo bajo reduce motion** | **ninguno**: E4.12 corre sin reduce motion | **X42r** | **sobrevive: H11** |
+| **Fundido de salida propio, sin envoltorio** | **ninguno**: E4.12 solo mira el padre | **X42e** | **sobrevive: H10** |
+
+**R7, «no monta el fundido mientras el skeleton ocupa su sitio»**: el `it` de
+R7 que niega el WHEN.
+
+| Rama | Candado | Sonda | Estado |
+|---|---|---|---|
+| Sin reduce motion | R7 `no monta el fundido mientras el skeleton ocupa su sitio` | — | cubierta |
+| **Bajo reduce motion** | **ninguno** | **X49r** | **sobrevive: H11** |
+
+R7 nombra reduce motion («igual con o sin reduce motion»). Por eso cada
+cláusula de R7 × reduce motion es una rama y no una conjunción: es el mismo
+criterio que aceptó H6 y H8.
+
+**R8, «La barra no añade texto ni copy; el lector de pantalla sigue leyendo
+`collar-battery`»** (E4.11 y E4.14).
+
+| Rama | Candado | Sonda | Estado |
+|---|---|---|---|
+| Ancestro agrupado con `accessible` o nombre, hasta la raíz | E4.14 | X46c, X46e, X46h, X46s | cae |
+| El propio `collar-battery` con nombre | E4.14 | X37l | cae |
+| `<Text>` anidado que envuelve `collar-battery` | R8.2 (`pone la barra detrás del porcentaje en su fila`) | X47t | cae (`toBe`) |
+| **Ancestro agrupado con `screenReaderFocusable`, `focusable` o `tabIndex`** | **ninguno**: la regex no casa esas props | **X46r, X46f, X46t** (`collar-card`) y **X37s** (la fila) | **sobreviven 215/215: H13** |
+| **La pista con `focusable`** | **ninguno**: misma regex | **X30f** | **sobrevive 215/215: H13** |
+
+### 3. Huecos que E4 no cierra (bloqueantes)
+
+**H10: E4.12, «ni le añade un fundido de salida propio».**
+
+- Sonda X42e: `animation={{ exiting: { value: FadeOut.duration(400) } }}` en
+  el `Skeleton` de `summary-skeleton`. `heroui-native` acepta ese override y
+  lo pone como `exiting` del host. Sobrevive 215/215.
+- Es justo lo que E4.12 prohíbe, pero el `it` de E4.12 solo mira el padre.
+
+**H11: R7 con reduce motion mientras la actividad está pendiente.** La
+sección 2 explica por qué reduce motion es una rama de R7.
+
+- X42r: `summary-skeleton` dentro de un
+  `Animated.View exiting={FadeOut.duration(400)}`, solo con `reduceMotion`.
+  Sobrevive 215/215.
+- X49r: un `summary-reveal` vacío montado junto al skeleton, solo con
+  `reduceMotion`. Sobrevive 215/215.
+
+Un solo candado cierra H10 y H11. Convierte el `it` de E4.12 en un `it.each`
+sobre reduce motion (añade `FadeOut` al import de `react-native-reanimated`
+del fichero):
+
+```ts
+  it.each([false, true])(
+    'monta el skeleton directamente en la tarjeta, sin fundido de salida propio (reduce motion: %s)',
+    async (reduceMotion) => {
+      mockUseReducedMotion.mockReturnValue(reduceMotion);
+      mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
+      await renderHome();
+      const skeleton = await screen.findByTestId('summary-skeleton');
+      expect(skeleton.parent).toBe(screen.getByTestId('summary-card'));
+      expect([FadeOut, undefined]).toContain(skeleton.props.exiting);
+      expect(screen.queryByTestId('summary-reveal')).toBeNull();
+    },
+  );
+```
+
+Esto mide la producción:
+
+- Sin reduce motion, `heroui-native` pone `exiting` igual a `FadeOut`, el
+  builder de serie con la misma identidad.
+- Bajo reduce motion no pone ninguno (`undefined`).
+- Así el candado deja pasar el fundido de heroui-native que E4.12 deja fuera,
+  y caza cualquier fundido propio.
+- Coste: queda atado al valor de serie de `heroui-native`. Si una versión
+  nueva lo cambia, este `it` se pone rojo sin que #152 haya tocado nada.
+
+**H12: R7, «sus celdas siguen siendo sus hijos directos», sin reduce motion,
+celdas de descanso y distancia.**
+
+- Sonda X45s: la celda de descanso dentro de un `<View>`, solo con
+  `!reduceMotion`. La fila sigue con 4 hijos. Sobrevive 215/215.
+- El origen es mío. En la ronda 1d (§2) di la rama `ok` sin reduce motion por
+  cubierta con #69 R12, que solo cuenta 4 hijos no-string. #69 R1 mira la
+  celda de actividad y R7 la de peso; nadie mira las otras dos.
+- Candado: el mismo bloque de E4.13, añadido también al final de
+  `envuelve la fila del resumen sin tocarla`, que ya define `row`:
+
+```ts
+    expect(row?.children.filter((child) => typeof child !== 'string')).toEqual(
+      ['summary-weight', 'summary-activity', 'summary-sleep', 'summary-distance'].map(
+        (id) => screen.getByTestId(id).parent,
+      ),
+    );
+```
+
+**H13: la regex de E4.11 y E4.14 no casa las props que agrupan en Android.**
+
+- Sondas: X46r (`screenReaderFocusable`), X46f (`focusable`) y X46t
+  (`tabIndex={0}`) en `collar-card`; X37s (`screenReaderFocusable` en la
+  fila); X30f (`focusable` en la pista). Todas sobreviven 215/215.
+- En RN 0.86, Android hace lo mismo con estas props que con `accessible`, que
+  la regex ya caza:
+  - `accessible` pone `isFocusable`;
+  - `focusable` también, y además un listener de click;
+  - `tabIndex` se convierte en `focusable` en `View.js`;
+  - `screenReaderFocusable` hace el nodo enfocable para el lector.
+- Con cualquiera de ellas, TalkBack agrupa el nodo y lee la tarjeta o la fila
+  en vez de `collar-battery`. En la pista añaden una parada vacía.
+- Candado: cambiar la regex en los dos sitios del handoff, el bucle de E4.11 y
+  el recorrido de E4.14, por:
+
+```ts
+/^(accessib|aria-|role$|importantForAccessibility|screenReaderFocusable$|focusable$|tabIndex$)/
+```
+
+En producción ningún nodo la casa: ni la pista, ni el relleno, ni el camino
+de `collar-battery` a la raíz. El camino es `collar-battery`, la fila,
+`collar-card`, `home-entrance-collar`, `home-content`, un `View`,
+`screen-home`, `RNCSafeAreaProvider` y el contenedor. Hay que volver a medir
+las anclas `grep -cF` del handoff que citen la regex vieja.
+
+**Verificación (spike).** Metí los tres candados como `it` sueltos en los
+worktrees desechables; no están en ningún commit del repo.
+
+- En producción pasan. El de H10-H11, con reduce motion y sin él.
+- Cada sonda cae por aserción, con 0 `TypeError` y «Unable to find»:
+
+| Candado | Sondas |
+|---|---|
+| H10-H11, fila sin reduce motion | X42e (`toContain`) |
+| H10-H11, fila con reduce motion | X42r (`toBe`), X49r (`toBeNull`) |
+| H12 | X45s, X45n (`toEqual`) |
+| H13 | X46r, X46f, X46t, X37s, X30f, y también X46c, X46e, X46h, X46s, X37l (`toEqual`) |
+
+- Con el spike en el fichero, `bun run typecheck` y `bunx eslint` sobre
+  `index.test.tsx` dan exit 0.
+
+**Cifras.**
+
+- H12 y H13 amplían `it` que ya existen.
+- H10-H11 convierte un `it` en dos, así que suma 1:
+  - `index.test.tsx` pasa de 215 a 216;
+  - el cierre, de 343 a 344;
+  - Jest móvil, de 2232 a 2233.
+- El rojo de E4.3 (23/192/215) y los 174 guards dependen de cómo caiga el `it`
+  nuevo en el rojo. Lo deduzco, no lo medí: que lo mida el leader.
+
+### 4. No bloqueantes
+
+- **X50e.** `summary-skeleton` se queda montado con la actividad en `error`
+  (`activity.data === undefined || activity.data.kind === 'error'`). Sobrevive
+  215/215.
+  - El `waitFor` de `no pinta el envoltorio de la actividad con $kind`
+    comprueba que el skeleton se va con `no-tracking`, `unauthorized`,
+    `unreachable` y `missing-config`, pero no con `error`.
+  - Queda fuera de la lectura de E4.12, que reduce la frase a «no envuelve ni
+    añade fundido de salida propio».
+  - La falta de candado ya existía en `66aaf981`.
+  - Si el leader quiere que «se desmonta» siga siendo cláusula, esta es su
+    rama sin candado.
+- **El recorrido de E4.14 llega a nodos del arnés** (`RNCSafeAreaProvider` y
+  el contenedor de render). Si un test futuro envuelve la Home en un
+  navegador con props de accesibilidad, el candado se pondría rojo por algo
+  ajeno a R8. Hoy no pasa.
+- **Conjunciones.** Siguen igual que en la ronda 1c, §4. Por ejemplo, las
+  celdas con reduce motion y un `kind` que no es `ok`, o la regex de R8 con
+  reduce motion.
