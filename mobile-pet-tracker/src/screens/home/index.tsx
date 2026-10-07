@@ -79,6 +79,7 @@ import {
   localDayOf,
   upcomingReminders,
 } from './format';
+import { CollarBatteryBar } from './collar-battery-bar';
 import { HomeEntrance, homeEntering } from './home-entrance';
 import { WeeklyActivityChart } from './weekly-activity-chart';
 
@@ -555,6 +556,9 @@ export function HomeScreen() {
                       ? '—'
                       : `${detail.data.pet.device.batteryPct}%`}
                   </Text>
+                  {detail.data.pet.device.batteryPct !== null ? (
+                    <CollarBatteryBar pct={detail.data.pet.device.batteryPct} />
+                  ) : null}
                 </View>
               ) : (
                 <Text className="font-normal text-muted">
