@@ -593,3 +593,94 @@ Al marcar esta casilla el humano firma también, explícitamente, las decisiones
 D1-D6 con sus valores por defecto y la enmienda A21 a `docs/ui-guidelines.md`
 (R2), que Codex escribe y que el humano aprueba marcando su propia casilla en
 la sección de la enmienda.
+
+## Enmienda E4 — tres cláusulas de R5 y R7 sin candado
+
+El reviewer rechazó #152 en `c7ac5ceb`
+(`progress/review_mobile-home-motion-foundations.md` §Observaciones,
+bloqueantes B1-B3). La producción cumple R5 y R7. El hueco está en las listas
+de `it` de esta spec, que candan cada cláusula en una sola rama. Con cada una
+de estas mutaciones, `src/screens/home/index.test.tsx` sigue en 192/192:
+
+| Cláusula | Ramas sin candado | Mutaciones que pasan en verde |
+|---|---|---|
+| R5: «cada envoltorio se pinta exactamente bajo la misma condición que su bloque» | `selectedPetId` nulo, para los cuatro envoltorios que dependen de él. Y para `home-entrance-weekly`, los `kind` de la actividad que no son `ok` ni `error` | X2b, X2, X2c y X2d (envoltorio montado sin mascota). X21 (`kind !== 'error'` en vez de `=== 'ok'`) |
+| R5: «`pet-hero-error` y `weekly-activity-day-map` siguen siendo hijos directos de `home-content`, sin envoltorio» | Las dos ramas: ningún test pinta esos nodos y mira su padre | X18 (`pet-hero-error` dentro de un `HomeEntrance`) y X17 (el botón del mapa dentro de un `HomeEntrance`) |
+| R7: «igual con o sin reduce motion» | Con reduce motion | X1 (`entering={reduceMotion ? undefined : homeEntering(0, 0)}`) |
+
+R5 y R7 no cambian. Esta enmienda solo añade los candados que les faltaban.
+
+### E4.1 — R5 sin mascota seleccionada
+
+**WHEN** se cierra #152, **THE SYSTEM SHALL** tener en
+`describe('#152 R5: …')` el `it('no pinta ningún envoltorio sin mascota seleccionada')`.
+Con `listPets` → `{ kind: 'ok', pets: [] }`, espera a `home-empty` y comprueba
+que los seis envoltorios de la tabla de R5 están ausentes.
+
+### E4.2 — `home-entrance-weekly` en cada `kind` que no es `ok`
+
+**WHEN** se cierra #152, **THE SYSTEM SHALL** tener en el mismo describe un
+`it.each` `no pinta el envoltorio de la actividad con $kind` con cuatro filas:
+`no-tracking`, `unauthorized`, `unreachable` y `missing-config`. `error` ya
+tiene su `it`. Cada fila espera a que `summary-card` esté visible **y**
+`summary-skeleton` ausente en el mismo `waitFor`. Así sabe que hay mascota y
+que la actividad ya llegó, sin depender de otro envoltorio. Después comprueba
+`home-entrance-reminders` visible y `home-entrance-weekly` ausente.
+
+Con un ancla más débil (`findByTestId('home-entrance-reminders')` y luego
+`summary-skeleton` ausente), la espera pasa antes de que haya mascota si el
+envoltorio de recordatorios se monta siempre. El leader lo midió en el spike
+(sonda X2d, fila `unauthorized`).
+
+### E4.3 — los dos nodos sin envoltorio
+
+**WHEN** se cierra #152, **THE SYSTEM SHALL** tener en el mismo describe:
+
+- `it.each` `deja el error del detalle ($kind) como hijo directo de home-content`,
+  con dos filas de `getPet`: `{ kind: 'error' }` y
+  `{ kind: 'unreachable', message: 'network down' }`, las dos ramas que pintan
+  `pet-hero-error`. Comprueba que `(await findByTestId('pet-hero-error')).parent`
+  es `toBe(getByTestId('home-content'))`.
+- `it('deja el botón del mapa del día como hijo directo de home-content')`.
+  Con el arreglo de `setupHomeMotion`, pulsa `weekly-activity-day-2026-08-21`
+  (el último día, es decir, hoy). Comprueba que
+  `getByTestId('weekly-activity-day-map').parent` es `toBe(getByTestId('home-content'))`.
+
+### E4.4 — R7 bajo reduce motion
+
+**WHEN** se cierra #152, **THE SYSTEM SHALL** tener en
+`describe('#152 R7: …')` el `it('funde igual bajo reduce motion')`. Hace lo
+mismo que `funde sin espera ni desplazamiento`, pero con
+`mockUseReducedMotion.mockReturnValue(true)` antes de renderizar, y comprueba
+primero `entering` `toEqual(expect.any(Function))`. Así la sonda X1 cae por
+aserción y no por `TypeError`.
+
+### Cifras y alcance
+
+Las ediciones literales, los mensajes de commit y la mutación del rojo están
+en `progress/handoff_mobile-home-motion-foundations.md` §Enmienda E4. El
+leader las verificó en un worktree desechable sobre `c7ac5ceb`:
+
+- **Verde:**
+  - `index.test.tsx`: 201/201.
+  - Jest móvil entero: 96 suites / 2218 tests.
+- **Rojo** (con la mutación de cuatro sondas en `index.tsx`):
+  - `index.test.tsx`: exactamente los 9 `it` nuevos fallan y 192 pasan, sin
+    excepciones.
+  - typecheck y lint: exit 0.
+  - design-drift, legibility-classnames y consistency-classnames: 144/144.
+- **Sondas:** las ocho del reviewer caen una a una, por aserción. También
+  caen dos variantes del leader: X21b (actividad sin skeleton) y X18u (solo
+  la rama `unreachable` envuelta).
+
+Cifras:
+
+- `index.test.tsx`: de 192 a **201** (+1 de E4.1, +4 de E4.2, +3 de E4.3,
+  +1 de E4.4).
+- Comparación de cierre con la base: de 320 a **329**.
+- Jest móvil: de 2209 a **2218**.
+- La lista cerrada no cambia: sigue en 11 ficheros. E4 toca solo
+  `index.test.tsx` e `index.tsx`, y este último vuelve en el verde a su
+  contenido de `c7ac5ceb`.
+
+- [ ] Enmienda E4 aprobada por humano (fecha: ____, en el chat del leader; commit de firma: el que marca esta casilla)

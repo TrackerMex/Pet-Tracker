@@ -824,3 +824,203 @@ CAMBIA EN EL RESTO DEL HANDOFF:
 - En el impl, debajo de la PARADA, una seccion `## Reanudacion E3` con la
   salida de E3.1-E3.5 y despues sigue el formato de siempre.
 ```
+
+## Enmienda E4 (leader, 2026-10-07): candados de R5 y R7 en todas sus ramas
+
+> El reviewer rechazó en `c7ac5ceb` (`progress/review_mobile-home-motion-foundations.md`,
+> bloqueantes B1-B3). Tu código cumple la spec; lo que faltaba eran candados,
+> y la spec los añade en `requirements.md` §Enmienda E4 (firmada por el
+> humano). Para reanudar, el humano pega en Codex: «Lee la §Enmienda E4 de
+> progress/handoff_mobile-home-motion-foundations.md y reanuda desde ahí. Todo
+> lo demás del handoff sigue vigente.»
+
+```
+Worktree: /home/claude/sites/Pet-Tracker-wt-152   <- el mismo; no cambies de branch
+
+CAUSA: requirements.md (R5 y R7) candaba cada clausula en una sola rama. Con
+estas mutaciones index.test.tsx seguia en 192/192: envoltorios montados sin
+mascota (X2, X2b, X2c, X2d), weekly con `kind !== 'error'` (X21), pet-hero-error
+o el boton del mapa dentro de un HomeEntrance (X18, X17) y summary-reveal sin
+`entering` bajo reduce motion (X1). El hueco es de la spec, no tuyo.
+Medido por el leader en un worktree desechable sobre c7ac5ceb, con el texto
+EXACTO de abajo:
+  - tests de E4.2 + index.tsx de c7ac5ceb:  201 passed, 201 total
+  - tests de E4.2 + mutacion de E4.3:      9 failed, 192 passed, 201 total
+      (exactamente los 9 nuevos; sin TypeError/ReferenceError/SyntaxError)
+      typecheck y lint exit=0; design-drift + legibility-classnames +
+      consistency-classnames: 144 passed, 144 total
+  - jest movil entero en verde: 96 suites, 2218 tests
+  - cada sonda del reviewer por separado cae, por asercion
+
+REANUDA ASI, desde mobile-pet-tracker/:
+
+E4.1 Estado. `git status --short` -> vacio.
+     `git log -1 --format=%s` -> docs(mobile-home-motion-foundations): #152 approve amendment E4 (firma en chat)
+     `git diff --quiet c7ac5ceb HEAD -- src/; echo "exit=$?"` -> exit=0
+     Si algo no coincide, PARA.
+
+E4.2 En src/screens/home/index.test.tsx, dos inserciones y nada mas. Copia
+  el texto LITERAL (indentacion de dos espacios, como el resto del fichero).
+
+  (a) Dentro de `describe('#152 R5: ...')`, justo despues del cierre `  });`
+      del it 'no pinta el envoltorio de la actividad si la actividad falla'
+      y antes del `});` que cierra el describe (al que siguen una linea en
+      blanco y `const homeMotionNodeIds = [`), inserta una linea en blanco y:
+
+  it('no pinta ningún envoltorio sin mascota seleccionada', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    await renderHome();
+    await screen.findByTestId('home-empty');
+    for (const id of [
+      'home-entrance-summary',
+      'home-entrance-collar',
+      'home-entrance-quick-actions',
+      'home-entrance-weekly',
+      'home-entrance-reminders',
+      'home-entrance-last-position',
+    ]) {
+      expect(screen.queryByTestId(id)).toBeNull();
+    }
+  });
+
+  it.each<DailyActivityState>([
+    { kind: 'no-tracking' },
+    { kind: 'unauthorized' },
+    { kind: 'unreachable', message: 'network down' },
+    { kind: 'missing-config' },
+  ])('no pinta el envoltorio de la actividad con $kind', async (state) => {
+    mockGetDailyActivity.mockResolvedValue(state);
+    await renderHome();
+    await waitFor(() => {
+      expect(screen.getByTestId('summary-card')).toBeVisible();
+      expect(screen.queryByTestId('summary-skeleton')).toBeNull();
+    });
+    expect(screen.getByTestId('home-entrance-reminders')).toBeVisible();
+    expect(screen.queryByTestId('home-entrance-weekly')).toBeNull();
+  });
+
+  it.each<PetState>([
+    { kind: 'error' },
+    { kind: 'unreachable', message: 'network down' },
+  ])('deja el error del detalle ($kind) como hijo directo de home-content', async (state) => {
+    mockGetPet.mockResolvedValue(state);
+    await renderHome();
+    expect((await screen.findByTestId('pet-hero-error')).parent)
+      .toBe(screen.getByTestId('home-content'));
+  });
+
+  it('deja el botón del mapa del día como hijo directo de home-content', async () => {
+    await renderMotionHome();
+    await fireEvent.press(screen.getByTestId('weekly-activity-day-2026-08-21'));
+    expect(screen.getByTestId('weekly-activity-day-map').parent)
+      .toBe(screen.getByTestId('home-content'));
+  });
+
+  (b) Dentro de `describe('#152 R7: ...')`, justo despues del cierre `  });`
+      del it 'no monta el fundido mientras el skeleton ocupa su sitio' y
+      antes del `});` que cierra el describe (al que siguen una linea en
+      blanco y `describe('#152 R8: ...`), inserta una linea en blanco y:
+
+  it('funde igual bajo reduce motion', async () => {
+    mockUseReducedMotion.mockReturnValue(true);
+    await renderMotionHome();
+    jest.mocked(withDelay).mockClear();
+    const { entering } = screen.getByTestId('summary-reveal').props;
+    expect(entering).toEqual(expect.any(Function));
+    expect(entering({})).toEqual({
+      initialValues: { opacity: 0, transform: [{ translateY: 0 }] },
+      animations: { opacity: 1, transform: [{ translateY: 0 }] },
+    });
+    expect(jest.mocked(withDelay).mock.calls.map(([ms]) => ms)).toEqual([0, 0]);
+  });
+
+  No anadas imports: DailyActivityState, PetState, waitFor, fireEvent,
+  withDelay, mockUseReducedMotion, renderHome y renderMotionHome ya estan.
+  T=src/screens/home/index.test.tsx
+  test "$(git diff --numstat -- $T | cut -f1,2)" = "$(printf '62\t0')"; echo "exit=$?"            -> exit=0
+  grep -cF "it('no pinta ningún envoltorio sin mascota seleccionada'" $T                       -> 1
+  grep -cF "])('no pinta el envoltorio de la actividad con \$kind'" $T                          -> 1
+  grep -cF "como hijo directo de home-content'" $T                                              -> 2
+  grep -cF "it('funde igual bajo reduce motion'" $T                                             -> 1
+  grep -cF "describe('#152" $T                                                                  -> 4
+
+E4.3 Mutacion de sonda en src/screens/home/index.tsx (va en el commit rojo y
+  se revierte en el verde, regla C4 de esta feature). Cuatro cambios; las
+  anclas son lineas COMPLETAS (grep -cxF), no numeros de linea:
+  - la linea
+        {selectedPetId && (activity.data === undefined || activity.data.kind === 'ok') ? (
+    pasa a
+        {activity.data === undefined || activity.data.kind !== 'error' ? (
+  - la linea
+                <Animated.View testID="summary-reveal" entering={homeEntering(0, 0)}>
+    pasa a
+                <Animated.View testID="summary-reveal" entering={reduceMotion ? undefined : homeEntering(0, 0)}>
+  - antes de la linea `          <HeroUICard testID="pet-hero-error" className="items-start gap-3 p-4">`
+    inserta `          <HomeEntrance index={0} testID="home-entrance-hero-error">`,
+    y despues de la linea `          </HeroUICard>` inserta `          </HomeEntrance>`
+  - antes de la linea `          <Button` (exactamente 10 espacios; es la del
+    testID="weekly-activity-day-map") inserta
+    `          <HomeEntrance index={6} testID="home-entrance-day-map">`, y despues
+    de la linea `          </Button>` (exactamente 10 espacios) inserta
+    `          </HomeEntrance>`
+  Antes de editar, cada ancla da 1 con grep -cxF. Despues:
+  P=src/screens/home/index.tsx
+  test "$(git diff --numstat -- $P | cut -f1,2)" = "$(printf '6\t2')"; echo "exit=$?"   -> exit=0
+  grep -cF '<HomeEntrance' $P                                                     -> 8
+  grep -cF "activity.data.kind !== 'error' ? (" $P                                -> 1
+  grep -cF 'entering={reduceMotion ? undefined : homeEntering(0, 0)}' $P          -> 1
+
+E4.4 Rojo E4:
+  FORCE_COLOR=0 bunx jest src/screens/home/index.test.tsx > /tmp/152-r-e4.txt 2>&1; echo "exit=$?"
+    -> exit=1 y `Tests:       9 failed, 192 passed, 201 total`
+  FORCE_COLOR=0 bunx jest src/__tests__/design-drift.test.ts src/__tests__/legibility-classnames.test.ts src/__tests__/consistency-classnames.test.ts > /tmp/152-r-e4-guards.txt 2>&1; echo "exit=$?"
+    -> exit=0 y `Tests:       144 passed, 144 total`
+  grep -qE '^Tests: +9 failed, 192 passed, 201 total$' /tmp/152-r-e4.txt \
+    && test "$(grep -cF '✕ no pinta ningún envoltorio sin mascota seleccionada' /tmp/152-r-e4.txt)" = 1 \
+    && test "$(grep -cF '✕ no pinta el envoltorio de la actividad con ' /tmp/152-r-e4.txt)" = 4 \
+    && test "$(grep -cF '✕ deja el ' /tmp/152-r-e4.txt)" = 3 \
+    && test "$(grep -cF '✕ funde igual bajo reduce motion' /tmp/152-r-e4.txt)" = 1 \
+    && test "$(grep -c '✕' /tmp/152-r-e4.txt)" = 9 \
+    && ! grep -qE 'TypeError|ReferenceError|SyntaxError|Cannot find module' /tmp/152-r-e4.txt \
+    && grep -qE '^Tests: +144 passed, 144 total$' /tmp/152-r-e4-guards.txt \
+    && test ! -e .expo/types/router.d.ts && bun run typecheck && bun run lint \
+    && git add src/screens/home/index.test.tsx src/screens/home/index.tsx \
+    && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'mobile-pet-tracker/src/screens/home/index.test.tsx mobile-pet-tracker/src/screens/home/index.tsx ' \
+    && git commit -m 'test(mobile-home): #152 R5 R7 red, wrappers and fade locked on every branch'
+
+E4.5 Verde E4: devuelve index.tsx a su contenido de c7ac5ceb.
+  git checkout c7ac5ceb -- src/screens/home/index.tsx \
+    && git diff --quiet c7ac5ceb -- src/screens/home/index.tsx; echo "exit=$?"   -> exit=0
+  FORCE_COLOR=0 bunx jest src/screens/home/index.test.tsx > /tmp/152-g-e4.txt 2>&1; echo "exit=$?"
+    -> exit=0 y `Tests:       201 passed, 201 total`
+  FORCE_COLOR=0 bunx jest src/__tests__/design-drift.test.ts src/__tests__/legibility-classnames.test.ts src/__tests__/consistency-classnames.test.ts > /tmp/152-g-e4-guards.txt 2>&1; echo "exit=$?"
+    -> exit=0 y `Tests:       144 passed, 144 total`
+  grep -qE '^Tests: +201 passed, 201 total$' /tmp/152-g-e4.txt \
+    && grep -qE '^Tests: +144 passed, 144 total$' /tmp/152-g-e4-guards.txt \
+    && test ! -e .expo/types/router.d.ts && bun run typecheck && bun run lint \
+    && test "$(git diff --cached --name-only)" = 'mobile-pet-tracker/src/screens/home/index.tsx' \
+    && test -z "$(git diff --name-only)" \
+    && git commit -m 'feat(mobile-home): #152 R5 R7 green, revert the probe mutation' \
+    && git diff --quiet c7ac5ceb HEAD -- src/screens/home/index.tsx; echo "exit=$?"   -> exit=0
+
+E4.6 CIERRE: repitelo entero, tal cual, con estas cifras nuevas:
+  - comparacion con la base: `Tests:       329 passed, 329 total`
+    (281 de la base + 48 nuevos. Reparto: home/index 201, design-drift 62,
+    global-css 51, motion 9, home-entrance 6)
+  - jest entero: `Test Suites: 96 passed, 96 total` y `Tests:       2218 passed, 2218 total`
+  - anclas 0-40 y las 8 positivas: mismos valores de cierre que antes
+    (E4 no las mueve: `<HomeEntrance` vuelve a 6 en el verde)
+  - lista cerrada: los mismos 11 ficheros
+
+CAMBIA EN EL RESTO DEL HANDOFF:
+- Son 28 commits, no 25: el rojo E4, el verde E4 y el commit documental de E4.
+- traceability.md:
+  - fila R5: «(15 `it`)» en vez de «(7 `it`)», y añade el rojo y el verde de E4.
+  - fila R7: «(4 `it`)» en vez de «(3 `it`)», y añade el rojo y el verde de E4.
+- En el impl, una seccion `## Reanudacion E4` con la salida de E4.1-E4.6.
+- Commit documental, desde la raiz:
+  git add specs/mobile-home-motion-foundations/traceability.md progress/impl_mobile-home-motion-foundations.md \
+    && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'progress/impl_mobile-home-motion-foundations.md specs/mobile-home-motion-foundations/traceability.md ' \
+    && git commit -m 'docs(mobile-home-motion-foundations): #152 traceability E4'
+- No hagas push. Avisa al humano de que terminaste.
+```
