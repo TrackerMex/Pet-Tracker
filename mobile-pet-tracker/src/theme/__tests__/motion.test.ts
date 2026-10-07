@@ -10,6 +10,12 @@ import {
 } from '../motion';
 
 declare function require(moduleName: '../motion'): Record<string, unknown>;
+declare function require(moduleName: 'fs'): {
+  readFileSync: (path: string, encoding: 'utf8') => string;
+};
+declare function require(moduleName: 'path'): {
+  join: (...paths: string[]) => string;
+};
 
 jest.mock('react-native-reanimated', () => ({
   ...jest.requireActual('react-native-reanimated'),
@@ -65,5 +71,33 @@ describe('#152 R1: las duraciones y el preset de movimiento viven en un solo sit
       'MOTION_SURFACE_MS',
       'MOTION_TRANSITION_MS',
     ]);
+  });
+});
+
+const { readFileSync } = require('fs');
+const { join } = require('path');
+
+describe('#152 R2: la carta apunta a motion.ts', () => {
+  const charter = readFileSync(
+    join(process.cwd(), '..', 'docs', 'ui-guidelines.md'),
+    'utf8',
+  );
+
+  it('la carta nombra motion.ts en §Animación y ya no promete tokens --motion-*', () => {
+    expect(charter).toContain('`src/theme/motion.ts` (enmienda A21 de #152)');
+    expect(charter).not.toContain('promueven a tokens');
+  });
+
+  it('la carta declara la enmienda #152 con su casilla', () => {
+    const heading = '## Enmienda #152 — el movimiento vive en src/theme/motion.ts';
+    expect(charter).toContain(heading);
+    expect(charter.slice(charter.indexOf(heading))).toMatch(
+      /^- \[.*Enmienda aprobada por humano/m,
+    );
+  });
+
+  it('global.css no declara tokens de movimiento', () => {
+    expect(readFileSync(join(process.cwd(), 'src/theme/global.css'), 'utf8'))
+      .not.toContain('--motion');
   });
 });
