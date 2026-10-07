@@ -4915,4 +4915,11 @@ describe('#152 R7: las cifras del resumen aparecen con un fundido', () => {
     });
     expect(jest.mocked(withDelay).mock.calls.map(([ms]) => ms)).toEqual([0, 0]);
   });
+
+  it('no monta el fundido mientras el skeleton ocupa su sitio', async () => {
+    mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
+    await renderHome();
+    expect(await screen.findByTestId('summary-skeleton')).toBeVisible();
+    expect(screen.queryByTestId('summary-reveal')).toBeNull();
+  });
 });
