@@ -79,7 +79,7 @@ import {
   localDayOf,
   upcomingReminders,
 } from './format';
-import { HomeEntrance } from './home-entrance';
+import { HomeEntrance, homeEntering } from './home-entrance';
 import { WeeklyActivityChart } from './weekly-activity-chart';
 
 const WEEKLY_ACTIVITY_SKELETON_HEIGHT = 408;
@@ -427,77 +427,79 @@ export function HomeScreen() {
 
               {activity.data !== undefined &&
               activity.data.kind !== 'unauthorized' ? (
-                <View className="flex-row">
-                  <View className="flex-1 items-center gap-1 border-r border-border">
-                    <Weight size={20} color={muted} />
-                    <Text
-                      testID="summary-weight"
-                      className="text-sm font-bold text-foreground"
-                      style={TABULAR_NUMS}
-                    >
-                      {fmtKg(
-                        detail.data?.kind === 'ok'
-                          ? detail.data.pet.currentWeightKg
-                          : null,
-                      )}
-                    </Text>
-                    <Text className="text-2xs font-normal text-muted">
-                      {t('home.weight')}
-                    </Text>
+                <Animated.View testID="summary-reveal" entering={homeEntering(0, 0)}>
+                  <View className="flex-row">
+                    <View className="flex-1 items-center gap-1 border-r border-border">
+                      <Weight size={20} color={muted} />
+                      <Text
+                        testID="summary-weight"
+                        className="text-sm font-bold text-foreground"
+                        style={TABULAR_NUMS}
+                      >
+                        {fmtKg(
+                          detail.data?.kind === 'ok'
+                            ? detail.data.pet.currentWeightKg
+                            : null,
+                        )}
+                      </Text>
+                      <Text className="text-2xs font-normal text-muted">
+                        {t('home.weight')}
+                      </Text>
+                    </View>
+                    {activity.data.kind === 'ok' ? (
+                      <>
+                        <View className="flex-1 items-center gap-1 border-r border-border">
+                          <Walk size={20} color={muted} />
+                          <Text
+                            testID="summary-activity"
+                            className="text-sm font-bold text-foreground"
+                            style={TABULAR_NUMS}
+                          >
+                            {fmtMinutes(today?.activeMinutes ?? null)}
+                          </Text>
+                          <Text className="text-2xs font-normal text-muted">
+                            {t('home.activity')}
+                          </Text>
+                        </View>
+                        <View className="flex-1 items-center gap-1 border-r border-border">
+                          <Moon size={20} color={muted} />
+                          <Text
+                            testID="summary-sleep"
+                            className="text-sm font-bold text-foreground"
+                            style={TABULAR_NUMS}
+                          >
+                            {fmtMinutes(today?.restMinutes ?? null)}
+                          </Text>
+                          <Text className="text-2xs font-normal text-muted">
+                            {t('home.sleep')}
+                          </Text>
+                        </View>
+                        <View className="flex-1 items-center gap-1">
+                          <Map size={20} color={muted} />
+                          <Text
+                            testID="summary-distance"
+                            className="text-sm font-bold text-foreground"
+                            style={TABULAR_NUMS}
+                          >
+                            {fmtKm(today?.distanceM ?? null)}
+                          </Text>
+                          <Text className="text-2xs font-normal text-muted">
+                            {t('home.distance')}
+                          </Text>
+                        </View>
+                      </>
+                    ) : (
+                      <Text
+                        testID="summary-note"
+                        className="flex-3 self-center pl-3 font-normal text-muted"
+                      >
+                        {activity.data.kind === 'no-tracking'
+                          ? t('home.activityNeedsCollar')
+                          : t('home.couldNotLoadActivity')}
+                      </Text>
+                    )}
                   </View>
-                  {activity.data.kind === 'ok' ? (
-                    <>
-                      <View className="flex-1 items-center gap-1 border-r border-border">
-                        <Walk size={20} color={muted} />
-                        <Text
-                          testID="summary-activity"
-                          className="text-sm font-bold text-foreground"
-                          style={TABULAR_NUMS}
-                        >
-                          {fmtMinutes(today?.activeMinutes ?? null)}
-                        </Text>
-                        <Text className="text-2xs font-normal text-muted">
-                          {t('home.activity')}
-                        </Text>
-                      </View>
-                      <View className="flex-1 items-center gap-1 border-r border-border">
-                        <Moon size={20} color={muted} />
-                        <Text
-                          testID="summary-sleep"
-                          className="text-sm font-bold text-foreground"
-                          style={TABULAR_NUMS}
-                        >
-                          {fmtMinutes(today?.restMinutes ?? null)}
-                        </Text>
-                        <Text className="text-2xs font-normal text-muted">
-                          {t('home.sleep')}
-                        </Text>
-                      </View>
-                      <View className="flex-1 items-center gap-1">
-                        <Map size={20} color={muted} />
-                        <Text
-                          testID="summary-distance"
-                          className="text-sm font-bold text-foreground"
-                          style={TABULAR_NUMS}
-                        >
-                          {fmtKm(today?.distanceM ?? null)}
-                        </Text>
-                        <Text className="text-2xs font-normal text-muted">
-                          {t('home.distance')}
-                        </Text>
-                      </View>
-                    </>
-                  ) : (
-                    <Text
-                      testID="summary-note"
-                      className="flex-3 self-center pl-3 font-normal text-muted"
-                    >
-                      {activity.data.kind === 'no-tracking'
-                        ? t('home.activityNeedsCollar')
-                        : t('home.couldNotLoadActivity')}
-                    </Text>
-                  )}
-                </View>
+                </Animated.View>
               ) : null}
             </Card>
           </HomeEntrance>
