@@ -8,7 +8,6 @@ import {
 import { router, useFocusEffect } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
-import { StyleSheet } from 'react-native';
 import { Easing, ReduceMotion, withDelay } from 'react-native-reanimated';
 import { Uniwind } from 'uniwind';
 
@@ -4957,7 +4956,7 @@ describe('#152 R8: la batería del collar se dibuja como barra', () => {
   it('llena la barra desde vacía con el preset de barra', async () => {
     await renderMotionHome();
     const fill = screen.getByTestId('collar-battery-fill');
-    expect(StyleSheet.flatten(fill.props.style).width).toBe('0%');
+    expect(fill).toHaveStyle({ width: '0%' });
     const config = mockWithTiming.mock.calls.find(([value]) => value === 82)?.[1];
     expect(config).toBe(MOTION_FILL_TIMING);
     expect(config).toEqual(expect.objectContaining({ duration: 250, reduceMotion: ReduceMotion.System }));
@@ -4969,7 +4968,7 @@ describe('#152 R8: la batería del collar se dibuja como barra', () => {
       await renderMotionHome();
       const fill = screen.getByTestId('collar-battery-fill');
       expect(mockWithTiming.mock.calls.some(([value]) => value === 82)).toBe(false);
-      expect(StyleSheet.flatten(fill.props.style).width).toBe('82%');
+      expect(fill).toHaveStyle({ width: '82%' });
       expect(fill).toHaveAnimatedStyle({ width: '82%' }, { shouldMatchAllProps: true });
     } finally {
       mockUseReducedMotion.mockReturnValue(false);
