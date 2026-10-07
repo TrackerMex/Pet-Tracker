@@ -4872,7 +4872,7 @@ describe('#152 R6: la entrada se reproduce una vez por montaje', () => {
     });
     await waitFor(() => {
       expect(screen.getByTestId('collar-battery')).toHaveTextContent('81%');
-      expect(screen.getByTestId('summary-weight')).toHaveTextContent('15');
+      expect(screen.getByTestId('summary-weight')).toHaveTextContent('15 kg');
     });
     for (const id of [
       'home-entrance-summary',
