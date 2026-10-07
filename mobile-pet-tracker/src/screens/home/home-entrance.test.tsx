@@ -8,6 +8,7 @@ const mockUseReducedMotion = jest.fn<boolean, []>(() => false);
 
 jest.mock('react-native-reanimated', () => ({
   ...jest.requireActual('react-native-reanimated'),
+  __esModule: true,
   Easing: {
     bezier: (...points: number[]) => ({ bezier: points }),
   },
