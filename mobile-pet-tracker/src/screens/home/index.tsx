@@ -422,9 +422,7 @@ export function HomeScreen() {
               </Text>
 
               {activity.data === undefined ? (
-                <Animated.View testID="summary-reveal" entering={homeEntering(0, 0)}>
-                  <Skeleton testID="summary-skeleton" className="h-16 w-full rounded-xl" />
-                </Animated.View>
+                <Skeleton testID="summary-skeleton" className="h-16 w-full rounded-xl" />
               ) : null}
 
               {activity.data !== undefined &&
