@@ -4891,3 +4891,28 @@ describe('#152 R6: la entrada se reproduce una vez por montaje', () => {
     }
   });
 });
+
+describe('#152 R7: las cifras del resumen aparecen con un fundido', () => {
+  beforeEach(setupHomeMotion);
+
+  it('envuelve la fila del resumen sin tocarla', async () => {
+    await renderMotionHome();
+    const reveal = screen.getByTestId('summary-reveal');
+    const row = screen.getByTestId('summary-weight').parent?.parent;
+    expect(row?.props.className).toBe('flex-row');
+    expect(row?.parent).toBe(reveal);
+    expect(reveal.children.filter((child) => typeof child !== 'string')).toEqual([row]);
+    expect(reveal.props.style).toBeUndefined();
+    expect(reveal.props.className).toBeUndefined();
+  });
+
+  it('funde sin espera ni desplazamiento', async () => {
+    await renderMotionHome();
+    jest.mocked(withDelay).mockClear();
+    expect(screen.getByTestId('summary-reveal').props.entering({})).toEqual({
+      initialValues: { opacity: 0, transform: [{ translateY: 0 }] },
+      animations: { opacity: 1, transform: [{ translateY: 0 }] },
+    });
+    expect(jest.mocked(withDelay).mock.calls.map(([ms]) => ms)).toEqual([0, 0]);
+  });
+});
