@@ -1273,3 +1273,162 @@ lo mida el leader.
   - el skeleton con reduce motion y un `kind` que no es `ok`;
   - las celdas con reduce motion y un `kind` que no es `ok`;
   - la regex de R8 con reduce motion.
+
+## Pre-verificación E4 (ronda 1g)
+
+Fecha: 2026-10-07. Objeto: `75a10abe`, que añade a E4 los candados de H15 y
+H16 tal como los propuse en la ronda 1f. Cambios desde `9cb2242c`:
+
+- E4.13 termina con `expect(screen.queryByTestId('summary-skeleton')).toBeNull();`
+  (H15).
+- La regex de E4.11 y E4.14 añade `hasTVPreferredFocus$` (H16).
+- La spec deja fuera `experimental_accessibilityOrder` y lo explica.
+
+`src/` sigue igual a `c7ac5ceb`.
+
+Método:
+
+- Worktree desechable en `75a10abe`. Reconstruí `index.test.tsx` desde los
+  bloques del handoff.
+  - Numstat `203 1`.
+  - Las 22 anclas del handoff dan lo que dice, incluidas la de la regex
+    nueva (2) y la del `toBeNull` del skeleton (3).
+  - `tsc --noEmit` y `bunx eslint` sobre `index.test.tsx` dan exit 0.
+- Base: 218/218.
+- Las sondas de esta ronda son solo mías, escritas de cero (`rv1g-*`). El
+  scratchpad lo comparto con el leader, y en la ronda 1f él sobrescribió mis
+  scripts de sondas. Ninguna salida que cito aquí viene de un fichero suyo.
+- Cada sonda corre sola contra `index.test.tsx` entero y se revierte con
+  `git checkout HEAD -- src`. Después de cada una, el árbol y
+  `git diff --cached` quedan vacíos.
+- No corrí `init.sh`, ni la suite entera, ni el rojo de E4.3.
+- El worktree desechable ya está eliminado y el `node_modules` de wt-152
+  sigue intacto (723 entradas).
+- Barrido como en las rondas 1e y 1f: para cada candado, incluidos los dos
+  nuevos, enumeré las ramas hermanas de la cláusula entera. Las conjunciones
+  siguen fuera de alcance (ronda 1c, §4).
+
+**Resultado: E4 suficiente.** H15 y H16 quedan cerrados y el barrido no
+encuentra huecos nuevos. Las 40 sondas que no son equivalentes caen por
+aserción, con 0 `TypeError`, `ReferenceError`, `SyntaxError` y «Unable to
+find». X42f sigue siendo la única equivalente.
+
+### 1. ¿Cierra E4 los huecos H15 y H16?
+
+Sí.
+
+| Sonda | Hueco | Falla en | Aserción |
+|---|---|---|---|
+| X50r | H15 | E4.13, `reduce motion: true` | `toBeNull` |
+| X50q | H15 | E4.13, `reduce motion: true` | `toBeNull` |
+| X50o | H15 | E4.13 en las dos filas y los dos `it` de `enteringIds` | `toBeNull` y `toEqual` |
+| X46v | H16 | `no añade texto ni nombre accesible a la fila` | `toEqual` |
+| X37v | H16 | ídem | `toEqual` |
+| X30tv | H16 | ídem | `toEqual` |
+
+X50q, que en la ronda 1f solo deduje, ahora está medida.
+
+### 2. Barrido cláusula × rama × candado × sonda
+
+**R5.** El diff `9cb2242c..75a10abe` no toca los bloques de R5. El barrido
+de la ronda 1d (§2) sigue valiendo.
+
+**R7, «sus celdas siguen siendo sus hijos directos».**
+
+| Rama | Candado | Sonda | Estado |
+|---|---|---|---|
+| `ok` sin reduce motion | E4.13, `reduce motion: false` | X45s, X45d; X45n (también #69 R1, `toBe`); X45w (11 `it`) | caen |
+| `ok` con reduce motion | E4.13, `reduce motion: true` | X45a, X45r | caen |
+| Los 4 `kind` que no son `ok`, sin reduce motion | #77 R2 | — | cubierta (ronda 1e) |
+
+**R7, «no envuelve `summary-skeleton` ni le añade un fundido de salida
+propio»** (E4.12).
+
+| Rama | Candado | Sonda | Estado |
+|---|---|---|---|
+| Envoltorio siempre | E4.12, `parent` `toBe` `summary-card` | X42 | cae en las dos filas |
+| Envoltorio solo con reduce motion | ídem | X42r | cae |
+| Fundido propio sin reduce motion | E4.12, `toBe(FadeOut)` | X42e | cae |
+| Fundido propio con reduce motion, por prop directa | E4.12, `toBe(undefined)` | X42d | cae |
+| Fundido propio con reduce motion, por `animation` | — | X42f | equivalente (ronda 1f, §1) |
+| Fundido mientras el skeleton está montado | E4.12, `summary-reveal` ausente | X49r | cae |
+
+**R7, «El skeleton se desmonta en el acto».** Leí la cláusula en dos ejes:
+qué `kind` y si se desmonta tarde.
+
+| Rama | Candado | Sonda | Estado |
+|---|---|---|---|
+| `ok` sin reduce motion | E4.13, `reduce motion: false` | X50o | cae |
+| `ok` con reduce motion | E4.13, `reduce motion: true` | X50r, X50q | caen |
+| `no-tracking`, `error`, `unreachable` y `missing-config`, sin reduce motion | E4.7 | X50e | cae |
+| `unauthorized` | `waitFor` de `no pinta la fila con la sesión caducada` | X50T | cae |
+| Desmontaje diferido 400 ms | E4.7 (×4), E4.13 (×2), `enteringIds` (×2) | X50t | 8 fallos (`toBeNull` y `toEqual`) |
+| Desmontaje diferido 1500 ms | lo anterior más los `waitFor` de `unauthorized` y de los 4 `no pinta el envoltorio de la actividad con …` | X50T | 13 fallos (`toBeNull` y `toEqual`) |
+
+X50t y X50T dejan el skeleton montado un rato con `useState` y
+`setTimeout` después de que llegue la actividad. «En el acto» queda candado
+también contra un desmontaje tardío, no solo contra uno que nunca ocurre.
+
+**R8, «el lector de pantalla sigue leyendo `collar-battery`»** (E4.11, E4.14
+y R8.1).
+
+| Rama | Candado | Sonda | Estado |
+|---|---|---|---|
+| `accessible` o nombre en `collar-card`, la fila o la pista | E4.11 y E4.14 | X46c, X37r, X30a | caen |
+| Nombre en `collar-battery` | E4.14 | X37l | cae |
+| Nombre en ancestros altos | E4.14 | X46h, X46s, X46e | caen |
+| `screenReaderFocusable` | E4.11 y E4.14 | X46r, X37s | caen |
+| `focusable` | ídem | X46f, X37f, X30f | caen |
+| `tabIndex` | ídem | X46t | cae |
+| `hasTVPreferredFocus` | ídem | X46v, X37v, X30tv | caen |
+| `accessibilityValue` y `aria-valuenow` en la pista | E4.11 | X30v, X30n | caen |
+| Texto dentro del relleno | E4.11, `fill.children` `toEqual []` | X30x | cae |
+| Texto o vista accesible dentro de la pista, antes o después del relleno | R8.1, `track.children` sin cadenas `toEqual [fill]` | X30i, X30j, X30k | caen en los 4 `pinta N% con …` |
+
+**`experimental_accessibilityOrder`.** Contrasté la exclusión del leader con
+el código de RN 0.86.2 instalado. Es correcta:
+
+- `ReactViewManager.kt`, `setAccessibilityOrder`: sale sin hacer nada si
+  `!ReactNativeFeatureFlags.enableAccessibilityOrder()`.
+- `ReactNativeFeatureFlagsDefaults.kt` lo pone en `false`, y el getter JS
+  (`ReactNativeFeatureFlags.js`) también.
+- Solo `ReactNativeFeatureFlagsOverrides_RNOSS_Experimental_Android` lo
+  enciende.
+  - `DefaultNewArchitectureEntryPoint` usa `releaseLevel = STABLE` por
+    defecto, y la clase de STABLE no lo sobrescribe.
+  - Ningún paquete Android de Expo cambia `releaseLevel`.
+- En iOS, `RCTViewComponentView.mm` también depende del flag.
+  - `ExpoReactNativeFactory.swift` toma el nivel de la clave
+    `ReactNativeReleaseLevel` del `Info.plist`, con Stable por defecto.
+  - Ni `app.json` ni `app.config.ts` la fijan.
+- `src/` no usa la prop (grep = 0).
+
+Con la regex de H16, la lista de props que hacen enfocable una vista en RN
+0.86 queda cubierta entera (ronda 1f, §3).
+
+### 3. Huecos que E4 no cierra (bloqueantes)
+
+Ninguno.
+
+**Cifras.** Las cifras 26/192/218 (rojo por aserción), 174 (guards), 218
+(verde), 2235 (Jest móvil, 96 suites) y 346 (cierre) son del leader. No las
+medí. Lo único que medí fue `index.test.tsx` en verde (218/218) y las sondas.
+
+### 4. No bloqueantes
+
+- **X42f es equivalente**, como en la ronda 1f.
+- **E4.12 queda atado al `FadeOut` de serie de `heroui-native`.** Si una
+  versión nueva lo cambia, el `it` se pone rojo sin que #152 haya tocado
+  nada.
+- **El recorrido de E4.14 llega a nodos del arnés**, como en la ronda 1e, §4.
+- **La frase de E4.13 «esa cláusula queda candada en todos sus `kind`»** es
+  cierta por `kind`: cada uno tiene candado en al menos una rama de reduce
+  motion. Los `kind` que no son `ok` con reduce motion son conjunción, no
+  rama.
+- **`accessibilityViewIsModal`** (solo iOS) en un hermano de un ancestro,
+  como el icono `Battery`, haría que VoiceOver ignore a sus hermanos. El
+  recorrido de E4.14 no mira hermanos. Queda fuera del sujeto de la
+  cláusula: el icono no lo toca #152 y R8 habla de la barra. No lo medí.
+- **Conjunciones.** Siguen igual que en la ronda 1c, §4. Por ejemplo:
+  - el skeleton o las celdas con reduce motion y un `kind` que no es `ok`;
+  - la regex de R8 con reduce motion o con cada umbral.
