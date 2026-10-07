@@ -1,3 +1,4 @@
+// #152 barra de batería del collar
 import { useEffect } from 'react';
 import { View } from 'react-native';
 import Animated, {

@@ -736,3 +736,24 @@ describe('#149 R4: solo cuatro ficheros de producción navegan a login', () => {
     expect(actual).toEqual(loginRoutes);
   });
 });
+
+
+describe('#152 R9: el movimiento de la Home no mete drift de estilo', () => {
+  const featureFiles = [
+    'theme/motion.ts',
+    'screens/home/home-entrance.tsx',
+    'screens/home/collar-battery-bar.tsx',
+    'screens/home/index.tsx',
+  ];
+
+  it('mantiene sus ficheros sin escapes de estilo literales', () => {
+    const violations = featureFiles.flatMap((relativePath) => {
+      const contents = readFileSync(join(sourceRoot, relativePath), 'utf8');
+      return MEALS_BAR_STYLE_ESCAPES.test(contents)
+        ? [relativePath]
+        : [];
+    });
+
+    expect(violations).toEqual([]);
+  });
+});
