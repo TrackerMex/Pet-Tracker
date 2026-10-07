@@ -8,7 +8,7 @@ import {
 import { router, useFocusEffect } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
-import { Easing, ReduceMotion, withDelay } from 'react-native-reanimated';
+import { Easing, FadeOut, ReduceMotion, withDelay } from 'react-native-reanimated';
 import { Uniwind } from 'uniwind';
 
 import {
@@ -4808,6 +4808,111 @@ describe('#152 R5: la Home envuelve cada bloque en su entrada escalonada', () =>
     expect(screen.getByTestId('home-entrance-reminders')).toBeVisible();
     expect(screen.queryByTestId('home-entrance-weekly')).toBeNull();
   });
+
+  it('no pinta ningún envoltorio sin mascota seleccionada', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    await renderHome();
+    await screen.findByTestId('home-empty');
+    for (const id of [
+      'home-entrance-summary',
+      'home-entrance-collar',
+      'home-entrance-quick-actions',
+      'home-entrance-weekly',
+      'home-entrance-reminders',
+      'home-entrance-last-position',
+    ]) {
+      expect(screen.queryByTestId(id)).toBeNull();
+    }
+  });
+
+  it.each<DailyActivityState>([
+    { kind: 'no-tracking' },
+    { kind: 'unauthorized' },
+    { kind: 'unreachable', message: 'network down' },
+    { kind: 'missing-config' },
+  ])('no pinta el envoltorio de la actividad con $kind', async (state) => {
+    mockGetDailyActivity.mockResolvedValue(state);
+    await renderHome();
+    await waitFor(() => {
+      expect(screen.getByTestId('summary-card')).toBeVisible();
+      expect(screen.queryByTestId('summary-skeleton')).toBeNull();
+    });
+    expect(screen.getByTestId('home-entrance-reminders')).toBeVisible();
+    expect(screen.queryByTestId('home-entrance-weekly')).toBeNull();
+  });
+
+  const enteringIds = (node: typeof screen.container): string[] => [
+    ...(node.props.entering ? [String(node.props.testID)] : []),
+    ...node.children.flatMap((child) => (typeof child === 'string' ? [] : enteringIds(child))),
+  ];
+
+  const homeEnteringIds = [
+    'pet-avatar-fallback-pet-1',
+    'home-entrance-summary',
+    'summary-reveal',
+    'home-entrance-collar',
+    'home-entrance-quick-actions',
+    'home-entrance-weekly',
+    'home-entrance-reminders',
+    'home-entrance-last-position',
+  ];
+
+  it.each<PetState>([
+    { kind: 'error' },
+    { kind: 'unreachable', message: 'network down' },
+  ])('deja el error del detalle ($kind) como hijo directo de home-content y sin entrada', async (state) => {
+    mockGetPet.mockResolvedValue(state);
+    await renderHome();
+    const card = await screen.findByTestId('pet-hero-error');
+    expect(card.parent).toBe(screen.getByTestId('home-content'));
+    expect(enteringIds(card)).toEqual([]);
+  });
+
+  it('deja el botón del mapa del día como hijo directo de home-content y sin entrada', async () => {
+    await renderMotionHome();
+    await fireEvent.press(screen.getByTestId('weekly-activity-day-2026-08-21'));
+    const button = screen.getByTestId('weekly-activity-day-map');
+    expect(button.parent).toBe(screen.getByTestId('home-content'));
+    expect(enteringIds(button)).toEqual([]);
+  });
+
+  it.each<PetState>([
+    { kind: 'unauthorized' },
+    { kind: 'unreachable', message: 'network down' },
+    { kind: 'missing-config' },
+  ])('no pinta los envoltorios del collar ni de la última posición con el detalle en $kind', async (state) => {
+    mockGetPet.mockResolvedValue(state);
+    await renderHome();
+    await waitFor(() => {
+      expect(screen.getByTestId('reminders-section')).toBeVisible();
+      expect(screen.queryByTestId('reminders-section-skeleton')).toBeNull();
+    });
+    expect(screen.queryByTestId('home-entrance-collar')).toBeNull();
+    expect(screen.queryByTestId('home-entrance-last-position')).toBeNull();
+  });
+
+  it('solo da entrada a los envoltorios, al fundido y al avatar del selector', async () => {
+    await renderMotionHome();
+    expect(enteringIds(screen.container)).toEqual(homeEnteringIds);
+  });
+
+  it('no da entrada al hero con alertas abiertas', async () => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert()], nextCursor: null });
+    await renderMotionHome();
+    await screen.findByTestId('home-alerts-dot');
+    expect(enteringIds(screen.container)).toEqual(homeEnteringIds);
+  });
+
+  it.each([
+    ['home-loading', () => mockListPets.mockReturnValue(pending<PetsState>()), ['home-loading']],
+    ['home-error', () => mockListPets.mockResolvedValue({ kind: 'error' }), []],
+    ['home-empty', () => mockListPets.mockResolvedValue({ kind: 'ok', pets: [] }), []],
+  ])('no da entrada a home-states con %s', async (anchor, arrange, expected) => {
+    arrange();
+    await renderHome();
+    await screen.findByTestId(anchor);
+    expect(enteringIds(screen.container)).toEqual(expected);
+  });
 });
 
 const homeMotionNodeIds = [
@@ -4923,6 +5028,79 @@ describe('#152 R7: las cifras del resumen aparecen con un fundido', () => {
     expect(await screen.findByTestId('summary-skeleton')).toBeVisible();
     expect(screen.queryByTestId('summary-reveal')).toBeNull();
   });
+
+  const expectRowUntouched = (reveal: typeof screen.container) => {
+    const row = screen.getByTestId('summary-weight').parent?.parent;
+    expect(row?.props.className).toBe('flex-row');
+    expect(row?.parent).toBe(reveal);
+    expect(reveal.children.filter((child) => typeof child !== 'string')).toEqual([row]);
+    expect(reveal.props.style).toBeUndefined();
+    expect(reveal.props.className).toBeUndefined();
+  };
+
+  it('funde igual bajo reduce motion', async () => {
+    mockUseReducedMotion.mockReturnValue(true);
+    await renderMotionHome();
+    jest.mocked(withDelay).mockClear();
+    const reveal = screen.getByTestId('summary-reveal');
+    const { entering } = reveal.props;
+    expect(entering).toEqual(expect.any(Function));
+    expect(entering({})).toEqual({
+      initialValues: { opacity: 0, transform: [{ translateY: 0 }] },
+      animations: { opacity: 1, transform: [{ translateY: 0 }] },
+    });
+    expect(jest.mocked(withDelay).mock.calls.map(([ms]) => ms)).toEqual([0, 0]);
+    expectRowUntouched(reveal);
+  });
+
+  it.each<DailyActivityState>([
+    { kind: 'no-tracking' },
+    { kind: 'error' },
+    { kind: 'unreachable', message: 'network down' },
+    { kind: 'missing-config' },
+  ])('funde igual la fila con la actividad en $kind', async (state) => {
+    mockGetDailyActivity.mockResolvedValue(state);
+    await renderHome();
+    const reveal = await screen.findByTestId('summary-reveal');
+    jest.mocked(withDelay).mockClear();
+    const { entering } = reveal.props;
+    expect(entering).toEqual(expect.any(Function));
+    expect(entering({})).toEqual({
+      initialValues: { opacity: 0, transform: [{ translateY: 0 }] },
+      animations: { opacity: 1, transform: [{ translateY: 0 }] },
+    });
+    expect(jest.mocked(withDelay).mock.calls.map(([ms]) => ms)).toEqual([0, 0]);
+    expectRowUntouched(reveal);
+    expect(screen.queryByTestId('summary-skeleton')).toBeNull();
+  });
+
+  it.each([false, true])(
+    'deja las cuatro celdas como hijos directos de la fila (reduce motion: %s)',
+    async (reduceMotion) => {
+      mockUseReducedMotion.mockReturnValue(reduceMotion);
+      await renderMotionHome();
+      const row = screen.getByTestId('summary-weight').parent?.parent;
+      expect(row?.children.filter((child) => typeof child !== 'string')).toEqual(
+        ['summary-weight', 'summary-activity', 'summary-sleep', 'summary-distance'].map(
+          (id) => screen.getByTestId(id).parent,
+        ),
+      );
+      expect(screen.queryByTestId('summary-skeleton')).toBeNull();
+    },
+  );
+
+  it.each([false, true])(
+    'monta el skeleton directamente en la tarjeta, sin fundido de salida propio (reduce motion: %s)',
+    async (reduceMotion) => {
+      mockUseReducedMotion.mockReturnValue(reduceMotion);
+      mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
+      await renderHome();
+      const skeleton = await screen.findByTestId('summary-skeleton');
+      expect(skeleton.parent).toBe(screen.getByTestId('summary-card'));
+      expect(skeleton.props.exiting).toBe(reduceMotion ? undefined : FadeOut);
+      expect(screen.queryByTestId('summary-reveal')).toBeNull();
+    },
+  );
 });
 
 describe('#152 R8: la batería del collar se dibuja como barra', () => {
@@ -5017,6 +5195,30 @@ describe('#152 R8: la batería del collar se dibuja como barra', () => {
       expect(fill).toHaveAnimatedStyle({ width: '81%' }, { shouldMatchAllProps: true });
     } finally {
       mockUseReducedMotion.mockReturnValue(false);
+    }
+  });
+
+  it('no añade texto ni nombre accesible a la fila', async () => {
+    await renderMotionHome();
+    const track = screen.getByTestId('collar-battery-track');
+    const fill = screen.getByTestId('collar-battery-fill');
+    expect(track.parent?.children.at(-1)).toBe(track);
+    expect(fill.children).toEqual([]);
+    for (const node of [track, fill]) {
+      expect(Object.keys(node.props).filter((key) => typeof node.props[key] === 'string'))
+        .toEqual(['testID', 'className']);
+    }
+    for (const node of [track, fill, track.parent]) {
+      expect(Object.keys(node?.props ?? {}).filter((key) => /^(accessib|aria-|role$|importantForAccessibility|screenReaderFocusable$|focusable$|tabIndex$|hasTVPreferredFocus$)/.test(key)))
+        .toEqual([]);
+    }
+    for (
+      let node: typeof track | null = screen.getByTestId('collar-battery');
+      node;
+      node = node.parent
+    ) {
+      expect(Object.keys(node.props).filter((key) => /^(accessib|aria-|role$|importantForAccessibility|screenReaderFocusable$|focusable$|tabIndex$|hasTVPreferredFocus$)/.test(key)))
+        .toEqual([]);
     }
   });
 });

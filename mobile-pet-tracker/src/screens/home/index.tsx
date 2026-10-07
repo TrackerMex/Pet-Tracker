@@ -323,6 +323,7 @@ export function HomeScreen() {
               : undefined
           }
         >
+          <HomeEntrance index={0} testID="home-entrance-hero"><View /></HomeEntrance>
           <View testID="home-hero-actions" className="flex-row items-center gap-3">
             <View className="flex-1">
               <PetSwitcher
@@ -368,6 +369,7 @@ export function HomeScreen() {
             {t('home.home')}
           </Text>
 
+          <HomeEntrance index={0} testID="home-entrance-states"><View /></HomeEntrance>
           {pets.data === undefined ? (
             <Skeleton
               testID="home-loading"
@@ -399,6 +401,7 @@ export function HomeScreen() {
 
       <View testID="home-content" style={{ paddingHorizontal: 24, gap: 16 }}>
         {detail.data?.kind === 'error' || detail.data?.kind === 'unreachable' ? (
+          <HomeEntrance index={0} testID="home-entrance-hero-error">
           <HeroUICard testID="pet-hero-error" className="items-start gap-3 p-4">
             <Text className="text-danger">
               {t('common.somethingWentWrong')}
@@ -410,6 +413,7 @@ export function HomeScreen() {
               {t('common.retry')}
             </Button>
           </HeroUICard>
+          </HomeEntrance>
         ) : null}
 
         {selectedPetId ? (
@@ -423,12 +427,12 @@ export function HomeScreen() {
               </Text>
 
               {activity.data === undefined ? (
-                <Skeleton testID="summary-skeleton" className="h-16 w-full rounded-xl" />
+                <Animated.View><Skeleton testID="summary-skeleton" className="h-16 w-full rounded-xl" /></Animated.View>
               ) : null}
 
               {activity.data !== undefined &&
               activity.data.kind !== 'unauthorized' ? (
-                <Animated.View testID="summary-reveal" entering={homeEntering(0, 0)}>
+                <Animated.View testID="summary-reveal" entering={reduceMotion || activity.data.kind !== 'ok' ? undefined : homeEntering(0, 0)}>
                   <View className="flex-row">
                     <View className="flex-1 items-center gap-1 border-r border-border">
                       <Weight size={20} color={muted} />
@@ -475,7 +479,7 @@ export function HomeScreen() {
                             {t('home.sleep')}
                           </Text>
                         </View>
-                        <View className="flex-1 items-center gap-1">
+                        <View><View className="flex-1 items-center gap-1">
                           <Map size={20} color={muted} />
                           <Text
                             testID="summary-distance"
@@ -488,7 +492,7 @@ export function HomeScreen() {
                             {t('home.distance')}
                           </Text>
                         </View>
-                      </>
+                      </View></>
                     ) : (
                       <Text
                         testID="summary-note"
@@ -506,6 +510,7 @@ export function HomeScreen() {
           </HomeEntrance>
         ) : null}
 
+        {detail.data !== undefined && detail.data.kind !== 'ok' && detail.data.kind !== 'error' ? <HomeEntrance index={1} testID="home-entrance-collar"><View /></HomeEntrance> : null}
         {detail.data?.kind === 'ok' && connection ? (
           <HomeEntrance index={1} testID="home-entrance-collar">
             <Card
@@ -620,7 +625,7 @@ export function HomeScreen() {
           </HomeEntrance>
         ) : null}
 
-        {selectedPetId && (activity.data === undefined || activity.data.kind === 'ok') ? (
+        {activity.data === undefined || activity.data.kind !== 'error' ? (
           <HomeEntrance index={3} testID="home-entrance-weekly">
             {activity.data === undefined ? (
               <Skeleton
@@ -645,6 +650,7 @@ export function HomeScreen() {
         ) : null}
 
         {activity.data?.kind === 'ok' && selectedToday ? (
+          <HomeEntrance index={6} testID="home-entrance-day-map">
           <Button
             testID="weekly-activity-day-map"
             className="min-h-11 w-full rounded-xl bg-accent"
@@ -654,6 +660,7 @@ export function HomeScreen() {
               {viewOnMapLabel}
             </Button.Label>
           </Button>
+          </HomeEntrance>
         ) : null}
 
         {selectedPetId ? (
