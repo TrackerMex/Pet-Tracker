@@ -931,4 +931,4 @@ Cifras:
   `index.test.tsx`, `index.tsx` y `collar-battery-bar.tsx`. Los dos últimos
   vuelven en el verde a su contenido de `c7ac5ceb`.
 
-- [ ] Enmienda E4 aprobada por humano (fecha: ____, en el chat del leader; commit de firma: el que marca esta casilla)
+- [x] Enmienda E4 aprobada por humano (fecha: 2026-10-07, en el chat del leader; commit de firma: el que marca esta casilla)
