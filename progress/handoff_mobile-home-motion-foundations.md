@@ -1253,3 +1253,55 @@ CAMBIA EN EL RESTO DEL HANDOFF:
     && git commit -m 'docs(mobile-home-motion-foundations): #152 traceability E4'
 - No hagas push. Avisa al humano de que terminaste.
 ```
+
+## Enmienda E5 (leader, 2026-10-07): lista cerrada sin el reporte del reviewer
+
+> Codex paró en E4.6 (parada correcta, `progress/impl_mobile-home-motion-foundations.md`
+> §E4.6 — Parada por discrepancia de la lista cerrada). Para reanudar, el
+> humano pega en Codex: «Lee la §Enmienda E5 de
+> progress/handoff_mobile-home-motion-foundations.md y reanuda desde ahí. Todo lo
+> demás del handoff sigue vigente.»
+
+```
+Worktree: /home/claude/sites/Pet-Tracker-wt-152   <- el mismo; no cambies de branch
+
+CAUSA: progress/review_mobile-home-motion-foundations.md lo creo el leader en
+08845498 (veredicto de la ronda 1) y lo amplio con las pre-verificaciones de
+E4. Es un fichero del leader, como el handoff o requirements.md, y la lista
+cerrada no lo excluia. El hueco es del handoff, no tuyo. Tus 11 ficheros
+siguen siendo 11; lo que cambia es solo el pathspec de la lista cerrada.
+Medido por el leader sobre este commit de enmienda, desde la raiz:
+  lista cerrada con la exclusion nueva           -> 11 lineas
+  git diff --quiet 38fa5a95 HEAD -- progress/review_mobile-home-motion-foundations.md -> exit=0
+
+REANUDA ASI, desde la raiz del repo:
+
+E5.1 Estado. `git status --short` -> exactamente esta linea:
+       M progress/impl_mobile-home-motion-foundations.md
+     `git log -1 --format=%s` -> docs(mobile-home-motion-foundations): #152 handoff amendment E5
+     `git diff --quiet 3406b9d6 HEAD -- mobile-pet-tracker/ specs/mobile-home-motion-foundations/traceability.md; echo "exit=$?"` -> exit=0
+     Si algo no coincide, PARA.
+
+E5.2 Sigue E4.6 desde donde paraste: comparacion de cinco suites (346),
+  jest entero (96 / 2235), typecheck, lint, `entering=`, el `git diff --stat`
+  vacio, anclas 0-40 y las 8 positivas. Mismas cifras de E4.6.
+
+E5.3 Lista cerrada. Sustituye a la del CIERRE y a la de E4.6; es la misma
+  con una exclusion mas al final. Desde la raiz, con salida al impl:
+  git diff --name-only 36f91e6e HEAD -- . ':!feature_list.json' ':!progress/current.md' ':!progress/handoff_mobile-home-motion-foundations.md' ':!specs/mobile-home-motion-foundations/requirements.md' ':!specs/mobile-home-motion-foundations/design.md' ':!specs/mobile-home-motion-foundations/tasks.md' ':!progress/review_mobile-home-motion-foundations.md'
+    -> exactamente los 11 ficheros de la lista del CIERRE
+  git diff --quiet 38fa5a95 HEAD -- progress/review_mobile-home-motion-foundations.md; echo "exit=$?"
+    -> exit=0 (no lo toques: es del leader)
+
+E5.4 Despues, lo que queda del CAMBIA de E4 sin cambios: traceability.md
+  (filas R5, R7 y R8), la seccion `## Reanudacion E4` del impl con la salida
+  de E4.6 y de E5.1-E5.3, y el commit documental
+  'docs(mobile-home-motion-foundations): #152 traceability E4' con su
+  comprobacion de dos ficheros en el indice.
+
+CAMBIA EN EL RESTO DEL HANDOFF:
+- Este commit de enmienda toca solo progress/handoff_mobile-home-motion-foundations.md,
+  que ya esta excluido de la lista cerrada. La lista y sus cuentas no cambian.
+- Siguen siendo 28 commits tuyos: esta enmienda es del leader y no cuenta.
+- No hagas push. Avisa al humano de que terminaste.
+```
