@@ -604,7 +604,9 @@ borrador de esta enmienda con un barrido cláusula × rama × candado × sonda
 cláusulas más en la misma situación (H1-H4). Su segunda pre-verificación
 (§Pre-verificación E4 (ronda 1c)) dio H1-H4 por cerrados y encontró tres más
 (H5-H7): ramas de las mismas cláusulas que los candados de H2-H4 no
-alcanzaban. La producción cumple R5, R7 y R8.
+alcanzaban. La tercera (§Pre-verificación E4 (ronda 1d)) dio H5-H7 y X42 por
+cerrados y encontró dos más (H8 y H9), de nuevo porque los candados de H6 y H7
+se paraban antes que su cláusula. La producción cumple R5, R7 y R8.
 El hueco está en las listas de `it` de esta spec, que candan cada cláusula en
 una sola rama o en ninguna. Con cada una de estas mutaciones,
 `src/screens/home/index.test.tsx` sigue en 192/192:
@@ -621,6 +623,8 @@ una sola rama o en ninguna. Con cada una de estas mutaciones,
 | R5: «El hero (`PetHeroHeader`), `pet-hero-error`, `home-states` y `weekly-activity-day-map` no reciben entrada» (H5) | Una entrada dentro de `pet-hero-error` o del botón del mapa, o en el propio nodo. Y el hero con alertas abiertas: E4.6 lo pinta sin `home-alerts-dot` | X18i y X18p (`pet-hero-error`), X17i y X17p (el botón del mapa), X27d (`home-alerts-dot` con entrada) |
 | R7: «envuelve la fila desde fuera, sin `style` ni `className`» (H6) | Con los `kind` que no son `ok` y con reduce motion. E4.4 y E4.7 solo miran `entering` | X39s2, X39c, X39r2 y X39c2 (`style` o `className` en el reveal), X43s y X43r (otro hijo en el reveal), X44r (la fila cambia de clase) |
 | R8: «La barra no añade texto ni copy; el lector de pantalla sigue leyendo `collar-battery`» (H7) | Un `<Text>` dentro del relleno, props de accesibilidad que no son `string` en la pista, y la fila agrupada con nombre propio | X30x, X30v, X30n y X37r |
+| R7: «sus celdas siguen siendo sus hijos directos» (H8) | Con reduce motion. #69 R12 lo canda sin reduce motion y #77 R2 con los `kind` que no son `ok`; E4.10 solo mira la celda del peso | X45r (las tres celdas de `ok` dentro de un `View` solo bajo reduce motion) |
+| R8: «el lector de pantalla sigue leyendo `collar-battery`» (H9) | Un ancestro por encima de la fila agrupado con nombre propio. E4.11 se para en la fila | X46c (`accessible` y `accessibilityLabel` en `collar-card`) y X46e (lo mismo en el `Animated.View` de `HomeEntrance`) |
 
 R5, R7 y R8 no cambian, salvo una precisión de lectura en R7 (E4.12). Esta
 enmienda solo añade los candados que les faltaban.
@@ -802,11 +806,36 @@ Con la actividad pendiente comprueba que
 `(await findByTestId('summary-skeleton')).parent` es
 `toBe(getByTestId('summary-card'))`.
 
+### E4.13 — R7: las celdas siguen siendo hijos directos bajo reduce motion (H8)
+
+**WHEN** se cierra #152, **THE SYSTEM SHALL** ampliar
+`funde igual bajo reduce motion` (E4.4). Detrás de `expectRowUntouched(reveal)`
+comprueba que los hijos no-`string` de la fila (`summary-weight` →
+`.parent?.parent`) son `toEqual` a los padres de `summary-weight`,
+`summary-activity`, `summary-sleep` y `summary-distance`, en ese orden. Así
+cae un envoltorio de las celdas que solo aparezca con reduce motion (X45r).
+
+### E4.14 — R8: ningún ancestro de la barra agrupa la fila (H9)
+
+**WHEN** se cierra #152, **THE SYSTEM SHALL** ampliar el `it` de E4.8 con un
+recorrido por `.parent` desde `collar-battery` hasta la raíz del árbol. Ningún
+nodo del camino tiene una prop cuyo nombre case con la regex de E4.11. El
+bucle de E4.11 se queda para la pista y el relleno, que no son ancestros.
+
+El recorrido no se para en `home-content`: la cláusula vale para cualquier
+ancestro, y un nombre propio en `home-content` o en `screen-home` también
+haría que el lector leyese ese nodo en vez de `collar-battery`. En producción
+ningún nodo del camino tiene una prop que case: `collar-battery`, la fila,
+`collar-card`, `home-entrance-collar`, `home-content`, `screen-home` y los
+nodos por encima. Caen X46c, X46e y, además, X46h y X46s (nombre propio en
+`home-content` y en `screen-home`) y X37l (`accessibilityLabel` en el propio
+`collar-battery`).
+
 ### Cifras y alcance
 
 Las ediciones literales, los mensajes de commit y la mutación del rojo están
 en `progress/handoff_mobile-home-motion-foundations.md` §Enmienda E4. El
-leader las verificó en un worktree desechable sobre `c79b9dbc`, cuyo `src/` es
+leader las verificó en un worktree desechable sobre `f2bc714c`, cuyo `src/` es
 el de `c7ac5ceb`:
 
 - **Verde:**
@@ -828,12 +857,14 @@ el de `c7ac5ceb`:
   - X25w cae por consulta: `findByTestId` no encuentra el `testID`. Es el
     rojo esperado para esa sonda.
   - Las dieciséis de H5-H7 y X42 caen una a una, todas por aserción.
+  - Las seis de H8-H9 (X45r, X46c, X46e, X46h, X46s y X37l) caen una a una,
+    todas por aserción.
 
 Cifras:
 
 - `index.test.tsx`: de 192 a **215**. E4.1 suma 1, E4.2 suma 4, E4.3 suma 3,
   E4.4 suma 1, E4.5 suma 3, E4.6 suma 4, E4.7 suma 4, E4.8 suma 1, E4.9 suma 1
-  y E4.12 suma 1. E4.10 y E4.11 amplían `it` que ya existían.
+  y E4.12 suma 1. E4.10, E4.11, E4.13 y E4.14 amplían `it` que ya existían.
 - Comparación de cierre con la base: de 320 a **343**.
 - Jest móvil: de 2209 a **2232**.
 - La lista cerrada no cambia: sigue en 11 ficheros. E4 toca solo

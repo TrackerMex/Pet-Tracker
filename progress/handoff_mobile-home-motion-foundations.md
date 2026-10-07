@@ -829,8 +829,9 @@ CAMBIA EN EL RESTO DEL HANDOFF:
 
 > El reviewer rechazó en `c7ac5ceb` (`progress/review_mobile-home-motion-foundations.md`,
 > bloqueantes B1-B3), y su pre-verificación de esta enmienda encontró cuatro
-> huecos más (H1-H4, §Pre-verificación E4 (ronda 1b)) y, en una segunda,
-> otros tres (H5-H7, §Pre-verificación E4 (ronda 1c)). Tu código cumple la
+> huecos más (H1-H4, §Pre-verificación E4 (ronda 1b)), en una segunda
+> otros tres (H5-H7, §Pre-verificación E4 (ronda 1c)) y, en una tercera,
+> dos más (H8-H9, §Pre-verificación E4 (ronda 1d)). Tu código cumple la
 > spec; lo que faltaba eran candados, y la spec los añade en
 > `requirements.md` §Enmienda E4 (firmada por el humano). Para reanudar, el humano pega en Codex: «Lee la §Enmienda E4 de
 > progress/handoff_mobile-home-motion-foundations.md y reanuda desde ahí. Todo
@@ -850,9 +851,11 @@ actividad no-ok (X25), copy o nombre accesible en la barra de bateria (X30t,
 X30a), entrada dentro de pet-hero-error, del boton del mapa o del hero con
 alertas (X18i, X18p, X17i, X17p, X27d), style/className/otro hijo en el reveal
 con actividad no-ok o reduce motion (X39s2, X39c, X39r2, X39c2, X43s, X43r,
-X44r) y copy por otros canales en la barra (X30x, X30v, X30n, X37r). El hueco
-es de la spec, no tuyo.
-Medido por el leader en un worktree desechable sobre c79b9dbc (src/ = c7ac5ceb),
+X44r), copy por otros canales en la barra (X30x, X30v, X30n, X37r), las celdas
+del resumen envueltas solo bajo reduce motion (X45r) y un ancestro de la barra
+con nombre accesible propio (X46c, X46e, X46h, X46s, X37l). El hueco es de la
+spec, no tuyo.
+Medido por el leader en un worktree desechable sobre f2bc714c (src/ = c7ac5ceb),
 con el texto EXACTO de abajo:
   - tests de E4.2 + produccion de c7ac5ceb:  215 passed, 215 total
   - tests de E4.2 + mutacion de E4.3:       23 failed, 192 passed, 215 total
@@ -861,7 +864,7 @@ con el texto EXACTO de abajo:
       typecheck y lint exit=0; design-drift + legibility-classnames +
       consistency-classnames + ui-language: 174 passed, 174 total
   - jest movil entero en verde: 96 suites, 2232 tests
-  - cada sonda del reviewer por separado cae
+  - cada sonda del reviewer y del leader por separado cae
 
 REANUDA ASI, desde mobile-pet-tracker/:
 
@@ -1010,6 +1013,12 @@ E4.2 En src/screens/home/index.test.tsx, tres inserciones y nada mas. Copia
     });
     expect(jest.mocked(withDelay).mock.calls.map(([ms]) => ms)).toEqual([0, 0]);
     expectRowUntouched(reveal);
+    const row = screen.getByTestId('summary-weight').parent?.parent;
+    expect(row?.children.filter((child) => typeof child !== 'string')).toEqual(
+      ['summary-weight', 'summary-activity', 'summary-sleep', 'summary-distance'].map(
+        (id) => screen.getByTestId(id).parent,
+      ),
+    );
   });
 
   it.each<DailyActivityState>([
@@ -1058,6 +1067,14 @@ E4.2 En src/screens/home/index.test.tsx, tres inserciones y nada mas. Copia
       expect(Object.keys(node?.props ?? {}).filter((key) => /^(accessib|aria-|role$|importantForAccessibility)/.test(key)))
         .toEqual([]);
     }
+    for (
+      let node: typeof track | null = screen.getByTestId('collar-battery');
+      node;
+      node = node.parent
+    ) {
+      expect(Object.keys(node.props).filter((key) => /^(accessib|aria-|role$|importantForAccessibility)/.test(key)))
+        .toEqual([]);
+    }
   });
 
   No anadas imports: DailyActivityState, PetState, PetsState, pending, waitFor,
@@ -1065,7 +1082,7 @@ E4.2 En src/screens/home/index.test.tsx, tres inserciones y nada mas. Copia
   renderHome y renderMotionHome ya estan.
 
   T=src/screens/home/index.test.tsx
-  test "$(git diff --numstat -- $T | cut -f1,2)" = "$(printf '172\t0')"; echo "exit=$?"           -> exit=0
+  test "$(git diff --numstat -- $T | cut -f1,2)" = "$(printf '186\t0')"; echo "exit=$?"           -> exit=0
   grep -cF "it('no pinta ningún envoltorio sin mascota seleccionada'" $T                       -> 1
   grep -cF "])('no pinta el envoltorio de la actividad con \$kind'" $T                          -> 1
   grep -cF "como hijo directo de home-content y sin entrada'" $T                                -> 2
@@ -1079,6 +1096,8 @@ E4.2 En src/screens/home/index.test.tsx, tres inserciones y nada mas. Copia
   grep -cF "it('monta el skeleton directamente en la tarjeta, sin fundido de salida propio'" $T -> 1
   grep -cF "enteringIds(screen.container)).toEqual(homeEnteringIds)" $T                         -> 2
   grep -cF "expectRowUntouched(reveal);" $T                                                     -> 2
+  grep -cF "['summary-weight', 'summary-activity', 'summary-sleep', 'summary-distance'].map(" $T -> 1
+  grep -cF "let node: typeof track | null = screen.getByTestId('collar-battery');" $T -> 1
   grep -cF "describe('#152" $T                                                                  -> 4
   tail -n 1 $T                                                                                  -> });
 
