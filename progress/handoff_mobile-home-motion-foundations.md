@@ -564,3 +564,80 @@ ficheros con 320, jest entero con exit, typecheck, lint, entering=, NR,
 backend/infra vacios, lista cerrada); y cualquier decision que la spec no
 cerrara literalmente.
 ```
+
+---
+
+## Enmienda E1 (leader, 2026-10-07): doble de Reanimated sin `__esModule`
+
+> Codex paró en el verde de R4 (parada correcta, `progress/impl_mobile-home-motion-foundations.md`
+> §PARADA). Para reanudar, el humano pega en Codex: «Lee la §Enmienda E1 de
+> progress/handoff_mobile-home-motion-foundations.md y reanuda desde ahí. Todo lo
+> demás del handoff sigue vigente.»
+
+```
+Worktree: /home/claude/sites/Pet-Tracker-wt-152   <- el mismo; no cambies de branch
+
+CAUSA (verificada por el leader fuera del arbol, sin tocar el worktree):
+el jest.mock('react-native-reanimated', ...) de home-entrance.test.tsx
+esparce jest.requireActual(...) pero no declara `__esModule: true`. Esa
+propiedad no es enumerable y el spread la pierde; sin ella,
+`import Animated from 'react-native-reanimated'` en home-entrance.tsx
+recibe el modulo entero y `Animated.View` es undefined. index.test.tsx
+ya lo declara. Medido con copias en un directorio aparte:
+  - doble actual + tu HomeEntrance          -> 4 failed, 2 passed, 6 total
+  - doble con __esModule + home-entrance.tsx de 3f42c163 (sin HomeEntrance)
+                                            -> 4 failed, 2 passed, 6 total;
+                                               4 `Element type is invalid`, 0 TypeError
+  - doble con __esModule + tu HomeEntrance  -> 6 passed, 6 total
+Tu HomeEntrance no cambia. Solo cambia una linea del doble.
+
+REANUDA ASI, desde mobile-pet-tracker/:
+
+E1.1 Estado. `git status --short` -> exactamente estas dos lineas:
+       M mobile-pet-tracker/src/screens/home/home-entrance.tsx
+      ?? progress/impl_mobile-home-motion-foundations.md
+     `git log -1 --format=%s` -> docs(mobile-home-motion-foundations): #152 handoff amendment E1
+     Si algo no coincide, PARA.
+
+E1.2 Aparta tu HomeEntrance (vuelve en E1.5):
+  git stash push -- src/screens/home/home-entrance.tsx \
+    && git diff --quiet HEAD -- src/screens/home/home-entrance.tsx; echo "exit=$?"   -> exit=0
+  Si el sandbox deniega `git stash`, PARA (no lo sustituyas por copias).
+
+E1.3 En home-entrance.test.tsx, dentro del factory de
+  jest.mock('react-native-reanimated', ...), anade la linea
+  `  __esModule: true,` justo debajo de
+  `  ...jest.requireActual('react-native-reanimated'),`. Nada mas.
+  grep -cF '__esModule: true,' src/screens/home/home-entrance.test.tsx   -> 1
+
+E1.4 Rojo E1 (HomeEntrance sigue sin existir en HEAD; cae como el rojo de R4):
+  FORCE_COLOR=0 bunx jest src/screens/home/home-entrance.test.tsx > /tmp/152-r4e1.txt 2>&1; echo "exit=$?"
+    -> exit=1 y `Tests:       4 failed, 2 passed, 6 total`
+  grep -qE '^Tests: +4 failed, 2 passed, 6 total$' /tmp/152-r4e1.txt \
+    && test "$(grep -cF 'Element type is invalid' /tmp/152-r4e1.txt)" -ge 4 \
+    && ! grep -qE 'TypeError|ReferenceError|SyntaxError|Cannot find module' /tmp/152-r4e1.txt \
+    && test "$(git diff --numstat -- src/screens/home/home-entrance.test.tsx | cut -f1,2)" = "$(printf '1\t0')" \
+    && test ! -e .expo/types/router.d.ts \
+    && { bun run typecheck > /tmp/152-r4e1-tsc.txt 2>&1 || true; } \
+    && test "$(grep -c 'error TS' /tmp/152-r4e1-tsc.txt)" = "$(grep -cE '^src/screens/home/home-entrance\.test\.tsx\([0-9]+,[0-9]+\): error TS2305:' /tmp/152-r4e1-tsc.txt)" \
+    && bun run lint \
+    && git add src/screens/home/home-entrance.test.tsx \
+    && test "$(git diff --cached --name-only)" = 'mobile-pet-tracker/src/screens/home/home-entrance.test.tsx' \
+    && git commit -m 'test(mobile-home): #152 R4 red, reanimated double declares __esModule'
+
+E1.5 Recupera tu HomeEntrance:
+  git stash pop && git status --short
+    -> las mismas dos lineas de E1.1 (`M .../home-entrance.tsx` y `?? progress/impl_...`)
+  y `git stash list` sin la entrada que creaste en E1.2.
+
+E1.6 R4 verde: la cadena del handoff, TAL CUAL (no cambia nada).
+     Despues sigue con R5 y el resto, sin cambios.
+
+CAMBIA EN EL RESTO DEL HANDOFF:
+- Son 23 commits, no 22 (el rojo E1 entre el rojo y el verde de R4).
+- traceability.md, fila R4: los dos rojos (3f42c163 y el de E1) y el verde.
+- Este commit de enmienda toca solo progress/handoff_mobile-home-motion-foundations.md,
+  que ya esta excluido de la lista cerrada: la lista y sus cuentas no cambian.
+- En el impl, debajo de la PARADA, una seccion `## Reanudacion E1` con la
+  salida de E1.1-E1.5 y despues sigue el formato de siempre.
+```
