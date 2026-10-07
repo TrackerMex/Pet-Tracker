@@ -1,6 +1,6 @@
 ---
 feature: "mobile-welcome-pingo"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec, mobile, ui-delight]
 ---
 
@@ -801,8 +801,8 @@ registra en `feature_list.json` desde esta spec: eso lo decide el leader.
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
-- [ ] Voz de Pingo (R2) y copy final (R1) aprobados (fecha: ____)
+- [x] Aprobado por humano (fecha: 2026-10-07) ← gate obligatorio antes de implementar
+- [x] Voz de Pingo (R2) y copy final (R1) aprobados (fecha: 2026-10-07)
 - [ ] Smoke R14 superado en dev build de Android (fecha: ____)
 
 ## Premisas falsas

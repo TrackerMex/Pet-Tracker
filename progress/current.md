@@ -3,10 +3,15 @@
 > Este archivo describe el estado de la sesion en curso.
 > Al cerrar la sesion, mueve este contenido a progress/history.md y deja solo esta plantilla.
 
-## #153 mobile-welcome-pingo — spec_ready, gate abierto
+## #153 mobile-welcome-pingo — spec aprobada
 
-- Spec en `specs/mobile-welcome-pingo/` (75f880b8). Espejo en Notion:
-  https://app.notion.com/p/3f26115a9b27814194c0e3a051d61551 (Estado del gate = En revisión).
+- Spec en `specs/mobile-welcome-pingo/`. Espejo en Notion:
+  https://app.notion.com/p/3f26115a9b27814194c0e3a051d61551
+- Aprobada el 2026-10-07 en Notion (`page_last_edited_at` 2026-10-07T16:03:29.036Z).
+  G1-G11 quedan con la opción de la spec. El humano confirmó en el chat que la
+  aprobación cubre también G10 (copy y voz). Al aprobar marcó en Notion la casilla
+  del smoke R14, pero no cuenta: aún no hay nada implementado, así que en el repo
+  sigue sin marcar.
 - Bloqueada: no hay handoff a Codex hasta que Backend avise del merge de #152.
 
 ### Pendiente tras el merge de #152 (antes del handoff)
