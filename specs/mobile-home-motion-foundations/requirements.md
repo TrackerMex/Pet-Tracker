@@ -606,7 +606,10 @@ cláusulas más en la misma situación (H1-H4). Su segunda pre-verificación
 (H5-H7): ramas de las mismas cláusulas que los candados de H2-H4 no
 alcanzaban. La tercera (§Pre-verificación E4 (ronda 1d)) dio H5-H7 y X42 por
 cerrados y encontró dos más (H8 y H9), de nuevo porque los candados de H6 y H7
-se paraban antes que su cláusula. La producción cumple R5, R7 y R8.
+se paraban antes que su cláusula. La cuarta (§Pre-verificación E4 (ronda 1e))
+dio H8 y H9 por cerrados y encontró cuatro más (H10-H13); el leader añadió
+H14, que el reviewer dejó como no bloqueante. La producción cumple R5, R7 y
+R8.
 El hueco está en las listas de `it` de esta spec, que candan cada cláusula en
 una sola rama o en ninguna. Con cada una de estas mutaciones,
 `src/screens/home/index.test.tsx` sigue en 192/192:
@@ -625,6 +628,11 @@ una sola rama o en ninguna. Con cada una de estas mutaciones,
 | R8: «La barra no añade texto ni copy; el lector de pantalla sigue leyendo `collar-battery`» (H7) | Un `<Text>` dentro del relleno, props de accesibilidad que no son `string` en la pista, y la fila agrupada con nombre propio | X30x, X30v, X30n y X37r |
 | R7: «sus celdas siguen siendo sus hijos directos» (H8) | Con reduce motion. #69 R12 lo canda sin reduce motion y #77 R2 con los `kind` que no son `ok`; E4.10 solo mira la celda del peso | X45r (las tres celdas de `ok` dentro de un `View` solo bajo reduce motion) |
 | R8: «el lector de pantalla sigue leyendo `collar-battery`» (H9) | Un ancestro por encima de la fila agrupado con nombre propio. E4.11 se para en la fila | X46c (`accessible` y `accessibilityLabel` en `collar-card`) y X46e (lo mismo en el `Animated.View` de `HomeEntrance`) |
+| R7: «#152 no envuelve `summary-skeleton` ni le añade un fundido de salida propio» (E4.12) (H10) | Un fundido de salida propio sin envoltorio. E4.12 solo miraba el padre | X42e (`animation={{ exiting: { value: FadeOut.duration(400) } }}` en el `Skeleton`) |
+| R7: el skeleton y «no monta el fundido mientras el skeleton ocupa su sitio», con reduce motion (H11) | Con reduce motion: E4.12 y el `it` de R7 corren sin él | X42r (el skeleton dentro de un `Animated.View` con `exiting`, solo bajo reduce motion) y X49r (un `summary-reveal` vacío junto al skeleton, solo bajo reduce motion) |
+| R7: «sus celdas siguen siendo sus hijos directos», sin reduce motion (H12) | Las celdas de descanso y distancia. #69 R12 solo cuenta cuatro hijos, #69 R1 mira la de actividad y R7 la de peso | X45s (la celda de descanso dentro de un `View`, solo sin reduce motion) |
+| R8: «el lector de pantalla sigue leyendo `collar-battery`» (H13) | `screenReaderFocusable`, `focusable` y `tabIndex`, que en Android agrupan igual que `accessible`. La regex de E4.11 no los casa | X46r, X46f y X46t (en `collar-card`), X37s (en la fila) y X30f (`focusable` en la pista) |
+| R7: «El skeleton se desmonta en el acto» (H14) | Con la actividad en `error`: el `waitFor` de E4.2 lo mira con los otros cuatro `kind` | X50e (el skeleton también con `error`) |
 
 R5, R7 y R8 no cambian, salvo una precisión de lectura en R7 (E4.12). Esta
 enmienda solo añade los candados que les faltaban.
@@ -726,7 +734,9 @@ cambia lo que R5 dice que no cambia.
 `{ kind: 'missing-config' }`. Cada fila espera a `summary-reveal` con
 `findByTestId`, porque aparece justo cuando llega la actividad. Después hace
 las mismas comprobaciones que `funde igual bajo reduce motion`. Con
-`unauthorized` la fila no se pinta (#77 R3).
+`unauthorized` la fila no se pinta (#77 R3). Al final comprueba que
+`summary-skeleton` ya no está (`queryByTestId` → `toBeNull()`): R7 dice «el
+skeleton se desmonta en el acto», y con `error` nada lo miraba (H14, X50e).
 
 ### E4.8 — R8: la barra no añade texto ni nombre accesible (H4)
 
@@ -782,7 +792,7 @@ siendo la fila.
 
 - `collar-battery-fill` sin hijos: `fill.children` es `toEqual([])`;
 - en la pista, en el relleno y en la fila (`track.parent`), ninguna prop cuyo
-  nombre case con `/^(accessib|aria-|role$|importantForAccessibility)/`.
+  nombre case con `/^(accessib|aria-|role$|importantForAccessibility|screenReaderFocusable$|focusable$|tabIndex$)/`.
 
 En producción no hay ninguna: la pista lleva `testID`, `className` y
 `children`; el relleno, `testID`, `className`, `style` y las props del mock
@@ -791,7 +801,14 @@ que no son `string` (`accessibilityValue`, `accessible`) y la fila agrupada
 con nombre propio, que haría que el lector la leyese a ella en vez de
 `collar-battery`.
 
-### E4.12 — R7: el skeleton no estrena fundido de salida (X42)
+La regex incluye `screenReaderFocusable`, `focusable` y `tabIndex` (H13). En
+RN 0.86, Android los trata como `accessible`: `focusable` y
+`screenReaderFocusable` hacen el nodo enfocable para TalkBack, y `View.js`
+convierte `tabIndex` en `focusable`. TalkBack lee entonces el nodo agrupado en
+vez de `collar-battery`, y en la pista añaden una parada vacía. Caen X46r,
+X46f, X46t, X37s y X30f.
+
+### E4.12 — R7: el skeleton no estrena fundido de salida (X42, H10, H11)
 
 R7 dice «El skeleton se desmonta en el acto, sin fundido cruzado». Leída al
 pie de la letra no la cumplía la producción ni antes de #152: el `Skeleton`
@@ -800,20 +817,36 @@ de heroui-native trae de serie `entering` FadeIn y `exiting` FadeOut
 ni le añade un fundido de salida propio**; el de heroui-native queda fuera.
 
 **WHEN** se cierra #152, **THE SYSTEM SHALL** tener en
-`describe('#152 R7: …')` el
-`it('monta el skeleton directamente en la tarjeta, sin fundido de salida propio')`.
-Con la actividad pendiente comprueba que
-`(await findByTestId('summary-skeleton')).parent` es
-`toBe(getByTestId('summary-card'))`.
+`describe('#152 R7: …')` el `it.each([false, true])`
+`monta el skeleton directamente en la tarjeta, sin fundido de salida propio (reduce motion: %s)`.
+Cada fila fija `mockUseReducedMotion` a su valor y deja la actividad
+pendiente. Con `summary-skeleton` (`findByTestId`) comprueba tres cosas:
 
-### E4.13 — R7: las celdas siguen siendo hijos directos bajo reduce motion (H8)
+- su `parent` es `toBe(getByTestId('summary-card'))`;
+- su `props.exiting` es `toBe(reduceMotion ? undefined : FadeOut)` (H10);
+- `summary-reveal` no está (`queryByTestId` → `toBeNull()`), también con
+  reduce motion (H11).
 
-**WHEN** se cierra #152, **THE SYSTEM SHALL** ampliar
-`funde igual bajo reduce motion` (E4.4). Detrás de `expectRowUntouched(reveal)`
-comprueba que los hijos no-`string` de la fila (`summary-weight` →
+`FadeOut` entra en el import de `react-native-reanimated` del fichero de test.
+Es lo que pone heroui-native: sin reduce motion, el `FadeOut` de serie, el
+mismo objeto; con reduce motion, ninguno, porque anula los fundidos desde la
+raíz. Caen X42e, X42r y X49r. El `it` queda atado al valor de serie de
+heroui-native: si una versión nueva lo cambia, se pone rojo sin que #152 haya
+tocado nada, y el arreglo es actualizar el valor esperado.
+
+### E4.13 — R7: las celdas siguen siendo hijos directos, con y sin reduce motion (H8, H12)
+
+**WHEN** se cierra #152, **THE SYSTEM SHALL** tener en
+`describe('#152 R7: …')` el `it.each([false, true])`
+`deja las cuatro celdas como hijos directos de la fila (reduce motion: %s)`.
+Cada fila fija `mockUseReducedMotion` a su valor y llama a `renderMotionHome`.
+Después comprueba que los hijos no-`string` de la fila (`summary-weight` →
 `.parent?.parent`) son `toEqual` a los padres de `summary-weight`,
-`summary-activity`, `summary-sleep` y `summary-distance`, en ese orden. Así
-cae un envoltorio de las celdas que solo aparezca con reduce motion (X45r).
+`summary-activity`, `summary-sleep` y `summary-distance`, en ese orden.
+
+Cubre la cláusula entera con `ok`, con reduce motion (H8) y sin él (H12). Cae
+un envoltorio de cualquier celda, aunque no cambie el número de hijos: X45r,
+X45a, X45s, X45n y X45d.
 
 ### E4.14 — R8: ningún ancestro de la barra agrupa la fila (H9)
 
@@ -835,17 +868,17 @@ nodos por encima. Caen X46c, X46e y, además, X46h y X46s (nombre propio en
 
 Las ediciones literales, los mensajes de commit y la mutación del rojo están
 en `progress/handoff_mobile-home-motion-foundations.md` §Enmienda E4. El
-leader las verificó en un worktree desechable sobre `f2bc714c`, cuyo `src/` es
+leader las verificó en un worktree desechable sobre `75fea066`, cuyo `src/` es
 el de `c7ac5ceb`:
 
 - **Verde:**
-  - `index.test.tsx`: 215/215.
-  - Jest móvil entero: 96 suites / 2232 tests.
+  - `index.test.tsx`: 218/218.
+  - Jest móvil entero: 96 suites / 2235 tests.
   - typecheck y lint: exit 0.
 - **Rojo** (con la mutación de sonda en `index.tsx` y
   `collar-battery-bar.tsx`):
-  - `index.test.tsx`: exactamente los 23 `it` nuevos fallan y 192 pasan, todos
-    por aserción.
+  - `index.test.tsx`: exactamente los 26 casos nuevos fallan y 192 pasan,
+    todos por aserción.
   - typecheck y lint: exit 0.
   - design-drift, legibility-classnames y consistency-classnames: 144/144.
     ui-language: 30/30.
@@ -859,14 +892,21 @@ el de `c7ac5ceb`:
   - Las dieciséis de H5-H7 y X42 caen una a una, todas por aserción.
   - Las seis de H8-H9 (X45r, X46c, X46e, X46h, X46s y X37l) caen una a una,
     todas por aserción.
+  - Las de H10-H14 (X42e, X42r, X49r, X45s, X46r, X46f, X46t, X37s, X30f y
+    X50e) y tres variantes (X45a, X45n y X45d) caen una a una, todas por
+    aserción. Las de H8-H9 siguen cayendo con los candados de esta ronda.
+  - X42f (`exiting` `FadeOut` en el `Skeleton` solo bajo reduce motion) pasa,
+    pero no cambia nada: heroui-native anula el `exiting` desde la raíz con
+    reduce motion. Es un mutante equivalente, no un hueco.
 
 Cifras:
 
-- `index.test.tsx`: de 192 a **215**. E4.1 suma 1, E4.2 suma 4, E4.3 suma 3,
-  E4.4 suma 1, E4.5 suma 3, E4.6 suma 4, E4.7 suma 4, E4.8 suma 1, E4.9 suma 1
-  y E4.12 suma 1. E4.10, E4.11, E4.13 y E4.14 amplían `it` que ya existían.
-- Comparación de cierre con la base: de 320 a **343**.
-- Jest móvil: de 2209 a **2232**.
+- `index.test.tsx`: de 192 a **218**. E4.1 suma 1, E4.2 suma 4, E4.3 suma 3,
+  E4.4 suma 1, E4.5 suma 3, E4.6 suma 4, E4.7 suma 4, E4.8 suma 1, E4.9 suma 1,
+  E4.12 suma 2 y E4.13 suma 2. E4.10, E4.11 y E4.14 amplían `it` que ya
+  existían.
+- Comparación de cierre con la base: de 320 a **346**.
+- Jest móvil: de 2209 a **2235**.
 - La lista cerrada no cambia: sigue en 11 ficheros. E4 toca solo
   `index.test.tsx`, `index.tsx` y `collar-battery-bar.tsx`. Los dos últimos
   vuelven en el verde a su contenido de `c7ac5ceb`.
