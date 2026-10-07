@@ -165,3 +165,192 @@ Tests:       8 skipped, 438 passed, 446 total
 ✅ Typecheck sin errores
 ✅ Todo verde. Listo para trabajar.
 ```
+
+## Pre-verificación E4 (ronda 1b)
+
+Fecha: 2026-10-07. Objeto: el borrador de la Enmienda E4 en `083ebc1b`
+(spec §Enmienda E4 y handoff §Enmienda E4). Su `src/` es idéntico al de
+`c7ac5ceb`.
+
+Método: un worktree desechable en detached HEAD sobre `083ebc1b`, con las
+inserciones literales del handoff aplicadas y commiteadas en local para que
+`git checkout HEAD --` las conserve. Todas las comprobaciones del handoff
+cuadran: numstat `62	0`, y los grep dan 1, 1, 2, 1 y 4.
+
+Solo corrí `bunx jest <fichero>` dirigido, más `bun run typecheck` y
+`bun run lint` bajo la mutación roja. No corrí `./init.sh` ni la suite entera,
+por instrucción del leader. Por eso no verifiqué las cifras 2218 (jest móvil)
+ni 320 → 329 (comparación de cierre). Cada sonda se revirtió con
+`git checkout HEAD -- <fichero>`, y tras cada una el árbol quedó limpio y
+`git diff --cached` vacío. El worktree está eliminado.
+
+**Resultado: E4 cierra B1, B2 y B3 tal como se rechazaron, pero el barrido
+exhaustivo encuentra 4 cláusulas más con ramas sin candado (H1-H4,
+14 ramas).** E4 es insuficiente.
+
+### 1. E4 contra las sondas de la ronda 1
+
+Base, con los tests de E4 y `index.tsx` de `c7ac5ceb`:
+`Tests: 201 passed, 201 total`, exit 0.
+
+| Sonda | Falla con E4 | Motivo |
+|---|---|---|
+| X1 | R7 «funde igual bajo reduce motion» | `expect(received).toEqual(expected)` |
+| X2 | R5 «no pinta ningún envoltorio sin mascota seleccionada» | `toBeNull()` |
+| X2b | ídem | `toBeNull()` |
+| X2c | ídem | `toBeNull()` |
+| X2d | ídem | `toBeNull()` |
+| X21 | R5 «no pinta el envoltorio de la actividad con $kind», las 4 filas (no-tracking, unauthorized, unreachable y missing-config) | `toBeNull()` |
+| X17 | R5 «deja el botón del mapa del día como hijo directo de home-content» | `toBe` (Object.is) |
+| X18 | R5 «deja el error del detalle ($kind)…», filas error y unreachable | `toBe` (Object.is) |
+
+Las ocho caen por aserción. En todas hay 0 `TypeError`, 0 `ReferenceError`,
+0 `SyntaxError` y 0 «Unable to find».
+
+Rojo combinado (las cuatro sondas de E4.3 aplicadas por anclas de línea
+completa):
+
+- numstat `6	2`, `<HomeEntrance` = 8.
+- `index.test.tsx`: exit 1, `Tests: 9 failed, 192 passed, 201 total`.
+  - Fallan exactamente los 9 `it` nuevos:
+    - 1 «sin mascota»;
+    - 4 «actividad con»;
+    - 3 «deja el»;
+    - 1 «funde igual».
+  - Ninguna de las cadenas TypeError, ReferenceError, SyntaxError o Cannot find module.
+- Guards design-drift, legibility-classnames y consistency-classnames: `144 passed, 144 total`.
+- `bun run typecheck` y `bun run lint`: exit 0.
+- `.expo/types/router.d.ts` no existe.
+
+Verde: revertir `index.tsx` devuelve la base, 201/201.
+
+### 2. Barrido cláusula × rama × candado × sonda
+
+La spec solo tiene la enmienda E4; no existen E1-E3. «Candado» es el `it`
+que cae con la sonda.
+
+| Req. | Cláusula / rama | Candado | Sonda | Resultado |
+|---|---|---|---|---|
+| R1 | 8 valores y «ninguna otra» | R1 (6 `it`) | M1, X13 | Cubierto |
+| R1 | «usan `MOTION_TRANSITION_MS` sin repetir el número» | — | X31 (`duration: 250` literal) | Sobrevive; equivalente en ejecución (ver §4) |
+| R1 | no importa global.css/uniwind, sin colores/espaciados/radios | R9 (hex/arbitrarias) + lectura | X29T | Hex cubierto; imports verificados leyendo |
+| R2 | frase §Animación, encabezado, casilla, global.css | R2 (3 `it`) | ronda 1 | Cubierto |
+| R2 | contenido de las tres viñetas de A21 | casilla humana A21 | X32 (borra la viñeta de constantes previas) | Sobrevive; gate humano (ver §4) |
+| R3 | receta entera, Never/System | R3 «parte invisible…» | M2, X13, X14 | Cubierto |
+| R3 | «no llama a withDelay/withTiming/withSpring al crearse» | R3 «no anima nada…» | X34 (withDelay ansioso) | Cubierto |
+| R4 | WHILE reduce motion off / on | R4 índice 0 / reduce motion | M3, X12 | Cubierto, las dos ramas |
+| R4 | único nodo host: hijo envuelto / host exterior | R4 «no añade estilo propio» / R5 orden + 4 tests P8 | X33i / X33o | Cubierto |
+| R4 | sin `style` ni `className` | R4 «no añade estilo propio» | X4 | Cubierto |
+| R5 | índice y espera por envoltorio | R5 «escalona…» | M1, M4 | Cubierto |
+| R5 | misma condición, `selectedPetId` nulo (6 envoltorios) | E4.1 | X2, X2b, X2c, X2d | Cubierto por E4 |
+| R5 | misma condición, weekly × 5 kinds no-ok | R5 error + E4.2 | X21 | Cubierto por E4 |
+| R5 | misma condición, collar y última posición, detalle `error` | R5 «…si el detalle falla» | X23e, X24e | Cubierto |
+| R5 | misma condición, última posición sin collar | R5 «…sin collar» | X24n | Cubierto |
+| R5 | misma condición, collar y última posición, detalle pendiente | R6 «al cambiar de mascota…» (`not.toBe`) | X23p, X24p | Cubierto |
+| R5 | **misma condición, collar y última posición, detalle `unauthorized` / `unreachable` / `missing-config`** | — | X23a/u/m, X24a/u/m | **Sobreviven 201/201 (H1)** |
+| R5 | condición más estricta que el bloque (bloque desaparece) | tests previos #70/#71/#77/#81/#85/R9/R14 | Y1, Y2, Y3, Y5, Y6 | Cubierto |
+| R5 | skeleton y gráfica en la misma posición de JSX | R6 «al cambiar…» | X3 | Cubierto |
+| R5 | pet-hero-error (error, unreachable) y day-map sin envoltorio | E4.3 | X18, X17 | Cubierto por E4 |
+| R5 | **hero (`PetHeroHeader`) y `home-states` «no cambian»** | — | X27, X28 | **Sobreviven 201/201 (H3)** |
+| R5 | 4 tests P8 movidos | sus 4 `it` | X33o | Cubierto |
+| R6 | foco: 7 nodos conservados | R6 «no repite…» | M5, X9, X26r/w/c/l/q | Cubierto, nodo a nodo |
+| R6 | cambio de mascota: 4 conservados | R6 «al cambiar…» | M6, X26r2/w2/s2 | Cubierto, nodo a nodo |
+| R6 | cambio de mascota: collar, última posición y reveal se remontan | R6 «al cambiar…» `not.toBe` | X23p, X24p | Cubierto |
+| R7 | reveal envuelve la fila, sin style/className | R7 «envuelve…» | X19 | Cubierto (actividad `ok`) |
+| R7 | `homeEntering(0, 0)` sin reduce motion | R7 «funde sin espera…» | M7 | Cubierto |
+| R7 | con reduce motion | E4.4 | X1 | Cubierto por E4 |
+| R7 | no monta el fundido con el skeleton | R7 «no monta…» | Y3 | Cubierto |
+| R7 | **WHEN la fila sustituye al skeleton con actividad `no-tracking` / `error` / `unreachable` / `missing-config`** | — | X25, X25w | **Sobreviven 201/201 (H2)** |
+| R8 | umbral > 60 / ≤ 60 | R8.1 | M8 | Cubierto |
+| R8 | WHILE off: nace en 0 + FILL / refresco anima | R8.3, R8.7 | M9, M10, M11, X8 | Cubierto |
+| R8 | WHILE on: nace en pct / refresco asigna pct | R8.4, R8.8 | M12 | Cubierto |
+| R8 | misma fila, detrás del texto | R8.2 | X7, X7b | Cubierto |
+| R8 | IF `batteryPct` null / sin collar | R8.5 / R8.6 | Y7 / Y6 | Cubierto |
+| R8 | **«no añade texto ni copy; el lector sigue leyendo collar-battery»** | — | X30t (`<Text>` hermano tras la pista), X30a (`accessibilityLabel` en la pista) | **Sobreviven (H4)** |
+| R8 | clases del relleno como literales completos | lectura | — | Verificado leyendo (`collar-battery-bar.tsx`) |
+| R9 | los 4 ficheros sin escapes | R9 | X29T, X29E, X29B, X29H | Cubierto, fichero a fichero |
+| E4.1-E4.4 | cada `it` nuevo | sí mismo | §1 | Cubierto |
+
+### 3. Huecos que E4 no cierra (bloqueantes)
+
+Cada sonda superviviente es una mutación de un solo punto en producción que
+deja `index.test.tsx` en 201/201. En H4 también quedan en verde los guards y
+`ui-language`, que corrí con ella. Para descartar ramas
+inalcanzables o que no se puedan probar, añadí en el worktree desechable un
+describe de sonda, que no está en ningún commit del repo.
+
+- En producción sin mutar, ese describe pasa 10/10.
+- Con cada sonda superviviente, cae por aserción, con 0 TypeError y 0 «Unable to find».
+
+**H1 — R5 «cada envoltorio se pinta exactamente bajo la misma condición que su
+bloque»: `home-entrance-collar` y `home-entrance-last-position` con el
+detalle en `unauthorized`, `unreachable` y `missing-config`.**
+
+- Sondas: X23u, X23a y X23m montan el envoltorio del collar vacío; X24u, X24a
+  y X24m hacen lo mismo con el de la última posición. Las seis dejan
+  201/201.
+- El único candado es «no pinta los envoltorios del collar ni de la última
+  posición si el detalle falla», y usa solo `{ kind: 'error' }`.
+- `unreachable` es un estado visible normal: pinta `pet-hero-error`, y un
+  envoltorio vacío ahí suma el `gap: 16` que R5 quiere evitar.
+- Es el mismo patrón que E4.2 cerró para weekly.
+- Se puede candar: con `getPet` en cada kind, esperar en el mismo `waitFor` a
+  `reminders-section` visible y a `reminders-section-skeleton` ausente (el
+  detalle ya llegó). Después, los dos envoltorios son `toBeNull`. Cae con las
+  seis sondas.
+
+**H2 — R7 «WHEN la fila del resumen sustituye a `summary-skeleton`»: los
+kinds de actividad `no-tracking`, `error`, `unreachable` y `missing-config`.**
+
+- Con esos kinds la fila (`summary-weight` + `summary-note`) también
+  sustituye al skeleton, dentro de `summary-reveal`. La condición en
+  producción es `kind !== 'unauthorized'`.
+- Los cuatro `it` de R7, E4.4 incluida, usan actividad `ok`.
+- X25 (`entering={activity.data.kind === 'ok' ? homeEntering(0, 0) : undefined}`)
+  y X25w (el `testID` del reveal solo con `ok`) dejan 201/201.
+- Se puede candar: con un `findByTestId('summary-reveal')` por kind y
+  `entering` `toEqual(expect.any(Function))`, las 4 filas caen con X25.
+
+**H3 — R5 «El hero (`PetHeroHeader`) y `home-states` no cambian»** (también
+§Fuera de alcance: «no reciben entrada»).
+
+- X27 envuelve el `PetHeroHeader` en un `HomeEntrance`; X28 hace lo mismo con
+  `home-states`. Las dos dejan 201/201.
+- Es la misma clase de hueco que B2, que E4.3 solo cierra para
+  `pet-hero-error` y el mapa del día.
+- El smoke R10, paso 1, mira el hero a ojo. `home-states` (vacío, error,
+  carga) no lo mira nadie.
+- Se puede candar: recorrer `.parent` desde `pet-hero` (con
+  `renderMotionHome`) y desde `home-states` (con `pets: []`) y comprobar que
+  ningún ancestro tiene `props.entering`. Cae con X27 y X28.
+
+**H4 — R8 «La barra no añade texto ni copy; el lector de pantalla sigue
+leyendo `collar-battery`».**
+
+- X30t: `CollarBatteryBar` devuelve un fragmento con un `<Text>bateria</Text>`
+  detrás de la pista. Deja verdes `index.test.tsx` (201), ui-language,
+  design-drift, legibility-classnames y consistency-classnames: 375/375.
+  `collar-battery-bar.tsx` no está en `SCREEN_FILES`.
+- X30a: `accessible` + `accessibilityLabel` en la pista. Deja 201/201.
+- R8.1 solo cierra los hijos de la pista, y R8.2 solo que la pista va justo
+  detrás de `collar-battery`. Nada mira lo que viene detrás de la pista ni
+  sus props de accesibilidad.
+- Se puede candar: la pista es el último hijo no-string de su fila y su
+  `accessibilityLabel` es `undefined`. Cae con X30t y X30a.
+
+### 4. No bloqueantes
+
+- **X31 (R1, `duration: 250` literal en un objeto).** Sobrevive, 15/15 en
+  motion y home-entrance. En ejecución es un mutante equivalente: solo una
+  lectura del fuente lo distinguiría. `motion.ts` en `c7ac5ceb` usa
+  `MOTION_TRANSITION_MS` en los tres objetos, verificado leyendo.
+- **X32 (R2, borrar la viñeta de las constantes previas de A21).** Sobrevive,
+  9/9 en `motion.test.ts`. La spec solo canda frase, encabezado y casilla. El
+  contenido de las viñetas lo firma el humano con la casilla
+  `- [ ] Enmienda aprobada por humano`, que sigue sin marcar.
+- **Cláusulas estáticas verificadas leyendo.**
+  - `'worklet'` en la primera línea de la función de `homeEntering`.
+  - `motion.ts` solo importa `react-native-reanimated`.
+  - Las dos clases del relleno son literales completos.
+- **Cifras de E4.** `index.test.tsx` 201 verificado. No verificadas por mí,
+  porque exigen la suite entera: 2218 y 329.
