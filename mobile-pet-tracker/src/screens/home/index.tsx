@@ -556,14 +556,15 @@ export function HomeScreen() {
                       ? '—'
                       : `${detail.data.pet.device.batteryPct}%`}
                   </Text>
-                  {detail.data.pet.device.batteryPct !== null ? (
-                    <CollarBatteryBar pct={detail.data.pet.device.batteryPct} />
-                  ) : null}
+                  <CollarBatteryBar pct={detail.data.pet.device.batteryPct ?? 0} />
                 </View>
               ) : (
-                <Text className="font-normal text-muted">
-                  {t('home.noCollar')}
-                </Text>
+                <>
+                  <Text className="font-normal text-muted">
+                    {t('home.noCollar')}
+                  </Text>
+                  <CollarBatteryBar pct={0} />
+                </>
               )}
               {detail.data.pet.device === null ? (
                     <Pressable

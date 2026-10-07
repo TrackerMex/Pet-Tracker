@@ -4976,6 +4976,20 @@ describe('#152 R8: la batería del collar se dibuja como barra', () => {
     }
   });
 
+  it('no pinta la barra sin porcentaje', async () => {
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makeMotionPet(null) });
+    await renderHome();
+    await waitFor(() => expect(screen.getByTestId('collar-battery')).toHaveTextContent('—'));
+    expect(screen.queryByTestId('collar-battery-track')).toBeNull();
+  });
+
+  it('no pinta la barra sin collar', async () => {
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makeMotionPet(82, { device: null }) });
+    await renderHome();
+    expect(await screen.findByTestId('collar-status')).toBeVisible();
+    expect(screen.queryByTestId('collar-battery-track')).toBeNull();
+  });
+
   it('anima del valor anterior al nuevo al refrescar', async () => {
     await renderMotionHome();
     const fill = screen.getByTestId('collar-battery-fill');
