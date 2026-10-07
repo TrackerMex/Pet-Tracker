@@ -634,3 +634,181 @@ que E4.6 no pinta.
 - **Estabilidad.** La espera de E4.5 (`reminders-section` visible y
   `reminders-section-skeleton` ausente en el mismo `waitFor`) fue estable en
   todas las corridas del fichero.
+
+## Pre-verificación E4 (ronda 1d)
+
+Fecha: 2026-10-07. Objeto: `d24167fa` (E4.9-E4.12 en `requirements.md` y en
+el handoff). `src/` sigue igual a `c7ac5ceb`.
+
+Método:
+
+- Worktree desechable en `d24167fa`. Copié literales los bloques (a), (b) y
+  (c) de E4.2 del handoff. `index.test.tsx` da numstat `172 0`, y las anclas
+  nuevas de `grep -cF` dan lo que dice el handoff.
+- Base: 215/215.
+- Cada sonda corre sola contra `index.test.tsx` entero y se revierte con
+  `git checkout HEAD --`. Después de cada una, el árbol y `git diff --cached`
+  quedan vacíos.
+- No corrí `init.sh`, ni la suite entera, ni el rojo de E4.3: esas cifras las
+  midió el leader. El worktree ya está eliminado.
+
+**Resultado: E4 insuficiente, 2 huecos (H8 y H9).** H5, H6, H7 y X42 quedan
+cerrados. Los dos huecos nuevos son del mismo tipo que H6 y H7: mis propuestas
+de candado de la ronda 1c eran más estrechas que su cláusula.
+
+### 1. ¿E4.9-E4.12 cierran H5, H6, H7 y X42?
+
+Sí. Las 17 sondas caen por aserción, con 0 `TypeError`, `ReferenceError`,
+`SyntaxError` y «Unable to find».
+
+| Sonda | Hueco | Falla en | Aserción |
+|---|---|---|---|
+| X18i, X18p | H5 | `deja el error del detalle ($kind) …` (las 2 filas) | `toEqual` |
+| X17i, X17p | H5 | `deja el botón del mapa del día …` | `toEqual` |
+| X27d | H5 | `no da entrada al hero con alertas abiertas` | `toEqual` |
+| X39s2, X39c | H6 | `funde igual la fila con la actividad en $kind` (las 4 filas) | `toBeUndefined` |
+| X43s | H6 | ídem (las 4 filas) | `toEqual` |
+| X39r2, X39c2 | H6 | `funde igual bajo reduce motion` | `toBeUndefined` |
+| X43r / X44r | H6 | ídem | `toEqual` / `toBe` |
+| X30x, X30v, X30n, X37r | H7 | `no añade texto ni nombre accesible a la fila` | `toEqual` |
+| X42 | E4.12 | `monta el skeleton directamente en la tarjeta, …` | `toBe` |
+
+### 2. ¿Cubren los candados la cláusula entera?
+
+Enumeré las ramas leyendo el JSX de `index.tsx` y solo sondeé las que podían
+sobrevivir.
+
+**R5, «no reciben entrada».** Completo, sin sondas nuevas:
+
+- `pet-hero-error` solo se pinta con el detalle en `error` o `unreachable`, y
+  E4.3 cubre las dos filas.
+- `weekly-activity-day-map` tiene una sola rama (actividad `ok` y día
+  seleccionado), cubierta por E4.3.
+- En `index.tsx`, el hero solo se ramifica por `hasOpenAlerts`. E4.6 lo cubre
+  sin alertas y E4.9 con ellas.
+- `home-states` tiene tres ramas (carga, error y vacío), y E4.6 cubre las tres.
+- Con reduce motion es una conjunción con una dimensión que R5 no nombra
+  (ronda 1c, §4).
+
+**R7, «sin `style` ni `className`».** Completo:
+
+- R7 cubre `ok` sin reduce motion.
+- E4.10 cubre reduce motion y los 4 `kind` que no son `ok`.
+- Con `unauthorized` no se pinta el reveal (X40).
+
+**R7, «envuelve la fila desde fuera: la fila conserva su `View` con
+`className="flex-row"` y sus celdas siguen siendo sus hijos directos».**
+
+- Clase de la fila e hijo único del reveal: R7 y E4.10 lo cubren con `ok`,
+  con reduce motion y con los 4 `kind` que no son `ok`.
+- Celdas como hijos directos:
+  - con `ok` y sin reduce motion, #69 R12 (cuatro hijos no-string);
+  - con los 4 `kind` que no son `ok`, #77 R2 (`[celda, summary-note]`);
+  - **con reduce motion no lo cubre nadie: H8.**
+
+**R8, «no añade texto ni copy».** Completo:
+
+- Pista y relleno:
+  - E4.8 cubre las props string;
+  - E4.11 exige que el relleno no tenga hijos;
+  - R8.1 exige que el relleno sea el único hijo no-string de la pista.
+- Un string suelto en la pista (X30s) tumba 51 `it` con «Invariant Violation:
+  Text strings must be rendered within a <Text> component». En el dispositivo
+  sería un crash, así que no es un hueco.
+- Fila: R8.2 exige que la pista vaya justo detrás de `collar-battery`, y E4.8
+  que sea el último hijo.
+- Props de accesibilidad en la pista, el relleno y la fila: E4.11.
+
+**R8, «el lector de pantalla sigue leyendo `collar-battery`».**
+
+- `collar-battery` oculto cae por consulta (X37h).
+- La fila agrupada con nombre propio la cubre E4.11.
+- **Agrupar un ancestro por encima de la fila no lo cubre nadie: H9.**
+
+### 3. Huecos que E4 no cierra (bloqueantes)
+
+**H8 — R7, «sus celdas siguen siendo sus hijos directos», con reduce motion.**
+
+- Sonda X45r (215/215): con `reduceMotion`, las tres celdas de `ok`
+  (actividad, sueño y distancia) van dentro de un
+  `<View className="flex-3 flex-row">`. Es un componente `CellsWrap` en
+  `index.tsx` que solo envuelve si recibe `wrap`.
+- `expectRowUntouched` no la ve:
+  - solo comprueba la celda del peso (el abuelo de `summary-weight`) y que el
+    reveal tenga un único hijo;
+  - #69 R12 cuenta los hijos de la fila, pero sin reduce motion.
+- El origen es mío. Mi propuesta de H6 copiaba las comprobaciones de
+  `envuelve la fila del resumen sin tocarla`, que no mira las celdas porque
+  sin reduce motion ya las mira #69 R12. Es el mismo hueco que X44r, en la
+  otra mitad de la frase.
+- Candado, al final de `funde igual bajo reduce motion`, detrás de
+  `expectRowUntouched(reveal);`:
+
+```ts
+    const row = screen.getByTestId('summary-weight').parent?.parent;
+    expect(row?.children.filter((child) => typeof child !== 'string')).toEqual(
+      ['summary-weight', 'summary-activity', 'summary-sleep', 'summary-distance'].map(
+        (id) => screen.getByTestId(id).parent,
+      ),
+    );
+```
+
+**H9 — R8, «el lector de pantalla sigue leyendo `collar-battery`», con un
+ancestro por encima de la fila agrupado con nombre propio.**
+
+- Sondas:
+  - X46c: `accessible accessibilityLabel="collar"` en el `Card` de
+    `collar-card` (`index.tsx`). 215/215.
+  - X46e: `accessible accessibilityLabel={testID}` en el `Animated.View` de
+    `HomeEntrance` (`home-entrance.tsx`). 215/215 en `index.test.tsx` y 6/6
+    en `home-entrance.test.tsx`.
+- El efecto es el de X37r: el lector lee la tarjeta o el envoltorio, no
+  `collar-battery`.
+  - `home-entrance-collar` es un nodo nuevo de #152.
+  - R4 solo le prohíbe `style` y `className`.
+- El origen es mío: mi propuesta de H7 se paraba en la fila, y E4.11 la copió
+  (`track.parent`).
+- Candado, en `no añade texto ni nombre accesible a la fila`. El bucle de
+  E4.11 se queda para la pista y el relleno, que no son ancestros:
+
+```ts
+    const content = screen.getByTestId('home-content');
+    for (
+      let node: typeof content | null = screen.getByTestId('collar-battery');
+      node && node !== content;
+      node = node.parent
+    ) {
+      expect(
+        Object.keys(node.props).filter((key) => /^(accessib|aria-|role$|importantForAccessibility)/.test(key)),
+      ).toEqual([]);
+    }
+```
+
+  En producción, la cadena es `collar-battery`, la fila, `collar-card` y
+  `home-entrance-collar`, y ninguno tiene una prop que case. Las props de los
+  tres últimos son:
+  - la fila: `className, children`;
+  - `collar-card`: `testID, children, className, style`;
+  - `home-entrance-collar`: `testID, entering, children` y las del mock.
+
+**Verificación (spike).** Metí los dos candados como `it` sueltos en el
+worktree desechable; no están en ningún commit del repo.
+
+- En producción pasan.
+- Con X45r, X46c, X46e y X37l, cada sonda cae por aserción.
+- Con el spike en el fichero, `bun run typecheck` y `bun run lint` dan exit 0.
+
+**Cifras.** Ninguno de los dos añade `it`: amplían el `it` de E4.4 y el de
+E4.8. Los dos ya caen en el rojo de E4.3, uno por la entrada bajo reduce motion
+y otro por el `accessibilityLabel` en la pista. Por eso 215, 23/192/215 y 174
+no deberían moverse. Lo deduzco, no lo medí.
+
+### 4. No bloqueantes
+
+- **X37l.** `accessibilityLabel` en el propio `collar-battery` sobrevive
+  215/215. El lector sigue leyendo `collar-battery` y la barra no añade nada:
+  es un cambio en el `Text` previo, fuera de la cláusula. El recorrido de H9
+  empieza en `collar-battery`, así que también lo caza sin coste.
+- **X30s.** Ver §2: cae, no es un hueco.
+- **Conjunciones.** Siguen igual que en la ronda 1c, §4. Por ejemplo, las
+  celdas con reduce motion y un `kind` que no es `ok`.
