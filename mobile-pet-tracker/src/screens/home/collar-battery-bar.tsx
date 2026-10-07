@@ -24,7 +24,6 @@ export function CollarBatteryBar({ pct }: { pct: number }) {
   return (
     <View
       testID="collar-battery-track"
-      accessibilityLabel="bateria"
       className="h-1.5 flex-1 overflow-hidden rounded-full bg-surface"
     >
       <Animated.View
