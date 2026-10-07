@@ -721,3 +721,106 @@ CAMBIA EN EL RESTO DEL HANDOFF:
 - En el impl, debajo de la PARADA, una seccion `## Reanudacion E2` con la
   salida de E2.1-E2.5 y despues sigue el formato de siempre.
 ```
+
+## Enmienda E3 (leader, 2026-10-07): R8 sin `StyleSheet` en index.test.tsx
+
+> Codex paró en el verde de R9 (parada correcta, `progress/impl_mobile-home-motion-foundations.md`
+> §PARADA — R9 verde: guards históricos rechazan StyleSheet.flatten). Para
+> reanudar, el humano pega en Codex: «Lee la §Enmienda E3 de
+> progress/handoff_mobile-home-motion-foundations.md y reanuda desde ahí. Todo lo
+> demás del handoff sigue vigente.»
+
+```
+Worktree: /home/claude/sites/Pet-Tracker-wt-152   <- el mismo; no cambies de branch
+
+CAUSA (verificada por el leader en un worktree desechable, sin tocar el tuyo):
+la spec (R8.3 y R8.4) prescribe `StyleSheet.flatten(fill.props.style).width`
+en index.test.tsx, pero cinco guards historicos de design-drift.test.ts
+(#68 R18, #69 R13, #70 R17, #71 R13, #85 R12) pasan FEATURE_STYLE_ESCAPES,
+que rechaza cualquier `StyleSheet`, por ese fichero. Estan rojos desde el
+rojo A de R8 (5606d328); ninguna cadena de R8 medía design-drift. El hueco
+es de la spec, no tuyo. Arreglo: medir el ancho del primer render con
+`toHaveStyle` de RNTL, que aplana `props.style` igual que StyleSheet.flatten,
+y quitar el import. Medido sobre 4daff5ff:
+  - test arreglado + collar-battery-bar.tsx de HEAD (comentario mutado):
+      design-drift:  1 failed, 61 passed, 62 total (solo el it de #152 R9)
+      -t '#152 R9':  1 failed, 61 skipped, 62 total
+      index -t '#152 R8': 181 skipped, 11 passed, 192 total
+      index entero:  192 passed, 192 total; typecheck y lint exit=0
+  - test arreglado + tu comentario corregido:
+      design-drift:  62 passed, 62 total; -t '#152 R9': 61 skipped, 1 passed
+      index entero:  192 passed, 192 total
+  - sondas en collar-battery-bar.tsx, con el assert viejo y con el nuevo,
+    mismo resultado (1 failed, 181 skipped, 10 passed, 192 total):
+      useSharedValue(pct) siempre -> cae «llena la barra desde vacía…»
+                                     en la linea `toHaveStyle({ width: '0%' })`
+      useSharedValue(0) siempre   -> cae «bajo reduce motion fija el ancho…»
+                                     en la linea `toHaveStyle({ width: '82%' })`
+Tu comentario corregido no cambia. Ningun guard cambia.
+
+REANUDA ASI, desde mobile-pet-tracker/:
+
+E3.1 Estado. `git status --short` -> exactamente estas dos lineas:
+       M mobile-pet-tracker/src/screens/home/collar-battery-bar.tsx
+      ?? progress/impl_mobile-home-motion-foundations.md
+     `git log -1 --format=%s` -> docs(mobile-home-motion-foundations): #152 handoff amendment E3
+     Si algo no coincide, PARA.
+
+E3.2 Aparta tu verde de R9 (vuelve en E3.5). Igual que en E2: el stash es
+  comun y hay una entrada ajena; usa la tuya por nombre.
+  git stash push -m 'e3-152' -- src/screens/home/collar-battery-bar.tsx \
+    && git diff --quiet HEAD -- src/screens/home/collar-battery-bar.tsx; echo "exit=$?"   -> exit=0
+  Si el sandbox deniega `git stash`, PARA (no lo sustituyas por copias).
+
+E3.3 En src/screens/home/index.test.tsx, tres cambios y nada mas:
+  - borra la linea `import { StyleSheet } from 'react-native';`
+  - `expect(StyleSheet.flatten(fill.props.style).width).toBe('0%');`
+      -> `expect(fill).toHaveStyle({ width: '0%' });`
+  - `expect(StyleSheet.flatten(fill.props.style).width).toBe('82%');`
+      -> `expect(fill).toHaveStyle({ width: '82%' });`
+  grep -cF 'StyleSheet' src/screens/home/index.test.tsx                            -> 0
+  grep -cF "expect(fill).toHaveStyle({ width: '0%' });" src/screens/home/index.test.tsx    -> 1
+  grep -cF "expect(fill).toHaveStyle({ width: '82%' });" src/screens/home/index.test.tsx   -> 1
+
+E3.4 Rojo E3 (R9 sigue rojo por el comentario mutado de HEAD; los cinco
+  guards historicos vuelven a verde):
+  FORCE_COLOR=0 bunx jest src/__tests__/design-drift.test.ts -t '#152 R9' > /tmp/152-r9e3.txt 2>&1; echo "exit=$?"
+    -> exit=1 y `Tests:       1 failed, 61 skipped, 62 total`
+  FORCE_COLOR=0 bunx jest src/__tests__/design-drift.test.ts > /tmp/152-r9e3-all.txt 2>&1; echo "exit=$?"
+    -> exit=1 y `Tests:       1 failed, 61 passed, 62 total`
+  FORCE_COLOR=0 bunx jest src/screens/home/index.test.tsx -t '#152 R8' > /tmp/152-r9e3-r8.txt 2>&1; echo "exit=$?"
+    -> exit=0 y `Tests:       181 skipped, 11 passed, 192 total`
+  grep -qE '^Tests: +1 failed, 61 skipped, 62 total$' /tmp/152-r9e3.txt \
+    && grep -qF '"screens/home/collar-battery-bar.tsx"' /tmp/152-r9e3.txt \
+    && grep -qE '^Tests: +1 failed, 61 passed, 62 total$' /tmp/152-r9e3-all.txt \
+    && ! grep -qF '"screens/home/index.test.tsx"' /tmp/152-r9e3-all.txt \
+    && grep -qE '^Tests: +181 skipped, 11 passed, 192 total$' /tmp/152-r9e3-r8.txt \
+    && ! grep -qE 'TypeError|ReferenceError|SyntaxError|Cannot find module' /tmp/152-r9e3.txt /tmp/152-r9e3-all.txt \
+    && test "$(git diff --numstat -- src/screens/home/index.test.tsx | cut -f1,2)" = "$(printf '2\t3')" \
+    && test ! -e .expo/types/router.d.ts && bun run typecheck && bun run lint \
+    && git add src/screens/home/index.test.tsx \
+    && test "$(git diff --cached --name-only)" = 'mobile-pet-tracker/src/screens/home/index.test.tsx' \
+    && git commit -m 'test(mobile-home): #152 R9 red, R8 reads the fill width without StyleSheet'
+
+E3.5 Recupera tu verde de R9, por nombre:
+  git stash pop "$(git stash list | grep -F ': e3-152' | cut -d: -f1)" && git status --short
+    -> las mismas dos lineas de E3.1 (`M .../collar-battery-bar.tsx` y `?? progress/impl_...`)
+  y `git stash list | grep -cF 'e3-152'` -> 0; la entrada ajena sigue ahi.
+
+E3.6 R9 verde: la cadena del handoff, TAL CUAL (repite sus dos mediciones;
+     ahora el fichero entero da 62 passed). Despues sigue con el Cierre,
+     sin cambios.
+
+CAMBIA EN EL RESTO DEL HANDOFF:
+- Son 25 commits, no 24 (el rojo E3 entre el rojo y el verde de R9).
+- traceability.md:
+  - fila R8: añade el commit E3 y di que R8.3 y R8.4 miden el ancho del
+    primer render con `toHaveStyle` en vez de `StyleSheet.flatten` (misma
+    lectura de `props.style`; requirements.md no se reescribe).
+  - fila R9: sus dos rojos (4daff5ff y el de E3) y el verde.
+- Este commit de enmienda toca solo progress/handoff_mobile-home-motion-foundations.md,
+  que ya esta excluido de la lista cerrada: la lista y sus cuentas no cambian
+  (home/index sigue en 192 y design-drift en 62 al cierre; E3 no anade tests).
+- En el impl, debajo de la PARADA, una seccion `## Reanudacion E3` con la
+  salida de E3.1-E3.5 y despues sigue el formato de siempre.
+```
