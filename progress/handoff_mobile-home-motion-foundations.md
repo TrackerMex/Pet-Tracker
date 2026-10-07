@@ -641,3 +641,83 @@ CAMBIA EN EL RESTO DEL HANDOFF:
 - En el impl, debajo de la PARADA, una seccion `## Reanudacion E1` con la
   salida de E1.1-E1.5 y despues sigue el formato de siempre.
 ```
+
+## Enmienda E2 (leader, 2026-10-07): espera literal del peso en R6
+
+> Codex paró antes del verde de R7 A (parada correcta, `progress/impl_mobile-home-motion-foundations.md`
+> §PARADA — espera literal de R6 antes del verde R7 A). Para reanudar, el humano
+> pega en Codex: «Lee la §Enmienda E2 de
+> progress/handoff_mobile-home-motion-foundations.md y reanuda desde ahí. Todo lo
+> demás del handoff sigue vigente.»
+
+```
+Worktree: /home/claude/sites/Pet-Tracker-wt-152   <- el mismo; no cambies de branch
+
+CAUSA (verificada por el leader en un worktree desechable, sin tocar el tuyo):
+el segundo it de #152 R6 espera `toHaveTextContent('15')` en summary-weight,
+pero fmtKg (src/screens/home/format.ts) devuelve `${kg} kg` y el matcher de
+RNTL 14 compara el texto completo por defecto. La spec (R6) dice "espera a
+summary-weight" sin dar el literal: el hueco es de la spec, no tuyo. El
+literal correcto es '15 kg' (la primera mascota pesa 12 kg, así que la
+espera sigue distinguiendo a la segunda). Medido sobre a7cbd7d7:
+  - tu index.tsx de R7 A + '15 kg'   -> -t '#152 R(6|7)': 176 skipped, 4 passed, 180 total
+                                       fichero entero:  180 passed, 180 total
+  - index.tsx de HEAD + '15 kg'      -> -t '#152 R6': 2 failed, 178 skipped, 180 total,
+                                       2 `Unable to find ... summary-reveal`, 0 TypeError
+                                       fichero entero:  4 failed, 176 passed, 180 total
+Tu index.tsx de R7 A no cambia. Solo cambia un literal del test.
+
+REANUDA ASI, desde mobile-pet-tracker/:
+
+E2.1 Estado. `git status --short` -> exactamente estas dos lineas:
+       M mobile-pet-tracker/src/screens/home/index.tsx
+      ?? progress/impl_mobile-home-motion-foundations.md
+     `git log -1 --format=%s` -> docs(mobile-home-motion-foundations): #152 handoff amendment E2
+     Si algo no coincide, PARA.
+
+E2.2 Aparta tu R7 A (vuelve en E2.5). El stash es comun a todos los
+  worktrees y ya hay una entrada ajena (`codex-preserve-before-feature-52-checkout`):
+  no la toques; usa siempre la tuya por nombre.
+  git stash push -m 'e2-152' -- src/screens/home/index.tsx \
+    && git diff --quiet HEAD -- src/screens/home/index.tsx; echo "exit=$?"   -> exit=0
+  Si el sandbox deniega `git stash`, PARA (no lo sustituyas por copias).
+
+E2.3 En index.test.tsx, dentro del it 'al cambiar de mascota solo repiten los
+  bloques que se vuelven a montar' de #152 R6, cambia
+  `toHaveTextContent('15');` por `toHaveTextContent('15 kg');`. Nada mas.
+  grep -cF "toHaveTextContent('15');" src/screens/home/index.test.tsx      -> 0
+  grep -cF "toHaveTextContent('15 kg');" src/screens/home/index.test.tsx   -> 1
+
+E2.4 Rojo E2 (summary-reveal sigue sin existir en HEAD; R6 cae como en su rojo):
+  FORCE_COLOR=0 bunx jest src/screens/home/index.test.tsx -t '#152 R6' > /tmp/152-r6e2.txt 2>&1; echo "exit=$?"
+    -> exit=1 y `Tests:       2 failed, 178 skipped, 180 total`
+  FORCE_COLOR=0 bunx jest src/screens/home/index.test.tsx > /tmp/152-r6e2-all.txt 2>&1; echo "exit=$?"
+    -> exit=1 y `Tests:       4 failed, 176 passed, 180 total` (2 de R6 + 2 de R7)
+  grep -qE '^Tests: +2 failed, 178 skipped, 180 total$' /tmp/152-r6e2.txt \
+    && test "$(grep -cF 'Unable to find an element with testID: summary-reveal' /tmp/152-r6e2.txt)" -ge 2 \
+    && grep -qE '^Tests: +4 failed, 176 passed, 180 total$' /tmp/152-r6e2-all.txt \
+    && ! grep -qE 'TypeError|ReferenceError|SyntaxError|Cannot find module' /tmp/152-r6e2.txt \
+    && test "$(git diff --numstat -- src/screens/home/index.test.tsx | cut -f1,2)" = "$(printf '1\t1')" \
+    && test ! -e .expo/types/router.d.ts && bun run typecheck && bun run lint \
+    && git add src/screens/home/index.test.tsx \
+    && test "$(git diff --cached --name-only)" = 'mobile-pet-tracker/src/screens/home/index.test.tsx' \
+    && git commit -m 'test(mobile-home): #152 R6 red, weight wait matches the full text'
+
+E2.5 Recupera tu R7 A, por nombre:
+  git stash pop "$(git stash list | grep -F ': e2-152' | cut -d: -f1)" && git status --short
+    -> las mismas dos lineas de E2.1 (`M .../index.tsx` y `?? progress/impl_...`)
+  y `git stash list | grep -cF 'e2-152'` -> 0; la entrada ajena sigue ahi.
+
+E2.6 R7 verde A: la cadena del handoff, TAL CUAL (no cambia nada).
+     Despues sigue con R7 rojo B y el resto, sin cambios.
+
+CAMBIA EN EL RESTO DEL HANDOFF:
+- Son 24 commits, no 23 (el rojo E2 entre el rojo de R7 A y su verde).
+- traceability.md, fila R6: sus dos rojos (29eba7b1 y el de E2) y el verde
+  de R7 A.
+- Este commit de enmienda toca solo progress/handoff_mobile-home-motion-foundations.md,
+  que ya esta excluido de la lista cerrada: la lista y sus cuentas no cambian
+  (home/index sigue en 192 al cierre; E2 no anade tests).
+- En el impl, debajo de la PARADA, una seccion `## Reanudacion E2` con la
+  salida de E2.1-E2.5 y despues sigue el formato de siempre.
+```
