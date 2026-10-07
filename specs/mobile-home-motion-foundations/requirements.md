@@ -594,21 +594,30 @@ D1-D6 con sus valores por defecto y la enmienda A21 a `docs/ui-guidelines.md`
 (R2), que Codex escribe y que el humano aprueba marcando su propia casilla en
 la sección de la enmienda.
 
-## Enmienda E4 — tres cláusulas de R5 y R7 sin candado
+## Enmienda E4 — cláusulas de R5, R7 y R8 sin candado
 
 El reviewer rechazó #152 en `c7ac5ceb`
 (`progress/review_mobile-home-motion-foundations.md` §Observaciones,
-bloqueantes B1-B3). La producción cumple R5 y R7. El hueco está en las listas
-de `it` de esta spec, que candan cada cláusula en una sola rama. Con cada una
-de estas mutaciones, `src/screens/home/index.test.tsx` sigue en 192/192:
+bloqueantes B1-B3). Antes de la firma, el reviewer pre-verificó el primer
+borrador de esta enmienda con un barrido cláusula × rama × candado × sonda
+(§Pre-verificación E4 (ronda 1b) del mismo fichero) y encontró cuatro
+cláusulas más en la misma situación (H1-H4). La producción cumple R5, R7 y R8.
+El hueco está en las listas de `it` de esta spec, que candan cada cláusula en
+una sola rama o en ninguna. Con cada una de estas mutaciones,
+`src/screens/home/index.test.tsx` sigue en 192/192:
 
 | Cláusula | Ramas sin candado | Mutaciones que pasan en verde |
 |---|---|---|
 | R5: «cada envoltorio se pinta exactamente bajo la misma condición que su bloque» | `selectedPetId` nulo, para los cuatro envoltorios que dependen de él. Y para `home-entrance-weekly`, los `kind` de la actividad que no son `ok` ni `error` | X2b, X2, X2c y X2d (envoltorio montado sin mascota). X21 (`kind !== 'error'` en vez de `=== 'ok'`) |
 | R5: «`pet-hero-error` y `weekly-activity-day-map` siguen siendo hijos directos de `home-content`, sin envoltorio» | Las dos ramas: ningún test pinta esos nodos y mira su padre | X18 (`pet-hero-error` dentro de un `HomeEntrance`) y X17 (el botón del mapa dentro de un `HomeEntrance`) |
 | R7: «igual con o sin reduce motion» | Con reduce motion | X1 (`entering={reduceMotion ? undefined : homeEntering(0, 0)}`) |
+| R5: «cada envoltorio se pinta exactamente bajo la misma condición que su bloque» (H1) | `home-entrance-collar` y `home-entrance-last-position` con el detalle en `unauthorized`, `unreachable` o `missing-config`. El único candado usa `error` | X23u, X23a y X23m (envoltorio del collar vacío con ese `kind`). X24u, X24a y X24m (lo mismo con el de la última posición) |
+| R5: «El hero (`PetHeroHeader`) y `home-states` no cambian» (H3) | Las dos: ningún test mira si reciben entrada | X27 (el hero dentro de un `HomeEntrance`) y X28 (`home-states` dentro de un `HomeEntrance`) |
+| R7: «WHEN la fila del resumen sustituye a `summary-skeleton`» (H2) | La fila con la actividad en `no-tracking`, `error`, `unreachable` o `missing-config`. Los `it` de R7 usan `ok` | X25 (`entering` solo con `ok`) y X25w (`testID` solo con `ok`) |
+| R8: «La barra no añade texto ni copy; el lector de pantalla sigue leyendo `collar-battery`» (H4) | Toda: nada mira lo que va detrás de la pista ni sus props de accesibilidad | X30t (un `<Text>` detrás de la pista) y X30a (`accessible` y `accessibilityLabel` en la pista) |
 
-R5 y R7 no cambian. Esta enmienda solo añade los candados que les faltaban.
+R5, R7 y R8 no cambian. Esta enmienda solo añade los candados que les
+faltaban.
 
 ### E4.1 — R5 sin mascota seleccionada
 
@@ -655,32 +664,106 @@ mismo que `funde sin espera ni desplazamiento`, pero con
 primero `entering` `toEqual(expect.any(Function))`. Así la sonda X1 cae por
 aserción y no por `TypeError`.
 
+### E4.5 — R5: collar y última posición con cada detalle fallido (H1)
+
+**WHEN** se cierra #152, **THE SYSTEM SHALL** tener en
+`describe('#152 R5: …')` un `it.each`
+`no pinta los envoltorios del collar ni de la última posición con el detalle en $kind`
+con tres filas de `getPet`: `{ kind: 'unauthorized' }`,
+`{ kind: 'unreachable', message: 'network down' }` y
+`{ kind: 'missing-config' }`. `error` ya tiene su `it`. Cada fila espera, en
+el mismo `waitFor`, a `reminders-section` visible y a
+`reminders-section-skeleton` ausente. Ese skeleton solo se pinta con el
+detalle pendiente, así que la espera depende del dato que se prueba. Después
+comprueba que `home-entrance-collar` y `home-entrance-last-position` están
+ausentes.
+
+### E4.6 — R5: el hero y `home-states` no reciben entrada (H3)
+
+**WHEN** se cierra #152, **THE SYSTEM SHALL** tener en el mismo describe una
+función `enteringIds(node)`. Recorre el árbol desde `screen.container` y
+devuelve, en preorden, el `testID` de cada nodo que tiene `props.entering`. Y
+estos `it`:
+
+- `solo da entrada a los envoltorios, al fundido y al avatar del selector` —
+  con `renderMotionHome`, `toEqual` exacto con
+  `pet-avatar-fallback-pet-1`, `home-entrance-summary`, `summary-reveal`,
+  `home-entrance-collar`, `home-entrance-quick-actions`,
+  `home-entrance-weekly`, `home-entrance-reminders` y
+  `home-entrance-last-position`. `pet-avatar-fallback-pet-1` es el
+  `Avatar.Fallback` de heroui-native que pinta `pet-switcher.tsx` dentro del
+  hero. Ya traía su propia entrada antes de #152: es el hero tal como estaba.
+- `it.each` `no da entrada a home-states con %s`, con las tres ramas de
+  `home-states`:
+  - `home-loading`, con `listPets` pendiente. Espera `['home-loading']`: el
+    `Skeleton` de heroui-native trae su propia entrada.
+  - `home-error`, con `{ kind: 'error' }`. Espera `[]`.
+  - `home-empty`, con `{ kind: 'ok', pets: [] }`. Espera `[]`.
+
+Se recorre el árbol entero y no solo los ancestros. Una entrada dentro del
+hero (X27i) o dentro de una sola rama de `home-states` (X28e, X28l) también
+cambia lo que R5 dice que no cambia.
+
+### E4.7 — R7: la fila funde igual con cada actividad (H2)
+
+**WHEN** se cierra #152, **THE SYSTEM SHALL** tener en
+`describe('#152 R7: …')` un `it.each`
+`funde igual la fila con la actividad en $kind` con cuatro filas:
+`{ kind: 'no-tracking' }`, `{ kind: 'error' }`,
+`{ kind: 'unreachable', message: 'network down' }` y
+`{ kind: 'missing-config' }`. Cada fila espera a `summary-reveal` con
+`findByTestId`, porque aparece justo cuando llega la actividad. Después hace
+las mismas comprobaciones que `funde igual bajo reduce motion`. Con
+`unauthorized` la fila no se pinta (#77 R3).
+
+### E4.8 — R8: la barra no añade texto ni nombre accesible (H4)
+
+**WHEN** se cierra #152, **THE SYSTEM SHALL** tener en
+`describe('#152 R8: …')` el
+`it('no añade texto ni nombre accesible a la fila')`. Con `renderMotionHome`
+comprueba dos cosas:
+
+- `collar-battery-track` es `toBe` el último hijo de su fila.
+- En la pista y en el relleno, las únicas props de tipo `string` son
+  `testID` y `className`, en ese orden.
+
+Así cae cualquier canal de copy: `accessibilityLabel`, `aria-label`,
+`accessibilityHint` o un `<Text>` detrás de la pista.
+
 ### Cifras y alcance
 
 Las ediciones literales, los mensajes de commit y la mutación del rojo están
 en `progress/handoff_mobile-home-motion-foundations.md` §Enmienda E4. El
-leader las verificó en un worktree desechable sobre `c7ac5ceb`:
+leader las verificó en un worktree desechable sobre `083ebc1b`, cuyo `src/` es
+el de `c7ac5ceb`:
 
 - **Verde:**
-  - `index.test.tsx`: 201/201.
-  - Jest móvil entero: 96 suites / 2218 tests.
-- **Rojo** (con la mutación de cuatro sondas en `index.tsx`):
-  - `index.test.tsx`: exactamente los 9 `it` nuevos fallan y 192 pasan, sin
-    excepciones.
+  - `index.test.tsx`: 213/213.
+  - Jest móvil entero: 96 suites / 2230 tests.
+  - typecheck y lint: exit 0.
+- **Rojo** (con la mutación de sonda en `index.tsx` y
+  `collar-battery-bar.tsx`):
+  - `index.test.tsx`: exactamente los 21 `it` nuevos fallan y 192 pasan, todos
+    por aserción.
   - typecheck y lint: exit 0.
   - design-drift, legibility-classnames y consistency-classnames: 144/144.
-- **Sondas:** las ocho del reviewer caen una a una, por aserción. También
-  caen dos variantes del leader: X21b (actividad sin skeleton) y X18u (solo
-  la rama `unreachable` envuelta).
+    ui-language: 30/30.
+- **Sondas:**
+  - Las ocho de la ronda 1 caen por aserción (el reviewer lo verificó en la
+    ronda 1b).
+  - Las doce de H1-H4 y seis variantes del leader (X25d, X27i, X28e, X28l,
+    X30h y X30f) caen una a una. Diecisiete caen por aserción.
+  - X25w cae por consulta: `findByTestId` no encuentra el `testID`. Es el
+    rojo esperado para esa sonda.
 
 Cifras:
 
-- `index.test.tsx`: de 192 a **201** (+1 de E4.1, +4 de E4.2, +3 de E4.3,
-  +1 de E4.4).
-- Comparación de cierre con la base: de 320 a **329**.
-- Jest móvil: de 2209 a **2218**.
+- `index.test.tsx`: de 192 a **213**. E4.1 suma 1, E4.2 suma 4, E4.3 suma 3,
+  E4.4 suma 1, E4.5 suma 3, E4.6 suma 4, E4.7 suma 4 y E4.8 suma 1.
+- Comparación de cierre con la base: de 320 a **341**.
+- Jest móvil: de 2209 a **2230**.
 - La lista cerrada no cambia: sigue en 11 ficheros. E4 toca solo
-  `index.test.tsx` e `index.tsx`, y este último vuelve en el verde a su
-  contenido de `c7ac5ceb`.
+  `index.test.tsx`, `index.tsx` y `collar-battery-bar.tsx`. Los dos últimos
+  vuelven en el verde a su contenido de `c7ac5ceb`.
 
 - [ ] Enmienda E4 aprobada por humano (fecha: ____, en el chat del leader; commit de firma: el que marca esta casilla)
