@@ -8,6 +8,7 @@ import {
 import { router, useFocusEffect } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
+import { StyleSheet } from 'react-native';
 import { Easing, ReduceMotion, withDelay } from 'react-native-reanimated';
 import { Uniwind } from 'uniwind';
 
@@ -29,6 +30,7 @@ import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import { LanguageProvider } from '../../providers/language-provider';
 import { SelectedPetProvider } from '../../providers/selected-pet-provider';
 import * as selectedPetHooks from '../../providers/selected-pet-provider';
+import { MOTION_FILL_TIMING } from '../../theme/motion';
 import { TABULAR_NUMS } from '../../theme/native-styles';
 import { CATEGORY_SLOTS } from '../../utils/category-palette';
 import { HomeScreen } from './index';
@@ -4921,5 +4923,87 @@ describe('#152 R7: las cifras del resumen aparecen con un fundido', () => {
     await renderHome();
     expect(await screen.findByTestId('summary-skeleton')).toBeVisible();
     expect(screen.queryByTestId('summary-reveal')).toBeNull();
+  });
+});
+
+describe('#152 R8: la batería del collar se dibuja como barra', () => {
+  beforeEach(setupHomeMotion);
+
+  it.each([
+    [82, 'bg-success'],
+    [61, 'bg-success'],
+    [60, 'bg-warning-strong'],
+    [12, 'bg-warning-strong'],
+  ] as const)('pinta %i% con %s', async (pct, color) => {
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makeMotionPet(pct) });
+    await renderMotionHome();
+    const track = screen.getByTestId('collar-battery-track');
+    const fill = screen.getByTestId('collar-battery-fill');
+    expect(track.props.className).toBe('h-1.5 flex-1 overflow-hidden rounded-full bg-surface');
+    expect(fill.props.className).toBe(`h-full rounded-full ${color}`);
+    expect(track.children.filter((child) => typeof child !== 'string')).toEqual([fill]);
+    expect(fill).toHaveAnimatedStyle({ width: `${pct}%` }, { shouldMatchAllProps: true });
+  });
+
+  it('pone la barra detrás del porcentaje en su fila', async () => {
+    await renderMotionHome();
+    const track = screen.getByTestId('collar-battery-track');
+    const battery = screen.getByTestId('collar-battery');
+    expect(track.parent).toBe(battery.parent);
+    const siblings = track.parent?.children.filter((child) => typeof child !== 'string');
+    expect(siblings?.indexOf(track)).toBe((siblings?.indexOf(battery) ?? -1) + 1);
+  });
+
+  it('llena la barra desde vacía con el preset de barra', async () => {
+    await renderMotionHome();
+    const fill = screen.getByTestId('collar-battery-fill');
+    expect(StyleSheet.flatten(fill.props.style).width).toBe('0%');
+    const config = mockWithTiming.mock.calls.find(([value]) => value === 82)?.[1];
+    expect(config).toBe(MOTION_FILL_TIMING);
+    expect(config).toEqual(expect.objectContaining({ duration: 250, reduceMotion: ReduceMotion.System }));
+  });
+
+  it('bajo reduce motion fija el ancho sin animar', async () => {
+    mockUseReducedMotion.mockReturnValue(true);
+    try {
+      await renderMotionHome();
+      const fill = screen.getByTestId('collar-battery-fill');
+      expect(mockWithTiming.mock.calls.some(([value]) => value === 82)).toBe(false);
+      expect(StyleSheet.flatten(fill.props.style).width).toBe('82%');
+      expect(fill).toHaveAnimatedStyle({ width: '82%' }, { shouldMatchAllProps: true });
+    } finally {
+      mockUseReducedMotion.mockReturnValue(false);
+    }
+  });
+
+  it('anima del valor anterior al nuevo al refrescar', async () => {
+    await renderMotionHome();
+    const fill = screen.getByTestId('collar-battery-fill');
+    mockWithTiming.mockClear();
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makeMotionPet(81) });
+    await refocusHome();
+    await waitFor(() => expect(screen.getByTestId('collar-battery')).toHaveTextContent('81%'));
+    expect(screen.getByTestId('collar-battery-fill')).toBe(fill);
+    const config = mockWithTiming.mock.calls.find(([value]) => value === 81)?.[1];
+    expect(config).toBe(MOTION_FILL_TIMING);
+    expect(config).toEqual(expect.objectContaining({ duration: 250, reduceMotion: ReduceMotion.System }));
+    expect(fill).toHaveAnimatedStyle({ width: '81%' }, { shouldMatchAllProps: true });
+  });
+
+  it('bajo reduce motion salta al nuevo valor al refrescar', async () => {
+    mockUseReducedMotion.mockReturnValue(true);
+    try {
+      await renderMotionHome();
+      const fill = screen.getByTestId('collar-battery-fill');
+      mockWithTiming.mockClear();
+      mockGetPet.mockResolvedValue({ kind: 'ok', pet: makeMotionPet(81) });
+      await refocusHome();
+      await waitFor(() => expect(screen.getByTestId('collar-battery')).toHaveTextContent('81%'));
+      expect(screen.getByTestId('collar-battery-fill')).toBe(fill);
+      expect(mockWithTiming.mock.calls.some(([value]) => value === 81)).toBe(false);
+      expect(fill).toHaveAnimatedStyle({ width: '81%' }, { shouldMatchAllProps: true });
+    } finally {
+      mockUseReducedMotion.mockReturnValue(false);
+    }
   });
 });
