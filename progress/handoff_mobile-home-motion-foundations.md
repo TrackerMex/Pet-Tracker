@@ -829,7 +829,8 @@ CAMBIA EN EL RESTO DEL HANDOFF:
 
 > El reviewer rechazó en `c7ac5ceb` (`progress/review_mobile-home-motion-foundations.md`,
 > bloqueantes B1-B3), y su pre-verificación de esta enmienda encontró cuatro
-> huecos más (H1-H4, §Pre-verificación E4 (ronda 1b)). Tu código cumple la
+> huecos más (H1-H4, §Pre-verificación E4 (ronda 1b)) y, en una segunda,
+> otros tres (H5-H7, §Pre-verificación E4 (ronda 1c)). Tu código cumple la
 > spec; lo que faltaba eran candados, y la spec los añade en
 > `requirements.md` §Enmienda E4 (firmada por el humano). Para reanudar, el humano pega en Codex: «Lee la §Enmienda E4 de
 > progress/handoff_mobile-home-motion-foundations.md y reanuda desde ahí. Todo
@@ -845,17 +846,21 @@ o el boton del mapa dentro de un HomeEntrance (X18, X17), summary-reveal sin
 `entering` bajo reduce motion (X1), envoltorios del collar o de la ultima
 posicion con el detalle en unauthorized/unreachable/missing-config (X23, X24),
 el hero o home-states con entrada (X27, X28), summary-reveal sin `entering` con
-actividad no-ok (X25) y copy o nombre accesible en la barra de bateria (X30t,
-X30a). El hueco es de la spec, no tuyo.
-Medido por el leader en un worktree desechable sobre 083ebc1b (src/ = c7ac5ceb),
+actividad no-ok (X25), copy o nombre accesible en la barra de bateria (X30t,
+X30a), entrada dentro de pet-hero-error, del boton del mapa o del hero con
+alertas (X18i, X18p, X17i, X17p, X27d), style/className/otro hijo en el reveal
+con actividad no-ok o reduce motion (X39s2, X39c, X39r2, X39c2, X43s, X43r,
+X44r) y copy por otros canales en la barra (X30x, X30v, X30n, X37r). El hueco
+es de la spec, no tuyo.
+Medido por el leader en un worktree desechable sobre c79b9dbc (src/ = c7ac5ceb),
 con el texto EXACTO de abajo:
-  - tests de E4.2 + produccion de c7ac5ceb:  213 passed, 213 total
-  - tests de E4.2 + mutacion de E4.3:       21 failed, 192 passed, 213 total
-      (exactamente los 21 nuevos, todos por asercion; sin TypeError,
+  - tests de E4.2 + produccion de c7ac5ceb:  215 passed, 215 total
+  - tests de E4.2 + mutacion de E4.3:       23 failed, 192 passed, 215 total
+      (exactamente los 23 nuevos, todos por asercion; sin TypeError,
       ReferenceError, SyntaxError ni "Unable to find")
       typecheck y lint exit=0; design-drift + legibility-classnames +
       consistency-classnames + ui-language: 174 passed, 174 total
-  - jest movil entero en verde: 96 suites, 2230 tests
+  - jest movil entero en verde: 96 suites, 2232 tests
   - cada sonda del reviewer por separado cae
 
 REANUDA ASI, desde mobile-pet-tracker/:
@@ -905,21 +910,39 @@ E4.2 En src/screens/home/index.test.tsx, tres inserciones y nada mas. Copia
     expect(screen.queryByTestId('home-entrance-weekly')).toBeNull();
   });
 
+  const enteringIds = (node: typeof screen.container): string[] => [
+    ...(node.props.entering ? [String(node.props.testID)] : []),
+    ...node.children.flatMap((child) => (typeof child === 'string' ? [] : enteringIds(child))),
+  ];
+
+  const homeEnteringIds = [
+    'pet-avatar-fallback-pet-1',
+    'home-entrance-summary',
+    'summary-reveal',
+    'home-entrance-collar',
+    'home-entrance-quick-actions',
+    'home-entrance-weekly',
+    'home-entrance-reminders',
+    'home-entrance-last-position',
+  ];
+
   it.each<PetState>([
     { kind: 'error' },
     { kind: 'unreachable', message: 'network down' },
-  ])('deja el error del detalle ($kind) como hijo directo de home-content', async (state) => {
+  ])('deja el error del detalle ($kind) como hijo directo de home-content y sin entrada', async (state) => {
     mockGetPet.mockResolvedValue(state);
     await renderHome();
-    expect((await screen.findByTestId('pet-hero-error')).parent)
-      .toBe(screen.getByTestId('home-content'));
+    const card = await screen.findByTestId('pet-hero-error');
+    expect(card.parent).toBe(screen.getByTestId('home-content'));
+    expect(enteringIds(card)).toEqual([]);
   });
 
-  it('deja el botón del mapa del día como hijo directo de home-content', async () => {
+  it('deja el botón del mapa del día como hijo directo de home-content y sin entrada', async () => {
     await renderMotionHome();
     await fireEvent.press(screen.getByTestId('weekly-activity-day-2026-08-21'));
-    expect(screen.getByTestId('weekly-activity-day-map').parent)
-      .toBe(screen.getByTestId('home-content'));
+    const button = screen.getByTestId('weekly-activity-day-map');
+    expect(button.parent).toBe(screen.getByTestId('home-content'));
+    expect(enteringIds(button)).toEqual([]);
   });
 
   it.each<PetState>([
@@ -937,23 +960,16 @@ E4.2 En src/screens/home/index.test.tsx, tres inserciones y nada mas. Copia
     expect(screen.queryByTestId('home-entrance-last-position')).toBeNull();
   });
 
-  const enteringIds = (node: typeof screen.container): string[] => [
-    ...(node.props.entering ? [String(node.props.testID)] : []),
-    ...node.children.flatMap((child) => (typeof child === 'string' ? [] : enteringIds(child))),
-  ];
-
   it('solo da entrada a los envoltorios, al fundido y al avatar del selector', async () => {
     await renderMotionHome();
-    expect(enteringIds(screen.container)).toEqual([
-      'pet-avatar-fallback-pet-1',
-      'home-entrance-summary',
-      'summary-reveal',
-      'home-entrance-collar',
-      'home-entrance-quick-actions',
-      'home-entrance-weekly',
-      'home-entrance-reminders',
-      'home-entrance-last-position',
-    ]);
+    expect(enteringIds(screen.container)).toEqual(homeEnteringIds);
+  });
+
+  it('no da entrada al hero con alertas abiertas', async () => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert()], nextCursor: null });
+    await renderMotionHome();
+    await screen.findByTestId('home-alerts-dot');
+    expect(enteringIds(screen.container)).toEqual(homeEnteringIds);
   });
 
   it.each([
@@ -972,17 +988,28 @@ E4.2 En src/screens/home/index.test.tsx, tres inserciones y nada mas. Copia
       antes del `});` que cierra el describe (al que siguen una linea en
       blanco y `describe('#152 R8: ...`), inserta una linea en blanco y:
 
+  const expectRowUntouched = (reveal: typeof screen.container) => {
+    const row = screen.getByTestId('summary-weight').parent?.parent;
+    expect(row?.props.className).toBe('flex-row');
+    expect(row?.parent).toBe(reveal);
+    expect(reveal.children.filter((child) => typeof child !== 'string')).toEqual([row]);
+    expect(reveal.props.style).toBeUndefined();
+    expect(reveal.props.className).toBeUndefined();
+  };
+
   it('funde igual bajo reduce motion', async () => {
     mockUseReducedMotion.mockReturnValue(true);
     await renderMotionHome();
     jest.mocked(withDelay).mockClear();
-    const { entering } = screen.getByTestId('summary-reveal').props;
+    const reveal = screen.getByTestId('summary-reveal');
+    const { entering } = reveal.props;
     expect(entering).toEqual(expect.any(Function));
     expect(entering({})).toEqual({
       initialValues: { opacity: 0, transform: [{ translateY: 0 }] },
       animations: { opacity: 1, transform: [{ translateY: 0 }] },
     });
     expect(jest.mocked(withDelay).mock.calls.map(([ms]) => ms)).toEqual([0, 0]);
+    expectRowUntouched(reveal);
   });
 
   it.each<DailyActivityState>([
@@ -1002,6 +1029,14 @@ E4.2 En src/screens/home/index.test.tsx, tres inserciones y nada mas. Copia
       animations: { opacity: 1, transform: [{ translateY: 0 }] },
     });
     expect(jest.mocked(withDelay).mock.calls.map(([ms]) => ms)).toEqual([0, 0]);
+    expectRowUntouched(reveal);
+  });
+
+  it('monta el skeleton directamente en la tarjeta, sin fundido de salida propio', async () => {
+    mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
+    await renderHome();
+    expect((await screen.findByTestId('summary-skeleton')).parent)
+      .toBe(screen.getByTestId('summary-card'));
   });
 
   (c) Dentro de `describe('#152 R8: ...')`, justo despues del cierre `  });`
@@ -1012,35 +1047,45 @@ E4.2 En src/screens/home/index.test.tsx, tres inserciones y nada mas. Copia
   it('no añade texto ni nombre accesible a la fila', async () => {
     await renderMotionHome();
     const track = screen.getByTestId('collar-battery-track');
+    const fill = screen.getByTestId('collar-battery-fill');
     expect(track.parent?.children.at(-1)).toBe(track);
-    for (const node of [track, screen.getByTestId('collar-battery-fill')]) {
+    expect(fill.children).toEqual([]);
+    for (const node of [track, fill]) {
       expect(Object.keys(node.props).filter((key) => typeof node.props[key] === 'string'))
         .toEqual(['testID', 'className']);
+    }
+    for (const node of [track, fill, track.parent]) {
+      expect(Object.keys(node?.props ?? {}).filter((key) => /^(accessib|aria-|role$|importantForAccessibility)/.test(key)))
+        .toEqual([]);
     }
   });
 
   No anadas imports: DailyActivityState, PetState, PetsState, pending, waitFor,
-  fireEvent, withDelay, mockUseReducedMotion, renderHome y renderMotionHome ya
-  estan.
+  fireEvent, withDelay, mockUseReducedMotion, mockListAlerts, makeAlert,
+  renderHome y renderMotionHome ya estan.
 
   T=src/screens/home/index.test.tsx
-  test "$(git diff --numstat -- $T | cut -f1,2)" = "$(printf '136\t0')"; echo "exit=$?"           -> exit=0
+  test "$(git diff --numstat -- $T | cut -f1,2)" = "$(printf '172\t0')"; echo "exit=$?"           -> exit=0
   grep -cF "it('no pinta ningún envoltorio sin mascota seleccionada'" $T                       -> 1
   grep -cF "])('no pinta el envoltorio de la actividad con \$kind'" $T                          -> 1
-  grep -cF "como hijo directo de home-content'" $T                                              -> 2
+  grep -cF "como hijo directo de home-content y sin entrada'" $T                                -> 2
   grep -cF "it('funde igual bajo reduce motion'" $T                                             -> 1
   grep -cF "con el detalle en \$kind'" $T                                                       -> 1
   grep -cF "it('solo da entrada a los envoltorios, al fundido y al avatar del selector'" $T     -> 1
   grep -cF "])('no da entrada a home-states con %s'" $T                                         -> 1
   grep -cF "])('funde igual la fila con la actividad en \$kind'" $T                            -> 1
   grep -cF "it('no añade texto ni nombre accesible a la fila'" $T                               -> 1
+  grep -cF "it('no da entrada al hero con alertas abiertas'" $T                                 -> 1
+  grep -cF "it('monta el skeleton directamente en la tarjeta, sin fundido de salida propio'" $T -> 1
+  grep -cF "enteringIds(screen.container)).toEqual(homeEnteringIds)" $T                         -> 2
+  grep -cF "expectRowUntouched(reveal);" $T                                                     -> 2
   grep -cF "describe('#152" $T                                                                  -> 4
   tail -n 1 $T                                                                                  -> });
 
 E4.3 Mutacion de sonda en src/screens/home/index.tsx y
   src/screens/home/collar-battery-bar.tsx (va en el commit rojo y se revierte
   en el verde, regla C4 de esta feature). Las anclas son lineas COMPLETAS
-  (grep -cxF), no numeros de linea. En index.tsx, siete cambios:
+  (grep -cxF), no numeros de linea. En index.tsx, ocho cambios:
   - la linea
         {selectedPetId && (activity.data === undefined || activity.data.kind === 'ok') ? (
     pasa a
@@ -1063,25 +1108,30 @@ E4.3 Mutacion de sonda en src/screens/home/index.tsx y
           <HomeEntrance index={0} testID="home-entrance-hero"><View /></HomeEntrance>
   - antes de la linea `          {pets.data === undefined ? (` inserta
           <HomeEntrance index={0} testID="home-entrance-states"><View /></HomeEntrance>
+  - la linea
+                <Skeleton testID="summary-skeleton" className="h-16 w-full rounded-xl" />
+    pasa a
+                <Animated.View><Skeleton testID="summary-skeleton" className="h-16 w-full rounded-xl" /></Animated.View>
   En collar-battery-bar.tsx, un cambio:
   - despues de la linea `      testID="collar-battery-track"` inserta
       accessibilityLabel="bateria"
     (6 espacios de sangria, como la linea ancla)
   Antes de editar, cada ancla da 1 con grep -cxF. Despues:
   P=src/screens/home/index.tsx; B=src/screens/home/collar-battery-bar.tsx
-  test "$(git diff --numstat -- $P | cut -f1,2)" = "$(printf '9\t2')"; echo "exit=$?"   -> exit=0
+  test "$(git diff --numstat -- $P | cut -f1,2)" = "$(printf '10\t3')"; echo "exit=$?"  -> exit=0
   test "$(git diff --numstat -- $B | cut -f1,2)" = "$(printf '1\t0')"; echo "exit=$?"   -> exit=0
   grep -cF '<HomeEntrance' $P                                                     -> 11
   grep -cF "activity.data.kind !== 'error' ? (" $P                                -> 1
   grep -cF "entering={reduceMotion || activity.data.kind !== 'ok' ? undefined : homeEntering(0, 0)}" $P -> 1
   grep -cF 'accessibilityLabel="bateria"' $B                                      -> 1
+  grep -cF '<Animated.View><Skeleton testID="summary-skeleton"' $P                -> 1
 
 E4.4 Rojo E4:
   FORCE_COLOR=0 bunx jest src/screens/home/index.test.tsx > /tmp/152-r-e4.txt 2>&1; echo "exit=$?"
-    -> exit=1 y `Tests:       21 failed, 192 passed, 213 total`
+    -> exit=1 y `Tests:       23 failed, 192 passed, 215 total`
   FORCE_COLOR=0 bunx jest src/__tests__/design-drift.test.ts src/__tests__/legibility-classnames.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/ui-language.test.ts > /tmp/152-r-e4-guards.txt 2>&1; echo "exit=$?"
     -> exit=0 y `Tests:       174 passed, 174 total`
-  grep -qE '^Tests: +21 failed, 192 passed, 213 total$' /tmp/152-r-e4.txt \
+  grep -qE '^Tests: +23 failed, 192 passed, 215 total$' /tmp/152-r-e4.txt \
     && test "$(grep -cF '✕ no pinta ningún envoltorio sin mascota seleccionada' /tmp/152-r-e4.txt)" = 1 \
     && test "$(grep -cF '✕ no pinta el envoltorio de la actividad con ' /tmp/152-r-e4.txt)" = 4 \
     && test "$(grep -cF '✕ deja el ' /tmp/152-r-e4.txt)" = 3 \
@@ -1091,7 +1141,9 @@ E4.4 Rojo E4:
     && test "$(grep -cF '✕ funde igual bajo reduce motion' /tmp/152-r-e4.txt)" = 1 \
     && test "$(grep -cF '✕ funde igual la fila con la actividad en ' /tmp/152-r-e4.txt)" = 4 \
     && test "$(grep -cF '✕ no añade texto ni nombre accesible a la fila' /tmp/152-r-e4.txt)" = 1 \
-    && test "$(grep -c '✕' /tmp/152-r-e4.txt)" = 21 \
+    && test "$(grep -cF '✕ no da entrada al hero con alertas abiertas' /tmp/152-r-e4.txt)" = 1 \
+    && test "$(grep -cF '✕ monta el skeleton directamente en la tarjeta, sin fundido de salida propio' /tmp/152-r-e4.txt)" = 1 \
+    && test "$(grep -c '✕' /tmp/152-r-e4.txt)" = 23 \
     && ! grep -qE 'TypeError|ReferenceError|SyntaxError|Cannot find module|Unable to find' /tmp/152-r-e4.txt \
     && grep -qE '^Tests: +174 passed, 174 total$' /tmp/152-r-e4-guards.txt \
     && test ! -e .expo/types/router.d.ts && bun run typecheck && bun run lint \
@@ -1103,10 +1155,10 @@ E4.5 Verde E4: devuelve index.tsx y collar-battery-bar.tsx a su contenido de c7a
   git checkout c7ac5ceb -- src/screens/home/index.tsx src/screens/home/collar-battery-bar.tsx \
     && git diff --quiet c7ac5ceb -- src/screens/home/index.tsx src/screens/home/collar-battery-bar.tsx; echo "exit=$?"   -> exit=0
   FORCE_COLOR=0 bunx jest src/screens/home/index.test.tsx > /tmp/152-g-e4.txt 2>&1; echo "exit=$?"
-    -> exit=0 y `Tests:       213 passed, 213 total`
+    -> exit=0 y `Tests:       215 passed, 215 total`
   FORCE_COLOR=0 bunx jest src/__tests__/design-drift.test.ts src/__tests__/legibility-classnames.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/ui-language.test.ts > /tmp/152-g-e4-guards.txt 2>&1; echo "exit=$?"
     -> exit=0 y `Tests:       174 passed, 174 total`
-  grep -qE '^Tests: +213 passed, 213 total$' /tmp/152-g-e4.txt \
+  grep -qE '^Tests: +215 passed, 215 total$' /tmp/152-g-e4.txt \
     && grep -qE '^Tests: +174 passed, 174 total$' /tmp/152-g-e4-guards.txt \
     && test ! -e .expo/types/router.d.ts && bun run typecheck && bun run lint \
     && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'mobile-pet-tracker/src/screens/home/collar-battery-bar.tsx mobile-pet-tracker/src/screens/home/index.tsx ' \
@@ -1115,10 +1167,10 @@ E4.5 Verde E4: devuelve index.tsx y collar-battery-bar.tsx a su contenido de c7a
     && git diff --quiet c7ac5ceb HEAD -- src/screens/home/index.tsx src/screens/home/collar-battery-bar.tsx; echo "exit=$?"   -> exit=0
 
 E4.6 CIERRE: repitelo entero, tal cual, con estas cifras nuevas:
-  - comparacion con la base: `Tests:       341 passed, 341 total`
-    (281 de la base + 60 nuevos. Reparto: home/index 213, design-drift 62,
+  - comparacion con la base: `Tests:       343 passed, 343 total`
+    (281 de la base + 62 nuevos. Reparto: home/index 215, design-drift 62,
     global-css 51, motion 9, home-entrance 6)
-  - jest entero: `Test Suites: 96 passed, 96 total` y `Tests:       2230 passed, 2230 total`
+  - jest entero: `Test Suites: 96 passed, 96 total` y `Tests:       2232 passed, 2232 total`
   - anclas 0-40 y las 8 positivas: mismos valores de cierre que antes
     (E4 no las mueve: `<HomeEntrance` vuelve a 6 en el verde)
   - lista cerrada: los mismos 11 ficheros
@@ -1126,8 +1178,8 @@ E4.6 CIERRE: repitelo entero, tal cual, con estas cifras nuevas:
 CAMBIA EN EL RESTO DEL HANDOFF:
 - Son 28 commits, no 25: el rojo E4, el verde E4 y el commit documental de E4.
 - traceability.md:
-  - fila R5: «(22 casos)» en vez de «(7 `it`)», y añade el rojo y el verde de E4.
-  - fila R7: «(8 casos)» en vez de «(3 `it`)», y añade el rojo y el verde de E4.
+  - fila R5: «(23 casos)» en vez de «(7 `it`)», y añade el rojo y el verde de E4.
+  - fila R7: «(9 casos)» en vez de «(3 `it`)», y añade el rojo y el verde de E4.
   - fila R8: «(12 casos: `it.each` de 4 filas y 8 `it`; …)» en vez de
     «(11 casos: `it.each` de 4 filas y 7 `it`; …)» (el resto del parentesis
     igual), y añade el rojo y el verde de E4.

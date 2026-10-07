@@ -601,7 +601,10 @@ El reviewer rechazó #152 en `c7ac5ceb`
 bloqueantes B1-B3). Antes de la firma, el reviewer pre-verificó el primer
 borrador de esta enmienda con un barrido cláusula × rama × candado × sonda
 (§Pre-verificación E4 (ronda 1b) del mismo fichero) y encontró cuatro
-cláusulas más en la misma situación (H1-H4). La producción cumple R5, R7 y R8.
+cláusulas más en la misma situación (H1-H4). Su segunda pre-verificación
+(§Pre-verificación E4 (ronda 1c)) dio H1-H4 por cerrados y encontró tres más
+(H5-H7): ramas de las mismas cláusulas que los candados de H2-H4 no
+alcanzaban. La producción cumple R5, R7 y R8.
 El hueco está en las listas de `it` de esta spec, que candan cada cláusula en
 una sola rama o en ninguna. Con cada una de estas mutaciones,
 `src/screens/home/index.test.tsx` sigue en 192/192:
@@ -615,9 +618,12 @@ una sola rama o en ninguna. Con cada una de estas mutaciones,
 | R5: «El hero (`PetHeroHeader`) y `home-states` no cambian» (H3) | Las dos: ningún test mira si reciben entrada | X27 (el hero dentro de un `HomeEntrance`) y X28 (`home-states` dentro de un `HomeEntrance`) |
 | R7: «WHEN la fila del resumen sustituye a `summary-skeleton`» (H2) | La fila con la actividad en `no-tracking`, `error`, `unreachable` o `missing-config`. Los `it` de R7 usan `ok` | X25 (`entering` solo con `ok`) y X25w (`testID` solo con `ok`) |
 | R8: «La barra no añade texto ni copy; el lector de pantalla sigue leyendo `collar-battery`» (H4) | Toda: nada mira lo que va detrás de la pista ni sus props de accesibilidad | X30t (un `<Text>` detrás de la pista) y X30a (`accessible` y `accessibilityLabel` en la pista) |
+| R5: «El hero (`PetHeroHeader`), `pet-hero-error`, `home-states` y `weekly-activity-day-map` no reciben entrada» (H5) | Una entrada dentro de `pet-hero-error` o del botón del mapa, o en el propio nodo. Y el hero con alertas abiertas: E4.6 lo pinta sin `home-alerts-dot` | X18i y X18p (`pet-hero-error`), X17i y X17p (el botón del mapa), X27d (`home-alerts-dot` con entrada) |
+| R7: «envuelve la fila desde fuera, sin `style` ni `className`» (H6) | Con los `kind` que no son `ok` y con reduce motion. E4.4 y E4.7 solo miran `entering` | X39s2, X39c, X39r2 y X39c2 (`style` o `className` en el reveal), X43s y X43r (otro hijo en el reveal), X44r (la fila cambia de clase) |
+| R8: «La barra no añade texto ni copy; el lector de pantalla sigue leyendo `collar-battery`» (H7) | Un `<Text>` dentro del relleno, props de accesibilidad que no son `string` en la pista, y la fila agrupada con nombre propio | X30x, X30v, X30n y X37r |
 
-R5, R7 y R8 no cambian. Esta enmienda solo añade los candados que les
-faltaban.
+R5, R7 y R8 no cambian, salvo una precisión de lectura en R7 (E4.12). Esta
+enmienda solo añade los candados que les faltaban.
 
 ### E4.1 — R5 sin mascota seleccionada
 
@@ -645,15 +651,17 @@ envoltorio de recordatorios se monta siempre. El leader lo midió en el spike
 
 **WHEN** se cierra #152, **THE SYSTEM SHALL** tener en el mismo describe:
 
-- `it.each` `deja el error del detalle ($kind) como hijo directo de home-content`,
+- `it.each` `deja el error del detalle ($kind) como hijo directo de home-content y sin entrada`,
   con dos filas de `getPet`: `{ kind: 'error' }` y
   `{ kind: 'unreachable', message: 'network down' }`, las dos ramas que pintan
   `pet-hero-error`. Comprueba que `(await findByTestId('pet-hero-error')).parent`
-  es `toBe(getByTestId('home-content'))`.
-- `it('deja el botón del mapa del día como hijo directo de home-content')`.
+  es `toBe(getByTestId('home-content'))` y, desde E4.9, que
+  `enteringIds(pet-hero-error)` es `toEqual([])`.
+- `it('deja el botón del mapa del día como hijo directo de home-content y sin entrada')`.
   Con el arreglo de `setupHomeMotion`, pulsa `weekly-activity-day-2026-08-21`
   (el último día, es decir, hoy). Comprueba que
-  `getByTestId('weekly-activity-day-map').parent` es `toBe(getByTestId('home-content'))`.
+  `getByTestId('weekly-activity-day-map').parent` es `toBe(getByTestId('home-content'))`
+  y, desde E4.9, que `enteringIds(weekly-activity-day-map)` es `toEqual([])`.
 
 ### E4.4 — R7 bajo reduce motion
 
@@ -730,20 +738,84 @@ comprueba dos cosas:
 Así cae cualquier canal de copy: `accessibilityLabel`, `aria-label`,
 `accessibilityHint` o un `<Text>` detrás de la pista.
 
+### E4.9 — R5: ni `pet-hero-error`, ni el botón del mapa, ni el hero con alertas reciben entrada (H5)
+
+**WHEN** se cierra #152, **THE SYSTEM SHALL**:
+
+- Declarar `enteringIds` (E4.6) y una constante `homeEnteringIds` con la lista
+  exacta de ocho de E4.6 **antes** de los `it` de E4.3, y usarla en el `it` de
+  la lista exacta de E4.6.
+- Comprobar en los `it` de E4.3 que `enteringIds` del propio nodo
+  (`pet-hero-error` en sus dos filas, `weekly-activity-day-map` tras pulsar el
+  día) es `toEqual([])`. `enteringIds` incluye el propio nodo, así que cae
+  tanto una entrada dentro (X18i, X17i) como en el nodo (X18p, X17p).
+- Tener en `describe('#152 R5: …')` el
+  `it('no da entrada al hero con alertas abiertas')`. Con `listAlerts` →
+  `{ kind: 'ok', items: [makeAlert()], nextCursor: null }` y
+  `renderMotionHome`, espera a `home-alerts-dot` y comprueba que
+  `enteringIds(screen.container)` es `toEqual(homeEnteringIds)`.
+
+### E4.10 — R7: la fila sigue intacta con cada actividad y bajo reduce motion (H6)
+
+**WHEN** se cierra #152, **THE SYSTEM SHALL** tener en
+`describe('#152 R7: …')`, antes de los `it` de E4.4 y E4.7, una función
+`expectRowUntouched(reveal)` con las cinco comprobaciones de
+`envuelve la fila del resumen sin tocarla`:
+
+- la fila (`summary-weight` → `.parent?.parent`) tiene `className` `'flex-row'`;
+- su padre es `toBe(reveal)`;
+- el único hijo no-`string` del reveal es la fila;
+- `reveal.props.style` y `reveal.props.className` son `toBeUndefined()`.
+
+`funde igual bajo reduce motion` y cada fila de
+`funde igual la fila con la actividad en $kind` la llaman al final. Con los
+`kind` que no son `ok`, `summary-weight` se pinta igual y su abuelo sigue
+siendo la fila.
+
+### E4.11 — R8: ningún canal de copy ni de accesibilidad en la barra (H7)
+
+**WHEN** se cierra #152, **THE SYSTEM SHALL** ampliar el `it` de E4.8 con:
+
+- `collar-battery-fill` sin hijos: `fill.children` es `toEqual([])`;
+- en la pista, en el relleno y en la fila (`track.parent`), ninguna prop cuyo
+  nombre case con `/^(accessib|aria-|role$|importantForAccessibility)/`.
+
+En producción no hay ninguna: la pista lleva `testID`, `className` y
+`children`; el relleno, `testID`, `className`, `style` y las props del mock
+de Reanimated; la fila, `className` y `children`. Así caen también los canales
+que no son `string` (`accessibilityValue`, `accessible`) y la fila agrupada
+con nombre propio, que haría que el lector la leyese a ella en vez de
+`collar-battery`.
+
+### E4.12 — R7: el skeleton no estrena fundido de salida (X42)
+
+R7 dice «El skeleton se desmonta en el acto, sin fundido cruzado». Leída al
+pie de la letra no la cumplía la producción ni antes de #152: el `Skeleton`
+de heroui-native trae de serie `entering` FadeIn y `exiting` FadeOut
+(`skeleton.animation.js`). Se lee así: **#152 no envuelve `summary-skeleton`
+ni le añade un fundido de salida propio**; el de heroui-native queda fuera.
+
+**WHEN** se cierra #152, **THE SYSTEM SHALL** tener en
+`describe('#152 R7: …')` el
+`it('monta el skeleton directamente en la tarjeta, sin fundido de salida propio')`.
+Con la actividad pendiente comprueba que
+`(await findByTestId('summary-skeleton')).parent` es
+`toBe(getByTestId('summary-card'))`.
+
 ### Cifras y alcance
 
 Las ediciones literales, los mensajes de commit y la mutación del rojo están
 en `progress/handoff_mobile-home-motion-foundations.md` §Enmienda E4. El
-leader las verificó en un worktree desechable sobre `083ebc1b`, cuyo `src/` es
+leader las verificó en un worktree desechable sobre `c79b9dbc`, cuyo `src/` es
 el de `c7ac5ceb`:
 
 - **Verde:**
-  - `index.test.tsx`: 213/213.
-  - Jest móvil entero: 96 suites / 2230 tests.
+  - `index.test.tsx`: 215/215.
+  - Jest móvil entero: 96 suites / 2232 tests.
   - typecheck y lint: exit 0.
 - **Rojo** (con la mutación de sonda en `index.tsx` y
   `collar-battery-bar.tsx`):
-  - `index.test.tsx`: exactamente los 21 `it` nuevos fallan y 192 pasan, todos
+  - `index.test.tsx`: exactamente los 23 `it` nuevos fallan y 192 pasan, todos
     por aserción.
   - typecheck y lint: exit 0.
   - design-drift, legibility-classnames y consistency-classnames: 144/144.
@@ -755,13 +827,15 @@ el de `c7ac5ceb`:
     X30h y X30f) caen una a una. Diecisiete caen por aserción.
   - X25w cae por consulta: `findByTestId` no encuentra el `testID`. Es el
     rojo esperado para esa sonda.
+  - Las dieciséis de H5-H7 y X42 caen una a una, todas por aserción.
 
 Cifras:
 
-- `index.test.tsx`: de 192 a **213**. E4.1 suma 1, E4.2 suma 4, E4.3 suma 3,
-  E4.4 suma 1, E4.5 suma 3, E4.6 suma 4, E4.7 suma 4 y E4.8 suma 1.
-- Comparación de cierre con la base: de 320 a **341**.
-- Jest móvil: de 2209 a **2230**.
+- `index.test.tsx`: de 192 a **215**. E4.1 suma 1, E4.2 suma 4, E4.3 suma 3,
+  E4.4 suma 1, E4.5 suma 3, E4.6 suma 4, E4.7 suma 4, E4.8 suma 1, E4.9 suma 1
+  y E4.12 suma 1. E4.10 y E4.11 amplían `it` que ya existían.
+- Comparación de cierre con la base: de 320 a **343**.
+- Jest móvil: de 2209 a **2232**.
 - La lista cerrada no cambia: sigue en 11 ficheros. E4 toca solo
   `index.test.tsx`, `index.tsx` y `collar-battery-bar.tsx`. Los dos últimos
   vuelven en el verde a su contenido de `c7ac5ceb`.
