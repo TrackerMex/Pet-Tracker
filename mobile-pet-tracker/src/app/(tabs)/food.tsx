@@ -402,9 +402,12 @@ export default function FoodScreen() {
           ) : null}
 
           {plan.data?.kind === 'not-found' ? (
-            <Text testID="food-plan-empty" className="font-normal text-muted">
-              {t('food.noMealPlanYet')}
-            </Text>
+            <EmptyState
+              testID="food-plan-empty"
+              pose="food"
+              title={t('food.noMealPlanYet')}
+              body={t('food.noMealPlanBody')}
+            />
           ) : null}
 
           {plan.data?.kind === 'error' ||
