@@ -1150,6 +1150,15 @@ describe('#155 R5: sin alertas, Pingo duerme', () => {
     mockListAlerts.mockReset();
   });
 
+  it('queda en el sitio del vacío que sustituye', async () => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [], nextCursor: null });
+    await renderAlerts();
+    await screen.findByTestId('alerts-empty-pose');
+    const slot = screen.getByTestId('alerts-empty');
+    expect(slot.parent?.parent?.props.testID).toBe('alerts-list');
+    expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['alerts-empty']);
+  });
+
   it('pinta la pose, el título y la frase de Pingo', async () => {
     mockListAlerts.mockResolvedValue({ kind: 'ok', items: [], nextCursor: null });
     await renderAlerts();
