@@ -685,3 +685,14 @@ describe('#153 R11: Pingo parpadea cada cuatro segundos', () => {
     }
   });
 });
+
+describe('#153 R12: la parada de los bucles la hace Reanimated', () => {
+  it('no cancela a mano ni devuelve limpieza', async () => {
+    await renderWelcome();
+    expect(screen.getByTestId('welcome-pingo')).toBeOnTheScreen();
+    const source = readSource('screens/welcome/index.tsx');
+    for (const re of [/\bcancelAnimation\b/g, /return \(\) =>/g]) {
+      expect((source.match(re) ?? []).length).toBe(0);
+    }
+  });
+});
