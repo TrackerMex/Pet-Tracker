@@ -45,6 +45,7 @@ import {
 import { listReminders } from '../../api/reminders';
 import type { DayEntry, ReminderType } from '../../api/types';
 import { Card } from '../../components/card';
+import { EmptyState } from '../../components/empty-state';
 import {
   PetHeroHeader,
   type PetHeroStatusTone,
@@ -390,9 +391,16 @@ export function HomeScreen() {
           ) : null}
 
           {pets.data?.kind === 'ok' && pets.data.pets.length === 0 ? (
-            <Text testID="home-empty" className="text-muted">
-              {t('common.noPetsYet')}
-            </Text>
+            <EmptyState
+              testID="home-empty"
+              pose="talk"
+              title={t('common.noPetsYet')}
+              body={t('common.noPetsBody')}
+              action={{
+                label: t('profile.addPet'),
+                onPress: () => router.push('/pets/add'),
+              }}
+            />
           ) : null}
         </View>
       )}

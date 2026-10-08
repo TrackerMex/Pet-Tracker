@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { Button, Skeleton } from 'heroui-native';
-import { useFocusEffect } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -21,6 +21,7 @@ import {
 import { geofenceKeys, petKeys, positionKeys, tripKeys } from '../../api/query-keys';
 import { getDayRoute } from '../../api/trips';
 import { Card } from '../../components/card';
+import { EmptyState } from '../../components/empty-state';
 import { PetAvatar } from '../../components/pet-avatar';
 import {
   STATUS_TONE_CLASSES,
@@ -265,9 +266,16 @@ export function MapScreen() {
 
       {pets.data?.kind === 'ok' && pets.data.pets.length === 0 ? (
         <View className="flex-1 items-center justify-center p-6 bg-background">
-          <Text testID="map-no-pets" className="text-muted">
-            {t('common.noPetsYet')}
-          </Text>
+          <EmptyState
+            testID="map-no-pets"
+            pose="talk"
+            title={t('common.noPetsYet')}
+            body={t('common.noPetsBody')}
+            action={{
+              label: t('profile.addPet'),
+              onPress: () => router.push('/pets/add'),
+            }}
+          />
         </View>
       ) : null}
 
