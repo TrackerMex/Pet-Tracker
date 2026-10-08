@@ -1,3 +1,4 @@
+import { ReduceMotion } from 'react-native-reanimated';
 import {
   MOTION_FEEDBACK_MS,
   MOTION_TRANSITION_MS,
@@ -7,6 +8,11 @@ import {
   MOTION_SETTLE_SPRING,
   MOTION_FADE_TIMING,
   MOTION_FILL_TIMING,
+  MOTION_ENTRANCE_SCALE,
+  MOTION_FLOAT_OFFSET_Y,
+  MOTION_FLOAT_TIMING,
+  MOTION_BLINK_INTERVAL_MS,
+  MOTION_BLINK_TIMING,
 } from '../motion';
 
 declare function require(moduleName: '../motion'): Record<string, unknown>;
@@ -62,10 +68,15 @@ describe('#152 R1: las duraciones y el preset de movimiento viven en un solo sit
 
   it('no exporta nada más', () => {
     expect(Object.keys(require('../motion')).sort()).toEqual([
+      'MOTION_BLINK_INTERVAL_MS',
+      'MOTION_BLINK_TIMING',
       'MOTION_ENTRANCE_OFFSET_Y',
+      'MOTION_ENTRANCE_SCALE',
       'MOTION_FADE_TIMING',
       'MOTION_FEEDBACK_MS',
       'MOTION_FILL_TIMING',
+      'MOTION_FLOAT_OFFSET_Y',
+      'MOTION_FLOAT_TIMING',
       'MOTION_SETTLE_SPRING',
       'MOTION_STAGGER_MS',
       'MOTION_SURFACE_MS',
@@ -99,5 +110,26 @@ describe('#152 R2: la carta apunta a motion.ts', () => {
   it('global.css no declara tokens de movimiento', () => {
     expect(readFileSync(join(process.cwd(), 'src/theme/global.css'), 'utf8'))
       .not.toContain('--motion');
+  });
+});
+
+
+describe('#153 R4: las constantes de Pingo viven en motion.ts', () => {
+  it('declara la escala de entrada y el recorrido de la flotación', () => {
+    expect(MOTION_ENTRANCE_SCALE).toBe(0.9);
+    expect(MOTION_FLOAT_OFFSET_Y).toBe(4);
+  });
+
+  it('declara medio ciclo de flotación ease-in-out', () => {
+    expect(MOTION_FLOAT_TIMING).toEqual({
+      duration: 1200,
+      easing: { bezier: [0.37, 0, 0.63, 1] },
+      reduceMotion: ReduceMotion.System,
+    });
+  });
+
+  it('declara el intervalo y el cambio instantáneo del parpadeo', () => {
+    expect(MOTION_BLINK_INTERVAL_MS).toBe(4000);
+    expect(MOTION_BLINK_TIMING).toEqual({ duration: 0, reduceMotion: ReduceMotion.System });
   });
 });

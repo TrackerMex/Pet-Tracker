@@ -276,7 +276,7 @@ describe('#146 R10: el editor de zonas resuelve su copy por clave', () => {
 });
 
 describe('#118 R1: welcome resuelve su copy por clave', () => {
-  it('resuelve las 8 ocurrencias de welcome', () => checkUses(R16_WELCOME));
+  it('resuelve las 9 ocurrencias de welcome (#153 R1)', () => checkUses(R16_WELCOME));
 });
 
 const REPOSITORY_ROOT = join(SOURCE_ROOT, '..');

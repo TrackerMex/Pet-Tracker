@@ -306,6 +306,27 @@ Tres corolarios que nadie debe confundir con lo anterior:
   `device.connectivity` dejó de pintarse crudo en la feature #68 (R16): se
   resuelve por catálogo en `src/utils/device-connectivity.ts`.
 
+**7. Voz de Pingo: guardián sereno.** Decidido por el humano el 2026-10-07
+(D1 de la feature #153): la mascota se llama **Pingo** y habla con la voz B,
+«guardián sereno». Rige todo texto que la app pone en boca de Pingo
+(bocadillos, estados vacíos, celebraciones, avisos); el resto del copy sigue el
+punto 6 sin más. Cada frase nueva de Pingo entra con su clave en los dos
+idiomas, como cualquier otra copy.
+
+- **Tono:** tranquilo y cálido; da seguridad. En español, tutea.
+- **Persona:** Pingo habla en primera persona («te ayudo», «te recomiendo») y
+  llama a la mascota del usuario por su nombre, con el marcador `{{petName}}`.
+- **Sin emoji**, en ningún idioma.
+- **Exclamaciones solo para celebrar.** Un saludo, un aviso o un estado vacío
+  terminan en punto.
+- **Sin bromas en las alertas.** Una alerta de Pingo dice qué pasa y qué hacer.
+- **En inglés, registro neutro.**
+- **Bucles de reposo.** Flotar y parpadear son las únicas animaciones
+  continuas de Pingo, y una excepción declarada a §Animación: animan
+  `translateY` y `opacity` con timing y duraciones fuera de 150/250/400,
+  porque no entran, ni salen, ni responden a un gesto. Sus constantes viven en
+  `src/theme/motion.ts` y no arrancan con reduce motion.
+
 ## Checklist de autocrítica (cierra toda pantalla nueva o modificada)
 
 Screenshot mental (o real en smoke) contra: jerarquía (lo importante
@@ -433,8 +454,9 @@ solo duraciones y configuraciones de Reanimated. Tiene los precedentes
 `native-styles.ts` y `touch-target.ts` en la misma carpeta.
 
 Las constantes anteriores a #152 (`MEALS_BAR_TIMING`, `KCAL_BAR_TIMING`,
-`WELCOME_ENTRANCE_MS`, `BAR_ENTRY_*`, `METRIC_TAB_SPRING` y
-`TAB_INDICATOR_SPRING`) migran a `motion.ts` en una feature posterior,
-fuera del alcance de esta.
+`BAR_ENTRY_*`, `METRIC_TAB_SPRING` y `TAB_INDICATOR_SPRING`) migran a
+`motion.ts` en una feature posterior, fuera del alcance de esta.
+`WELCOME_ENTRANCE_MS` no está en la lista: la retiró #153, cuya bienvenida
+usa `MOTION_FADE_TIMING` y `MOTION_SETTLE_SPRING` (enmienda E1 de #153).
 
 - [X] Enmienda aprobada por humano

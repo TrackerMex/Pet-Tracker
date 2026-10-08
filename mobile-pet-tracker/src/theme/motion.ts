@@ -20,3 +20,21 @@ export const MOTION_FILL_TIMING = {
   easing: Easing.bezier(0.77, 0, 0.175, 1),
   reduceMotion: ReduceMotion.System,
 };
+
+// #153 R4
+export const MOTION_ENTRANCE_SCALE = 0.9;
+// #153 R4
+export const MOTION_FLOAT_OFFSET_Y = 4;
+// #153 R4
+export const MOTION_FLOAT_TIMING = {
+  duration: 1200,
+  easing: Easing.bezier(0.37, 0, 0.63, 1),
+  reduceMotion: ReduceMotion.System,
+};
+// #153 R4
+export const MOTION_BLINK_INTERVAL_MS = 4000;
+// #153 R4
+export const MOTION_BLINK_TIMING = {
+  duration: 0,
+  reduceMotion: ReduceMotion.System,
+};
