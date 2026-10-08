@@ -1,3 +1,7 @@
+import {
+  buildUserPrompt,
+  NUTRITION_AI_SYSTEM_PROMPT,
+} from './nutrition-prompt';
 import type {
   NutritionEngineInput,
   NutritionPlanResult,
@@ -30,14 +34,29 @@ export class AnthropicNutritionExplainer implements NutritionExplainer {
     private readonly apiKey: string,
     private client: AnthropicMessagesClient | null,
   ) {}
-  explain(
+  async explain(
     input: NutritionEngineInput,
     result: NutritionPlanResult,
     ctx: NutritionExplainerContext,
   ): Promise<string | null> {
-    void input;
-    void result;
     void ctx;
-    return Promise.reject(new Error('not implemented (R9)'));
+    if (this.client === null) {
+      const { default: Anthropic } = await import('@anthropic-ai/sdk');
+      this.client = new Anthropic({
+        apiKey: this.apiKey,
+        timeout: NUTRITION_AI_TIMEOUT_MS,
+        maxRetries: NUTRITION_AI_MAX_RETRIES,
+      }).messages;
+    }
+    const response = await this.client.create({
+      model: this.model,
+      max_tokens: NUTRITION_AI_MAX_OUTPUT_TOKENS,
+      system: NUTRITION_AI_SYSTEM_PROMPT,
+      messages: [{ role: 'user', content: buildUserPrompt(input, result) }],
+    });
+    const blocks = Array.isArray(response.content)
+      ? (response.content as { type: string; text?: string }[])
+      : [];
+    return blocks.find((block) => block.type === 'text')?.text ?? null;
   }
 }
