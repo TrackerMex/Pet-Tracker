@@ -19,19 +19,19 @@ function document(id: string, date: string): PetDocument {
   };
 }
 
-describe('R1: ListPetDocumentsUseCase delega en listByPet', () => {
-  it('devuelve sin alterar la lista ordenada por el repositorio', async () => {
+describe('#157 R3: ListPetDocumentsUseCase delega en listUploadedByPet', () => {
+  it('#157 R3: pide al repositorio solo los documentos subidos de la mascota', async () => {
     const expected = [
       document('0198b2c3-4d5e-7a01-b234-56789abcde02', '2026-08-25'),
       document('0198b2c3-4d5e-7a01-b234-56789abcde01', '2026-08-24'),
     ];
-    const listByPet = jest.fn().mockResolvedValue(expected);
-    const documents = { listByPet } as unknown as PetDocumentRepository;
+    const listUploadedByPet = jest.fn().mockResolvedValue(expected);
+    const documents = { listUploadedByPet } as unknown as PetDocumentRepository;
 
     await expect(
       new ListPetDocumentsUseCase(documents).execute(PET_ID),
     ).resolves.toBe(expected);
-    expect(listByPet).toHaveBeenCalledTimes(1);
-    expect(listByPet).toHaveBeenCalledWith(PET_ID);
+    expect(listUploadedByPet).toHaveBeenCalledTimes(1);
+    expect(listUploadedByPet).toHaveBeenCalledWith(PET_ID);
   });
 });

@@ -16,7 +16,7 @@ export class PetDocumentDrizzleRepository implements PetDocumentRepository {
     await this.db.insert(petDocuments).values(document);
   }
 
-  async listByPet(petId: string): Promise<PetDocument[]> {
+  async listUploadedByPet(petId: string): Promise<PetDocument[]> {
     const rows = await this.db
       .select()
       .from(petDocuments)

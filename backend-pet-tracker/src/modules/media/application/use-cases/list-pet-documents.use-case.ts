@@ -11,6 +11,6 @@ export class ListPetDocumentsUseCase {
   ) {}
 
   execute(petId: string): Promise<PetDocument[]> {
-    return this.documents.listByPet(petId);
+    return this.documents.listUploadedByPet(petId);
   }
 }

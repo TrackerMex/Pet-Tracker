@@ -94,6 +94,7 @@ describe('Pet documents API (e2e)', () => {
       name?: string;
       date: string;
       vet?: string | null;
+      uploadedAt?: Date | null;
     },
   ): Promise<DocumentResponse> {
     const id = values.id ?? uuidv7();
@@ -106,6 +107,8 @@ describe('Pet documents API (e2e)', () => {
       vet: values.vet ?? null,
       key: `pets/${petId}/docs/${id}`,
       createdBy,
+      uploadedAt:
+        values.uploadedAt === undefined ? new Date() : values.uploadedAt,
     };
     await db.insert(petDocuments).values(document);
     return {
@@ -267,7 +270,7 @@ describe('Pet documents API (e2e)', () => {
       vet: 'Dr. López',
     });
 
-    it('responde 201/600s, persiste antes del PUT, aparece en GET y audita pet.document_add', async () => {
+    it('responde 201/600s, persiste pendiente antes del PUT, no aparece en GET y audita pet.document_add', async () => {
       const owner = await seedUser('r2-owner');
       const pet = await seedPet(owner);
 
@@ -305,10 +308,11 @@ describe('Pet documents API (e2e)', () => {
         ...body.document,
         petId: pet.id,
         createdBy: owner.id,
+        uploadedAt: null,
       });
 
       const listed = await listDocuments(owner, pet.id).expect(200);
-      expect(listed.body).toEqual([body.document]);
+      expect(listed.body).toEqual([]);
 
       const entries = await db
         .select()
@@ -408,6 +412,65 @@ describe('Pet documents API (e2e)', () => {
     });
   });
 
+  describe('#157 R3: GET oculta los pendientes a los cuatro roles', () => {
+    it.each(['owner', 'family', 'walker', 'vet'] as const)(
+      '#157 R3: %s solo ve los documentos subidos',
+      async (role) => {
+        const owner = await seedUser(`157-r3-owner-${role}`);
+        const pet = await seedPet(owner);
+        const member =
+          role === 'owner' ? owner : await seedUser(`157-r3-member-${role}`);
+        if (role !== 'owner') await seedMembership(pet.id, member.id, role);
+        const uploaded = await seedDocument(pet.id, owner.id, {
+          date: '2026-10-08',
+        });
+        await seedDocument(pet.id, owner.id, {
+          date: '2026-10-09',
+          uploadedAt: null,
+        });
+
+        const listed = await listDocuments(member, pet.id).expect(200);
+        expect(
+          (listed.body as DocumentResponse[]).map((item) => item.id),
+        ).toEqual([uploaded.id]);
+      },
+    );
+  });
+
+  describe('#157 R2: POST deja el documento pendiente', () => {
+    it('#157 R2: tras el PUT sin confirmar, la fila sigue con uploaded_at NULL y el GET solo lista los subidos', async () => {
+      const owner = await seedUser('157-r2-owner');
+      const pet = await seedPet(owner);
+      const uploaded = await seedDocument(pet.id, owner.id, {
+        date: '2026-10-07',
+      });
+      const created = await createDocument(owner, pet.id, {
+        type: 'Consulta',
+        name: 'Pendiente de confirmar',
+        date: '2026-10-08',
+      }).expect(201);
+      const body = created.body as {
+        document: DocumentResponse;
+        uploadUrl: string;
+      };
+      const put = await fetch(body.uploadUrl, {
+        method: 'PUT',
+        body: Buffer.from('pending upload'),
+      });
+      expect(put.status).toBeGreaterThanOrEqual(200);
+      expect(put.status).toBeLessThan(300);
+      const [stored] = await db
+        .select()
+        .from(petDocuments)
+        .where(eq(petDocuments.id, body.document.id));
+      expect(stored.uploadedAt).toBeNull();
+      const listed = await listDocuments(owner, pet.id).expect(200);
+      expect(
+        (listed.body as DocumentResponse[]).map((item) => item.id),
+      ).toEqual([uploaded.id]);
+    });
+  });
+
   describe('#157 R5: confirmar marca el documento como subido', () => {
     it('#157 R5: el owner confirma un pendiente subido: 204 sin cuerpo, uploaded_at no nulo y aparece en GET', async () => {
       const owner = await seedUser('157-r5-owner');
@@ -485,6 +548,7 @@ describe('Pet documents API (e2e)', () => {
       const pet = await seedPet(owner);
       const document = await seedDocument(pet.id, owner.id, {
         date: '2026-10-08',
+        uploadedAt: null,
       });
       const response = await confirmDocument(
         owner,
@@ -508,6 +572,7 @@ describe('Pet documents API (e2e)', () => {
       const pet = await seedPet(owner);
       const document = await seedDocument(pet.id, owner.id, {
         date: '2026-10-08',
+        uploadedAt: null,
       });
       const response = await confirmDocument(owner, pet.id, uuidv7()).expect(
         404,
@@ -565,6 +630,7 @@ describe('Pet documents API (e2e)', () => {
       const pet = await seedPet(owner);
       const document = await seedDocument(pet.id, owner.id, {
         date: '2026-10-08',
+        uploadedAt: null,
       });
       const response = await confirmDocument(owner, pet.id, document.id).expect(
         409,
@@ -574,6 +640,8 @@ describe('Pet documents API (e2e)', () => {
         code: 'PET_DOCUMENT_NOT_UPLOADED',
         message: 'Pet document file not found in storage',
       });
+      const listed = await listDocuments(owner, pet.id).expect(200);
+      expect(listed.body).toEqual([]);
       const [stored] = await db
         .select()
         .from(petDocuments)
@@ -618,6 +686,7 @@ describe('Pet documents API (e2e)', () => {
       const pet = await seedPet(owner);
       const document = await seedDocument(pet.id, owner.id, {
         date: '2026-10-08',
+        uploadedAt: null,
       });
       for (const [user, petId] of [
         [outsider, pet.id],

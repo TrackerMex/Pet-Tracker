@@ -25,7 +25,7 @@ function buildDeps() {
   });
   const documents = {
     create,
-    listByPet: jest.fn(),
+    listUploadedByPet: jest.fn(),
   } as unknown as PetDocumentRepository;
   const storage: PhotoStorage = {
     createUploadUrl,
