@@ -4,7 +4,7 @@ import { HeroUINativeProvider } from 'heroui-native';
 import { en, es } from '../../i18n/catalog';
 import { EmptyState } from '../empty-state';
 
-const { readFileSync } = jest.requireActual<typeof import('fs')>('fs');
+const { readFileSync, readdirSync } = jest.requireActual<typeof import('fs')>('fs');
 const { join } = jest.requireActual<typeof import('path')>('path');
 const enCatalog: Record<string, string> = en;
 const esCatalog: Record<string, string> = es;
@@ -127,5 +127,64 @@ describe('#155 R3: un único componente pinta los vacíos ilustrados', () => {
     expect(source).toContain('className="rounded-xl bg-accent"');
     expect(source).toContain('className="font-bold text-accent-foreground"');
     expect(source).not.toMatch(/border-b-4/);
+  });
+});
+
+function sourceFiles(directory = join(process.cwd(), 'src')): string[] {
+  return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const path = join(directory, entry.name);
+    if (entry.isDirectory()) return entry.name === '__tests__' ? [] : sourceFiles(path);
+    return /\.tsx?$/.test(entry.name) && !/\.test\.tsx?$/.test(entry.name) ? [path] : [];
+  });
+}
+
+describe('#155 R10: los vacíos que no se ilustran siguen en texto', () => {
+  it.each([
+    ['src/screens/health/index.tsx', 'Text', 'vaccines-empty'],
+    ['src/screens/health/index.tsx', 'Text', 'weight-card-empty'],
+    ['src/components/weight-chart.tsx', 'Text', 'weight-chart-empty'],
+    ['src/screens/home/weekly-activity-chart.tsx', 'Text', 'weekly-activity-empty'],
+    ['src/screens/meals-history/index.tsx', 'Text', 'meals-history-empty'],
+    ['src/screens/meals-history/index.tsx', 'Text', 'meals-history-detail-empty'],
+    ['src/screens/meal-schedule/index.tsx', 'Text', 'nutrition-profile-empty'],
+    ['src/screens/meal-schedule/index.tsx', 'Text', 'meal-schedule-empty'],
+    ['src/screens/profile/index.tsx', 'Text', 'profile-pets-empty'],
+    ['src/screens/weight-log/index.tsx', 'Text', 'weight-log-empty'],
+    ['src/screens/map/index.tsx', 'Text', 'map-empty'],
+    ['src/screens/map/index.tsx', 'Card', 'map-empty-overlay'],
+  ])('%s abre <%s testID="%s"> una sola vez', (path, tag, testID) => {
+    const source = readFileSync(join(process.cwd(), path), 'utf8');
+    expect(source.match(new RegExp('<' + tag + '\\s+testID="' + testID + '"', 'g')) ?? []).toHaveLength(1);
+  });
+
+  it.each([
+    ['src/screens/home/index.tsx', 1],
+    ['src/screens/health/index.tsx', 1],
+    ['src/app/(tabs)/food.tsx', 2],
+    ['src/screens/map/index.tsx', 1],
+    ['src/screens/alerts/index.tsx', 1],
+    ['src/screens/reminders/index.tsx', 1],
+    ['src/screens/docs/index.tsx', 1],
+    ['src/screens/geofences/index.tsx', 1],
+  ] as const)('%s pinta %i EmptyState', (path, n) => {
+    const source = readFileSync(join(process.cwd(), path), 'utf8');
+    expect(source.match(/<EmptyState\b/g) ?? []).toHaveLength(n);
+  });
+
+  it('ningún otro fichero usa EmptyState', () => {
+    const files = sourceFiles()
+      .filter((path) => /<EmptyState\b/.test(readFileSync(path, 'utf8')))
+      .map((path) => path.slice(process.cwd().length + 1))
+      .sort();
+    expect(files).toEqual([
+      'src/app/(tabs)/food.tsx',
+      'src/screens/alerts/index.tsx',
+      'src/screens/docs/index.tsx',
+      'src/screens/geofences/index.tsx',
+      'src/screens/health/index.tsx',
+      'src/screens/home/index.tsx',
+      'src/screens/map/index.tsx',
+      'src/screens/reminders/index.tsx',
+    ]);
   });
 });
