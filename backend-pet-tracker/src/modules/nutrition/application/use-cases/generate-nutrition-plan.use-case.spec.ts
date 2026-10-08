@@ -232,3 +232,15 @@ describe('R15 (nutrition-ai-explainer #18): reintenta el hash hit con null sobre
     expect(f.insertPlan).not.toHaveBeenCalled();
   });
 });
+
+describe('R16 (nutrition-ai-explainer #18): hash hit con texto no vuelve a pagar', () => {
+  it('devuelve latest sin IA, entitlement, UPDATE ni INSERT', async () => {
+    const latest = setup().updated;
+    const f = setup('otro texto', true, latest);
+    expect(await f.useCase.execute(petId)).toBe(latest);
+    expect(f.explain).not.toHaveBeenCalled();
+    expect(f.isPetTracked).not.toHaveBeenCalled();
+    expect(f.setAiExplanation).not.toHaveBeenCalled();
+    expect(f.insertPlan).not.toHaveBeenCalled();
+  });
+});
