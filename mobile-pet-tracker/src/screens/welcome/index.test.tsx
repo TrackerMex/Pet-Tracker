@@ -528,3 +528,22 @@ describe('#153 R8: el contenido entra con las constantes de motion.ts', () => {
     mockUseReducedMotion.mockReturnValue(false);
   });
 });
+
+describe('#153 E1: la carta retira WELCOME_ENTRANCE_MS de la migración pendiente', () => {
+  it('deja en la lista solo las cinco constantes pendientes', () => {
+    const charter = readFileSync(join(process.cwd(), '..', 'docs', 'ui-guidelines.md'), 'utf8');
+    const heading = '## Enmienda #152 — el movimiento vive en src/theme/motion.ts';
+    const start = charter.indexOf(heading);
+    const next = charter.indexOf('\n## ', start + heading.length);
+    const amendment = charter.slice(start, next === -1 ? undefined : next);
+    expect(start).toBeGreaterThan(-1);
+    expect(amendment).toContain([
+      'Las constantes anteriores a #152 (`MEALS_BAR_TIMING`, `KCAL_BAR_TIMING`,',
+      '`BAR_ENTRY_*`, `METRIC_TAB_SPRING` y `TAB_INDICATOR_SPRING`) migran a',
+      '`motion.ts` en una feature posterior, fuera del alcance de esta.',
+      '`WELCOME_ENTRANCE_MS` no está en la lista: la retiró #153, cuya bienvenida',
+      'usa `MOTION_FADE_TIMING` y `MOTION_SETTLE_SPRING` (enmienda E1 de #153).',
+    ].join('\n'));
+    expect(amendment.split('`WELCOME_ENTRANCE_MS`').length).toBe(2);
+  });
+});
