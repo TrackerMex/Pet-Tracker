@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ackAlert } from '../../api/alerts';
 import type { Alert } from '../../api/types';
 import { Card } from '../../components/card';
+import { EmptyState } from '../../components/empty-state';
 import { useAlertsList } from '../../hooks/use-alerts-list';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
@@ -141,9 +142,12 @@ export function AlertsScreen() {
       </Button>
     </View>
   ) : firstPage?.kind === 'ok' && rows.length === 0 ? (
-    <Text testID="alerts-empty" className="font-normal text-muted">
-      {t('alerts.empty')}
-    </Text>
+    <EmptyState
+      testID="alerts-empty"
+      pose="sleep"
+      title={t('alerts.empty')}
+      body={t('alerts.emptyBody')}
+    />
   ) : null;
 
   return (
