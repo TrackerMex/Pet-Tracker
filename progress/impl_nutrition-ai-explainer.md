@@ -8119,3 +8119,200 @@ $ git ls-files --others --exclude-standard -- backend-pet-tracker | wc -l
 ## Commit de cierre E1-c18
 
 `docs(nutrition-ai-explainer): #18 traceability and probes for amendment E1`. El hash y la salida del paso 6 se añaden después del commit en §Final E1.
+
+## Final E1
+
+HEAD tras los 18 commits: `8b0677b5a522fd3109950f7b00d17a2f220b08e9`. Esta sección se escribe **después de E1-c18 y queda sin commitear**, como exige el handoff; la versiona el leader. No se añade ningún commit ni se rebasea.
+
+
+### E1-c18 — `8b0677b5a522fd3109950f7b00d17a2f220b08e9`
+
+`docs(nutrition-ai-explainer): #18 traceability and probes for amendment E1`
+
+`eslint --fix`: exit=0. `tsc --noEmit -p tsconfig.json`: exit=0; 0 errores TS.
+
+`jest src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts`: exit=0.
+
+```json
+{"total":37,"passed":37,"failed":0,"suiteErrors":0,"failedTitles":[]}
+```
+
+`jest src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.spec.ts`: exit=0.
+
+```json
+{"total":25,"passed":25,"failed":0,"suiteErrors":0,"failedTitles":[]}
+```
+
+`jest src/modules/nutrition/nutrition-scope.spec.ts`: exit=0.
+
+```json
+{"total":9,"passed":9,"failed":0,"suiteErrors":0,"failedTitles":[]}
+```
+
+Commit encadenado al gate literal:
+
+```bash
+[ "$(node /tmp/e1-check.js /tmp/e1-c18as.json)" = '{"total":37,"passed":37,"failed":0,"suiteErrors":0,"failedTitles":[]}' ] && [ "$(node /tmp/e1-check.js /tmp/e1-c18fs.json)" = '{"total":25,"passed":25,"failed":0,"suiteErrors":0,"failedTitles":[]}' ] && [ "$(node /tmp/e1-check.js /tmp/e1-c18ss.json)" = '{"total":9,"passed":9,"failed":0,"suiteErrors":0,"failedTitles":[]}' ] && pnpm -C backend-pet-tracker exec eslint src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.spec.ts src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.ts src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.ts && git commit -m 'docs(nutrition-ai-explainer): #18 traceability and probes for amendment E1' -- specs/nutrition-ai-explainer/traceability.md progress/impl_nutrition-ai-explainer.md
+```
+
+`git show --name-only --format= HEAD`:
+
+```text
+progress/impl_nutrition-ai-explainer.md
+specs/nutrition-ai-explainer/traceability.md
+```
+
+`git diff --cached --quiet`: exit=0.
+
+### Anclas en HEAD
+
+| Ancla | Declarado tras E1 | Medido | Exit |
+|---|---|---|---|
+| E1-A1 | 1 | 1 | 0 |
+| E1-A2 | 0 | 0 | 1 |
+| E1-A3 | 1 | 1 | 0 |
+| E1-A4 | 1 | 1 | 0 |
+| E1-A5 | 1 | 1 | 0 |
+| E1-A6 | 1 | 1 | 0 |
+| E1-A7 | 1 | 1 | 0 |
+| E1-A8 | 1 | 1 | 0 |
+| E1-A9 | 0 | 0 | 1 |
+| E1-A10 | 4 | 4 | 0 |
+| E1-A11 | 1 | 1 | 0 |
+| E1-A12 | 1 | 1 | 0 |
+| E1-A13 | 0 | 0 | 1 |
+| E1-A14 | 1 | 1 | 0 |
+| E1-A15 | 1 | 1 | 0 |
+| E1-A16 | 1 | 1 | 0 |
+| E1-A17 | 1 | 1 | 0 |
+| E1-A18 | 1 | 1 | 0 |
+| E1-A19 | 1 | 1 | 0 |
+| E1-A20 | 1 | 1 | 0 |
+| E1-A21 | 1 | 1 | 0 |
+| E1-A22 | 2 | 2 | 0 |
+| E1-A23 | 2 | 2 | 0 |
+| E1-A24 | 7 | 7 | 0 |
+| E1-A25 | 2 | 2 | 0 |
+| E1-A26 | 0 | 0 | 0 |
+| E1-A27 | 0 | 0 | 0 |
+| E1-A28 | 0 | 0 | 0 |
+| E1-A29 | 1 | 1 | 0 |
+| E1-A30 | 1 | 1 | 0 |
+| E1-A31 | 1 | 1 | 0 |
+| E1-A32 | 1 | 1 | 0 |
+| E1-A33 | 1 | 1 | 0 |
+| E1-A34 | 3 | 3 | 0 |
+| E1-A35 | 3 | 3 | 0 |
+| E1-A36 | 3 | 3 | 0 |
+| E1-A37 | 1 | 1 | 0 |
+| E1-A38 | 4 | 4 | 0 |
+
+Comandos: los 38 literales de §Base E1, ejecutados de nuevo con `AI` definido en la misma línea.
+
+### Alcance final
+
+`git diff --name-only H0E1 HEAD`: exit=0. Coincide exactamente con la lista cerrada de seis rutas:
+
+```text
+backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts
+backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.ts
+backend-pet-tracker/src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.spec.ts
+backend-pet-tracker/src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.ts
+progress/impl_nutrition-ai-explainer.md
+specs/nutrition-ai-explainer/traceability.md
+```
+
+`git diff c09ee51c HEAD -- backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.ts`: exit=0. Diff entero (solo E1.3):
+
+```diff
+diff --git a/backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.ts b/backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.ts
+index fb45523f..82d946bf 100644
+--- a/backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.ts
++++ b/backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.ts
+@@ -30,12 +30,24 @@ export interface AnthropicMessageResponse {
+ export interface AnthropicMessagesClient {
+   create(params: AnthropicMessageParams): Promise<AnthropicMessageResponse>;
+ }
++export interface AnthropicClientOptions {
++  apiKey: string;
++  timeout: number;
++  maxRetries: number;
++}
++export type AnthropicSdkLoader = () => Promise<{
++  default: new (options: AnthropicClientOptions) => {
++    messages: AnthropicMessagesClient;
++  };
++}>;
+ export class AnthropicNutritionExplainer implements NutritionExplainer {
+   private readonly logger = new Logger(AnthropicNutritionExplainer.name);
+   constructor(
+     private readonly model: string,
+     private readonly apiKey: string,
+     private client: AnthropicMessagesClient | null,
++    private readonly loadSdk: AnthropicSdkLoader = async () =>
++      await import('@anthropic-ai/sdk'),
+   ) {}
+   async explain(
+     input: NutritionEngineInput,
+@@ -44,7 +56,7 @@ export class AnthropicNutritionExplainer implements NutritionExplainer {
+   ): Promise<string | null> {
+     try {
+       if (this.client === null) {
+-        const { default: Anthropic } = await import('@anthropic-ai/sdk');
++        const { default: Anthropic } = await this.loadSdk();
+         this.client = new Anthropic({
+           apiKey: this.apiKey,
+           timeout: NUTRITION_AI_TIMEOUT_MS,
+```
+
+`git diff c09ee51c HEAD -- backend-pet-tracker/src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.ts`: exit=0. Diff neto (solo D-E1-a):
+
+```diff
+diff --git a/backend-pet-tracker/src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.ts b/backend-pet-tracker/src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.ts
+index 33405da5..011f0183 100644
+--- a/backend-pet-tracker/src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.ts
++++ b/backend-pet-tracker/src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.ts
+@@ -20,5 +20,5 @@ export function createNutritionExplainer(
+   const model = config.get<string>('ANTHROPIC_MODEL');
+   if (typeof model !== 'string' || model.trim() === '')
+     return new NullNutritionExplainer('model-missing');
+-  return new AnthropicNutritionExplainer(model, key, null);
++  return new AnthropicNutritionExplainer(model.trim(), key.trim(), null);
+ }
+```
+
+E1-A25 = 2 y E1-A29 = 1, como se declara. El adaptador coincide con HASH_C7 y el factory con HASH_C4; ambos diffs de restauración son vacíos. Ronda 1 del informe conservada byte a byte.
+
+### Verificación final
+
+`pnpm -C backend-pet-tracker exec tsc --noEmit -p tsconfig.json`: exit=0; 0 errores TS.
+
+`pnpm -C backend-pet-tracker exec eslint src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.spec.ts src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.ts src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.ts`: exit=0.
+
+`pgrep -af 'init\.sh|test:e2e|jest-e2e' | grep -v pgrep` inmediatamente antes de la suite completa: salida vacía, exit=1.
+
+`FORCE_COLOR=0 pnpm -C backend-pet-tracker exec jest --json --outputFile=/tmp/e1-final-unit.json`: exit=0.
+
+```json
+{"total":1450,"passed":1450,"failed":0,"suiteErrors":0,"failedTitles":[]}
+```
+
+```text
+Test Suites: 183 passed, 183 total
+```
+
+```text
+Tests:       1450 passed, 1450 total
+```
+
+`git status --short` después de E1-c18 y de las comprobaciones finales, **antes de escribir esta sección**: salida vacía, exit=0.
+
+`git status --short` después de añadir §Final E1:
+
+```text
+ M progress/impl_nutrition-ai-explainer.md
+```
+
+Es el único cambio sin commitear y corresponde exclusivamente al cierre solicitado para el leader. `git diff --cached --quiet`: exit=0. `git diff --quiet -- backend-pet-tracker`: exit=0.
+
+`init.sh`, `pnpm test:e2e` y todos los e2e: **delegado al leader**. R19 no ejecutado; ningún test usó la red. Sin push ni edición de PR.
