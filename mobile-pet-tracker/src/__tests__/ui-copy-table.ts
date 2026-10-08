@@ -286,6 +286,7 @@ export const R8_REMINDERS: UseRow[] = [
   { file: 'src/screens/reminders/index.tsx', key: 'common.somethingWentWrong' },
   { file: 'src/screens/reminders/index.tsx', key: 'common.retry' },
   { file: 'src/screens/reminders/index.tsx', key: 'reminders.noRemindersYet' },
+  { file: 'src/screens/reminders/index.tsx', key: 'reminders.emptyBody' }, // #155 R6
   { file: 'src/screens/reminders/index.tsx', key: 'reminders.active' },
   { file: 'src/screens/reminders/index.tsx', key: 'reminders.thisWeek' },
   { file: 'src/screens/reminders/index.tsx', key: 'reminders.inactive' },

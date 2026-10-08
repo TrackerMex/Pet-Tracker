@@ -267,7 +267,7 @@ describe('R5: reminders monta con métricas y estados', () => {
     await renderReminders();
 
     await waitFor(() =>
-      expect(screen.getByTestId('reminders-empty')).toHaveTextContent(
+      expect(screen.getByTestId('reminders-empty-title')).toHaveTextContent(
         'Aún no hay recordatorios',
       ),
     );
@@ -993,5 +993,38 @@ describe('#128 R4: el botón destructivo del sheet y su etiqueta llevan su recet
     expect(within(confirm).getByText('Eliminar').props.className).toBe(
       'button__label button__label--variant-danger button__label--size-md font-bold text-danger-foreground',
     );
+  });
+});
+
+describe('#155 R6: sin recordatorios, Pingo sostiene su lista', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+  });
+
+  it('pinta la pose, el título y la frase de Pingo', async () => {
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [] });
+    await renderReminders();
+    const pose = await screen.findByTestId('reminders-empty-pose');
+    expect(pose.props.source).toEqual([
+      expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/pingo-clipboard\.webp$/) }),
+    ]);
+    expect(screen.getByTestId('reminders-empty-title')).toHaveTextContent('Aún no hay recordatorios');
+    expect(screen.getByTestId('reminders-empty-body')).toHaveTextContent('Cuando crees un recordatorio, te aviso a tiempo.');
+  });
+
+  it('no duplica la acción de crear', async () => {
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [] });
+    await renderReminders();
+    await screen.findByTestId('reminders-empty-title');
+    expect(screen.queryByTestId('reminders-empty-action')).toBeNull();
+    expect(screen.getByTestId('reminders-add-link')).toBeVisible();
   });
 });
