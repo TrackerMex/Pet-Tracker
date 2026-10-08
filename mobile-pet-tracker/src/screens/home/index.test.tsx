@@ -8,7 +8,7 @@ import {
 import { router, useFocusEffect } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
-import { Easing, ReduceMotion } from 'react-native-reanimated';
+import { Easing, FadeOut, ReduceMotion, withDelay } from 'react-native-reanimated';
 import { Uniwind } from 'uniwind';
 
 import {
@@ -29,6 +29,7 @@ import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import { LanguageProvider } from '../../providers/language-provider';
 import { SelectedPetProvider } from '../../providers/selected-pet-provider';
 import * as selectedPetHooks from '../../providers/selected-pet-provider';
+import { MOTION_FILL_TIMING } from '../../theme/motion';
 import { TABULAR_NUMS } from '../../theme/native-styles';
 import { CATEGORY_SLOTS } from '../../utils/category-palette';
 import { HomeScreen } from './index';
@@ -1981,16 +1982,16 @@ describe('R14: la Home monta la actividad semanal sin pedir nada nuevo', () => {
       )
       .filter((testID) =>
         [
-          'summary-card',
-          'weekly-activity-card',
-          'last-position-card',
+          'home-entrance-summary',
+          'home-entrance-weekly',
+          'home-entrance-last-position',
         ].includes(testID),
       );
 
     expect(relevantChildren).toEqual([
-      'summary-card',
-      'weekly-activity-card',
-      'last-position-card',
+      'home-entrance-summary',
+      'home-entrance-weekly',
+      'home-entrance-last-position',
     ]);
   });
 
@@ -2184,18 +2185,18 @@ describe('#69 R1: la tira de hoy tiene cuatro celdas con tres divisores', () => 
       )
       .filter((testID) =>
         [
-          'summary-card',
-          'collar-card',
-          'weekly-activity-card',
-          'last-position-card',
+          'home-entrance-summary',
+          'home-entrance-collar',
+          'home-entrance-weekly',
+          'home-entrance-last-position',
         ].includes(testID),
       );
 
     expect(relevantChildren).toEqual([
-      'summary-card',
-      'collar-card',
-      'weekly-activity-card',
-      'last-position-card',
+      'home-entrance-summary',
+      'home-entrance-collar',
+      'home-entrance-weekly',
+      'home-entrance-last-position',
     ]);
   });
 
@@ -2636,20 +2637,20 @@ describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
       )
       .filter((testID) =>
         [
-          'summary-card',
-          'collar-card',
-          'quick-actions',
-          'weekly-activity-card',
-          'last-position-card',
+          'home-entrance-summary',
+          'home-entrance-collar',
+          'home-entrance-quick-actions',
+          'home-entrance-weekly',
+          'home-entrance-last-position',
         ].includes(testID),
       );
 
     expect(relevantChildren).toEqual([
-      'summary-card',
-      'collar-card',
-      'quick-actions',
-      'weekly-activity-card',
-      'last-position-card',
+      'home-entrance-summary',
+      'home-entrance-collar',
+      'home-entrance-quick-actions',
+      'home-entrance-weekly',
+      'home-entrance-last-position',
     ]);
   });
 
@@ -4177,22 +4178,22 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
         )
         .filter((testID) =>
           [
-            'summary-card',
-            'collar-card',
-            'quick-actions',
-            'weekly-activity-card',
-            'reminders-section',
-            'last-position-card',
+            'home-entrance-summary',
+            'home-entrance-collar',
+            'home-entrance-quick-actions',
+            'home-entrance-weekly',
+            'home-entrance-reminders',
+            'home-entrance-last-position',
           ].includes(testID),
         );
 
       expect(relevantChildren).toEqual([
-        'summary-card',
-        'collar-card',
-        'quick-actions',
-        'weekly-activity-card',
-        'reminders-section',
-        'last-position-card',
+        'home-entrance-summary',
+        'home-entrance-collar',
+        'home-entrance-quick-actions',
+        'home-entrance-weekly',
+        'home-entrance-reminders',
+        'home-entrance-last-position',
       ]);
     });
 
@@ -4681,5 +4682,543 @@ describe('R2 (mobile-reanimated-double-dead-weight): Animated.View no es el View
     );
 
     expect(Animated.View).not.toBe(View);
+  });
+});
+
+function makeMotionPet(pct: number | null = 82, overrides: Partial<PetProfile> = {}): PetProfile {
+  return makePet({
+    device: {
+      model: 'PetTrack One',
+      batteryPct: pct,
+      connectivity: 'online',
+      lastMessageAt: '2026-10-07T12:00:00.000Z',
+      esn: 'MOTION-001',
+    },
+    ...overrides,
+  });
+}
+
+function setupHomeMotion(): void {
+  jest.clearAllMocks();
+  process.env.EXPO_PUBLIC_API_URL = apiUrl;
+  mockUseAuth.mockReturnValue({
+    status: 'authenticated',
+    token: 'jwt-token',
+    signIn: jest.fn(),
+    signOut: jest.fn(),
+  } satisfies AuthContextValue);
+  const pet = makeMotionPet();
+  mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+  mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+  mockGetDailyActivity.mockResolvedValue({
+    kind: 'ok',
+    days: [makeDay()],
+    weekComparison: { distanceM: null, activeMinutes: null, walkCount: null },
+  });
+  mockListReminders.mockResolvedValue({
+    kind: 'ok',
+    reminders: [makeReminder({ dueAt: new Date(Date.now() + 86400000).toISOString() })],
+  });
+}
+
+async function renderMotionHome(): Promise<void> {
+  await renderHome();
+  await screen.findByTestId('summary-weight');
+  await screen.findByTestId('collar-battery');
+  await screen.findByTestId('weekly-activity-card');
+}
+
+describe('#152 R5: la Home envuelve cada bloque en su entrada escalonada', () => {
+  beforeEach(setupHomeMotion);
+
+  it('pinta los seis envoltorios como hijos directos y en orden', async () => {
+    await renderMotionHome();
+    const ids = screen.getByTestId('home-content').children.flatMap(
+      (child) => typeof child === 'string' ? [] : [child.props.testID],
+    );
+    expect(ids).toEqual([
+      'home-entrance-summary',
+      'home-entrance-collar',
+      'home-entrance-quick-actions',
+      'home-entrance-weekly',
+      'home-entrance-reminders',
+      'home-entrance-last-position',
+    ]);
+  });
+
+  it('cada envoltorio contiene su bloque', async () => {
+    await renderMotionHome();
+    for (const [entrance, block] of [
+      ['home-entrance-summary', 'summary-card'],
+      ['home-entrance-collar', 'collar-card'],
+      ['home-entrance-quick-actions', 'quick-actions'],
+      ['home-entrance-weekly', 'weekly-activity-card'],
+      ['home-entrance-reminders', 'reminders-section'],
+      ['home-entrance-last-position', 'last-position-card'],
+    ]) {
+      expect(within(screen.getByTestId(entrance)).getByTestId(block)).toBeVisible();
+    }
+  });
+
+  it('escalona las entradas cada 60 ms en el orden de los bloques', async () => {
+    await renderMotionHome();
+    for (const [id, delay] of [
+      ['home-entrance-summary', 0],
+      ['home-entrance-collar', 60],
+      ['home-entrance-quick-actions', 120],
+      ['home-entrance-weekly', 180],
+      ['home-entrance-reminders', 240],
+      ['home-entrance-last-position', 300],
+    ] as const) {
+      jest.mocked(withDelay).mockClear();
+      screen.getByTestId(id).props.entering({});
+      expect(jest.mocked(withDelay).mock.calls.map(([ms]) => ms)).toEqual([delay, delay]);
+    }
+  });
+
+  it('el envoltorio de la actividad envuelve también su skeleton', async () => {
+    mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
+    await renderHome();
+    await screen.findByTestId('weekly-activity-skeleton');
+    expect(within(screen.getByTestId('home-entrance-weekly'))
+      .getByTestId('weekly-activity-skeleton')).toBeVisible();
+  });
+
+  it('no pinta los envoltorios del collar ni de la última posición si el detalle falla', async () => {
+    mockGetPet.mockResolvedValue({ kind: 'error' });
+    await renderHome();
+    await screen.findByTestId('pet-hero-error');
+    expect(screen.getByTestId('home-entrance-summary')).toBeVisible();
+    expect(screen.queryByTestId('home-entrance-collar')).toBeNull();
+    expect(screen.queryByTestId('home-entrance-last-position')).toBeNull();
+  });
+
+  it('no pinta el envoltorio de la última posición sin collar', async () => {
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makeMotionPet(82, { device: null }) });
+    await renderHome();
+    await screen.findByTestId('collar-status');
+    expect(screen.getByTestId('home-entrance-collar')).toBeVisible();
+    expect(screen.queryByTestId('home-entrance-last-position')).toBeNull();
+  });
+
+  it('no pinta el envoltorio de la actividad si la actividad falla', async () => {
+    mockGetDailyActivity.mockResolvedValue({ kind: 'error' });
+    await renderHome();
+    await screen.findByTestId('summary-note');
+    expect(screen.getByTestId('home-entrance-reminders')).toBeVisible();
+    expect(screen.queryByTestId('home-entrance-weekly')).toBeNull();
+  });
+
+  it('no pinta ningún envoltorio sin mascota seleccionada', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    await renderHome();
+    await screen.findByTestId('home-empty');
+    for (const id of [
+      'home-entrance-summary',
+      'home-entrance-collar',
+      'home-entrance-quick-actions',
+      'home-entrance-weekly',
+      'home-entrance-reminders',
+      'home-entrance-last-position',
+    ]) {
+      expect(screen.queryByTestId(id)).toBeNull();
+    }
+  });
+
+  it.each<DailyActivityState>([
+    { kind: 'no-tracking' },
+    { kind: 'unauthorized' },
+    { kind: 'unreachable', message: 'network down' },
+    { kind: 'missing-config' },
+  ])('no pinta el envoltorio de la actividad con $kind', async (state) => {
+    mockGetDailyActivity.mockResolvedValue(state);
+    await renderHome();
+    await waitFor(() => {
+      expect(screen.getByTestId('summary-card')).toBeVisible();
+      expect(screen.queryByTestId('summary-skeleton')).toBeNull();
+    });
+    expect(screen.getByTestId('home-entrance-reminders')).toBeVisible();
+    expect(screen.queryByTestId('home-entrance-weekly')).toBeNull();
+  });
+
+  const enteringIds = (node: typeof screen.container): string[] => [
+    ...(node.props.entering ? [String(node.props.testID)] : []),
+    ...node.children.flatMap((child) => (typeof child === 'string' ? [] : enteringIds(child))),
+  ];
+
+  const homeEnteringIds = [
+    'pet-avatar-fallback-pet-1',
+    'home-entrance-summary',
+    'summary-reveal',
+    'home-entrance-collar',
+    'home-entrance-quick-actions',
+    'home-entrance-weekly',
+    'home-entrance-reminders',
+    'home-entrance-last-position',
+  ];
+
+  it.each<PetState>([
+    { kind: 'error' },
+    { kind: 'unreachable', message: 'network down' },
+  ])('deja el error del detalle ($kind) como hijo directo de home-content y sin entrada', async (state) => {
+    mockGetPet.mockResolvedValue(state);
+    await renderHome();
+    const card = await screen.findByTestId('pet-hero-error');
+    expect(card.parent).toBe(screen.getByTestId('home-content'));
+    expect(enteringIds(card)).toEqual([]);
+  });
+
+  it('deja el botón del mapa del día como hijo directo de home-content y sin entrada', async () => {
+    await renderMotionHome();
+    await fireEvent.press(screen.getByTestId('weekly-activity-day-2026-08-21'));
+    const button = screen.getByTestId('weekly-activity-day-map');
+    expect(button.parent).toBe(screen.getByTestId('home-content'));
+    expect(enteringIds(button)).toEqual([]);
+  });
+
+  it.each<PetState>([
+    { kind: 'unauthorized' },
+    { kind: 'unreachable', message: 'network down' },
+    { kind: 'missing-config' },
+  ])('no pinta los envoltorios del collar ni de la última posición con el detalle en $kind', async (state) => {
+    mockGetPet.mockResolvedValue(state);
+    await renderHome();
+    await waitFor(() => {
+      expect(screen.getByTestId('reminders-section')).toBeVisible();
+      expect(screen.queryByTestId('reminders-section-skeleton')).toBeNull();
+    });
+    expect(screen.queryByTestId('home-entrance-collar')).toBeNull();
+    expect(screen.queryByTestId('home-entrance-last-position')).toBeNull();
+  });
+
+  it('solo da entrada a los envoltorios, al fundido y al avatar del selector', async () => {
+    await renderMotionHome();
+    expect(enteringIds(screen.container)).toEqual(homeEnteringIds);
+  });
+
+  it('no da entrada al hero con alertas abiertas', async () => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert()], nextCursor: null });
+    await renderMotionHome();
+    await screen.findByTestId('home-alerts-dot');
+    expect(enteringIds(screen.container)).toEqual(homeEnteringIds);
+  });
+
+  it.each([
+    ['home-loading', () => mockListPets.mockReturnValue(pending<PetsState>()), ['home-loading']],
+    ['home-error', () => mockListPets.mockResolvedValue({ kind: 'error' }), []],
+    ['home-empty', () => mockListPets.mockResolvedValue({ kind: 'ok', pets: [] }), []],
+  ])('no da entrada a home-states con %s', async (anchor, arrange, expected) => {
+    arrange();
+    await renderHome();
+    await screen.findByTestId(anchor);
+    expect(enteringIds(screen.container)).toEqual(expected);
+  });
+});
+
+const homeMotionNodeIds = [
+  'home-entrance-summary',
+  'home-entrance-collar',
+  'home-entrance-quick-actions',
+  'home-entrance-weekly',
+  'home-entrance-reminders',
+  'home-entrance-last-position',
+  'summary-reveal',
+] as const;
+
+async function refocusHome(): Promise<void> {
+  const focusCallback = mockUseFocusEffect.mock.calls.at(-1)?.[0];
+  expect(focusCallback).toBeDefined();
+  await act(async () => {
+    focusCallback?.();
+    await Promise.resolve();
+  });
+}
+
+describe('#152 R6: la entrada se reproduce una vez por montaje', () => {
+  beforeEach(setupHomeMotion);
+
+  it('no repite la entrada al volver al foco', async () => {
+    await renderMotionHome();
+    const nodes = homeMotionNodeIds.map((id) => screen.getByTestId(id));
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makeMotionPet(81) });
+    await refocusHome();
+    await waitFor(() => expect(screen.getByTestId('collar-battery')).toHaveTextContent('81%'));
+    homeMotionNodeIds.forEach((id, index) => {
+      expect(screen.getByTestId(id)).toBe(nodes[index]);
+    });
+  });
+
+  it('al cambiar de mascota solo repiten los bloques que se vuelven a montar', async () => {
+    const first = makeMotionPet();
+    const second = makeMotionPet(81, { id: 'pet-2', name: 'Milo', currentWeightKg: 15 });
+    const activity: DailyActivityState = {
+      kind: 'ok',
+      days: [makeDay()],
+      weekComparison: { distanceM: null, activeMinutes: null, walkCount: null },
+    };
+    let resolveDetail!: (state: PetState) => void;
+    let resolveActivity!: (state: DailyActivityState) => void;
+    const secondDetail = new Promise<PetState>((resolve) => { resolveDetail = resolve; });
+    const secondActivity = new Promise<DailyActivityState>((resolve) => { resolveActivity = resolve; });
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [first, second] });
+    mockGetPet.mockImplementation((_base, _token, petId) =>
+      petId === 'pet-2' ? secondDetail : Promise.resolve<PetState>({ kind: 'ok', pet: first }),
+    );
+    mockGetDailyActivity.mockImplementation((_base, _token, petId) =>
+      petId === 'pet-2' ? secondActivity : Promise.resolve(activity),
+    );
+    await renderMotionHome();
+    const nodes = homeMotionNodeIds.map((id) => screen.getByTestId(id));
+
+    await fireEvent.press(screen.getByTestId('pet-chip-pet-2'));
+    await screen.findByTestId('summary-skeleton');
+    await act(async () => {
+      resolveDetail({ kind: 'ok', pet: second });
+      resolveActivity(activity);
+    });
+    await waitFor(() => {
+      expect(screen.getByTestId('collar-battery')).toHaveTextContent('81%');
+      expect(screen.getByTestId('summary-weight')).toHaveTextContent('15 kg');
+    });
+    for (const id of [
+      'home-entrance-summary',
+      'home-entrance-quick-actions',
+      'home-entrance-weekly',
+      'home-entrance-reminders',
+    ] as const) {
+      expect(screen.getByTestId(id)).toBe(nodes[homeMotionNodeIds.indexOf(id)]);
+    }
+    for (const id of [
+      'home-entrance-collar',
+      'home-entrance-last-position',
+      'summary-reveal',
+    ] as const) {
+      expect(screen.getByTestId(id)).not.toBe(nodes[homeMotionNodeIds.indexOf(id)]);
+    }
+  });
+});
+
+describe('#152 R7: las cifras del resumen aparecen con un fundido', () => {
+  beforeEach(setupHomeMotion);
+
+  it('envuelve la fila del resumen sin tocarla', async () => {
+    await renderMotionHome();
+    const reveal = screen.getByTestId('summary-reveal');
+    const row = screen.getByTestId('summary-weight').parent?.parent;
+    expect(row?.props.className).toBe('flex-row');
+    expect(row?.parent).toBe(reveal);
+    expect(reveal.children.filter((child) => typeof child !== 'string')).toEqual([row]);
+    expect(reveal.props.style).toBeUndefined();
+    expect(reveal.props.className).toBeUndefined();
+  });
+
+  it('funde sin espera ni desplazamiento', async () => {
+    await renderMotionHome();
+    jest.mocked(withDelay).mockClear();
+    expect(screen.getByTestId('summary-reveal').props.entering({})).toEqual({
+      initialValues: { opacity: 0, transform: [{ translateY: 0 }] },
+      animations: { opacity: 1, transform: [{ translateY: 0 }] },
+    });
+    expect(jest.mocked(withDelay).mock.calls.map(([ms]) => ms)).toEqual([0, 0]);
+  });
+
+  it('no monta el fundido mientras el skeleton ocupa su sitio', async () => {
+    mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
+    await renderHome();
+    expect(await screen.findByTestId('summary-skeleton')).toBeVisible();
+    expect(screen.queryByTestId('summary-reveal')).toBeNull();
+  });
+
+  const expectRowUntouched = (reveal: typeof screen.container) => {
+    const row = screen.getByTestId('summary-weight').parent?.parent;
+    expect(row?.props.className).toBe('flex-row');
+    expect(row?.parent).toBe(reveal);
+    expect(reveal.children.filter((child) => typeof child !== 'string')).toEqual([row]);
+    expect(reveal.props.style).toBeUndefined();
+    expect(reveal.props.className).toBeUndefined();
+  };
+
+  it('funde igual bajo reduce motion', async () => {
+    mockUseReducedMotion.mockReturnValue(true);
+    await renderMotionHome();
+    jest.mocked(withDelay).mockClear();
+    const reveal = screen.getByTestId('summary-reveal');
+    const { entering } = reveal.props;
+    expect(entering).toEqual(expect.any(Function));
+    expect(entering({})).toEqual({
+      initialValues: { opacity: 0, transform: [{ translateY: 0 }] },
+      animations: { opacity: 1, transform: [{ translateY: 0 }] },
+    });
+    expect(jest.mocked(withDelay).mock.calls.map(([ms]) => ms)).toEqual([0, 0]);
+    expectRowUntouched(reveal);
+  });
+
+  it.each<DailyActivityState>([
+    { kind: 'no-tracking' },
+    { kind: 'error' },
+    { kind: 'unreachable', message: 'network down' },
+    { kind: 'missing-config' },
+  ])('funde igual la fila con la actividad en $kind', async (state) => {
+    mockGetDailyActivity.mockResolvedValue(state);
+    await renderHome();
+    const reveal = await screen.findByTestId('summary-reveal');
+    jest.mocked(withDelay).mockClear();
+    const { entering } = reveal.props;
+    expect(entering).toEqual(expect.any(Function));
+    expect(entering({})).toEqual({
+      initialValues: { opacity: 0, transform: [{ translateY: 0 }] },
+      animations: { opacity: 1, transform: [{ translateY: 0 }] },
+    });
+    expect(jest.mocked(withDelay).mock.calls.map(([ms]) => ms)).toEqual([0, 0]);
+    expectRowUntouched(reveal);
+    expect(screen.queryByTestId('summary-skeleton')).toBeNull();
+  });
+
+  it.each([false, true])(
+    'deja las cuatro celdas como hijos directos de la fila (reduce motion: %s)',
+    async (reduceMotion) => {
+      mockUseReducedMotion.mockReturnValue(reduceMotion);
+      await renderMotionHome();
+      const row = screen.getByTestId('summary-weight').parent?.parent;
+      expect(row?.children.filter((child) => typeof child !== 'string')).toEqual(
+        ['summary-weight', 'summary-activity', 'summary-sleep', 'summary-distance'].map(
+          (id) => screen.getByTestId(id).parent,
+        ),
+      );
+      expect(screen.queryByTestId('summary-skeleton')).toBeNull();
+    },
+  );
+
+  it.each([false, true])(
+    'monta el skeleton directamente en la tarjeta, sin fundido de salida propio (reduce motion: %s)',
+    async (reduceMotion) => {
+      mockUseReducedMotion.mockReturnValue(reduceMotion);
+      mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
+      await renderHome();
+      const skeleton = await screen.findByTestId('summary-skeleton');
+      expect(skeleton.parent).toBe(screen.getByTestId('summary-card'));
+      expect(skeleton.props.exiting).toBe(reduceMotion ? undefined : FadeOut);
+      expect(screen.queryByTestId('summary-reveal')).toBeNull();
+    },
+  );
+});
+
+describe('#152 R8: la batería del collar se dibuja como barra', () => {
+  beforeEach(setupHomeMotion);
+
+  it.each([
+    [82, 'bg-success'],
+    [61, 'bg-success'],
+    [60, 'bg-warning-strong'],
+    [12, 'bg-warning-strong'],
+  ] as const)('pinta %i% con %s', async (pct, color) => {
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makeMotionPet(pct) });
+    await renderMotionHome();
+    const track = screen.getByTestId('collar-battery-track');
+    const fill = screen.getByTestId('collar-battery-fill');
+    expect(track.props.className).toBe('h-1.5 flex-1 overflow-hidden rounded-full bg-surface');
+    expect(fill.props.className).toBe(`h-full rounded-full ${color}`);
+    expect(track.children.filter((child) => typeof child !== 'string')).toEqual([fill]);
+    expect(fill).toHaveAnimatedStyle({ width: `${pct}%` }, { shouldMatchAllProps: true });
+  });
+
+  it('pone la barra detrás del porcentaje en su fila', async () => {
+    await renderMotionHome();
+    const track = screen.getByTestId('collar-battery-track');
+    const battery = screen.getByTestId('collar-battery');
+    expect(track.parent).toBe(battery.parent);
+    const siblings = track.parent?.children.filter((child) => typeof child !== 'string');
+    expect(siblings?.indexOf(track)).toBe((siblings?.indexOf(battery) ?? -1) + 1);
+  });
+
+  it('llena la barra desde vacía con el preset de barra', async () => {
+    await renderMotionHome();
+    const fill = screen.getByTestId('collar-battery-fill');
+    expect(fill).toHaveStyle({ width: '0%' });
+    const config = mockWithTiming.mock.calls.find(([value]) => value === 82)?.[1];
+    expect(config).toBe(MOTION_FILL_TIMING);
+    expect(config).toEqual(expect.objectContaining({ duration: 250, reduceMotion: ReduceMotion.System }));
+  });
+
+  it('bajo reduce motion fija el ancho sin animar', async () => {
+    mockUseReducedMotion.mockReturnValue(true);
+    try {
+      await renderMotionHome();
+      const fill = screen.getByTestId('collar-battery-fill');
+      expect(mockWithTiming.mock.calls.some(([value]) => value === 82)).toBe(false);
+      expect(fill).toHaveStyle({ width: '82%' });
+      expect(fill).toHaveAnimatedStyle({ width: '82%' }, { shouldMatchAllProps: true });
+    } finally {
+      mockUseReducedMotion.mockReturnValue(false);
+    }
+  });
+
+  it('no pinta la barra sin porcentaje', async () => {
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makeMotionPet(null) });
+    await renderHome();
+    await waitFor(() => expect(screen.getByTestId('collar-battery')).toHaveTextContent('—'));
+    expect(screen.queryByTestId('collar-battery-track')).toBeNull();
+  });
+
+  it('no pinta la barra sin collar', async () => {
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makeMotionPet(82, { device: null }) });
+    await renderHome();
+    expect(await screen.findByTestId('collar-status')).toBeVisible();
+    expect(screen.queryByTestId('collar-battery-track')).toBeNull();
+  });
+
+  it('anima del valor anterior al nuevo al refrescar', async () => {
+    await renderMotionHome();
+    const fill = screen.getByTestId('collar-battery-fill');
+    mockWithTiming.mockClear();
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makeMotionPet(81) });
+    await refocusHome();
+    await waitFor(() => expect(screen.getByTestId('collar-battery')).toHaveTextContent('81%'));
+    expect(screen.getByTestId('collar-battery-fill')).toBe(fill);
+    const config = mockWithTiming.mock.calls.find(([value]) => value === 81)?.[1];
+    expect(config).toBe(MOTION_FILL_TIMING);
+    expect(config).toEqual(expect.objectContaining({ duration: 250, reduceMotion: ReduceMotion.System }));
+    expect(fill).toHaveAnimatedStyle({ width: '81%' }, { shouldMatchAllProps: true });
+  });
+
+  it('bajo reduce motion salta al nuevo valor al refrescar', async () => {
+    mockUseReducedMotion.mockReturnValue(true);
+    try {
+      await renderMotionHome();
+      const fill = screen.getByTestId('collar-battery-fill');
+      mockWithTiming.mockClear();
+      mockGetPet.mockResolvedValue({ kind: 'ok', pet: makeMotionPet(81) });
+      await refocusHome();
+      await waitFor(() => expect(screen.getByTestId('collar-battery')).toHaveTextContent('81%'));
+      expect(screen.getByTestId('collar-battery-fill')).toBe(fill);
+      expect(mockWithTiming.mock.calls.some(([value]) => value === 81)).toBe(false);
+      expect(fill).toHaveAnimatedStyle({ width: '81%' }, { shouldMatchAllProps: true });
+    } finally {
+      mockUseReducedMotion.mockReturnValue(false);
+    }
+  });
+
+  it('no añade texto ni nombre accesible a la fila', async () => {
+    await renderMotionHome();
+    const track = screen.getByTestId('collar-battery-track');
+    const fill = screen.getByTestId('collar-battery-fill');
+    expect(track.parent?.children.at(-1)).toBe(track);
+    expect(fill.children).toEqual([]);
+    for (const node of [track, fill]) {
+      expect(Object.keys(node.props).filter((key) => typeof node.props[key] === 'string'))
+        .toEqual(['testID', 'className']);
+    }
+    for (const node of [track, fill, track.parent]) {
+      expect(Object.keys(node?.props ?? {}).filter((key) => /^(accessib|aria-|role$|importantForAccessibility|screenReaderFocusable$|focusable$|tabIndex$|hasTVPreferredFocus$)/.test(key)))
+        .toEqual([]);
+    }
+    for (
+      let node: typeof track | null = screen.getByTestId('collar-battery');
+      node;
+      node = node.parent
+    ) {
+      expect(Object.keys(node.props).filter((key) => /^(accessib|aria-|role$|importantForAccessibility|screenReaderFocusable$|focusable$|tabIndex$|hasTVPreferredFocus$)/.test(key)))
+        .toEqual([]);
+    }
   });
 });

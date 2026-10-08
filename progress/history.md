@@ -8149,3 +8149,45 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
   arbitrarias lo admite la spec. La fila n canda a propósito el plural roto
   «Faltan 1 días» (Fuera de alcance de la spec).
 - Estado: `done`. PR abierta; siguiente: merge humano.
+
+## #152 `mobile-home-motion-foundations` — Cimientos de movimiento y entrada escalonada de la Home — 2026-10-08
+
+- Sesión: Backend (Claude Code, leader). Fecha de inicio: 2026-10-06.
+- Worktree `/home/claude/sites/Pet-Tracker-wt-152`, branch
+  `feature/152-mobile-home-motion-foundations`. Registro en `a783a2fa`.
+- Spec: `spec_author` en `11958b70` (R1-R10); revisión del leader en `9d7d0dc3`
+  (candado del refresco con reduce motion). Aprobada en Notion (página
+  `3f16115a-9b27-8135-a964-f9a857f75cd8`); firma en `faee3b23`.
+- `origin/main` 66aaf981 (#115, PR #197) mergeado en la branch en `9ecc70bb`
+  antes del handoff. Handoff a Codex en `36f91e6e` (H0). Base medida: 3 suites,
+  281 tests, exit=0.
+- Ronda 1 de Codex: carta A21 en `40ef31a7`; tres paradas de entorno o de
+  lista resueltas con las enmiendas de handoff E1 `c0bf53cb`, E2 `03274b2c` y
+  E3 `8ea0cf5e` (E3: `StyleSheet.flatten` en `index.test.tsx` rompía los
+  guards de `design-drift.test.ts`; se pasó a `toHaveStyle`). Trazabilidad en
+  `c7ac5ceb`.
+- Review ronda 1: **rechazado** (`08845498`, B1-B3). Cláusulas de R5, R7 y R8
+  candadas en una sola rama.
+- Enmienda E4 (spec): borrador `083ebc1b`. Seis pre-verificaciones del
+  reviewer contra sondas antes de firmar: 1b `b18d8e51`, 1c `c79b9dbc`, 1d
+  `f2bc714c`, 1e `75fea066`, 1f `9cb2242c` (insuficientes) y 1g `4537e956`
+  (suficiente). Ampliaciones H1-H16 en `a81f01cd`, `d24167fa`, `54b168c9`,
+  `f093528e` y `75a10abe`. Causa recurrente: el candado propuesto era más
+  estrecho que su cláusula (memoria `clausulas-universales-candadas-en-un-caso`).
+  El humano la aprobó en el chat («apruebo E4»); firma en `38fa5a95`.
+- Ronda 2 de Codex: rojo `8f680bcf`, verde `3406b9d6`. Paró en E4.6 porque la
+  lista cerrada contaba 12 ficheros y no 11: el pathspec del leader no excluía
+  `progress/review_<feature>.md`. Resuelto con la Enmienda de handoff E5
+  `ed06559a`. Trazabilidad E4 en `5f75faa8`.
+- Gate: `./init.sh` sobre `5f75faa8` con permiso del humano, exit=0 (backend
+  176/1348, móvil 96/2235, e2e 29 de 32 suites, 438 tests). Avisos a Frontend
+  antes y después (Postgres 5433 y LocalStack compartidos).
+- Review ronda 2: **aprobado** (`a38df955`). 91 de 93 sondas únicas caen; las 2
+  vivas son X42f, equivalente. Observación 5: `#152 R8 › pinta 12% con
+  bg-warning-strong` falló 1 vez en unas 110 corridas (la anchura se lee antes
+  de que acabe el `withTiming` de `MOTION_TRANSITION_MS` = 250 ms). No bloquea.
+- Humano: smoke R10 pasos 1-7 en el dev build de Android (OnePlus Nord 5,
+  2026-10-08) en `5afed4e6` y casilla de la carta A21 en `7d2df1d1`. Solo
+  casillas, 0 drift de código frente a `a38df955`.
+- Cierre: `done` en `feature_list.json`, trazabilidad R10, STATUS, Notion
+  (Implementado / Completado) y PR contra `main`. Merge: humano.
