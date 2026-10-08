@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, within } from '@testing-library/react-native';
 import { HeroUINativeProvider } from 'heroui-native';
+import { View } from 'react-native';
 
 import { en, es } from '../../i18n/catalog';
 import { EmptyState } from '../empty-state';
@@ -65,7 +66,9 @@ describe('#155 R2: las poses de los vacíos entran como WebP', () => {
 async function renderProbe(action?: { label: string; onPress: () => void }) {
   await render(
     <HeroUINativeProvider>
-      <EmptyState testID="probe" pose="talk" title="Título de prueba" body="Cuerpo de prueba." action={action} />
+      <View testID="probe-frame">
+        <EmptyState testID="probe" pose="talk" title="Título de prueba" body="Cuerpo de prueba." action={action} />
+      </View>
     </HeroUINativeProvider>,
   );
 }
@@ -91,6 +94,7 @@ describe('#155 R3: un único componente pinta los vacíos ilustrados', () => {
     expect(image.props.style).toEqual({ width: 160, height: 160 });
     expect(image.props.contentFit).toBe('contain');
     expect(image.props.accessibilityLabel).toBeUndefined();
+    expect(image.props.className).toBeUndefined();
   });
 
   it('pinta el contenedor sin tarjeta', async () => {
@@ -127,6 +131,30 @@ describe('#155 R3: un único componente pinta los vacíos ilustrados', () => {
     expect(source).toContain('className="rounded-xl bg-accent"');
     expect(source).toContain('className="font-bold text-accent-foreground"');
     expect(source).not.toMatch(/border-b-4/);
+  });
+
+  it('con acción pinta pose, título, cuerpo y botón como hijos directos, en ese orden', async () => {
+    await renderProbe({ label: 'Acción de prueba', onPress: jest.fn() });
+    const root = await screen.findByTestId('probe');
+    expect(root.parent).toBe(screen.getByTestId('probe-frame'));
+    expect(root.type).toBe('View');
+    expect(root.props.style).toBeUndefined();
+    expect(root.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['probe-pose', 'probe-title', 'probe-body', 'probe-action']);
+  });
+
+  it('sin acción pinta pose, título y cuerpo como hijos directos, en ese orden', async () => {
+    await renderProbe();
+    const root = await screen.findByTestId('probe');
+    expect(root.parent).toBe(screen.getByTestId('probe-frame'));
+    expect(root.type).toBe('View');
+    expect(root.props.style).toBeUndefined();
+    expect(root.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['probe-pose', 'probe-title', 'probe-body']);
+  });
+
+  it('declara el botón sin size ni variant', () => {
+    const source = readFileSync(join(process.cwd(), 'src', 'components', 'empty-state.tsx'), 'utf8');
+    expect(source.match(/<Button[\s>]/g)).toHaveLength(1);
+    expect(source).toContain('<Button testID={`${testID}-action`} className="rounded-xl bg-accent" onPress={action.onPress}>');
   });
 });
 
