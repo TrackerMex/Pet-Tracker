@@ -23,6 +23,14 @@ export class ListPetDocumentsUseCase {
 
   async execute(petId: string): Promise<PetDocumentListItem[]> {
     const documents = await this.documents.listUploadedByPet(petId);
-    return documents.map((document) => ({ document, downloadUrl: '' }));
+    return Promise.all(
+      documents.map(async (document) => ({
+        document,
+        downloadUrl: await this.storage.createDownloadUrl(
+          document.key,
+          DOCUMENT_DOWNLOAD_URL_EXPIRES_IN_SECONDS,
+        ),
+      })),
+    );
   }
 }
