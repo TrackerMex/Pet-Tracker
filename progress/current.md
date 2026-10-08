@@ -18,3 +18,9 @@ Solo backend; no toca `mobile-pet-tracker/`.
 - 2026-10-08: spec en `spec_ready` (status draft, casilla sin marcar):
   esqueleto `8756cc3d`, requirements `11a66756`, design `e68ddd46` + `04ba8b3a`,
   tasks `91ee0757`, traceability `83efe04f`. Migración fijada: `0019`.
+- 2026-10-08: spec espejada en Notion (base *Specs*, página
+  `3f36115a-9b27-81d6-b555-d8ae33ffc2d5`, `Estado del gate` = En revisión),
+  copia de `requirements.md` en `0b505e99` (idéntico a `fa2eb4da`; ese commit
+  solo corrige roles y `files_affected` en `feature_list.json`, que cierra P4).
+  Pendiente del humano: aprobar o cambiar DA1-DA9 y responder Q1 (coste en
+  modo `aws`, con la nota del 403 sin `s3:ListBucket`).
