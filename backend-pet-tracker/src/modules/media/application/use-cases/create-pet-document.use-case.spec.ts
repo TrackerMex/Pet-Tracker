@@ -73,6 +73,7 @@ describe('R2: CreatePetDocumentUseCase persiste, firma y audita', () => {
         date: '2026-08-25',
         vet: null,
         key: expectedKey,
+        uploadedAt: null,
         createdBy: USER_ID,
       },
       uploadUrl: 'https://example.local/signed-document-put',
