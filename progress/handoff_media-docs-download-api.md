@@ -288,9 +288,9 @@ ni el snapshot ni el journal):
     && pnpm exec tsc --noEmit -p tsconfig.json && pnpm exec eslint "{src,apps,libs,test}/**/*.ts" \
     && git add src/db/schema/media.schema.ts src/db/migrations/0019_pet_documents_uploaded_at.sql src/db/migrations/meta/0019_snapshot.json src/db/migrations/meta/_journal.json \
     && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'backend-pet-tracker/src/db/migrations/0019_pet_documents_uploaded_at.sql backend-pet-tracker/src/db/migrations/meta/0019_snapshot.json backend-pet-tracker/src/db/migrations/meta/_journal.json backend-pet-tracker/src/db/schema/media.schema.ts ' \
-    && test -z "$(git status --short)" \
+    && git diff --quiet -- . && test -z "$(git ls-files --others --exclude-standard -- .)" \
     && git commit -m 'feat(db): add pet_documents.uploaded_at, migration 0019 (#157 R1)'
-  (`test -z "$(git status --short)"` tras el add: drizzle-kit no puede
+  (`git diff --quiet -- .` y `git ls-files --others` tras el add: nada sin stagear ni sin trackear en backend-pet-tracker/, drizzle-kit no puede
   haber dejado ningun otro fichero. Si lo dejo, PARA.)
   (<PGREP> es el chequeo de arriba; si no da `libre`, no lances el e2e.)
 
@@ -456,7 +456,7 @@ Desde backend-pet-tracker/, sin pipe, con salida al impl:
        + 1 de R4). Mientras corre, no lances otra cosa.
 - TSC -> exit=0.
 - `pnpm run lint > /tmp/157-lint.txt 2>&1; echo "exit=$?"` -> exit=0 (este
-  SI lleva --fix) y despues `git status --short` -> vacio. Si --fix
+  SI lleva --fix) y despues `git status --short -- .` -> vacio (solo backend-pet-tracker/; el impl sigue sin trackear hasta c12). Si --fix
   reescribio algo, PARA y reporta que fichero y que cambio: no lo
   commitees sin decirlo.
 Desde la raiz del repo:
