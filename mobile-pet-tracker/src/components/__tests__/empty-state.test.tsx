@@ -1,4 +1,8 @@
+import { fireEvent, render, screen, within } from '@testing-library/react-native';
+import { HeroUINativeProvider } from 'heroui-native';
+
 import { en, es } from '../../i18n/catalog';
+import { EmptyState } from '../empty-state';
 
 const { readFileSync } = jest.requireActual<typeof import('fs')>('fs');
 const { join } = jest.requireActual<typeof import('path')>('path');
@@ -55,5 +59,73 @@ describe('#155 R2: las poses de los vacíos entran como WebP', () => {
     expect(bytes.readUIntLE(24, 3) + 1).toBe(1024);
     expect(bytes.readUIntLE(27, 3) + 1).toBe(1024);
     expect(bytes.length).toBeLessThanOrEqual(100000);
+  });
+});
+
+async function renderProbe(action?: { label: string; onPress: () => void }) {
+  await render(
+    <HeroUINativeProvider>
+      <EmptyState testID="probe" pose="talk" title="Título de prueba" body="Cuerpo de prueba." action={action} />
+    </HeroUINativeProvider>,
+  );
+}
+
+describe('#155 R3: un único componente pinta los vacíos ilustrados', () => {
+  it.each([
+    ['talk', /assets\/images\/pingo-talk\.webp$/],
+    ['sleep', /assets\/images\/pingo-sleep\.webp$/],
+    ['clipboard', /assets\/images\/pingo-clipboard\.webp$/],
+    ['health', /assets\/images\/pingo-health\.webp$/],
+    ['collar', /assets\/images\/pingo-collar\.webp$/],
+    ['food', /assets\/images\/pingo-food\.webp$/],
+  ] as const)('pinta la pose %s a 160×160 y sin etiqueta', async (pose, source) => {
+    await render(
+      <HeroUINativeProvider>
+        <EmptyState testID="probe" pose={pose} title="Título de prueba" body="Cuerpo de prueba." />
+      </HeroUINativeProvider>,
+    );
+    const image = await screen.findByTestId('probe-pose');
+    expect(image.props.source).toEqual([
+      expect.objectContaining({ testUri: expect.stringMatching(source) }),
+    ]);
+    expect(image.props.style).toEqual({ width: 160, height: 160 });
+    expect(image.props.contentFit).toBe('contain');
+    expect(image.props.accessibilityLabel).toBeUndefined();
+  });
+
+  it('pinta el contenedor sin tarjeta', async () => {
+    await renderProbe();
+    expect(await screen.findByTestId('probe')).toHaveProp('className', 'items-center gap-3 py-8');
+  });
+
+  it('pinta el título y el cuerpo con sus clases', async () => {
+    await renderProbe();
+    const title = await screen.findByTestId('probe-title');
+    expect(title).toHaveTextContent('Título de prueba');
+    expect(title.props.className).toBe('text-center text-lg font-bold text-foreground');
+    expect(screen.getByTestId('probe-body')).toHaveTextContent('Cuerpo de prueba.');
+    expect(screen.getByTestId('probe-body').props.className).toBe('text-center font-normal text-muted');
+  });
+
+  it('sin acción no pinta botón', async () => {
+    await renderProbe();
+    await screen.findByTestId('probe-title');
+    expect(screen.queryByTestId('probe-action')).toBeNull();
+  });
+
+  it('con acción pinta el botón y lo pulsa una vez', async () => {
+    const onPress = jest.fn();
+    await renderProbe({ label: 'Acción de prueba', onPress });
+    const button = await screen.findByTestId('probe-action');
+    expect(within(button).getByText('Acción de prueba')).toBeVisible();
+    await fireEvent.press(button);
+    expect(onPress).toHaveBeenCalledTimes(1);
+  });
+
+  it('declara el botón primario sin labio', () => {
+    const source = readFileSync(join(process.cwd(), 'src', 'components', 'empty-state.tsx'), 'utf8');
+    expect(source).toContain('className="rounded-xl bg-accent"');
+    expect(source).toContain('className="font-bold text-accent-foreground"');
+    expect(source).not.toMatch(/border-b-4/);
   });
 });
