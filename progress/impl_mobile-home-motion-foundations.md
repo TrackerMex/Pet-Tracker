@@ -3911,3 +3911,1123 @@ test ! -e mobile-pet-tracker/.expo/types/router.d.ts \
 ```
 
 R1-R9 completos. R10 y la aprobación de la enmienda A21 permanecen reservados al humano. Este cierre no ejecuta init.sh ni hace push o PR.
+
+
+## Reanudacion E4
+
+Fecha: 2026-10-07 (UTC). Se retoma la enmienda firmada en `38fa5a95`; H0 sigue siendo `36f91e6e`. Solo #152, sin push, PR ni init.sh, según el handoff. R10 y A21 permanecen pendientes del humano.
+
+### E4.1 — Estado y lectura
+
+```text
+$ pwd
+/home/claude/sites/Pet-Tracker-wt-152
+
+$ git branch --show-current
+feature/152-mobile-home-motion-foundations
+
+$ git rev-parse --short HEAD
+38fa5a95
+
+$ git status --short
+
+$ git log -1 --format=%s
+docs(mobile-home-motion-foundations): #152 approve amendment E4 (firma en chat)
+
+$ git diff --quiet c7ac5ceb HEAD -- src/; echo "exit=$?"
+exit=0
+
+$ test -d node_modules && echo presente
+presente
+
+$ test ! -e .expo/types/router.d.ts; echo "exit=$?"
+exit=0
+```
+
+Leídos requirements.md completo (incluida la firma E4), design.md, tasks.md, traceability.md, la carta móvil, arquitectura y las convenciones/verificación aplicables. Skills cargadas: `building-native-ui` (plugin Expo), `animate-expo`, `animation-vocabulary`, `review-animations`, `emil-design-eng` y `ponytail:ponytail`. D1-D6 siguen cerradas; prevalecen la spec y la carta. Leído `mobile-pet-tracker/AGENTS.md` y la documentación de Expo SDK 57 en https://docs.expo.dev/versions/v57.0.0/ antes de editar código.
+
+### E4.2 — Inserciones literales
+
+Tres inserciones copiadas del handoff y único cambio de import (`FadeOut`); ningún doble ni import adicional.
+
+```text
+$ test "$(git diff --numstat -- $T | cut -f1,2)" = "$(printf '203\t1')"; echo "exit=$?"
+exit=0
+
+$ grep -cF "it('no pinta ningún envoltorio sin mascota seleccionada'" $T
+1
+
+$ grep -cF "])('no pinta el envoltorio de la actividad con \$kind'" $T
+1
+
+$ grep -cF "como hijo directo de home-content y sin entrada'" $T
+2
+
+$ grep -cF "it('funde igual bajo reduce motion'" $T
+1
+
+$ grep -cF "con el detalle en \$kind'" $T
+1
+
+$ grep -cF "it('solo da entrada a los envoltorios, al fundido y al avatar del selector'" $T
+1
+
+$ grep -cF "])('no da entrada a home-states con %s'" $T
+1
+
+$ grep -cF "])('funde igual la fila con la actividad en \$kind'" $T
+1
+
+$ grep -cF "it('no añade texto ni nombre accesible a la fila'" $T
+1
+
+$ grep -cF "it('no da entrada al hero con alertas abiertas'" $T
+1
+
+$ grep -cF "'monta el skeleton directamente en la tarjeta, sin fundido de salida propio (reduce motion: %s)'" $T
+1
+
+$ grep -cF "'deja las cuatro celdas como hijos directos de la fila (reduce motion: %s)'" $T
+1
+
+$ grep -cF "toBe(reduceMotion ? undefined : FadeOut)" $T
+1
+
+$ grep -cxF "import { Easing, FadeOut, ReduceMotion, withDelay } from 'react-native-reanimated';" $T
+1
+
+$ grep -cF '|screenReaderFocusable$|focusable$|tabIndex$|hasTVPreferredFocus$)/' $T
+2
+
+$ grep -cF "expect(screen.queryByTestId('summary-skeleton')).toBeNull();" $T
+3
+
+$ grep -cF "enteringIds(screen.container)).toEqual(homeEnteringIds)" $T
+2
+
+$ grep -cF "expectRowUntouched(reveal);" $T
+2
+
+$ grep -cF "['summary-weight', 'summary-activity', 'summary-sleep', 'summary-distance'].map(" $T
+1
+
+$ grep -cF "let node: typeof track | null = screen.getByTestId('collar-battery');" $T
+1
+
+$ grep -cF "describe('#152" $T
+4
+
+$ tail -n 1 $T
+});
+```
+
+### E4.3 — Mutación de producción versionada
+
+Anclas de línea completa medidas antes de editar y todas únicas. Mutación literal de la sonda E4; se revertirá en E4.5.
+
+```text
+$ grep -cxF -- '        {selectedPetId && (activity.data === undefined || activity.data.kind === '"'"'ok'"'"') ? (' src/screens/home/index.tsx
+1
+
+$ grep -cxF -- '                <Animated.View testID="summary-reveal" entering={homeEntering(0, 0)}>' src/screens/home/index.tsx
+1
+
+$ grep -cxF -- '          <HeroUICard testID="pet-hero-error" className="items-start gap-3 p-4">' src/screens/home/index.tsx
+1
+
+$ grep -cxF -- '          </HeroUICard>' src/screens/home/index.tsx
+1
+
+$ grep -cxF -- '          <Button' src/screens/home/index.tsx
+1
+
+$ grep -cxF -- '          </Button>' src/screens/home/index.tsx
+1
+
+$ grep -cxF -- '        {detail.data?.kind === '"'"'ok'"'"' && connection ? (' src/screens/home/index.tsx
+1
+
+$ grep -cxF -- '          <View testID="home-hero-actions" className="flex-row items-center gap-3">' src/screens/home/index.tsx
+1
+
+$ grep -cxF -- '          {pets.data === undefined ? (' src/screens/home/index.tsx
+1
+
+$ grep -cxF -- '                <Skeleton testID="summary-skeleton" className="h-16 w-full rounded-xl" />' src/screens/home/index.tsx
+1
+
+$ grep -cxF -- '                        <View className="flex-1 items-center gap-1">' src/screens/home/index.tsx
+1
+
+$ grep -cxF -- '                      </>' src/screens/home/index.tsx
+1
+
+$ grep -cxF -- '      testID="collar-battery-track"' src/screens/home/collar-battery-bar.tsx
+1
+
+Despues de la mutacion:
+
+$ test "$(git diff --numstat -- $P | cut -f1,2)" = "$(printf '12\t5')"; echo "exit=$?"
+exit=0
+
+$ test "$(git diff --numstat -- $B | cut -f1,2)" = "$(printf '1\t0')"; echo "exit=$?"
+exit=0
+
+$ grep -cF '<HomeEntrance' $P
+11
+
+$ grep -cF "activity.data.kind !== 'error' ? (" $P
+1
+
+$ grep -cF "entering={reduceMotion || activity.data.kind !== 'ok' ? undefined : homeEntering(0, 0)}" $P
+1
+
+$ grep -cF 'accessibilityLabel="bateria"' $B
+1
+
+$ grep -cF '<Animated.View><Skeleton testID="summary-skeleton"' $P
+1
+
+$ grep -cF '<View><View className="flex-1 items-center gap-1">' $P
+1
+
+$ grep -cxF '                      </View></>' $P
+1
+```
+
+### E4.4 — Rojo
+
+Incidencia de invocación corregida: el primer `FORCE_COLOR=0 bunx jest src/screens/home/index.test.tsx > /tmp/152-r-e4.txt 2>&1` se lanzó por error desde la raíz y terminó en exit=1 antes de ejecutar tests: `Could not find a config file`, cwd `/home/claude/sites/Pet-Tracker-wt-152`. No se lanzó ninguna cadena de commit ni se modificó ninguna dependencia del repo. Log conservado en `/tmp/152-r-e4-wrong-cwd.txt`. La medición válida se ejecuta a continuación desde `mobile-pet-tracker/`, como exige el handoff.
+
+Mediciones válidas, sin pipe, desde mobile-pet-tracker/:
+
+```text
+$ FORCE_COLOR=0 bunx jest src/screens/home/index.test.tsx > /tmp/152-r-e4.txt 2>&1; echo "exit=$?"
+Test Suites: 1 failed, 1 total
+Tests:       26 failed, 192 passed, 218 total
+exit=1
+$ FORCE_COLOR=0 bunx jest src/__tests__/design-drift.test.ts src/__tests__/legibility-classnames.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/ui-language.test.ts > /tmp/152-r-e4-guards.txt 2>&1; echo "exit=$?"
+Test Suites: 4 passed, 4 total
+Tests:       174 passed, 174 total
+exit=0
+```
+
+Revisados los 26 fallos: todos por aserción, exclusivamente los casos nuevos de E4. Sin TypeError, ReferenceError, SyntaxError, Cannot find module ni Unable to find; ningún caso previo rojo. El log completo local está en `/tmp/152-r-e4.txt`; contiene árboles grandes (130066 líneas). Se conservan aquí cada título, matcher, Expected/Received resumidos y extractos de los diffs originales, omitiendo el resto de esos árboles y los stacks:
+
+```text
+1. #152 R5: la Home envuelve cada bloque en su entrada escalonada › no pinta ningún envoltorio sin mascota seleccionada
+expect(received).toBeNull()
+Expected (resumen del nodo/valor): null
+Received (resumen del nodo/valor): View testID="home-entrance-weekly", con weekly-activity-skeleton
+> 4824 |       expect(screen.queryByTestId(id)).toBeNull();
+    Received: <View collapsable={false} entering={[Function homeEntranceTsx1]} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {}}} testID="home-entrance-weekly"><View className="skeleton__root w-full rounded-card" collapsable={false} entering={[Function FadeIn]} exiting={[Function FadeOut]} jestAnimatedProps={{"value": {}}} jestAnim … [resto del árbol omitido]
+
+2. #152 R5: la Home envuelve cada bloque en su entrada escalonada › no pinta el envoltorio de la actividad con no-tracking
+expect(received).toBeNull()
+Expected (resumen del nodo/valor): null
+Received (resumen del nodo/valor): View testID="home-entrance-weekly" vacío
+> 4841 |     expect(screen.queryByTestId('home-entrance-weekly')).toBeNull();
+    Received: <View collapsable={false} entering={[Function homeEntranceTsx1]} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {}}} testID="home-entrance-weekly" />
+
+3. #152 R5: la Home envuelve cada bloque en su entrada escalonada › no pinta el envoltorio de la actividad con unauthorized
+expect(received).toBeNull()
+Expected (resumen del nodo/valor): null
+Received (resumen del nodo/valor): View testID="home-entrance-weekly" vacío
+> 4841 |     expect(screen.queryByTestId('home-entrance-weekly')).toBeNull();
+    Received: <View collapsable={false} entering={[Function homeEntranceTsx1]} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {}}} testID="home-entrance-weekly" />
+
+4. #152 R5: la Home envuelve cada bloque en su entrada escalonada › no pinta el envoltorio de la actividad con unreachable
+expect(received).toBeNull()
+Expected (resumen del nodo/valor): null
+Received (resumen del nodo/valor): View testID="home-entrance-weekly" vacío
+> 4841 |     expect(screen.queryByTestId('home-entrance-weekly')).toBeNull();
+    Received: <View collapsable={false} entering={[Function homeEntranceTsx1]} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {}}} testID="home-entrance-weekly" />
+
+5. #152 R5: la Home envuelve cada bloque en su entrada escalonada › no pinta el envoltorio de la actividad con missing-config
+expect(received).toBeNull()
+Expected (resumen del nodo/valor): null
+Received (resumen del nodo/valor): View testID="home-entrance-weekly" vacío
+> 4841 |     expect(screen.queryByTestId('home-entrance-weekly')).toBeNull();
+    Received: <View collapsable={false} entering={[Function homeEntranceTsx1]} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {}}} testID="home-entrance-weekly" />
+
+6. #152 R5: la Home envuelve cada bloque en su entrada escalonada › deja el error del detalle (error) como hijo directo de home-content y sin entrada
+expect(received).toBe(expected) // Object.is equality
+Expected (resumen del nodo/valor): nodo home-content
+Received (resumen del nodo/valor): nodo home-entrance-hero-error
+> 4867 |     expect(card.parent).toBe(screen.getByTestId('home-content'));
+    - Expected  - 840
+    + Received  +   0
+
+    @@ -1,15 +1,6 @@
+      <View
+    -   style={
+    -     Object {
+    -       "gap": 16,
+    -       "paddingHorizontal": 24,
+    -     }
+    -   }
+    -   testID="home-content"
+    - >
+    -   <View
+        collapsable={false}
+        entering={[Function homeEntranceTsx1]}
+        jestAnimatedProps={
+          Object {
+            "value": Object {},
+    @@ -155,840 +146,9 @@
+            />
+            <Text
+              className="font-normal button__label button__label--variant-primary button__label--size-md"
+            >
+              Reintentar
+    -         </Text>
+    -       </View>
+    -     </View>
+    -   </View>
+    -   <View
+[extracto del diff; se omite el resto del árbol/stack]
+
+7. #152 R5: la Home envuelve cada bloque en su entrada escalonada › deja el error del detalle (unreachable) como hijo directo de home-content y sin entrada
+expect(received).toBe(expected) // Object.is equality
+Expected (resumen del nodo/valor): nodo home-content
+Received (resumen del nodo/valor): nodo home-entrance-hero-error
+> 4867 |     expect(card.parent).toBe(screen.getByTestId('home-content'));
+    - Expected  - 857
+    + Received  +   0
+
+    @@ -1,15 +1,6 @@
+      <View
+    -   style={
+    -     Object {
+    -       "gap": 16,
+    -       "paddingHorizontal": 24,
+    -     }
+    -   }
+    -   testID="home-content"
+    - >
+    -   <View
+        collapsable={false}
+        entering={[Function homeEntranceTsx1]}
+        jestAnimatedProps={
+          Object {
+            "value": Object {},
+    @@ -155,857 +146,9 @@
+            />
+            <Text
+              className="font-normal button__label button__label--variant-primary button__label--size-md"
+            >
+              Reintentar
+    -         </Text>
+    -       </View>
+    -     </View>
+    -   </View>
+    -   <View
+[extracto del diff; se omite el resto del árbol/stack]
+
+8. #152 R5: la Home envuelve cada bloque en su entrada escalonada › deja el botón del mapa del día como hijo directo de home-content y sin entrada
+expect(received).toBe(expected) // Object.is equality
+Expected (resumen del nodo/valor): nodo home-content
+Received (resumen del nodo/valor): nodo home-entrance-day-map
+> 4875 |     expect(button.parent).toBe(screen.getByTestId('home-content'));
+    - Expected  - 1455
+    + Received  +    0
+
+    @@ -1,1178 +1,18 @@
+      <View
+    -   style={
+    -     Object {
+    -       "gap": 16,
+    -       "paddingHorizontal": 24,
+    -     }
+    -   }
+    -   testID="home-content"
+    - >
+    -   <View
+        collapsable={false}
+        entering={[Function homeEntranceTsx1]}
+        jestAnimatedProps={
+          Object {
+            "value": Object {},
+          }
+        }
+        jestAnimatedStyle={
+          Object {
+            "value": Object {},
+    -       }
+    -     }
+    -     testID="home-entrance-summary"
+    -   >
+    -     <View
+    -       className="rounded-card border border-border bg-surface p-4 shadow-sm gap-4"
+[extracto del diff; se omite el resto del árbol/stack]
+
+9. #152 R5: la Home envuelve cada bloque en su entrada escalonada › no pinta los envoltorios del collar ni de la última posición con el detalle en unauthorized
+expect(received).toBeNull()
+Expected (resumen del nodo/valor): null
+Received (resumen del nodo/valor): View testID="home-entrance-collar" con View vacío
+> 4890 |     expect(screen.queryByTestId('home-entrance-collar')).toBeNull();
+    Received: <View collapsable={false} entering={[Function homeEntranceTsx1]} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {}}} testID="home-entrance-collar"><View /></View>
+
+10. #152 R5: la Home envuelve cada bloque en su entrada escalonada › no pinta los envoltorios del collar ni de la última posición con el detalle en unreachable
+expect(received).toBeNull()
+Expected (resumen del nodo/valor): null
+Received (resumen del nodo/valor): View testID="home-entrance-collar" con View vacío
+> 4890 |     expect(screen.queryByTestId('home-entrance-collar')).toBeNull();
+    Received: <View collapsable={false} entering={[Function homeEntranceTsx1]} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {}}} testID="home-entrance-collar"><View /></View>
+
+11. #152 R5: la Home envuelve cada bloque en su entrada escalonada › no pinta los envoltorios del collar ni de la última posición con el detalle en missing-config
+expect(received).toBeNull()
+Expected (resumen del nodo/valor): null
+Received (resumen del nodo/valor): View testID="home-entrance-collar" con View vacío
+> 4890 |     expect(screen.queryByTestId('home-entrance-collar')).toBeNull();
+    Received: <View collapsable={false} entering={[Function homeEntranceTsx1]} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {}}} testID="home-entrance-collar"><View /></View>
+
+12. #152 R5: la Home envuelve cada bloque en su entrada escalonada › solo da entrada a los envoltorios, al fundido y al avatar del selector
+expect(received).toEqual(expected) // deep equality
+Expected (resumen del nodo/valor): homeEnteringIds (ocho testID literales de E4.2)
+Received (resumen del nodo/valor): los ocho más home-entrance-hero al principio
+> 4896 |     expect(enteringIds(screen.container)).toEqual(homeEnteringIds);
+    - Expected  - 0
+    + Received  + 1
+
+    @@ -1,6 +1,7 @@
+      Array [
+    +   "home-entrance-hero",
+        "pet-avatar-fallback-pet-1",
+        "home-entrance-summary",
+        "summary-reveal",
+        "home-entrance-collar",
+        "home-entrance-quick-actions",
+[extracto del diff; se omite el resto del árbol/stack]
+
+13. #152 R5: la Home envuelve cada bloque en su entrada escalonada › no da entrada al hero con alertas abiertas
+expect(received).toEqual(expected) // deep equality
+Expected (resumen del nodo/valor): homeEnteringIds (ocho testID literales de E4.2)
+Received (resumen del nodo/valor): los ocho más home-entrance-hero al principio
+> 4903 |     expect(enteringIds(screen.container)).toEqual(homeEnteringIds);
+    - Expected  - 0
+    + Received  + 1
+
+    @@ -1,6 +1,7 @@
+      Array [
+    +   "home-entrance-hero",
+        "pet-avatar-fallback-pet-1",
+        "home-entrance-summary",
+        "summary-reveal",
+        "home-entrance-collar",
+        "home-entrance-quick-actions",
+[extracto del diff; se omite el resto del árbol/stack]
+
+14. #152 R5: la Home envuelve cada bloque en su entrada escalonada › no da entrada a home-states con home-loading
+expect(received).toEqual(expected) // deep equality
+Expected (resumen del nodo/valor): ['home-loading']
+Received (resumen del nodo/valor): ['home-entrance-states', 'home-loading', 'home-entrance-weekly', 'weekly-activity-skeleton']
+> 4914 |     expect(enteringIds(screen.container)).toEqual(expected);
+    - Expected  - 0
+    + Received  + 3
+[extracto del diff; se omite el resto del árbol/stack]
+
+15. #152 R5: la Home envuelve cada bloque en su entrada escalonada › no da entrada a home-states con home-error
+expect(received).toEqual(expected) // deep equality
+Expected (resumen del nodo/valor): []
+Received (resumen del nodo/valor): ['home-entrance-states', 'home-entrance-weekly', 'weekly-activity-skeleton']
+> 4914 |     expect(enteringIds(screen.container)).toEqual(expected);
+    - Expected  - 1
+    + Received  + 5
+
+    - Array []
+    + Array [
+    +   "home-entrance-states",
+    +   "home-entrance-weekly",
+    +   "weekly-activity-skeleton",
+    + ]
+[extracto del diff; se omite el resto del árbol/stack]
+
+16. #152 R5: la Home envuelve cada bloque en su entrada escalonada › no da entrada a home-states con home-empty
+expect(received).toEqual(expected) // deep equality
+Expected (resumen del nodo/valor): []
+Received (resumen del nodo/valor): ['home-entrance-states', 'home-entrance-weekly', 'weekly-activity-skeleton']
+> 4914 |     expect(enteringIds(screen.container)).toEqual(expected);
+    - Expected  - 1
+    + Received  + 5
+
+    - Array []
+    + Array [
+    +   "home-entrance-states",
+    +   "home-entrance-weekly",
+    +   "weekly-activity-skeleton",
+    + ]
+[extracto del diff; se omite el resto del árbol/stack]
+
+17. #152 R7: las cifras del resumen aparecen con un fundido › funde igual bajo reduce motion
+expect(received).toEqual(expected) // deep equality
+Expected (resumen del nodo/valor): Any<Function>
+Received (resumen del nodo/valor): undefined
+> 5047 |     expect(entering).toEqual(expect.any(Function));
+    Expected: Any<Function>
+    Received: undefined
+
+18. #152 R7: las cifras del resumen aparecen con un fundido › funde igual la fila con la actividad en no-tracking
+expect(received).toEqual(expected) // deep equality
+Expected (resumen del nodo/valor): Any<Function>
+Received (resumen del nodo/valor): undefined
+> 5067 |     expect(entering).toEqual(expect.any(Function));
+    Expected: Any<Function>
+    Received: undefined
+
+19. #152 R7: las cifras del resumen aparecen con un fundido › funde igual la fila con la actividad en error
+expect(received).toEqual(expected) // deep equality
+Expected (resumen del nodo/valor): Any<Function>
+Received (resumen del nodo/valor): undefined
+> 5067 |     expect(entering).toEqual(expect.any(Function));
+    Expected: Any<Function>
+    Received: undefined
+
+20. #152 R7: las cifras del resumen aparecen con un fundido › funde igual la fila con la actividad en unreachable
+expect(received).toEqual(expected) // deep equality
+Expected (resumen del nodo/valor): Any<Function>
+Received (resumen del nodo/valor): undefined
+> 5067 |     expect(entering).toEqual(expect.any(Function));
+    Expected: Any<Function>
+    Received: undefined
+
+21. #152 R7: las cifras del resumen aparecen con un fundido › funde igual la fila con la actividad en missing-config
+expect(received).toEqual(expected) // deep equality
+Expected (resumen del nodo/valor): Any<Function>
+Received (resumen del nodo/valor): undefined
+> 5067 |     expect(entering).toEqual(expect.any(Function));
+    Expected: Any<Function>
+    Received: undefined
+
+22. #152 R7: las cifras del resumen aparecen con un fundido › deja las cuatro celdas como hijos directos de la fila (reduce motion: false)
+expect(received).toEqual(expected) // deep equality
+Expected (resumen del nodo/valor): padres de summary-weight, summary-activity, summary-sleep y summary-distance, como hijos directos
+Received (resumen del nodo/valor): la cuarta celda está dentro de un View adicional
+> 5083 |       expect(row?.children.filter((child) => typeof child !== 'string')).toEqual(
+    - Expected  - 0
+    + Received  + 2
+
+    @@ -78,10 +78,11 @@
+            className="text-2xs font-normal text-muted"
+          >
+            Descanso
+          </Text>
+        </View>,
+    +   <View>
+          <View
+            className="flex-1 items-center gap-1"
+          >
+            <View
+              color="#0D1117"
+    @@ -104,7 +105,8 @@
+            <Text
+              className="text-2xs font-normal text-muted"
+            >
+              Distancia
+            </Text>
+    +     </View>
+        </View>,
+      ]
+[extracto del diff; se omite el resto del árbol/stack]
+
+23. #152 R7: las cifras del resumen aparecen con un fundido › deja las cuatro celdas como hijos directos de la fila (reduce motion: true)
+expect(received).toEqual(expected) // deep equality
+Expected (resumen del nodo/valor): padres de summary-weight, summary-activity, summary-sleep y summary-distance, como hijos directos
+Received (resumen del nodo/valor): la cuarta celda está dentro de un View adicional
+> 5083 |       expect(row?.children.filter((child) => typeof child !== 'string')).toEqual(
+    - Expected  - 0
+    + Received  + 2
+
+    @@ -78,10 +78,11 @@
+            className="text-2xs font-normal text-muted"
+          >
+            Descanso
+          </Text>
+        </View>,
+    +   <View>
+          <View
+            className="flex-1 items-center gap-1"
+          >
+            <View
+              color="#0D1117"
+    @@ -104,7 +105,8 @@
+            <Text
+              className="text-2xs font-normal text-muted"
+            >
+              Distancia
+            </Text>
+    +     </View>
+        </View>,
+      ]
+[extracto del diff; se omite el resto del árbol/stack]
+
+24. #152 R7: las cifras del resumen aparecen con un fundido › monta el skeleton directamente en la tarjeta, sin fundido de salida propio (reduce motion: false)
+expect(received).toBe(expected) // Object.is equality
+Expected (resumen del nodo/valor): nodo summary-card
+Received (resumen del nodo/valor): Animated.View sin testID entre el skeleton y summary-card
+> 5099 |       expect(skeleton.parent).toBe(screen.getByTestId('summary-card'));
+    - Expected  - 16
+    + Received  +  0
+
+    @@ -1,21 +1,6 @@
+      <View
+    -   className="rounded-card border border-border bg-surface p-4 shadow-sm gap-4"
+    -   style={
+    -     Object {
+    -       "borderCurve": "continuous",
+    -     }
+    -   }
+    -   testID="summary-card"
+    - >
+    -   <Text
+    -     className="text-base font-bold text-foreground"
+    -     testID="summary-card-title"
+    -   >
+    -     Resumen de hoy
+    -   </Text>
+    -   <View
+        collapsable={false}
+        jestAnimatedProps={
+          Object {
+            "value": Object {},
+          }
+    @@ -58,7 +43,6 @@
+              undefined,
+            ]
+          }
+          testID="summary-skeleton"
+[extracto del diff; se omite el resto del árbol/stack]
+
+25. #152 R7: las cifras del resumen aparecen con un fundido › monta el skeleton directamente en la tarjeta, sin fundido de salida propio (reduce motion: true)
+expect(received).toBe(expected) // Object.is equality
+Expected (resumen del nodo/valor): nodo summary-card
+Received (resumen del nodo/valor): Animated.View sin testID entre el skeleton y summary-card
+> 5099 |       expect(skeleton.parent).toBe(screen.getByTestId('summary-card'));
+    - Expected  - 16
+    + Received  +  0
+
+    @@ -1,21 +1,6 @@
+      <View
+    -   className="rounded-card border border-border bg-surface p-4 shadow-sm gap-4"
+    -   style={
+    -     Object {
+    -       "borderCurve": "continuous",
+    -     }
+    -   }
+    -   testID="summary-card"
+    - >
+    -   <Text
+    -     className="text-base font-bold text-foreground"
+    -     testID="summary-card-title"
+    -   >
+    -     Resumen de hoy
+    -   </Text>
+    -   <View
+        collapsable={false}
+        jestAnimatedProps={
+          Object {
+            "value": Object {},
+          }
+    @@ -56,7 +41,6 @@
+              undefined,
+            ]
+          }
+          testID="summary-skeleton"
+[extracto del diff; se omite el resto del árbol/stack]
+
+26. #152 R8: la batería del collar se dibuja como barra › no añade texto ni nombre accesible a la fila
+expect(received).toEqual(expected) // deep equality
+Expected (resumen del nodo/valor): ['testID', 'className']
+Received (resumen del nodo/valor): ['testID', 'accessibilityLabel', 'className']
+> 5209 |         .toEqual(['testID', 'className']);
+    - Expected  - 0
+    + Received  + 1
+[extracto del diff; se omite el resto del árbol/stack]
+```
+
+Cadena E4.4 literal ejecutada desde mobile-pet-tracker/:
+
+```bash
+grep -qE '^Tests: +26 failed, 192 passed, 218 total$' /tmp/152-r-e4.txt \
+  && test "$(grep -cF '✕ no pinta ningún envoltorio sin mascota seleccionada' /tmp/152-r-e4.txt)" = 1 \
+  && test "$(grep -cF '✕ no pinta el envoltorio de la actividad con ' /tmp/152-r-e4.txt)" = 4 \
+  && test "$(grep -cF '✕ deja el ' /tmp/152-r-e4.txt)" = 3 \
+  && test "$(grep -cF '✕ no pinta los envoltorios del collar ni de la última posición con el detalle en ' /tmp/152-r-e4.txt)" = 3 \
+  && test "$(grep -cF '✕ solo da entrada a los envoltorios, al fundido y al avatar del selector' /tmp/152-r-e4.txt)" = 1 \
+  && test "$(grep -cF '✕ no da entrada a home-states con ' /tmp/152-r-e4.txt)" = 3 \
+  && test "$(grep -cF '✕ funde igual bajo reduce motion' /tmp/152-r-e4.txt)" = 1 \
+  && test "$(grep -cF '✕ funde igual la fila con la actividad en ' /tmp/152-r-e4.txt)" = 4 \
+  && test "$(grep -cF '✕ no añade texto ni nombre accesible a la fila' /tmp/152-r-e4.txt)" = 1 \
+  && test "$(grep -cF '✕ no da entrada al hero con alertas abiertas' /tmp/152-r-e4.txt)" = 1 \
+  && test "$(grep -cF '✕ monta el skeleton directamente en la tarjeta, sin fundido de salida propio (reduce motion: ' /tmp/152-r-e4.txt)" = 2 \
+  && test "$(grep -cF '✕ deja las cuatro celdas como hijos directos de la fila (reduce motion: ' /tmp/152-r-e4.txt)" = 2 \
+  && test "$(grep -c '✕' /tmp/152-r-e4.txt)" = 26 \
+  && ! grep -qE 'TypeError|ReferenceError|SyntaxError|Cannot find module|Unable to find' /tmp/152-r-e4.txt \
+  && grep -qE '^Tests: +174 passed, 174 total$' /tmp/152-r-e4-guards.txt \
+  && test ! -e .expo/types/router.d.ts && bun run typecheck && bun run lint \
+  && git add src/screens/home/index.test.tsx src/screens/home/index.tsx src/screens/home/collar-battery-bar.tsx \
+  && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'mobile-pet-tracker/src/screens/home/collar-battery-bar.tsx mobile-pet-tracker/src/screens/home/index.test.tsx mobile-pet-tracker/src/screens/home/index.tsx ' \
+  && git commit -m 'test(mobile-home): #152 R5 R7 R8 red, wrappers, fade and battery copy locked on every branch'
+```
+
+```text
+[feature/152-mobile-home-motion-foundations 8f680bcf] test(mobile-home): #152 R5 R7 R8 red, wrappers, fade and battery copy locked on every branch
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 3 files changed, 216 insertions(+), 6 deletions(-)
+$ tsc --noEmit
+$ expo lint
+chain exit=0
+```
+
+Rojo E4: `8f680bcf test(mobile-home): #152 R5 R7 R8 red, wrappers, fade and battery copy locked on every branch`. Typecheck y lint de la cadena: exit=0.
+
+### E4.5 — Verde y restauración exacta
+
+```text
+$ git checkout c7ac5ceb -- src/screens/home/index.tsx src/screens/home/collar-battery-bar.tsx && git diff --quiet c7ac5ceb -- src/screens/home/index.tsx src/screens/home/collar-battery-bar.tsx; echo "exit=$?"
+exit=0
+$ FORCE_COLOR=0 bunx jest src/screens/home/index.test.tsx > /tmp/152-g-e4.txt 2>&1; echo "exit=$?"
+Test Suites: 1 passed, 1 total
+Tests:       218 passed, 218 total
+exit=0
+$ FORCE_COLOR=0 bunx jest src/__tests__/design-drift.test.ts src/__tests__/legibility-classnames.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/ui-language.test.ts > /tmp/152-g-e4-guards.txt 2>&1; echo "exit=$?"
+Test Suites: 4 passed, 4 total
+Tests:       174 passed, 174 total
+exit=0
+```
+
+La adenda de este reporte se conserva temporalmente fuera del árbol durante la cadena verde, para cumplir su `test -z "$(git diff --name-only)"` sin añadir el reporte al índice. Se recupera después de la cadena; ningún cambio documental previo se pierde.
+
+Cadena E4.5 literal ejecutada desde mobile-pet-tracker/:
+
+```bash
+grep -qE '^Tests: +218 passed, 218 total$' /tmp/152-g-e4.txt \
+  && grep -qE '^Tests: +174 passed, 174 total$' /tmp/152-g-e4-guards.txt \
+  && test ! -e .expo/types/router.d.ts && bun run typecheck && bun run lint \
+  && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'mobile-pet-tracker/src/screens/home/collar-battery-bar.tsx mobile-pet-tracker/src/screens/home/index.tsx ' \
+  && test -z "$(git diff --name-only)" \
+  && git commit -m 'feat(mobile-home): #152 R5 R7 R8 green, revert the probe mutation' \
+  && git diff --quiet c7ac5ceb HEAD -- src/screens/home/index.tsx src/screens/home/collar-battery-bar.tsx; echo "exit=$?"
+```
+
+```text
+$ tsc --noEmit
+$ expo lint
+[feature/152-mobile-home-motion-foundations 3406b9d6] feat(mobile-home): #152 R5 R7 R8 green, revert the probe mutation
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 2 files changed, 5 insertions(+), 13 deletions(-)
+exit=0
+chain exit=0
+```
+
+Verde E4: `3406b9d6 feat(mobile-home): #152 R5 R7 R8 green, revert the probe mutation`. Typecheck y lint: exit=0. `git diff --quiet c7ac5ceb HEAD -- src/screens/home/index.tsx src/screens/home/collar-battery-bar.tsx`: exit=0. Producción idéntica a c7ac5ceb.
+
+### E4.6 — Parada por discrepancia de la lista cerrada
+
+Después del verde E4, una comprobación de alcance previa al resto del cierre devuelve **12 ficheros**, no los **11** exigidos por E4.6 y el cierre original. El adicional es `progress/review_mobile-home-motion-foundations.md`, incorporado por el reviewer/leader en `08845498`, antes del HEAD de reanudación `38fa5a95`. Este implementer no lo ha modificado.
+
+```text
+$ git diff --name-only 36f91e6e HEAD -- . ':!feature_list.json' ':!progress/current.md' ':!progress/handoff_mobile-home-motion-foundations.md' ':!specs/mobile-home-motion-foundations/requirements.md' ':!specs/mobile-home-motion-foundations/design.md' ':!specs/mobile-home-motion-foundations/tasks.md'
+docs/ui-guidelines.md
+mobile-pet-tracker/src/__tests__/design-drift.test.ts
+mobile-pet-tracker/src/screens/home/collar-battery-bar.tsx
+mobile-pet-tracker/src/screens/home/home-entrance.test.tsx
+mobile-pet-tracker/src/screens/home/home-entrance.tsx
+mobile-pet-tracker/src/screens/home/index.test.tsx
+mobile-pet-tracker/src/screens/home/index.tsx
+mobile-pet-tracker/src/theme/__tests__/motion.test.ts
+mobile-pet-tracker/src/theme/motion.ts
+progress/impl_mobile-home-motion-foundations.md
+progress/review_mobile-home-motion-foundations.md
+specs/mobile-home-motion-foundations/traceability.md
+exit=0
+recuento=12; esperado=11
+$ git log --diff-filter=A --format='%h %s' -- progress/review_mobile-home-motion-foundations.md
+08845498 docs(mobile-home-motion-foundations): review #152 round 1, rejected
+$ git diff --quiet 38fa5a95 HEAD -- progress/review_mobile-home-motion-foundations.md; echo "exit=$?"
+exit=0
+```
+
+Aplica la regla crítica del handoff: «cualquier otro fichero ajeno en `git diff --name-only <H0> HEAD` es motivo de parada». No se excluye el reporte del reviewer por iniciativa propia ni se borra o modifica. Hace falta que el leader corrija la comprobación de alcance para contemplar ese fichero preexistente antes de reanudar.
+
+**Estado al parar:** rojo E4 `8f680bcf`, verde E4 `3406b9d6`. Home 218/218 y guardas 174/174 en verde, typecheck/lint exit=0. Producción restaurada exactamente a `c7ac5ceb`. No se ha ejecutado aún la comparación de cinco suites (346 esperados), Jest completo (96 suites/2235 esperados), ni las anclas finales de E4.6. No se ha actualizado todavía la trazabilidad E4 ni creado su commit documental. La adenda de este reporte queda sin commit para no ejecutar el cierre fuera de orden o inventar otra cadena. No hay otros cambios de trabajo pendientes. Sin init.sh, push, PR ni firmas humanas; R10/A21 continúan pendientes.
+
+### E5.1 — Reanudación autorizada
+
+Fecha: 2026-10-07 (UTC). HEAD de reanudación: `ed06559a`. Leída E5 completa; resuelve exclusivamente la exclusión del reporte del reviewer. La parada E4.6 queda resuelta por esta enmienda del leader, invocada por el humano. H0 sigue siendo `36f91e6e`; rojo y verde E4 permanecen `8f680bcf` y `3406b9d6`. Se conservan todos los cambios y la evidencia de la sesión anterior. Solo queda verificar y documentar el cierre; no se toca producción.
+
+```text
+$ git status --short
+ M progress/impl_mobile-home-motion-foundations.md
+
+$ git log -1 --format=%s
+docs(mobile-home-motion-foundations): #152 handoff amendment E5
+
+$ git diff --quiet 3406b9d6 HEAD -- mobile-pet-tracker/ specs/mobile-home-motion-foundations/traceability.md; echo "exit=$?"
+exit=0
+
+$ git diff --quiet 38fa5a95 HEAD -- progress/review_mobile-home-motion-foundations.md; echo "exit=$?"
+exit=0
+
+$ test -d mobile-pet-tracker/node_modules && echo presente
+presente
+
+$ test ! -e mobile-pet-tracker/.expo/types/router.d.ts; echo "exit=$?"
+exit=0
+```
+
+### E4.6 / E5.2 — Cierre reanudado
+
+Se repite íntegro el cierre móvil con las cifras de E4 (346 y 2235). Se conservan para el leader `init.sh`, push y PR, y para el humano R10 y la casilla A21.
+
+Comparación con la base, desde mobile-pet-tracker/, sin pipe:
+
+```text
+$ FORCE_COLOR=0 bunx jest src/screens/home/index.test.tsx src/__tests__/design-drift.test.ts src/theme/__tests__/global-css.test.ts src/theme/__tests__/motion.test.ts src/screens/home/home-entrance.test.tsx > /tmp/152-five.txt 2>&1; echo "exit=$?"
+Test Suites: 5 passed, 5 total
+Tests:       346 passed, 346 total
+exit=0
+```
+
+346 = 281 de base + 65 casos nuevos. Reparto: home/index 218, design-drift 62, global-css 51, motion 9 y home-entrance 6.
+
+Suite móvil completa, ejecutada sin ningún otro comando en paralelo:
+
+```text
+$ pgrep -af '[i]nit\.sh'
+(sin salida; exit=1: no hay procesos coincidentes)
+$ FORCE_COLOR=0 bunx jest > /tmp/152-all.txt 2>&1; echo "exit=$?"
+Test Suites: 96 passed, 96 total
+Tests:       2235 passed, 2235 total
+exit=0
+```
+
+```text
+$ bun run typecheck; echo "exit=$?"
+$ tsc --noEmit
+exit=0
+```
+
+```text
+$ bun run lint; echo "exit=$?"
+$ expo lint
+exit=0
+```
+
+Anclas finales 0-40 y las ocho positivas: todos los valores coinciden con el cierre del handoff y E4.
+
+```text
+Ancla 0:
+$ grep -cF -- '- [x] Aprobado por humano (fecha: 2026-10-06, vía Notion' ../specs/mobile-home-motion-foundations/requirements.md
+1
+
+Ancla 1:
+$ grep -rlF 'entering=' src | wc -l
+2
+
+Ancla 2:
+$ test -e src/theme/motion.ts; echo $?
+0
+
+Ancla 3:
+$ grep -cF -- '--motion' src/theme/global.css
+0
+
+Ancla 4:
+$ grep -rlF 'home-entrance' src | wc -l
+4
+
+Ancla 5:
+$ grep -cF 'promueven a tokens `--motion-*` en global.css' ../docs/ui-guidelines.md
+0
+
+Ancla 6:
+$ grep -cF 'unmountOnBlur' 'src/app/(tabs)/_layout.tsx'
+0
+
+Ancla 7:
+$ grep -cF "expect(mockWithTiming).not.toHaveBeenCalled()" src/screens/home/index.test.tsx
+1
+
+Ancla 8:
+$ grep -cF '.children.flatMap((child) =>' src/screens/home/index.test.tsx
+5
+
+Ancla 9:
+$ grep -cF 'BAR_ENTRY_STAGGER_MS = 40' src/screens/home/weekly-activity-chart.tsx
+1
+
+Ancla 10:
+$ grep -cF "dot: 'bg-success'" src/components/pet-hero-header.tsx
+1
+
+Ancla 11:
+$ grep -cF "dot: 'bg-warning-strong'" src/components/pet-hero-header.tsx
+1
+
+Ancla 12:
+$ test -e src/screens/home/home-entrance.tsx; echo $?
+0
+
+Ancla 13:
+$ test -e src/screens/home/home-entrance.test.tsx; echo $?
+0
+
+Ancla 14:
+$ test -e src/screens/home/collar-battery-bar.tsx; echo $?
+0
+
+Ancla 15:
+$ test -e src/theme/__tests__/motion.test.ts; echo $?
+0
+
+Ancla 16:
+$ grep -cF 'testID="home-content"' src/screens/home/index.tsx
+1
+
+Ancla 17:
+$ grep -cF 'className="flex-row"' src/screens/home/index.tsx
+1
+
+Ancla 18:
+$ grep -cF 'testID="summary-skeleton"' src/screens/home/index.tsx
+1
+
+Ancla 19:
+$ grep -cF 'testID="collar-battery"' src/screens/home/index.tsx
+1
+
+Ancla 20:
+$ grep -cF "t('home.noCollar')" src/screens/home/index.tsx
+1
+
+Ancla 21:
+$ grep -cF 'const detail = useQuery({' src/screens/home/index.tsx
+1
+
+Ancla 22:
+$ grep -cF 'const { selectedPetId, selectPet } = useSelectedPet();' src/screens/home/index.tsx
+1
+
+Ancla 23:
+$ grep -cF 'MEALS_BAR_TIMING' src/screens/home/index.tsx
+2
+
+Ancla 24:
+$ grep -cF "describe('R10: refetch al foco'" src/screens/home/index.test.tsx
+1
+
+Ancla 25:
+$ grep -cF "it('selects a pressed pet and reloads its detail and activity'" src/screens/home/index.test.tsx
+1
+
+Ancla 26:
+$ grep -cF "it('queda entre el resumen y la última posición en el árbol'" src/screens/home/index.test.tsx
+1
+
+Ancla 27:
+$ grep -cF "it('coloca la tira sobre la tarjeta del collar'" src/screens/home/index.test.tsx
+1
+
+Ancla 28:
+$ grep -cF "it('coloca la rejilla entre el collar y la actividad semanal'" src/screens/home/index.test.tsx
+1
+
+Ancla 29:
+$ grep -cF "it('coloca la sección entre la actividad semanal y la última posición'" src/screens/home/index.test.tsx
+1
+
+Ancla 30:
+$ grep -cF 'const mockWithTiming = jest.fn(' src/screens/home/index.test.tsx
+1
+
+Ancla 31:
+$ grep -cF 'const mockUseReducedMotion = jest.fn' src/screens/home/index.test.tsx
+1
+
+Ancla 32:
+$ grep -cF 'withDelay: jest.fn(' src/screens/home/index.test.tsx
+1
+
+Ancla 33:
+$ grep -cF "describe('#152" src/screens/home/index.test.tsx
+4
+
+Ancla 34:
+$ grep -cF "describe('#152" src/__tests__/design-drift.test.ts
+1
+
+Ancla 35:
+$ grep -cF 'const MEALS_BAR_STYLE_ESCAPES = new RegExp(' src/__tests__/design-drift.test.ts
+1
+
+Ancla 36:
+$ grep -cF "describe('#98 R10: la barra de comidas no mete drift de estilo'" src/__tests__/design-drift.test.ts
+2
+
+Ancla 37:
+$ grep -cF '## Enmienda #152' ../docs/ui-guidelines.md
+1
+
+Ancla 38:
+$ grep -cF 'Enmienda aprobada por humano' ../docs/ui-guidelines.md
+3
+
+Ancla 39:
+$ grep -cF -- '- [ ] Enmienda aprobada por humano' ../docs/ui-guidelines.md
+1
+
+Ancla 40:
+$ test ! -e .expo/types/router.d.ts; echo $?
+0
+
+Ocho anclas positivas:
+$ grep -cF 'export const MOTION_' src/theme/motion.ts
+8
+
+$ grep -cF "'worklet'" src/screens/home/home-entrance.tsx
+1
+
+$ grep -cF '<HomeEntrance' src/screens/home/index.tsx
+6
+
+$ grep -cF 'testID="summary-reveal"' src/screens/home/index.tsx
+1
+
+$ grep -cF 'homeEntering(0, 0)' src/screens/home/index.tsx
+1
+
+$ grep -cF '<CollarBatteryBar' src/screens/home/index.tsx
+1
+
+$ grep -cF '`src/theme/motion.ts` (enmienda A21 de #152)' ../docs/ui-guidelines.md
+1
+
+$ grep -cF "describe('#152 R9" src/__tests__/design-drift.test.ts
+1
+```
+
+Entering, no regresión y alcance móvil/backend/infra:
+
+```text
+$ grep -rlF 'entering=' src --include='*.tsx' | LC_ALL=C sort
+src/screens/home/home-entrance.tsx
+src/screens/home/index.tsx
+
+$ git diff --stat 36f91e6e -- src/i18n src/theme/global.css src/components src/screens/home/weekly-activity-chart.tsx src/__tests__/ui-copy-table.ts package.json bun.lock
+
+$ git diff --stat 36f91e6e -- backend-pet-tracker/ infra-pet-tracker/
+
+$ git diff --stat 36f91e6e -- infra/
+
+$ git diff --name-only 36f91e6e HEAD -- mobile-pet-tracker/
+mobile-pet-tracker/src/__tests__/design-drift.test.ts
+mobile-pet-tracker/src/screens/home/collar-battery-bar.tsx
+mobile-pet-tracker/src/screens/home/home-entrance.test.tsx
+mobile-pet-tracker/src/screens/home/home-entrance.tsx
+mobile-pet-tracker/src/screens/home/index.test.tsx
+mobile-pet-tracker/src/screens/home/index.tsx
+mobile-pet-tracker/src/theme/__tests__/motion.test.ts
+mobile-pet-tracker/src/theme/motion.ts
+
+$ git diff --quiet c7ac5ceb HEAD -- mobile-pet-tracker/src/screens/home/index.tsx mobile-pet-tracker/src/screens/home/collar-battery-bar.tsx; echo "exit=$?"
+exit=0
+```
+
+Exactamente dos ficheros con `entering=`, ocho ficheros móviles contra H0 y diffs de no regresión vacíos. Producción de index.tsx y collar-battery-bar.tsx idéntica a c7ac5ceb. Se verifica además `infra/`, nombre real del directorio de infraestructura del repo.
+
+### E5.3 — Lista cerrada corregida
+
+Medida desde la raíz con la exclusión autorizada por E5:
+
+```text
+$ git diff --name-only 36f91e6e HEAD -- . ':!feature_list.json' ':!progress/current.md' ':!progress/handoff_mobile-home-motion-foundations.md' ':!specs/mobile-home-motion-foundations/requirements.md' ':!specs/mobile-home-motion-foundations/design.md' ':!specs/mobile-home-motion-foundations/tasks.md' ':!progress/review_mobile-home-motion-foundations.md'
+docs/ui-guidelines.md
+mobile-pet-tracker/src/__tests__/design-drift.test.ts
+mobile-pet-tracker/src/screens/home/collar-battery-bar.tsx
+mobile-pet-tracker/src/screens/home/home-entrance.test.tsx
+mobile-pet-tracker/src/screens/home/home-entrance.tsx
+mobile-pet-tracker/src/screens/home/index.test.tsx
+mobile-pet-tracker/src/screens/home/index.tsx
+mobile-pet-tracker/src/theme/__tests__/motion.test.ts
+mobile-pet-tracker/src/theme/motion.ts
+progress/impl_mobile-home-motion-foundations.md
+specs/mobile-home-motion-foundations/traceability.md
+
+$ git diff --quiet 38fa5a95 HEAD -- progress/review_mobile-home-motion-foundations.md; echo "exit=$?"
+exit=0
+recuento=11; esperado=11
+```
+
+La discrepancia de E4.6 queda resuelta. El reporte del reviewer permanece intacto respecto a 38fa5a95.
+
+### E5.4 — Trazabilidad y cierre documental de E4
+
+Actualizadas únicamente las filas R5 (23 casos), R7 (12 casos) y R8 (12 casos: cuatro filas de it.each y ocho it) de traceability.md. Las tres conservan sus commits históricos y añaden el rojo `8f680bcf` y el verde `3406b9d6` de E4 con sus mensajes completos. R10 sigue `pendiente (humano)`. No se modifican requirements.md, design.md, tasks.md, la carta ni el reporte del reviewer.
+
+Orden de los 27 commits propios ya existentes verificado por hash (los commits del leader quedan fuera de este recuento):
+
+```text
+f110abac test(mobile-home): #152 R1 red, motion constants
+a588f1d8 feat(mobile-home): #152 R1 motion constants in theme/motion.ts
+595665b3 test(mobile-home): #152 R2 red, charter points to motion.ts
+40ef31a7 docs(mobile-home): #152 R2 charter amendment A21 for motion.ts
+de2bab96 test(mobile-home): #152 R3 red, home entrance recipe
+0b2ba0da feat(mobile-home): #152 R3 homeEntering worklet
+3f42c163 test(mobile-home): #152 R4 red, staggered HomeEntrance
+891bc4f6 test(mobile-home): #152 R4 red, reanimated double declares __esModule
+a34c2712 feat(mobile-home): #152 R4 HomeEntrance wrapper
+557ce704 test(mobile-home): #152 R5 red, staggered Home blocks
+29eba7b1 test(mobile-home): #152 R6 red, entrance plays once per mount
+60371e0a feat(mobile-home): #152 R5 wrap Home blocks in HomeEntrance
+a7cbd7d7 test(mobile-home): #152 R7 red, summary reveal fade
+bb7f3194 test(mobile-home): #152 R6 red, weight wait matches the full text
+630a611e feat(mobile-home): #152 R7 fade in the summary row
+c872a3e1 test(mobile-home): #152 R7 red, no fade over the skeleton
+b25535eb feat(mobile-home): #152 R7 keep the skeleton without fade
+5606d328 test(mobile-home): #152 R8 red, collar battery bar
+6da3a9c7 feat(mobile-home): #152 R8 collar battery bar
+26092abf test(mobile-home): #152 R8 red, no bar without percentage or collar
+b0ab47fc feat(mobile-home): #152 R8 bar only with a numeric percentage
+4daff5ff test(mobile-home): #152 R9 red, no style drift in Home motion
+11dffcf4 test(mobile-home): #152 R9 red, R8 reads the fill width without StyleSheet
+86f4b6ed fix(mobile-home): #152 R9 cite the feature with its R-id
+c7ac5ceb docs(mobile-home-motion-foundations): #152 traceability
+8f680bcf test(mobile-home): #152 R5 R7 R8 red, wrappers, fade and battery copy locked on every branch
+3406b9d6 feat(mobile-home): #152 R5 R7 R8 green, revert the probe mutation
+```
+
+El commit documental siguiente es el número 28. No se reescribe ni se rebasea ninguno de los hashes anteriores. Cadena final desde la raíz (se conserva el control de ausencia de router.d.ts exigido en cada cadena):
+
+```bash
+test ! -e mobile-pet-tracker/.expo/types/router.d.ts \
+  && git add specs/mobile-home-motion-foundations/traceability.md progress/impl_mobile-home-motion-foundations.md \
+  && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'progress/impl_mobile-home-motion-foundations.md specs/mobile-home-motion-foundations/traceability.md ' \
+  && git commit -m 'docs(mobile-home-motion-foundations): #152 traceability E4'
+```
+
+Después del commit se repiten la lista cerrada de E5.3, la comprobación de que el reporte del reviewer y la producción siguen intactos, el recuento de 28 commits propios y el estado limpio, sin modificar de nuevo este reporte para añadir su propio hash.
+
+**Resultado del cierre E4/E5 (2026-10-08 UTC):** comparación de base 5 suites/346 tests (281 + 65); Jest móvil completo 96 suites/2235 tests; typecheck y lint exit=0; 41 anclas y ocho positivas correctas; dos ficheros con entering=; no regresión de copy, tokens, componentes, gráfica semanal ni dependencias; backend/infra sin cambios; ocho ficheros móviles y lista cerrada de once. La producción vuelve exactamente a c7ac5ceb. La parada anterior queda resuelta por E5. R1-R9 implementados y documentados; la feature sigue in_progress para revisión del leader y gates humanos (R10 y aprobación de A21). init.sh, push y PR quedan para el leader. No se ha hecho push ni abierto PR.
