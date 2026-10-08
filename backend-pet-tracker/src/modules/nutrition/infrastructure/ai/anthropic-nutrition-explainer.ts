@@ -69,10 +69,9 @@ export class AnthropicNutritionExplainer implements NutritionExplainer {
         system: NUTRITION_AI_SYSTEM_PROMPT,
         messages: [{ role: 'user', content: buildUserPrompt(input, result) }],
       });
-      const blocks =
-        response.content != null
-          ? (response.content as { type: string; text?: string }[])
-          : [];
+      const blocks = Array.isArray(response.content)
+        ? (response.content as { type: string; text?: string }[])
+        : [];
       const text = blocks
         .filter((block) => block.type === 'text')
         .map((block) => block.text ?? '')
