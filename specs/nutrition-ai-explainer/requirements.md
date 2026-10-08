@@ -1966,7 +1966,7 @@ humano no dice otra cosa, se implementa ese.
       Re-abierto por la enmienda del 2026-10-08 (primera aprobación: 2026-08-18).
 - [ ] Prueba de humo con clave real ejecutada por humano (R19, fecha: ____)
       ← gate de cierre, casilla propia; ni el `reviewer` ni ninguna IA pueden marcarla
-- [ ] Enmienda E1 aprobada por humano (fecha: )
+- [x] Enmienda E1 aprobada por humano (fecha: 2026-10-08)
       ← gate previo al handoff de la ronda 2, casilla propia; la firma es el commit
       que la marca. El frontmatter sigue en `status: approved` (convención de la
       enmienda E4 de #152). La marca el humano, o el leader con la firma de Notion
