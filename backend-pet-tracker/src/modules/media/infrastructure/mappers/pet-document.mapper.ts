@@ -1,3 +1,4 @@
+import type { PetDocumentListItem } from '@/modules/media/application/use-cases/list-pet-documents.use-case';
 import type { PetDocument } from '@/modules/media/domain/entities/pet-document.entity';
 
 export interface PetDocumentResponse {
@@ -19,5 +20,18 @@ export function toPetDocumentResponse(
     date: document.date,
     vet: document.vet,
     key: document.key,
+  };
+}
+
+export interface PetDocumentListItemResponse extends PetDocumentResponse {
+  downloadUrl: string;
+}
+
+export function toPetDocumentListItemResponse(
+  item: PetDocumentListItem,
+): PetDocumentListItemResponse {
+  return {
+    ...toPetDocumentResponse(item.document),
+    downloadUrl: item.downloadUrl,
   };
 }

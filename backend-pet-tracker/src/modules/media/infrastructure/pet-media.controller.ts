@@ -20,7 +20,9 @@ import { CreatePetDocumentUseCase } from '@/modules/media/application/use-cases/
 import { ListPetDocumentsUseCase } from '@/modules/media/application/use-cases/list-pet-documents.use-case';
 import { mapPetDocumentError } from '@/modules/media/infrastructure/mappers/pet-document-error.mapper';
 import {
+  PetDocumentListItemResponse,
   PetDocumentResponse,
+  toPetDocumentListItemResponse,
   toPetDocumentResponse,
 } from '@/modules/media/infrastructure/mappers/pet-document.mapper';
 import { RequirePetRole } from '@/modules/pets/infrastructure/decorators/require-pet-role.decorator';
@@ -37,10 +39,12 @@ export class PetMediaController {
   ) {}
 
   @Get()
-  async list(@Req() request: PetAccessRequest): Promise<PetDocumentResponse[]> {
+  async list(
+    @Req() request: PetAccessRequest,
+  ): Promise<PetDocumentListItemResponse[]> {
     return (
       await this.listPetDocuments.execute(request.petMembership.petId)
-    ).map(toPetDocumentResponse);
+    ).map(toPetDocumentListItemResponse);
   }
 
   @Post(':documentId/confirm')

@@ -41,6 +41,10 @@ describe('Pet documents API (e2e)', () => {
     key: string;
   }
 
+  interface DocumentListItemResponse extends DocumentResponse {
+    downloadUrl: string;
+  }
+
   const api = () => request(app.getHttpServer());
   const auth = (token: string) => ({ Authorization: `Bearer ${token}` });
 
@@ -204,13 +208,13 @@ describe('Pet documents API (e2e)', () => {
 
       expect(Array.isArray(response.body)).toBe(true);
       expect(response.body).toEqual([
-        sameDateHigherId,
-        sameDateLowerId,
-        oldest,
+        { ...sameDateHigherId, downloadUrl: expect.any(String) as unknown },
+        { ...sameDateLowerId, downloadUrl: expect.any(String) as unknown },
+        { ...oldest, downloadUrl: expect.any(String) as unknown },
       ]);
       for (const item of response.body as DocumentResponse[]) {
         expect(Object.keys(item).sort()).toEqual(
-          ['id', 'type', 'name', 'date', 'vet', 'key'].sort(),
+          ['id', 'type', 'name', 'date', 'vet', 'key', 'downloadUrl'].sort(),
         );
         expect(typeof item.id).toBe('string');
         expect(typeof item.type).toBe('string');
@@ -709,6 +713,77 @@ describe('Pet documents API (e2e)', () => {
     });
   });
 
+  describe('#157 R4: cada documento listado trae downloadUrl de 3600 s', () => {
+    it.each(['owner', 'family', 'walker', 'vet'] as const)(
+      '#157 R4: %s recibe downloadUrl prefirmada sobre la key',
+      async (role) => {
+        const owner = await seedUser(`157-r4-owner-${role}`);
+        const pet = await seedPet(owner);
+        const member =
+          role === 'owner' ? owner : await seedUser(`157-r4-member-${role}`);
+        if (role !== 'owner') await seedMembership(pet.id, member.id, role);
+        const document = await seedDocument(pet.id, owner.id, {
+          date: '2026-10-08',
+        });
+
+        const listed = await listDocuments(member, pet.id).expect(200);
+        const items = listed.body as DocumentListItemResponse[];
+        expect(items).toHaveLength(1);
+        const item = items[0];
+        expect(item.id).toBe(document.id);
+        expect(Object.keys(item).sort()).toEqual(
+          ['id', 'type', 'name', 'date', 'vet', 'key', 'downloadUrl'].sort(),
+        );
+        expect(item.downloadUrl).toMatch(/^https?:\/\//);
+        const url = new URL(item.downloadUrl);
+        expect(url.searchParams.get('X-Amz-Expires')).toBe('3600');
+        expect(url.searchParams.has('X-Amz-Signature')).toBe(true);
+        expect(url.pathname.endsWith(`/${item.key}`)).toBe(true);
+      },
+    );
+  });
+
+  describe('#157 R8: flujo POST → PUT → confirm → GET → descarga contra LocalStack', () => {
+    it.each(['application/pdf', 'image/jpeg'])(
+      '#157 R8: %s se sube, se confirma y se descarga con sus bytes y su content-type',
+      async (type) => {
+        const owner = await seedUser(`157-r8-owner-${type.replace('/', '-')}`);
+        const pet = await seedPet(owner);
+        const bytes = Buffer.from(`document-${type}-${runId}`);
+        const created = await createDocument(owner, pet.id, {
+          type: 'Consulta',
+          name: 'Documento descargable',
+          date: '2026-10-08',
+        }).expect(201);
+        const body = created.body as {
+          document: DocumentResponse;
+          uploadUrl: string;
+        };
+        const put = await fetch(body.uploadUrl, {
+          method: 'PUT',
+          headers: { 'Content-Type': type },
+          body: bytes,
+        });
+        expect(put.status).toBeGreaterThanOrEqual(200);
+        expect(put.status).toBeLessThan(300);
+        const pending = await listDocuments(owner, pet.id).expect(200);
+        expect(pending.body).toEqual([]);
+
+        await confirmDocument(owner, pet.id, body.document.id).expect(204);
+        const listed = await listDocuments(owner, pet.id).expect(200);
+        const items = listed.body as DocumentListItemResponse[];
+        expect(items).toHaveLength(1);
+        const item = items[0];
+        expect(item.id).toBe(body.document.id);
+        expect(item.downloadUrl).toMatch(/^https?:\/\//);
+        const download = await fetch(item.downloadUrl);
+        expect(download.status).toBe(200);
+        expect(Buffer.from(await download.arrayBuffer())).toEqual(bytes);
+        expect(download.headers.get('content-type')).toBe(type);
+      },
+    );
+  });
+
   describe('R3: flujo end-to-end POST → PUT → GET contra LocalStack', () => {
     it('sube bytes sin Authorization, conserva el documento y permite leer el objeto por key', async () => {
       const owner = await seedUser('r3-owner');
@@ -738,7 +813,9 @@ describe('Pet documents API (e2e)', () => {
       await confirmDocument(owner, pet.id, createdBody.document.id).expect(204);
 
       const listed = await listDocuments(owner, pet.id).expect(200);
-      expect(listed.body).toEqual([createdBody.document]);
+      expect(listed.body).toEqual([
+        { ...createdBody.document, downloadUrl: expect.any(String) as unknown },
+      ]);
 
       const storedObject = await s3.send(
         new GetObjectCommand({
