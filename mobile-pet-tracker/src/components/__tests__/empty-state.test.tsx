@@ -188,3 +188,18 @@ describe('#155 R10: los vacíos que no se ilustran siguen en texto', () => {
     ]);
   });
 });
+
+
+describe('#155 R11: los vacíos no traen movimiento ni dependencias', () => {
+  it('EmptyState solo importa de react, react-native, expo-image y heroui-native', () => {
+    const source = readFileSync(join(process.cwd(), 'src', 'components', 'empty-state.tsx'), 'utf8');
+    for (const [, specifier] of source.matchAll(/from '([^']+)'/g)) {
+      expect(['react', 'react-native', 'expo-image', 'heroui-native']).toContain(specifier);
+    }
+  });
+
+  it('EmptyState no anima', () => {
+    const source = readFileSync(join(process.cwd(), 'src', 'components', 'empty-state.tsx'), 'utf8');
+    expect(source).not.toMatch(/react-native-reanimated|entering=|MOTION_/);
+  });
+});
