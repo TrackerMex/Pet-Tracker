@@ -153,6 +153,34 @@ describe('R10 (nutrition-ai-explainer #18): normaliza respuestas a texto o null 
       },
     ],
     ['content null sin usage', { stop_reason: 'end_turn', content: null }],
+    [
+      'content string',
+      { stop_reason: 'end_turn', content: 'Tu perro necesita...', usage },
+    ],
+    [
+      'content objeto',
+      {
+        stop_reason: 'end_turn',
+        content: { type: 'text', text: 'Tu perro necesita...' },
+        usage,
+      },
+    ],
+    ['content numero', { stop_reason: 'end_turn', content: 42, usage }],
+    [
+      'content undefined',
+      { stop_reason: 'end_turn', content: undefined, usage },
+    ],
+    [
+      'content array-like',
+      {
+        stop_reason: 'end_turn',
+        content: {
+          0: { type: 'text', text: 'Tu perro necesita...' },
+          length: 1,
+        },
+        usage,
+      },
+    ],
   ];
   it.each(unusable)(
     'degrada %s con exactamente un warn completo',
