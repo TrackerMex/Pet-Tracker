@@ -357,3 +357,35 @@ describe('R10', () => {
     }, { shouldMatchAllProps: true });
   });
 });
+
+describe('#153 R2: la carta escribe la voz de Pingo', () => {
+  const charter = readFileSync(join(process.cwd(), '..', 'docs', 'ui-guidelines.md'), 'utf8');
+
+  it('declara el punto 7 tras el punto 6 y antes del checklist', () => {
+    const voice = '**7. Voz de Pingo: guardián sereno.**';
+    const language = '**6. Idioma:';
+    const checklist = '## Checklist de autocrítica';
+    expect(charter.indexOf(voice)).toBeGreaterThan(charter.indexOf(language));
+    expect(charter.indexOf(voice)).toBeLessThan(charter.indexOf(checklist));
+    for (const text of [voice, language, checklist]) {
+      expect(charter.split(text).length).toBe(2);
+    }
+  });
+
+  it('fija las reglas de la voz', () => {
+    for (const text of [
+      '- **Sin emoji**, en ningún idioma.',
+      '- **Exclamaciones solo para celebrar.**',
+      '- **Sin bromas en las alertas.**',
+      '- **En inglés, registro neutro.**',
+      'con el marcador `{{petName}}`',
+    ]) {
+      expect(charter).toContain(text);
+    }
+  });
+
+  it('declara la excepción de los bucles de reposo', () => {
+    expect(charter).toContain('- **Bucles de reposo.**');
+    expect(charter).toContain('`src/theme/motion.ts` y no arrancan con reduce motion.');
+  });
+});
