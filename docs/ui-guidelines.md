@@ -454,8 +454,9 @@ solo duraciones y configuraciones de Reanimated. Tiene los precedentes
 `native-styles.ts` y `touch-target.ts` en la misma carpeta.
 
 Las constantes anteriores a #152 (`MEALS_BAR_TIMING`, `KCAL_BAR_TIMING`,
-`WELCOME_ENTRANCE_MS`, `BAR_ENTRY_*`, `METRIC_TAB_SPRING` y
-`TAB_INDICATOR_SPRING`) migran a `motion.ts` en una feature posterior,
-fuera del alcance de esta.
+`BAR_ENTRY_*`, `METRIC_TAB_SPRING` y `TAB_INDICATOR_SPRING`) migran a
+`motion.ts` en una feature posterior, fuera del alcance de esta.
+`WELCOME_ENTRANCE_MS` no está en la lista: la retiró #153, cuya bienvenida
+usa `MOTION_FADE_TIMING` y `MOTION_SETTLE_SPRING` (enmienda E1 de #153).
 
 - [X] Enmienda aprobada por humano
