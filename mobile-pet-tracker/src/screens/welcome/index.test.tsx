@@ -696,3 +696,11 @@ describe('#153 R12: la parada de los bucles la hace Reanimated', () => {
     }
   });
 });
+
+describe('#153 R13: Pingo no trae dependencias nuevas', () => {
+  it('no declara Lottie, Rive ni expo-linear-gradient', () => {
+    const manifest = JSON.parse(readFileSync(join(process.cwd(), 'package.json'), 'utf8'));
+    const dependencies = [...Object.keys(manifest.dependencies), ...Object.keys(manifest.devDependencies)];
+    expect(dependencies.filter((name) => /^(?:lottie-react-native|rive-react-native|@rive-app\/.+|expo-linear-gradient)$/.test(name))).toEqual([]);
+  });
+});
