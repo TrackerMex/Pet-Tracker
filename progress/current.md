@@ -31,8 +31,12 @@
   (`progress/spec_nutrition-ai-explainer_e1.md`, D-E1-a del humano: recortar)
   y barrida por el reviewer en tres revisiones
   (`progress/review_nutrition-ai-explainer_e1.md`): **apta para firma** en
-  `0fde011c`. Espejada en Notion (pagina #18, `Estado del gate` = En revision)
-  el 2026-10-08; falta la firma del humano.
+  `0fde011c`. Aprobada por el humano en Notion el 2026-10-08; commit de firma
+  del leader `c4b86430`. Handoff de la ronda 2 (E1-c1...E1-c18) en
+  `progress/handoff_nutrition-ai-explainer_e1.md`; H0E1 = el commit que lo
+  anade. Gates por JSON de jest (`/tmp/e1-check.js`) encadenados al commit;
+  anclas, cadenas esperadas y mensajes verificados contra la base y tasks.md
+  antes de entregarlo. Ronda solo unitaria: sin e2e ni init.sh para Codex.
 
 ### Delegado al leader al cierre
 
@@ -42,10 +46,10 @@
 
 ### Pasos que quedan
 
-1. Humano: aprueba E1 en Notion (`Estado del gate` = Aprobado). Leader: commit
-   de firma marcando la casilla E1 de §Aprobacion, y handoff de la ronda 2
-   (E1-c1...E1-c18) para Codex.
-2. Codex implementa la ronda 2 (18 commits, test primero).
+1. ~~Humano: aprueba E1 en Notion. Leader: commit de firma y handoff de la
+   ronda 2.~~ Hecho (`c4b86430` + commit del handoff).
+2. Codex implementa la ronda 2 (18 commits, test primero) y deja §Final E1 sin
+   commitear en el impl: lo versiona el leader.
 3. Leader: init.sh con permiso del humano, luego `reviewer` (ronda 2).
 4. Humano: R19 (prueba de humo con clave real, `docs/verification.md`
    §Feature 18). Ninguna IA la corre.
