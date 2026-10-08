@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type {
@@ -96,5 +97,113 @@ describe('R9 (nutrition-ai-explainer #18): parametros exactos de la llamada', ()
       2,
     );
     expect(source).not.toContain("from '@anthropic-ai/" + "sdk'");
+  });
+});
+
+describe('R10 (nutrition-ai-explainer #18): normaliza respuestas a texto o null con warn', () => {
+  let warn: jest.SpyInstance<
+    ReturnType<Logger['warn']>,
+    Parameters<Logger['warn']>
+  >;
+  beforeEach(() => {
+    warn = jest
+      .spyOn(Logger.prototype, 'warn')
+      .mockImplementation(() => undefined);
+  });
+  afterEach(() => jest.restoreAllMocks());
+  const usage = { input_tokens: 10, output_tokens: 20 };
+  const unusable: [string, AnthropicMessageResponse][] = [
+    ...[
+      'max_tokens',
+      'refusal',
+      'stop_sequence',
+      'tool_use',
+      'pause_turn',
+      null,
+      'valor_futuro',
+    ].map((stop): [string, AnthropicMessageResponse] => [
+      String(stop),
+      {
+        stop_reason: stop,
+        content: [{ type: 'text', text: 'Tu perro necesita...' }],
+        usage,
+      },
+    ]),
+    ['vacio', { stop_reason: 'end_turn', content: [], usage }],
+    [
+      'thinking',
+      {
+        stop_reason: 'end_turn',
+        content: [{ type: 'thinking', thinking: 'razono' }],
+        usage,
+      },
+    ],
+    [
+      'texto vacio',
+      { stop_reason: 'end_turn', content: [{ type: 'text', text: '' }], usage },
+    ],
+    [
+      'espacios',
+      {
+        stop_reason: 'end_turn',
+        content: [{ type: 'text', text: '   ' }],
+        usage,
+      },
+    ],
+    ['content null sin usage', { stop_reason: 'end_turn', content: null }],
+  ];
+  it.each(unusable)(
+    'degrada %s con exactamente un warn completo',
+    async (_label, response) => {
+      const create = jest
+        .fn<Promise<AnthropicMessageResponse>, [AnthropicMessageParams]>()
+        .mockResolvedValue(response);
+      const adapter = new AnthropicNutritionExplainer(
+        'modelo-de-prueba',
+        'clave-de-prueba',
+        { create },
+      );
+      await expect(adapter.explain(input, result, ctx)).resolves.toBeNull();
+      expect(warn).toHaveBeenCalledTimes(1);
+      expect(warn.mock.calls[0][0]).toEqual({
+        scope: 'nutrition-ai',
+        petId: ctx.petId,
+        planId: ctx.planId,
+        message: 'ai explanation unusable',
+        stopReason: response.stop_reason ?? null,
+        usage: response.usage ?? null,
+      });
+    },
+  );
+  it.each([
+    [
+      'thinking y texto',
+      [
+        { type: 'thinking', thinking: 'razono' },
+        { type: 'text', text: 'Tu perro necesita...' },
+      ],
+    ],
+    [
+      'dos bloques',
+      [
+        { type: 'text', text: 'Tu perro ' },
+        { type: 'text', text: 'necesita...' },
+      ],
+    ],
+    ['trim', [{ type: 'text', text: '  Tu perro necesita...  ' }]],
+  ])('anti-vacio: %s devuelve texto sin warn', async (_label, content) => {
+    const adapter = new AnthropicNutritionExplainer(
+      'modelo-de-prueba',
+      'clave-de-prueba',
+      {
+        create: jest
+          .fn<Promise<AnthropicMessageResponse>, [AnthropicMessageParams]>()
+          .mockResolvedValue({ stop_reason: 'end_turn', content }),
+      },
+    );
+    await expect(adapter.explain(input, result, ctx)).resolves.toBe(
+      'Tu perro necesita...',
+    );
+    expect(warn).not.toHaveBeenCalled();
   });
 });
