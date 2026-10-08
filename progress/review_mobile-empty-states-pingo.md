@@ -415,3 +415,97 @@ G4 tiene dos opciones, sin medir:
 - **Componente (E2-S1 a E2-S9, al menos E2-S1 a E2-S3):** se midieron mientras corría el `init.sh` ajeno de wt-18 (pid 975770). Aun así dieron sus cifras exactas. Las sondas de pantalla corrieron con ese `init.sh` ya terminado.
 - **Flake de map:** en la corrida de 4 suites (home, health, food y map, sobre `410035a`) falló 1 test de 448. Fue `R4: map resuelve la mascota seleccionada › selects the first pet and loads its first position (#72 R2)`, por timeout de `waitFor` en la línea 312. No es de #155 y corre antes del `it` nuevo. Borré la perf-cache de jest del árbol desechable y repetí map solo: 97/97. Lo tomo como flake por carga.
 - **Combinado de B5:** en la corrida en paralelo, el worker de empty-state cayó (ver arriba). Solo, da sus rojos por aserción.
+
+## Re-pre-verificación E2
+
+**Veredicto: E2 SUFICIENTE.** Las cuatro respuestas son afirmativas:
+- los literales nuevos nacen verdes y las cuentas no se mueven;
+- E2-S23 a E2-S27 dan exactamente su línea `Tests:`, en rojo por aserción;
+- ningún mutante de sitio de reminders sobrevive con el error visible;
+- el combinado G1 + G2 + G3 + G4 + NIMG cae en rojo, por aserción, en las dos suites que toca.
+
+G1-G4 quedan cerrados. No queda ningún hueco bloqueante dentro del alcance B1-B5.
+
+### Base y método
+- **Base:** `459e9f6c`, sacada con `git archive` de `mobile-pet-tracker`, `specs`, `progress` y `docs` a un árbol desechable fuera del repo. `node_modules` es un symlink al del worktree.
+- **Commits del árbol desechable:** `377795c` base, `21a7365` paso 3a (R3), `7737bde` paso 3b (R11) y `d3219fc` paso 4 (los 9 `it` de sitio).
+- **Fuente de los literales:** los `it` y las líneas se insertaron leyendo la spec y el handoff de ese mismo árbol, no copiados a mano. El `it` nuevo de R6 es idéntico en `requirements.md` (E2.2) y en el handoff (paso 4). Las líneas de 3a (`className` del `Image`) y 3b (`0x02`) también están en los dos.
+- **Ni `init.sh` ni suite completa.** Solo jest acotado, `tsc` y lint. `pgrep -af '[i]nit\.sh'` vacío antes de cada corrida. El worktree no se tocó: sigue en `459e9f6c`, limpio, salvo esta subsección, sin commitear.
+
+### 1. Literales y cuentas: verdes, sin cambios
+| Paso | Corrida | Resultado |
+|---|---|---|
+| 3a (E2.1, R3) | empty-state | 62 passed, 62 total, exit 0 |
+| 3b (E2.3, R11) | empty-state | 64 passed, 64 total, exit 0 |
+| 3b | GUARDAS | 174 passed, 174 total, exit 0 |
+| 4 (E2.2, sitio) | reminders | 34 passed, 34 total, exit 0 |
+
+- **Typecheck:** `bunx tsc --noEmit` exit 0, tras borrar `.expo/types/router.d.ts`.
+- **Lint:** `bunx expo lint --no-cache` exit 0, sin avisos. La primera corrida usó la cache por defecto; la repetí con `--no-cache`.
+- **Los 15 ficheros del cierre**, en tres corridas sin pipe:
+
+  | Corrida | Ficheros | Resultado |
+  |---|---|---|
+  | 1 | empty-state, welcome, language-provider y las 4 GUARDAS | 327/327 |
+  | 2 | health, food, alerts, reminders, docs, geofences | 270/270 |
+  | 3 | home, map | 318/318 |
+
+  En total, **915/915, exit 0**. Las cuentas siguen en 62, 64, 34 y 915.
+- Respecto a la pre-verificación sobre `1cbcd4b0`, el único `it` de sitio que cambia es el de reminders.
+
+### 2. Sondas del paso 6, medidas una a una
+Cada sonda se plantó sobre `d3219fc`, se corrió en su suite acotada y se restauró después. `git status` quedó limpio tras cada una.
+
+| Sonda | Mutación (E2.5) | Esperado | Medido | `it` y aserción que caen |
+|---|---|---|---|---|
+| E2-S23 | bit `0x02` de VP8X puesto con el one-liner de `node` de la spec | 1 failed, 63 passed, 64 total | igual | fila `pingo-talk.webp` del `it.each` de R2, `expect(bytes[20] & 0x02).toBe(0)` |
+| E2-S24 | `style` con fondo en la raíz | 2 failed, 62 passed, 64 total | igual | los dos `…como hijos directos…`, `toBeUndefined` de `root.props.style` |
+| E2-S25 | raíz `Text` | 2 failed, 62 passed, 64 total | igual | los dos `…como hijos directos…`, `expect(root.type).toBe('View')` |
+| E2-S26 | `className="rounded-full bg-surface"` en el `Image` | 6 failed, 58 passed, 64 total | igual | las seis filas de `pinta la pose %s…`, `toBeUndefined`. Recibido: `"rounded-full bg-surface"` |
+| E2-S27 | vacío debajo de `actionError` | 1 failed, 33 passed, 34 total | igual | el `it` de sitio de R6, segundo `toEqual` (`slotWithError`) |
+| E2-S15 | `reminders-empty` envuelto | 1 failed, 33 passed, 34 total | igual | el `it` de sitio de R6, `toBe('screen-reminders')` del abuelo |
+| E2-S20 | vacío encima del PetSwitcher | 1 failed, 33 passed, 34 total | igual | el `it` de sitio de R6, primer `toEqual` |
+
+La salida de E2-S20 también muestra un marco de `selected-pet-provider.tsx:31`. Es un `console.error` de `act(...)`, igual que en la corrida verde (15-16 avisos de ese tipo en todas), y no un fallo. El único `●` es el `it` de sitio.
+
+### 3. Barrido de las ramas que abre el `it` de R6
+Con el error visible, el segundo `toEqual` fija la lista completa de hermanos:
+
+`reminders-actions`, PetSwitcher (`RCTScrollView`), `reminders-empty`, `reminders-action-error`, `reminders-delete-host`.
+
+Carga, error de carga y lista son excluyentes con el vacío, así que no coexisten con él. Mutantes de sitio con el error visible:
+
+| Mutante | Resultado | Aserción |
+|---|---|---|
+| NRAE (= E2-S27): vacío debajo de `actionError` | 1 failed, 33 passed, 34 total | segundo `toEqual` |
+| R6W: vacío envuelto en `<View>` solo mientras hay `actionError` | 1 failed, 33 passed, 34 total | segundo `toEqual` (la lista pasa a ser solo `['reminders-empty']`) |
+| R6H: vacío oculto mientras hay `actionError` (`&& !actionError`) | 1 failed, 33 passed, 34 total | `findByTestId('reminders-empty-pose')` de la línea 1037: **rojo por consulta**, esperado porque el nodo desaparece |
+| Error encima del PetSwitcher, o vacío detrás de `delete-host`, solo con error | por análisis | el segundo `toEqual` fija el orden completo |
+
+Sin error, el primer `toEqual` y el `toBe` del abuelo siguen cubriendo E2-S15 y E2-S20. **No sobrevive ningún mutante de sitio.**
+
+### 4. El combinado nuevo (G1 + G2 + G3 + G4 + NIMG), ahora en rojo
+- **Mutante:** el mismo de la pre-verificación, aplicado sobre `d3219fc`:
+  - raíz `<Text … style={{ backgroundColor: "white", borderRadius: 24 }}>`;
+  - `className` óvalo en el `Image`;
+  - `pingo-talk.webp` animado (VP8X `0x12`, 89 330 bytes, por debajo del tope de 100 000);
+  - reminders con el vacío detrás de `actionError`.
+- **Corrida:** empty-state + reminders, exit 1, `Tests: 10 failed, 88 passed, 98 total`. Ningún `TypeError`, ni `Unable to find`, ni caída de worker.
+
+  | Rojos | Aserción |
+  |---|---|
+  | 1, fila `pingo-talk.webp` de R2 | `expect(bytes[20] & 0x02).toBe(0)` |
+  | 6, filas `pinta la pose %s…` | `expect(image.props.className).toBeUndefined()` |
+  | 2, `…como hijos directos…` | `expect(root.type).toBe('View')` |
+  | 1, `it` de sitio de R6 | segundo `toEqual` |
+
+- En el combinado, el `style` de G2 queda tapado por G3: `root.type` cae antes, en el mismo `it`. E2-S24 demuestra por separado que la línea de G2 lo caza.
+- Tras la corrida, el árbol quedó restaurado. La corrida de control de empty-state + reminders sobre `d3219fc` limpio da 98/98, exit 0.
+
+### Observaciones no bloqueantes
+1. **El `it` de R6 depende de un comportamiento ajeno a R6.** Supone que `actionError` sobrevive al cambio de mascota. Hoy es así: `onSelect={selectPet}` no lo limpia, solo lo limpian el blur (`useFocusEffect`), `handleDelete` y `confirmDelete`. Si una feature futura limpia el error al cambiar de mascota, este `it` caerá en el segundo `toEqual` sin que R6 se incumpla. Quien lo vea en rojo debe mirar primero ese cambio.
+2. **Residual de G1, misma clase que N2.** Un WebP con chunks `ANMF` pero con el flag `0x02` apagado sigue pasando. Es un fichero que incumple la especificación del contenedor WebP, no una pose animada válida. Sigue fuera de alcance, como N2.
+
+### Concurrencia y ruido
+- No hubo ningún `init.sh` en curso durante las corridas: `pgrep` dio exit 1 antes de cada una.
+- No hubo flakes. Ninguna corrida necesitó borrar la perf-cache.
