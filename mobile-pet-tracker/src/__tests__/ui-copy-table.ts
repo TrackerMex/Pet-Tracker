@@ -189,6 +189,7 @@ export const R6_FOOD: UseRow[] = [
   { file: 'src/app/(tabs)/food.tsx', key: 'food.served' },
   { file: 'src/app/(tabs)/food.tsx', key: 'food.aiRecommendation' },
   { file: 'src/app/(tabs)/food.tsx', key: 'food.noMealPlanYet' },
+  { file: 'src/app/(tabs)/food.tsx', key: 'food.noMealPlanBody' }, // #155 R9
   { file: 'src/app/(tabs)/food.tsx', key: 'food.couldNotLoadPlan' },
   { file: 'src/app/(tabs)/food.tsx', key: 'common.retry' },
   { file: 'src/app/(tabs)/food.tsx', key: 'food.mealSchedule' },

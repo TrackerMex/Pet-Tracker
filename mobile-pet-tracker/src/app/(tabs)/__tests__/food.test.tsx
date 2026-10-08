@@ -457,7 +457,7 @@ describe('R5: plan del día con horarios y warnings', () => {
     await renderFood();
 
     await waitFor(() =>
-      expect(screen.getByTestId('food-plan-empty')).toHaveTextContent(
+      expect(screen.getByTestId('food-plan-empty-title')).toHaveTextContent(
         'Aún no hay plan de alimentación',
       ),
     );
@@ -1282,5 +1282,27 @@ describe('#155 R4: Comida sin mascotas presenta a Pingo', () => {
     await fireEvent.press(action);
     expect(mockRouter.push).toHaveBeenCalledTimes(1);
     expect(mockRouter.push).toHaveBeenCalledWith('/pets/add');
+  });
+});
+
+describe('#155 R9: sin plan de comidas, Pingo enseña el cuenco', () => {
+  beforeEach(() => { mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] }); });
+
+  it('pinta la pose, el título y la frase de Pingo', async () => {
+    mockGetNutritionPlan.mockResolvedValue({ kind: 'not-found' });
+    await renderFood();
+    const pose = await screen.findByTestId('food-plan-empty-pose');
+    expect(pose.props.source).toEqual([
+      expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/pingo-food\.webp$/) }),
+    ]);
+    expect(screen.getByTestId('food-plan-empty-title')).toHaveTextContent('Aún no hay plan de alimentación');
+    expect(screen.getByTestId('food-plan-empty-body')).toHaveTextContent('Cuando haya un plan, te ayudo a llevar la cuenta de cada comida.');
+  });
+
+  it('no ofrece acción', async () => {
+    mockGetNutritionPlan.mockResolvedValue({ kind: 'not-found' });
+    await renderFood();
+    await screen.findByTestId('food-plan-empty-title');
+    expect(screen.queryByTestId('food-plan-empty-action')).toBeNull();
   });
 });
