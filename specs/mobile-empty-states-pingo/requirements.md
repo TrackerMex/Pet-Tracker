@@ -694,7 +694,7 @@ Ninguna es deuda.
 - [x] Aprobado por humano (fecha: 2026-10-08) ← gate obligatorio antes de implementar
 - [x] Clasificación, poses (A1, A2, A9) y copy final (A7, A8) aprobados (fecha: 2026-10-08)
 - [ ] Smoke R12 superado en dev build de Android (fecha: ____)
-- [ ] Enmienda E1 aprobada (fecha: ____) ← gate de la enmienda; Codex no reanuda T4 sin ella
+- [x] Enmienda E1 aprobada (fecha: 2026-10-08) ← gate de la enmienda; Codex no reanuda T4 sin ella
 
 ## Premisas falsas
 
