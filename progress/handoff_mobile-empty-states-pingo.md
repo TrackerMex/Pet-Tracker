@@ -818,3 +818,307 @@ Leela entera antes de tocar nada.
 Este commit solo toca requirements.md, tasks.md y este handoff. La lista
 cerrada del Cierre excluye los tres.
 ```
+
+---
+
+## Reanudación 3 (2026-10-08, tras el rechazo de la ronda 1)
+
+> Pegar en Codex CLI: «Lee la sección Reanudación 3 de
+> progress/handoff_mobile-empty-states-pingo.md y continúa».
+
+```
+Worktree: /home/claude/sites/Pet-Tracker-wt-155   <- el mismo. No cambies de branch.
+
+Causa: el reviewer rechazo la ronda 1 (progress/review_mobile-empty-states-pingo.md).
+Tu codigo esta bien; faltan candados en cinco clausulas y sobreviven
+mutantes. El leader enmendo la spec: seccion «Enmienda E2» al final de
+specs/mobile-empty-states-pingo/requirements.md. Leela ENTERA antes de
+tocar nada. E2 solo anade tests: NO cambias ni una linea de produccion.
+Todos los candados nacen VERDES contra HEAD (el codigo ya cumple) y su
+rojo lo demuestran las sondas del paso 6, como en T10 y T11.
+
+0. Precondicion: el humano firma E2. Desde la raiz del worktree:
+     grep -cF -- '- [x] Enmienda E2 aprobada' specs/mobile-empty-states-pingo/requirements.md   -> 1
+   Si da 0, PARA: la enmienda aun no esta aprobada.
+
+1. Estado. Desde la raiz:
+     git branch --show-current   -> feature/155-mobile-empty-states-pingo
+     git diff --quiet && git diff --cached --quiet && test -z "$(git ls-files --others --exclude-standard)"; echo "limpio=$?"   -> limpio=0
+     git diff --name-only 8c142376 HEAD -- . ':!specs/' ':!progress/'   -> vacio
+   (los commits posteriores a 8c142376 son del leader y del humano y solo
+   tocan specs/ y progress/). Apunta `git rev-parse --short HEAD` en el
+   impl como E2H: es la base de los diffs del paso 7. Desde
+   mobile-pet-tracker/:
+     test ! -e .expo/types/router.d.ts; echo "exit=$?"   -> exit=0
+   Si algo no cuadra, PARA. Nunca rebasees ni mergees.
+
+2. Reglas de esta reanudacion (mandan las de arriba, «REGLAS CRITICAS»,
+   salvo donde esto diga otra cosa):
+   - Cada commit solo toca los ficheros de test que nombra su cadena.
+     Ningun fichero de produccion, ni package.json, ni bun.lock.
+   - Los `it` se copian LITERALES de E2.1 a E2.3 y de aqui: mismos
+     nombres, mismas listas, mismos valores. Ni mas ni menos.
+   - Si un candado NO nace verde contra HEAD: PARA, copia al impl el `●`
+     del it y el `Expected`/`Received` recortado, y no toques produccion
+     ni la lista esperada (E2.7).
+   - El impl (progress/impl_mobile-empty-states-pingo.md) ya esta
+     commiteado: lo vas editando sin stagearlo y entra en el commit del
+     paso 7.
+
+3. Candados del componente (src/components/__tests__/empty-state.test.tsx),
+   desde mobile-pet-tracker/:
+
+   3a. R3 (E2.1). Anade `import { View } from 'react-native';` en la
+   linea siguiente a `import { HeroUINativeProvider } from 'heroui-native';`.
+   `renderProbe` envuelve el EmptyState en `<View testID="probe-frame">`
+   dentro del provider (E2.1, literal). Al final del describe
+   `#155 R3: un único componente pinta los vacíos ilustrados`, los tres
+   `it` de E2.1, en su orden.
+     FORCE_COLOR=0 bunx jest src/components/__tests__/empty-state.test.tsx > /tmp/155-e2-r3.txt 2>&1; echo "exit=$?"
+       -> exit=0 y `Tests:       62 passed, 62 total`
+     <GUARDAS> > /tmp/155-e2-r3-guardas.txt 2>&1; echo "exit=$?"
+     grep -qE '^Tests: +62 passed, 62 total$' /tmp/155-e2-r3.txt \
+       && grep -qE '^Tests: +174 passed, 174 total$' /tmp/155-e2-r3-guardas.txt \
+       && test ! -e .expo/types/router.d.ts && bun run typecheck && bun run lint \
+       && git add src/components/__tests__/empty-state.test.tsx \
+       && test "$(git diff --cached --name-only)" = 'mobile-pet-tracker/src/components/__tests__/empty-state.test.tsx' \
+       && git commit -m 'test(mobile-empty-states): #155 R3 candado de orden y botón'
+
+   3b. R11 (E2.3). Al final del describe
+   `#155 R11: los vacíos no traen movimiento ni dependencias`, los dos
+   `it` de E2.3, en su orden. Los dos que ya tiene no se tocan.
+     FORCE_COLOR=0 bunx jest src/components/__tests__/empty-state.test.tsx > /tmp/155-e2-r11.txt 2>&1; echo "exit=$?"
+       -> exit=0 y `Tests:       64 passed, 64 total`
+     <GUARDAS> > /tmp/155-e2-r11-guardas.txt 2>&1; echo "exit=$?"
+     grep -qE '^Tests: +64 passed, 64 total$' /tmp/155-e2-r11.txt \
+       && grep -qE '^Tests: +174 passed, 174 total$' /tmp/155-e2-r11-guardas.txt \
+       && test ! -e .expo/types/router.d.ts && bun run typecheck && bun run lint \
+       && git add src/components/__tests__/empty-state.test.tsx \
+       && test "$(git diff --cached --name-only)" = 'mobile-pet-tracker/src/components/__tests__/empty-state.test.tsx' \
+       && git commit -m 'test(mobile-empty-states): #155 R11 candado de Animated y transiciones'
+
+4. Candados de sitio (E2.2). En cada describe, un `it` nuevo JUSTO
+   DESPUES del `it` `pinta la pose, el título y la frase de Pingo` (en
+   geofences, `…de Pingo, sin tarjeta`). Literales, medidos por el leader
+   en un arbol desechable (verdes contra HEAD, typecheck y lint 0):
+
+   src/screens/home/index.test.tsx, describe `#155 R4: Inicio sin mascotas presenta a Pingo`:
+  it('queda en el sitio del vacío que sustituye', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    await renderHome();
+    await screen.findByTestId('home-empty-pose');
+    const slot = screen.getByTestId('home-empty');
+    expect(slot.parent?.props.testID).toBe('home-states');
+    expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['Text', 'home-empty']);
+  });
+
+   src/screens/health/index.test.tsx, describe `#155 R4: Salud sin mascotas presenta a Pingo`:
+  it('queda en el sitio del vacío que sustituye', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    await renderHealth();
+    await screen.findByTestId('health-empty-pose');
+    const slot = screen.getByTestId('health-empty');
+    expect(slot.parent?.props.testID).toBe('health-states');
+    expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['Text', 'health-empty']);
+  });
+
+   src/app/(tabs)/__tests__/food.test.tsx, describe `#155 R4: Comida sin mascotas presenta a Pingo`:
+  it('queda en el sitio del vacío que sustituye', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    await renderFood();
+    await screen.findByTestId('food-empty-pose');
+    const slot = screen.getByTestId('food-empty');
+    expect(slot.parent?.parent?.props.testID).toBe('screen-food');
+    expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['Text', 'food-empty']);
+  });
+
+   src/screens/map/index.test.tsx, describe `#155 R4: Mapa sin mascotas presenta a Pingo`:
+  it('queda en el sitio del vacío que sustituye', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    await renderMap();
+    await screen.findByTestId('map-no-pets-pose');
+    const slot = screen.getByTestId('map-no-pets');
+    expect(slot.parent?.props.className).toBe('flex-1 items-center justify-center p-6 bg-background');
+    expect(slot.parent?.parent?.props.testID).toBe('screen-map');
+    expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['map-no-pets']);
+  });
+
+   src/screens/alerts/index.test.tsx, describe `#155 R5: sin alertas, Pingo duerme`:
+  it('queda en el sitio del vacío que sustituye', async () => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [], nextCursor: null });
+    await renderAlerts();
+    await screen.findByTestId('alerts-empty-pose');
+    const slot = screen.getByTestId('alerts-empty');
+    expect(slot.parent?.parent?.props.testID).toBe('alerts-list');
+    expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['alerts-empty']);
+  });
+
+   src/screens/reminders/index.test.tsx, describe `#155 R6: sin recordatorios, Pingo sostiene su lista`:
+  it('queda en el sitio del vacío que sustituye', async () => {
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [] });
+    await renderReminders();
+    await screen.findByTestId('reminders-empty-pose');
+    const slot = screen.getByTestId('reminders-empty');
+    expect(slot.parent?.parent?.props.testID).toBe('screen-reminders');
+    expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['reminders-actions', 'RCTScrollView', 'reminders-empty', 'reminders-delete-host']);
+  });
+
+   src/screens/docs/index.test.tsx, describe `#155 R7: sin documentos, Pingo los guarda`:
+  it('queda en el sitio del vacío que sustituye', async () => {
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet() });
+    mockListPetDocs.mockResolvedValue({ kind: 'ok', docs: [] });
+    await renderDocs();
+    await screen.findByTestId('docs-empty-pose');
+    const slot = screen.getByTestId('docs-empty');
+    expect(slot.parent?.parent?.props.testID).toBe('screen-docs');
+    expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['View', 'docs-empty']);
+  });
+
+   src/screens/geofences/index.test.tsx, describe `#155 R8: sin zonas seguras, Pingo enseña el collar`:
+  it('queda en el sitio del vacío que sustituye', async () => {
+    mockList.mockResolvedValue({ kind: 'ok', geofences: [] });
+    await mount();
+    await screen.findByTestId('geofences-empty-pose');
+    const slot = screen.getByTestId('geofences-empty');
+    expect(slot.parent?.parent?.props.testID).toBe('screen-geofences');
+    expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['geofences-empty', 'geofences-add']);
+  });
+
+   src/app/(tabs)/__tests__/food.test.tsx, describe `#155 R9: sin plan de comidas, Pingo enseña el cuenco`:
+  it('queda en el sitio del vacío que sustituye', async () => {
+    mockGetNutritionPlan.mockResolvedValue({ kind: 'not-found' });
+    await renderFood();
+    await screen.findByTestId('food-plan-empty-pose');
+    const slot = screen.getByTestId('food-plan-empty');
+    expect(slot.parent?.parent?.parent?.props.testID).toBe('screen-food');
+    expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['food-plan-empty', 'meal-schedule-link', 'meals-history-link']);
+  });
+
+5. Un commit por requisito, en este orden. Cadena tipo (cambia N, los
+   ficheros, la cuenta y el mensaje segun la tabla):
+     FORCE_COLOR=0 bunx jest <ficheros> > /tmp/155-e2-rN.txt 2>&1; echo "exit=$?"
+       -> exit=0 y la linea `Tests:` de la tabla
+     <GUARDAS> > /tmp/155-e2-rN-guardas.txt 2>&1; echo "exit=$?"
+     grep -qE '^Tests: +<T> passed, <T> total$' /tmp/155-e2-rN.txt \
+       && grep -qE '^Tests: +174 passed, 174 total$' /tmp/155-e2-rN-guardas.txt \
+       && test ! -e .expo/types/router.d.ts && bun run typecheck && bun run lint \
+       && git add <ficheros sin escapar> \
+       && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = '<lista de la tabla, con espacio final>' \
+       && git commit -m '<mensaje>'
+   En jest la ruta de food va ESCAPADA y entre comillas:
+   'src/app/\(tabs\)/__tests__/food.test.tsx'. En git add, sin escapar:
+   'src/app/(tabs)/__tests__/food.test.tsx'.
+
+   | N  | ficheros (its de E2.2)                        | T   | mensaje |
+   | r4 | home, health, food (R4), map                  | 447 | test(mobile-empty-states): #155 R4 candado de sitio |
+   | r5 | alerts                                        | 39  | test(mobile-empty-states): #155 R5 candado de sitio |
+   | r6 | reminders                                     | 34  | test(mobile-empty-states): #155 R6 candado de sitio |
+   | r7 | docs                                          | 16  | test(mobile-empty-states): #155 R7 candado de sitio |
+   | r8 | geofences                                     | 51  | test(mobile-empty-states): #155 R8 candado de sitio |
+   | r9 | food (R9)                                     | 63  | test(mobile-empty-states): #155 R9 candado de sitio |
+   r4 = 221 + 67 + 62 + 97. Lista de r4 para el test de git diff --cached:
+     'mobile-pet-tracker/src/app/(tabs)/__tests__/food.test.tsx mobile-pet-tracker/src/screens/health/index.test.tsx mobile-pet-tracker/src/screens/home/index.test.tsx mobile-pet-tracker/src/screens/map/index.test.tsx '
+   Las demas son un solo fichero:
+     'mobile-pet-tracker/src/screens/alerts/index.test.tsx ' y asi, con
+   food de r9 = 'mobile-pet-tracker/src/app/(tabs)/__tests__/food.test.tsx '.
+
+6. Sondas (E2.5), sobre el HEAD del paso 5, UNA A UNA. Cada una: plantas
+   la mutacion, mides el fichero de test de su fila (salida a
+   /tmp/155-e2-sN.txt), revisas, y revierte:
+     git checkout HEAD -- <fichero de produccion>
+     git diff --cached --quiet && git diff --quiet -- . && test -z "$(git ls-files --others --exclude-standard -- .)"; echo "limpio=$?"   -> limpio=0
+   (desde mobile-pet-tracker/: `-- .` deja fuera el impl, que sigue
+   modificado sin stagear). Rojo esperado, medido por el leader con el
+   fichero entero; todos por ASERCION (`expect(received)`), ninguno por
+   consulta (`Unable to find`) ni por excepcion:
+   Componente (src/components/__tests__/empty-state.test.tsx, 64 tests;
+   fichero de produccion src/components/empty-state.tsx):
+     E2-S1  titulo y cuerpo intercambiados        2 failed, 62 passed, 64 total
+            los dos `…como hijos directos, en ese orden` (toEqual)
+     E2-S2  ovalo View envolviendo el Image       2 failed, 62 passed, 64 total
+            los dos `…como hijos directos, en ese orden` (toEqual)
+     E2-S3  Card con su import en la raiz         3 failed, 61 passed, 64 total
+            los dos `…como hijos directos…` (toBe) y
+            `EmptyState importa exactamente Image, Button, Text y View` (toEqual)
+     E2-S4  View bg-surface en la raiz            2 failed, 62 passed, 64 total
+            los dos `…como hijos directos…` (toBe)
+     E2-S5  variant="secondary" size="lg"         1 failed, 63 passed, 64 total
+            `declara el botón sin size ni variant` (toContain)
+     E2-S6  variant="primary" explicito           1 failed, 63 passed, 64 total
+            `declara el botón sin size ni variant` (toContain)
+     E2-S7  Animated + useEffect/useRef           2 failed, 62 passed, 64 total
+            `…importa exactamente…` (toEqual) y
+            `EmptyState no anima con Animated, LayoutAnimation ni transiciones` (not.toMatch)
+     E2-S8  transition={300} en el Image          1 failed, 63 passed, 64 total
+            `…no anima con Animated…` (not.toMatch)
+     E2-S9  require('react-native') + RN.Animated 2 failed, 62 passed, 64 total
+            `…importa exactamente…` (toHaveLength) y `…no anima…` (not.toMatch)
+   Pantallas (el fichero de test de su fila de E2.2; un solo `●`, el
+   `it` `queda en el sitio del vacío que sustituye` de su describe):
+     E2-S10 home-empty envuelto      home       1 failed, 220 passed, 221 total  toBe
+     E2-S11 health-empty envuelto    health     1 failed, 66 passed, 67 total    toBe
+     E2-S12 food-empty envuelto      food       1 failed, 62 passed, 63 total    toBe
+     E2-S13 map-no-pets envuelto     map        1 failed, 96 passed, 97 total    toBe
+     E2-S14 alerts-empty envuelto    alerts     1 failed, 38 passed, 39 total    toBe
+     E2-S15 reminders-empty envuelto reminders  1 failed, 33 passed, 34 total    toBe
+     E2-S16 docs-empty envuelto      docs       1 failed, 15 passed, 16 total    toBe
+     E2-S17 geofences-empty envuelto geofences  1 failed, 50 passed, 51 total    toBe
+     E2-S18 food-plan-empty envuelto food (R9)  1 failed, 62 passed, 63 total    toBe
+     E2-S19 envoltorio del mapa pelado   map         1 failed, 96 passed, 97 total  toBe
+     E2-S20 reminders-empty sobre PetSwitcher  reminders  1 failed, 33 passed, 34 total  toEqual
+     E2-S21 food-plan-empty bajo historial     food (R9)  1 failed, 62 passed, 63 total  toEqual
+     E2-S22 historial condicionado             food (R9)  1 failed, 62 passed, 63 total  toEqual
+   Las mutaciones exactas estan en la tabla de E2.5. «Envuelto» = un
+   `<View>` pelado alrededor del `<EmptyState … />` de ese testID.
+   Si una sonda no da EXACTAMENTE esa linea `Tests:` y esos `●`, PARA y
+   copia la salida recortada. Ninguna sonda se commitea.
+
+7. Cierre, desde mobile-pet-tracker/, sin pipe, con salida al impl:
+   - Los 15 ficheros: el comando BASE con
+     `src/components/__tests__/empty-state.test.tsx` al final, salida a
+     /tmp/155-e2-final.txt
+       -> exit=0, `Test Suites: 15 passed, 15 total` y
+          `Tests:       915 passed, 915 total`
+          (reparto: home 221, health 67, food 63, map 97, alerts 39,
+          reminders 34, docs 16, geofences 51, welcome 65,
+          language-provider 24, ui-language 30, consistency 55,
+          design-drift 62, legibility 27, empty-state 64)
+   - `pgrep -af '[i]nit\.sh'` vacio; despues
+     `FORCE_COLOR=0 bunx jest > /tmp/155-e2-all.txt 2>&1; echo "exit=$?"` -> exit=0.
+     Copia `Test Suites:` y `Tests:`. Mientras corre, no lances otra cosa.
+   - `bun run typecheck; echo "exit=$?"` -> exit=0 y `bun run lint; echo "exit=$?"` -> exit=0.
+   - `git diff --stat <E2H> -- package.json bun.lock app.json src/theme` -> vacio.
+   - `git diff --name-only <E2H> HEAD -- . | LC_ALL=C sort` -> exactamente:
+       mobile-pet-tracker/src/app/(tabs)/__tests__/food.test.tsx
+       mobile-pet-tracker/src/components/__tests__/empty-state.test.tsx
+       mobile-pet-tracker/src/screens/alerts/index.test.tsx
+       mobile-pet-tracker/src/screens/docs/index.test.tsx
+       mobile-pet-tracker/src/screens/geofences/index.test.tsx
+       mobile-pet-tracker/src/screens/health/index.test.tsx
+       mobile-pet-tracker/src/screens/home/index.test.tsx
+       mobile-pet-tracker/src/screens/map/index.test.tsx
+       mobile-pet-tracker/src/screens/reminders/index.test.tsx
+   Despues, en specs/mobile-empty-states-pingo/traceability.md, SOLO la
+   columna «Commit verde» de R3, R4, R5, R6, R7, R8, R9 y R11: anade al
+   final de la celda ` · E2: \`<hash corto> <mensaje>\`` con el commit de
+   su candado. Nada mas de ese fichero. Commit, desde la raiz:
+     git add specs/mobile-empty-states-pingo/traceability.md progress/impl_mobile-empty-states-pingo.md \
+       && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'progress/impl_mobile-empty-states-pingo.md specs/mobile-empty-states-pingo/traceability.md ' \
+       && git commit -m 'docs(mobile-empty-states-pingo): #155 traceability E2'
+   Y la lista cerrada, con salida al impl:
+     git diff --name-only <E2H> HEAD -- . ':!feature_list.json' ':!progress/current.md' ':!progress/handoff_mobile-empty-states-pingo.md' ':!specs/mobile-empty-states-pingo/requirements.md' ':!specs/mobile-empty-states-pingo/design.md' ':!specs/mobile-empty-states-pingo/tasks.md' ':!progress/review_mobile-empty-states-pingo.md'
+       -> exactamente los 9 de arriba mas
+          progress/impl_mobile-empty-states-pingo.md y
+          specs/mobile-empty-states-pingo/traceability.md (11)
+   No rebasees despues de escribir hashes. NO lances ./init.sh: lo corre
+   el leader.
+
+8. En el impl, anade una seccion «Reanudacion 3» con: E2H, limpio=0 del
+   paso 1, cada cadena con su linea `Tests:`, GUARDAS, typecheck y lint,
+   los 8 commits con hash, cada sonda E2-S1..E2-S22 con su linea `Tests:`
+   roja, sus `●` y su `limpio=0`, el cierre del paso 7 y la lista
+   cerrada. Termina con la linea `R12: pendiente del smoke humano`.
+
+Este commit solo toca requirements.md, tasks.md y este handoff. La lista
+cerrada del paso 7 excluye los tres.
+```

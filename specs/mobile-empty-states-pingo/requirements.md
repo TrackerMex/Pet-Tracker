@@ -695,6 +695,7 @@ Ninguna es deuda.
 - [x] Clasificación, poses (A1, A2, A9) y copy final (A7, A8) aprobados (fecha: 2026-10-08)
 - [ ] Smoke R12 superado en dev build de Android (fecha: ____)
 - [x] Enmienda E1 aprobada (fecha: 2026-10-08) ← gate de la enmienda; Codex no reanuda T4 sin ella
+- [ ] Enmienda E2 aprobada (fecha: ____) ← gate de la enmienda; Codex no empieza la Reanudación 3 sin ella
 
 ## Premisas falsas
 
@@ -760,3 +761,262 @@ en los cuatro ficheros y 174 en GUARDAS.
 con `.expo/types/router.d.ts` ausente como exige la cadena, Codex PARA y
 copia el error. No vuelve al cast por su cuenta.
 
+## Enmienda E2 — candados de orden, sitio y movimiento (2026-10-08)
+
+**Qué paró.** El reviewer rechazó la ronda 1 (`438b3263`,
+`progress/review_mobile-empty-states-pingo.md`). El código de HEAD es
+correcto; lo que falla es que cinco cláusulas SHALL no tienen candado en
+alguna de sus ramas:
+
+| Bloqueante | Cláusula | Sondas que sobreviven |
+|---|---|---|
+| B1 | R3: orden de los hijos, «sin `Card`, sin fondo y sin óvalo», «sin `size`, sin `variant`» | S1-S4 |
+| B2 | R4: «el padre del `Text` sustituido no cambia» y el envoltorio del mapa | S5-S7 |
+| B3 | R6 y R9: «en el sitio del `Text`…»; R9: la tarjeta de historial | S8-S10 |
+| B4 | R11: «sin animación» deja pasar `Animated` de React Native | S11 |
+| B5 | Todo lo anterior cabe en un solo mutante que deja verdes 16 suites | — |
+
+**Decisión del humano (2026-10-08): candados mínimos.**
+- R3 queda candada en orden, hijos directos y `Button` sin `size` ni
+  `variant`.
+- R11 suma la rama de `Animated`.
+- Cada uno de los 9 vacíos ilustrados suma un candado de sitio (padre directo
+  y posición entre sus hermanos). Eso cubre B2 y B3, también en R5, R7 y R8,
+  que el reviewer no sondeó.
+- R9 suma la tarjeta de historial.
+- N1 (las clases de los 11 vacíos en texto) y N2 (la regex de comillas de
+  R11 y el alias en R10) quedan fuera: son delimitaciones, no deuda.
+
+E2 **no toca código de producción**. Todos los candados nacen en verde contra
+HEAD, porque el código ya cumple. Su rojo se demuestra con las sondas de
+E2.5, igual que R10 y R11.
+
+**Base medida.** Medida en un árbol desechable (`git archive 8c142376`)
+con RNTL 14.0.1:
+- `getByTestId` devuelve un `TestInstance` de `test-renderer` con `parent`
+  y `children`;
+- la identidad es estable, así que `toBe` entre nodos funciona (el `it` de
+  #105 en `food.test.tsx` ya lo usa con `card.parent?.children`);
+- con los candados puestos, typecheck y lint salen limpios y
+  `src/__tests__` da 8/8 suites.
+
+En todas las listas de hijos, cada nodo se escribe así:
+
+```ts
+(child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type))
+```
+
+Es decir, su testID o, si no tiene, el nombre de su tipo de host en jest
+(`'Text'`, `'View'`, `'RCTScrollView'`). La comparación usa `toEqual` sobre
+la lista entera: un nodo de más, de menos o fuera de orden la pone en rojo.
+
+### E2.1 — R3: orden, hijos directos y botón sin `size` ni `variant`
+
+En el test del componente:
+
+- El test no importa nada de `react-native`. Se añade la línea
+  `import { View } from 'react-native';` justo debajo de
+  `import { HeroUINativeProvider } from 'heroui-native';`, en el mismo
+  bloque, que es el orden que acepta el lint.
+- `renderProbe` envuelve el `EmptyState` en un marco, dentro del provider:
+
+  ```tsx
+  <HeroUINativeProvider>
+    <View testID="probe-frame">
+      <EmptyState testID="probe" pose="talk" title="Título de prueba" body="Cuerpo de prueba." action={action} />
+    </View>
+  </HeroUINativeProvider>
+  ```
+
+  Los `it` que ya usan `renderProbe` no cambian. El `it.each` de las poses
+  tiene su propio `render` y tampoco cambia.
+
+El describe `#155 R3: un único componente pinta los vacíos ilustrados` suma
+tres `it` al final:
+
+```tsx
+it('con acción pinta pose, título, cuerpo y botón como hijos directos, en ese orden', async () => {
+  await renderProbe({ label: 'Acción de prueba', onPress: jest.fn() });
+  const root = await screen.findByTestId('probe');
+  expect(root.parent).toBe(screen.getByTestId('probe-frame'));
+  expect(root.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['probe-pose', 'probe-title', 'probe-body', 'probe-action']);
+});
+
+it('sin acción pinta pose, título y cuerpo como hijos directos, en ese orden', async () => {
+  await renderProbe();
+  const root = await screen.findByTestId('probe');
+  expect(root.parent).toBe(screen.getByTestId('probe-frame'));
+  expect(root.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['probe-pose', 'probe-title', 'probe-body']);
+});
+
+it('declara el botón sin size ni variant', () => {
+  const source = readFileSync(join(process.cwd(), 'src', 'components', 'empty-state.tsx'), 'utf8');
+  expect(source.match(/<Button[\s>]/g)).toHaveLength(1);
+  expect(source).toContain('<Button testID={`${testID}-action`} className="rounded-xl bg-accent" onPress={action.onPress}>');
+});
+```
+
+Qué caza cada `it`:
+- El marco caza cualquier envoltorio alrededor de la raíz, sea una `Card` o
+  un `View` con fondo.
+- La lista de hijos caza el orden y cualquier envoltorio alrededor de la
+  imagen, del título, del cuerpo o del botón (un óvalo, por ejemplo).
+- La apertura literal del `Button` caza `size`, `variant` (también
+  `variant="primary"` explícito), un spread de props y el `border-b-4`.
+- `/<Button[\s>]/` no casa con `<Button.Label`.
+
+### E2.2 — R4 a R9: cada vacío queda en su sitio
+
+Cada uno de los 8 describes de pantalla suma un `it` llamado
+`queda en el sitio del vacío que sustituye`. El describe de R9 está en el
+mismo fichero que el de Comida de R4, así que `food.test.tsx` suma dos, uno
+por describe.
+
+**Arreglo.** Se copian del `it` hermano `pinta la pose, el título y la
+frase de Pingo` (en geofences, `…de Pingo, sin tarjeta`) sus líneas
+anteriores a la espera de la pose: los `mock….mockResolvedValue(…)` y la
+llamada de render (`await renderHome();`, `await mount();`…). En geofences
+**no** se copian la línea `const empty = …` ni su `expect`. La espera va
+**sin asignar**: `await screen.findByTestId('<id>-pose');`. Un
+`const pose` sin usar tumba el lint.
+
+**Cuerpo.** Después de la espera, con `<id>` el testID de la fila:
+
+```tsx
+const slot = screen.getByTestId('<id>');
+expect(<nodo ancla>).toBe(<valor ancla>);
+expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(<hermanos>);
+```
+
+Se llama `slot` en los nueve, por uniformidad con el spike que midió la
+tabla.
+
+| R | Fichero de test | `<id>` | Nodo ancla, `toBe` | Hermanos (`toEqual`) |
+|---|---|---|---|---|
+| R4 | `src/screens/home/index.test.tsx` | `home-empty` | `slot.parent?.props.testID` → `'home-states'` | `['Text', 'home-empty']` |
+| R4 | `src/screens/health/index.test.tsx` | `health-empty` | `slot.parent?.props.testID` → `'health-states'` | `['Text', 'health-empty']` |
+| R4 | `src/app/(tabs)/__tests__/food.test.tsx` | `food-empty` | `slot.parent?.parent?.props.testID` → `'screen-food'` | `['Text', 'food-empty']` |
+| R4 | `src/screens/map/index.test.tsx` | `map-no-pets` | `slot.parent?.props.className` → `'flex-1 items-center justify-center p-6 bg-background'` **y** `slot.parent?.parent?.props.testID` → `'screen-map'` (dos `expect`) | `['map-no-pets']` |
+| R5 | `src/screens/alerts/index.test.tsx` | `alerts-empty` | `slot.parent?.parent?.props.testID` → `'alerts-list'` | `['alerts-empty']` |
+| R6 | `src/screens/reminders/index.test.tsx` | `reminders-empty` | `slot.parent?.parent?.props.testID` → `'screen-reminders'` | `['reminders-actions', 'RCTScrollView', 'reminders-empty', 'reminders-delete-host']` |
+| R7 | `src/screens/docs/index.test.tsx` | `docs-empty` | `slot.parent?.parent?.props.testID` → `'screen-docs'` | `['View', 'docs-empty']` |
+| R8 | `src/screens/geofences/index.test.tsx` | `geofences-empty` | `slot.parent?.parent?.props.testID` → `'screen-geofences'` | `['geofences-empty', 'geofences-add']` |
+| R9 | `src/app/(tabs)/__tests__/food.test.tsx` | `food-plan-empty` | `slot.parent?.parent?.parent?.props.testID` → `'screen-food'` | `['food-plan-empty', 'meal-schedule-link', 'meals-history-link']` |
+
+Cómo se lee la tabla, medido en el árbol de host:
+- `'Text'` es el título de la pantalla (`text-2xl font-black`).
+- `'View'` en docs es la cabecera `gap-1`.
+- `'RCTScrollView'` en reminders es el `PetSwitcher`.
+- `reminders-delete-host` es el host del diálogo de borrar.
+- Donde el ancla es el abuelo, el padre es el contenedor de contenido del
+  `ScrollView` o de la `FlatList`, que no tiene testID. En R9 el padre es el
+  `View` `gap-4` de la mascota seleccionada.
+
+Qué cierra:
+- **B2:** un envoltorio en Inicio, Salud o Comida, y el envoltorio del mapa
+  quitado o cambiado.
+- **B3:** el sitio en las cinco pantallas de R5 a R9; en reminders, el orden
+  respecto del `PetSwitcher` y de `reminders-actions`.
+- **R9:** las dos tarjetas siguen debajo del vacío, en su orden, incluida
+  la de historial.
+
+### E2.3 — R11: sin `Animated` ni transiciones
+
+El describe `#155 R11: los vacíos no traen movimiento ni dependencias` suma
+dos `it` al final. Los dos que ya tiene no cambian.
+
+```tsx
+it('EmptyState importa exactamente Image, Button, Text y View', () => {
+  const source = readFileSync(join(process.cwd(), 'src', 'components', 'empty-state.tsx'), 'utf8');
+  expect(source.match(/^import\b.*$/gm)).toEqual([
+    "import { Image } from 'expo-image';",
+    "import { Button } from 'heroui-native';",
+    "import { Text, View } from 'react-native';",
+  ]);
+  expect(source.match(/\brequire\(/g)).toHaveLength(6);
+});
+
+it('EmptyState no anima con Animated, LayoutAnimation ni transiciones', () => {
+  const source = readFileSync(join(process.cwd(), 'src', 'components', 'empty-state.tsx'), 'utf8');
+  expect(source).not.toMatch(/\bAnimated\b|LayoutAnimation|transition|animate-/);
+});
+```
+
+Con esto, la cláusula «`EmptyState` no anima» queda cerrada así:
+
+| Vía | La caza |
+|---|---|
+| Reanimated, `entering=` y `MOTION_` | los dos `it` que ya existen |
+| `Animated` y `LayoutAnimation` de React Native, por import o por `require` | los imports exactos, los 6 `require` (las seis poses) y la regex |
+| `transition` de `expo-image` y las clases `animate-*`/`transition-*` | la regex |
+| hooks de `react` para animar por estado | los imports exactos |
+
+Efecto lateral: los imports exactos también cierran, solo para
+`empty-state.tsx`, el hueco de comillas dobles de N2. N2 sigue fuera en lo
+demás.
+
+### E2.4 — Cuentas
+
+Medidas en `8c142376` con jest acotado al fichero:
+
+| Fichero | Antes | Después |
+|---|---|---|
+| `src/components/__tests__/empty-state.test.tsx` | 59 | 64 |
+| `src/screens/home/index.test.tsx` | 220 | 221 |
+| `src/screens/health/index.test.tsx` | 66 | 67 |
+| `src/app/(tabs)/__tests__/food.test.tsx` | 61 | 63 |
+| `src/screens/map/index.test.tsx` | 96 | 97 |
+| `src/screens/alerts/index.test.tsx` | 38 | 39 |
+| `src/screens/reminders/index.test.tsx` | 33 | 34 |
+| `src/screens/docs/index.test.tsx` | 15 | 16 |
+| `src/screens/geofences/index.test.tsx` | 50 | 51 |
+| **Total (9 ficheros)** | 638 | 652 |
+
+La suite móvil de `init.sh` pasa de 2351 a 2365 tests. No cambia ninguna
+fila de `ui-copy-table.ts`, ningún recuento de `ui-language.test.ts` ni la
+longitud del catálogo.
+
+### E2.5 — Sondas
+
+Cada sonda se aplica sobre HEAD, se mide con jest acotado a su fichero de
+test, se revierte con `git checkout HEAD -- <fichero>` y se comprueba
+`limpio=0` (tasks.md §Reglas, «Sondas»). Todas dan **rojo por aserción**,
+nunca por consulta: el nodo sigue existiendo y lo que falla es el `expect`.
+Así fallaron todas en el spike.
+
+| Id | Fichero de producción | Mutación | Rojo esperado (`it` y matcher) |
+|---|---|---|---|
+| E2-S1 | `empty-state.tsx` | los bloques `Text` del título y del cuerpo intercambiados | los dos `…como hijos directos…`, `toEqual` |
+| E2-S2 | `empty-state.tsx` | `<View className="rounded-full bg-surface p-4">` envolviendo el `Image` | los dos `…como hijos directos…`, `toEqual` |
+| E2-S3 | `empty-state.tsx` | `<Card className="bg-surface">` envolviendo el `View` raíz, con `Card` en el import de `heroui-native` | los dos `…como hijos directos…`, `toBe`, y `…importa exactamente…`, `toEqual` |
+| E2-S4 | `empty-state.tsx` | `<View className="bg-surface">` envolviendo el `View` raíz | los dos `…como hijos directos…`, `toBe` |
+| E2-S5 | `empty-state.tsx` | `variant="secondary" size="lg"` en el `Button`, tras `testID` | `declara el botón sin size ni variant`, `toContain` |
+| E2-S6 | `empty-state.tsx` | `variant="primary"` explícito en el `Button`, tras `testID` | `declara el botón sin size ni variant`, `toContain` |
+| E2-S7 | `empty-state.tsx` | `import { useEffect, useRef } from 'react';`, `Animated` en el import de `react-native` y un `Animated.loop(Animated.timing(…))` en un `useEffect` | `…importa exactamente…`, `toEqual`, y `…no anima con Animated…`, `not.toMatch` |
+| E2-S8 | `empty-state.tsx` | `transition={300}` en el `Image` | `…no anima con Animated…`, `not.toMatch` |
+| E2-S9 | `empty-state.tsx` | `// eslint-disable-next-line` y `const RN = require('react-native');` encima de la función, y `RN.Animated;` como su primera línea, sin tocar los imports | `…no anima con Animated…`, `not.toMatch`, y `…importa exactamente…`, `toHaveLength(6)` |
+| E2-S10 a E2-S18 | la pantalla de cada fila de E2.2 | `<View>` pelado envolviendo el `EmptyState` de `<id>` (las 9 filas, en el orden de la tabla) | `queda en el sitio del vacío que sustituye` de su describe, `toBe` |
+| E2-S19 | `src/screens/map/index.tsx` | `className` del envoltorio de `map-no-pets` quitado (queda `<View>`) | el `it` de sitio del Mapa, `toBe` |
+| E2-S20 | `src/screens/reminders/index.tsx` | bloque de `reminders-empty` movido encima del bloque del `PetSwitcher` | el `it` de sitio de R6, `toEqual` |
+| E2-S21 | `src/app/(tabs)/food.tsx` | bloque de `food-plan-empty` movido debajo de la `Card` `meals-history-link` | el `it` de sitio de R9, `toEqual` |
+| E2-S22 | `src/app/(tabs)/food.tsx` | la `Card` `meals-history-link` dentro de `{plan.data?.kind !== 'not-found' ? (…) : null}` | el `it` de sitio de R9, `toEqual` |
+
+Ninguna sonda se commitea. Cada una se apunta en el impl con su salida roja
+recortada: el `●` del `it` y la línea del matcher.
+
+### E2.6 — Qué no cambia
+
+- **Producción.** Ningún fichero de producción cambia:
+  `git diff --name-only <E2H> HEAD -- mobile-pet-tracker`, con `<E2H>` el HEAD con el que arranca la Reanudación 3 del handoff,
+  solo lista los 9 ficheros de test de E2.4.
+- **Tests existentes.** No se tocan los demás `it`, ni R10, ni los dos `it`
+  que ya tiene R11.
+- **Dependencias.** `package.json` y `bun.lock` no cambian.
+- **N1 y N2** quedan como delimitación (ver arriba).
+
+### E2.7 — Riesgo
+
+**Si un candado no da verde contra HEAD, Codex PARA.** Copia el `Received`
+recortado al impl y no toca producción ni ajusta la lista esperada. La spec
+mide el árbol en un arreglo concreto, y si ese arreglo no reproduce lo
+medido, quien decide es el leader.
