@@ -315,6 +315,16 @@ describe('#155 R7: sin documentos, Pingo los guarda', () => {
     } satisfies AuthContextValue);
   });
 
+  it('queda en el sitio del vacío que sustituye', async () => {
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet() });
+    mockListPetDocs.mockResolvedValue({ kind: 'ok', docs: [] });
+    await renderDocs();
+    await screen.findByTestId('docs-empty-pose');
+    const slot = screen.getByTestId('docs-empty');
+    expect(slot.parent?.parent?.props.testID).toBe('screen-docs');
+    expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['View', 'docs-empty']);
+  });
+
   it('pinta la pose, el título y la frase de Pingo', async () => {
     mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet() });
     mockListPetDocs.mockResolvedValue({ kind: 'ok', docs: [] });
