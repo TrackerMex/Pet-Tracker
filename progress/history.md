@@ -8191,3 +8191,40 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
   casillas, 0 drift de código frente a `a38df955`.
 - Cierre: `done` en `feature_list.json`, trazabilidad R10, STATUS, Notion
   (Implementado / Completado) y PR contra `main`. Merge: humano.
+
+## #153 `mobile-welcome-pingo` — Bienvenida con la mascota Pingo — 2026-10-08
+
+- Sesión: Frontend (Claude Code, leader). Fecha de inicio: 2026-10-07.
+- Worktree `/home/claude/sites/Pet-Tracker-wt-153`, branch
+  `feature/153-mobile-welcome-pingo`. Id asignado por el leader de Backend.
+- Spec: `spec_author` (R1-R14, G1-G11). Aprobada en Notion el 2026-10-07
+  (página `3f26115a-9b27-8141-94c0-e3a051d61551`), incluida G10 (voz y copy)
+  confirmada en el chat; firma en `10f7e808`.
+- #152 mergeada en `main` (`36c8050d`, PR #198) e incorporada a la branch por
+  merge (`61c03a8a`) para no invalidar la firma. G11 revalidada contra
+  `36c8050d`: anclas A1-A20 y guards de design.md con su «Esperado».
+- Enmienda E1 (la carta retira `WELCOME_ENTRANCE_MS` de la migración pendiente,
+  P-d), decidida con el leader de #152 y firmada en Notion en `291049ae`.
+- G2: el leader convirtió las dos poses a WebP antes del handoff
+  (`/home/claude/pet-tracker-mascot/webp/`, 56 062 y 55 608 bytes).
+- Handoff a Codex en `c03ddc09` (H0): 58 anclas ejecutadas desde el fichero.
+  Base: welcome 28, motion 9, carta 216.
+- Codex paró en el rojo de T2: la cadena solo admitía TS2305 y TypeScript
+  6.0.3 emite TS2724 cuando el export que falta se parece a uno existente.
+  Error del leader, corregido en `1f18d037` (5 `error TS`, TS2305|TS2724). Los
+  valores de cierre de A5 y A7 del handoff también estaban mal (cierran en 0);
+  el humano se lo aclaró a Codex.
+- Codex: 27 commits (12 pares rojo/verde, T12 y T13 verdes por diseño,
+  trazabilidad en `f8132e4f`). Cierre 275 tests en los siete ficheros.
+- Gate: `./init.sh` sobre `f8132e4f` con permiso del humano, exit=0 (backend
+  176/1348, móvil 96/2275, e2e 29 de 32 suites, 438 tests). Backend avisado
+  antes y después.
+- Review: **APROBADO** a la primera (`progress/review_mobile-welcome-pingo.md`,
+  `930f282b`). Sondas S1-S3, R12 (2) y R13 rojas por aserción; unas 45
+  mutaciones propias. Vivas: W9 (equivalente) y P3/P4 (R3 no distingue el
+  contenido de los dos WebP; sha256 igual a los originales, cubierto por el
+  paso 4 de R14).
+- Humano: smoke R14 pasos 1-7 en el dev build de Android (2026-10-08) en
+  `78df9b08`. Solo la casilla, 0 drift de código frente a `f8132e4f`.
+- Cierre: `done` en `feature_list.json`, trazabilidad R14, STATUS, Notion
+  (Implementado / Completado) y PR contra `main`. Merge: humano.

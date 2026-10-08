@@ -364,6 +364,7 @@ export const en = {
   'welcome.getStarted': 'Get started',
   'welcome.haveAccount': 'I already have an account',
   'welcome.legalNotice': 'By continuing you accept our Terms and Privacy Policy',
+  'welcome.pingoGreeting': 'Hi, I\'m Pingo. I\'ll help you know where your pet is and how they\'re doing.',
 } as const;
 
 export type TranslationKey = keyof typeof en;
@@ -734,6 +735,7 @@ export const es: Record<TranslationKey, string> = {
   'welcome.getStarted': 'Comenzar ahora',
   'welcome.haveAccount': 'Ya tengo una cuenta',
   'welcome.legalNotice': 'Al continuar aceptas nuestros Términos y Política de privacidad',
+  'welcome.pingoGreeting': 'Hola, soy Pingo. Te ayudo a saber dónde está y cómo está tu mascota.',
 };
 
 export const LOCALES = { es: 'es-MX', en: 'en-US' } as const;
