@@ -5,4 +5,6 @@ export const PET_DOCUMENT_REPOSITORY = Symbol('PetDocumentRepository');
 export interface PetDocumentRepository {
   create(document: PetDocument): Promise<void>;
   listByPet(petId: string): Promise<PetDocument[]>;
+  findByIdAndPet(id: string, petId: string): Promise<PetDocument | null>;
+  markUploaded(id: string): Promise<void>;
 }

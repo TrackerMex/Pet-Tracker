@@ -14,6 +14,7 @@ function document(id: string, date: string): PetDocument {
     date,
     vet: null,
     key: `pets/${PET_ID}/docs/${id}`,
+    uploadedAt: new Date(),
     createdBy: USER_ID,
   };
 }

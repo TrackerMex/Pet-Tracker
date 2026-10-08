@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { desc, eq } from 'drizzle-orm';
+import { and, desc, eq, isNull, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DRIZZLE } from '@/db/drizzle.constants';
 import { petDocuments } from '@/db/schema/media.schema';
@@ -25,6 +25,22 @@ export class PetDocumentDrizzleRepository implements PetDocumentRepository {
 
     return rows.map(toDomain);
   }
+
+  async findByIdAndPet(id: string, petId: string): Promise<PetDocument | null> {
+    const [row] = await this.db
+      .select()
+      .from(petDocuments)
+      .where(and(eq(petDocuments.id, id), eq(petDocuments.petId, petId)))
+      .limit(1);
+    return row ? toDomain(row) : null;
+  }
+
+  async markUploaded(id: string): Promise<void> {
+    await this.db
+      .update(petDocuments)
+      .set({ uploadedAt: sql`now()` })
+      .where(and(eq(petDocuments.id, id), isNull(petDocuments.uploadedAt)));
+  }
 }
 
 function toDomain(row: PetDocumentRow): PetDocument {
@@ -36,6 +52,7 @@ function toDomain(row: PetDocumentRow): PetDocument {
     date: row.date,
     vet: row.vet,
     key: row.key,
+    uploadedAt: row.uploadedAt,
     createdBy: row.createdBy,
   };
 }
