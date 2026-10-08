@@ -650,6 +650,8 @@ comando, como red de seguridad.
 | S-E1.1a | `return new AnthropicNutritionExplainer(model.trim() + 'x', key.trim(), null);` | `3 failed, 22 passed, 25 total` | los dos anti-vacíos y `pasa clave y modelo recortados (E1.1)` |
 | S-E1.1b | `return new AnthropicNutritionExplainer(model.trim(), key, null);` | `1 failed, 24 passed, 25 total` | `pasa clave y modelo recortados (E1.1)` |
 | S-E1.1c | `return new AnthropicNutritionExplainer(model, key.trim(), null);` | `1 failed, 24 passed, 25 total` | `pasa clave y modelo recortados (E1.1)` |
+| S-E1.1d | `return new AnthropicNutritionExplainer(model.replace(/^ +/, '').replace(/ +$/, ''), key.replace(/^ +/, '').replace(/ +$/, ''), null);` | `1 failed, 24 passed, 25 total` | `pasa clave y modelo recortados (E1.1)` |
+| S-E1.1e | `return new AnthropicNutritionExplainer(model.replace(/\n+$/, ''), key.replace(/\n+$/, ''), null);` | `1 failed, 24 passed, 25 total` | `pasa clave y modelo recortados (E1.1)` |
 | S-E1.2a | bloque `node-env-test` detrás del bloque `not-enabled` | `1 failed, 24 passed, 25 total` | `NODE_ENV y ANTHROPIC_ENABLED fallan: gana node-env-test` |
 | S-E1.2b | bloque `key-missing` delante del bloque `not-enabled` | `1 failed, 24 passed, 25 total` | `ANTHROPIC_ENABLED y ANTHROPIC_API_KEY fallan: gana not-enabled` |
 | S-E1.2c | bloque `model-missing` delante del bloque `key-missing` | `1 failed, 24 passed, 25 total` | `ANTHROPIC_API_KEY y ANTHROPIC_MODEL fallan: gana key-missing` |
@@ -679,7 +681,7 @@ anota en `progress/impl_nutrition-ai-explainer.md` §Bloqueos.
     - `specs/nutrition-ai-explainer/traceability.md`: las filas E1.1–E1.5,
       E1.7 y E1.8, cada una con sus hashes y la sonda citada.
     - `progress/impl_nutrition-ai-explainer.md`: §Sondas E1, la base de
-      `tsc` y las anclas E1-A1…E1-A37 medidas en el HEAD final.
+      `tsc` y las anclas E1-A1…E1-A38 medidas en el HEAD final.
   - Las anclas deben coincidir con la columna «tras E1» de [[requirements]]
     §Enmienda E1 §Cifras y alcance.
   - El diff de la ronda contra el commit de handoff, sin contar
@@ -691,7 +693,7 @@ anota en `progress/impl_nutrition-ai-explainer.md` §Bloqueos.
 - [ ] Cada gate rojo de E1-c1…E1-c16 se reproduce con `git checkout` del
   commit, y su rojo es de aserción.
 - [ ] **Nota 2: cargador de test siempre presente.** E1-A34 = E1-A35 =
-  E1-A36 = 3 y E1-A37 = 1 en el HEAD final.
+  E1-A36 = 3, E1-A37 = 1 y E1-A38 = 4 en el HEAD final.
   - Ninguna construcción del adaptador con cliente `null` en un spec omite el
     cuarto argumento ni pasa `undefined`.
   - El cargador real por defecto no se ejecuta en ningún test.

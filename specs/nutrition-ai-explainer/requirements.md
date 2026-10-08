@@ -355,8 +355,10 @@ viaja como `model`, y el `warn` de R11 puede acabar escribiéndola en el log.
    entre sí.
 3. Un `it` nuevo al final del describe R5,
    `it('pasa clave y modelo recortados (E1.1)')`. Usa `valid` con
-   `ANTHROPIC_API_KEY: '  clave-de-prueba  '` y
-   `ANTHROPIC_MODEL: '  modelo-de-prueba  '` (dos espacios a cada lado). Comprueba
+   `ANTHROPIC_API_KEY: '\t clave-de-prueba \n'` y
+   `ANTHROPIC_MODEL: '\t modelo-de-prueba \n'` (tabulador y espacio delante,
+   espacio y salto de línea detrás; `\t` y `\n` son escapes del literal
+   TypeScript). Comprueba
    `toBeInstanceOf(AnthropicNutritionExplainer)` y que `constructorArgs` sea
    `toEqual({ model: 'modelo-de-prueba', apiKey: 'clave-de-prueba', client: null })`.
 
@@ -392,9 +394,21 @@ recortada:
 | `return new AnthropicNutritionExplainer(model.trim() + 'x', key.trim(), null);` (veredicto F1, adaptada) | los 3 | sonda S-E1.1a |
 | `return new AnthropicNutritionExplainer(model.trim(), key, null);` | solo el del punto 3 | sonda S-E1.1b: la rama de la clave |
 | `return new AnthropicNutritionExplainer(model, key.trim(), null);` | solo el del punto 3 | sonda S-E1.1c: la rama del modelo |
+| `return new AnthropicNutritionExplainer(model.replace(/^ +/, '').replace(/ +$/, ''), key.replace(/^ +/, '').replace(/ +$/, ''), null);` | solo el del punto 3 | sonda S-E1.1d: recorta solo espacios |
+| `return new AnthropicNutritionExplainer(model.replace(/\n+$/, ''), key.replace(/\n+$/, ''), null);` | solo el del punto 3 | sonda S-E1.1e: recorta solo el salto final |
 
 Un solo `toEqual` vigila las dos ramas del recorte. S-E1.1b y S-E1.1c prueban
-que cada rama cae por separado.
+que cada rama cae por separado. S-E1.1d y S-E1.1e prueban que un recorte
+parcial cae: el blanco de los valores mezcla tabulador, espacio y salto de
+línea, y solo un recorte de todo el blanco de los extremos deja la suite en
+verde. S-E1.1d da el mismo resultado que `x.replace(/^ +| +$/g, '')`, y
+S-E1.1e que `x.replace(/\n+$/, '')`; las dos las midió el reviewer en la
+revisión 2 de E1 (`progress/review_nutrition-ai-explainer_e1.md` §4).
+
+**Zona ciega declarada del recorte.** Quitar todo el blanco, también el
+interior (`x.replace(/\s/g, '')` en los dos argumentos), sobrevive con los 25
+en verde: los valores de prueba no tienen blanco interior. No se cierra con candado porque
+un modelo o una clave con blanco interior no es realista.
 
 **Zona ciega declarada.** `constructorArgs` no ve un cuarto argumento en la
 llamada del factory (por ejemplo, un cargador distinto del default de E1.3).
@@ -513,8 +527,8 @@ con `new AnthropicNutritionExplainer('modelo-de-prueba', 'clave-de-prueba', null
 - **Cuarto argumento siempre presente (nota 2 del veredicto).** Todo
   `new AnthropicNutritionExplainer(` con cliente `null` en un spec lleva
   `loadSdk` como cuarto argumento, nunca `undefined` ni nada. Si faltara, el
-  cargador real por defecto se ejecutaría en test. Lo fijan E1-A34, E1-A35,
-  E1-A36 y E1-A37 (§Cifras y alcance), y el checklist del reviewer en
+  cargador real por defecto se ejecutaría en test. Lo fijan E1-A34…E1-A38
+  (§Cifras y alcance), y el checklist del reviewer en
   tasks.md.
 
 1. `it('fallo del import del SDK: null y un warn sin relanzar')`. El cargador
@@ -836,7 +850,7 @@ es el resultado de `String({})` en Node, y es estable.
 | E1-A22 | `grep -cF "'sdk ausente'" $AI/anthropic-nutrition-explainer.spec.ts` | 0 | 2 |
 | E1-A23 | `grep -cF "'opciones invalidas'" $AI/anthropic-nutrition-explainer.spec.ts` | 0 | 2 |
 | E1-A24 | `grep -cF 'new AnthropicNutritionExplainer(' $AI/anthropic-nutrition-explainer.spec.ts` | 4 | 7 |
-| E1-A25 | `git diff -U0 c09ee51c -- $AI/nutrition-explainer.factory.ts \| grep -c '^[-+] '` | 0 | 2 |
+| E1-A25 | `git diff -U0 c09ee51c -- $AI/nutrition-explainer.factory.ts \| grep -cvE '^(diff \|index \|--- \|\+\+\+ \|@@ )'` | 0 | 2 |
 | E1-A26 | `git diff c09ee51c -- backend-pet-tracker/src/modules/nutrition/nutrition-scope.spec.ts \| wc -l` | 0 | 0 |
 | E1-A27 | `grep -rlF "jest.mock('@anthropic-ai/sdk'" backend-pet-tracker/src backend-pet-tracker/test \| wc -l` | 0 | 0 |
 | E1-A28 | A47: `grep -rlE "from '@anthropic-ai/sdk'\|import\('@anthropic-ai/sdk'\)" backend-pet-tracker/src backend-pet-tracker/test --include=*spec.ts \| wc -l` | 0 | 0 |
@@ -849,26 +863,34 @@ es el resultado de `String({})` en Node, y es estable.
 | E1-A35 | `tr -d ' \n' < $AI/anthropic-nutrition-explainer.spec.ts \| grep -oF "'clave-de-prueba',null" \| wc -l` | 0 | 3 |
 | E1-A36 | `tr -d ' \n' < $AI/anthropic-nutrition-explainer.spec.ts \| grep -oF "'clave-de-prueba',null,loadSdk" \| wc -l` | 0 | 3 |
 | E1-A37 | `grep -rlF 'new AnthropicNutritionExplainer(' backend-pet-tracker/src backend-pet-tracker/test --include=*spec.ts \| wc -l` | 1 | 1 |
+| E1-A38 | `tr -d ' \n' < $AI/anthropic-nutrition-explainer.spec.ts \| grep -oF "'clave-de-prueba',{" \| wc -l` | 4 | 4 |
 
 **Cómo copiar las anclas (N1 del veredicto).** Como en §E-5, `\|` es el escape
 de la tubería dentro de la tabla markdown. Al copiar E1-A25, E1-A26, E1-A27,
-E1-A28, E1-A35, E1-A36 y E1-A37 del texto crudo, y la mutación de E1.8, cada
-`\|` se sustituye por `|`.
-- Si se copia sin sustituir, E1-A25 y E1-A26 no imprimen nada y E1-A27 sale
-  con rc=2.
+E1-A28, E1-A35, E1-A36, E1-A37 y E1-A38 del texto crudo, y la mutación de
+E1.8, cada `\|` se sustituye por `|`. En E1-A25 eso incluye los cuatro
+`\|` de la regex.
+- Si se copia sin sustituir, E1-A25 no imprime ningún número (nada en la base,
+  el propio diff tras E1), E1-A26 no imprime nada, E1-A27 sale con rc=2, y
+  E1-A35, E1-A36 y E1-A38 salen con rc=1 (`tr: extra operand`).
 - E1-A28 queda ciega: dentro de `-E`, `\|` es una tubería literal.
 - Los valores de la tabla se midieron ejecutando cada comando ya sustituido,
   tal como lo copiará Codex. El registro está en
   `progress/spec_nutrition-ai-explainer_e1.md` §E1 revision 2.
 
 **Regla de la nota 2 (cargador de test siempre presente).** Al cerrar #18 se
-cumplen a la vez E1-A34 = E1-A35 = E1-A36 = 3 y E1-A37 = 1. Juntas dicen:
+cumplen a la vez E1-A34 = E1-A35 = E1-A36 = 3, E1-A37 = 1 y E1-A38 = 4.
+Juntas dicen:
 
 - El único spec que construye el adaptador es el suyo (E1-A37).
 - En ese spec hay exactamente tres construcciones con cliente `null`
   (E1-A35).
 - Las tres llevan `loadSdk` como cuarto argumento (E1-A36).
 - Hay tres cargadores de test tipados (E1-A34).
+- Las otras cuatro construcciones pasan un cliente falso literal (E1-A38).
+  Como E1-A24 = 7 = E1-A38 + E1-A36, cada construcción queda contada: pasar
+  una de las cuatro a `null` con otra clave y sin cargador deja E1-A38 en 3
+  (residuo de §5 de la revisión 2 del reviewer).
 
 Una construcción `null, undefined` o `null)` haría E1-A36 < E1-A35.
 `tr -d ' \n'` quita espacios y saltos, así que el formato de prettier no

@@ -275,3 +275,162 @@ reformular esa sonda.
   lo son (N1).
 - [x] Worktree temporal eliminado; wt-18 sin cambios salvo este informe; sin
   commit.
+
+## Revisión 2
+
+Fecha: 2026-10-08
+Base: HEAD `2a727b94` en wt-18 (`feature/18-nutrition-ai-explainer-claude`),
+delta revisado `git diff 83bee22b 2a727b94 -- specs/`.
+Veredicto: **NECESITA CAMBIOS** (un bloqueante, R2-1, y dos cambios de ancla
+o de texto, R2-2 y R2-3; R2-4 no bloquea).
+
+Método: worktree temporal `/tmp/rev18-e1r2` desprendido en `2a727b94`, con la
+producción y las dos specs finales escritas tal como las prescribe E1 (factory
+recortado, costura `loadSdk` en el adaptador, factory spec de 25 y adaptador
+spec de 37). Solo jest unitario de los dos ficheros, sin e2e ni `init.sh`.
+`tsc --noEmit` = 0 y `eslint` sobre los 4 ficheros = 0. El worktree se
+eliminó al terminar.
+
+### 1. N1–N8
+
+| Ítem | Estado |
+|---|---|
+| N1 | Aplicado: la nota «Cómo copiar las anclas» cubre E1-A25…A28, A35…A37 y la mutación de E1.8 |
+| N2 | Aplicado: fila de E1.8 y viñeta reescrita |
+| N3 | Aplicado: fila `'sin stop_reason'` en E1.7 y rojo E1-c14 |
+| N4 | Aplicado: `'texto-futuro'` y sondas S-E1.5b/c |
+| N5 | Aplicado: fila *array-like*, sondas S-E1.4c/d, zona ciega retirada |
+| N6 | Aplicado: `content: [null]` fuera de alcance |
+| N7 | Aplicado: en S-E1.3c, el `it` 2 cae por `toHaveLength(1)` |
+| N8 | Aplicado: cifras rehechas (factory 18 a 25, adaptador 25 a 37) |
+
+### 2. Cifras: medido frente a declarado
+
+Factory (spec final de 25): 25 en verde, exit 0.
+
+| Compuerta o sonda | Declarada | Medida |
+|---|---|---|
+| E1-c1 (swap sin recorte) | 2/16/18 | 3/22/25 en la spec final; en la de 18, 2/16/18 ✓ |
+| E1-c3 (sin recorte, rojo natural) | 1/18/19 | 1/24/25 en la spec final; en la de 19, 1/18/19 ✓ |
+| E1-c5 | 2/23/25 | 2/23/25 ✓ |
+| S-E1.1a | 3/22/25 | 3/22/25 ✓ |
+| S-E1.1b, S-E1.1c | 1/24/25 | 1/24/25 ✓ |
+| S-E1.2a/b/c | 1/24/25 | 1/24/25 ✓ (filas 1, 4 y 6) |
+
+Adaptador (spec final de 37): 37 en verde, exit 0. E1-c8 da 2/35 (2/26/28
+en su punto), E1-c10 4/33 (4/29/33), E1-c12 2/35 (2/33/35), E1-c14 1/36
+(1/35/36) y E1-c16 1/36 (1/36/37). Todos coinciden y caen por aserción.
+También coinciden S-E1.3a/b (1/36), S-E1.3c (4/33/37, con el `it` 2 por
+`toHaveLength`), S-E1.4a (5/32), S-E1.4b (2/35), S-E1.4c/d (1/36) y
+S-E1.5a/b/c (1/36).
+
+Barrido Z1–Z6 y tabla C rehechos: Z1 y Z2 (S-E1.4c/d), Z3 y Z4 (S-E1.5b/c),
+Z5 (E1-c14) y Z6 (E1-c16) mueren todas con 1 rojo, en la fila prevista.
+
+### 3. Anclas, copiadas tal como lo hará Codex
+
+E1-A1…A37, con `\|` cambiado por `|` y ejecutadas con `bash -c`: **37 de 37
+coinciden** en las dos columnas. La base se midió en wt-18, cuyo backend no
+difiere de `c09ee51c`; «tras E1» se midió en el worktree temporal.
+
+### 4. D-E1-a (recortar): el candado de E1.1
+
+- El `it` del punto 3 espera los valores recortados, y su rojo natural es la
+  producción actual (1/24/25) ✓.
+- Las sondas reformuladas sobre el recorte (S-E1.1a/b/c) son coherentes ✓.
+- Zonas ciegas buscadas con los valores tal como están escritos
+  (`'  clave-de-prueba  '`, `'  modelo-de-prueba  '`, solo espacios):
+
+| Mutación del factory | Resultado |
+|---|---|
+| Recorte en un solo argumento (S-E1.1b/c) | muere, 1/24/25 |
+| `trimStart()` en los dos | muere, 1/24/25 |
+| `trimEnd()` en los dos | muere, 1/24/25 |
+| swap con recorte | muere, 3/22/25 |
+| **solo espacios: `x.replace(/^ +\| +$/g, '')` en los dos** | **sobrevive, 25/25 en verde** |
+| quitar todo el blanco: `x.replace(/\s/g, '')` en los dos | sobrevive, 25/25 en verde |
+
+El superviviente de solo espacios deja pasar el caso que la propia D-E1-a da
+como motivo («inyectado con un salto de línea final»): un `\n` final llegaría
+crudo al cuerpo JSON con la suite en verde.
+
+Variante medida: `ANTHROPIC_API_KEY: '\t clave-de-prueba \n'` y
+`ANTHROPIC_MODEL: '\t modelo-de-prueba \n'`. La final sigue en 25 verdes, la
+producción sin recorte da 1/24/25, S-E1.1b/c dan 1/24/25 cada una y
+`trimStart`/`trimEnd` también 1/24/25. Mata además el recorte de solo
+espacios (1/24/25) y el de solo salto final, `replace(/\n+$/, '')`
+(1/24/25). **No cambia ninguna cifra declarada.**
+
+### 5. Nota 2: anclas E1-A34…A37 con positivos plantados
+
+Base final: A34 = 3, A35 = 3, A36 = 3, A37 = 1.
+
+| Positivo plantado | A34 | A35 | A36 | A37 | ¿Lo ve? |
+|---|---|---|---|---|---|
+| Quitar `loadSdk,` de una construcción `null` | 3 | 3 | **2** | 1 | sí |
+| Cambiar `loadSdk` por `undefined` | 3 | 3 | **2** | 1 | sí |
+| Construcción `null` de una línea en `nutrition-explainer.factory.spec.ts` | 3 | 3 | 3 | **2** | sí |
+| Octava construcción `null` sin loader en el mismo fichero | 3 | **4** | 3 | 1 | sí |
+| Una de las tres con otra clave literal y sin loader | 3 | **2** | **2** | 1 | sí |
+| **Una construcción de cliente falso (`{ create }`) pasada a `null`, con otra clave y sin loader** | 3 | 3 | 3 | 1 | **no** (y E1-A24 sigue en 7) |
+
+La regla funciona tal como está escrita para los casos que declara. El último
+residuo es rebuscado; ver R2-4.
+
+### 6. E1-A25: zona ciega de la propia ancla
+
+`git diff -U0 c09ee51c -- $AI/nutrition-explainer.factory.ts | grep -c '^[-+] '`
+solo cuenta las líneas cambiadas que empiezan por espacio, así que no ve las
+de columna 0 ni las líneas en blanco:
+
+| Plantado sobre el factory final | `grep -c '^[-+] '` | `--numstat` |
+|---|---|---|
+| nada | 2 | `1 1` |
+| `import { Logger } from "@nestjs/common";` en la línea 1 | **2** | `2 1` |
+| una línea en blanco en la línea 1 | **2** | `2 1` |
+
+Un `import` añadido a nivel de módulo es justo lo que Codex podría colar en el
+factory (por ejemplo, el tipo del loader). La forma
+`git diff -U0 c09ee51c -- $AI/nutrition-explainer.factory.ts | grep -cvE '^(diff |index |--- |\+\+\+ |@@ )'`
+mide 0 en la base, 2 en la final y 3 con cualquiera de los dos plantados. Así
+conserva los valores 0 y 2 que ya citan las compuertas E1-c2 y E1-c4 de
+`tasks.md`.
+
+### Cambios pedidos
+
+- **R2-1 (bloqueante).** En E1.1, punto 3 (`it('pasa clave y modelo
+  recortados (E1.1)')`), y en el texto «(dos espacios a cada lado)», cambiar
+  los valores a `'\t clave-de-prueba \n'` y `'\t modelo-de-prueba \n'`. El
+  valor esperado sigue siendo `{ model: 'modelo-de-prueba', apiKey:
+  'clave-de-prueba', client: null }`. Añadir a la tabla de sondas de E1.1 dos
+  filas, cada una con 1/24/25 medido:
+  - recorte de solo espacios: `x.replace(/^ +| +$/g, '')` en los dos argumentos;
+  - recorte de solo salto final: `x.replace(/\n+$/, '')` en los dos.
+  Las cifras de E1-c1…E1-c6 no cambian.
+- **R2-2.** Declarar en E1.1 como zona ciega la eliminación de todo el blanco
+  (`x.replace(/\s/g, '')`): sobrevive porque los valores no tienen blanco
+  interior. Un modelo o una clave con blanco interior no es realista.
+- **R2-3.** Cambiar E1-A25 en la tabla de anclas, y en su línea de la nota
+  «Cómo copiar las anclas», por la forma de §6:
+  `git diff -U0 c09ee51c -- $AI/nutrition-explainer.factory.ts | grep -cvE '^(diff |index |--- |\+\+\+ |@@ )'`.
+  Base 0, tras E1 2. Las compuertas de `tasks.md` que citan A25 = 0 y A25 = 2
+  no cambian de valor.
+- **R2-4 (no bloquea).** Para cerrar el residuo de §5, añadir el ancla
+  `tr -d ' \n' < $AI/anthropic-nutrition-explainer.spec.ts | grep -oF "'clave-de-prueba',{" | wc -l`
+  (base 4, tras E1 4, con el residuo plantado 3). Con E1-A24 = 7 = 4 + E1-A36,
+  queda contada cada construcción.
+
+Fuera de esto, todo el delta coincide con lo declarado.
+
+### Checklist de la revisión 2
+
+- [x] HEAD de wt-18 = `2a727b94`
+- [x] N1–N8 aplicados
+- [x] Cifras 25 + 37 y todas las compuertas y sondas, medidas = declaradas
+- [x] Z1–Z6 y tabla C rehechos en el worktree temporal
+- [x] E1-A1…A37 copiadas como Codex: 37/37
+- [x] Nota 2: los positivos plantados se ven (residuo en R2-4)
+- [ ] Candado del recorte sin superviviente evitable (R2-1)
+- [ ] E1-A25 ve toda línea cambiada (R2-3)
+- [x] Sin e2e ni `init.sh`; worktree temporal eliminado; wt-18 sin cambios
+  salvo este informe; sin commit

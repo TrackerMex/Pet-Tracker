@@ -222,3 +222,21 @@ coincidencias en el estado final mutado. E1-A35…A37 cubren ese hueco en el
 
   Las zonas del 4.º argumento del factory (E1-A29/E1-A25), el *array-like*,
   el prefijo `text…` y el rechazo no-`Error` quedaron cerradas.
+
+## E1 revisión 3 (leader, 2026-10-08)
+
+El leader aplica directamente los cambios R2-1…R2-4 de la revisión 2 del
+reviewer (`progress/review_nutrition-ai-explainer_e1.md` §Revisión 2):
+
+| Cambio | Dónde | Qué |
+|---|---|---|
+| R2-1 | requirements.md §E1.1 punto 3 y tabla de rojos; tasks.md §Sondas; traceability.md fila E1.1 | Valores `'\t clave-de-prueba \n'` y `'\t modelo-de-prueba \n'`. Sondas nuevas S-E1.1d (solo espacios, escrita como `.replace(/^ +/, '').replace(/ +$/, '')` para no meter `\|` en la tabla; mismo resultado que la forma del reviewer) y S-E1.1e (`.replace(/\n+$/, '')`), 1/24/25 cada una según la medición del reviewer. Las cifras de E1-c1…E1-c6 no cambian |
+| R2-2 | requirements.md §E1.1 | Zona ciega declarada del recorte: `x.replace(/\s/g, '')` |
+| R2-3 | requirements.md tabla de anclas y nota «Cómo copiar las anclas» | E1-A25 pasa a `grep -cvE '^(diff \|index \|--- \|\+\+\+ \|@@ )'`; valores 0 y 2 sin cambio |
+| R2-4 | requirements.md tabla de anclas, nota 2 y §E1.3; tasks.md E1-c18 y checklist | Ancla nueva E1-A38 (`'clave-de-prueba',{`), 4 y 4 |
+
+Medido en wt-18 (backend igual a `c09ee51c`), copiando cada fila del texto
+crudo y sustituyendo `\|` por `|`: E1-A25 = 0, E1-A38 = 4, E1-A24 = 4,
+E1-A36 = 0, todas iguales a la columna «base». Copiadas sin sustituir:
+E1-A25 no imprime nada en la base (rc=0) y E1-A38 sale con rc=1
+(`tr: extra operand`).
