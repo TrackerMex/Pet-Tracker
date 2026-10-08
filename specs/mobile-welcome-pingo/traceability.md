@@ -22,7 +22,7 @@ tags: [harness, spec, mobile, ui-delight]
 | R11 | `src/screens/welcome/index.test.tsx`::`#153 R11: Pingo parpadea cada cuatro segundos` (4 `it`) | `8c48d8a8 test(mobile-welcome): #153 R11 red pingo blink`<br>`23be4df3 feat(mobile-welcome): #153 R11 pingo blink` |
 | R12 | `src/screens/welcome/index.test.tsx`::`#153 R12: la parada de los bucles la hace Reanimated` > `no cancela a mano ni devuelve limpieza`; sonda del reviewer de tasks.md T12 | `cd87dcb1 test(mobile-welcome): #153 R12 lock no manual loop cleanup` |
 | R13 | `src/screens/welcome/index.test.tsx`::`#153 R13: Pingo no trae dependencias nuevas` > `no declara Lottie, Rive ni expo-linear-gradient`; `src/__tests__/design-drift.test.ts::#118 R11: la bienvenida no mete drift de estilo` sin tocar; diff vacío de `package.json` y `bun.lock` contra el HEAD del handoff | `21b60da6 test(mobile-welcome): #153 R13 lock no new animation deps` |
-| R14 | Smoke humano en dev build de Android, pasos de requirements.md R14; casilla «Smoke R14» de requirements.md §Aprobación | pendiente (lo firma el humano) |
+| R14 | Humano, dev build de Android: pasos 1-7 de requirements.md R14 superados (2026-10-08); casilla «Smoke R14» de requirements.md §Aprobación | Smoke: `78df9b08 smoke R14 superado en el dev build de Android` |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente".
 Convención de commit: `feat(<scope>): <desc> (R1,R2)`.
