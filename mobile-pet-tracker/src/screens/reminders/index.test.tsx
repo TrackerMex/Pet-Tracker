@@ -1009,6 +1009,25 @@ describe('#155 R6: sin recordatorios, Pingo sostiene su lista', () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
   });
 
+  it('queda en el sitio del vacío que sustituye', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet(), makePet({ id: 'pet-2', name: 'Milo' })] });
+    mockListReminders.mockImplementation((_url, _token, petId) => Promise.resolve<RemindersState>({ kind: 'ok', reminders: petId === 'pet-2' ? [makeReminder({ petId: 'pet-2' })] : [] }));
+    mockDeleteReminder.mockResolvedValue({ kind: 'forbidden' });
+    await renderReminders();
+    await screen.findByTestId('reminders-empty-pose');
+    const slot = screen.getByTestId('reminders-empty');
+    expect(slot.parent?.parent?.props.testID).toBe('screen-reminders');
+    expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['reminders-actions', 'RCTScrollView', 'reminders-empty', 'reminders-delete-host']);
+    await fireEvent.press(screen.getByTestId('pet-chip-pet-2'));
+    await waitFor(() => expect(screen.getByTestId('reminder-delete-reminder-1')).toBeVisible());
+    await confirmDelete('reminder-1');
+    await waitFor(() => expect(screen.getByTestId('reminders-action-error')).toBeVisible());
+    await fireEvent.press(screen.getByTestId('pet-chip-pet-1'));
+    await screen.findByTestId('reminders-empty-pose');
+    const slotWithError = screen.getByTestId('reminders-empty');
+    expect(slotWithError.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['reminders-actions', 'RCTScrollView', 'reminders-empty', 'reminders-action-error', 'reminders-delete-host']);
+  });
+
   it('pinta la pose, el título y la frase de Pingo', async () => {
     mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [] });
     await renderReminders();
