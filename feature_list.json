@@ -3157,5 +3157,24 @@
       "backend-pet-tracker/src/modules/media/",
       "backend-pet-tracker/test/media-docs.e2e-spec.ts"
     ]
+  },
+  {
+    "id": 162,
+    "name": "media-docs-download-test-locks",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Registrada el 2026-10-08 por decisión del humano («si registra los 4 huecos»). Deuda de #157 media-docs-download-api: las observaciones 1, 3, 4 y 5 de progress/review_media-docs-download-api.md, el veredicto que aprobó #157. Solo añade candados de test: no cambia comportamiento de producción y ningún hueco es incumplimiento de #157, que se ciñó a su spec. Medido en la branch de #157 (45fc4d46), bajo backend-pet-tracker/src/modules/media/. (1) R6 (g): infrastructure/mappers/pet-document-error.mapper.ts devuelve por identidad el error desconocido (`return error;`, tras las ramas `instanceof PetDocumentNotFoundError` y `instanceof PetDocumentNotUploadedError`) y no tiene spec propio; la sonda P16 (mapear el desconocido a 404) sobrevivió en unit y e2e. #157 declaró «(g) no tiene e2e» porque LocalStack no reproduce un fallo distinto de 404, así que el candado va en un pet-document-error.mapper.spec.ts nuevo con un it por rama. (2) R7: en infrastructure/photo-storage.object-exists.spec.ts el doble del 404 trae a la vez `name: 'NotFound'` y `$metadata: { httpStatusCode: 404 }`; la sonda P10 (decidir por name) sobrevivió. Falta un it con un error 404 sin `name`. (3) R4: application/use-cases/list-pet-documents.use-case.ts arma la lista con Promise.all sobre el orden del repositorio, pero el doble de createDownloadUrl (`Promise.resolve`) resuelve en orden de llamada; la sonda P4 (push al resolver) sobrevivió. Falta un doble que resuelva el primer documento después del segundo. (4) Carrera de confirm: infrastructure/repositories/pet-document.drizzle.repository.ts filtra markUploaded con `isNull(petDocuments.uploadedAt)` (design D4) y no hay spec de ese repositorio ni test que lo llame directamente; la idempotencia de R5 la cubre el return temprano del use case. Ninguna cláusula EARS de #157 lo exige: la spec de esta deuda decide si se candada (por ejemplo, markUploaded sobre una fila ya confirmada no cambia uploaded_at, contra Postgres) o si se descarta por escrito. Depende del merge de #157.",
+    "acceptance_criteria": [
+      "Cada candado nuevo falla con su sonda de #157 plantada (P16, P10, P4 y, si la spec lo incluye, el WHERE de markUploaded sin isNull) y pasa sin ella",
+      "Cero cambios en código de producción de backend-pet-tracker/",
+      "Ningún test existente cambia salvo los dos dobles nombrados (object-exists y list-pet-documents)",
+      "Ninguna prueba contra AWS real"
+    ],
+    "files_affected": [
+      "backend-pet-tracker/src/modules/media/infrastructure/mappers/pet-document-error.mapper.spec.ts",
+      "backend-pet-tracker/src/modules/media/infrastructure/photo-storage.object-exists.spec.ts",
+      "backend-pet-tracker/src/modules/media/application/use-cases/list-pet-documents.use-case.spec.ts",
+      "backend-pet-tracker/test/media-docs.e2e-spec.ts"
+    ]
   }
 ]
