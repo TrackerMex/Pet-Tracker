@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import {
   GetObjectCommand,
+  HeadObjectCommand,
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3';
@@ -38,8 +39,21 @@ export class PhotoStorageS3Adapter implements PhotoStorage {
     return getSignedUrl(this.s3, command, { expiresIn: expiresInSeconds });
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- stub rojo de #157 R7, lo retira el verde
-  objectExists(key: string): Promise<boolean> {
-    return Promise.resolve(true);
+  async objectExists(key: string): Promise<boolean> {
+    try {
+      await this.s3.send(
+        new HeadObjectCommand({ Bucket: this.names.mediaBucket, Key: key }),
+      );
+      return true;
+    } catch (error) {
+      // ponytail: sin s3:ListBucket, AWS devuelve 403 para un objeto ausente; revisar si el modo aws lo necesita (Q1).
+      if (
+        (error as { $metadata?: { httpStatusCode?: number } })?.$metadata
+          ?.httpStatusCode === 404
+      ) {
+        return false;
+      }
+      throw error;
+    }
   }
 }
