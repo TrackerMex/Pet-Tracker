@@ -595,3 +595,46 @@ describe('#153 R9: Pingo entra con un muelle de escala', () => {
     }
   });
 });
+
+describe('#153 R10: Pingo flota en bucle', () => {
+  beforeEach(() => jest.useFakeTimers());
+  afterEach(() => jest.useRealTimers());
+
+  it('sube 4 puntos en medio ciclo sin reduce motion', async () => {
+    await renderWelcome();
+    expect(screen.getByTestId('welcome-pingo')).toBeOnTheScreen();
+    // Medio ciclo dura 1200 ms; 2000 ms deja 800 ms de margen.
+    await act(async () => { jest.advanceTimersByTime(2000); });
+    expect(getAnimatedStyle(screen.getByTestId('welcome-pingo'))).toEqual({
+      width: 200, height: 200, transform: [{ translateY: -4 }, { scale: 1 }],
+    });
+  });
+
+  it('repite la flotación sin fin y en vaivén', async () => {
+    await renderWelcome();
+    expect(screen.getByTestId('welcome-pingo')).toBeOnTheScreen();
+    const args = mockWithRepeat.mock.calls.map((call) => call.slice(1));
+    expect(args.filter((values) => values.length === 2 && values[0] === -1 && values[1] === true)).toEqual([[-1, true]]);
+  });
+
+  it('con reduce motion no flota', async () => {
+    mockUseReducedMotion.mockReturnValue(true);
+    await renderWelcome();
+    expect(screen.getByTestId('welcome-pingo')).toBeOnTheScreen();
+    // 5000 ms supera el ciclo de 2400 ms y el primer parpadeo de 4000 ms.
+    await act(async () => { jest.advanceTimersByTime(5000); });
+    expect(getAnimatedStyle(screen.getByTestId('welcome-pingo'))).toEqual({
+      width: 200, height: 200, transform: [{ translateY: 0 }, { scale: 1 }],
+    });
+    expect(mockWithRepeat).not.toHaveBeenCalled();
+    mockUseReducedMotion.mockReturnValue(false);
+  });
+
+  it('usa la flotación de motion.ts', async () => {
+    await renderWelcome();
+    expect(screen.getByTestId('welcome-pingo')).toBeOnTheScreen();
+    const source = readSource('screens/welcome/index.tsx');
+    const re = /pingoFloatY\.set\(\s*withRepeat\(\s*withTiming\(\s*-MOTION_FLOAT_OFFSET_Y,\s*MOTION_FLOAT_TIMING,?\s*\),\s*-1,\s*true,?\s*\),?\s*\)/g;
+    expect((source.match(re) ?? []).length).toBe(1);
+  });
+});
