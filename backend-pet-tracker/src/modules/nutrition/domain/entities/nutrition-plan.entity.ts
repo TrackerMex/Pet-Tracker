@@ -1,4 +1,5 @@
 import type {
+  NutritionPlanResult,
   NutritionObjective,
   NutritionWarning,
 } from '@/modules/nutrition/domain/nutrition-engine';
@@ -76,4 +77,9 @@ export function copyWithMealTimes(
     aiExplanation: plan.aiExplanation,
     inputsHash: plan.inputsHash,
   };
+}
+
+export function toPlanResult(plan: NutritionPlan): NutritionPlanResult {
+  void plan;
+  throw new Error('not implemented (R12)');
 }
