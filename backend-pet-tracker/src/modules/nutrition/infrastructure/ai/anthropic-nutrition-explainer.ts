@@ -30,12 +30,24 @@ export interface AnthropicMessageResponse {
 export interface AnthropicMessagesClient {
   create(params: AnthropicMessageParams): Promise<AnthropicMessageResponse>;
 }
+export interface AnthropicClientOptions {
+  apiKey: string;
+  timeout: number;
+  maxRetries: number;
+}
+export type AnthropicSdkLoader = () => Promise<{
+  default: new (options: AnthropicClientOptions) => {
+    messages: AnthropicMessagesClient;
+  };
+}>;
 export class AnthropicNutritionExplainer implements NutritionExplainer {
   private readonly logger = new Logger(AnthropicNutritionExplainer.name);
   constructor(
     private readonly model: string,
     private readonly apiKey: string,
     private client: AnthropicMessagesClient | null,
+    private readonly loadSdk: AnthropicSdkLoader = async () =>
+      await import('@anthropic-ai/sdk'),
   ) {}
   async explain(
     input: NutritionEngineInput,
@@ -44,7 +56,7 @@ export class AnthropicNutritionExplainer implements NutritionExplainer {
   ): Promise<string | null> {
     try {
       if (this.client === null) {
-        const { default: Anthropic } = await import('@anthropic-ai/sdk');
+        const { default: Anthropic } = await this.loadSdk();
         this.client = new Anthropic({
           apiKey: this.apiKey,
           timeout: NUTRITION_AI_TIMEOUT_MS,
