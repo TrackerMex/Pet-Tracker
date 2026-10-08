@@ -1,6 +1,6 @@
 import { Logger } from '@nestjs/common';
-import { NUTRITION_AI_SCOPE } from './nutrition-prompt';
 import {
+  NUTRITION_AI_SCOPE,
   buildUserPrompt,
   NUTRITION_AI_SYSTEM_PROMPT,
 } from './nutrition-prompt';
@@ -42,37 +42,47 @@ export class AnthropicNutritionExplainer implements NutritionExplainer {
     result: NutritionPlanResult,
     ctx: NutritionExplainerContext,
   ): Promise<string | null> {
-    if (this.client === null) {
-      const { default: Anthropic } = await import('@anthropic-ai/sdk');
-      this.client = new Anthropic({
-        apiKey: this.apiKey,
-        timeout: NUTRITION_AI_TIMEOUT_MS,
-        maxRetries: NUTRITION_AI_MAX_RETRIES,
-      }).messages;
+    try {
+      if (this.client === null) {
+        const { default: Anthropic } = await import('@anthropic-ai/sdk');
+        this.client = new Anthropic({
+          apiKey: this.apiKey,
+          timeout: NUTRITION_AI_TIMEOUT_MS,
+          maxRetries: NUTRITION_AI_MAX_RETRIES,
+        }).messages;
+      }
+      const response = await this.client.create({
+        model: this.model,
+        max_tokens: NUTRITION_AI_MAX_OUTPUT_TOKENS,
+        system: NUTRITION_AI_SYSTEM_PROMPT,
+        messages: [{ role: 'user', content: buildUserPrompt(input, result) }],
+      });
+      const blocks = Array.isArray(response.content)
+        ? (response.content as { type: string; text?: string }[])
+        : [];
+      const text = blocks
+        .filter((block) => block.type === 'text')
+        .map((block) => block.text ?? '')
+        .join('')
+        .trim();
+      if (response.stop_reason === 'end_turn' && text.length > 0) return text;
+      this.logger.warn({
+        scope: NUTRITION_AI_SCOPE,
+        petId: ctx.petId,
+        planId: ctx.planId,
+        message: 'ai explanation unusable',
+        stopReason: response.stop_reason ?? null,
+        usage: response.usage ?? null,
+      });
+      return null;
+    } catch (error) {
+      this.logger.warn({
+        scope: NUTRITION_AI_SCOPE,
+        petId: ctx.petId,
+        planId: ctx.planId,
+        message: error instanceof Error ? error.message : String(error),
+      });
+      return null;
     }
-    const response = await this.client.create({
-      model: this.model,
-      max_tokens: NUTRITION_AI_MAX_OUTPUT_TOKENS,
-      system: NUTRITION_AI_SYSTEM_PROMPT,
-      messages: [{ role: 'user', content: buildUserPrompt(input, result) }],
-    });
-    const blocks = Array.isArray(response.content)
-      ? (response.content as { type: string; text?: string }[])
-      : [];
-    const text = blocks
-      .filter((block) => block.type === 'text')
-      .map((block) => block.text ?? '')
-      .join('')
-      .trim();
-    if (response.stop_reason === 'end_turn' && text.length > 0) return text;
-    this.logger.warn({
-      scope: NUTRITION_AI_SCOPE,
-      petId: ctx.petId,
-      planId: ctx.planId,
-      message: 'ai explanation unusable',
-      stopReason: response.stop_reason ?? null,
-      usage: response.usage ?? null,
-    });
-    return null;
   }
 }
