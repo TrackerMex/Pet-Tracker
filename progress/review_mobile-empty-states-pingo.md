@@ -3,7 +3,8 @@ Fecha: 2026-10-08
 Revisor: reviewer (Claude)
 Worktree: /home/claude/sites/Pet-Tracker-wt-155, branch feature/155-mobile-empty-states-pingo, HEAD cedb357a (verificado igual a origin)
 Base del handoff (H0): d4e044b3
-Veredicto: RECHAZADO (ronda 1; init.sh verde en 438b3263, corrido por el leader)
+Veredicto: APROBADO (ronda 2, HEAD 7d10fb25; ver §Ronda 2)
+Veredicto ronda 1: RECHAZADO (init.sh verde en 438b3263, corrido por el leader)
 
 El código hace lo que pide la spec, y al leerlo no encontré ningún defecto de comportamiento. El rechazo se debe a cláusulas SHALL de R3, R4, R6, R9 y R11 a las que les falta el candado de alguna rama. En la zona ciega planté mutantes que sobreviven a sus suites. Todos juntos dan un mutante combinado que es un programa válido (`tsc` exit 0) y que pasa las 16 suites acotadas con 934/934 en verde (ver §Observaciones B1-B5). Las listas de `it` de la spec no enumeran esas ramas. Codex siguió la spec, así que el hueco nace en la spec y su cierre pasa por una enmienda, como en #152.
 
@@ -509,3 +510,180 @@ Sin error, el primer `toEqual` y el `toBe` del abuelo siguen cubriendo E2-S15 y 
 ### Concurrencia y ruido
 - No hubo ningún `init.sh` en curso durante las corridas: `pgrep` dio exit 1 antes de cada una.
 - No hubo flakes. Ninguna corrida necesitó borrar la perf-cache.
+
+## Ronda 2 (2026-10-08)
+
+Veredicto: APROBADO (ronda 2; HEAD 7d10fb25, init.sh verde en 7d10fb25, corrido por el leader)
+
+E2 cierra B1-B5 solo con tests y sin tocar producción. Los 14 `it` nuevos son copia literal de la spec. Medí las 27 sondas de E2.5 y el combinado G1+G2+G3+G4+NIMG en un árbol desechable: todas dan rojo por aserción en el `it` que nombra la spec, con las mismas líneas `Tests:` que reporta Codex. En el barrido no aparece ninguna rama ciega nueva. R12 queda pendiente: es del humano.
+
+### Base y método
+- Worktree `/home/claude/sites/Pet-Tracker-wt-155`, branch `feature/155-mobile-empty-states-pingo`, HEAD `7d10fb25`, igual a `origin/feature/155-mobile-empty-states-pingo`. La base del handoff de E2 (E2H) es `adee148a`.
+- Árbol desechable fuera del repo: `git archive 7d10fb25` de `mobile-pet-tracker/`, `specs/`, `progress/` y `docs/`, más `git init` (commit base `72c5cd0`) y `node_modules` enlazado al de wt-155.
+- Corrí cada sonda con `FORCE_COLOR=0 bunx jest <suite>` y medí el exit code sin pipe. Clasifiqué cada fallo leyendo la primera línea de cada bloque `●`: aserción `expect(...)`, consulta (`Unable to find`) u otro.
+- Tras cada sonda restauré con `git checkout HEAD -- .` y comprobé `git diff --quiet && git diff --cached --quiet`: limpio=0 en todas.
+- No corrí la suite entera. Antes de cada jest comprobé `pgrep -af 'init\.sh|test:e2e|jest-e2e'`.
+- Concurrencia: durante S10, S13 y S19 corría el e2e de backend de #161 (`pnpm test:e2e media-docs`). Las cuentas `Tests:` salieron exactas y no hubo ningún rojo inesperado que repetir.
+- No corrí `init.sh`, por instrucción del leader. Lo leí del log.
+
+### 1. HEAD e init.sh
+- `git rev-parse HEAD origin/feature/155-mobile-empty-states-pingo`: los dos dan `7d10fb25875043b5f93ce286f8b860f2232d667f`.
+- Log `scratchpad/init155-7d10fb25.log`:
+  - Backend: 176/176 suites con 1348/1348 tests, y luego 2/2 suites con 14/14 tests.
+  - Móvil: 97/97 suites con **2365/2365** tests.
+  - e2e: 29 suites pasan y 3 se saltan de 32; 438 tests pasan y 8 se saltan de 446.
+  - `✅ Lint sin errores`, sin warnings entre `$ expo lint` y el ✅. `✅ Typecheck sin errores`. `✅ Todo verde`. `exit=0`.
+- Hay un aviso de force-exit de un worker en la línea ~27565 del log. Es ruido de jest, no un fallo.
+- 2365 coincide con E2.4: 2351 de la base más los 14 `it` de E2.
+
+### 2. Lista cerrada
+`git diff --stat adee148a..7d10fb25` toca 11 ficheros:
+- Los 9 tests de E2.4:
+  - `src/components/__tests__/empty-state.test.tsx`
+  - `src/screens/{home,health,map,alerts,reminders,docs,geofences}/index.test.tsx`
+  - `src/app/(tabs)/__tests__/food.test.tsx`
+- `progress/impl_mobile-empty-states-pingo.md`
+- `specs/mobile-empty-states-pingo/traceability.md`
+
+No hay ningún fichero de producción. `git diff --stat adee148a..7d10fb25 -- mobile-pet-tracker/package.json mobile-pet-tracker/bun.lock mobile-pet-tracker/app.json mobile-pet-tracker/src/theme` sale vacío. El rango `8c142376..adee148a` no toca `mobile-pet-tracker/`.
+
+### 3. Cuentas de E2.4
+| Suite | Base `adee148a` | HEAD `7d10fb25` | Δ |
+|---|---|---|---|
+| empty-state | 59 | 64 | +5 |
+| home | 220 | 221 | +1 |
+| health | 66 | 67 | +1 |
+| food | 61 | 63 | +2 |
+| map | 96 | 97 | +1 |
+| alerts | 38 | 39 | +1 |
+| reminders | 33 | 34 | +1 |
+| docs | 15 | 16 | +1 |
+| geofences | 50 | 51 | +1 |
+| **Total** | **638** | **652** | **+14** |
+
+Las 9 suites en HEAD dan 652/652, exit 0, igual que E2.4. Con el resto de la suite móvil suman 2365, la cifra de init.sh.
+
+### 4. Transcripción spec → test
+Comparé el diff `adee148a..7d10fb25` con E2.1-E2.3 línea a línea. Todo es literal y no hay desviaciones:
+- **E2.1, `empty-state.test.tsx`:**
+  - Añade `import { View } from 'react-native';`.
+  - `renderProbe` va envuelto en el `probe-frame`.
+  - El `it.each` de poses termina en `expect(image.props.className).toBeUndefined();`.
+  - Los 3 `it` de R3 van al final del describe de R3, con los textos y aserciones de la spec: orden de hijos, `root.type`, botón en fuente.
+- **E2.2, los 9 `it` de sitio** (ancla de padre/abuelo y lista de hermanos exactas por tabla). Los arrange coinciden con el `it` hermano de cada suite; geofences va sin `const empty`, como en la spec.
+  - home: `'home-states'`, `['Text','home-empty']`
+  - health: `'health-states'`, `['Text','health-empty']`
+  - food R4: abuelo `'screen-food'`, `['Text','food-empty']`
+  - map: className `'flex-1 items-center justify-center p-6 bg-background'` y abuelo `'screen-map'`, `['map-no-pets']`
+  - alerts: abuelo `'alerts-list'`, `['alerts-empty']`
+  - reminders: el bloque literal de R6 con sus dos listas
+  - docs: abuelo `'screen-docs'`, `['View','docs-empty']`
+  - geofences: abuelo `'screen-geofences'`, `['geofences-empty','geofences-add']`
+  - R9: bisabuelo `'screen-food'`, `['food-plan-empty','meal-schedule-link','meals-history-link']`
+- **E2.3:** los 2 `it` de R11 van al final del describe de R11, y `expect(bytes[20] & 0x02).toBe(0);` va bajo la línea del alfa.
+
+### 5. Sondas E2.5 y combinado
+Las 27 sondas dan rojo por aserción en el `it` que nombra la spec. Ninguna da rojo por consulta ni por excepción.
+
+| Sonda | `Tests:` | Matcher / sitio |
+|---|---|---|
+| S1, S2 | 2 failed, 62 passed, 64 total | `toEqual` |
+| S3 | 3 failed, 61 passed, 64 total | `toBe` ×2 + `toEqual` de imports |
+| S4 | 2 failed, 62 passed, 64 total | `toBe` |
+| S5, S6 | 1 failed, 63 passed, 64 total | `toContain` |
+| S7 | 2 failed, 62 passed, 64 total | `toEqual` + `not.toMatch` |
+| S8 | 1 failed, 63 passed, 64 total | `not.toMatch` |
+| S9 | 2 failed, 62 passed, 64 total | `toHaveLength` + `not.toMatch` |
+| S10 | 1 failed, 220 passed, 221 total | `toBe` `home-states` |
+| S11 | 1 failed, 66 passed, 67 total | `toBe`/`toEqual` de sitio |
+| S12, S18 | 1 failed, 62 passed, 63 total | `toBe` |
+| S13, S19 | 1 failed, 96 passed, 97 total | `toBe` de className |
+| S14 | 1 failed, 38 passed, 39 total | sitio alerts |
+| S15 | 1 failed, 33 passed, 34 total | `toBe` `screen-reminders` |
+| S16 | 1 failed, 15 passed, 16 total | sitio docs |
+| S17 | 1 failed, 50 passed, 51 total | sitio geofences |
+| S20 | 1 failed, 33 passed, 34 total | `toEqual` |
+| S21, S22 | 1 failed, 62 passed, 63 total | `toEqual` |
+| S23 | 1 failed, 63 passed, 64 total | `toBe`, `bytes[20] & 0x02`, fila `pingo-talk.webp` |
+| S24 | 2 failed, 62 passed, 64 total | `toBeUndefined` |
+| S25 | 2 failed, 62 passed, 64 total | `toBe` `root.type` |
+| S26 | 6 failed, 58 passed, 64 total | `toBeUndefined` className, las 6 poses |
+| S27 | 1 failed, 33 passed, 34 total | segundo `toEqual`, `slotWithError` |
+
+Codex reporta las mismas 27 líneas `Tests:` en impl §Reanudacion 3, cada una con limpio=0. No hay discrepancias.
+
+**Combinado G1+G2+G3+G4+NIMG.** Este mutante reúne las cuatro mutaciones:
+- raíz `<Text … style={{backgroundColor:"white",borderRadius:24}}>`
+- `className` en la Image
+- bit 0x02 encendido en el VP8X de `pingo-talk.webp`
+- vacío de reminders tras `actionError`
+
+Sobre empty-state + reminders da exit 1 con `Tests: 10 failed, 88 passed, 98 total`:
+- 1 × `bytes[20] & 0x02`
+- 6 × `image.props.className`
+- 2 × `root.type`
+- 1 × `slotWithError` `toEqual`
+
+No hay ningún fallo de suite ni de consulta. Es el rojo que predijo la re-pre-verificación: el combinado que en la ronda 1 pasaba en verde ahora cae.
+
+### 6. Barrido R3-R9 y R11
+Ahora que los tests son literales a la spec, el barrido de la pre-verificación y de la re-pre-verificación (B1-B5, G1-G4, NIMG) se mantiene. Además medí estas ramas candidatas nuevas en el árbol desechable:
+
+| Rama candidata | Cláusula | Mutante | Resultado |
+|---|---|---|---|
+| `alt` en expo-image | R3 «decorativa: sin `accessibilityLabel`» | `alt="Pingo"` en la Image | Rojo por aserción, `Tests: 6 failed, 58 passed, 64 total`. Las 6 poses fallan en `expect(image.props.accessibilityLabel).toBeUndefined()` con `Received: "Pingo"`, porque expo-image mapea `alt` a la etiqueta. Cubierta |
+| Contenedor animado en Inicio | R11 «sin animación» | `home-states` como `Animated.View entering={homeEntering(0, 0)}` | Rojo por aserción, `Tests: 4 failed, 217 passed, 221 total`. Caen `#152 R5 › no da entrada a home-states con home-empty`, más las de loading y error, por `enteringIds` = `[]`, y además el `toEqual` del safe area de R6. Cubierta por un candado previo |
+| Contenedor animado en Salud | R11 «sin animación» | `health-states` como `Animated.View entering={FadeIn}`, con import | Rojo por aserción, `Tests: 6 failed, 61 passed, 67 total`. Caen los 5 `it` de `#115 R2 … agrupa título y rama en health-states` y el de safe area: el `toEqual` del style recibe un array. Cubierta por un candado previo, aunque de rebote |
+
+Las otras pantallas no importan reanimated. R11 define «sin animación» con sus viñetas: el fuente de `EmptyState`, más el asset desde E2.3. Animar un contenedor de pantalla que ya existía antes de #155 y que comparten carga y error es una delimitación, no una rama de la cláusula. Ver N2.
+
+No queda ninguna rama ciega bloqueante.
+
+### 7. Historial
+Todos los commits de `adee148a..7d10fb25` son de solo tests, nombran el R-id y coinciden con la tabla del handoff §Reanudación 3:
+- `d84b47ae` R3: empty-state, +29/−1, con el import de View, el probe-frame y la línea de className
+- `d4063486` R11: +16, con la línea 0x02 tal como pide E2.3
+- `b4abfe7d` R4: home, health, food, map
+- `96bda091` R5: alerts
+- `5b24557c` R6: reminders
+- `bedbfb8f` R7: docs
+- `397bbc2e` R8: geofences
+- `2a589c65` R9: food
+
+Después viene `7d10fb25` `docs(...)`: trazabilidad, que solo toca impl y traceability.
+
+Los candados de E2 nacen verdes por diseño. Es la opción (b) de C4, que E2 declara antes del handoff y que está firmada. El rojo lo demuestran las 27 sondas y el combinado de §5, no el historial.
+
+### 8. Checklist C2-C8
+- **C2**
+  - [x] No hay ninguna feature `in_progress`: #155 sigue en `spec_ready` en `feature_list.json`, como en la ronda 1 (N3).
+  - [x] `progress/current.md` sigue describiendo la sesión activa de #155, pero va desfasado (N1).
+- **C3**
+  - [x] Sin cambios de producción desde la ronda 1, donde C3 quedó aprobado.
+- **C4**
+  - [x] Cada R-id tocado por E2 (R3-R9, R11) tiene `it` que lo nombran en el describe correspondiente.
+  - [x] Los candados nacen verdes por la opción (b); los cubren las sondas de §5.
+- **C5**
+  - [x] `traceability.md` solo tiene «pendiente» en R12 («lo firma el humano», precedente #152).
+  - [x] Los commits de E2 están añadidos a las filas R3-R9 y R11.
+  - [x] Los 28 hashes citados son ancestros de HEAD (`merge-base --is-ancestor`).
+  - [x] Los mensajes siguen el formato `test(mobile-empty-states): #155 R<n> …`.
+- **C6**
+  - [x] `requirements.md` dice `status: approved`, con las casillas de aprobación, E1 y E2 marcadas.
+  - [x] La firma de E2 está en `adee148a` («aprobada vía Notion»).
+  - [x] `requirements.md` y `tasks.md` no cambian desde `adee148a`.
+- **C7**
+  - [x] N/A: E2 no reemplaza nada.
+- **C8**
+  - [x] Cargué la skill `expo:expo-overview`.
+  - [x] Producción no cambia desde la ronda 1, donde C8 quedó aprobado salvo B1, que E2 cierra.
+  - [x] Las líneas añadidas no tienen hex, `StyleSheet` ni clases arbitrarias `[...]`. Las únicas clases que aparecen son tokens dentro de aserciones (`bg-accent`, `bg-background`). design-drift, que también escanea tests, y el lint salen verdes en init.sh.
+
+### 9. R12
+Pendiente. Es la prueba de humo del humano en un dev build de Android y su casilla «Smoke R12» de §Aprobación sigue en `[ ]`. #155 no pasa a done hasta que el humano la firme.
+
+### Observaciones
+Ninguna bloqueante.
+
+- **N1 (no bloqueante, la misma de la ronda 1):** `progress/current.md` sigue en el commit del handoff `d4e044b3`, con la cabecera «(P2, pending)». No menciona la ronda 1, E1, E2 ni la Reanudación 3. El leader lo pone al día al cerrar.
+- **N2 (delimitación, no bloqueante):** R11 no tiene un candado propio contra la animación del contenedor de pantalla. Las dos pantallas donde la medí caen por candados previos: Inicio por `#152 R5` (`enteringIds`) y Salud por el `toEqual` del style de `#115 R2`. En food, map, alerts, reminders, docs y geofences, una animación del padre anónimo que no cambiase la forma del style no la vería ningún `it` de #155. No es una rama de R11 tal como está escrita, porque sus viñetas limitan «sin animación» al fuente de `EmptyState` y al asset. Si el humano quiere un vacío estático en cualquier pantalla, sería deuda que registrar, no un hueco de esta spec.
