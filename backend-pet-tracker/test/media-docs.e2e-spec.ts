@@ -133,6 +133,16 @@ describe('Pet documents API (e2e)', () => {
       .send(body);
   }
 
+  function confirmDocument(
+    user: UserFixture,
+    petId: string,
+    documentId: string,
+  ) {
+    return api()
+      .post(`/v1/pets/${petId}/media/${documentId}/confirm`)
+      .set(auth(user.token));
+  }
+
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
@@ -398,6 +408,238 @@ describe('Pet documents API (e2e)', () => {
     });
   });
 
+  describe('#157 R5: confirmar marca el documento como subido', () => {
+    it('#157 R5: el owner confirma un pendiente subido: 204 sin cuerpo, uploaded_at no nulo y aparece en GET', async () => {
+      const owner = await seedUser('157-r5-owner');
+      const pet = await seedPet(owner);
+      const created = await createDocument(owner, pet.id, {
+        type: 'Consulta',
+        name: 'Control',
+        date: '2026-10-08',
+      }).expect(201);
+      const body = created.body as {
+        document: DocumentResponse;
+        uploadUrl: string;
+      };
+      const put = await fetch(body.uploadUrl, {
+        method: 'PUT',
+        body: Buffer.from('confirmed document'),
+      });
+      expect(put.status).toBeGreaterThanOrEqual(200);
+      expect(put.status).toBeLessThan(300);
+
+      const confirmed = await confirmDocument(
+        owner,
+        pet.id,
+        body.document.id,
+      ).expect(204);
+      expect(confirmed.text).toBe('');
+      const [stored] = await db
+        .select()
+        .from(petDocuments)
+        .where(eq(petDocuments.id, body.document.id));
+      expect(stored.uploadedAt).toBeInstanceOf(Date);
+      const listed = await listDocuments(owner, pet.id).expect(200);
+      expect(
+        (listed.body as DocumentResponse[]).map((item) => item.id),
+      ).toEqual([body.document.id]);
+    });
+
+    it('#157 R5: un segundo confirm responde 204 y no cambia uploaded_at', async () => {
+      const owner = await seedUser('157-r5-idempotent-owner');
+      const pet = await seedPet(owner);
+      const created = await createDocument(owner, pet.id, {
+        type: 'Consulta',
+        name: 'Control idempotente',
+        date: '2026-10-08',
+      }).expect(201);
+      const body = created.body as {
+        document: DocumentResponse;
+        uploadUrl: string;
+      };
+      const put = await fetch(body.uploadUrl, {
+        method: 'PUT',
+        body: Buffer.from('idempotent document'),
+      });
+      expect(put.status).toBeGreaterThanOrEqual(200);
+      expect(put.status).toBeLessThan(300);
+
+      await confirmDocument(owner, pet.id, body.document.id).expect(204);
+      const [first] = await db
+        .select()
+        .from(petDocuments)
+        .where(eq(petDocuments.id, body.document.id));
+      expect(first.uploadedAt).toBeInstanceOf(Date);
+      await confirmDocument(owner, pet.id, body.document.id).expect(204);
+      const [second] = await db
+        .select()
+        .from(petDocuments)
+        .where(eq(petDocuments.id, body.document.id));
+      expect(second.uploadedAt?.getTime()).toBe(first.uploadedAt?.getTime());
+    });
+  });
+
+  describe('#157 R6: confirmar rechaza sin escribir', () => {
+    it('#157 R6 (a): documentId malformado responde 404 PET_DOCUMENT_NOT_FOUND', async () => {
+      const owner = await seedUser('157-r6-a-owner');
+      const pet = await seedPet(owner);
+      const document = await seedDocument(pet.id, owner.id, {
+        date: '2026-10-08',
+      });
+      const response = await confirmDocument(
+        owner,
+        pet.id,
+        'not-a-uuid',
+      ).expect(404);
+      expect(response.body).toEqual({
+        statusCode: 404,
+        code: 'PET_DOCUMENT_NOT_FOUND',
+        message: 'Pet document not found',
+      });
+      const [stored] = await db
+        .select()
+        .from(petDocuments)
+        .where(eq(petDocuments.id, document.id));
+      expect(stored.uploadedAt).toBeNull();
+    });
+
+    it('#157 R6 (b): documentId inexistente responde el mismo 404', async () => {
+      const owner = await seedUser('157-r6-b-owner');
+      const pet = await seedPet(owner);
+      const document = await seedDocument(pet.id, owner.id, {
+        date: '2026-10-08',
+      });
+      const response = await confirmDocument(owner, pet.id, uuidv7()).expect(
+        404,
+      );
+      expect(response.body).toEqual({
+        statusCode: 404,
+        code: 'PET_DOCUMENT_NOT_FOUND',
+        message: 'Pet document not found',
+      });
+      const [stored] = await db
+        .select()
+        .from(petDocuments)
+        .where(eq(petDocuments.id, document.id));
+      expect(stored.uploadedAt).toBeNull();
+    });
+
+    it('#157 R6 (c): documento de otra mascota responde el mismo 404 y no se marca', async () => {
+      const owner = await seedUser('157-r6-c-owner');
+      const pet = await seedPet(owner);
+      const otherPet = await seedPet(owner);
+      const created = await createDocument(owner, otherPet.id, {
+        type: 'Consulta',
+        name: 'Documento ajeno',
+        date: '2026-10-08',
+      }).expect(201);
+      const body = created.body as {
+        document: DocumentResponse;
+        uploadUrl: string;
+      };
+      const put = await fetch(body.uploadUrl, {
+        method: 'PUT',
+        body: Buffer.from('other pet document'),
+      });
+      expect(put.status).toBeGreaterThanOrEqual(200);
+      expect(put.status).toBeLessThan(300);
+      const response = await confirmDocument(
+        owner,
+        pet.id,
+        body.document.id,
+      ).expect(404);
+      expect(response.body).toEqual({
+        statusCode: 404,
+        code: 'PET_DOCUMENT_NOT_FOUND',
+        message: 'Pet document not found',
+      });
+      const [stored] = await db
+        .select()
+        .from(petDocuments)
+        .where(eq(petDocuments.id, body.document.id));
+      expect(stored.uploadedAt).toBeNull();
+    });
+
+    it('#157 R6 (d): objeto ausente responde 409 PET_DOCUMENT_NOT_UPLOADED', async () => {
+      const owner = await seedUser('157-r6-d-owner');
+      const pet = await seedPet(owner);
+      const document = await seedDocument(pet.id, owner.id, {
+        date: '2026-10-08',
+      });
+      const response = await confirmDocument(owner, pet.id, document.id).expect(
+        409,
+      );
+      expect(response.body).toEqual({
+        statusCode: 409,
+        code: 'PET_DOCUMENT_NOT_UPLOADED',
+        message: 'Pet document file not found in storage',
+      });
+      const [stored] = await db
+        .select()
+        .from(petDocuments)
+        .where(eq(petDocuments.id, document.id));
+      expect(stored.uploadedAt).toBeNull();
+    });
+
+    it.each(['family', 'walker', 'vet'] as const)(
+      '#157 R6 (e): %s recibe 403 aunque el objeto exista',
+      async (role) => {
+        const owner = await seedUser(`157-r6-e-owner-${role}`);
+        const member = await seedUser(`157-r6-e-member-${role}`);
+        const pet = await seedPet(owner);
+        await seedMembership(pet.id, member.id, role);
+        const created = await createDocument(owner, pet.id, {
+          type: 'Consulta',
+          name: 'Documento del owner',
+          date: '2026-10-08',
+        }).expect(201);
+        const body = created.body as {
+          document: DocumentResponse;
+          uploadUrl: string;
+        };
+        const put = await fetch(body.uploadUrl, {
+          method: 'PUT',
+          body: Buffer.from(`document for ${role}`),
+        });
+        expect(put.status).toBeGreaterThanOrEqual(200);
+        expect(put.status).toBeLessThan(300);
+        await confirmDocument(member, pet.id, body.document.id).expect(403);
+        const [stored] = await db
+          .select()
+          .from(petDocuments)
+          .where(eq(petDocuments.id, body.document.id));
+        expect(stored.uploadedAt).toBeNull();
+      },
+    );
+
+    it('#157 R6 (f): no-miembro, mascota inexistente y :petId malformado reciben el 404 del guard', async () => {
+      const owner = await seedUser('157-r6-f-owner');
+      const outsider = await seedUser('157-r6-f-outsider');
+      const pet = await seedPet(owner);
+      const document = await seedDocument(pet.id, owner.id, {
+        date: '2026-10-08',
+      });
+      for (const [user, petId] of [
+        [outsider, pet.id],
+        [owner, uuidv7()],
+        [owner, 'not-a-uuid'],
+      ] as const) {
+        const response = await confirmDocument(user, petId, document.id).expect(
+          404,
+        );
+        expect(response.body).toEqual({
+          statusCode: 404,
+          message: 'Not Found',
+        });
+      }
+      const [stored] = await db
+        .select()
+        .from(petDocuments)
+        .where(eq(petDocuments.id, document.id));
+      expect(stored.uploadedAt).toBeNull();
+    });
+  });
+
   describe('R3: flujo end-to-end POST → PUT → GET contra LocalStack', () => {
     it('sube bytes sin Authorization, conserva el documento y permite leer el objeto por key', async () => {
       const owner = await seedUser('r3-owner');
@@ -423,6 +665,8 @@ describe('Pet documents API (e2e)', () => {
       });
       expect(putResponse.status).toBeGreaterThanOrEqual(200);
       expect(putResponse.status).toBeLessThan(300);
+
+      await confirmDocument(owner, pet.id, createdBody.document.id).expect(204);
 
       const listed = await listDocuments(owner, pet.id).expect(200);
       expect(listed.body).toEqual([createdBody.document]);
