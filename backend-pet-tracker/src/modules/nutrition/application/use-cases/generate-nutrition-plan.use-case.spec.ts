@@ -193,3 +193,42 @@ describe('R14 (nutrition-ai-explainer #18): entitlement decide la explicacion si
     expect(f.explain).toHaveBeenCalledTimes(1);
   });
 });
+
+describe('R15 (nutrition-ai-explainer #18): reintenta el hash hit con null sobre la misma fila', () => {
+  it('entitlement true y texto actualiza la misma fila usando su horario editado', async () => {
+    const latest = setup().inserted;
+    const f = setup('texto', true, latest);
+    const plan = await f.useCase.execute(petId);
+    expect(f.explain).toHaveBeenCalledTimes(1);
+    expect(f.explain.mock.calls[0][1]).toEqual({
+      rerKcal: 662,
+      merKcal: 1059,
+      dailyGrams: 305,
+      mealsPerDay: 3,
+      mealTimes: ['08:00', '14:00', '22:00'],
+      objective: 'maintenance',
+      warnings: [],
+    });
+    expect(f.explain.mock.calls[0][2]).toEqual({ petId, planId: latest.id });
+    expect(f.setAiExplanation).toHaveBeenCalledWith(latest.id, 'texto');
+    expect(f.insertPlan).not.toHaveBeenCalled();
+    expect(plan).toBe(f.updated);
+    expect(plan.id).toBe(latest.id);
+  });
+  it('entitlement true y null devuelve latest sin insertar ni actualizar', async () => {
+    const latest = setup().inserted;
+    const f = setup(null, true, latest);
+    expect(await f.useCase.execute(petId)).toBe(latest);
+    expect(f.explain).toHaveBeenCalledTimes(1);
+    expect(f.setAiExplanation).not.toHaveBeenCalled();
+    expect(f.insertPlan).not.toHaveBeenCalled();
+  });
+  it('entitlement false no explica, actualiza ni inserta', async () => {
+    const latest = setup().inserted;
+    const f = setup('texto', false, latest);
+    expect(await f.useCase.execute(petId)).toBe(latest);
+    expect(f.explain).not.toHaveBeenCalled();
+    expect(f.setAiExplanation).not.toHaveBeenCalled();
+    expect(f.insertPlan).not.toHaveBeenCalled();
+  });
+});
