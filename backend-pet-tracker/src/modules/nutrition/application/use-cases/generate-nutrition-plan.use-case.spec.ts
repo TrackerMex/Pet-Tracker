@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import type {
   NutritionEngineInput,
   NutritionPlanResult,
@@ -164,5 +165,31 @@ describe('R12 (nutrition-ai-explainer #18): inserta antes de explicar y devuelve
       objective: 'maintenance',
       warnings: [],
     });
+  });
+});
+
+describe('R14 (nutrition-ai-explainer #18): entitlement decide la explicacion sin muro de pago ni log', () => {
+  afterEach(() => jest.restoreAllMocks());
+  it('sin entitlement devuelve el plan completo sin IA, UPDATE, warn ni error', async () => {
+    const warn = jest
+      .spyOn(Logger.prototype, 'warn')
+      .mockImplementation(() => undefined);
+    const error = jest
+      .spyOn(Logger.prototype, 'error')
+      .mockImplementation(() => undefined);
+    const f = setup('texto', false);
+    const plan = await f.useCase.execute(petId);
+    expect(f.isPetTracked).toHaveBeenCalledWith(petId);
+    expect(f.explain).not.toHaveBeenCalled();
+    expect(f.setAiExplanation).not.toHaveBeenCalled();
+    expect(plan).toBe(f.inserted);
+    expect(plan.aiExplanation).toBeNull();
+    expect(warn).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
+  });
+  it('anti-vacio: con entitlement llama una vez y devuelve texto', async () => {
+    const f = setup('texto', true);
+    expect((await f.useCase.execute(petId)).aiExplanation).toBe('texto');
+    expect(f.explain).toHaveBeenCalledTimes(1);
   });
 });
