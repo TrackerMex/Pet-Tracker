@@ -3,7 +3,9 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
   HttpStatus,
+  Param,
   Post,
   Req,
   UseGuards,
@@ -13,10 +15,14 @@ import {
   CreatePetDocumentDto,
   CreatePetDocumentSchema,
 } from '@/modules/media/application/dto/create-pet-document.dto';
+import { ConfirmPetDocumentUploadUseCase } from '@/modules/media/application/use-cases/confirm-pet-document-upload.use-case';
 import { CreatePetDocumentUseCase } from '@/modules/media/application/use-cases/create-pet-document.use-case';
 import { ListPetDocumentsUseCase } from '@/modules/media/application/use-cases/list-pet-documents.use-case';
+import { mapPetDocumentError } from '@/modules/media/infrastructure/mappers/pet-document-error.mapper';
 import {
+  PetDocumentListItemResponse,
   PetDocumentResponse,
+  toPetDocumentListItemResponse,
   toPetDocumentResponse,
 } from '@/modules/media/infrastructure/mappers/pet-document.mapper';
 import { RequirePetRole } from '@/modules/pets/infrastructure/decorators/require-pet-role.decorator';
@@ -29,13 +35,33 @@ export class PetMediaController {
   constructor(
     private readonly listPetDocuments: ListPetDocumentsUseCase,
     private readonly createPetDocument: CreatePetDocumentUseCase,
+    private readonly confirmPetDocumentUpload: ConfirmPetDocumentUploadUseCase,
   ) {}
 
   @Get()
-  async list(@Req() request: PetAccessRequest): Promise<PetDocumentResponse[]> {
+  async list(
+    @Req() request: PetAccessRequest,
+  ): Promise<PetDocumentListItemResponse[]> {
     return (
       await this.listPetDocuments.execute(request.petMembership.petId)
-    ).map(toPetDocumentResponse);
+    ).map(toPetDocumentListItemResponse);
+  }
+
+  @Post(':documentId/confirm')
+  @RequirePetRole('owner')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async confirm(
+    @Req() request: PetAccessRequest,
+    @Param('documentId') documentId: string,
+  ): Promise<void> {
+    try {
+      await this.confirmPetDocumentUpload.execute(
+        request.petMembership.petId,
+        documentId,
+      );
+    } catch (error) {
+      throw mapPetDocumentError(error);
+    }
   }
 
   @Post()

@@ -1,0 +1,1 @@
+ALTER TABLE "pet_documents" ADD COLUMN "uploaded_at" timestamp with time zone;

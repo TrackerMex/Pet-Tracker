@@ -1,10 +1,10 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-10-08
-**Features completadas**: 145/154 (`feature_list.json`)
-**En progreso**: ninguna en esta rama. #153 cerrada en `feature/153-mobile-welcome-pingo`, PR pendiente de merge humano.
+**Features completadas**: 146/160 (`feature_list.json`)
+**En progreso**: ninguna en esta rama. #157 cerrada en `feature/157-media-docs-download-api`, PR pendiente de merge humano.
 
-**Pendientes**: 9 (#18, #60, #119, #129, #134, #144, #150, #151 y #154). **#153 `mobile-welcome-pingo` cerrada**: la bienvenida sin sesión estrena a Pingo, la mascota. Una escena (`Card` secundaria) con un bocadillo que dice el saludo en la voz «guardián sereno» (`welcome.pingoGreeting`, en/es) sustituye al logo; la voz queda escrita en el punto 7 de la carta. Las dos poses entran como WebP con alfa (`pingo-wave` y `pingo-wave-blink`). Pingo entra con un muelle de escala, flota ±4 px en un ciclo de 2,4 s y parpadea cada 4 s con un cambio de pose instantáneo; las cinco constantes nuevas viven en `src/theme/motion.ts`. Con Reduce Motion solo queda el fundido. El CTA primario gana un labio inferior (`border-b-4 border-black/25`) solo en el sitio de uso. La Enmienda E1 retira `WELCOME_ENTRANCE_MS` de la migración pendiente de la carta. Cero dependencias nuevas. Móvil 96/2235 → 96/2275. Codex test-primero en 27 commits (una parada en T2 por un error de la cadena del handoff, TS2724, corregida en `1f18d037`). Reviewer APROBADO a la primera (`930f282b`): 6 sondas obligatorias y unas 45 propias caen; las vivas son W9 (equivalente) y P3/P4 (R3 no distingue el contenido de los dos WebP, verificado por sha256 y cubierto por el smoke). Prueba de humo en el dev build de Android firmada por el humano (`78df9b08`).
+**Pendientes**: 14 (#18, #60, #119, #129, #134, #144, #150, #151, #154, #158, #159, #160, #161 y #162). **#157 `media-docs-download-api` cerrada**: los documentos de una mascota ganan estado de subida y URL de descarga. `pet_documents` gana `uploaded_at` (migración 0019, nullable y sin backfill: las filas existentes quedan pendientes). El POST crea el documento pendiente. `POST /v1/pets/:petId/media/:documentId/confirm` (solo owner, 204) lo marca subido tras un `HeadObject` al bucket y es idempotente; si el objeto no está, responde 409 `PET_DOCUMENT_NOT_UPLOADED`. El GET lista solo los confirmados, y cada elemento trae `downloadUrl`, una URL GET prefirmada de 3600 s, para los cuatro roles. El cuerpo del POST no cambia y el móvil desplegado tolera la clave nueva. Q1 (coste en modo aws) autorizada por el humano; deudas #160 (IAM mínimo del bucket, incluido el 403 sin `s3:ListBucket`) y #161 (límite de tamaño en el confirm). Codex test-primero en 12 commits (una parada en c10 por ESLint, corregida en `771460af`). Reviewer APROBADO a la primera; las 3 sondas vivas (P4, P10, P16) y la carrera de `markUploaded` van a la deuda #162 (candados de test, por decisión del humano). Backend unit 176/1348 → 179/1361, e2e 438 → 459 tests verdes.
 
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
@@ -88,6 +88,12 @@ debe listar las 4 URLs de cola.
 
 ## Estado actual
 
+- **`media-docs-download-api` (#157) done** (2026-10-08, worktree
+  `Pet-Tracker-wt-157`, sesion Frontend): estado de subida (`uploaded_at`,
+  migración 0019), `POST .../:documentId/confirm` con `HeadObject` y
+  `downloadUrl` prefirmada de 3600 s en el GET. Reviewer aprobado a la
+  primera. Gate: `./init.sh` exit 0 (backend 179/1361, móvil 96/2275,
+  e2e 29 de 32 suites, 459 tests). PR abierta.
 - **`mobile-welcome-pingo` (#153) done** (2026-10-08, worktree
   `Pet-Tracker-wt-153`, sesion Frontend): bienvenida con Pingo, bocadillo con
   su saludo, labio en el CTA primario y entrada, flotación y parpadeo con las
@@ -1389,6 +1395,13 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Última sesión
+
+- **2026-10-08** — **#157 `media-docs-download-api` cerrada** (worktree
+  `Pet-Tracker-wt-157`, sesión Frontend, que heredó la coordinación de
+  Backend): spec firmada desde Notion (`ef0b256d`, `dd16ee7c`), Q1 y deudas
+  #160/#161 (`eae547bf`), dos correcciones del handoff (`7931f528`,
+  `771460af`), Codex en una ronda y reviewer APROBADO a la primera. PR
+  abierta; siguiente: merge humano.
 
 - **2026-10-08** — **#153 `mobile-welcome-pingo` cerrada** (worktree
   `Pet-Tracker-wt-153`, sesión Frontend): spec firmada desde Notion

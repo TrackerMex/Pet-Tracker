@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfirmPetDocumentUploadUseCase } from '@/modules/media/application/use-cases/confirm-pet-document-upload.use-case';
 import { CreatePetDocumentUseCase } from '@/modules/media/application/use-cases/create-pet-document.use-case';
 import { ListPetDocumentsUseCase } from '@/modules/media/application/use-cases/list-pet-documents.use-case';
 import { PET_DOCUMENT_REPOSITORY } from '@/modules/media/domain/repositories/pet-document.repository';
@@ -21,6 +22,7 @@ import { PetPhotoReadModule } from './pet-photo-read.module';
   providers: [
     RequestPhotoUploadUrlUseCase,
     CreatePetDocumentUseCase,
+    ConfirmPetDocumentUploadUseCase,
     ListPetDocumentsUseCase,
     {
       provide: PET_DOCUMENT_REPOSITORY,
