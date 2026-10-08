@@ -352,12 +352,13 @@ lleva su testID, un `EmptyState` con:
 - `pose="talk"`;
 - `title={t('common.noPetsYet')}`;
 - `body={t('common.noPetsBody')}`;
-- `action={{ label: t('profile.addPet'), onPress: () => router.push('/pets/add' as Href) }}`.
+- `action={{ label: t('profile.addPet'), onPress: () => router.push('/pets/add') }}` (sin cast; enmienda E1).
 
 El padre del `Text` sustituido no cambia. En el mapa, el `EmptyState` queda
 dentro del `View` `flex-1 items-center justify-center p-6 bg-background` que
-ya envuelve hoy a `map-no-pets`. Las pantallas que aún no importan `router`
-o `type Href` de `expo-router` los importan. En Inicio, el `router.push`
+ya envuelve hoy a `map-no-pets`. Solo el mapa importa `router` de
+`expo-router`, que aún no tiene; ninguna pantalla añade `type Href`
+(enmienda E1). En Inicio, el `router.push`
 nuevo no va dentro de `QUICK_ACTIONS`: el test de Inicio prohíbe
 `'/pets/add'` en ese bloque.
 
@@ -693,6 +694,7 @@ Ninguna es deuda.
 - [x] Aprobado por humano (fecha: 2026-10-08) ← gate obligatorio antes de implementar
 - [x] Clasificación, poses (A1, A2, A9) y copy final (A7, A8) aprobados (fecha: 2026-10-08)
 - [ ] Smoke R12 superado en dev build de Android (fecha: ____)
+- [ ] Enmienda E1 aprobada (fecha: ____) ← gate de la enmienda; Codex no reanuda T4 sin ella
 
 ## Premisas falsas
 
@@ -709,3 +711,52 @@ Hechos de la descripción de #155 o del explore que no cuadran con el árbol.
   spec toma de #153 (punto 7 de la carta, las constantes de movimiento, la
   clave `welcome.pingoGreeting`, §2.20, el candado de poses y el
   `+ 1, // #153 R1` del catálogo) sale de su texto y se re-verifica al merge.
+
+## Enmienda E1 — el CTA de R4 sin cast `as Href` (2026-10-08)
+
+**Qué paró.** Codex se detuvo en T4 verde: `src/screens/home/index.test.tsx`
+dio 1 fallo de 220 tests. No falló ningún test de #155, sino un candado
+anterior, el `it` `lleva a la lista de recordatorios existente` del describe
+`#70 R10: enlace a la lista de recordatorios`. Ese candado asevera
+`expect(source).not.toMatch(/import\s*\{[^}]*\bHref\b[^}]*\}\s*from/)`
+sobre `src/screens/home/index.tsx`, y el `it` `#121 R1: usa la ruta real sin
+cast Href…` del mismo fichero va en la misma línea. R4 prescribía
+`router.push('/pets/add' as Href)` y el import de `type Href` en Inicio, y
+eso es justo lo que el candado prohíbe. La spec no lo vio: es un candado
+por fichero, no uno de los inventarios globales que revisó.
+
+**Premisa medida en `0c236ef4`, el commit rojo de T4.** El cast no hace
+falta.
+- `/pets/add` es una ruta real: existe `src/app/pets/add.tsx`.
+- Inicio ya empuja rutas literales sin cast: `router.push('/alerts')` y
+  `router.push('/reminders')`.
+- Salud también: `router.push('/weight-log')`.
+- Solo Comida usa `as Href`, en `/meal-schedule` y `/meals-history`, y ya
+  importa `router` y `type Href` para esas dos rutas.
+
+**E1.1. La acción de R4, en las cuatro pantallas.** Queda
+`onPress: () => router.push('/pets/add')`, sin cast. Esto aplica a Inicio,
+Salud, Comida y Mapa. Así el código sigue la línea de #121 R1 y es igual
+en las cuatro. En Comida, el import de `type Href` sigue igual: lo usan las
+dos rutas ajenas a #155.
+
+**E1.2. Imports.** Solo `src/screens/map/index.tsx` añade algo: `router`
+al import de `expo-router` que ya existe (`useFocusEffect`). Ninguna
+pantalla añade `type Href`. El candado de #70 R10 no se toca ni se relaja.
+
+**E1.3. Tests.** Ninguno de R4 cambia: los cuatro aseveran
+`mockRouter.push` con `'/pets/add'`, y eso sigue siendo cierto. El commit
+rojo `0c236ef4` sigue valiendo. Cuentas de T4 verde sin cambios: 441 tests
+en los cuatro ficheros y 174 en GUARDAS.
+
+**E1.4. Anclas tras T4 verde**, medidas con `grep` desde `mobile-pet-tracker/`:
+- `grep -cF "router.push('/pets/add')"` da `1` en cada uno de los cuatro
+  ficheros de pantalla.
+- `grep -cF "'/pets/add' as Href"` da `0` en cada uno.
+- `grep -cE "import \{[^}]*\bHref\b" src/screens/home/index.tsx src/screens/health/index.tsx src/screens/map/index.tsx`
+  da `0` en los tres.
+
+**E1.5. Riesgo.** Si `bun run typecheck` rechaza `'/pets/add'` sin cast,
+con `.expo/types/router.d.ts` ausente como exige la cadena, Codex PARA y
+copia el error. No vuelve al cast por su cuenta.
+

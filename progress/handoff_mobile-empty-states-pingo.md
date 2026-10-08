@@ -755,3 +755,66 @@ Que haces:
 Este commit de reanudacion solo toca progress/handoff_mobile-empty-states-pingo.md,
 que la lista cerrada del Cierre ya excluye.
 ```
+
+---
+
+## Reanudación 2 (2026-10-08, tras la parada en T4 verde)
+
+> Pegar en Codex CLI: «Lee la sección Reanudación 2 de
+> progress/handoff_mobile-empty-states-pingo.md y continúa».
+
+```
+Worktree: /home/claude/sites/Pet-Tracker-wt-155   <- el mismo. No cambies de branch.
+
+Causa de la parada: la spec chocaba con un candado anterior. En Inicio, el
+`it` «lleva a la lista de recordatorios existente» (describe #70 R10)
+prohibe importar Href en src/screens/home/index.tsx, y R4 prescribia
+`'/pets/add' as Href`. Paraste bien. El leader enmendo la spec: es la
+seccion «Enmienda E1» al final de specs/mobile-empty-states-pingo/requirements.md.
+Leela entera antes de tocar nada.
+
+0. Precondicion: el humano firma E1. Desde la raiz del worktree:
+     grep -cF -- '- [x] Enmienda E1 aprobada' specs/mobile-empty-states-pingo/requirements.md   -> 1
+   Si da 0, PARA: la enmienda aun no esta aprobada.
+
+1. Estado. Desde la raiz:
+     git status --short
+   Debe dar exactamente tus cuatro ficheros de T4 sin commitear:
+      M 'mobile-pet-tracker/src/app/(tabs)/food.tsx'
+      M mobile-pet-tracker/src/screens/health/index.tsx
+      M mobile-pet-tracker/src/screens/home/index.tsx
+      M mobile-pet-tracker/src/screens/map/index.tsx
+   mas `?? progress/impl_mobile-empty-states-pingo.md`. Y
+     git diff --name-only 0c236ef4 HEAD
+   solo debe listar ficheros de specs/ y progress/: son commits del leader
+   y del humano. Si no, PARA.
+
+2. Arreglo, sobre esos cuatro ficheros:
+   - En los cuatro, `router.push('/pets/add' as Href)` pasa a
+     `router.push('/pets/add')`.
+   - En home, health y map, quita `type Href` del import de 'expo-router'
+     que anadiste en T4. Quedan asi:
+       home:   import { router, useFocusEffect } from 'expo-router';
+       health: import { router } from 'expo-router';
+       map:    import { router, useFocusEffect } from 'expo-router';
+   - En food.tsx no toques el import: `type Href` lo usan /meal-schedule
+     y /meals-history.
+   - El candado de #70 R10 y los tests de R4 no se tocan.
+
+3. Anclas E1.4, desde mobile-pet-tracker/:
+     for f in src/screens/home/index.tsx src/screens/health/index.tsx 'src/app/(tabs)/food.tsx' src/screens/map/index.tsx; do grep -cF "router.push('/pets/add')" "$f"; done   -> 1 1 1 1
+     for f in src/screens/home/index.tsx src/screens/health/index.tsx 'src/app/(tabs)/food.tsx' src/screens/map/index.tsx; do grep -cF "'/pets/add' as Href" "$f"; done   -> 0 0 0 0
+     grep -chE "import \{[^}]*\bHref\b" src/screens/home/index.tsx src/screens/health/index.tsx src/screens/map/index.tsx   -> 0 0 0
+   Copia las salidas al impl. Si alguna no cuadra, PARA.
+
+4. Repite la cadena de T4 verde TAL CUAL esta en el handoff (441 tests y
+   174 de GUARDAS; incluye typecheck y lint) y sigue con T5-T11 y el Cierre
+   sin cambios. Si typecheck rechaza '/pets/add' sin cast, PARA, copia el
+   error y no vuelvas al cast (E1.5).
+
+5. En el impl, anade una seccion «Reanudacion 2» con estos pasos. Sigue la
+   regla de recorte de Received de la Reanudacion 1.
+
+Este commit solo toca requirements.md, tasks.md y este handoff. La lista
+cerrada del Cierre excluye los tres.
+```

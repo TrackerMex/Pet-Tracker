@@ -200,7 +200,7 @@ y filas de `ui-copy-table.ts`.
   y `checkUses` de los cuatro bloques (filas sin su `t()`). Commit
   `test(mobile-empty-states): #155 R4 red sin mascotas`.
 - [ ] (2) Implementación mínima: el `EmptyState` de R4 en las cuatro
-  pantallas, con los imports de `router` y `type Href` que falten. Mide en
+  pantallas, `router.push('/pets/add')` sin cast; solo el mapa añade `router` (enmienda E1). Mide en
   verde, sin pipe: los cuatro tests de pantalla (Comida con la ruta
   escapada) y `src/__tests__/ui-language.test.ts`. Commit
   `feat(mobile-empty-states): #155 R4 sin mascotas`.
