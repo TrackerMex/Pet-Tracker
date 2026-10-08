@@ -7,6 +7,7 @@ import Animated, {
   useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
+  withRepeat,
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
@@ -16,7 +17,7 @@ import { ForkKnife, Map, Stethoscope } from 'reicon-react-native';
 import { Card } from '../../components/card';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
-import { MOTION_FADE_TIMING, MOTION_SETTLE_SPRING, MOTION_ENTRANCE_OFFSET_Y, MOTION_ENTRANCE_SCALE } from '../../theme/motion';
+import { MOTION_FADE_TIMING, MOTION_SETTLE_SPRING, MOTION_ENTRANCE_OFFSET_Y, MOTION_ENTRANCE_SCALE, MOTION_FLOAT_OFFSET_Y, MOTION_FLOAT_TIMING } from '../../theme/motion';
 import { useThemeColors } from '../../theme/use-theme-colors';
 
 const WELCOME_CHIPS = [
@@ -50,8 +51,9 @@ export function WelcomeScreen() {
     if (!reduceMotion) {
       translateY.set(withSpring(0, MOTION_SETTLE_SPRING));
       pingoScale.set(withSpring(1, MOTION_SETTLE_SPRING));
+      pingoFloatY.set(withRepeat(withTiming(-MOTION_FLOAT_OFFSET_Y, MOTION_FLOAT_TIMING), -1, true));
     }
-  }, [opacity, translateY, reduceMotion, pingoScale]);
+  }, [opacity, translateY, reduceMotion, pingoScale, pingoFloatY]);
 
   if (status === 'authenticated') return <Redirect href="/home" />;
 
