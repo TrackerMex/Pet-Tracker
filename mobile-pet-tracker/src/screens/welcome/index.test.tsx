@@ -131,20 +131,17 @@ describe('R5', () => {
     const children = screen.getByTestId('welcome-content').children as TestInstance[];
     expect(children).toHaveLength(7);
     expect(children.map((child) => child.props.testID)).toEqual([
-      'welcome-hero', 'welcome-brand', 'welcome-chips', 'welcome-tagline',
+      'welcome-scene', 'welcome-chips', 'welcome-brand', 'welcome-tagline',
       'welcome-get-started', 'welcome-have-account', 'welcome-legal',
     ]);
   });
 
-  it('pinta hero, marca, tagline y legal con sus clases', async () => {
+  it('pinta marca, tagline y legal con sus clases', async () => {
     await renderWelcome();
     expect(screen.getByTestId('welcome-brand').props.className).toBe('text-3xl font-bold text-foreground');
     expect(screen.getByTestId('welcome-tagline').props.className).toBe('text-center text-base text-muted');
     expect(screen.getByTestId('welcome-legal').props.className).toBe('text-center text-xs text-muted');
     expect(StyleSheet.flatten(screen.getByTestId('welcome-content').props.style)).toMatchObject({ alignItems: 'center', gap: 16 });
-    expect(screen.getByTestId('welcome-hero').props.contentFit).toBe('contain');
-    expect(screen.getByTestId('welcome-hero').props.style).toEqual({ width: 160, height: 160 });
-    expect(screen.getByTestId('welcome-hero').props.source).toEqual([expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/splash-icon\.png$/) })]);
   });
 });
 
@@ -424,9 +421,59 @@ describe('#153 R1: el saludo de Pingo existe en los dos idiomas', () => {
     }
   });
 
+  it('pinta el saludo en el bocadillo en español', async () => {
+    await renderWelcome('es');
+    expect(screen.getByText('Hola, soy Pingo. Te ayudo a saber dónde está y cómo está tu mascota.').props.testID).toBe('welcome-bubble-text');
+  });
+
+  it('pinta el saludo en el bocadillo en inglés', async () => {
+    await renderWelcome('en');
+    expect(screen.getByText('Hi, I\'m Pingo. I\'ll help you know where your pet is and how they\'re doing.').props.testID).toBe('welcome-bubble-text');
+  });
+
   it('registra la clave en la tabla de mobile-ui-language', () => {
     const design = readFileSync(join(process.cwd(), '..', 'specs', 'mobile-ui-language', 'design.md'), 'utf8');
     expect(design).toContain('### §2.20 — Añadidos por #153 — Pingo en la bienvenida');
     expect(design).toMatch(new RegExp('\\| — \\| `welcome\\.pingoGreeting`[^\\n]*← añadida por #153 \\(R1\\)'));
+  });
+});
+
+
+describe('#153 R5: la escena de Pingo sustituye al logo', () => {
+  it('apila la escena y los seis bloques de #118 en orden', async () => {
+    await renderWelcome();
+    const children = screen.getByTestId('welcome-content').children as TestInstance[];
+    expect(children).toHaveLength(7);
+    expect(children.map((child) => child.props.testID)).toEqual([
+      'welcome-scene', 'welcome-chips', 'welcome-brand', 'welcome-tagline',
+      'welcome-get-started', 'welcome-have-account', 'welcome-legal',
+    ]);
+  });
+
+  it('ya no pinta el logo', async () => {
+    await renderWelcome();
+    expect(screen.getByTestId('welcome-content')).toBeOnTheScreen();
+    expect(screen.queryByTestId('welcome-hero')).toBeNull();
+    expect(readSource('screens/welcome/index.tsx')).not.toContain('splash-icon');
+  });
+
+  it('pinta la escena como card secundaria con el bocadillo y Pingo', async () => {
+    await renderWelcome();
+    const scene = screen.getByTestId('welcome-scene');
+    expect(scene.props.className.split(' ')).toEqual(expect.arrayContaining([
+      'rounded-card', 'bg-surface-secondary', 'w-full', 'items-center', 'gap-3', 'py-6',
+    ]));
+    expect((scene.children as TestInstance[]).map((child) => child.props.testID)).toEqual(['welcome-bubble', 'welcome-pingo']);
+  });
+
+  it('pinta el bocadillo como card de superficie con el saludo', async () => {
+    await renderWelcome();
+    const bubble = screen.getByTestId('welcome-bubble');
+    expect(bubble.props.className.split(' ')).toEqual(expect.arrayContaining([
+      'rounded-card', 'bg-surface', 'shadow-sm', 'px-4', 'py-3',
+    ]));
+    expect(bubble.children).toHaveLength(1);
+    expect((bubble.children[0] as TestInstance).props.testID).toBe('welcome-bubble-text');
+    expect(screen.getByTestId('welcome-bubble-text').props.className).toBe('text-center text-sm font-semibold text-foreground');
   });
 });

@@ -528,6 +528,7 @@ export const R16_WELCOME: UseRow[] = [
   { file: 'src/screens/welcome/index.tsx', key: 'welcome.getStarted' },
   { file: 'src/screens/welcome/index.tsx', key: 'welcome.haveAccount' },
   { file: 'src/screens/welcome/index.tsx', key: 'welcome.legalNotice' },
+  { file: 'src/screens/welcome/index.tsx', key: 'welcome.pingoGreeting' }, // #153 R1
 ];
 
 export const ALL_USES: UseRow[] = [
