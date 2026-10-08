@@ -24,8 +24,10 @@ tags: [harness, spec, backend]
   documento. Sirve a R4.
 
 - **D2 — Caducidad 3600 s** (DA2). Es la de la foto de perfil. El móvil
-  revalida el GET al volver a la pantalla (TanStack Query), así que una
-  URL caducada solo dura lo que tarde ese refetch. Constante nueva
+  lee el GET con TanStack Query (`useQuery` en
+  `mobile-pet-tracker/src/screens/docs/index.tsx`), así que cualquier
+  refetch de esa query renueva las URLs. Cuándo refetchea lo decide #158.
+  Constante nueva
   `DOCUMENT_DOWNLOAD_URL_EXPIRES_IN_SECONDS = 3600`, exportada desde
   `src/modules/media/application/use-cases/list-pet-documents.use-case.ts`.
   No se importa la de `pets` porque media no depende de pets/application.
