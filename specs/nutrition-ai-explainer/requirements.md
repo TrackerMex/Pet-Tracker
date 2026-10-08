@@ -198,7 +198,11 @@ Medidos en `c4e6be8b`. La lista completa con los comandos está en
 Ejecutar desde la raíz del repo. Abreviaturas de ruta:
 `NUT=backend-pet-tracker/src/modules/nutrition`,
 `BE=backend-pet-tracker`. "Tras #18" es el valor que el `reviewer` debe medir al
-cerrar; "libre" significa que la implementación puede moverlo.
+cerrar; "libre" significa que la implementación puede moverlo. En la tabla,
+`\|` es el escape de Markdown de una tubería de shell: al copiar un comando del
+texto crudo, sustitúyase `\|` por `|` (A12, A14, A47, A53). Ningún comando
+necesita un `|` literal dentro de un patrón; las filas de tabla de
+`docs/conventions.md` se cuentan con `^.` como comodín del borde.
 
 | # | Comando | En `c4e6be8b` | Tras #18 |
 |---|---|---|---|
@@ -207,8 +211,8 @@ cerrar; "libre" significa que la implementación puede moverlo.
 | A3 | `grep -cE '^[A-Z_]+=' .env.example` | 24 | 27 |
 | A4 | `grep -cE '^ANTHROPIC_' .env.example` | 0 | 3 |
 | A5 | `grep -cE '^OPENAI_' .env.example` | 0 | 0 |
-| A6 | ``grep -cE '^\| `ANTHROPIC_(ENABLED\|API_KEY\|MODEL)` \|' docs/conventions.md`` | 0 | 3 |
-| A7 | ``grep -cF '| `PUSH_ENABLED` |' docs/conventions.md`` | 1 | 1 |
+| A6 | ``grep -c '^. `ANTHROPIC_[A-Z_]*` ' docs/conventions.md`` | 0 | 3 |
+| A7 | ``grep -c '^. `PUSH_ENABLED` ' docs/conventions.md`` | 1 | 1 |
 | A8 | `grep -cx '.env' .gitignore` | 1 | 1 |
 | A9 | `grep -c '^### Feature ' docs/verification.md` | 18 | 19 |
 | A10 | `grep -cF '### Feature 18 — nutrition-ai-explainer' docs/verification.md` | 0 | 1 |
@@ -651,11 +655,12 @@ A36: `toMatchObject({ petId: PET_B })`).
   devuelve el literal (lo que R17 corrige). SHALL cambiarse esa única aserción a
   `toHaveProperty('aiExplanation', 'explicacion previa')` (ancla A44); el resto
   del bloque no cambia. La herencia de la explicación al editar horarios es
-  conducta de #103 (A5) y #18 no la toca (P8).
+  conducta de #103 (`copyWithMealTimes`, ancla A26) y #18 no la toca (P8).
 
   **Este ajuste va en su propio commit** `test(nutrition-ai-explainer):
-  derogate R26 of #17 (R1)` y **deja la suite roja a propósito** (aserciones 6–
-  11 y R1(c)) hasta que R4, R5, R17 y la dependencia aterricen. Está dicho aquí
+  derogate R26 of #17 (R1)` y **deja la suite roja a propósito** (aserciones 6,
+  7, 9 y 10, y R1(c); las 1–5, 8, 11, 12 y 13 nacen verdes y su rojo se ve con
+  sonda de mutación) hasta que R4, R5, R17 y la dependencia aterricen. Está dicho aquí
   por escrito para que el `reviewer` no lo lea como regresión; es la única
   excepción a RP-1(b).
   *Test*: `src/modules/nutrition/nutrition-scope.spec.ts::R1
@@ -1264,7 +1269,7 @@ A36: `toMatchObject({ petId: PET_B })`).
 - **Modificar cualquier contrato existente**: el shape de las respuestas del
   plan (once claves; trece en el `GET`) no cambia; solo cambia el **valor** de
   `aiExplanation`.
-- **Cambiar la herencia de la explicación al editar horarios** (#103 A5): P8.
+- **Cambiar la herencia de la explicación al editar horarios** (#103, `copyWithMealTimes`): P8.
 
 ---
 
@@ -1311,7 +1316,7 @@ humano no dice otra cosa, se implementa ese.
 - [ ] **P7 — `plans/presupuesto-produccion.md` sigue presupuestando GPT-5 mini.**
   Esta spec no lo edita ni decide nada de presupuesto. La estimación por llamada
   de R19 es el dato de entrada para cuando el humano lo actualice.
-- [ ] **P8 — Explicación heredada tras editar horarios.** Por #103 (A5), mover
+- [ ] **P8 — Explicación heredada tras editar horarios.** Por #103 (`copyWithMealTimes`, ancla A26), mover
   o añadir una toma copia el plan **con** su `aiExplanation`, que puede citar los
   horarios anteriores. **Por defecto: se conserva la conducta de #103**; con
   R17 esa explicación heredada pasa a ser visible en las respuestas.

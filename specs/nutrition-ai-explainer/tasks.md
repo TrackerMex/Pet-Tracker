@@ -31,7 +31,7 @@ tags: [harness, spec]
 > R11, R14, R15, R16): (a) el test se ve fallar antes de implementar, y (b)
 > incluye su aserción anti-vacío (el camino que sí debe producir texto lo
 > produce). Las guardas de texto negativo que nacen verdes porque el árbol ya
-> las cumple (aserciones 1–5, 11, 12 y 13 de R1a) se prueban con una **sonda de
+> las cumple (aserciones 1–5, 8, 11, 12 y 13 de R1a) se prueban con una **sonda de
 > mutación** local: plantar el texto prohibido, ver el rojo, deshacer con
 > `git checkout HEAD -- <ruta>` y comprobar `git diff --cached --quiet`. La
 > salida del rojo se pega en `progress/impl_nutrition-ai-explainer.md`; la
@@ -71,11 +71,12 @@ tags: [harness, spec]
   - `test/meal-times.e2e-spec.ts`: en el bloque R12 de #103, cambiar
     `toHaveProperty('aiExplanation', null)` por
     `toHaveProperty('aiExplanation', 'explicacion previa')`.
-  - Rojo esperado: aserción 6 (sin dependencia), 7–9 (sin variables), 10 (sin
-    factory) y R1(c) (mapper con literal). Verdes desde el principio: 1–5, 11,
-    12, 13 (sonda de mutación para 11, 12 y 13).
+  - Rojo esperado: aserción 6 (sin dependencia), 7 y 9 (sin variables), 10
+    (sin factory) y R1(c) (mapper con literal). Verdes desde el principio: 1–5,
+    8, 11, 12 y 13 (sonda de mutación para 8, 11, 12 y 13; para 8, plantar
+    `ANTHROPIC_API_KEY=sk-x` en `.env.example`).
 - [ ] (2) Implementación mínima que lo pasa — no hay implementación propia: se
-  pone verde por partes con R4 (7–9), la dependencia (6), R5 (10) y R17
+  pone verde por partes con R4 (7 y 9), la dependencia (6), R5 (10) y R17
   (R1(c)).
 - [ ] (3) Refactor con tests verdes — anclas A38–A41, A43, A44 de
   [[requirements]] §E-5 con el valor "tras #18".
