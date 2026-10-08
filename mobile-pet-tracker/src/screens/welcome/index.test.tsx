@@ -10,7 +10,7 @@ import { LanguageProvider } from '../../providers/language-provider';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { WelcomeScreen, WELCOME_ENTRANCE_MS, WELCOME_ENTRANCE_EASING } from './index';
 
-const { readFileSync } = jest.requireActual<typeof import('fs')>('fs');
+const { readFileSync, readdirSync } = jest.requireActual<typeof import('fs')>('fs');
 const { join } = jest.requireActual<typeof import('path')>('path');
 const sourceRoot = join(process.cwd(), 'src');
 const mockUseReducedMotion = jest.fn<boolean, []>(() => false);
@@ -387,5 +387,24 @@ describe('#153 R2: la carta escribe la voz de Pingo', () => {
   it('declara la excepción de los bucles de reposo', () => {
     expect(charter).toContain('- **Bucles de reposo.**');
     expect(charter).toContain('`src/theme/motion.ts` y no arrancan con reduce motion.');
+  });
+});
+
+
+describe('#153 R3: las poses entran como WebP', () => {
+  it.each(['pingo-wave.webp', 'pingo-wave-blink.webp'])('%s es un WebP con alfa de 1024×1024 y como mucho 100 000 bytes', (name) => {
+    const bytes = readFileSync(join(process.cwd(), 'assets', 'images', name));
+    expect(bytes.toString('ascii', 0, 4)).toBe('RIFF');
+    expect(bytes.toString('ascii', 8, 12)).toBe('WEBP');
+    expect(bytes.toString('ascii', 12, 16)).toBe('VP8X');
+    expect((bytes[20] & 0x10) !== 0).toBe(true);
+    expect(bytes.readUIntLE(24, 3) + 1).toBe(1024);
+    expect(bytes.readUIntLE(27, 3) + 1).toBe(1024);
+    expect(bytes.length).toBeLessThanOrEqual(100000);
+  });
+
+  it('no mete otras poses de Pingo', () => {
+    expect(readdirSync(join(process.cwd(), 'assets', 'images')).filter((name) => /^(pingo|mascot)-/.test(name)).sort())
+      .toEqual(['pingo-wave-blink.webp', 'pingo-wave.webp']);
   });
 });
