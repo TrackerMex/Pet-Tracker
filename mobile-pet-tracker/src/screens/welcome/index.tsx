@@ -92,7 +92,7 @@ export function WelcomeScreen() {
         </View>
         <Text testID="welcome-brand" className="text-3xl font-bold text-foreground">{t('welcome.brand')}</Text>
         <Text testID="welcome-tagline" className="text-center text-base text-muted">{t('welcome.tagline')}</Text>
-        <Button testID="welcome-get-started" className="w-full rounded-xl bg-accent" onPress={() => router.push('/register')}>
+        <Button testID="welcome-get-started" className="w-full rounded-xl bg-accent border-b-4 border-black/25" onPress={() => router.push('/register')}>
           <Button.Label className="font-bold text-accent-foreground">{t('welcome.getStarted')}</Button.Label>
         </Button>
         <Button testID="welcome-have-account" className="w-full rounded-xl border border-accent bg-transparent" onPress={() => router.push('/login')}>
