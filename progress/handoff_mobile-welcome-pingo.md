@@ -220,8 +220,11 @@ o el ENOENT que fallo).
 Typecheck en los rojos: va normal (exit 0) salvo en T2 y T4, donde la
 cadena lo acota:
 - T2: motion.test.ts importa por nombre las constantes nuevas, que aun no
-  existen: todo `error TS` del log tiene que ser un TS2305 de
-  src/theme/__tests__/motion.test.ts.
+  existen: el log tiene exactamente 5 `error TS`, todos de
+  src/theme/__tests__/motion.test.ts y todos TS2305 o TS2724. TypeScript
+  6.0.3 da TS2724 («Did you mean...») cuando el nombre se parece a otro
+  export (MOTION_FLOAT_TIMING y MOTION_BLINK_TIMING). Lo midio Codex en la
+  primera pasada y el leader corrigio la cadena el 2026-10-08.
 - T4: el test de la bienvenida lee `en['welcome.pingoGreeting']` y
   `es['welcome.pingoGreeting']`, una clave que aun no existe: todo
   `error TS` del log tiene que ser un TS7053 de
@@ -268,7 +271,8 @@ T2 rojo (describe `#153 R4: las constantes de Pingo viven en motion.ts`, 3 it, +
     && ! grep -qE 'TypeError|ReferenceError|SyntaxError|Cannot find module' /tmp/153-r2.txt \
     && test ! -e .expo/types/router.d.ts \
     && { bun run typecheck > /tmp/153-r2-tsc.txt 2>&1 || true; } \
-    && test "$(grep -c 'error TS' /tmp/153-r2-tsc.txt)" = "$(grep -cE '^src/theme/__tests__/motion\.test\.ts\([0-9]+,[0-9]+\): error TS2305:' /tmp/153-r2-tsc.txt)" \
+    && test "$(grep -c 'error TS' /tmp/153-r2-tsc.txt)" = 5 \
+    && test "$(grep -cE '^src/theme/__tests__/motion\.test\.ts\([0-9]+,[0-9]+\): error TS(2305|2724):' /tmp/153-r2-tsc.txt)" = 5 \
     && bun run lint \
     && git add src/theme/__tests__/motion.test.ts \
     && test "$(git diff --cached --name-only)" = 'mobile-pet-tracker/src/theme/__tests__/motion.test.ts' \
