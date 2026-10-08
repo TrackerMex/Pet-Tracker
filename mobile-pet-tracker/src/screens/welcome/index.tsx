@@ -7,7 +7,9 @@ import Animated, {
   useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
+  withDelay,
   withRepeat,
+  withSequence,
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
@@ -17,7 +19,7 @@ import { ForkKnife, Map, Stethoscope } from 'reicon-react-native';
 import { Card } from '../../components/card';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
-import { MOTION_FADE_TIMING, MOTION_SETTLE_SPRING, MOTION_ENTRANCE_OFFSET_Y, MOTION_ENTRANCE_SCALE, MOTION_FLOAT_OFFSET_Y, MOTION_FLOAT_TIMING } from '../../theme/motion';
+import { MOTION_FADE_TIMING, MOTION_SETTLE_SPRING, MOTION_ENTRANCE_OFFSET_Y, MOTION_ENTRANCE_SCALE, MOTION_FLOAT_OFFSET_Y, MOTION_FLOAT_TIMING, MOTION_BLINK_INTERVAL_MS, MOTION_BLINK_TIMING, MOTION_FEEDBACK_MS } from '../../theme/motion';
 import { useThemeColors } from '../../theme/use-theme-colors';
 
 const WELCOME_CHIPS = [
@@ -52,8 +54,17 @@ export function WelcomeScreen() {
       translateY.set(withSpring(0, MOTION_SETTLE_SPRING));
       pingoScale.set(withSpring(1, MOTION_SETTLE_SPRING));
       pingoFloatY.set(withRepeat(withTiming(-MOTION_FLOAT_OFFSET_Y, MOTION_FLOAT_TIMING), -1, true));
+      pingoBlink.set(
+        withRepeat(
+          withSequence(
+            withDelay(MOTION_BLINK_INTERVAL_MS, withTiming(1, MOTION_BLINK_TIMING)),
+            withDelay(MOTION_FEEDBACK_MS, withTiming(0, MOTION_BLINK_TIMING)),
+          ),
+          -1,
+        ),
+      );
     }
-  }, [opacity, translateY, reduceMotion, pingoScale, pingoFloatY]);
+  }, [opacity, translateY, reduceMotion, pingoScale, pingoFloatY, pingoBlink]);
 
   if (status === 'authenticated') return <Redirect href="/home" />;
 
