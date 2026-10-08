@@ -298,7 +298,7 @@
   {
     "id": 18,
     "name": "nutrition-ai-explainer",
-    "status": "spec_ready",
+    "status": "in_progress",
     "priority": "P3",
     "description": "Plan 009 (paso 3): ai-explainer.ts — si ANTHROPIC_ENABLED=true y hay clave: SDK @anthropic-ai/sdk (modelo desde env ANTHROPIC_MODEL=claude-haiku-5-5, jamás hardcodeado), timeout 15 s, system prompt del plan (español cálido, orientativo, máx 180 palabras); resultado → ai_explanation. Cualquier fallo/clave ausente → ai_explanation=null y 200 igualmente (la IA nunca produce 5xx). Introduce ANTHROPIC_ENABLED, ANTHROPIC_API_KEY, ANTHROPIC_MODEL en .env.example y conventions. La IA solo se llama desde backend (brief §9/§19). Proveedor cambiado de OpenAI a Anthropic por decisión del humano del 2026-10-08: la primera implementación con openai (branch feature/18-nutrition-ai-explainer, aprobada por el reviewer en ronda 2 el 2026-08-18) quedó bloqueada en la prueba de humo R19 por cuota agotada y nunca se mergeó.",
     "acceptance_criteria": [
