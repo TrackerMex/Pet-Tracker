@@ -3025,5 +3025,21 @@
       "mobile-pet-tracker/src/__tests__/design-drift.test.ts",
       "docs/ui-guidelines.md"
     ]
+  },
+  {
+    "id": 154,
+    "name": "mobile-home-battery-bar-test-race",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Registrada el 2026-10-08 por decision del humano al cerrar #152. Es la obs. 5 de la ronda 2 del reviewer de #152 (progress/review_mobile-home-motion-foundations.md, Ronda 2 §No bloqueantes 5). En src/screens/home/index.test.tsx, el it.each `pinta %i% con %s` del describe `#152 R8: la bateria del collar se dibuja como barra` fallo una vez en la fila [12, 'bg-warning-strong']: toHaveAnimatedStyle({ width: '12%' }, { shouldMatchAllProps: true }) recibio width \"0%\". Fue en una corrida paralela con la sonda X18i plantada, y X18i no puede afectar a ese it. No se repitio en 17 corridas posteriores (2 secuenciales con X18i y 15 del fichero sin mutar bajo carga de 3 carriles, load average de unos 4,7). El reviewer estima la frecuencia en 1 de cada 110 corridas. La causa NO esta medida, y la que propuso el reviewer (aseverar antes de que acabe el withTiming de 250 ms) no cuadra con el doble del fichero. index.test.tsx sustituye withTiming por `const mockWithTiming = jest.fn((value: number, _config?: unknown) => value);`, que devuelve el valor al instante, asi que en jest no hay animacion de 250 ms. El 0% es el valor inicial de fillPct en CollarBatteryBar (useSharedValue(reducedMotion ? pct : 0)) antes de que la asignacion del useEffect llegue al estilo animado. Limites: solo se vio una vez y solo en la fila 12. Las otras tres filas y los it 7 y 8 del mismo describe (refresco a 81%) aseveran el ancho con el mismo patron y no se han visto fallar. La spec decide si los incluye, y lo justifica con corridas medidas, no con este registro. Sin anclas por numero de linea: el reviewer cito index.test.tsx 5109-5123, y eso caduca con cualquier merge. Cero cambio en produccion. Depende del merge de #152 (PR #198): ese describe solo existe ahi.",
+    "acceptance_criteria": [
+      "La spec mide la causa antes de arreglarla (reproduccion o sonda que fuerce la carrera) y la deja escrita; si no se reproduce, lo dice y declara cuantas corridas hizo y bajo que carga",
+      "Las aserciones de ancho no se relajan: siguen siendo { width: '<pct>%' } literal con shouldMatchAllProps; solo cambia la sincronizacion, y esta espera sobre el arbol renderizado (docs/conventions.md §Esperas), no sobre un contador de mock",
+      "Una barra que no se llena (sin la asignacion del useEffect) sigue haciendo FALLAR el it, y las sondas de R8 que caian en la ronda 2 del reviewer de #152 siguen cayendo",
+      "Cero cambio en produccion; suite movil verde medida sin pipe; el numero de corridas repetidas del describe lo fija la spec; delta de tests declarado"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/screens/home/index.test.tsx"
+    ]
   }
 ]
