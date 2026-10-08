@@ -43,3 +43,28 @@
 - Siguiente paso: cuando el humano confirme que Codex terminó, se lanza el
   `reviewer`. El leader pide permiso al humano y corre él `init.sh`. Después
   viene el smoke R14 del humano.
+
+### Implementación y revisión (2026-10-08)
+
+- **Parada en T2.** La cadena del handoff solo admitía TS2305, pero
+  TypeScript 6.0.3 emite TS2724 cuando el export que falta se parece a uno que
+  existe. El error era del leader y lo corrigió en 1f18d037: exactamente 5
+  `error TS` en motion.test.ts, todos TS2305 o TS2724. Codex rehízo el rojo.
+- **Valores de cierre de A5 y A7.** El handoff decía «sin cambios», pero
+  cierran en 0. También es error del leader; el humano se lo aclaró a Codex.
+- **Fin de Codex.** Terminó en f8132e4f: 27 commits, que son 12 pares
+  rojo/verde, T12 y T13 en verde y el commit de trazabilidad.
+- **init.sh.** Lo corrió el leader sobre f8132e4f, con exit=0 y en este
+  orden: backend 1348, móvil 2275, e2e 438 + 8 omitidos.
+- **Reviewer: APROBADO** (`progress/review_mobile-welcome-pingo.md`).
+  - Sondas: las 6 obligatorias y unas 45 propias.
+  - Observaciones:
+    - O1, mutante equivalente W9;
+    - O2, R3 no distingue el contenido de los dos WebP: el sha256 coincide
+      con los originales y lo cubre el paso 4 de R14;
+    - O3, formato `#153 R<n>` en los commits;
+    - O4, fila R3 de traceability;
+    - O5, aviso de worker de jest que ya existía;
+    - O6, R14 pendiente.
+- **Siguiente paso:** el smoke R14 del humano en dev build de Android. Al
+  firmarlo: trazabilidad R14, `done`, Notion y PR.
