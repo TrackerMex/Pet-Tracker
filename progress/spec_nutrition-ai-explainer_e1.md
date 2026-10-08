@@ -37,6 +37,8 @@ R11 y los *Test* de R5 y R10.
    literal de `(model, key, null)`. Se fija con un `it` de valores con
    espacios. El humano puede derogarlo, pero eso sería un cambio de conducta
    fuera de E1.
+   **Sustituida en la revisión 2:** el humano decidió recortar (véase
+   §E1 revision 2).
 4. **Seam primero (E1-c5), test después (E1-c6).** Sin el cuarto parámetro, el
    test no compila, y C4 prohíbe los rojos de compilación o `ReferenceError`.
    Queda declarado por escrito antes del handoff.
@@ -114,3 +116,109 @@ Recuento de tests: el spec del factory pasa de 18 a 25 y el del adaptador de
   - un rechazo que no sea `Error` en el camino perezoso;
   - un `content` *array-like*;
   - un filtro por prefijo `text…`.
+
+## E1 revision 2
+
+**Fecha:** 2026-10-08. **Base congelada:** `83bee22b`, que contiene
+`progress/review_nutrition-ai-explainer_e1.md`. Sin commit. No se tocó
+`backend-pet-tracker/` del worktree. Las medidas se hicieron en un worktree
+temporal en `/tmp`, ya borrado (`git worktree list` lo confirma).
+
+Archivos tocados: `specs/nutrition-ai-explainer/requirements.md` (solo la
+sección E1), `tasks.md` (sección E1 reescrita), `traceability.md` (filas E1 y
+nota) y `design.md` (nota de D-E1-a).
+
+### Qué se cerró
+
+| Punto | Cambio |
+|---|---|
+| N1 | Párrafo «Cómo copiar las anclas» al pie de la tabla de E1. Cubre E1-A25…A28, A35…A37 y la mutación de E1.8. Cada ancla se ejecutó como la copiará Codex, con el escape sustituido por la tubería. |
+| N2 | E1.8 nuevo: fila R11 `['objeto', '[object Object]']`, que rechaza `{ message: 'no soy Error' }`. Su rojo es la mutación duck-typed, en E1-c16/E1-c17. La viñeta falsa de la zona ciega de E1.3 se reescribió. |
+| N3 | E1.7 nuevo: fila `['sin stop_reason', …]` al final de `unusable`. Su rojo es quitar `?? null`, en E1-c14/E1-c15. |
+| N4 | `'tipo-futuro'` pasa a `'texto-futuro'` en E1.5 y E1-A20. Sondas nuevas S-E1.5b (`startsWith`) y S-E1.5c (`includes`). Zona ciega de prefijo borrada. |
+| N5 | Fila `'content array-like'` en E1.4. E1-c10 da 4 rojos. Sondas nuevas S-E1.4c (`Array.from`) y S-E1.4d (`Object.values`). Zona ciega borrada. |
+| N6 | Una línea en E1.4: `content: [null]` queda fuera de alcance, sin candado. |
+| N7 | En S-E1.3c, el `it` 2 cae por `toHaveLength(1)`. |
+| N8 | Recuentos rehechos. Factory 18 → 25 y adaptador 25 → 37. 18 commits (E1-c1…E1-c18); cada candado nuevo lleva su par `test`/`fix` (C4). |
+| D-E1-a | Decisión del humano: recortar. El factory pasa `model.trim()` y `key.trim()`. Se reescribió E1.1, con override de la fila positiva de R5 en E1.6. El rojo de E1-c3 es la producción de `c09ee51c`, y E1-c4 es el `feat`. |
+| Nota 1 (Z7) | Sin caché del cliente (decisión del leader, YAGNI). El `it` 3 se renombra a `anti-vacio: el SDK cargado construye el cliente con clave y constantes`. |
+| Nota 2 | Anclas E1-A34…A37 más una casilla en el checklist del reviewer (tasks.md §Cierre). En el HEAD final, A34 = A35 = A36 = 3 y A37 = 1. |
+
+### Medido en esta revisión
+
+**Spike del factory** sobre el archivo completo, etapa a etapa. Todos los
+rojos son de aserción; no hubo ningún «suite failed to run» ni ningún
+`ReferenceError`.
+
+| Estado | `Tests:` | Rojos |
+|---|---|---|
+| E1-c1: intercambio `(key, model, null)` sobre `c09ee51c` | 2 failed, 16 passed, 18 total | los dos anti-vacíos, por `toEqual` |
+| E1-c2 | 18 passed, 18 total | — |
+| E1-c3: `it` recortado con producción sin recortar | 1 failed, 18 passed, 19 total | `pasa clave y modelo recortados (E1.1)` |
+| E1-c4 (trim) | 19 passed, 19 total | — |
+| E1-c5: `not-enabled` al final, sobre trim | 2 failed, 23 passed, 25 total | filas 4 y 5, por `toBe` |
+| E1-c6 | 25 passed, 25 total | — |
+| S-E1.1a `(model.trim() + 'x', key.trim(), null)` | 3 failed, 22 passed, 25 total | 2 anti-vacíos más el `it` de E1.1 |
+| S-E1.1b `(model.trim(), key, null)` | 1 failed, 24 passed, 25 total | `it` de E1.1 |
+| S-E1.1c `(model, key.trim(), null)` | 1 failed, 24 passed, 25 total | `it` de E1.1 |
+| S-E1.2a / b / c | 1 failed, 24 passed, 25 total cada una | filas 1 / 4 / 6 |
+
+**Estado final plantado** en el worktree temporal: producción con D-E1-a y
+el seam de E1.3, más los specs escritos según la spec y pasados por prettier.
+
+- Adaptador: `37 passed, 37 total`. Factory: `25 passed, 25 total`.
+- Sondas del adaptador sobre ese estado:
+
+| Sonda | `Tests:` |
+|---|---|
+| E1-c10 (`!= null`) | 4 failed, 33 passed, 37 total |
+| S-E1.4a | 5 failed |
+| S-E1.4b | 2 failed |
+| S-E1.4c y S-E1.4d | 1 failed cada una; cae `content array-like` por `resolves.toBeNull()` |
+| E1-c12 (sin filtro) | 2 failed |
+| S-E1.5a, S-E1.5b y S-E1.5c | 1 failed cada una |
+| E1-c14 | 1 failed: `sin stop_reason`, por `toEqual` |
+| E1-c16 | 1 failed: `degrada objeto: [object Object]`, por `toEqual` |
+| S-E1.3c | 4 failed, 33 passed: R9 por `toHaveLength`, `it` 1 por `toEqual`, `it` 2 por `toHaveLength` y `it` 3 |
+
+  Todas coinciden con el veredicto del reviewer.
+
+**Anclas.** Un script extrae cada fila E1-A1…E1-A37 del texto crudo de la
+tabla, sustituye `\|` por `|` y ejecuta el comando con `bash -c` desde la raíz
+del worktree.
+
+- Base (wt-18 en `83bee22b`, mismo backend que `c09ee51c`): 37/37 coinciden
+  con la columna `c09ee51c`.
+- Estado final plantado: 37/37 coinciden con la columna «tras E1».
+
+**Ancla negativa de la nota 2.** Sobre el estado final se quitó el cuarto
+argumento de una construcción, y también se cambió por `undefined`. En los dos
+casos dio A35 = 3 y A36 = 2, así que el ancla lo detecta.
+
+### Derivado, no medido
+
+- Gates intermedios del adaptador: E1-c7 en 25, E1-c8 en 28, E1-c10 en 33,
+  E1-c12 en 35, E1-c14 en 36 y E1-c16 en 37. Salen de las medidas sobre 37
+  restando las filas que aún no existen en cada commit. Todos los rojos caen
+  en filas del propio commit.
+- S-E1.3a, S-E1.3b y el rojo de E1-c8 sobre 37 los midió el reviewer; yo no
+  los repetí.
+
+### Observación (no se cambia)
+
+La aserción 13 de R1 (`/new AnthropicNutritionExplainer\([^)]*\bnull\s*\)/`)
+es ciega a la forma de prettier `null,` + salto + `)`. Lo medí: 0
+coincidencias en el estado final mutado. E1-A35…A37 cubren ese hueco en el
+único spec que construye el adaptador.
+
+### Abierto
+
+- La **firma humana** de E1, en su casilla propia de §Aprobación.
+- La base de `tsc --noEmit` del backend completo sigue sin medirse. tasks.md
+  manda medirla al arrancar.
+- Siguen declaradas dos zonas ciegas, sin candado:
+  - el orden dependiente del valor (E1.2);
+  - el cuerpo del cargador por defecto, vigilado por el texto de R9 y por R19.
+
+  Las zonas del 4.º argumento del factory (E1-A29/E1-A25), el *array-like*,
+  el prefijo `text…` y el rechazo no-`Error` quedaron cerradas.

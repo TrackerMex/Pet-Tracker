@@ -417,171 +417,283 @@ tags: [harness, spec]
 
 ## Enmienda E1 — ronda 2 (candados de R3, R5, R10 y R11)
 
-Fuente: [[requirements]] §Enmienda E1, apartados E1.0–E1.6. Esta sección es el
-orden **literal** de commits de la ronda 2. Se ejecuta después de la firma de
-E1 en §Aprobación y antes del cierre de R19. Los demás bloques de este archivo
-ya están cumplidos en la ronda 1 y no se rehacen.
+Fuente: [[requirements]] §Enmienda E1, apartados E1.0–E1.8, en su revisión 2
+del 2026-10-08. Esta sección es el orden **literal** de commits de la ronda 2.
+Se ejecuta después de la firma de E1 en §Aprobación y antes del cierre de R19.
+Los demás bloques de este archivo ya se cumplieron en la ronda 1 y no se
+rehacen.
 
 **Convenciones de la ronda.**
 
 - Rutas: `AI=backend-pet-tracker/src/modules/nutrition/infrastructure/ai`. Los
   comandos `pnpm exec` se lanzan desde `backend-pet-tracker/`.
-- **Rojo legítimo** (CHECKPOINTS C4). El código de producción ya es correcto,
-  así que cada commit `test(...)` versiona **una mutación de producción**, y el
-  commit `fix(...)` siguiente la revierte. Nunca se muta un doble de test.
-  Ningún rojo puede ser de compilación ni un `ReferenceError`.
+- **Rojo legítimo** (CHECKPOINTS C4). Hay dos clases de rojo:
+  - **Producción ya correcta.** Es el caso de todos los commits `test(...)`
+    salvo E1-c3. El commit versiona **una mutación de producción**, y el
+    `fix(...)` siguiente la revierte.
+  - **Cambio de conducta, D-E1-a.** E1-c3 cambia solo el spec, y su rojo es
+    la producción de `c09ee51c` tal como está, sin recortar. E1-c4 es el
+    `feat(...)` que lo pone en verde.
+
+  Nunca se muta un doble de test. Ningún rojo puede ser de compilación ni un
+  `ReferenceError`.
 - **Gate de un commit rojo.** Se mide sin pipe:
-  `pnpm exec jest <spec> > <log> 2>&1; echo $?`. El exit debe ser distinto de
-  0, la línea `Tests:` debe ser exactamente la indicada y los `it` rojos deben
-  ser los nombrados. Si alguna de las tres cosas no coincide, **se para** y no
-  se commitea.
+  `pnpm exec jest <spec> > <log> 2>&1; echo $?`. Se exigen tres cosas:
+  - el exit es distinto de 0;
+  - la línea `Tests:` es exactamente la indicada;
+  - los `it` rojos son los nombrados.
+
+  Si alguna no coincide, **se para** y no se commitea.
 - **Gate de un commit verde.** El exit de jest es 0 con la línea `Tests:`
   indicada, y `pnpm exec eslint <archivos del commit>` sale con exit 0.
 - **Base de tipos.** Al arrancar, en el HEAD del handoff, se mide
   `pnpm exec tsc --noEmit -p tsconfig.json; echo $?` y se anota el recuento de
-  errores. E1-c5 y el HEAD final no pueden añadir ninguno.
-- **Sondas.** Se hacen con el árbol en E1-c11. Cada una se aplica en el árbol
-  de trabajo, se corre, y su salida (`Tests:` más el nombre de cada `it` rojo)
-  se pega en `progress/impl_nutrition-ai-explainer.md` §Sondas E1. Después se
-  revierte con `git checkout HEAD -- <ruta>`, y se verifica que
-  `git status --porcelain` y `git diff --cached --name-only` salen vacíos.
-  Nunca se commitea una sonda.
+  errores. Ni E1-c7 ni el HEAD final pueden añadir ninguno.
+- **Sondas.** Se hacen con el árbol en E1-c17, y por cada una:
+  1. Se aplica en el árbol de trabajo y se corre.
+  2. Su salida (`Tests:` más el nombre de cada `it` rojo) se pega en
+     `progress/impl_nutrition-ai-explainer.md` §Sondas E1.
+  3. Se revierte con `git checkout HEAD -- <ruta>`.
+  4. Se verifica que `git status --porcelain` y
+     `git diff --cached --name-only` salen vacíos.
 
-### E1.1 — R5: argumentos de la rama positiva
+  Nunca se commitea una sonda.
+- **Anclas.** En la tabla de [[requirements]] §Cifras y alcance, `\|` es el
+  escape markdown de `|`. Se sustituye al copiar el comando.
+
+### E1.1 — R5: argumentos de la rama positiva y recorte (D-E1-a)
 
 - [ ] **E1-c1** `test(nutrition-ai-explainer): lock factory constructor arguments (R5, E1.1)`
-  - Archivos: `$AI/nutrition-explainer.factory.spec.ts`, con el helper
-    `constructorArgs`, el `toEqual` en los dos anti-vacíos y el `it` nuevo
-    `'pasa clave y modelo sin recortar (E1.1)'`. Y `$AI/nutrition-explainer.factory.ts`,
-    con la mutación versionada
-    `return new AnthropicNutritionExplainer(key, model, null);`.
+  - Archivos:
+    - `$AI/nutrition-explainer.factory.spec.ts`: el helper
+      `constructorArgs` y el `toEqual` en los dos anti-vacíos (puntos 1 y 2
+      de E1.1). El `it` del punto 3 **no** entra aquí.
+    - `$AI/nutrition-explainer.factory.ts`: la mutación versionada
+      `return new AnthropicNutritionExplainer(key, model, null);`.
   - Gate rojo sobre `src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.spec.ts`:
-    `Tests: 3 failed, 16 passed, 19 total`. Los rojos son los dos anti-vacíos y
-    el `it` nuevo, todos por `toEqual`.
+    `Tests: 2 failed, 16 passed, 18 total`. Los rojos son
+    `anti-vacio: development selecciona Anthropic sin invocarlo` y
+    `anti-vacio: todas cumplidas seleccionan el adaptador real sin invocarlo`,
+    los dos por `toEqual`.
 - [ ] **E1-c2** `fix(nutrition-ai-explainer): restore factory constructor argument order (R5, E1.1)`
   - Archivo: `$AI/nutrition-explainer.factory.ts`, restaurado con
     `git checkout c09ee51c -- <ruta>`.
-  - Gate verde: `Tests: 19 passed, 19 total`, y
-    `git diff c09ee51c HEAD -- $AI/nutrition-explainer.factory.ts | wc -l` da 0.
+  - Gate verde: `Tests: 18 passed, 18 total`. E1-A25 da 0.
   - Mutación que lo pone rojo: la F1 del veredicto (el intercambio de
-    argumentos). Sondas pendientes: S-E1.1a y S-E1.1b.
+    argumentos). Sonda pendiente: S-E1.1a.
+- [ ] **E1-c3** `test(nutrition-ai-explainer): expect trimmed key and model from factory (R5, E1.1, D-E1-a)`
+  - Archivo: solo `$AI/nutrition-explainer.factory.spec.ts`, con el `it`
+    nuevo `'pasa clave y modelo recortados (E1.1)'` al final del describe R5
+    (punto 3 de E1.1).
+  - No versiona ninguna mutación. El rojo es la producción de `c09ee51c`, que
+    aún pasa los valores sin recortar.
+  - Gate rojo: `Tests: 1 failed, 18 passed, 19 total`. El rojo es
+    `pasa clave y modelo recortados (E1.1)`, por `toEqual` (llegan los valores
+    con espacios).
+- [ ] **E1-c4** `feat(nutrition-ai-explainer): pass trimmed key and model to Anthropic explainer (R5, E1.1, D-E1-a)`
+  - Archivo: `$AI/nutrition-explainer.factory.ts`. La línea
+    `return new AnthropicNutritionExplainer(model, key, null);` pasa a ser
+    `return new AnthropicNutritionExplainer(model.trim(), key.trim(), null);`.
+    No cambia nada más.
+  - Gate verde: `Tests: 19 passed, 19 total`. E1-A9 = 0, E1-A29 = 1 y
+    E1-A25 = 2.
+  - Sondas pendientes: S-E1.1b (rama de la clave) y S-E1.1c (rama del
+    modelo).
 
 ### E1.2 — R3.1 y R5: orden entre pares
 
-- [ ] **E1-c3** `test(nutrition-ai-explainer): lock pairwise order of explainer guards (R3, R5, E1.2)`
-  - Archivos: `$AI/nutrition-explainer.factory.spec.ts`, con el
-    `it.each(...)('%s y %s fallan: gana %s')` de 6 filas. Y
-    `$AI/nutrition-explainer.factory.ts`, con la mutación versionada: el bloque
-    `not-enabled` se mueve detrás del bloque `model-missing`.
+- [ ] **E1-c5** `test(nutrition-ai-explainer): lock pairwise order of explainer guards (R3, R5, E1.2)`
+  - Archivos:
+    - `$AI/nutrition-explainer.factory.spec.ts`: el
+      `it.each(...)('%s y %s fallan: gana %s')` de 6 filas.
+    - `$AI/nutrition-explainer.factory.ts`: la mutación versionada. El
+      bloque `not-enabled` se mueve detrás del bloque `model-missing`.
   - Gate rojo: `Tests: 2 failed, 23 passed, 25 total`. Los rojos son
     `ANTHROPIC_ENABLED y ANTHROPIC_API_KEY fallan: gana not-enabled` y
     `ANTHROPIC_ENABLED y ANTHROPIC_MODEL fallan: gana not-enabled`, por `toBe`.
-- [ ] **E1-c4** `fix(nutrition-ai-explainer): restore explainer guard order (R3, R5, E1.2)`
-  - Archivo: `$AI/nutrition-explainer.factory.ts`, restaurado desde
-    `c09ee51c`.
-  - Gate verde: `Tests: 25 passed, 25 total`; E1-A25 da 0.
+- [ ] **E1-c6** `fix(nutrition-ai-explainer): restore explainer guard order (R3, R5, E1.2)`
+  - Archivo: `$AI/nutrition-explainer.factory.ts`, restaurado con
+    `git checkout <hash de E1-c4> -- <ruta>`.
+  - Gate verde: `Tests: 25 passed, 25 total`. Además,
+    `git diff <hash de E1-c4> HEAD -- $AI/nutrition-explainer.factory.ts | wc -l`
+    da 0, E1-A25 = 2 y E1-A29 = 1.
   - Mutación que lo pone rojo: «ANTHROPIC_ENABLED al final», de la F2 del
     veredicto. Sondas pendientes: S-E1.2a, S-E1.2b y S-E1.2c, que son las
     otras tres mutaciones de F2.
 
 ### E1.3 — R11: carga perezosa del SDK
 
-- [ ] **E1-c5** `refactor(nutrition-ai-explainer): inject SDK loader into Anthropic explainer (R11, E1.3)`
+- [ ] **E1-c7** `refactor(nutrition-ai-explainer): inject SDK loader into Anthropic explainer (R11, E1.3)`
   - Archivo: `$AI/anthropic-nutrition-explainer.ts`, con el cambio de E1.3:
-    `AnthropicClientOptions`, `AnthropicSdkLoader`, el cuarto parámetro
-    `loadSdk` con su default, y `await this.loadSdk()` dentro del `try`.
+    - `AnthropicClientOptions` y `AnthropicSdkLoader`;
+    - el cuarto parámetro `loadSdk` con su default;
+    - `await this.loadSdk()` dentro del `try`.
   - Commit sin cambio de conducta. Va **antes** que su test para que el test
-    nuevo compile: esto queda declarado aquí por escrito antes del handoff.
+    nuevo compile: queda declarado aquí, por escrito, antes del handoff.
   - Gates verdes:
     - `anthropic-nutrition-explainer.spec.ts`: `Tests: 25 passed, 25 total`.
-    - `nutrition-explainer.factory.spec.ts`: `25 passed`.
+    - `nutrition-explainer.factory.spec.ts`: `Tests: 25 passed, 25 total`.
     - `nutrition-scope.spec.ts`: verde.
     - `tsc` sin errores nuevos.
-    - Anclas E1-A1 = 1, E1-A2 = 0, E1-A3 = 1, E1-A4 = 1, E1-A5 = 1 y
+    - Anclas: E1-A1 = 1, E1-A2 = 0, E1-A3 = 1, E1-A4 = 1, E1-A5 = 1 y
       E1-A6 = 1.
-- [ ] **E1-c6** `test(nutrition-ai-explainer): lock lazy SDK load inside degradation (R11, E1.3)`
-  - Archivos: `$AI/anthropic-nutrition-explainer.spec.ts`, con el describe
-    `R11 (nutrition-ai-explainer #18) E1.3: …` y sus 3 `it`. Y
-    `$AI/anthropic-nutrition-explainer.ts`, con la mutación versionada: el
-    bloque `if (this.client === null) { … }` se mueve entero encima del `try`.
+- [ ] **E1-c8** `test(nutrition-ai-explainer): lock lazy SDK load inside degradation (R11, E1.3)`
+  - Archivos:
+    - `$AI/anthropic-nutrition-explainer.spec.ts`: el describe
+      `R11 (nutrition-ai-explainer #18) E1.3: …` y sus 3 `it`. Cada `it`
+      declara su `const loadSdk: AnthropicSdkLoader` y construye el
+      adaptador con `null, loadSdk` (nota 2 del veredicto).
+    - `$AI/anthropic-nutrition-explainer.ts`: la mutación versionada. El
+      bloque `if (this.client === null) { … }` se mueve entero encima del
+      `try`.
   - Gate rojo sobre `src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts`:
     `Tests: 2 failed, 26 passed, 28 total`. Los rojos son
     `fallo del import del SDK: null y un warn sin relanzar` y
     `el constructor del SDK lanza: null y un warn sin relanzar`, por
-    `resolves.toBeNull()`. El anti-vacío nace verde.
-- [ ] **E1-c7** `fix(nutrition-ai-explainer): load SDK inside the degradation try (R11, E1.3)`
+    `resolves.toBeNull()`.
+  - El tercer `it`,
+    `anti-vacio: el SDK cargado construye el cliente con clave y constantes`,
+    nace verde. Lo acredita S-E1.3c.
+- [ ] **E1-c9** `fix(nutrition-ai-explainer): load SDK inside the degradation try (R11, E1.3)`
   - Archivo: `$AI/anthropic-nutrition-explainer.ts`, restaurado con
-    `git checkout <hash de E1-c5> -- <ruta>`.
-  - Gate verde: `Tests: 28 passed, 28 total`, y
-    `git diff <hash de E1-c5> HEAD -- $AI/anthropic-nutrition-explainer.ts | wc -l`
-    da 0.
+    `git checkout <hash de E1-c7> -- <ruta>`.
+  - Gate verde: `Tests: 28 passed, 28 total`. Además,
+    `git diff <hash de E1-c7> HEAD -- $AI/anthropic-nutrition-explainer.ts | wc -l`
+    da 0, y E1-A34 = E1-A35 = E1-A36 = 3.
   - Mutación que lo pone rojo: la F3 del veredicto. Sondas pendientes:
-    S-E1.3a, S-E1.3b y S-E1.3c. S-E1.3c acredita el anti-vacío, que nació
-    verde.
+    S-E1.3a, S-E1.3b y S-E1.3c.
 
 ### E1.4 — R10: `content` que no es un array
 
-- [ ] **E1-c8** `test(nutrition-ai-explainer): lock non-array content as unusable (R10, E1.4)`
-  - Archivos: `$AI/anthropic-nutrition-explainer.spec.ts`, con 4 filas al
-    final de `unusable`. Y `$AI/anthropic-nutrition-explainer.ts`, con la
-    mutación versionada `Array.isArray(response.content)` →
-    `response.content != null`.
-  - Gate rojo: `Tests: 3 failed, 29 passed, 32 total`. Los rojos son
-    `degrada content string …`, `degrada content objeto …` y
-    `degrada content numero …`, por `toEqual` del `warn`. La fila
-    `content undefined` nace verde.
-- [ ] **E1-c9** `fix(nutrition-ai-explainer): restore array check on response content (R10, E1.4)`
-  - Restaurado desde el hash de E1-c5.
-  - Gate verde: `Tests: 32 passed, 32 total`.
+- [ ] **E1-c10** `test(nutrition-ai-explainer): lock non-array content as unusable (R10, E1.4)`
+  - Archivos:
+    - `$AI/anthropic-nutrition-explainer.spec.ts`: las 5 filas de E1.4 al
+      final de `unusable`, en el orden de su tabla.
+    - `$AI/anthropic-nutrition-explainer.ts`: la mutación versionada
+      `Array.isArray(response.content)` → `response.content != null`.
+  - Gate rojo: `Tests: 4 failed, 29 passed, 33 total`. Los rojos son
+    `degrada content string …`, `degrada content objeto …`,
+    `degrada content numero …` y `degrada content array-like …`, por
+    `toEqual` del `warn`.
+  - La fila `content undefined` nace verde. La acredita S-E1.4a.
+- [ ] **E1-c11** `fix(nutrition-ai-explainer): restore array check on response content (R10, E1.4)`
+  - Restaurado desde el hash de E1-c7.
+  - Gate verde: `Tests: 33 passed, 33 total`, y el diff contra E1-c7 da 0.
   - Mutación que lo pone rojo: la F4 del veredicto. Sondas pendientes:
-    S-E1.4a, que acredita la fila `undefined`, y S-E1.4b.
+    S-E1.4a, S-E1.4b, S-E1.4c y S-E1.4d.
 
 ### E1.5 — R10: bloques ajenos con campo `text`
 
-- [ ] **E1-c10** `test(nutrition-ai-explainer): lock text-only block filter (R10, E1.5)`
-  - Archivos: `$AI/anthropic-nutrition-explainer.spec.ts`, con la fila
-    `'bloque no-text con text'` en el anti-vacío y la fila
-    `'solo bloque no-text con text'` en `unusable`. Y
-    `$AI/anthropic-nutrition-explainer.ts`, con la mutación versionada: se
-    borra `.filter((block) => block.type === 'text')`.
-  - Gate rojo: `Tests: 2 failed, 32 passed, 34 total`. Los rojos son
-    `anti-vacio: bloque no-text con text …`, por `toBe`, y
-    `degrada solo bloque no-text con text …`, por `resolves.toBeNull()`.
-- [ ] **E1-c11** `fix(nutrition-ai-explainer): restore text block filter (R10, E1.5)`
-  - Restaurado desde el hash de E1-c5.
-  - Gate verde: `Tests: 34 passed, 34 total`, y el diff contra E1-c5 da 0.
-  - Mutación que lo pone rojo: la F5 del veredicto. Sonda pendiente: S-E1.5a.
+- [ ] **E1-c12** `test(nutrition-ai-explainer): lock text-only block filter (R10, E1.5)`
+  - Archivos:
+    - `$AI/anthropic-nutrition-explainer.spec.ts`: la fila
+      `'bloque no-text con text'` en el anti-vacío y la fila
+      `'solo bloque no-text con text'` (con `type: 'texto-futuro'`) al final
+      de `unusable`.
+    - `$AI/anthropic-nutrition-explainer.ts`: la mutación versionada. Se
+      borra `.filter((block) => block.type === 'text')`.
+  - Gate rojo: `Tests: 2 failed, 33 passed, 35 total`. Los rojos son:
+    - `anti-vacio: bloque no-text con text …`, por `toBe`;
+    - `degrada solo bloque no-text con text …`, por `resolves.toBeNull()`.
+- [ ] **E1-c13** `fix(nutrition-ai-explainer): restore text block filter (R10, E1.5)`
+  - Restaurado desde el hash de E1-c7.
+  - Gate verde: `Tests: 35 passed, 35 total`, y el diff contra E1-c7 da 0.
+  - Mutación que lo pone rojo: la F5 del veredicto. Sondas pendientes:
+    S-E1.5a, S-E1.5b y S-E1.5c.
 
-### Sondas (sin commit, con el árbol en E1-c11)
+### E1.7 — R10: `stopReason` nulo sin `stop_reason`
 
-Recuentos sobre los archivos completos: factory 25 tests, adaptador 34.
+- [ ] **E1-c14** `test(nutrition-ai-explainer): lock null stopReason when stop_reason is missing (R10, E1.7)`
+  - Archivos:
+    - `$AI/anthropic-nutrition-explainer.spec.ts`: la fila
+      `'sin stop_reason'` al final de `unusable`.
+    - `$AI/anthropic-nutrition-explainer.ts`: la mutación versionada
+      `stopReason: response.stop_reason ?? null,` →
+      `stopReason: response.stop_reason,`.
+  - Gate rojo: `Tests: 1 failed, 35 passed, 36 total`. El rojo es
+    `degrada sin stop_reason con exactamente un warn completo`, por `toEqual`
+    del `warn`.
+- [ ] **E1-c15** `fix(nutrition-ai-explainer): restore null default for stopReason (R10, E1.7)`
+  - Restaurado desde el hash de E1-c7.
+  - Gate verde: `Tests: 36 passed, 36 total`, y el diff contra E1-c7 da 0.
+  - Mutación que lo pone rojo: la de E1-c14 (N3 del veredicto).
 
-| Sonda | Archivo | Mutación | `Tests:` esperado | `it` rojos |
-|---|---|---|---|---|
-| S-E1.1a | `nutrition-explainer.factory.ts` | `(model.trim() + 'x', key, null)` | `3 failed, 22 passed, 25 total` | los dos anti-vacíos y `pasa clave y modelo sin recortar (E1.1)` |
-| S-E1.1b | `nutrition-explainer.factory.ts` | `(model.trim(), key.trim(), null)` | `1 failed, 24 passed, 25 total` | `pasa clave y modelo sin recortar (E1.1)` |
-| S-E1.2a | `nutrition-explainer.factory.ts` | bloque `node-env-test` detrás del bloque `not-enabled` | `1 failed, 24 passed, 25 total` | `NODE_ENV y ANTHROPIC_ENABLED fallan: gana node-env-test` |
-| S-E1.2b | `nutrition-explainer.factory.ts` | bloque `key-missing` delante del bloque `not-enabled` | `1 failed, 24 passed, 25 total` | `ANTHROPIC_ENABLED y ANTHROPIC_API_KEY fallan: gana not-enabled` |
-| S-E1.2c | `nutrition-explainer.factory.ts` | bloque `model-missing` delante del bloque `key-missing` | `1 failed, 24 passed, 25 total` | `ANTHROPIC_API_KEY y ANTHROPIC_MODEL fallan: gana key-missing` |
-| S-E1.3a | `anthropic-nutrition-explainer.ts` | el fallo de `this.loadSdk()` se captura en el sitio y `explain()` devuelve `null` sin `warn` | `1 failed, 33 passed, 34 total` | `fallo del import del SDK: …` |
-| S-E1.3b | `anthropic-nutrition-explainer.ts` | `new Anthropic(…)` dentro de su propio `try` que devuelve `null` sin `warn` | `1 failed, 33 passed, 34 total` | `el constructor del SDK lanza: …` |
-| S-E1.3c | `anthropic-nutrition-explainer.ts` | en `explain()`, `await this.loadSdk()` → `await import('@anthropic-ai/sdk')`; el default no se toca | `4 failed, 30 passed, 34 total` | los 3 de E1.3 y `construye el cliente perezoso con clave explicita y constantes` (R9) |
-| S-E1.4a | `anthropic-nutrition-explainer.ts` | `Array.isArray(response.content)` → `response.content !== null` | `4 failed, 30 passed, 34 total` | las 4 filas de E1.4 |
-| S-E1.4b | `anthropic-nutrition-explainer.ts` | → `typeof response.content === 'object' && response.content !== null` | `1 failed, 33 passed, 34 total` | `degrada content objeto …` |
-| S-E1.5a | `anthropic-nutrition-explainer.ts` | filtro → `block.type !== 'thinking'` | `1 failed, 33 passed, 34 total` | `degrada solo bloque no-text con text …` |
+### E1.8 — R11: valor rechazado que no es `Error` con `message`
+
+- [ ] **E1-c16** `test(nutrition-ai-explainer): lock String() message for non-Error rejections (R11, E1.8)`
+  - Archivos:
+    - `$AI/anthropic-nutrition-explainer.spec.ts`: la fila
+      `['objeto', '[object Object]']` al final del `it.each` de R11, y la
+      rama `status === 'objeto'` del cuerpo, que rechaza
+      `{ message: 'no soy Error' }`.
+    - `$AI/anthropic-nutrition-explainer.ts`: la mutación versionada
+      `message: error instanceof Error ? error.message : String(error),` →
+      `message: (error as { message?: string } | null)?.message ?? String(error),`.
+  - Gate rojo: `Tests: 1 failed, 36 passed, 37 total`. El rojo es
+    `degrada objeto: [object Object]`, por `toEqual` del `warn` (llega
+    `'no soy Error'`).
+- [ ] **E1-c17** `fix(nutrition-ai-explainer): restore instanceof Error check in failure warn (R11, E1.8)`
+  - Restaurado desde el hash de E1-c7.
+  - Gate verde: `Tests: 37 passed, 37 total`, y el diff contra E1-c7 da 0.
+  - Mutación que lo pone rojo: la de E1-c16 (N2 del veredicto).
+
+### Sondas (sin commit, con el árbol en E1-c17)
+
+Los recuentos son sobre los archivos completos: factory 25 tests, adaptador 37.
+S-E1.3c se corre con `ANTHROPIC_BASE_URL=http://127.0.0.1:9` delante del
+comando, como red de seguridad.
+
+**Sondas del factory** (`nutrition-explainer.factory.ts`):
+
+| Sonda | Mutación | `Tests:` esperado | `it` rojos |
+|---|---|---|---|
+| S-E1.1a | `return new AnthropicNutritionExplainer(model.trim() + 'x', key.trim(), null);` | `3 failed, 22 passed, 25 total` | los dos anti-vacíos y `pasa clave y modelo recortados (E1.1)` |
+| S-E1.1b | `return new AnthropicNutritionExplainer(model.trim(), key, null);` | `1 failed, 24 passed, 25 total` | `pasa clave y modelo recortados (E1.1)` |
+| S-E1.1c | `return new AnthropicNutritionExplainer(model, key.trim(), null);` | `1 failed, 24 passed, 25 total` | `pasa clave y modelo recortados (E1.1)` |
+| S-E1.2a | bloque `node-env-test` detrás del bloque `not-enabled` | `1 failed, 24 passed, 25 total` | `NODE_ENV y ANTHROPIC_ENABLED fallan: gana node-env-test` |
+| S-E1.2b | bloque `key-missing` delante del bloque `not-enabled` | `1 failed, 24 passed, 25 total` | `ANTHROPIC_ENABLED y ANTHROPIC_API_KEY fallan: gana not-enabled` |
+| S-E1.2c | bloque `model-missing` delante del bloque `key-missing` | `1 failed, 24 passed, 25 total` | `ANTHROPIC_API_KEY y ANTHROPIC_MODEL fallan: gana key-missing` |
+
+**Sondas del adaptador** (`anthropic-nutrition-explainer.ts`):
+
+| Sonda | Mutación | `Tests:` esperado | `it` rojos |
+|---|---|---|---|
+| S-E1.3a | el fallo de `this.loadSdk()` se captura en el sitio y `explain()` devuelve `null` sin `warn` | `1 failed, 36 passed, 37 total` | `fallo del import del SDK: …` |
+| S-E1.3b | `new Anthropic(…)` dentro de su propio `try` que devuelve `null` sin `warn` | `1 failed, 36 passed, 37 total` | `el constructor del SDK lanza: …` |
+| S-E1.3c | en `explain()`, `await this.loadSdk()` → `await import('@anthropic-ai/sdk')`; el default no se toca | `4 failed, 33 passed, 37 total` | los 3 de E1.3 y `construye el cliente perezoso con clave explicita y constantes` (R9) |
+| S-E1.4a | `Array.isArray(response.content)` → `response.content !== null` | `5 failed, 32 passed, 37 total` | las 5 filas de E1.4 |
+| S-E1.4b | → `typeof response.content === 'object' && response.content !== null` | `2 failed, 35 passed, 37 total` | `degrada content objeto …` y `degrada content array-like …` |
+| S-E1.4c | toda la expresión de `blocks` → `Array.from((response.content ?? []) as ArrayLike<{ type: string; text?: string }>)` | `1 failed, 36 passed, 37 total` | `degrada content array-like …` |
+| S-E1.4d | toda la expresión de `blocks` → `Object.values((response.content ?? {}) as Record<string, { type: string; text?: string }>)` | `1 failed, 36 passed, 37 total` | `degrada content array-like …` |
+| S-E1.5a | filtro → `block.type !== 'thinking'` | `1 failed, 36 passed, 37 total` | `degrada solo bloque no-text con text …` |
+| S-E1.5b | filtro → `block.type.startsWith('text')` | `1 failed, 36 passed, 37 total` | `degrada solo bloque no-text con text …` |
+| S-E1.5c | filtro → `block.type.includes('text')` | `1 failed, 36 passed, 37 total` | `degrada solo bloque no-text con text …` |
 
 Si una sonda no da exactamente lo indicado, no se ajusta la tabla: se para y se
 anota en `progress/impl_nutrition-ai-explainer.md` §Bloqueos.
 
 ### Cierre de la ronda
 
-- [ ] **E1-c12** `docs(nutrition-ai-explainer): #18 traceability and probes for amendment E1`
-  - Archivos: `specs/nutrition-ai-explainer/traceability.md`, con las filas
-    E1.1–E1.5 y sus dos hashes cada una más la sonda citada. Y
-    `progress/impl_nutrition-ai-explainer.md`, con §Sondas E1, la base de
-    `tsc` y las anclas E1-A1…E1-A28 medidas en el HEAD final.
+- [ ] **E1-c18** `docs(nutrition-ai-explainer): #18 traceability and probes for amendment E1`
+  - Archivos:
+    - `specs/nutrition-ai-explainer/traceability.md`: las filas E1.1–E1.5,
+      E1.7 y E1.8, cada una con sus hashes y la sonda citada.
+    - `progress/impl_nutrition-ai-explainer.md`: §Sondas E1, la base de
+      `tsc` y las anclas E1-A1…E1-A37 medidas en el HEAD final.
   - Las anclas deben coincidir con la columna «tras E1» de [[requirements]]
     §Enmienda E1 §Cifras y alcance.
   - El diff de la ronda contra el commit de handoff, sin contar
     `progress/review_nutrition-ai-explainer.md`, toca solo los 6 archivos de
     la lista cerrada.
+
+**Checklist del reviewer para E1** (además de C2–C7):
+
+- [ ] Cada gate rojo de E1-c1…E1-c16 se reproduce con `git checkout` del
+  commit, y su rojo es de aserción.
+- [ ] **Nota 2: cargador de test siempre presente.** E1-A34 = E1-A35 =
+  E1-A36 = 3 y E1-A37 = 1 en el HEAD final.
+  - Ninguna construcción del adaptador con cliente `null` en un spec omite el
+    cuarto argumento ni pasa `undefined`.
+  - El cargador real por defecto no se ejecuta en ningún test.
+- [ ] El diff neto del factory contra `c09ee51c` es exactamente la línea de
+  D-E1-a (E1-A25 = 2, E1-A29 = 1).

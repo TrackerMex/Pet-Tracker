@@ -114,6 +114,11 @@ infrastructure/ai/nutrition-explainer.factory.ts    createNutritionExplainer(con
 > con `module: nodenext`, `jest.mock` no intercepta el `import()` nativo (E1.0),
 > y sin un cargador inyectable el fallo del `import` o del constructor no se
 > puede probar. La conducta de producción no cambia.
+>
+> **Enmienda E1.1, D-E1-a (2026-10-08, decisión del humano).** El factory pasa
+> `model.trim()` y `key.trim()` al adaptador, siempre con tres argumentos. Es
+> el único cambio de conducta de E1 (véase [[requirements]] §Enmienda E1, E1.1
+> y E1.6).
 - **Clave explícita.** `new Anthropic({ apiKey: this.apiKey, ... })`: la clave
   viene de `ConfigService`, no de la lectura automática de `process.env` del
   SDK.
