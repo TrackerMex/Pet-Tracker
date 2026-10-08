@@ -1,6 +1,6 @@
 ---
 feature: "nutrition-ai-explainer"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec]
 ---
 
@@ -1293,12 +1293,12 @@ A36: `toMatchObject({ petId: PET_B })`).
 Cada una trae el valor por defecto con el que la spec queda escrita; si el
 humano no dice otra cosa, se implementa ese.
 
-- [ ] **P4 — ¿Enviar `thinking` u `output_config.effort`?** Su validez depende
+- [x] **P4 — ¿Enviar `thinking` u `output_config.effort`?** Su validez depende
   del modelo y el modelo llega por env (C-2). La skill confirma que en Haiku 5.5
   el razonamiento adaptativo está activo por defecto y que sus tokens cuentan
   contra `max_tokens`. **Por defecto: no se envía nada**; el `warn` de R10 deja
   `stopReason` y `usage` en el log para decidir con datos tras R19.
-- [ ] **P5 — ¿El SDK lee otras variables `ANTHROPIC_*` de `process.env` pese al
+- [x] **P5 — ¿El SDK lee otras variables `ANTHROPIC_*` de `process.env` pese al
   `apiKey` explícito?** La skill confirma que los SDK resuelven credenciales
   en el orden "explícita, `ANTHROPIC_API_KEY`, `ANTHROPIC_AUTH_TOKEN`", que
   `ANTHROPIC_BASE_URL` cambia el host, y que con `ANTHROPIC_API_KEY` y
@@ -1310,24 +1310,24 @@ humano no dice otra cosa, se implementa ese.
   instalado (0.128.0) y lo deja escrito en `progress/impl_nutrition-ai-explainer.md`;
   el pre-vuelo de R19 (`env | grep -c '^ANTHROPIC_'` → 0) cubre el riesgo en la
   prueba de humo. No afecta a los tests (R3: no se construye cliente).
-- [ ] **P6 — Versión fijada del SDK.** Se fija `0.128.0` (publicada el
+- [x] **P6 — Versión fijada del SDK.** Se fija `0.128.0` (publicada el
   2026-09-22, más de dos semanas de antigüedad); la última publicada a la fecha
   de la enmienda es `0.132.1`. **Por defecto: `0.128.0`**.
-- [ ] **P7 — `plans/presupuesto-produccion.md` sigue presupuestando GPT-5 mini.**
+- [x] **P7 — `plans/presupuesto-produccion.md` sigue presupuestando GPT-5 mini.**
   Esta spec no lo edita ni decide nada de presupuesto. La estimación por llamada
   de R19 es el dato de entrada para cuando el humano lo actualice.
-- [ ] **P8 — Explicación heredada tras editar horarios.** Por #103 (`copyWithMealTimes`, ancla A26), mover
+- [x] **P8 — Explicación heredada tras editar horarios.** Por #103 (`copyWithMealTimes`, ancla A26), mover
   o añadir una toma copia el plan **con** su `aiExplanation`, que puede citar los
   horarios anteriores. **Por defecto: se conserva la conducta de #103**; con
   R17 esa explicación heredada pasa a ser visible en las respuestas.
-- [ ] **P9 — ¿Proyección del plan persistido en lugar de `computePlan`?** R12 y
+- [x] **P9 — ¿Proyección del plan persistido en lugar de `computePlan`?** R12 y
   R15 alimentan el prompt con `toPlanResult(plan)` para que la explicación
   describa el horario que el usuario ve. Mismo tipo y mismas claves que exige
   OV2. **Por defecto: proyección.**
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar.
+- [x] Aprobado por humano (fecha: 2026-10-08) ← gate obligatorio antes de implementar.
       Re-abierto por la enmienda del 2026-10-08 (primera aprobación: 2026-08-18).
 - [ ] Prueba de humo con clave real ejecutada por humano (R19, fecha: ____)
       ← gate de cierre, casilla propia; ni el `reviewer` ni ninguna IA pueden marcarla
