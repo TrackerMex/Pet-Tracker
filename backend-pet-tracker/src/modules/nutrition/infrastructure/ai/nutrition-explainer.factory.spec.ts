@@ -86,4 +86,19 @@ describe('R5 (nutrition-ai-explainer #18): seleccion en orden con reason exacto'
       client: null,
     });
   });
+  it('pasa clave y modelo recortados (E1.1)', () => {
+    const adapter = createNutritionExplainer(
+      config({
+        ...valid,
+        ANTHROPIC_API_KEY: '\t clave-de-prueba \n',
+        ANTHROPIC_MODEL: '\t modelo-de-prueba \n',
+      }),
+    );
+    expect(adapter).toBeInstanceOf(AnthropicNutritionExplainer);
+    expect(constructorArgs(adapter)).toEqual({
+      model: 'modelo-de-prueba',
+      apiKey: 'clave-de-prueba',
+      client: null,
+    });
+  });
 });
