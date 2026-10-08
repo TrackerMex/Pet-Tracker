@@ -244,12 +244,12 @@ describe('#78 R4: la pantalla pinta su esqueleto, su error, su vacío y sus fila
     await renderAlerts();
 
     await waitFor(() =>
-      expect(screen.getByTestId('alerts-empty')).toHaveTextContent(
-        es['alerts.empty'],
+      expect(screen.getByTestId('alerts-empty-title')).toHaveTextContent(
+        'No hay alertas',
       ),
     );
-    expect(screen.getByTestId('alerts-empty').props.className).toBe(
-      'font-normal text-muted',
+    expect(screen.getByTestId('alerts-empty-title').props.className).toBe(
+      'text-center text-lg font-bold text-foreground',
     );
   });
 
@@ -1134,5 +1134,37 @@ describe('#100 R6: la columna de texto de cada fila abre su detalle', () => {
     await fireEvent.press(screen.getByTestId('alert-row-alert-1-ack'));
     await waitFor(() => expect(mockAckAlert).toHaveBeenCalledTimes(1));
     expect(mockRouterPush).not.toHaveBeenCalled();
+  });
+});
+
+describe('#155 R5: sin alertas, Pingo duerme', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListAlerts.mockReset();
+  });
+
+  it('pinta la pose, el título y la frase de Pingo', async () => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [], nextCursor: null });
+    await renderAlerts();
+    const pose = await screen.findByTestId('alerts-empty-pose');
+    expect(pose.props.source).toEqual([
+      expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/pingo-sleep\.webp$/) }),
+    ]);
+    expect(screen.getByTestId('alerts-empty-title')).toHaveTextContent('No hay alertas');
+    expect(screen.getByTestId('alerts-empty-body')).toHaveTextContent('Todo está tranquilo. Si pasa algo, te aviso aquí.');
+  });
+
+  it('no ofrece acción', async () => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [], nextCursor: null });
+    await renderAlerts();
+    await screen.findByTestId('alerts-empty-title');
+    expect(screen.queryByTestId('alerts-empty-action')).toBeNull();
   });
 });

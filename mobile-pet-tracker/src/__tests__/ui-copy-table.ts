@@ -457,6 +457,7 @@ export const R12_ALERTS: UseRow[] = [
   { file: 'src/screens/alerts/index.tsx', key: 'common.somethingWentWrong' },
   { file: 'src/screens/alerts/index.tsx', key: 'common.retry' },
   { file: 'src/screens/alerts/index.tsx', key: 'alerts.empty' },
+  { file: 'src/screens/alerts/index.tsx', key: 'alerts.emptyBody' }, // #155 R5
   { file: 'src/screens/alerts/index.tsx', key: 'alerts.ack' },
   { file: 'src/screens/alerts/index.tsx', key: 'alerts.statusAcked' },
   { file: 'src/screens/alerts/index.tsx', key: 'alerts.statusClosed' },
