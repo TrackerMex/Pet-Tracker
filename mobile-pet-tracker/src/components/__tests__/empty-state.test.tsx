@@ -57,6 +57,7 @@ describe('#155 R2: las poses de los vacíos entran como WebP', () => {
     expect(bytes.toString('ascii', 8, 12)).toBe('WEBP');
     expect(bytes.toString('ascii', 12, 16)).toBe('VP8X');
     expect(bytes[20] & 0x10).not.toBe(0);
+    expect(bytes[20] & 0x02).toBe(0);
     expect(bytes.readUIntLE(24, 3) + 1).toBe(1024);
     expect(bytes.readUIntLE(27, 3) + 1).toBe(1024);
     expect(bytes.length).toBeLessThanOrEqual(100000);
@@ -229,5 +230,20 @@ describe('#155 R11: los vacíos no traen movimiento ni dependencias', () => {
   it('EmptyState no anima', () => {
     const source = readFileSync(join(process.cwd(), 'src', 'components', 'empty-state.tsx'), 'utf8');
     expect(source).not.toMatch(/react-native-reanimated|entering=|MOTION_/);
+  });
+
+  it('EmptyState importa exactamente Image, Button, Text y View', () => {
+    const source = readFileSync(join(process.cwd(), 'src', 'components', 'empty-state.tsx'), 'utf8');
+    expect(source.match(/^import\b.*$/gm)).toEqual([
+      "import { Image } from 'expo-image';",
+      "import { Button } from 'heroui-native';",
+      "import { Text, View } from 'react-native';",
+    ]);
+    expect(source.match(/\brequire\(/g)).toHaveLength(6);
+  });
+
+  it('EmptyState no anima con Animated, LayoutAnimation ni transiciones', () => {
+    const source = readFileSync(join(process.cwd(), 'src', 'components', 'empty-state.tsx'), 'utf8');
+    expect(source).not.toMatch(/\bAnimated\b|LayoutAnimation|transition|animate-/);
   });
 });
