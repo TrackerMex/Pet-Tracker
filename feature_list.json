@@ -3027,6 +3027,27 @@
     ]
   },
   {
+    "id": 153,
+    "name": "mobile-welcome-pingo",
+    "status": "done",
+    "priority": "P2",
+    "description": "Registrada el 2026-10-07 por el leader de la sesion Frontend por asignacion del leader de la sesion Backend, tras cerrar el humano el alcance del bloque de diseno nuevo. Es la candidata B de progress/explore_ui-delight-appllama.md §4 (vive en origin/feature/152-mobile-home-motion-foundations, no en main). Rehace la bienvenida de #118 (src/screens/welcome/index.tsx) con la mascota Pingo en el lenguaje visual del canvas aprobado el 2026-10-06 (https://claude.ai/artifact/VqaQQsRTtis9Dbttqy3z7j, artboard Bienvenida; copiado en specs/mobile-welcome-pingo/design-src/). Decisiones del humano relatadas por el leader de Backend: D1 (2026-10-07) nombre Pingo y voz B guardian sereno; D2 las 12 poses PNG 1024x1024 de /home/claude/pet-tracker-mascot/ entran al repo como WebP (de celebrate y worried solo las -v2); D3 (2026-10-07) Reanimated + PNG, sin Rive ni Lottie ni dependencias nuevas; D4 (2026-10-07) el CTA con cuerpo solo en welcome y celebraciones, el Button global de heroui no cambia. D5 y D6 siguen abiertas y fuera de alcance. La spec anade la voz de Pingo a docs/ui-guidelines.md junto a las reglas de copy, fija el copy final en/es (el del canvas no esta aprobado) y recuenta los candados de catalogo. Los movimientos salen de las constantes MOTION_* de src/theme/motion.ts que crea #152: la implementacion espera al merge de #152 y la spec se revisa contra main al mergearlo. Fuera de alcance: celebraciones (E), estados vacios (D), hero (F), onboarding (G), src/screens/home/**.",
+    "acceptance_criteria": [
+      "Sin sesion, la bienvenida muestra a Pingo con su bocadillo, la marca y los dos CTA hacia registro e inicio de sesion; el destino de cada CTA no cambia respecto de #118",
+      "Pingo entra, flota y parpadea con Reanimated y las constantes MOTION_* de #152; con reduce-motion activo no hay desplazamiento, escala ni parpadeo",
+      "El copy nuevo existe en los dos idiomas con la voz guardian sereno, y la voz queda escrita en docs/ui-guidelines.md",
+      "Cero dependencias nuevas; las poses entran como WebP; suite movil verde medida sin pipe; grep-clean intacto",
+      "Gate humano: smoke en dev build de Android (nunca Expo Go). No delegable a IA"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/screens/welcome/index.tsx",
+      "mobile-pet-tracker/src/screens/welcome/index.test.tsx",
+      "mobile-pet-tracker/src/i18n/catalog.ts",
+      "mobile-pet-tracker/assets/images/",
+      "docs/ui-guidelines.md"
+    ]
+  },
+  {
     "id": 154,
     "name": "mobile-home-battery-bar-test-race",
     "status": "pending",

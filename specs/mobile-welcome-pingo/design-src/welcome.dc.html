@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Bienvenida</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#107148;text-decoration:none}a:hover{color:#0B5C3A}
+.pt{--bg:#FFFFFF;--fg:#0D1117;--surface:#FFFFFF;--surface2:#F0FBF6;--default:#F5F6F8;--muted:#667085;--border:rgba(13,17,23,0.08);--lip-gray:#E4E7EC;--accent:#178255;--accent-strong:#107148;--lip:#0E5E3C;--blue:#EFF6FF;--blue-s:#0768E0;--amber:#FFF7ED;--amber-s:#A55E07;--green:#F0FBF6;--green-s:#107148;--violet:#F5F3FF;--violet-s:#7549F7;--rose:#FFF0F3;--rose-s:#D80B34;--danger:#D92D20;--warning:#B54708;--glass:rgba(255,255,255,0.86);--pill:rgba(23,130,85,0.14);--shadow:0 1px 2px rgba(13,17,23,0.04),0 8px 24px rgba(13,17,23,0.06)}
+.pt.dark{--bg:#0D1117;--fg:#F7F8FA;--surface:#161B22;--surface2:#12231B;--default:#1F242B;--muted:#9CA3AF;--border:rgba(255,255,255,0.08);--lip-gray:#0A0D12;--accent-strong:#2AB87C;--lip:#0B4D31;--blue:#0B203A;--blue-s:#4A8DDF;--amber:#271E14;--amber-s:#C17B22;--green:#12231B;--green-s:#2AB87C;--violet:#221C33;--violet-s:#9579E7;--rose:#39131A;--rose-s:#E35E78;--danger:#F87171;--warning:#FBBF24;--glass:rgba(22,27,34,0.86);--pill:rgba(23,130,85,0.22);--shadow:0 1px 2px rgba(0,0,0,0.4)}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes ping{0%{transform:scale(.55);opacity:.55}100%{transform:scale(1.5);opacity:0}}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes fill{from{width:0}}
+@keyframes pop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+@keyframes fall{0%{transform:translateY(-40px) rotate(0);opacity:0}10%{opacity:1}100%{transform:translateY(760px) rotate(540deg);opacity:0}}
+@media (prefers-reduced-motion: reduce){*{animation:none!important}}
+</style>
+</helmet>
+<div class="pt {{theme}}" style="width: 390px; height: 844px; box-sizing: border-box; overflow: hidden; position: relative; background: var(--bg); color: var(--fg); font-family: Inter, 'Helvetica Neue', system-ui, sans-serif; display: flex; flex-direction: column; padding: 56px 16px 34px">
+<div style="position: relative; height: 380px; border-radius: 32px; background: var(--surface2); display: flex; align-items: center; justify-content: center; overflow: hidden; animation: rise 400ms ease-out both">
+<div style="position: absolute; width: 260px; height: 260px; border-radius: 50%; border: 2px solid var(--accent); animation: ping 2.4s ease-out infinite"></div>
+<div style="position: absolute; width: 260px; height: 260px; border-radius: 50%; border: 2px solid var(--accent); animation: ping 2.4s ease-out 0.8s infinite"></div>
+<div style="position: absolute; width: 260px; height: 260px; border-radius: 50%; border: 2px solid var(--accent); animation: ping 2.4s ease-out 1.6s infinite"></div>
+<div style="position: absolute; top: 28px; right: 22px; background: var(--surface); color: var(--fg); font-size: 14px; font-weight: 700; padding: 10px 14px; border-radius: 16px 16px 4px 16px; box-shadow: var(--shadow); animation: pop 400ms ease-out 600ms both">¡Guau! Soy [NOMBRE]</div>
+
+<div style="position: absolute; bottom: 30px; width: 120px; height: 14px; border-radius: 50%; background: rgba(13,17,23,0.08)"></div>
+<img src="/_blob/f4ec4ed756bad6b3aa2ee809a534ea88" alt="Mascota de Pet Tracker" style="width: 220px; height: auto; position: relative; animation: float 3s ease-in-out infinite"></div>
+<div style="display: flex; justify-content: center; gap: 8px; margin-top: 24px; animation: rise 400ms ease-out 120ms both">
+<span style="display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; background: var(--surface2); color: var(--accent-strong); font-size: 12px; font-weight: 600"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3 3 6v15l6-3 6 3 6-3V3l-6 3-6-3z"></path><path d="M9 3v15M15 6v15"></path></svg>GPS</span>
+<span style="display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; background: var(--surface2); color: var(--accent-strong); font-size: 12px; font-weight: 600"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3v6a5 5 0 0 0 10 0V3"></path><path d="M10 14v1a5 5 0 0 0 10 0v-2"></path><circle cx="20" cy="11" r="2"></circle></svg>Salud</span>
+<span style="display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; background: var(--surface2); color: var(--accent-strong); font-size: 12px; font-weight: 600"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3v18M4 3v5a3 3 0 0 0 6 0V3"></path><path d="M18 21V3c-2.5 1-4 3.5-4 7 0 2 1.5 3 4 3"></path></svg>Nutrición</span>
+</div>
+<div style="display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: 18px; animation: rise 400ms ease-out 200ms both">
+<h1 style="margin: 0; font-size: 34px; line-height: 40px; font-weight: 900; letter-spacing: -0.5px">Pet Tracker</h1>
+<p style="margin: 0; max-width: 300px; text-align: center; font-size: 16px; line-height: 24px; color: var(--muted); text-wrap: pretty">Tu centro inteligente de bienestar, rastreo y nutrición canina profesional</p>
+</div>
+<div style="flex: 1"></div>
+<div style="display: flex; flex-direction: column; gap: 14px; animation: rise 400ms ease-out 280ms both">
+<a href="Registro.dc.html" style="height: 56px; border-radius: 16px; background: var(--accent); color: #FFFFFF; box-shadow: 0 4px 0 var(--lip); display: flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 800">Comenzar ahora</a>
+<a href="Login.dc.html" style="height: 56px; box-sizing: border-box; border-radius: 16px; background: var(--surface); color: var(--accent-strong); border: 2px solid var(--lip-gray); box-shadow: 0 4px 0 var(--lip-gray); display: flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 700">Ya tengo una cuenta</a>
+</div>
+<p style="margin: 16px 0 0; text-align: center; font-size: 12px; line-height: 16px; color: var(--muted)">Al continuar aceptas nuestros Términos y Política de privacidad</p>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return { theme: this.props.dark ? "dark" : "" };
+}
+}
+</script>
+</body>
+</html>

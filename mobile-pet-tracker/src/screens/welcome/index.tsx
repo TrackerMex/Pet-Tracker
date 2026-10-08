@@ -4,22 +4,23 @@ import { Button } from 'heroui-native';
 import { useEffect } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import Animated, {
-  Easing,
-  ReduceMotion,
   useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
+  withDelay,
+  withRepeat,
+  withSequence,
+  withSpring,
   withTiming,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ForkKnife, Map, Stethoscope } from 'reicon-react-native';
 
+import { Card } from '../../components/card';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
+import { MOTION_FADE_TIMING, MOTION_SETTLE_SPRING, MOTION_ENTRANCE_OFFSET_Y, MOTION_ENTRANCE_SCALE, MOTION_FLOAT_OFFSET_Y, MOTION_FLOAT_TIMING, MOTION_BLINK_INTERVAL_MS, MOTION_BLINK_TIMING, MOTION_FEEDBACK_MS } from '../../theme/motion';
 import { useThemeColors } from '../../theme/use-theme-colors';
-
-export const WELCOME_ENTRANCE_MS = 240;
-export const WELCOME_ENTRANCE_EASING = Easing.bezier(0.23, 1, 0.32, 1);
 
 const WELCOME_CHIPS = [
   { testID: 'welcome-chip-gps', Icon: Map, labelKey: 'welcome.chipGps' },
@@ -33,27 +34,37 @@ export function WelcomeScreen() {
   const insets = useSafeAreaInsets();
   const [chipInk] = useThemeColors(['accent-strong']);
   const reduceMotion = useReducedMotion();
+  const pingoScale = useSharedValue(reduceMotion ? 1 : MOTION_ENTRANCE_SCALE);
+  const pingoFloatY = useSharedValue(0);
+  const pingoStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: pingoFloatY.get() }, { scale: pingoScale.get() }],
+  }));
+  const pingoBlink = useSharedValue(0);
+  const blinkStyle = useAnimatedStyle(() => ({ opacity: pingoBlink.get() }));
   const opacity = useSharedValue(0);
-  const translateY = useSharedValue(reduceMotion ? 0 : 16);
+  const translateY = useSharedValue(reduceMotion ? 0 : MOTION_ENTRANCE_OFFSET_Y);
   const entranceStyle = useAnimatedStyle(() => ({
     opacity: opacity.get(),
     transform: [{ translateY: translateY.get() }],
   }));
 
   useEffect(() => {
-    opacity.set(withTiming(1, {
-      duration: WELCOME_ENTRANCE_MS,
-      easing: WELCOME_ENTRANCE_EASING,
-      // Reduce Motion keeps this fade while removing the spatial motion below.
-      reduceMotion: ReduceMotion.Never,
-    }));
+    opacity.set(withTiming(1, MOTION_FADE_TIMING));
     if (!reduceMotion) {
-      translateY.set(withTiming(0, {
-        duration: WELCOME_ENTRANCE_MS,
-        easing: WELCOME_ENTRANCE_EASING,
-      }));
+      translateY.set(withSpring(0, MOTION_SETTLE_SPRING));
+      pingoScale.set(withSpring(1, MOTION_SETTLE_SPRING));
+      pingoFloatY.set(withRepeat(withTiming(-MOTION_FLOAT_OFFSET_Y, MOTION_FLOAT_TIMING), -1, true));
+      pingoBlink.set(
+        withRepeat(
+          withSequence(
+            withDelay(MOTION_BLINK_INTERVAL_MS, withTiming(1, MOTION_BLINK_TIMING)),
+            withDelay(MOTION_FEEDBACK_MS, withTiming(0, MOTION_BLINK_TIMING)),
+          ),
+          -1,
+        ),
+      );
     }
-  }, [opacity, translateY, reduceMotion]);
+  }, [opacity, translateY, reduceMotion, pingoScale, pingoFloatY, pingoBlink]);
 
   if (status === 'authenticated') return <Redirect href="/home" />;
 
@@ -68,13 +79,17 @@ export function WelcomeScreen() {
       }}
     >
       <Animated.View testID="welcome-content" style={[entranceStyle, { alignItems: 'center', gap: 16 }]}>
-        <Image
-          testID="welcome-hero"
-          source={require('../../../assets/images/splash-icon.png')}
-          style={{ width: 160, height: 160 }}
-          contentFit="contain"
-        />
-        <Text testID="welcome-brand" className="text-3xl font-bold text-foreground">{t('welcome.brand')}</Text>
+        <Card testID="welcome-scene" variant="secondary" className="w-full items-center gap-3 py-6">
+          <Card testID="welcome-bubble" variant="surface" className="px-4 py-3">
+            <Text testID="welcome-bubble-text" className="text-center text-sm font-semibold text-foreground">{t('welcome.pingoGreeting')}</Text>
+          </Card>
+          <Animated.View testID="welcome-pingo" style={[pingoStyle, { width: 200, height: 200 }]}>
+            <Image testID="welcome-pingo-wave" source={require('../../../assets/images/pingo-wave.webp')} style={{ width: 200, height: 200 }} contentFit="contain" />
+            <Animated.View testID="welcome-pingo-blink" style={[blinkStyle, { position: 'absolute', top: 0, left: 0 }]}>
+              <Image testID="welcome-pingo-blink-image" source={require('../../../assets/images/pingo-wave-blink.webp')} style={{ width: 200, height: 200 }} contentFit="contain" />
+            </Animated.View>
+          </Animated.View>
+        </Card>
         <View testID="welcome-chips" className="flex-row justify-center gap-2">
           {WELCOME_CHIPS.map(({ testID, Icon, labelKey }) => (
             <View key={testID} testID={testID} className="flex-row items-center gap-1.5 rounded-full bg-surface-secondary px-3 py-1.5">
@@ -83,8 +98,9 @@ export function WelcomeScreen() {
             </View>
           ))}
         </View>
+        <Text testID="welcome-brand" className="text-3xl font-bold text-foreground">{t('welcome.brand')}</Text>
         <Text testID="welcome-tagline" className="text-center text-base text-muted">{t('welcome.tagline')}</Text>
-        <Button testID="welcome-get-started" className="w-full rounded-xl bg-accent" onPress={() => router.push('/register')}>
+        <Button testID="welcome-get-started" className="w-full rounded-xl bg-accent border-b-4 border-black/25" onPress={() => router.push('/register')}>
           <Button.Label className="font-bold text-accent-foreground">{t('welcome.getStarted')}</Button.Label>
         </Button>
         <Button testID="welcome-have-account" className="w-full rounded-xl border border-accent bg-transparent" onPress={() => router.push('/login')}>
