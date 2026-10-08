@@ -3,7 +3,7 @@ Fecha: 2026-10-08
 Revisor: reviewer (Claude)
 Worktree: /home/claude/sites/Pet-Tracker-wt-155, branch feature/155-mobile-empty-states-pingo, HEAD cedb357a (verificado igual a origin)
 Base del handoff (H0): d4e044b3
-Veredicto: RECHAZADO (ronda 1; la parte de init.sh queda pendiente del log del leader)
+Veredicto: RECHAZADO (ronda 1; init.sh verde en 438b3263, corrido por el leader)
 
 El código hace lo que pide la spec, y al leerlo no encontré ningún defecto de comportamiento. El rechazo se debe a cláusulas SHALL de R3, R4, R6, R9 y R11 a las que les falta el candado de alguna rama. En la zona ciega planté mutantes que sobreviven a sus suites. Todos juntos dan un mutante combinado que es un programa válido (`tsc` exit 0) y que pasa las 16 suites acotadas con 934/934 en verde (ver §Observaciones B1-B5). Las listas de `it` de la spec no enumeran esas ramas. Codex siguió la spec, así que el hueco nace en la spec y su cierre pasa por una enmienda, como en #152.
 
@@ -176,5 +176,25 @@ Sobre la corrección: la implementación de HEAD es correcta en todos estos punt
 - `bun run lint` (`expo lint`): exit 0.
 - No corrí `./init.sh`, la suite completa, `test:e2e` ni `db:migrate`, por instrucción del leader.
 
-## Output de ./init.sh — pendiente del log del leader
-El leader corre `./init.sh` en cedb357a y me lo envía por SendMessage. Esta sección se completa con ese log. Aunque saliera verde, no cambiaría el veredicto: el rechazo es por B1-B5. Si saliera rojo, se suma como bloqueante.
+## Output de ./init.sh (corrido por el leader en 438b3263, exit=0)
+El leader lo corrió en 438b3263 con `./init.sh > <log> 2>&1`, sin pipe, y terminó a las 21:06 UTC. El código de producción es idéntico al de cedb357a, porque el único commit extra es este review. Ningún otro init.sh corría a la vez (Frontend confirmó que wt-157 estaba parado). Log entero en `scratchpad/init155-438b3263.log` (27 738 líneas). Estas son sus líneas de resumen:
+
+```
+✅ Sin features en progreso (sesión limpia)
+✅ Build exitoso
+Test Suites: 176 passed, 176 total          (backend unit)
+Tests:       1348 passed, 1348 total
+Test Suites: 2 passed, 2 total              (segundo bloque backend)
+Tests:       14 passed, 14 total
+Test Suites: 97 passed, 97 total            (mobile jest)
+Tests:       2351 passed, 2351 total
+✅ Tests pasados
+Test Suites: 3 skipped, 29 passed, 29 of 32 total   (e2e)
+Tests:       8 skipped, 438 passed, 446 total
+✅ Tests e2e pasados
+✅ Lint sin errores
+✅ Typecheck sin errores
+✅ Todo verde. Listo para trabajar.
+```
+
+No hay regresiones. Jest de móvil imprime el aviso «A worker process has failed to exit gracefully…» (línea 27392 del log), pero no falla ninguna suite. El veredicto sigue siendo RECHAZADO por B1-B5. init.sh no lo cambia.
