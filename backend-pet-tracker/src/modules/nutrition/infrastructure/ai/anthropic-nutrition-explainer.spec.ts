@@ -207,3 +207,49 @@ describe('R10 (nutrition-ai-explainer #18): normaliza respuestas a texto o null 
     expect(warn).not.toHaveBeenCalled();
   });
 });
+
+describe('R11 (nutrition-ai-explainer #18): cualquier fallo degrada con un warn', () => {
+  let warn: jest.SpyInstance<
+    ReturnType<Logger['warn']>,
+    Parameters<Logger['warn']>
+  >;
+  beforeEach(() => {
+    warn = jest
+      .spyOn(Logger.prototype, 'warn')
+      .mockImplementation(() => undefined);
+  });
+  afterEach(() => jest.restoreAllMocks());
+  it.each<[number | string | undefined, string]>([
+    [401, 'invalid x-api-key'],
+    [429, 'rate_limit_error'],
+    [529, 'overloaded_error'],
+    [500, 'api_error'],
+    [undefined, 'Connection error.'],
+    [undefined, 'Request timed out.'],
+    ['string', 'boom'],
+  ])('degrada %s: %s', async (status, message) => {
+    const error =
+      status === 'string'
+        ? 'boom'
+        : Object.assign(new Error(message), { status });
+    const create = jest
+      .fn<Promise<AnthropicMessageResponse>, [AnthropicMessageParams]>()
+      .mockRejectedValue(error);
+    const adapter = new AnthropicNutritionExplainer(
+      'modelo-de-prueba',
+      'clave-de-prueba',
+      { create },
+    );
+    await expect(adapter.explain(input, result, ctx)).resolves.toBeNull();
+    expect(create).toHaveBeenCalledTimes(1);
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(warn.mock.calls[0][0]).toEqual({
+      scope: 'nutrition-ai',
+      petId: ctx.petId,
+      planId: ctx.planId,
+      message,
+    });
+    expect(JSON.stringify(warn.mock.calls)).not.toContain('clave-de-prueba');
+    expect(JSON.stringify(warn.mock.calls)).not.toContain('pollo');
+  });
+});
