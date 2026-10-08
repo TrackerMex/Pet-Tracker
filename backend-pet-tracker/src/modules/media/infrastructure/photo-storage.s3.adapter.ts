@@ -37,4 +37,9 @@ export class PhotoStorageS3Adapter implements PhotoStorage {
     });
     return getSignedUrl(this.s3, command, { expiresIn: expiresInSeconds });
   }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- stub rojo de #157 R7, lo retira el verde
+  objectExists(key: string): Promise<boolean> {
+    return Promise.resolve(true);
+  }
 }

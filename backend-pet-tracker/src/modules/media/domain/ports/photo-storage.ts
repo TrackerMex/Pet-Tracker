@@ -9,4 +9,5 @@ export const PHOTO_STORAGE = Symbol('PhotoStorage');
 export interface PhotoStorage {
   createUploadUrl(key: string, expiresInSeconds: number): Promise<string>;
   createDownloadUrl(key: string, expiresInSeconds: number): Promise<string>;
+  objectExists(key: string): Promise<boolean>;
 }

@@ -21,6 +21,7 @@ function buildDeps() {
   const photoStorage: PhotoStorage = {
     createUploadUrl,
     createDownloadUrl: jest.fn(),
+    objectExists: jest.fn(),
   };
   const auditLogger: AuditLogger = { record };
 
