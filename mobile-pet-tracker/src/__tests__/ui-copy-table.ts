@@ -488,6 +488,7 @@ export const R14_GEOFENCES: UseRow[] = [
   { file: 'src/screens/geofences/index.tsx', key: 'geofences.cancel' },
   { file: 'src/screens/geofences/index.tsx', key: 'geofences.delete' },
   { file: 'src/screens/geofences/index.tsx', key: 'geofences.empty' },
+  { file: 'src/screens/geofences/index.tsx', key: 'geofences.emptyBody' }, // #155 R8
   { file: 'src/screens/geofences/index.tsx', key: 'geofences.radius' },
   { file: 'src/screens/geofences/index.tsx', key: 'geofences.activeLabel' },
   { file: 'src/screens/geofences/index.tsx', key: 'geofences.delete' },

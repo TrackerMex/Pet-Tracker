@@ -107,14 +107,6 @@ describe('#41 R5: la pantalla pinta la lista de zonas y sus estados', () => {
     expect(root.props.contentContainerStyle).toEqual({ padding: 24, gap: 16, paddingBottom: 48 });
   });
 
-  it('pinta el vacío con su tarjeta y su copy', async () => {
-    mockList.mockResolvedValue({ kind: 'ok', geofences: [] });
-    await mount();
-    const empty = await screen.findByTestId('geofences-empty');
-    expect(empty.props.className).toBe('rounded-card border border-border bg-surface p-4 shadow-sm items-center py-8');
-    expect(within(empty).getByText('Aún no hay zonas seguras').props.className).toBe('text-center font-normal text-muted');
-    expect(screen.queryByTestId('geofences-loading')).toBeNull();
-  });
 
   it('pinta cada nombre y radio en sus columnas en el orden del backend', async () => {
     mockList.mockResolvedValue({ kind: 'ok', geofences: [
@@ -525,5 +517,30 @@ describe('#146 R12: con el máximo de zonas la lista no ofrece añadir otra', ()
   it('pinta el aviso del máximo en inglés', async () => {
     mockList.mockResolvedValue({ kind: 'ok', geofences: fiveZones }); await mount('en');
     expect(await screen.findByTestId('geofences-limit')).toHaveTextContent('This pet already has 5 zones, the maximum. Delete one to add another.');
+  });
+});
+
+describe('#155 R8: sin zonas seguras, Pingo enseña el collar', () => {
+
+  it('pinta la pose, el título y la frase de Pingo, sin tarjeta', async () => {
+    mockList.mockResolvedValue({ kind: 'ok', geofences: [] });
+    await mount();
+    const empty = await screen.findByTestId('geofences-empty');
+    expect(empty.props.className).toBe('items-center gap-3 py-8');
+    const pose = await screen.findByTestId('geofences-empty-pose');
+    expect(pose.props.source).toEqual([
+      expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/pingo-collar\.webp$/) }),
+    ]);
+    expect(screen.getByTestId('geofences-empty-title')).toHaveTextContent('Aún no hay zonas seguras');
+    expect(screen.getByTestId('geofences-empty-body')).toHaveTextContent('Cuando haya una zona segura, te aviso si tu mascota sale de ella.');
+    expect(within(empty).getByText('Aún no hay zonas seguras').props.className).toBe('text-center text-lg font-bold text-foreground');
+    expect(screen.queryByTestId('geofences-loading')).toBeNull();
+  });
+
+  it('no ofrece acción', async () => {
+    mockList.mockResolvedValue({ kind: 'ok', geofences: [] });
+    await mount();
+    await screen.findByTestId('geofences-empty-title');
+    expect(screen.queryByTestId('geofences-empty-action')).toBeNull();
   });
 });
