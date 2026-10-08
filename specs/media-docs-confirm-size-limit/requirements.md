@@ -1,6 +1,6 @@
 ---
 feature: "media-docs-confirm-size-limit"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec, backend, media]
 ---
 
@@ -295,5 +295,5 @@ Clasificado viñeta a viñeta (memoria `fuera-de-alcance-no-todo-es-feature`):
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
-- Respuestas a Q1–Q3 (frase literal del humano): ____
+- [x] Aprobado por humano (fecha: 2026-10-08) ← gate obligatorio antes de implementar
+- Respuestas a Q1–Q3 (frase literal del humano, escrita en la página de Notion): «Dejarlas como los recomendaste es buena opción.» Q1: 10485760 bytes; Q2: el objeto se deja en el bucket; Q3: no se registra deuda. DA1–DA6 quedan con su opción por defecto.
