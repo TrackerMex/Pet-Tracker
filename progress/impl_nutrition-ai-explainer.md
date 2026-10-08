@@ -5702,3 +5702,2420 @@ specs/nutrition-ai-explainer/traceability.md
  specs/nutrition-ai-explainer/traceability.md       |   44 +-
  30 files changed, 7386 insertions(+), 41 deletions(-)
 ```
+
+
+# Ronda 2 — Enmienda E1
+
+## Base E1
+
+```text
+$ pwd
+/home/claude/sites/Pet-Tracker-wt-18
+$ git branch --show-current
+feature/18-nutrition-ai-explainer-claude
+$ git rev-parse HEAD
+5b069b93a76a8cf2e8aef39fe42c82148915c24e
+$ git status --short
+(salida vacía)
+```
+
+H0E1 = `5b069b93a76a8cf2e8aef39fe42c82148915c24e` (commit que añade el handoff E1). Ronda 1 intacta byte a byte. Skills cargadas: ninguna. `init.sh`, `pnpm test:e2e` y todos los e2e: **delegado al leader**. R19: gate humano, sin ejecutar.
+
+Leídos enteros: requirements §Enmienda E1 (E1.0–E1.8 y Cifras y alcance), tasks §Enmienda E1 hasta el final, traceability y review de ronda 1 (F1–F5).
+
+`git merge-base --is-ancestor c4b86430 HEAD`: exit=0.
+
+`git merge-base --is-ancestor c09ee51c HEAD`: exit=0.
+
+`git diff --quiet c09ee51c HEAD -- backend-pet-tracker`: exit=0.
+
+`/tmp/e1-check.js` creado con el contenido literal del handoff:
+
+```javascript
+const r = require(process.argv[2]);
+const failed = r.testResults
+  .flatMap((t) => t.assertionResults)
+  .filter((a) => a.status === 'failed')
+  .map((a) => a.title)
+  .sort();
+console.log(JSON.stringify({ total: r.numTotalTests, passed: r.numPassedTests, failed: r.numFailedTests, suiteErrors: r.numRuntimeErrorTestSuites, failedTitles: failed }));
+```
+
+### Anclas en H0E1
+
+| Ancla | Declarado base | Medido | Exit |
+|---|---|---|---|
+| E1-A1 | 1 | 1 | 0 |
+| E1-A2 | 0 | 0 | 1 |
+| E1-A3 | 0 | 0 | 1 |
+| E1-A4 | 0 | 0 | 1 |
+| E1-A5 | 0 | 0 | 1 |
+| E1-A6 | 1 | 1 | 0 |
+| E1-A7 | 1 | 1 | 0 |
+| E1-A8 | 1 | 1 | 0 |
+| E1-A9 | 1 | 1 | 0 |
+| E1-A10 | 0 | 0 | 1 |
+| E1-A11 | 0 | 0 | 1 |
+| E1-A12 | 0 | 0 | 1 |
+| E1-A13 | 0 | 0 | 1 |
+| E1-A14 | 0 | 0 | 1 |
+| E1-A15 | 0 | 0 | 1 |
+| E1-A16 | 0 | 0 | 1 |
+| E1-A17 | 0 | 0 | 1 |
+| E1-A18 | 0 | 0 | 1 |
+| E1-A19 | 0 | 0 | 1 |
+| E1-A20 | 0 | 0 | 1 |
+| E1-A21 | 0 | 0 | 1 |
+| E1-A22 | 0 | 0 | 1 |
+| E1-A23 | 0 | 0 | 1 |
+| E1-A24 | 4 | 4 | 0 |
+| E1-A25 | 0 | 0 | 1 |
+| E1-A26 | 0 | 0 | 0 |
+| E1-A27 | 0 | 0 | 0 |
+| E1-A28 | 0 | 0 | 0 |
+| E1-A29 | 0 | 0 | 1 |
+| E1-A30 | 0 | 0 | 1 |
+| E1-A31 | 0 | 0 | 1 |
+| E1-A32 | 0 | 0 | 1 |
+| E1-A33 | 0 | 0 | 1 |
+| E1-A34 | 0 | 0 | 1 |
+| E1-A35 | 0 | 0 | 0 |
+| E1-A36 | 0 | 0 | 0 |
+| E1-A37 | 1 | 1 | 0 |
+| E1-A38 | 4 | 4 | 0 |
+
+Comandos de las 38 anclas, copiados del handoff con `AI` definido en la misma línea en cada ejecución:
+
+```bash
+AI=backend-pet-tracker/src/modules/nutrition/infrastructure/ai; grep -cF "await import('@anthropic-ai/sdk')" $AI/anthropic-nutrition-explainer.ts
+AI=backend-pet-tracker/src/modules/nutrition/infrastructure/ai; grep -cF "from '@anthropic-ai/sdk'" $AI/anthropic-nutrition-explainer.ts
+AI=backend-pet-tracker/src/modules/nutrition/infrastructure/ai; grep -cF 'export type AnthropicSdkLoader' $AI/anthropic-nutrition-explainer.ts
+AI=backend-pet-tracker/src/modules/nutrition/infrastructure/ai; grep -cF 'export interface AnthropicClientOptions' $AI/anthropic-nutrition-explainer.ts
+AI=backend-pet-tracker/src/modules/nutrition/infrastructure/ai; grep -cF 'await this.loadSdk()' $AI/anthropic-nutrition-explainer.ts
+AI=backend-pet-tracker/src/modules/nutrition/infrastructure/ai; grep -cF 'if (this.client === null)' $AI/anthropic-nutrition-explainer.ts
+AI=backend-pet-tracker/src/modules/nutrition/infrastructure/ai; grep -cF 'Array.isArray(response.content)' $AI/anthropic-nutrition-explainer.ts
+AI=backend-pet-tracker/src/modules/nutrition/infrastructure/ai; grep -cF "block.type === 'text'" $AI/anthropic-nutrition-explainer.ts
+AI=backend-pet-tracker/src/modules/nutrition/infrastructure/ai; grep -cF 'return new AnthropicNutritionExplainer(model, key, null);' $AI/nutrition-explainer.factory.ts
+AI=backend-pet-tracker/src/modules/nutrition/infrastructure/ai; grep -cF 'constructorArgs(' $AI/nutrition-explainer.factory.spec.ts
+AI=backend-pet-tracker/src/modules/nutrition/infrastructure/ai; grep -cF "'%s y %s fallan: gana %s'" $AI/nutrition-explainer.factory.spec.ts
+AI=backend-pet-tracker/src/modules/nutrition/infrastructure/ai; grep -cF 'pasa clave y modelo recortados (E1.1)' $AI/nutrition-explainer.factory.spec.ts
+AI=backend-pet-tracker/src/modules/nutrition/infrastructure/ai; grep -cF '.explain(' $AI/nutrition-explainer.factory.spec.ts
+AI=backend-pet-tracker/src/modules/nutrition/infrastructure/ai; grep -cF "'content string'" $AI/anthropic-nutrition-explainer.spec.ts
+AI=backend-pet-tracker/src/modules/nutrition/infrastructure/ai; grep -cF "'content objeto'" $AI/anthropic-nutrition-explainer.spec.ts
+AI=backend-pet-tracker/src/modules/nutrition/infrastructure/ai; grep -cF "'content numero'" $AI/anthropic-nutrition-explainer.spec.ts
+AI=backend-pet-tracker/src/modules/nutrition/infrastructure/ai; grep -cF "'content undefined'" $AI/anthropic-nutrition-explainer.spec.ts
+AI=backend-pet-tracker/src/modules/nutrition/infrastructure/ai; grep -cF "'bloque no-text con text'" $AI/anthropic-nutrition-explainer.spec.ts
+AI=backend-pet-tracker/src/modules/nutrition/infrastructure/ai; grep -cF "'solo bloque no-text con text'" $AI/anthropic-nutrition-explainer.spec.ts
+AI=backend-pet-tracker/src/modules/nutrition/infrastructure/ai; grep -cF "'texto-futuro'" $AI/anthropic-nutrition-explainer.spec.ts
+AI=backend-pet-tracker/src/modules/nutrition/infrastructure/ai; grep -cF 'R11 (nutrition-ai-explainer #18) E1.3:' $AI/anthropic-nutrition-explainer.spec.ts
+AI=backend-pet-tracker/src/modules/nutrition/infrastructure/ai; grep -cF "'sdk ausente'" $AI/anthropic-nutrition-explainer.spec.ts
+AI=backend-pet-tracker/src/modules/nutrition/infrastructure/ai; grep -cF "'opciones invalidas'" $AI/anthropic-nutrition-explainer.spec.ts
+AI=backend-pet-tracker/src/modules/nutrition/infrastructure/ai; grep -cF 'new AnthropicNutritionExplainer(' $AI/anthropic-nutrition-explainer.spec.ts
+AI=backend-pet-tracker/src/modules/nutrition/infrastructure/ai; git diff -U0 c09ee51c -- $AI/nutrition-explainer.factory.ts | grep -cvE '^(diff |index |--- |\+\+\+ |@@ )'
+AI=backend-pet-tracker/src/modules/nutrition/infrastructure/ai; git diff c09ee51c -- backend-pet-tracker/src/modules/nutrition/nutrition-scope.spec.ts | wc -l
+AI=backend-pet-tracker/src/modules/nutrition/infrastructure/ai; grep -rlF "jest.mock('@anthropic-ai/sdk'" backend-pet-tracker/src backend-pet-tracker/test | wc -l
+AI=backend-pet-tracker/src/modules/nutrition/infrastructure/ai; grep -rlE "from '@anthropic-ai/sdk'|import\('@anthropic-ai/sdk'\)" backend-pet-tracker/src backend-pet-tracker/test --include=*spec.ts | wc -l
+AI=backend-pet-tracker/src/modules/nutrition/infrastructure/ai; grep -cF 'return new AnthropicNutritionExplainer(model.trim(), key.trim(), null);' $AI/nutrition-explainer.factory.ts
+AI=backend-pet-tracker/src/modules/nutrition/infrastructure/ai; grep -cF "'content array-like'" $AI/anthropic-nutrition-explainer.spec.ts
+AI=backend-pet-tracker/src/modules/nutrition/infrastructure/ai; grep -cF "'sin stop_reason'" $AI/anthropic-nutrition-explainer.spec.ts
+AI=backend-pet-tracker/src/modules/nutrition/infrastructure/ai; grep -cF "'no soy Error'" $AI/anthropic-nutrition-explainer.spec.ts
+AI=backend-pet-tracker/src/modules/nutrition/infrastructure/ai; grep -cF "'[object Object]'" $AI/anthropic-nutrition-explainer.spec.ts
+AI=backend-pet-tracker/src/modules/nutrition/infrastructure/ai; grep -cF 'const loadSdk: AnthropicSdkLoader' $AI/anthropic-nutrition-explainer.spec.ts
+AI=backend-pet-tracker/src/modules/nutrition/infrastructure/ai; tr -d ' \n' < $AI/anthropic-nutrition-explainer.spec.ts | grep -oF "'clave-de-prueba',null" | wc -l
+AI=backend-pet-tracker/src/modules/nutrition/infrastructure/ai; tr -d ' \n' < $AI/anthropic-nutrition-explainer.spec.ts | grep -oF "'clave-de-prueba',null,loadSdk" | wc -l
+AI=backend-pet-tracker/src/modules/nutrition/infrastructure/ai; grep -rlF 'new AnthropicNutritionExplainer(' backend-pet-tracker/src backend-pet-tracker/test --include=*spec.ts | wc -l
+AI=backend-pet-tracker/src/modules/nutrition/infrastructure/ai; tr -d ' \n' < $AI/anthropic-nutrition-explainer.spec.ts | grep -oF "'clave-de-prueba',{" | wc -l
+```
+
+### Línea base E1
+
+`FORCE_COLOR=0 pnpm -C backend-pet-tracker exec jest src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.spec.ts --json --outputFile=/tmp/e1-base-fs.json`: exit=0.
+
+```json
+{"total":18,"passed":18,"failed":0,"suiteErrors":0,"failedTitles":[]}
+```
+
+`FORCE_COLOR=0 pnpm -C backend-pet-tracker exec jest src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts --json --outputFile=/tmp/e1-base-as.json`: exit=0.
+
+```json
+{"total":25,"passed":25,"failed":0,"suiteErrors":0,"failedTitles":[]}
+```
+
+`FORCE_COLOR=0 pnpm -C backend-pet-tracker exec jest src/modules/nutrition/nutrition-scope.spec.ts --json --outputFile=/tmp/e1-base-ss.json`: exit=0.
+
+```json
+{"total":9,"passed":9,"failed":0,"suiteErrors":0,"failedTitles":[]}
+```
+
+`FORCE_COLOR=0 pnpm -C backend-pet-tracker exec jest  --json --outputFile=/tmp/e1-base-unit.json`: exit=0.
+
+```json
+{"total":1431,"passed":1431,"failed":0,"suiteErrors":0,"failedTitles":[]}
+```
+
+`pnpm -C backend-pet-tracker exec tsc --noEmit -p tsconfig.json`: exit=0. `grep -c 'error TS' /tmp/e1-base.tsc`: 0.
+
+pgrep antes de la suite completa (`pgrep -af 'init\.sh|test:e2e|jest-e2e' | grep -v pgrep`): salida vacía, exit=1.
+
+Decisión de alcance: el cierre del handoff dice «17» sondas pero sus listas nombran 18 (8 del factory + 10 del adaptador). Se ejecutan **todas las 18 enumeradas**, con los gates literales, sin omitir ninguna.
+
+## Commits E1
+
+### E1-c1 — `807b56626521f8dcf948a1572fccf51f0eebefb7`
+
+`test(nutrition-ai-explainer): lock factory constructor arguments (R5, E1.1)`
+
+`eslint --fix`: exit=0. `tsc --noEmit -p tsconfig.json`: exit=0; 0 errores TS.
+
+`jest src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.spec.ts`: exit=1.
+
+```json
+{"total":18,"passed":16,"failed":2,"suiteErrors":0,"failedTitles":["anti-vacio: development selecciona Anthropic sin invocarlo","anti-vacio: todas cumplidas seleccionan el adaptador real sin invocarlo"]}
+```
+
+```text
+  ● R3 (nutrition-ai-explainer #18): NODE_ENV test apaga antes que nada › anti-vacio: development selecciona Anthropic sin invocarlo
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 2
+    + Received  + 2
+
+      Object {
+    -   "apiKey": "clave-de-prueba",
+    +   "apiKey": "modelo-de-prueba",
+        "client": null,
+    -   "model": "modelo-de-prueba",
+    +   "model": "clave-de-prueba",
+      }
+
+      32 |     const adapter = createNutritionExplainer(config(valid));
+      33 |     expect(adapter).toBeInstanceOf(AnthropicNutritionExplainer);
+    > 34 |     expect(constructorArgs(adapter)).toEqual({
+         |                                      ^
+      35 |       model: 'modelo-de-prueba',
+      36 |       apiKey: 'clave-de-prueba',
+      37 |       client: null,
+
+      at Object.<anonymous> (modules/nutrition/infrastructure/ai/nutrition-explainer.factory.spec.ts:34:38)
+```
+
+```text
+  ● R5 (nutrition-ai-explainer #18): seleccion en orden con reason exacto › anti-vacio: todas cumplidas seleccionan el adaptador real sin invocarlo
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 2
+    + Received  + 2
+
+      Object {
+    -   "apiKey": "clave-de-prueba",
+    +   "apiKey": "modelo-de-prueba",
+        "client": null,
+    -   "model": "modelo-de-prueba",
+    +   "model": "clave-de-prueba",
+      }
+
+      81 |     const adapter = createNutritionExplainer(config(valid));
+      82 |     expect(adapter).toBeInstanceOf(AnthropicNutritionExplainer);
+    > 83 |     expect(constructorArgs(adapter)).toEqual({
+         |                                      ^
+      84 |       model: 'modelo-de-prueba',
+      85 |       apiKey: 'clave-de-prueba',
+      86 |       client: null,
+
+      at Object.<anonymous> (modules/nutrition/infrastructure/ai/nutrition-explainer.factory.spec.ts:83:38)
+```
+
+Commit encadenado al gate literal:
+
+```bash
+[ "$(node /tmp/e1-check.js /tmp/e1-c1.json)" = '{"total":18,"passed":16,"failed":2,"suiteErrors":0,"failedTitles":["anti-vacio: development selecciona Anthropic sin invocarlo","anti-vacio: todas cumplidas seleccionan el adaptador real sin invocarlo"]}' ] && git commit -m 'test(nutrition-ai-explainer): lock factory constructor arguments (R5, E1.1)' -- backend-pet-tracker/src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.spec.ts backend-pet-tracker/src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.ts
+```
+
+`git show --name-only --format= HEAD`:
+
+```text
+backend-pet-tracker/src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.spec.ts
+backend-pet-tracker/src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.ts
+```
+
+`git diff --cached --quiet`: exit=0.
+
+### E1-c2 — `8273dce8da541f5e9a0593cd5482a9dad1c91797`
+
+`fix(nutrition-ai-explainer): restore factory constructor argument order (R5, E1.1)`
+
+`eslint --fix`: exit=0. `tsc --noEmit -p tsconfig.json`: exit=0; 0 errores TS.
+
+`jest src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.spec.ts`: exit=0.
+
+```json
+{"total":18,"passed":18,"failed":0,"suiteErrors":0,"failedTitles":[]}
+```
+
+Commit encadenado al gate literal:
+
+```bash
+[ "$(node /tmp/e1-check.js /tmp/e1-c2.json)" = '{"total":18,"passed":18,"failed":0,"suiteErrors":0,"failedTitles":[]}' ] && pnpm -C backend-pet-tracker exec eslint src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.ts && git commit -m 'fix(nutrition-ai-explainer): restore factory constructor argument order (R5, E1.1)' -- backend-pet-tracker/src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.ts
+```
+
+`git show --name-only --format= HEAD`:
+
+```text
+backend-pet-tracker/src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.ts
+```
+
+`git diff --cached --quiet`: exit=0.
+
+Restauración: `git checkout c09ee51c -- backend-pet-tracker/src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.ts`; `git diff c09ee51c HEAD -- backend-pet-tracker/src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.ts | wc -l`: 0.
+
+E1-A25 después de E1-c2: 0 (declarado 0).
+
+### E1-c3 — `dca3aecd2c3dfe3ac49b324875ca9acd34e4240e`
+
+`test(nutrition-ai-explainer): expect trimmed key and model from factory (R5, E1.1, D-E1-a)`
+
+`eslint --fix`: exit=0. `tsc --noEmit -p tsconfig.json`: exit=0; 0 errores TS.
+
+`jest src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.spec.ts`: exit=1.
+
+```json
+{"total":19,"passed":18,"failed":1,"suiteErrors":0,"failedTitles":["pasa clave y modelo recortados (E1.1)"]}
+```
+
+```text
+  ● R5 (nutrition-ai-explainer #18): seleccion en orden con reason exacto › pasa clave y modelo recortados (E1.1)
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 2
+    + Received  + 4
+
+      Object {
+    -   "apiKey": "clave-de-prueba",
+    +   "apiKey": "	 clave-de-prueba
+    + ",
+        "client": null,
+    -   "model": "modelo-de-prueba",
+    +   "model": "	 modelo-de-prueba
+    + ",
+      }
+
+       96 |     );
+       97 |     expect(adapter).toBeInstanceOf(AnthropicNutritionExplainer);
+    >  98 |     expect(constructorArgs(adapter)).toEqual({
+          |                                      ^
+       99 |       model: 'modelo-de-prueba',
+      100 |       apiKey: 'clave-de-prueba',
+      101 |       client: null,
+
+      at Object.<anonymous> (modules/nutrition/infrastructure/ai/nutrition-explainer.factory.spec.ts:98:38)
+```
+
+Commit encadenado al gate literal:
+
+```bash
+[ "$(node /tmp/e1-check.js /tmp/e1-c3.json)" = '{"total":19,"passed":18,"failed":1,"suiteErrors":0,"failedTitles":["pasa clave y modelo recortados (E1.1)"]}' ] && git commit -m 'test(nutrition-ai-explainer): expect trimmed key and model from factory (R5, E1.1, D-E1-a)' -- backend-pet-tracker/src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.spec.ts
+```
+
+`git show --name-only --format= HEAD`:
+
+```text
+backend-pet-tracker/src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.spec.ts
+```
+
+`git diff --cached --quiet`: exit=0.
+
+### E1-c4 — `f7dc3072461ad29187a1c79e25a65c97cf98fc09`
+
+`feat(nutrition-ai-explainer): pass trimmed key and model to Anthropic explainer (R5, E1.1, D-E1-a)`
+
+`eslint --fix`: exit=0. `tsc --noEmit -p tsconfig.json`: exit=0; 0 errores TS.
+
+`jest src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.spec.ts`: exit=0.
+
+```json
+{"total":19,"passed":19,"failed":0,"suiteErrors":0,"failedTitles":[]}
+```
+
+Commit encadenado al gate literal:
+
+```bash
+[ "$(node /tmp/e1-check.js /tmp/e1-c4.json)" = '{"total":19,"passed":19,"failed":0,"suiteErrors":0,"failedTitles":[]}' ] && pnpm -C backend-pet-tracker exec eslint src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.ts && git commit -m 'feat(nutrition-ai-explainer): pass trimmed key and model to Anthropic explainer (R5, E1.1, D-E1-a)' -- backend-pet-tracker/src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.ts
+```
+
+`git show --name-only --format= HEAD`:
+
+```text
+backend-pet-tracker/src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.ts
+```
+
+`git diff --cached --quiet`: exit=0.
+
+HASH_C4 = `f7dc3072461ad29187a1c79e25a65c97cf98fc09`.
+
+E1-A9 después de E1-c4: 0 (declarado 0).
+
+E1-A25 después de E1-c4: 2 (declarado 2).
+
+E1-A29 después de E1-c4: 1 (declarado 1).
+
+### E1-c5 — `34ee1311cd61773297cec077031551d1115a8f53`
+
+`test(nutrition-ai-explainer): lock pairwise order of explainer guards (R3, R5, E1.2)`
+
+`eslint --fix`: exit=0. `tsc --noEmit -p tsconfig.json`: exit=0; 0 errores TS.
+
+`jest src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.spec.ts`: exit=1.
+
+```json
+{"total":25,"passed":23,"failed":2,"suiteErrors":0,"failedTitles":["ANTHROPIC_ENABLED y ANTHROPIC_API_KEY fallan: gana not-enabled","ANTHROPIC_ENABLED y ANTHROPIC_MODEL fallan: gana not-enabled"]}
+```
+
+```text
+  ● R5 (nutrition-ai-explainer #18): seleccion en orden con reason exacto › ANTHROPIC_ENABLED y ANTHROPIC_API_KEY fallan: gana not-enabled
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "not-enabled"
+    Received: "key-missing"
+
+      105 |     );
+      106 |     expect(adapter).toBeInstanceOf(NullNutritionExplainer);
+    > 107 |     expect((adapter as NullNutritionExplainer).reason).toBe(reason);
+          |                                                        ^
+      108 |   });
+      109 |   it('pasa clave y modelo recortados (E1.1)', () => {
+      110 |     const adapter = createNutritionExplainer(
+
+      at modules/nutrition/infrastructure/ai/nutrition-explainer.factory.spec.ts:107:56
+```
+
+```text
+  ● R5 (nutrition-ai-explainer #18): seleccion en orden con reason exacto › ANTHROPIC_ENABLED y ANTHROPIC_MODEL fallan: gana not-enabled
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "not-enabled"
+    Received: "model-missing"
+
+      105 |     );
+      106 |     expect(adapter).toBeInstanceOf(NullNutritionExplainer);
+    > 107 |     expect((adapter as NullNutritionExplainer).reason).toBe(reason);
+          |                                                        ^
+      108 |   });
+      109 |   it('pasa clave y modelo recortados (E1.1)', () => {
+      110 |     const adapter = createNutritionExplainer(
+
+      at modules/nutrition/infrastructure/ai/nutrition-explainer.factory.spec.ts:107:56
+```
+
+Commit encadenado al gate literal:
+
+```bash
+[ "$(node /tmp/e1-check.js /tmp/e1-c5.json)" = '{"total":25,"passed":23,"failed":2,"suiteErrors":0,"failedTitles":["ANTHROPIC_ENABLED y ANTHROPIC_API_KEY fallan: gana not-enabled","ANTHROPIC_ENABLED y ANTHROPIC_MODEL fallan: gana not-enabled"]}' ] && git commit -m 'test(nutrition-ai-explainer): lock pairwise order of explainer guards (R3, R5, E1.2)' -- backend-pet-tracker/src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.spec.ts backend-pet-tracker/src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.ts
+```
+
+`git show --name-only --format= HEAD`:
+
+```text
+backend-pet-tracker/src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.spec.ts
+backend-pet-tracker/src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.ts
+```
+
+`git diff --cached --quiet`: exit=0.
+
+### E1-c6 — `fa5df45b6a1505b61ab1f042d8d45c0f8fdf1acb`
+
+`fix(nutrition-ai-explainer): restore explainer guard order (R3, R5, E1.2)`
+
+`eslint --fix`: exit=0. `tsc --noEmit -p tsconfig.json`: exit=0; 0 errores TS.
+
+`jest src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.spec.ts`: exit=0.
+
+```json
+{"total":25,"passed":25,"failed":0,"suiteErrors":0,"failedTitles":[]}
+```
+
+Commit encadenado al gate literal:
+
+```bash
+[ "$(node /tmp/e1-check.js /tmp/e1-c6.json)" = '{"total":25,"passed":25,"failed":0,"suiteErrors":0,"failedTitles":[]}' ] && pnpm -C backend-pet-tracker exec eslint src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.ts && git commit -m 'fix(nutrition-ai-explainer): restore explainer guard order (R3, R5, E1.2)' -- backend-pet-tracker/src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.ts
+```
+
+`git show --name-only --format= HEAD`:
+
+```text
+backend-pet-tracker/src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.ts
+```
+
+`git diff --cached --quiet`: exit=0.
+
+Restauración: `git checkout f7dc3072461ad29187a1c79e25a65c97cf98fc09 -- backend-pet-tracker/src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.ts`; `git diff f7dc3072461ad29187a1c79e25a65c97cf98fc09 HEAD -- backend-pet-tracker/src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.ts | wc -l`: 0.
+
+E1-A25 después de E1-c6: 2 (declarado 2).
+
+E1-A29 después de E1-c6: 1 (declarado 1).
+
+### E1-c7 — `7ef04fc7bd685edf15f3d6e34ebf69b8ab977136`
+
+`refactor(nutrition-ai-explainer): inject SDK loader into Anthropic explainer (R11, E1.3)`
+
+`eslint --fix`: exit=0. `tsc --noEmit -p tsconfig.json`: exit=0; 0 errores TS.
+
+`jest src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts`: exit=0.
+
+```json
+{"total":25,"passed":25,"failed":0,"suiteErrors":0,"failedTitles":[]}
+```
+
+`jest src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.spec.ts`: exit=0.
+
+```json
+{"total":25,"passed":25,"failed":0,"suiteErrors":0,"failedTitles":[]}
+```
+
+`jest src/modules/nutrition/nutrition-scope.spec.ts`: exit=0.
+
+```json
+{"total":9,"passed":9,"failed":0,"suiteErrors":0,"failedTitles":[]}
+```
+
+Commit encadenado al gate literal:
+
+```bash
+[ "$(node /tmp/e1-check.js /tmp/e1-c7as.json)" = '{"total":25,"passed":25,"failed":0,"suiteErrors":0,"failedTitles":[]}' ] && [ "$(node /tmp/e1-check.js /tmp/e1-c7fs.json)" = '{"total":25,"passed":25,"failed":0,"suiteErrors":0,"failedTitles":[]}' ] && [ "$(node /tmp/e1-check.js /tmp/e1-c7ss.json)" = '{"total":9,"passed":9,"failed":0,"suiteErrors":0,"failedTitles":[]}' ] && pnpm -C backend-pet-tracker exec eslint src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.ts && git commit -m 'refactor(nutrition-ai-explainer): inject SDK loader into Anthropic explainer (R11, E1.3)' -- backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.ts
+```
+
+`git show --name-only --format= HEAD`:
+
+```text
+backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.ts
+```
+
+`git diff --cached --quiet`: exit=0.
+
+HASH_C7 = `7ef04fc7bd685edf15f3d6e34ebf69b8ab977136`.
+
+E1-A1 después de E1-c7: 1 (declarado 1).
+
+E1-A2 después de E1-c7: 0 (declarado 0).
+
+E1-A3 después de E1-c7: 1 (declarado 1).
+
+E1-A4 después de E1-c7: 1 (declarado 1).
+
+E1-A5 después de E1-c7: 1 (declarado 1).
+
+E1-A6 después de E1-c7: 1 (declarado 1).
+
+### E1-c8 — `9d99df4c311374b66cbf516bfbf7bfabc80b9ab1`
+
+`test(nutrition-ai-explainer): lock lazy SDK load inside degradation (R11, E1.3)`
+
+`eslint --fix`: exit=0. `tsc --noEmit -p tsconfig.json`: exit=0; 0 errores TS.
+
+`jest src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts`: exit=1.
+
+```json
+{"total":28,"passed":26,"failed":2,"suiteErrors":0,"failedTitles":["el constructor del SDK lanza: null y un warn sin relanzar","fallo del import del SDK: null y un warn sin relanzar"]}
+```
+
+```text
+  ● R11 (nutrition-ai-explainer #18) E1.3: la carga perezosa del SDK tambien degrada a null › fallo del import del SDK: null y un warn sin relanzar
+
+    expect(received).resolves.toBeNull()
+
+    Received promise rejected instead of resolved
+    Rejected to value: [Error: sdk ausente]
+
+      278 |       loadSdk,
+      279 |     );
+    > 280 |     await expect(adapter.explain(input, result, ctx)).resolves.toBeNull();
+          |           ^
+      281 |     expect(warn).toHaveBeenCalledTimes(1);
+      282 |     expect(warn.mock.calls[0][0]).toEqual({
+      283 |       scope: 'nutrition-ai',
+
+      at expect (../node_modules/.pnpm/expect@30.4.1/node_modules/expect/build/index.js:2116:15)
+      at Object.<anonymous> (modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts:280:11)
+```
+
+```text
+  ● R11 (nutrition-ai-explainer #18) E1.3: la carga perezosa del SDK tambien degrada a null › el constructor del SDK lanza: null y un warn sin relanzar
+
+    expect(received).resolves.toBeNull()
+
+    Received promise rejected instead of resolved
+    Rejected to value: [Error: opciones invalidas]
+
+      310 |       loadSdk,
+      311 |     );
+    > 312 |     await expect(adapter.explain(input, result, ctx)).resolves.toBeNull();
+          |           ^
+      313 |     expect(options).toHaveLength(1);
+      314 |     expect(warn).toHaveBeenCalledTimes(1);
+      315 |     expect(warn.mock.calls[0][0]).toEqual({
+
+      at expect (../node_modules/.pnpm/expect@30.4.1/node_modules/expect/build/index.js:2116:15)
+      at Object.<anonymous> (modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts:312:11)
+```
+
+Commit encadenado al gate literal:
+
+```bash
+[ "$(node /tmp/e1-check.js /tmp/e1-c8.json)" = '{"total":28,"passed":26,"failed":2,"suiteErrors":0,"failedTitles":["el constructor del SDK lanza: null y un warn sin relanzar","fallo del import del SDK: null y un warn sin relanzar"]}' ] && git commit -m 'test(nutrition-ai-explainer): lock lazy SDK load inside degradation (R11, E1.3)' -- backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.ts
+```
+
+`git show --name-only --format= HEAD`:
+
+```text
+backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts
+backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.ts
+```
+
+`git diff --cached --quiet`: exit=0.
+
+### E1-c9 — `c4276761262c2710b385dd02729bc38d8f2a6dd7`
+
+`fix(nutrition-ai-explainer): load SDK inside the degradation try (R11, E1.3)`
+
+`eslint --fix`: exit=0. `tsc --noEmit -p tsconfig.json`: exit=0; 0 errores TS.
+
+`jest src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts`: exit=0.
+
+```json
+{"total":28,"passed":28,"failed":0,"suiteErrors":0,"failedTitles":[]}
+```
+
+Commit encadenado al gate literal:
+
+```bash
+[ "$(node /tmp/e1-check.js /tmp/e1-c9.json)" = '{"total":28,"passed":28,"failed":0,"suiteErrors":0,"failedTitles":[]}' ] && pnpm -C backend-pet-tracker exec eslint src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.ts && git commit -m 'fix(nutrition-ai-explainer): load SDK inside the degradation try (R11, E1.3)' -- backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.ts
+```
+
+`git show --name-only --format= HEAD`:
+
+```text
+backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.ts
+```
+
+`git diff --cached --quiet`: exit=0.
+
+Restauración: `git checkout 7ef04fc7bd685edf15f3d6e34ebf69b8ab977136 -- backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.ts`; `git diff 7ef04fc7bd685edf15f3d6e34ebf69b8ab977136 HEAD -- backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.ts | wc -l`: 0.
+
+E1-A34 después de E1-c9: 3 (declarado 3).
+
+E1-A35 después de E1-c9: 3 (declarado 3).
+
+E1-A36 después de E1-c9: 3 (declarado 3).
+
+### E1-c10 — `bdb097b9802cd3438e715c719d89b7435d33b26b`
+
+`test(nutrition-ai-explainer): lock non-array content as unusable (R10, E1.4)`
+
+`eslint --fix`: exit=0. `tsc --noEmit -p tsconfig.json`: exit=0; 0 errores TS.
+
+`jest src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts`: exit=1.
+
+```json
+{"total":33,"passed":29,"failed":4,"suiteErrors":0,"failedTitles":["degrada content array-like con exactamente un warn completo","degrada content numero con exactamente un warn completo","degrada content objeto con exactamente un warn completo","degrada content string con exactamente un warn completo"]}
+```
+
+```text
+  ● R10 (nutrition-ai-explainer #18): normaliza respuestas a texto o null con warn › degrada content string con exactamente un warn completo
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 6
+    + Received  + 1
+
+      Object {
+    -   "message": "ai explanation unusable",
+    +   "message": "blocks.filter is not a function",
+        "petId": "11111111-1111-1111-1111-111111111111",
+        "planId": "22222222-2222-2222-2222-222222222222",
+        "scope": "nutrition-ai",
+    -   "stopReason": "end_turn",
+    -   "usage": Object {
+    -     "input_tokens": 10,
+    -     "output_tokens": 20,
+    -   },
+      }
+
+      196 |       await expect(adapter.explain(input, result, ctx)).resolves.toBeNull();
+      197 |       expect(warn).toHaveBeenCalledTimes(1);
+    > 198 |       expect(warn.mock.calls[0][0]).toEqual({
+          |                                     ^
+      199 |         scope: 'nutrition-ai',
+      200 |         petId: ctx.petId,
+      201 |         planId: ctx.planId,
+
+      at modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts:198:37
+```
+
+```text
+  ● R10 (nutrition-ai-explainer #18): normaliza respuestas a texto o null con warn › degrada content objeto con exactamente un warn completo
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 6
+    + Received  + 1
+
+      Object {
+    -   "message": "ai explanation unusable",
+    +   "message": "blocks.filter is not a function",
+        "petId": "11111111-1111-1111-1111-111111111111",
+        "planId": "22222222-2222-2222-2222-222222222222",
+        "scope": "nutrition-ai",
+    -   "stopReason": "end_turn",
+    -   "usage": Object {
+    -     "input_tokens": 10,
+    -     "output_tokens": 20,
+    -   },
+      }
+
+      196 |       await expect(adapter.explain(input, result, ctx)).resolves.toBeNull();
+      197 |       expect(warn).toHaveBeenCalledTimes(1);
+    > 198 |       expect(warn.mock.calls[0][0]).toEqual({
+          |                                     ^
+      199 |         scope: 'nutrition-ai',
+      200 |         petId: ctx.petId,
+      201 |         planId: ctx.planId,
+
+      at modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts:198:37
+```
+
+```text
+  ● R10 (nutrition-ai-explainer #18): normaliza respuestas a texto o null con warn › degrada content numero con exactamente un warn completo
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 6
+    + Received  + 1
+
+      Object {
+    -   "message": "ai explanation unusable",
+    +   "message": "blocks.filter is not a function",
+        "petId": "11111111-1111-1111-1111-111111111111",
+        "planId": "22222222-2222-2222-2222-222222222222",
+        "scope": "nutrition-ai",
+    -   "stopReason": "end_turn",
+    -   "usage": Object {
+    -     "input_tokens": 10,
+    -     "output_tokens": 20,
+    -   },
+      }
+
+      196 |       await expect(adapter.explain(input, result, ctx)).resolves.toBeNull();
+      197 |       expect(warn).toHaveBeenCalledTimes(1);
+    > 198 |       expect(warn.mock.calls[0][0]).toEqual({
+          |                                     ^
+      199 |         scope: 'nutrition-ai',
+      200 |         petId: ctx.petId,
+      201 |         planId: ctx.planId,
+
+      at modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts:198:37
+```
+
+```text
+  ● R10 (nutrition-ai-explainer #18): normaliza respuestas a texto o null con warn › degrada content array-like con exactamente un warn completo
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 6
+    + Received  + 1
+
+      Object {
+    -   "message": "ai explanation unusable",
+    +   "message": "blocks.filter is not a function",
+        "petId": "11111111-1111-1111-1111-111111111111",
+        "planId": "22222222-2222-2222-2222-222222222222",
+        "scope": "nutrition-ai",
+    -   "stopReason": "end_turn",
+    -   "usage": Object {
+    -     "input_tokens": 10,
+    -     "output_tokens": 20,
+    -   },
+      }
+
+      196 |       await expect(adapter.explain(input, result, ctx)).resolves.toBeNull();
+      197 |       expect(warn).toHaveBeenCalledTimes(1);
+    > 198 |       expect(warn.mock.calls[0][0]).toEqual({
+          |                                     ^
+      199 |         scope: 'nutrition-ai',
+      200 |         petId: ctx.petId,
+      201 |         planId: ctx.planId,
+
+      at modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts:198:37
+```
+
+Commit encadenado al gate literal:
+
+```bash
+[ "$(node /tmp/e1-check.js /tmp/e1-c10.json)" = '{"total":33,"passed":29,"failed":4,"suiteErrors":0,"failedTitles":["degrada content array-like con exactamente un warn completo","degrada content numero con exactamente un warn completo","degrada content objeto con exactamente un warn completo","degrada content string con exactamente un warn completo"]}' ] && git commit -m 'test(nutrition-ai-explainer): lock non-array content as unusable (R10, E1.4)' -- backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.ts
+```
+
+`git show --name-only --format= HEAD`:
+
+```text
+backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts
+backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.ts
+```
+
+`git diff --cached --quiet`: exit=0.
+
+### E1-c11 — `9e2ef4ef0e5402d050bc96c0057003a4b29f7a80`
+
+`fix(nutrition-ai-explainer): restore array check on response content (R10, E1.4)`
+
+`eslint --fix`: exit=0. `tsc --noEmit -p tsconfig.json`: exit=0; 0 errores TS.
+
+`jest src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts`: exit=0.
+
+```json
+{"total":33,"passed":33,"failed":0,"suiteErrors":0,"failedTitles":[]}
+```
+
+Commit encadenado al gate literal:
+
+```bash
+[ "$(node /tmp/e1-check.js /tmp/e1-c11.json)" = '{"total":33,"passed":33,"failed":0,"suiteErrors":0,"failedTitles":[]}' ] && pnpm -C backend-pet-tracker exec eslint src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.ts && git commit -m 'fix(nutrition-ai-explainer): restore array check on response content (R10, E1.4)' -- backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.ts
+```
+
+`git show --name-only --format= HEAD`:
+
+```text
+backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.ts
+```
+
+`git diff --cached --quiet`: exit=0.
+
+Restauración: `git checkout 7ef04fc7bd685edf15f3d6e34ebf69b8ab977136 -- backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.ts`; `git diff 7ef04fc7bd685edf15f3d6e34ebf69b8ab977136 HEAD -- backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.ts | wc -l`: 0.
+
+### E1-c12 — `76de3247cb68d79e3171744c076139a7f5c4fd36`
+
+`test(nutrition-ai-explainer): lock text-only block filter (R10, E1.5)`
+
+`eslint --fix`: exit=0. `tsc --noEmit -p tsconfig.json`: exit=0; 0 errores TS.
+
+`jest src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts`: exit=1.
+
+```json
+{"total":35,"passed":33,"failed":2,"suiteErrors":0,"failedTitles":["anti-vacio: bloque no-text con text devuelve texto sin warn","degrada solo bloque no-text con text con exactamente un warn completo"]}
+```
+
+```text
+  ● R10 (nutrition-ai-explainer #18): normaliza respuestas a texto o null con warn › degrada solo bloque no-text con text con exactamente un warn completo
+
+    expect(received).resolves.toBeNull()
+
+    Received: "no es explicacion"
+
+      202 |         { create },
+      203 |       );
+    > 204 |       await expect(adapter.explain(input, result, ctx)).resolves.toBeNull();
+          |                                                                  ^
+      205 |       expect(warn).toHaveBeenCalledTimes(1);
+      206 |       expect(warn.mock.calls[0][0]).toEqual({
+      207 |         scope: 'nutrition-ai',
+
+      at Object.toBeNull (../node_modules/.pnpm/expect@30.4.1/node_modules/expect/build/index.js:2140:20)
+      at modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts:204:66
+```
+
+```text
+  ● R10 (nutrition-ai-explainer #18): normaliza respuestas a texto o null con warn › anti-vacio: bloque no-text con text devuelve texto sin warn
+
+    expect(received).resolves.toBe(expected) // Object.is equality
+
+    Expected: "Tu perro necesita..."
+    Received: "texto oculto Tu perro necesita..."
+
+      247 |       },
+      248 |     );
+    > 249 |     await expect(adapter.explain(input, result, ctx)).resolves.toBe(
+          |                                                                ^
+      250 |       'Tu perro necesita...',
+      251 |     );
+      252 |     expect(warn).not.toHaveBeenCalled();
+
+      at Object.toBe (../node_modules/.pnpm/expect@30.4.1/node_modules/expect/build/index.js:2140:20)
+      at modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts:249:64
+```
+
+Commit encadenado al gate literal:
+
+```bash
+[ "$(node /tmp/e1-check.js /tmp/e1-c12.json)" = '{"total":35,"passed":33,"failed":2,"suiteErrors":0,"failedTitles":["anti-vacio: bloque no-text con text devuelve texto sin warn","degrada solo bloque no-text con text con exactamente un warn completo"]}' ] && git commit -m 'test(nutrition-ai-explainer): lock text-only block filter (R10, E1.5)' -- backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.ts
+```
+
+`git show --name-only --format= HEAD`:
+
+```text
+backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts
+backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.ts
+```
+
+`git diff --cached --quiet`: exit=0.
+
+### E1-c13 — `ea01b8ac8a81da68b13dc074ccbe4828eddd9f96`
+
+`fix(nutrition-ai-explainer): restore text block filter (R10, E1.5)`
+
+`eslint --fix`: exit=0. `tsc --noEmit -p tsconfig.json`: exit=0; 0 errores TS.
+
+`jest src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts`: exit=0.
+
+```json
+{"total":35,"passed":35,"failed":0,"suiteErrors":0,"failedTitles":[]}
+```
+
+Commit encadenado al gate literal:
+
+```bash
+[ "$(node /tmp/e1-check.js /tmp/e1-c13.json)" = '{"total":35,"passed":35,"failed":0,"suiteErrors":0,"failedTitles":[]}' ] && pnpm -C backend-pet-tracker exec eslint src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.ts && git commit -m 'fix(nutrition-ai-explainer): restore text block filter (R10, E1.5)' -- backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.ts
+```
+
+`git show --name-only --format= HEAD`:
+
+```text
+backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.ts
+```
+
+`git diff --cached --quiet`: exit=0.
+
+Restauración: `git checkout 7ef04fc7bd685edf15f3d6e34ebf69b8ab977136 -- backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.ts`; `git diff 7ef04fc7bd685edf15f3d6e34ebf69b8ab977136 HEAD -- backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.ts | wc -l`: 0.
+
+### E1-c14 — `1344163b8442bcb30ecdc91012f7a99b6d236b09`
+
+`test(nutrition-ai-explainer): lock null stopReason when stop_reason is missing (R10, E1.7)`
+
+`eslint --fix`: exit=0. `tsc --noEmit -p tsconfig.json`: exit=0; 0 errores TS.
+
+`jest src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts`: exit=1.
+
+```json
+{"total":36,"passed":35,"failed":1,"suiteErrors":0,"failedTitles":["degrada sin stop_reason con exactamente un warn completo"]}
+```
+
+```text
+  ● R10 (nutrition-ai-explainer #18): normaliza respuestas a texto o null con warn › degrada sin stop_reason con exactamente un warn completo
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Object {
+        "message": "ai explanation unusable",
+        "petId": "11111111-1111-1111-1111-111111111111",
+        "planId": "22222222-2222-2222-2222-222222222222",
+        "scope": "nutrition-ai",
+    -   "stopReason": null,
+    +   "stopReason": undefined,
+        "usage": Object {
+          "input_tokens": 10,
+          "output_tokens": 20,
+        },
+      }
+
+      208 |       await expect(adapter.explain(input, result, ctx)).resolves.toBeNull();
+      209 |       expect(warn).toHaveBeenCalledTimes(1);
+    > 210 |       expect(warn.mock.calls[0][0]).toEqual({
+          |                                     ^
+      211 |         scope: 'nutrition-ai',
+      212 |         petId: ctx.petId,
+      213 |         planId: ctx.planId,
+
+      at modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts:210:37
+```
+
+Commit encadenado al gate literal:
+
+```bash
+[ "$(node /tmp/e1-check.js /tmp/e1-c14.json)" = '{"total":36,"passed":35,"failed":1,"suiteErrors":0,"failedTitles":["degrada sin stop_reason con exactamente un warn completo"]}' ] && git commit -m 'test(nutrition-ai-explainer): lock null stopReason when stop_reason is missing (R10, E1.7)' -- backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.ts
+```
+
+`git show --name-only --format= HEAD`:
+
+```text
+backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts
+backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.ts
+```
+
+`git diff --cached --quiet`: exit=0.
+
+### E1-c15 — `834619e43b79ef179b09f48d0e4215c6690e0123`
+
+`fix(nutrition-ai-explainer): restore null default for stopReason (R10, E1.7)`
+
+`eslint --fix`: exit=0. `tsc --noEmit -p tsconfig.json`: exit=0; 0 errores TS.
+
+`jest src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts`: exit=0.
+
+```json
+{"total":36,"passed":36,"failed":0,"suiteErrors":0,"failedTitles":[]}
+```
+
+Commit encadenado al gate literal:
+
+```bash
+[ "$(node /tmp/e1-check.js /tmp/e1-c15.json)" = '{"total":36,"passed":36,"failed":0,"suiteErrors":0,"failedTitles":[]}' ] && pnpm -C backend-pet-tracker exec eslint src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.ts && git commit -m 'fix(nutrition-ai-explainer): restore null default for stopReason (R10, E1.7)' -- backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.ts
+```
+
+`git show --name-only --format= HEAD`:
+
+```text
+backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.ts
+```
+
+`git diff --cached --quiet`: exit=0.
+
+Restauración: `git checkout 7ef04fc7bd685edf15f3d6e34ebf69b8ab977136 -- backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.ts`; `git diff 7ef04fc7bd685edf15f3d6e34ebf69b8ab977136 HEAD -- backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.ts | wc -l`: 0.
+
+### E1-c16 — `54c74b78d1fd507f73a0e875188117666b4b79ad`
+
+`test(nutrition-ai-explainer): lock String() message for non-Error rejections (R11, E1.8)`
+
+`eslint --fix`: exit=0. `tsc --noEmit -p tsconfig.json`: exit=0; 0 errores TS.
+
+`jest src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts`: exit=1.
+
+```json
+{"total":37,"passed":36,"failed":1,"suiteErrors":0,"failedTitles":["degrada objeto: [object Object]"]}
+```
+
+```text
+  ● R11 (nutrition-ai-explainer #18): cualquier fallo degrada con un warn › degrada objeto: [object Object]
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Object {
+    -   "message": "[object Object]",
+    +   "message": "no soy Error",
+        "petId": "11111111-1111-1111-1111-111111111111",
+        "planId": "22222222-2222-2222-2222-222222222222",
+        "scope": "nutrition-ai",
+      }
+
+      296 |     expect(create).toHaveBeenCalledTimes(1);
+      297 |     expect(warn).toHaveBeenCalledTimes(1);
+    > 298 |     expect(warn.mock.calls[0][0]).toEqual({
+          |                                   ^
+      299 |       scope: 'nutrition-ai',
+      300 |       petId: ctx.petId,
+      301 |       planId: ctx.planId,
+
+      at modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts:298:35
+```
+
+Commit encadenado al gate literal:
+
+```bash
+[ "$(node /tmp/e1-check.js /tmp/e1-c16.json)" = '{"total":37,"passed":36,"failed":1,"suiteErrors":0,"failedTitles":["degrada objeto: [object Object]"]}' ] && git commit -m 'test(nutrition-ai-explainer): lock String() message for non-Error rejections (R11, E1.8)' -- backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.ts
+```
+
+`git show --name-only --format= HEAD`:
+
+```text
+backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts
+backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.ts
+```
+
+`git diff --cached --quiet`: exit=0.
+
+### E1-c17 — `aba336beab9131e16ed03b2e25fbabea51375a2a`
+
+`fix(nutrition-ai-explainer): restore instanceof Error check in failure warn (R11, E1.8)`
+
+`eslint --fix`: exit=0. `tsc --noEmit -p tsconfig.json`: exit=0; 0 errores TS.
+
+`jest src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts`: exit=0.
+
+```json
+{"total":37,"passed":37,"failed":0,"suiteErrors":0,"failedTitles":[]}
+```
+
+Commit encadenado al gate literal:
+
+```bash
+[ "$(node /tmp/e1-check.js /tmp/e1-c17.json)" = '{"total":37,"passed":37,"failed":0,"suiteErrors":0,"failedTitles":[]}' ] && pnpm -C backend-pet-tracker exec eslint src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.ts && git commit -m 'fix(nutrition-ai-explainer): restore instanceof Error check in failure warn (R11, E1.8)' -- backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.ts
+```
+
+`git show --name-only --format= HEAD`:
+
+```text
+backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.ts
+```
+
+`git diff --cached --quiet`: exit=0.
+
+Restauración: `git checkout 7ef04fc7bd685edf15f3d6e34ebf69b8ab977136 -- backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.ts`; `git diff 7ef04fc7bd685edf15f3d6e34ebf69b8ab977136 HEAD -- backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.ts | wc -l`: 0.
+
+## Sondas E1
+
+Se ejecutan las 18 sondas enumeradas, una por vez, sobre E1-c17. Cada restauración usa `git checkout HEAD -- <ruta>`. No se versiona ninguna mutación de sonda.
+
+### S-E1.1a
+
+Mutación:
+
+```text
+return new AnthropicNutritionExplainer(model.trim() + 'x', key.trim(), null);
+```
+
+`jest src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.spec.ts`: exit=1.
+
+```json
+{"total":25,"passed":22,"failed":3,"suiteErrors":0,"failedTitles":["anti-vacio: development selecciona Anthropic sin invocarlo","anti-vacio: todas cumplidas seleccionan el adaptador real sin invocarlo","pasa clave y modelo recortados (E1.1)"]}
+```
+
+`[ "$(node /tmp/e1-check.js /tmp/e1-S-E1.1a.json)" = '{"total":25,"passed":22,"failed":3,"suiteErrors":0,"failedTitles":["anti-vacio: development selecciona Anthropic sin invocarlo","anti-vacio: todas cumplidas seleccionan el adaptador real sin invocarlo","pasa clave y modelo recortados (E1.1)"]}' ] && echo SONDA-OK || echo SONDA-DISTINTA`: **SONDA-OK**.
+
+```text
+  ● R3 (nutrition-ai-explainer #18): NODE_ENV test apaga antes que nada › anti-vacio: development selecciona Anthropic sin invocarlo
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Object {
+        "apiKey": "clave-de-prueba",
+        "client": null,
+    -   "model": "modelo-de-prueba",
+    +   "model": "modelo-de-pruebax",
+      }
+
+      32 |     const adapter = createNutritionExplainer(config(valid));
+      33 |     expect(adapter).toBeInstanceOf(AnthropicNutritionExplainer);
+    > 34 |     expect(constructorArgs(adapter)).toEqual({
+         |                                      ^
+      35 |       model: 'modelo-de-prueba',
+      36 |       apiKey: 'clave-de-prueba',
+      37 |       client: null,
+
+      at Object.<anonymous> (modules/nutrition/infrastructure/ai/nutrition-explainer.factory.spec.ts:34:38)
+```
+
+```text
+  ● R5 (nutrition-ai-explainer #18): seleccion en orden con reason exacto › anti-vacio: todas cumplidas seleccionan el adaptador real sin invocarlo
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Object {
+        "apiKey": "clave-de-prueba",
+        "client": null,
+    -   "model": "modelo-de-prueba",
+    +   "model": "modelo-de-pruebax",
+      }
+
+      81 |     const adapter = createNutritionExplainer(config(valid));
+      82 |     expect(adapter).toBeInstanceOf(AnthropicNutritionExplainer);
+    > 83 |     expect(constructorArgs(adapter)).toEqual({
+         |                                      ^
+      84 |       model: 'modelo-de-prueba',
+      85 |       apiKey: 'clave-de-prueba',
+      86 |       client: null,
+
+      at Object.<anonymous> (modules/nutrition/infrastructure/ai/nutrition-explainer.factory.spec.ts:83:38)
+```
+
+```text
+  ● R5 (nutrition-ai-explainer #18): seleccion en orden con reason exacto › pasa clave y modelo recortados (E1.1)
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Object {
+        "apiKey": "clave-de-prueba",
+        "client": null,
+    -   "model": "modelo-de-prueba",
+    +   "model": "modelo-de-pruebax",
+      }
+
+      116 |     );
+      117 |     expect(adapter).toBeInstanceOf(AnthropicNutritionExplainer);
+    > 118 |     expect(constructorArgs(adapter)).toEqual({
+          |                                      ^
+      119 |       model: 'modelo-de-prueba',
+      120 |       apiKey: 'clave-de-prueba',
+      121 |       client: null,
+
+      at Object.<anonymous> (modules/nutrition/infrastructure/ai/nutrition-explainer.factory.spec.ts:118:38)
+```
+
+Restauración: `git checkout HEAD -- backend-pet-tracker/src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.ts`.
+
+```text
+$ git diff --quiet -- backend-pet-tracker; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+$ git ls-files --others --exclude-standard -- backend-pet-tracker | wc -l
+0
+```
+
+### S-E1.1b
+
+Mutación:
+
+```text
+return new AnthropicNutritionExplainer(model.trim(), key, null);
+```
+
+`jest src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.spec.ts`: exit=1.
+
+```json
+{"total":25,"passed":24,"failed":1,"suiteErrors":0,"failedTitles":["pasa clave y modelo recortados (E1.1)"]}
+```
+
+`[ "$(node /tmp/e1-check.js /tmp/e1-S-E1.1b.json)" = '{"total":25,"passed":24,"failed":1,"suiteErrors":0,"failedTitles":["pasa clave y modelo recortados (E1.1)"]}' ] && echo SONDA-OK || echo SONDA-DISTINTA`: **SONDA-OK**.
+
+```text
+  ● R5 (nutrition-ai-explainer #18): seleccion en orden con reason exacto › pasa clave y modelo recortados (E1.1)
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 2
+
+      Object {
+    -   "apiKey": "clave-de-prueba",
+    +   "apiKey": "	 clave-de-prueba
+    + ",
+        "client": null,
+        "model": "modelo-de-prueba",
+      }
+
+      116 |     );
+      117 |     expect(adapter).toBeInstanceOf(AnthropicNutritionExplainer);
+    > 118 |     expect(constructorArgs(adapter)).toEqual({
+          |                                      ^
+      119 |       model: 'modelo-de-prueba',
+      120 |       apiKey: 'clave-de-prueba',
+      121 |       client: null,
+
+      at Object.<anonymous> (modules/nutrition/infrastructure/ai/nutrition-explainer.factory.spec.ts:118:38)
+```
+
+Restauración: `git checkout HEAD -- backend-pet-tracker/src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.ts`.
+
+```text
+$ git diff --quiet -- backend-pet-tracker; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+$ git ls-files --others --exclude-standard -- backend-pet-tracker | wc -l
+0
+```
+
+### S-E1.1c
+
+Mutación:
+
+```text
+return new AnthropicNutritionExplainer(model, key.trim(), null);
+```
+
+`jest src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.spec.ts`: exit=1.
+
+```json
+{"total":25,"passed":24,"failed":1,"suiteErrors":0,"failedTitles":["pasa clave y modelo recortados (E1.1)"]}
+```
+
+`[ "$(node /tmp/e1-check.js /tmp/e1-S-E1.1c.json)" = '{"total":25,"passed":24,"failed":1,"suiteErrors":0,"failedTitles":["pasa clave y modelo recortados (E1.1)"]}' ] && echo SONDA-OK || echo SONDA-DISTINTA`: **SONDA-OK**.
+
+```text
+  ● R5 (nutrition-ai-explainer #18): seleccion en orden con reason exacto › pasa clave y modelo recortados (E1.1)
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 2
+
+      Object {
+        "apiKey": "clave-de-prueba",
+        "client": null,
+    -   "model": "modelo-de-prueba",
+    +   "model": "	 modelo-de-prueba
+    + ",
+      }
+
+      116 |     );
+      117 |     expect(adapter).toBeInstanceOf(AnthropicNutritionExplainer);
+    > 118 |     expect(constructorArgs(adapter)).toEqual({
+          |                                      ^
+      119 |       model: 'modelo-de-prueba',
+      120 |       apiKey: 'clave-de-prueba',
+      121 |       client: null,
+
+      at Object.<anonymous> (modules/nutrition/infrastructure/ai/nutrition-explainer.factory.spec.ts:118:38)
+```
+
+Restauración: `git checkout HEAD -- backend-pet-tracker/src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.ts`.
+
+```text
+$ git diff --quiet -- backend-pet-tracker; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+$ git ls-files --others --exclude-standard -- backend-pet-tracker | wc -l
+0
+```
+
+### S-E1.1d
+
+Mutación:
+
+```text
+return new AnthropicNutritionExplainer(model.replace(/^ +/, '').replace(/ +$/, ''), key.replace(/^ +/, '').replace(/ +$/, ''), null);
+```
+
+`jest src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.spec.ts`: exit=1.
+
+```json
+{"total":25,"passed":24,"failed":1,"suiteErrors":0,"failedTitles":["pasa clave y modelo recortados (E1.1)"]}
+```
+
+`[ "$(node /tmp/e1-check.js /tmp/e1-S-E1.1d.json)" = '{"total":25,"passed":24,"failed":1,"suiteErrors":0,"failedTitles":["pasa clave y modelo recortados (E1.1)"]}' ] && echo SONDA-OK || echo SONDA-DISTINTA`: **SONDA-OK**.
+
+```text
+  ● R5 (nutrition-ai-explainer #18): seleccion en orden con reason exacto › pasa clave y modelo recortados (E1.1)
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 2
+    + Received  + 4
+
+      Object {
+    -   "apiKey": "clave-de-prueba",
+    +   "apiKey": "	 clave-de-prueba
+    + ",
+        "client": null,
+    -   "model": "modelo-de-prueba",
+    +   "model": "	 modelo-de-prueba
+    + ",
+      }
+
+      116 |     );
+      117 |     expect(adapter).toBeInstanceOf(AnthropicNutritionExplainer);
+    > 118 |     expect(constructorArgs(adapter)).toEqual({
+          |                                      ^
+      119 |       model: 'modelo-de-prueba',
+      120 |       apiKey: 'clave-de-prueba',
+      121 |       client: null,
+
+      at Object.<anonymous> (modules/nutrition/infrastructure/ai/nutrition-explainer.factory.spec.ts:118:38)
+```
+
+Restauración: `git checkout HEAD -- backend-pet-tracker/src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.ts`.
+
+```text
+$ git diff --quiet -- backend-pet-tracker; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+$ git ls-files --others --exclude-standard -- backend-pet-tracker | wc -l
+0
+```
+
+### S-E1.1e
+
+Mutación:
+
+```text
+return new AnthropicNutritionExplainer(model.replace(/\n+$/, ''), key.replace(/\n+$/, ''), null);
+```
+
+`jest src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.spec.ts`: exit=1.
+
+```json
+{"total":25,"passed":24,"failed":1,"suiteErrors":0,"failedTitles":["pasa clave y modelo recortados (E1.1)"]}
+```
+
+`[ "$(node /tmp/e1-check.js /tmp/e1-S-E1.1e.json)" = '{"total":25,"passed":24,"failed":1,"suiteErrors":0,"failedTitles":["pasa clave y modelo recortados (E1.1)"]}' ] && echo SONDA-OK || echo SONDA-DISTINTA`: **SONDA-OK**.
+
+```text
+  ● R5 (nutrition-ai-explainer #18): seleccion en orden con reason exacto › pasa clave y modelo recortados (E1.1)
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 2
+    + Received  + 2
+
+      Object {
+    -   "apiKey": "clave-de-prueba",
+    +   "apiKey": "	 clave-de-prueba ",
+        "client": null,
+    -   "model": "modelo-de-prueba",
+    +   "model": "	 modelo-de-prueba ",
+      }
+
+      116 |     );
+      117 |     expect(adapter).toBeInstanceOf(AnthropicNutritionExplainer);
+    > 118 |     expect(constructorArgs(adapter)).toEqual({
+          |                                      ^
+      119 |       model: 'modelo-de-prueba',
+      120 |       apiKey: 'clave-de-prueba',
+      121 |       client: null,
+
+      at Object.<anonymous> (modules/nutrition/infrastructure/ai/nutrition-explainer.factory.spec.ts:118:38)
+```
+
+Restauración: `git checkout HEAD -- backend-pet-tracker/src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.ts`.
+
+```text
+$ git diff --quiet -- backend-pet-tracker; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+$ git ls-files --others --exclude-standard -- backend-pet-tracker | wc -l
+0
+```
+
+### S-E1.2a
+
+Mutación:
+
+```text
+Reordenar los dos bloques completos:
+  if (config.get<string>('NODE_ENV') === 'test')
+    return new NullNutritionExplainer('node-env-test');
+
+  if (config.get<string>('ANTHROPIC_ENABLED') !== 'true')
+    return new NullNutritionExplainer('not-enabled');
+
+```
+
+`jest src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.spec.ts`: exit=1.
+
+```json
+{"total":25,"passed":24,"failed":1,"suiteErrors":0,"failedTitles":["NODE_ENV y ANTHROPIC_ENABLED fallan: gana node-env-test"]}
+```
+
+`[ "$(node /tmp/e1-check.js /tmp/e1-S-E1.2a.json)" = '{"total":25,"passed":24,"failed":1,"suiteErrors":0,"failedTitles":["NODE_ENV y ANTHROPIC_ENABLED fallan: gana node-env-test"]}' ] && echo SONDA-OK || echo SONDA-DISTINTA`: **SONDA-OK**.
+
+```text
+  ● R5 (nutrition-ai-explainer #18): seleccion en orden con reason exacto › NODE_ENV y ANTHROPIC_ENABLED fallan: gana node-env-test
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "node-env-test"
+    Received: "not-enabled"
+
+      105 |     );
+      106 |     expect(adapter).toBeInstanceOf(NullNutritionExplainer);
+    > 107 |     expect((adapter as NullNutritionExplainer).reason).toBe(reason);
+          |                                                        ^
+      108 |   });
+      109 |   it('pasa clave y modelo recortados (E1.1)', () => {
+      110 |     const adapter = createNutritionExplainer(
+
+      at modules/nutrition/infrastructure/ai/nutrition-explainer.factory.spec.ts:107:56
+```
+
+Restauración: `git checkout HEAD -- backend-pet-tracker/src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.ts`.
+
+```text
+$ git diff --quiet -- backend-pet-tracker; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+$ git ls-files --others --exclude-standard -- backend-pet-tracker | wc -l
+0
+```
+
+### S-E1.2b
+
+Mutación:
+
+```text
+Reordenar los dos bloques completos:
+  if (config.get<string>('ANTHROPIC_ENABLED') !== 'true')
+    return new NullNutritionExplainer('not-enabled');
+
+  const key = config.get<string>('ANTHROPIC_API_KEY');
+  if (
+    typeof key !== 'string' ||
+    key.trim() === '' ||
+    key.trim() === ANTHROPIC_API_KEY_PENDING
+  )
+    return new NullNutritionExplainer('key-missing');
+
+```
+
+`jest src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.spec.ts`: exit=1.
+
+```json
+{"total":25,"passed":24,"failed":1,"suiteErrors":0,"failedTitles":["ANTHROPIC_ENABLED y ANTHROPIC_API_KEY fallan: gana not-enabled"]}
+```
+
+`[ "$(node /tmp/e1-check.js /tmp/e1-S-E1.2b.json)" = '{"total":25,"passed":24,"failed":1,"suiteErrors":0,"failedTitles":["ANTHROPIC_ENABLED y ANTHROPIC_API_KEY fallan: gana not-enabled"]}' ] && echo SONDA-OK || echo SONDA-DISTINTA`: **SONDA-OK**.
+
+```text
+  ● R5 (nutrition-ai-explainer #18): seleccion en orden con reason exacto › ANTHROPIC_ENABLED y ANTHROPIC_API_KEY fallan: gana not-enabled
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "not-enabled"
+    Received: "key-missing"
+
+      105 |     );
+      106 |     expect(adapter).toBeInstanceOf(NullNutritionExplainer);
+    > 107 |     expect((adapter as NullNutritionExplainer).reason).toBe(reason);
+          |                                                        ^
+      108 |   });
+      109 |   it('pasa clave y modelo recortados (E1.1)', () => {
+      110 |     const adapter = createNutritionExplainer(
+
+      at modules/nutrition/infrastructure/ai/nutrition-explainer.factory.spec.ts:107:56
+```
+
+Restauración: `git checkout HEAD -- backend-pet-tracker/src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.ts`.
+
+```text
+$ git diff --quiet -- backend-pet-tracker; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+$ git ls-files --others --exclude-standard -- backend-pet-tracker | wc -l
+0
+```
+
+### S-E1.2c
+
+Mutación:
+
+```text
+Reordenar los dos bloques completos:
+  const key = config.get<string>('ANTHROPIC_API_KEY');
+  if (
+    typeof key !== 'string' ||
+    key.trim() === '' ||
+    key.trim() === ANTHROPIC_API_KEY_PENDING
+  )
+    return new NullNutritionExplainer('key-missing');
+
+  const model = config.get<string>('ANTHROPIC_MODEL');
+  if (typeof model !== 'string' || model.trim() === '')
+    return new NullNutritionExplainer('model-missing');
+
+```
+
+`jest src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.spec.ts`: exit=1.
+
+```json
+{"total":25,"passed":24,"failed":1,"suiteErrors":0,"failedTitles":["ANTHROPIC_API_KEY y ANTHROPIC_MODEL fallan: gana key-missing"]}
+```
+
+`[ "$(node /tmp/e1-check.js /tmp/e1-S-E1.2c.json)" = '{"total":25,"passed":24,"failed":1,"suiteErrors":0,"failedTitles":["ANTHROPIC_API_KEY y ANTHROPIC_MODEL fallan: gana key-missing"]}' ] && echo SONDA-OK || echo SONDA-DISTINTA`: **SONDA-OK**.
+
+```text
+  ● R5 (nutrition-ai-explainer #18): seleccion en orden con reason exacto › ANTHROPIC_API_KEY y ANTHROPIC_MODEL fallan: gana key-missing
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "key-missing"
+    Received: "model-missing"
+
+      105 |     );
+      106 |     expect(adapter).toBeInstanceOf(NullNutritionExplainer);
+    > 107 |     expect((adapter as NullNutritionExplainer).reason).toBe(reason);
+          |                                                        ^
+      108 |   });
+      109 |   it('pasa clave y modelo recortados (E1.1)', () => {
+      110 |     const adapter = createNutritionExplainer(
+
+      at modules/nutrition/infrastructure/ai/nutrition-explainer.factory.spec.ts:107:56
+```
+
+Restauración: `git checkout HEAD -- backend-pet-tracker/src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.ts`.
+
+```text
+$ git diff --quiet -- backend-pet-tracker; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+$ git ls-files --others --exclude-standard -- backend-pet-tracker | wc -l
+0
+```
+
+### S-E1.3a
+
+Mutación:
+
+```text
+Capturar el rechazo de this.loadSdk() en el sitio y devolver null sin warn.
+```
+
+`jest src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts`: exit=1.
+
+```json
+{"total":37,"passed":36,"failed":1,"suiteErrors":0,"failedTitles":["fallo del import del SDK: null y un warn sin relanzar"]}
+```
+
+`[ "$(node /tmp/e1-check.js /tmp/e1-S-E1.3a.json)" = '{"total":37,"passed":36,"failed":1,"suiteErrors":0,"failedTitles":["fallo del import del SDK: null y un warn sin relanzar"]}' ] && echo SONDA-OK || echo SONDA-DISTINTA`: **SONDA-OK**.
+
+```text
+  ● R11 (nutrition-ai-explainer #18) E1.3: la carga perezosa del SDK tambien degrada a null › fallo del import del SDK: null y un warn sin relanzar
+
+    expect(jest.fn()).toHaveBeenCalledTimes(expected)
+
+    Expected number of calls: 1
+    Received number of calls: 0
+
+      329 |     );
+      330 |     await expect(adapter.explain(input, result, ctx)).resolves.toBeNull();
+    > 331 |     expect(warn).toHaveBeenCalledTimes(1);
+          |                  ^
+      332 |     expect(warn.mock.calls[0][0]).toEqual({
+      333 |       scope: 'nutrition-ai',
+      334 |       petId: ctx.petId,
+
+      at Object.<anonymous> (modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts:331:18)
+```
+
+Restauración: `git checkout HEAD -- backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.ts`.
+
+```text
+$ git diff --quiet -- backend-pet-tracker; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+$ git ls-files --others --exclude-standard -- backend-pet-tracker | wc -l
+0
+```
+
+### S-E1.3b
+
+Mutación:
+
+```text
+Envolver new Anthropic(...) en su propio try que devuelve null sin warn.
+```
+
+`jest src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts`: exit=1.
+
+```json
+{"total":37,"passed":36,"failed":1,"suiteErrors":0,"failedTitles":["el constructor del SDK lanza: null y un warn sin relanzar"]}
+```
+
+`[ "$(node /tmp/e1-check.js /tmp/e1-S-E1.3b.json)" = '{"total":37,"passed":36,"failed":1,"suiteErrors":0,"failedTitles":["el constructor del SDK lanza: null y un warn sin relanzar"]}' ] && echo SONDA-OK || echo SONDA-DISTINTA`: **SONDA-OK**.
+
+```text
+  ● R11 (nutrition-ai-explainer #18) E1.3: la carga perezosa del SDK tambien degrada a null › el constructor del SDK lanza: null y un warn sin relanzar
+
+    expect(jest.fn()).toHaveBeenCalledTimes(expected)
+
+    Expected number of calls: 1
+    Received number of calls: 0
+
+      362 |     await expect(adapter.explain(input, result, ctx)).resolves.toBeNull();
+      363 |     expect(options).toHaveLength(1);
+    > 364 |     expect(warn).toHaveBeenCalledTimes(1);
+          |                  ^
+      365 |     expect(warn.mock.calls[0][0]).toEqual({
+      366 |       scope: 'nutrition-ai',
+      367 |       petId: ctx.petId,
+
+      at Object.<anonymous> (modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts:364:18)
+```
+
+Restauración: `git checkout HEAD -- backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.ts`.
+
+```text
+$ git diff --quiet -- backend-pet-tracker; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+$ git ls-files --others --exclude-standard -- backend-pet-tracker | wc -l
+0
+```
+
+### S-E1.3c
+
+Mutación:
+
+```text
+En explain(): await this.loadSdk() -> await import('@anthropic-ai/sdk'); default intacto. ANTHROPIC_BASE_URL=http://127.0.0.1:9.
+```
+
+`jest src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts`: exit=1.
+
+```json
+{"total":37,"passed":33,"failed":4,"suiteErrors":0,"failedTitles":["anti-vacio: el SDK cargado construye el cliente con clave y constantes","construye el cliente perezoso con clave explicita y constantes","el constructor del SDK lanza: null y un warn sin relanzar","fallo del import del SDK: null y un warn sin relanzar"]}
+```
+
+`[ "$(node /tmp/e1-check.js /tmp/e1-S-E1.3c.json)" = '{"total":37,"passed":33,"failed":4,"suiteErrors":0,"failedTitles":["anti-vacio: el SDK cargado construye el cliente con clave y constantes","construye el cliente perezoso con clave explicita y constantes","el constructor del SDK lanza: null y un warn sin relanzar","fallo del import del SDK: null y un warn sin relanzar"]}' ] && echo SONDA-OK || echo SONDA-DISTINTA`: **SONDA-OK**.
+
+```text
+  ● R9 (nutrition-ai-explainer #18): parametros exactos de la llamada › construye el cliente perezoso con clave explicita y constantes
+
+    expect(received).toHaveLength(expected)
+
+    Expected length: 2
+    Received length: 3
+    Received array:  ["import { Logger } from '@nestjs/common';
+    import {
+      NUTRITION_AI_SCOPE,
+      buildUserPrompt,
+      NUTRITION_AI_SYSTEM_PROMPT,
+    } from './nutrition-prompt';
+    import type {
+      NutritionEngineInput,
+      NutritionPlanResult,
+    } from '@/modules/nutrition/domain/nutrition-engine';
+    import type {
+      NutritionExplainer,
+      NutritionExplainerContext,
+    } from '@/modules/nutrition/domain/ports/nutrition-explainer';·
+    export const NUTRITION_AI_TIMEOUT_MS = 15_000;
+    export const NUTRITION_AI_MAX_RETRIES = 0;
+    export const NUTRITION_AI_MAX_OUTPUT_TOKENS = 1_200;
+    export interface AnthropicMessageParams {
+      model: string;
+      max_tokens: number;
+      system: string;
+      messages: { role: 'user'; content: string }[];
+    }
+    export interface AnthropicMessageResponse {
+      content: unknown;
+      stop_reason?: string | null;
+      usage?: { input_tokens: number; output_tokens: number };
+    }
+    export interface AnthropicMessagesClient {
+      create(params: AnthropicMessageParams): Promise<AnthropicMessageResponse>;
+    }
+    export interface AnthropicClientOptions {
+      apiKey: string;
+      timeout: number;
+      maxRetries: number;
+    }
+    export type AnthropicSdkLoader = () => Promise<{
+      default: new (options: AnthropicClientOptions) => {
+        messages: AnthropicMessagesClient;
+      };
+    }>;
+    export class AnthropicNutritionExplainer implements NutritionExplainer {
+      private readonly logger = new Logger(AnthropicNutritionExplainer.name);
+      constructor(
+        private readonly model: string,
+        private readonly apiKey: string,
+        private client: AnthropicMessagesClient | null,
+        private readonly loadSdk: AnthropicSdkLoader = async () =>
+          ", ",
+      ) {}
+      async explain(
+        input: NutritionEngineInput,
+        result: NutritionPlanResult,
+        ctx: NutritionExplainerContext,
+      ): Promise<string | null> {
+        try {
+          if (this.client === null) {
+            const { default: Anthropic } = ", ";
+            this.client = new Anthropic({
+              apiKey: this.apiKey,
+              timeout: NUTRITION_AI_TIMEOUT_MS,
+              maxRetries: NUTRITION_AI_MAX_RETRIES,
+            }).messages;
+          }
+          const response = await this.client.create({
+            model: this.model,
+            max_tokens: NUTRITION_AI_MAX_OUTPUT_TOKENS,
+            system: NUTRITION_AI_SYSTEM_PROMPT,
+            messages: [{ role: 'user', content: buildUserPrompt(input, result) }],
+          });
+          const blocks = Array.isArray(response.content)
+            ? (response.content as { type: string; text?: string }[])
+            : [];
+          const text = blocks
+            .filter((block) => block.type === 'text')
+            .map((block) => block.text ?? '')
+            .join('')
+            .trim();
+          if (response.stop_reason === 'end_turn' && text.length > 0) return text;
+          this.logger.warn({
+            scope: NUTRITION_AI_SCOPE,
+            petId: ctx.petId,
+            planId: ctx.planId,
+            message: 'ai explanation unusable',
+            stopReason: response.stop_reason ?? null,
+            usage: response.usage ?? null,
+          });
+          return null;
+        } catch (error) {
+          this.logger.warn({
+            scope: NUTRITION_AI_SCOPE,
+            petId: ctx.petId,
+            planId: ctx.planId,
+            message: error instanceof Error ? error.message : String(error),
+          });
+          return null;
+        }
+      }
+    }
+    "]
+
+       96 |     expect(source).toContain('maxRetries: NUTRITION_AI_MAX_RETRIES');
+       97 |     expect(source).not.toContain('maxRetries: 0');
+    >  98 |     expect(source.split("await import('@anthropic-ai/" + "sdk')")).toHaveLength(
+          |                                                                    ^
+       99 |       2,
+      100 |     );
+      101 |     expect(source).not.toContain("from '@anthropic-ai/" + "sdk'");
+
+      at Object.<anonymous> (modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts:98:68)
+```
+
+```text
+  ● R11 (nutrition-ai-explainer #18) E1.3: la carga perezosa del SDK tambien degrada a null › fallo del import del SDK: null y un warn sin relanzar
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Object {
+    -   "message": "sdk ausente",
+    +   "message": "TypeError [ERR_VM_DYNAMIC_IMPORT_CALLBACK_MISSING_FLAG]: A dynamic import callback was invoked without --experimental-vm-modules",
+        "petId": "11111111-1111-1111-1111-111111111111",
+        "planId": "22222222-2222-2222-2222-222222222222",
+        "scope": "nutrition-ai",
+      }
+
+      330 |     await expect(adapter.explain(input, result, ctx)).resolves.toBeNull();
+      331 |     expect(warn).toHaveBeenCalledTimes(1);
+    > 332 |     expect(warn.mock.calls[0][0]).toEqual({
+          |                                   ^
+      333 |       scope: 'nutrition-ai',
+      334 |       petId: ctx.petId,
+      335 |       planId: ctx.planId,
+
+      at Object.<anonymous> (modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts:332:35)
+```
+
+```text
+  ● R11 (nutrition-ai-explainer #18) E1.3: la carga perezosa del SDK tambien degrada a null › el constructor del SDK lanza: null y un warn sin relanzar
+
+    expect(received).toHaveLength(expected)
+
+    Expected length: 1
+    Received length: 0
+    Received array:  []
+
+      361 |     );
+      362 |     await expect(adapter.explain(input, result, ctx)).resolves.toBeNull();
+    > 363 |     expect(options).toHaveLength(1);
+          |                     ^
+      364 |     expect(warn).toHaveBeenCalledTimes(1);
+      365 |     expect(warn.mock.calls[0][0]).toEqual({
+      366 |       scope: 'nutrition-ai',
+
+      at Object.<anonymous> (modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts:363:21)
+```
+
+```text
+  ● R11 (nutrition-ai-explainer #18) E1.3: la carga perezosa del SDK tambien degrada a null › anti-vacio: el SDK cargado construye el cliente con clave y constantes
+
+    expect(received).resolves.toBe(expected) // Object.is equality
+
+    Expected: "Tu perro necesita..."
+    Received: null
+
+      394 |       loadSdk,
+      395 |     );
+    > 396 |     await expect(adapter.explain(input, result, ctx)).resolves.toBe(
+          |                                                                ^
+      397 |       'Tu perro necesita...',
+      398 |     );
+      399 |     expect(options).toEqual([
+
+      at Object.toBe (../node_modules/.pnpm/expect@30.4.1/node_modules/expect/build/index.js:2140:20)
+      at Object.<anonymous> (modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts:396:64)
+```
+
+Restauración: `git checkout HEAD -- backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.ts`.
+
+```text
+$ git diff --quiet -- backend-pet-tracker; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+$ git ls-files --others --exclude-standard -- backend-pet-tracker | wc -l
+0
+```
+
+### S-E1.4a
+
+Mutación:
+
+```text
+Array.isArray(response.content) -> response.content !== null
+```
+
+`jest src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts`: exit=1.
+
+```json
+{"total":37,"passed":32,"failed":5,"suiteErrors":0,"failedTitles":["degrada content array-like con exactamente un warn completo","degrada content numero con exactamente un warn completo","degrada content objeto con exactamente un warn completo","degrada content string con exactamente un warn completo","degrada content undefined con exactamente un warn completo"]}
+```
+
+`[ "$(node /tmp/e1-check.js /tmp/e1-S-E1.4a.json)" = '{"total":37,"passed":32,"failed":5,"suiteErrors":0,"failedTitles":["degrada content array-like con exactamente un warn completo","degrada content numero con exactamente un warn completo","degrada content objeto con exactamente un warn completo","degrada content string con exactamente un warn completo","degrada content undefined con exactamente un warn completo"]}' ] && echo SONDA-OK || echo SONDA-DISTINTA`: **SONDA-OK**.
+
+```text
+  ● R10 (nutrition-ai-explainer #18): normaliza respuestas a texto o null con warn › degrada content string con exactamente un warn completo
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 6
+    + Received  + 1
+
+      Object {
+    -   "message": "ai explanation unusable",
+    +   "message": "blocks.filter is not a function",
+        "petId": "11111111-1111-1111-1111-111111111111",
+        "planId": "22222222-2222-2222-2222-222222222222",
+        "scope": "nutrition-ai",
+    -   "stopReason": "end_turn",
+    -   "usage": Object {
+    -     "input_tokens": 10,
+    -     "output_tokens": 20,
+    -   },
+      }
+
+      208 |       await expect(adapter.explain(input, result, ctx)).resolves.toBeNull();
+      209 |       expect(warn).toHaveBeenCalledTimes(1);
+    > 210 |       expect(warn.mock.calls[0][0]).toEqual({
+          |                                     ^
+      211 |         scope: 'nutrition-ai',
+      212 |         petId: ctx.petId,
+      213 |         planId: ctx.planId,
+
+      at modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts:210:37
+```
+
+```text
+  ● R10 (nutrition-ai-explainer #18): normaliza respuestas a texto o null con warn › degrada content objeto con exactamente un warn completo
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 6
+    + Received  + 1
+
+      Object {
+    -   "message": "ai explanation unusable",
+    +   "message": "blocks.filter is not a function",
+        "petId": "11111111-1111-1111-1111-111111111111",
+        "planId": "22222222-2222-2222-2222-222222222222",
+        "scope": "nutrition-ai",
+    -   "stopReason": "end_turn",
+    -   "usage": Object {
+    -     "input_tokens": 10,
+    -     "output_tokens": 20,
+    -   },
+      }
+
+      208 |       await expect(adapter.explain(input, result, ctx)).resolves.toBeNull();
+      209 |       expect(warn).toHaveBeenCalledTimes(1);
+    > 210 |       expect(warn.mock.calls[0][0]).toEqual({
+          |                                     ^
+      211 |         scope: 'nutrition-ai',
+      212 |         petId: ctx.petId,
+      213 |         planId: ctx.planId,
+
+      at modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts:210:37
+```
+
+```text
+  ● R10 (nutrition-ai-explainer #18): normaliza respuestas a texto o null con warn › degrada content numero con exactamente un warn completo
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 6
+    + Received  + 1
+
+      Object {
+    -   "message": "ai explanation unusable",
+    +   "message": "blocks.filter is not a function",
+        "petId": "11111111-1111-1111-1111-111111111111",
+        "planId": "22222222-2222-2222-2222-222222222222",
+        "scope": "nutrition-ai",
+    -   "stopReason": "end_turn",
+    -   "usage": Object {
+    -     "input_tokens": 10,
+    -     "output_tokens": 20,
+    -   },
+      }
+
+      208 |       await expect(adapter.explain(input, result, ctx)).resolves.toBeNull();
+      209 |       expect(warn).toHaveBeenCalledTimes(1);
+    > 210 |       expect(warn.mock.calls[0][0]).toEqual({
+          |                                     ^
+      211 |         scope: 'nutrition-ai',
+      212 |         petId: ctx.petId,
+      213 |         planId: ctx.planId,
+
+      at modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts:210:37
+```
+
+```text
+  ● R10 (nutrition-ai-explainer #18): normaliza respuestas a texto o null con warn › degrada content undefined con exactamente un warn completo
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 6
+    + Received  + 1
+
+      Object {
+    -   "message": "ai explanation unusable",
+    +   "message": "Cannot read properties of undefined (reading 'filter')",
+        "petId": "11111111-1111-1111-1111-111111111111",
+        "planId": "22222222-2222-2222-2222-222222222222",
+        "scope": "nutrition-ai",
+    -   "stopReason": "end_turn",
+    -   "usage": Object {
+    -     "input_tokens": 10,
+    -     "output_tokens": 20,
+    -   },
+      }
+
+      208 |       await expect(adapter.explain(input, result, ctx)).resolves.toBeNull();
+      209 |       expect(warn).toHaveBeenCalledTimes(1);
+    > 210 |       expect(warn.mock.calls[0][0]).toEqual({
+          |                                     ^
+      211 |         scope: 'nutrition-ai',
+      212 |         petId: ctx.petId,
+      213 |         planId: ctx.planId,
+
+      at modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts:210:37
+```
+
+```text
+  ● R10 (nutrition-ai-explainer #18): normaliza respuestas a texto o null con warn › degrada content array-like con exactamente un warn completo
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 6
+    + Received  + 1
+
+      Object {
+    -   "message": "ai explanation unusable",
+    +   "message": "blocks.filter is not a function",
+        "petId": "11111111-1111-1111-1111-111111111111",
+        "planId": "22222222-2222-2222-2222-222222222222",
+        "scope": "nutrition-ai",
+    -   "stopReason": "end_turn",
+    -   "usage": Object {
+    -     "input_tokens": 10,
+    -     "output_tokens": 20,
+    -   },
+      }
+
+      208 |       await expect(adapter.explain(input, result, ctx)).resolves.toBeNull();
+      209 |       expect(warn).toHaveBeenCalledTimes(1);
+    > 210 |       expect(warn.mock.calls[0][0]).toEqual({
+          |                                     ^
+      211 |         scope: 'nutrition-ai',
+      212 |         petId: ctx.petId,
+      213 |         planId: ctx.planId,
+
+      at modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts:210:37
+```
+
+Restauración: `git checkout HEAD -- backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.ts`.
+
+```text
+$ git diff --quiet -- backend-pet-tracker; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+$ git ls-files --others --exclude-standard -- backend-pet-tracker | wc -l
+0
+```
+
+### S-E1.4b
+
+Mutación:
+
+```text
+Array.isArray(response.content) -> typeof response.content === 'object' && response.content !== null
+```
+
+`jest src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts`: exit=1.
+
+```json
+{"total":37,"passed":35,"failed":2,"suiteErrors":0,"failedTitles":["degrada content array-like con exactamente un warn completo","degrada content objeto con exactamente un warn completo"]}
+```
+
+`[ "$(node /tmp/e1-check.js /tmp/e1-S-E1.4b.json)" = '{"total":37,"passed":35,"failed":2,"suiteErrors":0,"failedTitles":["degrada content array-like con exactamente un warn completo","degrada content objeto con exactamente un warn completo"]}' ] && echo SONDA-OK || echo SONDA-DISTINTA`: **SONDA-OK**.
+
+```text
+  ● R10 (nutrition-ai-explainer #18): normaliza respuestas a texto o null con warn › degrada content objeto con exactamente un warn completo
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 6
+    + Received  + 1
+
+      Object {
+    -   "message": "ai explanation unusable",
+    +   "message": "blocks.filter is not a function",
+        "petId": "11111111-1111-1111-1111-111111111111",
+        "planId": "22222222-2222-2222-2222-222222222222",
+        "scope": "nutrition-ai",
+    -   "stopReason": "end_turn",
+    -   "usage": Object {
+    -     "input_tokens": 10,
+    -     "output_tokens": 20,
+    -   },
+      }
+
+      208 |       await expect(adapter.explain(input, result, ctx)).resolves.toBeNull();
+      209 |       expect(warn).toHaveBeenCalledTimes(1);
+    > 210 |       expect(warn.mock.calls[0][0]).toEqual({
+          |                                     ^
+      211 |         scope: 'nutrition-ai',
+      212 |         petId: ctx.petId,
+      213 |         planId: ctx.planId,
+
+      at modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts:210:37
+```
+
+```text
+  ● R10 (nutrition-ai-explainer #18): normaliza respuestas a texto o null con warn › degrada content array-like con exactamente un warn completo
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 6
+    + Received  + 1
+
+      Object {
+    -   "message": "ai explanation unusable",
+    +   "message": "blocks.filter is not a function",
+        "petId": "11111111-1111-1111-1111-111111111111",
+        "planId": "22222222-2222-2222-2222-222222222222",
+        "scope": "nutrition-ai",
+    -   "stopReason": "end_turn",
+    -   "usage": Object {
+    -     "input_tokens": 10,
+    -     "output_tokens": 20,
+    -   },
+      }
+
+      208 |       await expect(adapter.explain(input, result, ctx)).resolves.toBeNull();
+      209 |       expect(warn).toHaveBeenCalledTimes(1);
+    > 210 |       expect(warn.mock.calls[0][0]).toEqual({
+          |                                     ^
+      211 |         scope: 'nutrition-ai',
+      212 |         petId: ctx.petId,
+      213 |         planId: ctx.planId,
+
+      at modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts:210:37
+```
+
+Restauración: `git checkout HEAD -- backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.ts`.
+
+```text
+$ git diff --quiet -- backend-pet-tracker; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+$ git ls-files --others --exclude-standard -- backend-pet-tracker | wc -l
+0
+```
+
+### S-E1.4c
+
+Mutación:
+
+```text
+Toda la expresión de blocks -> Array.from((response.content ?? []) as ArrayLike<{ type: string; text?: string }>)
+```
+
+`jest src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts`: exit=1.
+
+```json
+{"total":37,"passed":36,"failed":1,"suiteErrors":0,"failedTitles":["degrada content array-like con exactamente un warn completo"]}
+```
+
+`[ "$(node /tmp/e1-check.js /tmp/e1-S-E1.4c.json)" = '{"total":37,"passed":36,"failed":1,"suiteErrors":0,"failedTitles":["degrada content array-like con exactamente un warn completo"]}' ] && echo SONDA-OK || echo SONDA-DISTINTA`: **SONDA-OK**.
+
+```text
+  ● R10 (nutrition-ai-explainer #18): normaliza respuestas a texto o null con warn › degrada content array-like con exactamente un warn completo
+
+    expect(received).resolves.toBeNull()
+
+    Received: "Tu perro necesita..."
+
+      206 |         { create },
+      207 |       );
+    > 208 |       await expect(adapter.explain(input, result, ctx)).resolves.toBeNull();
+          |                                                                  ^
+      209 |       expect(warn).toHaveBeenCalledTimes(1);
+      210 |       expect(warn.mock.calls[0][0]).toEqual({
+      211 |         scope: 'nutrition-ai',
+
+      at Object.toBeNull (../node_modules/.pnpm/expect@30.4.1/node_modules/expect/build/index.js:2140:20)
+      at modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts:208:66
+```
+
+Restauración: `git checkout HEAD -- backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.ts`.
+
+```text
+$ git diff --quiet -- backend-pet-tracker; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+$ git ls-files --others --exclude-standard -- backend-pet-tracker | wc -l
+0
+```
+
+### S-E1.4d
+
+Mutación:
+
+```text
+Toda la expresión de blocks -> Object.values((response.content ?? {}) as Record<string, { type: string; text?: string }>)
+```
+
+`jest src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts`: exit=1.
+
+```json
+{"total":37,"passed":36,"failed":1,"suiteErrors":0,"failedTitles":["degrada content array-like con exactamente un warn completo"]}
+```
+
+`[ "$(node /tmp/e1-check.js /tmp/e1-S-E1.4d.json)" = '{"total":37,"passed":36,"failed":1,"suiteErrors":0,"failedTitles":["degrada content array-like con exactamente un warn completo"]}' ] && echo SONDA-OK || echo SONDA-DISTINTA`: **SONDA-OK**.
+
+```text
+  ● R10 (nutrition-ai-explainer #18): normaliza respuestas a texto o null con warn › degrada content array-like con exactamente un warn completo
+
+    expect(received).resolves.toBeNull()
+
+    Received: "Tu perro necesita..."
+
+      206 |         { create },
+      207 |       );
+    > 208 |       await expect(adapter.explain(input, result, ctx)).resolves.toBeNull();
+          |                                                                  ^
+      209 |       expect(warn).toHaveBeenCalledTimes(1);
+      210 |       expect(warn.mock.calls[0][0]).toEqual({
+      211 |         scope: 'nutrition-ai',
+
+      at Object.toBeNull (../node_modules/.pnpm/expect@30.4.1/node_modules/expect/build/index.js:2140:20)
+      at modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts:208:66
+```
+
+Restauración: `git checkout HEAD -- backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.ts`.
+
+```text
+$ git diff --quiet -- backend-pet-tracker; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+$ git ls-files --others --exclude-standard -- backend-pet-tracker | wc -l
+0
+```
+
+### S-E1.5a
+
+Mutación:
+
+```text
+Filtro -> block.type !== 'thinking'
+```
+
+`jest src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts`: exit=1.
+
+```json
+{"total":37,"passed":36,"failed":1,"suiteErrors":0,"failedTitles":["degrada solo bloque no-text con text con exactamente un warn completo"]}
+```
+
+`[ "$(node /tmp/e1-check.js /tmp/e1-S-E1.5a.json)" = '{"total":37,"passed":36,"failed":1,"suiteErrors":0,"failedTitles":["degrada solo bloque no-text con text con exactamente un warn completo"]}' ] && echo SONDA-OK || echo SONDA-DISTINTA`: **SONDA-OK**.
+
+```text
+  ● R10 (nutrition-ai-explainer #18): normaliza respuestas a texto o null con warn › degrada solo bloque no-text con text con exactamente un warn completo
+
+    expect(received).resolves.toBeNull()
+
+    Received: "no es explicacion"
+
+      206 |         { create },
+      207 |       );
+    > 208 |       await expect(adapter.explain(input, result, ctx)).resolves.toBeNull();
+          |                                                                  ^
+      209 |       expect(warn).toHaveBeenCalledTimes(1);
+      210 |       expect(warn.mock.calls[0][0]).toEqual({
+      211 |         scope: 'nutrition-ai',
+
+      at Object.toBeNull (../node_modules/.pnpm/expect@30.4.1/node_modules/expect/build/index.js:2140:20)
+      at modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts:208:66
+```
+
+Restauración: `git checkout HEAD -- backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.ts`.
+
+```text
+$ git diff --quiet -- backend-pet-tracker; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+$ git ls-files --others --exclude-standard -- backend-pet-tracker | wc -l
+0
+```
+
+### S-E1.5b
+
+Mutación:
+
+```text
+Filtro -> block.type.startsWith('text')
+```
+
+`jest src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts`: exit=1.
+
+```json
+{"total":37,"passed":36,"failed":1,"suiteErrors":0,"failedTitles":["degrada solo bloque no-text con text con exactamente un warn completo"]}
+```
+
+`[ "$(node /tmp/e1-check.js /tmp/e1-S-E1.5b.json)" = '{"total":37,"passed":36,"failed":1,"suiteErrors":0,"failedTitles":["degrada solo bloque no-text con text con exactamente un warn completo"]}' ] && echo SONDA-OK || echo SONDA-DISTINTA`: **SONDA-OK**.
+
+```text
+  ● R10 (nutrition-ai-explainer #18): normaliza respuestas a texto o null con warn › degrada solo bloque no-text con text con exactamente un warn completo
+
+    expect(received).resolves.toBeNull()
+
+    Received: "no es explicacion"
+
+      206 |         { create },
+      207 |       );
+    > 208 |       await expect(adapter.explain(input, result, ctx)).resolves.toBeNull();
+          |                                                                  ^
+      209 |       expect(warn).toHaveBeenCalledTimes(1);
+      210 |       expect(warn.mock.calls[0][0]).toEqual({
+      211 |         scope: 'nutrition-ai',
+
+      at Object.toBeNull (../node_modules/.pnpm/expect@30.4.1/node_modules/expect/build/index.js:2140:20)
+      at modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts:208:66
+```
+
+Restauración: `git checkout HEAD -- backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.ts`.
+
+```text
+$ git diff --quiet -- backend-pet-tracker; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+$ git ls-files --others --exclude-standard -- backend-pet-tracker | wc -l
+0
+```
+
+### S-E1.5c
+
+Mutación:
+
+```text
+Filtro -> block.type.includes('text')
+```
+
+`jest src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts`: exit=1.
+
+```json
+{"total":37,"passed":36,"failed":1,"suiteErrors":0,"failedTitles":["degrada solo bloque no-text con text con exactamente un warn completo"]}
+```
+
+`[ "$(node /tmp/e1-check.js /tmp/e1-S-E1.5c.json)" = '{"total":37,"passed":36,"failed":1,"suiteErrors":0,"failedTitles":["degrada solo bloque no-text con text con exactamente un warn completo"]}' ] && echo SONDA-OK || echo SONDA-DISTINTA`: **SONDA-OK**.
+
+```text
+  ● R10 (nutrition-ai-explainer #18): normaliza respuestas a texto o null con warn › degrada solo bloque no-text con text con exactamente un warn completo
+
+    expect(received).resolves.toBeNull()
+
+    Received: "no es explicacion"
+
+      206 |         { create },
+      207 |       );
+    > 208 |       await expect(adapter.explain(input, result, ctx)).resolves.toBeNull();
+          |                                                                  ^
+      209 |       expect(warn).toHaveBeenCalledTimes(1);
+      210 |       expect(warn.mock.calls[0][0]).toEqual({
+      211 |         scope: 'nutrition-ai',
+
+      at Object.toBeNull (../node_modules/.pnpm/expect@30.4.1/node_modules/expect/build/index.js:2140:20)
+      at modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts:208:66
+```
+
+Restauración: `git checkout HEAD -- backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.ts`.
+
+```text
+$ git diff --quiet -- backend-pet-tracker; echo "exit=$?"
+exit=0
+$ git diff --cached --quiet; echo "exit=$?"
+exit=0
+$ git ls-files --others --exclude-standard -- backend-pet-tracker | wc -l
+0
+```
+
+## Anclas E1 antes de E1-c18
+
+| Ancla | Declarado tras E1 | Medido | Exit |
+|---|---|---|---|
+| E1-A1 | 1 | 1 | 0 |
+| E1-A2 | 0 | 0 | 1 |
+| E1-A3 | 1 | 1 | 0 |
+| E1-A4 | 1 | 1 | 0 |
+| E1-A5 | 1 | 1 | 0 |
+| E1-A6 | 1 | 1 | 0 |
+| E1-A7 | 1 | 1 | 0 |
+| E1-A8 | 1 | 1 | 0 |
+| E1-A9 | 0 | 0 | 1 |
+| E1-A10 | 4 | 4 | 0 |
+| E1-A11 | 1 | 1 | 0 |
+| E1-A12 | 1 | 1 | 0 |
+| E1-A13 | 0 | 0 | 1 |
+| E1-A14 | 1 | 1 | 0 |
+| E1-A15 | 1 | 1 | 0 |
+| E1-A16 | 1 | 1 | 0 |
+| E1-A17 | 1 | 1 | 0 |
+| E1-A18 | 1 | 1 | 0 |
+| E1-A19 | 1 | 1 | 0 |
+| E1-A20 | 1 | 1 | 0 |
+| E1-A21 | 1 | 1 | 0 |
+| E1-A22 | 2 | 2 | 0 |
+| E1-A23 | 2 | 2 | 0 |
+| E1-A24 | 7 | 7 | 0 |
+| E1-A25 | 2 | 2 | 0 |
+| E1-A26 | 0 | 0 | 0 |
+| E1-A27 | 0 | 0 | 0 |
+| E1-A28 | 0 | 0 | 0 |
+| E1-A29 | 1 | 1 | 0 |
+| E1-A30 | 1 | 1 | 0 |
+| E1-A31 | 1 | 1 | 0 |
+| E1-A32 | 1 | 1 | 0 |
+| E1-A33 | 1 | 1 | 0 |
+| E1-A34 | 3 | 3 | 0 |
+| E1-A35 | 3 | 3 | 0 |
+| E1-A36 | 3 | 3 | 0 |
+| E1-A37 | 1 | 1 | 0 |
+| E1-A38 | 4 | 4 | 0 |
+
+## Bloqueos
+
+## Decisiones E1
+
+- Se ejecutan las 18 sondas enumeradas aunque el párrafo de cierre dice «17». No se cambian sus gates.
+- Los dobles de E1.3 se escribieron desde su intención: un cargador que rechaza, una clase que registra opciones y lanza, y una clase que registra opciones y expone `messages.create`. Ninguno importa el SDK.
+- El refactor E1-c7 precede a su test por la excepción explícita de E1.3 para mantener tsc verde.
+- E1-c18 sólo lleva este informe y las siete filas E1 de traceability. Su hash propio y los comandos posteriores quedan en §Final E1 sin commitear, para que los versione el leader.
+
+## Commit de cierre E1-c18
+
+`docs(nutrition-ai-explainer): #18 traceability and probes for amendment E1`. El hash y la salida del paso 6 se añaden después del commit en §Final E1.
