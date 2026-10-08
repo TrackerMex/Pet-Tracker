@@ -1308,6 +1308,15 @@ describe('#155 R9: sin plan de comidas, Pingo enseña el cuenco', () => {
     expect(screen.getByTestId('food-plan-empty-body')).toHaveTextContent('Cuando haya un plan, te ayudo a llevar la cuenta de cada comida.');
   });
 
+  it('queda en el sitio del vacío que sustituye', async () => {
+    mockGetNutritionPlan.mockResolvedValue({ kind: 'not-found' });
+    await renderFood();
+    await screen.findByTestId('food-plan-empty-pose');
+    const slot = screen.getByTestId('food-plan-empty');
+    expect(slot.parent?.parent?.parent?.props.testID).toBe('screen-food');
+    expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['food-plan-empty', 'meal-schedule-link', 'meals-history-link']);
+  });
+
   it('no ofrece acción', async () => {
     mockGetNutritionPlan.mockResolvedValue({ kind: 'not-found' });
     await renderFood();
