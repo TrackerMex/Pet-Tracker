@@ -129,4 +129,46 @@ describe('Nutrition AI explainer (e2e HTTP y Postgres)', () => {
       });
     });
   });
+  describe('R13 (nutrition-ai-explainer #18): UPDATE solo de la segunda fila por id', () => {
+    it('conserva P1 null y todos los campos insertados de P2 excepto la explicacion', async () => {
+      const f = await fixture();
+      let inserted: typeof nutritionPlans.$inferSelect | undefined;
+      explain
+        .mockResolvedValueOnce(null)
+        .mockImplementationOnce(
+          async (
+            _input: NutritionEngineInput,
+            _result: NutritionPlanResult,
+            ctx: NutritionExplainerContext,
+          ) => {
+            [inserted] = await db
+              .select()
+              .from(nutritionPlans)
+              .where(eq(nutritionPlans.id, ctx.planId));
+            return 'texto B';
+          },
+        );
+      const first = (await f.generate().expect(200)).body as PlanResponse;
+      expect(first.aiExplanation).toBeNull();
+      await f.putProfile(351).expect(200);
+      const second = (await f.generate().expect(200)).body as PlanResponse;
+      const rows = await db
+        .select()
+        .from(nutritionPlans)
+        .where(eq(nutritionPlans.petId, f.petId));
+      expect(rows).toHaveLength(2);
+      const p1 = rows.find((row) => row.id === first.id);
+      expect(p1).toBeDefined();
+      expect(p1?.aiExplanation).toBeNull();
+      expect(second.id).not.toBe(first.id);
+      const p2 = rows.find((row) => row.id === second.id);
+      expect(p2).toBeDefined();
+      expect(p2?.aiExplanation).toBe('texto B');
+      expect(p2?.generatedAt.toISOString()).toBe(second.generatedAt);
+      expect(inserted).toBeDefined();
+      expect(inserted?.aiExplanation).toBeNull();
+      expect(p2?.inputsHash).toBe(inserted?.inputsHash);
+      expect(p2).toEqual({ ...inserted, aiExplanation: 'texto B' });
+    });
+  });
 });
