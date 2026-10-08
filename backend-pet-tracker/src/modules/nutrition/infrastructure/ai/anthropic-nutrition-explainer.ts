@@ -73,6 +73,7 @@ export class AnthropicNutritionExplainer implements NutritionExplainer {
         ? (response.content as { type: string; text?: string }[])
         : [];
       const text = blocks
+        .filter((block) => block.type === 'text')
         .map((block) => block.text ?? '')
         .join('')
         .trim();
