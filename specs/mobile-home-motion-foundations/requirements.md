@@ -583,7 +583,7 @@ conocida.
 7. **Fluidez.** En el teléfono del smoke, la cascada y la barra no dan
    tirones, ni al arrancar en frío ni al volver de segundo plano.
 
-- [ ] Smoke R10 superado por humano (fecha: ____, dispositivo: ____)
+- [X] Smoke R10 superado por humano (fecha: 2026-10-08, dispositivo: OnePlus Nord 5)
 
 ## Aprobación
 
