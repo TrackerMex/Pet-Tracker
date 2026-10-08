@@ -4,11 +4,10 @@ import { Button } from 'heroui-native';
 import { useEffect } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import Animated, {
-  Easing,
-  ReduceMotion,
   useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
+  withSpring,
   withTiming,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -17,10 +16,8 @@ import { ForkKnife, Map, Stethoscope } from 'reicon-react-native';
 import { Card } from '../../components/card';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
+import { MOTION_FADE_TIMING, MOTION_SETTLE_SPRING, MOTION_ENTRANCE_OFFSET_Y } from '../../theme/motion';
 import { useThemeColors } from '../../theme/use-theme-colors';
-
-export const WELCOME_ENTRANCE_MS = 240;
-export const WELCOME_ENTRANCE_EASING = Easing.bezier(0.23, 1, 0.32, 1);
 
 const WELCOME_CHIPS = [
   { testID: 'welcome-chip-gps', Icon: Map, labelKey: 'welcome.chipGps' },
@@ -37,24 +34,16 @@ export function WelcomeScreen() {
   const pingoBlink = useSharedValue(0);
   const blinkStyle = useAnimatedStyle(() => ({ opacity: pingoBlink.get() }));
   const opacity = useSharedValue(0);
-  const translateY = useSharedValue(reduceMotion ? 0 : 16);
+  const translateY = useSharedValue(reduceMotion ? 0 : MOTION_ENTRANCE_OFFSET_Y);
   const entranceStyle = useAnimatedStyle(() => ({
     opacity: opacity.get(),
     transform: [{ translateY: translateY.get() }],
   }));
 
   useEffect(() => {
-    opacity.set(withTiming(1, {
-      duration: WELCOME_ENTRANCE_MS,
-      easing: WELCOME_ENTRANCE_EASING,
-      // Reduce Motion keeps this fade while removing the spatial motion below.
-      reduceMotion: ReduceMotion.Never,
-    }));
+    opacity.set(withTiming(1, MOTION_FADE_TIMING));
     if (!reduceMotion) {
-      translateY.set(withTiming(0, {
-        duration: WELCOME_ENTRANCE_MS,
-        easing: WELCOME_ENTRANCE_EASING,
-      }));
+      translateY.set(withSpring(0, MOTION_SETTLE_SPRING));
     }
   }, [opacity, translateY, reduceMotion]);
 
