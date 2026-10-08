@@ -302,3 +302,36 @@ describe('#95 R6: métricas bajo cabecera nativa', () => {
     });
   });
 });
+
+describe('#155 R7: sin documentos, Pingo los guarda', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+  });
+
+  it('pinta la pose, el título y la frase de Pingo', async () => {
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet() });
+    mockListPetDocs.mockResolvedValue({ kind: 'ok', docs: [] });
+    await renderDocs();
+    const pose = await screen.findByTestId('docs-empty-pose');
+    expect(pose.props.source).toEqual([
+      expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/pingo-health\.webp$/) }),
+    ]);
+    expect(screen.getByTestId('docs-empty-title')).toHaveTextContent('Aún no hay documentos');
+    expect(screen.getByTestId('docs-empty-body')).toHaveTextContent('Cuando lleguen los documentos médicos de tu mascota, te los guardo aquí.');
+  });
+
+  it('no ofrece acción', async () => {
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet() });
+    mockListPetDocs.mockResolvedValue({ kind: 'ok', docs: [] });
+    await renderDocs();
+    await screen.findByTestId('docs-empty-title');
+    expect(screen.queryByTestId('docs-empty-action')).toBeNull();
+  });
+});
