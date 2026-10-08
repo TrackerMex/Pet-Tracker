@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, desc, eq, isNull, sql } from 'drizzle-orm';
+import { and, desc, eq, isNotNull, isNull, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DRIZZLE } from '@/db/drizzle.constants';
 import { petDocuments } from '@/db/schema/media.schema';
@@ -20,7 +20,9 @@ export class PetDocumentDrizzleRepository implements PetDocumentRepository {
     const rows = await this.db
       .select()
       .from(petDocuments)
-      .where(eq(petDocuments.petId, petId))
+      .where(
+        and(eq(petDocuments.petId, petId), isNotNull(petDocuments.uploadedAt)),
+      )
       .orderBy(desc(petDocuments.date), desc(petDocuments.id));
 
     return rows.map(toDomain);
