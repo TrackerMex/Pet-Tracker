@@ -1,6 +1,6 @@
 ---
 feature: "mobile-empty-states-pingo"
-status: draft        # draft | approved
+status: approved       # draft | approved
 tags: [harness, spec, mobile, ui-delight]
 ---
 
@@ -690,8 +690,8 @@ Ninguna es deuda.
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
-- [ ] Clasificación, poses (A1, A2, A9) y copy final (A7, A8) aprobados (fecha: ____)
+- [x] Aprobado por humano (fecha: 2026-10-08) ← gate obligatorio antes de implementar
+- [x] Clasificación, poses (A1, A2, A9) y copy final (A7, A8) aprobados (fecha: 2026-10-08)
 - [ ] Smoke R12 superado en dev build de Android (fecha: ____)
 
 ## Premisas falsas

@@ -24,3 +24,7 @@
   merge de #153: re-medir las anclas marcadas «re-verificar al merge de
   #153», convertir los 6 WebP (design.md §Assets) y comprobar que el sandbox
   de Codex lee `~/pet-tracker-mascot/`.
+- 2026-10-08: **spec aprobada vía Notion** (`Estado del gate` = Aprobado,
+  `page_last_edited_at` 2026-10-08T17:17:46.173Z, sin comentarios: A1-A9 con
+  su defecto). Firma en el commit siguiente. Implementación bloqueada hasta
+  el merge de #153 y los tres pasos previos al handoff de arriba.
