@@ -3,14 +3,18 @@ import { Redirect, router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
 import { StyleSheet } from 'react-native';
-import { getAnimatedStyle } from 'react-native-reanimated';
+import { getAnimatedStyle, withRepeat } from 'react-native-reanimated';
 import type { TestInstance } from 'test-renderer';
 
 import { en, es } from '../../i18n/catalog';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import { LanguageProvider } from '../../providers/language-provider';
 import { useThemeColors } from '../../theme/use-theme-colors';
-import { WelcomeScreen, WELCOME_ENTRANCE_MS, WELCOME_ENTRANCE_EASING } from './index';
+import { WelcomeScreen } from './index';
+
+declare function require(moduleName: './index'): Record<string, unknown>;
+
+const mockWithRepeat = jest.mocked(withRepeat);
 
 const { readFileSync, readdirSync } = jest.requireActual<typeof import('fs')>('fs');
 const { join } = jest.requireActual<typeof import('path')>('path');
@@ -31,7 +35,7 @@ jest.mock('../../theme/use-theme-colors', () => ({
 }));
 jest.mock('react-native-reanimated', () => {
   const actual = jest.requireActual<typeof import('react-native-reanimated')>('react-native-reanimated');
-  return { ...actual, __esModule: true, useReducedMotion: () => mockUseReducedMotion() };
+  return { ...actual, __esModule: true, useReducedMotion: () => mockUseReducedMotion(), withRepeat: jest.fn((animation: unknown) => animation) };
 });
 jest.mock('reicon-react-native', () => {
   const actual = jest.requireActual<typeof import('reicon-react-native')>('reicon-react-native');
@@ -299,64 +303,6 @@ describe('R8', () => {
 });
 
 
-describe('R10', () => {
-  beforeEach(() => jest.useFakeTimers());
-  afterEach(() => jest.useRealTimers());
-
-  it('fija la duración y la curva', () => {
-    expect(WELCOME_ENTRANCE_MS).toBe(240);
-    const expected = jest.requireActual<typeof import('react-native-reanimated')>('react-native-reanimated').Easing.bezier(0.23, 1, 0.32, 1).factory();
-    for (const point of [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]) {
-      expect(WELCOME_ENTRANCE_EASING.factory()(point)).toBeCloseTo(expected(point), 6);
-    }
-    const source = readSource('screens/welcome/index.tsx');
-    expect(source.match(/duration: WELCOME_ENTRANCE_MS,\s*easing: WELCOME_ENTRANCE_EASING,/g) ?? []).toHaveLength(2);
-    expect(source.match(/\b(duration|easing):/g) ?? []).toHaveLength(4);
-    expect(source.match(/reduceMotion: ReduceMotion\.Never/g) ?? []).toHaveLength(1);
-    expect(source.match(/\breduceMotion:/g) ?? []).toHaveLength(1);
-    expect(source).toMatch(/opacity\.set\(withTiming\(1, \{[^}]*reduceMotion: ReduceMotion\.Never,[^}]*\}\)\)/);
-  });
-
-  it('arranca invisible y desplazado sin Reduce Motion', async () => {
-    await renderWelcome();
-    expect(screen.getByTestId('welcome-content')).toHaveAnimatedStyle({
-      alignItems: 'center', gap: 16,
-      opacity: 0, transform: [{ translateY: 16 }],
-    }, { shouldMatchAllProps: true });
-  });
-
-  it('termina visible y en su sitio sin Reduce Motion', async () => {
-    await renderWelcome();
-    expect(screen.getByTestId('welcome-content')).toHaveAnimatedStyle({
-      alignItems: 'center', gap: 16,
-      opacity: 0, transform: [{ translateY: 16 }],
-    }, { shouldMatchAllProps: true });
-    await act(async () => {
-      jest.advanceTimersByTime(WELCOME_ENTRANCE_MS * 2 + 100);
-    });
-    expect(screen.getByTestId('welcome-content')).toHaveAnimatedStyle({
-      alignItems: 'center', gap: 16,
-      opacity: 1, transform: [{ translateY: 0 }],
-    }, { shouldMatchAllProps: true });
-  });
-
-  it('con Reduce Motion no se desplaza', async () => {
-    mockUseReducedMotion.mockReturnValue(true);
-    await renderWelcome();
-    expect(screen.getByTestId('welcome-content')).toHaveAnimatedStyle({
-      alignItems: 'center', gap: 16,
-      opacity: 0, transform: [{ translateY: 0 }],
-    }, { shouldMatchAllProps: true });
-    await act(async () => {
-      jest.advanceTimersByTime(WELCOME_ENTRANCE_MS * 2 + 100);
-    });
-    expect(screen.getByTestId('welcome-content')).toHaveAnimatedStyle({
-      alignItems: 'center', gap: 16,
-      opacity: 1, transform: [{ translateY: 0 }],
-    }, { shouldMatchAllProps: true });
-  });
-});
-
 describe('#153 R2: la carta escribe la voz de Pingo', () => {
   const charter = readFileSync(join(process.cwd(), '..', 'docs', 'ui-guidelines.md'), 'utf8');
 
@@ -520,5 +466,65 @@ describe('#153 R7: el CTA primario tiene cuerpo', () => {
     const secondary = screen.getByTestId('welcome-have-account');
     expect(secondary.props.className).not.toContain('border-b-4');
     expect(secondary.props.className).not.toContain('border-black');
+  });
+});
+
+
+describe('#153 R8: el contenido entra con las constantes de motion.ts', () => {
+  beforeEach(() => jest.useFakeTimers());
+  afterEach(() => jest.useRealTimers());
+
+  it('exporta solo la pantalla', async () => {
+    await renderWelcome();
+    expect(screen.getByTestId('welcome-content')).toBeOnTheScreen();
+    expect(Object.keys(require('./index'))).toEqual(['WelcomeScreen']);
+  });
+
+  it('usa el fundido y el muelle de motion.ts', async () => {
+    await renderWelcome();
+    expect(screen.getByTestId('welcome-content')).toBeOnTheScreen();
+    const source = readSource('screens/welcome/index.tsx');
+    for (const re of [
+      /opacity\.set\(\s*withTiming\(\s*1,\s*MOTION_FADE_TIMING,?\s*\),?\s*\)/g,
+      /translateY\.set\(\s*withSpring\(\s*0,\s*MOTION_SETTLE_SPRING,?\s*\),?\s*\)/g,
+      /useSharedValue\(\s*reduceMotion \? 0 : MOTION_ENTRANCE_OFFSET_Y,?\s*\)/g,
+      /from '\.\.\/\.\.\/theme\/motion'/g,
+    ]) {
+      expect((source.match(re) ?? []).length).toBe(1);
+    }
+    for (const re of [/\b(?:duration|easing|reduceMotion):/g, /WELCOME_ENTRANCE_/g]) {
+      expect((source.match(re) ?? []).length).toBe(0);
+    }
+  });
+
+  it('arranca invisible y desplazado 12 puntos sin reduce motion', async () => {
+    await renderWelcome();
+    expect(screen.getByTestId('welcome-content')).toHaveAnimatedStyle({
+      alignItems: 'center', gap: 16, opacity: 0, transform: [{ translateY: 12 }],
+    }, { shouldMatchAllProps: true });
+  });
+
+  it('termina visible y en su sitio sin reduce motion', async () => {
+    await renderWelcome();
+    expect(screen.getByTestId('welcome-content')).toBeOnTheScreen();
+    // El muelle se asienta en unas 1,5 × 250 ms; 1000 ms deja más del doble.
+    await act(async () => { jest.advanceTimersByTime(1000); });
+    expect(screen.getByTestId('welcome-content')).toHaveAnimatedStyle({
+      alignItems: 'center', gap: 16, opacity: 1, transform: [{ translateY: 0 }],
+    }, { shouldMatchAllProps: true });
+  });
+
+  it('con reduce motion aparece sin desplazarse', async () => {
+    mockUseReducedMotion.mockReturnValue(true);
+    await renderWelcome();
+    expect(screen.getByTestId('welcome-content')).toHaveAnimatedStyle({
+      alignItems: 'center', gap: 16, opacity: 0, transform: [{ translateY: 0 }],
+    }, { shouldMatchAllProps: true });
+    // Misma ventana de 1000 ms que el asentamiento sin reduce motion.
+    await act(async () => { jest.advanceTimersByTime(1000); });
+    expect(screen.getByTestId('welcome-content')).toHaveAnimatedStyle({
+      alignItems: 'center', gap: 16, opacity: 1, transform: [{ translateY: 0 }],
+    }, { shouldMatchAllProps: true });
+    mockUseReducedMotion.mockReturnValue(false);
   });
 });
