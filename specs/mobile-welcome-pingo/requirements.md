@@ -803,7 +803,7 @@ registra en `feature_list.json` desde esta spec: eso lo decide el leader.
 
 - [x] Aprobado por humano (fecha: 2026-10-07) ← gate obligatorio antes de implementar
 - [x] Voz de Pingo (R2) y copy final (R1) aprobados (fecha: 2026-10-07)
-- [ ] Smoke R14 superado en dev build de Android (fecha: ____)
+- [X] Smoke R14 superado en dev build de Android (fecha: 2026-10-08)
 
 ## Premisas falsas
 
