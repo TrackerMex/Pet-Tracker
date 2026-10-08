@@ -16,7 +16,7 @@ import { ForkKnife, Map, Stethoscope } from 'reicon-react-native';
 import { Card } from '../../components/card';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
-import { MOTION_FADE_TIMING, MOTION_SETTLE_SPRING, MOTION_ENTRANCE_OFFSET_Y } from '../../theme/motion';
+import { MOTION_FADE_TIMING, MOTION_SETTLE_SPRING, MOTION_ENTRANCE_OFFSET_Y, MOTION_ENTRANCE_SCALE } from '../../theme/motion';
 import { useThemeColors } from '../../theme/use-theme-colors';
 
 const WELCOME_CHIPS = [
@@ -31,6 +31,11 @@ export function WelcomeScreen() {
   const insets = useSafeAreaInsets();
   const [chipInk] = useThemeColors(['accent-strong']);
   const reduceMotion = useReducedMotion();
+  const pingoScale = useSharedValue(reduceMotion ? 1 : MOTION_ENTRANCE_SCALE);
+  const pingoFloatY = useSharedValue(0);
+  const pingoStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: pingoFloatY.get() }, { scale: pingoScale.get() }],
+  }));
   const pingoBlink = useSharedValue(0);
   const blinkStyle = useAnimatedStyle(() => ({ opacity: pingoBlink.get() }));
   const opacity = useSharedValue(0);
@@ -44,8 +49,9 @@ export function WelcomeScreen() {
     opacity.set(withTiming(1, MOTION_FADE_TIMING));
     if (!reduceMotion) {
       translateY.set(withSpring(0, MOTION_SETTLE_SPRING));
+      pingoScale.set(withSpring(1, MOTION_SETTLE_SPRING));
     }
-  }, [opacity, translateY, reduceMotion]);
+  }, [opacity, translateY, reduceMotion, pingoScale]);
 
   if (status === 'authenticated') return <Redirect href="/home" />;
 
@@ -64,7 +70,7 @@ export function WelcomeScreen() {
           <Card testID="welcome-bubble" variant="surface" className="px-4 py-3">
             <Text testID="welcome-bubble-text" className="text-center text-sm font-semibold text-foreground">{t('welcome.pingoGreeting')}</Text>
           </Card>
-          <Animated.View testID="welcome-pingo" style={{ width: 200, height: 200 }}>
+          <Animated.View testID="welcome-pingo" style={[pingoStyle, { width: 200, height: 200 }]}>
             <Image testID="welcome-pingo-wave" source={require('../../../assets/images/pingo-wave.webp')} style={{ width: 200, height: 200 }} contentFit="contain" />
             <Animated.View testID="welcome-pingo-blink" style={[blinkStyle, { position: 'absolute', top: 0, left: 0 }]}>
               <Image testID="welcome-pingo-blink-image" source={require('../../../assets/images/pingo-wave-blink.webp')} style={{ width: 200, height: 200 }} contentFit="contain" />
