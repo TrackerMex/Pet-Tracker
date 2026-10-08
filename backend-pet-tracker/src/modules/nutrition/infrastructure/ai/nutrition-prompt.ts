@@ -35,3 +35,6 @@ export function buildUserPrompt(
     },
   });
 }
+
+export const NUTRITION_AI_MAX_LIST_ITEMS = 20;
+export const NUTRITION_AI_MAX_ITEM_CHARS = 100;
