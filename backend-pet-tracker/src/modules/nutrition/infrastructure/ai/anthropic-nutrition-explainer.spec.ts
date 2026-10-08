@@ -189,6 +189,10 @@ describe('R10 (nutrition-ai-explainer #18): normaliza respuestas a texto o null 
         usage,
       },
     ],
+    [
+      'sin stop_reason',
+      { content: [{ type: 'text', text: 'Tu perro necesita...' }], usage },
+    ],
   ];
   it.each(unusable)(
     'degrada %s con exactamente un warn completo',
