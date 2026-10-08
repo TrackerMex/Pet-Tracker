@@ -715,3 +715,43 @@ lista cerrada); los pasos del smoke R12; la linea
 `R12: pendiente del smoke humano`; y cualquier decision que la spec no
 cerrara literalmente.
 ```
+
+---
+
+## Reanudación 1 (2026-10-08, tras la parada en T3 verde)
+
+> Pegar en Codex CLI: «Lee la sección Reanudación 1 de
+> progress/handoff_mobile-empty-states-pingo.md y continúa».
+
+```
+Worktree: /home/claude/sites/Pet-Tracker-wt-155   <- el mismo. No cambies de branch.
+
+Causa de la parada (diagnosticada por el leader, no es un fallo tuyo ni del
+componente): `bun run lint` es `expo lint`, que llama a eslint con `--cache`
+en mobile-pet-tracker/.expo/cache/eslint/. La cache de eslint se indexa por el
+contenido del fichero linteado, no por el de sus dependencias: como
+empty-state.test.tsx no cambio entre T3 rojo y T3 verde, eslint devolvio el
+resultado guardado en T3 rojo (`import/no-unresolved` sobre '../empty-state').
+`bunx eslint --no-cache` sobre ese fichero da exit 0. El leader ha borrado esa
+cache (esta en .gitignore); `bun run lint` desde mobile-pet-tracker/ da ahora
+exit=0 sin tocar ningun fichero tuyo.
+
+Que haces:
+1. Comprueba el estado: `git status --short` debe dar exactamente
+   `?? mobile-pet-tracker/src/components/empty-state.tsx` y
+   `?? progress/impl_mobile-empty-states-pingo.md`, y
+   `git log --oneline -1` debe dar d7455e94 (T3 rojo) o este commit de
+   reanudacion encima. Si no, PARA.
+2. Repite la cadena de T3 verde TAL CUAL esta en el handoff (medidas de jest
+   y GUARDAS incluidas) y sigue con T4-T11 y el Cierre sin cambios.
+3. No borres la cache tu (tu sandbox deniega rm). Si en otra cadena vuelve a
+   salir un error de lint sobre un fichero que no has cambiado, PARA y anota
+   la salida de `bunx eslint --no-cache <ese fichero>; echo "exit=$?"`.
+4. En el impl, anade una seccion «Reanudacion 1» con estos pasos. Desde aqui,
+   cuando un Received ocupe mas de 20 lineas (por ejemplo, un fichero leido
+   entero), copia el matcher, el Expected y las 20 primeras lineas del
+   Received, y nada mas: el impl ya pasa de 9 700 lineas.
+
+Este commit de reanudacion solo toca progress/handoff_mobile-empty-states-pingo.md,
+que la lista cerrada del Cierre ya excluye.
+```
