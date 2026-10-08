@@ -547,3 +547,51 @@ describe('#153 E1: la carta retira WELCOME_ENTRANCE_MS de la migración pendient
     expect(amendment.split('`WELCOME_ENTRANCE_MS`').length).toBe(2);
   });
 });
+
+describe('#153 R9: Pingo entra con un muelle de escala', () => {
+  beforeEach(() => jest.useFakeTimers());
+  afterEach(() => jest.useRealTimers());
+
+  it('arranca al 90 % sin reduce motion', async () => {
+    await renderWelcome();
+    expect(getAnimatedStyle(screen.getByTestId('welcome-pingo'))).toEqual({
+      width: 200, height: 200, transform: [{ translateY: 0 }, { scale: 0.9 }],
+    });
+  });
+
+  it('termina a tamaño completo sin reduce motion', async () => {
+    await renderWelcome();
+    expect(screen.getByTestId('welcome-pingo')).toBeOnTheScreen();
+    // Unas 1,5 × 250 ms de asentamiento; 1000 ms deja más del doble.
+    await act(async () => { jest.advanceTimersByTime(1000); });
+    expect(getAnimatedStyle(screen.getByTestId('welcome-pingo'))).toEqual({
+      width: 200, height: 200, transform: [{ translateY: expect.any(Number) }, { scale: 1 }],
+    });
+  });
+
+  it('con reduce motion nace a tamaño completo y no escala', async () => {
+    mockUseReducedMotion.mockReturnValue(true);
+    await renderWelcome();
+    expect(getAnimatedStyle(screen.getByTestId('welcome-pingo'))).toEqual({
+      width: 200, height: 200, transform: [{ translateY: 0 }, { scale: 1 }],
+    });
+    // 5000 ms supera el asentamiento y el primer parpadeo de 4000 ms.
+    await act(async () => { jest.advanceTimersByTime(5000); });
+    expect(getAnimatedStyle(screen.getByTestId('welcome-pingo'))).toEqual({
+      width: 200, height: 200, transform: [{ translateY: 0 }, { scale: 1 }],
+    });
+    mockUseReducedMotion.mockReturnValue(false);
+  });
+
+  it('usa el muelle de motion.ts', async () => {
+    await renderWelcome();
+    expect(screen.getByTestId('welcome-pingo')).toBeOnTheScreen();
+    const source = readSource('screens/welcome/index.tsx');
+    for (const re of [
+      /pingoScale\.set\(\s*withSpring\(\s*1,\s*MOTION_SETTLE_SPRING,?\s*\),?\s*\)/g,
+      /useSharedValue\(\s*reduceMotion \? 1 : MOTION_ENTRANCE_SCALE,?\s*\)/g,
+    ]) {
+      expect((source.match(re) ?? []).length).toBe(1);
+    }
+  });
+});
