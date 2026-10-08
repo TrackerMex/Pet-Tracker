@@ -5,6 +5,7 @@ import type { ReactNode } from 'react';
 import { StyleSheet } from 'react-native';
 import type { TestInstance } from 'test-renderer';
 
+import { en, es } from '../../i18n/catalog';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import { LanguageProvider } from '../../providers/language-provider';
 import { useThemeColors } from '../../theme/use-theme-colors';
@@ -406,5 +407,26 @@ describe('#153 R3: las poses entran como WebP', () => {
   it('no mete otras poses de Pingo', () => {
     expect(readdirSync(join(process.cwd(), 'assets', 'images')).filter((name) => /^(pingo|mascot)-/.test(name)).sort())
       .toEqual(['pingo-wave-blink.webp', 'pingo-wave.webp']);
+  });
+});
+
+
+describe('#153 R1: el saludo de Pingo existe en los dos idiomas', () => {
+  it('declara el saludo en inglés y en español', () => {
+    expect(en['welcome.pingoGreeting']).toBe('Hi, I\'m Pingo. I\'ll help you know where your pet is and how they\'re doing.');
+    expect(es['welcome.pingoGreeting']).toBe('Hola, soy Pingo. Te ayudo a saber dónde está y cómo está tu mascota.');
+  });
+
+  it('no exclama ni lleva emoji en ningún idioma', () => {
+    for (const value of [en['welcome.pingoGreeting'], es['welcome.pingoGreeting']]) {
+      expect(value).not.toMatch(/[!¡]/);
+      expect(value).not.toMatch(/\p{Extended_Pictographic}/u);
+    }
+  });
+
+  it('registra la clave en la tabla de mobile-ui-language', () => {
+    const design = readFileSync(join(process.cwd(), '..', 'specs', 'mobile-ui-language', 'design.md'), 'utf8');
+    expect(design).toContain('### §2.20 — Añadidos por #153 — Pingo en la bienvenida');
+    expect(design).toMatch(new RegExp('\\| — \\| `welcome\\.pingoGreeting`[^\\n]*← añadida por #153 \\(R1\\)'));
   });
 });
