@@ -37,6 +37,12 @@
   anade. Gates por JSON de jest (`/tmp/e1-check.js`) encadenados al commit;
   anclas, cadenas esperadas y mensajes verificados contra la base y tasks.md
   antes de entregarlo. Ronda solo unitaria: sin e2e ni init.sh para Codex.
+  Ronda 2 terminada en `8b0677b5` (18 commits); §Final E1 versionado por el
+  leader en `8b0a74c2`. init.sh del leader en `8b0a74c2`: exit=0 (unit
+  183/1450, mobile 96/2275, e2e 30/33 con 3 skipped). Review ronda 2
+  **aprobada** (`535128bd`) para codigo y tests; O1-O4 no bloquean (O1:
+  el anti-vacio de R3 solo muestrea `development`; candidata a deuda con sus
+  limites tal cual). Falta R19 del humano.
 
 ### Delegado al leader al cierre
 
@@ -50,7 +56,8 @@
    ronda 2.~~ Hecho (`c4b86430` + commit del handoff).
 2. Codex implementa la ronda 2 (18 commits, test primero) y deja §Final E1 sin
    commitear en el impl: lo versiona el leader.
-3. Leader: init.sh con permiso del humano, luego `reviewer` (ronda 2).
+3. ~~Leader: init.sh con permiso del humano, luego `reviewer` (ronda 2).~~
+   Hecho: init.sh exit=0, review aprobada en `535128bd`.
 4. Humano: R19 (prueba de humo con clave real, `docs/verification.md`
    §Feature 18). Ninguna IA la corre.
 5. Leader: Notion `Estado del gate` = Implementado y `Rol actual` = Completado,
