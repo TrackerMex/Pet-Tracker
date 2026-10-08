@@ -104,6 +104,16 @@ infrastructure/ai/nutrition-explainer.factory.ts    createNutritionExplainer(con
   `src/workers/notifier/expo-push-sender.ts`). Construir el adaptador nunca
   carga el SDK. El implementador comprueba bajo el `tsconfig` del repo cómo se
   obtiene el export por defecto y lo anota en su informe.
+
+> **Enmienda E1.3 (2026-10-08).** Este párrafo y la firma de la tabla de arriba
+> quedan derogados por [[requirements]] §Enmienda E1, E1.3 y E1.6. El constructor
+> gana un cuarto parámetro, `loadSdk: AnthropicSdkLoader`, cuyo default es
+> `async () => await import('@anthropic-ai/sdk')`. Así el literal sigue
+> apareciendo una sola vez y el factory sigue llamando con tres argumentos.
+> `explain()` carga el SDK con `await this.loadSdk()` dentro del `try`. Motivo:
+> con `module: nodenext`, `jest.mock` no intercepta el `import()` nativo (E1.0),
+> y sin un cargador inyectable el fallo del `import` o del constructor no se
+> puede probar. La conducta de producción no cambia.
 - **Clave explícita.** `new Anthropic({ apiKey: this.apiKey, ... })`: la clave
   viene de `ConfigService`, no de la lectura automática de `process.env` del
   SDK.

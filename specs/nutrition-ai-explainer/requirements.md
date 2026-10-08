@@ -272,6 +272,422 @@ Nada. Las cuatro piezas de la spec, el informe
 
 ---
 
+## Enmienda E1 (2026-10-08) — candados de R3, R5, R10 y R11 que faltaban en la ronda 1
+
+Origen: `progress/review_nutrition-ai-explainer.md`, ronda 1, rechazada por
+F1–F5 y la tabla C de §Sondas. Todas las medidas se tomaron en la base
+`c09ee51c`. El rechazo no apunta a código mal escrito. El problema está en los
+*Test* que prescribía esta spec: dejaban sin candado ramas de cláusulas ya
+aprobadas, y con ello estas mutaciones de producción pasan en verde.
+
+| Hallazgo | Cláusula aprobada | Ramas sin candado | Mutaciones que pasan en verde en `c09ee51c` |
+|---|---|---|---|
+| F1 | R5, fila «las cuatro se cumplen ⇒ `new AnthropicNutritionExplainer(model, key, null)`», y el anti-vacío de R3 | qué valor llega a cada parámetro | `(key, model, null)`; `(model.trim() + 'x', key, null)` |
+| F2 | R5, «evaluar, **en este orden**»; R3.1, `NODE_ENV` antes que cualquier otra condición | 5 de los 6 pares de condiciones (i<j); solo el par 1<3 tiene fila | `NODE_ENV` detrás de `ANTHROPIC_ENABLED`; la clave antes que `ANTHROPIC_ENABLED`; `ANTHROPIC_ENABLED` al final; el modelo antes que la clave |
+| F3 | R11, «Toda degradación es `null` + `warn`, nunca una excepción» | la carga perezosa del SDK: el `import` y el constructor | bloque `if (this.client === null) { … }` movido encima del `try` |
+| F4 | R10, «`content` no es un array» | `content` string, objeto, número y `undefined` | `Array.isArray(response.content)` → `response.content != null` |
+| F5 | R10, «ignorando cualquier otro tipo de bloque» | bloque no-`text` que trae campo `text` | borrar `.filter((block) => block.type === 'text')` |
+
+Las observaciones O1–O4 del veredicto quedan **fuera** de E1.
+
+R1–R19 conservan su conducta. E1 añade candados y hace **un** cambio de
+producción que no altera la conducta (E1.3: el cargador del SDK pasa a poder
+inyectarse). Donde un texto aprobado choca con eso, E1.6 lo deroga de forma
+explícita. El texto original no se reescribe.
+
+### E1.0 — Por qué no `jest.mock('@anthropic-ai/sdk')` (evidencia de spike)
+
+El backend compila con `module: nodenext`. ts-jest conserva el `await import()`
+nativo, y jest sin `--experimental-vm-modules` lo rechaza con
+`ERR_VM_DYNAMIC_IMPORT_CALLBACK_MISSING_FLAG` antes de consultar sus mocks. Por
+eso ni `jest.mock` ni `jest.doMock` interceptan ese import: en el spike fuera
+del árbol del 2026-10-08, todas las filas salieron rojas por ese error. Además,
+la aserción 12 de R1 prohíbe ese literal en los tests. La única forma de
+ejecutar el camino perezoso sin el SDK real es inyectar el cargador (E1.3).
+
+### E1.1 — R5: argumentos de la rama positiva (F1)
+
+**Cláusula.** R5, fila «— | las cuatro se cumplen |
+`new AnthropicNutritionExplainer(model, key, null)`», y el anti-vacío de R3.
+
+**Por qué el candado actual no la ve.** Las dos filas positivas de
+`nutrition-explainer.factory.spec.ts` solo comprueban
+`toBeInstanceOf(AnthropicNutritionExplainer)`. Los dos primeros parámetros son
+`string`, así que tsc no detecta un orden cambiado. Si esto regresa, la clave
+viaja como `model`, y el `warn` de R11 puede acabar escribiéndola en el log.
+
+**WHEN** se cierra #18, **THE SYSTEM SHALL** tener en
+`nutrition-explainer.factory.spec.ts`:
+
+1. Un helper local de test, `function constructorArgs(adapter: unknown)`,
+   **definido una sola vez**. Devuelve `{ model, apiKey, client }` leyendo los
+   campos privados del adaptador mediante un cast a un tipo con esos tres campos
+   `unknown`. No importa el SDK, no contiene `.explain(` (A52 sigue en 0) y no
+   lee constantes de producción.
+2. En `it('anti-vacio: development selecciona Anthropic sin invocarlo')`
+   (describe R3) y en
+   `it('anti-vacio: todas cumplidas seleccionan el adaptador real sin invocarlo')`
+   (describe R5): mantienen sus nombres y su `toBeInstanceOf`, y añaden
+   `expect(constructorArgs(adapter)).toEqual({ model: 'modelo-de-prueba', apiKey: 'clave-de-prueba', client: null })`.
+   Los literales se escriben en el test: son los de `valid` y son distintos
+   entre sí.
+3. Un `it` nuevo en el describe R5,
+   `it('pasa clave y modelo sin recortar (E1.1)')`. Usa `valid` con
+   `ANTHROPIC_API_KEY: '  clave-de-prueba  '` y
+   `ANTHROPIC_MODEL: '  modelo-de-prueba  '` (dos espacios a cada lado), y
+   comprueba `toBeInstanceOf(AnthropicNutritionExplainer)` y que
+   `constructorArgs` sea
+   `toEqual({ model: '  modelo-de-prueba  ', apiKey: '  clave-de-prueba  ', client: null })`.
+
+En total hay tres usos de `constructorArgs`, uno por `it`.
+
+**Decisión D-E1-a**, que cierra la ambigüedad de la fila positiva: el factory
+pasa los valores **tal cual llegan** de `ConfigService`. `trim()` solo se usa en
+las condiciones de las filas 3 y 4 de la tabla de R5. Es la lectura literal de
+`(model, key, null)` y lo que hace hoy `c09ee51c`. Si el humano prefiere
+recortar, eso es un cambio de conducta fuera de E1, y el valor esperado del
+punto 3 cambiaría.
+
+Los rojos son de aserción (`toEqual`). Se midieron en un spike con copias de
+la producción de `c09ee51c` y un spec reducido a los candados nuevos. Ese spec
+no incluía el anti-vacío de R3, que cae por la misma aserción (véase §Cifras y
+alcance):
+
+| Mutación en `nutrition-explainer.factory.ts` | `it` rojos | Uso |
+|---|---|---|
+| `return new AnthropicNutritionExplainer(key, model, null);` (veredicto F1) | los 3 | rojo versionado del commit E1-c1 |
+| `return new AnthropicNutritionExplainer(model.trim() + 'x', key, null);` (veredicto F1) | los 3 | sonda S-E1.1a |
+| `return new AnthropicNutritionExplainer(model.trim(), key.trim(), null);` | solo el del punto 3 | sonda S-E1.1b |
+
+**Zona ciega declarada.** `constructorArgs` no ve un cuarto argumento en la
+llamada del factory (por ejemplo, un cargador distinto del default de E1.3). Lo
+vigilan el ancla E1-A9 (la llamada literal con tres argumentos) y E1-A25 (el
+diff neto del factory contra `c09ee51c` debe ser vacío).
+
+### E1.2 — R3.1 y R5: orden entre pares de condiciones (F2)
+
+**Cláusulas.** R5, «esa función SHALL evaluar, **en este orden**, y devolver el
+primer resultado que aplique», y R3.1, que exige evaluar `NODE_ENV` antes que
+cualquier otra condición de R5.
+
+**Por qué el candado actual no la ve.** Cada fila del `it.each` de R5 hace
+fallar **una sola** condición. La única fila con dos condiciones fallidas es
+`it('evalua NODE_ENV antes que la clave PENDING')`, que cubre el par 1<3.
+Cualquier reordenación que respete ese par pasa en verde.
+
+**WHEN** se cierra #18, **THE SYSTEM SHALL** tener en el describe R5 de
+`nutrition-explainer.factory.spec.ts` un
+`it.each(...)('%s y %s fallan: gana %s')` con una fila por cada par (i<j) de
+las cuatro condiciones. Cada fila parte de `valid`, sustituye **solo** las dos
+claves del par por su valor fallido y comprueba
+`toBeInstanceOf(NullNutritionExplainer)` y el `reason` exacto con `toBe`. Los
+valores fallidos son fijos: `NODE_ENV: 'test'`, `ANTHROPIC_ENABLED: 'false'`,
+`ANTHROPIC_API_KEY: 'PENDING'` y `ANTHROPIC_MODEL: ''`.
+
+| # | Primera | Segunda | `reason` esperado |
+|---|---|---|---|
+| 1 | `NODE_ENV` | `ANTHROPIC_ENABLED` | `node-env-test` |
+| 2 | `NODE_ENV` | `ANTHROPIC_API_KEY` | `node-env-test` |
+| 3 | `NODE_ENV` | `ANTHROPIC_MODEL` | `node-env-test` |
+| 4 | `ANTHROPIC_ENABLED` | `ANTHROPIC_API_KEY` | `not-enabled` |
+| 5 | `ANTHROPIC_ENABLED` | `ANTHROPIC_MODEL` | `not-enabled` |
+| 6 | `ANTHROPIC_API_KEY` | `ANTHROPIC_MODEL` | `key-missing` |
+
+La fila 2 repite el par del `it` de orden que ya existe, y ese `it` se queda
+como está. Con `if` secuenciales, cualquier permutación invierte al menos un
+par, y la fila de ese par se pone roja.
+
+Los rojos son de aserción (`toBe(reason)`), medidos en spike:
+
+| Mutación en `nutrition-explainer.factory.ts` (veredicto F2) | Filas rojas | Uso |
+|---|---|---|
+| el bloque `not-enabled` pasa detrás del bloque `model-missing`, justo antes del `return new AnthropicNutritionExplainer` | 4 y 5 | rojo versionado del commit E1-c3 |
+| el bloque `node-env-test` pasa detrás del bloque `not-enabled` | 1 | sonda S-E1.2a |
+| el bloque `key-missing` pasa delante del bloque `not-enabled` | 4 | sonda S-E1.2b |
+| el bloque `model-missing` pasa delante del bloque `key-missing` | 6 | sonda S-E1.2c |
+
+**Zona ciega declarada.** Pasaría un orden que dependiera del **valor** fallido,
+por ejemplo comprobar la clave antes del gate solo cuando `ANTHROPIC_ENABLED`
+es `undefined`, porque cada condición se prueba con un único valor fallido.
+Ninguna lectura razonable de R5 lleva a eso, así que no se añaden más valores.
+
+### E1.3 — R11: la carga perezosa del SDK también degrada (F3)
+
+**Cláusula.** R11, cuyo título dice «Toda degradación es `null` + `warn`, nunca
+una excepción». Su condición IF solo nombra «la llamada `create` rechaza…».
+Pero la consecuencia descrita en F3 (un 500 después del INSERT) viola la misma
+intención cuando falla el `import` o el constructor del SDK, y hoy los dos
+viven en el mismo `try`. E1.6 extiende la condición IF a ambos casos.
+
+**Por qué el candado actual no la ve.** Todos los tests inyectan un cliente
+doble, así que el camino `client === null` no se ejecuta nunca. El test de
+texto de R9 no fija dónde queda ese bloque respecto del `try`, y `jest.mock` no
+sirve para ejecutarlo (E1.0).
+
+**Cambio de producción sin cambio de conducta**, en
+`anthropic-nutrition-explainer.ts`:
+
+- `export interface AnthropicClientOptions { apiKey: string; timeout: number; maxRetries: number }`.
+- `export type AnthropicSdkLoader = () => Promise<{ default: new (options: AnthropicClientOptions) => { messages: AnthropicMessagesClient } }>`.
+- El constructor gana un cuarto parámetro,
+  `private readonly loadSdk: AnthropicSdkLoader`, cuyo default es
+  `async () => await import('@anthropic-ai/sdk')`.
+  - El literal `await import('@anthropic-ai/sdk')` sigue apareciendo **una**
+    vez en el archivo y solo ahí: A48 = 1 y el test de texto de R9 sigue verde.
+  - No aparece `from '@anthropic-ai/sdk'` (A49 = 0); los tipos son
+    estructurales.
+  - El `async`/`await` es necesario por dos razones. El test de R9 cuenta ese
+    literal exacto, y un `async` sin `await` falla
+    `@typescript-eslint/require-await`.
+- En `explain()`, dentro del `try` y del bloque `if (this.client === null)`,
+  `await import('@anthropic-ai/sdk')` pasa a ser `await this.loadSdk()`. El
+  resto del bloque, `new Anthropic({ apiKey: this.apiKey, timeout:
+  NUTRITION_AI_TIMEOUT_MS, maxRetries: NUTRITION_AI_MAX_RETRIES }).messages`,
+  no cambia.
+- El factory no cambia: sigue llamando con tres argumentos, así que producción
+  usa el default.
+
+Resultado del spike: `tsc --noEmit` sale con exit 0 contra los tipos reales de
+`@anthropic-ai/sdk@0.128.0`, porque el SDK encaja estructuralmente en
+`AnthropicSdkLoader`. Con el cambio, la suite del adaptador queda en 25/25 y la
+del factory en 18/18.
+
+**WHEN** se cierra #18, **THE SYSTEM SHALL** tener en
+`anthropic-nutrition-explainer.spec.ts` un describe nuevo,
+`describe('R11 (nutrition-ai-explainer #18) E1.3: la carga perezosa del SDK tambien degrada a null')`,
+al final del archivo. Usa el mismo espía de `Logger.prototype.warn` que los
+describes R10 y R11 (`beforeEach`, y `afterEach` con `jest.restoreAllMocks()`).
+Cada `it` construye el adaptador **una vez** con
+`new AnthropicNutritionExplainer('modelo-de-prueba', 'clave-de-prueba', null, loadSdk)`,
+donde `loadSdk` es un cargador **de test** tipado `AnthropicSdkLoader` y
+declarado antes como constante. Así `null` nunca va seguido de `)` y la
+aserción 13 de R1 sigue verde. Ningún cargador de test escribe `import(` del
+SDK, por la aserción 12.
+
+1. `it('fallo del import del SDK: null y un warn sin relanzar')`. El cargador
+   rechaza con `new Error('sdk ausente')`.
+   - `explain(input, result, ctx)` resuelve a `null` (`resolves.toBeNull()`).
+   - `warn` se llama exactamente una vez.
+   - `warn.mock.calls[0][0]` cumple
+     `toEqual({ scope: 'nutrition-ai', petId: ctx.petId, planId: ctx.planId, message: 'sdk ausente' })`.
+2. `it('el constructor del SDK lanza: null y un warn sin relanzar')`. El
+   cargador resuelve `{ default: <clase doble> }`. El constructor de esa clase
+   guarda las opciones recibidas en un array del test y lanza
+   `new Error('opciones invalidas')`.
+   - El método resuelve a `null`.
+   - El array tiene exactamente 1 elemento, lo que demuestra que se llegó al
+     constructor y que no es el caso 1 con otro nombre.
+   - `warn` se llama una vez con
+     `toEqual({ scope: 'nutrition-ai', petId: ctx.petId, planId: ctx.planId, message: 'opciones invalidas' })`.
+   - `JSON.stringify(warn.mock.calls)` no contiene `'clave-de-prueba'`, porque
+     las opciones llevan la clave.
+3. `it('anti-vacio: el SDK cargado construye el cliente una vez con clave y constantes')`.
+   El cargador resuelve una clase doble cuyo constructor guarda sus opciones y
+   expone `messages = { create }`. `create` es un `jest.fn` que resuelve
+   `{ stop_reason: 'end_turn', content: [{ type: 'text', text: 'Tu perro necesita...' }] }`.
+   - El método resuelve a `'Tu perro necesita...'`.
+   - Las opciones recibidas cumplen
+     `toEqual([{ apiKey: 'clave-de-prueba', timeout: 15000, maxRetries: 0 }])`,
+     con **números literales**. Usar las constantes importadas haría el
+     candado tautológico.
+   - `create` se llama una vez y `warn` no se llama.
+
+Los dobles se escriben a partir de la intención descrita aquí; no se copian de
+otra suite. Los literales `'sdk ausente'` y `'opciones invalidas'` aparecen dos
+veces cada uno: una en el doble y otra en el `warn` esperado.
+
+Los rojos son de aserción, medidos en spike:
+
+| Mutación en `anthropic-nutrition-explainer.ts` | `it` rojos | Tipo de rojo | Uso |
+|---|---|---|---|
+| bloque `if (this.client === null) { … }` movido entero encima del `try` (veredicto F3) | 1 y 2 | `resolves.toBeNull()`: «Received promise rejected instead of resolved» | rojo versionado del commit E1-c6 |
+| el fallo de `this.loadSdk()` se captura en el sitio y `explain()` devuelve `null` sin `warn` | solo 1 | `toHaveBeenCalledTimes(1)` del `warn` | sonda S-E1.3a |
+| `new Anthropic(…)` envuelto en su propio `try` que devuelve `null` sin `warn` | solo 2 | `toHaveBeenCalledTimes(1)` del `warn` | sonda S-E1.3b |
+| en `explain()`, `await this.loadSdk()` vuelve a ser `await import('@anthropic-ai/sdk')`, sin tocar el default | 1, 2 y 3, más el `it` de texto de R9 (el literal queda dos veces) | 1 y 2: `toEqual` del `message` (llega `ERR_VM_DYNAMIC_IMPORT…`); 3: `toBe`; R9: `toHaveLength(2)` | sonda S-E1.3c: prueba que los tests no cargan el SDK real y que el anti-vacío está vivo |
+
+En el spike, S-E1.3c no incluía el `it` de R9. Ese rojo extra es determinista,
+porque el literal queda dos veces.
+
+**Zona ciega declarada.**
+- Ningún test ejecuta el cuerpo del cargador por defecto, es decir, el `import`
+  real. Lo vigilan el test de texto de R9 (el literal aparece una vez) y la
+  prueba de humo de R19.
+- Tampoco se cubre un valor rechazado que no sea un `Error` en el camino
+  perezoso. El formato `String(valor)` vive en el `catch` compartido, que R11
+  ya cubre con su fila `'string'`.
+
+### E1.4 — R10: `content` que no es un array (F4)
+
+**Cláusula.** R10, «`content` no es un array (respuesta con forma
+inesperada)», que debe dar `null` y el `warn` de R10
+(`message: 'ai explanation unusable'`, `stopReason`, `usage`).
+
+**Por qué el candado actual no la ve.** Solo existe la fila `content: null`, y
+la mutación `!= null` también la cumple.
+
+**WHEN** se cierra #18, **THE SYSTEM SHALL** tener cuatro filas nuevas al final
+del array `unusable` del describe R10. Todas llevan `stop_reason: 'end_turn'` y
+`usage` (la constante del describe). Corren por el
+`it.each(unusable)('degrada %s con exactamente un warn completo')` que ya
+existe, sin tocar su cuerpo:
+
+| Etiqueta | `content` |
+|---|---|
+| `'content string'` | `'Tu perro necesita...'` |
+| `'content objeto'` | `{ type: 'text', text: 'Tu perro necesita...' }` |
+| `'content numero'` | `42` |
+| `'content undefined'` | `undefined` |
+
+El string y el objeto llevan texto útil a propósito: si se colaran, el test
+recibiría texto en lugar de `null`.
+
+Los rojos son de aserción (`toEqual` del `warn`): llega la forma de R11, con el
+`message` de un `TypeError`, en lugar de la de R10. Medidos en spike:
+
+| Mutación en `anthropic-nutrition-explainer.ts` | Filas rojas | Uso |
+|---|---|---|
+| `Array.isArray(response.content)` → `response.content != null` (veredicto F4) | string, objeto, numero | rojo versionado del commit E1-c8 |
+| → `response.content !== null` | las cuatro, también `undefined` | sonda S-E1.4a: la fila `undefined` está viva |
+| → `typeof response.content === 'object' && response.content !== null` | objeto | sonda S-E1.4b |
+
+**Zona ciega declarada.** Pasaría las cuatro filas un objeto *array-like*
+(`{ length: 1, 0: { … } }`) con una mutación del tipo
+`Array.from((response.content ?? []) as …)`. Esto se razonó, no se midió. El
+SDK no produce esa forma, así que no se le pone candado.
+
+### E1.5 — R10: bloques que no son `text` aunque traigan campo `text` (F5)
+
+**Cláusula.** R10: el texto es la concatenación «del campo `text` de **todos**
+los bloques de `content` con `type === 'text'` … ignorando cualquier otro tipo
+de bloque».
+
+**Por qué el candado actual no la ve.** Los fixtures `thinking` no traen campo
+`text`, así que `text ?? ''` tapa la ausencia del filtro.
+
+**WHEN** se cierra #18, **THE SYSTEM SHALL** tener en el describe R10 una fila
+para cada una de estas dos ramas:
+
+1. **Hay texto y además un bloque ajeno con `text`.** Fila nueva en el
+   `it.each` `'anti-vacio: %s devuelve texto sin warn'`:
+   `['bloque no-text con text', [{ type: 'thinking', thinking: 'razono', text: 'texto oculto ' }, { type: 'text', text: 'Tu perro necesita...' }]]`.
+   Debe dar `'Tu perro necesita...'`, sin `warn`.
+2. **Solo hay bloques ajenos con `text`.** Fila nueva en `unusable`:
+   `['solo bloque no-text con text', { stop_reason: 'end_turn', content: [{ type: 'tipo-futuro', text: 'no es explicacion' }], usage }]`.
+   Debe dar `null` y el `warn` de R10. El tipo es inventado a propósito: R10
+   dice «cualquier otro tipo», y una lista negra de tipos conocidos nunca puede
+   incluirlo.
+
+Los rojos son de aserción:
+
+| Mutación en `anthropic-nutrition-explainer.ts` | Filas rojas | Tipo de rojo | Uso |
+|---|---|---|---|
+| borrar `.filter((block) => block.type === 'text')` (veredicto F5) | 1 y 2 | 1: `toBe` (llega `'texto oculto Tu perro necesita...'`); 2: `toBeNull()` (llega `'no es explicacion'`) | rojo versionado del commit E1-c10 |
+| filtro → `block.type !== 'thinking'` | solo 2 | `toBeNull()` | sonda S-E1.5a |
+
+En el spike, la fila 2 usó `type: 'tool_use'`. Ninguna de las dos mutaciones
+mira ese nombre, así que el resultado con `'tipo-futuro'` es el mismo.
+
+**Zona ciega declarada.** Un filtro por prefijo
+(`block.type.startsWith('text')`) admitiría un futuro tipo `text_…`. Hoy no
+existe en la respuesta de `messages.create`, así que no se le pone candado.
+
+### E1.6 — Overrides de texto aprobado
+
+Estos overrides prevalecen sobre el texto original, que se queda como está.
+
+- **C-6** (`constructor(model, apiKey, client) // sin default`). Pasa a
+  `constructor(model, apiKey, client, loadSdk = <default de E1.3>)`. `client`
+  sigue sin default.
+- **design.md D5** (la firma `AnthropicNutritionExplainer(model, apiKey, client)`
+  y la viñeta «Import perezoso»). Gana el cuarto parámetro, y el import
+  perezoso vive en el default de `loadSdk`. design.md lleva una nota que lo
+  remite aquí.
+- **R3.4** («ningún archivo de test pasa `null` como cliente»). Se lee como
+  «ningún archivo de test construye el adaptador con cliente `null` **sin**
+  inyectar un cargador de test como cuarto argumento». La aserción 13 de R1 no
+  cambia: su regex `/new AnthropicNutritionExplainer\([^)]*\bnull\s*\)/` no
+  casa con `null, loadSdk)`. A52 tampoco cambia.
+- **R11, condición IF.** Pasa a ser «IF la carga perezosa del SDK
+  (`loadSdk()` rechaza o el constructor del SDK lanza) o la llamada `create`
+  rechaza por **cualquier** motivo…». El `warn` y su forma exacta no cambian.
+- **R5 *Test*** (la fila positiva solo con `toBeInstanceOf`, y una sola fila de
+  orden). Se completa con E1.1 y E1.2.
+- **R10 *Test*.** Se completa con E1.4 y E1.5.
+- **R9** no cambia. Su test de texto sigue siendo válido y queda verde con el
+  cambio de E1.3.
+
+### Cifras y alcance
+
+- **Tests**, de `c09ee51c` al final de la ronda 2:
+  - `nutrition-explainer.factory.spec.ts`: 18 → 25 (+1 de E1.1, +6 de E1.2).
+  - `anthropic-nutrition-explainer.spec.ts`: 25 → 34 (+3 de E1.3, +4 de E1.4,
+    +2 de E1.5).
+  - `nutrition-scope.spec.ts`: sin cambios y en verde.
+- **Spike frente a archivo completo.** El spike usó specs reducidos a los
+  candados nuevos: 8 tests en el del factory y 10 en el del adaptador. Los
+  recuentos `Tests:` de tasks.md son sobre los archivos completos. Se
+  comprobaron fila a fila contra los fixtures de `c09ee51c`: ninguna fila
+  existente cae con estas mutaciones, salvo el anti-vacío de R3 en E1.1 y el
+  `it` de texto de R9 en S-E1.3c, que ya están contados.
+- **Rojos.** Todos son de aserción. Ninguno es de consulta, de compilación ni
+  un `ReferenceError` (CHECKPOINTS C4). Por eso el refactor de E1.3 va
+  **antes** que su test: sin el cuarto parámetro, el test nuevo no compila.
+- **Lista cerrada de archivos de la ronda 2.** El diff se mide contra el commit
+  de handoff del leader, sin contar `progress/review_nutrition-ai-explainer.md`.
+  1. `backend-pet-tracker/src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.spec.ts`
+  2. `backend-pet-tracker/src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.ts`:
+     solo mutaciones temporales; el diff neto contra `c09ee51c` debe ser vacío.
+  3. `backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.ts`:
+     el diff neto contra `c09ee51c` es solo el cambio de E1.3.
+  4. `backend-pet-tracker/src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts`
+  5. `specs/nutrition-ai-explainer/traceability.md`: filas E1.1–E1.5.
+  6. `progress/impl_nutrition-ai-explainer.md`: §Sondas E1, con la salida
+     pegada de cada sonda.
+
+  No se toca nada más: ni `nutrition-scope.spec.ts`, ni los e2e, ni
+  `package.json`, ni `.env*`, ni `docs/`.
+- **Anclas** (`grep -cF`, ejecutadas desde la raíz del worktree, con
+  `AI=backend-pet-tracker/src/modules/nutrition/infrastructure/ai`). Los
+  valores de `c09ee51c` se midieron el 2026-10-08. Los de «tras E1» son los que
+  debe dar el HEAD final de la ronda 2.
+
+| Ancla | Comando | `c09ee51c` | tras E1 |
+|---|---|---|---|
+| E1-A1 | `grep -cF "await import('@anthropic-ai/sdk')" $AI/anthropic-nutrition-explainer.ts` | 1 | 1 |
+| E1-A2 | `grep -cF "from '@anthropic-ai/sdk'" $AI/anthropic-nutrition-explainer.ts` | 0 | 0 |
+| E1-A3 | `grep -cF 'export type AnthropicSdkLoader' $AI/anthropic-nutrition-explainer.ts` | 0 | 1 |
+| E1-A4 | `grep -cF 'export interface AnthropicClientOptions' $AI/anthropic-nutrition-explainer.ts` | 0 | 1 |
+| E1-A5 | `grep -cF 'await this.loadSdk()' $AI/anthropic-nutrition-explainer.ts` | 0 | 1 |
+| E1-A6 | `grep -cF 'if (this.client === null)' $AI/anthropic-nutrition-explainer.ts` | 1 | 1 |
+| E1-A7 | `grep -cF 'Array.isArray(response.content)' $AI/anthropic-nutrition-explainer.ts` | 1 | 1 |
+| E1-A8 | `grep -cF "block.type === 'text'" $AI/anthropic-nutrition-explainer.ts` | 1 | 1 |
+| E1-A9 | `grep -cF 'return new AnthropicNutritionExplainer(model, key, null);' $AI/nutrition-explainer.factory.ts` | 1 | 1 |
+| E1-A10 | `grep -cF 'constructorArgs(' $AI/nutrition-explainer.factory.spec.ts` | 0 | 4 |
+| E1-A11 | `grep -cF "'%s y %s fallan: gana %s'" $AI/nutrition-explainer.factory.spec.ts` | 0 | 1 |
+| E1-A12 | `grep -cF 'pasa clave y modelo sin recortar (E1.1)' $AI/nutrition-explainer.factory.spec.ts` | 0 | 1 |
+| E1-A13 | `grep -cF '.explain(' $AI/nutrition-explainer.factory.spec.ts` (A52) | 0 | 0 |
+| E1-A14 | `grep -cF "'content string'" $AI/anthropic-nutrition-explainer.spec.ts` | 0 | 1 |
+| E1-A15 | `grep -cF "'content objeto'" $AI/anthropic-nutrition-explainer.spec.ts` | 0 | 1 |
+| E1-A16 | `grep -cF "'content numero'" $AI/anthropic-nutrition-explainer.spec.ts` | 0 | 1 |
+| E1-A17 | `grep -cF "'content undefined'" $AI/anthropic-nutrition-explainer.spec.ts` | 0 | 1 |
+| E1-A18 | `grep -cF "'bloque no-text con text'" $AI/anthropic-nutrition-explainer.spec.ts` | 0 | 1 |
+| E1-A19 | `grep -cF "'solo bloque no-text con text'" $AI/anthropic-nutrition-explainer.spec.ts` | 0 | 1 |
+| E1-A20 | `grep -cF "'tipo-futuro'" $AI/anthropic-nutrition-explainer.spec.ts` | 0 | 1 |
+| E1-A21 | `grep -cF 'R11 (nutrition-ai-explainer #18) E1.3:' $AI/anthropic-nutrition-explainer.spec.ts` | 0 | 1 |
+| E1-A22 | `grep -cF "'sdk ausente'" $AI/anthropic-nutrition-explainer.spec.ts` | 0 | 2 |
+| E1-A23 | `grep -cF "'opciones invalidas'" $AI/anthropic-nutrition-explainer.spec.ts` | 0 | 2 |
+| E1-A24 | `grep -cF 'new AnthropicNutritionExplainer(' $AI/anthropic-nutrition-explainer.spec.ts` | 4 | 7 |
+| E1-A25 | `git diff c09ee51c -- $AI/nutrition-explainer.factory.ts \| wc -l` | 0 | 0 |
+| E1-A26 | `git diff c09ee51c -- backend-pet-tracker/src/modules/nutrition/nutrition-scope.spec.ts \| wc -l` | 0 | 0 |
+| E1-A27 | `grep -rlF "jest.mock('@anthropic-ai/sdk'" backend-pet-tracker/src backend-pet-tracker/test \| wc -l` | 0 | 0 |
+| E1-A28 | A47: `grep -rlE "from '@anthropic-ai/sdk'\|import\('@anthropic-ai/sdk'\)" backend-pet-tracker/src backend-pet-tracker/test --include=*spec.ts \| wc -l` | 0 | 0 |
+
+- **Firma.** Va en la casilla propia «Enmienda E1 aprobada por humano» de
+  §Aprobación. El frontmatter sigue en `status: approved`, como en la enmienda
+  E4 de #152. La casilla de R19 no se toca.
+
+---
+
 ## Overrides humanos vigentes (fechados) — no revertir
 
 Estas decisiones las cerró el humano el **2026-08-18** (OV2, OV3) y el
@@ -1331,3 +1747,8 @@ humano no dice otra cosa, se implementa ese.
       Re-abierto por la enmienda del 2026-10-08 (primera aprobación: 2026-08-18).
 - [ ] Prueba de humo con clave real ejecutada por humano (R19, fecha: ____)
       ← gate de cierre, casilla propia; ni el `reviewer` ni ninguna IA pueden marcarla
+- [ ] Enmienda E1 aprobada por humano (fecha: )
+      ← gate previo al handoff de la ronda 2, casilla propia; la firma es el commit
+      que la marca. El frontmatter sigue en `status: approved` (convención de la
+      enmienda E4 de #152). La marca el humano, o el leader con la firma de Notion
+      (CLAUDE.md §Gate de specs vía Notion); nunca el `reviewer` ni Codex

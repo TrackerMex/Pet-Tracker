@@ -23,8 +23,14 @@
 - **Implementador**: Codex CLI, terminal aparte. Handoff en
   `progress/handoff_nutrition-ai-explainer.md`; H0 = el commit que lo anade.
   Codex escribe `progress/impl_nutrition-ai-explainer.md`.
-- **Estado**: `in_progress`. Esperando a que el humano confirme que Codex
-  termino.
+- **Estado**: `in_progress`. Ronda 1 de Codex terminada en `5575c5f2`
+  (34 commits); init.sh del leader exit=0. Review ronda 1 **rechazada**
+  (`c09ee51c`): F1-F3 bloquean (argumentos de la rama positiva de R5, orden
+  R3/R5, carga perezosa del SDK fuera del try de R11), F4-F5 menores. Origen
+  en las prescripciones *Test* de la spec. Enmienda E1 en curso por
+  `spec_author` (`progress/spec_nutrition-ai-explainer_e1.md`); antes de la
+  firma, barrido del reviewer sobre la enmienda; luego gate Notion y ronda 2
+  de Codex.
 
 ### Delegado al leader al cierre
 

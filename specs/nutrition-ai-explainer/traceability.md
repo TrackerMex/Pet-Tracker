@@ -55,9 +55,18 @@ tags: [harness, spec]
 | R17 | `src/modules/nutrition/infrastructure/mappers/nutrition.mapper.spec.ts::R17 (nutrition-ai-explainer #18): el mapper devuelve la explicacion persistida` + `test/nutrition.e2e-spec.ts::R17 (nutrition-ai-explainer #18): rutas leen la explicacion de Postgres sin overrides` + R1(c) | `7cfd618a6541ea848f0a0c476773aea056432144` — test(nutrition-ai-explainer): lock mapper returning persisted explanation (R17)<br>`d5c6d16c7b5ff6a95f7998bc65143fe498b011b6` — feat(nutrition-ai-explainer): return persisted aiExplanation from mapper (R17) |
 | R18 | `test/nutrition-ai-explainer.e2e-spec.ts::R18 (nutrition-ai-explainer #18): explicacion de punta a punta` | `37431787c3ad0e3f2d675f4da147d9504ac96b5b` — test(nutrition-ai-explainer): lock explanation end to end over HTTP and Postgres (R18)<br>sonda §Sondas R18-e2e en `progress/impl_nutrition-ai-explainer.md` (test nacido verde) |
 | R19 | `docs/verification.md` § `### Feature 18 — nutrition-ai-explainer` (prueba de humo manual con clave real) + casilla de R19 en [[requirements]] §Aprobación | pendiente — **gate humano**, fecha: ____ |
+| E1.1 (R5, R3) | `src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.spec.ts::R5 (nutrition-ai-explainer #18): seleccion en orden con reason exacto` (`pasa clave y modelo sin recortar (E1.1)` + `toEqual` de `constructorArgs` en los dos anti-vacíos, R3 y R5) | pendiente — rojo E1-c1 + verde E1-c2; sondas S-E1.1a y S-E1.1b |
+| E1.2 (R3.1, R5) | `src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.spec.ts::R5 (nutrition-ai-explainer #18): seleccion en orden con reason exacto` (`%s y %s fallan: gana %s`, 6 filas) | pendiente — rojo E1-c3 + verde E1-c4; sondas S-E1.2a, S-E1.2b y S-E1.2c |
+| E1.3 (R11) | `src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts::R11 (nutrition-ai-explainer #18) E1.3: la carga perezosa del SDK tambien degrada a null` | pendiente — refactor E1-c5 + rojo E1-c6 + verde E1-c7; sondas S-E1.3a, S-E1.3b y S-E1.3c (anti-vacío nacido verde) |
+| E1.4 (R10) | `src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts::R10 (nutrition-ai-explainer #18): normaliza respuestas a texto o null con warn` (filas `content string`, `content objeto`, `content numero` y `content undefined`) | pendiente — rojo E1-c8 + verde E1-c9; sondas S-E1.4a (fila `undefined`) y S-E1.4b |
+| E1.5 (R10) | `src/modules/nutrition/infrastructure/ai/anthropic-nutrition-explainer.spec.ts::R10 (nutrition-ai-explainer #18): normaliza respuestas a texto o null con warn` (filas `bloque no-text con text` y `solo bloque no-text con text`) | pendiente — rojo E1-c10 + verde E1-c11; sonda S-E1.5a |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente" (salvo R19, que
 cierra el humano después del veredicto).
+Las filas E1.x salen de [[requirements]] §Enmienda E1. Cada una lleva el hash
+del commit rojo y el del verde, y E1.3 lleva además el del refactor E1-c5. Se
+añade la sonda citada por su id de §Sondas E1 en
+`progress/impl_nutrition-ai-explainer.md`.
 Convención de commit: `feat(nutrition-ai-explainer): <desc> (R1,R2)`.
 El handoff humano exige completar esta tabla solo en el commit 36; el reviewer la valida
 al aprobar (ver [[../../docs/specs|specs]] y [[../../CHECKPOINTS|CHECKPOINTS]] C5).
