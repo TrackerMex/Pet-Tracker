@@ -40,3 +40,20 @@ describe('#155 R1: el copy de los vacíos existe en los dos idiomas', () => {
     expect(languageDesign()).toMatch(new RegExp('\\| — \\| `'+key.replace('.', '\\.')+'`[^\\n]*← (?:añadida|cambiada) por #155 \\(R1\\)'));
   });
 });
+
+
+describe('#155 R2: las poses de los vacíos entran como WebP', () => {
+  it.each([
+    'pingo-talk.webp', 'pingo-sleep.webp', 'pingo-clipboard.webp',
+    'pingo-health.webp', 'pingo-collar.webp', 'pingo-food.webp',
+  ])('%s es un WebP con alfa de 1024×1024 y como mucho 100 000 bytes', (name) => {
+    const bytes = readFileSync(join(process.cwd(), 'assets', 'images', name));
+    expect(bytes.toString('ascii', 0, 4)).toBe('RIFF');
+    expect(bytes.toString('ascii', 8, 12)).toBe('WEBP');
+    expect(bytes.toString('ascii', 12, 16)).toBe('VP8X');
+    expect(bytes[20] & 0x10).not.toBe(0);
+    expect(bytes.readUIntLE(24, 3) + 1).toBe(1024);
+    expect(bytes.readUIntLE(27, 3) + 1).toBe(1024);
+    expect(bytes.length).toBeLessThanOrEqual(100000);
+  });
+});
