@@ -275,7 +275,7 @@ describe('R7', () => {
 
   it('es el botón primario del repo', async () => {
     await renderWelcome();
-    expect(screen.getByTestId('welcome-get-started').props.className).toBe('w-full rounded-xl bg-accent');
+    expect(screen.getByTestId('welcome-get-started').props.className).toBe('w-full rounded-xl bg-accent border-b-4 border-black/25');
     expect(screen.getByText('Comenzar ahora')).toBeOnTheScreen();
     expect(screen.getByText('Comenzar ahora').props.className).toBe('font-bold text-accent-foreground');
   });
@@ -504,5 +504,21 @@ describe('#153 R6: Pingo se pinta con su pose y su capa de parpadeo', () => {
   it('coloca la capa de parpadeo encima de Pingo, cerrada', async () => {
     await renderWelcome();
     expect(getAnimatedStyle(screen.getByTestId('welcome-pingo-blink'))).toEqual({ position: 'absolute', top: 0, left: 0, opacity: 0 });
+  });
+});
+
+
+describe('#153 R7: el CTA primario tiene cuerpo', () => {
+  it('declara el labio en el CTA primario', async () => {
+    await renderWelcome('es');
+    expect(screen.getByTestId('welcome-get-started').props.className).toBe('w-full rounded-xl bg-accent border-b-4 border-black/25');
+    expect(screen.getByText('Comenzar ahora').props.className).toBe('font-bold text-accent-foreground');
+  });
+
+  it('deja el CTA secundario sin labio', async () => {
+    await renderWelcome();
+    const secondary = screen.getByTestId('welcome-have-account');
+    expect(secondary.props.className).not.toContain('border-b-4');
+    expect(secondary.props.className).not.toContain('border-black');
   });
 });
