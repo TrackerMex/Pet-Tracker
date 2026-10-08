@@ -92,8 +92,7 @@ export class AnthropicNutritionExplainer implements NutritionExplainer {
         scope: NUTRITION_AI_SCOPE,
         petId: ctx.petId,
         planId: ctx.planId,
-        message:
-          (error as { message?: string } | null)?.message ?? String(error),
+        message: error instanceof Error ? error.message : String(error),
       });
       return null;
     }
