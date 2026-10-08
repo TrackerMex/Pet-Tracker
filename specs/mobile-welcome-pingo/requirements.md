@@ -897,4 +897,4 @@ Tras cada sonda se restaura con `git checkout HEAD -- docs/ui-guidelines.md`
 y se comprueba que `git diff --cached --stat` y `git diff --stat` quedan
 vacíos.
 
-- [ ] Enmienda E1 aprobada por humano (fecha: ____)
+- [x] Enmienda E1 aprobada por humano (fecha: 2026-10-08)
