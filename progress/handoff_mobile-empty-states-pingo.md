@@ -873,7 +873,10 @@ rojo lo demuestran las sondas del paso 6, como en T10 y T11.
    `renderProbe` envuelve el EmptyState en `<View testID="probe-frame">`
    dentro del provider (E2.1, literal). Al final del describe
    `#155 R3: un único componente pinta los vacíos ilustrados`, los tres
-   `it` de E2.1, en su orden.
+   `it` de E2.1, en su orden. Y en el `it.each`
+   `pinta la pose %s a 160×160 y sin etiqueta`, una linea al final, debajo
+   de `expect(image.props.accessibilityLabel).toBeUndefined();`:
+       expect(image.props.className).toBeUndefined();
      FORCE_COLOR=0 bunx jest src/components/__tests__/empty-state.test.tsx > /tmp/155-e2-r3.txt 2>&1; echo "exit=$?"
        -> exit=0 y `Tests:       62 passed, 62 total`
      <GUARDAS> > /tmp/155-e2-r3-guardas.txt 2>&1; echo "exit=$?"
@@ -886,7 +889,10 @@ rojo lo demuestran las sondas del paso 6, como en T10 y T11.
 
    3b. R11 (E2.3). Al final del describe
    `#155 R11: los vacíos no traen movimiento ni dependencias`, los dos
-   `it` de E2.3, en su orden. Los dos que ya tiene no se tocan.
+   `it` de E2.3, en su orden. Los dos que ya tiene no se tocan. Y en el
+   `it.each` del describe `#155 R2: las poses de los vacíos entran como WebP`,
+   justo debajo de `expect(bytes[20] & 0x10).not.toBe(0);`, la linea:
+       expect(bytes[20] & 0x02).toBe(0);
      FORCE_COLOR=0 bunx jest src/components/__tests__/empty-state.test.tsx > /tmp/155-e2-r11.txt 2>&1; echo "exit=$?"
        -> exit=0 y `Tests:       64 passed, 64 total`
      <GUARDAS> > /tmp/155-e2-r11-guardas.txt 2>&1; echo "exit=$?"
@@ -955,12 +961,22 @@ rojo lo demuestran las sondas del paso 6, como en T10 y T11.
 
    src/screens/reminders/index.test.tsx, describe `#155 R6: sin recordatorios, Pingo sostiene su lista`:
   it('queda en el sitio del vacío que sustituye', async () => {
-    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [] });
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet(), makePet({ id: 'pet-2', name: 'Milo' })] });
+    mockListReminders.mockImplementation((_url, _token, petId) => Promise.resolve<RemindersState>({ kind: 'ok', reminders: petId === 'pet-2' ? [makeReminder({ petId: 'pet-2' })] : [] }));
+    mockDeleteReminder.mockResolvedValue({ kind: 'forbidden' });
     await renderReminders();
     await screen.findByTestId('reminders-empty-pose');
     const slot = screen.getByTestId('reminders-empty');
     expect(slot.parent?.parent?.props.testID).toBe('screen-reminders');
     expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['reminders-actions', 'RCTScrollView', 'reminders-empty', 'reminders-delete-host']);
+    await fireEvent.press(screen.getByTestId('pet-chip-pet-2'));
+    await waitFor(() => expect(screen.getByTestId('reminder-delete-reminder-1')).toBeVisible());
+    await confirmDelete('reminder-1');
+    await waitFor(() => expect(screen.getByTestId('reminders-action-error')).toBeVisible());
+    await fireEvent.press(screen.getByTestId('pet-chip-pet-1'));
+    await screen.findByTestId('reminders-empty-pose');
+    const slotWithError = screen.getByTestId('reminders-empty');
+    expect(slotWithError.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['reminders-actions', 'RCTScrollView', 'reminders-empty', 'reminders-action-error', 'reminders-delete-host']);
   });
 
    src/screens/docs/index.test.tsx, describe `#155 R7: sin documentos, Pingo los guarda`:
@@ -1068,6 +1084,19 @@ rojo lo demuestran las sondas del paso 6, como en T10 y T11.
      E2-S20 reminders-empty sobre PetSwitcher  reminders  1 failed, 33 passed, 34 total  toEqual
      E2-S21 food-plan-empty bajo historial     food (R9)  1 failed, 62 passed, 63 total  toEqual
      E2-S22 historial condicionado             food (R9)  1 failed, 62 passed, 63 total  toEqual
+   Pre-verificacion (E2-S23 a E2-S27):
+     E2-S23 pingo-talk.webp con el bit de animacion   empty-state  1 failed, 63 passed, 64 total
+            la fila `pingo-talk.webp es un WebP con alfa…` del it.each de R2 (toBe).
+            El fichero de produccion es el asset: revierte con
+            git checkout HEAD -- assets/images/pingo-talk.webp
+     E2-S24 style inline con fondo en la raiz         empty-state  2 failed, 62 passed, 64 total
+            los dos `…como hijos directos…` (toBeUndefined)
+     E2-S25 raiz Text en vez de View                  empty-state  2 failed, 62 passed, 64 total
+            los dos `…como hijos directos…` (toBe)
+     E2-S26 className en el Image                     empty-state  6 failed, 58 passed, 64 total
+            las seis filas de `pinta la pose %s a 160×160 y sin etiqueta` (toBeUndefined)
+     E2-S27 reminders-empty bajo el error de accion   reminders    1 failed, 33 passed, 34 total
+            el `it` de sitio de R6, en la lista con `reminders-action-error` (toEqual)
    Las mutaciones exactas estan en la tabla de E2.5. «Envuelto» = un
    `<View>` pelado alrededor del `<EmptyState … />` de ese testID.
    Si una sonda no da EXACTAMENTE esa linea `Tests:` y esos `●`, PARA y
@@ -1115,7 +1144,7 @@ rojo lo demuestran las sondas del paso 6, como en T10 y T11.
 
 8. En el impl, anade una seccion «Reanudacion 3» con: E2H, limpio=0 del
    paso 1, cada cadena con su linea `Tests:`, GUARDAS, typecheck y lint,
-   los 8 commits con hash, cada sonda E2-S1..E2-S22 con su linea `Tests:`
+   los 8 commits con hash, cada sonda E2-S1..E2-S27 con su linea `Tests:`
    roja, sus `●` y su `limpio=0`, el cierre del paso 7 y la lista
    cerrada. Termina con la linea `R12: pendiente del smoke humano`.
 

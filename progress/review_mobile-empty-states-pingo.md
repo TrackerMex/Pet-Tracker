@@ -198,3 +198,220 @@ Tests:       8 skipped, 438 passed, 446 total
 ```
 
 No hay regresiones. Jest de móvil imprime el aviso «A worker process has failed to exit gracefully…» (línea 27392 del log), pero no falla ninguna suite. El veredicto sigue siendo RECHAZADO por B1-B5. init.sh no lo cambia.
+
+## Pre-verificación E2 (2026-10-08)
+
+**Veredicto: E2 INSUFICIENTE.** Hay tres huecos bloqueantes, G1-G3, y uno de sitio, G4. Todos están dentro del alcance de B1-B5:
+- Cada mutante sobrevive a todos los candados de E2.
+- Juntos forman un programa válido que deja verdes los 15 ficheros del cierre, 915/915, con `tsc` exit 0 y lint exit 0.
+
+Todo lo demás de E2 se sostiene:
+- la transcripción al handoff es literal;
+- las 22 sondas dan exactamente su línea `Tests:`, en rojo por aserción;
+- el mutante combinado de la ronda 1 sale en rojo en las cinco suites que toca.
+
+Las tres líneas que cierran G1-G3 ya están medidas (§Candados propuestos). No cambian ninguna cuenta de E2.4.
+
+### Base y método
+- Base: `1cbcd4b0`, en `feature/155-mobile-empty-states-pingo`.
+- Árbol desechable fuera del worktree, sacado con `git archive 1cbcd4b0` y `node_modules` enlazado. Tiene dos commits locales:
+  - `3029acf`, la base;
+  - `410035a`, los `it` de E2 aplicados al pie de la letra desde la spec (E2.1, E2.3) y desde el paso 4 del handoff (los 9 `it` de sitio).
+- No he tocado el worktree ni ningún fichero de la app. Tras cada sonda, el árbol desechable vuelve a `410035a` con `git status` vacío.
+- No he lanzado `init.sh`. Antes de cada corrida pesada comprobé con `pgrep -af '[i]nit\.sh'` que no hubiera ninguno en curso.
+- Todo jest con `FORCE_COLOR=0`, sin pipe, y `food` con los paréntesis escapados.
+
+### Transcripción al handoff: sin desviaciones
+- **Los `it`:** los 3 de R3, los 2 de R11 y los 9 de sitio coinciden carácter a carácter con la spec. Lo mismo el import de `View`, el marco `probe-frame` de `renderProbe` y la tabla de E2.2 (ancla y hermanos).
+- **Cuentas:** cuadran todas con mi medida.
+
+  | Cifra | Qué es |
+  |---|---|
+  | 62 | empty-state con R3 |
+  | 64 | empty-state con R11 |
+  | 447 | r4 = 221 + 67 + 62 + 97 |
+  | 39 | alerts |
+  | 34 | reminders |
+  | 16 | docs |
+  | 51 | geofences |
+  | 63 | food con R9 |
+  | 915 | los 15 ficheros |
+
+  Además, GUARDAS = 174 y el reparto de 915 del paso 7 es exacto: home 221, health 67, food 63, map 97, alerts 39, reminders 34, docs 16, geofences 51, welcome 65, language-provider 24, ui-language 30, consistency 55, design-drift 62, legibility 27 y empty-state 64. `tsc` 0 y lint 0 sobre `410035a`.
+- **Las listas `git diff --cached`:** con el orden `LC_ALL=C sort` y la lista cerrada de 11, coinciden con los ficheros que tocan los `it`, más impl y traceability.
+- **Las 22 líneas `Tests:` de las sondas:** el handoff las copia de E2.5 sin cambios.
+
+### Las 22 sondas de E2.5, medidas
+Todas dan exactamente la línea `Tests:` del handoff, en rojo por aserción y nunca por consulta:
+
+| Sondas | Suite | `Tests:` | Matcher |
+|---|---|---|---|
+| E2-S1, E2-S2 | empty-state | 2 failed, 62 passed, 64 total | `toEqual` |
+| E2-S3 | empty-state | 3 failed, 61 passed, 64 total | `toBe` ×2, más `toEqual` de imports |
+| E2-S4 | empty-state | 2 failed, 62 passed, 64 total | `toBe` |
+| E2-S5, E2-S6 | empty-state | 1 failed, 63 passed, 64 total | `toContain` |
+| E2-S7 | empty-state | 2 failed, 62 passed, 64 total | `toEqual` + `not.toMatch` |
+| E2-S8 | empty-state | 1 failed, 63 passed, 64 total | `not.toMatch` |
+| E2-S9 | empty-state | 2 failed, 62 passed, 64 total | `toHaveLength` + `not.toMatch` |
+| E2-S10 | home | 1 failed, 220 passed, 221 total | `toBe` |
+| E2-S11 | health | 1 failed, 66 passed, 67 total | `toBe` |
+| E2-S12 | food | 1 failed, 62 passed, 63 total | `toBe` |
+| E2-S13 | map | 1 failed, 96 passed, 97 total | `toBe` |
+| E2-S14 | alerts | 1 failed, 38 passed, 39 total | `toBe` |
+| E2-S15 | reminders | 1 failed, 33 passed, 34 total | `toBe` |
+| E2-S16 | docs | 1 failed, 15 passed, 16 total | `toBe` |
+| E2-S17 | geofences | 1 failed, 50 passed, 51 total | `toBe` |
+| E2-S18 | food | 1 failed, 62 passed, 63 total | `toBe` |
+| E2-S19 | map | 1 failed, 96 passed, 97 total | `toBe` sobre `className` |
+| E2-S20 | reminders | 1 failed, 33 passed, 34 total | `toEqual` |
+| E2-S21, E2-S22 | food | 1 failed, 62 passed, 63 total | `toEqual` |
+
+### Sondas de la ronda 1 frente a E2
+| Ronda 1 | Equivale a | Estado con E2 |
+|---|---|---|
+| S1 | E2-S1 | cazada |
+| S2 | E2-S2 | cazada |
+| S3 | E2-S3 | cazada |
+| S4 | E2-S5 | cazada |
+| S5 | clase de E2-S10 | cazada |
+| S6 | clase de E2-S11 | cazada |
+| S7 | E2-S19 | cazada |
+| S8 | E2-S20 | cazada |
+| S9 | E2-S21 | cazada |
+| S10 | E2-S22 | cazada |
+| S11 | E2-S7 | cazada |
+| S12 | N1 | fuera por decisión del humano; E2 no la empeora (no toca esos 11 ficheros) |
+
+N2 también queda fuera y E2 no la empeora. Al contrario: en `empty-state.tsx` la cierra como efecto lateral, por los imports exactos.
+
+**El combinado de B5 contra E2.** Lo reconstruí con las mismas piezas que la ronda 1 salvo S12, que es N1: E2-S1, S2, S5, S7, S3, S10, S11, S19, S21 y S22, aplicadas a la vez. Sale en rojo en todas las suites que toca, siempre por aserción:
+
+| Suite | Rojos | Qué los caza |
+|---|---|---|
+| empty-state | 5 failed, 59 passed, 64 total | los dos `…como hijos directos…`, `declara el botón sin size ni variant`, `…importa exactamente…` y `…no anima con Animated…` |
+| home | 1 failed, 220 passed, 221 total | sitio |
+| health | 1 | sitio |
+| map | 1 | sitio |
+| food | 2 | sitio de R4 y de R9 |
+
+En la primera corrida, de 4 ficheros en paralelo, el worker de empty-state cayó con «Jest worker encountered 4 child process exceptions». El mutante combinado lleva un `Animated.loop` vivo. Corrida sola, la suite da los 5 rojos por aserción de la tabla. B5, tal como era, queda cerrado.
+
+### Barrido cláusula × rama × candado × sonda (alcance B1-B5)
+| Cláusula SHALL | Rama | Candado | Sonda | Estado |
+|---|---|---|---|---|
+| R3 «Pinta, en este orden» | con acción / sin acción | los dos `…como hijos directos…` (`toEqual`) | E2-S1 | cerrada |
+| R3 «Un `View` raíz» | tipo del nodo raíz | ninguno | NTXT | **G3** |
+| R3 raíz `className="items-center gap-3 py-8"` | clases | `pinta el contenedor sin tarjeta` (`toHaveProp`, preexistente) | — | cerrada |
+| R3 «Sin `Card`» | envoltorio `Card` | marco `toBe` + imports exactos | E2-S3 | cerrada |
+| R3 «sin fondo» | envoltorio con fondo | marco `toBe` | E2-S4 | cerrada |
+| R3 «sin fondo» | clase de fondo en la raíz | `className` exacto (preexistente) | — | cerrada |
+| R3 «sin fondo» | `style` inline en la raíz | ninguno | NBG | **G2** |
+| R3 «sin óvalo» | envoltorio óvalo de la imagen | lista de hijos `toEqual` | E2-S2 | cerrada |
+| R3 «sin óvalo» | `style` de la imagen | `toEqual({ width: 160, height: 160 })` (preexistente) | — | cerrada |
+| R3 «sin óvalo» | `className` en el `Image` | ninguno | NIMG | no bloqueante (ver abajo) |
+| R3 botón «sin `size`, sin `variant`» | `size`, `variant`, `variant="primary"`, spread, `border-b-4` | apertura literal + un solo `<Button` | E2-S5, E2-S6 | cerrada; queda el alias más comentario (clase N2) |
+| R4 Inicio, Salud, Comida | padre directo | `it` de sitio (`toBe` + `toEqual`) | E2-S10, S11, S12 | cerrada |
+| R4 Inicio, Salud, Comida | orden frente a skeleton y error | — | — | equivalente: hermanos excluyentes con el vacío |
+| R4 Mapa | envoltorio `flex-1 … bg-background` y abuelo `screen-map` | dos `toBe` | E2-S13, E2-S19 | cerrada |
+| R5 alerts | sitio | `it` de sitio | E2-S14 | cerrada |
+| R6 reminders | padre, y orden frente a `reminders-actions`, `PetSwitcher` y `reminders-delete-host` | `it` de sitio | E2-S15, E2-S20 | cerrada |
+| R6 reminders | orden frente a `reminders-action-error`, hermano condicional que coexiste con el vacío | ninguno | NRAE | **G4** |
+| R6 reminders | orden frente a loading y error | — | — | equivalente: excluyentes |
+| R7 docs | sitio | `it` de sitio | E2-S16 | cerrada; skeleton, filas y error son excluyentes |
+| R8 geofences | sitio | `it` de sitio | E2-S17 | cerrada (*) |
+| R9 Comida | sitio | `it` de sitio | E2-S18, E2-S21 | cerrada; `plan-error` es excluyente |
+| R9 Comida | tarjeta de horario y de historial | lista de hermanos | E2-S22 | cerrada |
+| R11 «no anima» | Reanimated, `entering=`, `MOTION_` | `it` preexistentes | ronda 1 | cerrada |
+| R11 «no anima» | `Animated` por import o por `require` | imports exactos + 6 `require` + regex | E2-S7, E2-S9 | cerrada |
+| R11 «no anima» | `transition`, `animate-*`, `LayoutAnimation` | regex | E2-S8 | cerrada |
+| R11 «no anima» | hooks de `react` | imports exactos | E2-S7 | cerrada |
+| R11 «sin animación» | la pose misma animada (WebP animado) | ninguno | ANIM | **G1** |
+
+(*) En geofences, `geofences-action-error` va después de `geofences-add`, y solo el dueño provoca acciones, así que solo él lo ve. Mover el vacío detrás del error obliga a pasar `geofences-add`, y eso lo caza el `toEqual`.
+
+### Huecos
+
+**G1. R11 «implementar #155 sin animación»: una pose animada sobrevive (B4).**
+- *Mutante:* `assets/images/pingo-talk.webp` sustituido por un WebP animado. Lo generé con Pillow a partir del mismo `pingo-talk.webp`:
+  - 89 330 bytes, 1024×1024;
+  - VP8X con flags `0x12` (alfa y animación) y 2 frames `ANMF`.
+- *Medida:* empty-state + welcome, 129/129. Dentro del combinado, 915/915.
+- *Por qué sobrevive:*
+  - El `it.each` de R2 y el candado de poses de #153 R3 solo miran `bytes[20] & 0x10` (alfa), la cabecera, el tamaño en píxeles y el peso.
+  - El bit de animación (`0x02`) no lo mira nadie.
+  - Los candados de R11 leen solo el fuente de `empty-state.tsx`.
+- *Por qué importa:* `expo-image` reproduce los WebP animados por defecto. La pantalla se movería sin tocar una línea de código, y además fuera del alcance de reduce motion. R11 dice que, si la pose flota, eso exige una enmienda con su propio requisito de reduce motion.
+
+**G2. R3 «Sin `Card`, sin fondo y sin óvalo»: un fondo inline en la raíz sobrevive (B1).**
+- *Mutante:* la raíz como `<View testID={testID} className="items-center gap-3 py-8" style={{ backgroundColor: "white", borderRadius: 24 }}>`. Es una tarjeta blanca redondeada sin `Card`.
+- *Medida:* empty-state + design-drift + consistency + legibility, 208/208, `tsc` 0. Dentro del combinado, 915/915.
+- *Por qué sobrevive:*
+  - El marco `probe-frame` solo caza envoltorios.
+  - `pinta el contenedor sin tarjeta` solo asevera `className`.
+  - design-drift prohíbe hex y `StyleSheet`, no colores con nombre en un `style` inline.
+  - E2.1 dice que «el marco caza… un `View` con fondo», pero la raíz misma con fondo no es un envoltorio.
+
+**G3. R3 «Un `View` raíz»: una raíz `Text` sobrevive (B1).**
+- *Mutante:* `<Text testID={testID} className="items-center gap-3 py-8">…</Text>` en lugar de `<View …>`.
+- *Medida:* empty-state + alerts + geofences, 154/154, `tsc` 0. Dentro del combinado, 915/915.
+- *Por qué sobrevive:*
+  - Las listas de hijos usan el testID del nodo raíz, nunca su `type`.
+  - El candado de imports sigue viendo `Text, View`.
+  - En el combinado, `expo lint` sale con exit 0 y un único *warning*: `'View' is defined but never used`. El `lint` de móvil (`expo lint`, el que corre `init.sh`) no usa `--max-warnings`.
+- *Notas:*
+  - Un `Text` raíz anida los hijos como texto: en Android cambia el layout (flex) y la accesibilidad del bloque.
+  - La variante que mantiene `View` en uso (`const Root = action ? Text : View`) tumba `tsc` con TS2604, así que no la cuento.
+
+**G4. R6 «en el sitio del `Text` `reminders-empty`»: el orden frente a `reminders-action-error` no tiene candado (B3).**
+- *Mutante:* el bloque del `EmptyState` movido detrás del bloque `{actionError ? (…) : null}`.
+- *Medida:* reminders, 34/34. Dentro del combinado, 915/915.
+- *Por qué sobrevive:* el `it` de sitio arregla solo el estado sin `actionError`, y su lista de hermanos no contiene el error.
+- *Es alcanzable:*
+  - `actionError` solo se limpia al perder el foco, al empezar otro borrado o al abrir el diálogo.
+  - Un borrado fallido, seguido de un cambio a una mascota sin recordatorios (o de un refetch que vacía la lista), deja los dos visibles.
+  - En la base `fca7c399`, el `Text` `reminders-empty` estaba encima del error.
+- *Alcance de la decisión:* la decisión del humano habla de «posición entre sus hermanos» sin acotar el estado. Que este caso cuente como rama o como delimitación lo decide el humano. Si es delimitación, que E2 lo diga.
+
+**NIMG, no bloqueante.**
+- *Mutante:* `className="rounded-full bg-surface"` en el `Image`.
+- *Medida:* 208/208 y `tsc` 0.
+- *Por qué no bloquea:* lo considero inerte en runtime. Uniwind no mapea `className` en componentes que no sean del núcleo de RN ni estén envueltos con `withUniwind`, y en el repo no hay ninguno. El `style` de la imagen sí está candado con `toEqual`.
+- *Candado si se quiere:* `expect(image.props.className).toBeUndefined()` en el `it.each` de poses.
+
+### Candados propuestos (medidos en el árbol desechable)
+Son tres líneas dentro de `it` que ya existen en `src/components/__tests__/empty-state.test.tsx`, así que no cambia ninguna cuenta: empty-state sigue en 64 y el total en 915. Con ellas, HEAD da 64/64 y cada mutante cae por aserción:
+
+| Hueco | Línea | Dónde | Rojo medido |
+|---|---|---|---|
+| G1 | `expect(bytes[20] & 0x02).toBe(0);` | `it.each` de R2, debajo de la del alfa | ANIM: 1 failed, 63 passed, 64 total (`toBe`, `pingo-talk.webp`) |
+| G2 | `expect(root.props.style).toBeUndefined();` | los dos `…como hijos directos…`, debajo del `toBe` del marco | NBG: 2 failed, 62 passed, 64 total (`toBeUndefined`) |
+| G3 | `expect(root.type).toBe('View');` | los dos `…como hijos directos…`, debajo del `toBe` del marco | NTXT: 2 failed, 62 passed, 64 total (`toBe`) |
+
+G1 conviene replicarla en el candado de poses de #153 R3 en welcome si se quiere cubrir también `pingo-wave*`. Está fuera de #155 y no la he medido.
+
+G4 tiene dos opciones, sin medir:
+- **(a) Arreglo en el `it` de sitio de R6:** forzar un borrado fallido y cambiar a una mascota sin recordatorios, y esperar `['reminders-actions', 'RCTScrollView', 'reminders-empty', 'reminders-action-error', 'reminders-delete-host']`. Es caro.
+- **(b) Candado de fuente en reminders:** `source.indexOf('testID="reminders-empty"') < source.indexOf('testID="reminders-action-error"')`. Es barato.
+
+### El combinado nuevo (G1 + G2 + G3 + G4 + NIMG)
+- **Mutante:**
+  - raíz `<Text … style={{ backgroundColor: "white", borderRadius: 24 }}>`;
+  - `className` óvalo en el `Image`;
+  - `pingo-talk.webp` animado;
+  - reminders con el vacío detrás de `actionError`.
+- **Los 15 ficheros del cierre**, en tres corridas:
+
+  | Corrida | Ficheros | Resultado |
+  |---|---|---|
+  | 1 | empty-state, welcome, language-provider y las 4 GUARDAS | 327/327 |
+  | 2 | health, food, alerts, reminders, docs, geofences | 270/270 |
+  | 3 | home, map | 318/318 |
+
+  En total, **915/915, exit 0**.
+- **Typecheck y lint:** `bunx tsc --noEmit` exit 0. `bunx expo lint --no-cache` exit 0, con 1 warning (el `View` sin usar de G3). Sin G3, el lint queda limpio: ese era el único aviso.
+- **Conclusión:** es el equivalente de B5 para E2. Un programa válido que deja verde todo el cierre y que incumple R3 (dos ramas), R6 y R11.
+
+### Concurrencia y ruido
+- **Componente (E2-S1 a E2-S9, al menos E2-S1 a E2-S3):** se midieron mientras corría el `init.sh` ajeno de wt-18 (pid 975770). Aun así dieron sus cifras exactas. Las sondas de pantalla corrieron con ese `init.sh` ya terminado.
+- **Flake de map:** en la corrida de 4 suites (home, health, food y map, sobre `410035a`) falló 1 test de 448. Fue `R4: map resuelve la mascota seleccionada › selects the first pet and loads its first position (#72 R2)`, por timeout de `waitFor` en la línea 312. No es de #155 y corre antes del `it` nuevo. Borré la perf-cache de jest del árbol desechable y repetí map solo: 97/97. Lo tomo como flake por carga.
+- **Combinado de B5:** en la corrida en paralelo, el worker de empty-state cayó (ver arriba). Solo, da sus rojos por aserción.

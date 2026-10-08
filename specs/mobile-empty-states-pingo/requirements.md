@@ -787,6 +787,26 @@ alguna de sus ramas:
 - N1 (las clases de los 11 vacíos en texto) y N2 (la regex de comillas de
   R11 y el alias en R10) quedan fuera: son delimitaciones, no deuda.
 
+**Pre-verificación del reviewer (2026-10-08).** Antes de la firma, el
+reviewer barrió E2 cláusula por rama (`progress/review_mobile-empty-states-pingo.md`
+§Pre-verificación E2). Encontró cuatro ramas sin candado. Juntas formaban un
+programa válido que dejaba verdes los 15 ficheros del cierre:
+
+| Hueco | Cláusula | Mutante que sobrevivía | Se cierra en |
+|---|---|---|---|
+| G1 | R11 «sin animación» | `pingo-talk.webp` con el bit de animación de VP8X puesto | E2.3 |
+| G2 | R3 «sin fondo» | `style` inline con fondo y radio en la raíz misma | E2.1 |
+| G3 | R3 «un `View` raíz» | la raíz como `Text` | E2.1 |
+| G4 | R6 «en el sitio del `Text`» | el vacío detrás de `reminders-action-error`, que puede verse a la vez | E2.2 |
+
+Se suma NIMG, que el reviewer no consideró bloqueante: un `className` en el
+`Image`. Va en E2.1.
+
+G4 se trata como una rama de «posición entre sus hermanos», no como
+delimitación. El error de acción sobrevive a un cambio de mascota, así que
+el vacío y el error conviven. Las cinco líneas van dentro de `it` que ya
+existen o que E2 ya añadía, y no cambia ninguna cuenta de E2.4.
+
 E2 **no toca código de producción**. Todos los candados nacen en verde contra
 HEAD, porque el código ya cumple. Su rojo se demuestra con las sondas de
 E2.5, igual que R10 y R11.
@@ -829,7 +849,9 @@ En el test del componente:
   ```
 
   Los `it` que ya usan `renderProbe` no cambian. El `it.each` de las poses
-  tiene su propio `render` y tampoco cambia.
+  (`pinta la pose %s a 160×160 y sin etiqueta`) tiene su propio `render` y
+  suma una sola línea, al final:
+  `expect(image.props.className).toBeUndefined();`.
 
 El describe `#155 R3: un único componente pinta los vacíos ilustrados` suma
 tres `it` al final:
@@ -839,6 +861,8 @@ it('con acción pinta pose, título, cuerpo y botón como hijos directos, en ese
   await renderProbe({ label: 'Acción de prueba', onPress: jest.fn() });
   const root = await screen.findByTestId('probe');
   expect(root.parent).toBe(screen.getByTestId('probe-frame'));
+  expect(root.type).toBe('View');
+  expect(root.props.style).toBeUndefined();
   expect(root.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['probe-pose', 'probe-title', 'probe-body', 'probe-action']);
 });
 
@@ -846,6 +870,8 @@ it('sin acción pinta pose, título y cuerpo como hijos directos, en ese orden',
   await renderProbe();
   const root = await screen.findByTestId('probe');
   expect(root.parent).toBe(screen.getByTestId('probe-frame'));
+  expect(root.type).toBe('View');
+  expect(root.props.style).toBeUndefined();
   expect(root.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['probe-pose', 'probe-title', 'probe-body']);
 });
 
@@ -859,8 +885,14 @@ it('declara el botón sin size ni variant', () => {
 Qué caza cada `it`:
 - El marco caza cualquier envoltorio alrededor de la raíz, sea una `Card` o
   un `View` con fondo.
+- `root.type` caza una raíz que no sea `View`, por ejemplo un `Text` (G3).
+- `root.props.style` caza un fondo, un borde o un radio inline en la raíz
+  misma, que no es un envoltorio y el marco no ve (G2).
 - La lista de hijos caza el orden y cualquier envoltorio alrededor de la
   imagen, del título, del cuerpo o del botón (un óvalo, por ejemplo).
+- `image.props.className` caza clases en el `Image`, por ejemplo un óvalo
+  (NIMG). Hoy Uniwind no las aplicaría a `expo-image`, pero la línea
+  cierra la rama sin depender de eso.
 - La apertura literal del `Button` caza `size`, `variant` (también
   `variant="primary"` explícito), un spread de props y el `border-b-4`.
 - `/<Button[\s>]/` no casa con `<Button.Label`.
@@ -898,7 +930,7 @@ tabla.
 | R4 | `src/app/(tabs)/__tests__/food.test.tsx` | `food-empty` | `slot.parent?.parent?.props.testID` → `'screen-food'` | `['Text', 'food-empty']` |
 | R4 | `src/screens/map/index.test.tsx` | `map-no-pets` | `slot.parent?.props.className` → `'flex-1 items-center justify-center p-6 bg-background'` **y** `slot.parent?.parent?.props.testID` → `'screen-map'` (dos `expect`) | `['map-no-pets']` |
 | R5 | `src/screens/alerts/index.test.tsx` | `alerts-empty` | `slot.parent?.parent?.props.testID` → `'alerts-list'` | `['alerts-empty']` |
-| R6 | `src/screens/reminders/index.test.tsx` | `reminders-empty` | `slot.parent?.parent?.props.testID` → `'screen-reminders'` | `['reminders-actions', 'RCTScrollView', 'reminders-empty', 'reminders-delete-host']` |
+| R6 | `src/screens/reminders/index.test.tsx` | `reminders-empty` | `slot.parent?.parent?.props.testID` → `'screen-reminders'` | `['reminders-actions', 'RCTScrollView', 'reminders-empty', 'reminders-delete-host']` y, con el error de acción visible, `['reminders-actions', 'RCTScrollView', 'reminders-empty', 'reminders-action-error', 'reminders-delete-host']` (ver «Arreglo propio de R6») |
 | R7 | `src/screens/docs/index.test.tsx` | `docs-empty` | `slot.parent?.parent?.props.testID` → `'screen-docs'` | `['View', 'docs-empty']` |
 | R8 | `src/screens/geofences/index.test.tsx` | `geofences-empty` | `slot.parent?.parent?.props.testID` → `'screen-geofences'` | `['geofences-empty', 'geofences-add']` |
 | R9 | `src/app/(tabs)/__tests__/food.test.tsx` | `food-plan-empty` | `slot.parent?.parent?.parent?.props.testID` → `'screen-food'` | `['food-plan-empty', 'meal-schedule-link', 'meals-history-link']` |
@@ -912,11 +944,44 @@ Cómo se lee la tabla, medido en el árbol de host:
   `ScrollView` o de la `FlatList`, que no tiene testID. En R9 el padre es el
   `View` `gap-4` de la mascota seleccionada.
 
+**Arreglo propio de R6 (G4).** `reminders-action-error` solo se limpia al
+perder el foco, al empezar otro borrado o al abrir el diálogo. Un cambio de
+mascota no lo limpia. Así, un borrado fallido seguido de un cambio a una
+mascota sin recordatorios deja el vacío y el error visibles a la vez. El
+`it` de R6 recorre ese camino y comprueba las dos listas: la de antes del
+error y la de después. Va literal, medido en el spike:
+
+```tsx
+  it('queda en el sitio del vacío que sustituye', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet(), makePet({ id: 'pet-2', name: 'Milo' })] });
+    mockListReminders.mockImplementation((_url, _token, petId) => Promise.resolve<RemindersState>({ kind: 'ok', reminders: petId === 'pet-2' ? [makeReminder({ petId: 'pet-2' })] : [] }));
+    mockDeleteReminder.mockResolvedValue({ kind: 'forbidden' });
+    await renderReminders();
+    await screen.findByTestId('reminders-empty-pose');
+    const slot = screen.getByTestId('reminders-empty');
+    expect(slot.parent?.parent?.props.testID).toBe('screen-reminders');
+    expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['reminders-actions', 'RCTScrollView', 'reminders-empty', 'reminders-delete-host']);
+    await fireEvent.press(screen.getByTestId('pet-chip-pet-2'));
+    await waitFor(() => expect(screen.getByTestId('reminder-delete-reminder-1')).toBeVisible());
+    await confirmDelete('reminder-1');
+    await waitFor(() => expect(screen.getByTestId('reminders-action-error')).toBeVisible());
+    await fireEvent.press(screen.getByTestId('pet-chip-pet-1'));
+    await screen.findByTestId('reminders-empty-pose');
+    const slotWithError = screen.getByTestId('reminders-empty');
+    expect(slotWithError.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['reminders-actions', 'RCTScrollView', 'reminders-empty', 'reminders-action-error', 'reminders-delete-host']);
+  });
+```
+
+Usa `makePet`, `makeReminder`, `confirmDelete` y el tipo `RemindersState`,
+que el fichero ya tiene. El orden de mascotas de `makePet` deja `pet-1`
+seleccionada al montar.
+
 Qué cierra:
 - **B2:** un envoltorio en Inicio, Salud o Comida, y el envoltorio del mapa
   quitado o cambiado.
 - **B3:** el sitio en las cinco pantallas de R5 a R9; en reminders, el orden
-  respecto del `PetSwitcher` y de `reminders-actions`.
+  respecto del `PetSwitcher`, de `reminders-actions` y de
+  `reminders-action-error` (G4).
 - **R9:** las dos tarjetas siguen debajo del vacío, en su orden, incluida
   la de historial.
 
@@ -942,6 +1007,13 @@ it('EmptyState no anima con Animated, LayoutAnimation ni transiciones', () => {
 });
 ```
 
+Además, el `it.each` de R2 (`%s es un WebP con alfa de 1024×1024…`) suma
+una línea, justo debajo de la del alfa:
+`expect(bytes[20] & 0x02).toBe(0);`. Es el bit de animación de la cabecera
+VP8X. `expo-image` reproduce los WebP animados por defecto, así que una
+pose animada movería la pantalla sin tocar código y fuera de reduce motion
+(G1). La línea entra en el commit de R11.
+
 Con esto, la cláusula «`EmptyState` no anima» queda cerrada así:
 
 | Vía | La caza |
@@ -950,6 +1022,7 @@ Con esto, la cláusula «`EmptyState` no anima» queda cerrada así:
 | `Animated` y `LayoutAnimation` de React Native, por import o por `require` | los imports exactos, los 6 `require` (las seis poses) y la regex |
 | `transition` de `expo-image` y las clases `animate-*`/`transition-*` | la regex |
 | hooks de `react` para animar por estado | los imports exactos |
+| una pose WebP animada | el bit `0x02` en el `it.each` de R2 |
 
 Efecto lateral: los imports exactos también cierran, solo para
 `empty-state.tsx`, el hueco de comillas dobles de N2. N2 sigue fuera en lo
@@ -971,6 +1044,9 @@ Medidas en `8c142376` con jest acotado al fichero:
 | `src/screens/docs/index.test.tsx` | 15 | 16 |
 | `src/screens/geofences/index.test.tsx` | 50 | 51 |
 | **Total (9 ficheros)** | 638 | 652 |
+
+Las líneas de la pre-verificación (G1-G4 y NIMG) van dentro de `it` que ya
+existen o que E2 ya añadía, así que no mueven ninguna cifra de esta tabla.
 
 La suite móvil de `init.sh` pasa de 2351 a 2365 tests. No cambia ninguna
 fila de `ui-copy-table.ts`, ningún recuento de `ui-language.test.ts` ni la
@@ -1000,6 +1076,11 @@ Así fallaron todas en el spike.
 | E2-S20 | `src/screens/reminders/index.tsx` | bloque de `reminders-empty` movido encima del bloque del `PetSwitcher` | el `it` de sitio de R6, `toEqual` |
 | E2-S21 | `src/app/(tabs)/food.tsx` | bloque de `food-plan-empty` movido debajo de la `Card` `meals-history-link` | el `it` de sitio de R9, `toEqual` |
 | E2-S22 | `src/app/(tabs)/food.tsx` | la `Card` `meals-history-link` dentro de `{plan.data?.kind !== 'not-found' ? (…) : null}` | el `it` de sitio de R9, `toEqual` |
+| E2-S23 | `assets/images/pingo-talk.webp` | bit de animación de VP8X puesto, desde `mobile-pet-tracker/`: `node -e "const fs=require('fs');const f='assets/images/pingo-talk.webp';const b=fs.readFileSync(f);b[20]^=2;fs.writeFileSync(f,b)"` | la fila `pingo-talk.webp` del `it.each` de R2, `toBe` |
+| E2-S24 | `empty-state.tsx` | `style={{ backgroundColor: "white", borderRadius: 24 }}` en el `View` raíz, tras `className` | los dos `…como hijos directos…`, `toBeUndefined` |
+| E2-S25 | `empty-state.tsx` | el `View` raíz cambiado a `Text`, en la apertura y en el cierre | los dos `…como hijos directos…`, `toBe` |
+| E2-S26 | `empty-state.tsx` | `className="rounded-full bg-surface"` en el `Image`, tras `contentFit` | las seis filas de `pinta la pose %s a 160×160 y sin etiqueta`, `toBeUndefined` |
+| E2-S27 | `src/screens/reminders/index.tsx` | bloque de `reminders-empty` movido debajo del bloque `{actionError ? (…) : null}` | el `it` de sitio de R6, el segundo `toEqual` |
 
 Ninguna sonda se commitea. Cada una se apunta en el impl con su salida roja
 recortada: el `●` del `it` y la línea del matcher.
@@ -1009,8 +1090,12 @@ recortada: el `●` del `it` y la línea del matcher.
 - **Producción.** Ningún fichero de producción cambia:
   `git diff --name-only <E2H> HEAD -- mobile-pet-tracker`, con `<E2H>` el HEAD con el que arranca la Reanudación 3 del handoff,
   solo lista los 9 ficheros de test de E2.4.
-- **Tests existentes.** No se tocan los demás `it`, ni R10, ni los dos `it`
-  que ya tiene R11.
+- **Tests existentes.** De los `it` que ya existían solo cambian dos
+  `it.each`, con una línea cada uno: el de R2 (bit de animación, E2.3) y
+  el de las poses de R3 (`className` del `Image`, E2.1). No se tocan los
+  demás, ni R10, ni los dos `it` que ya tiene R11.
+- **Poses de bienvenida.** El candado de poses de #153 R3 en welcome
+  (`pingo-wave*`) no suma el bit de animación: esas poses no son de #155.
 - **Dependencias.** `package.json` y `bun.lock` no cambian.
 - **N1 y N2** quedan como delimitación (ver arriba).
 

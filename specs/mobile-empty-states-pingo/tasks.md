@@ -321,15 +321,17 @@ rojo lo demuestran las sondas de E2.5. La secuencia exacta, con sus
 cadenas y cuentas, está en `progress/handoff_mobile-empty-states-pingo.md`
 §Reanudación 3.
 
-- [ ] (1) R3: el marco `probe-frame` en `renderProbe` y los tres `it` de
-  E2.1 en el test del componente. Mide 62. Commit
+- [ ] (1) R3: el marco `probe-frame` en `renderProbe`, los tres `it` de
+  E2.1 y la línea de `className` en el `it.each` de las poses, en el test
+  del componente. Mide 62. Commit
   `test(mobile-empty-states): #155 R3 candado de orden y botón`.
-- [ ] (2) R11: los dos `it` de E2.3. Mide 64. Commit
+- [ ] (2) R11: los dos `it` de E2.3 y la línea del bit de animación en el
+  `it.each` de R2. Mide 64. Commit
   `test(mobile-empty-states): #155 R11 candado de Animated y transiciones`.
 - [ ] (3) R4 a R9: el `it` `queda en el sitio del vacío que sustituye` de
   E2.2 en cada uno de los 9 describes, con un commit por requisito,
   `test(mobile-empty-states): #155 R<n> candado de sitio`.
-- [ ] (4) Sondas E2-S1 a E2-S22, una a una sobre el último HEAD: cada una
+- [ ] (4) Sondas E2-S1 a E2-S27, una a una sobre el último HEAD: cada una
   medida en rojo por aserción, revertida y con `limpio=0`. Se apuntan en
   el impl.
 - [ ] (5) Cierre: 15 ficheros con 915 tests, jest entero, typecheck,
