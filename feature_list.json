@@ -3000,5 +3000,46 @@
     "files_affected": [
       "mobile-pet-tracker/src/screens/map/index.test.tsx"
     ]
+  },
+  {
+    "id": 152,
+    "name": "mobile-home-motion-foundations",
+    "status": "done",
+    "priority": "P2",
+    "description": "Registrada el 2026-10-06 por decision del humano en el chat («puedes continuar»), tras la investigacion Appllama de progress/explore_ui-delight-appllama.md (candidata C de §4; patrones P7 de §3). Es la primera del bloque de deleite visual (welcome con mascota, vacios ilustrados, celebraciones) y la unica que no depende del set de ilustraciones de la mascota (candidata A, que produce el humano). Alcance: movimiento de la Home (src/screens/home/index.tsx) y los cimientos reutilizables que despues usaran B, D y E. (1) Entrada coreografiada de los bloques de la Home una sola vez por montaje: stagger corto (~60 ms) con spring de Reanimated, nunca en refetch ni al volver a la pestana. (2) Transicion del Skeleton al contenido por fundido, no salto. (3) Revelado de los datos del resumen y relleno animado de la bateria del collar. (4) Cimientos: el preset de entrada y las duraciones de la carta (150/250/400 ms) en un unico sitio reutilizable; la carta dice que si se repiten se promueven a tokens --motion-* de global.css, pero tambien prohibe pasar var CSS a estilos de Reanimated y crear un theme.ts paralelo: la spec resuelve esa tension por escrito o la eleva al humano. Premisas a verificar contra el arbol antes de especificar (progress/audit_animations_mobile.md es de 2026-08-24 y esta parcialmente obsoleto; #136 ya dio pressed a los accesos rapidos). Reduce-motion respetado en todo. Fuera de alcance: mascota, ilustraciones, celebraciones, vacios ilustrados, rediseno del hero (candidatas A, B, D, E, F del explore).",
+    "acceptance_criteria": [
+      "Los bloques de la Home entran con stagger una sola vez por montaje; un refetch o volver a la pestana no repite la entrada",
+      "El Skeleton cede al contenido por fundido; con reduce-motion activo no hay desplazamiento ni escala",
+      "La spec declara cuales de las siete preguntas de la Home responde (carta §Direccion de arte 3) y que ninguna cambia de contenido",
+      "Cero dependencias nuevas; suite movil verde medida sin pipe; grep-clean intacto",
+      "Gate humano: smoke en dev build de Android (nunca Expo Go). No delegable a IA"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/theme/motion.ts",
+      "mobile-pet-tracker/src/theme/__tests__/motion.test.ts",
+      "mobile-pet-tracker/src/screens/home/home-entrance.tsx",
+      "mobile-pet-tracker/src/screens/home/home-entrance.test.tsx",
+      "mobile-pet-tracker/src/screens/home/collar-battery-bar.tsx",
+      "mobile-pet-tracker/src/screens/home/index.tsx",
+      "mobile-pet-tracker/src/screens/home/index.test.tsx",
+      "mobile-pet-tracker/src/__tests__/design-drift.test.ts",
+      "docs/ui-guidelines.md"
+    ]
+  },
+  {
+    "id": 154,
+    "name": "mobile-home-battery-bar-test-race",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Registrada el 2026-10-08 por decision del humano al cerrar #152. Es la obs. 5 de la ronda 2 del reviewer de #152 (progress/review_mobile-home-motion-foundations.md, Ronda 2 §No bloqueantes 5). En src/screens/home/index.test.tsx, el it.each `pinta %i% con %s` del describe `#152 R8: la bateria del collar se dibuja como barra` fallo una vez en la fila [12, 'bg-warning-strong']: toHaveAnimatedStyle({ width: '12%' }, { shouldMatchAllProps: true }) recibio width \"0%\". Fue en una corrida paralela con la sonda X18i plantada, y X18i no puede afectar a ese it. No se repitio en 17 corridas posteriores (2 secuenciales con X18i y 15 del fichero sin mutar bajo carga de 3 carriles, load average de unos 4,7). El reviewer estima la frecuencia en 1 de cada 110 corridas. La causa NO esta medida, y la que propuso el reviewer (aseverar antes de que acabe el withTiming de 250 ms) no cuadra con el doble del fichero. index.test.tsx sustituye withTiming por `const mockWithTiming = jest.fn((value: number, _config?: unknown) => value);`, que devuelve el valor al instante, asi que en jest no hay animacion de 250 ms. El 0% es el valor inicial de fillPct en CollarBatteryBar (useSharedValue(reducedMotion ? pct : 0)) antes de que la asignacion del useEffect llegue al estilo animado. Limites: solo se vio una vez y solo en la fila 12. Las otras tres filas y los it 7 y 8 del mismo describe (refresco a 81%) aseveran el ancho con el mismo patron y no se han visto fallar. La spec decide si los incluye, y lo justifica con corridas medidas, no con este registro. Sin anclas por numero de linea: el reviewer cito index.test.tsx 5109-5123, y eso caduca con cualquier merge. Cero cambio en produccion. Depende del merge de #152 (PR #198): ese describe solo existe ahi.",
+    "acceptance_criteria": [
+      "La spec mide la causa antes de arreglarla (reproduccion o sonda que fuerce la carrera) y la deja escrita; si no se reproduce, lo dice y declara cuantas corridas hizo y bajo que carga",
+      "Las aserciones de ancho no se relajan: siguen siendo { width: '<pct>%' } literal con shouldMatchAllProps; solo cambia la sincronizacion, y esta espera sobre el arbol renderizado (docs/conventions.md §Esperas), no sobre un contador de mock",
+      "Una barra que no se llena (sin la asignacion del useEffect) sigue haciendo FALLAR el it, y las sondas de R8 que caian en la ronda 2 del reviewer de #152 siguen cayendo",
+      "Cero cambio en produccion; suite movil verde medida sin pipe; el numero de corridas repetidas del describe lo fija la spec; delta de tests declarado"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/screens/home/index.test.tsx"
+    ]
   }
 ]
