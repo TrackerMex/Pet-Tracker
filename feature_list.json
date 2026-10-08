@@ -300,12 +300,12 @@
     "name": "nutrition-ai-explainer",
     "status": "pending",
     "priority": "P3",
-    "description": "Plan 009 (paso 3): ai-explainer.ts — si OPENAI_ENABLED=true y hay clave: SDK openai (modelo desde env OPENAI_MODEL, jamás hardcodeado), timeout 15 s, system prompt del plan (español cálido, orientativo, máx 180 palabras); resultado → ai_explanation. Cualquier fallo/clave ausente → ai_explanation=null y 200 igualmente (la IA nunca produce 5xx). Introduce OPENAI_ENABLED, OPENAI_API_KEY, OPENAI_MODEL en .env.example y conventions. La IA solo se llama desde backend (brief §9/§19).",
+    "description": "Plan 009 (paso 3): ai-explainer.ts — si ANTHROPIC_ENABLED=true y hay clave: SDK @anthropic-ai/sdk (modelo desde env ANTHROPIC_MODEL=claude-haiku-5-5, jamás hardcodeado), timeout 15 s, system prompt del plan (español cálido, orientativo, máx 180 palabras); resultado → ai_explanation. Cualquier fallo/clave ausente → ai_explanation=null y 200 igualmente (la IA nunca produce 5xx). Introduce ANTHROPIC_ENABLED, ANTHROPIC_API_KEY, ANTHROPIC_MODEL en .env.example y conventions. La IA solo se llama desde backend (brief §9/§19). Proveedor cambiado de OpenAI a Anthropic por decisión del humano del 2026-10-08: la primera implementación con openai (branch feature/18-nutrition-ai-explainer, aprobada por el reviewer en ronda 2 el 2026-08-18) quedó bloqueada en la prueba de humo R19 por cuota agotada y nunca se mergeó.",
     "acceptance_criteria": [
-      "Con OPENAI_ENABLED=false → plan 200 con aiExplanation null y warning en log",
+      "Con ANTHROPIC_ENABLED=false → plan 200 con aiExplanation null y warning en log",
       "SDK mockeado: éxito guarda texto; timeout no rompe el endpoint",
       "Hash hit no re-llama a la IA",
-      "grep -rn 'gpt-' src/ → cero literales de modelo en código",
+      "grep -rn 'claude-' src/ → cero literales de modelo en código",
       "Sin entitlement de la mascota, aiExplanation es null con 200, consumiendo SubscriptionRepository.isPetTracked() de #25; no se recalcula la regla (criterio trasladado desde #25 por la Opción A del gate humano del 2026-08-17: el gate 4 de #25 no tenía runtime porque #17/#18 estaban pending)"
     ],
     "files_affected": [
