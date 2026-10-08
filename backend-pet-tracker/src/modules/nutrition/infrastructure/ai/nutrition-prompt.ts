@@ -21,8 +21,12 @@ export function buildUserPrompt(
       activityLevel: input.activityLevel,
       bodyCondition: input.bodyCondition,
       kcalPer100g: input.kcalPer100g,
-      allergies: input.allergies,
-      diseases: input.diseases,
+      allergies: input.allergies
+        .slice(0, NUTRITION_AI_MAX_LIST_ITEMS)
+        .map((item) => item.slice(0, NUTRITION_AI_MAX_ITEM_CHARS)),
+      diseases: input.diseases
+        .slice(0, NUTRITION_AI_MAX_LIST_ITEMS)
+        .map((item) => item.slice(0, NUTRITION_AI_MAX_ITEM_CHARS)),
     },
     result: {
       rerKcal: result.rerKcal,
@@ -38,3 +42,5 @@ export function buildUserPrompt(
 
 export const NUTRITION_AI_MAX_LIST_ITEMS = 20;
 export const NUTRITION_AI_MAX_ITEM_CHARS = 100;
+
+export const NUTRITION_AI_SCOPE = 'nutrition-ai';
