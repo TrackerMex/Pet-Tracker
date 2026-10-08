@@ -83,7 +83,7 @@ export class AnthropicNutritionExplainer implements NutritionExplainer {
         petId: ctx.petId,
         planId: ctx.planId,
         message: 'ai explanation unusable',
-        stopReason: response.stop_reason,
+        stopReason: response.stop_reason ?? null,
         usage: response.usage ?? null,
       });
       return null;
