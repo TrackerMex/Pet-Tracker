@@ -919,7 +919,10 @@ describe('Meal schedule editing (e2e)', () => {
       const response = await moveMealTime(owner, pet.id, '07:30', {
         mealTime: '08:15',
       }).expect(200);
-      expect(response.body).toHaveProperty('aiExplanation', null);
+      expect(response.body).toHaveProperty(
+        'aiExplanation',
+        'explicacion previa',
+      );
       const result = response.body as { id: string };
       const rows = await plansOf(pet.id);
       expect(rows).toHaveLength(2);
