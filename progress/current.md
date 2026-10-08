@@ -27,10 +27,12 @@
   (34 commits); init.sh del leader exit=0. Review ronda 1 **rechazada**
   (`c09ee51c`): F1-F3 bloquean (argumentos de la rama positiva de R5, orden
   R3/R5, carga perezosa del SDK fuera del try de R11), F4-F5 menores. Origen
-  en las prescripciones *Test* de la spec. Enmienda E1 en curso por
-  `spec_author` (`progress/spec_nutrition-ai-explainer_e1.md`); antes de la
-  firma, barrido del reviewer sobre la enmienda; luego gate Notion y ronda 2
-  de Codex.
+  en las prescripciones *Test* de la spec. Enmienda E1 escrita
+  (`progress/spec_nutrition-ai-explainer_e1.md`, D-E1-a del humano: recortar)
+  y barrida por el reviewer en tres revisiones
+  (`progress/review_nutrition-ai-explainer_e1.md`): **apta para firma** en
+  `0fde011c`. Espejada en Notion (pagina #18, `Estado del gate` = En revision)
+  el 2026-10-08; falta la firma del humano.
 
 ### Delegado al leader al cierre
 
@@ -40,9 +42,12 @@
 
 ### Pasos que quedan
 
-1. Codex implementa (36 commits como maximo, test primero).
-2. Leader: init.sh con permiso del humano, luego `reviewer`.
-3. Humano: R19 (prueba de humo con clave real, `docs/verification.md`
+1. Humano: aprueba E1 en Notion (`Estado del gate` = Aprobado). Leader: commit
+   de firma marcando la casilla E1 de §Aprobacion, y handoff de la ronda 2
+   (E1-c1...E1-c18) para Codex.
+2. Codex implementa la ronda 2 (18 commits, test primero).
+3. Leader: init.sh con permiso del humano, luego `reviewer` (ronda 2).
+4. Humano: R19 (prueba de humo con clave real, `docs/verification.md`
    §Feature 18). Ninguna IA la corre.
-4. Leader: Notion `Estado del gate` = Implementado y `Rol actual` = Completado,
+5. Leader: Notion `Estado del gate` = Implementado y `Rol actual` = Completado,
    cierre de bitacora, `gh pr create`. El humano mergea.
