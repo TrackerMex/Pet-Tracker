@@ -36,6 +36,17 @@
   `pet-document-error.mapper.spec.ts` (cubre en parte su ítem 1) y edita
   `photo-storage.object-exists.spec.ts` (su ítem 2). La spec de #162 se mide
   tras mergear #161.
+- 2026-10-08: gate aprobado en Notion (`Estado del gate` = Aprobado,
+  `page_last_edited_at` 2026-10-08T22:30:04.789Z, espejo de `f0fead46`).
+  Respuesta del humano en la página: «Dejarlas como los recomendaste es buena
+  opción.» Q1–Q3 y DA1–DA6 quedan con su defecto; la spec no se enmienda.
+  Firma en `c2676ab6`.
+- 2026-10-08: handoff a Codex CLI en
+  `progress/handoff_media-docs-confirm-size-limit.md` (7 commits, c1–c7);
+  feature `in_progress`. Corrección del leader sin enmienda: ts-jest
+  transpila sin comprobar tipos (`isolatedModules: true`), así que los rojos
+  de c1 y c3 son `TypeError` en jest y no fallos de compilación; las cadenas
+  comprueban los ficheros con error de `tsc`. Esperando a que Codex termine.
 
 ## Coordinación con otras sesiones (2026-10-08)
 
@@ -43,7 +54,3 @@
   `backend-pet-tracker/src/modules/nutrition/infrastructure/ai/`.
 - Backend: #155 mobile-empty-states-pingo, enmienda E2 (solo tests móviles).
   #158 y #159 están en su plan; avisarle antes de tomarlas.
-- 2026-10-08: gate aprobado en Notion (`Estado del gate` = Aprobado,
-  `page_last_edited_at` 2026-10-08T22:30:04.789Z, espejo de `f0fead46`).
-  Respuesta del humano en la página: «Dejarlas como los recomendaste es buena
-  opción.» Q1–Q3 y DA1–DA6 quedan con su defecto; la spec no se enmienda.
