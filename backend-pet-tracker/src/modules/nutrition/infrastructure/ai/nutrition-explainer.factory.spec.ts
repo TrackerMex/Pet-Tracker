@@ -12,6 +12,14 @@ const valid: Record<string, string | undefined> = {
 function config(values: Record<string, string | undefined>): ConfigService {
   return { get: (key: string) => values[key] } as ConfigService;
 }
+function constructorArgs(adapter: unknown) {
+  const { model, apiKey, client } = adapter as {
+    model: unknown;
+    apiKey: unknown;
+    client: unknown;
+  };
+  return { model, apiKey, client };
+}
 describe('R3 (nutrition-ai-explainer #18): NODE_ENV test apaga antes que nada', () => {
   it('devuelve el nulo con reason node-env-test aunque la IA este habilitada', () => {
     const adapter = createNutritionExplainer(
@@ -21,9 +29,13 @@ describe('R3 (nutrition-ai-explainer #18): NODE_ENV test apaga antes que nada', 
     expect((adapter as NullNutritionExplainer).reason).toBe('node-env-test');
   });
   it('anti-vacio: development selecciona Anthropic sin invocarlo', () => {
-    expect(createNutritionExplainer(config(valid))).toBeInstanceOf(
-      AnthropicNutritionExplainer,
-    );
+    const adapter = createNutritionExplainer(config(valid));
+    expect(adapter).toBeInstanceOf(AnthropicNutritionExplainer);
+    expect(constructorArgs(adapter)).toEqual({
+      model: 'modelo-de-prueba',
+      apiKey: 'clave-de-prueba',
+      client: null,
+    });
   });
 });
 
@@ -66,8 +78,12 @@ describe('R5 (nutrition-ai-explainer #18): seleccion en orden con reason exacto'
     expect((adapter as NullNutritionExplainer).reason).toBe('node-env-test');
   });
   it('anti-vacio: todas cumplidas seleccionan el adaptador real sin invocarlo', () => {
-    expect(createNutritionExplainer(config(valid))).toBeInstanceOf(
-      AnthropicNutritionExplainer,
-    );
+    const adapter = createNutritionExplainer(config(valid));
+    expect(adapter).toBeInstanceOf(AnthropicNutritionExplainer);
+    expect(constructorArgs(adapter)).toEqual({
+      model: 'modelo-de-prueba',
+      apiKey: 'clave-de-prueba',
+      client: null,
+    });
   });
 });

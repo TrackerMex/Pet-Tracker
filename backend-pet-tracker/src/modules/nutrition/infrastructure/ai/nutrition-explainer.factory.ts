@@ -20,5 +20,5 @@ export function createNutritionExplainer(
   const model = config.get<string>('ANTHROPIC_MODEL');
   if (typeof model !== 'string' || model.trim() === '')
     return new NullNutritionExplainer('model-missing');
-  return new AnthropicNutritionExplainer(model, key, null);
+  return new AnthropicNutritionExplainer(key, model, null);
 }
