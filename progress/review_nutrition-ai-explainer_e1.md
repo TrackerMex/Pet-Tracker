@@ -434,3 +434,84 @@ Fuera de esto, todo el delta coincide con lo declarado.
 - [ ] E1-A25 ve toda línea cambiada (R2-3)
 - [x] Sin e2e ni `init.sh`; worktree temporal eliminado; wt-18 sin cambios
   salvo este informe; sin commit
+
+## Revisión 3
+
+Fecha: 2026-10-08
+Base: HEAD `8a8613b3` en wt-18 (`feature/18-nutrition-ai-explainer-claude`),
+delta revisado `git diff 2a727b94 8a8613b3 -- specs/`.
+Veredicto: **APTO PARA FIRMA**.
+
+Método: worktree temporal `/tmp/rev18-e1r3` desprendido en `8a8613b3`, con
+la producción y las dos specs finales que prescribe E1. Es lo mismo que en la
+revisión 2, con un cambio: el `it` del punto 3 usa los valores nuevos
+`'\t clave-de-prueba \n'` y `'\t modelo-de-prueba \n'`. Las sondas S-E1.1a…e
+se copiaron del texto crudo de `tasks.md` §Sondas, que coincide carácter a
+carácter con la tabla de `requirements.md` §E1.1. Las anclas se copiaron del
+texto crudo, cambiando `\|` por `|`. Solo se corrió jest unitario del factory
+spec. No se corrieron `init.sh`, e2e ni migraciones. `eslint` sobre el factory
+y su spec dio 0. El worktree temporal está eliminado. En wt-18 solo cambió
+este informe.
+
+### Medido frente a declarado
+
+| Ítem | Declarado | Medido | |
+|---|---|---|---|
+| Factory spec final (valores nuevos) | 25 verdes | `25 passed, 25 total`, exit 0 | ✓ |
+| R2-1 S-E1.1d, tal como está escrita (`.replace(/^ +/, '').replace(/ +$/, '')`) | `1 failed, 24 passed, 25 total` | 1/24/25, rojo `pasa clave y modelo recortados (E1.1)` por `toEqual` | ✓ |
+| R2-1 S-E1.1e, tal como está escrita (`.replace(/\n+$/, '')`) | `1 failed, 24 passed, 25 total` | 1/24/25, mismo rojo | ✓ |
+| Control: `replace(/^ +\| +$/g, '')` (forma de la revisión 2) | igual que S-E1.1d | 1/24/25 | ✓ |
+| S-E1.1a | 3/22/25 | 3/22/25 (2 anti-vacíos + punto 3) | ✓ |
+| S-E1.1b, S-E1.1c | 1/24/25 | 1/24/25 cada una | ✓ |
+| `trimStart` / `trimEnd` en los dos (control) | — | 1/24/25 cada una | ✓ |
+| R2-2 zona ciega `x.replace(/\s/g, '')` en los dos | sobrevive, 25 verdes | `25 passed, 25 total` | ✓ |
+| E1-c3, rojo natural con los valores nuevos (spec de 19, producción `c09ee51c`) | `1 failed, 18 passed, 19 total` | 1/18/19 | ✓ |
+| E1-c4 verde (spec de 19, recortada) | `19 passed, 19 total` | 19/19 | ✓ |
+| E1-c5 rojo (spec de 25) | 2/23/25 | 2/23/25, las dos filas `gana not-enabled` por `toBe` | ✓ |
+| S-E1.2a/b/c | 1/24/25 | 1/24/25 cada una, en la fila prevista | ✓ |
+| R2-3 E1-A25 sustituida: base (wt-18) / tras E1 | 0 / 2 | 0 / 2 | ✓ |
+| R2-3 E1-A25 con `import { Logger } …` plantado en la línea 1 | 3 | 3 (`--numstat` 2 1) | ✓ |
+| R2-3 E1-A25 con una línea en blanco plantada en la línea 1 | 3 | 3 | ✓ |
+| R2-3 E1-A25 copiada sin sustituir | sin número (nada en la base; el propio diff tras E1) | base vacía, rc=0; tras E1 imprime el diff | ✓ |
+| R2-4 E1-A38 sustituida: base / tras E1 | 4 / 4 | 4 / 4 | ✓ |
+| R2-4 residuo plantado (`{ create }` pasado a `'otra-clave', null` sin cargador) | 3 | A38 = 3; A24 = 7, A35 = 3 y A36 = 3 no lo ven | ✓ |
+| E1-A35, E1-A36 y E1-A38 copiadas sin sustituir | rc=1 `tr: extra operand` | rc=1 `tr: extra operand '\|'` en las dos columnas | ✓ |
+| E1-A1…A38 completas, sustituidas, base y tras E1 | tabla | **38 de 38** coinciden en las dos columnas | ✓ |
+
+### Puntos 1 a 5
+
+1. **R2-1.** Aplicado. Los valores de §E1.1, punto 3, están escritos como
+   escapes del literal TS. Las sondas S-E1.1d y S-E1.1e están en las dos
+   tablas y en la fila E1.1 de `traceability.md`. La forma partida de
+   S-E1.1d mide lo mismo que la de la revisión 2.
+2. **R2-2.** Aplicado: la zona ciega está declarada y se midió que sobrevive.
+3. **R2-3.** Aplicado en la tabla y en la nota «Cómo copiar las anclas», que
+   ya avisa de los cuatro `\|` de la regex.
+4. **R2-4.** Aplicado: E1-A38 está en la tabla, en la regla de la nota 2
+   (E1-A24 = 7 = E1-A38 + E1-A36), en la nota 2 de §E1.3 (E1-A34…E1-A38), en
+   E1-c18 y en el checklist de `tasks.md`.
+5. **Cifras.** El delta no cambia ninguna otra cifra declarada. Los gates
+   E1-c1…E1-c6, S-E1.1a…c, S-E1.2a…c y E1-A1…A37 dan los mismos valores.
+
+### Notas no bloqueantes (texto, no cifras)
+
+- `tasks.md` E1-c3: «(llegan los valores con espacios)». Ahora llegan con
+  tabulador, espacio y salto de línea.
+- `tasks.md` E1-c4: «Sondas pendientes: S-E1.1b … y S-E1.1c». No nombra
+  S-E1.1d ni S-E1.1e, aunque las dos aplican desde E1-c4. §Sondas y la fila
+  de trazabilidad sí las listan, así que Codex las correrá igual.
+- `requirements.md` §Cifras y alcance, «Qué está medido»: dice «las sondas
+  S-E1.1a…c». S-E1.1d y S-E1.1e las midió el reviewer, como ya dice §E1.1.
+- `requirements.md` §E1.1: «solo un recorte de todo el blanco de los extremos
+  deja la suite en verde». El párrafo siguiente lo matiza al declarar como
+  zona ciega `\s` global.
+
+### Checklist de la revisión 3
+
+- [x] HEAD de wt-18 = `8a8613b3`
+- [x] R2-1: valores nuevos; S-E1.1d y S-E1.1e medidas tal como están escritas (1/24/25)
+- [x] R2-2: zona ciega declarada y medida (25 verdes)
+- [x] R2-3: E1-A25 nueva; base 0, tras E1 2, plantados 3
+- [x] R2-4: E1-A38; base 4, tras E1 4, residuo 3
+- [x] Ninguna otra cifra cambia (38/38 anclas, gates del factory iguales)
+- [x] Sin `init.sh`, sin e2e y sin migraciones; worktree temporal eliminado; `backend-pet-tracker/` de wt-18 intacto; sin commit

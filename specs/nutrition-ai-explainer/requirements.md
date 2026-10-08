@@ -400,8 +400,7 @@ recortada:
 Un solo `toEqual` vigila las dos ramas del recorte. S-E1.1b y S-E1.1c prueban
 que cada rama cae por separado. S-E1.1d y S-E1.1e prueban que un recorte
 parcial cae: el blanco de los valores mezcla tabulador, espacio y salto de
-línea, y solo un recorte de todo el blanco de los extremos deja la suite en
-verde. S-E1.1d da el mismo resultado que `x.replace(/^ +| +$/g, '')`, y
+línea, y un recorte parcial de ese blanco no deja la suite en verde. S-E1.1d da el mismo resultado que `x.replace(/^ +| +$/g, '')`, y
 S-E1.1e que `x.replace(/\n+$/, '')`; las dos las midió el reviewer en la
 revisión 2 de E1 (`progress/review_nutrition-ai-explainer_e1.md` §4).
 
@@ -790,7 +789,7 @@ es el resultado de `String({})` en Node, y es estable.
   - **Factory.** Medido el 2026-10-08 en un worktree temporal sobre el archivo
     completo, etapa por etapa (18, 19 y 25 tests). Se midieron todos los
     gates `Tests:` del factory en tasks.md y las sondas S-E1.1a…c y
-    S-E1.2a…c.
+    S-E1.2a…c. S-E1.1d y S-E1.1e las midió el reviewer (§E1.1).
   - **Adaptador.** El reviewer midió cada mutación prescrita sobre el archivo
     completo de 37 tests (veredicto de E1, N8). Los gates intermedios de
     tasks.md se derivan de esas medidas restando las filas que aún no

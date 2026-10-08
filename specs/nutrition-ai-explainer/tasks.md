@@ -489,7 +489,7 @@ rehacen.
     aún pasa los valores sin recortar.
   - Gate rojo: `Tests: 1 failed, 18 passed, 19 total`. El rojo es
     `pasa clave y modelo recortados (E1.1)`, por `toEqual` (llegan los valores
-    con espacios).
+    con tabulador, espacio y salto de línea).
 - [ ] **E1-c4** `feat(nutrition-ai-explainer): pass trimmed key and model to Anthropic explainer (R5, E1.1, D-E1-a)`
   - Archivo: `$AI/nutrition-explainer.factory.ts`. La línea
     `return new AnthropicNutritionExplainer(model, key, null);` pasa a ser
@@ -497,8 +497,8 @@ rehacen.
     No cambia nada más.
   - Gate verde: `Tests: 19 passed, 19 total`. E1-A9 = 0, E1-A29 = 1 y
     E1-A25 = 2.
-  - Sondas pendientes: S-E1.1b (rama de la clave) y S-E1.1c (rama del
-    modelo).
+  - Sondas pendientes: S-E1.1b (rama de la clave), S-E1.1c (rama del
+    modelo), S-E1.1d (solo espacios) y S-E1.1e (solo salto final).
 
 ### E1.2 — R3.1 y R5: orden entre pares
 
