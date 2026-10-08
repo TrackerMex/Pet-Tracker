@@ -276,11 +276,14 @@ describe('R11 (nutrition-ai-explainer #18): cualquier fallo degrada con un warn'
     [undefined, 'Connection error.'],
     [undefined, 'Request timed out.'],
     ['string', 'boom'],
+    ['objeto', '[object Object]'],
   ])('degrada %s: %s', async (status, message) => {
     const error =
       status === 'string'
         ? 'boom'
-        : Object.assign(new Error(message), { status });
+        : status === 'objeto'
+          ? { message: 'no soy Error' }
+          : Object.assign(new Error(message), { status });
     const create = jest
       .fn<Promise<AnthropicMessageResponse>, [AnthropicMessageParams]>()
       .mockRejectedValue(error);
