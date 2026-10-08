@@ -437,4 +437,4 @@ Las constantes anteriores a #152 (`MEALS_BAR_TIMING`, `KCAL_BAR_TIMING`,
 `TAB_INDICATOR_SPRING`) migran a `motion.ts` en una feature posterior,
 fuera del alcance de esta.
 
-- [ ] Enmienda aprobada por humano
+- [X] Enmienda aprobada por humano
