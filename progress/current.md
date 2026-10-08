@@ -5,7 +5,7 @@
 
 ## Feature
 
-#157 `media-docs-download-api` (P2, pending). Branch
+#157 `media-docs-download-api` (P2, in_progress). Leader: sesión Frontend. Branch
 `feature/157-media-docs-download-api` en el worktree
 `/home/claude/sites/Pet-Tracker-wt-157`, base origin/main `36c8050d`.
 Solo backend; no toca `mobile-pet-tracker/`.
@@ -32,3 +32,19 @@ Solo backend; no toca `mobile-pet-tracker/`.
   (toda la spec corre contra LocalStack), pero si el humano responde «no»,
   DA1 y DA3 se reabren antes del merge. La coordinación de #157 pasa a la
   sesión Frontend por decisión del humano; Backend sigue con #155.
+- 2026-10-08: firma `ef0b256d` (casilla) + `dd16ee7c` (frontmatter
+  `approved`). Liderazgo en la sesión Frontend. Merge de origin/main
+  `fca7c399` (#153) en `23f69803`. Base medida en ese árbol: unit media +
+  schema 101, `pnpm test` 176 suites / 1348 tests, e2e `media-docs` 9,
+  e2e `test/media\.e2e` 12, eslint y tsc exit 0.
+- 2026-10-08: **handoff a Codex** en
+  `progress/handoff_media-docs-download-api.md` (commit H0): 12 commits,
+  cuentas por commit, lista cerrada de 26 ficheros, `pgrep` antes de cada
+  e2e y del `db:migrate` (pedido de IA PET, #18 comparte `pet_tracker` en
+  5433). `feature_list.json` #157 → `in_progress`. Codex aplica 0019 a
+  `pet_tracker` en su c2. `test:e2e` completo e `./init.sh` los corre el
+  leader con permiso del humano, avisando antes a IA PET y a Backend.
+  Observación menor para el reviewer: design §D7 dice que el HEAD va a
+  `AWS_ENDPOINT_URL`, pero `createS3Client` usa el endpoint de firma cuando
+  `AWS_PRESIGN_ENDPOINT_URL` está definido; en el `.env` de wt-157 no lo
+  está, así que los tests no cambian. Q1 sigue abierta.
