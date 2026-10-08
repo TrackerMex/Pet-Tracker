@@ -890,6 +890,12 @@ copy completa en cada una.
 | — | `welcome.haveAccount` | `I already have an account` | `Ya tengo una cuenta` | ← añadida por #118 (R1) |
 | — | `welcome.legalNotice` | `By continuing you accept our Terms and Privacy Policy` | `Al continuar aceptas nuestros Términos y Política de privacidad` | ← añadida por #118 (R1) |
 
+### §2.20 — Añadidos por #153 — Pingo en la bienvenida
+
+| # | Clave | `en` | `es` | Origen |
+|---|---|---|---|---|
+| — | `welcome.pingoGreeting` | `Hi, I'm Pingo. I'll help you know where your pet is and how they're doing.` | `Hola, soy Pingo. Te ayudo a saber dónde está y cómo está tu mascota.` | ← añadida por #153 (R1) |
+
 ## 3. La infraestructura
 
 ### 3.1 Decisiones
