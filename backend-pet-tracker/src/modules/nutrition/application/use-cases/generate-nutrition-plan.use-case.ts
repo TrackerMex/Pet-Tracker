@@ -4,7 +4,10 @@ import { NUTRITION_EXPLAINER } from '@/modules/nutrition/domain/ports/nutrition-
 import type { NutritionExplainer } from '@/modules/nutrition/domain/ports/nutrition-explainer';
 import { Inject, Injectable } from '@nestjs/common';
 import { nutritionInputHash } from '@/modules/nutrition/application/nutrition-input-hash';
-import { carriedSchedule } from '@/modules/nutrition/domain/entities/nutrition-plan.entity';
+import {
+  carriedSchedule,
+  toPlanResult,
+} from '@/modules/nutrition/domain/entities/nutrition-plan.entity';
 import type { NutritionPlan } from '@/modules/nutrition/domain/entities/nutrition-plan.entity';
 import {
   NutritionProfileRequiredError,
@@ -58,7 +61,7 @@ export class GenerateNutritionPlanUseCase {
 
     const result = computePlan(input);
 
-    return this.nutrition.insertPlan({
+    const plan = await this.nutrition.insertPlan({
       petId,
       ...result,
       ...carriedSchedule(latestPlan, result),
@@ -66,5 +69,20 @@ export class GenerateNutritionPlanUseCase {
       aiExplanation: null,
       inputsHash,
     });
+    return this.explainPlan(petId, input, plan);
+  }
+
+  private async explainPlan(
+    petId: string,
+    input: NutritionEngineInput,
+    plan: NutritionPlan,
+  ): Promise<NutritionPlan> {
+    if (!(await this.subscriptions.isPetTracked(petId))) return plan;
+    const text = await this.explainer.explain(input, toPlanResult(plan), {
+      petId,
+      planId: plan.id,
+    });
+    if (text === null) return plan;
+    return this.nutrition.setAiExplanation(plan.id, text);
   }
 }

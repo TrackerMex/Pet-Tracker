@@ -80,6 +80,13 @@ export function copyWithMealTimes(
 }
 
 export function toPlanResult(plan: NutritionPlan): NutritionPlanResult {
-  void plan;
-  throw new Error('not implemented (R12)');
+  return {
+    rerKcal: plan.rerKcal,
+    merKcal: plan.merKcal,
+    dailyGrams: plan.dailyGrams,
+    mealsPerDay: plan.mealsPerDay,
+    mealTimes: plan.mealTimes,
+    objective: plan.objective,
+    warnings: plan.warnings,
+  };
 }
