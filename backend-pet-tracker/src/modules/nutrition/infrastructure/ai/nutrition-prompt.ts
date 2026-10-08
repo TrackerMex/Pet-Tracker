@@ -11,7 +11,27 @@ export function buildUserPrompt(
   input: NutritionEngineInput,
   result: NutritionPlanResult,
 ): string {
-  void input;
-  void result;
-  return '{}';
+  return JSON.stringify({
+    input: {
+      species: input.species,
+      weightKg: input.weightKg,
+      targetWeightKg: input.targetWeightKg,
+      ageMonths: input.ageMonths,
+      sterilized: input.sterilized,
+      activityLevel: input.activityLevel,
+      bodyCondition: input.bodyCondition,
+      kcalPer100g: input.kcalPer100g,
+      allergies: input.allergies,
+      diseases: input.diseases,
+    },
+    result: {
+      rerKcal: result.rerKcal,
+      merKcal: result.merKcal,
+      dailyGrams: result.dailyGrams,
+      mealsPerDay: result.mealsPerDay,
+      mealTimes: result.mealTimes,
+      objective: result.objective,
+      warnings: result.warnings,
+    },
+  });
 }
