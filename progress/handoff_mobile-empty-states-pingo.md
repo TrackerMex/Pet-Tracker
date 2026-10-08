@@ -780,7 +780,7 @@ Leela entera antes de tocar nada.
 1. Estado. Desde la raiz:
      git status --short
    Debe dar exactamente tus cuatro ficheros de T4 sin commitear:
-      M 'mobile-pet-tracker/src/app/(tabs)/food.tsx'
+      M mobile-pet-tracker/src/app/(tabs)/food.tsx
       M mobile-pet-tracker/src/screens/health/index.tsx
       M mobile-pet-tracker/src/screens/home/index.tsx
       M mobile-pet-tracker/src/screens/map/index.tsx
