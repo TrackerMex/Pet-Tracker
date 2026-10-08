@@ -48,3 +48,14 @@ Solo backend; no toca `mobile-pet-tracker/`.
   `AWS_ENDPOINT_URL`, pero `createS3Client` usa el endpoint de firma cuando
   `AWS_PRESIGN_ENDPOINT_URL` está definido; en el `.env` de wt-157 no lo
   está, así que los tests no cambian. Q1 sigue abierta.
+- 2026-10-08: fix del handoff `7931f528` (chequeo de árbol limpio acotado a
+  backend-pet-tracker/). **Q1 autorizada** por el humano en esta sesión y
+  deudas registradas como #160 y #161 (`eae547bf`); Notion al día, sin
+  bloqueadores. Codex commiteó c1-c9 (último `dd9d9c56`).
+- 2026-10-08: **PARADA de Codex en c10** por ESLint, con las cuentas rojas
+  exactas (unit 1/113/114, e2e 6/24/30) y tsc en 0. Causa:
+  `downloadUrl: expect.any(String)` (E3/E4, 4 sitios) dispara
+  `no-unsafe-assignment`. Corrección en el handoff: `as unknown` (precedente
+  en test/meals-history.e2e-spec.ts), probada en seco con `eslint --stdin`
+  (exit 0). Mismo matcher, no es enmienda de spec. c10 sigue sin commitear
+  en el árbol; Codex reanuda desde ahí.

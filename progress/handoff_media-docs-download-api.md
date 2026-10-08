@@ -415,6 +415,20 @@ con `downloadUrl: ''` SIN llamar a storage, mapper y `list()` reales, el
 describe unit `#157 R3` construye con el doble de storage, describe unit
 `#157 R4` (1 it), E3, E4 parte R4, describes e2e `#157 R4` (it.each x4) y
 `#157 R8` (it.each x2). E3 y E4 nacen verdes con el stub, declarado):
+  CORRECCION DEL LEADER (2026-10-08, tras la PARADA de c10 por ESLint):
+  `expect.any(String)` esta tipado `any` y, como valor de propiedad en
+  E3/E4, dispara `@typescript-eslint/no-unsafe-assignment` (4 errores).
+  Las 4 propiedades `downloadUrl` de E3/E4 se escriben
+  `downloadUrl: expect.any(String) as unknown` (precedente del repo:
+  test/meals-history.e2e-spec.ts, `message: expect.any(String) as unknown`).
+  Solo cambia el tipo estatico: el matcher es el mismo que prescriben
+  requirements.md E3/E4 y tasks.md, no es enmienda de spec. Sin
+  eslint-disable. Antes de la cadena, desde backend-pet-tracker/:
+    grep -cF 'downloadUrl: expect.any(String) as unknown }' test/media-docs.e2e-spec.ts   -> 4
+    grep -cE 'downloadUrl: expect\.any\(String\) }' test/media-docs.e2e-spec.ts           -> 0
+  Despues repite los dos comandos de abajo (unit y e2e, con <PGREP>) para
+  que los logs reflejen el arbol que se commitea, y lanza la cadena tal
+  cual (mismas cuentas: 1/113/114 y 6/24/30).
   FORCE_COLOR=0 pnpm exec jest src/modules/media src/db/schema > /tmp/157-r10.txt 2>&1; echo "exit=$?"
     -> exit=1 y `Tests:       1 failed, 113 passed, 114 total`
   <PGREP>; FORCE_COLOR=0 pnpm run test:e2e -- media-docs > /tmp/157-r10-e2e.txt 2>&1; echo "exit=$?"
