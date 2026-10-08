@@ -525,7 +525,7 @@ describe('R6: home carga pets y selecciona', () => {
     await renderHome();
 
     await waitFor(() =>
-      expect(screen.getByTestId('home-empty')).toHaveTextContent(
+      expect(screen.getByTestId('home-empty-title')).toHaveTextContent(
         'Aún no tienes mascotas',
       ),
     );
@@ -5220,5 +5220,41 @@ describe('#152 R8: la batería del collar se dibuja como barra', () => {
       expect(Object.keys(node.props).filter((key) => /^(accessib|aria-|role$|importantForAccessibility|screenReaderFocusable$|focusable$|tabIndex$|hasTVPreferredFocus$)/.test(key)))
         .toEqual([]);
     }
+  });
+});
+
+describe('#155 R4: Inicio sin mascotas presenta a Pingo', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockGetPet.mockReturnValue(pending<PetState>());
+    mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
+  });
+
+  it('pinta la pose, el título y la frase de Pingo', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    await renderHome();
+    const pose = await screen.findByTestId('home-empty-pose');
+    expect(pose.props.source).toEqual([
+      expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/pingo-talk\.webp$/) }),
+    ]);
+    expect(screen.getByTestId('home-empty-title')).toHaveTextContent('Aún no tienes mascotas');
+    expect(screen.getByTestId('home-empty-body')).toHaveTextContent('Añade a tu mascota y te ayudo a saber dónde está y cómo está.');
+    expect(within(screen.getByTestId('home-empty-action')).getByText('Añadir mascota')).toBeVisible();
+  });
+
+  it('lleva a añadir mascota', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    await renderHome();
+    const action = await screen.findByTestId('home-empty-action');
+    await fireEvent.press(action);
+    expect(mockRouter.push).toHaveBeenCalledTimes(1);
+    expect(mockRouter.push).toHaveBeenCalledWith('/pets/add');
   });
 });

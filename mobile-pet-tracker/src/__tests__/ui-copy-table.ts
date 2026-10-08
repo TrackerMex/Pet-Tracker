@@ -56,6 +56,8 @@ export const R3_HOME: UseRow[] = [
   { file: 'src/screens/home/index.tsx', key: 'common.somethingWentWrong' },
   { file: 'src/screens/home/index.tsx', key: 'common.retry' },
   { file: 'src/screens/home/index.tsx', key: 'common.noPetsYet' },
+  { file: 'src/screens/home/index.tsx', key: 'common.noPetsBody' }, // #155 R4
+  { file: 'src/screens/home/index.tsx', key: 'profile.addPet' }, // #155 R4
   { file: 'src/screens/home/index.tsx', key: 'common.somethingWentWrong' },
   { file: 'src/screens/home/index.tsx', key: 'common.retry' },
   { file: 'src/screens/home/index.tsx', key: 'home.free' },
@@ -112,6 +114,8 @@ export const R4_MAP: UseRow[] = [
   { file: 'src/screens/map/index.tsx', key: 'common.somethingWentWrong' },
   { file: 'src/screens/map/index.tsx', key: 'common.retry' },
   { file: 'src/screens/map/index.tsx', key: 'common.noPetsYet' },
+  { file: 'src/screens/map/index.tsx', key: 'common.noPetsBody' }, // #155 R4
+  { file: 'src/screens/map/index.tsx', key: 'profile.addPet' }, // #155 R4
   { file: 'src/screens/map/index.tsx', key: 'map.trackingNeedsCollar' },
   { file: 'src/screens/map/index.tsx', key: 'common.somethingWentWrong' },
   { file: 'src/screens/map/index.tsx', key: 'common.retry' },
@@ -131,6 +135,8 @@ export const R5_HEALTH: UseRow[] = [
   { file: 'src/screens/health/index.tsx', key: 'common.somethingWentWrong' },
   { file: 'src/screens/health/index.tsx', key: 'common.retry' },
   { file: 'src/screens/health/index.tsx', key: 'common.noPetsYet' },
+  { file: 'src/screens/health/index.tsx', key: 'common.noPetsBody' }, // #155 R4
+  { file: 'src/screens/health/index.tsx', key: 'profile.addPet' }, // #155 R4
   { file: 'src/screens/health/index.tsx', key: 'health.vaccines' },
   { file: 'src/screens/health/index.tsx', key: 'health.nextDue' },
   { file: 'src/screens/health/index.tsx', key: 'health.noVaccinesYet' },
@@ -169,6 +175,8 @@ export const R6_FOOD: UseRow[] = [
   { file: 'src/app/(tabs)/food.tsx', key: 'common.somethingWentWrong' },
   { file: 'src/app/(tabs)/food.tsx', key: 'common.retry' },
   { file: 'src/app/(tabs)/food.tsx', key: 'common.noPetsYet' },
+  { file: 'src/app/(tabs)/food.tsx', key: 'common.noPetsBody' }, // #155 R4
+  { file: 'src/app/(tabs)/food.tsx', key: 'profile.addPet' }, // #155 R4
   { file: 'src/app/(tabs)/food.tsx', key: 'food.dailyTarget' },
   { file: 'src/app/(tabs)/food.tsx', key: 'food.dailyKcal' },
   { file: 'src/app/(tabs)/food.tsx', key: 'food.dailyGrams' },

@@ -268,7 +268,7 @@ describe('R4: health resuelve la mascota seleccionada', () => {
     await renderHealth();
 
     await waitFor(() =>
-      expect(screen.getByTestId('health-empty')).toHaveTextContent(
+      expect(screen.getByTestId('health-empty-title')).toHaveTextContent(
         'Aún no tienes mascotas',
       ),
     );
@@ -1021,5 +1021,41 @@ describe('#115 R6: la próxima vacuna dice fecha y días restantes', () => {
     expect(days.props.className).toBe('text-lg font-black text-warning-strong');
     expect(days.props.style).toEqual({ fontVariant: ['tabular-nums'] });
     expect(screen.getByTestId('next-vaccine-date').props.className).toBe('font-normal text-muted');
+  });
+});
+
+describe('#155 R4: Salud sin mascotas presenta a Pingo', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListVaccines.mockReturnValue(pending<VaccinesState>());
+    mockListWeights.mockReturnValue(pending<WeightsState>());
+  });
+
+  it('pinta la pose, el título y la frase de Pingo', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    await renderHealth();
+    const pose = await screen.findByTestId('health-empty-pose');
+    expect(pose.props.source).toEqual([
+      expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/pingo-talk\.webp$/) }),
+    ]);
+    expect(screen.getByTestId('health-empty-title')).toHaveTextContent('Aún no tienes mascotas');
+    expect(screen.getByTestId('health-empty-body')).toHaveTextContent('Añade a tu mascota y te ayudo a saber dónde está y cómo está.');
+    expect(within(screen.getByTestId('health-empty-action')).getByText('Añadir mascota')).toBeVisible();
+  });
+
+  it('lleva a añadir mascota', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    await renderHealth();
+    const action = await screen.findByTestId('health-empty-action');
+    await fireEvent.press(action);
+    expect(mockRouter.push).toHaveBeenCalledTimes(1);
+    expect(mockRouter.push).toHaveBeenCalledWith('/pets/add');
   });
 });

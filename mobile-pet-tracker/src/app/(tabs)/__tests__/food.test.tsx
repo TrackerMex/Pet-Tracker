@@ -290,7 +290,7 @@ describe('R4: food resuelve la mascota seleccionada', () => {
     await renderFood();
 
     await waitFor(() =>
-      expect(screen.getByTestId('food-empty')).toHaveTextContent(
+      expect(screen.getByTestId('food-empty-title')).toHaveTextContent(
         'Aún no tienes mascotas',
       ),
     );
@@ -1257,5 +1257,30 @@ describe('#105 R14: Food opens served meals history', () => {
     expect(typeof previous === 'string' ? previous : previous?.props.testID).toBe('meal-schedule-link');
     await fireEvent.press(card);
     expect(mockRouter.push).toHaveBeenCalledWith('/meals-history');
+  });
+});
+
+describe('#155 R4: Comida sin mascotas presenta a Pingo', () => {
+  beforeEach(() => { mockGetNutritionPlan.mockReturnValue(pending<NutritionPlanState>()); });
+
+  it('pinta la pose, el título y la frase de Pingo', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    await renderFood();
+    const pose = await screen.findByTestId('food-empty-pose');
+    expect(pose.props.source).toEqual([
+      expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/pingo-talk\.webp$/) }),
+    ]);
+    expect(screen.getByTestId('food-empty-title')).toHaveTextContent('Aún no tienes mascotas');
+    expect(screen.getByTestId('food-empty-body')).toHaveTextContent('Añade a tu mascota y te ayudo a saber dónde está y cómo está.');
+    expect(within(screen.getByTestId('food-empty-action')).getByText('Añadir mascota')).toBeVisible();
+  });
+
+  it('lleva a añadir mascota', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    await renderFood();
+    const action = await screen.findByTestId('food-empty-action');
+    await fireEvent.press(action);
+    expect(mockRouter.push).toHaveBeenCalledTimes(1);
+    expect(mockRouter.push).toHaveBeenCalledWith('/pets/add');
   });
 });
