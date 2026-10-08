@@ -3,6 +3,7 @@ import { Redirect, router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
 import { StyleSheet } from 'react-native';
+import { getAnimatedStyle } from 'react-native-reanimated';
 import type { TestInstance } from 'test-renderer';
 
 import { en, es } from '../../i18n/catalog';
@@ -475,5 +476,33 @@ describe('#153 R5: la escena de Pingo sustituye al logo', () => {
     expect(bubble.children).toHaveLength(1);
     expect((bubble.children[0] as TestInstance).props.testID).toBe('welcome-bubble-text');
     expect(screen.getByTestId('welcome-bubble-text').props.className).toBe('text-center text-sm font-semibold text-foreground');
+  });
+});
+
+
+describe('#153 R6: Pingo se pinta con su pose y su capa de parpadeo', () => {
+  it('deja en Pingo la pose y la capa de parpadeo, en ese orden', async () => {
+    await renderWelcome();
+    expect((screen.getByTestId('welcome-pingo').children as TestInstance[]).map((child) => child.props.testID))
+      .toEqual(['welcome-pingo-wave', 'welcome-pingo-blink']);
+    expect((screen.getByTestId('welcome-pingo-blink').children as TestInstance[]).map((child) => child.props.testID))
+      .toEqual(['welcome-pingo-blink-image']);
+  });
+
+  it.each([
+    ['welcome-pingo-wave', /assets\/images\/pingo-wave\.webp$/],
+    ['welcome-pingo-blink-image', /assets\/images\/pingo-wave-blink\.webp$/],
+  ] as const)('%s pinta su pose a 200×200, sin etiqueta de accesibilidad', async (testID, pattern) => {
+    await renderWelcome();
+    const image = screen.getByTestId(testID);
+    expect(image.props.style).toEqual({ width: 200, height: 200 });
+    expect(image.props.contentFit).toBe('contain');
+    expect(image.props.source).toEqual([expect.objectContaining({ testUri: expect.stringMatching(pattern) })]);
+    expect(image.props.accessibilityLabel).toBeUndefined();
+  });
+
+  it('coloca la capa de parpadeo encima de Pingo, cerrada', async () => {
+    await renderWelcome();
+    expect(getAnimatedStyle(screen.getByTestId('welcome-pingo-blink'))).toEqual({ position: 'absolute', top: 0, left: 0, opacity: 0 });
   });
 });
