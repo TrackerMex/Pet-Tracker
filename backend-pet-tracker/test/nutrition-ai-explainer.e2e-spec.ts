@@ -171,4 +171,21 @@ describe('Nutrition AI explainer (e2e HTTP y Postgres)', () => {
       expect(p2).toEqual({ ...inserted, aiExplanation: 'texto B' });
     });
   });
+  describe('R16 (nutrition-ai-explainer #18): hash hit no vuelve a pagar por HTTP', () => {
+    it('dos generate devuelven mismo id y texto con una fila y una llamada', async () => {
+      const f = await fixture();
+      const first = (await f.generate().expect(200)).body as PlanResponse;
+      const second = (await f.generate().expect(200)).body as PlanResponse;
+      expect(second.id).toBe(first.id);
+      expect(first.aiExplanation).toBe(text);
+      expect(second.aiExplanation).toBe(text);
+      const rows = await db
+        .select()
+        .from(nutritionPlans)
+        .where(eq(nutritionPlans.petId, f.petId));
+      expect(rows).toHaveLength(1);
+      expect(explain).toHaveBeenCalledTimes(1);
+      expect(isPetTracked).toHaveBeenCalledTimes(1);
+    });
+  });
 });
