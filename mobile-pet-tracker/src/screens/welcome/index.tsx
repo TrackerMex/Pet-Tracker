@@ -1,3 +1,4 @@
+import { Image } from 'expo-image';
 import { Redirect, router } from 'expo-router';
 import { Button } from 'heroui-native';
 import { useEffect } from 'react';
@@ -33,6 +34,8 @@ export function WelcomeScreen() {
   const insets = useSafeAreaInsets();
   const [chipInk] = useThemeColors(['accent-strong']);
   const reduceMotion = useReducedMotion();
+  const pingoBlink = useSharedValue(0);
+  const blinkStyle = useAnimatedStyle(() => ({ opacity: pingoBlink.get() }));
   const opacity = useSharedValue(0);
   const translateY = useSharedValue(reduceMotion ? 0 : 16);
   const entranceStyle = useAnimatedStyle(() => ({
@@ -72,7 +75,12 @@ export function WelcomeScreen() {
           <Card testID="welcome-bubble" variant="surface" className="px-4 py-3">
             <Text testID="welcome-bubble-text" className="text-center text-sm font-semibold text-foreground">{t('welcome.pingoGreeting')}</Text>
           </Card>
-          <Animated.View testID="welcome-pingo" style={{ width: 200, height: 200 }} />
+          <Animated.View testID="welcome-pingo" style={{ width: 200, height: 200 }}>
+            <Image testID="welcome-pingo-wave" source={require('../../../assets/images/pingo-wave.webp')} style={{ width: 200, height: 200 }} contentFit="contain" />
+            <Animated.View testID="welcome-pingo-blink" style={[blinkStyle, { position: 'absolute', top: 0, left: 0 }]}>
+              <Image testID="welcome-pingo-blink-image" source={require('../../../assets/images/pingo-wave-blink.webp')} style={{ width: 200, height: 200 }} contentFit="contain" />
+            </Animated.View>
+          </Animated.View>
         </Card>
         <View testID="welcome-chips" className="flex-row justify-center gap-2">
           {WELCOME_CHIPS.map(({ testID, Icon, labelKey }) => (
