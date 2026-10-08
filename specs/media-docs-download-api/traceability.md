@@ -1,6 +1,6 @@
 ---
 feature: "media-docs-download-api"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec, backend, media]
 ---
 
@@ -20,7 +20,7 @@ verde en la misma celda, `rojo → verde`).
 | R6 | `src/modules/media/application/use-cases/confirm-pet-document-upload.use-case.spec.ts::#157 R6: ConfirmPetDocumentUploadUseCase rechaza sin marcar` ((a), (b)/(c), (d), (g)); `test/media-docs.e2e-spec.ts::#157 R6: confirmar rechaza sin escribir` ((a), (b), (c), (d), it.each (e) × 3, (f)) | `469333fa test(media): red upload confirmation (#157 R5,R6)` → `9c3befeb feat(media): upload state and POST confirm (#157 R2,R5,R6)` |
 | R7 | `src/modules/media/infrastructure/photo-storage.object-exists.spec.ts::#157 R7: objectExists hace HEAD al bucket de media` (3 its) | `0616c45b test(media): red objectExists sends HEAD (#157 R7)` → `8417a680 feat(media): objectExists with HeadObjectCommand (#157 R7)` |
 | R8 | `test/media-docs.e2e-spec.ts::#157 R8: flujo POST → PUT → confirm → GET → descarga contra LocalStack` (it.each × 2) | `4fbcc8d3 test(media): red downloadUrl and full download flow (#157 R4,R8)` → `faa11b3b feat(media): sign a 3600 s downloadUrl per document (#157 R4,R8)` |
-| R9 | sin test propio — `progress/impl_media-docs-download-api.md::Verificación R9` (lint, test, test:e2e, `./init.sh` sin pipe; 4 greps; allowlist de `git diff --stat`) | sin commit propio: impl §Verificación R9 (test:e2e completo e ./init.sh los corre el leader) |
+| R9 | sin test propio — `progress/impl_media-docs-download-api.md::Verificación R9` (lint, test, test:e2e, `./init.sh` sin pipe; 4 greps; allowlist de `git diff --stat`) | sin commit propio: impl §Verificación R9. Gate del leader: `./init.sh` sobre `a1e16faa`, exit=0 (backend 179/1361, móvil 96/2275, e2e 29 de 32 suites, 459 tests verdes y 8 saltados); reviewer APROBADO (`progress/review_media-docs-download-api.md`) |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente".
 Convención de commit: `feat(<scope>): <desc> (R1,R2)`.

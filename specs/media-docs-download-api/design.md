@@ -88,6 +88,12 @@ tags: [harness, spec, backend]
        un HEAD de objeto inexistente y aquí sale 500. Tratar 403 como false
        si el modo aws lo necesita (ver Q1). -->
   Sirve a R7.
+  *Nota del cierre (2026-10-08, observación 2 del reviewer)*: el texto
+  anterior es inexacto. En modo local, `src/aws/aws-clients.ts` usa
+  `AWS_PRESIGN_ENDPOINT_URL`, si está definida, como `endpoint` del único
+  `S3_CLIENT`, así que el HEAD sale hacia ese host. R7 pide «por el
+  `S3_CLIENT` existente» y se cumple. El `.env` de wt-157 no define la
+  variable y en modo aws no aplica.
 
 - **D8 — Errores de dominio y su mapeo**, patrón
   `src/modules/geofences/infrastructure/mappers/geofence-error.mapper.ts`

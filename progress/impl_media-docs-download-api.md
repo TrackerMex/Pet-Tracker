@@ -3144,3 +3144,80 @@ git add specs/media-docs-download-api/traceability.md progress/impl_media-docs-d
   && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'progress/impl_media-docs-download-api.md specs/media-docs-download-api/traceability.md ' \
   && git commit -m 'docs(media-docs-download-api): traceability (#157)'
 ~~~
+
+Salida de cadena c12:
+
+~~~text
++ git add specs/media-docs-download-api/traceability.md progress/impl_media-docs-download-api.md
+++ git diff --cached --name-only
+++ LC_ALL=C
+++ sort
+++ tr '\n' ' '
++ test 'progress/impl_media-docs-download-api.md specs/media-docs-download-api/traceability.md ' = 'progress/impl_media-docs-download-api.md specs/media-docs-download-api/traceability.md '
++ git commit -m 'docs(media-docs-download-api): traceability (#157)'
+[feature/157-media-docs-download-api a1e16faa] docs(media-docs-download-api): traceability (#157)
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 2 files changed, 3155 insertions(+), 9 deletions(-)
+ create mode 100644 progress/impl_media-docs-download-api.md
+
+exit=0
+~~~
+
+Commit c12 R1–R9 (trazabilidad): `a1e16faa docs(media-docs-download-api): traceability (#157)`.
+
+Lista cerrada después de c12:
+
+~~~text
+$ git diff --name-only 20908b80 HEAD -- . ':!feature_list.json' ':!progress/current.md' ':!progress/handoff_media-docs-download-api.md' ':!specs/media-docs-download-api/requirements.md' ':!specs/media-docs-download-api/design.md' ':!specs/media-docs-download-api/tasks.md' ':!progress/review_media-docs-download-api.md'
+backend-pet-tracker/src/db/migrations/0019_pet_documents_uploaded_at.sql
+backend-pet-tracker/src/db/migrations/meta/0019_snapshot.json
+backend-pet-tracker/src/db/migrations/meta/_journal.json
+backend-pet-tracker/src/db/schema/media.schema.spec.ts
+backend-pet-tracker/src/db/schema/media.schema.ts
+backend-pet-tracker/src/modules/media/application/use-cases/confirm-pet-document-upload.use-case.spec.ts
+backend-pet-tracker/src/modules/media/application/use-cases/confirm-pet-document-upload.use-case.ts
+backend-pet-tracker/src/modules/media/application/use-cases/create-pet-document.use-case.spec.ts
+backend-pet-tracker/src/modules/media/application/use-cases/create-pet-document.use-case.ts
+backend-pet-tracker/src/modules/media/application/use-cases/list-pet-documents.use-case.spec.ts
+backend-pet-tracker/src/modules/media/application/use-cases/list-pet-documents.use-case.ts
+backend-pet-tracker/src/modules/media/application/use-cases/request-photo-upload-url.use-case.spec.ts
+backend-pet-tracker/src/modules/media/domain/entities/pet-document.entity.ts
+backend-pet-tracker/src/modules/media/domain/errors/pet-document.errors.ts
+backend-pet-tracker/src/modules/media/domain/ports/photo-storage.ts
+backend-pet-tracker/src/modules/media/domain/repositories/pet-document.repository.ts
+backend-pet-tracker/src/modules/media/infrastructure/mappers/pet-document-error.mapper.ts
+backend-pet-tracker/src/modules/media/infrastructure/mappers/pet-document.mapper.ts
+backend-pet-tracker/src/modules/media/infrastructure/pet-media.controller.ts
+backend-pet-tracker/src/modules/media/infrastructure/photo-storage.object-exists.spec.ts
+backend-pet-tracker/src/modules/media/infrastructure/photo-storage.s3.adapter.ts
+backend-pet-tracker/src/modules/media/infrastructure/repositories/pet-document.drizzle.repository.ts
+backend-pet-tracker/src/modules/media/media.module.ts
+backend-pet-tracker/test/media-docs.e2e-spec.ts
+progress/impl_media-docs-download-api.md
+specs/media-docs-download-api/traceability.md
+exit=0
+~~~
+
+Resultado: exactamente los 26 archivos autorizados. Los doce commits de implementación/trazabilidad están confirmados; las tres correcciones del leader quedan en las rutas excluidas.
+
+El hash de c12 y esta salida se anotan después de crear c12, tal como pide el handoff. Por ello únicamente el registro final del propio informe queda modificado, sin crear un decimotercer commit ni alterar trazabilidad/código. El leader podrá recoger esa anotación en su cierre.
+
+Estado final:
+
+~~~text
+$ git status --short
+ M progress/impl_media-docs-download-api.md
+~~~
+
+No se hizo push ni se abrió PR. No se ejecutó test:e2e completo ni ./init.sh; quedan a cargo del leader.
