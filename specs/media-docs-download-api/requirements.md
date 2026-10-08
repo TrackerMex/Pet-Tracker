@@ -326,4 +326,4 @@ Clasificado viñeta a viñeta (memoria `fuera-de-alcance-no-todo-es-feature`):
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [x] Aprobado por humano (fecha: 2026-10-08) ← gate obligatorio antes de implementar

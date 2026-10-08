@@ -24,3 +24,11 @@ Solo backend; no toca `mobile-pet-tracker/`.
   solo corrige roles y `files_affected` en `feature_list.json`, que cierra P4).
   Pendiente del humano: aprobar o cambiar DA1-DA9 y responder Q1 (coste en
   modo `aws`, con la nota del 403 sin `s3:ListBucket`).
+- 2026-10-08: **spec aprobada vía Notion** (`Estado del gate` = Aprobado,
+  `page_last_edited_at` 2026-10-08T18:25:59.032Z, sin comentarios: DA1-DA9
+  con su defecto). Firma en el commit siguiente. **Q1 (coste en modo `aws`)
+  sigue sin respuesta literal**: la aprobación no la contesta y no se infiere
+  (memoria `decisiones-de-costo-no-inferir`). No bloquea la implementación
+  (toda la spec corre contra LocalStack), pero si el humano responde «no»,
+  DA1 y DA3 se reabren antes del merge. La coordinación de #157 pasa a la
+  sesión Frontend por decisión del humano; Backend sigue con #155.
