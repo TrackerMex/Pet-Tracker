@@ -618,16 +618,20 @@ Pasos, en español y luego en inglés (Perfil → idioma):
    «Añadir mascota» / «Add pet». Pulsar el botón en cada una abre el alta de
    mascota.
 2. Con una mascota recién creada: Alertas (pose `sleep`), Recordatorios
-   (`clipboard`, con el botón «Nuevo» / «New» encima), Documentos (`health`),
-   Zonas seguras (`collar`) y Comida sin plan (`food`, con las tarjetas de
-   horario e historial debajo) muestran pose, título y frase, sin botón
-   propio.
-3. En modo oscuro, la pose no muestra recuadro ni halo: el fondo es
+   (`clipboard`, con el botón «Nuevo» / «New» encima), Documentos (`health`)
+   y Comida sin plan (`food`, con las tarjetas de horario e historial debajo)
+   muestran pose, título y frase, sin botón propio.
+3. Con una mascota que tiene collar con suscripción activa y ninguna zona
+   segura: Zonas seguras muestra la pose `collar`, el título y la frase, sin
+   botón propio. Una mascota sin collar no sirve para este paso, porque
+   `PetTrackingGuard` responde 402 y la pantalla pinta
+   `geofences-no-tracking`, que queda fuera de alcance.
+4. En modo oscuro, la pose no muestra recuadro ni halo: el fondo es
    transparente.
-4. Con el texto del sistema al máximo, título y frase se parten en líneas sin
+5. Con el texto del sistema al máximo, título y frase se parten en líneas sin
    cortarse y el botón sigue visible al hacer scroll donde la pantalla lo
    tenga.
-5. Los vacíos en texto de §Clasificación (por ejemplo, vacunas en Salud o el
+6. Los vacíos en texto de §Clasificación (por ejemplo, vacunas en Salud o el
    registro de peso) siguen igual que antes.
 
 Lo firma el humano en §Aprobación, casilla «Smoke R12».
