@@ -537,6 +537,15 @@ describe('#155 R8: sin zonas seguras, Pingo enseña el collar', () => {
     expect(screen.queryByTestId('geofences-loading')).toBeNull();
   });
 
+  it('queda en el sitio del vacío que sustituye', async () => {
+    mockList.mockResolvedValue({ kind: 'ok', geofences: [] });
+    await mount();
+    await screen.findByTestId('geofences-empty-pose');
+    const slot = screen.getByTestId('geofences-empty');
+    expect(slot.parent?.parent?.props.testID).toBe('screen-geofences');
+    expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['geofences-empty', 'geofences-add']);
+  });
+
   it('no ofrece acción', async () => {
     mockList.mockResolvedValue({ kind: 'ok', geofences: [] });
     await mount();
