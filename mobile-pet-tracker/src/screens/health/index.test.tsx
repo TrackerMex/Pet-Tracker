@@ -1038,6 +1038,15 @@ describe('#155 R4: Salud sin mascotas presenta a Pingo', () => {
     mockListWeights.mockReturnValue(pending<WeightsState>());
   });
 
+  it('queda en el sitio del vacío que sustituye', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    await renderHealth();
+    await screen.findByTestId('health-empty-pose');
+    const slot = screen.getByTestId('health-empty');
+    expect(slot.parent?.props.testID).toBe('health-states');
+    expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['Text', 'health-empty']);
+  });
+
   it('pinta la pose, el título y la frase de Pingo', async () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
     await renderHealth();

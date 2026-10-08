@@ -1275,6 +1275,15 @@ describe('#155 R4: Comida sin mascotas presenta a Pingo', () => {
     expect(within(screen.getByTestId('food-empty-action')).getByText('Añadir mascota')).toBeVisible();
   });
 
+  it('queda en el sitio del vacío que sustituye', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    await renderFood();
+    await screen.findByTestId('food-empty-pose');
+    const slot = screen.getByTestId('food-empty');
+    expect(slot.parent?.parent?.props.testID).toBe('screen-food');
+    expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['Text', 'food-empty']);
+  });
+
   it('lleva a añadir mascota', async () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
     await renderFood();

@@ -5237,6 +5237,15 @@ describe('#155 R4: Inicio sin mascotas presenta a Pingo', () => {
     mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
   });
 
+  it('queda en el sitio del vacío que sustituye', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    await renderHome();
+    await screen.findByTestId('home-empty-pose');
+    const slot = screen.getByTestId('home-empty');
+    expect(slot.parent?.props.testID).toBe('home-states');
+    expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['Text', 'home-empty']);
+  });
+
   it('pinta la pose, el título y la frase de Pingo', async () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
     await renderHome();

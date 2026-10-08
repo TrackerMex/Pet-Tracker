@@ -1956,6 +1956,16 @@ describe('#155 R4: Mapa sin mascotas presenta a Pingo', () => {
     expect(within(screen.getByTestId('map-no-pets-action')).getByText('Añadir mascota')).toBeVisible();
   });
 
+  it('queda en el sitio del vacío que sustituye', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    await renderMap();
+    await screen.findByTestId('map-no-pets-pose');
+    const slot = screen.getByTestId('map-no-pets');
+    expect(slot.parent?.props.className).toBe('flex-1 items-center justify-center p-6 bg-background');
+    expect(slot.parent?.parent?.props.testID).toBe('screen-map');
+    expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['map-no-pets']);
+  });
+
   it('lleva a añadir mascota', async () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
     await renderMap();
