@@ -181,6 +181,14 @@ describe('R10 (nutrition-ai-explainer #18): normaliza respuestas a texto o null 
         usage,
       },
     ],
+    [
+      'solo bloque no-text con text',
+      {
+        stop_reason: 'end_turn',
+        content: [{ type: 'texto-futuro', text: 'no es explicacion' }],
+        usage,
+      },
+    ],
   ];
   it.each(unusable)(
     'degrada %s con exactamente un warn completo',
@@ -221,6 +229,13 @@ describe('R10 (nutrition-ai-explainer #18): normaliza respuestas a texto o null 
       ],
     ],
     ['trim', [{ type: 'text', text: '  Tu perro necesita...  ' }]],
+    [
+      'bloque no-text con text',
+      [
+        { type: 'thinking', thinking: 'razono', text: 'texto oculto ' },
+        { type: 'text', text: 'Tu perro necesita...' },
+      ],
+    ],
   ])('anti-vacio: %s devuelve texto sin warn', async (_label, content) => {
     const adapter = new AnthropicNutritionExplainer(
       'modelo-de-prueba',
