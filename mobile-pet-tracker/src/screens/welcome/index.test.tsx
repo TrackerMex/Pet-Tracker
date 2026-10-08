@@ -638,3 +638,50 @@ describe('#153 R10: Pingo flota en bucle', () => {
     expect((source.match(re) ?? []).length).toBe(1);
   });
 });
+
+describe('#153 R11: Pingo parpadea cada cuatro segundos', () => {
+  beforeEach(() => jest.useFakeTimers());
+  afterEach(() => jest.useRealTimers());
+
+  it('cierra los ojos a los 4 s y los abre 150 ms después', async () => {
+    await renderWelcome();
+    expect(screen.getByTestId('welcome-pingo-blink')).toBeOnTheScreen();
+    // Los controles quedan al menos 50 ms a cada lado de los cambios.
+    await act(async () => { jest.advanceTimersByTime(3900); });
+    expect(getAnimatedStyle(screen.getByTestId('welcome-pingo-blink'))).toEqual({ position: 'absolute', top: 0, left: 0, opacity: 0 });
+    await act(async () => { jest.advanceTimersByTime(200); });
+    expect(getAnimatedStyle(screen.getByTestId('welcome-pingo-blink'))).toEqual({ position: 'absolute', top: 0, left: 0, opacity: 1 });
+    await act(async () => { jest.advanceTimersByTime(200); });
+    expect(getAnimatedStyle(screen.getByTestId('welcome-pingo-blink'))).toEqual({ position: 'absolute', top: 0, left: 0, opacity: 0 });
+  });
+
+  it('repite el parpadeo sin fin', async () => {
+    await renderWelcome();
+    expect(screen.getByTestId('welcome-pingo-blink')).toBeOnTheScreen();
+    const args = mockWithRepeat.mock.calls.map((call) => call.slice(1));
+    expect(args.filter((values) => values.length === 1 && values[0] === -1)).toEqual([[-1]]);
+  });
+
+  it('con reduce motion no parpadea', async () => {
+    mockUseReducedMotion.mockReturnValue(true);
+    await renderWelcome();
+    expect(screen.getByTestId('welcome-pingo-blink')).toBeOnTheScreen();
+    // 4100 ms queda 100 ms después del cierre de ojos esperado sin reduce motion.
+    await act(async () => { jest.advanceTimersByTime(4100); });
+    expect(getAnimatedStyle(screen.getByTestId('welcome-pingo-blink'))).toEqual({ position: 'absolute', top: 0, left: 0, opacity: 0 });
+    expect(mockWithRepeat).not.toHaveBeenCalled();
+    mockUseReducedMotion.mockReturnValue(false);
+  });
+
+  it('usa el intervalo y el cambio de motion.ts', async () => {
+    await renderWelcome();
+    expect(screen.getByTestId('welcome-pingo-blink')).toBeOnTheScreen();
+    const source = readSource('screens/welcome/index.tsx');
+    for (const re of [
+      /withDelay\(\s*MOTION_BLINK_INTERVAL_MS,\s*withTiming\(\s*1,\s*MOTION_BLINK_TIMING,?\s*\),?\s*\)/g,
+      /withDelay\(\s*MOTION_FEEDBACK_MS,\s*withTiming\(\s*0,\s*MOTION_BLINK_TIMING,?\s*\),?\s*\)/g,
+    ]) {
+      expect((source.match(re) ?? []).length).toBe(1);
+    }
+  });
+});
