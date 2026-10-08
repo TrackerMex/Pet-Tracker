@@ -1,4 +1,12 @@
-import { date, index, pgTable, text, uuid, varchar } from 'drizzle-orm/pg-core';
+import {
+  date,
+  index,
+  pgTable,
+  text,
+  timestamp,
+  uuid,
+  varchar,
+} from 'drizzle-orm/pg-core';
 import { pets } from './pets.schema';
 import { users } from './users.schema';
 
@@ -14,6 +22,7 @@ export const petDocuments = pgTable(
     date: date('date').notNull(),
     vet: varchar('vet', { length: 120 }),
     key: text('key').notNull(),
+    uploadedAt: timestamp('uploaded_at', { withTimezone: true }),
     createdBy: uuid('created_by')
       .notNull()
       .references(() => users.id),
