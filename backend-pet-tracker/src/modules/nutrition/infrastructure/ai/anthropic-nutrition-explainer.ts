@@ -54,15 +54,15 @@ export class AnthropicNutritionExplainer implements NutritionExplainer {
     result: NutritionPlanResult,
     ctx: NutritionExplainerContext,
   ): Promise<string | null> {
+    if (this.client === null) {
+      const { default: Anthropic } = await this.loadSdk();
+      this.client = new Anthropic({
+        apiKey: this.apiKey,
+        timeout: NUTRITION_AI_TIMEOUT_MS,
+        maxRetries: NUTRITION_AI_MAX_RETRIES,
+      }).messages;
+    }
     try {
-      if (this.client === null) {
-        const { default: Anthropic } = await this.loadSdk();
-        this.client = new Anthropic({
-          apiKey: this.apiKey,
-          timeout: NUTRITION_AI_TIMEOUT_MS,
-          maxRetries: NUTRITION_AI_MAX_RETRIES,
-        }).messages;
-      }
       const response = await this.client.create({
         model: this.model,
         max_tokens: NUTRITION_AI_MAX_OUTPUT_TOKENS,

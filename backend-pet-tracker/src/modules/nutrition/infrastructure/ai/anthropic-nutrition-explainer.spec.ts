@@ -13,6 +13,8 @@ import {
   NUTRITION_AI_MAX_OUTPUT_TOKENS,
 } from './anthropic-nutrition-explainer';
 import type {
+  AnthropicClientOptions,
+  AnthropicSdkLoader,
   AnthropicMessageParams,
   AnthropicMessageResponse,
 } from './anthropic-nutrition-explainer';
@@ -251,5 +253,103 @@ describe('R11 (nutrition-ai-explainer #18): cualquier fallo degrada con un warn'
     });
     expect(JSON.stringify(warn.mock.calls)).not.toContain('clave-de-prueba');
     expect(JSON.stringify(warn.mock.calls)).not.toContain('pollo');
+  });
+});
+
+describe('R11 (nutrition-ai-explainer #18) E1.3: la carga perezosa del SDK tambien degrada a null', () => {
+  let warn: jest.SpyInstance<
+    ReturnType<Logger['warn']>,
+    Parameters<Logger['warn']>
+  >;
+  beforeEach(() => {
+    warn = jest
+      .spyOn(Logger.prototype, 'warn')
+      .mockImplementation(() => undefined);
+  });
+  afterEach(() => jest.restoreAllMocks());
+  it('fallo del import del SDK: null y un warn sin relanzar', async () => {
+    const loadSdk: AnthropicSdkLoader = jest
+      .fn<ReturnType<AnthropicSdkLoader>, []>()
+      .mockRejectedValue(new Error('sdk ausente'));
+    const adapter = new AnthropicNutritionExplainer(
+      'modelo-de-prueba',
+      'clave-de-prueba',
+      null,
+      loadSdk,
+    );
+    await expect(adapter.explain(input, result, ctx)).resolves.toBeNull();
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(warn.mock.calls[0][0]).toEqual({
+      scope: 'nutrition-ai',
+      petId: ctx.petId,
+      planId: ctx.planId,
+      message: 'sdk ausente',
+    });
+  });
+  it('el constructor del SDK lanza: null y un warn sin relanzar', async () => {
+    const options: AnthropicClientOptions[] = [];
+    class FailingSdk {
+      readonly messages = {
+        create: jest.fn<
+          Promise<AnthropicMessageResponse>,
+          [AnthropicMessageParams]
+        >(),
+      };
+      constructor(value: AnthropicClientOptions) {
+        options.push(value);
+        throw new Error('opciones invalidas');
+      }
+    }
+    const loadSdk: AnthropicSdkLoader = jest
+      .fn<ReturnType<AnthropicSdkLoader>, []>()
+      .mockResolvedValue({ default: FailingSdk });
+    const adapter = new AnthropicNutritionExplainer(
+      'modelo-de-prueba',
+      'clave-de-prueba',
+      null,
+      loadSdk,
+    );
+    await expect(adapter.explain(input, result, ctx)).resolves.toBeNull();
+    expect(options).toHaveLength(1);
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(warn.mock.calls[0][0]).toEqual({
+      scope: 'nutrition-ai',
+      petId: ctx.petId,
+      planId: ctx.planId,
+      message: 'opciones invalidas',
+    });
+    expect(JSON.stringify(warn.mock.calls)).not.toContain('clave-de-prueba');
+  });
+  it('anti-vacio: el SDK cargado construye el cliente con clave y constantes', async () => {
+    const options: AnthropicClientOptions[] = [];
+    const create = jest
+      .fn<Promise<AnthropicMessageResponse>, [AnthropicMessageParams]>()
+      .mockResolvedValue({
+        stop_reason: 'end_turn',
+        content: [{ type: 'text', text: 'Tu perro necesita...' }],
+      });
+    class WorkingSdk {
+      readonly messages = { create };
+      constructor(value: AnthropicClientOptions) {
+        options.push(value);
+      }
+    }
+    const loadSdk: AnthropicSdkLoader = jest
+      .fn<ReturnType<AnthropicSdkLoader>, []>()
+      .mockResolvedValue({ default: WorkingSdk });
+    const adapter = new AnthropicNutritionExplainer(
+      'modelo-de-prueba',
+      'clave-de-prueba',
+      null,
+      loadSdk,
+    );
+    await expect(adapter.explain(input, result, ctx)).resolves.toBe(
+      'Tu perro necesita...',
+    );
+    expect(options).toEqual([
+      { apiKey: 'clave-de-prueba', timeout: 15000, maxRetries: 0 },
+    ]);
+    expect(create).toHaveBeenCalledTimes(1);
+    expect(warn).not.toHaveBeenCalled();
   });
 });
