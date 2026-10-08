@@ -1432,3 +1432,245 @@ medí. Lo único que medí fue `index.test.tsx` en verde (218/218) y las sondas.
 - **Conjunciones.** Siguen igual que en la ronda 1c, §4. Por ejemplo:
   - el skeleton o las celdas con reduce motion y un `kind` que no es `ok`;
   - la regex de R8 con reduce motion o con cada umbral.
+
+## Ronda 2
+
+Fecha: 2026-10-08
+Revisor: reviewer (Claude)
+Worktree: /home/claude/sites/Pet-Tracker-wt-152, branch feature/152-mobile-home-motion-foundations, HEAD 5f75faa8 (verificado; árbol limpio)
+Base: Enmienda E4 firmada en 38fa5a95; handoff E5 en ed06559a
+Veredicto: APROBADO (R1-R9). R10 y A21 siguen pendientes del humano (no bloqueantes, ver §No bloqueantes 1)
+
+B1-B3 y H1-H16 quedan cerrados. Los 26 `it` de E4 coinciden con E4.1-E4.14
+cláusula a cláusula: lo comprobé literal contra el diff de `index.test.tsx`
+(+203/−1 desde c7ac5ceb). Además caen por aserción las 39 sondas no
+equivalentes de la ronda 1g y todas las del leader, salvo X25w, que cae por
+consulta tal como la spec declara. Producción es idéntica a c7ac5ceb.
+
+### Checklist C2 — Estado coherente
+- [x] Solo 1 feature in_progress: `feature_list.json` tiene únicamente #152
+- [x] progress/current.md describe la sesión activa de #152. Está desfasado (ver §No bloqueantes 6)
+
+### Checklist C3 — Arquitectura
+- [x] Producción sin cambios desde c7ac5ceb: `git diff --quiet c7ac5ceb HEAD` sobre los 4 ficheros de producción da exit 0. Vale el C3 de la ronda 1
+- [x] Sin cambios en backend ni en infra desde 36f91e6e (exit 0)
+- [x] domain, application e infrastructure no se tocan (feature solo móvil)
+
+### Checklist C4 — TDD
+- [x] Cada R-id tiene al menos un test que lo nombra. Los 26 `it` de E4 cuelgan de los `describe` de R5, R7 y R8
+- [x] Test primero en E4:
+  - **Rojo 8f680bcf** `test(mobile-home): #152 R5 R7 R8 red, ...`. Versiona la mutación de sonda en producción. Medido en worktree desechable: exit=1, **26 failed / 192 passed / 218**. ERR=0 y UF=0: ningún TypeError, ReferenceError ni "Unable to find". Matchers que fallan: 5 `toBe`, 8 `toBeNull` y 13 `toEqual`, exactamente los 26 `it` de E4. El fichero de test del rojo es idéntico al de HEAD. Guards en rojo: 4 suites, 174/174
+  - **Verde 3406b9d6** `feat(mobile-home): #152 R5 R7 R8 green, revert the probe mutation`: 218/218, guards 174/174. Producción del verde = c7ac5ceb (exit 0). Móvil del verde = móvil de HEAD (exit 0)
+
+### Checklist C5 — Trazabilidad
+- [x] La única fila `pendiente` es R10 `pendiente (humano)`, el smoke que solo cierra el humano. El otro "pendiente" del fichero es el texto de la regla en la línea 32
+- [x] Las filas R5 (23 casos), R7 (12) y R8 (12) citan "Rojo E4: 8f680bcf" y "Verde E4: 3406b9d6"
+- [x] Los 26 hashes distintos de traceability.md existen y son ancestros de HEAD
+- [x] Los commits desde c7ac5ceb (8f680bcf, 3406b9d6, ed06559a, 5f75faa8) siguen el formato de la ronda 1
+
+### Checklist C6 — Spec aprobada
+- [x] La casilla de la Enmienda E4 está marcada: requirements.md línea 934, "(fecha: 2026-10-07, en el chat del leader; commit de firma: el que marca esta casilla)" = 38fa5a95. Ver §No bloqueantes 2
+- [x] Las firmas previas (spec y E1-E3) siguen intactas, como en la ronda 1
+
+### Checklist C7 — Sin código huérfano
+- [x] N/A: E4 solo añade tests; esta feature no reemplaza nada existente
+
+### Checklist C8 — Carta UI
+- [x] Producción idéntica a c7ac5ceb, así que vale el C8 de la ronda 1 (cargadas expo:expo-overview y expo:expo-animation)
+- [ ] Casilla A21 «Enmienda #152» de docs/ui-guidelines.md línea 440: sigue `- [ ]`, pendiente de firma humana. No bloquea este veredicto; sí bloquea `done`
+
+### Lista cerrada (E5.3)
+
+Medida con el comando literal de E5.3 desde la raíz: exactamente 11 ficheros.
+
+```
+docs/ui-guidelines.md
+mobile-pet-tracker/src/__tests__/design-drift.test.ts
+mobile-pet-tracker/src/screens/home/collar-battery-bar.tsx
+mobile-pet-tracker/src/screens/home/home-entrance.test.tsx
+mobile-pet-tracker/src/screens/home/home-entrance.tsx
+mobile-pet-tracker/src/screens/home/index.test.tsx
+mobile-pet-tracker/src/screens/home/index.tsx
+mobile-pet-tracker/src/theme/__tests__/motion.test.ts
+mobile-pet-tracker/src/theme/motion.ts
+progress/impl_mobile-home-motion-foundations.md
+specs/mobile-home-motion-foundations/traceability.md
+```
+
+`git diff --quiet 38fa5a95 HEAD -- progress/review_mobile-home-motion-foundations.md`
+da exit=0: Codex no tocó este informe.
+
+### Cifras (medidas por mí, salvo las de init.sh)
+
+| Medida | Resultado |
+|---|---|
+| `index.test.tsx` en HEAD | 218/218 |
+| Comparación de cinco suites (home 218, design-drift 62, global-css 51, motion 9, home-entrance 6) | 346/346, exit 0. Coincide con 281 + 65 del impl |
+| Guards (4 suites) en rojo y en verde | 174/174 y 174/174 |
+| Jest móvil (init.sh) | 96/96 suites, 2235/2235 tests |
+| Typecheck y lint (init.sh) | sin errores |
+
+### Sondas de mutación
+
+Se corrieron en worktrees desechables (rev152r2, rev152r2b y rev152r2c)
+creados desde 5f75faa8, cada uno con su `bun install`. Al acabar se borraron
+y se hizo prune; `git worktree list` no muestra ninguna entrada rev152.
+
+- **Ronda 1g (mías):** 40 sondas. Las 39 no equivalentes caen todas, con ERR=0 y UF=0. X42f sobrevive (218/218) y es equivalente: `heroui-native` descarta la prop `animation` del Skeleton bajo reduce motion.
+- **Juegos del leader:** e4-mut 12, e4b 17, e4c 17, e4d 1 y e4e 6, deduplicados.
+- **Total:** 138 entradas, que deduplicadas por contenido dan **93 mutaciones únicas**. Caen 91. Sobreviven 2, que son las dos variantes de X42f (rv1g y e4e), ambas equivalentes.
+- **Caídas por consulta:**
+  - X25w cae solo por consulta ("Unable to find" en summary-reveal). La spec lo declara como su rojo esperado.
+  - X2b, X21b, X18u y X2b+X21 tumban además algún `it` antiguo por consulta. Los candados de E4 y de la ronda 1 caen por aserción en todas ellas.
+
+En la tabla, «(consulta)» marca un `it` que cae por "Unable to find". Las
+etiquetas E4.x remiten a los `it` de la Enmienda E4. Una fila repetida entre
+orígenes (por ejemplo X42 en rv1g y en e4c) es la misma sonda medida en dos
+juegos.
+
+| Sonda | Origen | Cae en | Aserción |
+|---|---|---|---|
+| X50r | rv1g | E4.13 true | toBeNull() |
+| X50q | rv1g | E4.13 true | toBeNull() |
+| X50o | rv1g | E4.6 lista; E4.9 alertas; E4.13 false; E4.13 true | toBeNull(), toEqual(expected) |
+| X50e | rv1g | E4.7 error | toBeNull() |
+| X42 | rv1g | E4.12 false; E4.12 true | toBe(expected) |
+| X42r | rv1g | E4.12 true | toBe(expected) |
+| X42e | rv1g | E4.12 false | toBe(expected) |
+| X42d | rv1g | E4.12 true | toBe(expected) |
+| X42f | rv1g | sobrevive 218/218 | — |
+| X49r | rv1g | E4.12 true | toBeNull() |
+| X45s | rv1g | E4.13 false | toEqual(expected) |
+| X45n | rv1g | «keeps the row flush without spacing utilities»; E4.13 false | toBe(expected), toEqual(expected) |
+| X45d | rv1g | E4.13 false | toEqual(expected) |
+| X45w | rv1g | «sin collar: compone la celda y la nota en una sola fila»; «con la actividad en error: compone la celda y la nota en una sola fila»; «sin conexión: compone la celda y la nota en una sola fila»; «sin configuración: compone la celda y la nota en una sola fila»; «#69 R12: deja que cada celda se anuncie por separado»; «envuelve la fila del resumen sin tocarla»; E4.7 no-tracking; E4.7 error; E4.7 unreachable; E4.7 missing-config; E4.13 false | toBe(expected), toEqual(expected), toHaveLength(expected) |
+| X45a | rv1g | E4.13 true | toEqual(expected) |
+| X45r | rv1g | E4.13 true | toEqual(expected) |
+| X46r | rv1g | E4.8/E4.11/E4.14 | toEqual(expected) |
+| X46f | rv1g | E4.8/E4.11/E4.14 | toEqual(expected) |
+| X46t | rv1g | E4.8/E4.11/E4.14 | toEqual(expected) |
+| X46c | rv1g | E4.8/E4.11/E4.14 | toEqual(expected) |
+| X46v | rv1g | E4.8/E4.11/E4.14 | toEqual(expected) |
+| X37s | rv1g | E4.8/E4.11/E4.14 | toEqual(expected) |
+| X37f | rv1g | E4.8/E4.11/E4.14 | toEqual(expected) |
+| X37v | rv1g | E4.8/E4.11/E4.14 | toEqual(expected) |
+| X37r | rv1g | E4.8/E4.11/E4.14 | toEqual(expected) |
+| X37l | rv1g | E4.8/E4.11/E4.14 | toEqual(expected) |
+| X46h | rv1g | E4.8/E4.11/E4.14 | toEqual(expected) |
+| X46s | rv1g | E4.8/E4.11/E4.14 | toEqual(expected) |
+| X46e | rv1g | E4.8/E4.11/E4.14 | toEqual(expected) |
+| X30f | rv1g | E4.8/E4.11/E4.14 | toEqual(expected) |
+| X30tv | rv1g | E4.8/E4.11/E4.14 | toEqual(expected) |
+| X30a | rv1g | E4.8/E4.11/E4.14 | toEqual(expected) |
+| X30v | rv1g | E4.8/E4.11/E4.14 | toEqual(expected) |
+| X30n | rv1g | E4.8/E4.11/E4.14 | toEqual(expected) |
+| X30x | rv1g | E4.8/E4.11/E4.14 | toEqual(expected) |
+| X50t | rv1g | E4.6 lista; E4.9 alertas; E4.7 no-tracking; E4.7 error; E4.7 unreachable; E4.7 missing-config; E4.13 false; E4.13 true | toBeNull(), toEqual(expected) |
+| X50T | rv1g | «no pinta la fila con la sesión caducada»; E4.2 no-tracking; E4.2 unauthorized; E4.2 unreachable; E4.2 missing-config; E4.6 lista; E4.9 alertas; E4.7 no-tracking; E4.7 error; E4.7 unreachable; E4.7 missing-config; E4.13 false; E4.13 true | toBeNull(), toEqual(expected) |
+| X30i | rv1g | «pinta 82% con bg-success»; «pinta 61% con bg-success»; «pinta 60% con bg-warning-strong»; «pinta 12% con bg-warning-strong» | toEqual(expected) |
+| X30j | rv1g | «pinta 82% con bg-success»; «pinta 61% con bg-success»; «pinta 60% con bg-warning-strong»; «pinta 12% con bg-warning-strong» | toEqual(expected) |
+| X30k | rv1g | «pinta 82% con bg-success»; «pinta 61% con bg-success»; «pinta 60% con bg-warning-strong»; «pinta 12% con bg-warning-strong» | toEqual(expected) |
+| X1 | e4 | E4.4 | toEqual(expected) |
+| X2 | e4 | «no dibuja la rejilla sin mascota seleccionada»; E4.1; E4.6 home-loading; E4.6 home-error; E4.6 home-empty | toBeNull(), toEqual(expected) |
+| X2b | e4 | «carga con skeleton y se calla cuando la actividad falla» (consulta); E4.1; E4.6 home-loading; E4.6 home-error; E4.6 home-empty | toBeNull(), toEqual(expected) |
+| X2c | e4 | E4.1; E4.6 home-loading; E4.6 home-error; E4.6 home-empty | toBeNull(), toEqual(expected) |
+| X2d | e4 | «no dibuja la sección sin mascota seleccionada»; E4.1; E4.6 home-loading; E4.6 home-error; E4.6 home-empty | toBeNull(), toEqual(expected) |
+| X21 | e4 | E4.2 no-tracking; E4.2 unauthorized; E4.2 unreachable; E4.2 missing-config | toBeNull() |
+| X21b | e4 | «carga con skeleton y se calla cuando la actividad falla» (consulta); «el envoltorio de la actividad envuelve también su skeleton» (consulta); E4.2 no-tracking; E4.2 unauthorized; E4.2 unreachable; E4.2 missing-config; «al cambiar de mascota solo repiten los bloques que se vuelven a montar» | toBe(expected), toBeNull() |
+| X18 | e4 | E4.3 error; E4.3 unreachable | toBe(expected) |
+| X18u | e4 | «shows an error and retries pet detail» (consulta); «mantiene el hero y los chips montados cuando el detalle falla» (consulta); E4.3 unreachable | toBe(expected) |
+| X17 | e4 | E4.3 mapa | toBe(expected) |
+| X2d+X21 | e4 | «no dibuja la sección sin mascota seleccionada»; E4.1; E4.2 no-tracking; E4.2 unauthorized; E4.2 unreachable; E4.2 missing-config; E4.6 home-loading; E4.6 home-error; E4.6 home-empty | toBeNull(), toEqual(expected) |
+| X2b+X21 | e4 | «carga con skeleton y se calla cuando la actividad falla» (consulta); E4.1; E4.2 no-tracking; E4.2 unauthorized; E4.2 unreachable; E4.2 missing-config; E4.6 home-loading; E4.6 home-error; E4.6 home-empty | toBeNull(), toEqual(expected) |
+| X23u | e4b | E4.5 unauthorized | toBeNull() |
+| X23a | e4b | E4.5 unreachable | toBeNull() |
+| X23m | e4b | E4.5 missing-config | toBeNull() |
+| X24u | e4b | E4.5 unauthorized | toBeNull() |
+| X24a | e4b | E4.5 unreachable | toBeNull() |
+| X24m | e4b | E4.5 missing-config | toBeNull() |
+| X25 | e4b | E4.7 no-tracking; E4.7 error; E4.7 unreachable; E4.7 missing-config | toEqual(expected) |
+| X25d | e4b | E4.7 no-tracking; E4.7 error; E4.7 unreachable; E4.7 missing-config | toEqual(expected) |
+| X25w | e4b | E4.7 no-tracking (consulta); E4.7 error (consulta); E4.7 unreachable (consulta); E4.7 missing-config (consulta) | — |
+| X27 | e4b | E4.6 lista; E4.9 alertas | toEqual(expected) |
+| X27i | e4b | E4.6 lista; E4.9 alertas | toEqual(expected) |
+| X28 | e4b | E4.6 home-loading; E4.6 home-error; E4.6 home-empty | toEqual(expected) |
+| X28e | e4b | E4.6 home-error | toEqual(expected) |
+| X28l | e4b | E4.6 home-loading | toEqual(expected) |
+| X30t | e4b | E4.8/E4.11/E4.14 | toBe(expected) |
+| X30h | e4b | E4.8/E4.11/E4.14 | toEqual(expected) |
+| X30f | e4b | E4.8/E4.11/E4.14 | toEqual(expected) |
+| X18i | e4c | E4.3 error; E4.3 unreachable | toEqual(expected) |
+| X18p | e4c | E4.3 error; E4.3 unreachable | toEqual(expected) |
+| X17i | e4c | E4.3 mapa | toEqual(expected) |
+| X17p | e4c | E4.3 mapa | toEqual(expected) |
+| X27d | e4c | E4.9 alertas | toEqual(expected) |
+| X39s2 | e4c | E4.7 no-tracking; E4.7 error; E4.7 unreachable; E4.7 missing-config | toBeUndefined() |
+| X39c | e4c | E4.7 no-tracking; E4.7 error; E4.7 unreachable; E4.7 missing-config | toBeUndefined() |
+| X39r2 | e4c | E4.4 | toBeUndefined() |
+| X39c2 | e4c | E4.4 | toBeUndefined() |
+| X43s | e4c | E4.7 no-tracking; E4.7 error; E4.7 unreachable; E4.7 missing-config | toEqual(expected) |
+| X43r | e4c | E4.4 | toEqual(expected) |
+| X44r | e4c | E4.4 | toBe(expected) |
+| X37r | e4c | E4.8/E4.11/E4.14 | toEqual(expected) |
+| X42 | e4c | E4.12 false; E4.12 true | toBe(expected) |
+| X30x | e4c | E4.8/E4.11/E4.14 | toEqual(expected) |
+| X30v | e4c | E4.8/E4.11/E4.14 | toEqual(expected) |
+| X30n | e4c | E4.8/E4.11/E4.14 | toEqual(expected) |
+| X45r | e4d | E4.13 true | toEqual(expected) |
+| X45s | e4e | E4.13 false | toEqual(expected) |
+| X45n | e4e | «keeps the row flush without spacing utilities»; E4.13 false | toBe(expected), toEqual(expected) |
+| X45d | e4e | E4.13 false | toEqual(expected) |
+| X45a | e4e | E4.13 true | toEqual(expected) |
+| X45r | e4e | E4.13 true | toEqual(expected) |
+| X42f | e4e | sobrevive 218/218 | — |
+
+### Bloqueantes
+
+Ninguno.
+
+### No bloqueantes
+
+1. **R10 y A21 siguen pendientes del humano.** Falta el smoke de R10 en dev build de Android: casilla `- [ ] Smoke R10 superado por humano` en la línea 586 de requirements.md, fila R10 `pendiente (humano)` en traceability.md. También falta la casilla A21 de docs/ui-guidelines.md, en la línea 440. El leader no debe marcar #152 como `done` hasta que el humano cierre las dos.
+2. **La firma de E4 está en el chat y no se puede comprobar desde el repo.** 38fa5a95 es un commit del leader que cita una aprobación hecha en su chat. Hay precedente: las enmiendas E1-E4 de specs/mobile-meal-schedule-editing y specs/mobile-map-gps-pill-battery se firmaron igual. Lo dejo anotado.
+3. **X42f es equivalente** en sus dos variantes: `FadeOut.duration(400)` (rv1g) y `FadeOut` (e4e), ambas por la prop `animation` bajo reduce motion. `heroui-native` descarta esa prop con reduce motion, así que ningún test puede distinguirlas.
+4. **X25w cae por consulta y no por aserción**, como la spec declara para esa sonda.
+5. **Flake puntual en R8 `pinta 12% con bg-warning-strong`.** Lo vi una vez, en la primera corrida paralela de X18i: llegó `width: "0%"` donde se esperaba `"12%"`. La mutación X18i no puede afectar a ese `it`. No se repitió en 17 corridas posteriores:
+   - dos corridas secuenciales de X18i, que solo tumbaron sus 2 `it` esperados;
+   - 15 corridas del fichero sin mutar bajo carga de 3 carriles (load average de unos 4,7), todas 218/218.
+
+   Origen probable: el `it` (index.test.tsx 5109-5123) asevera `toHaveAnimatedStyle({ width: '12%' }, { shouldMatchAllProps: true })` justo después de `renderMotionHome()`. Lo hace con timers reales y sin esperar a que acabe el `withTiming` de `MOTION_TRANSITION_MS` = 250 ms que arranca en `fillPct` desde 0. La frecuencia observada es de 1 en unas 110 corridas. Evidencia: `$S/rv2-e4c-X18i-run1.txt` en el scratchpad del reviewer.
+6. **progress/current.md está desfasado.** Su último cambio es 36f91e6e: no recoge el rechazo de la ronda 1, ni la Enmienda E4, ni el handoff E5. C2 solo exige que describa la sesión activa, y lo hace.
+7. **Corrección a la ronda 1g, línea 1312.** Dice "Las 40 sondas que no son equivalentes caen por...". Lo correcto es 40 sondas, de las que 39 no son equivalentes, más X42f, que lo es. Las cifras de esta ronda usan 39 + 1.
+8. **Siguen vigentes los no bloqueantes de rondas anteriores:**
+   - X20, X31 y X32 son equivalentes; X32 queda bajo el gate de A21.
+   - X40.
+   - E4.12 está atado al `FadeOut` de serie de `heroui-native`.
+   - El recorrido de E4.14 llega a nodos del arnés.
+   - `accessibilityViewIsModal` en hermanos queda fuera del sujeto.
+   - Conjunciones: `kind` distinto de `ok` con reduce motion, y regex de R8 por umbral.
+   - El aviso "A worker process has failed to exit gracefully" del jest móvil.
+   - `width` del relleno animado sobre un nodo en flujo; la spec lo permite.
+
+### Output de ./init.sh (corrido por el leader en 5f75faa8, exit=0)
+
+No lo ejecuté yo, porque el clasificador se lo deniega al reviewer. Leí el log
+`init-152-r2.log`, cuyo `.head` dice 5f75faa8 y coincide con el HEAD verificado.
+
+```
+✅ Build exitoso
+Test Suites: 176 passed, 176 total
+Tests:       1348 passed, 1348 total
+Test Suites: 2 passed, 2 total
+Tests:       14 passed, 14 total
+# tests 28 / # pass 28 / # fail 0
+# tests 5 / # pass 5 / # fail 0
+# tests 15 / # pass 15 / # fail 0
+A worker process has failed to exit gracefully and has been force exited. ...
+Test Suites: 96 passed, 96 total
+Tests:       2235 passed, 2235 total
+Test Suites: 3 skipped, 29 passed, 29 of 32 total
+Tests:       8 skipped, 438 passed, 446 total
+✅ Lint sin errores
+✅ Typecheck sin errores
+✅ Todo verde. Listo para trabajar.
+```
