@@ -3124,5 +3124,38 @@
       "mobile-pet-tracker/src/screens/home/index.tsx",
       "mobile-pet-tracker/src/i18n/catalog.ts"
     ]
+  },
+  {
+    "id": 160,
+    "name": "infra-media-bucket-iam-least-privilege",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Registrada el 2026-10-08 por decisión del humano («Autorizo Q1 de #157 y registra las dos deudas: #160 infra-media-bucket-iam-least-privilege y #161 media-docs-confirm-size-limit.»). Deuda de #157 media-docs-download-api. #157 dejó infra/, IAM y CDK en §Fuera de alcance. Medido en origin/main fca7c399: infra/lib/pet-tracker-dev-stack.ts crea MediaBucket (new s3.Bucket(this, 'MediaBucket', …)) y no define ningún rol, usuario ni grant (grep -cE \"grant|Role|PolicyStatement\" → 0). En modo aws el backend usa las credenciales que le dé el operador; si no tienen s3:ListBucket, un HeadObject de un objeto inexistente responde 403 y no 404, y R7 de #157 (objectExists) lo relanza: el confirm responde 500. La spec decide qué identidad usa el backend (rol o usuario) y le concede el mínimo sobre el bucket de media (s3:GetObject, s3:PutObject y s3:ListBucket), justificando cada acción; si #161 decide borrar el objeto que excede el límite, también s3:DeleteObject. Depende del merge de #157.",
+    "acceptance_criteria": [
+      "Un test de CDK (assertions) fija la política sobre el bucket de media",
+      "cdk synth verde",
+      "cdk deploy y cualquier prueba contra la cuenta real los corre el humano, nunca una IA",
+      "Cero cambios en backend-pet-tracker/ salvo que la spec lo justifique"
+    ],
+    "files_affected": [
+      "infra/lib/pet-tracker-dev-stack.ts",
+      "infra/test/pet-tracker-dev-stack.test.ts"
+    ]
+  },
+  {
+    "id": 161,
+    "name": "media-docs-confirm-size-limit",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Registrada el 2026-10-08 por decisión del humano («Autorizo Q1 de #157 y registra las dos deudas: #160 infra-media-bucket-iam-least-privilege y #161 media-docs-confirm-size-limit.»). Deuda de #157 media-docs-download-api. La spec de #157 deja fuera el límite de tamaño en servidor (requirements.md §Fuera de alcance: «Una URL PUT prefirmada no puede imponer tamaño; #158 fija el límite en el cliente. Si algún día se impone en servidor, el sitio natural es el confirm (`ContentLength` del HEAD)»). #158 mobile-docs-upload sigue pending: el límite del cliente aún no existe y lo fija su spec. Esta spec fija el límite en bytes (igual al de #158), el código HTTP y el cuerpo de error, y qué pasa con el objeto que excede el límite: se borra, o se queda oculto con uploaded_at a NULL. Si se borra hace falta s3:DeleteObject, y #160 debe contemplarlo. Depende de #157; conviene alinearla con la spec de #158.",
+    "acceptance_criteria": [
+      "Un test por rama: ContentLength justo en el límite, uno por encima y ContentLength ausente",
+      "e2e contra LocalStack",
+      "Ninguna prueba contra AWS real"
+    ],
+    "files_affected": [
+      "backend-pet-tracker/src/modules/media/",
+      "backend-pet-tracker/test/media-docs.e2e-spec.ts"
+    ]
   }
 ]

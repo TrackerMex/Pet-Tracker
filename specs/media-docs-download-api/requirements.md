@@ -273,6 +273,15 @@ HEAD de un objeto inexistente, y R7 lo relanzaría como 500. Extender
 `test/aws-real-media.e2e-spec.ts` para cubrirlo cuesta dinero y queda
 fuera de alcance salvo que el humano lo pida.
 
+**Respuesta a Q1 (2026-10-08)**: autorizada. Frase literal del humano al
+leader: «Autorizo Q1 de #157 y registra las dos deudas: #160
+infra-media-bucket-iam-least-privilege y #161 media-docs-confirm-size-limit.»
+Antes la había dado a la sesión Backend («Autorizo Q1 y registra las 2
+deudas»), que la relató. DA1 y DA3 se quedan como están y Q1 deja de
+bloquear el merge. #160 cubre la identidad y los permisos mínimos sobre el
+bucket de media (incluido el 403 sin `s3:ListBucket`); #161, el límite de
+tamaño en el confirm.
+
 ## Premisas falsas
 
 Verificadas contra la base congelada:
