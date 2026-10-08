@@ -80,6 +80,9 @@ no es la que la spec supone.
 | A18 | `ls /home/claude/pet-tracker-mascot/webp/` | `pingo-wave-blink.webp  pingo-wave.webp` |
 | A19 | bloque A19, debajo de la tabla | `0` |
 | A20 | bloque A20, debajo de la tabla | `0` |
+| A21 | bloque A21, debajo de la tabla | `1` |
+| A22 | bloque A22, debajo de la tabla | `1` |
+| A23 | bloque A23, debajo de la tabla | `1` |
 
 Los comandos con `|` van aquí, fuera de la tabla, para copiarlos tal cual:
 
@@ -90,6 +93,12 @@ grep -cE '^export const MOTION_(FEEDBACK_MS|TRANSITION_MS|SURFACE_MS|STAGGER_MS|
 ls mobile-pet-tracker/assets/images | grep -cE '^(pingo|mascot)-'
 # A20: #152 R9 sobre motion.ts. Esperado: 0
 grep -ciP '#(?!\d{2,3} R\d)[\da-f]{3,8}\b|[A-Za-z0-9_-]+-\[[^\]]+\]|StyleSheet|shadowColor|shadowOffset|shadowOpacity|shadowRadius|\belevation\s*:' mobile-pet-tracker/src/theme/motion.ts
+# A21: el párrafo que E1 sustituye. Esperado: 1
+grep -cF 'Las constantes anteriores a #152 (' docs/ui-guidelines.md
+# A22: WELCOME_ENTRANCE_MS sigue en la lista de #152. Esperado: 1
+grep -cF '`WELCOME_ENTRANCE_MS`, `BAR_ENTRY_*`, `METRIC_TAB_SPRING` y' docs/ui-guidelines.md
+# A23: la sección de #152 que recorta el test de E1. Esperado: 1
+grep -cF '## Enmienda #152 — el movimiento vive en src/theme/motion.ts' docs/ui-guidelines.md
 ```
 
 Mide también los dos primeros bloques de design.md §Guards que vigilan los
@@ -109,14 +118,17 @@ Después:
 
 ## Orden
 
-El orden es R2, R4, R3, R1, R5, R6, R7, R8, R9, R10, R11, R12, R13 y R14.
+El orden es R2, R4, R3, R1, R5, R6, R7, R8, E1, R9, R10, R11, R12, R13 y
+R14.
 Se aparta del orden numérico para que ningún test asevere un nodo que todavía
 no existe:
 
 - los dos `it` de R1 que leen el bocadillo (`pinta el saludo en el bocadillo
   …`) se escriben en T5, que es donde nace `welcome-bubble-text`;
 - las filas C2 y C3 también van en T5, porque `checkUses` solo pasa cuando la
-  pantalla ya llama a `t('welcome.pingoGreeting')`.
+  pantalla ya llama a `t('welcome.pingoGreeting')`;
+- E1 (T8b) va justo detrás de R8: la carta dice que #153 retiró
+  `WELCOME_ENTRANCE_MS`, y eso es cierto desde el verde de T8.
 
 ## T1 — R2: la voz de Pingo en la carta
 
@@ -127,8 +139,8 @@ no existe:
   - Commit: `test(mobile-welcome): #153 R2 red pingo voice in the charter`.
 - [ ] (2) **Implementación mínima.** Inserta en `docs/ui-guidelines.md` el
   bloque literal de R2 justo antes de la línea del ancla A10, separado por
-  una línea en blanco arriba y abajo. No toques §Animación ni el final del
-  fichero, que son de #152.
+  una línea en blanco arriba y abajo. No toques §Animación. De la sección
+  `## Enmienda #152` solo cambia el párrafo de E1, y eso va en T8b.
   - Commit: `feat(mobile-welcome): #153 R2 pingo voice in the charter`.
 - [ ] (3) **Refactor.** No aplica.
 
@@ -320,6 +332,27 @@ no existe:
   Commit: `feat(mobile-welcome): #153 R8 entrance from motion.ts`.
 - [ ] (3) **Refactor.** Comprueba que `Easing` ya no se importa si no se
   usa, y que `bunx tsc --noEmit; echo "exit=$?"` da `exit=0`.
+
+## T8b — E1: la carta retira `WELCOME_ENTRANCE_MS`
+
+- [ ] (1) **Test rojo.** Añade al test de la bienvenida el describe
+  `#153 E1: la carta retira WELCOME_ENTRANCE_MS de la migración pendiente`
+  con su `it` de requirements.md §Enmienda E1.
+  - Rojo esperado: el `it`, por aserción del `toContain` del bloque. La cuenta
+    de `` `WELCOME_ENTRANCE_MS` `` ya da 1 antes del verde: no es ella la que
+    pone el rojo.
+  - Commit: `test(mobile-welcome): #153 E1 red charter retires WELCOME_ENTRANCE_MS`.
+- [ ] (2) **Implementación mínima.** En `docs/ui-guidelines.md`, sustituye el
+  párrafo del ancla A21 (cuatro líneas, de `Las constantes anteriores a #152 (`
+  hasta `fuera del alcance de esta.`) por el bloque literal de E1. No toques
+  nada más de la sección `## Enmienda #152`.
+  - Mide en verde, sin pipe, el test de la bienvenida y
+    `bunx jest src/theme/__tests__/motion.test.ts; echo "exit=$?"`: los `it`
+    de `#152 R2` siguen verdes.
+  - Commit: `feat(mobile-welcome): #153 E1 charter retires WELCOME_ENTRANCE_MS`.
+- [ ] (3) **Refactor.** No aplica.
+
+Las sondas S1-S3 de requirements.md §Enmienda E1 las hace el reviewer.
 
 ## T9 — R9: el muelle de escala de Pingo
 

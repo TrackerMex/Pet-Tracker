@@ -16,6 +16,7 @@ tags: [harness, spec, mobile, ui-delight]
 | R6 | `src/screens/welcome/index.test.tsx`::`#153 R6: Pingo se pinta con su pose y su capa de parpadeo` (2 `it` y un `it.each` de 2 filas) | pendiente (T6) |
 | R7 | `src/screens/welcome/index.test.tsx`::`#153 R7: el CTA primario tiene cuerpo` (2 `it`); `es el botón primario del repo` (C7) | pendiente (T7) |
 | R8 | `src/screens/welcome/index.test.tsx`::`#153 R8: el contenido entra con las constantes de motion.ts` (5 `it`; sustituye al describe `R10` de #118, C8) | pendiente (T8) |
+| E1 | `src/screens/welcome/index.test.tsx`::`#153 E1: la carta retira WELCOME_ENTRANCE_MS de la migración pendiente` > `deja en la lista solo las cinco constantes pendientes`; sondas S1-S3 del reviewer | pendiente (T8b) |
 | R9 | `src/screens/welcome/index.test.tsx`::`#153 R9: Pingo entra con un muelle de escala` (4 `it`) | pendiente (T9) |
 | R10 | `src/screens/welcome/index.test.tsx`::`#153 R10: Pingo flota en bucle` (4 `it`) | pendiente (T10) |
 | R11 | `src/screens/welcome/index.test.tsx`::`#153 R11: Pingo parpadea cada cuatro segundos` (4 `it`) | pendiente (T11) |

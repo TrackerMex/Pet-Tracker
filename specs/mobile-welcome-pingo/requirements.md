@@ -823,7 +823,78 @@ Estas son premisas de los documentos de entrada que no se sostienen contra el
 - **P-d.** La enmienda de #152 a la carta dice que `WELCOME_ENTRANCE_MS`
   migra «a motion.ts en una feature posterior». #153 no lo migra: lo borra
   (R8) y usa `MOTION_FADE_TIMING` y `MOTION_SETTLE_SPRING`. Esa frase de la
-  carta queda parcialmente caducada, y #153 no puede editarla porque está en
-  el tramo de #152. El leader decide si la corrige tras el merge.
+  carta queda parcialmente caducada. #153 no podía editarla mientras #152
+  estaba en vuelo. Tras el merge la corrige la Enmienda E1.
 - **P-e.** La descripción de #153 en `feature_list.json` dice que «las 12
   poses … entran al repo como WebP». Esta spec mete dos (G1).
+
+## Enmienda E1 — la carta deja de anunciar que `WELCOME_ENTRANCE_MS` migra
+
+#152 se mergeó en `main` el 2026-10-07 (`36c8050d`, PR #198). Su enmienda a
+la carta, la sección `## Enmienda #152 — el movimiento vive en src/theme/motion.ts`
+de `docs/ui-guidelines.md`, cuenta `WELCOME_ENTRANCE_MS` entre las constantes
+que «migran a `motion.ts` en una feature posterior». R8 no la migra: la borra.
+Con #153 mergeada, esa frase de la carta diría algo falso (P-d). El leader de
+#152 decidió el 2026-10-07 que la corrige #153 tras el merge, y no #152.
+
+La revalidación de G11 contra `36c8050d` no encontró nada más que cambiar.
+Las anclas A1-A20 de T0 y los bloques de design.md §Guards dan su
+«Esperado», y #152 no tocó ningún fichero de #153. R2 y R8 no cambian: esta
+enmienda añade un requisito y su candado.
+
+**THE SYSTEM SHALL** sustituir, en esa sección de `docs/ui-guidelines.md`, el
+párrafo que empieza por `Las constantes anteriores a #152 (` y acaba en
+`fuera del alcance de esta.` (cuatro líneas) por este texto exacto:
+
+```
+Las constantes anteriores a #152 (`MEALS_BAR_TIMING`, `KCAL_BAR_TIMING`,
+`BAR_ENTRY_*`, `METRIC_TAB_SPRING` y `TAB_INDICATOR_SPRING`) migran a
+`motion.ts` en una feature posterior, fuera del alcance de esta.
+`WELCOME_ENTRANCE_MS` no está en la lista: la retiró #153, cuya bienvenida
+usa `MOTION_FADE_TIMING` y `MOTION_SETTLE_SPRING` (enmienda E1 de #153).
+```
+
+El resto de la sección no cambia: ni el encabezado, ni el texto de A21, ni la
+casilla `- [X] Enmienda aprobada por humano`. Los leen los `it` de
+`#152 R2: la carta apunta a motion.ts` en `src/theme/__tests__/motion.test.ts`.
+
+Observable en el test de la bienvenida, describe
+`#153 E1: la carta retira WELCOME_ENTRANCE_MS de la migración pendiente`. Lee
+la carta como el describe de R2 y tiene un `it`,
+`deja en la lista solo las cinco constantes pendientes`. El `it` recorta la
+sección así:
+
+```ts
+const heading = '## Enmienda #152 — el movimiento vive en src/theme/motion.ts';
+const start = charter.indexOf(heading);
+const next = charter.indexOf('\n## ', start + heading.length);
+const amendment = charter.slice(start, next === -1 ? undefined : next);
+```
+
+Y comprueba:
+
+- `start` es mayor que `-1`;
+- `amendment` contiene el bloque de arriba entero, escrito en el test como
+  sus cinco líneas en un array de literales con comillas simples, unido con
+  `.join('\n')`;
+- `` `WELCOME_ENTRANCE_MS` `` aparece una sola vez en `amendment`:
+  ``amendment.split('`WELCOME_ENTRANCE_MS`').length`` es `2`.
+
+Ninguna cadena nueva del test lleva un guion pegado a `[` (design.md §Guards,
+test colocado).
+
+**Sondas del reviewer.** Cada una se aplica sobre la carta en verde y debe
+poner el `it` en rojo por aserción. Se probaron en un spike fuera del árbol el
+2026-10-08: la base da rojo, el verde da verde y las tres sondas dan rojo.
+
+| Sonda | Mutación | Qué la caza |
+|---|---|---|
+| S1 | Deja el párrafo viejo y añade el bloque nuevo debajo | La cuenta: 2 |
+| S2 | Quita `` `MEALS_BAR_TIMING`, `` del bloque nuevo | `toContain` |
+| S3 | Borra el párrafo viejo y pone el bloque antes de `## Checklist de autocrítica` | `toContain` y la cuenta: 0 |
+
+Tras cada sonda se restaura con `git checkout HEAD -- docs/ui-guidelines.md`
+y se comprueba que `git diff --cached --stat` y `git diff --stat` quedan
+vacíos.
+
+- [ ] Enmienda E1 aprobada por humano (fecha: ____)

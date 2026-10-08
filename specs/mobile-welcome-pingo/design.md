@@ -133,17 +133,19 @@ Rutas relativas a `mobile-pet-tracker/` salvo las que empiezan por `docs/` o
 | Presentación | `src/i18n/catalog.ts` | R1 | `welcome.pingoGreeting` en `en` y `es` |
 | Presentación | `src/theme/motion.ts` | R4 | Cinco constantes nuevas |
 | Assets | `assets/images/pingo-wave.webp`, `assets/images/pingo-wave-blink.webp` | R3 | Nuevos |
-| Tests | `src/screens/welcome/index.test.tsx` | R1–R3, R5–R13 | Describes `#153 R<n>`; C5–C8 |
+| Tests | `src/screens/welcome/index.test.tsx` | R1–R3, R5–R13, E1 | Describes `#153 R<n>`; C5–C8 |
 | Tests | `src/theme/__tests__/motion.test.ts` | R4 | Describe `#153 R4`; C4 |
 | Tests | `src/providers/__tests__/language-provider.test.tsx` | R1 | C1 |
 | Tests | `src/__tests__/ui-copy-table.ts` | R1 | C2 |
 | Tests | `src/__tests__/ui-language.test.ts` | R1 | C3 |
-| Docs | `docs/ui-guidelines.md` | R2 | Punto 7, antes del checklist |
+| Docs | `docs/ui-guidelines.md` | R2, E1 | Punto 7, antes del checklist; párrafo de la sección `## Enmienda #152` (E1) |
 | Docs | `specs/mobile-ui-language/design.md` | R1 | §2.20 |
 | Harness | `specs/mobile-welcome-pingo/traceability.md`, `progress/impl_mobile-welcome-pingo.md` | todos | Trazabilidad y reporte |
 
 **No cambian** `package.json` ni `bun.lock` (R13), ni ningún fichero del
-reparto de #152.
+reparto de #152. La única excepción es el párrafo de E1 en la sección
+`## Enmienda #152` de la carta: #152 ya está mergeada y su leader pidió el
+cambio.
 
 ## Candados existentes que se mueven
 

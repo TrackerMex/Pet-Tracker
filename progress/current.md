@@ -12,20 +12,17 @@
   aprobación cubre también G10 (copy y voz). Al aprobar marcó en Notion la casilla
   del smoke R14, pero no cuenta: aún no hay nada implementado, así que en el repo
   sigue sin marcar.
-- Bloqueada: no hay handoff a Codex hasta que Backend avise del merge de #152.
+- #152 mergeada en `main` (36c8050d, PR #198). La branch la incorporó por merge
+  (61c03a8a), no por rebase, para que el commit de firma 10f7e808 siga valiendo.
 
-### Pendiente tras el merge de #152 (antes del handoff)
+### Tras el merge de #152
 
-1. **G11.** Revalidar la spec contra `main` con las anclas de T0. Si algo cambió,
-   enmendar y reabrir el gate solo para las enmiendas.
-2. **P-d, decidido por Backend el 2026-10-07:** lo corrige #153 tras el merge, no
-   #152 (que no se toca a mitad de Codex). Hay que enmendar R2 con la frase de
-   `docs/ui-guidelines.md` que lista las constantes que «migran a motion.ts en una
-   feature posterior»: se quita `WELCOME_ENTRANCE_MS` de esa lista y se dice que
-   #153 la retiró. El resto (`MEALS_BAR_*`, `KCAL_BAR_TIMING`, `BAR_ENTRY_*`,
-   `METRIC_TAB_SPRING`, `TAB_INDICATOR_SPRING`) sigue pendiente. Ningún test de #152
-   bloquea esa frase: el describe `#152 R2` de `motion.test.ts` solo comprueba
-   `` `src/theme/motion.ts` (enmienda A21 de #152) ``, el
-   `not.toContain('promueven a tokens')` y los encabezados. Esta enmienda va al gate.
-3. **G2.** Convertir los dos WebP a `/home/claude/pet-tracker-mascot/webp/` con el
-   comando de design.md §Assets.
+1. **G11, hecho 2026-10-08.** Anclas A1-A20 de T0 y bloques de design.md §Guards
+   con su «Esperado» contra 36c8050d. #152 no tocó ningún fichero de #153.
+2. **G2, hecho 2026-10-08.** Los dos WebP están en
+   `/home/claude/pet-tracker-mascot/webp/` (56 062 y 55 608 bytes, VP8X con alfa,
+   1024×1024).
+3. **P-d, Enmienda E1 en el gate.** Decidido por Backend el 2026-10-07: la frase de
+   la carta que lista lo que «migra a motion.ts en una feature posterior» pierde
+   `WELCOME_ENTRANCE_MS` y dice que #153 la retiró. Tarea T8b, después de R8.
+   Ningún test de #152 lee ese párrafo. El handoff a Codex espera a la firma de E1.
