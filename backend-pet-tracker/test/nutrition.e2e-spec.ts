@@ -16,6 +16,8 @@ import { TOKEN_SERVICE } from '@/modules/auth/domain/ports/token-service';
 import type { TokenService } from '@/modules/auth/domain/ports/token-service';
 import { AppModule } from '../src/app.module';
 
+process.env.ANTHROPIC_ENABLED = 'false';
+
 describe('Nutrition profile and plans (e2e)', () => {
   const runId = Date.now();
   let app: INestApplication<App>;
