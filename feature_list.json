@@ -3049,12 +3049,17 @@
     "priority": "P2",
     "description": "Registrada el 2026-10-08 por decisión del humano tras aprobar #155, que dejó este tema en §Fuera de alcance. Ids #157-#159 reservados con la sesión Frontend (Frontend: #156 y #160 en adelante). Mitad backend de «subir documentos» (el humano la partió en backend y móvil). Medido en origin/main 36c8050d: #49 media-docs-api ya expone POST /v1/pets/:petId/media (solo owner) que persiste la fila en pet_documents y devuelve {document, uploadUrl, expiresInSeconds: 600} con una URL PUT prefirmada, y GET /v1/pets/:petId/media, que devuelve {id, type, name, date, vet, key} sin ninguna URL de lectura. Huecos: (1) no hay forma de abrir un documento subido; (2) la fila se persiste antes del PUT y no hay estado de subida, así que un PUT que nunca llega deja en la lista un documento sin fichero. La spec decide cómo se lee (URL prefirmada GET en la lista o endpoint por documento) y cómo se confirma la subida. Borrar documentos no entra salvo que la spec lo justifique. No toca mobile-pet-tracker/.",
     "acceptance_criteria": [
-      "Un miembro de la mascota (owner, caregiver o viewer) puede obtener una URL de lectura prefirmada y con caducidad de un documento suyo; un no miembro recibe 404 como el resto del módulo media",
+      "Un miembro de la mascota (owner, family, walker o vet) puede obtener una URL de lectura prefirmada y con caducidad de un documento suyo; un no miembro recibe 404 como el resto del módulo media",
       "Un documento cuyo fichero no llegó al bucket no aparece como disponible; el mecanismo (estado en pet_documents, confirmación explícita u otro) lo fija la spec con su migración si la necesita",
       "El contrato de POST /v1/pets/:petId/media sigue compatible para el cliente móvil o la spec declara el cambio; e2e en LocalStack con URLs prefirmadas reales, como #49 y #57",
       "Tests rojos primero, por R-id; suites backend y e2e verdes medidas sin pipe"
     ],
     "files_affected": [
+      "backend-pet-tracker/src/db/schema/media.schema.ts",
+      "backend-pet-tracker/src/db/schema/media.schema.spec.ts",
+      "backend-pet-tracker/src/db/migrations/0019_pet_documents_uploaded_at.sql",
+      "backend-pet-tracker/src/db/migrations/meta/0019_snapshot.json",
+      "backend-pet-tracker/src/db/migrations/meta/_journal.json",
       "backend-pet-tracker/src/modules/media/",
       "backend-pet-tracker/test/media-docs.e2e-spec.ts"
     ]
@@ -3068,7 +3073,7 @@
     "acceptance_criteria": [
       "El dueño puede elegir un fichero (tipos y tamaño máximo los fija la spec), rellenar type, name, date y vet opcional, y subirlo; el documento aparece en la lista sin recargar a mano",
       "Cualquier miembro puede abrir un documento de la lista con la URL de lectura de #157",
-      "Caregiver y viewer no ven la acción de subir; errores de red, 403 y fallo del PUT tienen copy en/es y no dejan la pantalla en un estado roto",
+      "Family, walker y vet no ven la acción de subir; errores de red, 403 y fallo del PUT tienen copy en/es y no dejan la pantalla en un estado roto",
       "docs-empty de #155 gana la acción para el dueño y su frase se revisa en voz B; los literales en/es van en la spec desde R1",
       "Smoke del humano en dev build de Android con un PDF y una imagen reales contra LocalStack"
     ],
