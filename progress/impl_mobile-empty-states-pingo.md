@@ -12168,3 +12168,1944 @@ Pasos, en español y luego en inglés (Perfil → idioma):
 Lo firma el humano en §Aprobación, casilla «Smoke R12».
 
 R12: pendiente del smoke humano
+
+
+## Reanudacion 3
+
+E2 aprobada: `grep -cF -- '- [x] Enmienda E2 aprobada' specs/mobile-empty-states-pingo/requirements.md` → `1`.
+
+E2H: `adee148a`. Árbol inicial: limpio=0.
+
+```text
+pwd: /home/claude/sites/Pet-Tracker-wt-155
+branch: feature/155-mobile-empty-states-pingo
+HEAD: adee148a
+git status --short: (vacío)
+git diff --quiet && git diff --cached --quiet && test -z "$(git ls-files --others --exclude-standard)": limpio=0
+git diff --name-only 8c142376 HEAD -- . ':!specs/' ':!progress/': (vacío)
+test ! -e .expo/types/router.d.ts: exit=0
+```
+
+Leídos: Reanudación 3 y Enmienda E2 completas; revisión E2 del reviewer. Se mantienen las skills previamente cargadas: building-native-ui, appllama-app-design-skill, emil-design-eng y ponytail. E2 solo añade los candados literales aprobados; no cambia producción. No hay decisiones nuevas.
+
+### Incidencia del extractor — Jest sobre la base intacta
+
+```sh
+FORCE_COLOR=0 bunx jest src/components/__tests__/empty-state.test.tsx > /tmp/155-e2-r3.txt 2>&1; echo "exit=$?"
+```
+
+```text
+Test Suites: 1 passed, 1 total
+Tests:       59 passed, 59 total
+exit=0
+```
+
+### Incidencia del extractor — medida de la base R3 sin candados nuevos
+
+```sh
+FORCE_COLOR=0 bunx jest src/components/__tests__/empty-state.test.tsx > /tmp/155-e2-r3.txt 2>&1; echo "exit=$?"
+```
+
+```text
+ling solution. Use Tailwind CSS classes via className prop on all components.
+    • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+    • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+      - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+      - Check component documentation - Each component page includes a link to the component's style source
+    • If styles are occupied by animation, modify them via the animation prop on components that support it.
+    • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+    [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+  console.info
+    [34mHeroUI Native Styling Principles[0m
+    • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+    • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+    • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+      - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+      - Check component documentation - Each component page includes a link to the component's style source
+    • If styles are occupied by animation, modify them via the animation prop on components that support it.
+    • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+    [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+  console.info
+    [34mHeroUI Native Styling Principles[0m
+    • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+    • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+    • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+      - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+      - Check component documentation - Each component page includes a link to the component's style source
+    • If styles are occupied by animation, modify them via the animation prop on components that support it.
+    • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+    [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+  console.warn
+    Uniwind - We couldn't find your variable --theme. Make sure it's used at least once in your className, or define it in a static theme as described in the docs: https://docs.uniwind.dev/api/use-css-variable
+
+      at Function.warn (node_modules/uniwind/src/core/logger.ts:11:17)
+      at warn (node_modules/uniwind/src/hooks/useCSSVariable/useCSSVariable.ts:20:12)
+      at logDevError (node_modules/uniwind/src/hooks/useCSSVariable/useCSSVariable.ts:33:17)
+          at Array.forEach (<anonymous>)
+      at forEach (node_modules/uniwind/src/hooks/useCSSVariable/useCSSVariable.ts:31:15)
+      at getCSSVariable (node_modules/uniwind/src/hooks/useCSSVariable/useCSSVariable.ts:62:46)
+      at mountStateImpl (node_modules/react-reconciler/cjs/react-reconciler.development.js:5941:24)
+      at mountState (node_modules/react-reconciler/cjs/react-reconciler.development.js:5962:22)
+      at Object.useState (node_modules/react-reconciler/cjs/react-reconciler.development.js:17940:18)
+      at Object.<anonymous>.process.env.NODE_ENV.exports.useState (node_modules/react/cjs/react.development.js:1263:34)
+      at useCSSVariable (node_modules/uniwind/src/hooks/useCSSVariable/useCSSVariable.ts:62:39)
+      at useLibraryTheme (node_modules/heroui-native/src/helpers/internal/hooks/use-library-theme.ts:22:33)
+      at useHasDefaultThemeBackground (node_modules/heroui-native/src/components/theme-background/theme-background.tsx:33:32)
+      at HeroUINative.Button.Root (node_modules/heroui-native/src/components/button/button.tsx:84:65)
+      at Object.react_stack_bottom_frame (node_modules/react-reconciler/cjs/react-reconciler.development.js:17596:20)
+      at renderWithHooks (node_modules/react-reconciler/cjs/react-reconciler.development.js:5335:22)
+      at updateForwardRef (node_modules/react-reconciler/cjs/react-reconciler.development.js:7278:19)
+      at beginWork (node_modules/react-reconciler/cjs/react-reconciler.development.js:9602:18)
+      at runWithFiberInDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:2508:13)
+      at performUnitOfWork (node_modules/react-reconciler/cjs/react-reconciler.development.js:15273:22)
+      at workLoopSync (node_modules/react-reconciler/cjs/react-reconciler.development.js:15099:41)
+      at renderRootSync (node_modules/react-reconciler/cjs/react-reconciler.development.js:15080:11)
+      at performWorkOnRoot (node_modules/react-reconciler/cjs/react-reconciler.development.js:14165:11)
+      at performWorkOnRootViaSchedulerTask (node_modules/react-reconciler/cjs/react-reconciler.development.js:3335:7)
+      at flushActQueue (node_modules/react/cjs/react.development.js:590:34)
+      at node_modules/react/cjs/react.development.js:847:21
+
+  console.info
+    [34mHeroUI Native Styling Principles[0m
+    • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+    • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+    • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+      - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+      - Check component documentation - Each component page includes a link to the component's style source
+    • If styles are occupied by animation, modify them via the animation prop on components that support it.
+    • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+    [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+PASS src/components/__tests__/empty-state.test.tsx
+  #155 R1: el copy de los vacíos existe en los dos idiomas
+    ✓ declara common.noPetsBody en inglés y en español (2 ms)
+    ✓ declara alerts.emptyBody en inglés y en español (1 ms)
+    ✓ declara reminders.emptyBody en inglés y en español (1 ms)
+    ✓ declara geofences.emptyBody en inglés y en español
+    ✓ declara food.noMealPlanBody en inglés y en español (1 ms)
+    ✓ declara docs.emptyBody en inglés y en español
+    ✓ common.noPetsBody no exclama, no lleva emoji y termina en punto en los dos idiomas (2 ms)
+    ✓ alerts.emptyBody no exclama, no lleva emoji y termina en punto en los dos idiomas
+    ✓ reminders.emptyBody no exclama, no lleva emoji y termina en punto en los dos idiomas
+    ✓ geofences.emptyBody no exclama, no lleva emoji y termina en punto en los dos idiomas (1 ms)
+    ✓ food.noMealPlanBody no exclama, no lleva emoji y termina en punto en los dos idiomas (3 ms)
+    ✓ docs.emptyBody no exclama, no lleva emoji y termina en punto en los dos idiomas
+    ✓ registra las claves en la tabla de mobile-ui-language (1 ms)
+    ✓ common.noPetsBody tiene fila de #155 en mobile-ui-language (1 ms)
+    ✓ alerts.emptyBody tiene fila de #155 en mobile-ui-language (1 ms)
+    ✓ reminders.emptyBody tiene fila de #155 en mobile-ui-language (1 ms)
+    ✓ geofences.emptyBody tiene fila de #155 en mobile-ui-language (1 ms)
+    ✓ food.noMealPlanBody tiene fila de #155 en mobile-ui-language
+    ✓ docs.emptyBody tiene fila de #155 en mobile-ui-language (1 ms)
+  #155 R2: las poses de los vacíos entran como WebP
+    ✓ pingo-talk.webp es un WebP con alfa de 1024×1024 y como mucho 100 000 bytes (1 ms)
+    ✓ pingo-sleep.webp es un WebP con alfa de 1024×1024 y como mucho 100 000 bytes (1 ms)
+    ✓ pingo-clipboard.webp es un WebP con alfa de 1024×1024 y como mucho 100 000 bytes
+    ✓ pingo-health.webp es un WebP con alfa de 1024×1024 y como mucho 100 000 bytes (1 ms)
+    ✓ pingo-collar.webp es un WebP con alfa de 1024×1024 y como mucho 100 000 bytes
+    ✓ pingo-food.webp es un WebP con alfa de 1024×1024 y como mucho 100 000 bytes (1 ms)
+  #155 R3: un único componente pinta los vacíos ilustrados
+    ✓ pinta la pose talk a 160×160 y sin etiqueta (55 ms)
+    ✓ pinta la pose sleep a 160×160 y sin etiqueta (7 ms)
+    ✓ pinta la pose clipboard a 160×160 y sin etiqueta (6 ms)
+    ✓ pinta la pose health a 160×160 y sin etiqueta (8 ms)
+    ✓ pinta la pose collar a 160×160 y sin etiqueta (6 ms)
+    ✓ pinta la pose food a 160×160 y sin etiqueta (6 ms)
+    ✓ pinta el contenedor sin tarjeta (5 ms)
+    ✓ pinta el título y el cuerpo con sus clases (5 ms)
+    ✓ sin acción no pinta botón (6 ms)
+    ✓ con acción pinta el botón y lo pulsa una vez (61 ms)
+    ✓ declara el botón primario sin labio (1 ms)
+  #155 R10: los vacíos que no se ilustran siguen en texto
+    ✓ src/screens/health/index.tsx abre <Text testID="vaccines-empty"> una sola vez (1 ms)
+    ✓ src/screens/health/index.tsx abre <Text testID="weight-card-empty"> una sola vez
+    ✓ src/components/weight-chart.tsx abre <Text testID="weight-chart-empty"> una sola vez (1 ms)
+    ✓ src/screens/home/weekly-activity-chart.tsx abre <Text testID="weekly-activity-empty"> una sola vez
+    ✓ src/screens/meals-history/index.tsx abre <Text testID="meals-history-empty"> una sola vez (1 ms)
+    ✓ src/screens/meals-history/index.tsx abre <Text testID="meals-history-detail-empty"> una sola vez
+    ✓ src/screens/meal-schedule/index.tsx abre <Text testID="nutrition-profile-empty"> una sola vez (1 ms)
+    ✓ src/screens/meal-schedule/index.tsx abre <Text testID="meal-schedule-empty"> una sola vez
+    ✓ src/screens/profile/index.tsx abre <Text testID="profile-pets-empty"> una sola vez
+    ✓ src/screens/weight-log/index.tsx abre <Text testID="weight-log-empty"> una sola vez (1 ms)
+    ✓ src/screens/map/index.tsx abre <Text testID="map-empty"> una sola vez (6 ms)
+    ✓ src/screens/map/index.tsx abre <Card testID="map-empty-overlay"> una sola vez
+    ✓ src/screens/home/index.tsx pinta 1 EmptyState (1 ms)
+    ✓ src/screens/health/index.tsx pinta 1 EmptyState (1 ms)
+    ✓ src/app/(tabs)/food.tsx pinta 2 EmptyState
+    ✓ src/screens/map/index.tsx pinta 1 EmptyState (1 ms)
+    ✓ src/screens/alerts/index.tsx pinta 1 EmptyState
+    ✓ src/screens/reminders/index.tsx pinta 1 EmptyState
+    ✓ src/screens/docs/index.tsx pinta 1 EmptyState
+    ✓ src/screens/geofences/index.tsx pinta 1 EmptyState
+    ✓ ningún otro fichero usa EmptyState (11 ms)
+  #155 R11: los vacíos no traen movimiento ni dependencias
+    ✓ EmptyState solo importa de react, react-native, expo-image y heroui-native
+    ✓ EmptyState no anima (1 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       59 passed, 59 total
+Snapshots:   0 total
+Time:        2.963 s
+Ran all test suites matching /src\/components\/__tests__\/empty-state.test.tsx/i.
+```
+
+Nota de ejecución: la primera extracción Markdown terminó en `StopIteration` antes de escribir el fichero de tests. Por ello, la primera medida R3 ejecutó la base intacta de 59 tests (exit=0), no los candados nuevos; no se ejecutó ninguna cadena ni commit. Se corrigió el reconocimiento de las vallas Markdown indentadas, conservando los tres it byte a byte (salvo indentación). Ningún candado añadido nació rojo ni se ajustó ningún valor esperado.
+
+### E2 R3 — Jest
+
+```sh
+FORCE_COLOR=0 bunx jest src/components/__tests__/empty-state.test.tsx > /tmp/155-e2-r3.txt 2>&1; echo "exit=$?"
+```
+
+```text
+Test Suites: 1 passed, 1 total
+Tests:       62 passed, 62 total
+exit=0
+```
+
+### E2 R3 — GUARDAS
+
+```sh
+FORCE_COLOR=0 bunx jest src/__tests__/ui-language.test.ts src/__tests__/design-drift.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/155-e2-r3-guardas.txt 2>&1; echo "exit=$?"
+```
+
+```text
+Test Suites: 4 passed, 4 total
+Tests:       174 passed, 174 total
+exit=0
+```
+
+### E2 R3 — cadena de commit
+
+```sh
+grep -qE '^Tests: +62 passed, 62 total$' /tmp/155-e2-r3.txt \
+  && grep -qE '^Tests: +174 passed, 174 total$' /tmp/155-e2-r3-guardas.txt \
+  && test ! -e .expo/types/router.d.ts && bun run typecheck && bun run lint \
+  && git add src/components/__tests__/empty-state.test.tsx \
+  && test "$(git diff --cached --name-only)" = mobile-pet-tracker/src/components/__tests__/empty-state.test.tsx \
+  && git commit -m 'test(mobile-empty-states): #155 R3 candado de orden y botón'
+```
+
+```text
+[feature/155-mobile-empty-states-pingo d84b47ae] test(mobile-empty-states): #155 R3 candado de orden y botón
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 1 file changed, 29 insertions(+), 1 deletion(-)
+$ tsc --noEmit
+$ expo lint
+
+exit=0
+```
+
+Commit E2 R3: `d84b47ae test(mobile-empty-states): #155 R3 candado de orden y botón`. Typecheck: exit=0. Lint: exit=0.
+
+### E2 R11 — Jest
+
+```sh
+FORCE_COLOR=0 bunx jest src/components/__tests__/empty-state.test.tsx > /tmp/155-e2-r11.txt 2>&1; echo "exit=$?"
+```
+
+```text
+Test Suites: 1 passed, 1 total
+Tests:       64 passed, 64 total
+exit=0
+```
+
+### E2 R11 — GUARDAS
+
+```sh
+FORCE_COLOR=0 bunx jest src/__tests__/ui-language.test.ts src/__tests__/design-drift.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/155-e2-r11-guardas.txt 2>&1; echo "exit=$?"
+```
+
+```text
+Test Suites: 4 passed, 4 total
+Tests:       174 passed, 174 total
+exit=0
+```
+
+### E2 R11 — cadena de commit
+
+```sh
+grep -qE '^Tests: +64 passed, 64 total$' /tmp/155-e2-r11.txt \
+  && grep -qE '^Tests: +174 passed, 174 total$' /tmp/155-e2-r11-guardas.txt \
+  && test ! -e .expo/types/router.d.ts && bun run typecheck && bun run lint \
+  && git add src/components/__tests__/empty-state.test.tsx \
+  && test "$(git diff --cached --name-only)" = mobile-pet-tracker/src/components/__tests__/empty-state.test.tsx \
+  && git commit -m 'test(mobile-empty-states): #155 R11 candado de Animated y transiciones'
+```
+
+```text
+[feature/155-mobile-empty-states-pingo d4063486] test(mobile-empty-states): #155 R11 candado de Animated y transiciones
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 1 file changed, 16 insertions(+)
+$ tsc --noEmit
+$ expo lint
+
+exit=0
+```
+
+Commit E2 R11: `d4063486 test(mobile-empty-states): #155 R11 candado de Animated y transiciones`. Typecheck: exit=0. Lint: exit=0.
+
+### E2 R4 — Jest
+
+```sh
+FORCE_COLOR=0 bunx jest src/screens/home/index.test.tsx src/screens/health/index.test.tsx 'src/app/\(tabs\)/__tests__/food.test.tsx' src/screens/map/index.test.tsx > /tmp/155-e2-r4.txt 2>&1; echo "exit=$?"
+```
+
+```text
+Test Suites: 4 passed, 4 total
+Tests:       447 passed, 447 total
+exit=0
+```
+
+### E2 R4 — GUARDAS
+
+```sh
+FORCE_COLOR=0 bunx jest src/__tests__/ui-language.test.ts src/__tests__/design-drift.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/155-e2-r4-guardas.txt 2>&1; echo "exit=$?"
+```
+
+```text
+Test Suites: 4 passed, 4 total
+Tests:       174 passed, 174 total
+exit=0
+```
+
+### E2 R4 — cadena de commit
+
+```sh
+grep -qE '^Tests: +447 passed, 447 total$' /tmp/155-e2-r4.txt \
+  && grep -qE '^Tests: +174 passed, 174 total$' /tmp/155-e2-r4-guardas.txt \
+  && test ! -e .expo/types/router.d.ts && bun run typecheck && bun run lint \
+  && git add src/screens/home/index.test.tsx src/screens/health/index.test.tsx 'src/app/(tabs)/__tests__/food.test.tsx' src/screens/map/index.test.tsx \
+  && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'mobile-pet-tracker/src/app/(tabs)/__tests__/food.test.tsx mobile-pet-tracker/src/screens/health/index.test.tsx mobile-pet-tracker/src/screens/home/index.test.tsx mobile-pet-tracker/src/screens/map/index.test.tsx ' \
+  && git commit -m 'test(mobile-empty-states): #155 R4 candado de sitio'
+```
+
+```text
+[feature/155-mobile-empty-states-pingo b4abfe7d] test(mobile-empty-states): #155 R4 candado de sitio
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 4 files changed, 37 insertions(+)
+$ tsc --noEmit
+$ expo lint
+
+exit=0
+```
+
+Commit E2 R4: `b4abfe7d test(mobile-empty-states): #155 R4 candado de sitio`. Typecheck: exit=0. Lint: exit=0.
+
+### E2 R5 — Jest
+
+```sh
+FORCE_COLOR=0 bunx jest src/screens/alerts/index.test.tsx > /tmp/155-e2-r5.txt 2>&1; echo "exit=$?"
+```
+
+```text
+Test Suites: 1 passed, 1 total
+Tests:       39 passed, 39 total
+exit=0
+```
+
+### E2 R5 — GUARDAS
+
+```sh
+FORCE_COLOR=0 bunx jest src/__tests__/ui-language.test.ts src/__tests__/design-drift.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/155-e2-r5-guardas.txt 2>&1; echo "exit=$?"
+```
+
+```text
+Test Suites: 4 passed, 4 total
+Tests:       174 passed, 174 total
+exit=0
+```
+
+### E2 R5 — cadena de commit
+
+```sh
+grep -qE '^Tests: +39 passed, 39 total$' /tmp/155-e2-r5.txt \
+  && grep -qE '^Tests: +174 passed, 174 total$' /tmp/155-e2-r5-guardas.txt \
+  && test ! -e .expo/types/router.d.ts && bun run typecheck && bun run lint \
+  && git add src/screens/alerts/index.test.tsx \
+  && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'mobile-pet-tracker/src/screens/alerts/index.test.tsx ' \
+  && git commit -m 'test(mobile-empty-states): #155 R5 candado de sitio'
+```
+
+```text
+[feature/155-mobile-empty-states-pingo 96bda091] test(mobile-empty-states): #155 R5 candado de sitio
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 1 file changed, 9 insertions(+)
+$ tsc --noEmit
+$ expo lint
+
+exit=0
+```
+
+Commit E2 R5: `96bda091 test(mobile-empty-states): #155 R5 candado de sitio`. Typecheck: exit=0. Lint: exit=0.
+
+### E2 R6 — Jest
+
+```sh
+FORCE_COLOR=0 bunx jest src/screens/reminders/index.test.tsx > /tmp/155-e2-r6.txt 2>&1; echo "exit=$?"
+```
+
+```text
+Test Suites: 1 passed, 1 total
+Tests:       34 passed, 34 total
+exit=0
+```
+
+### E2 R6 — GUARDAS
+
+```sh
+FORCE_COLOR=0 bunx jest src/__tests__/ui-language.test.ts src/__tests__/design-drift.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/155-e2-r6-guardas.txt 2>&1; echo "exit=$?"
+```
+
+```text
+Test Suites: 4 passed, 4 total
+Tests:       174 passed, 174 total
+exit=0
+```
+
+### E2 R6 — cadena de commit
+
+```sh
+grep -qE '^Tests: +34 passed, 34 total$' /tmp/155-e2-r6.txt \
+  && grep -qE '^Tests: +174 passed, 174 total$' /tmp/155-e2-r6-guardas.txt \
+  && test ! -e .expo/types/router.d.ts && bun run typecheck && bun run lint \
+  && git add src/screens/reminders/index.test.tsx \
+  && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'mobile-pet-tracker/src/screens/reminders/index.test.tsx ' \
+  && git commit -m 'test(mobile-empty-states): #155 R6 candado de sitio'
+```
+
+```text
+[feature/155-mobile-empty-states-pingo 5b24557c] test(mobile-empty-states): #155 R6 candado de sitio
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 1 file changed, 19 insertions(+)
+$ tsc --noEmit
+$ expo lint
+
+exit=0
+```
+
+Commit E2 R6: `5b24557c test(mobile-empty-states): #155 R6 candado de sitio`. Typecheck: exit=0. Lint: exit=0.
+
+### E2 R7 — Jest
+
+```sh
+FORCE_COLOR=0 bunx jest src/screens/docs/index.test.tsx > /tmp/155-e2-r7.txt 2>&1; echo "exit=$?"
+```
+
+```text
+Test Suites: 1 passed, 1 total
+Tests:       16 passed, 16 total
+exit=0
+```
+
+### E2 R7 — GUARDAS
+
+```sh
+FORCE_COLOR=0 bunx jest src/__tests__/ui-language.test.ts src/__tests__/design-drift.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/155-e2-r7-guardas.txt 2>&1; echo "exit=$?"
+```
+
+```text
+Test Suites: 4 passed, 4 total
+Tests:       174 passed, 174 total
+exit=0
+```
+
+### E2 R7 — cadena de commit
+
+```sh
+grep -qE '^Tests: +16 passed, 16 total$' /tmp/155-e2-r7.txt \
+  && grep -qE '^Tests: +174 passed, 174 total$' /tmp/155-e2-r7-guardas.txt \
+  && test ! -e .expo/types/router.d.ts && bun run typecheck && bun run lint \
+  && git add src/screens/docs/index.test.tsx \
+  && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'mobile-pet-tracker/src/screens/docs/index.test.tsx ' \
+  && git commit -m 'test(mobile-empty-states): #155 R7 candado de sitio'
+```
+
+```text
+[feature/155-mobile-empty-states-pingo bedbfb8f] test(mobile-empty-states): #155 R7 candado de sitio
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 1 file changed, 10 insertions(+)
+$ tsc --noEmit
+$ expo lint
+
+exit=0
+```
+
+Commit E2 R7: `bedbfb8f test(mobile-empty-states): #155 R7 candado de sitio`. Typecheck: exit=0. Lint: exit=0.
+
+### E2 R8 — Jest
+
+```sh
+FORCE_COLOR=0 bunx jest src/screens/geofences/index.test.tsx > /tmp/155-e2-r8.txt 2>&1; echo "exit=$?"
+```
+
+```text
+Test Suites: 1 passed, 1 total
+Tests:       51 passed, 51 total
+exit=0
+```
+
+### E2 R8 — GUARDAS
+
+```sh
+FORCE_COLOR=0 bunx jest src/__tests__/ui-language.test.ts src/__tests__/design-drift.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/155-e2-r8-guardas.txt 2>&1; echo "exit=$?"
+```
+
+```text
+Test Suites: 4 passed, 4 total
+Tests:       174 passed, 174 total
+exit=0
+```
+
+### E2 R8 — cadena de commit
+
+```sh
+grep -qE '^Tests: +51 passed, 51 total$' /tmp/155-e2-r8.txt \
+  && grep -qE '^Tests: +174 passed, 174 total$' /tmp/155-e2-r8-guardas.txt \
+  && test ! -e .expo/types/router.d.ts && bun run typecheck && bun run lint \
+  && git add src/screens/geofences/index.test.tsx \
+  && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'mobile-pet-tracker/src/screens/geofences/index.test.tsx ' \
+  && git commit -m 'test(mobile-empty-states): #155 R8 candado de sitio'
+```
+
+```text
+[feature/155-mobile-empty-states-pingo 397bbc2e] test(mobile-empty-states): #155 R8 candado de sitio
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 1 file changed, 9 insertions(+)
+$ tsc --noEmit
+$ expo lint
+
+exit=0
+```
+
+Commit E2 R8: `397bbc2e test(mobile-empty-states): #155 R8 candado de sitio`. Typecheck: exit=0. Lint: exit=0.
+
+### E2 R9 — Jest
+
+```sh
+FORCE_COLOR=0 bunx jest 'src/app/\(tabs\)/__tests__/food.test.tsx' > /tmp/155-e2-r9.txt 2>&1; echo "exit=$?"
+```
+
+```text
+Test Suites: 1 passed, 1 total
+Tests:       63 passed, 63 total
+exit=0
+```
+
+### E2 R9 — GUARDAS
+
+```sh
+FORCE_COLOR=0 bunx jest src/__tests__/ui-language.test.ts src/__tests__/design-drift.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/155-e2-r9-guardas.txt 2>&1; echo "exit=$?"
+```
+
+```text
+Test Suites: 4 passed, 4 total
+Tests:       174 passed, 174 total
+exit=0
+```
+
+### E2 R9 — cadena de commit
+
+```sh
+grep -qE '^Tests: +63 passed, 63 total$' /tmp/155-e2-r9.txt \
+  && grep -qE '^Tests: +174 passed, 174 total$' /tmp/155-e2-r9-guardas.txt \
+  && test ! -e .expo/types/router.d.ts && bun run typecheck && bun run lint \
+  && git add 'src/app/(tabs)/__tests__/food.test.tsx' \
+  && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'mobile-pet-tracker/src/app/(tabs)/__tests__/food.test.tsx ' \
+  && git commit -m 'test(mobile-empty-states): #155 R9 candado de sitio'
+```
+
+```text
+[feature/155-mobile-empty-states-pingo 2a589c65] test(mobile-empty-states): #155 R9 candado de sitio
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 1 file changed, 9 insertions(+)
+$ tsc --noEmit
+$ expo lint
+
+exit=0
+```
+
+Commit E2 R9: `2a589c65 test(mobile-empty-states): #155 R9 candado de sitio`. Typecheck: exit=0. Lint: exit=0.
+
+### E2-S1 — sonda sobre HEAD
+
+```sh
+Mutación E2.5 en src/components/empty-state.tsx
+FORCE_COLOR=0 bunx jest src/components/__tests__/empty-state.test.tsx > /tmp/155-e2-s1.txt 2>&1; echo "exit=$?"
+```
+
+```text
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 62 passed, 64 total
+exit=1
+
+● #155 R3: un único componente pinta los vacíos ilustrados › con acción pinta pose, título, cuerpo y botón como hijos directos, en ese orden
+expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Array [
+        "probe-pose",
+    -   "probe-title",
+        "probe-body",
+    +   "probe-title",
+        "probe-action",
+      ]
+
+● #155 R3: un único componente pinta los vacíos ilustrados › sin acción pinta pose, título y cuerpo como hijos directos, en ese orden
+expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Array [
+        "probe-pose",
+    -   "probe-title",
+        "probe-body",
+    +   "probe-title",
+      ]
+```
+
+### E2-S1 — reversión
+
+```sh
+git checkout HEAD -- src/components/empty-state.tsx && git diff --cached --quiet && git diff --quiet -- . && test -z "$(git ls-files --others --exclude-standard -- .)"; echo "limpio=$?"
+```
+
+```text
+limpio=0
+```
+
+### E2-S2 — sonda sobre HEAD
+
+```sh
+Mutación E2.5 en src/components/empty-state.tsx
+FORCE_COLOR=0 bunx jest src/components/__tests__/empty-state.test.tsx > /tmp/155-e2-s2.txt 2>&1; echo "exit=$?"
+```
+
+```text
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 62 passed, 64 total
+exit=1
+
+● #155 R3: un único componente pinta los vacíos ilustrados › con acción pinta pose, título, cuerpo y botón como hijos directos, en ese orden
+expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Array [
+    -   "probe-pose",
+    +   "View",
+        "probe-title",
+        "probe-body",
+        "probe-action",
+      ]
+
+● #155 R3: un único componente pinta los vacíos ilustrados › sin acción pinta pose, título y cuerpo como hijos directos, en ese orden
+expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Array [
+    -   "probe-pose",
+    +   "View",
+        "probe-title",
+        "probe-body",
+      ]
+```
+
+### E2-S2 — reversión
+
+```sh
+git checkout HEAD -- src/components/empty-state.tsx && git diff --cached --quiet && git diff --quiet -- . && test -z "$(git ls-files --others --exclude-standard -- .)"; echo "limpio=$?"
+```
+
+```text
+limpio=0
+```
+
+### E2-S3 — sonda sobre HEAD
+
+```sh
+Mutación E2.5 en src/components/empty-state.tsx
+FORCE_COLOR=0 bunx jest src/components/__tests__/empty-state.test.tsx > /tmp/155-e2-s3.txt 2>&1; echo "exit=$?"
+```
+
+```text
+Test Suites: 1 failed, 1 total
+Tests:       3 failed, 61 passed, 64 total
+exit=1
+
+● #155 R3: un único componente pinta los vacíos ilustrados › con acción pinta pose, título, cuerpo y botón como hijos directos, en ese orden
+expect(received).toBe(expected) // Object.is equality
+
+    - Expected  - 4
+    + Received  + 0
+
+    @@ -1,9 +1,6 @@
+      <View
+    -   testID="probe-frame"
+    - >
+    -   <View
+        className="surface__root surface__root--variant-default bg-surface"
+        style={
+          Array [
+            Object {
+              "borderCurve": "continuous",
+    @@ -181,9 +178,8 @@
+            <Text
+              className="button__label button__label--variant-primary button__label--size-md font-bold text-accent-foreground"
+            >
+              Acción de prueba
+            </Text>
+    -       </View>
+          </View>
+        </View>
+      </View>
+
+● #155 R3: un único componente pinta los vacíos ilustrados › sin acción pinta pose, título y cuerpo como hijos directos, en ese orden
+expect(received).toBe(expected) // Object.is equality
+
+    - Expected  - 4
+    + Received  + 0
+
+    @@ -1,9 +1,6 @@
+      <View
+    -   testID="probe-frame"
+    - >
+    -   <View
+        className="surface__root surface__root--variant-default bg-surface"
+        style={
+          Array [
+            Object {
+              "borderCurve": "continuous",
+    @@ -62,8 +59,7 @@
+            className="text-center font-normal text-muted"
+            testID="probe-body"
+          >
+            Cuerpo de prueba.
+          </Text>
+    -     </View>
+        </View>
+      </View>
+
+● #155 R11: los vacíos no traen movimiento ni dependencias › EmptyState importa exactamente Image, Button, Text y View
+expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Array [
+        "import { Image } from 'expo-image';",
+    -   "import { Button } from 'heroui-native';",
+    +   "import { Button, Card } from 'heroui-native';",
+        "import { Text, View } from 'react-native';",
+      ]
+```
+
+### E2-S3 — reversión
+
+```sh
+git checkout HEAD -- src/components/empty-state.tsx && git diff --cached --quiet && git diff --quiet -- . && test -z "$(git ls-files --others --exclude-standard -- .)"; echo "limpio=$?"
+```
+
+```text
+limpio=0
+```
+
+### E2-S4 — sonda sobre HEAD
+
+```sh
+Mutación E2.5 en src/components/empty-state.tsx
+FORCE_COLOR=0 bunx jest src/components/__tests__/empty-state.test.tsx > /tmp/155-e2-s4.txt 2>&1; echo "exit=$?"
+```
+
+```text
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 62 passed, 64 total
+exit=1
+
+● #155 R3: un único componente pinta los vacíos ilustrados › con acción pinta pose, título, cuerpo y botón como hijos directos, en ese orden
+expect(received).toBe(expected) // Object.is equality
+
+    - Expected  - 4
+    + Received  + 0
+
+    @@ -1,9 +1,6 @@
+      <View
+    -   testID="probe-frame"
+    - >
+    -   <View
+        className="bg-surface"
+      >
+        <View
+          className="items-center gap-3 py-8"
+          testID="probe"
+    @@ -201,9 +198,8 @@
+            <Text
+              className="button__label button__label--variant-primary button__label--size-md font-bold text-accent-foreground"
+            >
+              Acción de prueba
+            </Text>
+    -       </View>
+          </View>
+        </View>
+      </View>
+
+● #155 R3: un único componente pinta los vacíos ilustrados › sin acción pinta pose, título y cuerpo como hijos directos, en ese orden
+expect(received).toBe(expected) // Object.is equality
+
+    - Expected  - 4
+    + Received  + 0
+
+    @@ -1,9 +1,6 @@
+      <View
+    -   testID="probe-frame"
+    - >
+    -   <View
+        className="bg-surface"
+      >
+        <View
+          className="items-center gap-3 py-8"
+          testID="probe"
+    @@ -54,8 +51,7 @@
+            className="text-center font-normal text-muted"
+            testID="probe-body"
+          >
+            Cuerpo de prueba.
+          </Text>
+    -     </View>
+        </View>
+      </View>
+```
+
+### E2-S4 — reversión
+
+```sh
+git checkout HEAD -- src/components/empty-state.tsx && git diff --cached --quiet && git diff --quiet -- . && test -z "$(git ls-files --others --exclude-standard -- .)"; echo "limpio=$?"
+```
+
+```text
+limpio=0
+```
+
+### E2-S5 — sonda sobre HEAD
+
+```sh
+Mutación E2.5 en src/components/empty-state.tsx
+FORCE_COLOR=0 bunx jest src/components/__tests__/empty-state.test.tsx > /tmp/155-e2-s5.txt 2>&1; echo "exit=$?"
+```
+
+```text
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 63 passed, 64 total
+exit=1
+
+● #155 R3: un único componente pinta los vacíos ilustrados › declara el botón sin size ni variant
+expect(received).toContain(expected) // indexOf
+
+    Expected substring: "<Button testID={`${testID}-action`} className=\"rounded-xl bg-accent\" onPress={action.onPress}>"
+    Received string:    "import { Image } from 'expo-image';
+    import { Button } from 'heroui-native';
+    import { Text, View } from 'react-native';·
+    export type EmptyStatePose = 'talk' | 'sleep' | 'clipboard' | 'health' | 'collar' | 'food';·
+    const POSES = {
+      talk: require('../../assets/images/pingo-talk.webp'),
+      sleep: require('../../assets/images/pingo-sleep.webp'),
+      clipboard: require('../../assets/images/pingo-clipboard.webp'),
+      health: require('../../assets/images/pingo-health.webp'),
+      collar: require('../../assets/images/pingo-collar.webp'),
+      food: require('../../assets/images/pingo-food.webp'),
+    };·
+    type EmptyStateProps = {
+      testID: string;
+      pose: EmptyStatePose;
+      title: string;
+      body: string;
+      action?: { label: string; onPress: () => void };
+    };·
+    export function EmptyState({ testID, pose, title, body, action }: EmptyStateProps) {
+      return (
+    [Received recortado a 20 líneas]
+```
+
+### E2-S5 — reversión
+
+```sh
+git checkout HEAD -- src/components/empty-state.tsx && git diff --cached --quiet && git diff --quiet -- . && test -z "$(git ls-files --others --exclude-standard -- .)"; echo "limpio=$?"
+```
+
+```text
+limpio=0
+```
+
+### E2-S6 — sonda sobre HEAD
+
+```sh
+Mutación E2.5 en src/components/empty-state.tsx
+FORCE_COLOR=0 bunx jest src/components/__tests__/empty-state.test.tsx > /tmp/155-e2-s6.txt 2>&1; echo "exit=$?"
+```
+
+```text
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 63 passed, 64 total
+exit=1
+
+● #155 R3: un único componente pinta los vacíos ilustrados › declara el botón sin size ni variant
+expect(received).toContain(expected) // indexOf
+
+    Expected substring: "<Button testID={`${testID}-action`} className=\"rounded-xl bg-accent\" onPress={action.onPress}>"
+    Received string:    "import { Image } from 'expo-image';
+    import { Button } from 'heroui-native';
+    import { Text, View } from 'react-native';·
+    export type EmptyStatePose = 'talk' | 'sleep' | 'clipboard' | 'health' | 'collar' | 'food';·
+    const POSES = {
+      talk: require('../../assets/images/pingo-talk.webp'),
+      sleep: require('../../assets/images/pingo-sleep.webp'),
+      clipboard: require('../../assets/images/pingo-clipboard.webp'),
+      health: require('../../assets/images/pingo-health.webp'),
+      collar: require('../../assets/images/pingo-collar.webp'),
+      food: require('../../assets/images/pingo-food.webp'),
+    };·
+    type EmptyStateProps = {
+      testID: string;
+      pose: EmptyStatePose;
+      title: string;
+      body: string;
+      action?: { label: string; onPress: () => void };
+    };·
+    export function EmptyState({ testID, pose, title, body, action }: EmptyStateProps) {
+      return (
+    [Received recortado a 20 líneas]
+```
+
+### E2-S6 — reversión
+
+```sh
+git checkout HEAD -- src/components/empty-state.tsx && git diff --cached --quiet && git diff --quiet -- . && test -z "$(git ls-files --others --exclude-standard -- .)"; echo "limpio=$?"
+```
+
+```text
+limpio=0
+```
+
+### E2-S7 — sonda sobre HEAD
+
+```sh
+Mutación E2.5 en src/components/empty-state.tsx
+FORCE_COLOR=0 bunx jest src/components/__tests__/empty-state.test.tsx > /tmp/155-e2-s7.txt 2>&1; echo "exit=$?"
+```
+
+```text
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 62 passed, 64 total
+exit=1
+
+● #155 R11: los vacíos no traen movimiento ni dependencias › EmptyState importa exactamente Image, Button, Text y View
+expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 2
+
+      Array [
+    +   "import { useEffect, useRef } from 'react';",
+        "import { Image } from 'expo-image';",
+        "import { Button } from 'heroui-native';",
+    -   "import { Text, View } from 'react-native';",
+    +   "import { Animated, Text, View } from 'react-native';",
+      ]
+
+● #155 R11: los vacíos no traen movimiento ni dependencias › EmptyState no anima con Animated, LayoutAnimation ni transiciones
+expect(received).not.toMatch(expected)
+
+    Expected pattern: not /\bAnimated\b|LayoutAnimation|transition|animate-/
+    Received string:      "import { useEffect, useRef } from 'react';
+    import { Image } from 'expo-image';
+    import { Button } from 'heroui-native';
+    import { Animated, Text, View } from 'react-native';
+
+    export type EmptyStatePose = 'talk' | 'sleep' | 'clipboard' | 'health' | 'collar' | 'food';
+
+    const POSES = {
+      talk: require('../../assets/images/pingo-talk.webp'),
+      sleep: require('../../assets/images/pingo-sleep.webp'),
+      clipboard: require('../../assets/images/pingo-clipboard.webp'),
+      health: require('../../assets/images/pingo-health.webp'),
+      collar: require('../../assets/images/pingo-collar.webp'),
+      food: require('../../assets/images/pingo-food.webp'),
+    };
+
+    type EmptyStateProps = {
+      testID: string;
+      pose: EmptyStatePose;
+      title: string;
+      body: string;
+    [Received recortado a 20 líneas]
+```
+
+### E2-S7 — reversión
+
+```sh
+git checkout HEAD -- src/components/empty-state.tsx && git diff --cached --quiet && git diff --quiet -- . && test -z "$(git ls-files --others --exclude-standard -- .)"; echo "limpio=$?"
+```
+
+```text
+limpio=0
+```
+
+### E2-S8 — sonda sobre HEAD
+
+```sh
+Mutación E2.5 en src/components/empty-state.tsx
+FORCE_COLOR=0 bunx jest src/components/__tests__/empty-state.test.tsx > /tmp/155-e2-s8.txt 2>&1; echo "exit=$?"
+```
+
+```text
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 63 passed, 64 total
+exit=1
+
+● #155 R11: los vacíos no traen movimiento ni dependencias › EmptyState no anima con Animated, LayoutAnimation ni transiciones
+expect(received).not.toMatch(expected)
+
+    Expected pattern: not /\bAnimated\b|LayoutAnimation|transition|animate-/
+    Received string:      "import { Image } from 'expo-image';
+    import { Button } from 'heroui-native';
+    import { Text, View } from 'react-native';
+
+    export type EmptyStatePose = 'talk' | 'sleep' | 'clipboard' | 'health' | 'collar' | 'food';
+
+    const POSES = {
+      talk: require('../../assets/images/pingo-talk.webp'),
+      sleep: require('../../assets/images/pingo-sleep.webp'),
+      clipboard: require('../../assets/images/pingo-clipboard.webp'),
+      health: require('../../assets/images/pingo-health.webp'),
+      collar: require('../../assets/images/pingo-collar.webp'),
+      food: require('../../assets/images/pingo-food.webp'),
+    };
+
+    type EmptyStateProps = {
+      testID: string;
+      pose: EmptyStatePose;
+      title: string;
+      body: string;
+      action?: { label: string; onPress: () => void };
+    [Received recortado a 20 líneas]
+```
+
+### E2-S8 — reversión
+
+```sh
+git checkout HEAD -- src/components/empty-state.tsx && git diff --cached --quiet && git diff --quiet -- . && test -z "$(git ls-files --others --exclude-standard -- .)"; echo "limpio=$?"
+```
+
+```text
+limpio=0
+```
+
+### E2-S9 — sonda sobre HEAD
+
+```sh
+Mutación E2.5 en src/components/empty-state.tsx
+FORCE_COLOR=0 bunx jest src/components/__tests__/empty-state.test.tsx > /tmp/155-e2-s9.txt 2>&1; echo "exit=$?"
+```
+
+```text
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 62 passed, 64 total
+exit=1
+
+● #155 R11: los vacíos no traen movimiento ni dependencias › EmptyState importa exactamente Image, Button, Text y View
+expect(received).toHaveLength(expected)
+
+    Expected length: 6
+    Received length: 7
+    Received array:  ["require(", "require(", "require(", "require(", "require(", "require(", "require("]
+
+● #155 R11: los vacíos no traen movimiento ni dependencias › EmptyState no anima con Animated, LayoutAnimation ni transiciones
+expect(received).not.toMatch(expected)
+
+    Expected pattern: not /\bAnimated\b|LayoutAnimation|transition|animate-/
+    Received string:      "import { Image } from 'expo-image';
+    import { Button } from 'heroui-native';
+    import { Text, View } from 'react-native';
+
+    export type EmptyStatePose = 'talk' | 'sleep' | 'clipboard' | 'health' | 'collar' | 'food';
+
+    const POSES = {
+      talk: require('../../assets/images/pingo-talk.webp'),
+      sleep: require('../../assets/images/pingo-sleep.webp'),
+      clipboard: require('../../assets/images/pingo-clipboard.webp'),
+      health: require('../../assets/images/pingo-health.webp'),
+      collar: require('../../assets/images/pingo-collar.webp'),
+      food: require('../../assets/images/pingo-food.webp'),
+    };
+
+    type EmptyStateProps = {
+      testID: string;
+      pose: EmptyStatePose;
+      title: string;
+      body: string;
+      action?: { label: string; onPress: () => void };
+    [Received recortado a 20 líneas]
+```
+
+### E2-S9 — reversión
+
+```sh
+git checkout HEAD -- src/components/empty-state.tsx && git diff --cached --quiet && git diff --quiet -- . && test -z "$(git ls-files --others --exclude-standard -- .)"; echo "limpio=$?"
+```
+
+```text
+limpio=0
+```
+
+### E2-S10 — sonda sobre HEAD
+
+```sh
+Mutación E2.5 en src/screens/home/index.tsx
+FORCE_COLOR=0 bunx jest src/screens/home/index.test.tsx > /tmp/155-e2-s10.txt 2>&1; echo "exit=$?"
+```
+
+```text
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 220 passed, 221 total
+exit=1
+
+● #155 R4: Inicio sin mascotas presenta a Pingo › queda en el sitio del vacío que sustituye
+expect(received).toBe(expected) // Object.is equality
+
+    Expected: "home-states"
+    Received: undefined
+```
+
+### E2-S10 — reversión
+
+```sh
+git checkout HEAD -- src/screens/home/index.tsx && git diff --cached --quiet && git diff --quiet -- . && test -z "$(git ls-files --others --exclude-standard -- .)"; echo "limpio=$?"
+```
+
+```text
+limpio=0
+```
+
+### E2-S11 — sonda sobre HEAD
+
+```sh
+Mutación E2.5 en src/screens/health/index.tsx
+FORCE_COLOR=0 bunx jest src/screens/health/index.test.tsx > /tmp/155-e2-s11.txt 2>&1; echo "exit=$?"
+```
+
+```text
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 66 passed, 67 total
+exit=1
+
+● #155 R4: Salud sin mascotas presenta a Pingo › queda en el sitio del vacío que sustituye
+expect(received).toBe(expected) // Object.is equality
+
+    Expected: "health-states"
+    Received: undefined
+```
+
+### E2-S11 — reversión
+
+```sh
+git checkout HEAD -- src/screens/health/index.tsx && git diff --cached --quiet && git diff --quiet -- . && test -z "$(git ls-files --others --exclude-standard -- .)"; echo "limpio=$?"
+```
+
+```text
+limpio=0
+```
+
+### E2-S12 — sonda sobre HEAD
+
+```sh
+Mutación E2.5 en src/app/(tabs)/food.tsx
+FORCE_COLOR=0 bunx jest 'src/app/\(tabs\)/__tests__/food.test.tsx' > /tmp/155-e2-s12.txt 2>&1; echo "exit=$?"
+```
+
+```text
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 62 passed, 63 total
+exit=1
+
+● #155 R4: Comida sin mascotas presenta a Pingo › queda en el sitio del vacío que sustituye
+expect(received).toBe(expected) // Object.is equality
+
+    Expected: "screen-food"
+    Received: undefined
+```
+
+### E2-S12 — reversión
+
+```sh
+git checkout HEAD -- 'src/app/(tabs)/food.tsx' && git diff --cached --quiet && git diff --quiet -- . && test -z "$(git ls-files --others --exclude-standard -- .)"; echo "limpio=$?"
+```
+
+```text
+limpio=0
+```
+
+### E2-S13 — sonda sobre HEAD
+
+```sh
+Mutación E2.5 en src/screens/map/index.tsx
+FORCE_COLOR=0 bunx jest src/screens/map/index.test.tsx > /tmp/155-e2-s13.txt 2>&1; echo "exit=$?"
+```
+
+```text
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 96 passed, 97 total
+exit=1
+
+● #155 R4: Mapa sin mascotas presenta a Pingo › queda en el sitio del vacío que sustituye
+expect(received).toBe(expected) // Object.is equality
+
+    Expected: "flex-1 items-center justify-center p-6 bg-background"
+    Received: undefined
+```
+
+### E2-S13 — reversión
+
+```sh
+git checkout HEAD -- src/screens/map/index.tsx && git diff --cached --quiet && git diff --quiet -- . && test -z "$(git ls-files --others --exclude-standard -- .)"; echo "limpio=$?"
+```
+
+```text
+limpio=0
+```
+
+### E2-S14 — sonda sobre HEAD
+
+```sh
+Mutación E2.5 en src/screens/alerts/index.tsx
+FORCE_COLOR=0 bunx jest src/screens/alerts/index.test.tsx > /tmp/155-e2-s14.txt 2>&1; echo "exit=$?"
+```
+
+```text
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 38 passed, 39 total
+exit=1
+
+● #155 R5: sin alertas, Pingo duerme › queda en el sitio del vacío que sustituye
+expect(received).toBe(expected) // Object.is equality
+
+    Expected: "alerts-list"
+    Received: undefined
+```
+
+### E2-S14 — reversión
+
+```sh
+git checkout HEAD -- src/screens/alerts/index.tsx && git diff --cached --quiet && git diff --quiet -- . && test -z "$(git ls-files --others --exclude-standard -- .)"; echo "limpio=$?"
+```
+
+```text
+limpio=0
+```
+
+### E2-S15 — sonda sobre HEAD
+
+```sh
+Mutación E2.5 en src/screens/reminders/index.tsx
+FORCE_COLOR=0 bunx jest src/screens/reminders/index.test.tsx > /tmp/155-e2-s15.txt 2>&1; echo "exit=$?"
+```
+
+```text
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 33 passed, 34 total
+exit=1
+
+● #155 R6: sin recordatorios, Pingo sostiene su lista › queda en el sitio del vacío que sustituye
+expect(received).toBe(expected) // Object.is equality
+
+    Expected: "screen-reminders"
+    Received: undefined
+```
+
+### E2-S15 — reversión
+
+```sh
+git checkout HEAD -- src/screens/reminders/index.tsx && git diff --cached --quiet && git diff --quiet -- . && test -z "$(git ls-files --others --exclude-standard -- .)"; echo "limpio=$?"
+```
+
+```text
+limpio=0
+```
+
+### E2-S16 — sonda sobre HEAD
+
+```sh
+Mutación E2.5 en src/screens/docs/index.tsx
+FORCE_COLOR=0 bunx jest src/screens/docs/index.test.tsx > /tmp/155-e2-s16.txt 2>&1; echo "exit=$?"
+```
+
+```text
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 15 passed, 16 total
+exit=1
+
+● #155 R7: sin documentos, Pingo los guarda › queda en el sitio del vacío que sustituye
+expect(received).toBe(expected) // Object.is equality
+
+    Expected: "screen-docs"
+    Received: undefined
+```
+
+### E2-S16 — reversión
+
+```sh
+git checkout HEAD -- src/screens/docs/index.tsx && git diff --cached --quiet && git diff --quiet -- . && test -z "$(git ls-files --others --exclude-standard -- .)"; echo "limpio=$?"
+```
+
+```text
+limpio=0
+```
+
+### E2-S17 — sonda sobre HEAD
+
+```sh
+Mutación E2.5 en src/screens/geofences/index.tsx
+FORCE_COLOR=0 bunx jest src/screens/geofences/index.test.tsx > /tmp/155-e2-s17.txt 2>&1; echo "exit=$?"
+```
+
+```text
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 50 passed, 51 total
+exit=1
+
+● #155 R8: sin zonas seguras, Pingo enseña el collar › queda en el sitio del vacío que sustituye
+expect(received).toBe(expected) // Object.is equality
+
+    Expected: "screen-geofences"
+    Received: undefined
+```
+
+### E2-S17 — reversión
+
+```sh
+git checkout HEAD -- src/screens/geofences/index.tsx && git diff --cached --quiet && git diff --quiet -- . && test -z "$(git ls-files --others --exclude-standard -- .)"; echo "limpio=$?"
+```
+
+```text
+limpio=0
+```
+
+### E2-S18 — sonda sobre HEAD
+
+```sh
+Mutación E2.5 en src/app/(tabs)/food.tsx
+FORCE_COLOR=0 bunx jest 'src/app/\(tabs\)/__tests__/food.test.tsx' > /tmp/155-e2-s18.txt 2>&1; echo "exit=$?"
+```
+
+```text
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 62 passed, 63 total
+exit=1
+
+● #155 R9: sin plan de comidas, Pingo enseña el cuenco › queda en el sitio del vacío que sustituye
+expect(received).toBe(expected) // Object.is equality
+
+    Expected: "screen-food"
+    Received: undefined
+```
+
+### E2-S18 — reversión
+
+```sh
+git checkout HEAD -- 'src/app/(tabs)/food.tsx' && git diff --cached --quiet && git diff --quiet -- . && test -z "$(git ls-files --others --exclude-standard -- .)"; echo "limpio=$?"
+```
+
+```text
+limpio=0
+```
+
+### E2-S19 — sonda sobre HEAD
+
+```sh
+Mutación E2.5 en src/screens/map/index.tsx
+FORCE_COLOR=0 bunx jest src/screens/map/index.test.tsx > /tmp/155-e2-s19.txt 2>&1; echo "exit=$?"
+```
+
+```text
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 96 passed, 97 total
+exit=1
+
+● #155 R4: Mapa sin mascotas presenta a Pingo › queda en el sitio del vacío que sustituye
+expect(received).toBe(expected) // Object.is equality
+
+    Expected: "flex-1 items-center justify-center p-6 bg-background"
+    Received: undefined
+```
+
+### E2-S19 — reversión
+
+```sh
+git checkout HEAD -- src/screens/map/index.tsx && git diff --cached --quiet && git diff --quiet -- . && test -z "$(git ls-files --others --exclude-standard -- .)"; echo "limpio=$?"
+```
+
+```text
+limpio=0
+```
+
+### E2-S20 — sonda sobre HEAD
+
+```sh
+Mutación E2.5 en src/screens/reminders/index.tsx
+FORCE_COLOR=0 bunx jest src/screens/reminders/index.test.tsx > /tmp/155-e2-s20.txt 2>&1; echo "exit=$?"
+```
+
+```text
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 33 passed, 34 total
+exit=1
+
+● #155 R6: sin recordatorios, Pingo sostiene su lista › queda en el sitio del vacío que sustituye
+expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Array [
+        "reminders-actions",
+    -   "RCTScrollView",
+        "reminders-empty",
+    +   "RCTScrollView",
+        "reminders-delete-host",
+      ]
+```
+
+### E2-S20 — reversión
+
+```sh
+git checkout HEAD -- src/screens/reminders/index.tsx && git diff --cached --quiet && git diff --quiet -- . && test -z "$(git ls-files --others --exclude-standard -- .)"; echo "limpio=$?"
+```
+
+```text
+limpio=0
+```
+
+### E2-S21 — sonda sobre HEAD
+
+```sh
+Mutación E2.5 en src/app/(tabs)/food.tsx
+FORCE_COLOR=0 bunx jest 'src/app/\(tabs\)/__tests__/food.test.tsx' > /tmp/155-e2-s21.txt 2>&1; echo "exit=$?"
+```
+
+```text
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 62 passed, 63 total
+exit=1
+
+● #155 R9: sin plan de comidas, Pingo enseña el cuenco › queda en el sitio del vacío que sustituye
+expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Array [
+    -   "food-plan-empty",
+        "meal-schedule-link",
+        "meals-history-link",
+    +   "food-plan-empty",
+      ]
+```
+
+### E2-S21 — reversión
+
+```sh
+git checkout HEAD -- 'src/app/(tabs)/food.tsx' && git diff --cached --quiet && git diff --quiet -- . && test -z "$(git ls-files --others --exclude-standard -- .)"; echo "limpio=$?"
+```
+
+```text
+limpio=0
+```
+
+### E2-S22 — sonda sobre HEAD
+
+```sh
+Mutación E2.5 en src/app/(tabs)/food.tsx
+FORCE_COLOR=0 bunx jest 'src/app/\(tabs\)/__tests__/food.test.tsx' > /tmp/155-e2-s22.txt 2>&1; echo "exit=$?"
+```
+
+```text
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 62 passed, 63 total
+exit=1
+
+● #155 R9: sin plan de comidas, Pingo enseña el cuenco › queda en el sitio del vacío que sustituye
+expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 0
+
+      Array [
+        "food-plan-empty",
+        "meal-schedule-link",
+    -   "meals-history-link",
+      ]
+```
+
+### E2-S22 — reversión
+
+```sh
+git checkout HEAD -- 'src/app/(tabs)/food.tsx' && git diff --cached --quiet && git diff --quiet -- . && test -z "$(git ls-files --others --exclude-standard -- .)"; echo "limpio=$?"
+```
+
+```text
+limpio=0
+```
+
+### E2-S23 — sonda sobre HEAD
+
+```sh
+Mutación E2.5 en assets/images/pingo-talk.webp
+FORCE_COLOR=0 bunx jest src/components/__tests__/empty-state.test.tsx > /tmp/155-e2-s23.txt 2>&1; echo "exit=$?"
+```
+
+```text
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 63 passed, 64 total
+exit=1
+
+● #155 R2: las poses de los vacíos entran como WebP › pingo-talk.webp es un WebP con alfa de 1024×1024 y como mucho 100 000 bytes
+expect(received).toBe(expected) // Object.is equality
+
+    Expected: 0
+    Received: 2
+```
+
+### E2-S23 — reversión
+
+```sh
+git checkout HEAD -- assets/images/pingo-talk.webp && git diff --cached --quiet && git diff --quiet -- . && test -z "$(git ls-files --others --exclude-standard -- .)"; echo "limpio=$?"
+```
+
+```text
+limpio=0
+```
+
+### E2-S24 — sonda sobre HEAD
+
+```sh
+Mutación E2.5 en src/components/empty-state.tsx
+FORCE_COLOR=0 bunx jest src/components/__tests__/empty-state.test.tsx > /tmp/155-e2-s24.txt 2>&1; echo "exit=$?"
+```
+
+```text
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 62 passed, 64 total
+exit=1
+
+● #155 R3: un único componente pinta los vacíos ilustrados › con acción pinta pose, título, cuerpo y botón como hijos directos, en ese orden
+expect(received).toBeUndefined()
+
+    Received: {"backgroundColor": "white", "borderRadius": 24}
+
+● #155 R3: un único componente pinta los vacíos ilustrados › sin acción pinta pose, título y cuerpo como hijos directos, en ese orden
+expect(received).toBeUndefined()
+
+    Received: {"backgroundColor": "white", "borderRadius": 24}
+```
+
+### E2-S24 — reversión
+
+```sh
+git checkout HEAD -- src/components/empty-state.tsx && git diff --cached --quiet && git diff --quiet -- . && test -z "$(git ls-files --others --exclude-standard -- .)"; echo "limpio=$?"
+```
+
+```text
+limpio=0
+```
+
+### E2-S25 — sonda sobre HEAD
+
+```sh
+Mutación E2.5 en src/components/empty-state.tsx
+FORCE_COLOR=0 bunx jest src/components/__tests__/empty-state.test.tsx > /tmp/155-e2-s25.txt 2>&1; echo "exit=$?"
+```
+
+```text
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 62 passed, 64 total
+exit=1
+
+● #155 R3: un único componente pinta los vacíos ilustrados › con acción pinta pose, título, cuerpo y botón como hijos directos, en ese orden
+expect(received).toBe(expected) // Object.is equality
+
+    Expected: "View"
+    Received: "Text"
+
+● #155 R3: un único componente pinta los vacíos ilustrados › sin acción pinta pose, título y cuerpo como hijos directos, en ese orden
+expect(received).toBe(expected) // Object.is equality
+
+    Expected: "View"
+    Received: "Text"
+```
+
+### E2-S25 — reversión
+
+```sh
+git checkout HEAD -- src/components/empty-state.tsx && git diff --cached --quiet && git diff --quiet -- . && test -z "$(git ls-files --others --exclude-standard -- .)"; echo "limpio=$?"
+```
+
+```text
+limpio=0
+```
+
+### E2-S26 — sonda sobre HEAD
+
+```sh
+Mutación E2.5 en src/components/empty-state.tsx
+FORCE_COLOR=0 bunx jest src/components/__tests__/empty-state.test.tsx > /tmp/155-e2-s26.txt 2>&1; echo "exit=$?"
+```
+
+```text
+Test Suites: 1 failed, 1 total
+Tests:       6 failed, 58 passed, 64 total
+exit=1
+
+● #155 R3: un único componente pinta los vacíos ilustrados › pinta la pose talk a 160×160 y sin etiqueta
+expect(received).toBeUndefined()
+
+    Received: "rounded-full bg-surface"
+
+● #155 R3: un único componente pinta los vacíos ilustrados › pinta la pose sleep a 160×160 y sin etiqueta
+expect(received).toBeUndefined()
+
+    Received: "rounded-full bg-surface"
+
+● #155 R3: un único componente pinta los vacíos ilustrados › pinta la pose clipboard a 160×160 y sin etiqueta
+expect(received).toBeUndefined()
+
+    Received: "rounded-full bg-surface"
+
+● #155 R3: un único componente pinta los vacíos ilustrados › pinta la pose health a 160×160 y sin etiqueta
+expect(received).toBeUndefined()
+
+    Received: "rounded-full bg-surface"
+
+● #155 R3: un único componente pinta los vacíos ilustrados › pinta la pose collar a 160×160 y sin etiqueta
+expect(received).toBeUndefined()
+
+    Received: "rounded-full bg-surface"
+
+● #155 R3: un único componente pinta los vacíos ilustrados › pinta la pose food a 160×160 y sin etiqueta
+expect(received).toBeUndefined()
+
+    Received: "rounded-full bg-surface"
+```
+
+### E2-S26 — reversión
+
+```sh
+git checkout HEAD -- src/components/empty-state.tsx && git diff --cached --quiet && git diff --quiet -- . && test -z "$(git ls-files --others --exclude-standard -- .)"; echo "limpio=$?"
+```
+
+```text
+limpio=0
+```
+
+### E2-S27 — sonda sobre HEAD
+
+```sh
+Mutación E2.5 en src/screens/reminders/index.tsx
+FORCE_COLOR=0 bunx jest src/screens/reminders/index.test.tsx > /tmp/155-e2-s27.txt 2>&1; echo "exit=$?"
+```
+
+```text
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 33 passed, 34 total
+exit=1
+
+● #155 R6: sin recordatorios, Pingo sostiene su lista › queda en el sitio del vacío que sustituye
+expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Array [
+        "reminders-actions",
+        "RCTScrollView",
+    -   "reminders-empty",
+        "reminders-action-error",
+    +   "reminders-empty",
+        "reminders-delete-host",
+      ]
+```
+
+### E2-S27 — reversión
+
+```sh
+git checkout HEAD -- src/screens/reminders/index.tsx && git diff --cached --quiet && git diff --quiet -- . && test -z "$(git ls-files --others --exclude-standard -- .)"; echo "limpio=$?"
+```
+
+```text
+limpio=0
+```
+
+Sondas E2-S1 a E2-S27: todas coincidieron con la línea Tests, los it y los matchers de E2.5; todas se revirtieron con limpio=0. HEAD de los candados: `2a589c65`. Ninguna sonda se commiteó.
+
+### Cierre E2 — 15 ficheros
+
+```sh
+FORCE_COLOR=0 bunx jest src/screens/home/index.test.tsx src/screens/health/index.test.tsx 'src/app/\(tabs\)/__tests__/food.test.tsx' src/screens/map/index.test.tsx src/screens/alerts/index.test.tsx src/screens/reminders/index.test.tsx src/screens/docs/index.test.tsx src/screens/geofences/index.test.tsx src/screens/welcome/index.test.tsx src/providers/__tests__/language-provider.test.tsx src/__tests__/ui-language.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/design-drift.test.ts src/__tests__/legibility-classnames.test.ts src/components/__tests__/empty-state.test.tsx > /tmp/155-e2-final.txt 2>&1; echo "exit=$?"
+```
+
+```text
+Test Suites: 15 passed, 15 total
+Tests:       915 passed, 915 total
+exit=0
+```
+
+### Cierre E2 — ausencia de init.sh
+
+```sh
+pgrep -af '[i]nit\.sh'
+```
+
+```text
+(sin salida; exit=1 indica que no hay procesos coincidentes)
+```
+
+### Cierre E2 — Jest entero
+
+```sh
+FORCE_COLOR=0 bunx jest > /tmp/155-e2-all.txt 2>&1; echo "exit=$?"
+```
+
+```text
+Test Suites: 97 passed, 97 total
+Tests:       2365 passed, 2365 total
+exit=0
+```
+
+### Cierre E2 — typecheck
+
+```sh
+bun run typecheck; echo "exit=$?"
+```
+
+```text
+exit=0
+$ tsc --noEmit
+```
+
+### Cierre E2 — lint
+
+```sh
+bun run lint; echo "exit=$?"
+```
+
+```text
+exit=0
+$ expo lint
+```
+
+### Cierre E2 — dependencias, configuración y tokens
+
+```sh
+git diff --stat adee148a -- package.json bun.lock app.json src/theme
+```
+
+```text
+(vacío)
+exit=0
+```
+
+### Cierre E2 — nueve ficheros de test
+
+```sh
+git diff --name-only adee148a HEAD -- . | LC_ALL=C sort
+```
+
+```text
+mobile-pet-tracker/src/app/(tabs)/__tests__/food.test.tsx
+mobile-pet-tracker/src/components/__tests__/empty-state.test.tsx
+mobile-pet-tracker/src/screens/alerts/index.test.tsx
+mobile-pet-tracker/src/screens/docs/index.test.tsx
+mobile-pet-tracker/src/screens/geofences/index.test.tsx
+mobile-pet-tracker/src/screens/health/index.test.tsx
+mobile-pet-tracker/src/screens/home/index.test.tsx
+mobile-pet-tracker/src/screens/map/index.test.tsx
+mobile-pet-tracker/src/screens/reminders/index.test.tsx
+exit=0
+```
+
+### Cierre E2 — producción restaurada y móvil limpio
+
+```sh
+git diff --cached --quiet && git diff --quiet -- . && test -z "$(git ls-files --others --exclude-standard -- .)"; echo "limpio=$?"
+```
+
+```text
+limpio=0
+```
+
+### Cierre E2 — tipos de router ausentes
+
+```sh
+test ! -e .expo/types/router.d.ts; echo "exit=$?"
+```
+
+```text
+exit=0
+```
+
+### Cierre E2 — auditoría de literales y commits
+
+Los tres it de E2.1, los dos de E2.3 y los nueve it de sitio coinciden con los literales aprobados (solo se indenta el bloque del componente). Los únicos cambios en it existentes son las dos líneas aprobadas en los it.each de R2 y de poses de R3. No se cambia producción, catálogo, guardas ni R10.
+
+| Requisito | Commit E2 |
+|---|---|
+| R3 | `d84b47ae test(mobile-empty-states): #155 R3 candado de orden y botón` |
+| R11 | `d4063486 test(mobile-empty-states): #155 R11 candado de Animated y transiciones` |
+| R4 | `b4abfe7d test(mobile-empty-states): #155 R4 candado de sitio` |
+| R5 | `96bda091 test(mobile-empty-states): #155 R5 candado de sitio` |
+| R6 | `5b24557c test(mobile-empty-states): #155 R6 candado de sitio` |
+| R7 | `bedbfb8f test(mobile-empty-states): #155 R7 candado de sitio` |
+| R8 | `397bbc2e test(mobile-empty-states): #155 R8 candado de sitio` |
+| R9 | `2a589c65 test(mobile-empty-states): #155 R9 candado de sitio` |
+
+### Cierre E2 — lista cerrada del árbol a commitear (11)
+
+```sh
+git diff --name-only adee148a -- . ':!feature_list.json' ':!progress/current.md' ':!progress/handoff_mobile-empty-states-pingo.md' ':!specs/mobile-empty-states-pingo/requirements.md' ':!specs/mobile-empty-states-pingo/design.md' ':!specs/mobile-empty-states-pingo/tasks.md' ':!progress/review_mobile-empty-states-pingo.md'
+```
+
+```text
+mobile-pet-tracker/src/app/(tabs)/__tests__/food.test.tsx
+mobile-pet-tracker/src/components/__tests__/empty-state.test.tsx
+mobile-pet-tracker/src/screens/alerts/index.test.tsx
+mobile-pet-tracker/src/screens/docs/index.test.tsx
+mobile-pet-tracker/src/screens/geofences/index.test.tsx
+mobile-pet-tracker/src/screens/health/index.test.tsx
+mobile-pet-tracker/src/screens/home/index.test.tsx
+mobile-pet-tracker/src/screens/map/index.test.tsx
+mobile-pet-tracker/src/screens/reminders/index.test.tsx
+progress/impl_mobile-empty-states-pingo.md
+specs/mobile-empty-states-pingo/traceability.md
+exit=0
+```
+
+La lista anterior incluye los nueve tests ya commiteados y los dos documentos de este cierre. Tras el commit se comprueba la misma lista con:
+
+```sh
+git diff --name-only adee148a HEAD -- . ':!feature_list.json' ':!progress/current.md' ':!progress/handoff_mobile-empty-states-pingo.md' ':!specs/mobile-empty-states-pingo/requirements.md' ':!specs/mobile-empty-states-pingo/design.md' ':!specs/mobile-empty-states-pingo/tasks.md' ':!progress/review_mobile-empty-states-pingo.md'
+```
+
+### Commit de cierre E2
+
+```sh
+git add specs/mobile-empty-states-pingo/traceability.md progress/impl_mobile-empty-states-pingo.md \
+  && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'progress/impl_mobile-empty-states-pingo.md specs/mobile-empty-states-pingo/traceability.md ' \
+  && git commit -m 'docs(mobile-empty-states-pingo): #155 traceability E2'
+```
+
+La trazabilidad solo añade E2 al final de las ocho celdas Commit verde indicadas. Las celdas rojas, R1, R2, R10, R12, el frontmatter y el resto del documento se conservan. El guion del smoke R12 permanece arriba, listo para el humano; su casilla no se marca.
+
+R12: pendiente del smoke humano
