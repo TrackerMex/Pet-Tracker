@@ -1,3 +1,5 @@
+import { Logger } from '@nestjs/common';
+import { NUTRITION_AI_SCOPE } from './nutrition-prompt';
 import {
   buildUserPrompt,
   NUTRITION_AI_SYSTEM_PROMPT,
@@ -29,6 +31,7 @@ export interface AnthropicMessagesClient {
   create(params: AnthropicMessageParams): Promise<AnthropicMessageResponse>;
 }
 export class AnthropicNutritionExplainer implements NutritionExplainer {
+  private readonly logger = new Logger(AnthropicNutritionExplainer.name);
   constructor(
     private readonly model: string,
     private readonly apiKey: string,
@@ -39,7 +42,6 @@ export class AnthropicNutritionExplainer implements NutritionExplainer {
     result: NutritionPlanResult,
     ctx: NutritionExplainerContext,
   ): Promise<string | null> {
-    void ctx;
     if (this.client === null) {
       const { default: Anthropic } = await import('@anthropic-ai/sdk');
       this.client = new Anthropic({
@@ -57,6 +59,20 @@ export class AnthropicNutritionExplainer implements NutritionExplainer {
     const blocks = Array.isArray(response.content)
       ? (response.content as { type: string; text?: string }[])
       : [];
-    return blocks.find((block) => block.type === 'text')?.text ?? null;
+    const text = blocks
+      .filter((block) => block.type === 'text')
+      .map((block) => block.text ?? '')
+      .join('')
+      .trim();
+    if (response.stop_reason === 'end_turn' && text.length > 0) return text;
+    this.logger.warn({
+      scope: NUTRITION_AI_SCOPE,
+      petId: ctx.petId,
+      planId: ctx.planId,
+      message: 'ai explanation unusable',
+      stopReason: response.stop_reason ?? null,
+      usage: response.usage ?? null,
+    });
+    return null;
   }
 }
