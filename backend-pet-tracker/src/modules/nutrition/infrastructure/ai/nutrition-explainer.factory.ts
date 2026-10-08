@@ -8,8 +8,6 @@ export function createNutritionExplainer(
 ): NutritionExplainer {
   if (config.get<string>('NODE_ENV') === 'test')
     return new NullNutritionExplainer('node-env-test');
-  if (config.get<string>('ANTHROPIC_ENABLED') !== 'true')
-    return new NullNutritionExplainer('not-enabled');
   const key = config.get<string>('ANTHROPIC_API_KEY');
   if (
     typeof key !== 'string' ||
@@ -20,5 +18,7 @@ export function createNutritionExplainer(
   const model = config.get<string>('ANTHROPIC_MODEL');
   if (typeof model !== 'string' || model.trim() === '')
     return new NullNutritionExplainer('model-missing');
+  if (config.get<string>('ANTHROPIC_ENABLED') !== 'true')
+    return new NullNutritionExplainer('not-enabled');
   return new AnthropicNutritionExplainer(model.trim(), key.trim(), null);
 }

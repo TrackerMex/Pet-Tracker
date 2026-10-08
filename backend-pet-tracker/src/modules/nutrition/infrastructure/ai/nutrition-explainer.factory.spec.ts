@@ -86,6 +86,26 @@ describe('R5 (nutrition-ai-explainer #18): seleccion en orden con reason exacto'
       client: null,
     });
   });
+  const failed: Record<string, string> = {
+    NODE_ENV: 'test',
+    ANTHROPIC_ENABLED: 'false',
+    ANTHROPIC_API_KEY: 'PENDING',
+    ANTHROPIC_MODEL: '',
+  };
+  it.each([
+    ['NODE_ENV', 'ANTHROPIC_ENABLED', 'node-env-test'],
+    ['NODE_ENV', 'ANTHROPIC_API_KEY', 'node-env-test'],
+    ['NODE_ENV', 'ANTHROPIC_MODEL', 'node-env-test'],
+    ['ANTHROPIC_ENABLED', 'ANTHROPIC_API_KEY', 'not-enabled'],
+    ['ANTHROPIC_ENABLED', 'ANTHROPIC_MODEL', 'not-enabled'],
+    ['ANTHROPIC_API_KEY', 'ANTHROPIC_MODEL', 'key-missing'],
+  ])('%s y %s fallan: gana %s', (first, second, reason) => {
+    const adapter = createNutritionExplainer(
+      config({ ...valid, [first]: failed[first], [second]: failed[second] }),
+    );
+    expect(adapter).toBeInstanceOf(NullNutritionExplainer);
+    expect((adapter as NullNutritionExplainer).reason).toBe(reason);
+  });
   it('pasa clave y modelo recortados (E1.1)', () => {
     const adapter = createNutritionExplainer(
       config({
