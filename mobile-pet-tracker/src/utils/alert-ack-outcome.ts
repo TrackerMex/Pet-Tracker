@@ -26,5 +26,15 @@ export async function settleAlertAck(
       return;
     case 'not-found':
       onNotFound();
+      return;
+    case 'unreachable':
+      showError(t('common.cannotReachServer'));
+      return;
+    case 'unauthorized':
+      await signOut();
+      return;
+    case 'error':
+    case 'missing-config':
+      showError(t('common.somethingWentWrong'));
   }
 }
