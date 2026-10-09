@@ -12,6 +12,7 @@ import { useAlertsList } from '../../hooks/use-alerts-list';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
 import { useThemeColors } from '../../theme/use-theme-colors';
+import { settleAlertAck } from '../../utils/alert-ack-outcome';
 import { alertTypeMeta } from '../../utils/alert-meta';
 
 function fmtOpenedAt(
@@ -86,36 +87,18 @@ export function AlertsScreen() {
     setActionError(null);
 
     try {
-      const result = await ackAlert(baseUrl, token ?? '', alert.id);
-
-      switch (result.kind) {
-        case 'ok':
+      await settleAlertAck(() => ackAlert(baseUrl, token ?? '', alert.id), alert, {
+        t,
+        signOut,
+        showError: setActionError,
+        onAcked: (next) => {
           setAcked((current) => ({
             ...current,
-            [alert.id]: result.alert,
+            [alert.id]: next,
           }));
-          return;
-        case 'already-closed':
-          setAcked((current) => ({
-            ...current,
-            [alert.id]: { ...alert, status: 'closed' },
-          }));
-          return;
-        case 'not-found':
-          setActionError(t('common.somethingWentWrong'));
-          return;
-        case 'unreachable':
-          setActionError(t('common.cannotReachServer'));
-          return;
-        case 'unauthorized':
-          await signOut();
-          return;
-        case 'error':
-        case 'missing-config':
-          setActionError(t('common.somethingWentWrong'));
-      }
-    } catch {
-      setActionError(t('common.somethingWentWrong'));
+        },
+        onNotFound: () => setActionError(t('common.somethingWentWrong')),
+      });
     } finally {
       ackingIdRef.current = null;
       setAckingId(null);

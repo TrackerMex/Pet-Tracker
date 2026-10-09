@@ -11,6 +11,7 @@ import { useAlertsList } from '../../hooks/use-alerts-list';
 import { useAuth } from '../../providers/auth-provider';
 import { useLocale, useTranslate } from '../../providers/language-provider';
 import { useThemeColors } from '../../theme/use-theme-colors';
+import { settleAlertAck } from '../../utils/alert-ack-outcome';
 import { alertTypeMeta } from '../../utils/alert-meta';
 
 export function AlertDetailScreen({ alertId }: { alertId: string }) {
@@ -49,32 +50,18 @@ export function AlertDetailScreen({ alertId }: { alertId: string }) {
     setAcking(true);
     setActionError(null);
     try {
-      const result = await ackAlert(baseUrl, token ?? '', alertId);
-      switch (result.kind) {
-        case 'ok':
-          setAcked(result.alert);
-          return;
-        case 'already-closed':
-          setAcked({ ...alert, status: 'closed' });
-          return;
-        case 'not-found':
+      await settleAlertAck(() => ackAlert(baseUrl, token ?? '', alertId), alert, {
+        t,
+        signOut,
+        showError: setActionError,
+        onAcked: setAcked,
+        onNotFound: () => {
           if (!leavingRef.current) {
             leavingRef.current = true;
             router.dismissTo('/alerts');
           }
-          return;
-        case 'unreachable':
-          setActionError(t('common.cannotReachServer'));
-          return;
-        case 'unauthorized':
-          await signOut();
-          return;
-        case 'error':
-        case 'missing-config':
-          setActionError(t('common.somethingWentWrong'));
-      }
-    } catch {
-      setActionError(t('common.somethingWentWrong'));
+        },
+      });
     } finally {
       ackingRef.current = false;
       setAcking(false);
