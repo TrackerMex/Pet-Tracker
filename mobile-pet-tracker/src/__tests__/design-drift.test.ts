@@ -776,3 +776,20 @@ describe('#134 R6: el resultado del ack se clasifica en un solo sitio', () => {
     }).toEqual({ file, cases: 0, unreachable: 0, signOut: 0, settle: 1, request: 1 });
   });
 });
+
+describe('#134 R7: el ack no toca la caché de la lista', () => {
+  it('mantiene cero referencias a la caché en el helper y las pantallas', () => {
+    for (const file of [
+      'utils/alert-ack-outcome.ts',
+      'screens/alerts/index.tsx',
+      'screens/alert-detail/index.tsx',
+    ]) {
+      const source = readFileSync(join(sourceRoot, file), 'utf8');
+
+      expect({
+        file,
+        refs: source.match(/alertKeys|invalidateQueries|setQueryData|useQueryClient|queryClient/g) ?? [],
+      }).toEqual({ file, refs: [] });
+    }
+  });
+});
