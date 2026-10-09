@@ -74,3 +74,29 @@ describe('#161 R1: getObjectSize devuelve ContentLength o falla sin él', () => 
     );
   });
 });
+
+describe('#162 R1: getObjectSize decide el 404 por httpStatusCode, no por name', () => {
+  it('#162 R1 (a): resuelve null con un 404 sin name NotFound', async () => {
+    const { send, storage } = buildDeps();
+    send.mockRejectedValue(
+      Object.assign(new Error('Not Found'), {
+        $metadata: { httpStatusCode: 404 },
+      }),
+    );
+
+    await expect(storage.getObjectSize('pets/p/docs/d')).resolves.toBeNull();
+  });
+
+  it('#162 R1 (b): relanza un error con name NotFound y httpStatusCode 403', async () => {
+    const { send, storage } = buildDeps();
+    const notFoundByName = Object.assign(new Error('NotFound'), {
+      name: 'NotFound',
+      $metadata: { httpStatusCode: 403 },
+    });
+    send.mockRejectedValue(notFoundByName);
+
+    await expect(storage.getObjectSize('pets/p/docs/d')).rejects.toBe(
+      notFoundByName,
+    );
+  });
+});

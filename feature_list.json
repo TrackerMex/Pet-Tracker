@@ -3180,7 +3180,7 @@
   {
     "id": 162,
     "name": "media-docs-download-test-locks",
-    "status": "pending",
+    "status": "done",
     "priority": "P3",
     "description": "Registrada el 2026-10-08 por decisión del humano («si registra los 4 huecos»). Deuda de #157 media-docs-download-api: las observaciones 1, 3, 4 y 5 de progress/review_media-docs-download-api.md, el veredicto que aprobó #157. Solo añade candados de test: no cambia comportamiento de producción y ningún hueco es incumplimiento de #157, que se ciñó a su spec. Medido en la branch de #157 (45fc4d46), bajo backend-pet-tracker/src/modules/media/. (1) R6 (g): infrastructure/mappers/pet-document-error.mapper.ts devuelve por identidad el error desconocido (`return error;`, tras las ramas `instanceof PetDocumentNotFoundError` y `instanceof PetDocumentNotUploadedError`) y no tiene spec propio; la sonda P16 (mapear el desconocido a 404) sobrevivió en unit y e2e. #157 declaró «(g) no tiene e2e» porque LocalStack no reproduce un fallo distinto de 404, así que el candado va en un pet-document-error.mapper.spec.ts nuevo con un it por rama. (2) R7: en infrastructure/photo-storage.object-exists.spec.ts el doble del 404 trae a la vez `name: 'NotFound'` y `$metadata: { httpStatusCode: 404 }`; la sonda P10 (decidir por name) sobrevivió. Falta un it con un error 404 sin `name`. (3) R4: application/use-cases/list-pet-documents.use-case.ts arma la lista con Promise.all sobre el orden del repositorio, pero el doble de createDownloadUrl (`Promise.resolve`) resuelve en orden de llamada; la sonda P4 (push al resolver) sobrevivió. Falta un doble que resuelva el primer documento después del segundo. (4) Carrera de confirm: infrastructure/repositories/pet-document.drizzle.repository.ts filtra markUploaded con `isNull(petDocuments.uploadedAt)` (design D4) y no hay spec de ese repositorio ni test que lo llame directamente; la idempotencia de R5 la cubre el return temprano del use case. Ninguna cláusula EARS de #157 lo exige: la spec de esta deuda decide si se candada (por ejemplo, markUploaded sobre una fila ya confirmada no cambia uploaded_at, contra Postgres) o si se descarta por escrito. Depende del merge de #157.",
     "acceptance_criteria": [
@@ -3190,7 +3190,6 @@
       "Ninguna prueba contra AWS real"
     ],
     "files_affected": [
-      "backend-pet-tracker/src/modules/media/infrastructure/mappers/pet-document-error.mapper.spec.ts",
       "backend-pet-tracker/src/modules/media/infrastructure/photo-storage.object-exists.spec.ts",
       "backend-pet-tracker/src/modules/media/application/use-cases/list-pet-documents.use-case.spec.ts",
       "backend-pet-tracker/test/media-docs.e2e-spec.ts"
@@ -3210,6 +3209,23 @@
     ],
     "files_affected": [
       "backend-pet-tracker/src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.spec.ts"
+    ]
+  },
+  {
+    "id": 164,
+    "name": "media-docs-storage-error-and-order-locks",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Registrada el 2026-10-09 por decisión del humano al cerrar #162 («si registra N1 y N2 como feature nueva de deuda»). Deuda de #162 media-docs-download-test-locks: las observaciones N1 y N2 de progress/review_media-docs-download-test-locks.md, el veredicto que aprobó #162 sobre e780925d. Solo añade candados de test; ningún hueco es incumplimiento de #157 ni de #162, que se ciñeron a su spec. Medido en la branch de #162 (f12eebd6), bajo backend-pet-tracker/src/modules/media/. (1) N1, cláusula «relanza cualquier otro error» de #157 R7: getObjectSize en infrastructure/photo-storage.s3.adapter.ts devuelve null solo con `$metadata.httpStatusCode === 404` y relanza lo demás; application/use-cases/confirm-pet-document-upload.use-case.ts convierte ese null en PetDocumentNotUploadedError, que pet-document-error.mapper.ts responde como 409. En infrastructure/photo-storage.object-exists.spec.ts los únicos dobles que deben relanzarse son dos 403 (#157 R7 y #162 R1 (b)) y uno sin ContentLength (#161 R1 (b)), así que la sonda X4 `(status ?? 0) >= 404` sobrevive: un 500 o un 503 del HEAD acabaría en 409 en vez de 500. Cierre propuesto por el reviewer: un it con `httpStatusCode: 500` que aserte `rejects.toBe(err)`. Límite: ese it mata X4 pero no la variante `>= 404 && < 500`, que convertiría en null un 4xx mayor que 404; como la cláusula es universal, la spec decide qué códigos muestrea (por ejemplo un 5xx y un 4xx distinto de 403 y 404) y lo justifica. El 403 sigue relanzándose: el comentario ponytail del adaptador sobre s3:ListBucket (Q1 de #157) queda fuera. (2) N2, #162 R2: en application/use-cases/list-pet-documents.use-case.spec.ts los its de orden de #157 R4 y #162 R2 usan el mismo fixture, a = (…02, 2026-08-25) y b = (…01, 2026-08-24), donde el orden del repositorio (a, b) coincide con fecha desc y con id desc. Las sondas X7 (push al resolver + sort por fecha desc) y X8 (push + sort por id desc) sobreviven en unit y e2e. X10 (orden por índice + sort por fecha desc) también sobrevive, pero es equivalente en producción porque listUploadedByPet ya ordena por desc(date), desc(id). X7 reabre la fuga del orden de resolución entre documentos con la misma fecha, y X8 rompe el orden por fecha cuando el orden de los ids no sigue al de las fechas. Cierre propuesto por el reviewer: un fixture cuyo orden de repositorio no salga de ordenar por fecha ni por id desc (por ejemplo a.date < b.date y a.id < b.id) con las URLs resolviendo al revés, o un it hermano con dos documentos de la misma fecha; la spec elige y dice qué sondas mata cada opción (los sorts asc ya los mata el fixture de #157 R4). Las fixtures e2e de #157 R1 en test/media-docs.e2e-spec.ts (ids …01/02/03 monótonos con la fecha) tienen el mismo punto ciego: la spec decide si las toca o lo delimita por escrito. Fuera: N3-N5 del mismo veredicto, que son cosméticos. Sin anclas por número de línea. Cero cambio en producción. Depende del merge de #162 (PR #204, branch feature/162-media-docs-download-test-locks): los its de #162 R1 y R2 solo existen ahí.",
+    "acceptance_criteria": [
+      "La sonda X4 `(status ?? 0) >= 404` en getObjectSize hace FALLAR por aserción al menos un it de photo-storage.object-exists.spec.ts; cada código adicional que la spec muestree trae su propia sonda, y todas quedan con su salida en el impl",
+      "Las sondas X7 (push al resolver + sort por fecha desc) y X8 (push al resolver + sort por id desc) en ListPetDocumentsUseCase hacen FALLAR por aserción al menos un it de list-pet-documents.use-case.spec.ts; las sondas y su salida quedan en el impl",
+      "Los its existentes de #157 R4 y R7, #161 R1 y #162 R1 y R2 no se relajan y siguen cayendo con sus mutaciones",
+      "Cero cambio en producción; suite unitaria de backend verde medida sin pipe; delta de tests declarado; ninguna prueba contra AWS real"
+    ],
+    "files_affected": [
+      "backend-pet-tracker/src/modules/media/infrastructure/photo-storage.object-exists.spec.ts",
+      "backend-pet-tracker/src/modules/media/application/use-cases/list-pet-documents.use-case.spec.ts"
     ]
   }
 ]
