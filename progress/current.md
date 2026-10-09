@@ -37,3 +37,16 @@
 - Gate: Aprobado en Notion (`page_last_edited_at` 2026-10-09T15:55:19.534Z), Q1–Q3
   con su recomendación («Vamos a seguir la recomendaciones»). Sin enmiendas.
   Firma: commit `docs(specs): firma de la spec de #162 aprobada vía Notion`.
+- Notion tras la firma: `Rol actual` = Implementer.
+- Merge de origin/main `65f37841` (#155, PR #203) en la branch (`6c4f0d69`):
+  no toca `backend-pet-tracker/`, `infra/` ni `init.sh`. Base unit media
+  medida por el leader en wt-162: 12 suites, 46 tests, exit 0.
+- Estado: `in_progress`. Handoff a Codex en
+  `progress/handoff_media-docs-download-test-locks.md`: 7 commits (R1-R3 en
+  pares rojo/verde con M1-M3 revertidas desde H0, c7 trazabilidad) + lista
+  cerrada. 43 anclas (A1-A21, P1-P8, H1-H14) ejecutadas por el leader desde
+  el propio handoff: 0 fallos. Codex corre solo el e2e de
+  `test/media-docs.e2e-spec.ts`, con pgrep libre; `./init.sh` es del leader.
+  H0 = el commit `chore(harness): Codex handoff for #162 …`.
+- Peers: UI-Pet lleva #159 en wt-159 (init.sh de arranque en marcha al
+  escribir el handoff); Backend lleva #158 en wt-158, solo `mobile-pet-tracker/`.
