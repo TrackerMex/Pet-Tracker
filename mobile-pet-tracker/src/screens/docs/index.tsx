@@ -6,9 +6,12 @@ import { ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
+  confirmPetDocumentUpload,
+  createPetDocument,
   DOCUMENT_MAX_BYTES,
   listPetDocs,
   resolveDocumentContentType,
+  uploadPhotoToUrl,
   type DocumentContentType,
   type PetDocument,
 } from '../../api/media';
@@ -117,12 +120,28 @@ export function DocsScreen({ petId }: { petId: string }) {
     setActionError(null);
   }
 
-  function submitDocument() {
+  async function submitDocument() {
+    if (!selectedDocument) return;
     setActionError(null);
     if (!type.trim() || !name.trim() || !/^\d{4}-\d{2}-\d{2}$/.test(date.trim())) {
       setActionError('invalid-form');
       return;
     }
+    const response = await fetch(selectedDocument.asset.uri);
+    const blob = await response.blob();
+    const created = await createPetDocument(baseUrl, token ?? '', petId, {
+      type: type.trim(),
+      name: name.trim(),
+      date: date.trim(),
+      ...(vet.trim() ? { vet: vet.trim() } : {}),
+    });
+    if (created.kind !== 'ok') return;
+    const uploaded = await uploadPhotoToUrl(created.uploadUrl, blob, selectedDocument.contentType);
+    if (uploaded.kind !== 'ok') return;
+    const confirmed = await confirmPetDocumentUpload(baseUrl, token ?? '', petId, created.documentId);
+    if (confirmed.kind !== 'ok') return;
+    await docs.refetch();
+    cancelUpload();
   }
 
   return (
@@ -219,7 +238,7 @@ export function DocsScreen({ petId }: { petId: string }) {
           <Button
             testID="docs-upload-submit"
             className="rounded-xl bg-accent"
-            onPress={submitDocument}
+            onPress={() => void submitDocument().catch(() => undefined)}
           >
             <Button.Label className="font-bold text-accent-foreground">
               {t('docs.upload')}
