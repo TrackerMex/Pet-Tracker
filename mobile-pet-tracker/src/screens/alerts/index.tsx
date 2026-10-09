@@ -108,14 +108,14 @@ export function AlertsScreen() {
           setActionError(t('common.cannotReachServer'));
           return;
         case 'unauthorized':
-          await Promise.resolve(signOut()).catch(() => undefined);
+          await signOut();
           return;
         case 'error':
         case 'missing-config':
           setActionError(t('common.somethingWentWrong'));
       }
     } catch {
-      setActionError(t('common.somethingWentWrong').toUpperCase());
+      setActionError(t('common.somethingWentWrong'));
     } finally {
       ackingIdRef.current = null;
       setAckingId(null);
