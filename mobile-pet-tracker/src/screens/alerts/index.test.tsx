@@ -781,6 +781,25 @@ describe('#78 R8: el ack cambia la fila sin recargar la lista', () => {
       await fireEvent.press(await screen.findByTestId('alert-row-alert-1-ack'));
       await waitFor(() => expect(screen.queryByTestId('alerts-action-error')).toHaveTextContent('Something went wrong'));
     });
+
+    it('mantiene el botón deshabilitado hasta que signOut termina tras unauthorized', async () => {
+      let finishSignOut: () => void = () => undefined;
+      mockAckAlert.mockResolvedValueOnce({ kind: 'unauthorized' });
+      mockSignOut.mockReturnValueOnce(
+        new Promise<void>((resolve) => {
+          finishSignOut = resolve;
+        }),
+      );
+
+      await pressAck();
+
+      await waitFor(() => expect(mockSignOut).toHaveBeenCalledTimes(1));
+      expect(screen.getByTestId('alert-row-alert-1-ack')).toBeDisabled();
+
+      finishSignOut();
+      await waitFor(() => expect(screen.getByTestId('alert-row-alert-1-ack')).not.toBeDisabled());
+      expect(screen.queryByTestId('alerts-action-error')).toBeNull();
+    });
   });
 });
 
