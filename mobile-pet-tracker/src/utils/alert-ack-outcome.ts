@@ -1,7 +1,6 @@
 import type { AckAlertState } from '../api/alerts';
 import type { Alert } from '../api/types';
 import type { TranslationKey } from '../i18n/catalog';
-// alertKeys.list()
 
 export type AlertAckHandlers = {
   t: (key: TranslationKey) => string;
