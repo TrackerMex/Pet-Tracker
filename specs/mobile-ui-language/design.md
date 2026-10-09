@@ -907,6 +907,15 @@ copy completa en cada una.
 | — | `food.noMealPlanBody` | `Once there's a plan, I'll help you keep track of every meal.` | `Cuando haya un plan, te ayudo a llevar la cuenta de cada comida.` | ← añadida por #155 (R1) |
 | — | `docs.emptyBody` | `When your pet's medical documents arrive, I'll keep them here.` | `Cuando lleguen los documentos médicos de tu mascota, te los guardo aquí.` | ← cambiada por #155 (R1) |
 
+### §2.23 — Añadidos por #159 — Pingo sin collar
+
+| # | Clave | `en` | `es` | Origen |
+|---|---|---|---|---|
+| — | `map.noTrackingTitle` | `No live location` | `Sin ubicación en vivo` | ← añadida por #159 (R1) |
+| — | `map.noTrackingBody` | `Once your pet has a collar with an active plan, I'll show you where they are.` | `Cuando tu mascota tenga un collar con plan activo, te muestro dónde está.` | ← añadida por #159 (R1) |
+| — | `geofences.noTrackingTitle` | `Safe zones unavailable` | `Zonas seguras no disponibles` | ← añadida por #159 (R1) |
+| — | `geofences.noTrackingBody` | `Once your pet has a collar with an active plan, I'll let you know if they leave a safe zone.` | `Cuando tu mascota tenga un collar con plan activo, te aviso si sale de una zona segura.` | ← añadida por #159 (R1) |
+
 ## 3. La infraestructura
 
 ### 3.1 Decisiones
