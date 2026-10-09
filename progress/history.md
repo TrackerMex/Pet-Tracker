@@ -8228,3 +8228,41 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
   `78df9b08`. Solo la casilla, 0 drift de código frente a `f8132e4f`.
 - Cierre: `done` en `feature_list.json`, trazabilidad R14, STATUS, Notion
   (Implementado / Completado) y PR contra `main`. Merge: humano.
+
+## #157 `media-docs-download-api` — Documentos con estado de subida y URL de descarga — 2026-10-08
+
+- Sesión: Frontend (Claude Code, leader). La coordinación pasó de Backend a
+  Frontend por decisión del humano. Worktree
+  `/home/claude/sites/Pet-Tracker-wt-157`, branch
+  `feature/157-media-docs-download-api`.
+- Spec: aprobada en Notion el 2026-10-08 (página
+  `3f36115a-9b27-81d6-b555-d8ae33ffc2d5`); firma en `ef0b256d` (casilla) y
+  `dd16ee7c` (frontmatter). Merge de origin/main (#153) en `23f69803`. Base:
+  unit media + schema 101, `pnpm test` 176/1348, e2e `media-docs` 9,
+  `test/media\.e2e` 12.
+- Q1 (coste en modo aws): autorizada por el humano en la sesión Frontend y
+  registrada en `eae547bf`, junto con las deudas #160
+  `infra-media-bucket-iam-least-privilege` y #161
+  `media-docs-confirm-size-limit`. Antes se había pedido registrarla con la
+  autorización relatada por Backend; el clasificador lo bloqueó y se esperó
+  a la frase directa del humano.
+- Handoff a Codex en `20908b80` (H0). Correcciones del leader: `7931f528`
+  (el chequeo de árbol limpio de c2 fallaba siempre tras el `git add`) y
+  `771460af` (c10 paró en ESLint: `expect.any(String)` es `any` y dispara
+  `no-unsafe-assignment` como valor de propiedad; se escribe `as unknown`,
+  mismo matcher, sin enmienda de spec).
+- Codex: 12 commits (c1-c11 en pares rojo/verde, trazabilidad en
+  `a1e16faa`). Cierre unit 179/1361, lista cerrada de 26 ficheros, 50 anclas
+  en su valor de cierre (verificadas también por el leader).
+- Gate: `./init.sh` sobre `a1e16faa` con permiso del humano, exit=0 (backend
+  179/1361, móvil 96/2275, e2e 29 de 32 suites, 459 tests verdes y 8
+  saltados). IA PET y Backend avisados antes y después.
+- Review: **APROBADO** a la primera
+  (`progress/review_media-docs-download-api.md`). 29 mutaciones y un COMBO:
+  25 rojas por aserción, P8b equivalente y 3 vivas (P4 orden de resolución
+  en R4, P10 404 por `name` en R7, P16 R6 (g) sin candado HTTP). Las tres
+  vivas caen en huecos de la spec, no de la implementación. 7 observaciones
+  no bloqueantes; en el cierre se corrigen la 2 (nota en design.md §D7) y la
+  7 (frontmatter de traceability.md).
+- Cierre: `done` en `feature_list.json`, trazabilidad R9, STATUS, Notion
+  (Implementado / Completado) y PR contra `main`. Merge: humano.

@@ -3062,5 +3062,119 @@
     "files_affected": [
       "mobile-pet-tracker/src/screens/home/index.test.tsx"
     ]
+  },
+  {
+    "id": 157,
+    "name": "media-docs-download-api",
+    "status": "done",
+    "priority": "P2",
+    "description": "Registrada el 2026-10-08 por decisión del humano tras aprobar #155, que dejó este tema en §Fuera de alcance. Ids #157-#159 reservados con la sesión Frontend (Frontend: #156 y #160 en adelante). Mitad backend de «subir documentos» (el humano la partió en backend y móvil). Medido en origin/main 36c8050d: #49 media-docs-api ya expone POST /v1/pets/:petId/media (solo owner) que persiste la fila en pet_documents y devuelve {document, uploadUrl, expiresInSeconds: 600} con una URL PUT prefirmada, y GET /v1/pets/:petId/media, que devuelve {id, type, name, date, vet, key} sin ninguna URL de lectura. Huecos: (1) no hay forma de abrir un documento subido; (2) la fila se persiste antes del PUT y no hay estado de subida, así que un PUT que nunca llega deja en la lista un documento sin fichero. La spec decide cómo se lee (URL prefirmada GET en la lista o endpoint por documento) y cómo se confirma la subida. Borrar documentos no entra salvo que la spec lo justifique. No toca mobile-pet-tracker/.",
+    "acceptance_criteria": [
+      "Un miembro de la mascota (owner, family, walker o vet) puede obtener una URL de lectura prefirmada y con caducidad de un documento suyo; un no miembro recibe 404 como el resto del módulo media",
+      "Un documento cuyo fichero no llegó al bucket no aparece como disponible; el mecanismo (estado en pet_documents, confirmación explícita u otro) lo fija la spec con su migración si la necesita",
+      "El contrato de POST /v1/pets/:petId/media sigue compatible para el cliente móvil o la spec declara el cambio; e2e en LocalStack con URLs prefirmadas reales, como #49 y #57",
+      "Tests rojos primero, por R-id; suites backend y e2e verdes medidas sin pipe"
+    ],
+    "files_affected": [
+      "backend-pet-tracker/src/db/schema/media.schema.ts",
+      "backend-pet-tracker/src/db/schema/media.schema.spec.ts",
+      "backend-pet-tracker/src/db/migrations/0019_pet_documents_uploaded_at.sql",
+      "backend-pet-tracker/src/db/migrations/meta/0019_snapshot.json",
+      "backend-pet-tracker/src/db/migrations/meta/_journal.json",
+      "backend-pet-tracker/src/modules/media/",
+      "backend-pet-tracker/test/media-docs.e2e-spec.ts"
+    ]
+  },
+  {
+    "id": 158,
+    "name": "mobile-docs-upload",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Registrada el 2026-10-08 por decisión del humano tras aprobar #155, que dejó este tema en §Fuera de alcance. Ids #157-#159 reservados con la sesión Frontend (Frontend: #156 y #160 en adelante). Mitad móvil de «subir documentos». Medido en origin/main 36c8050d: src/api/media.ts solo tiene listPetDocs para documentos (más el flujo de foto de mascota: requestPhotoUploadUrl + uploadPhotoToUrl, reutilizable), y src/screens/docs/index.tsx no tiene botón de subir ni de abrir. package.json trae expo-image-picker pero no expo-document-picker: subir PDFs exige una dependencia nueva que la spec debe declarar (memoria dependencias-nuevas-autorizadas). Depende de #157 (URL de lectura y confirmación de subida) y de #155 (mobile-empty-states-pingo): #155 pinta docs-empty con EmptyState, sin action y con docs.emptyBody «Cuando lleguen los documentos médicos de tu mascota, te los guardo aquí.», copy escrito para una app que no sube; esta feature añade la acción y revisa esa frase. POST es solo owner: la acción de subir solo la ve el dueño (mismo patrón que geofences-add).",
+    "acceptance_criteria": [
+      "El dueño puede elegir un fichero (tipos y tamaño máximo los fija la spec), rellenar type, name, date y vet opcional, y subirlo; el documento aparece en la lista sin recargar a mano",
+      "Cualquier miembro puede abrir un documento de la lista con la URL de lectura de #157",
+      "Family, walker y vet no ven la acción de subir; errores de red, 403 y fallo del PUT tienen copy en/es y no dejan la pantalla en un estado roto",
+      "docs-empty de #155 gana la acción para el dueño y su frase se revisa en voz B; los literales en/es van en la spec desde R1",
+      "Smoke del humano en dev build de Android con un PDF y una imagen reales contra LocalStack"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/api/media.ts",
+      "mobile-pet-tracker/src/screens/docs/index.tsx",
+      "mobile-pet-tracker/src/i18n/catalog.ts",
+      "mobile-pet-tracker/package.json"
+    ]
+  },
+  {
+    "id": 159,
+    "name": "mobile-no-collar-states-pingo",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Registrada el 2026-10-08 por decisión del humano tras aprobar #155, que dejó este tema en §Fuera de alcance. Ids #157-#159 reservados con la sesión Frontend (Frontend: #156 y #160 en adelante). Medido en origin/main 36c8050d: los estados «sin collar» son texto gris sin ninguna acción: map-no-tracking (Text con map.trackingNeedsCollar, src/screens/map/index.tsx), geofences-no-tracking (Card con geofences.needsCollar, src/screens/geofences/index.tsx), geofence-editor-no-tracking (Card con geofences.needsCollar, src/screens/geofence-editor/index.tsx) y la nota summary-note con home.activityNeedsCollar dentro de la tarjeta de actividad de Inicio. El flujo de emparejar ya existe (ruta /pairing, enlazada desde Inicio y Perfil). Premisa a medir en la spec: el kind no-tracking sale del 402 de PetTrackingGuard, que salta cuando isPetTracked es falso (sin suscripción activa del dispositivo), no solo cuando falta collar; una mascota con collar y suscripción vencida vería hoy «requiere un collar». Depende de #155: reutiliza EmptyState y la pose pingo-collar.webp que mete #155 R2.",
+    "acceptance_criteria": [
+      "Los estados sin collar de pantalla completa muestran a Pingo (pose collar) con título, frase en voz B y una acción que lleva a /pairing; cuáles se ilustran y cuáles siguen en texto (p. ej. la nota de Inicio dentro de su tarjeta) lo clasifica la spec con el criterio de #155",
+      "La spec mide si «sin collar» y «suscripción vencida» llegan a la app como estados distinguibles y fija el copy de cada caso; si no se distinguen, no promete un copy que mienta",
+      "Quién ve la acción de emparejar (owner frente a caregiver y viewer) lo fija la spec contra el permiso real de /pairing",
+      "Literales en/es desde R1; candados de catálogo, ui-copy-table y design-drift contados; smoke en dev build de Android con una mascota sin collar"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/screens/map/index.tsx",
+      "mobile-pet-tracker/src/screens/geofences/index.tsx",
+      "mobile-pet-tracker/src/screens/geofence-editor/index.tsx",
+      "mobile-pet-tracker/src/screens/home/index.tsx",
+      "mobile-pet-tracker/src/i18n/catalog.ts"
+    ]
+  },
+  {
+    "id": 160,
+    "name": "infra-media-bucket-iam-least-privilege",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Registrada el 2026-10-08 por decisión del humano («Autorizo Q1 de #157 y registra las dos deudas: #160 infra-media-bucket-iam-least-privilege y #161 media-docs-confirm-size-limit.»). Deuda de #157 media-docs-download-api. #157 dejó infra/, IAM y CDK en §Fuera de alcance. Medido en origin/main fca7c399: infra/lib/pet-tracker-dev-stack.ts crea MediaBucket (new s3.Bucket(this, 'MediaBucket', …)) y no define ningún rol, usuario ni grant (grep -cE \"grant|Role|PolicyStatement\" → 0). En modo aws el backend usa las credenciales que le dé el operador; si no tienen s3:ListBucket, un HeadObject de un objeto inexistente responde 403 y no 404, y R7 de #157 (objectExists) lo relanza: el confirm responde 500. La spec decide qué identidad usa el backend (rol o usuario) y le concede el mínimo sobre el bucket de media (s3:GetObject, s3:PutObject y s3:ListBucket), justificando cada acción; si #161 decide borrar el objeto que excede el límite, también s3:DeleteObject. Depende del merge de #157.",
+    "acceptance_criteria": [
+      "Un test de CDK (assertions) fija la política sobre el bucket de media",
+      "cdk synth verde",
+      "cdk deploy y cualquier prueba contra la cuenta real los corre el humano, nunca una IA",
+      "Cero cambios en backend-pet-tracker/ salvo que la spec lo justifique"
+    ],
+    "files_affected": [
+      "infra/lib/pet-tracker-dev-stack.ts",
+      "infra/test/pet-tracker-dev-stack.test.ts"
+    ]
+  },
+  {
+    "id": 161,
+    "name": "media-docs-confirm-size-limit",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Registrada el 2026-10-08 por decisión del humano («Autorizo Q1 de #157 y registra las dos deudas: #160 infra-media-bucket-iam-least-privilege y #161 media-docs-confirm-size-limit.»). Deuda de #157 media-docs-download-api. La spec de #157 deja fuera el límite de tamaño en servidor (requirements.md §Fuera de alcance: «Una URL PUT prefirmada no puede imponer tamaño; #158 fija el límite en el cliente. Si algún día se impone en servidor, el sitio natural es el confirm (`ContentLength` del HEAD)»). #158 mobile-docs-upload sigue pending: el límite del cliente aún no existe y lo fija su spec. Esta spec fija el límite en bytes (igual al de #158), el código HTTP y el cuerpo de error, y qué pasa con el objeto que excede el límite: se borra, o se queda oculto con uploaded_at a NULL. Si se borra hace falta s3:DeleteObject, y #160 debe contemplarlo. Depende de #157; conviene alinearla con la spec de #158.",
+    "acceptance_criteria": [
+      "Un test por rama: ContentLength justo en el límite, uno por encima y ContentLength ausente",
+      "e2e contra LocalStack",
+      "Ninguna prueba contra AWS real"
+    ],
+    "files_affected": [
+      "backend-pet-tracker/src/modules/media/",
+      "backend-pet-tracker/test/media-docs.e2e-spec.ts"
+    ]
+  },
+  {
+    "id": 162,
+    "name": "media-docs-download-test-locks",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Registrada el 2026-10-08 por decisión del humano («si registra los 4 huecos»). Deuda de #157 media-docs-download-api: las observaciones 1, 3, 4 y 5 de progress/review_media-docs-download-api.md, el veredicto que aprobó #157. Solo añade candados de test: no cambia comportamiento de producción y ningún hueco es incumplimiento de #157, que se ciñó a su spec. Medido en la branch de #157 (45fc4d46), bajo backend-pet-tracker/src/modules/media/. (1) R6 (g): infrastructure/mappers/pet-document-error.mapper.ts devuelve por identidad el error desconocido (`return error;`, tras las ramas `instanceof PetDocumentNotFoundError` y `instanceof PetDocumentNotUploadedError`) y no tiene spec propio; la sonda P16 (mapear el desconocido a 404) sobrevivió en unit y e2e. #157 declaró «(g) no tiene e2e» porque LocalStack no reproduce un fallo distinto de 404, así que el candado va en un pet-document-error.mapper.spec.ts nuevo con un it por rama. (2) R7: en infrastructure/photo-storage.object-exists.spec.ts el doble del 404 trae a la vez `name: 'NotFound'` y `$metadata: { httpStatusCode: 404 }`; la sonda P10 (decidir por name) sobrevivió. Falta un it con un error 404 sin `name`. (3) R4: application/use-cases/list-pet-documents.use-case.ts arma la lista con Promise.all sobre el orden del repositorio, pero el doble de createDownloadUrl (`Promise.resolve`) resuelve en orden de llamada; la sonda P4 (push al resolver) sobrevivió. Falta un doble que resuelva el primer documento después del segundo. (4) Carrera de confirm: infrastructure/repositories/pet-document.drizzle.repository.ts filtra markUploaded con `isNull(petDocuments.uploadedAt)` (design D4) y no hay spec de ese repositorio ni test que lo llame directamente; la idempotencia de R5 la cubre el return temprano del use case. Ninguna cláusula EARS de #157 lo exige: la spec de esta deuda decide si se candada (por ejemplo, markUploaded sobre una fila ya confirmada no cambia uploaded_at, contra Postgres) o si se descarta por escrito. Depende del merge de #157.",
+    "acceptance_criteria": [
+      "Cada candado nuevo falla con su sonda de #157 plantada (P16, P10, P4 y, si la spec lo incluye, el WHERE de markUploaded sin isNull) y pasa sin ella",
+      "Cero cambios en código de producción de backend-pet-tracker/",
+      "Ningún test existente cambia salvo los dos dobles nombrados (object-exists y list-pet-documents)",
+      "Ninguna prueba contra AWS real"
+    ],
+    "files_affected": [
+      "backend-pet-tracker/src/modules/media/infrastructure/mappers/pet-document-error.mapper.spec.ts",
+      "backend-pet-tracker/src/modules/media/infrastructure/photo-storage.object-exists.spec.ts",
+      "backend-pet-tracker/src/modules/media/application/use-cases/list-pet-documents.use-case.spec.ts",
+      "backend-pet-tracker/test/media-docs.e2e-spec.ts"
+    ]
   }
 ]

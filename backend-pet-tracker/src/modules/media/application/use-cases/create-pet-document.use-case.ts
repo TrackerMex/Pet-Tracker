@@ -44,6 +44,7 @@ export class CreatePetDocumentUseCase {
       date: dto.date,
       vet: dto.vet ?? null,
       key,
+      uploadedAt: null,
       createdBy: userId,
     };
 

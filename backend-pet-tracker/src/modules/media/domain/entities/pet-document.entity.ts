@@ -6,5 +6,6 @@ export interface PetDocument {
   date: string;
   vet: string | null;
   key: string;
+  uploadedAt: Date | null;
   createdBy: string;
 }
