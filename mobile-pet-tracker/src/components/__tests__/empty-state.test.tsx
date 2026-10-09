@@ -194,7 +194,7 @@ describe('#155 R10: los vacíos que no se ilustran siguen en texto', () => {
     ['src/screens/alerts/index.tsx', 1],
     ['src/screens/reminders/index.tsx', 1],
     ['src/screens/docs/index.tsx', 1],
-    ['src/screens/geofences/index.tsx', 1],
+    ['src/screens/geofences/index.tsx', 2],
   ] as const)('%s pinta %i EmptyState', (path, n) => {
     const source = readFileSync(join(process.cwd(), path), 'utf8');
     expect(source.match(/<EmptyState\b/g) ?? []).toHaveLength(n);

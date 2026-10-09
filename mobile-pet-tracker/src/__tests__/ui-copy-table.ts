@@ -497,7 +497,8 @@ export const R14_GEOFENCES: UseRow[] = [
   { file: 'src/screens/geofences/index.tsx', key: 'geofences.delete' },
   { file: 'src/screens/geofences/index.tsx', key: 'geofences.statusActive' },
   { file: 'src/screens/geofences/index.tsx', key: 'geofences.statusInactive' },
-  { file: 'src/screens/geofences/index.tsx', key: 'geofences.needsCollar' },
+  { file: 'src/screens/geofences/index.tsx', key: 'geofences.noTrackingTitle' }, // #159 R5
+  { file: 'src/screens/geofences/index.tsx', key: 'geofences.noTrackingBody' }, // #159 R5
   { file: 'src/screens/geofences/index.tsx', key: 'common.cannotReachServer' },
   { file: 'src/screens/geofences/index.tsx', key: 'common.somethingWentWrong' },
   { file: 'src/screens/geofences/index.tsx', key: 'common.retry' },

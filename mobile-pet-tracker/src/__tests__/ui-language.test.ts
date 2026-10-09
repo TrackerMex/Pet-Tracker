@@ -257,7 +257,7 @@ describe('#100 R10: el detalle de alerta resuelve su copy por clave', () => {
 
 describe('#41 R10: las zonas seguras resuelven su copy por clave', () => {
   it('registra cada ocurrencia de la pantalla y de su cabecera', () => {
-    expect(R14_GEOFENCES).toHaveLength(18 + 1); // +1 #155 R8
+    expect(R14_GEOFENCES).toHaveLength(18 + 1 + 1); // +1 #155 R8, +1 #159 R5
     expect(R14_GEOFENCES.every(({ file }) =>
       file === 'src/app/_layout.tsx' || file === 'src/screens/geofences/index.tsx',
     )).toBe(true);
