@@ -33,3 +33,7 @@
   verificadas contra el árbol. Enmiendas del leader: R2 nombra `documents` y
   `storage` en tasks.md; `files_affected` de #162 pierde el mapper spec (cerrado
   por #161 R3). Pendiente: gate humano en Notion + Q1-Q3.
+- Notion: página `3f46115a-9b27-8139-b35e-ee1d530aef95` (espejo de 1f975e55), En revisión / Spec Author.
+- Gate: Aprobado en Notion (`page_last_edited_at` 2026-10-09T15:55:19.534Z), Q1–Q3
+  con su recomendación («Vamos a seguir la recomendaciones»). Sin enmiendas.
+  Firma: commit `docs(specs): firma de la spec de #162 aprobada vía Notion`.

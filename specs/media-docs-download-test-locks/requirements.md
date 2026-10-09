@@ -1,6 +1,6 @@
 ---
 feature: "media-docs-download-test-locks"
-status: draft     # draft | approved
+status: approved  # draft | approved
 tags: [harness, spec, backend, media, tests]
 ---
 
@@ -284,5 +284,5 @@ Clasificado viñeta a viñeta (memoria `fuera-de-alcance-no-todo-es-feature`):
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
-- Respuestas a Q1–Q3 (frase literal del humano): ____
+- [x] Aprobado por humano (fecha: 2026-10-09) ← gate obligatorio antes de implementar
+- Respuestas a Q1–Q3 (frase literal del humano, escrita en la página de Notion): «Vamos a seguir la recomendaciones». Q1: se canda `markUploaded` (R3 se queda); Q2: sin unit para las ramas NOT_FOUND y NOT_UPLOADED del mapper; Q3: no se registra deuda por el `eq(petDocuments.id, id)`. DA1–DA5 quedan con su opción por defecto.
