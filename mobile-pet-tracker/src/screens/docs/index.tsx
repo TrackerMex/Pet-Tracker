@@ -25,7 +25,7 @@ import {
 } from '../../utils/category-palette';
 import { civilTodayIso } from '../../utils/civil-today-iso';
 
-type ActionError = 'file-format' | 'file-too-large' | 'unknown';
+type ActionError = 'file-format' | 'file-too-large' | 'invalid-form' | 'unknown';
 type SelectedDocument = {
   asset: DocumentPicker.DocumentPickerAsset;
   contentType: DocumentContentType;
@@ -80,9 +80,11 @@ export function DocsScreen({ petId }: { petId: string }) {
     ? t('docs.errorFileFormat')
     : actionError === 'file-too-large'
       ? t('docs.errorFileTooLarge')
-      : actionError === 'unknown'
-        ? t('common.somethingWentWrong')
-        : null;
+      : actionError === 'invalid-form'
+        ? t('docs.errorInvalidForm')
+        : actionError === 'unknown'
+          ? t('common.somethingWentWrong')
+          : null;
 
   function pickDocument() {
     setActionError(null);
@@ -113,6 +115,14 @@ export function DocsScreen({ petId }: { petId: string }) {
     setDate(civilTodayIso(undefined));
     setVet('');
     setActionError(null);
+  }
+
+  function submitDocument() {
+    setActionError(null);
+    if (!type.trim() || !name.trim() || !/^\d{4}-\d{2}-\d{2}$/.test(date.trim())) {
+      setActionError('invalid-form');
+      return;
+    }
   }
 
   return (
@@ -206,7 +216,11 @@ export function DocsScreen({ petId }: { petId: string }) {
               maxLength={120}
             />
           </TextField>
-          <Button testID="docs-upload-submit" className="rounded-xl bg-accent">
+          <Button
+            testID="docs-upload-submit"
+            className="rounded-xl bg-accent"
+            onPress={submitDocument}
+          >
             <Button.Label className="font-bold text-accent-foreground">
               {t('docs.upload')}
             </Button.Label>
