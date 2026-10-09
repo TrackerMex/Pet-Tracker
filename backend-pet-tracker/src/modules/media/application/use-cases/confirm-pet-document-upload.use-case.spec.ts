@@ -129,3 +129,14 @@ describe('#161 R2: ConfirmPetDocumentUploadUseCase aplica el límite de 10485760
     expect(markUploaded).not.toHaveBeenCalled();
   });
 });
+
+describe('#161 R3: ContentLength ausente no confirma', () => {
+  it('#161 R3: propaga el error de getObjectSize sin markUploaded', async () => {
+    const { useCase, getObjectSize, markUploaded } = buildDeps();
+    const missing = new Error('HeadObject response has no ContentLength');
+    getObjectSize.mockRejectedValue(missing);
+
+    await expect(useCase.execute(PET_ID, DOCUMENT_ID)).rejects.toBe(missing);
+    expect(markUploaded).not.toHaveBeenCalled();
+  });
+});

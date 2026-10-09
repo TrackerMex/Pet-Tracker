@@ -15,3 +15,11 @@ describe('#161 R2: mapPetDocumentError traduce PetDocumentTooLargeError a 409', 
     });
   });
 });
+
+describe('#161 R3: mapPetDocumentError devuelve por identidad un error desconocido', () => {
+  it('#161 R3: devuelve el mismo Error sin traducirlo', () => {
+    const missing = new Error('HeadObject response has no ContentLength');
+
+    expect(mapPetDocumentError(missing)).toBe(missing);
+  });
+});
