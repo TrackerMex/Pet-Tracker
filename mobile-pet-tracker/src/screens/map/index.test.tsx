@@ -2025,8 +2025,15 @@ describe('#159 R3: el dueño sin collar puede ir a emparejar', () => {
     expect(mockRouter.push).toHaveBeenCalledWith('/pairing');
   });
 
-  it('pinta Vincular collar aunque el listado diga otro rol: manda el rol del detalle', async () => {
-    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ myRole: 'family' })] });
+  it.each([
+    { role: 'family', collar: 'sin collar', device: null },
+    { role: 'family', collar: 'con collar', device: makeDevice('online') },
+    { role: 'walker', collar: 'sin collar', device: null },
+    { role: 'walker', collar: 'con collar', device: makeDevice('online') },
+    { role: 'vet', collar: 'sin collar', device: null },
+    { role: 'vet', collar: 'con collar', device: makeDevice('online') },
+  ] as const)('pinta Vincular collar aunque el listado diga $role $collar: manda el rol y el collar del detalle', async ({ role, device }) => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ myRole: role, device })] });
     mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet() });
     mockGetLastPosition.mockResolvedValue({ kind: 'no-tracking' });
     await renderMap();
