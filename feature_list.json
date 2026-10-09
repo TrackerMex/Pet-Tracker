@@ -2643,7 +2643,7 @@
   {
     "id": 134,
     "name": "mobile-alert-ack-outcome-helper",
-    "status": "spec_ready",
+    "status": "in_progress",
     "priority": "P3",
     "description": "Registrada al cerrar #100 el 2026-09-29, por decision del humano. Es la deuda 5 del reviewer de #100 (progress/review_mobile-alert-detail-screen.md, «#134 (propuesta)») y la del «switch de ackAlert duplicado» de specs/mobile-alert-detail-screen/requirements.md §Fuera de alcance. El switch sobre el resultado de ackAlert esta duplicado entre handleAck de mobile-pet-tracker/src/screens/alerts/index.tsx y handleAck de mobile-pet-tracker/src/screens/alert-detail/index.tsx (ancla por contenido: grep -n \"ackAlert(baseUrl\"). Coinciden unreachable (common.cannotReachServer), unauthorized (signOut), error/missing-config y catch (common.somethingWentWrong); ok y already-closed marcan la alerta como acked/closed en el estado local de cada pantalla (por id en el centro, unica en el detalle); not-found difiere a proposito: el centro pinta common.somethingWentWrong y el detalle hace router.dismissTo('/alerts') una vez. Alcance: extraer la clasificacion del resultado a un helper y dejar a cada pantalla solo not-found y el destino del ok/already-closed, sin cambio de conducta. Delimitacion: NO es invalidar ni escribir la cache de alertKeys.list(); #100 D2 y R5 lo excluyen a proposito. Contratos que la spec debe medir antes de mover nada: el mapa screenSignOutCalls de src/__tests__/design-drift.test.ts (cuenta signOut por pantalla; hoy 'screens/alert-detail/index.tsx': 1) y las tablas R12_ALERTS y R13_ALERT_DETAIL de src/__tests__/ui-copy-table.ts (cuentan cada t('...') por fichero), que se mueven si las llamadas salen de las pantallas.",
     "acceptance_criteria": [

@@ -36,3 +36,10 @@
 - Gate firmado vía Notion: `Estado del gate` = Aprobado, `page_last_edited_at`
   2026-10-09T18:07:22.971Z, respuesta «seguimos la recomendaciones» (Q1–Q5
   con su recomendación). Spec sin enmiendas.
+- Handoff a Codex CLI en `progress/handoff_mobile-alert-ack-outcome-helper.md`
+  (commit H0 que lo añade). Base medida en `851d8685`: alerts 39, detalle 25,
+  design-drift 62, ui-language 30, consistency 55, legibility 27; suite entera
+  97 suites / 2365 tests, exit 0. Cierre esperado: 98 / 2386 (+21 tests).
+  Todas las anclas del handoff ejecutadas desde el fichero contra H0 y cuadran.
+  El handoff corrige la ruta de language-provider de tasks.md §Cierre
+  (`src/providers/__tests__/`, no `src/__tests__/`).
