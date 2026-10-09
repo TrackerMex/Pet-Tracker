@@ -23,65 +23,68 @@ function buildDeps(uploadedAt: Date | null = null) {
     uploadedAt,
   });
   const markUploaded = jest.fn().mockResolvedValue(undefined);
-  const objectExists = jest.fn().mockResolvedValue(true);
+  const getObjectSize = jest.fn().mockResolvedValue(1024);
   const documents = {
     findByIdAndPet,
     markUploaded,
   } as unknown as PetDocumentRepository;
-  const storage = { objectExists } as unknown as PhotoStorage;
+  const storage = { getObjectSize } as unknown as PhotoStorage;
   const useCase = new ConfirmPetDocumentUploadUseCase(documents, storage);
 
-  return { useCase, findByIdAndPet, markUploaded, objectExists };
+  return { useCase, findByIdAndPet, markUploaded, getObjectSize };
 }
 
 describe('#157 R5: ConfirmPetDocumentUploadUseCase marca subido', () => {
-  it('#157 R5: pendiente cuyo objeto existe: consulta objectExists(key) y llama markUploaded(id)', async () => {
-    const { useCase, findByIdAndPet, objectExists, markUploaded } = buildDeps();
+  it('#157 R5: pendiente cuyo objeto existe: consulta getObjectSize(key) y llama markUploaded(id)', async () => {
+    const { useCase, findByIdAndPet, getObjectSize, markUploaded } =
+      buildDeps();
 
     await expect(useCase.execute(PET_ID, DOCUMENT_ID)).resolves.toBeUndefined();
     expect(findByIdAndPet).toHaveBeenCalledWith(DOCUMENT_ID, PET_ID);
-    expect(objectExists).toHaveBeenCalledTimes(1);
-    expect(objectExists).toHaveBeenCalledWith(KEY);
+    expect(getObjectSize).toHaveBeenCalledTimes(1);
+    expect(getObjectSize).toHaveBeenCalledWith(KEY);
     expect(markUploaded).toHaveBeenCalledTimes(1);
     expect(markUploaded).toHaveBeenCalledWith(DOCUMENT_ID);
   });
 
-  it('#157 R5: ya confirmado: resuelve sin llamar a objectExists ni a markUploaded', async () => {
-    const { useCase, objectExists, markUploaded } = buildDeps(new Date());
+  it('#157 R5: ya confirmado: resuelve sin llamar a getObjectSize ni a markUploaded', async () => {
+    const { useCase, getObjectSize, markUploaded } = buildDeps(new Date());
 
     await expect(useCase.execute(PET_ID, DOCUMENT_ID)).resolves.toBeUndefined();
-    expect(objectExists).not.toHaveBeenCalled();
+    expect(getObjectSize).not.toHaveBeenCalled();
     expect(markUploaded).not.toHaveBeenCalled();
   });
 });
 
 describe('#157 R6: ConfirmPetDocumentUploadUseCase rechaza sin marcar', () => {
   it('#157 R6 (a): documentId malformado: PetDocumentNotFoundError sin consultar el repositorio', async () => {
-    const { useCase, findByIdAndPet, objectExists, markUploaded } = buildDeps();
+    const { useCase, findByIdAndPet, getObjectSize, markUploaded } =
+      buildDeps();
 
     await expect(useCase.execute(PET_ID, 'not-a-uuid')).rejects.toBeInstanceOf(
       PetDocumentNotFoundError,
     );
     expect(findByIdAndPet).not.toHaveBeenCalled();
-    expect(objectExists).not.toHaveBeenCalled();
+    expect(getObjectSize).not.toHaveBeenCalled();
     expect(markUploaded).not.toHaveBeenCalled();
   });
 
   it('#157 R6 (b)/(c): findByIdAndPet devuelve null: PetDocumentNotFoundError sin consultar el bucket', async () => {
-    const { useCase, findByIdAndPet, objectExists, markUploaded } = buildDeps();
+    const { useCase, findByIdAndPet, getObjectSize, markUploaded } =
+      buildDeps();
     findByIdAndPet.mockResolvedValue(null);
 
     await expect(useCase.execute(PET_ID, DOCUMENT_ID)).rejects.toBeInstanceOf(
       PetDocumentNotFoundError,
     );
     expect(findByIdAndPet).toHaveBeenCalledWith(DOCUMENT_ID, PET_ID);
-    expect(objectExists).not.toHaveBeenCalled();
+    expect(getObjectSize).not.toHaveBeenCalled();
     expect(markUploaded).not.toHaveBeenCalled();
   });
 
   it('#157 R6 (d): objeto ausente: PetDocumentNotUploadedError sin markUploaded', async () => {
-    const { useCase, objectExists, markUploaded } = buildDeps();
-    objectExists.mockResolvedValue(false);
+    const { useCase, getObjectSize, markUploaded } = buildDeps();
+    getObjectSize.mockResolvedValue(null);
 
     await expect(useCase.execute(PET_ID, DOCUMENT_ID)).rejects.toBeInstanceOf(
       PetDocumentNotUploadedError,
@@ -89,12 +92,51 @@ describe('#157 R6: ConfirmPetDocumentUploadUseCase rechaza sin marcar', () => {
     expect(markUploaded).not.toHaveBeenCalled();
   });
 
-  it('#157 R6 (g): objectExists falla: propaga el mismo error sin markUploaded', async () => {
-    const { useCase, objectExists, markUploaded } = buildDeps();
+  it('#157 R6 (g): getObjectSize falla: propaga el mismo error sin markUploaded', async () => {
+    const { useCase, getObjectSize, markUploaded } = buildDeps();
     const boom = new Error('storage unavailable');
-    objectExists.mockRejectedValue(boom);
+    getObjectSize.mockRejectedValue(boom);
 
     await expect(useCase.execute(PET_ID, DOCUMENT_ID)).rejects.toBe(boom);
+    expect(markUploaded).not.toHaveBeenCalled();
+  });
+});
+
+describe('#161 R2: ConfirmPetDocumentUploadUseCase aplica el límite de 10485760 bytes', () => {
+  it('#161 R2 (a): acepta exactamente 10485760 bytes y llama markUploaded(id)', async () => {
+    const { useCase, getObjectSize, markUploaded } = buildDeps();
+    getObjectSize.mockResolvedValue(10485760);
+
+    await expect(useCase.execute(PET_ID, DOCUMENT_ID)).resolves.toBeUndefined();
+    expect(getObjectSize).toHaveBeenCalledWith(KEY);
+    expect(markUploaded).toHaveBeenCalledTimes(1);
+    expect(markUploaded).toHaveBeenCalledWith(DOCUMENT_ID);
+  });
+
+  it('#161 R2 (b): rechaza 10485761 bytes con PetDocumentTooLargeError sin markUploaded', async () => {
+    const { useCase, getObjectSize, markUploaded } = buildDeps();
+    getObjectSize.mockResolvedValue(10485761);
+
+    const error = await useCase
+      .execute(PET_ID, DOCUMENT_ID)
+      .catch((error: unknown) => error);
+
+    expect(error).toBeInstanceOf(Error);
+    expect((error as Error).name).toBe('PetDocumentTooLargeError');
+    expect((error as Error).message).toBe(
+      'Pet document file exceeds the size limit',
+    );
+    expect(markUploaded).not.toHaveBeenCalled();
+  });
+});
+
+describe('#161 R3: ContentLength ausente no confirma', () => {
+  it('#161 R3: propaga el error de getObjectSize sin markUploaded', async () => {
+    const { useCase, getObjectSize, markUploaded } = buildDeps();
+    const missing = new Error('HeadObject response has no ContentLength');
+    getObjectSize.mockRejectedValue(missing);
+
+    await expect(useCase.execute(PET_ID, DOCUMENT_ID)).rejects.toBe(missing);
     expect(markUploaded).not.toHaveBeenCalled();
   });
 });

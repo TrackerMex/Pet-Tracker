@@ -11,3 +11,10 @@ export class PetDocumentNotUploadedError extends Error {
     this.name = 'PetDocumentNotUploadedError';
   }
 }
+
+export class PetDocumentTooLargeError extends Error {
+  constructor() {
+    super('Pet document file exceeds the size limit');
+    this.name = 'PetDocumentTooLargeError';
+  }
+}

@@ -1,10 +1,10 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-10-09
-**Features completadas**: 147/161 (`feature_list.json`)
-**En progreso**: ninguna en esta rama. #18 cerrada en `feature/18-nutrition-ai-explainer-claude`, PR pendiente de merge humano.
+**Features completadas**: 148/161 (`feature_list.json`)
+**En progreso**: ninguna en esta rama. #161 cerrada en `feature/161-media-docs-confirm-size-limit`, PR pendiente de merge humano.
 
-**Pendientes**: 14 (#60, #119, #129, #134, #144, #150, #151, #154, #158, #159, #160, #161, #162 y #163). **#18 `nutrition-ai-explainer` cerrada (proveedor Anthropic)**: el plan nutricional gana una explicación en lenguaje natural escrita por `claude-haiku-5-5`, opcional y apagada por defecto. Tres variables en `.env.example` (`ANTHROPIC_ENABLED`, `ANTHROPIC_API_KEY`, `ANTHROPIC_MODEL`); la factory es la única que las lee, `NODE_ENV=test` la apaga antes que nada y clave y modelo llegan recortados. El plan se inserta primero y la IA va después: cualquier fallo del SDK o del proveedor degrada a `aiExplanation: null` con un warn, sin tumbar la respuesta. La explicación se persiste en Postgres (`setAiExplanation`) y las rutas la leen de ahí; un hash hit con explicación no vuelve a pagar, el reintento escribe sobre la misma fila y solo se pide con el gate de entitlement (`isPetTracked`). Sustituye a la implementación OpenAI de 2026-08, que nunca se mergeó. Codex en dos rondas: la primera rechazada (F1-F3, con origen en la spec), Enmienda E1 firmada desde Notion (`c4b86430`) y la segunda aprobada (`535128bd`). R19, la prueba de humo con clave real, la superó el humano (`27680bf6`). Deuda #163: la O1 del reviewer (el anti-vacío de R3 solo muestrea `NODE_ENV=development`). Backend unit 179/1361 → 186/1463, e2e 459 → 465 tests verdes.
+**Pendientes**: 13 (#60, #119, #129, #134, #144, #150, #151, #154, #158, #159, #160, #162 y #163). **#161 `media-docs-confirm-size-limit` cerrada**: el confirm de documentos (`POST /v1/pets/:petId/media/:documentId/confirm`) rechaza ficheros de más de 10485760 bytes (10 MiB, `PET_DOCUMENT_MAX_BYTES`) con 409 `PET_DOCUMENT_TOO_LARGE`; el documento queda pendiente y el objeto se deja en el bucket (Q2). En el puerto `PhotoStorage`, `getObjectSize` sustituye a `objectExists` y lee `ContentLength` del mismo `HeadObject`: un 404 da `null` (409 `PET_DOCUMENT_NOT_UPLOADED`, como antes), un fichero de 0 bytes se acepta, y una respuesta sin `ContentLength` falla cerrada sin marcar nada. Q1-Q3 y DA1-DA6 con su opción por defecto. Codex test-primero en 7 commits (paradas en c1 por prettier y en c3 por una cuenta mal sumada en el handoff, enmiendas L1 y L2). Reviewer APROBADO a la primera con 32 sondas de mutación (un mutante equivalente, el orden null/límite, que protege `tsc`). Backend unit 186/1463 → 187/1471, e2e 465 → 467 tests verdes.
 
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
@@ -88,6 +88,12 @@ debe listar las 4 URLs de cola.
 
 ## Estado actual
 
+- **`media-docs-confirm-size-limit` (#161) done** (2026-10-09, worktree
+  `Pet-Tracker-wt-161`, sesion Frontend): límite de 10485760 bytes en el
+  confirm de documentos (409 `PET_DOCUMENT_TOO_LARGE`) leyendo `ContentLength`
+  del `HeadObject` vía `getObjectSize`. Reviewer aprobado a la primera
+  (veredicto sobre `2e8319df`). Gate: `./init.sh` exit 0 (backend 187/1471,
+  móvil 96/2275, e2e 30 de 33 suites, 467 tests). PR abierta.
 - **`nutrition-ai-explainer` (#18) done** (2026-10-09, worktree
   `Pet-Tracker-wt-18`, sesion Backend): explicación IA del plan nutricional
   con `claude-haiku-5-5`, apagada por defecto y degradando a `null`.
@@ -1402,6 +1408,12 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Última sesión
+
+- **2026-10-09** — **#161 `media-docs-confirm-size-limit` cerrada** (worktree
+  `Pet-Tracker-wt-161`, sesión Frontend): spec firmada desde Notion
+  (`c2676ab6`), handoff a Codex (`6ccdb744`) con enmiendas L1 (`298f7243`) y
+  L2 (`6bd52ec7`), 7 commits test-primero, merge de `origin/main` (#18) en
+  `2e8319df` y reviewer APROBADO. PR abierta; siguiente: merge humano.
 
 - **2026-10-09** — **#18 `nutrition-ai-explainer` cerrada** (worktree
   `Pet-Tracker-wt-18`, sesión Backend): enmienda de proveedor a Anthropic

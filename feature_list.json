@@ -3145,7 +3145,7 @@
   {
     "id": 161,
     "name": "media-docs-confirm-size-limit",
-    "status": "pending",
+    "status": "done",
     "priority": "P3",
     "description": "Registrada el 2026-10-08 por decisión del humano («Autorizo Q1 de #157 y registra las dos deudas: #160 infra-media-bucket-iam-least-privilege y #161 media-docs-confirm-size-limit.»). Deuda de #157 media-docs-download-api. La spec de #157 deja fuera el límite de tamaño en servidor (requirements.md §Fuera de alcance: «Una URL PUT prefirmada no puede imponer tamaño; #158 fija el límite en el cliente. Si algún día se impone en servidor, el sitio natural es el confirm (`ContentLength` del HEAD)»). #158 mobile-docs-upload sigue pending: el límite del cliente aún no existe y lo fija su spec. Esta spec fija el límite en bytes (igual al de #158), el código HTTP y el cuerpo de error, y qué pasa con el objeto que excede el límite: se borra, o se queda oculto con uploaded_at a NULL. Si se borra hace falta s3:DeleteObject, y #160 debe contemplarlo. Depende de #157; conviene alinearla con la spec de #158.",
     "acceptance_criteria": [
