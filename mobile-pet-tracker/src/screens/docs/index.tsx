@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import * as DocumentPicker from 'expo-document-picker';
+import { openBrowserAsync } from 'expo-web-browser';
 import { Button, Input, Label, Skeleton, TextField } from 'heroui-native';
 import { useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
@@ -43,11 +44,11 @@ type SelectedDocument = {
   contentType: DocumentContentType;
 };
 
-function DocumentRow({ document }: { document: PetDocument }) {
+function DocumentRow({ document, onPress }: { document: PetDocument; onPress: () => void }) {
   const slot = CATEGORY_SLOTS[documentCategory(document.type)];
 
   return (
-    <Card testID={`doc-${document.id}`} className="flex-row items-center gap-3">
+    <Card testID={`doc-${document.id}`} className="flex-row items-center gap-3" onPress={onPress}>
       <View
         className={`size-10 items-center justify-center rounded-xl ${slot.surface}`}
         style={CONTINUOUS_CORNER}
@@ -128,6 +129,11 @@ export function DocsScreen({ petId }: { petId: string }) {
     setDate(civilTodayIso(undefined));
     setVet('');
     setActionError(null);
+  }
+
+  function openDocument(document: PetDocument) {
+    setActionError(null);
+    void openBrowserAsync(document.downloadUrl).catch(() => setActionError('unknown'));
   }
 
   async function handleUploadError(
@@ -338,7 +344,7 @@ export function DocsScreen({ petId }: { petId: string }) {
 
       {docs.data?.kind === 'ok'
         ? docs.data.docs.map((document) => (
-            <DocumentRow key={document.id} document={document} />
+            <DocumentRow key={document.id} document={document} onPress={() => openDocument(document)} />
           ))
         : null}
 
