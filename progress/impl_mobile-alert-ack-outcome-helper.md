@@ -1740,3 +1740,1461 @@ exit=0
 ```
 
 Lista cerrada exacta: 11 ficheros. Este bloque se incorpora mediante el commit adicional autorizado `docs(mobile-alert-ack-outcome-helper): impl report (#134)`, únicamente sobre este informe, porque registra una medida posterior al commit de trazabilidad. No se modifican ni se reescriben los hashes de R1–R7.
+
+## Ronda 2
+
+```text
+$ pwd
+/home/claude/sites/Pet-Tracker-wt-134
+$ git branch --show-current
+feature/134-mobile-alert-ack-outcome-helper
+$ git rev-parse --short HEAD
+044ecfe0
+$ git status --short
+(salida vacía)
+```
+
+H0 ronda 2: `044ecfe0`. Branch correcta y árbol limpio antes de escribir esta sección.
+Skills cargadas: ninguna, conforme al handoff. No se ejecuta init.sh ni se toca infraestructura. No se hace merge/rebase/push ni se abre PR. La ronda 1 del informe y sus commits permanecen intactos.
+
+### Arranque de la ronda 2
+
+`git fetch origin`: exit=0.
+`git merge-base --is-ancestor origin/main HEAD; echo "exit=$?"`: exit=0.
+`node_modules`: presente. `test ! -e .expo/types/router.d.ts`: exit=0.
+`pgrep -af '[i]nit\.sh'`: detectó `2009301 bash ./init.sh`; se esperará a que salga vacío antes de Jest entero.
+
+### Anclas H0 ronda 2
+
+```text
+E1. $ grep -cF 'function deferred()' src/utils/alert-ack-outcome.test.ts
+0
+E2. $ grep -cF "it('unauthorized espera a signOut antes de resolver'" src/utils/alert-ack-outcome.test.ts
+0
+E3. $ grep -cF "it('unauthorized espera también a un signOut que rechaza, es'" src/utils/alert-ack-outcome.test.ts
+0
+E4. $ grep -cF 'function renderAlertsInEnglish()' src/screens/alerts/index.test.tsx
+0
+E5. $ grep -cF 'initial="en"' src/screens/alerts/index.test.tsx
+0
+E6. $ grep -cF "'Cannot reach server'" src/screens/alerts/index.test.tsx
+0
+E7. $ grep -cF "'Something went wrong'" src/screens/alerts/index.test.tsx
+0
+E8. $ grep -cF "'Cannot reach server'" src/screens/alert-detail/index.test.tsx
+0
+E9. $ grep -cF "'Something went wrong'" src/screens/alert-detail/index.test.tsx
+0
+E10. $ grep -cF "renderDetail('alert-1', 'en')" src/screens/alert-detail/index.test.tsx
+0
+E11. $ grep -cF 'const fail' src/utils/alert-ack-outcome.ts
+0
+E12. $ grep -cF 'es[key]' src/screens/alerts/index.tsx
+0
+E13. $ grep -cF 'es[key]' src/screens/alert-detail/index.tsx
+0
+E14. $ grep -cF "it('mantiene el botón deshabilitado hasta que signOut termina tras unauthorized'" src/screens/alerts/index.test.tsx
+0
+E15. $ grep -cF "it('mantiene el botón deshabilitado hasta que signOut termina tras unauthorized'" src/screens/alert-detail/index.test.tsx
+0
+E16. $ grep -cF 'finishSignOut' src/screens/alerts/index.test.tsx
+0
+E17. $ grep -cF 'finishSignOut' src/screens/alert-detail/index.test.tsx
+0
+E18. $ grep -cF 'const run = signOut;' src/screens/alerts/index.tsx
+0
+E19. $ grep -cF 'const run = signOut;' src/screens/alert-detail/index.tsx
+0
+E20. $ grep -cxF '        signOut,' src/screens/alerts/index.tsx
+1
+E21. $ grep -cxF '        signOut,' src/screens/alert-detail/index.tsx
+1
+X1. $ grep -cF -- '- [x] Enmienda E1 aprobada (fecha: 2026-10-09)' ../specs/mobile-alert-ack-outcome-helper/requirements.md
+1
+X2. $ grep -cF "describe('#134 R4: el helper resuelve las ramas comunes en los dos idiomas'" src/utils/alert-ack-outcome.test.ts
+1
+X3. $ grep -cF "describe('#134 R1: caracterización de las ramas sin candado del ack'" src/screens/alerts/index.test.tsx
+1
+X4. $ grep -cF "describe('#134 R2: caracterización de la rama sin candado del ack'" src/screens/alert-detail/index.test.tsx
+1
+X5. $ grep -cxF '        await signOut();' src/utils/alert-ack-outcome.ts
+1
+X6. $ grep -cxF "    showError(t('common.somethingWentWrong'));" src/utils/alert-ack-outcome.ts
+1
+X7. $ grep -cxF '        t,' src/screens/alerts/index.tsx
+1
+X8. $ grep -cxF '        t,' src/screens/alert-detail/index.tsx
+1
+X9. $ grep -cxF "import { useAlertsList } from '../../hooks/use-alerts-list';" src/screens/alerts/index.tsx
+1
+X10. $ grep -cxF "import { useAlertsList } from '../../hooks/use-alerts-list';" src/screens/alert-detail/index.tsx
+1
+X11. $ grep -cF "function renderDetail(alertId = 'alert-1', language: 'es' | 'en' = 'es')" src/screens/alert-detail/index.test.tsx
+1
+X12. $ grep -cF 'mockRejectedValue(' src/utils/alert-ack-outcome.test.ts src/screens/alerts/index.test.tsx src/screens/alert-detail/index.test.tsx
+src/utils/alert-ack-outcome.test.ts:0
+src/screens/alerts/index.test.tsx:0
+src/screens/alert-detail/index.test.tsx:1
+X13. $ grep -cF 'mockResolvedValue(' src/utils/alert-ack-outcome.test.ts src/screens/alerts/index.test.tsx src/screens/alert-detail/index.test.tsx
+src/utils/alert-ack-outcome.test.ts:0
+src/screens/alerts/index.test.tsx:30
+src/screens/alert-detail/index.test.tsx:15
+X14. $ grep -cF 'mockReturnValue(' src/utils/alert-ack-outcome.test.ts src/screens/alerts/index.test.tsx src/screens/alert-detail/index.test.tsx
+src/utils/alert-ack-outcome.test.ts:0
+src/screens/alerts/index.test.tsx:18
+src/screens/alert-detail/index.test.tsx:4
+```
+
+Todas las anclas H0 de la ronda 2 coinciden.
+
+### Base medida de la ronda 2
+
+```text
+$ FORCE_COLOR=0 bunx jest src/utils/alert-ack-outcome.test.ts > /tmp/134-e1-base-1.txt 2>&1; echo "exit=$?"
+exit=0
+Test Suites: 1 passed, 1 total
+Tests:       15 passed, 15 total
+$ FORCE_COLOR=0 bunx jest src/screens/alerts/index.test.tsx > /tmp/134-e1-base-2.txt 2>&1; echo "exit=$?"
+exit=0
+Test Suites: 1 passed, 1 total
+Tests:       41 passed, 41 total
+$ FORCE_COLOR=0 bunx jest src/screens/alert-detail/index.test.tsx > /tmp/134-e1-base-3.txt 2>&1; echo "exit=$?"
+exit=0
+Test Suites: 1 passed, 1 total
+Tests:       26 passed, 26 total
+$ FORCE_COLOR=0 bunx jest src/__tests__/design-drift.test.ts > /tmp/134-e1-base-4.txt 2>&1; echo "exit=$?"
+exit=0
+Test Suites: 1 passed, 1 total
+Tests:       65 passed, 65 total
+$ FORCE_COLOR=0 bunx jest src/__tests__/ui-language.test.ts > /tmp/134-e1-base-5.txt 2>&1; echo "exit=$?"
+exit=0
+Test Suites: 1 passed, 1 total
+Tests:       30 passed, 30 total
+$ FORCE_COLOR=0 bunx jest src/__tests__/consistency-classnames.test.ts > /tmp/134-e1-base-6.txt 2>&1; echo "exit=$?"
+exit=0
+Test Suites: 1 passed, 1 total
+Tests:       55 passed, 55 total
+$ FORCE_COLOR=0 bunx jest src/__tests__/legibility-classnames.test.ts > /tmp/134-e1-base-7.txt 2>&1; echo "exit=$?"
+exit=0
+Test Suites: 1 passed, 1 total
+Tests:       27 passed, 27 total
+```
+
+Base idéntica a la declarada. Suite entera de referencia del leader: 98 suites / 2386 tests; cierre esperado: 98 / 2394 (+8 tests).
+
+### c1: W1/W2 verdes contra HEAD, antes de M5
+
+```text
+FORCE_COLOR=0 bunx jest src/utils/alert-ack-outcome.test.ts > /tmp/134-e1-pre-c1.txt 2>&1; echo "exit=$?"
+exit=0
+Test Suites: 1 passed, 1 total
+Tests:       17 passed, 17 total
+```
+
+### c1 rojo — R4 (E1), M5
+
+```text
+FORCE_COLOR=0 bunx jest src/utils/alert-ack-outcome.test.ts > /tmp/134-e1-r1.txt 2>&1; echo "exit=$?"
+exit=1
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 15 passed, 17 total
+```
+
+It rojo, matcher y Expected/Received observados:
+
+```text
+  ● #134 R4: el helper resuelve las ramas comunes en los dos idiomas › unauthorized espera a signOut antes de resolver
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: false
+    Received: true
+
+      171 |     await flushPromises();
+      172 |     expect(handlers.signOut).toHaveBeenCalledTimes(1);
+    > 173 |     expect(settled).toBe(false);
+          |                     ^
+      174 |
+      175 |     signOutGate.resolve();
+      176 |     await expect(done).resolves.toBeUndefined();
+
+      at Object.toBe (src/utils/alert-ack-outcome.test.ts:173:21)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+It rojo, matcher y Expected/Received observados:
+
+```text
+  ● #134 R4: el helper resuelve las ramas comunes en los dos idiomas › unauthorized espera también a un signOut que rechaza, es
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: false
+    Received: true
+
+      196 |     await flushPromises();
+      197 |     expect(handlers.signOut).toHaveBeenCalledTimes(1);
+    > 198 |     expect(settled).toBe(false);
+          |                     ^
+      199 |     expect(handlers.showError).not.toHaveBeenCalled();
+      200 |
+      201 |     signOutGate.reject(new Error('sign-out failed'));
+
+      at Object.toBe (src/utils/alert-ack-outcome.test.ts:198:21)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+```text
+FORCE_COLOR=0 bunx jest src/__tests__/ui-language.test.ts src/__tests__/design-drift.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/134-e1-r1-guardas.txt 2>&1; echo "exit=$?"
+exit=0
+Test Suites: 4 passed, 4 total
+Tests:       177 passed, 177 total
+```
+
+Cadena literal c1 (H0 ronda 2 `044ecfe0`): exit=0.
+
+```text
+grep -qE '^Tests: +2 failed, 15 passed, 17 total$' /tmp/134-e1-r1.txt \
+  && grep -qE '^Tests: +177 passed, 177 total$' /tmp/134-e1-r1-guardas.txt \
+  && grep -qF '● #134 R4: el helper resuelve las ramas comunes en los dos idiomas › unauthorized espera a signOut antes de resolver' /tmp/134-e1-r1.txt \
+  && grep -qF '● #134 R4: el helper resuelve las ramas comunes en los dos idiomas › unauthorized espera también a un signOut que rechaza, es' /tmp/134-e1-r1.txt \
+  && grep -qF 'Expected: false' /tmp/134-e1-r1.txt \
+  && ! grep -qE 'TypeError|ReferenceError|SyntaxError|Cannot find module|Unable to find an element' /tmp/134-e1-r1.txt \
+  && test "$(grep -cF 'const fail' src/utils/alert-ack-outcome.ts)" = 1 \
+  && test "$(grep -cxF '        await signOut();' src/utils/alert-ack-outcome.ts)" = 0 \
+  && test "$(grep -cF 'signOut(' src/utils/alert-ack-outcome.ts)" = 1 \
+  && test "$(grep -cF "t('common.somethingWentWrong')" src/utils/alert-ack-outcome.ts)" = 2 \
+  && test "$(grep -cF 'function deferred()' src/utils/alert-ack-outcome.test.ts)" = 1 \
+  && test ! -e .expo/types/router.d.ts && bun run typecheck && bun run lint \
+  && git add src/utils/alert-ack-outcome.test.ts src/utils/alert-ack-outcome.ts \
+  && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'mobile-pet-tracker/src/utils/alert-ack-outcome.test.ts mobile-pet-tracker/src/utils/alert-ack-outcome.ts ' \
+  && git commit -m 'test(mobile-alert-ack-outcome-helper): helper awaits sign-out either way (R4)'
+```
+Commit: `afd1b4fb test(mobile-alert-ack-outcome-helper): helper awaits sign-out either way (R4)`. Router ausente; typecheck exit=0; lint exit=0; inventario staged exacto verificado.
+
+```text
+[feature/134-mobile-alert-ack-outcome-helper afd1b4fb] test(mobile-alert-ack-outcome-helper): helper awaits sign-out either way (R4)
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 2 files changed, 71 insertions(+), 2 deletions(-)
+
+```
+
+### c2 verde — R4 (E1), M5 revertida
+
+```text
+FORCE_COLOR=0 bunx jest src/utils/alert-ack-outcome.test.ts > /tmp/134-e1-g1.txt 2>&1; echo "exit=$?"
+exit=0
+Test Suites: 1 passed, 1 total
+Tests:       17 passed, 17 total
+```
+
+```text
+FORCE_COLOR=0 bunx jest src/__tests__/ui-language.test.ts src/__tests__/design-drift.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/134-e1-g1-guardas.txt 2>&1; echo "exit=$?"
+exit=0
+Test Suites: 4 passed, 4 total
+Tests:       177 passed, 177 total
+```
+
+Cadena literal c2 (H0 ronda 2 `044ecfe0`): exit=0.
+
+```text
+grep -qE '^Tests: +17 passed, 17 total$' /tmp/134-e1-g1.txt \
+  && grep -qE '^Tests: +177 passed, 177 total$' /tmp/134-e1-g1-guardas.txt \
+  && git diff --quiet 044ecfe0 -- src/utils/alert-ack-outcome.ts \
+  && test ! -e .expo/types/router.d.ts && bun run typecheck && bun run lint \
+  && git add src/utils/alert-ack-outcome.ts \
+  && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'mobile-pet-tracker/src/utils/alert-ack-outcome.ts ' \
+  && git commit -m 'fix(mobile-alert-ack-outcome-helper): revert R4 sign-out wait mutation (R4)'
+```
+Commit: `d3c2b7eb fix(mobile-alert-ack-outcome-helper): revert R4 sign-out wait mutation (R4)`. Router ausente; typecheck exit=0; lint exit=0; inventario staged exacto verificado.
+
+```text
+[feature/134-mobile-alert-ack-outcome-helper d3c2b7eb] fix(mobile-alert-ack-outcome-helper): revert R4 sign-out wait mutation (R4)
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+```
+
+### c3: C3/C4 verdes contra HEAD, antes de M6
+
+```text
+FORCE_COLOR=0 bunx jest src/screens/alerts/index.test.tsx > /tmp/134-e1-pre-c3.txt 2>&1; echo "exit=$?"
+exit=0
+Test Suites: 1 passed, 1 total
+Tests:       43 passed, 43 total
+```
+
+### c3 rojo — R1 (E1), M6
+
+```text
+FORCE_COLOR=0 bunx jest src/screens/alerts/index.test.tsx > /tmp/134-e1-r3.txt 2>&1; echo "exit=$?"
+exit=1
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 41 passed, 43 total
+```
+
+It rojo, matcher y Expected/Received observados:
+
+```text
+  ● #78 R8: el ack cambia la fila sin recargar la lista › #134 R1: caracterización de las ramas sin candado del ack › muestra Cannot reach server en inglés si ackAlert responde unreachable
+
+    expect(instance).toHaveTextContent()
+
+    Expected instance to have text content:
+      Cannot reach server
+    Received:
+      No se pudo conectar con el servidor
+
+      772 |       await renderAlertsInEnglish();
+      773 |       await fireEvent.press(await screen.findByTestId('alert-row-alert-1-ack'));
+    > 774 |       await waitFor(() => expect(screen.queryByTestId('alerts-action-error')).toHaveTextContent('Cannot reach server'));
+          |                    ^
+      775 |     });
+      776 |
+      777 |     it('muestra Something went wrong en inglés si ackAlert responde error', async () => {
+
+      at Object.<anonymous> (src/screens/alerts/index.test.tsx:774:20)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+It rojo, matcher y Expected/Received observados:
+
+```text
+  ● #78 R8: el ack cambia la fila sin recargar la lista › #134 R1: caracterización de las ramas sin candado del ack › muestra Something went wrong en inglés si ackAlert responde error
+
+    expect(instance).toHaveTextContent()
+
+    Expected instance to have text content:
+      Something went wrong
+    Received:
+      Algo salió mal
+
+      780 |       await renderAlertsInEnglish();
+      781 |       await fireEvent.press(await screen.findByTestId('alert-row-alert-1-ack'));
+    > 782 |       await waitFor(() => expect(screen.queryByTestId('alerts-action-error')).toHaveTextContent('Something went wrong'));
+          |                    ^
+      783 |     });
+      784 |   });
+      785 | });
+
+      at Object.<anonymous> (src/screens/alerts/index.test.tsx:782:20)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+```text
+FORCE_COLOR=0 bunx jest src/__tests__/ui-language.test.ts src/__tests__/design-drift.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/134-e1-r3-guardas.txt 2>&1; echo "exit=$?"
+exit=0
+Test Suites: 4 passed, 4 total
+Tests:       177 passed, 177 total
+```
+
+Cadena literal c3 (H0 ronda 2 `044ecfe0`): exit=0.
+
+```text
+grep -qE '^Tests: +2 failed, 41 passed, 43 total$' /tmp/134-e1-r3.txt \
+  && grep -qE '^Tests: +177 passed, 177 total$' /tmp/134-e1-r3-guardas.txt \
+  && grep -qF '● #78 R8: el ack cambia la fila sin recargar la lista › #134 R1: caracterización de las ramas sin candado del ack › muestra Cannot reach server en inglés si ackAlert responde unreachable' /tmp/134-e1-r3.txt \
+  && grep -qF '● #78 R8: el ack cambia la fila sin recargar la lista › #134 R1: caracterización de las ramas sin candado del ack › muestra Something went wrong en inglés si ackAlert responde error' /tmp/134-e1-r3.txt \
+  && ! grep -qE 'TypeError|ReferenceError|SyntaxError|Cannot find module|Unable to find an element' /tmp/134-e1-r3.txt \
+  && test "$(grep -cF 'es[key]' src/screens/alerts/index.tsx)" = 1 \
+  && test "$(grep -cxF '        t,' src/screens/alerts/index.tsx)" = 0 \
+  && test "$(grep -cF 'function renderAlertsInEnglish()' src/screens/alerts/index.test.tsx)" = 1 \
+  && test ! -e .expo/types/router.d.ts && bun run typecheck && bun run lint \
+  && git add src/screens/alerts/index.test.tsx src/screens/alerts/index.tsx \
+  && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'mobile-pet-tracker/src/screens/alerts/index.test.tsx mobile-pet-tracker/src/screens/alerts/index.tsx ' \
+  && git commit -m 'test(mobile-alert-ack-outcome-helper): centro ack errors in english (R1)'
+```
+Commit: `c19c7ca6 test(mobile-alert-ack-outcome-helper): centro ack errors in english (R1)`. Router ausente; typecheck exit=0; lint exit=0; inventario staged exacto verificado.
+
+```text
+[feature/134-mobile-alert-ack-outcome-helper c19c7ca6] test(mobile-alert-ack-outcome-helper): centro ack errors in english (R1)
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 2 files changed, 32 insertions(+), 1 deletion(-)
+
+```
+
+### c4 verde — R1 (E1), M6 revertida
+
+```text
+FORCE_COLOR=0 bunx jest src/screens/alerts/index.test.tsx > /tmp/134-e1-g3.txt 2>&1; echo "exit=$?"
+exit=0
+Test Suites: 1 passed, 1 total
+Tests:       43 passed, 43 total
+```
+
+```text
+FORCE_COLOR=0 bunx jest src/__tests__/ui-language.test.ts src/__tests__/design-drift.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/134-e1-g3-guardas.txt 2>&1; echo "exit=$?"
+exit=0
+Test Suites: 4 passed, 4 total
+Tests:       177 passed, 177 total
+```
+
+Cadena literal c4 (H0 ronda 2 `044ecfe0`): exit=0.
+
+```text
+grep -qE '^Tests: +43 passed, 43 total$' /tmp/134-e1-g3.txt \
+  && grep -qE '^Tests: +177 passed, 177 total$' /tmp/134-e1-g3-guardas.txt \
+  && git diff --quiet 044ecfe0 -- src/screens/alerts/index.tsx \
+  && test ! -e .expo/types/router.d.ts && bun run typecheck && bun run lint \
+  && git add src/screens/alerts/index.tsx \
+  && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'mobile-pet-tracker/src/screens/alerts/index.tsx ' \
+  && git commit -m 'fix(mobile-alert-ack-outcome-helper): revert R1 translator mutation (R1)'
+```
+Commit: `bfca523f fix(mobile-alert-ack-outcome-helper): revert R1 translator mutation (R1)`. Router ausente; typecheck exit=0; lint exit=0; inventario staged exacto verificado.
+
+```text
+[feature/134-mobile-alert-ack-outcome-helper bfca523f] fix(mobile-alert-ack-outcome-helper): revert R1 translator mutation (R1)
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+```
+
+### c5: D2/D3 verdes contra HEAD, antes de M7
+
+```text
+FORCE_COLOR=0 bunx jest src/screens/alert-detail/index.test.tsx > /tmp/134-e1-pre-c5.txt 2>&1; echo "exit=$?"
+exit=0
+Test Suites: 1 passed, 1 total
+Tests:       28 passed, 28 total
+```
+
+### c5 rojo — R2 (E1), M7
+
+```text
+FORCE_COLOR=0 bunx jest src/screens/alert-detail/index.test.tsx > /tmp/134-e1-r5.txt 2>&1; echo "exit=$?"
+exit=1
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 26 passed, 28 total
+```
+
+It rojo, matcher y Expected/Received observados:
+
+```text
+  ● #100 R5: el detalle marca leída la alerta › #134 R2: caracterización de la rama sin candado del ack › muestra Cannot reach server en inglés si ackAlert responde unreachable
+
+    expect(instance).toHaveTextContent()
+
+    Expected instance to have text content:
+      Cannot reach server
+    Received:
+      No se pudo conectar con el servidor
+
+      361 |       await renderDetail('alert-1', 'en');
+      362 |       await fireEvent.press(await screen.findByTestId('alert-detail-ack'));
+    > 363 |       await waitFor(() => expect(screen.queryByTestId('alert-detail-action-error')).toHaveTextContent('Cannot reach server'));
+          |                    ^
+      364 |     });
+      365 |
+      366 |     it('muestra Something went wrong en inglés si ackAlert responde error', async () => {
+
+      at Object.<anonymous> (src/screens/alert-detail/index.test.tsx:363:20)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+It rojo, matcher y Expected/Received observados:
+
+```text
+  ● #100 R5: el detalle marca leída la alerta › #134 R2: caracterización de la rama sin candado del ack › muestra Something went wrong en inglés si ackAlert responde error
+
+    expect(instance).toHaveTextContent()
+
+    Expected instance to have text content:
+      Something went wrong
+    Received:
+      Algo salió mal
+
+      369 |       await renderDetail('alert-1', 'en');
+      370 |       await fireEvent.press(await screen.findByTestId('alert-detail-ack'));
+    > 371 |       await waitFor(() => expect(screen.queryByTestId('alert-detail-action-error')).toHaveTextContent('Something went wrong'));
+          |                    ^
+      372 |     });
+      373 |   });
+      374 | });
+
+      at Object.<anonymous> (src/screens/alert-detail/index.test.tsx:371:20)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+```text
+FORCE_COLOR=0 bunx jest src/__tests__/ui-language.test.ts src/__tests__/design-drift.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/134-e1-r5-guardas.txt 2>&1; echo "exit=$?"
+exit=0
+Test Suites: 4 passed, 4 total
+Tests:       177 passed, 177 total
+```
+
+Cadena literal c5 (H0 ronda 2 `044ecfe0`): exit=0.
+
+```text
+grep -qE '^Tests: +2 failed, 26 passed, 28 total$' /tmp/134-e1-r5.txt \
+  && grep -qE '^Tests: +177 passed, 177 total$' /tmp/134-e1-r5-guardas.txt \
+  && grep -qF '● #100 R5: el detalle marca leída la alerta › #134 R2: caracterización de la rama sin candado del ack › muestra Cannot reach server en inglés si ackAlert responde unreachable' /tmp/134-e1-r5.txt \
+  && grep -qF '● #100 R5: el detalle marca leída la alerta › #134 R2: caracterización de la rama sin candado del ack › muestra Something went wrong en inglés si ackAlert responde error' /tmp/134-e1-r5.txt \
+  && ! grep -qE 'TypeError|ReferenceError|SyntaxError|Cannot find module|Unable to find an element' /tmp/134-e1-r5.txt \
+  && test "$(grep -cF 'es[key]' src/screens/alert-detail/index.tsx)" = 1 \
+  && test "$(grep -cxF '        t,' src/screens/alert-detail/index.tsx)" = 0 \
+  && test "$(grep -cF "renderDetail('alert-1', 'en')" src/screens/alert-detail/index.test.tsx)" = 2 \
+  && test ! -e .expo/types/router.d.ts && bun run typecheck && bun run lint \
+  && git add src/screens/alert-detail/index.test.tsx src/screens/alert-detail/index.tsx \
+  && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'mobile-pet-tracker/src/screens/alert-detail/index.test.tsx mobile-pet-tracker/src/screens/alert-detail/index.tsx ' \
+  && git commit -m 'test(mobile-alert-ack-outcome-helper): detail ack errors in english (R2)'
+```
+Commit: `63f91569 test(mobile-alert-ack-outcome-helper): detail ack errors in english (R2)`. Router ausente; typecheck exit=0; lint exit=0; inventario staged exacto verificado.
+
+```text
+[feature/134-mobile-alert-ack-outcome-helper 63f91569] test(mobile-alert-ack-outcome-helper): detail ack errors in english (R2)
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 2 files changed, 18 insertions(+), 1 deletion(-)
+
+```
+
+### c6 verde — R2 (E1), M7 revertida
+
+```text
+FORCE_COLOR=0 bunx jest src/screens/alert-detail/index.test.tsx > /tmp/134-e1-g5.txt 2>&1; echo "exit=$?"
+exit=0
+Test Suites: 1 passed, 1 total
+Tests:       28 passed, 28 total
+```
+
+```text
+FORCE_COLOR=0 bunx jest src/__tests__/ui-language.test.ts src/__tests__/design-drift.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/134-e1-g5-guardas.txt 2>&1; echo "exit=$?"
+exit=0
+Test Suites: 4 passed, 4 total
+Tests:       177 passed, 177 total
+```
+
+Cadena literal c6 (H0 ronda 2 `044ecfe0`): exit=0.
+
+```text
+grep -qE '^Tests: +28 passed, 28 total$' /tmp/134-e1-g5.txt \
+  && grep -qE '^Tests: +177 passed, 177 total$' /tmp/134-e1-g5-guardas.txt \
+  && git diff --quiet 044ecfe0 -- src/screens/alert-detail/index.tsx \
+  && test ! -e .expo/types/router.d.ts && bun run typecheck && bun run lint \
+  && git add src/screens/alert-detail/index.tsx \
+  && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'mobile-pet-tracker/src/screens/alert-detail/index.tsx ' \
+  && git commit -m 'fix(mobile-alert-ack-outcome-helper): revert R2 translator mutation (R2)'
+```
+Commit: `190cb1cc fix(mobile-alert-ack-outcome-helper): revert R2 translator mutation (R2)`. Router ausente; typecheck exit=0; lint exit=0; inventario staged exacto verificado.
+
+```text
+[feature/134-mobile-alert-ack-outcome-helper 190cb1cc] fix(mobile-alert-ack-outcome-helper): revert R2 translator mutation (R2)
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+```
+
+### c7: C5/D4 verdes contra HEAD, antes de M8/M9
+
+```text
+FORCE_COLOR=0 bunx jest src/screens/alerts/index.test.tsx > /tmp/134-e1-pre-c7a.txt 2>&1; echo "exit=$?"
+exit=0
+Test Suites: 1 passed, 1 total
+Tests:       44 passed, 44 total
+```
+
+```text
+FORCE_COLOR=0 bunx jest src/screens/alert-detail/index.test.tsx > /tmp/134-e1-pre-c7b.txt 2>&1; echo "exit=$?"
+exit=0
+Test Suites: 1 passed, 1 total
+Tests:       29 passed, 29 total
+```
+
+### c7 rojo — R1 y R2 (E1.7), M8/M9
+
+```text
+FORCE_COLOR=0 bunx jest src/screens/alerts/index.test.tsx > /tmp/134-e1-r7a.txt 2>&1; echo "exit=$?"
+exit=1
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 43 passed, 44 total
+```
+
+It rojo, matcher y Expected/Received observados:
+
+```text
+  ● #78 R8: el ack cambia la fila sin recargar la lista › #134 R1: caracterización de las ramas sin candado del ack › mantiene el botón deshabilitado hasta que signOut termina tras unauthorized
+
+    expect(instance).toBeDisabled()
+
+    Received instance is not disabled:
+      [36m<View[39m
+        [33maccessibilityRole[39m=[32m"button"[39m
+        [33maccessibilityState[39m=[32m{
+          {
+            "disabled": false,
+          }
+        }[39m
+        [33maccessible[39m=[32m{true}[39m
+        [33mtestID[39m=[32m"alert-row-alert-1-ack"[39m
+      [36m/>[39m
+
+      795 |
+      796 |       await waitFor(() => expect(mockSignOut).toHaveBeenCalledTimes(1));
+    > 797 |       expect(screen.getByTestId('alert-row-alert-1-ack')).toBeDisabled();
+          |                                                           ^
+      798 |
+      799 |       finishSignOut();
+      800 |       await waitFor(() => expect(screen.getByTestId('alert-row-alert-1-ack')).not.toBeDisabled());
+
+      at Object.toBeDisabled (src/screens/alerts/index.test.tsx:797:59)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+```text
+FORCE_COLOR=0 bunx jest src/screens/alert-detail/index.test.tsx > /tmp/134-e1-r7b.txt 2>&1; echo "exit=$?"
+exit=1
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 28 passed, 29 total
+```
+
+It rojo, matcher y Expected/Received observados:
+
+```text
+  ● #100 R5: el detalle marca leída la alerta › #134 R2: caracterización de la rama sin candado del ack › mantiene el botón deshabilitado hasta que signOut termina tras unauthorized
+
+    expect(instance).toBeDisabled()
+
+    Received instance is not disabled:
+      [36m<View[39m
+        [33maccessibilityRole[39m=[32m"button"[39m
+        [33maccessibilityState[39m=[32m{
+          {
+            "disabled": false,
+          }
+        }[39m
+        [33maccessible[39m=[32m{true}[39m
+        [33mtestID[39m=[32m"alert-detail-ack"[39m
+      [36m/>[39m
+
+      385 |
+      386 |       await waitFor(() => expect(mockSignOut).toHaveBeenCalledTimes(1));
+    > 387 |       expect(screen.getByTestId('alert-detail-ack')).toBeDisabled();
+          |                                                      ^
+      388 |
+      389 |       finishSignOut();
+      390 |       await waitFor(() => expect(screen.getByTestId('alert-detail-ack')).not.toBeDisabled());
+
+      at Object.toBeDisabled (src/screens/alert-detail/index.test.tsx:387:54)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+```text
+FORCE_COLOR=0 bunx jest src/utils/alert-ack-outcome.test.ts > /tmp/134-e1-r7c.txt 2>&1; echo "exit=$?"
+exit=0
+Test Suites: 1 passed, 1 total
+Tests:       17 passed, 17 total
+```
+
+```text
+FORCE_COLOR=0 bunx jest src/__tests__/ui-language.test.ts src/__tests__/design-drift.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/134-e1-r7-guardas.txt 2>&1; echo "exit=$?"
+exit=0
+Test Suites: 4 passed, 4 total
+Tests:       177 passed, 177 total
+```
+
+Cadena literal c7 (H0 ronda 2 `044ecfe0`): exit=0.
+
+```text
+grep -qE '^Tests: +1 failed, 43 passed, 44 total$' /tmp/134-e1-r7a.txt \
+  && grep -qE '^Tests: +1 failed, 28 passed, 29 total$' /tmp/134-e1-r7b.txt \
+  && grep -qE '^Tests: +17 passed, 17 total$' /tmp/134-e1-r7c.txt \
+  && grep -qE '^Tests: +177 passed, 177 total$' /tmp/134-e1-r7-guardas.txt \
+  && grep -qF '● #78 R8: el ack cambia la fila sin recargar la lista › #134 R1: caracterización de las ramas sin candado del ack › mantiene el botón deshabilitado hasta que signOut termina tras unauthorized' /tmp/134-e1-r7a.txt \
+  && grep -qF '● #100 R5: el detalle marca leída la alerta › #134 R2: caracterización de la rama sin candado del ack › mantiene el botón deshabilitado hasta que signOut termina tras unauthorized' /tmp/134-e1-r7b.txt \
+  && grep -qF 'Received instance is not disabled' /tmp/134-e1-r7a.txt \
+  && grep -qF 'Received instance is not disabled' /tmp/134-e1-r7b.txt \
+  && ! grep -qE 'TypeError|ReferenceError|SyntaxError|Cannot find module|Unable to find an element' /tmp/134-e1-r7a.txt /tmp/134-e1-r7b.txt \
+  && test "$(grep -cF 'const run = signOut;' src/screens/alerts/index.tsx)" = 1 \
+  && test "$(grep -cF 'const run = signOut;' src/screens/alert-detail/index.tsx)" = 1 \
+  && test "$(grep -cxF '        signOut,' src/screens/alerts/index.tsx)" = 0 \
+  && test "$(grep -cxF '        signOut,' src/screens/alert-detail/index.tsx)" = 0 \
+  && test "$(grep -cF 'finishSignOut' src/screens/alerts/index.test.tsx)" = 3 \
+  && test "$(grep -cF 'finishSignOut' src/screens/alert-detail/index.test.tsx)" = 3 \
+  && test ! -e .expo/types/router.d.ts && bun run typecheck && bun run lint \
+  && git add src/screens/alerts/index.test.tsx src/screens/alerts/index.tsx src/screens/alert-detail/index.test.tsx src/screens/alert-detail/index.tsx \
+  && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'mobile-pet-tracker/src/screens/alert-detail/index.test.tsx mobile-pet-tracker/src/screens/alert-detail/index.tsx mobile-pet-tracker/src/screens/alerts/index.test.tsx mobile-pet-tracker/src/screens/alerts/index.tsx ' \
+  && git commit -m 'test(mobile-alert-ack-outcome-helper): screens keep ack disabled until sign-out settles (R1, R2)'
+```
+Commit: `670fd9f5 test(mobile-alert-ack-outcome-helper): screens keep ack disabled until sign-out settles (R1, R2)`. Router ausente; typecheck exit=0; lint exit=0; inventario staged exacto verificado.
+
+```text
+[feature/134-mobile-alert-ack-outcome-helper 670fd9f5] test(mobile-alert-ack-outcome-helper): screens keep ack disabled until sign-out settles (R1, R2)
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 4 files changed, 51 insertions(+), 2 deletions(-)
+
+```
+
+Numstat de las mutaciones de producción de c7:
+
+```text
+$ git diff --numstat HEAD~1 HEAD -- src/screens/alerts/index.tsx src/screens/alert-detail/index.tsx
+6	1	mobile-pet-tracker/src/screens/alert-detail/index.tsx
+6	1	mobile-pet-tracker/src/screens/alerts/index.tsx
+exit=0
+```
+
+### c8 verde — R1 y R2 (E1.7), M8/M9 revertidas
+
+```text
+FORCE_COLOR=0 bunx jest src/screens/alerts/index.test.tsx src/screens/alert-detail/index.test.tsx > /tmp/134-e1-g7.txt 2>&1; echo "exit=$?"
+exit=0
+Test Suites: 2 passed, 2 total
+Tests:       73 passed, 73 total
+```
+
+```text
+FORCE_COLOR=0 bunx jest src/__tests__/ui-language.test.ts src/__tests__/design-drift.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/134-e1-g7-guardas.txt 2>&1; echo "exit=$?"
+exit=0
+Test Suites: 4 passed, 4 total
+Tests:       177 passed, 177 total
+```
+
+Cadena literal c8 (H0 ronda 2 `044ecfe0`): exit=0.
+
+```text
+grep -qE '^Tests: +73 passed, 73 total$' /tmp/134-e1-g7.txt \
+  && grep -qE '^Tests: +177 passed, 177 total$' /tmp/134-e1-g7-guardas.txt \
+  && git diff --quiet 044ecfe0 -- src/screens/alerts/index.tsx src/screens/alert-detail/index.tsx \
+  && test ! -e .expo/types/router.d.ts && bun run typecheck && bun run lint \
+  && git add src/screens/alerts/index.tsx src/screens/alert-detail/index.tsx \
+  && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'mobile-pet-tracker/src/screens/alert-detail/index.tsx mobile-pet-tracker/src/screens/alerts/index.tsx ' \
+  && git commit -m 'fix(mobile-alert-ack-outcome-helper): revert R1 and R2 sign-out wrapper mutations (R1, R2)'
+```
+Commit: `c6ec5d8c fix(mobile-alert-ack-outcome-helper): revert R1 and R2 sign-out wrapper mutations (R1, R2)`. Router ausente; typecheck exit=0; lint exit=0; inventario staged exacto verificado.
+
+```text
+[feature/134-mobile-alert-ack-outcome-helper c6ec5d8c] fix(mobile-alert-ack-outcome-helper): revert R1 and R2 sign-out wrapper mutations (R1, R2)
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 2 files changed, 2 insertions(+), 12 deletions(-)
+
+```
+
+Preparación del buffer: el registrador esperaba la ruta de git status relativa a la raíz, pero desde mobile-pet-tracker/ se imprime ../progress/impl_mobile-alert-ack-outcome-helper.md. Falló esa comprobación de invocación antes de escribir el buffer o tocar ficheros. El diff global posterior salió 1 porque el informe seguía sin guardar; no se había aplicado ninguna sonda. Se corrigió la ruta del registrador y se repitió la preparación, ahora encadenando su éxito al diff global. No es un rojo de código ni de los candados de E1.
+
+### Sondas E1.4
+
+Para medir literalmente `git diff --quiet && git diff --cached --quiet` tras cada sonda, la sección nueva Ronda 2 se guardó temporalmente en este buffer y el impl quedó con sus bytes de H0 (ronda 1). La ronda 1 no se modifica. Las ocho evidencias y el contenido previo de Ronda 2 se añadirán juntos al impl después de las sondas; no se añade ningún commit fuera del guion.
+
+Preparación corregida: árbol e índice limpios, diff global exit=0. HEAD de las sondas: c6ec5d8c (c8).
+
+#### E1-S1
+
+Mutación declarada en src/utils/alert-ack-outcome.ts:
+
+```text
+        await signOut();
+→
+        void Promise.resolve(signOut()).catch(() => showError(t('common.somethingWentWrong')));
+```
+
+```text
+E1-S1
+$ FORCE_COLOR=0 bunx jest src/utils/alert-ack-outcome.test.ts > /tmp/134-e1-s1.txt 2>&1; echo "exit=$?"
+exit=1
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 15 passed, 17 total
+```
+
+```text
+  ● #134 R4: el helper resuelve las ramas comunes en los dos idiomas › unauthorized espera a signOut antes de resolver
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: false
+    Received: true
+
+      171 |     await flushPromises();
+      172 |     expect(handlers.signOut).toHaveBeenCalledTimes(1);
+    > 173 |     expect(settled).toBe(false);
+          |                     ^
+      174 |
+      175 |     signOutGate.resolve();
+      176 |     await expect(done).resolves.toBeUndefined();
+
+      at Object.toBe (src/utils/alert-ack-outcome.test.ts:173:21)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+```text
+  ● #134 R4: el helper resuelve las ramas comunes en los dos idiomas › unauthorized espera también a un signOut que rechaza, es
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: false
+    Received: true
+
+      196 |     await flushPromises();
+      197 |     expect(handlers.signOut).toHaveBeenCalledTimes(1);
+    > 198 |     expect(settled).toBe(false);
+          |                     ^
+      199 |     expect(handlers.showError).not.toHaveBeenCalled();
+      200 |
+      201 |     signOutGate.reject(new Error('sign-out failed'));
+
+      at Object.toBe (src/utils/alert-ack-outcome.test.ts:198:21)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+```text
+$ git checkout HEAD -- src/utils/alert-ack-outcome.ts
+exit=0
+$ git diff --quiet && git diff --cached --quiet; echo "exit=$?"
+exit=0
+```
+
+#### E1-S2
+
+Mutación declarada en src/utils/alert-ack-outcome.ts:
+
+```text
+        await signOut();
+→
+        void signOut().catch(() => showError(t('common.somethingWentWrong')));
+```
+
+```text
+E1-S2
+$ FORCE_COLOR=0 bunx jest src/utils/alert-ack-outcome.test.ts > /tmp/134-e1-s2.txt 2>&1; echo "exit=$?"
+exit=1
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 15 passed, 17 total
+```
+
+```text
+  ● #134 R4: el helper resuelve las ramas comunes en los dos idiomas › unauthorized espera a signOut antes de resolver
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: false
+    Received: true
+
+      171 |     await flushPromises();
+      172 |     expect(handlers.signOut).toHaveBeenCalledTimes(1);
+    > 173 |     expect(settled).toBe(false);
+          |                     ^
+      174 |
+      175 |     signOutGate.resolve();
+      176 |     await expect(done).resolves.toBeUndefined();
+
+      at Object.toBe (src/utils/alert-ack-outcome.test.ts:173:21)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+```text
+  ● #134 R4: el helper resuelve las ramas comunes en los dos idiomas › unauthorized espera también a un signOut que rechaza, es
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: false
+    Received: true
+
+      196 |     await flushPromises();
+      197 |     expect(handlers.signOut).toHaveBeenCalledTimes(1);
+    > 198 |     expect(settled).toBe(false);
+          |                     ^
+      199 |     expect(handlers.showError).not.toHaveBeenCalled();
+      200 |
+      201 |     signOutGate.reject(new Error('sign-out failed'));
+
+      at Object.toBe (src/utils/alert-ack-outcome.test.ts:198:21)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+```text
+$ git checkout HEAD -- src/utils/alert-ack-outcome.ts
+exit=0
+$ git diff --quiet && git diff --cached --quiet; echo "exit=$?"
+exit=0
+```
+
+#### E1-S3
+
+Mutación declarada en src/screens/alerts/index.tsx:
+
+```text
+        t,
+→
+        t: (key) => (key === 'common.cannotReachServer' ? es[key] : t(key)),
+```
+
+```text
+E1-S3
+$ FORCE_COLOR=0 bunx jest src/screens/alerts/index.test.tsx > /tmp/134-e1-s3.txt 2>&1; echo "exit=$?"
+exit=1
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 43 passed, 44 total
+```
+
+```text
+  ● #78 R8: el ack cambia la fila sin recargar la lista › #134 R1: caracterización de las ramas sin candado del ack › muestra Cannot reach server en inglés si ackAlert responde unreachable
+
+    expect(instance).toHaveTextContent()
+
+    Expected instance to have text content:
+      Cannot reach server
+    Received:
+      No se pudo conectar con el servidor
+
+      772 |       await renderAlertsInEnglish();
+      773 |       await fireEvent.press(await screen.findByTestId('alert-row-alert-1-ack'));
+    > 774 |       await waitFor(() => expect(screen.queryByTestId('alerts-action-error')).toHaveTextContent('Cannot reach server'));
+          |                    ^
+      775 |     });
+      776 |
+      777 |     it('muestra Something went wrong en inglés si ackAlert responde error', async () => {
+
+      at Object.<anonymous> (src/screens/alerts/index.test.tsx:774:20)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+```text
+$ git checkout HEAD -- src/screens/alerts/index.tsx
+exit=0
+$ git diff --quiet && git diff --cached --quiet; echo "exit=$?"
+exit=0
+```
+
+#### E1-S4
+
+Mutación declarada en src/screens/alerts/index.tsx:
+
+```text
+        t,
+→
+        t: (key) => (key === 'common.somethingWentWrong' ? es[key] : t(key)),
+```
+
+```text
+E1-S4
+$ FORCE_COLOR=0 bunx jest src/screens/alerts/index.test.tsx > /tmp/134-e1-s4.txt 2>&1; echo "exit=$?"
+exit=1
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 43 passed, 44 total
+```
+
+```text
+  ● #78 R8: el ack cambia la fila sin recargar la lista › #134 R1: caracterización de las ramas sin candado del ack › muestra Something went wrong en inglés si ackAlert responde error
+
+    expect(instance).toHaveTextContent()
+
+    Expected instance to have text content:
+      Something went wrong
+    Received:
+      Algo salió mal
+
+      780 |       await renderAlertsInEnglish();
+      781 |       await fireEvent.press(await screen.findByTestId('alert-row-alert-1-ack'));
+    > 782 |       await waitFor(() => expect(screen.queryByTestId('alerts-action-error')).toHaveTextContent('Something went wrong'));
+          |                    ^
+      783 |     });
+      784 |
+      785 |     it('mantiene el botón deshabilitado hasta que signOut termina tras unauthorized', async () => {
+
+      at Object.<anonymous> (src/screens/alerts/index.test.tsx:782:20)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+```text
+$ git checkout HEAD -- src/screens/alerts/index.tsx
+exit=0
+$ git diff --quiet && git diff --cached --quiet; echo "exit=$?"
+exit=0
+```
+
+#### E1-S5
+
+Mutación declarada en src/screens/alert-detail/index.tsx:
+
+```text
+        t,
+→
+        t: (key) => (key === 'common.cannotReachServer' ? es[key] : t(key)),
+```
+
+```text
+E1-S5
+$ FORCE_COLOR=0 bunx jest src/screens/alert-detail/index.test.tsx > /tmp/134-e1-s5.txt 2>&1; echo "exit=$?"
+exit=1
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 28 passed, 29 total
+```
+
+```text
+  ● #100 R5: el detalle marca leída la alerta › #134 R2: caracterización de la rama sin candado del ack › muestra Cannot reach server en inglés si ackAlert responde unreachable
+
+    expect(instance).toHaveTextContent()
+
+    Expected instance to have text content:
+      Cannot reach server
+    Received:
+      No se pudo conectar con el servidor
+
+      361 |       await renderDetail('alert-1', 'en');
+      362 |       await fireEvent.press(await screen.findByTestId('alert-detail-ack'));
+    > 363 |       await waitFor(() => expect(screen.queryByTestId('alert-detail-action-error')).toHaveTextContent('Cannot reach server'));
+          |                    ^
+      364 |     });
+      365 |
+      366 |     it('muestra Something went wrong en inglés si ackAlert responde error', async () => {
+
+      at Object.<anonymous> (src/screens/alert-detail/index.test.tsx:363:20)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+```text
+$ git checkout HEAD -- src/screens/alert-detail/index.tsx
+exit=0
+$ git diff --quiet && git diff --cached --quiet; echo "exit=$?"
+exit=0
+```
+
+#### E1-S6
+
+Mutación declarada en src/screens/alert-detail/index.tsx:
+
+```text
+        t,
+→
+        t: (key) => (key === 'common.somethingWentWrong' ? es[key] : t(key)),
+```
+
+```text
+E1-S6
+$ FORCE_COLOR=0 bunx jest src/screens/alert-detail/index.test.tsx > /tmp/134-e1-s6.txt 2>&1; echo "exit=$?"
+exit=1
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 28 passed, 29 total
+```
+
+```text
+  ● #100 R5: el detalle marca leída la alerta › #134 R2: caracterización de la rama sin candado del ack › muestra Something went wrong en inglés si ackAlert responde error
+
+    expect(instance).toHaveTextContent()
+
+    Expected instance to have text content:
+      Something went wrong
+    Received:
+      Algo salió mal
+
+      369 |       await renderDetail('alert-1', 'en');
+      370 |       await fireEvent.press(await screen.findByTestId('alert-detail-ack'));
+    > 371 |       await waitFor(() => expect(screen.queryByTestId('alert-detail-action-error')).toHaveTextContent('Something went wrong'));
+          |                    ^
+      372 |     });
+      373 |
+      374 |     it('mantiene el botón deshabilitado hasta que signOut termina tras unauthorized', async () => {
+
+      at Object.<anonymous> (src/screens/alert-detail/index.test.tsx:371:20)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+```text
+$ git checkout HEAD -- src/screens/alert-detail/index.tsx
+exit=0
+$ git diff --quiet && git diff --cached --quiet; echo "exit=$?"
+exit=0
+```
+
+#### E1-S7
+
+Mutación declarada en src/screens/alerts/index.tsx:
+
+```text
+        signOut,
+→
+        signOut: () => {
+          const run = signOut;
+          const key = 'common.somethingWentWrong' as const;
+          void Promise.resolve(run()).catch(() => setActionError(t(key)));
+          return Promise.resolve();
+        },
+```
+
+```text
+E1-S7
+$ FORCE_COLOR=0 bunx jest src/screens/alerts/index.test.tsx > /tmp/134-e1-s7.txt 2>&1; echo "exit=$?"
+exit=1
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 43 passed, 44 total
+```
+
+```text
+  ● #78 R8: el ack cambia la fila sin recargar la lista › #134 R1: caracterización de las ramas sin candado del ack › mantiene el botón deshabilitado hasta que signOut termina tras unauthorized
+
+    expect(instance).toBeDisabled()
+
+    Received instance is not disabled:
+      <View
+        accessibilityRole="button"
+        accessibilityState={
+          {
+            "disabled": false,
+          }
+        }
+        accessible={true}
+        testID="alert-row-alert-1-ack"
+      />
+
+      795 |
+      796 |       await waitFor(() => expect(mockSignOut).toHaveBeenCalledTimes(1));
+    > 797 |       expect(screen.getByTestId('alert-row-alert-1-ack')).toBeDisabled();
+          |                                                           ^
+      798 |
+      799 |       finishSignOut();
+      800 |       await waitFor(() => expect(screen.getByTestId('alert-row-alert-1-ack')).not.toBeDisabled());
+
+      at Object.toBeDisabled (src/screens/alerts/index.test.tsx:797:59)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+```text
+$ git checkout HEAD -- src/screens/alerts/index.tsx
+exit=0
+$ git diff --quiet && git diff --cached --quiet; echo "exit=$?"
+exit=0
+```
+
+#### E1-S8
+
+Mutación declarada en src/screens/alert-detail/index.tsx:
+
+```text
+        signOut,
+→
+        signOut: () => {
+          const run = signOut;
+          const key = 'common.somethingWentWrong' as const;
+          void Promise.resolve(run()).catch(() => setActionError(t(key)));
+          return Promise.resolve();
+        },
+```
+
+```text
+E1-S8
+$ FORCE_COLOR=0 bunx jest src/screens/alert-detail/index.test.tsx > /tmp/134-e1-s8.txt 2>&1; echo "exit=$?"
+exit=1
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 28 passed, 29 total
+```
+
+```text
+  ● #100 R5: el detalle marca leída la alerta › #134 R2: caracterización de la rama sin candado del ack › mantiene el botón deshabilitado hasta que signOut termina tras unauthorized
+
+    expect(instance).toBeDisabled()
+
+    Received instance is not disabled:
+      <View
+        accessibilityRole="button"
+        accessibilityState={
+          {
+            "disabled": false,
+          }
+        }
+        accessible={true}
+        testID="alert-detail-ack"
+      />
+
+      385 |
+      386 |       await waitFor(() => expect(mockSignOut).toHaveBeenCalledTimes(1));
+    > 387 |       expect(screen.getByTestId('alert-detail-ack')).toBeDisabled();
+          |                                                      ^
+      388 |
+      389 |       finishSignOut();
+      390 |       await waitFor(() => expect(screen.getByTestId('alert-detail-ack')).not.toBeDisabled());
+
+      at Object.toBeDisabled (src/screens/alert-detail/index.test.tsx:387:54)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+```text
+$ git checkout HEAD -- src/screens/alert-detail/index.tsx
+exit=0
+$ git diff --quiet && git diff --cached --quiet; echo "exit=$?"
+exit=0
+```
+
+Las ocho sondas coinciden exactamente en cuenta, it y matcher. Cada una se revirtió con git checkout HEAD y midió árbol e índice limpios (exit=0) antes de la siguiente. Ninguna se commiteó.
+
+### Cierre de la ronda 2
+
+El buffer se añadió por append tras las ocho sondas y se retiró. Se verificó igualdad byte por byte de toda la ronda 1 con H0 ronda 2.
+
+```text
+$ cd /home/claude/sites/Pet-Tracker-wt-134/mobile-pet-tracker && pwd
+/home/claude/sites/Pet-Tracker-wt-134/mobile-pet-tracker
+```
+
+### Cierre: siete suites
+
+```text
+FORCE_COLOR=0 bunx jest src/screens/alerts/index.test.tsx src/screens/alert-detail/index.test.tsx src/utils/alert-ack-outcome.test.ts src/__tests__/ui-language.test.ts src/__tests__/design-drift.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/134-e1-final.txt 2>&1; echo "exit=$?"
+exit=0
+Test Suites: 7 passed, 7 total
+Tests:       267 passed, 267 total
+```
+
+Antes de Jest entero:
+
+```text
+$ pgrep -af '[i]nit\.sh'
+(salida vacía; exit=1 = ningún proceso coincide)
+```
+No se ejecutan otros comandos mientras corre Jest completo.
+
+### Cierre: suite entera
+
+```text
+FORCE_COLOR=0 bunx jest > /tmp/134-e1-all.txt 2>&1; echo "exit=$?"
+exit=0
+Test Suites: 98 passed, 98 total
+Tests:       2394 passed, 2394 total
+```
+
+### Cierre: typecheck, lint y diffs
+
+```text
+$ test ! -e .expo/types/router.d.ts && bun run typecheck; echo "exit=$?"
+exit=0
+$ tsc --noEmit
+```
+
+```text
+$ bunx expo lint --no-cache; echo "exit=$?"
+exit=0
+```
+
+```text
+$ git diff --numstat 044ecfe0 HEAD -- src/utils/alert-ack-outcome.test.ts src/screens/alerts/index.test.tsx src/screens/alert-detail/index.test.tsx
+36	0	mobile-pet-tracker/src/screens/alert-detail/index.test.tsx
+49	0	mobile-pet-tracker/src/screens/alerts/index.test.tsx
+68	0	mobile-pet-tracker/src/utils/alert-ack-outcome.test.ts
+```
+
+```text
+$ git diff --quiet 044ecfe0 HEAD -- src/utils/alert-ack-outcome.ts src/screens/alerts/index.tsx src/screens/alert-detail/index.tsx src/__tests__ src/i18n/catalog.ts src/providers/__tests__/language-provider.test.tsx package.json bun.lock app.json; echo "exit=$?"
+exit=0
+```
+
+### Anclas al cerrar la ronda 2
+
+```text
+E1. $ grep -cF 'function deferred()' src/utils/alert-ack-outcome.test.ts
+1
+E2. $ grep -cF "it('unauthorized espera a signOut antes de resolver'" src/utils/alert-ack-outcome.test.ts
+1
+E3. $ grep -cF "it('unauthorized espera también a un signOut que rechaza, es'" src/utils/alert-ack-outcome.test.ts
+1
+E4. $ grep -cF 'function renderAlertsInEnglish()' src/screens/alerts/index.test.tsx
+1
+E5. $ grep -cF 'initial="en"' src/screens/alerts/index.test.tsx
+1
+E6. $ grep -cF "'Cannot reach server'" src/screens/alerts/index.test.tsx
+1
+E7. $ grep -cF "'Something went wrong'" src/screens/alerts/index.test.tsx
+1
+E8. $ grep -cF "'Cannot reach server'" src/screens/alert-detail/index.test.tsx
+1
+E9. $ grep -cF "'Something went wrong'" src/screens/alert-detail/index.test.tsx
+1
+E10. $ grep -cF "renderDetail('alert-1', 'en')" src/screens/alert-detail/index.test.tsx
+2
+E11. $ grep -cF 'const fail' src/utils/alert-ack-outcome.ts
+0
+E12. $ grep -cF 'es[key]' src/screens/alerts/index.tsx
+0
+E13. $ grep -cF 'es[key]' src/screens/alert-detail/index.tsx
+0
+E14. $ grep -cF "it('mantiene el botón deshabilitado hasta que signOut termina tras unauthorized'" src/screens/alerts/index.test.tsx
+1
+E15. $ grep -cF "it('mantiene el botón deshabilitado hasta que signOut termina tras unauthorized'" src/screens/alert-detail/index.test.tsx
+1
+E16. $ grep -cF 'finishSignOut' src/screens/alerts/index.test.tsx
+3
+E17. $ grep -cF 'finishSignOut' src/screens/alert-detail/index.test.tsx
+3
+E18. $ grep -cF 'const run = signOut;' src/screens/alerts/index.tsx
+0
+E19. $ grep -cF 'const run = signOut;' src/screens/alert-detail/index.tsx
+0
+E20. $ grep -cxF '        signOut,' src/screens/alerts/index.tsx
+1
+E21. $ grep -cxF '        signOut,' src/screens/alert-detail/index.tsx
+1
+X1. $ grep -cF -- '- [x] Enmienda E1 aprobada (fecha: 2026-10-09)' ../specs/mobile-alert-ack-outcome-helper/requirements.md
+1
+X2. $ grep -cF "describe('#134 R4: el helper resuelve las ramas comunes en los dos idiomas'" src/utils/alert-ack-outcome.test.ts
+1
+X3. $ grep -cF "describe('#134 R1: caracterización de las ramas sin candado del ack'" src/screens/alerts/index.test.tsx
+1
+X4. $ grep -cF "describe('#134 R2: caracterización de la rama sin candado del ack'" src/screens/alert-detail/index.test.tsx
+1
+X5. $ grep -cxF '        await signOut();' src/utils/alert-ack-outcome.ts
+1
+X6. $ grep -cxF "    showError(t('common.somethingWentWrong'));" src/utils/alert-ack-outcome.ts
+1
+X7. $ grep -cxF '        t,' src/screens/alerts/index.tsx
+1
+X8. $ grep -cxF '        t,' src/screens/alert-detail/index.tsx
+1
+X9. $ grep -cxF "import { useAlertsList } from '../../hooks/use-alerts-list';" src/screens/alerts/index.tsx
+1
+X10. $ grep -cxF "import { useAlertsList } from '../../hooks/use-alerts-list';" src/screens/alert-detail/index.tsx
+1
+X11. $ grep -cF "function renderDetail(alertId = 'alert-1', language: 'es' | 'en' = 'es')" src/screens/alert-detail/index.test.tsx
+1
+X12. $ grep -cF 'mockRejectedValue(' src/utils/alert-ack-outcome.test.ts src/screens/alerts/index.test.tsx src/screens/alert-detail/index.test.tsx
+src/utils/alert-ack-outcome.test.ts:0
+src/screens/alerts/index.test.tsx:0
+src/screens/alert-detail/index.test.tsx:1
+X13. $ grep -cF 'mockResolvedValue(' src/utils/alert-ack-outcome.test.ts src/screens/alerts/index.test.tsx src/screens/alert-detail/index.test.tsx
+src/utils/alert-ack-outcome.test.ts:0
+src/screens/alerts/index.test.tsx:30
+src/screens/alert-detail/index.test.tsx:15
+X14. $ grep -cF 'mockReturnValue(' src/utils/alert-ack-outcome.test.ts src/screens/alerts/index.test.tsx src/screens/alert-detail/index.test.tsx
+src/utils/alert-ack-outcome.test.ts:0
+src/screens/alerts/index.test.tsx:18
+src/screens/alert-detail/index.test.tsx:4
+```
+
+Todas las anclas finales coinciden, incluidas las cuentas originales de mocks sin Once.
+
+### Cierre: comprobaciones desde la raíz
+
+```text
+$ cd /home/claude/sites/Pet-Tracker-wt-134 && pwd
+/home/claude/sites/Pet-Tracker-wt-134
+```
+
+```text
+$ git diff --stat 044ecfe0 HEAD -- backend-pet-tracker/ infra/ docs/
+(salida vacía)
+```
+
+```text
+$ git diff --name-only 044ecfe0 HEAD -- mobile-pet-tracker/ | LC_ALL=C sort
+mobile-pet-tracker/src/screens/alert-detail/index.test.tsx
+mobile-pet-tracker/src/screens/alerts/index.test.tsx
+mobile-pet-tracker/src/utils/alert-ack-outcome.test.ts
+```
+
+### Commits TDD de la ronda 2 y cierre de trazabilidad
+
+| Paso | Requisito | Commit |
+|---|---|---|
+| c1 rojo | R4 (E1) | `afd1b4fb test(mobile-alert-ack-outcome-helper): helper awaits sign-out either way (R4)` |
+| c2 verde | R4 (E1) | `d3c2b7eb fix(mobile-alert-ack-outcome-helper): revert R4 sign-out wait mutation (R4)` |
+| c3 rojo | R1 (E1) | `c19c7ca6 test(mobile-alert-ack-outcome-helper): centro ack errors in english (R1)` |
+| c4 verde | R1 (E1) | `bfca523f fix(mobile-alert-ack-outcome-helper): revert R1 translator mutation (R1)` |
+| c5 rojo | R2 (E1) | `63f91569 test(mobile-alert-ack-outcome-helper): detail ack errors in english (R2)` |
+| c6 verde | R2 (E1) | `190cb1cc fix(mobile-alert-ack-outcome-helper): revert R2 translator mutation (R2)` |
+| c7 rojo | R1 y R2 (E1.7) | `670fd9f5 test(mobile-alert-ack-outcome-helper): screens keep ack disabled until sign-out settles (R1, R2)` |
+| c8 verde | R1 y R2 (E1.7) | `c6ec5d8c fix(mobile-alert-ack-outcome-helper): revert R1 and R2 sign-out wrapper mutations (R1, R2)` |
+
+Se añaden una sola vez las cuatro filas de Enmienda E1 a traceability.md, inmediatamente después de R7. Las siete filas anteriores, el frontmatter y el resto del fichero quedan idénticos a H0. La ronda 1 del impl conserva sus bytes.
+
+Los ocho candados pasan contra HEAD antes de sus mutaciones; los ocho rojos TDD y las ocho sondas caen exclusivamente en los its declarados. No se ajustó ningún it ni hubo decisiones funcionales fuera de la spec. Producción e inventarios conservan el contenido de H0; los tres tests solo tienen adiciones. La única decisión operativa fue guardar temporalmente la sección Ronda 2 para medir el árbol limpio entre sondas, documentada arriba junto con la corrección de invocación del registrador. Skills cargadas: ninguna.
