@@ -28,7 +28,7 @@ import {
 } from '../../utils/category-palette';
 import { civilTodayIso } from '../../utils/civil-today-iso';
 
-type ActionError = 'file-format' | 'file-too-large' | 'invalid-form' | 'unknown';
+type ActionError = 'file-format' | 'file-too-large' | 'invalid-form' | 'upload-forbidden' | 'unknown';
 type SelectedDocument = {
   asset: DocumentPicker.DocumentPickerAsset;
   contentType: DocumentContentType;
@@ -64,6 +64,7 @@ export function DocsScreen({ petId }: { petId: string }) {
   const t = useTranslate();
   const insets = useSafeAreaInsets();
   const [selectedDocument, setSelectedDocument] = useState<SelectedDocument | null>(null);
+  const [uploading, setUploading] = useState(false);
   const [type, setType] = useState('');
   const [name, setName] = useState('');
   const [date, setDate] = useState(() => civilTodayIso(undefined));
@@ -85,9 +86,11 @@ export function DocsScreen({ petId }: { petId: string }) {
       ? t('docs.errorFileTooLarge')
       : actionError === 'invalid-form'
         ? t('docs.errorInvalidForm')
-        : actionError === 'unknown'
-          ? t('common.somethingWentWrong')
-          : null;
+        : actionError === 'upload-forbidden'
+          ? t('docs.errorUploadForbidden')
+          : actionError === 'unknown'
+            ? t('common.somethingWentWrong')
+            : null;
 
   function pickDocument() {
     setActionError(null);
@@ -121,27 +124,35 @@ export function DocsScreen({ petId }: { petId: string }) {
   }
 
   async function submitDocument() {
-    if (!selectedDocument) return;
+    if (uploading || !selectedDocument) return;
     setActionError(null);
     if (!type.trim() || !name.trim() || !/^\d{4}-\d{2}-\d{2}$/.test(date.trim())) {
       setActionError('invalid-form');
       return;
     }
-    const response = await fetch(selectedDocument.asset.uri);
-    const blob = await response.blob();
-    const created = await createPetDocument(baseUrl, token ?? '', petId, {
-      type: type.trim(),
-      name: name.trim(),
-      date: date.trim(),
-      ...(vet.trim() ? { vet: vet.trim() } : {}),
-    });
-    if (created.kind !== 'ok') return;
-    const uploaded = await uploadPhotoToUrl(created.uploadUrl, blob, selectedDocument.contentType);
-    if (uploaded.kind !== 'ok') return;
-    const confirmed = await confirmPetDocumentUpload(baseUrl, token ?? '', petId, created.documentId);
-    if (confirmed.kind !== 'ok') return;
-    await docs.refetch();
-    cancelUpload();
+    setUploading(true);
+    try {
+      const response = await fetch(selectedDocument.asset.uri);
+      const blob = await response.blob();
+      const created = await createPetDocument(baseUrl, token ?? '', petId, {
+        type: type.trim(),
+        name: name.trim(),
+        date: date.trim(),
+        ...(vet.trim() ? { vet: vet.trim() } : {}),
+      });
+      if (created.kind !== 'ok') {
+        if (created.kind === 'forbidden') setActionError('upload-forbidden');
+        return;
+      }
+      const uploaded = await uploadPhotoToUrl(created.uploadUrl, blob, selectedDocument.contentType);
+      if (uploaded.kind !== 'ok') return;
+      const confirmed = await confirmPetDocumentUpload(baseUrl, token ?? '', petId, created.documentId);
+      if (confirmed.kind !== 'ok') return;
+      await docs.refetch();
+      cancelUpload();
+    } finally {
+      setUploading(false);
+    }
   }
 
   return (
@@ -238,6 +249,7 @@ export function DocsScreen({ petId }: { petId: string }) {
           <Button
             testID="docs-upload-submit"
             className="rounded-xl bg-accent"
+            isDisabled={uploading}
             onPress={() => void submitDocument().catch(() => undefined)}
           >
             <Button.Label className="font-bold text-accent-foreground">
@@ -248,6 +260,7 @@ export function DocsScreen({ petId }: { petId: string }) {
             testID="docs-upload-cancel"
             className="rounded-xl"
             variant="outline"
+            isDisabled={uploading}
             onPress={cancelUpload}
           >
             <Button.Label className="font-semibold">{t('docs.cancel')}</Button.Label>
