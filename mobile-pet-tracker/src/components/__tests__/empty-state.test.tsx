@@ -16,7 +16,7 @@ const copyRows = [
   ["reminders.emptyBody", "Once you create a reminder, I'll let you know on time.", "Cuando crees un recordatorio, te aviso a tiempo."],
   ["geofences.emptyBody", "Once there's a safe zone, I'll let you know if your pet leaves it.", "Cuando haya una zona segura, te aviso si tu mascota sale de ella."],
   ["food.noMealPlanBody", "Once there's a plan, I'll help you keep track of every meal.", "Cuando haya un plan, te ayudo a llevar la cuenta de cada comida."],
-  ["docs.emptyBody", "When your pet's medical documents arrive, I'll keep them here.", "Cuando lleguen los documentos médicos de tu mascota, te los guardo aquí."],
+  ["docs.emptyBody", "When a medical document for your pet is uploaded, I'll keep it here.", "Cuando se suba un documento médico de tu mascota, te lo guardo aquí."],
 ] as const;
 
 function languageDesign(): string {

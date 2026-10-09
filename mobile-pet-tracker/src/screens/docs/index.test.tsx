@@ -334,7 +334,7 @@ describe('#155 R7: sin documentos, Pingo los guarda', () => {
       expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/pingo-health\.webp$/) }),
     ]);
     expect(screen.getByTestId('docs-empty-title')).toHaveTextContent('Aún no hay documentos');
-    expect(screen.getByTestId('docs-empty-body')).toHaveTextContent('Cuando lleguen los documentos médicos de tu mascota, te los guardo aquí.');
+    expect(screen.getByTestId('docs-empty-body')).toHaveTextContent('Cuando se suba un documento médico de tu mascota, te lo guardo aquí.');
   });
 
   it('no ofrece acción', async () => {
