@@ -325,3 +325,28 @@ describe('#159 R7: la guarda del editor sigue en texto y dice la verdad', () => 
     expect(source).not.toMatch(/<EmptyState\b/);
   });
 });
+
+describe('#159 R8: la nota de Inicio sigue en texto y dice la verdad', () => {
+  it('home.activityNeedsCollar declara el literal nuevo en inglés y en español', () => {
+    expect(enCatalog['home.activityNeedsCollar']).toBe('Activity needs a collar with an active plan');
+    expect(esCatalog['home.activityNeedsCollar']).toBe('La actividad necesita un collar con plan activo');
+  });
+
+  it('home.activityNeedsCollar no exclama, no lleva emoji y no termina en punto en los dos idiomas', () => {
+    for (const v of [enCatalog['home.activityNeedsCollar'], esCatalog['home.activityNeedsCollar']]) {
+      expect(typeof v).toBe('string');
+      expect(v).not.toMatch(/[!¡]/);
+      expect(v).not.toMatch(/\p{Extended_Pictographic}/u);
+      expect(v).not.toMatch(/\.$/);
+    }
+  });
+
+  it('home.activityNeedsCollar tiene fila de #159 en mobile-ui-language', () => {
+    expect(section159()).toContain('| — | `home.activityNeedsCollar` | `Activity needs a collar with an active plan` | `La actividad necesita un collar con plan activo` | ← cambiada por #159 (R8) |');
+  });
+
+  it('Inicio abre <Text testID="summary-note"> una sola vez', () => {
+    const source = readFileSync(join(process.cwd(), 'src', 'screens', 'home', 'index.tsx'), 'utf8');
+    expect(source.match(/<Text\s+testID="summary-note"/g) ?? []).toHaveLength(1);
+  });
+});
