@@ -2279,3 +2279,8923 @@ specs/mobile-ui-language/design.md
 Lista exacta: 15 ficheros, sin ficheros ajenos. Todos los Received de más de 20 líneas están recortados a sus primeras 20; se conserva el matcher y el Expected.
 
 R10: pendiente del smoke humano
+
+# Ronda 2 — Enmienda E1
+
+## Base E1
+
+```text
+$ pwd
+/home/claude/sites/Pet-Tracker-wt-159
+$ git branch --show-current
+feature/159-mobile-no-collar-states-pingo
+$ git rev-parse --short HEAD
+c8064d03
+$ git status --short
+```
+
+H0E1: `c8064d03`; status vacío. Enmienda E1 firmada en `f3ca7b8e`. Ninguna skill cargada.
+
+```text
+$ cd /home/claude/sites/Pet-Tracker-wt-159/mobile-pet-tracker && pwd
+/home/claude/sites/Pet-Tracker-wt-159/mobile-pet-tracker
+```
+
+```text
+$ git fetch origin; echo "exit=$?"
+exit=0
+```
+
+```text
+$ git merge-base --is-ancestor origin/main HEAD; echo "exit=$?"
+exit=0
+```
+
+```text
+$ git merge-base --is-ancestor 664b95a7 HEAD; echo "exit=$?"
+exit=0
+```
+
+```text
+$ git diff --quiet 664b95a7 HEAD -- .; echo "exit=$?"
+exit=0
+```
+
+```text
+$ test ! -e .expo/types/router.d.ts; echo "exit=$?"
+exit=0
+```
+
+```text
+$ test -d node_modules && echo presente
+presente
+```
+
+## Anclas E1 en H0E1
+
+A1 (esperado H0E1: 0; cierre: 1):
+```text
+$ grep -cF "it('pinta Vincular collar aunque el listado diga otro rol: manda el rol del detalle'" src/screens/map/index.test.tsx
+0
+```
+
+A2 (esperado H0E1: 0; cierre: 1):
+```text
+$ grep -cF "it('pinta Vincular collar aunque el listado traiga collar: manda el collar del detalle'" src/screens/map/index.test.tsx
+0
+```
+
+A3 (esperado H0E1: 0; cierre: 1):
+```text
+$ grep -cF "('no pinta el botón a %s aunque el listado diga owner'" src/screens/map/index.test.tsx
+0
+```
+
+A4 (esperado H0E1: 0; cierre: 3):
+```text
+$ grep -cF 'aunque el listado' src/screens/map/index.test.tsx
+0
+```
+
+A5 (esperado H0E1: 1; cierre: 3):
+```text
+$ grep -cF "within(action).getByText('Vincular collar')" src/screens/map/index.test.tsx
+1
+```
+
+A6 (esperado H0E1: 1; cierre: 1):
+```text
+$ grep -cF "it('lleva a emparejar una sola vez'" src/screens/map/index.test.tsx
+1
+```
+
+A7 (esperado H0E1: 1; cierre: 1):
+```text
+$ grep -cF "it('no pinta el botón mientras el detalle carga'" src/screens/map/index.test.tsx
+1
+```
+
+A8 (esperado H0E1: 1; cierre: 1):
+```text
+$ grep -cF "it.each(['family', 'walker', 'vet'] as const)('no pinta el botón a %s', async (role)" src/screens/map/index.test.tsx
+1
+```
+
+A9 (esperado H0E1: 1; cierre: 1):
+```text
+$ grep -cF 'function noTrackingAfterDetail(detailState: PetState)' src/screens/map/index.test.tsx
+1
+```
+
+A10 (esperado H0E1: 1; cierre: 1):
+```text
+$ grep -cF "selectedPet?.myRole === 'owner'" src/screens/map/index.tsx
+1
+```
+
+A11 (esperado H0E1: 0; cierre: 0):
+```text
+$ grep -cF 'selectedPet?.device' src/screens/map/index.tsx
+0
+```
+
+A12 (esperado H0E1: 1; cierre: 1):
+```text
+$ grep -cF "detail.data.pet.myRole === 'owner' &&" src/screens/map/index.tsx
+1
+```
+
+A13 (esperado H0E1: 1; cierre: 1):
+```text
+$ grep -cF 'detail.data.pet.device === null;' src/screens/map/index.tsx
+1
+```
+
+A14 (esperado H0E1: exit=0; cierre: exit=0):
+```text
+$ git diff --quiet 664b95a7 HEAD -- src/screens/map/index.tsx; echo "exit=$?"
+exit=0
+```
+
+## Base del Mapa E1 — PARADA
+
+```text
+$ FORCE_COLOR=0 bunx jest src/screens/map/index.test.tsx > /tmp/159-e1-base.txt 2>&1; echo "exit=$?"
+exit=1
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 108 passed, 109 total
+```
+
+Esperado: `exit=0` y `Tests:       109 passed, 109 total`.
+Medido: `exit=1` y `Tests:       1 failed, 108 passed, 109 total`.
+Salida completa: `/tmp/159-e1-base.txt`.
+
+Fallo del test existente, antes de cualquier edición de tests o producción:
+
+```text
+  ● R4: map resuelve la mascota seleccionada › selects the first pet and loads its first position (#72 R2)
+
+    expect(jest.fn()).toHaveBeenCalledWith(...expected)
+
+    Expected: "http://example.test/v1", "jwt-token", "pet-1"
+
+    Number of calls: 0
+
+      310 |     await renderMap();
+      311 |
+    > 312 |     await waitFor(() => {
+          |                  ^
+      313 |       expect(mockGetLastPosition).toHaveBeenCalledWith(
+      314 |         apiUrl,
+      315 |         'jwt-token',
+
+      at Object.<anonymous> (src/screens/map/index.test.tsx:312:18)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+PARADA conforme a `== BASE ==` del handoff E1: la base no dio exactamente
+109 tests pasados. No se recalculan las cuentas ni se reintenta. No se
+escribieron los tests E1 ni se plantó la mutación versionada. Ninguna
+cadena de commit ni sonda se ejecutó; no se creó ningún commit E1.
+Ninguna skill cargada; no se lanzó `init.sh`, no hubo push ni PR.
+
+```text
+$ git rev-parse --short HEAD
+c8064d03
+```
+
+```text
+$ git diff --name-only
+progress/impl_mobile-no-collar-states-pingo.md
+```
+
+```text
+$ git status --short
+ M progress/impl_mobile-no-collar-states-pingo.md
+```
+
+R10: pendiente del smoke humano
+
+## Reanudación
+
+Reanudación autorizada por el humano sin commit previo. H0E1 sigue siendo `c8064d03`. La sección «Base del Mapa E1 — PARADA» se conserva íntegra. El leader midió dos bases verdes (109 passed) y atribuye el fallo al flake por carga de #72 R2, fuera de alcance. No se modifica ese test. Antes de cada Jest se registra `uptime`. Solo se permite una repetición cuando la única desviación sea ese it con `Number of calls: 0`; una segunda desviación o cualquier otro fallo inesperado exige parar. Anclas iniciales ya medidas, no se repiten.
+
+```text
+$ cd /home/claude/sites/Pet-Tracker-wt-159/mobile-pet-tracker && pwd
+(en ejecución)
+```
+
+```text
+/home/claude/sites/Pet-Tracker-wt-159/mobile-pet-tracker
+```
+Exit de la invocación: 0.
+
+### Medida: 159-e1-base.txt, intento 1
+
+```text
+$ uptime
+(en ejecución)
+```
+
+```text
+ 21:52:03 up 16 days, 17:59,  4 users,  load average: 4.74, 6.02, 4.21
+```
+Exit de la invocación: 0.
+
+```text
+$ FORCE_COLOR=0 bunx jest src/screens/map/index.test.tsx > /tmp/159-e1-base.txt 2>&1; echo "exit=$?"
+(en ejecución)
+```
+
+```text
+exit=0
+```
+Exit de la invocación: 0.
+
+```text
+$ resumen de /tmp/159-e1-base.txt
+Test Suites: 1 passed, 1 total
+Tests:       109 passed, 109 total
+```
+
+Medida exacta conforme al handoff.
+
+### e1-1 — Preparación del rojo
+
+Se añadieron los dos `it` literales al final del describe R3 y el `it.each` de los tres roles al final del describe R4. Ningún test existente, helper o import cambia. Mutación versionada limitada a las dos cláusulas de rol y collar de `canPairCollar`; la guarda `kind === ok` conserva su texto.
+
+### Medida: 159-e1-r.txt, intento 1
+
+```text
+$ uptime
+(en ejecución)
+```
+
+```text
+ 21:52:40 up 16 days, 18:00,  4 users,  load average: 3.12, 5.49, 4.10
+```
+Exit de la invocación: 0.
+
+```text
+$ FORCE_COLOR=0 bunx jest src/screens/map/index.test.tsx > /tmp/159-e1-r.txt 2>&1; echo "exit=$?"
+(en ejecución)
+```
+
+```text
+exit=1
+```
+Exit de la invocación: 0.
+
+```text
+$ resumen de /tmp/159-e1-r.txt
+Test Suites: 1 failed, 1 total
+Tests:       6 failed, 108 passed, 114 total
+```
+
+```text
+  ● #159 R3: el dueño sin collar puede ir a emparejar › pinta Vincular collar aunque el listado diga otro rol: manda el rol del detalle
+
+    Unable to find an element with testID: map-no-tracking-action
+```
+
+```text
+  ● #159 R3: el dueño sin collar puede ir a emparejar › pinta Vincular collar aunque el listado traiga collar: manda el collar del detalle
+
+    Unable to find an element with testID: map-no-tracking-action
+```
+
+```text
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón al dueño de una mascota con collar
+
+    expect(received).toBeNull()
+
+    Expected: null (matcher toBeNull)
+    Received: <View accessibilityRole="button" accessibilityState={{"busy": undefined, "checked": undefined, "disabled": false, "expanded": undefined, "selected": undefined}} accessibilityValue={{"max": undefined, "min": undefined, "now": undefined, "text": undefined}} accessible={true} className="pressable-feedback__root button__root button__root--variant-primary button__root--size-md rounded-xl bg-accent" collapsable={false} focusable={true} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"transform": [{"scale": 1}]}}} jestInlineStyle={[{"borderCurve": "continuous"}, [{"borderCurve": "continuous"}, undefined]]} onBlur={[Function onBlur]} onClick={[Function onClick]} onFocus={[Function onFocus]} onLayout={[Function anonymous]} onResponderGrant={[Function onResponderGrant]} onResponderMove={[Function onResponderMove]} onResponderRelease={[Function onResponderRelease]} onResponderTerminate={[Function onResponderTerminate]} onResponderTerminationRequest={[Function onResponderTerminationRequest]} onStartShouldSetResponder={[Function onStartShouldSetResponder]} style={[{"borderCurve": "continuous"}, {"transform": [{"scale": 1}]}, {"borderCurve": "continuous"}, undefined]} testID="map-no-tracking-action"><View className="pressable-feedback__highlight" collapsable={false} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"backgroundColor": "invalid", "opacity": 0}}} jestInlineStyle={[undefined]} pointerEvents="none" style={[{"backgroundColor": "invalid", "opacity": 0}, undefined]} /><Text className="button__label button__label--variant-primary button__label--size-md font-bold text-accent-foreground">Vincular collar</Text></View>
+```
+
+```text
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón a family aunque el listado diga owner
+
+    expect(received).toBeNull()
+
+    Expected: null (matcher toBeNull)
+    Received: <View accessibilityRole="button" accessibilityState={{"busy": undefined, "checked": undefined, "disabled": false, "expanded": undefined, "selected": undefined}} accessibilityValue={{"max": undefined, "min": undefined, "now": undefined, "text": undefined}} accessible={true} className="pressable-feedback__root button__root button__root--variant-primary button__root--size-md rounded-xl bg-accent" collapsable={false} focusable={true} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"transform": [{"scale": 1}]}}} jestInlineStyle={[{"borderCurve": "continuous"}, [{"borderCurve": "continuous"}, undefined]]} onBlur={[Function onBlur]} onClick={[Function onClick]} onFocus={[Function onFocus]} onLayout={[Function anonymous]} onResponderGrant={[Function onResponderGrant]} onResponderMove={[Function onResponderMove]} onResponderRelease={[Function onResponderRelease]} onResponderTerminate={[Function onResponderTerminate]} onResponderTerminationRequest={[Function onResponderTerminationRequest]} onStartShouldSetResponder={[Function onStartShouldSetResponder]} style={[{"borderCurve": "continuous"}, {"transform": [{"scale": 1}]}, {"borderCurve": "continuous"}, undefined]} testID="map-no-tracking-action"><View className="pressable-feedback__highlight" collapsable={false} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"backgroundColor": "invalid", "opacity": 0}}} jestInlineStyle={[undefined]} pointerEvents="none" style={[{"backgroundColor": "invalid", "opacity": 0}, undefined]} /><Text className="button__label button__label--variant-primary button__label--size-md font-bold text-accent-foreground">Vincular collar</Text></View>
+```
+
+```text
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón a walker aunque el listado diga owner
+
+    expect(received).toBeNull()
+
+    Expected: null (matcher toBeNull)
+    Received: <View accessibilityRole="button" accessibilityState={{"busy": undefined, "checked": undefined, "disabled": false, "expanded": undefined, "selected": undefined}} accessibilityValue={{"max": undefined, "min": undefined, "now": undefined, "text": undefined}} accessible={true} className="pressable-feedback__root button__root button__root--variant-primary button__root--size-md rounded-xl bg-accent" collapsable={false} focusable={true} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"transform": [{"scale": 1}]}}} jestInlineStyle={[{"borderCurve": "continuous"}, [{"borderCurve": "continuous"}, undefined]]} onBlur={[Function onBlur]} onClick={[Function onClick]} onFocus={[Function onFocus]} onLayout={[Function anonymous]} onResponderGrant={[Function onResponderGrant]} onResponderMove={[Function onResponderMove]} onResponderRelease={[Function onResponderRelease]} onResponderTerminate={[Function onResponderTerminate]} onResponderTerminationRequest={[Function onResponderTerminationRequest]} onStartShouldSetResponder={[Function onStartShouldSetResponder]} style={[{"borderCurve": "continuous"}, {"transform": [{"scale": 1}]}, {"borderCurve": "continuous"}, undefined]} testID="map-no-tracking-action"><View className="pressable-feedback__highlight" collapsable={false} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"backgroundColor": "invalid", "opacity": 0}}} jestInlineStyle={[undefined]} pointerEvents="none" style={[{"backgroundColor": "invalid", "opacity": 0}, undefined]} /><Text className="button__label button__label--variant-primary button__label--size-md font-bold text-accent-foreground">Vincular collar</Text></View>
+```
+
+```text
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón a vet aunque el listado diga owner
+
+    expect(received).toBeNull()
+
+    Expected: null (matcher toBeNull)
+    Received: <View accessibilityRole="button" accessibilityState={{"busy": undefined, "checked": undefined, "disabled": false, "expanded": undefined, "selected": undefined}} accessibilityValue={{"max": undefined, "min": undefined, "now": undefined, "text": undefined}} accessible={true} className="pressable-feedback__root button__root button__root--variant-primary button__root--size-md rounded-xl bg-accent" collapsable={false} focusable={true} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"transform": [{"scale": 1}]}}} jestInlineStyle={[{"borderCurve": "continuous"}, [{"borderCurve": "continuous"}, undefined]]} onBlur={[Function onBlur]} onClick={[Function onClick]} onFocus={[Function onFocus]} onLayout={[Function anonymous]} onResponderGrant={[Function onResponderGrant]} onResponderMove={[Function onResponderMove]} onResponderRelease={[Function onResponderRelease]} onResponderTerminate={[Function onResponderTerminate]} onResponderTerminationRequest={[Function onResponderTerminationRequest]} onStartShouldSetResponder={[Function onStartShouldSetResponder]} style={[{"borderCurve": "continuous"}, {"transform": [{"scale": 1}]}, {"borderCurve": "continuous"}, undefined]} testID="map-no-tracking-action"><View className="pressable-feedback__highlight" collapsable={false} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"backgroundColor": "invalid", "opacity": 0}}} jestInlineStyle={[undefined]} pointerEvents="none" style={[{"backgroundColor": "invalid", "opacity": 0}, undefined]} /><Text className="button__label button__label--variant-primary button__label--size-md font-bold text-accent-foreground">Vincular collar</Text></View>
+```
+
+Medida exacta conforme al handoff.
+
+```text
+$ grep -qE '^Tests: +6 failed, 108 passed, 114 total$' /tmp/159-e1-r.txt \
+  && test "$(grep -cE '^  ● ' /tmp/159-e1-r.txt)" = 6 \
+  && test "$(grep -E '^  ● ' /tmp/159-e1-r.txt | grep -cF 'aunque el listado')" = 5 \
+  && test "$(grep -E '^  ● ' /tmp/159-e1-r.txt | grep -cF 'no pinta el botón al dueño de una mascota con collar')" = 1 \
+  && test "$(grep -cF 'Unable to find an element with testID: map-no-tracking-action' /tmp/159-e1-r.txt)" = 2 \
+  && test "$(grep -cF 'expect(received).toBeNull()' /tmp/159-e1-r.txt)" = 4 \
+  && ! grep -qE 'Test suite failed to run|TypeError|ReferenceError|SyntaxError|Cannot find module' /tmp/159-e1-r.txt \
+  && test "$(grep -cF "selectedPet?.myRole === 'owner'" src/screens/map/index.tsx)" = 2 \
+  && test "$(grep -cF 'selectedPet?.device === null;' src/screens/map/index.tsx)" = 1 \
+  && test "$(grep -cF 'detail.data.pet.myRole' src/screens/map/index.tsx)" = 0 \
+  && test "$(grep -cF 'detail.data.pet.device' src/screens/map/index.tsx)" = 0 \
+  && test ! -e .expo/types/router.d.ts && bun run typecheck && bunx expo lint --no-cache \
+  && git add src/screens/map/index.test.tsx src/screens/map/index.tsx \
+  && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'mobile-pet-tracker/src/screens/map/index.test.tsx mobile-pet-tracker/src/screens/map/index.tsx ' \
+  && git diff --quiet -- . ../docs ../specs && test -z "$(git ls-files --others --exclude-standard -- . ../docs ../specs)" \
+  && git commit -m 'test(mobile-no-collar-states): #159 E1 red pair action reads role and collar from list'
+
+(en ejecución)
+```
+
+```text
+(vacío)
+```
+Exit de la invocación: 1.
+
+PARADA: Falló `grep -qE '^Tests: +6 failed, 108 passed, 114 total$' /tmp/159-e1-r.txt \
+  && test "$(grep -cE '^  ● ' /tmp/159-e1-r.txt)" = 6 \
+  && test "$(grep -E '^  ● ' /tmp/159-e1-r.txt | grep -cF 'aunque el listado')" = 5 \
+  && test "$(grep -E '^  ● ' /tmp/159-e1-r.txt | grep -cF 'no pinta el botón al dueño de una mascota con collar')" = 1 \
+  && test "$(grep -cF 'Unable to find an element with testID: map-no-tracking-action' /tmp/159-e1-r.txt)" = 2 \
+  && test "$(grep -cF 'expect(received).toBeNull()' /tmp/159-e1-r.txt)" = 4 \
+  && ! grep -qE 'Test suite failed to run|TypeError|ReferenceError|SyntaxError|Cannot find module' /tmp/159-e1-r.txt \
+  && test "$(grep -cF "selectedPet?.myRole === 'owner'" src/screens/map/index.tsx)" = 2 \
+  && test "$(grep -cF 'selectedPet?.device === null;' src/screens/map/index.tsx)" = 1 \
+  && test "$(grep -cF 'detail.data.pet.myRole' src/screens/map/index.tsx)" = 0 \
+  && test "$(grep -cF 'detail.data.pet.device' src/screens/map/index.tsx)" = 0 \
+  && test ! -e .expo/types/router.d.ts && bun run typecheck && bunx expo lint --no-cache \
+  && git add src/screens/map/index.test.tsx src/screens/map/index.tsx \
+  && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'mobile-pet-tracker/src/screens/map/index.test.tsx mobile-pet-tracker/src/screens/map/index.tsx ' \
+  && git diff --quiet -- . ../docs ../specs && test -z "$(git ls-files --others --exclude-standard -- . ../docs ../specs)" \
+  && git commit -m 'test(mobile-no-collar-states): #159 E1 red pair action reads role and collar from list'
+` (exit=1); salida registrada arriba.
+
+R10: pendiente del smoke humano
+
+### Diagnóstico del eslabón fallido de e1-1
+
+El rojo coincidió exactamente: `exit=1`, `6 failed, 108 passed, 114 total`,
+los seis títulos prescritos, dos consultas y cuatro matchers `toBeNull`.
+No hubo desviación por #72 R2 y no se aplicó ninguna repetición.
+
+La cadena literal terminó con exit=1 en este eslabón:
+
+```text
+$ test "$(grep -cF 'detail.data.pet.device' src/screens/map/index.tsx)" = 0
+exit=1
+$ grep -cF 'detail.data.pet.device' src/screens/map/index.tsx
+2
+```
+
+Esperado por la cadena: 0. Medido: 2. Son referencias preexistentes fuera de
+`canPairCollar`, conservadas sin cambios; no se modifica el guion ni esas
+referencias para sortear el gate:
+
+```text
+$ rg -nF 'detail.data.pet.device' src/screens/map/index.tsx
+235:      ? deviceConnectionState(detail.data.pet.device)
+244:    ? detail.data.pet.device?.batteryPct ?? null
+```
+
+Los eslabones anteriores coinciden: grep del resumen exit=0; títulos 6;
+«aunque el listado» 5; dueño con collar 1; consultas 2; matchers 4;
+ningún error de ejecución prohibido; rol de selectedPet 2; collar de
+selectedPet 1; rol de detail 0. La guarda del fichero router ausente da 0.
+
+Typecheck, lint, git add y git commit NO llegaron a ejecutarse en la cadena.
+No se creó e1-1, ni se inició e1-2, ni ninguna sonda ni el cierre.
+Se dejan los cinco tests añadidos y la mutación roja sin commit; no se
+restaura producción como un verde sin el rojo previo. HEAD sigue en H0E1.
+
+```text
+$ git diff --cached --name-only
+(vacío)
+$ git status --short
+ M src/screens/map/index.test.tsx
+ M src/screens/map/index.tsx
+ M ../progress/impl_mobile-no-collar-states-pingo.md
+$ git rev-parse --short HEAD
+c8064d03
+```
+
+Ninguna skill cargada; no se lanzó init.sh, no hubo push, PR, merge ni rebase.
+La sección de la parada previa y todo el contenido anterior a la reanudación
+se conservan byte a byte.
+
+R10: pendiente del smoke humano
+
+## Reanudación 2
+
+Reanudación autorizada por el humano sobre H0E1 `c8064d03`, sin commit previo.
+Se conservan íntegros los tests y la mutación roja del árbol actual. No se
+editan las referencias de conexión y batería ni el test #72 R2.
+
+El humano confirma que el error estaba en el handoff y autoriza este único
+cambio de eslabón en la cadena e1-1:
+
+```text
+  && test "$(grep -cF 'detail.data.pet.device === null' src/screens/map/index.tsx)" = 0 \
+```
+
+El leader midió esa cuenta en el árbol mutado (0), typecheck y lint (exit=0).
+Se repetirá la medida roja y la cadena entera con ese único eslabón cambiado.
+Sigue vigente la repetición única autorizada únicamente por el flake de
+#72 R2 con `Number of calls: 0`. Antes de cada Jest se registra `uptime`.
+Cualquier otra desviación exige parar. Ninguna skill cargada.
+
+```text
+$ pwd
+/home/claude/sites/Pet-Tracker-wt-159
+$ git branch --show-current
+feature/159-mobile-no-collar-states-pingo
+$ git rev-parse --short HEAD
+c8064d03
+$ git status --short
+ M mobile-pet-tracker/src/screens/map/index.test.tsx
+ M mobile-pet-tracker/src/screens/map/index.tsx
+ M progress/impl_mobile-no-collar-states-pingo.md
+```
+
+```text
+$ cd /home/claude/sites/Pet-Tracker-wt-159/mobile-pet-tracker && pwd
+(en ejecución)
+```
+
+```text
+/home/claude/sites/Pet-Tracker-wt-159/mobile-pet-tracker
+```
+Exit de la invocación: 0.
+
+### Medida: 159-e1-r.txt, intento 1
+
+```text
+$ uptime
+(en ejecución)
+```
+
+```text
+ 21:57:04 up 16 days, 18:04,  4 users,  load average: 4.46, 4.68, 4.08
+```
+Exit de la invocación: 0.
+
+```text
+$ FORCE_COLOR=0 bunx jest src/screens/map/index.test.tsx > /tmp/159-e1-r.txt 2>&1; echo "exit=$?"
+(en ejecución)
+```
+
+```text
+exit=1
+```
+Exit de la invocación: 0.
+
+```text
+$ resumen de /tmp/159-e1-r.txt
+Test Suites: 1 failed, 1 total
+Tests:       6 failed, 108 passed, 114 total
+```
+
+```text
+  ● #159 R3: el dueño sin collar puede ir a emparejar › pinta Vincular collar aunque el listado diga otro rol: manda el rol del detalle
+
+    Unable to find an element with testID: map-no-tracking-action
+```
+
+```text
+  ● #159 R3: el dueño sin collar puede ir a emparejar › pinta Vincular collar aunque el listado traiga collar: manda el collar del detalle
+
+    Unable to find an element with testID: map-no-tracking-action
+```
+
+```text
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón al dueño de una mascota con collar
+
+    expect(received).toBeNull()
+
+    Expected: null (matcher toBeNull)
+    Received: <View accessibilityRole="button" accessibilityState={{"busy": undefined, "checked": undefined, "disabled": false, "expanded": undefined, "selected": undefined}} accessibilityValue={{"max": undefined, "min": undefined, "now": undefined, "text": undefined}} accessible={true} className="pressable-feedback__root button__root button__root--variant-primary button__root--size-md rounded-xl bg-accent" collapsable={false} focusable={true} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"transform": [{"scale": 1}]}}} jestInlineStyle={[{"borderCurve": "continuous"}, [{"borderCurve": "continuous"}, undefined]]} onBlur={[Function onBlur]} onClick={[Function onClick]} onFocus={[Function onFocus]} onLayout={[Function anonymous]} onResponderGrant={[Function onResponderGrant]} onResponderMove={[Function onResponderMove]} onResponderRelease={[Function onResponderRelease]} onResponderTerminate={[Function onResponderTerminate]} onResponderTerminationRequest={[Function onResponderTerminationRequest]} onStartShouldSetResponder={[Function onStartShouldSetResponder]} style={[{"borderCurve": "continuous"}, {"transform": [{"scale": 1}]}, {"borderCurve": "continuous"}, undefined]} testID="map-no-tracking-action"><View className="pressable-feedback__highlight" collapsable={false} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"backgroundColor": "invalid", "opacity": 0}}} jestInlineStyle={[undefined]} pointerEvents="none" style={[{"backgroundColor": "invalid", "opacity": 0}, undefined]} /><Text className="button__label button__label--variant-primary button__label--size-md font-bold text-accent-foreground">Vincular collar</Text></View>
+```
+
+```text
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón a family aunque el listado diga owner
+
+    expect(received).toBeNull()
+
+    Expected: null (matcher toBeNull)
+    Received: <View accessibilityRole="button" accessibilityState={{"busy": undefined, "checked": undefined, "disabled": false, "expanded": undefined, "selected": undefined}} accessibilityValue={{"max": undefined, "min": undefined, "now": undefined, "text": undefined}} accessible={true} className="pressable-feedback__root button__root button__root--variant-primary button__root--size-md rounded-xl bg-accent" collapsable={false} focusable={true} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"transform": [{"scale": 1}]}}} jestInlineStyle={[{"borderCurve": "continuous"}, [{"borderCurve": "continuous"}, undefined]]} onBlur={[Function onBlur]} onClick={[Function onClick]} onFocus={[Function onFocus]} onLayout={[Function anonymous]} onResponderGrant={[Function onResponderGrant]} onResponderMove={[Function onResponderMove]} onResponderRelease={[Function onResponderRelease]} onResponderTerminate={[Function onResponderTerminate]} onResponderTerminationRequest={[Function onResponderTerminationRequest]} onStartShouldSetResponder={[Function onStartShouldSetResponder]} style={[{"borderCurve": "continuous"}, {"transform": [{"scale": 1}]}, {"borderCurve": "continuous"}, undefined]} testID="map-no-tracking-action"><View className="pressable-feedback__highlight" collapsable={false} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"backgroundColor": "invalid", "opacity": 0}}} jestInlineStyle={[undefined]} pointerEvents="none" style={[{"backgroundColor": "invalid", "opacity": 0}, undefined]} /><Text className="button__label button__label--variant-primary button__label--size-md font-bold text-accent-foreground">Vincular collar</Text></View>
+```
+
+```text
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón a walker aunque el listado diga owner
+
+    expect(received).toBeNull()
+
+    Expected: null (matcher toBeNull)
+    Received: <View accessibilityRole="button" accessibilityState={{"busy": undefined, "checked": undefined, "disabled": false, "expanded": undefined, "selected": undefined}} accessibilityValue={{"max": undefined, "min": undefined, "now": undefined, "text": undefined}} accessible={true} className="pressable-feedback__root button__root button__root--variant-primary button__root--size-md rounded-xl bg-accent" collapsable={false} focusable={true} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"transform": [{"scale": 1}]}}} jestInlineStyle={[{"borderCurve": "continuous"}, [{"borderCurve": "continuous"}, undefined]]} onBlur={[Function onBlur]} onClick={[Function onClick]} onFocus={[Function onFocus]} onLayout={[Function anonymous]} onResponderGrant={[Function onResponderGrant]} onResponderMove={[Function onResponderMove]} onResponderRelease={[Function onResponderRelease]} onResponderTerminate={[Function onResponderTerminate]} onResponderTerminationRequest={[Function onResponderTerminationRequest]} onStartShouldSetResponder={[Function onStartShouldSetResponder]} style={[{"borderCurve": "continuous"}, {"transform": [{"scale": 1}]}, {"borderCurve": "continuous"}, undefined]} testID="map-no-tracking-action"><View className="pressable-feedback__highlight" collapsable={false} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"backgroundColor": "invalid", "opacity": 0}}} jestInlineStyle={[undefined]} pointerEvents="none" style={[{"backgroundColor": "invalid", "opacity": 0}, undefined]} /><Text className="button__label button__label--variant-primary button__label--size-md font-bold text-accent-foreground">Vincular collar</Text></View>
+```
+
+```text
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón a vet aunque el listado diga owner
+
+    expect(received).toBeNull()
+
+    Expected: null (matcher toBeNull)
+    Received: <View accessibilityRole="button" accessibilityState={{"busy": undefined, "checked": undefined, "disabled": false, "expanded": undefined, "selected": undefined}} accessibilityValue={{"max": undefined, "min": undefined, "now": undefined, "text": undefined}} accessible={true} className="pressable-feedback__root button__root button__root--variant-primary button__root--size-md rounded-xl bg-accent" collapsable={false} focusable={true} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"transform": [{"scale": 1}]}}} jestInlineStyle={[{"borderCurve": "continuous"}, [{"borderCurve": "continuous"}, undefined]]} onBlur={[Function onBlur]} onClick={[Function onClick]} onFocus={[Function onFocus]} onLayout={[Function anonymous]} onResponderGrant={[Function onResponderGrant]} onResponderMove={[Function onResponderMove]} onResponderRelease={[Function onResponderRelease]} onResponderTerminate={[Function onResponderTerminate]} onResponderTerminationRequest={[Function onResponderTerminationRequest]} onStartShouldSetResponder={[Function onStartShouldSetResponder]} style={[{"borderCurve": "continuous"}, {"transform": [{"scale": 1}]}, {"borderCurve": "continuous"}, undefined]} testID="map-no-tracking-action"><View className="pressable-feedback__highlight" collapsable={false} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"backgroundColor": "invalid", "opacity": 0}}} jestInlineStyle={[undefined]} pointerEvents="none" style={[{"backgroundColor": "invalid", "opacity": 0}, undefined]} /><Text className="button__label button__label--variant-primary button__label--size-md font-bold text-accent-foreground">Vincular collar</Text></View>
+```
+
+Medida exacta conforme al handoff.
+
+```text
+$ grep -qE '^Tests: +6 failed, 108 passed, 114 total$' /tmp/159-e1-r.txt \
+  && test "$(grep -cE '^  ● ' /tmp/159-e1-r.txt)" = 6 \
+  && test "$(grep -E '^  ● ' /tmp/159-e1-r.txt | grep -cF 'aunque el listado')" = 5 \
+  && test "$(grep -E '^  ● ' /tmp/159-e1-r.txt | grep -cF 'no pinta el botón al dueño de una mascota con collar')" = 1 \
+  && test "$(grep -cF 'Unable to find an element with testID: map-no-tracking-action' /tmp/159-e1-r.txt)" = 2 \
+  && test "$(grep -cF 'expect(received).toBeNull()' /tmp/159-e1-r.txt)" = 4 \
+  && ! grep -qE 'Test suite failed to run|TypeError|ReferenceError|SyntaxError|Cannot find module' /tmp/159-e1-r.txt \
+  && test "$(grep -cF "selectedPet?.myRole === 'owner'" src/screens/map/index.tsx)" = 2 \
+  && test "$(grep -cF 'selectedPet?.device === null;' src/screens/map/index.tsx)" = 1 \
+  && test "$(grep -cF 'detail.data.pet.myRole' src/screens/map/index.tsx)" = 0 \
+  && test "$(grep -cF 'detail.data.pet.device === null' src/screens/map/index.tsx)" = 0 \
+  && test ! -e .expo/types/router.d.ts && bun run typecheck && bunx expo lint --no-cache \
+  && git add src/screens/map/index.test.tsx src/screens/map/index.tsx \
+  && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'mobile-pet-tracker/src/screens/map/index.test.tsx mobile-pet-tracker/src/screens/map/index.tsx ' \
+  && git diff --quiet -- . ../docs ../specs && test -z "$(git ls-files --others --exclude-standard -- . ../docs ../specs)" \
+  && git commit -m 'test(mobile-no-collar-states): #159 E1 red pair action reads role and collar from list'
+
+(en ejecución)
+```
+
+```text
+$ tsc --noEmit
+[feature/159-mobile-no-collar-states-pingo 3224d502] test(mobile-no-collar-states): #159 E1 red pair action reads role and collar from list
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 2 files changed, 29 insertions(+), 2 deletions(-)
+```
+Exit de la invocación: 0.
+
+Commit red: `3224d502`. Typecheck y lint: exit=0 (la cadena alcanzó el commit).
+
+```text
+$ git checkout 664b95a7 -- src/screens/map/index.tsx && git diff --quiet 664b95a7 -- src/screens/map/index.tsx; echo "exit=$?"
+(en ejecución)
+```
+
+```text
+exit=0
+```
+Exit de la invocación: 0.
+
+### Medida: 159-e1-g.txt, intento 1
+
+```text
+$ uptime
+(en ejecución)
+```
+
+```text
+ 21:58:38 up 16 days, 18:06,  4 users,  load average: 5.51, 5.17, 4.32
+```
+Exit de la invocación: 0.
+
+```text
+$ FORCE_COLOR=0 bunx jest src/screens/map/index.test.tsx > /tmp/159-e1-g.txt 2>&1; echo "exit=$?"
+(en ejecución)
+```
+
+```text
+exit=0
+```
+Exit de la invocación: 0.
+
+```text
+$ resumen de /tmp/159-e1-g.txt
+Test Suites: 1 passed, 1 total
+Tests:       114 passed, 114 total
+```
+
+Medida exacta conforme al handoff.
+
+### Medida: 159-e1-g-guardas.txt, intento 1
+
+```text
+$ uptime
+(en ejecución)
+```
+
+```text
+ 21:58:49 up 16 days, 18:06,  4 users,  load average: 4.96, 5.07, 4.30
+```
+Exit de la invocación: 0.
+
+```text
+$ FORCE_COLOR=0 bunx jest src/__tests__/ui-language.test.ts src/__tests__/design-drift.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/159-e1-g-guardas.txt 2>&1; echo "exit=$?"
+(en ejecución)
+```
+
+```text
+exit=0
+```
+Exit de la invocación: 0.
+
+```text
+$ resumen de /tmp/159-e1-g-guardas.txt
+Test Suites: 4 passed, 4 total
+Tests:       174 passed, 174 total
+```
+
+Medida exacta conforme al handoff.
+
+```text
+$ grep -qE '^Tests: +114 passed, 114 total$' /tmp/159-e1-g.txt \
+  && grep -qE '^Tests: +174 passed, 174 total$' /tmp/159-e1-g-guardas.txt \
+  && git diff --quiet 664b95a7 -- src/screens/map/index.tsx \
+  && test ! -e .expo/types/router.d.ts && bun run typecheck && bunx expo lint --no-cache \
+  && git add src/screens/map/index.tsx \
+  && test "$(git diff --cached --name-only)" = 'mobile-pet-tracker/src/screens/map/index.tsx' \
+  && git diff --quiet -- . ../docs ../specs && test -z "$(git ls-files --others --exclude-standard -- . ../docs ../specs)" \
+  && git commit -m 'fix(mobile-no-collar-states): #159 E1 revert list probe, pair action locked to detail' \
+  && git diff --quiet 664b95a7 HEAD -- src/screens/map/index.tsx; echo "exit=$?"
+
+(en ejecución)
+```
+
+```text
+$ tsc --noEmit
+[feature/159-mobile-no-collar-states-pingo 203ea96e] fix(mobile-no-collar-states): #159 E1 revert list probe, pair action locked to detail
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+exit=0
+```
+Exit de la invocación: 0.
+
+Commit green: `203ea96e`. Typecheck y lint: exit=0 (la cadena alcanzó el commit).
+
+### Sonda E1a — Sin commit
+
+```text
+$ grep -cF "selectedPet?.myRole === 'owner' &&" src/screens/map/index.tsx
+(en ejecución)
+```
+
+```text
+1
+```
+Exit de la invocación: 0.
+
+### Medida: 159-e1a.txt, intento 1
+
+```text
+$ uptime
+(en ejecución)
+```
+
+```text
+ 21:59:53 up 16 days, 18:07,  4 users,  load average: 4.56, 4.97, 4.32
+```
+Exit de la invocación: 0.
+
+```text
+$ FORCE_COLOR=0 bunx jest src/screens/map/index.test.tsx > /tmp/159-e1a.txt 2>&1; echo "exit=$?"
+(en ejecución)
+```
+
+```text
+exit=1
+```
+Exit de la invocación: 0.
+
+```text
+$ resumen de /tmp/159-e1a.txt
+Test Suites: 1 failed, 1 total
+Tests:       4 failed, 110 passed, 114 total
+```
+
+```text
+  ● #159 R3: el dueño sin collar puede ir a emparejar › pinta Vincular collar aunque el listado diga otro rol: manda el rol del detalle
+
+    Unable to find an element with testID: map-no-tracking-action
+```
+
+```text
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón a family aunque el listado diga owner
+
+    expect(received).toBeNull()
+
+    Expected: null (matcher toBeNull)
+    Received: <View accessibilityRole="button" accessibilityState={{"busy": undefined, "checked": undefined, "disabled": false, "expanded": undefined, "selected": undefined}} accessibilityValue={{"max": undefined, "min": undefined, "now": undefined, "text": undefined}} accessible={true} className="pressable-feedback__root button__root button__root--variant-primary button__root--size-md rounded-xl bg-accent" collapsable={false} focusable={true} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"transform": [{"scale": 1}]}}} jestInlineStyle={[{"borderCurve": "continuous"}, [{"borderCurve": "continuous"}, undefined]]} onBlur={[Function onBlur]} onClick={[Function onClick]} onFocus={[Function onFocus]} onLayout={[Function anonymous]} onResponderGrant={[Function onResponderGrant]} onResponderMove={[Function onResponderMove]} onResponderRelease={[Function onResponderRelease]} onResponderTerminate={[Function onResponderTerminate]} onResponderTerminationRequest={[Function onResponderTerminationRequest]} onStartShouldSetResponder={[Function onStartShouldSetResponder]} style={[{"borderCurve": "continuous"}, {"transform": [{"scale": 1}]}, {"borderCurve": "continuous"}, undefined]} testID="map-no-tracking-action"><View className="pressable-feedback__highlight" collapsable={false} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"backgroundColor": "invalid", "opacity": 0}}} jestInlineStyle={[undefined]} pointerEvents="none" style={[{"backgroundColor": "invalid", "opacity": 0}, undefined]} /><Text className="button__label button__label--variant-primary button__label--size-md font-bold text-accent-foreground">Vincular collar</Text></View>
+```
+
+```text
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón a walker aunque el listado diga owner
+
+    expect(received).toBeNull()
+
+    Expected: null (matcher toBeNull)
+    Received: <View accessibilityRole="button" accessibilityState={{"busy": undefined, "checked": undefined, "disabled": false, "expanded": undefined, "selected": undefined}} accessibilityValue={{"max": undefined, "min": undefined, "now": undefined, "text": undefined}} accessible={true} className="pressable-feedback__root button__root button__root--variant-primary button__root--size-md rounded-xl bg-accent" collapsable={false} focusable={true} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"transform": [{"scale": 1}]}}} jestInlineStyle={[{"borderCurve": "continuous"}, [{"borderCurve": "continuous"}, undefined]]} onBlur={[Function onBlur]} onClick={[Function onClick]} onFocus={[Function onFocus]} onLayout={[Function anonymous]} onResponderGrant={[Function onResponderGrant]} onResponderMove={[Function onResponderMove]} onResponderRelease={[Function onResponderRelease]} onResponderTerminate={[Function onResponderTerminate]} onResponderTerminationRequest={[Function onResponderTerminationRequest]} onStartShouldSetResponder={[Function onStartShouldSetResponder]} style={[{"borderCurve": "continuous"}, {"transform": [{"scale": 1}]}, {"borderCurve": "continuous"}, undefined]} testID="map-no-tracking-action"><View className="pressable-feedback__highlight" collapsable={false} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"backgroundColor": "invalid", "opacity": 0}}} jestInlineStyle={[undefined]} pointerEvents="none" style={[{"backgroundColor": "invalid", "opacity": 0}, undefined]} /><Text className="button__label button__label--variant-primary button__label--size-md font-bold text-accent-foreground">Vincular collar</Text></View>
+```
+
+```text
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón a vet aunque el listado diga owner
+
+    expect(received).toBeNull()
+
+    Expected: null (matcher toBeNull)
+    Received: <View accessibilityRole="button" accessibilityState={{"busy": undefined, "checked": undefined, "disabled": false, "expanded": undefined, "selected": undefined}} accessibilityValue={{"max": undefined, "min": undefined, "now": undefined, "text": undefined}} accessible={true} className="pressable-feedback__root button__root button__root--variant-primary button__root--size-md rounded-xl bg-accent" collapsable={false} focusable={true} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"transform": [{"scale": 1}]}}} jestInlineStyle={[{"borderCurve": "continuous"}, [{"borderCurve": "continuous"}, undefined]]} onBlur={[Function onBlur]} onClick={[Function onClick]} onFocus={[Function onFocus]} onLayout={[Function anonymous]} onResponderGrant={[Function onResponderGrant]} onResponderMove={[Function onResponderMove]} onResponderRelease={[Function onResponderRelease]} onResponderTerminate={[Function onResponderTerminate]} onResponderTerminationRequest={[Function onResponderTerminationRequest]} onStartShouldSetResponder={[Function onStartShouldSetResponder]} style={[{"borderCurve": "continuous"}, {"transform": [{"scale": 1}]}, {"borderCurve": "continuous"}, undefined]} testID="map-no-tracking-action"><View className="pressable-feedback__highlight" collapsable={false} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"backgroundColor": "invalid", "opacity": 0}}} jestInlineStyle={[undefined]} pointerEvents="none" style={[{"backgroundColor": "invalid", "opacity": 0}, undefined]} /><Text className="button__label button__label--variant-primary button__label--size-md font-bold text-accent-foreground">Vincular collar</Text></View>
+```
+
+Medida exacta conforme al handoff.
+
+```text
+$ git checkout HEAD -- src/screens/map/index.tsx
+(en ejecución)
+```
+
+```text
+(vacío)
+```
+Exit de la invocación: 0.
+
+```text
+$ git diff --quiet HEAD -- . ../docs ../specs; echo "limpio=$?"
+(en ejecución)
+```
+
+```text
+limpio=0
+```
+Exit de la invocación: 0.
+
+Sonda E1a exacta y revertida, sin commit.
+
+### Sonda E1b — Sin commit
+
+```text
+$ grep -cF "(selectedPet?.myRole === 'owner' || detail.data.pet.myRole === 'owner') &&" src/screens/map/index.tsx
+(en ejecución)
+```
+
+```text
+1
+```
+Exit de la invocación: 0.
+
+### Medida: 159-e1b.txt, intento 1
+
+```text
+$ uptime
+(en ejecución)
+```
+
+```text
+ 22:00:15 up 16 days, 18:07,  4 users,  load average: 5.00, 5.05, 4.36
+```
+Exit de la invocación: 0.
+
+```text
+$ FORCE_COLOR=0 bunx jest src/screens/map/index.test.tsx > /tmp/159-e1b.txt 2>&1; echo "exit=$?"
+(en ejecución)
+```
+
+```text
+exit=1
+```
+Exit de la invocación: 0.
+
+```text
+$ resumen de /tmp/159-e1b.txt
+Test Suites: 1 failed, 1 total
+Tests:       3 failed, 111 passed, 114 total
+```
+
+```text
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón a family aunque el listado diga owner
+
+    expect(received).toBeNull()
+
+    Expected: null (matcher toBeNull)
+    Received: <View accessibilityRole="button" accessibilityState={{"busy": undefined, "checked": undefined, "disabled": false, "expanded": undefined, "selected": undefined}} accessibilityValue={{"max": undefined, "min": undefined, "now": undefined, "text": undefined}} accessible={true} className="pressable-feedback__root button__root button__root--variant-primary button__root--size-md rounded-xl bg-accent" collapsable={false} focusable={true} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"transform": [{"scale": 1}]}}} jestInlineStyle={[{"borderCurve": "continuous"}, [{"borderCurve": "continuous"}, undefined]]} onBlur={[Function onBlur]} onClick={[Function onClick]} onFocus={[Function onFocus]} onLayout={[Function anonymous]} onResponderGrant={[Function onResponderGrant]} onResponderMove={[Function onResponderMove]} onResponderRelease={[Function onResponderRelease]} onResponderTerminate={[Function onResponderTerminate]} onResponderTerminationRequest={[Function onResponderTerminationRequest]} onStartShouldSetResponder={[Function onStartShouldSetResponder]} style={[{"borderCurve": "continuous"}, {"transform": [{"scale": 1}]}, {"borderCurve": "continuous"}, undefined]} testID="map-no-tracking-action"><View className="pressable-feedback__highlight" collapsable={false} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"backgroundColor": "invalid", "opacity": 0}}} jestInlineStyle={[undefined]} pointerEvents="none" style={[{"backgroundColor": "invalid", "opacity": 0}, undefined]} /><Text className="button__label button__label--variant-primary button__label--size-md font-bold text-accent-foreground">Vincular collar</Text></View>
+```
+
+```text
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón a walker aunque el listado diga owner
+
+    expect(received).toBeNull()
+
+    Expected: null (matcher toBeNull)
+    Received: <View accessibilityRole="button" accessibilityState={{"busy": undefined, "checked": undefined, "disabled": false, "expanded": undefined, "selected": undefined}} accessibilityValue={{"max": undefined, "min": undefined, "now": undefined, "text": undefined}} accessible={true} className="pressable-feedback__root button__root button__root--variant-primary button__root--size-md rounded-xl bg-accent" collapsable={false} focusable={true} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"transform": [{"scale": 1}]}}} jestInlineStyle={[{"borderCurve": "continuous"}, [{"borderCurve": "continuous"}, undefined]]} onBlur={[Function onBlur]} onClick={[Function onClick]} onFocus={[Function onFocus]} onLayout={[Function anonymous]} onResponderGrant={[Function onResponderGrant]} onResponderMove={[Function onResponderMove]} onResponderRelease={[Function onResponderRelease]} onResponderTerminate={[Function onResponderTerminate]} onResponderTerminationRequest={[Function onResponderTerminationRequest]} onStartShouldSetResponder={[Function onStartShouldSetResponder]} style={[{"borderCurve": "continuous"}, {"transform": [{"scale": 1}]}, {"borderCurve": "continuous"}, undefined]} testID="map-no-tracking-action"><View className="pressable-feedback__highlight" collapsable={false} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"backgroundColor": "invalid", "opacity": 0}}} jestInlineStyle={[undefined]} pointerEvents="none" style={[{"backgroundColor": "invalid", "opacity": 0}, undefined]} /><Text className="button__label button__label--variant-primary button__label--size-md font-bold text-accent-foreground">Vincular collar</Text></View>
+```
+
+```text
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón a vet aunque el listado diga owner
+
+    expect(received).toBeNull()
+
+    Expected: null (matcher toBeNull)
+    Received: <View accessibilityRole="button" accessibilityState={{"busy": undefined, "checked": undefined, "disabled": false, "expanded": undefined, "selected": undefined}} accessibilityValue={{"max": undefined, "min": undefined, "now": undefined, "text": undefined}} accessible={true} className="pressable-feedback__root button__root button__root--variant-primary button__root--size-md rounded-xl bg-accent" collapsable={false} focusable={true} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"transform": [{"scale": 1}]}}} jestInlineStyle={[{"borderCurve": "continuous"}, [{"borderCurve": "continuous"}, undefined]]} onBlur={[Function onBlur]} onClick={[Function onClick]} onFocus={[Function onFocus]} onLayout={[Function anonymous]} onResponderGrant={[Function onResponderGrant]} onResponderMove={[Function onResponderMove]} onResponderRelease={[Function onResponderRelease]} onResponderTerminate={[Function onResponderTerminate]} onResponderTerminationRequest={[Function onResponderTerminationRequest]} onStartShouldSetResponder={[Function onStartShouldSetResponder]} style={[{"borderCurve": "continuous"}, {"transform": [{"scale": 1}]}, {"borderCurve": "continuous"}, undefined]} testID="map-no-tracking-action"><View className="pressable-feedback__highlight" collapsable={false} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"backgroundColor": "invalid", "opacity": 0}}} jestInlineStyle={[undefined]} pointerEvents="none" style={[{"backgroundColor": "invalid", "opacity": 0}, undefined]} /><Text className="button__label button__label--variant-primary button__label--size-md font-bold text-accent-foreground">Vincular collar</Text></View>
+```
+
+Medida exacta conforme al handoff.
+
+```text
+$ git checkout HEAD -- src/screens/map/index.tsx
+(en ejecución)
+```
+
+```text
+(vacío)
+```
+Exit de la invocación: 0.
+
+```text
+$ git diff --quiet HEAD -- . ../docs ../specs; echo "limpio=$?"
+(en ejecución)
+```
+
+```text
+limpio=0
+```
+Exit de la invocación: 0.
+
+Sonda E1b exacta y revertida, sin commit.
+
+### Sonda E1c — Sin commit
+
+```text
+$ grep -cF "selectedPet?.myRole === 'owner' && detail.data.pet.myRole === 'owner' &&" src/screens/map/index.tsx
+(en ejecución)
+```
+
+```text
+1
+```
+Exit de la invocación: 0.
+
+### Medida: 159-e1c.txt, intento 1
+
+```text
+$ uptime
+(en ejecución)
+```
+
+```text
+ 22:00:28 up 16 days, 18:07,  4 users,  load average: 5.24, 5.10, 4.38
+```
+Exit de la invocación: 0.
+
+```text
+$ FORCE_COLOR=0 bunx jest src/screens/map/index.test.tsx > /tmp/159-e1c.txt 2>&1; echo "exit=$?"
+(en ejecución)
+```
+
+```text
+exit=1
+```
+Exit de la invocación: 0.
+
+```text
+$ resumen de /tmp/159-e1c.txt
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 113 passed, 114 total
+```
+
+```text
+  ● #159 R3: el dueño sin collar puede ir a emparejar › pinta Vincular collar aunque el listado diga otro rol: manda el rol del detalle
+
+    Unable to find an element with testID: map-no-tracking-action
+```
+
+Medida exacta conforme al handoff.
+
+```text
+$ git checkout HEAD -- src/screens/map/index.tsx
+(en ejecución)
+```
+
+```text
+(vacío)
+```
+Exit de la invocación: 0.
+
+```text
+$ git diff --quiet HEAD -- . ../docs ../specs; echo "limpio=$?"
+(en ejecución)
+```
+
+```text
+limpio=0
+```
+Exit de la invocación: 0.
+
+Sonda E1c exacta y revertida, sin commit.
+
+### Sonda E1d — Sin commit
+
+```text
+$ grep -cF 'selectedPet?.device === null;' src/screens/map/index.tsx
+(en ejecución)
+```
+
+```text
+1
+```
+Exit de la invocación: 0.
+
+### Medida: 159-e1d.txt, intento 1
+
+```text
+$ uptime
+(en ejecución)
+```
+
+```text
+ 22:00:42 up 16 days, 18:08,  4 users,  load average: 4.97, 5.04, 4.37
+```
+Exit de la invocación: 0.
+
+```text
+$ FORCE_COLOR=0 bunx jest src/screens/map/index.test.tsx > /tmp/159-e1d.txt 2>&1; echo "exit=$?"
+(en ejecución)
+```
+
+```text
+exit=1
+```
+Exit de la invocación: 0.
+
+```text
+$ resumen de /tmp/159-e1d.txt
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 112 passed, 114 total
+```
+
+```text
+  ● #159 R3: el dueño sin collar puede ir a emparejar › pinta Vincular collar aunque el listado traiga collar: manda el collar del detalle
+
+    Unable to find an element with testID: map-no-tracking-action
+```
+
+```text
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón al dueño de una mascota con collar
+
+    expect(received).toBeNull()
+
+    Expected: null (matcher toBeNull)
+    Received: <View accessibilityRole="button" accessibilityState={{"busy": undefined, "checked": undefined, "disabled": false, "expanded": undefined, "selected": undefined}} accessibilityValue={{"max": undefined, "min": undefined, "now": undefined, "text": undefined}} accessible={true} className="pressable-feedback__root button__root button__root--variant-primary button__root--size-md rounded-xl bg-accent" collapsable={false} focusable={true} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"transform": [{"scale": 1}]}}} jestInlineStyle={[{"borderCurve": "continuous"}, [{"borderCurve": "continuous"}, undefined]]} onBlur={[Function onBlur]} onClick={[Function onClick]} onFocus={[Function onFocus]} onLayout={[Function anonymous]} onResponderGrant={[Function onResponderGrant]} onResponderMove={[Function onResponderMove]} onResponderRelease={[Function onResponderRelease]} onResponderTerminate={[Function onResponderTerminate]} onResponderTerminationRequest={[Function onResponderTerminationRequest]} onStartShouldSetResponder={[Function onStartShouldSetResponder]} style={[{"borderCurve": "continuous"}, {"transform": [{"scale": 1}]}, {"borderCurve": "continuous"}, undefined]} testID="map-no-tracking-action"><View className="pressable-feedback__highlight" collapsable={false} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"backgroundColor": "invalid", "opacity": 0}}} jestInlineStyle={[undefined]} pointerEvents="none" style={[{"backgroundColor": "invalid", "opacity": 0}, undefined]} /><Text className="button__label button__label--variant-primary button__label--size-md font-bold text-accent-foreground">Vincular collar</Text></View>
+```
+
+Medida exacta conforme al handoff.
+
+```text
+$ git checkout HEAD -- src/screens/map/index.tsx
+(en ejecución)
+```
+
+```text
+(vacío)
+```
+Exit de la invocación: 0.
+
+```text
+$ git diff --quiet HEAD -- . ../docs ../specs; echo "limpio=$?"
+(en ejecución)
+```
+
+```text
+limpio=0
+```
+Exit de la invocación: 0.
+
+Sonda E1d exacta y revertida, sin commit.
+
+### Sonda E1e — Sin commit
+
+```text
+$ grep -cF 'selectedPet?.device === null && detail.data.pet.device === null;' src/screens/map/index.tsx
+(en ejecución)
+```
+
+```text
+1
+```
+Exit de la invocación: 0.
+
+### Medida: 159-e1e.txt, intento 1
+
+```text
+$ uptime
+(en ejecución)
+```
+
+```text
+ 22:00:57 up 16 days, 18:08,  4 users,  load average: 4.84, 5.01, 4.37
+```
+Exit de la invocación: 0.
+
+```text
+$ FORCE_COLOR=0 bunx jest src/screens/map/index.test.tsx > /tmp/159-e1e.txt 2>&1; echo "exit=$?"
+(en ejecución)
+```
+
+```text
+exit=1
+```
+Exit de la invocación: 0.
+
+```text
+$ resumen de /tmp/159-e1e.txt
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 113 passed, 114 total
+```
+
+```text
+  ● #159 R3: el dueño sin collar puede ir a emparejar › pinta Vincular collar aunque el listado traiga collar: manda el collar del detalle
+
+    Unable to find an element with testID: map-no-tracking-action
+```
+
+Medida exacta conforme al handoff.
+
+```text
+$ git checkout HEAD -- src/screens/map/index.tsx
+(en ejecución)
+```
+
+```text
+(vacío)
+```
+Exit de la invocación: 0.
+
+```text
+$ git diff --quiet HEAD -- . ../docs ../specs; echo "limpio=$?"
+(en ejecución)
+```
+
+```text
+limpio=0
+```
+Exit de la invocación: 0.
+
+Sonda E1e exacta y revertida, sin commit.
+
+### Cierre E1 — BASE
+
+```text
+$ cd /home/claude/sites/Pet-Tracker-wt-159/mobile-pet-tracker && pwd
+(en ejecución)
+```
+
+```text
+/home/claude/sites/Pet-Tracker-wt-159/mobile-pet-tracker
+```
+Exit de la invocación: 0.
+
+```text
+$ pgrep -af '[i]nit\.sh'
+(en ejecución)
+```
+
+```text
+(vacío)
+```
+Exit de la invocación: 1.
+
+### Medida: 159-e1-final.txt, intento 1
+
+```text
+$ uptime
+(en ejecución)
+```
+
+```text
+ 22:01:19 up 16 days, 18:08,  4 users,  load average: 5.65, 5.17, 4.44
+```
+Exit de la invocación: 0.
+
+```text
+$ FORCE_COLOR=0 bunx jest src/components/__tests__/empty-state.test.tsx src/providers/__tests__/language-provider.test.tsx src/__tests__/ui-language.test.ts src/screens/map/index.test.tsx src/screens/geofences/index.test.tsx src/screens/geofence-editor/index.test.tsx src/screens/home/index.test.tsx src/__tests__/design-drift.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/159-e1-final.txt 2>&1; echo "exit=$?"
+(en ejecución)
+```
+
+```text
+exit=0
+```
+Exit de la invocación: 0.
+
+```text
+$ resumen de /tmp/159-e1-final.txt
+Test Suites: 10 passed, 10 total
+Tests:       754 passed, 754 total
+```
+
+```text
+  ● Console
+
+console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.warn
+      Uniwind - We couldn't find your variable --theme. Make sure it's used at least once in your className, or define it in a static theme as described in the docs: https://docs.uniwind.dev/api/use-css-variable
+
+      at Function.warn (node_modules/uniwind/src/core/logger.ts:11:17)
+      at warn (node_modules/uniwind/src/hooks/useCSSVariable/useCSSVariable.ts:20:12)
+      at logDevError (node_modules/uniwind/src/hooks/useCSSVariable/useCSSVariable.ts:33:17)
+          at Array.forEach (<anonymous>)
+      at forEach (node_modules/uniwind/src/hooks/useCSSVariable/useCSSVariable.ts:31:15)
+      at getCSSVariable (node_modules/uniwind/src/hooks/useCSSVariable/useCSSVariable.ts:62:46)
+      at mountStateImpl (node_modules/react-reconciler/cjs/react-reconciler.development.js:5941:24)
+      at mountState (node_modules/react-reconciler/cjs/react-reconciler.development.js:5962:22)
+      at Object.useState (node_modules/react-reconciler/cjs/react-reconciler.development.js:17940:18)
+      at Object.<anonymous>.process.env.NODE_ENV.exports.useState (node_modules/react/cjs/react.development.js:1263:34)
+      at useCSSVariable (node_modules/uniwind/src/hooks/useCSSVariable/useCSSVariable.ts:62:39)
+      at useLibraryTheme (node_modules/heroui-native/src/helpers/internal/hooks/use-library-theme.ts:22:33)
+      at useHasDefaultThemeBackground (node_modules/heroui-native/src/components/theme-background/theme-background.tsx:33:32)
+      at HeroUINative.Button.Root (node_modules/heroui-native/src/components/button/button.tsx:84:65)
+      at Object.react_stack_bottom_frame (node_modules/react-reconciler/cjs/react-reconciler.development.js:17596:20)
+      at renderWithHooks (node_modules/react-reconciler/cjs/react-reconciler.development.js:5335:22)
+      at updateForwardRef (node_modules/react-reconciler/cjs/react-reconciler.development.js:7278:19)
+      at beginWork (node_modules/react-reconciler/cjs/react-reconciler.development.js:9602:18)
+      at runWithFiberInDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:2508:13)
+      at performUnitOfWork (node_modules/react-reconciler/cjs/react-reconciler.development.js:15273:22)
+      at workLoopSync (node_modules/react-reconciler/cjs/react-reconciler.development.js:15099:41)
+      at renderRootSync (node_modules/react-reconciler/cjs/react-reconciler.development.js:15080:11)
+      at performWorkOnRoot (node_modules/react-reconciler/cjs/react-reconciler.development.js:14165:11)
+      at performSyncWorkOnRoot (node_modules/react-reconciler/cjs/react-reconciler.development.js:3350:7)
+      at flushSyncWorkAcrossRoots_impl (node_modules/react-reconciler/cjs/react-reconciler.development.js:3192:21)
+      at processRootScheduleInMicrotask (node_modules/react-reconciler/cjs/react-reconciler.development.js:3231:9)
+      at node_modules/react-reconciler/cjs/react-reconciler.development.js:3370:17
+      at node_modules/test-renderer/src/reconciler.ts:479:7
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.error
+      The current testing environment is not configured to support act(...)
+
+      165 |         refetchPets();
+      166 |       } else {
+    > 167 |         setLostModeFailed(true);
+          |         ^
+      168 |       }
+      169 |     } finally {
+      170 |       setLostModeBusy(false);
+
+      at isConcurrentActEnvironment (node_modules/react-reconciler/cjs/react-reconciler.development.js:13990:17)
+      at warnIfUpdatesNotWrappedWithActDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:16304:7)
+      at scheduleUpdateOnFiber (node_modules/react-reconciler/cjs/react-reconciler.development.js:14070:11)
+      at dispatchSetStateInternal (node_modules/react-reconciler/cjs/react-reconciler.development.js:6784:13)
+      at dispatchSetState (node_modules/react-reconciler/cjs/react-reconciler.development.js:6741:7)
+      at setLostModeFailed (src/screens/map/index.tsx:167:9)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+    console.error
+      The current testing environment is not configured to support act(...)
+
+      168 |       }
+      169 |     } finally {
+    > 170 |       setLostModeBusy(false);
+          |       ^
+      171 |     }
+      172 |   }, [baseUrl, lostModeBusy, refetchPets, selectedPet, token]);
+      173 |
+
+      at isConcurrentActEnvironment (node_modules/react-reconciler/cjs/react-reconciler.development.js:13990:17)
+      at warnIfUpdatesNotWrappedWithActDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:16304:7)
+      at scheduleUpdateOnFiber (node_modules/react-reconciler/cjs/react-reconciler.development.js:14070:11)
+      at dispatchSetStateInternal (node_modules/react-reconciler/cjs/react-reconciler.development.js:6784:13)
+      at dispatchSetState (node_modules/react-reconciler/cjs/react-reconciler.development.js:6741:7)
+      at setLostModeBusy (src/screens/map/index.tsx:170:7)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.error
+      An update to MapScreen inside a test was not wrapped in act(...).
+      
+      When testing, code that causes React state updates should be wrapped into act(...):
+      
+      act(() => {
+        /* fire events that update state */
+      });
+      /* assert on the output */
+      
+      This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+      at node_modules/react-reconciler/cjs/react-reconciler.development.js:16307:19
+      at runWithFiberInDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:2508:13)
+      at warnIfUpdatesNotWrappedWithActDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:16306:9)
+      at scheduleUpdateOnFiber (node_modules/react-reconciler/cjs/react-reconciler.development.js:14070:11)
+      at forceStoreRerender (node_modules/react-reconciler/cjs/react-reconciler.development.js:5935:24)
+      at node_modules/react-reconciler/cjs/react-reconciler.development.js:5920:11
+      at node_modules/@tanstack/query-core/src/notifyManager.ts:73:11
+      at notifyFn (node_modules/@tanstack/query-core/src/notifyManager.ts:21:5)
+      at node_modules/@tanstack/query-core/src/notifyManager.ts:44:13
+          at Array.forEach (<anonymous>)
+      at node_modules/@tanstack/query-core/src/notifyManager.ts:43:25
+      at batchNotifyFn (node_modules/@tanstack/query-core/src/notifyManager.ts:24:5)
+      at Timeout._onTimeout (node_modules/@tanstack/query-core/src/notifyManager.ts:42:9)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.error
+      An update to MapScreen inside a test was not wrapped in act(...).
+      
+      When testing, code that causes React state updates should be wrapped into act(...):
+      
+      act(() => {
+        /* fire events that update state */
+      });
+      /* assert on the output */
+      
+      This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+      at node_modules/react-reconciler/cjs/react-reconciler.development.js:16307:19
+      at runWithFiberInDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:2508:13)
+      at warnIfUpdatesNotWrappedWithActDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:16306:9)
+      at scheduleUpdateOnFiber (node_modules/react-reconciler/cjs/react-reconciler.development.js:14070:11)
+      at forceStoreRerender (node_modules/react-reconciler/cjs/react-reconciler.development.js:5935:24)
+      at node_modules/react-reconciler/cjs/react-reconciler.development.js:5920:11
+      at node_modules/@tanstack/query-core/src/notifyManager.ts:73:11
+      at notifyFn (node_modules/@tanstack/query-core/src/notifyManager.ts:21:5)
+      at node_modules/@tanstack/query-core/src/notifyManager.ts:44:13
+          at Array.forEach (<anonymous>)
+      at node_modules/@tanstack/query-core/src/notifyManager.ts:43:25
+      at batchNotifyFn (node_modules/@tanstack/query-core/src/notifyManager.ts:24:5)
+      at Timeout._onTimeout (node_modules/@tanstack/query-core/src/notifyManager.ts:42:9)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.error
+      An update to MapScreen inside a test was not wrapped in act(...).
+      
+      When testing, code that causes React state updates should be wrapped into act(...):
+      
+      act(() => {
+        /* fire events that update state */
+      });
+      /* assert on the output */
+      
+      This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+      at node_modules/react-reconciler/cjs/react-reconciler.development.js:16307:19
+      at runWithFiberInDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:2508:13)
+      at warnIfUpdatesNotWrappedWithActDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:16306:9)
+      at scheduleUpdateOnFiber (node_modules/react-reconciler/cjs/react-reconciler.development.js:14070:11)
+      at forceStoreRerender (node_modules/react-reconciler/cjs/react-reconciler.development.js:5935:24)
+      at node_modules/react-reconciler/cjs/react-reconciler.development.js:5920:11
+      at node_modules/@tanstack/query-core/src/notifyManager.ts:73:11
+      at notifyFn (node_modules/@tanstack/query-core/src/notifyManager.ts:21:5)
+      at node_modules/@tanstack/query-core/src/notifyManager.ts:44:13
+          at Array.forEach (<anonymous>)
+      at node_modules/@tanstack/query-core/src/notifyManager.ts:43:25
+      at batchNotifyFn (node_modules/@tanstack/query-core/src/notifyManager.ts:24:5)
+      at Timeout._onTimeout (node_modules/@tanstack/query-core/src/notifyManager.ts:42:9)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.error
+      The current testing environment is not configured to support act(...)
+
+      168 |       }
+      169 |     } finally {
+    > 170 |       setLostModeBusy(false);
+          |       ^
+      171 |     }
+      172 |   }, [baseUrl, lostModeBusy, refetchPets, selectedPet, token]);
+      173 |
+
+      at isConcurrentActEnvironment (node_modules/react-reconciler/cjs/react-reconciler.development.js:13990:17)
+      at warnIfUpdatesNotWrappedWithActDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:16304:7)
+      at scheduleUpdateOnFiber (node_modules/react-reconciler/cjs/react-reconciler.development.js:14070:11)
+      at dispatchSetStateInternal (node_modules/react-reconciler/cjs/react-reconciler.development.js:6784:13)
+      at dispatchSetState (node_modules/react-reconciler/cjs/react-reconciler.development.js:6741:7)
+      at setLostModeBusy (src/screens/map/index.tsx:170:7)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+    console.error
+      The current testing environment is not configured to support act(...)
+
+      at isConcurrentActEnvironment (node_modules/react-reconciler/cjs/react-reconciler.development.js:13990:17)
+      at warnIfUpdatesNotWrappedWithActDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:16304:7)
+      at scheduleUpdateOnFiber (node_modules/react-reconciler/cjs/react-reconciler.development.js:14070:11)
+      at forceStoreRerender (node_modules/react-reconciler/cjs/react-reconciler.development.js:5935:24)
+      at node_modules/react-reconciler/cjs/react-reconciler.development.js:5920:11
+      at node_modules/@tanstack/query-core/src/notifyManager.ts:73:11
+      at notifyFn (node_modules/@tanstack/query-core/src/notifyManager.ts:21:5)
+      at node_modules/@tanstack/query-core/src/notifyManager.ts:44:13
+          at Array.forEach (<anonymous>)
+      at node_modules/@tanstack/query-core/src/notifyManager.ts:43:25
+      at batchNotifyFn (node_modules/@tanstack/query-core/src/notifyManager.ts:24:5)
+      at Timeout._onTimeout (node_modules/@tanstack/query-core/src/notifyManager.ts:42:9)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+PASS src/screens/geofence-editor/index.test.tsx (20.378 s)
+```
+
+```text
+  ● Console
+
+console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.error
+      An update to GeofenceEditorScreen inside a test was not wrapped in act(...).
+      
+      When testing, code that causes React state updates should be wrapped into act(...):
+      
+      act(() => {
+        /* fire events that update state */
+      });
+      /* assert on the output */
+      
+      This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+      at node_modules/react-reconciler/cjs/react-reconciler.development.js:16307:19
+      at runWithFiberInDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:2508:13)
+      at warnIfUpdatesNotWrappedWithActDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:16306:9)
+      at scheduleUpdateOnFiber (node_modules/react-reconciler/cjs/react-reconciler.development.js:14070:11)
+      at forceStoreRerender (node_modules/react-reconciler/cjs/react-reconciler.development.js:5935:24)
+      at node_modules/react-reconciler/cjs/react-reconciler.development.js:5920:11
+      at node_modules/@tanstack/query-core/src/notifyManager.ts:73:11
+      at notifyFn (node_modules/@tanstack/query-core/src/notifyManager.ts:21:5)
+      at node_modules/@tanstack/query-core/src/notifyManager.ts:44:13
+          at Array.forEach (<anonymous>)
+      at node_modules/@tanstack/query-core/src/notifyManager.ts:43:25
+      at batchNotifyFn (node_modules/@tanstack/query-core/src/notifyManager.ts:24:5)
+      at Timeout._onTimeout (node_modules/@tanstack/query-core/src/notifyManager.ts:42:9)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.warn
+      Uniwind - We couldn't find your variable --color-foreground. Make sure it's used at least once in your className, or define it in a static theme as described in the docs: https://docs.uniwind.dev/api/use-css-variable
+
+      16 |   const { theme } = useUniwind();
+      17 |   const foreground =
+    > 18 |     asColor(Uniwind.getCSSVariable('--color-foreground')) ??
+         |                     ^
+      19 |     (theme === 'dark' ? '#F7F8FA' : '#0D1117');
+      20 |
+      21 |   return tokens.map(
+
+      at Function.warn (node_modules/uniwind/src/core/logger.ts:11:17)
+      at warn (node_modules/uniwind/src/hooks/useCSSVariable/useCSSVariable.ts:20:12)
+      at logDevError (node_modules/uniwind/src/hooks/useCSSVariable/useCSSVariable.ts:39:9)
+      at UniwindConfigBuilder.getCSSVariable (node_modules/uniwind/src/core/config/config.common.ts:122:30)
+      at getCSSVariable (src/theme/use-theme-colors.ts:18:21)
+      at PetMap (src/components/pet-map.tsx:22:53)
+      at Object.react_stack_bottom_frame (node_modules/react-reconciler/cjs/react-reconciler.development.js:17596:20)
+      at renderWithHooks (node_modules/react-reconciler/cjs/react-reconciler.development.js:5335:22)
+      at updateFunctionComponent (node_modules/react-reconciler/cjs/react-reconciler.development.js:7720:19)
+      at beginWork (node_modules/react-reconciler/cjs/react-reconciler.development.js:9277:18)
+      at runWithFiberInDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:2508:13)
+      at performUnitOfWork (node_modules/react-reconciler/cjs/react-reconciler.development.js:15273:22)
+      at workLoopSync (node_modules/react-reconciler/cjs/react-reconciler.development.js:15099:41)
+      at renderRootSync (node_modules/react-reconciler/cjs/react-reconciler.development.js:15080:11)
+      at performWorkOnRoot (node_modules/react-reconciler/cjs/react-reconciler.development.js:14165:11)
+      at performSyncWorkOnRoot (node_modules/react-reconciler/cjs/react-reconciler.development.js:3350:7)
+      at flushSyncWorkAcrossRoots_impl (node_modules/react-reconciler/cjs/react-reconciler.development.js:3192:21)
+      at processRootScheduleInMicrotask (node_modules/react-reconciler/cjs/react-reconciler.development.js:3231:9)
+      at node_modules/react-reconciler/cjs/react-reconciler.development.js:3370:17
+      at node_modules/test-renderer/src/reconciler.ts:479:7
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+PASS src/providers/__tests__/language-provider.test.tsx
+PASS src/components/__tests__/empty-state.test.tsx
+```
+
+```text
+  ● Console
+
+console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.warn
+      Uniwind - We couldn't find your variable --theme. Make sure it's used at least once in your className, or define it in a static theme as described in the docs: https://docs.uniwind.dev/api/use-css-variable
+
+      at Function.warn (node_modules/uniwind/src/core/logger.ts:11:17)
+      at warn (node_modules/uniwind/src/hooks/useCSSVariable/useCSSVariable.ts:20:12)
+      at logDevError (node_modules/uniwind/src/hooks/useCSSVariable/useCSSVariable.ts:33:17)
+          at Array.forEach (<anonymous>)
+      at forEach (node_modules/uniwind/src/hooks/useCSSVariable/useCSSVariable.ts:31:15)
+      at getCSSVariable (node_modules/uniwind/src/hooks/useCSSVariable/useCSSVariable.ts:62:46)
+      at mountStateImpl (node_modules/react-reconciler/cjs/react-reconciler.development.js:5941:24)
+      at mountState (node_modules/react-reconciler/cjs/react-reconciler.development.js:5962:22)
+      at Object.useState (node_modules/react-reconciler/cjs/react-reconciler.development.js:17940:18)
+      at Object.<anonymous>.process.env.NODE_ENV.exports.useState (node_modules/react/cjs/react.development.js:1263:34)
+      at useCSSVariable (node_modules/uniwind/src/hooks/useCSSVariable/useCSSVariable.ts:62:39)
+      at useLibraryTheme (node_modules/heroui-native/src/helpers/internal/hooks/use-library-theme.ts:22:33)
+      at useHasDefaultThemeBackground (node_modules/heroui-native/src/components/theme-background/theme-background.tsx:33:32)
+      at HeroUINative.Button.Root (node_modules/heroui-native/src/components/button/button.tsx:84:65)
+      at Object.react_stack_bottom_frame (node_modules/react-reconciler/cjs/react-reconciler.development.js:17596:20)
+      at renderWithHooks (node_modules/react-reconciler/cjs/react-reconciler.development.js:5335:22)
+      at updateForwardRef (node_modules/react-reconciler/cjs/react-reconciler.development.js:7278:19)
+      at beginWork (node_modules/react-reconciler/cjs/react-reconciler.development.js:9602:18)
+      at runWithFiberInDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:2508:13)
+      at performUnitOfWork (node_modules/react-reconciler/cjs/react-reconciler.development.js:15273:22)
+      at workLoopSync (node_modules/react-reconciler/cjs/react-reconciler.development.js:15099:41)
+      at renderRootSync (node_modules/react-reconciler/cjs/react-reconciler.development.js:15080:11)
+      at performWorkOnRoot (node_modules/react-reconciler/cjs/react-reconciler.development.js:14165:11)
+      at performWorkOnRootViaSchedulerTask (node_modules/react-reconciler/cjs/react-reconciler.development.js:3335:7)
+      at flushActQueue (node_modules/react/cjs/react.development.js:590:34)
+      at node_modules/react/cjs/react.development.js:847:21
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+PASS src/screens/geofences/index.test.tsx (7.88 s)
+```
+
+```text
+  ● Console
+
+console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.error
+      An update to GeofencesScreen inside a test was not wrapped in act(...).
+      
+      When testing, code that causes React state updates should be wrapped into act(...):
+      
+      act(() => {
+        /* fire events that update state */
+      });
+      /* assert on the output */
+      
+      This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+      at node_modules/react-reconciler/cjs/react-reconciler.development.js:16307:19
+      at runWithFiberInDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:2508:13)
+      at warnIfUpdatesNotWrappedWithActDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:16306:9)
+      at scheduleUpdateOnFiber (node_modules/react-reconciler/cjs/react-reconciler.development.js:14070:11)
+      at forceStoreRerender (node_modules/react-reconciler/cjs/react-reconciler.development.js:5935:24)
+      at node_modules/react-reconciler/cjs/react-reconciler.development.js:5920:11
+      at node_modules/@tanstack/query-core/src/notifyManager.ts:73:11
+      at notifyFn (node_modules/@tanstack/query-core/src/notifyManager.ts:21:5)
+      at node_modules/@tanstack/query-core/src/notifyManager.ts:44:13
+          at Array.forEach (<anonymous>)
+      at node_modules/@tanstack/query-core/src/notifyManager.ts:43:25
+      at batchNotifyFn (node_modules/@tanstack/query-core/src/notifyManager.ts:24:5)
+      at Timeout._onTimeout (node_modules/@tanstack/query-core/src/notifyManager.ts:42:9)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.warn
+      Uniwind - We couldn't find your variable --theme. Make sure it's used at least once in your className, or define it in a static theme as described in the docs: https://docs.uniwind.dev/api/use-css-variable
+
+      at Function.warn (node_modules/uniwind/src/core/logger.ts:11:17)
+      at warn (node_modules/uniwind/src/hooks/useCSSVariable/useCSSVariable.ts:20:12)
+      at logDevError (node_modules/uniwind/src/hooks/useCSSVariable/useCSSVariable.ts:33:17)
+          at Array.forEach (<anonymous>)
+      at forEach (node_modules/uniwind/src/hooks/useCSSVariable/useCSSVariable.ts:31:15)
+      at getCSSVariable (node_modules/uniwind/src/hooks/useCSSVariable/useCSSVariable.ts:62:46)
+      at mountStateImpl (node_modules/react-reconciler/cjs/react-reconciler.development.js:5941:24)
+      at mountState (node_modules/react-reconciler/cjs/react-reconciler.development.js:5962:22)
+      at Object.useState (node_modules/react-reconciler/cjs/react-reconciler.development.js:17940:18)
+      at Object.<anonymous>.process.env.NODE_ENV.exports.useState (node_modules/react/cjs/react.development.js:1263:34)
+      at useCSSVariable (node_modules/uniwind/src/hooks/useCSSVariable/useCSSVariable.ts:62:39)
+      at useLibraryTheme (node_modules/heroui-native/src/helpers/internal/hooks/use-library-theme.ts:22:33)
+      at useHasDefaultThemeBackground (node_modules/heroui-native/src/components/theme-background/theme-background.tsx:33:32)
+      at HeroUINative.Switch.Root (node_modules/heroui-native/src/components/switch/switch.tsx:86:67)
+      at Object.react_stack_bottom_frame (node_modules/react-reconciler/cjs/react-reconciler.development.js:17596:20)
+      at renderWithHooks (node_modules/react-reconciler/cjs/react-reconciler.development.js:5335:22)
+      at updateForwardRef (node_modules/react-reconciler/cjs/react-reconciler.development.js:7278:19)
+      at beginWork (node_modules/react-reconciler/cjs/react-reconciler.development.js:9602:18)
+      at runWithFiberInDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:2508:13)
+      at performUnitOfWork (node_modules/react-reconciler/cjs/react-reconciler.development.js:15273:22)
+      at workLoopSync (node_modules/react-reconciler/cjs/react-reconciler.development.js:15099:41)
+      at renderRootSync (node_modules/react-reconciler/cjs/react-reconciler.development.js:15080:11)
+      at performWorkOnRoot (node_modules/react-reconciler/cjs/react-reconciler.development.js:14165:11)
+      at performSyncWorkOnRoot (node_modules/react-reconciler/cjs/react-reconciler.development.js:3350:7)
+      at flushSyncWorkAcrossRoots_impl (node_modules/react-reconciler/cjs/react-reconciler.development.js:3192:21)
+      at processRootScheduleInMicrotask (node_modules/react-reconciler/cjs/react-reconciler.development.js:3231:9)
+      at node_modules/react-reconciler/cjs/react-reconciler.development.js:3370:17
+      at node_modules/test-renderer/src/reconciler.ts:479:7
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+PASS src/__tests__/ui-language.test.ts
+PASS src/__tests__/consistency-classnames.test.ts
+PASS src/__tests__/design-drift.test.ts
+PASS src/__tests__/legibility-classnames.test.ts
+PASS src/screens/home/index.test.tsx (90.479 s)
+```
+
+```text
+  ● Console
+
+console.warn
+      Uniwind - We couldn't find your variable --color-foreground. Make sure it's used at least once in your className, or define it in a static theme as described in the docs: https://docs.uniwind.dev/api/use-css-variable
+
+      16 |   const { theme } = useUniwind();
+      17 |   const foreground =
+    > 18 |     asColor(Uniwind.getCSSVariable('--color-foreground')) ??
+         |                     ^
+      19 |     (theme === 'dark' ? '#F7F8FA' : '#0D1117');
+      20 |
+      21 |   return tokens.map(
+
+      at Function.warn (node_modules/uniwind/src/core/logger.ts:11:17)
+      at warn (node_modules/uniwind/src/hooks/useCSSVariable/useCSSVariable.ts:20:12)
+      at logDevError (node_modules/uniwind/src/hooks/useCSSVariable/useCSSVariable.ts:39:9)
+      at UniwindConfigBuilder.getCSSVariable (node_modules/uniwind/src/core/config/config.common.ts:122:30)
+      at getCSSVariable (src/theme/use-theme-colors.ts:18:21)
+      at HomeScreen (src/screens/home/index.tsx:189:19)
+      at Object.react_stack_bottom_frame (node_modules/react-reconciler/cjs/react-reconciler.development.js:17596:20)
+      at renderWithHooks (node_modules/react-reconciler/cjs/react-reconciler.development.js:5335:22)
+      at updateFunctionComponent (node_modules/react-reconciler/cjs/react-reconciler.development.js:7720:19)
+      at beginWork (node_modules/react-reconciler/cjs/react-reconciler.development.js:9277:18)
+      at runWithFiberInDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:2508:13)
+      at performUnitOfWork (node_modules/react-reconciler/cjs/react-reconciler.development.js:15273:22)
+      at workLoopSync (node_modules/react-reconciler/cjs/react-reconciler.development.js:15099:41)
+      at renderRootSync (node_modules/react-reconciler/cjs/react-reconciler.development.js:15080:11)
+      at performWorkOnRoot (node_modules/react-reconciler/cjs/react-reconciler.development.js:14165:11)
+      at performWorkOnRootViaSchedulerTask (node_modules/react-reconciler/cjs/react-reconciler.development.js:3335:7)
+      at flushActQueue (node_modules/react/cjs/react.development.js:590:34)
+      at node_modules/react/cjs/react.development.js:847:21
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.error
+      An update to HomeScreen inside a test was not wrapped in act(...).
+      
+      When testing, code that causes React state updates should be wrapped into act(...):
+      
+      act(() => {
+        /* fire events that update state */
+      });
+      /* assert on the output */
+      
+      This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+      at node_modules/react-reconciler/cjs/react-reconciler.development.js:16307:19
+      at runWithFiberInDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:2508:13)
+      at warnIfUpdatesNotWrappedWithActDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:16306:9)
+      at scheduleUpdateOnFiber (node_modules/react-reconciler/cjs/react-reconciler.development.js:14070:11)
+      at forceStoreRerender (node_modules/react-reconciler/cjs/react-reconciler.development.js:5935:24)
+      at node_modules/react-reconciler/cjs/react-reconciler.development.js:5920:11
+      at node_modules/@tanstack/query-core/src/notifyManager.ts:73:11
+      at notifyFn (node_modules/@tanstack/query-core/src/notifyManager.ts:21:5)
+      at node_modules/@tanstack/query-core/src/notifyManager.ts:44:13
+          at Array.forEach (<anonymous>)
+      at node_modules/@tanstack/query-core/src/notifyManager.ts:43:25
+      at batchNotifyFn (node_modules/@tanstack/query-core/src/notifyManager.ts:24:5)
+      at Timeout._onTimeout (node_modules/@tanstack/query-core/src/notifyManager.ts:42:9)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.error
+      An update to HomeScreen inside a test was not wrapped in act(...).
+      
+      When testing, code that causes React state updates should be wrapped into act(...):
+      
+      act(() => {
+        /* fire events that update state */
+      });
+      /* assert on the output */
+      
+      This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+      at node_modules/react-reconciler/cjs/react-reconciler.development.js:16307:19
+      at runWithFiberInDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:2508:13)
+      at warnIfUpdatesNotWrappedWithActDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:16306:9)
+      at scheduleUpdateOnFiber (node_modules/react-reconciler/cjs/react-reconciler.development.js:14070:11)
+      at forceStoreRerender (node_modules/react-reconciler/cjs/react-reconciler.development.js:5935:24)
+      at node_modules/react-reconciler/cjs/react-reconciler.development.js:5920:11
+      at node_modules/@tanstack/query-core/src/notifyManager.ts:73:11
+      at notifyFn (node_modules/@tanstack/query-core/src/notifyManager.ts:21:5)
+      at node_modules/@tanstack/query-core/src/notifyManager.ts:44:13
+          at Array.forEach (<anonymous>)
+      at node_modules/@tanstack/query-core/src/notifyManager.ts:43:25
+      at batchNotifyFn (node_modules/@tanstack/query-core/src/notifyManager.ts:24:5)
+      at Timeout._onTimeout (node_modules/@tanstack/query-core/src/notifyManager.ts:42:9)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.error
+      Encountered two children with the same key, `2026-08-21`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+
+      at node_modules/react-reconciler/cjs/react-reconciler.development.js:4179:23
+      at runWithFiberInDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:2508:13)
+      at warnOnInvalidKey (node_modules/react-reconciler/cjs/react-reconciler.development.js:4178:13)
+      at reconcileChildrenArray (node_modules/react-reconciler/cjs/react-reconciler.development.js:4247:31)
+      at reconcileChildFibersImpl (node_modules/react-reconciler/cjs/react-reconciler.development.js:4568:30)
+      at node_modules/react-reconciler/cjs/react-reconciler.development.js:4673:33
+      at reconcileChildren (node_modules/react-reconciler/cjs/react-reconciler.development.js:7255:13)
+      at beginWork (node_modules/react-reconciler/cjs/react-reconciler.development.js:9542:13)
+      at runWithFiberInDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:2508:13)
+      at performUnitOfWork (node_modules/react-reconciler/cjs/react-reconciler.development.js:15273:22)
+      at workLoopSync (node_modules/react-reconciler/cjs/react-reconciler.development.js:15099:41)
+      at renderRootSync (node_modules/react-reconciler/cjs/react-reconciler.development.js:15080:11)
+      at performWorkOnRoot (node_modules/react-reconciler/cjs/react-reconciler.development.js:14165:11)
+      at performSyncWorkOnRoot (node_modules/react-reconciler/cjs/react-reconciler.development.js:3350:7)
+      at flushSyncWorkAcrossRoots_impl (node_modules/react-reconciler/cjs/react-reconciler.development.js:3192:21)
+      at processRootScheduleInMicrotask (node_modules/react-reconciler/cjs/react-reconciler.development.js:3231:9)
+      at node_modules/react-reconciler/cjs/react-reconciler.development.js:3370:17
+      at node_modules/test-renderer/src/reconciler.ts:479:7
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.error
+      An update to HomeScreen inside a test was not wrapped in act(...).
+      
+      When testing, code that causes React state updates should be wrapped into act(...):
+      
+      act(() => {
+        /* fire events that update state */
+      });
+      /* assert on the output */
+      
+      This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+      at node_modules/react-reconciler/cjs/react-reconciler.development.js:16307:19
+      at runWithFiberInDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:2508:13)
+      at warnIfUpdatesNotWrappedWithActDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:16306:9)
+      at scheduleUpdateOnFiber (node_modules/react-reconciler/cjs/react-reconciler.development.js:14070:11)
+      at forceStoreRerender (node_modules/react-reconciler/cjs/react-reconciler.development.js:5935:24)
+      at node_modules/react-reconciler/cjs/react-reconciler.development.js:5920:11
+      at node_modules/@tanstack/query-core/src/notifyManager.ts:73:11
+      at notifyFn (node_modules/@tanstack/query-core/src/notifyManager.ts:21:5)
+      at node_modules/@tanstack/query-core/src/notifyManager.ts:44:13
+          at Array.forEach (<anonymous>)
+      at node_modules/@tanstack/query-core/src/notifyManager.ts:43:25
+      at batchNotifyFn (node_modules/@tanstack/query-core/src/notifyManager.ts:24:5)
+      at Timeout._onTimeout (node_modules/@tanstack/query-core/src/notifyManager.ts:42:9)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.error
+      An update to HomeScreen inside a test was not wrapped in act(...).
+      
+      When testing, code that causes React state updates should be wrapped into act(...):
+      
+      act(() => {
+        /* fire events that update state */
+      });
+      /* assert on the output */
+      
+      This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+      at node_modules/react-reconciler/cjs/react-reconciler.development.js:16307:19
+      at runWithFiberInDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:2508:13)
+      at warnIfUpdatesNotWrappedWithActDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:16306:9)
+      at scheduleUpdateOnFiber (node_modules/react-reconciler/cjs/react-reconciler.development.js:14070:11)
+      at forceStoreRerender (node_modules/react-reconciler/cjs/react-reconciler.development.js:5935:24)
+      at node_modules/react-reconciler/cjs/react-reconciler.development.js:5920:11
+      at node_modules/@tanstack/query-core/src/notifyManager.ts:73:11
+      at notifyFn (node_modules/@tanstack/query-core/src/notifyManager.ts:21:5)
+      at node_modules/@tanstack/query-core/src/notifyManager.ts:44:13
+          at Array.forEach (<anonymous>)
+      at node_modules/@tanstack/query-core/src/notifyManager.ts:43:25
+      at batchNotifyFn (node_modules/@tanstack/query-core/src/notifyManager.ts:24:5)
+      at Timeout._onTimeout (node_modules/@tanstack/query-core/src/notifyManager.ts:42:9)
+
+    console.error
+      An update to SelectedPetProvider inside a test was not wrapped in act(...).
+      
+      When testing, code that causes React state updates should be wrapped into act(...):
+      
+      act(() => {
+        /* fire events that update state */
+      });
+      /* assert on the output */
+      
+      This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+      29 |   }
+      30 |   const selectedPetId = selection.token === token ? selection.petId : null;
+    > 31 |   const selectPet = useCallback((id: string) => setSelection({ token, petId: id }), [token]);
+         |                                                 ^
+      32 |   const value = useMemo(
+      33 |     () => ({ selectedPetId, selectPet }),
+      34 |     [selectPet, selectedPetId],
+
+      at node_modules/react-reconciler/cjs/react-reconciler.development.js:16307:19
+      at runWithFiberInDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:2508:13)
+      at warnIfUpdatesNotWrappedWithActDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:16306:9)
+      at scheduleUpdateOnFiber (node_modules/react-reconciler/cjs/react-reconciler.development.js:14070:11)
+      at dispatchSetStateInternal (node_modules/react-reconciler/cjs/react-reconciler.development.js:6784:13)
+      at dispatchSetState (node_modules/react-reconciler/cjs/react-reconciler.development.js:6741:7)
+      at setSelection (src/providers/selected-pet-provider.tsx:31:49)
+      at selectPet (src/hooks/use-pet-selection.ts:24:27)
+      at Object.react_stack_bottom_frame (node_modules/react-reconciler/cjs/react-reconciler.development.js:17681:20)
+      at runWithFiberInDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:2508:13)
+      at commitHookEffectListMount (node_modules/react-reconciler/cjs/react-reconciler.development.js:10861:29)
+      at commitHookPassiveMountEffects (node_modules/react-reconciler/cjs/react-reconciler.development.js:10948:11)
+      at commitPassiveMountOnFiber (node_modules/react-reconciler/cjs/react-reconciler.development.js:12979:13)
+      at recursivelyTraversePassiveMountEffects (node_modules/react-reconciler/cjs/react-reconciler.development.js:12934:11)
+      at commitPassiveMountOnFiber (node_modules/react-reconciler/cjs/react-reconciler.development.js:13213:11)
+      at recursivelyTraversePassiveMountEffects (node_modules/react-reconciler/cjs/react-reconciler.development.js:12934:11)
+      at commitPassiveMountOnFiber (node_modules/react-reconciler/cjs/react-reconciler.development.js:12971:11)
+      at recursivelyTraversePassiveMountEffects (node_modules/react-reconciler/cjs/react-reconciler.development.js:12934:11)
+      at commitPassiveMountOnFiber (node_modules/react-reconciler/cjs/react-reconciler.development.js:13213:11)
+      at recursivelyTraversePassiveMountEffects (node_modules/react-reconciler/cjs/react-reconciler.development.js:12934:11)
+      at commitPassiveMountOnFiber (node_modules/react-reconciler/cjs/react-reconciler.development.js:12971:11)
+      at recursivelyTraversePassiveMountEffects (node_modules/react-reconciler/cjs/react-reconciler.development.js:12934:11)
+      at commitPassiveMountOnFiber (node_modules/react-reconciler/cjs/react-reconciler.development.js:13213:11)
+      at recursivelyTraversePassiveMountEffects (node_modules/react-reconciler/cjs/react-reconciler.development.js:12934:11)
+      at commitPassiveMountOnFiber (node_modules/react-reconciler/cjs/react-reconciler.development.js:13213:11)
+      at recursivelyTraversePassiveMountEffects (node_modules/react-reconciler/cjs/react-reconciler.development.js:12934:11)
+      at commitPassiveMountOnFiber (node_modules/react-reconciler/cjs/react-reconciler.development.js:13213:11)
+      at recursivelyTraversePassiveMountEffects (node_modules/react-reconciler/cjs/react-reconciler.development.js:12934:11)
+      at commitPassiveMountOnFiber (node_modules/react-reconciler/cjs/react-reconciler.development.js:12971:11)
+      at recursivelyTraversePassiveMountEffects (node_modules/react-reconciler/cjs/react-reconciler.development.js:12934:11)
+      at commitPassiveMountOnFiber (node_modules/react-reconciler/cjs/react-reconciler.development.js:13213:11)
+      at recursivelyTraversePassiveMountEffects (node_modules/react-reconciler/cjs/react-reconciler.development.js:12934:11)
+      at commitPassiveMountOnFiber (node_modules/react-reconciler/cjs/react-reconciler.development.js:13213:11)
+      at recursivelyTraversePassiveMountEffects (node_modules/react-reconciler/cjs/react-reconciler.development.js:12934:11)
+      at commitPassiveMountOnFiber (node_modules/react-reconciler/cjs/react-reconciler.development.js:13213:11)
+      at recursivelyTraversePassiveMountEffects (node_modules/react-reconciler/cjs/react-reconciler.development.js:12934:11)
+      at commitPassiveMountOnFiber (node_modules/react-reconciler/cjs/react-reconciler.development.js:12971:11)
+      at recursivelyTraversePassiveMountEffects (node_modules/react-reconciler/cjs/react-reconciler.development.js:12934:11)
+      at commitPassiveMountOnFiber (node_modules/react-reconciler/cjs/react-reconciler.development.js:13213:11)
+      at recursivelyTraversePassiveMountEffects (node_modules/react-reconciler/cjs/react-reconciler.development.js:12934:11)
+      at commitPassiveMountOnFiber (node_modules/react-reconciler/cjs/react-reconciler.development.js:13213:11)
+      at recursivelyTraversePassiveMountEffects (node_modules/react-reconciler/cjs/react-reconciler.development.js:12934:11)
+      at commitPassiveMountOnFiber (node_modules/react-reconciler/cjs/react-reconciler.development.js:12999:11)
+      at recursivelyTraversePassiveMountEffects (node_modules/react-reconciler/cjs/react-reconciler.development.js:12934:11)
+      at commitPassiveMountOnFiber (node_modules/react-reconciler/cjs/react-reconciler.development.js:12971:11)
+      at recursivelyTraversePassiveMountEffects (node_modules/react-reconciler/cjs/react-reconciler.development.js:12934:11)
+      at commitPassiveMountOnFiber (node_modules/react-reconciler/cjs/react-reconciler.development.js:12971:11)
+      at recursivelyTraversePassiveMountEffects (node_modules/react-reconciler/cjs/react-reconciler.development.js:12934:11)
+      at commitPassiveMountOnFiber (node_modules/react-reconciler/cjs/react-reconciler.development.js:12971:11)
+      at recursivelyTraversePassiveMountEffects (node_modules/react-reconciler/cjs/react-reconciler.development.js:12934:11)
+      at commitPassiveMountOnFiber (node_modules/react-reconciler/cjs/react-reconciler.development.js:13213:11)
+      at recursivelyTraversePassiveMountEffects (node_modules/react-reconciler/cjs/react-reconciler.development.js:12934:11)
+      at commitPassiveMountOnFiber (node_modules/react-reconciler/cjs/react-reconciler.development.js:12971:11)
+      at recursivelyTraversePassiveMountEffects (node_modules/react-reconciler/cjs/react-reconciler.development.js:12934:11)
+      at commitPassiveMountOnFiber (node_modules/react-reconciler/cjs/react-reconciler.development.js:12971:11)
+      at recursivelyTraversePassiveMountEffects (node_modules/react-reconciler/cjs/react-reconciler.development.js:12934:11)
+      at commitPassiveMountOnFiber (node_modules/react-reconciler/cjs/react-reconciler.development.js:13014:11)
+      at flushPassiveEffects (node_modules/react-reconciler/cjs/react-reconciler.development.js:15982:9)
+      at flushPendingEffects (node_modules/react-reconciler/cjs/react-reconciler.development.js:15892:14)
+      at flushSpawnedWork (node_modules/react-reconciler/cjs/react-reconciler.development.js:15856:44)
+      at commitRoot (node_modules/react-reconciler/cjs/react-reconciler.development.js:15587:9)
+      at commitRootWhenReady (node_modules/react-reconciler/cjs/react-reconciler.development.js:14467:7)
+      at performWorkOnRoot (node_modules/react-reconciler/cjs/react-reconciler.development.js:14384:15)
+      at performSyncWorkOnRoot (node_modules/react-reconciler/cjs/react-reconciler.development.js:3350:7)
+      at flushSyncWorkAcrossRoots_impl (node_modules/react-reconciler/cjs/react-reconciler.development.js:3192:21)
+      at processRootScheduleInMicrotask (node_modules/react-reconciler/cjs/react-reconciler.development.js:3231:9)
+      at node_modules/react-reconciler/cjs/react-reconciler.development.js:3370:17
+      at node_modules/test-renderer/src/reconciler.ts:479:7
+
+    console.error
+      An update to HomeScreen inside a test was not wrapped in act(...).
+      
+      When testing, code that causes React state updates should be wrapped into act(...):
+      
+      act(() => {
+        /* fire events that update state */
+      });
+      /* assert on the output */
+      
+      This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+      at node_modules/react-reconciler/cjs/react-reconciler.development.js:16307:19
+      at runWithFiberInDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:2508:13)
+      at warnIfUpdatesNotWrappedWithActDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:16306:9)
+      at scheduleUpdateOnFiber (node_modules/react-reconciler/cjs/react-reconciler.development.js:14070:11)
+      at forceStoreRerender (node_modules/react-reconciler/cjs/react-reconciler.development.js:5935:24)
+      at node_modules/react-reconciler/cjs/react-reconciler.development.js:5920:11
+      at node_modules/@tanstack/query-core/src/notifyManager.ts:73:11
+      at notifyFn (node_modules/@tanstack/query-core/src/notifyManager.ts:21:5)
+      at node_modules/@tanstack/query-core/src/notifyManager.ts:44:13
+          at Array.forEach (<anonymous>)
+      at node_modules/@tanstack/query-core/src/notifyManager.ts:43:25
+      at batchNotifyFn (node_modules/@tanstack/query-core/src/notifyManager.ts:24:5)
+      at Timeout._onTimeout (node_modules/@tanstack/query-core/src/notifyManager.ts:42:9)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.error
+      An update to HomeScreen inside a test was not wrapped in act(...).
+      
+      When testing, code that causes React state updates should be wrapped into act(...):
+      
+      act(() => {
+        /* fire events that update state */
+      });
+      /* assert on the output */
+      
+      This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+      at node_modules/react-reconciler/cjs/react-reconciler.development.js:16307:19
+      at runWithFiberInDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:2508:13)
+      at warnIfUpdatesNotWrappedWithActDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:16306:9)
+      at scheduleUpdateOnFiber (node_modules/react-reconciler/cjs/react-reconciler.development.js:14070:11)
+      at forceStoreRerender (node_modules/react-reconciler/cjs/react-reconciler.development.js:5935:24)
+      at node_modules/react-reconciler/cjs/react-reconciler.development.js:5920:11
+      at node_modules/@tanstack/query-core/src/notifyManager.ts:73:11
+      at notifyFn (node_modules/@tanstack/query-core/src/notifyManager.ts:21:5)
+      at node_modules/@tanstack/query-core/src/notifyManager.ts:44:13
+          at Array.forEach (<anonymous>)
+      at node_modules/@tanstack/query-core/src/notifyManager.ts:43:25
+      at batchNotifyFn (node_modules/@tanstack/query-core/src/notifyManager.ts:24:5)
+      at Timeout._onTimeout (node_modules/@tanstack/query-core/src/notifyManager.ts:42:9)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.error
+      Encountered two children with the same key, `2026-08-21`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+
+      at node_modules/react-reconciler/cjs/react-reconciler.development.js:4179:23
+      at runWithFiberInDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:2508:13)
+      at warnOnInvalidKey (node_modules/react-reconciler/cjs/react-reconciler.development.js:4178:13)
+      at reconcileChildrenArray (node_modules/react-reconciler/cjs/react-reconciler.development.js:4247:31)
+      at reconcileChildFibersImpl (node_modules/react-reconciler/cjs/react-reconciler.development.js:4568:30)
+      at node_modules/react-reconciler/cjs/react-reconciler.development.js:4673:33
+      at reconcileChildren (node_modules/react-reconciler/cjs/react-reconciler.development.js:7255:13)
+      at beginWork (node_modules/react-reconciler/cjs/react-reconciler.development.js:9542:13)
+      at runWithFiberInDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:2508:13)
+      at performUnitOfWork (node_modules/react-reconciler/cjs/react-reconciler.development.js:15273:22)
+      at workLoopSync (node_modules/react-reconciler/cjs/react-reconciler.development.js:15099:41)
+      at renderRootSync (node_modules/react-reconciler/cjs/react-reconciler.development.js:15080:11)
+      at performWorkOnRoot (node_modules/react-reconciler/cjs/react-reconciler.development.js:14165:11)
+      at performSyncWorkOnRoot (node_modules/react-reconciler/cjs/react-reconciler.development.js:3350:7)
+      at flushSyncWorkAcrossRoots_impl (node_modules/react-reconciler/cjs/react-reconciler.development.js:3192:21)
+      at processRootScheduleInMicrotask (node_modules/react-reconciler/cjs/react-reconciler.development.js:3231:9)
+      at node_modules/react-reconciler/cjs/react-reconciler.development.js:3370:17
+      at node_modules/test-renderer/src/reconciler.ts:479:7
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.warn
+      "--color-accent-strong" is not a valid color or brush
+
+      at warn (node_modules/react-native-svg/src/lib/extract/extractBrush.ts:47:11)
+      at extractFill (node_modules/react-native-svg/src/lib/extract/extractFill.ts:22:69)
+      at extractProps (node_modules/react-native-svg/src/lib/extract/extractProps.ts:86:14)
+      at extractProps (node_modules/react-native-svg/src/lib/extract/extractProps.ts:191:10)
+      at Path.render (node_modules/react-native-svg/src/elements/Path.tsx:19:35)
+      at Object.react_stack_bottom_frame (node_modules/react-reconciler/cjs/react-reconciler.development.js:17609:29)
+      at updateClassComponent (node_modules/react-reconciler/cjs/react-reconciler.development.js:8273:25)
+      at beginWork (node_modules/react-reconciler/cjs/react-reconciler.development.js:9291:13)
+      at runWithFiberInDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:2508:13)
+      at performUnitOfWork (node_modules/react-reconciler/cjs/react-reconciler.development.js:15273:22)
+      at workLoopSync (node_modules/react-reconciler/cjs/react-reconciler.development.js:15099:41)
+      at renderRootSync (node_modules/react-reconciler/cjs/react-reconciler.development.js:15080:11)
+      at performWorkOnRoot (node_modules/react-reconciler/cjs/react-reconciler.development.js:14165:11)
+      at performSyncWorkOnRoot (node_modules/react-reconciler/cjs/react-reconciler.development.js:3350:7)
+      at flushSyncWorkAcrossRoots_impl (node_modules/react-reconciler/cjs/react-reconciler.development.js:3192:21)
+      at processRootScheduleInMicrotask (node_modules/react-reconciler/cjs/react-reconciler.development.js:3231:9)
+      at node_modules/react-reconciler/cjs/react-reconciler.development.js:3370:17
+      at node_modules/test-renderer/src/reconciler.ts:479:7
+
+    console.warn
+      "--color-muted" is not a valid color or brush
+
+      at warn (node_modules/react-native-svg/src/lib/extract/extractBrush.ts:47:11)
+      at extractStroke (node_modules/react-native-svg/src/lib/extract/extractStroke.ts:46:28)
+      at extractProps (node_modules/react-native-svg/src/lib/extract/extractProps.ts:87:16)
+      at extractProps (node_modules/react-native-svg/src/lib/extract/extractProps.ts:191:10)
+      at Path.render (node_modules/react-native-svg/src/elements/Path.tsx:19:35)
+      at Object.react_stack_bottom_frame (node_modules/react-reconciler/cjs/react-reconciler.development.js:17609:29)
+      at updateClassComponent (node_modules/react-reconciler/cjs/react-reconciler.development.js:8273:25)
+      at beginWork (node_modules/react-reconciler/cjs/react-reconciler.development.js:9291:13)
+      at runWithFiberInDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:2508:13)
+      at performUnitOfWork (node_modules/react-reconciler/cjs/react-reconciler.development.js:15273:22)
+      at workLoopSync (node_modules/react-reconciler/cjs/react-reconciler.development.js:15099:41)
+      at renderRootSync (node_modules/react-reconciler/cjs/react-reconciler.development.js:15080:11)
+      at performWorkOnRoot (node_modules/react-reconciler/cjs/react-reconciler.development.js:14165:11)
+      at performSyncWorkOnRoot (node_modules/react-reconciler/cjs/react-reconciler.development.js:3350:7)
+      at flushSyncWorkAcrossRoots_impl (node_modules/react-reconciler/cjs/react-reconciler.development.js:3192:21)
+      at processRootScheduleInMicrotask (node_modules/react-reconciler/cjs/react-reconciler.development.js:3231:9)
+      at node_modules/react-reconciler/cjs/react-reconciler.development.js:3370:17
+      at node_modules/test-renderer/src/reconciler.ts:479:7
+
+    console.warn
+      "--color-muted" is not a valid color or brush
+
+      at warn (node_modules/react-native-svg/src/lib/extract/extractBrush.ts:47:11)
+      at extractStroke (node_modules/react-native-svg/src/lib/extract/extractStroke.ts:46:28)
+      at extractProps (node_modules/react-native-svg/src/lib/extract/extractProps.ts:87:16)
+      at extractProps (node_modules/react-native-svg/src/lib/extract/extractProps.ts:191:10)
+      at Path.render (node_modules/react-native-svg/src/elements/Path.tsx:19:35)
+      at Object.react_stack_bottom_frame (node_modules/react-reconciler/cjs/react-reconciler.development.js:17609:29)
+      at updateClassComponent (node_modules/react-reconciler/cjs/react-reconciler.development.js:8273:25)
+      at beginWork (node_modules/react-reconciler/cjs/react-reconciler.development.js:9291:13)
+      at runWithFiberInDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:2508:13)
+      at performUnitOfWork (node_modules/react-reconciler/cjs/react-reconciler.development.js:15273:22)
+      at workLoopSync (node_modules/react-reconciler/cjs/react-reconciler.development.js:15099:41)
+      at renderRootSync (node_modules/react-reconciler/cjs/react-reconciler.development.js:15080:11)
+      at performWorkOnRoot (node_modules/react-reconciler/cjs/react-reconciler.development.js:14165:11)
+      at performSyncWorkOnRoot (node_modules/react-reconciler/cjs/react-reconciler.development.js:3350:7)
+      at flushSyncWorkAcrossRoots_impl (node_modules/react-reconciler/cjs/react-reconciler.development.js:3192:21)
+      at processRootScheduleInMicrotask (node_modules/react-reconciler/cjs/react-reconciler.development.js:3231:9)
+      at node_modules/react-reconciler/cjs/react-reconciler.development.js:3370:17
+      at node_modules/test-renderer/src/reconciler.ts:479:7
+
+    console.warn
+      "--color-muted" is not a valid color or brush
+
+      at warn (node_modules/react-native-svg/src/lib/extract/extractBrush.ts:47:11)
+      at extractStroke (node_modules/react-native-svg/src/lib/extract/extractStroke.ts:46:28)
+      at extractProps (node_modules/react-native-svg/src/lib/extract/extractProps.ts:87:16)
+      at extractProps (node_modules/react-native-svg/src/lib/extract/extractProps.ts:191:10)
+      at Path.render (node_modules/react-native-svg/src/elements/Path.tsx:19:35)
+      at Object.react_stack_bottom_frame (node_modules/react-reconciler/cjs/react-reconciler.development.js:17609:29)
+      at updateClassComponent (node_modules/react-reconciler/cjs/react-reconciler.development.js:8273:25)
+      at beginWork (node_modules/react-reconciler/cjs/react-reconciler.development.js:9291:13)
+      at runWithFiberInDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:2508:13)
+      at performUnitOfWork (node_modules/react-reconciler/cjs/react-reconciler.development.js:15273:22)
+      at workLoopSync (node_modules/react-reconciler/cjs/react-reconciler.development.js:15099:41)
+      at renderRootSync (node_modules/react-reconciler/cjs/react-reconciler.development.js:15080:11)
+      at performWorkOnRoot (node_modules/react-reconciler/cjs/react-reconciler.development.js:14165:11)
+      at performSyncWorkOnRoot (node_modules/react-reconciler/cjs/react-reconciler.development.js:3350:7)
+      at flushSyncWorkAcrossRoots_impl (node_modules/react-reconciler/cjs/react-reconciler.development.js:3192:21)
+      at processRootScheduleInMicrotask (node_modules/react-reconciler/cjs/react-reconciler.development.js:3231:9)
+      at node_modules/react-reconciler/cjs/react-reconciler.development.js:3370:17
+      at node_modules/test-renderer/src/reconciler.ts:479:7
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.warn
+      "--color-accent-strong" is not a valid color or brush
+
+      at warn (node_modules/react-native-svg/src/lib/extract/extractBrush.ts:47:11)
+      at extractFill (node_modules/react-native-svg/src/lib/extract/extractFill.ts:22:69)
+      at extractProps (node_modules/react-native-svg/src/lib/extract/extractProps.ts:86:14)
+      at extractProps (node_modules/react-native-svg/src/lib/extract/extractProps.ts:191:10)
+      at Path.render (node_modules/react-native-svg/src/elements/Path.tsx:19:35)
+      at Object.react_stack_bottom_frame (node_modules/react-reconciler/cjs/react-reconciler.development.js:17609:29)
+      at updateClassComponent (node_modules/react-reconciler/cjs/react-reconciler.development.js:8273:25)
+      at beginWork (node_modules/react-reconciler/cjs/react-reconciler.development.js:9291:13)
+      at runWithFiberInDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:2508:13)
+      at performUnitOfWork (node_modules/react-reconciler/cjs/react-reconciler.development.js:15273:22)
+      at workLoopSync (node_modules/react-reconciler/cjs/react-reconciler.development.js:15099:41)
+      at renderRootSync (node_modules/react-reconciler/cjs/react-reconciler.development.js:15080:11)
+      at performWorkOnRoot (node_modules/react-reconciler/cjs/react-reconciler.development.js:14165:11)
+      at performSyncWorkOnRoot (node_modules/react-reconciler/cjs/react-reconciler.development.js:3350:7)
+      at flushSyncWorkAcrossRoots_impl (node_modules/react-reconciler/cjs/react-reconciler.development.js:3192:21)
+      at processRootScheduleInMicrotask (node_modules/react-reconciler/cjs/react-reconciler.development.js:3231:9)
+      at node_modules/react-reconciler/cjs/react-reconciler.development.js:3370:17
+      at node_modules/test-renderer/src/reconciler.ts:479:7
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.warn
+      "--color-accent-strong" is not a valid color or brush
+
+      at warn (node_modules/react-native-svg/src/lib/extract/extractBrush.ts:47:11)
+      at extractFill (node_modules/react-native-svg/src/lib/extract/extractFill.ts:22:69)
+      at extractProps (node_modules/react-native-svg/src/lib/extract/extractProps.ts:86:14)
+      at extractProps (node_modules/react-native-svg/src/lib/extract/extractProps.ts:191:10)
+      at Path.render (node_modules/react-native-svg/src/elements/Path.tsx:19:35)
+      at Object.react_stack_bottom_frame (node_modules/react-reconciler/cjs/react-reconciler.development.js:17609:29)
+      at updateClassComponent (node_modules/react-reconciler/cjs/react-reconciler.development.js:8273:25)
+      at beginWork (node_modules/react-reconciler/cjs/react-reconciler.development.js:9291:13)
+      at runWithFiberInDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:2508:13)
+      at performUnitOfWork (node_modules/react-reconciler/cjs/react-reconciler.development.js:15273:22)
+      at workLoopSync (node_modules/react-reconciler/cjs/react-reconciler.development.js:15099:41)
+      at renderRootSync (node_modules/react-reconciler/cjs/react-reconciler.development.js:15080:11)
+      at performWorkOnRoot (node_modules/react-reconciler/cjs/react-reconciler.development.js:14165:11)
+      at performSyncWorkOnRoot (node_modules/react-reconciler/cjs/react-reconciler.development.js:3350:7)
+      at flushSyncWorkAcrossRoots_impl (node_modules/react-reconciler/cjs/react-reconciler.development.js:3192:21)
+      at processRootScheduleInMicrotask (node_modules/react-reconciler/cjs/react-reconciler.development.js:3231:9)
+      at node_modules/react-reconciler/cjs/react-reconciler.development.js:3370:17
+      at node_modules/test-renderer/src/reconciler.ts:479:7
+
+    console.warn
+      "--color-muted" is not a valid color or brush
+
+      at warn (node_modules/react-native-svg/src/lib/extract/extractBrush.ts:47:11)
+      at extractStroke (node_modules/react-native-svg/src/lib/extract/extractStroke.ts:46:28)
+      at extractProps (node_modules/react-native-svg/src/lib/extract/extractProps.ts:87:16)
+      at extractProps (node_modules/react-native-svg/src/lib/extract/extractProps.ts:191:10)
+      at Path.render (node_modules/react-native-svg/src/elements/Path.tsx:19:35)
+      at Object.react_stack_bottom_frame (node_modules/react-reconciler/cjs/react-reconciler.development.js:17609:29)
+      at updateClassComponent (node_modules/react-reconciler/cjs/react-reconciler.development.js:8273:25)
+      at beginWork (node_modules/react-reconciler/cjs/react-reconciler.development.js:9291:13)
+      at runWithFiberInDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:2508:13)
+      at performUnitOfWork (node_modules/react-reconciler/cjs/react-reconciler.development.js:15273:22)
+      at workLoopSync (node_modules/react-reconciler/cjs/react-reconciler.development.js:15099:41)
+      at renderRootSync (node_modules/react-reconciler/cjs/react-reconciler.development.js:15080:11)
+      at performWorkOnRoot (node_modules/react-reconciler/cjs/react-reconciler.development.js:14165:11)
+      at performSyncWorkOnRoot (node_modules/react-reconciler/cjs/react-reconciler.development.js:3350:7)
+      at flushSyncWorkAcrossRoots_impl (node_modules/react-reconciler/cjs/react-reconciler.development.js:3192:21)
+      at processRootScheduleInMicrotask (node_modules/react-reconciler/cjs/react-reconciler.development.js:3231:9)
+      at node_modules/react-reconciler/cjs/react-reconciler.development.js:3370:17
+      at node_modules/test-renderer/src/reconciler.ts:479:7
+
+    console.warn
+      "--color-muted" is not a valid color or brush
+
+      at warn (node_modules/react-native-svg/src/lib/extract/extractBrush.ts:47:11)
+      at extractStroke (node_modules/react-native-svg/src/lib/extract/extractStroke.ts:46:28)
+      at extractProps (node_modules/react-native-svg/src/lib/extract/extractProps.ts:87:16)
+      at extractProps (node_modules/react-native-svg/src/lib/extract/extractProps.ts:191:10)
+      at Path.render (node_modules/react-native-svg/src/elements/Path.tsx:19:35)
+      at Object.react_stack_bottom_frame (node_modules/react-reconciler/cjs/react-reconciler.development.js:17609:29)
+      at updateClassComponent (node_modules/react-reconciler/cjs/react-reconciler.development.js:8273:25)
+      at beginWork (node_modules/react-reconciler/cjs/react-reconciler.development.js:9291:13)
+      at runWithFiberInDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:2508:13)
+      at performUnitOfWork (node_modules/react-reconciler/cjs/react-reconciler.development.js:15273:22)
+      at workLoopSync (node_modules/react-reconciler/cjs/react-reconciler.development.js:15099:41)
+      at renderRootSync (node_modules/react-reconciler/cjs/react-reconciler.development.js:15080:11)
+      at performWorkOnRoot (node_modules/react-reconciler/cjs/react-reconciler.development.js:14165:11)
+      at performSyncWorkOnRoot (node_modules/react-reconciler/cjs/react-reconciler.development.js:3350:7)
+      at flushSyncWorkAcrossRoots_impl (node_modules/react-reconciler/cjs/react-reconciler.development.js:3192:21)
+      at processRootScheduleInMicrotask (node_modules/react-reconciler/cjs/react-reconciler.development.js:3231:9)
+      at node_modules/react-reconciler/cjs/react-reconciler.development.js:3370:17
+      at node_modules/test-renderer/src/reconciler.ts:479:7
+
+    console.warn
+      "--color-muted" is not a valid color or brush
+
+      at warn (node_modules/react-native-svg/src/lib/extract/extractBrush.ts:47:11)
+      at extractStroke (node_modules/react-native-svg/src/lib/extract/extractStroke.ts:46:28)
+      at extractProps (node_modules/react-native-svg/src/lib/extract/extractProps.ts:87:16)
+      at extractProps (node_modules/react-native-svg/src/lib/extract/extractProps.ts:191:10)
+      at Path.render (node_modules/react-native-svg/src/elements/Path.tsx:19:35)
+      at Object.react_stack_bottom_frame (node_modules/react-reconciler/cjs/react-reconciler.development.js:17609:29)
+      at updateClassComponent (node_modules/react-reconciler/cjs/react-reconciler.development.js:8273:25)
+      at beginWork (node_modules/react-reconciler/cjs/react-reconciler.development.js:9291:13)
+      at runWithFiberInDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:2508:13)
+      at performUnitOfWork (node_modules/react-reconciler/cjs/react-reconciler.development.js:15273:22)
+      at workLoopSync (node_modules/react-reconciler/cjs/react-reconciler.development.js:15099:41)
+      at renderRootSync (node_modules/react-reconciler/cjs/react-reconciler.development.js:15080:11)
+      at performWorkOnRoot (node_modules/react-reconciler/cjs/react-reconciler.development.js:14165:11)
+      at performSyncWorkOnRoot (node_modules/react-reconciler/cjs/react-reconciler.development.js:3350:7)
+      at flushSyncWorkAcrossRoots_impl (node_modules/react-reconciler/cjs/react-reconciler.development.js:3192:21)
+      at processRootScheduleInMicrotask (node_modules/react-reconciler/cjs/react-reconciler.development.js:3231:9)
+      at node_modules/react-reconciler/cjs/react-reconciler.development.js:3370:17
+      at node_modules/test-renderer/src/reconciler.ts:479:7
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.error
+      An update to HomeScreen inside a test was not wrapped in act(...).
+      
+      When testing, code that causes React state updates should be wrapped into act(...):
+      
+      act(() => {
+        /* fire events that update state */
+      });
+      /* assert on the output */
+      
+      This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+      at node_modules/react-reconciler/cjs/react-reconciler.development.js:16307:19
+      at runWithFiberInDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:2508:13)
+      at warnIfUpdatesNotWrappedWithActDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:16306:9)
+      at scheduleUpdateOnFiber (node_modules/react-reconciler/cjs/react-reconciler.development.js:14070:11)
+      at forceStoreRerender (node_modules/react-reconciler/cjs/react-reconciler.development.js:5935:24)
+      at node_modules/react-reconciler/cjs/react-reconciler.development.js:5920:11
+      at node_modules/@tanstack/query-core/src/notifyManager.ts:73:11
+      at notifyFn (node_modules/@tanstack/query-core/src/notifyManager.ts:21:5)
+      at node_modules/@tanstack/query-core/src/notifyManager.ts:44:13
+          at Array.forEach (<anonymous>)
+      at node_modules/@tanstack/query-core/src/notifyManager.ts:43:25
+      at batchNotifyFn (node_modules/@tanstack/query-core/src/notifyManager.ts:24:5)
+      at Timeout._onTimeout (node_modules/@tanstack/query-core/src/notifyManager.ts:42:9)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.warn
+      "--color-accent-strong" is not a valid color or brush
+
+      at warn (node_modules/react-native-svg/src/lib/extract/extractBrush.ts:47:11)
+      at extractFill (node_modules/react-native-svg/src/lib/extract/extractFill.ts:22:69)
+      at extractProps (node_modules/react-native-svg/src/lib/extract/extractProps.ts:86:14)
+      at extractProps (node_modules/react-native-svg/src/lib/extract/extractProps.ts:191:10)
+      at Path.render (node_modules/react-native-svg/src/elements/Path.tsx:19:35)
+      at Object.react_stack_bottom_frame (node_modules/react-reconciler/cjs/react-reconciler.development.js:17609:29)
+      at updateClassComponent (node_modules/react-reconciler/cjs/react-reconciler.development.js:8273:25)
+      at beginWork (node_modules/react-reconciler/cjs/react-reconciler.development.js:9291:13)
+      at runWithFiberInDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:2508:13)
+      at performUnitOfWork (node_modules/react-reconciler/cjs/react-reconciler.development.js:15273:22)
+      at workLoopSync (node_modules/react-reconciler/cjs/react-reconciler.development.js:15099:41)
+      at renderRootSync (node_modules/react-reconciler/cjs/react-reconciler.development.js:15080:11)
+      at performWorkOnRoot (node_modules/react-reconciler/cjs/react-reconciler.development.js:14165:11)
+      at performSyncWorkOnRoot (node_modules/react-reconciler/cjs/react-reconciler.development.js:3350:7)
+      at flushSyncWorkAcrossRoots_impl (node_modules/react-reconciler/cjs/react-reconciler.development.js:3192:21)
+      at processRootScheduleInMicrotask (node_modules/react-reconciler/cjs/react-reconciler.development.js:3231:9)
+      at node_modules/react-reconciler/cjs/react-reconciler.development.js:3370:17
+      at node_modules/test-renderer/src/reconciler.ts:479:7
+      at runJobs (node_modules/@sinonjs/fake-timers/src/fake-timers-src.js:511:22)
+      at doTickInner (node_modules/@sinonjs/fake-timers/src/fake-timers-src.js:1311:29)
+      at Immediate.nextPromiseTick [as _onImmediate] (node_modules/@sinonjs/fake-timers/src/fake-timers-src.js:1373:25)
+
+    console.warn
+      "--color-muted" is not a valid color or brush
+
+      at warn (node_modules/react-native-svg/src/lib/extract/extractBrush.ts:47:11)
+      at extractStroke (node_modules/react-native-svg/src/lib/extract/extractStroke.ts:46:28)
+      at extractProps (node_modules/react-native-svg/src/lib/extract/extractProps.ts:87:16)
+      at extractProps (node_modules/react-native-svg/src/lib/extract/extractProps.ts:191:10)
+      at Path.render (node_modules/react-native-svg/src/elements/Path.tsx:19:35)
+      at Object.react_stack_bottom_frame (node_modules/react-reconciler/cjs/react-reconciler.development.js:17609:29)
+      at updateClassComponent (node_modules/react-reconciler/cjs/react-reconciler.development.js:8273:25)
+      at beginWork (node_modules/react-reconciler/cjs/react-reconciler.development.js:9291:13)
+      at runWithFiberInDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:2508:13)
+      at performUnitOfWork (node_modules/react-reconciler/cjs/react-reconciler.development.js:15273:22)
+      at workLoopSync (node_modules/react-reconciler/cjs/react-reconciler.development.js:15099:41)
+      at renderRootSync (node_modules/react-reconciler/cjs/react-reconciler.development.js:15080:11)
+      at performWorkOnRoot (node_modules/react-reconciler/cjs/react-reconciler.development.js:14165:11)
+      at performSyncWorkOnRoot (node_modules/react-reconciler/cjs/react-reconciler.development.js:3350:7)
+      at flushSyncWorkAcrossRoots_impl (node_modules/react-reconciler/cjs/react-reconciler.development.js:3192:21)
+      at processRootScheduleInMicrotask (node_modules/react-reconciler/cjs/react-reconciler.development.js:3231:9)
+      at node_modules/react-reconciler/cjs/react-reconciler.development.js:3370:17
+      at node_modules/test-renderer/src/reconciler.ts:479:7
+      at runJobs (node_modules/@sinonjs/fake-timers/src/fake-timers-src.js:511:22)
+      at doTickInner (node_modules/@sinonjs/fake-timers/src/fake-timers-src.js:1311:29)
+      at Immediate.nextPromiseTick [as _onImmediate] (node_modules/@sinonjs/fake-timers/src/fake-timers-src.js:1373:25)
+
+    console.warn
+      "--color-muted" is not a valid color or brush
+
+      at warn (node_modules/react-native-svg/src/lib/extract/extractBrush.ts:47:11)
+      at extractStroke (node_modules/react-native-svg/src/lib/extract/extractStroke.ts:46:28)
+      at extractProps (node_modules/react-native-svg/src/lib/extract/extractProps.ts:87:16)
+      at extractProps (node_modules/react-native-svg/src/lib/extract/extractProps.ts:191:10)
+      at Path.render (node_modules/react-native-svg/src/elements/Path.tsx:19:35)
+      at Object.react_stack_bottom_frame (node_modules/react-reconciler/cjs/react-reconciler.development.js:17609:29)
+      at updateClassComponent (node_modules/react-reconciler/cjs/react-reconciler.development.js:8273:25)
+      at beginWork (node_modules/react-reconciler/cjs/react-reconciler.development.js:9291:13)
+      at runWithFiberInDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:2508:13)
+      at performUnitOfWork (node_modules/react-reconciler/cjs/react-reconciler.development.js:15273:22)
+      at workLoopSync (node_modules/react-reconciler/cjs/react-reconciler.development.js:15099:41)
+      at renderRootSync (node_modules/react-reconciler/cjs/react-reconciler.development.js:15080:11)
+      at performWorkOnRoot (node_modules/react-reconciler/cjs/react-reconciler.development.js:14165:11)
+      at performSyncWorkOnRoot (node_modules/react-reconciler/cjs/react-reconciler.development.js:3350:7)
+      at flushSyncWorkAcrossRoots_impl (node_modules/react-reconciler/cjs/react-reconciler.development.js:3192:21)
+      at processRootScheduleInMicrotask (node_modules/react-reconciler/cjs/react-reconciler.development.js:3231:9)
+      at node_modules/react-reconciler/cjs/react-reconciler.development.js:3370:17
+      at node_modules/test-renderer/src/reconciler.ts:479:7
+      at runJobs (node_modules/@sinonjs/fake-timers/src/fake-timers-src.js:511:22)
+      at doTickInner (node_modules/@sinonjs/fake-timers/src/fake-timers-src.js:1311:29)
+      at Immediate.nextPromiseTick [as _onImmediate] (node_modules/@sinonjs/fake-timers/src/fake-timers-src.js:1373:25)
+
+    console.warn
+      "--color-muted" is not a valid color or brush
+
+      at warn (node_modules/react-native-svg/src/lib/extract/extractBrush.ts:47:11)
+      at extractStroke (node_modules/react-native-svg/src/lib/extract/extractStroke.ts:46:28)
+      at extractProps (node_modules/react-native-svg/src/lib/extract/extractProps.ts:87:16)
+      at extractProps (node_modules/react-native-svg/src/lib/extract/extractProps.ts:191:10)
+      at Path.render (node_modules/react-native-svg/src/elements/Path.tsx:19:35)
+      at Object.react_stack_bottom_frame (node_modules/react-reconciler/cjs/react-reconciler.development.js:17609:29)
+      at updateClassComponent (node_modules/react-reconciler/cjs/react-reconciler.development.js:8273:25)
+      at beginWork (node_modules/react-reconciler/cjs/react-reconciler.development.js:9291:13)
+      at runWithFiberInDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:2508:13)
+      at performUnitOfWork (node_modules/react-reconciler/cjs/react-reconciler.development.js:15273:22)
+      at workLoopSync (node_modules/react-reconciler/cjs/react-reconciler.development.js:15099:41)
+      at renderRootSync (node_modules/react-reconciler/cjs/react-reconciler.development.js:15080:11)
+      at performWorkOnRoot (node_modules/react-reconciler/cjs/react-reconciler.development.js:14165:11)
+      at performSyncWorkOnRoot (node_modules/react-reconciler/cjs/react-reconciler.development.js:3350:7)
+      at flushSyncWorkAcrossRoots_impl (node_modules/react-reconciler/cjs/react-reconciler.development.js:3192:21)
+      at processRootScheduleInMicrotask (node_modules/react-reconciler/cjs/react-reconciler.development.js:3231:9)
+      at node_modules/react-reconciler/cjs/react-reconciler.development.js:3370:17
+      at node_modules/test-renderer/src/reconciler.ts:479:7
+      at runJobs (node_modules/@sinonjs/fake-timers/src/fake-timers-src.js:511:22)
+      at doTickInner (node_modules/@sinonjs/fake-timers/src/fake-timers-src.js:1311:29)
+      at Immediate.nextPromiseTick [as _onImmediate] (node_modules/@sinonjs/fake-timers/src/fake-timers-src.js:1373:25)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.warn
+      "--color-accent-strong" is not a valid color or brush
+
+      at warn (node_modules/react-native-svg/src/lib/extract/extractBrush.ts:47:11)
+      at extractFill (node_modules/react-native-svg/src/lib/extract/extractFill.ts:22:69)
+      at extractProps (node_modules/react-native-svg/src/lib/extract/extractProps.ts:86:14)
+      at extractProps (node_modules/react-native-svg/src/lib/extract/extractProps.ts:191:10)
+      at Path.render (node_modules/react-native-svg/src/elements/Path.tsx:19:35)
+      at Object.react_stack_bottom_frame (node_modules/react-reconciler/cjs/react-reconciler.development.js:17609:29)
+      at updateClassComponent (node_modules/react-reconciler/cjs/react-reconciler.development.js:8273:25)
+      at beginWork (node_modules/react-reconciler/cjs/react-reconciler.development.js:9291:13)
+      at runWithFiberInDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:2508:13)
+      at performUnitOfWork (node_modules/react-reconciler/cjs/react-reconciler.development.js:15273:22)
+      at workLoopSync (node_modules/react-reconciler/cjs/react-reconciler.development.js:15099:41)
+      at renderRootSync (node_modules/react-reconciler/cjs/react-reconciler.development.js:15080:11)
+      at performWorkOnRoot (node_modules/react-reconciler/cjs/react-reconciler.development.js:14165:11)
+      at performSyncWorkOnRoot (node_modules/react-reconciler/cjs/react-reconciler.development.js:3350:7)
+      at flushSyncWorkAcrossRoots_impl (node_modules/react-reconciler/cjs/react-reconciler.development.js:3192:21)
+      at processRootScheduleInMicrotask (node_modules/react-reconciler/cjs/react-reconciler.development.js:3231:9)
+      at node_modules/react-reconciler/cjs/react-reconciler.development.js:3370:17
+      at node_modules/test-renderer/src/reconciler.ts:479:7
+
+    console.warn
+      "--color-muted" is not a valid color or brush
+
+      at warn (node_modules/react-native-svg/src/lib/extract/extractBrush.ts:47:11)
+      at extractStroke (node_modules/react-native-svg/src/lib/extract/extractStroke.ts:46:28)
+      at extractProps (node_modules/react-native-svg/src/lib/extract/extractProps.ts:87:16)
+      at extractProps (node_modules/react-native-svg/src/lib/extract/extractProps.ts:191:10)
+      at Path.render (node_modules/react-native-svg/src/elements/Path.tsx:19:35)
+      at Object.react_stack_bottom_frame (node_modules/react-reconciler/cjs/react-reconciler.development.js:17609:29)
+      at updateClassComponent (node_modules/react-reconciler/cjs/react-reconciler.development.js:8273:25)
+      at beginWork (node_modules/react-reconciler/cjs/react-reconciler.development.js:9291:13)
+      at runWithFiberInDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:2508:13)
+      at performUnitOfWork (node_modules/react-reconciler/cjs/react-reconciler.development.js:15273:22)
+      at workLoopSync (node_modules/react-reconciler/cjs/react-reconciler.development.js:15099:41)
+      at renderRootSync (node_modules/react-reconciler/cjs/react-reconciler.development.js:15080:11)
+      at performWorkOnRoot (node_modules/react-reconciler/cjs/react-reconciler.development.js:14165:11)
+      at performSyncWorkOnRoot (node_modules/react-reconciler/cjs/react-reconciler.development.js:3350:7)
+      at flushSyncWorkAcrossRoots_impl (node_modules/react-reconciler/cjs/react-reconciler.development.js:3192:21)
+      at processRootScheduleInMicrotask (node_modules/react-reconciler/cjs/react-reconciler.development.js:3231:9)
+      at node_modules/react-reconciler/cjs/react-reconciler.development.js:3370:17
+      at node_modules/test-renderer/src/reconciler.ts:479:7
+
+    console.warn
+      "--color-muted" is not a valid color or brush
+
+      at warn (node_modules/react-native-svg/src/lib/extract/extractBrush.ts:47:11)
+      at extractStroke (node_modules/react-native-svg/src/lib/extract/extractStroke.ts:46:28)
+      at extractProps (node_modules/react-native-svg/src/lib/extract/extractProps.ts:87:16)
+      at extractProps (node_modules/react-native-svg/src/lib/extract/extractProps.ts:191:10)
+      at Path.render (node_modules/react-native-svg/src/elements/Path.tsx:19:35)
+      at Object.react_stack_bottom_frame (node_modules/react-reconciler/cjs/react-reconciler.development.js:17609:29)
+      at updateClassComponent (node_modules/react-reconciler/cjs/react-reconciler.development.js:8273:25)
+      at beginWork (node_modules/react-reconciler/cjs/react-reconciler.development.js:9291:13)
+      at runWithFiberInDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:2508:13)
+      at performUnitOfWork (node_modules/react-reconciler/cjs/react-reconciler.development.js:15273:22)
+      at workLoopSync (node_modules/react-reconciler/cjs/react-reconciler.development.js:15099:41)
+      at renderRootSync (node_modules/react-reconciler/cjs/react-reconciler.development.js:15080:11)
+      at performWorkOnRoot (node_modules/react-reconciler/cjs/react-reconciler.development.js:14165:11)
+      at performSyncWorkOnRoot (node_modules/react-reconciler/cjs/react-reconciler.development.js:3350:7)
+      at flushSyncWorkAcrossRoots_impl (node_modules/react-reconciler/cjs/react-reconciler.development.js:3192:21)
+      at processRootScheduleInMicrotask (node_modules/react-reconciler/cjs/react-reconciler.development.js:3231:9)
+      at node_modules/react-reconciler/cjs/react-reconciler.development.js:3370:17
+      at node_modules/test-renderer/src/reconciler.ts:479:7
+
+    console.warn
+      "--color-muted" is not a valid color or brush
+
+      at warn (node_modules/react-native-svg/src/lib/extract/extractBrush.ts:47:11)
+      at extractStroke (node_modules/react-native-svg/src/lib/extract/extractStroke.ts:46:28)
+      at extractProps (node_modules/react-native-svg/src/lib/extract/extractProps.ts:87:16)
+      at extractProps (node_modules/react-native-svg/src/lib/extract/extractProps.ts:191:10)
+      at Path.render (node_modules/react-native-svg/src/elements/Path.tsx:19:35)
+      at Object.react_stack_bottom_frame (node_modules/react-reconciler/cjs/react-reconciler.development.js:17609:29)
+      at updateClassComponent (node_modules/react-reconciler/cjs/react-reconciler.development.js:8273:25)
+      at beginWork (node_modules/react-reconciler/cjs/react-reconciler.development.js:9291:13)
+      at runWithFiberInDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:2508:13)
+      at performUnitOfWork (node_modules/react-reconciler/cjs/react-reconciler.development.js:15273:22)
+      at workLoopSync (node_modules/react-reconciler/cjs/react-reconciler.development.js:15099:41)
+      at renderRootSync (node_modules/react-reconciler/cjs/react-reconciler.development.js:15080:11)
+      at performWorkOnRoot (node_modules/react-reconciler/cjs/react-reconciler.development.js:14165:11)
+      at performSyncWorkOnRoot (node_modules/react-reconciler/cjs/react-reconciler.development.js:3350:7)
+      at flushSyncWorkAcrossRoots_impl (node_modules/react-reconciler/cjs/react-reconciler.development.js:3192:21)
+      at processRootScheduleInMicrotask (node_modules/react-reconciler/cjs/react-reconciler.development.js:3231:9)
+      at node_modules/react-reconciler/cjs/react-reconciler.development.js:3370:17
+      at node_modules/test-renderer/src/reconciler.ts:479:7
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.error
+      An update to HomeScreen inside a test was not wrapped in act(...).
+      
+      When testing, code that causes React state updates should be wrapped into act(...):
+      
+      act(() => {
+        /* fire events that update state */
+      });
+      /* assert on the output */
+      
+      This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+      at node_modules/react-reconciler/cjs/react-reconciler.development.js:16307:19
+      at runWithFiberInDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:2508:13)
+      at warnIfUpdatesNotWrappedWithActDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:16306:9)
+      at scheduleUpdateOnFiber (node_modules/react-reconciler/cjs/react-reconciler.development.js:14070:11)
+      at forceStoreRerender (node_modules/react-reconciler/cjs/react-reconciler.development.js:5935:24)
+      at node_modules/react-reconciler/cjs/react-reconciler.development.js:5920:11
+      at node_modules/@tanstack/query-core/src/notifyManager.ts:73:11
+      at notifyFn (node_modules/@tanstack/query-core/src/notifyManager.ts:21:5)
+      at node_modules/@tanstack/query-core/src/notifyManager.ts:44:13
+          at Array.forEach (<anonymous>)
+      at node_modules/@tanstack/query-core/src/notifyManager.ts:43:25
+      at batchNotifyFn (node_modules/@tanstack/query-core/src/notifyManager.ts:24:5)
+      at Timeout._onTimeout (node_modules/@tanstack/query-core/src/notifyManager.ts:42:9)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.error
+      An update to HomeScreen inside a test was not wrapped in act(...).
+      
+      When testing, code that causes React state updates should be wrapped into act(...):
+      
+      act(() => {
+        /* fire events that update state */
+      });
+      /* assert on the output */
+      
+      This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+      at node_modules/react-reconciler/cjs/react-reconciler.development.js:16307:19
+      at runWithFiberInDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:2508:13)
+      at warnIfUpdatesNotWrappedWithActDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:16306:9)
+      at scheduleUpdateOnFiber (node_modules/react-reconciler/cjs/react-reconciler.development.js:14070:11)
+      at forceStoreRerender (node_modules/react-reconciler/cjs/react-reconciler.development.js:5935:24)
+      at node_modules/react-reconciler/cjs/react-reconciler.development.js:5920:11
+      at node_modules/@tanstack/query-core/src/notifyManager.ts:73:11
+      at notifyFn (node_modules/@tanstack/query-core/src/notifyManager.ts:21:5)
+      at node_modules/@tanstack/query-core/src/notifyManager.ts:44:13
+          at Array.forEach (<anonymous>)
+      at node_modules/@tanstack/query-core/src/notifyManager.ts:43:25
+      at batchNotifyFn (node_modules/@tanstack/query-core/src/notifyManager.ts:24:5)
+      at Timeout._onTimeout (node_modules/@tanstack/query-core/src/notifyManager.ts:42:9)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.error
+      An update to HomeScreen inside a test was not wrapped in act(...).
+      
+      When testing, code that causes React state updates should be wrapped into act(...):
+      
+      act(() => {
+        /* fire events that update state */
+      });
+      /* assert on the output */
+      
+      This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+      at node_modules/react-reconciler/cjs/react-reconciler.development.js:16307:19
+      at runWithFiberInDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:2508:13)
+      at warnIfUpdatesNotWrappedWithActDEV (node_modules/react-reconciler/cjs/react-reconciler.development.js:16306:9)
+      at scheduleUpdateOnFiber (node_modules/react-reconciler/cjs/react-reconciler.development.js:14070:11)
+      at forceStoreRerender (node_modules/react-reconciler/cjs/react-reconciler.development.js:5935:24)
+      at node_modules/react-reconciler/cjs/react-reconciler.development.js:5920:11
+      at node_modules/@tanstack/query-core/src/notifyManager.ts:73:11
+      at notifyFn (node_modules/@tanstack/query-core/src/notifyManager.ts:21:5)
+      at node_modules/@tanstack/query-core/src/notifyManager.ts:44:13
+          at Array.forEach (<anonymous>)
+      at node_modules/@tanstack/query-core/src/notifyManager.ts:43:25
+      at batchNotifyFn (node_modules/@tanstack/query-core/src/notifyManager.ts:24:5)
+      at Timeout._onTimeout (node_modules/@tanstack/query-core/src/notifyManager.ts:42:9)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+
+    console.info
+      [34mHeroUI Native Styling Principles[0m
+      • className: this is your go-to styling solution. Use Tailwind CSS classes via className prop on all components.
+      • StyleSheet precedence: The style prop (StyleSheet API) has precedence over className when both are provided. This allows you to override Tailwind classes when needed.
+      • Animated styles: Some style properties are animated using react-native-reanimated and have precedence over className. To identify which styles are animated:
+        - Hover over className in your IDE - TypeScript definitions show which properties are occupied by animated styles
+        - Check component documentation - Each component page includes a link to the component's style source
+      • If styles are occupied by animation, modify them via the animation prop on components that support it.
+      • To deactivate animated style completely and apply your own styles, use isAnimatedStyleActive prop.
+      [33m💡 To disable this message, set config.devInfo.stylingPrinciples to false[0m
+
+      at info (node_modules/heroui-native/src/helpers/internal/hooks/use-dev-info.ts:25:15)
+```
+
+PARADA: Medida `/tmp/159-e1-final.txt` distinta de la esperada, intento 1; no se aplica otra repetición. Véanse resumen y fallos arriba.
+
+R10: pendiente del smoke humano
+
+### Corrección del registro auxiliar de BASE
+
+BASE dio realmente `exit=0`, `Test Suites: 10 passed, 10 total` y
+`Tests:       754 passed, 754 total`, exactamente lo pedido. No falló ningún it.
+Los cinco encabezados `● Console` son bloques de salida de consola de suites
+pasadas. Mi comprobador auxiliar los confundió con títulos de tests fallidos
+y escribió la parada anterior por error. Se corrige el parser de ese auxiliar
+en `/tmp/`, sin cambiar archivos de código ni repetir Jest. La medida BASE
+se acepta por su exit y sus totales exactos; sigue el cierre con ALL.
+
+### Cierre E1 — ALL
+
+```text
+$ pgrep -af '[i]nit\.sh'
+(en ejecución)
+```
+
+```text
+(vacío)
+```
+Exit de la invocación: 1.
+
+### Medida: 159-e1-all.txt, intento 1
+
+```text
+$ uptime
+(en ejecución)
+```
+
+```text
+ 22:03:35 up 16 days, 18:11,  4 users,  load average: 4.04, 4.92, 4.46
+```
+Exit de la invocación: 0.
+
+```text
+$ FORCE_COLOR=0 bunx jest > /tmp/159-e1-all.txt 2>&1; echo "exit=$?"
+(en ejecución)
+```
+
+```text
+exit=0
+```
+Exit de la invocación: 0.
+
+```text
+$ resumen de /tmp/159-e1-all.txt
+Test Suites: 97 passed, 97 total
+Tests:       2420 passed, 2420 total
+```
+
+Medida exacta conforme al handoff.
+
+### Cierre E1 — Typecheck, lint, anclas y alcance
+
+```text
+$ bun run typecheck; echo "exit=$?"
+(en ejecución)
+```
+
+```text
+$ tsc --noEmit
+exit=0
+```
+Exit de la invocación: 0.
+
+```text
+$ bunx expo lint --no-cache; echo "exit=$?"
+(en ejecución)
+```
+
+```text
+exit=0
+```
+Exit de la invocación: 0.
+
+A1 (esperado H0E1: 0; cierre: 1):
+
+```text
+$ grep -cF "it('pinta Vincular collar aunque el listado diga otro rol: manda el rol del detalle'" src/screens/map/index.test.tsx
+(en ejecución)
+```
+
+```text
+1
+```
+Exit de la invocación: 0.
+
+A2 (esperado H0E1: 0; cierre: 1):
+
+```text
+$ grep -cF "it('pinta Vincular collar aunque el listado traiga collar: manda el collar del detalle'" src/screens/map/index.test.tsx
+(en ejecución)
+```
+
+```text
+1
+```
+Exit de la invocación: 0.
+
+A3 (esperado H0E1: 0; cierre: 1):
+
+```text
+$ grep -cF "('no pinta el botón a %s aunque el listado diga owner'" src/screens/map/index.test.tsx
+(en ejecución)
+```
+
+```text
+1
+```
+Exit de la invocación: 0.
+
+A4 (esperado H0E1: 0; cierre: 3):
+
+```text
+$ grep -cF 'aunque el listado' src/screens/map/index.test.tsx
+(en ejecución)
+```
+
+```text
+3
+```
+Exit de la invocación: 0.
+
+A5 (esperado H0E1: 1; cierre: 3):
+
+```text
+$ grep -cF "within(action).getByText('Vincular collar')" src/screens/map/index.test.tsx
+(en ejecución)
+```
+
+```text
+3
+```
+Exit de la invocación: 0.
+
+A6 (esperado H0E1: 1; cierre: 1):
+
+```text
+$ grep -cF "it('lleva a emparejar una sola vez'" src/screens/map/index.test.tsx
+(en ejecución)
+```
+
+```text
+1
+```
+Exit de la invocación: 0.
+
+A7 (esperado H0E1: 1; cierre: 1):
+
+```text
+$ grep -cF "it('no pinta el botón mientras el detalle carga'" src/screens/map/index.test.tsx
+(en ejecución)
+```
+
+```text
+1
+```
+Exit de la invocación: 0.
+
+A8 (esperado H0E1: 1; cierre: 1):
+
+```text
+$ grep -cF "it.each(['family', 'walker', 'vet'] as const)('no pinta el botón a %s', async (role)" src/screens/map/index.test.tsx
+(en ejecución)
+```
+
+```text
+1
+```
+Exit de la invocación: 0.
+
+A9 (esperado H0E1: 1; cierre: 1):
+
+```text
+$ grep -cF 'function noTrackingAfterDetail(detailState: PetState)' src/screens/map/index.test.tsx
+(en ejecución)
+```
+
+```text
+1
+```
+Exit de la invocación: 0.
+
+A10 (esperado H0E1: 1; cierre: 1):
+
+```text
+$ grep -cF "selectedPet?.myRole === 'owner'" src/screens/map/index.tsx
+(en ejecución)
+```
+
+```text
+1
+```
+Exit de la invocación: 0.
+
+A11 (esperado H0E1: 0; cierre: 0):
+
+```text
+$ grep -cF 'selectedPet?.device' src/screens/map/index.tsx
+(en ejecución)
+```
+
+```text
+0
+```
+Exit de la invocación: 1.
+
+A12 (esperado H0E1: 1; cierre: 1):
+
+```text
+$ grep -cF "detail.data.pet.myRole === 'owner' &&" src/screens/map/index.tsx
+(en ejecución)
+```
+
+```text
+1
+```
+Exit de la invocación: 0.
+
+A13 (esperado H0E1: 1; cierre: 1):
+
+```text
+$ grep -cF 'detail.data.pet.device === null;' src/screens/map/index.tsx
+(en ejecución)
+```
+
+```text
+1
+```
+Exit de la invocación: 0.
+
+A14 (esperado H0E1: exit=0; cierre: exit=0):
+
+```text
+$ git diff --quiet 664b95a7 HEAD -- src/screens/map/index.tsx; echo "exit=$?"
+(en ejecución)
+```
+
+```text
+exit=0
+```
+Exit de la invocación: 0.
+
+```text
+$ git diff --stat c8064d03 HEAD -- package.json bun.lock app.json src/theme
+(en ejecución)
+```
+
+```text
+(vacío)
+```
+Exit de la invocación: 0.
+
+```text
+$ cd /home/claude/sites/Pet-Tracker-wt-159 && pwd
+(en ejecución)
+```
+
+```text
+/home/claude/sites/Pet-Tracker-wt-159
+```
+Exit de la invocación: 0.
+
+```text
+$ git log --oneline c8064d03..HEAD
+(en ejecución)
+```
+
+```text
+203ea96e fix(mobile-no-collar-states): #159 E1 revert list probe, pair action locked to detail
+3224d502 test(mobile-no-collar-states): #159 E1 red pair action reads role and collar from list
+```
+Exit de la invocación: 0.
+
+```text
+$ git diff --name-only c8064d03 HEAD -- mobile-pet-tracker/
+(en ejecución)
+```
+
+```text
+mobile-pet-tracker/src/screens/map/index.test.tsx
+```
+Exit de la invocación: 0.
+
+```text
+$ git diff --stat c8064d03 HEAD -- backend-pet-tracker/ infra-pet-tracker/ docs/
+(en ejecución)
+```
+
+```text
+(vacío)
+```
+Exit de la invocación: 0.
+
+### e1-3 — Trazabilidad y lista cerrada
+
+Solo las filas R3 y R4 se actualizaron con los tests E1, sondas E1a-E1e y hashes rojo→verde. Producción idéntica a `664b95a7`; ninguna decisión adicional de producto. No se cargaron skills ni se ejecutaron init.sh, push, PR, merge o rebase.
+
+```text
+$ Cadena e1-3 que se ejecutará tras la lista cerrada
+git add specs/mobile-no-collar-states-pingo/traceability.md progress/impl_mobile-no-collar-states-pingo.md \
+  && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'progress/impl_mobile-no-collar-states-pingo.md specs/mobile-no-collar-states-pingo/traceability.md ' \
+  && git diff --quiet && test -z "$(git ls-files --others --exclude-standard)" \
+  && git commit -m 'docs(mobile-no-collar-states-pingo): #159 E1 traceability'
+```
+
+```text
+$ git diff --name-only c8064d03 -- . ':!feature_list.json' ':!progress/current.md' ':!progress/review_mobile-no-collar-states-pingo.md' ':!specs/mobile-no-collar-states-pingo/requirements.md' ':!specs/mobile-no-collar-states-pingo/design.md' ':!specs/mobile-no-collar-states-pingo/tasks.md' | LC_ALL=C sort
+(en ejecución)
+```
+
+```text
+mobile-pet-tracker/src/screens/map/index.test.tsx
+progress/impl_mobile-no-collar-states-pingo.md
+specs/mobile-no-collar-states-pingo/traceability.md
+```
+Exit de la invocación: 0.
+
+```text
+$ test -z "$(git ls-files --others --exclude-standard)"; echo "exit=$?"
+(en ejecución)
+```
+
+```text
+exit=0
+```
+Exit de la invocación: 0.
+
+R10: pendiente del smoke humano
