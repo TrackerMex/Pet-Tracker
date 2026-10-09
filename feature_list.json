@@ -3107,8 +3107,9 @@
   {
     "id": 158,
     "name": "mobile-docs-upload",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P2",
+    "spec_path": "specs/mobile-docs-upload/requirements.md",
     "description": "Registrada el 2026-10-08 por decisión del humano tras aprobar #155, que dejó este tema en §Fuera de alcance. Ids #157-#159 reservados con la sesión Frontend (Frontend: #156 y #160 en adelante). Mitad móvil de «subir documentos». Medido en origin/main 36c8050d: src/api/media.ts solo tiene listPetDocs para documentos (más el flujo de foto de mascota: requestPhotoUploadUrl + uploadPhotoToUrl, reutilizable), y src/screens/docs/index.tsx no tiene botón de subir ni de abrir. package.json trae expo-image-picker pero no expo-document-picker: subir PDFs exige una dependencia nueva que la spec debe declarar (memoria dependencias-nuevas-autorizadas). Depende de #157 (URL de lectura y confirmación de subida) y de #155 (mobile-empty-states-pingo): #155 pinta docs-empty con EmptyState, sin action y con docs.emptyBody «Cuando lleguen los documentos médicos de tu mascota, te los guardo aquí.», copy escrito para una app que no sube; esta feature añade la acción y revisa esa frase. POST es solo owner: la acción de subir solo la ve el dueño (mismo patrón que geofences-add).",
     "acceptance_criteria": [
       "El dueño puede elegir un fichero (tipos y tamaño máximo los fija la spec), rellenar type, name, date y vet opcional, y subirlo; el documento aparece en la lista sin recargar a mano",
