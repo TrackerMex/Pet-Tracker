@@ -15,26 +15,30 @@ export async function settleAlertAck(
   alert: Alert,
   { t, signOut, showError, onAcked, onNotFound }: AlertAckHandlers,
 ): Promise<void> {
-  const result = await request();
+  try {
+    const result = await request();
 
-  switch (result.kind) {
-    case 'ok':
-      onAcked(result.alert);
-      return;
-    case 'already-closed':
-      onAcked({ ...alert, status: 'closed' });
-      return;
-    case 'not-found':
-      onNotFound();
-      return;
-    case 'unreachable':
-      showError(t('common.cannotReachServer'));
-      return;
-    case 'unauthorized':
-      await signOut();
-      return;
-    case 'error':
-    case 'missing-config':
-      showError(t('common.somethingWentWrong'));
+    switch (result.kind) {
+      case 'ok':
+        onAcked(result.alert);
+        return;
+      case 'already-closed':
+        onAcked({ ...alert, status: 'closed' });
+        return;
+      case 'not-found':
+        onNotFound();
+        return;
+      case 'unreachable':
+        showError(t('common.cannotReachServer'));
+        return;
+      case 'unauthorized':
+        await signOut();
+        return;
+      case 'error':
+      case 'missing-config':
+        showError(t('common.somethingWentWrong'));
+    }
+  } catch {
+    showError(t('common.somethingWentWrong'));
   }
 }
