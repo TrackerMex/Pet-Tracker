@@ -3198,3 +3198,41 @@ mobile-pet-tracker/src/utils/alert-ack-outcome.test.ts
 Se añaden una sola vez las cuatro filas de Enmienda E1 a traceability.md, inmediatamente después de R7. Las siete filas anteriores, el frontmatter y el resto del fichero quedan idénticos a H0. La ronda 1 del impl conserva sus bytes.
 
 Los ocho candados pasan contra HEAD antes de sus mutaciones; los ocho rojos TDD y las ocho sondas caen exclusivamente en los its declarados. No se ajustó ningún it ni hubo decisiones funcionales fuera de la spec. Producción e inventarios conservan el contenido de H0; los tres tests solo tienen adiciones. La única decisión operativa fue guardar temporalmente la sección Ronda 2 para medir el árbol limpio entre sondas, documentada arriba junto con la corrección de invocación del registrador. Skills cargadas: ninguna.
+
+### c9: trazabilidad y lista cerrada
+
+```sh
+git add specs/mobile-alert-ack-outcome-helper/traceability.md progress/impl_mobile-alert-ack-outcome-helper.md \
+  && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'progress/impl_mobile-alert-ack-outcome-helper.md specs/mobile-alert-ack-outcome-helper/traceability.md ' \
+  && git commit -m 'docs(mobile-alert-ack-outcome-helper): traceability round 2 (#134)'
+```
+
+```text
+[feature/134-mobile-alert-ack-outcome-helper 7a28a26b] docs(mobile-alert-ack-outcome-helper): traceability round 2 (#134)
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 2 files changed, 1462 insertions(+)
+exit=0
+```
+
+```text
+$ git diff --name-only 044ecfe0 HEAD -- . ':!feature_list.json' ':!progress/current.md' ':!progress/handoff_mobile-alert-ack-outcome-helper.md' ':!progress/handoff_mobile-alert-ack-outcome-helper_e1.md' ':!specs/mobile-alert-ack-outcome-helper/requirements.md' ':!specs/mobile-alert-ack-outcome-helper/design.md' ':!specs/mobile-alert-ack-outcome-helper/tasks.md' ':!progress/review_mobile-alert-ack-outcome-helper.md'
+mobile-pet-tracker/src/screens/alert-detail/index.test.tsx
+mobile-pet-tracker/src/screens/alerts/index.test.tsx
+mobile-pet-tracker/src/utils/alert-ack-outcome.test.ts
+progress/impl_mobile-alert-ack-outcome-helper.md
+specs/mobile-alert-ack-outcome-helper/traceability.md
+exit=0
+```
+
+La lista cerrada contiene exactamente los cinco ficheros autorizados. Se registra esta medición posterior a c9 mediante el commit exclusivo del impl autorizado: `docs(mobile-alert-ack-outcome-helper): impl report round 2 (#134)`.
