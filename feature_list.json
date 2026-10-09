@@ -3127,7 +3127,7 @@
   {
     "id": 159,
     "name": "mobile-no-collar-states-pingo",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P2",
     "description": "Registrada el 2026-10-08 por decisión del humano tras aprobar #155, que dejó este tema en §Fuera de alcance. Ids #157-#159 reservados con la sesión Frontend (Frontend: #156 y #160 en adelante). Medido en origin/main 36c8050d: los estados «sin collar» son texto gris sin ninguna acción: map-no-tracking (Text con map.trackingNeedsCollar, src/screens/map/index.tsx), geofences-no-tracking (Card con geofences.needsCollar, src/screens/geofences/index.tsx), geofence-editor-no-tracking (Card con geofences.needsCollar, src/screens/geofence-editor/index.tsx) y la nota summary-note con home.activityNeedsCollar dentro de la tarjeta de actividad de Inicio. El flujo de emparejar ya existe (ruta /pairing, enlazada desde Inicio y Perfil). Premisa a medir en la spec: el kind no-tracking sale del 402 de PetTrackingGuard, que salta cuando isPetTracked es falso (sin suscripción activa del dispositivo), no solo cuando falta collar; una mascota con collar y suscripción vencida vería hoy «requiere un collar». Depende de #155: reutiliza EmptyState y la pose pingo-collar.webp que mete #155 R2.",
     "acceptance_criteria": [
