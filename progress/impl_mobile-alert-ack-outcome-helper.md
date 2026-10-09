@@ -1715,3 +1715,28 @@ No se tomó ninguna decisión funcional adicional ni se reabrieron Q1–Q5. Para
 La trazabilidad contiene los siete R-ids con ficheros, describes reales y hash corto más mensaje de ambos commits. Solo se editaron sus siete filas: frontmatter y texto restante intactos.
 
 Cierre verificado: 7 suites / 259 tests, suite entera 98 / 2386, typecheck exit=0, lint sin caché exit=0 sin avisos ni errores, cero borrados de tests existentes, diffs protegidos vacíos y todas las anclas finales correctas. No se pide smoke (Q5). El leader conserva el cierre administrativo, init.sh, push y PR.
+
+## Commit de trazabilidad y lista cerrada
+
+Cadena del Cierre ejecutada desde la raíz, exit=0: git add de traceability e impl; verificación de inventario staged exacto de esos dos ficheros; git commit.
+Commit 15: `5a85534e docs(mobile-alert-ack-outcome-helper): traceability (#134)`.
+
+Salida real medida después del commit de trazabilidad:
+
+```text
+$ git diff --name-only 4d87eb8f HEAD -- . ':!feature_list.json' ':!progress/current.md' ':!progress/handoff_mobile-alert-ack-outcome-helper.md' ':!specs/mobile-alert-ack-outcome-helper/requirements.md' ':!specs/mobile-alert-ack-outcome-helper/design.md' ':!specs/mobile-alert-ack-outcome-helper/tasks.md' ':!progress/review_mobile-alert-ack-outcome-helper.md'
+mobile-pet-tracker/src/__tests__/design-drift.test.ts
+mobile-pet-tracker/src/__tests__/ui-copy-table.ts
+mobile-pet-tracker/src/__tests__/ui-language.test.ts
+mobile-pet-tracker/src/screens/alert-detail/index.test.tsx
+mobile-pet-tracker/src/screens/alert-detail/index.tsx
+mobile-pet-tracker/src/screens/alerts/index.test.tsx
+mobile-pet-tracker/src/screens/alerts/index.tsx
+mobile-pet-tracker/src/utils/alert-ack-outcome.test.ts
+mobile-pet-tracker/src/utils/alert-ack-outcome.ts
+progress/impl_mobile-alert-ack-outcome-helper.md
+specs/mobile-alert-ack-outcome-helper/traceability.md
+exit=0
+```
+
+Lista cerrada exacta: 11 ficheros. Este bloque se incorpora mediante el commit adicional autorizado `docs(mobile-alert-ack-outcome-helper): impl report (#134)`, únicamente sobre este informe, porque registra una medida posterior al commit de trazabilidad. No se modifican ni se reescriben los hashes de R1–R7.
