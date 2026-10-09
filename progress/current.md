@@ -63,5 +63,14 @@
   argumento de `done.then` en W1/W2) y B3/E1.7 (C5, D4: el botón espera a
   `signOut`; mutaciones M8/M9). Cierre esperado: 98 suites / 2394 (+8).
 - Espejo de E1 en Notion (§Enmienda E1 antes de §Aprobación), `Estado del
-  gate` = En revisión, Rol Leader. Falta la aprobación humana de E1; después,
-  commit de firma y handoff de la ronda 2.
+  gate` = En revisión, Rol Leader.
+- E1 aprobada vía Notion (`Estado del gate` = Aprobado, `page_last_edited_at`
+  2026-10-09T21:58:25.943Z, chat «listo ya firme la spec»); commit de firma
+  `08d7d0a1`. Notion: Rol Implementer, Bloqueadores vacío.
+- Handoff de la ronda 2 a Codex CLI en
+  `progress/handoff_mobile-alert-ack-outcome-helper_e1.md` (el commit que lo
+  añade es el H0 de la ronda 2). Base medida en `08d7d0a1`: helper 15,
+  alerts 41, detalle 26, design-drift 65, ui-language 30, consistency 55,
+  legibility 27, todas exit 0; suite entera 98 / 2386 (init.sh en `b276727e`,
+  mismo `mobile-pet-tracker/`). Cierre esperado: 98 / 2394 (+8). Anclas
+  E1–E21 y X1–X14 ejecutadas desde el fichero en H0 y cuadran.
