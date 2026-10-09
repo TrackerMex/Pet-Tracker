@@ -889,3 +889,43 @@ describe('#158 R9: cada fallo conserva el formulario y sus valores', () => {
     expect(screen.queryByTestId('docs-action-error')).toBeNull();
   });
 });
+
+describe('#158 R10: cualquier miembro abre un documento', () => {
+  it.each(['owner', 'family', 'walker', 'vet'] as const)('abre la URL de descarga para %s', async (myRole) => {
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: { ...makePet(), myRole } });
+    await renderDocs();
+    await screen.findByText('Luna');
+    const row = await screen.findByTestId('doc-doc-1');
+    await fireEvent.press(row);
+    expect(mockOpenBrowserAsync).toHaveBeenCalledTimes(1);
+    expect(mockOpenBrowserAsync).toHaveBeenCalledWith('http://download.test/doc-1.pdf');
+    expect(row.props.accessibilityRole).toBe('button');
+  });
+
+  it.each(['owner', 'family', 'walker', 'vet'] as const)('mantiene la lista y sitúa el error del navegador para %s', async (myRole) => {
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: { ...makePet(), myRole } });
+    mockOpenBrowserAsync.mockRejectedValue(new Error('browser failed'));
+    await renderDocs();
+    await screen.findByText('Luna');
+    await fireEvent.press(await screen.findByTestId('doc-doc-1'));
+    await screen.findByText('Algo salió mal');
+    expect(screen.getByTestId('doc-doc-1')).toBeVisible();
+    expect(docsChildren()).toEqual(myRole === 'owner'
+      ? ['View', 'docs-upload', 'docs-action-error', 'doc-doc-1']
+      : ['View', 'docs-action-error', 'doc-doc-1']);
+  });
+
+  it('family limpia el error antes de abrir otra vez el navegador', async () => {
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: { ...makePet(), myRole: 'family' } });
+    mockOpenBrowserAsync.mockRejectedValueOnce(new Error('browser failed'));
+    await renderDocs();
+    await screen.findByText('Luna');
+    await fireEvent.press(await screen.findByTestId('doc-doc-1'));
+    await screen.findByText('Algo salió mal');
+    mockOpenBrowserAsync.mockReturnValueOnce(pending());
+    await fireEvent.press(screen.getByTestId('doc-doc-1'));
+    expect(screen.getByTestId('doc-doc-1')).toBeVisible();
+    expect(screen.queryByTestId('docs-action-error')).toBeNull();
+    expect(mockOpenBrowserAsync).toHaveBeenCalledTimes(2);
+  });
+});
