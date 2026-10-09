@@ -915,6 +915,7 @@ copy completa en cada una.
 | — | `map.noTrackingBody` | `Once your pet has a collar with an active plan, I'll show you where they are.` | `Cuando tu mascota tenga un collar con plan activo, te muestro dónde está.` | ← añadida por #159 (R1) |
 | — | `geofences.noTrackingTitle` | `Safe zones unavailable` | `Zonas seguras no disponibles` | ← añadida por #159 (R1) |
 | — | `geofences.noTrackingBody` | `Once your pet has a collar with an active plan, I'll let you know if they leave a safe zone.` | `Cuando tu mascota tenga un collar con plan activo, te aviso si sale de una zona segura.` | ← añadida por #159 (R1) |
+| — | `map.trackingNeedsCollar` ← retirada por #159 (R2) | `Live tracking requires a collar` | `El rastreo en vivo requiere un collar` |
 
 ## 3. La infraestructura
 

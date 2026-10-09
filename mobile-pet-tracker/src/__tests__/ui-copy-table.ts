@@ -116,7 +116,8 @@ export const R4_MAP: UseRow[] = [
   { file: 'src/screens/map/index.tsx', key: 'common.noPetsYet' },
   { file: 'src/screens/map/index.tsx', key: 'common.noPetsBody' }, // #155 R4
   { file: 'src/screens/map/index.tsx', key: 'profile.addPet' }, // #155 R4
-  { file: 'src/screens/map/index.tsx', key: 'map.trackingNeedsCollar' },
+  { file: 'src/screens/map/index.tsx', key: 'map.noTrackingTitle' }, // #159 R2
+  { file: 'src/screens/map/index.tsx', key: 'map.noTrackingBody' }, // #159 R2
   { file: 'src/screens/map/index.tsx', key: 'common.somethingWentWrong' },
   { file: 'src/screens/map/index.tsx', key: 'common.retry' },
   { file: 'src/screens/map/index.tsx', key: 'map.noLocationDataYet' },
