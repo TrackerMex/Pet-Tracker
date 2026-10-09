@@ -15,7 +15,6 @@ export async function settleAlertAck(
   alert: Alert,
   { t, signOut, showError, onAcked, onNotFound }: AlertAckHandlers,
 ): Promise<void> {
-  const fail = () => showError(t('common.somethingWentWrong'));
   try {
     const result = await request();
 
@@ -33,13 +32,13 @@ export async function settleAlertAck(
         showError(t('common.cannotReachServer'));
         return;
       case 'unauthorized':
-        void Promise.resolve(signOut()).catch(fail);
+        await signOut();
         return;
       case 'error':
       case 'missing-config':
         showError(t('common.somethingWentWrong'));
     }
   } catch {
-    fail();
+    showError(t('common.somethingWentWrong'));
   }
 }
