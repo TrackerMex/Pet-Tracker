@@ -317,3 +317,90 @@ Requisito de verificación (C4 b): el test nace verde; se cierra con mutación.
   commit `docs(mobile-alert-ack-outcome-helper): traceability (#134)`.
 - [ ] `progress/impl_mobile-alert-ack-outcome-helper.md` con lo hecho, los
   rojos observados frente a los declarados y cualquier parada.
+
+## Ronda 2 — Enmienda E1
+
+Detalle de cada `it` y de cada mutación en `requirements.md` §Enmienda E1.
+**H0 de la ronda 2** = HEAD del handoff de la ronda 2. Los commits de la
+ronda 1 no se tocan. Rojos por aserción, como en la ronda 1.
+
+### Anclas de la ronda 2
+
+«Antes» medido en `815de8f6`. «Después» es el estado tras el cierre de la
+ronda 2.
+
+| Id | Comando | Antes | Después |
+|---|---|---|---|
+| E1 | `grep -cF 'function deferred()' src/utils/alert-ack-outcome.test.ts` | 0 | 1 |
+| E2 | `grep -cF "it('unauthorized espera a signOut antes de resolver'" src/utils/alert-ack-outcome.test.ts` | 0 | 1 |
+| E3 | `grep -cF "it('unauthorized espera también a un signOut que rechaza, es'" src/utils/alert-ack-outcome.test.ts` | 0 | 1 |
+| E4 | `grep -cF 'function renderAlertsInEnglish()' src/screens/alerts/index.test.tsx` | 0 | 1 |
+| E5 | `grep -cF 'initial="en"' src/screens/alerts/index.test.tsx` | 0 | 1 |
+| E6 | `grep -cF "'Cannot reach server'" src/screens/alerts/index.test.tsx` | 0 | 1 |
+| E7 | `grep -cF "'Something went wrong'" src/screens/alerts/index.test.tsx` | 0 | 1 |
+| E8 | `grep -cF "'Cannot reach server'" src/screens/alert-detail/index.test.tsx` | 0 | 1 |
+| E9 | `grep -cF "'Something went wrong'" src/screens/alert-detail/index.test.tsx` | 0 | 1 |
+| E10 | `grep -cF "renderDetail('alert-1', 'en')" src/screens/alert-detail/index.test.tsx` | 0 | 2 |
+| E11 | `grep -cF 'const fail' src/utils/alert-ack-outcome.ts` | 0 | 0 |
+| E12 | `grep -cF 'es[key]' src/screens/alerts/index.tsx` | 0 | 0 |
+| E13 | `grep -cF 'es[key]' src/screens/alert-detail/index.tsx` | 0 | 0 |
+
+H4–H8 y A1–A17 siguen en su valor «después» de la ronda 1.
+
+### R4 (E1) — El helper espera a `signOut`
+
+Requisito de verificación (C4 b): los `it` nacen verdes y se cierran con
+mutación.
+
+- [ ] **(1) Rojo** — commit
+  `test(mobile-alert-ack-outcome-helper): helper awaits sign-out either way (R4)`.
+  `deferred`, `flushPromises`, W1 y W2 (E1.1), más la mutación M5.
+  **Rojo esperado** (`bunx jest src/utils/alert-ack-outcome.test.ts`): 2
+  rojos, W1 y W2, los dos en `expect(settled).toBe(false)`; 15 verdes; 17 en
+  total.
+- [ ] **(2) Verde** — commit
+  `fix(mobile-alert-ack-outcome-helper): revert R4 sign-out wait mutation (R4)`:
+  revierte M5. `git diff --quiet <H0 ronda 2> -- src/utils/alert-ack-outcome.ts`
+  da exit 0. 17 verdes.
+
+### R1 (E1) — El centro en inglés
+
+- [ ] **(1) Rojo** — commit
+  `test(mobile-alert-ack-outcome-helper): centro ack errors in english (R1)`.
+  `EnglishAlertsWrapper`, `renderAlertsInEnglish`, C3 y C4 (E1.2), más la
+  mutación M6. **Rojo esperado** (`bunx jest src/screens/alerts/index.test.tsx`):
+  2 rojos, C3 y C4, en `toHaveTextContent`; 41 verdes; 43 en total.
+- [ ] **(2) Verde** — commit
+  `fix(mobile-alert-ack-outcome-helper): revert R1 translator mutation (R1)`:
+  revierte M6. `git diff --quiet <H0 ronda 2> -- src/screens/alerts/index.tsx`
+  da exit 0. 43 verdes.
+
+### R2 (E1) — El detalle en inglés
+
+- [ ] **(1) Rojo** — commit
+  `test(mobile-alert-ack-outcome-helper): detail ack errors in english (R2)`.
+  D2 y D3 (E1.2), más la mutación M7. **Rojo esperado**
+  (`bunx jest src/screens/alert-detail/index.test.tsx`): 2 rojos, D2 y D3, en
+  `toHaveTextContent`; 26 verdes; 28 en total.
+- [ ] **(2) Verde** — commit
+  `fix(mobile-alert-ack-outcome-helper): revert R2 translator mutation (R2)`:
+  revierte M7. `git diff --quiet <H0 ronda 2> -- src/screens/alert-detail/index.tsx`
+  da exit 0. 28 verdes.
+
+### Cierre de la ronda 2
+
+- [ ] Sondas E1-S1 a E1-S6 de `requirements.md` §E1.4, una a una, revertidas,
+  con su salida roja recortada en el impl.
+- [ ] Anclas E1–E13 en su valor «después».
+- [ ] `bunx jest` completo, **sin pipe**, exit 0: 98 suites y 2392 tests.
+- [ ] `bun run typecheck` y `bunx expo lint --no-cache`, exit 0 y sin avisos.
+- [ ] `git diff --numstat <H0 ronda 2> HEAD -- src/utils/alert-ack-outcome.test.ts src/screens/alerts/index.test.tsx src/screens/alert-detail/index.test.tsx`:
+  borrados en 0 en los tres.
+- [ ] `git diff --quiet <H0 ronda 2> HEAD -- src/utils/alert-ack-outcome.ts src/screens/alerts/index.tsx src/screens/alert-detail/index.tsx src/__tests__ src/i18n/catalog.ts src/providers/__tests__/language-provider.test.tsx package.json bun.lock`
+  da exit 0.
+- [ ] `traceability.md` con tres filas nuevas, `R4 (E1)`, `R1 (E1)` y
+  `R2 (E1)`, cada una con su test y sus dos commits; commit
+  `docs(mobile-alert-ack-outcome-helper): traceability round 2 (#134)`.
+- [ ] `progress/impl_mobile-alert-ack-outcome-helper.md` con una sección
+  `## Ronda 2` al final: lo hecho, los rojos observados frente a los
+  declarados, las sondas y cualquier parada.
