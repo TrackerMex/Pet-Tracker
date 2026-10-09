@@ -579,3 +579,101 @@ una tarea posterior:
   Expo Go, con `bunx expo start --dev-client` desde `mobile-pet-tracker/`.
 - [ ] (3) El humano marca con su fecha la casilla «Prueba de humo R10 superada en dev build de Android» de
   requirements.md §Aprobación. Sin ella, el leader no marca `done`.
+
+## Enmienda E1 — ronda 2 (R3 y R4, solo tests)
+
+> Solo tras la firma humana de la Enmienda E1 (requirements.md §Enmienda E1).
+> La producción de `src/screens/map/index.tsx` queda **idéntica** a `664b95a7`
+> al final de la ronda: el commit verde la restaura desde ese hash. Rutas
+> relativas a `mobile-pet-tracker/`. Nada de números de línea: todo se
+> localiza por contenido.
+
+- [ ] **Antes.**
+  - `git merge-base --is-ancestor 664b95a7 HEAD; echo "exit=$?"` → `exit=0`.
+  - `git diff --quiet 664b95a7 HEAD -- mobile-pet-tracker; echo "exit=$?"` → `exit=0`.
+  - `test ! -e .expo/types/router.d.ts; echo "exit=$?"` → `exit=0`.
+  - Base: `bunx jest --runTestsByPath src/screens/map/index.test.tsx` → `Tests: 109 passed, 109 total`.
+  - Si la base no da 109, manda la medida: los recuentos de abajo pasan a
+    base + 5 (rojo: 6 failed, base − 1 passed), y la diferencia va al impl.
+
+- [ ] **(1) Commit rojo** `test(mobile-no-collar-states): #159 E1 red pair action reads role and collar from list`.
+  - En `src/screens/map/index.test.tsx`:
+    - Al final de `describe('#159 R3: el dueño sin collar puede ir a emparejar'`, tras
+      `it('lleva a emparejar una sola vez'`, añade los dos `it` de
+      requirements.md §Enmienda E1. Cada uno sigue el patrón del primer `it` de
+      ese `describe`: `mockListPets.mockResolvedValue`,
+      `mockGetPet.mockResolvedValue`, `mockGetLastPosition.mockResolvedValue({ kind: 'no-tracking' })`,
+      `await renderMap()`,
+      `const action = await screen.findByTestId('map-no-tracking-action')` y
+      `expect(within(action).getByText('Vincular collar')).toBeVisible()`.
+      - `it('pinta Vincular collar aunque el listado diga otro rol: manda el rol del detalle')`:
+        listado `[makePet({ myRole: 'family' })]`, detalle `{ kind: 'ok', pet: makePet() }`.
+      - `it('pinta Vincular collar aunque el listado traiga collar: manda el collar del detalle')`:
+        listado `[makePet({ device: makeDevice('online') })]`, detalle `{ kind: 'ok', pet: makePet() }`.
+    - Al final de `describe('#159 R4: nadie más ve el botón de emparejar'`, tras
+      `it('no pinta el botón mientras el detalle carga'`, añade
+      `it.each(['family', 'walker', 'vet'] as const)('no pinta el botón a %s aunque el listado diga owner', async (role) => {…})`:
+      `mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] })`,
+      `noTrackingAfterDetail({ kind: 'ok', pet: makePet({ myRole: role }) })`,
+      `await renderMap()`, y las tres líneas finales de
+      `it.each(['family', 'walker', 'vet'] as const)('no pinta el botón a %s'`
+      copiadas tal cual: `findByTestId('map-no-tracking-title')`, el cuerpo con
+      `toHaveTextContent('Cuando tu mascota tenga un collar con plan activo, te muestro dónde está.')`
+      y `expect(screen.queryByTestId('map-no-tracking-action')).toBeNull()`.
+    - Ningún `it` existente cambia, ni de nombre ni de cuerpo.
+  - **Mutación versionada** en `src/screens/map/index.tsx`. En `const canPairCollar =`, las líneas
+    `detail.data.pet.myRole === 'owner' &&` y `detail.data.pet.device === null;` pasan a
+    `selectedPet?.myRole === 'owner' &&` y `selectedPet?.device === null;`.
+    La primera línea, `detail.data?.kind === 'ok' &&`, no cambia.
+  - Rojo esperado, midiendo solo `src/screens/map/index.test.tsx`:
+    `Tests: 6 failed, 108 passed, 114 total`. Los seis son estos:
+
+    | `it` | Por qué falla |
+    |---|---|
+    | `pinta Vincular collar aunque el listado diga otro rol: manda el rol del detalle` | consulta: `Unable to find an element with testID: map-no-tracking-action` |
+    | `pinta Vincular collar aunque el listado traiga collar: manda el collar del detalle` | consulta: `Unable to find an element with testID: map-no-tracking-action` |
+    | `no pinta el botón a family aunque el listado diga owner` | aserción: `expect(received).toBeNull()` |
+    | `no pinta el botón a walker aunque el listado diga owner` | aserción: `expect(received).toBeNull()` |
+    | `no pinta el botón a vet aunque el listado diga owner` | aserción: `expect(received).toBeNull()` |
+    | `no pinta el botón al dueño de una mascota con collar` (ya existía; cae en cascada) | aserción: `expect(received).toBeNull()` |
+
+    Los dos rojos de R3 son por consulta: su aserción **es** que el botón
+    existe, y `findByTestId` es esa aserción. Cualquier otro `it` rojo, o un
+    `ReferenceError`, es un error de medida: **para**.
+
+- [ ] **(2) Commit verde** `fix(mobile-no-collar-states): #159 E1 revert list probe, pair action locked to detail`.
+  - `git checkout 664b95a7 -- src/screens/map/index.tsx`, y después
+    `git diff --quiet 664b95a7 -- src/screens/map/index.tsx; echo "exit=$?"` → `exit=0`.
+  - Gate: `Tests: 114 passed, 114 total` en `src/screens/map/index.test.tsx`;
+    `bun run typecheck` y `bunx expo lint --no-cache` con `exit=0`.
+
+- [ ] **Sondas E1a-E1e**, sin commit, sobre el árbol verde, en `const canPairCollar =` de
+  `src/screens/map/index.tsx`. Mide solo `src/screens/map/index.test.tsx`.
+  Restaura cada sonda con `git checkout HEAD -- src/screens/map/index.tsx` y
+  `git diff --quiet HEAD -- src/screens/map/index.tsx` (`limpio=0`) antes de
+  la siguiente.
+
+  | Sonda | Mutación | Esperado | Qué falla |
+  |---|---|---|---|
+  | E1a | `detail.data.pet.myRole === 'owner' &&` pasa a `selectedPet?.myRole === 'owner' &&` (la Z1 del reviewer) | `4 failed, 110 passed, 114 total` | las 3 filas `no pinta el botón a %s aunque el listado diga owner` (aserción) y `pinta Vincular collar aunque el listado diga otro rol: …` (consulta) |
+  | E1b | pasa a `(selectedPet?.myRole === 'owner' \|\| detail.data.pet.myRole === 'owner') &&` | `3 failed, 111 passed, 114 total` | las 3 filas `… aunque el listado diga owner` (aserción) |
+  | E1c | pasa a `selectedPet?.myRole === 'owner' && detail.data.pet.myRole === 'owner' &&` | `1 failed, 113 passed, 114 total` | `pinta Vincular collar aunque el listado diga otro rol: …` (consulta) |
+  | E1d | `detail.data.pet.device === null;` pasa a `selectedPet?.device === null;` | `2 failed, 112 passed, 114 total` | `no pinta el botón al dueño de una mascota con collar` (aserción) y `pinta Vincular collar aunque el listado traiga collar: …` (consulta) |
+  | E1e | pasa a `selectedPet?.device === null && detail.data.pet.device === null;` | `1 failed, 113 passed, 114 total` | `pinta Vincular collar aunque el listado traiga collar: …` (consulta) |
+
+- [ ] **Cierre.**
+  - El comando BASE de la ronda 1 (los 10 ficheros) → `Tests: 754 passed, 754 total`,
+    con map en 114.
+  - `bun run test` → `97 suites` y `2420 tests` (2415 + 5).
+  - `bun run typecheck` y `bunx expo lint --no-cache` con `exit=0`.
+  - Si la base de **Antes** no dio 109, estos recuentos se mueven con ella.
+
+- [ ] **(3) Commit final** `docs(mobile-no-collar-states-pingo): #159 E1 traceability`.
+  - En traceability.md, la fila R3 añade a su columna de tests los dos `it` nuevos.
+  - La fila R4 añade `no pinta el botón a %s aunque el listado diga owner` y
+    `(sondas E1a-E1e)`.
+  - Las dos filas añaden a su columna de commit `E1: <hash rojo> → <hash verde>`
+    con sus mensajes.
+  - La lista cerrada de ficheros de la ronda 1 no cambia: E1 solo toca
+    `src/screens/map/index.test.tsx` (ya en la lista) y deja
+    `src/screens/map/index.tsx` idéntico a `664b95a7`.

@@ -389,3 +389,95 @@ casilla de §Aprobación.
 - [x] Aprobado por humano (fecha: 2026-10-09) ← gate obligatorio antes de implementar
 - [x] Decisiones A1–A5 y copy final L1–L8 aprobados (fecha: 2026-10-09)
 - [ ] Prueba de humo R10 superada en dev build de Android (fecha: ____) ← gate de cierre; el leader no marca `done` sin ella
+
+## Enmienda E1 — R3 y R4: el rol y el collar del botón salen del detalle, no del listado
+
+> Escrita el 2026-10-09 sobre la spec aprobada (firma `b304538f`), tras la
+> revisión **rechazada** (`progress/review_mobile-no-collar-states-pingo.md`,
+> sobre la punta de Codex `664b95a7`), por su bloqueante B1. No toca D1-D7,
+> ni el texto de R1-R10, ni la firma original. **Solo tests**: la producción
+> de `664b95a7` es correcta y queda idéntica. Su casilla va **sin marcar**: el
+> humano reabre el gate solo para esta enmienda.
+
+### El hecho medido (B1 del reviewer)
+
+R3.1 y R4.1-R4.3 dicen «el detalle resuelve…», y D2 (design.md) fija que el
+rol y el collar salen **del mismo detalle**, sin cruzar listado y detalle. El
+código lo cumple:
+
+```tsx
+const canPairCollar =
+  detail.data?.kind === 'ok' &&
+  detail.data.pet.myRole === 'owner' &&
+  detail.data.pet.device === null;
+```
+
+Pero ningún test lo exige. En todos los `it` de R3 y R4 el rol del listado
+(`pets: [makePet(…)]`) y el del detalle (`pet: makePet(…)`) son el mismo,
+porque así lo prescribió tasks.md T3/T4. El hueco nace en la spec, no en el
+implementador.
+
+| Id | Mutación en `src/screens/map/index.tsx` | Qué rompe en producción | Estado en `664b95a7` |
+|---|---|---|---|
+| Z1 | `detail.data.pet.myRole === 'owner' &&` pasa a `selectedPet?.myRole === 'owner' &&` | el botón obedece al rol del listado, no al del detalle | **verde** 109/109 |
+
+El collar sí tiene un candado contra el listado (R4.4: listado `device: null`,
+detalle con collar), pero solo en una dirección. Si `canPairCollar` exigiera
+además el collar del listado, ningún test lo vería. La enmienda cierra las dos
+direcciones del rol y la que falta del collar.
+
+### Decisión: E1 añade tests a R3 y R4, no reescribe su texto
+
+El texto de R3.1 y R4.1-R4.3 ya dice lo correcto. E1 solo añade sus candados
+contra el listado: cinco `it` nuevos en `src/screens/map/index.test.tsx`, en
+los `describe` de #159 que ya existen. Los `it` de `664b95a7` no cambian.
+
+**R3.1, la inversa del rol.** Al final de
+`describe('#159 R3: el dueño sin collar puede ir a emparejar'`:
+
+- `it('pinta Vincular collar aunque el listado diga otro rol: manda el rol del detalle')`:
+  listado `[makePet({ myRole: 'family' })]`, detalle
+  `{ kind: 'ok', pet: makePet() }` (owner, `device: null`), última posición
+  `{ kind: 'no-tracking' }`. Espera `map-no-tracking-action` con
+  `Vincular collar` visible.
+
+**R3.1, la inversa del collar.** En el mismo `describe`:
+
+- `it('pinta Vincular collar aunque el listado traiga collar: manda el collar del detalle')`:
+  listado `[makePet({ device: makeDevice('online') })]`, detalle
+  `{ kind: 'ok', pet: makePet() }`, última posición `{ kind: 'no-tracking' }`.
+  Espera lo mismo.
+
+**R4.1-R4.3, cada rol con su candado contra el listado.** Al final de
+`describe('#159 R4: nadie más ve el botón de emparejar'`:
+
+- `it.each(['family', 'walker', 'vet'] as const)('no pinta el botón a %s aunque el listado diga owner')`:
+  listado `[makePet()]` (owner), detalle `{ kind: 'ok', pet: makePet({ myRole: role }) }`
+  servido con el helper `noTrackingAfterDetail` que ya existe en ese
+  `describe`. Espera título y cuerpo visibles y `map-no-tracking-action`
+  ausente, igual que los `it` de R4 que ya existen.
+
+### Cómo se prueba que los candados vigilan (CHECKPOINTS.md C4, quinto punto)
+
+Es un candado sobre código **ya correcto**. Por eso su rojo es una **mutación de
+producción**: se versiona en el commit rojo y se revierte en el verde. Nunca
+una mutación del doble.
+
+La mutación del rojo es el error que D2 prohíbe: leer rol y collar **del
+listado**. Las dos últimas líneas de `canPairCollar` pasan a:
+
+```tsx
+  selectedPet?.myRole === 'owner' &&
+  selectedPet?.device === null;
+```
+
+Con ella fallan los cinco `it` nuevos, y además R4.4 ya existente, que cae en
+cascada. tasks.md §Enmienda E1 da la tabla exacta.
+
+Después, cinco sondas sin commit, restauradas, sobre el árbol verde (E1a-E1e
+en tasks.md), cada una con su recuento esperado. Separan el rol del collar y
+la sustitución del OR y del AND.
+
+### Aprobación de la Enmienda E1
+
+- [ ] Enmienda E1 aprobada por humano (fecha: ____, vía Notion) ← gate obligatorio antes de la ronda 2 de Codex
