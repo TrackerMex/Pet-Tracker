@@ -12,6 +12,8 @@ import {
   listPetDocs,
   resolveDocumentContentType,
   uploadPhotoToUrl,
+  type ConfirmPetDocumentUploadState,
+  type CreatePetDocumentState,
   type DocumentContentType,
   type PetDocument,
 } from '../../api/media';
@@ -28,7 +30,14 @@ import {
 } from '../../utils/category-palette';
 import { civilTodayIso } from '../../utils/civil-today-iso';
 
-type ActionError = 'file-format' | 'file-too-large' | 'invalid-form' | 'upload-forbidden' | 'unknown';
+type ActionError =
+  | 'file-format'
+  | 'file-too-large'
+  | 'invalid-form'
+  | 'upload-forbidden'
+  | 'upload-failed'
+  | 'unreachable'
+  | 'unknown';
 type SelectedDocument = {
   asset: DocumentPicker.DocumentPickerAsset;
   contentType: DocumentContentType;
@@ -60,7 +69,7 @@ function DocumentRow({ document }: { document: PetDocument }) {
 
 export function DocsScreen({ petId }: { petId: string }) {
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
-  const { token } = useAuth();
+  const { token, signOut } = useAuth();
   const t = useTranslate();
   const insets = useSafeAreaInsets();
   const [selectedDocument, setSelectedDocument] = useState<SelectedDocument | null>(null);
@@ -80,17 +89,15 @@ export function DocsScreen({ petId }: { petId: string }) {
   });
   const petName = pet.data?.kind === 'ok' ? pet.data.pet.name : null;
   const isOwner = pet.data?.kind === 'ok' && pet.data.pet.myRole === 'owner';
-  const actionErrorText = actionError === 'file-format'
-    ? t('docs.errorFileFormat')
-    : actionError === 'file-too-large'
-      ? t('docs.errorFileTooLarge')
-      : actionError === 'invalid-form'
-        ? t('docs.errorInvalidForm')
-        : actionError === 'upload-forbidden'
-          ? t('docs.errorUploadForbidden')
-          : actionError === 'unknown'
-            ? t('common.somethingWentWrong')
-            : null;
+  const actionErrorText = actionError ? {
+    'file-format': t('docs.errorFileFormat'),
+    'file-too-large': t('docs.errorFileTooLarge'),
+    'invalid-form': t('docs.errorInvalidForm'),
+    'upload-forbidden': t('docs.errorUploadForbidden'),
+    'upload-failed': t('docs.errorUploadFailed'),
+    unreachable: t('common.cannotReachServer'),
+    unknown: t('common.somethingWentWrong'),
+  }[actionError] : null;
 
   function pickDocument() {
     setActionError(null);
@@ -123,6 +130,33 @@ export function DocsScreen({ petId }: { petId: string }) {
     setActionError(null);
   }
 
+  async function handleUploadError(
+    kind: Exclude<CreatePetDocumentState['kind'] | ConfirmPetDocumentUploadState['kind'], 'ok'>,
+  ) {
+    switch (kind) {
+      case 'unauthorized':
+        await signOut();
+        break;
+      case 'invalid':
+        setActionError('invalid-form');
+        break;
+      case 'forbidden':
+        setActionError('upload-forbidden');
+        break;
+      case 'unreachable':
+        setActionError('unreachable');
+        break;
+      case 'not-uploaded':
+        setActionError('upload-failed');
+        break;
+      case 'too-large':
+        setActionError('file-too-large');
+        break;
+      default:
+        setActionError('unknown');
+    }
+  }
+
   async function submitDocument() {
     if (uploading || !selectedDocument) return;
     setActionError(null);
@@ -131,9 +165,11 @@ export function DocsScreen({ petId }: { petId: string }) {
       return;
     }
     setUploading(true);
+    let readingAsset = true;
     try {
       const response = await fetch(selectedDocument.asset.uri);
       const blob = await response.blob();
+      readingAsset = false;
       const created = await createPetDocument(baseUrl, token ?? '', petId, {
         type: type.trim(),
         name: name.trim(),
@@ -141,15 +177,23 @@ export function DocsScreen({ petId }: { petId: string }) {
         ...(vet.trim() ? { vet: vet.trim() } : {}),
       });
       if (created.kind !== 'ok') {
-        if (created.kind === 'forbidden') setActionError('upload-forbidden');
+        await handleUploadError(created.kind);
         return;
       }
       const uploaded = await uploadPhotoToUrl(created.uploadUrl, blob, selectedDocument.contentType);
-      if (uploaded.kind !== 'ok') return;
+      if (uploaded.kind !== 'ok') {
+        setActionError('upload-failed');
+        return;
+      }
       const confirmed = await confirmPetDocumentUpload(baseUrl, token ?? '', petId, created.documentId);
-      if (confirmed.kind !== 'ok') return;
+      if (confirmed.kind !== 'ok') {
+        await handleUploadError(confirmed.kind);
+        return;
+      }
       await docs.refetch();
       cancelUpload();
+    } catch {
+      setActionError(readingAsset ? 'upload-failed' : 'unknown');
     } finally {
       setUploading(false);
     }
@@ -250,7 +294,7 @@ export function DocsScreen({ petId }: { petId: string }) {
             testID="docs-upload-submit"
             className="rounded-xl bg-accent"
             isDisabled={uploading}
-            onPress={() => void submitDocument().catch(() => undefined)}
+            onPress={() => void submitDocument()}
           >
             <Button.Label className="font-bold text-accent-foreground">
               {t('docs.upload')}
