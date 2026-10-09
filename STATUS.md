@@ -1,10 +1,10 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-10-09
-**Features completadas**: 149/162 (`feature_list.json`)
-**En progreso**: ninguna en esta rama. #155 cerrada en `feature/155-mobile-empty-states-pingo`, PR pendiente de merge humano.
+**Features completadas**: 150/162 (`feature_list.json`)
+**En progreso**: ninguna en esta rama. #162 cerrada en `feature/162-media-docs-download-test-locks`, PR pendiente de merge humano.
 
-**Pendientes**: 13 (#60, #119, #129, #134, #144, #150, #151, #154, #158, #159, #160, #162 y #163). **#155 `mobile-empty-states-pingo` cerrada**: 9 estados vacíos de la app pasan a ilustrarse con Pingo en un componente compartido, `EmptyState` (`src/components/empty-state.tsx`): pose, título y frase en la voz «guardián sereno» (en/es), y un botón «Añadir mascota» solo en los vacíos sin mascota. Sin mascotas, Inicio, Salud, Comida y Mapa usan la pose `talk`. Con mascota, Alertas usa `sleep`, Recordatorios `clipboard`, Documentos `health`, Comida sin plan `food` y Zonas seguras `collar`. Los 11 vacíos restantes siguen en texto, cada uno justificado en §Clasificación. Seis poses nuevas entran como WebP estáticos y sin animación. Cero dependencias nuevas. Enmienda E1: el CTA de R4 va sin cast `as Href`. Codex test-primero en 21 commits. Reviewer: ronda 1 RECHAZADA (`438b3263`, huecos B1-B5 de orden, sitio y movimiento). Enmienda E2: solo candados de test, pre-verificados como suficientes antes de la firma. Reanudación 3 de Codex en 9 commits. Ronda 2 APROBADA (`f986c72c`) con 27 sondas y un combinado en rojo por aserción. Prueba de humo en el dev build de Android firmada por el humano (`db033b17`). Móvil 96/2275 → 97/2365.
+**Pendientes**: 12 (#60, #119, #129, #134, #144, #150, #151, #154, #158, #159, #160 y #163). **#162 `media-docs-download-test-locks` cerrada**: tres candados de test sobre el código de #157, que ya era correcto. R1: un 404 sin `name` sigue dando `null` en `getObjectSize`, así que el 404 se decide por `$metadata.httpStatusCode` y no por `name`. R2: un doble de `createDownloadUrl` que resuelve el primer documento después del segundo fija que la lista conserva el orden del repositorio. R3: un e2e contra Postgres fija que `markUploaded` sobre una fila ya confirmada no cambia `uploaded_at`. Cero cambios en producción: cada candado nace rojo con su mutación M1-M3 versionada y el verde la revierte desde el HEAD del handoff. Codex test-primero en 8 commits. Reviewer APROBADO a la primera, con dos huecos fuera de alcance (N1: un 500 del HEAD no tiene candado; N2: el fixture de R2 no distingue el orden del repositorio de un sort por fecha o id desc). Backend 187/1471 → 187/1474; e2e 30 de 33 suites, 476 tests con 8 saltados.
 
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
@@ -88,6 +88,15 @@ debe listar las 4 URLs de cola.
 
 ## Estado actual
 
+- **`media-docs-download-test-locks` (#162) done** (2026-10-09, worktree
+  `Pet-Tracker-wt-162`, sesion Frontend): candados de test para la deuda de
+  #157. R1 decide el 404 por status y no por `name`, R2 conserva el orden
+  del repositorio con URLs resueltas fuera de orden, y R3 hace que
+  `markUploaded` no pise el `uploaded_at` confirmado (e2e contra Postgres).
+  Cero cambios en producción. Reviewer aprobado a la primera (veredicto sobre
+  `e780925d`). Gate: `./init.sh` exit 0 sobre `e780925d` (backend 187/1474,
+  infra 2/14, móvil 97/2365, e2e 30 de 33 suites, 476 tests con 8
+  saltados). PR abierta.
 - **`mobile-empty-states-pingo` (#155) done** (2026-10-09, worktree
   `Pet-Tracker-wt-155`, sesion Backend): 9 vacíos ilustrados con Pingo en
   `EmptyState` (6 poses WebP, copy en/es en voz B) y 11 que siguen en texto.
@@ -1414,6 +1423,12 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Última sesión
+
+- **2026-10-09** — **#162 `media-docs-download-test-locks` cerrada** (worktree
+  `Pet-Tracker-wt-162`, sesión Frontend): spec firmada desde Notion
+  (`b1eea14a`), handoff a Codex (`29585178`) con una parada de arranque por
+  cwd reanudada sin enmienda, 8 commits test-primero y reviewer APROBADO a la
+  primera. PR abierta; siguiente: merge humano.
 
 - **2026-10-09** — **#155 `mobile-empty-states-pingo` cerrada** (worktree
   `Pet-Tracker-wt-155`, sesión Backend): spec firmada desde Notion
