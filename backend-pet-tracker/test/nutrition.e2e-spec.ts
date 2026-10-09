@@ -16,6 +16,8 @@ import { TOKEN_SERVICE } from '@/modules/auth/domain/ports/token-service';
 import type { TokenService } from '@/modules/auth/domain/ports/token-service';
 import { AppModule } from '../src/app.module';
 
+process.env.ANTHROPIC_ENABLED = 'false';
+
 describe('Nutrition profile and plans (e2e)', () => {
   const runId = Date.now();
   let app: INestApplication<App>;
@@ -571,8 +573,8 @@ describe('Nutrition profile and plans (e2e)', () => {
     });
   });
 
-  describe('R26 (nutrition-profile-engine #17): aiExplanation es null', () => {
-    it('persiste null y nunca expone otro valor en generate ni GET', async () => {
+  describe('R5 (nutrition-ai-explainer #18): con la IA apagada generate responde 200 con aiExplanation null', () => {
+    it('persiste null y responde 200 con la IA apagada', async () => {
       const owner = await seedUser('r26');
       const pet = await seedPet(owner);
       await putProfile(owner, pet.id, {
@@ -593,17 +595,72 @@ describe('Nutrition profile and plans (e2e)', () => {
         .from(nutritionPlans)
         .where(eq(nutritionPlans.id, generatedBody.id));
       expect(persisted).toEqual([{ aiExplanation: null }]);
+    });
+  });
 
+  describe('R17 (nutrition-ai-explainer #18): rutas leen la explicacion de Postgres sin overrides', () => {
+    async function fixture(label: string) {
+      const owner = await seedUser(`ai-${label}`);
+      const pet = await seedPet(owner);
+      await postWeight(owner, pet.id, 20).expect(201);
+      await putProfile(owner, pet.id, {
+        activityLevel: 'medium',
+        foodType: 'dry',
+        kcalPer100g: 350,
+      }).expect(200);
+      const response = await generatePlan(owner, pet.id).expect(200);
+      return { owner, pet, planId: (response.body as { id: string }).id };
+    }
+    it('GET devuelve texto sembrado y trece claves aunque no haya collar', async () => {
+      const { owner, pet, planId } = await fixture('get');
       await db
         .update(nutritionPlans)
-        .set({ aiExplanation: 'must not leak while feature 17 is active' })
-        .where(eq(nutritionPlans.id, generatedBody.id));
-      const latest = await api()
+        .set({ aiExplanation: 'texto sembrado' })
+        .where(eq(nutritionPlans.id, planId));
+      const response = await api()
         .get(`/v1/pets/${pet.id}/nutrition-plan`)
         .set(auth(owner.token))
         .expect(200);
-      const latestBody = latest.body as { aiExplanation: null };
-      expect(latestBody.aiExplanation).toBeNull();
+      expect(response.body).toHaveProperty('aiExplanation', 'texto sembrado');
+      expect(Object.keys(response.body as object).sort()).toEqual(
+        [
+          'id',
+          'petId',
+          'rerKcal',
+          'merKcal',
+          'dailyGrams',
+          'mealsPerDay',
+          'mealTimes',
+          'objective',
+          'warnings',
+          'aiExplanation',
+          'generatedAt',
+          'servedToday',
+          'kcalConsumedToday',
+        ].sort(),
+      );
+      expect(response.body).not.toHaveProperty('inputsHash');
+    });
+    it('POST meal-times hereda y devuelve texto sembrado', async () => {
+      const { owner, pet, planId } = await fixture('add');
+      await db
+        .update(nutritionPlans)
+        .set({ aiExplanation: 'texto sembrado' })
+        .where(eq(nutritionPlans.id, planId));
+      const response = await api()
+        .post(`/v1/pets/${pet.id}/meal-times`)
+        .set(auth(owner.token))
+        .send({ mealTime: '12:30' })
+        .expect(201);
+      expect(response.body).toHaveProperty('aiExplanation', 'texto sembrado');
+    });
+    it('GET devuelve null cuando la fila tiene NULL', async () => {
+      const { owner, pet } = await fixture('null');
+      const response = await api()
+        .get(`/v1/pets/${pet.id}/nutrition-plan`)
+        .set(auth(owner.token))
+        .expect(200);
+      expect(response.body).toHaveProperty('aiExplanation', null);
     });
   });
 

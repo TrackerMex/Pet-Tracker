@@ -77,7 +77,7 @@ export function toNutritionPlanResponse(
     mealTimes: plan.mealTimes,
     objective: plan.objective,
     warnings: plan.warnings,
-    aiExplanation: null,
+    aiExplanation: plan.aiExplanation,
     generatedAt: plan.generatedAt.toISOString(),
   };
 }

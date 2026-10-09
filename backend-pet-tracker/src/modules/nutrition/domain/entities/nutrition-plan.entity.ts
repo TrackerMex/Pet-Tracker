@@ -1,4 +1,5 @@
 import type {
+  NutritionPlanResult,
   NutritionObjective,
   NutritionWarning,
 } from '@/modules/nutrition/domain/nutrition-engine';
@@ -75,5 +76,17 @@ export function copyWithMealTimes(
     warnings: plan.warnings,
     aiExplanation: plan.aiExplanation,
     inputsHash: plan.inputsHash,
+  };
+}
+
+export function toPlanResult(plan: NutritionPlan): NutritionPlanResult {
+  return {
+    rerKcal: plan.rerKcal,
+    merKcal: plan.merKcal,
+    dailyGrams: plan.dailyGrams,
+    mealsPerDay: plan.mealsPerDay,
+    mealTimes: plan.mealTimes,
+    objective: plan.objective,
+    warnings: plan.warnings,
   };
 }

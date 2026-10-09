@@ -8266,3 +8266,43 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
   7 (frontmatter de traceability.md).
 - Cierre: `done` en `feature_list.json`, trazabilidad R9, STATUS, Notion
   (Implementado / Completado) y PR contra `main`. Merge: humano.
+
+## #18 `nutrition-ai-explainer` — Explicación IA del plan nutricional (proveedor Anthropic) — 2026-10-09
+
+- Sesión: Backend (Claude Code, leader). Fecha de inicio: 2026-10-08.
+- Decisión del humano: `claude-haiku-5-5` en vez de OpenAI. La implementación
+  OpenAI (branch `feature/18-nutrition-ai-explainer`, aprobada por el reviewer
+  el 2026-08-18) nunca se mergeó porque R19 se bloqueó por cuota agotada; no se
+  reutilizó.
+- Worktree `/home/claude/sites/Pet-Tracker-wt-18`, branch
+  `feature/18-nutrition-ai-explainer-claude`, cortada de `origin/main` y
+  re-sincronizada con `fca7c399` (#153) en `04b4bb8c`.
+- Spec: enmienda de proveedor escrita por `spec_author`
+  (`progress/spec_nutrition-ai-explainer_amend.md`), aprobada en Notion; firma
+  en `1837ab0a`. P4-P9 aceptadas por defecto (P4: no se envía `thinking` ni
+  `output_config`). Handoff a Codex en `704af9e5` (H0).
+- Ronda 1 de Codex: 34 commits hasta `5575c5f2`; init.sh del leader exit=0.
+  Reviewer **rechazó** (`c09ee51c`): F1-F3 bloqueantes (argumentos de la rama
+  positiva de R5, orden R3/R5, carga perezosa del SDK fuera del try de R11) y
+  F4-F5 menores, con origen en las prescripciones *Test* de la spec.
+- Enmienda E1 (`progress/spec_nutrition-ai-explainer_e1.md`, D-E1-a del humano:
+  recortar clave y modelo), barrida por el reviewer en tres revisiones
+  (`progress/review_nutrition-ai-explainer_e1.md`, apta en `0fde011c`).
+  Aprobada en Notion; firma en `c4b86430`. Handoff de la ronda 2 (E1-c1 a
+  E1-c18, gates por JSON de jest, solo unitaria) en `5b069b93` (H0E1). El texto
+  decía «17 sondas» y son 18; Codex corrió las 18.
+- Ronda 2 de Codex: 18 commits hasta `8b0677b5`; §Final E1 versionado por el
+  leader en `8b0a74c2`. init.sh del leader en `8b0a74c2`: exit=0 (unit
+  183/1450, móvil 96/2275, e2e 30 de 33 suites con 3 skipped). Reviewer
+  **APROBADO** en `535128bd`; O1-O4 no bloqueantes.
+- R19 (prueba de humo con clave real): la corrió el humano y marcó su casilla
+  en `27680bf6` («Prueba de humo superado», 2026-10-08).
+- `origin/main` 58323e49 (#157, PR #200) mergeado en la branch en `3469a993`
+  antes del cierre, sin conflictos.
+- Deuda: la O1 del reviewer se registra como #163
+  `nutrition-explainer-node-env-production-lock` por decisión del humano al
+  cerrar («cierra y registra 01 como deuda»). O2-O4 quedan solo en el review.
+- Gate de cierre: `./init.sh` exit 0 (backend 186/1463, infra 2/14, móvil
+  96/2275, e2e 30 de 33 suites con 465 tests verdes y 8 saltados de 473).
+- Notion: página de Specs de #18 en Implementado / Completado.
+- Estado: `done`. PR abierta; siguiente: merge humano.
