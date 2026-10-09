@@ -338,4 +338,21 @@ describe('#100 R5: el detalle marca leída la alerta', () => {
     expect(mockAckAlert).toHaveBeenCalledTimes(1);
     expect(screen.getByTestId('alert-detail-ack')).toBeDisabled();
   });
+
+  describe('#134 R2: caracterización de la rama sin candado del ack', () => {
+    it('muestra Algo salió mal si signOut rechaza tras unauthorized', async () => {
+      mockAckAlert.mockResolvedValue({ kind: 'unauthorized' });
+      mockSignOut.mockRejectedValueOnce(new Error('sign-out failed'));
+
+      await renderDetail();
+      await fireEvent.press(await screen.findByTestId('alert-detail-ack'));
+
+      await waitFor(() =>
+        expect(screen.queryByTestId('alert-detail-action-error')).toHaveTextContent(
+          'Algo salió mal',
+        ),
+      );
+      expect(mockSignOut).toHaveBeenCalledTimes(1);
+    });
+  });
 });

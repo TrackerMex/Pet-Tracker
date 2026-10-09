@@ -67,7 +67,7 @@ export function AlertDetailScreen({ alertId }: { alertId: string }) {
           setActionError(t('common.cannotReachServer'));
           return;
         case 'unauthorized':
-          await signOut();
+          await Promise.resolve(signOut()).catch(() => undefined);
           return;
         case 'error':
         case 'missing-config':
