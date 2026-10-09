@@ -101,8 +101,8 @@ describe('R8: pantalla Docs', () => {
     mockListPetDocs.mockResolvedValue({
       kind: 'ok',
       docs: [
-        { id: 'doc-1', type: 'Vacunación', name: 'Antirrábica', date: '2026-07-12' },
-        { id: 'doc-2', type: 'Consulta', name: 'Control anual', date: '2026-06-03' },
+        { id: 'doc-1', type: 'Vacunación', name: 'Antirrábica', date: '2026-07-12', downloadUrl: 'http://download.test/document.pdf' },
+        { id: 'doc-2', type: 'Consulta', name: 'Control anual', date: '2026-06-03', downloadUrl: 'http://download.test/document.pdf' },
       ],
     });
 
@@ -169,6 +169,7 @@ describe('#62 R10: el tipo de documento se lee como badge', () => {
           type: 'Vacunación',
           name: 'Antirrábica',
           date: '2026-07-12',
+          downloadUrl: 'http://download.test/document.pdf',
         },
       ],
     });
@@ -202,12 +203,14 @@ describe('#64 R8: la fila de documento pinta icono y badge con el color de su ti
           type: 'Vacunación',
           name: 'Antirrábica',
           date: '2026-07-12',
+          downloadUrl: 'http://download.test/document.pdf',
         },
         {
           id: 'unknown',
           type: 'Radiografía',
           name: 'Cadera',
           date: '2026-06-03',
+          downloadUrl: 'http://download.test/document.pdf',
         },
       ],
     });
@@ -254,6 +257,7 @@ describe('#87 R9: DocsScreen lee por TanStack Query', () => {
           type: 'Vacunación',
           name: 'Antirrábica',
           date: '2026-07-12',
+          downloadUrl: 'http://download.test/document.pdf',
         },
       ],
     };

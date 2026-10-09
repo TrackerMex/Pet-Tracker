@@ -5,6 +5,7 @@ export interface PetDocument {
   type: string;
   name: string;
   date: string;
+  downloadUrl: string;
   vet?: string | null;
 }
 
@@ -47,7 +48,8 @@ function isPetDocument(value: unknown): value is PetDocument {
     typeof document.id === 'string' &&
     typeof document.type === 'string' &&
     typeof document.name === 'string' &&
-    typeof document.date === 'string'
+    typeof document.date === 'string' &&
+    typeof document.downloadUrl === 'string'
   );
 }
 
@@ -115,7 +117,7 @@ export async function requestPhotoUploadUrl(
 export async function uploadPhotoToUrl(
   uploadUrl: string,
   body: Blob,
-  contentType: PhotoContentType,
+  contentType: PhotoContentType | DocumentContentType,
   fetchFn: typeof fetch = fetch,
 ): Promise<PhotoUploadState> {
   try {
@@ -160,4 +162,108 @@ export async function listPetDocs(
   return Array.isArray(body) && body.every(isPetDocument)
     ? { kind: 'ok', docs: body }
     : { kind: 'error' };
+}
+
+
+export type DocumentContentType = 'application/pdf' | 'image/jpeg' | 'image/png';
+
+export const DOCUMENT_MAX_BYTES = 10485760;
+
+export interface CreatePetDocumentInput {
+  type: string;
+  name: string;
+  date: string;
+  vet?: string;
+}
+
+export type CreatePetDocumentState =
+  | { kind: 'ok'; documentId: string; uploadUrl: string }
+  | { kind: 'invalid' }
+  | { kind: 'not-found' }
+  | { kind: 'forbidden' }
+  | { kind: 'unauthorized' }
+  | { kind: 'error' }
+  | { kind: 'unreachable'; message: string }
+  | { kind: 'missing-config' };
+
+export type ConfirmPetDocumentUploadState =
+  | { kind: 'ok' }
+  | { kind: 'not-uploaded' }
+  | { kind: 'too-large' }
+  | { kind: 'not-found' }
+  | { kind: 'forbidden' }
+  | { kind: 'unauthorized' }
+  | { kind: 'error' }
+  | { kind: 'unreachable'; message: string }
+  | { kind: 'missing-config' };
+
+export function resolveDocumentContentType(
+  mimeType: string | undefined,
+  fileName: string,
+): DocumentContentType | null {
+  const normalized = mimeType?.toLowerCase();
+  if (normalized === 'application/pdf' || normalized === 'image/jpeg' || normalized === 'image/png') {
+    return normalized;
+  }
+  if (normalized && normalized !== 'application/octet-stream') return null;
+  const dot = fileName.lastIndexOf('.');
+  if (dot < 0) return null;
+  const extension = fileName.slice(dot + 1).toLowerCase();
+  if (extension === 'pdf') return 'application/pdf';
+  if (extension === 'jpg' || extension === 'jpeg') return 'image/jpeg';
+  if (extension === 'png') return 'image/png';
+  return null;
+}
+
+export async function createPetDocument(
+  baseUrl: string | undefined,
+  token: string,
+  petId: string,
+  input: CreatePetDocumentInput,
+  fetchFn: typeof fetch = fetch,
+): Promise<CreatePetDocumentState> {
+  if (!baseUrl) return { kind: 'missing-config' };
+  const result = await postJson(baseUrl, `/pets/${petId}/media`, token, input, fetchFn);
+  if (result.kind === 'unreachable') return result;
+  if (result.response.status === 400) return { kind: 'invalid' };
+  if (result.response.status === 401) return { kind: 'unauthorized' };
+  if (result.response.status === 403) return { kind: 'forbidden' };
+  if (result.response.status === 404) return { kind: 'not-found' };
+  if (result.response.status !== 201) return { kind: 'error' };
+  const body = await readJson(result.response);
+  if (typeof body !== 'object' || body === null) return { kind: 'error' };
+  const { document, uploadUrl } = body as Record<string, unknown>;
+  if (typeof document !== 'object' || document === null || typeof uploadUrl !== 'string') {
+    return { kind: 'error' };
+  }
+  const { id } = document as Record<string, unknown>;
+  return typeof id === 'string'
+    ? { kind: 'ok', documentId: id, uploadUrl }
+    : { kind: 'error' };
+}
+
+export async function confirmPetDocumentUpload(
+  baseUrl: string | undefined,
+  token: string,
+  petId: string,
+  documentId: string,
+  fetchFn: typeof fetch = fetch,
+): Promise<ConfirmPetDocumentUploadState> {
+  if (!baseUrl) return { kind: 'missing-config' };
+  const result = await postJson(
+    baseUrl, `/pets/${petId}/media/${documentId}/confirm`, token, {}, fetchFn,
+  );
+  if (result.kind === 'unreachable') return result;
+  if (result.response.status === 204) return { kind: 'ok' };
+  if (result.response.status === 401) return { kind: 'unauthorized' };
+  if (result.response.status === 403) return { kind: 'forbidden' };
+  if (result.response.status === 404) return { kind: 'not-found' };
+  if (result.response.status === 409) {
+    const body = await readJson(result.response);
+    const code = typeof body === 'object' && body !== null
+      ? (body as Record<string, unknown>).code : undefined;
+    if (code === 'PET_DOCUMENT_NOT_UPLOADED') return { kind: 'not-uploaded' };
+    if (code === 'PET_DOCUMENT_TOO_LARGE') return { kind: 'too-large' };
+  }
+  return { kind: 'error' };
 }
