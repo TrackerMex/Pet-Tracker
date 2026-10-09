@@ -56,6 +56,8 @@ export const R3_HOME: UseRow[] = [
   { file: 'src/screens/home/index.tsx', key: 'common.somethingWentWrong' },
   { file: 'src/screens/home/index.tsx', key: 'common.retry' },
   { file: 'src/screens/home/index.tsx', key: 'common.noPetsYet' },
+  { file: 'src/screens/home/index.tsx', key: 'common.noPetsBody' }, // #155 R4
+  { file: 'src/screens/home/index.tsx', key: 'profile.addPet' }, // #155 R4
   { file: 'src/screens/home/index.tsx', key: 'common.somethingWentWrong' },
   { file: 'src/screens/home/index.tsx', key: 'common.retry' },
   { file: 'src/screens/home/index.tsx', key: 'home.free' },
@@ -112,6 +114,8 @@ export const R4_MAP: UseRow[] = [
   { file: 'src/screens/map/index.tsx', key: 'common.somethingWentWrong' },
   { file: 'src/screens/map/index.tsx', key: 'common.retry' },
   { file: 'src/screens/map/index.tsx', key: 'common.noPetsYet' },
+  { file: 'src/screens/map/index.tsx', key: 'common.noPetsBody' }, // #155 R4
+  { file: 'src/screens/map/index.tsx', key: 'profile.addPet' }, // #155 R4
   { file: 'src/screens/map/index.tsx', key: 'map.trackingNeedsCollar' },
   { file: 'src/screens/map/index.tsx', key: 'common.somethingWentWrong' },
   { file: 'src/screens/map/index.tsx', key: 'common.retry' },
@@ -131,6 +135,8 @@ export const R5_HEALTH: UseRow[] = [
   { file: 'src/screens/health/index.tsx', key: 'common.somethingWentWrong' },
   { file: 'src/screens/health/index.tsx', key: 'common.retry' },
   { file: 'src/screens/health/index.tsx', key: 'common.noPetsYet' },
+  { file: 'src/screens/health/index.tsx', key: 'common.noPetsBody' }, // #155 R4
+  { file: 'src/screens/health/index.tsx', key: 'profile.addPet' }, // #155 R4
   { file: 'src/screens/health/index.tsx', key: 'health.vaccines' },
   { file: 'src/screens/health/index.tsx', key: 'health.nextDue' },
   { file: 'src/screens/health/index.tsx', key: 'health.noVaccinesYet' },
@@ -169,6 +175,8 @@ export const R6_FOOD: UseRow[] = [
   { file: 'src/app/(tabs)/food.tsx', key: 'common.somethingWentWrong' },
   { file: 'src/app/(tabs)/food.tsx', key: 'common.retry' },
   { file: 'src/app/(tabs)/food.tsx', key: 'common.noPetsYet' },
+  { file: 'src/app/(tabs)/food.tsx', key: 'common.noPetsBody' }, // #155 R4
+  { file: 'src/app/(tabs)/food.tsx', key: 'profile.addPet' }, // #155 R4
   { file: 'src/app/(tabs)/food.tsx', key: 'food.dailyTarget' },
   { file: 'src/app/(tabs)/food.tsx', key: 'food.dailyKcal' },
   { file: 'src/app/(tabs)/food.tsx', key: 'food.dailyGrams' },
@@ -181,6 +189,7 @@ export const R6_FOOD: UseRow[] = [
   { file: 'src/app/(tabs)/food.tsx', key: 'food.served' },
   { file: 'src/app/(tabs)/food.tsx', key: 'food.aiRecommendation' },
   { file: 'src/app/(tabs)/food.tsx', key: 'food.noMealPlanYet' },
+  { file: 'src/app/(tabs)/food.tsx', key: 'food.noMealPlanBody' }, // #155 R9
   { file: 'src/app/(tabs)/food.tsx', key: 'food.couldNotLoadPlan' },
   { file: 'src/app/(tabs)/food.tsx', key: 'common.retry' },
   { file: 'src/app/(tabs)/food.tsx', key: 'food.mealSchedule' },
@@ -278,6 +287,7 @@ export const R8_REMINDERS: UseRow[] = [
   { file: 'src/screens/reminders/index.tsx', key: 'common.somethingWentWrong' },
   { file: 'src/screens/reminders/index.tsx', key: 'common.retry' },
   { file: 'src/screens/reminders/index.tsx', key: 'reminders.noRemindersYet' },
+  { file: 'src/screens/reminders/index.tsx', key: 'reminders.emptyBody' }, // #155 R6
   { file: 'src/screens/reminders/index.tsx', key: 'reminders.active' },
   { file: 'src/screens/reminders/index.tsx', key: 'reminders.thisWeek' },
   { file: 'src/screens/reminders/index.tsx', key: 'reminders.inactive' },
@@ -449,6 +459,7 @@ export const R12_ALERTS: UseRow[] = [
   { file: 'src/screens/alerts/index.tsx', key: 'common.somethingWentWrong' },
   { file: 'src/screens/alerts/index.tsx', key: 'common.retry' },
   { file: 'src/screens/alerts/index.tsx', key: 'alerts.empty' },
+  { file: 'src/screens/alerts/index.tsx', key: 'alerts.emptyBody' }, // #155 R5
   { file: 'src/screens/alerts/index.tsx', key: 'alerts.ack' },
   { file: 'src/screens/alerts/index.tsx', key: 'alerts.statusAcked' },
   { file: 'src/screens/alerts/index.tsx', key: 'alerts.statusClosed' },
@@ -478,6 +489,7 @@ export const R14_GEOFENCES: UseRow[] = [
   { file: 'src/screens/geofences/index.tsx', key: 'geofences.cancel' },
   { file: 'src/screens/geofences/index.tsx', key: 'geofences.delete' },
   { file: 'src/screens/geofences/index.tsx', key: 'geofences.empty' },
+  { file: 'src/screens/geofences/index.tsx', key: 'geofences.emptyBody' }, // #155 R8
   { file: 'src/screens/geofences/index.tsx', key: 'geofences.radius' },
   { file: 'src/screens/geofences/index.tsx', key: 'geofences.activeLabel' },
   { file: 'src/screens/geofences/index.tsx', key: 'geofences.delete' },

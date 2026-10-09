@@ -8358,3 +8358,52 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
   #161.
 - Notion: página de Specs de #161 en Implementado / Completado.
 - Estado: `done`. PR abierta; siguiente: merge humano.
+
+## #155 `mobile-empty-states-pingo` — Estados vacíos ilustrados con Pingo — 2026-10-09
+
+- Sesión: Backend (Claude Code, leader). Worktree
+  `/home/claude/sites/Pet-Tracker-wt-155`, branch
+  `feature/155-mobile-empty-states-pingo`, base origin/main `36c8050d`.
+- Registrada en `f5df3b00`, con la referencia visual del canvas en
+  `design-src/` (`f23fdc9d`). Spec del `spec_author` en `b141db4d`..`7772a694`.
+  R12 se corrigió en `3b2c4d53`: Zonas seguras necesita una mascota con collar
+  activo, porque sin él `PetTrackingGuard` responde 402.
+- Spec aprobada en Notion (página `3f36115a-9b27-811c-875c-f1c2d5f2644e`), con
+  A1-A9 en su opción por defecto. Firma en `a7f6d708`. #153 se mergeó (PR
+  #199) y se trajo a la branch en `6a9cc241`. Antes del handoff: anclas D1-D7
+  re-medidas, los 6 WebP convertidos y la base medida (14 ficheros, 825 tests).
+- Handoff a Codex en `d4e044b3`, con 45 anclas ejecutadas desde el propio
+  fichero. Hubo dos reanudaciones:
+  - `0fb1718c`, y el chequeo de `food.tsx` sin comillas en `059ed18d`;
+  - la Enmienda E1 (`8256d4d5`, firmada en `515cc263`): el CTA de R4 sin
+    cast `as Href`, porque un candado de import de Inicio lo prohíbe.
+- Codex: 21 commits (R1-R11 en pares rojo/verde, más los candados de R10 y
+  R11 y la trazabilidad en `cedb357a`).
+- Ronda 1: `./init.sh` del leader sobre `438b3263`, exit 0 (móvil 97/2351).
+  Reviewer **RECHAZADO** (`438b3263`) por los huecos B1-B5: orden e hijos de
+  R3, sitio de cada vacío en R4-R9, y R11 sin candado de `Animated`.
+- Enmienda E2 (`1cbcd4b0`, `459e9f6c`): solo candados de test. La
+  pre-verificación del reviewer encontró G1-G4 y NIMG: el bit de animación
+  del WebP, `root.type`, el `style` inline en la raíz y los hermanos
+  condicionales. La re-pre-verificación dio SUFICIENTE (`58994788`). Firma
+  desde Notion en `adee148a`.
+- Reanudación 3 de Codex: 9 commits de solo test (`d84b47ae`..`2a589c65`) y
+  trazabilidad en `7d10fb25`.
+- Gate: `./init.sh` del leader sobre `7d10fb25`, exit 0 (backend 176/1348,
+  infra 2/14, móvil 97/2365, e2e 29 de 32 suites con 438 tests y 8 saltados).
+  Frontend confirmó que no corría nada en ese momento.
+- Reviewer **APROBADO** en la ronda 2 (`f986c72c`): 27 sondas de E2.5 y el
+  combinado G1-G4 + NIMG dan rojo por aserción, y el barrido no encuentra
+  ramas ciegas. Dos observaciones no bloqueantes:
+  - N1: current.md desfasado, se resuelve en este cierre.
+  - N2: R11 no impide animar el contenedor de pantalla. Lo cazan candados
+    previos en Inicio y Salud, no en las otras seis pantallas. Es una
+    delimitación de la spec y no se registra como deuda.
+- Smoke R12 en el dev build de Android firmado por el humano en `db033b17`.
+  Solo cambia la casilla: 0 drift de código frente a `f986c72c`.
+- `origin/main` `51ffebd0` (#157, #161 y #18) se mergeó en `2b5ea80e`. Hubo
+  un conflicto en `feature_list.json`, resuelto conservando las dos entradas.
+  Main no trae nada a `mobile-pet-tracker/`, así que el árbol móvil es
+  idéntico al del veredicto. No se repite `init.sh`.
+- Cierre: `done` en `feature_list.json`, trazabilidad R12, STATUS, Notion
+  (Implementado / Completado) y PR contra `main`. Merge: humano.

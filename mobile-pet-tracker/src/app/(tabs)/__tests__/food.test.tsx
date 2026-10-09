@@ -290,7 +290,7 @@ describe('R4: food resuelve la mascota seleccionada', () => {
     await renderFood();
 
     await waitFor(() =>
-      expect(screen.getByTestId('food-empty')).toHaveTextContent(
+      expect(screen.getByTestId('food-empty-title')).toHaveTextContent(
         'Aún no tienes mascotas',
       ),
     );
@@ -457,7 +457,7 @@ describe('R5: plan del día con horarios y warnings', () => {
     await renderFood();
 
     await waitFor(() =>
-      expect(screen.getByTestId('food-plan-empty')).toHaveTextContent(
+      expect(screen.getByTestId('food-plan-empty-title')).toHaveTextContent(
         'Aún no hay plan de alimentación',
       ),
     );
@@ -1257,5 +1257,70 @@ describe('#105 R14: Food opens served meals history', () => {
     expect(typeof previous === 'string' ? previous : previous?.props.testID).toBe('meal-schedule-link');
     await fireEvent.press(card);
     expect(mockRouter.push).toHaveBeenCalledWith('/meals-history');
+  });
+});
+
+describe('#155 R4: Comida sin mascotas presenta a Pingo', () => {
+  beforeEach(() => { mockGetNutritionPlan.mockReturnValue(pending<NutritionPlanState>()); });
+
+  it('pinta la pose, el título y la frase de Pingo', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    await renderFood();
+    const pose = await screen.findByTestId('food-empty-pose');
+    expect(pose.props.source).toEqual([
+      expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/pingo-talk\.webp$/) }),
+    ]);
+    expect(screen.getByTestId('food-empty-title')).toHaveTextContent('Aún no tienes mascotas');
+    expect(screen.getByTestId('food-empty-body')).toHaveTextContent('Añade a tu mascota y te ayudo a saber dónde está y cómo está.');
+    expect(within(screen.getByTestId('food-empty-action')).getByText('Añadir mascota')).toBeVisible();
+  });
+
+  it('queda en el sitio del vacío que sustituye', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    await renderFood();
+    await screen.findByTestId('food-empty-pose');
+    const slot = screen.getByTestId('food-empty');
+    expect(slot.parent?.parent?.props.testID).toBe('screen-food');
+    expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['Text', 'food-empty']);
+  });
+
+  it('lleva a añadir mascota', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    await renderFood();
+    const action = await screen.findByTestId('food-empty-action');
+    await fireEvent.press(action);
+    expect(mockRouter.push).toHaveBeenCalledTimes(1);
+    expect(mockRouter.push).toHaveBeenCalledWith('/pets/add');
+  });
+});
+
+describe('#155 R9: sin plan de comidas, Pingo enseña el cuenco', () => {
+  beforeEach(() => { mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] }); });
+
+  it('pinta la pose, el título y la frase de Pingo', async () => {
+    mockGetNutritionPlan.mockResolvedValue({ kind: 'not-found' });
+    await renderFood();
+    const pose = await screen.findByTestId('food-plan-empty-pose');
+    expect(pose.props.source).toEqual([
+      expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/pingo-food\.webp$/) }),
+    ]);
+    expect(screen.getByTestId('food-plan-empty-title')).toHaveTextContent('Aún no hay plan de alimentación');
+    expect(screen.getByTestId('food-plan-empty-body')).toHaveTextContent('Cuando haya un plan, te ayudo a llevar la cuenta de cada comida.');
+  });
+
+  it('queda en el sitio del vacío que sustituye', async () => {
+    mockGetNutritionPlan.mockResolvedValue({ kind: 'not-found' });
+    await renderFood();
+    await screen.findByTestId('food-plan-empty-pose');
+    const slot = screen.getByTestId('food-plan-empty');
+    expect(slot.parent?.parent?.parent?.props.testID).toBe('screen-food');
+    expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['food-plan-empty', 'meal-schedule-link', 'meals-history-link']);
+  });
+
+  it('no ofrece acción', async () => {
+    mockGetNutritionPlan.mockResolvedValue({ kind: 'not-found' });
+    await renderFood();
+    await screen.findByTestId('food-plan-empty-title');
+    expect(screen.queryByTestId('food-plan-empty-action')).toBeNull();
   });
 });

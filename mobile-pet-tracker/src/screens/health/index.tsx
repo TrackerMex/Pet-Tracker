@@ -9,6 +9,7 @@ import { listVaccines, listWeights } from '../../api/health-records';
 import { listPets, type PetsState } from '../../api/pets';
 import { healthKeys, petKeys } from '../../api/query-keys';
 import { Card } from '../../components/card';
+import { EmptyState } from '../../components/empty-state';
 import { PetHeroHeader } from '../../components/pet-hero-header';
 import { PetSwitcher } from '../../components/pet-switcher';
 import { WeightChart } from '../../components/weight-chart';
@@ -302,9 +303,16 @@ export function HealthScreen() {
           ) : null}
 
           {pets.data?.kind === 'ok' && pets.data.pets.length === 0 ? (
-            <Text testID="health-empty" className="text-muted">
-              {t('common.noPetsYet')}
-            </Text>
+            <EmptyState
+              testID="health-empty"
+              pose="talk"
+              title={t('common.noPetsYet')}
+              body={t('common.noPetsBody')}
+              action={{
+                label: t('profile.addPet'),
+                onPress: () => router.push('/pets/add'),
+              }}
+            />
           ) : null}
 
         </View>

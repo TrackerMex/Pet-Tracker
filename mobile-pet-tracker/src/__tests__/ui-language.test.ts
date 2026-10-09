@@ -86,7 +86,7 @@ describe('#65 R3: Home resuelve su copy por clave', () => {
   // #68 añade el delta medido de weekly-activity-chart, sin recontar la base.
   // #73 añade `home.unknown` para distinguir espera inicial de desconexión.
   it('#71 R11: registra el copy de accesos rápidos sobre los deltas heredados', () => {
-    expect(R3_HOME).toHaveLength(21 + 15 + 1 + 4 + 7 + 2 + 1 + 2);
+    expect(R3_HOME).toHaveLength(21 + 15 + 1 + 4 + 7 + 2 + 1 + 2 + 2); // +2 #155 R4
     checkUses(R3_HOME);
   });
 });
@@ -127,21 +127,21 @@ describe('#70 R16: copy de recordatorios de la Home', () => {
 
 describe('#65 R4: Map resuelve su copy por clave', () => {
   it('resuelve las 17 ocurrencias normativas', () => {
-    expect(R4_MAP).toHaveLength(17);
+    expect(R4_MAP).toHaveLength(17 + 2); // +2 #155 R4
     checkUses(R4_MAP);
   });
 });
 
 describe('#65 R5: Health resuelve su copy por clave', () => {
   it('resuelve las 32 ocurrencias normativas', () => {
-    expect(R5_HEALTH).toHaveLength(32 + 1 + 1 - 2 + 3); // +1 #90 R5, +1 #95 R4, -2 #95 R5, +3 #115 R1
+    expect(R5_HEALTH).toHaveLength(32 + 1 + 1 - 2 + 3 + 2); // +1 #90 R5, +1 #95 R4, -2 #95 R5, +3 #115 R1, +2 #155 R4
     checkUses(R5_HEALTH);
   });
 });
 
 describe('#65 R6: Food resuelve su copy por clave', () => {
   it('resuelve las 50 ocurrencias normativas', () => {
-    expect(R6_FOOD).toHaveLength(35 + 3 + 1 - 2 + 1 + 3 + 9 + 11); // #105 R5; +1 #95 R4, -2 #95 R5, +1 #113 R3, +3 #147 R8, +9 #147 R9
+    expect(R6_FOOD).toHaveLength(35 + 3 + 1 - 2 + 1 + 3 + 9 + 11 + 2 + 1); // #105 R5; +1 #95 R4, -2 #95 R5, +1 #113 R3, +3 #147 R8, +9 #147 R9, +2 #155 R4, +1 #155 R9
     checkUses(R6_FOOD);
   });
 });
@@ -174,7 +174,7 @@ describe('#65 R7: Profile resuelve su copy por clave', () => {
 
 describe('#65 R8: Recordatorios resuelve su copy por clave', () => {
   it('resuelve las 49 ocurrencias normativas', () => {
-    expect(R8_REMINDERS).toHaveLength(50 + 1 - 2 + 1 - 1); // +1 #95 R4, -2 #95 R5, +1 #114 R4, -1 #114 R5
+    expect(R8_REMINDERS).toHaveLength(50 + 1 - 2 + 1 - 1 + 1); // +1 #95 R4, -2 #95 R5, +1 #114 R4, -1 #114 R5, +1 #155 R6
     checkUses(R8_REMINDERS);
   });
 });
@@ -257,7 +257,7 @@ describe('#100 R10: el detalle de alerta resuelve su copy por clave', () => {
 
 describe('#41 R10: las zonas seguras resuelven su copy por clave', () => {
   it('registra cada ocurrencia de la pantalla y de su cabecera', () => {
-    expect(R14_GEOFENCES).toHaveLength(18);
+    expect(R14_GEOFENCES).toHaveLength(18 + 1); // +1 #155 R8
     expect(R14_GEOFENCES.every(({ file }) =>
       file === 'src/app/_layout.tsx' || file === 'src/screens/geofences/index.tsx',
     )).toBe(true);

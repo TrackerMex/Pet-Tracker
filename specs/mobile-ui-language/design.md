@@ -896,6 +896,17 @@ copy completa en cada una.
 |---|---|---|---|---|
 | — | `welcome.pingoGreeting` | `Hi, I'm Pingo. I'll help you know where your pet is and how they're doing.` | `Hola, soy Pingo. Te ayudo a saber dónde está y cómo está tu mascota.` | ← añadida por #153 (R1) |
 
+### §2.21 — Añadidos por #155 — Pingo en los estados vacíos
+
+| # | Clave | `en` | `es` | Origen |
+|---|---|---|---|---|
+| — | `common.noPetsBody` | `Add your pet and I'll help you know where they are and how they're doing.` | `Añade a tu mascota y te ayudo a saber dónde está y cómo está.` | ← añadida por #155 (R1) |
+| — | `alerts.emptyBody` | `All is calm. If anything happens, I'll let you know here.` | `Todo está tranquilo. Si pasa algo, te aviso aquí.` | ← añadida por #155 (R1) |
+| — | `reminders.emptyBody` | `Once you create a reminder, I'll let you know on time.` | `Cuando crees un recordatorio, te aviso a tiempo.` | ← añadida por #155 (R1) |
+| — | `geofences.emptyBody` | `Once there's a safe zone, I'll let you know if your pet leaves it.` | `Cuando haya una zona segura, te aviso si tu mascota sale de ella.` | ← añadida por #155 (R1) |
+| — | `food.noMealPlanBody` | `Once there's a plan, I'll help you keep track of every meal.` | `Cuando haya un plan, te ayudo a llevar la cuenta de cada comida.` | ← añadida por #155 (R1) |
+| — | `docs.emptyBody` | `When your pet's medical documents arrive, I'll keep them here.` | `Cuando lleguen los documentos médicos de tu mascota, te los guardo aquí.` | ← cambiada por #155 (R1) |
+
 ## 3. La infraestructura
 
 ### 3.1 Decisiones

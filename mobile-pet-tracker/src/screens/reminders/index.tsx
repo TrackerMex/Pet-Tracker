@@ -18,6 +18,7 @@ import {
 } from '../../api/reminders';
 import type { Reminder } from '../../api/types';
 import { Card } from '../../components/card';
+import { EmptyState } from '../../components/empty-state';
 import { PetSwitcher } from '../../components/pet-switcher';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
@@ -187,9 +188,12 @@ export function RemindersScreen() {
 
       {reminders.data?.kind === 'ok' &&
       reminders.data.reminders.length === 0 ? (
-        <Text testID="reminders-empty" className="font-normal text-muted">
-          {t('reminders.noRemindersYet')}
-        </Text>
+        <EmptyState
+          testID="reminders-empty"
+          pose="clipboard"
+          title={t('reminders.noRemindersYet')}
+          body={t('reminders.emptyBody')}
+        />
       ) : null}
 
       {actionError ? (

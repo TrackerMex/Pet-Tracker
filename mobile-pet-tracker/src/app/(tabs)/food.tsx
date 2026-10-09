@@ -16,6 +16,7 @@ import {
 import { listPets, type PetsState } from '../../api/pets';
 import { nutritionKeys, petKeys } from '../../api/query-keys';
 import { Card } from '../../components/card';
+import { EmptyState } from '../../components/empty-state';
 import { PetSwitcher } from '../../components/pet-switcher';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
@@ -151,9 +152,16 @@ export default function FoodScreen() {
       ) : null}
 
       {pets.data?.kind === 'ok' && pets.data.pets.length === 0 ? (
-        <Text testID="food-empty" className="text-muted">
-          {t('common.noPetsYet')}
-        </Text>
+        <EmptyState
+          testID="food-empty"
+          pose="talk"
+          title={t('common.noPetsYet')}
+          body={t('common.noPetsBody')}
+          action={{
+            label: t('profile.addPet'),
+            onPress: () => router.push('/pets/add'),
+          }}
+        />
       ) : null}
 
       {pets.data?.kind === 'ok' && pets.data.pets.length > 0 ? (
@@ -394,9 +402,12 @@ export default function FoodScreen() {
           ) : null}
 
           {plan.data?.kind === 'not-found' ? (
-            <Text testID="food-plan-empty" className="font-normal text-muted">
-              {t('food.noMealPlanYet')}
-            </Text>
+            <EmptyState
+              testID="food-plan-empty"
+              pose="food"
+              title={t('food.noMealPlanYet')}
+              body={t('food.noMealPlanBody')}
+            />
           ) : null}
 
           {plan.data?.kind === 'error' ||
