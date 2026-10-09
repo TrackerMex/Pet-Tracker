@@ -298,3 +298,18 @@ describe('#159 R1: el copy sin collar existe en los dos idiomas', () => {
     expect(section159()).toContain(`| — | \`${key}\` | \`${english}\` | \`${spanish}\` | ← añadida por #159 (R1) |`);
   });
 });
+
+
+describe('#159 R2: el texto de rastreo en vivo se retira', () => {
+  it('map.trackingNeedsCollar ya no existe en ningún idioma y queda retirada en mobile-ui-language', () => {
+    expect(Object.keys(enCatalog)).not.toContain('map.trackingNeedsCollar');
+    expect(Object.keys(esCatalog)).not.toContain('map.trackingNeedsCollar');
+    expect(section159()).toContain('| — | `map.trackingNeedsCollar` ← retirada por #159 (R2) | `Live tracking requires a collar` | `El rastreo en vivo requiere un collar` |');
+  });
+
+  it('docs/verification.md describe a Pingo en el paso 5 del plan Free', () => {
+    const source = readFileSync(join(process.cwd(), '..', 'docs', 'verification.md'), 'utf8');
+    expect(source).toContain('el tab Map muestra a Pingo con `No live location`, sin el botón `Pair a collar` (la mascota ya tiene collar)');
+    expect(source).not.toContain('Live tracking requires a collar');
+  });
+});

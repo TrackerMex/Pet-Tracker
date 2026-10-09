@@ -374,8 +374,8 @@ describe('R5: mascota free degrada sin mapa', () => {
     await renderMap();
 
     await waitFor(() => {
-      expect(screen.getByTestId('map-no-tracking')).toHaveTextContent(
-        'El rastreo en vivo requiere un collar',
+      expect(screen.getByTestId('map-no-tracking-body')).toHaveTextContent(
+        'Cuando tu mascota tenga un collar con plan activo, te muestro dónde está.',
       );
     });
     expect(screen.queryByTestId('map-view')).toBeNull();
@@ -1973,5 +1973,33 @@ describe('#155 R4: Mapa sin mascotas presenta a Pingo', () => {
     await fireEvent.press(action);
     expect(mockRouter.push).toHaveBeenCalledTimes(1);
     expect(mockRouter.push).toHaveBeenCalledWith('/pets/add');
+  });
+});
+
+
+describe('#159 R2: Mapa sin seguimiento presenta a Pingo', () => {
+  it('pinta la pose del collar, el título y la frase de Pingo', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetLastPosition.mockResolvedValue({ kind: 'no-tracking' });
+    await renderMap();
+    const pose = await screen.findByTestId('map-no-tracking-pose');
+    expect(pose.props.source).toEqual([
+      expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/pingo-collar\.webp$/) }),
+    ]);
+    expect(screen.getByTestId('map-no-tracking-title')).toHaveTextContent('Sin ubicación en vivo');
+    expect(screen.getByTestId('map-no-tracking-body')).toHaveTextContent('Cuando tu mascota tenga un collar con plan activo, te muestro dónde está.');
+  });
+
+  it('queda en el sitio del texto que sustituye y sin mapa debajo', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetLastPosition.mockResolvedValue({ kind: 'no-tracking' });
+    await renderMap();
+    await screen.findByTestId('map-no-tracking-pose');
+    const slot = screen.getByTestId('map-no-tracking');
+    expect(slot.props.className).toBe('items-center gap-3 py-8');
+    expect(slot.parent?.props.className).toBe('flex-1 items-center justify-center p-6 bg-background');
+    expect(slot.parent?.parent?.props.testID).toBe('screen-map');
+    expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['map-no-tracking']);
+    expect(screen.queryByTestId('map-view')).toBeNull();
   });
 });
