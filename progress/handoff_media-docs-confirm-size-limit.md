@@ -30,6 +30,13 @@
 > Ninguna aserción, título ni cuenta cambia. Prompt de reanudación: §RETOMAR
 > al final del bloque.
 >
+> **Enmienda L2 (2026-10-09), tras la parada de Codex en c3.** Error de
+> cuenta del leader: c2 deja 41 tests y c3 añade 3 (2 del confirm y 1 del
+> mapper), así que el rojo de c3 es `2 failed, 42 passed, 44 total` y no
+> `41 passed, 43 total`. Las cuentas de c4 (44), c5 (46), c6 (46) y del
+> cierre (+8) ya estaban bien. El leader repitió sobre los logs de Codex
+> todos los eslabones de c3 anteriores al `git add`, ya con 44: pasan.
+>
 > **Comparte Postgres (`pet_tracker`, 5433) y LocalStack con Backend (#155,
 > wt-155) e IA PET (#18, wt-18).** Por eso hay un `pgrep` antes de cada e2e
 > y de la suite unit entera. `node_modules` y `.env` ya están en el
@@ -320,7 +327,7 @@ ficheros de test; nada de produccion):
     Nada de `.algo` sobre un `any` (eslint `no-unsafe-*` es ERROR).
   FORCE_COLOR=0 pnpm exec jest src/modules/media > /tmp/161-r2.txt 2>&1; echo "exit=$?"
     -> exit=1, `Test Suites: 2 failed, 10 passed, 12 total` y
-       `Tests:       2 failed, 41 passed, 43 total`
+       `Tests:       2 failed, 42 passed, 44 total`
        (confirm `#161 R2 (b)` por asercion y mapper `#161 R2 (b)` por
        TypeError «is not a constructor»; `#161 R2 (a)` pasa ya, es rama
        frontera declarada en requirements.md)
@@ -329,7 +336,7 @@ ficheros de test; nada de produccion):
        (`#161 R2 (b)`: `expected 409 "Conflict", got 204 "No Content"`)
   pnpm exec tsc --noEmit -p tsconfig.json --pretty false > /tmp/161-r2-tsc.txt 2>&1; echo "exit=$?"
     -> exit=2
-  grep -qE '^Tests: +2 failed, 41 passed, 43 total$' /tmp/161-r2.txt \
+  grep -qE '^Tests: +2 failed, 42 passed, 44 total$' /tmp/161-r2.txt \
     && grep -qE '^Test Suites: +2 failed, 10 passed, 12 total$' /tmp/161-r2.txt \
     && grep -qE '^Tests: +1 failed, 31 passed, 32 total$' /tmp/161-r2-e2e.txt \
     && grep -qF 'is not a constructor' /tmp/161-r2.txt \
@@ -549,4 +556,21 @@ quedan como estan. Desde backend-pet-tracker/:
    sigue con c2-c7 aplicando FORMATO.
 Anade al impl una seccion `## Reanudacion tras L1` con estos cuatro
 pasos y sus salidas, debajo de la parada (no borres la parada).
+
+== RETOMAR TRAS LA PARADA EN C3 (enmienda L2) ==
+
+Si ya paraste en c3 (impl con «## Parada obligatoria — cadena c3»), NO
+repitas nada de c1-c2 ni de la base, y no toques los tres ficheros de
+test de c3. Desde backend-pet-tracker/:
+1. `git log --oneline -1` -> el commit de la enmienda L2 (anotalo como
+   H0-L2); `git log --oneline <H0>..HEAD` -> L1, c1, c2 y L2, nada mas.
+2. Repite las tres medidas de c3 (UNIT a /tmp/161-r2.txt, <PGREP> y E2E
+   a /tmp/161-r2-e2e.txt, TSC a /tmp/161-r2-tsc.txt): UNIT debe dar
+   `Tests:       2 failed, 42 passed, 44 total`.
+3. Lanza la cadena c3 tal como esta ahora y sigue con c4-c7.
+<PGREP> y su medida van en llamadas SEPARADAS: lee la salida del pgrep y
+lanza el e2e solo si dice `libre`. En c2 un e2e salio con el pgrep ocupado
+(el init.sh de wt-18); no puede repetirse.
+Anade al impl `## Reanudacion tras L2` con estos pasos y sus salidas,
+debajo de la parada de c3 (no la borres).
 ```
