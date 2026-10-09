@@ -1,10 +1,10 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-10-09
-**Features completadas**: 150/163 (`feature_list.json`)
-**En progreso**: ninguna en esta rama. #162 cerrada en `feature/162-media-docs-download-test-locks`, PR pendiente de merge humano.
+**Features completadas**: 151/163 (`feature_list.json`)
+**En progreso**: ninguna en esta rama. #134 cerrada en `feature/134-mobile-alert-ack-outcome-helper`, PR pendiente de merge humano.
 
-**Pendientes**: 13 (#60, #119, #129, #134, #144, #150, #151, #154, #158, #159, #160, #163 y #164). **#162 `media-docs-download-test-locks` cerrada**: tres candados de test sobre el código de #157, que ya era correcto. R1: un 404 sin `name` sigue dando `null` en `getObjectSize`, así que el 404 se decide por `$metadata.httpStatusCode` y no por `name`. R2: un doble de `createDownloadUrl` que resuelve el primer documento después del segundo fija que la lista conserva el orden del repositorio. R3: un e2e contra Postgres fija que `markUploaded` sobre una fila ya confirmada no cambia `uploaded_at`. Cero cambios en producción: cada candado nace rojo con su mutación M1-M3 versionada y el verde la revierte desde el HEAD del handoff. Codex test-primero en 8 commits. Reviewer APROBADO a la primera, con dos huecos fuera de alcance (N1: un 500 del HEAD no tiene candado; N2: el fixture de R2 no distingue el orden del repositorio de un sort por fecha o id desc), registrados por decisión del humano como deuda #164 `media-docs-storage-error-and-order-locks`. Backend 187/1471 → 187/1474; e2e 30 de 33 suites, 476 tests con 8 saltados.
+**Pendientes**: 12 (#60, #119, #129, #144, #150, #151, #154, #158, #159, #160, #163 y #164). **#134 `mobile-alert-ack-outcome-helper` cerrada**: el `switch` sobre el resultado de `ackAlert`, duplicado en `handleAck` del centro de alertas (`src/screens/alerts/index.tsx`) y del detalle (`src/screens/alert-detail/index.tsx`), sale a `settleAlertAck` en `src/utils/alert-ack-outcome.ts`. El helper resuelve las ramas comunes (`unreachable`, `unauthorized` con `await signOut()`, `error`, `missing-config`, la excepción de la petición y el rechazo de `signOut`) y entrega `ok`, `already-closed` y `not-found` a cada pantalla, que conserva su guard, su `finally` y su conducta de `not-found`. Sin cambio de conducta y sin tocar la caché de `alertKeys.list()` (R7 lo canda). Los inventarios globales se mueven en el mismo commit rojo: `screenSignOutCalls` neto −1, `R13_ALERT_DETAIL` −3, `R12_ALERTS` neto 0 y `SCREEN_FILES` +1. Codex en dos rondas: la primera rechazada (B1: el helper no esperaba a `signOut` con candado; B2: el `t` de cada pantalla solo se probaba en español; B3: un envoltorio de `signOut` pasaba en verde), Enmienda E1 firmada desde Notion (`08d7d0a1`) con ocho tests nuevos y cero producción, y la segunda aprobada (`98449adf`). Siete supervivientes anteriores a #134 (retry, guard y `leavingRef` de las pantallas) quedan fuera por decisión del humano («Solo lo de #134»). Móvil 97/2365 → 98/2394.
 
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
@@ -88,6 +88,13 @@ debe listar las 4 URLs de cola.
 
 ## Estado actual
 
+- **`mobile-alert-ack-outcome-helper` (#134) done** (2026-10-09, worktree
+  `Pet-Tracker-wt-134`, sesion Frontend): el `switch` sobre el resultado de
+  `ackAlert` sale de las dos pantallas de alertas a `settleAlertAck`
+  (`src/utils/alert-ack-outcome.ts`), sin cambio de conducta ni de caché.
+  Reviewer aprobado en la ronda 2 (`98449adf`, veredicto sobre `707c566e`).
+  Gate: `./init.sh` exit 0 sobre `707c566e` (backend 187/1474, infra 2/14,
+  móvil 98/2394, e2e 30 de 33 suites, 476 tests con 8 saltados). PR abierta.
 - **`media-docs-download-test-locks` (#162) done** (2026-10-09, worktree
   `Pet-Tracker-wt-162`, sesion Frontend): candados de test para la deuda de
   #157. R1 decide el 404 por status y no por `name`, R2 conserva el orden
@@ -1423,6 +1430,12 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Última sesión
+
+- **2026-10-09** — **#134 `mobile-alert-ack-outcome-helper` cerrada** (worktree
+  `Pet-Tracker-wt-134`, sesión Frontend): spec firmada desde Notion, ronda 1
+  de Codex rechazada (`815de8f6`), Enmienda E1 firmada desde Notion
+  (`08d7d0a1`), ronda 2 en 8 commits test-primero y reviewer APROBADO
+  (`98449adf`). PR abierta; siguiente: merge humano.
 
 - **2026-10-09** — **#162 `media-docs-download-test-locks` cerrada** (worktree
   `Pet-Tracker-wt-162`, sesión Frontend): spec firmada desde Notion
