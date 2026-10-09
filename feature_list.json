@@ -298,7 +298,7 @@
   {
     "id": 18,
     "name": "nutrition-ai-explainer",
-    "status": "in_progress",
+    "status": "done",
     "priority": "P3",
     "description": "Plan 009 (paso 3): ai-explainer.ts — si ANTHROPIC_ENABLED=true y hay clave: SDK @anthropic-ai/sdk (modelo desde env ANTHROPIC_MODEL=claude-haiku-5-5, jamás hardcodeado), timeout 15 s, system prompt del plan (español cálido, orientativo, máx 180 palabras); resultado → ai_explanation. Cualquier fallo/clave ausente → ai_explanation=null y 200 igualmente (la IA nunca produce 5xx). Introduce ANTHROPIC_ENABLED, ANTHROPIC_API_KEY, ANTHROPIC_MODEL en .env.example y conventions. La IA solo se llama desde backend (brief §9/§19). Proveedor cambiado de OpenAI a Anthropic por decisión del humano del 2026-10-08: la primera implementación con openai (branch feature/18-nutrition-ai-explainer, aprobada por el reviewer en ronda 2 el 2026-08-18) quedó bloqueada en la prueba de humo R19 por cuota agotada y nunca se mergeó.",
     "acceptance_criteria": [
@@ -3175,6 +3175,22 @@
       "backend-pet-tracker/src/modules/media/infrastructure/photo-storage.object-exists.spec.ts",
       "backend-pet-tracker/src/modules/media/application/use-cases/list-pet-documents.use-case.spec.ts",
       "backend-pet-tracker/test/media-docs.e2e-spec.ts"
+    ]
+  },
+  {
+    "id": 163,
+    "name": "nutrition-explainer-node-env-production-lock",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Registrada el 2026-10-09 por decision del humano al cerrar #18 («cierra y registra 01 como deuda»). Es la O1 de la ronda 2 del reviewer de #18 (progress/review_nutrition-ai-explainer.md, veredicto aprobado en 535128bd). En backend-pet-tracker/src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.spec.ts, el lado «distinto de test» de R3.1 solo se muestrea con NODE_ENV 'development' (el objeto `valid` del fichero; 'production' no aparece). La produccion es correcta: la guarda de NODE_ENV en nutrition-explainer.factory.ts compara `=== 'test'`, literal como dice R3.1. Pero ninguna fila ni ancla fija el comparador (el ancla A32 cuenta la guarda `!==` de los schedulers, no esta), asi que la mutacion `!== 'development'` pasa en verde, y con ese cambio NODE_ENV 'production' o ausente apagarian la IA en silencio. El repo no fija NODE_ENV fuera de src y test, y el reviewer estima que R19 corre en desarrollo, asi que tampoco lo cazaria. Cierre propuesto por el reviewer: que el anti-vacio de R3 recorra ['development', 'production']; es una linea. Limites: la observacion es de cobertura del test, no un defecto de produccion. El cierre propuesto no muestrea NODE_ENV ausente: la spec decide si lo incluye y lo justifica. Sin anclas por numero de linea. Cero cambio en produccion. Depende del merge de #18 (branch feature/18-nutrition-ai-explainer-claude): la factory y su spec solo existen ahi.",
+    "acceptance_criteria": [
+      "El anti-vacio de R3 en nutrition-explainer.factory.spec.ts muestrea NODE_ENV 'development' y 'production', y en los dos espera que la factory devuelva el explainer de Anthropic con sus argumentos exactos; si muestrea tambien NODE_ENV ausente lo decide la spec",
+      "La mutacion `!== 'development'` en la guarda de NODE_ENV de nutrition-explainer.factory.ts hace FALLAR el describe de R3; la sonda y su salida quedan en el impl",
+      "Las filas y sondas existentes de R3 y R5 (incluido el it.each por pares de E1.2) no se relajan y siguen cayendo con sus mutaciones",
+      "Cero cambio en produccion; suite unitaria de backend verde medida sin pipe; delta de tests declarado"
+    ],
+    "files_affected": [
+      "backend-pet-tracker/src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.spec.ts"
     ]
   }
 ]
