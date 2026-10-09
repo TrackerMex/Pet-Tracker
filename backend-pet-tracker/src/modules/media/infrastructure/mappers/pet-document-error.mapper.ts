@@ -31,5 +31,5 @@ export function mapPetDocumentError(error: unknown): unknown {
       message: 'Pet document file exceeds the size limit',
     });
   }
-  return new NotFoundException();
+  return error;
 }

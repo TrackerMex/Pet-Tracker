@@ -32,12 +32,7 @@ export class ConfirmPetDocumentUploadUseCase {
       throw new PetDocumentNotFoundError();
     }
     if (document.uploadedAt !== null) return;
-    let size: number | null;
-    try {
-      size = await this.storage.getObjectSize(document.key);
-    } catch {
-      throw new PetDocumentNotUploadedError();
-    }
+    const size = await this.storage.getObjectSize(document.key);
     if (size === null) {
       throw new PetDocumentNotUploadedError();
     }
