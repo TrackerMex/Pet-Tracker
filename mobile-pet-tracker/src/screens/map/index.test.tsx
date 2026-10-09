@@ -2025,3 +2025,52 @@ describe('#159 R3: el dueño sin collar puede ir a emparejar', () => {
     expect(mockRouter.push).toHaveBeenCalledWith('/pairing');
   });
 });
+
+describe('#159 R4: nadie más ve el botón de emparejar', () => {
+  function noTrackingAfterDetail(detailState: PetState) {
+    const detailPromise = Promise.resolve(detailState);
+    mockGetPet.mockReturnValue(detailPromise);
+    mockGetLastPosition.mockReturnValue(detailPromise.then((): LastPositionState => ({ kind: 'no-tracking' })));
+  }
+
+  it.each(['family', 'walker', 'vet'] as const)('no pinta el botón a %s', async (role) => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ myRole: role })] });
+    noTrackingAfterDetail({ kind: 'ok', pet: makePet({ myRole: role }) });
+    await renderMap();
+    await screen.findByTestId('map-no-tracking-title');
+    expect(screen.getByTestId('map-no-tracking-body')).toHaveTextContent('Cuando tu mascota tenga un collar con plan activo, te muestro dónde está.');
+    expect(screen.queryByTestId('map-no-tracking-action')).toBeNull();
+  });
+
+  it('no pinta el botón al dueño de una mascota con collar', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    noTrackingAfterDetail({ kind: 'ok', pet: makePet({ device: makeDevice('online') }) });
+    await renderMap();
+    await screen.findByTestId('map-no-tracking-title');
+    expect(screen.getByTestId('map-no-tracking-body')).toHaveTextContent('Cuando tu mascota tenga un collar con plan activo, te muestro dónde está.');
+    expect(screen.queryByTestId('map-no-tracking-action')).toBeNull();
+  });
+
+  it.each([
+    ['error', { kind: 'error' }],
+    ['unreachable', { kind: 'unreachable', message: 'offline' }],
+    ['missing-config', { kind: 'missing-config' }],
+  ] as const)('no pinta el botón si el detalle resuelve %s', async (_kind, state) => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    noTrackingAfterDetail(state);
+    await renderMap();
+    await screen.findByTestId('map-no-tracking-title');
+    expect(screen.getByTestId('map-no-tracking-body')).toHaveTextContent('Cuando tu mascota tenga un collar con plan activo, te muestro dónde está.');
+    expect(screen.queryByTestId('map-no-tracking-action')).toBeNull();
+  });
+
+  it('no pinta el botón mientras el detalle carga', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetPet.mockReturnValue(pending<PetState>());
+    mockGetLastPosition.mockResolvedValue({ kind: 'no-tracking' });
+    await renderMap();
+    await screen.findByTestId('map-no-tracking-title');
+    expect(screen.getByTestId('map-no-tracking-body')).toHaveTextContent('Cuando tu mascota tenga un collar con plan activo, te muestro dónde está.');
+    expect(screen.queryByTestId('map-no-tracking-action')).toBeNull();
+  });
+});
