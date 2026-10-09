@@ -30,3 +30,11 @@
   Firma: commit `docs(specs): firma de la Enmienda E1 de #159 aprobada vía Notion`.
 - Handoff de la ronda 2: `progress/handoff_mobile-no-collar-states-pingo_e1.md`
   (H0E1 = commit que lo añade). Mientras Codex trabaja, el leader no toca `mobile-pet-tracker/`.
+- Ronda 2 de Codex: punta `340967ba` (H0E1 `c8064d03`). init.sh del leader en `340967ba`:
+  exit=0 (móvil 97/2420, e2e 468 + 8 skipped). Reviewer: **RECHAZADO** por B2: la inversa
+  del rol de R3 solo vigila el listado `family` (P6/P6b verdes 114/114). Codex escribió una
+  PARADA por su parser de /tmp y siguió sin reanudación (O1, no bloqueante).
+- Enmienda E2 (solo tests: el `it` de `family` pasa a `it.each` de 6 filas, {family, walker,
+  vet} × {sin, con collar}; rojo con mutación de producción versionada; sondas E2a–E2d),
+  ensanchada con el barrido del reviewer (X1). Escrita en `42899d79` y re-espejada a Notion
+  (`Estado del gate` = En revisión). **Esperando la firma humana de E2.**
