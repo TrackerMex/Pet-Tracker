@@ -134,6 +134,20 @@ function renderAlerts() {
   });
 }
 
+function EnglishAlertsWrapper({ children }: { children: ReactNode }) {
+  return (
+    <HeroUINativeProvider>
+      <LanguageProvider initial="en">{children}</LanguageProvider>
+    </HeroUINativeProvider>
+  );
+}
+
+function renderAlertsInEnglish() {
+  return renderWithProviders(<AlertsScreen />, {
+    wrapper: EnglishAlertsWrapper,
+  });
+}
+
 async function focusScreen(): Promise<(() => void)[]> {
   let cleanups: (() => void)[] = [];
 
@@ -750,6 +764,22 @@ describe('#78 R8: el ack cambia la fila sin recargar la lista', () => {
         ),
       );
       expect(mockSignOut).toHaveBeenCalledTimes(1);
+    });
+
+    it('muestra Cannot reach server en inglés si ackAlert responde unreachable', async () => {
+      mockAckAlert.mockResolvedValueOnce({ kind: 'unreachable', message: 'network down' });
+
+      await renderAlertsInEnglish();
+      await fireEvent.press(await screen.findByTestId('alert-row-alert-1-ack'));
+      await waitFor(() => expect(screen.queryByTestId('alerts-action-error')).toHaveTextContent('Cannot reach server'));
+    });
+
+    it('muestra Something went wrong en inglés si ackAlert responde error', async () => {
+      mockAckAlert.mockResolvedValueOnce({ kind: 'error' });
+
+      await renderAlertsInEnglish();
+      await fireEvent.press(await screen.findByTestId('alert-row-alert-1-ack'));
+      await waitFor(() => expect(screen.queryByTestId('alerts-action-error')).toHaveTextContent('Something went wrong'));
     });
   });
 });
