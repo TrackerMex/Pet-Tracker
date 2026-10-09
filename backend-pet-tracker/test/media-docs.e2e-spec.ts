@@ -1,4 +1,8 @@
-import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import {
+  GetObjectCommand,
+  HeadObjectCommand,
+  S3Client,
+} from '@aws-sdk/client-s3';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { and, eq, inArray } from 'drizzle-orm';
@@ -828,5 +832,102 @@ describe('Pet documents API (e2e)', () => {
       );
       expect(storedBytes.equals(fixtureBytes)).toBe(true);
     });
+  });
+
+  describe('#161 R2: confirm contra LocalStack en la frontera de 10485760 bytes', () => {
+    it('#161 R2 (a): un fichero de 10485760 bytes se confirma y aparece en GET', async () => {
+      const owner = await seedUser('161-r2-a-owner');
+      const pet = await seedPet(owner);
+      const created = await createDocument(owner, pet.id, {
+        type: 'Consulta',
+        name: 'Control',
+        date: '2026-10-08',
+      }).expect(201);
+      const body = created.body as {
+        document: DocumentResponse;
+        uploadUrl: string;
+      };
+      const put = await fetch(body.uploadUrl, {
+        method: 'PUT',
+        body: Buffer.alloc(10485760, 0x61),
+      });
+      expect(put.status).toBeGreaterThanOrEqual(200);
+      expect(put.status).toBeLessThan(300);
+      const head = await s3.send(
+        new HeadObjectCommand({
+          Bucket: resourceNames.mediaBucket,
+          Key: body.document.key,
+        }),
+      );
+      expect(head.ContentLength).toBe(10485760);
+
+      const confirmed = await confirmDocument(
+        owner,
+        pet.id,
+        body.document.id,
+      ).expect(204);
+      expect(confirmed.text).toBe('');
+      const [stored] = await db
+        .select()
+        .from(petDocuments)
+        .where(eq(petDocuments.id, body.document.id));
+      expect(stored.uploadedAt).toBeInstanceOf(Date);
+      const listed = await listDocuments(owner, pet.id).expect(200);
+      expect((listed.body as DocumentResponse[]).map((d) => d.id)).toEqual([
+        body.document.id,
+      ]);
+    }, 30000);
+
+    it('#161 R2 (b): un fichero de 10485761 bytes responde 409 PET_DOCUMENT_TOO_LARGE y no se borra', async () => {
+      const owner = await seedUser('161-r2-b-owner');
+      const pet = await seedPet(owner);
+      const created = await createDocument(owner, pet.id, {
+        type: 'Consulta',
+        name: 'Control',
+        date: '2026-10-08',
+      }).expect(201);
+      const body = created.body as {
+        document: DocumentResponse;
+        uploadUrl: string;
+      };
+      const put = await fetch(body.uploadUrl, {
+        method: 'PUT',
+        body: Buffer.alloc(10485761, 0x61),
+      });
+      expect(put.status).toBeGreaterThanOrEqual(200);
+      expect(put.status).toBeLessThan(300);
+      const head = await s3.send(
+        new HeadObjectCommand({
+          Bucket: resourceNames.mediaBucket,
+          Key: body.document.key,
+        }),
+      );
+      expect(head.ContentLength).toBe(10485761);
+
+      const confirmed = await confirmDocument(
+        owner,
+        pet.id,
+        body.document.id,
+      ).expect(409);
+      expect(confirmed.body).toEqual({
+        statusCode: 409,
+        code: 'PET_DOCUMENT_TOO_LARGE',
+        message: 'Pet document file exceeds the size limit',
+      });
+      const listed = await listDocuments(owner, pet.id).expect(200);
+      expect((listed.body as DocumentResponse[]).map((d) => d.id)).toEqual([]);
+      const [stored] = await db
+        .select()
+        .from(petDocuments)
+        .where(eq(petDocuments.id, body.document.id));
+      expect(stored.uploadedAt).toBeNull();
+      const retained = await s3.send(
+        new HeadObjectCommand({
+          Bucket: resourceNames.mediaBucket,
+          Key: body.document.key,
+        }),
+      );
+      expect(retained.ContentLength).toBe(10485761);
+    }, 30000);
   });
 });

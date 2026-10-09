@@ -101,3 +101,31 @@ describe('#157 R6: ConfirmPetDocumentUploadUseCase rechaza sin marcar', () => {
     expect(markUploaded).not.toHaveBeenCalled();
   });
 });
+
+describe('#161 R2: ConfirmPetDocumentUploadUseCase aplica el límite de 10485760 bytes', () => {
+  it('#161 R2 (a): acepta exactamente 10485760 bytes y llama markUploaded(id)', async () => {
+    const { useCase, getObjectSize, markUploaded } = buildDeps();
+    getObjectSize.mockResolvedValue(10485760);
+
+    await expect(useCase.execute(PET_ID, DOCUMENT_ID)).resolves.toBeUndefined();
+    expect(getObjectSize).toHaveBeenCalledWith(KEY);
+    expect(markUploaded).toHaveBeenCalledTimes(1);
+    expect(markUploaded).toHaveBeenCalledWith(DOCUMENT_ID);
+  });
+
+  it('#161 R2 (b): rechaza 10485761 bytes con PetDocumentTooLargeError sin markUploaded', async () => {
+    const { useCase, getObjectSize, markUploaded } = buildDeps();
+    getObjectSize.mockResolvedValue(10485761);
+
+    const error = await useCase
+      .execute(PET_ID, DOCUMENT_ID)
+      .catch((error: unknown) => error);
+
+    expect(error).toBeInstanceOf(Error);
+    expect((error as Error).name).toBe('PetDocumentTooLargeError');
+    expect((error as Error).message).toBe(
+      'Pet document file exceeds the size limit',
+    );
+    expect(markUploaded).not.toHaveBeenCalled();
+  });
+});
