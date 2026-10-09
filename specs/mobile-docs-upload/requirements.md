@@ -1,6 +1,6 @@
 ---
 feature: "mobile-docs-upload"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec, mobile]
 ---
 
@@ -464,7 +464,7 @@ El detalle y las alternativas descartadas están en [[design]] §Decisiones.
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [x] Aprobado por humano (fecha: 2026-10-09) ← gate obligatorio antes de implementar
 
 ## Prueba de humo (gate humano propio, después del veredicto del reviewer)
 
