@@ -344,6 +344,14 @@ ronda 2.
 | E11 | `grep -cF 'const fail' src/utils/alert-ack-outcome.ts` | 0 | 0 |
 | E12 | `grep -cF 'es[key]' src/screens/alerts/index.tsx` | 0 | 0 |
 | E13 | `grep -cF 'es[key]' src/screens/alert-detail/index.tsx` | 0 | 0 |
+| E14 | `grep -cF "it('mantiene el botón deshabilitado hasta que signOut termina tras unauthorized'" src/screens/alerts/index.test.tsx` | 0 | 1 |
+| E15 | `grep -cF "it('mantiene el botón deshabilitado hasta que signOut termina tras unauthorized'" src/screens/alert-detail/index.test.tsx` | 0 | 1 |
+| E16 | `grep -cF 'finishSignOut' src/screens/alerts/index.test.tsx` | 0 | 3 |
+| E17 | `grep -cF 'finishSignOut' src/screens/alert-detail/index.test.tsx` | 0 | 3 |
+| E18 | `grep -cF 'const run = signOut;' src/screens/alerts/index.tsx` | 0 | 0 |
+| E19 | `grep -cF 'const run = signOut;' src/screens/alert-detail/index.tsx` | 0 | 0 |
+| E20 | `grep -cxF '        signOut,' src/screens/alerts/index.tsx` | 1 | 1 |
+| E21 | `grep -cxF '        signOut,' src/screens/alert-detail/index.tsx` | 1 | 1 |
 
 H4–H8 y A1–A17 siguen en su valor «después» de la ronda 1.
 
@@ -387,19 +395,36 @@ mutación.
   revierte M7. `git diff --quiet <H0 ronda 2> -- src/screens/alert-detail/index.tsx`
   da exit 0. 28 verdes.
 
+### R1 y R2 (E1.7) — Cada pantalla espera a `signOut`
+
+- [ ] **(1) Rojo** — commit
+  `test(mobile-alert-ack-outcome-helper): screens keep ack disabled until sign-out settles (R1, R2)`.
+  C5 y D4 (E1.7), más las mutaciones M8 y M9 a la vez. **Rojo esperado**,
+  medido suite a suite:
+  - `bunx jest src/screens/alerts/index.test.tsx`: 1 rojo, C5, en
+    `toBeDisabled`; 43 verdes; 44 en total.
+  - `bunx jest src/screens/alert-detail/index.test.tsx`: 1 rojo, D4, en
+    `toBeDisabled`; 28 verdes; 29 en total.
+  - `ui-language` 30/30, `design-drift` 65/65 y helper 17/17, en verde.
+- [ ] **(2) Verde** — commit
+  `fix(mobile-alert-ack-outcome-helper): revert R1 and R2 sign-out wrapper mutations (R1, R2)`:
+  revierte M8 y M9. `git diff --quiet <H0 ronda 2> -- src/screens/alerts/index.tsx src/screens/alert-detail/index.tsx`
+  da exit 0. 44 y 29 verdes.
+
 ### Cierre de la ronda 2
 
-- [ ] Sondas E1-S1 a E1-S6 de `requirements.md` §E1.4, una a una, revertidas,
+- [ ] Sondas E1-S1 a E1-S8 de `requirements.md` §E1.4, una a una, revertidas,
   con su salida roja recortada en el impl.
-- [ ] Anclas E1–E13 en su valor «después».
-- [ ] `bunx jest` completo, **sin pipe**, exit 0: 98 suites y 2392 tests.
+- [ ] Anclas E1–E21 en su valor «después».
+- [ ] `bunx jest` completo, **sin pipe**, exit 0: 98 suites y 2394 tests.
 - [ ] `bun run typecheck` y `bunx expo lint --no-cache`, exit 0 y sin avisos.
 - [ ] `git diff --numstat <H0 ronda 2> HEAD -- src/utils/alert-ack-outcome.test.ts src/screens/alerts/index.test.tsx src/screens/alert-detail/index.test.tsx`:
   borrados en 0 en los tres.
 - [ ] `git diff --quiet <H0 ronda 2> HEAD -- src/utils/alert-ack-outcome.ts src/screens/alerts/index.tsx src/screens/alert-detail/index.tsx src/__tests__ src/i18n/catalog.ts src/providers/__tests__/language-provider.test.tsx package.json bun.lock`
   da exit 0.
-- [ ] `traceability.md` con tres filas nuevas, `R4 (E1)`, `R1 (E1)` y
-  `R2 (E1)`, cada una con su test y sus dos commits; commit
+- [ ] `traceability.md` con cuatro filas nuevas, `R4 (E1)`, `R1 (E1)`,
+  `R2 (E1)` y `R1 y R2 (E1.7)`, cada una con sus tests y sus dos commits;
+  commit
   `docs(mobile-alert-ack-outcome-helper): traceability round 2 (#134)`.
 - [ ] `progress/impl_mobile-alert-ack-outcome-helper.md` con una sección
   `## Ronda 2` al final: lo hecho, los rojos observados frente a los

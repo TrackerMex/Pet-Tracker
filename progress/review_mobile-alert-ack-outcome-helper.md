@@ -296,3 +296,266 @@ ser una función **nueva**: no se puede parametrizar `AlertsWrapper` ni
 Suites sin cambio (98).
 
 No se espera delta en los inventarios globales: `ui-copy-table` y `SCREEN_FILES` cuentan fuente, no tests, y los literales nuevos van en tests. Aun así, el spec_author debe hacer grep de los guards de `design-drift` que escanean tests (por ejemplo `StyleSheet` y `-[`) contra el código que prescriba.
+
+## Pre-verificación E1
+
+Fecha: 2026-10-09. Árbol de wt-134 en `d09716d1`. E1 está en `0ea2d86d`; `d09716d1` solo toca `progress/current.md`, y `src/` es igual a `b276727e`. Nada se commiteó y no se corrió init.sh ni la suite completa. Se usó jest fichero a fichero (`FORCE_COLOR=0 bunx jest <f>`, sin pipe), con salidas en `/tmp/134-rev-E1-*.txt`. Al terminar, `git checkout HEAD --` de los tres tests, `git diff --quiet && git diff --cached --quiet` en verde y 0 ficheros sin trackear. Este fichero es el único cambio que queda.
+
+### 1. Tests prescritos, copiados tal cual
+
+`deferred`, `flushPromises`, W1 y W2 se insertaron en `src/utils/alert-ack-outcome.test.ts`. `EnglishAlertsWrapper`, `renderAlertsInEnglish`, C3 y C4 se insertaron en `src/screens/alerts/index.test.tsx`, y D2 y D3 en `src/screens/alert-detail/index.test.tsx`. Cada pieza va en el sitio y con el texto que da E1.1/E1.2. W1 y W2 se escribieron paso a paso según la lista de E1.1.
+
+| Comprobación | Resultado |
+|---|---|
+| helper | **17/17**, exit 0 |
+| centro | **43/43**, exit 0 |
+| detalle | **28/28**, exit 0 |
+| los seis `it` nuevos | aparecen en verde por título en las tres salidas |
+| `bun run typecheck` | exit 0 |
+| `bunx expo lint --no-cache` | exit 0, sin salida |
+| `git diff --numstat` | helper 68/0, centro 32/0, detalle 18/0, con **0 borrados** |
+| anclas E1–E13 de `tasks.md` §Ronda 2 | las 13 dan el valor «después» declarado; E10 = 2 y E11–E13 = 0 |
+
+Todo compila y da verde sin tocar nada.
+
+### 2. Mutaciones de los commits rojos (con los tests puestos)
+
+| Mut. | Suite propia | Qué cae | Línea del matcher | ui-language | design-drift | typecheck |
+|---|---|---|---|---|---|---|
+| M5 | helper 2 rojos / 15 verdes | solo W1 y W2 | `expect(settled).toBe(false)`: Expected `false`, Received `true` | 30/30 | 65/65 | exit 0 |
+| M6 | centro 2 / 41 | solo C3 y C4 | `toHaveTextContent`: Received `No se pudo conectar con el servidor` / `Algo salió mal` | 30/30 | 65/65 | exit 0 |
+| M7 | detalle 2 / 26 | solo D2 y D3 | igual que M6 | 30/30 | 65/65 | exit 0 |
+
+El ancla de M7 (`import { useAlertsList } from '../../hooks/use-alerts-list';`) existe en el detalle (línea 10). `t,` y `signOut,` aparecen una sola vez en cada pantalla. Los tres rojos son por aserción, como declara E1.
+
+### 3. Sondas E1-S1 a E1-S6
+
+| Sonda | Resultado | Qué cae | Tipo |
+|---|---|---|---|
+| E1-S1 | helper 2/15 | W1 y W2 en `expect(settled).toBe(false)` | aserción |
+| E1-S2 | helper 2/15 | W1 y W2 en `expect(settled).toBe(false)` | aserción |
+| E1-S3 | centro 1/42 | solo C3 (Received `No se pudo conectar con el servidor`) | aserción |
+| E1-S4 | centro 1/42 | solo C4 (Received `Algo salió mal`) | aserción |
+| E1-S5 | detalle 1/27 | solo D2 | aserción |
+| E1-S6 | detalle 1/27 | solo D3 | aserción |
+
+El typecheck da exit 0 en las seis. Cada sonda cae en exactamente los `it` declarados.
+
+### 4. Barrido de las cláusulas de E1
+
+Con los tests de E1 puestos, cada mutación se aplicó al fuente y se revirtió:
+
+| Id | Mutación | Resultado | Lectura |
+|---|---|---|---|
+| Q1 | helper: `await Promise.race([signOut(), new Promise<void>((resolve) => setTimeout(resolve, 0))]);` | helper **17/17 verde** | sobrevive (F2) |
+| Q2 | helper: `await signOut();` → `return signOut();` | helper: **jest muere** (`Error: sign-out failed`, exit 1, sin línea `Tests:`) | rojo por caída, no por aserción (F1) |
+| Q3 | helper: `await signOut().catch(() => undefined);` | 3 rojos: W2 y R5 «signOut rechaza tras unauthorized» en/es, en `showError` `toHaveBeenCalledTimes(1)` (Received 0) | aserción |
+| Q5 | helper: `catch` de `signOut` que llama `showError` en un `setTimeout(…, 0)` (el helper resuelve antes del error) | 3 rojos: los mismos que Q3 | aserción |
+| Q7 | helper: el `catch` final relanza (`} catch (error) { throw error;`) | helper: **jest muere** igual que Q2 | rojo por caída (F1) |
+| K1 | centro: `t` fija `en` solo para `common.cannotReachServer` | 1 rojo: «traduce unreachable como servidor inalcanzable» | aserción |
+| K2 | centro: `t` fija `en` solo para `common.somethingWentWrong` | 4 rojos: C1, C2, «traduce error…», «traduce missing-config…» | aserción |
+| K3 | detalle: como K1 | 1 rojo: `it.each` «muestra el error de $kind…» (fila unreachable) | aserción |
+| K4 | detalle: como K2 | 4 rojos: D1 y tres filas del `it.each` | aserción |
+| Q6Ac | centro: `signOut: () => { void Promise.resolve(signOut()).catch(() => setActionError(t('common.somethingWentWrong'))); return Promise.resolve(); },` | centro 43/43 verde; ui-language 2 rojos (#65 R18, #78 R12); design-drift 2 rojos (#134 R6, #87 R19) | aserción estática |
+| Q6Ad | detalle: la misma | detalle 28/28 verde; ui-language 2 rojos (#100 R10, #65 R18); design-drift 2 rojos (#134 R6, #87 R19) | aserción estática |
+| Q6Bc | centro: el mismo envoltorio, sin los literales (`const run = signOut;` y `t(key)` con `const key = 'common.somethingWentWrong' as const`) | centro 43/43, ui-language 30/30, design-drift 65/65 y typecheck: **verde** | sobrevive (F3) |
+| Q6Bd | detalle: la misma | detalle 28/28, ui-language 30/30, design-drift 65/65 y typecheck: **verde** | sobrevive (F3) |
+
+El `t` de cada pantalla queda cerrado clave por clave en los dos idiomas. E1-S3 a E1-S6 cierran el sentido `es`, y K1 a K4 el sentido `en`, con los `it` en `es` que ya existían.
+
+**F1, cambiar antes de firmar: W1 y W2 convierten en caída de jest dos rojos que hoy son por aserción.**
+- **Causa.** El paso 2 de W1 (y W2 lo repite) dice `void done.then(() => { settled = true; });`, sin manejador de rechazo. Si `settleAlertAck` rechaza, la promesa derivada queda sin manejar y Node mata el proceso de jest. La pila apunta a `signOutGate.reject(new Error('sign-out failed'))` de W2, y se pierde el informe de **todos** los `it` del fichero.
+- **Medido en HEAD, sin los tests de E1.**
+  - Q2 da 2 rojos por aserción en R5 «signOut rechaza tras unauthorized» en/es, con «Received promise rejected instead of resolved».
+  - Q7 da 5 rojos por aserción en todo R5.
+  - Con E1 tal cual, las dos sondas tumban el proceso. E1 empeora candados de R5 que ya existían.
+- **Cambio propuesto**, en E1.1 paso 2 de W1 (W2 lo hereda por «los pasos 1 y 2 de W1»):
+  ```ts
+  void done.then(
+    () => {
+      settled = true;
+    },
+    () => undefined,
+  );
+  ```
+- **Spike medido con este cambio**, y revertido después:
+  - helper 17/17;
+  - M5, E1-S1 y E1-S2 siguen rojos solo en W1 y W2, en `expect(settled).toBe(false)`;
+  - Q2 da rojo por aserción en W2 (`await expect(done).resolves.toBeUndefined()`, «Received promise rejected instead of resolved») y en R5 en/es;
+  - Q7 da rojo por aserción en W2 y en los 5 `it` de R5;
+  - typecheck y `expo lint --no-cache` dan exit 0.
+- **Impacto.** No cambian las cuentas (17/43/28) ni las anclas E1–E13.
+
+**F2, residual sin candado propuesto: Q1, una espera acotada por un temporizador.**
+- Q1 no es una rama de la cláusula. Las dos ramas, `signOut` resuelve y `signOut` rechaza, ya tienen candado (W1 y W2). Lo que Q1 cambia es un límite de tiempo.
+- Ningún test finito lo cierra: con temporizadores falsos, una carrera con un plazo mayor que el avanzado vuelve a pasar en verde.
+- Se apunta para dejar constancia, no para enmendar.
+
+**F3, decide el leader: la espera vista desde la pantalla. Es la fila hermana de la que cierra B2.**
+- **Cláusula.** `design.md` §3, fila `signOut`: «`signOut` de `useAuth()`, pasado sin llamarlo». Es nueva de #134 y hermana de la fila `t`. E1 no dice cerrarla.
+- **Qué sobrevive.** Un envoltorio en la pantalla que no espera a `signOut` y pinta él mismo el error del rechazo deja el `finally` de la pantalla corriendo antes de que `signOut` termine. Es la misma conducta que motivó B1, ahora desde la pantalla.
+- **Qué lo caza hoy.** La forma literal (Q6A) la cazan R6 (`screenSignOutCalls`, `#134 R6`, `#87 R19`) y `checkUses`. La forma que esconde `signOut(` y `t('…')` (Q6B) pasa todo en verde en las dos pantallas.
+- **Candado más estrecho, ensanchado a la cláusula (las dos pantallas).** Un `it` por pantalla:
+  - `unauthorized`, con `mockSignOut` devolviendo una promesa diferida;
+  - con `signOut` pendiente, el botón de ack (`alert-row-alert-1-ack` / `alert-detail-ack`) sigue deshabilitado;
+  - al resolver `signOut`, se espera el botón habilitado.
+- **La rama que rechaza** no necesita otro `it` en pantalla. Un envoltorio que no espera solo puede propagar el rechazo pintando su propia copia, y C2/D1 más `checkUses` ya miran ese texto. Q6B lo esquiva solo porque oculta el literal.
+- **Tipo:** verificación, cerrada por Q6B. **Sin spike:** no está comprobado que el botón vuelva a habilitarse tras `unauthorized` con el `useAuth` doble de cada suite.
+- **Delta:** centro +1, detalle +1, móvil 2392 → 2394.
+- **Decisión pendiente.** Si entra en E1, también cambian E1.3 y las anclas. Si no, va a la tabla de deuda de E1.5 con estos límites.
+
+### Conclusión
+
+E1 hace lo que declara: verde tal cual, rojos de M5/M6/M7 y de E1-S1 a E1-S6 exactamente en los `it` declarados, y typecheck, lint y numstat limpios. Antes de firmar falta **F1**: añadir `() => undefined` como segundo argumento de `done.then` en W1/W2. **F3** queda a decisión del leader.
+
+### Spike F3
+
+Medido en HEAD `d09716d1` con los tests de E1 puestos (W1/W2, C3/C4, D2/D3) y C5/D4 añadidos al final de `#134 R1` y `#134 R2`, después de C4 y D3. Producción sin tocar. Al terminar se restauraron los tres ficheros de test con `git checkout HEAD --`. Resultado: `git diff --cached --quiet` y `git diff --quiet -- mobile-pet-tracker` en 0, y ningún fichero sin trackear. Solo quedan modificados este fichero y `requirements.md` (F1 del leader, sin tocar).
+
+**Veredicto del spike:** la forma propuesta funciona tal cual en las dos pantallas.
+- No hace falta `act` ni ningún vaciado explícito. La pulsación (`await pressAck()` / `await fireEvent.press(...)`) ya vacía en su `act` toda la cadena hasta la llamada a `signOut`, y bajo Q6B también hasta el `finally` (sonda P0).
+- El paso 3, «vacía las microtareas», ya lo hace el propio `waitFor`: `wrapAsync` termina con un `setImmediate`. No se añade ninguna instrucción.
+- Única elección de sintaxis: el diferido se declara con inicializador (`let finishSignOut: () => void = () => undefined;`) y no con `!`. Así no depende de ninguna regla de lint sobre aserciones no nulas, y no hay función nueva de módulo.
+
+**C5, centro** (`mobile-pet-tracker/src/screens/alerts/index.test.tsx`): se inserta justo antes del `  });` que cierra `describe('#134 R1: caracterización de las ramas sin candado del ack'`, después de C4. Son 19 líneas, con la línea en blanco inicial incluida.
+
+```tsx
+
+    it('mantiene el botón deshabilitado hasta que signOut termina tras unauthorized', async () => {
+      let finishSignOut: () => void = () => undefined;
+      mockAckAlert.mockResolvedValueOnce({ kind: 'unauthorized' });
+      mockSignOut.mockReturnValueOnce(
+        new Promise<void>((resolve) => {
+          finishSignOut = resolve;
+        }),
+      );
+
+      await pressAck();
+
+      await waitFor(() => expect(mockSignOut).toHaveBeenCalledTimes(1));
+      expect(screen.getByTestId('alert-row-alert-1-ack')).toBeDisabled();
+
+      finishSignOut();
+      await waitFor(() => expect(screen.getByTestId('alert-row-alert-1-ack')).not.toBeDisabled());
+      expect(screen.queryByTestId('alerts-action-error')).toBeNull();
+    });
+```
+
+**D4, detalle** (`mobile-pet-tracker/src/screens/alert-detail/index.test.tsx`): se inserta justo antes del `  });` que cierra `describe('#134 R2: caracterización de la rama sin candado del ack'`, después de D3. Son 20 líneas, con la línea en blanco inicial incluida. Solo usa `fireEvent`, `screen` y `waitFor`, que ya están importados. No añade imports.
+
+```tsx
+
+    it('mantiene el botón deshabilitado hasta que signOut termina tras unauthorized', async () => {
+      let finishSignOut: () => void = () => undefined;
+      mockAckAlert.mockResolvedValueOnce({ kind: 'unauthorized' });
+      mockSignOut.mockReturnValueOnce(
+        new Promise<void>((resolve) => {
+          finishSignOut = resolve;
+        }),
+      );
+
+      await renderDetail();
+      await fireEvent.press(await screen.findByTestId('alert-detail-ack'));
+
+      await waitFor(() => expect(mockSignOut).toHaveBeenCalledTimes(1));
+      expect(screen.getByTestId('alert-detail-ack')).toBeDisabled();
+
+      finishSignOut();
+      await waitFor(() => expect(screen.getByTestId('alert-detail-ack')).not.toBeDisabled());
+      expect(screen.queryByTestId('alert-detail-action-error')).toBeNull();
+    });
+```
+
+**§Esperas: la espera al contador seguida de la consulta al árbol no tiene carrera en esta posición.**
+- **Estado del árbol en HEAD.** `isDisabled` pasa a `true` en la pulsación: `setAckingId` / `setAcking` se confirman dentro del `act` de `fireEvent`. Solo vuelve a `false` en el `finally` de la pantalla. Ese `finally` corre únicamente cuando se resuelve el diferido, y el diferido lo resuelve el propio test con `finishSignOut()`, después de la aserción. Entre la espera y la consulta no hay ningún render pendiente que pueda cambiar el valor consultado.
+- **Para qué sirve la espera al contador.** No espera a que se pinte nada. Sitúa la aserción en la ventana «`signOut` pendiente» y no en la ventana «ack en vuelo», donde el botón también está deshabilitado y la aserción pasaría por otra razón.
+- **Sonda P0** (las dos pantallas): sustituir la espera por un `expect(mockSignOut).toHaveBeenCalledTimes(1)` síncrono justo después de la pulsación da verde. El contador ya vale 1 al volver la pulsación, así que el `waitFor` resuelve en su primera comprobación.
+- **Paso 4.** Espera sobre el árbol (`waitFor` + `getByTestId(...).not.toBeDisabled()`), no sobre un contador. Después consulta la ausencia del error con `queryByTestId`.
+- **Comprobado.** El botón vuelve a habilitarse tras `unauthorized` con el `useAuth` doble de cada suite. Esto cierra la reserva «Sin spike» de F3.
+
+**Cuentas** (Tests: por fichero, recuento de `it`):
+
+| Fichero | HEAD | con E1 | con E1 + F3 |
+|---|---|---|---|
+| `src/utils/alert-ack-outcome.test.ts` | 15 | 17 | 17 (medido) |
+| `src/screens/alerts/index.test.tsx` | 41 | 43 | **44** (medido) |
+| `src/screens/alert-detail/index.test.tsx` | 26 | 28 | **29** (medido) |
+| móvil (total) | 2386 | 2392 | **2394** (aritmética: 2386 + 2 + 3 + 3; no se corrió la suite entera) |
+
+**Salidas:**
+- **Verde en HEAD, 3 de 3 por suite.** `bunx jest --clearCache` antes de cada corrida. Las tres corridas dan `alerts exit=0 :: Tests: 44 passed, 44 total` y `alert-detail exit=0 :: Tests: 29 passed, 29 total`. Hubo además una corrida previa sin borrar la caché, con el mismo resultado.
+- **Q6B, 3 de 3 por pantalla.** El envoltorio sin literales de §4. `bunx jest --clearCache` antes de cada corrida.
+  - Centro: `exit=1 :: Tests: 1 failed, 43 passed, 44 total`. Solo cae `#134 R1 › mantiene el botón deshabilitado hasta que signOut termina tras unauthorized`, por aserción: `expect(instance).toBeDisabled()` / `Received instance is not disabled:` en `> 799 | expect(screen.getByTestId('alert-row-alert-1-ack')).toBeDisabled();`.
+  - Detalle: `exit=1 :: Tests: 1 failed, 28 passed, 29 total`. Solo cae `#134 R2 › mantiene el botón deshabilitado …`, por aserción: `Received instance is not disabled:` en `> 389 | expect(screen.getByTestId('alert-detail-ack')).toBeDisabled();`.
+  - Producción restaurada tras cada corrida.
+- **Sonda P0 bajo Q6B.** Sin la espera al contador, el rojo es el mismo en la misma línea (799 / 389). El rojo no depende del vaciado del `waitFor`.
+- **Q6A sigue cazado, y ahora también en pantalla.**
+  - Centro: la pantalla da `1 failed, 43 passed` (C5). `ui-language` da `2 failed, 28 passed` (`#65 R18`, `#78 R12`). `design-drift` da `2 failed, 63 passed` (`#134 R6 › screens/alerts/index.tsx delega…`, `#87 R19`).
+  - Detalle: la pantalla da `1 failed, 28 passed` (D4). `ui-language` da `2 failed, 28 passed` (`#100 R10`, `#65 R18`). `design-drift` da `2 failed, 63 passed` (`#134 R6 › screens/alert-detail/index.tsx delega…`, `#87 R19`).
+- **M6 y M7 siguen dando su rojo declarado con C5/D4 puestos.**
+  - M6, centro: `2 failed, 42 passed, 44 total`, solo C3 y C4 (`toHaveTextContent`, líneas 775 y 784). `ui-language` da 30/30, `design-drift` 65/65 y typecheck `exit=0`.
+  - M7, detalle: `2 failed, 27 passed, 29 total`, solo D2 y D3 (líneas 364 y 373). `ui-language` da 30/30, `design-drift` 65/65 y typecheck `exit=0`.
+  - C5 y D4 no caen con M6/M7.
+- **typecheck y lint.** `bun run typecheck` da `exit=0`; la única salida es el eco de bun `$ tsc --noEmit`. `bunx expo lint --no-cache` da `exit=0` con 0 bytes de salida.
+- **numstat** (E1 + F3, contra HEAD):
+  - `alerts/index.test.tsx` `51 0`, es decir, E1 32 + C5 19;
+  - `alert-detail/index.test.tsx` `38 0`, es decir, E1 18 + D4 20;
+  - `alert-ack-outcome.test.ts` `68 0`.
+  - 0 borrados.
+- **Anclas medidas.**
+  - `grep -cF "mantiene el botón deshabilitado hasta que signOut termina tras unauthorized"` da 1 en cada suite de pantalla con F3 y 0 en HEAD.
+  - `grep -cF "finishSignOut"` da 3 en cada suite con F3 y 0 en HEAD.
+
+**Lo que no se midió.**
+- La suite móvil entera e `init.sh`, por instrucción.
+- La firma `!` (`let finishSignOut!: () => void;`): no se probó contra lint ni typecheck. Si el leader la prefiere, hay que medirla antes de prescribirla.
+
+### Mutaciones M8 y M9
+
+Medido en HEAD `d09716d1` con E1 + C5 + D4 puestos.
+- **Base de tests.** E1 se aplicó con F1 tal como figura hoy en `requirements.md` (W1 y W2 con `() => undefined` como segundo argumento de `done.then`). C5 y D4 son el texto exacto de `### Spike F3`.
+- **Mutaciones.** M8 y M9 se aplicaron a la vez: es el commit rojo único que añade C5 y D4. No se añade ninguna constante fuera del objeto, ningún import y ningún comentario. No aparece `#134` en ningún sitio.
+
+**Texto literal de M8 y M9.**
+- Las dos sustituyen una sola línea: `        signOut,` (8 espacios). Es la línea del tercer argumento de `settleAlertAck(`, el objeto de handlers, entre `        t,` y `        showError: setActionError,`.
+- **M8, centro** (`mobile-pet-tracker/src/screens/alerts/index.tsx`). Ancla: `grep -cxF '        signOut,' src/screens/alerts/index.tsx` da `1` en HEAD (hoy en la línea 92; la línea no es ancla).
+- **M9, detalle** (`mobile-pet-tracker/src/screens/alert-detail/index.tsx`). Ancla: `grep -cxF '        signOut,' src/screens/alert-detail/index.tsx` da `1` en HEAD (hoy en la línea 55).
+
+La sustituyen estas 6 líneas, idénticas en los dos ficheros:
+
+```tsx
+        signOut: () => {
+          const run = signOut;
+          const key = 'common.somethingWentWrong' as const;
+          void Promise.resolve(run()).catch(() => setActionError(t(key)));
+          return Promise.resolve();
+        },
+```
+
+- **numstat** de producción con M8 + M9: `6 1` en cada pantalla.
+- **Ancla negativa tras revertir.** `grep -cF 'const run = signOut;'` da `0` en cada pantalla.
+- **Por qué esta forma.** Es la forma Q6B del barrido de §4. Esconde `signOut(` (lo lee `screenSignOutCalls`) y `t('…')` (lo lee `checkUses`). Por eso la ven en verde R6, `#87 R19` y la tabla de copy. No espera a `signOut`, y el `finally` de la pantalla rehabilita el botón antes de que `signOut` termine.
+
+**Medición combinada (M8 + M9 a la vez).** Cada corrida va sin pipe y con `bunx jest --clearCache` justo antes.
+
+| Fichero | Salida |
+|---|---|
+| `src/screens/alerts/index.test.tsx` | `exit=1 :: Tests: 1 failed, 43 passed, 44 total` |
+| `src/screens/alert-detail/index.test.tsx` | `exit=1 :: Tests: 1 failed, 28 passed, 29 total` |
+| `src/__tests__/ui-language.test.ts` | `exit=0 :: Tests: 30 passed, 30 total` |
+| `src/__tests__/design-drift.test.ts` | `exit=0 :: Tests: 65 passed, 65 total` |
+| `src/utils/alert-ack-outcome.test.ts` | `exit=0 :: Tests: 17 passed, 17 total` |
+| `bun run typecheck` | `exit=0`; la única salida es el eco de bun `$ tsc --noEmit` |
+| `bunx expo lint --no-cache` | `exit=0`, 0 bytes de salida |
+
+- **Centro.** Solo cae `#78 R8 › #134 R1 › mantiene el botón deshabilitado hasta que signOut termina tras unauthorized`, por aserción: `expect(instance).toBeDisabled()` / `Received instance is not disabled:` en `> 799 | expect(screen.getByTestId('alert-row-alert-1-ack')).toBeDisabled();`.
+- **Detalle.** Solo cae `#100 R5 › #134 R2 › mantiene el botón deshabilitado hasta que signOut termina tras unauthorized`, por aserción: `Received instance is not disabled:` en `> 389 | expect(screen.getByTestId('alert-detail-ack')).toBeDisabled();`.
+
+**Revertir M8 y M9.**
+- `git checkout HEAD --` de las dos pantallas deja `git diff --quiet` en 0.
+- Con `--clearCache` antes, el centro da `exit=0 :: Tests: 44 passed, 44 total` y el detalle `exit=0 :: Tests: 29 passed, 29 total`.
+
+**Limpieza.**
+- Se restauraron los tres ficheros de test con `git checkout HEAD --`.
+- `git diff --cached --quiet` y `git diff --quiet -- mobile-pet-tracker` dan 0, y no hay ficheros sin trackear.
+- Quedan modificados este fichero, `requirements.md` y `tasks.md`. Los dos últimos son cambios del leader; no se tocaron.

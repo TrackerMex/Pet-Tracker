@@ -270,6 +270,7 @@ una desviación de Codex:
 |---|---|---|
 | B1 | R4: «esperar (`await`) a `signOut()`» | P3c y P3d: `await signOut()` sustituido por un `void … .catch(…)` que no espera deja helper (15/15), centro (41/41) y detalle (26/26) en verde |
 | B2 | `design.md` §3, fila `t`: cada pantalla pasa «`t` de `useTranslate()`» | P11 (detalle) y P14 (centro): un `t` fijado a `es` deja en verde la pantalla, `ui-language` y `design-drift`. Las dos suites de pantalla solo prueban el ack en `es` |
+| B3 | `design.md` §3, fila `signOut`: cada pantalla pasa «`signOut` de `useAuth()`, pasado sin llamarlo» | Q6Bc y Q6Bd (pre-verificación de E1, F3): un envoltorio de `signOut` que no espera y esconde los literales `signOut(` y `t('…')` deja en verde la pantalla, `ui-language` y `design-drift`. El `finally` de la pantalla corre antes de que `signOut` termine: la conducta de B1, vista desde la pantalla |
 
 Antes del rechazo, `checkUses` contaba los `t('…')` de cada pantalla. #134 los
 movió al helper, y desde entonces nada mira qué `t` le pasa cada pantalla.
@@ -282,6 +283,18 @@ siete supervivientes son anteriores a #134 (ver E1.5).
 
 **Decisión del humano (2026-10-09): solo lo de #134.** E1 cierra B1 y B2. Las
 siete supervivientes anteriores pasan a deuda con sus límites exactos (E1.5).
+
+**Pre-verificación de E1** (mismo fichero de review, §Pre-verificación E1).
+El reviewer escribió los tests de E1 tal cual, aplicó sus mutaciones y sondas,
+y barrió sus cláusulas. De ahí salen dos cambios:
+
+- **F1**: el segundo argumento de `done.then` en W1 y W2 (E1.1, paso 2).
+- **F3**: la fila hermana de B2, que es B3. Nace de #134 igual que B1 y B2, así
+  que entra por la misma decisión del humano. La cierra E1.7, que está medida
+  en el spike F3.
+
+Q1 (una espera a `signOut` acotada por un temporizador) queda sin candado: no
+es una rama de la cláusula, y ningún test finito la cierra (F2).
 
 E1 **no toca código de producción**. Todos los candados nacen en verde contra
 HEAD, porque el código ya cumple. Su rojo se demuestra con la mutación de su
@@ -318,7 +331,22 @@ function flushPromises() {
 1. `makeHandlers('es')`, y `handlers.signOut.mockReturnValueOnce(signOutGate.promise)`
    con `const signOutGate = deferred()`.
 2. `const done = settleAlertAck(() => Promise.resolve({ kind: 'unauthorized' }), alert, handlers);`,
-   `let settled = false;` y `void done.then(() => { settled = true; });`.
+   `let settled = false;` y, con el segundo argumento obligatorio:
+
+   ```ts
+   void done.then(
+     () => {
+       settled = true;
+     },
+     () => undefined,
+   );
+   ```
+
+   Sin `() => undefined`, una mutación que haga rechazar a `settleAlertAck`
+   deja la promesa derivada sin manejar y Node tumba el proceso de jest: se
+   pierde el informe de todo el fichero, y los rojos por aserción que hoy dan
+   los `it` de R5 pasan a ser una caída (pre-verificación E1, F1: sondas Q2
+   `return signOut();` y Q7 `catch` que relanza).
 3. `await flushPromises();`. Después, `signOut` llamado una vez y
    `expect(settled).toBe(false)`.
 4. `signOutGate.resolve();` y `await expect(done).resolves.toBeUndefined();`.
@@ -440,14 +468,14 @@ Base medida por el reviewer en HEAD `b276727e`, que es igual en `src/` a
 | Suite | Antes de E1 | Después de E1 | Delta |
 |---|---|---|---|
 | `src/utils/alert-ack-outcome.test.ts` | 15 | 17 | +2 (W1, W2) |
-| `src/screens/alerts/index.test.tsx` | 41 | 43 | +2 (C3, C4) |
-| `src/screens/alert-detail/index.test.tsx` | 26 | 28 | +2 (D2, D3) |
+| `src/screens/alerts/index.test.tsx` | 41 | 44 | +3 (C3, C4, C5) |
+| `src/screens/alert-detail/index.test.tsx` | 26 | 29 | +3 (D2, D3, D4) |
 | `src/__tests__/design-drift.test.ts` | 65 | 65 | 0 |
 | `src/__tests__/ui-language.test.ts` | 30 | 30 | 0 |
 
 La suite móvil completa pasa de 98 suites y 2386 tests a 98 suites y
-**2392** tests (+6). Respecto a la base original de la spec (H0 de la ronda
-1), el total de #134 es **+27 tests y +1 suite**.
+**2394** tests (+8). Respecto a la base original de la spec (H0 de la ronda
+1), el total de #134 es **+29 tests y +1 suite**.
 
 No cambia ninguna fila de `ui-copy-table.ts`, ningún recuento de
 `ui-language.test.ts`, `screenSignOutCalls` ni la longitud del catálogo. Los
@@ -471,13 +499,18 @@ matcher).
 | E1-S5 | `src/screens/alert-detail/index.tsx` | lo de E1-S3, en el detalle | solo D2, `toHaveTextContent` |
 | E1-S6 | `src/screens/alert-detail/index.tsx` | lo de E1-S4, en el detalle | solo D3, `toHaveTextContent` |
 
+| E1-S7 | `src/screens/alerts/index.tsx` | M8 de E1.7 sola | solo C5, `toBeDisabled` |
+| E1-S8 | `src/screens/alert-detail/index.tsx` | M9 de E1.7 sola | solo D4, `toBeDisabled` |
+
 E1-S3 a E1-S6 fijan **una sola** clave cada una. Así cada `it` es el candado
-de su clave, y no un candado compartido.
+de su clave, y no un candado compartido. E1-S7 y E1-S8 aplican por separado
+las dos mitades del commit rojo de E1.7: cada pantalla tiene su propio
+candado.
 
 ### E1.5 — Qué no cambia, y deuda
 
 - **Producción.** `git diff --quiet <H0 de la ronda 2> HEAD -- src/utils/alert-ack-outcome.ts src/screens/alerts/index.tsx src/screens/alert-detail/index.tsx`
-  da exit 0. Las mutaciones M5, M6 y M7 se revierten en su verde.
+  da exit 0. Las mutaciones M5 a M9 se revierten en su verde.
 - **Tests existentes.** `git diff --numstat <H0 de la ronda 2> HEAD` sobre los
   tres ficheros de test da 0 en la columna de borrados. No cambia ningún `it`
   de la ronda 1.
@@ -509,6 +542,128 @@ de su clave, y no un candado compartido.
 declarado, Codex PARA.** Copia el `Received` recortado al impl, no toca
 producción fuera de la mutación declarada y no ajusta el `it`. Quien decide
 es el leader.
+
+### E1.7 — R1 y R2: cada pantalla espera a `signOut` (B3)
+
+Las tablas de R1 y R2 suman una fila cada una:
+
+| Pantalla | Rama | Efecto | Candado |
+|---|---|---|---|
+| centro | unauthorized, con `signOut` pendiente | `alert-row-alert-1-ack` sigue deshabilitado hasta que `signOut` termina; después se habilita, sin error pintado | **nuevo C5** |
+| detalle | unauthorized, con `signOut` pendiente | `alert-detail-ack` sigue deshabilitado hasta que `signOut` termina; después se habilita, sin error pintado | **nuevo D4** |
+
+La rama en la que `signOut` rechaza no necesita otro `it` en pantalla. Un
+envoltorio que no espera solo puede propagar el rechazo pintando su propia
+copia, y esa copia ya la miran C2, D1 y `checkUses`.
+
+**C5**, en `src/screens/alerts/index.test.tsx`: se inserta justo antes del
+`  });` que cierra `describe('#134 R1: caracterización de las ramas sin
+candado del ack')`, después de C4. Son 19 líneas, con la línea en blanco
+inicial incluida:
+
+```tsx
+
+    it('mantiene el botón deshabilitado hasta que signOut termina tras unauthorized', async () => {
+      let finishSignOut: () => void = () => undefined;
+      mockAckAlert.mockResolvedValueOnce({ kind: 'unauthorized' });
+      mockSignOut.mockReturnValueOnce(
+        new Promise<void>((resolve) => {
+          finishSignOut = resolve;
+        }),
+      );
+
+      await pressAck();
+
+      await waitFor(() => expect(mockSignOut).toHaveBeenCalledTimes(1));
+      expect(screen.getByTestId('alert-row-alert-1-ack')).toBeDisabled();
+
+      finishSignOut();
+      await waitFor(() => expect(screen.getByTestId('alert-row-alert-1-ack')).not.toBeDisabled());
+      expect(screen.queryByTestId('alerts-action-error')).toBeNull();
+    });
+```
+
+**D4**, en `src/screens/alert-detail/index.test.tsx`: se inserta justo antes
+del `  });` que cierra `describe('#134 R2: caracterización de la rama sin
+candado del ack')`, después de D3. Son 20 líneas, con la línea en blanco
+inicial incluida. No añade imports: `fireEvent`, `screen` y `waitFor` ya están
+importados.
+
+```tsx
+
+    it('mantiene el botón deshabilitado hasta que signOut termina tras unauthorized', async () => {
+      let finishSignOut: () => void = () => undefined;
+      mockAckAlert.mockResolvedValueOnce({ kind: 'unauthorized' });
+      mockSignOut.mockReturnValueOnce(
+        new Promise<void>((resolve) => {
+          finishSignOut = resolve;
+        }),
+      );
+
+      await renderDetail();
+      await fireEvent.press(await screen.findByTestId('alert-detail-ack'));
+
+      await waitFor(() => expect(mockSignOut).toHaveBeenCalledTimes(1));
+      expect(screen.getByTestId('alert-detail-ack')).toBeDisabled();
+
+      finishSignOut();
+      await waitFor(() => expect(screen.getByTestId('alert-detail-ack')).not.toBeDisabled());
+      expect(screen.queryByTestId('alert-detail-action-error')).toBeNull();
+    });
+```
+
+**Reglas de este texto:**
+
+- El diferido se declara con inicializador (`= () => undefined`) y no con
+  `!`. La forma con `!` no está medida contra lint ni typecheck.
+- No se añade `act` ni ningún vaciado explícito, y ningún import cambia. El
+  detalle no importa `act`, y una segunda línea de import de
+  `@testing-library/react-native` dispara `import/no-duplicates`.
+
+**§Esperas.** La espera al contador de `signOut` seguida de la consulta del
+botón no abre carrera aquí:
+
+- En HEAD, `isDisabled` pasa a `true` dentro del `act` de la pulsación, y solo
+  vuelve a `false` en el `finally` de la pantalla.
+- Ese `finally` solo corre cuando el test llama `finishSignOut()`, que va
+  después de la aserción.
+- La espera no aguarda a que se pinte nada: sitúa la aserción en la ventana
+  «`signOut` pendiente» y no en la ventana «ack en vuelo», donde el botón
+  también está deshabilitado.
+- El paso final espera sobre el árbol (`not.toBeDisabled()`) y después
+  comprueba la ausencia con `queryByTestId`.
+
+**Mutaciones M8 (centro) y M9 (detalle)** del commit rojo: un solo commit
+añade C5 y D4 y aplica las dos a la vez. Cada una sustituye el `signOut` que
+la pantalla pasa al helper por un envoltorio que no espera y que esconde los
+literales que miran `design-drift` y `checkUses`:
+
+Las dos sustituyen una sola línea, `        signOut,` (8 espacios), del objeto
+de handlers que recibe `settleAlertAck(`, entre `        t,` y
+`        showError: setActionError,`. Ancla:
+`grep -cxF '        signOut,' <pantalla>` da 1 en cada pantalla. Las
+sustituyen estas 6 líneas, idénticas en `src/screens/alerts/index.tsx` (M8) y
+en `src/screens/alert-detail/index.tsx` (M9), sin constantes fuera del objeto,
+sin imports y sin comentarios:
+
+```tsx
+        signOut: () => {
+          const run = signOut;
+          const key = 'common.somethingWentWrong' as const;
+          void Promise.resolve(run()).catch(() => setActionError(t(key)));
+          return Promise.resolve();
+        },
+```
+
+El `numstat` de producción con M8 y M9 da `6 1` en cada pantalla. El
+envoltorio esconde `signOut(` (lo lee `screenSignOutCalls`) y `t('…')` (lo lee
+`checkUses`). No espera a `signOut`, así que el `finally` de la pantalla
+rehabilita el botón antes de que `signOut` termine.
+
+Con M8 y M9 aplicadas, solo C5 y D4 caen, los dos en
+`expect(...).toBeDisabled()` («Received instance is not disabled»). Los otros
+43 `it` del centro y 28 del detalle siguen verdes, igual que `ui-language`
+(30), `design-drift` (65) y el helper (17).
 
 ## Aprobación
 
