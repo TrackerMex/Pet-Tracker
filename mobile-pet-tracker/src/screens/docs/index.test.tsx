@@ -402,6 +402,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  jest.useRealTimers();
   globalThis.fetch = originalFetch;
 });
 
@@ -506,5 +507,150 @@ describe('#158 R4: family, walker y vet no ven la acción', () => {
         'docs-empty-pose', 'docs-empty-title', 'docs-empty-body',
       ]);
     });
+  });
+});
+
+const documentAsset = {
+  uri: 'file:///cache/vacuna.pdf', name: 'vacuna.pdf', mimeType: 'application/pdf', size: 1000,
+  lastModified: 0,
+};
+
+async function openUploadForm(docs = [docOne]) {
+  mockListPetDocs.mockResolvedValue({ kind: 'ok', docs });
+  mockGetDocumentAsync.mockResolvedValueOnce({ canceled: false, assets: [documentAsset] });
+  await renderDocs();
+  await screen.findByText('Luna');
+  const entry = await screen.findByTestId(docs.length ? 'docs-upload' : 'docs-empty-action');
+  await act(async () => { fireEvent.press(entry); });
+  return screen.findByTestId('docs-upload-form');
+}
+
+function fillDocumentForm() {
+  fireEvent.changeText(screen.getByTestId('docs-type-input'), 'Vacunación');
+  fireEvent.changeText(screen.getByTestId('docs-name-input'), 'Antirrábica');
+  fireEvent.changeText(screen.getByTestId('docs-date-input'), '2026-10-01');
+  fireEvent.changeText(screen.getByTestId('docs-vet-input'), 'Dra. Pérez');
+}
+
+describe('#158 R5: selector y formulario de subida', () => {
+  it.each([
+    { label: 'canceled', canceled: true, error: null },
+    { label: 'tipo inválido', asset: { ...documentAsset, name: 'a.txt', mimeType: 'text/plain' }, error: 'Elige un archivo PDF, JPEG o PNG' },
+    { label: 'mayor que el máximo', asset: { ...documentAsset, size: 10485761 }, error: 'El archivo pesa más de 10 MB' },
+    { label: 'tipo inválido y demasiado grande', asset: { ...documentAsset, mimeType: 'image/heic', size: 10485761 }, error: 'Elige un archivo PDF, JPEG o PNG' },
+    { label: 'en el máximo', asset: { ...documentAsset, size: 10485760 }, error: null },
+    { label: 'sin tamaño', asset: { uri: 'file:///cache/vacuna.pdf', name: 'vacuna.pdf', mimeType: 'application/pdf', lastModified: 0 }, error: null },
+    { label: 'rechazo del selector', reject: true, error: 'Algo salió mal' },
+  ] as const)('selector: $label', async (row) => {
+    if ('reject' in row) mockGetDocumentAsync.mockRejectedValue(new Error('no native module'));
+    else if ('canceled' in row) mockGetDocumentAsync.mockResolvedValue({ canceled: true, assets: null });
+    else mockGetDocumentAsync.mockResolvedValue({ canceled: false, assets: [row.asset] });
+    await renderDocs();
+    await screen.findByText('Luna');
+    fireEvent.press(await screen.findByTestId('docs-upload'));
+    if (row.error) {
+      await screen.findByText(row.error);
+      expect(screen.queryByTestId('docs-upload-form')).toBeNull();
+    } else if ('canceled' in row) {
+      await screen.findByTestId('docs-upload');
+      expect(screen.queryByTestId('docs-upload-form')).toBeNull();
+      expect(screen.queryByTestId('docs-action-error')).toBeNull();
+    } else {
+      expect(await screen.findByTestId('docs-upload-form')).toBeVisible();
+    }
+  });
+
+  it.each([{ docs: [] }, { docs: [docOne] }])('ordena el error del selector con lista %j', async ({ docs }) => {
+    mockListPetDocs.mockResolvedValue({ kind: 'ok', docs });
+    mockGetDocumentAsync.mockResolvedValue({ canceled: false, assets: [{ ...documentAsset, mimeType: 'image/heic' }] });
+    await renderDocs();
+    await screen.findByText('Luna');
+    fireEvent.press(await screen.findByTestId(docs.length ? 'docs-upload' : 'docs-empty-action'));
+    await screen.findByText('Elige un archivo PDF, JPEG o PNG');
+    expect(docsChildren()).toEqual(docs.length
+      ? ['View', 'docs-upload', 'docs-action-error', 'doc-doc-1']
+      : ['View', 'docs-action-error', 'docs-empty']);
+    const error = screen.getByTestId('docs-action-error');
+    expect(error.props.selectable).toBe(true);
+    expect(error.props.className).toBe('text-danger');
+  });
+
+  it.each([{ docs: [] }, { docs: [docOne] }])('quita el error al volver al selector con lista %j', async ({ docs }) => {
+    mockListPetDocs.mockResolvedValue({ kind: 'ok', docs });
+    mockGetDocumentAsync.mockResolvedValueOnce({ canceled: false, assets: [{ ...documentAsset, mimeType: 'image/heic' }] });
+    await renderDocs();
+    await screen.findByText('Luna');
+    const entry = await screen.findByTestId(docs.length ? 'docs-upload' : 'docs-empty-action');
+    fireEvent.press(entry);
+    await screen.findByText('Elige un archivo PDF, JPEG o PNG');
+    mockGetDocumentAsync.mockReturnValueOnce(pending());
+    fireEvent.press(entry);
+    expect(screen.queryByTestId('docs-action-error')).toBeNull();
+  });
+
+  it.each([{ docs: [] }, { docs: [docOne] }])('sitúa el formulario y oculta las entradas con lista %j', async ({ docs }) => {
+    await openUploadForm(docs);
+    expect(docsChildren()).toEqual(docs.length
+      ? ['View', 'docs-upload-form', 'doc-doc-1']
+      : ['View', 'docs-upload-form', 'docs-empty']);
+    expect(screen.queryByTestId('docs-upload')).toBeNull();
+    expect(screen.queryByTestId('docs-empty-action')).toBeNull();
+    expect(screen.getByTestId('docs-upload-file')).toHaveTextContent('vacuna.pdf');
+  });
+
+  it('declara las props, clases y fecha civil de los controles', async () => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2026-10-09T12:00:00Z'));
+    await openUploadForm();
+    const fields = [
+      ['Tipo', 'docs-type-input', '', 40],
+      ['Nombre', 'docs-name-input', '', 120],
+      ['Fecha', 'docs-date-input', '2026-10-09', undefined],
+      ['Veterinario (opcional)', 'docs-vet-input', '', 120],
+    ] as const;
+    for (const [labelText, id, value, maxLength] of fields) {
+      const input = screen.getByTestId(id);
+      expect(input.props.value).toBe(value);
+      if (maxLength !== undefined) expect(input.props.maxLength).toBe(maxLength);
+      expect(input.props.className).toEqual(expect.stringContaining('rounded-xl'));
+      expect(input.props.className).toEqual(expect.stringContaining('bg-default'));
+      const label = screen.getByText(labelText);
+      expect(label.props.className).toEqual(expect.stringContaining('text-2xs'));
+      expect(label.props.className).toEqual(expect.stringContaining('font-semibold'));
+      expect(label.props.className).toEqual(expect.stringContaining('text-foreground'));
+    }
+    expect(screen.getByTestId('docs-date-input').props.placeholder).toBe('AAAA-MM-DD');
+    const submit = screen.getByTestId('docs-upload-submit');
+    expect(submit).toHaveTextContent('Subir documento');
+    expect(submit.props.className).toEqual(expect.stringContaining('rounded-xl'));
+    expect(submit.props.className).toEqual(expect.stringContaining('bg-accent'));
+    const submitLabel = within(submit).getByText('Subir documento');
+    expect(submitLabel.props.className).toEqual(expect.stringContaining('font-bold'));
+    expect(submitLabel.props.className).toEqual(expect.stringContaining('text-accent-foreground'));
+    const cancel = screen.getByTestId('docs-upload-cancel');
+    expect(cancel).toHaveTextContent('Cancelar');
+    expect(cancel.props.className).toEqual(expect.stringContaining('rounded-xl'));
+    expect(cancel.props.className).toEqual(expect.stringContaining('button__root--variant-outline'));
+    const cancelLabel = within(cancel).getByText('Cancelar');
+    expect(cancelLabel.props.className).toEqual(expect.stringContaining('font-semibold'));
+    expect(cancelLabel.props.className).toEqual(expect.stringContaining('button__label--variant-outline'));
+  });
+
+  it.each([{ docs: [] }, { docs: [docOne] }])('cancelar reinicia los campos sin red con lista %j', async ({ docs }) => {
+    await openUploadForm(docs);
+    const initialDate = screen.getByTestId('docs-date-input').props.value;
+    fillDocumentForm();
+    fireEvent.press(screen.getByTestId('docs-upload-cancel'));
+    const entry = await screen.findByTestId(docs.length ? 'docs-upload' : 'docs-empty-action');
+    expect(screen.queryByTestId('docs-upload-form')).toBeNull();
+    mockGetDocumentAsync.mockResolvedValueOnce({ canceled: false, assets: [documentAsset] });
+    fireEvent.press(entry);
+    await screen.findByTestId('docs-upload-form');
+    expect(screen.getByTestId('docs-type-input').props.value).toBe('');
+    expect(screen.getByTestId('docs-name-input').props.value).toBe('');
+    expect(screen.getByTestId('docs-vet-input').props.value).toBe('');
+    expect(screen.getByTestId('docs-date-input').props.value).toBe(initialDate);
+    expect(mockCreatePetDocument).not.toHaveBeenCalled();
+    expect(mockAssetFetch).not.toHaveBeenCalled();
   });
 });
