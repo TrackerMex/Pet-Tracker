@@ -1,4 +1,5 @@
 import {
+  act,
   fireEvent,
   screen,
   waitFor,
@@ -6,7 +7,16 @@ import {
 } from '@testing-library/react-native';
 import { HeroUINativeProvider } from 'heroui-native';
 
-import { listPetDocs, type PetDocsState } from '../../api/media';
+import { getDocumentAsync } from 'expo-document-picker';
+import { openBrowserAsync } from 'expo-web-browser';
+
+import {
+  confirmPetDocumentUpload,
+  createPetDocument,
+  listPetDocs,
+  uploadPhotoToUrl,
+  type PetDocsState,
+} from '../../api/media';
 import { getPet, type PetState } from '../../api/pets';
 import { mediaKeys, petKeys } from '../../api/query-keys';
 import type { PetProfile } from '../../api/types';
@@ -16,7 +26,15 @@ import { LanguageProvider } from '../../providers/language-provider';
 import { DocsScreen } from '.';
 import { renderWithProviders } from '../../../test/render-with-providers';
 
-jest.mock('../../api/media', () => ({ listPetDocs: jest.fn() }));
+jest.mock('../../api/media', () => ({
+  ...jest.requireActual('../../api/media'),
+  listPetDocs: jest.fn(),
+  createPetDocument: jest.fn(),
+  uploadPhotoToUrl: jest.fn(),
+  confirmPetDocumentUpload: jest.fn(),
+}));
+jest.mock('expo-document-picker', () => ({ getDocumentAsync: jest.fn() }));
+jest.mock('expo-web-browser', () => ({ openBrowserAsync: jest.fn() }));
 jest.mock('../../api/pets', () => ({ getPet: jest.fn() }));
 jest.mock('../../providers/auth-provider', () => ({ useAuth: jest.fn() }));
 jest.mock('react-native-safe-area-context', () => ({
@@ -341,11 +359,124 @@ describe('#155 R7: sin documentos, Pingo los guarda', () => {
     expect(screen.getByTestId('docs-empty-body')).toHaveTextContent('Cuando se suba un documento médico de tu mascota, te lo guardo aquí.');
   });
 
-  it('no ofrece acción', async () => {
-    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet() });
+  it('no ofrece acción a quien no es owner (#158 R4)', async () => {
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: { ...makePet(), myRole: 'family' } });
     mockListPetDocs.mockResolvedValue({ kind: 'ok', docs: [] });
     await renderDocs();
     await screen.findByTestId('docs-empty-title');
+    expect(screen.queryByTestId('docs-empty-action')).toBeNull();
+  });
+});
+
+const mockGetDocumentAsync = jest.mocked(getDocumentAsync);
+const mockOpenBrowserAsync = jest.mocked(openBrowserAsync);
+const mockCreatePetDocument = jest.mocked(createPetDocument);
+const mockUploadPhotoToUrl = jest.mocked(uploadPhotoToUrl);
+const mockConfirmPetDocumentUpload = jest.mocked(confirmPetDocumentUpload);
+const mockSignOut = jest.fn();
+const originalFetch = globalThis.fetch;
+const documentBlob = new Blob(['PDF bytes']);
+const mockAssetBlob = jest.fn();
+const mockAssetFetch = jest.fn();
+const docOne = {
+  id: 'doc-1', type: 'Vacunación', name: 'Antirrábica', date: '2026-07-12',
+  downloadUrl: 'http://download.test/doc-1.pdf',
+};
+
+beforeEach(() => {
+  jest.resetAllMocks();
+  process.env.EXPO_PUBLIC_API_URL = apiUrl;
+  mockUseAuth.mockReturnValue({
+    status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: mockSignOut,
+  });
+  mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet() });
+  mockListPetDocs.mockResolvedValue({ kind: 'ok', docs: [docOne] });
+  mockGetDocumentAsync.mockResolvedValue({ canceled: true, assets: null });
+  mockOpenBrowserAsync.mockReturnValue(pending());
+  mockCreatePetDocument.mockResolvedValue({ kind: 'ok', documentId: 'doc-2', uploadUrl: 'http://upload.test/doc-2' });
+  mockUploadPhotoToUrl.mockResolvedValue({ kind: 'ok' });
+  mockConfirmPetDocumentUpload.mockResolvedValue({ kind: 'ok' });
+  mockAssetBlob.mockResolvedValue(documentBlob);
+  mockAssetFetch.mockResolvedValue({ blob: mockAssetBlob });
+  globalThis.fetch = mockAssetFetch as unknown as typeof fetch;
+});
+
+afterEach(() => {
+  globalThis.fetch = originalFetch;
+});
+
+function docsChildren() {
+  const container = screen.getByTestId('screen-docs').children[0];
+  if (typeof container === 'string') throw new Error('Expected scroll content');
+  return container.children.map(child => typeof child === 'string' ? child : (child.props.testID ?? child.type));
+}
+
+describe('#158 R3: el owner ve la acción de subir', () => {
+  it('con documentos pinta el botón, sus clases y el orden exacto', async () => {
+    await renderDocs();
+    await screen.findByText('Luna');
+    await screen.findByTestId('doc-doc-1');
+    const button = await screen.findByTestId('docs-upload');
+    expect(button).toHaveTextContent('Subir documento');
+    expect(docsChildren()).toEqual(['View', 'docs-upload', 'doc-doc-1']);
+    expect(button.props.className).toEqual(expect.stringContaining('rounded-xl'));
+    expect(button.props.className).toEqual(expect.stringContaining('bg-accent'));
+    const label = within(button).getByText('Subir documento');
+    expect(label.props.className).toEqual(expect.stringContaining('font-bold'));
+    expect(label.props.className).toEqual(expect.stringContaining('text-accent-foreground'));
+  });
+
+  it('en el vacío pinta la acción de Pingo', async () => {
+    mockListPetDocs.mockResolvedValue({ kind: 'ok', docs: [] });
+    await renderDocs();
+    await screen.findByText('Luna');
+    expect(await screen.findByTestId('docs-empty-action')).toHaveTextContent('Subir documento');
+  });
+
+  it.each([
+    ['docs-upload', [docOne]],
+    ['docs-empty-action', []],
+  ] as const)('abre el selector desde %s', async (entry, docs) => {
+    mockListPetDocs.mockResolvedValue({ kind: 'ok', docs: [...docs] });
+    await renderDocs();
+    await screen.findByText('Luna');
+    fireEvent.press(await screen.findByTestId(entry));
+    expect(mockGetDocumentAsync).toHaveBeenCalledTimes(1);
+    expect(mockGetDocumentAsync).toHaveBeenCalledWith({
+      type: ['application/pdf', 'image/jpeg', 'image/png'],
+      copyToCacheDirectory: true,
+      multiple: false,
+    });
+  });
+
+  it.each(['pending', 'not-found', 'forbidden', 'unauthorized', 'error', 'unreachable', 'missing-config'] as const)(
+    'sin entradas con lista %s', async (kind) => {
+      if (kind === 'pending') mockListPetDocs.mockReturnValue(pending<PetDocsState>());
+      else if (kind === 'unreachable') mockListPetDocs.mockResolvedValue({ kind, message: 'offline' });
+      else mockListPetDocs.mockResolvedValue({ kind });
+      await renderDocs();
+      await screen.findByText('Luna');
+      await screen.findByTestId(kind === 'pending' ? 'docs-list-skeleton' : 'docs-error');
+      expect(screen.queryByTestId('docs-upload')).toBeNull();
+      expect(screen.queryByTestId('docs-empty-action')).toBeNull();
+    },
+  );
+
+  it.each((['pending', 'unauthorized', 'error', 'unreachable', 'missing-config'] as const).flatMap(kind => [
+    { kind, docs: [docOne], node: 'doc-doc-1' },
+    { kind, docs: [], node: 'docs-empty' },
+  ]))('sin entradas con mascota $kind y lista $node', async ({ kind, docs, node }) => {
+    if (kind === 'pending') mockGetPet.mockReturnValue(pending<PetState>());
+    else if (kind === 'unreachable') mockGetPet.mockResolvedValue({ kind, message: 'offline' });
+    else mockGetPet.mockResolvedValue({ kind });
+    mockListPetDocs.mockResolvedValue({ kind: 'ok', docs });
+    const { queryClient } = await renderDocs();
+    await screen.findByTestId(node);
+    if (kind !== 'pending') {
+      await waitFor(() => expect(queryClient.getQueryState(petKeys.detail('pet-1'))?.status).toBe('success'));
+    }
+    await act(async () => { await new Promise((r) => setTimeout(r, 0)); });
+    expect(screen.queryByTestId('docs-upload')).toBeNull();
     expect(screen.queryByTestId('docs-empty-action')).toBeNull();
   });
 });
