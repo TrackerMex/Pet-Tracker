@@ -669,4 +669,4 @@ Con M8 y M9 aplicadas, solo C5 y D4 caen, los dos en
 
 - [x] Aprobado por humano (fecha: 2026-10-09) ← gate obligatorio antes de implementar
 - Respuestas a Q1–Q5 (frase literal del humano, escrita en la página de Notion): «seguimos la recomendaciones». Q1: se canda el rechazo de `signOut` tras `unauthorized` (C2, D1, R5); Q2: las filas del helper van en `R12_ALERTS`; Q3: el helper entra en `screenSignOutCalls` con 1; Q4: R7 es requisito propio; Q5: sin smoke en dev build de Android.
-- [ ] Enmienda E1 aprobada (fecha: …) ← gate de la enmienda; Codex no reanuda la ronda 2 sin ella
+- [x] Enmienda E1 aprobada (fecha: 2026-10-09) ← gate de la enmienda; Codex no reanuda la ronda 2 sin ella
