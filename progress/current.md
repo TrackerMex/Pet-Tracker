@@ -58,5 +58,10 @@
   con los límites exactos de E1.5: P16b, P20a, P20b (retry del detalle); P17
   (guard del centro); P18 (guard del detalle); P24, P25 (`leavingRef` en
   `onNotFound` del detalle).
-- Pendiente: pre-verificación de E1 por el reviewer, espejo en Notion y gate
-  de la enmienda; después handoff de ronda 2.
+- Pre-verificación de E1 por el reviewer (review §Pre-verificación E1, Spike
+  F3, Mutaciones M8 y M9) y E1 actualizada en `b196f27a`: F1 (segundo
+  argumento de `done.then` en W1/W2) y B3/E1.7 (C5, D4: el botón espera a
+  `signOut`; mutaciones M8/M9). Cierre esperado: 98 suites / 2394 (+8).
+- Espejo de E1 en Notion (§Enmienda E1 antes de §Aprobación), `Estado del
+  gate` = En revisión, Rol Leader. Falta la aprobación humana de E1; después,
+  commit de firma y handoff de la ronda 2.
