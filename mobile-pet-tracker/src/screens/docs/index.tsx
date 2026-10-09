@@ -7,6 +7,7 @@ import { listPetDocs, type PetDocument } from '../../api/media';
 import { getPet } from '../../api/pets';
 import { mediaKeys, petKeys } from '../../api/query-keys';
 import { Card } from '../../components/card';
+import { EmptyState } from '../../components/empty-state';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
 import { CONTINUOUS_CORNER } from '../../theme/native-styles';
@@ -87,14 +88,12 @@ export function DocsScreen({ petId }: { petId: string }) {
       ) : null}
 
       {docs.data?.kind === 'ok' && docs.data.docs.length === 0 ? (
-        <Card testID="docs-empty" className="items-center gap-2 py-8">
-          <Text className="text-lg font-bold text-foreground">
-            {t('docs.noDocumentsYet')}
-          </Text>
-          <Text className="text-center font-normal text-muted">
-            {t('docs.emptyBody')}
-          </Text>
-        </Card>
+        <EmptyState
+          testID="docs-empty"
+          pose="health"
+          title={t('docs.noDocumentsYet')}
+          body={t('docs.emptyBody')}
+        />
       ) : null}
 
       {docs.data?.kind === 'ok'

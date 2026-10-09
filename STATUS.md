@@ -1,10 +1,10 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-10-09
-**Features completadas**: 148/161 (`feature_list.json`)
-**En progreso**: ninguna en esta rama. #161 cerrada en `feature/161-media-docs-confirm-size-limit`, PR pendiente de merge humano.
+**Features completadas**: 149/162 (`feature_list.json`)
+**En progreso**: ninguna en esta rama. #155 cerrada en `feature/155-mobile-empty-states-pingo`, PR pendiente de merge humano.
 
-**Pendientes**: 13 (#60, #119, #129, #134, #144, #150, #151, #154, #158, #159, #160, #162 y #163). **#161 `media-docs-confirm-size-limit` cerrada**: el confirm de documentos (`POST /v1/pets/:petId/media/:documentId/confirm`) rechaza ficheros de más de 10485760 bytes (10 MiB, `PET_DOCUMENT_MAX_BYTES`) con 409 `PET_DOCUMENT_TOO_LARGE`; el documento queda pendiente y el objeto se deja en el bucket (Q2). En el puerto `PhotoStorage`, `getObjectSize` sustituye a `objectExists` y lee `ContentLength` del mismo `HeadObject`: un 404 da `null` (409 `PET_DOCUMENT_NOT_UPLOADED`, como antes), un fichero de 0 bytes se acepta, y una respuesta sin `ContentLength` falla cerrada sin marcar nada. Q1-Q3 y DA1-DA6 con su opción por defecto. Codex test-primero en 7 commits (paradas en c1 por prettier y en c3 por una cuenta mal sumada en el handoff, enmiendas L1 y L2). Reviewer APROBADO a la primera con 32 sondas de mutación (un mutante equivalente, el orden null/límite, que protege `tsc`). Backend unit 186/1463 → 187/1471, e2e 465 → 467 tests verdes.
+**Pendientes**: 13 (#60, #119, #129, #134, #144, #150, #151, #154, #158, #159, #160, #162 y #163). **#155 `mobile-empty-states-pingo` cerrada**: 9 estados vacíos de la app pasan a ilustrarse con Pingo en un componente compartido, `EmptyState` (`src/components/empty-state.tsx`): pose, título y frase en la voz «guardián sereno» (en/es), y un botón «Añadir mascota» solo en los vacíos sin mascota. Sin mascotas, Inicio, Salud, Comida y Mapa usan la pose `talk`. Con mascota, Alertas usa `sleep`, Recordatorios `clipboard`, Documentos `health`, Comida sin plan `food` y Zonas seguras `collar`. Los 11 vacíos restantes siguen en texto, cada uno justificado en §Clasificación. Seis poses nuevas entran como WebP estáticos y sin animación. Cero dependencias nuevas. Enmienda E1: el CTA de R4 va sin cast `as Href`. Codex test-primero en 21 commits. Reviewer: ronda 1 RECHAZADA (`438b3263`, huecos B1-B5 de orden, sitio y movimiento). Enmienda E2: solo candados de test, pre-verificados como suficientes antes de la firma. Reanudación 3 de Codex en 9 commits. Ronda 2 APROBADA (`f986c72c`) con 27 sondas y un combinado en rojo por aserción. Prueba de humo en el dev build de Android firmada por el humano (`db033b17`). Móvil 96/2275 → 97/2365.
 
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
@@ -88,6 +88,12 @@ debe listar las 4 URLs de cola.
 
 ## Estado actual
 
+- **`mobile-empty-states-pingo` (#155) done** (2026-10-09, worktree
+  `Pet-Tracker-wt-155`, sesion Backend): 9 vacíos ilustrados con Pingo en
+  `EmptyState` (6 poses WebP, copy en/es en voz B) y 11 que siguen en texto.
+  Reviewer aprobado en la ronda 2 (`f986c72c` sobre `7d10fb25`). Gate:
+  `./init.sh` exit 0 sobre `7d10fb25` (backend 176/1348, móvil 97/2365, e2e
+  29 de 32 suites, 438 tests). Smoke R12 firmado por el humano. PR abierta.
 - **`media-docs-confirm-size-limit` (#161) done** (2026-10-09, worktree
   `Pet-Tracker-wt-161`, sesion Frontend): límite de 10485760 bytes en el
   confirm de documentos (409 `PET_DOCUMENT_TOO_LARGE`) leyendo `ContentLength`
@@ -1408,6 +1414,13 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Última sesión
+
+- **2026-10-09** — **#155 `mobile-empty-states-pingo` cerrada** (worktree
+  `Pet-Tracker-wt-155`, sesión Backend): spec firmada desde Notion
+  (`a7f6d708`), enmiendas E1 (`515cc263`) y E2 (`adee148a`) firmadas desde
+  Notion, Codex en 21 + 9 commits, reviewer RECHAZADO en la ronda 1 y
+  APROBADO en la ronda 2, smoke R12 del humano (`db033b17`) y merge de
+  `origin/main` (#161) en `2b5ea80e`. PR abierta; siguiente: merge humano.
 
 - **2026-10-09** — **#161 `media-docs-confirm-size-limit` cerrada** (worktree
   `Pet-Tracker-wt-161`, sesión Frontend): spec firmada desde Notion

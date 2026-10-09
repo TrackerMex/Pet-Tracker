@@ -350,7 +350,7 @@ describe('#153 R3: las poses entran como WebP', () => {
 
   it('no mete otras poses de Pingo', () => {
     expect(readdirSync(join(process.cwd(), 'assets', 'images')).filter((name) => /^(pingo|mascot)-/.test(name)).sort())
-      .toEqual(['pingo-wave-blink.webp', 'pingo-wave.webp']);
+      .toEqual(['pingo-clipboard.webp', 'pingo-collar.webp', 'pingo-food.webp', 'pingo-health.webp', 'pingo-sleep.webp', 'pingo-talk.webp', 'pingo-wave-blink.webp', 'pingo-wave.webp']);
   });
 });
 

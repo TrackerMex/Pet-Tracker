@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import {
   act,
   fireEvent,
@@ -338,7 +339,7 @@ describe('R4: map resuelve la mascota seleccionada', () => {
     await renderMap();
 
     await waitFor(() => {
-      expect(screen.getByTestId('map-no-pets')).toHaveTextContent(
+      expect(screen.getByTestId('map-no-pets-title')).toHaveTextContent(
         'Aún no tienes mascotas',
       );
     });
@@ -1936,5 +1937,41 @@ describe('#116 R8: el mapa no estrena animación', () => {
     );
     expect(source).not.toContain('react-native-reanimated');
     expect(source).not.toMatch(/\bAnimated\b/);
+  });
+});
+
+const mockRouter = jest.mocked(router);
+
+describe('#155 R4: Mapa sin mascotas presenta a Pingo', () => {
+
+  it('pinta la pose, el título y la frase de Pingo', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    await renderMap();
+    const pose = await screen.findByTestId('map-no-pets-pose');
+    expect(pose.props.source).toEqual([
+      expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/pingo-talk\.webp$/) }),
+    ]);
+    expect(screen.getByTestId('map-no-pets-title')).toHaveTextContent('Aún no tienes mascotas');
+    expect(screen.getByTestId('map-no-pets-body')).toHaveTextContent('Añade a tu mascota y te ayudo a saber dónde está y cómo está.');
+    expect(within(screen.getByTestId('map-no-pets-action')).getByText('Añadir mascota')).toBeVisible();
+  });
+
+  it('queda en el sitio del vacío que sustituye', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    await renderMap();
+    await screen.findByTestId('map-no-pets-pose');
+    const slot = screen.getByTestId('map-no-pets');
+    expect(slot.parent?.props.className).toBe('flex-1 items-center justify-center p-6 bg-background');
+    expect(slot.parent?.parent?.props.testID).toBe('screen-map');
+    expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['map-no-pets']);
+  });
+
+  it('lleva a añadir mascota', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    await renderMap();
+    const action = await screen.findByTestId('map-no-pets-action');
+    await fireEvent.press(action);
+    expect(mockRouter.push).toHaveBeenCalledTimes(1);
+    expect(mockRouter.push).toHaveBeenCalledWith('/pets/add');
   });
 });

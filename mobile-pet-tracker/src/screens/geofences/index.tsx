@@ -9,6 +9,7 @@ import { GEOFENCE_MAX_PER_PET, deleteGeofence, listGeofences, setGeofenceActive,
 import { getPet } from '../../api/pets';
 import { geofenceKeys, petKeys } from '../../api/query-keys';
 import { Card } from '../../components/card';
+import { EmptyState } from '../../components/empty-state';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
 
@@ -84,9 +85,12 @@ export function GeofencesScreen({ petId }: { petId: string }) {
         <Skeleton testID="geofences-loading" className="h-24 w-full rounded-card" />
       ) : geofences.data.kind === 'ok' ? (
         geofences.data.geofences.length === 0 ? (
-          <Card testID="geofences-empty" className="items-center py-8">
-            <Text className="text-center font-normal text-muted">{t('geofences.empty')}</Text>
-          </Card>
+          <EmptyState
+            testID="geofences-empty"
+            pose="collar"
+            title={t('geofences.empty')}
+            body={t('geofences.emptyBody')}
+          />
         ) : geofences.data.geofences.map((geofence) => {
           const nameAndRadius = <>
             <Text testID={`geofence-${geofence.id}-name`} selectable={!isOwner} className="font-bold text-foreground">{geofence.name}</Text>
