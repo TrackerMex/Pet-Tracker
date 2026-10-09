@@ -29,7 +29,8 @@ export class ConfirmPetDocumentUploadUseCase {
       throw new PetDocumentNotFoundError();
     }
     if (document.uploadedAt !== null) return;
-    if (!(await this.storage.objectExists(document.key))) {
+    const size = await this.storage.getObjectSize(document.key);
+    if (size === null) {
       throw new PetDocumentNotUploadedError();
     }
     await this.documents.markUploaded(document.id);

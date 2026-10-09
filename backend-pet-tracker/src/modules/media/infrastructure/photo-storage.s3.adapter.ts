@@ -39,19 +39,22 @@ export class PhotoStorageS3Adapter implements PhotoStorage {
     return getSignedUrl(this.s3, command, { expiresIn: expiresInSeconds });
   }
 
-  async objectExists(key: string): Promise<boolean> {
+  async getObjectSize(key: string): Promise<number | null> {
     try {
-      await this.s3.send(
+      const { ContentLength } = await this.s3.send(
         new HeadObjectCommand({ Bucket: this.names.mediaBucket, Key: key }),
       );
-      return true;
+      if (typeof ContentLength !== 'number') {
+        throw new Error('HeadObject response has no ContentLength');
+      }
+      return ContentLength;
     } catch (error) {
       // ponytail: sin s3:ListBucket, AWS devuelve 403 para un objeto ausente; revisar si el modo aws lo necesita (Q1).
       if (
         (error as { $metadata?: { httpStatusCode?: number } })?.$metadata
           ?.httpStatusCode === 404
       ) {
-        return false;
+        return null;
       }
       throw error;
     }
