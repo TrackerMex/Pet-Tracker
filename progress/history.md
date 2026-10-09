@@ -8306,3 +8306,55 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
   96/2275, e2e 30 de 33 suites con 465 tests verdes y 8 saltados de 473).
 - Notion: página de Specs de #18 en Implementado / Completado.
 - Estado: `done`. PR abierta; siguiente: merge humano.
+
+## #161 `media-docs-confirm-size-limit` — Límite de tamaño en el confirm de documentos — 2026-10-09
+
+- Sesión: Frontend (Claude Code, leader). Inicio: 2026-10-08 21:30 UTC.
+  Elegida por el humano entre #158, #160, #161 y #162 (deuda de #157).
+- Worktree `/home/claude/sites/Pet-Tracker-wt-161`, branch
+  `feature/161-media-docs-confirm-size-limit`, cortada de `origin/main`
+  `58323e49` (#157, PR #200). `.env` copiado del árbol principal.
+- Spec: `spec_author` en `f0fead46`; espejo en Notion y gate aprobado
+  (`Estado del gate` = Aprobado, 2026-10-08T22:30:04Z). Respuesta del humano:
+  «Dejarlas como los recomendaste es buena opción.» Q1: 10485760 bytes; Q2: el
+  objeto se deja en el bucket; Q3: sin deuda nueva; DA1-DA6 por defecto.
+  Firma en `c2676ab6`.
+- Handoff a Codex en `6ccdb744` (H0, 7 commits c1-c7). Corrección sin
+  enmienda: ts-jest transpila sin comprobar tipos (`isolatedModules: true`),
+  así que los rojos de c1/c3 son `TypeError` en jest y los errores de tipos se
+  miden con `tsc`.
+- Parada en c1: tres errores `prettier/prettier` en el confirm spec por el
+  renombrado de E2 (más uno oculto por el `--ignore-pattern`). Enmienda L1
+  (`298f7243`): `prettier --write` por commit y `prettier --check` en cada
+  cadena.
+- Parada en c3: el handoff fijaba `43 total` y eran 44 (c2 dejaba 41 y c3
+  añadía 3). Enmienda L2 (`6bd52ec7`); el leader repitió sobre los logs de
+  Codex los eslabones de solo lectura de c3 antes de reanudar. En c2 Codex
+  lanzó un e2e con el pgrep ocupado por el `init.sh` de wt-18; descartó esa
+  corrida y repitió tras `libre`.
+- Commits de Codex: c1 `935e8d15` / c2 `25788949` (R1), c3 `d31b95d9` / c4
+  `781e7fe7` (R2), c5 `be474e38` / c6 `fa81bf5a` (R3), c7 `9e23832e`
+  (traceability) y `57609fdc` (lista cerrada, 13 ficheros).
+- `origin/main` `306f3c9f` (#18, PR #201) mergeado en `2e8319df` sin
+  conflictos; trae `@anthropic-ai/sdk`, instalado con
+  `pnpm install --frozen-lockfile` en `backend-pet-tracker/` (`init.sh` no
+  instala).
+- Gate: `./init.sh` del leader sobre `2e8319df`, exit 0 (backend 187/1471,
+  infra 2/14, móvil 96/2275, e2e 30 de 33 suites con 467 tests verdes y 8
+  saltados). IA PET y Backend confirmaron que no hubo solape.
+- Reviewer **APROBADO** a la primera
+  (`progress/review_media-docs-confirm-size-limit.md`): 32 sondas de mutación
+  y un mutante equivalente (orden null/límite) que protege `tsc`. La «PARADA»
+  de E2 en el impl era un falso positivo del verificador propio de Codex.
+  Observación 1: una sonda e2e del reviewer corrió la suite e2e completa hacia
+  las 05:15Z (`-t` tras el `--` de pnpm cuenta como patrón de ruta) sin repetir
+  el pgrep; se avisó a IA PET y a Backend. Al comprobar esa causa, el leader
+  repitió el desliz: `pnpm run test:e2e -- … --listTests` lanzó jest contra
+  `pet_tracker:5433` y LocalStack, porque pnpm pasa el `--` y `--listTests`
+  quedó como patrón de ruta. Fue sin pgrep previo y el clasificador denegó el
+  kill. Terminó solo antes de las 05:29:50Z y se avisó a los dos peers.
+- Solape con #162: #161 crea `pet-document-error.mapper.spec.ts` y edita
+  `photo-storage.object-exists.spec.ts`; la spec de #162 se mide tras mergear
+  #161.
+- Notion: página de Specs de #161 en Implementado / Completado.
+- Estado: `done`. PR abierta; siguiente: merge humano.
