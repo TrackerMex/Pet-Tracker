@@ -723,6 +723,35 @@ describe('#78 R8: el ack cambia la fila sin recargar la lista', () => {
       expect(screen.getByTestId('alert-row-alert-1-status')).toBeVisible(),
     );
   });
+
+  describe('#134 R1: caracterización de las ramas sin candado del ack', () => {
+    it('muestra Algo salió mal si ackAlert rechaza', async () => {
+      mockAckAlert.mockRejectedValueOnce(new Error('request failed'));
+
+      await pressAck();
+
+      await waitFor(() =>
+        expect(screen.queryByTestId('alerts-action-error')).toHaveTextContent(
+          'Algo salió mal',
+        ),
+      );
+      expect(mockSignOut).not.toHaveBeenCalled();
+    });
+
+    it('muestra Algo salió mal si signOut rechaza tras unauthorized', async () => {
+      mockAckAlert.mockResolvedValue({ kind: 'unauthorized' });
+      mockSignOut.mockRejectedValueOnce(new Error('sign-out failed'));
+
+      await pressAck();
+
+      await waitFor(() =>
+        expect(screen.queryByTestId('alerts-action-error')).toHaveTextContent(
+          'Algo salió mal',
+        ),
+      );
+      expect(mockSignOut).toHaveBeenCalledTimes(1);
+    });
+  });
 });
 
 describe('#78 R9: pagina por nextCursor y se para cuando no hay', () => {
