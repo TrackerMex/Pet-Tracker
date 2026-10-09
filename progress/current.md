@@ -27,3 +27,9 @@
     y entran en `ALL_USES`.
 - Peers: Backend lleva #158 en wt-158 (gate de Notion); UI-Pet lleva #159 en
   wt-159 (spec_ready).
+- Spec escrita por `spec_author` en `e0641f91` y revisada por el leader sin
+  enmiendas: las anclas «antes» de `tasks.md` §Anclas (A1–A17, H1, T1–T7,
+  L1–L6, D1–D7) se re-ejecutaron contra la base `13afb0b3` y cuadran.
+- Espejo en Notion (Specs, «En revisión», Rol Spec Author):
+  https://app.notion.com/p/3f46115a9b2781918fd1ce61607d0101. Falta la firma
+  humana y las respuestas a Q1–Q5.
