@@ -27190,3 +27190,77 @@ cd /home/claude/sites/Pet-Tracker-wt-158 \
 ```
 
 R13: pendiente del smoke humano
+
+Cadena de traceability: exit=0. Commit 26: `dc6bd670 docs(mobile-docs-upload): traceability (#158)`.
+
+## Lista cerrada
+
+```bash
+cd /home/claude/sites/Pet-Tracker-wt-158 && git diff --name-only 421cd836 HEAD -- . ':!progress/review_mobile-docs-upload.md' | LC_ALL=C sort
+```
+
+```text
+mobile-pet-tracker/bun.lock
+mobile-pet-tracker/package.json
+mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+mobile-pet-tracker/src/__tests__/design-drift.test.ts
+mobile-pet-tracker/src/__tests__/ui-copy-table.ts
+mobile-pet-tracker/src/__tests__/ui-language.test.ts
+mobile-pet-tracker/src/api/__tests__/media.test.ts
+mobile-pet-tracker/src/api/media.ts
+mobile-pet-tracker/src/components/__tests__/empty-state.test.tsx
+mobile-pet-tracker/src/i18n/catalog.ts
+mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx
+mobile-pet-tracker/src/screens/docs/index.test.tsx
+mobile-pet-tracker/src/screens/docs/index.tsx
+progress/impl_mobile-docs-upload.md
+specs/mobile-docs-upload/traceability.md
+specs/mobile-ui-language/design.md
+exit=0
+```
+
+Lista cerrada: exactamente 16 ficheros autorizados; app.json no cambió. El handoff del leader permanece modificado sin stagear ni commitear. No se hizo push ni se abrió/editó la PR.
+
+### Historial antes del último commit
+
+```text
+f117aaa2 chore(mobile-docs-upload): add expo-document-picker
+33fe49a2 test(mobile-docs-upload): red catalog keys and new Pingo line (R1)
+a1792b86 feat(mobile-docs-upload): catalog keys and new Pingo line (R1)
+1a2308c5 test(mobile-docs-upload): red media API for document upload (R2)
+d4719d8f feat(mobile-docs-upload): media API creates, uploads and confirms documents (R2)
+447cdf63 test(mobile-docs-upload): red owner sees the upload action (R3)
+97832d92 feat(mobile-docs-upload): owner sees the upload action (R3)
+ca74f737 test(mobile-docs-upload): lock non-owners without the upload action (R4)
+18f86fe5 test(mobile-docs-upload): red document picker and upload form (R5)
+a9b74613 test(mobile-docs-upload): await R5 events (R5)
+5086136f feat(mobile-docs-upload): document picker and upload form (R5)
+6b300482 test(mobile-docs-upload): red form validation before any call (R6)
+7ad23d67 feat(mobile-docs-upload): form validation before any call (R6)
+0bc16f82 test(mobile-docs-upload): red successful upload refreshes the list (R7)
+fec7bbb7 feat(mobile-docs-upload): successful upload refreshes the list (R7)
+7e7bed31 test(mobile-docs-upload): red buttons locked while uploading (R8)
+672c8cfe feat(mobile-docs-upload): buttons locked while uploading (R8)
+e7f02a8e test(mobile-docs-upload): red upload errors keep the screen up (R9)
+a5d6ac36 feat(mobile-docs-upload): upload errors keep the screen up (R9)
+f5df2d44 test(mobile-docs-upload): red any member opens a document (R10)
+9d3d8178 feat(mobile-docs-upload): any member opens a document (R10)
+69cc2fd8 test(mobile-docs-upload): red form avoids the keyboard on Android (R11)
+61035b63 feat(mobile-docs-upload): form avoids the keyboard on Android (R11)
+f2cc98de test(mobile-docs-upload): red copy registry for the upload screen (R12)
+ae8e7fbc feat(mobile-docs-upload): copy registry for the upload screen (R12)
+dc6bd670 docs(mobile-docs-upload): traceability (#158)
+```
+
+El commit 27 es `docs(mobile-docs-upload): closed file list (#158)`, identificado por HEAD al terminar. Su hash se informa en la respuesta final; este fichero no puede incluir el hash del commit que lo contiene sin alterarlo.
+
+### Cadena de lista cerrada (antes de ejecutar)
+
+```bash
+cd /home/claude/sites/Pet-Tracker-wt-158 \
+  && git add progress/impl_mobile-docs-upload.md \
+  && test "$(git diff --cached --name-only | tr '\n' ' ')" = 'progress/impl_mobile-docs-upload.md ' \
+  && git commit -m 'docs(mobile-docs-upload): closed file list (#158)'
+```
+
+R13: pendiente del smoke humano
