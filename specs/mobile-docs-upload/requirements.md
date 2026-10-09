@@ -12,7 +12,7 @@ tags: [harness, spec, mobile]
 > [[../../docs/ui-guidelines|ui-guidelines]] para la carta de UI que rige la
 > pantalla.
 >
-> **Base congelada**: `65f37841` (origin/main tras el merge de #161, PR #202).
+> **Base congelada**: `65f37841` (origin/main tras el merge de #155, PR #203).
 > Todos los hechos de esta spec se comprobaron contra ese árbol. Las anclas son
 > contenido que se busca con `grep -cF`, nunca números de línea. Los comandos
 > y sus salidas sobre la base están en [[design]] §Base medida.
