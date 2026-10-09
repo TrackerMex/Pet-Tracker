@@ -19,6 +19,17 @@
 > eso, en los dos rojos (c1 y c3), las cadenas comprueban qué ficheros dan
 > error en `tsc` en lugar de exigir exit 0.
 >
+> **Enmienda L1 (2026-10-09), tras la parada de Codex en c1.** La cadena de
+> c1 falló en eslint por tres errores `prettier/prettier` en
+> `confirm-pet-document-upload.use-case.spec.ts`. El renombrado E2 alarga
+> tres desestructuraciones de `buildDeps()` por encima del ancho de línea.
+> Un cuarto error, en `photo-storage.object-exists.spec.ts` (E1 alarga
+> `.resolves.toBe(10485761)`), quedaba oculto por el `--ignore-pattern` y
+> habría parado c2. Arreglo: `prettier --write` sobre los ficheros de cada
+> commit antes de medir, y `prettier --check` como eslabón de cada cadena.
+> Ninguna aserción, título ni cuenta cambia. Prompt de reanudación: §RETOMAR
+> al final del bloque.
+>
 > **Comparte Postgres (`pet_tracker`, 5433) y LocalStack con Backend (#155,
 > wt-155) e IA PET (#18, wt-18).** Por eso hay un `pgrep` antes de cada e2e
 > y de la suite unit entera. `node_modules` y `.env` ya están en el
@@ -91,6 +102,15 @@ Esto manda sobre tasks.md:
   commit de c1-c6 la toca.
 - Lint: en las cadenas va `pnpm exec eslint` SIN `--fix`. `pnpm run lint`
   lleva `--fix` y reescribe ficheros: se corre UNA vez, en el cierre.
+- FORMATO (enmienda L1 del leader, 2026-10-09). En cada commit c1-c6,
+  ANTES de sus medidas, ejecuta
+  `pnpm exec prettier --write <los ficheros de su git add>` (exactamente
+  esos, nunca un glob). Cada cadena lleva el eslabon
+  `pnpm exec prettier --check <mismos ficheros>` delante del `git add`.
+  Prettier solo parte lineas largas (el renombrado de E1/E2 alarga
+  `.resolves.toBe(10485761)` y las desestructuraciones de `buildDeps()`):
+  no cambia ningun literal, titulo ni asercion, y no se considera
+  desviacion de E1-E5. Copia al impl la salida de cada `--write`.
 - R4: tu corres lint, la suite unit entera y los e2e FILTRADOS de abajo.
   `pnpm run test:e2e` completo y `./init.sh` los corre el leader, porque
   comparten Postgres y LocalStack con otras sesiones.
@@ -242,6 +262,7 @@ cuatro ficheros de test; nada de produccion):
     && test "$(grep -oE '^[^(]+\([0-9]+,[0-9]+\): error TS' /tmp/161-r1-tsc.txt | sed -E 's/\(.*//' | LC_ALL=C sort -u | tr '\n' ' ')" = 'src/modules/media/application/use-cases/create-pet-document.use-case.spec.ts src/modules/media/application/use-cases/request-photo-upload-url.use-case.spec.ts src/modules/media/infrastructure/photo-storage.object-exists.spec.ts ' \
     && test "$(grep -rlF 'objectExists' src test | wc -l)" = 3 \
     && pnpm exec eslint "{src,apps,libs,test}/**/*.ts" --ignore-pattern 'src/modules/media/infrastructure/photo-storage.object-exists.spec.ts' \
+    && pnpm exec prettier --check src/modules/media/infrastructure/photo-storage.object-exists.spec.ts src/modules/media/application/use-cases/confirm-pet-document-upload.use-case.spec.ts src/modules/media/application/use-cases/create-pet-document.use-case.spec.ts src/modules/media/application/use-cases/request-photo-upload-url.use-case.spec.ts \
     && git add src/modules/media/infrastructure/photo-storage.object-exists.spec.ts src/modules/media/application/use-cases/confirm-pet-document-upload.use-case.spec.ts src/modules/media/application/use-cases/create-pet-document.use-case.spec.ts src/modules/media/application/use-cases/request-photo-upload-url.use-case.spec.ts \
     && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'backend-pet-tracker/src/modules/media/application/use-cases/confirm-pet-document-upload.use-case.spec.ts backend-pet-tracker/src/modules/media/application/use-cases/create-pet-document.use-case.spec.ts backend-pet-tracker/src/modules/media/application/use-cases/request-photo-upload-url.use-case.spec.ts backend-pet-tracker/src/modules/media/infrastructure/photo-storage.object-exists.spec.ts ' \
     && git diff --quiet -- . && test -z "$(git ls-files --others --exclude-standard -- .)" \
@@ -266,6 +287,7 @@ TODAVIA SIN LIMITE. La comprobacion de D2 es
     && test "$(grep -cF 'new HeadObjectCommand(' src/modules/media/infrastructure/photo-storage.s3.adapter.ts)" = 1 \
     && test "$(grep -rlF 'PET_DOCUMENT_MAX_BYTES' src test | wc -l)" = 0 \
     && pnpm exec tsc --noEmit -p tsconfig.json --pretty false && pnpm exec eslint "{src,apps,libs,test}/**/*.ts" \
+    && pnpm exec prettier --check src/modules/media/domain/ports/photo-storage.ts src/modules/media/infrastructure/photo-storage.s3.adapter.ts src/modules/media/application/use-cases/confirm-pet-document-upload.use-case.ts \
     && git add src/modules/media/domain/ports/photo-storage.ts src/modules/media/infrastructure/photo-storage.s3.adapter.ts src/modules/media/application/use-cases/confirm-pet-document-upload.use-case.ts \
     && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'backend-pet-tracker/src/modules/media/application/use-cases/confirm-pet-document-upload.use-case.ts backend-pet-tracker/src/modules/media/domain/ports/photo-storage.ts backend-pet-tracker/src/modules/media/infrastructure/photo-storage.s3.adapter.ts ' \
     && git diff --quiet -- . && test -z "$(git ls-files --others --exclude-standard -- .)" \
@@ -318,6 +340,7 @@ ficheros de test; nada de produccion):
     && test "$(grep -rlF 'PET_DOCUMENT_TOO_LARGE' src test | wc -l)" = 2 \
     && test "$(grep -rlF 'PET_DOCUMENT_MAX_BYTES' src test | wc -l)" = 0 \
     && pnpm exec eslint "{src,apps,libs,test}/**/*.ts" --ignore-pattern 'src/modules/media/infrastructure/mappers/pet-document-error.mapper.spec.ts' \
+    && pnpm exec prettier --check src/modules/media/application/use-cases/confirm-pet-document-upload.use-case.spec.ts src/modules/media/infrastructure/mappers/pet-document-error.mapper.spec.ts test/media-docs.e2e-spec.ts \
     && git add src/modules/media/application/use-cases/confirm-pet-document-upload.use-case.spec.ts src/modules/media/infrastructure/mappers/pet-document-error.mapper.spec.ts test/media-docs.e2e-spec.ts \
     && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'backend-pet-tracker/src/modules/media/application/use-cases/confirm-pet-document-upload.use-case.spec.ts backend-pet-tracker/src/modules/media/infrastructure/mappers/pet-document-error.mapper.spec.ts backend-pet-tracker/test/media-docs.e2e-spec.ts ' \
     && git diff --quiet -- . && test -z "$(git ls-files --others --exclude-standard -- .)" \
@@ -342,6 +365,7 @@ comprobacion `> PET_DOCUMENT_MAX_BYTES` en el use case, despues de la de
     && test "$(grep -cF 'export class Pet' src/modules/media/domain/errors/pet-document.errors.ts)" = 3 \
     && test "$(grep -cF 'return error;' src/modules/media/infrastructure/mappers/pet-document-error.mapper.ts)" = 1 \
     && pnpm exec tsc --noEmit -p tsconfig.json --pretty false && pnpm exec eslint "{src,apps,libs,test}/**/*.ts" \
+    && pnpm exec prettier --check src/modules/media/domain/errors/pet-document.errors.ts src/modules/media/application/use-cases/confirm-pet-document-upload.use-case.ts src/modules/media/infrastructure/mappers/pet-document-error.mapper.ts \
     && git add src/modules/media/domain/errors/pet-document.errors.ts src/modules/media/application/use-cases/confirm-pet-document-upload.use-case.ts src/modules/media/infrastructure/mappers/pet-document-error.mapper.ts \
     && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'backend-pet-tracker/src/modules/media/application/use-cases/confirm-pet-document-upload.use-case.ts backend-pet-tracker/src/modules/media/domain/errors/pet-document.errors.ts backend-pet-tracker/src/modules/media/infrastructure/mappers/pet-document-error.mapper.ts ' \
     && git diff --quiet -- . && test -z "$(git ls-files --others --exclude-standard -- .)" \
@@ -367,6 +391,7 @@ M3b cambia el `return error;` final del mapper por
     && test "$(grep -cF 'return error;' src/modules/media/infrastructure/mappers/pet-document-error.mapper.ts)" = 0 \
     && test "$(grep -cF 'throw new PetDocumentNotUploadedError();' src/modules/media/application/use-cases/confirm-pet-document-upload.use-case.ts)" = 2 \
     && pnpm exec tsc --noEmit -p tsconfig.json --pretty false && pnpm exec eslint "{src,apps,libs,test}/**/*.ts" \
+    && pnpm exec prettier --check src/modules/media/application/use-cases/confirm-pet-document-upload.use-case.spec.ts src/modules/media/infrastructure/mappers/pet-document-error.mapper.spec.ts src/modules/media/application/use-cases/confirm-pet-document-upload.use-case.ts src/modules/media/infrastructure/mappers/pet-document-error.mapper.ts \
     && git add src/modules/media/application/use-cases/confirm-pet-document-upload.use-case.spec.ts src/modules/media/infrastructure/mappers/pet-document-error.mapper.spec.ts src/modules/media/application/use-cases/confirm-pet-document-upload.use-case.ts src/modules/media/infrastructure/mappers/pet-document-error.mapper.ts \
     && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'backend-pet-tracker/src/modules/media/application/use-cases/confirm-pet-document-upload.use-case.spec.ts backend-pet-tracker/src/modules/media/application/use-cases/confirm-pet-document-upload.use-case.ts backend-pet-tracker/src/modules/media/infrastructure/mappers/pet-document-error.mapper.spec.ts backend-pet-tracker/src/modules/media/infrastructure/mappers/pet-document-error.mapper.ts ' \
     && git diff --quiet -- . && test -z "$(git ls-files --others --exclude-standard -- .)" \
@@ -383,6 +408,7 @@ ficheros a c4 con `git show HEAD~1:<ruta desde la raiz> > <ruta>`; NUNCA
     && test "$(grep -cF 'return error;' src/modules/media/infrastructure/mappers/pet-document-error.mapper.ts)" = 1 \
     && test "$(grep -cF 'throw new PetDocumentNotUploadedError();' src/modules/media/application/use-cases/confirm-pet-document-upload.use-case.ts)" = 1 \
     && pnpm exec tsc --noEmit -p tsconfig.json --pretty false && pnpm exec eslint "{src,apps,libs,test}/**/*.ts" \
+    && pnpm exec prettier --check src/modules/media/application/use-cases/confirm-pet-document-upload.use-case.ts src/modules/media/infrastructure/mappers/pet-document-error.mapper.ts \
     && git add src/modules/media/application/use-cases/confirm-pet-document-upload.use-case.ts src/modules/media/infrastructure/mappers/pet-document-error.mapper.ts \
     && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'backend-pet-tracker/src/modules/media/application/use-cases/confirm-pet-document-upload.use-case.ts backend-pet-tracker/src/modules/media/infrastructure/mappers/pet-document-error.mapper.ts ' \
     && git diff --cached --quiet HEAD~1 -- src/modules/media/application/use-cases/confirm-pet-document-upload.use-case.ts src/modules/media/infrastructure/mappers/pet-document-error.mapper.ts \
@@ -504,4 +530,23 @@ TSC y ESLINT; cada <PGREP> que no salio `libre` y cuanto esperaste; el
 cierre (ALL, E2E, E2E-M, TSC, lint con --fix y status vacio, diffs
 vacios, lista cerrada); la seccion `## Verificación R4`; y cualquier
 decision que la spec no cerrara literalmente.
+
+== RETOMAR TRAS LA PARADA EN C1 (enmienda L1) ==
+
+Si ya paraste en c1 (impl con «## Parada obligatoria — cadena c1»), NO
+repitas la base ni deshagas nada: los cuatro ficheros de test de c1 se
+quedan como estan. Desde backend-pet-tracker/:
+1. `git rev-parse --short HEAD` -> el commit de la enmienda L1 (anotalo
+   en el impl como H0-L1); `git log --oneline <H0>..HEAD` -> solo ese
+   commit, que toca solo este handoff. H0 sigue siendo el de arriba para
+   las anclas, la lista cerrada y los diffs del cierre.
+2. `pnpm exec prettier --write src/modules/media/infrastructure/photo-storage.object-exists.spec.ts src/modules/media/application/use-cases/confirm-pet-document-upload.use-case.spec.ts src/modules/media/application/use-cases/create-pet-document.use-case.spec.ts src/modules/media/application/use-cases/request-photo-upload-url.use-case.spec.ts`
+   -> reescribe confirm (3 lineas) y object-exists (1 linea).
+3. Repite las dos medidas de c1 (jest a /tmp/161-r1.txt y tsc a
+   /tmp/161-r1-tsc.txt): las cuentas y TSFILES no cambian; los numeros
+   de linea de tsc si.
+4. Lanza la cadena c1 tal como esta ahora (con el eslabon prettier) y
+   sigue con c2-c7 aplicando FORMATO.
+Anade al impl una seccion `## Reanudacion tras L1` con estos cuatro
+pasos y sus salidas, debajo de la parada (no borres la parada).
 ```
