@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import * as DocumentPicker from 'expo-document-picker';
 import { Button, Skeleton } from 'heroui-native';
 import { ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -54,6 +55,15 @@ export function DocsScreen({ petId }: { petId: string }) {
     queryFn: () => listPetDocs(baseUrl, token ?? '', petId),
   });
   const petName = pet.data?.kind === 'ok' ? pet.data.pet.name : null;
+  const isOwner = pet.data?.kind === 'ok' && pet.data.pet.myRole === 'owner';
+
+  function pickDocument() {
+    void DocumentPicker.getDocumentAsync({
+      type: ['application/pdf', 'image/jpeg', 'image/png'],
+      copyToCacheDirectory: true,
+      multiple: false,
+    }).catch(() => undefined);
+  }
 
   return (
     <ScrollView
@@ -79,6 +89,14 @@ export function DocsScreen({ petId }: { petId: string }) {
         )}
       </View>
 
+      {isOwner && docs.data?.kind === 'ok' && docs.data.docs.length > 0 ? (
+        <Button testID="docs-upload" className="rounded-xl bg-accent" onPress={pickDocument}>
+          <Button.Label className="font-bold text-accent-foreground">
+            {t('docs.upload')}
+          </Button.Label>
+        </Button>
+      ) : null}
+
       {docs.data === undefined ? (
         <View testID="docs-list-skeleton" className="gap-3">
           <Skeleton className="h-24 w-full rounded-card" />
@@ -93,6 +111,7 @@ export function DocsScreen({ petId }: { petId: string }) {
           pose="health"
           title={t('docs.noDocumentsYet')}
           body={t('docs.emptyBody')}
+          action={isOwner ? { label: t('docs.upload'), onPress: pickDocument } : undefined}
         />
       ) : null}
 
