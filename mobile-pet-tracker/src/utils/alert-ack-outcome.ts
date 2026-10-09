@@ -15,5 +15,16 @@ export async function settleAlertAck(
   alert: Alert,
   { t, signOut, showError, onAcked, onNotFound }: AlertAckHandlers,
 ): Promise<void> {
-  await request();
+  const result = await request();
+
+  switch (result.kind) {
+    case 'ok':
+      onAcked(result.alert);
+      return;
+    case 'already-closed':
+      onAcked({ ...alert, status: 'closed' });
+      return;
+    case 'not-found':
+      onNotFound();
+  }
 }
