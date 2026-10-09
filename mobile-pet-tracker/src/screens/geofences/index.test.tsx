@@ -141,15 +141,7 @@ describe('#41 R5: la pantalla pinta la lista de zonas y sus estados', () => {
     expect(await screen.findByTestId('geofence-geofence-1-radius')).toHaveTextContent('150 m radius');
   });
 
-  it('pinta el 402 sin Reintentar', async () => {
-    mockList.mockResolvedValue({ kind: 'no-tracking' });
-    await mount();
-    const card = await screen.findByTestId('geofences-no-tracking');
-    expect(card).toHaveTextContent('Las zonas seguras requieren un collar');
-    expect(card.props.className).toBe('rounded-card border border-border bg-surface p-4 shadow-sm items-center py-8');
-    expect(within(card).getByText('Las zonas seguras requieren un collar').props.className).toBe('text-center font-normal text-muted');
-    expect(screen.queryByTestId('geofences-retry')).toBeNull();
-  });
+
 
   it.each([
     [{ kind: 'error' }, 'Algo salió mal'],
@@ -551,5 +543,38 @@ describe('#155 R8: sin zonas seguras, Pingo enseña el collar', () => {
     await mount();
     await screen.findByTestId('geofences-empty-title');
     expect(screen.queryByTestId('geofences-empty-action')).toBeNull();
+  });
+});
+
+describe('#159 R5: Zonas seguras sin seguimiento presentan a Pingo', () => {
+  it('pinta la pose del collar, el título y la frase de Pingo, sin tarjeta', async () => {
+    mockList.mockResolvedValue({ kind: 'no-tracking' });
+    await mount();
+    const empty = await screen.findByTestId('geofences-no-tracking');
+    expect(empty.props.className).toBe('items-center gap-3 py-8');
+    expect(screen.getByTestId('geofences-no-tracking-pose').props.source).toEqual([
+      expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/pingo-collar\.webp$/) }),
+    ]);
+    expect(screen.getByTestId('geofences-no-tracking-title')).toHaveTextContent('Zonas seguras no disponibles');
+    expect(screen.getByTestId('geofences-no-tracking-body')).toHaveTextContent('Cuando tu mascota tenga un collar con plan activo, te aviso si sale de una zona segura.');
+  });
+
+  it('pinta el título y la frase en inglés', async () => {
+    mockList.mockResolvedValue({ kind: 'no-tracking' });
+    await mount('en');
+    expect(await screen.findByTestId('geofences-no-tracking-title')).toHaveTextContent('Safe zones unavailable');
+    expect(screen.getByTestId('geofences-no-tracking-body')).toHaveTextContent("Once your pet has a collar with an active plan, I'll let you know if they leave a safe zone.");
+  });
+
+  it('queda en el sitio de la tarjeta que sustituye', async () => {
+    mockList.mockResolvedValue({ kind: 'no-tracking' });
+    await mount();
+    await screen.findByTestId('geofences-no-tracking-pose');
+    const slot = screen.getByTestId('geofences-no-tracking');
+    expect(slot.parent?.parent?.props.testID).toBe('screen-geofences');
+    expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['geofences-no-tracking']);
+    expect(screen.queryByTestId('geofences-retry')).toBeNull();
+    expect(screen.queryByTestId('geofences-add')).toBeNull();
+    expect(screen.queryByTestId('geofences-empty')).toBeNull();
   });
 });
