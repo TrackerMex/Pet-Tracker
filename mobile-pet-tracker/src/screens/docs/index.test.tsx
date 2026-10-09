@@ -521,15 +521,15 @@ async function openUploadForm(docs = [docOne]) {
   await renderDocs();
   await screen.findByText('Luna');
   const entry = await screen.findByTestId(docs.length ? 'docs-upload' : 'docs-empty-action');
-  await act(async () => { fireEvent.press(entry); });
+  await fireEvent.press(entry);
   return screen.findByTestId('docs-upload-form');
 }
 
-function fillDocumentForm() {
-  fireEvent.changeText(screen.getByTestId('docs-type-input'), 'Vacunación');
-  fireEvent.changeText(screen.getByTestId('docs-name-input'), 'Antirrábica');
-  fireEvent.changeText(screen.getByTestId('docs-date-input'), '2026-10-01');
-  fireEvent.changeText(screen.getByTestId('docs-vet-input'), 'Dra. Pérez');
+async function fillDocumentForm() {
+  await fireEvent.changeText(screen.getByTestId('docs-type-input'), 'Vacunación');
+  await fireEvent.changeText(screen.getByTestId('docs-name-input'), 'Antirrábica');
+  await fireEvent.changeText(screen.getByTestId('docs-date-input'), '2026-10-01');
+  await fireEvent.changeText(screen.getByTestId('docs-vet-input'), 'Dra. Pérez');
 }
 
 describe('#158 R5: selector y formulario de subida', () => {
@@ -547,7 +547,7 @@ describe('#158 R5: selector y formulario de subida', () => {
     else mockGetDocumentAsync.mockResolvedValue({ canceled: false, assets: [row.asset] });
     await renderDocs();
     await screen.findByText('Luna');
-    fireEvent.press(await screen.findByTestId('docs-upload'));
+    await fireEvent.press(await screen.findByTestId('docs-upload'));
     if (row.error) {
       await screen.findByText(row.error);
       expect(screen.queryByTestId('docs-upload-form')).toBeNull();
@@ -565,7 +565,7 @@ describe('#158 R5: selector y formulario de subida', () => {
     mockGetDocumentAsync.mockResolvedValue({ canceled: false, assets: [{ ...documentAsset, mimeType: 'image/heic' }] });
     await renderDocs();
     await screen.findByText('Luna');
-    fireEvent.press(await screen.findByTestId(docs.length ? 'docs-upload' : 'docs-empty-action'));
+    await fireEvent.press(await screen.findByTestId(docs.length ? 'docs-upload' : 'docs-empty-action'));
     await screen.findByText('Elige un archivo PDF, JPEG o PNG');
     expect(docsChildren()).toEqual(docs.length
       ? ['View', 'docs-upload', 'docs-action-error', 'doc-doc-1']
@@ -581,10 +581,10 @@ describe('#158 R5: selector y formulario de subida', () => {
     await renderDocs();
     await screen.findByText('Luna');
     const entry = await screen.findByTestId(docs.length ? 'docs-upload' : 'docs-empty-action');
-    fireEvent.press(entry);
+    await fireEvent.press(entry);
     await screen.findByText('Elige un archivo PDF, JPEG o PNG');
     mockGetDocumentAsync.mockReturnValueOnce(pending());
-    fireEvent.press(entry);
+    await fireEvent.press(entry);
     expect(screen.queryByTestId('docs-action-error')).toBeNull();
   });
 
@@ -639,12 +639,12 @@ describe('#158 R5: selector y formulario de subida', () => {
   it.each([{ docs: [] }, { docs: [docOne] }])('cancelar reinicia los campos sin red con lista %j', async ({ docs }) => {
     await openUploadForm(docs);
     const initialDate = screen.getByTestId('docs-date-input').props.value;
-    fillDocumentForm();
-    fireEvent.press(screen.getByTestId('docs-upload-cancel'));
+    await fillDocumentForm();
+    await fireEvent.press(screen.getByTestId('docs-upload-cancel'));
     const entry = await screen.findByTestId(docs.length ? 'docs-upload' : 'docs-empty-action');
     expect(screen.queryByTestId('docs-upload-form')).toBeNull();
     mockGetDocumentAsync.mockResolvedValueOnce({ canceled: false, assets: [documentAsset] });
-    fireEvent.press(entry);
+    await fireEvent.press(entry);
     await screen.findByTestId('docs-upload-form');
     expect(screen.getByTestId('docs-type-input').props.value).toBe('');
     expect(screen.getByTestId('docs-name-input').props.value).toBe('');
