@@ -684,3 +684,86 @@ describe('#158 R6: validación antes de leer o crear', () => {
     expect(screen.queryByTestId('docs-action-error')).toBeNull();
   });
 });
+
+const docTwo = {
+  id: 'doc-2', type: 'Vacunación', name: 'Antirrábica', date: '2026-10-01',
+  downloadUrl: 'http://download.test/doc-2.pdf',
+};
+
+describe('#158 R7: una subida correcta refresca la lista', () => {
+  it('sube el PDF en orden con los cuatro campos recortados', async () => {
+    mockGetDocumentAsync.mockResolvedValueOnce({
+      canceled: false,
+      assets: [{ uri: 'file:///cache/vacuna.pdf', name: 'vacuna.pdf', mimeType: 'application/pdf', size: 1000, lastModified: 0 }],
+    });
+    mockListPetDocs.mockResolvedValueOnce({ kind: 'ok', docs: [docOne] });
+    mockListPetDocs.mockResolvedValueOnce({ kind: 'ok', docs: [docOne, docTwo] });
+    await renderDocs();
+    await screen.findByText('Luna');
+    await fireEvent.press(await screen.findByTestId('docs-upload'));
+    await screen.findByTestId('docs-upload-form');
+    await fireEvent.changeText(screen.getByTestId('docs-type-input'), ' Vacunación ');
+    await fireEvent.changeText(screen.getByTestId('docs-name-input'), ' Antirrábica ');
+    await fireEvent.changeText(screen.getByTestId('docs-date-input'), ' 2026-10-01 ');
+    await fireEvent.changeText(screen.getByTestId('docs-vet-input'), ' Dra. Pérez ');
+    await fireEvent.press(screen.getByTestId('docs-upload-submit'));
+    await waitFor(() => expect(within(screen.getByTestId('doc-doc-2')).getByText('Antirrábica')).toHaveTextContent('Antirrábica'));
+    expect(mockAssetFetch).toHaveBeenCalledWith('file:///cache/vacuna.pdf');
+    expect(mockCreatePetDocument).toHaveBeenCalledWith('http://example.test/v1', 'jwt-token', 'pet-1', {
+      type: 'Vacunación', name: 'Antirrábica', date: '2026-10-01', vet: 'Dra. Pérez',
+    });
+    expect(mockCreatePetDocument.mock.calls[0][3]).toEqual({
+      type: 'Vacunación', name: 'Antirrábica', date: '2026-10-01', vet: 'Dra. Pérez',
+    });
+    expect(mockUploadPhotoToUrl).toHaveBeenCalledWith('http://upload.test/doc-2', documentBlob, 'application/pdf');
+    expect(mockConfirmPetDocumentUpload).toHaveBeenCalledWith('http://example.test/v1', 'jwt-token', 'pet-1', 'doc-2');
+    const order = [
+      mockAssetFetch.mock.invocationCallOrder[0],
+      mockAssetBlob.mock.invocationCallOrder[0],
+      mockCreatePetDocument.mock.invocationCallOrder[0],
+      mockUploadPhotoToUrl.mock.invocationCallOrder[0],
+      mockConfirmPetDocumentUpload.mock.invocationCallOrder[0],
+      mockListPetDocs.mock.invocationCallOrder[1],
+    ];
+    expect(order).toEqual([...order].sort((a, b) => a - b));
+    expect(new Set(order).size).toBe(6);
+    expect(screen.queryByTestId('docs-upload-form')).toBeNull();
+    expect(screen.getByTestId('docs-upload')).toBeVisible();
+  });
+
+  it('sube el PNG sin mimeType y omite el veterinario vacío', async () => {
+    mockGetDocumentAsync.mockResolvedValueOnce({
+      canceled: false,
+      assets: [{ uri: 'file:///cache/radiografia.png', name: 'radiografia.png', size: 2000, lastModified: 0 }],
+    });
+    mockListPetDocs.mockResolvedValueOnce({ kind: 'ok', docs: [docOne] });
+    mockListPetDocs.mockResolvedValueOnce({ kind: 'ok', docs: [docOne, docTwo] });
+    await renderDocs();
+    await screen.findByText('Luna');
+    await fireEvent.press(await screen.findByTestId('docs-upload'));
+    await screen.findByTestId('docs-upload-form');
+    await fillDocumentForm();
+    await fireEvent.changeText(screen.getByTestId('docs-vet-input'), '   ');
+    await fireEvent.press(screen.getByTestId('docs-upload-submit'));
+    await waitFor(() => expect(within(screen.getByTestId('doc-doc-2')).getByText('Antirrábica')).toHaveTextContent('Antirrábica'));
+    const input = mockCreatePetDocument.mock.calls[0][3];
+    expect(input).toEqual({ type: 'Vacunación', name: 'Antirrábica', date: '2026-10-01' });
+    expect(input).not.toHaveProperty('vet');
+    expect(mockAssetFetch).toHaveBeenCalledWith('file:///cache/radiografia.png');
+    expect(mockUploadPhotoToUrl).toHaveBeenCalledWith('http://upload.test/doc-2', documentBlob, 'image/png');
+    expect(screen.queryByTestId('docs-upload-form')).toBeNull();
+    expect(screen.getByTestId('docs-upload')).toBeVisible();
+  });
+
+  it('cierra el formulario aunque el refetch responda error', async () => {
+    mockListPetDocs.mockResolvedValueOnce({ kind: 'ok', docs: [docOne] });
+    mockListPetDocs.mockResolvedValueOnce({ kind: 'error' });
+    await openUploadForm();
+    await fillDocumentForm();
+    await fireEvent.press(screen.getByTestId('docs-upload-submit'));
+    await screen.findByTestId('docs-error');
+    expect(screen.queryByTestId('docs-upload-form')).toBeNull();
+    expect(screen.queryByTestId('docs-upload')).toBeNull();
+    expect(screen.queryByTestId('docs-empty-action')).toBeNull();
+  });
+});
