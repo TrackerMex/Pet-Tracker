@@ -677,3 +677,93 @@ una tarea posterior:
   - La lista cerrada de ficheros de la ronda 1 no cambia: E1 solo toca
     `src/screens/map/index.test.tsx` (ya en la lista) y deja
     `src/screens/map/index.tsx` idéntico a `664b95a7`.
+
+## Enmienda E2 — ronda 3 (R3, solo tests)
+
+> Solo tras la firma humana de la Enmienda E2 (requirements.md §Enmienda E2).
+> La producción de `src/screens/map/index.tsx` queda **idéntica** a `664b95a7`
+> al final de la ronda. Rutas relativas a `mobile-pet-tracker/`. Todo se
+> localiza por contenido, sin números de línea.
+
+- [ ] **Antes.**
+  - `git diff --quiet 664b95a7 HEAD -- src/screens/map/index.tsx; echo "exit=$?"` → `exit=0`.
+  - `test ! -e .expo/types/router.d.ts; echo "exit=$?"` → `exit=0`.
+  - Base: `bunx jest --runTestsByPath src/screens/map/index.test.tsx` → `Tests: 114 passed, 114 total`.
+  - Si la base no da 114, manda la medida: los recuentos de abajo pasan a
+    base + 5, y la diferencia va al impl.
+
+- [ ] **(1) Commit rojo** `test(mobile-no-collar-states): #159 E2 red pair action obeys list role except family`.
+  - En `src/screens/map/index.test.tsx`, dentro de
+    `describe('#159 R3: el dueño sin collar puede ir a emparejar'`, el `it`
+    `'pinta Vincular collar aunque el listado diga otro rol: manda el rol del detalle'`
+    se reemplaza, en el mismo sitio, por:
+
+    ```tsx
+      it.each([
+        { role: 'family', collar: 'sin collar', device: null },
+        { role: 'family', collar: 'con collar', device: makeDevice('online') },
+        { role: 'walker', collar: 'sin collar', device: null },
+        { role: 'walker', collar: 'con collar', device: makeDevice('online') },
+        { role: 'vet', collar: 'sin collar', device: null },
+        { role: 'vet', collar: 'con collar', device: makeDevice('online') },
+      ] as const)('pinta Vincular collar aunque el listado diga $role $collar: manda el rol y el collar del detalle', async ({ role, device }) => {
+        mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ myRole: role, device })] });
+        mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet() });
+        mockGetLastPosition.mockResolvedValue({ kind: 'no-tracking' });
+        await renderMap();
+        const action = await screen.findByTestId('map-no-tracking-action');
+        expect(within(action).getByText('Vincular collar')).toBeVisible();
+      });
+    ```
+
+    Ningún otro `it` cambia.
+  - **Mutación versionada** en `src/screens/map/index.tsx`. En `const canPairCollar =`, la línea
+    `detail.data.pet.myRole === 'owner' &&` pasa a las tres de requirements.md §Enmienda E2:
+    `selectedPet?.myRole !== 'walker' &&`, `selectedPet?.myRole !== 'vet' &&`
+    y `detail.data.pet.myRole === 'owner' &&`. Las demás líneas no cambian.
+  - Rojo esperado, midiendo solo `src/screens/map/index.test.tsx`:
+    `Tests: 4 failed, 115 passed, 119 total`. Los cuatro, todos por consulta
+    (`Unable to find an element with testID: map-no-tracking-action`):
+    - `pinta Vincular collar aunque el listado diga walker sin collar: manda el rol y el collar del detalle`
+    - `pinta Vincular collar aunque el listado diga walker con collar: manda el rol y el collar del detalle`
+    - `pinta Vincular collar aunque el listado diga vet sin collar: manda el rol y el collar del detalle`
+    - `pinta Vincular collar aunque el listado diga vet con collar: manda el rol y el collar del detalle`
+
+    Las dos filas `family` quedan verdes. Cualquier otro `it` rojo, o un
+    `ReferenceError`/`TypeError`, es un error de medida: **para**.
+
+- [ ] **(2) Commit verde** `fix(mobile-no-collar-states): #159 E2 revert list role probe, pair action locked to detail role`.
+  - `git checkout 664b95a7 -- src/screens/map/index.tsx`, y después
+    `git diff --quiet 664b95a7 -- src/screens/map/index.tsx; echo "exit=$?"` → `exit=0`.
+  - Gate: `Tests: 119 passed, 119 total` en `src/screens/map/index.test.tsx`;
+    `bun run typecheck` y `bunx expo lint --no-cache` con `exit=0`.
+
+- [ ] **Sondas E2a-E2d**, sin commit, sobre el árbol verde, en `const canPairCollar =` de
+  `src/screens/map/index.tsx`. Mide solo `src/screens/map/index.test.tsx`.
+  Restaura cada sonda con `git checkout HEAD -- src/screens/map/index.tsx` y
+  `git diff --quiet HEAD -- src/screens/map/index.tsx` (`limpio=0`) antes de
+  la siguiente. Todas sustituyen la línea `detail.data.pet.myRole === 'owner' &&`.
+
+  | Sonda | La línea pasa a | Esperado | Qué falla (todo por consulta) |
+  |---|---|---|---|
+  | E2a | `selectedPet?.myRole !== 'walker' && detail.data.pet.myRole === 'owner' &&` (P6) | `2 failed, 117 passed, 119 total` | `… diga walker sin collar: …`, `… diga walker con collar: …` |
+  | E2b | igual con `'vet'` (P6b) | `2 failed, 117 passed, 119 total` | `… diga vet sin collar: …`, `… diga vet con collar: …` |
+  | E2c | igual con `'family'` | `2 failed, 117 passed, 119 total` | `… diga family sin collar: …`, `… diga family con collar: …` |
+  | E2d | `(selectedPet?.myRole === 'owner' \|\| selectedPet?.device === null) && detail.data.pet.myRole === 'owner' &&` (X1) | `3 failed, 116 passed, 119 total` | `… diga family con collar: …`, `… diga walker con collar: …`, `… diga vet con collar: …` |
+
+- [ ] **Cierre.**
+  - El comando BASE de la ronda 1 (los 10 ficheros) → `Tests: 759 passed, 759 total`,
+    con map en 119.
+  - `bun run test` → `97 suites` y `2425 tests` (2420 + 5).
+  - `bun run typecheck` y `bunx expo lint --no-cache` con `exit=0`.
+  - Si la base de **Antes** no dio 114, estos recuentos se mueven con ella.
+
+- [ ] **(3) Commit final** `docs(mobile-no-collar-states-pingo): #159 E2 traceability`.
+  - En traceability.md, en la fila R3, el `it` de E1
+    `pinta Vincular collar aunque el listado diga otro rol: manda el rol del detalle`
+    pasa a
+    `pinta Vincular collar aunque el listado diga $role $collar: manda el rol y el collar del detalle (family, walker y vet, con y sin collar; sondas E2a-E2d)`.
+    Su columna de commit añade `E2: <hash rojo> → <hash verde>` con sus mensajes.
+  - La lista cerrada de ficheros no cambia: E2 solo toca
+    `src/screens/map/index.test.tsx` y deja `src/screens/map/index.tsx`
+    idéntico a `664b95a7`.

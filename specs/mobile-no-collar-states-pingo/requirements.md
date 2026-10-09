@@ -481,3 +481,69 @@ la sustitución del OR y del AND.
 ### Aprobación de la Enmienda E1
 
 - [x] Enmienda E1 aprobada por humano (fecha: 2026-10-09, vía Notion) ← gate obligatorio antes de la ronda 2 de Codex
+
+## Enmienda E2 — R3: la inversa del rol, con los tres roles del listado, con y sin collar
+
+> Escrita el 2026-10-09 sobre la Enmienda E1 (firma `f3ca7b8e`), tras la
+> revisión de la ronda 2 **rechazada** (`progress/review_mobile-no-collar-states-pingo.md`
+> §Ronda 2, sobre la punta de Codex `340967ba`), por su bloqueante B2, y
+> ensanchada con el barrido del reviewer (§Barrido de la Enmienda E2, X1). No
+> toca D1-D7, ni el texto de R1-R10, ni las firmas anteriores. **Solo tests**: la
+> producción de `664b95a7` sigue siendo correcta y queda idéntica. Su casilla
+> va **sin marcar**: el humano reabre el gate solo para esta enmienda.
+
+### El hecho medido (B2 y X1 del reviewer)
+
+Con el detalle owner y sin collar, el botón debe salir **sea cual sea el
+listado**: `myRole` ∈ {owner, family, walker, vet} × collar ∈ {sin, con}, ocho
+casos. Tras E1 hay test para tres: owner sin collar (R3), owner con collar (E1)
+y family sin collar (E1). Estas mutaciones leen el rol o el collar **del
+listado**, justo lo que D2 prohíbe, y sobreviven a la suite de `340967ba`:
+
+| Id | Mutación en `const canPairCollar =` de `src/screens/map/index.tsx` | Estado en `340967ba` |
+|---|---|---|
+| P6 | `detail.data.pet.myRole === 'owner' &&` pasa a `selectedPet?.myRole !== 'walker' && detail.data.pet.myRole === 'owner' &&` | **verde** 114/114 |
+| P6b | igual, con `'vet'` | **verde** 114/114 |
+| X1 | `detail.data.pet.myRole === 'owner' &&` pasa a `(selectedPet?.myRole === 'owner' \|\| selectedPet?.device === null) && detail.data.pet.myRole === 'owner' &&` | **verde** 114/114 |
+
+El hueco nace en la spec (E1 prescribió solo `family` sin collar), no en el
+implementador.
+
+### Decisión: el `it` de `family` pasa a `it.each` con los seis listados no-owner
+
+En `describe('#159 R3: el dueño sin collar puede ir a emparejar'`, el `it`
+`'pinta Vincular collar aunque el listado diga otro rol: manda el rol del detalle'`
+se **reemplaza** por un `it.each` de seis filas:
+{family, walker, vet} × {sin collar (`device: null`), con collar
+(`device: makeDevice('online')`)}. El listado es `[makePet({ myRole: role, device })]`,
+el detalle `{ kind: 'ok', pet: makePet() }` (owner, `device: null`) y la última
+posición `{ kind: 'no-tracking' }`. Espera `map-no-tracking-action` con
+`Vincular collar` visible. El título nombra rol y collar
+(`… aunque el listado diga $role $collar: …`), para que la traza distinga cada
+fila. El cuerpo exacto está en tasks.md §Enmienda E2.
+
+Con E1, el resto de casos ya estaba cubierto. Owner sin collar y owner con
+collar siguen en sus `it`. El fichero pasa de 114 a 119 `it` (−1 + 6). Ningún
+otro `it` cambia.
+
+### Cómo se prueba que el candado vigila (CHECKPOINTS.md C4, quinto punto)
+
+Otra vez es un candado sobre código **ya correcto**. Su rojo es una **mutación
+de producción**, versionada en el commit rojo y revertida en el verde: la suma
+de P6 y P6b. La línea `detail.data.pet.myRole === 'owner' &&` de
+`canPairCollar` pasa a tres:
+
+```tsx
+  selectedPet?.myRole !== 'walker' &&
+  selectedPet?.myRole !== 'vet' &&
+  detail.data.pet.myRole === 'owner' &&
+```
+
+Con ella fallan, por consulta, las cuatro filas `walker` y `vet`, con y sin
+collar. Las dos filas `family` siguen verdes. Las sondas E2a-E2d de tasks.md
+separan cada rol y X1. El barrido del reviewer ya midió que esta mutación pasa
+typecheck y lint.
+
+### Aprobación de la Enmienda E2
+
+- [ ] Enmienda E2 aprobada por humano (fecha: ____, vía Notion) ← gate obligatorio antes de la ronda 3 de Codex

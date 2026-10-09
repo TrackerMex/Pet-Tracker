@@ -292,3 +292,33 @@ Tests:       8 skipped, 468 passed, 476 total
 ✅ Typecheck sin errores
 ✅ Todo verde. Listo para trabajar.
 ```
+
+## Barrido de la Enmienda E2
+
+Fecha: 2026-10-09. Sobre el borrador sin commitear de requirements.md §Enmienda E2 y tasks.md §Enmienda E2, en HEAD `039e6195`. Sondas en producción como en la ronda 2 (restauradas, `git diff --quiet HEAD -- mobile-pet-tracker` → `limpio=0` tras cada una). El test de E2 no existe aún: lo que depende de él va como «no medido».
+
+1. **OK. ¿Cierra B2?** Las filas `walker` y `vet` del `it.each` montan listado `walker`/`vet` sin collar y detalle owner sin collar, y esperan el botón. P6 (`!== 'walker'`) y P6b (`!== 'vet'`) ocultan el botón justo ahí y caerían por consulta, cada una en su fila; P6c en la fila `family`. No medido con el test de E2: es deducción determinista, porque en `340967ba` P6, P6b y P6c dejan intactos todos los demás `it` (114/114, 114/114 y solo el `family` de E1).
+2. **CORREGIR. Queda una mutación que lee rol y collar del listado y sobrevive con E2.**
+   - **X1:** `detail.data.pet.myRole === 'owner' &&` → `(selectedPet?.myRole === 'owner' || selectedPet?.device === null) && detail.data.pet.myRole === 'owner' &&`. Medida en HEAD `039e6195`: `Tests: 114 passed, 114 total`, `exit=0`, `limpio=0`. Con E2 seguiría verde (no medido): sus tres filas montan el listado con `device: null`, así que el OR es cierto y el botón sale.
+   - El hueco tiene una forma concreta. Con el detalle owner sin collar, el botón debe salir para los 8 listados posibles: `myRole` ∈ {owner, family, walker, vet} × `device` ∈ {null, con collar}. Son los dos atributos que decide `canPairCollar`. Tras E2 hay test para 5 de esos listados: owner/null (R3 base), owner/online (E1 collar), y family, walker y vet con null (E2). Faltan family/online, walker/online y vet/online, los tres «no-owner y con collar». X1 es la única función de los dos predicados del botón, con su misma polaridad, que es cierta en los 5 casos medidos y falsa en los 3 que faltan. Las variantes por rol, como `selectedPet?.myRole !== 'walker' || selectedPet?.device === null`, caen en el mismo hueco.
+   - **Corrección:** el `it.each` de E2 debe cubrir los 3 roles × {sin collar, con collar} en el listado, por ejemplo con `makePet({ myRole: role, device })` y `device` ∈ {`null`, `makeDevice('online')`}, siempre con el detalle `makePet()`. X1 debe entrar como sonda (E2d). Recuentos derivados con 6 filas: 114 − 1 + 6 = **119**. El rojo de tres líneas da `4 failed, 115 passed, 119 total` (walker y vet, con y sin collar). El verde da 119. E2a, E2b y E2c dan `2 failed, 117 passed` cada una. E2d (X1) da `3 failed, 116 passed` (las tres filas con collar, por consulta). BASE da 759 y ALL 2422 + 3 = **2425**.
+3. **OK. Dirección contraria (sin botón): la cubren los `it` existentes.** Para que una mutación natural (OR con un predicado del listado en la polaridad del botón) muestre el botón por error, el predicado tendría que ser cierto en algún listado con `device: null`. Ahí la cazan R4 (listado = detalle por rol), R4 E1 (listado owner/null), R4.4 y los cuatro `it` de detalle no-`ok`. Solo escaparía un predicado cierto únicamente con collar en el listado (`device !== null`), que invierte la condición de D2. No lo cuento como «leer el collar del listado».
+4. **OK. Los campos del collar fuera de `device === null`** (`connectivity`, `batteryPct`…) siguen fuera, igual que O4 de la ronda 2: `canPairCollar` no decide sobre ellos.
+5. **OK. D2, que el detalle no `ok` no caiga al listado:** P4 en la ronda 2, 4 rojos preexistentes. E2 no lo toca.
+6. **OK. Recuentos de E2 tal como están escritos:**
+   - el rojo da `2 failed, 114 passed, 116 total`;
+   - el verde da 116;
+   - E2a, E2b y E2c dan `1 failed, 115 passed, 116 total` cada una;
+   - BASE da 756 = 754 + 2 y ALL da 2422 = 2420 + 2, con 97 suites.
+
+   Cuadran entre sí y con la base de 114. Si se aplica la corrección 2, pasan a los derivados de arriba.
+7. **OK. La mutación roja de tres líneas compila, pasa lint y no arrastra rojos.** En HEAD `039e6195` (`selectedPet?.myRole !== 'walker' &&`, `selectedPet?.myRole !== 'vet' &&` y la línea original): `bun run typecheck` exit=0, `bunx expo lint --no-cache` exit=0, `jest src/screens/map/index.test.tsx` → `114 passed, 114 total`, exit=0, `limpio=0`. Sin el test de E2 no cae ningún `it`, así que con E2 solo pueden caer las filas nuevas.
+8. **OK. Lista cerrada, commits y trazabilidad.**
+   - Los mensajes `test(…)`, `fix(…)` y `docs(…)` con `#159 E2` siguen el patrón de E1.
+   - El verde restaura desde `664b95a7` y las sondas desde `HEAD`, que es lo correcto (memoria del índice tras checkout).
+   - La fila R3 de traceability renombra el `it` de E1 y añade `E2: <rojo> → <verde>`.
+   - «E2 solo toca `index.test.tsx`» vale para `mobile-pet-tracker/`. Desde H0E2 la lista completa serán `index.test.tsx`, el impl y `traceability.md`, como en E1.
+   - Si se aplica la corrección 2, el título del `it.each` debe nombrar el collar (p. ej. filas `[role, etiqueta, device]` y dos `%s` en el título). Si no, las filas con y sin collar del mismo rol salen con el mismo título y la traza no las distingue.
+9. **OK, notas para el handoff (no son de la spec).** En «Antes» no hay `git merge-base --is-ancestor 039e6195 HEAD` (E1 sí lo tenía con `664b95a7`); la base de 114 lo suple. La regla de una sola repetición por el flake de #72 R2 (`Number of calls: 0`) debe ir en el handoff, porque tasks.md dice «cualquier otro `it` rojo… para».
+
+Resultado del barrido: **CORREGIR**, 1 corrección (la 2; sus efectos sobre los recuentos y el título van dentro de ella).
