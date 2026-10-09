@@ -5,7 +5,7 @@
 
 ## Feature
 
-#158 `mobile-docs-upload` (P2, pending). Branch
+#158 `mobile-docs-upload` (P2, spec_ready, en el gate). Branch
 `feature/158-mobile-docs-upload` en el worktree
 `/home/claude/sites/Pet-Tracker-wt-158`, base origin/main `65f37841` (con
 #155, #157 y #161 ya mergeadas).
@@ -28,6 +28,13 @@
   Comparte con #158 `catalog.ts`, `language-provider.test.tsx`,
   `ui-copy-table.ts` y la §2.22 de `specs/mobile-ui-language/design.md`:
   quien mergee segundo recuenta.
+- 2026-10-09: pre-verificación de la spec en tres rondas (1: 12 bloqueantes
+  y 7 menores; 1b: 3 y 6; 1c: 0 y 2), todas aplicadas. DA8 (`{{petName}}` o
+  «tu mascota» en `docs.emptyBody`) queda para el humano. Spec en `b36266e9`.
+- 2026-10-09: espejo en Notion, página «#158 mobile-docs-upload» de Specs
+  (https://app.notion.com/p/3f46115a9b2781bc8380ead4cfabacbb), con
+  `Estado del gate` = En revisión y `Rol actual` = Spec Author. Esperando
+  la aprobación del humano.
 
 ### Coordinación con #159 (UI-Pet, 2026-10-09)
 
@@ -43,4 +50,4 @@ UI-Pet fijó sus claves en `feature/159-mobile-no-collar-states-pingo` (b6049e61
   - #159 cambia K7 de map y geofences y añade `describe` al final.
 - `specs/mobile-ui-language/design.md`: la §2.22 es de #158 y la §2.23 de #159.
 - UI-Pet confirmó (medido sobre 65f37841 + b6049e61) que #159 no mueve `rounded-xl bg-accent`, ni `design-drift`, ni `SCREEN_FILES`. `consistency-classnames` es solo de #158 (de 17 a 19). Si DA8 cambia los literales o el recuento de #158, hay que avisar a UI-Pet.
-- Por hacer: añadir §Coordinación con #159 al design.md de #158 junto a las enmiendas de la ronda 1b.
+- Hecho: §Coordinación con #159 está en el design.md de #158.
