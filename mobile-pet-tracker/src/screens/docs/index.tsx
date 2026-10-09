@@ -1,10 +1,17 @@
 import { useQuery } from '@tanstack/react-query';
 import * as DocumentPicker from 'expo-document-picker';
-import { Button, Skeleton } from 'heroui-native';
+import { Button, Input, Label, Skeleton, TextField } from 'heroui-native';
+import { useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { listPetDocs, type PetDocument } from '../../api/media';
+import {
+  DOCUMENT_MAX_BYTES,
+  listPetDocs,
+  resolveDocumentContentType,
+  type DocumentContentType,
+  type PetDocument,
+} from '../../api/media';
 import { getPet } from '../../api/pets';
 import { mediaKeys, petKeys } from '../../api/query-keys';
 import { Card } from '../../components/card';
@@ -16,6 +23,13 @@ import {
   CATEGORY_SLOTS,
   documentCategory,
 } from '../../utils/category-palette';
+import { civilTodayIso } from '../../utils/civil-today-iso';
+
+type ActionError = 'file-format' | 'file-too-large' | 'unknown';
+type SelectedDocument = {
+  asset: DocumentPicker.DocumentPickerAsset;
+  contentType: DocumentContentType;
+};
 
 function DocumentRow({ document }: { document: PetDocument }) {
   const slot = CATEGORY_SLOTS[documentCategory(document.type)];
@@ -46,6 +60,12 @@ export function DocsScreen({ petId }: { petId: string }) {
   const { token } = useAuth();
   const t = useTranslate();
   const insets = useSafeAreaInsets();
+  const [selectedDocument, setSelectedDocument] = useState<SelectedDocument | null>(null);
+  const [type, setType] = useState('');
+  const [name, setName] = useState('');
+  const [date, setDate] = useState(() => civilTodayIso(undefined));
+  const [vet, setVet] = useState('');
+  const [actionError, setActionError] = useState<ActionError | null>(null);
   const pet = useQuery({
     queryKey: petKeys.detail(petId),
     queryFn: () => getPet(baseUrl, token ?? '', petId),
@@ -56,13 +76,43 @@ export function DocsScreen({ petId }: { petId: string }) {
   });
   const petName = pet.data?.kind === 'ok' ? pet.data.pet.name : null;
   const isOwner = pet.data?.kind === 'ok' && pet.data.pet.myRole === 'owner';
+  const actionErrorText = actionError === 'file-format'
+    ? t('docs.errorFileFormat')
+    : actionError === 'file-too-large'
+      ? t('docs.errorFileTooLarge')
+      : actionError === 'unknown'
+        ? t('common.somethingWentWrong')
+        : null;
 
   function pickDocument() {
+    setActionError(null);
     void DocumentPicker.getDocumentAsync({
       type: ['application/pdf', 'image/jpeg', 'image/png'],
       copyToCacheDirectory: true,
       multiple: false,
-    }).catch(() => undefined);
+    }).then((result) => {
+      if (result.canceled) return;
+      const asset = result.assets[0];
+      const contentType = resolveDocumentContentType(asset.mimeType, asset.name);
+      if (!contentType) {
+        setActionError('file-format');
+        return;
+      }
+      if (asset.size !== undefined && asset.size > DOCUMENT_MAX_BYTES) {
+        setActionError('file-too-large');
+        return;
+      }
+      setSelectedDocument({ asset, contentType });
+    }).catch(() => setActionError('unknown'));
+  }
+
+  function cancelUpload() {
+    setSelectedDocument(null);
+    setType('');
+    setName('');
+    setDate(civilTodayIso(undefined));
+    setVet('');
+    setActionError(null);
   }
 
   return (
@@ -89,12 +139,93 @@ export function DocsScreen({ petId }: { petId: string }) {
         )}
       </View>
 
-      {isOwner && docs.data?.kind === 'ok' && docs.data.docs.length > 0 ? (
+      {isOwner && !selectedDocument && docs.data?.kind === 'ok' && docs.data.docs.length > 0 ? (
         <Button testID="docs-upload" className="rounded-xl bg-accent" onPress={pickDocument}>
           <Button.Label className="font-bold text-accent-foreground">
             {t('docs.upload')}
           </Button.Label>
         </Button>
+      ) : null}
+
+      {selectedDocument ? (
+        <View testID="docs-upload-form">
+          <Text testID="docs-upload-file">{selectedDocument.asset.name}</Text>
+          <TextField>
+            <Label className="text-2xs font-semibold text-foreground">
+              <Label.Text className="text-2xs font-semibold text-foreground">
+                {t('docs.type')}
+              </Label.Text>
+            </Label>
+            <Input
+              testID="docs-type-input"
+              className="rounded-xl bg-default"
+              value={type}
+              onChangeText={setType}
+              maxLength={40}
+            />
+          </TextField>
+          <TextField>
+            <Label className="text-2xs font-semibold text-foreground">
+              <Label.Text className="text-2xs font-semibold text-foreground">
+                {t('docs.name')}
+              </Label.Text>
+            </Label>
+            <Input
+              testID="docs-name-input"
+              className="rounded-xl bg-default"
+              value={name}
+              onChangeText={setName}
+              maxLength={120}
+            />
+          </TextField>
+          <TextField>
+            <Label className="text-2xs font-semibold text-foreground">
+              <Label.Text className="text-2xs font-semibold text-foreground">
+                {t('docs.date')}
+              </Label.Text>
+            </Label>
+            <Input
+              testID="docs-date-input"
+              className="rounded-xl bg-default"
+              value={date}
+              onChangeText={setDate}
+              placeholder={t('docs.datePlaceholder')}
+            />
+          </TextField>
+          <TextField>
+            <Label className="text-2xs font-semibold text-foreground">
+              <Label.Text className="text-2xs font-semibold text-foreground">
+                {t('docs.vet')}
+              </Label.Text>
+            </Label>
+            <Input
+              testID="docs-vet-input"
+              className="rounded-xl bg-default"
+              value={vet}
+              onChangeText={setVet}
+              maxLength={120}
+            />
+          </TextField>
+          <Button testID="docs-upload-submit" className="rounded-xl bg-accent">
+            <Button.Label className="font-bold text-accent-foreground">
+              {t('docs.upload')}
+            </Button.Label>
+          </Button>
+          <Button
+            testID="docs-upload-cancel"
+            className="rounded-xl"
+            variant="outline"
+            onPress={cancelUpload}
+          >
+            <Button.Label className="font-semibold">{t('docs.cancel')}</Button.Label>
+          </Button>
+        </View>
+      ) : null}
+
+      {actionErrorText ? (
+        <Text testID="docs-action-error" selectable className="text-danger">
+          {actionErrorText}
+        </Text>
       ) : null}
 
       {docs.data === undefined ? (
@@ -111,7 +242,7 @@ export function DocsScreen({ petId }: { petId: string }) {
           pose="health"
           title={t('docs.noDocumentsYet')}
           body={t('docs.emptyBody')}
-          action={isOwner ? { label: t('docs.upload'), onPress: pickDocument } : undefined}
+          action={isOwner && !selectedDocument ? { label: t('docs.upload'), onPress: pickDocument } : undefined}
         />
       ) : null}
 
