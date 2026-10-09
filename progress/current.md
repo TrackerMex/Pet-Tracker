@@ -2,3 +2,28 @@
 
 > Este archivo describe el estado de la sesion en curso.
 > Al cerrar la sesion, mueve este contenido a progress/history.md y deja solo esta plantilla.
+
+## #134 `mobile-alert-ack-outcome-helper` — Frontend [3619ed], 2026-10-09
+
+- Elegida por el humano tras el merge de #162 (PR #204), entre las pendientes
+  móviles: «#134 refactor de alertas». Aviso dado: toca
+  `src/__tests__/ui-copy-table.ts`, que #158 (Backend, en el gate de Notion)
+  probablemente también toque.
+- Branch `feature/134-mobile-alert-ack-outcome-helper` desde origin/main
+  `fb1e562d`, en `/home/claude/sites/Pet-Tracker-wt-134` (el worktree de #162,
+  movido con `git worktree move`).
+- Baseline del gate: el código de `fb1e562d` es idéntico al de `e780925d`
+  (`git diff --quiet e780925d fb1e562d -- backend-pet-tracker mobile-pet-tracker infra init.sh`),
+  cuyo `./init.sh` dio exit 0 (móvil 97/2365). No se relanza init.sh solo
+  para la spec.
+- Premisas re-medidas en `fb1e562d` antes de la spec:
+  - `ackAlert(baseUrl` sigue en los dos `handleAck`
+    (`src/screens/alerts/index.tsx` y `src/screens/alert-detail/index.tsx`).
+  - **Drift frente al registro:** `screenSignOutCalls` de
+    `src/__tests__/design-drift.test.ts` cuenta hoy 1 en
+    `'screens/alerts/index.tsx'` y 1 en `'screens/alert-detail/index.tsx'`;
+    el registro de 2026-09-29 solo nombraba el detalle.
+  - `R12_ALERTS` y `R13_ALERT_DETAIL` siguen en `src/__tests__/ui-copy-table.ts`
+    y entran en `ALL_USES`.
+- Peers: Backend lleva #158 en wt-158 (gate de Notion); UI-Pet lleva #159 en
+  wt-159 (spec_ready).
