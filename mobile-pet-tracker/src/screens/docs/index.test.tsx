@@ -654,3 +654,33 @@ describe('#158 R5: selector y formulario de subida', () => {
     expect(mockAssetFetch).not.toHaveBeenCalled();
   });
 });
+
+describe('#158 R6: validación antes de leer o crear', () => {
+  it.each([
+    { label: 'tipo solo con espacios', input: 'docs-type-input', value: '   ' },
+    { label: 'nombre vacío', input: 'docs-name-input', value: '' },
+    { label: 'fecha sin formato ISO', input: 'docs-date-input', value: '09/10/2026' },
+  ])('rechaza $label sin llamadas', async ({ input, value }) => {
+    await openUploadForm();
+    await fillDocumentForm();
+    await fireEvent.changeText(screen.getByTestId(input), value);
+    await fireEvent.press(screen.getByTestId('docs-upload-submit'));
+    await screen.findByText('Añade un tipo, un nombre y una fecha con formato AAAA-MM-DD');
+    expect(mockAssetFetch).not.toHaveBeenCalled();
+    expect(mockCreatePetDocument).not.toHaveBeenCalled();
+  });
+
+  it.each([{ docs: [] }, { docs: [docOne] }])('ordena y limpia el error con lista %j', async ({ docs }) => {
+    await openUploadForm(docs);
+    await fillDocumentForm();
+    await fireEvent.changeText(screen.getByTestId('docs-type-input'), '   ');
+    await fireEvent.press(screen.getByTestId('docs-upload-submit'));
+    await screen.findByText('Añade un tipo, un nombre y una fecha con formato AAAA-MM-DD');
+    expect(docsChildren()).toEqual(docs.length
+      ? ['View', 'docs-upload-form', 'docs-action-error', 'doc-doc-1']
+      : ['View', 'docs-upload-form', 'docs-action-error', 'docs-empty']);
+    await fireEvent.press(screen.getByTestId('docs-upload-cancel'));
+    await screen.findByTestId(docs.length ? 'docs-upload' : 'docs-empty-action');
+    expect(screen.queryByTestId('docs-action-error')).toBeNull();
+  });
+});
