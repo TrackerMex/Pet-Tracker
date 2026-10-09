@@ -50,7 +50,10 @@ export class PhotoStorageS3Adapter implements PhotoStorage {
       return ContentLength;
     } catch (error) {
       // ponytail: sin s3:ListBucket, AWS devuelve 403 para un objeto ausente; revisar si el modo aws lo necesita (Q1).
-      if ((error as { name?: string })?.name === 'NotFound') {
+      if (
+        (error as { $metadata?: { httpStatusCode?: number } })?.$metadata
+          ?.httpStatusCode === 404
+      ) {
         return null;
       }
       throw error;
