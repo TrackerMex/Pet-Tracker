@@ -247,3 +247,54 @@ describe('#155 R11: los vacíos no traen movimiento ni dependencias', () => {
     expect(source).not.toMatch(/\bAnimated\b|LayoutAnimation|transition|animate-/);
   });
 });
+
+
+const noCollarRows = [
+  ['map.noTrackingTitle', 'No live location', 'Sin ubicación en vivo'],
+  ['map.noTrackingBody', "Once your pet has a collar with an active plan, I'll show you where they are.", 'Cuando tu mascota tenga un collar con plan activo, te muestro dónde está.'],
+  ['geofences.noTrackingTitle', 'Safe zones unavailable', 'Zonas seguras no disponibles'],
+  ['geofences.noTrackingBody', "Once your pet has a collar with an active plan, I'll let you know if they leave a safe zone.", 'Cuando tu mascota tenga un collar con plan activo, te aviso si sale de una zona segura.'],
+] as const;
+
+function section159(): string {
+  const source = languageDesign();
+  const start = source.indexOf('### §2.23 — Añadidos por #159 — Pingo sin collar');
+  return start === -1 ? '' : source.slice(start, source.indexOf('\n## 3. La infraestructura', start));
+}
+
+describe('#159 R1: el copy sin collar existe en los dos idiomas', () => {
+  it.each(noCollarRows)('declara %s en inglés y en español', (key, english, spanish) => {
+    expect(enCatalog[key]).toBe(english);
+    expect(esCatalog[key]).toBe(spanish);
+  });
+
+  it.each(['map.noTrackingBody', 'geofences.noTrackingBody'])('%s no exclama, no lleva emoji y termina en punto en los dos idiomas', (key) => {
+    for (const v of [enCatalog[key], esCatalog[key]]) {
+      expect(typeof v).toBe('string');
+      expect(v).not.toMatch(/[!¡]/);
+      expect(v).not.toMatch(/\p{Extended_Pictographic}/u);
+      expect(v).toMatch(/\.$/);
+    }
+  });
+
+  it.each(['map.noTrackingTitle', 'geofences.noTrackingTitle'])('%s no exclama, no lleva emoji y no termina en punto en los dos idiomas', (key) => {
+    for (const v of [enCatalog[key], esCatalog[key]]) {
+      expect(typeof v).toBe('string');
+      expect(v).not.toMatch(/[!¡]/);
+      expect(v).not.toMatch(/\p{Extended_Pictographic}/u);
+      expect(v).not.toMatch(/\.$/);
+    }
+  });
+
+  it('abre la sección §2.23 en mobile-ui-language tras §2.21 y antes de la infraestructura', () => {
+    const source = languageDesign();
+    const header = '### §2.23 — Añadidos por #159 — Pingo sin collar';
+    expect(source).toContain(header);
+    expect(source.indexOf('### §2.21 — Añadidos por #155')).toBeLessThan(source.indexOf(header));
+    expect(source.indexOf(header)).toBeLessThan(source.indexOf('## 3. La infraestructura'));
+  });
+
+  it.each(noCollarRows)('%s tiene fila de #159 en mobile-ui-language', (key, english, spanish) => {
+    expect(section159()).toContain(`| — | \`${key}\` | \`${english}\` | \`${spanish}\` | ← añadida por #159 (R1) |`);
+  });
+});
