@@ -546,4 +546,4 @@ typecheck y lint.
 
 ### Aprobación de la Enmienda E2
 
-- [ ] Enmienda E2 aprobada por humano (fecha: ____, vía Notion) ← gate obligatorio antes de la ronda 3 de Codex
+- [x] Enmienda E2 aprobada por humano (fecha: 2026-10-09, vía Notion) ← gate obligatorio antes de la ronda 3 de Codex
