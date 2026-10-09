@@ -146,8 +146,8 @@ export function MapScreen() {
   const canSetLostMode = selectedPet?.myRole === 'owner';
   const canPairCollar =
     detail.data?.kind === 'ok' &&
-    detail.data.pet.myRole === 'owner' &&
-    detail.data.pet.device === null;
+    selectedPet?.myRole === 'owner' &&
+    selectedPet?.device === null;
   const refetchPets = pets.refetch;
   const handleLostMode = useCallback(async () => {
     if (!selectedPet || selectedPet.myRole !== 'owner' || lostModeBusy) return;

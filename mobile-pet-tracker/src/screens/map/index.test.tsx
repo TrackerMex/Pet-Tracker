@@ -2024,6 +2024,24 @@ describe('#159 R3: el dueño sin collar puede ir a emparejar', () => {
     expect(mockRouter.push).toHaveBeenCalledTimes(1);
     expect(mockRouter.push).toHaveBeenCalledWith('/pairing');
   });
+
+  it('pinta Vincular collar aunque el listado diga otro rol: manda el rol del detalle', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ myRole: 'family' })] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet() });
+    mockGetLastPosition.mockResolvedValue({ kind: 'no-tracking' });
+    await renderMap();
+    const action = await screen.findByTestId('map-no-tracking-action');
+    expect(within(action).getByText('Vincular collar')).toBeVisible();
+  });
+
+  it('pinta Vincular collar aunque el listado traiga collar: manda el collar del detalle', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ device: makeDevice('online') })] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet() });
+    mockGetLastPosition.mockResolvedValue({ kind: 'no-tracking' });
+    await renderMap();
+    const action = await screen.findByTestId('map-no-tracking-action');
+    expect(within(action).getByText('Vincular collar')).toBeVisible();
+  });
 });
 
 describe('#159 R4: nadie más ve el botón de emparejar', () => {
@@ -2068,6 +2086,15 @@ describe('#159 R4: nadie más ve el botón de emparejar', () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
     mockGetPet.mockReturnValue(pending<PetState>());
     mockGetLastPosition.mockResolvedValue({ kind: 'no-tracking' });
+    await renderMap();
+    await screen.findByTestId('map-no-tracking-title');
+    expect(screen.getByTestId('map-no-tracking-body')).toHaveTextContent('Cuando tu mascota tenga un collar con plan activo, te muestro dónde está.');
+    expect(screen.queryByTestId('map-no-tracking-action')).toBeNull();
+  });
+
+  it.each(['family', 'walker', 'vet'] as const)('no pinta el botón a %s aunque el listado diga owner', async (role) => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    noTrackingAfterDetail({ kind: 'ok', pet: makePet({ myRole: role }) });
     await renderMap();
     await screen.findByTestId('map-no-tracking-title');
     expect(screen.getByTestId('map-no-tracking-body')).toHaveTextContent('Cuando tu mascota tenga un collar con plan activo, te muestro dónde está.');
