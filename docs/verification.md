@@ -1023,6 +1023,63 @@ Prueba de humo en el dev build de Android, firmada por el humano el
 
 ---
 
+### Feature 18 — nutrition-ai-explainer
+
+Prueba de humo con clave real: la ejecuta exclusivamente un humano tras la revisión. R19 permanece pendiente hasta que marque su casilla en la spec.
+
+```
+0. Pre-vuelo (en el worktree y en la shell que arrancará el servidor):
+   grep -cE '^NODE_ENV=' .env           -> 0   (con NODE_ENV=test el factory apaga la IA)
+   env | grep -c '^ANTHROPIC_'          -> 0   (una variable exportada gana sobre .env)
+   Mascota con collar vinculado y suscripcion vigente (isPetTracked true).
+   Candidata local: Rex18, 01a0181f-5e2d-7cd2-beb9-b3761c405d39, collar SIM-002,
+   si sigue en la BD local; si no, cualquier mascota con collar activo.
+1. En .env (nunca en .env.example): ANTHROPIC_ENABLED=true,
+   ANTHROPIC_API_KEY=<clave real>, ANTHROPIC_MODEL=claude-haiku-5-5.
+   Parar el servidor (Ctrl-C) y arrancarlo otra vez: `nest start --watch` NO
+   vigila .env.
+2. API_BASE=http://localhost:3000/v1 y AUTH_TOKEN con el login de la seccion
+   "Feature 51 — media-bucket-aws-mode" de este documento (LOGIN_BODY con jq -n,
+   POST $API_BASE/auth/login | jq -er '.access_token').
+   Cambiar kcalPer100g para forzar un hash nuevo: GET el perfil, PUT el mismo
+   perfil con kcalPer100g distinto
+     (jq '{activityLevel, bodyCondition, targetWeightKg, foodType, allergies,
+           diseases, kcalPer100g: <nuevo>} | with_entries(select(.value != null))').
+3. POST $API_BASE/pets/<petId>/nutrition-plan/generate -> 200, kcal y gramos
+   coherentes y aiExplanation = texto en español (no null). Anotar id y texto.
+   GET $API_BASE/pets/<petId>/nutrition-plan -> mismo aiExplanation.
+4. Repetir el mismo POST generate sin tocar nada -> mismo id y mismo texto
+   (hash hit: la IA NO se vuelve a llamar).
+5. En .env: ANTHROPIC_API_KEY=PENDING. Reiniciar el servidor. Cambiar
+   kcalPer100g otra vez (sin esto el hash hit devuelve el texto anterior) y
+   POST generate -> 200 con aiExplanation null; en la salida del servidor,
+   un warn con "ai explanation disabled" y "key-missing".
+6. Dejar ANTHROPIC_API_KEY=PENDING y ANTHROPIC_ENABLED=false en .env y
+   reiniciar el servidor, para que init.sh y el desarrollo no facturen.
+```
+
+Y esta tabla de diagnóstico, para cuando el paso 3 devuelva `null`:
+
+| En la salida del servidor | Significa |
+|---|---|
+| `ai explanation disabled` + `node-env-test` | `NODE_ENV=test` en `.env` o en la shell |
+| `ai explanation disabled` + `not-enabled` / `key-missing` / `model-missing` | variable mal puesta o servidor sin reiniciar |
+| `ai explanation unusable` + `stopReason` / `usage` | respuesta sin texto útil (ver P4) |
+| `warn` con el mensaje de un error (401, 429, …) | clave o cuenta |
+| ningún `warn` de `nutrition-ai` | mascota sin entitlement (`isPetTracked` falso) |
+
+IF la clave real falla con `401`/`429` persistente THEN el humano SHALL dejar
+`ANTHROPIC_ENABLED=false`, reportarlo y **no** bloquear el cierre por ese
+motivo (condición de STOP del plan 009).
+
+**Coste estimado por llamada** (estimación, no factura: precios de Haiku 5.5
+según la skill `claude-api` a 2026-10-08, $0.10 por millón de tokens de
+entrada y $0.50 por millón de salida, para prompts de hasta 100 000 tokens):
+peor caso con las cotas de C-3, ≤ 1 500 tokens de entrada (≈ $0.00015) más
+≤ 1 200 de salida (≈ $0.0006), es decir **≤ ~$0.00075 por llamada**; caso
+típico del orden de **$0.0003**. La prueba de humo completa hace **una**
+llamada facturada (paso 3).
+
 ## Notas para el implementer
 
 - No declares done solo porque el build pasa. Prueba los casos edge (errores,

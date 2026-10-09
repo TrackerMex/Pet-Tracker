@@ -1,3 +1,7 @@
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { SubscriptionsModule } from '@/modules/subscriptions/subscriptions.module';
+import { NUTRITION_EXPLAINER } from '@/modules/nutrition/domain/ports/nutrition-explainer';
+import { createNutritionExplainer } from '@/modules/nutrition/infrastructure/ai/nutrition-explainer.factory';
 import { GetMealsHistoryUseCase } from '@/modules/nutrition/application/use-cases/get-meals-history.use-case';
 import { MoveMealTimeUseCase } from '@/modules/nutrition/application/use-cases/move-meal-time.use-case';
 import { AddMealTimeUseCase } from '@/modules/nutrition/application/use-cases/add-meal-time.use-case';
@@ -17,9 +21,14 @@ import { NutritionDrizzleRepository } from '@/modules/nutrition/infrastructure/r
 import { PetsModule } from '@/modules/pets/pets.module';
 
 @Module({
-  imports: [PetsModule],
+  imports: [PetsModule, SubscriptionsModule, ConfigModule],
   controllers: [NutritionController, MealsController],
   providers: [
+    {
+      provide: NUTRITION_EXPLAINER,
+      useFactory: createNutritionExplainer,
+      inject: [ConfigService],
+    },
     GetMealsHistoryUseCase,
     MoveMealTimeUseCase,
     AddMealTimeUseCase,

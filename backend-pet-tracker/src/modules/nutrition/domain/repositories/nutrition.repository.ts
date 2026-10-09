@@ -16,6 +16,7 @@ export interface MealTimeMove {
 }
 
 export interface NutritionRepository {
+  setAiExplanation(planId: string, explanation: string): Promise<NutritionPlan>;
   findProfile(petId: string): Promise<NutritionProfile | null>;
   upsertProfile(
     petId: string,

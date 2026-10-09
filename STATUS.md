@@ -1,10 +1,10 @@
 # pet-tracker — Status
 
-**Última actualización**: 2026-10-08
-**Features completadas**: 146/160 (`feature_list.json`)
-**En progreso**: ninguna en esta rama. #157 cerrada en `feature/157-media-docs-download-api`, PR pendiente de merge humano.
+**Última actualización**: 2026-10-09
+**Features completadas**: 147/161 (`feature_list.json`)
+**En progreso**: ninguna en esta rama. #18 cerrada en `feature/18-nutrition-ai-explainer-claude`, PR pendiente de merge humano.
 
-**Pendientes**: 14 (#18, #60, #119, #129, #134, #144, #150, #151, #154, #158, #159, #160, #161 y #162). **#157 `media-docs-download-api` cerrada**: los documentos de una mascota ganan estado de subida y URL de descarga. `pet_documents` gana `uploaded_at` (migración 0019, nullable y sin backfill: las filas existentes quedan pendientes). El POST crea el documento pendiente. `POST /v1/pets/:petId/media/:documentId/confirm` (solo owner, 204) lo marca subido tras un `HeadObject` al bucket y es idempotente; si el objeto no está, responde 409 `PET_DOCUMENT_NOT_UPLOADED`. El GET lista solo los confirmados, y cada elemento trae `downloadUrl`, una URL GET prefirmada de 3600 s, para los cuatro roles. El cuerpo del POST no cambia y el móvil desplegado tolera la clave nueva. Q1 (coste en modo aws) autorizada por el humano; deudas #160 (IAM mínimo del bucket, incluido el 403 sin `s3:ListBucket`) y #161 (límite de tamaño en el confirm). Codex test-primero en 12 commits (una parada en c10 por ESLint, corregida en `771460af`). Reviewer APROBADO a la primera; las 3 sondas vivas (P4, P10, P16) y la carrera de `markUploaded` van a la deuda #162 (candados de test, por decisión del humano). Backend unit 176/1348 → 179/1361, e2e 438 → 459 tests verdes.
+**Pendientes**: 14 (#60, #119, #129, #134, #144, #150, #151, #154, #158, #159, #160, #161, #162 y #163). **#18 `nutrition-ai-explainer` cerrada (proveedor Anthropic)**: el plan nutricional gana una explicación en lenguaje natural escrita por `claude-haiku-5-5`, opcional y apagada por defecto. Tres variables en `.env.example` (`ANTHROPIC_ENABLED`, `ANTHROPIC_API_KEY`, `ANTHROPIC_MODEL`); la factory es la única que las lee, `NODE_ENV=test` la apaga antes que nada y clave y modelo llegan recortados. El plan se inserta primero y la IA va después: cualquier fallo del SDK o del proveedor degrada a `aiExplanation: null` con un warn, sin tumbar la respuesta. La explicación se persiste en Postgres (`setAiExplanation`) y las rutas la leen de ahí; un hash hit con explicación no vuelve a pagar, el reintento escribe sobre la misma fila y solo se pide con el gate de entitlement (`isPetTracked`). Sustituye a la implementación OpenAI de 2026-08, que nunca se mergeó. Codex en dos rondas: la primera rechazada (F1-F3, con origen en la spec), Enmienda E1 firmada desde Notion (`c4b86430`) y la segunda aprobada (`535128bd`). R19, la prueba de humo con clave real, la superó el humano (`27680bf6`). Deuda #163: la O1 del reviewer (el anti-vacío de R3 solo muestrea `NODE_ENV=development`). Backend unit 179/1361 → 186/1463, e2e 459 → 465 tests verdes.
 
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
@@ -88,6 +88,13 @@ debe listar las 4 URLs de cola.
 
 ## Estado actual
 
+- **`nutrition-ai-explainer` (#18) done** (2026-10-09, worktree
+  `Pet-Tracker-wt-18`, sesion Backend): explicación IA del plan nutricional
+  con `claude-haiku-5-5`, apagada por defecto y degradando a `null`.
+  Reviewer aprobado en la ronda 2 (`535128bd` sobre `8b0a74c2`). Gate:
+  `./init.sh` exit 0 (backend 186/1463, móvil 96/2275,
+  e2e 30 de 33 suites, 465 tests). Smoke humano R19
+  `27680bf6`. Deuda #163. PR abierta.
 - **`media-docs-download-api` (#157) done** (2026-10-08, worktree
   `Pet-Tracker-wt-157`, sesion Frontend): estado de subida (`uploaded_at`,
   migración 0019), `POST .../:documentId/confirm` con `HeadObject` y
@@ -1395,6 +1402,13 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Última sesión
+
+- **2026-10-09** — **#18 `nutrition-ai-explainer` cerrada** (worktree
+  `Pet-Tracker-wt-18`, sesión Backend): enmienda de proveedor a Anthropic
+  firmada desde Notion (`1837ab0a`), ronda 1 de Codex rechazada (`c09ee51c`),
+  Enmienda E1 firmada desde Notion (`c4b86430`), ronda 2 y reviewer APROBADO
+  (`535128bd`), smoke humano R19 (`27680bf6`) y deuda #163. PR abierta;
+  siguiente: merge humano.
 
 - **2026-10-08** — **#157 `media-docs-download-api` cerrada** (worktree
   `Pet-Tracker-wt-157`, sesión Frontend, que heredó la coordinación de
