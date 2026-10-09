@@ -33,6 +33,22 @@ function makeHandlers(language: 'en' | 'es') {
   } satisfies AlertAckHandlers;
 }
 
+function deferred() {
+  let resolve!: () => void;
+  let reject!: (error: Error) => void;
+  const promise = new Promise<void>((onResolve, onReject) => {
+    resolve = onResolve;
+    reject = onReject;
+  });
+  return { promise, resolve, reject };
+}
+
+function flushPromises() {
+  return new Promise<void>((resolve) => {
+    setTimeout(resolve, 0);
+  });
+}
+
 describe('#134 R3: el helper entrega las ramas delegadas a la pantalla', () => {
   it('ok entrega el Alert devuelto sin copiarlo', async () => {
     const handlers = makeHandlers('es');
@@ -135,6 +151,58 @@ describe('#134 R4: el helper resuelve las ramas comunes en los dos idiomas', () 
     expect(handlers.showError).toHaveBeenCalledTimes(1);
     expect(handlers.showError).toHaveBeenCalledWith(expected);
     expect(handlers.signOut).not.toHaveBeenCalled();
+    expect(handlers.onAcked).not.toHaveBeenCalled();
+    expect(handlers.onNotFound).not.toHaveBeenCalled();
+  });
+
+  it('unauthorized espera a signOut antes de resolver', async () => {
+    const handlers = makeHandlers('es');
+    const signOutGate = deferred();
+    handlers.signOut.mockReturnValueOnce(signOutGate.promise);
+    const done = settleAlertAck(() => Promise.resolve({ kind: 'unauthorized' }), alert, handlers);
+    let settled = false;
+    void done.then(
+      () => {
+        settled = true;
+      },
+      () => undefined,
+    );
+
+    await flushPromises();
+    expect(handlers.signOut).toHaveBeenCalledTimes(1);
+    expect(settled).toBe(false);
+
+    signOutGate.resolve();
+    await expect(done).resolves.toBeUndefined();
+    expect(settled).toBe(true);
+    expect(handlers.showError).not.toHaveBeenCalled();
+    expect(handlers.onAcked).not.toHaveBeenCalled();
+    expect(handlers.onNotFound).not.toHaveBeenCalled();
+  });
+
+  it('unauthorized espera también a un signOut que rechaza, es', async () => {
+    const handlers = makeHandlers('es');
+    const signOutGate = deferred();
+    handlers.signOut.mockReturnValueOnce(signOutGate.promise);
+    const done = settleAlertAck(() => Promise.resolve({ kind: 'unauthorized' }), alert, handlers);
+    let settled = false;
+    void done.then(
+      () => {
+        settled = true;
+      },
+      () => undefined,
+    );
+
+    await flushPromises();
+    expect(handlers.signOut).toHaveBeenCalledTimes(1);
+    expect(settled).toBe(false);
+    expect(handlers.showError).not.toHaveBeenCalled();
+
+    signOutGate.reject(new Error('sign-out failed'));
+    await expect(done).resolves.toBeUndefined();
+    expect(settled).toBe(true);
+    expect(handlers.showError).toHaveBeenCalledTimes(1);
+    expect(handlers.showError).toHaveBeenCalledWith('Algo salió mal');
     expect(handlers.onAcked).not.toHaveBeenCalled();
     expect(handlers.onNotFound).not.toHaveBeenCalled();
   });
