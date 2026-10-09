@@ -8407,3 +8407,57 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
   idéntico al del veredicto. No se repite `init.sh`.
 - Cierre: `done` en `feature_list.json`, trazabilidad R12, STATUS, Notion
   (Implementado / Completado) y PR contra `main`. Merge: humano.
+
+## #162 `media-docs-download-test-locks` — Candados de test de la deuda de #157 — 2026-10-09
+
+- Sesión: Frontend (Claude Code, leader). Worktree
+  `/home/claude/sites/Pet-Tracker-wt-162`, branch
+  `feature/162-media-docs-download-test-locks`, base origin/main `51ffebd0`.
+- Antes de la spec se re-midieron los cuatro huecos registrados (memoria
+  `deuda-registrada-ensancha-el-alcance`). El hueco (1), P16 del mapper,
+  ya lo había cerrado #161 R3, así que salió del alcance. Quedaron tres:
+  - R1: el 404 de `getObjectSize` se decide por `$metadata.httpStatusCode`,
+    no por `name`;
+  - R2: la lista conserva el orden del repositorio cuando las URLs resuelven
+    fuera de orden;
+  - R3: `markUploaded` sobre una fila ya confirmada no cambia `uploaded_at`
+    (e2e contra Postgres).
+- Spec del `spec_author` en `1f975e55`, revisada por el leader: 29 anclas
+  re-ejecutadas sobre `51ffebd0`, 0 fallos. Aprobada en Notion (página
+  `3f46115a-9b27-8139-b35e-ee1d530aef95`) con Q1-Q3 en su recomendación
+  («Vamos a seguir la recomendaciones»). Firma en `b1eea14a`.
+- Merge de origin/main `65f37841` (#155) en `6c4f0d69`. No toca
+  `backend-pet-tracker/`.
+- Handoff a Codex en `29585178` (H0): R1-R3 en pares rojo/verde, con las
+  mutaciones M1-M3 versionadas en el rojo y revertidas desde H0 en el verde,
+  más trazabilidad y lista cerrada. 43 anclas ejecutadas desde el propio
+  fichero.
+- Parada de arranque: Codex lanzó la UNIT de la base desde la raíz del
+  worktree (`ERR_PNPM_RECURSIVE_EXEC_NO_PACKAGE`) y lo tomó por un rojo. Se
+  reanudó con un mensaje que conserva H0, en vez de una enmienda commiteada.
+  Lección en la memoria `handoff-cwd-explicito-y-error-de-invocacion`.
+- Codex: 8 commits (`dc4a2dd7`..`e780925d`), tres pares rojo/verde,
+  trazabilidad (`e2cbec46`) y lista cerrada (`e780925d`). El diff neto de
+  producción es cero.
+- Gate: `./init.sh` del leader sobre `e780925d`, exit 0 (backend 187/1474,
+  infra 2/14, móvil 97/2365, e2e 30 de 33 suites con 476 tests y 8
+  saltados). Peers avisados antes y después.
+- Reviewer **APROBADO** a la primera (veredicto sobre `e780925d`). M1-M3 y
+  las sondas de tasks.md mueren en el it previsto. Observaciones no
+  bloqueantes:
+  - N1: la sonda X4, `(status ?? 0) >= 404`, sobrevive. Un 500 o un 503 del
+    HEAD acabaría en 409 NOT_UPLOADED, porque la cláusula «relanza cualquier
+    otro error» de #157 R7 solo tiene candado con un 403. Está fuera de R1.
+  - N2: las sondas X7, X8 y X10 sobreviven. El fixture de R2 que manda la
+    spec no distingue el orden del repositorio de un sort por fecha o id
+    desc. X7 reabriría la fuga entre documentos de la misma fecha. Cerrarlo
+    exige enmendar la spec.
+  - N3-N5: texto «pendiente» obsoleto en el impl, frontmatter `draft` en
+    tasks.md y traceability.md (igual que en #161) y autor «Claude» en los
+    commits. Cosméticos.
+  N1 y N2 se registran como deuda #164 `media-docs-storage-error-and-order-locks`
+  por decisión del humano («si registra N1 y N2 como feature nueva de deuda»),
+  con sus límites: un 500 no mata la variante `>= 404 && < 500`, y la
+  spec elige el fixture de orden y decide sobre las fixtures e2e de #157 R1.
+- Cierre: `done` en `feature_list.json`, STATUS, Notion (Implementado /
+  Completado) y PR contra `main`. Merge: humano.
