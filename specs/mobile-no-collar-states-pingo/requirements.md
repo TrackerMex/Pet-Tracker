@@ -1,6 +1,6 @@
 ---
 feature: "mobile-no-collar-states-pingo"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [mobile, ui, spec]
 ---
 
@@ -386,6 +386,6 @@ casilla de §Aprobación.
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
-- [ ] Decisiones A1–A5 y copy final L1–L8 aprobados (fecha: ____)
+- [x] Aprobado por humano (fecha: 2026-10-09) ← gate obligatorio antes de implementar
+- [x] Decisiones A1–A5 y copy final L1–L8 aprobados (fecha: 2026-10-09)
 - [ ] Prueba de humo R10 superada en dev build de Android (fecha: ____) ← gate de cierre; el leader no marca `done` sin ella
