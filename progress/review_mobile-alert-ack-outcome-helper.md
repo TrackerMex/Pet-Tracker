@@ -559,3 +559,110 @@ La sustituyen estas 6 líneas, idénticas en los dos ficheros:
 - Se restauraron los tres ficheros de test con `git checkout HEAD --`.
 - `git diff --cached --quiet` y `git diff --quiet -- mobile-pet-tracker` dan 0, y no hay ficheros sin trackear.
 - Quedan modificados este fichero, `requirements.md` y `tasks.md`. Los dos últimos son cambios del leader; no se tocaron.
+
+## Ronda 2
+
+Re-revisión de la Enmienda E1. Worktree `/home/claude/sites/Pet-Tracker-wt-134`, branch `feature/134-mobile-alert-ack-outcome-helper`, HEAD `707c566e`. H0 de la ronda 2 = `044ecfe0`. Fecha: 2026-10-09.
+
+### R2.1 — Estado, lista cerrada y diffs
+
+- `git rev-parse HEAD` = `707c566e4baf87ae3c0285a6026f57871eef4260`; branch `feature/134-mobile-alert-ack-outcome-helper`; `git status --short` vacío.
+- Commits de la ronda 2 sobre H0 `044ecfe0`: c1 `afd1b4fb` (rojo R4), c2 `d3c2b7eb` (verde), c3 `c19c7ca6` (rojo R1), c4 `bfca523f` (verde), c5 `63f91569` (rojo R2), c6 `190cb1cc` (verde), c7 `670fd9f5` (rojo R1, R2), c8 `c6ec5d8c` (verde), c9 `7a28a26b` (trazabilidad), `707c566e` (impl). Orden y separación rojo/verde según el handoff.
+- Lista cerrada (`git diff --name-only 044ecfe0 HEAD` con las 8 exclusiones del handoff): exactamente los 5 ficheros declarados (3 tests, impl, traceability). Sin exclusiones sale la misma lista: el leader no commiteó en mitad.
+- `git diff --numstat 044ecfe0 HEAD` de los tests: `36 0` detalle, `49 0` centro, `68 0` helper. 0 borrados.
+- `git diff --quiet 044ecfe0 HEAD -- <helper> <2 pantallas> src/__tests__ src/i18n/catalog.ts src/providers/__tests__/language-provider.test.tsx package.json bun.lock app.json` → exit=0.
+- `git diff --stat 044ecfe0 HEAD -- backend-pet-tracker/ infra/ docs/` → vacío.
+- Cada verde deja producción igual a H0: `git diff --quiet 044ecfe0 <verde> -- <helper> <2 pantallas>` → exit=0 en `d3c2b7eb`, `bfca523f`, `190cb1cc`, `c6ec5d8c`.
+- Cada rojo toca solo su test y su producción: c1 test helper `68 0` y helper `3 2` (M5); c3 test centro `30 0` y centro `2 1` (M6); c5 test detalle `16 0` y detalle `2 1` (M7); c7 tests `19 0` y `20 0`, y cada pantalla `6 1` (M8 y M9). Los diffs de producción de los rojos son literalmente M5, M6, M7, M8 y M9 de E1.1, E1.2 y E1.7.
+- traceability.md: 4 filas nuevas justo después de R7 (`R4 (E1)`, `R1 (E1)`, `R2 (E1)`, `R1 y R2 (E1.7)`). Las 7 filas de la ronda 1 no cambian. Los 8 hashes cumplen `git merge-base --is-ancestor <hash> HEAD` (exit=0). Ninguna fila dice «pendiente»; la única aparición de la palabra es la línea de la regla.
+
+### R2.2 — Literalidad de los 8 tests
+
+- Helper: `deferred` y `flushPromises` justo después de `makeHandlers`, iguales al bloque de E1.1. W1 y W2 al final de `describe('#134 R4: …')`, con los títulos literales, `mockReturnValueOnce(signOutGate.promise)`, `void done.then(() => { settled = true; }, () => undefined)`, `flushPromises`, las aserciones de E1.1 en su orden y `'Algo salió mal'` literal en W2.
+- Centro: `EnglishAlertsWrapper` y `renderAlertsInEnglish` justo después de `renderAlerts`, literales. C3, C4 y C5 al final de `describe('#134 R1: …')`, en ese orden, con títulos, `mockResolvedValueOnce`, esperas con `queryByTestId` + `toHaveTextContent('<literal completo>')` y el cuerpo de C5 idéntico al de E1.7 (19 líneas). `AlertsWrapper` y `renderAlerts` sin tocar.
+- Detalle: D2, D3 y D4 al final de `describe('#134 R2: …')`, con `renderDetail('alert-1', 'en')` en D2/D3 y el cuerpo de D4 idéntico al de E1.7 (20 líneas).
+- Sin `act`, sin imports nuevos (el diff no toca ninguna línea `import`), sin formas sin `Once` en los mocks, sin `#134` sueltos, sin `en[...]`/`es[...]` en los valores esperados.
+
+### R2.3 — Rojos de c1, c3, c5 y c7 medidos en un worktree temporal
+
+Worktree desacoplado en el scratchpad (`git worktree add --detach`), con `node_modules` enlazado al de wt-134; borrado al terminar. El HEAD de wt-134 no se movió. Jest por fichero, `FORCE_COLOR=0`, salida a fichero.
+
+| Commit | Suite | exit | `Tests:` | `it` rojos | Matcher / Received |
+|---|---|---|---|---|---|
+| c1 `afd1b4fb` | helper | 1 | 2 failed, 15 passed, 17 total | W1, W2 | `expect(settled).toBe(false)` (líneas 173 y 198): Expected `false`, Received `true` |
+| c3 `c19c7ca6` | centro | 1 | 2 failed, 41 passed, 43 total | C3, C4 | `toHaveTextContent('Cannot reach server')` → Received `No se pudo conectar con el servidor`; `toHaveTextContent('Something went wrong')` → Received `Algo salió mal` |
+| c5 `63f91569` | detalle | 1 | 2 failed, 26 passed, 28 total | D2, D3 | ídem, en `alert-detail-action-error` |
+| c7 `670fd9f5` | centro | 1 | 1 failed, 43 passed, 44 total | C5 | `toBeDisabled()` (línea 797): «Received instance is not disabled» |
+| c7 `670fd9f5` | detalle | 1 | 1 failed, 28 passed, 29 total | D4 | `toBeDisabled()` (línea 387): «Received instance is not disabled» |
+| c7 `670fd9f5` | helper + design-drift + ui-language | 0 | 112 passed (17 + 65 + 30) | — | M8 y M9 esconden los literales: los guards siguen verdes, como declara E1.7 |
+
+Cada rojo cae por aserción (el nodo existe), solo en sus `it`, y los demás de la suite siguen verdes. Los verdes ya están medidos arriba: producción igual a H0 en c2, c4, c6 y c8.
+
+### R2.4 — Sondas E1-S1 a E1-S8 y supervivientes de la ronda 1, sobre HEAD `707c566e`
+
+Cada sonda: mutación en el árbol de wt-134, jest por fichero (`FORCE_COLOR=0`, salida a fichero), `git checkout HEAD -- <fichero>` y comprobación de limpieza. La limpieza se mide como `git diff --quiet -- . ':!progress/review_mobile-alert-ack-outcome-helper.md' && git diff --cached --quiet` y sin ficheros sin trackear: el único fichero modificado es este review, que se va escribiendo durante la medición.
+
+| Sonda | Mutación | Suite | exit | `Tests:` | Rojos (matcher) | Limpieza |
+|---|---|---|---|---|---|---|
+| E1-S1 = P3d | helper: `await signOut();` → `void Promise.resolve(signOut()).catch(() => showError(t('common.somethingWentWrong')));` (numstat `1 1`) | helper | 1 | 2 failed, 15 passed, 17 | W1, W2: `toBe(false)`, Received `true` (173, 198) | exit=0 (solo `M` el review) |
+| | | centro | 1 | 1 failed, 43 passed, 44 | C5: `toBeDisabled()` (797) | |
+| | | detalle | 1 | 1 failed, 28 passed, 29 | D4: `toBeDisabled()` (387) | |
+| E1-S2 = P3c | helper: `await signOut();` → `void signOut().catch(() => showError(t('common.somethingWentWrong')));` (numstat `1 1`) | helper | 1 | 2 failed, 15 passed, 17 | W1, W2: `toBe(false)` (173, 198) | exit=0 |
+| | | centro | 1 | 1 failed, 43 passed, 44 | C5: `toBeDisabled()` (797). En la ronda 1, P3c dejaba el centro 41/41 en verde | |
+| | | detalle | 1 | 2 failed, 27 passed, 29 | D4: `toBeDisabled()` (387); y el rojo accidental ya conocido de P3b en `#100 R5` «cierra sesión una vez si el ack responde unauthorized» (`toBeNull`, 329: el `mockSignOut` por defecto devuelve `undefined`) | |
+| E1-S3 | centro: `import { es }` + `t: (key) => (key === 'common.cannotReachServer' ? es[key] : t(key)),` (numstat `2 1`) | centro | 1 | 1 failed, 43 passed, 44 | solo C3: `toHaveTextContent('Cannot reach server')`, Received `No se pudo conectar con el servidor` (774) | exit=0 |
+| E1-S4 | centro: lo mismo con `'common.somethingWentWrong'` | centro | 1 | 1 failed, 43 passed, 44 | solo C4: `toHaveTextContent('Something went wrong')`, Received `Algo salió mal` (782) | exit=0 |
+| E1-S5 | detalle: lo de E1-S3 | detalle | 1 | 1 failed, 28 passed, 29 | solo D2: Received `No se pudo conectar con el servidor` (363) | exit=0 |
+| E1-S6 | detalle: lo de E1-S4 | detalle | 1 | 1 failed, 28 passed, 29 | solo D3: Received `Algo salió mal` (371) | exit=0 |
+| E1-S7 = Q6Bc (B3, centro) | centro: M8 sola (`        signOut,` → el envoltorio de 6 líneas de E1.7; ancla `grep -cxF '        signOut,'` = 1 en cada pantalla; numstat `6 1`) | centro | 1 | 1 failed, 43 passed, 44 | solo C5: `toBeDisabled()`, «Received instance is not disabled» (797) | exit=0 |
+| | | ui-language / design-drift | 0 / 0 | 30 / 65 passed | ninguno (el envoltorio esconde los literales, como declara E1.7) | |
+| E1-S8 = Q6Bd (B3, detalle) | detalle: M9 sola (numstat `6 1`) | detalle | 1 | 1 failed, 28 passed, 29 | solo D4: `toBeDisabled()`, «Received instance is not disabled» (387) | exit=0 |
+| | | ui-language / design-drift | 0 / 0 | 30 / 65 passed | ninguno | |
+| P14 (ronda 1) | centro: `import { es }` + `t: (key) => es[key],` (= M6) | centro | 1 | 2 failed, 42 passed, 44 | C3 y C4: `toHaveTextContent`, Received en `es` (774, 782). En la ronda 1 sobrevivía con 41/41 | exit=0 |
+| P11 (ronda 1) | detalle: lo mismo (= M7) | detalle | 1 | 2 failed, 27 passed, 29 | D2 y D3: `toHaveTextContent`, Received en `es` (363, 371). En la ronda 1 sobrevivía con 26/26 | exit=0 |
+
+**Resultado.** Las 8 sondas de E1.4 dan el rojo declarado, por aserción y nunca por consulta, en exactamente sus `it`. Las supervivientes de #134 de la ronda 1 caen todas ahora: P3c (= E1-S2), P3d (= E1-S1), P11, P14, y la B3 de M8/M9 (= Q6Bc/Q6Bd = E1-S7/E1-S8). P3c y P3d caen además en C5 y D4, o sea que la espera queda cerrada por dos lados: en el helper (W1/W2) y en las pantallas (C5/D4). Tras cada sonda, el árbol vuelve a HEAD (limpieza exit=0).
+
+### R2.5 — Typecheck, lint e init.sh
+
+- Desde `mobile-pet-tracker/` en HEAD `707c566e`: `test ! -e .expo/types/router.d.ts` → exit=0; `bun run typecheck` → exit=0; `bunx expo lint --no-cache` → exit=0, salida sin avisos ni errores.
+- `./init.sh`: no lo lancé (el clasificador lo deniega al reviewer y comparte Postgres/LocalStack). Lo corrió el leader con permiso del humano sobre HEAD `707c566e` (commit de las 22:42:29 UTC; log escrito a las 23:05). Log leído con grep: backend `Test Suites: 187 passed, 187 total` / `Tests: 1474 passed, 1474 total`; `Test Suites: 2 passed` / `Tests: 14 passed`; móvil (líneas 28002-28003) `Test Suites: 98 passed, 98 total` / `Tests: 2394 passed, 2394 total`; e2e `Test Suites: 3 skipped, 30 passed, 30 of 33 total` / `Tests: 8 skipped, 468 passed, 476 total`; `✅ Lint sin errores`, `✅ Typecheck sin errores`, `✅ Todo verde`. 2394 = 2386 + 8, la cuenta de E1.3. HEAD del worktree sin mover durante toda la revisión (`707c566e`).
+
+### R2.6 — Deuda delimitada por E1.5
+
+Las 7 supervivientes anteriores (P16b, P20a, P20b, P17, P18, P24, P25) siguen fuera del diff: `git diff -U0 044ecfe0 HEAD` sobre las dos pantallas sale vacío, y sus líneas siguen en su sitio (`setActionError(null)` del detalle :51, `ackingRef.current = false;` :66, `setAcking(false);` :67, `if (ackingIdRef.current !== null) return;` del centro :84, `|| ackingRef.current` del detalle :48, y los dos `leavingRef` del `onNotFound` :59-60). No son motivo de rechazo. El leader las registra como feature de deuda al cerrar #134.
+
+### Checklist ronda 2
+
+**C2 — Estado coherente**
+- [x] Solo 1 feature `in_progress` en `feature_list.json` (#134)
+- [x] `progress/current.md` describe #134, E1 y el handoff de la ronda 2
+
+**C3 — Arquitectura**
+- [x] Sin cambios de producción en la ronda 2 (`git diff --quiet 044ecfe0 HEAD` sobre el helper y las pantallas, exit=0). Lo de la ronda 1 no cambia.
+
+**C4 — TDD**
+- [x] W1/W2 nombran R4 (en `describe('#134 R4: …')`); C3/C4/C5 nombran R1; D2/D3/D4 nombran R2
+- [x] Rojo antes del verde, en commits separados (c1-c8). Cada rojo cae por aserción en exactamente sus `it`, medido por mí en cada commit rojo. Cada verde deja producción igual a H0
+
+**C5 — Trazabilidad**
+- [x] 4 filas nuevas tras R7, con hashes reales que son ancestros de HEAD; ninguna fila «pendiente»
+- [x] Mensajes `test(...)`/`fix(...)`/`docs(...)` con sus R-ids, con el mismo formato que la ronda 1
+
+**C6 — Spec aprobada**
+- [x] `status: approved`; `[x] Enmienda E1 aprobada (fecha: 2026-10-09)`, firma en `08d7d0a1`
+
+**C7 — Sin código huérfano**
+- [x] N/A en la ronda 2: no se reemplaza nada; solo se añaden tests
+
+**C8 — Carta UI**
+- [x] La ronda 2 solo añade tests: sin hex, sin `StyleSheet`, sin clases arbitrarias; `design-drift` 65/65 en verde
+
+### Observaciones de la ronda 2
+
+- O6 (informativa): Codex commitea con la identidad automática `Claude <claude@srv1178023.hstgr.cloud>`, como avisa git en la salida de c9 del impl. No afecta al veredicto.
+- O7 (informativa): con P3c (E1-S2), el detalle da además el rojo accidental de P3b en `#100 R5` «cierra sesión una vez…», ya documentado en la ronda 1. No tapa el rojo de D4, que cae por su cuenta.
+
+### Veredicto ronda 2: APROBADO
+
+Sin hallazgos bloqueantes. B1, B2 y B3 de la Enmienda E1 están cerrados: W1/W2 y C5/D4 candan la espera a `signOut` en el helper y en cada pantalla, y C3/C4/D2/D3 candan el `t` de cada pantalla, una clave por `it`. Las supervivientes de #134 de la ronda 1 (P3c, P3d, P11, P14, Q6Bc, Q6Bd) caen todas. Lista cerrada, numstat, producción, typecheck, lint e init.sh del leader en verde.
