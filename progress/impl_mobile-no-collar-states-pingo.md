@@ -11199,3 +11199,639 @@ exit=0
 Exit de la invocación: 0.
 
 R10: pendiente del smoke humano
+
+# Ronda 3 — Enmienda E2
+
+## Base E2
+
+```text
+$ pwd
+/home/claude/sites/Pet-Tracker-wt-159
+$ git branch --show-current
+feature/159-mobile-no-collar-states-pingo
+$ git rev-parse --short HEAD
+48363132
+$ git status --short
+(vacío)
+```
+
+H0E2: `48363132`. Enmienda E2 firmada en `4146ac24`. Ninguna skill cargada.
+Las rondas 1 y 2 se conservan íntegras; solo se añade al final del impl.
+Se sigue literalmente el handoff E2. No se crean comprobadores propios de Jest.
+
+```text
+$ cd /home/claude/sites/Pet-Tracker-wt-159/mobile-pet-tracker && pwd
+/home/claude/sites/Pet-Tracker-wt-159/mobile-pet-tracker
+$ git fetch origin; echo "exit=$?"
+exit=0
+```
+
+## Comprobaciones iniciales E2
+
+```text
+$ git merge-base --is-ancestor origin/main HEAD; echo "exit=$?"
+exit=0
+```
+
+```text
+$ git merge-base --is-ancestor 340967ba HEAD; echo "exit=$?"
+exit=0
+```
+
+```text
+$ git diff --quiet 340967ba HEAD -- .; echo "exit=$?"
+exit=0
+```
+
+```text
+$ git diff --quiet 664b95a7 HEAD -- src/screens/map/index.tsx; echo "exit=$?"
+exit=0
+```
+
+```text
+$ test ! -e .expo/types/router.d.ts; echo "exit=$?"
+exit=0
+```
+
+```text
+$ test -d node_modules && echo presente
+presente
+```
+
+## Anclas E2 en H0E2
+
+A1 (esperado H0E2: 1; cierre: 0):
+```text
+$ grep -cF "it('pinta Vincular collar aunque el listado diga otro rol: manda el rol del detalle'" src/screens/map/index.test.tsx
+1
+```
+
+A2 (esperado H0E2: 0; cierre: 1):
+```text
+$ grep -cF 'aunque el listado diga $role $collar: manda el rol y el collar del detalle' src/screens/map/index.test.tsx
+0
+```
+
+A3 (esperado H0E2: 0; cierre: 6):
+```text
+$ grep -cE "^    \{ role: '(family|walker|vet)', collar: '(sin|con) collar', device: (null|makeDevice\('online'\)) \},$" src/screens/map/index.test.tsx
+0
+```
+
+A4 (esperado H0E2: 0; cierre: 1):
+```text
+$ grep -cF "mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ myRole: role, device })] });" src/screens/map/index.test.tsx
+0
+```
+
+A5 (esperado H0E2: 3; cierre: 3):
+```text
+$ grep -cF 'aunque el listado' src/screens/map/index.test.tsx
+3
+```
+
+A6 (esperado H0E2: 3; cierre: 3):
+```text
+$ grep -cF "within(action).getByText('Vincular collar')" src/screens/map/index.test.tsx
+3
+```
+
+A7 (esperado H0E2: 1; cierre: 1):
+```text
+$ grep -cF "it('pinta Vincular collar aunque el listado traiga collar: manda el collar del detalle'" src/screens/map/index.test.tsx
+1
+```
+
+A8 (esperado H0E2: 1; cierre: 1):
+```text
+$ grep -cF "('no pinta el botón a %s aunque el listado diga owner'" src/screens/map/index.test.tsx
+1
+```
+
+A9 (esperado H0E2: 1; cierre: 1):
+```text
+$ grep -cF "it('lleva a emparejar una sola vez'" src/screens/map/index.test.tsx
+1
+```
+
+A10 (esperado H0E2: 0; cierre: 0):
+```text
+$ grep -cF 'selectedPet?.myRole !==' src/screens/map/index.tsx
+0
+```
+
+A11 (esperado H0E2: 1; cierre: 1):
+```text
+$ grep -cF "detail.data.pet.myRole === 'owner' &&" src/screens/map/index.tsx
+1
+```
+
+A12 (esperado H0E2: 1; cierre: 1):
+```text
+$ grep -cF 'detail.data.pet.device === null;' src/screens/map/index.tsx
+1
+```
+
+A13 (esperado H0E2: exit=0; cierre: exit=0):
+```text
+$ git diff --quiet 664b95a7 HEAD -- src/screens/map/index.tsx; echo "exit=$?"
+exit=0
+```
+
+## Base del Mapa E2
+
+```text
+$ uptime
+ 22:58:30 up 16 days, 19:05,  4 users,  load average: 2.32, 2.14, 2.94
+$ FORCE_COLOR=0 bunx jest src/screens/map/index.test.tsx > /tmp/159-e2-base.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+Test Suites: 1 passed, 1 total
+Tests:       114 passed, 114 total
+```
+
+## e2-1 — Rojo
+
+Se sustituyó únicamente el it indicado por el it.each literal de seis filas. Mutación versionada: dos líneas añadidas en canPairCollar; ninguna otra línea de producción cambia.
+
+```text
+$ uptime
+ 22:59:06 up 16 days, 19:06,  4 users,  load average: 4.10, 2.62, 3.08
+$ FORCE_COLOR=0 bunx jest src/screens/map/index.test.tsx > /tmp/159-e2-r.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=1
+$ rg '^(Test Suites:|Tests:|  ● .+ › )|Unable to find an element with testID: map-no-tracking-action' /tmp/159-e2-r.txt
+  ● #159 R3: el dueño sin collar puede ir a emparejar › pinta Vincular collar aunque el listado diga walker sin collar: manda el rol y el collar del detalle
+    Unable to find an element with testID: map-no-tracking-action
+  ● #159 R3: el dueño sin collar puede ir a emparejar › pinta Vincular collar aunque el listado diga walker con collar: manda el rol y el collar del detalle
+    Unable to find an element with testID: map-no-tracking-action
+  ● #159 R3: el dueño sin collar puede ir a emparejar › pinta Vincular collar aunque el listado diga vet sin collar: manda el rol y el collar del detalle
+    Unable to find an element with testID: map-no-tracking-action
+  ● #159 R3: el dueño sin collar puede ir a emparejar › pinta Vincular collar aunque el listado diga vet con collar: manda el rol y el collar del detalle
+    Unable to find an element with testID: map-no-tracking-action
+Test Suites: 1 failed, 1 total
+Tests:       4 failed, 115 passed, 119 total
+```
+
+Cadena e2-1 literal, con `<LIMPIO>` expandido:
+```sh
+grep -qE '^Tests: +4 failed, 115 passed, 119 total$' /tmp/159-e2-r.txt \
+  && test "$(grep -cE '^  ● .+ › ' /tmp/159-e2-r.txt)" = 4 \
+  && test "$(grep -E '^  ● .+ › ' /tmp/159-e2-r.txt | grep -cE 'aunque el listado diga (walker|vet) (sin|con) collar: manda el rol y el collar del detalle')" = 4 \
+  && test "$(grep -cF 'Unable to find an element with testID: map-no-tracking-action' /tmp/159-e2-r.txt)" = 4 \
+  && ! grep -qE 'Test suite failed to run|TypeError|ReferenceError|SyntaxError|Cannot find module' /tmp/159-e2-r.txt \
+  && test "$(grep -cF "selectedPet?.myRole !== 'walker' &&" src/screens/map/index.tsx)" = 1 \
+  && test "$(grep -cF "selectedPet?.myRole !== 'vet' &&" src/screens/map/index.tsx)" = 1 \
+  && test "$(grep -cF "detail.data.pet.myRole === 'owner' &&" src/screens/map/index.tsx)" = 1 \
+  && test "$(grep -cF 'detail.data.pet.device === null;' src/screens/map/index.tsx)" = 1 \
+  && test "$(git diff --numstat 664b95a7 -- src/screens/map/index.tsx | cut -f1,2 | tr '\t' ' ')" = '2 0' \
+  && test "$(git diff --numstat HEAD -- src/screens/map/index.test.tsx | cut -f1,2 | tr '\t' ' ')" = '9 2' \
+  && test ! -e .expo/types/router.d.ts && bun run typecheck && bunx expo lint --no-cache \
+  && git add src/screens/map/index.test.tsx src/screens/map/index.tsx \
+  && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'mobile-pet-tracker/src/screens/map/index.test.tsx mobile-pet-tracker/src/screens/map/index.tsx ' \
+  && git diff --quiet -- . ../docs ../specs && test -z "$(git ls-files --others --exclude-standard -- . ../docs ../specs)" \
+  && git commit -m 'test(mobile-no-collar-states): #159 E2 red pair action obeys list role except family'
+```
+
+```text
+$ tsc --noEmit
+[feature/159-mobile-no-collar-states-pingo 43e712b3] test(mobile-no-collar-states): #159 E2 red pair action obeys list role except family
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 2 files changed, 11 insertions(+), 2 deletions(-)
+exit=0
+```
+
+Commit e2-1: `43e712b3`. Typecheck: exit=0. Lint: exit=0; ambos están encadenados antes del commit.
+
+## e2-2 — Verde
+
+```text
+$ git checkout 664b95a7 -- src/screens/map/index.tsx && git diff --quiet 664b95a7 -- src/screens/map/index.tsx; echo "exit=$?"
+exit=0
+```
+
+```text
+$ uptime
+ 23:01:12 up 16 days, 19:08,  3 users,  load average: 10.04, 5.23, 3.97
+$ FORCE_COLOR=0 bunx jest src/screens/map/index.test.tsx > /tmp/159-e2-g.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+Test Suites: 1 passed, 1 total
+Tests:       119 passed, 119 total
+```
+
+```text
+$ uptime
+ 23:01:38 up 16 days, 19:09,  3 users,  load average: 8.49, 5.26, 4.02
+$ FORCE_COLOR=0 bunx jest src/__tests__/ui-language.test.ts src/__tests__/design-drift.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/159-e2-g-guardas.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+Test Suites: 4 passed, 4 total
+Tests:       174 passed, 174 total
+```
+
+Cadena e2-2 literal, con `<LIMPIO>` expandido:
+```sh
+grep -qE '^Tests: +119 passed, 119 total$' /tmp/159-e2-g.txt \
+  && grep -qE '^Tests: +174 passed, 174 total$' /tmp/159-e2-g-guardas.txt \
+  && git diff --quiet 664b95a7 -- src/screens/map/index.tsx \
+  && test ! -e .expo/types/router.d.ts && bun run typecheck && bunx expo lint --no-cache \
+  && git add src/screens/map/index.tsx \
+  && test "$(git diff --cached --name-only)" = 'mobile-pet-tracker/src/screens/map/index.tsx' \
+  && git diff --quiet -- . ../docs ../specs && test -z "$(git ls-files --others --exclude-standard -- . ../docs ../specs)" \
+  && git commit -m 'fix(mobile-no-collar-states): #159 E2 revert list role probe, pair action locked to detail role' \
+  && git diff --quiet 664b95a7 HEAD -- src/screens/map/index.tsx; echo "exit=$?"
+```
+
+```text
+$ tsc --noEmit
+[feature/159-mobile-no-collar-states-pingo 15fa23e4] fix(mobile-no-collar-states): #159 E2 revert list role probe, pair action locked to detail role
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 1 file changed, 2 deletions(-)
+exit=0
+```
+
+Commit e2-2: `15fa23e4`. Typecheck: exit=0. Lint: exit=0. Diff final de producción contra 664b95a7: exit=0.
+
+## Sonda E2a — Sin commit
+
+```text
+$ grep -cF "selectedPet?.myRole !== 'walker' && detail.data.pet.myRole === 'owner' &&" src/screens/map/index.tsx
+1
+```
+Esperado: 1.
+
+```text
+$ uptime
+ 23:03:24 up 16 days, 19:10,  3 users,  load average: 5.57, 5.03, 4.06
+$ FORCE_COLOR=0 bunx jest src/screens/map/index.test.tsx > /tmp/159-e2a.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=1
+  ● #159 R3: el dueño sin collar puede ir a emparejar › pinta Vincular collar aunque el listado diga walker sin collar: manda el rol y el collar del detalle
+    Unable to find an element with testID: map-no-tracking-action
+  ● #159 R3: el dueño sin collar puede ir a emparejar › pinta Vincular collar aunque el listado diga walker con collar: manda el rol y el collar del detalle
+    Unable to find an element with testID: map-no-tracking-action
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 117 passed, 119 total
+```
+
+```text
+$ grep -qE '^Tests: +2 failed, 117 passed, 119 total$' /tmp/159-e2a.txt && test "$(grep -cE '^  ● .+ › ' /tmp/159-e2a.txt)" = 2 && test "$(grep -E '^  ● .+ › ' /tmp/159-e2a.txt | grep -cE 'aunque el listado diga walker (sin|con) collar: ')" = 2 && test "$(grep -cF 'Unable to find an element with testID: map-no-tracking-action' /tmp/159-e2a.txt)" = 2; echo "sonda=$?"
+sonda=0
+```
+
+```text
+$ git checkout HEAD -- src/screens/map/index.tsx && git diff --quiet HEAD -- . ../docs ../specs; echo "limpio=$?"
+limpio=0
+```
+
+## Sonda E2b — Sin commit
+
+```text
+$ grep -cF "selectedPet?.myRole !== 'vet' && detail.data.pet.myRole === 'owner' &&" src/screens/map/index.tsx
+1
+```
+Esperado: 1.
+
+```text
+$ uptime
+ 23:04:16 up 16 days, 19:11,  3 users,  load average: 4.63, 4.86, 4.05
+$ FORCE_COLOR=0 bunx jest src/screens/map/index.test.tsx > /tmp/159-e2b.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=1
+  ● #159 R3: el dueño sin collar puede ir a emparejar › pinta Vincular collar aunque el listado diga vet sin collar: manda el rol y el collar del detalle
+    Unable to find an element with testID: map-no-tracking-action
+  ● #159 R3: el dueño sin collar puede ir a emparejar › pinta Vincular collar aunque el listado diga vet con collar: manda el rol y el collar del detalle
+    Unable to find an element with testID: map-no-tracking-action
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 117 passed, 119 total
+```
+
+```text
+$ grep -qE '^Tests: +2 failed, 117 passed, 119 total$' /tmp/159-e2b.txt && test "$(grep -cE '^  ● .+ › ' /tmp/159-e2b.txt)" = 2 && test "$(grep -E '^  ● .+ › ' /tmp/159-e2b.txt | grep -cE 'aunque el listado diga vet (sin|con) collar: ')" = 2 && test "$(grep -cF 'Unable to find an element with testID: map-no-tracking-action' /tmp/159-e2b.txt)" = 2; echo "sonda=$?"
+sonda=0
+```
+
+```text
+$ git checkout HEAD -- src/screens/map/index.tsx && git diff --quiet HEAD -- . ../docs ../specs; echo "limpio=$?"
+limpio=0
+```
+
+## Sonda E2c — Sin commit
+
+```text
+$ grep -cF "selectedPet?.myRole !== 'family' && detail.data.pet.myRole === 'owner' &&" src/screens/map/index.tsx
+1
+```
+Esperado: 1.
+
+```text
+$ uptime
+ 23:04:54 up 16 days, 19:12,  3 users,  load average: 5.03, 4.97, 4.13
+$ FORCE_COLOR=0 bunx jest src/screens/map/index.test.tsx > /tmp/159-e2c.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=1
+  ● #159 R3: el dueño sin collar puede ir a emparejar › pinta Vincular collar aunque el listado diga family sin collar: manda el rol y el collar del detalle
+    Unable to find an element with testID: map-no-tracking-action
+  ● #159 R3: el dueño sin collar puede ir a emparejar › pinta Vincular collar aunque el listado diga family con collar: manda el rol y el collar del detalle
+    Unable to find an element with testID: map-no-tracking-action
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 117 passed, 119 total
+```
+
+```text
+$ grep -qE '^Tests: +2 failed, 117 passed, 119 total$' /tmp/159-e2c.txt && test "$(grep -cE '^  ● .+ › ' /tmp/159-e2c.txt)" = 2 && test "$(grep -E '^  ● .+ › ' /tmp/159-e2c.txt | grep -cE 'aunque el listado diga family (sin|con) collar: ')" = 2 && test "$(grep -cF 'Unable to find an element with testID: map-no-tracking-action' /tmp/159-e2c.txt)" = 2; echo "sonda=$?"
+sonda=0
+```
+
+```text
+$ git checkout HEAD -- src/screens/map/index.tsx && git diff --quiet HEAD -- . ../docs ../specs; echo "limpio=$?"
+limpio=0
+```
+
+## Sonda E2d — Sin commit
+
+```text
+$ grep -cF "(selectedPet?.myRole === 'owner' || selectedPet?.device === null) && detail.data.pet.myRole === 'owner' &&" src/screens/map/index.tsx
+1
+```
+Esperado: 1.
+
+```text
+$ uptime
+ 23:05:31 up 16 days, 19:12,  3 users,  load average: 4.49, 4.89, 4.13
+$ FORCE_COLOR=0 bunx jest src/screens/map/index.test.tsx > /tmp/159-e2d.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=1
+  ● #159 R3: el dueño sin collar puede ir a emparejar › pinta Vincular collar aunque el listado diga family con collar: manda el rol y el collar del detalle
+    Unable to find an element with testID: map-no-tracking-action
+  ● #159 R3: el dueño sin collar puede ir a emparejar › pinta Vincular collar aunque el listado diga walker con collar: manda el rol y el collar del detalle
+    Unable to find an element with testID: map-no-tracking-action
+  ● #159 R3: el dueño sin collar puede ir a emparejar › pinta Vincular collar aunque el listado diga vet con collar: manda el rol y el collar del detalle
+    Unable to find an element with testID: map-no-tracking-action
+Test Suites: 1 failed, 1 total
+Tests:       3 failed, 116 passed, 119 total
+```
+
+```text
+$ grep -qE '^Tests: +3 failed, 116 passed, 119 total$' /tmp/159-e2d.txt && test "$(grep -cE '^  ● .+ › ' /tmp/159-e2d.txt)" = 3 && test "$(grep -E '^  ● .+ › ' /tmp/159-e2d.txt | grep -cE 'aunque el listado diga (family|walker|vet) con collar: ')" = 3 && test "$(grep -cF 'Unable to find an element with testID: map-no-tracking-action' /tmp/159-e2d.txt)" = 3; echo "sonda=$?"
+sonda=0
+```
+
+```text
+$ git checkout HEAD -- src/screens/map/index.tsx && git diff --quiet HEAD -- . ../docs ../specs; echo "limpio=$?"
+limpio=0
+```
+
+## Cierre E2 — BASE
+
+```text
+$ cd /home/claude/sites/Pet-Tracker-wt-159/mobile-pet-tracker && pwd
+/home/claude/sites/Pet-Tracker-wt-159/mobile-pet-tracker
+```
+
+```text
+$ pgrep -af '[i]nit\.sh'
+(vacío)
+```
+Exit de pgrep: 1.
+
+```text
+$ uptime
+ 23:06:21 up 16 days, 19:13,  3 users,  load average: 3.42, 4.53, 4.05
+$ FORCE_COLOR=0 bunx jest src/components/__tests__/empty-state.test.tsx src/providers/__tests__/language-provider.test.tsx src/__tests__/ui-language.test.ts src/screens/map/index.test.tsx src/screens/geofences/index.test.tsx src/screens/geofence-editor/index.test.tsx src/screens/home/index.test.tsx src/__tests__/design-drift.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/159-e2-final.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+Test Suites: 10 passed, 10 total
+Tests:       759 passed, 759 total
+```
+
+## Cierre E2 — ALL
+
+```text
+$ pgrep -af '[i]nit\.sh'
+(vacío)
+```
+Exit de pgrep: 1.
+
+```text
+$ uptime
+ 23:07:17 up 16 days, 19:14,  3 users,  load average: 4.64, 4.60, 4.10
+$ FORCE_COLOR=0 bunx jest > /tmp/159-e2-all.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+Test Suites: 97 passed, 97 total
+Tests:       2425 passed, 2425 total
+```
+
+## Cierre E2 — Typecheck y lint
+
+```text
+$ bun run typecheck; echo "exit=$?"
+```
+
+```text
+$ tsc --noEmit
+exit=0
+$ bunx expo lint --no-cache; echo "exit=$?"
+```
+
+```text
+exit=0
+```
+
+## Anclas E2 en el cierre
+
+A1 (esperado H0E2: 1; cierre: 0):
+```text
+$ grep -cF "it('pinta Vincular collar aunque el listado diga otro rol: manda el rol del detalle'" src/screens/map/index.test.tsx
+0
+```
+
+A2 (esperado H0E2: 0; cierre: 1):
+```text
+$ grep -cF 'aunque el listado diga $role $collar: manda el rol y el collar del detalle' src/screens/map/index.test.tsx
+1
+```
+
+A3 (esperado H0E2: 0; cierre: 6):
+```text
+$ grep -cE "^    \{ role: '(family|walker|vet)', collar: '(sin|con) collar', device: (null|makeDevice\('online'\)) \},$" src/screens/map/index.test.tsx
+6
+```
+
+A4 (esperado H0E2: 0; cierre: 1):
+```text
+$ grep -cF "mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ myRole: role, device })] });" src/screens/map/index.test.tsx
+1
+```
+
+A5 (esperado H0E2: 3; cierre: 3):
+```text
+$ grep -cF 'aunque el listado' src/screens/map/index.test.tsx
+3
+```
+
+A6 (esperado H0E2: 3; cierre: 3):
+```text
+$ grep -cF "within(action).getByText('Vincular collar')" src/screens/map/index.test.tsx
+3
+```
+
+A7 (esperado H0E2: 1; cierre: 1):
+```text
+$ grep -cF "it('pinta Vincular collar aunque el listado traiga collar: manda el collar del detalle'" src/screens/map/index.test.tsx
+1
+```
+
+A8 (esperado H0E2: 1; cierre: 1):
+```text
+$ grep -cF "('no pinta el botón a %s aunque el listado diga owner'" src/screens/map/index.test.tsx
+1
+```
+
+A9 (esperado H0E2: 1; cierre: 1):
+```text
+$ grep -cF "it('lleva a emparejar una sola vez'" src/screens/map/index.test.tsx
+1
+```
+
+A10 (esperado H0E2: 0; cierre: 0):
+```text
+$ grep -cF 'selectedPet?.myRole !==' src/screens/map/index.tsx
+0
+```
+
+A11 (esperado H0E2: 1; cierre: 1):
+```text
+$ grep -cF "detail.data.pet.myRole === 'owner' &&" src/screens/map/index.tsx
+1
+```
+
+A12 (esperado H0E2: 1; cierre: 1):
+```text
+$ grep -cF 'detail.data.pet.device === null;' src/screens/map/index.tsx
+1
+```
+
+A13 (esperado H0E2: exit=0; cierre: exit=0):
+```text
+$ git diff --quiet 664b95a7 HEAD -- src/screens/map/index.tsx; echo "exit=$?"
+exit=0
+```
+
+## Alcance e historial del cierre E2
+
+```text
+$ git diff --stat 48363132 HEAD -- package.json bun.lock app.json src/theme
+(vacío)
+```
+
+```text
+$ cd /home/claude/sites/Pet-Tracker-wt-159 && pwd
+/home/claude/sites/Pet-Tracker-wt-159
+```
+
+```text
+$ git log --oneline 48363132..HEAD
+15fa23e4 fix(mobile-no-collar-states): #159 E2 revert list role probe, pair action locked to detail role
+43e712b3 test(mobile-no-collar-states): #159 E2 red pair action obeys list role except family
+```
+
+```text
+$ git diff --numstat 48363132 HEAD -- mobile-pet-tracker/
+9	2	mobile-pet-tracker/src/screens/map/index.test.tsx
+```
+
+```text
+$ git diff --quiet 664b95a7 HEAD -- mobile-pet-tracker/src/screens/map/index.tsx; echo "exit=$?"
+exit=0
+```
+
+```text
+$ git diff --stat 48363132 HEAD -- backend-pet-tracker/ infra-pet-tracker/ docs/
+(vacío)
+```
+
+## e2-3 — Trazabilidad
+
+Solo se actualizó la fila R3, copiada literalmente del handoff con `43e712b3` y `15fa23e4`.
+
+```text
+$ git diff -U0 -- specs/mobile-no-collar-states-pingo/traceability.md | grep -E '^[-+]\|' | cut -c1-8
+-| R3 | 
++| R3 | 
+```
+
+```text
+$ grep -cF '; E2: ' specs/mobile-no-collar-states-pingo/traceability.md
+1
+```
+
+Todas las medidas coincidieron sin repetición: no apareció el flake de #72 R2. No se añadieron decisiones de producto; se copió el bloque literal de tasks.md. Dependencias presentes (comando de node_modules exit=0). Ninguna skill cargada; no se lanzó init.sh ni se hizo push, PR, rebase o merge. Las rondas 1 y 2 del impl se conservaron y todo el registro E2 se añadió al final.
+
+Cadena e2-3 que se ejecutará tras comprobar la lista cerrada:
+```sh
+git add specs/mobile-no-collar-states-pingo/traceability.md progress/impl_mobile-no-collar-states-pingo.md \
+  && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'progress/impl_mobile-no-collar-states-pingo.md specs/mobile-no-collar-states-pingo/traceability.md ' \
+  && git diff --quiet && test -z "$(git ls-files --others --exclude-standard)" \
+  && git commit -m 'docs(mobile-no-collar-states-pingo): #159 E2 traceability'
+```
+
+## Lista cerrada E2
+
+```text
+$ git diff --name-only 48363132 -- . ':!feature_list.json' ':!progress/current.md' ':!progress/review_mobile-no-collar-states-pingo.md' ':!specs/mobile-no-collar-states-pingo/requirements.md' ':!specs/mobile-no-collar-states-pingo/design.md' ':!specs/mobile-no-collar-states-pingo/tasks.md' | LC_ALL=C sort
+mobile-pet-tracker/src/screens/map/index.test.tsx
+progress/impl_mobile-no-collar-states-pingo.md
+specs/mobile-no-collar-states-pingo/traceability.md
+```
+
+```text
+$ test -z "$(git ls-files --others --exclude-standard)"; echo "exit=$?"
+exit=0
+```
+
+R10: pendiente del smoke humano
