@@ -19,6 +19,7 @@ import { pets, petUsers } from '@/db/schema/pets.schema';
 import { users } from '@/db/schema/users.schema';
 import { TOKEN_SERVICE } from '@/modules/auth/domain/ports/token-service';
 import type { TokenService } from '@/modules/auth/domain/ports/token-service';
+import { PetDocumentDrizzleRepository } from '@/modules/media/infrastructure/repositories/pet-document.drizzle.repository';
 import { AppModule } from '../src/app.module';
 
 describe('Pet documents API (e2e)', () => {
@@ -929,5 +930,22 @@ describe('Pet documents API (e2e)', () => {
       );
       expect(retained.ContentLength).toBe(10485761);
     }, 30000);
+  });
+
+  describe('#162 R3: markUploaded no pisa uploaded_at de un documento ya confirmado', () => {
+    it('#162 R3: con uploaded_at 2026-10-01T10:00:00.000Z, markUploaded deja la fila igual', async () => {
+      const owner = await seedUser('162-r3-owner');
+      const pet = await seedPet(owner);
+      const document = await seedDocument(pet.id, owner.id, {
+        date: '2026-10-01',
+        uploadedAt: new Date('2026-10-01T10:00:00.000Z'),
+      });
+      await new PetDocumentDrizzleRepository(db).markUploaded(document.id);
+      const [stored] = await db
+        .select()
+        .from(petDocuments)
+        .where(eq(petDocuments.id, document.id));
+      expect(stored.uploadedAt).toEqual(new Date('2026-10-01T10:00:00.000Z'));
+    });
   });
 });
