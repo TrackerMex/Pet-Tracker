@@ -6,6 +6,7 @@ import {
 import {
   PetDocumentNotFoundError,
   PetDocumentNotUploadedError,
+  PetDocumentTooLargeError,
 } from '@/modules/media/domain/errors/pet-document.errors';
 
 export function mapPetDocumentError(error: unknown): unknown {
@@ -21,6 +22,13 @@ export function mapPetDocumentError(error: unknown): unknown {
       statusCode: HttpStatus.CONFLICT,
       code: 'PET_DOCUMENT_NOT_UPLOADED',
       message: 'Pet document file not found in storage',
+    });
+  }
+  if (error instanceof PetDocumentTooLargeError) {
+    return new ConflictException({
+      statusCode: HttpStatus.CONFLICT,
+      code: 'PET_DOCUMENT_TOO_LARGE',
+      message: 'Pet document file exceeds the size limit',
     });
   }
   return error;
