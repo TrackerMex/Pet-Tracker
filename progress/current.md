@@ -43,3 +43,20 @@
   Todas las anclas del handoff ejecutadas desde el fichero contra H0 y cuadran.
   El handoff corrige la ruta de language-provider de tasks.md §Cierre
   (`src/providers/__tests__/`, no `src/__tests__/`).
+- Ronda 1 de Codex (H0 `4d87eb8f`, código hasta `b276727e`): **RECHAZADA** por
+  el reviewer, veredicto y barrido exhaustivo en `815de8f6`
+  (`progress/review_mobile-alert-ack-outcome-helper.md`, P1–P34). Ocho
+  supervivientes: cuatro de #134 en dos zonas (P3c/P3d, la espera a
+  `signOut`; P11/P14, el idioma de `t` en cada pantalla) y siete
+  preexistentes. (La pregunta al humano decía 3/8; el recuento bueno es 4/7 y
+  no cambia la decisión.)
+- Decisión del humano (2026-10-09): «Solo lo de #134». Enmienda E1 en
+  `0ea2d86d` (requirements.md §Enmienda E1 + tasks.md §Ronda 2): +6 tests
+  (W1, W2, C3, C4, D2, D3), cero código de producción, cierre esperado
+  98 suites / 2392.
+- Deuda a registrar **al cerrar #134** (id contra origin/main en ese momento),
+  con los límites exactos de E1.5: P16b, P20a, P20b (retry del detalle); P17
+  (guard del centro); P18 (guard del detalle); P24, P25 (`leavingRef` en
+  `onNotFound` del detalle).
+- Pendiente: pre-verificación de E1 por el reviewer, espejo en Notion y gate
+  de la enmienda; después handoff de ronda 2.
