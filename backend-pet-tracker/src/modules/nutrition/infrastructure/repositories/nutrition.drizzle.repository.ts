@@ -26,6 +26,18 @@ type NutritionPlanRow = typeof nutritionPlans.$inferSelect;
 export class NutritionDrizzleRepository implements NutritionRepository {
   constructor(@Inject(DRIZZLE) private readonly db: NodePgDatabase) {}
 
+  async setAiExplanation(
+    planId: string,
+    explanation: string,
+  ): Promise<NutritionPlan> {
+    const [row] = await this.db
+      .update(nutritionPlans)
+      .set({ aiExplanation: explanation })
+      .where(eq(nutritionPlans.id, planId))
+      .returning();
+    return toPlan(row);
+  }
+
   async findProfile(petId: string): Promise<NutritionProfile | null> {
     const [row] = await this.db
       .select()

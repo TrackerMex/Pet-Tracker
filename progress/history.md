@@ -8228,3 +8228,133 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
   `78df9b08`. Solo la casilla, 0 drift de código frente a `f8132e4f`.
 - Cierre: `done` en `feature_list.json`, trazabilidad R14, STATUS, Notion
   (Implementado / Completado) y PR contra `main`. Merge: humano.
+
+## #157 `media-docs-download-api` — Documentos con estado de subida y URL de descarga — 2026-10-08
+
+- Sesión: Frontend (Claude Code, leader). La coordinación pasó de Backend a
+  Frontend por decisión del humano. Worktree
+  `/home/claude/sites/Pet-Tracker-wt-157`, branch
+  `feature/157-media-docs-download-api`.
+- Spec: aprobada en Notion el 2026-10-08 (página
+  `3f36115a-9b27-81d6-b555-d8ae33ffc2d5`); firma en `ef0b256d` (casilla) y
+  `dd16ee7c` (frontmatter). Merge de origin/main (#153) en `23f69803`. Base:
+  unit media + schema 101, `pnpm test` 176/1348, e2e `media-docs` 9,
+  `test/media\.e2e` 12.
+- Q1 (coste en modo aws): autorizada por el humano en la sesión Frontend y
+  registrada en `eae547bf`, junto con las deudas #160
+  `infra-media-bucket-iam-least-privilege` y #161
+  `media-docs-confirm-size-limit`. Antes se había pedido registrarla con la
+  autorización relatada por Backend; el clasificador lo bloqueó y se esperó
+  a la frase directa del humano.
+- Handoff a Codex en `20908b80` (H0). Correcciones del leader: `7931f528`
+  (el chequeo de árbol limpio de c2 fallaba siempre tras el `git add`) y
+  `771460af` (c10 paró en ESLint: `expect.any(String)` es `any` y dispara
+  `no-unsafe-assignment` como valor de propiedad; se escribe `as unknown`,
+  mismo matcher, sin enmienda de spec).
+- Codex: 12 commits (c1-c11 en pares rojo/verde, trazabilidad en
+  `a1e16faa`). Cierre unit 179/1361, lista cerrada de 26 ficheros, 50 anclas
+  en su valor de cierre (verificadas también por el leader).
+- Gate: `./init.sh` sobre `a1e16faa` con permiso del humano, exit=0 (backend
+  179/1361, móvil 96/2275, e2e 29 de 32 suites, 459 tests verdes y 8
+  saltados). IA PET y Backend avisados antes y después.
+- Review: **APROBADO** a la primera
+  (`progress/review_media-docs-download-api.md`). 29 mutaciones y un COMBO:
+  25 rojas por aserción, P8b equivalente y 3 vivas (P4 orden de resolución
+  en R4, P10 404 por `name` en R7, P16 R6 (g) sin candado HTTP). Las tres
+  vivas caen en huecos de la spec, no de la implementación. 7 observaciones
+  no bloqueantes; en el cierre se corrigen la 2 (nota en design.md §D7) y la
+  7 (frontmatter de traceability.md).
+- Cierre: `done` en `feature_list.json`, trazabilidad R9, STATUS, Notion
+  (Implementado / Completado) y PR contra `main`. Merge: humano.
+
+## #18 `nutrition-ai-explainer` — Explicación IA del plan nutricional (proveedor Anthropic) — 2026-10-09
+
+- Sesión: Backend (Claude Code, leader). Fecha de inicio: 2026-10-08.
+- Decisión del humano: `claude-haiku-5-5` en vez de OpenAI. La implementación
+  OpenAI (branch `feature/18-nutrition-ai-explainer`, aprobada por el reviewer
+  el 2026-08-18) nunca se mergeó porque R19 se bloqueó por cuota agotada; no se
+  reutilizó.
+- Worktree `/home/claude/sites/Pet-Tracker-wt-18`, branch
+  `feature/18-nutrition-ai-explainer-claude`, cortada de `origin/main` y
+  re-sincronizada con `fca7c399` (#153) en `04b4bb8c`.
+- Spec: enmienda de proveedor escrita por `spec_author`
+  (`progress/spec_nutrition-ai-explainer_amend.md`), aprobada en Notion; firma
+  en `1837ab0a`. P4-P9 aceptadas por defecto (P4: no se envía `thinking` ni
+  `output_config`). Handoff a Codex en `704af9e5` (H0).
+- Ronda 1 de Codex: 34 commits hasta `5575c5f2`; init.sh del leader exit=0.
+  Reviewer **rechazó** (`c09ee51c`): F1-F3 bloqueantes (argumentos de la rama
+  positiva de R5, orden R3/R5, carga perezosa del SDK fuera del try de R11) y
+  F4-F5 menores, con origen en las prescripciones *Test* de la spec.
+- Enmienda E1 (`progress/spec_nutrition-ai-explainer_e1.md`, D-E1-a del humano:
+  recortar clave y modelo), barrida por el reviewer en tres revisiones
+  (`progress/review_nutrition-ai-explainer_e1.md`, apta en `0fde011c`).
+  Aprobada en Notion; firma en `c4b86430`. Handoff de la ronda 2 (E1-c1 a
+  E1-c18, gates por JSON de jest, solo unitaria) en `5b069b93` (H0E1). El texto
+  decía «17 sondas» y son 18; Codex corrió las 18.
+- Ronda 2 de Codex: 18 commits hasta `8b0677b5`; §Final E1 versionado por el
+  leader en `8b0a74c2`. init.sh del leader en `8b0a74c2`: exit=0 (unit
+  183/1450, móvil 96/2275, e2e 30 de 33 suites con 3 skipped). Reviewer
+  **APROBADO** en `535128bd`; O1-O4 no bloqueantes.
+- R19 (prueba de humo con clave real): la corrió el humano y marcó su casilla
+  en `27680bf6` («Prueba de humo superado», 2026-10-08).
+- `origin/main` 58323e49 (#157, PR #200) mergeado en la branch en `3469a993`
+  antes del cierre, sin conflictos.
+- Deuda: la O1 del reviewer se registra como #163
+  `nutrition-explainer-node-env-production-lock` por decisión del humano al
+  cerrar («cierra y registra 01 como deuda»). O2-O4 quedan solo en el review.
+- Gate de cierre: `./init.sh` exit 0 (backend 186/1463, infra 2/14, móvil
+  96/2275, e2e 30 de 33 suites con 465 tests verdes y 8 saltados de 473).
+- Notion: página de Specs de #18 en Implementado / Completado.
+- Estado: `done`. PR abierta; siguiente: merge humano.
+
+## #161 `media-docs-confirm-size-limit` — Límite de tamaño en el confirm de documentos — 2026-10-09
+
+- Sesión: Frontend (Claude Code, leader). Inicio: 2026-10-08 21:30 UTC.
+  Elegida por el humano entre #158, #160, #161 y #162 (deuda de #157).
+- Worktree `/home/claude/sites/Pet-Tracker-wt-161`, branch
+  `feature/161-media-docs-confirm-size-limit`, cortada de `origin/main`
+  `58323e49` (#157, PR #200). `.env` copiado del árbol principal.
+- Spec: `spec_author` en `f0fead46`; espejo en Notion y gate aprobado
+  (`Estado del gate` = Aprobado, 2026-10-08T22:30:04Z). Respuesta del humano:
+  «Dejarlas como los recomendaste es buena opción.» Q1: 10485760 bytes; Q2: el
+  objeto se deja en el bucket; Q3: sin deuda nueva; DA1-DA6 por defecto.
+  Firma en `c2676ab6`.
+- Handoff a Codex en `6ccdb744` (H0, 7 commits c1-c7). Corrección sin
+  enmienda: ts-jest transpila sin comprobar tipos (`isolatedModules: true`),
+  así que los rojos de c1/c3 son `TypeError` en jest y los errores de tipos se
+  miden con `tsc`.
+- Parada en c1: tres errores `prettier/prettier` en el confirm spec por el
+  renombrado de E2 (más uno oculto por el `--ignore-pattern`). Enmienda L1
+  (`298f7243`): `prettier --write` por commit y `prettier --check` en cada
+  cadena.
+- Parada en c3: el handoff fijaba `43 total` y eran 44 (c2 dejaba 41 y c3
+  añadía 3). Enmienda L2 (`6bd52ec7`); el leader repitió sobre los logs de
+  Codex los eslabones de solo lectura de c3 antes de reanudar. En c2 Codex
+  lanzó un e2e con el pgrep ocupado por el `init.sh` de wt-18; descartó esa
+  corrida y repitió tras `libre`.
+- Commits de Codex: c1 `935e8d15` / c2 `25788949` (R1), c3 `d31b95d9` / c4
+  `781e7fe7` (R2), c5 `be474e38` / c6 `fa81bf5a` (R3), c7 `9e23832e`
+  (traceability) y `57609fdc` (lista cerrada, 13 ficheros).
+- `origin/main` `306f3c9f` (#18, PR #201) mergeado en `2e8319df` sin
+  conflictos; trae `@anthropic-ai/sdk`, instalado con
+  `pnpm install --frozen-lockfile` en `backend-pet-tracker/` (`init.sh` no
+  instala).
+- Gate: `./init.sh` del leader sobre `2e8319df`, exit 0 (backend 187/1471,
+  infra 2/14, móvil 96/2275, e2e 30 de 33 suites con 467 tests verdes y 8
+  saltados). IA PET y Backend confirmaron que no hubo solape.
+- Reviewer **APROBADO** a la primera
+  (`progress/review_media-docs-confirm-size-limit.md`): 32 sondas de mutación
+  y un mutante equivalente (orden null/límite) que protege `tsc`. La «PARADA»
+  de E2 en el impl era un falso positivo del verificador propio de Codex.
+  Observación 1: una sonda e2e del reviewer corrió la suite e2e completa hacia
+  las 05:15Z (`-t` tras el `--` de pnpm cuenta como patrón de ruta) sin repetir
+  el pgrep; se avisó a IA PET y a Backend. Al comprobar esa causa, el leader
+  repitió el desliz: `pnpm run test:e2e -- … --listTests` lanzó jest contra
+  `pet_tracker:5433` y LocalStack, porque pnpm pasa el `--` y `--listTests`
+  quedó como patrón de ruta. Fue sin pgrep previo y el clasificador denegó el
+  kill. Terminó solo antes de las 05:29:50Z y se avisó a los dos peers.
+- Solape con #162: #161 crea `pet-document-error.mapper.spec.ts` y edita
+  `photo-storage.object-exists.spec.ts`; la spec de #162 se mide tras mergear
+  #161.
+- Notion: página de Specs de #161 en Implementado / Completado.
+- Estado: `done`. PR abierta; siguiente: merge humano.

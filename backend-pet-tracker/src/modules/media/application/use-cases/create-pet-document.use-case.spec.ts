@@ -25,11 +25,12 @@ function buildDeps() {
   });
   const documents = {
     create,
-    listByPet: jest.fn(),
+    listUploadedByPet: jest.fn(),
   } as unknown as PetDocumentRepository;
   const storage: PhotoStorage = {
     createUploadUrl,
     createDownloadUrl: jest.fn(),
+    getObjectSize: jest.fn(),
   };
   const auditLogger: AuditLogger = { record };
 
@@ -72,6 +73,7 @@ describe('R2: CreatePetDocumentUseCase persiste, firma y audita', () => {
         date: '2026-08-25',
         vet: null,
         key: expectedKey,
+        uploadedAt: null,
         createdBy: USER_ID,
       },
       uploadUrl: 'https://example.local/signed-document-put',

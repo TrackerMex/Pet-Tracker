@@ -1,10 +1,10 @@
 # pet-tracker — Status
 
-**Última actualización**: 2026-10-08
-**Features completadas**: 145/154 (`feature_list.json`)
-**En progreso**: ninguna en esta rama. #153 cerrada en `feature/153-mobile-welcome-pingo`, PR pendiente de merge humano.
+**Última actualización**: 2026-10-09
+**Features completadas**: 148/161 (`feature_list.json`)
+**En progreso**: ninguna en esta rama. #161 cerrada en `feature/161-media-docs-confirm-size-limit`, PR pendiente de merge humano.
 
-**Pendientes**: 9 (#18, #60, #119, #129, #134, #144, #150, #151 y #154). **#153 `mobile-welcome-pingo` cerrada**: la bienvenida sin sesión estrena a Pingo, la mascota. Una escena (`Card` secundaria) con un bocadillo que dice el saludo en la voz «guardián sereno» (`welcome.pingoGreeting`, en/es) sustituye al logo; la voz queda escrita en el punto 7 de la carta. Las dos poses entran como WebP con alfa (`pingo-wave` y `pingo-wave-blink`). Pingo entra con un muelle de escala, flota ±4 px en un ciclo de 2,4 s y parpadea cada 4 s con un cambio de pose instantáneo; las cinco constantes nuevas viven en `src/theme/motion.ts`. Con Reduce Motion solo queda el fundido. El CTA primario gana un labio inferior (`border-b-4 border-black/25`) solo en el sitio de uso. La Enmienda E1 retira `WELCOME_ENTRANCE_MS` de la migración pendiente de la carta. Cero dependencias nuevas. Móvil 96/2235 → 96/2275. Codex test-primero en 27 commits (una parada en T2 por un error de la cadena del handoff, TS2724, corregida en `1f18d037`). Reviewer APROBADO a la primera (`930f282b`): 6 sondas obligatorias y unas 45 propias caen; las vivas son W9 (equivalente) y P3/P4 (R3 no distingue el contenido de los dos WebP, verificado por sha256 y cubierto por el smoke). Prueba de humo en el dev build de Android firmada por el humano (`78df9b08`).
+**Pendientes**: 13 (#60, #119, #129, #134, #144, #150, #151, #154, #158, #159, #160, #162 y #163). **#161 `media-docs-confirm-size-limit` cerrada**: el confirm de documentos (`POST /v1/pets/:petId/media/:documentId/confirm`) rechaza ficheros de más de 10485760 bytes (10 MiB, `PET_DOCUMENT_MAX_BYTES`) con 409 `PET_DOCUMENT_TOO_LARGE`; el documento queda pendiente y el objeto se deja en el bucket (Q2). En el puerto `PhotoStorage`, `getObjectSize` sustituye a `objectExists` y lee `ContentLength` del mismo `HeadObject`: un 404 da `null` (409 `PET_DOCUMENT_NOT_UPLOADED`, como antes), un fichero de 0 bytes se acepta, y una respuesta sin `ContentLength` falla cerrada sin marcar nada. Q1-Q3 y DA1-DA6 con su opción por defecto. Codex test-primero en 7 commits (paradas en c1 por prettier y en c3 por una cuenta mal sumada en el handoff, enmiendas L1 y L2). Reviewer APROBADO a la primera con 32 sondas de mutación (un mutante equivalente, el orden null/límite, que protege `tsc`). Backend unit 186/1463 → 187/1471, e2e 465 → 467 tests verdes.
 
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
@@ -88,6 +88,25 @@ debe listar las 4 URLs de cola.
 
 ## Estado actual
 
+- **`media-docs-confirm-size-limit` (#161) done** (2026-10-09, worktree
+  `Pet-Tracker-wt-161`, sesion Frontend): límite de 10485760 bytes en el
+  confirm de documentos (409 `PET_DOCUMENT_TOO_LARGE`) leyendo `ContentLength`
+  del `HeadObject` vía `getObjectSize`. Reviewer aprobado a la primera
+  (veredicto sobre `2e8319df`). Gate: `./init.sh` exit 0 (backend 187/1471,
+  móvil 96/2275, e2e 30 de 33 suites, 467 tests). PR abierta.
+- **`nutrition-ai-explainer` (#18) done** (2026-10-09, worktree
+  `Pet-Tracker-wt-18`, sesion Backend): explicación IA del plan nutricional
+  con `claude-haiku-5-5`, apagada por defecto y degradando a `null`.
+  Reviewer aprobado en la ronda 2 (`535128bd` sobre `8b0a74c2`). Gate:
+  `./init.sh` exit 0 (backend 186/1463, móvil 96/2275,
+  e2e 30 de 33 suites, 465 tests). Smoke humano R19
+  `27680bf6`. Deuda #163. PR abierta.
+- **`media-docs-download-api` (#157) done** (2026-10-08, worktree
+  `Pet-Tracker-wt-157`, sesion Frontend): estado de subida (`uploaded_at`,
+  migración 0019), `POST .../:documentId/confirm` con `HeadObject` y
+  `downloadUrl` prefirmada de 3600 s en el GET. Reviewer aprobado a la
+  primera. Gate: `./init.sh` exit 0 (backend 179/1361, móvil 96/2275,
+  e2e 29 de 32 suites, 459 tests). PR abierta.
 - **`mobile-welcome-pingo` (#153) done** (2026-10-08, worktree
   `Pet-Tracker-wt-153`, sesion Frontend): bienvenida con Pingo, bocadillo con
   su saludo, labio en el CTA primario y entrada, flotación y parpadeo con las
@@ -1389,6 +1408,26 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Última sesión
+
+- **2026-10-09** — **#161 `media-docs-confirm-size-limit` cerrada** (worktree
+  `Pet-Tracker-wt-161`, sesión Frontend): spec firmada desde Notion
+  (`c2676ab6`), handoff a Codex (`6ccdb744`) con enmiendas L1 (`298f7243`) y
+  L2 (`6bd52ec7`), 7 commits test-primero, merge de `origin/main` (#18) en
+  `2e8319df` y reviewer APROBADO. PR abierta; siguiente: merge humano.
+
+- **2026-10-09** — **#18 `nutrition-ai-explainer` cerrada** (worktree
+  `Pet-Tracker-wt-18`, sesión Backend): enmienda de proveedor a Anthropic
+  firmada desde Notion (`1837ab0a`), ronda 1 de Codex rechazada (`c09ee51c`),
+  Enmienda E1 firmada desde Notion (`c4b86430`), ronda 2 y reviewer APROBADO
+  (`535128bd`), smoke humano R19 (`27680bf6`) y deuda #163. PR abierta;
+  siguiente: merge humano.
+
+- **2026-10-08** — **#157 `media-docs-download-api` cerrada** (worktree
+  `Pet-Tracker-wt-157`, sesión Frontend, que heredó la coordinación de
+  Backend): spec firmada desde Notion (`ef0b256d`, `dd16ee7c`), Q1 y deudas
+  #160/#161 (`eae547bf`), dos correcciones del handoff (`7931f528`,
+  `771460af`), Codex en una ronda y reviewer APROBADO a la primera. PR
+  abierta; siguiente: merge humano.
 
 - **2026-10-08** — **#153 `mobile-welcome-pingo` cerrada** (worktree
   `Pet-Tracker-wt-153`, sesión Frontend): spec firmada desde Notion
