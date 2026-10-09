@@ -480,3 +480,31 @@ describe('#158 R3: el owner ve la acción de subir', () => {
     expect(screen.queryByTestId('docs-empty-action')).toBeNull();
   });
 });
+
+describe('#158 R4: family, walker y vet no ven la acción', () => {
+  describe('con documentos', () => {
+    it.each(['family', 'walker', 'vet'] as const)('sin botón para %s', async (myRole) => {
+      mockGetPet.mockResolvedValue({ kind: 'ok', pet: { ...makePet(), myRole } });
+      await renderDocs();
+      await screen.findByText('Luna');
+      await screen.findByTestId('doc-doc-1');
+      expect(screen.queryByTestId('docs-upload')).toBeNull();
+      expect(screen.queryByTestId('docs-empty-action')).toBeNull();
+    });
+  });
+
+  describe('en el vacío', () => {
+    it.each(['family', 'walker', 'vet'] as const)('solo Pingo para %s', async (myRole) => {
+      mockGetPet.mockResolvedValue({ kind: 'ok', pet: { ...makePet(), myRole } });
+      mockListPetDocs.mockResolvedValue({ kind: 'ok', docs: [] });
+      await renderDocs();
+      await screen.findByText('Luna');
+      const empty = await screen.findByTestId('docs-empty');
+      expect(screen.queryByTestId('docs-upload')).toBeNull();
+      expect(screen.queryByTestId('docs-empty-action')).toBeNull();
+      expect(empty.children.map(child => typeof child === 'string' ? child : child.props.testID)).toEqual([
+        'docs-empty-pose', 'docs-empty-title', 'docs-empty-body',
+      ]);
+    });
+  });
+});
