@@ -37,4 +37,11 @@
 - Enmienda E2 (solo tests: el `it` de `family` pasa a `it.each` de 6 filas, {family, walker,
   vet} × {sin, con collar}; rojo con mutación de producción versionada; sondas E2a–E2d),
   ensanchada con el barrido del reviewer (X1). Escrita en `42899d79` y re-espejada a Notion
-  (`Estado del gate` = En revisión). **Esperando la firma humana de E2.**
+  (`Estado del gate` = En revisión).
+  Aprobada en Notion: `Estado del gate` = Aprobado, `page_last_edited_at`
+  2026-10-09T22:36:38.817Z, casilla de E2 marcada con fecha 2026-10-09.
+  Firma: `4146ac24` `docs(specs): firma de la Enmienda E2 de #159 aprobada vía Notion`.
+- Handoff de la ronda 3: `progress/handoff_mobile-no-collar-states-pingo_e2.md`
+  (H0E2 = commit que lo añade). Incluye la repetición única por el flake de #72 R2 y la
+  PARADA terminal. Mientras Codex trabaja, el leader no toca `mobile-pet-tracker/`.
+  **Esperando a Codex (ronda 3).**
