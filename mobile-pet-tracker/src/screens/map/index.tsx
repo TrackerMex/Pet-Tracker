@@ -146,8 +146,6 @@ export function MapScreen() {
   const canSetLostMode = selectedPet?.myRole === 'owner';
   const canPairCollar =
     detail.data?.kind === 'ok' &&
-    selectedPet?.myRole !== 'walker' &&
-    selectedPet?.myRole !== 'vet' &&
     detail.data.pet.myRole === 'owner' &&
     detail.data.pet.device === null;
   const refetchPets = pets.refetch;
