@@ -451,7 +451,7 @@ describe('#87 R19: use-' + 'api no deja huella', () => {
     'screens/meal-schedule/index.tsx': 2, // #147 R8: el 401 de la edición de franjas
     'screens/meals-history/index.tsx': 1, // #105 R15
     'screens/weight-log/index.tsx': 1,
-    'screens/docs/index.tsx': 0,
+      'screens/docs/index.tsx': 1, // #158 R9
     'screens/alerts/index.tsx': 1,
     'screens/alert-detail/index.tsx': 1,
     'screens/geofences/index.tsx': 1,

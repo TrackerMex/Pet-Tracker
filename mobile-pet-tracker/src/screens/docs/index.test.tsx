@@ -809,3 +809,83 @@ describe('#158 R8: botones bloqueados durante la subida', () => {
     expect(screen.getByTestId('docs-upload-cancel').props.accessibilityState?.disabled).toBe(false);
   });
 });
+
+describe('#158 R9: cada fallo conserva el formulario y sus valores', () => {
+  it.each([
+    { label: 'lectura fetch rechaza', stage: 'fetch', error: 'No se pudo subir el archivo. Inténtalo de nuevo' },
+    { label: 'lectura blob rechaza', stage: 'blob', error: 'No se pudo subir el archivo. Inténtalo de nuevo' },
+    { label: 'crear invalid', stage: 'crear', state: { kind: 'invalid' }, error: 'Añade un tipo, un nombre y una fecha con formato AAAA-MM-DD' },
+    { label: 'crear forbidden', stage: 'crear', state: { kind: 'forbidden' }, error: 'Solo el dueño puede subir documentos' },
+    { label: 'crear unreachable', stage: 'crear', state: { kind: 'unreachable', message: 'offline' }, error: 'No se pudo conectar con el servidor' },
+    { label: 'crear not-found', stage: 'crear', state: { kind: 'not-found' }, error: 'Algo salió mal' },
+    { label: 'crear error', stage: 'crear', state: { kind: 'error' }, error: 'Algo salió mal' },
+    { label: 'crear missing-config', stage: 'crear', state: { kind: 'missing-config' }, error: 'Algo salió mal' },
+    { label: 'crear rechaza', stage: 'crear', reject: true, error: 'Algo salió mal' },
+    { label: 'PUT error', stage: 'PUT', state: { kind: 'error' }, error: 'No se pudo subir el archivo. Inténtalo de nuevo' },
+    { label: 'PUT unreachable', stage: 'PUT', state: { kind: 'unreachable', message: 'offline' }, error: 'No se pudo subir el archivo. Inténtalo de nuevo' },
+    { label: 'confirmar not-uploaded', stage: 'confirmar', state: { kind: 'not-uploaded' }, error: 'No se pudo subir el archivo. Inténtalo de nuevo' },
+    { label: 'confirmar too-large', stage: 'confirmar', state: { kind: 'too-large' }, error: 'El archivo pesa más de 10 MB' },
+    { label: 'confirmar forbidden', stage: 'confirmar', state: { kind: 'forbidden' }, error: 'Solo el dueño puede subir documentos' },
+    { label: 'confirmar unreachable', stage: 'confirmar', state: { kind: 'unreachable', message: 'offline' }, error: 'No se pudo conectar con el servidor' },
+    { label: 'confirmar not-found', stage: 'confirmar', state: { kind: 'not-found' }, error: 'Algo salió mal' },
+    { label: 'confirmar error', stage: 'confirmar', state: { kind: 'error' }, error: 'Algo salió mal' },
+    { label: 'confirmar missing-config', stage: 'confirmar', state: { kind: 'missing-config' }, error: 'Algo salió mal' },
+    { label: 'confirmar rechaza', stage: 'confirmar', reject: true, error: 'Algo salió mal' },
+  ] as const)('$label', async (row) => {
+    if (row.stage === 'fetch') mockAssetFetch.mockRejectedValue(new Error('local read failed'));
+    if (row.stage === 'blob') mockAssetFetch.mockResolvedValue({ blob: jest.fn().mockRejectedValue(new Error('blob failed')) });
+    if (row.stage === 'crear') {
+      if ('reject' in row) mockCreatePetDocument.mockRejectedValue(new Error('create failed'));
+      else mockCreatePetDocument.mockResolvedValue(row.state);
+    }
+    if (row.stage === 'PUT') mockUploadPhotoToUrl.mockResolvedValue(row.state);
+    if (row.stage === 'confirmar') {
+      if ('reject' in row) mockConfirmPetDocumentUpload.mockRejectedValue(new Error('confirm failed'));
+      else mockConfirmPetDocumentUpload.mockResolvedValue(row.state);
+    }
+    await openUploadForm();
+    await fillDocumentForm();
+    await fireEvent.press(screen.getByTestId('docs-upload-submit'));
+    await screen.findByText(row.error);
+    expect(screen.getByTestId('docs-upload-form')).toBeVisible();
+    for (const [id, value] of [
+      ['docs-type-input', 'Vacunación'],
+      ['docs-name-input', 'Antirrábica'],
+      ['docs-date-input', '2026-10-01'],
+      ['docs-vet-input', 'Dra. Pérez'],
+    ]) expect(screen.getByTestId(id).props.value).toBe(value);
+    expect(screen.getByTestId('docs-upload-submit').props.accessibilityState?.disabled).toBe(false);
+    expect(screen.getByTestId('docs-upload-cancel').props.accessibilityState?.disabled).toBe(false);
+    expect(mockListPetDocs).toHaveBeenCalledTimes(1);
+    if (row.stage === 'fetch' || row.stage === 'blob') expect(mockCreatePetDocument).not.toHaveBeenCalled();
+    if (row.stage === 'crear') expect(mockUploadPhotoToUrl).not.toHaveBeenCalled();
+    if (row.stage === 'PUT') expect(mockConfirmPetDocumentUpload).not.toHaveBeenCalled();
+  });
+
+  it.each(['crear', 'confirmar'] as const)('unauthorized al %s cierra la sesión sin error de acción', async (stage) => {
+    if (stage === 'crear') mockCreatePetDocument.mockResolvedValue({ kind: 'unauthorized' });
+    else mockConfirmPetDocumentUpload.mockResolvedValue({ kind: 'unauthorized' });
+    await openUploadForm();
+    await fillDocumentForm();
+    await fireEvent.press(screen.getByTestId('docs-upload-submit'));
+    await waitFor(() => expect(screen.getByTestId('docs-upload-submit').props.accessibilityState?.disabled).toBe(false));
+    expect(mockSignOut).toHaveBeenCalledTimes(1);
+    expect(screen.queryByTestId('docs-action-error')).toBeNull();
+  });
+
+  it.each(['Error de R9', 'Error de R6'] as const)('quita al pulsar el error anterior: %s', async (origin) => {
+    if (origin === 'Error de R9') mockCreatePetDocument.mockResolvedValue({ kind: 'error' });
+    await openUploadForm();
+    await fillDocumentForm();
+    if (origin === 'Error de R6') await fireEvent.changeText(screen.getByTestId('docs-type-input'), '   ');
+    await fireEvent.press(screen.getByTestId('docs-upload-submit'));
+    await screen.findByText(origin === 'Error de R9'
+      ? 'Algo salió mal'
+      : 'Añade un tipo, un nombre y una fecha con formato AAAA-MM-DD');
+    if (origin === 'Error de R6') await fireEvent.changeText(screen.getByTestId('docs-type-input'), 'Vacunación');
+    mockAssetFetch.mockReturnValueOnce(pending());
+    await fireEvent.press(screen.getByTestId('docs-upload-submit'));
+    expect(screen.getByTestId('docs-upload-form')).toBeVisible();
+    expect(screen.queryByTestId('docs-action-error')).toBeNull();
+  });
+});
