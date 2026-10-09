@@ -13,3 +13,9 @@
 - Gate: Aprobado en Notion (`page_last_edited_at` 2026-10-09T17:19:00.820Z), con las
   casillas del gate y de A1–A5 + L1–L8 marcadas en la página. Sin enmiendas.
   Firma: commit `docs(specs): firma de la spec de #159 aprobada vía Notion`.
+- Handoff a Codex CLI: `progress/handoff_mobile-no-collar-states-pingo.md` (H0 = commit
+  que lo añade). Plan: R1–R9 de tasks.md en 18 commits (R1–R5, R7, R8 rojo/verde; R6 y
+  R9 nacen verdes con sondas; trazabilidad y lista cerrada). Base medida por el leader:
+  10 suites, 699 tests verdes; cierre esperado 749 (+50). init.sh lo corre el leader.
+  Mientras Codex trabaja, el leader no toca `mobile-pet-tracker/`, `docs/verification.md`
+  ni `specs/mobile-ui-language/design.md`.
