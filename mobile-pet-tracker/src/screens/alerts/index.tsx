@@ -9,7 +9,6 @@ import type { Alert } from '../../api/types';
 import { Card } from '../../components/card';
 import { EmptyState } from '../../components/empty-state';
 import { useAlertsList } from '../../hooks/use-alerts-list';
-import { es } from '../../i18n/catalog';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
 import { useThemeColors } from '../../theme/use-theme-colors';
@@ -89,7 +88,7 @@ export function AlertsScreen() {
 
     try {
       await settleAlertAck(() => ackAlert(baseUrl, token ?? '', alert.id), alert, {
-        t: (key) => es[key],
+        t,
         signOut,
         showError: setActionError,
         onAcked: (next) => {
