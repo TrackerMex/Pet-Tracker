@@ -1,6 +1,6 @@
 ---
 feature: "mobile-alert-ack-outcome-helper"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec, mobile]
 ---
 
@@ -259,4 +259,5 @@ Delimitaciones (no son features pendientes):
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [x] Aprobado por humano (fecha: 2026-10-09) ← gate obligatorio antes de implementar
+- Respuestas a Q1–Q5 (frase literal del humano, escrita en la página de Notion): «seguimos la recomendaciones». Q1: se canda el rechazo de `signOut` tras `unauthorized` (C2, D1, R5); Q2: las filas del helper van en `R12_ALERTS`; Q3: el helper entra en `screenSignOutCalls` con 1; Q4: R7 es requisito propio; Q5: sin smoke en dev build de Android.

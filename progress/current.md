@@ -33,3 +33,6 @@
 - Espejo en Notion (Specs, «En revisión», Rol Spec Author):
   https://app.notion.com/p/3f46115a9b2781918fd1ce61607d0101. Falta la firma
   humana y las respuestas a Q1–Q5.
+- Gate firmado vía Notion: `Estado del gate` = Aprobado, `page_last_edited_at`
+  2026-10-09T18:07:22.971Z, respuesta «seguimos la recomendaciones» (Q1–Q5
+  con su recomendación). Spec sin enmiendas.
