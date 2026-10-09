@@ -52,12 +52,7 @@ export function AlertDetailScreen({ alertId }: { alertId: string }) {
     try {
       await settleAlertAck(() => ackAlert(baseUrl, token ?? '', alertId), alert, {
         t,
-        signOut: () => {
-          const run = signOut;
-          const key = 'common.somethingWentWrong' as const;
-          void Promise.resolve(run()).catch(() => setActionError(t(key)));
-          return Promise.resolve();
-        },
+        signOut,
         showError: setActionError,
         onAcked: setAcked,
         onNotFound: () => {
