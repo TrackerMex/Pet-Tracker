@@ -6,8 +6,10 @@ import {
   within,
 } from '@testing-library/react-native';
 import { HeroUINativeProvider } from 'heroui-native';
+import { DeviceEventEmitter, Platform } from 'react-native';
 
 import { getDocumentAsync } from 'expo-document-picker';
+import { HeaderHeightContext } from 'expo-router/react-navigation';
 import { openBrowserAsync } from 'expo-web-browser';
 
 import {
@@ -85,7 +87,9 @@ async function renderDocs() {
   return renderWithProviders(
     <HeroUINativeProvider>
       <LanguageProvider initial="es">
-        <DocsScreen petId="pet-1" />
+        <HeaderHeightContext.Provider value={91}>
+          <DocsScreen petId="pet-1" />
+        </HeaderHeightContext.Provider>
       </LanguageProvider>
     </HeroUINativeProvider>,
   );
@@ -375,6 +379,7 @@ const mockUploadPhotoToUrl = jest.mocked(uploadPhotoToUrl);
 const mockConfirmPetDocumentUpload = jest.mocked(confirmPetDocumentUpload);
 const mockSignOut = jest.fn();
 const originalFetch = globalThis.fetch;
+const originalOS = Platform.OS;
 const documentBlob = new Blob(['PDF bytes']);
 const mockAssetBlob = jest.fn();
 const mockAssetFetch = jest.fn();
@@ -404,6 +409,7 @@ beforeEach(() => {
 afterEach(() => {
   jest.useRealTimers();
   globalThis.fetch = originalFetch;
+  (Platform as { OS: string }).OS = originalOS;
 });
 
 function docsChildren() {
@@ -927,5 +933,33 @@ describe('#158 R10: cualquier miembro abre un documento', () => {
     expect(screen.getByTestId('doc-doc-1')).toBeVisible();
     expect(screen.queryByTestId('docs-action-error')).toBeNull();
     expect(mockOpenBrowserAsync).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('#158 R11: el formulario se aparta del teclado en Android', () => {
+  it('añade paddingBottom 291 con layout 700, teclado en 500 y cabecera 91', async () => {
+    (Platform as { OS: string }).OS = 'android';
+    await openUploadForm();
+    const host = await screen.findByTestId('docs-keyboard-avoider');
+    expect(host.props.className).toEqual(expect.stringContaining('flex-1'));
+    expect(host).toHaveStyle({ paddingBottom: 0 });
+    await fireEvent(host, 'layout', {
+      persist() {},
+      nativeEvent: { layout: { x: 0, y: 0, width: 400, height: 700 } },
+    });
+    await act(async () => {
+      DeviceEventEmitter.emit('keyboardDidShow', {
+        startCoordinates: { screenX: 0, screenY: 800, width: 400, height: 0 },
+        endCoordinates: { screenX: 0, screenY: 500, width: 400, height: 300 },
+        duration: 0, easing: 'keyboard', isEventFromThisApp: true,
+      });
+    });
+    await waitFor(() => expect(screen.getByTestId('docs-keyboard-avoider')).toHaveStyle({ paddingBottom: 291 }));
+  });
+
+  it('entrega el primer toque del scroll con el teclado abierto', async () => {
+    await openUploadForm();
+    const scroll = await screen.findByTestId('screen-docs');
+    expect(scroll.props.keyboardShouldPersistTaps).toBe('handled');
   });
 });
