@@ -78,3 +78,64 @@ describe('#134 R3: el helper entrega las ramas delegadas a la pantalla', () => {
     expect(handlers.onAcked).not.toHaveBeenCalled();
   });
 });
+
+describe('#134 R4: el helper resuelve las ramas comunes en los dos idiomas', () => {
+  it.each<{ language: 'en' | 'es'; expected: string }>([
+    { language: 'en', expected: 'Cannot reach server' },
+    { language: 'es', expected: 'No se pudo conectar con el servidor' },
+  ])('unreachable $language', async ({ language, expected }) => {
+    const handlers = makeHandlers(language);
+
+    await expect(
+      settleAlertAck(
+        () => Promise.resolve({ kind: 'unreachable', message: 'network down' }),
+        alert,
+        handlers,
+      ),
+    ).resolves.toBeUndefined();
+
+    expect(handlers.showError).toHaveBeenCalledTimes(1);
+    expect(handlers.showError).toHaveBeenCalledWith(expected);
+    expect(handlers.showError).not.toHaveBeenCalledWith('network down');
+    expect(handlers.signOut).not.toHaveBeenCalled();
+    expect(handlers.onAcked).not.toHaveBeenCalled();
+    expect(handlers.onNotFound).not.toHaveBeenCalled();
+  });
+
+  it('unauthorized', async () => {
+    const handlers = makeHandlers('es');
+
+    await expect(
+      settleAlertAck(() => Promise.resolve({ kind: 'unauthorized' }), alert, handlers),
+    ).resolves.toBeUndefined();
+
+    expect(handlers.signOut).toHaveBeenCalledTimes(1);
+    expect(handlers.signOut).toHaveBeenCalledWith();
+    expect(handlers.showError).not.toHaveBeenCalled();
+    expect(handlers.onAcked).not.toHaveBeenCalled();
+    expect(handlers.onNotFound).not.toHaveBeenCalled();
+  });
+
+  it.each<{
+    kind: 'error' | 'missing-config';
+    language: 'en' | 'es';
+    expected: string;
+  }>([
+    { kind: 'error', language: 'en', expected: 'Something went wrong' },
+    { kind: 'error', language: 'es', expected: 'Algo salió mal' },
+    { kind: 'missing-config', language: 'en', expected: 'Something went wrong' },
+    { kind: 'missing-config', language: 'es', expected: 'Algo salió mal' },
+  ])('$kind $language', async ({ kind, language, expected }) => {
+    const handlers = makeHandlers(language);
+
+    await expect(
+      settleAlertAck(() => Promise.resolve({ kind }), alert, handlers),
+    ).resolves.toBeUndefined();
+
+    expect(handlers.showError).toHaveBeenCalledTimes(1);
+    expect(handlers.showError).toHaveBeenCalledWith(expected);
+    expect(handlers.signOut).not.toHaveBeenCalled();
+    expect(handlers.onAcked).not.toHaveBeenCalled();
+    expect(handlers.onNotFound).not.toHaveBeenCalled();
+  });
+});
