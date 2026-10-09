@@ -8552,6 +8552,9 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
 - Sin drift desde el veredicto: `git diff 707c566e 98449adf` solo toca el
   review, y origin/main sigue en `fb1e562d` al cerrar.
 - Deuda: las siete supervivientes anteriores a #134 de E1.5 (P16b, P20a,
-  P20b, P17, P18, P24, P25) se registran como feature aparte.
+  P20b, P17, P18, P24, P25) se registran como deuda #165
+  `mobile-alert-ack-retry-guard-leaving-locks` por decisión del humano
+  («Solo lo de #134»), con los límites de E1.5 y los cierres L3-L5 del
+  reviewer. L4 y L5 llevan la advertencia «sin spike».
 - Cierre: `done` en `feature_list.json`, trazabilidad `approved`, STATUS,
   Notion (Implementado / Completado) y PR contra `main`. Merge: humano.

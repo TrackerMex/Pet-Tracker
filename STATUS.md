@@ -1,10 +1,10 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-10-09
-**Features completadas**: 151/163 (`feature_list.json`)
+**Features completadas**: 151/164 (`feature_list.json`)
 **En progreso**: ninguna en esta rama. #134 cerrada en `feature/134-mobile-alert-ack-outcome-helper`, PR pendiente de merge humano.
 
-**Pendientes**: 12 (#60, #119, #129, #144, #150, #151, #154, #158, #159, #160, #163 y #164). **#134 `mobile-alert-ack-outcome-helper` cerrada**: el `switch` sobre el resultado de `ackAlert`, duplicado en `handleAck` del centro de alertas (`src/screens/alerts/index.tsx`) y del detalle (`src/screens/alert-detail/index.tsx`), sale a `settleAlertAck` en `src/utils/alert-ack-outcome.ts`. El helper resuelve las ramas comunes (`unreachable`, `unauthorized` con `await signOut()`, `error`, `missing-config`, la excepción de la petición y el rechazo de `signOut`) y entrega `ok`, `already-closed` y `not-found` a cada pantalla, que conserva su guard, su `finally` y su conducta de `not-found`. Sin cambio de conducta y sin tocar la caché de `alertKeys.list()` (R7 lo canda). Los inventarios globales se mueven en el mismo commit rojo: `screenSignOutCalls` neto −1, `R13_ALERT_DETAIL` −3, `R12_ALERTS` neto 0 y `SCREEN_FILES` +1. Codex en dos rondas: la primera rechazada (B1: el helper no esperaba a `signOut` con candado; B2: el `t` de cada pantalla solo se probaba en español; B3: un envoltorio de `signOut` pasaba en verde), Enmienda E1 firmada desde Notion (`08d7d0a1`) con ocho tests nuevos y cero producción, y la segunda aprobada (`98449adf`). Siete supervivientes anteriores a #134 (retry, guard y `leavingRef` de las pantallas) quedan fuera por decisión del humano («Solo lo de #134»). Móvil 97/2365 → 98/2394.
+**Pendientes**: 13 (#60, #119, #129, #144, #150, #151, #154, #158, #159, #160, #163, #164 y #165). **#134 `mobile-alert-ack-outcome-helper` cerrada**: el `switch` sobre el resultado de `ackAlert`, duplicado en `handleAck` del centro de alertas (`src/screens/alerts/index.tsx`) y del detalle (`src/screens/alert-detail/index.tsx`), sale a `settleAlertAck` en `src/utils/alert-ack-outcome.ts`. El helper resuelve las ramas comunes (`unreachable`, `unauthorized` con `await signOut()`, `error`, `missing-config`, la excepción de la petición y el rechazo de `signOut`) y entrega `ok`, `already-closed` y `not-found` a cada pantalla, que conserva su guard, su `finally` y su conducta de `not-found`. Sin cambio de conducta y sin tocar la caché de `alertKeys.list()` (R7 lo canda). Los inventarios globales se mueven en el mismo commit rojo: `screenSignOutCalls` neto −1, `R13_ALERT_DETAIL` −3, `R12_ALERTS` neto 0 y `SCREEN_FILES` +1. Codex en dos rondas: la primera rechazada (B1: el helper no esperaba a `signOut` con candado; B2: el `t` de cada pantalla solo se probaba en español; B3: un envoltorio de `signOut` pasaba en verde), Enmienda E1 firmada desde Notion (`08d7d0a1`) con ocho tests nuevos y cero producción, y la segunda aprobada (`98449adf`). Siete supervivientes anteriores a #134 (retry, guard y `leavingRef` de las pantallas) quedan fuera por decisión del humano («Solo lo de #134») y se registran como deuda #165 `mobile-alert-ack-retry-guard-leaving-locks`. Móvil 97/2365 → 98/2394.
 
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
@@ -1435,7 +1435,8 @@ debe listar las 4 URLs de cola.
   `Pet-Tracker-wt-134`, sesión Frontend): spec firmada desde Notion, ronda 1
   de Codex rechazada (`815de8f6`), Enmienda E1 firmada desde Notion
   (`08d7d0a1`), ronda 2 en 8 commits test-primero y reviewer APROBADO
-  (`98449adf`). PR abierta; siguiente: merge humano.
+  (`98449adf`). Siete supervivientes preexistentes registradas como deuda
+  #165. PR abierta; siguiente: merge humano.
 
 - **2026-10-09** — **#162 `media-docs-download-test-locks` cerrada** (worktree
   `Pet-Tracker-wt-162`, sesión Frontend): spec firmada desde Notion
