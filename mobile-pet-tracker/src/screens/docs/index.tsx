@@ -1,9 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import * as DocumentPicker from 'expo-document-picker';
+import { HeaderHeightContext } from 'expo-router/react-navigation';
 import { openBrowserAsync } from 'expo-web-browser';
 import { Button, Input, Label, Skeleton, TextField } from 'heroui-native';
-import { useState } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { useContext, useState } from 'react';
+import { KeyboardAvoidingView, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
@@ -73,6 +74,7 @@ export function DocsScreen({ petId }: { petId: string }) {
   const { token, signOut } = useAuth();
   const t = useTranslate();
   const insets = useSafeAreaInsets();
+  const headerHeight = useContext(HeaderHeightContext);
   const [selectedDocument, setSelectedDocument] = useState<SelectedDocument | null>(null);
   const [uploading, setUploading] = useState(false);
   const [type, setType] = useState('');
@@ -206,158 +208,166 @@ export function DocsScreen({ petId }: { petId: string }) {
   }
 
   return (
-    <ScrollView
-      testID="screen-docs"
-      className="flex-1 bg-background"
-      contentInsetAdjustmentBehavior="automatic"
-      contentContainerStyle={{
-        padding: 24,
-        gap: 16,
-        paddingBottom: insets.bottom + 24,
-      }}
+    <KeyboardAvoidingView
+      testID="docs-keyboard-avoider"
+      className="flex-1"
+      behavior="padding"
+      keyboardVerticalOffset={headerHeight}
     >
-      <View className="gap-1">
-        <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
-          {t('docs.documentsOf')}
-        </Text>
-        {pet.data === undefined ? (
-          <Skeleton testID="docs-header-skeleton" className="h-8 w-36 rounded-xl" />
-        ) : (
-          <Text className="text-2xl font-black text-foreground">
-            {petName ?? t('docs.pet')}
+      <ScrollView
+        testID="screen-docs"
+        className="flex-1 bg-background"
+        contentInsetAdjustmentBehavior="automatic"
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{
+          padding: 24,
+          gap: 16,
+          paddingBottom: insets.bottom + 24,
+        }}
+      >
+        <View className="gap-1">
+          <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
+            {t('docs.documentsOf')}
           </Text>
-        )}
-      </View>
+          {pet.data === undefined ? (
+            <Skeleton testID="docs-header-skeleton" className="h-8 w-36 rounded-xl" />
+          ) : (
+            <Text className="text-2xl font-black text-foreground">
+              {petName ?? t('docs.pet')}
+            </Text>
+          )}
+        </View>
 
-      {isOwner && !selectedDocument && docs.data?.kind === 'ok' && docs.data.docs.length > 0 ? (
-        <Button testID="docs-upload" className="rounded-xl bg-accent" onPress={pickDocument}>
-          <Button.Label className="font-bold text-accent-foreground">
-            {t('docs.upload')}
-          </Button.Label>
-        </Button>
-      ) : null}
-
-      {selectedDocument ? (
-        <View testID="docs-upload-form">
-          <Text testID="docs-upload-file">{selectedDocument.asset.name}</Text>
-          <TextField>
-            <Label className="text-2xs font-semibold text-foreground">
-              <Label.Text className="text-2xs font-semibold text-foreground">
-                {t('docs.type')}
-              </Label.Text>
-            </Label>
-            <Input
-              testID="docs-type-input"
-              className="rounded-xl bg-default"
-              value={type}
-              onChangeText={setType}
-              maxLength={40}
-            />
-          </TextField>
-          <TextField>
-            <Label className="text-2xs font-semibold text-foreground">
-              <Label.Text className="text-2xs font-semibold text-foreground">
-                {t('docs.name')}
-              </Label.Text>
-            </Label>
-            <Input
-              testID="docs-name-input"
-              className="rounded-xl bg-default"
-              value={name}
-              onChangeText={setName}
-              maxLength={120}
-            />
-          </TextField>
-          <TextField>
-            <Label className="text-2xs font-semibold text-foreground">
-              <Label.Text className="text-2xs font-semibold text-foreground">
-                {t('docs.date')}
-              </Label.Text>
-            </Label>
-            <Input
-              testID="docs-date-input"
-              className="rounded-xl bg-default"
-              value={date}
-              onChangeText={setDate}
-              placeholder={t('docs.datePlaceholder')}
-            />
-          </TextField>
-          <TextField>
-            <Label className="text-2xs font-semibold text-foreground">
-              <Label.Text className="text-2xs font-semibold text-foreground">
-                {t('docs.vet')}
-              </Label.Text>
-            </Label>
-            <Input
-              testID="docs-vet-input"
-              className="rounded-xl bg-default"
-              value={vet}
-              onChangeText={setVet}
-              maxLength={120}
-            />
-          </TextField>
-          <Button
-            testID="docs-upload-submit"
-            className="rounded-xl bg-accent"
-            isDisabled={uploading}
-            onPress={() => void submitDocument()}
-          >
+        {isOwner && !selectedDocument && docs.data?.kind === 'ok' && docs.data.docs.length > 0 ? (
+          <Button testID="docs-upload" className="rounded-xl bg-accent" onPress={pickDocument}>
             <Button.Label className="font-bold text-accent-foreground">
               {t('docs.upload')}
             </Button.Label>
           </Button>
-          <Button
-            testID="docs-upload-cancel"
-            className="rounded-xl"
-            variant="outline"
-            isDisabled={uploading}
-            onPress={cancelUpload}
-          >
-            <Button.Label className="font-semibold">{t('docs.cancel')}</Button.Label>
-          </Button>
-        </View>
-      ) : null}
+        ) : null}
 
-      {actionErrorText ? (
-        <Text testID="docs-action-error" selectable className="text-danger">
-          {actionErrorText}
-        </Text>
-      ) : null}
+        {selectedDocument ? (
+          <View testID="docs-upload-form">
+            <Text testID="docs-upload-file">{selectedDocument.asset.name}</Text>
+            <TextField>
+              <Label className="text-2xs font-semibold text-foreground">
+                <Label.Text className="text-2xs font-semibold text-foreground">
+                  {t('docs.type')}
+                </Label.Text>
+              </Label>
+              <Input
+                testID="docs-type-input"
+                className="rounded-xl bg-default"
+                value={type}
+                onChangeText={setType}
+                maxLength={40}
+              />
+            </TextField>
+            <TextField>
+              <Label className="text-2xs font-semibold text-foreground">
+                <Label.Text className="text-2xs font-semibold text-foreground">
+                  {t('docs.name')}
+                </Label.Text>
+              </Label>
+              <Input
+                testID="docs-name-input"
+                className="rounded-xl bg-default"
+                value={name}
+                onChangeText={setName}
+                maxLength={120}
+              />
+            </TextField>
+            <TextField>
+              <Label className="text-2xs font-semibold text-foreground">
+                <Label.Text className="text-2xs font-semibold text-foreground">
+                  {t('docs.date')}
+                </Label.Text>
+              </Label>
+              <Input
+                testID="docs-date-input"
+                className="rounded-xl bg-default"
+                value={date}
+                onChangeText={setDate}
+                placeholder={t('docs.datePlaceholder')}
+              />
+            </TextField>
+            <TextField>
+              <Label className="text-2xs font-semibold text-foreground">
+                <Label.Text className="text-2xs font-semibold text-foreground">
+                  {t('docs.vet')}
+                </Label.Text>
+              </Label>
+              <Input
+                testID="docs-vet-input"
+                className="rounded-xl bg-default"
+                value={vet}
+                onChangeText={setVet}
+                maxLength={120}
+              />
+            </TextField>
+            <Button
+              testID="docs-upload-submit"
+              className="rounded-xl bg-accent"
+              isDisabled={uploading}
+              onPress={() => void submitDocument()}
+            >
+              <Button.Label className="font-bold text-accent-foreground">
+                {t('docs.upload')}
+              </Button.Label>
+            </Button>
+            <Button
+              testID="docs-upload-cancel"
+              className="rounded-xl"
+              variant="outline"
+              isDisabled={uploading}
+              onPress={cancelUpload}
+            >
+              <Button.Label className="font-semibold">{t('docs.cancel')}</Button.Label>
+            </Button>
+          </View>
+        ) : null}
 
-      {docs.data === undefined ? (
-        <View testID="docs-list-skeleton" className="gap-3">
-          <Skeleton className="h-24 w-full rounded-card" />
-          <Skeleton className="h-24 w-full rounded-card" />
-          <Skeleton className="h-24 w-full rounded-card" />
-        </View>
-      ) : null}
-
-      {docs.data?.kind === 'ok' && docs.data.docs.length === 0 ? (
-        <EmptyState
-          testID="docs-empty"
-          pose="health"
-          title={t('docs.noDocumentsYet')}
-          body={t('docs.emptyBody')}
-          action={isOwner && !selectedDocument ? { label: t('docs.upload'), onPress: pickDocument } : undefined}
-        />
-      ) : null}
-
-      {docs.data?.kind === 'ok'
-        ? docs.data.docs.map((document) => (
-            <DocumentRow key={document.id} document={document} onPress={() => openDocument(document)} />
-          ))
-        : null}
-
-      {docs.data && docs.data.kind !== 'ok' ? (
-        <Card testID="docs-error" className="items-start gap-3">
-          <Text className="font-normal text-danger">
-            {t('docs.couldNotLoadDocuments')}
+        {actionErrorText ? (
+          <Text testID="docs-action-error" selectable className="text-danger">
+            {actionErrorText}
           </Text>
-          <Button testID="docs-retry" onPress={() => void docs.refetch()}>
-            <Button.Label>{t('common.retry')}</Button.Label>
-          </Button>
-        </Card>
-      ) : null}
-    </ScrollView>
+        ) : null}
+
+        {docs.data === undefined ? (
+          <View testID="docs-list-skeleton" className="gap-3">
+            <Skeleton className="h-24 w-full rounded-card" />
+            <Skeleton className="h-24 w-full rounded-card" />
+            <Skeleton className="h-24 w-full rounded-card" />
+          </View>
+        ) : null}
+
+        {docs.data?.kind === 'ok' && docs.data.docs.length === 0 ? (
+          <EmptyState
+            testID="docs-empty"
+            pose="health"
+            title={t('docs.noDocumentsYet')}
+            body={t('docs.emptyBody')}
+            action={isOwner && !selectedDocument ? { label: t('docs.upload'), onPress: pickDocument } : undefined}
+          />
+        ) : null}
+
+        {docs.data?.kind === 'ok'
+          ? docs.data.docs.map((document) => (
+              <DocumentRow key={document.id} document={document} onPress={() => openDocument(document)} />
+            ))
+          : null}
+
+        {docs.data && docs.data.kind !== 'ok' ? (
+          <Card testID="docs-error" className="items-start gap-3">
+            <Text className="font-normal text-danger">
+              {t('docs.couldNotLoadDocuments')}
+            </Text>
+            <Button testID="docs-retry" onPress={() => void docs.refetch()}>
+              <Button.Label>{t('common.retry')}</Button.Label>
+            </Button>
+          </Card>
+        ) : null}
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
