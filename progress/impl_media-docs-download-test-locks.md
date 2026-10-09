@@ -1153,3 +1153,60 @@ git add specs/media-docs-download-test-locks/traceability.md progress/impl_media
   && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'progress/impl_media-docs-download-test-locks.md specs/media-docs-download-test-locks/traceability.md ' \
   && git commit -m 'docs(media-docs-download-test-locks): traceability (#162)'
 ```
+
+### c7 — cadena de trazabilidad y commit
+
+```text
+$ git add specs/media-docs-download-test-locks/traceability.md progress/impl_media-docs-download-test-locks.md && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'progress/impl_media-docs-download-test-locks.md specs/media-docs-download-test-locks/traceability.md ' && git commit -m 'docs(media-docs-download-test-locks): traceability (#162)'
+exit=0
++ git add specs/media-docs-download-test-locks/traceability.md progress/impl_media-docs-download-test-locks.md
+++ git diff --cached --name-only
+++ LC_ALL=C
+++ sort
+++ tr '\n' ' '
++ test 'progress/impl_media-docs-download-test-locks.md specs/media-docs-download-test-locks/traceability.md ' = 'progress/impl_media-docs-download-test-locks.md specs/media-docs-download-test-locks/traceability.md '
++ git commit -m 'docs(media-docs-download-test-locks): traceability (#162)'
+[feature/162-media-docs-download-test-locks e2cbec46] docs(media-docs-download-test-locks): traceability (#162)
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 2 files changed, 1159 insertions(+), 4 deletions(-)
+ create mode 100644 progress/impl_media-docs-download-test-locks.md
+```
+
+### Lista cerrada tras c7
+
+```text
+$ git diff --name-only 29585178 HEAD -- . ':!feature_list.json' ':!progress/current.md' ':!progress/handoff_media-docs-download-test-locks.md' ':!specs/media-docs-download-test-locks/requirements.md' ':!specs/media-docs-download-test-locks/design.md' ':!specs/media-docs-download-test-locks/tasks.md' ':!progress/review_media-docs-download-test-locks.md' > /tmp/162-closed-files.txt 2>&1; echo "exit=$?"
+exit=0
+backend-pet-tracker/src/modules/media/application/use-cases/list-pet-documents.use-case.spec.ts
+backend-pet-tracker/src/modules/media/infrastructure/photo-storage.object-exists.spec.ts
+backend-pet-tracker/test/media-docs.e2e-spec.ts
+progress/impl_media-docs-download-test-locks.md
+specs/media-docs-download-test-locks/traceability.md
+```
+
+c7 — R4/documentación: e2cbec46 docs(media-docs-download-test-locks): traceability (#162). Cadena exit=0.
+
+Lista cerrada conforme: exactamente los cinco ficheros autorizados. El diff neto de producción es cero; infra y mobile no cambian.
+
+Incidencia de invocación del orquestador antes del cierre: functions.exec rechazó el JavaScript con SyntaxError (Unexpected identifier e2cbec46), sin ejecutar comandos ni tocar ficheros. Se corrigieron los delimitadores del texto del registro y se volvió a invocar la misma secuencia. Ninguna medida ni cadena resultó afectada.
+
+Commit final de lista cerrada (adicional a c1–c7), desde la raíz:
+
+```bash
+git commit --only progress/impl_media-docs-download-test-locks.md -m 'docs(media-docs-download-test-locks): closed file list (#162)'
+```
+
+Identificación del último commit: mensaje literal anterior, padre c7 e2cbec46. Su hash se informa en la respuesta final: un commit no puede incluir su propio hash en el fichero que versiona. No se añade un noveno commit ni se reescriben hashes.
+
+Trabajo autorizado completo. Pendientes del leader/reviewer: ./init.sh, sondas, bookkeeping, push y PR. Ninguna de esas acciones se ha ejecutado.
