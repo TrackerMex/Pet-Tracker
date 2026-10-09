@@ -139,3 +139,55 @@ describe('#134 R4: el helper resuelve las ramas comunes en los dos idiomas', () 
     expect(handlers.onNotFound).not.toHaveBeenCalled();
   });
 });
+
+describe('#134 R5: el helper convierte toda excepción en el error genérico', () => {
+  it.each<{ language: 'en' | 'es'; expected: string }>([
+    { language: 'en', expected: 'Something went wrong' },
+    { language: 'es', expected: 'Algo salió mal' },
+  ])('la petición rechaza, $language', async ({ language, expected }) => {
+    const handlers = makeHandlers(language);
+    const request = () => Promise.reject(new Error('request failed'));
+
+    await expect(settleAlertAck(request, alert, handlers)).resolves.toBeUndefined();
+
+    expect(handlers.showError).toHaveBeenCalledTimes(1);
+    expect(handlers.showError).toHaveBeenCalledWith(expected);
+    expect(handlers.signOut).not.toHaveBeenCalled();
+    expect(handlers.onAcked).not.toHaveBeenCalled();
+    expect(handlers.onNotFound).not.toHaveBeenCalled();
+  });
+
+  it('la petición lanza de forma síncrona, es', async () => {
+    const handlers = makeHandlers('es');
+    const request = () => {
+      throw new Error('sync failure');
+    };
+
+    await expect(settleAlertAck(request, alert, handlers)).resolves.toBeUndefined();
+
+    expect(handlers.showError).toHaveBeenCalledTimes(1);
+    expect(handlers.showError).toHaveBeenCalledWith('Algo salió mal');
+    expect(handlers.signOut).not.toHaveBeenCalled();
+    expect(handlers.onAcked).not.toHaveBeenCalled();
+    expect(handlers.onNotFound).not.toHaveBeenCalled();
+  });
+
+  it.each<{ language: 'en' | 'es'; expected: string }>([
+    { language: 'en', expected: 'Something went wrong' },
+    { language: 'es', expected: 'Algo salió mal' },
+  ])('signOut rechaza tras unauthorized, $language', async ({ language, expected }) => {
+    const handlers = makeHandlers(language);
+    handlers.signOut.mockRejectedValueOnce(new Error('sign-out failed'));
+
+    await expect(
+      settleAlertAck(() => Promise.resolve({ kind: 'unauthorized' }), alert, handlers),
+    ).resolves.toBeUndefined();
+
+    expect(handlers.signOut).toHaveBeenCalledTimes(1);
+    expect(handlers.signOut).toHaveBeenCalledWith();
+    expect(handlers.showError).toHaveBeenCalledTimes(1);
+    expect(handlers.showError).toHaveBeenCalledWith(expected);
+    expect(handlers.onAcked).not.toHaveBeenCalled();
+    expect(handlers.onNotFound).not.toHaveBeenCalled();
+  });
+});
