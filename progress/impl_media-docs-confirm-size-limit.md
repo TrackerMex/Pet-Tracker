@@ -2061,3 +2061,62 @@ La lista cerrada se anotará después de c7 con el comando literal del handoff; 
 Todas las decisiones funcionales permanecen las aprobadas (Q1–Q3 y DA1–DA6). Las variaciones de ejecución registradas son L1, L2, el código 1 del TSC incremental rojo y el incidente PGREP, cuya corrida se descartó y repitió con libre tras 120 s. Los PGREP de L2 y del cierre dieron libre y se inspeccionaron en llamadas separadas.
 
 test:e2e completo y ./init.sh: pendientes del leader
+
+### c7 — Trazabilidad R1–R4
+
+`9e23832e docs(media-docs-confirm-size-limit): traceability (#161)`. Cadena de c7 exit=0; solo se stagearon y commitearon traceability y este impl.
+
+```text
+[feature/161-media-docs-confirm-size-limit 9e23832e] docs(media-docs-confirm-size-limit): traceability (#161)
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 2 files changed, 2067 insertions(+), 4 deletions(-)
+ create mode 100644 progress/impl_media-docs-confirm-size-limit.md
+exit=0
+```
+
+### R4 — Lista cerrada tras c7
+
+```text
+$ git diff --name-only 6ccdb744 HEAD -- . ':!feature_list.json' ':!progress/current.md' ':!progress/handoff_media-docs-confirm-size-limit.md' ':!specs/media-docs-confirm-size-limit/requirements.md' ':!specs/media-docs-confirm-size-limit/design.md' ':!specs/media-docs-confirm-size-limit/tasks.md' ':!progress/review_media-docs-confirm-size-limit.md'
+backend-pet-tracker/src/modules/media/application/use-cases/confirm-pet-document-upload.use-case.spec.ts
+backend-pet-tracker/src/modules/media/application/use-cases/confirm-pet-document-upload.use-case.ts
+backend-pet-tracker/src/modules/media/application/use-cases/create-pet-document.use-case.spec.ts
+backend-pet-tracker/src/modules/media/application/use-cases/request-photo-upload-url.use-case.spec.ts
+backend-pet-tracker/src/modules/media/domain/errors/pet-document.errors.ts
+backend-pet-tracker/src/modules/media/domain/ports/photo-storage.ts
+backend-pet-tracker/src/modules/media/infrastructure/mappers/pet-document-error.mapper.spec.ts
+backend-pet-tracker/src/modules/media/infrastructure/mappers/pet-document-error.mapper.ts
+backend-pet-tracker/src/modules/media/infrastructure/photo-storage.object-exists.spec.ts
+backend-pet-tracker/src/modules/media/infrastructure/photo-storage.s3.adapter.ts
+backend-pet-tracker/test/media-docs.e2e-spec.ts
+progress/impl_media-docs-confirm-size-limit.md
+specs/media-docs-confirm-size-limit/traceability.md
+exit=0
+```
+
+La salida contiene exactamente los 13 ficheros autorizados. No hay rutas ajenas.
+
+Estado inmediatamente después de c7, antes de añadir este registro:
+
+```text
+$ git status --short
+(vacío)
+exit=0
+```
+
+Se usa el commit adicional de lista cerrada expresamente autorizado por el handoff para anotarla después de c7. Ese commit lleva --only progress/impl_media-docs-confirm-size-limit.md; no cambia producción ni traceability. No se hicieron rebase, merge, push, PR, Docker, provisión ni acciones contra AWS real.
+
+Trabajo del implementer completado: R1–R3 y verificación R4 delegada al implementer pasan. La revisión por mutaciones de frontera y el gate completo permanecen al leader/reviewer.
+
+test:e2e completo y ./init.sh: pendientes del leader
