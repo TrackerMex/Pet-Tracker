@@ -2003,3 +2003,25 @@ describe('#159 R2: Mapa sin seguimiento presenta a Pingo', () => {
     expect(screen.queryByTestId('map-view')).toBeNull();
   });
 });
+
+describe('#159 R3: el dueño sin collar puede ir a emparejar', () => {
+  it('pinta Vincular collar al dueño de una mascota sin collar', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet() });
+    mockGetLastPosition.mockResolvedValue({ kind: 'no-tracking' });
+    await renderMap();
+    const action = await screen.findByTestId('map-no-tracking-action');
+    expect(within(action).getByText('Vincular collar')).toBeVisible();
+  });
+
+  it('lleva a emparejar una sola vez', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet() });
+    mockGetLastPosition.mockResolvedValue({ kind: 'no-tracking' });
+    await renderMap();
+    const action = await screen.findByTestId('map-no-tracking-action');
+    await fireEvent.press(action);
+    expect(mockRouter.push).toHaveBeenCalledTimes(1);
+    expect(mockRouter.push).toHaveBeenCalledWith('/pairing');
+  });
+});
