@@ -354,5 +354,21 @@ describe('#100 R5: el detalle marca leída la alerta', () => {
       );
       expect(mockSignOut).toHaveBeenCalledTimes(1);
     });
+
+    it('muestra Cannot reach server en inglés si ackAlert responde unreachable', async () => {
+      mockAckAlert.mockResolvedValueOnce({ kind: 'unreachable', message: 'network down' });
+
+      await renderDetail('alert-1', 'en');
+      await fireEvent.press(await screen.findByTestId('alert-detail-ack'));
+      await waitFor(() => expect(screen.queryByTestId('alert-detail-action-error')).toHaveTextContent('Cannot reach server'));
+    });
+
+    it('muestra Something went wrong en inglés si ackAlert responde error', async () => {
+      mockAckAlert.mockResolvedValueOnce({ kind: 'error' });
+
+      await renderDetail('alert-1', 'en');
+      await fireEvent.press(await screen.findByTestId('alert-detail-ack'));
+      await waitFor(() => expect(screen.queryByTestId('alert-detail-action-error')).toHaveTextContent('Something went wrong'));
+    });
   });
 });
