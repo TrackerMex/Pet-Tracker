@@ -313,3 +313,15 @@ describe('#159 R2: el texto de rastreo en vivo se retira', () => {
     expect(source).not.toContain('Live tracking requires a collar');
   });
 });
+
+describe('#159 R7: la guarda del editor sigue en texto y dice la verdad', () => {
+  it('geofences.needsCollar tiene fila de #159 en mobile-ui-language', () => {
+    expect(section159()).toContain('| — | `geofences.needsCollar` | `Safe zones need a collar with an active plan.` | `Las zonas seguras necesitan un collar con plan activo.` | ← cambiada por #159 (R7) |');
+  });
+
+  it('el editor abre <Card testID="geofence-editor-no-tracking"> una sola vez y no usa EmptyState', () => {
+    const source = readFileSync(join(process.cwd(), 'src', 'screens', 'geofence-editor', 'index.tsx'), 'utf8');
+    expect(source.match(/<Card\s+testID="geofence-editor-no-tracking"/g) ?? []).toHaveLength(1);
+    expect(source).not.toMatch(/<EmptyState\b/);
+  });
+});
