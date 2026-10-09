@@ -163,3 +163,132 @@ Tests:       8 skipped, 468 passed, 476 total
 ✅ Todo verde. Listo para trabajar.
 ```
 Los recuentos coinciden con la tabla del leader.
+
+---
+
+# Ronda 2 — Enmienda E1
+
+Fecha: 2026-10-09
+HEAD revisado: `340967ba` (branch `feature/159-mobile-no-collar-states-pingo`, worktree `Pet-Tracker-wt-159`)
+H0E1: `c8064d03`. Commits de la ronda: `3224d502` (rojo) → `203ea96e` (verde) → `340967ba` (trazabilidad).
+Veredicto: RECHAZADO (1 bloqueante: B2)
+
+## Comprobaciones
+
+### Producción idéntica a 664b95a7
+- `git diff --quiet 664b95a7 HEAD -- mobile-pet-tracker/src/screens/map/index.tsx` → `exit=0`. [x]
+
+### Lista cerrada desde H0E1
+- `git diff --name-only c8064d03 HEAD` → exactamente `mobile-pet-tracker/src/screens/map/index.test.tsx`, `progress/impl_mobile-no-collar-states-pingo.md`, `specs/mobile-no-collar-states-pingo/traceability.md`. [x]
+- `git log --oneline c8064d03..HEAD` → los tres commits esperados, en orden e1-1, e1-2, e1-3. [x]
+- El diff de `index.test.tsx` contra `664b95a7` tiene 0 líneas borradas: ningún `it` existente cambia. [x]
+
+### C6 — Spec y enmienda firmadas
+- `requirements.md`: `status: approved`; casillas 1 y 2 marcadas; §Enmienda E1 con su casilla marcada (2026-10-09, vía Notion). [x]
+
+### Gate init.sh (corrido por el leader, no por el reviewer)
+- `init-159-e1.log.head`: HEAD `340967bad55b169519b88ed70b51f4d7fd9f00c5`, `exit=0`. Coincide con el HEAD revisado. [x]
+- Log: backend unit 187 suites / 1474 tests; 2 suites / 14 tests; móvil `Test Suites: 97 passed, 97 total` y `Tests: 2420 passed, 2420 total` (2415 + 5); e2e `30 passed, 3 skipped` suites y `468 passed, 8 skipped`; `✅ Lint sin errores`, `✅ Typecheck sin errores`, `✅ Todo verde`. Sin líneas `FAIL `. [x]
+- `git status --short` limpio al arrancar la revisión (el `eslint --fix` de init.sh no dejó cambios). [x]
+
+### C4 — Rojo → verde
+- `3224d502` (rojo) toca `index.test.tsx` (+27: dos `it` al final de `#159 R3`, un `it.each(['family','walker','vet'])` al final de `#159 R4`) **y** `src/screens/map/index.tsx`: las dos últimas líneas de `canPairCollar` pasan de `detail.data.pet.myRole === 'owner' &&` / `detail.data.pet.device === null;` a `selectedPet?.myRole === 'owner' &&` / `selectedPet?.device === null;`. Es la mutación de producción que prescribe E1; ningún doble (`mockListPets`, `mockGetPet`, `makePet`, `noTrackingAfterDetail`) cambia. [x]
+- `203ea96e` (verde) toca solo `src/screens/map/index.tsx` y revierte exactamente esas dos líneas (blob `11d85fa3` → `31b4e3d5`, el de `664b95a7`). [x]
+- El test no cambia después del rojo: `git diff --stat 3224d502 HEAD -- …/index.test.tsx` vacío. [x]
+- Rojo según el impl (`## Reanudación 2`, `159-e1-r.txt`): `Tests: 6 failed, 108 passed, 114 total`. Los dos de R3 caen por consulta (`Unable to find an element with testID: map-no-tracking-action`); R4.4 y las tres filas del `it.each` caen por aserción (`expect(received).toBeNull()` y el `Received` es el botón `Vincular collar`). Coincide con la tabla de tasks.md §Enmienda E1. [x]
+- Los commits siguen `test(…)`/`fix(…)`/`docs(…)` con el id `#159 E1`. [x]
+
+## Sondas del reviewer (en HEAD 340967ba, sin commit)
+
+Todas en `const canPairCollar =` de `src/screens/map/index.tsx`. Cada una: `uptime`, `FORCE_COLOR=0 bunx jest src/screens/map/index.test.tsx > <scratchpad>/probe159-<id>.txt 2>&1; echo "exit=$?"` sin pipe, restaurada con `git checkout HEAD -- mobile-pet-tracker/src/screens/map/index.tsx`. `limpio` es `git diff --quiet HEAD -- mobile-pet-tracker` (el único fichero sucio del worktree es este review).
+
+| Id | Mutación | Carga (1 min) | Resultado | exit | limpio | Qué cae |
+|---|---|---|---|---|---|---|
+| P1 | rol del listado: `detail.data.pet.myRole === 'owner' &&` → `selectedPet?.myRole === 'owner' &&` (= Z1 / E1a) | 4.37 | `4 failed, 110 passed, 114 total` | 1 | 0 | R3 «…diga otro rol…»; R4 «no pinta el botón a family/walker/vet aunque el listado diga owner» |
+| P2 | collar del listado: `detail.data.pet.device === null;` → `selectedPet?.device === null;` (= E1d) | 5.02 | `2 failed, 112 passed, 114 total` | 1 | 0 | R3 «…traiga collar…»; R4 «no pinta el botón al dueño de una mascota con collar» |
+| P3 | los dos (= mutación del rojo) | 5.41 | `6 failed, 108 passed, 114 total` | 1 | 0 | las 6 de la tabla del rojo |
+| P4 | zona ciega fuera de E1a-E1e (las cinco conservan la guarda `detail.data?.kind === 'ok'`): las tres líneas pasan a `(detail.data?.kind === 'ok' ? detail.data.pet : selectedPet)?.myRole === 'owner' &&` / `(…)?.device === null;`, el listado de respaldo mientras el detalle no es `ok` | 6.41 | `4 failed, 110 passed, 114 total` | 1 | 0 | R4 «no pinta el botón si el detalle resuelve error/unreachable/missing-config» y «…mientras el detalle carga» (preexistentes, aserción) |
+| P5 | zona ciega fuera de E1a-E1e (E1b es el OR del rol; nadie prueba el OR del collar): `detail.data.pet.device === null;` → `(selectedPet?.device === null \|\| detail.data.pet.device === null);` | 7.03 | `1 failed, 113 passed, 114 total` | 1 | 0 | R4 «no pinta el botón al dueño de una mascota con collar» (preexistente, aserción) |
+| P6 | zona ciega de la inversa del rol en R3 (el listado solo dice `family`): `detail.data.pet.myRole === 'owner' &&` → `selectedPet?.myRole !== 'walker' && detail.data.pet.myRole === 'owner' &&` | 7.31 | **`114 passed, 114 total` — sobrevive** | 0 | 0 | ninguno |
+| P6b | igual que P6 con `'vet'` | 4.56 | **`114 passed, 114 total` — sobrevive** | 0 | 0 | ninguno |
+| P6c | control de P6 con `'family'` | 5.65 | `1 failed, 113 passed, 114 total` | 1 | 0 | R3 «pinta Vincular collar aunque el listado diga otro rol: manda el rol del detalle» (consulta) |
+
+Tipo de rojo (grep sobre cada salida): P1 1 consulta + 3 aserción; P2 1 + 1; P3 2 + 4; P4 0 + 4; P5 0 + 1; P6c 1 + 0. Ningún `ReferenceError`/`TypeError`. El flake de #72 R2 no salió en ninguna de las 8 corridas. Árbol final: `git status --short` → solo ` M progress/review_mobile-no-collar-states-pingo.md`.
+
+Las sondas E1a-E1e de Codex (impl, `### Sonda E1a`…`E1e`) dan 4/3/1/2/1 failed sobre 114, con `limpio=0`, como la tabla de tasks.md. P1 y P2 las reproducen.
+
+## Cobertura de las cláusulas de E1
+
+| Cláusula | Ramas | Candado | Estado |
+|---|---|---|---|
+| R3.1 inversa del rol: «aunque el listado diga **otro rol**» → hay botón | listado `family`, `walker`, `vet` con detalle owner | solo `family` (`it` «…diga otro rol…») | **`walker` y `vet` ciegas (P6, P6b): B2** |
+| R3.1 inversa del collar: «aunque el listado traiga collar» → hay botón | listado con collar / sin collar (la rama de producción es `device === null`, binaria) | `makeDevice('online')` en el listado | [x] (P2, P3; E1d, E1e) |
+| R4.1-R4.3 contra el listado: detalle `family`/`walker`/`vet`, listado owner → sin botón | las tres | `it.each(['family','walker','vet'])` | [x] (P1 tumba las tres filas) |
+| R4.4 collar del detalle contra listado sin collar | AND y OR | R4.4 preexistente | [x] (P2, P5) |
+| D2: rol y collar del mismo detalle, sin caer al listado | detalle cargando / error / unreachable / missing-config | `it` preexistentes de R4 | [x] (P4) |
+
+## C5 — Trazabilidad
+- Fila R3: añade los dos `it` nuevos de E1 y `E1: 3224d502 … → 203ea96e …` con sus mensajes. [x]
+- Fila R4: añade `no pinta el botón a %s aunque el listado diga owner`, `sondas E1a-E1e` y los mismos hashes. [x]
+- Los nombres citados existen literalmente en `index.test.tsx` y nombran su R-id vía el `describe('#159 R3: …')` / `describe('#159 R4: …')`. [x]
+- Única fila `pendiente`: R10, el humo humano en dev build de Android (§Aprobación, casilla 3), igual que en la ronda 1. [x]
+
+## C2 / C3 / C7 / C8
+- C2: `feature_list.json` con una sola feature `in_progress` (#159); `progress/current.md` registra la enmienda E1 y su firma. [x]
+- C3 y C8: ronda solo de tests; producción idéntica a `664b95a7`, ya revisada en la ronda 1. [x]
+- C7: N/A, E1 no reemplaza nada.
+
+## Observaciones
+
+### B2 (bloqueante): la inversa del rol de R3 solo vigila el listado `family`; con `walker` o `vet` el botón aún puede obedecer al listado
+
+B1 pedía un candado que exigiera que el rol del botón salga del detalle. E1 lo cierra en un sentido para los tres roles (R4, `it.each`), pero en el otro sentido (listado no-owner, detalle owner → hay botón) solo con `makePet({ myRole: 'family' })`. El `it` dice «aunque el listado diga **otro rol**», que son tres valores.
+
+- P6: `selectedPet?.myRole !== 'walker' && detail.data.pet.myRole === 'owner' &&` en `canPairCollar` → `114 passed, 114 total`, `exit=0`.
+- P6b: lo mismo con `'vet'` → `114 passed, 114 total`, `exit=0`.
+- P6c (control): con `'family'` cae el `it` de E1 (1 failed, por consulta). El candado funciona, pero solo en esa rama.
+
+En las dos mutaciones supervivientes el botón lee el rol **del listado** (justo lo que D2 prohíbe y B1 denunciaba), y ningún test de `src/screens/map/index.test.tsx` lo ve. Ningún otro `it` del fichero monta listado `walker`/`vet` con detalle owner y estado `no-tracking`: los `it` de R4 con `walker`/`vet` usan el mismo rol en listado y detalle, y ahí la rama del detalle ya oculta el botón.
+
+El hueco nace en la spec: requirements.md §Enmienda E1 y tasks.md §Enmienda E1 prescriben un solo listado, `family`. Codex cumplió el texto al pie de la letra. Para cerrarlo hace falta enmendar la spec (cláusula «otro rol» = `family`, `walker` y `vet` en el listado con detalle owner, cada una con su candado) y otra ronda solo de tests con el mismo patrón (mutación de producción versionada en el rojo y revertida en el verde). Hay que repetir P6 y P6b como sondas de esa ronda.
+
+### No bloqueantes
+
+- **O1. PARADA de Codex en el cierre (`### Medida: 159-e1-final.txt` → `PARADA: Medida /tmp/159-e1-final.txt distinta de la esperada` → `### Corrección del registro auxiliar de BASE`). No es bloqueante.** La medida real cumplía la regla de CIERRE del handoff: `exit=0`, `Test Suites: 10 passed, 10 total`, `Tests: 754 passed, 754 total` (impl, justo tras el comando BASE). La regla de parada del handoff («Si exit no es 0, anota los `●` y PARA») no se disparó. El falso positivo vino de su comprobador auxiliar en `/tmp/`, que tomó los encabezados `● Console` por fallos. Codex no tocó código, no repitió Jest y dejó la corrección por escrito. ALL (`97 passed`, `2420 passed`) y el `init.sh` del leader en `340967ba` lo corroboran. Como proceso es una desviación: escribió una PARADA y siguió sin reanudación humana. Una parada escrita debería ser terminal; si no, el registro deja de distinguir una parada legítima de una auto-anulada. Además, el impl arrastra ~7.400 líneas de volcado `console.info` de HeroUI entre esa medida y la PARADA, lo que obliga a leerlo con grep.
+- **O2. Eslabón laxo de la cadena e1-1 (error del leader en el handoff).** `grep -cF 'detail.data.pet.device' = 0` contaba 2 (`deviceConnectionState(detail.data.pet.device)` y `?.batteryPct`). Codex paró bien (impl, `PARADA: Falló …` y `### Diagnóstico del eslabón fallido de e1-1`). La reanudación cambió solo ese eslabón por `'detail.data.pet.device === null'`. El fichero del handoff conserva el texto viejo, como estaba previsto.
+- **O3. Flake de #72 R2 (deuda, fuera de alcance).** Salió en la base de Codex (impl, `## Base del Mapa E1 — PARADA`: `R4: map resuelve la mascota seleccionada › selects the first pet and loads its first position (#72 R2)`, `Number of calls: 0`) con carga ~4-5 en 4 CPU. No salió en ninguna de mis 8 corridas (carga 4.4-7.3). Sigue como deuda de #72.
+- **O4. Inversa del collar.** Solo se prueba con el listado `makeDevice('online')`. La rama de producción es binaria (`device === null`) y P2, P3, E1d y E1e la tumban, así que no la cuento como cláusula abierta. Solo una mutación que lea un campo concreto del collar del listado (p. ej. `connectivity`) escaparía, y eso ya no es «leer el collar del listado» sino introducir lógica nueva.
+- **O5.** R10 sigue pendiente: es el humo humano, igual que en la ronda 1.
+
+## Veredicto ronda 2
+
+**RECHAZADO** — 1 bloqueante (B2). Lo demás está verificado: producción idéntica a `664b95a7`; lista cerrada exacta; rojo→verde con mutación de producción y rojos del tipo declarado; P1-P5 caen como se esperaba; trazabilidad R3/R4 correcta; `init.sh` exit=0 en `340967ba`.
+
+## Output de ./init.sh (corrido por el leader en 340967ba; extracto por grep)
+```
+340967bad55b169519b88ed70b51f4d7fd9f00c5
+exit=0
+✅ node disponible (/usr/bin/node)
+✅ pnpm disponible (/home/claude/.npm-global/bin/pnpm)
+✅ bun disponible (/home/claude/.npm-global/bin/bun)
+✅ .env encontrado
+✅   DATABASE_URL definida
+✅ Dependencias instaladas
+✅ Archivos del harness presentes
+✅ STATUS.md sincronizado con feature_list.json
+✅ Build exitoso
+Test Suites: 187 passed, 187 total
+Tests:       1474 passed, 1474 total
+Test Suites: 2 passed, 2 total
+Tests:       14 passed, 14 total
+Test Suites: 97 passed, 97 total
+Tests:       2420 passed, 2420 total
+✅ Tests pasados
+✅ Esquema y recursos e2e listos
+Test Suites: 3 skipped, 30 passed, 30 of 33 total
+Tests:       8 skipped, 468 passed, 476 total
+✅ Tests e2e pasados
+✅ Lint sin errores
+✅ Typecheck sin errores
+✅ Todo verde. Listo para trabajar.
+```
