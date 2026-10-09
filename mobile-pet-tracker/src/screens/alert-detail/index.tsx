@@ -8,7 +8,6 @@ import { ackAlert } from '../../api/alerts';
 import type { Alert } from '../../api/types';
 import { Card } from '../../components/card';
 import { useAlertsList } from '../../hooks/use-alerts-list';
-import { es } from '../../i18n/catalog';
 import { useAuth } from '../../providers/auth-provider';
 import { useLocale, useTranslate } from '../../providers/language-provider';
 import { useThemeColors } from '../../theme/use-theme-colors';
@@ -52,7 +51,7 @@ export function AlertDetailScreen({ alertId }: { alertId: string }) {
     setActionError(null);
     try {
       await settleAlertAck(() => ackAlert(baseUrl, token ?? '', alertId), alert, {
-        t: (key) => es[key],
+        t,
         signOut,
         showError: setActionError,
         onAcked: setAcked,
