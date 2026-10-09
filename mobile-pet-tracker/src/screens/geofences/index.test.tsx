@@ -578,3 +578,21 @@ describe('#159 R5: Zonas seguras sin seguimiento presentan a Pingo', () => {
     expect(screen.queryByTestId('geofences-empty')).toBeNull();
   });
 });
+
+describe('#159 R6: en Zonas seguras nadie ve el botón de emparejar', () => {
+  it.each(['owner', 'family', 'walker', 'vet'] as const)('no ofrece acción a %s', async (role) => {
+    mockList.mockResolvedValue({ kind: 'no-tracking' });
+    mockGetPet.mockResolvedValue(petState(role));
+    await mount();
+    await screen.findByTestId('geofences-no-tracking-title');
+    expect(screen.queryByTestId('geofences-no-tracking-action')).toBeNull();
+  });
+
+  it('no ofrece acción si el detalle falla', async () => {
+    mockList.mockResolvedValue({ kind: 'no-tracking' });
+    mockGetPet.mockResolvedValue({ kind: 'error' });
+    await mount();
+    await screen.findByTestId('geofences-no-tracking-title');
+    expect(screen.queryByTestId('geofences-no-tracking-action')).toBeNull();
+  });
+});
