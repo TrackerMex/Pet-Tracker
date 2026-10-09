@@ -1,10 +1,10 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-10-09
-**Features completadas**: 150/162 (`feature_list.json`)
+**Features completadas**: 150/163 (`feature_list.json`)
 **En progreso**: ninguna en esta rama. #162 cerrada en `feature/162-media-docs-download-test-locks`, PR pendiente de merge humano.
 
-**Pendientes**: 12 (#60, #119, #129, #134, #144, #150, #151, #154, #158, #159, #160 y #163). **#162 `media-docs-download-test-locks` cerrada**: tres candados de test sobre el código de #157, que ya era correcto. R1: un 404 sin `name` sigue dando `null` en `getObjectSize`, así que el 404 se decide por `$metadata.httpStatusCode` y no por `name`. R2: un doble de `createDownloadUrl` que resuelve el primer documento después del segundo fija que la lista conserva el orden del repositorio. R3: un e2e contra Postgres fija que `markUploaded` sobre una fila ya confirmada no cambia `uploaded_at`. Cero cambios en producción: cada candado nace rojo con su mutación M1-M3 versionada y el verde la revierte desde el HEAD del handoff. Codex test-primero en 8 commits. Reviewer APROBADO a la primera, con dos huecos fuera de alcance (N1: un 500 del HEAD no tiene candado; N2: el fixture de R2 no distingue el orden del repositorio de un sort por fecha o id desc). Backend 187/1471 → 187/1474; e2e 30 de 33 suites, 476 tests con 8 saltados.
+**Pendientes**: 13 (#60, #119, #129, #134, #144, #150, #151, #154, #158, #159, #160, #163 y #164). **#162 `media-docs-download-test-locks` cerrada**: tres candados de test sobre el código de #157, que ya era correcto. R1: un 404 sin `name` sigue dando `null` en `getObjectSize`, así que el 404 se decide por `$metadata.httpStatusCode` y no por `name`. R2: un doble de `createDownloadUrl` que resuelve el primer documento después del segundo fija que la lista conserva el orden del repositorio. R3: un e2e contra Postgres fija que `markUploaded` sobre una fila ya confirmada no cambia `uploaded_at`. Cero cambios en producción: cada candado nace rojo con su mutación M1-M3 versionada y el verde la revierte desde el HEAD del handoff. Codex test-primero en 8 commits. Reviewer APROBADO a la primera, con dos huecos fuera de alcance (N1: un 500 del HEAD no tiene candado; N2: el fixture de R2 no distingue el orden del repositorio de un sort por fecha o id desc), registrados por decisión del humano como deuda #164 `media-docs-storage-error-and-order-locks`. Backend 187/1471 → 187/1474; e2e 30 de 33 suites, 476 tests con 8 saltados.
 
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
@@ -1428,7 +1428,8 @@ debe listar las 4 URLs de cola.
   `Pet-Tracker-wt-162`, sesión Frontend): spec firmada desde Notion
   (`b1eea14a`), handoff a Codex (`29585178`) con una parada de arranque por
   cwd reanudada sin enmienda, 8 commits test-primero y reviewer APROBADO a la
-  primera. PR abierta; siguiente: merge humano.
+  primera. N1 y N2 registradas como deuda #164. PR abierta; siguiente: merge
+  humano.
 
 - **2026-10-09** — **#155 `mobile-empty-states-pingo` cerrada** (worktree
   `Pet-Tracker-wt-155`, sesión Backend): spec firmada desde Notion

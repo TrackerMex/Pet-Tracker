@@ -3190,7 +3190,7 @@
       "Ninguna prueba contra AWS real"
     ],
     "files_affected": [
-          "backend-pet-tracker/src/modules/media/infrastructure/photo-storage.object-exists.spec.ts",
+      "backend-pet-tracker/src/modules/media/infrastructure/photo-storage.object-exists.spec.ts",
       "backend-pet-tracker/src/modules/media/application/use-cases/list-pet-documents.use-case.spec.ts",
       "backend-pet-tracker/test/media-docs.e2e-spec.ts"
     ]
@@ -3209,6 +3209,23 @@
     ],
     "files_affected": [
       "backend-pet-tracker/src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.spec.ts"
+    ]
+  },
+  {
+    "id": 164,
+    "name": "media-docs-storage-error-and-order-locks",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Registrada el 2026-10-09 por decisión del humano al cerrar #162 («si registra N1 y N2 como feature nueva de deuda»). Deuda de #162 media-docs-download-test-locks: las observaciones N1 y N2 de progress/review_media-docs-download-test-locks.md, el veredicto que aprobó #162 sobre e780925d. Solo añade candados de test; ningún hueco es incumplimiento de #157 ni de #162, que se ciñeron a su spec. Medido en la branch de #162 (f12eebd6), bajo backend-pet-tracker/src/modules/media/. (1) N1, cláusula «relanza cualquier otro error» de #157 R7: getObjectSize en infrastructure/photo-storage.s3.adapter.ts devuelve null solo con `$metadata.httpStatusCode === 404` y relanza lo demás; application/use-cases/confirm-pet-document-upload.use-case.ts convierte ese null en PetDocumentNotUploadedError, que pet-document-error.mapper.ts responde como 409. En infrastructure/photo-storage.object-exists.spec.ts los únicos dobles que deben relanzarse son dos 403 (#157 R7 y #162 R1 (b)) y uno sin ContentLength (#161 R1 (b)), así que la sonda X4 `(status ?? 0) >= 404` sobrevive: un 500 o un 503 del HEAD acabaría en 409 en vez de 500. Cierre propuesto por el reviewer: un it con `httpStatusCode: 500` que aserte `rejects.toBe(err)`. Límite: ese it mata X4 pero no la variante `>= 404 && < 500`, que convertiría en null un 4xx mayor que 404; como la cláusula es universal, la spec decide qué códigos muestrea (por ejemplo un 5xx y un 4xx distinto de 403 y 404) y lo justifica. El 403 sigue relanzándose: el comentario ponytail del adaptador sobre s3:ListBucket (Q1 de #157) queda fuera. (2) N2, #162 R2: en application/use-cases/list-pet-documents.use-case.spec.ts los its de orden de #157 R4 y #162 R2 usan el mismo fixture, a = (…02, 2026-08-25) y b = (…01, 2026-08-24), donde el orden del repositorio (a, b) coincide con fecha desc y con id desc. Las sondas X7 (push al resolver + sort por fecha desc) y X8 (push + sort por id desc) sobreviven en unit y e2e. X10 (orden por índice + sort por fecha desc) también sobrevive, pero es equivalente en producción porque listUploadedByPet ya ordena por desc(date), desc(id). X7 reabre la fuga del orden de resolución entre documentos con la misma fecha, y X8 rompe el orden por fecha cuando el orden de los ids no sigue al de las fechas. Cierre propuesto por el reviewer: un fixture cuyo orden de repositorio no salga de ordenar por fecha ni por id desc (por ejemplo a.date < b.date y a.id < b.id) con las URLs resolviendo al revés, o un it hermano con dos documentos de la misma fecha; la spec elige y dice qué sondas mata cada opción (los sorts asc ya los mata el fixture de #157 R4). Las fixtures e2e de #157 R1 en test/media-docs.e2e-spec.ts (ids …01/02/03 monótonos con la fecha) tienen el mismo punto ciego: la spec decide si las toca o lo delimita por escrito. Fuera: N3-N5 del mismo veredicto, que son cosméticos. Sin anclas por número de línea. Cero cambio en producción. Depende del merge de #162 (PR #204, branch feature/162-media-docs-download-test-locks): los its de #162 R1 y R2 solo existen ahí.",
+    "acceptance_criteria": [
+      "La sonda X4 `(status ?? 0) >= 404` en getObjectSize hace FALLAR por aserción al menos un it de photo-storage.object-exists.spec.ts; cada código adicional que la spec muestree trae su propia sonda, y todas quedan con su salida en el impl",
+      "Las sondas X7 (push al resolver + sort por fecha desc) y X8 (push al resolver + sort por id desc) en ListPetDocumentsUseCase hacen FALLAR por aserción al menos un it de list-pet-documents.use-case.spec.ts; las sondas y su salida quedan en el impl",
+      "Los its existentes de #157 R4 y R7, #161 R1 y #162 R1 y R2 no se relajan y siguen cayendo con sus mutaciones",
+      "Cero cambio en producción; suite unitaria de backend verde medida sin pipe; delta de tests declarado; ninguna prueba contra AWS real"
+    ],
+    "files_affected": [
+      "backend-pet-tracker/src/modules/media/infrastructure/photo-storage.object-exists.spec.ts",
+      "backend-pet-tracker/src/modules/media/application/use-cases/list-pet-documents.use-case.spec.ts"
     ]
   }
 ]

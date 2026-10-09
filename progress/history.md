@@ -8455,6 +8455,9 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
   - N3-N5: texto «pendiente» obsoleto en el impl, frontmatter `draft` en
     tasks.md y traceability.md (igual que en #161) y autor «Claude» en los
     commits. Cosméticos.
-  N1 y N2 no se registran como deuda sin decisión del humano.
+  N1 y N2 se registran como deuda #164 `media-docs-storage-error-and-order-locks`
+  por decisión del humano («si registra N1 y N2 como feature nueva de deuda»),
+  con sus límites: un 500 no mata la variante `>= 404 && < 500`, y la
+  spec elige el fixture de orden y decide sobre las fixtures e2e de #157 R1.
 - Cierre: `done` en `feature_list.json`, STATUS, Notion (Implementado /
   Completado) y PR contra `main`. Merge: humano.
