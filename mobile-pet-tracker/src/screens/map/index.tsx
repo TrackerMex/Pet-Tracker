@@ -286,6 +286,7 @@ export function MapScreen() {
             pose="collar"
             title={t('map.noTrackingTitle')}
             body={t('map.noTrackingBody')}
+            action={{ label: t('home.pairCollar'), onPress: () => router.push('/pairing') }}
           />
         </View>
       ) : null}

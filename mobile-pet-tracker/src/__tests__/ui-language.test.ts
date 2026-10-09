@@ -127,7 +127,7 @@ describe('#70 R16: copy de recordatorios de la Home', () => {
 
 describe('#65 R4: Map resuelve su copy por clave', () => {
   it('resuelve las 17 ocurrencias normativas', () => {
-    expect(R4_MAP).toHaveLength(17 + 2 + 1); // +2 #155 R4, +1 #159 R2
+    expect(R4_MAP).toHaveLength(17 + 2 + 1 + 1); // +2 #155 R4, +1 #159 R2, +1 #159 R3
     checkUses(R4_MAP);
   });
 });
