@@ -767,3 +767,45 @@ describe('#158 R7: una subida correcta refresca la lista', () => {
     expect(screen.queryByTestId('docs-empty-action')).toBeNull();
   });
 });
+
+describe('#158 R8: botones bloqueados durante la subida', () => {
+  it.each(['fetch', 'blob', 'crear', 'PUT', 'confirmar', 'refetch'] as const)('bloquea ambos botones durante %s', async (stage) => {
+    if (stage === 'fetch') mockAssetFetch.mockReturnValue(pending());
+    if (stage === 'blob') mockAssetBlob.mockReturnValue(pending());
+    if (stage === 'crear') mockCreatePetDocument.mockReturnValue(pending());
+    if (stage === 'PUT') mockUploadPhotoToUrl.mockReturnValue(pending());
+    if (stage === 'confirmar') mockConfirmPetDocumentUpload.mockReturnValue(pending());
+    if (stage === 'refetch') {
+      mockListPetDocs.mockResolvedValueOnce({ kind: 'ok', docs: [docOne] });
+      mockListPetDocs.mockReturnValueOnce(pending());
+    }
+    await openUploadForm();
+    await fillDocumentForm();
+    await fireEvent.press(screen.getByTestId('docs-upload-submit'));
+    if (stage === 'fetch') await waitFor(() => expect(mockAssetFetch).toHaveBeenCalledTimes(1));
+    if (stage === 'blob') await waitFor(() => expect(mockAssetBlob).toHaveBeenCalledTimes(1));
+    if (stage === 'crear') await waitFor(() => expect(mockCreatePetDocument).toHaveBeenCalledTimes(1));
+    if (stage === 'PUT') await waitFor(() => expect(mockUploadPhotoToUrl).toHaveBeenCalledTimes(1));
+    if (stage === 'confirmar') await waitFor(() => expect(mockConfirmPetDocumentUpload).toHaveBeenCalledTimes(1));
+    if (stage === 'refetch') await waitFor(() => expect(mockListPetDocs).toHaveBeenCalledTimes(2));
+    const submit = screen.getByTestId('docs-upload-submit');
+    const cancel = screen.getByTestId('docs-upload-cancel');
+    expect(submit.props.accessibilityState?.disabled).toBe(true);
+    expect(cancel.props.accessibilityState?.disabled).toBe(true);
+    await fireEvent.press(submit);
+    expect(mockAssetFetch).toHaveBeenCalledTimes(1);
+    expect(mockCreatePetDocument).toHaveBeenCalledTimes(stage === 'fetch' || stage === 'blob' ? 0 : 1);
+    await fireEvent.press(cancel);
+    expect(screen.getByTestId('docs-upload-form')).toBeVisible();
+  });
+
+  it('rehabilita ambos botones cuando crear responde forbidden', async () => {
+    mockCreatePetDocument.mockResolvedValue({ kind: 'forbidden' });
+    await openUploadForm();
+    await fillDocumentForm();
+    await fireEvent.press(screen.getByTestId('docs-upload-submit'));
+    await screen.findByText('Solo el dueño puede subir documentos');
+    expect(screen.getByTestId('docs-upload-submit').props.accessibilityState?.disabled).toBe(false);
+    expect(screen.getByTestId('docs-upload-cancel').props.accessibilityState?.disabled).toBe(false);
+  });
+});
