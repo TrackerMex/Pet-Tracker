@@ -50,3 +50,9 @@
   listados owner/sin collar y del mismo rol; M7, M8 y M9 leen el listado y quedan 119/119.
   Es el espejo de B2 en el lado R4: el barrido previo a la firma de E2 solo miró R3.
   **Siguiente: Enmienda E3** (tabla de verdad completa del predicado contra el listado).
+- Enmienda E3 (solo tests: tabla de verdad entera del lado R4 contra el listado, 18 detalles
+  × 8 listados + pendiente × 8 = 152 `it` nuevos, 119 → 271; rojo M7+M8 = 57 por `toBeNull`;
+  sondas E3a–E3f), ensanchada con el barrido del reviewer (G1: collar del detalle partido por
+  `deviceConnectionState`; G2: anclas de trazabilidad en bloque cercado). Escrita en
+  `96bf7b1d` y re-espejada a Notion (`Estado del gate` = En revisión). G3 (conectividad del
+  listado) y G4 (mascota ausente del listado) quedan fuera por defecto; decide el humano.
