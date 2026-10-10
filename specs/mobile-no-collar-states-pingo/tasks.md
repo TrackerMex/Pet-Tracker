@@ -767,3 +767,123 @@ una tarea posterior:
   - La lista cerrada de ficheros no cambia: E2 solo toca
     `src/screens/map/index.test.tsx` y deja `src/screens/map/index.tsx`
     idéntico a `664b95a7`.
+
+## Enmienda E3 — ronda 4 (R4, solo tests)
+
+> Solo tras la firma humana de la Enmienda E3 (requirements.md §Enmienda E3).
+> La producción de `src/screens/map/index.tsx` queda **idéntica** a `664b95a7`
+> al final de la ronda. Rutas relativas a `mobile-pet-tracker/`. Todo se
+> localiza por contenido, sin números de línea.
+
+- [ ] **Antes.**
+  - `git diff --quiet 664b95a7 HEAD -- src/screens/map/index.tsx; echo "exit=$?"` → `exit=0`.
+  - `test ! -e .expo/types/router.d.ts; echo "exit=$?"` → `exit=0`.
+  - Base: `bunx jest --runTestsByPath src/screens/map/index.test.tsx` → `Tests: 119 passed, 119 total`.
+  - Si la base no da 119, manda la medida: los recuentos de abajo pasan a
+    base + 88, y la diferencia va al impl.
+
+- [ ] **(1) Commit rojo** `test(mobile-no-collar-states): #159 E3 red pair action follows list role and collar for non-owners`.
+  - En `src/screens/map/index.test.tsx`, al final de
+    `describe('#159 R4: nadie más ve el botón de emparejar'`, después del
+    `it.each` `'no pinta el botón a %s aunque el listado diga owner'` y antes
+    del `});` que cierra el `describe`, se añade:
+
+    ```tsx
+      const LIST_STATES = (['owner', 'family', 'walker', 'vet'] as const).flatMap((listRole) => [
+        { listRole, listCollar: 'sin collar', listDevice: null },
+        { listRole, listCollar: 'con collar', listDevice: makeDevice('online') },
+      ]);
+
+      const DETAIL_STATES: { detalle: string; state: PetState }[] = [
+        { detalle: 'owner con collar', state: { kind: 'ok', pet: makePet({ device: makeDevice('online') }) } },
+        { detalle: 'family sin collar', state: { kind: 'ok', pet: makePet({ myRole: 'family' }) } },
+        { detalle: 'family con collar', state: { kind: 'ok', pet: makePet({ myRole: 'family', device: makeDevice('online') }) } },
+        { detalle: 'walker sin collar', state: { kind: 'ok', pet: makePet({ myRole: 'walker' }) } },
+        { detalle: 'walker con collar', state: { kind: 'ok', pet: makePet({ myRole: 'walker', device: makeDevice('online') }) } },
+        { detalle: 'vet sin collar', state: { kind: 'ok', pet: makePet({ myRole: 'vet' }) } },
+        { detalle: 'vet con collar', state: { kind: 'ok', pet: makePet({ myRole: 'vet', device: makeDevice('online') }) } },
+        { detalle: 'error', state: { kind: 'error' } },
+        { detalle: 'unreachable', state: { kind: 'unreachable', message: 'offline' } },
+        { detalle: 'missing-config', state: { kind: 'missing-config' } },
+      ];
+
+      it.each(DETAIL_STATES.flatMap((detail) => LIST_STATES.map((list) => ({ ...detail, ...list }))))(
+        'no pinta el botón con el detalle $detalle aunque el listado diga $listRole $listCollar',
+        async ({ state, listRole, listDevice }) => {
+          mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ myRole: listRole, device: listDevice })] });
+          noTrackingAfterDetail(state);
+          await renderMap();
+          await screen.findByTestId('map-no-tracking-title');
+          expect(screen.getByTestId('map-no-tracking-body')).toHaveTextContent('Cuando tu mascota tenga un collar con plan activo, te muestro dónde está.');
+          expect(screen.queryByTestId('map-no-tracking-action')).toBeNull();
+        },
+      );
+
+      it.each(LIST_STATES)(
+        'no pinta el botón mientras el detalle carga aunque el listado diga $listRole $listCollar',
+        async ({ listRole, listDevice }) => {
+          mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ myRole: listRole, device: listDevice })] });
+          mockGetPet.mockReturnValue(pending<PetState>());
+          mockGetLastPosition.mockResolvedValue({ kind: 'no-tracking' });
+          await renderMap();
+          await screen.findByTestId('map-no-tracking-title');
+          expect(screen.getByTestId('map-no-tracking-body')).toHaveTextContent('Cuando tu mascota tenga un collar con plan activo, te muestro dónde está.');
+          expect(screen.queryByTestId('map-no-tracking-action')).toBeNull();
+        },
+      );
+    ```
+
+    Ningún otro `it` cambia. Son 80 + 8 = 88 `it` nuevos.
+  - **Mutación versionada** en `src/screens/map/index.tsx`. En `const canPairCollar =`:
+    - la línea `detail.data.pet.myRole === 'owner' &&` pasa a
+      `(detail.data.pet.myRole === 'owner' || Boolean(selectedPet?.device)) &&` (M7);
+    - la línea `detail.data.pet.device === null;` pasa a
+      `(detail.data.pet.device === null || selectedPet?.myRole !== 'owner');` (M8).
+
+    La línea `detail.data?.kind === 'ok' &&` no cambia.
+  - Rojo esperado, midiendo solo `src/screens/map/index.test.tsx`:
+    `Tests: 27 failed, 180 passed, 207 total`. Las 27, todas por aserción
+    (`expect(received).toBeNull()`), todas del primer `it.each` nuevo:
+    - `… detalle owner con collar aunque el listado diga {family, walker, vet} {sin, con} collar` → 6;
+    - `… detalle {family, walker, vet} sin collar aunque el listado diga {owner, family, walker, vet} con collar` → 12;
+    - `… detalle {family, walker, vet} con collar aunque el listado diga {family, walker, vet} con collar` → 9.
+
+    Ningún `it` anterior a E3 cae, ni ninguna fila del segundo `it.each`.
+    Cualquier otro `it` rojo, o un `ReferenceError`/`TypeError`, es un error
+    de medida: **para**.
+
+- [ ] **(2) Commit verde** `fix(mobile-no-collar-states): #159 E3 revert list probe, no pair action whatever the list says`.
+  - `git checkout 664b95a7 -- src/screens/map/index.tsx`, y después
+    `git diff --quiet 664b95a7 -- src/screens/map/index.tsx; echo "exit=$?"` → `exit=0`.
+  - Gate: `Tests: 207 passed, 207 total` en `src/screens/map/index.test.tsx`;
+    `bun run typecheck` y `bunx expo lint --no-cache` con `exit=0`.
+
+- [ ] **Sondas E3a-E3d**, sin commit, sobre el árbol verde, en `const canPairCollar =` de
+  `src/screens/map/index.tsx`. Mide solo `src/screens/map/index.test.tsx`.
+  Restaura cada sonda con `git checkout HEAD -- src/screens/map/index.tsx` y
+  `git diff --quiet HEAD -- src/screens/map/index.tsx` (`limpio=0`) antes de
+  la siguiente. Todas fallan por aserción (`toBeNull`).
+
+  | Sonda | Mutación | Esperado | Qué falla |
+  |---|---|---|---|
+  | E3a (M7) | la línea del rol pasa a `(detail.data.pet.myRole === 'owner' \|\| Boolean(selectedPet?.device)) &&` | `12 failed, 195 passed, 207 total` | `… detalle {family, walker, vet} sin collar aunque el listado diga {owner, family, walker, vet} con collar` |
+  | E3b (M8) | la línea del collar pasa a `(detail.data.pet.device === null \|\| selectedPet?.myRole !== 'owner');` | `6 failed, 201 passed, 207 total` | `… detalle owner con collar aunque el listado diga {family, walker, vet} {sin, con} collar` |
+  | E3c (M9) | la línea del rol pasa a `(detail.data.pet.myRole === 'owner' \|\| (selectedPet?.myRole !== 'owner' && selectedPet?.myRole !== detail.data.pet.myRole)) &&` | `12 failed, 195 passed, 207 total` | `… detalle R sin collar aunque el listado diga {los dos roles no-owner distintos de R} {sin, con} collar`, para R ∈ {family, walker, vet} |
+  | E3d (M12) | el predicado entero pasa a `detail.data?.kind === 'ok' ? detail.data.pet.myRole === 'owner' && detail.data.pet.device === null : Boolean(selectedPet?.device);` | `16 failed, 191 passed, 207 total` | `… detalle {error, unreachable, missing-config} aunque el listado diga {owner, family, walker, vet} con collar` (12) y `… mientras el detalle carga aunque el listado diga {owner, family, walker, vet} con collar` (4) |
+
+- [ ] **Cierre.**
+  - El comando BASE de la ronda 1 (los 10 ficheros) → `Tests: 847 passed, 847 total`,
+    con map en 207.
+  - `bun run test` → `97 suites` y `2513 tests` (2425 + 88).
+  - `bun run typecheck` y `bunx expo lint --no-cache` con `exit=0`.
+  - Si la base de **Antes** no dio 119, estos recuentos se mueven con ella.
+
+- [ ] **(3) Commit final** `docs(mobile-no-collar-states-pingo): #159 E3 traceability`.
+  - En traceability.md, en la fila R4, tras
+    `E1: \`no pinta el botón a %s aunque el listado diga owner\`, sondas E1a-E1e`
+    se añade
+    `; E3: \`no pinta el botón con el detalle $detalle aunque el listado diga $listRole $listCollar\` (10 detalles × 8 listados), \`no pinta el botón mientras el detalle carga aunque el listado diga $listRole $listCollar\` (8 listados), sondas E3a-E3d`.
+    Su columna de commit añade `; E3: <hash rojo> <mensaje rojo> → <hash verde> <mensaje verde>`.
+  - La lista cerrada de ficheros no cambia: E3 solo toca
+    `src/screens/map/index.test.tsx` y deja `src/screens/map/index.tsx`
+    idéntico a `664b95a7`.
