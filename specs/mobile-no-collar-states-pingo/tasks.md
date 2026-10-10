@@ -780,13 +780,13 @@ una tarea posterior:
   - `test ! -e .expo/types/router.d.ts; echo "exit=$?"` → `exit=0`.
   - Base: `bunx jest --runTestsByPath src/screens/map/index.test.tsx` → `Tests: 119 passed, 119 total`.
   - Si la base no da 119, manda la medida: los recuentos de abajo pasan a
-    base + 88, y la diferencia va al impl.
+    base + 152, y la diferencia va al impl.
 
-- [ ] **(1) Commit rojo** `test(mobile-no-collar-states): #159 E3 red pair action follows list role and collar for non-owners`.
-  - En `src/screens/map/index.test.tsx`, al final de
-    `describe('#159 R4: nadie más ve el botón de emparejar'`, después del
-    `it.each` `'no pinta el botón a %s aunque el listado diga owner'` y antes
-    del `});` que cierra el `describe`, se añade:
+- [ ] **(1) Commit rojo** `test(mobile-no-collar-states): #159 E3 red pair action follows list role and collar`.
+  - En `src/screens/map/index.test.tsx`, dentro de
+    `describe('#159 R4: nadie más ve el botón de emparejar'`, justo después
+    del `it.each(['family', 'walker', 'vet'] as const)('no pinta el botón a %s aunque el listado diga owner', …)`
+    y antes del `});` que cierra ese `describe`, se añade:
 
     ```tsx
       const LIST_STATES = (['owner', 'family', 'walker', 'vet'] as const).flatMap((listRole) => [
@@ -802,6 +802,14 @@ una tarea posterior:
         { detalle: 'walker con collar', state: { kind: 'ok', pet: makePet({ myRole: 'walker', device: makeDevice('online') }) } },
         { detalle: 'vet sin collar', state: { kind: 'ok', pet: makePet({ myRole: 'vet' }) } },
         { detalle: 'vet con collar', state: { kind: 'ok', pet: makePet({ myRole: 'vet', device: makeDevice('online') }) } },
+        { detalle: 'owner con collar offline', state: { kind: 'ok', pet: makePet({ device: makeDevice('offline') }) } },
+        { detalle: 'owner con collar sin conectividad', state: { kind: 'ok', pet: makePet({ device: makeDevice(null) }) } },
+        { detalle: 'family con collar offline', state: { kind: 'ok', pet: makePet({ myRole: 'family', device: makeDevice('offline') }) } },
+        { detalle: 'family con collar sin conectividad', state: { kind: 'ok', pet: makePet({ myRole: 'family', device: makeDevice(null) }) } },
+        { detalle: 'walker con collar offline', state: { kind: 'ok', pet: makePet({ myRole: 'walker', device: makeDevice('offline') }) } },
+        { detalle: 'walker con collar sin conectividad', state: { kind: 'ok', pet: makePet({ myRole: 'walker', device: makeDevice(null) }) } },
+        { detalle: 'vet con collar offline', state: { kind: 'ok', pet: makePet({ myRole: 'vet', device: makeDevice('offline') }) } },
+        { detalle: 'vet con collar sin conectividad', state: { kind: 'ok', pet: makePet({ myRole: 'vet', device: makeDevice(null) }) } },
         { detalle: 'error', state: { kind: 'error' } },
         { detalle: 'unreachable', state: { kind: 'unreachable', message: 'offline' } },
         { detalle: 'missing-config', state: { kind: 'missing-config' } },
@@ -833,57 +841,86 @@ una tarea posterior:
       );
     ```
 
-    Ningún otro `it` cambia. Son 80 + 8 = 88 `it` nuevos.
-  - **Mutación versionada** en `src/screens/map/index.tsx`. En `const canPairCollar =`:
-    - la línea `detail.data.pet.myRole === 'owner' &&` pasa a
-      `(detail.data.pet.myRole === 'owner' || Boolean(selectedPet?.device)) &&` (M7);
-    - la línea `detail.data.pet.device === null;` pasa a
-      `(detail.data.pet.device === null || selectedPet?.myRole !== 'owner');` (M8).
+    `makePet`, `makeDevice`, `pending`, `PetState`, `renderMap` y
+    `noTrackingAfterDetail` ya existen en el fichero; no se importa ni se
+    declara nada más. Ningún `it` existente cambia. Son 144 + 8 = 152 `it`
+    nuevos.
+  - **Mutación versionada** en `src/screens/map/index.tsx`. En `const canPairCollar =`,
+    la línea `detail.data?.kind === 'ok' &&` no cambia, y las otras dos pasan a
+    (M7 + M8 de requirements.md §Enmienda E3):
 
-    La línea `detail.data?.kind === 'ok' &&` no cambia.
+    ```tsx
+        (detail.data.pet.myRole === 'owner' || Boolean(selectedPet?.device)) &&
+        (detail.data.pet.device === null || selectedPet?.myRole !== 'owner');
+    ```
+
   - Rojo esperado, midiendo solo `src/screens/map/index.test.tsx`:
-    `Tests: 27 failed, 180 passed, 207 total`. Las 27, todas por aserción
-    (`expect(received).toBeNull()`), todas del primer `it.each` nuevo:
-    - `… detalle owner con collar aunque el listado diga {family, walker, vet} {sin, con} collar` → 6;
-    - `… detalle {family, walker, vet} sin collar aunque el listado diga {owner, family, walker, vet} con collar` → 12;
-    - `… detalle {family, walker, vet} con collar aunque el listado diga {family, walker, vet} con collar` → 9.
+    `Tests: 57 failed, 214 passed, 271 total`. Las 57, todas por aserción
+    (`toBeNull`), todas del primer `it.each` (`no pinta el botón con el detalle …`):
+    - detalle `owner con collar`, `owner con collar offline` y `owner con collar sin conectividad`
+      × listado {family, walker, vet} × {sin collar, con collar}: 18;
+    - detalle {family, walker, vet} `sin collar` × listado {owner, family, walker, vet} `con collar`: 12;
+    - detalle {family, walker, vet} `con collar`, `con collar offline` y `con collar sin conectividad`
+      × listado {family, walker, vet} `con collar`: 27.
 
-    Ningún `it` anterior a E3 cae, ni ninguna fila del segundo `it.each`.
-    Cualquier otro `it` rojo, o un `ReferenceError`/`TypeError`, es un error
-    de medida: **para**.
+    Las 8 filas de `mientras el detalle carga` quedan verdes. Cualquier otro
+    `it` rojo, un rojo por consulta, o un `ReferenceError`/`TypeError`, es un
+    error de medida: **para**.
 
 - [ ] **(2) Commit verde** `fix(mobile-no-collar-states): #159 E3 revert list probe, no pair action whatever the list says`.
   - `git checkout 664b95a7 -- src/screens/map/index.tsx`, y después
     `git diff --quiet 664b95a7 -- src/screens/map/index.tsx; echo "exit=$?"` → `exit=0`.
-  - Gate: `Tests: 207 passed, 207 total` en `src/screens/map/index.test.tsx`;
+  - Gate: `Tests: 271 passed, 271 total` en `src/screens/map/index.test.tsx`;
     `bun run typecheck` y `bunx expo lint --no-cache` con `exit=0`.
 
-- [ ] **Sondas E3a-E3d**, sin commit, sobre el árbol verde, en `const canPairCollar =` de
+- [ ] **Sondas E3a-E3f**, sin commit, sobre el árbol verde, en `const canPairCollar =` de
   `src/screens/map/index.tsx`. Mide solo `src/screens/map/index.test.tsx`.
   Restaura cada sonda con `git checkout HEAD -- src/screens/map/index.tsx` y
-  `git diff --quiet HEAD -- src/screens/map/index.tsx` (`limpio=0`) antes de
-  la siguiente. Todas fallan por aserción (`toBeNull`).
+  `git diff --quiet HEAD -- src/screens/map/index.tsx` más
+  `git diff --cached --quiet` (`limpio=0`) antes de la siguiente. Todas las
+  filas que caen lo hacen por aserción (`toBeNull`).
 
-  | Sonda | Mutación | Esperado | Qué falla |
+  | Sonda | Cambio | Esperado | Qué falla |
   |---|---|---|---|
-  | E3a (M7) | la línea del rol pasa a `(detail.data.pet.myRole === 'owner' \|\| Boolean(selectedPet?.device)) &&` | `12 failed, 195 passed, 207 total` | `… detalle {family, walker, vet} sin collar aunque el listado diga {owner, family, walker, vet} con collar` |
-  | E3b (M8) | la línea del collar pasa a `(detail.data.pet.device === null \|\| selectedPet?.myRole !== 'owner');` | `6 failed, 201 passed, 207 total` | `… detalle owner con collar aunque el listado diga {family, walker, vet} {sin, con} collar` |
-  | E3c (M9) | la línea del rol pasa a `(detail.data.pet.myRole === 'owner' \|\| (selectedPet?.myRole !== 'owner' && selectedPet?.myRole !== detail.data.pet.myRole)) &&` | `12 failed, 195 passed, 207 total` | `… detalle R sin collar aunque el listado diga {los dos roles no-owner distintos de R} {sin, con} collar`, para R ∈ {family, walker, vet} |
-  | E3d (M12) | el predicado entero pasa a `detail.data?.kind === 'ok' ? detail.data.pet.myRole === 'owner' && detail.data.pet.device === null : Boolean(selectedPet?.device);` | `16 failed, 191 passed, 207 total` | `… detalle {error, unreachable, missing-config} aunque el listado diga {owner, family, walker, vet} con collar` (12) y `… mientras el detalle carga aunque el listado diga {owner, family, walker, vet} con collar` (4) |
+  | E3a | M7: `detail.data.pet.myRole === 'owner' &&` pasa a `(detail.data.pet.myRole === 'owner' \|\| Boolean(selectedPet?.device)) &&` | `12 failed, 259 passed, 271 total` | detalle {family, walker, vet} `sin collar` × listado {owner, family, walker, vet} `con collar` |
+  | E3b | M8: `detail.data.pet.device === null;` pasa a `(detail.data.pet.device === null \|\| selectedPet?.myRole !== 'owner');` | `18 failed, 253 passed, 271 total` | detalle `owner con collar` (las tres conectividades) × listado {family, walker, vet} × {sin, con collar} |
+  | E3c | M9: `detail.data.pet.myRole === 'owner' &&` pasa a `(detail.data.pet.myRole === 'owner' \|\| (selectedPet?.myRole !== 'owner' && selectedPet?.myRole !== detail.data.pet.myRole)) &&` | `12 failed, 259 passed, 271 total` | detalle R `sin collar` (R ∈ {family, walker, vet}) × listado con los dos roles no-owner distintos de R × {sin, con collar} |
+  | E3d | M12: el predicado entero (sus tres líneas) pasa a `detail.data?.kind === 'ok' ? detail.data.pet.myRole === 'owner' && detail.data.pet.device === null : Boolean(selectedPet?.device);` | `16 failed, 255 passed, 271 total` | detalle {`error`, `unreachable`, `missing-config`} × listado `con collar` (12) y `mientras el detalle carga` × listado `con collar` (4) |
+  | E3e | N3: `detail.data.pet.device === null;` pasa a `deviceConnectionState(detail.data.pet.device) !== 'online';` | `16 failed, 255 passed, 271 total` | detalle `owner con collar offline` y `owner con collar sin conectividad` × los 8 listados |
+  | E3f | N1: `detail.data.pet.device === null;` pasa a `(detail.data.pet.device === null \|\| (detail.data.pet.device.connectivity !== 'online' && selectedPet?.device === null));` | `8 failed, 263 passed, 271 total` | detalle `owner con collar offline` y `owner con collar sin conectividad` × listado {owner, family, walker, vet} `sin collar` |
+
+  `deviceConnectionState` ya está importado en `src/screens/map/index.tsx`;
+  E3e no añade import.
 
 - [ ] **Cierre.**
-  - El comando BASE de la ronda 1 (los 10 ficheros) → `Tests: 847 passed, 847 total`,
-    con map en 207.
-  - `bun run test` → `97 suites` y `2513 tests` (2425 + 88).
+  - El comando BASE de la ronda 1 (los 10 ficheros) → `Tests: 911 passed, 911 total`,
+    con map en 271.
+  - `bun run test` → `97 suites` y `2577 tests` (2425 + 152).
   - `bun run typecheck` y `bunx expo lint --no-cache` con `exit=0`.
   - Si la base de **Antes** no dio 119, estos recuentos se mueven con ella.
 
 - [ ] **(3) Commit final** `docs(mobile-no-collar-states-pingo): #159 E3 traceability`.
-  - En traceability.md, en la fila R4, tras
-    `E1: \`no pinta el botón a %s aunque el listado diga owner\`, sondas E1a-E1e`
-    se añade
-    `; E3: \`no pinta el botón con el detalle $detalle aunque el listado diga $listRole $listCollar\` (10 detalles × 8 listados), \`no pinta el botón mientras el detalle carga aunque el listado diga $listRole $listCollar\` (8 listados), sondas E3a-E3d`.
-    Su columna de commit añade `; E3: <hash rojo> <mensaje rojo> → <hash verde> <mensaje verde>`.
+  - En traceability.md, fila R4. Ancla (desde la raíz del repo):
+
+    ```sh
+    grep -cF 'E1: `no pinta el botón a %s aunque el listado diga owner`, sondas E1a-E1e' specs/mobile-no-collar-states-pingo/traceability.md
+    ```
+
+    → `1`. Justo después de ese texto, antes del `)` que lo cierra, se inserta:
+
+    ```text
+    ; E3: `no pinta el botón con el detalle $detalle aunque el listado diga $listRole $listCollar` (18 detalles × 8 listados), `no pinta el botón mientras el detalle carga aunque el listado diga $listRole $listCollar` (8 listados), sondas E3a-E3f
+    ```
+
+    Comprobación:
+
+    ```sh
+    grep -cF 'sondas E1a-E1e; E3: ' specs/mobile-no-collar-states-pingo/traceability.md
+    ```
+
+    → `1`.
+  - Al final de la columna de commits de esa fila se añade
+    `; E3: <hash rojo> <mensaje rojo> → <hash verde> <mensaje verde>`.
   - La lista cerrada de ficheros no cambia: E3 solo toca
     `src/screens/map/index.test.tsx` y deja `src/screens/map/index.tsx`
     idéntico a `664b95a7`.

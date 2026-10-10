@@ -459,3 +459,155 @@ Tests:       8 skipped, 468 passed, 476 total
 ✅ Todo verde. Listo para trabajar.
 exit=0
 ```
+
+---
+
+## Barrido de la Enmienda E3
+
+Fecha: 2026-10-10. Sobre el borrador sin firmar de requirements.md §Enmienda E3 y tasks.md §Enmienda E3 — ronda 4, en HEAD `375485e7`. El bloque de test de tasks.md §E3 (1) se aplicó tal cual, sin commit; mutaciones en producción restauradas tras cada sonda.
+
+Resultado: **E3 necesita cambios.** Hay dos correcciones bloqueantes: G1, una mutación que lee el collar del listado y sobrevive (§4), y G2, el ancla de trazabilidad, que es ambigua (§5). Todo lo que E3 declara se mide igual: verde 207, rojo 27/180, E3a-E3d, typecheck y lint. Las sondas anteriores caen todas.
+
+### 1. Verde con el test de E3
+- El bloque tsx de tasks.md §E3 (1) se extrajo del markdown quitando solo las 4 columnas de sangría de la lista y se insertó tras el `it.each` `'no pinta el botón a %s aunque el listado diga owner'`, antes del `});` del `describe` de R4.
+- `uptime` 0,36. `FORCE_COLOR=0 bunx jest --runTestsByPath src/screens/map/index.test.tsx` → `Tests: 207 passed, 207 total`, `exit=0` (esperado 207). Títulos generados: 80 `✓ no pinta el botón con el detalle …` y 8 `✓ no pinta el botón mientras el detalle carga aunque …`, sin duplicados y sin `$` sin interpolar (p. ej. `… con el detalle missing-config aunque el listado diga vet con collar`).
+- `bun run typecheck` → `exit=0`; `bunx expo lint --no-cache` → `exit=0`.
+
+### 2. Rojo y sondas E3a-E3d
+Cada sonda sobre el árbol con el test de E3 y la producción de HEAD; restaurada con `git checkout HEAD -- src/screens/map/index.tsx` y `git diff --quiet HEAD -- …/index.tsx` → `prod_limpio=0` tras cada una. La columna «filas» compara el conjunto de `✕` medido con el que se deriva de la tabla de verdad (script, título a título).
+
+| Sonda | Esperado (tasks.md) | Medido | Tipo de rojo | Filas |
+|---|---|---|---|---|
+| ROJO (M7+M8) | `27 failed, 180 passed, 207 total` | igual | 27 `toBeNull`, 0 consulta, 0 `ReferenceError`/`TypeError`; 27 del primer `it.each`, 0 anteriores a E3, 0 del segundo | idénticas a las 6 + 12 + 9 de tasks.md |
+| E3a (M7) | `12 failed, 195 passed` | igual | 12 `toBeNull` | idénticas |
+| E3b (M8) | `6 failed, 201 passed` | igual | 6 `toBeNull` | idénticas |
+| E3c (M9) | `12 failed, 195 passed` | igual | 12 `toBeNull` | idénticas |
+| E3d (M12) | `16 failed, 191 passed` | igual | 16 `toBeNull` | idénticas (12 no-`ok` + 4 cargando, todas con listado con collar) |
+
+Gates estáticos con las mutaciones: ROJO (M7+M8) → `bun run typecheck` `exit=0`, `bunx expo lint --no-cache` `exit=0`; M12 → `exit=0` y `exit=0`. Es decir, el commit rojo de tasks.md pasa lint y typecheck y la sonda E3d también.
+
+### 3. Sondas anteriores contra el árbol con E3
+Las mutaciones son las de §Ronda 3 (M1-M11, E2a-E2d) y se aplicaron con el mismo `e3probe.sh` y la misma restauración. «Anteriores» son las filas de `✕` cuyo título no es de E3. En todas, ese número es el mismo que en `a8681b51`, así que E3 no cambia ningún `it` existente y solo suma muertes.
+
+| Sonda | En `a8681b51` (119) | En el árbol E3 (207) | Filas E3 / anteriores | Tipo |
+|---|---|---|---|---|
+| M1 `??` | 9 failed | `15 failed, 192 passed` | 6 / 9 | 6 consulta (E2) + 9 `toBeNull` |
+| M2 `\|\|` rol | 3 failed | `9 failed, 198 passed` | 6 / 3 | `toBeNull` |
+| M3 collar del listado | 5 failed | `9 failed, 198 passed` | 4 / 5 | 4 consulta + 5 `toBeNull` |
+| M4 `\|\|` collar | 1 failed | `5 failed, 202 passed` | 4 / 1 | `toBeNull` |
+| M5 rama por kind | 4 failed | `8 failed, 199 passed` | 4 / 4 | `toBeNull` |
+| M6 rama por conectividad | 3 failed | `3 failed, 204 passed` | 0 / 3 | consulta (lado R3, no le toca a E3) |
+| E2a, E2b, E2c | 2 failed cada una | `2 failed, 205 passed` cada una | 0 / 2 | consulta (lado R3) |
+| E2d = X1 | 3 failed | `3 failed, 204 passed` | 0 / 3 | consulta (lado R3) |
+| M7, M8, M9 | sobreviven (119) | 12, 6 y 12 failed | = E3a, E3b, E3c | `toBeNull` |
+| M10 `lostMode` del listado | sobrevive | **`207 passed` — sobrevive** | 0 / 0 | fuera de dominio por el texto de E3 |
+| M11 conectividad del listado | sobrevive | **`207 passed` — sobrevive** | 0 / 0 | fuera de dominio por el texto de E3 (ver G3) |
+
+Todas las que debían caer caen. B3 queda cerrado tal como E3 lo plantea.
+
+### 4. Barrido nuevo (los dos lados y todas las ramas)
+**Por qué la tabla de verdad se cierra por construcción.** El `it.each` de E3 recorre los 88 casos «sin botón» del dominio abstracto (detalle: rol × collar nulo/no nulo, más las 4 ramas que no son `ok`; listado: rol × collar nulo/no nulo). E2 cubre los 8 casos «con botón». Toda mutación que sea función de esos cuatro bits, y de la rama `ok`/no `ok`/pendiente, cae en alguna fila. Lo confirman M1-M9 y M12 arriba. Lo que sobrevive tiene que leer algo que la tabla fija en un solo valor. Medido:
+
+| Id | Mutación en `const canPairCollar =` | Contra E3 (207) | Lee el listado | Diagnóstico |
+|---|---|---|---|---|
+| **N1** | `detail.data.pet.device === null;` pasa a `(detail.data.pet.device === null \|\| (detail.data.pet.device.connectivity !== 'online' && selectedPet?.device === null));` | **`207 passed` — sobrevive** | **sí, su collar** | pinta el botón al dueño con collar offline o sin conectividad si el listado dice «sin collar». Viola R4.4 y D2. Typecheck 0, lint 0 |
+| N1b | `(detail.data.pet.device === null \|\| detail.data.pet.device.connectivity !== 'online');` | **`207 passed` — sobrevive** | no | lo mismo sin mirar el listado. R4.4 dice «`device` no nulo», pero solo se prueba con `makeDevice('online')`: es una cláusula universal con candado en un solo caso |
+| N3 | `deviceConnectionState(detail.data.pet.device) !== 'online';` | sobrevive por construcción (con E3 todos los collares del detalle son `online`, así que equivale a N1b) | no | es la forma más plausible de N1b, porque la pantalla ya llama a `deviceConnectionState(detail.data.pet.device)`. Typecheck 0, lint 0 |
+| N2 | `selectedPet !== undefined && detail.data.pet.myRole === 'owner' &&` | `207 passed` — sobrevive | sí, la presencia | oculta el botón si la mascota seleccionada no está en el listado. `selected-pet-provider.tsx` no reconcilia la selección con el listado, así que es alcanzable (selección rancia). Pertenece al lado R3 |
+
+**G1 (bloqueante): el dominio del detalle fija «con collar» en `makeDevice('online')`.** N1 lee el collar de `selectedPet` y sobrevive, que es justo lo que este barrido tenía que buscar. La fila que falta es «detalle owner con collar no `online`» × «listado sin collar». La corrección cierra el collar del detalle en su partición finita, la que la propia pantalla ya usa: `deviceConnectionState` de `src/utils/device-connectivity.ts`, que distingue `none`, `online`, `offline` y `unknown`. Entonces `device` ∈ {`null`, `makeDevice('online')`, `makeDevice('offline')`, `makeDevice(null)`}, para los 4 roles, por la misma regla de producto cartesiano que E3 aplica a los roles.
+
+Contraprueba medida: añadí al bloque de E3, sin commit, las 8 entradas de abajo y medí `src/screens/map/index.test.tsx`. Cada fila salió igual que la predicción hecha antes de correrla:
+
+| Sonda | Predicción | Medido (`uptime` 0,2-0,7) | Tipo |
+|---|---|---|---|
+| verde | 119 + 18×8 + 8 = 271 | `271 passed, 271 total` (19,5 s; antes 16,3 s) | — |
+| ROJO M7+M8 | 18 + 12 + 27 = 57 | `57 failed, 214 passed, 271 total` | 57 `toBeNull`, 0 anteriores |
+| E3a (M7) | 12 | `12 failed, 259 passed` | `toBeNull` |
+| E3b (M8) | 3 collares × 3 roles × 2 = 18 | `18 failed, 253 passed` | `toBeNull` |
+| E3c (M9) | 12 | `12 failed, 259 passed` | `toBeNull` |
+| E3d (M12) | 16 | `16 failed, 255 passed` | `toBeNull` |
+| N1 | 2 collares × 4 listados sin collar = 8 | `8 failed, 263 passed` | `toBeNull` |
+| N1b | 2 × 8 = 16 | `16 failed, 255 passed` | `toBeNull` |
+| N3 | 16 | `16 failed, 255 passed` | `toBeNull` |
+
+Con el bloque ensanchado: `bun run typecheck` → `exit=0`, `bunx expo lint --no-cache` → `exit=0`. N1 y N3 en producción → typecheck 0 y lint 0 (son sondas válidas).
+
+**G3 (no bloqueante, decisión del humano): el párrafo «Fuera del dominio» de requirements §E3 dice de `device.connectivity` del listado que «su espacio no es finito».** Para la conectividad eso no es cierto: es finita, los mismos 4 valores de `deviceConnectionState`. M11 (lee la conectividad del listado) sigue vivo. Dejarlo fuera es una decisión de coste, no una imposibilidad. Ensancharlo llevaría `LIST_STATES` de 8 a 16 y E2 (lado R3) de 8 a 16 listados, unas 18×16 + 16 + 8 = 312 filas en vez de 152. `lostMode` y el resto de `PetProfile` sí son abiertos y pueden quedar fuera tal como está escrito.
+
+**G4 (no bloqueante, decisión del humano): N2, mascota seleccionada ausente del listado.** Sería un 9.º estado de listado (`pets: [makePet({ id: '<otro id>' })]`) que afecta sobre todo al lado R3. Si queda fuera, el párrafo «Fuera del dominio» debe nombrarlo.
+
+### 5. Texto de la spec
+**Verificado y correcto:** la cuenta 207 = 119 + 88; el desglose 6 + 12 + 9 = 27 del rojo, comprobado título a título; los conjuntos de filas de E3a-E3d; la cuenta 847 = 759 + 88 y 2513 = 2425 + 88; los dos mensajes de commit (test/fix/docs) presentes y con el formato de C5; la lista cerrada (solo el test); la restauración con `git checkout 664b95a7 --` más `git diff --quiet`; y el bloque tsx, que compila y pasa lint copiado quitando solo las 4 columnas de sangría de la lista. Nit: el mensaje rojo dice «for non-owners», pero M8 pinta el botón al dueño con collar. Se puede dejar.
+
+**G2 (bloqueante): ancla de trazabilidad ambigua.** tasks.md §E3 (3) escribe el ancla y el texto nuevo con `\`` dentro de un code span de un solo backtick. En CommonMark la barra no escapa dentro de un code span: el span se corta en el segundo backtick, y en crudo Codex ve barras que el fichero no tiene. Medido: `grep -cF 'E1: \`no pinta el botón a %s aunque el listado diga owner\`, sondas E1a-E1e' traceability.md` → `0`; sin barras → `1`. Texto exacto propuesto para sustituir los dos code spans de (3):
+
+  - En traceability.md, en la fila R4, el ancla (una sola aparición):
+
+    ```sh
+    grep -cF 'E1: `no pinta el botón a %s aunque el listado diga owner`, sondas E1a-E1e' specs/mobile-no-collar-states-pingo/traceability.md   # → 1
+    ```
+
+    Justo después de ese texto, antes del `)` que cierra la celda, se inserta literalmente:
+
+    ```text
+    ; E3: `no pinta el botón con el detalle $detalle aunque el listado diga $listRole $listCollar` (18 detalles × 8 listados), `no pinta el botón mientras el detalle carga aunque el listado diga $listRole $listCollar` (8 listados), sondas E3a-E3f
+    ```
+
+    Comprobación: `grep -cF 'sondas E1a-E1e; E3: ' …/traceability.md` → `1`. Hoy da `0`.
+  - En la columna de commits de la misma fila, al final, se inserta literalmente (con los hashes reales):
+
+    ```text
+    ; E3: <hash rojo> test(mobile-no-collar-states): #159 E3 red pair action follows list role and collar for non-owners → <hash verde> fix(mobile-no-collar-states): #159 E3 revert list probe, no pair action whatever the list says
+    ```
+
+  Con G1 la cifra es «18 detalles» y las sondas son «E3a-E3f». Sin G1 serían «10 detalles» y «E3a-E3d».
+
+**Correcciones exactas para G1** (si el humano no ensancha el listado, G3):
+
+*requirements.md §Enmienda E3:*
+1. §Decisión, viñeta **Detalle**: «los 8 estados `ok` (`myRole` ∈ {owner, family, walker, vet} × `device` ∈ {`null`, `makeDevice('online')`})» pasa a «los 16 estados `ok` (`myRole` ∈ {owner, family, walker, vet} × `device` ∈ {`null`, `makeDevice('online')`, `makeDevice('offline')`, `makeDevice(null)`}, los cuatro valores de `deviceConnectionState` de `src/utils/device-connectivity.ts`: `none`, `online`, `offline`, `unknown`)». También «12 estados» pasa a «20 estados».
+2. «96 casos. … E3 da test a los otros 88» pasa a «160 casos. … E3 da test a los otros 152».
+3. Viñeta nueva bajo «R4 se **ensancha**»: «"con collar" en R4.1-R4.4 es cualquier `device` no nulo, sea cual sea su `connectivity` (`'online'`, `'offline'` o `null`). Es el texto actual de R4.4 ("`device` no nulo"); hasta E3 solo tenía candado con `'online'` (sondas N1/N1b del barrido)».
+4. «10 estados de detalle (los 7 `ok` sin botón, más …) × 8 listados = 80 filas» pasa a «18 estados de detalle (los 15 `ok` sin botón, más `error`, `unreachable` y `missing-config`) × 8 listados = 144 filas». También «El fichero pasa de 119 a 207 `it`» pasa a «… de 119 a 271 `it`».
+5. «Con ella fallan 27 filas de la tabla de 80» pasa a «… 57 filas de la tabla de 144». «Las sondas E3a-E3d … separan M7, M8, M9 y una cuarta, M12» suma E3e (N3, conectividad del detalle) y E3f (N1, collar del listado con conectividad del detalle).
+6. «Fuera del dominio»: «`device.connectivity` dentro de «con collar»» pasa a decir que la conectividad del **listado** queda fuera por coste (G3), y que la del detalle ya está dentro. Añadir «la mascota seleccionada ausente del listado» (G4) si el humano no la mete.
+
+*tasks.md §Enmienda E3 — ronda 4:*
+1. **Antes**: «base + 88» pasa a «base + 152».
+2. **(1)**: en `DETAIL_STATES`, tras la línea de `'vet con collar'` y antes de la de `'error'`, estas 8 líneas (con la misma sangría que sus vecinas). Las medí así en el árbol:
+
+    ```tsx
+        { detalle: 'owner con collar offline', state: { kind: 'ok', pet: makePet({ device: makeDevice('offline') }) } },
+        { detalle: 'owner con collar sin conectividad', state: { kind: 'ok', pet: makePet({ device: makeDevice(null) }) } },
+        { detalle: 'family con collar offline', state: { kind: 'ok', pet: makePet({ myRole: 'family', device: makeDevice('offline') }) } },
+        { detalle: 'family con collar sin conectividad', state: { kind: 'ok', pet: makePet({ myRole: 'family', device: makeDevice(null) }) } },
+        { detalle: 'walker con collar offline', state: { kind: 'ok', pet: makePet({ myRole: 'walker', device: makeDevice('offline') }) } },
+        { detalle: 'walker con collar sin conectividad', state: { kind: 'ok', pet: makePet({ myRole: 'walker', device: makeDevice(null) }) } },
+        { detalle: 'vet con collar offline', state: { kind: 'ok', pet: makePet({ myRole: 'vet', device: makeDevice('offline') }) } },
+        { detalle: 'vet con collar sin conectividad', state: { kind: 'ok', pet: makePet({ myRole: 'vet', device: makeDevice(null) }) } },
+    ```
+
+    «Son 80 + 8 = 88 `it` nuevos» pasa a «Son 144 + 8 = 152».
+3. **Rojo esperado**: `Tests: 57 failed, 214 passed, 271 total`, desglosado así:
+   - `… detalle owner con collar{, offline, sin conectividad} aunque el listado diga {family, walker, vet} {sin, con} collar` → 18;
+   - `… detalle {family, walker, vet} sin collar aunque el listado diga {owner, family, walker, vet} con collar` → 12;
+   - `… detalle {family, walker, vet} con collar{, offline, sin conectividad} aunque el listado diga {family, walker, vet} con collar` → 27.
+4. **(2) Gate**: `Tests: 271 passed, 271 total`.
+5. **Sondas**:
+
+   | Sonda | Esperado | Filas |
+   |---|---|---|
+   | E3a | `12 failed, 259 passed, 271 total` | sin cambios |
+   | E3b | `18 failed, 253 passed, 271 total` | las 18 de la primera viñeta del rojo |
+   | E3c | `12 failed, 259 passed, 271 total` | sin cambios |
+   | E3d | `16 failed, 255 passed, 271 total` | sin cambios |
+   | **E3e (N3)** | `16 failed, 255 passed, 271 total` | la línea `detail.data.pet.device === null;` pasa a `deviceConnectionState(detail.data.pet.device) !== 'online';`. Caen `… detalle owner con collar {offline, sin conectividad} aunque el listado diga …` × 8 |
+   | **E3f (N1)** | `8 failed, 263 passed, 271 total` | la misma línea pasa a `(detail.data.pet.device === null \|\| (detail.data.pet.device.connectivity !== 'online' && selectedPet?.device === null));`. Caen `… detalle owner con collar {offline, sin conectividad} aunque el listado diga {owner, family, walker, vet} sin collar` |
+
+   Todas caen por `toBeNull`.
+6. **Cierre**: BASE `Tests: 911 passed, 911 total` (759 + 152) con map en 271; `bun run test` → `2577 tests` (2425 + 152).
+7. **(3)**: el texto de G2.
+
+Restauración al terminar: `git checkout HEAD -- mobile-pet-tracker/src/screens/map/index.test.tsx mobile-pet-tracker/src/screens/map/index.tsx`. El resultado de `git diff --quiet HEAD -- mobile-pet-tracker specs && git diff --cached --quiet` está en la línea siguiente.
+`limpio=0` medido tras la restauración (HEAD `375485e7`). Solo queda modificado este fichero de review, sin commit.

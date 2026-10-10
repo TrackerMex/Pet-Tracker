@@ -552,26 +552,32 @@ typecheck y lint.
 
 > Escrita el 2026-10-10 sobre la Enmienda E2 (firma `4146ac24`), tras la
 > revisión de la ronda 3 **rechazada** (`progress/review_mobile-no-collar-states-pingo.md`
-> §Ronda 3, sobre la punta de Codex `a8681b51`), por su bloqueante B3. No toca
-> D1-D7, ni el texto de R1-R3 ni R5-R10, ni las firmas anteriores. **Solo
-> tests**: la producción de `664b95a7` sigue siendo correcta y queda idéntica.
-> Su casilla va **sin marcar**: el humano reabre el gate solo para esta
-> enmienda.
+> §Ronda 3, sobre la punta de Codex `a8681b51`), por su bloqueante B3, y
+> ensanchada con el barrido del reviewer (§Barrido de la Enmienda E3, G1 y
+> G2). No toca D1-D7, ni el texto de R1-R3 ni R5-R10, ni las firmas
+> anteriores. **Solo tests**: la producción de `664b95a7` sigue siendo
+> correcta y queda idéntica. Su casilla va **sin marcar**: el humano reabre
+> el gate solo para esta enmienda.
 
-### El hecho medido (B3 del reviewer)
+### El hecho medido (B3 del reviewer, y N1 del barrido)
 
 E2 cerró el lado R3 (el botón **sale** con el detalle owner sin collar, sea
 cual sea el listado: 8 de 8 listados con test). El lado R4 (el botón **no
-sale**) sigue con listados sueltos: hoy hay test para 7 de sus 32
+sale**) sigue con listados sueltos: en `a8681b51` hay test para 7 de sus 32
 combinaciones de detalle `ok` × listado. Estas mutaciones leen el listado,
 justo lo que D2 prohíbe, pasan typecheck y lint, y dejan el fichero en
-`119 passed, 119 total` en `a8681b51`:
+`119 passed, 119 total`:
 
 | Id | Mutación en `const canPairCollar =` de `src/screens/map/index.tsx` | Qué pinta donde R4 lo prohíbe |
 |---|---|---|
 | M7 | `detail.data.pet.myRole === 'owner' &&` pasa a `(detail.data.pet.myRole === 'owner' \|\| Boolean(selectedPet?.device)) &&` | el botón a family/walker/vet sin collar si el listado trae collar |
 | M8 | `detail.data.pet.device === null;` pasa a `(detail.data.pet.device === null \|\| selectedPet?.myRole !== 'owner');` | el botón al dueño con collar si el listado dice otro rol |
 | M9 | `detail.data.pet.myRole === 'owner' &&` pasa a `(detail.data.pet.myRole === 'owner' \|\| (selectedPet?.myRole !== 'owner' && selectedPet?.myRole !== detail.data.pet.myRole)) &&` | el botón a un no-dueño si el listado dice otro rol no-owner |
+| N1 | `detail.data.pet.device === null;` pasa a `(detail.data.pet.device === null \|\| (detail.data.pet.device.connectivity !== 'online' && selectedPet?.device === null));` | el botón al dueño con collar offline o sin conectividad si el listado dice «sin collar» |
+
+N1 sobrevive incluso a una primera versión de E3 que solo probaba «con
+collar» como `makeDevice('online')`: R4.4 dice «`device` no nulo», pero su
+candado estaba en un solo valor.
 
 Es el espejo de B2 en el lado R4. El hueco nace en la spec (E1 y E2
 prescribieron listados sueltos para R4) y en el barrido previo a la firma de
@@ -580,30 +586,37 @@ E2, que solo miró R3; no en el implementador.
 ### Decisión: la tabla de verdad entera del botón contra el listado
 
 Para no volver a cerrar el producto cartesiano a trozos, E3 lo cierra
-**entero**. El predicado lee dos atributos del detalle (rol y collar) y D2
-prohíbe que lea los dos mismos del listado. El dominio es:
+**entero** en el dominio que el predicado y D2 nombran: rol y collar, del
+detalle y del listado. El collar del detalle se parte como ya lo parte la
+pantalla, con `deviceConnectionState` de `src/utils/device-connectivity.ts`
+(`none`, `online`, `offline`, `unknown`).
 
-- **Detalle**: los 8 estados `ok` (`myRole` ∈ {owner, family, walker, vet} ×
-  `device` ∈ {`null`, `makeDevice('online')`}) y los 4 que no son `ok`
-  (`error`, `unreachable`, `missing-config`, pendiente). 12 estados.
+- **Detalle**: 16 estados `ok` (`myRole` ∈ {owner, family, walker, vet} ×
+  `device` ∈ {`null`, `makeDevice('online')`, `makeDevice('offline')`,
+  `makeDevice(null)`}) y los 4 que no son `ok` (`error`, `unreachable`,
+  `missing-config`, pendiente). 20 estados.
 - **Listado**: `myRole` ∈ {owner, family, walker, vet} × `device` ∈ {`null`,
   `makeDevice('online')`}. 8 estados.
 
-96 casos. El botón sale **solo** con el detalle owner sin collar (8 casos,
-cerrados por R3, E1 y E2). E3 da test a los otros 88, todos con «sin botón»:
+160 casos. El botón sale **solo** con el detalle owner sin collar (8 casos,
+cerrados por R3, E1 y E2). E3 da test a los otros 152, todos con «sin botón».
+R4 se **ensancha** en dos puntos de texto; la producción ya cumple los dos:
 
-- R4 se **ensancha** en un punto de texto: R4.1-R4.3 cubren family, walker y
-  vet **también con collar** (hoy solo dicen `device: null`). Es el mismo
-  «nadie más» del título de R4; la producción ya lo cumple.
-- Cada caso de R4.1-R4.8 vale **sea cual sea el listado** (los 8 estados de
-  arriba), como R3.1 tras E2.
+- R4.1-R4.3 cubren family, walker y vet **también con collar** (hoy solo
+  dicen `device: null`). Es el mismo «nadie más» del título de R4.
+- «Con collar» en R4.1-R4.4 es cualquier `device` no nulo, sea cual sea su
+  `connectivity` (`'online'`, `'offline'` o `null`). Es el texto actual de
+  R4.4 («`device` no nulo»); hasta E3 solo tenía candado con `'online'`.
+
+Y cada caso de R4.1-R4.8 vale **sea cual sea el listado** (los 8 estados de
+arriba), como R3.1 tras E2.
 
 En `describe('#159 R4: nadie más ve el botón de emparejar'`, al final, dos
 `it.each` generados del producto (cuerpo exacto en tasks.md §Enmienda E3):
 
 - `no pinta el botón con el detalle $detalle aunque el listado diga $listRole $listCollar`:
-  10 estados de detalle (los 7 `ok` sin botón, más `error`, `unreachable` y
-  `missing-config`) × 8 listados = 80 filas, con el helper
+  18 estados de detalle (los 15 `ok` sin botón, más `error`, `unreachable` y
+  `missing-config`) × 8 listados = 144 filas, con el helper
   `noTrackingAfterDetail` que ya existe en ese `describe`.
 - `no pinta el botón mientras el detalle carga aunque el listado diga $listRole $listCollar`:
   detalle pendiente × 8 listados = 8 filas, con la sincronización del `it`
@@ -612,14 +625,22 @@ En `describe('#159 R4: nadie más ve el botón de emparejar'`, al final, dos
 Cada fila espera título y cuerpo visibles y `map-no-tracking-action`
 ausente, igual que los `it` de R4 que ya existen. Ningún `it` existente
 cambia; los que repiten una combinación de la tabla se quedan (duplicado
-barato, no se borra historia firmada). El fichero pasa de 119 a 207 `it`.
+barato, no se borra historia firmada). El fichero pasa de 119 a 271 `it`
+(medido por el reviewer: 19,5 s frente a 16,3 s).
 
-**Fuera del dominio, a propósito** (N1 del reviewer): atributos del listado
-que el predicado no lee (`lostMode`, `device.connectivity` dentro de «con
-collar», cualquier otro campo de `PetProfile`). Su espacio no es finito y
-ningún candado finito lo cierra. Si el humano quiere ensanchar el dominio
-(por ejemplo, listados con `makeDevice('offline')`), es su decisión en este
-gate.
+**Fuera del dominio, a propósito.** Tres cosas que el humano puede meter en
+este gate si quiere; por defecto quedan fuera:
+
+- **G3, la conectividad del listado.** Es finita (los mismos 4 valores),
+  así que dejarla fuera es una decisión de coste, no una imposibilidad: el
+  listado pasaría de 8 a 16 estados, E3 de 152 a ~312 filas, y E2 (lado R3)
+  de 8 a 16 listados. La mutación que la lee (M11 del reviewer) sigue viva.
+- **G4, la mascota seleccionada ausente del listado.** Sería un 9.º estado
+  de listado; afecta sobre todo al lado R3 (N2 del reviewer: el botón se
+  oculta si la selección no está en el listado).
+- `lostMode` y cualquier otro campo de `PetProfile` del listado: el
+  predicado no los lee y su espacio no es finito; ningún candado finito lo
+  cierra (M10 del reviewer).
 
 ### Cómo se prueba que el candado vigila (CHECKPOINTS.md C4, quinto punto)
 
@@ -633,10 +654,10 @@ mutación):
   (detail.data.pet.device === null || selectedPet?.myRole !== 'owner');
 ```
 
-Con ella fallan 27 filas de la tabla de 80, por aserción (`toBeNull`). Las
-sondas E3a-E3d de tasks.md separan M7, M8, M9 y una cuarta, M12, que cae al
-listado cuando el detalle no es `ok` y vigila esa rama (cae en sus 16
-filas con listado con collar).
+Con ella fallan 57 filas de la tabla de 144, por aserción (`toBeNull`). Las
+sondas E3a-E3f de tasks.md separan M7, M8, M9, M12 (cae al listado cuando el
+detalle no es `ok`; vigila esa rama), N3 (lee la conectividad del detalle) y
+N1. Todas medidas por el reviewer antes de esta firma.
 
 ### Aprobación de la Enmienda E3
 
