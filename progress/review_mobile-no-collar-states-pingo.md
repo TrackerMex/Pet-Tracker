@@ -322,3 +322,140 @@ Fecha: 2026-10-09. Sobre el borrador sin commitear de requirements.md §Enmienda
 9. **OK, notas para el handoff (no son de la spec).** En «Antes» no hay `git merge-base --is-ancestor 039e6195 HEAD` (E1 sí lo tenía con `664b95a7`); la base de 114 lo suple. La regla de una sola repetición por el flake de #72 R2 (`Number of calls: 0`) debe ir en el handoff, porque tasks.md dice «cualquier otro `it` rojo… para».
 
 Resultado del barrido: **CORREGIR**, 1 corrección (la 2; sus efectos sobre los recuentos y el título van dentro de ella).
+
+---
+
+# Ronda 3 — Enmienda E2
+
+Fecha: 2026-10-10. HEAD `a8681b51` (branch `feature/159-mobile-no-collar-states-pingo`). H0E2 `48363132`. Enmienda E2 firmada en `4146ac24`.
+
+Veredicto: RECHAZADO (1 bloqueante: B3, la inversa de R4 contra el listado solo vigila listados owner/sin collar y del mismo rol; M7, M8 y M9 leen el listado y sobreviven 119/119)
+
+## Comprobaciones
+
+### Producción idéntica a 664b95a7
+- `git diff --stat 664b95a7 HEAD -- mobile-pet-tracker/src/screens/map/index.tsx` → vacío. También `git diff --quiet 664b95a7 15fa23e4 -- …/index.tsx` → 0 y `git diff --quiet 664b95a7 48363132 -- …/index.tsx` → 0.
+
+### Lista cerrada desde H0E2
+- `git diff --name-only 48363132 a8681b51` → exactamente `mobile-pet-tracker/src/screens/map/index.test.tsx`, `progress/impl_mobile-no-collar-states-pingo.md`, `specs/mobile-no-collar-states-pingo/traceability.md`. OK.
+- `git log --oneline 48363132..HEAD` → `43e712b3` (rojo), `15fa23e4` (verde), `a8681b51` (trazabilidad). Mensajes literales de tasks.md §Enmienda E2.
+
+### C6 — Spec y enmienda firmadas
+- requirements.md §Aprobación de la Enmienda E2: `- [x] Enmienda E2 aprobada por humano (fecha: 2026-10-09, vía Notion)`, firma en `4146ac24`.
+
+### Gate init.sh (corrido por el leader, no por el reviewer)
+- Log `scratchpad/init-159-e2.log`, última línea `exit=0`, `✅ Todo verde`. Backend `Tests: 1474 passed, 1474 total`; móvil `Test Suites: 97 passed, 97 total` / `Tests: 2425 passed, 2425 total` (= 2420 + 5, lo que prescribe tasks.md §Cierre); e2e `Tests: 8 skipped, 468 passed, 476 total`; lint y typecheck sin errores.
+- El log no imprime el hash. Lo ato a HEAD así: su mtime (2026-10-10 06:13 local) es posterior al commit `a8681b51` (2026-10-09 23:11 UTC), el árbol está limpio salvo este fichero de review, y 2425 solo cuadra con las 6 filas de E2 dentro.
+
+### C4 — Rojo → verde
+- `43e712b3` (rojo): el `it` de E1 pasa a `it.each` de 6 filas, con el cuerpo literal de tasks.md §Enmienda E2 (diff revisado línea a línea), más la mutación de producción de tres líneas (`selectedPet?.myRole !== 'walker' &&`, `selectedPet?.myRole !== 'vet' &&`, `detail.data.pet.myRole === 'owner' &&`). El test no muta dobles: el rojo sale de producción.
+- `15fa23e4` (verde): solo revierte esas dos líneas de `index.tsx`; el test no cambia después del rojo (`git diff --quiet 43e712b3 HEAD -- …/index.test.tsx` → 0).
+- Rojo reproducido por mí (producción de `43e712b3` con el test de HEAD): `Tests: 4 failed, 115 passed, 119 total`, los cuatro por consulta (`Unable to find an element with testID: map-no-tracking-action` ×4), walker y vet con y sin collar; las dos filas `family` verdes. Ningún `ReferenceError`/`TypeError`. Coincide con tasks.md.
+- Verde en HEAD: `Tests: 119 passed, 119 total`, `exit=0`.
+
+## Sondas del reviewer (en HEAD a8681b51, sin commit)
+
+Cada sonda: mutación en `const canPairCollar =` de `mobile-pet-tracker/src/screens/map/index.tsx`, `FORCE_COLOR=0 bunx jest --runTestsByPath src/screens/map/index.test.tsx`, restauración con `git checkout HEAD -- <ruta>` y `git diff --quiet HEAD -- mobile-pet-tracker specs && git diff --cached --quiet` → `limpio=0` tras cada una. `uptime` antes: carga 0,68-0,89. `.expo/types/router.d.ts` ausente.
+
+### Sondas de tasks.md y de la ronda 2
+
+E2a es literalmente P6, E2b es P6b y E2d es X1 (mismo texto de mutación), así que cada corrida vale para las dos.
+
+| Sonda | Mutación | Esperado | Medido | Qué cae (todo por consulta) |
+|---|---|---|---|---|
+| BASE | ninguna | 119 passed | `119 passed, 119 total`, exit=0 | — |
+| ROJO | producción de `43e712b3` | `4 failed, 115 passed, 119 total` | igual | walker sin/con, vet sin/con |
+| E2a = P6 | `selectedPet?.myRole !== 'walker' && detail.data.pet.myRole === 'owner' &&` | `2 failed, 117 passed` | igual | walker sin collar, walker con collar |
+| E2b = P6b | igual con `'vet'` | `2 failed, 117 passed` | igual | vet sin collar, vet con collar |
+| E2c | igual con `'family'` | `2 failed, 117 passed` | igual | family sin collar, family con collar |
+| E2d = X1 | `(selectedPet?.myRole === 'owner' \|\| selectedPet?.device === null) && detail.data.pet.myRole === 'owner' &&` | `3 failed, 116 passed` | igual | family/walker/vet con collar |
+
+P6 y P6b, verdes en `340967ba`, ahora caen. B2 queda cerrado.
+
+### Barrido adicional (mutaciones que leen rol o collar de `selectedPet` por otra vía)
+
+Ids M para no chocar con los bloqueantes B1-B3. Sustituyen la línea del rol (`detail.data.pet.myRole === 'owner' &&`), la del collar (`detail.data.pet.device === null;`) o las tres líneas del predicado (M5).
+
+| Id | Mutación | Medido | Qué cae | Lado |
+|---|---|---|---|---|
+| M1 `??` | `(selectedPet?.myRole ?? detail.data.pet.myRole) === 'owner' &&` | `9 failed, 110 passed` | las 6 filas de E2 (consulta) + R4 «no pinta el botón a family/walker/vet aunque el listado diga owner» (aserción `toBeNull`) | R3 + R4 |
+| M2 `\|\|` rol | `(selectedPet?.myRole === 'owner' \|\| detail.data.pet.myRole === 'owner') &&` | `3 failed, 116 passed` | R4 «… aunque el listado diga owner» ×3 | R4 |
+| M3 collar del listado | `selectedPet?.device === null;` | `5 failed, 114 passed` | E2 con collar ×3, E1 «… traiga collar», R4.4 | R3 + R4 |
+| M4 `\|\|` collar | `(selectedPet?.device === null \|\| detail.data.pet.device === null);` | `1 failed, 118 passed` | R4.4 «no pinta el botón al dueño de una mascota con collar» | R4 |
+| M5 rama por kind | si el detalle no es `ok`, cae al listado: `detail.data?.kind === 'ok' ? <detalle> : selectedPet?.myRole === 'owner' && selectedPet?.device === null;` | `4 failed, 115 passed` | R4.5-R4.8 (error, unreachable, missing-config, cargando) | R4 |
+| M6 rama por conectividad | `(selectedPet?.device?.connectivity === 'online' ? selectedPet.myRole === 'owner' : true) && detail… &&` | `3 failed, 116 passed` | E2 con collar ×3 | R3 |
+| **M7** | `(detail.data.pet.myRole === 'owner' \|\| Boolean(selectedPet?.device)) &&` | **`119 passed, 119 total` — sobrevive** | ninguno | **R4.1-R4.3** |
+| **M8** | `(detail.data.pet.device === null \|\| selectedPet?.myRole !== 'owner');` | **`119 passed, 119 total` — sobrevive** | ninguno | **R4.4** |
+| **M9** | `(detail.data.pet.myRole === 'owner' \|\| (selectedPet?.myRole !== 'owner' && selectedPet?.myRole !== detail.data.pet.myRole)) &&` | **`119 passed, 119 total` — sobrevive** | ninguno | **R4.1-R4.3** |
+| M10 | `!selectedPet?.lostMode && detail.data.pet.myRole === 'owner' &&` | `119 passed` — sobrevive | ninguno | fuera de dominio (ver N/B) |
+| M11 | `selectedPet?.device?.connectivity !== 'offline' && detail.data.pet.myRole === 'owner' &&` | `119 passed` — sobrevive | ninguno | fuera de dominio (ver N/B) |
+
+`limpio=0` tras cada sonda. Ningún `ReferenceError`/`TypeError`. El flake de #72 R2 no salió en ninguna de las 17 corridas.
+
+**M7, M8 y M9 pasan los gates estáticos:** con M7+M8 aplicadas a la vez, `bun run typecheck` → `exit=0` y `bunx expo lint --no-cache src/screens/map/index.tsx` → `exit=0`; con M9, igual (`exit=0` y `exit=0`). Restaurado y `limpio=0` después.
+
+**Prueba de que violan R4 (contraejemplo medido, no deducido).** Sondas de test, sin commit, restauradas con `git checkout HEAD -- <prod> <test>` y `limpio=0`:
+
+| Contraejemplo (solo cambia el listado del `it` de R4) | HEAD (producción correcta) | Con la mutación |
+|---|---|---|
+| CX7: en «no pinta el botón a %s», listado `makePet({ myRole: role, device: makeDevice('online') })` | `119 passed` | M7: `3 failed, 116 passed` — «no pinta el botón a family/walker/vet», aserción `toBeNull` |
+| CX8: en «no pinta el botón al dueño de una mascota con collar», listado `makePet({ myRole: 'family' })` | `119 passed` | M8: `1 failed, 118 passed` — ese `it` |
+| CX9: en «no pinta el botón a %s», listado `makePet({ myRole: role === 'family' ? 'walker' : 'family' })` | `119 passed` | M9: `3 failed, 116 passed` — «no pinta el botón a family/walker/vet» |
+
+Es decir: con M7 un familiar/paseador/veterinario ve «Vincular collar» si el listado trae collar; con M8 el dueño de una mascota con collar lo ve si el listado dice otro rol; con M9 lo ve un no-dueño si el listado dice otro rol no-owner. Las tres leen del listado, justo lo que D2 prohíbe.
+
+## Cobertura de la cláusula tras E2
+
+| Cláusula | Dominio (detalle × listado) | Casos con test | Estado |
+|---|---|---|---|
+| R3.1 (detalle owner, sin collar → botón, «sea cual sea el listado») | 1 × {owner, family, walker, vet} × {sin, con collar} = 8 | 8: owner/sin (R3 base), owner/con (E1), y las 6 filas de E2 | **cerrada** (M1, M3, M6, E2a-E2d, P6, P6b, X1 caen) |
+| R4.1-R4.3 (detalle family/walker/vet sin collar → sin botón) | 3 × 8 = 24 | 6: cada rol con listado del mismo rol sin collar y con listado owner sin collar | **18 sin test; M7 y M9 sobreviven** |
+| R4.4 (detalle owner con collar → sin botón) | 1 × 8 = 8 | 1: listado owner sin collar | **7 sin test; M8 sobrevive** |
+| R4.5-R4.8 (detalle no `ok` o pendiente) | `detail.data?.kind === 'ok' &&` corta antes de mirar nada; el listado de los 4 `it` es owner/sin collar, el más favorable para un respaldo al listado | 4 | M5 cae; sin hueco medido |
+
+## C5 — Trazabilidad
+- Fila R3 de `traceability.md` en `a8681b51`: el `it` de E1 pasa a `pinta Vincular collar aunque el listado diga $role $collar: manda el rol y el collar del detalle (family, walker y vet, con y sin collar; sondas E2a-E2d)`, literal de tasks.md §Enmienda E2 (3). La columna de commits añade `E2: 43e712b3 test(…): #159 E2 red pair action obeys list role except family → 15fa23e4 fix(…): #159 E2 revert list role probe, pair action locked to detail role`. [x]
+- `git merge-base --is-ancestor <h> HEAD` → 0 para `f346baf3`, `9b89f6c8`, `3224d502`, `203ea96e`, `43e712b3`, `15fa23e4`. [x]
+- Única fila `pendiente`: R10, el humo humano (§Aprobación, casilla 3), como en las rondas 1 y 2. [x]
+- Mensajes `test(…)/fix(…)/docs(…)` con el formato y el número de feature. [x]
+
+## C2 / C3 / C4 / C6 / C7 / C8
+- C2: `feature_list.json` → una sola `in_progress` (#159). `progress/current.md` registra E2, su firma `4146ac24` y el handoff. [x]
+- C3: la ronda no toca producción (`git diff --stat 48363132 HEAD -- mobile-pet-tracker` → solo `index.test.tsx`, 9+/2−). [x]
+- C4: el `it.each` nombra su R-id por el `describe('#159 R3: …')`; rojo con mutación de producción versionada (`43e712b3`) y revertida (`15fa23e4`), medido por mí en 4/115/119. [x] — pero el candado de R4 contra el listado no vigila su cláusula entera (B3). [ ]
+- C6: Enmienda E2 firmada (`4146ac24`, casilla marcada). [x]
+- C7: el `it` de E1 se reemplazó en su sitio; su título viejo no queda (`grep -c "manda el rol del detalle'"` → 0). [x]
+- C8: sin cambios de UI en esta ronda. N/A.
+
+## Observaciones
+
+### B3 (bloqueante): la inversa de R4 contra el listado solo vigila listados owner sin collar o del mismo rol
+- R4 dice «el detalle resuelve…» y D2 fija que rol y collar salen del detalle, nunca del listado. Para que el botón **no** salga sea cual sea el listado, cada estado de detalle de R4.1-R4.4 tiene el mismo dominio de 8 listados que E2 cerró para R3: `myRole` ∈ {owner, family, walker, vet} × `device` ∈ {null, con collar}. Hoy hay test para 7 de las 32 combinaciones (tabla de cobertura).
+- M7, M8 y M9 leen del listado, pasan typecheck y lint, dejan el fichero en `119 passed, 119 total` y los contraejemplos CX7-CX9 demuestran que pintan el botón donde R4 lo prohíbe.
+- Es el espejo exacto de B2/X1: E2 cerró el producto cartesiano del lado R3 (el botón debe salir), pero no el del lado R4 (el botón no debe salir). Mi barrido previo a la firma de E2 (§Barrido de la Enmienda E2) solo miró el lado R3; el hueco nace en la spec y en ese barrido, no en Codex, que cumplió tasks.md al pie de la letra.
+- Lo que hace falta: una enmienda que dé a R4.1-R4.4 su producto cartesiano contra el listado (4 estados de detalle × 8 listados = 32 casos, cada uno con su fila, frente a los 7 de hoy), con rojo por mutación de producción versionada y M7, M8 y M9 como sondas que deben caer.
+
+### No bloqueantes
+- **N1. M10 y M11, fuera del dominio de la spec.** Leen del listado atributos que `canPairCollar` no lee: `lostMode` y `device.connectivity` (dentro de «con collar», distingue `offline` de `online`). Sobreviven 119/119 y violan la letra de R3.1 («sea cual sea el listado»). No los cuento como bloqueantes: la spec fija el dominio en rol × collar nulo/no nulo, y fuera de él el espacio no es finito (cualquier campo de `PetProfile` o cualquier cadena de `connectivity`), así que ningún candado finito lo cierra. Si el leader o el humano quieren ensanchar el dominio (por ejemplo, filas con `makeDevice('offline')`), es una decisión de alcance de la siguiente enmienda.
+- **N2.** Codex declara «Ninguna skill cargada» en el impl de la ronda 3. La ronda es solo de tests y no toca UI, así que no tiene efecto aquí.
+- **N3.** El log de init.sh no imprime el hash de HEAD; lo até por mtime, árbol limpio y el recuento 2425. Si se quiere evitar esa inferencia, que init.sh (o el leader) imprima `git rev-parse HEAD` en la cabecera del log.
+
+## Veredicto ronda 3
+RECHAZADO por B3. B2 queda cerrado: E2a-E2d, P6, P6b y X1 caen con los recuentos de tasks.md, el rojo se reproduce en 4/115/119 y la producción es idéntica a `664b95a7`.
+
+## Output de ./init.sh (corrido por el leader en a8681b51; extracto por grep)
+```
+Test Suites: 187 passed, 187 total
+Tests:       1474 passed, 1474 total
+Test Suites: 2 passed, 2 total
+Tests:       14 passed, 14 total
+Test Suites: 97 passed, 97 total
+Tests:       2425 passed, 2425 total
+Snapshots:   1 passed, 1 total
+Test Suites: 3 skipped, 30 passed, 30 of 33 total
+Tests:       8 skipped, 468 passed, 476 total
+✅ Lint sin errores
+✅ Typecheck sin errores
+✅ Todo verde. Listo para trabajar.
+exit=0
+```

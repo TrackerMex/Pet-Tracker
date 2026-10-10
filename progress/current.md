@@ -44,4 +44,9 @@
 - Handoff de la ronda 3: `progress/handoff_mobile-no-collar-states-pingo_e2.md`
   (H0E2 = commit que lo añade). Incluye la repetición única por el flake de #72 R2 y la
   PARADA terminal. Mientras Codex trabaja, el leader no toca `mobile-pet-tracker/`.
-  **Esperando a Codex (ronda 3).**
+- Ronda 3 de Codex: punta `a8681b51` (H0E2 `48363132`). init.sh del leader en `a8681b51`:
+  exit=0 (backend 1474, móvil 97/2425, e2e 468 + 8 skipped). Reviewer: **RECHAZADO** por B3:
+  B2 cerrado (E2a–E2d, P6, P6b, X1 caen), pero la inversa de R4 contra el listado solo vigila
+  listados owner/sin collar y del mismo rol; M7, M8 y M9 leen el listado y quedan 119/119.
+  Es el espejo de B2 en el lado R4: el barrido previo a la firma de E2 solo miró R3.
+  **Siguiente: Enmienda E3** (tabla de verdad completa del predicado contra el listado).
