@@ -452,8 +452,9 @@ describe('#87 R19: use-' + 'api no deja huella', () => {
     'screens/meals-history/index.tsx': 1, // #105 R15
     'screens/weight-log/index.tsx': 1,
     'screens/docs/index.tsx': 0,
-    'screens/alerts/index.tsx': 1,
-    'screens/alert-detail/index.tsx': 1,
+    'screens/alerts/index.tsx': 0,
+    'screens/alert-detail/index.tsx': 0,
+    'utils/alert-ack-outcome.ts': 1, // #134 R6
     'screens/geofences/index.tsx': 1,
     'screens/geofence-editor/index.tsx': 1,
     'screens/home/index.tsx': 0,
@@ -755,5 +756,40 @@ describe('#152 R9: el movimiento de la Home no mete drift de estilo', () => {
     });
 
     expect(violations).toEqual([]);
+  });
+});
+
+describe('#134 R6: el resultado del ack se clasifica en un solo sitio', () => {
+  it.each([
+    'screens/alerts/index.tsx',
+    'screens/alert-detail/index.tsx',
+  ])('%s delega la clasificación del ack', (file) => {
+    const source = readFileSync(join(sourceRoot, file), 'utf8');
+
+    expect({
+      file,
+      cases: source.split("case '").length - 1,
+      unreachable: source.split("t('common.cannotReachServer')").length - 1,
+      signOut: source.split('signOut(').length - 1,
+      settle: source.split('settleAlertAck(').length - 1,
+      request: source.split('ackAlert(baseUrl').length - 1,
+    }).toEqual({ file, cases: 0, unreachable: 0, signOut: 0, settle: 1, request: 1 });
+  });
+});
+
+describe('#134 R7: el ack no toca la caché de la lista', () => {
+  it('mantiene cero referencias a la caché en el helper y las pantallas', () => {
+    for (const file of [
+      'utils/alert-ack-outcome.ts',
+      'screens/alerts/index.tsx',
+      'screens/alert-detail/index.tsx',
+    ]) {
+      const source = readFileSync(join(sourceRoot, file), 'utf8');
+
+      expect({
+        file,
+        refs: source.match(/alertKeys|invalidateQueries|setQueryData|useQueryClient|queryClient/g) ?? [],
+      }).toEqual({ file, refs: [] });
+    }
   });
 });
