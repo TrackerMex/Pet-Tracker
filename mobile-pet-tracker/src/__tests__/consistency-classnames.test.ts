@@ -627,3 +627,25 @@ describe('#166 R3: el secundario neutro lleva el labio gris', () => {
     expect(count(/\bborder-b-6\b/g)).toBe(4);
   });
 });
+
+describe('#166 R4: la carta declara el botón con cuerpo', () => {
+  it('declara las dos recetas y el orden del labio', () => {
+    const guidelines = readFileSync(
+      join(process.cwd(), '..', 'docs', 'ui-guidelines.md'),
+      'utf8',
+    );
+
+    expect(guidelines).toContain('13. **Botón con cuerpo** (feature #166, 2026-10-11)');
+    expect(guidelines).toContain('`rounded-xl bg-accent border-b-4 border-black/25`');
+    expect(guidelines).toContain('`rounded-xl border-2 border-b-6 border-lip-gray bg-surface`');
+    expect(guidelines).toContain('El labio va detrás de `bg-accent`, nunca delante');
+    expect(guidelines).toContain('`--color-lip-gray`');
+    expect(guidelines).toContain('**Sin labio**');
+    expect(guidelines.indexOf('12. **Escala de radios**')).toBeLessThan(
+      guidelines.indexOf('13. **Botón con cuerpo**'),
+    );
+    expect(guidelines.indexOf('13. **Botón con cuerpo**')).toBeLessThan(
+      guidelines.indexOf('## Animación (decisiones por defecto)'),
+    );
+  });
+});
