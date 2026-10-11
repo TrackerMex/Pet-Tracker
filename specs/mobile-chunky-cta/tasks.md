@@ -58,8 +58,11 @@ En `src/theme/__tests__/global-css.test.ts`, al final del fichero, añade:
 - `it.each` con las filas `['light', '#E4E7EC']` y `['dark', '#0A0D12']`,
   nombre `'declara --color-lip-gray exacto en %s'`. Usa los mismos helpers
   que el describe `'R2: tokens glass-surface y tab-pill en light y dark'`
-  del mismo fichero (variables del bloque `@variant` del tema, comparadas
-  con `toMatchObject({ '--color-lip-gray': valor })`).
+  del mismo fichero (`parseVariables(extractVariant(tema))`, comparadas
+  con `toMatchObject({ 'color-lip-gray': valor })`). La clave va **sin**
+  `--`: `parseVariables` lo quita al capturar el nombre (corrección del
+  leader en el commit del handoff, medida contra el fichero: con
+  `'--color-lip-gray'` el verde nunca llegaría).
 
 `bunx jest --runTestsByPath src/theme/__tests__/global-css.test.ts` →
 rojo esperado: **2 failed**, las dos filas del `it.each`, por aserción.

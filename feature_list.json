@@ -3250,7 +3250,7 @@
   {
     "id": 166,
     "name": "mobile-chunky-cta",
-    "status": "spec_ready",
+    "status": "in_progress",
     "priority": "P2",
     "description": "Registrada el 2026-10-11 por decisión del humano (cuestionario en el chat: «Toda la app + secundario gris» y «C1 CTA chunky» como primera feature). Es la candidata C1 de progress/explore_ui-canvas-parity.md §5, primera del bloque de paridad con el canvas aprobado el 2026-10-06 (https://claude.ai/artifact/VqaQQsRTtis9Dbttqy3z7j). Rutas relativas a mobile-pet-tracker/. Alcance: (1) el labio «chunky» del primario de Bienvenida (src/screens/welcome/index.tsx, testID welcome-get-started) pasa a todos los botones primarios sólidos de la app (los que llevan `rounded-xl bg-accent`); (2) variante secundaria con labio gris, que necesita un token de color nuevo en global.css (hoy no existe) y revierte el candado de #153 que la prohíbe en src/screens/welcome/index.test.tsx (`not.toContain('border-b-4')`). Fuera de alcance salvo decisión del humano: feedback de pulsación PressableScale (audit A1). Candados a medir al arrancar, nunca copiar los números del explore: consistency-classnames (recuento de primarios y el lookahead de `rounded-xl bg-accent`), design-drift (sin clases entre corchetes ni hex) y legibility-classnames. Premisas del explore sin verificar al detalle: contrastar contra el árbol antes de especificar."
   },
