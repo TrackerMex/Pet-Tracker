@@ -1,6 +1,6 @@
 ---
 feature: "mobile-docs-upload"
-status: approved     # draft | approved  (Enmienda E1 pendiente de aprobación, ver §Aprobación)
+status: approved     # draft | approved
 tags: [harness, spec, mobile]
 ---
 
@@ -700,7 +700,7 @@ El detalle y las alternativas descartadas están en [[design]] §Decisiones.
 
 ### Enmienda E1 — el `PUT` lleva el tipo declarado (R14)
 
-- [ ] Enmienda E1 aprobada por humano (fecha: ____) ← gate obligatorio antes de la ronda de Codex de R14. Solo cubre E1: R14, la nota de R2.5, §Fuera de alcance de E1 y los cambios de §Prueba de humo marcados «Enmienda E1»
+- [x] Enmienda E1 aprobada por humano (fecha: 2026-10-10) ← gate obligatorio antes de la ronda de Codex de R14. Solo cubre E1: R14, la nota de R2.5, §Fuera de alcance de E1 y los cambios de §Prueba de humo marcados «Enmienda E1»
 
 ## Prueba de humo (gate humano propio, después del veredicto del reviewer)
 
