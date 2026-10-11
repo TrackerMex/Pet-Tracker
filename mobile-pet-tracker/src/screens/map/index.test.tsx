@@ -2107,4 +2107,55 @@ describe('#159 R4: nadie más ve el botón de emparejar', () => {
     expect(screen.getByTestId('map-no-tracking-body')).toHaveTextContent('Cuando tu mascota tenga un collar con plan activo, te muestro dónde está.');
     expect(screen.queryByTestId('map-no-tracking-action')).toBeNull();
   });
+
+  const LIST_STATES = (['owner', 'family', 'walker', 'vet'] as const).flatMap((listRole) => [
+    { listRole, listCollar: 'sin collar', listDevice: null },
+    { listRole, listCollar: 'con collar', listDevice: makeDevice('online') },
+  ]);
+
+  const DETAIL_STATES: { detalle: string; state: PetState }[] = [
+    { detalle: 'owner con collar', state: { kind: 'ok', pet: makePet({ device: makeDevice('online') }) } },
+    { detalle: 'family sin collar', state: { kind: 'ok', pet: makePet({ myRole: 'family' }) } },
+    { detalle: 'family con collar', state: { kind: 'ok', pet: makePet({ myRole: 'family', device: makeDevice('online') }) } },
+    { detalle: 'walker sin collar', state: { kind: 'ok', pet: makePet({ myRole: 'walker' }) } },
+    { detalle: 'walker con collar', state: { kind: 'ok', pet: makePet({ myRole: 'walker', device: makeDevice('online') }) } },
+    { detalle: 'vet sin collar', state: { kind: 'ok', pet: makePet({ myRole: 'vet' }) } },
+    { detalle: 'vet con collar', state: { kind: 'ok', pet: makePet({ myRole: 'vet', device: makeDevice('online') }) } },
+    { detalle: 'owner con collar offline', state: { kind: 'ok', pet: makePet({ device: makeDevice('offline') }) } },
+    { detalle: 'owner con collar sin conectividad', state: { kind: 'ok', pet: makePet({ device: makeDevice(null) }) } },
+    { detalle: 'family con collar offline', state: { kind: 'ok', pet: makePet({ myRole: 'family', device: makeDevice('offline') }) } },
+    { detalle: 'family con collar sin conectividad', state: { kind: 'ok', pet: makePet({ myRole: 'family', device: makeDevice(null) }) } },
+    { detalle: 'walker con collar offline', state: { kind: 'ok', pet: makePet({ myRole: 'walker', device: makeDevice('offline') }) } },
+    { detalle: 'walker con collar sin conectividad', state: { kind: 'ok', pet: makePet({ myRole: 'walker', device: makeDevice(null) }) } },
+    { detalle: 'vet con collar offline', state: { kind: 'ok', pet: makePet({ myRole: 'vet', device: makeDevice('offline') }) } },
+    { detalle: 'vet con collar sin conectividad', state: { kind: 'ok', pet: makePet({ myRole: 'vet', device: makeDevice(null) }) } },
+    { detalle: 'error', state: { kind: 'error' } },
+    { detalle: 'unreachable', state: { kind: 'unreachable', message: 'offline' } },
+    { detalle: 'missing-config', state: { kind: 'missing-config' } },
+  ];
+
+  it.each(DETAIL_STATES.flatMap((detail) => LIST_STATES.map((list) => ({ ...detail, ...list }))))(
+    'no pinta el botón con el detalle $detalle aunque el listado diga $listRole $listCollar',
+    async ({ state, listRole, listDevice }) => {
+      mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ myRole: listRole, device: listDevice })] });
+      noTrackingAfterDetail(state);
+      await renderMap();
+      await screen.findByTestId('map-no-tracking-title');
+      expect(screen.getByTestId('map-no-tracking-body')).toHaveTextContent('Cuando tu mascota tenga un collar con plan activo, te muestro dónde está.');
+      expect(screen.queryByTestId('map-no-tracking-action')).toBeNull();
+    },
+  );
+
+  it.each(LIST_STATES)(
+    'no pinta el botón mientras el detalle carga aunque el listado diga $listRole $listCollar',
+    async ({ listRole, listDevice }) => {
+      mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ myRole: listRole, device: listDevice })] });
+      mockGetPet.mockReturnValue(pending<PetState>());
+      mockGetLastPosition.mockResolvedValue({ kind: 'no-tracking' });
+      await renderMap();
+      await screen.findByTestId('map-no-tracking-title');
+      expect(screen.getByTestId('map-no-tracking-body')).toHaveTextContent('Cuando tu mascota tenga un collar con plan activo, te muestro dónde está.');
+      expect(screen.queryByTestId('map-no-tracking-action')).toBeNull();
+    },
+  );
 });
