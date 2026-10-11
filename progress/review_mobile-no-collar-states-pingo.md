@@ -611,3 +611,147 @@ Con el bloque ensanchado: `bun run typecheck` → `exit=0`, `bunx expo lint --no
 
 Restauración al terminar: `git checkout HEAD -- mobile-pet-tracker/src/screens/map/index.test.tsx mobile-pet-tracker/src/screens/map/index.tsx`. El resultado de `git diff --quiet HEAD -- mobile-pet-tracker specs && git diff --cached --quiet` está en la línea siguiente.
 `limpio=0` medido tras la restauración (HEAD `375485e7`). Solo queda modificado este fichero de review, sin commit.
+
+## Ronda 4
+
+# review: mobile-no-collar-states-pingo — ronda 4 (Enmienda E3)
+Fecha: 2026-10-11T04:12Z. HEAD `3011c459` en `feature/159-mobile-no-collar-states-pingo` (worktree `Pet-Tracker-wt-159`), H0E3 = `557f6e5e`.
+Commits de Codex: `2e2f16db` (rojo), `d30cd476` (verde) y `3011c459` (trazabilidad).
+Veredicto: **APROBADO**. B3 queda cerrado y no hay bloqueantes nuevos.
+
+### Comprobaciones
+
+**Lista cerrada desde H0E3.** `git diff --name-status 557f6e5e HEAD` da `M index.test.tsx` (+51 −0), `M progress/impl_mobile-no-collar-states-pingo.md` (+731) y `M specs/…/traceability.md` (+1 −1). No hay más ficheros. [x]
+
+**Producción idéntica.** `git diff --quiet 664b95a7 HEAD -- mobile-pet-tracker/src/screens/map/index.tsx` → `exit=0`. Además, `git diff 557f6e5e d30cd476 -- …/index.tsx` sale vacío. [x]
+
+**C4: rojo → verde con una mutación versionada.**
+- `git show 2e2f16db` toca `index.test.tsx` (+51) e `index.tsx` (+2 −2). Las dos líneas de `canPairCollar` son literalmente M7+M8 de tasks.md §E3 (1).
+- `git show d30cd476` toca solo `index.tsx` y devuelve esas dos líneas a su texto original.
+- Ningún doble de test cambia: el test no tiene ninguna línea `-` desde H0E3. [x]
+
+**Bloque literal.** Extraje el bloque tsx de tasks.md §E3 (1), le quité las 4 columnas de sangría de la lista y lo comparé con las líneas `+` del diff: `diff` → `0a1 > ` (vacía). La única diferencia es una línea en blanco separadora al principio, que Codex declara en el impl. El bloque está justo después del `it.each(['family', 'walker', 'vet'] as const)('no pinta el botón a %s aunque el listado diga owner', …)` y antes del `});` del `describe('#159 R4: …')`. [x]
+
+**Gate init.sh (corrido por el leader, no por mí).** Leí `scratchpad/init_r4_3011c459.log` (30300 líneas, mtime 03:51:56Z, posterior al commit `3011c459` de 03:45:28Z):
+- Las rutas son las de `/home/claude/sites/Pet-Tracker-wt-159/…`.
+- Backend: `Tests: 1474 passed, 1474 total` (187 suites). Infra: `14 passed, 14 total` (2 suites).
+- Móvil: `Test Suites: 97 passed, 97 total` y `Tests: 2577 passed, 2577 total`. Es 2425 + 152, cifra que sin el bloque de E3 no se alcanza.
+- e2e: `30 passed`, `3 skipped` y `Tests: 8 skipped, 468 passed, 476 total`.
+- Lint y typecheck sin errores. Cierra con `✅ Todo verde`.
+- No hay ningún `✕` ni `FAIL `. Los 38 `● Console` son salida de consola.
+- El log no imprime HEAD (como en N3 de la ronda 3). Lo até por mtime, por las rutas, por el recuento 2577 y porque el árbol está limpio en `3011c459` sin commits posteriores. [x]
+
+### Reproducción propia (jest de un fichero)
+
+- Comando: `cd mobile-pet-tracker && FORCE_COLOR=0 bunx jest src/screens/map/index.test.tsx > <log> 2>&1`, con `uptime` antes de cada corrida (carga de 1 min entre 0,40 y 3,22).
+- Lo lancé con `scratchpad/r4/probe.py`. Cada mutación sustituye las 3 líneas de `const canPairCollar =`. Después restauré con `git checkout HEAD -- mobile-pet-tracker/src/screens/map/index.tsx` y comprobé con `git diff --quiet HEAD && git diff --cached --quiet`: `limpio=0` tras **cada** una de las 41 corridas.
+- `.expo/types/router.d.ts` está ausente (`exit=0`).
+- `scratchpad/r4/model.py` deriva de la tabla de verdad las filas de E3 que cada mutación debe tumbar y las compara título a título con los `✕` medidos.
+- El flake de #72 R2 no salió en ninguna corrida.
+
+**Verde:** `exit=0`, `Tests: 271 passed, 271 total` (18,8 s). Hay 144 `✓ no pinta el botón con el detalle …` y 8 `✓ … mientras el detalle carga aunque …`, sin `$` sin interpolar y sin títulos duplicados.
+
+**Rojo y sondas de tasks.md:**
+
+| Sonda | Esperado (tasks.md) | Medido | Tipo | Filas de E3 frente a la tabla de verdad |
+|---|---|---|---|---|
+| ROJO M7+M8 | `57 failed, 214 passed, 271 total` | igual, exit=1 | 57 `toBeNull`, 0 consulta, 0 errores | 57 = 57, idénticas; 0 anteriores |
+| E3a (M7) | `12 failed, 259 passed` | igual | 12 `toBeNull` | idénticas |
+| E3b (M8) | `18 failed, 253 passed` | igual | 18 `toBeNull` | idénticas |
+| E3c (M9) | `12 failed, 259 passed` | igual | 12 `toBeNull` | idénticas |
+| E3d (M12) | `16 failed, 255 passed` | igual | 16 `toBeNull` | idénticas |
+| E3e (N3) | `16 failed, 255 passed` | igual | 16 `toBeNull` | idénticas |
+| E3f (N1) | `8 failed, 263 passed` | igual | 8 `toBeNull` | idénticas |
+
+M7, M8 y M9, que sobrevivían en la ronda 3 (119/119), ahora caen. N1, el hallazgo G1 del barrido, también cae.
+
+**Regresión de las sondas de la ronda 3 (deben seguir cayendo):**
+
+| Id | Medido | Tipo | E3 / anteriores |
+|---|---|---|---|
+| M1 `??` | `15 failed, 256 passed` | 9 `toBeNull` + 6 consulta | 6 / 9 |
+| M3 collar del listado | `17 failed, 254 passed` | 13 `toBeNull` + 4 consulta | 12 / 5 |
+| M4 `\|\|` collar | `13 failed, 258 passed` | 13 `toBeNull` | 12 / 1 |
+| M5 rama por kind | `8 failed, 263 passed` | 8 `toBeNull` | 4 / 4 |
+| M6 rama por conectividad | `3 failed, 268 passed` | 3 consulta (lado R3) | 0 / 3 |
+
+### Barrido exhaustivo (los dos lados, todas las ramas)
+
+Dominio de E3: detalle (16 `ok` = rol × `deviceConnectionState`, más `error`, `unreachable`, `missing-config` y pendiente) × listado (rol × collar nulo/`online`) = 160 casos.
+
+Busqué mutaciones de `canPairCollar` que lean `selectedPet?.myRole` o `selectedPet?.device`, o que partan el detalle por kind, rol, collar o conectividad, y que quedaran verdes. Casi todas apuntan a **una sola celda** de la tabla, la forma más difícil de cazar. En todas, `DC` = `deviceConnectionState(detail.data.pet.device)`, que ya está importado en la pantalla.
+
+| Id | Mutación (resumen; texto exacto en `scratchpad/r4/probe.py`) | Celda o lado | Medido | Filas E3 frente al modelo |
+|---|---|---|---|---|
+| W1 | línea del collar: `\|\| (DC === 'unknown' && listado vet sin collar)` | owner/unknown × vet sin | `1 failed, 270 passed` | idénticas |
+| W2 | `\|\| (DC === 'offline' && listado owner con collar)` | owner/offline × owner con | `1 failed` | idénticas |
+| W3 | rol: `\|\| (vet && listado family con collar)`; collar: si vet, `DC === 'unknown'` | vet/unknown × family con | `1 failed` | idénticas |
+| W4 | igual con walker/offline × listado owner sin collar | walker/offline × owner sin | `1 failed` | idénticas |
+| W5 | igual con family/online × listado walker sin collar | family/online × walker sin | `1 failed` | idénticas |
+| W6 | si no es `ok`: `kind === 'error' && listado owner sin collar` | error × owner sin | `2 failed` (E3 + R4.5) | idénticas |
+| W7 | si no es `ok`: `kind === 'unreachable' && listado vet sin collar` | unreachable × vet sin | `1 failed` | idénticas |
+| W8 | si no es `ok`: `kind === 'missing-config' && listado family con collar` | missing-config × family con | `1 failed` | idénticas |
+| W9 | `detail.data === undefined ? listado walker sin collar : <original>` | pendiente × walker sin | `1 failed` | idénticas |
+| W10 | `detail.data === undefined ? listado owner sin collar : <original>` | pendiente × owner sin | `2 failed` (E3 + R4.8) | idénticas |
+| W11 | `detail.isPending ? listado owner con collar : <original>` | pendiente × owner con | `1 failed` | idénticas |
+| W12 | `&& !(listado walker con collar)` | lado R3: owner sin × walker con | `1 failed` (consulta, fila E2) | — |
+| W13 | `&& !(listado owner con collar)` | lado R3: owner sin × owner con | `1 failed` (consulta, fila E1) | — |
+| W14 | `&& !(listado vet sin collar)` | lado R3: owner sin × vet sin | `1 failed` (consulta, fila E2) | — |
+| W15 | `&& !(listado owner sin collar)` | lado R3: base | `2 failed` (consulta, R3 base) | — |
+| W16 | `(ok ? detail.data.pet : selectedPet)` para rol y collar (respaldo al listado) | no `ok` y pendiente × owner sin | `8 failed` | idénticas (4) + 4 anteriores |
+| W20 | rol: `!== 'family' && !== 'walker'` (deja pasar vet) | partición del rol del detalle | `10 failed` | idénticas (8) + 2 anteriores |
+| W21 | collar: `DC !== 'online' && DC !== 'offline'` (deja pasar unknown) | partición de la conectividad del detalle | `8 failed` | idénticas |
+| W22 | collar: `DC === 'none' \|\| (listado sin collar && DC === 'unknown')` | owner/unknown × 4 listados sin | `4 failed` | idénticas |
+| W23 | rol: `\|\| (rol del detalle === rol del listado && listado con collar)` | R sin × R con | `3 failed` | idénticas |
+| W24 | rol y collar: no-owner/unknown pasa si el listado dice owner sin collar | {family, walker, vet}/unknown × owner sin | `3 failed` | idénticas |
+
+**Indicadores de realización.** Su función es probar que cada una de las 152 filas observa de verdad el estado que nombra, y no un detalle aún pendiente.
+
+| Id | Predicado | Medido | Filas E3 frente al modelo |
+|---|---|---|---|
+| K1 | `detail.data !== undefined` | `154 failed` | 144 = 144 (todas las no pendientes) |
+| K2 | `detail.data === undefined && selectedPet !== undefined` | `18 failed` | 8 = 8 (las pendientes) |
+| K3 | `ok && rol !== owner && DC !== 'none' && listado sin collar` | `45 failed` | 36 = 36 |
+| K4 | `ok && DC !== 'online' && (listado owner \|\| listado con collar)` | `61 failed` | 55 = 55 |
+
+- Uniendo las 41 corridas, las **152 de 152** filas de E3 caen al menos una vez, y siempre con el conjunto exacto que predice la tabla de verdad (`comm -23` de todas las filas contra las caídas → 0).
+- Ninguna mutación dentro del dominio quedó verde.
+- Todos los rojos son por aserción (`toBeNull`) en el lado R4 y por consulta en el lado R3, con 0 `ReferenceError`/`TypeError`.
+
+**Fuera de dominio (G3 y G4, decisión humana en la firma `9e475054`): siguen vivas, como se esperaba.**
+
+| Id | Mutación | Medido |
+|---|---|---|
+| M10 | `!selectedPet?.lostMode && …` | `271 passed` |
+| M11 (G3) | `selectedPet?.device?.connectivity !== 'offline' && …` | `271 passed` |
+| N2 (G4) | `selectedPet !== undefined && …` | `271 passed` |
+
+### C5 — Trazabilidad
+- La fila R4 de `traceability.md` añade la parte E3: los dos títulos de `it.each` literales (18 detalles × 8 listados; 8 listados), «sondas E3a-E3f», y `E3: 2e2f16db test(…): #159 E3 red pair action follows list role and collar → d30cd476 fix(…): #159 E3 revert list probe, no pair action whatever the list says`. Los hashes son reales y los dos son ancestros de HEAD. [x]
+- La única fila `pendiente` es R10, la prueba de humo humana en dev build de Android. Es el gate humano posterior, igual que en las rondas 1-3, y no motiva rechazo. [x]
+- Los mensajes `test(…)`, `fix(…)` y `docs(…)` son los literales de tasks.md §E3 y llevan el número de feature. [x]
+
+### C2 / C3 / C4 / C6 / C7 / C8
+- C2: `feature_list.json` tiene una sola `in_progress`. `progress/current.md` registra E3, su firma `9e475054` y el handoff (H0E3). [x]
+- C3: la ronda no toca producción ni capas. [x]
+- C4: los `it.each` nombran su R-id por el `describe('#159 R4: …')`. El rojo es una mutación de producción versionada y revertida, y lo reproduje en 57/214/271. Las sondas están en §Reproducción. [x]
+- C6: `status: approved`. La casilla de la Enmienda E3 está marcada (2026-10-10, vía Notion) en `9e475054`, que es ancestro de HEAD. [x]
+- C7: N/A. No se reemplaza nada y ningún `it` existente cambia. [x]
+- C8: N/A. Esta ronda no cambia UI.
+
+### Observaciones (no bloqueantes)
+- **O1. Merge con main.** `origin/main` (`1da2e76d`) no es ancestro (`exit=1`), como estaba previsto. `git merge-tree --write-tree HEAD origin/main` → `exit=0`, sin conflictos textuales. Los dos lados tocan, desde la merge-base `fb1e562d`, `feature_list.json`, `mobile-pet-tracker/src/__tests__/ui-copy-table.ts` y `mobile-pet-tracker/src/__tests__/ui-language.test.ts`. Los dos últimos son candados agregados de copy (#65 R18): tras el merge hay que correr init.sh (o al menos `bun run test` en móvil) sobre el árbol mergeado antes del cierre. Que no haya conflicto textual no garantiza el verde.
+- **O2. G3 y G4 siguen abiertos por decisión humana.** M11 (conectividad del listado) y N2 (mascota ausente del listado) sobreviven 271/271. Si algún día se quieren cerrar, el coste ya está medido en §Barrido de la Enmienda E3.
+- **O3.** Como en la ronda 3 (N3), el log de init.sh no imprime `git rev-parse HEAD`. El vínculo con `3011c459` es inferido (mtime, rutas, recuento 2577 y árbol limpio).
+- **O4.** El impl declara «Ninguna skill cargada». La ronda es solo de tests, sin UI, así que no tiene efecto.
+
+### Veredicto ronda 4
+**APROBADO**, sin bloqueantes:
+- B3 queda cerrado: M7, M8 y M9 caen con los recuentos exactos de tasks.md, igual que N1.
+- La tabla de verdad de 160 casos tiene las 152 filas «sin botón» vivas, una a una, y las 8 «con botón» de E1 y E2 siguen vigilando.
+- El barrido de 24 mutaciones nuevas no encontró ninguna superviviente dentro del dominio.
+- Producción idéntica a `664b95a7`.
+
+Pendiente fuera de este veredicto: R10 (humo humano) y el merge de `origin/main` con su gate (O1).
+
+Árbol tras la revisión: `git diff --quiet HEAD && git diff --cached --quiet` → `limpio=0` antes de escribir esta sección. Solo queda modificado este fichero, sin commit. Logs en `scratchpad/r4/` (`GREEN.log`, `<id>.log`, `tasks_probes.txt` y `sweep1-4.txt`).
