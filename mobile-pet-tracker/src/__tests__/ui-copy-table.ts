@@ -449,13 +449,14 @@ export const R12_ALERTS: UseRow[] = [
   { file: 'src/utils/alert-meta.ts', key: 'alerts.typeGeofenceExit' },
   { file: 'src/utils/alert-meta.ts', key: 'alerts.typeBatteryLow' },
   { file: 'src/utils/alert-meta.ts', key: 'alerts.typeUnknown' },
+  // #134 R6: el ack se clasifica en el helper
+  { file: 'src/utils/alert-ack-outcome.ts', key: 'common.cannotReachServer' },
+  { file: 'src/utils/alert-ack-outcome.ts', key: 'common.somethingWentWrong' },
+  { file: 'src/utils/alert-ack-outcome.ts', key: 'common.somethingWentWrong' },
   { file: 'src/screens/alerts/index.tsx', key: 'alerts.justNow' },
   { file: 'src/screens/alerts/index.tsx', key: 'alerts.minutesAgo' },
   { file: 'src/screens/alerts/index.tsx', key: 'alerts.hoursAgo' },
   { file: 'src/screens/alerts/index.tsx', key: 'alerts.daysAgo' },
-  { file: 'src/screens/alerts/index.tsx', key: 'common.somethingWentWrong' },
-  { file: 'src/screens/alerts/index.tsx', key: 'common.somethingWentWrong' },
-  { file: 'src/screens/alerts/index.tsx', key: 'common.cannotReachServer' },
   { file: 'src/screens/alerts/index.tsx', key: 'common.somethingWentWrong' },
   { file: 'src/screens/alerts/index.tsx', key: 'common.somethingWentWrong' },
   { file: 'src/screens/alerts/index.tsx', key: 'common.somethingWentWrong' },
@@ -475,9 +476,6 @@ export const R13_ALERT_DETAIL: UseRow[] = [
   { file: 'src/screens/alert-detail/index.tsx', key: 'alerts.statusClosed' },
   { file: 'src/screens/alert-detail/index.tsx', key: 'alerts.ack' },
   { file: 'src/screens/alert-detail/index.tsx', key: 'common.somethingWentWrong' },
-  { file: 'src/screens/alert-detail/index.tsx', key: 'common.somethingWentWrong' },
-  { file: 'src/screens/alert-detail/index.tsx', key: 'common.somethingWentWrong' },
-  { file: 'src/screens/alert-detail/index.tsx', key: 'common.cannotReachServer' },
   { file: 'src/screens/alert-detail/index.tsx', key: 'common.retry' },
 ];
 
