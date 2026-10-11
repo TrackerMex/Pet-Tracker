@@ -66,3 +66,10 @@
   spike fuera del árbol (rojo 57/214/271, verde 271, sondas 12/18/12/16/16/8). origin/main
   (`1da2e76d`, con #134 y #161) no es ancestro: el merge lo hace el leader al cerrar.
   Mientras Codex trabaja, el leader no toca `mobile-pet-tracker/`.
+- Ronda 4 de Codex: punta `3011c459` (H0E3 `557f6e5e`), sin PARADA ni repeticiones por el
+  flake. init.sh del leader en `3011c459`: exit=0 (backend 1474, móvil 97/2577, e2e 468 + 8
+  skipped). Reviewer: **APROBADO**, 0 bloqueantes; B3 cerrado, 152/152 filas de E3 caen en el
+  barrido y ninguna mutación dentro del dominio queda verde (G3/G4 vivas por decisión humana).
+- Merge de origin/main `1da2e76d` (#134) en `26077378`, sin conflictos. init.sh del leader en
+  `26077378`: exit=0 (backend 1474, móvil 98/2606, e2e 468 + 8 skipped).
+  **Siguiente: prueba de humo R10 del humano** en dev build de Android; después, cierre.
