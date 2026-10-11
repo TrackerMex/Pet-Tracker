@@ -124,7 +124,7 @@ export async function uploadPhotoToUrl(
     const response = await fetchFn(uploadUrl, {
       method: 'PUT',
       headers: { 'Content-Type': contentType },
-      body,
+      body: new Blob([body], { type: contentType }),
     });
 
     return response.status >= 200 && response.status < 300
