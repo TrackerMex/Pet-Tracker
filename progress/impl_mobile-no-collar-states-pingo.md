@@ -12566,3 +12566,68 @@ exit=0
 ```
 
 R10: pendiente del smoke humano
+
+# Cierre — merge de origin/main con #158 (implementer)
+Fecha: 2026-10-11T05:21Z. Worktree `/home/claude/sites/Pet-Tracker-wt-159`, branch `feature/159-mobile-no-collar-states-pingo`, HEAD `c487e459`, MERGE_HEAD = origin/main = `acff81e6`. Sin commit ni push.
+
+## 1. Resolución del conflicto
+`mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx`: bloque `<<<<<<< HEAD` … `>>>>>>> origin/main` sustituido por tres líneas (8 espacios), entre `+ 5 // #155 R1` y `);`:
+```
+        + 12 // #158 R1
+        + 4 // #159 R1
+        - 1, // #159 R2
+```
+Total: 383 (main) + 4 - 1 = 386. Ninguna otra línea editada a mano.
+
+## 2. Comprobaciones
+```
+$ grep -cE '^(<<<<<<<|=======|>>>>>>>)' mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx
+0
+$ git diff --numstat origin/main -- mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx
+3	1	mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx
+$ git diff --numstat HEAD -- mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx
+40	0	mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx
+```
+**Discrepancia con lo esperado (`2 0` y `1 0`).** No viene de la resolución: es que el fichero tiene otros hunks que git automergeó sin conflicto, y las cuentas esperadas no los contaban.
+- Contra origin/main, `3 1` = hunk de la suma `+2 0` (`+ 4 // #159 R1`, `- 1, // #159 R2`) + hunk de #159 en `#41 R1`, `+1 1` (`geofences.needsCollar` → 'Safe zones need a collar with an active plan.' / 'Las zonas seguras necesitan un collar con plan activo.'), que viene del lado HEAD.
+- Contra HEAD, `40 0` = hunk de la suma `+1 0` (`+ 12 // #158 R1`) + `+39 0` del bloque nuevo `describe('#158 R1: claves y nueva frase de Pingo', …)` al final del fichero, que viene de origin/main (`git diff 1da2e76d origin/main` lo contiene; merge-base `1da2e76d`).
+- Lado a lado, desde la merge-base `1da2e76d`: HEAD `4 2`, origin/main `41 1`.
+El hunk de la suma coincide exactamente con lo pedido en las dos comparaciones.
+
+## 3. Stage y conflictos restantes
+```
+$ git add mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx
+$ git diff --name-only --diff-filter=U; echo "fin"
+fin
+```
+
+## 4. Dependencias
+```
+$ cd mobile-pet-tracker && bun install --frozen-lockfile; echo "exit=$?"
+bun install v1.4.0 (34cbb9a40)
+
++ expo-document-picker@57.0.3
+
+1 package installed [1207.00ms]
+exit=0
+$ git status --short -- package.json bun.lock
+M  bun.lock
+M  package.json
+```
+El `M ` está en la columna del índice: es el cambio stageado del merge (#158 añade expo-document-picker), no lo cambia el install. Comprobado:
+```
+$ git diff --quiet -- package.json bun.lock; echo "worktree-vs-index exit=$?"
+worktree-vs-index exit=0
+$ git diff --cached --quiet origin/main -- package.json bun.lock; echo "index-vs-origin/main exit=$?"
+index-vs-origin/main exit=0
+```
+El install no tocó ni package.json ni bun.lock; los dos son iguales a origin/main.
+
+## 5. Jest de los candados del catálogo
+```
+$ cd mobile-pet-tracker && FORCE_COLOR=0 bunx jest src/providers/__tests__/language-provider.test.tsx src/__tests__/ui-language.test.ts > /tmp/159-merge-lp.txt 2>&1; echo "exit=$?"
+exit=0
+Test Suites: 2 passed, 2 total
+Tests:       55 passed, 55 total
+```
+Ningún `●` en `/tmp/159-merge-lp.txt`. No he corrido `./init.sh`, la suite entera ni e2e. Esta sección no está stageada.

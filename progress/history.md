@@ -8613,3 +8613,61 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
 - Cierre: `done` en `feature_list.json`, trazabilidad `approved` con R13 y
   las notas de «nació verde» de R2 y R5 (observación 3), STATUS, Notion
   (Implementado / Completado) y PR contra `main`. Merge: humano.
+
+## #159 `mobile-no-collar-states-pingo` — Estados sin collar con Pingo — 2026-10-11
+
+- Sesión: UI-Pet (Claude Code, leader). Worktree
+  `/home/claude/sites/Pet-Tracker-wt-159`, branch
+  `feature/159-mobile-no-collar-states-pingo`, base origin/main `65f37841`.
+- Qué hace: el Mapa y Zonas seguras sin seguimiento pintan a Pingo (pose
+  collar) con el `EmptyState` de #155, título y frase en voz B. El Mapa gana
+  «Vincular collar» hacia `/pairing`, solo para el dueño y solo sin collar,
+  y el rol y el collar salen del detalle de la mascota, no del listado. En
+  Zonas seguras nadie ve el botón. El editor de zonas y la nota de actividad
+  de Inicio siguen en texto, con un copy que dice la verdad tanto sin collar
+  como con la suscripción vencida (el 402 de `PetTrackingGuard` no los
+  distingue).
+- Spec del `spec_author` en `b6049e61` (R1-R10, A1-A5, copy L1-L8). Aprobada
+  en Notion (página `3f46115a-9b27-8132-9d76-de53d6925045`) y firmada en
+  `b304538f`.
+- Ronda 1 de Codex (H0 `f9fb79ed`, punta `664b95a7`): **RECHAZADA** por B1.
+  Ningún test exigía que `canPairCollar` leyera rol y collar del detalle y
+  no del listado.
+- Enmienda E1 (solo tests, `506232a3`), firmada en `f3ca7b8e`. Ronda 2
+  (punta `340967ba`): **RECHAZADA** por B2 (`039e6195`), porque la inversa
+  del rol de R3 solo vigilaba el listado `family`.
+- Enmienda E2 (solo tests, `42899d79`, ensanchada con el barrido del
+  reviewer), firmada en `4146ac24`. Ronda 3 (punta `a8681b51`):
+  **RECHAZADA** por B3 (`6296f612`). Era el espejo de B2 en el lado R4: el
+  barrido previo a la firma de E2 solo había mirado R3.
+- Enmienda E3 (`96bf7b1d`): la tabla de verdad entera del lado R4 contra el
+  listado, 152 `it` nuevos (Mapa 119 → 271). Se ensanchó con G1 y G2 del
+  barrido del reviewer y se firmó en `9e475054`. G3 (conectividad del
+  listado) y G4 (mascota ausente del listado) quedan fuera por decisión
+  humana.
+- Ronda 4 (H0E3 `557f6e5e`, punta `3011c459`): sin paradas. Reviewer
+  **APROBADO** con 0 bloqueantes (`4971a555`): las 152 filas de E3 caen en
+  el barrido y ninguna mutación dentro del dominio queda verde.
+- Merges de origin/main: `26077378` (#134, sin conflictos) y `e61c5bb5`
+  (#158). El segundo tuvo dos conflictos:
+  - `language-provider.test.tsx`: el recuento del catálogo queda en 386
+    (383 + 4 − 1). Lo resolvió el subagente `implementer` como excepción
+    trivial (sección «Cierre — merge de origin/main con #158» de
+    `progress/impl_mobile-no-collar-states-pingo.md`).
+  - `specs/mobile-ui-language/design.md`: §2.22 de #158 y luego §2.23 de
+    #159. Lo resolvió el leader.
+  Con `--remerge-diff`, los dos merges solo traen esas resoluciones. Los
+  ficheros de pantalla de #159 son idénticos a la punta del veredicto.
+- Gates (`./init.sh` del leader, exit 0):
+  - `3011c459`: backend 1474, móvil 97/2577, e2e 468 + 8 saltados.
+  - `26077378`: backend 187/1474, móvil 98/2606, e2e 468 + 8 saltados.
+  - `e61c5bb5`: backend 187/1474, infra 2/14, móvil 98/2765, e2e 468 + 8 saltados.
+- Prueba de humo R10 en el dev build de Android: superada. El humano firmó
+  su casilla en `bbb8df47` (fecha: 2026-10-10), que el leader trajo a la
+  rama con un merge antes del commit de cierre.
+- Deuda: el flake de #72 R2 (`selects the first pet and loads its first
+  position`, `Number of calls: 0`) sigue en #129. Según el reviewer, no
+  salió en ninguna corrida de la ronda 4.
+- Cierre: `done` en `feature_list.json`, trazabilidad `approved` con R10,
+  STATUS, Notion (Implementado / Completado) y PR contra `main`. Merge:
+  humano.

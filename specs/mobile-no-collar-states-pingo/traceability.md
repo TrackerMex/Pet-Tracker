@@ -1,6 +1,6 @@
 ---
 feature: "mobile-no-collar-states-pingo"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [mobile, ui, spec]
 ---
 
@@ -21,6 +21,6 @@ un `it` cambia de nombre al implementarlo, aquí va el nombre real.
 | R7 | `src/screens/geofence-editor/index.test.tsx::pinta el 402 sin Reintentar` y `::pinta %s bajo Guardar y conserva el borrador`; `src/providers/__tests__/language-provider.test.tsx::registra las once claves en los dos idiomas y en la tabla de la spec de idioma`; `src/components/__tests__/empty-state.test.tsx::#159 R7: la guarda del editor sigue en texto y dice la verdad` (sonda S7) | c3312097 test(mobile-no-collar-states): #159 R7 red truthful editor guard → 92d9a59b feat(mobile-no-collar-states): #159 R7 truthful editor guard copy |
 | R8 | `src/screens/home/index.test.tsx` (los 3 `it` de tasks.md T8); `src/components/__tests__/empty-state.test.tsx::#159 R8: la nota de Inicio sigue en texto y dice la verdad` (sondas S8a-S8b) | c6430e68 test(mobile-no-collar-states): #159 R8 red truthful activity note → 1e45b478 feat(mobile-no-collar-states): #159 R8 truthful activity note copy |
 | R9 | `src/components/__tests__/empty-state.test.tsx::#159 R9: los estados sin collar no traen movimiento ni dependencias` (sondas S9a-S9b); `git diff` de tasks.md T9 (3) | sondas S9a-S9b (impl) → 1c54b04d test(mobile-no-collar-states): #159 R9 lock no motion on no-collar screens |
-| R10 | prueba de humo del humano en dev build de Android (requirements.md §Aprobación) | pendiente |
+| R10 | prueba de humo del humano en dev build de Android (requirements.md §Aprobación) | superada; casilla firmada por el humano en `bbb8df47` (fecha: 2026-10-10) |
 
 Rutas relativas a `mobile-pet-tracker/`.

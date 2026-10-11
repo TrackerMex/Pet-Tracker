@@ -1,10 +1,10 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-10-11
-**Features completadas**: 152/164 (`feature_list.json`)
-**En progreso**: ninguna en esta rama. #158 cerrada en `feature/158-mobile-docs-upload`, PR pendiente de merge humano.
+**Features completadas**: 153/164 (`feature_list.json`)
+**En progreso**: ninguna en esta rama. #159 cerrada en `feature/159-mobile-no-collar-states-pingo`, PR pendiente de merge humano.
 
-**Pendientes**: 12 (#60, #119, #129, #144, #150, #151, #154, #159, #160, #163, #164 y #165). **#158 `mobile-docs-upload` cerrada**: el owner sube un PDF o una imagen desde Documentos con `expo-document-picker` (límite de 10 MB, formulario con Tipo, Nombre, Fecha y Veterinario opcional). La subida crea el documento, hace el `PUT` a la URL firmada y lo confirma con la API de #157, y la fila aparece sin recargar. Cualquier miembro abre un documento con `expo-web-browser`, y family, walker y vet no ven la acción de subir. El formulario se aparta del teclado en Android, y el vacío de Pingo de #155 gana la acción y una frase nueva en voz B. El primer smoke falló en el paso 6: `expo/fetch` pisaba el `Content-Type` con el `type` vacío del blob de `file://` y S3 guardaba `binary/octet-stream`. La Enmienda E1 (R14, firmada desde Notion en `d45c4333`) hace que `uploadPhotoToUrl` envíe un `Blob` con el tipo declarado. Codex trabajó en dos rondas, R1-R12 y luego E1 con el merge de origin/main (#134). Las dos las aprobó el reviewer (`791a6f97` y `22e14690`), y el segundo smoke lo firmó el humano en `5b36c3d1`. Móvil 97/2365 → 98/2553 (con #134).
+**Pendientes**: 11 (#60, #119, #129, #144, #150, #151, #154, #160, #163, #164 y #165). **#159 `mobile-no-collar-states-pingo` cerrada**: el Mapa y Zonas seguras sin seguimiento pintan a Pingo (pose collar) con el `EmptyState` de #155 y copy en voz B que dice la verdad sin collar y con la suscripción vencida. El Mapa gana «Vincular collar» hacia `/pairing`, solo para el dueño y solo sin collar, leyendo rol y collar del detalle y no del listado; en Zonas seguras nadie ve el botón. El editor de zonas y la nota de Inicio siguen en texto con copy corregido. Tres rondas de Codex rechazadas (B1, B2 y B3, todas por candados del lado listado) y tres enmiendas de solo tests firmadas desde Notion (E1 `f3ca7b8e`, E2 `4146ac24`, E3 `9e475054`); E3 cierra la tabla de verdad entera de R4 (Mapa 119 → 271 tests). La ronda 4 la aprobó el reviewer (`4971a555`), el humano firmó el smoke R10 en `bbb8df47`, y la rama trae #134 y #158 mergeados (catálogo en 386). Móvil 98/2765 en el gate de cierre (con #134 y #158).
 
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
@@ -88,6 +88,14 @@ debe listar las 4 URLs de cola.
 
 ## Estado actual
 
+- **`mobile-no-collar-states-pingo` (#159) done** (2026-10-11, worktree
+  `Pet-Tracker-wt-159`, sesion UI-Pet): estados sin collar del Mapa y de
+  Zonas seguras con Pingo, y botón de emparejar solo para el dueño sin
+  collar. Reviewer APROBADO en la ronda 4 (`4971a555`, veredicto sobre
+  `3011c459`) tras las enmiendas E1-E3. Gate: `./init.sh` exit 0 sobre
+  `e61c5bb5`, con #158 mergeado (backend 187/1474, infra 2/14, móvil
+  98/2765, e2e 30 de 33 suites, 476 tests con 8 saltados). Smoke R10
+  firmado por el humano en `bbb8df47`. PR abierta.
 - **`mobile-docs-upload` (#158) done** (2026-10-11, worktree
   `Pet-Tracker-wt-158`, sesion Backend): subida de documentos para el owner y
   apertura para cualquier miembro en la pantalla Documentos. La Enmienda E1
@@ -1438,6 +1446,14 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Última sesión
+
+- **2026-10-11** — **#159 `mobile-no-collar-states-pingo` cerrada** (worktree
+  `Pet-Tracker-wt-159`, sesión UI-Pet). Spec firmada desde Notion
+  (`b304538f`). Rondas 1-3 de Codex rechazadas (B1, B2, B3) y enmiendas de
+  solo tests E1-E3 firmadas desde Notion. Ronda 4 aprobada por el reviewer
+  (`4971a555`). Merges de #134 y #158, con el recuento de
+  `language-provider` en 386. Smoke R10 firmado por el humano en `bbb8df47`. PR abierta;
+  siguiente: merge humano.
 
 - **2026-10-11** — **#158 `mobile-docs-upload` cerrada** (worktree
   `Pet-Tracker-wt-158`, sesión Backend). Spec firmada desde Notion
