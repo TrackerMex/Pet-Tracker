@@ -105,7 +105,7 @@ Las mayores brechas se repiten en tres frentes:
 | Pide el canvas | Situación verificada | Ancla |
 |---|---|---|
 | Fila de alerta genérica «Aviso» | **No construible** sin backend: el tipo no existe | `src/api/types.ts` · `AlertType = 'geofence_exit' \| 'battery_low'` |
-| «A 85 m de Casa» en DetalleAlerta | No se sirve. **Derivable en cliente** desde `payload.position` y el centro/radio de la zona, pero el payload solo trae `geofenceName`, sin id; el emparejamiento por nombre es frágil. Lo limpio sería que el backend añada `geofenceId` o la distancia al payload | `backend-pet-tracker/…/alerts-engine-consumer.service.ts` · `geofenceName: geofence.name` |
+| «A 85 m de Casa» en DetalleAlerta | No se sirve, pero **derivable en cliente sin tocar backend**: la alerta ya trae `geofenceId` en la raíz (no solo `payload.geofenceName`), más `payload.position`. *Corrección del leader de #170, 2026-10-11, verificada en origin/main 89fe2009: la versión anterior de esta fila decía que el payload no traía id y proponía emparejar por nombre o pedir el id al backend; era falsa.* `geofenceId` vale `null` en `battery_low` y cuando la zona se borra (`ON DELETE SET NULL`) | `backend-pet-tracker/src/modules/alerts/infrastructure/mappers/alert-response.mapper.ts` · `geofenceId: alert.geofenceId`; `src/api/types.ts` · `interface Alert`; `backend-pet-tracker/src/db/schema/alerts.schema.ts` · `onDelete: 'set null'` |
 | «Le falta la comida de las 18:00» en la frase de Inicio | `PetProfile.mealsToday` es `{served,total}`, **sin horas**. Pintarlo exige consultar nutrition-plan y comidas desde Inicio, con riesgo de la carrera #129 (espera de query de mascota seleccionada) | `src/api/types.ts` · `MealsToday` |
 | «Rocky ya caminó 2.3 km hoy» | Disponible (Inicio ya pinta distancia) | `src/api/types.ts` · `distanceM`; `home.distance` |
 | «+0.3 kg este mes» | Derivable en cliente de las entradas de peso que weight-log ya trae | `src/screens/weight-log/index.tsx` · `WeightChart` |
@@ -286,8 +286,8 @@ transversal.
     el mapa».
   - Se puede partir en lista / detalle.
 - **Cierra**: Alertas y DetalleAlerta, salvo la fila «Aviso» (§2).
-- **Depende de**: decidir si la distancia se deriva en cliente (emparejando
-  por `geofenceName`) o se pide al backend; copy (§3); D4 para el CTA.
+- **Depende de**: copy (§3); D4 para el CTA. La distancia se deriva en
+  cliente con `geofenceId` + `payload.position` (corrección de §2 en #170).
 - **Candados**: catálogo; `consistency-classnames` si entra un primario nuevo.
 - **#119**: sin solape.
 
@@ -361,8 +361,9 @@ transversal.
 - **Spike de expo-maps**: sin vista React para el marcador, el ping del mapa
   puede no ser viable con `GoogleMaps.View`. Podría acabar en un overlay
   aproximado o en descartarlo.
-- **La distancia de alertas por nombre de zona** se rompe si dos zonas se
-  llaman igual o si se renombra una.
+- ~~**La distancia de alertas por nombre de zona** se rompe si dos zonas se
+  llaman igual o si se renombra una.~~ Cae: la alerta trae `geofenceId` (§2,
+  corrección de #170).
 - **Filas `*`** (no verificadas al detalle): la spec de cada candidata debe
   contrastarlas contra el árbol (memoria «premisas-de-explore-sin-verificar»).
 - **Celebración** necesita un asset nuevo: lo produce el humano o el
