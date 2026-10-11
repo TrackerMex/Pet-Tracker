@@ -288,8 +288,36 @@ describe('#158 R2: API de subida de documentos', () => {
     const fetchFn = jest.fn().mockResolvedValue(response(200, undefined));
     await expect(uploadPhotoToUrl('http://upload.test/doc-2', body, 'application/pdf', fetchFn)).resolves.toEqual({ kind: 'ok' });
     expect(fetchFn).toHaveBeenCalledWith('http://upload.test/doc-2', {
-      method: 'PUT', headers: { 'Content-Type': 'application/pdf' }, body,
+      method: 'PUT', headers: { 'Content-Type': 'application/pdf' }, body: expect.any(Blob),
     });
     expect(fetchFn.mock.calls[0][1].headers).not.toHaveProperty('Authorization');
   });
+});
+
+describe('#158 R14: uploadPhotoToUrl sube un Blob con el tipo declarado (Enmienda E1)', () => {
+  it.each([
+    ['image/jpeg', '', 'bytes 01'],
+    ['image/jpeg', 'text/plain', 'bytes 02'],
+    ['image/jpeg', 'image/png', 'bytes 03'],
+    ['image/png', '', 'bytes 04'],
+    ['image/png', 'text/plain', 'bytes 05'],
+    ['image/png', 'image/jpeg', 'bytes 06'],
+    ['image/webp', '', 'bytes 07'],
+    ['image/webp', 'text/plain', 'bytes 08'],
+    ['image/webp', 'image/png', 'bytes 09'],
+    ['application/pdf', '', 'bytes 10'],
+    ['application/pdf', 'text/plain', 'bytes 11'],
+    ['application/pdf', 'image/png', 'bytes 12'],
+  ] as const)(
+    'envía %s con un blob de entrada de tipo «%s»',
+    async (contentType, inputType, content) => {
+      const fetchFn = jest.fn().mockResolvedValue(response(200, undefined));
+      await expect(uploadPhotoToUrl('http://upload.test/typed', new Blob([content], { type: inputType }), contentType, fetchFn)).resolves.toEqual({ kind: 'ok' });
+      const init = fetchFn.mock.calls[0][1];
+      expect(init.body).toBeInstanceOf(Blob);
+      expect(init.body.type).toBe(contentType);
+      await expect(init.body.text()).resolves.toBe(content);
+      expect(init.headers).toStrictEqual({ 'Content-Type': contentType });
+    },
+  );
 });
