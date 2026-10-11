@@ -766,4 +766,4 @@ LocalStack tiene que firmar con la IP LAN (#57).
    Debe salir sin coincidencias. En Windows: `adb -s <ip:puerto> logcat -d | findstr ConnectException`, y ninguna línea menciona `:4566`.
 8. Cierra sesión, entra con `<email-no-owner>` y abre Documentos de `<nombre-mascota>`. Ves las dos filas y no aparece `Subir documento`. Pulsa `<nombre-pdf>` y se abre como en el paso 6.
 
-- [ ] Smoke R13 superado en dev build de Android (fecha: ____)
+- [X] Smoke R13 superado en dev build de Android (fecha: 2026-10-10)
