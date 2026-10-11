@@ -1765,3 +1765,53 @@ R1–R4 y CA-1–CA-5 verificados; trece sondas con sus rojos exactos, revertida
 No hubo decisiones de producto nuevas: P1 fuera, P2 sin labio y P3 los cuatro neutros, tal como se aprobaron. La investigación y el smoke de la skill appllama corresponden al leader y al humano según la carta; la implementación conserva el sistema existente y no añade animación. El gate init.sh y el lifecycle del repo quedan a cargo del leader, conforme al handoff.
 
 R5: pendiente del smoke humano
+
+## Lista cerrada tras c9
+
+c9: `abe995ec docs(mobile-chunky-cta): #166 traceability` (cadena exit=0).
+
+```bash
+git diff --name-only e96870fa HEAD -- . ':!feature_list.json' ':!progress/current.md' ':!progress/handoff_mobile-chunky-cta.md' ':!specs/mobile-chunky-cta/requirements.md' ':!specs/mobile-chunky-cta/design.md' ':!specs/mobile-chunky-cta/tasks.md' ':!progress/review_mobile-chunky-cta.md'
+```
+```text
+docs/ui-guidelines.md
+mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+mobile-pet-tracker/src/app/(auth)/__tests__/login.test.tsx
+mobile-pet-tracker/src/app/(auth)/__tests__/register.test.tsx
+mobile-pet-tracker/src/app/(auth)/login.tsx
+mobile-pet-tracker/src/app/(auth)/register.tsx
+mobile-pet-tracker/src/components/__tests__/empty-state.test.tsx
+mobile-pet-tracker/src/components/empty-state.tsx
+mobile-pet-tracker/src/screens/add-pet/index.tsx
+mobile-pet-tracker/src/screens/add-reminder/index.tsx
+mobile-pet-tracker/src/screens/docs/index.tsx
+mobile-pet-tracker/src/screens/forgot/index.test.tsx
+mobile-pet-tracker/src/screens/forgot/index.tsx
+mobile-pet-tracker/src/screens/geofence-editor/index.test.tsx
+mobile-pet-tracker/src/screens/geofence-editor/index.tsx
+mobile-pet-tracker/src/screens/geofences/index.test.tsx
+mobile-pet-tracker/src/screens/geofences/index.tsx
+mobile-pet-tracker/src/screens/home/index.tsx
+mobile-pet-tracker/src/screens/meal-schedule/index.tsx
+mobile-pet-tracker/src/screens/pairing/index.tsx
+mobile-pet-tracker/src/screens/profile/index.tsx
+mobile-pet-tracker/src/screens/reminders/index.tsx
+mobile-pet-tracker/src/screens/reset-password/index.test.tsx
+mobile-pet-tracker/src/screens/reset-password/index.tsx
+mobile-pet-tracker/src/screens/weight-log/index.tsx
+mobile-pet-tracker/src/screens/welcome/index.test.tsx
+mobile-pet-tracker/src/screens/welcome/index.tsx
+mobile-pet-tracker/src/theme/__tests__/global-css.test.ts
+mobile-pet-tracker/src/theme/global.css
+progress/impl_mobile-chunky-cta.md
+specs/mobile-chunky-cta/traceability.md
+exit=0
+```
+
+Coinciden exactamente los 31 ficheros autorizados. c10 guarda esta salida con el comando prescrito:
+
+```bash
+git commit --only progress/impl_mobile-chunky-cta.md -m 'docs(mobile-chunky-cta): #166 closed file list'
+```
+
+R5: pendiente del smoke humano
