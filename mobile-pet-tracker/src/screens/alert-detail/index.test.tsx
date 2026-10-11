@@ -338,4 +338,57 @@ describe('#100 R5: el detalle marca leída la alerta', () => {
     expect(mockAckAlert).toHaveBeenCalledTimes(1);
     expect(screen.getByTestId('alert-detail-ack')).toBeDisabled();
   });
+
+  describe('#134 R2: caracterización de la rama sin candado del ack', () => {
+    it('muestra Algo salió mal si signOut rechaza tras unauthorized', async () => {
+      mockAckAlert.mockResolvedValue({ kind: 'unauthorized' });
+      mockSignOut.mockRejectedValueOnce(new Error('sign-out failed'));
+
+      await renderDetail();
+      await fireEvent.press(await screen.findByTestId('alert-detail-ack'));
+
+      await waitFor(() =>
+        expect(screen.queryByTestId('alert-detail-action-error')).toHaveTextContent(
+          'Algo salió mal',
+        ),
+      );
+      expect(mockSignOut).toHaveBeenCalledTimes(1);
+    });
+
+    it('muestra Cannot reach server en inglés si ackAlert responde unreachable', async () => {
+      mockAckAlert.mockResolvedValueOnce({ kind: 'unreachable', message: 'network down' });
+
+      await renderDetail('alert-1', 'en');
+      await fireEvent.press(await screen.findByTestId('alert-detail-ack'));
+      await waitFor(() => expect(screen.queryByTestId('alert-detail-action-error')).toHaveTextContent('Cannot reach server'));
+    });
+
+    it('muestra Something went wrong en inglés si ackAlert responde error', async () => {
+      mockAckAlert.mockResolvedValueOnce({ kind: 'error' });
+
+      await renderDetail('alert-1', 'en');
+      await fireEvent.press(await screen.findByTestId('alert-detail-ack'));
+      await waitFor(() => expect(screen.queryByTestId('alert-detail-action-error')).toHaveTextContent('Something went wrong'));
+    });
+
+    it('mantiene el botón deshabilitado hasta que signOut termina tras unauthorized', async () => {
+      let finishSignOut: () => void = () => undefined;
+      mockAckAlert.mockResolvedValueOnce({ kind: 'unauthorized' });
+      mockSignOut.mockReturnValueOnce(
+        new Promise<void>((resolve) => {
+          finishSignOut = resolve;
+        }),
+      );
+
+      await renderDetail();
+      await fireEvent.press(await screen.findByTestId('alert-detail-ack'));
+
+      await waitFor(() => expect(mockSignOut).toHaveBeenCalledTimes(1));
+      expect(screen.getByTestId('alert-detail-ack')).toBeDisabled();
+
+      finishSignOut();
+      await waitFor(() => expect(screen.getByTestId('alert-detail-ack')).not.toBeDisabled());
+      expect(screen.queryByTestId('alert-detail-action-error')).toBeNull();
+    });
+  });
 });

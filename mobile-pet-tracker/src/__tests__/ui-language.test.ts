@@ -205,7 +205,8 @@ describe('#78 R12: el centro de alertas resuelve su copy por clave', () => {
     expect(R12_ALERTS.length).toBeGreaterThan(0);
     expect(
       R12_ALERTS.every(
-        ({ file }) => file === 'src/screens/alerts/index.tsx' || file === 'src/app/_layout.tsx' || file === 'src/utils/alert-meta.ts', // #100 R3
+        ({ file }) => file === 'src/screens/alerts/index.tsx' || file === 'src/app/_layout.tsx' || file === 'src/utils/alert-meta.ts' // #100 R3
+          || file === 'src/utils/alert-ack-outcome.ts', // #134 R6
       ),
     ).toBe(true);
     checkUses(R12_ALERTS);
@@ -247,7 +248,7 @@ describe('#78 R12: el centro de alertas resuelve su copy por clave', () => {
 
 describe('#100 R10: el detalle de alerta resuelve su copy por clave', () => {
   it('registra cada ocurrencia del detalle', () => {
-    expect(R13_ALERT_DETAIL).toHaveLength(11);
+    expect(R13_ALERT_DETAIL).toHaveLength(11 - 3); // #134 R6
     expect(R13_ALERT_DETAIL.every(({ file }) =>
       file === 'src/app/_layout.tsx' || file === 'src/screens/alert-detail/index.tsx',
     )).toBe(true);
@@ -495,7 +496,8 @@ describe('#65 R18: los sitios resuelven por clave y no queda copy suelta', () =>
     expect(SCREEN_FILES).toHaveLength(
       19 + 2 + 1 + 1 + 1 + 1 + 1 + 1 + 1 // #100 R10, #41 R10, #146 R10, #105 R5
         + 1 - 1 // #117 R10: sale app/(auth)/forgot.tsx, entra screens/forgot/index.tsx
-        + 1, // #118 R1
+        + 1 // #118 R1
+        + 1, // #134 R6
     );
 
     for (const file of SCREEN_FILES) {

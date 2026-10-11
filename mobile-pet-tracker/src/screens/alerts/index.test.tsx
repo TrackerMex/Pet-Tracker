@@ -134,6 +134,20 @@ function renderAlerts() {
   });
 }
 
+function EnglishAlertsWrapper({ children }: { children: ReactNode }) {
+  return (
+    <HeroUINativeProvider>
+      <LanguageProvider initial="en">{children}</LanguageProvider>
+    </HeroUINativeProvider>
+  );
+}
+
+function renderAlertsInEnglish() {
+  return renderWithProviders(<AlertsScreen />, {
+    wrapper: EnglishAlertsWrapper,
+  });
+}
+
 async function focusScreen(): Promise<(() => void)[]> {
   let cleanups: (() => void)[] = [];
 
@@ -722,6 +736,70 @@ describe('#78 R8: el ack cambia la fila sin recargar la lista', () => {
     await waitFor(() =>
       expect(screen.getByTestId('alert-row-alert-1-status')).toBeVisible(),
     );
+  });
+
+  describe('#134 R1: caracterización de las ramas sin candado del ack', () => {
+    it('muestra Algo salió mal si ackAlert rechaza', async () => {
+      mockAckAlert.mockRejectedValueOnce(new Error('request failed'));
+
+      await pressAck();
+
+      await waitFor(() =>
+        expect(screen.queryByTestId('alerts-action-error')).toHaveTextContent(
+          'Algo salió mal',
+        ),
+      );
+      expect(mockSignOut).not.toHaveBeenCalled();
+    });
+
+    it('muestra Algo salió mal si signOut rechaza tras unauthorized', async () => {
+      mockAckAlert.mockResolvedValue({ kind: 'unauthorized' });
+      mockSignOut.mockRejectedValueOnce(new Error('sign-out failed'));
+
+      await pressAck();
+
+      await waitFor(() =>
+        expect(screen.queryByTestId('alerts-action-error')).toHaveTextContent(
+          'Algo salió mal',
+        ),
+      );
+      expect(mockSignOut).toHaveBeenCalledTimes(1);
+    });
+
+    it('muestra Cannot reach server en inglés si ackAlert responde unreachable', async () => {
+      mockAckAlert.mockResolvedValueOnce({ kind: 'unreachable', message: 'network down' });
+
+      await renderAlertsInEnglish();
+      await fireEvent.press(await screen.findByTestId('alert-row-alert-1-ack'));
+      await waitFor(() => expect(screen.queryByTestId('alerts-action-error')).toHaveTextContent('Cannot reach server'));
+    });
+
+    it('muestra Something went wrong en inglés si ackAlert responde error', async () => {
+      mockAckAlert.mockResolvedValueOnce({ kind: 'error' });
+
+      await renderAlertsInEnglish();
+      await fireEvent.press(await screen.findByTestId('alert-row-alert-1-ack'));
+      await waitFor(() => expect(screen.queryByTestId('alerts-action-error')).toHaveTextContent('Something went wrong'));
+    });
+
+    it('mantiene el botón deshabilitado hasta que signOut termina tras unauthorized', async () => {
+      let finishSignOut: () => void = () => undefined;
+      mockAckAlert.mockResolvedValueOnce({ kind: 'unauthorized' });
+      mockSignOut.mockReturnValueOnce(
+        new Promise<void>((resolve) => {
+          finishSignOut = resolve;
+        }),
+      );
+
+      await pressAck();
+
+      await waitFor(() => expect(mockSignOut).toHaveBeenCalledTimes(1));
+      expect(screen.getByTestId('alert-row-alert-1-ack')).toBeDisabled();
+
+      finishSignOut();
+      await waitFor(() => expect(screen.getByTestId('alert-row-alert-1-ack')).not.toBeDisabled());
+      expect(screen.queryByTestId('alerts-action-error')).toBeNull();
+    });
   });
 });
 

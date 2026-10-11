@@ -64,3 +64,41 @@ describe('#157 R4: ListPetDocumentsUseCase firma una URL de lectura de 3600 s po
     ]);
   });
 });
+
+describe('#162 R2: ListPetDocumentsUseCase conserva el orden del repositorio aunque las URLs resuelvan al revés', () => {
+  it('#162 R2: la URL del segundo documento resuelve antes que la del primero y la lista sigue a, b', async () => {
+    const a = document('0198b2c3-4d5e-7a01-b234-56789abcde02', '2026-08-25');
+    const b = document('0198b2c3-4d5e-7a01-b234-56789abcde01', '2026-08-24');
+    const listUploadedByPet = jest.fn().mockResolvedValue([a, b]);
+    const documents = { listUploadedByPet } as unknown as PetDocumentRepository;
+    let releaseA: (url: string) => void = () => undefined;
+    let releaseB: (url: string) => void = () => undefined;
+    const createDownloadUrl = jest
+      .fn<Promise<string>, [string, number]>()
+      .mockImplementation(
+        (key) =>
+          new Promise<string>((resolve) => {
+            if (key === a.key) releaseA = resolve;
+            else releaseB = resolve;
+          }),
+      );
+    const storage = { createDownloadUrl } as unknown as PhotoStorage;
+    const drain = () => new Promise((resolve) => setImmediate(resolve));
+    const pending = new ListPetDocumentsUseCase(documents, storage).execute(
+      PET_ID,
+    );
+
+    await drain();
+    expect(createDownloadUrl.mock.calls).toEqual([
+      [a.key, 3600],
+      [b.key, 3600],
+    ]);
+    releaseB(`signed:${b.key}`);
+    await drain();
+    releaseA(`signed:${a.key}`);
+    await expect(pending).resolves.toEqual([
+      { document: a, downloadUrl: `signed:${a.key}` },
+      { document: b, downloadUrl: `signed:${b.key}` },
+    ]);
+  });
+});
