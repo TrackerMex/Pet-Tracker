@@ -533,3 +533,47 @@ describe('#98 R11: la carta y la spec de Food registran la enmienda', () => {
     }
   });
 });
+
+describe('#166 R2: todo primario sólido lleva el labio detrás de bg-accent', () => {
+  const expected = {
+    [join('app', '(auth)', 'login.tsx')]: 1,
+    [join('app', '(auth)', 'register.tsx')]: 1,
+    [join('components', 'empty-state.tsx')]: 1,
+    [join('screens', 'add-pet', 'index.tsx')]: 1,
+    [join('screens', 'add-reminder', 'index.tsx')]: 1,
+    [join('screens', 'docs', 'index.tsx')]: 2,
+    [join('screens', 'forgot', 'index.tsx')]: 1,
+    [join('screens', 'geofence-editor', 'index.tsx')]: 1,
+    [join('screens', 'geofences', 'index.tsx')]: 1,
+    [join('screens', 'home', 'index.tsx')]: 1,
+    [join('screens', 'meal-schedule', 'index.tsx')]: 1,
+    [join('screens', 'pairing', 'index.tsx')]: 2,
+    [join('screens', 'profile', 'index.tsx')]: 1,
+    [join('screens', 'reminders', 'index.tsx')]: 1,
+    [join('screens', 'reset-password', 'index.tsx')]: 1,
+    [join('screens', 'weight-log', 'index.tsx')]: 1,
+    [join('screens', 'welcome', 'index.tsx')]: 1,
+  };
+
+  it('inventaría los diecinueve primarios con labio, fichero a fichero', () => {
+    const inventory = (pattern: RegExp) => Object.fromEntries(
+      sourceFiles().flatMap((path) => {
+        const count = (readFileSync(path, 'utf8').match(pattern) ?? []).length;
+        return count > 0 ? [[path.slice(sourceRoot.length + 1), count]] : [];
+      }),
+    );
+
+    expect(inventory(/rounded-xl bg-accent border-b-4 border-black\/25(?=[\s'"`])/g)).toEqual(expected);
+    expect(inventory(/rounded-xl bg-accent(?=[\s'"`])/g)).toEqual(expected);
+  });
+
+  it('no deja la receta del labio fuera de un primario', () => {
+    const count = (pattern: RegExp) => sourceFiles().reduce(
+      (total, path) => total + (readFileSync(path, 'utf8').match(pattern) ?? []).length,
+      0,
+    );
+
+    expect(count(/\bborder-b-4\b/g)).toBe(19);
+    expect(count(/border-black\/25/g)).toBe(19);
+  });
+});
