@@ -1,12 +1,255 @@
 # review: mobile-docs-upload (#158)
-Fecha: 2026-10-09
-Veredicto: N/A (no hay implementación; solo pre-verificación de la spec antes del gate humano)
+Fecha: 2026-10-09T23:05:37Z
+Veredicto: APROBADO (0 hallazgos bloqueantes; una salvedad C8 sobre el feedback pressed de `Card`, transversal y fuera de la lista cerrada, ver Observaciones 1)
+
+- Worktree: `/home/claude/sites/Pet-Tracker-wt-158`.
+- Branch: `feature/158-mobile-docs-upload`.
+- HEAD: `791a6f97`. Lo comprobé al empezar, después de cada sonda y al terminar.
+- H0: `421cd836`.
+- Diff revisado: `421cd836..791a6f97`, con 27 commits de Codex.
+- `./init.sh`: lo corrió el leader en `791a6f97` con permiso del humano. Este reviewer no lo corrió, por instrucción del leader. Leí el log entero (ver §Output).
+- Fuera del stage queda solo `progress/handoff_mobile-docs-upload.md` (M), que es del leader. No cuenta como hallazgo.
+- Antes de tocar código comprobé `test ! -e mobile-pet-tracker/.expo/types/router.d.ts`: exit 0.
+- Las pre-verificaciones de la spec (rondas 1, 1b y 1c, commit `0bbfda48`) se conservan íntegras al final de este fichero.
+
+## Checklist C2 — Estado coherente
+- [x] Solo 1 feature in_progress: `feature_list.json` del worktree tiene solo la #158 en `in_progress`.
+- [x] `progress/current.md` actualizado: describe la sesión de #158, el handoff a Codex, la coordinación con #159 y #134, y el plan init.sh, reviewer y smoke R13.
+
+## Checklist C3 — Arquitectura
+- [x] Las capas de dominio no cambian. El diff es solo de la app móvil: `git diff --stat 421cd836 HEAD -- backend-pet-tracker/ infra-pet-tracker/ docs/` sale vacío.
+- [x] Contratos: `src/api/media.ts` añade funciones puras con `fetchFn` inyectable:
+  - `resolveDocumentContentType`;
+  - `createPetDocument`;
+  - `confirmPetDocumentUpload`;
+  - `uploadPhotoToUrl`, ensanchada a `DocumentContentType`.
+
+  Devuelven uniones discriminadas (`CreatePetDocumentState`, `ConfirmPetDocumentUploadState`) y no conocen la UI.
+- [x] La pantalla depende de la capa `api`, no de detalles de transporte. El mapeo estado→copy vive en `handleUploadError`, de la pantalla, como prescribe R9.
+- [x] No hay lógica de negocio en infraestructura (sin cambios en infra).
+
+## Checklist C4 — TDD
+- [x] Cada R<n> tiene al menos un test que lo nombra. Los `describe` usan `#158 R1` … `#158 R11`. R12 vive en `#65 R7 … 53 ocurrencias` y en las filas de `ui-copy-table.ts`. R4 tiene además el caso A renombrado `no ofrece acción a quien no es owner (#158 R4)`. R13 es el smoke humano, sin test por diseño.
+- [x] El historial muestra test primero. Hay 12 pares rojo→verde (R1-R12), más:
+  - `f117aaa2`, la dependencia (chore);
+  - `ca74f737`, el candado de R4, verde de entrada y declarado (ver sondas);
+  - `a9b74613`, el commit intermedio de `await` en R5.
+
+  Los rojos contienen solo tests y los verdes solo producción. Hay dos excepciones, ambas prescritas por el handoff:
+  - el verde de R2 actualiza las fixtures `downloadUrl` de `docs/index.test.tsx`;
+  - el verde de R12 toca el fichero de datos `ui-copy-table.ts`.
+- [x] `a9b74613` cambia exactamente 13 líneas, todas `await` de `fireEvent`, y no toca el cuerpo de ningún `it`. Desde T6, todo `fireEvent` nuevo lleva `await`. Solo quedan sin él las líneas 168 (`docs-retry`, previa) y 450 (R3), ambas autorizadas.
+- [x] No hay rojos por ReferenceError ni por mutar un doble. El único rojo por excepción es el TypeError "is not a function" de T2, autorizado en el handoff.
+- [x] Los rojos que nacieron verdes muerden. Planté una mutación en producción para cada uno (tabla en §Pruebas de mutación):
+  - el `it` PDF de R2;
+  - R4 caso A;
+  - la fila `canceled` de R5;
+  - en T9, `Error de R6` y `crear forbidden`.
+- [x] `git merge-base --is-ancestor` da exit 0 para todos los hashes de `traceability.md` respecto de HEAD.
+
+## Checklist C5 — Trazabilidad
+- [x] `traceability.md` no tiene filas "pendiente" salvo R13, el smoke humano. Está permitido: la casilla se firma en `requirements.md` §Prueba de humo.
+- [x] Los commits siguen el formato `test|feat|chore|docs(mobile-docs-upload): <desc> (R-id)`, y los de cierre `(#158)`.
+- [x] El frontmatter `status: draft` de `traceability.md` se conserva byte a byte, como ordenó el handoff; el leader lo cambia al cerrar.
+
+## Checklist C6 — Spec aprobada
+- [x] `specs/mobile-docs-upload/requirements.md` tiene `status: approved`, con la casilla humana marcada el 2026-10-09 (firma `81d14978`, gate en Notion). La casilla R13 del final sigue sin marcar, como corresponde.
+
+## Checklist C7 — Sin código huérfano
+- [ ] N/A: esta feature no reemplaza nada existente. El antiguo `it('no ofrece acción'` se renombró y se redirigió a R4; grep da 0 para el título viejo y 1 para el nuevo. No se borran ficheros.
+
+## Checklist C8 — Carta UI (`docs/ui-guidelines.md`, skill `expo:expo-overview` cargada)
+- [x] Grep-clean en `src/screens/docs/index.tsx` y en su test:
+  - 0 hex;
+  - 0 clases arbitrarias `[...]`;
+  - 0 `StyleSheet` (0/0);
+  - 0 shadow/elevation;
+  - 0 `bg-accent-soft`;
+  - 0 `text-accent` suelto.
+- [x] Las dimensiones siguen la excepción A11 de pantalla empujada:
+  - `p-6 gap-4`;
+  - `paddingBottom: insets.bottom + 24`, candado en R11 con 291;
+  - `KeyboardAvoidingView` `behavior="padding"` con `keyboardVerticalOffset` de `HeaderHeightContext`;
+  - `keyboardShouldPersistTaps="handled"`.
+- [x] El Skeleton de carga queda intacto: el diff no lo toca.
+- [x] Componentes compartidos reutilizados:
+  - `Card` para las filas, como prescribe R10;
+  - `EmptyState` con `action` para la entrada vacía;
+  - `Button`, `TextField`, `Label.Text` e `Input` de heroui-native.
+
+  No hay forks locales.
+- [x] Tappables con feedback pressed y touch target ≥ 44pt, **con salvedad**:
+  - Los botones heroui (`docs-upload`, submit, cancel, `docs-empty-action`) traen su feedback y su altura.
+  - Las filas de documento usan `Card` con `onPress` (72pt), pero la rama `onPress` de `src/components/card.tsx` pinta un `Pressable` sin función de estilo pressed.
+  - Es deuda del componente compartido, fuera de la lista cerrada y prescrita por R10. Sigo el precedente de #71 (`review_mobile-home-quick-actions.md`, «deuda del repo y no de #71»). Ver Observaciones 1.
+- [x] No hay animaciones nuevas.
+- [x] Errores en `<Text selectable className="text-danger">` (`docs-action-error`). Los controles van en `rounded-xl` y el fondo de acción en `bg-accent`: `rounded-xl bg-accent` aparece 2 veces, con el candado de `consistency-classnames` en `13 + 1 + 1 + 1 + 1 + 1 + 1`.
+
+## Lista cerrada de ficheros
+`git diff --stat 421cd836..HEAD` lista exactamente los 16 ficheros autorizados:
+- `mobile-pet-tracker/`:
+  - `bun.lock`, `package.json`;
+  - `src/__tests__/{consistency-classnames.test.ts, design-drift.test.ts, ui-copy-table.ts, ui-language.test.ts}`;
+  - `src/api/media.ts`, `src/api/__tests__/media.test.ts`;
+  - `src/components/__tests__/empty-state.test.tsx`;
+  - `src/i18n/catalog.ts`;
+  - `src/providers/__tests__/language-provider.test.tsx`;
+  - `src/screens/docs/index.tsx` y su test.
+- Fuera de `mobile-pet-tracker/`:
+  - `progress/impl_mobile-docs-upload.md`;
+  - `specs/mobile-docs-upload/traceability.md`;
+  - `specs/mobile-ui-language/design.md`.
+
+`app.json` no cambia.
+
+## Decisiones del leader que prevalecen sobre tasks.md (verificadas)
+1. `"expo-document-picker": "~57.0.3"` en `package.json` (grep = 1).
+2. Todo literal `DocumentPickerAsset` lleva `lastModified: 0`.
+3. `a9b74613` cambia 13/13 líneas, solo `await`. Desde T6, los `fireEvent` nuevos llevan `await`.
+4. Las etiquetas usan `<Label.Text className="text-2xs font-semibold text-foreground">` dentro de un `Label` que conserva su className inerte. No es hallazgo.
+5. `crear forbidden` nació verde en el rojo de T9, autorizado por la Reanudación 4. La sonda M5 lo hace morder.
+
+## Valores de cierre del handoff (todos coinciden)
+| Valor | Resultado |
+|---|---|
+| picker en `package.json` | 1 |
+| `rounded-xl bg-accent` | 2 |
+| `signOut(` | 1 |
+| `bg-accent-soft` | 0 |
+| `text-accent` suelto | 0 |
+| `StyleSheet` | 0/0 |
+| `refetchInterval` | 0 |
+| `useFocusEffect` | 0 |
+| `{{petName}}` en el catálogo | 2 |
+| `it('no ofrece acción'` | 0 |
+| título `#158 R4` | 1 |
+| `+ 12 // #158 R1` | 1 |
+| `13 + 1 + 1 + 1 + 1 + 1 + 1` | 2 |
+| entrada de `design-drift` | 1 |
+| filas docs en `ui-copy-table` | 22 |
+| `35 - 1 + 2 + 1 + 16` | 1 |
+| título de 53 ocurrencias | 1 |
+| título de 36 ocurrencias | 1 |
+| cabecera §2.22 | 1 |
+| `HeaderHeightContext.Provider value={91}` | 1 |
+
+Las ocurrencias por clave cuadran con design.md §Ocurrencias: `docs.upload` ×3, las otras 13 claves ×1, 16 en total, y R7_PROFILE pasa de 37 a 53. Los literales del catálogo, la §2.22, `copyRows` de empty-state y el `it` `#158 R1` de language-provider coinciden byte a byte con §Copy nueva.
+
+## Pruebas de mutación
+Método:
+- Cada sonda se plantó en producción, in situ.
+- Corrí jest solo sobre el fichero de test afectado, en primer plano y sin pipe: `FORCE_COLOR=0 bunx jest <fichero> > scratchpad 2>&1; echo "exit=$?"`.
+- Después restauré con `git checkout HEAD -- <ruta>` y comprobé `git diff --cached --quiet` (0) y `git diff --quiet -- .` (0).
+- Con wt-134 corriendo init.sh en paralelo, revisé el motivo de cada rojo. Todos son por aserción o por elemento ausente que la mutación explica: en los `findBy*` agotados, el árbol muestra el copy o el nodo que produce la mutación. Ninguno es por timeout ajeno a la lógica.
+- En cada corrida, los tests que no muerde la sonda quedaron verdes, lo que sirve de control bajo carga.
+
+### Rojos nacidos verdes (pedidos por el leader)
+| Sonda | Mutación plantada | Resultado |
+|---|---|---|
+| M1 (R2, `it` PDF) | `media.ts:126`, `'Content-Type': contentType.startsWith('image/') ? contentType : 'image/jpeg'` (zona ciega: las fotos siguen igual) | media 1 rojo / 69: `uploadPhotoToUrl manda application/pdf sin Authorization` |
+| M2b (R4 caso A) | `index.tsx:350`, `action={!selectedDocument ? …}` (sin `isOwner` solo en la rama vacía) | docs 9 rojos / 108: `no ofrece acción a quien no es owner (#158 R4)`, las 5 filas `sin entradas con mascota <estado>` de #155 y `solo Pingo para family/walker/vet` |
+| M2a (R4 por rol) | `index.tsx:94`, `myRole !== 'vet'` (family y walker pasan por owner) | docs 7 rojos: caso A, `sin botón para family/walker`, `solo Pingo para family/walker` y `mantiene la lista … para family/walker` (vet queda verde, como se espera) |
+| M3a (R5 `canceled`) | `index.tsx:112`, `if (result.canceled) { setActionError('unknown'); return; }` | docs 1 rojo: `selector: canceled` (`docs-action-error` presente con «Algo salió mal») |
+| M3c (R5 `canceled`) | `canceled` abre el formulario con un asset ficticio | docs 1 rojo: `selector: canceled` (`docs-upload` desaparece) |
+| M4 (R9 `Error de R6` / `Error de R9`) | borrar el `setActionError(null)` de `submitDocument` (`index.tsx:170`) | docs 2 rojos: `quita al pulsar el error anterior: Error de R9` y `… Error de R6` |
+| M4b (zona ciega) | `if (actionError !== 'invalid-form') setActionError(null);` | docs 1 rojo: solo `… Error de R6`. Hay un candado por rama |
+| M5 (R9 `crear forbidden`) | `index.tsx:188`, `handleUploadError(created.kind === 'forbidden' ? 'error' : created.kind)` (confirmar forbidden queda intacto) | docs 2 rojos: `crear forbidden` y `rehabilita ambos botones cuando crear responde forbidden` (el árbol muestra «Algo salió mal») |
+
+### Barrido adicional en zonas ciegas
+| Sonda | Mutación plantada | Resultado |
+|---|---|---|
+| M6 | catch `readingAsset ? 'upload-failed' : 'unknown'` → `'unknown'` | 2 rojos: `lectura fetch rechaza`, `lectura blob rechaza` |
+| M7 | `vet` siempre enviado (`vet: vet.trim()`) | 1 rojo: `sube el PNG sin mimeType y omite el veterinario vacío` |
+| M8 | `isDisabled={false}` en cancelar (`:322`) | 6 rojos: `bloquea ambos botones durante fetch/blob/crear/PUT/confirmar/refetch` |
+| M9 | `isDisabled={false}` en enviar (`:311`) | los mismos 6 rojos |
+| M10 | sin `await docs.refetch()` | 4 rojos: los dos `sube …`, `cierra el formulario aunque el refetch responda error` y `bloquea … durante refetch` |
+| M11 | `.toLowerCase()` fuera de la extensión | media 1 rojo: `undefined y A.PNG` |
+| M12 | `normalized = mimeType` sin minúsculas | media 2 rojos: `IMAGE/PNG y a.bin`, `APPLICATION/OCTET-STREAM y a.png` |
+| M13 | `lastIndexOf('.')` → `indexOf('.')` | media 1 rojo: `undefined y informe.v2.pdf` |
+| M14 | `if (normalized) return null;` (sin excepción octet-stream) | media 2 rojos: las dos filas `octet-stream` |
+
+Ninguna sonda sobrevivió.
+
+## Corridas propias (HEAD 791a6f97, sin pipe)
+- `bunx tsc --noEmit`: exit=0, sin salida.
+- `bunx expo lint --no-cache`: exit=0, sin salida de errores.
+- No corrí la suite móvil entera, por instrucción del leader: wt-134 y wt-159 tenían jest en vuelo.
+- Control sin mutar tras terminar el init.sh de wt-134 (exit=0, avisado por el leader): `FORCE_COLOR=0 bunx jest src/screens/docs/index.test.tsx src/api/__tests__/media.test.ts`, con exit=0, 2 suites y 177 tests verdes (108 + 69). No quedó ningún rojo de sonda pendiente de repetir.
+
+## Observaciones
+Ninguna es bloqueante.
+
+1. **Salvedad C8: feedback pressed en `Card`.**
+   - Las filas de documento son el primer consumidor real de `Card` con `onPress` en la app; en origin/main solo lo usa `card.test.tsx`.
+   - La rama `onPress` de `src/components/card.tsx` pinta `<Pressable … style={mergedStyle}>`, sin función de estilo pressed.
+   - La carta (`docs/ui-guidelines.md`: «Feedback pressed en TODO elemento tappable») y C8 lo piden.
+   - No lo cuento contra #158:
+     - R10 prescribe la `Card` compartida;
+     - `card.tsx` queda fuera de la lista cerrada;
+     - mis pre-verificaciones de la spec tampoco lo cazaron;
+     - el precedente de #71 lo trató como deuda del repo.
+   - Propuesta de seguimiento con id propio: en `card.tsx`, rama `onPress`, `style={({ pressed }) => [mergedStyle, { opacity: pressed ? 0.8 : 1 }]}` (la receta del repo, #138), con su candado en `card.test.tsx`.
+   - Mientras tanto, el humano puede comprobarlo de paso en el smoke R13 (paso 8, abrir un documento).
+2. **El formulario va sin clases.**
+   - `docs-upload-form` (`View`) no lleva className: no tiene `gap` entre el nombre del fichero y los cuatro `TextField`.
+   - `docs-upload-file` es el único `<Text>` de `src/screens` y `src/components` sin clase de color.
+   - En modo oscuro, el color por defecto de RN puede quedar ilegible sobre `bg-background`.
+   - La spec (requirements.md:228-231) los describe sin clases y Codex la siguió al pie de la letra, así que es un hueco de spec.
+   - Recomiendo mirarlo en el smoke R13, con el teléfono también en modo oscuro, y abrir un seguimiento (`gap-4` y `text-sm text-foreground`, por ejemplo) si se confirma.
+3. **Faltan notas de «nació verde» en `traceability.md`.**
+   - La fila R2 no dice que el `it` `uploadPhotoToUrl manda application/pdf sin Authorization` nació verde.
+   - La fila R5 no lo dice de `selector: canceled`.
+   - El impl sí lo documenta (§Cierre: «la única fila nueva verde fue selector: canceled»), y el handoff solo lo exigía allí.
+   - Las sondas M1 y M3a/M3c prueban que muerden. El leader puede añadir la nota al cerrar si quiere la trazabilidad completa.
+4. **Párrafo suelto en `traceability.md`.** Dice «Los recuentos entre paréntesis…», pero la tabla no tiene paréntesis. Es cosmético.
+5. **Los candados de className de R3 y R5 son laxos.** Usan `expect.stringContaining`. Los respaldan los recuentos exactos de `consistency-classnames` (`rounded-xl bg-accent` ×2), así que no hay hueco efectivo.
+6. **Cosméticos en tests globales.**
+   - En `design-drift.test.ts`, la entrada `'screens/docs/index.tsx': 1, // #158 R9` va con 6 espacios de sangría frente a los 4 de sus hermanas.
+   - En `consistency-classnames.test.ts` hay un comentario con `//` duplicado.
+   - Prettier/eslint no los marcan.
+7. **Aviso de worker en el log de init.sh.** El jest móvil emite «A worker process has failed to exit gracefully». Es un aviso, no un fallo: 97/97 suites verdes. No lo atribuyo a #158 sin más evidencia.
+8. **R13 queda pendiente del humano y el impl deja los pasos completos y ejecutables.** `impl_mobile-docs-upload.md` §Smoke R13 es idéntica a requirements.md §Prueba de humo:
+   - precondiciones 1-7: dev build de Android, `google-services.json` por máquina, backend parado en vez de modo avión;
+   - pasos 1-8.
+
+   Solo cambia la casilla final, sustituida por «R13: pendiente del smoke humano». La feature no debe marcarse `done` hasta que el humano firme esa casilla.
+
+## Output de ./init.sh
+Lo corrió el leader en HEAD `791a6f97` con permiso del humano. Log: `/tmp/claude-1002/-home-claude-sites-Pet-Tracker/74892c00-321f-434a-abca-de5bbd0439dc/scratchpad/158-init.log`. El leader reportó exit 0, y el log termina en «✅ Todo verde. Listo para trabajar.». Extracto, sin códigos ANSI:
+```
+✅ Build exitoso
+# backend
+Test Suites: 187 passed, 187 total
+Tests:       1471 passed, 1471 total
+# infra
+Test Suites: 2 passed, 2 total
+Tests:       14 passed, 14 total
+# móvil
+A worker process has failed to exit gracefully and has been force exited. ...
+Test Suites: 97 passed, 97 total
+Tests:       2512 passed, 2512 total
+Snapshots:   1 passed, 1 total
+# e2e
+[✓] migrations applied successfully!
+Test Suites: 3 skipped, 30 passed, 30 of 33 total
+Tests:       8 skipped, 467 passed, 475 total
+✅ Tests e2e pasados
+→ Lint...
+✅ Lint sin errores
+→ Typecheck...
+$ tsc --noEmit
+✅ Typecheck sin errores
+✅ Todo verde. Listo para trabajar.
+  Features: 149/162 completadas | 12 pendientes
+```
+
+---
+
+## Pre-verificación de la spec (antes del gate)
 
 Worktree: `/home/claude/sites/Pet-Tracker-wt-158`, branch `feature/158-mobile-docs-upload`, base `65f37841`.
 Spec revisada: `specs/mobile-docs-upload/{requirements,design,tasks,traceability}.md` sin commitear (status: draft).
 No se ha corrido `./init.sh` ni e2e (Postgres/LocalStack compartidos), por instrucción del leader.
-
-## Pre-verificación de la spec (antes del gate)
 
 ### Resumen
 
@@ -610,3 +853,274 @@ Arreglo: partir B50 en dos anclas sin tubería, `grep -cF 'refetchInterval' src/
 La fila «Error de R6» del nuevo intento puede salir verde antes del verde de R9. Un verde de R6 natural fija el error con el resultado de validar (`setActionError(validate(...))`), y con el formulario ya válido eso lo borra al pulsar.
 R6 no lo exige ni lo prohíbe, así que las dos implementaciones son correctas.
 Arreglo: «22 o 23: la fila "Error de R6" del nuevo intento puede salir verde si el verde de R6 ya fija el error con el resultado de validar», como ya se hace en R4, en R5 (`canceled`) y en R8 (`rehabilitar`). Así Codex no para por un recuento de rojos que no cuadra.
+
+## Pre-verificación de la Enmienda E1 (antes del gate)
+
+Fecha: 2026-10-11. Reviewer. Árbol: wt-158, branch `feature/158-mobile-docs-upload`, HEAD `791a6f97`, E1 sin commitear en `specs/mobile-docs-upload/{requirements,design,tasks,traceability}.md`. Las anclas se midieron en `mobile-pet-tracker/` y todo lo demás en una copia fuera del árbol (scratchpad, con `node_modules`, `docs/`, `specs/` y `backend-pet-tracker/` enlazados). No se corrió `init.sh`, ni e2e, ni la suite móvil entera. El árbol de la app sigue intacto: `git diff --quiet HEAD -- mobile-pet-tracker` da 0.
+
+**Veredicto: bloqueada.** 1 bloqueante y 3 no bloqueantes.
+
+### Medido (todo cuadra con la spec salvo B1)
+
+- **Anclas A1-A6 de R14, en la base**: A1 `1`, A2 `0`, A3 `1`, A4 `0`, A5 `1`, A6 `0`, que es la columna «Base `791a6f97`». En la copia, tras el rojo: A4 `1`, A5 `0`, A6 `1`. Tras el verde: A1 `0`, A2 `1`, A3 `1`. Son los valores de «Tras el verde de R14».
+- **Base**: `FORCE_COLOR=0 bunx jest src/api/__tests__/media.test.ts` da `Tests: 69 passed, 69 total`, `exit=0`.
+- **Rojo**: solo el cambio de test de tasks.md E1 (1), es decir, el `describe` de R14 con sus siete pasos y `body: expect.any(Blob),` en el `it` de R2. Da `Tests: 4 failed, 69 passed, 73 total`, `exit=1`. Los cuatro rojos son las filas de R14, todos en el paso 5 (`expect(init.body.type).toBe(contentType)`) con `Received: ""`. El `it` de R2 que se mueve sigue verde. `bunx eslint --no-cache` sobre el test da `exit=0`.
+- **Verde** (`body: new Blob([body], { type: contentType }),`): `Tests: 73 passed, 73 total`, `exit=0`. `bunx eslint --no-cache` sobre los dos ficheros da `exit=0`, `bunx tsc --noEmit` da `exit=0` y `bunx expo lint --no-cache` (proyecto entero) da `exit=0`.
+- **Las tres mutaciones de la tabla de R14** se reproducen tal cual:
+  - `body,` da 4 rojos, en el paso 5;
+  - `new Blob([body])` da 5: las 4 de R14 en el paso 5 y R7 en su `toHaveBeenCalledWith`;
+  - `new Blob([], { type: contentType })` da 5: las 4 de R14 en el paso 6 (`Expected: "x"`, `Received: ""`) y R7.
+- **Otras mutaciones, en rojo como deben**:
+  - `type` fijo `'application/pdf'`: 4 rojos (jpeg, png y webp en el paso 5, y R7);
+  - quitar la cabecera con el blob ya tipado: 6 rojos (las 4 de R14 en el paso 7, más R2 y R7);
+  - cabecera `body.type`: 5 rojos (las 4 de R14 en el paso 7, más R2).
+  - Cambiar el orden de las claves `headers`/`body` es equivalente y no es una mutación: 73/73.
+- **Cobertura de `contentType`**: `PhotoContentType` (`media.ts:21`) es `image/jpeg | image/png | image/webp` y `DocumentContentType` (`media.ts:168`) es `application/pdf | image/jpeg | image/png`. La unión tiene 4 valores distintos y las 4 filas los cubren. Cualquier tipo constante o mapeo que no sea la identidad pone roja al menos una fila.
+- **`expect.any(Blob)` en el `it` de R2**: no deja ciego nada de R2.5. Ese `it` sigue fijando URL, `method: 'PUT'`, cabeceras exactas y la ausencia de `Authorization`. El tipo y los bytes del cuerpo los fija R14, y la longitud del blob `image/png` la sigue viendo R7.
+- **Candados globales**, en la base y con E1 aplicada en la copia:
+  - `design-drift`, `consistency-classnames`, `ui-language`, `legibility-classnames` y `language-provider`: 199/199 en los dos casos;
+  - pantallas docs, add-pet y profile: 173/173 en los dos casos;
+  - `app.config.test.ts`: 21/21 en los dos casos.
+  - `design-drift`, `consistency-classnames` y `legibility-classnames` recorren `join(process.cwd(), 'src')`, así que en la copia escanearon los ficheros de E1. Los guards de `src/app/__tests__` solo recorren `src/app`.
+  - Ningún test fuera de `media.test.ts` prohíbe `new Blob` ni `expect.any`. El único otro `new Blob` está en `src/screens/docs/index.test.tsx:383`. Ningún test referencia `media.test`.
+- **Anclas del diagnóstico** en `node_modules/expo/src/winter/`, todas `1`: `overriddenHeaders: [['Content-Type', body.type]]` (`fetch/RequestUtils.ts`), `install('fetch', () => require('./fetch').fetch)` (`runtime.native.ts`) y `this.headers.get('content-type') ?? ''` (`fetch/FetchResponse.ts`).
+- **Smoke R13 enmendado**:
+  - **Bucket**: `BUCKET_MEDIA = resourceName('pet-tracker-media', 'local')` (`backend-pet-tracker/src/aws/constants.ts:36,42`). `resolveResourceSuffix` solo añade sufijo con `NODE_ENV=test`, así que `start:dev` usa `pet-tracker-media-local`.
+  - **Clave**: `buildDocumentKey` da `` `pets/${petId}/docs/${documentId}` `` (`domain/document-key.ts`) y `PhotoStorageS3Adapter` la usa tal cual (`Key: key`, `photo-storage.s3.adapter.ts:29,37`). Las fotos son `pets/<petId>/photo-<ts>` (`photo-key.ts:7`), así que el filtro «contienen `/docs/`» las separa.
+  - **Región**: `us-east-1` en `.env.example`.
+  - **Comandos**: los dos `aws` valen tal cual en bash y en PowerShell. La `--query` va entre comillas dobles, sin `$` y sin espacios. Las variables tienen su equivalente PowerShell en el texto. Precondición 3 asegura que la máquina alcanza `http://<IP LAN>:4566`. `aws --endpoint-url` ya se usa en otros smokes (`localstack-provisioning`, `mobile-alert-detail-screen`, `mobile-push-registration`, `docs/verification.md`).
+  - **Casillas**: §Aprobación tiene tres, cada una con su gate (spec `[x]`, E1 `[ ]` y smoke `[ ]`, este último en §Prueba de humo, `grep -c` = 1). La precondición 8 encaja con el paso 6 y con la nota de R13.
+- **Coherencia** entre requirements, design D8, tasks y traceability. R14 es el mismo en los cuatro. Las cuentas 69 + 4 = 73 cuadran en las consecuencias de E1, en tasks §Recuentos, en tasks E1 (1)/(2) y en traceability. Los mensajes `test(mobile-docs-upload): red typed upload body (R14)` y `fix(mobile-docs-upload): upload body carries the declared content type (R14)` son idénticos en tasks y traceability. La lista cerrada no crece: `media.ts` y `media.test.ts` ya estaban en design §Ficheros afectados.
+
+### Bloqueantes
+
+**B1. R14 cláusula 2 («`type` exactamente igual a `contentType`, *también* cuando el `body` recibido trae `type === ''`») y el «`Blob` **nuevo**» de R14 solo están candados en la rama `type === ''`.**
+
+Las cuatro filas usan `new Blob(['x'])`, sin tipo. R7 usa un blob ya tipado con el mismo `contentType`. Ninguna fila usa un blob de entrada con un tipo distinto de `contentType`, y ninguna mira la identidad. Con E1 tal cual, estas tres mutaciones dan **73/73 en verde**:
+
+| Mutación en `uploadPhotoToUrl` | Qué rompe |
+|---|---|
+| `body: body.type === '' ? new Blob([body], { type: contentType }) : body,` | cláusula 2 y «nuevo»: con un blob tipado distinto, `expo/fetch` manda `body.type` como `Content-Type` |
+| `body: new Blob([body], { type: body.type \|\| contentType }),` | cláusula 2, el mismo efecto en el cable. Es la más plausible: «respetar el tipo si viene» |
+| `body: body.type === contentType ? body : new Blob([body], { type: contentType }),` | solo «nuevo». En el cable es equivalente |
+
+El cierre está medido en la copia con una sonda temporal, ya retirada:
+
+- un `it.each` de las 4 filas con blob de entrada `new Blob(['x'], { type: 'text/plain' })`, que asevera `type === contentType`. Pone rojas la primera mutación (4 filas) y la segunda (4 filas);
+- un `it` con blob de entrada `{ type: 'image/png' }` y `contentType` `'image/png'`, que asevera `expect(init.body).not.toBe(input)`. Pone roja la tercera (y también la primera).
+
+Resultados con la sonda: arreglo 78/78, base 9 rojos / 69 verdes / 78 total, `tsc --noEmit` `exit=0`.
+
+Si el leader decide que la identidad no es requisito, puede quitar «nuevo» de R14 y prescindir de ese `it`. Las 4 filas tipadas hacen falta en cualquier caso.
+
+Cualquier cierre arrastra las cifras escritas, que hay que medir de nuevo:
+
+- la tabla de mutaciones de R14 y los nombres de §Candado;
+- tasks §Recuentos (73 → 77/78) y tasks E1 (1)/(2): el rojo pasa de 4 a 8/9, y el `it` de identidad no cae en el paso 5;
+- las consecuencias y la tabla de E1 en requirements («69 a 73», «4 rojos, 73/73»);
+- design §Ficheros afectados («`describe` nuevo de 4 `it`»);
+- traceability («suma 4»);
+- el ancla A4, si las filas nuevas van en un segundo `describe` con `#158 R14`.
+
+### No bloqueantes
+
+**N1. R14 cláusula 3 («mismos bytes») tiene una sola muestra, de 1 byte, y su valor esperado es el mismo literal que la entrada.**
+
+`body: new Blob(['x'], { type: contentType }),` pasa las 4 filas de R14. Solo la caza R7 (1 rojo), y únicamente porque la igualdad de jest compara el `Symbol(kLength)` interno del `Blob` de Node (`'image bytes'` mide 11, no 1). Eso es un detalle de Node, no un contrato.
+
+La mutación es poco plausible. Si se reabre R14 por B1, un contenido distinto por fila (por ejemplo, el propio `contentType`) lo cerraría dentro de R14.
+
+**N2. Paso 6 del smoke: la salida esperada no es un literal.**
+
+La forma de la salida de `head-object` depende del `output` que el humano tenga en `~/.aws/config` (json por defecto, pero puede ser `text` o `table`). `--query ContentType --output text` haría que imprimiese exactamente `application/pdf`.
+
+Además, `list-objects-v2 --output text` ordena por `Key` y no por `LastModified`, así que «las dos más recientes» se eligen a ojo. Un documento de antes de E1 elegido por error da un falso rojo, que es el lado seguro.
+
+**N3. `CHECKPOINTS.md` C5 dice literalmente `feat(<scope>): <desc> (R1,R2)`.**
+
+`docs/conventions.md` §Commits admite `fix(<scope>): <descripción> (R3)`, y cinco traceability ya tienen `fix(...) (R<n>)`, por ejemplo `specs/android-map-never-ready/traceability.md`. El `fix(...)` de E1 es conforme a las convenciones. Se anota para que el reviewer de la ronda de R14 no lo marque contra la letra de C5.
+
+### Ronda 2
+
+Fecha: 2026-10-11. Base `791a6f97`, con la E1 de la ronda 2 aplicada solo en
+una copia fuera del árbol (node_modules enlazado). No se ha tocado el árbol, no
+se ha hecho ningún commit y no se ha corrido `init.sh`, e2e ni la suite móvil
+entera. Al terminar, `git diff --quiet HEAD -- mobile-pet-tracker` da 0 en el
+worktree.
+
+**Veredicto: bloqueada.** 2 bloqueantes (B2 y B3) y 6 no bloqueantes (N4-N9).
+B1 de la ronda 1 queda cerrado para `''` y `'text/plain'`, pero la rama de la
+cláusula 2 que abre B2 sigue sin candado.
+
+#### Medido: cuadra con la spec
+
+- Anclas: con el test de la ronda 2, A4 da 1, A5 da 0 y A6 da 1. Con el arreglo, A1 da 0, A2 da 1 y A3 da 1.
+- Base: `media.test.ts` da 69/69.
+- Rojo (test de la ronda 2 sobre el `media.ts` de la base): `Tests: 8 failed, 69 passed, 77 total` con `exit=1`. Los ocho fallan en `media.test.ts:314`, el paso 5: cuatro con `Received: ""` y cuatro con `Received: "text/plain"`. Los nombres de los `it` son los de la spec.
+- Verde: `Tests: 77 passed, 77 total` con `exit=0`. `bunx tsc --noEmit` da 0, `bunx eslint --no-cache` sobre los dos ficheros da 0 y `bunx expo lint --no-cache` da 0.
+- La tabla de mutaciones de R14 se reproduce fila a fila:
+  - T1 (base): 8 rojos en el paso 5.
+  - T2 (sin `type`): 9 rojos, los 8 del paso 5 más R7.
+  - T3 (sin bytes): 9 rojos, en el paso 6 con `Received: ""`, más R7.
+  - T4 (bytes fijos): 9 rojos, en el paso 6, más R7.
+  - T5 y T6: 4 rojos cada una, las filas de `«text/plain»` en el paso 5.
+  - T7: 77/77 en verde, la mutación equivalente aceptada.
+- Punto 5, candados con la E1 de la ronda 2:
+  - globales (`design-drift`, `consistency-classnames`, `ui-language`, `legibility-classnames`, `language-provider`): 199/199 con `exit=0`;
+  - `src/screens/docs`, `add-pet` y `profile`: 173/173 con `exit=0`;
+  - `app.config.test.ts` más `media.test.ts`: 98/98 (21 + 77) con `exit=0`.
+
+#### Barrido por cláusula de R14 (punto 2)
+
+Todas las sondas se aplican sobre el `media.ts` arreglado, con el test de la ronda 2.
+
+| Cláusula | Mutación | Resultado |
+|---|---|---|
+| 1, instanceof Blob | S9: `Uint8Array` en vez de `Blob` | 10 rojos |
+| 1 | S8: `new File([body], 'upload', { type: contentType })` | 1 rojo, solo R7 (ver N8) |
+| 2, `type` exacto, «sea cual sea el type del body recibido» | S1: `[tipos admitidos].includes(body.type) ? body : new Blob([body], { type: contentType })` | **77/77 en verde** |
+| 2 | S2: `new Blob([body], { type: admitidos.includes(body.type) ? body.type : contentType })` | **77/77 en verde** |
+| 2 | S3: `body.type.startsWith('image/') ? body : new Blob(...)` | **77/77 en verde** |
+| 2 | S11: `body.type.startsWith('text/') \|\| body.type === '' ? new Blob(...) : body` | **77/77 en verde** |
+| 2 | S5: envolver solo si `body.size === 0` | 8 rojos |
+| 2 | S4: envolver solo si `body.size > 0` | 77/77 en verde (ver N6) |
+| 2 | S6: `type: contentType.toUpperCase()` | 77/77 en verde (ver N7) |
+| 2 | S10: `type: contentType + ';charset=utf-8'` | 9 rojos |
+| 3, mismos bytes | S7: `new Blob([contentType], { type: contentType })` | 1 rojo, solo R7 (ver N4) |
+| cabecera | H1: clave en minúsculas; H2: valor en mayúsculas; H6: objeto `Headers` | 10 rojos cada una |
+| sin Authorization | H3: con `Authorization: 'Bearer x'`; H4: `Authorization: ''` | 10 rojos cada una |
+| sin Authorization | H5: `Authorization: undefined` | 1 rojo, solo R2 en `media.test.ts:293` (ver N5) |
+
+#### Bloqueantes
+
+**B2. La cláusula 2 solo tiene candado con `'text/plain'` como «otro tipo distinto de `contentType`».**
+
+R14.2 exige el `type` exacto «sea cual sea el type del body recibido: '' u otro tipo distinto de contentType». Las 8 filas solo prueban `''` y `'text/plain'`, y nunca un tipo admitido distinto del declarado (por ejemplo, un blob `image/png` subido como `image/jpeg`). Por eso S1, S2, S3 y S11 quedan 77/77 en verde.
+
+S2 es la evolución natural de T6, que la propia spec da por plausible: fiarse del `type` del blob cuando es válido y declarar el propio si no lo es. Hoy los anclas A1 y A2, junto con «el resto de `media.ts` no cambia», cazarían estas variantes en esta ronda, pero el test no las detecta como regresión futura. Es la regla de un candado por rama (`clausulas-universales-candadas-en-un-caso`).
+
+Cómo se cierra (medido en la copia): añadir 4 filas con un tipo de entrada admitido y distinto, `['image/jpeg', 'image/png']`, `['image/png', 'image/jpeg']`, `['image/webp', 'image/png']` y `['application/pdf', 'image/png']`. Resultados:
+
+| Sonda | Resultado |
+|---|---|
+| verde | 81/81 |
+| base | 12 rojos en el paso 5 |
+| S1, S2, S3, S11 | 4 rojos cada una, justo en las filas nuevas |
+| T5 y T6 | 8 rojos cada una |
+| T7 | sigue en verde |
+
+`tsc` y `eslint` dan 0 en los dos casos. Hay que recalcular las cifras de los cuatro ficheros de la spec y del handoff de E1: el `it.each` pasa de 8 a 12 filas, `media.test.ts` de 77 a 81 (69 + 12), el rojo de 8 a 12, y las filas T5 y T6 de la tabla de mutaciones de 4 a 8 rojos.
+
+**B3. Cifras de la ronda 1 sin marcar en `progress/explore_mobile-docs-upload-e1.md`.**
+
+En `## Verificación del spec_author`, las líneas 89-92 siguen diciendo:
+
+- «base 4 rojos / 69 verdes / 73; con el arreglo 73/73»;
+- «`body,` → 4 rojos»;
+- «→ 5 (4 de R14 + R7)», dos veces.
+
+Ninguna marca indica que la `### Ronda 2` de la línea 106 las sustituye, y el criterio de esta ronda es que no quede `73` ni «4 rojos» referido a E1 (`premisas-de-explore-sin-verificar`).
+
+Cómo se cierra: marcar ese bloque como ronda 1 superada o reescribirlo. Si se cierra B2, la `### Ronda 2` del explore (8 rojos / 77) también queda desfasada y tiene que pasar a 12 / 81.
+
+#### Cifras arrastradas en el resto (punto 3)
+
+Grep de `73`, «4 rojos», «4 filas», «cuatro filas», «69 a 73», «suma 4» y «nuevo» en los cuatro ficheros de la spec y en el explore.
+
+- Las únicas cifras viejas de E1 son las de B3.
+- `requirements.md:550-551` («4 rojos: las cuatro filas de `«text/plain»`») está bien para la ronda 2 medida, pero cambia si se cierra B2.
+- `design.md:238` («#159 suma 4») no tiene que ver con E1.
+- «nuevo» ya no califica al `Blob` en R14: `requirements.md:434` dice «Que sea el mismo objeto o uno nuevo no es requisito». Las apariciones que quedan son «un `describe` nuevo» (`requirements.md:576`, `design.md:261`) y «R14 (requisito nuevo)» (`requirements.md:581`), y describen el test y el requisito, no el cuerpo.
+- `tasks.md:54-55,310,325`, `requirements.md:542,585` y `traceability.md:29` dan 8 / 77, de forma coherente entre sí.
+- `progress/handoff_mobile-docs-upload.md` está modificado en el árbol, pero su diff no menciona E1, R14, 73 ni 77.
+
+#### JMESPath y salida del paso 6 (punto 4)
+
+Comprobado con `aws-cli/2.36.27` (el de `~/.local/bin`) contra un servidor S3 falso local en `127.0.0.1` que devuelve un `ListObjectsV2` de 4 objetos: tres en `/docs/` con fechas desordenadas y una `photo-`. No se ha usado LocalStack.
+
+- `list-objects-v2`, con el `--query` copiado de `requirements.md:722`, da `exit=0` e imprime exactamente dos líneas, `pets/p1/docs/d-pdf<TAB>2026-10-11T10:04:00+00:00` y `pets/p1/docs/d-img<TAB>2026-10-11T10:05:00+00:00`. Excluye la foto y ordena por fecha ascendente, así que la penúltima línea es la más antigua de las dos últimas. Lo verifiqué con `cat -A`.
+- `head-object --query ContentType --output text` da una sola línea, `application/pdf`, sin comillas, con `exit=0`.
+- `jmespath` 1.0.1 compila la expresión y la evalúa igual.
+- PowerShell no está instalado aquí (`which pwsh` vacío), así que es razonado y no ejecutado: la expresión no lleva `$`, ni comillas dobles internas, ni backtick, y `&` dentro de comillas dobles es literal. La afirmación de `requirements.md` es verosímil, pero no la he medido.
+
+#### No bloqueantes
+
+- **N4.** El contenido de cada fila es igual a su `contentType`, y eso hace tautológica la cláusula 3. S7 (`new Blob([contentType], ...)`) pasa las 8 filas de R14 y solo lo caza R7 (`media.test.ts:93`), porque `toHaveBeenCalledWith` compara `Symbol(kLength)` y `'image bytes'` mide 11 frente a los 9 de `'image/png'`. Es decir, lo caza por casualidad. Lo introdujo mi propia sugerencia de N1 en la ronda 1. Cómo se cierra (medido): una tercera columna con un literal propio por fila (`'bytes 01'` … `'bytes 12'`) y `text()` comparado contra ella. Con eso, S7 da 12 rojos en el paso 6. Conviene hacerlo en el mismo cambio que B2.
+- **N5.** El paso 7 usa `toEqual`, que ignora las claves con valor `undefined`. H5 (`Authorization: undefined`) solo cae por R2 (pdf). Para `image/jpeg`, `png` y `webp` no lo caza ningún test, y no he verificado cómo serializaría `expo/fetch` ese valor. Cómo se cierra (medido): con `toStrictEqual` en el paso 7, H5 da 12 rojos en R14 y el verde sigue en 81/81. No es bloqueante porque la variante incondicional ya cae por R2 y la condicional por tipo es rebuscada.
+- **N6.** S4 (envolver solo si `size > 0`) sigue en verde: un cuerpo de 0 bytes saldría con `type ''`. La cláusula 2 no habla de tamaño y la mutación es rebuscada. Una fila con contenido `''` probablemente la cerraría, pero no lo he medido.
+- **N7.** S6 (`toUpperCase()`) sigue en verde porque el `Blob` de Node pasa `type` a minúsculas. En el dispositivo, `node_modules/react-native/Libraries/Blob/BlobManager.js:105` copia `options.type` tal cual. Es una zona ciega del entorno de jest que no se puede cerrar con el `Blob` de Node, y el candado real es el paso 6 del smoke (`image/jpeg` exacto).
+- **N8.** S8 (`File` en vez de `Blob`) cumple la cláusula 1, pero R7 lo rechaza por igualdad en `toHaveBeenCalledWith`. Es un candado de más, no un hueco. Solo lo anoto.
+- **N9.** Si `pets/` no tiene objetos, el paso 6 no da «menos de dos líneas»: falla con `exit=255` y `aws: [ERROR]: In function sort_by(), invalid type for value: None, expected one of: ['array'], received: "null"`. Con la precondición 8 no debería ocurrir, pero el texto podría añadir «o un error de `sort_by`» entre los casos que hacen fallar el paso.
+
+### Ronda 3
+
+Fecha: 2026-10-11. Es una comprobación de cierre, no un barrido nuevo. Base
+`791a6f97`. La ronda 3 se aplicó solo en la copia fuera del árbol: el test se
+generó desde el bloque de código y los siete pasos de `requirements.md` R14, y
+cada mutación salió de la celda literal de su fila de la tabla. No se ha tocado
+el árbol ni se ha hecho ningún commit, y no se han corrido `init.sh`, los e2e
+ni la suite móvil entera.
+
+**Veredicto: lista para firma.** 0 bloqueantes. B2 y B3 están cerrados, y N4,
+N5 y N9 también. N6, N7 y N8 quedan como límites aceptados y dicen lo medido en
+la ronda 2. No veo ninguna rama nueva: `toStrictEqual` y la columna de
+contenido solo estrechan los pasos 6 y 7.
+
+#### Medido (punto 1)
+
+- Anclas en la base: A1 `1`, A2 `0`, A3 `1`. En el test de `HEAD`: A4 `0`, A5 `1`, A6 `0`.
+- Anclas con el test de la ronda 3: A4 `1`, A5 `0`, A6 `1`. Tras el verde: A1 `0`, A2 `1`, A3 `1`. Todas cuadran con la tabla.
+- Rojo: `Tests: 12 failed, 69 passed, 81 total`, `exit=1`. Los doce fallan en `media.test.ts:318`, que es el paso 5. Los `Received` son:
+  - `""` en 4 filas;
+  - `"text/plain"` en 4;
+  - `"image/png"` en 3;
+  - `"image/jpeg"` en 1.
+
+  No cae ningún otro `it`, como pide `tasks.md` (1).
+- Verde: `Tests: 81 passed, 81 total`, `exit=0`.
+- `bunx tsc --noEmit`, `bunx eslint --no-cache` sobre los dos ficheros y `bunx expo lint --no-cache`: los tres dan `exit=0`.
+- Las 13 filas de la tabla de mutaciones, aplicadas tal como están escritas, salen como dice la spec:
+
+| Id | Medido | Dónde |
+|---|---|---|
+| T1 | 12 rojos (R14) | paso 5 (`:318`); `""` 4, `text/plain` 4, `image/png` 3, `image/jpeg` 1 |
+| T2 | 13 (12 de R14 + R7) | R14 en el paso 5 con `""`; R7 en `:93` |
+| T3 | 13 (12 + R7) | R14 en el paso 6 (`:319`) con `""`; R7 en `:93` |
+| T4 | 13 (12 + R7) | R14 en el paso 6 con `"x"`; R7 en `:93` |
+| T5 | 8 (R14) | paso 5; `text/plain` 4, `image/png` 3, `image/jpeg` 1 |
+| T6 | 8 (R14) | igual que T5 |
+| T7 | 81/81 verdes | equivalente aceptada |
+| S1, S2, S3, S11 | 4 rojos cada una (R14) | paso 5; `image/png` 3, `image/jpeg` 1 |
+| S7 | 13 (12 + R7) | R14 en el paso 6 con el `contentType` como `Received` (3 por tipo); R7 en `:93` |
+| H5 | 13 (12 + R2) | R14 en el paso 7 (`:320`, `toStrictEqual`); R2 en `:293` |
+
+#### Filas y títulos (punto 2)
+
+- El orden `[contentType, tipo de entrada, contenido]` de las 12 filas cuadra con la viñeta del tipo admitido: `image/png` para `image/jpeg`, `image/webp` y `application/pdf`, e `image/jpeg` para `image/png`.
+- Corrí jest con `--verbose` y extraje los 12 títulos generados. Son idénticos, y en el mismo orden, a la lista literal de «Nombres completos de los doce `it`»: el `diff` sale vacío.
+- Los dos `%s` toman las dos primeras columnas. La tercera no aparece en el título, y `''` se imprime como `«»`.
+- `tasks.md` (1) remite al bloque de R14 sin copiarlo, así que no hay una segunda versión que pueda divergir.
+
+#### Cifras arrastradas (punto 3)
+
+Busqué `77`, `73`, «8 rojos», `69 + 8`, «4 filas», «ocho filas» y «8 filas» en los cuatro ficheros de la spec y en el explore. No queda ninguna cifra de las rondas 1 o 2 como dato vigente.
+
+- «8 rojos» solo aparece en T5 y T6 (`requirements.md:570-571`), y eso es lo medido para esas mutaciones, no el rojo de la base.
+- El explore (`:89-90`) cita «4 filas» y «8 filas» dentro de un «Historial del candado» marcado como tal: «Las cifras de abajo son solo las de la ronda 3».
+- `tasks.md:54-55,310,327`, `traceability.md:29`, `requirements.md:471,559,617`, `design.md:261` y el explore `:95-96` dicen todos 12 / 81 (69 + 12). Son coherentes entre sí y con lo medido.
+
+#### N6, N7 y N8 (punto 4)
+
+Comparé las tres líneas de «Alcance del candado» con lo medido en la ronda 2:
+
+- **N6:** que `size > 0` dé verde, y que no haya fila de 0 bytes, cuadra. La spec no afirma nada que yo no haya medido.
+- **N7:** cuadra. El `Blob` de Node pasa `type` a minúsculas y `BlobManager.js:105` copia `options.type` tal cual.
+- **N8:** cuadra. `File` cumple la cláusula 1 y lo rechaza el `toHaveBeenCalledWith` de R7. En la ronda 2 di 1 rojo, solo R7.
+
+#### Candados (punto 5)
+
+Con la ronda 3 aplicada en la copia:
+
+- globales: 199/199, `exit=0`;
+- `src/screens/docs`, `add-pet` y `profile`: 173/173, `exit=0`;
+- `app.config.test.ts` más `media.test.ts`: 102/102 (21 + 81), `exit=0`.

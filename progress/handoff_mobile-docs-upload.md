@@ -146,7 +146,7 @@ coincide, PARA.
 
 Valores al cerrar (en el CIERRE las vuelves a ejecutar). Desde
 mobile-pet-tracker/:
-  grep -cF '"expo-document-picker": "~57.0.1"' package.json                          -> 1
+  grep -cF '"expo-document-picker": "~57.0.3"' package.json                          -> 1
   grep -cF 'rounded-xl bg-accent' src/screens/docs/index.tsx                         -> 2
   grep -cF 'signOut(' src/screens/docs/index.tsx                                     -> 1
   grep -cF 'bg-accent-soft' src/screens/docs/index.tsx                               -> 0
@@ -253,7 +253,7 @@ Rojos esperados (fichero del paso / <NUEVE>; FAIL = suites que salen FAIL):
   cd /home/claude/sites/Pet-Tracker-wt-158/mobile-pet-tracker && bunx expo install expo-document-picker; echo "exit=$?"
     -> exit=0. Si el sandbox te deniega la red o la instalacion, PARA y
        reportalo: no lo sustituyas por `bun add`, npm ni npx.
-  Que puede cambiar: package.json (`"expo-document-picker": "~57.0.1"`),
+  Que puede cambiar: package.json (`"expo-document-picker": "~57.0.3"`, Reanudacion 1),
   bun.lock y, si `expo install` lo anade el solo, el array `plugins` de
   app.json. No anadas opciones de plugin a mano. Si cambia cualquier otro
   fichero, PARA.
@@ -261,7 +261,7 @@ Rojos esperados (fichero del paso / <NUEVE>; FAIL = suites que salen FAIL):
     -> exit=0 y `Tests:       314 passed, 314 total` (app.config.test.ts vigila los plugins de app.json)
   cd /home/claude/sites/Pet-Tracker-wt-158/mobile-pet-tracker \
     && grep -qE '^Tests: +314 passed, 314 total$' /tmp/158-c0.txt \
-    && test "$(grep -cF '"expo-document-picker": "~57.0.1"' package.json)" = 1 \
+    && test "$(grep -cF '"expo-document-picker": "~57.0.3"' package.json)" = 1 \
     && <COMPROBAR> \
     && git add package.json bun.lock \
     && { git diff --quiet -- app.json || git add app.json; } \
@@ -708,3 +708,296 @@ cerrada); los pasos del smoke R13; la linea
 `R13: pendiente del smoke humano`; y cualquier decision que la spec no
 cerrara literalmente.
 ```
+
+## Reanudación 1 (2026-10-09, tras la parada en c0)
+
+Codex paró bien: la cadena de c0 exigía `"expo-document-picker": "~57.0.1"`
+en package.json y `bunx expo install` escribió `~57.0.3`. El error es del
+handoff, no de Codex: el leader copió el rango de
+`node_modules/expo/bundledNativeModules.json`, que es la instantánea que
+trae el paquete `expo` instalado, y `expo install` consulta el resolutor
+vivo de Expo, que recomienda `~57.0.3`. El rango válido es el que escribe
+el instalador; la spec no fija ninguno. La ancla H4 sigue dando 1 (mide la
+instantánea, no el rango instalado). El leader ha cambiado `~57.0.1` por
+`~57.0.3` en la cadena de c0 y en «Valores al cerrar», sin commitear este
+fichero: H0 sigue siendo `421cd836`.
+
+```
+Worktree: /home/claude/sites/Pet-Tracker-wt-158   <- PRIMERA LINEA. Trabaja AQUI y en ningun otro sitio.
+Reanudacion 1 de #158. Lee en progress/handoff_mobile-docs-upload.md la
+seccion «Reanudación 1» y vuelve a leer la cadena de c0: el leader cambio
+`~57.0.1` por `~57.0.3` (el rango que escribio `bunx expo install`).
+H0 sigue siendo 421cd836: no cambia.
+
+Al arrancar, desde la raiz del worktree, pega en el impl, bajo un titulo
+`## Reanudación 1`:
+  git rev-parse --short HEAD                         -> 421cd836
+  git diff --cached --name-only                      -> (vacio)
+  git status --short                                 -> exactamente estas 4 lineas:
+     M mobile-pet-tracker/bun.lock
+     M mobile-pet-tracker/package.json
+     M progress/handoff_mobile-docs-upload.md
+    ?? progress/impl_mobile-docs-upload.md
+  grep -cF '"expo-document-picker": "~57.0.3"' mobile-pet-tracker/package.json   -> 1
+Si algo no cuadra, PARA.
+
+progress/handoff_mobile-docs-upload.md modificado es del leader: NO lo
+stagees ni lo commitees nunca (lo commitea el leader al cerrar). Tus
+cadenas ya solo stagean ficheros con nombre, asi que no te estorba.
+
+NO vuelvas a lanzar `bunx expo install`: package.json y bun.lock ya tienen
+lo que escribio. Retoma en la TERCERA orden de c0 (la cadena del commit):
+/tmp/158-c0.txt ya tiene los 314 en verde medidos despues de instalar. Si
+ese fichero ya no existe, repite antes la segunda orden (el jest de c0).
+Despues sigue con T1 y el resto del handoff tal cual.
+```
+
+## Reanudación 2 (2026-10-09, tras la parada en la cadena de T5)
+
+Codex paró bien: la cadena r5 cayó en `bunx tsc --noEmit` con cinco TS2345
+en `src/screens/docs/index.test.tsx`, todos por la misma causa. Los tipos
+instalados de `expo-document-picker` (`build/types.d.ts`) declaran
+`lastModified: number` obligatorio en `DocumentPickerAsset`, y las fixtures
+de la spec no lo llevan: design.md describe el asset como
+`{ uri, name, mimeType?, size? }` y tasks.md copia esa forma. El error es de
+la spec y del handoff, no de Codex.
+
+El leader autoriza completar las fixtures con `lastModified: 0`. No cambia
+ningún requisito: la producción no lee `lastModified`, y ninguna aserción ni
+cuenta se mueve. Esto manda sobre tasks.md, como el resto de este handoff.
+
+Regla para lo que queda de la feature: todo literal de `DocumentPickerAsset`
+en los tests de #158 lleva `lastModified: 0`; los que hacen spread de
+`documentAsset` lo heredan. En T7, los assets de tasks.md R7
+(`vacuna.pdf` y `radiografia.png`) también lo llevan. Ningún otro campo
+nuevo, ningún cast ni `satisfies`. Si el typecheck pide cualquier otra cosa
+del selector, PARA.
+
+```
+Worktree: /home/claude/sites/Pet-Tracker-wt-158   <- PRIMERA LINEA. Trabaja AQUI y en ningun otro sitio.
+Reanudacion 2 de #158. Lee en progress/handoff_mobile-docs-upload.md la
+seccion «Reanudación 2». Autorizado `lastModified: 0` en las fixtures del
+selector. H0 sigue siendo 421cd836: no cambia.
+
+Al arrancar, desde la raiz del worktree, pega en el impl, bajo un titulo
+`## Reanudación 2`:
+  git rev-parse --short HEAD                         -> ca74f737
+  git diff --cached --name-only                      -> (vacio)
+  git status --short                                 -> exactamente estas 4 lineas:
+     M mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+     M mobile-pet-tracker/src/screens/docs/index.test.tsx
+     M progress/handoff_mobile-docs-upload.md
+    ?? progress/impl_mobile-docs-upload.md
+  grep -c 'lastModified' mobile-pet-tracker/src/screens/docs/index.test.tsx   -> 0
+Si algo no cuadra, PARA.
+
+1. En src/screens/docs/index.test.tsx anade `lastModified: 0` al objeto
+   `documentAsset` y al asset de la fila `sin tamaño`. Nada mas cambia.
+     grep -c 'lastModified: 0' mobile-pet-tracker/src/screens/docs/index.test.tsx   -> 2
+2. Repite las dos mediciones de T5: el jest del fichero docs a
+   /tmp/158-r5.txt y el de <NUEVE> a /tmp/158-r5-todo.txt. Deben salir las
+   mismas cuentas que antes: docs `15 failed, 44 passed, 59 total` y NUEVE
+   `17 failed, 395 passed, 412 total`, con la fila `canceled` como unica
+   verde nueva. Si cambia algo, PARA.
+3. Lanza la cadena r5 tal cual. Despues sigue con el verde de T5 y el resto
+   del handoff.
+
+progress/handoff_mobile-docs-upload.md modificado sigue siendo del leader:
+NO lo stagees ni lo commitees.
+```
+
+## Reanudación 3 (2026-10-09, tras la parada en el verde de T5)
+
+Codex paró bien en el verde de T5: la medición g5 dio `5 failed, 407
+passed, 412 total`. El leader reprodujo los cinco rojos en una copia fuera
+del árbol (`scratchpad/repo158`, con el `node_modules` del worktree
+enlazado) y probó el arreglo allí. Son dos causas y ninguna es de producto:
+
+1. **Eventos sin esperar (4 it).** En `@testing-library/react-native` 14,
+   `fireEvent.press` y `fireEvent.changeText` devuelven una promesa (act
+   asíncrono). Los it nuevos de R5 no la esperan, así que la aserción
+   siguiente lee el árbol antes de que se aplique el estado, y el act que
+   queda abierto contamina el it siguiente (la fila `[doc-1]` de cancelar
+   no encuentra `Luna`). En el repo, 335 `await fireEvent.press` contra 33
+   sin esperar.
+2. **Clases de la etiqueta (1 it).** `Label` de heroui-native pone su
+   `className` en el `Pressable` raíz y envuelve el texto en un `Label.Text`
+   propio sin esas clases (`node_modules/heroui-native/src/components/label/label.tsx`).
+   El it, que lee `getByText('Tipo')`, tiene razón: con el JSX de R5 tal
+   cual, las clases nunca llegan al texto.
+
+Medido en la copia, con este arreglo:
+- rojo con los eventos esperados y la pantalla de `18f86fe5`: docs
+  `15 failed, 44 passed, 59 total`, los mismos 15 it que el rojo r5;
+  <NUEVE> `17 failed, 395 passed, 412 total`, FAIL consistency + docs; sin
+  `overlapping act`;
+- verde con la pantalla de Codex más `Label.Text`: <NUEVE> `412 passed,
+  412 total`, `bunx tsc --noEmit` exit=0, `bunx expo lint --no-cache` exit=0.
+
+Decisiones del leader (mandan sobre tasks.md, como el resto del handoff):
+- Entra un commit nuevo, solo de test, entre el rojo y el verde de R5:
+  `test(mobile-docs-upload): await R5 events (R5)`. Cambia 13 líneas del
+  fichero de test (13 inserciones, 13 borrados) y ningún it. El total
+  pasa a 27 commits (R4 no necesitó verde). Los recuentos de la tabla no
+  cambian.
+- En producción, cada una de las cuatro etiquetas lleva el texto dentro de
+  `Label.Text` con las mismas clases. La `Label` raíz conserva su `className`
+  (es el literal de R5). No se enmienda la spec.
+- Para el resto de la feature (T6-T11), todo `fireEvent` nuevo se espera
+  (`await fireEvent.press(...)`, `await fireEvent.changeText(...)`) y
+  `fillDocumentForm` se llama con `await`. Las líneas de R3 y del reintento
+  (`docs-retry`) que ya pasan sin `await` no se tocan.
+
+```
+Worktree: /home/claude/sites/Pet-Tracker-wt-158   <- PRIMERA LINEA. Trabaja AQUI y en ningun otro sitio.
+Reanudacion 3 de #158. Lee en progress/handoff_mobile-docs-upload.md la
+seccion «Reanudación 3». H0 sigue siendo 421cd836: no cambia.
+
+Al arrancar, desde la raiz del worktree, pega en el impl, bajo un titulo
+`## Reanudación 3`:
+  git rev-parse --short HEAD                         -> 18f86fe5
+  git diff --cached --name-only                      -> (vacio)
+  git status --short                                 -> exactamente estas 3 lineas:
+     M mobile-pet-tracker/src/screens/docs/index.tsx
+     M progress/handoff_mobile-docs-upload.md
+    ?? progress/impl_mobile-docs-upload.md
+  grep -c 'Label.Text' mobile-pet-tracker/src/screens/docs/index.tsx          -> 0
+  grep -cF 'await fireEvent.' mobile-pet-tracker/src/screens/docs/index.test.tsx -> 0
+Si algo no cuadra, PARA.
+
+Todo lo que sigue, desde mobile-pet-tracker/:
+  cd /home/claude/sites/Pet-Tracker-wt-158/mobile-pet-tracker
+
+1. Aparta la pantalla (sin commitear nada):
+     cp src/screens/docs/index.tsx /tmp/158-g5-index.tsx \
+       && git checkout HEAD -- src/screens/docs/index.tsx \
+       && git diff --quiet -- src/screens/docs/index.tsx && echo ok
+   -> ok
+
+2. En src/screens/docs/index.test.tsx, SOLO estas 13 lineas:
+   - en `openUploadForm`: `await act(async () => { fireEvent.press(entry); });`
+     pasa a `await fireEvent.press(entry);`
+   - `function fillDocumentForm()` pasa a `async function fillDocumentForm()`,
+     y sus 4 `fireEvent.changeText(` pasan a `await fireEvent.changeText(`
+   - dentro de `describe('#158 R5: ...')`, los 6 `fireEvent.press(` sin
+     await pasan a `await fireEvent.press(`, y `fillDocumentForm();` pasa a
+     `await fillDocumentForm();`
+   Anclas:
+     git diff --numstat -- src/screens/docs/index.test.tsx         -> 13	13	mobile-pet-tracker/src/screens/docs/index.test.tsx
+     grep -cF 'await fireEvent.' src/screens/docs/index.test.tsx   -> 11
+     grep -cE '^\s*fireEvent\.' src/screens/docs/index.test.tsx    -> 2   (docs-retry y la entrada de R3: no se tocan)
+     grep -cF 'act(async () => { fireEvent' src/screens/docs/index.test.tsx -> 0
+
+3. Mide el rojo (FORCE_COLOR=0, sin pipe, como siempre):
+     jest de docs     > /tmp/158-r5b.txt      -> `15 failed, 44 passed, 59 total`
+     jest de <NUEVE>  > /tmp/158-r5b-todo.txt -> `17 failed, 395 passed, 412 total`; FAIL consistency + docs
+   y comprueba que son los mismos 15 it que el rojo r5:
+     diff <(grep '^  ● ' /tmp/158-r5.txt | LC_ALL=C sort) <(grep '^  ● ' /tmp/158-r5b.txt | LC_ALL=C sort) && echo iguales
+   -> iguales
+     grep -c 'overlapping act' /tmp/158-r5b.txt   -> 0
+
+4. Cadena del commit nuevo:
+     grep -qE '^Tests: +15 failed, 44 passed, 59 total$' /tmp/158-r5b.txt \
+       && grep -qE '^Tests: +17 failed, 395 passed, 412 total$' /tmp/158-r5b-todo.txt \
+       && test "$(grep -oE '^FAIL [^ ]+' /tmp/158-r5b-todo.txt | LC_ALL=C sort -u | tr '\n' ' ')" = 'FAIL src/__tests__/consistency-classnames.test.ts FAIL src/screens/docs/index.test.tsx ' \
+       && ! grep -qE 'TypeError|ReferenceError|SyntaxError|Cannot find module' /tmp/158-r5b.txt /tmp/158-r5b-todo.txt \
+       && test ! -e .expo/types/router.d.ts && bunx tsc --noEmit && bunx expo lint --no-cache \
+       && git add src/screens/docs/index.test.tsx \
+       && git diff --quiet -- . && test -z "$(git ls-files --others --exclude-standard -- .)" \
+       && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'mobile-pet-tracker/src/screens/docs/index.test.tsx ' \
+       && git commit -m 'test(mobile-docs-upload): await R5 events (R5)'
+
+5. Devuelve la pantalla y anade `Label.Text`:
+     cp /tmp/158-g5-index.tsx src/screens/docs/index.tsx
+   En cada una de las 4 etiquetas del formulario, el texto pasa a
+   `<Label.Text className="text-2xs font-semibold text-foreground">{t('docs.<clave>')}</Label.Text>`
+   dentro de la `Label`, que conserva su `className="text-2xs font-semibold text-foreground"`.
+   Anclas:
+     grep -cF '<Label.Text className="text-2xs font-semibold text-foreground">' src/screens/docs/index.tsx -> 4
+     grep -cF '<Label className="text-2xs font-semibold text-foreground">' src/screens/docs/index.tsx      -> 4
+
+6. Sigue con el verde de T5 tal cual dice el handoff (medicion g5 en
+   `412 passed, 412 total`, cadena con solo src/screens/docs/index.tsx
+   staged, mensaje `feat(mobile-docs-upload): document picker and upload form (R5)`).
+   Despues, T6 y el resto, con la regla de `await` de la seccion
+   «Reanudación 3».
+
+progress/handoff_mobile-docs-upload.md modificado sigue siendo del leader:
+NO lo stagees ni lo commitees.
+```
+
+## Reanudación 4 (2026-10-09, tras la parada en el rojo de T9)
+
+Codex paró bien: el handoff solo dejaba salir verde la fila «Error de R6»
+del nuevo intento, y en `/tmp/158-r9.txt` salió verde también `crear
+forbidden`. El error es del handoff, no del test ni de la pantalla:
+tasks.md R8 (línea 219, «Rehabilitar») ya exige que, con `createPetDocument`
+en `{ kind: 'forbidden' }`, la pantalla muestre `Solo el dueño puede subir
+documentos` y rehabilite los dos botones. El verde de R8 (`672c8cfe`) lo
+cumple, así que la fila de R9 nace verde. Nadie la endurece para que salga
+roja y la pantalla de R8 no se toca.
+
+Medido por el leader en el worktree con el test y el design-drift sin
+commitear de Codex (jest de <NUEVE>, FORCE_COLOR=0, sin pipe): `22 failed,
+428 passed, 450 total`, FAIL design-drift + docs. El rojo de design-drift es
+el prescrito (`#87 R19: use-api no deja huella › preserves every mutation
+sign-out with zero delta`, inventario de Docs 0 != 1). Los 21 rojos de docs
+son los mismos que en `/tmp/158-r9.txt`.
+
+Decisiones del leader (mandan sobre tasks.md y sobre la sección T9 de este
+handoff):
+- `crear forbidden` y `quita al pulsar el error anterior: Error de R6` son
+  las dos únicas filas de R9 que salen verdes en el rojo. Si sale verde
+  cualquier otra, PARA.
+- Cuentas exactas del rojo de T9, sin alternativas: docs `21 failed,
+  76 passed, 97 total`; <NUEVE> `22 failed, 428 passed, 450 total`,
+  FAIL design-drift + docs.
+- No cambia ningún it, ni el número de commits, ni el verde de T9 (una sola
+  llamada `signOut(` en la pantalla, T=450), ni las cuentas de T10 a T12.
+
+Pasos para Codex, desde `mobile-pet-tracker/`:
+
+0. Comprueba el estado de arranque (desde la raíz del worktree):
+     git rev-parse --short HEAD                -> 672c8cfe
+     git diff --cached --name-only             -> (vacío)
+     git status --short                        -> exactamente estas 4 líneas
+        M mobile-pet-tracker/src/__tests__/design-drift.test.ts
+        M mobile-pet-tracker/src/screens/docs/index.test.tsx
+        M progress/handoff_mobile-docs-upload.md
+       ?? progress/impl_mobile-docs-upload.md
+     test /tmp/158-r9.txt -nt src/screens/docs/index.test.tsx && echo vigente   -> vigente
+   Si algo no cuadra, PARA.
+
+1. Comprueba que `/tmp/158-r9.txt` tiene justo las dos filas verdes:
+     grep -cE '^  ● #158 R9: ' /tmp/158-r9.txt                                 -> 21
+     grep -cE '✓ (crear forbidden|quita al pulsar el error anterior: Error de R6) ' /tmp/158-r9.txt -> 2
+
+2. Mide <NUEVE> (no vuelvas a medir docs; `/tmp/158-r9.txt` sigue vigente):
+     jest de <NUEVE> > /tmp/158-r9-todo.txt  -> `22 failed, 428 passed, 450 total`; FAIL design-drift + docs
+   y comprueba que docs falla con los mismos 21 it:
+     diff <(grep -E '^  ● #158' /tmp/158-r9.txt | LC_ALL=C sort) <(grep -E '^  ● #158' /tmp/158-r9-todo.txt | LC_ALL=C sort) && echo iguales
+   -> iguales
+
+3. Cadena del rojo de T9 (sustituye a la de la sección T9):
+     grep -qE '^Tests: +21 failed, 76 passed, 97 total$' /tmp/158-r9.txt \
+       && grep -qE '^Tests: +22 failed, 428 passed, 450 total$' /tmp/158-r9-todo.txt \
+       && test "$(grep -oE '^FAIL [^ ]+' /tmp/158-r9-todo.txt | LC_ALL=C sort -u | tr '\n' ' ')" = 'FAIL src/__tests__/design-drift.test.ts FAIL src/screens/docs/index.test.tsx ' \
+       && ! grep -qE 'TypeError|ReferenceError|SyntaxError|Cannot find module' /tmp/158-r9.txt /tmp/158-r9-todo.txt \
+       && test ! -e .expo/types/router.d.ts && bunx tsc --noEmit && bunx expo lint --no-cache \
+       && git add src/screens/docs/index.test.tsx src/__tests__/design-drift.test.ts \
+       && git diff --quiet -- . && test -z "$(git ls-files --others --exclude-standard -- .)" \
+       && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'mobile-pet-tracker/src/__tests__/design-drift.test.ts mobile-pet-tracker/src/screens/docs/index.test.tsx ' \
+       && git commit -m 'test(mobile-docs-upload): red upload errors keep the screen up (R9)'
+
+4. Sigue con el verde de T9 tal cual dice el handoff (<NUEVE> en
+   `450 passed, 450 total`, una sola llamada `signOut(` en
+   `src/screens/docs/index.tsx`, mensaje
+   `feat(mobile-docs-upload): upload errors keep the screen up (R9)`) y
+   después T10 a T12 con la regla de `await` de la Reanudación 3.
+
+5. En la traceability, en la fila de R9, anota que `crear forbidden` nació
+   verde porque R8 ya lo implementaba (tasks.md:219) y cita esta
+   Reanudación.
+
+progress/handoff_mobile-docs-upload.md modificado sigue siendo del leader:
+NO lo stagees ni lo commitees.
