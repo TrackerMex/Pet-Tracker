@@ -59,9 +59,11 @@ Cada requisito nombra en [[tasks]] el test que lo verifica. En los testIDs,
   cabecera `RIFF`/`WEBP`/`VP8X`, bit de alfa `bytes[20] & 0x10` encendido y
   bit de animación `bytes[20] & 0x02` apagado. Debe medir 1024 × 1024 y pesar
   como mucho 100000 bytes.
-- **R1.2** THE SYSTEM SHALL que `assets/images/` tenga exactamente nueve
-  ficheros que empiezan por `pingo-` o `mascot-`: los ocho de hoy más
-  `pingo-celebrate.webp`.
+- **R1.2** THE SYSTEM SHALL que los ficheros de `assets/images/` que
+  empiezan por `pingo-` o `mascot-` sean exactamente los de `origin/main` en
+  el momento del handoff más `pingo-celebrate.webp`. En 89fe2009 son ocho, así
+  que quedarían nueve. **El recuento no se congela aquí**: #167 y #170 pueden
+  añadir poses antes, y el leader lo re-mide en [[design]] §9.3 (paso 5).
 
 ### R2 — Un único componente pinta la celebración
 

@@ -75,11 +75,13 @@ tags: [harness, spec, mobile, ui, motion]
   - En `src/screens/welcome/index.test.tsx`,
     `it('no mete otras poses de Pingo'` pasa a esperar
     `['pingo-celebrate.webp', 'pingo-clipboard.webp', 'pingo-collar.webp', 'pingo-food.webp', 'pingo-health.webp', 'pingo-sleep.webp', 'pingo-talk.webp', 'pingo-wave-blink.webp', 'pingo-wave.webp']`.
+    Esta lista se midió en 89fe2009. Antes del handoff, el leader la reescribe
+    con lo que haya en `origin/main` ([[design]] §9.3 paso 5).
 
   | it | Rojo esperado |
   |---|---|
   | R1.1 cabecera WebP | excepción `ENOENT` de `readFileSync`; se declara como rojo **por consulta** del fichero |
-  | R1.2 nueve poses | **por aserción** (`toEqual`: falta `pingo-celebrate.webp`) |
+  | R1.2 lista de poses | **por aserción** (`toEqual`: falta `pingo-celebrate.webp`) |
 
 - [ ] (2) Verde
   ```bash

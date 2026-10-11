@@ -333,7 +333,7 @@ Cada ancla se midió en 89fe2009 y se ejecuta desde `mobile-pet-tracker/`.
 
 | Candado | Ancla (`grep -cF`) → base | Cambio |
 |---|---|---|
-| Bienvenida, poses | `"it('no mete otras poses de Pingo'" src/screens/welcome/index.test.tsx` → `1` | `'pingo-celebrate.webp'` entra **primero** en la lista ordenada, antes de `'pingo-clipboard.webp'` (R1.2) |
+| Bienvenida, poses | `"it('no mete otras poses de Pingo'" src/screens/welcome/index.test.tsx` → `1` | `'pingo-celebrate.webp'` entra en su sitio alfabético de la lista ordenada: en 89fe2009, **primero**, antes de `'pingo-clipboard.webp'`. La lista se re-mide en §9.3 paso 5 (R1.2) |
 | EmptyState, imports permitidos | `"it('EmptyState solo importa de react, react-native, expo-image y heroui-native'" src/components/__tests__/empty-state.test.tsx` → `1` | Se reescribe: la lista admitida suma `'react-native-reanimated'` y `'../theme/motion'`, y el nombre del `it` lo dice |
 | EmptyState, no anima | `"it('EmptyState no anima', ()" src/components/__tests__/empty-state.test.tsx` → `1` | Se **elimina**: lo sustituyen los candados de R10 y R11 |
 | EmptyState, imports exactos | `"it('EmptyState importa exactamente Image, Button, Text y View'" src/components/__tests__/empty-state.test.tsx` → `1` | La lista exacta pasa a ser la de §4.5; `require(` sigue en 6 |
@@ -461,6 +461,13 @@ El leader:
      R14 se enmienda para copiarla y se reabre el gate solo para R14.
 4. Si `EmptyState` cambió en #166 (labio de `{testID}-action`), re-mide los
    imports exactos de §4.5 y los `it` de §7 que miran `empty-state.tsx`.
+5. Re-mide las poses de R1.2, que no dependen de #166 sino de lo que haya
+   mergeado antes (#167, #170 u otra): lista ordenada de
+   `ls mobile-pet-tracker/assets/images | grep -E '^(pingo|mascot)-'` en
+   `origin/main`. Reescribe con ella, más `pingo-celebrate.webp` en su sitio
+   alfabético, la lista esperada de [[tasks]] T1 y la fila «Bienvenida,
+   poses» de §7. También busca cualquier otro candado de poses que haya
+   aparecido (`grep -rlF "no mete otras poses" mobile-pet-tracker/src`).
 
 Hasta entonces, R14 y sus tests (T14) **no se implementan**. Si Codex arranca
 sin esta sección rellena, **para**.
