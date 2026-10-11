@@ -577,3 +577,53 @@ describe('#166 R2: todo primario sólido lleva el labio detrás de bg-accent', (
     expect(count(/border-black\/25/g)).toBe(19);
   });
 });
+
+describe('#166 R3: el secundario neutro lleva el labio gris', () => {
+  const recipe = 'rounded-xl border-2 border-b-6 border-lip-gray bg-surface';
+  const rows = [
+    [join('screens', 'welcome', 'index.tsx'), 'welcome-have-account', null],
+    [join('screens', 'forgot', 'index.tsx'), 'forgot-resend', 'secondary'],
+    [join('screens', 'docs', 'index.tsx'), 'docs-upload-cancel', 'outline'],
+    [join('screens', 'reminders', 'index.tsx'), 'reminders-delete-cancel', 'outline'],
+  ] as const;
+
+  it.each(rows)('%s pinta %s con la receta del secundario en su tag de apertura', (path, testId, variant) => {
+    const tag = openingTagWithTestId(readSource(path), testId);
+
+    expect(tag).toContain(recipe);
+    expect(tag).not.toContain('border-accent');
+    expect(tag).not.toContain('bg-transparent');
+    expect(tag).not.toContain('border-black');
+    if (variant === null) {
+      expect(tag).not.toContain('variant=');
+    } else {
+      expect(tag).toContain(`variant="${variant}"`);
+    }
+  });
+
+  it('inventaría los cuatro secundarios neutros de toda la app', () => {
+    const testIds = sourceFiles().filter((path) => path.endsWith('.tsx')).flatMap((path) =>
+      readFileSync(path, 'utf8').split(/<Button(?=[\s>])/).slice(1).flatMap((part) => {
+        const tag = part.split('<')[0];
+        const neutral = ((tag.includes('variant="outline"') || tag.includes('variant="secondary"'))
+          && !tag.includes('bg-accent-soft') && !tag.includes('bg-default'))
+          || tag.includes('border-lip-gray');
+
+        return neutral ? [tag.match(/testID="([^"]+)"/)?.[1]] : [];
+      }),
+    );
+
+    expect(testIds.sort()).toEqual([
+      'docs-upload-cancel',
+      'forgot-resend',
+      'reminders-delete-cancel',
+      'welcome-have-account',
+    ]);
+    const count = (pattern: RegExp) => sourceFiles().reduce(
+      (total, path) => total + (readFileSync(path, 'utf8').match(pattern) ?? []).length,
+      0,
+    );
+    expect(count(/border-lip-gray/g)).toBe(4);
+    expect(count(/\bborder-b-6\b/g)).toBe(4);
+  });
+});
