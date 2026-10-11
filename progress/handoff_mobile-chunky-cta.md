@@ -240,7 +240,10 @@ mutacion, mides SOLO los ficheros de test que dice la sonda (salida a
   git diff --cached --quiet && git diff --quiet; echo "limpio=$?"   -> limpio=0
 Nunca `git checkout <commit> -- <fichero>` (deja el cambio en el
 indice). Si una sonda no da EXACTAMENTE su linea `Tests:` y sus `●`,
-PARA. Ninguna sonda se commitea. Todas caen por ASERCION.
+PARA.
+`●` son SOLO los encabezados de it rojo: Jest tambien imprime bloques
+`  ● Console` (console.warn de Uniwind, console.info de HeroUI) que no
+cuentan nunca, ni en sondas ni en rojos; se copian al impl sin filtrar. Ninguna sonda se commitea. Todas caen por ASERCION.
 
 -- T1 R1: el token del labio gris --
 
@@ -251,7 +254,7 @@ it.each de 2 filas, al final de global-css.test.ts; clave
   FORCE_COLOR=0 bunx jest --runTestsByPath src/theme/__tests__/global-css.test.ts > /tmp/166-r1.txt 2>&1; echo "exit=$?"
     -> exit=1 y `Tests:       2 failed, 51 passed, 53 total`, los dos por asercion
   grep -qE '^Tests: +2 failed, 51 passed, 53 total$' /tmp/166-r1.txt \
-    && test "$(grep -cE '^  ● ' /tmp/166-r1.txt)" = 2 \
+    && test "$(grep -E '^  ● ' /tmp/166-r1.txt | grep -cvxF '  ● Console')" = 2 \
     && test "$(grep -E '^  ● ' /tmp/166-r1.txt | grep -cF 'declara --color-lip-gray exacto en')" = 2 \
     && ! grep -qE 'Test suite failed to run|TypeError|ReferenceError|SyntaxError|Cannot find module' /tmp/166-r1.txt \
     && ! grep -qF 'Unable to find' /tmp/166-r1.txt \
@@ -292,7 +295,7 @@ y los dos it de empty-state, uno renombrado y sin su `not.toMatch`):
   FORCE_COLOR=0 bunx jest --runTestsByPath src/__tests__/consistency-classnames.test.ts 'src/app/(auth)/__tests__/login.test.tsx' 'src/app/(auth)/__tests__/register.test.tsx' src/screens/forgot/index.test.tsx src/screens/reset-password/index.test.tsx src/screens/geofence-editor/index.test.tsx src/screens/geofences/index.test.tsx src/components/__tests__/empty-state.test.tsx > /tmp/166-r2.txt 2>&1; echo "exit=$?"
     -> exit=1 y `Tests:       10 failed, 342 passed, 352 total`, los diez por asercion
   grep -qE '^Tests: +10 failed, 342 passed, 352 total$' /tmp/166-r2.txt \
-    && test "$(grep -cE '^  ● ' /tmp/166-r2.txt)" = 10 \
+    && test "$(grep -E '^  ● ' /tmp/166-r2.txt | grep -cvxF '  ● Console')" = 10 \
     && test "$(grep -E '^  ● ' /tmp/166-r2.txt | grep -cF '#166 R2: todo primario sólido lleva el labio detrás de bg-accent')" = 2 \
     && ! grep -qE '^  ● (#62 R1|#98 R10)' /tmp/166-r2.txt \
     && ! grep -qE 'Test suite failed to run|TypeError|ReferenceError|SyntaxError|Cannot find module' /tmp/166-r2.txt \
@@ -359,7 +362,7 @@ el it `deja el CTA secundario sin labio` borrado entero y el describe
   FORCE_COLOR=0 bunx jest --runTestsByPath src/__tests__/consistency-classnames.test.ts src/screens/welcome/index.test.tsx src/screens/forgot/index.test.tsx src/screens/docs/index.test.tsx src/screens/reminders/index.test.tsx > /tmp/166-r3.txt 2>&1; echo "exit=$?"
     -> exit=1 y `Tests:       7 failed, 293 passed, 300 total`, los siete por asercion
   grep -qE '^Tests: +7 failed, 293 passed, 300 total$' /tmp/166-r3.txt \
-    && test "$(grep -cE '^  ● ' /tmp/166-r3.txt)" = 7 \
+    && test "$(grep -E '^  ● ' /tmp/166-r3.txt | grep -cvxF '  ● Console')" = 7 \
     && test "$(grep -E '^  ● ' /tmp/166-r3.txt | grep -cF '#166 R3: el secundario neutro lleva el labio gris')" = 5 \
     && test "$(grep -E '^  ● ' /tmp/166-r3.txt | grep -cF 'es un botón de superficie con labio gris y tinta accent-strong')" = 1 \
     && test "$(grep -E '^  ● ' /tmp/166-r3.txt | grep -cF 'lleva el labio gris en el CTA secundario')" = 1 \
@@ -419,7 +422,7 @@ consistency-classnames.test.ts):
   FORCE_COLOR=0 bunx jest --runTestsByPath src/__tests__/consistency-classnames.test.ts > /tmp/166-r4.txt 2>&1; echo "exit=$?"
     -> exit=1 y `Tests:       1 failed, 62 passed, 63 total`, por asercion
   grep -qE '^Tests: +1 failed, 62 passed, 63 total$' /tmp/166-r4.txt \
-    && test "$(grep -cE '^  ● ' /tmp/166-r4.txt)" = 1 \
+    && test "$(grep -E '^  ● ' /tmp/166-r4.txt | grep -cvxF '  ● Console')" = 1 \
     && test "$(grep -E '^  ● ' /tmp/166-r4.txt | grep -cF 'declara las dos recetas y el orden del labio')" = 1 \
     && ! grep -qE 'Test suite failed to run|TypeError|ReferenceError|SyntaxError|Cannot find module' /tmp/166-r4.txt \
     && test ! -e .expo/types/router.d.ts && bun run typecheck && bunx expo lint --no-cache \
@@ -604,3 +607,24 @@ vacios, lista cerrada); los pasos de la prueba de humo R5; la linea
 `R5: pendiente del smoke humano`; y cualquier decision que la spec no
 cerrara literalmente.
 ```
+
+## Reanudacion 1 (leader, 2026-10-11): c3 paro por los `  ● Console`
+
+Causa: el segundo eslabon de c3 contaba `grep -cE '^  ● '` = 10 y el log
+da 17: los 10 it rojos esperados mas 7 bloques `  ● Console` de Jest. No
+era un fallo de Codex ni del arbol. Corregido en este handoff: los cuatro
+contadores (r1-r4) son ahora
+`grep -E '^  ● ' <log> | grep -cvxF '  ● Console'`. Medido por el leader
+sobre el arbol de la parada (HEAD d03bc813 + los 8 tests de c3 sin
+stagear): contador nuevo = 10 en /tmp/166-r2.txt (y 2 en
+/tmp/166-r1.txt), el resto de eslabones de solo lectura pasan
+(0, 6, 2, 0, 1), `bun run typecheck` y `bunx expo lint --no-cache` exit 0.
+
+Para reanudar: NO reviertes los 8 ficheros de test de c3 ni tocas nada
+mas. Desde `cd /home/claude/sites/Pet-Tracker-wt-166/mobile-pet-tracker`
+vuelves a correr el comando de medida de c3 (sobrescribe
+/tmp/166-r2.txt) y despues la cadena de c3 tal como esta ahora en este
+fichero, entera, hasta su `git commit`. Luego sigues con S2.1-S2.4 y c4
+en adelante sin cambios. Anota en el impl una seccion `Reanudacion 1`
+con la linea `Tests:` y el resultado de la cadena.
+
