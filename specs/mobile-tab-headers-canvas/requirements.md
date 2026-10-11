@@ -33,6 +33,30 @@ pantallas (`profile-add-pet`, `change-photo`, `profile-sign-out`,
 `Button`**: ningún test de #168 aserta sobre ellos y todo test que necesite un
 botón lo encuentra por `testID`.
 
+### §0.1 Decisión sobre #119, relatada (pendiente de confirmar)
+
+Frase literal del humano, **relatada por la sesión Frontend, 2026-10-11**
+(ni el leader ni esta spec la vieron escribir), en respuesta a «cancelar,
+reescribir o absorber #119». Se copia con su errata:
+
+> «y si reescribe todo lo necesario parar llegar a la UI que decidimos del artifac»
+
+**Interpretación de la sesión Frontend, no un hecho**: la opción elegida es
+reescribir #119 en lo que haga falta para llegar a la UI del canvas, y eso
+autoriza también a reescribir los candados y enmiendas previas que lo impidan
+(la Enmienda #67 y `src/__tests__/hero-header-amendments.test.ts`). La
+pregunta abierta 1 pide al humano que confirme o corrija esta lectura.
+
+Lo que esta frase **no** cambia:
+
+- Ningún gate. Cada reversión conserva su bloque de enmienda y su casilla de
+  firma humana propia (R11 y § Aprobación). La frase autoriza a proponer; la
+  firma sigue siendo por bloque.
+- El diseño de #168. #168 ya se apoya en N1 y no reescribe ningún candado
+  de #67: añade su enmienda sin tocar los tres `it` de `#67 R10` (R11.4). Si
+  el humano confirma la lectura de Frontend, la spec queda igual; si la
+  corrige, también.
+
 ## §1. Medidas en la base `89fe2009` (se re-miden al arrancar, por grep)
 
 Las cifras caducan con el trabajo de otros (#166 mergea antes). El handoff las
@@ -487,15 +511,37 @@ Candidatas a feature propia (las decide el humano, no se crean aquí):
 
 ## Preguntas abiertas
 
-1. **#119 `mobile-hero-food-and-detail`** pide hero fotográfico en Nutrición,
-   lo contrario de N1. Opciones:
-   (a) **cancelar**: se pierde la parte de pantallas de detalle (A11/A13 de
-   #95), que nadie más cubre;
-   (b) **reescribir** a solo pantallas de detalle: conserva ese valor, exige
-   una spec nueva y que respete la regla N1 de la carta;
-   (c) **absorber** en #168: ensancha un PR ya grande con pantallas ajenas a
-   las pestañas.
-   Recomendación de esta spec: (b). #168 no toca la entrada de #119.
+1. **#119 `mobile-hero-food-and-detail`: confirma la lectura de §0.1.**
+   Si la confirmas, esta es la propuesta de en qué queda #119. La redacción
+   nueva de su entrada en `feature_list.json` la escribe el leader tras
+   aprobar esta spec; #168 no la toca.
+
+   Contraste hecho contra el canvas aprobado
+   (`https://claude.ai/artifact/VqaQQsRTtis9Dbttqy3z7j`, versión
+   `1791609186-17a0`), artboard por artboard:
+
+   | Parte de #119 | Qué pinta el canvas | Propuesta |
+   |---|---|---|
+   | (1) Cabecera fotográfica de 280 px en Nutrición | `Nutricion.dc.html`: título grande, sin foto | **Se cae**: la contradicen N1 y el canvas. La sustituye R1 de #168 |
+   | (2) Cabecera fotográfica en las pantallas de detalle (docs, add-reminder, meal-schedule, weight-log, pairing, pets/add, reminders, alerts) | `Documentos`, `NuevoRecordatorio`, `HorarioComidas`, `Peso`, `Vincular`, `NuevaMascota`, `Recordatorios`, `Alertas` (y `HistorialComidas`): las nueve abren con «Volver» y un título de texto; ninguna lleva foto de la mascota (`Vincular` lleva la ilustración de Pingo, no una foto) | **Se cae**: el canvas tampoco la pide. La cabecera nativa de A11/A13 (#95) se queda, que es lo que `progress/explore_ui-canvas-parity.md` §1 llama «paridad por equivalencia». Esta spec no la relitiga |
+   | Migrar `food.tsx` a `src/screens/food/` | No es UI | **No es de #119**: sigue siendo la deuda nombrada en #102. #168 deja la ruta gorda (design D7) |
+   | Delta del candado de catálogo si añade copy | No aplica | **Se cae** con las partes (1) y (2) |
+
+   Resultado: de #119 no queda nada vivo. Lo que el canvas pide en esas
+   pantallas además de la cabecera ya tiene dueño en el reparto por filas
+   (`progress/explore_ui-canvas-parity.md` §6): Recordatorios, Nuevo
+   recordatorio, Peso, Horario, Historial y Documentos son de la fila 3
+   (#169 y su segunda parte); Alertas, Vincular y Nueva mascota, de la fila 4
+   (#170 en ese reparto). Ninguna pide cabecera fotográfica.
+
+   Propuesta para el leader: cerrar #119 como **superada por #168 y el
+   canvas, sin código propio**. `feature_list.json` no tiene hoy un estado
+   «cancelada» (solo `pending`, `spec_ready` y `done`). Cómo se registra es
+   decisión del humano: (i) `done` con la descripción reescrita a «cerrada
+   sin implementación: superada por #168 (N1) y por el canvas del
+   2026-10-06», o (ii) añadir un estado nuevo, lo que cambia `AGENTS.md` §6 y
+   el `init.sh`. Por defecto, (i), y solo cuando #168 esté mergeada.
+
 2. **Copy del canvas**: #168 no añade claves. Diferencias medidas contra
    `src/i18n/catalog.ts` que el humano puede querer adoptar en otra feature:
    `profile.gpsSettings` ES «Configuración del Dispositivo GPS» / EN "GPS
@@ -521,10 +567,15 @@ Candidatas a feature propia (las decide el humano, no se crean aquí):
 ## Aprobación
 
 - [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
-- [ ] Enmienda #168 aprobada por humano en los cuatro documentos de R11.2
-  (cada uno lleva su casilla `- [ ] Enmienda #168 aprobada por humano`; los
-  bloques los inserta Codex en el bloque L de `tasks.md`, así que el humano
-  las marca tras la implementación y antes del cierre; el leader no marca
-  `done` sin ellas)
+- Reversiones, una casilla cada una. Los bloques los inserta Codex en el
+  bloque L de `tasks.md`, así que el humano firma aquí **y** en la casilla
+  `- [ ] Enmienda #168 aprobada por humano` de cada documento tras la
+  implementación y antes del cierre. El leader no marca `done` sin las cinco.
+  La frase relatada en §0.1 no sustituye a ninguna:
+  - [ ] B1: Salud deja el hero (enmienda a `specs/mobile-health-make-parity/`, R2 y R3)
+  - [ ] B2: Perfil deja el hero; Inicio lo conserva (enmienda a `specs/mobile-pet-hero-header/`, R6, la Enmienda #67)
+  - [ ] B3: el anillo sustituye a la barra (enmienda a `specs/mobile-kcal-consumed-bar/`, R2, R4 y R7)
+  - [ ] B4: regla N1 en la carta (`docs/ui-guidelines.md`)
+  - [ ] Candado: `src/__tests__/hero-header-amendments.test.ts` gana el `describe` `#168 R11`; los tres `it` de `#67 R10` no cambian (R11.4)
 - [ ] Prueba de humo R13 superada en dev build de Android (fecha: ____,
   dispositivo: ____) ← gate de cierre; el leader no marca `done` sin ella
