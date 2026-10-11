@@ -59,6 +59,8 @@ describe('#65 R12: el catálogo tiene los dos idiomas y t resuelve claves y par�
         + 1 // #153 R1
         + 5 // #155 R1
         + 12 // #158 R1
+        + 4 // #159 R1
+        - 1, // #159 R2
     );
     expect(spanishKeys).toEqual(englishKeys);
     for (const key of englishKeys) {
@@ -177,7 +179,7 @@ describe('#41 R1: el catálogo trae las once claves de zonas seguras', () => {
     const translations = [
       ['geofences.title', 'Safe zones', 'Zonas seguras'],
       ['geofences.empty', 'No safe zones yet', 'Aún no hay zonas seguras'],
-      ['geofences.needsCollar', 'Safe zones require a collar', 'Las zonas seguras requieren un collar'],
+      ['geofences.needsCollar', 'Safe zones need a collar with an active plan.', 'Las zonas seguras necesitan un collar con plan activo.'],
       ['geofences.radius', '{{meters}} m radius', 'Radio de {{meters}} m'],
       ['geofences.activeLabel', '{{name}} zone active', 'Zona {{name}} activa'],
       ['geofences.statusActive', 'Active', 'Activa'],

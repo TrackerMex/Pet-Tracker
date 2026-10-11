@@ -1100,7 +1100,7 @@ describe('R9: summary degrada con gracia', () => {
 
     await waitFor(() => {
       expect(screen.getByTestId('summary-note')).toHaveTextContent(
-        'La actividad requiere un collar',
+        'La actividad necesita un collar con plan activo',
       );
     });
   });
@@ -1212,7 +1212,7 @@ describe('#77 R1: el peso se pinta aunque la actividad no esté disponible', () 
 
     expect(screen.getByTestId('summary-weight')).toHaveTextContent('—');
     expect(screen.getByTestId('summary-note')).toHaveTextContent(
-      'La actividad requiere un collar',
+      'La actividad necesita un collar con plan activo',
     );
   });
 
@@ -1262,7 +1262,7 @@ describe('#77 R2: sin actividad, la fila es la celda de peso seguida de la nota'
   });
 
   it.each<[string, DailyActivityState, string]>([
-    ['sin collar', { kind: 'no-tracking' }, 'La actividad requiere un collar'],
+    ['sin collar', { kind: 'no-tracking' }, 'La actividad necesita un collar con plan activo'],
     ['con la actividad en error', { kind: 'error' }, 'No se pudo cargar la actividad'],
     [
       'sin conexión',

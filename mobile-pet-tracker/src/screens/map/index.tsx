@@ -144,6 +144,10 @@ export function MapScreen() {
       ? pets.data.pets.find(({ id }) => id === selectedPetId)
       : undefined;
   const canSetLostMode = selectedPet?.myRole === 'owner';
+  const canPairCollar =
+    detail.data?.kind === 'ok' &&
+    detail.data.pet.myRole === 'owner' &&
+    detail.data.pet.device === null;
   const refetchPets = pets.refetch;
   const handleLostMode = useCallback(async () => {
     if (!selectedPet || selectedPet.myRole !== 'owner' || lostModeBusy) return;
@@ -281,9 +285,13 @@ export function MapScreen() {
 
       {petsReady && last.data?.kind === 'no-tracking' ? (
         <View className="flex-1 items-center justify-center p-6 bg-background">
-          <Text testID="map-no-tracking" className="text-center text-muted">
-            {t('map.trackingNeedsCollar')}
-          </Text>
+          <EmptyState
+            testID="map-no-tracking"
+            pose="collar"
+            title={t('map.noTrackingTitle')}
+            body={t('map.noTrackingBody')}
+            action={canPairCollar ? { label: t('home.pairCollar'), onPress: () => router.push('/pairing') } : undefined}
+          />
         </View>
       ) : null}
 

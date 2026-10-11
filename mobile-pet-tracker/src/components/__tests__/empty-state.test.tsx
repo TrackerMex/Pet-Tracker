@@ -190,11 +190,11 @@ describe('#155 R10: los vacíos que no se ilustran siguen en texto', () => {
     ['src/screens/home/index.tsx', 1],
     ['src/screens/health/index.tsx', 1],
     ['src/app/(tabs)/food.tsx', 2],
-    ['src/screens/map/index.tsx', 1],
+    ['src/screens/map/index.tsx', 2],
     ['src/screens/alerts/index.tsx', 1],
     ['src/screens/reminders/index.tsx', 1],
     ['src/screens/docs/index.tsx', 1],
-    ['src/screens/geofences/index.tsx', 1],
+    ['src/screens/geofences/index.tsx', 2],
   ] as const)('%s pinta %i EmptyState', (path, n) => {
     const source = readFileSync(join(process.cwd(), path), 'utf8');
     expect(source.match(/<EmptyState\b/g) ?? []).toHaveLength(n);
@@ -245,5 +245,126 @@ describe('#155 R11: los vacíos no traen movimiento ni dependencias', () => {
   it('EmptyState no anima con Animated, LayoutAnimation ni transiciones', () => {
     const source = readFileSync(join(process.cwd(), 'src', 'components', 'empty-state.tsx'), 'utf8');
     expect(source).not.toMatch(/\bAnimated\b|LayoutAnimation|transition|animate-/);
+  });
+});
+
+
+const noCollarRows = [
+  ['map.noTrackingTitle', 'No live location', 'Sin ubicación en vivo'],
+  ['map.noTrackingBody', "Once your pet has a collar with an active plan, I'll show you where they are.", 'Cuando tu mascota tenga un collar con plan activo, te muestro dónde está.'],
+  ['geofences.noTrackingTitle', 'Safe zones unavailable', 'Zonas seguras no disponibles'],
+  ['geofences.noTrackingBody', "Once your pet has a collar with an active plan, I'll let you know if they leave a safe zone.", 'Cuando tu mascota tenga un collar con plan activo, te aviso si sale de una zona segura.'],
+] as const;
+
+function section159(): string {
+  const source = languageDesign();
+  const start = source.indexOf('### §2.23 — Añadidos por #159 — Pingo sin collar');
+  return start === -1 ? '' : source.slice(start, source.indexOf('\n## 3. La infraestructura', start));
+}
+
+describe('#159 R1: el copy sin collar existe en los dos idiomas', () => {
+  it.each(noCollarRows)('declara %s en inglés y en español', (key, english, spanish) => {
+    expect(enCatalog[key]).toBe(english);
+    expect(esCatalog[key]).toBe(spanish);
+  });
+
+  it.each(['map.noTrackingBody', 'geofences.noTrackingBody'])('%s no exclama, no lleva emoji y termina en punto en los dos idiomas', (key) => {
+    for (const v of [enCatalog[key], esCatalog[key]]) {
+      expect(typeof v).toBe('string');
+      expect(v).not.toMatch(/[!¡]/);
+      expect(v).not.toMatch(/\p{Extended_Pictographic}/u);
+      expect(v).toMatch(/\.$/);
+    }
+  });
+
+  it.each(['map.noTrackingTitle', 'geofences.noTrackingTitle'])('%s no exclama, no lleva emoji y no termina en punto en los dos idiomas', (key) => {
+    for (const v of [enCatalog[key], esCatalog[key]]) {
+      expect(typeof v).toBe('string');
+      expect(v).not.toMatch(/[!¡]/);
+      expect(v).not.toMatch(/\p{Extended_Pictographic}/u);
+      expect(v).not.toMatch(/\.$/);
+    }
+  });
+
+  it('abre la sección §2.23 en mobile-ui-language tras §2.21 y antes de la infraestructura', () => {
+    const source = languageDesign();
+    const header = '### §2.23 — Añadidos por #159 — Pingo sin collar';
+    expect(source).toContain(header);
+    expect(source.indexOf('### §2.21 — Añadidos por #155')).toBeLessThan(source.indexOf(header));
+    expect(source.indexOf(header)).toBeLessThan(source.indexOf('## 3. La infraestructura'));
+  });
+
+  it.each(noCollarRows)('%s tiene fila de #159 en mobile-ui-language', (key, english, spanish) => {
+    expect(section159()).toContain(`| — | \`${key}\` | \`${english}\` | \`${spanish}\` | ← añadida por #159 (R1) |`);
+  });
+});
+
+
+describe('#159 R2: el texto de rastreo en vivo se retira', () => {
+  it('map.trackingNeedsCollar ya no existe en ningún idioma y queda retirada en mobile-ui-language', () => {
+    expect(Object.keys(enCatalog)).not.toContain('map.trackingNeedsCollar');
+    expect(Object.keys(esCatalog)).not.toContain('map.trackingNeedsCollar');
+    expect(section159()).toContain('| — | `map.trackingNeedsCollar` ← retirada por #159 (R2) | `Live tracking requires a collar` | `El rastreo en vivo requiere un collar` |');
+  });
+
+  it('docs/verification.md describe a Pingo en el paso 5 del plan Free', () => {
+    const source = readFileSync(join(process.cwd(), '..', 'docs', 'verification.md'), 'utf8');
+    expect(source).toContain('el tab Map muestra a Pingo con `No live location`, sin el botón `Pair a collar` (la mascota ya tiene collar)');
+    expect(source).not.toContain('Live tracking requires a collar');
+  });
+});
+
+describe('#159 R7: la guarda del editor sigue en texto y dice la verdad', () => {
+  it('geofences.needsCollar tiene fila de #159 en mobile-ui-language', () => {
+    expect(section159()).toContain('| — | `geofences.needsCollar` | `Safe zones need a collar with an active plan.` | `Las zonas seguras necesitan un collar con plan activo.` | ← cambiada por #159 (R7) |');
+  });
+
+  it('el editor abre <Card testID="geofence-editor-no-tracking"> una sola vez y no usa EmptyState', () => {
+    const source = readFileSync(join(process.cwd(), 'src', 'screens', 'geofence-editor', 'index.tsx'), 'utf8');
+    expect(source.match(/<Card\s+testID="geofence-editor-no-tracking"/g) ?? []).toHaveLength(1);
+    expect(source).not.toMatch(/<EmptyState\b/);
+  });
+});
+
+describe('#159 R8: la nota de Inicio sigue en texto y dice la verdad', () => {
+  it('home.activityNeedsCollar declara el literal nuevo en inglés y en español', () => {
+    expect(enCatalog['home.activityNeedsCollar']).toBe('Activity needs a collar with an active plan');
+    expect(esCatalog['home.activityNeedsCollar']).toBe('La actividad necesita un collar con plan activo');
+  });
+
+  it('home.activityNeedsCollar no exclama, no lleva emoji y no termina en punto en los dos idiomas', () => {
+    for (const v of [enCatalog['home.activityNeedsCollar'], esCatalog['home.activityNeedsCollar']]) {
+      expect(typeof v).toBe('string');
+      expect(v).not.toMatch(/[!¡]/);
+      expect(v).not.toMatch(/\p{Extended_Pictographic}/u);
+      expect(v).not.toMatch(/\.$/);
+    }
+  });
+
+  it('home.activityNeedsCollar tiene fila de #159 en mobile-ui-language', () => {
+    expect(section159()).toContain('| — | `home.activityNeedsCollar` | `Activity needs a collar with an active plan` | `La actividad necesita un collar con plan activo` | ← cambiada por #159 (R8) |');
+  });
+
+  it('Inicio abre <Text testID="summary-note"> una sola vez', () => {
+    const source = readFileSync(join(process.cwd(), 'src', 'screens', 'home', 'index.tsx'), 'utf8');
+    expect(source.match(/<Text\s+testID="summary-note"/g) ?? []).toHaveLength(1);
+  });
+});
+
+describe('#159 R9: los estados sin collar no traen movimiento ni dependencias', () => {
+  it.each([
+    ['src/screens/map/index.tsx', 'react-native-reanimated'],
+    ['src/screens/map/index.tsx', '\\bAnimated\\b'],
+    ['src/screens/map/index.tsx', 'LayoutAnimation'],
+    ['src/screens/map/index.tsx', 'entering='],
+    ['src/screens/map/index.tsx', 'MOTION_'],
+    ['src/screens/geofences/index.tsx', 'react-native-reanimated'],
+    ['src/screens/geofences/index.tsx', '\\bAnimated\\b'],
+    ['src/screens/geofences/index.tsx', 'LayoutAnimation'],
+    ['src/screens/geofences/index.tsx', 'entering='],
+    ['src/screens/geofences/index.tsx', 'MOTION_'],
+  ])('%s no contiene %s', (path, pattern) => {
+    const source = readFileSync(join(process.cwd(), path), 'utf8');
+    expect(source).not.toMatch(new RegExp(pattern));
   });
 });

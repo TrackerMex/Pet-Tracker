@@ -925,6 +925,18 @@ copy completa en cada una.
 | — | `docs.errorUploadFailed` | `The file could not be uploaded. Try again` | `No se pudo subir el archivo. Inténtalo de nuevo` | ← añadida por #158 (R1) |
 | — | `docs.emptyBody` | `When a medical document for your pet is uploaded, I'll keep it here.` | `Cuando se suba un documento médico de tu mascota, te lo guardo aquí.` | ← cambiada por #158 (R1) |
 
+### §2.23 — Añadidos por #159 — Pingo sin collar
+
+| # | Clave | `en` | `es` | Origen |
+|---|---|---|---|---|
+| — | `map.noTrackingTitle` | `No live location` | `Sin ubicación en vivo` | ← añadida por #159 (R1) |
+| — | `map.noTrackingBody` | `Once your pet has a collar with an active plan, I'll show you where they are.` | `Cuando tu mascota tenga un collar con plan activo, te muestro dónde está.` | ← añadida por #159 (R1) |
+| — | `geofences.noTrackingTitle` | `Safe zones unavailable` | `Zonas seguras no disponibles` | ← añadida por #159 (R1) |
+| — | `geofences.noTrackingBody` | `Once your pet has a collar with an active plan, I'll let you know if they leave a safe zone.` | `Cuando tu mascota tenga un collar con plan activo, te aviso si sale de una zona segura.` | ← añadida por #159 (R1) |
+| — | `map.trackingNeedsCollar` ← retirada por #159 (R2) | `Live tracking requires a collar` | `El rastreo en vivo requiere un collar` |
+| — | `geofences.needsCollar` | `Safe zones need a collar with an active plan.` | `Las zonas seguras necesitan un collar con plan activo.` | ← cambiada por #159 (R7) |
+| — | `home.activityNeedsCollar` | `Activity needs a collar with an active plan` | `La actividad necesita un collar con plan activo` | ← cambiada por #159 (R8) |
+
 ## 3. La infraestructura
 
 ### 3.1 Decisiones

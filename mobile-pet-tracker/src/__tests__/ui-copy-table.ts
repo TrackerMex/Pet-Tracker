@@ -116,7 +116,9 @@ export const R4_MAP: UseRow[] = [
   { file: 'src/screens/map/index.tsx', key: 'common.noPetsYet' },
   { file: 'src/screens/map/index.tsx', key: 'common.noPetsBody' }, // #155 R4
   { file: 'src/screens/map/index.tsx', key: 'profile.addPet' }, // #155 R4
-  { file: 'src/screens/map/index.tsx', key: 'map.trackingNeedsCollar' },
+  { file: 'src/screens/map/index.tsx', key: 'map.noTrackingTitle' }, // #159 R2
+  { file: 'src/screens/map/index.tsx', key: 'map.noTrackingBody' }, // #159 R2
+  { file: 'src/screens/map/index.tsx', key: 'home.pairCollar' }, // #159 R3
   { file: 'src/screens/map/index.tsx', key: 'common.somethingWentWrong' },
   { file: 'src/screens/map/index.tsx', key: 'common.retry' },
   { file: 'src/screens/map/index.tsx', key: 'map.noLocationDataYet' },
@@ -509,7 +511,8 @@ export const R14_GEOFENCES: UseRow[] = [
   { file: 'src/screens/geofences/index.tsx', key: 'geofences.delete' },
   { file: 'src/screens/geofences/index.tsx', key: 'geofences.statusActive' },
   { file: 'src/screens/geofences/index.tsx', key: 'geofences.statusInactive' },
-  { file: 'src/screens/geofences/index.tsx', key: 'geofences.needsCollar' },
+  { file: 'src/screens/geofences/index.tsx', key: 'geofences.noTrackingTitle' }, // #159 R5
+  { file: 'src/screens/geofences/index.tsx', key: 'geofences.noTrackingBody' }, // #159 R5
   { file: 'src/screens/geofences/index.tsx', key: 'common.cannotReachServer' },
   { file: 'src/screens/geofences/index.tsx', key: 'common.somethingWentWrong' },
   { file: 'src/screens/geofences/index.tsx', key: 'common.retry' },

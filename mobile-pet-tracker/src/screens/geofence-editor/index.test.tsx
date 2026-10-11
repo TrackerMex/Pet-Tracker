@@ -165,7 +165,7 @@ describe('#146 R6: el editor pinta el formulario sobre el mapa y sus estados', (
   });
   it('pinta el 402 sin Reintentar', async () => {
     mockList.mockResolvedValue({ kind: 'no-tracking' }); await mount('geofence-1');
-    expect(await screen.findByTestId('geofence-editor-no-tracking')).toHaveTextContent('Las zonas seguras requieren un collar');
+    expect(await screen.findByTestId('geofence-editor-no-tracking')).toHaveTextContent('Las zonas seguras necesitan un collar con plan activo.');
     expect(screen.queryByTestId('geofence-editor-retry')).toBeNull();
   });
   it.each(['error', 'unreachable', 'missing-config'] as const)('pinta %s con Reintentar, que vuelve a pedir solo la lista', async (kind) => {
@@ -349,7 +349,7 @@ describe('#146 R8: Guardar crea o actualiza la zona y vuelve a la lista', () => 
     ['limit-reached', 'Esta mascota ya tiene el máximo de zonas.'],
     ['invalid', 'Revisa el nombre y el radio de la zona.'],
     ['not-found', 'La mascota o la zona ya no están disponibles.'],
-    ['no-tracking', 'Las zonas seguras requieren un collar'],
+    ['no-tracking', 'Las zonas seguras necesitan un collar con plan activo.'],
     ['unreachable', 'No se pudo conectar con el servidor'],
     ['error', 'Algo salió mal'], ['missing-config', 'Algo salió mal'],
   ] as const)('pinta %s bajo Guardar y conserva el borrador', async (kind, message) => {

@@ -134,9 +134,7 @@ export function GeofencesScreen({ petId }: { petId: string }) {
           </Card>;
         })
       ) : geofences.data.kind === 'no-tracking' ? (
-        <Card testID="geofences-no-tracking" className="items-center py-8">
-          <Text className="text-center font-normal text-muted">{t('geofences.needsCollar')}</Text>
-        </Card>
+        <EmptyState testID="geofences-no-tracking" pose="collar" title={t('geofences.noTrackingTitle')} body={t('geofences.noTrackingBody')} />
       ) : geofences.data.kind === 'unauthorized' ? null : (
         <>
           <Text testID="geofences-error" selectable className="text-danger">

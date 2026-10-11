@@ -307,7 +307,7 @@ pnpm run seed:devices            # SIM-001..003 / ACT-001..003, suscripción gra
 5. **Free**: en otra terminal
    `pnpm run subscription:set -- --unit-id 900001 --status canceled`
    → salir y volver a `/pairing` (refetch en foco) → bloque `Free plan —
-   health only…`; el tab Map muestra `Live tracking requires a collar`.
+   health only…`; el tab Map muestra a Pingo con `No live location`, sin el botón `Pair a collar` (la mascota ya tiene collar).
    Reactivar: `pnpm run subscription:set -- --unit-id 900001 --status active`
    → pill `GPS tracking active` y posiciones de nuevo **sin re-claim**
    (R5/R6 de #25).
