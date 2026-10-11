@@ -8558,3 +8558,58 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
   reviewer. L4 y L5 llevan la advertencia «sin spike».
 - Cierre: `done` en `feature_list.json`, trazabilidad `approved`, STATUS,
   Notion (Implementado / Completado) y PR contra `main`. Merge: humano.
+
+## #158 `mobile-docs-upload` — Subida y apertura de documentos en la app — 2026-10-11
+
+- Sesión: Backend (Claude Code, leader). Worktree
+  `/home/claude/sites/Pet-Tracker-wt-158`, branch
+  `feature/158-mobile-docs-upload`, base origin/main `65f37841` (con #155,
+  #157 y #161).
+- Qué hace: el owner sube un PDF o una imagen desde Documentos
+  (`expo-document-picker`, límite de 10 MB, formulario con Tipo, Nombre,
+  Fecha y Veterinario opcional). La subida crea el documento, hace el `PUT`
+  a la URL firmada y lo confirma con la API de #157. Cualquier miembro abre
+  un documento con `expo-web-browser`. El formulario se aparta del teclado en
+  Android. El vacío de Pingo de #155 gana la acción para el owner y una frase
+  nueva en voz B.
+- Spec del `spec_author` (R1-R13, DA1-DA8), pre-verificada por el reviewer en
+  tres rondas (1: 12 bloqueantes; 1b: 3; 1c: 0) y guardada en `0bbfda48`.
+  Aprobada en Notion (página `3f46115a-9b27-81bc-8380-ead4cfabacbb`) con
+  DA1-DA8 tal como estaban escritas. Firma en `81d14978`.
+- Handoff a Codex en `421cd836`, con cuatro reanudaciones (`0113317a`). Una
+  de ellas fue por las fixtures de `expo-document-picker`, que exigían
+  `lastModified` según su `.d.ts` instalado. Otra fue porque la fila `crear
+  forbidden` de R9 nacía verde por R8.
+- Reviewer **APROBADO** sobre `791a6f97` para R1-R12.
+- Primer smoke R13: falló en el paso 6. S3 guardaba el documento como
+  `binary/octet-stream` porque `expo/fetch` pisa el `Content-Type` con el
+  `type` vacío del blob de `file://`
+  (`progress/explore_mobile-docs-upload-e1.md`).
+- Enmienda E1 (R14, `b1b9b947`): `uploadPhotoToUrl` envía
+  `new Blob([body], { type: contentType })`. Se pre-verificó en tres rondas y
+  se firmó desde Notion en `d45c4333`.
+- Al traer origin/main `1da2e76d` (#134) hubo un conflicto en el mapa
+  `screenSignOutCalls` de `design-drift.test.ts`. El clasificador no dejó al
+  leader resolverlo, y el humano decidió que lo hiciera Codex como último
+  paso de la ronda E1 (handoff en `48db1c22`).
+- Ronda E1 de Codex: rojo `cf4933ae`, verde `8b0f1d86` (`fix`, admitido por
+  `docs/conventions.md`), trazabilidad `156a952c`, merge `038f4288` e
+  informe `377064b2`.
+- Gate: `./init.sh` del leader sobre `377064b2`, exit 0 (backend 187/1474,
+  infra 2/14, móvil 98/2553, e2e 30 de 33 suites con 476 tests y 8
+  saltados). Antes y después se avisó a UI-Pet (#159) y a Frontend.
+- Reviewer **APROBADO** en la ronda E1, con 0 bloqueantes (`22e14690`).
+  Validó la resolución del merge con `--remerge-diff` (no es un merge
+  maligno) y corrió 21 mutaciones. Queda O1 como límite: si un día se
+  reabre R14, una fila con bytes que no sean UTF-8 válido cerraría la zona
+  ciega de `new Blob([await body.text()])`. Hoy lo cubre el smoke.
+- Segundo smoke R13 en el dev build de Android: superado y firmado por el
+  humano en `5b36c3d1`. El humano también comprobó las observaciones 1 y 2
+  del primer veredicto: el pressed de la `Card` responde bien y el
+  formulario se lee bien en modo oscuro. No se abren seguimientos.
+- Coordinación con #159 (UI-Pet, wt-159), que ya trae `1da2e76d` mergeado.
+  Las dos features tocan `language-provider.test.tsx` (longitud del
+  catálogo). La de quien mergee segundo la deja en 386.
+- Cierre: `done` en `feature_list.json`, trazabilidad `approved` con R13 y
+  las notas de «nació verde» de R2 y R5 (observación 3), STATUS, Notion
+  (Implementado / Completado) y PR contra `main`. Merge: humano.

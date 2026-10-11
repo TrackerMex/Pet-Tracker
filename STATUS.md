@@ -1,10 +1,10 @@
 # pet-tracker — Status
 
-**Última actualización**: 2026-10-09
-**Features completadas**: 151/164 (`feature_list.json`)
-**En progreso**: ninguna en esta rama. #134 cerrada en `feature/134-mobile-alert-ack-outcome-helper`, PR pendiente de merge humano.
+**Última actualización**: 2026-10-11
+**Features completadas**: 152/164 (`feature_list.json`)
+**En progreso**: ninguna en esta rama. #158 cerrada en `feature/158-mobile-docs-upload`, PR pendiente de merge humano.
 
-**Pendientes**: 13 (#60, #119, #129, #144, #150, #151, #154, #158, #159, #160, #163, #164 y #165). **#134 `mobile-alert-ack-outcome-helper` cerrada**: el `switch` sobre el resultado de `ackAlert`, duplicado en `handleAck` del centro de alertas (`src/screens/alerts/index.tsx`) y del detalle (`src/screens/alert-detail/index.tsx`), sale a `settleAlertAck` en `src/utils/alert-ack-outcome.ts`. El helper resuelve las ramas comunes (`unreachable`, `unauthorized` con `await signOut()`, `error`, `missing-config`, la excepción de la petición y el rechazo de `signOut`) y entrega `ok`, `already-closed` y `not-found` a cada pantalla, que conserva su guard, su `finally` y su conducta de `not-found`. Sin cambio de conducta y sin tocar la caché de `alertKeys.list()` (R7 lo canda). Los inventarios globales se mueven en el mismo commit rojo: `screenSignOutCalls` neto −1, `R13_ALERT_DETAIL` −3, `R12_ALERTS` neto 0 y `SCREEN_FILES` +1. Codex en dos rondas: la primera rechazada (B1: el helper no esperaba a `signOut` con candado; B2: el `t` de cada pantalla solo se probaba en español; B3: un envoltorio de `signOut` pasaba en verde), Enmienda E1 firmada desde Notion (`08d7d0a1`) con ocho tests nuevos y cero producción, y la segunda aprobada (`98449adf`). Siete supervivientes anteriores a #134 (retry, guard y `leavingRef` de las pantallas) quedan fuera por decisión del humano («Solo lo de #134») y se registran como deuda #165 `mobile-alert-ack-retry-guard-leaving-locks`. Móvil 97/2365 → 98/2394.
+**Pendientes**: 12 (#60, #119, #129, #144, #150, #151, #154, #159, #160, #163, #164 y #165). **#158 `mobile-docs-upload` cerrada**: el owner sube un PDF o una imagen desde Documentos con `expo-document-picker` (límite de 10 MB, formulario con Tipo, Nombre, Fecha y Veterinario opcional). La subida crea el documento, hace el `PUT` a la URL firmada y lo confirma con la API de #157, y la fila aparece sin recargar. Cualquier miembro abre un documento con `expo-web-browser`, y family, walker y vet no ven la acción de subir. El formulario se aparta del teclado en Android, y el vacío de Pingo de #155 gana la acción y una frase nueva en voz B. El primer smoke falló en el paso 6: `expo/fetch` pisaba el `Content-Type` con el `type` vacío del blob de `file://` y S3 guardaba `binary/octet-stream`. La Enmienda E1 (R14, firmada desde Notion en `d45c4333`) hace que `uploadPhotoToUrl` envíe un `Blob` con el tipo declarado. Codex trabajó en dos rondas, R1-R12 y luego E1 con el merge de origin/main (#134). Las dos las aprobó el reviewer (`791a6f97` y `22e14690`), y el segundo smoke lo firmó el humano en `5b36c3d1`. Móvil 97/2365 → 98/2553 (con #134).
 
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
@@ -88,6 +88,14 @@ debe listar las 4 URLs de cola.
 
 ## Estado actual
 
+- **`mobile-docs-upload` (#158) done** (2026-10-11, worktree
+  `Pet-Tracker-wt-158`, sesion Backend): subida de documentos para el owner y
+  apertura para cualquier miembro en la pantalla Documentos. La Enmienda E1
+  (R14) arregla el `Content-Type` del `PUT`. El reviewer aprobó las dos
+  rondas (`22e14690`, veredicto sobre `377064b2`). Gate: `./init.sh` exit 0
+  sobre `377064b2` (backend 187/1474, infra 2/14, móvil 98/2553, e2e 30 de
+  33 suites, 476 tests con 8 saltados). Smoke R13 firmado en `5b36c3d1`. PR
+  abierta.
 - **`mobile-alert-ack-outcome-helper` (#134) done** (2026-10-09, worktree
   `Pet-Tracker-wt-134`, sesion Frontend): el `switch` sobre el resultado de
   `ackAlert` sale de las dos pantallas de alertas a `settleAlertAck`
@@ -1430,6 +1438,15 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Última sesión
+
+- **2026-10-11** — **#158 `mobile-docs-upload` cerrada** (worktree
+  `Pet-Tracker-wt-158`, sesión Backend). Spec firmada desde Notion
+  (`81d14978`). Ronda R1-R12 de Codex aprobada (`791a6f97`). El primer smoke
+  falló en el paso 6, y la Enmienda E1 (R14) se firmó desde Notion
+  (`d45c4333`). La ronda E1 de Codex incluyó el merge de #134 y la aprobó el
+  reviewer (`22e14690`). Segundo smoke firmado por el humano (`5b36c3d1`).
+  PR abierta; siguiente: merge humano y recuento de `language-provider` (386)
+  por quien mergee segundo entre #158 y #159.
 
 - **2026-10-09** — **#134 `mobile-alert-ack-outcome-helper` cerrada** (worktree
   `Pet-Tracker-wt-134`, sesión Frontend): spec firmada desde Notion, ronda 1
