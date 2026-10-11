@@ -381,3 +381,33 @@ transversal.
   C3, C5 y C7 dan más cambio percibido. C1 primero ahorra que cada una
   reabra el recuento de `consistency-classnames`.
 - C13 y cualquier cambio de header van detrás de #119 o dentro de ella.
+
+## 6. Reparto por fila del canvas (leader, 2026-10-11)
+
+El humano pidió avanzar por filas del canvas, en su orden, con una feature por
+fila. Filas verificadas en `project/canvas.json` del canvas (coordenada `y` de
+cada artboard): **Nueva mascota está en la fila 4**, no en la 5.
+
+| Fila | Artboards | Feature registrada (primera parte) | Partes siguientes (se registran al llegar) |
+|---|---|---|---|
+| 1 Bienvenida y cuenta | Bienvenida, Login, Registro, Recuperar, Nueva contraseña | #167 mobile-account-screens-pingo (fila entera) | — |
+| 2 Pestañas principales | Inicio, Mapa, Salud, Nutrición, Perfil | #168 mobile-tab-headers-canvas (Salud, Nutrición, Perfil) | Inicio con frase del día + píldora de la tab bar (C5); ping del marcador en Mapa tras un spike (C8) |
+| 3 Salud y rutina | Recordatorios, Nuevo recordatorio, Peso, Horario, Historial, Documentos | #169 mobile-weight-draw-and-toasts (Peso, toasts) | Vista previa de Nuevo recordatorio (C12), chips de Documentos (C11), agrupación por día |
+| 4 Collar y seguridad | Alertas, Detalle, Vincular, Zonas, Editor de zona, Nueva mascota | #170 mobile-alerts-grouped-and-detail-map (C7) | Zonas + Editor (pastel, breathe); Vincular + Nueva mascota en 2 pasos (C9), después de #171 |
+| 5 Propuestas nuevas | Inicio sin mascota, Collar vinculado | #171 mobile-celebrations-and-living-empty (fila entera) | — |
+
+Transversal: #166 mobile-chunky-cta (C1) toca los primarios de todas las filas.
+
+**Reglas de convivencia entre sesiones**:
+- Las specs pueden escribirse en paralelo ya. La implementación con Codex de
+  #167-#171 espera a que #166 esté mergeada.
+- Un solo `init.sh` a la vez en el VPS: comparten Postgres y LocalStack
+  (memoria init-sh-concurrente-worktrees).
+- Ficheros con dueño: `WeightChart` es de #169; `PetHeroHeader` y
+  `hero-header-amendments.test.ts` son de #168; `pet-map.tsx` es de la parte
+  Mapa de la fila 2 (el mini-mapa de #170 lo reutiliza sin tocarlo);
+  `pairing` y `add-pet` son primero de #171 y después de la tercera parte de
+  la fila 4.
+- Todas añaden copy: el recuento de `language-provider.test.tsx`,
+  `ui-copy-table.ts` y `SCREEN_FILES` chocará al mergear. Integrar main con
+  merge, no con rebase (memoria rebase-invalida-hashes-traceability).
