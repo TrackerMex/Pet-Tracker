@@ -1124,3 +1124,97 @@ Con la ronda 3 aplicada en la copia:
 - globales: 199/199, `exit=0`;
 - `src/screens/docs`, `add-pet` y `profile`: 173/173, `exit=0`;
 - `app.config.test.ts` más `media.test.ts`: 102/102 (21 + 81), `exit=0`.
+
+## Ronda E1 de implementación (R14 + merge, HEAD 377064b2)
+Fecha: 2026-10-11
+Veredicto: **APROBADO** (0 bloqueantes, 3 no bloqueantes). Cubre R14 y el merge de `1da2e76d`. **R13 sigue pendiente**: la cierra el humano con el re-smoke en dev build de Android (paso 6 con la comprobación de E1).
+
+Skill cargada: `expo:expo-overview`. La ronda no toca UI: `docs/ui-guidelines.md` (C8) no aplica a los dos ficheros de R14, y el merge trae #134, ya revisada en main.
+
+### Qué medí y cómo
+- HEAD de wt-158: `377064b2`, árbol limpio al empezar y al acabar (`git diff --quiet && git diff --cached --quiet` → `clean`). Nunca toqué wt-158.
+- Commits sobre H0 `48db1c22` (`docs(mobile-docs-upload): handoff de la ronda E1 (#158)`), por primera línea de padres: `cf4933ae` rojo → `8b0f1d86` verde → `156a952c` traceability → `038f4288` merge → `377064b2` informe.
+- jest acotado y mutaciones en un `git worktree add --detach` temporal dentro del scratchpad (symlink a `node_modules` de wt-158): primero en `48db1c22`, `cf4933ae` y `8b0f1d86`, y después en `377064b2`. Lo quité con `git worktree remove` + `prune`, y `git worktree list` ya no lo lista.
+- `init.sh` no lo corrí yo. Leí el log del leader (`scratchpad/init_158_e1.log`, 30518 líneas). Commit `377064b2` a las 04:16:06; el log va de 04:21 a 04:26.
+
+### C2 — Estado coherente
+- [x] Solo 1 feature in_progress: `[(158, 'mobile-docs-upload')]` en `feature_list.json`.
+- [x] `progress/current.md` registra E1, el merge y el siguiente paso (líneas 60-70).
+
+### C3 — Arquitectura
+- [x] Cambio de una línea en `src/api/media.ts` (capa API). Los tres llamantes no se tocan.
+
+### C4 — TDD
+- [x] `cf4933ae` toca solo `mobile-pet-tracker/src/api/__tests__/media.test.ts` (+29/−1). `8b0f1d86` toca solo `src/api/media.ts` (+1/−1).
+- [x] Base `48db1c22`: `exit=0`, `Tests: 69 passed, 69 total`.
+- [x] Rojo `cf4933ae`: `exit=1`, `Tests: 12 failed, 69 passed, 81 total`. Hay 12 `●`, los 12 con el prefijo de `#158 R14 … › envía `. Los 12 caen en `expect(init.body.type).toBe(contentType);`. Received por fila: `""` ×4, `"text/plain"` ×4, `"image/png"` ×3, `"image/jpeg"` ×1, cada uno en la fila que le toca (emparejé título con Expected/Received). Sin TypeError, ReferenceError, SyntaxError ni Cannot find module.
+- [x] Verde `8b0f1d86`: `exit=0`, `Tests: 81 passed, 81 total`.
+- [x] El `describe`, el `it.each`, las 12 filas, el `as const` y los 7 pasos coinciden literalmente con R14 §Candado. El `it` de R2 pasa a `body: expect.any(Blob),`.
+
+### C5 — Trazabilidad
+- [x] Fila R14: `cf4933ae test(...)` y `8b0f1d86 fix(...)`, con hashes reales. El `fix(...)` está admitido (N3 de la pre-verificación).
+- [x] La única fila con «pendiente» es R13, la excepción que declara `traceability.md:31-32` (smoke humano).
+
+### C6 — Spec aprobada
+- [x] `status: approved`. E1-H1 = 1 (casilla de E1 firmada), E1-H2 = 1 (la casilla del smoke sigue sin marcar, como debe) y E1-H3 = 1.
+
+### C7 — Sin código huérfano
+- [x] N/A: E1 no reemplaza nada.
+
+### Anclas (medidas con `git show <commit>:<ruta> | grep`)
+| Commit | A1 | A2 | A4 | A5 | A6 |
+|---|---|---|---|---|---|
+| `48db1c22` | 1 | 0 | 0 | 1 | 0 |
+| `cf4933ae` | 1 | 0 | 1 | 0 | 1 |
+| `8b0f1d86` | 0 | 1 | 1 | 0 | 1 |
+
+En HEAD, A3 = 1 y `.expo/types/router.d.ts` no existe.
+
+### Lista cerrada (`git diff --stat 48db1c22 377064b2`: 34 ficheros)
+- 30 los trae origin/main. Coinciden exactamente con `git diff --name-only 65f37841 1da2e76d`, donde `65f37841` es el merge-base.
+- 4 son de Codex: `media.test.ts`, `media.ts`, `progress/impl_mobile-docs-upload.md` y `specs/mobile-docs-upload/traceability.md`. Son los que prescribe el handoff.
+- `comm -23` de `git diff --name-only 1da2e76d 377064b2` contra `git diff --name-only 65f37841 48db1c22` no deja fuera nada más que esos 4. Ningún fichero ajeno.
+- `git diff --name-only 1da2e76d HEAD -- mobile-pet-tracker` da las 13 líneas del handoff. Backend, infra y docs: vacío.
+
+### Merge `038f4288`
+- Padres: `156a952c` y `1da2e76d` (`git rev-list --parents -n1`).
+- `git show --remerge-diff 038f4288` muestra un solo hunk, en `design-drift.test.ts` (`screenSignOutCalls`). Su resolución es exactamente M2-M5 (docs 1 con 4 espacios, alerts 0, alert-detail 0, helper 1). No es un merge maligno: ningún otro fichero difiere de la fusión automática.
+- M1 = 0, M2 = M3 = M4 = M5 = 1. M6 da `1 1 design-drift.test.ts` contra `1da2e76d`, y el cambio es solo la línea de docs `0 → 1`. M7 da `16 0 ui-copy-table.ts` y `2 2 ui-language.test.ts`, idéntico al numstat de la rama antes del merge (`65f37841..48db1c22`).
+- `git grep -c 'signOut('` en `377064b2`: `docs/index.tsx:1` y `utils/alert-ack-outcome.ts:1`. Las dos pantallas de alertas dan 0. Cuadra con el mapa.
+
+### Cifras (las mías, en `377064b2`)
+- Globales (design-drift, consistency, ui-language, legibility y language-provider): `exit=0`, `5 suites`, `Tests: 202 passed, 202 total` (199 + 3).
+- alerts, alert-detail, alert-ack-outcome, docs y media: `exit=0`, `Tests: 279 passed, 279 total`.
+- add-pet y profile: `65 passed`. Más docs 108 da los 173 de antes del merge.
+- Log de init.sh: backend `187 / 1474` (antes 1471; +3 its unitarios de #161 en main, medido con grep en `65f37841..1da2e76d`); infra `2 / 14`; móvil `98 / 2553` (líneas 30166-30167, = 2512 + 29 + 12); e2e `30 of 33`, `468 passed + 8 skipped de 476` (antes 467/475; +1 it e2e de #161); lint y typecheck verdes; «Todo verde». No ejecuté la suite móvil entera.
+
+### Mutaciones sobre `media.ts` (en el worktree temporal en `377064b2`; tras cada una, `git checkout HEAD -- mobile-pet-tracker/src/api/media.ts` y `git diff --quiet && git diff --cached --quiet`)
+| Id | Resultado | Dónde | ¿Cuadra con la spec? |
+|---|---|---|---|
+| T1 | 12 rojos (R14) | paso 5; Received `""`/`text/plain`/el tipo de entrada | sí |
+| T2 | 13 (R14 + R7) | R14 en el paso 5 con `""`; R7 en `toHaveBeenCalledWith` | sí |
+| T3 | 13 | R14 en el paso 6 con `""`; R7 | sí |
+| T4 | 13 | R14 en el paso 6 con `"x"`; R7 | sí |
+| T5 | 8 (`text/plain` + tipo admitido) | paso 5 | sí |
+| T6 | 8 | paso 5 | sí |
+| T7 | 81/81 verdes | — | sí (equivalente aceptada) |
+| S1, S2, S3, S11 | 4 cada una (tipo admitido) | paso 5; `image/png` ×3, `image/jpeg` ×1 | sí |
+| S7 | 13 | R14 en el paso 6 con el `contentType` como Received; R7 | sí |
+| H5 | 13 (R14 + R2 pdf) | R14 en el paso 7 (`toStrictEqual`); R2 en `not.toHaveProperty('Authorization')` | sí |
+| Z1 `type: contentType.toUpperCase()` (zona ciega) | 81/81 verdes | — | sí, es N7 |
+| Z2 `new Blob([body, body], …)` | 13 | paso 6 (`"bytes 01bytes 01"`…); R7 | rojo |
+| Z3 `new File([body], 'doc', …)` | 1 (solo R7) | `toHaveBeenCalledWith` | sí, es N8 |
+| Z4 `contentType === 'image/webp' ? body : …` | 3 (las de webp) | paso 5 | rojo: el cartesiano muerde por contentType |
+| Z5 `contentType === 'application/pdf' ? … : body` | 9 (las no-pdf) | paso 5 | rojo |
+| Z6 `body.slice(0, body.size - 1)` | 13 | paso 6 (`"bytes 0"`/`"bytes 1"`); R7 | rojo |
+| Z7 `body.size > 0 ? … : body` | 81/81 verdes | — | sí, es N6 |
+| Z8 `new Blob([await body.text()], …)` (zona ciega) | **81/81 verdes** | — | no está entre los límites aceptados: ver O1 |
+| Z9 `type: contentType + ';charset=utf-8'` | 13 | paso 5; R7 | rojo |
+
+### Bloqueantes
+Ninguno.
+
+### No bloqueantes
+- **O1. Zona ciega nueva en la cláusula 3 («mismos bytes»).** `new Blob([await body.text()], { type: contentType })` pasa 81/81. Ese viaje de ida y vuelta por UTF-8 pasa los bytes ASCII tal cual y estropea los que no son UTF-8 válido, que es lo normal en un PDF o un JPEG reales. Los contenidos de R14 (`'bytes 01'`…`'bytes 12'`) y el de R7 (`'image bytes'`) son ASCII. Hoy el producto es la línea literal prescrita (A2 = 1), así que no hay defecto. En el dispositivo lo cubre R13: si los bytes se estropean, el PDF o la imagen no se abre. Si un día se enmienda R14, una fila con bytes que no sean UTF-8 válido, comparados por `arrayBuffer()`, cerraría este hueco (no lo he medido).
+- **O2.** Z1, Z3 y Z7 se comportan como dicen N7, N8 y N6. No hay nada nuevo.
+- **O3.** Las mutaciones y el jest acotado corrieron en el worktree temporal en `377064b2` (mismo árbol que wt-158) y no en wt-158. Así wt-158 no tuvo ni una escritura. Por eso la restauración con `checkout HEAD --` se hizo en el temporal.

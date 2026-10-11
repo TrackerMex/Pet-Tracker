@@ -70,6 +70,13 @@
   §Ronda E1. Después: init.sh (avisando a UI-Pet y Frontend), reviewer de R14
   más el merge, y re-smoke R13 del humano (basta `bunx expo start -c`, sin
   reconstruir el dev build).
+- 2026-10-11: Codex terminó la ronda E1 (`cf4933ae` rojo, `8b0f1d86` verde,
+  `156a952c` traceability, merge `038f4288` y `377064b2`). init.sh en wt-158
+  sobre `377064b2` con `exit=0` (móvil 98 / 2553), avisando a UI-Pet y
+  Frontend. Veredicto APROBADO del reviewer, con 0 bloqueantes y 3 no
+  bloqueantes (`progress/review_mobile-docs-upload.md` §Ronda E1 de
+  implementación). O1: si se reabre R14, añadir una fila con bytes que no
+  sean UTF-8 válido. Falta el re-smoke R13 del humano.
 
 ### Coordinación con #159 (UI-Pet, 2026-10-09)
 
