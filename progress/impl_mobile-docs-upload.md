@@ -27264,3 +27264,603 @@ cd /home/claude/sites/Pet-Tracker-wt-158 \
 ```
 
 R13: pendiente del smoke humano
+
+
+## Ronda E1
+
+Worktree: `/home/claude/sites/Pet-Tracker-wt-158`. Branch: `feature/158-mobile-docs-upload`. H0: `48db1c22`.
+
+### Arranque
+
+```text
+$ pwd
+/home/claude/sites/Pet-Tracker-wt-158
+$ git branch --show-current
+feature/158-mobile-docs-upload
+$ git rev-parse --short HEAD
+48db1c22
+$ git status --short
+$ git log -1 --format=%s HEAD
+docs(mobile-docs-upload): handoff de la ronda E1 (#158)
+$ git cat-file -t 1da2e76d
+commit
+$ git merge-base --is-ancestor 1da2e76d HEAD; echo "exit=$?"
+exit=1
+$ git merge-base --is-ancestor d45c4333 HEAD; echo "exit=$?"
+exit=0
+$ pgrep -af '[i]nit\.sh'; echo "exit=$?"
+exit=1
+```
+
+`git status --short` y `pgrep` sin salida. Leídos R14 entero (incluido §Candado), la nota de R2.5, §Enmienda E1, §Fuera de alcance de E1, design.md D8, tasks.md §E1 y las reglas críticas del handoff. Se sigue la secuencia cerrada de cinco commits, sin init.sh, prettier, fetch, push ni PR. No se modifica ninguna casilla humana.
+
+### Skills
+
+No cargué ninguna skill, incluidas las de Expo: esta ronda solo cambia el test de la capa API y una línea de `uploadPhotoToUrl`; no hay trabajo de UI.
+
+### Anclas antes del rojo
+
+E1-H1 (desde `/home/claude/sites/Pet-Tracker-wt-158`):
+
+```bash
+grep -cF -- '- [x] Enmienda E1 aprobada por humano (fecha: 2026-10-10)' specs/mobile-docs-upload/requirements.md
+```
+
+```text
+1
+exit del comando=0
+```
+
+E1-H2 (desde `/home/claude/sites/Pet-Tracker-wt-158`):
+
+```bash
+grep -cF -- '- [ ] Smoke R13 superado en dev build de Android (fecha: ____)' specs/mobile-docs-upload/requirements.md
+```
+
+```text
+1
+exit del comando=0
+```
+
+E1-H3 (desde `/home/claude/sites/Pet-Tracker-wt-158`):
+
+```bash
+grep -c '^status: approved' specs/mobile-docs-upload/requirements.md
+```
+
+```text
+1
+exit del comando=0
+```
+
+A1 antes (desde `/home/claude/sites/Pet-Tracker-wt-158/mobile-pet-tracker`):
+
+```bash
+grep -cxF '      body,' src/api/media.ts
+```
+
+```text
+1
+exit del comando=0
+```
+
+A2 antes (desde `/home/claude/sites/Pet-Tracker-wt-158/mobile-pet-tracker`):
+
+```bash
+grep -cF 'body: new Blob([body], { type: contentType }),' src/api/media.ts
+```
+
+```text
+0
+exit del comando=1
+```
+
+A3 antes (desde `/home/claude/sites/Pet-Tracker-wt-158/mobile-pet-tracker`):
+
+```bash
+grep -cF 'export async function uploadPhotoToUrl' src/api/media.ts
+```
+
+```text
+1
+exit del comando=0
+```
+
+A4 antes (desde `/home/claude/sites/Pet-Tracker-wt-158/mobile-pet-tracker`):
+
+```bash
+grep -cF '#158 R14' src/api/__tests__/media.test.ts
+```
+
+```text
+0
+exit del comando=1
+```
+
+A5 antes (desde `/home/claude/sites/Pet-Tracker-wt-158/mobile-pet-tracker`):
+
+```bash
+grep -cF "method: 'PUT', headers: { 'Content-Type': 'application/pdf' }, body," src/api/__tests__/media.test.ts
+```
+
+```text
+1
+exit del comando=0
+```
+
+A6 antes (desde `/home/claude/sites/Pet-Tracker-wt-158/mobile-pet-tracker`):
+
+```bash
+grep -cF "method: 'PUT', headers: { 'Content-Type': 'application/pdf' }, body: expect.any(Blob)," src/api/__tests__/media.test.ts
+```
+
+```text
+0
+exit del comando=1
+```
+
+router base (desde `/home/claude/sites/Pet-Tracker-wt-158/mobile-pet-tracker`):
+
+```bash
+test ! -e .expo/types/router.d.ts; echo "exit=$?"
+```
+
+```text
+exit=0
+exit del comando=0
+```
+
+### Base API
+
+```bash
+FORCE_COLOR=0 bunx jest src/api/__tests__/media.test.ts > /tmp/158-e1-base.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+Test Suites: 1 passed, 1 total
+Tests:       69 passed, 69 total
+```
+
+### Commit 1 — rojo R14
+
+Solo `src/api/__tests__/media.test.ts`: describe literal, 12 filas y los siete pasos en orden, sin comentarios nuevos; el esperado de R2 usa `expect.any(Blob)`. `media.ts` no cambia. La lectura de `fetchFn.mock.calls` va después de la aserción de resolución; `body.text()` se comprueba con `await expect(...).resolves.toBe(content)`.
+
+```bash
+FORCE_COLOR=0 bunx jest src/api/__tests__/media.test.ts > /tmp/158-e1-red.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=1
+Test Suites: 1 failed, 1 total
+Tests:       12 failed, 69 passed, 81 total
+```
+
+Los doce rojos caen en el paso 5, `expect(init.body.type).toBe(contentType);`. Salida de los doce fallos:
+
+```text
+  ● #158 R14: uploadPhotoToUrl sube un Blob con el tipo declarado (Enmienda E1) › envía image/jpeg con un blob de entrada de tipo «»
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "image/jpeg"
+    Received: ""
+
+      316 |       const init = fetchFn.mock.calls[0][1];
+      317 |       expect(init.body).toBeInstanceOf(Blob);
+    > 318 |       expect(init.body.type).toBe(contentType);
+          |                              ^
+      319 |       await expect(init.body.text()).resolves.toBe(content);
+      320 |       expect(init.headers).toStrictEqual({ 'Content-Type': contentType });
+      321 |     },
+
+      at toBe (src/api/__tests__/media.test.ts:318:30)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+  ● #158 R14: uploadPhotoToUrl sube un Blob con el tipo declarado (Enmienda E1) › envía image/jpeg con un blob de entrada de tipo «text/plain»
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "image/jpeg"
+    Received: "text/plain"
+
+      316 |       const init = fetchFn.mock.calls[0][1];
+      317 |       expect(init.body).toBeInstanceOf(Blob);
+    > 318 |       expect(init.body.type).toBe(contentType);
+          |                              ^
+      319 |       await expect(init.body.text()).resolves.toBe(content);
+      320 |       expect(init.headers).toStrictEqual({ 'Content-Type': contentType });
+      321 |     },
+
+      at toBe (src/api/__tests__/media.test.ts:318:30)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+  ● #158 R14: uploadPhotoToUrl sube un Blob con el tipo declarado (Enmienda E1) › envía image/jpeg con un blob de entrada de tipo «image/png»
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "image/jpeg"
+    Received: "image/png"
+
+      316 |       const init = fetchFn.mock.calls[0][1];
+      317 |       expect(init.body).toBeInstanceOf(Blob);
+    > 318 |       expect(init.body.type).toBe(contentType);
+          |                              ^
+      319 |       await expect(init.body.text()).resolves.toBe(content);
+      320 |       expect(init.headers).toStrictEqual({ 'Content-Type': contentType });
+      321 |     },
+
+      at toBe (src/api/__tests__/media.test.ts:318:30)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+  ● #158 R14: uploadPhotoToUrl sube un Blob con el tipo declarado (Enmienda E1) › envía image/png con un blob de entrada de tipo «»
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "image/png"
+    Received: ""
+
+      316 |       const init = fetchFn.mock.calls[0][1];
+      317 |       expect(init.body).toBeInstanceOf(Blob);
+    > 318 |       expect(init.body.type).toBe(contentType);
+          |                              ^
+      319 |       await expect(init.body.text()).resolves.toBe(content);
+      320 |       expect(init.headers).toStrictEqual({ 'Content-Type': contentType });
+      321 |     },
+
+      at toBe (src/api/__tests__/media.test.ts:318:30)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+  ● #158 R14: uploadPhotoToUrl sube un Blob con el tipo declarado (Enmienda E1) › envía image/png con un blob de entrada de tipo «text/plain»
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "image/png"
+    Received: "text/plain"
+
+      316 |       const init = fetchFn.mock.calls[0][1];
+      317 |       expect(init.body).toBeInstanceOf(Blob);
+    > 318 |       expect(init.body.type).toBe(contentType);
+          |                              ^
+      319 |       await expect(init.body.text()).resolves.toBe(content);
+      320 |       expect(init.headers).toStrictEqual({ 'Content-Type': contentType });
+      321 |     },
+
+      at toBe (src/api/__tests__/media.test.ts:318:30)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+  ● #158 R14: uploadPhotoToUrl sube un Blob con el tipo declarado (Enmienda E1) › envía image/png con un blob de entrada de tipo «image/jpeg»
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "image/png"
+    Received: "image/jpeg"
+
+      316 |       const init = fetchFn.mock.calls[0][1];
+      317 |       expect(init.body).toBeInstanceOf(Blob);
+    > 318 |       expect(init.body.type).toBe(contentType);
+          |                              ^
+      319 |       await expect(init.body.text()).resolves.toBe(content);
+      320 |       expect(init.headers).toStrictEqual({ 'Content-Type': contentType });
+      321 |     },
+
+      at toBe (src/api/__tests__/media.test.ts:318:30)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+  ● #158 R14: uploadPhotoToUrl sube un Blob con el tipo declarado (Enmienda E1) › envía image/webp con un blob de entrada de tipo «»
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "image/webp"
+    Received: ""
+
+      316 |       const init = fetchFn.mock.calls[0][1];
+      317 |       expect(init.body).toBeInstanceOf(Blob);
+    > 318 |       expect(init.body.type).toBe(contentType);
+          |                              ^
+      319 |       await expect(init.body.text()).resolves.toBe(content);
+      320 |       expect(init.headers).toStrictEqual({ 'Content-Type': contentType });
+      321 |     },
+
+      at toBe (src/api/__tests__/media.test.ts:318:30)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+  ● #158 R14: uploadPhotoToUrl sube un Blob con el tipo declarado (Enmienda E1) › envía image/webp con un blob de entrada de tipo «text/plain»
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "image/webp"
+    Received: "text/plain"
+
+      316 |       const init = fetchFn.mock.calls[0][1];
+      317 |       expect(init.body).toBeInstanceOf(Blob);
+    > 318 |       expect(init.body.type).toBe(contentType);
+          |                              ^
+      319 |       await expect(init.body.text()).resolves.toBe(content);
+      320 |       expect(init.headers).toStrictEqual({ 'Content-Type': contentType });
+      321 |     },
+
+      at toBe (src/api/__tests__/media.test.ts:318:30)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+  ● #158 R14: uploadPhotoToUrl sube un Blob con el tipo declarado (Enmienda E1) › envía image/webp con un blob de entrada de tipo «image/png»
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "image/webp"
+    Received: "image/png"
+
+      316 |       const init = fetchFn.mock.calls[0][1];
+      317 |       expect(init.body).toBeInstanceOf(Blob);
+    > 318 |       expect(init.body.type).toBe(contentType);
+          |                              ^
+      319 |       await expect(init.body.text()).resolves.toBe(content);
+      320 |       expect(init.headers).toStrictEqual({ 'Content-Type': contentType });
+      321 |     },
+
+      at toBe (src/api/__tests__/media.test.ts:318:30)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+  ● #158 R14: uploadPhotoToUrl sube un Blob con el tipo declarado (Enmienda E1) › envía application/pdf con un blob de entrada de tipo «»
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "application/pdf"
+    Received: ""
+
+      316 |       const init = fetchFn.mock.calls[0][1];
+      317 |       expect(init.body).toBeInstanceOf(Blob);
+    > 318 |       expect(init.body.type).toBe(contentType);
+          |                              ^
+      319 |       await expect(init.body.text()).resolves.toBe(content);
+      320 |       expect(init.headers).toStrictEqual({ 'Content-Type': contentType });
+      321 |     },
+
+      at toBe (src/api/__tests__/media.test.ts:318:30)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+  ● #158 R14: uploadPhotoToUrl sube un Blob con el tipo declarado (Enmienda E1) › envía application/pdf con un blob de entrada de tipo «text/plain»
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "application/pdf"
+    Received: "text/plain"
+
+      316 |       const init = fetchFn.mock.calls[0][1];
+      317 |       expect(init.body).toBeInstanceOf(Blob);
+    > 318 |       expect(init.body.type).toBe(contentType);
+          |                              ^
+      319 |       await expect(init.body.text()).resolves.toBe(content);
+      320 |       expect(init.headers).toStrictEqual({ 'Content-Type': contentType });
+      321 |     },
+
+      at toBe (src/api/__tests__/media.test.ts:318:30)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+  ● #158 R14: uploadPhotoToUrl sube un Blob con el tipo declarado (Enmienda E1) › envía application/pdf con un blob de entrada de tipo «image/png»
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "application/pdf"
+    Received: "image/png"
+
+      316 |       const init = fetchFn.mock.calls[0][1];
+      317 |       expect(init.body).toBeInstanceOf(Blob);
+    > 318 |       expect(init.body.type).toBe(contentType);
+          |                              ^
+      319 |       await expect(init.body.text()).resolves.toBe(content);
+      320 |       expect(init.headers).toStrictEqual({ 'Content-Type': contentType });
+      321 |     },
+
+      at toBe (src/api/__tests__/media.test.ts:318:30)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+```
+
+Cadena entera, desde `mobile-pet-tracker/`:
+
+```bash
+grep -qE '^Tests: +12 failed, 69 passed, 81 total$' /tmp/158-e1-red.txt \
+  && test "$(grep -cE '^  ● ' /tmp/158-e1-red.txt)" = 12 \
+  && test "$(grep -cF '  ● #158 R14: uploadPhotoToUrl sube un Blob con el tipo declarado (Enmienda E1) › envía ' /tmp/158-e1-red.txt)" = 12 \
+  && test "$(grep -cE '^ +> +[0-9]+ \| +expect\(init\.body\.type\)\.toBe\(contentType\);$' /tmp/158-e1-red.txt)" = 12 \
+  && test "$(grep -cxE ' +Received: ""' /tmp/158-e1-red.txt)" = 4 \
+  && test "$(grep -cxE ' +Received: "text/plain"' /tmp/158-e1-red.txt)" = 4 \
+  && test "$(grep -cxE ' +Received: "image/png"' /tmp/158-e1-red.txt)" = 3 \
+  && test "$(grep -cxE ' +Received: "image/jpeg"' /tmp/158-e1-red.txt)" = 1 \
+  && ! grep -qE 'TypeError|ReferenceError|SyntaxError|Cannot find module' /tmp/158-e1-red.txt \
+  && test "$(grep -cF '#158 R14' src/api/__tests__/media.test.ts)" = 1 \
+  && test "$(grep -cF "method: 'PUT', headers: { 'Content-Type': 'application/pdf' }, body," src/api/__tests__/media.test.ts)" = 0 \
+  && test "$(grep -cF "method: 'PUT', headers: { 'Content-Type': 'application/pdf' }, body: expect.any(Blob)," src/api/__tests__/media.test.ts)" = 1 \
+  && bunx eslint --no-cache src/api/__tests__/media.test.ts \
+  && test ! -e .expo/types/router.d.ts && bunx tsc --noEmit \
+  && git add src/api/__tests__/media.test.ts \
+  && git diff --quiet -- . && test -z "$(git ls-files --others --exclude-standard -- .)" \
+  && test "$(git diff --cached --name-only | tr '\n' ' ')" = 'mobile-pet-tracker/src/api/__tests__/media.test.ts ' \
+  && git commit -m 'test(mobile-docs-upload): red typed upload body (R14)'
+```
+
+```text
+[feature/158-mobile-docs-upload cf4933ae] test(mobile-docs-upload): red typed upload body (R14)
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 1 file changed, 29 insertions(+), 1 deletion(-)
+exit=0
+```
+
+Commit rojo: `cf4933ae`. ESLint y typecheck verdes, sin salida; las comprobaciones de cuentas y stage de la cadena pasan.
+
+### Commit 2 — verde R14
+
+Solo `src/api/media.ts`, una línea: `body: new Blob([body], { type: contentType }),`. Firma y llamantes intactos.
+
+```bash
+FORCE_COLOR=0 bunx jest src/api/__tests__/media.test.ts > /tmp/158-e1-green.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+Test Suites: 1 passed, 1 total
+Tests:       81 passed, 81 total
+```
+
+Anclas A1–A6 después del verde (desde `mobile-pet-tracker/`):
+
+A1 después:
+
+```bash
+grep -cxF '      body,' src/api/media.ts
+```
+
+```text
+0
+exit del comando=1
+```
+
+A2 después:
+
+```bash
+grep -cF 'body: new Blob([body], { type: contentType }),' src/api/media.ts
+```
+
+```text
+1
+exit del comando=0
+```
+
+A3 después:
+
+```bash
+grep -cF 'export async function uploadPhotoToUrl' src/api/media.ts
+```
+
+```text
+1
+exit del comando=0
+```
+
+A4 después:
+
+```bash
+grep -cF '#158 R14' src/api/__tests__/media.test.ts
+```
+
+```text
+1
+exit del comando=0
+```
+
+A5 después:
+
+```bash
+grep -cF "method: 'PUT', headers: { 'Content-Type': 'application/pdf' }, body," src/api/__tests__/media.test.ts
+```
+
+```text
+0
+exit del comando=1
+```
+
+A6 después:
+
+```bash
+grep -cF "method: 'PUT', headers: { 'Content-Type': 'application/pdf' }, body: expect.any(Blob)," src/api/__tests__/media.test.ts
+```
+
+```text
+1
+exit del comando=0
+```
+
+Cadena entera del verde:
+
+```bash
+grep -qE '^Tests: +81 passed, 81 total$' /tmp/158-e1-green.txt \
+  && test "$(grep -cxF '      body,' src/api/media.ts)" = 0 \
+  && test "$(grep -cF 'body: new Blob([body], { type: contentType }),' src/api/media.ts)" = 1 \
+  && test "$(grep -cF 'export async function uploadPhotoToUrl' src/api/media.ts)" = 1 \
+  && bunx eslint --no-cache src/api/media.ts \
+  && test ! -e .expo/types/router.d.ts && bunx tsc --noEmit && bunx expo lint --no-cache \
+  && git add src/api/media.ts \
+  && git diff --quiet -- . && test -z "$(git ls-files --others --exclude-standard -- .)" \
+  && test "$(git diff --cached --name-only | tr '\n' ' ')" = 'mobile-pet-tracker/src/api/media.ts ' \
+  && git commit -m 'fix(mobile-docs-upload): upload body carries the declared content type (R14)'
+```
+
+```text
+[feature/158-mobile-docs-upload 8b0f1d86] fix(mobile-docs-upload): upload body carries the declared content type (R14)
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+exit=0
+```
+
+Commit verde: `8b0f1d86`. ESLint, typecheck y Expo lint pasan sin salida. Sin commit de refactor.
+
+### Candados antes del merge
+
+Desde `mobile-pet-tracker/`, sin pipe en las mediciones:
+
+```bash
+FORCE_COLOR=0 bunx jest src/__tests__/design-drift.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/ui-language.test.ts src/__tests__/legibility-classnames.test.ts src/providers/__tests__/language-provider.test.tsx > /tmp/158-e1-globals.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+Test Suites: 5 passed, 5 total
+Tests:       199 passed, 199 total
+```
+
+```bash
+FORCE_COLOR=0 bunx jest src/screens/docs src/screens/add-pet src/screens/profile > /tmp/158-e1-screens.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+Test Suites: 3 passed, 3 total
+Tests:       173 passed, 173 total
+```
+
+### Commit 3 — traceability + impl
+
+En traceability solo se reemplazan los dos `pendiente: ` de la columna de commits de R14 por `cf4933ae ` y `8b0f1d86 `; mensajes intactos. Cadena a ejecutar desde la raíz:
+
+```bash
+cd /home/claude/sites/Pet-Tracker-wt-158 \
+  && git add specs/mobile-docs-upload/traceability.md progress/impl_mobile-docs-upload.md \
+  && git diff --quiet && test -z "$(git ls-files --others --exclude-standard)" \
+  && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'progress/impl_mobile-docs-upload.md specs/mobile-docs-upload/traceability.md ' \
+  && git commit -m 'docs(mobile-docs-upload): traceability for R14 (#158)'
+```
