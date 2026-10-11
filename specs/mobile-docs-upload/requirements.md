@@ -1,6 +1,6 @@
 ---
 feature: "mobile-docs-upload"
-status: approved     # draft | approved
+status: approved     # draft | approved  (Enmienda E1 pendiente de aprobación, ver §Aprobación)
 tags: [harness, spec, mobile]
 ---
 
@@ -159,7 +159,7 @@ En `src/api/media.ts`:
 
    Son doce filas y cada una es un candado.
 
-5. **THE SYSTEM SHALL** aceptar `DocumentContentType` en el parámetro `contentType` de `uploadPhotoToUrl`, sin cambiar su nombre ni su comportamiento: `PUT` con cabecera `Content-Type` y sin `Authorization`.
+5. **THE SYSTEM SHALL** aceptar `DocumentContentType` en el parámetro `contentType` de `uploadPhotoToUrl`, sin cambiar su nombre ni su comportamiento: `PUT` con cabecera `Content-Type` y sin `Authorization`. *(Enmienda E1: el comportamiento cambia en un punto, el cuerpo del `PUT` pasa a ser un `Blob` con `type === contentType`; ver R14.)*
 
 ### R3: el owner ve la acción de subir, en la lista y en el vacío
 
@@ -417,12 +417,218 @@ que dice [[design]] §Ocurrencias, como `t('<clave>'`.
 real contra LocalStack. La firma el humano en su casilla propia; la casilla de
 §Aprobación no la cubre.
 
+*(Enmienda E1: el veredicto que cuenta es el de la ronda de R14, y el paso 6
+incluye la comprobación del `ContentType` guardado.)*
+
+### R14: la subida lleva el tipo declarado aunque el archivo no lo traiga (Enmienda E1)
+
+**WHEN** `uploadPhotoToUrl(uploadUrl, body, contentType, fetchFn)`
+(`mobile-pet-tracker/src/api/media.ts`) hace el `PUT`, **THE SYSTEM SHALL**
+pasar a `fetchFn` como `body` un `Blob` que:
+
+1. es `instanceof Blob`;
+2. tiene `type` exactamente igual a `contentType`, sea cual sea el `type` del
+   `body` recibido: `''`, un tipo que la app no admite (`'text/plain'`) o un
+   tipo admitido distinto de `contentType` (un blob `image/png` subido como
+   `image/jpeg`);
+3. tiene los mismos bytes que el `body` recibido.
+
+Que sea el mismo objeto o uno nuevo no es requisito: lo que se pide es el
+tipo y los bytes que salen en el cable.
+
+La cabecera sigue siendo `headers: { 'Content-Type': contentType }` y sigue
+sin `Authorization` (R2.5). Vale para los cuatro `contentType` que la firma
+admite (`PhotoContentType | DocumentContentType`): `image/jpeg`, `image/png`,
+`image/webp` y `application/pdf`.
+
+**Por qué** (diagnóstico en `progress/explore_mobile-docs-upload-e1.md`): en
+nativo, Expo SDK 57 instala `expo/fetch` como `fetch` global, y con un `Blob`
+como cuerpo pisa la cabecera `Content-Type` del llamante con `body.type`. El
+blob que lee la pantalla Docs desde un `file://` llega con `type === ''`, el
+`PUT` sale con `Content-Type` vacío y S3/LocalStack guarda
+`binary/octet-stream`. Al abrirlo (R10), Chrome no sabe mostrarlo.
+
+**Arreglo prescrito, sin alternativas**: en `uploadPhotoToUrl`, y solo ahí,
+la línea `body,` del objeto que se pasa a `fetchFn` pasa a ser
+`body: new Blob([body], { type: contentType }),`. El resto de `media.ts` no
+cambia. Los tres llamantes (`src/screens/docs/index.tsx`,
+`src/screens/add-pet/index.tsx`, `src/screens/profile/index.tsx`) y sus tests
+no se tocan: el arreglo en la función compartida cubre los tres.
+
+Anclas, en `mobile-pet-tracker/`:
+
+| Ancla | Comando | Base `791a6f97` | Tras el verde de R14 |
+|---|---|---|---|
+| A1 | `grep -cxF '      body,' src/api/media.ts` | `1` | `0` |
+| A2 | `grep -cF 'body: new Blob([body], { type: contentType }),' src/api/media.ts` | `0` | `1` |
+| A3 | `grep -cF 'export async function uploadPhotoToUrl' src/api/media.ts` | `1` | `1` |
+| A4 | `grep -cF '#158 R14' src/api/__tests__/media.test.ts` | `0` | `1` |
+| A5 | `grep -cF "method: 'PUT', headers: { 'Content-Type': 'application/pdf' }, body," src/api/__tests__/media.test.ts` | `1` | `0` |
+| A6 | `grep -cF "method: 'PUT', headers: { 'Content-Type': 'application/pdf' }, body: expect.any(Blob)," src/api/__tests__/media.test.ts` | `0` | `1` |
+
+**Candado** (en `src/api/__tests__/media.test.ts`, al final del fichero, tras
+el `describe` de `#158 R2`): el producto cartesiano `contentType` × tipo del
+blob de entrada, en un solo `it.each` de 12 filas dentro de un solo `describe`,
+para que el ancla A4 siga en `1`.
+
+- `contentType`: los cuatro valores distintos de `PhotoContentType | DocumentContentType`.
+  `image/jpeg` e `image/png` están en los dos tipos y no se repiten.
+- Tipo del blob de entrada, tres por `contentType`:
+  - `''`, el caso de la pantalla Docs;
+  - `'text/plain'`, un tipo que no es ninguno de los `contentType`;
+  - un tipo admitido y distinto del declarado: `image/png` para `image/jpeg`,
+    `image/webp` y `application/pdf`, e `image/jpeg` para `image/png`.
+  El blob se construye siempre con `new Blob([content], { type: inputType })`;
+  con `inputType === ''` queda con `type === ''`, igual que un blob sin opciones.
+- `content`, la tercera columna: un literal propio por fila, de `'bytes 01'` a
+  `'bytes 12'`, que no coincide con ningún `contentType`. Es el contenido del
+  blob de entrada, y el paso 6 lo compara con él.
+
+Tabla y título, literales. El orden de cada fila es `[contentType, tipo de
+entrada, contenido]`. El `as const` hace falta para que `tsc` acepte la primera
+columna como `contentType`. El título solo usa las dos primeras columnas:
+
+```ts
+describe('#158 R14: uploadPhotoToUrl sube un Blob con el tipo declarado (Enmienda E1)', () => {
+  it.each([
+    ['image/jpeg', '', 'bytes 01'],
+    ['image/jpeg', 'text/plain', 'bytes 02'],
+    ['image/jpeg', 'image/png', 'bytes 03'],
+    ['image/png', '', 'bytes 04'],
+    ['image/png', 'text/plain', 'bytes 05'],
+    ['image/png', 'image/jpeg', 'bytes 06'],
+    ['image/webp', '', 'bytes 07'],
+    ['image/webp', 'text/plain', 'bytes 08'],
+    ['image/webp', 'image/png', 'bytes 09'],
+    ['application/pdf', '', 'bytes 10'],
+    ['application/pdf', 'text/plain', 'bytes 11'],
+    ['application/pdf', 'image/png', 'bytes 12'],
+  ] as const)(
+    'envía %s con un blob de entrada de tipo «%s»',
+    async (contentType, inputType, content) => {
+      // pasos 1-7
+    },
+  );
+});
+```
+
+Nombres completos de los doce `it` (prefijo
+`#158 R14: uploadPhotoToUrl sube un Blob con el tipo declarado (Enmienda E1) › `):
+
+- `envía image/jpeg con un blob de entrada de tipo «»`
+- `envía image/jpeg con un blob de entrada de tipo «text/plain»`
+- `envía image/jpeg con un blob de entrada de tipo «image/png»`
+- `envía image/png con un blob de entrada de tipo «»`
+- `envía image/png con un blob de entrada de tipo «text/plain»`
+- `envía image/png con un blob de entrada de tipo «image/jpeg»`
+- `envía image/webp con un blob de entrada de tipo «»`
+- `envía image/webp con un blob de entrada de tipo «text/plain»`
+- `envía image/webp con un blob de entrada de tipo «image/png»`
+- `envía application/pdf con un blob de entrada de tipo «»`
+- `envía application/pdf con un blob de entrada de tipo «text/plain»`
+- `envía application/pdf con un blob de entrada de tipo «image/png»`
+
+Cada fila, en este orden:
+
+1. `const fetchFn = jest.fn().mockResolvedValue(response(200, undefined));`,
+   con el helper `response` que ya existe en el fichero y sin cast, como el
+   `it` de R2 `uploadPhotoToUrl manda application/pdf sin Authorization`;
+2. `await expect(uploadPhotoToUrl('http://upload.test/typed', new Blob([content], { type: inputType }), contentType, fetchFn)).resolves.toEqual({ kind: 'ok' });`
+3. `const init = fetchFn.mock.calls[0][1];`
+4. `expect(init.body).toBeInstanceOf(Blob);`
+5. `expect(init.body.type).toBe(contentType);`
+6. `await expect(init.body.text()).resolves.toBe(content);`
+7. `expect(init.headers).toStrictEqual({ 'Content-Type': contentType });`. Va
+   con `toStrictEqual` y no con `toEqual`, que ignora las claves con valor
+   `undefined` y dejaría pasar `Authorization: undefined`.
+
+No hay `it` de identidad (`not.toBe(input)`): la identidad no es requisito.
+
+**El `it` de R2 que se mueve** (medido, no supuesto): con el arreglo, el `it`
+`#158 R2: API de subida de documentos › uploadPhotoToUrl manda application/pdf sin Authorization`
+se pone rojo. Su blob de entrada es `new Blob(['PDF bytes'])`, sin tipo, y en
+jest `toHaveBeenCalledWith` compara el `Blob` de Node también por su
+propiedad `Symbol(kType)`: espera `''` y recibe `'application/pdf'`. En ese
+`it`, y solo en él, el `body,` del objeto esperado pasa a
+`body: expect.any(Blob),` (anclas A5 y A6). El tipo y los bytes del cuerpo
+los fija ya R14. El `it` de `R7: media photo upload API` `PUTs the raw body
+with Content-Type and without Authorization` sigue verde sin cambios, porque
+su blob ya trae `type: 'image/png'` y el mismo tamaño. No se toca.
+
+**Mutaciones** (medidas sobre una copia fuera del árbol, base `791a6f97` con
+E1 aplicada; el fichero tiene 81 `it`). Las filas de R14 se agrupan por tipo de
+entrada: cuatro de `«»`, cuatro de `«text/plain»` y cuatro de tipo admitido
+(`«image/png»` o `«image/jpeg»`). La mutación cambia la línea `body` de
+`uploadPhotoToUrl`, salvo H5, que cambia `headers`:
+
+| Id | Mutación | Resultado | Dónde falla |
+|---|---|---|---|
+| T1 | `body,` (sin envolver, la base) | 12 rojos: las doce filas de R14 | paso 5, con `Received: ""` en las de `«»`, `Received: "text/plain"` en las de `«text/plain»` y el tipo de entrada (`"image/png"` o `"image/jpeg"`) en las de tipo admitido. El paso 4 pasa, porque el blob de entrada ya es un `Blob` |
+| T2 | `body: new Blob([body]),` (sin `type`) | 13 rojos: las doce de R14 y el `it` de R7 | R14 en el paso 5 (`Received: ""`); R7 en su `toHaveBeenCalledWith` |
+| T3 | `body: new Blob([], { type: contentType }),` (sin bytes) | 13 rojos: las doce de R14 y el `it` de R7 | R14 en el paso 6 (`Received: ""`); R7 en su `toHaveBeenCalledWith` |
+| T4 | `body: new Blob(['x'], { type: contentType }),` (bytes fijos) | 13 rojos: las doce de R14 y el `it` de R7 | R14 en el paso 6 (`Received: "x"`); R7 en su `toHaveBeenCalledWith` |
+| T5 | `body: body.type === '' ? new Blob([body], { type: contentType }) : body,` | 8 rojos: las de `«text/plain»` y las de tipo admitido | paso 5, con el tipo de entrada como `Received` |
+| T6 | `body: new Blob([body], { type: body.type \|\| contentType }),` | 8 rojos: las de `«text/plain»` y las de tipo admitido | paso 5, con el tipo de entrada como `Received` |
+| T7 | `body: body.type === contentType ? body : new Blob([body], { type: contentType }),` | 81/81 verdes: **mutación equivalente aceptada** | no falla. Solo reutiliza el objeto cuando ya trae `type === contentType`, y entonces `expo/fetch` manda esa misma cabecera y los mismos bytes. En el cable no se distingue del arreglo, y R14 no pide un objeto nuevo |
+| S1 | `body: ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'].includes(body.type) ? body : new Blob([body], { type: contentType }),` | 4 rojos: las de tipo admitido | paso 5, con `Received: "image/png"` (3) o `"image/jpeg"` (1) |
+| S2 | `body: new Blob([body], { type: ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'].includes(body.type) ? body.type : contentType }),` | 4 rojos: las de tipo admitido | paso 5, igual que S1 |
+| S3 | `body: body.type.startsWith('image/') ? body : new Blob([body], { type: contentType }),` | 4 rojos: las de tipo admitido | paso 5, igual que S1 |
+| S11 | `body: body.type.startsWith('text/') \|\| body.type === '' ? new Blob([body], { type: contentType }) : body,` | 4 rojos: las de tipo admitido | paso 5, igual que S1 |
+| S7 | `body: new Blob([contentType], { type: contentType }),` (bytes = el tipo) | 13 rojos: las doce de R14 y el `it` de R7 | R14 en el paso 6, con el `contentType` como `Received`; R7 en su `toHaveBeenCalledWith` |
+| H5 | `headers: { 'Content-Type': contentType, Authorization: undefined },` | 13 rojos: las doce de R14 y el `it` de R2 `uploadPhotoToUrl manda application/pdf sin Authorization` | R14 en el paso 7 (`toStrictEqual`); R2 en su aserción de cabeceras |
+
+**Alcance del candado**: jest corre con el `Blob` de Node. El `Blob` de React
+Native que la app usa en el teléfono (`react-native/Libraries/Blob/Blob.js`,
+`BlobManager.createFromParts`, que acepta partes `Blob` y toma
+`options.type`) solo lo cubre la prueba de humo: R13, paso 6, con la
+comprobación de E1.
+
+Límites aceptados, sin candado propio:
+
+- **N6.** Envolver solo si `body.size > 0` deja un cuerpo de 0 bytes con `type ''`. Ninguna fila lo prueba: la cláusula 2 no habla de tamaño y la mutación es rebuscada.
+- **N7.** El `Blob` de Node pasa `type` a minúsculas y el de React Native (`BlobManager.js`) lo copia tal cual, así que `type: contentType.toUpperCase()` pasa en jest. Lo cubre el paso 6 del smoke, que exige el literal exacto.
+- **N8.** Un `File` en vez de un `Blob` cumple la cláusula 1. No hace falta fila: el `toHaveBeenCalledWith` de R7 ya lo rechaza.
+
 ## Criterios no funcionales (los comprueba el reviewer y no tienen R-id)
 
 - `bunx expo install expo-document-picker` en `mobile-pet-tracker/`, sin escribir el rango a mano. Es un módulo nativo: el dev build hay que **reconstruirlo** (`bunx expo run:android`) antes del humo. Si `expo install` añade `expo-document-picker` a `plugins` de la configuración de la app, se deja tal cual, sin opciones de iCloud.
 - `expo-web-browser` ya está instalado: no se toca su versión.
 - grep-clean de la carta (`docs/ui-guidelines.md` §Decisiones fijas): sin hex fuera de `src/theme`, sin clases arbitrarias `[…]`, sin `StyleSheet.create`, radios solo `rounded-card`, `rounded-xl` y `rounded-full`. La pantalla sigue en el layout de pantalla empujada (excepción A11): `padding: 24`, `gap: 16`, `paddingBottom: insets.bottom + 24`.
 - La ruta `src/app/pets/[petId]/docs.tsx` no cambia. No hay ruta nueva ni cambios en `src/app/_layout.tsx`.
+
+## Enmienda E1 (smoke R13, paso 6, 2026-10-11)
+
+En el smoke R13 (paso 6), el humano relató que el documento se sube, la fila
+aparece y, al pulsarla, Chrome en el teléfono no sabe mostrarlo porque el
+objeto no tiene tipo. El leader verificó la causa y la dejó escrita en
+`progress/explore_mobile-docs-upload-e1.md`, en `791a6f97`. El `reviewer` había
+aprobado ese HEAD: R1–R12 siguen valiendo y **no cambian**, salvo la nota de
+R2.5. E1 añade R14 y toca solo dos ficheros de la app, los dos ya en la lista
+cerrada ([[design]] §Ficheros afectados): `src/api/media.ts` (una línea) y
+`src/api/__tests__/media.test.ts` (un `describe` nuevo y una línea del `it` de
+R2).
+
+| Id | Requisito | Cambio | Validación |
+|---|---|---|---|
+| E1 | R14 (requisito nuevo), R2.5, R13 | el `PUT` lleva un `Blob` con `type === contentType`; un `it` de R2 deja de exigir que el cuerpo sea el mismo blob; el smoke vuelve a subir y comprueba el `ContentType` guardado | copia fuera del árbol: 12 rojos en la base, 81/81 verdes con el arreglo, `tsc --noEmit` y `eslint --no-cache` en verde; de las trece mutaciones de R14, doce en rojo y una equivalente aceptada (T7) |
+
+Consecuencias:
+
+- `src/api/__tests__/media.test.ts` pasa de 69 a 81 `it` (12 filas de R14).
+- Los candados globales no se mueven: `design-drift`, `consistency-classnames`,
+  `ui-language`, `legibility-classnames` y `language-provider` dan 199/199 en
+  la base y con E1 aplicada. No existe ningún inventario de `it` o `expect` de
+  `media.test.ts` fuera de [[tasks]] y [[traceability]].
+- Los tests de las tres pantallas no se mueven: mockean `../../api/media`
+  entero. Con E1 aplicada dan 173/173.
+- Ninguna dependencia nueva, ninguna clase, ninguna copy. `bunx expo install`
+  no se corre y el dev build **no** hace falta reconstruirlo: el cambio es JS y
+  llega por Metro (`bunx expo start -c`).
+- El verde de R14 se commitea como `fix(...)`, no como `feat(...)`: corrige un
+  comportamiento que R2.5 daba por bueno.
+
+Los textos normativos están en R2.5, R14, §Fuera de alcance de E1 y
+§Prueba de humo, marcados «Enmienda E1».
 
 ## Fuera de alcance
 
@@ -442,6 +648,25 @@ delimita esta.
 - **(D)** Zona horaria del perfil para la fecha por defecto. Se usa la del dispositivo (DA7).
 - **(D)** Prueba de humo en iOS.
 - **(D)** Cualquier cambio en `backend-pet-tracker/`.
+
+### Fuera de alcance de E1
+
+- **(D)** Reparar los objetos que ya se subieron con `binary/octet-stream`.
+  No se migran ni se reescriben: en el smoke se vuelve a subir (§Prueba de
+  humo, precondición 8).
+- **(D)** El backend. Guarda y devuelve lo que llega en el `PUT`: el leader
+  lo midió contra LocalStack 4.14 con una URL prefirmada como la de
+  `PhotoStorageS3Adapter.createUploadUrl` (sin `ContentType` en la firma).
+  Con `Content-Type: application/pdf`, `HEAD` y `GET` devuelven
+  `application/pdf`; con `Content-Type` vacío, `binary/octet-stream`.
+- **(F)** El feedback pressed de `Card` (observación 1 de
+  `progress/review_mobile-docs-upload.md`). Es transversal y va como
+  seguimiento aparte.
+- **(F)** Las clases del formulario (observación 2 de esa review). Va como
+  seguimiento aparte.
+- **(D)** Cambiar de implementación de `fetch` (`EXPO_PUBLIC_USE_RN_FETCH=1`),
+  tocar los tres llamantes o leer el archivo a un `ArrayBuffer`
+  ([[design]] D8).
 
 ## Decisiones abiertas que el humano debe revisar en el gate
 
@@ -464,7 +689,18 @@ El detalle y las alternativas descartadas están en [[design]] §Decisiones.
 
 ## Aprobación
 
+> Tres casillas, tres gates (lección `gate-humano-sin-casilla-donde-firmar`).
+> La de la spec autorizó la implementación de R1–R13; la de la Enmienda E1
+> autoriza la ronda de Codex de R14; la del smoke R13, en §Prueba de humo,
+> cierra la feature.
+
+### Aprobación de la spec
+
 - [x] Aprobado por humano (fecha: 2026-10-09) ← gate obligatorio antes de implementar
+
+### Enmienda E1 — el `PUT` lleva el tipo declarado (R14)
+
+- [ ] Enmienda E1 aprobada por humano (fecha: ____) ← gate obligatorio antes de la ronda de Codex de R14. Solo cubre E1: R14, la nota de R2.5, §Fuera de alcance de E1 y los cambios de §Prueba de humo marcados «Enmienda E1»
 
 ## Prueba de humo (gate humano propio, después del veredicto del reviewer)
 
@@ -503,6 +739,7 @@ LocalStack tiene que firmar con la IP LAN (#57).
 5. La cuenta owner `<email-owner>` tiene la mascota `<nombre-mascota>`. Una segunda cuenta, `<email-no-owner>`, tiene el rol `<family | walker | vet>` sobre esa misma mascota.
 6. En el teléfono hay un PDF real de menos de 10 MB (`<archivo.pdf>`), una imagen JPEG o PNG real (`<imagen.jpg|png>`) y un archivo de más de 10 MB (`<archivo-grande>`).
 7. `adb devices -l` puede listar el teléfono dos veces (por IP y por mDNS). Todos los comandos usan `adb -s <ip:puerto>`.
+8. **(Enmienda E1)** Los documentos subidos antes de E1 quedaron en S3 con `binary/octet-stream` y no sirven para el paso 6. Hay que volver a subir el PDF y la imagen en los pasos 4 y 5, con Metro sirviendo ya el código de E1 (`bunx expo start -c`; E1 es solo JS y no pide reconstruir el dev build). Las filas de antes de E1 que sigan en la lista no cuentan: usa para `<nombre-pdf>` y `<nombre-imagen>` nombres que no estén ya en ella.
 
 **Pasos**. Todos con la cuenta owner, salvo el 8:
 
@@ -511,7 +748,17 @@ LocalStack tiene que firmar con la IP LAN (#57).
 3. Pulsa `Subir documento` y elige `<archivo-grande>`. Sale `El archivo pesa más de 10 MB` y no se abre el formulario.
 4. Pulsa `Subir documento` y elige `<archivo.pdf>`. El formulario muestra el nombre del archivo y la fecha de hoy. Escribe Tipo `Vacunación` y Nombre `<nombre-pdf>`, deja Veterinario vacío y pulsa `Subir documento`. Los botones se bloquean y la fila `<nombre-pdf>` aparece en la lista sin recargar a mano.
 5. Para el backend (Ctrl+C en la terminal de `start:dev`). Sube `<imagen.jpg|png>` con Tipo `Consulta` y Nombre `<nombre-imagen>` y pulsa `Subir documento`. Sale `No se pudo conectar con el servidor`, el formulario sigue abierto con lo escrito y la pantalla no se rompe. Vuelve a lanzar `pnpm -C backend-pet-tracker run start:dev`, espera a que escuche en el puerto 3000, pulsa otra vez `Subir documento` y la fila `<nombre-imagen>` aparece. No uses el modo avión: corta la Wi-Fi, y con ella la depuración inalámbrica de adb (Android la apaga y le cambia el puerto) y la conexión con Metro.
-6. Pulsa la fila `<nombre-imagen>`: se abre en el navegador dentro de la app y se ve la imagen subida. Pulsa la fila `<nombre-pdf>`: se abre la pestaña y el PDF se ve en ella o se descarga y se abre con el visor del sistema (DA4). En los dos casos es el archivo subido.
+6. **(Enmienda E1)** Antes de pulsar nada, comprueba desde la máquina de desarrollo el tipo que guardó S3 para los dos documentos de los pasos 4 y 5. Las claves tienen la forma `pets/<petId>/docs/<documentId>`. El primer comando lista solo las claves que contienen `/docs/`, ordenadas por `LastModified`, y se queda con las dos últimas: la penúltima es el PDF del paso 4 y la última, la imagen del paso 5. Cada línea de la salida es `<clave><TAB><LastModified>`. Después lee el tipo guardado de cada una, sustituyendo `<clave>` por la clave copiada de la salida anterior:
+   ```bash
+   export AWS_ACCESS_KEY_ID=test AWS_SECRET_ACCESS_KEY=test AWS_DEFAULT_REGION=us-east-1
+   aws --endpoint-url http://<IP LAN>:4566 s3api list-objects-v2 --bucket pet-tracker-media-local --prefix pets/ --query "sort_by(Contents[?contains(Key,'/docs/')], &LastModified)[-2:].[Key,LastModified]" --output text
+   aws --endpoint-url http://<IP LAN>:4566 s3api head-object --bucket pet-tracker-media-local --key <clave> --query ContentType --output text
+   ```
+   La salida de `head-object` es una sola línea con el tipo, sin comillas. Para la clave del PDF tiene que ser exactamente `application/pdf`; para la de la imagen, exactamente `image/jpeg` si subiste un JPEG o `image/png` si subiste un PNG. Cualquier otra salida hace fallar el paso aunque el navegador abra algo. Si sale `binary/octet-stream`, es un documento de antes de E1 o Metro no sirvió el código de E1. El paso también falla, y hay que volver a la precondición 8, si `list-objects-v2` devuelve menos de dos líneas, si las dos claves no son las de los pasos 4 y 5, o si termina con `aws: [ERROR]: In function sort_by(), invalid type for value: None, expected one of: ['array'], received: "null"` (`exit=255`): ese error quiere decir que no hay ningún objeto bajo `pets/`.
+
+   Los dos comandos `aws` valen tal cual en bash y en PowerShell. La consulta va entre comillas dobles y no lleva `$` ni comillas invertidas, así que ninguna de las dos shells la toca. Las credenciales `test`/`test` de LocalStack van en variables de entorno y no en el comando. En PowerShell, en lugar del `export`: `$env:AWS_ACCESS_KEY_ID='test'; $env:AWS_SECRET_ACCESS_KEY='test'; $env:AWS_DEFAULT_REGION='us-east-1'`. La consulta JMESPath se validó con `jmespath` 1.0.1 sobre una salida de ejemplo, sin LocalStack: excluye las fotos (`pets/<petId>/photo-<epoch-ms>`) y devuelve las dos claves de `/docs/` más recientes, de la más antigua a la más nueva.
+
+   Después, pulsa la fila `<nombre-imagen>`: se abre en el navegador dentro de la app y se ve la imagen subida. Pulsa la fila `<nombre-pdf>`: se abre la pestaña y el PDF se ve en ella o se descarga y se abre con el visor del sistema (DA4). En los dos casos es el archivo subido.
 7. Comprueba que el teléfono no intentó ir al loopback:
    ```bash
    adb -s <ip:puerto> logcat -d | rg 'ConnectException.*(localhost|127\.0\.0\.1):4566'

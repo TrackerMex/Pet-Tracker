@@ -51,6 +51,8 @@ Totales tras el commit rojo de cada requisito. La base está medida en [[design]
 | R10 rojo | 106 | 69 | 25 | 9 |
 | R11 rojo | 108 | 69 | 25 | 2 |
 | R12 rojo | 108 | 69 | 25 | `ui-language` (37 ≠ 53) |
+| E1 rojo (R14), sobre `791a6f97` | no cambia | 81 (69 + 12) | no cambia | 12: las doce filas de R14 |
+| E1 verde (R14) | no cambia | 81 | no cambia | 0 |
 
 ## Reglas comunes de los tests de pantalla (`src/screens/docs/index.test.tsx`)
 
@@ -286,7 +288,62 @@ Fichero de test: `src/api/__tests__/media.test.ts`. Usa el helper `response(stat
 - [ ] (2) El humano marca `- [ ] Smoke R13 superado en dev build de Android (fecha: ____)`.
 - [ ] (3) —
 
+## E1 — R14: el `PUT` lleva el tipo declarado (Enmienda E1)
+
+Solo con la casilla de la Enmienda E1 firmada en [[requirements]] §Aprobación.
+Todo se corre en `mobile-pet-tracker/`, sin pipe. Base medida en `791a6f97`:
+`FORCE_COLOR=0 bunx jest src/api/__tests__/media.test.ts; echo "exit=$?"` da
+`Tests: 69 passed, 69 total` y `exit=0`. Si al arrancar la base da otra cifra,
+se mide de nuevo y se aplica el delta de esta tarea (+12), sin copiar los
+números de aquí.
+
+- [ ] (1) Rojo. Solo `src/api/__tests__/media.test.ts`:
+  - al final del fichero, el `describe` de [[requirements]] R14 §Candado, con
+    sus siete pasos por fila y en ese orden;
+  - en el `it` de R2 `uploadPhotoToUrl manda application/pdf sin Authorization`,
+    el `body,` del objeto esperado pasa a `body: expect.any(Blob),`. Anclas A5
+    (`1` → `0`) y A6 (`0` → `1`) de R14. Esta línea sigue verde en la base y con
+    el arreglo; va en el rojo para que el verde solo toque `media.ts`.
+
+  Comprobación:
+  - `FORCE_COLOR=0 bunx jest src/api/__tests__/media.test.ts; echo "exit=$?"`
+    da `Tests: 12 failed, 69 passed, 81 total` y `exit=1`. Los doce rojos son
+    las filas de R14 y fallan todos en el paso 5,
+    `expect(init.body.type).toBe(contentType)`, con el tipo de entrada como
+    `Received`: `""` en las cuatro de `«»`, `"text/plain"` en las cuatro de
+    `«text/plain»`, y `"image/png"` (tres) o `"image/jpeg"` (una) en las de
+    tipo admitido.
+    Si cae otro `it`, o una fila falla en otro paso, se para;
+  - `bunx eslint --no-cache src/api/__tests__/media.test.ts; echo "exit=$?"` da `exit=0`;
+  - ancla A4 da `1`.
+
+  Commit: `test(mobile-docs-upload): red typed upload body (R14)`, con solo ese fichero.
+- [ ] (2) Verde. Solo `src/api/media.ts`: en `uploadPhotoToUrl`, `body,` pasa a
+  `body: new Blob([body], { type: contentType }),`. Anclas A1 (`0`), A2 (`1`)
+  y A3 (`1`).
+
+  Comprobación:
+  - `FORCE_COLOR=0 bunx jest src/api/__tests__/media.test.ts; echo "exit=$?"`
+    da `Tests: 81 passed, 81 total` y `exit=0`;
+  - `bunx eslint --no-cache src/api/media.ts; echo "exit=$?"` da `exit=0`;
+  - `bunx tsc --noEmit; echo "exit=$?"` da `exit=0`.
+
+  Commit: `fix(mobile-docs-upload): upload body carries the declared content type (R14)`,
+  con solo ese fichero. El verde va como `fix(...)`, no `feat(...)`, según
+  `docs/conventions.md` §Commits (`fix(<scope>): <descripción> (R3)`): corrige
+  un comportamiento que R2.5 daba por bueno. No es una desviación de
+  `CHECKPOINTS.md` C5.
+- [ ] (3) Refactor: nada previsto.
+- [ ] (4) Candados que no se mueven, medidos después del verde:
+  - `FORCE_COLOR=0 bunx jest src/__tests__/design-drift.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/ui-language.test.ts src/__tests__/legibility-classnames.test.ts src/providers/__tests__/language-provider.test.tsx; echo "exit=$?"`
+    da `Tests: 199 passed, 199 total` y `exit=0`, igual que en la base;
+  - `FORCE_COLOR=0 bunx jest src/screens/docs src/screens/add-pet src/screens/profile; echo "exit=$?"`
+    da `Tests: 173 passed, 173 total` y `exit=0`. Las tres suites mockean
+    `../../api/media` entero y no ven el cambio;
+  - no hay inventario de `it` o `expect` de `media.test.ts` fuera de esta spec.
+- [ ] (5) [[traceability]]: fila R14 con el hash y el mensaje del rojo y del verde.
+
 ## T-final
 
 - [ ] `bunx jest` entero en `mobile-pet-tracker/`, `bunx tsc --noEmit` y `bunx expo lint --no-cache`, los tres en verde y medidos sin pipe.
-- [ ] `git diff --stat 65f37841..HEAD` solo toca los ficheros de [[design]] §Ficheros afectados, más `progress/impl_mobile-docs-upload.md` y `specs/mobile-docs-upload/traceability.md`.
+- [ ] `git diff --stat 65f37841..HEAD` solo toca los ficheros de [[design]] §Ficheros afectados, más `progress/impl_mobile-docs-upload.md` y `specs/mobile-docs-upload/traceability.md`. *(Enmienda E1: R14 no añade ficheros a esa lista; `media.ts` y `media.test.ts` ya están en ella.)*

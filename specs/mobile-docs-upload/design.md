@@ -147,7 +147,7 @@ Límite conocido: Android no pinta PDFs en una Custom Tab, los descarga.
 
 - `createPetDocument` y `confirmPetDocumentUpload` siguen el molde de `requestPhotoUploadUrl`: `postJson` de `./http`, `missing-config` sin `baseUrl`, un `kind` por estado.
 - El `code` del 409 se lee con `readJson` como en `src/api/geofences.ts`.
-- `uploadPhotoToUrl` ya hace un `PUT` con un `Blob` cualquiera. Solo se ensancha el tipo de `contentType`. No se renombra, porque renombrarla tocaría el perfil y sus tests, que quedan fuera.
+- `uploadPhotoToUrl` ya hace un `PUT` con un `Blob` cualquiera. Solo se ensancha el tipo de `contentType`. No se renombra, porque renombrarla tocaría el perfil y sus tests, que quedan fuera. *(Enmienda E1: «un `Blob` cualquiera» no basta en nativo; el cuerpo se re-envuelve con el tipo, ver D8.)*
 - `downloadUrl` pasa a ser obligatorio en `PetDocument`. El backend de #157 lo manda siempre (`pet-document.mapper.ts`).
 
 ### D5 — Secuencia y estado de la subida
@@ -181,6 +181,35 @@ catálogo ya repite literales por pantalla (`geofences.cancel`,
 `reminders.cancel`, `pairing.cancel`; `weightLog.yyyyMmDd`), así que
 `docs.cancel` y `docs.datePlaceholder` siguen ese precedente. Ningún literal sale
 del canvas de propuesta UI: la copy no aprobada no se copia (DA1).
+
+### D8 — El cuerpo del `PUT` se re-envuelve con el tipo declarado (Enmienda E1, R14)
+
+- Causa, medida por el leader en `progress/explore_mobile-docs-upload-e1.md`: en
+  nativo `fetch` es `expo/fetch` (`node_modules/expo/src/winter/runtime.native.ts`,
+  `install('fetch', () => require('./fetch').fetch)`). En
+  `node_modules/expo/src/winter/fetch/RequestUtils.ts`, con un `Blob` como cuerpo,
+  `normalizeBodyInitAsync` devuelve `overriddenHeaders: [['Content-Type', body.type]]`,
+  que sustituye la cabecera del llamante. El blob que lee Docs de un `file://`
+  tiene `type === ''` (`FetchResponse.ts`: `this.headers.get('content-type') ?? ''`).
+- Arreglo: `body: new Blob([body], { type: contentType })` dentro de
+  `uploadPhotoToUrl`. Es una línea en la función por la que pasan los tres
+  llamantes, así que cubre también las fotos de add-pet y de perfil, que tienen
+  el mismo defecto aunque `<Image>` no lo deja ver.
+- El `Blob` del teléfono es el de React Native: su constructor llama a
+  `BlobManager.createFromParts(parts, options)`, que acepta partes `Blob` y toma
+  `type: options ? options.type : ''`. En jest es el `Blob` de Node, con el mismo
+  contrato. `bunx tsc --noEmit` y `bunx eslint --no-cache` aceptan la línea
+  (medido en una copia fuera del árbol).
+- Alternativas descartadas:
+  - poner el tipo en el blob de la pantalla Docs: arregla un llamante de tres y
+    deja las fotos igual;
+  - `EXPO_PUBLIC_USE_RN_FETCH=1`: cambia la implementación de `fetch` de toda la
+    app para arreglar una cabecera;
+  - leer el archivo a un `ArrayBuffer` y mandarlo así: carga hasta 10 MB en
+    memoria de JS y cambia el contrato `body: Blob` de la función;
+  - firmar la URL con `ContentType` en el backend: el backend está fuera de
+    alcance, y no evita que `expo/fetch` mande la cabecera vacía; solo haría
+    que el `PUT` fallase por firma.
 
 ## §Coexistencia de `docs-action-error` y `docs-error`
 
@@ -228,8 +257,8 @@ test. Fuente: `specs/mobile-no-collar-states-pingo/design.md` §Coordinación co
 
 | Capa | Fichero | Cambio |
 |---|---|---|
-| infraestructura (API) | `mobile-pet-tracker/src/api/media.ts` | R2 |
-| infraestructura (test) | `mobile-pet-tracker/src/api/__tests__/media.test.ts` | R2; las fixtures de R8 ganan `downloadUrl` |
+| infraestructura (API) | `mobile-pet-tracker/src/api/media.ts` | R2; R14 (Enmienda E1: una línea en `uploadPhotoToUrl`) |
+| infraestructura (test) | `mobile-pet-tracker/src/api/__tests__/media.test.ts` | R2; las fixtures de R8 ganan `downloadUrl`; R14 (Enmienda E1: `describe` nuevo con un `it.each` de 12 filas, `contentType` × tipo del blob de entrada, y una línea del `it` de R2 `uploadPhotoToUrl manda application/pdf sin Authorization`) |
 | presentación | `mobile-pet-tracker/src/screens/docs/index.tsx` | R3-R11 |
 | presentación (test) | `mobile-pet-tracker/src/screens/docs/index.test.tsx` | R3-R11; las fixtures ganan `downloadUrl`; T4 redirige `no ofrece acción` |
 | i18n | `mobile-pet-tracker/src/i18n/catalog.ts` | R1 |
