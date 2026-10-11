@@ -274,6 +274,22 @@ export const R7_PROFILE: UseRow[] = [
   { file: 'src/screens/docs/index.tsx', key: 'docs.emptyBody' },
   { file: 'src/screens/docs/index.tsx', key: 'docs.couldNotLoadDocuments' },
   { file: 'src/screens/docs/index.tsx', key: 'common.retry' },
+  { file: 'src/screens/docs/index.tsx', key: 'docs.upload' }, // #158 R12
+  { file: 'src/screens/docs/index.tsx', key: 'docs.upload' }, // #158 R12
+  { file: 'src/screens/docs/index.tsx', key: 'docs.upload' }, // #158 R12
+  { file: 'src/screens/docs/index.tsx', key: 'docs.type' }, // #158 R12
+  { file: 'src/screens/docs/index.tsx', key: 'docs.name' }, // #158 R12
+  { file: 'src/screens/docs/index.tsx', key: 'docs.date' }, // #158 R12
+  { file: 'src/screens/docs/index.tsx', key: 'docs.datePlaceholder' }, // #158 R12
+  { file: 'src/screens/docs/index.tsx', key: 'docs.vet' }, // #158 R12
+  { file: 'src/screens/docs/index.tsx', key: 'docs.cancel' }, // #158 R12
+  { file: 'src/screens/docs/index.tsx', key: 'docs.errorFileFormat' }, // #158 R12
+  { file: 'src/screens/docs/index.tsx', key: 'docs.errorFileTooLarge' }, // #158 R12
+  { file: 'src/screens/docs/index.tsx', key: 'docs.errorInvalidForm' }, // #158 R12
+  { file: 'src/screens/docs/index.tsx', key: 'docs.errorUploadForbidden' }, // #158 R12
+  { file: 'src/screens/docs/index.tsx', key: 'docs.errorUploadFailed' }, // #158 R12
+  { file: 'src/screens/docs/index.tsx', key: 'common.cannotReachServer' }, // #158 R12
+  { file: 'src/screens/docs/index.tsx', key: 'common.somethingWentWrong' }, // #158 R12
 ];
 
 export const R8_REMINDERS: UseRow[] = [

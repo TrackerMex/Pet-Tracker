@@ -907,6 +907,24 @@ copy completa en cada una.
 | — | `food.noMealPlanBody` | `Once there's a plan, I'll help you keep track of every meal.` | `Cuando haya un plan, te ayudo a llevar la cuenta de cada comida.` | ← añadida por #155 (R1) |
 | — | `docs.emptyBody` | `When your pet's medical documents arrive, I'll keep them here.` | `Cuando lleguen los documentos médicos de tu mascota, te los guardo aquí.` | ← cambiada por #155 (R1) |
 
+### §2.22 — Añadidos por #158 — Subir documentos
+
+| # | Clave | `en` | `es` | Origen |
+|---|---|---|---|---|
+| — | `docs.upload` | `Upload document` | `Subir documento` | ← añadida por #158 (R1) |
+| — | `docs.type` | `Type` | `Tipo` | ← añadida por #158 (R1) |
+| — | `docs.name` | `Name` | `Nombre` | ← añadida por #158 (R1) |
+| — | `docs.date` | `Date` | `Fecha` | ← añadida por #158 (R1) |
+| — | `docs.datePlaceholder` | `YYYY-MM-DD` | `AAAA-MM-DD` | ← añadida por #158 (R1) |
+| — | `docs.vet` | `Vet (optional)` | `Veterinario (opcional)` | ← añadida por #158 (R1) |
+| — | `docs.cancel` | `Cancel` | `Cancelar` | ← añadida por #158 (R1) |
+| — | `docs.errorFileFormat` | `Choose a PDF, JPEG, or PNG file` | `Elige un archivo PDF, JPEG o PNG` | ← añadida por #158 (R1) |
+| — | `docs.errorFileTooLarge` | `The file is larger than 10 MB` | `El archivo pesa más de 10 MB` | ← añadida por #158 (R1) |
+| — | `docs.errorInvalidForm` | `Add a type, a name, and a date in YYYY-MM-DD format` | `Añade un tipo, un nombre y una fecha con formato AAAA-MM-DD` | ← añadida por #158 (R1) |
+| — | `docs.errorUploadForbidden` | `Only the owner can upload documents` | `Solo el dueño puede subir documentos` | ← añadida por #158 (R1) |
+| — | `docs.errorUploadFailed` | `The file could not be uploaded. Try again` | `No se pudo subir el archivo. Inténtalo de nuevo` | ← añadida por #158 (R1) |
+| — | `docs.emptyBody` | `When a medical document for your pet is uploaded, I'll keep it here.` | `Cuando se suba un documento médico de tu mascota, te lo guardo aquí.` | ← cambiada por #158 (R1) |
+
 ## 3. La infraestructura
 
 ### 3.1 Decisiones

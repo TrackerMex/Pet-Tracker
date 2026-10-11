@@ -166,8 +166,8 @@ describe('#98 R9: el copy de comidas servidas queda registrado', () => {
 });
 
 describe('#65 R7: Profile resuelve su copy por clave', () => {
-  it('resuelve las 36 ocurrencias normativas', () => {
-    expect(R7_PROFILE).toHaveLength(35 - 1 + 2 + 1); // #95 R5, +2 #99 R3, +1 #41 R9
+  it('resuelve las 53 ocurrencias normativas', () => {
+    expect(R7_PROFILE).toHaveLength(35 - 1 + 2 + 1 + 16); // #95 R5, +2 #99 R3, +1 #41 R9 // #158 R12
     checkUses(R7_PROFILE);
   });
 });

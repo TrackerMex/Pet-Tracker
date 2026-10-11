@@ -57,7 +57,8 @@ describe('#65 R12: el catálogo tiene los dos idiomas y t resuelve claves y par�
         + 6 - 1 // #117 R1
         + 8 // #118 R1
         + 1 // #153 R1
-        + 5, // #155 R1
+        + 5 // #155 R1
+        + 12 // #158 R1
     );
     expect(spanishKeys).toEqual(englishKeys);
     for (const key of englishKeys) {
@@ -464,5 +465,44 @@ describe('#117 R1: el catálogo trae las claves de recuperar contraseña', () =>
     const spanish = es as Record<string, string>;
     expect(english['forgot.comingSoon']).toBeUndefined();
     expect(spanish['forgot.comingSoon']).toBeUndefined();
+  });
+});
+
+
+describe('#158 R1: claves y nueva frase de Pingo', () => {
+  it('#158 R1: declara los 13 pares exactos y su registro', () => {
+    const english = en as Record<string, string>;
+    const spanish = es as Record<string, string>;
+    const languageDesign = readFileSync(
+      join(process.cwd(), '../specs/mobile-ui-language/design.md'),
+      'utf8',
+    );
+    const translations = [
+      ["docs.upload", "Upload document", "Subir documento"],
+      ["docs.type", "Type", "Tipo"],
+      ["docs.name", "Name", "Nombre"],
+      ["docs.date", "Date", "Fecha"],
+      ["docs.datePlaceholder", "YYYY-MM-DD", "AAAA-MM-DD"],
+      ["docs.vet", "Vet (optional)", "Veterinario (opcional)"],
+      ["docs.cancel", "Cancel", "Cancelar"],
+      ["docs.errorFileFormat", "Choose a PDF, JPEG, or PNG file", "Elige un archivo PDF, JPEG o PNG"],
+      ["docs.errorFileTooLarge", "The file is larger than 10 MB", "El archivo pesa más de 10 MB"],
+      ["docs.errorInvalidForm", "Add a type, a name, and a date in YYYY-MM-DD format", "Añade un tipo, un nombre y una fecha con formato AAAA-MM-DD"],
+      ["docs.errorUploadForbidden", "Only the owner can upload documents", "Solo el dueño puede subir documentos"],
+      ["docs.errorUploadFailed", "The file could not be uploaded. Try again", "No se pudo subir el archivo. Inténtalo de nuevo"],
+      ["docs.emptyBody", "When a medical document for your pet is uploaded, I'll keep it here.", "Cuando se suba un documento médico de tu mascota, te lo guardo aquí."],
+    ] as const;
+
+    for (const [key, englishValue, spanishValue] of translations) {
+      expect(english[key]).toBe(englishValue);
+      expect(spanish[key]).toBe(spanishValue);
+      expect(languageDesign).toMatch(
+        new RegExp(
+          '\\| — \\| `' + escapeRegExp(key) +
+            '`[^\\n]*← (?:añadida|cambiada) por #158 \\(R1\\)',
+        ),
+      );
+    }
+    expect(languageDesign).toContain('### §2.22 — Añadidos por #158 — Subir documentos');
   });
 });
