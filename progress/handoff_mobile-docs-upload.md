@@ -1001,3 +1001,315 @@ Pasos para Codex, desde `mobile-pet-tracker/`:
 
 progress/handoff_mobile-docs-upload.md modificado sigue siendo del leader:
 NO lo stagees ni lo commitees.
+
+## Ronda E1 (2026-10-11, Enmienda E1: R14 y merge de origin/main)
+
+Smoke R13 falló en el paso 6: el PUT de subida sale sin `Content-Type` y
+S3 guarda `binary/octet-stream`. Diagnóstico en
+`progress/explore_mobile-docs-upload-e1.md`. Enmienda E1 (R14) escrita en
+`b1b9b947`, pre-verificada por el reviewer (`progress/review_mobile-docs-upload.md`,
+rondas 1-3) y firmada por el humano vía Notion en `d45c4333`.
+
+El merge de `origin/main` (`1da2e76d`, PR #205, #134) entra al final de esta
+ronda. Decisión del humano (2026-10-11): el leader no lo resuelve, porque el
+clasificador le deniega tocar `mobile-pet-tracker/`. Así init.sh y el reviewer
+corren sobre el árbol ya integrado. Solo hay un conflicto, y el leader lo
+midió en solo-lectura con `git merge-tree` (árbol `94abbf40`):
+`design-drift.test.ts`, mapa `screenSignOutCalls`. Las cifras tras el merge
+salen de sumar recuentos medidos: la rama en `791a6f97` (97 suites, 2512
+tests), #134 en su review (centro 44, detalle 29, helper 17, design-drift 65)
+y los 12 de R14. El leader no pudo correr jest sobre el árbol fusionado: el
+clasificador le denegó también la copia en scratchpad.
+
+El humano copia este bloque entero en Codex CLI.
+
+```
+Worktree: /home/claude/sites/Pet-Tracker-wt-158   <- PRIMERA LINEA. Trabaja AQUI y en ningun otro sitio.
+Branch:   feature/158-mobile-docs-upload
+Feature:  #158 mobile-docs-upload, RONDA E1 (Enmienda E1, requisito R14)
+Spec:     specs/mobile-docs-upload/requirements.md (status: approved; la casilla
+          de la Enmienda E1 esta firmada en d45c4333). Lee R14 entero (incluido
+          su §Candado), la nota de R2.5, §Enmienda E1 y §Fuera de alcance de E1;
+          design.md D8; tasks.md §E1.
+
+Todo lo de las secciones == REGLAS CRITICAS == y == ANCLAS == del bloque
+principal de este handoff (arriba) SIGUE VIGENTE salvo lo que esta ronda diga
+distinto. En particular: NO prettier (mobile no lo tiene), todo con bun/bunx,
+NO ./init.sh, NO push, NO PR, no toques history/current/STATUS/feature_list,
+ni requirements.md, ni este handoff. Si el sandbox te deniega algo, PARA y
+reportalo.
+
+Skills: NO cargues ninguna skill de expo; ninguna de tu plugin sirve para
+esto (un test unitario de la capa API y un cambio de una linea en
+src/api/media.ts, sin UI). Di en el impl que no cargaste ninguna.
+
+Esperas (docs/conventions.md §Esperas sobre el arbol renderizado): aqui no
+hay arbol renderizado. Las lecturas de `fetchFn.mock.calls[0][1]` van
+DESPUES de `await expect(uploadPhotoToUrl(...)).resolves.toEqual(...)`, como
+asercion, y `init.body.text()` se espera con
+`await expect(...).resolves.toBe(content)`. Sin `await`, la asercion lee una
+promesa y el it pasa en falso.
+
+== ARRANQUE ==
+
+Desde /home/claude/sites/Pet-Tracker-wt-158. Pega las salidas al principio de
+una seccion nueva `## Ronda E1` AL FINAL de progress/impl_mobile-docs-upload.md
+(no borres nada de lo anterior):
+  pwd                                   -> /home/claude/sites/Pet-Tracker-wt-158
+  git branch --show-current             -> feature/158-mobile-docs-upload
+  git rev-parse --short HEAD            -> H0 (el commit del leader que registra esta ronda)
+  git status --short                    -> (vacio)
+  git log -1 --format=%s HEAD           -> docs(mobile-docs-upload): handoff de la ronda E1 (#158)
+  git cat-file -t 1da2e76d              -> commit
+  git merge-base --is-ancestor 1da2e76d HEAD; echo "exit=$?"   -> exit=1 (aun sin mergear)
+  git merge-base --is-ancestor d45c4333 HEAD; echo "exit=$?"   -> exit=0
+  pgrep -af '[i]nit\.sh'; echo "exit=$?"                       -> exit=1 y sin salida
+PARA si algo no cuadra. Sustituye <H0> por el hash de la tercera linea en
+todos los comandos de esta ronda.
+
+Anclas de arranque, desde la raiz del worktree:
+  E1-H1  grep -cF -- '- [x] Enmienda E1 aprobada por humano (fecha: 2026-10-10)' specs/mobile-docs-upload/requirements.md   -> 1
+  E1-H2  grep -cF -- '- [ ] Smoke R13 superado en dev build de Android (fecha: ____)' specs/mobile-docs-upload/requirements.md   -> 1   (es del humano: NO la toques)
+  E1-H3  grep -c '^status: approved' specs/mobile-docs-upload/requirements.md   -> 1
+
+Anclas de R14, desde mobile-pet-tracker/ (antes / despues del verde):
+  A1  grep -cxF '      body,' src/api/media.ts                                   -> 1 / 0
+  A2  grep -cF 'body: new Blob([body], { type: contentType }),' src/api/media.ts -> 0 / 1
+  A3  grep -cF 'export async function uploadPhotoToUrl' src/api/media.ts         -> 1 / 1
+  A4  grep -cF '#158 R14' src/api/__tests__/media.test.ts                        -> 0 / 1
+  A5  grep -cF "method: 'PUT', headers: { 'Content-Type': 'application/pdf' }, body," src/api/__tests__/media.test.ts                  -> 1 / 0
+  A6  grep -cF "method: 'PUT', headers: { 'Content-Type': 'application/pdf' }, body: expect.any(Blob)," src/api/__tests__/media.test.ts -> 0 / 1
+A4, A5 y A6 cambian en el ROJO; A1 y A2, en el VERDE.
+
+Base, desde mobile-pet-tracker/, sin pipe:
+  test ! -e .expo/types/router.d.ts; echo "exit=$?"   -> exit=0 (si sale 1, PARA y pide al humano que lo borre; NO `rm -f`)
+  FORCE_COLOR=0 bunx jest src/api/__tests__/media.test.ts > /tmp/158-e1-base.txt 2>&1; echo "exit=$?"
+    -> exit=0 y `Tests:       69 passed, 69 total`
+Si la base da otra cifra, PARA (no apliques el delta por tu cuenta).
+
+== COMMIT 1: ROJO (solo src/api/__tests__/media.test.ts) ==
+
+Dos cambios, los dos en el mismo commit:
+  a) Al FINAL del fichero, el `describe` de requirements.md R14 §Candado, tal
+     cual: titulo del describe, titulo del it.each, las 12 filas
+     `[contentType, tipo de entrada, contenido]` con `as const` y los 7 pasos
+     por fila, en ese orden. SIN comentarios nuevos: el titulo del describe
+     ya lleva `#158 R14` y A4 cuenta exactamente 1.
+  b) En el it de R2 `uploadPhotoToUrl manda application/pdf sin Authorization`,
+     en el objeto esperado, `body,` pasa a `body: expect.any(Blob),` (A5 1->0,
+     A6 0->1). Es verde en la base y con el arreglo; va en el rojo para que el
+     verde solo toque media.ts.
+NO toques src/api/media.ts en este commit.
+
+Mide, desde mobile-pet-tracker/, sin pipe:
+  FORCE_COLOR=0 bunx jest src/api/__tests__/media.test.ts > /tmp/158-e1-red.txt 2>&1; echo "exit=$?"
+    -> exit=1 y `Tests:       12 failed, 69 passed, 81 total`
+Los 12 rojos son las filas de R14 y caen TODOS en el paso 5,
+`expect(init.body.type).toBe(contentType);`, con el tipo de entrada como
+Received: `""` x4, `"text/plain"` x4, `"image/png"` x3, `"image/jpeg"` x1.
+Si cae otro it, o una fila cae en otro paso, PARA y pega la salida.
+
+Cadena del rojo (una sola linea logica, desde mobile-pet-tracker/):
+  grep -qE '^Tests: +12 failed, 69 passed, 81 total$' /tmp/158-e1-red.txt \
+    && test "$(grep -cE '^  ● ' /tmp/158-e1-red.txt)" = 12 \
+    && test "$(grep -cF '  ● #158 R14: uploadPhotoToUrl sube un Blob con el tipo declarado (Enmienda E1) › envía ' /tmp/158-e1-red.txt)" = 12 \
+    && test "$(grep -cE '^ +> +[0-9]+ \| +expect\(init\.body\.type\)\.toBe\(contentType\);$' /tmp/158-e1-red.txt)" = 12 \
+    && test "$(grep -cxE ' +Received: ""' /tmp/158-e1-red.txt)" = 4 \
+    && test "$(grep -cxE ' +Received: "text/plain"' /tmp/158-e1-red.txt)" = 4 \
+    && test "$(grep -cxE ' +Received: "image/png"' /tmp/158-e1-red.txt)" = 3 \
+    && test "$(grep -cxE ' +Received: "image/jpeg"' /tmp/158-e1-red.txt)" = 1 \
+    && ! grep -qE 'TypeError|ReferenceError|SyntaxError|Cannot find module' /tmp/158-e1-red.txt \
+    && test "$(grep -cF '#158 R14' src/api/__tests__/media.test.ts)" = 1 \
+    && test "$(grep -cF "method: 'PUT', headers: { 'Content-Type': 'application/pdf' }, body," src/api/__tests__/media.test.ts)" = 0 \
+    && test "$(grep -cF "method: 'PUT', headers: { 'Content-Type': 'application/pdf' }, body: expect.any(Blob)," src/api/__tests__/media.test.ts)" = 1 \
+    && bunx eslint --no-cache src/api/__tests__/media.test.ts \
+    && test ! -e .expo/types/router.d.ts && bunx tsc --noEmit \
+    && git add src/api/__tests__/media.test.ts \
+    && git diff --quiet -- . && test -z "$(git ls-files --others --exclude-standard -- .)" \
+    && test "$(git diff --cached --name-only | tr '\n' ' ')" = 'mobile-pet-tracker/src/api/__tests__/media.test.ts ' \
+    && git commit -m 'test(mobile-docs-upload): red typed upload body (R14)'
+Si eslint falla por formato, arreglalo A MANO como el codigo de alrededor
+(sin prettier, sin --fix) y vuelve a lanzar la cadena entera.
+
+== COMMIT 2: VERDE (solo src/api/media.ts) ==
+
+En `uploadPhotoToUrl`, la linea `      body,` pasa a
+`      body: new Blob([body], { type: contentType }),`. Nada mas: ni la firma,
+ni los tres llamantes (docs, add-pet, profile), ni otro fichero.
+
+Cadena del verde (desde mobile-pet-tracker/, sin pipe):
+  FORCE_COLOR=0 bunx jest src/api/__tests__/media.test.ts > /tmp/158-e1-green.txt 2>&1; echo "exit=$?"
+    -> exit=0 y `Tests:       81 passed, 81 total`
+  grep -qE '^Tests: +81 passed, 81 total$' /tmp/158-e1-green.txt \
+    && test "$(grep -cxF '      body,' src/api/media.ts)" = 0 \
+    && test "$(grep -cF 'body: new Blob([body], { type: contentType }),' src/api/media.ts)" = 1 \
+    && test "$(grep -cF 'export async function uploadPhotoToUrl' src/api/media.ts)" = 1 \
+    && bunx eslint --no-cache src/api/media.ts \
+    && test ! -e .expo/types/router.d.ts && bunx tsc --noEmit && bunx expo lint --no-cache \
+    && git add src/api/media.ts \
+    && git diff --quiet -- . && test -z "$(git ls-files --others --exclude-standard -- .)" \
+    && test "$(git diff --cached --name-only | tr '\n' ' ')" = 'mobile-pet-tracker/src/api/media.ts ' \
+    && git commit -m 'fix(mobile-docs-upload): upload body carries the declared content type (R14)'
+El verde va como `fix(...)`, no `feat(...)` (tasks.md §E1 (2) y
+docs/conventions.md §Commits). Sin commit de refactor.
+
+== CANDADOS QUE NO SE MUEVEN (antes del merge) ==
+
+Desde mobile-pet-tracker/, sin pipe, cada uno con su exit:
+  FORCE_COLOR=0 bunx jest src/__tests__/design-drift.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/ui-language.test.ts src/__tests__/legibility-classnames.test.ts src/providers/__tests__/language-provider.test.tsx > /tmp/158-e1-globals.txt 2>&1; echo "exit=$?"
+    -> exit=0 y `Tests:       199 passed, 199 total`
+  FORCE_COLOR=0 bunx jest src/screens/docs src/screens/add-pet src/screens/profile > /tmp/158-e1-screens.txt 2>&1; echo "exit=$?"
+    -> exit=0 y `Tests:       173 passed, 173 total`
+Si alguno no cuadra, PARA.
+
+== COMMIT 3: TRACEABILITY + IMPL ==
+
+En specs/mobile-docs-upload/traceability.md, SOLO la fila R14: en la columna
+de commits, cada `pendiente: ` pasa al hash corto del commit seguido de un
+espacio (`<hash rojo> test(...)` y `<hash verde> fix(...)`, con el mensaje
+igual). Nada mas en ese fichero.
+En progress/impl_mobile-docs-upload.md, seccion `## Ronda E1`: arranque,
+anclas E1-H1..H3 y A1..A6 (antes y despues), base, por cada commit la cadena
+entera con su salida, las lineas `Tests:` y en el rojo los 12 `●` con su
+Expected/Received; los dos candados; skills (ninguna).
+Desde la raiz:
+  cd /home/claude/sites/Pet-Tracker-wt-158 \
+    && git add specs/mobile-docs-upload/traceability.md progress/impl_mobile-docs-upload.md \
+    && git diff --quiet && test -z "$(git ls-files --others --exclude-standard)" \
+    && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'progress/impl_mobile-docs-upload.md specs/mobile-docs-upload/traceability.md ' \
+    && git commit -m 'docs(mobile-docs-upload): traceability for R14 (#158)'
+Lista cerrada hasta aqui (pegala en el impl en el commit 5):
+  git diff --name-only <H0> HEAD -- . | LC_ALL=C sort
+    -> exactamente estas 4 lineas:
+       mobile-pet-tracker/src/api/__tests__/media.test.ts
+       mobile-pet-tracker/src/api/media.ts
+       progress/impl_mobile-docs-upload.md
+       specs/mobile-docs-upload/traceability.md
+
+== COMMIT 4: MERGE DE 1da2e76d (origin/main) ==
+
+Merge, NUNCA rebase (reescribiria los hashes que acabas de escribir). Se
+mergea 1da2e76d por hash, aunque origin/main se haya movido: es el commit que
+midio el leader. NO hagas fetch.
+Entre el `git merge` y su commit NO escribas en el impl: guarda las salidas
+en /tmp/158-e1-merge*.txt y pasalas al impl en el commit 5.
+
+Desde la raiz:
+  pgrep -af '[i]nit\.sh'; echo "exit=$?"     -> exit=1 y sin salida
+  git merge --no-ff --no-commit 1da2e76d > /tmp/158-e1-merge.txt 2>&1; echo "exit=$?"
+    -> exit=1
+  grep -c '^CONFLICT' /tmp/158-e1-merge.txt   -> 1
+  grep -cF 'CONFLICT (content): Merge conflict in mobile-pet-tracker/src/__tests__/design-drift.test.ts' /tmp/158-e1-merge.txt   -> 1
+  git diff --name-only --diff-filter=U        -> mobile-pet-tracker/src/__tests__/design-drift.test.ts (solo esa)
+Si hay otro conflicto, o ninguno, PARA: `git merge --abort` y reportalo.
+
+Resolucion, en mobile-pet-tracker/src/__tests__/design-drift.test.ts, mapa
+`screenSignOutCalls` dentro de `describe('#87 R19: ...')`. El hunk en
+conflicto tiene que ser EXACTAMENTE este (10 lineas; la de docs lleva 6
+espacios por un desliz de la ronda anterior):
+<<<<<<< HEAD
+      'screens/docs/index.tsx': 1, // #158 R9
+    'screens/alerts/index.tsx': 1,
+    'screens/alert-detail/index.tsx': 1,
+=======
+    'screens/docs/index.tsx': 0,
+    'screens/alerts/index.tsx': 0,
+    'screens/alert-detail/index.tsx': 0,
+    'utils/alert-ack-outcome.ts': 1, // #134 R6
+>>>>>>> origin/main
+(si la ultima linea dice `>>>>>>> 1da2e76d` en vez de `>>>>>>> origin/main`,
+es lo mismo). Sustituyelo ENTERO por estas 4 lineas, con 4 espacios de
+sangria como sus vecinas:
+    'screens/docs/index.tsx': 1, // #158 R9
+    'screens/alerts/index.tsx': 0,
+    'screens/alert-detail/index.tsx': 0,
+    'utils/alert-ack-outcome.ts': 1, // #134 R6
+Por que: docs llama una vez a `signOut(` desde R9 de esta feature; #134 movio
+la llamada de las dos pantallas de alertas al helper. Nada mas cambia en ese
+fichero. NO uses prettier ni --fix.
+
+Comprobaciones de la resolucion, desde mobile-pet-tracker/:
+  M1  grep -cE '^(<<<<<<<|=======|>>>>>>>)' src/__tests__/design-drift.test.ts           -> 0
+  M2  grep -cxF "    'screens/docs/index.tsx': 1, // #158 R9" src/__tests__/design-drift.test.ts    -> 1
+  M3  grep -cxF "    'screens/alerts/index.tsx': 0," src/__tests__/design-drift.test.ts             -> 1
+  M4  grep -cxF "    'screens/alert-detail/index.tsx': 0," src/__tests__/design-drift.test.ts       -> 1
+  M5  grep -cxF "    'utils/alert-ack-outcome.ts': 1, // #134 R6" src/__tests__/design-drift.test.ts -> 1
+  M6  git diff --numstat 1da2e76d -- src/__tests__/design-drift.test.ts
+        -> `1	1	mobile-pet-tracker/src/__tests__/design-drift.test.ts`
+           (contra main solo cambia la linea de docs, 0 -> 1)
+  M7  git diff --numstat 1da2e76d -- src/__tests__/ui-language.test.ts src/__tests__/ui-copy-table.ts
+        -> exactamente estas 2 lineas (los cambios de esta feature, intactos tras la fusion automatica):
+           16	0	mobile-pet-tracker/src/__tests__/ui-copy-table.ts
+           2	2	mobile-pet-tracker/src/__tests__/ui-language.test.ts
+Despues: `git add src/__tests__/design-drift.test.ts` y
+  git diff --name-only --diff-filter=U        -> (vacio)
+
+Medicion del arbol fusionado, ANTES de commitear el merge (desde
+mobile-pet-tracker/, sin pipe, cada una con su exit; NO lances otra cosa
+mientras corre el jest entero):
+  FORCE_COLOR=0 bunx jest src/__tests__/design-drift.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/ui-language.test.ts src/__tests__/legibility-classnames.test.ts src/providers/__tests__/language-provider.test.tsx > /tmp/158-e1-merge-globals.txt 2>&1; echo "exit=$?"
+    -> exit=0 y `Tests:       202 passed, 202 total`   (199 + 3 its de #134 en design-drift: 62 -> 65)
+  FORCE_COLOR=0 bunx jest src/screens/alerts/index.test.tsx src/screens/alert-detail/index.test.tsx src/utils/alert-ack-outcome.test.ts src/screens/docs/index.test.tsx src/api/__tests__/media.test.ts > /tmp/158-e1-merge-screens.txt 2>&1; echo "exit=$?"
+    -> exit=0 y `Tests:       279 passed, 279 total`   (44 + 29 + 17 + 108 + 81)
+  FORCE_COLOR=0 bunx jest > /tmp/158-e1-merge-all.txt 2>&1; echo "exit=$?"
+    -> exit=0, `Test Suites: 98 passed, 98 total` y `Tests:       2553 passed, 2553 total`
+       (2512 de la rama en 791a6f97 + 29 de #134 + 12 de R14; 97 suites + el helper)
+  test ! -e .expo/types/router.d.ts && bunx tsc --noEmit; echo "exit=$?"   -> exit=0
+  bunx expo lint --no-cache; echo "exit=$?"                                -> exit=0
+Si una cifra no cuadra pero todo sale verde, PARA y pega las lineas
+`Test Suites:`/`Tests:` de cada corrida: el leader las contrasta. Si algo sale
+ROJO, PARA, pega los `●` y NO toques nada para arreglarlo: deja el merge sin
+commitear y reportalo.
+
+Commit del merge (desde la raiz, una sola linea logica):
+  cd /home/claude/sites/Pet-Tracker-wt-158 \
+    && git diff --quiet && test -z "$(git ls-files --others --exclude-standard)" \
+    && test -z "$(git diff --name-only --diff-filter=U)" \
+    && test "$(git diff --cached --name-only | LC_ALL=C sort)" = "$(git diff --name-only 65f37841 1da2e76d | LC_ALL=C sort)" \
+    && git commit -m 'Merge origin/main into feature/158-mobile-docs-upload (integrates #134, PR #205)'
+(lo staged contra HEAD son exactamente los 30 ficheros que main cambio desde
+la base de la rama).
+
+Comprobaciones tras el commit, desde la raiz:
+  git rev-list --parents -n 1 HEAD | wc -w                  -> 3 (merge con dos padres)
+  git rev-parse --short HEAD^2                              -> 1da2e76d
+  git merge-base --is-ancestor 1da2e76d HEAD; echo "exit=$?" -> exit=0
+  git diff --name-only 1da2e76d HEAD -- backend-pet-tracker infra-pet-tracker docs   -> (vacio)
+  git diff --name-only 1da2e76d HEAD -- mobile-pet-tracker | LC_ALL=C sort
+    -> exactamente estas 13 lineas (los ficheros de esta feature, ni uno mas):
+       mobile-pet-tracker/bun.lock
+       mobile-pet-tracker/package.json
+       mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+       mobile-pet-tracker/src/__tests__/design-drift.test.ts
+       mobile-pet-tracker/src/__tests__/ui-copy-table.ts
+       mobile-pet-tracker/src/__tests__/ui-language.test.ts
+       mobile-pet-tracker/src/api/__tests__/media.test.ts
+       mobile-pet-tracker/src/api/media.ts
+       mobile-pet-tracker/src/components/__tests__/empty-state.test.tsx
+       mobile-pet-tracker/src/i18n/catalog.ts
+       mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx
+       mobile-pet-tracker/src/screens/docs/index.test.tsx
+       mobile-pet-tracker/src/screens/docs/index.tsx
+
+== COMMIT 5: IMPL (cierre de la ronda) ==
+
+Anade a `## Ronda E1` del impl: la lista cerrada del commit 3; la salida del
+merge y M1-M7; las lineas `Test Suites:`/`Tests:` y el exit de cada medicion
+del arbol fusionado; tsc y lint; el hash del merge y las comprobaciones de
+tras el commit; y al final la linea `R13: pendiente del re-smoke humano`.
+Desde la raiz:
+  cd /home/claude/sites/Pet-Tracker-wt-158 \
+    && git add progress/impl_mobile-docs-upload.md \
+    && git diff --quiet && test -z "$(git ls-files --others --exclude-standard)" \
+    && test "$(git diff --cached --name-only | tr '\n' ' ')" = 'progress/impl_mobile-docs-upload.md ' \
+    && git commit -m 'docs(mobile-docs-upload): E1 merge report (#158)'
+
+Si el leader commitea en mitad de tu trabajo, sus ficheros entran en
+`git diff <H0> HEAD`: anadelos a la lista cerrada y di en el impl que son del
+leader, con su hash. Cualquier otro fichero ajeno es motivo de parada.
+
+Criterios de aceptacion de esta ronda: R14 (requirements.md) y el merge
+limpio de 1da2e76d. R13 (re-smoke en dev build de Android) es del humano.
+Al terminar: 5 commits nuevos sobre <H0> (rojo, verde, traceability, merge,
+impl), sin push.
+```

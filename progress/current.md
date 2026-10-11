@@ -55,6 +55,21 @@
   `expo-web-browser` (todos los roles) y el `KeyboardAvoidingView`, todo
   test-primero según `tasks.md`. Después: init.sh (lo corre el leader,
   avisando a Frontend y UI-Pet), reviewer y smoke R13 del humano.
+- 2026-10-10: Codex terminó R1-R12 (cuatro reanudaciones del handoff),
+  init.sh en verde y veredicto APROBADO del reviewer sobre `791a6f97`.
+- 2026-10-10: el smoke R13 falló en el paso 6. El documento se sube y sale
+  en la lista, pero S3 lo guarda como `binary/octet-stream` y Chrome no sabe
+  abrirlo. Causa: `expo/fetch` pisa el `Content-Type` con el `type` vacío del
+  blob de `file://` (`progress/explore_mobile-docs-upload-e1.md`). Enmienda
+  E1 (R14) en `b1b9b947`, pre-verificada en tres rondas y firmada por el
+  humano vía Notion: commit `d45c4333`, Notion en `Rol actual` = Implementer.
+- 2026-10-11: el merge de origin/main (`1da2e76d`, #134) choca en
+  `design-drift.test.ts` (`screenSignOutCalls`). El clasificador deniega al
+  leader resolverlo; el humano decidió abortar y que lo haga Codex como último
+  paso de la ronda E1. Handoff en `progress/handoff_mobile-docs-upload.md`
+  §Ronda E1. Después: init.sh (avisando a UI-Pet y Frontend), reviewer de R14
+  más el merge, y re-smoke R13 del humano (basta `bunx expo start -c`, sin
+  reconstruir el dev build).
 
 ### Coordinación con #159 (UI-Pet, 2026-10-09)
 
