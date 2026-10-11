@@ -1,6 +1,6 @@
 ---
 feature: "mobile-chunky-cta"
-status: spec_ready   # draft | spec_ready | approved
+status: approved   # draft | spec_ready | approved
 tags: [mobile, ui, spec]
 ---
 
@@ -322,5 +322,5 @@ spec se enmienda antes del handoff.
 
 ## Aprobación
 
-- [ ] Aprobado por humano, con P1 a P3 resueltas (fecha: ____) ← gate obligatorio antes de implementar
+- [x] Aprobado por humano, con P1 a P3 resueltas (fecha: 2026-10-11) ← gate obligatorio antes de implementar
 - [ ] Prueba de humo R5 superada en dev build de Android (fecha: ____) ← gate de cierre; el leader no marca `done` sin ella
