@@ -27864,3 +27864,402 @@ cd /home/claude/sites/Pet-Tracker-wt-158 \
   && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'progress/impl_mobile-docs-upload.md specs/mobile-docs-upload/traceability.md ' \
   && git commit -m 'docs(mobile-docs-upload): traceability for R14 (#158)'
 ```
+
+Salida de la cadena del commit 3:
+
+```text
+[feature/158-mobile-docs-upload 156a952c] docs(mobile-docs-upload): traceability for R14 (#158)
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 2 files changed, 601 insertions(+), 1 deletion(-)
+exit=0
+```
+
+Commit de traceability: `156a952c`.
+
+### Lista cerrada tras el commit 3
+
+Desde la raíz, antes del merge:
+
+```bash
+git diff --name-only 48db1c22 HEAD -- . | LC_ALL=C sort
+```
+
+```text
+mobile-pet-tracker/src/api/__tests__/media.test.ts
+mobile-pet-tracker/src/api/media.ts
+progress/impl_mobile-docs-upload.md
+specs/mobile-docs-upload/traceability.md
+exit=0
+```
+
+Exactamente los cuatro ficheros autorizados. No hubo commits del leader durante esta ronda.
+
+### Commit 4 — merge de 1da2e76d
+
+Sin fetch ni rebase. Entre el merge y su commit no se escribió en el impl: salidas conservadas en `/tmp/158-e1-merge.txt`, `/tmp/158-e1-merge-checks.txt`, `/tmp/158-e1-merge-globals.txt`, `/tmp/158-e1-merge-screens.txt` y `/tmp/158-e1-merge-all.txt`.
+
+```bash
+pgrep -af '[i]nit\.sh'; echo "exit=$?"
+```
+
+```text
+exit=1
+```
+
+```bash
+git merge --no-ff --no-commit 1da2e76d > /tmp/158-e1-merge.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=1
+Auto-merging feature_list.json
+Auto-merging mobile-pet-tracker/src/__tests__/design-drift.test.ts
+CONFLICT (content): Merge conflict in mobile-pet-tracker/src/__tests__/design-drift.test.ts
+Auto-merging mobile-pet-tracker/src/__tests__/ui-copy-table.ts
+Auto-merging mobile-pet-tracker/src/__tests__/ui-language.test.ts
+Automatic merge failed; fix conflicts and then commit the result.
+```
+
+conflictos:
+
+```bash
+grep -c '^CONFLICT' /tmp/158-e1-merge.txt
+```
+
+```text
+1
+exit del comando=0
+```
+
+conflicto previsto:
+
+```bash
+grep -cF 'CONFLICT (content): Merge conflict in mobile-pet-tracker/src/__tests__/design-drift.test.ts' /tmp/158-e1-merge.txt
+```
+
+```text
+1
+exit del comando=0
+```
+
+sin resolver:
+
+```bash
+git diff --name-only --diff-filter=U
+```
+
+```text
+mobile-pet-tracker/src/__tests__/design-drift.test.ts
+exit del comando=0
+```
+
+El único conflicto tiene el hunk literal esperado dentro de `screenSignOutCalls` de `#87 R19`. Salida numerada antes de resolverlo:
+
+```text
+446-  const legacyIdentifier = ['use', 'Api'].join('');
+447-  const screenSignOutCalls: Record<string, number> = {
+448-    'app/(tabs)/food.tsx': 0,
+449-    'screens/health/index.tsx': 0,
+450-    'screens/map/index.tsx': 0,
+451-    'screens/meal-schedule/index.tsx': 2, // #147 R8: el 401 de la edición de franjas
+452-    'screens/meals-history/index.tsx': 1, // #105 R15
+453-    'screens/weight-log/index.tsx': 1,
+454:<<<<<<< HEAD
+455-      'screens/docs/index.tsx': 1, // #158 R9
+456-    'screens/alerts/index.tsx': 1,
+457-    'screens/alert-detail/index.tsx': 1,
+458-=======
+459-    'screens/docs/index.tsx': 0,
+460-    'screens/alerts/index.tsx': 0,
+461-    'screens/alert-detail/index.tsx': 0,
+462-    'utils/alert-ack-outcome.ts': 1, // #134 R6
+463->>>>>>> 1da2e76d
+464-    'screens/geofences/index.tsx': 1,
+465-    'screens/geofence-editor/index.tsx': 1,
+466-    'screens/home/index.tsx': 0,
+467-    'screens/pairing/index.tsx': 2,
+```
+
+Se reemplaza entero por las cuatro líneas autorizadas, con cuatro espacios:
+
+```ts
+    'screens/docs/index.tsx': 1, // #158 R9
+    'screens/alerts/index.tsx': 0,
+    'screens/alert-detail/index.tsx': 0,
+    'utils/alert-ack-outcome.ts': 1, // #134 R6
+```
+
+Docs conserva su llamada de R9; #134 mueve las dos de alertas al helper. Nada más se cambia manualmente en ese fichero.
+
+### Comprobaciones M1–M7
+
+Desde `mobile-pet-tracker/`:
+
+M1:
+
+```bash
+grep -cE '^(<<<<<<<|=======|>>>>>>>)' src/__tests__/design-drift.test.ts
+```
+
+```text
+0
+exit del comando=1
+```
+
+M2:
+
+```bash
+grep -cxF "    'screens/docs/index.tsx': 1, // #158 R9" src/__tests__/design-drift.test.ts
+```
+
+```text
+1
+exit del comando=0
+```
+
+M3:
+
+```bash
+grep -cxF "    'screens/alerts/index.tsx': 0," src/__tests__/design-drift.test.ts
+```
+
+```text
+1
+exit del comando=0
+```
+
+M4:
+
+```bash
+grep -cxF "    'screens/alert-detail/index.tsx': 0," src/__tests__/design-drift.test.ts
+```
+
+```text
+1
+exit del comando=0
+```
+
+M5:
+
+```bash
+grep -cxF "    'utils/alert-ack-outcome.ts': 1, // #134 R6" src/__tests__/design-drift.test.ts
+```
+
+```text
+1
+exit del comando=0
+```
+
+M6:
+
+```bash
+git diff --numstat 1da2e76d -- src/__tests__/design-drift.test.ts
+```
+
+```text
+1	1	mobile-pet-tracker/src/__tests__/design-drift.test.ts
+exit del comando=0
+```
+
+M7:
+
+```bash
+git diff --numstat 1da2e76d -- src/__tests__/ui-language.test.ts src/__tests__/ui-copy-table.ts
+```
+
+```text
+16	0	mobile-pet-tracker/src/__tests__/ui-copy-table.ts
+2	2	mobile-pet-tracker/src/__tests__/ui-language.test.ts
+exit del comando=0
+```
+
+```bash
+git add src/__tests__/design-drift.test.ts
+git diff --name-only --diff-filter=U
+```
+
+```text
+(sin salida)
+exit=0
+```
+
+### Mediciones del árbol fusionado antes del commit
+
+Desde `mobile-pet-tracker/`. No se lanzó ningún otro comando mientras corrió Jest entero.
+
+```bash
+FORCE_COLOR=0 bunx jest src/__tests__/design-drift.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/ui-language.test.ts src/__tests__/legibility-classnames.test.ts src/providers/__tests__/language-provider.test.tsx > /tmp/158-e1-merge-globals.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+Test Suites: 5 passed, 5 total
+Tests:       202 passed, 202 total
+```
+
+```bash
+FORCE_COLOR=0 bunx jest src/screens/alerts/index.test.tsx src/screens/alert-detail/index.test.tsx src/utils/alert-ack-outcome.test.ts src/screens/docs/index.test.tsx src/api/__tests__/media.test.ts > /tmp/158-e1-merge-screens.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+Test Suites: 5 passed, 5 total
+Tests:       279 passed, 279 total
+```
+
+```bash
+FORCE_COLOR=0 bunx jest > /tmp/158-e1-merge-all.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+Test Suites: 98 passed, 98 total
+Tests:       2553 passed, 2553 total
+```
+
+```bash
+test ! -e .expo/types/router.d.ts && bunx tsc --noEmit; echo "exit=$?"
+```
+
+```text
+exit=0
+```
+
+```bash
+bunx expo lint --no-cache; echo "exit=$?"
+```
+
+```text
+exit=0
+```
+
+Los tres recuentos coinciden con el handoff; typecheck y Expo lint sin diagnósticos.
+
+### Cadena del commit del merge
+
+```bash
+cd /home/claude/sites/Pet-Tracker-wt-158 \
+  && git diff --quiet && test -z "$(git ls-files --others --exclude-standard)" \
+  && test -z "$(git diff --name-only --diff-filter=U)" \
+  && test "$(git diff --cached --name-only | LC_ALL=C sort)" = "$(git diff --name-only 65f37841 1da2e76d | LC_ALL=C sort)" \
+  && git commit -m 'Merge origin/main into feature/158-mobile-docs-upload (integrates #134, PR #205)'
+```
+
+```text
+[feature/158-mobile-docs-upload 038f4288] Merge origin/main into feature/158-mobile-docs-upload (integrates #134, PR #205)
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+exit=0
+```
+
+Commit del merge: `038f4288`. El stage coincide exactamente con los 30 ficheros cambiados en main desde `65f37841` hasta `1da2e76d`.
+
+### Comprobaciones tras el commit del merge
+
+Desde la raíz:
+
+dos padres:
+
+```bash
+git rev-list --parents -n 1 HEAD | wc -w
+```
+
+```text
+3
+exit del comando=0
+```
+
+segundo padre:
+
+```bash
+git rev-parse --short HEAD^2
+```
+
+```text
+1da2e76d
+exit del comando=0
+```
+
+main integrado:
+
+```bash
+git merge-base --is-ancestor 1da2e76d HEAD; echo "exit=$?"
+```
+
+```text
+exit=0
+exit del comando=0
+```
+
+backend, infra y docs:
+
+```bash
+git diff --name-only 1da2e76d HEAD -- backend-pet-tracker infra-pet-tracker docs
+```
+
+```text
+(sin salida)
+exit=0
+```
+
+lista móvil:
+
+```bash
+git diff --name-only 1da2e76d HEAD -- mobile-pet-tracker | LC_ALL=C sort
+```
+
+```text
+mobile-pet-tracker/bun.lock
+mobile-pet-tracker/package.json
+mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+mobile-pet-tracker/src/__tests__/design-drift.test.ts
+mobile-pet-tracker/src/__tests__/ui-copy-table.ts
+mobile-pet-tracker/src/__tests__/ui-language.test.ts
+mobile-pet-tracker/src/api/__tests__/media.test.ts
+mobile-pet-tracker/src/api/media.ts
+mobile-pet-tracker/src/components/__tests__/empty-state.test.tsx
+mobile-pet-tracker/src/i18n/catalog.ts
+mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx
+mobile-pet-tracker/src/screens/docs/index.test.tsx
+mobile-pet-tracker/src/screens/docs/index.tsx
+exit del comando=0
+```
+
+Dos padres, segundo padre `1da2e76d`, ancestro integrado. Backend, infra y docs sin diff respecto a main. La lista móvil coincide exactamente con los 13 ficheros de la feature.
+
+### Commit 5 — cierre del informe
+
+Solo este impl. Cadena a ejecutar desde la raíz:
+
+```bash
+cd /home/claude/sites/Pet-Tracker-wt-158 \
+  && git add progress/impl_mobile-docs-upload.md \
+  && git diff --quiet && test -z "$(git ls-files --others --exclude-standard)" \
+  && test "$(git diff --cached --name-only | tr '\n' ' ')" = 'progress/impl_mobile-docs-upload.md ' \
+  && git commit -m 'docs(mobile-docs-upload): E1 merge report (#158)'
+```
+
+La salida y el hash de este último commit se reportan al humano al terminar; no se añade otro commit para registrar su propio hash. La ronda deja cinco commits por la primera línea de padres desde H0, sin push. No cargué ninguna skill. No se ejecutó init.sh ni prettier; no se abrió ni editó PR. Las casillas humanas quedan intactas.
+
+R13: pendiente del re-smoke humano
