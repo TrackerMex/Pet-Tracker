@@ -56,3 +56,13 @@
   `deviceConnectionState`; G2: anclas de trazabilidad en bloque cercado). Escrita en
   `96bf7b1d` y re-espejada a Notion (`Estado del gate` = En revisión). G3 (conectividad del
   listado) y G4 (mascota ausente del listado) quedan fuera por defecto; decide el humano.
+  Aprobada en Notion: `Estado del gate` = Aprobado, `page_last_edited_at`
+  2026-10-11T02:57:50.335Z, casilla de E3 marcada con fecha 2026-10-10. El humano no
+  ensanchó a G3/G4. Firma: `9e475054` `docs(specs): firma de la Enmienda E3 de #159
+  aprobada vía Notion`.
+- Handoff de la ronda 4: `progress/handoff_mobile-no-collar-states-pingo_e3.md`
+  (H0E3 = commit que lo añade). Base del Mapa medida por el leader en `9e475054`: 119/119.
+  Rojo, verde, sondas E3a–E3f, anclas y fila de trazabilidad verificados con GNU grep en un
+  spike fuera del árbol (rojo 57/214/271, verde 271, sondas 12/18/12/16/16/8). origin/main
+  (`1da2e76d`, con #134 y #161) no es ancestro: el merge lo hace el leader al cerrar.
+  Mientras Codex trabaja, el leader no toca `mobile-pet-tracker/`.
