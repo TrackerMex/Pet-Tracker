@@ -11835,3 +11835,734 @@ exit=0
 ```
 
 R10: pendiente del smoke humano
+
+# Ronda 4 — Enmienda E3
+
+## Base E3
+
+```text
+$ pwd
+/home/claude/sites/Pet-Tracker-wt-159
+$ git branch --show-current
+feature/159-mobile-no-collar-states-pingo
+$ git rev-parse --short HEAD
+557f6e5e
+$ git status --short
+(vacío)
+```
+
+H0E3: `557f6e5e`. Enmienda E3 firmada en `9e475054`. Ninguna skill cargada.
+Las rondas 1, 2 y 3 del impl se conservan; solo se añade al final.
+
+```text
+$ cd /home/claude/sites/Pet-Tracker-wt-159/mobile-pet-tracker && pwd
+/home/claude/sites/Pet-Tracker-wt-159/mobile-pet-tracker
+$ git fetch origin; echo "exit=$?"
+exit=0
+$ git merge-base --is-ancestor origin/main HEAD; echo "exit=$?"
+exit=1
+$ git merge-base --is-ancestor a8681b51 HEAD; echo "exit=$?"
+exit=0
+$ git diff --quiet a8681b51 HEAD -- .; echo "exit=$?"
+exit=0
+$ git diff --quiet 664b95a7 HEAD -- src/screens/map/index.tsx; echo "exit=$?"
+exit=0
+$ test ! -e .expo/types/router.d.ts; echo "exit=$?"
+exit=0
+$ test -d node_modules && echo presente
+presente
+exit=0
+```
+
+`origin/main` no es ancestro (exit=1), tal como anticipa el handoff; se continúa sobre H0E3.
+
+### Anclas A1-A15 en H0E3
+
+```text
+A1 $ grep -cF "('no pinta el botón a %s aunque el listado diga owner'" src/screens/map/index.test.tsx
+1
+Esperado H0E3 / cierre: 1 / 1
+```
+
+```text
+A2 $ grep -cF 'const LIST_STATES = (' src/screens/map/index.test.tsx
+0
+Esperado H0E3 / cierre: 0 / 1
+```
+
+```text
+A3 $ grep -cF 'const DETAIL_STATES: { detalle: string; state: PetState }[] = [' src/screens/map/index.test.tsx
+0
+Esperado H0E3 / cierre: 0 / 1
+```
+
+```text
+A4 $ grep -cE "^    \{ detalle: '[^']+', state: \{ kind: " src/screens/map/index.test.tsx
+0
+Esperado H0E3 / cierre: 0 / 18
+```
+
+```text
+A5 $ grep -cF 'no pinta el botón con el detalle $detalle aunque el listado diga $listRole $listCollar' src/screens/map/index.test.tsx
+0
+Esperado H0E3 / cierre: 0 / 1
+```
+
+```text
+A6 $ grep -cF 'no pinta el botón mientras el detalle carga aunque el listado diga $listRole $listCollar' src/screens/map/index.test.tsx
+0
+Esperado H0E3 / cierre: 0 / 1
+```
+
+```text
+A7 $ grep -cF 'aunque el listado' src/screens/map/index.test.tsx
+3
+Esperado H0E3 / cierre: 3 / 5
+```
+
+```text
+A8 $ grep -cF "expect(screen.queryByTestId('map-no-tracking-action')).toBeNull();" src/screens/map/index.test.tsx
+5
+Esperado H0E3 / cierre: 5 / 7
+```
+
+```text
+A9 $ grep -cF 'mockGetPet.mockReturnValue(pending<PetState>());' src/screens/map/index.test.tsx
+4
+Esperado H0E3 / cierre: 4 / 5
+```
+
+```text
+A10 $ grep -cF 'function noTrackingAfterDetail(detailState: PetState) {' src/screens/map/index.test.tsx
+1
+Esperado H0E3 / cierre: 1 / 1
+```
+
+```text
+A11 $ grep -cF '#159' src/screens/map/index.test.tsx
+3
+Esperado H0E3 / cierre: 3 / 3
+```
+
+```text
+A12 $ grep -cF "detail.data.pet.myRole === 'owner' &&" src/screens/map/index.tsx
+1
+Esperado H0E3 / cierre: 1 / 1
+```
+
+```text
+A13 $ grep -cF 'detail.data.pet.device === null;' src/screens/map/index.tsx
+1
+Esperado H0E3 / cierre: 1 / 1
+```
+
+```text
+A14 $ grep -cF 'selectedPet?.' src/screens/map/index.tsx
+2
+Esperado H0E3 / cierre: 2 / 2
+```
+
+```text
+A15 $ git diff --quiet 664b95a7 HEAD -- src/screens/map/index.tsx; echo "exit=$?"
+exit=0
+Esperado H0E3 / cierre: exit=0 / exit=0
+```
+
+
+### Base del Mapa
+
+```text
+$ uptime
+ 03:35:04 up 17 days, 23:42,  4 users,  load average: 0.36, 0.78, 0.87
+$ FORCE_COLOR=0 bunx jest src/screens/map/index.test.tsx > /tmp/159-e3-base.txt 2>&1; echo "exit=$?"
+exit=0
+Test Suites: 1 passed, 1 total
+Tests:       119 passed, 119 total
+```
+
+```text
+$ pgrep -af '[i]nit\.sh'
+(vacío; exit=1)
+```
+
+## e3-1 — Rojo
+
+Se añade literalmente el primer bloque TSX de tasks.md §Enmienda E3 (1), quitando solo las cuatro columnas de la lista Markdown, y una línea en blanco previa: 51 adiciones, ninguna baja. Se plantan únicamente las dos líneas de la mutación versionada de `canPairCollar`; no se cambian tests ni dobles existentes.
+
+```text
+$ uptime
+ 03:35:33 up 17 days, 23:43,  4 users,  load average: 0.84, 0.86, 0.89
+$ FORCE_COLOR=0 bunx jest src/screens/map/index.test.tsx > /tmp/159-e3-r.txt 2>&1; echo "exit=$?"
+exit=1
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle owner con collar aunque el listado diga family sin collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle owner con collar aunque el listado diga family con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle owner con collar aunque el listado diga walker sin collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle owner con collar aunque el listado diga walker con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle owner con collar aunque el listado diga vet sin collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle owner con collar aunque el listado diga vet con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle family sin collar aunque el listado diga owner con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle family sin collar aunque el listado diga family con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle family sin collar aunque el listado diga walker con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle family sin collar aunque el listado diga vet con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle family con collar aunque el listado diga family con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle family con collar aunque el listado diga walker con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle family con collar aunque el listado diga vet con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle walker sin collar aunque el listado diga owner con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle walker sin collar aunque el listado diga family con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle walker sin collar aunque el listado diga walker con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle walker sin collar aunque el listado diga vet con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle walker con collar aunque el listado diga family con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle walker con collar aunque el listado diga walker con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle walker con collar aunque el listado diga vet con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle vet sin collar aunque el listado diga owner con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle vet sin collar aunque el listado diga family con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle vet sin collar aunque el listado diga walker con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle vet sin collar aunque el listado diga vet con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle vet con collar aunque el listado diga family con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle vet con collar aunque el listado diga walker con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle vet con collar aunque el listado diga vet con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle owner con collar offline aunque el listado diga family sin collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle owner con collar offline aunque el listado diga family con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle owner con collar offline aunque el listado diga walker sin collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle owner con collar offline aunque el listado diga walker con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle owner con collar offline aunque el listado diga vet sin collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle owner con collar offline aunque el listado diga vet con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle owner con collar sin conectividad aunque el listado diga family sin collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle owner con collar sin conectividad aunque el listado diga family con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle owner con collar sin conectividad aunque el listado diga walker sin collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle owner con collar sin conectividad aunque el listado diga walker con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle owner con collar sin conectividad aunque el listado diga vet sin collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle owner con collar sin conectividad aunque el listado diga vet con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle family con collar offline aunque el listado diga family con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle family con collar offline aunque el listado diga walker con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle family con collar offline aunque el listado diga vet con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle family con collar sin conectividad aunque el listado diga family con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle family con collar sin conectividad aunque el listado diga walker con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle family con collar sin conectividad aunque el listado diga vet con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle walker con collar offline aunque el listado diga family con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle walker con collar offline aunque el listado diga walker con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle walker con collar offline aunque el listado diga vet con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle walker con collar sin conectividad aunque el listado diga family con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle walker con collar sin conectividad aunque el listado diga walker con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle walker con collar sin conectividad aunque el listado diga vet con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle vet con collar offline aunque el listado diga family con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle vet con collar offline aunque el listado diga walker con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle vet con collar offline aunque el listado diga vet con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle vet con collar sin conectividad aunque el listado diga family con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle vet con collar sin conectividad aunque el listado diga walker con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle vet con collar sin conectividad aunque el listado diga vet con collar
+Test Suites: 1 failed, 1 total
+Tests:       57 failed, 214 passed, 271 total
+```
+
+Cadena literal e3-1, con `<LIMPIO>` expandido:
+
+```sh
+grep -qE '^Tests: +57 failed, 214 passed, 271 total$' /tmp/159-e3-r.txt \
+    && test "$(grep -cE '^  ● .+ › ' /tmp/159-e3-r.txt)" = 57 \
+    && test "$(grep -cF '  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle ' /tmp/159-e3-r.txt)" = 57 \
+    && test "$(grep -E '^  ● .+ › ' /tmp/159-e3-r.txt | grep -cE 'con el detalle owner con collar( offline| sin conectividad)? aunque el listado diga (family|walker|vet) (sin|con) collar$')" = 18 \
+    && test "$(grep -E '^  ● .+ › ' /tmp/159-e3-r.txt | grep -cE 'con el detalle (family|walker|vet) sin collar aunque el listado diga (owner|family|walker|vet) con collar$')" = 12 \
+    && test "$(grep -E '^  ● .+ › ' /tmp/159-e3-r.txt | grep -cE 'con el detalle (family|walker|vet) con collar( offline| sin conectividad)? aunque el listado diga (family|walker|vet) con collar$')" = 27 \
+    && test "$(grep -cF 'expect(received).toBeNull()' /tmp/159-e3-r.txt)" = 57 \
+    && ! grep -qF 'Unable to find an element' /tmp/159-e3-r.txt \
+    && ! grep -qE 'Test suite failed to run|TypeError|ReferenceError|SyntaxError|Cannot find module' /tmp/159-e3-r.txt \
+    && test "$(grep -cF "(detail.data.pet.myRole === 'owner' || Boolean(selectedPet?.device)) &&" src/screens/map/index.tsx)" = 1 \
+    && test "$(grep -cF "(detail.data.pet.device === null || selectedPet?.myRole !== 'owner');" src/screens/map/index.tsx)" = 1 \
+    && test "$(grep -cF "detail.data?.kind === 'ok' &&" src/screens/map/index.tsx)" = 1 \
+    && test "$(git diff --numstat 664b95a7 -- src/screens/map/index.tsx | cut -f1,2 | tr '\t' ' ')" = '2 2' \
+    && test "$(git diff --numstat HEAD -- src/screens/map/index.test.tsx | cut -f1,2 | tr '\t' ' ')" = '51 0' \
+    && test ! -e .expo/types/router.d.ts && bun run typecheck && bunx expo lint --no-cache \
+    && git add src/screens/map/index.test.tsx src/screens/map/index.tsx \
+    && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'mobile-pet-tracker/src/screens/map/index.test.tsx mobile-pet-tracker/src/screens/map/index.tsx ' \
+    && git diff --quiet -- . ../docs ../specs && test -z "$(git ls-files --others --exclude-standard -- . ../docs ../specs)" \
+    && git commit -m 'test(mobile-no-collar-states): #159 E3 red pair action follows list role and collar'
+```
+
+```text
+$ tsc --noEmit
+[feature/159-mobile-no-collar-states-pingo 2e2f16db] test(mobile-no-collar-states): #159 E3 red pair action follows list role and collar
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 2 files changed, 53 insertions(+), 2 deletions(-)
+exit=0
+```
+
+`bun run typecheck`: exit=0; `bunx expo lint --no-cache`: exit=0. Todos los eslabones llegaron al commit rojo `2e2f16db`.
+
+## e3-2 — Verde
+
+```text
+$ git checkout 664b95a7 -- src/screens/map/index.tsx && git diff --quiet 664b95a7 -- src/screens/map/index.tsx; echo "exit=$?"
+exit=0
+```
+
+```text
+$ uptime
+ 03:36:52 up 17 days, 23:44,  4 users,  load average: 1.91, 1.25, 1.03
+$ FORCE_COLOR=0 bunx jest src/screens/map/index.test.tsx > /tmp/159-e3-g.txt 2>&1; echo "exit=$?"
+exit=0
+Test Suites: 1 passed, 1 total
+Tests:       271 passed, 271 total
+```
+
+```text
+$ uptime
+ 03:37:19 up 17 days, 23:44,  4 users,  load average: 1.43, 1.19, 1.02
+$ FORCE_COLOR=0 bunx jest src/__tests__/ui-language.test.ts src/__tests__/design-drift.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/159-e3-g-guardas.txt 2>&1; echo "exit=$?"
+exit=0
+Test Suites: 4 passed, 4 total
+Tests:       174 passed, 174 total
+```
+
+Cadena literal e3-2, con `<LIMPIO>` expandido:
+
+```sh
+grep -qE '^Tests: +271 passed, 271 total$' /tmp/159-e3-g.txt \
+    && grep -qE '^Tests: +174 passed, 174 total$' /tmp/159-e3-g-guardas.txt \
+    && git diff --quiet 664b95a7 -- src/screens/map/index.tsx \
+    && test ! -e .expo/types/router.d.ts && bun run typecheck && bunx expo lint --no-cache \
+    && git add src/screens/map/index.tsx \
+    && test "$(git diff --cached --name-only)" = 'mobile-pet-tracker/src/screens/map/index.tsx' \
+    && git diff --quiet -- . ../docs ../specs && test -z "$(git ls-files --others --exclude-standard -- . ../docs ../specs)" \
+    && git commit -m 'fix(mobile-no-collar-states): #159 E3 revert list probe, no pair action whatever the list says' \
+    && git diff --quiet 664b95a7 HEAD -- src/screens/map/index.tsx; echo "exit=$?"
+```
+
+```text
+$ tsc --noEmit
+[feature/159-mobile-no-collar-states-pingo d30cd476] fix(mobile-no-collar-states): #159 E3 revert list probe, no pair action whatever the list says
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+exit=0
+```
+
+`bun run typecheck`: exit=0; `bunx expo lint --no-cache`: exit=0. Todos los eslabones llegaron al commit verde `d30cd476`; el diff de producción contra `664b95a7` da exit=0.
+
+## Sondas E3a-E3f — Sin commit
+
+### E3a (M7)
+
+Se sustituye únicamente la línea del rol por `(detail.data.pet.myRole === 'owner' || Boolean(selectedPet?.device)) &&`.
+
+```text
+$ grep -cF "(detail.data.pet.myRole === 'owner' || Boolean(selectedPet?.device)) &&" src/screens/map/index.tsx
+1
+Esperado: 1
+$ uptime
+ 03:38:24 up 17 days, 23:45,  4 users,  load average: 1.91, 1.44, 1.12
+$ FORCE_COLOR=0 bunx jest src/screens/map/index.test.tsx > /tmp/159-e3a.txt 2>&1; echo "exit=$?"
+exit=1
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle family sin collar aunque el listado diga owner con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle family sin collar aunque el listado diga family con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle family sin collar aunque el listado diga walker con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle family sin collar aunque el listado diga vet con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle walker sin collar aunque el listado diga owner con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle walker sin collar aunque el listado diga family con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle walker sin collar aunque el listado diga walker con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle walker sin collar aunque el listado diga vet con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle vet sin collar aunque el listado diga owner con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle vet sin collar aunque el listado diga family con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle vet sin collar aunque el listado diga walker con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle vet sin collar aunque el listado diga vet con collar
+Test Suites: 1 failed, 1 total
+Tests:       12 failed, 259 passed, 271 total
+$ grep -qE '^Tests: +12 failed, 259 passed, 271 total$' /tmp/159-e3a.txt && test "$(grep -cE '^  ● .+ › ' /tmp/159-e3a.txt)" = 12 && test "$(grep -cF 'expect(received).toBeNull()' /tmp/159-e3a.txt)" = 12 && ! grep -qF 'Unable to find an element' /tmp/159-e3a.txt && test "$(grep -E '^  ● .+ › ' /tmp/159-e3a.txt | grep -cE 'con el detalle (family|walker|vet) sin collar aunque el listado diga (owner|family|walker|vet) con collar$')" = 12; echo "sonda=$?"
+sonda=0
+$ git checkout HEAD -- src/screens/map/index.tsx && git diff --quiet HEAD -- . ../docs ../specs; echo "limpio=$?"
+limpio=0
+```
+
+### E3b (M8)
+
+Se sustituye únicamente la línea del collar por `(detail.data.pet.device === null || selectedPet?.myRole !== 'owner');`.
+
+```text
+$ grep -cF "(detail.data.pet.device === null || selectedPet?.myRole !== 'owner');" src/screens/map/index.tsx
+1
+Esperado: 1
+$ uptime
+ 03:39:03 up 17 days, 23:46,  4 users,  load average: 1.24, 1.33, 1.09
+$ FORCE_COLOR=0 bunx jest src/screens/map/index.test.tsx > /tmp/159-e3b.txt 2>&1; echo "exit=$?"
+exit=1
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle owner con collar aunque el listado diga family sin collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle owner con collar aunque el listado diga family con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle owner con collar aunque el listado diga walker sin collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle owner con collar aunque el listado diga walker con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle owner con collar aunque el listado diga vet sin collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle owner con collar aunque el listado diga vet con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle owner con collar offline aunque el listado diga family sin collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle owner con collar offline aunque el listado diga family con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle owner con collar offline aunque el listado diga walker sin collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle owner con collar offline aunque el listado diga walker con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle owner con collar offline aunque el listado diga vet sin collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle owner con collar offline aunque el listado diga vet con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle owner con collar sin conectividad aunque el listado diga family sin collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle owner con collar sin conectividad aunque el listado diga family con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle owner con collar sin conectividad aunque el listado diga walker sin collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle owner con collar sin conectividad aunque el listado diga walker con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle owner con collar sin conectividad aunque el listado diga vet sin collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle owner con collar sin conectividad aunque el listado diga vet con collar
+Test Suites: 1 failed, 1 total
+Tests:       18 failed, 253 passed, 271 total
+$ grep -qE '^Tests: +18 failed, 253 passed, 271 total$' /tmp/159-e3b.txt && test "$(grep -cE '^  ● .+ › ' /tmp/159-e3b.txt)" = 18 && test "$(grep -cF 'expect(received).toBeNull()' /tmp/159-e3b.txt)" = 18 && ! grep -qF 'Unable to find an element' /tmp/159-e3b.txt && test "$(grep -E '^  ● .+ › ' /tmp/159-e3b.txt | grep -cE 'con el detalle owner con collar( offline| sin conectividad)? aunque el listado diga (family|walker|vet) (sin|con) collar$')" = 18; echo "sonda=$?"
+sonda=0
+$ git checkout HEAD -- src/screens/map/index.tsx && git diff --quiet HEAD -- . ../docs ../specs; echo "limpio=$?"
+limpio=0
+```
+
+### E3c (M9)
+
+Se sustituye únicamente la línea del rol por la mutación M9 que compara el rol del listado con el del detalle.
+
+```text
+$ grep -cF "(selectedPet?.myRole !== 'owner' && selectedPet?.myRole !== detail.data.pet.myRole)) &&" src/screens/map/index.tsx
+1
+Esperado: 1
+$ uptime
+ 03:39:40 up 17 days, 23:47,  4 users,  load average: 2.87, 1.74, 1.24
+$ FORCE_COLOR=0 bunx jest src/screens/map/index.test.tsx > /tmp/159-e3c.txt 2>&1; echo "exit=$?"
+exit=1
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle family sin collar aunque el listado diga walker sin collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle family sin collar aunque el listado diga walker con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle family sin collar aunque el listado diga vet sin collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle family sin collar aunque el listado diga vet con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle walker sin collar aunque el listado diga family sin collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle walker sin collar aunque el listado diga family con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle walker sin collar aunque el listado diga vet sin collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle walker sin collar aunque el listado diga vet con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle vet sin collar aunque el listado diga family sin collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle vet sin collar aunque el listado diga family con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle vet sin collar aunque el listado diga walker sin collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle vet sin collar aunque el listado diga walker con collar
+Test Suites: 1 failed, 1 total
+Tests:       12 failed, 259 passed, 271 total
+$ grep -qE '^Tests: +12 failed, 259 passed, 271 total$' /tmp/159-e3c.txt && test "$(grep -cE '^  ● .+ › ' /tmp/159-e3c.txt)" = 12 && test "$(grep -cF 'expect(received).toBeNull()' /tmp/159-e3c.txt)" = 12 && ! grep -qF 'Unable to find an element' /tmp/159-e3c.txt && test "$(grep -E '^  ● .+ › ' /tmp/159-e3c.txt | grep -cE 'con el detalle (family|walker|vet) sin collar aunque el listado diga (family|walker|vet) (sin|con) collar$')" = 12 && test "$(grep -E '^  ● .+ › ' /tmp/159-e3c.txt | grep -cE 'con el detalle (family sin collar aunque el listado diga family|walker sin collar aunque el listado diga walker|vet sin collar aunque el listado diga vet) ')" = 0; echo "sonda=$?"
+sonda=0
+$ git checkout HEAD -- src/screens/map/index.tsx && git diff --quiet HEAD -- . ../docs ../specs; echo "limpio=$?"
+limpio=0
+```
+
+### E3d (M12)
+
+Se sustituyen únicamente las tres líneas del predicado por la línea ternaria de M12, que lee el collar del listado cuando el detalle no es ok.
+
+```text
+$ grep -cF ": Boolean(selectedPet?.device);" src/screens/map/index.tsx
+1
+Esperado: 1
+$ grep -cF "detail.data?.kind === 'ok' &&" src/screens/map/index.tsx
+0
+Esperado: 0
+$ uptime
+ 03:40:21 up 17 days, 23:47,  4 users,  load average: 2.16, 1.71, 1.25
+$ FORCE_COLOR=0 bunx jest src/screens/map/index.test.tsx > /tmp/159-e3d.txt 2>&1; echo "exit=$?"
+exit=1
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle error aunque el listado diga owner con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle error aunque el listado diga family con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle error aunque el listado diga walker con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle error aunque el listado diga vet con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle unreachable aunque el listado diga owner con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle unreachable aunque el listado diga family con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle unreachable aunque el listado diga walker con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle unreachable aunque el listado diga vet con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle missing-config aunque el listado diga owner con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle missing-config aunque el listado diga family con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle missing-config aunque el listado diga walker con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle missing-config aunque el listado diga vet con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón mientras el detalle carga aunque el listado diga owner con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón mientras el detalle carga aunque el listado diga family con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón mientras el detalle carga aunque el listado diga walker con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón mientras el detalle carga aunque el listado diga vet con collar
+Test Suites: 1 failed, 1 total
+Tests:       16 failed, 255 passed, 271 total
+$ grep -qE '^Tests: +16 failed, 255 passed, 271 total$' /tmp/159-e3d.txt && test "$(grep -cE '^  ● .+ › ' /tmp/159-e3d.txt)" = 16 && test "$(grep -cF 'expect(received).toBeNull()' /tmp/159-e3d.txt)" = 16 && ! grep -qF 'Unable to find an element' /tmp/159-e3d.txt && test "$(grep -E '^  ● .+ › ' /tmp/159-e3d.txt | grep -cE 'con el detalle (error|unreachable|missing-config) aunque el listado diga (owner|family|walker|vet) con collar$')" = 12 && test "$(grep -E '^  ● .+ › ' /tmp/159-e3d.txt | grep -cE 'mientras el detalle carga aunque el listado diga (owner|family|walker|vet) con collar$')" = 4; echo "sonda=$?"
+sonda=0
+$ git checkout HEAD -- src/screens/map/index.tsx && git diff --quiet HEAD -- . ../docs ../specs; echo "limpio=$?"
+limpio=0
+```
+
+### E3e (N3)
+
+Se sustituye únicamente la línea del collar por `deviceConnectionState(detail.data.pet.device) !== 'online';`. No se añade ningún import.
+
+```text
+$ grep -cF "deviceConnectionState(detail.data.pet.device) !== 'online';" src/screens/map/index.tsx
+1
+Esperado: 1
+$ uptime
+ 03:40:59 up 17 days, 23:48,  4 users,  load average: 2.69, 1.91, 1.34
+$ FORCE_COLOR=0 bunx jest src/screens/map/index.test.tsx > /tmp/159-e3e.txt 2>&1; echo "exit=$?"
+exit=1
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle owner con collar offline aunque el listado diga owner sin collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle owner con collar offline aunque el listado diga owner con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle owner con collar offline aunque el listado diga family sin collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle owner con collar offline aunque el listado diga family con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle owner con collar offline aunque el listado diga walker sin collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle owner con collar offline aunque el listado diga walker con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle owner con collar offline aunque el listado diga vet sin collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle owner con collar offline aunque el listado diga vet con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle owner con collar sin conectividad aunque el listado diga owner sin collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle owner con collar sin conectividad aunque el listado diga owner con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle owner con collar sin conectividad aunque el listado diga family sin collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle owner con collar sin conectividad aunque el listado diga family con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle owner con collar sin conectividad aunque el listado diga walker sin collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle owner con collar sin conectividad aunque el listado diga walker con collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle owner con collar sin conectividad aunque el listado diga vet sin collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle owner con collar sin conectividad aunque el listado diga vet con collar
+Test Suites: 1 failed, 1 total
+Tests:       16 failed, 255 passed, 271 total
+$ grep -qE '^Tests: +16 failed, 255 passed, 271 total$' /tmp/159-e3e.txt && test "$(grep -cE '^  ● .+ › ' /tmp/159-e3e.txt)" = 16 && test "$(grep -cF 'expect(received).toBeNull()' /tmp/159-e3e.txt)" = 16 && ! grep -qF 'Unable to find an element' /tmp/159-e3e.txt && test "$(grep -E '^  ● .+ › ' /tmp/159-e3e.txt | grep -cE 'con el detalle owner con collar (offline|sin conectividad) aunque el listado diga (owner|family|walker|vet) (sin|con) collar$')" = 16; echo "sonda=$?"
+sonda=0
+$ git checkout HEAD -- src/screens/map/index.tsx && git diff --quiet HEAD -- . ../docs ../specs; echo "limpio=$?"
+limpio=0
+```
+
+### E3f (N1)
+
+Se sustituye únicamente la línea del collar por la mutación N1 que admite collar sin conexión cuando el listado no tiene collar.
+
+```text
+$ grep -cF "detail.data.pet.device.connectivity !== 'online' && selectedPet?.device === null));" src/screens/map/index.tsx
+1
+Esperado: 1
+$ uptime
+ 03:41:39 up 17 days, 23:49,  4 users,  load average: 2.32, 1.95, 1.38
+$ FORCE_COLOR=0 bunx jest src/screens/map/index.test.tsx > /tmp/159-e3f.txt 2>&1; echo "exit=$?"
+exit=1
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle owner con collar offline aunque el listado diga owner sin collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle owner con collar offline aunque el listado diga family sin collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle owner con collar offline aunque el listado diga walker sin collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle owner con collar offline aunque el listado diga vet sin collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle owner con collar sin conectividad aunque el listado diga owner sin collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle owner con collar sin conectividad aunque el listado diga family sin collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle owner con collar sin conectividad aunque el listado diga walker sin collar
+  ● #159 R4: nadie más ve el botón de emparejar › no pinta el botón con el detalle owner con collar sin conectividad aunque el listado diga vet sin collar
+Test Suites: 1 failed, 1 total
+Tests:       8 failed, 263 passed, 271 total
+$ grep -qE '^Tests: +8 failed, 263 passed, 271 total$' /tmp/159-e3f.txt && test "$(grep -cE '^  ● .+ › ' /tmp/159-e3f.txt)" = 8 && test "$(grep -cF 'expect(received).toBeNull()' /tmp/159-e3f.txt)" = 8 && ! grep -qF 'Unable to find an element' /tmp/159-e3f.txt && test "$(grep -E '^  ● .+ › ' /tmp/159-e3f.txt | grep -cE 'con el detalle owner con collar (offline|sin conectividad) aunque el listado diga (owner|family|walker|vet) sin collar$')" = 8; echo "sonda=$?"
+sonda=0
+$ git checkout HEAD -- src/screens/map/index.tsx && git diff --quiet HEAD -- . ../docs ../specs; echo "limpio=$?"
+limpio=0
+```
+
+Las seis sondas dieron `sonda=0` y se restauraron con `limpio=0`, sin commit. Hasta aquí, ninguna medida requirió repetición por el flake conocido.
+
+## Cierre E3
+
+### BASE (10 ficheros)
+
+```text
+$ cd /home/claude/sites/Pet-Tracker-wt-159/mobile-pet-tracker && pwd
+/home/claude/sites/Pet-Tracker-wt-159/mobile-pet-tracker
+$ pgrep -af '[i]nit\.sh'
+(vacío; exit=1)
+$ uptime
+ 03:42:18 up 17 days, 23:49,  4 users,  load average: 1.78, 1.86, 1.37
+$ FORCE_COLOR=0 bunx jest src/components/__tests__/empty-state.test.tsx src/providers/__tests__/language-provider.test.tsx src/__tests__/ui-language.test.ts src/screens/map/index.test.tsx src/screens/geofences/index.test.tsx src/screens/geofence-editor/index.test.tsx src/screens/home/index.test.tsx src/__tests__/design-drift.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/159-e3-final.txt 2>&1; echo "exit=$?"
+exit=0
+Test Suites: 10 passed, 10 total
+Tests:       911 passed, 911 total
+```
+
+### ALL (suite completa)
+
+```text
+$ pgrep -af '[i]nit\.sh'
+(vacío; exit=1)
+$ uptime
+ 03:42:52 up 17 days, 23:50,  4 users,  load average: 2.01, 1.93, 1.41
+$ FORCE_COLOR=0 bunx jest > /tmp/159-e3-all.txt 2>&1; echo "exit=$?"
+exit=0
+Test Suites: 97 passed, 97 total
+Tests:       2577 passed, 2577 total
+```
+
+### Typecheck y lint de cierre
+
+```text
+$ bun run typecheck; echo "exit=$?"
+$ tsc --noEmit
+exit=0
+```
+
+```text
+$ bunx expo lint --no-cache; echo "exit=$?"
+exit=0
+```
+
+### Anclas A1-A15 de cierre
+
+```text
+A1 $ grep -cF "('no pinta el botón a %s aunque el listado diga owner'" src/screens/map/index.test.tsx
+1
+Esperado H0E3 / cierre: 1 / 1
+```
+
+```text
+A2 $ grep -cF 'const LIST_STATES = (' src/screens/map/index.test.tsx
+1
+Esperado H0E3 / cierre: 0 / 1
+```
+
+```text
+A3 $ grep -cF 'const DETAIL_STATES: { detalle: string; state: PetState }[] = [' src/screens/map/index.test.tsx
+1
+Esperado H0E3 / cierre: 0 / 1
+```
+
+```text
+A4 $ grep -cE "^    \{ detalle: '[^']+', state: \{ kind: " src/screens/map/index.test.tsx
+18
+Esperado H0E3 / cierre: 0 / 18
+```
+
+```text
+A5 $ grep -cF 'no pinta el botón con el detalle $detalle aunque el listado diga $listRole $listCollar' src/screens/map/index.test.tsx
+1
+Esperado H0E3 / cierre: 0 / 1
+```
+
+```text
+A6 $ grep -cF 'no pinta el botón mientras el detalle carga aunque el listado diga $listRole $listCollar' src/screens/map/index.test.tsx
+1
+Esperado H0E3 / cierre: 0 / 1
+```
+
+```text
+A7 $ grep -cF 'aunque el listado' src/screens/map/index.test.tsx
+5
+Esperado H0E3 / cierre: 3 / 5
+```
+
+```text
+A8 $ grep -cF "expect(screen.queryByTestId('map-no-tracking-action')).toBeNull();" src/screens/map/index.test.tsx
+7
+Esperado H0E3 / cierre: 5 / 7
+```
+
+```text
+A9 $ grep -cF 'mockGetPet.mockReturnValue(pending<PetState>());' src/screens/map/index.test.tsx
+5
+Esperado H0E3 / cierre: 4 / 5
+```
+
+```text
+A10 $ grep -cF 'function noTrackingAfterDetail(detailState: PetState) {' src/screens/map/index.test.tsx
+1
+Esperado H0E3 / cierre: 1 / 1
+```
+
+```text
+A11 $ grep -cF '#159' src/screens/map/index.test.tsx
+3
+Esperado H0E3 / cierre: 3 / 3
+```
+
+```text
+A12 $ grep -cF "detail.data.pet.myRole === 'owner' &&" src/screens/map/index.tsx
+1
+Esperado H0E3 / cierre: 1 / 1
+```
+
+```text
+A13 $ grep -cF 'detail.data.pet.device === null;' src/screens/map/index.tsx
+1
+Esperado H0E3 / cierre: 1 / 1
+```
+
+```text
+A14 $ grep -cF 'selectedPet?.' src/screens/map/index.tsx
+2
+Esperado H0E3 / cierre: 2 / 2
+```
+
+```text
+A15 $ git diff --quiet 664b95a7 HEAD -- src/screens/map/index.tsx; echo "exit=$?"
+exit=0
+Esperado H0E3 / cierre: exit=0 / exit=0
+```
+
+```text
+$ git diff --stat 557f6e5e HEAD -- package.json bun.lock app.json src/theme
+(vacío; exit=0)
+```
+
+### Comprobaciones desde la raíz
+
+```text
+$ cd /home/claude/sites/Pet-Tracker-wt-159 && pwd
+/home/claude/sites/Pet-Tracker-wt-159
+$ git log --oneline 557f6e5e..HEAD
+d30cd476 fix(mobile-no-collar-states): #159 E3 revert list probe, no pair action whatever the list says
+2e2f16db test(mobile-no-collar-states): #159 E3 red pair action follows list role and collar
+$ git diff --numstat 557f6e5e HEAD -- mobile-pet-tracker/
+51	0	mobile-pet-tracker/src/screens/map/index.test.tsx
+$ git diff --quiet 664b95a7 HEAD -- mobile-pet-tracker/src/screens/map/index.tsx; echo "exit=$?"
+exit=0
+$ git diff --stat 557f6e5e HEAD -- backend-pet-tracker/ infra-pet-tracker/ docs/
+(vacío; exit=0)
+```
+
+## Trazabilidad E3
+
+Se sustituye solo la fila R4 por la fila literal del handoff, con rojo `2e2f16db` y verde `d30cd476`.
+
+```text
+$ git diff -U0 -- specs/mobile-no-collar-states-pingo/traceability.md | grep -E '^[-+]\|' | cut -c1-8
+-| R4 | 
++| R4 | 
+$ grep -cF 'sondas E1a-E1e; E3: ' specs/mobile-no-collar-states-pingo/traceability.md
+1
+$ grep -oF '; E3: ' specs/mobile-no-collar-states-pingo/traceability.md | wc -l
+2
+$ grep -cF '<ROJO>' specs/mobile-no-collar-states-pingo/traceability.md
+0
+$ grep -cF '<VERDE>' specs/mobile-no-collar-states-pingo/traceability.md
+0
+```
+
+Todas las medidas dieron los valores literales esperados en su primer intento; no se aplicó la repetición del flake. No hubo decisiones adicionales a las del handoff y la spec.
+
+Cadena literal prevista para e3-3, tras registrar la lista cerrada y R10:
+
+```sh
+git add specs/mobile-no-collar-states-pingo/traceability.md progress/impl_mobile-no-collar-states-pingo.md \
+    && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'progress/impl_mobile-no-collar-states-pingo.md specs/mobile-no-collar-states-pingo/traceability.md ' \
+    && git diff --quiet && test -z "$(git ls-files --others --exclude-standard)" \
+    && git commit -m 'docs(mobile-no-collar-states-pingo): #159 E3 traceability'
+```
+
+## Lista cerrada desde H0E3
+
+```text
+$ git diff --name-only 557f6e5e -- . ':!feature_list.json' ':!progress/current.md' ':!progress/review_mobile-no-collar-states-pingo.md' ':!specs/mobile-no-collar-states-pingo/requirements.md' ':!specs/mobile-no-collar-states-pingo/design.md' ':!specs/mobile-no-collar-states-pingo/tasks.md' | LC_ALL=C sort
+mobile-pet-tracker/src/screens/map/index.test.tsx
+progress/impl_mobile-no-collar-states-pingo.md
+specs/mobile-no-collar-states-pingo/traceability.md
+$ test -z "$(git ls-files --others --exclude-standard)"; echo "exit=$?"
+exit=0
+```
+
+R10: pendiente del smoke humano
