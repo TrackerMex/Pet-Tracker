@@ -661,4 +661,4 @@ N1. Todas medidas por el reviewer antes de esta firma.
 
 ### Aprobación de la Enmienda E3
 
-- [ ] Enmienda E3 aprobada por humano (fecha: ) ← gate obligatorio antes de la ronda 4 de Codex
+- [x] Enmienda E3 aprobada por humano (fecha: 2026-10-10, vía Notion) ← gate obligatorio antes de la ronda 4 de Codex
