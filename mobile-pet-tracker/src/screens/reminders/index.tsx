@@ -384,7 +384,7 @@ export function RemindersScreen() {
                 </Button>
                 <Button
                   testID="reminders-delete-cancel"
-                  className="w-full rounded-xl"
+                  className="w-full rounded-xl border-2 border-b-6 border-lip-gray bg-surface"
                   variant="outline"
                   onPress={dismissDeleteSheet}
                 >

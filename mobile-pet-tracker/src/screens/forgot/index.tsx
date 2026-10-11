@@ -126,7 +126,7 @@ export function ForgotScreen() {
           <Button
             testID="forgot-resend"
             variant="secondary"
-            className="w-full rounded-xl"
+            className="w-full rounded-xl border-2 border-b-6 border-lip-gray bg-surface"
             isDisabled={submitting}
             onPress={() => void send(submittedEmail)}
           >

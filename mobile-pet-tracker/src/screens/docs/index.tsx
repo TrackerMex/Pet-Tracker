@@ -317,7 +317,7 @@ export function DocsScreen({ petId }: { petId: string }) {
             </Button>
             <Button
               testID="docs-upload-cancel"
-              className="rounded-xl"
+              className="rounded-xl border-2 border-b-6 border-lip-gray bg-surface"
               variant="outline"
               isDisabled={uploading}
               onPress={cancelUpload}
