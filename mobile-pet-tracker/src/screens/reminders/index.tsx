@@ -143,7 +143,7 @@ export function RemindersScreen() {
       <View testID="reminders-actions" className="flex-row justify-end">
         <Button
           testID="reminders-add-link"
-          className="rounded-xl bg-accent"
+          className="rounded-xl bg-accent border-b-4 border-black/25"
           onPress={() => router.push('/add-reminder' as Href)}
         >
           <Button.Label className="font-bold text-accent-foreground">

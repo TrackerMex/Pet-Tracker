@@ -112,7 +112,7 @@ export function ForgotScreen() {
         {!sent ? (
           <Button
             testID="forgot-submit"
-            className="w-full rounded-xl bg-accent"
+            className="w-full rounded-xl bg-accent border-b-4 border-black/25"
             isDisabled={email.trim() === '' || submitting}
             onPress={() => void send(email.trim())}
           >

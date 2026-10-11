@@ -298,7 +298,7 @@ function AddReminderContent({ petId }: { petId: string }) {
 
         <Button
           testID="add-reminder-submit"
-          className="rounded-xl bg-accent"
+          className="rounded-xl bg-accent border-b-4 border-black/25"
           isDisabled={submitting}
           onPress={() => void handleSubmit()}
         >

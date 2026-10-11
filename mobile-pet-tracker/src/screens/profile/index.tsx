@@ -200,7 +200,7 @@ export function ProfileScreen() {
         </Text>
         <Button
           testID="profile-add-pet"
-          className="rounded-xl bg-accent"
+          className="rounded-xl bg-accent border-b-4 border-black/25"
           size="sm"
           onPress={() => router.push('/pets/add' as Href)}
         >
