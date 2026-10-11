@@ -11,3 +11,4 @@
 - decisión del humano (AskUserQuestion, 2026-10-11): pose celebrate = «v2 brazos arriba» (`~/pet-tracker-mascot/mascot-03-celebrate-v2.png`)
 - dependencia: la implementación con Codex espera al merge de #166 mobile-chunky-cta (className de primarios y secundarios; labio del botón de EmptyState)
 - plan: spec_author escribe `specs/mobile-celebrations-and-living-empty/` → leader espeja a Notion (En revisión) → PARA hasta el gate humano
+- espejo Notion (2026-10-11): https://app.notion.com/p/3f66115a9b2781e0bfd6fba81768b1e1, desde 4a133b16, Estado del gate = En revisión, Rol actual = Spec Author. Avisado a Frontend. PARADA en el gate humano
