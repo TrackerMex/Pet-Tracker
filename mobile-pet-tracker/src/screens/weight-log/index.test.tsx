@@ -976,3 +976,49 @@ describe('#169 R10: toast y háptico tras un alta correcta', () => {
       .toBe(1);
   });
 });
+describe('#169 R11: ni toast ni háptico fuera de la rama ok', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2026-09-17T23:30:00.000Z'));
+    prepareWeightLogTests();
+  });
+
+  afterEach(() => jest.useRealTimers());
+
+  const cases: [string, CreateWeightState | null, string | null][] = [
+    ['peso no numérico', null, 'Introduce un peso válido'],
+    ['validation', { kind: 'validation', errors: [{ path: 'weightKg', message: 'weightKg must be positive' }] }, 'weightKg must be positive'],
+    ['forbidden', { kind: 'forbidden' }, 'Solo el dueño puede registrar pesos'],
+    ['unreachable', { kind: 'unreachable', message: 'x' }, 'No se pudo conectar con el servidor'],
+    ['unauthorized', { kind: 'unauthorized' }, null],
+    ['error', { kind: 'error' }, 'Algo salió mal'],
+    ['missing-config', { kind: 'missing-config' }, 'Algo salió mal'],
+    ['excepción', null, 'Algo salió mal'],
+  ];
+
+  it.each(cases)('rama %s: ni toast ni háptico', async (branch, result, message) => {
+    if (branch === 'excepción') {
+      mockCreateWeight.mockRejectedValue(new Error('boom'));
+    } else if (result !== null) {
+      mockCreateWeight.mockResolvedValue(result);
+    }
+
+    await renderWeightLog();
+    await waitFor(() => expect(screen.getByTestId('weight-input')).toBeVisible());
+    await fireEvent.changeText(screen.getByTestId('weight-input'), branch === 'peso no numérico' ? 'abc' : '12.4');
+    await fireEvent.press(screen.getByTestId('weight-submit'));
+
+    if (branch === 'unauthorized') {
+      await waitFor(() => expect(mockUseAuth().signOut).toHaveBeenCalledTimes(1));
+    } else {
+      await waitFor(() => {
+        expect(screen.getByTestId('weight-form-error')).toHaveTextContent(message!);
+        expect(screen.getByTestId('weight-form-error')).toBeVisible();
+      });
+      expect(screen.getByTestId('weight-form-error')).toHaveTextContent(message!);
+      if (branch === 'peso no numérico') expect(mockCreateWeight).not.toHaveBeenCalled();
+    }
+    expect(screen.queryByTestId('weight-toast')).toBeNull();
+    expect(mockHaptics.notificationAsync).not.toHaveBeenCalled();
+  });
+});
