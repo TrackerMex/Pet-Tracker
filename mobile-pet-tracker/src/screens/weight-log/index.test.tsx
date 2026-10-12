@@ -1022,3 +1022,46 @@ describe('#169 R11: ni toast ni háptico fuera de la rama ok', () => {
     expect(mockHaptics.notificationAsync).not.toHaveBeenCalled();
   });
 });
+
+describe('#169 R12: el toast se va solo', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2026-09-17T23:30:00.000Z'));
+    prepareWeightLogTests();
+    mockCreateWeight.mockResolvedValue({ kind: 'ok', weight: makeWeight() });
+  });
+
+  afterEach(() => jest.useRealTimers());
+
+  it('se ve a los 2400 ms y se va a los 2650 ms', async () => {
+    await renderWeightLog();
+    await waitFor(() => expect(screen.getByTestId('weight-input')).toBeVisible());
+    await fireEvent.changeText(screen.getByTestId('weight-input'), '12.4');
+    await fireEvent.press(screen.getByTestId('weight-submit'));
+    await act(async () => {});
+
+    await act(async () => { jest.advanceTimersByTime(2400); });
+    expect(screen.queryByTestId('weight-toast')).not.toBeNull();
+    await act(async () => { jest.advanceTimersByTime(250); });
+    expect(screen.queryByTestId('weight-toast')).toBeNull();
+  });
+
+  it('otra alta reinicia la cuenta y vibra otra vez', async () => {
+    await renderWeightLog();
+    await waitFor(() => expect(screen.getByTestId('weight-input')).toBeVisible());
+    await fireEvent.changeText(screen.getByTestId('weight-input'), '12.4');
+    await fireEvent.press(screen.getByTestId('weight-submit'));
+    await act(async () => {});
+
+    await act(async () => { jest.advanceTimersByTime(2000); });
+    await fireEvent.changeText(screen.getByTestId('weight-input'), '12.5');
+    await fireEvent.press(screen.getByTestId('weight-submit'));
+    await act(async () => {});
+
+    await act(async () => { jest.advanceTimersByTime(2400); });
+    expect(screen.queryByTestId('weight-toast')).not.toBeNull();
+    await act(async () => { jest.advanceTimersByTime(250); });
+    expect(screen.queryByTestId('weight-toast')).toBeNull();
+    expect(mockHaptics.notificationAsync).toHaveBeenCalledTimes(2);
+  });
+});
