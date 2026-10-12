@@ -202,7 +202,7 @@ describe('#171 R6: confeti', () => {
 
   it('R6.3 la pieza 0 está en vuelo a los 1200 ms', async () => {
     await renderProbe();
-    act(() => { jest.advanceTimersByTime(1200); });
+    await act(async () => { jest.advanceTimersByTime(1200); });
     const style = getAnimatedStyle(screen.getByTestId('probe-confetti-0', { includeHiddenElements: true }));
     expect(style.opacity).toBeGreaterThan(0);
     expect(style.opacity).toBeLessThan(1);
@@ -210,7 +210,7 @@ describe('#171 R6: confeti', () => {
 
   it('R6.3 la pieza 22 conserva el retardo a los 1100 ms', async () => {
     await renderProbe();
-    act(() => { jest.advanceTimersByTime(1100); });
+    await act(async () => { jest.advanceTimersByTime(1100); });
     expect(getAnimatedStyle(screen.getByTestId('probe-confetti-22', { includeHiddenElements: true }))).toEqual({
       position: 'absolute', top: 0, left: '9%', opacity: 0,
       transform: [{ translateY: -40 }, { rotate: '0deg' }],
@@ -219,7 +219,7 @@ describe('#171 R6: confeti', () => {
 
   it('R6.4 a los 5000 ms todas las piezas terminaron y desaparecieron', async () => {
     await renderProbe();
-    act(() => { jest.advanceTimersByTime(5000); });
+    await act(async () => { jest.advanceTimersByTime(5000); });
     for (let i = 0; i < 24; i++) {
       expect(getAnimatedStyle(screen.getByTestId(`probe-confetti-${i}`, { includeHiddenElements: true }))).toEqual({
         position: 'absolute', top: 0, left: `${LEFT[i]}%`, opacity: 0,
