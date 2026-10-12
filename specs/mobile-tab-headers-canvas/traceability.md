@@ -8,23 +8,23 @@ tags: [harness, spec, mobile, ui]
 
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
-| R1 (Salud) | pendiente | pendiente |
-| R1 (Perfil) | pendiente | pendiente |
-| R1 (Nutrición) | pendiente | pendiente |
-| R1.3 | pendiente | pendiente |
-| R2 | pendiente | pendiente |
-| R3 | pendiente | pendiente |
-| R4 | pendiente | pendiente |
-| R5 | pendiente | pendiente |
-| R6 | pendiente | pendiente |
-| R7 | pendiente | pendiente |
-| R8 | pendiente | pendiente |
-| R9 | pendiente | pendiente |
-| R10 | pendiente | pendiente |
-| R11 | pendiente | pendiente |
-| R12.1 / R12.1b | pendiente | pendiente |
-| R12.2 / R12.3 | pendiente | pendiente |
-| R12.4 / R12.5 | pendiente (comprobación por diff, sin test) | pendiente |
+| R1 (Salud) | `mobile-pet-tracker/src/screens/health/index.test.tsx::#168 R1: Salud pinta el título grande en todas sus ramas` | rojo `c5618f43 test(mobile): Salud con título grande y sin hero (#168 R1, R2)` → verde `1abc7950 feat(mobile): Salud abre con el título grande (#168 R1, R2)` |
+| R1 (Perfil) | `mobile-pet-tracker/src/screens/profile/index.test.tsx::#168 R1: Perfil pinta el título grande en todas sus ramas` | rojo `bb71dc3b test(mobile): Perfil con título grande (#168 R1)` → verde `e65457de feat(mobile): título grande en Perfil (#168 R1)` |
+| R1 (Nutrición) | `mobile-pet-tracker/src/app/(tabs)/__tests__/food.test.tsx::#168 R1: Nutrición pinta el título grande en todas sus ramas` | rojo `03064141 test(mobile): Nutrición con título grande (#168 R1)` → verde `6b371832 feat(mobile): título grande en Nutrición (#168 R1)` |
+| R1.3 | `mobile-pet-tracker/src/__tests__/tab-headers-canvas.test.ts::#168 R1: el título grande vive en las tres pestañas` — `pinta una ocurrencia del literal en cada fichero de pestaña`; `limita el literal a los tres ficheros de producción` | `5d6be139 test(mobile): candados globales de #168 (#168 R1, R12)` (nace verde, sondas S1-S8) |
+| R2 | `mobile-pet-tracker/src/screens/health/index.test.tsx::#168 R2: Salud sin hero y con métricas estándar` | rojo `c5618f43 test(mobile): Salud con título grande y sin hero (#168 R1, R2)` → verde `1abc7950 feat(mobile): Salud abre con el título grande (#168 R1, R2)` |
+| R3 | `mobile-pet-tracker/src/screens/health/index.test.tsx::#168 R3: cada vacuna lleva su tile pastel` | rojo `2c01414a test(mobile): tile pastel por estado en cada vacuna (#168 R3)` + `675c465e test(mobile): busca los tiles ocultos a accesibilidad (#168 R3)` → verde `74447b19 feat(mobile): tiles pastel en las vacunas (#168 R3)` |
+| R4 | `mobile-pet-tracker/src/screens/profile/index.test.tsx::#168 R4: Perfil sustituye el hero por profile-pet-card` | rojo `ce060f18 test(mobile): Perfil pinta la tarjeta de mascota con avatar (#168 R4)` + `b550084e test(mobile): el skeleton de Perfil se compara con skeleton__root (#168 R4)` → verde `30db66c1 feat(mobile): tarjeta de mascota en Perfil (#168 R4)` |
+| R5 | `mobile-pet-tracker/src/screens/profile/index.test.tsx::#168 R5: Perfil pinta chips pastel por dato` | rojo `11ef23d5 test(mobile): chips pastel por dato (#168 R5)` → verde `b6cfa1b5 feat(mobile): chips pastel en Perfil (#168 R5)` |
+| R6 | `mobile-pet-tracker/src/screens/profile/index.test.tsx::#168 R6: cada fila de navegación lleva su tile pastel` | rojo `56e75042 test(mobile): tile pastel en las filas de navegación (#168 R6)` → verde `72a3fe23 feat(mobile): tiles en las filas de Perfil (#168 R6)` |
+| R7 | `mobile-pet-tracker/src/screens/profile/index.test.tsx::#168 R7: la cuenta muestra el avatar de iniciales` | rojo `d8c5c06b test(mobile): avatar de iniciales en la cuenta (#168 R7)` → verde `90908a6f feat(mobile): iniciales del usuario en Perfil (#168 R7)` |
+| R8 | `mobile-pet-tracker/src/app/(tabs)/__tests__/food.test.tsx::#168 R8: food-plan-card pinta el anillo` | rojo `3abdfbc3 test(mobile): el anillo sustituye a la barra (#168 R8)` + `e37b72a3 test(mobile): el doble de Circle es una función, como en weekly-activity-chart (#168 R8)` → verde `963f29e1 feat(mobile): anillo de kcal en Nutrición (#168 R8)` |
+| R9 | `mobile-pet-tracker/src/app/(tabs)/__tests__/food.test.tsx::#168 R9: el anillo dice el porcentaje acotado`; `mobile-pet-tracker/src/app/(tabs)/__tests__/food.test.tsx::#113 R3: el progreso es un único elemento accesible con su clave de catálogo (mobile-kcal-consumed-bar #113)` | rojo `b054fd63 test(mobile): el anillo dice el porcentaje acotado (#168 R9)` → verde `439da40f feat(mobile): progreso del anillo (#168 R9)` |
+| R10 | `mobile-pet-tracker/src/app/(tabs)/__tests__/food.test.tsx::#168 R10: el anillo transiciona con reduce motion` | rojo `fa68d334 test(mobile): el anillo transiciona con reduce motion (#168 R10)` → verde `1e3669c9 feat(mobile): transición del anillo (#168 R10)` |
+| R11 | `mobile-pet-tracker/src/__tests__/hero-header-amendments.test.ts::#168 R11: las specs enmendadas por #168 llevan su bloque` | rojo `5d174a8c test(harness): las specs enmendadas por #168 llevan su bloque (#168 R11)` → verde `2f5c294c docs(specs): enmienda #168 en specs y carta (#168 R11)` |
+| R12.1 / R12.1b | `mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts::#62 R14: toda esquina no-cápsula que dibuja el repo es continua` — `%s importa y aplica sus %i esquinas`; `mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts::#98 R10: los candados que esta feature no mueve` — `deja CONTINUOUS_CORNER, bg-accent-soft y el acento donde estaban`; `mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts::#64 R9: el color categórico solo se nombra en el módulo de paleta` — `conserva los usos de bg-accent-soft que sí son acento` | R12.1, Salud: rojo `2c01414a test(mobile): tile pastel por estado en cada vacuna (#168 R3)` → verde `74447b19 feat(mobile): tiles pastel en las vacunas (#168 R3)`; Perfil: rojo `56e75042 test(mobile): tile pastel en las filas de navegación (#168 R6)` → verde `72a3fe23 feat(mobile): tiles en las filas de Perfil (#168 R6)`; Nutrición: rojo `3abdfbc3 test(mobile): el anillo sustituye a la barra (#168 R8)` → verde `963f29e1 feat(mobile): anillo de kcal en Nutrición (#168 R8)`; R12.1b: rojo `11ef23d5 test(mobile): chips pastel por dato (#168 R5)` → verde `b6cfa1b5 feat(mobile): chips pastel en Perfil (#168 R5)` |
+| R12.2 / R12.3 | `mobile-pet-tracker/src/__tests__/tab-headers-canvas.test.ts::#168 R12: alcance cerrado` — `conserva PetHeroHeader solo en Inicio`; `veta clases con corchetes en las pantallas y sus tests`; `veta StyleSheet en las pantallas y sus tests`; `veta text-accent suelto en las pantallas y sus tests`; `veta hex solo en las tres pantallas de producción` | `5d6be139 test(mobile): candados globales de #168 (#168 R1, R12)` (nace verde, sondas S1-S8) |
+| R12.4 / R12.5 | Comprobación de CIERRE desde mobile-pet-tracker/: `git diff --quiet b082f6e5 -- package.json bun.lock app.json src/i18n/catalog.ts src/__tests__/ui-copy-table.ts src/components/pet-hero-header.tsx src/components/pet-avatar.tsx ../specs/mobile-ui-language/design.md; echo "exit=$?"` → exit=0 (Reanudación 11) | sin commit propio (comprobación de cierre) |
 | R13 | gate humano: smoke en dev build de Android (requirements § Aprobación) | no aplica |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente".
