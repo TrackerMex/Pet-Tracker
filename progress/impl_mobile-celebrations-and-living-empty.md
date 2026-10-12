@@ -6305,3 +6305,45 @@ transportes adb, usa `adb -s <ip:puerto>`.
 A1–A59 conservan su comprobación previa; A60=0 y A61–A70, H1–H5 y P1–P10 coinciden. Backend e infra: diff vacío; docs: solo ui-guidelines.md; móvil: los 20 ficheros permitidos. Se conservan BASE 13/663, ALL 99/2856, typecheck=0, lint=0 y vacío, dependencias sin cambios y sombras=0. La casilla de la enmienda de la carta sigue desmarcada. No se corrió init.sh, no hubo push, PR, merge ni rebase. Trazabilidad y evidencia listas para c29; después se comprobará la lista cerrada para c30.
 
 R16: pendiente del smoke humano
+
+### c29 — trazabilidad confirmada
+
+Commit: d5f4cac7 docs(mobile-celebrations-and-living-empty): #171 traceability. La cadena terminó con exit=0 y exactamente los dos ficheros previstos en el índice.
+
+### Lista cerrada para c30
+
+```bash
+git diff --name-only d01b03bf HEAD -- . ':!feature_list.json' ':!progress/current.md' ':!progress/handoff_mobile-celebrations-and-living-empty.md' ':!specs/mobile-celebrations-and-living-empty/requirements.md' ':!specs/mobile-celebrations-and-living-empty/design.md' ':!specs/mobile-celebrations-and-living-empty/tasks.md' ':!progress/review_mobile-celebrations-and-living-empty.md'
+```
+
+```text
+exit=0
+docs/ui-guidelines.md
+mobile-pet-tracker/assets/images/pingo-celebrate.webp
+mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+mobile-pet-tracker/src/__tests__/design-drift.test.ts
+mobile-pet-tracker/src/__tests__/ui-copy-table.ts
+mobile-pet-tracker/src/__tests__/ui-language.test.ts
+mobile-pet-tracker/src/components/__tests__/celebration.test.tsx
+mobile-pet-tracker/src/components/__tests__/empty-state.test.tsx
+mobile-pet-tracker/src/components/celebration.tsx
+mobile-pet-tracker/src/components/empty-state.tsx
+mobile-pet-tracker/src/i18n/catalog.ts
+mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx
+mobile-pet-tracker/src/screens/add-pet/index.test.tsx
+mobile-pet-tracker/src/screens/add-pet/index.tsx
+mobile-pet-tracker/src/screens/docs/index.test.tsx
+mobile-pet-tracker/src/screens/pairing/index.test.tsx
+mobile-pet-tracker/src/screens/pairing/index.tsx
+mobile-pet-tracker/src/screens/welcome/index.test.tsx
+mobile-pet-tracker/src/theme/__tests__/motion.test.ts
+mobile-pet-tracker/src/theme/motion.ts
+mobile-pet-tracker/src/utils/category-palette.ts
+progress/impl_mobile-celebrations-and-living-empty.md
+specs/mobile-celebrations-and-living-empty/traceability.md
+specs/mobile-ui-language/design.md
+```
+
+La lista cerrada coincide exactamente con los 24 ficheros permitidos. No hay ficheros ajenos tras las exclusiones del leader. c30 registra esta comprobación con el comando literal del handoff. Las verificaciones verdes del Cierre se conservaron sin repetirlas en Reanudación 5. El humo humano no se ha ejecutado ni se ha marcado su casilla.
+
+R16: pendiente del smoke humano
