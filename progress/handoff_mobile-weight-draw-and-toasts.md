@@ -1368,3 +1368,87 @@ Todo lo demas, igual que en el bloque principal: REGLAS CRITICAS, lista
 cerrada de 14, nada de ./init.sh, push ni PR, y lo que debe contener el
 impl al terminar.
 ```
+
+---
+
+## Reanudación 4 — tras la parada de c16 (cadena lanzada con jest aún corriendo)
+
+> Codex cerró c13 (`b294c719`), c14 (`b10d1dab`) y c15 (`825abbc7`), y
+> pasó S6 (un solo rojo, `no pinta el resumen sin entradas`, revertida con
+> `limpio=0`). Las cuentas de c13 (`<PESO>` 130) y de c15 (`<PESO>` 134)
+> cuadran con el bloque principal, `<GUARDAS>` da 92 en las dos, y el lint
+> sale vacío en todas.
+>
+> En c16 la herramienta de Codex devolvió el control con jest todavía
+> corriendo. Codex leyó el log sin resumen y lanzó la cadena. El primer
+> eslabón (`grep -qE '^Tests: +3 failed, 41 passed, 44 total$'`) la cortó
+> antes de typecheck, add o commit. Al terminar jest, el rojo era el
+> esperado: `3 failed, 41 passed, 44 total`, los tres de
+> `#169 R7: tono del delta del mes` por aserción de className. El fallo
+> es de secuencia, no de la spec ni del código, así que no hay enmienda.
+>
+> Este commit del leader solo toca
+> `progress/handoff_mobile-weight-draw-and-toasts.md` y
+> `progress/current.md`, que la lista cerrada ya excluye. Los tres tests
+> de R7 sin commitear de Codex en `src/screens/weight-log/index.test.tsx`
+> siguen en el árbol, intactos.
+
+Pegar en Codex CLI:
+
+```
+Worktree: /home/claude/sites/Pet-Tracker-wt-169   <- PRIMERA LINEA. Trabaja AQUI y en ningun otro sitio
+Reanudas #169 mobile-weight-draw-and-toasts tras tu parada en c16. Relee
+progress/handoff_mobile-weight-draw-and-toasts.md entero: el bloque
+principal sigue mandando, con los cambios de las Reanudaciones 1, 2 y 3
+(siguen vigentes: lint con salida vacia, un reintento por SIGKILL, doble
+de reicon con Text, c13 ya hecho) y la regla de esta Reanudacion 4 (al
+final del fichero). H0 sigue siendo fc384b44.
+
+== ARRANQUE ==
+cd /home/claude/sites/Pet-Tracker-wt-169 && pwd
+Pega en tu impl, bajo un titulo nuevo `## Reanudacion 4` al FINAL del
+fichero (no borres ni edites nada de lo que ya escribiste, las cuatro
+PARADAS incluidas), las salidas de:
+  git branch --show-current          -> feature/169-mobile-weight-draw-and-toasts
+  git rev-parse --short HEAD         -> el commit del leader que anade esta Reanudacion 4
+  git log --oneline fc384b44..HEAD   -> tus 15 commits (98db0006 a 825abbc7), los del leader e4903ae1, 19e308f6 y dc62f11a, y encima el nuevo del leader
+  git diff --cached --name-only      -> vacio
+  git status --short                 -> SOLO estas dos lineas:
+                                         ` M mobile-pet-tracker/src/screens/weight-log/index.test.tsx`
+                                         `?? progress/impl_mobile-weight-draw-and-toasts.md`
+PARA si algo de esto no sale asi. No repitas las anclas, ni BASE, ni ALL de
+la base, ni ninguna sonda ya hecha.
+
+== QUE CAMBIA ==
+Una regla de secuencia, para todas las medidas que quedan (jest, typecheck,
+lint y las cadenas):
+- Cada medida es UNA llamada que acaba en `echo "exit=$?"`. No la das por
+  terminada hasta ver la linea `exit=` impresa por esa misma llamada.
+- Si tu herramienta te devuelve el control con el proceso todavia vivo
+  (por ejemplo, un session_id en vez de la salida), espera a que termine
+  en esa misma sesion. Mientras siga vivo, no leas su log, no lances la
+  cadena y no empieces otra medida.
+- Solo con `exit=` visto copias al impl la linea `Tests:` y los `●`, y
+  lanzas la cadena.
+Ningun otro cambio: los tests de R7 que tienes sin commitear valen tal cual.
+
+== QUE HACES ==
+1. c16 ENTERA desde el principio, con la regla de arriba: vuelve a medir el
+   rojo (debe salir exit=1 y `Tests:       3 failed, 41 passed, 44 total`,
+   los tres de `#169 R7: tono del delta del mes`, por asercion) y despues
+   su cadena del bloque principal, con el lint de la Reanudacion 1:
+     ... && test ! -e .expo/types/router.d.ts && bun run typecheck \
+       && bunx expo lint --no-cache > /tmp/169-lint.txt 2>&1 && test ! -s /tmp/169-lint.txt \
+       && git add src/screens/weight-log/index.test.tsx ...
+   Si el rojo sale distinto, PARA.
+2. c17 a c25, las cadenas del bloque principal con el lint de la
+   Reanudacion 1 y la sonda S11 tras c21.
+3. El CIERRE, c26 y c27, como dice el bloque principal, con la medida de
+   lint de la Reanudacion 1.
+La lista cerrada se mide contra fc384b44 y ya excluye los ficheros que
+toca el leader.
+
+Todo lo demas, igual que en el bloque principal: REGLAS CRITICAS, lista
+cerrada de 14, nada de ./init.sh, push ni PR, y lo que debe contener el
+impl al terminar.
+```

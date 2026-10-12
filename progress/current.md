@@ -80,6 +80,18 @@
     y las anclas de la cadena ejecutadas dan 0.
   - Enmendado T7 (2) en `tasks.md`. Reanudación 3 en el handoff, con la
     cadena de c13 reescrita (dos ficheros). Sigue en c14.
+  - Codex cerró c13 `b294c719`, c14 `b10d1dab` y c15 `825abbc7`, y la
+    sonda S6 (un rojo, revertida). `<PESO>` dio 130 en c13 y 134 en c15, y
+    `<GUARDAS>` 92, como en el bloque principal.
+- Parada 4 (c16, 2026-10-12): la herramienta de Codex le devolvió el control
+  con jest todavía corriendo. Codex leyó el log sin resumen y lanzó la cadena,
+  que cortó en su primer grep, sin typecheck, add ni commit. Al terminar, el
+  rojo era el esperado: `3 failed, 41 passed, 44 total`, los tres de
+  `#169 R7: tono del delta del mes` por aserción. Fallo de secuencia de
+  Codex, no de la spec: no hay enmienda en `tasks.md`.
+  - Reanudación 4 en el handoff: cada medida acaba en `echo "exit=$?"` y no
+    se lee su log ni se lanza la cadena hasta ver `exit=`. Repetir c16
+    entera. Sigue en c17.
 - Choques conocidos al mergear main, avisados por Frontend:
   - #167 cambia la misma línea `- 1, // #159 R2` de language-provider.
     Resolución: `- 1 // #159 R2`, `+ 1 // #167 R5`, `+ 2, // #169 R9`.
