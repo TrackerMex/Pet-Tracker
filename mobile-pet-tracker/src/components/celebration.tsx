@@ -71,10 +71,10 @@ export function Celebration({ testID, title, body, details, primary, secondary }
           </View>
         ) : null}
         <View testID={`${testID}-actions`} className="mt-auto w-full gap-3">
-          <Button testID={primary.testID} className="min-h-11 w-full rounded-xl" onPress={primary.onPress}>
+          <Button testID={primary.testID} className="min-h-11 w-full rounded-xl bg-accent border-b-4 border-black/25" onPress={primary.onPress}>
             <Button.Label className="font-bold text-accent-foreground">{primary.label}</Button.Label>
           </Button>
-          <Button testID={secondary.testID} className="min-h-11 w-full rounded-xl" onPress={secondary.onPress}>
+          <Button testID={secondary.testID} className="min-h-11 w-full rounded-xl border-2 border-b-6 border-lip-gray bg-surface" onPress={secondary.onPress}>
             <Button.Label className="font-bold text-foreground">{secondary.label}</Button.Label>
           </Button>
         </View>
