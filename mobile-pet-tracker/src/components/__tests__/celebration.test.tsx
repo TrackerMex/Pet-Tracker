@@ -228,3 +228,46 @@ describe('#171 R6: confeti', () => {
     }
   });
 });
+
+describe('#171 R7: pop', () => {
+  beforeEach(() => { jest.useFakeTimers(); });
+  afterEach(() => { jest.useRealTimers(); });
+
+  it('R7.1 Pingo empieza transparente y a escala 0.6', async () => {
+    await renderProbe();
+    expect(getAnimatedStyle(screen.getByTestId('probe-pingo'))).toEqual({
+      width: 200, height: 200, opacity: 0, transform: [{ scale: 0.6 }],
+    });
+  });
+
+  it('R7.2 la insignia empieza transparente y a escala 0.6', async () => {
+    await renderProbe();
+    expect(getAnimatedStyle(screen.getByTestId('probe-badge', { includeHiddenElements: true }))).toEqual({
+      position: 'absolute', right: 0, bottom: 0, opacity: 0, transform: [{ scale: 0.6 }],
+    });
+  });
+
+  it('R7.3 Pingo llega a opacidad y escala 1 a los 2000 ms', async () => {
+    await renderProbe();
+    await act(async () => { jest.advanceTimersByTime(2000); });
+    expect(getAnimatedStyle(screen.getByTestId('probe-pingo'))).toEqual({
+      width: 200, height: 200, opacity: 1, transform: [{ scale: 1 }],
+    });
+  });
+
+  it('R7.3 la insignia sigue en reposo a los 300 ms', async () => {
+    await renderProbe();
+    await act(async () => { jest.advanceTimersByTime(300); });
+    expect(getAnimatedStyle(screen.getByTestId('probe-badge', { includeHiddenElements: true }))).toEqual({
+      position: 'absolute', right: 0, bottom: 0, opacity: 0, transform: [{ scale: 0.6 }],
+    });
+  });
+
+  it('R7.3 la insignia llega a opacidad y escala 1 a los 2400 ms', async () => {
+    await renderProbe();
+    await act(async () => { jest.advanceTimersByTime(2400); });
+    expect(getAnimatedStyle(screen.getByTestId('probe-badge', { includeHiddenElements: true }))).toEqual({
+      position: 'absolute', right: 0, bottom: 0, opacity: 1, transform: [{ scale: 1 }],
+    });
+  });
+});
