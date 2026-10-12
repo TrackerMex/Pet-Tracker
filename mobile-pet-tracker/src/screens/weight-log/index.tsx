@@ -32,6 +32,7 @@ import {
 } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { civilTodayIso } from '../../utils/civil-today-iso';
+import { monthlyWeightDelta } from '../../utils/monthly-weight-delta';
 
 const MEASURED_AT_IN_FUTURE_MESSAGE =
   'measuredAt is too far in the future';
@@ -72,6 +73,8 @@ function WeightLogContent({ petId }: { petId: string }) {
     queryKey: healthKeys.weights(petId, undefined),
     queryFn: () => listWeights(baseUrl, token ?? '', petId),
   });
+  const entries = weights.data?.kind === 'ok' ? weights.data.weights : [];
+  const monthDelta = monthlyWeightDelta(entries, civilTodayIso(profileTimeZone));
 
   async function handleSubmit() {
     const weightKg = parseFloat(weightText);
@@ -150,7 +153,25 @@ function WeightLogContent({ petId }: { petId: string }) {
         }}
       >
         {weights.data?.kind === 'ok' ? (
-          <Card testID="weight-chart-card">
+          <Card testID="weight-chart-card" className="gap-4">
+            {entries.length > 0 ? (
+              <View testID="weight-summary">
+                <Text
+                  testID="weight-current"
+                  className="text-3xl font-black text-foreground"
+                  style={TABULAR_NUMS}
+                >
+                  {`${entries[0].weightKg} kg`}
+                </Text>
+                {monthDelta !== null ? (
+                  <View testID="weight-month-delta" className="flex-row items-center gap-1.5">
+                    <Text testID="weight-month-delta-text" style={TABULAR_NUMS}>
+                      {t('weightLog.monthDelta', { value: fmtVariation(monthDelta) })}
+                    </Text>
+                  </View>
+                ) : null}
+              </View>
+            ) : null}
             <WeightChart entries={weights.data.weights} />
           </Card>
         ) : null}
