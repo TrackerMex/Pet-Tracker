@@ -239,7 +239,7 @@ export function DocsScreen({ petId }: { petId: string }) {
         </View>
 
         {isOwner && !selectedDocument && docs.data?.kind === 'ok' && docs.data.docs.length > 0 ? (
-          <Button testID="docs-upload" className="rounded-xl bg-accent" onPress={pickDocument}>
+          <Button testID="docs-upload" className="rounded-xl bg-accent border-b-4 border-black/25" onPress={pickDocument}>
             <Button.Label className="font-bold text-accent-foreground">
               {t('docs.upload')}
             </Button.Label>
@@ -307,7 +307,7 @@ export function DocsScreen({ petId }: { petId: string }) {
             </TextField>
             <Button
               testID="docs-upload-submit"
-              className="rounded-xl bg-accent"
+              className="rounded-xl bg-accent border-b-4 border-black/25"
               isDisabled={uploading}
               onPress={() => void submitDocument()}
             >
@@ -317,7 +317,7 @@ export function DocsScreen({ petId }: { petId: string }) {
             </Button>
             <Button
               testID="docs-upload-cancel"
-              className="rounded-xl"
+              className="rounded-xl border-2 border-b-6 border-lip-gray bg-surface"
               variant="outline"
               isDisabled={uploading}
               onPress={cancelUpload}

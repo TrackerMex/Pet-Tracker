@@ -337,7 +337,7 @@ export function PairingScreen() {
 
             <Button
               testID="ready-map"
-              className="min-h-11 w-full rounded-xl bg-accent"
+              className="min-h-11 w-full rounded-xl bg-accent border-b-4 border-black/25"
               onPress={() => leaveReady('map')}
             >
               <Button.Label className="font-bold text-accent-foreground">
@@ -395,7 +395,7 @@ export function PairingScreen() {
 
             <Button
               testID="pairing-submit"
-              className="min-h-11 w-full rounded-xl bg-accent"
+              className="min-h-11 w-full rounded-xl bg-accent border-b-4 border-black/25"
               isDisabled={code.trim() === '' || claiming}
               onPress={() => void handleClaim()}
             >
