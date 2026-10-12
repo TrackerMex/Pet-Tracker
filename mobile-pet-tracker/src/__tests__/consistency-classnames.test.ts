@@ -265,6 +265,7 @@ describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () 
     [join('screens', 'add-pet', 'index.tsx'), 5],
     [join('screens', 'add-reminder', 'index.tsx'), 3],
     [join('screens', 'pairing', 'index.tsx'), 2],
+    [join('screens', 'alert-detail', 'index.tsx'), 1], // #170 R16
   ] as const;
 
   it('declara las dos constantes nativas compartidas', () => {
@@ -311,7 +312,7 @@ describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () 
     // #138 R3: minus one more, collar-pair-link's corner travels in its own.
     expect(
       directUses.reduce((total, [, count]) => total + count, 2),
-    ).toBe(33 + 1 + 1 - 1 - 1 + 1); // #41 R9: geofences-link
+    ).toBe(33 + 1 + 1 - 1 - 1 + 1 + 1); // #41 R9: geofences-link, #170 R16
   });
 });
 

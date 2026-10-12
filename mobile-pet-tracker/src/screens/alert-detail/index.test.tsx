@@ -6,16 +6,38 @@ import type { ReactNode } from 'react';
 import type { TestInstance } from 'test-renderer';
 
 import { ackAlert, listAlerts, type AlertsState } from '../../api/alerts';
+import { listGeofences } from '../../api/geofences';
 import { alertKeys } from '../../api/query-keys';
 import type { Alert } from '../../api/types';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import { LanguageProvider } from '../../providers/language-provider';
 import { createQueryClient } from '../../providers/query-provider';
+import { useSelectedPet } from '../../providers/selected-pet-provider';
 import { renderWithProviders } from '../../../test/render-with-providers';
 import { AlertDetailScreen } from '.';
 
 jest.mock('expo-router', () => ({
   router: { dismissTo: jest.fn(), push: jest.fn() },
+}));
+
+jest.mock('../../components/pet-map', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return { PetMap: (props: Record<string, unknown>) => React.createElement(View, { ...props, testID: 'pet-map-double' }) };
+});
+
+jest.mock('../../api/geofences', () => ({
+  ...jest.requireActual('../../api/geofences'),
+  listGeofences: jest.fn(),
+}));
+
+jest.mock('uniwind', () => ({
+  ...jest.requireActual('uniwind'),
+  useUniwind: () => ({ theme: mockTheme, hasAdaptiveThemes: false }),
+}));
+
+jest.mock('../../providers/selected-pet-provider', () => ({
+  useSelectedPet: jest.fn(),
 }));
 
 jest.mock('../../api/alerts', () => ({
@@ -54,6 +76,12 @@ jest.mock('../../theme/use-theme-colors', () => ({
     tokens.map((token) => `--color-${token}`),
 }));
 
+let mockTheme: 'light' | 'dark' = 'light';
+const mockSelectPet = jest.fn();
+const mockUseSelectedPet = jest.mocked(useSelectedPet);
+const mockListGeofences = jest.mocked(listGeofences);
+const POS_OUT = { lat: 19.4342637, lng: -99.1332 };
+const REAL_PAYLOAD = { position: { ...POS_OUT, ts: '2026-09-11T10:00:00.000Z', flags: [] }, geofenceName: 'Casa' };
 const apiUrl = 'http://example.test/v1';
 const mockAckAlert = jest.mocked(ackAlert);
 const mockListAlerts = jest.mocked(listAlerts);
@@ -105,6 +133,9 @@ function renderDetail(alertId = 'alert-1', language: 'es' | 'en' = 'es') {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  mockTheme = 'light';
+  mockListGeofences.mockReset().mockReturnValue(new Promise(() => undefined));
+  mockUseSelectedPet.mockReturnValue({ selectedPetId: 'pet-1', selectPet: mockSelectPet });
   mockListAlerts.mockReset();
   mockAckAlert.mockReset();
   process.env.EXPO_PUBLIC_API_URL = apiUrl;
@@ -407,5 +438,62 @@ describe('#170 R6: la tarjeta abierta lleva el borde de su tipo', () => {
     mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ status })], nextCursor: null });
     await renderDetail();
     expect((await screen.findByTestId('alert-detail-card')).props.className).toBe('rounded-card border border-border bg-surface p-4 shadow-sm min-h-44 gap-3');
+  });
+});
+
+describe('#170 R8: pinta el mini-mapa con la posición de la alerta', () => {
+  it.each([
+    { fila: 'vacío', payload: {} },
+    { fila: 'batería real', payload: { batteryPct: 12 } },
+    { fila: 'posición nula', payload: { position: null } },
+    { fila: 'posición no objeto', payload: { position: 'x' } },
+    { fila: 'lat texto', payload: { position: { lat: '19.4', lng: -99.1 } } },
+    { fila: 'falta lng', payload: { position: { lat: 19.4 } } },
+    { fila: 'lat NaN', payload: { position: { lat: NaN, lng: -99.1 } } },
+    { fila: 'lng infinito', payload: { position: { lat: 19.4, lng: Infinity } } },
+    { fila: 'lat fuera', payload: { position: { lat: 90.0001, lng: 0 } } },
+    { fila: 'lng fuera', payload: { position: { lat: 0, lng: -180.0001 } } },
+  ])('$fila: sin mapa', async ({ payload }) => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ payload })], nextCursor: null });
+    await renderDetail();
+    await screen.findByTestId('alert-detail-card');
+    expect(screen.queryByTestId('alert-detail-map')).toBeNull();
+    expect(screen.queryByTestId('alert-detail-distance')).toBeNull();
+    expect(mockListGeofences).not.toHaveBeenCalled();
+  });
+  it.each([
+    { fila: 'borde válido', payload: { position: { lat: 90, lng: -180 } }, position: { latitude: 90, longitude: -180 } },
+    { fila: 'real del motor', payload: REAL_PAYLOAD, position: { latitude: 19.4342637, longitude: -99.1332 } },
+  ])('$fila: con mapa', async ({ payload, position }) => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ payload })], nextCursor: null });
+    await renderDetail();
+    const map = await screen.findByTestId('alert-detail-map');
+    expect(map.props.className).toBe('h-52 overflow-hidden rounded-card');
+    expect(map.props.style).toEqual({ borderCurve: 'continuous' });
+    expect(map.children).toHaveLength(1);
+    const petMap = elementChild(map, 0);
+    expect(petMap.props.testID).toBe('pet-map-double');
+    expect(petMap.props.center).toEqual(position);
+    expect(petMap.props.marker).toEqual(position);
+    expect(petMap.props.polylines).toEqual([]);
+    expect(petMap.props.colorScheme).toBe('light');
+  });
+  it('pasa colorScheme dark con el tema oscuro', async () => {
+    mockTheme = 'dark';
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ payload: REAL_PAYLOAD })], nextCursor: null });
+    await renderDetail();
+    expect((await screen.findByTestId('pet-map-double')).props.colorScheme).toBe('dark');
+  });
+  it('pinta el mapa tras la tarjeta y antes del ack', async () => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ payload: REAL_PAYLOAD })], nextCursor: null });
+    await renderDetail();
+    const card = await screen.findByTestId('alert-detail-card');
+    screen.getByTestId('alert-detail-map');
+    const children = card.parent!.children.filter((child): child is TestInstance => typeof child !== 'string');
+    const cardIndex = children.findIndex((child) => child.props.testID === 'alert-detail-card');
+    const mapIndex = children.findIndex((child) => child.props.testID === 'alert-detail-map');
+    const ackIndex = children.findIndex((child) => child.props.testID === 'alert-detail-ack' || within(child).queryByTestId('alert-detail-ack') !== null);
+    expect(cardIndex).toBeLessThan(mapIndex);
+    expect(mapIndex).toBeLessThan(ackIndex);
   });
 });
