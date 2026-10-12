@@ -27,7 +27,7 @@ exacto de cada `it` y el hash de sus commits rojo y verde.
 | R13 | `src/screens/alert-detail/index.test.tsx::#170 R13: si la consulta de zonas no da ok, mapa sin zona y sin error` (pendiente) | pendiente |
 | R14 | `src/screens/alert-detail/index.test.tsx::#170 R14: dentro o en el borde no dice distancia` (pendiente) | pendiente |
 | R15 | `src/screens/alert-detail/index.test.tsx::#170 R15: Ver en el mapa lleva al Mapa con la mascota de la alerta` (pendiente) | pendiente |
-| R16 | `src/__tests__/ui-language.test.ts` (R12/R13) + `src/__tests__/consistency-classnames.test.ts` (#62 R14/R15, #69 R10) (pendiente) | pendiente |
+| R16 | `src/__tests__/ui-language.test.ts` (R12/R13) + `src/__tests__/consistency-classnames.test.ts` (#62 R14/R15, #69 R10, #166 R3) (pendiente) | pendiente |
 | R17 | pendiente (humano): smoke en dev build de Android, casilla `## Smoke R17` de requirements.md | pendiente |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente".

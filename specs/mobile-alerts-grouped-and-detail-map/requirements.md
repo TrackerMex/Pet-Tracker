@@ -8,9 +8,11 @@ tags: [harness, spec, mobile]
 
 > Feature #170. Primera parte de la fila 4 «Collar y seguridad» del canvas
 > aprobado el 2026-10-06 (artboards «Alertas» y «Detalle de alerta»).
-> Base congelada: `origin/main` en `89fe2009`. Rutas de código relativas a
-> `mobile-pet-tracker/` salvo que se diga otra cosa. La implementación espera a
-> que #166 `mobile-chunky-cta` esté mergeada (§Medir al arrancar, M1).
+> Base congelada: `origin/main` en `89fe2009`, re-medida el 2026-10-12 sobre
+> `c865f856` (merge de `origin/main` en `d2b8b0ae`, que trae #166
+> `mobile-chunky-cta`): B1–B19 y los candados de la tabla dan lo mismo, y lo
+> que #166 añade está en la fila «Secundarios neutros», en R15 y en R16. Rutas
+> de código relativas a `mobile-pet-tracker/` salvo que se diga otra cosa.
 
 ## Contexto y base medida
 
@@ -52,7 +54,8 @@ medir al arrancar, §Medir al arrancar):
 | Esquinas continuas | `src/__tests__/consistency-classnames.test.ts` · `describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua'` | sin fila para `alert-detail` | `+1` fila de `1` y `+ 1` en la suma (R16) |
 | `signOut(` por pantalla | `src/__tests__/design-drift.test.ts` · `'screens/alert-detail/index.tsx': 0,` | `0` y `0` en `alerts` | sin cambio: la consulta de zonas no llama a `signOut` |
 | Claves de consulta literales | `src/__tests__/design-drift.test.ts` · `it('keeps literal query keys out of every migrated screen'` | `[]` | sin cambio: se usa `geofenceKeys.list(petId)` |
-| Botones primarios sólidos / clases de CTA | `src/__tests__/consistency-classnames.test.ts` · `describe('#62 R1:` | lo cambia #166 | se mide al arrancar (M2) |
+| Primarios sólidos | `src/__tests__/consistency-classnames.test.ts` · `describe('#62 R1:` y `describe('#166 R2:` (cuentan `rounded-xl bg-accent`) | `19` en `c865f856` | sin cambio: el CTA de R15 es secundario |
+| Secundarios neutros | `src/__tests__/consistency-classnames.test.ts` · `describe('#166 R3: el secundario neutro lleva el labio gris'` | `4` filas en `rows`, `4` testIDs en el inventario y `toBe(4)` en los recuentos de `border-lip-gray` y `border-b-6`, en `c865f856` | `+1` fila, `+1` testID y los dos recuentos a `4 + 1` (R16) |
 
 **Copy en paralelo.** #167, #168, #169 y #171 también añaden claves y filas a
 los mismos candados. Las cuatro y esta se integran con **merge** de
@@ -278,8 +281,14 @@ R7.
   y estado, con o sin mapa) THE SYSTEM SHALL pintar, después del mini-mapa y
   de la distancia y antes de `alert-detail-ack`, un `Button`
   `testID="alert-detail-view-map"` con `variant="secondary"`,
-  `accessibilityRole="button"`, la receta de secundario vigente en `main` tras
-  #166 (M2) y la etiqueta `Button.Label` con `alerts.viewOnMap`. WHEN se pulsa
+  `accessibilityRole="button"`,
+  `className="min-h-11 rounded-xl border-2 border-b-6 border-lip-gray bg-surface"`
+  (la receta del secundario neutro de `docs/ui-guidelines.md` punto 13, de
+  #166, más el alto mínimo del ack vecino), sin prop `style` (`#62 R14` cuenta
+  una sola esquina continua en el detalle, la del mapa) y la etiqueta
+  `Button.Label`, sin `className`, con `alerts.viewOnMap`. El `testID` va como
+  literal de cadena: el inventario de `#166 R3` lo lee del tag de apertura.
+  WHEN se pulsa
   THEN llama una vez a `selectPet(alert.petId)` de `useSelectedPet()` y
   después una vez a `router.dismissTo('/map')` (B15): destino = pestaña Mapa,
   mascota = la de la alerta, centro = el que el Mapa ya da a esa mascota (su
@@ -298,7 +307,16 @@ R7.
     `[join('screens', 'alert-detail', 'index.tsx'), 1]` y `+ 2` en la suma de
     `#69 R10`;
   - en `#62 R14` la fila `[join('screens', 'alert-detail', 'index.tsx'), 1]` y
-    `+ 1` en la suma.
+    `+ 1` en la suma;
+  - en `#166 R3` de `consistency-classnames` la fila
+    `[join('screens', 'alert-detail', 'index.tsx'), 'alert-detail-view-map', 'secondary']`
+    al final de `rows`; `'alert-detail-view-map'` en la lista ordenada del
+    inventario, en primera posición (ordena antes que `'docs-upload-cancel'`);
+    y los dos recuentos, `count(/border-lip-gray/g)` y
+    `count(/\bborder-b-6\b/g)`, a `toBe(4 + 1); // #170 R16`. El nombre del
+    `it` «inventaría los cuatro secundarios neutros de toda la app» **no se
+    cambia**: lo cita la trazabilidad cerrada de #166
+    (`specs/mobile-chunky-cta/traceability.md`).
 
   Las claves de sección se resuelven con `t('…')` literal o con objetos
   `labelKey: '…'`: son las dos formas que cuenta `checkUses`; un mapa
@@ -327,12 +345,16 @@ handoff. Lo que se desplaza no es ancla: se grepea por contenido.
 
 - **M1 — #166 mergeada.** `python3 -c "import json;print([f['status'] for f in json.load(open('feature_list.json')) if f['id']==166])"`
   → `['done']`. Si no, **parar**.
-- **M2 — Receta del secundario tras #166.** La clase del `Button`
-  `variant="secondary"` vigente en `main` tras #166, leída de su enmienda en
-  `docs/ui-guidelines.md` o de `specs/mobile-chunky-cta/design.md`, y el
-  inventario de `consistency-classnames` que #166 deje para secundarios
-  (`grep -n "secondary" mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts`).
-  `alert-detail-view-map` entra en ese inventario con `+1`. No se congela aquí.
+- **M2 — Receta del secundario tras #166.** Cerrada el 2026-10-12 en
+  `c865f856`: la receta está congelada en R15 y el inventario en R16. Al
+  arrancar se comprueba que nadie lo movió después, desde la raíz:
+  - `` grep -cF '`rounded-xl border-2 border-b-6 border-lip-gray bg-surface`' docs/ui-guidelines.md `` → `1`;
+  - `grep -cF "const recipe = 'rounded-xl border-2 border-b-6 border-lip-gray bg-surface';" mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts` → `1`;
+  - `grep -cF 'expect(count(/border-lip-gray/g)).toBe(4);' mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts` → `1`;
+  - `grep -cF 'expect(count(/\bborder-b-6\b/g)).toBe(4);' mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts` → `1`.
+
+  Si un recuento da `0`, otra feature movió el inventario antes: #170 suma
+  `+ 1` a la expresión que haya, no a `4`. Si cambia la receta, **parar**.
 - **M3 — Expresión del catálogo.** `grep -A12 'expect(englishKeys).toHaveLength(' mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx`;
   #170 añade su línea `+ 7 // #170 R1` sobre lo que haya.
 - **M4 — Sumas de `consistency-classnames`.** `grep -n -A2 -e "it('#69 R10" -e 'directUses.reduce' mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts`;

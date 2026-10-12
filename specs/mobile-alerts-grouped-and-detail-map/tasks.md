@@ -580,10 +580,12 @@ con el CTA se comprueba en T15, no en T8.
     `mockSelectPet.mock.invocationCallOrder[0] < mockDismissTo.mock.invocationCallOrder[0]`.
     Rojo por consulta.
   - Candados agregados (R16): `R13_ALERT_DETAIL`, fila de
-    `alerts.viewOnMap` y longitud `11 - 3 + 2 // #170 R16`; y, si #166 dejó
-    inventario de secundarios (M2), la fila de `alert-detail-view-map`. Rojo
-    por aserción.
-- [ ] (2) Pantalla: `Button` según R15 y la receta de M2, entre el mapa (o la
+    `alerts.viewOnMap` y longitud `11 - 3 + 2 // #170 R16`; y en `#166 R3`
+    de `consistency-classnames` la fila de `rows`, el testID del inventario y
+    los dos recuentos a `4 + 1`, tal como los da R16. Rojo por aserción: la
+    fila nueva del `it.each` falla en `openingTagWithTestId` (ancla ausente) y
+    el inventario en el `toEqual` de testIDs.
+- [ ] (2) Pantalla: `Button` según R15, entre el mapa (o la
   tarjeta, si no hay mapa) y el ack.
 - [ ] (3) Refactor: ninguno previsto.
 - [ ] Sonda T15-a: llama a `router.dismissTo('/map')` antes que a
@@ -591,6 +593,10 @@ con el CTA se comprueba en T15, no en T8.
   vuelve al Mapa'`.
 - [ ] Sonda T15-b: pinta el CTA también en carga y en error. Rojo esperado:
   `'no lo pinta mientras carga'` y `'no lo pinta con error'`.
+- [ ] Sonda T15-c: quita `border-lip-gray` del `className` del CTA. Rojo
+  esperado: `consistency-classnames.test.ts` › `#166 R3` › la fila de
+  `alert-detail-view-map` del `it.each` y `'inventaría los cuatro secundarios
+  neutros de toda la app'` (recuento `4` contra `5`).
 
 ## T16 — R16: comprobación de los candados agregados
 
@@ -603,6 +609,10 @@ no añade tests ni código, solo comprueba:
   → `1` (si #167–#171 cambiaron la expresión antes, la suya más `+ 2`).
 - [ ] `grep -n -A2 -e "it('#69 R10" -e 'directUses.reduce' mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts`
   → las dos sumas de M4 con `+ 2` (tabulares) y `+ 1` (esquinas).
+- [ ] `grep -cF "'alert-detail-view-map'" mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts`
+  → `2` (fila de `rows` y lista del inventario).
+- [ ] `grep -cF 'toBe(4 + 1); // #170 R16' mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts`
+  → `2` (si otra feature movió antes los recuentos, su expresión más `+ 1`).
 - [ ] `grep -c "t('alerts\.section" mobile-pet-tracker/src/screens/alerts/index.tsx`
   → `3`.
 - [ ] Sonda T16-a: borra `t('alerts.viewOnMap')` del detalle (deja la etiqueta

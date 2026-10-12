@@ -10,7 +10,8 @@ tags: [harness, spec, mobile]
 > para las capas. En el móvil, `src/utils/` hace de dominio (funciones puras,
 > sin React ni red), `src/api/` de infraestructura y `src/screens/` +
 > `src/app/` de presentación. Rutas relativas a `mobile-pet-tracker/` salvo
-> que se diga otra cosa. Base: `origin/main` en `89fe2009`.
+> que se diga otra cosa. Base: `origin/main` en `89fe2009`, re-medida sobre
+> `c865f856` (con #166).
 
 ## Decisiones técnicas
 
@@ -118,8 +119,8 @@ tags: [harness, spec, mobile]
   apilaría un segundo Mapa sobre el detalle. Antes se llama a
   `selectPet(alert.petId)` (el proveedor está montado en `src/app/_layout.tsx`
   sobre todo el stack), porque Mapa centra en la última posición de la mascota
-  seleccionada. La receta visual del secundario la fija #166; esta spec no la
-  congela (M2).
+  seleccionada. La receta visual es la del secundario neutro de #166
+  (`docs/ui-guidelines.md` punto 13), congelada en R15 tras medir M2.
 
 - **D11 — Copy y candados en paralelo.** Siete claves nuevas en `alerts.*`,
   aunque `home.viewOnMap`, `reminders.thisWeek` y `home.nextVaccineToday`
