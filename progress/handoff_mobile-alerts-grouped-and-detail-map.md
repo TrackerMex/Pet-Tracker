@@ -70,6 +70,24 @@
 >     `Exceeded timeout of 5000 ms`. El timeout no cambia ningún recuento
 >     esperado. Si aun así sale `Exceeded timeout`, anota los `●` y PARA sin
 >     relanzar.
+>
+> 13. **Sonda T15-b (tras la parada en S15.2).** El CTA que la mutación pinta
+>     en carga aparece antes que la alerta. `'selecciona la mascota de la
+>     alerta y después vuelve al Mapa'` lo encuentra con `findByTestId` y pulsa
+>     ese botón, que no tiene manejador. Son 3 rojos, no 2:
+>     `Tests:       3 failed, 75 passed, 78 total` (`no lo pinta mientras
+>     carga`, `no lo pinta con error` y `selecciona la mascota de la alerta y
+>     después vuelve al Mapa`). La medida que Codex registró en la parada ya es
+>     esta, así que S15.2 queda cerrada y no se repite.
+> 14. **Sombras en el CIERRE.** El comando `git diff <H0> -- src | grep -cE '^\+.*(shadow-|elevation|boxShadow)'`
+>     también cuenta tests. Da 5, y todos son literales `shadow-sm` de la base
+>     de `Card` en src/screens/alert-detail/index.test.tsx que tasks.md T6
+>     prescribe. El criterio es que no haya sombras nuevas en producción,
+>     medido desde mobile-pet-tracker/:
+>     `git diff <H0> -- src ':(exclude)src/**/*.test.ts' ':(exclude)src/**/*.test.tsx' ':(exclude)src/**/__tests__/**' | grep -cE '^\+.*(shadow-|elevation|boxShadow)'`   -> 0
+>     El comando entero -> 5. El leader lo midió el 2026-10-12 sobre
+>     `643c2f2d`. Esto cierra la revisión del criterio que quedó pendiente en
+>     Reanudacion 2.
 
 ---
 
