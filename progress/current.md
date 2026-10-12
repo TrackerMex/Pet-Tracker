@@ -32,6 +32,9 @@
   casa, porque #171 R12 reescribe esa suma; y la carta termina en `## Enmienda #171`.
   R11.2 sigue añadiendo al final, y R11.3 solo pide «una sola vez», sin posición
   (verificado con grep: ningún candado de #167 usa endsWith ni lastIndexOf).
+- **Solapes con #169** (sites-99, H0 fc384b44): los mismos de #170 (§2.24, la línea
+  `- 1, // #159 R2`, `ui-copy-table.ts`, `ui-language.test.ts` y
+  `consistency-classnames.test.ts`). Se tratan igual.
 - **Solapes con #170** (Backend, handoff 4a68bfe0, Codex en marcha): #170 también
   abre §2.24, suma +7 al catálogo (la misma expresión que B15) y toca
   `ui-copy-table.ts`, `ui-language.test.ts` y `consistency-classnames.test.ts`. Si
