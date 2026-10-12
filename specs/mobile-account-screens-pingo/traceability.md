@@ -12,21 +12,21 @@ tags: [mobile, ui, spec]
 
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
-| R1 (R1.1–R1.5) | movimiento verde: `src/screens/login/index.test.tsx` y `src/screens/register/index.test.tsx` (los `it` de la base, sin cambios) | pendiente |
-| R1.6 | `src/__tests__/design-drift.test.ts::#167 R1: cada ruta solo renderiza su pantalla` | pendiente |
-| R2 | `src/theme/__tests__/motion.test.ts::#167 R2: …` (4) y `no exporta nada más` | pendiente |
-| R3 | `src/components/__tests__/pop-in.test.tsx::#167 R3: …` (4) | pendiente |
-| R4 | `src/screens/home/home-entrance.test.tsx::#167 R4: pasa className tal cual sin añadir style` | pendiente |
-| R5 | `src/providers/__tests__/language-provider.test.tsx::#167 R5: declara login.pingoGreeting en los dos idiomas y su registro` | pendiente |
-| R6 | `src/screens/login/index.test.tsx::#167 R6: …` (9); `src/__tests__/ui-language.test.ts` (`checkUses(R1_AUTH)`, `checkUses(ALL_USES)`) | pendiente |
-| R7 | `src/screens/register/index.test.tsx::#167 R7: …` (4) | pendiente |
-| R8 | `src/screens/register/index.test.tsx::#167 R8: …` (4) | pendiente |
-| R9 | `src/screens/forgot/index.test.tsx::#167 R9: …` (4) | pendiente |
-| R10 | `src/screens/reset-password/index.test.tsx::#167 R10: …` (10); `src/__tests__/legibility-classnames.test.ts::screens/reset-password/index.tsx pinta con text-accent-strong (3)` | pendiente |
-| R11 | `src/screens/welcome/index.test.tsx::#167 R11: …` (4) | pendiente |
-| R12 | `src/screens/welcome/index.test.tsx::#167 R12: …` (10) y la aserción de hijos de `welcome-scene` | pendiente |
-| R13 | `src/screens/welcome/index.test.tsx::#167 R13: …` (2) y los dos `it` de la base con `expect(mockWithRepeat).not.toHaveBeenCalled()` | pendiente |
-| R14 | `src/__tests__/design-drift.test.ts::#167 R14: …` (4) | pendiente |
+| R1 (R1.1–R1.5) | movimiento verde: `src/screens/login/index.test.tsx` y `src/screens/register/index.test.tsx` (los `it` de la base, sin cambios) | `e5ee5a5f` refactor(mobile): mueve login y registro a src/screens (R1) |
+| R1.6 | `src/__tests__/design-drift.test.ts::#167 R1: cada ruta solo renderiza su pantalla` | `7297bde0` test(mobile): rutas delgadas de login y registro (R1) |
+| R2 | `src/theme/__tests__/motion.test.ts::#167 R2: …` (4) y `no exporta nada más` | `e009c792` test(mobile): tokens de pop y ping (R2)<br>`43a45f50` feat(mobile): tokens de pop y ping (R2) |
+| R3 | `src/components/__tests__/pop-in.test.tsx::#167 R3: …` (4) | `697b3199` test(mobile): PopIn entra con escala y fundido (R3)<br>`a6fa7a86` feat(mobile): PopIn (R3) |
+| R4 | `src/screens/home/home-entrance.test.tsx::#167 R4: pasa className tal cual sin añadir style` | `da81e1d7` test(mobile): HomeEntrance pasa className (R4)<br>`7ff33151` feat(mobile): HomeEntrance pasa className (R4) |
+| R5 | `src/providers/__tests__/language-provider.test.tsx::#167 R5: declara login.pingoGreeting en los dos idiomas y su registro` | `c4e3b3a0` test(mobile): clave del saludo de Pingo en login (R5)<br>`1f3e0cc0` feat(mobile): clave del saludo de Pingo en login (R5) |
+| R6 | `src/screens/login/index.test.tsx::#167 R6: …` (9); `src/__tests__/ui-language.test.ts` (`checkUses(R1_AUTH)`, `checkUses(ALL_USES)`) | `6e169e1b` test(mobile): Pingo saluda en login y la pantalla entra en dos tiempos (R6)<br>`5b31f8a2` feat(mobile): Pingo saluda en login y la pantalla entra en dos tiempos (R6) |
+| R7 | `src/screens/register/index.test.tsx::#167 R7: …` (4) | `9c02f7a0` test(mobile): Pingo en la cabecera del registro (R7)<br>`b5433595` feat(mobile): Pingo en la cabecera del registro (R7) |
+| R8 | `src/screens/register/index.test.tsx::#167 R8: …` (4) | `dbdfb49b` test(mobile): el error del registro lleva icono (R8)<br>`ed49c8ca` feat(mobile): el error del registro lleva icono (R8) |
+| R9 | `src/screens/forgot/index.test.tsx::#167 R9: …` (4) | `0c66e6c5` test(mobile): Pingo y pop del candado en recuperar (R9)<br>`0a63d4e9` feat(mobile): Pingo y pop del candado en recuperar (R9) |
+| R10 | `src/screens/reset-password/index.test.tsx::#167 R10: …` (10); `src/__tests__/legibility-classnames.test.ts::screens/reset-password/index.tsx pinta con text-accent-strong (3)` | `50972818` test(mobile): Pingo y tarjeta de estado en nueva contraseña (R10)<br>`3e168e10` feat(mobile): Pingo y tarjeta de estado en nueva contraseña (R10) |
+| R11 | `src/screens/welcome/index.test.tsx::#167 R11: …` (4) | `f5b7bd17` test(mobile): la carta declara los anillos de ping (R11)<br>`5834b4e5` docs(ui): enmienda de la carta para los anillos de ping (R11) |
+| R12 | `src/screens/welcome/index.test.tsx::#167 R12: …` (10) y la aserción de hijos de `welcome-scene` | `fc49e87f` test(mobile): anillos de ping alrededor de Pingo (R12)<br>`13835918` feat(mobile): anillos de ping alrededor de Pingo (R12) |
+| R13 | `src/screens/welcome/index.test.tsx::#167 R13: …` (2) y los dos `it` de la base con `expect(mockWithRepeat).not.toHaveBeenCalled()` | `7c4f727d` test(mobile): sin anillos con reduce motion (R13) |
+| R14 | `src/__tests__/design-drift.test.ts::#167 R14: …` (4) | `108bd291` test(mobile): las pantallas de cuenta no traen deriva (R14) |
 | R15 | prueba de humo en dev build de Android (humano) | pendiente (humano) |
 
 ---
