@@ -204,7 +204,7 @@ function WeightLogContent({ petId }: { petId: string }) {
 
             <Button
               testID="weight-submit"
-              className="rounded-xl bg-accent"
+              className="rounded-xl bg-accent border-b-4 border-black/25"
               isDisabled={submitting}
               onPress={() => void handleSubmit()}
             >

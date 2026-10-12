@@ -725,3 +725,14 @@ describe('#64 R4: ninguna categoría se confunde con otra ni con un token de est
     expect(deltaE00(palette.green.ink, variables['accent-strong'])).toBe(0);
   });
 });
+
+describe('#166 R1: global.css declara el labio gris en los dos temas', () => {
+  it.each([
+    ['light', '#E4E7EC'],
+    ['dark', '#0A0D12'],
+  ] as const)('declara --color-lip-gray exacto en %s', (theme, value) => {
+    expect(parseVariables(extractVariant(theme))).toMatchObject({
+      'color-lip-gray': value,
+    });
+  });
+});

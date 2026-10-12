@@ -295,9 +295,9 @@ describe('R8', () => {
     expect(mockRouter.replace).not.toHaveBeenCalled();
   });
 
-  it('es un botón hueco con tinta accent-strong', async () => {
+  it('es un botón de superficie con labio gris y tinta accent-strong', async () => {
     await renderWelcome();
-    expect(screen.getByTestId('welcome-have-account').props.className).toBe('w-full rounded-xl border border-accent bg-transparent');
+    expect(screen.getByTestId('welcome-have-account').props.className).toBe('w-full rounded-xl border-2 border-b-6 border-lip-gray bg-surface');
     expect(screen.getByText('Ya tengo una cuenta').props.className).toBe('font-semibold text-accent-strong');
   });
 });
@@ -461,12 +461,6 @@ describe('#153 R7: el CTA primario tiene cuerpo', () => {
     expect(screen.getByText('Comenzar ahora').props.className).toBe('font-bold text-accent-foreground');
   });
 
-  it('deja el CTA secundario sin labio', async () => {
-    await renderWelcome();
-    const secondary = screen.getByTestId('welcome-have-account');
-    expect(secondary.props.className).not.toContain('border-b-4');
-    expect(secondary.props.className).not.toContain('border-black');
-  });
 });
 
 
@@ -702,5 +696,18 @@ describe('#153 R13: Pingo no trae dependencias nuevas', () => {
     const manifest = JSON.parse(readFileSync(join(process.cwd(), 'package.json'), 'utf8'));
     const dependencies = [...Object.keys(manifest.dependencies), ...Object.keys(manifest.devDependencies)];
     expect(dependencies.filter((name) => /^(?:lottie-react-native|rive-react-native|@rive-app\/.+|expo-linear-gradient)$/.test(name))).toEqual([]);
+  });
+});
+
+describe('#166 R3: el CTA secundario lleva el labio gris', () => {
+  it('lleva el labio gris en el CTA secundario', async () => {
+    await renderWelcome();
+    const secondary = screen.getByTestId('welcome-have-account');
+    expect(secondary.props.className).toContain('border-b-6');
+    expect(secondary.props.className).toContain('border-lip-gray');
+    expect(secondary.props.className).toContain('bg-surface');
+    expect(secondary.props.className).not.toContain('border-black');
+    expect(secondary.props.className).not.toContain('border-accent');
+    expect(secondary.props.className).not.toContain('bg-transparent');
   });
 });

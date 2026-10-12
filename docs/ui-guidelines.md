@@ -172,6 +172,25 @@ Tres límites, no negociables:
     componentes de heroui-native ya lo traen de fábrica y no se envuelven
     para añadírselo.
 
+13. **Botón con cuerpo** (feature #166, 2026-10-11). Los botones de acción
+    llevan un labio inferior: un borde inferior más grueso que los
+    laterales, nunca una sombra.
+    - **Primario sólido** (todo `Button` con `rounded-xl bg-accent`):
+      `rounded-xl bg-accent border-b-4 border-black/25`
+      El labio va detrás de `bg-accent`, nunca delante: el recuento de
+      primarios de `consistency-classnames` busca `rounded-xl bg-accent`
+      seguido de espacio o comilla.
+    - **Secundario neutro** (`variant="outline"` o `variant="secondary"`
+      sin relleno tonal, y el secundario de Bienvenida):
+      `rounded-xl border-2 border-b-6 border-lip-gray bg-surface`
+      El gris sale del token `--color-lip-gray` de `src/theme/global.css`,
+      nunca de un hex ni de una clase entre corchetes.
+    - **Sin labio**: los tonales (`bg-accent-soft`, `bg-default`), los
+      destructivos (`bg-danger`, `variant="danger-soft"`) y las primarias
+      de heroui sin color en `className` (reintentos, confirmar alerta).
+    Los inventarios que lo verifican viven en
+    `src/__tests__/consistency-classnames.test.ts`.
+
 ## Animación (decisiones por defecto)
 
 - Reanimated 4 en UI thread; nada que dependa de JS thread para gestos.

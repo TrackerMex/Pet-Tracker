@@ -149,7 +149,7 @@ export function GeofencesScreen({ petId }: { petId: string }) {
       )}
       {isOwner && geofences.data?.kind === 'ok' ? (
         <>
-        <Button testID="geofences-add" className="rounded-xl bg-accent" isDisabled={busy || atLimit}
+        <Button testID="geofences-add" className="rounded-xl bg-accent border-b-4 border-black/25" isDisabled={busy || atLimit}
           onPress={() => router.push({ pathname: '/pets/[petId]/geofence-editor', params: { petId } })}>
           <Button.Label className="font-bold text-accent-foreground">{t('geofenceEditor.add')}</Button.Label>
         </Button>
