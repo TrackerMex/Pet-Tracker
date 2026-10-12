@@ -2068,3 +2068,76 @@ handoff original desde `bun run typecheck` (el BASE de cierre ya paso
 en la Reanudacion 8 con 475/475: no lo repitas), y despues
 traceability, c26 y c27, con todas las correcciones citadas arriba.
 ```
+
+## Reanudación 11: la espera del paso 1 también espera a init.sh (2026-10-12)
+
+> La Reanudación 10 pasó sus condiciones y sus seis anclas, y paró en el
+> paso 1. El bucle de espera solo esperaba a jest. El `pgrep` de
+> `init.sh` iba después del bucle, una sola vez, y encontró un `init.sh`
+> del worktree 169 que todavía no había llegado a su jest. Codex paró
+> sin lanzar el ALL, que era lo correcto: el fallo era del handoff, no
+> de Codex.
+>
+> Esta reanudación cambia solo el paso 1. Ahora el bucle espera a que no
+> haya ni jest ni `init.sh` de ningún worktree, con un máximo de 90
+> minutos, porque hay tres sesiones más con jest en la máquina. Los pasos
+> 2 y 3 son los de la Reanudación 10, sin cambios. H0 sigue siendo
+> `b082f6e5`. Este commit solo toca este fichero, que está fuera de la
+> lista cerrada.
+
+Pegar en Codex CLI:
+
+```
+Worktree: /home/claude/sites/Pet-Tracker-wt-168   <- PRIMERA LINEA. Trabaja AQUI y en ningun otro sitio
+Reanudacion 11 de #168 tras la parada en la espera del paso 1. NO
+repitas las Reanudaciones 8, 9 ni 10. Ejecuta y pega en
+progress/impl_mobile-tab-headers-canvas.md, bajo una seccion nueva
+«## Reanudacion 11»:
+  cd /home/claude/sites/Pet-Tracker-wt-168 && pwd
+  git branch --show-current
+  git rev-parse --short HEAD~1
+  git log --oneline b082f6e5..HEAD | wc -l
+  git log --oneline 600cc3a7..HEAD
+  git status --short
+PARA si:
+- la branch no es feature/168-mobile-tab-headers-canvas;
+- HEAD~1 no es 5c27b858 (la Reanudacion 10 del leader);
+- el recuento no es 39;
+- el segundo log no son exactamente dos commits: el del leader que
+  anade esta reanudacion y 5c27b858;
+- `git status --short` no es exactamente esta linea:
+  ?? progress/impl_mobile-tab-headers-canvas.md
+H0 sigue siendo b082f6e5. Siguen en vigor todas las reglas del handoff
+original, las correcciones del paso 5 de la Reanudacion 2, el
+`<LINT n>` con reintento de la Reanudacion 4, la regla de medidas de la
+Reanudacion 6, las dos correcciones del paso 5 de la Reanudacion 7
+(fila R8 con c17 + c17b; 30 commits en total y 28 en A-M) y la regla
+de error de invocacion ampliada de la Reanudacion 8.
+
+Anclas, desde mobile-pet-tracker/
+(`cd /home/claude/sites/Pet-Tracker-wt-168/mobile-pet-tracker && pwd`):
+  test -f src/__tests__/tab-headers-canvas.test.ts; echo $?   -> 0
+  git diff --name-only HEAD -- . ../docs ../specs | wc -l   -> 0
+  git diff --cached --name-only | wc -l   -> 0
+  git ls-files --others --exclude-standard -- . ../docs ../specs | wc -l   -> 0
+  git diff --name-only b082f6e5 HEAD -- . | wc -l   -> 9
+  git diff b082f6e5 HEAD -- src/screens/profile/index.tsx | grep -cE '^[-+].*(handleChangePhoto|launchImageLibraryAsync|picked)'   -> 0
+Si alguna no da su cifra, PARA.
+
+Paso 1, espera a que no corra ni jest ni init.sh en la maquina, de
+ningun worktree. Desde mobile-pet-tracker/, como comando PROPIO (no lo
+encadenes con el jest del paso 2). Puede tardar hasta 90 minutos: no lo
+cortes ni lo repitas:
+  for i in $(seq 1 90); do pgrep -f 'node_modules/(\.bin/jest|jest-worker)|[i]nit\.sh' > /dev/null || break; sleep 60; done; pgrep -af 'node_modules/(\.bin/jest|jest-worker)'; pgrep -af '[i]nit\.sh'; echo "fin-espera"
+    -> solo la linea `fin-espera`
+Si sale algun proceso, PARA y copia la salida. No repitas la espera.
+
+Paso 2, nada mas terminar el paso 1: el paso 2 de la Reanudacion 10 tal
+cual. Es decir, el ALL a /tmp/168-all-r10.txt y despues el grep de
+`reading 'canceled'`, con las mismas cifras esperadas y la misma regla
+de PARA (sin medir suites solas, sin repetir el ALL, sin tocar tests ni
+codigo).
+
+Paso 3: el paso 3 de la Reanudacion 10 tal cual. Solo se hace con el
+paso 2 entero en verde.
+```
