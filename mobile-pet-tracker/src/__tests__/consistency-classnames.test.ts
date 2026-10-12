@@ -99,7 +99,7 @@ describe('#62 R1: la escala de radios está declarada y el botón primario tiene
       readFileSync(path, 'utf8').match(/rounded-xl bg-accent(?=[\s'"`])/g) ?? [],
     );
 
-    expect(primaryRadius).toHaveLength(13 + 1 + 1 + 1 + 1 + 1 + 1); // #146 R8, #146 R9; #118 R7; #155 R3 // #158 R3: docs-upload; // #158 R5: docs-upload-submit
+    expect(primaryRadius).toHaveLength(13 + 1 + 1 + 1 + 1 + 1 + 1 + 1); // #146 R8, #146 R9; #118 R7; #155 R3 // #158 R3: docs-upload; // #158 R5: docs-upload-submit // #171 R14: celebration
     expect(filesMatching(/rounded-2xl bg-accent(?=[\s'"`])/)).toEqual([]);
   });
 });
@@ -396,7 +396,7 @@ describe('#98 R10: los candados que esta feature no mueve', () => {
     expect(home.match(/style=\{CONTINUOUS_CORNER\}/g) ?? []).toHaveLength(0);
     expect(food.match(/style=\{CONTINUOUS_CORNER\}/g)).toHaveLength(2);
     expect(count(/style=\{CONTINUOUS_CORNER\}/g)).toBe(31 + 1); // #41 R9: geofences-link
-    expect(count(/rounded-xl bg-accent(?=[\s'"`])/g)).toBe(13 + 1 + 1 + 1 + 1 + 1 + 1); // #146 R8, #146 R9; #118 R7; #155 R3 // #158 R3: docs-upload; // #158 R5: docs-upload-submit
+    expect(count(/rounded-xl bg-accent(?=[\s'"`])/g)).toBe(13 + 1 + 1 + 1 + 1 + 1 + 1 + 1); // #146 R8, #146 R9; #118 R7; #155 R3 // #158 R3: docs-upload; // #158 R5: docs-upload-submit // #171 R14
     expect(count(/bg-accent-soft/g)).toBe(16 + 2 + 1); // #147 R4: meal-time-edit y add-meal-time-button; #105 R11
     expect(home.match(/text-accent-strong\b/g)).toHaveLength(2);
     expect(food.match(/text-accent-strong\b/g)).toHaveLength(1);
@@ -538,6 +538,7 @@ describe('#166 R2: todo primario sólido lleva el labio detrás de bg-accent', (
   const expected = {
     [join('app', '(auth)', 'login.tsx')]: 1,
     [join('app', '(auth)', 'register.tsx')]: 1,
+    [join('components', 'celebration.tsx')]: 1, // #171 R14
     [join('components', 'empty-state.tsx')]: 1,
     [join('screens', 'add-pet', 'index.tsx')]: 1,
     [join('screens', 'add-reminder', 'index.tsx')]: 1,
@@ -573,8 +574,8 @@ describe('#166 R2: todo primario sólido lleva el labio detrás de bg-accent', (
       0,
     );
 
-    expect(count(/\bborder-b-4\b/g)).toBe(19);
-    expect(count(/border-black\/25/g)).toBe(19);
+    expect(count(/\bborder-b-4\b/g)).toBe(19 + 1); // #171 R14
+    expect(count(/border-black\/25/g)).toBe(19 + 1); // #171 R14
   });
 });
 
@@ -601,7 +602,7 @@ describe('#166 R3: el secundario neutro lleva el labio gris', () => {
     }
   });
 
-  it('inventaría los cuatro secundarios neutros de toda la app', () => {
+  it('inventaría los cinco secundarios neutros de toda la app', () => {
     const testIds = sourceFiles().filter((path) => path.endsWith('.tsx')).flatMap((path) =>
       readFileSync(path, 'utf8').split(/<Button(?=[\s>])/).slice(1).flatMap((part) => {
         const tag = part.split('<')[0];
@@ -609,7 +610,8 @@ describe('#166 R3: el secundario neutro lleva el labio gris', () => {
           && !tag.includes('bg-accent-soft') && !tag.includes('bg-default'))
           || tag.includes('border-lip-gray');
 
-        return neutral ? [tag.match(/testID="([^"]+)"/)?.[1]] : [];
+        const match = tag.match(/testID=(?:"([^"]+)"|\{([^}]+)\})/); // #171 R14: testID dinámico
+        return neutral ? [match?.[1] ?? match?.[2]] : [];
       }),
     );
 
@@ -617,14 +619,15 @@ describe('#166 R3: el secundario neutro lleva el labio gris', () => {
       'docs-upload-cancel',
       'forgot-resend',
       'reminders-delete-cancel',
+      'secondary.testID', // #171 R14
       'welcome-have-account',
     ]);
     const count = (pattern: RegExp) => sourceFiles().reduce(
       (total, path) => total + (readFileSync(path, 'utf8').match(pattern) ?? []).length,
       0,
     );
-    expect(count(/border-lip-gray/g)).toBe(4);
-    expect(count(/\bborder-b-6\b/g)).toBe(4);
+    expect(count(/border-lip-gray/g)).toBe(4 + 1); // #171 R14
+    expect(count(/\bborder-b-6\b/g)).toBe(4 + 1); // #171 R14
   });
 });
 
