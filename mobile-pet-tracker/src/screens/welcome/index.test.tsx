@@ -845,3 +845,19 @@ describe('#167 R12: anillos de ping', () => {
     }
   });
 });
+
+
+describe('#167 R13: sin anillos con reduce motion', () => {
+  beforeEach(() => mockUseReducedMotion.mockReturnValue(true));
+
+  it('#167 R13: con reduce motion el escenario solo lleva a Pingo', async () => {
+    await renderWelcome();
+    expect(screen.getByTestId('welcome-stage').children
+      .map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['welcome-pingo']);
+  });
+
+  it.each([0, 1, 2])('#167 R13: con reduce motion no hay anillo %i', async (index) => {
+    await renderWelcome();
+    expect(screen.queryByTestId(`welcome-ring-${index}`)).toBeNull();
+  });
+});
