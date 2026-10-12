@@ -1104,3 +1104,132 @@ pet-chip-pet-2`. Copia al impl el `●` de ese it con su `Unable to find`.
 Si cae por cualquier otra cosa, PARA. Despues sigue con c2 y el resto
 del handoff hasta c27, sin cambios.
 ```
+
+## Reanudación 2: parada en el verde de B (2026-10-12)
+
+> Codex paró en la primera medida de c4 (verde de B) con c1-c3 commiteados
+> (`c5618f43`, `1abc7950`, `2c01414a`) y el cambio de producción de B sin
+> stagear en `src/screens/health/index.tsx`. Fallaban los cuatro its de
+> `#168 R3: cada vacuna lleva su tile pastel` con `Unable to find an
+> element with testID: vaccine-tile-<id>`. La parada fue correcta: los
+> tiles existen y son decorativos por R3.6 (`accessibilityElementsHidden`
+> e `importantForAccessibility="no-hide-descendants"`), y RNTL 14 deja
+> fuera de `getBy*` y `queryBy*` los nodos ocultos a accesibilidad y a sus
+> descendientes, salvo con `{ includeHiddenElements: true }`. Las dos
+> consultas del it (`vaccine-tile-<id>` y el icono dentro del tile) no la
+> llevaban. tasks.md prescribía consultar nodos que R3.6 oculta sin decir
+> cómo; el hueco era de la spec.
+>
+> Corrección del leader, sin enmienda: no cambia ningún requisito, solo
+> dos consultas del test. El leader lo midió fuera del árbol, con una copia
+> del fichero de test que solo cambia esas dos líneas: los 4 its pasan con
+> el cambio de producción de Codex y siguen rojos contra la producción de
+> `2c01414a`, por la razón de c3 (3 × `Received length: 3` y 1 ×
+> `Expected substring: "flex-row items-center gap-3"`, sin ningún `Unable
+> to find`). La corrección entra en un commit de test propio, c3b, medido en
+> rojo sobre la producción de HEAD, antes de c4, que queda igual. Son 28
+> commits (26 en A-M). El mismo patrón llega a F (tiles y sus iconos, R6.2:
+> «decorativo como R3.6») y a G (`me-avatar` y sus iniciales, R7.2): quedan
+> cerrados aquí, antes de que paren. H0 sigue siendo `b082f6e5`. Este commit
+> solo toca este fichero, que está fuera de la lista cerrada.
+
+Pegar en Codex CLI:
+
+```
+Worktree: /home/claude/sites/Pet-Tracker-wt-168   <- PRIMERA LINEA. Trabaja AQUI y en ningun otro sitio
+Reanudacion 2 de #168 tras tu parada en el verde de B (c4). Ejecuta y
+pega en progress/impl_mobile-tab-headers-canvas.md, bajo una seccion
+nueva «## Reanudacion 2»:
+  cd /home/claude/sites/Pet-Tracker-wt-168 && pwd
+  git branch --show-current
+  git rev-parse --short HEAD~1
+  git log --oneline b082f6e5..HEAD
+  git status --short
+PARA si:
+- la branch no es feature/168-mobile-tab-headers-canvas;
+- HEAD~1 no es 2c01414a (tu c3);
+- el log no son exactamente cinco commits: el del leader que anade esta
+  reanudacion, 2c01414a, 1abc7950, c5618f43 y fdd98bcf;
+- `git status --short` no son exactamente estas dos lineas:
+   M mobile-pet-tracker/src/screens/health/index.tsx
+  ?? progress/impl_mobile-tab-headers-canvas.md
+H0 sigue siendo b082f6e5: todos los diffs se miden contra el. Siguen en
+vigor todas las reglas del handoff original. NO descartes tu cambio de
+produccion de B: lo apartas y lo restauras tal cual (pasos 1 y 4).
+
+Anclas, desde mobile-pet-tracker/
+(`cd /home/claude/sites/Pet-Tracker-wt-168/mobile-pet-tracker && pwd`):
+  grep -cF "    const tile = scope.getByTestId(\`vaccine-tile-\${id}\`);" src/screens/health/index.test.tsx   -> 1
+  grep -cF "    const glyph = within(tile).getByTestId(icon);" src/screens/health/index.test.tsx   -> 1
+  grep -cF "includeHiddenElements" src/screens/health/index.test.tsx   -> 0
+  grep -cF 'importantForAccessibility="no-hide-descendants"' src/screens/health/index.tsx   -> 1
+  git diff --stat -- src/screens/health/index.tsx | tail -1   -> ` 1 file changed, 26 insertions(+), 5 deletions(-)`
+Si alguna no da su cifra, PARA.
+
+Paso 1, aparta el cambio de produccion de B (desde mobile-pet-tracker/):
+  cp src/screens/health/index.tsx /tmp/168-b-verde-index.tsx \
+    && git checkout HEAD -- src/screens/health/index.tsx \
+    && git diff --quiet HEAD -- src/screens/health/index.tsx \
+    && test -z "$(git diff --cached --name-only)" \
+    && ! cmp -s /tmp/168-b-verde-index.tsx src/screens/health/index.tsx \
+    && test "$(grep -cF 'importantForAccessibility="no-hide-descendants"' /tmp/168-b-verde-index.tsx)" = 1
+  -> exit 0. Si no, PARA y no toques nada mas.
+
+Paso 2, el cambio de test, y solo esto: en el it.each de `#168 R3: cada
+vacuna lleva su tile pastel` de src/screens/health/index.test.tsx,
+sustituye las dos primeras lineas de las anclas, con su sangria, por:
+    const tile = scope.getByTestId(`vaccine-tile-${id}`, { includeHiddenElements: true });
+    const glyph = within(tile).getByTestId(icon, { includeHiddenElements: true });
+Nada mas cambia en H ni en ningun otro fichero.
+
+Paso 3, c3b, el rojo con la consulta corregida (desde mobile-pet-tracker/):
+  FORCE_COLOR=0 bunx jest --runTestsByPath src/__tests__/consistency-classnames.test.ts src/screens/health/index.test.tsx > /tmp/168-r2b.txt 2>&1; echo "exit=$?"
+    -> exit=1 y `Tests:       6 failed, 132 passed, 138 total`
+  grep -qE '^Tests: +6 failed, 132 passed, 138 total$' /tmp/168-r2b.txt \
+    && test "$(grep -E '^  ● ' /tmp/168-r2b.txt | grep -cvxF '  ● Console')" = 6 \
+    && test "$(grep -E '^  ● ' /tmp/168-r2b.txt | grep -cF '#168 R3: cada vacuna lleva su tile pastel')" = 4 \
+    && test "$(grep -E '^  ● ' /tmp/168-r2b.txt | grep -cF 'screens/health/index.tsx importa y aplica sus 3 esquinas')" = 1 \
+    && test "$(grep -E '^  ● ' /tmp/168-r2b.txt | grep -cF '#98 R10')" = 1 \
+    && test "$(grep -cF 'Received length: 3' /tmp/168-r2b.txt)" = 3 \
+    && test "$(grep -cF 'Expected substring: "flex-row items-center gap-3"' /tmp/168-r2b.txt)" = 1 \
+    && ! grep -qF 'Unable to find' /tmp/168-r2b.txt \
+    && ! grep -qE 'Test suite failed to run|TypeError|ReferenceError|SyntaxError|Cannot find module' /tmp/168-r2b.txt \
+    && test "$(grep -cF 'includeHiddenElements: true' src/screens/health/index.test.tsx)" = 2 \
+    && test ! -e .expo/types/router.d.ts && bun run typecheck && <LINT 0> \
+    && git add src/screens/health/index.test.tsx \
+    && test "$(git diff --cached --name-only)" = 'mobile-pet-tracker/src/screens/health/index.test.tsx' \
+    && <LIMPIO> \
+    && git commit -m 'test(mobile): busca los tiles ocultos a accesibilidad (#168 R3)'
+Copia al impl la linea `Tests:` y los seis `●` con su matcher y su
+Expected/Received.
+
+Paso 4, restaura el cambio de produccion de B (desde mobile-pet-tracker/):
+  cp /tmp/168-b-verde-index.tsx src/screens/health/index.tsx \
+    && git diff --stat -- src/screens/health/index.tsx | tail -1
+    -> ` 1 file changed, 26 insertions(+), 5 deletions(-)`
+y `git status --short` desde la raiz da exactamente:
+   M mobile-pet-tracker/src/screens/health/index.tsx
+  ?? progress/impl_mobile-tab-headers-canvas.md
+Si no, PARA.
+
+Paso 5: c4 entero, tal como esta en el handoff (medida a /tmp/168-g2.txt
+y su cadena, sin cambiar ninguna cifra): `Tests:       138 passed, 138
+total` y GUARDAS 92. Despues sigue con c5 y el resto del handoff hasta
+c27, con estas tres correcciones:
+
+- Regla para F y G (RNTL 14 deja fuera de getBy*/queryBy*/findBy* los
+  nodos con `accessibilityElementsHidden` o
+  `importantForAccessibility="no-hide-descendants"` y a sus
+  descendientes): toda consulta a `<fila>-tile`, a `profile-icon-*`, a
+  `me-avatar` y a `me-avatar-initials` lleva
+  `{ includeHiddenElements: true }` como segundo argumento, tambien las
+  negativas: en la fila sin iniciales de G,
+  `queryByTestId('me-avatar', { includeHiddenElements: true })` es null.
+  Sin la opcion, ese null pasaria aunque `me-avatar` existiera. Nunca
+  `toBeVisible()` sobre esos nodos (RNTL da false en los ocultos);
+  `toHaveTextContent` vale. Las cifras de c11-c14 no cambian.
+- c26, traceability: la fila R3 lleva como rojo c3 `2c01414a` + c3b
+  (su hash corto y su mensaje), `rojo → verde` hacia c4.
+- Los commits de A-M son 26 (c1-c25 mas c3b) y en total 28: donde el
+  handoff dice 27 y 25, cuenta 28 y 26.
+```
