@@ -5,6 +5,7 @@ import {
   render,
   screen,
   waitFor,
+  within,
 } from '@testing-library/react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
@@ -12,6 +13,46 @@ import { HeroUINativeProvider } from 'heroui-native';
 import { resetPassword, type ResetPasswordState } from '../../api/auth';
 import ResetPasswordRoute from '../../app/reset-password';
 import { LanguageProvider } from '../../providers/language-provider';
+
+const mockHomeEntrance = jest.fn<void, [import('react-native').ViewProps & { index: number }]>();
+const mockPopIn = jest.fn<void, [import('react-native').ViewProps]>();
+
+jest.mock('../home/home-entrance', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return {
+    HomeEntrance(props: import('react-native').ViewProps & { index: number }) {
+      mockHomeEntrance(props);
+      return React.createElement(View, props);
+    },
+  };
+});
+
+jest.mock('../../components/pop-in', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return {
+    PopIn(props: import('react-native').ViewProps) {
+      mockPopIn(props);
+      return React.createElement(View, props);
+    },
+  };
+});
+
+jest.mock('reicon-react-native', () => {
+  const actual = jest.requireActual<typeof import('reicon-react-native')>('reicon-react-native');
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  const mockIcon = (testID: string) =>
+    function MockIcon(props: Record<string, unknown>) {
+      return React.createElement(View, { testID, ...props });
+    };
+  return { ...actual, Check: mockIcon('icon-check') };
+});
+
+jest.mock('../../theme/use-theme-colors', () => ({
+  useThemeColors: (tokens: string[]) => tokens.map((token) => `color:${token}`),
+}));
 
 jest.mock('../../api/auth', () => ({
   resetPassword: jest.fn(),
@@ -305,5 +346,122 @@ describe('#148 R3: reset-password se aparta del teclado en Android', () => {
       });
     });
     await waitFor(() => expect(screen.getByTestId('screen-reset-password')).toHaveStyle({ paddingBottom: 200 }));
+  });
+});
+
+
+describe('#167 R10: Pingo y tarjeta de estado en nueva contraseña', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
+    mockResetPassword.mockResolvedValue({ kind: 'ok' });
+  });
+
+  it('#167 R10: el formulario entra en dos tiempos', async () => {
+    await renderRoute('reset-token-167');
+    expect(Object.fromEntries(mockHomeEntrance.mock.calls.map(([p]) => [
+      p.testID, { index: p.index, className: p.className },
+    ]))).toEqual({
+      'reset-header': { index: 0, className: 'flex-row items-center justify-center gap-3' },
+      'reset-body': { index: 1, className: 'gap-4' },
+    });
+  });
+
+  it('#167 R10: la cabecera lleva a Pingo y después el título', async () => {
+    await renderRoute('reset-token-167');
+    const header = screen.getByTestId('reset-header');
+    expect(header.children).toHaveLength(2);
+    expect(header.children[0]).toHaveProperty('props.testID', 'reset-pingo');
+    expect(header.children[1]).toBe(within(header).getByText('Restablecer contraseña'));
+  });
+
+  it('#167 R10: el cuerpo lleva campos, error y envío', async () => {
+    mockResetPassword.mockResolvedValue({ kind: 'invalid-token' });
+    await renderRoute('reset-token-167');
+    const body = screen.getByTestId('reset-body');
+    const header = screen.getByTestId('reset-header');
+    for (const id of ['reset-password', 'reset-password-confirm', 'reset-submit']) {
+      expect(within(body).getByTestId(id)).toBeOnTheScreen();
+      expect(within(header).queryByTestId(id)).toBeNull();
+    }
+    await submitReset();
+    expect(within(body).getByTestId('reset-error')).toBeOnTheScreen();
+  });
+
+  it('#167 R10: Pingo en el formulario usa la tablilla', async () => {
+    await renderRoute('reset-token-167');
+    const pingo = screen.getByTestId('reset-pingo');
+    expect(pingo.props.source).toEqual([
+      expect.objectContaining({ testUri: expect.stringMatching(/pingo-clipboard\.webp$/) }),
+    ]);
+    expect(pingo.props.style).toEqual({ width: 72, height: 72 });
+    expect(pingo.props.accessibilityLabel).toBeUndefined();
+  });
+
+  it('#167 R10: Pingo en el éxito usa la tablilla', async () => {
+    await renderRoute('reset-token-167');
+    await submitReset();
+    expect(await screen.findByTestId('reset-success')).toBeOnTheScreen();
+    const pingo = screen.getByTestId('reset-pingo');
+    expect(pingo.props.source).toEqual([
+      expect.objectContaining({ testUri: expect.stringMatching(/pingo-clipboard\.webp$/) }),
+    ]);
+    expect(pingo.props.style).toEqual({ width: 72, height: 72 });
+    expect(pingo.props.accessibilityLabel).toBeUndefined();
+  });
+
+  it('#167 R10: el éxito pinta cabecera, tarjeta y enlace, sin cuerpo', async () => {
+    await renderRoute('reset-token-167');
+    await submitReset();
+    expect(await screen.findByTestId('reset-success')).toBeOnTheScreen();
+    const nodes = screen.getAllByTestId(/^(reset-header|reset-success-pop|link-login)$/);
+    expect(nodes.map((node) => node.props.testID)).toEqual(['reset-header', 'reset-success-pop', 'link-login']);
+    expect(nodes[0].parent).toBe(nodes[1].parent);
+    expect(nodes[1].parent).toBe(nodes[2].parent);
+    expect(screen.queryByTestId('reset-body')).toBeNull();
+  });
+
+  it('#167 R10: la tarjeta de estado es secondary con check y texto', async () => {
+    await renderRoute('reset-token-167');
+    await submitReset();
+    expect(await screen.findByTestId('reset-success')).toBeOnTheScreen();
+    const pop = screen.getByTestId('reset-success-pop');
+    const card = within(pop).getByTestId('reset-success-card');
+    expect(card.props.className.split(' ')).toEqual(expect.arrayContaining([
+      'rounded-card', 'bg-surface-secondary', 'flex-row', 'items-center', 'gap-3', 'px-4', 'py-3.5',
+    ]));
+    expect(card.children.map((child) => typeof child === 'string' ? child : child.props.testID))
+      .toEqual(['reset-success-check', 'reset-success']);
+  });
+
+  it('#167 R10: el disco del check es acento con Check de 18', async () => {
+    await renderRoute('reset-token-167');
+    await submitReset();
+    expect(await screen.findByTestId('reset-success')).toBeOnTheScreen();
+    const disk = screen.getByTestId('reset-success-check');
+    expect(disk.props.className).toBe('size-8 items-center justify-center rounded-full bg-accent');
+    const icon = within(disk).getByTestId('icon-check');
+    expect(disk.children).toEqual([icon]);
+    expect(icon.props.size).toBe(18);
+    expect(icon.props.color).toBe('color:accent-foreground');
+  });
+
+  it('#167 R10: el texto de éxito es tinta accent-strong y seleccionable', async () => {
+    await renderRoute('reset-token-167');
+    await submitReset();
+    const text = await screen.findByTestId('reset-success');
+    expect(text.props.className).toBe('flex-1 font-bold text-accent-strong');
+    expect(text.props.selectable).toBe(true);
+    expect(text).toHaveTextContent('Contraseña actualizada');
+  });
+
+  it('#167 R10: la tarjeta de estado entra con pop', async () => {
+    await renderRoute('reset-token-167');
+    mockPopIn.mockClear();
+    await submitReset();
+    expect(await screen.findByTestId('reset-success')).toBeOnTheScreen();
+    expect(Object.fromEntries(mockPopIn.mock.calls.map(([p]) => [
+      p.testID, { className: p.className, style: p.style },
+    ]))).toEqual({ 'reset-success-pop': { className: 'w-full', style: undefined } });
   });
 });
