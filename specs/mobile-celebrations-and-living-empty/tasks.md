@@ -66,6 +66,18 @@ tags: [harness, spec, mobile, ui, motion]
     `await renderWithProviders(...)`;
   - todo `fireEvent` lleva `await`; `requestClose` se emite con
     `await fireEvent(screen.getByTestId('{id}-modal'), 'requestClose')`.
+- **Nodos ocultos a la accesibilidad** (corrección del leader en el handoff):
+  `{id}-confetti`, sus piezas `{id}-confetti-<i>` y `{id}-badge` llevan
+  `importantForAccessibility="no-hide-descendants"` y
+  `accessibilityElementsHidden` (R2.7). RNTL 14 los deja fuera de
+  `getBy*`/`queryBy*`/`findBy*`, a ellos y a todo lo que contienen, salvo
+  con `{ includeHiddenElements: true }`. Toda consulta a esos nodos o a sus
+  hijos lleva la opción, también las negativas (`queryByTestId(..., { includeHiddenElements: true })`)
+  y las de dentro de un `within(...)` (el `✓` de R2.4). Nunca
+  `toBeVisible()` sobre ellos. Spike del leader sobre d2b8b0ae: sin la
+  opción, `getByTestId` lanza `Unable to find` sobre los tres y
+  `queryByTestId` da `null` aunque el nodo exista. Los hijos directos leídos
+  con `.children` no se filtran.
 - **Rojo:** cada fila de las tablas dice si el rojo es **por aserción** (un
   `expect` falla) o **por consulta** (`getBy*`/`findBy*` lanza). Un rojo
   distinto del declarado es parada, no adaptación.
@@ -274,7 +286,7 @@ cualquier `grep -cF` que no dé `1` es **parada**.
 
   | it | Rojo esperado |
   |---|---|
-  | R8.1 `probe-confetti` no existe y `probe-confetti-0` tampoco (`queryByTestId` es `null`) | **por aserción** (T2 pinta la capa siempre) |
+  | R8.1 `probe-confetti` no existe y `probe-confetti-0` tampoco (`queryByTestId(<id>, { includeHiddenElements: true })` es `null`; sin la opción daría `null` siempre) | **por aserción** (T2 pinta la capa siempre) |
   | R8.1 los hijos directos de `probe` son `['probe-hero', 'probe-title', 'probe-body', 'probe-details', 'probe-actions']` | **por aserción** |
   | R8.2 al montar, `probe-pingo` es igual a `{ width: 200, height: 200, opacity: 0, transform: [{ scale: 1 }] }` | **por aserción** (escala 0.6) |
   | R8.2 a los 2000 ms, `probe-pingo` está en `opacity: 1` y `scale: 1` | nace **verde** por T4: la opacidad ya funde y la escala llega a 1. Se declara como fila que nace verde; su sonda es quitar el fundido de opacidad, y debe ponerse rojo |
@@ -369,7 +381,7 @@ cualquier `grep -cF` que no dé `1` es **parada**.
   | R3.2 `ready-map` llama a `dismissTo('/map')` una vez; `ready-done` llama a `back()` una vez | ya existen y nacen **verdes**; no se duplican |
   | R3.3 la fuente de `src/screens/pairing/index.tsx` no contiene `<Pressable`, ni `size-16 items-center justify-center rounded-full bg-accent-soft`, ni `<Card className="w-full">`, y contiene `<Celebration` una vez | **por aserción** |
   | R3 al llegar a `pairing-ready`, `notificationAsync` se llamó 1 vez | **por aserción** (0) |
-  | R3.4 con `mockClaimDevice.mockResolvedValue({ kind: 'error' })`, `await renderPairing()`, `await fireEvent.changeText(await screen.findByTestId('activation-code-input'), 'ACT-READY')`, `await fireEvent.press(screen.getByTestId('pairing-submit'))` y `await screen.findByTestId('pairing-error')`; `pairing-ready-modal` no existe y `notificationAsync` no se llamó | nace **verde**: es candado de regresión. Sonda: cambiar la condición de render a `phase !== 'idle'` debe ponerlo rojo |
+  | R3.4 con `mockClaimDevice.mockResolvedValue({ kind: 'error' })`, `await renderPairing()`, `await fireEvent.changeText(await screen.findByTestId('activation-code-input'), 'ACT-READY')`, `await fireEvent.press(screen.getByTestId('pairing-submit'))` y `await screen.findByTestId('pairing-error')`; `pairing-ready-modal` no existe y `notificationAsync` no se llamó | nace **verde**: es candado de regresión. Sonda (corregida por el leader en el handoff: `phase` solo vale `'idle'` o `'ready'`, así que `phase !== 'idle'` no mutaba nada): en `case 'error':` / `case 'missing-config':`, tras `setActionError(t('common.somethingWentWrong'));`, añadir `setReadyDevice({} as never); setPhase('ready');`. Midiendo `pairing`: `Tests:       5 failed, 56 passed, 61 total`, con R3.4 y cuatro `it` existentes (dos de `R5: sin collar muestra el formulario` y dos filas de `R6: el claim mapea cada kind`), medidos por el leader con la misma mutación sobre la base |
 
   Cuenta: +7 `it`. Rojos: 6 (R3.1 ×3 y R3.2 por consulta, con
   `Unable to find`; R3.3 y el háptico por aserción). Nace verde 1 (R3.4).
@@ -515,8 +527,8 @@ commit verde, precedidos por un refactor del arnés.
   | R4.1 tras `await renderAddPet()`: `await waitFor(() => expect(mockListPets).toHaveBeenCalledTimes(1))` y `toHaveBeenCalledWith('http://example.test/v1', 'jwt-token')` | **por aserción** (0 llamadas) |
   | R4.3 lista `{ kind: 'ok', pets: [] }`, sin foto: tras guardar, `await screen.findByTestId('add-pet-celebration-modal')`; `mockRouter.back` 0 y `mockNotificationAsync` 1 | **por aserción** (compuerta) |
   | R4.3 igual, con la foto subida bien | **por aserción** (compuerta) |
-  | R4.4 lista con un pet, `{ kind: 'ok', pets: [{ id: 'pet-1', name: 'Milo' } as never] }`: `await waitFor(() => expect(mockRouter.back).toHaveBeenCalledTimes(1))`, sin `add-pet-celebration-modal` y `mockNotificationAsync` 0 | **por aserción** (compuerta). Sonda tras el verde: `wasFirst = true` fijo lo pone rojo |
-  | R4.5 lista pendiente (`mockListPets.mockReturnValue(new Promise(() => {}))`), **sin** compuerta: `back` 1 y sin modal | nace **verde**. Sonda: `wasFirst = pets.data?.kind !== 'ok' \|\| pets.data.pets.length === 0` lo pone rojo |
+  | R4.4 lista con un pet, `{ kind: 'ok', pets: [{ id: 'pet-1', name: 'Milo' } as never] }`: `await waitFor(() => expect(mockRouter.back).toHaveBeenCalledTimes(1))`, sin `add-pet-celebration-modal` y `mockNotificationAsync` 0 | **por aserción** (compuerta). Sonda tras el verde: `wasFirst = true` fijo lo pone rojo, junto con las cuatro R4.5 y los dos `it` existentes que esperan `back` una vez; la línea `Tests:` se anota, no se fija |
+  | R4.5 lista pendiente (`mockListPets.mockReturnValue(new Promise(() => {}))`), **sin** compuerta: `back` 1 y sin modal | nace **verde**. Sonda: `wasFirst = pets.data?.kind !== 'ok' \|\| pets.data.pets.length === 0` lo pone rojo, junto con las otras tres R4.5; la línea `Tests:` se anota, no se fija |
   | R4.5 lista `{ kind: 'error' }`, en un **`it` propio**: igual | **por aserción** (compuerta). Misma sonda |
   | R4.5 lista `{ kind: 'unreachable', message: 'offline' }`, en un **`it` propio** | igual |
   | R4.5 lista `{ kind: 'unauthorized' }`, en un **`it` propio** | igual |
@@ -632,8 +644,13 @@ mismo tiempo que la base y sin avisos de worker.
 - [ ] (1) Test rojo, en `celebration.test.tsx`:
   `it('#171 R15: docs/ui-guidelines.md declara la enmienda del confeti')`.
   Lee `../docs/ui-guidelines.md` desde `process.cwd()` y asevera que
-  contiene el bloque literal de [[design]] §8 exactamente una vez y que su
-  encabezado va después de `## Checklist de autocrítica`. En el literal, el
+  contiene el bloque literal de [[design]] §8 **sin su última línea** (la
+  casilla) exactamente una vez y que su encabezado va después de
+  `## Checklist de autocrítica`. La casilla se comprueba aparte: lo que
+  sigue al bloque casa con
+  `/^\n\n- \[[ xX]\] Aprobada por humano \(fecha: [^)\n]*\)(?:\n|$)/`, para
+  que el candado siga verde cuando el humano la marque (corrección del
+  leader en el handoff; #65 R19 y #167 cometieron el mismo error). En el literal, el
   `#` de `#171` se escribe `\u0023` (`'## Enmienda \u0023171 — confeti de celebración'`),
   como en R12.3. **No** asevera que
   sea la última sección: #167 añade otra enmienda al final y, si mergea
