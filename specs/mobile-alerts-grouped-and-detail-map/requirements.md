@@ -523,7 +523,7 @@ recuento ya prescrito. La lista cerrada gana este fichero: son 17 bajo
 
 - [x] Aprobado por humano (fecha: 2026-10-12) ← gate obligatorio antes de implementar
 - [x] Enmienda E1 aprobada por humano (fecha: 2026-10-12)
-- [ ] Enmienda E2 aprobada por humano (fecha: ____)
+- [x] Enmienda E2 aprobada por humano (fecha: 2026-10-12)
 
 ## Smoke R17
 
