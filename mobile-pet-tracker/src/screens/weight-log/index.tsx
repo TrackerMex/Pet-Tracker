@@ -165,7 +165,22 @@ function WeightLogContent({ petId }: { petId: string }) {
                 </Text>
                 {monthDelta !== null ? (
                   <View testID="weight-month-delta" className="flex-row items-center gap-1.5">
-                    <Text testID="weight-month-delta-text" style={TABULAR_NUMS}>
+                    {monthDelta > 0 ? (
+                      <TrendUp size={15} color={danger} />
+                    ) : monthDelta < 0 ? (
+                      <TrendDown size={15} color={success} />
+                    ) : (
+                      <Minus size={15} color={muted} />
+                    )}
+                    <Text
+                      testID="weight-month-delta-text"
+                      className={monthDelta > 0
+                        ? 'text-sm font-semibold text-danger'
+                        : monthDelta < 0
+                          ? 'text-sm font-semibold text-success'
+                          : 'text-sm font-semibold text-muted'}
+                      style={TABULAR_NUMS}
+                    >
                       {t('weightLog.monthDelta', { value: fmtVariation(monthDelta) })}
                     </Text>
                   </View>
