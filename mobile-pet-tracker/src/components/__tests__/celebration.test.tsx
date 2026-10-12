@@ -1,6 +1,8 @@
-import { fireEvent, render, screen, within } from '@testing-library/react-native';
+import { act, fireEvent, render, screen, within } from '@testing-library/react-native';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
+import { Dimensions } from 'react-native';
+import { getAnimatedStyle } from 'react-native-reanimated';
 
 import { Celebration } from '../celebration';
 
@@ -161,5 +163,68 @@ describe('#171 R14: botones con labio', () => {
     expect(screen.getByTestId('probe-secondary').props.className).toBe('min-h-11 w-full rounded-xl border-2 border-b-6 border-lip-gray bg-surface');
     expect(screen.getByTestId('probe-secondary').props.variant).toBeUndefined();
     expect(screen.getByText('Listo').props.className).toBe('font-bold text-foreground');
+  });
+});
+
+const LEFT = [7, 48, 89, 30, 71, 12, 53, 94, 35, 76, 17, 58, 99, 40, 81, 22, 63, 4, 45, 86, 27, 68, 9, 50];
+const SHAPES = ['h-1.5 w-2 rounded-full', 'h-3.5 w-2.5', 'h-4 w-3'];
+const COLORS = ['bg-accent', 'bg-category-amber-strong', 'bg-category-violet-strong', 'bg-category-blue-strong', 'bg-category-rose-strong', 'bg-category-green-strong'];
+
+describe('#171 R6: confeti', () => {
+  const H = Dimensions.get('window').height;
+
+  beforeEach(() => { jest.useFakeTimers(); });
+  afterEach(() => { jest.useRealTimers(); });
+
+  it('R6.1 pinta 24 piezas con sus formas y colores en orden', async () => {
+    await renderProbe();
+    const layer = screen.getByTestId('probe-confetti', { includeHiddenElements: true });
+    expect(layer.children).toHaveLength(24);
+    expect(layer.children.map((child) => typeof child === 'string' ? child : child.props.testID))
+      .toEqual(Array.from({ length: 24 }, (_, index) => `probe-confetti-${index}`));
+    for (let i = 0; i < 24; i++) {
+      const piece = screen.getByTestId(`probe-confetti-${i}`, { includeHiddenElements: true });
+      expect(piece.children).toHaveLength(1);
+      expect(piece.children.map((child) => typeof child === 'string' ? child : child.props.className))
+        .toEqual([SHAPES[Math.floor(i / 8)] + ' ' + COLORS[i % 6]]);
+    }
+  });
+
+  it('R6.2 cada pieza empieza arriba y transparente, en su posición', async () => {
+    await renderProbe();
+    for (let i = 0; i < 24; i++) {
+      expect(getAnimatedStyle(screen.getByTestId(`probe-confetti-${i}`, { includeHiddenElements: true }))).toEqual({
+        position: 'absolute', top: 0, left: `${LEFT[i]}%`, opacity: 0,
+        transform: [{ translateY: -40 }, { rotate: '0deg' }],
+      });
+    }
+  });
+
+  it('R6.3 la pieza 0 está en vuelo a los 1200 ms', async () => {
+    await renderProbe();
+    act(() => { jest.advanceTimersByTime(1200); });
+    const style = getAnimatedStyle(screen.getByTestId('probe-confetti-0', { includeHiddenElements: true }));
+    expect(style.opacity).toBeGreaterThan(0);
+    expect(style.opacity).toBeLessThan(1);
+  });
+
+  it('R6.3 la pieza 22 conserva el retardo a los 1100 ms', async () => {
+    await renderProbe();
+    act(() => { jest.advanceTimersByTime(1100); });
+    expect(getAnimatedStyle(screen.getByTestId('probe-confetti-22', { includeHiddenElements: true }))).toEqual({
+      position: 'absolute', top: 0, left: '9%', opacity: 0,
+      transform: [{ translateY: -40 }, { rotate: '0deg' }],
+    });
+  });
+
+  it('R6.4 a los 5000 ms todas las piezas terminaron y desaparecieron', async () => {
+    await renderProbe();
+    act(() => { jest.advanceTimersByTime(5000); });
+    for (let i = 0; i < 24; i++) {
+      expect(getAnimatedStyle(screen.getByTestId(`probe-confetti-${i}`, { includeHiddenElements: true }))).toEqual({
+        position: 'absolute', top: 0, left: `${LEFT[i]}%`, opacity: 0,
+        transform: [{ translateY: H + 40 }, { rotate: '540deg' }],
+      });
+    }
   });
 });

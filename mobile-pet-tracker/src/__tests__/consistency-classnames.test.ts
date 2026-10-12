@@ -433,7 +433,7 @@ describe('#64 R9: el color categórico solo se nombra en el módulo de paleta', 
     };
   }
 
-  it('centraliza las diez clases completas y prohíbe interpolarlas', () => {
+  it('centraliza las quince clases completas y prohíbe interpolarlas', () => {
     const inventory = categoryClassInventory();
 
     expect(inventory.files).toEqual([join('utils', 'category-palette.ts')]);
@@ -449,6 +449,12 @@ describe('#64 R9: el color categórico solo se nombra en el módulo de paleta', 
       'text-category-violet-strong',
       'bg-category-rose',
       'text-category-rose-strong',
+      // #171 R6: el relleno del confeti
+      'bg-category-amber-strong',
+      'bg-category-violet-strong',
+      'bg-category-blue-strong',
+      'bg-category-rose-strong',
+      'bg-category-green-strong',
     ]);
   });
 
