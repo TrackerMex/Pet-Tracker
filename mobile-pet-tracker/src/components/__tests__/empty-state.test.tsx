@@ -406,3 +406,28 @@ describe('#171 R10: Pingo flota', () => {
     expect(getAnimatedStyle(screen.getByTestId('probe-float'))).toEqual({ width: 160, height: 160, transform: [{ translateY: -4 }] });
   });
 });
+
+describe('#171 R11: reduce motion en los vacíos', () => {
+  beforeEach(() => {
+    mockWithRepeat.mockClear();
+    mockUseReducedMotion.mockReturnValue(true);
+    jest.useFakeTimers();
+  });
+  afterEach(() => {
+    mockUseReducedMotion.mockReturnValue(false);
+    jest.useRealTimers();
+  });
+
+  it('R11.1 no arranca el bucle con reduce motion', async () => {
+    await renderProbe();
+    expect(mockWithRepeat).not.toHaveBeenCalled();
+  });
+
+  it('R11.1 conserva la posición a los 1200 y los 10000 ms', async () => {
+    await renderProbe();
+    await act(async () => { jest.advanceTimersByTime(1200); });
+    expect(getAnimatedStyle(screen.getByTestId('probe-float'))).toEqual({ width: 160, height: 160, transform: [{ translateY: 0 }] });
+    await act(async () => { jest.advanceTimersByTime(8800); });
+    expect(getAnimatedStyle(screen.getByTestId('probe-float'))).toEqual({ width: 160, height: 160, transform: [{ translateY: 0 }] });
+  });
+});
