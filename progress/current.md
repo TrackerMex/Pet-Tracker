@@ -110,3 +110,21 @@
     Resolución: `- 1 // #159 R2`, `+ 1 // #167 R5`, `+ 2, // #169 R9`.
   - §2.24 de specs/mobile-ui-language/design.md la abren también #167 y
     #170: quien mergee después renumera.
+
+### Gate y revisión (2026-10-12)
+
+- init.sh del leader sobre `dbe183a6`: EXIT=0, «Todo verde» (móvil 99/2823,
+  backend 1474, e2e 468 + 8 skipped), con avisos de inicio y fin a los peers.
+- Reviewer: **RECHAZADO** (`progress/review_mobile-weight-draw-and-toasts.md`).
+  Los tres bloqueantes son de la spec, no del trabajo de Codex:
+  - E1: la columna «Test» de `traceability.md` seguía en «pendiente»;
+  - E2: R1 y R2 solo muestreaban `p` en 0 y 1, así que un salto brusco pasaba;
+  - E3: la tabla de R5 no separaba posición de valor.
+- El leader confirmó E2 y E3 fuera del árbol y, al ensanchar cada candado a
+  su cláusula entera, halló dos huecos más de R5: M3c (base = la más pesada
+  anterior al mes) y M3d (paso 5 por fecha, no por identidad).
+- E1 lo cierra el leader: columna «Test» rellena con `archivo::describe`.
+- E2 y E3 van a la **Enmienda E1** (requirements.md y tasks.md, solo tests y
+  con la producción idéntica a `f314978d`): 2 `it` en weight-chart y las filas
+  12-14 en monthly. Pendiente del barrido del reviewer y de la firma humana
+  vía Notion. Después, Reanudación 5 de Codex.

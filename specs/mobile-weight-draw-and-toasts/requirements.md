@@ -365,3 +365,88 @@ Guardas de clases contrastadas; todas siguen verdes con lo prescrito:
 ### Aprobación de R14 (prueba de humo en dev build de Android)
 
 - [ ] Smoke de R14 superado por humano (fecha: ____, dispositivo: ____)
+
+## Enmienda E1 — candados de R1, R2 y R5 (revisión rechazada, 2026-10-12)
+
+> Escrita el 2026-10-12 sobre la spec aprobada (firma `ccb4ad61`), tras la
+> revisión **rechazada** (`progress/review_mobile-weight-draw-and-toasts.md`,
+> sobre `dbe183a6`, punta de Codex `f314978d`), por sus bloqueantes E2 y E3, y
+> ensanchada por el leader con dos huecos más de R5 (M3c y M3d). No toca D1-D7,
+> ni el texto de R1-R14, ni la firma original. **Solo tests**: la producción de
+> `f314978d` es correcta y queda idéntica. Su casilla va **sin marcar**: el
+> humano reabre el gate solo para esta enmienda.
+>
+> El bloqueante E1 del reviewer (columna «Test» de `traceability.md` en
+> «pendiente») no es de requisitos: lo cierra el leader en el mismo commit que
+> esta enmienda, sin tocar código.
+
+### El hecho medido
+
+**R1 y R2 (E2 del reviewer).** R1 dice `strokeDashoffset = L · (1 − p)` y R2
+`opacity = p`, pero T1 y T2 solo fijaron el primer frame (`p = 0`) y el final
+(`p = 1`). Un salto brusco o una curva distinta cumple los dos extremos:
+
+| Id | Mutación en `src/components/weight-chart.tsx` | Qué rompe en producción | Estado en `f314978d` |
+|---|---|---|---|
+| M1 | `strokeDashoffset: progress.get() >= 1 ? 0 : L` y `opacity: progress.get() >= 1 ? 1 : 0` | la gráfica aparece de golpe al final, sin dibujarse | **verde** 15/15 |
+| M2 | `L * (1 - progress.get()) ** 2` y `progress.get() ** 2` | el dibujo sigue otra curva | **verde** 15/15 |
+
+**R5 (E3 del reviewer, ensanchado).** R5 elige **por posición**: `newest =
+inMonth[0]` (paso 3), la base es la **primera** anterior al mes en el orden de
+la API y, si no hay, la **última** de `inMonth` (paso 4), y el paso 5 compara
+**identidad** (`baseline` es `newest`). La tabla cerrada de T5 no separa
+posición de valor, ni identidad de fecha:
+
+| Id | Mutación en `src/utils/monthly-weight-delta.ts` | Qué rompe | Estado en `f314978d` |
+|---|---|---|---|
+| M3a | `newest` = la entrada más pesada de `inMonth` | delta contra el pico del mes, no contra el último peso | **verde** 11/11 (reviewer) |
+| M3b | la base de respaldo = la más ligera de `inMonth` | delta contra el mínimo del mes | **verde** 11/11 (reviewer) |
+| M3c | la base = la **más pesada** anterior al mes, no la primera | delta contra un peso antiguo cualquiera | **verde** 11/11 (leader) |
+| M3d | el paso 5 compara `measuredAt` en vez de identidad | dos pesos del mismo día ocultan el delta | **verde** 11/11 (leader) |
+
+Las cuatro las midió el leader fuera del árbol sobre la tabla de 11 filas. M3c
+y M3d no estaban en la revisión: salieron al ensanchar cada candado a su
+cláusula entera (pasos 3, 4 y 5).
+
+### Decisión: E1 añade tests a R1, R2 y R5, no reescribe su texto
+
+El texto de R1, R2 y R5 ya dice lo correcto. La enmienda solo añade candados:
+
+- **R1**: un `it` con `p = 0.25` (el doble de `withTiming` devuelve `0.25`) y
+  la fixture de tres pesos. Espera `strokeDashoffset = 0.75 · L ≈ 78.7464`
+  (`expect.closeTo(78.7464, 3)`; `0.75 · 104.99523798… = 78.74642849…`).
+- **R2**: un `it` con el mismo doble. Espera `opacity = 0.25` en
+  `weight-chart-points`.
+- **R5**: tres filas nuevas en la tabla cerrada, todas con hoy `2027-01-05`:
+
+  | # | Entradas (`measuredAt` `weightKg`) | Esperado | Qué candada | Mutación que cae |
+  |---|---|---|---|---|
+  | 12 | `2027-01-04 12.0`, `2027-01-02 12.3`, `2027-01-01 12.1` | `-0.1` | sin anterior al mes, el peso baja: newest = `inMonth[0]` (no la más pesada) y la base = la última (no la más ligera) | M3a (`0.2`), M3b (`null`) |
+  | 13 | `2027-01-04 12.4`, `2026-12-31 11.8`, `2026-12-10 12.0` | `0.6` | base = la **primera** anterior al mes, aunque no sea la más pesada | M3c (`0.4`) |
+  | 14 | `2027-01-04 12.4`, `2027-01-04 12.3` | `0.1` | dos pesos del mismo día son dos entradas: el paso 5 es identidad, no fecha | M3d (`null`) |
+
+Los `it` y las filas que ya existen no cambian.
+
+### Cómo se prueba que los candados vigilan (CHECKPOINTS.md C4, quinto punto)
+
+Es un candado sobre código **ya correcto**. Por eso su rojo es una **mutación
+de producción**: se versiona en el commit rojo y se revierte en el verde.
+Nunca una mutación del doble.
+
+- R1 y R2: el rojo versiona M1 (el salto brusco del reviewer). Fallan los dos
+  `it` nuevos y ninguno más: `2 failed, 15 passed, 17 total`.
+- R5: el rojo versiona M3a + M3b + M3c + M3d a la vez. Fallan las tres filas
+  nuevas y ninguna más: `3 failed, 11 passed, 14 total`.
+
+Después, cinco sondas sin commit, restauradas, sobre el árbol verde: M2, y
+M3a, M3b, M3c y M3d **por separado**, cada una con su fila. tasks.md §Enmienda
+E1 da las mutaciones literales y los recuentos.
+
+Medido por el leader fuera del árbol sobre `dbe183a6`, con jest, `tsc` y
+eslint: los `it` y las filas nuevas nacen verdes; cada mutación los pone en
+rojo **por aserción** y en ninguno más; con las mutaciones del rojo, `tsc` y
+eslint dan 0; `GRAFICA` pasa de 140 a 142 y `GUARDAS` sigue en 92.
+
+### Aprobación de la Enmienda E1
+
+- [ ] Enmienda E1 aprobada por humano (fecha: ____, vía Notion) ← gate obligatorio antes de la Reanudación 5 de Codex

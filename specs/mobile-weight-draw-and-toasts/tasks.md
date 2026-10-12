@@ -338,3 +338,182 @@ tags: [mobile, ui, motion, spec]
 - [ ] `grep -cF 'Haptics.notificationAsync(' src/screens/weight-log/index.tsx` da 1.
 - [ ] Las anclas de [[requirements]] §Candados agregados, medidas otra vez, tienen el valor de su columna «Después».
 - [ ] `traceability.md` sin filas «pendiente», salvo R14 hasta la firma humana.
+
+## Enmienda E1 — Reanudación 5 (R1, R2 y R5, solo tests)
+
+> Solo tras la firma humana de la Enmienda E1 (requirements.md §Enmienda E1).
+> La producción de `src/components/weight-chart.tsx` y de
+> `src/utils/monthly-weight-delta.ts` queda **idéntica** a `f314978d` al final
+> de la ronda: cada commit verde la restaura desde ese hash. Rutas relativas a
+> `mobile-pet-tracker/`. Nada de números de línea: todo se localiza por
+> contenido. Cada medida acaba en `echo "exit=$?"` y su log no se lee hasta ver
+> `exit=`.
+
+- [ ] **Antes.**
+  - `git merge-base --is-ancestor f314978d HEAD; echo "exit=$?"` → `exit=0`.
+  - `git diff --quiet f314978d HEAD -- mobile-pet-tracker; echo "exit=$?"` → `exit=0`.
+  - `test ! -e .expo/types/router.d.ts; echo "exit=$?"` → `exit=0`.
+  - Base, fichero a fichero:
+    - `FORCE_COLOR=0 bunx jest --runTestsByPath src/components/__tests__/weight-chart.test.tsx` → `Tests: 15 passed, 15 total`;
+    - `FORCE_COLOR=0 bunx jest --runTestsByPath src/utils/monthly-weight-delta.test.ts` → `Tests: 11 passed, 11 total`.
+
+    Si alguna no da eso, **para**: la base no es la de la revisión.
+
+- [ ] **(1) Commit rojo de R1 y R2** `test(mobile): progreso intermedio del dibujo de la gráfica de peso (#169 R1, R2)`.
+  - En `src/components/__tests__/weight-chart.test.tsx`:
+    - Dentro de `describe('#169 R1: la línea se dibuja al montarse'`, justo
+      después de `it('empieza oculta en el primer frame'` y antes de
+      `it('con dos pesos iguales la longitud es 100'`:
+
+      ```tsx
+        it('con progreso 0.25 el desplazamiento es tres cuartos de L', async () => {
+          mockWithTiming.mockImplementation(() => 0.25);
+          await render(<WeightChart entries={entries} />, { wrapper: WeightChartWrapper });
+
+          await waitFor(() =>
+            expect(screen.getByTestId('weight-chart-line').props.jestAnimatedProps?.value)
+              .toEqual({ strokeDashoffset: expect.closeTo(78.7464, 3) }),
+          );
+        });
+      ```
+
+    - Dentro de `describe('#169 R2: los puntos aparecen con el mismo progreso'`,
+      justo después de `it('empieza con los puntos ocultos en el primer frame'`
+      y antes de `it('agrupa un Circle por entrada y ninguno fuera'`:
+
+      ```tsx
+        it('con progreso 0.25 la opacidad de los puntos es 0.25', async () => {
+          mockWithTiming.mockImplementation(() => 0.25);
+          await render(<WeightChart entries={entries} />, { wrapper: WeightChartWrapper });
+
+          await waitFor(() =>
+            expect(screen.getByTestId('weight-chart-points').props.jestAnimatedProps?.value)
+              .toEqual({ opacity: 0.25 }),
+          );
+        });
+      ```
+
+    - Los dos van con `waitFor`, no leídos directamente: con `p = 0.25` el
+      valor intermedio llega con el mapper de `useAnimatedProps`, igual que el
+      estado final (§Reglas comunes, «Props animadas»). Leído sin esperar, el
+      `it` de R1 ve `L` y falla aunque la producción sea correcta (medido).
+    - `entries` es la fixture de tres pesos que ya declara cada `describe`.
+      Ningún `it` existente cambia, ni de nombre ni de cuerpo.
+  - **Mutación versionada M1** en `src/components/weight-chart.tsx` (el salto
+    brusco del reviewer):
+    - `    strokeDashoffset: L * (1 - progress.get()),` pasa a
+      `    strokeDashoffset: progress.get() >= 1 ? 0 : L,`;
+    - `  const pointsProps = useAnimatedProps(() => ({ opacity: progress.get() }));`
+      pasa a
+      `  const pointsProps = useAnimatedProps(() => ({ opacity: progress.get() >= 1 ? 1 : 0 }));`.
+  - Rojo esperado, midiendo solo `src/components/__tests__/weight-chart.test.tsx`:
+    `Tests: 2 failed, 15 passed, 17 total`, los dos por aserción:
+
+    | `it` | Por qué falla |
+    |---|---|
+    | `con progreso 0.25 el desplazamiento es tres cuartos de L` | aserción dentro del `waitFor`: recibe `{ strokeDashoffset: 104.99… }` |
+    | `con progreso 0.25 la opacidad de los puntos es 0.25` | aserción dentro del `waitFor`: recibe `{ opacity: 0 }` |
+
+    Con la mutación, `bun run typecheck` y el lint dan 0 (medido). Cualquier
+    otro `it` rojo, un `TypeError` o un `ReferenceError` es un error de
+    medida: **para**.
+
+- [ ] **(2) Commit verde de R1 y R2** `feat(mobile): la gráfica de peso vuelve a dibujarse en continuo (#169 R1, R2)`.
+  - `git checkout f314978d -- src/components/weight-chart.tsx`, y después
+    `git diff --quiet f314978d -- src/components/weight-chart.tsx; echo "exit=$?"` → `exit=0`.
+  - Gate: weight-chart solo → `Tests: 17 passed, 17 total`; el comando
+    GRAFICA del handoff (weight-chart, health y weight-log) →
+    `Tests: 142 passed, 142 total`; GUARDAS → `Tests: 92 passed, 92 total`;
+    `bun run typecheck` y el lint con salida vacía.
+
+- [ ] **Sonda M2**, sin commit, sobre el verde. En `src/components/weight-chart.tsx`:
+  - `    strokeDashoffset: L * (1 - progress.get()),` pasa a
+    `    strokeDashoffset: L * (1 - progress.get()) ** 2,`;
+  - `({ opacity: progress.get() })` pasa a `({ opacity: progress.get() ** 2 })`.
+
+  Esperado, solo weight-chart: `Tests: 2 failed, 15 passed, 17 total`, los
+  mismos dos `it` por aserción. Restaurar con
+  `git checkout HEAD -- src/components/weight-chart.tsx` y
+  `git diff --quiet HEAD -- src/components/weight-chart.tsx; echo "exit=$?"` → `exit=0`.
+
+- [ ] **(3) Commit rojo de R5** `test(mobile): el delta del mes elige por posición, no por valor (#169 R5)`.
+  - En `src/utils/monthly-weight-delta.test.ts`, al final del array `cases`,
+    justo después de la fila `[11, …]`:
+
+    ```ts
+        [12, '2027-01-05', [w('2027-01-04', 12.0), w('2027-01-02', 12.3), w('2027-01-01', 12.1)], -0.1],
+        [13, '2027-01-05', [w('2027-01-04', 12.4), w('2026-12-31', 11.8), w('2026-12-10', 12.0)], 0.6],
+        [14, '2027-01-05', [w('2027-01-04', 12.4), w('2027-01-04', 12.3)], 0.1],
+    ```
+
+    Las filas 1 a 11 y el `it.each` no cambian.
+  - **Mutación versionada M3** en `src/utils/monthly-weight-delta.ts`: M3a,
+    M3b, M3c y M3d a la vez. Las cuatro líneas desde
+    `  const newest = inMonth[0];` hasta `  if (baseline === newest) return null;`
+    pasan a:
+
+    ```ts
+      const newest = inMonth.reduce((a, b) => (b.weightKg > a.weightKg ? b : a));
+      const baseline = entries
+        .filter((entry) => entry.measuredAt < monthStart)
+        .reduce<WeightEntry | undefined>((a, b) => (a && a.weightKg >= b.weightKg ? a : b), undefined)
+        ?? inMonth.reduce((a, b) => (b.weightKg < a.weightKg ? b : a));
+      if (baseline.measuredAt === newest.measuredAt) return null;
+    ```
+
+    El resto del fichero no cambia (`WeightEntry` ya está importado como tipo).
+  - Rojo esperado, midiendo solo `src/utils/monthly-weight-delta.test.ts`:
+    `Tests: 3 failed, 11 passed, 14 total`, los tres por aserción:
+
+    | `it` | Recibe | Espera |
+    |---|---|---|
+    | `fila 12 con hoy 2027-01-05` | `0.3` | `-0.1` |
+    | `fila 13 con hoy 2027-01-05` | `0.4` | `0.6` |
+    | `fila 14 con hoy 2027-01-05` | `null` | `0.1` |
+
+    Con la mutación, `bun run typecheck` y el lint dan 0 (medido). Cualquier
+    otra fila roja, un `TypeError` o un `ReferenceError` es un error de
+    medida: **para**.
+
+- [ ] **(4) Commit verde de R5** `feat(mobile): monthlyWeightDelta vuelve a elegir por posición (#169 R5)`.
+  - `git checkout f314978d -- src/utils/monthly-weight-delta.ts`, y después
+    `git diff --quiet f314978d -- src/utils/monthly-weight-delta.ts; echo "exit=$?"` → `exit=0`.
+  - Gate: monthly solo → `Tests: 14 passed, 14 total`; GUARDAS → 92;
+    `bun run typecheck` y el lint con salida vacía.
+
+- [ ] **Sondas M3a-M3d**, sin commit, sobre el verde, **por separado**, en
+  `src/utils/monthly-weight-delta.ts`. Mide solo
+  `src/utils/monthly-weight-delta.test.ts`. Restaura cada una con
+  `git checkout HEAD -- src/utils/monthly-weight-delta.ts` y
+  `git diff --quiet HEAD -- src/utils/monthly-weight-delta.ts; echo "exit=$?"` → `exit=0`
+  antes de la siguiente.
+
+  | Sonda | Mutación (una sola sustitución) | Esperado | Qué falla |
+  |---|---|---|---|
+  | M3a | `const newest = inMonth[0];` pasa a `const newest = inMonth.reduce((a, b) => (b.weightKg > a.weightKg ? b : a));` | `1 failed, 13 passed, 14 total` | `fila 12` (recibe `0.2`) |
+  | M3b | `?? inMonth[inMonth.length - 1];` pasa a `?? inMonth.reduce((a, b) => (b.weightKg < a.weightKg ? b : a));` | `1 failed, 13 passed, 14 total` | `fila 12` (recibe `null`) |
+  | M3c | `entries.find((entry) => entry.measuredAt < monthStart)` pasa a `entries.filter((entry) => entry.measuredAt < monthStart).reduce<WeightEntry \| undefined>((a, b) => (a === undefined \|\| b.weightKg > a.weightKg ? b : a), undefined)` | `1 failed, 13 passed, 14 total` | `fila 13` (recibe `0.4`) |
+  | M3d | `if (baseline === newest) return null;` pasa a `if (baseline.measuredAt === newest.measuredAt) return null;` | `1 failed, 13 passed, 14 total` | `fila 14` (recibe `null`) |
+
+  Todas por aserción. En la tabla, `\|` es un `|` literal del código.
+
+- [ ] **Cierre.**
+  - `git diff --quiet f314978d HEAD -- mobile-pet-tracker/src/components/weight-chart.tsx mobile-pet-tracker/src/utils/monthly-weight-delta.ts; echo "exit=$?"`
+    → `exit=0` (desde la raíz): la producción queda idéntica.
+  - El comando BASE del handoff (los 9 ficheros) → `Tests: 365 passed, 365 total`
+    (363 + 2, con weight-chart en 17).
+  - El comando ALL, con `pgrep -af '[i]nit\.sh'` vacío antes → `Test Suites: 99 passed, 99 total`
+    y `Tests: 2828 passed, 2828 total` (2823 + 2 + 3).
+  - `bun run typecheck` y el lint con salida vacía.
+
+- [ ] **(5) Commit final** `docs(mobile-weight-draw-and-toasts): #169 Enmienda E1, trazabilidad e impl`.
+  - En `traceability.md`, columna «Commit»:
+    - las filas R1 y R2 añaden `; Enmienda E1: <hash rojo> → <hash verde>` con
+      sus mensajes, y `sonda M2`;
+    - la fila R5 añade lo mismo con `sondas M3a-M3d`.
+  - La columna «Test» no se toca: la rellenó el leader con la enmienda.
+  - En `progress/impl_mobile-weight-draw-and-toasts.md`, una sección
+    `## Reanudación 5 (Enmienda E1)` con cada medida (sus líneas `Tests:` y su
+    `exit=`), los hashes y las cinco sondas.
+  - La lista cerrada de ficheros no cambia: la enmienda solo toca ficheros
+    que ya están en ella, y deja la producción idéntica a `f314978d`.
