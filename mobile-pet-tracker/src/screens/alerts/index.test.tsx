@@ -1255,3 +1255,93 @@ describe('#155 R5: sin alertas, Pingo duerme', () => {
     expect(screen.queryByTestId('alerts-empty-action')).toBeNull();
   });
 });
+
+describe('#170 R3: agrupa la lista en Hoy, Esta semana y Anteriores', () => {
+  const hostProcess = process.getBuiltinModule('process');
+  let previousTZ: string | undefined;
+  const S = [
+    makeAlert({ id: 'earlier-closed', status: 'closed', openedAt: '2026-12-26T12:00:00.000Z' }),
+    makeAlert({ id: 'today-acked', status: 'acked', openedAt: '2027-01-02T15:00:00.000Z' }),
+    makeAlert({ id: 'earlier-open', status: 'open', openedAt: '2026-12-20T12:00:00.000Z' }),
+    makeAlert({ id: 'week-open', status: 'open', openedAt: '2027-01-01T12:00:00.000Z' }),
+    makeAlert({ id: 'today-open', status: 'open', openedAt: '2027-01-02T07:00:00.000Z' }),
+  ];
+  beforeEach(() => {
+    previousTZ = hostProcess.env.TZ;
+    hostProcess.env.TZ = 'America/Mexico_City';
+    jest.spyOn(Date, 'now').mockReturnValue(Date.parse('2027-01-02T16:00:00.000Z'));
+    jest.clearAllMocks();
+    mockListAlerts.mockReset().mockResolvedValue({ kind: 'ok', items: S, nextCursor: null });
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() });
+  });
+  afterEach(() => {
+    if (previousTZ === undefined) delete hostProcess.env.TZ;
+    else hostProcess.env.TZ = previousTZ;
+    jest.restoreAllMocks();
+  });
+  it('ordena por sección y, dentro, abiertas primero en el orden del servidor', async () => {
+    await renderAlerts();
+    await screen.findByTestId('alert-row-today-open');
+    expect(screen.getByTestId('alerts-list').props.data.map((a: Alert) => a.id)).toEqual(['today-open', 'today-acked', 'week-open', 'earlier-open', 'earlier-closed']);
+  });
+  it('pinta una cabecera por sección con su copy en español', async () => {
+    await renderAlerts();
+    await screen.findByTestId('alert-row-today-open');
+    for (const [section, copy] of [['today', 'Hoy'], ['week', 'Esta semana'], ['earlier', 'Anteriores']]) {
+      const headers = screen.getAllByTestId('alerts-section-' + section);
+      expect(headers).toHaveLength(1);
+      expect(headers[0]).toHaveTextContent(copy);
+      expect(headers[0].props.accessibilityRole).toBe('header');
+      expect(headers[0].props.className).toBe('text-xs font-bold uppercase text-muted');
+    }
+  });
+  it('pinta las cabeceras en inglés', async () => {
+    await renderAlertsInEnglish();
+    await screen.findByTestId('alert-row-today-open');
+    for (const [section, copy] of [['today', 'Today'], ['week', 'This week'], ['earlier', 'Earlier']]) {
+      expect(screen.getByTestId('alerts-section-' + section)).toHaveTextContent(copy);
+    }
+  });
+  it('envuelve cada cabecera con la primera fila de su sección en un View gap-4', async () => {
+    await renderAlerts();
+    await screen.findByTestId('alert-row-today-open');
+    for (const [section, id] of [['today', 'today-open'], ['week', 'week-open'], ['earlier', 'earlier-open']]) {
+      const parent = screen.getByTestId('alerts-section-' + section).parent!;
+      expect(parent.props.className).toBe('gap-4');
+      expect(within(parent).getByTestId('alert-row-' + id)).toBeVisible();
+    }
+  });
+  it.each([
+    ['today', S.filter((a) => !a.id.startsWith('today'))],
+    ['week', S.filter((a) => !a.id.startsWith('week'))],
+    ['earlier', S.filter((a) => !a.id.startsWith('earlier'))],
+  ] as const)('omite la cabecera de %s cuando la sección queda vacía', async (section, items) => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items, nextCursor: null });
+    await renderAlerts();
+    await screen.findByTestId('alert-row-' + items[0].id);
+    expect(screen.queryByTestId('alerts-section-' + section)).toBeNull();
+  });
+  it('pinta cada cabecera una sola vez al cargar la página siguiente', async () => {
+    mockListAlerts.mockResolvedValueOnce({ kind: 'ok', items: [
+      makeAlert({ id: 'today-1', openedAt: '2027-01-02T14:00:00.000Z' }),
+      makeAlert({ id: 'week-1', openedAt: '2026-12-30T12:00:00.000Z' }),
+    ], nextCursor: 'c1' }).mockResolvedValue({ kind: 'ok', items: [
+      makeAlert({ id: 'week-2', status: 'acked', openedAt: '2026-12-29T12:00:00.000Z' }),
+      makeAlert({ id: 'earlier-1', openedAt: '2026-12-01T12:00:00.000Z' }),
+    ], nextCursor: null });
+    await renderAlerts();
+    await screen.findByTestId('alert-row-today-1');
+    await fireEvent(screen.getByTestId('alerts-list'), 'onEndReached');
+    await waitFor(() => expect(screen.getByTestId('alerts-list').props.data).toHaveLength(4));
+    expect(screen.getByTestId('alerts-list').props.data.map((a: Alert) => a.id)).toEqual(['today-1', 'week-1', 'week-2', 'earlier-1']);
+    expect(screen.getAllByTestId('alerts-section-week')).toHaveLength(1);
+  });
+  it('no reordena al marcar leída una fila abierta', async () => {
+    mockAckAlert.mockResolvedValue({ kind: 'ok', alert: { ...S[4], status: 'acked' } });
+    await renderAlerts();
+    await fireEvent.press(await screen.findByTestId('alert-row-today-open-ack'));
+    await screen.findByTestId('alert-row-today-open-status');
+    expect(screen.getByTestId('alerts-list').props.data.map((a: Alert) => a.id)).toEqual(['today-open', 'today-acked', 'week-open', 'earlier-open', 'earlier-closed']);
+  });
+});
