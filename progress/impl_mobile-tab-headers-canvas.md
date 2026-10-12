@@ -61054,4 +61054,59 @@ git add specs/mobile-tab-headers-canvas/traceability.md progress/impl_mobile-tab
     && git commit -m 'docs(mobile-tab-headers-canvas): #168 traceability'
 ```
 
-Resultado de c26 pendiente de la ejecución indicada.
+```text
+[feature/168-mobile-tab-headers-canvas 8b41b4f4] docs(mobile-tab-headers-canvas): #168 traceability
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 2 files changed, 61074 insertions(+), 17 deletions(-)
+ create mode 100644 progress/impl_mobile-tab-headers-canvas.md
+cadena_exit=0
+```
+
+c26 alcanzó el commit `8b41b4f4 docs(mobile-tab-headers-canvas): #168 traceability`; la lista stageada fue exactamente la de la cadena.
+
+### Lista cerrada tras c26
+
+```text
+$ git diff --name-only b082f6e5 HEAD -- . ':!feature_list.json' ':!progress/current.md' ':!progress/handoff_mobile-tab-headers-canvas.md' ':!specs/mobile-tab-headers-canvas/requirements.md' ':!specs/mobile-tab-headers-canvas/design.md' ':!specs/mobile-tab-headers-canvas/tasks.md' ':!progress/review_mobile-tab-headers-canvas.md'
+docs/ui-guidelines.md
+mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+mobile-pet-tracker/src/__tests__/hero-header-amendments.test.ts
+mobile-pet-tracker/src/__tests__/tab-headers-canvas.test.ts
+mobile-pet-tracker/src/app/(tabs)/__tests__/food.test.tsx
+mobile-pet-tracker/src/app/(tabs)/food.tsx
+mobile-pet-tracker/src/screens/health/index.test.tsx
+mobile-pet-tracker/src/screens/health/index.tsx
+mobile-pet-tracker/src/screens/profile/index.test.tsx
+mobile-pet-tracker/src/screens/profile/index.tsx
+progress/impl_mobile-tab-headers-canvas.md
+specs/mobile-health-make-parity/requirements.md
+specs/mobile-kcal-consumed-bar/requirements.md
+specs/mobile-pet-hero-header/requirements.md
+specs/mobile-tab-headers-canvas/traceability.md
+exit=0
+```
+
+Conforme: exactamente los 15 ficheros autorizados. Todas las verificaciones de cierre y la trazabilidad están registradas. BASE 475/475 y ALL 2833/2833 se conservan de las Reanudaciones 8 y 11. No se han repetido ni tocado tests/código en esta reanudación.
+
+### c27 — comando final de la lista cerrada
+
+El informe se cierra con este comando, según el handoff:
+
+```bash
+git commit --only progress/impl_mobile-tab-headers-canvas.md -m 'docs(mobile-tab-headers-canvas): #168 closed file list'
+```
+
+Los commits de A–M son 28; con c26 y c27, el cierre cuenta 30 commits. Las cuatro firmas de enmienda y el smoke de Android siguen a cargo del humano. No se ha ejecutado init.sh, push ni PR.
+
+R13: pendiente del smoke humano
