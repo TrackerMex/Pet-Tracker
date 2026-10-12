@@ -60,6 +60,16 @@
 >     contiene `Failed to run`: `pgrep -af '[i]nit\.sh'` vacío, `sleep 60` y
 >     la cadena entera otra vez, como mucho tres veces; a la tercera, PARA. Si
 >     contiene cualquier otra cosa, PARA sin reintentar.
+>
+> 12. **Timeout de jest en el CIERRE.** Los comandos FINAL y ALL del CIERRE
+>     llevan `--testTimeout=30000` justo después de `bunx jest`. Ejemplo:
+>     `FORCE_COLOR=0 bunx jest --testTimeout=30000 > /tmp/170-all.txt 2>&1; echo "exit=$?"`.
+>     El motivo es la carga del VPS: el 2026-10-12, entre las 18:44 y las
+>     18:48, había tres jest a la vez (#170, #171 y #167) en 4 CPU, y el ALL
+>     de #171, con el árbol idéntico a origin/main, sacó 6 rojos por
+>     `Exceeded timeout of 5000 ms`. El timeout no cambia ningún recuento
+>     esperado. Si aun así sale `Exceeded timeout`, anota los `●` y PARA sin
+>     relanzar.
 
 ---
 
