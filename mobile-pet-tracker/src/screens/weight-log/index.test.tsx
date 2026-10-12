@@ -872,3 +872,41 @@ describe('#169 R6: resumen del peso en la card de la gráfica', () => {
     expect(screen.queryByTestId('weight-summary')).toBeNull();
   });
 });
+
+describe('#169 R7: tono del delta del mes', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2026-09-17T18:00:00Z'));
+    prepareWeightLogTests();
+    mockGetMe.mockResolvedValue({ kind: 'ok', me: makeProfile('America/Mexico_City') });
+  });
+  afterEach(() => jest.useRealTimers());
+
+  it.each([
+    ['> 0', [
+      makeWeight({ id: 'weight-2', measuredAt: '2026-09-15', weightKg: 12.4 }),
+      makeWeight({ id: 'weight-1', measuredAt: '2026-09-02', weightKg: 12.0 }),
+    ], '+0.4 kg este mes', 'text-sm font-semibold text-danger', 'icon-trend-up', 'red', ['icon-trend-down', 'icon-minus']],
+    ['< 0', [
+      makeWeight({ id: 'weight-2', measuredAt: '2026-09-15', weightKg: 11.7 }),
+      makeWeight({ id: 'weight-1', measuredAt: '2026-08-30', weightKg: 12.0 }),
+    ], '-0.3 kg este mes', 'text-sm font-semibold text-success', 'icon-trend-down', 'green', ['icon-trend-up', 'icon-minus']],
+    ['= 0', [
+      makeWeight({ id: 'weight-2', measuredAt: '2026-09-15', weightKg: 12.0 }),
+      makeWeight({ id: 'weight-1', measuredAt: '2026-08-30', weightKg: 12.0 }),
+    ], '0 kg este mes', 'text-sm font-semibold text-muted', 'icon-minus', 'gray', ['icon-trend-up', 'icon-trend-down']],
+  ] as const)('rama %s: texto, clase e icono', async (_branch, entries, text, className, iconId, color, absent) => {
+    mockListWeights.mockResolvedValue({ kind: 'ok', weights: [...entries] });
+    await renderWeightLog();
+    await waitFor(() => expect(screen.getByTestId('weight-month-delta-text'))
+      .toHaveTextContent(text, { exact: true }));
+
+    expect(screen.getByTestId('weight-month-delta-text')).toHaveTextContent(text, { exact: true });
+    expect(screen.getByTestId('weight-month-delta-text').props.className).toBe(className);
+    const delta = within(screen.getByTestId('weight-month-delta'));
+    const icon = delta.getByTestId(iconId);
+    expect(icon.props.size).toBe(15);
+    expect(icon.props.style.color).toBe(color);
+    for (const other of absent) expect(delta.queryByTestId(other)).toBeNull();
+  });
+});
