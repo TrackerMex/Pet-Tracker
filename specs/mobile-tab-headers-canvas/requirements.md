@@ -1,6 +1,6 @@
 ---
 feature: "mobile-tab-headers-canvas"
-status: draft        # draft | approved
+status: approved       # draft | approved
 tags: [harness, spec, mobile, ui]
 ---
 
@@ -566,16 +566,16 @@ Candidatas a feature propia (las decide el humano, no se crean aquí):
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [X] Aprobado por humano (fecha: 2026-10-11) ← gate obligatorio antes de implementar
 - Reversiones, una casilla cada una. Los bloques los inserta Codex en el
   bloque L de `tasks.md`, así que el humano firma aquí **y** en la casilla
   `- [ ] Enmienda #168 aprobada por humano` de cada documento tras la
   implementación y antes del cierre. El leader no marca `done` sin las cinco.
   La frase relatada en §0.1 no sustituye a ninguna:
-  - [ ] B1: Salud deja el hero (enmienda a `specs/mobile-health-make-parity/`, R2 y R3)
-  - [ ] B2: Perfil deja el hero; Inicio lo conserva (enmienda a `specs/mobile-pet-hero-header/`, R6, la Enmienda #67)
-  - [ ] B3: el anillo sustituye a la barra (enmienda a `specs/mobile-kcal-consumed-bar/`, R2, R4 y R7)
-  - [ ] B4: regla N1 en la carta (`docs/ui-guidelines.md`)
-  - [ ] Candado: `src/__tests__/hero-header-amendments.test.ts` gana el `describe` `#168 R11`; los tres `it` de `#67 R10` no cambian (R11.4)
+  - [X] B1: Salud deja el hero (enmienda a `specs/mobile-health-make-parity/`, R2 y R3)
+  - [X] B2: Perfil deja el hero; Inicio lo conserva (enmienda a `specs/mobile-pet-hero-header/`, R6, la Enmienda #67)
+  - [X] B3: el anillo sustituye a la barra (enmienda a `specs/mobile-kcal-consumed-bar/`, R2, R4 y R7)
+  - [X] B4: regla N1 en la carta (`docs/ui-guidelines.md`)
+  - [X] Candado: `src/__tests__/hero-header-amendments.test.ts` gana el `describe` `#168 R11`; los tres `it` de `#67 R10` no cambian (R11.4)
 - [ ] Prueba de humo R13 superada en dev build de Android (fecha: ____,
   dispositivo: ____) ← gate de cierre; el leader no marca `done` sin ella
