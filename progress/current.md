@@ -9,4 +9,5 @@
 - Spec firmada vía Notion (a372efdc), E1 (a2e684ee), E2 (c8c6aee3).
 - Handoff a Codex CLI: `progress/handoff_mobile-tab-headers-canvas.md` (27 commits: A-L rojo/verde, M nace verde con sondas S1-S8, trazabilidad y lista cerrada; anclas A1-A14 y H1-H30 ejecutadas por el leader en H0).
 - Implementador: Codex CLI (terminal aparte, lo lanza el humano). Mientras implementa, el leader no toca `mobile-pet-tracker/`.
-- Siguiente: el humano avisa del fin de Codex; el leader corre init.sh (con permiso) y lanza el reviewer; firmas B1-B4 de la enmienda #168 en los cuatro documentos y smoke R13 en dev build de Android; cierre (Notion Implementado / Completado, gh pr create); #119 se cierra como superada tras el merge.
+- Review 1 (`53f0e8f9`): rechazado por O1/O2, candados que faltaban en la spec (R5 peso null, edad no finita, «Sin esterilizar»; R4.3 posición de `photo-upload-error`); el código es correcto. Enmienda E3 (`d83eafd7`, `dc5ed2e7`) añade 5 `it` que nacen verdes con sonda, incluido O3 (R9.3 `now` 150); espejada a Notion, gate En revisión.
+- Siguiente: firma de E3 vía Notion; Reanudación 13 del handoff (bloque O de tasks.md); re-review con init.sh (con permiso); firmas B1-B4 con `[X]` mayúscula y smoke R13 en dev build de Android; cierre (Notion Implementado / Completado, gh pr create); #119 se cierra como superada tras el merge.
