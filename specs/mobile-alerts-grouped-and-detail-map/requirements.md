@@ -723,7 +723,7 @@ handoff (corrección 16).
 - [x] Aprobado por humano (fecha: 2026-10-12) ← gate obligatorio antes de implementar
 - [x] Enmienda E1 aprobada por humano (fecha: 2026-10-12)
 - [x] Enmienda E2 aprobada por humano (fecha: 2026-10-12)
-- [ ] Enmienda E3 aprobada por humano (fecha: ____)
+- [x] Enmienda E3 aprobada por humano (fecha: 2026-10-12)
 
 ## Smoke R17
 
