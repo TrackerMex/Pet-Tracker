@@ -89,17 +89,13 @@ jest.mock('react-native-reanimated', () => ({
 }));
 
 jest.mock('react-native-svg', () => {
-  const React = jest.requireActual<typeof import('react')>('react');
   const actual = jest.requireActual<typeof import('react-native-svg')>('react-native-svg');
   const { View } = jest.requireActual('react-native');
-  class MockCircle extends React.Component<CircleProps> {
-    render() { return <View {...this.props} />; }
-  }
   return {
     ...actual,
     __esModule: true,
     default: (props: SvgProps) => <View {...props} />,
-    Circle: MockCircle,
+    Circle: (props: CircleProps) => <View {...props} />,
   };
 });
 
