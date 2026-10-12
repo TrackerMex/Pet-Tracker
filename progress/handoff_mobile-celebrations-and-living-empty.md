@@ -117,6 +117,44 @@
 >   la cadena de c7.1 y después c8 entera desde su medida (se espera
 >   `Tests: 98 passed, 98 total`). Cualquier otra cifra es PARADA.
 
+> **Reanudación 3** (2026-10-12; el leader la commitea encima de c16
+> `56ae7a8c` con `git commit --only`, H0 sigue siendo `d01b03bf`):
+> - **Parada**: la medida de c17 salió `Tests: 1 failed, 123 passed, 124
+>   total`. Cayó `#62 R14 › fusiona la esquina una vez y la entrega a las
+>   dos ramas de Card` con `Expected: 34`, `Received: 33`.
+> - **Causa**: hueco del inventario de design.md §7 (error del leader).
+>   Ese `it` suma el mapa por fichero de #62 R14 y lo compara con un
+>   literal propio, `33 + 1 + 1 - 1 - 1 + 1`. Tu c17 bajó bien la fila de
+>   Vincular de 2 a 1, como mandaba §7, pero §7 no listaba el literal, que
+>   tiene que bajar con ella. Tu código y el resto de tus cambios de
+>   candados son correctos. El leader copió tu diff de c17 fuera del árbol,
+>   le añadió solo esta línea y obtuvo `Tests: 124 passed, 124 total` y
+>   eslint en 0 sobre los dos ficheros.
+> - **Corrección** (mecánica de test, no cambia requisitos ni el número de
+>   `it`): design.md §7 gana la fila «CONTINUOUS_CORNER, suma del mapa
+>   (#62 R14)» y tasks.md T8 (2) la nombra. La cadena de c17 no cambia: el
+>   fichero ya está en su lista de `git add`.
+> - **Al reanudar**: no repitas las comprobaciones de arranque. HEAD es el
+>   commit de esta nota, hijo directo de `56ae7a8c`. `git status --short`
+>   debe dar exactamente los dos ` M` de c17 (`pairing/index.tsx` y
+>   `consistency-classnames.test.ts`) y
+>   `?? progress/impl_mobile-celebrations-and-living-empty.md`. No toques
+>   el resto de los cambios de c17. Añade al impl un apartado
+>   `## Reanudación 3`. Desde `mobile-pet-tracker/`, aplica la línea que
+>   falta:
+>
+>   ```
+>   cd /home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker
+>   test "$(grep -cF ').toBe(33 + 1 + 1 - 1 - 1 + 1); // #41 R9: geofences-link' src/__tests__/consistency-classnames.test.ts)" = 1 \
+>     && sed -i 's|^    ).toBe(33 + 1 + 1 - 1 - 1 + 1); // #41 R9: geofences-link$|    ).toBe(33 + 1 + 1 - 1 - 1 + 1 - 1); // #41 R9: geofences-link, #171 R3: ready-done|' src/__tests__/consistency-classnames.test.ts \
+>     && test "$(grep -cF ').toBe(33 + 1 + 1 - 1 - 1 + 1 - 1); // #41 R9: geofences-link, #171 R3: ready-done' src/__tests__/consistency-classnames.test.ts)" = 1
+>   ```
+>
+>   Si la primera comprobación no da `1`, PARA sin tocar nada. Después
+>   corre c17 entera desde su medida. Se espera `Tests: 124 passed, 124
+>   total`, y el ALL sigue en 2826. Cualquier otra cifra es PARADA. Las
+>   sondas de c17 (S8.1) van después, como estaba previsto.
+
 ---
 
 ```

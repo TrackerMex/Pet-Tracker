@@ -397,8 +397,8 @@ cualquier `grep -cF` que no dé `1` es **parada**.
 - [ ] (2) Verde: [[design]] §3.1. En el mismo commit se mueven, cada uno con
   su comentario `// #171 R3`:
   - los candados de `consistency-classnames` de [[design]] §7
-    (CONTINUOUS_CORNER del repo y de Vincular, y los dos recuentos de
-    `bg-accent-soft`);
+    (CONTINUOUS_CORNER del repo, de Vincular y la suma del mapa de #62 R14,
+    y los dos recuentos de `bg-accent-soft`);
   - los de la columna «Tras T8» de [[design]] §9.2, porque `ready-map` sale
     de Vincular: el mapa de #166 R2 deja `screens/pairing/index.tsx` en 1 y
     el total vuelve a 19 en 18 ficheros; `border-b-4` y `border-black/25`
