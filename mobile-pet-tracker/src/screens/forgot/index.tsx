@@ -112,7 +112,7 @@ export function ForgotScreen() {
         {!sent ? (
           <Button
             testID="forgot-submit"
-            className="w-full rounded-xl bg-accent"
+            className="w-full rounded-xl bg-accent border-b-4 border-black/25"
             isDisabled={email.trim() === '' || submitting}
             onPress={() => void send(email.trim())}
           >
@@ -126,7 +126,7 @@ export function ForgotScreen() {
           <Button
             testID="forgot-resend"
             variant="secondary"
-            className="w-full rounded-xl"
+            className="w-full rounded-xl border-2 border-b-6 border-lip-gray bg-surface"
             isDisabled={submitting}
             onPress={() => void send(submittedEmail)}
           >

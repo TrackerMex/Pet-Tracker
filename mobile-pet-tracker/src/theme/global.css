@@ -49,6 +49,7 @@
       --color-muted: #667085;
       --color-glass-surface: rgba(255,255,255,0.60);
       --color-tab-pill: rgba(23,130,85,0.14);
+      --color-lip-gray: #E4E7EC;
       --color-danger: #EF4444;
       --color-warning: #F59E0B;
       --color-success: #0F9B5A;
@@ -97,6 +98,7 @@
       --color-muted: #9CA3AF;
       --color-glass-surface: rgba(22,27,34,0.60);
       --color-tab-pill: rgba(23,130,85,0.22);
+      --color-lip-gray: #0A0D12;
       --color-danger: #F87171;
       --color-warning: #FBBF24;
       --color-success: #34D399;

@@ -319,7 +319,7 @@ describe('#146 R8: Guardar crea o actualiza la zona y vuelve a la lista', () => 
   });
   it('pinta Guardar con la receta primaria tras la nota de reinicio', async () => {
     await edit(); const save = screen.getByTestId('geofence-editor-save');
-    expect(save.props.className).toBe('pressable-feedback__root button__root button__root--variant-primary button__root--size-md rounded-xl bg-accent');
+    expect(save.props.className).toBe('pressable-feedback__root button__root button__root--variant-primary button__root--size-md rounded-xl bg-accent border-b-4 border-black/25');
     expect(within(save).getByText('Guardar').props.className).toBe('button__label button__label--variant-primary button__label--size-md font-bold text-accent-foreground');
     const ids = childTestIds(save.parent!);
     expect(ids.slice(ids.indexOf('geofence-editor-reset-note'), ids.indexOf('geofence-editor-reset-note') + 2)).toEqual(['geofence-editor-reset-note', 'geofence-editor-save']);

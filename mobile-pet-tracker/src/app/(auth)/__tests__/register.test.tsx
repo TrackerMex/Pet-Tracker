@@ -255,7 +255,7 @@ describe('#127 R1: el botón de envío de register lleva su receta en el árbol'
     await renderRegister();
 
     expect(screen.getByTestId('register-submit').props.className).toBe(
-      'pressable-feedback__root button__root button__root--variant-primary button__root--size-md disabled:element-disabled w-full rounded-xl bg-accent',
+      'pressable-feedback__root button__root button__root--variant-primary button__root--size-md disabled:element-disabled w-full rounded-xl bg-accent border-b-4 border-black/25',
     );
   });
 });

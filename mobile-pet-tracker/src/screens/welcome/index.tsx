@@ -103,7 +103,7 @@ export function WelcomeScreen() {
         <Button testID="welcome-get-started" className="w-full rounded-xl bg-accent border-b-4 border-black/25" onPress={() => router.push('/register')}>
           <Button.Label className="font-bold text-accent-foreground">{t('welcome.getStarted')}</Button.Label>
         </Button>
-        <Button testID="welcome-have-account" className="w-full rounded-xl border border-accent bg-transparent" onPress={() => router.push('/login')}>
+        <Button testID="welcome-have-account" className="w-full rounded-xl border-2 border-b-6 border-lip-gray bg-surface" onPress={() => router.push('/login')}>
           <Button.Label className="font-semibold text-accent-strong">{t('welcome.haveAccount')}</Button.Label>
         </Button>
         <Text testID="welcome-legal" className="text-center text-xs text-muted">{t('welcome.legalNotice')}</Text>
