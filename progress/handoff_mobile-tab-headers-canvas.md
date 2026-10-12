@@ -1974,3 +1974,97 @@ Paso 3: el resto del CIERRE del handoff original desde
 475/475: no lo repitas), y despues traceability, c26 y c27, con todas las
 correcciones citadas arriba.
 ```
+
+## Reanudación 10: parada en el ALL de CIERRE, flake del picker (2026-10-12)
+
+> La Reanudación 9 esperó sin jest concurrente y lanzó el ALL con
+> `--testTimeout=30000`. Dio `1 failed, 98 passed, 99 total` y
+> `3 failed, 2830 passed, 2833 total`. Los tres rojos son los tres `it` de
+> `describe('R7: cambiar foto')` de `src/screens/profile/index.test.tsx`,
+> todos con `TypeError: Cannot read properties of undefined (reading
+> 'canceled')` en `src/screens/profile/index.tsx:137`. La suite, sola,
+> dio `59 passed, 59 total`.
+>
+> No es de #168:
+> - el diff de `b082f6e5..HEAD` no toca `handleChangePhoto`, ni el botón
+>   `change-photo`, ni el `describe('R7: cambiar foto')`, ni el
+>   `jest.mock('expo-image-picker')` y su rearme en el `beforeEach` raíz;
+> - es la misma firma que el flake de `src/screens/add-pet/index.test.tsx`
+>   que #72 dejó abierto sin causa (PR #139, 2026-09-17), ahora en otro
+>   fichero.
+>
+> Dato nuevo para ese flake: en el primer `it`, `mockLaunchImageLibrary`
+> tenía 0 llamadas mientras producción leía `undefined`. Es decir,
+> producción llamó a una función distinta del mock del test, o a una ya
+> desarmada. El log entero queda guardado fuera del repo.
+>
+> La perf-cache de jest de este worktree ya marca la suite como verde (la
+> medida aislada la sobrescribió), así que el siguiente ALL no la
+> programa primero. Esta reanudación repite el ALL una vez, con la misma
+> espera y el mismo comando. Si vuelve a salir el mismo rojo, ya no es un
+> flake raro y para. H0 sigue siendo `b082f6e5`. Este commit solo toca
+> este fichero, que está fuera de la lista cerrada.
+
+Pegar en Codex CLI:
+
+```
+Worktree: /home/claude/sites/Pet-Tracker-wt-168   <- PRIMERA LINEA. Trabaja AQUI y en ningun otro sitio
+Reanudacion 10 de #168 tras el rojo del picker en el ALL de CIERRE. NO
+repitas las Reanudaciones 8 ni 9. Ejecuta y pega en
+progress/impl_mobile-tab-headers-canvas.md, bajo una seccion nueva
+«## Reanudacion 10»:
+  cd /home/claude/sites/Pet-Tracker-wt-168 && pwd
+  git branch --show-current
+  git rev-parse --short HEAD~1
+  git log --oneline b082f6e5..HEAD | wc -l
+  git log --oneline 5d6be139..HEAD
+  git status --short
+PARA si:
+- la branch no es feature/168-mobile-tab-headers-canvas;
+- HEAD~1 no es 600cc3a7 (la Reanudacion 9 del leader);
+- el recuento no es 38;
+- el segundo log no son exactamente dos commits: el del leader que
+  anade esta reanudacion y 600cc3a7;
+- `git status --short` no es exactamente esta linea:
+  ?? progress/impl_mobile-tab-headers-canvas.md
+H0 sigue siendo b082f6e5. Siguen en vigor todas las reglas del handoff
+original, las correcciones del paso 5 de la Reanudacion 2, el
+`<LINT n>` con reintento de la Reanudacion 4, la regla de medidas de la
+Reanudacion 6, las dos correcciones del paso 5 de la Reanudacion 7
+(fila R8 con c17 + c17b; 30 commits en total y 28 en A-M) y la regla
+de error de invocacion ampliada de la Reanudacion 8.
+
+Anclas, desde mobile-pet-tracker/
+(`cd /home/claude/sites/Pet-Tracker-wt-168/mobile-pet-tracker && pwd`):
+  test -f src/__tests__/tab-headers-canvas.test.ts; echo $?   -> 0
+  git diff --name-only HEAD -- . ../docs ../specs | wc -l   -> 0
+  git diff --cached --name-only | wc -l   -> 0
+  git ls-files --others --exclude-standard -- . ../docs ../specs | wc -l   -> 0
+  git diff --name-only b082f6e5 HEAD -- . | wc -l   -> 9
+  git diff b082f6e5 HEAD -- src/screens/profile/index.tsx | grep -cE '^[-+].*(handleChangePhoto|launchImageLibraryAsync|picked)'   -> 0
+Si alguna no da su cifra, PARA.
+
+Paso 1, la misma espera de la Reanudacion 9. Desde mobile-pet-tracker/,
+como comando PROPIO (no lo encadenes con el jest del paso 2):
+  for i in $(seq 1 45); do pgrep -f 'node_modules/(\.bin/jest|jest-worker)' > /dev/null || break; sleep 60; done; pgrep -af 'node_modules/(\.bin/jest|jest-worker)'; pgrep -af '[i]nit\.sh'; echo "fin-espera"
+    -> solo la linea `fin-espera`
+Si sale algun proceso tras los 45 minutos, PARA y copia la salida.
+
+Paso 2, el ALL de CIERRE, desde mobile-pet-tracker/, sin pipe y sin
+lanzar nada mas mientras corre. Escribe en un fichero NUEVO, no en
+/tmp/168-all.txt:
+  FORCE_COLOR=0 bunx jest --testTimeout=30000 > /tmp/168-all-r10.txt 2>&1; echo "exit=$?"
+    -> exit=0, `Test Suites: 99 passed, 99 total` y
+       `Tests:       2833 passed, 2833 total`
+Copia las dos lineas y despues, como comando propio:
+  grep -c "reading 'canceled'" /tmp/168-all-r10.txt
+    -> 0
+Si algo no da eso, copia los `●` (sin los `  ● Console`) y la linea
+`FAIL` de cada suite roja, y PARA. No midas las suites solas. No
+repitas el ALL. No toques ningun test ni el codigo.
+
+Paso 3, solo con el paso 2 entero en verde: el resto del CIERRE del
+handoff original desde `bun run typecheck` (el BASE de cierre ya paso
+en la Reanudacion 8 con 475/475: no lo repitas), y despues
+traceability, c26 y c27, con todas las correcciones citadas arriba.
+```
