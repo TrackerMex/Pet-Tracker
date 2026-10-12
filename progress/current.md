@@ -23,4 +23,9 @@
 - **Choque previsto al integrar main**: #167 R5.2, #169 y #170 abren todas
   `### §2.24` en `specs/mobile-ui-language/design.md`. La que mergee después
   renumera su sección y sus candados al siguiente §2.N libre.
-- **Siguiente**: espejo en Notion y gate humano.
+- **Espejo Notion** (2026-10-12): https://app.notion.com/p/3f76115a9b27812d88b4ebbe02174d7c
+  (base Specs, «En revisión», espejo de 8ffd31a1). Las tres celdas de §Deltas con
+  `+ n`/`- n` se pasaron a notas (a)-(c) bajo la tabla: Notion convierte `+ ` dentro
+  de una celda en viñeta. sites-4c [87612b] avisado: #167 no pide poses nuevas.
+- **Siguiente**: gate humano (Estado del gate = Aprobado), luego commit de firma y
+  handoff a Codex.
