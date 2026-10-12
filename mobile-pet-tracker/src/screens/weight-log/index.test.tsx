@@ -9,6 +9,7 @@ import {
 } from '@testing-library/react-native';
 import { HeroUINativeProvider } from 'heroui-native';
 import { useEffect } from 'react';
+import { FadeIn, FadeOut } from 'react-native-reanimated';
 
 import {
   createWeight,
@@ -1063,5 +1064,36 @@ describe('#169 R12: el toast se va solo', () => {
     await act(async () => { jest.advanceTimersByTime(250); });
     expect(screen.queryByTestId('weight-toast')).toBeNull();
     expect(mockHaptics.notificationAsync).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('#169 R13: movimiento del toast', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2026-09-17T23:30:00.000Z'));
+    prepareWeightLogTests();
+    mockCreateWeight.mockResolvedValue({ kind: 'ok', weight: makeWeight() });
+  });
+
+  afterEach(() => jest.useRealTimers());
+
+  it('el fuente declara el fundido sin ReduceMotion.Never', () => {
+    const source = readFileSync(join(process.cwd(), 'src/screens/weight-log/index.tsx'), 'utf8');
+    expect(source).toContain('entering={FadeIn.duration(MOTION_TRANSITION_MS)}');
+    expect(source).toContain('exiting={FadeOut.duration(MOTION_FEEDBACK_MS)}');
+    expect(source.split('ReduceMotion.Never').length - 1).toBe(0);
+  });
+
+  it('el toast lleva FadeIn y FadeOut', async () => {
+    await renderWeightLog();
+    await waitFor(() => expect(screen.getByTestId('weight-input')).toBeVisible());
+    await fireEvent.changeText(screen.getByTestId('weight-input'), '12.4');
+    await fireEvent.press(screen.getByTestId('weight-submit'));
+    await act(async () => {});
+
+    expect(screen.queryByTestId('weight-toast')).not.toBeNull();
+    const toast = screen.getByTestId('weight-toast');
+    expect(toast.props.entering).toBeInstanceOf(FadeIn);
+    expect(toast.props.exiting).toBeInstanceOf(FadeOut);
   });
 });
