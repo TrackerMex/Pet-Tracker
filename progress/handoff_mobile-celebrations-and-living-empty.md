@@ -51,6 +51,36 @@
 >   (`# -- … --`), cada cadena termina en su línea `git commit -m` seguida de
 >   una línea en blanco, y el lint se guarda en fichero y se exige vacío (en
 >   #168 y #169 un SIGKILL de eslint salió con 0).
+>
+> **Reanudación 1** (2026-10-12; el leader la commitea encima de H0, pero
+> H0 sigue siendo `d01b03bf` en todos los `<H0>` del bloque):
+> - **Parada**: el ALL de la base salió con exit=1, `Tests: 6 failed, 2769
+>   passed, 2775 total`. Todos los rojos eran `Exceeded timeout of 5000 ms`
+>   (o `waitFor was aborted by cleanup` como consecuencia) en
+>   pairing/index.test.tsx y meal-schedule/index.test.tsx. El BASE, con
+>   pairing dentro, había salido verde minutos antes.
+> - **Causa**: carga, no código. El árbol de la app en H0 es idéntico a
+>   `origin/main` (`git diff --stat origin/main..d01b03bf -- mobile-pet-tracker`
+>   vacío), y el leader midió ese mismo ALL en verde. Entre las 18:44 y las
+>   18:48, el Codex de #170 en Pet-Tracker-wt-170 corría su propio jest
+>   (`/tmp/170-g8.txt`, 18:48:11) en una máquina de 4 CPU. El `pgrep` del
+>   handoff solo detecta `init.sh`, no el jest de otro worktree.
+> - **Corrección** (mecánica de test, no cambia requisitos): los 17
+>   comandos ALL del bloque (el de la base, la plantilla de verdes, los 15
+>   verdes y, por referencia, el del Cierre) llevan ahora
+>   `--testTimeout=30000` detrás de `bunx jest`. Solo amplía el límite por
+>   `it`: un cuelgue real sigue en rojo y ninguna aserción cambia. Las
+>   medidas de rojos, las sondas, GUARDAS y BASE siguen con el límite por
+>   defecto. El `init.sh` final del leader corre sin el flag.
+> - **Lo que sigue siendo PARADA**: cualquier rojo en un ALL con el flag
+>   nuevo. No se relanza un ALL para ver si sale verde la segunda vez.
+> - **Al reanudar**: no repitas las comprobaciones de arranque. HEAD es el
+>   commit de esta nota, hijo directo de `d01b03bf`, y solo toca este
+>   handoff, que la lista cerrada ya excluye. `git status --short` debe dar
+>   solo `?? progress/impl_mobile-celebrations-and-living-empty.md`. Sigue el
+>   impl donde lo dejaste, con un apartado `## Reanudación 1`. Vuelve a correr
+>   el ALL de la base con el comando nuevo. Si sale verde con 98/2775, sigue
+>   con las anclas y c1.
 
 ---
 
@@ -199,7 +229,7 @@ Comando BASE:
 
 Comando ALL (la suite entera; con `pgrep -af '[i]nit\.sh'` vacio antes y
 sin lanzar nada mas mientras corre):
-  FORCE_COLOR=0 bunx jest > /tmp/171-all-base.txt 2>&1; echo "exit=$?"
+  FORCE_COLOR=0 bunx jest --testTimeout=30000 > /tmp/171-all-base.txt 2>&1; echo "exit=$?"
   -> exit=0. Copia al impl sus lineas `Test Suites:` y `Tests:`. Si exit
      no es 0, anota los `●` y PARA.
   ALL base (leader, H0): exit=0, `Test Suites: 98 passed, 98 total` y
@@ -365,7 +395,7 @@ un `git add`: falla siempre (lo stageado sale).
 Verdes: antes de su cadena, cada verde corre (1) su medida, (2)
 `<GUARDAS> > /tmp/171-cN-guardas.txt 2>&1; echo "exit=$?"`, (3)
 `pgrep -af '[i]nit\.sh'` (vacio; si no, espera) y (4) el ALL:
-`FORCE_COLOR=0 bunx jest > /tmp/171-cN-all.txt 2>&1; echo "exit=$?"`.
+`FORCE_COLOR=0 bunx jest --testTimeout=30000 > /tmp/171-cN-all.txt 2>&1; echo "exit=$?"`.
 La cadena comprueba las tres salidas. Un rojo en el ALL fuera de los
 ficheros de design.md §5 es PARADA (tasks.md, reglas comunes); un rojo
 dentro, tambien.
@@ -413,7 +443,7 @@ c2, T1 verde (tasks.md T1 (2): solo el `cp`):
     -> exit=0 y `Tests:       66 passed, 66 total`
   <GUARDAS> > /tmp/171-c2-guardas.txt 2>&1; echo "exit=$?"
   pgrep -af '[i]nit\.sh'   -> vacio
-  FORCE_COLOR=0 bunx jest > /tmp/171-c2-all.txt 2>&1; echo "exit=$?"
+  FORCE_COLOR=0 bunx jest --testTimeout=30000 > /tmp/171-c2-all.txt 2>&1; echo "exit=$?"
   grep -qE '^Tests: +66 passed, 66 total$' /tmp/171-c2.txt \
     && grep -qE '^Tests: +92 passed, 92 total$' /tmp/171-c2-guardas.txt \
     && grep -qE '^Test Suites: +99 passed, 99 total$' /tmp/171-c2-all.txt \
@@ -456,7 +486,7 @@ pingo y badge `Animated.View` estaticos; botones
     -> exit=0 y `Tests:       13 passed, 13 total`
   <GUARDAS> > /tmp/171-c4-guardas.txt 2>&1; echo "exit=$?"
   pgrep -af '[i]nit\.sh'   -> vacio
-  FORCE_COLOR=0 bunx jest > /tmp/171-c4-all.txt 2>&1; echo "exit=$?"
+  FORCE_COLOR=0 bunx jest --testTimeout=30000 > /tmp/171-c4-all.txt 2>&1; echo "exit=$?"
   grep -qE '^Tests: +13 passed, 13 total$' /tmp/171-c4.txt \
     && grep -qE '^Tests: +92 passed, 92 total$' /tmp/171-c4-guardas.txt \
     && grep -qE '^Test Suites: +99 passed, 99 total$' /tmp/171-c4-all.txt \
@@ -502,7 +532,7 @@ celebration.tsx, y nada mas):
     -> exit=0 y `Tests:       78 passed, 78 total`
   <GUARDAS> > /tmp/171-c6-guardas.txt 2>&1; echo "exit=$?"
   pgrep -af '[i]nit\.sh'   -> vacio
-  FORCE_COLOR=0 bunx jest > /tmp/171-c6-all.txt 2>&1; echo "exit=$?"
+  FORCE_COLOR=0 bunx jest --testTimeout=30000 > /tmp/171-c6-all.txt 2>&1; echo "exit=$?"
   grep -qE '^Tests: +78 passed, 78 total$' /tmp/171-c6.txt \
     && grep -qE '^Tests: +92 passed, 92 total$' /tmp/171-c6-guardas.txt \
     && grep -qE '^Test Suites: +99 passed, 99 total$' /tmp/171-c6-all.txt \
@@ -545,7 +575,7 @@ de src/utils/category-palette.ts con el bloque literal de §4.1):
     -> exit=0 y `Tests:       98 passed, 98 total`
   <GUARDAS> > /tmp/171-c8-guardas.txt 2>&1; echo "exit=$?"
   pgrep -af '[i]nit\.sh'   -> vacio
-  FORCE_COLOR=0 bunx jest > /tmp/171-c8-all.txt 2>&1; echo "exit=$?"
+  FORCE_COLOR=0 bunx jest --testTimeout=30000 > /tmp/171-c8-all.txt 2>&1; echo "exit=$?"
   grep -qE '^Tests: +98 passed, 98 total$' /tmp/171-c8.txt \
     && grep -qE '^Tests: +92 passed, 92 total$' /tmp/171-c8-guardas.txt \
     && grep -qE '^Test Suites: +99 passed, 99 total$' /tmp/171-c8-all.txt \
@@ -586,7 +616,7 @@ motion, y las dos constantes de pop de §4.4):
     -> exit=0 y `Tests:       42 passed, 42 total`
   <GUARDAS> > /tmp/171-c10-guardas.txt 2>&1; echo "exit=$?"
   pgrep -af '[i]nit\.sh'   -> vacio
-  FORCE_COLOR=0 bunx jest > /tmp/171-c10-all.txt 2>&1; echo "exit=$?"
+  FORCE_COLOR=0 bunx jest --testTimeout=30000 > /tmp/171-c10-all.txt 2>&1; echo "exit=$?"
   grep -qE '^Tests: +42 passed, 42 total$' /tmp/171-c10.txt \
     && grep -qE '^Tests: +92 passed, 92 total$' /tmp/171-c10-guardas.txt \
     && grep -qE '^Test Suites: +99 passed, 99 total$' /tmp/171-c10-all.txt \
@@ -622,7 +652,7 @@ condicionada a `!reduceMotion`, escala inicial y muelle de §4.2):
     -> exit=0 y `Tests:       31 passed, 31 total`
   <GUARDAS> > /tmp/171-c12-guardas.txt 2>&1; echo "exit=$?"
   pgrep -af '[i]nit\.sh'   -> vacio
-  FORCE_COLOR=0 bunx jest > /tmp/171-c12-all.txt 2>&1; echo "exit=$?"
+  FORCE_COLOR=0 bunx jest --testTimeout=30000 > /tmp/171-c12-all.txt 2>&1; echo "exit=$?"
   grep -qE '^Tests: +31 passed, 31 total$' /tmp/171-c12.txt \
     && grep -qE '^Tests: +92 passed, 92 total$' /tmp/171-c12-guardas.txt \
     && grep -qE '^Test Suites: +99 passed, 99 total$' /tmp/171-c12-all.txt \
@@ -671,7 +701,7 @@ antes del efecto del pop):
     -> exit=0 y `Tests:       34 passed, 34 total`
   <GUARDAS> > /tmp/171-c14-guardas.txt 2>&1; echo "exit=$?"
   pgrep -af '[i]nit\.sh'   -> vacio
-  FORCE_COLOR=0 bunx jest > /tmp/171-c14-all.txt 2>&1; echo "exit=$?"
+  FORCE_COLOR=0 bunx jest --testTimeout=30000 > /tmp/171-c14-all.txt 2>&1; echo "exit=$?"
   grep -qE '^Tests: +34 passed, 34 total$' /tmp/171-c14.txt \
     && grep -qE '^Tests: +92 passed, 92 total$' /tmp/171-c14-guardas.txt \
     && grep -qE '^Test Suites: +99 passed, 99 total$' /tmp/171-c14-all.txt \
@@ -694,7 +724,7 @@ celebration.test.tsx; un solo commit, con la suite verde):
     -> exit=0 y `Tests:       104 passed, 104 total`
   <GUARDAS> > /tmp/171-c15-guardas.txt 2>&1; echo "exit=$?"
   pgrep -af '[i]nit\.sh'   -> vacio
-  FORCE_COLOR=0 bunx jest > /tmp/171-c15-all.txt 2>&1; echo "exit=$?"
+  FORCE_COLOR=0 bunx jest --testTimeout=30000 > /tmp/171-c15-all.txt 2>&1; echo "exit=$?"
   grep -qE '^Tests: +104 passed, 104 total$' /tmp/171-c15.txt \
     && grep -qE '^Tests: +96 passed, 96 total$' /tmp/171-c15-guardas.txt \
     && grep -qE '^Test Suites: +99 passed, 99 total$' /tmp/171-c15-all.txt \
@@ -745,7 +775,7 @@ mismo commit, en consistency-classnames.test.ts, los candados de §7
     -> exit=0 y `Tests:       124 passed, 124 total`
   <GUARDAS> > /tmp/171-c17-guardas.txt 2>&1; echo "exit=$?"
   pgrep -af '[i]nit\.sh'   -> vacio
-  FORCE_COLOR=0 bunx jest > /tmp/171-c17-all.txt 2>&1; echo "exit=$?"
+  FORCE_COLOR=0 bunx jest --testTimeout=30000 > /tmp/171-c17-all.txt 2>&1; echo "exit=$?"
   grep -qE '^Tests: +124 passed, 124 total$' /tmp/171-c17.txt \
     && grep -qE '^Tests: +96 passed, 96 total$' /tmp/171-c17-guardas.txt \
     && grep -qE '^Test Suites: +99 passed, 99 total$' /tmp/171-c17-all.txt \
@@ -802,7 +832,7 @@ A68, con una linea en blanco delante):
     -> exit=0 y `Tests:       70 passed, 70 total`
   <GUARDAS> > /tmp/171-c19-guardas.txt 2>&1; echo "exit=$?"
   pgrep -af '[i]nit\.sh'   -> vacio
-  FORCE_COLOR=0 bunx jest > /tmp/171-c19-all.txt 2>&1; echo "exit=$?"
+  FORCE_COLOR=0 bunx jest --testTimeout=30000 > /tmp/171-c19-all.txt 2>&1; echo "exit=$?"
   grep -qE '^Tests: +70 passed, 70 total$' /tmp/171-c19.txt \
     && grep -qE '^Tests: +96 passed, 96 total$' /tmp/171-c19-guardas.txt \
     && grep -qE '^Test Suites: +99 passed, 99 total$' /tmp/171-c19-all.txt \
@@ -824,7 +854,7 @@ verde; si alguno cambia de color, PARA):
     -> exit=0 y `Tests:       26 passed, 26 total`
   <GUARDAS> > /tmp/171-c20-guardas.txt 2>&1; echo "exit=$?"
   pgrep -af '[i]nit\.sh'   -> vacio
-  FORCE_COLOR=0 bunx jest > /tmp/171-c20-all.txt 2>&1; echo "exit=$?"
+  FORCE_COLOR=0 bunx jest --testTimeout=30000 > /tmp/171-c20-all.txt 2>&1; echo "exit=$?"
   grep -qE '^Tests: +26 passed, 26 total$' /tmp/171-c20.txt \
     && grep -qE '^Tests: +96 passed, 96 total$' /tmp/171-c20-guardas.txt \
     && grep -qE '^Test Suites: +99 passed, 99 total$' /tmp/171-c20-all.txt \
@@ -867,7 +897,7 @@ add-pet/index.tsx; cada clave nueva se usa una vez con `t('addPet.celebrate…'`
     -> exit=0 y `Tests:       70 passed, 70 total`
   <GUARDAS> > /tmp/171-c22-guardas.txt 2>&1; echo "exit=$?"
   pgrep -af '[i]nit\.sh'   -> vacio
-  FORCE_COLOR=0 bunx jest > /tmp/171-c22-all.txt 2>&1; echo "exit=$?"
+  FORCE_COLOR=0 bunx jest --testTimeout=30000 > /tmp/171-c22-all.txt 2>&1; echo "exit=$?"
   grep -qE '^Tests: +70 passed, 70 total$' /tmp/171-c22.txt \
     && grep -qE '^Tests: +96 passed, 96 total$' /tmp/171-c22-guardas.txt \
     && grep -qE '^Test Suites: +99 passed, 99 total$' /tmp/171-c22-all.txt \
@@ -924,7 +954,7 @@ reduce motion; imports exactamente las seis lineas de §4.5, y
     -> exit=0 y `Tests:       206 passed, 206 total`
   <GUARDAS> > /tmp/171-c24-guardas.txt 2>&1; echo "exit=$?"
   pgrep -af '[i]nit\.sh'   -> vacio
-  FORCE_COLOR=0 bunx jest > /tmp/171-c24-all.txt 2>&1; echo "exit=$?"
+  FORCE_COLOR=0 bunx jest --testTimeout=30000 > /tmp/171-c24-all.txt 2>&1; echo "exit=$?"
   grep -qE '^Tests: +206 passed, 206 total$' /tmp/171-c24.txt \
     && grep -qE '^Tests: +96 passed, 96 total$' /tmp/171-c24-guardas.txt \
     && grep -qE '^Test Suites: +99 passed, 99 total$' /tmp/171-c24-all.txt \
@@ -971,7 +1001,7 @@ arranque del bucle):
     -> exit=0 y `Tests:       100 passed, 100 total`
   <GUARDAS> > /tmp/171-c26-guardas.txt 2>&1; echo "exit=$?"
   pgrep -af '[i]nit\.sh'   -> vacio
-  FORCE_COLOR=0 bunx jest > /tmp/171-c26-all.txt 2>&1; echo "exit=$?"
+  FORCE_COLOR=0 bunx jest --testTimeout=30000 > /tmp/171-c26-all.txt 2>&1; echo "exit=$?"
   grep -qE '^Tests: +100 passed, 100 total$' /tmp/171-c26.txt \
     && grep -qE '^Tests: +96 passed, 96 total$' /tmp/171-c26-guardas.txt \
     && grep -qE '^Test Suites: +99 passed, 99 total$' /tmp/171-c26-all.txt \
@@ -1008,7 +1038,7 @@ final de ../docs/ui-guidelines.md, con su casilla DESMARCADA):
     -> exit=0 y `Tests:       46 passed, 46 total`
   <GUARDAS> > /tmp/171-c28-guardas.txt 2>&1; echo "exit=$?"
   pgrep -af '[i]nit\.sh'   -> vacio
-  FORCE_COLOR=0 bunx jest > /tmp/171-c28-all.txt 2>&1; echo "exit=$?"
+  FORCE_COLOR=0 bunx jest --testTimeout=30000 > /tmp/171-c28-all.txt 2>&1; echo "exit=$?"
   grep -qE '^Tests: +46 passed, 46 total$' /tmp/171-c28.txt \
     && grep -qE '^Tests: +96 passed, 96 total$' /tmp/171-c28-guardas.txt \
     && grep -qE '^Test Suites: +99 passed, 99 total$' /tmp/171-c28-all.txt \
