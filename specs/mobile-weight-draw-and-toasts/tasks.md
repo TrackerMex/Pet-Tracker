@@ -215,7 +215,7 @@ tags: [mobile, ui, motion, spec]
     - su className contiene su tono y no contiene los otros dos (`text-danger`, `text-success`, `text-muted`).
 
   Rojo por consulta (`weight-row-w-up-tone`). Commit: `test(mobile): candado del chip de delta por entrada de peso (#169 R8)`.
-- [ ] (2) Verde: solo los dos testIDs en la fila; ni classNames ni iconos cambian. Commit: `feat(mobile): testIDs del chip de delta por entrada (#169 R8)`.
+- [ ] (2) Verde: solo los dos testIDs en la fila; ni classNames ni iconos cambian. En el mismo commit, el selector del `it` de mobile-health R7 (`keeps API order and renders each weight detail`, en el mismo fichero de test) pasa de `getAllByTestId(/^weight-row-/)` a `getAllByTestId(/^weight-row-weight-\d+$/)`, porque el prefijo suelto también atrapa los dos testIDs nuevos y el `toEqual` recibe seis ids en vez de dos. La lista esperada y el resto del `it` no cambian. Enmienda de la Reanudación 3 (2026-10-12), medida por el leader fuera del árbol con los dos testIDs puestos: `<PESO>` 130 passed, `<GUARDAS>` 92 passed, typecheck 0 y eslint 0. Commit: `feat(mobile): testIDs del chip de delta por entrada (#169 R8)`.
 - [ ] (3) Refactor si hace falta.
 
 ## T8 — R6: resumen del peso en la card

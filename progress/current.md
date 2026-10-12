@@ -67,6 +67,19 @@
   - Enmendada la fila de `reicon-react-native` en `tasks.md`.
     Reanudación 2 en el handoff: cambiar solo el doble, con anclas
     `grep -cF`, y repetir c12 entera. Sigue en c13.
+  - c12 cerrado por Codex en `6569bd89`, con typecheck, lint y log vacíos.
+- Parada 3 (c13, 2026-10-12): en la medida `<PESO>`, el `it` de mobile-health
+  R7 `keeps API order and renders each weight detail` falló. Su
+  `getAllByTestId(/^weight-row-/)` atrapa también los testIDs nuevos
+  `-tone` y `-delta` de R8 (seis ids en vez de dos). Era un defecto de la
+  spec: no se buscaron con grep los selectores por prefijo. No se renombra
+  (reabriría el gate). Se ancla el selector a
+  `/^weight-row-weight-\d+$/` en el commit verde de c13, y es el único
+  selector por prefijo de `weight-row-` en el repo.
+  - Medido fuera del árbol: `<PESO>` 130, `<GUARDAS>` 92, tsc 0, eslint 0,
+    y las anclas de la cadena ejecutadas dan 0.
+  - Enmendado T7 (2) en `tasks.md`. Reanudación 3 en el handoff, con la
+    cadena de c13 reescrita (dos ficheros). Sigue en c14.
 - Choques conocidos al mergear main, avisados por Frontend:
   - #167 cambia la misma línea `- 1, // #159 R2` de language-provider.
     Resolución: `- 1 // #159 R2`, `+ 1 // #167 R5`, `+ 2, // #169 R9`.

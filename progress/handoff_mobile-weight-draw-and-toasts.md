@@ -1259,3 +1259,112 @@ Todo lo demas, igual que en el bloque principal: REGLAS CRITICAS, lista
 cerrada de 14, nada de ./init.sh, push ni PR, y lo que debe contener el
 impl al terminar.
 ```
+
+---
+
+## Reanudación 3 — tras la parada de c13 (el selector de R7 atrapa los testIDs nuevos)
+
+> Codex cerró c12 (`6569bd89`) y paró bien en la medida `<PESO>` de c13.
+> Los cuatro tests de R8 pasan y `<GUARDAS>` da 92, pero falla un `it` que
+> ya existía, el de mobile-health R7 `keeps API order and renders each
+> weight detail`, en `src/screens/weight-log/index.test.tsx`. Ese `it`
+> lista las filas con `getAllByTestId(/^weight-row-/)`. El prefijo suelto
+> atrapa también los dos testIDs nuevos de R8 (`weight-row-<id>-tone` y
+> `weight-row-<id>-delta`), y el `toEqual` recibe seis ids en vez de dos.
+>
+> El defecto es de la spec: los nombres de R8 (requirements.md, fijados en
+> el gate) comparten prefijo con las filas, y el leader no buscó con grep
+> los selectores por prefijo antes de firmar T7. No se renombran los
+> testIDs, porque eso reabriría el gate. Se ancla el selector de R7 a las
+> filas: `getAllByTestId(/^weight-row-weight-\d+$/)`. La lista esperada y
+> el resto del `it` no cambian. No hay más selectores por prefijo de
+> `weight-row-` en el repo (`git grep -nF "weight-row-"`).
+>
+> Enmienda en `specs/mobile-weight-draw-and-toasts/tasks.md`, T7 (2). El
+> leader lo midió el 2026-10-12 en una copia fuera del árbol (HEAD
+> `6569bd89` más los dos testIDs sin commitear de Codex más el selector
+> nuevo): `<PESO>` 130 passed, `<GUARDAS>` 92 passed, `tsc --noEmit` 0 y
+> eslint de los dos ficheros 0.
+>
+> c1 a c12 valen tal cual. H0 sigue siendo `fc384b44`. Este commit del
+> leader solo toca `progress/handoff_mobile-weight-draw-and-toasts.md`,
+> `progress/current.md` y `specs/mobile-weight-draw-and-toasts/tasks.md`,
+> que la lista cerrada ya excluye. El test ya está en la lista cerrada de
+> 14, así que la lista no cambia. Los dos testIDs sin commitear de Codex
+> en `src/screens/weight-log/index.tsx` siguen en el árbol, intactos.
+
+Pegar en Codex CLI:
+
+```
+Worktree: /home/claude/sites/Pet-Tracker-wt-169   <- PRIMERA LINEA. Trabaja AQUI y en ningun otro sitio
+Reanudas #169 mobile-weight-draw-and-toasts tras tu parada en c13. Relee
+progress/handoff_mobile-weight-draw-and-toasts.md entero: el bloque
+principal sigue mandando, con los cambios de las Reanudaciones 1 y 2
+(siguen vigentes: lint con salida vacia, un reintento por SIGKILL, doble
+de reicon con Text) y los de esta Reanudacion 3 (al final del fichero).
+Relee tambien T7 (2) de specs/mobile-weight-draw-and-toasts/tasks.md, que
+esta enmendado. H0 sigue siendo fc384b44.
+
+== ARRANQUE ==
+cd /home/claude/sites/Pet-Tracker-wt-169 && pwd
+Pega en tu impl, bajo un titulo nuevo `## Reanudacion 3` al FINAL del
+fichero (no borres ni edites nada de lo que ya escribiste, las tres
+PARADAS incluidas), las salidas de:
+  git branch --show-current          -> feature/169-mobile-weight-draw-and-toasts
+  git rev-parse --short HEAD         -> el commit del leader que anade esta Reanudacion 3
+  git log --oneline fc384b44..HEAD   -> tus 12 commits (98db0006 a 6569bd89), los del leader e4903ae1 (entre c7 y c8) y 19e308f6 (entre c11 y c12), y encima el nuevo del leader
+  git diff --cached --name-only      -> vacio
+  git status --short                 -> SOLO estas dos lineas:
+                                         ` M mobile-pet-tracker/src/screens/weight-log/index.tsx`
+                                         `?? progress/impl_mobile-weight-draw-and-toasts.md`
+PARA si algo de esto no sale asi. No repitas las anclas, ni BASE, ni ALL de
+la base, ni S4a/S4b.
+
+== QUE CAMBIA ==
+1. c13 toca DOS ficheros, no uno. Ademas de los dos testIDs que ya tienes
+   sin commitear en src/screens/weight-log/index.tsx, en
+   src/screens/weight-log/index.test.tsx cambias SOLO el selector del `it`
+   de R7 `keeps API order and renders each weight detail`:
+     getAllByTestId(/^weight-row-/)
+   pasa a
+     getAllByTestId(/^weight-row-weight-\d+$/)
+   Nada mas del test se toca: ni la lista esperada del `toEqual`, ni el
+   describe de R8, ni los dobles.
+   Comprueba el cambio desde mobile-pet-tracker/ con estas anclas, y PARA
+   si alguna no da su numero:
+     grep -cF 'getAllByTestId(/^weight-row-weight-\d+$/)' src/screens/weight-log/index.test.tsx   -> 1
+     grep -cF 'getAllByTestId(/^weight-row-/)' src/screens/weight-log/index.test.tsx               -> 0
+   Pegalas en el impl con su salida.
+2. La cadena de c13 queda asi (sustituye a la del bloque principal):
+  cd /home/claude/sites/Pet-Tracker-wt-169/mobile-pet-tracker
+  <PESO> > /tmp/169-g8.txt 2>&1; echo "exit=$?"
+    -> exit=0 y `Tests:       130 passed, 130 total`
+  <GUARDAS> > /tmp/169-g8-guardas.txt 2>&1; echo "exit=$?"
+    -> exit=0 y `Tests:       92 passed, 92 total`
+  grep -qE '^Tests: +130 passed, 130 total$' /tmp/169-g8.txt \
+    && grep -qE '^Tests: +92 passed, 92 total$' /tmp/169-g8-guardas.txt \
+    && test "$(grep -cF 'weight-row-${entry.id}-tone' src/screens/weight-log/index.tsx)" = 1 \
+    && test "$(grep -cF 'weight-row-${entry.id}-delta' src/screens/weight-log/index.tsx)" = 1 \
+    && test "$(grep -cF 'getAllByTestId(/^weight-row-weight-\d+$/)' src/screens/weight-log/index.test.tsx)" = 1 \
+    && test "$(grep -cF 'getAllByTestId(/^weight-row-/)' src/screens/weight-log/index.test.tsx)" = 0 \
+    && test ! -e .expo/types/router.d.ts && bun run typecheck \
+    && bunx expo lint --no-cache > /tmp/169-lint.txt 2>&1 && test ! -s /tmp/169-lint.txt \
+    && git add src/screens/weight-log/index.tsx src/screens/weight-log/index.test.tsx \
+    && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'mobile-pet-tracker/src/screens/weight-log/index.test.tsx mobile-pet-tracker/src/screens/weight-log/index.tsx ' \
+    && <LIMPIO> \
+    && git commit -m 'feat(mobile): testIDs del chip de delta por entrada (#169 R8)'
+
+== QUE HACES ==
+1. El cambio 1 y sus anclas.
+2. c13 con la cadena de arriba.
+3. c14 a c25, las cadenas del bloque principal con el lint de la
+   Reanudacion 1.
+4. El CIERRE, c26 y c27, como dice el bloque principal, con la medida de
+   lint de la Reanudacion 1.
+La lista cerrada se mide contra fc384b44 y ya excluye los tres ficheros
+que toca el leader.
+
+Todo lo demas, igual que en el bloque principal: REGLAS CRITICAS, lista
+cerrada de 14, nada de ./init.sh, push ni PR, y lo que debe contener el
+impl al terminar.
+```
