@@ -565,7 +565,13 @@ con los bloques de R11.1 y R11.2 como literales de plantilla:
    R11.1 aparece exactamente una vez (`split(bloque).length - 1` es `1`).
 2. `#167 R11: no queda la redacción vieja de la viñeta`: `not.toContain('Flotar y parpadear son las únicas')`.
 3. `#167 R11: la carta trae la enmienda de los anillos`: el título y el cuerpo
-   de R11.2, unidos por `\n\n`, aparecen exactamente una vez.
+   de R11.2 **sin** la línea `- [ ] Enmienda aprobada por humano` (cuerpo
+   recortado con `trimEnd()`), unidos por `\n\n`, aparecen exactamente una
+   vez; y `charter.slice(charter.indexOf(título))` casa con
+   `/- \[[ xX]\] Enmienda aprobada por humano/`. Dos `expect` en el mismo
+   `it`: la casilla la marca el humano y el candado no se ata a que siga sin
+   marcar (precedente: `consistency-classnames.test.ts`, regex
+   `[ xX]`).
 4. `#167 R11: el checklist de autocrítica sigue apareciendo una vez`:
    `'## Checklist de autocrítica'` aparece exactamente una vez.
 

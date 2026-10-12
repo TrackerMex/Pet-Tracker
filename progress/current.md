@@ -8,7 +8,8 @@
 - **Inicio**: 2026-10-12, sesión Frontend (leader), worktree
   `Pet-Tracker-wt-167`, branch `feature/167-mobile-account-screens-pingo`
   desde `origin/main` d2b8b0ae (merge de #166).
-- **Estado**: `pending` → spec en curso con `spec_author`.
+- **Estado**: `in_progress` desde 2026-10-12 (spec firmada en Notion, edición
+  2026-10-12T15:24:14Z). Implementa Codex CLI.
 - **Decisiones del humano (2026-10-12, cuestionario de opción cerrada,
   literal)**:
   - **N4**: «Migrar en #167». Login y Registro pasan de rutas gordas en
@@ -40,5 +41,13 @@
   `ui-copy-table.ts`, `ui-language.test.ts` y `consistency-classnames.test.ts`. Si
   mergea antes del handoff de #167, re-medir B5–B10, B15 y §2.N. Los conflictos se
   resuelven en el merge sumando los deltas. Antes de lanzar init.sh, avisar a Backend.
-- **Siguiente**: gate humano (Estado del gate = Aprobado), luego commit de firma y
-  handoff a Codex.
+- **Firma (2026-10-12)**: `Estado del gate` = Aprobado en Notion. Antes del
+  commit de firma, el leader corrigió R11.3 cláusula 3: aseveraba el cuerpo de
+  R11.2 con `- [ ] Enmienda aprobada por humano`, así que se habría puesto rojo
+  en cuanto se marcara la casilla. Ahora tolera `[ xX]`, como `#65 R19`. El
+  humano marcó `[X]` en esa casilla en Notion (P8): el leader la marca en
+  `docs/ui-guidelines.md` en el cierre, citando esa edición.
+- **Trabajo futuro**: las ocho viñetas [F] de §Fuera de alcance quedan como
+  #172 `mobile-account-screens-polish` (`pending`, sin spec), a petición del humano.
+- **Siguiente**: handoff a Codex en `progress/handoff_mobile-account-screens-pingo.md`.
+  Antes, integrar origin/main si #168–#171 han mergeado y re-medir las anclas.

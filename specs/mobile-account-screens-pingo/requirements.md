@@ -1,6 +1,6 @@
 ---
 feature: "mobile-account-screens-pingo"
-status: draft   # draft | spec_ready | approved — pendiente de firma humana
+status: approved   # draft | spec_ready | approved
 tags: [mobile, ui, spec]
 ---
 
@@ -460,7 +460,11 @@ Tiene un `it` por cláusula:
 
 1. contiene el bloque completo de R11.1 una sola vez;
 2. no contiene `'Flotar y parpadear son las únicas'`;
-3. contiene el título y el cuerpo completos de R11.2 una sola vez;
+3. contiene el título y el cuerpo de R11.2 **sin la línea de la casilla** una
+   sola vez, y el texto que sigue al título casa con
+   `/- \[[ xX]\] Enmienda aprobada por humano/`: la casilla la marca el humano
+   y el candado no puede atarse a que siga sin marcar (mismo criterio que
+   `#65 R19` en `ui-language.test.ts` y `consistency-classnames.test.ts`);
 4. `'## Checklist de autocrítica'` aparece exactamente una vez. **Nace verde**
    (declarado), con la sonda en tasks.md T12.
 
@@ -647,9 +651,17 @@ requisito. El humano las cierra al firmar o pide enmienda.
   la tarjeta `welcome-scene`. No se añade `overflow-hidden`. ¿Vale, o se recorta?
 - **P8 (carta).** Texto de la enmienda de §7 y de `## Enmienda #167` (R11). La
   casilla `- [ ] Enmienda aprobada por humano` es su firma.
+  **Cerrada 2026-10-12:** el humano marcó `[X]` en esa línea de la página de
+  Notion (edición 2026-10-12T15:24:14Z). Codex escribe la casilla sin marcar;
+  el leader la marca en el cierre citando esa edición.
 
 ---
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____)
+- [x] Aprobado por humano (fecha: 2026-10-12)
+
+Firmada en Notion: página https://app.notion.com/p/3f76115a9b27812d88b4ebbe02174d7c
+(base *Specs*), `Estado del gate` = Aprobado, última edición
+2026-10-12T15:24:14Z, cuenta alexfdgf32@gmail.com. P1–P7 quedan cerradas con
+el valor por defecto de su requisito; P8, como dice su viñeta.

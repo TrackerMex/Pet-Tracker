@@ -36,6 +36,10 @@ tags: [mobile, ui, spec]
 La casilla vive en `docs/ui-guidelines.md` § `## Enmienda #167 — anillos de
 ping de la bienvenida`: `- [ ] Enmienda aprobada por humano`.
 
+Texto aprobado en Notion (P8): el humano marcó `[X]` en la página de la spec,
+edición 2026-10-12T15:24:14Z. Codex la escribe sin marcar (c22); el leader la
+marca en el cierre citando esa edición. El candado de R11.3 acepta las dos.
+
 ---
 
 ## Firma de la prueba de humo (R15)
