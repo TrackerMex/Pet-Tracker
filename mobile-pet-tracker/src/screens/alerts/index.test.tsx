@@ -1413,3 +1413,40 @@ describe('#170 R4: cuenta las alertas nuevas', () => {
     expect(text.props.style).toEqual({ fontVariant: ['tabular-nums'] });
   });
 });
+
+describe('#170 R5: la fila abierta lleva el borde de su tipo', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockListAlerts.mockReset();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() });
+  });
+  it.each([
+    { type: 'geofence_exit', border: 'border-danger', iconName: 'LocationSlash', labelKey: 'alerts.typeGeofenceExit', surface: 'bg-danger-soft', ink: '--color-danger', label: 'Salió de la zona' },
+    { type: 'battery_low', border: 'border-warning-strong', iconName: 'BatteryLow', labelKey: 'alerts.typeBatteryLow', surface: 'bg-warning-soft', ink: '--color-warning-strong', label: 'Batería baja' },
+    { type: 'mystery_type', border: 'border-muted', iconName: 'Bell', labelKey: 'alerts.typeUnknown', surface: 'bg-default', ink: '--color-muted', label: 'Aviso' },
+  ])('abierta $type: border-2 y $border, con $iconName y $labelKey', async ({ type, border, iconName, surface, ink, label }) => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ type })], nextCursor: null });
+    await renderAlerts();
+    const row = await screen.findByTestId('alert-row-alert-1');
+    const classes = row.props.className.split(' ');
+    expect(classes).toContain('border-2');
+    expect(classes).toContain(border);
+    expect(classes).not.toContain('border-border');
+    const icon = within(row).getByTestId('alert-row-alert-1-icon');
+    expect(icon.props.iconName).toBe(iconName);
+    expect(icon.props.color).toBe(ink);
+    expect(icon.parent?.props.className.split(' ')).toContain(surface);
+    expect(within(row).getByTestId('alert-row-alert-1-type')).toHaveTextContent(label);
+  });
+  it.each(['acked', 'closed'] as const)('%s: sin borde de severidad', async (status) => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ status })], nextCursor: null });
+    await renderAlerts();
+    const row = await screen.findByTestId('alert-row-alert-1');
+    const classes = row.props.className.split(' ');
+    expect(classes).toContain('border');
+    expect(classes).toContain('border-border');
+    expect(classes).not.toContain('border-2');
+    expect(classes).not.toContain('border-danger');
+  });
+});
