@@ -1,6 +1,6 @@
 ---
 feature: "mobile-weight-draw-and-toasts"
-status: spec_ready     # draft | spec_ready | approved
+status: approved     # draft | spec_ready | approved
 tags: [mobile, ui, motion, spec]
 ---
 
