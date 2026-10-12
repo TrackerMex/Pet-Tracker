@@ -1,5 +1,5 @@
 import { DeviceEventEmitter, Platform } from 'react-native';
-import { act, waitFor, fireEvent, render, screen } from '@testing-library/react-native';
+import { act, waitFor, fireEvent, render, screen, within } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
@@ -12,6 +12,19 @@ import {
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import { LanguageProvider } from '../../providers/language-provider';
 import RegisterRoute from '../../app/(auth)/register';
+
+const mockHomeEntrance = jest.fn<void, [import('react-native').ViewProps & { index: number }]>();
+
+jest.mock('../home/home-entrance', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return {
+    HomeEntrance(props: import('react-native').ViewProps & { index: number }) {
+      mockHomeEntrance(props);
+      return React.createElement(View, props);
+    },
+  };
+});
 
 jest.mock('../../api/auth', () => ({
   login: jest.fn(),
@@ -283,5 +296,54 @@ describe('#148 R2: register se aparta del teclado en Android', () => {
       });
     });
     await waitFor(() => expect(screen.getByTestId('screen-register')).toHaveStyle({ paddingBottom: 200 }));
+  });
+});
+
+
+describe('#167 R7: Pingo en la cabecera del registro', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockUseAuth.mockReturnValue({
+      status: 'unauthenticated', token: null, signIn: mockSignIn, signOut: jest.fn(),
+    } satisfies AuthContextValue);
+  });
+
+  it('#167 R7: la cabecera entra con rise', async () => {
+    await renderRegister();
+    expect(Object.fromEntries(mockHomeEntrance.mock.calls.map(([p]) => [
+      p.testID, { index: p.index, className: p.className },
+    ]))).toEqual({
+      'register-header': { index: 0, className: 'flex-row items-center justify-center gap-3' },
+    });
+  });
+
+  it('#167 R7: la cabecera lleva a Pingo y después el título', async () => {
+    await renderRegister();
+    const header = screen.getByTestId('register-header');
+    expect(header.children).toHaveLength(2);
+    expect(header.children[0]).toHaveProperty('props.testID', 'register-pingo');
+    expect(header.children[1]).toBe(within(header).getByText('Crear cuenta'));
+  });
+
+  it('#167 R7: Pingo del registro usa la pose de la tablilla', async () => {
+    await renderRegister();
+    const pingo = screen.getByTestId('register-pingo');
+    expect(pingo.props.source).toEqual([
+      expect.objectContaining({ testUri: expect.stringMatching(/pingo-clipboard\.webp$/) }),
+    ]);
+    expect(pingo.props.style).toEqual({ width: 56, height: 56 });
+    expect(pingo.props.accessibilityLabel).toBeUndefined();
+  });
+
+  it('#167 R7: ningún campo ni el envío quedan dentro de la cabecera', async () => {
+    await renderRegister();
+    const header = screen.getByTestId('register-header');
+    for (const id of [
+      'register-first-name', 'register-last-name', 'register-email', 'register-phone',
+      'register-password', 'register-password-confirmation', 'register-country',
+      'register-terms', 'register-submit',
+    ]) {
+      expect(within(header).queryByTestId(id)).toBeNull();
+    }
   });
 });
