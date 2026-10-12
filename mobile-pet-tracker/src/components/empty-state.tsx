@@ -37,7 +37,7 @@ export function EmptyState({ testID, pose, title, body, action }: EmptyStateProp
         {body}
       </Text>
       {action ? (
-        <Button testID={`${testID}-action`} className="rounded-xl bg-accent" onPress={action.onPress}>
+        <Button testID={`${testID}-action`} className="rounded-xl bg-accent border-b-4 border-black/25" onPress={action.onPress}>
           <Button.Label className="font-bold text-accent-foreground">{action.label}</Button.Label>
         </Button>
       ) : null}

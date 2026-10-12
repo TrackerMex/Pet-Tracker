@@ -8671,3 +8671,38 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
 - Cierre: `done` en `feature_list.json`, trazabilidad `approved` con R10,
   STATUS, Notion (Implementado / Completado) y PR contra `main`. Merge:
   humano.
+
+## #166 `mobile-chunky-cta` — CTA con cuerpo en toda la app — 2026-10-12
+
+
+- Worktree: `/home/claude/sites/Pet-Tracker-wt-166`, branch
+  `feature/166-mobile-chunky-cta`.
+- Spec firmada vía Notion el 2026-10-11 (commit de firma `94f64979`), P1-P3
+  con sus valores por defecto.
+- Handoff a Codex CLI: `progress/handoff_mobile-chunky-cta.md` (10 commits,
+  13 sondas). En el mismo commit (H0), corrección del leader en tasks.md T1:
+  la clave de `toMatchObject` va sin `--` (`'color-lip-gray'`), porque
+  `parseVariables` lo quita.
+- Implementador: Codex CLI (terminal aparte, lo lanza el humano). Mientras
+  implementa, el leader no toca `mobile-pet-tracker/`.
+- (Plan al abrir) El humano avisa del fin de Codex. El leader corre `init.sh`
+  (con permiso del humano y respetando la cola del VPS) y lanza `reviewer`.
+  Después, el humano hace el smoke R5 en un dev build de Android y se cierra
+  (Notion Implementado / Completado, `gh pr create`).
+- Bloque de paridad con el canvas: #167-#171 en sesiones paralelas. #168
+  (UI-Pet) espera al merge de #166 antes de su handoff.
+- Parada de Codex en c3: la cadena contaba `grep -cE '^  ● '` = 10 y el log
+  daba 17 (10 it rojos + 7 bloques `  ● Console` de Jest). El rojo era el
+  correcto. Reanudación 1 (`f1c47164`): contador
+  `grep -E '^  ● ' <log> | grep -cvxF '  ● Console'` en r1-r4. Codex
+  terminó c3-c10 (`76e691ec`..`ea885296`) sin más paradas.
+- Gate del leader: `./init.sh` exit 0 sobre `ea885296` (backend 187/1474,
+  infra 2/14, móvil 98/2775, e2e 468 + 8 saltados).
+- Reviewer: **APROBADO** (`b69d8e86`), observaciones O1-O5 sin bloqueo. O2:
+  un `Button` con `bg-accent rounded-xl` en orden invertido, o las variantes
+  `ghost`/`tertiary`, escapan a la definición de «primario sólido» (deuda
+  heredada de #62; candado posible en una spec futura).
+- Smoke R5 en dev build de Android firmado por el humano en `b6a31bb9`.
+- Cierre: `done` en `feature_list.json`, trazabilidad `approved` con R5,
+  STATUS, Notion (Implementado / Completado) y PR contra `main`. Merge:
+  humano. Tras el merge: avisar a #167-#171 y borrar el worktree.

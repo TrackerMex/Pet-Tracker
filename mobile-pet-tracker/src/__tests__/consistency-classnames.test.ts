@@ -533,3 +533,119 @@ describe('#98 R11: la carta y la spec de Food registran la enmienda', () => {
     }
   });
 });
+
+describe('#166 R2: todo primario sólido lleva el labio detrás de bg-accent', () => {
+  const expected = {
+    [join('app', '(auth)', 'login.tsx')]: 1,
+    [join('app', '(auth)', 'register.tsx')]: 1,
+    [join('components', 'empty-state.tsx')]: 1,
+    [join('screens', 'add-pet', 'index.tsx')]: 1,
+    [join('screens', 'add-reminder', 'index.tsx')]: 1,
+    [join('screens', 'docs', 'index.tsx')]: 2,
+    [join('screens', 'forgot', 'index.tsx')]: 1,
+    [join('screens', 'geofence-editor', 'index.tsx')]: 1,
+    [join('screens', 'geofences', 'index.tsx')]: 1,
+    [join('screens', 'home', 'index.tsx')]: 1,
+    [join('screens', 'meal-schedule', 'index.tsx')]: 1,
+    [join('screens', 'pairing', 'index.tsx')]: 2,
+    [join('screens', 'profile', 'index.tsx')]: 1,
+    [join('screens', 'reminders', 'index.tsx')]: 1,
+    [join('screens', 'reset-password', 'index.tsx')]: 1,
+    [join('screens', 'weight-log', 'index.tsx')]: 1,
+    [join('screens', 'welcome', 'index.tsx')]: 1,
+  };
+
+  it('inventaría los diecinueve primarios con labio, fichero a fichero', () => {
+    const inventory = (pattern: RegExp) => Object.fromEntries(
+      sourceFiles().flatMap((path) => {
+        const count = (readFileSync(path, 'utf8').match(pattern) ?? []).length;
+        return count > 0 ? [[path.slice(sourceRoot.length + 1), count]] : [];
+      }),
+    );
+
+    expect(inventory(/rounded-xl bg-accent border-b-4 border-black\/25(?=[\s'"`])/g)).toEqual(expected);
+    expect(inventory(/rounded-xl bg-accent(?=[\s'"`])/g)).toEqual(expected);
+  });
+
+  it('no deja la receta del labio fuera de un primario', () => {
+    const count = (pattern: RegExp) => sourceFiles().reduce(
+      (total, path) => total + (readFileSync(path, 'utf8').match(pattern) ?? []).length,
+      0,
+    );
+
+    expect(count(/\bborder-b-4\b/g)).toBe(19);
+    expect(count(/border-black\/25/g)).toBe(19);
+  });
+});
+
+describe('#166 R3: el secundario neutro lleva el labio gris', () => {
+  const recipe = 'rounded-xl border-2 border-b-6 border-lip-gray bg-surface';
+  const rows = [
+    [join('screens', 'welcome', 'index.tsx'), 'welcome-have-account', null],
+    [join('screens', 'forgot', 'index.tsx'), 'forgot-resend', 'secondary'],
+    [join('screens', 'docs', 'index.tsx'), 'docs-upload-cancel', 'outline'],
+    [join('screens', 'reminders', 'index.tsx'), 'reminders-delete-cancel', 'outline'],
+  ] as const;
+
+  it.each(rows)('%s pinta %s con la receta del secundario en su tag de apertura', (path, testId, variant) => {
+    const tag = openingTagWithTestId(readSource(path), testId);
+
+    expect(tag).toContain(recipe);
+    expect(tag).not.toContain('border-accent');
+    expect(tag).not.toContain('bg-transparent');
+    expect(tag).not.toContain('border-black');
+    if (variant === null) {
+      expect(tag).not.toContain('variant=');
+    } else {
+      expect(tag).toContain(`variant="${variant}"`);
+    }
+  });
+
+  it('inventaría los cuatro secundarios neutros de toda la app', () => {
+    const testIds = sourceFiles().filter((path) => path.endsWith('.tsx')).flatMap((path) =>
+      readFileSync(path, 'utf8').split(/<Button(?=[\s>])/).slice(1).flatMap((part) => {
+        const tag = part.split('<')[0];
+        const neutral = ((tag.includes('variant="outline"') || tag.includes('variant="secondary"'))
+          && !tag.includes('bg-accent-soft') && !tag.includes('bg-default'))
+          || tag.includes('border-lip-gray');
+
+        return neutral ? [tag.match(/testID="([^"]+)"/)?.[1]] : [];
+      }),
+    );
+
+    expect(testIds.sort()).toEqual([
+      'docs-upload-cancel',
+      'forgot-resend',
+      'reminders-delete-cancel',
+      'welcome-have-account',
+    ]);
+    const count = (pattern: RegExp) => sourceFiles().reduce(
+      (total, path) => total + (readFileSync(path, 'utf8').match(pattern) ?? []).length,
+      0,
+    );
+    expect(count(/border-lip-gray/g)).toBe(4);
+    expect(count(/\bborder-b-6\b/g)).toBe(4);
+  });
+});
+
+describe('#166 R4: la carta declara el botón con cuerpo', () => {
+  it('declara las dos recetas y el orden del labio', () => {
+    const guidelines = readFileSync(
+      join(process.cwd(), '..', 'docs', 'ui-guidelines.md'),
+      'utf8',
+    );
+
+    expect(guidelines).toContain('13. **Botón con cuerpo** (feature #166, 2026-10-11)');
+    expect(guidelines).toContain('`rounded-xl bg-accent border-b-4 border-black/25`');
+    expect(guidelines).toContain('`rounded-xl border-2 border-b-6 border-lip-gray bg-surface`');
+    expect(guidelines).toContain('El labio va detrás de `bg-accent`, nunca delante');
+    expect(guidelines).toContain('`--color-lip-gray`');
+    expect(guidelines).toContain('**Sin labio**');
+    expect(guidelines.indexOf('12. **Escala de radios**')).toBeLessThan(
+      guidelines.indexOf('13. **Botón con cuerpo**'),
+    );
+    expect(guidelines.indexOf('13. **Botón con cuerpo**')).toBeLessThan(
+      guidelines.indexOf('## Animación (decisiones por defecto)'),
+    );
+  });
+});
