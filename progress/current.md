@@ -49,5 +49,12 @@
   `docs/ui-guidelines.md` en el cierre, citando esa edición.
 - **Trabajo futuro**: las ocho viñetas [F] de §Fuera de alcance quedan como
   #172 `mobile-account-screens-polish` (`pending`, sin spec), a petición del humano.
-- **Siguiente**: handoff a Codex en `progress/handoff_mobile-account-screens-pingo.md`.
-  Antes, integrar origin/main si #168–#171 han mergeado y re-medir las anclas.
+- **Handoff** (2026-10-12): `progress/handoff_mobile-account-screens-pingo.md`, 26 commits
+  c1–c26 + trazabilidad + impl. 51 anclas re-medidas en H0 con origin/main = d2b8b0ae
+  (#168–#171 sin mergear). Cifras no medidas en el árbol real, marcadas `<SIN MEDIR>`:
+  ALL tras c1 (2775) y ALL final (99/2841 = 2775 + 66); la simulación tuvo rojos de
+  entorno (copia sin `.env.example` ni `hosting/`). Correcciones del leader a
+  tasks.md/design.md en H0, listadas en la cabecera del handoff.
+- **Siguiente**: esperar a Codex. Después: avisar a Backend (#170) y sites-99 (#169),
+  init.sh (pgrep antes), reviewer, push y PR, smoke R15 del humano y cierre (marcar la
+  casilla de la carta citando la edición de Notion 2026-10-12T15:24:14Z).

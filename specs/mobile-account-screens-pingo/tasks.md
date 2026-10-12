@@ -6,6 +6,14 @@ tags: [mobile, ui, spec]
 
 # Tareas — [[mobile-account-screens-pingo]] (#167)
 
+> **Correcciones del leader en H0 (2026-10-12).** La lista completa está en la
+> cabecera de `progress/handoff_mobile-account-screens-pingo.md`, que manda si
+> discrepa. Aplicadas aquí en línea: prettier (preámbulo), ancla `(auth)` de T1.10,
+> rojos de T11 y gate de c20, sonda de T12 y sonda de T13. Solo en el handoff:
+> el cast `Record<string, string>` de T6, los its 4 y 9 de T7, `Card` desde
+> `'../../components/card'`, `View` sin uso en forgot (T10), las cotas de
+> tsc/lint de c3, c5 y c7, los títulos de `describe`, `--no-renames` y c12 = 206.
+
 > Base congelada `d2b8b0ae`. Requisitos en [requirements.md](requirements.md) y
 > diseño en [design.md](design.md). Cada R tiene un bloque (1) test rojo,
 > (2) implementación mínima, (3) refactor. Las excepciones están declaradas: R1
@@ -32,8 +40,9 @@ tags: [mobile, ui, spec]
 - **Gates por commit.** En el rojo, Jest de los ficheros del commit con
   exactamente los rojos de su tabla (ni uno más, ni uno menos). En el verde,
   Jest de los mismos ficheros en verde, `bun run typecheck` con exit 0 y
-  `bunx expo lint --no-cache` con exit 0. Si lint reporta `prettier/prettier`,
-  `bunx prettier --write <ficheros del commit>` y vuelve a lanzar lint.
+  `bunx expo lint --no-cache` con exit 0 y sin salida. **Prettier no se ejecuta**:
+  no está instalado en `mobile-pet-tracker/` y `bunx prettier` lo descarga y
+  reescribe el fichero entero con comillas dobles. Formatea a mano. _(Corrección del leader en H0.)_
 - **Tests.**
   - `await render(...)` y `await fireEvent.<x>(...)` siempre: RNTL 14 los hace
     asíncronos.
@@ -149,7 +158,7 @@ No cambia comportamiento.
     grep -cF "'src/screens/register/index.tsx'" src/__tests__/ui-copy-table.ts  # 14
     grep -cF "'src/app/(auth)/" src/__tests__/ui-copy-table.ts                 # 0
     grep -cF '+ 2 - 2, // #167 R1' src/__tests__/ui-language.test.ts           # 1
-    grep -rlE "\(auth\)[/'\", ]+(login|register)" src --include=*.ts --include=*.tsx | wc -l  # 0
+    grep -rlE "\(auth\)[/'\", ]+(login|register)" src --include=*.ts --include=*.tsx | wc -l  # 3: los dos tests movidos y el comentario #167 R1 de ui-language (en H0, 4). Corrección del leader en H0
     test -e 'src/app/(auth)/__tests__/layout.test.tsx'; echo $?                 # 0
     ```
 
@@ -360,7 +369,7 @@ En `src/screens/login/index.test.tsx`:
 | ui-language | el que llama `checkUses(ALL_USES)` | aserción (lo mismo) |
 | ui-language | el de `toHaveLength(29 + 7 + 1)` | **ninguno**: la fila y la cuenta llegan juntas |
 
-Los 8 `it` de la base del fichero siguen verdes en el rojo, porque el doble aún
+Los 8 `it` de la base del fichero (11 tests de Jest) siguen verdes en el rojo, porque el doble aún
 no se usa.
 
 **(2) Verde, c12:** `feat(mobile): Pingo saluda en login y la pantalla entra en dos tiempos (R6)`.
@@ -534,7 +543,8 @@ En `src/screens/reset-password/index.test.tsx`:
 | Fichero | `it` | Rojo |
 |---|---|---|
 | reset | 1 | aserción (mapa `{}`) |
-| reset | 2–8 | consulta (`reset-header`, `reset-body`, `reset-pingo`, `reset-success-pop`, `reset-success-card`, `reset-success-check`) |
+| reset | 2–5, 7, 8 | consulta: 6 `Unable to find` (`reset-header`, `reset-body`, `reset-pingo`, `reset-success-pop`, `reset-success-card`, `reset-success-check`) |
+| reset | 6 | aserción: `getAllByTestId` encuentra `link-login`. _(Corrección del leader en H0.)_ |
 | reset | 9 | aserción (`'text-center text-foreground'`) |
 | reset | 10 | aserción (mapa `{}`) |
 | legibility | el caso `screens/reset-password/index.tsx` del `it.each(inkSites)` | aserción (2 en vez de 3) |
@@ -546,8 +556,12 @@ se toca.
 
 ```
 grep -oF 'text-accent-strong' src/screens/reset-password/index.tsx | wc -l   # 3
-bunx jest --runTestsByPath src/screens/reset-password/index.test.tsx src/__tests__/legibility-classnames.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/design-drift.test.ts
+bunx jest --runTestsByPath src/screens/reset-password/index.test.tsx src/__tests__/legibility-classnames.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/design-drift.test.ts src/__tests__/ui-language.test.ts   # 215
+grep -cF "t('resetPassword.resetPassword')" src/screens/reset-password/index.tsx   # 3
 ```
+
+La cabecera va en línea en las dos ramas, sin factorizarla: con 2 usos de
+`t('resetPassword.resetPassword')` caen `#65 R11` y `#65 R18` de ui-language. _(Corrección del leader en H0.)_
 
 **(3) Refactor:** ninguno previsto.
 
@@ -578,7 +592,7 @@ con los bloques de R11.1 y R11.2 como literales de plantilla:
 | `it` | Rojo |
 |---|---|
 | 1, 2, 3 | aserción |
-| 4 | **nace verde** (declarado). Sonda: duplica la línea `## Checklist de autocrítica` en la carta, el `it` cae por aserción; revierte |
+| 4 | **nace verde** (declarado). Sonda: duplica la línea `## Checklist de autocrítica` en la carta, el `it` cae por aserción y cae también `#153 R2 … declara el punto 7 tras el punto 6 y antes del checklist`: 2 rojos, `Tests: 2 failed, 67 passed, 69 total`. _(Corrección del leader en H0.)_ Revierte |
 
 **(2) Verde, c22:** `docs(ui): enmienda de la carta para los anillos de ping (R11)`.
 `../docs/ui-guidelines.md` según R11.1 y R11.2. Los `it` de `#153 R2` siguen
@@ -651,7 +665,10 @@ activado y dos `it`:
 **Nace verde** (declarado). Sonda: quita la condición `!reduceMotion` del
 render de los anillos en `src/screens/welcome/index.tsx`. Deben caer los dos
 `it` de R13 (aserción) y los dos `it` de la base con
-`expect(mockWithRepeat).not.toHaveBeenCalled()` (aserción). Revierte.
+`expect(mockWithRepeat).not.toHaveBeenCalled()` (aserción): 6 tests de Jest,
+porque el `it.each` cuenta 3, y `Tests: 6 failed, 79 passed, 85 total`. La línea
+de render es exacta, `{reduceMotion ? null : [0, 1, 2].map((index) => <PingRing key={index} index={index} />)}`,
+y la sonda la cambia con `sed -i 's/{reduceMotion ? null : \[0, 1, 2\]/{[0, 1, 2]/'`. _(Corrección del leader en H0.)_ Revierte.
 
 **(4) Refactor:** ninguno previsto.
 

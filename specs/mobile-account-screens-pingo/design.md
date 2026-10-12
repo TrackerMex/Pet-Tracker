@@ -129,7 +129,8 @@ Son 4 usos nuevos con 3 poses distintas. El reparto es la pregunta abierta P2.
   y `{ ...actual, Check: mockIcon('icon-check') }`. Cada icono es un `View` con
   el `testID` y todas las props, para poder leer `size` y `color`.
 - **`useThemeColors`.** `jest.mock('../../theme/use-theme-colors', ...)`, que
-  devuelve `color:${token}` por token, como en la Bienvenida. El color esperado
+  devuelve `color:${token}` por token, como en `src/components/__tests__/pet-map.test.tsx`
+  (el de la Bienvenida devuelve `['accent-strong-ink']`; corrección del leader en H0). El color esperado
   es entonces `'color:danger'` o `'color:accent-foreground'`, un literal.
 - **Reanimated en `pop-in.test.tsx`.** `{ ...actual, __esModule: true, useReducedMotion: () => mockUseReducedMotion() }`.
   Sin `__esModule: true`, `Animated.View` sale `undefined` (lección de #152 E1).
