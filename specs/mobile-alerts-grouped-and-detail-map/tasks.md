@@ -423,6 +423,10 @@ con el CTA se comprueba en T15, no en T8.
   `AlertDetailMap({ alert, position })` (design.md D6/D7) tras `{card}`, con
   `PetMap` dentro del `View` `alert-detail-map`, `circles={[]}` y sin `zoom`
   por ahora.
+  (Enmienda E1) En el mismo commit, en `consistency-classnames` ›
+  `#98 R10`, el recuento global pasa a
+  `expect(count(/style=\{CONTINUOUS_CORNER\}/g)).toBe(31 + 1 + 1); // #41 R9: geofences-link, #170 R8: alert-detail-map`.
+  Con el mapa montado y la línea vieja, ese `it` da 32 contra 33.
 - [ ] (3) Refactor: ninguno previsto.
 - [ ] Sonda T8-a: pinta el mapa siempre, con `DEFAULT_CENTER` cuando no hay
   posición. Rojo esperado: las diez filas `'$fila: sin mapa'`.

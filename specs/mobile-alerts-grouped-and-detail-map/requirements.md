@@ -52,6 +52,7 @@ medir al arrancar, §Medir al arrancar):
 | `SCREEN_FILES` | `src/__tests__/ui-language.test.ts` · `expect(SCREEN_FILES).toHaveLength(` | sin cambio | `0`: los dos ficheros ya están en la tabla |
 | Cifras tabulares | `src/__tests__/consistency-classnames.test.ts` · `describe('#62 R15: todo contador usa cifras tabulares'` | sin fila para `alerts` ni `alert-detail` | `+2` filas de `1` y `+ 2` en la suma de `#69 R10` (R16) |
 | Esquinas continuas | `src/__tests__/consistency-classnames.test.ts` · `describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua'` | sin fila para `alert-detail` | `+1` fila de `1` y `+ 1` en la suma (R16) |
+| Esquinas continuas en todo el repo (E1) | `src/__tests__/consistency-classnames.test.ts` · `describe('#98 R10: los candados que esta feature no mueve'` · `expect(count(/style=\{CONTINUOUS_CORNER\}/g)).toBe(31 + 1); // #41 R9: geofences-link` | `32` | `31 + 1 + 1` (R16, Enmienda E1) |
 | `signOut(` por pantalla | `src/__tests__/design-drift.test.ts` · `'screens/alert-detail/index.tsx': 0,` | `0` y `0` en `alerts` | sin cambio: la consulta de zonas no llama a `signOut` |
 | Claves de consulta literales | `src/__tests__/design-drift.test.ts` · `it('keeps literal query keys out of every migrated screen'` | `[]` | sin cambio: se usa `geofenceKeys.list(petId)` |
 | Primarios sólidos | `src/__tests__/consistency-classnames.test.ts` · `describe('#62 R1:` y `describe('#166 R2:` (cuentan `rounded-xl bg-accent`) | `19` en `c865f856` | sin cambio: el CTA de R15 es secundario |
@@ -308,6 +309,9 @@ R7.
     `#69 R10`;
   - en `#62 R14` la fila `[join('screens', 'alert-detail', 'index.tsx'), 1]` y
     `+ 1` en la suma;
+  - (Enmienda E1) en `#98 R10` de `consistency-classnames`, el recuento
+    global de esquinas continuas a
+    `expect(count(/style=\{CONTINUOUS_CORNER\}/g)).toBe(31 + 1 + 1); // #41 R9: geofences-link, #170 R8: alert-detail-map`;
   - en `#166 R3` de `consistency-classnames` la fila
     `[join('screens', 'alert-detail', 'index.tsx'), 'alert-detail-view-map', 'secondary']`
     al final de `rows`; `'alert-detail-view-map'` en la lista ordenada del
@@ -422,9 +426,46 @@ Delimitaciones (no son features pendientes):
   «atrás» desde el Mapa no vuelve al detalle. Con `push('/map')` volvería, pero
   apilaría otra instancia de `(tabs)`. Elegido `dismissTo` por precedente (B15).
 
+## Enmienda E1 — el recuento global de esquinas continuas de `#98 R10`
+
+Codex paró en c16 (T8 verde) el 2026-10-12. Con el mini-mapa montado,
+`src/__tests__/consistency-classnames.test.ts` ›
+`#98 R10: los candados que esta feature no mueve` ›
+`deja CONTINUOUS_CORNER, bg-accent-soft y el acento donde estaban` dio
+`Expected: 32` / `Received: 33` (evidencia en
+`progress/impl_mobile-alerts-grouped-and-detail-map.md`, §Parada en c16). Ese
+`it` suma los `style={CONTINUOUS_CORNER}` de todos los ficheros de `src/`, y la
+tabla de candados agregados de esta spec solo recogía el inventario por fichero
+de `#62 R14`. El `View` `alert-detail-map` de R8 es el único uso nuevo de la
+feature: R15 va sin `style`, y P15 del cierre del handoff espera `1` en el
+detalle.
+
+El leader barrió contra el árbol en `fd7a129f` los demás recuentos globales de
+producción que esta feature podría mover. Ninguno cambia:
+
+- `bg-accent-soft` (`#98 R10` y `conserva los usos de bg-accent-soft que sí son acento`);
+- `rounded-xl bg-accent` (`#98 R10` y `#166 R2`);
+- `border-b-4` y `border-black/25` (`#166 R2`);
+- los radios fuera de escala (`#62 R4` y `#98 R10`);
+- los ficheros con `<EmptyState` (`empty-state.test.tsx`);
+- las coordenadas por defecto (`#146 R17` de `design-drift`): la sonda S8.1 las
+  planta, pero no se commitea.
+
+**THE SYSTEM SHALL**, en el commit verde de T8, cambiar esa línea a:
+
+```
+    expect(count(/style=\{CONTINUOUS_CORNER\}/g)).toBe(31 + 1 + 1); // #41 R9: geofences-link, #170 R8: alert-detail-map
+```
+
+El cambio va en el verde y no en el rojo porque el rojo de T8 (`fd7a129f`) ya
+está commiteado. El rojo de este candado es la medida de la parada: 32 contra
+33 con el mapa montado. Ningún otro requisito cambia: R16 gana esta línea, y la
+tabla de candados agregados gana su fila.
+
 ## Aprobación
 
 - [x] Aprobado por humano (fecha: 2026-10-12) ← gate obligatorio antes de implementar
+- [ ] Enmienda E1 aprobada por humano (fecha: ____)
 
 ## Smoke R17
 

@@ -44,6 +44,12 @@
 > 8. **Sonda T13-a y T14-b**, concretadas abajo en S13.1 y S14.2.
 > 9. **Sonda T16-a.** Tumba dos it, no uno: `'registra cada ocurrencia del detalle'`
 >    y `#65 R18` › `'resuelve cada ocurrencia de la tabla contra la clave exacta'`.
+>
+> 10. **Enmienda E1 (tras la parada en c16).** El verde de T8 también cambia,
+>     en `consistency-classnames` › `#98 R10`, el recuento global
+>     `expect(count(/style=\{CONTINUOUS_CORNER\}/g)).toBe(31 + 1); // #41 R9: geofences-link`
+>     a `….toBe(31 + 1 + 1); // #41 R9: geofences-link, #170 R8: alert-detail-map`
+>     (requirements.md §Enmienda E1). La cadena de c16 de abajo ya lo recoge.
 
 ---
 
@@ -628,7 +634,11 @@ y la linea de la suma de la correccion 3):
     && git commit -m 'test(mobile-alerts-grouped-and-detail-map): #170 R8 red alert mini-map'
 
 c16, T8 verde (tasks.md T8 (2), design.md D6/D7: `AlertDetailMap` tras la
-tarjeta, `circles={[]}` y sin `zoom` todavia):
+tarjeta, `circles={[]}` y sin `zoom` todavia; y, por la Enmienda E1, en
+src/__tests__/consistency-classnames.test.ts la linea entera
+`    expect(count(/style=\{CONTINUOUS_CORNER\}/g)).toBe(31 + 1); // #41 R9: geofences-link`
+pasa a
+`    expect(count(/style=\{CONTINUOUS_CORNER\}/g)).toBe(31 + 1 + 1); // #41 R9: geofences-link, #170 R8: alert-detail-map`):
   FORCE_COLOR=0 bunx jest --runTestsByPath src/screens/alert-detail/index.test.tsx src/__tests__/consistency-classnames.test.ts > /tmp/170-g8.txt 2>&1; echo "exit=$?"
     -> exit=0 y `Tests:       113 passed, 113 total`
   <GUARDAS> > /tmp/170-g8-guardas.txt 2>&1; echo "exit=$?"
@@ -636,9 +646,11 @@ tarjeta, `circles={[]}` y sin `zoom` todavia):
     && grep -qE '^Tests: +92 passed, 92 total$' /tmp/170-g8-guardas.txt \
     && test "$(grep -cF 'style={CONTINUOUS_CORNER}' src/screens/alert-detail/index.tsx)" = 1 \
     && test "$(grep -cF 'className="h-52 overflow-hidden rounded-card"' src/screens/alert-detail/index.tsx)" = 1 \
+    && test "$(grep -cF 'expect(count(/style=\{CONTINUOUS_CORNER\}/g)).toBe(31 + 1 + 1); // #41 R9: geofences-link, #170 R8: alert-detail-map' src/__tests__/consistency-classnames.test.ts)" = 1 \
+    && test "$(grep -cF 'toBe(31 + 1); // #41 R9: geofences-link' src/__tests__/consistency-classnames.test.ts)" = 0 \
     && test ! -e .expo/types/router.d.ts && bun run typecheck && bunx expo lint --no-cache \
-    && git add src/screens/alert-detail/index.tsx \
-    && test "$(git diff --cached --name-only)" = 'mobile-pet-tracker/src/screens/alert-detail/index.tsx' \
+    && git add src/__tests__/consistency-classnames.test.ts src/screens/alert-detail/index.tsx \
+    && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts mobile-pet-tracker/src/screens/alert-detail/index.tsx ' \
     && <LIMPIO> \
     && git commit -m 'feat(mobile-alerts-grouped-and-detail-map): #170 R8 alert mini-map'
   Despues, la sonda de T8, sobre src/screens/alert-detail/index.tsx, midiendo solo D:
