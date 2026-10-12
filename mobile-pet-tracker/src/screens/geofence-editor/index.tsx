@@ -170,7 +170,7 @@ function GeofenceEditorForm({ petId, readOnly, zone, geofences, initialName, ini
           onSelectedChange={(active) => void run(() => setGeofenceActive(baseUrl, token ?? '', petId, zone.id, active), refresh)} />
       </View> : null}
       {zone ? <Text testID="geofence-editor-reset-note" className="text-sm font-normal text-muted">{t('geofenceEditor.resetNote')}</Text> : null}
-      <Button testID="geofence-editor-save" className="rounded-xl bg-accent" isDisabled={busy || name.trim() === ''} onPress={() => void save()}>
+      <Button testID="geofence-editor-save" className="rounded-xl bg-accent border-b-4 border-black/25" isDisabled={busy || name.trim() === ''} onPress={() => void save()}>
         <Button.Label className="font-bold text-accent-foreground">{t('geofenceEditor.save')}</Button.Label>
       </Button>
       {zone ? <Button testID="geofence-editor-delete" variant="danger-soft" className="rounded-xl bg-danger-soft" isDisabled={busy} onPress={confirmDelete}>

@@ -655,7 +655,7 @@ export function HomeScreen() {
         {activity.data?.kind === 'ok' && selectedToday ? (
           <Button
             testID="weekly-activity-day-map"
-            className="min-h-11 w-full rounded-xl bg-accent"
+            className="min-h-11 w-full rounded-xl bg-accent border-b-4 border-black/25"
             onPress={() => router.push('/map')}
           >
             <Button.Label className="font-bold text-accent-foreground">
