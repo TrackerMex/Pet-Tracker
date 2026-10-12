@@ -617,3 +617,29 @@ describe('#170 R12: sin la zona de la alerta no pinta zona', () => {
     }
   });
 });
+
+describe('#170 R13: si la consulta de zonas no da ok, mapa sin zona y sin error', () => {
+  it.each([
+    { fila: 'pendiente', state: null },
+    { fila: 'no-tracking', state: { kind: 'no-tracking' } },
+    { fila: 'error', state: { kind: 'error' } },
+    { fila: 'unreachable', state: { kind: 'unreachable', message: 'network down' } },
+    { fila: 'missing-config', state: { kind: 'missing-config' } },
+    { fila: 'unauthorized', state: { kind: 'unauthorized' } },
+  ])('$fila', async ({ state }) => {
+    const queryClient = createQueryClient(jest.fn(), 60_000);
+    if (state !== null) queryClient.setQueryData(geofenceKeys.list('pet-1'), state);
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ geofenceId: 'zone-1', payload: REAL_PAYLOAD })], nextCursor: null });
+    try {
+      await render(<QueryClientProvider client={queryClient}><DetailWrapper><AlertDetailScreen alertId="alert-1" /></DetailWrapper></QueryClientProvider>);
+      const map = await screen.findByTestId('pet-map-double');
+      expect(map.props.circles).toEqual([]);
+      expect(map.props.zoom).toBeUndefined();
+      expect(screen.queryByTestId('alert-detail-distance')).toBeNull();
+      expect(screen.queryByTestId('alert-detail-error')).toBeNull();
+      expect(screen.getByTestId('alert-detail-card')).toBeVisible();
+    } finally {
+      queryClient.clear();
+    }
+  });
+});
