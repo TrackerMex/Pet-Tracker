@@ -1,0 +1,14 @@
+diff --git a/mobile-pet-tracker/src/screens/register/index.tsx b/mobile-pet-tracker/src/screens/register/index.tsx
+index e8b8bb71..f7793438 100644
+--- a/mobile-pet-tracker/src/screens/register/index.tsx
++++ b/mobile-pet-tracker/src/screens/register/index.tsx
+@@ -277,8 +277,8 @@ export function RegisterScreen() {
+             value={country}
+             onChangeText={(value) => setCountry(value.toUpperCase())}
+           />
+-          <FieldError testID="register-country-error">{fieldErrors.country}</FieldError>
+         </TextField>
++        <FieldError testID="register-country-error">{fieldErrors.country}</FieldError>
+ 
+         <View className="flex-row items-center gap-3">
+           <Checkbox

@@ -1,5 +1,11 @@
 # Handoff a Codex CLI — #167 mobile-account-screens-pingo
 
+> **Ronda 2 (Enmienda E1, firmada en `c32ae760`).** Empieza en el bloque
+> `== ENMIENDA E1 - RONDA 2 ==`, justo debajo de `Branch:`. Las sondas S1-S6
+> de tasks.md van como parches en `specs/mobile-account-screens-pingo/e1/`
+> (`s1.diff`-`s6.diff`), igual que las mutaciones. Las cifras de los rojos y
+> de las sondas se midieron en un spike, ejecutando las cadenas de este bloque.
+
 > **Nota del leader (2026-10-12).** Spec firmada en `ed8158b6`; P1–P8 cerradas
 > con sus valores por defecto; la cláusula 3 de R11.3 ya tolera `[ xX]`. H0 es
 > el commit que contiene este fichero (`git rev-parse HEAD` al arrancar).
@@ -58,6 +64,123 @@
 ```text
 Worktree: /home/claude/sites/Pet-Tracker-wt-167   <- PRIMERA LINEA. Trabaja AQUI y en ningun otro sitio
 Branch:   feature/167-mobile-account-screens-pingo   (H0 = git rev-parse HEAD al arrancar; anotalo en el impl)
+
+== ENMIENDA E1 - RONDA 2 (2026-10-12) - EMPIEZA AQUI ==
+La ronda 1 (c1-c26, trazabilidad e impl) esta TERMINADA. El reviewer la rechazo y el humano firmo la Enmienda E1,
+que es solo de tests. NO rehagas nada de la ronda 1. Esta ronda son los commits E1-E6, despues E7 (trazabilidad) y el
+impl, y deja login, register y reset-password IDENTICOS a 108bd291.
+H1 = git rev-parse HEAD al arrancar (el commit que contiene este bloque); anotalo en el impl.
+Guion: specs/mobile-account-screens-pingo/tasks.md §"Enmienda E1 - ronda 2" y requirements.md §"Enmienda E1": leelos
+ENTEROS. De mas abajo siguen valiendo Macros, CD, "Error de invocacion" y == REGLAS CRITICAS ==. El resto de abajo es
+la ronda 1 y NO se ejecuta.
+Mutaciones y sondas son parches ya escritos en specs/mobile-account-screens-pingo/e1/: login, register y
+reset-password son las mutaciones de los rojos; s1-s6 son las sondas S1-S6 de tasks.md. Se aplican con git apply;
+NUNCA los edites ni los redactes a mano.
+Rojo de E1 = patron C4 punto 5 de CHECKPOINTS.md: el commit rojo lleva los its nuevos MAS la mutacion de produccion
+(los dos ficheros staged), y el verde (fix) restaura produccion desde 108bd291. Asi se versiona el rojo de un candado
+sobre codigo ya correcto; no cuenta como mezclar.
+Los its se copian LITERALES del bloque tsx de tasks.md, con su indentacion y con la linea en blanco final de cada
+bloque. El numstat de la cadena lo comprueba. Sin prettier.
+Skills: carga building-native-ui (catalogo de Codex) y di en el impl cuales cargaste.
+NO lances ./init.sh (lo corre el leader). Ni push, ni PR, ni amend, ni rebase. Si un eslabon falla, PARA y reporta el
+eslabon y la salida exacta; no ajustes tests ni parches para que cuadre.
+Unica excepcion, el lint muerto por memoria: si una cadena para en <TSLINT> y /tmp/167-lint.txt contiene
+`Failed to run "eslint" due to signal SIGKILL`, es carga de otro worktree, no tu codigo (paso en la validacion del
+leader). Espera con
+CD && for i in $(seq 1 30); do pgrep -f 'node_modules/(\.bin/(jest|eslint)|jest-worker)|[i]nit\.sh' > /dev/null || break; sleep 60; done; echo "fin-espera"
+y relanza SOLO la cola de esa misma linea, `CD && ` seguido de todo lo que va desde <TSLINT> (incluido) hasta el
+`git commit` final, sin tocarla. NO relances la cadena entera: el parche ya esta aplicado y git apply fallaria. Una
+vez; si se repite, PARA. Anotalo en desviaciones del impl como carga. Lo mismo para la linea de lint de EK3.
+En el impl: seccion nueva `## Enmienda E1` al final, sin borrar nada de la ronda 1.
+
+# -- E0 estado --
+CD && pwd && git branch --show-current && git rev-parse HEAD && git status --short | wc -l
+   -> /home/claude/sites/Pet-Tracker-wt-167/mobile-pet-tracker ; feature/167-mobile-account-screens-pingo ; <H1> ; 0
+CD && git merge-base --is-ancestor 108bd291 HEAD; echo "exit=$?"   -> exit=0
+CD && git diff --quiet 108bd291 HEAD -- .; echo "exit=$?"   -> exit=0
+CD && test ! -e .expo/types/router.d.ts; echo "exit=$?"   -> exit=0   (si exit=1, PARA; NUNCA rm -f)
+CD && for p in login register reset-password s1 s2 s3 s4 s5 s6; do git -C "$(git rev-parse --show-toplevel)" apply --check specs/mobile-account-screens-pingo/e1/$p.diff; echo "$p exit=$?"; done
+   -> las nueve con exit=0
+# -- E0 base de los tres ficheros --
+CD && FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/login/index.test.tsx src/screens/register/index.test.tsx src/screens/reset-password/index.test.tsx > /tmp/167-e0.txt 2>&1; echo "exit=$?"
+   -> exit=0 ; Test Suites: 3 passed, 3 total ; Tests: 70 passed, 70 total   (login 20, register 21, reset 29)
+CD && <IT src/screens/login/index.test.tsx 17> && <IT src/screens/register/index.test.tsx 19> && <IT src/screens/reset-password/index.test.tsx 23> && echo its-ok   -> its-ok
+# -- E0 anclas (desde mobile-pet-tracker/; si una no da su valor, PARA y reporta la tabla) --
+grep -cF "describe('#167 R6: Pingo saluda en login y la pantalla entra en dos tiempos'" src/screens/login/index.test.tsx   -> 1
+grep -cF "it('#167 R6: la cabecera y el cuerpo no se mezclan'" src/screens/login/index.test.tsx   -> 1
+grep -cF "describe('#167 R7: Pingo en la cabecera del registro'" src/screens/register/index.test.tsx   -> 1
+grep -cF "it('#167 R7: ningún campo ni el envío quedan dentro de la cabecera'" src/screens/register/index.test.tsx   -> 1
+grep -cF "describe('#167 R10: Pingo y tarjeta de estado en nueva contraseña'" src/screens/reset-password/index.test.tsx   -> 1
+grep -cF "it('#167 R10: la tarjeta de estado es secondary con check y texto'" src/screens/reset-password/index.test.tsx   -> 1
+grep -cF -e '#167 R6: con error, el error va' -e '#167 R6: sin error, el cuerpo' -e '#167 R6: la cabecera va antes' -e '#167 R6: el título de la cabecera conserva' src/screens/login/index.test.tsx   -> 0
+grep -cF -e '#167 R7: el título de la cabecera conserva' -e '#167 R7: campos, errores, términos' src/screens/register/index.test.tsx   -> 0
+grep -cF -e '#167 R10: el éxito conserva' -e '#167 R10: con error, el error va' -e '#167 R10: sin error, el cuerpo' -e '#167 R10: la cabecera va antes' src/screens/reset-password/index.test.tsx   -> 0
+
+# -- E1 R6 rojo. Paso 1, a mano: pega los 4 its del bloque tsx de tasks.md (1) justo antes de
+# -- `it('#167 R6: la cabecera y el cuerpo no se mezclan'`, dentro del describe de R6. Paso 2, la cadena:
+CD && test "$(git diff --numstat -- src/screens/login/index.test.tsx)" = "$(printf '33\t0\tmobile-pet-tracker/src/screens/login/index.test.tsx')" && git -C "$(git rev-parse --show-toplevel)" apply specs/mobile-account-screens-pingo/e1/login.diff && test "$(git diff --numstat -- src/screens/login/index.tsx)" = "$(printf '21\t24\tmobile-pet-tracker/src/screens/login/index.tsx')" && { FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/login/index.test.tsx > /tmp/167-e1.txt 2>&1; echo "exit=$?"; } && grep -qE '^Tests: +4 failed, 20 passed, 24 total$' /tmp/167-e1.txt && <ROJOS /tmp/167-e1.txt 4> && <UNABLE /tmp/167-e1.txt 0> && <SINCRASH /tmp/167-e1.txt> && test "$(grep -cF 'expect(received).toEqual(expected)' /tmp/167-e1.txt)" = 3 && test "$(grep -cF 'expect(received).toBe(expected)' /tmp/167-e1.txt)" = 1 && grep -qF '› #167 R6: con error, el error va entre la contraseña y el envío' /tmp/167-e1.txt && grep -qF '› #167 R6: sin error, el cuerpo no lleva el error' /tmp/167-e1.txt && grep -qF '› #167 R6: la cabecera va antes que el cuerpo en el scroll' /tmp/167-e1.txt && grep -qF '› #167 R6: el título de la cabecera conserva su clase' /tmp/167-e1.txt && <IT src/screens/login/index.test.tsx 21> && <TSLINT> && git add src/screens/login/index.test.tsx src/screens/login/index.tsx && test "$(git diff --cached --no-renames --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'mobile-pet-tracker/src/screens/login/index.test.tsx mobile-pet-tracker/src/screens/login/index.tsx ' && <LIMPIO> && git commit -m 'test(mobile): #167 E1 rojo, candados de login con la mutación versionada (R6)'
+# -- E2 R6 verde --
+CD && git checkout 108bd291 -- src/screens/login/index.tsx && git diff --quiet 108bd291 -- src/screens/login/index.tsx && { FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/login/index.test.tsx > /tmp/167-e2.txt 2>&1; echo "exit=$?"; } && grep -qE '^Tests: +24 passed, 24 total$' /tmp/167-e2.txt && <TSLINT> && git add src/screens/login/index.tsx && test "$(git diff --cached --no-renames --name-only)" = 'mobile-pet-tracker/src/screens/login/index.tsx' && <LIMPIO> && git commit -m 'fix(mobile): #167 E1 verde, login restaurado desde 108bd291 (R6)'
+
+# -- E3 R7 rojo. Paso 1, a mano: pega los 2 its del bloque tsx de tasks.md (3) justo antes de
+# -- `it('#167 R7: ningún campo ni el envío quedan dentro de la cabecera'`, dentro del describe de R7. Paso 2:
+CD && test "$(git diff --numstat -- src/screens/register/index.test.tsx)" = "$(printf '32\t0\tmobile-pet-tracker/src/screens/register/index.test.tsx')" && git -C "$(git rev-parse --show-toplevel)" apply specs/mobile-account-screens-pingo/e1/register.diff && test "$(git diff --numstat -- src/screens/register/index.tsx)" = "$(printf '13\t11\tmobile-pet-tracker/src/screens/register/index.tsx')" && { FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/register/index.test.tsx > /tmp/167-e3.txt 2>&1; echo "exit=$?"; } && grep -qE '^Tests: +2 failed, 21 passed, 23 total$' /tmp/167-e3.txt && <ROJOS /tmp/167-e3.txt 2> && <UNABLE /tmp/167-e3.txt 0> && <SINCRASH /tmp/167-e3.txt> && test "$(grep -cF 'expect(received).toBe(expected)' /tmp/167-e3.txt)" = 2 && grep -qF '› #167 R7: el título de la cabecera conserva su clase' /tmp/167-e3.txt && grep -qF '› #167 R7: campos, errores, términos y envío cuelgan del scroll' /tmp/167-e3.txt && <IT src/screens/register/index.test.tsx 21> && <TSLINT> && git add src/screens/register/index.test.tsx src/screens/register/index.tsx && test "$(git diff --cached --no-renames --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'mobile-pet-tracker/src/screens/register/index.test.tsx mobile-pet-tracker/src/screens/register/index.tsx ' && <LIMPIO> && git commit -m 'test(mobile): #167 E1 rojo, candados del registro con la mutación versionada (R7)'
+# -- E4 R7 verde --
+CD && git checkout 108bd291 -- src/screens/register/index.tsx && git diff --quiet 108bd291 -- src/screens/register/index.tsx && { FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/register/index.test.tsx > /tmp/167-e4.txt 2>&1; echo "exit=$?"; } && grep -qE '^Tests: +23 passed, 23 total$' /tmp/167-e4.txt && <TSLINT> && git add src/screens/register/index.tsx && test "$(git diff --cached --no-renames --name-only)" = 'mobile-pet-tracker/src/screens/register/index.tsx' && <LIMPIO> && git commit -m 'fix(mobile): #167 E1 verde, registro restaurado desde 108bd291 (R7)'
+
+# -- E5 R10 rojo. Paso 1, a mano: pega los 4 its del bloque tsx de tasks.md (5) justo antes de
+# -- `it('#167 R10: la tarjeta de estado es secondary con check y texto'`, dentro del describe de R10. Paso 2:
+CD && test "$(git diff --numstat -- src/screens/reset-password/index.test.tsx)" = "$(printf '36\t0\tmobile-pet-tracker/src/screens/reset-password/index.test.tsx')" && git -C "$(git rev-parse --show-toplevel)" apply specs/mobile-account-screens-pingo/e1/reset-password.diff && test "$(git diff --numstat -- src/screens/reset-password/index.tsx)" = "$(printf '15\t17\tmobile-pet-tracker/src/screens/reset-password/index.tsx')" && { FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/reset-password/index.test.tsx > /tmp/167-e5.txt 2>&1; echo "exit=$?"; } && grep -qE '^Tests: +4 failed, 29 passed, 33 total$' /tmp/167-e5.txt && <ROJOS /tmp/167-e5.txt 4> && <UNABLE /tmp/167-e5.txt 0> && <SINCRASH /tmp/167-e5.txt> && test "$(grep -cF 'expect(received).toEqual(expected)' /tmp/167-e5.txt)" = 3 && test "$(grep -cF 'expect(received).toBeNull()' /tmp/167-e5.txt)" = 1 && grep -qF '› #167 R10: el éxito conserva la cabecera del formulario' /tmp/167-e5.txt && grep -qF '› #167 R10: con error, el error va entre la confirmación y el envío' /tmp/167-e5.txt && grep -qF '› #167 R10: sin error, el cuerpo no lleva el error' /tmp/167-e5.txt && grep -qF '› #167 R10: la cabecera va antes que el cuerpo en el scroll' /tmp/167-e5.txt && <IT src/screens/reset-password/index.test.tsx 27> && <TSLINT> && git add src/screens/reset-password/index.test.tsx src/screens/reset-password/index.tsx && test "$(git diff --cached --no-renames --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'mobile-pet-tracker/src/screens/reset-password/index.test.tsx mobile-pet-tracker/src/screens/reset-password/index.tsx ' && <LIMPIO> && git commit -m 'test(mobile): #167 E1 rojo, cabeceras y error de nueva contraseña con la mutación versionada (R10)'
+# -- E6 R10 verde --
+CD && git checkout 108bd291 -- src/screens/reset-password/index.tsx && git diff --quiet 108bd291 -- src/screens/reset-password/index.tsx && { FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/reset-password/index.test.tsx > /tmp/167-e6.txt 2>&1; echo "exit=$?"; } && grep -qE '^Tests: +33 passed, 33 total$' /tmp/167-e6.txt && <TSLINT> && git add src/screens/reset-password/index.tsx && test "$(git diff --cached --no-renames --name-only)" = 'mobile-pet-tracker/src/screens/reset-password/index.tsx' && <LIMPIO> && git commit -m 'fix(mobile): #167 E1 verde, nueva contraseña restaurada desde 108bd291 (R10)'
+
+# -- Sondas S1-S6: sin commit, sobre el HEAD de E6, una linea cada una. Exige limpio=0 antes de la siguiente --
+CD && git -C "$(git rev-parse --show-toplevel)" apply specs/mobile-account-screens-pingo/e1/s1.diff && FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/register/index.test.tsx > /tmp/167-e1-s1.txt 2>&1; grep -E '^Tests:' /tmp/167-e1-s1.txt; grep -E '^  ● ' /tmp/167-e1-s1.txt | grep -vxF '  ● Console'; grep -c 'Unable to find' /tmp/167-e1-s1.txt; git checkout HEAD -- src/screens/register/index.tsx; git diff --cached --quiet && <LIMPIO>; echo "limpio=$?"
+CD && git -C "$(git rev-parse --show-toplevel)" apply specs/mobile-account-screens-pingo/e1/s2.diff && FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/register/index.test.tsx > /tmp/167-e1-s2.txt 2>&1; grep -E '^Tests:' /tmp/167-e1-s2.txt; grep -E '^  ● ' /tmp/167-e1-s2.txt | grep -vxF '  ● Console'; grep -c 'Unable to find' /tmp/167-e1-s2.txt; git checkout HEAD -- src/screens/register/index.tsx; git diff --cached --quiet && <LIMPIO>; echo "limpio=$?"
+CD && git -C "$(git rev-parse --show-toplevel)" apply specs/mobile-account-screens-pingo/e1/s3.diff && FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/register/index.test.tsx > /tmp/167-e1-s3.txt 2>&1; grep -E '^Tests:' /tmp/167-e1-s3.txt; grep -E '^  ● ' /tmp/167-e1-s3.txt | grep -vxF '  ● Console'; grep -c 'Unable to find' /tmp/167-e1-s3.txt; git checkout HEAD -- src/screens/register/index.tsx; git diff --cached --quiet && <LIMPIO>; echo "limpio=$?"
+CD && git -C "$(git rev-parse --show-toplevel)" apply specs/mobile-account-screens-pingo/e1/s4.diff && FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/register/index.test.tsx > /tmp/167-e1-s4.txt 2>&1; grep -E '^Tests:' /tmp/167-e1-s4.txt; grep -E '^  ● ' /tmp/167-e1-s4.txt | grep -vxF '  ● Console'; grep -c 'Unable to find' /tmp/167-e1-s4.txt; git checkout HEAD -- src/screens/register/index.tsx; git diff --cached --quiet && <LIMPIO>; echo "limpio=$?"
+CD && git -C "$(git rev-parse --show-toplevel)" apply specs/mobile-account-screens-pingo/e1/s5.diff && FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/reset-password/index.test.tsx > /tmp/167-e1-s5.txt 2>&1; grep -E '^Tests:' /tmp/167-e1-s5.txt; grep -E '^  ● ' /tmp/167-e1-s5.txt | grep -vxF '  ● Console'; grep -c 'Unable to find' /tmp/167-e1-s5.txt; git checkout HEAD -- src/screens/reset-password/index.tsx; git diff --cached --quiet && <LIMPIO>; echo "limpio=$?"
+CD && git -C "$(git rev-parse --show-toplevel)" apply specs/mobile-account-screens-pingo/e1/s6.diff && FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/register/index.test.tsx > /tmp/167-e1-s6.txt 2>&1; grep -E '^Tests:' /tmp/167-e1-s6.txt; grep -E '^  ● ' /tmp/167-e1-s6.txt | grep -vxF '  ● Console'; grep -c 'Unable to find' /tmp/167-e1-s6.txt; git checkout HEAD -- src/screens/register/index.tsx; git diff --cached --quiet && <LIMPIO>; echo "limpio=$?"
+   -> S1, S2, S3 y S6: Tests: 1 failed, 22 passed, 23 total ; un solo ● :
+      `  ● #167 R7: Pingo en la cabecera del registro › #167 R7: campos, errores, términos y envío cuelgan del scroll` ; 0 ; limpio=0
+   -> S4: lo mismo, pero con 1 `Unable to find` (Unable to find an element with testID: register-country-error) ; limpio=0
+   -> S5: Tests: 1 failed, 32 passed, 33 total ; un solo ● :
+      `  ● #167 R10: Pingo y tarjeta de estado en nueva contraseña › #167 R10: el éxito conserva la cabecera del formulario` ; 0 ; limpio=0
+
+# -- EK1 its estaticos finales --
+CD && <IT src/screens/login/index.test.tsx 21> && <IT src/screens/register/index.test.tsx 21> && <IT src/screens/reset-password/index.test.tsx 27> && <IT src/__tests__/design-drift.test.ts 51> && <IT src/theme/__tests__/motion.test.ts 16> && <IT src/components/__tests__/pop-in.test.tsx 4> && <IT src/screens/home/home-entrance.test.tsx 7> && <IT src/providers/__tests__/language-provider.test.tsx 17> && <IT src/screens/forgot/index.test.tsx 28> && <IT src/screens/welcome/index.test.tsx 79> && <IT src/__tests__/ui-language.test.ts 28> && <IT src/__tests__/consistency-classnames.test.ts 33> && <IT src/__tests__/legibility-classnames.test.ts 12> && echo its-ok
+# -- EK2 BASE final (los 13 ficheros de K2) --
+CD && FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/__tests__/consistency-classnames.test.ts src/__tests__/design-drift.test.ts src/__tests__/legibility-classnames.test.ts src/__tests__/ui-language.test.ts src/screens/login/index.test.tsx src/screens/register/index.test.tsx src/providers/__tests__/language-provider.test.tsx src/screens/forgot/index.test.tsx src/screens/home/home-entrance.test.tsx src/screens/reset-password/index.test.tsx src/screens/welcome/index.test.tsx src/theme/__tests__/motion.test.ts src/components/__tests__/pop-in.test.tsx > /tmp/167-e-kbase.txt 2>&1; echo "exit=$?"
+   -> exit=0 ; Test Suites: 13 passed, 13 total ; Tests: 443 passed, 443 total   (login 24, register 23, reset 33; el resto como K2)
+# -- EK3 ALL: antes, espera a que no corra ningun jest ni init.sh de otro worktree (hasta 90 min) --
+CD && for i in $(seq 1 90); do pgrep -f 'node_modules/(\.bin/jest|jest-worker)|[i]nit\.sh' > /dev/null || break; sleep 60; done; pgrep -af 'node_modules/(\.bin/jest|jest-worker)'; pgrep -af '[i]nit\.sh'; echo "fin-espera"
+   -> solo "fin-espera" (si tras 90 min sigue saliendo algun proceso, PARA y reporta)
+CD && FORCE_COLOR=0 bunx jest --testTimeout=30000 > /tmp/167-e-kall.txt 2>&1; echo "exit=$?"
+   -> exit=0 ; Test Suites: 99 passed, 99 total ; Tests: 2851 passed, 2851 total
+      (medido por el leader en la validacion de este bloque: 2841 de 108bd291 + los 10 its de E1)
+   Si sale `Exceeded timeout`: repite la linea de espera y relanza el ALL UNA vez; si se repite, PARA.
+CD && bun run typecheck; echo "exit=$?"   -> exit=0
+CD && bunx expo lint --no-cache > /tmp/167-lint.txt 2>&1; echo "exit=$?"; test ! -s /tmp/167-lint.txt; echo "vacio=$?"   -> exit=0 ; vacio=0
+CD && git log --oneline <H1>..HEAD | wc -l   -> 6
+CD && git diff --quiet 108bd291 HEAD -- src/screens/login/index.tsx src/screens/register/index.tsx src/screens/reset-password/index.tsx; echo "exit=$?"   -> exit=0
+# -- E7 trazabilidad y despues el impl con --only --
+# -- En specs/mobile-account-screens-pingo/traceability.md, solo las filas R6, R7 y R10:
+# --   la columna de tests pasa de (9) a (13), de (4) a (6) y de (10) a (14);
+# --   la de commits añade `<br>E1: \`<hash rojo>\` <mensaje>` y `<br>\`<hash verde>\` <mensaje>`, con los mensajes literales.
+CD && git add ../specs/mobile-account-screens-pingo/traceability.md && test "$(git diff --cached --no-renames --name-only)" = 'specs/mobile-account-screens-pingo/traceability.md' && <LIMPIO> && git commit -m 'docs(mobile-account-screens-pingo): #167 E1 trazabilidad'
+CD && git add ../progress/impl_mobile-account-screens-pingo.md && git commit --only ../progress/impl_mobile-account-screens-pingo.md -m 'docs(mobile-account-screens-pingo): #167 E1 informe de implementación'
+# -- EK5 listas cerradas --
+CD && test "$(git diff --no-renames --name-only <H1>..HEAD -- .. | LC_ALL=C sort | tr '\n' ' ')" = 'mobile-pet-tracker/src/screens/login/index.test.tsx mobile-pet-tracker/src/screens/register/index.test.tsx mobile-pet-tracker/src/screens/reset-password/index.test.tsx progress/impl_mobile-account-screens-pingo.md specs/mobile-account-screens-pingo/traceability.md ' && echo lista-h1-ok
+CD && test "$(git diff --no-renames --name-only 7c2ffe6b..HEAD -- .. | grep -vxE 'feature_list\.json|progress/current\.md|progress/handoff_mobile-account-screens-pingo\.md|specs/mobile-account-screens-pingo/(requirements|design|tasks)\.md|progress/review_mobile-account-screens-pingo\.md|specs/mobile-account-screens-pingo/e1/[a-z0-9-]+\.diff' | LC_ALL=C sort | wc -l)" = 31 && echo lista-h0-ok
+   -> lista-h1-ok ; lista-h0-ok   (las 31 rutas de §Lista cerrada, abajo; E1 no añade ninguna)
+
+Terminado E1 = E1-E6 en orden con sus mensajes; S1-S6 con su salida exacta y limpio=0; EK1-EK5 en verde; E7 e impl.
+Impl `## Enmienda E1`: H1 y salidas de E0; tabla por commit (hash, mensaje, linea Tests:, numero de ●, de Unable y de
+toEqual/toBe/toBeNull); las seis sondas literales; EK1-EK5 literales; skills cargadas; desviaciones ("ninguna" si no
+hubo). R15 sigue "pendiente (humano)".
+== FIN ENMIENDA E1 ==
+
+== DESDE AQUI, RONDA 1: HISTORIAL. NO SE EJECUTA, salvo Macros, CD, "Error de invocacion" y == REGLAS CRITICAS == ==
 
 == REANUDACION 2 (2026-10-12; parada en S12 por limpio=1) ==
 Fallo del leader, no tuyo: la edicion sin commitear de este handoff ensuciaba el `git diff --quiet` global de
@@ -409,7 +532,8 @@ specs/mobile-ui-language/design.md
 
 Excluidos: `feature_list.json`, `progress/current.md`, este handoff,
 `specs/mobile-account-screens-pingo/{requirements,design,tasks}.md` y
-`progress/review_mobile-account-screens-pingo.md`. Las dos rutas
+`progress/review_mobile-account-screens-pingo.md`; desde E1, también los
+parches `specs/mobile-account-screens-pingo/e1/*.diff`, que son del leader. Las dos rutas
 `src/app/(auth)/__tests__/*.test.tsx` salen como borradas (las mueve c1).
 
 ## Criterios de terminado
