@@ -190,6 +190,42 @@
 >   Si falta alguno de los tres logs, corre el bloque c24 entero. Después
 >   sigue con S12.1 y con c25. Cualquier cifra distinta es PARADA.
 
+> **Reanudación 5** (2026-10-12; el leader la commitea encima de c28
+> `eb9da969` con `git commit --only`, H0 sigue siendo `d01b03bf`):
+> - **Parada**: en el Cierre, A1-A59 dieron sus valores de cierre y A60
+>   dio `0` contra el `1` esperado. Paraste antes de A61. No hay nada
+>   stageado ni commiteado después de c28.
+> - **Causa**: error del leader. c20 (T10 + T11 (0)) sustituye ese
+>   literal a propósito por
+>   `jest.mock('../../api/pets', () => ({ createPet: jest.fn(), listPets: jest.fn() }));`,
+>   y su cadena ya comprueba que el nuevo da `1`. La lista «Valores al
+>   cerrar» no recogió A60. El código de c20 está bien y no se toca.
+> - **Comprobación del leader**: corrió en solo lectura, contra
+>   `eb9da969`, las anclas A1-A70, H1-H5 y P1-P10, y las tres
+>   comprobaciones de `git diff` del Cierre. Solo difiere A60. Todo lo
+>   demás coincide con sus valores de cierre. Los valores que no se fijan
+>   salieron así: H5 12; A25, A26, A38-A41, A44 y A45, 0. Las tres
+>   comprobaciones de diff también coinciden: backend e infra vacío, en
+>   docs/ solo `docs/ui-guidelines.md`, y 20 ficheros en
+>   mobile-pet-tracker/.
+> - **Corrección**: «Valores al cerrar» dice ahora `A60 -> 0`. No cambia
+>   ningún requisito, test ni cifra.
+> - **Al reanudar**: no repitas las comprobaciones de arranque. HEAD es el
+>   commit de esta nota, hijo directo de `eb9da969`. `git status --short`
+>   debe dar exactamente
+>   `?? progress/impl_mobile-celebrations-and-living-empty.md`. Añade al
+>   impl un apartado `## Reanudación 5`. No repitas la parte del Cierre
+>   desde mobile-pet-tracker/, porque esta nota no toca ningún fichero de
+>   ahí y sus resultados siguen valiendo: BASE + celebration
+>   (`/tmp/171-final.txt`), ALL (`/tmp/171-all.txt`), typecheck, lint
+>   (`/tmp/171-final-lint.txt`), dependencias y sombras. Vuelve a correr
+>   A60 y anota `0`. Como dice el Cierre, las A van desde
+>   mobile-pet-tracker/ y las H, las P y los diff desde la raíz. Después
+>   sigue con A61-A70, H1-H5,
+>   P1-P10, las tres comprobaciones de `git diff`, la trazabilidad, c29,
+>   la lista cerrada y c30. Si falta alguno de los tres logs, corre el
+>   Cierre entero. Cualquier otra cifra distinta es PARADA.
+
 ---
 
 ```
@@ -449,7 +485,7 @@ H5. grep -rlF '#171' mobile-pet-tracker/src | wc -l   -> 0
 Valores al cerrar (copialos al impl): A7 -> 9; A9 -> exit=0; A12 -> 1;
 A13 -> 0; A16 -> 0; A17 -> 0; A18 -> 0; A19 -> 0; A22 -> 0; A23 -> 0;
 A24 -> 0; A29 -> 0; A31 -> 0; A33 -> 1; A34 -> 1; A37 -> 0; A42 -> 0;
-A43 -> 0; A66 -> 1; A69 -> 1. El resto de A y H1-H4, sin cambios, salvo
+A43 -> 0; A60 -> 0 (Reanudacion 5); A66 -> 1; A69 -> 1. El resto de A y H1-H4, sin cambios, salvo
 A25, A26, A38-A41, A44 y A45, que no se fijan (anota el valor). H5 no se
 fija (anota el valor). Y en positivo al cerrar, desde la raiz:
   P1. cmp -s mobile-pet-tracker/assets/images/pingo-celebrate.webp /home/claude/pet-tracker-mascot/webp/pingo-celebrate.webp; echo "cmp=$?"   -> cmp=0
