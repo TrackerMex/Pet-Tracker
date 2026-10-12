@@ -18,7 +18,7 @@ import { petKeys, userKeys } from '../../api/query-keys';
 import type { PetProfile } from '../../api/types';
 import { getMe } from '../../api/users';
 import { Card } from '../../components/card';
-import { PetHeroHeader } from '../../components/pet-hero-header';
+import { PetAvatar } from '../../components/pet-avatar';
 import { PetSwitcher } from '../../components/pet-switcher';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useNotificationsBlocked } from '../../hooks/use-push-registration';
@@ -77,7 +77,7 @@ function PetPills({ pet }: { pet: PetProfile }) {
   ].filter((value): value is string => value !== null);
 
   return (
-    <View className="flex-row flex-wrap gap-2">
+    <View testID="profile-pet-chips" className="flex-row flex-wrap gap-2">
       {pills.map((pill) => (
         <View key={pill} className="rounded-full bg-accent-soft px-3 py-2">
           <Text className="text-xs font-bold text-foreground">{pill}</Text>
@@ -246,7 +246,7 @@ export function ProfileScreen() {
 
       {petLoading ? (
         <>
-          <Skeleton testID="profile-hero-skeleton" className="h-80 w-full rounded-card" />
+          <Skeleton testID="profile-hero-skeleton" className="h-52 w-full rounded-card" />
           <Skeleton testID="pet-info-skeleton" className="h-52 w-full rounded-card" />
         </>
       ) : null}
@@ -265,8 +265,13 @@ export function ProfileScreen() {
 
       {pet ? (
         <>
-          <PetHeroHeader pet={pet} variant="card" />
-          <PetPills pet={pet} />
+          <Card variant="secondary" testID="profile-pet-card" className="items-center gap-3">
+            <PetAvatar name={pet.name} photoUrl={pet.photoUrl} cacheKey={pet.id} size={96} testID="profile-pet-avatar" />
+            <Text testID="profile-pet-name" className="text-2xl font-black text-foreground">
+              {pet.name}
+            </Text>
+            <PetPills pet={pet} />
+          </Card>
           <Button
             testID="change-photo"
             className="rounded-xl bg-accent-soft"
