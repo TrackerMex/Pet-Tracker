@@ -264,6 +264,7 @@ function WeightLogContent({ petId }: { petId: string }) {
                   className="flex-row items-center gap-3 rounded-xl border border-border bg-surface px-3.5 py-3 shadow-sm"
                 >
                   <View
+                    testID={`weight-row-${entry.id}-tone`}
                     className={`size-8 shrink-0 items-center justify-center rounded-xl ${tileClassName}`}
                     style={CONTINUOUS_CORNER}
                   >
@@ -284,6 +285,7 @@ function WeightLogContent({ petId }: { petId: string }) {
                         {entry.weightKg} kg
                       </Text>
                       <Text
+                        testID={`weight-row-${entry.id}-delta`}
                         className={`text-xs font-semibold ${variationClassName}`}
                         style={TABULAR_NUMS}
                       >

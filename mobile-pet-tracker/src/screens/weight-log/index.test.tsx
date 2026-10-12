@@ -249,7 +249,7 @@ describe('R7: weight log lista el historial', () => {
     await waitFor(() =>
       expect(screen.getByTestId('weight-row-weight-1')).toBeVisible(),
     );
-    expect(screen.getAllByTestId(/^weight-row-/).map(({ props }) => props.testID)).toEqual([
+    expect(screen.getAllByTestId(/^weight-row-weight-\d+$/).map(({ props }) => props.testID)).toEqual([
       'weight-row-weight-1',
       'weight-row-weight-2',
     ]);
