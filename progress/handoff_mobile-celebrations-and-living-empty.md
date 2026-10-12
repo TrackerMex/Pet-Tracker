@@ -81,6 +81,41 @@
 >   impl donde lo dejaste, con un apartado `## Reanudación 1`. Vuelve a correr
 >   el ALL de la base con el comando nuevo. Si sale verde con 98/2775, sigue
 >   con las anclas y c1.
+>
+> **Reanudación 2** (2026-10-12; el leader la commitea encima de c7
+> `166f78c8` con `git commit --only`, H0 sigue siendo `d01b03bf`):
+> - **Parada**: la medida de c8 salió `Tests: 2 failed, 96 passed, 98
+>   total`. R6.3 «pieza 22» y R6.4 fallaron con `Unable to find an element
+>   with testID`.
+> - **Causa**: el test, no el código de c8. tasks.md y este handoff
+>   prescribían `act(() => { jest.advanceTimersByTime(ms); })`, sin `await`
+>   (error del leader). En RNTL 14 `act` es asíncrono: la forma síncrona deja
+>   el scope abierto, y el `it` siguiente hace `await render(...)` sobre un
+>   árbol que se queda vacío (`screen.toJSON() === null`). Por eso solo caen
+>   los `it` que van detrás de uno que avanzó timers. El log lo delata con
+>   «You called act(async () => ...) without await». El leader lo reprodujo
+>   fuera del árbol con tu `celebration.tsx` de c8. Ni `screen.unmount()`,
+>   ni `clearAllTimers`, ni `runOnlyPendingTimers`, ni timers falsos por
+>   `describe` lo arreglan. Con `await act(async () => { … })` en los tres
+>   `it` sale 20/20 verde.
+> - **Corrección** (mecánica de test, no cambia requisitos ni recuentos):
+>   la regla común de tasks.md y la fila R10.3 de T12 dicen ahora
+>   `await act(async () => { jest.advanceTimersByTime(ms); })`; §Convenciones
+>   de este bloque, igual. Esto vale para todo `it` que escribas desde
+>   aquí (R7, R8, R10, R11).
+> - **Commit nuevo c7.1**, entre c7 y c8 (bloque T3 de abajo). Aplica el
+>   `sed` a las tres líneas de `celebration.test.tsx` y commitea solo ese
+>   fichero. Así c7 conserva su rojo (R6.2-R6.4 caían por consulta, sin
+>   que el `act` influyera) y la cadena de c8 queda tal cual. c7.1 no tiene
+>   medida propia: la medida de c8 es su prueba.
+> - **Al reanudar**: no repitas las comprobaciones de arranque. HEAD es el
+>   commit de esta nota, hijo directo de `166f78c8`. `git status --short`
+>   debe dar exactamente los tres ` M` de c8 (`celebration.tsx`, `motion.ts`,
+>   `category-palette.ts`) y
+>   `?? progress/impl_mobile-celebrations-and-living-empty.md`. No toques
+>   los cambios de c8. Añade al impl un apartado `## Reanudación 2`, corre
+>   la cadena de c7.1 y después c8 entera desde su medida (se espera
+>   `Tests: 98 passed, 98 total`). Cualquier otra cifra es PARADA.
 
 ---
 
@@ -116,7 +151,7 @@ R-ids):
   c1-c2   T1  R1   pose celebrate (rojo, verde)
   c3-c4   T2  R2   componente Celebration (rojo, verde)
   c5-c6   T14 R14  botones con labio (rojo, verde)
-  c7-c8   T3  R6   confeti (rojo, verde)
+  c7-c8   T3  R6   confeti (rojo, verde; c7.1 entre medias, Reanudacion 2)
   c9-c10  T4  R7   pop (rojo, verde)
   c11-c12 T5  R8   reduce motion (rojo, verde)
   c13-c14 T6  R9   haptico (rojo, verde)
@@ -567,6 +602,18 @@ de #64 R9 de design.md §7 (E1), con el titulo `quince`):
     && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts mobile-pet-tracker/src/components/__tests__/celebration.test.tsx mobile-pet-tracker/src/theme/__tests__/motion.test.ts ' \
     && <LIMPIO> \
     && git commit -m 'test(mobile): confeti de la celebración (R6)'
+
+c7.1, correccion de la Reanudacion 2 (solo celebration.test.tsx; los
+cambios de produccion de c8 siguen sin stagear y no entran):
+  sed -i 's/^    act(() => { jest\.advanceTimersByTime(\([0-9]*\)); });$/    await act(async () => { jest.advanceTimersByTime(\1); });/' src/components/__tests__/celebration.test.tsx
+  test "$(grep -cF 'await act(async () => { jest.advanceTimersByTime(' src/components/__tests__/celebration.test.tsx)" = 3 \
+    && test "$(grep -cE '^ +act\(' src/components/__tests__/celebration.test.tsx)" = 0 \
+    && test "$(git diff --numstat -- src/components/__tests__/celebration.test.tsx | cut -f1,2 | tr '\t' ' ')" = '3 3' \
+    && test ! -e .expo/types/router.d.ts && bun run typecheck \
+    && bunx expo lint --no-cache > /tmp/171-c7_1-lint.txt 2>&1 && test ! -s /tmp/171-c7_1-lint.txt \
+    && git add src/components/__tests__/celebration.test.tsx \
+    && test "$(git diff --cached --name-only)" = 'mobile-pet-tracker/src/components/__tests__/celebration.test.tsx' \
+    && git commit -m 'test(mobile): el confeti espera a act (R6)'
 
 c8, T3 verde (tasks.md T3 (2): `ConfettiPiece` y las tres constantes de
 confeti de design.md §4.1 y §4.4 en motion.ts, y `CONFETTI_FILLS` al final
@@ -1120,7 +1167,8 @@ No rebasees despues de escribir hashes.
 - Convenciones: docs/conventions.md, en particular §Tests y §Esperas. Todo
   `fireEvent` lleva `await`; cada it de animacion hace `await render(...)`
   o `await renderWithProviders(...)`; se avanza con
-  `act(() => { jest.advanceTimersByTime(ms); })`, con `ms` derivado de
+  `await act(async () => { jest.advanceTimersByTime(ms); })` (nunca
+  `act(() => ...)` sin `await`, ver Reanudacion 2), con `ms` derivado de
   design.md §4, nunca ampliando la asercion; se compara con `toEqual` el
   objeto entero de `getAnimatedStyle(node)`, nunca `toHaveAnimatedStyle`.
   En Vincular y Anadir mascota se espera al nodo

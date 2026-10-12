@@ -59,9 +59,12 @@ tags: [harness, spec, mobile, ui, motion]
     `jest.useRealTimers()` en su `afterEach`;
   - se lee con `getAnimatedStyle(node)` y se compara con `toEqual`
     (objeto entero, nunca `toHaveAnimatedStyle`);
-  - se avanza con `act(() => { jest.advanceTimersByTime(ms); })`, con `ms`
-    derivado de las duraciones de [[design]] §4 y nunca ampliando la
-    aserción;
+  - se avanza con `await act(async () => { jest.advanceTimersByTime(ms); })`,
+    con `ms` derivado de las duraciones de [[design]] §4 y nunca ampliando
+    la aserción. Nunca `act(() => …)` sin `await`: en RNTL 14 `act` es
+    asíncrono, la forma síncrona deja el scope abierto y el `it` siguiente
+    renderiza un árbol vacío (`screen.toJSON() === null`, «Unable to find an
+    element»). Paró c8 (Reanudación 2 del handoff);
   - cada `it` de animación hace `await render(...)` o
     `await renderWithProviders(...)`;
   - todo `fireEvent` lleva `await`; `requestClose` se emite con
@@ -584,7 +587,7 @@ commit verde, precedidos por un refactor del arnés.
   | R10.1 la fuente de `empty-state.tsx` contiene la línea `export type EmptyStatePose = 'talk' \| 'sleep' \| 'clipboard' \| 'health' \| 'collar' \| 'food';` exactamente una vez | nace **verde** (regresión). Sonda tras el verde: añadir `\| 'celebrate'` lo pone rojo |
   | R10.2 `probe-float` existe y contiene a `probe-pose` (`within(float).getByTestId('probe-pose')`); al montar, `getAnimatedStyle(float)` es igual a `{ width: 160, height: 160, transform: [{ translateY: 0 }] }` y `probe-pose` tiene `props.style` igual a `{ width: 160, height: 160 }` | **por consulta** (`probe-float`) |
   | R10.3 `mockWithRepeat` se llamó 1 vez y con `(expect.anything(), -1, true)` | **por aserción** (0 llamadas) |
-  | R10.3 tras `act(() => { jest.advanceTimersByTime(1200); })` (`MOTION_FLOAT_TIMING.duration`), `getAnimatedStyle(probe-float)` es igual a `{ width: 160, height: 160, transform: [{ translateY: -4 }] }` (`-MOTION_FLOAT_OFFSET_Y`) | **por consulta** (`probe-float`) |
+  | R10.3 tras `await act(async () => { jest.advanceTimersByTime(1200); })` (`MOTION_FLOAT_TIMING.duration`), `getAnimatedStyle(probe-float)` es igual a `{ width: 160, height: 160, transform: [{ translateY: -4 }] }` (`-MOTION_FLOAT_OFFSET_Y`) | **por consulta** (`probe-float`) |
 
   El doble deja `withRepeat` como identidad: el bucle corre una sola vez y
   los temporizadores falsos no giran sin fin.
