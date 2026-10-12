@@ -5,7 +5,7 @@ import { Button, Skeleton, Spinner } from 'heroui-native';
 import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Animated, { Easing, ReduceMotion, useAnimatedProps, useSharedValue } from 'react-native-reanimated';
+import Animated, { Easing, ReduceMotion, useAnimatedProps, useSharedValue, withTiming } from 'react-native-reanimated';
 import { ChevronRight, Clock, Sparkles } from 'reicon-react-native';
 import Svg, { Circle } from 'react-native-svg';
 
@@ -81,7 +81,7 @@ export default function FoodScreen() {
     strokeDashoffset: KCAL_RING_CIRCUMFERENCE * (1 - kcalRingPct.get() / 100),
   }));
   useEffect(() => {
-    kcalRingPct.set(Math.min(kcalPct, 100));
+    kcalRingPct.set(withTiming(Math.min(kcalPct, 100), KCAL_BAR_TIMING));
   }, [kcalPct, kcalRingPct]);
 
   async function toggleMeal(mealTime: string, served: boolean) {
