@@ -27,5 +27,10 @@
   (base Specs, «En revisión», espejo de 8ffd31a1). Las tres celdas de §Deltas con
   `+ n`/`- n` se pasaron a notas (a)-(c) bajo la tabla: Notion convierte `+ ` dentro
   de una celda en viñeta. sites-4c [87612b] avisado: #167 no pide poses nuevas.
+- **Solapes con #171** (sites-4c, 169e92c9): si #171 mergea antes del handoff de #167,
+  re-medir al hacer el handoff: §2.24 pasa a §2.25; B15 (`- 1, // #159 R2`) ya no
+  casa, porque #171 R12 reescribe esa suma; y la carta termina en `## Enmienda #171`.
+  R11.2 sigue añadiendo al final, y R11.3 solo pide «una sola vez», sin posición
+  (verificado con grep: ningún candado de #167 usa endsWith ni lastIndexOf).
 - **Siguiente**: gate humano (Estado del gate = Aprobado), luego commit de firma y
   handoff a Codex.
