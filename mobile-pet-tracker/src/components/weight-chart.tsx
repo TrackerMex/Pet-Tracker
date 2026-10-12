@@ -1,6 +1,11 @@
 import { useEffect } from 'react';
 import { Text } from 'react-native';
-import Animated, { useAnimatedProps, useSharedValue, withTiming } from 'react-native-reanimated';
+import Animated, {
+  useAnimatedProps,
+  useReducedMotion,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 import Svg, {
   Circle,
   Defs,
@@ -35,11 +40,12 @@ export function WeightChart({ entries }: { entries: WeightEntry[] }) {
 
 function WeightChartPlot({ entries }: { entries: WeightEntry[] }) {
   const [accent] = useThemeColors(['accent-strong']);
-  const progress = useSharedValue(0);
+  const reducedMotion = useReducedMotion();
+  const progress = useSharedValue(reducedMotion ? 1 : 0);
 
   useEffect(() => {
-    progress.set(withTiming(1, MOTION_FILL_TIMING));
-  }, [progress]);
+    if (!reducedMotion) progress.set(withTiming(1, MOTION_FILL_TIMING));
+  }, [progress, reducedMotion]);
 
   const ascending = [...entries].reverse();
   const values = ascending.map(({ weightKg }) => weightKg);
@@ -54,9 +60,13 @@ function WeightChartPlot({ entries }: { entries: WeightEntry[] }) {
     });
   const points = chartPoints.map(({ x, y }) => `${x},${y}`).join(' ');
   const areaPoints = `${points} 100,40 0,40`;
-  const L = chartPoints.slice(1).reduce((length, point, index) =>
-    length + Math.hypot(point.x - chartPoints[index].x, point.y - chartPoints[index].y),
-  0);
+  const L = chartPoints.slice(1).reduce(
+    (length, point, index) => length + Math.hypot(
+      point.x - chartPoints[index].x,
+      point.y - chartPoints[index].y,
+    ),
+    0,
+  );
   const lineProps = useAnimatedProps(() => ({
     strokeDashoffset: L * (1 - progress.get()),
   }));
