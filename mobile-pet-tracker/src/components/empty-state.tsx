@@ -33,7 +33,9 @@ export function EmptyState({ testID, pose, title, body, action }: EmptyStateProp
     transform: [{ translateY: offset.get() }],
   }));
   useEffect(() => {
-    offset.set(withRepeat(withTiming(-MOTION_FLOAT_OFFSET_Y, MOTION_FLOAT_TIMING), -1, true));
+    if (!reduceMotion) {
+      offset.set(withRepeat(withTiming(-MOTION_FLOAT_OFFSET_Y, MOTION_FLOAT_TIMING), -1, true));
+    }
   }, [offset, reduceMotion]);
 
   return (
