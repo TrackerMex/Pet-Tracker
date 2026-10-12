@@ -33,6 +33,7 @@ import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { useThemeTransition } from '../../theme/theme-transition';
 import { TOUCH_SLOP } from '../../theme/touch-target';
 import { useThemeColors } from '../../theme/use-theme-colors';
+import { CATEGORY_SLOTS, type CategorySlot } from '../../utils/category-palette';
 
 function InfoRow({
   isLast = false,
@@ -63,24 +64,18 @@ function InfoRow({
 
 function PetPills({ pet }: { pet: PetProfile }) {
   const t = useTranslate();
-  const pills = [
-    pet.sex,
-    pet.sterilized === null
-      ? null
-      : pet.sterilized
-        ? t('profile.sterilized')
-        : t('profile.notSterilized'),
-    Number.isFinite(pet.ageMonths)
-      ? t('profile.ageMonths', { months: pet.ageMonths })
-      : null,
-    pet.currentWeightKg === null ? null : `${pet.currentWeightKg} kg`,
-  ].filter((value): value is string => value !== null);
+  const pills: { testID: string; slot: CategorySlot; text: string | null }[] = [
+    { testID: 'profile-pet-chip-sex', slot: 'blue', text: pet.sex },
+    { testID: 'profile-pet-chip-sterilized', slot: 'green', text: pet.sterilized === null ? null : pet.sterilized ? t('profile.sterilized') : t('profile.notSterilized') },
+    { testID: 'profile-pet-chip-age', slot: 'amber', text: Number.isFinite(pet.ageMonths) ? t('profile.ageMonths', { months: pet.ageMonths }) : null },
+    { testID: 'profile-pet-chip-weight', slot: 'violet', text: pet.currentWeightKg === null ? null : `${pet.currentWeightKg} kg` },
+  ];
 
   return (
-    <View testID="profile-pet-chips" className="flex-row flex-wrap gap-2">
-      {pills.map((pill) => (
-        <View key={pill} className="rounded-full bg-accent-soft px-3 py-2">
-          <Text className="text-xs font-bold text-foreground">{pill}</Text>
+    <View testID="profile-pet-chips" className="flex-row flex-wrap justify-center gap-2">
+      {pills.filter(({ text }) => text !== null).map((pill) => (
+        <View key={pill.testID} testID={pill.testID} className={`rounded-full px-3 py-1 ${CATEGORY_SLOTS[pill.slot].surface}`}>
+          <Text className={`text-xs font-bold ${CATEGORY_SLOTS[pill.slot].ink}`}>{pill.text}</Text>
         </View>
       ))}
     </View>
