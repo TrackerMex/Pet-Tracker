@@ -585,3 +585,15 @@ describe('#170 R10: pinta la zona y la distancia a su borde', () => {
     expect(distanceIndex).toBe(mapIndex + 1);
   });
 });
+
+describe('#170 R11: sin geofenceId pinta el mapa sin zona', () => {
+  it.each(['geofence_exit', 'battery_low'])('%s sin geofenceId: mapa sin círculo ni distancia, sin consulta', async (type) => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ type, geofenceId: null, payload: REAL_PAYLOAD })], nextCursor: null });
+    await renderDetail();
+    const map = await screen.findByTestId('pet-map-double');
+    expect(map.props.circles).toEqual([]);
+    expect(map.props.zoom).toBeUndefined();
+    expect(screen.queryByTestId('alert-detail-distance')).toBeNull();
+    expect(mockListGeofences).not.toHaveBeenCalled();
+  });
+});
