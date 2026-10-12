@@ -3235,3 +3235,510 @@ Lista exacta de 14 ficheros verificada. c27 guarda esta salida mediante git comm
 Cierre: BASE 9/363, utilitario 1/11, ALL 99/2823, todos con exit=0; typecheck exit=0; lint exit=0 y vacio=0. Sondas S1, S4a, S4b, S6 y S11 revertidas con limpio=0. Pendientes del leader: gate compartido y PR; R14 corresponde al humano.
 
 R14: pendiente del smoke humano
+
+## Reanudacion 5 (Enmienda E1)
+
+Inicio: 2026-10-12. Trabajo exclusivamente en `/home/claude/sites/Pet-Tracker-wt-169`. Guion: tasks.md §Enmienda E1 y handoff §Reanudación 5; siete commits y siete sondas. Enmienda firmada por humano en `462ca164`. H0 = `fc384b44`; producción de referencia = `f314978d`.
+
+### Arranque
+
+```text
+$ pwd
+/home/claude/sites/Pet-Tracker-wt-169/mobile-pet-tracker
+$ git branch --show-current
+feature/169-mobile-weight-draw-and-toasts
+$ git rev-parse --short HEAD
+222e7370
+$ git log --oneline f314978d..HEAD
+222e7370 docs(mobile-weight-draw-and-toasts): #169 Reanudación 5 de Codex (Enmienda E1)
+462ca164 docs(specs): firma de la Enmienda E1 de #169 aprobada vía Notion
+26e56880 docs(mobile-weight-draw-and-toasts): #169 Enmienda E1 ensanchada tras el barrido del reviewer
+02da4c11 docs(mobile-weight-draw-and-toasts): #169 revisión rechazada y Enmienda E1
+dbe183a6 docs(mobile-weight-draw-and-toasts): #169 Codex terminado, en cola para init.sh
+$ git status --short
+(salida vacía)
+$ git merge-base --is-ancestor f314978d HEAD; echo "exit=$?"
+exit=0
+$ git diff --quiet f314978d HEAD -- . ; echo "exit=$?"
+exit=0
+$ test ! -e .expo/types/router.d.ts; echo "exit=$?"
+exit=0
+```
+
+Skills cargadas: `ponytail:ponytail`, `building-native-ui` (plugin Expo), `.agents/skills/appllama-app-design-skill` y `.agents/skills/animate-expo`. La carta y la spec firmada mandan; la prueba Android queda para el humano (R14). Leídas las convenciones de tests, esperas, carta móvil y arquitectura. No se ejecuta init.sh, push, PR, merge ni rebase. El registro se añade aquí sin modificar ninguna sección anterior.
+
+### Antes: base fichero a fichero
+
+Medida `/tmp/169-e1-b1.txt`:
+```text
+Test Suites: 1 passed, 1 total
+Tests:       15 passed, 15 total
+exit=0
+```
+
+Medida `/tmp/169-e1-b2.txt`:
+```text
+Test Suites: 1 passed, 1 total
+Tests:       11 passed, 11 total
+exit=0
+```
+
+### (1) Rojo R1 y R2: M1 + H1 + H2
+
+Medida `/tmp/169-e1-r1.txt`:
+```text
+
+
+
+
+Test Suites: 1 failed, 1 total
+Tests:       4 failed, 15 passed, 19 total
+exit=1
+```
+
+### Detalle de las cuatro aserciones rojas de (1)
+
+Medida `/tmp/169-e1-r1.txt`:
+```text
+  ● #169 R1: la línea se dibuja al montarse › con progreso 0.25 el desplazamiento es tres cuartos de L
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Object {
+    -   "strokeDashoffset": NumberCloseTo 78.7464 (3 digits),
+    +   "strokeDashoffset": 104.9952379872535,
+      }
+  ● #169 R1: la línea se dibuja al montarse › con tres pesos no alineados la longitud es la suma de los dos segmentos
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 2
+    + Received  + 2
+
+      Array [
+    -   NumberCloseTo 111.8609 (3 digits),
+    -   NumberCloseTo 111.8609 (3 digits),
+    +   101.27191120937731,
+    +   101.27191120937731,
+      ]
+  ● #169 R1: la línea se dibuja al montarse › p parte de 0: con una animación que no avanza, la línea y los puntos siguen ocultos
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Object {
+    -   "strokeDashoffset": NumberCloseTo 104.9952 (3 digits),
+    +   "strokeDashoffset": 0,
+      }
+  ● #169 R2: los puntos aparecen con el mismo progreso › con progreso 0.25 la opacidad de los puntos es 0.25
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Object {
+    -   "opacity": 0.25,
+    +   "opacity": 0,
+      }
+Test Suites: 1 failed, 1 total
+Tests:       4 failed, 15 passed, 19 total
+exit=1
+```
+
+(1) Commit `ab183a46 test(mobile): progreso intermedio, longitud y origen del dibujo de la gráfica de peso (#169 R1, R2)`. Cadena completa exit=0: anclas, recuento, cuatro fallos por aserción, typecheck exit=0, lint exit=0 y salida vacía, stage exacto de dos ficheros y LIMPIO verificados.
+
+### (2) Verde R1 y R2
+
+Medida `/tmp/169-e1-g1c.txt`:
+```text
+Test Suites: 1 passed, 1 total
+Tests:       19 passed, 19 total
+exit=0
+```
+
+Medida `/tmp/169-e1-g1.txt`:
+```text
+  ● Console
+  ● Console
+  ● Console
+Test Suites: 3 passed, 3 total
+Tests:       144 passed, 144 total
+exit=0
+```
+
+Medida `/tmp/169-e1-g1-guardas.txt`:
+```text
+Test Suites: 2 passed, 2 total
+Tests:       92 passed, 92 total
+exit=0
+```
+
+Restauración desde f314978d y diff del fichero: exit=0.
+
+(2) Commit `cbbe7986 feat(mobile): la gráfica de peso vuelve a dibujarse en continuo desde 0 (#169 R1, R2)`. Cadena completa exit=0: recuentos, producción idéntica a f314978d, typecheck exit=0, lint exit=0 y salida vacía, stage exacto y LIMPIO verificados.
+
+### Sonda M2 sobre cbbe7986 (sin commit)
+
+Medida `/tmp/169-e1-sM2.txt`:
+```text
+  ● #169 R1: la línea se dibuja al montarse › con progreso 0.25 el desplazamiento es tres cuartos de L
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Object {
+    -   "strokeDashoffset": NumberCloseTo 78.7464 (3 digits),
+    +   "strokeDashoffset": 59.0598213678301,
+      }
+  ● #169 R2: los puntos aparecen con el mismo progreso › con progreso 0.25 la opacidad de los puntos es 0.25
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Object {
+    -   "opacity": 0.25,
+    +   "opacity": 0.0625,
+      }
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 17 passed, 19 total
+exit=1
+```
+
+### Sonda H1b sobre cbbe7986 (sin commit)
+
+Medida `/tmp/169-e1-sH1b.txt`:
+```text
+  ● #169 R1: la línea se dibuja al montarse › con tres pesos no alineados la longitud es la suma de los dos segmentos
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 2
+    + Received  + 2
+
+      Array [
+    -   NumberCloseTo 111.8609 (3 digits),
+    -   NumberCloseTo 111.8609 (3 digits),
+    +   118.72657663724664,
+    +   118.72657663724664,
+      ]
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 18 passed, 19 total
+exit=1
+```
+
+M2 revertida antes de H1b: checkout HEAD y diff con pathspec, limpio=0.
+
+### (3) Rojo R3: H2b
+
+Medida `/tmp/169-e1-r3.txt`:
+```text
+  ● #169 R3: bajo reduce motion la gráfica sale completa › p arranca en 1 bajo reduce motion
+
+    expect(jest.fn()).toHaveBeenCalledWith(...expected)
+
+    Expected: 1
+    Received
+           1: {}
+           2: 0
+           3: 0
+
+    Number of calls: 3
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 19 passed, 20 total
+exit=1
+```
+
+H1b revertida antes de (3): checkout HEAD y diff con pathspec, limpio=0.
+
+(3) Commit `cf038d68 test(mobile): bajo reduce motion el progreso del dibujo arranca en 1 (#169 R3)`. Cadena completa exit=0: anclas, recuento, único fallo por aserción, typecheck exit=0, lint exit=0 y salida vacía, stage exacto de dos ficheros y LIMPIO verificados.
+
+### (4) Verde R3
+
+Medida `/tmp/169-e1-g3c.txt`:
+```text
+Test Suites: 1 passed, 1 total
+Tests:       20 passed, 20 total
+exit=0
+```
+
+Medida `/tmp/169-e1-g3.txt`:
+```text
+  ● Console
+  ● Console
+  ● Console
+Test Suites: 3 passed, 3 total
+Tests:       145 passed, 145 total
+exit=0
+```
+
+Medida `/tmp/169-e1-g3-guardas.txt`:
+```text
+Test Suites: 2 passed, 2 total
+Tests:       92 passed, 92 total
+exit=0
+```
+
+Restauración desde f314978d y diff del fichero: exit=0.
+
+(4) Commit `59cef5a9 feat(mobile): bajo reduce motion la gráfica vuelve a arrancar completa (#169 R3)`. Cadena completa exit=0: recuentos, producción idéntica a f314978d, typecheck exit=0, lint exit=0 y salida vacía, stage exacto y LIMPIO verificados.
+
+### (5) Rojo R5: M3 + H3
+
+Medida `/tmp/169-e1-r5.txt`:
+```text
+  ● #169 R5: monthlyWeightDelta › fila 12 con hoy 2027-01-05
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: -0.1
+    Received: 0.3
+  ● #169 R5: monthlyWeightDelta › fila 13 con hoy 2027-01-05
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 0.6
+    Received: 0.4
+  ● #169 R5: monthlyWeightDelta › fila 14 con hoy 2027-01-05
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 0.1
+    Received: null
+  ● #169 R5: monthlyWeightDelta › fila 15 con hoy 2027-01-05
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 0.04
+    Received: 0
+Test Suites: 1 failed, 1 total
+Tests:       4 failed, 11 passed, 15 total
+exit=1
+```
+
+(5) Commit `feee3406 test(mobile): el delta del mes elige por posición y redondea a 2 decimales (#169 R5)`. Cadena completa exit=0: anclas, recuento, cuatro fallos por aserción, typecheck exit=0, lint exit=0 y salida vacía, stage exacto de dos ficheros y LIMPIO verificados.
+
+### (6) Verde R5
+
+Medida `/tmp/169-e1-g5.txt`:
+```text
+Test Suites: 1 passed, 1 total
+Tests:       15 passed, 15 total
+exit=0
+```
+
+Medida `/tmp/169-e1-g5-guardas.txt`:
+```text
+Test Suites: 2 passed, 2 total
+Tests:       92 passed, 92 total
+exit=0
+```
+
+Restauración desde f314978d y diff del fichero: exit=0.
+
+(6) Commit `0697b117 feat(mobile): monthlyWeightDelta vuelve a elegir por posición y a redondear a 2 decimales (#169 R5)`. Cadena completa exit=0: recuentos, producción idéntica a f314978d, typecheck exit=0, lint exit=0 y salida vacía, stage exacto y LIMPIO verificados.
+
+### Sonda M3a sobre 0697b117 (sin commit)
+
+Medida `/tmp/169-e1-sM3a.txt`:
+```text
+  ● #169 R5: monthlyWeightDelta › fila 12 con hoy 2027-01-05
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: -0.1
+    Received: 0.2
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 14 passed, 15 total
+exit=1
+```
+
+### Sonda M3b sobre 0697b117 (sin commit)
+
+Medida `/tmp/169-e1-sM3b.txt`:
+```text
+  ● #169 R5: monthlyWeightDelta › fila 12 con hoy 2027-01-05
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: -0.1
+    Received: null
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 14 passed, 15 total
+exit=1
+```
+
+### Sonda M3c sobre 0697b117 (sin commit)
+
+Medida `/tmp/169-e1-sM3c.txt`:
+```text
+  ● #169 R5: monthlyWeightDelta › fila 13 con hoy 2027-01-05
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 0.6
+    Received: 0.4
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 14 passed, 15 total
+exit=1
+```
+
+### Sonda M3d sobre 0697b117 (sin commit)
+
+Medida `/tmp/169-e1-sM3d.txt`:
+```text
+  ● #169 R5: monthlyWeightDelta › fila 14 con hoy 2027-01-05
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 0.1
+    Received: null
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 14 passed, 15 total
+exit=1
+```
+
+### Sonda H3b sobre 0697b117 (sin commit)
+
+Medida `/tmp/169-e1-sH3b.txt`:
+```text
+  ● #169 R5: monthlyWeightDelta › fila 15 con hoy 2027-01-05
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 0.04
+    Received: 0
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 14 passed, 15 total
+exit=1
+```
+
+Las cinco sondas M3a, M3b, M3c, M3d y H3b se revirtieron por separado antes de la siguiente, con `git checkout HEAD -- src/utils/monthly-weight-delta.ts` y `git diff --quiet HEAD -- . ../docs ../specs; echo "limpio=$?"`: limpio=0 en las cinco. M2 y H1b también revertidas con limpio=0. Ninguna sonda commiteada.
+
+### Cierre: BASE y utilitario
+
+Medida `/tmp/169-e1-final.txt`:
+```text
+  ● Console
+  ● Console
+  ● Console
+Test Suites: 9 passed, 9 total
+Tests:       368 passed, 368 total
+exit=0
+```
+
+Medida `/tmp/169-e1-final-md.txt`:
+```text
+Test Suites: 1 passed, 1 total
+Tests:       15 passed, 15 total
+exit=0
+```
+
+### Espera antes de ALL (una llamada)
+
+```sh
+for i in $(seq 1 90); do pgrep -f 'node_modules/(\.bin/jest|jest-worker)|[i]nit\.sh' > /dev/null || break; sleep 60; done; pgrep -af 'node_modules/(\.bin/jest|jest-worker)'; pgrep -af '[i]nit\.sh'; echo "fin-espera"
+```
+```text
+fin-espera
+```
+Ninguna línea de proceso encima de fin-espera. No se lanza otro comando durante ALL.
+
+### Cierre: ALL con --testTimeout=30000
+
+Medida `/tmp/169-e1-all.txt`:
+```text
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+Test Suites: 99 passed, 99 total
+Tests:       2832 passed, 2832 total
+exit=0
+```
+
+### Cierre: typecheck, lint y diff de producción
+
+```text
+$ bun run typecheck; echo "exit=$?"
+$ tsc --noEmit
+exit=0
+$ bunx expo lint --no-cache > /tmp/169-lint-final.txt 2>&1; echo "exit=$?"; test ! -s /tmp/169-lint-final.txt; echo "vacio=$?"
+exit=0
+vacio=0
+```
+
+ALL imprimió el aviso preexistente de worker force-exit permitido por el handoff; terminó con exit=0, 99/99 suites y 2832/2832 tests.
+
+Desde la raíz:
+```text
+$ pwd
+/home/claude/sites/Pet-Tracker-wt-169
+$ git diff --quiet f314978d HEAD -- mobile-pet-tracker/src/components/weight-chart.tsx mobile-pet-tracker/src/utils/monthly-weight-delta.ts; echo "exit=$?"
+exit=0
+$ git diff --name-only f314978d HEAD -- mobile-pet-tracker/ | LC_ALL=C sort
+mobile-pet-tracker/src/components/__tests__/weight-chart.test.tsx
+mobile-pet-tracker/src/utils/monthly-weight-delta.test.ts
+```
+
+### (7) Trazabilidad e impl
+
+Solo la columna Commit de R1, R2, R3 y R5 añade los pares de la Enmienda E1, con sus mensajes y las sondas correspondientes. Columna Test, frontmatter, fila R14 y resto del fichero conservados; comprobados al escribir la tabla.
+
+Seis hashes de esta ronda:
+
+- (1) rojo R1/R2: ab183a46.
+- (2) verde R1/R2: cbbe7986.
+- (3) rojo R3: cf038d68.
+- (4) verde R3: 59cef5a9.
+- (5) rojo R5: feee3406.
+- (6) verde R5: 0697b117.
+
+Siete sondas medidas por aserción y revertidas con limpio=0: M2 (2 failed, 17 passed, 19 total), H1b (1 failed, 18 passed, 19 total), M3a, M3b, M3c, M3d y H3b (cada una 1 failed, 14 passed, 15 total). Cada sonda tiene arriba su exit=1, encabezado, matcher y Expected/Received.
+
+Cierre: BASE 9/368, utilitario 1/15, ALL 99/2832, todo exit=0; typecheck exit=0; lint exit=0 y vacio=0. Producción idéntica a f314978d; diff neto móvil de la Enmienda E1 limitado a los dos tests. No se ejecutó init.sh, push, PR, merge ni rebase; no se tocaron otros worktrees. El leader continúa con gate y re-revisión; el humano firma R14. La salida de status y la lista cerrada posterior al commit (7) se entregan en la respuesta final, como manda el handoff.
+
+R14: pendiente del smoke humano
