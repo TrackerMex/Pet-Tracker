@@ -306,7 +306,7 @@ de §Aprobación:
 
 | Candado | Ancla a 89fe2009 | Salida | Cambio | R |
 |---|---|---|---|---|
-| Recuento de claves | `grep -cF -e '- 1, // #159 R2' src/providers/__tests__/language-provider.test.tsx` | 1 | `- 1 // #159 R2` + nueva línea `+ 2, // #169 R9` | R9 |
+| Recuento de claves | `grep -cF -e '- 1, // #159 R2' src/providers/__tests__/language-provider.test.tsx` | 1 | pasa a `- 1 // #159 R2`, más una línea nueva `+ 2, // #169 R9` | R9 |
 | Filas de Peso en la tabla de copy | `grep -cF "{ file: 'src/screens/weight-log/index.tsx', key:" src/__tests__/ui-copy-table.ts` | 17 | 19: una en R6 y una en R10, dentro de `R5_HEALTH` | R6, R10 |
 | Longitud de `R5_HEALTH` | `grep -cF 'expect(R5_HEALTH).toHaveLength(32 + 1 + 1 - 2 + 3 + 2);' src/__tests__/ui-language.test.ts` | 1 | `+ 1` en R6 y `+ 1` en R10, con los comentarios `#169 R6` y `#169 R10` | R6, R10 |
 | `TABULAR_NUMS` en Peso | `grep -cF "[join('screens', 'weight-log', 'index.tsx'), 2]," src/__tests__/consistency-classnames.test.ts` | 1 | `2 + 2], // #169 R6` | R6 |

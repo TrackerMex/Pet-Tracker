@@ -9,10 +9,12 @@
 - Worktree: `../Pet-Tracker-wt-169`, branch `feature/169-mobile-weight-draw-and-toasts`,
   base origin/main 89fe2009. `.env` copiado del árbol principal.
 - Estado: `spec_ready` (commit 3f8f87cf). Espejo en Notion, «En revisión»:
-  https://app.notion.com/p/3f66115a9b27811b8c72f46cec163a90 (espejado de 3f8f87cf).
-  PARA hasta el gate humano.
-- Implementación con Codex: espera al merge de #166 mobile-chunky-cta (cambia el
-  className de `weight-submit` y del resto de primarios).
+  https://app.notion.com/p/3f66115a9b27811b8c72f46cec163a90 (re-espejado del
+  commit que añade esta línea). PARA hasta el gate humano.
+- #166 mobile-chunky-cta mergeado en main (PR #209, d2b8b0ae). Mergeado en esta
+  branch (merge, no rebase) en 4d455cab y spec re-medida en 259c7c8f: todas las
+  anclas dan lo mismo; #169 no añade Button/Pressable, así que no mueve #166
+  R2/R3. Ya no bloquea el handoff: solo falta el gate humano.
 
 ### Decisiones del humano
 
