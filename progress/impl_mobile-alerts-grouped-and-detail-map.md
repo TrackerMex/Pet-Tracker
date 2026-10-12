@@ -18459,3 +18459,23 @@ git commit --only progress/impl_mobile-alerts-grouped-and-detail-map.md -m 'docs
 Cierre automático verificado: FINAL 10/427; ALL 100/2893 al primer intento con carga 5.07; typecheck exit=0; lint exit=0 y 0 bytes; todos los candados y listas exactos; cero sombras nuevas en producción. No se ejecutó init.sh, no hubo push ni PR. R17 sigue reservado al humano.
 
 R17: pendiente del smoke humano
+
+## Reanudacion 6
+
+Nueva recepción de la misma instrucción después de completar cE2 y el cierre. Comprobación inicial desde la raíz, antes de modificar ningún fichero:
+
+```text
+$ pwd
+/home/claude/sites/Pet-Tracker-wt-170
+$ git branch --show-current
+feature/170-mobile-alerts-grouped-and-detail-map
+$ git rev-parse --short HEAD
+4e74bab9
+$ git status --short
+```
+
+La salida de status fue vacía. PARADA en el control inicial: HEAD esperado 5892e3e9, obtenido 4e74bab9; status esperado «?? progress/impl_mobile-alerts-grouped-and-detail-map.md», obtenido vacío. La instrucción repetida corresponde a una reanudación ya completada: cE2 0359fe6c, c27 642e8b3c y c28 4e74bab9. Sus medidas y el cierre están registrados en la sección anterior de Reanudacion 6.
+
+No se repiten cadenas, tests ni commits y no se modifica producción. Esta anotación, requerida por la nueva recepción, queda como único cambio sin commitear en el impl.
+
+R17: pendiente del smoke humano
