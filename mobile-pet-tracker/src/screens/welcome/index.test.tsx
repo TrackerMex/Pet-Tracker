@@ -711,3 +711,40 @@ describe('#166 R3: el CTA secundario lleva el labio gris', () => {
     expect(secondary.props.className).not.toContain('bg-transparent');
   });
 });
+
+
+describe('#167 R11: la carta declara los anillos de ping', () => {
+  const charter = readFileSync(join(process.cwd(), '..', 'docs', 'ui-guidelines.md'), 'utf8');
+  const idleLoops = `- **Bucles de reposo.** Flotar, parpadear y los tres anillos de ping que
+  rodean a Pingo en la bienvenida son las únicas animaciones continuas de
+  Pingo, y una excepción declarada a §Animación: animan \`translateY\`,
+  \`scale\` y \`opacity\` con timing y duraciones fuera de 150/250/400,
+  porque no entran, ni salen, ni responden a un gesto. Sus constantes viven en
+  \`src/theme/motion.ts\` y no arrancan con reduce motion.`;
+  const heading = '## Enmienda #167 — anillos de ping de la bienvenida';
+  const amendmentBody = `Los tres anillos de ping de la bienvenida amplían los bucles de reposo de
+§Animación punto 7. Cada anillo es un círculo de borde \`border-accent\` que
+crece de \`MOTION_PING_FROM\` a \`MOTION_PING_TO_SCALE\` mientras su opacidad cae
+de \`MOTION_PING_FROM\` a 0, con \`MOTION_PING_TIMING\`, en bucle infinito y sin
+invertir. Los anillos arrancan escalonados un tercio de la duración. Con
+reduce motion no se pintan.
+
+Ninguna otra pantalla usa anillos de ping sin una enmienda propia.`.trimEnd();
+
+  it('#167 R11: la viñeta de bucles de reposo nombra los anillos', () => {
+    expect(charter.split(idleLoops).length - 1).toBe(1);
+  });
+
+  it('#167 R11: no queda la redacción vieja de la viñeta', () => {
+    expect(charter).not.toContain('Flotar y parpadear son las únicas');
+  });
+
+  it('#167 R11: la carta trae la enmienda de los anillos', () => {
+    expect(charter.split(`${heading}\n\n${amendmentBody}`).length - 1).toBe(1);
+    expect(charter.slice(charter.indexOf(heading))).toMatch(/- \[[ xX]\] Enmienda aprobada por humano/);
+  });
+
+  it('#167 R11: el checklist de autocrítica sigue apareciendo una vez', () => {
+    expect(charter.split('## Checklist de autocrítica').length - 1).toBe(1);
+  });
+});
