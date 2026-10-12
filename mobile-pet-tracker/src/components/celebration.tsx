@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { Image } from 'expo-image';
 import { Button } from 'heroui-native';
 import { Modal, Text, View, useWindowDimensions } from 'react-native';
-import Animated, { interpolate, useAnimatedStyle, useSharedValue, withDelay, withSpring, withTiming } from 'react-native-reanimated';
+import Animated, { interpolate, useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withSpring, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { MOTION_CONFETTI_FALL_TIMING, MOTION_CONFETTI_MIN_MS, MOTION_CONFETTI_SPREAD_MS, MOTION_FADE_TIMING, MOTION_POP_SCALE, MOTION_POP_SPRING, MOTION_SURFACE_MS } from '../theme/motion';
@@ -20,9 +20,10 @@ type CelebrationProps = {
 export function Celebration({ testID, title, body, details, primary, secondary }: CelebrationProps) {
   const insets = useSafeAreaInsets();
   const height = useWindowDimensions().height;
-  const pingoScale = useSharedValue(MOTION_POP_SCALE);
+  const reduceMotion = useReducedMotion();
+  const pingoScale = useSharedValue(reduceMotion ? 1 : MOTION_POP_SCALE);
   const pingoOpacity = useSharedValue(0);
-  const badgeScale = useSharedValue(MOTION_POP_SCALE);
+  const badgeScale = useSharedValue(reduceMotion ? 1 : MOTION_POP_SCALE);
   const badgeOpacity = useSharedValue(0);
   const pingoStyle = useAnimatedStyle(() => ({
     opacity: pingoOpacity.get(), transform: [{ scale: pingoScale.get() }],
@@ -34,9 +35,11 @@ export function Celebration({ testID, title, body, details, primary, secondary }
   useEffect(() => {
     pingoOpacity.set(withTiming(1, MOTION_FADE_TIMING));
     badgeOpacity.set(withDelay(MOTION_SURFACE_MS, withTiming(1, MOTION_FADE_TIMING)));
-    pingoScale.set(withSpring(1, MOTION_POP_SPRING));
-    badgeScale.set(withDelay(MOTION_SURFACE_MS, withSpring(1, MOTION_POP_SPRING)));
-  }, [badgeOpacity, badgeScale, pingoOpacity, pingoScale]);
+    if (!reduceMotion) {
+      pingoScale.set(withSpring(1, MOTION_POP_SPRING));
+      badgeScale.set(withDelay(MOTION_SURFACE_MS, withSpring(1, MOTION_POP_SPRING)));
+    }
+  }, [badgeOpacity, badgeScale, pingoOpacity, pingoScale, reduceMotion]);
 
   return (
     <Modal
@@ -52,17 +55,19 @@ export function Celebration({ testID, title, body, details, primary, secondary }
         className="flex-1 items-center gap-4 bg-surface-secondary px-6"
         style={{ paddingTop: insets.top + 80, paddingBottom: insets.bottom + 24 }}
       >
-        <View
-          testID={`${testID}-confetti`}
-          className="absolute inset-0"
-          pointerEvents="none"
-          importantForAccessibility="no-hide-descendants"
-          accessibilityElementsHidden
-        >
-          {Array.from({ length: CONFETTI_COUNT }, (_, index) => (
-            <ConfettiPiece key={index} testID={`${testID}-confetti-${index}`} index={index} height={height} />
-          ))}
-        </View>
+        {!reduceMotion ? (
+          <View
+            testID={`${testID}-confetti`}
+            className="absolute inset-0"
+            pointerEvents="none"
+            importantForAccessibility="no-hide-descendants"
+            accessibilityElementsHidden
+          >
+            {Array.from({ length: CONFETTI_COUNT }, (_, index) => (
+              <ConfettiPiece key={index} testID={`${testID}-confetti-${index}`} index={index} height={height} />
+            ))}
+          </View>
+        ) : null}
         <View testID={`${testID}-hero`} style={{ width: 200, height: 200 }}>
           <Animated.View testID={`${testID}-pingo`} style={[pingoStyle, { width: 200, height: 200 }]}>
             <Image
