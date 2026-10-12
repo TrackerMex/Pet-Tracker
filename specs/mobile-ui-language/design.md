@@ -937,6 +937,13 @@ copy completa en cada una.
 | — | `geofences.needsCollar` | `Safe zones need a collar with an active plan.` | `Las zonas seguras necesitan un collar con plan activo.` | ← cambiada por #159 (R7) |
 | — | `home.activityNeedsCollar` | `Activity needs a collar with an active plan` | `La actividad necesita un collar con plan activo` | ← cambiada por #159 (R8) |
 
+### §2.24 — Añadidos por #169 — Peso
+
+| # | Clave | `en` | `es` | Origen |
+|---|---|---|---|---|
+| — | `weightLog.weightLogged` | `Logged. I've added it to the chart.` | `Anotado. Ya lo puse en la gráfica.` | ← añadida por #169 (R9) |
+| — | `weightLog.monthDelta` | `{{value}} this month` | `{{value}} este mes` | ← añadida por #169 (R9) |
+
 ## 3. La infraestructura
 
 ### 3.1 Decisiones
