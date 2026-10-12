@@ -18406,3 +18406,56 @@ git add specs/mobile-alerts-grouped-and-detail-map/traceability.md progress/impl
 ```
 
 R17: pendiente del smoke humano
+
+c27 completado: cadena exit=0, staged exactamente los dos ficheros prescritos.
+
+```text
+642e8b3c docs(mobile-alerts-grouped-and-detail-map): #170 traceability
+```
+
+### Lista cerrada — 20 ficheros tras E2
+
+Comando desde la raíz, con H0 literal y todos los pathspecs de exclusión del handoff:
+
+```sh
+git diff --name-only 584ef2d9 HEAD -- . ':!feature_list.json' ':!progress/current.md' ':!progress/handoff_mobile-alerts-grouped-and-detail-map.md' ':!specs/mobile-alerts-grouped-and-detail-map/requirements.md' ':!specs/mobile-alerts-grouped-and-detail-map/design.md' ':!specs/mobile-alerts-grouped-and-detail-map/tasks.md' ':!progress/review_mobile-alerts-grouped-and-detail-map.md'
+```
+
+Salida (exit=0):
+
+```text
+mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+mobile-pet-tracker/src/__tests__/ui-copy-table.ts
+mobile-pet-tracker/src/__tests__/ui-language.test.ts
+mobile-pet-tracker/src/app/__tests__/alert-detail.navigation.test.tsx
+mobile-pet-tracker/src/app/__tests__/layout.test.tsx
+mobile-pet-tracker/src/app/_layout.tsx
+mobile-pet-tracker/src/i18n/catalog.ts
+mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx
+mobile-pet-tracker/src/screens/alert-detail/index.test.tsx
+mobile-pet-tracker/src/screens/alert-detail/index.tsx
+mobile-pet-tracker/src/screens/alerts/index.test.tsx
+mobile-pet-tracker/src/screens/alerts/index.tsx
+mobile-pet-tracker/src/utils/alert-location.test.ts
+mobile-pet-tracker/src/utils/alert-location.ts
+mobile-pet-tracker/src/utils/alert-meta.ts
+mobile-pet-tracker/src/utils/alert-sections.test.ts
+mobile-pet-tracker/src/utils/alert-sections.ts
+progress/impl_mobile-alerts-grouped-and-detail-map.md
+specs/mobile-alerts-grouped-and-detail-map/traceability.md
+specs/mobile-ui-language/design.md
+```
+
+Coincide exactamente con la lista autorizada de 20: 17 móviles, design de mobile-ui-language, traceability e impl. Los cambios del leader quedan en los pathspecs excluidos; no hay ficheros ajenos.
+
+### c28 — lista cerrada
+
+Comando del handoff:
+
+```sh
+git commit --only progress/impl_mobile-alerts-grouped-and-detail-map.md -m 'docs(mobile-alerts-grouped-and-detail-map): #170 closed file list'
+```
+
+Cierre automático verificado: FINAL 10/427; ALL 100/2893 al primer intento con carga 5.07; typecheck exit=0; lint exit=0 y 0 bytes; todos los candados y listas exactos; cero sombras nuevas en producción. No se ejecutó init.sh, no hubo push ni PR. R17 sigue reservado al humano.
+
+R17: pendiente del smoke humano
