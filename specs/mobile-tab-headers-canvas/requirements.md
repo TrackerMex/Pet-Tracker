@@ -743,3 +743,179 @@ no se toca.
 ### Aprobación de la Enmienda E2
 
 - [X] Enmienda E2 aprobada por humano (fecha: 2026-10-12, vía Notion) ← gate obligatorio antes del handoff a Codex
+
+## Enmienda E3 — candados para las ramas de R5, R4.3 y R9.3
+
+> Escrita el 2026-10-12 sobre la spec aprobada con E1 y E2, tras el rechazo
+> del `reviewer` en `53f0e8f9` (`progress/review_mobile-tab-headers-canvas.md`,
+> O1, O2 y O3). El código de producción ya hace lo correcto en todas las ramas:
+> lo que faltaba era el `it` que las fija, y la spec no lo pedía. E3 añade
+> cinco `it` y no cambia ninguna conducta. No toca D1–D9, el texto EARS de
+> R1–R13, E1, E2 ni las casillas firmadas. Su casilla va **sin marcar**: el
+> humano reabre el gate solo para esta enmienda.
+
+### Cómo se prueba un `it` que nace verde
+
+Los cinco `it` nacen verdes, porque la producción ya es correcta. No hay commit
+`feat`: la prueba de que cada `it` muerde es una **sonda de mutación**. Para
+cada `it`:
+
+1. Plantar la mutación de su fila en el fichero de producción.
+2. Correr el fichero de test entero
+   (`bunx jest --testTimeout=30000 --maxWorkers=2 --runTestsByPath <fichero>`).
+3. Registrar el rojo en `progress/impl_mobile-tab-headers-canvas.md`, con el
+   recuento y el título del `it` que falla.
+4. Restaurar con `git checkout HEAD -- <fichero de producción>` y comprobar que
+   `git diff --quiet` y `git diff --cached --quiet` salen 0.
+
+El rojo esperado es **exactamente uno**, el del `it` nuevo. Si cae otro `it`,
+o ninguno, se para. Medido el 2026-10-12 en un worktree fuera del árbol sobre
+`53f0e8f9`, con los cinco `it` insertados a la vez. Los recuentos de cada commit
+son acumulados y están en `tasks.md` §Bloque O:
+
+| Sonda | `it` | Mutación en producción | Rojo esperado |
+|---|---|---|---|
+| P2 | E3.a peso | `src/screens/profile/index.tsx`: el `text` del chip de peso pasa a `` `${pet.currentWeightKg} kg` `` sin la guarda `=== null` | `1 failed, 62 passed, 63 total` |
+| P3 | E3.a edad | mismo fichero: el `text` del chip de edad pasa a `t('profile.ageMonths', { months: pet.ageMonths })` sin la guarda `Number.isFinite` | `1 failed, 62 passed, 63 total` |
+| P4c | E3.a esterilizado | mismo fichero: `pet.sterilized ? t('profile.sterilized')` pasa a `pet.sterilized !== undefined ? t('profile.sterilized')` | `1 failed, 62 passed, 63 total` |
+| P13 | E3.b | mismo fichero: el bloque `{photoError ? (… testID="photo-upload-error" …) : null}` se mueve delante de `<Button testID="change-photo"` | `1 failed, 62 passed, 63 total` |
+| F17 | E3.c | `src/app/(tabs)/food.tsx`: `now: kcalPct }}` pasa a `now: Math.min(kcalPct, 100) }}` | `1 failed, 83 passed, 84 total` |
+
+Las mutaciones se localizan por contenido con `grep -nF`, nunca por número de
+línea.
+
+### E3.a — R5.1 y R5.3: un `it` por rama de los chips
+
+R5.3 («IF un dato falta») cubre los cuatro datos, y R5.1 da dos textos para el
+chip de esterilizado. Los candados de R5 solo usaban dos fixtures: la completa
+y la que pone `sex` y `sterilized` a `null`. Sin `it` quedaban tres ramas:
+
+- el peso `null`: la sonda P2 pintaba «null kg» y pasaba en verde;
+- la edad no finita: P3 pintaba «NaN meses» y pasaba en verde;
+- `sterilized: false`: P4c pintaba «Esterilizado» y pasaba en verde.
+
+Los tres `it` van en `mobile-pet-tracker/src/screens/profile/index.test.tsx`,
+dentro de `describe('#168 R5: Perfil pinta chips pastel por dato')`,
+justo **antes** de `it('centra y agrupa los chips con gap-2'`. Usan los
+helpers que ya existen (`makePet`, `renderProfile` y `expectProfileChip168`) y
+literales ES, nunca el catálogo:
+
+```ts
+  it('sin peso omite su chip y conserva sexo, esterilización y edad en sus huecos', async () => {
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet({ ageMonths: 26, currentWeightKg: null }) });
+    await renderProfile();
+    const root = await screen.findByTestId('profile-pet-chips');
+    expect(root.children).toHaveLength(3);
+    expect(root.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['profile-pet-chip-sex', 'profile-pet-chip-sterilized', 'profile-pet-chip-age']);
+    expectProfileChip168(root, 'profile-pet-chip-sex', 'rounded-full px-3 py-1 bg-category-blue', 'text-xs font-bold text-category-blue-strong', 'female');
+    expectProfileChip168(root, 'profile-pet-chip-sterilized', 'rounded-full px-3 py-1 bg-category-green', 'text-xs font-bold text-category-green-strong', 'Esterilizado');
+    expectProfileChip168(root, 'profile-pet-chip-age', 'rounded-full px-3 py-1 bg-category-amber', 'text-xs font-bold text-category-amber-strong', '26 meses');
+  });
+
+  it('con la edad no finita omite su chip y deja el peso en violeta', async () => {
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet({ ageMonths: Number.NaN, currentWeightKg: 12.4 }) });
+    await renderProfile();
+    const root = await screen.findByTestId('profile-pet-chips');
+    expect(root.children).toHaveLength(3);
+    expect(root.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['profile-pet-chip-sex', 'profile-pet-chip-sterilized', 'profile-pet-chip-weight']);
+    expectProfileChip168(root, 'profile-pet-chip-sex', 'rounded-full px-3 py-1 bg-category-blue', 'text-xs font-bold text-category-blue-strong', 'female');
+    expectProfileChip168(root, 'profile-pet-chip-sterilized', 'rounded-full px-3 py-1 bg-category-green', 'text-xs font-bold text-category-green-strong', 'Esterilizado');
+    expectProfileChip168(root, 'profile-pet-chip-weight', 'rounded-full px-3 py-1 bg-category-violet', 'text-xs font-bold text-category-violet-strong', '12.4 kg');
+  });
+
+  it('sin esterilizar pinta el chip verde con «Sin esterilizar»', async () => {
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet({ sterilized: false, ageMonths: 26, currentWeightKg: 12.4 }) });
+    await renderProfile();
+    const root = await screen.findByTestId('profile-pet-chips');
+    expect(root.children).toHaveLength(4);
+    expect(root.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['profile-pet-chip-sex', 'profile-pet-chip-sterilized', 'profile-pet-chip-age', 'profile-pet-chip-weight']);
+    expectProfileChip168(root, 'profile-pet-chip-sterilized', 'rounded-full px-3 py-1 bg-category-green', 'text-xs font-bold text-category-green-strong', 'Sin esterilizar');
+  });
+
+```
+
+### E3.b — R4.3: la posición de `photo-upload-error`
+
+R4.3 nombra dos nodos, `change-photo` y `photo-upload-error`, pero el único
+`it` que la candaba (`deja change-photo inmediatamente después de la tarjeta`)
+renderiza sin error de subida y solo mira `change-photo`. La sonda P13, que
+pone el error delante del botón, pasaba en verde.
+
+El `it` va en el mismo fichero, dentro de
+`describe('#168 R4: Perfil sustituye el hero por profile-pet-card')`, justo
+**antes** de `it('no monta el hero compartido'`. Provoca la subida fallida igual
+que el `it` vivo `keeps the old photo and shows an error when upload fails`, y
+usa el helper `profileChild` que ya existe:
+
+```ts
+  it('con la subida fallida deja change-photo y luego photo-upload-error tras la tarjeta', async () => {
+    mockLaunchImageLibrary.mockResolvedValue({
+      canceled: false,
+      assets: [{ uri: 'file:///luna.webp', mimeType: 'image/webp' } as never],
+    });
+    mockRequestPhotoUploadUrl.mockResolvedValue({ kind: 'error' });
+    await renderProfile();
+    await waitFor(() => expect(screen.getByTestId('change-photo')).toBeVisible());
+
+    await fireEvent.press(screen.getByTestId('change-photo'));
+
+    const error = await screen.findByTestId('photo-upload-error');
+    const card = screen.getByTestId('profile-pet-card');
+    const index = card.parent!.children.indexOf(card);
+    expect(profileChild(card.parent!, index + 1)).toBe(screen.getByTestId('change-photo'));
+    expect(profileChild(card.parent!, index + 2)).toBe(error);
+    expect(within(card).queryByTestId('photo-upload-error')).toBeNull();
+  });
+
+```
+
+### E3.c — R9.3: `now` sin acotar cuando pasa de 100
+
+R9.3 conserva `accessibilityValue={{ min: 0, max: 100, now: kcalPct }}`, pero
+la tabla de `#113 R3` solo tiene filas con `now` 63 y 0, y los `it` de R9 no
+miran `accessibilityValue`. La sonda F17, que acota `now` a 100, pasaba en
+verde. El hueco viene de #113 (O3 del review). Como cuesta un solo `it`, entra
+en esta ronda.
+
+El `it` va en `mobile-pet-tracker/src/app/(tabs)/__tests__/food.test.tsx`, como
+**último** `it` de `describe('#168 R9: el anillo dice el porcentaje acotado')`,
+tras su `it.each`. Los `it` de `#113 R3` no se tocan, como manda R9.3:
+
+```ts
+  it('anuncia el valor sin acotar cuando pasa de 100', async () => {
+    mockGetNutritionPlan.mockResolvedValue({
+      kind: 'ok',
+      plan: makePlan({ merKcal: 656, kcalConsumedToday: 984 }),
+    });
+    await renderFood();
+    const progress = await screen.findByTestId('food-plan-progress');
+    await waitFor(() => expect(screen.getByTestId('food-plan-percent')).toHaveTextContent('150%'));
+    expect(progress.props.accessibilityValue).toEqual({ min: 0, max: 100, now: 150 });
+  });
+```
+
+O4 del review (la accesibilidad de `food-plan-ring`) queda fuera: R8.3 no la
+prescribe, y la semántica vive en `food-plan-progress`.
+
+### Recuentos tras E3
+
+Medidos en el mismo spike:
+
+- `src/screens/profile/index.test.tsx`: 59 → 63 `it`;
+- `src/app/(tabs)/__tests__/food.test.tsx`: 83 → 84;
+- los dos ficheros juntos: 147 passed;
+- suite móvil: 99 suites y 2833 → 2838 tests;
+- `bun run typecheck` y `bunx eslint --no-cache` sobre los dos ficheros de
+  test: salida 0;
+- las 8 suites globales de `src/__tests__/`: 206 passed, sin cambios.
+
+### Correcciones de `tasks.md` y `traceability.md` que acompañan a E3 (sin firma propia)
+
+- `tasks.md`: el bloque O lista los cinco `it` con su sonda.
+- `traceability.md`: las filas R4, R5 y R9 suman su `it` nuevo y su commit
+  `test`, que se anota como «nace verde; sonda <id> en impl». Las escribe
+  Codex en la Reanudación 13.
+
+### Aprobación de la Enmienda E3
+
+- [ ] Enmienda E3 aprobada por humano (fecha: ____, vía Notion) ← gate obligatorio antes del handoff a Codex
