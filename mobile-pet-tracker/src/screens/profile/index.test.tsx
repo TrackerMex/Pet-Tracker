@@ -138,6 +138,27 @@ jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 40, right: 0, bottom: 24, left: 0 }),
 }));
 
+jest.mock('reicon-react-native', () => {
+  const actual = jest.requireActual<typeof import('reicon-react-native')>('reicon-react-native');
+  const { View } = jest.requireActual('react-native');
+  const icon = (testID: string) =>
+    function MockIcon({ color, size }: { color?: string; size?: number }) {
+      return <View {...{ size }} testID={testID} style={{ color }} />;
+    };
+  return {
+    ...actual,
+    __esModule: true,
+    FileText: icon('profile-icon-file-text'),
+    Wifi: icon('profile-icon-wifi'),
+    Map: icon('profile-icon-map'),
+    Bell: icon('profile-icon-bell'),
+  };
+});
+
+jest.mock('../../theme/use-theme-colors', () => ({
+  useThemeColors: (tokens: string[]) => tokens,
+}));
+
 const apiUrl = 'http://example.test/v1';
 const mockLaunchImageLibrary = jest.mocked(ImagePicker.launchImageLibraryAsync);
 const mockRequestPhotoUploadUrl = jest.mocked(requestPhotoUploadUrl);
@@ -996,9 +1017,9 @@ describe('#41 R9: Perfil enlaza a las zonas seguras de la mascota activa', () =>
     expect(link).toHaveTextContent('Zonas seguras');
     expect(link.props.accessibilityRole).toBe('button');
     expect(link.props.hitSlop).toEqual({ top: 6, bottom: 6, left: 6, right: 6 });
-    expect(link.props.className).toBe('flex-row items-center justify-between rounded-xl bg-default px-3 py-2');
+    expect(link.props.className).toBe('flex-row items-center gap-3 rounded-xl bg-default px-3 py-2');
     expect(link).toHaveStyle({ borderCurve: 'continuous' });
-    expect(within(link).getByText('Zonas seguras').props.className).toBe('font-semibold text-foreground');
+    expect(within(link).getByText('Zonas seguras').props.className).toBe('flex-1 font-semibold text-foreground');
     expect(screen.getAllByTestId(/-link$/).map((row) => row.props.testID)).toEqual([
       'documents-link', 'pairing-link', 'geofences-link', 'reminders-link',
     ]);
@@ -1151,5 +1172,45 @@ describe('#168 R5: Perfil pinta chips pastel por dato', () => {
     await renderProfile();
     const root = await screen.findByTestId('profile-pet-chips');
     expect(root.props.className).toBe('flex-row flex-wrap justify-center gap-2');
+  });
+});
+
+describe('#168 R6: cada fila de navegación lleva su tile pastel', () => {
+  beforeEach(setupProfile168);
+
+  it.each([
+    ['documents-link', 'size-9 items-center justify-center rounded-xl bg-category-blue', 'profile-icon-file-text', 'category-blue-strong', 'Documentos', '/pets/pet-1/docs'],
+    ['pairing-link', 'size-9 items-center justify-center rounded-xl bg-category-green', 'profile-icon-wifi', 'category-green-strong', 'Configuración del Dispositivo GPS', '/pairing'],
+    ['geofences-link', 'size-9 items-center justify-center rounded-xl bg-category-amber', 'profile-icon-map', 'category-amber-strong', 'Zonas seguras', '/pets/pet-1/geofences'],
+    ['reminders-link', 'size-9 items-center justify-center rounded-xl bg-category-violet', 'profile-icon-bell', 'category-violet-strong', 'Recordatorios', '/reminders'],
+  ])('pinta el tile y conserva el destino de %s', async (id, surface, icon, color, label, destination) => {
+    await renderProfile();
+    await screen.findByTestId('pet-info-card');
+    const row = screen.getByTestId(id);
+    const scope = within(row);
+    expect(row.children).toHaveLength(3);
+    expect(row.props.className).toBe('flex-row items-center gap-3 rounded-xl bg-default px-3 py-2');
+    expect(row.props.style).toEqual({ borderCurve: 'continuous' });
+    const tile = scope.getByTestId(`${id}-tile`, { includeHiddenElements: true });
+    expect(profileChild(row, 0)).toBe(tile);
+    expect(tile.props.className).toBe(surface);
+    expect(tile.props.style).toEqual({ borderCurve: 'continuous' });
+    expect(tile.props.accessibilityElementsHidden).toBe(true);
+    expect(tile.props.importantForAccessibility).toBe('no-hide-descendants');
+    expect(tile.children).toHaveLength(1);
+    const glyph = within(tile).getByTestId(icon, { includeHiddenElements: true });
+    expect(profileChild(tile, 0)).toBe(glyph);
+    expect(glyph.props.size).toBe(18);
+    expect(glyph.props.style).toEqual({ color });
+    const text = scope.getByText(label);
+    expect(profileChild(row, 1)).toBe(text);
+    expect(text.props.className).toBe('flex-1 font-semibold text-foreground');
+    const chevron = profileChild(row, 2);
+    expect(chevron.props.width).toBe(20);
+    expect(chevron.props.height).toBe(20);
+    expect(chevron.props.xml).toContain('muted');
+    await fireEvent.press(row);
+    expect(mockRouter.push).toHaveBeenCalledTimes(1);
+    expect(mockRouter.push).toHaveBeenCalledWith(destination);
   });
 });

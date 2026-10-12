@@ -187,7 +187,7 @@ describe('#62 R7: ningún glifo tipográfico hace de icono', () => {
     const profile = readSource(join('screens', 'profile', 'index.tsx'));
 
     expect(profile).toContain(
-      "import { ChevronRight } from 'reicon-react-native';",
+      "import { Bell, ChevronRight, FileText, Map as MapIcon, Wifi } from 'reicon-react-native';",
     );
     expect(
       profile.match(/<ChevronRight size=\{20\} color=\{muted\} \/>/g),
@@ -260,7 +260,7 @@ describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () 
     [join('screens', 'meal-schedule', 'index.tsx'), 1],
     [join('screens', 'weight-log', 'index.tsx'), 1],
     [join('screens', 'docs', 'index.tsx'), 1],
-    [join('screens', 'profile', 'index.tsx'), 3 + 1], // #41 R9
+    [join('screens', 'profile', 'index.tsx'), 3 + 1 + 4], // #41 R9; #168 R6
     [join('screens', 'reminders', 'index.tsx'), 4],
     [join('screens', 'add-pet', 'index.tsx'), 5],
     [join('screens', 'add-reminder', 'index.tsx'), 3],
@@ -311,7 +311,7 @@ describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () 
     // #138 R3: minus one more, collar-pair-link's corner travels in its own.
     expect(
       directUses.reduce((total, [, count]) => total + count, 2),
-    ).toBe(33 + 1 + 1 - 1 - 1 + 1 + 1); // #41 R9: geofences-link; #168 R3
+    ).toBe(33 + 1 + 1 - 1 - 1 + 1 + 1 + 4); // #41 R9: geofences-link; #168 R3, R6
   });
 });
 
@@ -395,7 +395,7 @@ describe('#98 R10: los candados que esta feature no mueve', () => {
     // With no match, match() returns null: the ?? [] keeps the count readable.
     expect(home.match(/style=\{CONTINUOUS_CORNER\}/g) ?? []).toHaveLength(0);
     expect(food.match(/style=\{CONTINUOUS_CORNER\}/g)).toHaveLength(2);
-    expect(count(/style=\{CONTINUOUS_CORNER\}/g)).toBe(31 + 1 + 1); // #41 R9: geofences-link; #168 R3
+    expect(count(/style=\{CONTINUOUS_CORNER\}/g)).toBe(31 + 1 + 1 + 4); // #41 R9: geofences-link; #168 R3, R6
     expect(count(/rounded-xl bg-accent(?=[\s'"`])/g)).toBe(13 + 1 + 1 + 1 + 1 + 1 + 1); // #146 R8, #146 R9; #118 R7; #155 R3 // #158 R3: docs-upload; // #158 R5: docs-upload-submit
     expect(count(/bg-accent-soft/g)).toBe(16 + 2 + 1 - 1); // #147 R4: meal-time-edit y add-meal-time-button; #105 R11; #168 R5: PetPills pasa a huecos pastel
     expect(home.match(/text-accent-strong\b/g)).toHaveLength(2);
