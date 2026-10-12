@@ -693,6 +693,7 @@ describe('#170 R15: Ver en el mapa lleva al Mapa con la mascota de la alerta', (
     await renderDetail();
     const button = await screen.findByTestId('alert-detail-view-map');
     expect(button.props.accessibilityRole).toBe('button');
+    expect(button.props.className.split(' ')).toContain('min-h-11');
     expect(within(button).getByText('Ver en el mapa')).toBeVisible();
   });
   it('dice «View on map» en inglés', async () => {
