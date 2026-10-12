@@ -281,3 +281,23 @@ Lectura:
 - No toqué código ni tests de `Pet-Tracker-wt-168`. El único cambio es esta sección, sin commitear. El spike conserva los 6 `it` de E3; la producción está restaurada.
 
 **Veredicto del barrido: E3 no cierra. Cierra O1-O3, pero faltan candados para R5.3 con sexo o esterilizado ausentes por separado (N2 y N3 verdes) y para la edad `±Infinity` de R5.1 (N1 verde).**
+
+### Re-barrido (2cb3cd5c)
+No volví a medir lo que ya midió el leader. Comprobé que los tres bloques `ts` de §Enmienda E3 están byte a byte en los dos ficheros de test del spike.
+
+1. **Los bloques nuevos no abren ninguna alternativa en verde.**
+   - Guardas cruzadas: cada fixture de R5 anula ahora un solo dato (peso; edad NaN/±Infinity; sexo; esterilizado), además de la completa y la doble. Con eso, cualquier guarda que lea el dato de otro chip, sola o combinada con la suya, omite un chip que la fixture espera, en los 12 pares posibles.
+   - Texto de esterilizado decidido por otro dato: lo tumban `sin esterilizar…` y `sin sexo conserva…`.
+   - Color por índice, directo o inverso: lo tumba `sin sexo conserva…` (antes ya lo hacían otros dos `it`).
+   - Guardas de edad que coinciden con `Number.isFinite` en 26, 0, NaN y ±Infinity: `isFinite()` global, `Number.isInteger`, `Math.abs(x) < Infinity`. Solo difieren en edades fraccionarias o negativas, y el backend no las produce (`calculateAgeMonths` da un entero ≥ 0). Las cuento como equivalentes.
+2. **Los recuentos acumulados de `tasks.md` §Bloque O cuadran.** La base es 59. Cada fila suma sus `it`: O1 60, O2 63, O3 64, O4 65, O5 66, O6 67, O7 68. Los conjuntos de rojos coinciden fila a fila con la tabla:
+   - P3: 3 (las filas del `it.each`; la de 0 meses pinta «0 meses»).
+   - N1: 2.
+   - P3t: 3 en O4. NaN se omite por *truthiness*; caen las dos filas `±Infinity` y la de cero.
+   - N2: 1 en O5 y 2 en O6.
+   - N3: 1 en O6. Solo se planta ahí; en O5 nacería verde, porque `sin sexo…` anula el `text` del sexo de todas formas.
+   - P2, P4c, P2t y P13: 1 cada una.
+   - F17: 1 / 84.
+   Con los 68 `it`, las cifras coinciden con la tabla de la spec.
+
+**Veredicto del re-barrido: E3 cierra O1-O3 y N1-N3.**
