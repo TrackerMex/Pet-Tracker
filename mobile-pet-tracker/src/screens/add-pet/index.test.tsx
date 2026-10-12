@@ -1,20 +1,21 @@
 import { HeaderHeightContext } from 'expo-router/react-navigation';
-import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react-native';
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import * as ImagePicker from 'expo-image-picker';
 import { DeviceEventEmitter, Platform } from 'react-native';
 
 import { requestPhotoUploadUrl, uploadPhotoToUrl } from '../../api/media';
-import { createPet } from '../../api/pets';
+import { createPet, listPets } from '../../api/pets';
 import { es } from '../../i18n/catalog';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import { LanguageProvider } from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
 import { AddPetScreen } from '.';
 import { TOUCH_SLOP } from '../../theme/touch-target';
+import { renderWithProviders } from '../../../test/render-with-providers';
 
-jest.mock('../../api/pets', () => ({ createPet: jest.fn() }));
+jest.mock('../../api/pets', () => ({ createPet: jest.fn(), listPets: jest.fn() }));
 jest.mock('../../api/media', () => ({
   ...jest.requireActual('../../api/media'),
   requestPhotoUploadUrl: jest.fn(),
@@ -58,6 +59,7 @@ jest.mock('react-native-safe-area-context', () => ({
 }));
 
 const mockCreatePet = jest.mocked(createPet);
+const mockListPets = jest.mocked(listPets);
 const mockLaunchImageLibrary = jest.mocked(ImagePicker.launchImageLibraryAsync);
 const mockRequestPhotoUploadUrl = jest.mocked(requestPhotoUploadUrl);
 const mockUploadPhotoToUrl = jest.mocked(uploadPhotoToUrl);
@@ -71,7 +73,7 @@ function pending<T>(): Promise<T> {
 }
 
 async function renderAddPet() {
-  return render(
+  return renderWithProviders(
     <HeroUINativeProvider>
       <LanguageProvider initial="es">
         <HeaderHeightContext.Provider value={91}>
@@ -94,6 +96,8 @@ async function pressPickPhoto(): Promise<void> {
 beforeEach(() => {
   mockLaunchImageLibrary.mockReset();
   mockLaunchImageLibrary.mockResolvedValue({ canceled: true, assets: null });
+  mockListPets.mockReset();
+  mockListPets.mockResolvedValue({ kind: 'ok', pets: [{ id: 'pet-1', name: 'Milo' } as never] });
 });
 
 describe('R6: alta de mascota', () => {
@@ -605,3 +609,9 @@ describe('#148 R8: add-pet entrega el primer toque con el teclado abierto', () =
     expect(screen.getByTestId('add-pet-form').props.keyboardShouldPersistTaps).toBe('handled');
   });
 });
+
+
+jest.mock('expo-haptics', () => ({
+  notificationAsync: jest.fn(() => Promise.resolve()),
+  NotificationFeedbackType: { Success: 'mock-success', Error: 'mock-error' },
+}));
