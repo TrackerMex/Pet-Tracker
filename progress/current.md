@@ -125,6 +125,21 @@
   anterior al mes) y M3d (paso 5 por fecha, no por identidad).
 - E1 lo cierra el leader: columna «Test» rellena con `archivo::describe`.
 - E2 y E3 van a la **Enmienda E1** (requirements.md y tasks.md, solo tests y
-  con la producción idéntica a `f314978d`): 2 `it` en weight-chart y las filas
-  12-14 en monthly. Pendiente del barrido del reviewer y de la firma humana
-  vía Notion. Después, Reanudación 5 de Codex.
+  con la producción idéntica a `f314978d`). Primera versión en `02da4c11`:
+  2 `it` en weight-chart y las filas 12-14 en monthly.
+- Barrido del reviewer sobre `02da4c11` (§Barrido de la Enmienda E1 de la
+  revisión): **insuficiente**, con 4 huecos más, cada uno con su cierre
+  medido:
+  - H1: R1, `L` por cuerda;
+  - H2: R1 y R2, `p` parte de 1;
+  - H2b: R3, `p` no arranca en 1 (preexistente);
+  - H3: R5, redondeo a 1 decimal.
+- El leader re-midió los cuatro cierres fuera del árbol con el texto literal
+  de tasks.md: rojos 4/15/19, 1/19/20 y 4/11/15, por aserción; siete sondas;
+  GRAFICA 145, GUARDAS 92, BASE 368; tsc y eslint 0.
+  - Enmienda ensanchada: 5 `it` y el espía `useSharedValue` en weight-chart,
+    y las filas 12-15 en monthly, en 7 commits.
+  - Cierre esperado: ALL 99/2832.
+  - H2b entra en esta ronda y no pasa a deuda: es el mismo fichero y el mismo
+    tipo de candado.
+- Pendiente de la firma humana vía Notion. Después, Reanudación 5 de Codex.

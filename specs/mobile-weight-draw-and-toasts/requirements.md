@@ -366,36 +366,64 @@ Guardas de clases contrastadas; todas siguen verdes con lo prescrito:
 
 - [ ] Smoke de R14 superado por humano (fecha: ____, dispositivo: ____)
 
-## Enmienda E1 — candados de R1, R2 y R5 (revisión rechazada, 2026-10-12)
+## Enmienda E1 — candados de R1, R2, R3 y R5 (revisión rechazada, 2026-10-12)
 
 > Escrita el 2026-10-12 sobre la spec aprobada (firma `ccb4ad61`), tras la
 > revisión **rechazada** (`progress/review_mobile-weight-draw-and-toasts.md`,
-> sobre `dbe183a6`, punta de Codex `f314978d`), por sus bloqueantes E2 y E3, y
-> ensanchada por el leader con dos huecos más de R5 (M3c y M3d). No toca D1-D7,
-> ni el texto de R1-R14, ni la firma original. **Solo tests**: la producción de
-> `f314978d` es correcta y queda idéntica. Su casilla va **sin marcar**: el
-> humano reabre el gate solo para esta enmienda.
+> sobre `dbe183a6`, punta de Codex `f314978d`), por sus bloqueantes E2 y E3.
+> La ensancharon:
+>
+> - el leader, con dos huecos más de R5 (M3c y M3d);
+> - el barrido del reviewer sobre `02da4c11`, con cuatro más (H1, H2, H2b y
+>   H3). Está en la misma revisión, en §Barrido de la Enmienda E1.
+>
+> No toca D1-D7, ni el texto de R1-R14, ni la firma original. **Solo tests**:
+> la producción de `f314978d` es correcta y queda idéntica. Su casilla va
+> **sin marcar**: el humano reabre el gate solo para esta enmienda.
 >
 > El bloqueante E1 del reviewer (columna «Test» de `traceability.md` en
-> «pendiente») no es de requisitos: lo cierra el leader en el mismo commit que
-> esta enmienda, sin tocar código.
+> «pendiente») no es de requisitos. Lo cierra el leader sin tocar código.
 
 ### El hecho medido
 
-**R1 y R2 (E2 del reviewer).** R1 dice `strokeDashoffset = L · (1 − p)` y R2
-`opacity = p`, pero T1 y T2 solo fijaron el primer frame (`p = 0`) y el final
-(`p = 1`). Un salto brusco o una curva distinta cumple los dos extremos:
+**R1 y R2 (E2 del reviewer, ensanchado).** R1 y R2 tienen cuatro cláusulas
+que los `it` existentes no vigilan:
+
+- `strokeDashoffset = L · (1 − p)` (R1) y `opacity = p` (R2): T1 y T2 solo
+  fijaron el primer frame (`p = 0`) y el final (`p = 1`).
+- «`L` es la suma de las longitudes de sus segmentos» (R1): las dos fixtures
+  tienen segmentos alineados e iguales, así que la cuerda y
+  `(n − 1) · primer segmento` dan la misma `L`.
+- «`p` parte de `0`» (R1): el `it` del primer frame hace que el doble de
+  `withTiming` devuelva `0`, así que **impone** el valor que espera en vez de
+  dejar `p` en su origen.
 
 | Id | Mutación en `src/components/weight-chart.tsx` | Qué rompe en producción | Estado en `f314978d` |
 |---|---|---|---|
 | M1 | `strokeDashoffset: progress.get() >= 1 ? 0 : L` y `opacity: progress.get() >= 1 ? 1 : 0` | la gráfica aparece de golpe al final, sin dibujarse | **verde** 15/15 |
 | M2 | `L * (1 - progress.get()) ** 2` y `progress.get() ** 2` | el dibujo sigue otra curva | **verde** 15/15 |
+| H1 | `L` = la cuerda del primer punto al último | con pesos que suben y bajan, el trazo no cubre la línea o sobra | **verde** 17/17 (reviewer) |
+| H1b | `L` = `(n − 1)` · el primer segmento | ídem | **verde** 17/17 (reviewer) |
+| H2 | `useSharedValue(1)` en vez de `useSharedValue(reducedMotion ? 1 : 0)` | la línea nunca se dibuja: anima de 1 a 1 | **verde** 17/17 (reviewer) |
 
-**R5 (E3 del reviewer, ensanchado).** R5 elige **por posición**: `newest =
-inMonth[0]` (paso 3), la base es la **primera** anterior al mes en el orden de
-la API y, si no hay, la **última** de `inMonth` (paso 4), y el paso 5 compara
-**identidad** (`baseline` es `newest`). La tabla cerrada de T5 no separa
-posición de valor, ni identidad de fecha:
+**R3 (H2b del reviewer, preexistente).** «Arrancar `p` en `1`» no lo vigila
+ningún `it`. RNTL vacía los efectos dentro de `render`, así que no se ve un
+`p` que arranca en 0 y salta a 1 en el efecto:
+
+| Id | Mutación en `src/components/weight-chart.tsx` | Qué rompe en producción | Estado en `f314978d` |
+|---|---|---|---|
+| H2b | `useSharedValue(0)` y el efecto hace `progress.set(reducedMotion ? 1 : withTiming(…))` | bajo reduce motion, el primer frame pinta la gráfica oculta y salta a completa | **verde** 17/17 (reviewer) |
+
+**R5 (E3 del reviewer, ensanchado).** R5 elige **por posición**:
+
+- `newest = inMonth[0]` (paso 3);
+- la base es la **primera** anterior al mes en el orden de la API y, si no
+  hay, la **última** de `inMonth` (paso 4);
+- el paso 5 compara **identidad** (`baseline` es `newest`);
+- el paso 6 redondea a **2** decimales.
+
+La tabla cerrada de T5 no separa posición de valor, ni identidad de fecha. Y
+todas sus filas esperan como mucho 1 decimal:
 
 | Id | Mutación en `src/utils/monthly-weight-delta.ts` | Qué rompe | Estado en `f314978d` |
 |---|---|---|---|
@@ -403,27 +431,52 @@ posición de valor, ni identidad de fecha:
 | M3b | la base de respaldo = la más ligera de `inMonth` | delta contra el mínimo del mes | **verde** 11/11 (reviewer) |
 | M3c | la base = la **más pesada** anterior al mes, no la primera | delta contra un peso antiguo cualquiera | **verde** 11/11 (leader) |
 | M3d | el paso 5 compara `measuredAt` en vez de identidad | dos pesos del mismo día ocultan el delta | **verde** 11/11 (leader) |
+| H3 | redondeo a 1 decimal (`* 10) / 10` o `toFixed(1)`) | `weight_kg` es `numeric(5,2)`: `+0.04 kg este mes` en `text-danger` pasa a `0 kg este mes` en `text-muted` (la rama de R7 para 0) | **verde** 14/14 (reviewer) |
 
-Las cuatro las midió el leader fuera del árbol sobre la tabla de 11 filas. M3c
-y M3d no estaban en la revisión: salieron al ensanchar cada candado a su
-cláusula entera (pasos 3, 4 y 5).
+Cada «verde» lo midió fuera del árbol quien sale entre paréntesis (o el
+leader, si no sale nadie). M3c y M3d salieron al ensanchar cada candado a su
+cláusula entera (pasos 3, 4 y 5). H1, H2, H2b y H3, en el barrido del
+reviewer sobre la enmienda.
 
-### Decisión: E1 añade tests a R1, R2 y R5, no reescribe su texto
+### Decisión: E1 añade tests a R1, R2, R3 y R5, no reescribe su texto
 
-El texto de R1, R2 y R5 ya dice lo correcto. La enmienda solo añade candados:
+El texto de R1, R2, R3 y R5 ya dice lo correcto. La enmienda solo añade
+candados:
 
-- **R1**: un `it` con `p = 0.25` (el doble de `withTiming` devuelve `0.25`) y
-  la fixture de tres pesos. Espera `strokeDashoffset = 0.75 · L ≈ 78.7464`
-  (`expect.closeTo(78.7464, 3)`; `0.75 · 104.99523798… = 78.74642849…`).
-- **R2**: un `it` con el mismo doble. Espera `opacity = 0.25` en
+- **R1**, tres `it` en `describe('#169 R1: …')`:
+  - `p = 0.25`: el doble de `withTiming` devuelve `0.25`, con la fixture de
+    tres pesos. Espera `strokeDashoffset = 0.75 · L ≈ 78.7464`
+    (`expect.closeTo(78.7464, 3)`; `0.75 · 104.99523798… = 78.74642849…`).
+  - **Suma de segmentos**: tres pesos no alineados, `12`, `14` y `10` en el
+    orden de la API, que dan los puntos `0,36 50,4 100,20`. Espera
+    `strokeDasharray = [L, L]` con `L = √3524 + √2756 ≈ 111.8609`
+    (`expect.closeTo(111.8609, 3)`). La cuerda daría `101.2719` y el doble del
+    primer segmento `118.7266`.
+  - **Origen de `p`**: el doble de `withTiming` devuelve una animación que
+    termina en su valor de partida (`onStart` copia el valor actual,
+    `onFrame` termina en el primer frame). Es el «doble que deja `p` en su
+    origen» que ya nombra R1. Espera `strokeDashoffset = L` (`104.9952`) y
+    `opacity = 0` en `weight-chart-points`. Vigila cualquier origen distinto
+    de `0`, y también el origen de R2.
+- **R2**, un `it` con el doble de `0.25`. Espera `opacity = 0.25` en
   `weight-chart-points`.
-- **R5**: tres filas nuevas en la tabla cerrada, todas con hoy `2027-01-05`:
+- **R3**, un espía de paso sobre `useSharedValue` en el doble de Reanimated
+  (registra el valor inicial y devuelve el real) y un `it` que, bajo reduce
+  motion, espera que se haya llamado con `1`.
+  - Bajo el wrapper, el `ToastProvider` de heroui-native también llama a
+    `useSharedValue`, con `{}` y `0`. Por eso el `1` no es tautológico hoy.
+  - **Techo conocido**: lo sería si un proveedor del wrapper empezase a
+    llamarlo con `1`.
+  - Por la misma razón, el origen `0` de R1 no se vigila con este espía
+    sino con el `it` del origen de `p`.
+- **R5**, cuatro filas nuevas en la tabla cerrada, todas con hoy `2027-01-05`:
 
   | # | Entradas (`measuredAt` `weightKg`) | Esperado | Qué candada | Mutación que cae |
   |---|---|---|---|---|
   | 12 | `2027-01-04 12.0`, `2027-01-02 12.3`, `2027-01-01 12.1` | `-0.1` | sin anterior al mes, el peso baja: newest = `inMonth[0]` (no la más pesada) y la base = la última (no la más ligera) | M3a (`0.2`), M3b (`null`) |
   | 13 | `2027-01-04 12.4`, `2026-12-31 11.8`, `2026-12-10 12.0` | `0.6` | base = la **primera** anterior al mes, aunque no sea la más pesada | M3c (`0.4`) |
   | 14 | `2027-01-04 12.4`, `2027-01-04 12.3` | `0.1` | dos pesos del mismo día son dos entradas: el paso 5 es identidad, no fecha | M3d (`null`) |
+  | 15 | `2027-01-04 12.04`, `2026-12-31 12.0` | `0.04` | el redondeo es a 2 decimales | H3 (`0`) |
 
 Los `it` y las filas que ya existen no cambian.
 
@@ -433,19 +486,32 @@ Es un candado sobre código **ya correcto**. Por eso su rojo es una **mutación
 de producción**: se versiona en el commit rojo y se revierte en el verde.
 Nunca una mutación del doble.
 
-- R1 y R2: el rojo versiona M1 (el salto brusco del reviewer). Fallan los dos
-  `it` nuevos y ninguno más: `2 failed, 15 passed, 17 total`.
-- R5: el rojo versiona M3a + M3b + M3c + M3d a la vez. Fallan las tres filas
-  nuevas y ninguna más: `3 failed, 11 passed, 14 total`.
+| Rojo | Mutación versionada | Qué falla | Recuento |
+|---|---|---|---|
+| R1 y R2 | M1 + H1 + H2 a la vez | los cuatro `it` nuevos de R1 y R2, ninguno más | `4 failed, 15 passed, 19 total` |
+| R3 | H2b | el `it` nuevo de R3, ninguno más | `1 failed, 19 passed, 20 total` |
+| R5 | M3a + M3b + M3c + M3d + H3 a la vez | las filas 12 a 15, ninguna más | `4 failed, 11 passed, 15 total` |
 
-Después, cinco sondas sin commit, restauradas, sobre el árbol verde: M2, y
-M3a, M3b, M3c y M3d **por separado**, cada una con su fila. tasks.md §Enmienda
-E1 da las mutaciones literales y los recuentos.
+H2 y H2b tocan la misma línea, así que van en rojos distintos.
 
-Medido por el leader fuera del árbol sobre `dbe183a6`, con jest, `tsc` y
-eslint: los `it` y las filas nuevas nacen verdes; cada mutación los pone en
-rojo **por aserción** y en ninguno más; con las mutaciones del rojo, `tsc` y
-eslint dan 0; `GRAFICA` pasa de 140 a 142 y `GUARDAS` sigue en 92.
+Después vienen siete sondas sin commit, sobre el árbol verde, cada una
+restaurada antes de la siguiente:
+
+- M2 y H1b;
+- M3a, M3b, M3c y M3d **por separado**, cada una con su fila;
+- `toFixed(1)` (la segunda forma de H3).
+
+tasks.md §Enmienda E1 da las mutaciones literales y los recuentos.
+
+Medido por el leader fuera del árbol sobre `02da4c11`, con jest, `tsc` y
+eslint, con el texto literal de tasks.md:
+
+- los `it` y las filas nuevos nacen verdes;
+- cada mutación los pone en rojo **por aserción** y no pone en rojo ningún
+  otro;
+- con las mutaciones de cada rojo, `tsc` y eslint dan 0;
+- `GRAFICA` pasa de 140 a 145, `GUARDAS` sigue en 92 y `BASE` pasa de 363 a
+  368.
 
 ### Aprobación de la Enmienda E1
 

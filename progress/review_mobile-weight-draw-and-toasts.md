@@ -167,3 +167,270 @@ No lo ejecuté, por instrucción del leader. La máquina estaba cargada por otra
 ```
 
 El log tiene 0 apariciones de `Failed to run`. El rechazo no se debe al gate, que está verde, sino a E1–E3.
+
+## Barrido de la Enmienda E1
+
+Fecha: 2026-10-12. Sobre `02da4c11`. Medido fuera del árbol, en una copia `git archive HEAD mobile-pet-tracker docs specs` en el scratchpad con un symlink al `node_modules` de wt-169. `design-drift` lee `../docs` y `../specs`, y sin ellos da ENOENT falso. No ejecuté `init.sh` ni la suite entera. `git status --short` de wt-169 estaba limpio al empezar y al terminar solo cambia este fichero.
+
+**Veredicto: insuficiente, con 4 huecos.** Los cierran 3 `it` y 1 fila, todos medidos:
+
+- H1, H2 y H3 están en cláusulas de R1 y R5 que la enmienda dice candar.
+- H2b es el espejo de H2 en R3. Es preexistente y la enmienda no lo roza: el leader decide si entra en esta ronda o pasa a deuda.
+
+Fuera de esos huecos, la enmienda está bien: literales, recuentos y razones de fallo cuadran.
+
+### 1. Literales que tasks.md manda sustituir (`grep -cF` sobre `02da4c11`)
+
+Todos dan `1`:
+
+- en `weight-chart.tsx`:
+  - `    strokeDashoffset: L * (1 - progress.get()),`
+  - `  const pointsProps = useAnimatedProps(() => ({ opacity: progress.get() }));`
+  - `({ opacity: progress.get() })`
+- en `monthly-weight-delta.ts`:
+  - `  const newest = inMonth[0];`
+  - `entries.find((entry) => entry.measuredAt < monthStart)`
+  - `?? inMonth[inMonth.length - 1];`
+  - `  if (baseline === newest) return null;`
+  - el bloque de cuatro líneas de M3, entero
+- las anclas de inserción:
+  - `it('empieza oculta en el primer frame'`
+  - `it('con dos pesos iguales la longitud es 100'`
+  - `it('empieza con los puntos ocultos en el primer frame'`
+  - `it('agrupa un Circle por entrada y ninguno fuera'`
+  - las dos `describe` de R1 y R2
+  - la fila `[11, …]`
+
+Además:
+
+- `con progreso 0.25` da `0`.
+- `WeightEntry` ya está importado como tipo.
+- `entries` existe en las `describe` de R1 y R2.
+
+### 2. Recuentos y razones de la enmienda, medidos tal como los escribe tasks.md
+
+| Paso | Esperado | Medido | Razón |
+|---|---|---|---|
+| Base | 15 y 11 | 15 y 11 | — |
+| Verde con los `it` y filas nuevos | 17 y 14 | 17 y 14 | — |
+| (1) rojo M1 | 2/15/17 | 2/15/17 | `strokeDashoffset` recibe `104.9952379872535`, `opacity` recibe `0`; los dos por aserción dentro del `waitFor` |
+| Sonda M2 | 2/15/17 | 2/15/17 | `59.0598213678301` y `0.0625` |
+| (3) rojo M3 | 3/11/14 | 3/11/14 | filas 12, 13 y 14 reciben `0.3`, `0.4` y `null` |
+| M3a | 1/13/14 | 1/13/14 | fila 12, recibe `0.2` |
+| M3b | 1/13/14 | 1/13/14 | fila 12, recibe `null` |
+| M3c | 1/13/14 | 1/13/14 | fila 13, recibe `0.4` |
+| M3d | 1/13/14 | 1/13/14 | fila 14, recibe `null` |
+| GRAFICA | 142 | 142 | — |
+| GUARDAS | 92 | 92 | — |
+| BASE (los 9 ficheros del handoff) | 365 | 365 | Test Suites 9 |
+| ALL | 99/2828 | no medido (prohibido) | aritmética correcta: 2823 ya incluye las 11 filas del fichero nuevo, así que 2823 + 2 + 3 = 2828; las suites no cambian (99) |
+
+### 3. Barrido por cláusula, con los `it` y filas de la enmienda aplicados
+
+**R1 y R2.**
+
+| Cláusula | Mutación | Resultado |
+|---|---|---|
+| curva `L·(1−p)` y `opacity = p` | M1, M2 | rojo |
+| `L` es la suma de los segmentos | H1 (cuerda) | verde, **hueco** |
+| `L` es la suma de los segmentos | H1b ((n−1)·primer segmento) | verde, **hueco** |
+| `p` parte de 0 | H2 (`useSharedValue(1)`) | verde, **hueco** |
+
+Lo demás ya lo cubren los `it` existentes:
+
+- una sola `withTiming` con `MOTION_FILL_TIMING` por identidad;
+- `strokeDasharray = [L, L]`;
+- el área quieta;
+- el grupo `weight-chart-points` con un `Circle` por entrada;
+- un segundo shared value para los puntos: necesita una segunda `withTiming` o rompe el `it` de 0.25.
+
+**R3.** `p` arranca en 1: la mutación H2b sale verde y es **hueco**.
+
+**R5**, mutaciones medidas sobre las 14 filas:
+
+| Mutación | Resultado | Filas que fallan |
+|---|---|---|
+| filtro `>` en vez de `>=` | rojo | 9 y 12 |
+| `monthStart` sacado de `entries[0]` | rojo | 4 y 11 |
+| `newest` por fecha con empate al último | rojo | 10 y 14 |
+| base con `findLast` | rojo | 1 y 13 |
+| base = la más ligera anterior al mes | rojo | 1 |
+| respaldo `inMonth[1]` | rojo | 3 y 12 |
+| respaldo = la más pesada del mes | rojo | 2, 12 y 14 |
+| respaldo = `newest` | rojo | 2, 12 y 14 |
+| paso 5 por peso | rojo | 8 |
+| sin paso 5 | rojo | 3 |
+| `\|\| null` (el 0 pasa a null) | rojo | 8 |
+| signo invertido | rojo | 9 filas |
+| `trunc` | rojo | 9, 12, 13 y 14 |
+| `floor` | rojo | 7, 9, 13 y 14 |
+| `ceil` | rojo | 1, 2, 10 y 12 |
+| sin redondeo | rojo | 8 filas |
+| `Math.round(… * 10) / 10` (H3) | verde, **hueco** | — |
+| `Number((…).toFixed(1))` (H3) | verde, **hueco** | — |
+
+Descartadas por equivalentes:
+
+- `startsWith(todayIso.slice(0, 7))`: medida, verde. Con datos de la API, que nunca tienen fechas futuras, es idéntica.
+- `newest = entries[0]`: medida, verde. `inMonth` es un prefijo de `entries` ordenado.
+- `Math.round(… * 1000) / 1000`: medida, verde. `weight_kg` es `numeric(5,2)`, así que con entradas de 2 decimales coincide con el redondeo a 2.
+- Construir `monthStart` con `Date`: la spec prescribe la operación de cadena literal, y el resultado dependería de la TZ de jest.
+
+### 4. Huecos, cada uno con su cierre medido
+
+Cada cierre es verde sobre la producción de `02da4c11` y rojo **por aserción** con su mutación, sin ningún otro `it` rojo.
+
+**H1 (R1, «L es la suma de las longitudes de sus segmentos»).** La fixture de tres pesos es colineal con segmentos iguales: `0,36 50,20 100,4`. Con ella, la cuerda y `(n−1)·segmento` también dan `2·√2756`, y la de dos pesos iguales da `100` con cualquiera de las dos.
+
+Mutaciones literales que salen verdes con 17/17, sustituyendo el bloque `const L = chartPoints.slice(1).reduce(…, 0);`:
+
+- `const L = Math.hypot(chartPoints[chartPoints.length - 1].x - chartPoints[0].x, chartPoints[chartPoints.length - 1].y - chartPoints[0].y);`
+- `const L = (chartPoints.length - 1) * Math.hypot(chartPoints[1].x - chartPoints[0].x, chartPoints[1].y - chartPoints[0].y);`
+
+Se cierra con un `it` nuevo en la `describe` de R1, antes de `it('con dos pesos iguales la longitud es 100'`. Los puntos son `0,36 50,4 100,20` y `L = √3524 + √2756 = 111.86090731…`. La cuerda daría `101.2719` y `2·primer segmento` daría `118.7266`.
+
+```tsx
+  it('con tres pesos no alineados la longitud es la suma de los dos segmentos', async () => {
+    await render(
+      <WeightChart entries={[
+        makeWeight({ id: 'weight-3', weightKg: 12, measuredAt: '2026-08-21' }),
+        makeWeight({ id: 'weight-2', weightKg: 14, measuredAt: '2026-08-20' }),
+        makeWeight({ id: 'weight-1', weightKg: 10, measuredAt: '2026-08-19' }),
+      ]} />,
+      { wrapper: WeightChartWrapper },
+    );
+
+    expect(screen.getByTestId('weight-chart-line').props.strokeDasharray).toEqual([
+      expect.closeTo(111.8609, 3),
+      expect.closeTo(111.8609, 3),
+    ]);
+  });
+```
+
+Medido: con las dos mutaciones, `1 failed, 19 passed, 20 total`, y solo cae este `it`.
+
+**H2 (R1 y R2, «p parte de 0»).** `it('empieza oculta en el primer frame')` hace que el doble devuelva `0`, así que impone el valor que espera: no «deja p en su origen» como dice R1. Con `  const progress = useSharedValue(reducedMotion ? 1 : 0);` pasando a `  const progress = useSharedValue(1);`, todo sigue verde con 17/17. En producción la línea nunca se dibuja, porque anima de 1 a 1.
+
+Se cierra con un `it` nuevo en la `describe` de R1 que usa un doble de `withTiming` que de verdad deja `p` en su origen: una animación que termina en su valor de partida.
+
+```tsx
+  it('p parte de 0: con una animación que no avanza, la línea y los puntos siguen ocultos', async () => {
+    mockWithTiming.mockImplementation(() => ({
+      onStart: (animation: { current?: number }, value: number) => {
+        animation.current = value;
+      },
+      onFrame: () => true,
+      current: undefined,
+    }) as unknown as number);
+    await render(<WeightChart entries={entries} />, { wrapper: WeightChartWrapper });
+
+    await waitFor(() =>
+      expect(screen.getByTestId('weight-chart-line').props.jestAnimatedProps?.value)
+        .toEqual({ strokeDashoffset: expect.closeTo(104.9952, 3) }),
+    );
+    expect(screen.getByTestId('weight-chart-points').props.jestAnimatedProps?.value)
+      .toEqual({ opacity: 0 });
+  });
+```
+
+Medido: con H2, `1 failed, 19 passed, 20 total`, y recibe `strokeDashoffset: 0`. Vigila cualquier origen distinto de 0, no solo el 1, y cubre también la opacidad de R2.
+
+**H2b (R3, «arrancar p en 1»; preexistente, no lo roza la enmienda).** Mutación literal, en dos sustituciones:
+
+- `  const progress = useSharedValue(reducedMotion ? 1 : 0);` pasa a `  const progress = useSharedValue(0);`
+- `    if (!reducedMotion) progress.set(withTiming(1, MOTION_FILL_TIMING));` pasa a `    progress.set(reducedMotion ? 1 : withTiming(1, MOTION_FILL_TIMING));`
+
+Sale verde con 17/17. En producción, bajo reduce motion, el primer frame pinta la línea oculta y los puntos a 0, y salta a completa tras el efecto. Eso incumple «desde el primer frame». RNTL vacía los efectos dentro de `render`, así que ningún `it` actual puede ver ese frame.
+
+Se cierra en dos pasos:
+
+1. Añadir un espía de paso a `useSharedValue` en el doble de Reanimated. Solo registra y devuelve el real.
+
+   ```tsx
+   const mockUseSharedValue = jest.fn();
+
+   jest.mock('react-native-reanimated', () => {
+     const actual = jest.requireActual<typeof import('react-native-reanimated')>(
+       'react-native-reanimated',
+     );
+     return {
+       ...actual,
+       __esModule: true,
+       useReducedMotion: () => mockUseReducedMotion(),
+       withTiming: (value: number, config: unknown) => mockWithTiming(value, config),
+       useSharedValue: (initial: number) => {
+         mockUseSharedValue(initial);
+         return actual.useSharedValue(initial);
+       },
+     };
+   });
+   ```
+
+2. Añadir un `it` nuevo al final de la `describe` de R3:
+
+   ```tsx
+     it('p arranca en 1 bajo reduce motion', async () => {
+       mockUseReducedMotion.mockReturnValue(true);
+       await render(
+         <WeightChart entries={[
+           makeWeight({ id: 'weight-2', weightKg: 14, measuredAt: '2026-08-21' }),
+           makeWeight({ id: 'weight-1', weightKg: 10, measuredAt: '2026-08-20' }),
+         ]} />,
+         { wrapper: WeightChartWrapper },
+       );
+
+       expect(mockUseSharedValue).toHaveBeenCalledWith(1);
+     });
+   ```
+
+Medido: con H2b, `1 failed, 19 passed, 20 total`, con `Expected: 1`.
+
+Los otros que llaman a `useSharedValue` bajo el wrapper son el `ToastProvider` de heroui-native, con `{}` y `0`: lo medí con la traza de pila. Por eso:
+
+- la aserción con `1` no es tautológica hoy, pero lo sería si un proveedor empezase a llamar con `1`;
+- **no** se puede usar `toHaveBeenCalledWith(0)` para R1, porque el `0` del `ToastProvider` lo haría tautológico.
+
+Para R1, el cierre bueno es el de H2.
+
+**H3 (R5, paso 6, «redondeo a 2 decimales»).** Todas las filas esperan como mucho 1 decimal.
+
+Mutaciones literales que salen verdes con 14/14, sobre `  return Math.round((newest.weightKg - baseline.weightKg) * 100) / 100;`:
+
+- `  return Math.round((newest.weightKg - baseline.weightKg) * 10) / 10;`
+- `  return Number((newest.weightKg - baseline.weightKg).toFixed(1));`
+
+El efecto es visible: `weight_kg` es `numeric(5,2)` y `fmtVariation` pinta el valor crudo. Así, `+0.04 kg este mes` en `text-danger` pasaría a `0 kg este mes` en `text-muted`, la rama de R7 para 0.
+
+Se cierra con una fila nueva tras la 14:
+
+```ts
+    [15, '2027-01-05', [w('2027-01-04', 12.04), w('2026-12-31', 12.0)], 0.04],
+```
+
+Medido: verde sobre la producción. Con las dos mutaciones, `1 failed, 14 passed, 15 total`: la fila 15 espera `0.04` y recibe `0`.
+
+### 5. Recuentos con los cierres añadidos
+
+Medidos en la copia, con los tres `it`, el espía y la fila:
+
+| Medida | Resultado |
+|---|---|
+| weight-chart | 20 |
+| monthly | 15 |
+| GRAFICA | 145 |
+| GUARDAS | 92 |
+| BASE | 368 (aritmética: 365 + 3) |
+| ALL | 99/2832 (aritmética: 2828 + 3 + 1) |
+| `tsc --noEmit` | exit=0 |
+| `eslint --no-cache` de los dos ficheros de test | exit=0, salida vacía |
+
+Con los cierres, los rojos y las sondas de tasks.md cambian así:
+
+| Paso | Ahora |
+|---|---|
+| (1) M1 | `2 failed, 18 passed, 20 total`, los mismos dos `it` |
+| Sonda M2 | `2 failed, 18 passed, 20 total`, los mismos dos `it` |
+| (3) M3 | `3 failed, 12 passed, 15 total`, filas 12-14; la fila 15 sigue verde con M3 |
+| M3a-M3d | `1 failed, 14 passed, 15 total` cada una, con la misma fila |
+
+Ningún `it` nuevo cae con M1, M2 ni M3. El rojo que vigila cada cierre es su propia mutación: H1 o H1b, H2, H2b y H3. Se versiona en su commit rojo (C4, quinto punto).
