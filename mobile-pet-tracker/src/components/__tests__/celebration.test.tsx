@@ -354,3 +354,24 @@ describe('#171 R9: háptico', () => {
     expect(mockNotificationAsync).toHaveBeenCalledTimes(1);
   });
 });
+
+
+describe('#171 R13: solo anima transform y opacity', () => {
+  beforeEach(() => { jest.useFakeTimers(); });
+  afterEach(() => { jest.useRealTimers(); });
+
+  it('R13.2 conserva las claves de layout y solo anima transform y opacity a los 0 y 1200 ms', async () => {
+    await renderProbe();
+    const rows = [
+      ['probe-pingo', ['height', 'opacity', 'transform', 'width']],
+      ['probe-badge', ['bottom', 'opacity', 'position', 'right', 'transform']],
+      ['probe-confetti-0', ['left', 'opacity', 'position', 'top', 'transform']],
+    ] as const;
+    for (const elapsed of [0, 1200]) {
+      if (elapsed) await act(async () => { jest.advanceTimersByTime(1200); });
+      for (const [id, keys] of rows) {
+        expect(Object.keys(getAnimatedStyle(screen.getByTestId(id, { includeHiddenElements: true }))).sort()).toEqual(keys);
+      }
+    }
+  });
+});
