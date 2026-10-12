@@ -849,4 +849,9 @@ Todo medido en un spike sobre `a27664f8`:
 
 ### Aprobación de la Enmienda E1
 
-- [ ] Enmienda E1 aprobada por humano (fecha: ____, vía Notion) ← gate obligatorio antes de la ronda 2 de Codex
+- [x] Enmienda E1 aprobada por humano (fecha: 2026-10-12, vía Notion) ← gate obligatorio antes de la ronda 2 de Codex
+
+Firmada en Notion: página https://app.notion.com/p/3f76115a9b27812d88b4ebbe02174d7c
+(base *Specs*), `Estado del gate` = Aprobado, última edición
+2026-10-12T22:38:16Z, cuenta alexfdgf32@gmail.com. El espejo reflejaba el
+commit 43894737.
