@@ -465,7 +465,7 @@ tabla de candados agregados gana su fila.
 ## Aprobación
 
 - [x] Aprobado por humano (fecha: 2026-10-12) ← gate obligatorio antes de implementar
-- [ ] Enmienda E1 aprobada por humano (fecha: ____)
+- [x] Enmienda E1 aprobada por humano (fecha: 2026-10-12)
 
 ## Smoke R17
 
