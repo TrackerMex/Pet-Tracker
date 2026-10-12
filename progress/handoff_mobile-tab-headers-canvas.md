@@ -1613,3 +1613,184 @@ total`. Si no da eso, PARA.
 Paso 3: c11 y el resto del handoff original hasta c27, con todas las
 correcciones citadas arriba.
 ```
+
+## Reanudación 7: parada en la medida de c18 (2026-10-12)
+
+> c10–c17 quedaron commiteados y bien (de `b6cfa1b5` a `3abdfbc3`). El
+> verde de I está escrito en `src/app/(tabs)/food.tsx` (55 inserciones y 59
+> borrados, sin stagear), pero su primera medida dio `44 failed, 91 passed,
+> 135 total` con `TypeError: Cannot read properties of undefined (reading
+> 'setAttribute')` al montar `AnimatedCircle`. La causa está en el doble de
+> `react-native-svg` de c17: `Circle` es una clase sin `setNativeProps`. El
+> ref de `createAnimatedComponent` apunta entonces a la instancia de esa
+> clase, y `_updatePropsJS` de Reanimated 4.5.1
+> (`ReanimatedModule/js-reanimated/index.ts`) no encuentra `setNativeProps`
+> ni `style`. Cae en la rama web y llama a `component._touchableNode.setAttribute`,
+> que no existe. La producción de Codex está bien.
+>
+> design.md D6 da el doble de `src/screens/home/weekly-activity-chart.test.tsx`
+> como patrón de referencia: `Rect` y `Line` son funciones que devuelven un
+> `View` con las props tal cual, y en producción se animan con
+> `createAnimatedComponent`. Con React 19.2 el `ref` llega a la función como
+> prop y el spread lo pasa al `View`. D6 solo pide clase o `forwardRef` si
+> la función falla por el ref, y no falla. Sin la clase, `React` queda sin
+> uso en la fábrica y se borra también, porque si no el lint sumaría un
+> warning. No hace falta enmienda: D6 fija la intención, no el código, y la
+> intención se cumple. El test se corrige en un commit de test propio, c17b,
+> como c3b y c7b.
+>
+> El leader lo probó fuera del árbol, con este mismo texto en F:
+> - Contra el verde de I del árbol: `72 passed, 72 total` (solo F), sin
+>   `TypeError`. Un it de sonda leyó
+>   `host.props.jestAnimatedProps.value` en `food-plan-ring-fill` dentro de un
+>   `waitFor`: claves `['strokeDashoffset']` y 276.46, y `r` = 44 en el
+>   mismo host. El doble con función, por tanto, deja pasar
+>   `jestAnimatedProps` (lo que exigía D6).
+> - Contra la producción de HEAD: `7 failed, 65 passed, 72 total`, los mismos
+>   7 its que el doble de c17 y solo las consultas permitidas en c17.
+> - Lint por stdin: 1 warning, el mismo de c17 (`expectKcalBarTiming`).
+>
+> Sumando C, el rojo de c17b es el de c17 (9/126/135) y el verde de c18
+> queda en 135/135, como prescribe el handoff. H0 sigue siendo `b082f6e5`.
+> Este commit solo toca este fichero, que está fuera de la lista cerrada.
+
+Pegar en Codex CLI:
+
+```
+Worktree: /home/claude/sites/Pet-Tracker-wt-168   <- PRIMERA LINEA. Trabaja AQUI y en ningun otro sitio
+Reanudacion 7 de #168 tras la parada en la medida de c18. Ejecuta y pega
+en progress/impl_mobile-tab-headers-canvas.md, bajo una seccion nueva
+«## Reanudacion 7»:
+  cd /home/claude/sites/Pet-Tracker-wt-168 && pwd
+  git branch --show-current
+  git rev-parse --short HEAD~1
+  git log --oneline b082f6e5..HEAD
+  git status --short
+PARA si:
+- la branch no es feature/168-mobile-tab-headers-canvas;
+- HEAD~1 no es 3abdfbc3 (tu c17);
+- el log no son exactamente veintiseis commits: el del leader que anade
+  esta reanudacion, 3abdfbc3, 6b371832, 03064141, 90908a6f, d8c5c06b,
+  72a3fe23, 56e75042, b6cfa1b5, c3198fe4, 11ef23d5, 30db66c1, b550084e,
+  ae5085bf, 31605b09, ce060f18, e65457de, bb71dc3b, 74447b19, 9039b87b,
+  675c465e, f08b7b79, 2c01414a, 1abc7950, c5618f43 y fdd98bcf;
+- `git status --short` no es exactamente estas dos lineas:
+   M mobile-pet-tracker/src/app/(tabs)/food.tsx
+  ?? progress/impl_mobile-tab-headers-canvas.md
+H0 sigue siendo b082f6e5. Siguen en vigor todas las reglas del handoff
+original, las correcciones del paso 5 de la Reanudacion 2, el
+`<LINT n>` con reintento de la Reanudacion 4, las dos correcciones del
+paso 5 de la Reanudacion 5 (aqui ajustadas en el paso 5) y la regla de
+medidas de la Reanudacion 6, que se repite abajo.
+
+Regla de extraccion: cada cadena empieza en su primera linea de comando
+y termina en su linea `git commit -m '...'`, esa incluida. Nada de lo
+que va detras es comando: ni las cabeceras `-- Bloque ... --`, ni las
+lineas `cN, ...`, ni la prosa. Las lineas con `->` son lo esperado, no
+comandos.
+
+Regla de medidas: la medida de cada cN son SOLO las lineas
+`FORCE_COLOR=0 bunx jest ...` y `<GUARDAS> ...` que van entre su linea
+`cN, ...` y la primera linea de su cadena (`grep -qE '^Tests: ...`).
+Lo que va detras del `git commit` de cN no es de cN. Los controles con
+nombre propio se miden en su momento, despues de hacer lo que su parrafo
+pide, y se comparan con su propia linea `->`, nunca con la de otro
+paso. Si tu extractor no puede respetar eso, extrae a mano.
+
+Anclas, desde mobile-pet-tracker/
+(`cd /home/claude/sites/Pet-Tracker-wt-168/mobile-pet-tracker && pwd`):
+  git diff --numstat -- 'src/app/(tabs)/food.tsx' | cut -f1   -> 55
+  git diff --numstat -- 'src/app/(tabs)/food.tsx' | cut -f2   -> 59
+  git diff --name-only HEAD -- . | wc -l   -> 1
+  git diff --cached --name-only | wc -l   -> 0
+  grep -cxF 'const AnimatedCircle = Animated.createAnimatedComponent(Circle);' 'src/app/(tabs)/food.tsx'   -> 1
+  grep -c 'MockCircle' 'src/app/(tabs)/__tests__/food.test.tsx'   -> 2
+  grep -cF "const React = jest.requireActual<typeof import('react')>('react');" 'src/app/(tabs)/__tests__/food.test.tsx'   -> 1
+  grep -cF 'Rect: (mockProps: Record<string, unknown>) =>' src/screens/home/weekly-activity-chart.test.tsx   -> 1
+Si alguna no da su cifra, PARA.
+
+Paso 1, guarda el verde de I y vuelve a HEAD, desde mobile-pet-tracker/:
+  cp 'src/app/(tabs)/food.tsx' /tmp/168-i-verde-food.tsx && git checkout HEAD -- 'src/app/(tabs)/food.tsx'
+Comprueba:
+  grep -cxF 'const AnimatedCircle = Animated.createAnimatedComponent(Circle);' /tmp/168-i-verde-food.tsx
+    -> 1
+  git diff --stat HEAD -- . | wc -l
+    -> 0
+  git diff --cached --name-only | wc -l
+    -> 0
+Si no, PARA.
+
+Paso 2, c17b, el rojo de I con el doble de Circle como funcion (design.md
+D6, patron de weekly-activity-chart.test.tsx). En F, dentro de
+`jest.mock('react-native-svg', ...)`, este tramo:
+  const React = jest.requireActual<typeof import('react')>('react');
+  const actual = jest.requireActual<typeof import('react-native-svg')>('react-native-svg');
+  const { View } = jest.requireActual('react-native');
+  class MockCircle extends React.Component<CircleProps> {
+    render() { return <View {...this.props} />; }
+  }
+  return {
+    ...actual,
+    __esModule: true,
+    default: (props: SvgProps) => <View {...props} />,
+    Circle: MockCircle,
+  };
+queda asi:
+  const actual = jest.requireActual<typeof import('react-native-svg')>('react-native-svg');
+  const { View } = jest.requireActual('react-native');
+  return {
+    ...actual,
+    __esModule: true,
+    default: (props: SvgProps) => <View {...props} />,
+    Circle: (props: CircleProps) => <View {...props} />,
+  };
+Fuera la linea de `React` (sin la clase no tiene uso y el lint sumaria un
+warning), fuera la clase, y `Circle` pasa a ser la funcion. La sangria es
+la del fichero (dos espacios dentro de la fabrica). Nada mas. Desde
+mobile-pet-tracker/:
+  FORCE_COLOR=0 bunx jest --runTestsByPath src/__tests__/consistency-classnames.test.ts 'src/app/(tabs)/__tests__/food.test.tsx' > /tmp/168-r9b.txt 2>&1; echo "exit=$?"
+    -> exit=1 y `Tests:       9 failed, 126 passed, 135 total`
+  grep -qE '^Tests: +9 failed, 126 passed, 135 total$' /tmp/168-r9b.txt \
+    && test "$(grep -E '^  ● ' /tmp/168-r9b.txt | grep -cvxF '  ● Console')" = 9 \
+    && test "$(grep -E '^  ● ' /tmp/168-r9b.txt | grep -cF '#168 R8: food-plan-card pinta el anillo')" = 7 \
+    && test "$(grep -E '^  ● ' /tmp/168-r9b.txt | grep -cF 'app/(tabs)/food.tsx importa y aplica sus 1 esquinas')" = 1 \
+    && test "$(grep -E '^  ● ' /tmp/168-r9b.txt | grep -cF '#98 R10')" = 1 \
+    && ! grep -qE 'Test suite failed to run|TypeError|ReferenceError|SyntaxError|Cannot find module|setAttribute' /tmp/168-r9b.txt \
+    && ! grep -E 'Unable to find' /tmp/168-r9b.txt | grep -vE 'Unable to find an element with testID: (food-plan-summary|food-plan-ring|food-plan-ring-track|food-plan-ring-fill)$' \
+    && test "$(git diff --shortstat -- 'src/app/(tabs)/__tests__/food.test.tsx')" = ' 1 file changed, 1 insertion(+), 5 deletions(-)' \
+    && test "$(grep -c 'MockCircle' 'src/app/(tabs)/__tests__/food.test.tsx')" = 0 \
+    && test "$(grep -cxF '    Circle: (props: CircleProps) => <View {...props} />,' 'src/app/(tabs)/__tests__/food.test.tsx')" = 1 \
+    && test "$(grep -cF "jest.requireActual<typeof import('react')>('react')" 'src/app/(tabs)/__tests__/food.test.tsx')" = 0 \
+    && test "$(grep -cF "jest.mock('react-native-svg'" 'src/app/(tabs)/__tests__/food.test.tsx')" = 1 \
+    && test ! -e .expo/types/router.d.ts && bun run typecheck && <LINT 1> \
+    && test "$(grep -cF "'expectKcalBarTiming' is defined but never used" /tmp/168-lint.txt)" = 1 \
+    && git add 'src/app/(tabs)/__tests__/food.test.tsx' \
+    && test "$(git diff --cached --name-only)" = 'mobile-pet-tracker/src/app/(tabs)/__tests__/food.test.tsx' \
+    && <LIMPIO> \
+    && git commit -m 'test(mobile): el doble de Circle es una función, como en weekly-activity-chart (#168 R8)'
+
+Paso 3, restaura el verde de I, desde mobile-pet-tracker/:
+  cp /tmp/168-i-verde-food.tsx 'src/app/(tabs)/food.tsx' && git diff --shortstat -- 'src/app/(tabs)/food.tsx'
+    -> ` 1 file changed, 55 insertions(+), 59 deletions(-)`
+  git -C .. status --short
+    -> exactamente estas dos lineas:
+        M mobile-pet-tracker/src/app/(tabs)/food.tsx
+       ?? progress/impl_mobile-tab-headers-canvas.md
+Si no, PARA.
+
+Paso 4: c18 entero, tal como esta en el handoff original (medida a
+/tmp/168-g9.txt, `Tests:       135 passed, 135 total`; GUARDAS a
+/tmp/168-g9-guardas.txt, 92; `<LINT 2>` con sus dos warnings; el mismo
+mensaje), sin cambiar ninguna cifra.
+
+Paso 5: c19 y el resto del handoff original hasta c27, con todas las
+correcciones citadas arriba. En c19 sigue en pie la parada si
+`jestAnimatedProps` no llega al host de `food-plan-ring-fill`. Estas dos
+sustituyen a las del paso 5 de la Reanudacion 5:
+- c26, traceability: la fila R8 lleva como rojo c17 `3abdfbc3` + c17b
+  (su hash corto y su mensaje), `rojo → verde` hacia c18. La fila R3
+  sigue con c3 `2c01414a` + c3b y la R4 con c7 `ce060f18` + c7b.
+- Los commits de A-M son 28 (c1-c25 mas c3b, c7b y c17b) y en total 30.
+  Donde el handoff dice 27 y 25, la Reanudacion 2 dice 28 y 26 o la
+  Reanudacion 5 dice 29 y 27, cuenta 30 y 28.
+```
