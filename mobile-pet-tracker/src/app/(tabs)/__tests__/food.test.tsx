@@ -1384,3 +1384,85 @@ describe('#168 R9: el anillo dice el porcentaje acotado', () => {
     });
   });
 });
+
+
+describe('#168 R10: el anillo transiciona con reduce motion', () => {
+  beforeEach(setupFood168);
+
+  it('transiciona de 50 a 100 al servir y vuelve a 50 al deshacer', async () => {
+    mockGetNutritionPlan.mockResolvedValue({
+      kind: 'ok',
+      plan: makePlan({ merKcal: 1420, kcalConsumedToday: 710, servedToday: ['07:30'] }),
+    });
+    mockServeMeal.mockResolvedValue({ kind: 'ok' });
+    mockUnserveMeal.mockResolvedValue({ kind: 'ok' });
+    await renderFood();
+    await screen.findByTestId('food-plan-card');
+    await waitFor(() => {
+      expect(screen.getByTestId('food-plan-consumed')).toHaveTextContent('710 kcal');
+      expect(screen.getByTestId('food-plan-percent')).toHaveTextContent('50%');
+      expect(screen.getByTestId('food-plan-ring-fill').props.jestAnimatedProps.value.strokeDashoffset).toBeCloseTo(138.23, 2);
+    });
+    expectKcalBarTiming(50);
+    mockWithTiming.mockClear();
+
+    mockGetNutritionPlan.mockResolvedValue({
+      kind: 'ok',
+      plan: makePlan({ merKcal: 1420, kcalConsumedToday: 1420, servedToday: ['07:30', '19:30'] }),
+    });
+    await fireEvent.press(screen.getByTestId('meal-toggle-1'));
+    await waitFor(() => {
+      expect(screen.getByTestId('meal-served-1')).toBeVisible();
+      expect(screen.getByTestId('meal-toggle-1')).not.toBeDisabled();
+      expect(screen.getByTestId('food-plan-consumed')).toHaveTextContent('1420 kcal');
+      expect(screen.getByTestId('food-plan-percent')).toHaveTextContent('100%');
+      expect(screen.getByTestId('food-plan-ring-fill').props.jestAnimatedProps.value.strokeDashoffset).toBeCloseTo(0, 2);
+    });
+    expectKcalBarTiming(100);
+    mockWithTiming.mockClear();
+
+    mockGetNutritionPlan.mockResolvedValue({
+      kind: 'ok',
+      plan: makePlan({ merKcal: 1420, kcalConsumedToday: 710, servedToday: ['07:30'] }),
+    });
+    await fireEvent.press(screen.getByTestId('meal-toggle-1'));
+    await waitFor(() => {
+      expect(screen.getByTestId('meal-pending-1')).toBeVisible();
+      expect(screen.getByTestId('meal-toggle-1')).not.toBeDisabled();
+      expect(screen.getByTestId('food-plan-consumed')).toHaveTextContent('710 kcal');
+      expect(screen.getByTestId('food-plan-percent')).toHaveTextContent('50%');
+      expect(screen.getByTestId('food-plan-ring-fill').props.jestAnimatedProps.value.strokeDashoffset).toBeCloseTo(138.23, 2);
+    });
+    expectKcalBarTiming(50);
+  });
+
+  it('la llamada de 50 respeta ReduceMotion.System', async () => {
+    mockGetNutritionPlan.mockResolvedValue({
+      kind: 'ok',
+      plan: makePlan({ merKcal: 1420, kcalConsumedToday: 710 }),
+    });
+    await renderFood();
+    await screen.findByTestId('food-plan-card');
+    await waitFor(() => {
+      expect(screen.getByTestId('food-plan-percent')).toHaveTextContent('50%');
+      expect(screen.getByTestId('food-plan-ring-fill').props.jestAnimatedProps.value.strokeDashoffset).toBeCloseTo(138.23, 2);
+    });
+    const config = mockWithTiming.mock.calls.find(([value]) => value === 50)?.[1];
+    expect(config).toEqual(expect.objectContaining({ reduceMotion: ReduceMotion.System }));
+  });
+
+  it('acota la llamada a 100 aunque el texto diga 150%', async () => {
+    mockGetNutritionPlan.mockResolvedValue({
+      kind: 'ok',
+      plan: makePlan({ merKcal: 656, kcalConsumedToday: 984 }),
+    });
+    await renderFood();
+    await screen.findByTestId('food-plan-card');
+    await waitFor(() => {
+      expect(screen.getByTestId('food-plan-percent')).toHaveTextContent('150%');
+      expect(screen.getByTestId('food-plan-ring-fill').props.jestAnimatedProps.value.strokeDashoffset).toBeCloseTo(0, 2);
+    });
+    expect(mockWithTiming).toHaveBeenCalledWith(100, expect.any(Object));
+    expect(mockWithTiming).not.toHaveBeenCalledWith(150, expect.anything());
+  });
+});
