@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { render, screen, waitFor } from '@testing-library/react-native';
+import { render, screen, waitFor, within } from '@testing-library/react-native';
 import { HeroUINativeProvider } from 'heroui-native';
 
 import type { WeightEntry } from '../../api/types';
@@ -19,8 +19,12 @@ jest.mock('react-native-svg', () => {
     React.createElement(View, { ...props, testID: 'weight-chart-line' });
   const Polygon = (props: Record<string, unknown>) =>
     React.createElement(View, { ...props, testID: 'weight-chart-area' });
+  const G = (props: Record<string, unknown>) =>
+    React.createElement(View, props, props.children as ReactNode);
+  const Circle = (props: Record<string, unknown>) =>
+    React.createElement(View, { ...props, testID: 'weight-chart-point' });
 
-  return { ...actual, __esModule: true, default: Svg, Svg, Polyline, Polygon };
+  return { ...actual, __esModule: true, default: Svg, Svg, Polyline, Polygon, G, Circle };
 });
 
 const mockUseReducedMotion = jest.fn(() => false);
@@ -163,5 +167,39 @@ describe('#169 R1: la línea se dibuja al montarse', () => {
 
     expect(screen.getByTestId('weight-chart-area').props.jestAnimatedProps)
       .toBeUndefined();
+  });
+});
+
+describe('#169 R2: los puntos aparecen con el mismo progreso', () => {
+  const entries = [
+    makeWeight({ id: 'weight-3', weightKg: 14 }),
+    makeWeight({ id: 'weight-2', weightKg: 12 }),
+    makeWeight({ id: 'weight-1', weightKg: 10 }),
+  ];
+
+  it('termina con los puntos visibles', async () => {
+    await render(<WeightChart entries={entries} />, { wrapper: WeightChartWrapper });
+    screen.getByTestId('weight-chart-points');
+
+    await waitFor(() =>
+      expect(screen.getByTestId('weight-chart-points').props.jestAnimatedProps?.value)
+        .toEqual({ opacity: 1 }),
+    );
+  });
+
+  it('empieza con los puntos ocultos en el primer frame', async () => {
+    mockWithTiming.mockImplementation(() => 0);
+    await render(<WeightChart entries={entries} />, { wrapper: WeightChartWrapper });
+    const points = screen.getByTestId('weight-chart-points');
+
+    expect(points.props.jestAnimatedProps?.value).toEqual({ opacity: 0 });
+  });
+
+  it('agrupa un Circle por entrada y ninguno fuera', async () => {
+    await render(<WeightChart entries={entries} />, { wrapper: WeightChartWrapper });
+    const points = screen.getByTestId('weight-chart-points');
+
+    expect(within(points).getAllByTestId('weight-chart-point')).toHaveLength(3);
+    expect(screen.getAllByTestId('weight-chart-point')).toHaveLength(3);
   });
 });
