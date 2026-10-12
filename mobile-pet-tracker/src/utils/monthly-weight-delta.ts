@@ -8,12 +8,10 @@ export function monthlyWeightDelta(
   const inMonth = entries.filter((entry) => entry.measuredAt >= monthStart);
   if (inMonth.length === 0) return null;
 
-  const newest = inMonth.reduce((a, b) => (b.weightKg > a.weightKg ? b : a));
-  const baseline = entries
-    .filter((entry) => entry.measuredAt < monthStart)
-    .reduce<WeightEntry | undefined>((a, b) => (a && a.weightKg >= b.weightKg ? a : b), undefined)
-    ?? inMonth.reduce((a, b) => (b.weightKg < a.weightKg ? b : a));
-  if (baseline.measuredAt === newest.measuredAt) return null;
+  const newest = inMonth[0];
+  const baseline = entries.find((entry) => entry.measuredAt < monthStart)
+    ?? inMonth[inMonth.length - 1];
+  if (baseline === newest) return null;
 
-  return Math.round((newest.weightKg - baseline.weightKg) * 10) / 10;
+  return Math.round((newest.weightKg - baseline.weightKg) * 100) / 100;
 }
