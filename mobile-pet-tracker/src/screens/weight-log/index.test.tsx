@@ -814,3 +814,61 @@ describe('#169 R8: chip de delta por entrada', () => {
     }
   });
 });
+
+describe('#169 R6: resumen del peso en la card de la gráfica', () => {
+  const entries = [
+    makeWeight({ id: 'weight-3', measuredAt: '2026-09-30', weightKg: 12.4 }),
+    makeWeight({ id: 'weight-2', measuredAt: '2026-09-29', weightKg: 12.0 }),
+    makeWeight({ id: 'weight-1', measuredAt: '2026-08-31', weightKg: 11.0 }),
+  ];
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2026-10-01T05:00:00Z'));
+    prepareWeightLogTests();
+    mockListWeights.mockResolvedValue({ kind: 'ok', weights: entries });
+  });
+  afterEach(() => jest.useRealTimers());
+
+  it.each([
+    ['Pacific/Pago_Pago', '2026-09-30', '+1.4 kg este mes'],
+    ['Pacific/Kiritimati', '2026-10-01', null],
+  ] as const)('en %s pinta el peso actual y el delta del día civil', async (timezone, today, delta) => {
+    mockGetMe.mockResolvedValue({ kind: 'ok', me: makeProfile(timezone) });
+    await renderWeightLog();
+    await waitFor(() => expect(screen.getByTestId('weight-date-input').props.value).toBe(today));
+
+    const current = screen.getByTestId('weight-current');
+    expect(current).toHaveTextContent('12.4 kg', { exact: true });
+    expect(current.props.className).toBe('text-3xl font-black text-foreground');
+    expect(current.props.style).toEqual({ fontVariant: ['tabular-nums'] });
+    if (delta !== null) {
+      const deltaText = screen.getByTestId('weight-month-delta-text');
+      expect(deltaText).toHaveTextContent('+1.4 kg este mes', { exact: true });
+      expect(deltaText.props.style).toEqual({ fontVariant: ['tabular-nums'] });
+      expect(screen.getByTestId('weight-month-delta').props.className)
+        .toBe('flex-row items-center gap-1.5');
+    } else {
+      expect(screen.queryByTestId('weight-month-delta')).toBeNull();
+    }
+  });
+
+  it('pinta el resumen dentro de la card y antes de la gráfica', async () => {
+    await renderWeightLog();
+    await waitFor(() => expect(screen.getByTestId('weight-chart-card')).toBeVisible());
+
+    within(screen.getByTestId('weight-chart-card')).getByTestId('weight-summary');
+    expect(within(screen.getByTestId('weight-chart-card'))
+      .getAllByTestId(/^weight-(summary|chart)$/).map((node) => node.props.testID))
+      .toEqual(['weight-summary', 'weight-chart']);
+  });
+
+  it('no pinta el resumen sin entradas', async () => {
+    mockListWeights.mockResolvedValue({ kind: 'ok', weights: [] });
+    await renderWeightLog();
+    await waitFor(() => expect(screen.getByTestId('weight-chart-empty'))
+      .toHaveTextContent('Aún no hay datos suficientes'));
+
+    expect(screen.queryByTestId('weight-summary')).toBeNull();
+  });
+});

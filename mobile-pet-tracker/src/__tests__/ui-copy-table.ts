@@ -169,6 +169,7 @@ export const R5_HEALTH: UseRow[] = [
   { file: 'src/screens/weight-log/index.tsx', key: 'weightLog.bodyConditionValue' },
   { file: 'src/screens/weight-log/index.tsx', key: 'weightLog.dateCannotBeAfterToday' },
   { file: 'src/components/weight-chart.tsx', key: 'weightChart.notEnoughDataYet' },
+  { file: 'src/screens/weight-log/index.tsx', key: 'weightLog.monthDelta' },
 ];
 
 export const R6_FOOD: UseRow[] = [
