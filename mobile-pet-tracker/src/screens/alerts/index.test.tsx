@@ -1452,4 +1452,16 @@ describe('#170 R5: la fila abierta lleva el borde de su tipo', () => {
     expect(classes).not.toContain('border-2');
     expect(classes).not.toContain('border-danger');
   });
+  it.each(['ok', 'already-closed'] as const)('marcada leída en local (%s): pierde el borde de severidad', async (rama) => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert()], nextCursor: null });
+    mockAckAlert.mockResolvedValue(rama === 'ok' ? { kind: 'ok', alert: makeAlert({ status: 'acked' }) } : { kind: 'already-closed' });
+    await renderAlerts();
+    await fireEvent.press(await screen.findByTestId('alert-row-alert-1-ack'));
+    await waitFor(() => expect(screen.getByTestId('alert-row-alert-1-status')).toHaveTextContent(rama === 'ok' ? es['alerts.statusAcked'] : es['alerts.statusClosed']));
+    const classes = screen.getByTestId('alert-row-alert-1').props.className.split(' ');
+    expect(classes).toContain('border');
+    expect(classes).toContain('border-border');
+    expect(classes).not.toContain('border-2');
+    expect(classes).not.toContain('border-danger');
+  });
 });

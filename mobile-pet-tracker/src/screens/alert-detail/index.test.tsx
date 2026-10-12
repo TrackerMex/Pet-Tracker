@@ -446,6 +446,14 @@ describe('#170 R6: la tarjeta abierta lleva el borde de su tipo', () => {
     await renderDetail();
     expect((await screen.findByTestId('alert-detail-card')).props.className).toBe('rounded-card border border-border bg-surface p-4 shadow-sm min-h-44 gap-3');
   });
+  it.each(['ok', 'already-closed'] as const)('marcada leída en local (%s): pierde el borde de severidad', async (rama) => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert()], nextCursor: null });
+    mockAckAlert.mockResolvedValue(rama === 'ok' ? { kind: 'ok', alert: makeAlert({ status: 'acked' }) } : { kind: 'already-closed' });
+    await renderDetail();
+    await fireEvent.press(await screen.findByTestId('alert-detail-ack'));
+    await waitFor(() => expect(screen.getByTestId('alert-detail-status')).toHaveTextContent(rama === 'ok' ? 'Leída' : 'Resuelta'));
+    expect(screen.getByTestId('alert-detail-card').props.className).toBe('rounded-card border border-border bg-surface p-4 shadow-sm min-h-44 gap-3');
+  });
 });
 
 describe('#170 R8: pinta el mini-mapa con la posición de la alerta', () => {
