@@ -3,16 +3,16 @@ import type { TranslationKey } from '../i18n/catalog';
 export type UseRow = { file: string; key: TranslationKey };
 
 export const R1_AUTH: UseRow[] = [
-  { file: 'src/app/(auth)/login.tsx', key: 'login.invalidCredentials' },
-  { file: 'src/app/(auth)/login.tsx', key: 'common.cannotReachServer' },
-  { file: 'src/app/(auth)/login.tsx', key: 'common.somethingWentWrong' },
-  { file: 'src/app/(auth)/login.tsx', key: 'common.somethingWentWrong' },
-  { file: 'src/app/(auth)/login.tsx', key: 'login.signIn' },
-  { file: 'src/app/(auth)/login.tsx', key: 'login.email' },
-  { file: 'src/app/(auth)/login.tsx', key: 'login.password' },
-  { file: 'src/app/(auth)/login.tsx', key: 'login.signIn' },
-  { file: 'src/app/(auth)/login.tsx', key: 'login.createAccount' },
-  { file: 'src/app/(auth)/login.tsx', key: 'login.forgotPassword' },
+  { file: 'src/screens/login/index.tsx', key: 'login.invalidCredentials' },
+  { file: 'src/screens/login/index.tsx', key: 'common.cannotReachServer' },
+  { file: 'src/screens/login/index.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/screens/login/index.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/screens/login/index.tsx', key: 'login.signIn' },
+  { file: 'src/screens/login/index.tsx', key: 'login.email' },
+  { file: 'src/screens/login/index.tsx', key: 'login.password' },
+  { file: 'src/screens/login/index.tsx', key: 'login.signIn' },
+  { file: 'src/screens/login/index.tsx', key: 'login.createAccount' },
+  { file: 'src/screens/login/index.tsx', key: 'login.forgotPassword' },
   { file: 'src/screens/forgot/index.tsx', key: 'forgot.invalidEmail' }, // #117 R7
   { file: 'src/screens/forgot/index.tsx', key: 'forgot.tooManyAttempts' }, // #117 R7
   { file: 'src/screens/forgot/index.tsx', key: 'common.cannotReachServer' }, // #117 R7
@@ -25,20 +25,20 @@ export const R1_AUTH: UseRow[] = [
   { file: 'src/screens/forgot/index.tsx', key: 'forgot.email' }, // #117 R10
   { file: 'src/screens/forgot/index.tsx', key: 'forgot.sendRecoveryLink' }, // #117 R10
   { file: 'src/screens/forgot/index.tsx', key: 'forgot.backToSignIn' }, // #117 R10
-  { file: 'src/app/(auth)/register.tsx', key: 'register.emailAlreadyRegistered' },
-  { file: 'src/app/(auth)/register.tsx', key: 'common.cannotReachServer' },
-  { file: 'src/app/(auth)/register.tsx', key: 'common.somethingWentWrong' },
-  { file: 'src/app/(auth)/register.tsx', key: 'common.somethingWentWrong' },
-  { file: 'src/app/(auth)/register.tsx', key: 'register.createAccount' },
-  { file: 'src/app/(auth)/register.tsx', key: 'register.firstName' },
-  { file: 'src/app/(auth)/register.tsx', key: 'register.lastName' },
-  { file: 'src/app/(auth)/register.tsx', key: 'register.email' },
-  { file: 'src/app/(auth)/register.tsx', key: 'register.phone' },
-  { file: 'src/app/(auth)/register.tsx', key: 'register.password' },
-  { file: 'src/app/(auth)/register.tsx', key: 'register.confirmPassword' },
-  { file: 'src/app/(auth)/register.tsx', key: 'register.country' },
-  { file: 'src/app/(auth)/register.tsx', key: 'register.iAcceptTerms' },
-  { file: 'src/app/(auth)/register.tsx', key: 'register.createAccount' },
+  { file: 'src/screens/register/index.tsx', key: 'register.emailAlreadyRegistered' },
+  { file: 'src/screens/register/index.tsx', key: 'common.cannotReachServer' },
+  { file: 'src/screens/register/index.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/screens/register/index.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/screens/register/index.tsx', key: 'register.createAccount' },
+  { file: 'src/screens/register/index.tsx', key: 'register.firstName' },
+  { file: 'src/screens/register/index.tsx', key: 'register.lastName' },
+  { file: 'src/screens/register/index.tsx', key: 'register.email' },
+  { file: 'src/screens/register/index.tsx', key: 'register.phone' },
+  { file: 'src/screens/register/index.tsx', key: 'register.password' },
+  { file: 'src/screens/register/index.tsx', key: 'register.confirmPassword' },
+  { file: 'src/screens/register/index.tsx', key: 'register.country' },
+  { file: 'src/screens/register/index.tsx', key: 'register.iAcceptTerms' },
+  { file: 'src/screens/register/index.tsx', key: 'register.createAccount' },
 ];
 
 export const R2_TABS: UseRow[] = [

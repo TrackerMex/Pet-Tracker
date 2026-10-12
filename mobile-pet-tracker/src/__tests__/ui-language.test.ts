@@ -497,7 +497,8 @@ describe('#65 R18: los sitios resuelven por clave y no queda copy suelta', () =>
       19 + 2 + 1 + 1 + 1 + 1 + 1 + 1 + 1 // #100 R10, #41 R10, #146 R10, #105 R5
         + 1 - 1 // #117 R10: sale app/(auth)/forgot.tsx, entra screens/forgot/index.tsx
         + 1 // #118 R1
-        + 1, // #134 R6
+        + 1 // #134 R6
+        + 2 - 2, // #167 R1: salen app/(auth)/login.tsx y app/(auth)/register.tsx, entran screens/login/index.tsx y screens/register/index.tsx
     );
 
     for (const file of SCREEN_FILES) {

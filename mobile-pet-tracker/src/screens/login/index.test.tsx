@@ -4,16 +4,16 @@ import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
 import { DeviceEventEmitter, Platform } from 'react-native';
 
-import { login, type LoginState } from '../../../api/auth';
-import { useAuth, type AuthContextValue } from '../../../providers/auth-provider';
-import { LanguageProvider } from '../../../providers/language-provider';
-import Login from '../login';
+import { login, type LoginState } from '../../api/auth';
+import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
+import { LanguageProvider } from '../../providers/language-provider';
+import LoginRoute from '../../app/(auth)/login';
 
-jest.mock('../../../api/auth', () => ({
+jest.mock('../../api/auth', () => ({
   login: jest.fn(),
 }));
 
-jest.mock('../../../providers/auth-provider', () => ({
+jest.mock('../../providers/auth-provider', () => ({
   useAuth: jest.fn(),
 }));
 
@@ -45,7 +45,7 @@ function AuthScreenWrapper({ children }: { children: ReactNode }) {
 }
 
 async function renderLogin() {
-  await render(<Login />, { wrapper: AuthScreenWrapper });
+  await render(<LoginRoute />, { wrapper: AuthScreenWrapper });
 }
 
 async function submit(email = 'alex@example.com', password = 'correct horse') {

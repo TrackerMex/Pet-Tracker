@@ -8,17 +8,17 @@ import {
   login,
   register as registerApi,
   type RegisterState,
-} from '../../../api/auth';
-import { useAuth, type AuthContextValue } from '../../../providers/auth-provider';
-import { LanguageProvider } from '../../../providers/language-provider';
-import Register from '../register';
+} from '../../api/auth';
+import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
+import { LanguageProvider } from '../../providers/language-provider';
+import RegisterRoute from '../../app/(auth)/register';
 
-jest.mock('../../../api/auth', () => ({
+jest.mock('../../api/auth', () => ({
   login: jest.fn(),
   register: jest.fn(),
 }));
 
-jest.mock('../../../providers/auth-provider', () => ({
+jest.mock('../../providers/auth-provider', () => ({
   useAuth: jest.fn(),
 }));
 
@@ -62,7 +62,7 @@ function AuthScreenWrapper({ children }: { children: ReactNode }) {
 }
 
 async function renderRegister() {
-  await render(<Register />, { wrapper: AuthScreenWrapper });
+  await render(<RegisterRoute />, { wrapper: AuthScreenWrapper });
 }
 
 async function fillForm({ acceptTerms = true }: { acceptTerms?: boolean } = {}) {

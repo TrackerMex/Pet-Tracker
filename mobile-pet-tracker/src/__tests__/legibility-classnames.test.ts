@@ -144,7 +144,7 @@ describe('#61 R3: ningún texto sobre bg-accent se compone con opacidad', () => 
 describe('#61 R4: el acento como tinta usa accent-strong', () => {
   const inkSites: [string, number][] = [
     [join('components', 'floating-tab-bar.tsx'), 1],
-    [join('app', '(auth)', 'login.tsx'), 2],
+    [join('screens', 'login', 'index.tsx'), 2],
     [join('screens', 'forgot', 'index.tsx'), 1], // #117 R10
     [join('screens', 'reset-password', 'index.tsx'), 2],
     [join('screens', 'home', 'index.tsx'), 2],
