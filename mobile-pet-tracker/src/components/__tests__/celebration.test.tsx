@@ -6,6 +6,7 @@ import { Dimensions } from 'react-native';
 import { getAnimatedStyle } from 'react-native-reanimated';
 
 import { Celebration } from '../celebration';
+import { en, es } from '../../i18n/catalog';
 
 const { readFileSync } = jest.requireActual<typeof import('fs')>('fs');
 const { join } = jest.requireActual<typeof import('path')>('path');
@@ -375,3 +376,63 @@ describe('#171 R13: solo anima transform y opacity', () => {
     }
   });
 });
+
+
+const enCatalog: Record<string, string> = en;
+const esCatalog: Record<string, string> = es;
+const copyRows = [
+  ['addPet.celebrateTitle', '{{petName}} is home!', '¡{{petName}} ya está en casa!'],
+  ['addPet.celebrateBody', "I'll help you look after {{petName}}. Pair a collar and I'll keep track of where they are.", 'Te ayudo a cuidar de {{petName}}. Vincula un collar y estaré pendiente de dónde está.'],
+  ['addPet.celebratePair', 'Pair a collar', 'Vincular un collar'],
+  ['addPet.celebrateLater', 'Not now', 'Ahora no'],
+] as const;
+
+describe('#171 R12: copy de la variante sin collar', () => {
+  it.each(copyRows)('%s tiene su literal en los dos idiomas', (key, english, spanish) => {
+    expect(enCatalog[key]).toBe(english);
+    expect(esCatalog[key]).toBe(spanish);
+  });
+
+  it('addPet.celebrateTitle exclama con ¡…! en español', () => {
+    expect(esCatalog['addPet.celebrateTitle']).toMatch(/^¡.*!$/);
+  });
+
+  it('addPet.celebrateTitle exclama con …! en inglés', () => {
+    expect(enCatalog['addPet.celebrateTitle']).toMatch(/!$/);
+  });
+
+  it('body, pair y later no exclaman en ningún idioma', () => {
+    for (const key of ['addPet.celebrateBody', 'addPet.celebratePair', 'addPet.celebrateLater']) {
+      for (const catalog of [enCatalog, esCatalog]) expect(catalog[key]).not.toMatch(/[!¡]/);
+    }
+  });
+
+  it('ninguna de las cuatro lleva emoji', () => {
+    for (const [key] of copyRows) {
+      for (const catalog of [enCatalog, esCatalog]) expect(catalog[key]).not.toMatch(/\p{Extended_Pictographic}/u);
+    }
+  });
+
+  it('addPet.celebrateBody termina en punto en los dos idiomas', () => {
+    expect(enCatalog['addPet.celebrateBody']).toMatch(/\.$/);
+    expect(esCatalog['addPet.celebrateBody']).toMatch(/\.$/);
+  });
+
+  it('registra las cuatro claves en §2.24 de mobile-ui-language', () => {
+    const doc = readFileSync(join(process.cwd(), '..', 'specs', 'mobile-ui-language', 'design.md'), 'utf8');
+    const SECTION = [
+      '### §2.24 — Añadidos por \u0023171 — Celebraciones',
+      '',
+      '| # | Clave | `en` | `es` | Origen |',
+      '|---|---|---|---|---|',
+      '| — | `addPet.celebrateTitle` | `{{petName}} is home!` | `¡{{petName}} ya está en casa!` | ← añadida por \u0023171 (R12) |',
+      "| — | `addPet.celebrateBody` | `I'll help you look after {{petName}}. Pair a collar and I'll keep track of where they are.` | `Te ayudo a cuidar de {{petName}}. Vincula un collar y estaré pendiente de dónde está.` | ← añadida por \u0023171 (R12) |",
+      '| — | `addPet.celebratePair` | `Pair a collar` | `Vincular un collar` | ← añadida por \u0023171 (R12) |',
+      '| — | `addPet.celebrateLater` | `Not now` | `Ahora no` | ← añadida por \u0023171 (R12) |',
+    ].join('\n');
+    expect(doc.split(SECTION)).toHaveLength(2);
+    expect(doc.indexOf(SECTION)).toBeGreaterThan(doc.indexOf('### §2.23 '));
+    expect(doc.indexOf('## 3. La infraestructura')).toBeGreaterThan(doc.indexOf(SECTION));
+  });
+});
+
