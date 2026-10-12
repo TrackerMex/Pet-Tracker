@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
@@ -8,6 +8,19 @@ import { login, type LoginState } from '../../api/auth';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import { LanguageProvider } from '../../providers/language-provider';
 import LoginRoute from '../../app/(auth)/login';
+
+const mockHomeEntrance = jest.fn<void, [import('react-native').ViewProps & { index: number }]>();
+
+jest.mock('../home/home-entrance', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return {
+    HomeEntrance(props: import('react-native').ViewProps & { index: number }) {
+      mockHomeEntrance(props);
+      return React.createElement(View, props);
+    },
+  };
+});
 
 jest.mock('../../api/auth', () => ({
   login: jest.fn(),
@@ -199,5 +212,97 @@ describe('#148 R1: login se aparta del teclado en Android', () => {
       });
     });
     await waitFor(() => expect(screen.getByTestId('screen-login')).toHaveStyle({ paddingBottom: 200 }));
+  });
+});
+
+describe('#167 R6: Pingo saluda en login y la pantalla entra en dos tiempos', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'unauthenticated', token: null, signIn: mockSignIn, signOut: jest.fn(),
+    } satisfies AuthContextValue);
+  });
+
+  it('#167 R6: entra en dos tiempos, cabecera y cuerpo', async () => {
+    await renderLogin();
+    expect(Object.fromEntries(mockHomeEntrance.mock.calls.map(([p]) => [
+      p.testID, { index: p.index, className: p.className },
+    ]))).toEqual({
+      'login-header': { index: 0, className: 'gap-4' },
+      'login-body': { index: 1, className: 'gap-4' },
+    });
+  });
+
+  it('#167 R6: la cabecera lleva el saludo y después el título', async () => {
+    await renderLogin();
+    const header = screen.getByTestId('login-header');
+    expect(header.children).toHaveLength(2);
+    expect(header.children[0]).toHaveProperty('props.testID', 'login-greeting');
+    expect(header.children[1]).toBe(within(header).getByText('Iniciar sesión'));
+  });
+
+  it('#167 R6: el cuerpo lleva el formulario en el orden de siempre', async () => {
+    mockLogin.mockResolvedValue({ kind: 'invalid-credentials' });
+    await renderLogin();
+    const body = screen.getByTestId('login-body');
+    expect(within(body).getAllByTestId(/^(login-email|login-password|login-submit|link-register|link-forgot)$/)
+      .map((node) => node.props.testID)).toEqual([
+      'login-email', 'login-password', 'login-submit', 'link-register', 'link-forgot',
+    ]);
+    await submit();
+    expect(within(body).getByTestId('login-error')).toBeOnTheScreen();
+  });
+
+  it('#167 R6: la cabecera y el cuerpo no se mezclan', async () => {
+    await renderLogin();
+    const header = screen.getByTestId('login-header');
+    const body = screen.getByTestId('login-body');
+    for (const id of ['login-email', 'login-password', 'login-submit', 'link-register', 'link-forgot']) {
+      expect(within(header).queryByTestId(id)).toBeNull();
+    }
+    expect(within(body).queryByTestId('login-greeting')).toBeNull();
+    expect(within(body).queryAllByText('Iniciar sesión')).not.toContain(within(header).getByText('Iniciar sesión'));
+  });
+
+  it('#167 R6: el saludo pone a Pingo junto a su burbuja', async () => {
+    await renderLogin();
+    const greeting = screen.getByTestId('login-greeting');
+    expect(greeting.props.className).toBe('flex-row items-center gap-3');
+    expect(greeting.children.map((child) => typeof child === 'string' ? child : child.props.testID))
+      .toEqual(['login-pingo', 'login-bubble']);
+  });
+
+  it('#167 R6: Pingo saluda con la pose de la mano', async () => {
+    await renderLogin();
+    const pingo = screen.getByTestId('login-pingo');
+    expect(pingo.props.source).toEqual([
+      expect.objectContaining({ testUri: expect.stringMatching(/pingo-wave\.webp$/) }),
+    ]);
+    expect(pingo.props.style).toEqual({ width: 88, height: 88, transform: [{ rotate: '-8deg' }] });
+    expect(pingo.props.accessibilityLabel).toBeUndefined();
+  });
+
+  it('#167 R6: la burbuja es una card secondary que ocupa el resto', async () => {
+    await renderLogin();
+    expect(screen.getByTestId('login-bubble').props.className.split(' ')).toEqual(
+      expect.arrayContaining(['rounded-card', 'bg-surface-secondary', 'flex-1', 'px-4', 'py-3']),
+    );
+  });
+
+  it('#167 R6: la burbuja dice el saludo en español', async () => {
+    await renderLogin();
+    const bubble = screen.getByTestId('login-bubble');
+    const text = screen.getByTestId('login-bubble-text');
+    expect(bubble.children).toEqual([text]);
+    expect(text.props.className).toBe('text-sm font-semibold text-foreground');
+    expect(text).toHaveTextContent('Qué bueno verte de nuevo.');
+  });
+
+  it('#167 R6: la burbuja dice el saludo en inglés', async () => {
+    await render(
+      <HeroUINativeProvider><LanguageProvider initial="en"><LoginRoute /></LanguageProvider></HeroUINativeProvider>,
+    );
+    expect(screen.getByTestId('login-bubble-text')).toHaveTextContent('Good to see you again.');
   });
 });

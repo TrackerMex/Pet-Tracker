@@ -13,6 +13,7 @@ export const R1_AUTH: UseRow[] = [
   { file: 'src/screens/login/index.tsx', key: 'login.signIn' },
   { file: 'src/screens/login/index.tsx', key: 'login.createAccount' },
   { file: 'src/screens/login/index.tsx', key: 'login.forgotPassword' },
+  { file: 'src/screens/login/index.tsx', key: 'login.pingoGreeting' }, // #167 R6
   { file: 'src/screens/forgot/index.tsx', key: 'forgot.invalidEmail' }, // #117 R7
   { file: 'src/screens/forgot/index.tsx', key: 'forgot.tooManyAttempts' }, // #117 R7
   { file: 'src/screens/forgot/index.tsx', key: 'common.cannotReachServer' }, // #117 R7
