@@ -1888,3 +1888,89 @@ GUARDAS 92 y el mismo mensaje de dos `-m`.
 Paso 4: CIERRE, c26 y c27 del handoff original con todas las
 correcciones citadas arriba.
 ```
+
+## Reanudación 9: parada en el ALL de CIERRE (2026-10-12)
+
+> La Reanudación 8 llegó hasta c25 (`5d6be139`): G creado, las ocho sondas
+> con su rojo y el BASE de cierre en 475/475. El ALL de CIERRE dio
+> `1 failed, 98 passed, 99 total` y `26 failed, 2807 passed, 2833 total`.
+> Todos los fallos son de `src/screens/reminders/index.test.tsx`, que
+> tardó 90,457 s y lleva 4 `Exceeded timeout of 5000 ms`. El resto son
+> `Unable to find` de `findBy`. #168 no toca Reminders ni nada que
+> Reminders importe: el diff de `b082f6e5..HEAD` en mobile-pet-tracker/
+> son 9 ficheros, todos de Nutrición, Salud, Perfil y candados. El leader
+> corrió la suite sola en HEAD (`5d6be139`): `34 passed, 34 total` en
+> 8,2 s. Es carga de otros worktrees con jest a la vez, la misma de #171,
+> #167 y #170. Ni el código ni el handoff tienen nada que corregir.
+>
+> Después, Codex volvió a ejecutar el bloque de la Reanudación 8 y paró en
+> sus condiciones iniciales, porque c25 ya estaba hecho. También era
+> correcto.
+>
+> Esta reanudación repite el ALL con dos cambios. Antes de lanzarlo espera
+> a que no haya ningún jest corriendo en la máquina, de ningún worktree, y
+> lo lanza con `--testTimeout=30000`. Después sigue el CIERRE desde el
+> typecheck. El total esperado no cambia. H0 sigue siendo `b082f6e5`. Este
+> commit solo toca este fichero, que está fuera de la lista cerrada.
+
+Pegar en Codex CLI:
+
+```
+Worktree: /home/claude/sites/Pet-Tracker-wt-168   <- PRIMERA LINEA. Trabaja AQUI y en ningun otro sitio
+Reanudacion 9 de #168 tras la parada en el ALL de CIERRE. NO repitas la
+Reanudacion 8: c25 ya esta hecho. Ejecuta y pega en
+progress/impl_mobile-tab-headers-canvas.md, bajo una seccion nueva
+«## Reanudacion 9»:
+  cd /home/claude/sites/Pet-Tracker-wt-168 && pwd
+  git branch --show-current
+  git rev-parse --short HEAD~1
+  git log --oneline b082f6e5..HEAD | wc -l
+  git log --oneline 872f580d..HEAD
+  git status --short
+PARA si:
+- la branch no es feature/168-mobile-tab-headers-canvas;
+- HEAD~1 no es 5d6be139 (tu c25);
+- el recuento no es 37;
+- el segundo log no son exactamente dos commits: el del leader que
+  anade esta reanudacion y 5d6be139;
+- `git status --short` no es exactamente esta linea:
+  ?? progress/impl_mobile-tab-headers-canvas.md
+H0 sigue siendo b082f6e5. Siguen en vigor todas las reglas del handoff
+original, las correcciones del paso 5 de la Reanudacion 2, el
+`<LINT n>` con reintento de la Reanudacion 4, la regla de medidas de la
+Reanudacion 6, las dos correcciones del paso 5 de la Reanudacion 7
+(fila R8 con c17 + c17b; 30 commits en total y 28 en A-M) y la regla
+de error de invocacion ampliada de la Reanudacion 8.
+
+Anclas, desde mobile-pet-tracker/
+(`cd /home/claude/sites/Pet-Tracker-wt-168/mobile-pet-tracker && pwd`):
+  test -f src/__tests__/tab-headers-canvas.test.ts; echo $?   -> 0
+  git diff --name-only HEAD -- . ../docs ../specs | wc -l   -> 0
+  git diff --cached --name-only | wc -l   -> 0
+  git ls-files --others --exclude-standard -- . ../docs ../specs | wc -l   -> 0
+  git diff --name-only b082f6e5 HEAD -- . | wc -l   -> 9
+  git diff --name-only b082f6e5 HEAD -- . | grep -c reminders   -> 0
+Si alguna no da su cifra, PARA.
+
+Paso 1, espera a que no corra ningun jest en la maquina. Desde
+mobile-pet-tracker/, como comando PROPIO (no lo encadenes con el jest
+del paso 2: si van en la misma linea, pgrep se ve a si mismo):
+  for i in $(seq 1 45); do pgrep -f 'node_modules/(\.bin/jest|jest-worker)' > /dev/null || break; sleep 60; done; pgrep -af 'node_modules/(\.bin/jest|jest-worker)'; pgrep -af '[i]nit\.sh'; echo "fin-espera"
+    -> solo la linea `fin-espera`
+Si sale algun proceso tras los 45 minutos, PARA y copia la salida.
+
+Paso 2, el ALL de CIERRE, desde mobile-pet-tracker/, sin pipe y sin
+lanzar nada mas mientras corre:
+  FORCE_COLOR=0 bunx jest --testTimeout=30000 > /tmp/168-all.txt 2>&1; echo "exit=$?"
+    -> exit=0, `Test Suites: 99 passed, 99 total` y
+       `Tests:       2833 passed, 2833 total`
+Copia las dos lineas. Si no da eso, copia los `●` (sin los
+`  ● Console`) y la linea `FAIL` de cada suite roja; mide cada suite roja
+sola con `FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath <ruta>`,
+copia su linea `Tests:` y PARA. No repitas el ALL.
+
+Paso 3: el resto del CIERRE del handoff original desde
+`bun run typecheck` (el BASE de cierre ya paso en la Reanudacion 8 con
+475/475: no lo repitas), y despues traceability, c26 y c27, con todas las
+correcciones citadas arriba.
+```
