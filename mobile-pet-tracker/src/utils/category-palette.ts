@@ -53,3 +53,16 @@ const DOCUMENT_TYPE_SLOTS: Record<string, CategorySlot> = {
 export function documentCategory(type: string): CategorySlot {
   return DOCUMENT_TYPE_SLOTS[type.trim().toLowerCase()] ?? 'neutral';
 }
+
+/**
+ * #171 R6: el relleno del confeti son las tintas fuertes de los cinco huecos
+ * de color. Viven aquí porque este es el único módulo que nombra clases de
+ * categoría (#64 R9).
+ */
+export const CONFETTI_FILLS = [
+  'bg-category-amber-strong',
+  'bg-category-violet-strong',
+  'bg-category-blue-strong',
+  'bg-category-rose-strong',
+  'bg-category-green-strong',
+] as const;

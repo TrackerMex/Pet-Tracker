@@ -1,8 +1,12 @@
+import { useEffect } from 'react';
 import { Image } from 'expo-image';
 import { Button } from 'heroui-native';
-import { Modal, Text, View } from 'react-native';
-import Animated from 'react-native-reanimated';
+import { Modal, Text, View, useWindowDimensions } from 'react-native';
+import Animated, { interpolate, useAnimatedStyle, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+import { MOTION_CONFETTI_FALL_TIMING, MOTION_CONFETTI_MIN_MS, MOTION_CONFETTI_SPREAD_MS } from '../theme/motion';
+import { CONFETTI_FILLS } from '../utils/category-palette';
 
 type CelebrationProps = {
   testID: string;
@@ -15,6 +19,7 @@ type CelebrationProps = {
 
 export function Celebration({ testID, title, body, details, primary, secondary }: CelebrationProps) {
   const insets = useSafeAreaInsets();
+  const height = useWindowDimensions().height;
 
   return (
     <Modal
@@ -36,7 +41,11 @@ export function Celebration({ testID, title, body, details, primary, secondary }
           pointerEvents="none"
           importantForAccessibility="no-hide-descendants"
           accessibilityElementsHidden
-        />
+        >
+          {Array.from({ length: CONFETTI_COUNT }, (_, index) => (
+            <ConfettiPiece key={index} testID={`${testID}-confetti-${index}`} index={index} height={height} />
+          ))}
+        </View>
         <View testID={`${testID}-hero`} style={{ width: 200, height: 200 }}>
           <Animated.View testID={`${testID}-pingo`} style={{ width: 200, height: 200 }}>
             <Image
@@ -80,5 +89,38 @@ export function Celebration({ testID, title, body, details, primary, secondary }
         </View>
       </View>
     </Modal>
+  );
+}
+
+const CONFETTI_COUNT = 24;
+const COLORS = ['bg-accent', ...CONFETTI_FILLS];
+const SHAPES = ['h-1.5 w-2 rounded-full', 'h-3.5 w-2.5', 'h-4 w-3'];
+
+function ConfettiPiece({ testID, index, height }: { testID: string; index: number; height: number }) {
+  const progress = useSharedValue(0);
+  const left = `${(index * 41 + 7) % 100}%` as const;
+  const pieceStyle = useAnimatedStyle(() => {
+    const p = progress.get();
+    return {
+      position: 'absolute', top: 0, left,
+      opacity: interpolate(p, [0, 0.1, 1], [0, 1, 0]),
+      transform: [{ translateY: -40 + p * (height + 80) }, { rotate: `${p * 540}deg` }],
+    };
+  });
+
+  useEffect(() => {
+    progress.set(withDelay(
+      (index * 53) % MOTION_CONFETTI_SPREAD_MS,
+      withTiming(1, {
+        ...MOTION_CONFETTI_FALL_TIMING,
+        duration: MOTION_CONFETTI_MIN_MS + (index * 137) % MOTION_CONFETTI_SPREAD_MS,
+      }),
+    ));
+  }, [index, progress]);
+
+  return (
+    <Animated.View testID={testID} style={pieceStyle}>
+      <View className={`${SHAPES[Math.floor(index / 8)]} ${COLORS[index % 6]}`} />
+    </Animated.View>
   );
 }

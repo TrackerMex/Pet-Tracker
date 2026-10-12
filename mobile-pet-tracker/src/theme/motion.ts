@@ -38,3 +38,10 @@ export const MOTION_BLINK_TIMING = {
   duration: 0,
   reduceMotion: ReduceMotion.System,
 };
+
+// #171 R6
+export const MOTION_CONFETTI_FALL_TIMING = { easing: Easing.bezier(0.2, 0.6, 0.4, 1), reduceMotion: ReduceMotion.System };
+// #171 R6
+export const MOTION_CONFETTI_MIN_MS = 2400;
+// #171 R6
+export const MOTION_CONFETTI_SPREAD_MS = 1200;
