@@ -5,7 +5,7 @@ import { Button, Skeleton } from 'heroui-native';
 import { useCallback, useState } from 'react';
 import { Linking, Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ChevronRight } from 'reicon-react-native';
+import { Bell, ChevronRight, FileText, Map as MapIcon, Wifi } from 'reicon-react-native';
 import { useUniwind } from 'uniwind';
 
 import {
@@ -92,7 +92,7 @@ export function ProfileScreen() {
   const { theme } = useUniwind();
   const switchTheme = useThemeTransition();
   const insets = useSafeAreaInsets();
-  const [muted] = useThemeColors(['muted']);
+  const [muted, blue, green, amber, violet] = useThemeColors(['muted', 'category-blue-strong', 'category-green-strong', 'category-amber-strong', 'category-violet-strong']);
   const [photoUploading, setPhotoUploading] = useState(false);
   const [photoError, setPhotoError] = useState<string | null>(null);
   const notificationsBlocked = useNotificationsBlocked();
@@ -309,11 +309,20 @@ export function ProfileScreen() {
             accessibilityRole="button"
             testID="documents-link"
             hitSlop={TOUCH_SLOP}
-            className="flex-row items-center justify-between rounded-xl bg-default px-3 py-2"
+            className="flex-row items-center gap-3 rounded-xl bg-default px-3 py-2"
             style={CONTINUOUS_CORNER}
             onPress={() => router.push(`/pets/${pet.id}/docs` as Href)}
           >
-            <Text className="font-semibold text-foreground">
+            <View
+              testID="documents-link-tile"
+              className={`size-9 items-center justify-center rounded-xl ${CATEGORY_SLOTS['blue'].surface}`}
+              style={CONTINUOUS_CORNER}
+              accessibilityElementsHidden
+              importantForAccessibility="no-hide-descendants"
+            >
+              <FileText size={18} color={blue} />
+            </View>
+            <Text className="flex-1 font-semibold text-foreground">
               {t('profile.documents')}
             </Text>
             <ChevronRight size={20} color={muted} />
@@ -322,11 +331,20 @@ export function ProfileScreen() {
           <Pressable
             accessibilityRole="button"
             testID="pairing-link"
-            className="flex-row items-center justify-between rounded-xl bg-default px-3 py-2"
+            className="flex-row items-center gap-3 rounded-xl bg-default px-3 py-2"
             style={CONTINUOUS_CORNER}
             onPress={() => router.push('/pairing' as Href)}
           >
-            <Text className="font-semibold text-foreground">
+            <View
+              testID="pairing-link-tile"
+              className={`size-9 items-center justify-center rounded-xl ${CATEGORY_SLOTS['green'].surface}`}
+              style={CONTINUOUS_CORNER}
+              accessibilityElementsHidden
+              importantForAccessibility="no-hide-descendants"
+            >
+              <Wifi size={18} color={green} />
+            </View>
+            <Text className="flex-1 font-semibold text-foreground">
               {t('profile.gpsSettings')}
             </Text>
             <ChevronRight size={20} color={muted} />
@@ -336,11 +354,20 @@ export function ProfileScreen() {
             accessibilityRole="button"
             testID="geofences-link"
             hitSlop={TOUCH_SLOP}
-            className="flex-row items-center justify-between rounded-xl bg-default px-3 py-2"
+            className="flex-row items-center gap-3 rounded-xl bg-default px-3 py-2"
             style={CONTINUOUS_CORNER}
             onPress={() => router.push(`/pets/${pet.id}/geofences` as Href)}
           >
-            <Text className="font-semibold text-foreground">
+            <View
+              testID="geofences-link-tile"
+              className={`size-9 items-center justify-center rounded-xl ${CATEGORY_SLOTS['amber'].surface}`}
+              style={CONTINUOUS_CORNER}
+              accessibilityElementsHidden
+              importantForAccessibility="no-hide-descendants"
+            >
+              <MapIcon size={18} color={amber} />
+            </View>
+            <Text className="flex-1 font-semibold text-foreground">
               {t('geofences.title')}
             </Text>
             <ChevronRight size={20} color={muted} />
@@ -352,11 +379,20 @@ export function ProfileScreen() {
         accessibilityRole="button"
         testID="reminders-link"
         hitSlop={TOUCH_SLOP}
-        className="flex-row items-center justify-between rounded-xl bg-default px-3 py-2"
+        className="flex-row items-center gap-3 rounded-xl bg-default px-3 py-2"
         style={CONTINUOUS_CORNER}
         onPress={() => router.push('/reminders' as Href)}
       >
-        <Text className="font-semibold text-foreground">
+        <View
+          testID="reminders-link-tile"
+          className={`size-9 items-center justify-center rounded-xl ${CATEGORY_SLOTS['violet'].surface}`}
+          style={CONTINUOUS_CORNER}
+          accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants"
+        >
+          <Bell size={18} color={violet} />
+        </View>
+        <Text className="flex-1 font-semibold text-foreground">
           {t('profile.reminders')}
         </Text>
         <ChevronRight size={20} color={muted} />
