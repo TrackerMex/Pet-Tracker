@@ -99,7 +99,7 @@ describe('#62 R1: la escala de radios está declarada y el botón primario tiene
       readFileSync(path, 'utf8').match(/rounded-xl bg-accent(?=[\s'"`])/g) ?? [],
     );
 
-    expect(primaryRadius).toHaveLength(13 + 1 + 1 + 1 + 1 + 1 + 1 + 1); // #146 R8, #146 R9; #118 R7; #155 R3 // #158 R3: docs-upload; // #158 R5: docs-upload-submit // #171 R14: celebration
+    expect(primaryRadius).toHaveLength(13 + 1 + 1 + 1 + 1 + 1 + 1 + 1 - 1); // #171 R3: ready-map // #146 R8, #146 R9; #118 R7; #155 R3 // #158 R3: docs-upload; // #158 R5: docs-upload-submit // #171 R14: celebration
     expect(filesMatching(/rounded-2xl bg-accent(?=[\s'"`])/)).toEqual([]);
   });
 });
@@ -264,7 +264,7 @@ describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () 
     [join('screens', 'reminders', 'index.tsx'), 4],
     [join('screens', 'add-pet', 'index.tsx'), 5],
     [join('screens', 'add-reminder', 'index.tsx'), 3],
-    [join('screens', 'pairing', 'index.tsx'), 2],
+    [join('screens', 'pairing', 'index.tsx'), 1], // #171 R3: ready-done
   ] as const;
 
   it('declara las dos constantes nativas compartidas', () => {
@@ -311,7 +311,7 @@ describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () 
     // #138 R3: minus one more, collar-pair-link's corner travels in its own.
     expect(
       directUses.reduce((total, [, count]) => total + count, 2),
-    ).toBe(33 + 1 + 1 - 1 - 1 + 1); // #41 R9: geofences-link
+    ).toBe(33 + 1 + 1 - 1 - 1 + 1 - 1); // #41 R9: geofences-link, #171 R3: ready-done
   });
 });
 
@@ -395,9 +395,9 @@ describe('#98 R10: los candados que esta feature no mueve', () => {
     // With no match, match() returns null: the ?? [] keeps the count readable.
     expect(home.match(/style=\{CONTINUOUS_CORNER\}/g) ?? []).toHaveLength(0);
     expect(food.match(/style=\{CONTINUOUS_CORNER\}/g)).toHaveLength(2);
-    expect(count(/style=\{CONTINUOUS_CORNER\}/g)).toBe(31 + 1); // #41 R9: geofences-link
-    expect(count(/rounded-xl bg-accent(?=[\s'"`])/g)).toBe(13 + 1 + 1 + 1 + 1 + 1 + 1 + 1); // #146 R8, #146 R9; #118 R7; #155 R3 // #158 R3: docs-upload; // #158 R5: docs-upload-submit // #171 R14
-    expect(count(/bg-accent-soft/g)).toBe(16 + 2 + 1); // #147 R4: meal-time-edit y add-meal-time-button; #105 R11
+    expect(count(/style=\{CONTINUOUS_CORNER\}/g)).toBe(31 + 1 - 1); // #171 R3: ready-done // #41 R9: geofences-link
+    expect(count(/rounded-xl bg-accent(?=[\s'"`])/g)).toBe(13 + 1 + 1 + 1 + 1 + 1 + 1 + 1 - 1); // #171 R3 // #146 R8, #146 R9; #118 R7; #155 R3 // #158 R3: docs-upload; // #158 R5: docs-upload-submit // #171 R14
+    expect(count(/bg-accent-soft/g)).toBe(16 + 2 + 1 - 1); // #171 R3 // #147 R4: meal-time-edit y add-meal-time-button; #105 R11
     expect(home.match(/text-accent-strong\b/g)).toHaveLength(2);
     expect(food.match(/text-accent-strong\b/g)).toHaveLength(1);
     expect(filesMatching(/\brounded-(?:2xl|lg|md|sm)\b/)).toEqual([]);
@@ -469,7 +469,7 @@ describe('#64 R9: el color categórico solo se nombra en el módulo de paleta', 
     const reminders = readSource(join('screens', 'reminders', 'index.tsx'));
     const docs = readSource(join('screens', 'docs', 'index.tsx'));
 
-    expect(accentSoftCount).toBe(16 + 2 + 1); // #147 R4, #105 R11
+    expect(accentSoftCount).toBe(16 + 2 + 1 - 1); // #171 R3 // #147 R4, #105 R11
     expect(reminders.match(/bg-accent-soft/g)).toHaveLength(1);
     expect(docs.match(/bg-accent-soft/g)).toBeNull();
   });
@@ -554,7 +554,7 @@ describe('#166 R2: todo primario sólido lleva el labio detrás de bg-accent', (
     [join('screens', 'geofences', 'index.tsx')]: 1,
     [join('screens', 'home', 'index.tsx')]: 1,
     [join('screens', 'meal-schedule', 'index.tsx')]: 1,
-    [join('screens', 'pairing', 'index.tsx')]: 2,
+    [join('screens', 'pairing', 'index.tsx')]: 1, // #171 R3: ready-map
     [join('screens', 'profile', 'index.tsx')]: 1,
     [join('screens', 'reminders', 'index.tsx')]: 1,
     [join('screens', 'reset-password', 'index.tsx')]: 1,
@@ -580,8 +580,8 @@ describe('#166 R2: todo primario sólido lleva el labio detrás de bg-accent', (
       0,
     );
 
-    expect(count(/\bborder-b-4\b/g)).toBe(19 + 1); // #171 R14
-    expect(count(/border-black\/25/g)).toBe(19 + 1); // #171 R14
+    expect(count(/\bborder-b-4\b/g)).toBe(19 + 1 - 1); // #171 R3: ready-map // #171 R14
+    expect(count(/border-black\/25/g)).toBe(19 + 1 - 1); // #171 R3: ready-map // #171 R14
   });
 });
 
