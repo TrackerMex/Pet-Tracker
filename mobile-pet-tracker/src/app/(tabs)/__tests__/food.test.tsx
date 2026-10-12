@@ -1281,7 +1281,7 @@ describe('#155 R4: Comida sin mascotas presenta a Pingo', () => {
     await screen.findByTestId('food-empty-pose');
     const slot = screen.getByTestId('food-empty');
     expect(slot.parent?.parent?.props.testID).toBe('screen-food');
-    expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['Text', 'food-empty']);
+    expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['food-title', 'food-empty']);
   });
 
   it('lleva a añadir mascota', async () => {
@@ -1322,5 +1322,36 @@ describe('#155 R9: sin plan de comidas, Pingo enseña el cuenco', () => {
     await renderFood();
     await screen.findByTestId('food-plan-empty-title');
     expect(screen.queryByTestId('food-plan-empty-action')).toBeNull();
+  });
+});
+
+function setupFood168() {
+  mockListPets.mockReset();
+  mockGetNutritionPlan.mockReset();
+  mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+  mockGetNutritionPlan.mockResolvedValue({ kind: 'ok', plan: makePlan() });
+}
+
+const FOOD_BRANCHES_168 = [
+  { name: 'food-loading', pets: pending<PetsState>(), plan: pending<NutritionPlanState>(), branch: 'food-loading' },
+  { name: 'food-error', pets: { kind: 'error' } as PetsState, plan: pending<NutritionPlanState>(), branch: 'food-error' },
+  { name: 'food-empty', pets: { kind: 'ok', pets: [] } as PetsState, plan: pending<NutritionPlanState>(), branch: 'food-empty' },
+  { name: 'con plan', pets: { kind: 'ok', pets: [makePet()] } as PetsState, plan: { kind: 'ok', plan: makePlan() } as NutritionPlanState, branch: 'food-plan-card' },
+  { name: 'sin plan', pets: { kind: 'ok', pets: [makePet()] } as PetsState, plan: { kind: 'not-found' } as NutritionPlanState, branch: 'food-plan-empty' },
+  { name: 'error de plan', pets: { kind: 'ok', pets: [makePet()] } as PetsState, plan: { kind: 'error' } as NutritionPlanState, branch: 'food-plan-error' },
+];
+
+describe('#168 R1: Nutrición pinta el título grande en todas sus ramas', () => {
+  beforeEach(setupFood168);
+
+  it.each(FOOD_BRANCHES_168)('pinta el título grande ($name)', async ({ pets, plan, branch }) => {
+    mockListPets.mockImplementation(async () => pets);
+    mockGetNutritionPlan.mockImplementation(async () => plan);
+    await renderFood();
+    await screen.findByTestId(branch);
+    const title = screen.getByTestId('food-title');
+    expect(title.props.className).toBe('text-3xl font-black tracking-tight text-foreground');
+    expect(title).toHaveTextContent('Nutrición');
+    expect(title.parent!.children[0]).toBe(title);
   });
 });
