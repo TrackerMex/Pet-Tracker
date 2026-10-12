@@ -1,6 +1,6 @@
 ---
 feature: "mobile-celebrations-and-living-empty"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec, mobile, ui, motion]
 ---
 
@@ -389,6 +389,6 @@ dice otra cosa en el gate.
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
-- [ ] Enmienda a la carta de [[design]] §8 aprobada por humano (R15)
+- [x] Aprobado por humano (fecha: 2026-10-12) ← gate obligatorio antes de implementar
+- [x] Enmienda a la carta de [[design]] §8 aprobada por humano (R15)
 - [ ] R16: smoke en dev build de Android completado por humano (fecha: ____)
