@@ -116,7 +116,7 @@ export function AlertDetailScreen({ alertId }: { alertId: string }) {
   return (
     <ScrollView
       testID="screen-alert-detail"
-      className="flex-1 bg-background"
+      className={position ? 'flex-1' : 'flex-1 bg-background'}
       contentInsetAdjustmentBehavior="automatic"
       contentContainerStyle={{ padding: 24, gap: 16, paddingBottom: insets.bottom + 24 }}
     >
