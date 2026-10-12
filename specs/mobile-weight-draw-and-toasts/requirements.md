@@ -515,4 +515,4 @@ eslint, con el texto literal de tasks.md:
 
 ### Aprobación de la Enmienda E1
 
-- [ ] Enmienda E1 aprobada por humano (fecha: ____, vía Notion) ← gate obligatorio antes de la Reanudación 5 de Codex
+- [x] Enmienda E1 aprobada por humano (fecha: 2026-10-12, vía Notion) ← gate obligatorio antes de la Reanudación 5 de Codex
