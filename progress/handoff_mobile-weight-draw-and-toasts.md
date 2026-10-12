@@ -1142,3 +1142,120 @@ Todo lo demas, igual que en el bloque principal: REGLAS CRITICAS, lista
 cerrada de 14, nada de ./init.sh, push ni PR, y lo que debe contener el
 impl al terminar.
 ```
+
+---
+
+## Reanudación 2 — tras la parada de c12 (TS2769 en el doble de reicon)
+
+> Codex paró bien en c12. El rojo salió como se esperaba
+> (`4 failed, 33 passed, 37 total`, los cuatro por consulta), pero el
+> typecheck falló en `src/screens/weight-log/index.test.tsx(71,38)` con
+> TS2769: `{ color }` no cabe en `StyleProp<ViewStyle>`. El defecto es de la
+> spec, no de Codex. La tabla de dobles de `tasks.md` prescribía los iconos
+> de reicon como `View` con `style={{ color }}`, y el leader no pasó ese
+> doble por el typecheck. Codex lo copió al pie de la letra y paró sin
+> tocarlo, como debía.
+>
+> Enmienda en `specs/mobile-weight-draw-and-toasts/tasks.md` (tabla de
+> dobles, fila de `reicon-react-native`): los iconos pasan a ser `Text` de
+> `react-native`, porque `TextStyle` sí admite `color`. Además son una
+> `function MockIcon` con nombre, porque una flecha anónima rompe
+> `react/display-name` (lo destapó el eslint del leader en la misma
+> medida). Las aserciones no cambian: `props.style.color` y `props.size`
+> se leen igual en un `Text`, y un `Text` vacío no añade texto a
+> `toHaveTextContent`.
+>
+> El leader lo midió el 2026-10-12 en una copia fuera del árbol, con el
+> fichero sin commitear de Codex más este cambio: `tsc --noEmit` 0,
+> `eslint` del fichero 0, y el rojo igual (`4 failed, 33 passed, 37 total`,
+> los cuatro por `Unable to find an element with testID:
+> weight-row-w-{up,down,flat,none}-tone`). Una sonda aparte confirmó que
+> `Check` doblado así, con `size={16} color="green"`, da
+> `props.style.color === 'green'` y `props.size === 16`, que es lo que asertan
+> T9 y T10.
+>
+> c1 a c11 valen tal cual. H0 sigue siendo `fc384b44`. Este commit del
+> leader solo toca `progress/handoff_mobile-weight-draw-and-toasts.md`,
+> `progress/current.md` y `specs/mobile-weight-draw-and-toasts/tasks.md`,
+> que la lista cerrada ya excluye. El cambio sin commitear de Codex en
+> `src/screens/weight-log/index.test.tsx` sigue en el árbol, intacto.
+
+Pegar en Codex CLI:
+
+```
+Worktree: /home/claude/sites/Pet-Tracker-wt-169   <- PRIMERA LINEA. Trabaja AQUI y en ningun otro sitio
+Reanudas #169 mobile-weight-draw-and-toasts tras tu parada en c12. Relee
+progress/handoff_mobile-weight-draw-and-toasts.md entero: el bloque
+principal sigue mandando, con los cambios de la Reanudacion 1 (siguen
+vigentes: lint con salida vacia y un reintento por SIGKILL) y los de esta
+Reanudacion 2 (al final del fichero). Relee tambien la fila de
+`reicon-react-native` de la tabla de dobles de
+specs/mobile-weight-draw-and-toasts/tasks.md, que esta enmendada. H0 sigue
+siendo fc384b44.
+
+== ARRANQUE ==
+cd /home/claude/sites/Pet-Tracker-wt-169 && pwd
+Pega en tu impl, bajo un titulo nuevo `## Reanudacion 2` al FINAL del
+fichero (no borres ni edites nada de lo que ya escribiste, las dos PARADAS
+incluidas), las salidas de:
+  git branch --show-current          -> feature/169-mobile-weight-draw-and-toasts
+  git rev-parse --short HEAD         -> el commit del leader que anade esta Reanudacion 2
+  git log --oneline fc384b44..HEAD   -> tus 11 commits (98db0006 a 9c9c9382), el del leader e4903ae1 entre c7 y c8, y encima el nuevo del leader
+  git diff --cached --name-only      -> vacio
+  git status --short                 -> SOLO estas dos lineas:
+                                         ` M mobile-pet-tracker/src/screens/weight-log/index.test.tsx`
+                                         `?? progress/impl_mobile-weight-draw-and-toasts.md`
+PARA si algo de esto no sale asi. No repitas las anclas, ni BASE, ni ALL de
+la base, ni S4a/S4b.
+
+== QUE CAMBIA ==
+1. En src/screens/weight-log/index.test.tsx, que tienes SIN commitear,
+   cambias SOLO el doble de `reicon-react-native`. Nada mas del fichero se
+   toca: ni el describe de R8, ni el doble de use-theme-colors, ni
+   prepareWeightLogTests, ni el doble de `expo-router`, que sigue con su
+   `View`.
+   Donde ahora pone
+     const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+     const icon = (testID: string) => ({ size, color }: { size?: number; color?: string }) => {
+       const props = { testID, size, style: { color } };
+       return React.createElement(View, props);
+     };
+   pon, con la misma sangria de dos espacios dentro del factory de jest.mock,
+     const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
+     const icon = (testID: string) =>
+       function MockIcon({ size, color }: { size?: number; color?: string }) {
+         const props = { testID, size, style: { color } };
+         return React.createElement(Text, props);
+       };
+   Comprueba el cambio desde mobile-pet-tracker/ con estas anclas, y PARA
+   si alguna no da su numero:
+     grep -cF "const { Text } = jest.requireActual<typeof import('react-native')>('react-native');" src/screens/weight-log/index.test.tsx      -> 1
+     grep -cF "function MockIcon({ size, color }: { size?: number; color?: string }) {" src/screens/weight-log/index.test.tsx                 -> 1
+     grep -cF "return React.createElement(Text, props);" src/screens/weight-log/index.test.tsx                                                 -> 1
+     grep -cF "return React.createElement(View, props);" src/screens/weight-log/index.test.tsx                                                 -> 1   (el de expo-router)
+     grep -cF "({ size, color }: { size?: number; color?: string }) => {" src/screens/weight-log/index.test.tsx                               -> 0
+   Pegalas en el impl con su salida.
+2. Nada mas cambia. Los dobles de T9 y T10 son este mismo: sus aserciones
+   (`style.color` y `size`) no cambian.
+
+== QUE HACES ==
+1. c12 ENTERA desde el principio, como dice el bloque principal, con el
+   lint de la Reanudacion 1:
+     ... && test ! -e .expo/types/router.d.ts && bun run typecheck \
+       && bunx expo lint --no-cache > /tmp/169-lint.txt 2>&1 && test ! -s /tmp/169-lint.txt \
+       && git add src/screens/weight-log/index.test.tsx ...
+   Vuelve a medir el rojo: debe salir otra vez exit=1 y
+   `Tests:       4 failed, 33 passed, 37 total`, los cuatro por consulta
+   (`Unable to find an element with testID: weight-row-w-{up,down,flat,none}-tone`).
+   Si sale otra cosa, PARA.
+2. c13 a c25, las cadenas del bloque principal con el lint de la
+   Reanudacion 1.
+3. El CIERRE, c26 y c27, como dice el bloque principal, con la medida de
+   lint de la Reanudacion 1.
+La lista cerrada se mide contra fc384b44 y ya excluye los tres ficheros
+que toca el leader.
+
+Todo lo demas, igual que en el bloque principal: REGLAS CRITICAS, lista
+cerrada de 14, nada de ./init.sh, push ni PR, y lo que debe contener el
+impl al terminar.
+```

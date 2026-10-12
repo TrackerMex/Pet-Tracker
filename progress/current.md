@@ -53,6 +53,20 @@
   - Reanudación 1 en el handoff: el lint de las cadenas exige salida vacía
     (`> /tmp/169-lint.txt 2>&1 && test ! -s`) y se permite un reintento
     entero ante SIGKILL. Sigue en S4a/S4b → c8.
+- Parada 2 (c12, 2026-10-12): el rojo de T7 salió bien (`4 failed, 33
+  passed, 37 total`, por consulta), pero el typecheck falló con TS2769 en el
+  doble de reicon: `style={{ color }}` no cabe en `ViewStyle`. Era un
+  defecto de la spec, porque la tabla de dobles de `tasks.md` prescribía
+  `View` y el leader no la pasó por tsc. c8 a c11 quedaron commiteados con
+  typecheck, lint y log vacíos en orden.
+  - Verificación del leader fuera del árbol (copia con el test sin
+    commitear de Codex): con `Text` y una `function MockIcon` con nombre,
+    `tsc` da 0, eslint da 0 (una flecha anónima rompía `react/display-name`)
+    y el rojo sale igual. Una sonda aparte confirmó `props.style.color` y
+    `props.size` en un `Text`.
+  - Enmendada la fila de `reicon-react-native` en `tasks.md`.
+    Reanudación 2 en el handoff: cambiar solo el doble, con anclas
+    `grep -cF`, y repetir c12 entera. Sigue en c13.
 - Choques conocidos al mergear main, avisados por Frontend:
   - #167 cambia la misma línea `- 1, // #159 R2` de language-provider.
     Resolución: `- 1 // #159 R2`, `+ 1 // #167 R5`, `+ 2, // #169 R9`.
