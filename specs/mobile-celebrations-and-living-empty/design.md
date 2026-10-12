@@ -344,7 +344,7 @@ Cada ancla se midió en 89fe2009 y se ejecuta desde `mobile-pet-tracker/`.
 | CONTINUOUS_CORNER de Vincular | `"[join('screens', 'pairing', 'index.tsx'), 2]," src/__tests__/consistency-classnames.test.ts` → `1` | `2` → `1` |
 | bg-accent-soft (recuento 1) | `"expect(count(/bg-accent-soft/g)).toBe(16 + 2 + 1);" src/__tests__/consistency-classnames.test.ts` → `1` | `16 + 2 + 1 - 1`, con `// #171 R3` |
 | bg-accent-soft (recuento 2) | `"expect(accentSoftCount).toBe(16 + 2 + 1);" src/__tests__/consistency-classnames.test.ts` → `1` | `16 + 2 + 1 - 1`, con `// #171 R3` |
-| Catálogo, longitud | `-- "- 1, // #159 R2" src/providers/__tests__/language-provider.test.tsx` → `1` | Se inserta la línea `+ 4 // #171 R12` justo antes |
+| Catálogo, longitud | `-- "- 1, // #159 R2" src/providers/__tests__/language-provider.test.tsx` → `1` | Se inserta la línea `+ 4 // #171 R12` justo antes. #167 R5.3 reescribe esta línea; si #167 mergea antes, el ancla se re-mide en §9.3 paso 6 |
 | `R9_ADD_PET` | `"export const R9_ADD_PET: UseRow[] = [" src/__tests__/ui-copy-table.ts` → `1` | +4 filas (§6) |
 | `SCREEN_FILES` | — | +0 (no hay ruta nueva) |
 | motion, exports | `"it('no exporta nada más'" src/theme/__tests__/motion.test.ts` → `1` | +5 nombres (§4.4) |
@@ -378,7 +378,7 @@ Se añade al final de `docs/ui-guidelines.md`, tal cual:
 ```markdown
 ## Enmienda #171 — confeti de celebración
 
-§7 reserva los bucles para flotar y parpadear. El confeti de `Celebration`
+El punto 7 solo admite como bucles los «Bucles de reposo» de Pingo. El confeti de `Celebration`
 (`src/components/celebration.tsx`) no es un bucle: es **una sola pasada** de
 24 piezas que caen con `withTiming` (`MOTION_CONFETTI_FALL_TIMING`, entre
 `MOTION_CONFETTI_MIN_MS` y `MOTION_CONFETTI_MIN_MS + MOTION_CONFETTI_SPREAD_MS`
@@ -526,6 +526,24 @@ El leader:
    la fila «Bienvenida, poses» de §7 no cambian. El único candado de poses
    sigue siendo `src/screens/welcome/index.test.tsx`.
 
+6. Solapes con #167 (`feature/167-mobile-account-screens-pingo`, en gate a
+   2026-10-12). Si #167 está en `origin/main` al hacer el handoff:
+   - **§2.24:** #167 abre `### §2.24 — Añadidos por #167 — Pingo en las
+     pantallas de cuenta` justo antes de `## 3. La infraestructura`. La de
+     #171 pasa a `### §2.25 — Añadidos por #171 — Celebraciones`, después de
+     la de #167 y antes de `## 3. La infraestructura`. Reescribe R12.3, la
+     fila R12.3 de [[tasks]] T9 y su verde con el número nuevo.
+   - **Catálogo:** #167 R5.3 cambia `- 1, // #159 R2` por `- 1 // #159 R2` y
+     añade `+ 1, // #167 R5`. Re-mide el ancla de la fila «Catálogo,
+     longitud» de §7 contra la última línea de la expresión, y dónde entra
+     `+ 4 // #171 R12`.
+   - **Carta:** #167 sustituye la viñeta «Bucles de reposo» y añade su
+     `## Enmienda #167` al final. §8 ya no enumera los bucles y el candado
+     de T15 no exige ser la última sección, así que ninguno de los dos
+     cambia; solo hay que comprobar que el bloque de §8 sigue siendo cierto.
+   Si #167 mergea **después** que #171, le toca a #167 renumerar su §2.24 y
+   re-medir la línea del catálogo.
+
 R14 y sus tests (T14) quedan desbloqueados. Si al arrancar Codex
 `origin/main` ya no es d2b8b0ae, rige el paso 5 sobre las
 poses y las anclas de §7 y §9.2 se vuelven a ejecutar antes de T1: cualquier
@@ -541,8 +559,9 @@ poses y las anclas de §7 y §9.2 se vuelven a ejecutar antes de T1: cualquier
   cliente ya distingue con la lista de mascotas. Queda como (F).
 - **Lottie.** Dependencia nueva (`lottie-react-native`) y un asset que nadie
   ha diseñado. El confeti en Reanimated cabe en un fichero.
-- **Anillo «ping» del canvas.** Es un bucle continuo y §7 solo admite flotar
-  y parpadear.
+- **Anillo «ping» del canvas.** Es un bucle continuo y el punto 7 de la
+  carta solo admite los «Bucles de reposo» de Pingo; #167, que añade los
+  anillos a la bienvenida, exige enmienda propia para otra pantalla.
 - **Subida escalonada del texto.** Rompe los `toBeVisible()` de los tests de
   Vincular por la opacidad inicial 0. Basta el fundido del `Modal`.
 - **Confeti infinito como en el canvas.** Es una maqueta: la carta pide

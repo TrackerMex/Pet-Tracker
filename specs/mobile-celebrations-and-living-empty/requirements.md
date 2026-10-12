@@ -265,6 +265,10 @@ Cada requisito nombra en [[tasks]] el test que lo verifica. En los testIDs,
   `specs/mobile-ui-language/design.md`, después de §2.23 y antes de
   `## 3. La infraestructura`. Cada fila sigue el formato
   `| — | \`<clave>\` | \`<en>\` | \`<es>\` | ← añadida por #171 (R12) |`.
+  **El número de sección no se congela aquí**: #167 abre también una §2.24.
+  Si #167 está en `origin/main` al hacer el handoff, esta sección pasa a ser
+  la siguiente libre (§2.25), después de la de #167. El leader lo re-mide en
+  [[design]] §9.3 (paso 6).
   Además suma sus cuatro usos a `R9_ADD_PET` en
   `src/__tests__/ui-copy-table.ts`.
 
@@ -319,7 +323,8 @@ Cada requisito nombra en [[tasks]] el test que lo verifica. En los testIDs,
 
 - **R15.1** THE SYSTEM SHALL añadir al final de `docs/ui-guidelines.md` el
   texto literal de [[design]] §8 (`## Enmienda #171 — confeti de
-  celebración`). Su casilla va marcada solo si el humano marcó la casilla de
+  celebración`). El candado no exige que sea la última sección: otras
+  enmiendas (#167 añade la suya) pueden ir detrás. Su casilla va marcada solo si el humano marcó la casilla de
   enmienda de §Aprobación de esta spec.
 
 ### R16 — Smoke humano en dev build de Android
@@ -337,9 +342,11 @@ Clasificado viñeta a viñeta: (F) es feature futura y (D), delimitación.
 - (D) La copy de la celebración de Vincular no se reescribe a la voz B. Se
   reutiliza la aprobada: `pairing.trackerIsReady`, `pairing.readySubtitle`,
   `pairing.viewOnMap`, `pairing.done`, `pairing.model` y `pairing.esn`.
-- (D) No se construye el anillo «ping» del canvas, porque es un bucle
-  continuo y §7 de la carta solo admite flotar y parpadear como bucles. Por
-  la misma razón, Pingo no flota dentro de la celebración.
+- (D) No se construye el anillo «ping» del canvas en la celebración, porque
+  es un bucle continuo y el punto 7 de la carta solo admite como bucles los
+  «Bucles de reposo» de Pingo. #167 los amplía a los anillos de la
+  bienvenida, pero exige una enmienda propia para cualquier otra pantalla.
+  Por la misma razón, Pingo no flota dentro de la celebración.
 - (D) El texto de la celebración entra con el fundido nativo del `Modal`,
   sin la subida escalonada del canvas. Los tests de Vincular aseveran
   `toBeVisible()` sobre el título y el subtítulo, y una opacidad inicial 0

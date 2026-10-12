@@ -314,7 +314,7 @@ cualquier `grep -cF` que no dé `1` es **parada**.
   |---|---|
   | R12.1 las cuatro claves de [[design]] §6 tienen el literal exacto en `en` y en `es` | **por aserción** (`undefined`) |
   | R12.2 `addPet.celebrateTitle` casa con `/^¡.*!$/` en es y con `/!$/` en en (**un `it` por idioma**); las otras tres no contienen `!` ni `¡`; ninguna casa con `/\p{Extended_Pictographic}/u`; `addPet.celebrateBody` termina en `.` en los dos idiomas | **por aserción** |
-  | R12.3 `specs/mobile-ui-language/design.md` tiene la sección `### §2.24 — Añadidos por #171 — Celebraciones` después de §2.23 y antes de `## 3. La infraestructura`, con las cuatro filas literales | **por aserción** (`indexOf` vale `-1`) |
+  | R12.3 `specs/mobile-ui-language/design.md` tiene la sección `### §2.24 — Añadidos por #171 — Celebraciones` después de §2.23 y antes de `## 3. La infraestructura`, con las cuatro filas literales. Número re-medido en [[design]] §9.3 paso 6 (§2.25 si #167 mergea antes) | **por aserción** (`indexOf` vale `-1`) |
   | longitud del catálogo (`language-provider.test.tsx`) | **por aserción** (se inserta `+ 4 // #171 R12` antes de `- 1, // #159 R2`) |
   | `R9_ADD_PET` y `checkUses(ALL_USES)` | **por aserción** (filas nuevas sin uso en el código) |
 
@@ -428,10 +428,12 @@ suites ajenas sin enmienda.
 ## T15 — R15: enmienda a la carta
 
 - [ ] (1) Test rojo, en `celebration.test.tsx`:
-  `it('#171 R15: docs/ui-guidelines.md termina con la enmienda del confeti')`.
+  `it('#171 R15: docs/ui-guidelines.md declara la enmienda del confeti')`.
   Lee `../docs/ui-guidelines.md` desde `process.cwd()` y asevera que
-  contiene el bloque literal de [[design]] §8 una vez y que no hay otro
-  `## ` después de su encabezado. Rojo **por aserción**.
+  contiene el bloque literal de [[design]] §8 exactamente una vez y que su
+  encabezado va después de `## Checklist de autocrítica`. **No** asevera que
+  sea la última sección: #167 añade otra enmienda al final y, si mergea
+  después, lo pondría rojo. Rojo **por aserción**.
 - [ ] (2) Verde: pegar el texto de §8. La casilla se pega **desmarcada**. La
   marca el humano, y solo si marcó la casilla de enmienda de §Aprobación.
 - [ ] (3) Refactor: nada.
