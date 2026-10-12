@@ -665,3 +665,136 @@ Firmada en Notion: página https://app.notion.com/p/3f76115a9b27812d88b4ebbe0217
 (base *Specs*), `Estado del gate` = Aprobado, última edición
 2026-10-12T15:24:14Z, cuenta alexfdgf32@gmail.com. P1–P7 quedan cerradas con
 el valor por defecto de su requisito; P8, como dice su viñeta.
+
+---
+
+## Enmienda E1 — R6, R7 y R10: los candados que faltaban
+
+> Escrita el 2026-10-12 sobre la spec aprobada (firma `ed8158b6`), tras la
+> revisión **rechazada** (`progress/review_mobile-account-screens-pingo.md`,
+> sobre la punta de producción de Codex `108bd291`), por sus bloqueantes B1-B4.
+> No toca el texto de R1-R15 ni la firma original. **Solo tests**: la
+> producción de `108bd291` es correcta y queda idéntica. Su casilla va **sin
+> marcar**: el humano reabre el gate solo para esta enmienda.
+
+### Los hechos medidos
+
+El código cumple R6.2, R7.1, R7.3 y R10.3. Lo que falta es el candado: en
+cada caso el reviewer rompió la producción y la suite siguió verde.
+
+| Id | Requisito | Qué pide | Sonda del reviewer | Estado en `108bd291` |
+|---|---|---|---|---|
+| B1 | R6.2 | `login-error`, cuando lo hay, va entre `login-password` y `login-submit` | A: el bloque del error pasa detrás de `link-forgot` | **verde** 20/20 |
+| B2 | R10.3 | en la rama de éxito, `reset-header` es «el mismo de R10.1»: `index={0}`, `className="flex-row items-center justify-center gap-3"`, hijos `[reset-pingo, título]` | G: `index={3}`, `className="items-center gap-8"` y el título delante de Pingo | **verde** 29/29 |
+| B3 | R7.3 | campos, `FieldError`, `register-terms`, error general y `register-submit` siguen colgando del scroll | O1: `register-submit` envuelto en un `View` | **verde** 21/21 |
+| B4 | R6.2 y R7.1 | el título conserva la `className` de la base, `text-center text-2xl font-black text-foreground` | R1 y R2: otra clase en el título | **verde** |
+
+Por qué no lo veían los tests de la ronda 1:
+
+- **B1.** `it('#167 R6: el cuerpo lleva el formulario en el orden de siempre')`
+  filtra con una regex que no incluye `login-error`, y renderiza sin error.
+- **B2.** La cabecera solo se fija en la rama de formulario. En la de éxito
+  se miran la pose de `reset-pingo` y el orden
+  `[reset-header, reset-success-pop, link-login]`, pero no la cabecera.
+- **B3.** La última frase de R7.3 es **falsa**: «El `it` de #61 R7 que lo dice
+  sigue siendo verdad». Ese `it`
+  (`conserva los campos del formulario como hijos directos del scroll`) solo
+  comprueba `toBeVisible()` y que `getAllByText('Crear cuenta')` tenga dos
+  nodos. No mira ningún padre. E1 pone el candado que esa frase daba por
+  hecho. El texto de R7.3 no cambia.
+- **B4.** Ningún `it` lee la `className` del título.
+
+### Qué es «colgar del scroll» en el árbol de host (medido en `108bd291`)
+
+`register-form` se pinta como `RCTScrollView` con un único `View` hijo, el
+contenedor de contenido. Ese contenedor es `register-header.parent`, y sus
+hijos son, en orden:
+
+1. `register-header`;
+2. siete `View` `text-field__root`, uno por `TextField`. Dentro de cada uno, el
+   `Input` (`register-first-name`, `-last-name`, `-email`, `-phone`,
+   `-password`, `-password-confirmation`, `-country`) y su `FieldError`
+   (`<id>-error`) son hermanos;
+3. la fila de términos, cuyo hijo es `register-terms`;
+4. `register-error-row`, cuando hay error general;
+5. `register-submit`.
+
+Por tanto «cuelga del scroll» se concreta así:
+
+- el `Input` está a dos niveles del contenedor;
+- su `FieldError` comparte padre con él;
+- `register-terms` está a dos niveles;
+- `register-error-row` y `register-submit` están a uno.
+
+Un `View` intermedio en cualquiera de esos sitios rompe una de las
+igualdades. Para que los siete `FieldError` y la fila del error general
+existan a la vez, el `it` responde al envío con
+`{ kind: 'validation', errors: [...] }` en las ocho rutas: los siete campos y
+`termsAccepted`, que va a la fila del error general.
+
+### Decisión: cinco `it` nuevos, en los `describe` de #167 que ya existen
+
+Los `it` de la ronda 1 no cambian, ni de nombre ni de cuerpo. El código exacto
+está en tasks.md §Enmienda E1.
+
+- **R6.2 (B1 y B4).** En `src/screens/login/index.test.tsx`:
+  - `it('#167 R6: con error, el error va entre la contraseña y el envío')`.
+    Envía con credenciales inválidas. Exige que, dentro de `login-body`, el
+    orden de `[login-email, login-password, login-error, login-submit,
+    link-register, link-forgot]` sea exactamente ese.
+  - `it('#167 R6: el título de la cabecera conserva su clase')`. Exige un
+    `toBe` de la `className` de «Iniciar sesión» dentro de `login-header`.
+- **R7.1 y R7.3 (B4 y B3).** En `src/screens/register/index.test.tsx`:
+  - `it('#167 R7: el título de la cabecera conserva su clase')`. Igual que el
+    de login, con «Crear cuenta» dentro de `register-header`.
+  - `it('#167 R7: campos, errores, términos y envío cuelgan del scroll')`. Son
+    las igualdades de padre de la sección anterior.
+- **R10.3 (B2).** En `src/screens/reset-password/index.test.tsx`:
+  - `it('#167 R10: el éxito conserva la cabecera del formulario')`. Tras un
+    restablecimiento válido, `reset-header` tiene `index: 0` y la `className`
+    de R10.1, y dos hijos: `reset-pingo` y el título «Restablecer contraseña».
+
+### Cómo se prueba que los candados vigilan (CHECKPOINTS.md C4, quinto punto)
+
+Son candados sobre código **ya correcto**. Por eso su rojo es una **mutación de
+producción**: se versiona en el commit rojo y se revierte en el verde, que
+restaura el fichero desde `108bd291`. Hay un par rojo/verde por pantalla, y
+cada mutación del rojo es la sonda del reviewer que quedó verde:
+
+| Par | Mutación versionada | Rojo medido |
+|---|---|---|
+| R6 | el error pasa detrás de `link-forgot` (A) y el título a `text-xl` (R2) | `2 failed, 20 passed, 22 total` |
+| R7 | `register-submit` envuelto en un `View` (O1) y el título a `text-xl` (R1) | `2 failed, 21 passed, 23 total` |
+| R10 | la cabecera del éxito con `index={3}` y `className="items-center gap-8"` (G) | `1 failed, 29 passed, 30 total` |
+
+Todos los rojos son por aserción y no hay ningún rojo de otro `it`.
+
+Después vienen cinco sondas sin commit sobre el árbol verde (S1-S5 en
+tasks.md), cada una con su recuento esperado:
+
+- S1-S4 cubren los otros sitios de R7.3 donde un `View` intermedio o un
+  `FieldError` fuera de su campo romperían el candado;
+- S5 cubre el orden de los hijos de la cabecera de éxito.
+
+Todo medido en un spike sobre `a27664f8`:
+
+- verde: `22 + 23 + 30`;
+- BASE de 13 ficheros: `438 passed`, que son 433 + 5;
+- `typecheck` y `expo lint` limpios, con y sin las mutaciones.
+
+### Fuera de E1
+
+- **O4 (orden de `reset-body`).** R10.1 no dice «en orden», así que no es un
+  hueco de candado.
+- **Título del reset.** R10.1 dice «el título existente», sin clase. E1 no
+  amplía R10.
+- **O5 (`selectable` en `login-error` y `register-error`).** Es deuda anterior
+  a #167. Se registra en #172 en el cierre.
+- **O6 (título «36 ocurrencias» con la cuenta en 37).** Es cosmético. Se
+  registra junto a O5.
+- **O2 (frontmatter `draft` en design, tasks y traceability).** El leader lo
+  alinea en el cierre.
+
+### Aprobación de la Enmienda E1
+
+- [ ] Enmienda E1 aprobada por humano (fecha: ____, vía Notion) ← gate obligatorio antes de la ronda 2 de Codex

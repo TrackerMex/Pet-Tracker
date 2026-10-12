@@ -736,3 +736,206 @@ No la corre ninguna IA.
    muestra anillos, y en Recuperar y Nueva contraseña el tile y la tarjeta
    solo aparecen con fundido, sin escala.
 8. Firma en traceability.md §Firma de la prueba de humo (R15).
+
+---
+
+## Enmienda E1 — ronda 2 (R6, R7 y R10, solo tests)
+
+> Solo tras la firma humana de la Enmienda E1 (requirements.md §Enmienda E1).
+> La producción de `src/screens/login/index.tsx`, `src/screens/register/index.tsx`
+> y `src/screens/reset-password/index.tsx` queda **idéntica** a `108bd291` al
+> final de la ronda, porque cada commit verde la restaura desde ese hash.
+> Rutas relativas a `mobile-pet-tracker/`. Nada de números de línea: todo se
+> localiza por contenido. Las cifras se midieron en un spike sobre `a27664f8`.
+
+- [ ] **Antes.**
+  - `git merge-base --is-ancestor 108bd291 HEAD; echo "exit=$?"` → `exit=0`.
+  - `git diff --quiet 108bd291 HEAD -- .; echo "exit=$?"` → `exit=0`.
+  - `test ! -e .expo/types/router.d.ts; echo "exit=$?"` → `exit=0`.
+  - Base de los tres ficheros: `Tests: 70 passed, 70 total` (login 20, register 21, reset 29).
+  - `it` estáticos (`grep -cE '^\s*it(\.each)?[(<]'`): login 17, register 19, reset 23.
+
+- [ ] **(1) Commit rojo R6** `test(mobile): #167 E1 rojo, candados de login con la mutación versionada (R6)`.
+  - En `src/screens/login/index.test.tsx`, dentro de
+    `describe('#167 R6: Pingo saluda en login y la pantalla entra en dos tiempos'`,
+    justo antes de `it('#167 R6: la cabecera y el cuerpo no se mezclan'`:
+
+    ```tsx
+      it('#167 R6: con error, el error va entre la contraseña y el envío', async () => {
+        mockLogin.mockResolvedValue({ kind: 'invalid-credentials' });
+        await renderLogin();
+        await submit();
+        const body = screen.getByTestId('login-body');
+        expect(within(body).getAllByTestId(/^(login-email|login-password|login-error|login-submit|link-register|link-forgot)$/)
+          .map((node) => node.props.testID)).toEqual([
+          'login-email', 'login-password', 'login-error', 'login-submit', 'link-register', 'link-forgot',
+        ]);
+      });
+
+      it('#167 R6: el título de la cabecera conserva su clase', async () => {
+        await renderLogin();
+        expect(within(screen.getByTestId('login-header')).getByText('Iniciar sesión').props.className)
+          .toBe('text-center text-2xl font-black text-foreground');
+      });
+
+    ```
+
+  - **Mutación versionada** en `src/screens/login/index.tsx`:
+    - el bloque de cinco líneas `{error ? (` … `) : null}` (el de
+      `testID="login-error"`), con la línea en blanco que lo sigue, sale de
+      delante de `<Button testID="login-submit"` y pasa justo detrás del
+      `</LinkButton>` de `link-forgot`, antes del `</HomeEntrance>` de
+      `login-body`;
+    - la línea `<Text className="text-center text-2xl font-black text-foreground">`
+      (única en el fichero) pasa a `text-xl`.
+  - Rojo esperado, solo `src/screens/login/index.test.tsx`:
+    `Tests: 2 failed, 20 passed, 22 total`.
+
+    | `it` | Por qué falla |
+    |---|---|
+    | `#167 R6: con error, el error va entre la contraseña y el envío` | aserción: `expect(received).toEqual(expected)` |
+    | `#167 R6: el título de la cabecera conserva su clase` | aserción: `expect(received).toBe(expected)` |
+
+    Ningún `Unable to find`. `it` estáticos: 19. `typecheck` y `expo lint`
+    limpios (la mutación compila).
+
+- [ ] **(2) Commit verde R6** `fix(mobile): #167 E1 verde, login restaurado desde 108bd291 (R6)`.
+  - `git checkout 108bd291 -- src/screens/login/index.tsx`, y después
+    `git diff --quiet 108bd291 -- src/screens/login/index.tsx; echo "exit=$?"` → `exit=0`.
+  - Gate: `Tests: 22 passed, 22 total`, más `typecheck` y `expo lint` limpios.
+
+- [ ] **(3) Commit rojo R7** `test(mobile): #167 E1 rojo, candados del registro con la mutación versionada (R7)`.
+  - En `src/screens/register/index.test.tsx`, dentro de
+    `describe('#167 R7: Pingo en la cabecera del registro'`, justo antes de
+    `it('#167 R7: ningún campo ni el envío quedan dentro de la cabecera'`:
+
+    ```tsx
+      it('#167 R7: el título de la cabecera conserva su clase', async () => {
+        await renderRegister();
+        expect(within(screen.getByTestId('register-header')).getByText('Crear cuenta').props.className)
+          .toBe('text-center text-2xl font-black text-foreground');
+      });
+
+      it('#167 R7: campos, errores, términos y envío cuelgan del scroll', async () => {
+        const fields = [
+          'first-name', 'last-name', 'email', 'phone', 'password', 'password-confirmation', 'country',
+        ] as const;
+        mockRegister.mockResolvedValue({
+          kind: 'validation',
+          errors: [
+            'firstName', 'lastName', 'email', 'phone', 'password', 'passwordConfirmation', 'country', 'termsAccepted',
+          ].map((path) => ({ path, message: `${path} no vale` })),
+        });
+        await renderRegister();
+        await fillForm();
+        await submit();
+        const content = screen.getByTestId('register-header').parent;
+        expect(content?.parent).toHaveProperty('props.testID', 'register-form');
+        for (const field of fields) {
+          const input = screen.getByTestId(`register-${field}`);
+          expect(input.parent?.parent).toBe(content);
+          expect(screen.getByTestId(`register-${field}-error`).parent).toBe(input.parent);
+        }
+        expect(screen.getByTestId('register-terms').parent?.parent).toBe(content);
+        expect(screen.getByTestId('register-error-row').parent).toBe(content);
+        expect(screen.getByTestId('register-submit').parent).toBe(content);
+      });
+
+    ```
+
+  - **Mutación versionada** en `src/screens/register/index.tsx`:
+    - el bloque `<Button testID="register-submit" …>` … `</Button>`, que es el
+      último hijo del scroll, queda envuelto en `<View>` … `</View>`, reindentado
+      dos espacios (`View` ya está importado);
+    - la línea `<Text className="text-center text-2xl font-black text-foreground">`
+      (única en el fichero) pasa a `text-xl`.
+  - Rojo esperado, solo `src/screens/register/index.test.tsx`:
+    `Tests: 2 failed, 21 passed, 23 total`.
+
+    | `it` | Por qué falla |
+    |---|---|
+    | `#167 R7: el título de la cabecera conserva su clase` | aserción: `expect(received).toBe(expected)` |
+    | `#167 R7: campos, errores, términos y envío cuelgan del scroll` | aserción: `expect(received).toBe(expected)` (el diff del nodo es largo: es normal) |
+
+    Ningún `Unable to find`. `it` estáticos: 21. `typecheck` y `expo lint` limpios.
+
+- [ ] **(4) Commit verde R7** `fix(mobile): #167 E1 verde, registro restaurado desde 108bd291 (R7)`.
+  - `git checkout 108bd291 -- src/screens/register/index.tsx`, y
+    `git diff --quiet 108bd291 -- src/screens/register/index.tsx` → `exit=0`.
+  - Gate: `Tests: 23 passed, 23 total`, más `typecheck` y `expo lint` limpios.
+
+- [ ] **(5) Commit rojo R10** `test(mobile): #167 E1 rojo, cabecera del éxito con la mutación versionada (R10)`.
+  - En `src/screens/reset-password/index.test.tsx`, dentro de
+    `describe('#167 R10: Pingo y tarjeta de estado en nueva contraseña'`, justo
+    antes de `it('#167 R10: la tarjeta de estado es secondary con check y texto'`:
+
+    ```tsx
+      it('#167 R10: el éxito conserva la cabecera del formulario', async () => {
+        await renderRoute('reset-token-167');
+        await submitReset();
+        expect(await screen.findByTestId('reset-success')).toBeOnTheScreen();
+        const header = screen.getByTestId('reset-header');
+        expect({ index: header.props.index, className: header.props.className }).toEqual({
+          index: 0, className: 'flex-row items-center justify-center gap-3',
+        });
+        expect(header.children).toHaveLength(2);
+        expect(header.children[0]).toHaveProperty('props.testID', 'reset-pingo');
+        expect(header.children[1]).toBe(within(header).getByText('Restablecer contraseña'));
+      });
+
+    ```
+
+  - **Mutación versionada** en `src/screens/reset-password/index.tsx`. La línea
+    `<HomeEntrance testID="reset-header" index={0} className="flex-row items-center justify-center gap-3">`
+    aparece dos veces. Se cambia solo la **primera**, la de la rama de éxito:
+    su `</HomeEntrance>` va seguido de `<PopIn testID="reset-success-pop"`.
+    Pasa a
+    `<HomeEntrance testID="reset-header" index={3} className="items-center gap-8">`.
+    La segunda, la del formulario, no cambia.
+  - Rojo esperado, solo `src/screens/reset-password/index.test.tsx`:
+    `Tests: 1 failed, 29 passed, 30 total`.
+
+    | `it` | Por qué falla |
+    |---|---|
+    | `#167 R10: el éxito conserva la cabecera del formulario` | aserción: `expect(received).toEqual(expected)` |
+
+    Ningún `Unable to find`. `it` estáticos: 24. `typecheck` y `expo lint` limpios.
+
+- [ ] **(6) Commit verde R10** `fix(mobile): #167 E1 verde, nueva contraseña restaurada desde 108bd291 (R10)`.
+  - `git checkout 108bd291 -- src/screens/reset-password/index.tsx`, y
+    `git diff --quiet 108bd291 -- src/screens/reset-password/index.tsx` → `exit=0`.
+  - Gate: `Tests: 30 passed, 30 total`, más `typecheck` y `expo lint` limpios.
+
+- [ ] **Sondas S1-S5**, sin commit, sobre el árbol verde tras (6).
+  - Cada sonda mide solo el fichero de test de su pantalla.
+  - Se restaura con `git checkout HEAD -- <fichero>` y `limpio=0` antes de la
+    siguiente.
+  - Los `View` de las sondas no necesitan reindentar: el test no lo ve.
+
+  | Sonda | Mutación | Esperado | Qué falla |
+  |---|---|---|---|
+  | S1 | register: una línea `<View>` justo antes de `<TextField isInvalid={Boolean(fieldErrors.firstName)}>` y `</View>` justo después de su `</TextField>` | `1 failed, 22 passed, 23 total` | `#167 R7: campos, errores, términos y envío cuelgan del scroll` (aserción) |
+  | S2 | register: `<View>` antes y `</View>` después de la fila `<View className="flex-row items-center gap-3">` … `</View>` de `register-terms` | igual que S1 | igual que S1 |
+  | S3 | register: `<View>` antes de `{generalError ? (` y `</View>` después de su `) : null}` | igual que S1 | igual que S1 |
+  | S4 | register: `<FieldError testID="register-country-error">{fieldErrors.country}</FieldError>` sale de su `TextField` y pasa justo detrás de su `</TextField>` | igual que S1 | el mismo `it`, por consulta: `Unable to find an element with testID: register-country-error` |
+  | S5 | reset: en la rama de éxito (la primera cabecera), el bloque de cinco líneas `<Image testID="reset-pingo" …/>` y el de tres líneas `<Text …>{t('resetPassword.resetPassword')}</Text>` intercambian su orden | `1 failed, 29 passed, 30 total` | `#167 R10: el éxito conserva la cabecera del formulario` (aserción) |
+
+- [ ] **Cierre.**
+  - BASE de 13 ficheros (el comando K2 de la ronda 1): `Tests: 438 passed, 438 total`.
+    Son 433 + 5, con login 22, register 23 y reset 30.
+  - ALL: `99 suites` y `2846 tests`, que son 2841 + 5. No medido en el spike;
+    sale de la cuenta.
+  - `typecheck` y `expo lint` limpios.
+  - La lista cerrada contra H0 de la ronda 1 sigue en **31** rutas. E1 solo
+    toca ficheros que ya están en ella y deja las tres pantallas idénticas a
+    `108bd291`.
+
+- [ ] **(7) Commit de trazabilidad** `docs(mobile-account-screens-pingo): #167 E1 trazabilidad`.
+  - En traceability.md:
+    - la fila R6 añade los dos `it` nuevos y pasa de `(9)` a `(11)`;
+    - la fila R7 añade los dos suyos y pasa de `(4)` a `(6)`;
+    - la fila R10 añade el suyo y pasa de `(10)` a `(11)`.
+  - Cada una de esas filas añade a su columna de commit
+    `E1: <hash rojo> → <hash verde>`, con sus mensajes.
+  - Después, el impl con `git commit --only`: §Enmienda E1 con las salidas
+    literales de cada eslabón y de S1-S5.
