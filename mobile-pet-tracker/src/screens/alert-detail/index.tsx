@@ -73,7 +73,7 @@ export function AlertDetailScreen({ alertId }: { alertId: string }) {
     const Icon = meta.Icon;
     const color = { danger, 'warning-strong': warningStrong, muted }[meta.ink];
     return (
-      <Card testID="alert-detail-card" className="min-h-44 gap-3">
+      <Card testID="alert-detail-card" className={'min-h-44 gap-3' + (alert.status === 'open' ? ` border-2 ${meta.border}` : '')}>
         <View testID="alert-detail-header" className="flex-row items-center gap-3">
           <View className={`size-11 items-center justify-center rounded-full ${meta.surface}`}>
             <Icon testID="alert-detail-icon" size={20} color={color} />
