@@ -479,3 +479,18 @@ Las constantes anteriores a #152 (`MEALS_BAR_TIMING`, `KCAL_BAR_TIMING`,
 usa `MOTION_FADE_TIMING` y `MOTION_SETTLE_SPRING` (enmienda E1 de #153).
 
 - [X] Enmienda aprobada por humano
+
+## Enmienda #171 — confeti de celebración
+
+El punto 7 solo admite como bucles los «Bucles de reposo» de Pingo. El confeti de `Celebration`
+(`src/components/celebration.tsx`) no es un bucle: es **una sola pasada** de
+24 piezas que caen con `withTiming` (`MOTION_CONFETTI_FALL_TIMING`, entre
+`MOTION_CONFETTI_MIN_MS` y `MOTION_CONFETTI_MIN_MS + MOTION_CONFETTI_SPREAD_MS`
+de duración) y se desvanecen. Las reglas son:
+
+- solo en celebraciones del tier «raro» (vincular un collar, primera mascota);
+- es decorativo: `pointerEvents="none"` y oculto a la accesibilidad;
+- con reduce motion activo **no se monta**;
+- solo anima `transform` y `opacity`.
+
+- [ ] Aprobada por humano (fecha: ____)
