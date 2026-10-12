@@ -181,7 +181,7 @@ describe('#100 R3: el detalle pinta la alerta de la caché de la lista', () => {
     expect(root.props.className).toBe('flex-1 bg-background');
     expect(root.props.contentInsetAdjustmentBehavior).toBe('automatic');
     expect(root.props.contentContainerStyle).toEqual({ padding: 24, gap: 16, paddingBottom: 48 });
-    expect(card.props.className).toBe('rounded-card border border-border bg-surface p-4 shadow-sm min-h-44 gap-3');
+    expect(card.props.className).toBe('rounded-card bg-surface p-4 shadow-sm min-h-44 gap-3 border-2 border-danger');
   });
 });
 
@@ -390,5 +390,22 @@ describe('#100 R5: el detalle marca leída la alerta', () => {
       await waitFor(() => expect(screen.getByTestId('alert-detail-ack')).not.toBeDisabled());
       expect(screen.queryByTestId('alert-detail-action-error')).toBeNull();
     });
+  });
+});
+
+describe('#170 R6: la tarjeta abierta lleva el borde de su tipo', () => {
+  it.each([
+    { type: 'geofence_exit', className: 'rounded-card bg-surface p-4 shadow-sm min-h-44 gap-3 border-2 border-danger' },
+    { type: 'battery_low', className: 'rounded-card bg-surface p-4 shadow-sm min-h-44 gap-3 border-2 border-warning-strong' },
+    { type: 'mystery_type', className: 'rounded-card bg-surface p-4 shadow-sm min-h-44 gap-3 border-2 border-muted' },
+  ])('abierta $type: $className', async ({ type, className }) => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ type })], nextCursor: null });
+    await renderDetail();
+    expect((await screen.findByTestId('alert-detail-card')).props.className).toBe(className);
+  });
+  it.each(['acked', 'closed'] as const)('%s: conserva la tarjeta sin borde de severidad', async (status) => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ status })], nextCursor: null });
+    await renderDetail();
+    expect((await screen.findByTestId('alert-detail-card')).props.className).toBe('rounded-card border border-border bg-surface p-4 shadow-sm min-h-44 gap-3');
   });
 });
