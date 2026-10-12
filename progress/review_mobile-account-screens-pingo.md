@@ -229,3 +229,249 @@ avisos: ".env desactualizado: faltan 6 claves de .env.example";
 El total móvil cuadra. La base ALL del informe (B2) es 98/2775. Se suma 1 suite
 nueva, `pop-in.test.tsx`; login y registro se mueven, no se suman. Y se suman
 66 `it`, de 367 a 433 en la tabla de Cuentas. Total: 99/2841.
+
+## Barrido de la Enmienda E1 (pre-firma)
+
+Fecha: 2026-10-12T22:15:57Z. Reviewer, antes de la firma humana de la Enmienda E1.
+No es la ronda 2: todavía no hay implementación nueva.
+
+**Resultado: 1 hueco bloqueante (X1) y 6 observaciones (X2-X7).**
+
+### Cómo se midió
+
+- **Spike.** `…/scratchpad/spike167`, worktree de `a27664f8`. Su producción es
+  idéntica a `108bd291` y lleva aplicados sin commit los cinco `it` de E1.
+- **Los `it` de E1 en el spike son los de tasks.md.** Se compararon las líneas
+  añadidas en el diff de los tres `index.test.tsx` con los tres bloques `tsx` de
+  tasks.md §Enmienda E1, y coinciden en los tres. Las seis anclas de inserción
+  (`describe(…)` e `it(…)`) dan `grep -cF` = 1 en HEAD.
+- **Comando.** Cada sonda corrió solo el fichero de test de su pantalla:
+  `FORCE_COLOR=0 bunx jest --testTimeout=30000 --maxWorkers=1 --runTestsByPath <fichero>`.
+- **Restauración.** Cada mutación se deshizo con `git checkout HEAD -- <fichero>`
+  y se comprobó `limpio=0` antes de la siguiente.
+- **Candados propuestos.** Se midieron en copias temporales `zz-sweep.test.tsx`
+  de los tres tests, borradas al acabar.
+- **Estado final del spike.** `git status --short` muestra solo los tres
+  `index.test.tsx` y `?? node_modules`.
+- **Sin medir.** `typecheck`, `expo lint`, BASE 438 y ALL 2846. Por permiso, solo
+  podía correr ficheros de test sueltos.
+
+### Exactitud de tasks.md §Enmienda E1
+
+| Paso | Declarado | Medido | Tipo de rojo |
+|---|---|---|---|
+| Verdes (2), (4), (6) | 22 / 23 / 30 | `22 passed, 22 total` / `23 passed, 23 total` / `30 passed, 30 total` | — |
+| `it` estáticos | 17/19/23 antes, 19/21/24 con E1 | 17/19/23 y 19/21/24 | — |
+| (1) rojo R6 | `2 failed, 20 passed, 22 total` | igual | aserción: `toEqual` (con error) y `toBe` (título). `Unable to find` = 0 |
+| (3) rojo R7 | `2 failed, 21 passed, 23 total` | igual | aserción: `toBe` los dos. `Unable to find` = 0 |
+| (5) rojo R10 | `1 failed, 29 passed, 30 total` | igual | aserción: `toEqual`. `Unable to find` = 0 |
+| S1 | `1 failed, 22 passed, 23 total` | igual | aserción (`toBe`), el `it` declarado |
+| S2 | ídem | igual | ídem |
+| S3 | ídem | igual | ídem |
+| S4 | ídem, por consulta | igual | `Unable to find an element with testID: register-country-error` |
+| S5 | `1 failed, 29 passed, 30 total` | igual | aserción: el matcher es `toHaveProperty` (`children[0]`). La tabla solo dice «aserción», así que es correcta |
+
+Las tres mutaciones versionadas se aplicaron tal como las describe la prosa y
+dieron exactamente esos rojos. Lo que se puede mejorar de su redacción está en X7.
+
+### Cobertura de E1 por cláusula
+
+| Cláusula | Qué la cubre |
+|---|---|
+| **R6.2**, orden con error | E1 |
+| **R6.2**, orden sin error | `it` de la ronda 1. Es ciego a un `login-error` sobrante: ver **X1** |
+| **R6.2**, clase del título | E1 (sondas R2 y (1)) |
+| **R6.2**, orden de la cabecera | Ronda 1. Sonda H10 (saludo detrás del título): 1 failed `#167 R6: la cabecera lleva el saludo y después el título` |
+| **R6.2**, «ningún nodo de login-body está dentro de login-header» | Ronda 1 |
+| **R7.1**, clase | E1 (sonda R1) |
+| **R7.1**, hijos en orden y mapa | Ronda 1 |
+| **R7.3**, completa (siete campos, sus `FieldError`, términos, error general y envío) | E1. Sondas O1/(3), S1, S2, S3 y S4. «Ninguno dentro de register-header»: el `it` de la ronda 1 |
+| **R10.3**, completa | E1 cubre la cabecera «el mismo de R10.1»: índice, clase, `[reset-pingo, título]`. Sondas G/(5) y S5 |
+| **R10.3**, orden de las tres piezas, mismo padre y `reset-body` nulo | Ronda 1 |
+| **R10.3**, Pingo y mapa de `PopIn` | Ronda 1. Pingo por rama |
+
+Sondas extra que confirman candados existentes (sin hueco):
+
+| Sonda | Mutación | Rojo |
+|---|---|---|
+| H4 | hijos de la cabecera del formulario de reset intercambiados | 1 failed `#167 R10: la cabecera lleva a Pingo y después el título` |
+| H5 | `AlertCircle` detrás del texto en `register-error-row` | 1 failed `#167 R8: el error general va en una fila con icono` |
+| H11 | `login-bubble` delante de `login-pingo` | 1 failed `#167 R6: el saludo pone a Pingo junto a su burbuja` |
+| H12 | en `reset-success-card`, el texto delante de `reset-success-check` | 1 failed `#167 R10: la tarjeta de estado es secondary con check y texto` |
+
+**Delimitaciones «sin cambios».** `git diff d2b8b0ae 108bd291 -- mobile-pet-tracker/src/screens/reset-password/index.tsx`:
+
+- `link-login` solo aparece como contexto, así que cumple R10.3 «sin cambios»;
+- no hay ningún hunk en la rama sin token, así que cumple R10.5.
+
+### Hallazgos
+
+**X1. BLOQUEANTE. R6.2, el orden «sin error» de `login-body`.**
+
+- **Cláusula.** R6.2: «`login-body` SHALL contener, en el orden de la base,
+  `login-email`, `login-password`, `login-error` (cuando hay error), `login-submit`,
+  `link-register` y `link-forgot`».
+  - Sin error, ese orden son cinco nodos. El `it` de la ronda 1 que lo fija
+    filtra con una regex de cinco ids que **excluye** `login-error`, así que no
+    puede ver un `login-error` que sobre.
+  - Es exactamente el «orden con y sin error» que pedía el barrido.
+- **Mutación (H1).** El bloque `{error ? (` … `) : null}` de `login-error` pasa
+  a pintarse siempre:
+  `<Text testID="login-error" className="text-danger">{error}</Text>`, sin ternario.
+- **Medido.** `src/screens/login/index.test.tsx` → `Tests: 22 passed, 22 total`.
+  No hay ninguna otra referencia a `login-error` en `src` que asevere su ausencia:
+  el grep da las líneas 111, 128, 254 y 262, todas con error.
+- **Candado mínimo.** Un `it` nuevo justo detrás del `it` E1 «con error», con
+  la misma regex de seis ids:
+
+  ```tsx
+    it('#167 R6: sin error, el cuerpo no lleva el error', async () => {
+      await renderLogin();
+      const body = screen.getByTestId('login-body');
+      expect(within(body).getAllByTestId(/^(login-email|login-password|login-error|login-submit|link-register|link-forgot)$/)
+        .map((node) => node.props.testID)).toEqual([
+        'login-email', 'login-password', 'login-submit', 'link-register', 'link-forgot',
+      ]);
+    });
+  ```
+
+  - Contra H1 da `1 failed, 23 passed, 24 total`, solo ese `it` y por
+    aserción (`toEqual`). Se midió en una copia con X1 y X3 juntos.
+  - **Rojo versionado.** La mutación del paso (1) suma un tercer cambio: el
+    bloque, después de moverse detrás de `link-forgot`, pierde el ternario. Es la
+    misma sustitución de H1.
+  - Medido con X1 y X3: `3 failed, 21 passed, 24 total`. Fallan, por aserción y
+    sin `Unable to find`:
+    - `con error, el error va entre la contraseña y el envío`;
+    - `el título de la cabecera conserva su clase`;
+    - `sin error, el cuerpo no lleva el error`.
+  - Con X1 solo: `3 failed, 20 passed, 23 total`. Esta cifra está derivada,
+    porque X3 pasa bajo esa mutación.
+- **Arrastre si se acepta X1 solo.**
+  - Login: verde 23, `it` estáticos 20, y la fila R6 de traceability pasa de
+    `(9)` a `(12)`.
+  - BASE `439 = 433 + 6` y ALL `2847`.
+  - La frase de requirements §Enmienda E1 sobre los rojos y la tabla de B1 se
+    amplían con la fila «sin error».
+
+**X2. Observación. R10.1, `reset-error` «cuando lo hay».**
+
+- **Mutación (H1b).** `reset-error` se pinta siempre, sin ternario.
+- **Medido.** `src/screens/reset-password/index.test.tsx` → `Tests: 30 passed, 30 total`.
+- **Candado mínimo.**
+  `it('#167 R10: sin error, el cuerpo no lleva el error')`, con
+  `expect(within(screen.getByTestId('reset-body')).queryByTestId('reset-error')).toBeNull()`
+  tras `renderRoute('reset-token-167')`. Contra H1b: `1 failed, 31 passed, 32 total`
+  (copia con X2 y X5), aserción `toBeNull`.
+- **Por qué no bloquea.**
+  - R10.1 dice dónde va `reset-error` («va en un `HomeEntrance` `reset-body`»),
+    no un orden. El `it` de la ronda 1 lo cubre cuando existe.
+  - El ternario es de la base y #167 solo lo reindenta.
+  - Recomendado por simetría con X1: cuesta un `it`. Si se pliega en el paso (5),
+    el rojo pasa a `2 failed, 29 passed, 31 total` (derivado).
+  - En la ronda 2 no rechazaré por su ausencia.
+
+**X3. Observación. R6.1, la cabecera antes del cuerpo.**
+
+- **Mutación (H2).** Los bloques `login-header` y `login-body` intercambian su
+  sitio dentro del scroll.
+- **Medido.** `Tests: 22 passed, 22 total`.
+- **Candado mínimo.**
+
+  ```tsx
+    it('#167 R6: la cabecera va antes que el cuerpo en el scroll', async () => {
+      await renderLogin();
+      const header = screen.getByTestId('login-header');
+      expect(header.parent?.parent).toHaveProperty('props.testID', 'login-form');
+      expect(header.parent?.children).toEqual([header, screen.getByTestId('login-body')]);
+    });
+  ```
+
+  Contra H2: `1 failed, 23 passed, 24 total`, aserción `toEqual`.
+- **Por qué no bloquea.** R6.1 no dice «en orden». Es el mismo criterio que O4.
+  E1 deja la pantalla idéntica a `108bd291`, que ya tiene ese orden.
+
+**X4. Observación. R7.1, «sustituir el título suelto del scroll».**
+
+- **Mutación (H3).** El bloque `register-header` pasa detrás de `register-submit`,
+  como último hijo del scroll.
+- **Medido.** `Tests: 23 passed, 23 total`. El `it` E1 «cuelgan del scroll» solo
+  mira padres, no posiciones.
+- **Candado mínimo.** Una línea al final de ese `it`:
+  `expect(content?.children[0]).toBe(screen.getByTestId('register-header'));`.
+  Contra H3: `1 failed, 22 passed, 23 total`, aserción `toBe`.
+  - Bajo la mutación (3) el `it` ya cae antes, en la línea del envío. Por eso su
+    prueba de rojo sería una sonda S6 (H3) con esa cifra, no un cambio en la
+    tabla del paso (3).
+- **Por qué no bloquea.** «Sustituir» implica el sitio, pero la cláusula no dice
+  «en orden» ni «primer hijo».
+
+**X5. Observación. R10.1, la cabecera antes del cuerpo en la rama de formulario.**
+
+- **Mutación (H2b).** El segundo `reset-header` pasa detrás del `</HomeEntrance>`
+  de `reset-body`.
+- **Medido.** `Tests: 30 passed, 30 total`.
+- **Candado mínimo.** Es el de X3 con `reset-header` y `reset-body`. Contra
+  H2b: `1 failed, 31 passed, 32 total`.
+  - **Ojo:** en esta rama el scroll es `reset-password-form`.
+    `screen-reset-password` es ahí el `KeyboardAvoidingView`. Un primer intento
+    con `screen-reset-password` falló en verde, `Received value: "reset-password-form"`.
+- **Por qué no bloquea.** Es el mismo caso que X3 y O4.
+
+**X6. Observación. Cláusulas de disposición del fuente, sin candado.**
+
+| Cláusula | Mutación | Medido |
+|---|---|---|
+| R2.1 «un comentario `// #167 R2` encima de cada uno» | H8: se borra el primero de los cuatro | `src/theme/__tests__/motion.test.ts` → `16 passed, 16 total` |
+| R5.1 «justo después de `login.forgotPassword`» | H7: la línea `en` de `login.pingoGreeting` pasa delante de `login.signIn` | `src/providers/__tests__/language-provider.test.tsx` → `26 passed, 26 total`. Las listas de claves se comparan ordenadas |
+| R5.2 «justo antes de `## 3. La infraestructura`» | H9: §2.24 pasa al final de `specs/mobile-ui-language/design.md` | mismo fichero → `26 passed, 26 total` |
+| R6.4 fila de `ui-copy-table.ts` «justo después de la fila de `login.forgotPassword`» | sin sonda: es un fichero de test, no producción | — |
+
+- **Estado verificado a mano.** Las cuatro cláusulas se cumplen en `108bd291` /
+  `a27664f8`:
+  - `motion.ts` tiene cuatro `// #167 R2`;
+  - en `catalog.ts`, la clave está en las líneas 9-10 (`en`) y 401-402 (`es`);
+  - §2.24 está justo antes de `## 3.`, con la cabecera de §2.23;
+  - la fila de `ui-copy-table.ts` está en las líneas 15-16, en el árbol y en
+    `108bd291`.
+- **No pido candado.** Sería un candado de texto del fuente sin valor de
+  comportamiento.
+- **Ronda 2.** E1 no toca esos ficheros. En la ronda 2 lo compruebo con
+  `git diff --quiet 108bd291 HEAD -- mobile-pet-tracker/src/theme/motion.ts mobile-pet-tracker/src/i18n/catalog.ts mobile-pet-tracker/src/__tests__/ui-copy-table.ts specs/mobile-ui-language/design.md`.
+
+**X7. Observación: corregir antes del handoff. Anclas que no se pueden grepear tal cual.**
+
+En tasks.md §Enmienda E1 hay tres anclas que, copiadas literalmente, dan
+`grep -cF` = **0**, porque en el fuente `<Button` / `<Image` y `testID=` van en
+líneas distintas:
+
+| Ancla en tasks.md | Dónde aparece | Ancla que sí da cuenta |
+|---|---|---|
+| `<Button testID="login-submit"` | paso (1) | `testID="login-submit"` → 1 |
+| `<Button testID="register-submit" …>` | paso (3) | `testID="register-submit"` → 1 |
+| `<Image testID="reset-pingo" …/>` | S5 | `testID="reset-pingo"` → 2 (la primera es la rama de éxito) |
+
+Hay además dos anclas que se repiten en el fichero:
+
+- **El `Text` de S5.** `{t('resetPassword.resetPassword')}` sale 3 veces en
+  reset: sin token, éxito y formulario. La línea `text-center text-2xl font-black text-foreground`
+  también sale 3 veces.
+  - «En la rama de éxito (la primera cabecera)» lo desambigua, porque el `Text`
+    sin token no está dentro de ninguna cabecera.
+  - Aun así, en el handoff conviene decir «el `Text` hijo de la primera
+    `reset-header`».
+- **El `</LinkButton>` del paso (1).** Sale 2 veces. «El de `link-forgot`» es
+  el segundo.
+
+Es la lección de #117/#118: anclas transcritas que paran a Codex. Si se reescriben
+como `grep -cF` con su salida esperada, se cierra.
+
+### Para firmar
+
+- X1 debe entrar en la enmienda antes de la firma: el `it`, la mutación del paso (1)
+  con su tercer cambio, el rojo `3 failed, 20 passed, 23 total`, y las cuentas
+  arrastradas que da X1.
+- X2-X5 son opcionales. Cada candado está medido arriba. Si entran, cada `it`
+  suma +1 a su fichero, a BASE y a ALL. X4 no suma `it`.
+- X6 no pide cambios.
+- X7 es una corrección de redacción para el handoff.
