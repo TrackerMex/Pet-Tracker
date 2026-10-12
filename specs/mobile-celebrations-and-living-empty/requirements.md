@@ -15,8 +15,8 @@ tags: [harness, spec, mobile, ui, motion]
 >
 > **Prerrequisito de handoff:** #166 (`feature/166-mobile-chunky-cta`,
 > gate aprobado) mergeada en `origin/main`. Todo lo que depende de ella vive
-> en **R14** y en [[design]] §9, marcados «se re-mide tras el merge de #166».
-> Ninguna cuenta de #166 se congela aquí como si ya estuviera en main.
+> en **R14** y en [[design]] §9. Cumplido: #166 entró en d2b8b0ae (PR #209)
+> y §9 se re-midió el 2026-10-12 contra ese merge.
 
 ## Premisas verificadas contra el árbol (89fe2009)
 
@@ -279,7 +279,7 @@ Cada requisito nombra en [[tasks]] el test que lo verifica. En los testIDs,
   `opacity`, y que no use `LayoutAnimation`, `entering=`, `exiting=` ni
   `withRepeat`.
 
-### R14 — Lo que depende de #166 (se re-mide tras el merge de #166)
+### R14 — Lo que depende de #166 (re-medido tras el merge de #166)
 
 - **R14.1** THE SYSTEM SHALL pintar el primario de `Celebration` como
   `<Button testID={primary.testID} className="min-h-11 w-full rounded-xl bg-accent border-b-4 border-black/25">`
@@ -290,9 +290,9 @@ Cada requisito nombra en [[tasks]] el test que lo verifica. En los testIDs,
   Las dos recetas son las de #166 R2.1 (`rounded-xl bg-accent border-b-4 border-black/25`,
   con el labio detrás de `bg-accent`) y R3.1
   (`rounded-xl border-2 border-b-6 border-lip-gray bg-surface`), como
-  secuencias contiguas. Fuente: spec de #166 en
-  `origin/feature/166-mobile-chunky-cta` @ e96870fa. Tras el merge, viven en
-  el punto 13 de §Decisiones fijas de `docs/ui-guidelines.md`.
+  secuencias contiguas. Viven en el punto 13 de §Decisiones fijas de
+  `docs/ui-guidelines.md`; verificado tras el merge de #166 (d2b8b0ae) en
+  [[design]] §9.3.
 - **R14.3** THE SYSTEM SHALL que, al terminar la feature, los inventarios de
   botones cuenten lo siguiente:
   - **Primarios sólidos** (#166 R2.2): siguen siendo 19, ahora en 18
@@ -312,7 +312,7 @@ Cada requisito nombra en [[tasks]] el test que lo verifica. En los testIDs,
 
   Por el camino, cada commit verde deja la suite en verde. Los deltas
   intermedios (+1 en T14 y −1 en T8) y las anclas exactas están en
-  [[design]] §9, que el leader re-mide contra `origin/main` tras el merge de
+  [[design]] §9, re-medido contra `origin/main` d2b8b0ae tras el merge de
   #166.
 
 ### R15 — Enmienda a la carta: el confeti

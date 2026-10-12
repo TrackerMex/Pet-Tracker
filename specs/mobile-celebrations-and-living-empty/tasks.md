@@ -133,17 +133,17 @@ tags: [harness, spec, mobile, ui, motion]
 - [ ] (3) Refactor: extraer `DetailChip` como función local si el JSX pasa de
   ~120 líneas. Sin cambio de testIDs.
 
-## T14 — R14: botones con labio (se re-mide tras el merge de #166)
+## T14 — R14: botones con labio (re-medido tras el merge de #166)
 
 Va **justo después de T2**, antes que cualquier otro bloque (ver
-[[design]] §9.2). **No se empieza** hasta que [[design]] §9.3 tenga la tabla
-de anclas re-medidas por el leader contra #166 mergeada. Si no la tiene,
-**para**.
+[[design]] §9.2). Las anclas re-medidas contra #166 mergeada (5fbe9eed)
+están en [[design]] §9.2 y el resultado, en §9.3. Ejecútalas antes del rojo:
+cualquier `grep -cF` que no dé `1` es **parada**.
 
 - [ ] (1) Test rojo.
   - En `celebration.test.tsx`: `describe('#171 R14: botones con labio')`.
-  - En los ficheros de test donde #166 dejó sus inventarios (los fija
-    [[design]] §9.3): los cambios de expectativa de la columna «Tras T14» de
+  - En `src/__tests__/consistency-classnames.test.ts`, donde #166 dejó sus
+    inventarios ([[design]] §9.2, tabla «Anclas»): los cambios de expectativa de la columna «Tras T14» de
     [[design]] §9.2, con comentario `// #171 R14`. Son seis:
     1. el mapa de primarios de #166 R2 gana la fila
        `components/celebration.tsx` = 1, y el total pasa de 19 a 20;
@@ -165,8 +165,10 @@ de anclas re-medidas por el leader contra #166 mergeada. Si no la tiene,
   | R14.2 `probe-secondary` tiene `className` igual a `min-h-11 w-full rounded-xl border-2 border-b-6 border-lip-gray bg-surface`, sin prop `variant`, y su `Button.Label`, `font-bold text-foreground` | **por aserción** |
   | cambios 1 a 6 | **por aserción**: el código aún cuenta 19, 19, 19, 19, 4 testIDs y 4 |
 
-  Cómo se lee la clase del `Button` de heroui-native: con el mismo método que
-  usen los candados de #166 que §9.3 cite.
+  Cómo se lee la clase del `Button` de heroui-native: como en los candados
+  de render de #166, `screen.getByTestId(<testID>).props.className`, y la del
+  texto, `screen.getByText(<label>).props.className` ([[design]] §9.3,
+  paso 3).
 - [ ] (2) Verde: las clases de R14.1 y R14.2 en `celebration.tsx`. Con ellas
   los seis cambios pasan a verde sin tocar más código.
 - [ ] (3) Refactor: nada.

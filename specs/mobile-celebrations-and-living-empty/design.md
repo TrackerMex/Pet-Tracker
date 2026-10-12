@@ -394,13 +394,12 @@ de duración) y se desvanecen. Las reglas son:
 
 ## 9. Lo que depende de #166 (se re-mide tras el merge de #166) (R14)
 
-**Ninguna cifra de esta sección está congelada.** #166
-(`feature/166-mobile-chunky-cta`) introduce el labio de los primarios y el
-secundario neutro con `border-lip-gray`, además de sus inventarios. Lo que
-sigue se leyó en su spec, `git show origin/feature/166-mobile-chunky-cta:specs/mobile-chunky-cta/requirements.md`
-y `…/tasks.md` @ e96870fa (aprobada y aún sin mergear). Las recetas aún no
-están en su `docs/ui-guidelines.md`: el punto 13 lo escribe la
-implementación de #166 (su R4.1).
+**Re-medida el 2026-10-12 en 5fbe9eed**, el merge de `origin/main`
+d2b8b0ae (PR #209, que trae #166) en esta rama. Las cifras y anclas de abajo
+son las medidas ahí; el resultado paso a paso está en §9.3. #166 introdujo el
+labio de los primarios, el secundario neutro con `border-lip-gray` y sus
+inventarios. Las recetas viven en el punto 13 de §Decisiones fijas de
+`docs/ui-guidelines.md` y coinciden literalmente con §9.1.
 
 ### 9.1 Recetas (de #166 R2.1 y R3.1)
 
@@ -434,11 +433,35 @@ El inventario de secundarios extrae el testID con `/testID="([^"]+)"/`, y
 `/testID=(?:"([^"]+)"|\{([^}]+)\})/`, tomando el grupo 1 o, si no existe, el
 2. La lista esperada queda
 `['docs-upload-cancel', 'forgot-resend', 'reminders-delete-cancel', 'secondary.testID', 'welcome-have-account']`.
-El leader comprueba al re-medir que ninguno de los cuatro tags existentes
-cambia de testID con la regex nueva.
+Comprobado en 5fbe9eed: con la regex vieja y con la nueva, la extracción
+sobre el árbol da los mismos cuatro testIDs.
 
 El primario de Añadir mascota no suma nada: reutiliza el mismo tag de
 `celebration.tsx`.
+
+**Anclas** (medidas en 5fbe9eed, desde `mobile-pet-tracker/`, todas en
+`src/__tests__/consistency-classnames.test.ts`; cada `grep -cF` da `1`):
+
+| Candado | Ancla `grep -cF` | T14 | T8 |
+|---|---|---|---|
+| #166 R2, título | `"it('inventaría los diecinueve primarios con labio, fichero a fichero'"` | sin cambio: el total final vuelve a 19 | — |
+| #166 R2, fila nueva | `"[join('components', 'empty-state.tsx')]: 1,"` | inserta justo antes `[join('components', 'celebration.tsx')]: 1, // #171 R14` | — |
+| #166 R2, Vincular | `"[join('screens', 'pairing', 'index.tsx')]: 2,"` | — | `2` → `1`, con `// #171 R3: ready-map` |
+| #166 R2, `border-b-4` | `'expect(count(/\bborder-b-4\b/g)).toBe(19);'` | `19 + 1`, con `// #171 R14` | `19 + 1 - 1`, con `// #171 R3: ready-map` |
+| #166 R2, `border-black/25` | `'expect(count(/border-black\/25/g)).toBe(19);'` | igual | igual |
+| #62 R1 | `"expect(primaryRadius).toHaveLength(13 + 1 + 1 + 1 + 1 + 1 + 1);"` | `+ 1`, y al final del comentario de la línea `// #171 R14: celebration` | `- 1`, y `// #171 R3: ready-map` |
+| #98 R10 | `".toBe(13 + 1 + 1 + 1 + 1 + 1 + 1);"` | `+ 1`, `// #171 R14` | `- 1`, `// #171 R3` |
+| #166 R3, título | `"it('inventaría los cuatro secundarios neutros de toda la app'"` | `cuatro` → `cinco` | — |
+| #166 R3, extracción | `'return neutral ? [tag.match(/testID="([^"]+)"/)?.[1]] : [];'` | regex nueva, grupo 1 o el 2; lista esperada de arriba | — |
+| #166 R3, `border-lip-gray` | `"expect(count(/border-lip-gray/g)).toBe(4);"` | `4 + 1`, con `// #171 R14` | — |
+| #166 R3, `border-b-6` | `'expect(count(/\bborder-b-6\b/g)).toBe(4);'` | igual | — |
+| #166 R3, `it.each` | `"it.each(rows)('%s pinta %s con la receta del secundario en su tag de apertura'"` | sin fila nueva | — |
+
+No se mueven: `#166 R1` (`src/theme/__tests__/global-css.test.ts`, no hay
+token nuevo), `#166 R3` de Bienvenida (`src/screens/welcome/index.test.tsx`)
+y `#166 R4` (la carta; R15 añade su enmienda al final del fichero, después de
+`## Animación (decisiones por defecto)`, y #166 R4 solo ordena 12 < 13 <
+`## Animación`).
 
 ### 9.3 Re-medición (antes del handoff)
 
@@ -469,8 +492,44 @@ El leader:
    poses» de §7. También busca cualquier otro candado de poses que haya
    aparecido (`grep -rlF "no mete otras poses" mobile-pet-tracker/src`).
 
-Hasta entonces, R14 y sus tests (T14) **no se implementan**. Si Codex arranca
-sin esta sección rellena, **para**.
+**Resultado (2026-10-12, 5fbe9eed):**
+
+1. `git merge-base --is-ancestor d2b8b0ae origin/main` → sí.
+2. `origin/main` d2b8b0ae mergeada sin conflictos en 5fbe9eed.
+3. La tabla de §9.2 cuadra con la base medida y lleva sus anclas.
+   - #166 R2 **no lee testIDs**: cuenta la secuencia de className por
+     fichero. El `` `${testID}-action` `` dinámico de `EmptyState` cuenta
+     como `components/empty-state.tsx` = 1, y la fila de `celebration.tsx`
+     sigue el mismo método.
+   - `grep -cF -- '--color-lip-gray: ' src/theme/global.css` → `2` (los dos
+     temas). `border-lip-gray` y `border-b-6` ya están en cuatro tags de
+     producción con la suite verde en `origin/main` (98 suites, 2775 tests),
+     así que no chocan con `legibility-classnames` ni con `design-drift`.
+   - `` grep -cF '`rounded-xl bg-accent border-b-4 border-black/25`' ../docs/ui-guidelines.md `` → `1`
+     y `` grep -cF '`rounded-xl border-2 border-b-6 border-lip-gray bg-surface`' ../docs/ui-guidelines.md `` → `1`.
+     Las clases de R14.1 y R14.2 contienen esas secuencias contiguas, así que
+     **R14 no se enmienda** y su gate no se reabre.
+   - Cómo leen la clase del `Button` los candados de render de #166:
+     `screen.getByTestId(<testID>).props.className`, y la del texto,
+     `screen.getByText(<label>).props.className`
+     (`grep -cF "it('lleva el labio gris en el CTA secundario'" src/screens/welcome/index.test.tsx` → `1`).
+     T14 usa el mismo método.
+4. `EmptyState` cambió en #166 solo en la línea del `Button` (el labio de
+   `{testID}-action`). Sus imports siguen siendo los de 89fe2009, así que la
+   lista de §4.5 no cambia, y las seis anclas de §7 sobre
+   `empty-state.tsx` siguen en `1`. #166 dejó en
+   `src/components/__tests__/empty-state.test.tsx` dos `it` que leen la línea
+   exacta del `Button`: `it('declara el botón primario con labio'` y
+   `it('declara el botón sin size ni variant'` (cada uno → `1`). R10 solo
+   envuelve la pose, no toca esa línea: no se mueven.
+5. Poses en d2b8b0ae: las mismas ocho de 89fe2009. La lista de [[tasks]] T1 y
+   la fila «Bienvenida, poses» de §7 no cambian. El único candado de poses
+   sigue siendo `src/screens/welcome/index.test.tsx`.
+
+R14 y sus tests (T14) quedan desbloqueados. Si al arrancar Codex
+`origin/main` ya no es d2b8b0ae, rige el paso 5 sobre las
+poses y las anclas de §7 y §9.2 se vuelven a ejecutar antes de T1: cualquier
+`grep -cF` que no dé su valor es **parada**.
 
 ## 10. Alternativas descartadas
 
