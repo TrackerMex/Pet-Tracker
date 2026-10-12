@@ -3202,3 +3202,36 @@ Después de la aprobación del reviewer, un humano realiza y firma estos cinco p
 Las cuatro PARADAS y todos los registros anteriores se conservan. No se ejecutó init.sh, ni se tocó infraestructura, ni se hizo push o PR. El leader corre el gate compartido y el humano firma R14.
 
 R14: pendiente del smoke humano
+
+## c26 — trazabilidad
+
+Commit `e8440cd8 docs(mobile-weight-draw-and-toasts): #169 traceability`. Cadena c26 exit=0; stage exacto de impl y traceability verificado.
+
+## Lista cerrada contra H0 fc384b44
+
+```sh
+git diff --name-only fc384b44 HEAD -- . ':!feature_list.json' ':!progress/current.md' ':!progress/handoff_mobile-weight-draw-and-toasts.md' ':!specs/mobile-weight-draw-and-toasts/requirements.md' ':!specs/mobile-weight-draw-and-toasts/design.md' ':!specs/mobile-weight-draw-and-toasts/tasks.md' ':!progress/review_mobile-weight-draw-and-toasts.md'
+```
+```text
+mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+mobile-pet-tracker/src/__tests__/ui-copy-table.ts
+mobile-pet-tracker/src/__tests__/ui-language.test.ts
+mobile-pet-tracker/src/components/__tests__/weight-chart.test.tsx
+mobile-pet-tracker/src/components/weight-chart.tsx
+mobile-pet-tracker/src/i18n/catalog.ts
+mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx
+mobile-pet-tracker/src/screens/weight-log/index.test.tsx
+mobile-pet-tracker/src/screens/weight-log/index.tsx
+mobile-pet-tracker/src/utils/monthly-weight-delta.test.ts
+mobile-pet-tracker/src/utils/monthly-weight-delta.ts
+progress/impl_mobile-weight-draw-and-toasts.md
+specs/mobile-ui-language/design.md
+specs/mobile-weight-draw-and-toasts/traceability.md
+exit=0
+```
+
+Lista exacta de 14 ficheros verificada. c27 guarda esta salida mediante git commit --only progress/impl_mobile-weight-draw-and-toasts.md con el mensaje docs(mobile-weight-draw-and-toasts): #169 closed file list.
+
+Cierre: BASE 9/363, utilitario 1/11, ALL 99/2823, todos con exit=0; typecheck exit=0; lint exit=0 y vacio=0. Sondas S1, S4a, S4b, S6 y S11 revertidas con limpio=0. Pendientes del leader: gate compartido y PR; R14 corresponde al humano.
+
+R14: pendiente del smoke humano
