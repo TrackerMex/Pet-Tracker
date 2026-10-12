@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { NotificationFeedbackType, notificationAsync } from 'expo-haptics';
 import { Image } from 'expo-image';
 import { Button } from 'heroui-native';
 import { Modal, Text, View, useWindowDimensions } from 'react-native';
@@ -31,6 +32,8 @@ export function Celebration({ testID, title, body, details, primary, secondary }
   const badgeStyle = useAnimatedStyle(() => ({
     opacity: badgeOpacity.get(), transform: [{ scale: badgeScale.get() }],
   }));
+
+  useEffect(() => { void notificationAsync(NotificationFeedbackType.Success); }, []);
 
   useEffect(() => {
     pingoOpacity.set(withTiming(1, MOTION_FADE_TIMING));
