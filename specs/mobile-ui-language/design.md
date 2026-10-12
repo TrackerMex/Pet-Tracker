@@ -937,6 +937,15 @@ copy completa en cada una.
 | — | `geofences.needsCollar` | `Safe zones need a collar with an active plan.` | `Las zonas seguras necesitan un collar con plan activo.` | ← cambiada por #159 (R7) |
 | — | `home.activityNeedsCollar` | `Activity needs a collar with an active plan` | `La actividad necesita un collar con plan activo` | ← cambiada por #159 (R8) |
 
+### §2.24 — Añadidos por #171 — Celebraciones
+
+| # | Clave | `en` | `es` | Origen |
+|---|---|---|---|---|
+| — | `addPet.celebrateTitle` | `{{petName}} is home!` | `¡{{petName}} ya está en casa!` | ← añadida por #171 (R12) |
+| — | `addPet.celebrateBody` | `I'll help you look after {{petName}}. Pair a collar and I'll keep track of where they are.` | `Te ayudo a cuidar de {{petName}}. Vincula un collar y estaré pendiente de dónde está.` | ← añadida por #171 (R12) |
+| — | `addPet.celebratePair` | `Pair a collar` | `Vincular un collar` | ← añadida por #171 (R12) |
+| — | `addPet.celebrateLater` | `Not now` | `Ahora no` | ← añadida por #171 (R12) |
+
 ## 3. La infraestructura
 
 ### 3.1 Decisiones
