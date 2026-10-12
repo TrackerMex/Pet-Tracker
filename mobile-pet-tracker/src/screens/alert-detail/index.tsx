@@ -1,3 +1,4 @@
+import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { Button, Skeleton } from 'heroui-native';
 import { useEffect, useRef, useState } from 'react';
@@ -6,24 +7,53 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useUniwind } from 'uniwind';
 
 import { ackAlert } from '../../api/alerts';
+import { listGeofences } from '../../api/geofences';
+import { geofenceKeys } from '../../api/query-keys';
 import type { Alert } from '../../api/types';
 import { Card } from '../../components/card';
 import { PetMap, type MapCoordinates } from '../../components/pet-map';
 import { useAlertsList } from '../../hooks/use-alerts-list';
 import { useAuth } from '../../providers/auth-provider';
 import { useLocale, useTranslate } from '../../providers/language-provider';
-import { CONTINUOUS_CORNER } from '../../theme/native-styles';
+import { CONTINUOUS_CORNER, TABULAR_NUMS } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { settleAlertAck } from '../../utils/alert-ack-outcome';
 import { alertTypeMeta } from '../../utils/alert-meta';
-import { alertPosition } from '../../utils/alert-location';
+import { alertPosition, distanceMeters, formatDistance } from '../../utils/alert-location';
+import { zoomForRadius } from '../../utils/zoom-for-radius';
 
-function AlertDetailMap({ position }: { alert: Alert; position: MapCoordinates }) {
+function AlertDetailMap({ alert, position }: { alert: Alert; position: MapCoordinates }) {
   const { theme } = useUniwind();
+  const { token } = useAuth();
+  const baseUrl = process.env.EXPO_PUBLIC_API_URL;
+  const t = useTranslate();
+  const zones = useQuery({
+    queryKey: geofenceKeys.list(alert.petId),
+    queryFn: () => listGeofences(baseUrl, token ?? '', alert.petId),
+    enabled: alert.geofenceId !== null,
+  });
+  const zone = zones.data?.kind === 'ok'
+    ? zones.data.geofences.find((zona) => zona.id === alert.geofenceId)
+    : undefined;
+  const d = zone ? distanceMeters(position, { latitude: zone.centerLat, longitude: zone.centerLng }) : 0;
   return (
-    <View testID="alert-detail-map" className="h-52 overflow-hidden rounded-card" style={CONTINUOUS_CORNER}>
-      <PetMap center={position} marker={position} polylines={[]} circles={[]} colorScheme={theme === 'dark' ? 'dark' : 'light'} />
-    </View>
+    <>
+      <View testID="alert-detail-map" className="h-52 overflow-hidden rounded-card" style={CONTINUOUS_CORNER}>
+        <PetMap
+          center={position}
+          marker={position}
+          polylines={[]}
+          circles={zone ? [{ id: zone.id, center: { latitude: zone.centerLat, longitude: zone.centerLng }, radius: zone.radiusM }] : []}
+          zoom={zone ? zoomForRadius(d + zone.radiusM) : undefined}
+          colorScheme={theme === 'dark' ? 'dark' : 'light'}
+        />
+      </View>
+      {zone && Math.round(d - zone.radiusM) >= 1 ? (
+        <Text testID="alert-detail-distance" className="text-sm font-semibold text-foreground" style={TABULAR_NUMS}>
+          {t('alerts.distanceFromZone', { distance: formatDistance(d - zone.radiusM), zone: zone.name })}
+        </Text>
+      ) : null}
+    </>
   );
 }
 
