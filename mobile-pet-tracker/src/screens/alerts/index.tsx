@@ -14,6 +14,7 @@ import { useTranslate } from '../../providers/language-provider';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { settleAlertAck } from '../../utils/alert-ack-outcome';
 import { alertTypeMeta } from '../../utils/alert-meta';
+import { alertSection } from '../../utils/alert-sections';
 
 function fmtOpenedAt(
   iso: string,
@@ -60,10 +61,14 @@ export function AlertsScreen() {
     alerts.data?.pages.flatMap((page) =>
       page.kind === 'ok' ? page.items : [],
     ) ?? [];
-  const ordered = [
-    ...fetched.filter((alert) => alert.status === 'open'),
-    ...fetched.filter((alert) => alert.status !== 'open'),
-  ];
+  const now = new Date(alerts.dataUpdatedAt);
+  const ordered = (['today', 'week', 'earlier'] as const).flatMap((section) => {
+    const sectionRows = fetched.filter((alert) => alertSection(alert.openedAt, now) === section);
+    return [
+      ...sectionRows.filter((alert) => alert.status === 'open'),
+      ...sectionRows.filter((alert) => alert.status !== 'open'),
+    ];
+  });
   const rows = ordered.map((alert) =>
     alert.status === 'open' ? (acked[alert.id] ?? alert) : alert,
   );
@@ -78,7 +83,11 @@ export function AlertsScreen() {
   const displayedActionError =
     actionError ??
     (laterPageFailed ? t('common.somethingWentWrong') : null);
-  const now = new Date(alerts.dataUpdatedAt);
+  const sectionLabels = {
+    today: t('alerts.sectionToday'),
+    week: t('alerts.sectionThisWeek'),
+    earlier: t('alerts.sectionEarlier'),
+  };
 
   async function handleAck(alert: Alert) {
     if (ackingIdRef.current !== null) return;
@@ -156,7 +165,7 @@ export function AlertsScreen() {
           </Text>
         ) : null}
         ListEmptyComponent={empty}
-        renderItem={({ item }) => {
+        renderItem={({ item, index }) => {
           const rowId = `alert-row-${item.id}`;
           const meta = alertTypeMeta(item.type);
           const Icon = meta.Icon;
@@ -166,7 +175,7 @@ export function AlertsScreen() {
             muted,
           }[meta.ink];
 
-          return (
+          const card = (
             <Card
               testID={rowId}
               className="min-h-20 flex-row items-center gap-3"
@@ -226,6 +235,16 @@ export function AlertsScreen() {
               )}
             </Card>
           );
+          const section = alertSection(item.openedAt, now);
+          const firstInSection = index === 0 || alertSection(rows[index - 1].openedAt, now) !== section;
+          return firstInSection ? (
+            <View className="gap-4">
+              <Text testID={`alerts-section-${section}`} accessibilityRole="header" className="text-xs font-bold uppercase text-muted">
+                {sectionLabels[section]}
+              </Text>
+              {card}
+            </View>
+          ) : card;
         }}
       />
     </View>
