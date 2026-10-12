@@ -15,6 +15,7 @@ import { PetMap, type MapCoordinates } from '../../components/pet-map';
 import { useAlertsList } from '../../hooks/use-alerts-list';
 import { useAuth } from '../../providers/auth-provider';
 import { useLocale, useTranslate } from '../../providers/language-provider';
+import { useSelectedPet } from '../../providers/selected-pet-provider';
 import { CONTINUOUS_CORNER, TABULAR_NUMS } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { settleAlertAck } from '../../utils/alert-ack-outcome';
@@ -60,6 +61,7 @@ function AlertDetailMap({ alert, position }: { alert: Alert; position: MapCoordi
 export function AlertDetailScreen({ alertId }: { alertId: string }) {
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { signOut, token } = useAuth();
+  const { selectPet } = useSelectedPet();
   const alerts = useAlertsList();
   const t = useTranslate();
   const locale = useLocale();
@@ -154,6 +156,18 @@ export function AlertDetailScreen({ alertId }: { alertId: string }) {
         <>
           {card}
           {position ? <AlertDetailMap alert={alert} position={position} /> : null}
+          <Button
+            testID="alert-detail-view-map"
+            variant="secondary"
+            accessibilityRole="button"
+            className="min-h-11 rounded-xl border-2 border-b-6 border-lip-gray bg-surface"
+            onPress={() => {
+              selectPet(alert.petId);
+              router.dismissTo('/map');
+            }}
+          >
+            <Button.Label>{t('alerts.viewOnMap')}</Button.Label>
+          </Button>
           {alert.status === 'open' ? (
             <Button testID="alert-detail-ack" accessibilityRole="button" className="min-h-11" isDisabled={acking} onPress={() => void handleAck()}>
               <Button.Label>{t('alerts.ack')}</Button.Label>
