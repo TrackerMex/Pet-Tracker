@@ -203,3 +203,24 @@ describe('#169 R2: los puntos aparecen con el mismo progreso', () => {
     expect(screen.getAllByTestId('weight-chart-point')).toHaveLength(3);
   });
 });
+
+describe('#169 R3: bajo reduce motion la gráfica sale completa', () => {
+  it('sale completa sin llamar a withTiming', async () => {
+    mockUseReducedMotion.mockReturnValue(true);
+    mockWithTiming.mockImplementation(() => 0);
+    await render(
+      <WeightChart entries={[
+        makeWeight({ id: 'weight-3', weightKg: 14 }),
+        makeWeight({ id: 'weight-2', weightKg: 12 }),
+        makeWeight({ id: 'weight-1', weightKg: 10 }),
+      ]} />,
+      { wrapper: WeightChartWrapper },
+    );
+
+    expect(mockWithTiming).not.toHaveBeenCalled();
+    expect(screen.getByTestId('weight-chart-line').props.jestAnimatedProps?.value)
+      .toEqual({ strokeDashoffset: 0 });
+    expect(screen.getByTestId('weight-chart-points').props.jestAnimatedProps?.value)
+      .toEqual({ opacity: 1 });
+  });
+});
