@@ -166,6 +166,13 @@
 >     - las anclas `grep` de abajo dan los valores de base y final;
 >     - cada mutación da sus `●`.
 >
+>     Después lo repitió al pie de la letra: copió c29-c34 y SE3.1-SE3.7 de
+>     este fichero y los ejecutó tal cual, uno tras otro. Cada cadena salió
+>     con 0. Cada sonda dio `plantada=0`, `exit=1`, `sonda=0` y `limpio=0`,
+>     con la línea `Tests:` que se indica en ella. El FINAL dio 433. En c33,
+>     el lint murió una vez por SIGKILL con carga 14 de otras sesiones; la
+>     corrección 11 ya cubre ese caso (esperar y repetir la cadena entera).
+>
 >     **c29, E3.1** (R8: en `'$fila: sin mapa'`, la primera línea del cuerpo
 >     pasa a las dos líneas de E3.1):
 >
