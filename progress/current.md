@@ -55,6 +55,13 @@
   ALL tras c1 (2775) y ALL final (99/2841 = 2775 + 66); la simulación tuvo rojos de
   entorno (copia sin `.env.example` ni `hosting/`). Correcciones del leader a
   tasks.md/design.md en H0, listadas en la cabecera del handoff.
-- **Siguiente**: esperar a Codex. Después: avisar a Backend (#170) y sites-99 (#169),
-  init.sh (pgrep antes), reviewer, push y PR, smoke R15 del humano y cierre (marcar la
-  casilla de la carta citando la edición de Notion 2026-10-12T15:24:14Z).
+- **Ronda 1 rechazada; Enmienda E1** (solo tests) firmada en Notion y commiteada en
+  c32ae760. Handoff de la ronda 2 en 26989b9e: bloque `== ENMIENDA E1 - RONDA 2 ==`
+  con las mutaciones y las sondas como parches en `specs/mobile-account-screens-pingo/e1/`.
+  Validado en un spike ejecutando sus cadenas, ALL medido 99/2851. La validación
+  destapó dos fallos del handoff, ya corregidos: lint con SIGKILL por carga (regla
+  de reintento de la cola) y una espera con pgrep que casaba consigo misma.
+- **Siguiente**: esperar a Codex (ronda 2). Después: avisar a Backend (#170) y sites-99 (#169),
+  init.sh (pgrep antes), reviewer ronda 2 (diff contra H1, sin review_*.md), push y PR,
+  smoke R15 del humano y cierre (marcar la casilla de la carta citando la edición de
+  Notion 2026-10-12T15:24:14Z).
