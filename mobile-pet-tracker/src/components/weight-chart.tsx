@@ -41,10 +41,10 @@ export function WeightChart({ entries }: { entries: WeightEntry[] }) {
 function WeightChartPlot({ entries }: { entries: WeightEntry[] }) {
   const [accent] = useThemeColors(['accent-strong']);
   const reducedMotion = useReducedMotion();
-  const progress = useSharedValue(0);
+  const progress = useSharedValue(reducedMotion ? 1 : 0);
 
   useEffect(() => {
-    progress.set(reducedMotion ? 1 : withTiming(1, MOTION_FILL_TIMING));
+    if (!reducedMotion) progress.set(withTiming(1, MOTION_FILL_TIMING));
   }, [progress, reducedMotion]);
 
   const ascending = [...entries].reverse();
