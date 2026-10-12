@@ -63,6 +63,31 @@ jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 40, right: 0, bottom: 24, left: 0 }),
 }));
 
+jest.mock('reicon-react-native', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
+  const icon = (testID: string) =>
+    function MockIcon({ size, color }: { size?: number; color?: string }) {
+      const props = { testID, size, style: { color } };
+      return React.createElement(Text, props);
+    };
+
+  return {
+    ...jest.requireActual('reicon-react-native'),
+    Minus: icon('icon-minus'),
+    TrendUp: icon('icon-trend-up'),
+    TrendDown: icon('icon-trend-down'),
+    Check: icon('icon-check'),
+  };
+});
+
+jest.mock('../../theme/use-theme-colors', () => {
+  const colors: Record<string, string> = {
+    success: 'green', danger: 'red', muted: 'gray', 'accent-strong': 'blue',
+  };
+  return { useThemeColors: (tokens: readonly string[]) => tokens.map((token) => colors[token]) };
+});
+
 const originalOS = Platform.OS;
 
 const apiUrl = 'http://example.test/v1';
@@ -734,5 +759,58 @@ describe('#148 R8: weight-log entrega el primer toque con el teclado abierto', (
     await waitFor(() => expect(screen.getByTestId('screen-weight-log')).toBeVisible());
 
     expect(screen.getByTestId('weight-log-form').props.keyboardShouldPersistTaps).toBe('handled');
+  });
+});
+
+function prepareWeightLogTests() {
+  jest.clearAllMocks();
+  process.env.EXPO_PUBLIC_API_URL = apiUrl;
+  mockUseAuth.mockReturnValue({
+    status: 'authenticated', token: 'jwt-token',
+    signIn: jest.fn(), signOut: jest.fn(),
+  } satisfies AuthContextValue);
+  mockCreateWeight.mockReturnValue(pending<CreateWeightState>());
+  mockListWeights.mockResolvedValue({ kind: 'ok', weights: [] });
+}
+
+describe('#169 R8: chip de delta por entrada', () => {
+  const cases = [
+    ['w-up', 0.4, 'bg-danger-soft', 'text-danger', 'icon-trend-up', 'red', '+0.4 kg'],
+    ['w-down', -0.2, 'bg-success-soft', 'text-success', 'icon-trend-down', 'green', '-0.2 kg'],
+    ['w-flat', 0, 'bg-default', 'text-muted', 'icon-minus', 'gray', '0 kg'],
+    ['w-none', null, 'bg-default', 'text-muted', 'icon-minus', 'gray', '—'],
+  ] as const;
+
+  beforeEach(() => {
+    prepareWeightLogTests();
+    mockListWeights.mockResolvedValue({
+      kind: 'ok',
+      weights: cases.map(([id, variation]) => makeWeight({ id, variation })),
+    });
+  });
+
+  it.each(cases)('fila %s con su tono, icono y texto', async (
+    id, _variation, tileClassName, textClassName, iconId, color, text,
+  ) => {
+    await renderWeightLog();
+    await waitFor(() => expect(screen.getByTestId('weight-row-w-up')).toBeVisible());
+    const tile = screen.getByTestId(`weight-row-${id}-tone`);
+
+    expect(tile.props.className).toContain(tileClassName);
+    for (const other of ['bg-danger-soft', 'bg-success-soft', 'bg-default']) {
+      if (other !== tileClassName) expect(tile.props.className).not.toContain(other);
+    }
+    const icon = within(tile).getByTestId(iconId);
+    expect(icon.props.style.color).toBe(color);
+    expect(icon.props.size).toBe(15);
+    for (const other of ['icon-trend-up', 'icon-trend-down', 'icon-minus']) {
+      if (other !== iconId) expect(within(tile).queryByTestId(other)).toBeNull();
+    }
+    const delta = screen.getByTestId(`weight-row-${id}-delta`);
+    expect(delta).toHaveTextContent(text, { exact: true });
+    expect(delta.props.className).toContain(textClassName);
+    for (const other of ['text-danger', 'text-success', 'text-muted']) {
+      if (other !== textClassName) expect(delta.props.className).not.toContain(other);
+    }
   });
 });
