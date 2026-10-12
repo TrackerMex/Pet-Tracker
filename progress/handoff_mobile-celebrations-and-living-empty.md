@@ -155,6 +155,41 @@
 >   total`, y el ALL sigue en 2826. Cualquier otra cifra es PARADA. Las
 >   sondas de c17 (S8.1) van después, como estaba previsto.
 
+> **Reanudación 4** (2026-10-12; el leader la commitea encima de c23
+> `6c9f98d1` con `git commit --only`, H0 sigue siendo `d01b03bf`):
+> - **Parada**: c24 dio las tres cifras esperadas: medida 206/206,
+>   GUARDAS 96/96 y ALL `exit=0` con 99 suites y 2853 tests. El log del
+>   ALL trae el aviso «A worker process has failed to exit gracefully and
+>   has been force exited». Con la parada de T12 («avisa de handles
+>   abiertos») cortaste la cadena en el typecheck. No hay nada stageado ni
+>   commiteado.
+> - **Causa**: la regla de parada era ambigua (error del leader). Ese aviso
+>   sale una vez, al final, en todos los ALL completos de este VPS, también
+>   antes de que #171 tocara código: `/tmp/171-all-base.txt` (H0, igual que
+>   main), y cada ALL de c2 a c22. Lo traen también los ALL de #167, #168,
+>   #169 y #170. No identifica ninguna suite y no viene de `EmptyState`. El
+>   leader lo comprobó fuera del árbol. Montó las suites consumidoras con tu
+>   `empty-state.tsx` de c24 y con el de c23: los mismos tiempos y 0 avisos
+>   con c24. `detail-stack.guard`, Inicio y Mapa, cada una sola, tardan lo
+>   mismo en las dos versiones (9,4 s contra 9,3 s en `detail-stack.guard`).
+>   Tu medida de c24 tampoco trae el aviso.
+> - **Corrección** (no cambia requisitos ni cifras): la parada de T12, en
+>   tasks.md y en el bloque c24 de abajo, ya no cuenta ese aviso suelto al
+>   final del ALL. Sigue siendo PARADA si una suite consumidora sale roja,
+>   si algún log trae `Exceeded timeout`, o si el aviso aparece en la
+>   medida o en GUARDAS. Esto vale para los ALL que quedan (c26, c28 y
+>   Cierre).
+> - **Al reanudar**: no repitas las comprobaciones de arranque. HEAD es el
+>   commit de esta nota, hijo directo de `6c9f98d1`. `git status --short`
+>   debe dar exactamente ` M mobile-pet-tracker/src/components/empty-state.tsx`
+>   y `?? progress/impl_mobile-celebrations-and-living-empty.md`. No toques
+>   `empty-state.tsx`. Añade al impl un apartado `## Reanudación 4`. No
+>   repitas la medida, GUARDAS ni el ALL de c24: `/tmp/171-c24.txt`,
+>   `/tmp/171-c24-guardas.txt` y `/tmp/171-c24-all.txt` siguen valiendo.
+>   Corre la cadena de c24 desde su primer `grep -qE` hasta el `git commit`.
+>   Si falta alguno de los tres logs, corre el bloque c24 entero. Después
+>   sigue con S12.1 y con c25. Cualquier cifra distinta es PARADA.
+
 ---
 
 ```
@@ -1054,7 +1089,10 @@ reduce motion; imports exactamente las seis lineas de §4.5, y
     && git commit -m 'feat(mobile): Pingo flota en los vacíos (R10)'
 
   Parada de tasks.md T12: si alguna suite consumidora de EmptyState se
-  pone roja en el ALL, cuelga o avisa de handles abiertos, PARA.
+  pone roja en el ALL, si algun log trae `Exceeded timeout`, o si el aviso
+  «A worker process has failed to exit gracefully» sale en la medida o en
+  GUARDAS, PARA. Ese aviso suelto al final del ALL no es parada: sale en
+  todos los ALL desde la base (Reanudacion 4).
   Despues, la sonda de tasks.md T12, sobre src/components/empty-state.tsx,
   midiendo solo empty-state.test.tsx:
     S12.1 anade ` | 'celebrate'` al final de la union de `EmptyStatePose`

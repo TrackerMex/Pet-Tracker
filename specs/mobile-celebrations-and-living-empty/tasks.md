@@ -621,10 +621,13 @@ commit verde, precedidos por un refactor del arnés.
 
 **Parada:** si tras el verde alguna suite consumidora de `EmptyState` (Inicio,
 Mapa, Salud, Docs, Zonas, Recordatorios, Alertas, Comidas) se pone roja fuera
-de los 3 `it` de Docs de arriba, cuelga o avisa de handles abiertos, **para** y
-reporta. No se añaden mocks en suites ajenas sin enmienda. Medido por el
-leader en un spike fuera del árbol: las 22 suites consumidoras corren en el
-mismo tiempo que la base y sin avisos de worker.
+de los 3 `it` de Docs de arriba, o excede su timeout, **para** y reporta.
+También para si «A worker process has failed to exit gracefully» sale en
+la medida o en las guardas. Ese aviso no cuenta cuando sale una sola vez al
+final del ALL completo: sale así en todos los ALL desde la base, antes de
+#171 (Reanudación 4 del handoff). No se añaden mocks en suites ajenas sin
+enmienda. Medido por el leader en un spike fuera del árbol: las 22 suites
+consumidoras corren en el mismo tiempo que la base y sin avisos de worker.
 
 ## T13 — R11: reduce motion en los vacíos
 
