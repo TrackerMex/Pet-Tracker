@@ -1303,3 +1303,102 @@ del handoff hasta c27, con las tres correcciones del paso 5 de la
 Reanudacion 2 (consultas a nodos ocultos en F y G, fila R3 de la
 trazabilidad con c3 y c3b, 28 commits en total y 26 en A-M).
 ```
+
+## Reanudación 4: tras la parada en c7 (2026-10-12)
+
+> c4 a c7 quedaron commiteados y bien (`74447b19`, `bb71dc3b`, `e65457de`,
+> `ce060f18`). Codex paró en c7 por dos causas, y ninguna es suya:
+>
+> 1. El lint de c7 no llegó a terminar. El kernel mató eslint por falta de
+>    memoria (`error: Failed to run "eslint" due to signal SIGKILL`) mientras
+>    otras sesiones del VPS corrían jest y eslint, y `bunx expo lint` salió
+>    con 0 de todos modos. Codex lo cazó porque leyó el log. El leader repitió
+>    `bunx expo lint --no-cache` sobre `ce060f18` sin esa carga: salida vacía,
+>    exit 0, 0 warnings. c7 queda validado y no se toca. `<LINT n>` no
+>    detectaba ese caso; a partir de aquí incluye `! grep -qF 'Failed to run'`
+>    y una regla de reintento.
+> 2. El ancla de c8 `grep -cF 'h-52 w-full rounded-card'` = 1 estaba mal.
+>    `pet-info-skeleton` ya lleva ese literal en la base, y R4.4 se lo da
+>    también a `profile-hero-skeleton`, así que tras el verde de D sale 2.
+>    El error fue del leader: escribió la cifra futura sin medir la base. Se
+>    corrige a 2 y se añade un ancla que fija a qué skeleton va.
+>
+> El leader ha comprobado las demás cifras futuras de Perfil y Nutrición
+> contra la base y la spec (`bg-accent-soft` 2→1 en E, `CONTINUOUS_CORNER`
+> 4→8 en Perfil y 2→1 en Nutrición), y cuadran. H0 sigue siendo
+> `b082f6e5`. Este commit solo toca este fichero, que está fuera de la lista
+> cerrada.
+
+Pegar en Codex CLI:
+
+```
+Worktree: /home/claude/sites/Pet-Tracker-wt-168   <- PRIMERA LINEA. Trabaja AQUI y en ningun otro sitio
+Reanudacion 4 de #168 tras la parada en c7. Ejecuta y pega en
+progress/impl_mobile-tab-headers-canvas.md, bajo una seccion nueva
+«## Reanudacion 4»:
+  cd /home/claude/sites/Pet-Tracker-wt-168 && pwd
+  git branch --show-current
+  git rev-parse --short HEAD~1
+  git log --oneline b082f6e5..HEAD
+  git status --short
+PARA si:
+- la branch no es feature/168-mobile-tab-headers-canvas;
+- HEAD~1 no es ce060f18 (tu c7);
+- el log no son exactamente doce commits: el del leader que anade esta
+  reanudacion, ce060f18, e65457de, bb71dc3b, 74447b19, 9039b87b,
+  675c465e, f08b7b79, 2c01414a, 1abc7950, c5618f43 y fdd98bcf;
+- `git status --short` no es exactamente esta linea:
+  ?? progress/impl_mobile-tab-headers-canvas.md
+H0 sigue siendo b082f6e5. Siguen en vigor todas las reglas del handoff
+original y las tres correcciones del paso 5 de la Reanudacion 2.
+c7 no se rehace ni se enmienda: el leader valido su lint (salida vacia,
+exit 0, 0 warnings).
+
+Regla de extraccion: cada cadena empieza en su primera linea de comando
+y termina en su linea `git commit -m '...'`, esa incluida. Nada de lo
+que va detras es comando: ni las cabeceras `-- Bloque ... --`, ni las
+lineas `cN, ...`, ni la prosa. Las lineas con `->` son lo esperado, no
+comandos.
+
+Cambio 1, el lint. Desde aqui, y hasta c27, `<LINT n>` es:
+  bunx expo lint --no-cache > /tmp/168-lint.txt 2>&1 && ! grep -qF 'Failed to run' /tmp/168-lint.txt && test "$(grep -cE '^ +[0-9]+:[0-9]+ +warning ' /tmp/168-lint.txt)" = <n>
+Sustituye a la definicion del handoff original; las n de cada cadena no
+cambian (0 salvo c17-c21: 1, 2, 2, 2, 1). Si una cadena para y
+/tmp/168-lint.txt contiene `Failed to run`, eslint murio por memoria y
+no es un fallo de tu codigo: no toques nada, ejecuta `sleep 60` y
+relanza esa misma cadena entera desde su primera linea (la medida de
+jest que va antes no se repite). Como mucho tres intentos por cadena; si
+el tercero tambien da `Failed to run`, PARA y copia al impl las tres
+salidas.
+
+Anclas, desde mobile-pet-tracker/
+(`cd /home/claude/sites/Pet-Tracker-wt-168/mobile-pet-tracker && pwd`):
+  grep -cF 'h-52 w-full rounded-card' src/screens/profile/index.tsx   -> 1
+  grep -cF 'testID="profile-hero-skeleton" className="h-80 w-full rounded-card"' src/screens/profile/index.tsx   -> 1
+  git diff --stat HEAD -- . | wc -l   -> 0
+Si alguna no da su cifra, PARA.
+
+Paso 1: c8 (el verde de D, como en el handoff original, con el ancla del
+skeleton corregida; tasks.md bloque D (2); `PetAvatar` de
+src/components/pet-avatar.tsx tal cual, sin tocarlo; `<PetPills>` con
+`testID="profile-pet-chips"` en su contenedor, R5 decide su contenido).
+Desde mobile-pet-tracker/:
+  FORCE_COLOR=0 bunx jest --runTestsByPath src/screens/profile/index.test.tsx > /tmp/168-g4.txt 2>&1; echo "exit=$?"
+    -> exit=0 y `Tests:       47 passed, 47 total`
+  <GUARDAS> > /tmp/168-g4-guardas.txt 2>&1; echo "exit=$?"
+  grep -qE '^Tests: +47 passed, 47 total$' /tmp/168-g4.txt \
+    && grep -qE '^Tests: +92 passed, 92 total$' /tmp/168-g4-guardas.txt \
+    && test "$(grep -cF '<PetHeroHeader' src/screens/profile/index.tsx)" = 0 \
+    && test "$(grep -cF 'h-52 w-full rounded-card' src/screens/profile/index.tsx)" = 2 \
+    && test "$(grep -cF 'testID="profile-hero-skeleton" className="h-52 w-full rounded-card"' src/screens/profile/index.tsx)" = 1 \
+    && test ! -e .expo/types/router.d.ts && bun run typecheck && <LINT 0> \
+    && git add src/screens/profile/index.tsx \
+    && test "$(git diff --cached --name-only)" = 'mobile-pet-tracker/src/screens/profile/index.tsx' \
+    && <LIMPIO> \
+    && git commit -m 'feat(mobile): tarjeta de mascota en Perfil (#168 R4)'
+
+Paso 2: c9 y el resto del handoff original hasta c27, con el `<LINT n>`
+del cambio 1 y las tres correcciones del paso 5 de la Reanudacion 2
+(consultas a nodos ocultos en F y G, fila R3 de la trazabilidad con c3 y
+c3b, 28 commits en total y 26 en A-M).
+```
