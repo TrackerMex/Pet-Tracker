@@ -389,6 +389,10 @@ export const R9_ADD_PET: UseRow[] = [
   { file: 'src/screens/add-pet/index.tsx', key: 'addPet.savePet' },
   { file: 'src/screens/add-pet/index.tsx', key: 'addPet.no' },
   { file: 'src/screens/add-pet/index.tsx', key: 'addPet.microchip' },
+  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.celebrateTitle' },
+  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.celebrateBody' },
+  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.celebratePair' },
+  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.celebrateLater' },
 ];
 
 export const R10_PAIRING: UseRow[] = [
