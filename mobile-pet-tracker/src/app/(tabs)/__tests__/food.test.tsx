@@ -1356,3 +1356,31 @@ describe('#168 R8: food-plan-card pinta el anillo', () => {
     expect(consumed).toHaveTextContent('0 kcal');
   });
 });
+
+describe('#168 R9: el anillo dice el porcentaje acotado', () => {
+  beforeEach(setupFood168);
+
+  it.each([
+    { merKcal: 656, kcal: 0, percent: '0%', offset: 276.46 },
+    { merKcal: 656, kcal: 328, percent: '50%', offset: 138.23 },
+    { merKcal: 656, kcal: 656, percent: '100%', offset: 0 },
+    { merKcal: 1420, kcal: 890, percent: '63%', offset: 102.29 },
+    { merKcal: 1000, kcal: 333, percent: '33%', offset: 185.23 },
+    { merKcal: 200, kcal: 33, percent: '17%', offset: 229.46 },
+    { merKcal: 0, kcal: 0, percent: '0%', offset: 276.46 },
+    { merKcal: 656, kcal: 984, percent: '150%', offset: 0 },
+  ])('con $merKcal/$kcal pinta $percent y desfase $offset', async ({ merKcal, kcal, percent, offset }) => {
+    mockGetNutritionPlan.mockResolvedValue({
+      kind: 'ok',
+      plan: makePlan({ merKcal, kcalConsumedToday: kcal }),
+    });
+    await renderFood();
+    await screen.findByTestId('food-plan-card');
+    const fill = screen.getByTestId('food-plan-ring-fill');
+    await waitFor(() => {
+      expect(screen.getByTestId('food-plan-percent')).toHaveTextContent(percent);
+      expect(Object.keys(fill.props.jestAnimatedProps.value)).toEqual(['strokeDashoffset']);
+      expect(fill.props.jestAnimatedProps.value.strokeDashoffset).toBeCloseTo(offset, 2);
+    });
+  });
+});
