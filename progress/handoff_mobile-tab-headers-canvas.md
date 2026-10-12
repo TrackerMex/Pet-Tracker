@@ -1233,3 +1233,73 @@ c27, con estas tres correcciones:
 - Los commits de A-M son 26 (c1-c25 mas c3b) y en total 28: donde el
   handoff dice 27 y 25, cuenta 28 y 26.
 ```
+
+## Reanudación 3: tras el commit de c3b (2026-10-12)
+
+> c3b quedó commiteado y bien (`675c465e`: exactamente las dos consultas
+> con `{ includeHiddenElements: true }`, rojo `6 failed, 132 passed, 138
+> total`, typecheck y lint 0). Codex paró después: al extraer la cadena se
+> llevó la prosa que la Reanudación 2 ponía justo debajo del `git commit`,
+> sin línea en blanco, y bash la ejecutó (`Tests:: command not found`,
+> exit=127). No hubo daño: árbol limpio salvo el impl, y el verde de B
+> sigue en `/tmp/168-b-verde-index.tsx` (el leader lo comparó con HEAD:
+> 26 inserciones y 5 borrados, como antes del paso 1). El fallo fue de
+> redacción del leader, igual que en #170. Esta reanudación hace el paso 4
+> de la Reanudación 2 y retoma en c4. Cada cadena termina en su línea
+> `git commit -m '...'`, y no hay prosa pegada a ningún comando. H0 sigue
+> siendo `b082f6e5`. Este commit solo toca este fichero, que está fuera de
+> la lista cerrada.
+
+Pegar en Codex CLI:
+
+```
+Worktree: /home/claude/sites/Pet-Tracker-wt-168   <- PRIMERA LINEA. Trabaja AQUI y en ningun otro sitio
+Reanudacion 3 de #168 tras el commit de c3b. Ejecuta y pega en
+progress/impl_mobile-tab-headers-canvas.md, bajo una seccion nueva
+«## Reanudacion 3»:
+  cd /home/claude/sites/Pet-Tracker-wt-168 && pwd
+  git branch --show-current
+  git rev-parse --short HEAD~1
+  git log --oneline b082f6e5..HEAD
+  git status --short
+PARA si:
+- la branch no es feature/168-mobile-tab-headers-canvas;
+- HEAD~1 no es 675c465e (tu c3b);
+- el log no son exactamente siete commits: el del leader que anade esta
+  reanudacion, 675c465e, f08b7b79, 2c01414a, 1abc7950, c5618f43 y
+  fdd98bcf;
+- `git status --short` no es exactamente esta linea:
+  ?? progress/impl_mobile-tab-headers-canvas.md
+H0 sigue siendo b082f6e5. Siguen en vigor todas las reglas del handoff
+original y las tres correcciones del paso 5 de la Reanudacion 2.
+
+Regla de extraccion: cada cadena empieza en su primera linea de comando
+y termina en su linea `git commit -m '...'`, esa incluida. Nada de lo
+que va detras es comando: ni las cabeceras `-- Bloque ... --`, ni las
+lineas `cN, ...`, ni la prosa. Las lineas con `->` son lo esperado, no
+comandos.
+
+Anclas, desde mobile-pet-tracker/
+(`cd /home/claude/sites/Pet-Tracker-wt-168/mobile-pet-tracker && pwd`):
+  grep -cF 'importantForAccessibility="no-hide-descendants"' /tmp/168-b-verde-index.tsx   -> 1
+  grep -cF 'includeHiddenElements: true' src/screens/health/index.test.tsx   -> 2
+  git diff --stat HEAD -- . | wc -l   -> 0
+Si alguna no da su cifra, PARA.
+
+Paso 1, restaura el verde de B (el paso 4 de la Reanudacion 2), desde
+mobile-pet-tracker/:
+  cp /tmp/168-b-verde-index.tsx src/screens/health/index.tsx && git diff --stat -- src/screens/health/index.tsx | tail -1
+    -> ` 1 file changed, 26 insertions(+), 5 deletions(-)`
+  git -C .. status --short
+    -> exactamente estas dos lineas:
+        M mobile-pet-tracker/src/screens/health/index.tsx
+       ?? progress/impl_mobile-tab-headers-canvas.md
+Si no, PARA.
+
+Paso 2: c4 entero, tal como esta en el handoff original (medida a
+/tmp/168-g2.txt y su cadena, sin cambiar ninguna cifra): `Tests:
+138 passed, 138 total` y GUARDAS 92. Despues sigue con c5 y el resto
+del handoff hasta c27, con las tres correcciones del paso 5 de la
+Reanudacion 2 (consultas a nodos ocultos en F y G, fila R3 de la
+trazabilidad con c3 y c3b, 28 commits en total y 26 en A-M).
+```
