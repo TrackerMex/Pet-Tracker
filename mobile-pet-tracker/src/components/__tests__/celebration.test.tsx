@@ -271,3 +271,55 @@ describe('#171 R7: pop', () => {
     });
   });
 });
+
+describe('#171 R8: reduce motion', () => {
+  beforeEach(() => {
+    mockUseReducedMotion.mockReturnValue(true);
+    jest.useFakeTimers();
+  });
+  afterEach(() => { jest.useRealTimers(); });
+
+  it('R8.1 no monta confeti ni piezas', async () => {
+    await renderProbe();
+    expect(screen.queryByTestId('probe-confetti', { includeHiddenElements: true })).toBeNull();
+    expect(screen.queryByTestId('probe-confetti-0', { includeHiddenElements: true })).toBeNull();
+  });
+
+  it('R8.1 los hijos directos omiten el confeti', async () => {
+    await renderProbe();
+    expect(screen.getByTestId('probe').children.map((child) => typeof child === 'string' ? child : child.props.testID))
+      .toEqual(['probe-hero', 'probe-title', 'probe-body', 'probe-details', 'probe-actions']);
+  });
+
+  it('R8.2 Pingo empieza transparente a escala 1', async () => {
+    await renderProbe();
+    expect(getAnimatedStyle(screen.getByTestId('probe-pingo'))).toEqual({
+      width: 200, height: 200, opacity: 0, transform: [{ scale: 1 }],
+    });
+  });
+
+  it('R8.2 Pingo conserva el fundido a los 2000 ms', async () => {
+    await renderProbe();
+    await act(async () => { jest.advanceTimersByTime(2000); });
+    expect(getAnimatedStyle(screen.getByTestId('probe-pingo'))).toEqual({
+      width: 200, height: 200, opacity: 1, transform: [{ scale: 1 }],
+    });
+  });
+
+  it('R8.3 la insignia empieza transparente a escala 1', async () => {
+    await renderProbe();
+    expect(getAnimatedStyle(screen.getByTestId('probe-badge', { includeHiddenElements: true }))).toEqual({
+      position: 'absolute', right: 0, bottom: 0, opacity: 0, transform: [{ scale: 1 }],
+    });
+  });
+
+  it('R8.3 la insignia conserva el fundido retardado a los 300 y 2400 ms', async () => {
+    await renderProbe();
+    await act(async () => { jest.advanceTimersByTime(300); });
+    expect(getAnimatedStyle(screen.getByTestId('probe-badge', { includeHiddenElements: true })).opacity).toBe(0);
+    await act(async () => { jest.advanceTimersByTime(2100); });
+    expect(getAnimatedStyle(screen.getByTestId('probe-badge', { includeHiddenElements: true }))).toEqual({
+      position: 'absolute', right: 0, bottom: 0, opacity: 1, transform: [{ scale: 1 }],
+    });
+  });
+});
