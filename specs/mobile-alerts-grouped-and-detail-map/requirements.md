@@ -1,6 +1,6 @@
 ---
 feature: "mobile-alerts-grouped-and-detail-map"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec, mobile]
 ---
 
@@ -424,7 +424,7 @@ Delimitaciones (no son features pendientes):
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [x] Aprobado por humano (fecha: 2026-10-12) ← gate obligatorio antes de implementar
 
 ## Smoke R17
 
