@@ -548,6 +548,14 @@ describe('#170 R10: pinta la zona y la distancia a su borde', () => {
     expect(map.props.zoom).toBeCloseTo(16.0740, 3);
     expect(mockListGeofences).toHaveBeenCalledWith('http://example.test/v1', 'token-1', 'pet-1');
   });
+  it('consulta las zonas de la mascota de la alerta, no de la seleccionada', async () => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ petId: 'pet-7', geofenceId: 'zone-1', payload: REAL_PAYLOAD })], nextCursor: null });
+    mockListGeofences.mockResolvedValue({ kind: 'ok', geofences: [{ ...ZONE, petId: 'pet-7' }] });
+    await renderDetail();
+    expect(await screen.findByTestId('alert-detail-distance')).toHaveTextContent('A 85 m de Casa');
+    expect(mockListGeofences).toHaveBeenCalledWith('http://example.test/v1', 'token-1', 'pet-7');
+    expect(mockListGeofences).not.toHaveBeenCalledWith('http://example.test/v1', 'token-1', 'pet-1');
+  });
   it('dice «85 m from Casa» en inglés', async () => {
     await renderDetail('alert-1', 'en');
     expect(await screen.findByTestId('alert-detail-distance')).toHaveTextContent('85 m from Casa');
@@ -566,7 +574,8 @@ describe('#170 R10: pinta la zona y la distancia a su borde', () => {
   });
   it('lee la zona de la caché compartida de geofenceKeys.list', async () => {
     const queryClient = createQueryClient(jest.fn(), 60_000);
-    queryClient.setQueryData(geofenceKeys.list('pet-1'), { kind: 'ok', geofences: [ZONE] });
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ petId: 'pet-7', geofenceId: 'zone-1', payload: REAL_PAYLOAD })], nextCursor: null });
+    queryClient.setQueryData(geofenceKeys.list('pet-7'), { kind: 'ok', geofences: [{ ...ZONE, petId: 'pet-7' }] });
     mockListGeofences.mockReturnValue(new Promise(() => undefined));
     try {
       await render(<QueryClientProvider client={queryClient}><DetailWrapper><AlertDetailScreen alertId="alert-1" /></DetailWrapper></QueryClientProvider>);
