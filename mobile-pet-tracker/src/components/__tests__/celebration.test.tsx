@@ -436,3 +436,11 @@ describe('#171 R12: copy de la variante sin collar', () => {
   });
 });
 
+
+it('#171 R15: docs/ui-guidelines.md declara la enmienda del confeti', () => {
+  const source = readFileSync(join(process.cwd(), '..', 'docs', 'ui-guidelines.md'), 'utf8');
+  const amendment = "## Enmienda \u0023171 — confeti de celebración\n\nEl punto 7 solo admite como bucles los «Bucles de reposo» de Pingo. El confeti de `Celebration`\n(`src/components/celebration.tsx`) no es un bucle: es **una sola pasada** de\n24 piezas que caen con `withTiming` (`MOTION_CONFETTI_FALL_TIMING`, entre\n`MOTION_CONFETTI_MIN_MS` y `MOTION_CONFETTI_MIN_MS + MOTION_CONFETTI_SPREAD_MS`\nde duración) y se desvanecen. Las reglas son:\n\n- solo en celebraciones del tier «raro» (vincular un collar, primera mascota);\n- es decorativo: `pointerEvents=\"none\"` y oculto a la accesibilidad;\n- con reduce motion activo **no se monta**;\n- solo anima `transform` y `opacity`.";
+  expect(source.split(amendment)).toHaveLength(2);
+  expect(source.indexOf(amendment)).toBeGreaterThan(source.indexOf('## Checklist de autocrítica'));
+  expect(source.slice(source.indexOf(amendment) + amendment.length)).toMatch(/^\n\n- \[[ xX]\] Aprobada por humano \(fecha: [^)\n]*\)(?:\n|$)/);
+});
