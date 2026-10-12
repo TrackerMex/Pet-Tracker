@@ -18479,3 +18479,915 @@ La salida de status fue vacía. PARADA en el control inicial: HEAD esperado 5892
 No se repiten cadenas, tests ni commits y no se modifica producción. Esta anotación, requerida por la nueva recepción, queda como único cambio sin commitear en el impl.
 
 R17: pendiente del smoke humano
+
+## Enmienda E3
+
+Reanudación 7: corrección 16, desde c29; H0 permanece `584ef2d9`.
+
+Comprobación inicial, antes de editar:
+
+```text
+pwd: /home/claude/sites/Pet-Tracker-wt-170
+branch: feature/170-mobile-alerts-grouped-and-detail-map
+HEAD: 9de61d9d
+git status --short: (vacío)
+OK
+exit=0
+```
+
+E3 aprobada por humano en requirements.md §Aprobación; feature #170 in_progress. Se conservan c1–c28 y cE2, sin repetirlos. Skills cargadas: ponytail, building-native-ui, native-data-fetching, appllama-app-design-skill y emil-design-eng. Leída la documentación versionada exigida por mobile-pet-tracker/AGENTS.md: https://docs.expo.dev/versions/v57.0.0/. La spec manda: solo tests en A y D; sin cambios de producción, sin animación ni dependencias. No se ejecuta init.sh, ni se modifican los ficheros del leader, ni se hace push o PR. R17 sigue reservado al humano.
+
+### c29 — E3.1
+
+Literal de requirements.md E3.1 copiado en las diez filas sin mapa; filas con mapa intactas. Cadena del handoff, con LIMPIO expandido; pendiente de medida.
+
+Cadena literal ejecutada:
+
+```sh
+cd /home/claude/sites/Pet-Tracker-wt-170/mobile-pet-tracker && pwd \
+  && test "$(grep -cF "makeAlert({ payload })" src/screens/alert-detail/index.test.tsx)" = 1 \
+  && test "$(grep -cF "makeAlert({ geofenceId: 'zone-1', payload })" src/screens/alert-detail/index.test.tsx)" = 1 \
+  && test "$(grep -cF "mockListGeofences.mockResolvedValue({ kind: 'ok', geofences: [ZONE] });" src/screens/alert-detail/index.test.tsx)" = 4 \
+  && FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/alert-detail/index.test.tsx > /tmp/170-c29.txt 2>&1 \
+  && grep -qE '^Tests: +78 passed, 78 total$' /tmp/170-c29.txt \
+  && test ! -e .expo/types/router.d.ts && bun run typecheck \
+  && bunx expo lint --no-cache > /tmp/170-lint.txt 2>&1 && test ! -s /tmp/170-lint.txt \
+  && git add src/screens/alert-detail/index.test.tsx \
+  && test "$(git diff --cached --name-only)" = 'mobile-pet-tracker/src/screens/alert-detail/index.test.tsx' \
+  && git diff --quiet -- . ../docs ../specs && test -z "$(git ls-files --others --exclude-standard -- . ../docs ../specs)" \
+  && git commit -m 'test(mobile-alerts-grouped-and-detail-map): #170 E3 R8 rows without a map carry a zone'
+```
+
+Resultado:
+
+```text
+b91c815c test(mobile-alerts-grouped-and-detail-map): #170 E3 R8 rows without a map carry a zone
+Test Suites: 1 passed, 1 total
+Tests:       78 passed, 78 total
+jest exit=0
+typecheck exit=0 (tsc --noEmit; .expo/types/router.d.ts ausente)
+lint exit=0; /tmp/170-lint.txt: 0 bytes
+staged exacto y LIMPIO exit=0
+chain_exit=0
+```
+
+### SE3.1
+
+Comando literal, plantado sobre el HEAD anterior y revertido con la última línea:
+
+```sh
+cd /home/claude/sites/Pet-Tracker-wt-170/mobile-pet-tracker && pwd
+sed -i "s|^  const position = alert ? alertPosition(alert.payload) : null;\$|&\n  useQuery({ queryKey: geofenceKeys.list(alert?.petId ?? ''), queryFn: () => listGeofences(baseUrl, token ?? '', alert?.petId ?? ''), enabled: alert !== undefined \&\& alert.geofenceId !== null \&\& position === null });|" src/screens/alert-detail/index.tsx
+test "$(git diff --name-only -- . ../docs ../specs)" = 'mobile-pet-tracker/src/screens/alert-detail/index.tsx'; echo "plantada=$?"
+FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/alert-detail/index.test.tsx > /tmp/170-se3-1.txt 2>&1; echo "exit=$?"
+grep -qE '^Tests: +10 failed, 68 passed, 78 total$' /tmp/170-se3-1.txt \
+  && test "$(grep -E '^  ● ' /tmp/170-se3-1.txt | grep -cvxF '  ● Console')" = 10 \
+  && test "$(grep -E '^  ● ' /tmp/170-se3-1.txt | grep -cF '#170 R8: pinta el mini-mapa con la posición de la alerta › ')" = 10 \
+  && test "$(grep -E '^  ● ' /tmp/170-se3-1.txt | grep -cF ': sin mapa')" = 10 \
+  && ! grep -qE 'Test suite failed to run|TypeError|ReferenceError|SyntaxError|Cannot find module' /tmp/170-se3-1.txt; echo "sonda=$?"
+git checkout HEAD -- src/screens/alert-detail/index.tsx && git diff --cached --quiet && git diff --quiet -- . ../docs ../specs && test -z "$(git ls-files --others --exclude-standard -- . ../docs ../specs)"; echo "limpio=$?"
+```
+
+Resultado:
+
+```text
+/home/claude/sites/Pet-Tracker-wt-170/mobile-pet-tracker
+plantada=0
+exit=1
+sonda=0
+limpio=0
+  ● #170 R8: pinta el mini-mapa con la posición de la alerta › vacío: sin mapa
+  ● #170 R8: pinta el mini-mapa con la posición de la alerta › batería real: sin mapa
+  ● #170 R8: pinta el mini-mapa con la posición de la alerta › posición nula: sin mapa
+  ● #170 R8: pinta el mini-mapa con la posición de la alerta › posición no objeto: sin mapa
+  ● #170 R8: pinta el mini-mapa con la posición de la alerta › lat texto: sin mapa
+  ● #170 R8: pinta el mini-mapa con la posición de la alerta › falta lng: sin mapa
+  ● #170 R8: pinta el mini-mapa con la posición de la alerta › lat NaN: sin mapa
+  ● #170 R8: pinta el mini-mapa con la posición de la alerta › lng infinito: sin mapa
+  ● #170 R8: pinta el mini-mapa con la posición de la alerta › lat fuera: sin mapa
+  ● #170 R8: pinta el mini-mapa con la posición de la alerta › lng fuera: sin mapa
+Test Suites: 1 failed, 1 total
+Tests:       10 failed, 68 passed, 78 total
+```
+
+### c30 — E3.2
+
+Literal de requirements.md E3.2 copiado en su ubicación prescrita; pendiente de medida.
+
+Cadena literal ejecutada:
+
+```sh
+cd /home/claude/sites/Pet-Tracker-wt-170/mobile-pet-tracker && pwd \
+  && test "$(grep -cF "it('consulta las zonas de la mascota de la alerta, no de la seleccionada'" src/screens/alert-detail/index.test.tsx)" = 1 \
+  && test "$(grep -cF "geofenceKeys.list('pet-1')" src/screens/alert-detail/index.test.tsx)" = 2 \
+  && test "$(grep -cF "geofenceKeys.list('pet-7')" src/screens/alert-detail/index.test.tsx)" = 1 \
+  && FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/alert-detail/index.test.tsx > /tmp/170-c30.txt 2>&1 \
+  && grep -qE '^Tests: +79 passed, 79 total$' /tmp/170-c30.txt \
+  && test ! -e .expo/types/router.d.ts && bun run typecheck \
+  && bunx expo lint --no-cache > /tmp/170-lint.txt 2>&1 && test ! -s /tmp/170-lint.txt \
+  && git add src/screens/alert-detail/index.test.tsx \
+  && test "$(git diff --cached --name-only)" = 'mobile-pet-tracker/src/screens/alert-detail/index.test.tsx' \
+  && git diff --quiet -- . ../docs ../specs && test -z "$(git ls-files --others --exclude-standard -- . ../docs ../specs)" \
+  && git commit -m 'test(mobile-alerts-grouped-and-detail-map): #170 E3 R10 zones come from the alert pet'
+```
+
+Resultado:
+
+```text
+4f4cfbdb test(mobile-alerts-grouped-and-detail-map): #170 E3 R10 zones come from the alert pet
+Test Suites: 1 passed, 1 total
+Tests:       79 passed, 79 total
+jest exit=0
+typecheck exit=0 (tsc --noEmit; .expo/types/router.d.ts ausente)
+lint exit=0; /tmp/170-lint.txt: 0 bytes
+staged exacto y LIMPIO exit=0
+chain_exit=0
+```
+
+### SE3.2
+
+Comando literal, plantado sobre el HEAD anterior y revertido con la última línea:
+
+```sh
+cd /home/claude/sites/Pet-Tracker-wt-170/mobile-pet-tracker && pwd
+sed -i "s|^  const zones = useQuery({\$|  const petId = useSelectedPet().selectedPetId ?? alert.petId;\n&|; s|geofenceKeys.list(alert.petId)|geofenceKeys.list(petId)|; s|listGeofences(baseUrl, token ?? '', alert.petId)|listGeofences(baseUrl, token ?? '', petId)|" src/screens/alert-detail/index.tsx
+test "$(git diff --name-only -- . ../docs ../specs)" = 'mobile-pet-tracker/src/screens/alert-detail/index.tsx'; echo "plantada=$?"
+FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/alert-detail/index.test.tsx > /tmp/170-se3-2.txt 2>&1; echo "exit=$?"
+grep -qE '^Tests: +2 failed, 77 passed, 79 total$' /tmp/170-se3-2.txt \
+  && test "$(grep -E '^  ● ' /tmp/170-se3-2.txt | grep -cvxF '  ● Console')" = 2 \
+  && test "$(grep -E '^  ● ' /tmp/170-se3-2.txt | grep -cF '#170 R10: pinta la zona y la distancia a su borde › consulta las zonas de la mascota de la alerta, no de la seleccionada')" = 1 \
+  && test "$(grep -E '^  ● ' /tmp/170-se3-2.txt | grep -cF '#170 R10: pinta la zona y la distancia a su borde › lee la zona de la caché compartida de geofenceKeys.list')" = 1 \
+  && ! grep -qE 'Test suite failed to run|TypeError|ReferenceError|SyntaxError|Cannot find module' /tmp/170-se3-2.txt; echo "sonda=$?"
+git checkout HEAD -- src/screens/alert-detail/index.tsx && git diff --cached --quiet && git diff --quiet -- . ../docs ../specs && test -z "$(git ls-files --others --exclude-standard -- . ../docs ../specs)"; echo "limpio=$?"
+```
+
+Resultado:
+
+```text
+/home/claude/sites/Pet-Tracker-wt-170/mobile-pet-tracker
+plantada=0
+exit=1
+sonda=0
+limpio=0
+  ● #170 R10: pinta la zona y la distancia a su borde › consulta las zonas de la mascota de la alerta, no de la seleccionada
+  ● #170 R10: pinta la zona y la distancia a su borde › lee la zona de la caché compartida de geofenceKeys.list
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 77 passed, 79 total
+```
+
+### c31 — E3.3
+
+Literal de requirements.md E3.3 copiado en su ubicación prescrita; pendiente de medida.
+
+Cadena literal ejecutada:
+
+```sh
+cd /home/claude/sites/Pet-Tracker-wt-170/mobile-pet-tracker && pwd \
+  && test "$(grep -cF "expect(elementChild(parent, 0).props.testID).toBe('alerts-section-' + section);" src/screens/alerts/index.test.tsx)" = 1 \
+  && test "$(grep -A1 -F "expect(within(parent).getByTestId('alert-row-' + id)).toBeVisible();" src/screens/alerts/index.test.tsx | tail -1)" = "      expect(elementChild(parent, 0).props.testID).toBe('alerts-section-' + section);" \
+  && FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/alerts/index.test.tsx > /tmp/170-c31.txt 2>&1 \
+  && grep -qE '^Tests: +68 passed, 68 total$' /tmp/170-c31.txt \
+  && test ! -e .expo/types/router.d.ts && bun run typecheck \
+  && bunx expo lint --no-cache > /tmp/170-lint.txt 2>&1 && test ! -s /tmp/170-lint.txt \
+  && git add src/screens/alerts/index.test.tsx \
+  && test "$(git diff --cached --name-only)" = 'mobile-pet-tracker/src/screens/alerts/index.test.tsx' \
+  && git diff --quiet -- . ../docs ../specs && test -z "$(git ls-files --others --exclude-standard -- . ../docs ../specs)" \
+  && git commit -m 'test(mobile-alerts-grouped-and-detail-map): #170 E3 R3 section header before its first row'
+```
+
+Resultado:
+
+```text
+1fba836c test(mobile-alerts-grouped-and-detail-map): #170 E3 R3 section header before its first row
+Test Suites: 1 passed, 1 total
+Tests:       68 passed, 68 total
+jest exit=0
+typecheck exit=0 (tsc --noEmit; .expo/types/router.d.ts ausente)
+lint exit=0; /tmp/170-lint.txt: 0 bytes
+staged exacto y LIMPIO exit=0
+chain_exit=0
+```
+
+### SE3.3
+
+Comando literal, plantado sobre el HEAD anterior y revertido con la última línea:
+
+```sh
+cd /home/claude/sites/Pet-Tracker-wt-170/mobile-pet-tracker && pwd
+perl -0pi -e 's/(<View className="gap-4">\n)(\s*<Text testID=\{`alerts-section-\$\{section\}`\}.*?<\/Text>\n)(\s*\{card\}\n)/$1$3$2/s' src/screens/alerts/index.tsx
+test "$(git diff --name-only -- . ../docs ../specs)" = 'mobile-pet-tracker/src/screens/alerts/index.tsx'; echo "plantada=$?"
+FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/alerts/index.test.tsx > /tmp/170-se3-3.txt 2>&1; echo "exit=$?"
+grep -qE '^Tests: +1 failed, 67 passed, 68 total$' /tmp/170-se3-3.txt \
+  && test "$(grep -E '^  ● ' /tmp/170-se3-3.txt | grep -cvxF '  ● Console')" = 1 \
+  && test "$(grep -E '^  ● ' /tmp/170-se3-3.txt | grep -cF '#170 R3: agrupa la lista en Hoy, Esta semana y Anteriores › envuelve cada cabecera con la primera fila de su sección en un View gap-4')" = 1 \
+  && ! grep -qE 'Test suite failed to run|TypeError|ReferenceError|SyntaxError|Cannot find module' /tmp/170-se3-3.txt; echo "sonda=$?"
+git checkout HEAD -- src/screens/alerts/index.tsx && git diff --cached --quiet && git diff --quiet -- . ../docs ../specs && test -z "$(git ls-files --others --exclude-standard -- . ../docs ../specs)"; echo "limpio=$?"
+```
+
+Resultado:
+
+```text
+/home/claude/sites/Pet-Tracker-wt-170/mobile-pet-tracker
+plantada=0
+exit=1
+sonda=0
+limpio=0
+  ● #170 R3: agrupa la lista en Hoy, Esta semana y Anteriores › envuelve cada cabecera con la primera fila de su sección en un View gap-4
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 67 passed, 68 total
+```
+
+### c32 — E3.4
+
+Literal de requirements.md E3.4 copiado en su ubicación prescrita; pendiente de medida.
+
+Cadena literal ejecutada:
+
+```sh
+cd /home/claude/sites/Pet-Tracker-wt-170/mobile-pet-tracker && pwd \
+  && test "$(grep -cF "it.each(['ok', 'already-closed'] as const)('marcada leída en local (%s): pierde el borde de severidad'" src/screens/alerts/index.test.tsx)" = 1 \
+  && test "$(grep -cF "it.each(['ok', 'already-closed'] as const)('marcada leída en local (%s): pierde el borde de severidad'" src/screens/alert-detail/index.test.tsx)" = 1 \
+  && test "$(grep -cF "toBe('rounded-card border border-border bg-surface p-4 shadow-sm min-h-44 gap-3');" src/screens/alert-detail/index.test.tsx)" = 2 \
+  && FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/alerts/index.test.tsx src/screens/alert-detail/index.test.tsx > /tmp/170-c32.txt 2>&1 \
+  && grep -qE '^Tests: +151 passed, 151 total$' /tmp/170-c32.txt \
+  && test ! -e .expo/types/router.d.ts && bun run typecheck \
+  && bunx expo lint --no-cache > /tmp/170-lint.txt 2>&1 && test ! -s /tmp/170-lint.txt \
+  && git add src/screens/alerts/index.test.tsx src/screens/alert-detail/index.test.tsx \
+  && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'mobile-pet-tracker/src/screens/alert-detail/index.test.tsx mobile-pet-tracker/src/screens/alerts/index.test.tsx ' \
+  && git diff --quiet -- . ../docs ../specs && test -z "$(git ls-files --others --exclude-standard -- . ../docs ../specs)" \
+  && git commit -m 'test(mobile-alerts-grouped-and-detail-map): #170 E3 R5 R6 local ack drops the severity border'
+```
+
+Resultado:
+
+```text
+d1ff55b6 test(mobile-alerts-grouped-and-detail-map): #170 E3 R5 R6 local ack drops the severity border
+Test Suites: 2 passed, 2 total
+Tests:       151 passed, 151 total
+jest exit=0
+typecheck exit=0 (tsc --noEmit; .expo/types/router.d.ts ausente)
+lint exit=0; /tmp/170-lint.txt: 0 bytes
+staged exacto y LIMPIO exit=0
+chain_exit=0
+```
+
+### SE3.4
+
+Comando literal, plantado sobre el HEAD anterior y revertido con la última línea:
+
+```sh
+cd /home/claude/sites/Pet-Tracker-wt-170/mobile-pet-tracker && pwd
+sed -i "s|(item.status === 'open' ? \` border-2|(ordered[index].status === 'open' ? \` border-2|" src/screens/alerts/index.tsx
+test "$(git diff --name-only -- . ../docs ../specs)" = 'mobile-pet-tracker/src/screens/alerts/index.tsx'; echo "plantada=$?"
+FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/alerts/index.test.tsx > /tmp/170-se3-4.txt 2>&1; echo "exit=$?"
+grep -qE '^Tests: +2 failed, 68 passed, 70 total$' /tmp/170-se3-4.txt \
+  && test "$(grep -E '^  ● ' /tmp/170-se3-4.txt | grep -cvxF '  ● Console')" = 2 \
+  && test "$(grep -E '^  ● ' /tmp/170-se3-4.txt | grep -cF '#170 R5: la fila abierta lleva el borde de su tipo › marcada leída en local (')" = 2 \
+  && ! grep -qE 'Test suite failed to run|TypeError|ReferenceError|SyntaxError|Cannot find module' /tmp/170-se3-4.txt; echo "sonda=$?"
+git checkout HEAD -- src/screens/alerts/index.tsx && git diff --cached --quiet && git diff --quiet -- . ../docs ../specs && test -z "$(git ls-files --others --exclude-standard -- . ../docs ../specs)"; echo "limpio=$?"
+```
+
+Resultado:
+
+```text
+/home/claude/sites/Pet-Tracker-wt-170/mobile-pet-tracker
+plantada=0
+exit=1
+sonda=0
+limpio=0
+  ● #170 R5: la fila abierta lleva el borde de su tipo › marcada leída en local (ok): pierde el borde de severidad
+  ● #170 R5: la fila abierta lleva el borde de su tipo › marcada leída en local (already-closed): pierde el borde de severidad
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 68 passed, 70 total
+```
+
+### SE3.5
+
+Comando literal, plantado sobre el HEAD anterior y revertido con la última línea:
+
+```sh
+cd /home/claude/sites/Pet-Tracker-wt-170/mobile-pet-tracker && pwd
+sed -i "s|(alert.status === 'open' ? \` border-2|(found?.status === 'open' ? \` border-2|" src/screens/alert-detail/index.tsx
+test "$(git diff --name-only -- . ../docs ../specs)" = 'mobile-pet-tracker/src/screens/alert-detail/index.tsx'; echo "plantada=$?"
+FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/alert-detail/index.test.tsx > /tmp/170-se3-5.txt 2>&1; echo "exit=$?"
+grep -qE '^Tests: +2 failed, 79 passed, 81 total$' /tmp/170-se3-5.txt \
+  && test "$(grep -E '^  ● ' /tmp/170-se3-5.txt | grep -cvxF '  ● Console')" = 2 \
+  && test "$(grep -E '^  ● ' /tmp/170-se3-5.txt | grep -cF '#170 R6: la tarjeta abierta lleva el borde de su tipo › marcada leída en local (')" = 2 \
+  && ! grep -qE 'Test suite failed to run|TypeError|ReferenceError|SyntaxError|Cannot find module' /tmp/170-se3-5.txt; echo "sonda=$?"
+git checkout HEAD -- src/screens/alert-detail/index.tsx && git diff --cached --quiet && git diff --quiet -- . ../docs ../specs && test -z "$(git ls-files --others --exclude-standard -- . ../docs ../specs)"; echo "limpio=$?"
+```
+
+Resultado:
+
+```text
+/home/claude/sites/Pet-Tracker-wt-170/mobile-pet-tracker
+plantada=0
+exit=1
+sonda=0
+limpio=0
+  ● #170 R6: la tarjeta abierta lleva el borde de su tipo › marcada leída en local (ok): pierde el borde de severidad
+  ● #170 R6: la tarjeta abierta lleva el borde de su tipo › marcada leída en local (already-closed): pierde el borde de severidad
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 79 passed, 81 total
+```
+
+### c33 — E3.5
+
+Literal de requirements.md E3.5 copiado en su ubicación prescrita; pendiente de medida.
+
+Cadena literal ejecutada:
+
+```sh
+cd /home/claude/sites/Pet-Tracker-wt-170/mobile-pet-tracker && pwd \
+  && test "$(grep -cF "it('redondea al metro: a 0,71 m del borde dice «A 1 m de Casa»'" src/screens/alert-detail/index.test.tsx)" = 1 \
+  && test "$(grep -cF "{ lat: 19.4335057, lng: -99.1332 }" src/screens/alert-detail/index.test.tsx)" = 1 \
+  && FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/alert-detail/index.test.tsx > /tmp/170-c33.txt 2>&1 \
+  && grep -qE '^Tests: +82 passed, 82 total$' /tmp/170-c33.txt \
+  && test ! -e .expo/types/router.d.ts && bun run typecheck \
+  && bunx expo lint --no-cache > /tmp/170-lint.txt 2>&1 && test ! -s /tmp/170-lint.txt \
+  && git add src/screens/alert-detail/index.test.tsx \
+  && test "$(git diff --cached --name-only)" = 'mobile-pet-tracker/src/screens/alert-detail/index.test.tsx' \
+  && git diff --quiet -- . ../docs ../specs && test -z "$(git ls-files --others --exclude-standard -- . ../docs ../specs)" \
+  && git commit -m 'test(mobile-alerts-grouped-and-detail-map): #170 E3 R10 distance threshold rounds to the meter'
+```
+
+Resultado:
+
+```text
+dc074638 test(mobile-alerts-grouped-and-detail-map): #170 E3 R10 distance threshold rounds to the meter
+Test Suites: 1 passed, 1 total
+Tests:       82 passed, 82 total
+jest exit=0
+typecheck exit=0 (tsc --noEmit; .expo/types/router.d.ts ausente)
+lint exit=0; /tmp/170-lint.txt: 0 bytes
+staged exacto y LIMPIO exit=0
+chain_exit=0
+```
+
+### SE3.6
+
+Comando literal, plantado sobre el HEAD anterior y revertido con la última línea:
+
+```sh
+cd /home/claude/sites/Pet-Tracker-wt-170/mobile-pet-tracker && pwd
+sed -i "s|zone \&\& Math.round(d - zone.radiusM) >= 1 ?|zone \&\& d - zone.radiusM >= 1 ?|" src/screens/alert-detail/index.tsx
+test "$(git diff --name-only -- . ../docs ../specs)" = 'mobile-pet-tracker/src/screens/alert-detail/index.tsx'; echo "plantada=$?"
+FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/alert-detail/index.test.tsx > /tmp/170-se3-6.txt 2>&1; echo "exit=$?"
+grep -qE '^Tests: +1 failed, 81 passed, 82 total$' /tmp/170-se3-6.txt \
+  && test "$(grep -E '^  ● ' /tmp/170-se3-6.txt | grep -cvxF '  ● Console')" = 1 \
+  && test "$(grep -E '^  ● ' /tmp/170-se3-6.txt | grep -cF '#170 R10: pinta la zona y la distancia a su borde › redondea al metro: a 0,71 m del borde dice «A 1 m de Casa»')" = 1 \
+  && ! grep -qE 'Test suite failed to run|TypeError|ReferenceError|SyntaxError|Cannot find module' /tmp/170-se3-6.txt; echo "sonda=$?"
+git checkout HEAD -- src/screens/alert-detail/index.tsx && git diff --cached --quiet && git diff --quiet -- . ../docs ../specs && test -z "$(git ls-files --others --exclude-standard -- . ../docs ../specs)"; echo "limpio=$?"
+```
+
+Resultado:
+
+```text
+/home/claude/sites/Pet-Tracker-wt-170/mobile-pet-tracker
+plantada=0
+exit=1
+sonda=0
+limpio=0
+  ● #170 R10: pinta la zona y la distancia a su borde › redondea al metro: a 0,71 m del borde dice «A 1 m de Casa»
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 81 passed, 82 total
+```
+
+Incidencia del editor auxiliar al preparar E3.6: la aserción sobre accessibilityRole aparece dos veces en D; su selector global dio AssertionError antes de escribir el fichero y antes de arrancar la cadena c34. Ninguna medida ni sonda falló. Se restringe el selector a describe #170 R15 y se copia el mismo literal de E3.6 en la ubicación prescrita.
+
+### c34 — E3.6
+
+Literal de requirements.md E3.6 copiado en su ubicación prescrita; pendiente de medida.
+
+Cadena literal ejecutada:
+
+```sh
+cd /home/claude/sites/Pet-Tracker-wt-170/mobile-pet-tracker && pwd \
+  && test "$(grep -cF "expect(button.props.className.split(' ')).toContain('min-h-11');" src/screens/alert-detail/index.test.tsx)" = 1 \
+  && FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/alert-detail/index.test.tsx > /tmp/170-c34.txt 2>&1 \
+  && grep -qE '^Tests: +82 passed, 82 total$' /tmp/170-c34.txt \
+  && test ! -e .expo/types/router.d.ts && bun run typecheck \
+  && bunx expo lint --no-cache > /tmp/170-lint.txt 2>&1 && test ! -s /tmp/170-lint.txt \
+  && git add src/screens/alert-detail/index.test.tsx \
+  && test "$(git diff --cached --name-only)" = 'mobile-pet-tracker/src/screens/alert-detail/index.test.tsx' \
+  && git diff --quiet -- . ../docs ../specs && test -z "$(git ls-files --others --exclude-standard -- . ../docs ../specs)" \
+  && git commit -m 'test(mobile-alerts-grouped-and-detail-map): #170 E3 R15 view on map CTA keeps min-h-11'
+```
+
+Resultado:
+
+```text
+3361aea0 test(mobile-alerts-grouped-and-detail-map): #170 E3 R15 view on map CTA keeps min-h-11
+Test Suites: 1 passed, 1 total
+Tests:       82 passed, 82 total
+jest exit=0
+typecheck exit=0 (tsc --noEmit; .expo/types/router.d.ts ausente)
+lint exit=0; /tmp/170-lint.txt: 0 bytes
+staged exacto y LIMPIO exit=0
+chain_exit=0
+```
+
+### SE3.7
+
+Comando literal, plantado sobre el HEAD anterior y revertido con la última línea:
+
+```sh
+cd /home/claude/sites/Pet-Tracker-wt-170/mobile-pet-tracker && pwd
+sed -i 's|className="min-h-11 rounded-xl border-2 border-b-6 border-lip-gray bg-surface"|className="rounded-xl border-2 border-b-6 border-lip-gray bg-surface"|' src/screens/alert-detail/index.tsx
+test "$(git diff --name-only -- . ../docs ../specs)" = 'mobile-pet-tracker/src/screens/alert-detail/index.tsx'; echo "plantada=$?"
+FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/alert-detail/index.test.tsx > /tmp/170-se3-7.txt 2>&1; echo "exit=$?"
+grep -qE '^Tests: +3 failed, 79 passed, 82 total$' /tmp/170-se3-7.txt \
+  && test "$(grep -E '^  ● ' /tmp/170-se3-7.txt | grep -cvxF '  ● Console')" = 3 \
+  && test "$(grep -E '^  ● ' /tmp/170-se3-7.txt | grep -cF '#170 R15: Ver en el mapa lleva al Mapa con la mascota de la alerta › lo pinta en ')" = 3 \
+  && ! grep -qE 'Test suite failed to run|TypeError|ReferenceError|SyntaxError|Cannot find module' /tmp/170-se3-7.txt; echo "sonda=$?"
+git checkout HEAD -- src/screens/alert-detail/index.tsx && git diff --cached --quiet && git diff --quiet -- . ../docs ../specs && test -z "$(git ls-files --others --exclude-standard -- . ../docs ../specs)"; echo "limpio=$?"
+```
+
+Resultado:
+
+```text
+/home/claude/sites/Pet-Tracker-wt-170/mobile-pet-tracker
+plantada=0
+exit=1
+sonda=0
+limpio=0
+  ● #170 R15: Ver en el mapa lleva al Mapa con la mascota de la alerta › lo pinta en abierta geofence_exit con mapa
+  ● #170 R15: Ver en el mapa lleva al Mapa con la mascota de la alerta › lo pinta en acked battery_low sin mapa
+  ● #170 R15: Ver en el mapa lleva al Mapa con la mascota de la alerta › lo pinta en closed mystery_type sin mapa
+Test Suites: 1 failed, 1 total
+Tests:       3 failed, 79 passed, 82 total
+```
+
+Incidencia del registrador de FINAL: intentó contar líneas ✓ por fichero, pero el log de FINAL no es verbose y solo imprime PASS por suite. La aserción del registrador falló antes de escribir y antes de medir o lanzar ALL. Jest sí terminó con exit=0 y el resumen exacto de 10/433. Se registra el resumen y los PASS reales, sin inferir un reparto por líneas ausentes ni cambiar el comando.
+
+### CIERRE — FINAL
+
+Desde mobile-pet-tracker/, comando del handoff con timeout de corrección 12:
+
+```sh
+FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/alerts/index.test.tsx src/screens/alert-detail/index.test.tsx src/app/__tests__/layout.test.tsx src/providers/__tests__/language-provider.test.tsx src/__tests__/ui-language.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/design-drift.test.ts src/__tests__/legibility-classnames.test.ts src/utils/alert-sections.test.ts src/utils/alert-location.test.ts > /tmp/170-final.txt 2>&1; echo "exit=$?"
+
+== ANCLAS ==
+
+Ejecutalas TODAS desde la RAIZ antes de tocar nada y copia la salida al
+impl. Solo estos comandos son anclas; los numeros de linea no lo son. Si
+alguna no da EXACTAMENTE lo esperado, PARA y avisa (ante una diferencia
+manda el fichero, no el handoff). Cuando `grep -c` cuenta 0 sale con codigo
+1: lo que vale es la cifra impresa. El leader las ha ejecutado todas en H0
+sacandolas de este mismo fichero.
+
+H1. grep -cF -- '- [x] Aprobado por humano (fecha: 2026-10-12) ← gate obligatorio antes de implementar' specs/mobile-alerts-grouped-and-detail-map/requirements.md   -> 1
+H2. grep -cF -- '- [ ] Smoke R17 en dev build de Android verificado por humano (fecha: ____, build: ____, tema claro ☐ oscuro ☐)' specs/mobile-alerts-grouped-and-detail-map/requirements.md   -> 1
+H3. grep -cF '"status": "in_progress"' feature_list.json   -> 1
+H4. grep -rlF '#170' mobile-pet-tracker/src | wc -l   -> 0
+H5. ls mobile-pet-tracker/src/utils/alert-sections.ts mobile-pet-tracker/src/utils/alert-sections.test.ts mobile-pet-tracker/src/utils/alert-location.ts mobile-pet-tracker/src/utils/alert-location.test.ts 2>/dev/null | wc -l   -> 0
+H6. grep -cF -- '- 1, // #159 R2' mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx   -> 1
+H7. grep -cF "describe('#65 R12: el catálogo tiene los dos idiomas y t resuelve claves y parámetros'" mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx   -> 1
+H8. grep -cF 'expect(R13_ALERT_DETAIL).toHaveLength(11 - 3); // #134 R6' mobile-pet-tracker/src/__tests__/ui-language.test.ts   -> 1
+H9. grep -cF "describe('#100 R10: el detalle de alerta resuelve su copy por clave'" mobile-pet-tracker/src/__tests__/ui-language.test.ts   -> 1
+H10. grep -cF "describe('#78 R12: el centro de alertas resuelve su copy por clave'" mobile-pet-tracker/src/__tests__/ui-language.test.ts   -> 1
+H11. awk '/^export const R12_ALERTS/,/^];/{ if (/\{ file/) n++ } END { print n }' mobile-pet-tracker/src/__tests__/ui-copy-table.ts   -> 20
+H12. awk '/^export const R13_ALERT_DETAIL/,/^];/{ if (/\{ file/) n++ } END { print n }' mobile-pet-tracker/src/__tests__/ui-copy-table.ts   -> 8
+H13. grep -cF ').toBe(33 + 1 + 1 - 1 - 1 + 1); // #41 R9: geofences-link' mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts   -> 1
+H14. grep -cF '14 + 4 + 1 + 1 + 1 + 1 + 1 + 2 + 1 + 1, // #146 R18, #105 R11, #116 R5, #115 R6' mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts   -> 1
+H15. grep -cF '`rounded-xl border-2 border-b-6 border-lip-gray bg-surface`' docs/ui-guidelines.md   -> 1
+H16. grep -cF "const recipe = 'rounded-xl border-2 border-b-6 border-lip-gray bg-surface';" mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts   -> 1
+H17. grep -cF 'expect(count(/border-lip-gray/g)).toBe(4);' mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts   -> 1
+H18. grep -cF 'expect(count(/\bborder-b-6\b/g)).toBe(4);' mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts   -> 1
+H19. grep -cF "describe('#166 R3: el secundario neutro lleva el labio gris'" mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts   -> 1
+H20. grep -cF "it('inventaría los cuatro secundarios neutros de toda la app'" mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts   -> 1
+H21. grep -cF "expect(card.props.className).toBe('rounded-card border border-border bg-surface p-4 shadow-sm min-h-44 gap-3');" mobile-pet-tracker/src/screens/alert-detail/index.test.tsx   -> 1
+H22. grep -cF "it('respeta las métricas A11 bajo cabecera nativa'" mobile-pet-tracker/src/screens/alert-detail/index.test.tsx   -> 1
+H23. grep -cF "it('le da la cabecera nativa de #95 R4 con el título del detalle'" mobile-pet-tracker/src/app/__tests__/layout.test.tsx   -> 1
+H24. grep -cF "<Stack.Screen name=\"alerts/[alertId]\" dangerouslySingular options={{ ...headerOptions, title: t('alerts.detailTitle') }} />" mobile-pet-tracker/src/app/_layout.tsx   -> 1
+H25. grep -cF "const [background, foreground] = useThemeColors(['background', 'foreground']);" mobile-pet-tracker/src/app/_layout.tsx   -> 1
+H26. grep -cF 'export const MAP_ZOOM = 16;' mobile-pet-tracker/src/components/pet-map.tsx   -> 1
+H27. grep -cF 'export const DEFAULT_CENTER: MapCoordinates = { latitude: 19.4326, longitude: -99.1332 };' mobile-pet-tracker/src/components/pet-map.tsx   -> 1
+H28. grep -cF 'export function zoomForRadius(radiusM: number): number {' mobile-pet-tracker/src/utils/zoom-for-radius.ts   -> 1
+H29. grep -cF "border: '" mobile-pet-tracker/src/utils/alert-meta.ts   -> 0
+H30. grep -cF 'export const geofenceKeys = {' mobile-pet-tracker/src/api/query-keys.ts   -> 1
+H31. grep -cF 'export async function listGeofences(' mobile-pet-tracker/src/api/geofences.ts   -> 1
+H32. grep -cF 'export function useSelectedPet(): SelectedPetContextValue {' mobile-pet-tracker/src/providers/selected-pet-provider.tsx   -> 1
+H33. grep -cE '^export const (CONTINUOUS_CORNER|TABULAR_NUMS) = ' mobile-pet-tracker/src/theme/native-styles.ts   -> 2
+H34. grep -c '^### §2\.24' specs/mobile-ui-language/design.md   -> 0
+H35. grep -cF '### §2.23 — Añadidos por #159 — Pingo sin collar' specs/mobile-ui-language/design.md   -> 1
+H36. grep -cF 'const queryClient = createQueryClient(jest.fn(), 60_000);' mobile-pet-tracker/src/screens/alert-detail/index.test.tsx   -> 1
+H37. grep -cF 'function renderAlertsInEnglish() {' mobile-pet-tracker/src/screens/alerts/index.test.tsx   -> 1
+H38. grep -cF "process.getBuiltinModule('process')" mobile-pet-tracker/src/screens/meal-schedule/index.test.tsx   -> 1
+H39. grep -cF "jest.mock('uniwind'" mobile-pet-tracker/src/screens/geofence-editor/index.test.tsx   -> 1
+H40. grep -cF 'useSelectedPet: jest.fn()' mobile-pet-tracker/src/screens/add-pet/index.test.tsx   -> 1
+H41. grep -cF 'export type MapCoordinates = { latitude: number; longitude: number };' mobile-pet-tracker/src/components/pet-map.tsx   -> 1
+H42. grep -cF 'export interface Geofence {' mobile-pet-tracker/src/api/geofences.ts   -> 1
+H43. grep -cF '## 3. La infraestructura' specs/mobile-ui-language/design.md   -> 1
+H44. grep -cF 'testID="screen-alerts"' mobile-pet-tracker/src/screens/alerts/index.tsx   -> 1
+
+Valores al cerrar (copialos al impl): H1-H3 sin cambios; H4 no se fija
+(anota el valor); H5 -> 4; H6 -> 0; H7 -> 1; H8 -> 0; H9 -> 1; H10 -> 1;
+H11 -> 25; H12 -> 10; H13 -> 0; H14 -> 0; H15 -> 1; H16 -> 1; H17 -> 0;
+H18 -> 0; H19 -> 1; H20 -> 1; H21 no se fija (anota el valor); H22 -> 1;
+H23 -> 1; H24 no se fija (anota el valor); H25-H28 -> 1; H29 -> 3;
+H30-H32 -> 1; H33 -> 2; H34 -> 1; H35 -> 1; H36 no se fija (anota el
+valor); H37-H44 -> 1. Y en positivo al cerrar, desde la raiz:
+```
+
+```text
+exit=0
+PASS src/__tests__/ui-language.test.ts
+PASS src/app/__tests__/layout.test.tsx
+PASS src/providers/__tests__/language-provider.test.tsx
+PASS src/__tests__/legibility-classnames.test.ts
+PASS src/__tests__/design-drift.test.ts
+PASS src/__tests__/consistency-classnames.test.ts
+PASS src/utils/alert-sections.test.ts
+PASS src/utils/alert-location.test.ts
+PASS src/screens/alert-detail/index.test.tsx (11.923 s)
+  ● Console
+PASS src/screens/alerts/index.test.tsx (12.176 s)
+  ● Console
+Test Suites: 10 passed, 10 total
+Tests:       433 passed, 433 total
+```
+
+Reparto prescrito por el handoff: A 70, D 82, L 27, LP 26, UL 30, CC 67, design-drift 65, legibility 27, S 15, LOC 24. El total medido es 433, las 10 suites PASS están arriba; A y D además se han medido en las cadenas y sondas de E3.
+
+### CIERRE — carga del ALL, medida 1
+
+```text
+pgrep -af '[i]nit\.sh': (vacío); exit=1
+cut -d' ' -f1 /proc/loadavg: 4.51
+ALL permitido: True
+```
+
+### CIERRE — ALL, intento 1
+
+```sh
+FORCE_COLOR=0 bunx jest --testTimeout=30000 > /tmp/170-all.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+Test Suites: 100 passed, 100 total
+Tests:       2899 passed, 2899 total
+```
+
+### CIERRE — diffs, sombras y lista móvil
+
+```text
+$ (desde /home/claude/sites/Pet-Tracker-wt-170/mobile-pet-tracker) git diff --quiet 584ef2d9 -- package.json bun.lock app.json src/components/pet-map.tsx src/components/card.tsx src/api
+(salida vacía)
+exit=0
+
+$ (desde /home/claude/sites/Pet-Tracker-wt-170/mobile-pet-tracker) git diff 584ef2d9 -- src ':(exclude)src/**/*.test.ts' ':(exclude)src/**/*.test.tsx' ':(exclude)src/**/__tests__/**' | grep -cE '^\+.*(shadow-|elevation|boxShadow)'
+0
+exit=1
+
+$ (desde /home/claude/sites/Pet-Tracker-wt-170/mobile-pet-tracker) git diff 584ef2d9 -- src | grep -cE '^\+.*(shadow-|elevation|boxShadow)'
+6
+exit=0
+
+$ (desde /home/claude/sites/Pet-Tracker-wt-170) git diff --stat 584ef2d9 -- backend-pet-tracker/ infra-pet-tracker/ docs/
+(salida vacía)
+exit=0
+
+$ (desde /home/claude/sites/Pet-Tracker-wt-170/mobile-pet-tracker) git diff --quiet 9de61d9d -- src ':(exclude)src/**/*.test.ts' ':(exclude)src/**/*.test.tsx' ':(exclude)src/**/__tests__/**'
+(salida vacía)
+exit=0
+
+$ (desde /home/claude/sites/Pet-Tracker-wt-170) git diff --name-only 584ef2d9 HEAD -- mobile-pet-tracker/ | LC_ALL=C sort
+mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+mobile-pet-tracker/src/__tests__/ui-copy-table.ts
+mobile-pet-tracker/src/__tests__/ui-language.test.ts
+mobile-pet-tracker/src/app/__tests__/alert-detail.navigation.test.tsx
+mobile-pet-tracker/src/app/__tests__/layout.test.tsx
+mobile-pet-tracker/src/app/_layout.tsx
+mobile-pet-tracker/src/i18n/catalog.ts
+mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx
+mobile-pet-tracker/src/screens/alert-detail/index.test.tsx
+mobile-pet-tracker/src/screens/alert-detail/index.tsx
+mobile-pet-tracker/src/screens/alerts/index.test.tsx
+mobile-pet-tracker/src/screens/alerts/index.tsx
+mobile-pet-tracker/src/utils/alert-location.test.ts
+mobile-pet-tracker/src/utils/alert-location.ts
+mobile-pet-tracker/src/utils/alert-meta.ts
+mobile-pet-tracker/src/utils/alert-sections.test.ts
+mobile-pet-tracker/src/utils/alert-sections.ts
+exit=0
+```
+
+Los dos diffs exigidos siguen vacíos. Sombras: producción 0; comando completo 6, por el literal shadow-sm de E3.4 en D. E3 no modifica producción contra el HEAD de firma 9de61d9d. Lista móvil exacta de 17 ficheros.
+
+### CIERRE — H1–H44 y P1–P16
+
+Comandos literales del handoff, desde la raíz; valores de cierre exactos (H4, H21, H24 y H36 se anotan sin fijarlos).
+
+```text
+$ H1: grep -cF -- '- [x] Aprobado por humano (fecha: 2026-10-12) ← gate obligatorio antes de implementar' specs/mobile-alerts-grouped-and-detail-map/requirements.md
+1
+exit=0
+
+$ H2: grep -cF -- '- [ ] Smoke R17 en dev build de Android verificado por humano (fecha: ____, build: ____, tema claro ☐ oscuro ☐)' specs/mobile-alerts-grouped-and-detail-map/requirements.md
+1
+exit=0
+
+$ H3: grep -cF '"status": "in_progress"' feature_list.json
+1
+exit=0
+
+$ H4: grep -rlF '#170' mobile-pet-tracker/src | wc -l
+9
+exit=0
+
+$ H5: ls mobile-pet-tracker/src/utils/alert-sections.ts mobile-pet-tracker/src/utils/alert-sections.test.ts mobile-pet-tracker/src/utils/alert-location.ts mobile-pet-tracker/src/utils/alert-location.test.ts 2>/dev/null | wc -l
+4
+exit=0
+
+$ H6: grep -cF -- '- 1, // #159 R2' mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx
+0
+exit=1
+
+$ H7: grep -cF "describe('#65 R12: el catálogo tiene los dos idiomas y t resuelve claves y parámetros'" mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx
+1
+exit=0
+
+$ H8: grep -cF 'expect(R13_ALERT_DETAIL).toHaveLength(11 - 3); // #134 R6' mobile-pet-tracker/src/__tests__/ui-language.test.ts
+0
+exit=1
+
+$ H9: grep -cF "describe('#100 R10: el detalle de alerta resuelve su copy por clave'" mobile-pet-tracker/src/__tests__/ui-language.test.ts
+1
+exit=0
+
+$ H10: grep -cF "describe('#78 R12: el centro de alertas resuelve su copy por clave'" mobile-pet-tracker/src/__tests__/ui-language.test.ts
+1
+exit=0
+
+$ H11: awk '/^export const R12_ALERTS/,/^];/{ if (/\{ file/) n++ } END { print n }' mobile-pet-tracker/src/__tests__/ui-copy-table.ts
+25
+exit=0
+
+$ H12: awk '/^export const R13_ALERT_DETAIL/,/^];/{ if (/\{ file/) n++ } END { print n }' mobile-pet-tracker/src/__tests__/ui-copy-table.ts
+10
+exit=0
+
+$ H13: grep -cF ').toBe(33 + 1 + 1 - 1 - 1 + 1); // #41 R9: geofences-link' mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+0
+exit=1
+
+$ H14: grep -cF '14 + 4 + 1 + 1 + 1 + 1 + 1 + 2 + 1 + 1, // #146 R18, #105 R11, #116 R5, #115 R6' mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+0
+exit=1
+
+$ H15: grep -cF '`rounded-xl border-2 border-b-6 border-lip-gray bg-surface`' docs/ui-guidelines.md
+1
+exit=0
+
+$ H16: grep -cF "const recipe = 'rounded-xl border-2 border-b-6 border-lip-gray bg-surface';" mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+1
+exit=0
+
+$ H17: grep -cF 'expect(count(/border-lip-gray/g)).toBe(4);' mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+0
+exit=1
+
+$ H18: grep -cF 'expect(count(/\bborder-b-6\b/g)).toBe(4);' mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+0
+exit=1
+
+$ H19: grep -cF "describe('#166 R3: el secundario neutro lleva el labio gris'" mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+1
+exit=0
+
+$ H20: grep -cF "it('inventaría los cuatro secundarios neutros de toda la app'" mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+1
+exit=0
+
+$ H21: grep -cF "expect(card.props.className).toBe('rounded-card border border-border bg-surface p-4 shadow-sm min-h-44 gap-3');" mobile-pet-tracker/src/screens/alert-detail/index.test.tsx
+0
+exit=1
+
+$ H22: grep -cF "it('respeta las métricas A11 bajo cabecera nativa'" mobile-pet-tracker/src/screens/alert-detail/index.test.tsx
+1
+exit=0
+
+$ H23: grep -cF "it('le da la cabecera nativa de #95 R4 con el título del detalle'" mobile-pet-tracker/src/app/__tests__/layout.test.tsx
+1
+exit=0
+
+$ H24: grep -cF "<Stack.Screen name=\"alerts/[alertId]\" dangerouslySingular options={{ ...headerOptions, title: t('alerts.detailTitle') }} />" mobile-pet-tracker/src/app/_layout.tsx
+0
+exit=1
+
+$ H25: grep -cF "const [background, foreground] = useThemeColors(['background', 'foreground']);" mobile-pet-tracker/src/app/_layout.tsx
+1
+exit=0
+
+$ H26: grep -cF 'export const MAP_ZOOM = 16;' mobile-pet-tracker/src/components/pet-map.tsx
+1
+exit=0
+
+$ H27: grep -cF 'export const DEFAULT_CENTER: MapCoordinates = { latitude: 19.4326, longitude: -99.1332 };' mobile-pet-tracker/src/components/pet-map.tsx
+1
+exit=0
+
+$ H28: grep -cF 'export function zoomForRadius(radiusM: number): number {' mobile-pet-tracker/src/utils/zoom-for-radius.ts
+1
+exit=0
+
+$ H29: grep -cF "border: '" mobile-pet-tracker/src/utils/alert-meta.ts
+3
+exit=0
+
+$ H30: grep -cF 'export const geofenceKeys = {' mobile-pet-tracker/src/api/query-keys.ts
+1
+exit=0
+
+$ H31: grep -cF 'export async function listGeofences(' mobile-pet-tracker/src/api/geofences.ts
+1
+exit=0
+
+$ H32: grep -cF 'export function useSelectedPet(): SelectedPetContextValue {' mobile-pet-tracker/src/providers/selected-pet-provider.tsx
+1
+exit=0
+
+$ H33: grep -cE '^export const (CONTINUOUS_CORNER|TABULAR_NUMS) = ' mobile-pet-tracker/src/theme/native-styles.ts
+2
+exit=0
+
+$ H34: grep -c '^### §2\.24' specs/mobile-ui-language/design.md
+1
+exit=0
+
+$ H35: grep -cF '### §2.23 — Añadidos por #159 — Pingo sin collar' specs/mobile-ui-language/design.md
+1
+exit=0
+
+$ H36: grep -cF 'const queryClient = createQueryClient(jest.fn(), 60_000);' mobile-pet-tracker/src/screens/alert-detail/index.test.tsx
+4
+exit=0
+
+$ H37: grep -cF 'function renderAlertsInEnglish() {' mobile-pet-tracker/src/screens/alerts/index.test.tsx
+1
+exit=0
+
+$ H38: grep -cF "process.getBuiltinModule('process')" mobile-pet-tracker/src/screens/meal-schedule/index.test.tsx
+1
+exit=0
+
+$ H39: grep -cF "jest.mock('uniwind'" mobile-pet-tracker/src/screens/geofence-editor/index.test.tsx
+1
+exit=0
+
+$ H40: grep -cF 'useSelectedPet: jest.fn()' mobile-pet-tracker/src/screens/add-pet/index.test.tsx
+1
+exit=0
+
+$ H41: grep -cF 'export type MapCoordinates = { latitude: number; longitude: number };' mobile-pet-tracker/src/components/pet-map.tsx
+1
+exit=0
+
+$ H42: grep -cF 'export interface Geofence {' mobile-pet-tracker/src/api/geofences.ts
+1
+exit=0
+
+$ H43: grep -cF '## 3. La infraestructura' specs/mobile-ui-language/design.md
+1
+exit=0
+
+$ H44: grep -cF 'testID="screen-alerts"' mobile-pet-tracker/src/screens/alerts/index.tsx
+1
+exit=0
+
+$ P1: grep -cF '+ 7, // #170 R1' mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx
+1
+exit=0
+
+$ P2: grep -cF 'toHaveLength(11 - 3 + 2); // #170 R16' mobile-pet-tracker/src/__tests__/ui-language.test.ts
+1
+exit=0
+
+$ P3: grep -cF "'alert-detail-view-map'" mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+2
+exit=0
+
+$ P4: grep -cF 'toBe(4 + 1); // #170 R16' mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+2
+exit=0
+
+$ P5: grep -c "t('alerts\.section" mobile-pet-tracker/src/screens/alerts/index.tsx
+3
+exit=0
+
+$ P6: grep -cF 'contentStyle: { backgroundColor: background }' mobile-pet-tracker/src/app/_layout.tsx
+1
+exit=0
+
+$ P7: grep -cF "router.dismissTo('/map')" mobile-pet-tracker/src/screens/alert-detail/index.tsx
+1
+exit=0
+
+$ P8: grep -cF 'className="min-h-11 rounded-xl border-2 border-b-6 border-lip-gray bg-surface"' mobile-pet-tracker/src/screens/alert-detail/index.tsx
+1
+exit=0
+
+$ P9: grep -cF 'export function alertSection(openedAt: string, now: Date): AlertSection' mobile-pet-tracker/src/utils/alert-sections.ts
+1
+exit=0
+
+$ P10: grep -cE '^export function (alertPosition|distanceMeters|formatDistance)\(' mobile-pet-tracker/src/utils/alert-location.ts
+3
+exit=0
+
+$ P11: grep -cF '### §2.24 — Añadidos por #170 — Alertas agrupadas y mini-mapa' specs/mobile-ui-language/design.md
+1
+exit=0
+
+$ P12: grep -cF '← añadida por #170 (R1)' specs/mobile-ui-language/design.md
+7
+exit=0
+
+$ P13: grep -cF '14 + 4 + 1 + 1 + 1 + 1 + 1 + 2 + 1 + 1 + 1 + 1, // #146 R18, #105 R11, #116 R5, #115 R6, #170 R16' mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+1
+exit=0
+
+$ P14: grep -cF ').toBe(33 + 1 + 1 - 1 - 1 + 1 + 1); // #41 R9: geofences-link, #170 R16' mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+1
+exit=0
+
+$ P15: grep -rhoF 'style={CONTINUOUS_CORNER}' mobile-pet-tracker/src/screens/alert-detail/index.tsx | wc -l
+1
+exit=0
+
+$ P16: grep -rhoF 'style={TABULAR_NUMS}' mobile-pet-tracker/src/screens/alerts/index.tsx mobile-pet-tracker/src/screens/alert-detail/index.tsx | wc -l
+2
+exit=0
+```
+
+H1–H44 y P1–P16 coinciden. T16: H11=25, H12=10, P2–P5, P13 y P14 cubren los registros de copy, las cuentas tabulares, las esquinas y el inventario del CTA.
+
+### CIERRE — typecheck, lint y literales
+
+```sh
+cd /home/claude/sites/Pet-Tracker-wt-170/mobile-pet-tracker && pwd && test ! -e .expo/types/router.d.ts && bun run typecheck && bunx expo lint --no-cache > /tmp/170-lint.txt 2>&1 && test ! -s /tmp/170-lint.txt
+```
+
+```text
+/home/claude/sites/Pet-Tracker-wt-170/mobile-pet-tracker
+$ tsc --noEmit
+exit=0
+wc -c < /tmp/170-lint.txt: 0
+```
+
+Typecheck exit=0, lint exit=0 y 0 bytes. Todas las cadenas pasaron sin SIGKILL, sin reintentos de lint; ALL pasó al primer intento tras la medida 4,51 y pgrep vacío. Comparación literal final contra requirements.md: los 8 bloques de E3.1–E3.6 aparecen exactamente una vez, incluidos los dos cambios de E3.2 y los dos de E3.4; sin cambiar ninguna coma.
+
+### c35 — trazabilidad E3
+
+Solo la columna Commit de R3, R5, R6, R8, R10 y R15 suma ; E3: hash mensaje. R10 lleva c30 y c33; R5/R6 llevan c32; R8 va detrás de E2. Todas las demás columnas y líneas permanecen iguales, incluida R17 y el frontmatter. Cadena prescrita:
+
+```sh
+cd /home/claude/sites/Pet-Tracker-wt-170 && pwd \
+  && test "$(grep -c '; E3: ' specs/mobile-alerts-grouped-and-detail-map/traceability.md)" = 6 \
+  && test "$(git diff --numstat -- specs/mobile-alerts-grouped-and-detail-map/traceability.md | cut -f1,2 | tr '\t' ' ')" = '6 6' \
+  && git add specs/mobile-alerts-grouped-and-detail-map/traceability.md progress/impl_mobile-alerts-grouped-and-detail-map.md \
+  && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'progress/impl_mobile-alerts-grouped-and-detail-map.md specs/mobile-alerts-grouped-and-detail-map/traceability.md ' \
+  && git commit -m 'docs(mobile-alerts-grouped-and-detail-map): #170 E3 traceability'
+```
+
+R17: pendiente del smoke humano
