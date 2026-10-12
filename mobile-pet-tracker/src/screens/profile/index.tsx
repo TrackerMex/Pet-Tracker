@@ -122,6 +122,9 @@ export function ProfileScreen() {
 
   const pet = detail.data?.kind === 'ok' ? detail.data.pet : null;
   const petLoading = pets.data === undefined || (selectedPetId !== null && detail.data === undefined);
+  const initials = me.data?.kind === 'ok'
+    ? [me.data.me.firstName, me.data.me.lastName].map((part) => part.trim().charAt(0)).join('').toUpperCase()
+    : '';
 
   async function handleChangePhoto() {
     if (!pet) return;
@@ -406,11 +409,25 @@ export function ProfileScreen() {
           <Skeleton testID="me-card-skeleton" className="h-12 w-full rounded-xl" />
         ) : null}
         {me.data?.kind === 'ok' ? (
-          <View className="gap-1">
+          <View testID="me-identity" className="flex-row items-center gap-3">
+            {initials ? (
+              <View
+                testID="me-avatar"
+                className="size-10 items-center justify-center rounded-full bg-default"
+                accessibilityElementsHidden
+                importantForAccessibility="no-hide-descendants"
+              >
+                <Text testID="me-avatar-initials" className="text-sm font-black text-foreground">
+                  {initials}
+                </Text>
+              </View>
+            ) : null}
+          <View testID="me-identity-text" className="flex-1 gap-1">
             <Text className="text-lg font-bold text-foreground">
               {`${me.data.me.firstName} ${me.data.me.lastName}`}
             </Text>
             <Text className="font-normal text-muted">{me.data.me.email}</Text>
+          </View>
           </View>
         ) : null}
         {me.data && me.data.kind !== 'ok' && me.data.kind !== 'unauthorized' ? (
