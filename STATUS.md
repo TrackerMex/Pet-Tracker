@@ -1,10 +1,10 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-10-11
-**Features completadas**: 153/164 (`feature_list.json`)
-**En progreso**: ninguna en esta rama. #159 cerrada en `feature/159-mobile-no-collar-states-pingo`, PR pendiente de merge humano.
+**Features completadas**: 154/170 (`feature_list.json`)
+**En progreso**: ninguna en esta rama. #166 cerrada en `feature/166-mobile-chunky-cta`, PR pendiente de merge humano.
 
-**Pendientes**: 11 (#60, #119, #129, #144, #150, #151, #154, #160, #163, #164 y #165). **#159 `mobile-no-collar-states-pingo` cerrada**: el Mapa y Zonas seguras sin seguimiento pintan a Pingo (pose collar) con el `EmptyState` de #155 y copy en voz B que dice la verdad sin collar y con la suscripción vencida. El Mapa gana «Vincular collar» hacia `/pairing`, solo para el dueño y solo sin collar, leyendo rol y collar del detalle y no del listado; en Zonas seguras nadie ve el botón. El editor de zonas y la nota de Inicio siguen en texto con copy corregido. Tres rondas de Codex rechazadas (B1, B2 y B3, todas por candados del lado listado) y tres enmiendas de solo tests firmadas desde Notion (E1 `f3ca7b8e`, E2 `4146ac24`, E3 `9e475054`); E3 cierra la tabla de verdad entera de R4 (Mapa 119 → 271 tests). La ronda 4 la aprobó el reviewer (`4971a555`), el humano firmó el smoke R10 en `bbb8df47`, y la rama trae #134 y #158 mergeados (catálogo en 386). Móvil 98/2765 en el gate de cierre (con #134 y #158).
+**Pendientes**: 16 (#60, #119, #129, #144, #150, #151, #154, #160, #163, #164, #165, #167, #168, #169, #170 y #171). **#166 `mobile-chunky-cta` cerrada**: el labio «chunky» de Bienvenida pasa a los 19 botones primarios sólidos de la app (`rounded-xl bg-accent border-b-4 border-black/25`), y los 4 secundarios neutros ganan un labio gris con el token nuevo `--color-lip-gray`, definido en los dos temas. Se revierte el candado de #153 que prohibía el labio en el secundario de Bienvenida. La carta (`docs/ui-guidelines.md`) gana el punto 13, «botón con cuerpo». Codex trabajó en una ronda (c1-c10) con una parada en c3 por un contador del handoff, corregida por el leader (`f1c47164`). El reviewer la aprobó (`b69d8e86`, 0 bloqueantes) y el humano firmó el smoke R5 en `b6a31bb9`. Móvil 98/2765 → 98/2775.
 
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
@@ -88,6 +88,15 @@ debe listar las 4 URLs de cola.
 
 ## Estado actual
 
+- **`mobile-chunky-cta` (#166) done** (2026-10-12, worktree
+  `Pet-Tracker-wt-166`, sesion Frontend): labio en los 19 primarios sólidos
+  y labio gris (`--color-lip-gray`) en los 4 secundarios neutros, más el
+  punto 13 de la carta. Reviewer APROBADO (`b69d8e86`, veredicto sobre
+  `ea885296`, observaciones O1-O5 sin bloqueo; O2 es deuda de definición de
+  «primario sólido», heredada de #62). Gate: `./init.sh` exit 0 sobre
+  `ea885296` (backend 187/1474, infra 2/14, móvil 98/2775, e2e 30 de 33
+  suites, 476 tests con 8 saltados). Smoke R5 firmado por el humano en
+  `b6a31bb9`. PR abierta; desbloquea los handoffs de #167-#171.
 - **`mobile-no-collar-states-pingo` (#159) done** (2026-10-11, worktree
   `Pet-Tracker-wt-159`, sesion UI-Pet): estados sin collar del Mapa y de
   Zonas seguras con Pingo, y botón de emparejar solo para el dueño sin
@@ -1446,6 +1455,13 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Última sesión
+
+- **2026-10-12** — **#166 `mobile-chunky-cta` cerrada** (worktree
+  `Pet-Tracker-wt-166`, sesión Frontend). Spec firmada desde Notion
+  (`94f64979`). Ronda única de Codex, con una parada en c3 porque el
+  contador de `●` del handoff incluía los bloques `  ● Console` de Jest
+  (Reanudación 1, `f1c47164`). Aprobada por el reviewer (`b69d8e86`). Smoke R5
+  firmado por el humano en `b6a31bb9`. PR abierta; siguiente: merge humano.
 
 - **2026-10-11** — **#159 `mobile-no-collar-states-pingo` cerrada** (worktree
   `Pet-Tracker-wt-159`, sesión UI-Pet). Spec firmada desde Notion
