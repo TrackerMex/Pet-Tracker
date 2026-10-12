@@ -340,9 +340,10 @@ idiomas, como cualquier otra copy.
   terminan en punto.
 - **Sin bromas en las alertas.** Una alerta de Pingo dice qué pasa y qué hacer.
 - **En inglés, registro neutro.**
-- **Bucles de reposo.** Flotar y parpadear son las únicas animaciones
-  continuas de Pingo, y una excepción declarada a §Animación: animan
-  `translateY` y `opacity` con timing y duraciones fuera de 150/250/400,
+- **Bucles de reposo.** Flotar, parpadear y los tres anillos de ping que
+  rodean a Pingo en la bienvenida son las únicas animaciones continuas de
+  Pingo, y una excepción declarada a §Animación: animan `translateY`,
+  `scale` y `opacity` con timing y duraciones fuera de 150/250/400,
   porque no entran, ni salen, ni responden a un gesto. Sus constantes viven en
   `src/theme/motion.ts` y no arrancan con reduce motion.
 
@@ -479,3 +480,16 @@ Las constantes anteriores a #152 (`MEALS_BAR_TIMING`, `KCAL_BAR_TIMING`,
 usa `MOTION_FADE_TIMING` y `MOTION_SETTLE_SPRING` (enmienda E1 de #153).
 
 - [X] Enmienda aprobada por humano
+
+## Enmienda #167 — anillos de ping de la bienvenida
+
+Los tres anillos de ping de la bienvenida amplían los bucles de reposo de
+§Animación punto 7. Cada anillo es un círculo de borde `border-accent` que
+crece de `MOTION_PING_FROM` a `MOTION_PING_TO_SCALE` mientras su opacidad cae
+de `MOTION_PING_FROM` a 0, con `MOTION_PING_TIMING`, en bucle infinito y sin
+invertir. Los anillos arrancan escalonados un tercio de la duración. Con
+reduce motion no se pintan.
+
+Ninguna otra pantalla usa anillos de ping sin una enmienda propia.
+
+- [ ] Enmienda aprobada por humano
