@@ -574,6 +574,11 @@ describe('#170 R10: pinta la zona y la distancia a su borde', () => {
     expect(await screen.findByTestId('alert-detail-distance')).toHaveTextContent('A 1.2 km de Casa');
     expect(screen.getByTestId('pet-map-double').props.zoom).toBeCloseTo(13.7385, 3);
   });
+  it('redondea al metro: a 0,71 m del borde dice «A 1 m de Casa»', async () => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ geofenceId: 'zone-1', payload: { ...REAL_PAYLOAD, position: { lat: 19.4335057, lng: -99.1332 } } })], nextCursor: null });
+    await renderDetail();
+    expect(await screen.findByTestId('alert-detail-distance')).toHaveTextContent('A 1 m de Casa');
+  });
   it('usa la zona aunque esté inactiva', async () => {
     mockListGeofences.mockResolvedValue({ kind: 'ok', geofences: [{ ...ZONE, active: false }] });
     await renderDetail();
