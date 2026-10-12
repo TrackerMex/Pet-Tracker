@@ -32,5 +32,10 @@
   casa, porque #171 R12 reescribe esa suma; y la carta termina en `## Enmienda #171`.
   R11.2 sigue añadiendo al final, y R11.3 solo pide «una sola vez», sin posición
   (verificado con grep: ningún candado de #167 usa endsWith ni lastIndexOf).
+- **Solapes con #170** (Backend, handoff 4a68bfe0, Codex en marcha): #170 también
+  abre §2.24, suma +7 al catálogo (la misma expresión que B15) y toca
+  `ui-copy-table.ts`, `ui-language.test.ts` y `consistency-classnames.test.ts`. Si
+  mergea antes del handoff de #167, re-medir B5–B10, B15 y §2.N. Los conflictos se
+  resuelven en el merge sumando los deltas. Antes de lanzar init.sh, avisar a Backend.
 - **Siguiente**: gate humano (Estado del gate = Aprobado), luego commit de firma y
   handoff a Codex.
