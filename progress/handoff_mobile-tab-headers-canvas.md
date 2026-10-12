@@ -1794,3 +1794,97 @@ sustituyen a las del paso 5 de la Reanudacion 5:
   Donde el handoff dice 27 y 25, la Reanudacion 2 dice 28 y 26 o la
   Reanudacion 5 dice 29 y 27, cuenta 30 y 28.
 ```
+
+## Reanudación 8: parada en M, antes de crear G (2026-10-12)
+
+> c17b y c18–c24 quedaron commiteados en orden (de `e37b72a3` a
+> `2f5c294c`). El arreglo del doble de la Reanudación 7 funcionó y c19
+> leyó `jestAnimatedProps` sin parar. Codex paró en el bloque M por un
+> error de invocación suyo. Lanzó el script que escribe G desde
+> `mobile-pet-tracker/`, pero con rutas prefijadas `mobile-pet-tracker/`.
+> El script falló al leer C (`FileNotFoundError`) sin escribir nada. La
+> medida de M no iba encadenada con `&&` a la creación, así que corrió
+> igualmente y dio `ENOENT` sobre G, que no existía. Ese jest arrancó, así
+> que la regla de error de invocación del handoff original no lo cubría al
+> pie de la letra, y Codex paró, que era lo correcto.
+>
+> No hay nada que corregir en la spec, en el handoff ni en el código. El
+> árbol está limpio, G no existe y no se tocó ningún fichero. Esta
+> reanudación amplía la regla de error de invocación a este caso y repite
+> el bloque M entero desde la creación de G. H0 sigue siendo `b082f6e5`.
+> Este commit solo toca este fichero, que está fuera de la lista cerrada.
+
+Pegar en Codex CLI:
+
+```
+Worktree: /home/claude/sites/Pet-Tracker-wt-168   <- PRIMERA LINEA. Trabaja AQUI y en ningun otro sitio
+Reanudacion 8 de #168 tras la parada en M, antes de crear G. Ejecuta y
+pega en progress/impl_mobile-tab-headers-canvas.md, bajo una seccion
+nueva «## Reanudacion 8»:
+  cd /home/claude/sites/Pet-Tracker-wt-168 && pwd
+  git branch --show-current
+  git rev-parse --short HEAD~1
+  git log --oneline b082f6e5..HEAD | wc -l
+  git log --oneline 60d31502..HEAD
+  git status --short
+PARA si:
+- la branch no es feature/168-mobile-tab-headers-canvas;
+- HEAD~1 no es 2f5c294c (tu c24);
+- el recuento no es 35;
+- el segundo log no son exactamente nueve commits: el del leader que
+  anade esta reanudacion, 2f5c294c, 5d174a8c, 1e3669c9, fa68d334,
+  439da40f, b054fd63, 963f29e1 y e37b72a3;
+- `git status --short` no es exactamente esta linea:
+  ?? progress/impl_mobile-tab-headers-canvas.md
+H0 sigue siendo b082f6e5. Siguen en vigor todas las reglas del handoff
+original, las correcciones del paso 5 de la Reanudacion 2, el
+`<LINT n>` con reintento de la Reanudacion 4, la regla de medidas de la
+Reanudacion 6 y las dos correcciones del paso 5 de la Reanudacion 7
+(fila R8 con c17 + c17b; 30 commits en total y 28 en A-M).
+
+Regla de extraccion: cada cadena empieza en su primera linea de comando
+y termina en su linea `git commit -m '...'`, esa incluida. Nada de lo
+que va detras es comando: ni las cabeceras `-- Bloque ... --`, ni las
+lineas `cN, ...`, ni la prosa. Las lineas con `->` son lo esperado, no
+comandos.
+
+Error de invocacion, ampliado: tambien es error de invocacion (no
+parada) un fallo tuyo al crear un fichero que el paso te pide crear
+(ruta mal escrita, cwd equivocado) aunque detras arranque una medida
+que falla SOLO con `ENOENT` sobre ese mismo fichero, siempre que no se
+haya escrito nada en el arbol. Haz el `cd` literal, comprueba el arbol
+limpio, crea el fichero, repite la medida y anotalo en el impl.
+Cualquier otro fallo sigue siendo parada.
+
+Anclas, desde mobile-pet-tracker/
+(`cd /home/claude/sites/Pet-Tracker-wt-168/mobile-pet-tracker && pwd`):
+  test -e src/__tests__/tab-headers-canvas.test.ts; echo $?   -> 1
+  git diff --name-only HEAD -- . ../docs ../specs | wc -l   -> 0
+  git diff --cached --name-only | wc -l   -> 0
+  git ls-files --others --exclude-standard -- . ../docs ../specs | wc -l   -> 0
+  test -f src/__tests__/consistency-classnames.test.ts; echo $?   -> 0
+Si alguna no da su cifra, PARA.
+
+Paso 1, crea G desde mobile-pet-tracker/. Si usas un script, sus rutas
+son relativas a mobile-pet-tracker/, SIN el prefijo
+`mobile-pet-tracker/`: G es `src/__tests__/tab-headers-canvas.test.ts`
+y C es `src/__tests__/consistency-classnames.test.ts`. El contenido es
+el del bloque M del handoff original (tasks.md bloque M (1)), sin
+cambios. Antes de medir, comprueba:
+  cd /home/claude/sites/Pet-Tracker-wt-168/mobile-pet-tracker && pwd && test -f src/__tests__/tab-headers-canvas.test.ts && echo existe
+    -> /home/claude/sites/Pet-Tracker-wt-168/mobile-pet-tracker y `existe`
+Si no sale `existe`, no midas: corrige la creacion. Despues, la medida
+de M tal como esta en el handoff original:
+  FORCE_COLOR=0 bunx jest --runTestsByPath src/__tests__/tab-headers-canvas.test.ts > /tmp/168-g13.txt 2>&1; echo "exit=$?"
+    -> exit=0 y `Tests:       7 passed, 7 total`
+Si no da eso, PARA.
+
+Paso 2: las sondas S1-S8 del handoff original, una a una, con sus
+lineas `Tests:` y sus `●`, revertidas con `limpio=0`.
+
+Paso 3: c25 tal como esta en el handoff original, con su `<LINT 0>`,
+GUARDAS 92 y el mismo mensaje de dos `-m`.
+
+Paso 4: CIERRE, c26 y c27 del handoff original con todas las
+correcciones citadas arriba.
+```
