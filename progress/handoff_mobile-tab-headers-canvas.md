@@ -1402,3 +1402,130 @@ del cambio 1 y las tres correcciones del paso 5 de la Reanudacion 2
 (consultas a nodos ocultos en F y G, fila R3 de la trazabilidad con c3 y
 c3b, 28 commits en total y 26 en A-M).
 ```
+
+## Reanudación 5: parada en la medida de c8 (2026-10-12)
+
+> c8 paró en su medida, antes de la cadena: `1 failed, 46 passed, 47
+> total`. El it `reserva h-52 mientras carga el detalle` (c7, `ce060f18`)
+> compara el `className` del host de `Skeleton` con
+> `toBe('h-52 w-full rounded-card')`, pero HeroUI antepone `skeleton__root`
+> (Received `"skeleton__root h-52 w-full rounded-card"`). La producción de
+> Codex está bien y cumple R4.4. El test siguió al pie de la letra la viñeta
+> de tasks.md («`profile-hero-skeleton` con `className` `h-52 w-full
+> rounded-card`»), que no avisaba de que el host lleva la clase de HeroUI.
+> El repo ya lo compara así en geofences, geofence-editor, health y food
+> (`'skeleton__root h-XX w-full rounded-card'`). El fallo es de redacción
+> de la spec y del handoff, no de Codex. R4.4 no cambia: la prop que pasa la
+> pantalla sigue siendo `h-52 w-full rounded-card`. Por eso no hace falta
+> enmienda, y el test se corrige en un commit de test propio, c7b, como c3b
+> en la Reanudación 2.
+>
+> El leader lo probó fuera del árbol, con la línea corregida. Contra la
+> producción de HEAD, P da `9 failed, 38 passed, 47 total`: los mismos 9 its
+> que c7, y el del skeleton con Expected `"skeleton__root h-52 w-full
+> rounded-card"` y Received `"skeleton__root h-80 w-full rounded-card"`, sin
+> consultas fuera de las permitidas en c7. Contra el verde de D que Codex
+> dejó en el árbol, da `47 passed, 47 total`. H0 sigue siendo `b082f6e5`.
+> Este commit solo toca este fichero, que está fuera de la lista cerrada.
+
+Pegar en Codex CLI:
+
+```
+Worktree: /home/claude/sites/Pet-Tracker-wt-168   <- PRIMERA LINEA. Trabaja AQUI y en ningun otro sitio
+Reanudacion 5 de #168 tras la parada en la medida de c8. Ejecuta y pega
+en progress/impl_mobile-tab-headers-canvas.md, bajo una seccion nueva
+«## Reanudacion 5»:
+  cd /home/claude/sites/Pet-Tracker-wt-168 && pwd
+  git branch --show-current
+  git rev-parse --short HEAD~1
+  git log --oneline b082f6e5..HEAD
+  git status --short
+PARA si:
+- la branch no es feature/168-mobile-tab-headers-canvas;
+- HEAD~1 no es 31605b09 (la Reanudacion 4);
+- el log no son exactamente trece commits: el del leader que anade esta
+  reanudacion, 31605b09, ce060f18, e65457de, bb71dc3b, 74447b19,
+  9039b87b, 675c465e, f08b7b79, 2c01414a, 1abc7950, c5618f43 y
+  fdd98bcf;
+- `git status --short` no es exactamente estas dos lineas:
+   M mobile-pet-tracker/src/screens/profile/index.tsx
+  ?? progress/impl_mobile-tab-headers-canvas.md
+H0 sigue siendo b082f6e5. Siguen en vigor todas las reglas del handoff
+original, las correcciones del paso 5 de la Reanudacion 2 y el
+`<LINT n>` con reintento de la Reanudacion 4.
+
+Regla de extraccion: cada cadena empieza en su primera linea de comando
+y termina en su linea `git commit -m '...'`, esa incluida. Nada de lo
+que va detras es comando: ni las cabeceras `-- Bloque ... --`, ni las
+lineas `cN, ...`, ni la prosa. Las lineas con `->` son lo esperado, no
+comandos.
+
+Anclas, desde mobile-pet-tracker/
+(`cd /home/claude/sites/Pet-Tracker-wt-168/mobile-pet-tracker && pwd`):
+  git diff --numstat -- src/screens/profile/index.tsx | cut -f1   -> 10
+  git diff --numstat -- src/screens/profile/index.tsx | cut -f2   -> 5
+  grep -cF 'testID="profile-hero-skeleton" className="h-52 w-full rounded-card"' src/screens/profile/index.tsx   -> 1
+  grep -cF "toBe('h-52 w-full rounded-card')" src/screens/profile/index.test.tsx   -> 1
+  grep -cF "toBe('skeleton__root h-24 w-full rounded-card')" src/screens/geofences/index.test.tsx   -> 1
+  git diff --cached --name-only | wc -l   -> 0
+Si alguna no da su cifra, PARA.
+
+Paso 1, guarda el verde de D y vuelve a HEAD, desde mobile-pet-tracker/:
+  cp src/screens/profile/index.tsx /tmp/168-d-verde-index.tsx && git checkout HEAD -- src/screens/profile/index.tsx
+Comprueba:
+  grep -cF 'testID="profile-hero-skeleton" className="h-52 w-full rounded-card"' /tmp/168-d-verde-index.tsx
+    -> 1
+  git diff --stat HEAD -- . | wc -l
+    -> 0
+  git diff --cached --name-only | wc -l
+    -> 0
+Si no, PARA.
+
+Paso 2, c7b, el rojo de D con el className del host. En P cambia SOLO
+esta linea (el it `reserva h-52 mientras carga el detalle`):
+      expect(skeleton.props.className).toBe('h-52 w-full rounded-card');
+por esta:
+      expect(skeleton.props.className).toBe('skeleton__root h-52 w-full rounded-card');
+y nada mas. Desde mobile-pet-tracker/:
+  FORCE_COLOR=0 bunx jest --runTestsByPath src/screens/profile/index.test.tsx > /tmp/168-r4b.txt 2>&1; echo "exit=$?"
+    -> exit=1 y `Tests:       9 failed, 38 passed, 47 total`
+  grep -qE '^Tests: +9 failed, 38 passed, 47 total$' /tmp/168-r4b.txt \
+    && test "$(grep -E '^  ● ' /tmp/168-r4b.txt | grep -cvxF '  ● Console')" = 9 \
+    && test "$(grep -E '^  ● ' /tmp/168-r4b.txt | grep -cF '#168 R4:')" = 6 \
+    && test "$(grep -cF 'Expected: "skeleton__root h-52 w-full rounded-card"' /tmp/168-r4b.txt)" = 1 \
+    && test "$(grep -cF 'Received: "skeleton__root h-80 w-full rounded-card"' /tmp/168-r4b.txt)" = 1 \
+    && ! grep -qE 'Test suite failed to run|TypeError|ReferenceError|SyntaxError|Cannot find module' /tmp/168-r4b.txt \
+    && ! grep -E 'Unable to find' /tmp/168-r4b.txt | grep -vE 'Unable to find an element with testID: (profile-pet-card|profile-pet-avatar|profile-pet-name|profile-pet-chips)$' \
+    && test "$(git diff --shortstat -- src/screens/profile/index.test.tsx)" = ' 1 file changed, 1 insertion(+), 1 deletion(-)' \
+    && test "$(grep -cF "toBe('skeleton__root h-52 w-full rounded-card')" src/screens/profile/index.test.tsx)" = 1 \
+    && test "$(grep -cF "toBe('h-52 w-full rounded-card')" src/screens/profile/index.test.tsx)" = 0 \
+    && test ! -e .expo/types/router.d.ts && bun run typecheck && <LINT 0> \
+    && git add src/screens/profile/index.test.tsx \
+    && test "$(git diff --cached --name-only)" = 'mobile-pet-tracker/src/screens/profile/index.test.tsx' \
+    && <LIMPIO> \
+    && git commit -m 'test(mobile): el skeleton de Perfil se compara con skeleton__root (#168 R4)'
+
+Paso 3, restaura el verde de D, desde mobile-pet-tracker/:
+  cp /tmp/168-d-verde-index.tsx src/screens/profile/index.tsx && git diff --shortstat -- src/screens/profile/index.tsx
+    -> ` 1 file changed, 10 insertions(+), 5 deletions(-)`
+  git -C .. status --short
+    -> exactamente estas dos lineas:
+        M mobile-pet-tracker/src/screens/profile/index.tsx
+       ?? progress/impl_mobile-tab-headers-canvas.md
+Si no, PARA.
+
+Paso 4: c8 entero, tal como esta en el paso 1 de la Reanudacion 4 (medida
+a /tmp/168-g4.txt, `Tests:       47 passed, 47 total`, GUARDAS 92, el
+ancla de skeleton corregida y el mismo mensaje), sin cambiar ninguna
+cifra.
+
+Paso 5: c9 y el resto del handoff original hasta c27, con el `<LINT n>`
+de la Reanudacion 4 y las correcciones del paso 5 de la Reanudacion 2,
+mas estas dos, que ajustan las suyas:
+- c26, traceability: la fila R4 lleva como rojo c7 `ce060f18` + c7b (su
+  hash corto y su mensaje), `rojo → verde` hacia c8; la fila R3 sigue
+  con c3 `2c01414a` + c3b.
+- Los commits de A-M son 27 (c1-c25 mas c3b y c7b) y en total 29: donde
+  el handoff dice 27 y 25, o la Reanudacion 2 dice 28 y 26, cuenta 29
+  y 27.
+```
