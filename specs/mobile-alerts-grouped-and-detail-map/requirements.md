@@ -519,11 +519,211 @@ del cierre pasa a esperar 100 suites y 2893 tests, sin cambios respecto al
 recuento ya prescrito. La lista cerrada gana este fichero: son 17 bajo
 `mobile-pet-tracker/` y 20 en total.
 
+## Enmienda E3 — candados que la revisión encontró ciegos
+
+El reviewer rechazó la ronda 1 el 2026-10-12 sobre `3719eb75`
+(`progress/review_mobile-alerts-grouped-and-detail-map.md`). El hallazgo 1, la
+columna de tests de traceability.md, es de documentación y lo corrigió el
+leader en `003fa449`. Los hallazgos 2, 3 y 4 y las observaciones 2, 3 y 5 son
+sondas de mutación que el reviewer dejó en verde. El código de producción ya
+hace lo que dice la spec. Lo que falla es que ningún test lo distingue de una
+versión rota. Esta enmienda no cambia producción ni ningún requisito: añade o
+endurece tests en dos ficheros que ya están en la lista cerrada.
+
+Spike del leader en un worktree desechable sobre `003fa449`, con los seis
+cambios de abajo:
+
+- `src/screens/alert-detail/index.test.tsx` y `src/screens/alerts/index.test.tsx`
+  dan `Tests: 152 passed, 152 total`. Antes eran 78 + 68 = 146.
+- `tsc --noEmit` y `eslint` sobre los dos ficheros dan exit 0.
+- Cada mutación de la tabla de sondas, plantada sola, da exactamente los
+  rojos que se indican.
+
+### E3.1 — R8: «no llama a `listGeofences`» sin posición (hallazgo 2, sonda F)
+
+Las diez filas «no» de R8 usaban `makeAlert({ payload })`, que trae
+`geofenceId: null`. Con eso la consulta está deshabilitada por R11, así que
+`expect(mockListGeofences).not.toHaveBeenCalled()` se cumplía con cualquier
+código. **THE SYSTEM SHALL**, en `#170 R8` › `'$fila: sin mapa'`, sustituir la
+primera línea del cuerpo por estas dos:
+
+```
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ geofenceId: 'zone-1', payload })], nextCursor: null });
+    mockListGeofences.mockResolvedValue({ kind: 'ok', geofences: [ZONE] });
+```
+
+Las filas «sí» (`'$fila: con mapa'`) no cambian.
+
+### E3.2 — R10: la consulta usa la mascota de la alerta (hallazgo 3, sonda C)
+
+La alerta por defecto es de `pet-1` y la mascota seleccionada también, así que
+una consulta por `selectedPetId` pasaba igual. `listAlerts` no filtra por
+mascota, de modo que el detalle puede abrir la alerta de otra mascota.
+**THE SYSTEM SHALL**, en `#170 R10`:
+
+1. Añadir, justo después del `it` `'pinta el círculo, el encuadre y «A 85 m de Casa»'`:
+
+   ```
+     it('consulta las zonas de la mascota de la alerta, no de la seleccionada', async () => {
+       mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ petId: 'pet-7', geofenceId: 'zone-1', payload: REAL_PAYLOAD })], nextCursor: null });
+       mockListGeofences.mockResolvedValue({ kind: 'ok', geofences: [{ ...ZONE, petId: 'pet-7' }] });
+       await renderDetail();
+       expect(await screen.findByTestId('alert-detail-distance')).toHaveTextContent('A 85 m de Casa');
+       expect(mockListGeofences).toHaveBeenCalledWith('http://example.test/v1', 'token-1', 'pet-7');
+       expect(mockListGeofences).not.toHaveBeenCalledWith('http://example.test/v1', 'token-1', 'pet-1');
+     });
+   ```
+
+2. En `'lee la zona de la caché compartida de geofenceKeys.list'`, sustituir la
+   línea
+   `    queryClient.setQueryData(geofenceKeys.list('pet-1'), { kind: 'ok', geofences: [ZONE] });`
+   por estas dos:
+
+   ```
+       mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ petId: 'pet-7', geofenceId: 'zone-1', payload: REAL_PAYLOAD })], nextCursor: null });
+       queryClient.setQueryData(geofenceKeys.list('pet-7'), { kind: 'ok', geofences: [{ ...ZONE, petId: 'pet-7' }] });
+   ```
+
+La mascota seleccionada sigue siendo `pet-1`, la del `beforeEach` de nivel
+superior.
+
+### E3.3 — R3.2: la cabecera va antes de su primera fila (hallazgo 4, sonda A)
+
+`'envuelve cada cabecera con la primera fila de su sección en un View gap-4'`
+solo comprobaba el `className` del padre y que la fila estuviera dentro.
+Con la cabecera debajo de su fila seguía en verde. **THE SYSTEM SHALL**, en
+`#170 R3`, dentro del `for` de ese `it` y justo después de
+`expect(within(parent).getByTestId('alert-row-' + id)).toBeVisible();`, añadir:
+
+```
+      expect(elementChild(parent, 0).props.testID).toBe('alerts-section-' + section);
+      const first = elementChild(parent, 1);
+      expect(first.props.testID === 'alert-row-' + id || within(first).queryByTestId('alert-row-' + id) !== null).toBe(true);
+```
+
+El segundo hijo es «o contiene» la fila porque R3.2 solo exige que el
+envoltorio sea ancestro de la fila, y `within` no mira la raíz.
+
+### E3.4 — R5 y R6: el ack local quita el borde (observación 2, sondas Bl y Bd)
+
+La notación dice que «abierta» se lee **tras** el solapamiento local de la
+marca de leída. Ningún test marcaba leída y miraba el borde después, así que
+un borde calculado desde el `status` del servidor pasaba. Hay un candado por
+pantalla y uno por cada rama de `settleAlertAck` que deja la alerta sin abrir
+(`ok` da `acked` y `already-closed` da `closed`). **THE SYSTEM SHALL** añadir:
+
+- al final de `#170 R5`, en `src/screens/alerts/index.test.tsx`:
+
+  ```
+    it.each(['ok', 'already-closed'] as const)('marcada leída en local (%s): pierde el borde de severidad', async (rama) => {
+      mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert()], nextCursor: null });
+      mockAckAlert.mockResolvedValue(rama === 'ok' ? { kind: 'ok', alert: makeAlert({ status: 'acked' }) } : { kind: 'already-closed' });
+      await renderAlerts();
+      await fireEvent.press(await screen.findByTestId('alert-row-alert-1-ack'));
+      await waitFor(() => expect(screen.getByTestId('alert-row-alert-1-status')).toHaveTextContent(rama === 'ok' ? es['alerts.statusAcked'] : es['alerts.statusClosed']));
+      const classes = screen.getByTestId('alert-row-alert-1').props.className.split(' ');
+      expect(classes).toContain('border');
+      expect(classes).toContain('border-border');
+      expect(classes).not.toContain('border-2');
+      expect(classes).not.toContain('border-danger');
+    });
+  ```
+
+- al final de `#170 R6`, en `src/screens/alert-detail/index.test.tsx`:
+
+  ```
+    it.each(['ok', 'already-closed'] as const)('marcada leída en local (%s): pierde el borde de severidad', async (rama) => {
+      mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert()], nextCursor: null });
+      mockAckAlert.mockResolvedValue(rama === 'ok' ? { kind: 'ok', alert: makeAlert({ status: 'acked' }) } : { kind: 'already-closed' });
+      await renderDetail();
+      await fireEvent.press(await screen.findByTestId('alert-detail-ack'));
+      await waitFor(() => expect(screen.getByTestId('alert-detail-status')).toHaveTextContent(rama === 'ok' ? 'Leída' : 'Resuelta'));
+      expect(screen.getByTestId('alert-detail-card').props.className).toBe('rounded-card border border-border bg-surface p-4 shadow-sm min-h-44 gap-3');
+    });
+  ```
+
+### E3.5 — R10 y R14: el umbral redondea al metro (observación 3, sonda D)
+
+R14 fija `0` y `0,41 m`, que quedan por debajo de `1` con o sin
+`Math.round`. Falta una fila entre `0,5` y `1 m`. A `lat 19.4335057` la
+distancia al borde es `0,709 m` (medida con `distanceMeters` de R7):
+`Math.round` da `1` y `formatDistance` da `1 m`. **THE SYSTEM SHALL** añadir
+en `#170 R10`, justo antes del `it` `'usa la zona aunque esté inactiva'`:
+
+```
+  it('redondea al metro: a 0,71 m del borde dice «A 1 m de Casa»', async () => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ geofenceId: 'zone-1', payload: { ...REAL_PAYLOAD, position: { lat: 19.4335057, lng: -99.1332 } } })], nextCursor: null });
+    await renderDetail();
+    expect(await screen.findByTestId('alert-detail-distance')).toHaveTextContent('A 1 m de Casa');
+  });
+```
+
+`listGeofences` ya resuelve con `ZONE` en el `beforeEach` de `#170 R10`.
+
+### E3.6 — R15: el CTA mide `min-h-11` (observación 5)
+
+R15 prescribe el `className` exacto, y `#166 R3` solo comprueba la receta del
+secundario con `toContain`, no el alto. **THE SYSTEM SHALL**, en `#170 R15` ›
+`'lo pinta en %s'`, añadir justo después de
+`expect(button.props.accessibilityRole).toBe('button');`:
+
+```
+    expect(button.props.className.split(' ')).toContain('min-h-11');
+```
+
+### Sondas
+
+Cada sonda se planta sobre el commit que la nombra, se mide solo en su
+fichero y se revierte. Ninguna se commitea. «Detalle» es
+`src/screens/alert-detail/index.tsx` y «lista» es `src/screens/alerts/index.tsx`.
+
+| Sonda | Commit | Mutación | Rojos esperados |
+|---|---|---|---|
+| SE3.1 (F) | E3.1 | detalle: tras `const position = …`, una `useQuery` de zonas habilitada con `geofenceId` y sin posición | las 10 filas `'$fila: sin mapa'` |
+| SE3.2 (C) | E3.2 | detalle: la consulta de zonas usa `useSelectedPet().selectedPetId ?? alert.petId` | `consulta las zonas de la mascota…` y `lee la zona de la caché…` |
+| SE3.3 (A) | E3.3 | lista: `{card}` antes de la cabecera dentro del `View gap-4` | `envuelve cada cabecera…` |
+| SE3.4 (Bl) | E3.4 | lista: el borde sale de `ordered[index].status` | las 2 filas de `#170 R5` › `marcada leída en local` |
+| SE3.5 (Bd) | E3.4 | detalle: el borde sale de `found?.status` | las 2 filas de `#170 R6` › `marcada leída en local` |
+| SE3.6 (D) | E3.5 | detalle: umbral `d - zone.radiusM >= 1` sin `Math.round` | `redondea al metro…` |
+| SE3.7 (X) | E3.6 | detalle: el CTA pierde `min-h-11` | las 3 filas de `'lo pinta en %s'` |
+
+Los comandos literales de cada mutación, con sus líneas `Tests:`, están en el
+handoff (corrección 16).
+
+### Lo que no entra
+
+- Observación 1: R16 se nombra en comentarios `// #170 R16`, como prescribe
+  tasks.md T16 y como hicieron los candados agregados anteriores.
+- Observación 4: el candado del registro de R1 es el que la spec prescribió.
+- Observación 6: `new Date(alerts.dataUpdatedAt)` y `new Date()` solo se
+  distinguen si la lista sigue montada sin recargar al cruzar el límite de
+  una sección. Haría falta un escenario de timers solo para eso.
+- Observación 7: el comentario `// #134 R6` de `ui-language.test.ts` lo
+  sustituyó la corrección 2 del handoff a propósito. Cambiarlo ahora rompe el
+  ancla `grep -cF 'toHaveLength(11 - 3 + 2); // #170 R16'` de tasks.md T16 y
+  toca una línea que #167 también mueve.
+- Observación 5, la parte de `Button.Label` sin `className`: es una ausencia
+  en el código fuente. El inventario de `#166 R3` ya lee el tag del CTA.
+- Observación 8: ya cubierta por `#78 R7` y `#78 R9`.
+
+### Recuentos
+
+- `alert-detail/index.test.tsx` pasa de 78 a 82 tests (+1 en E3.2, +2 en
+  E3.4 y +1 en E3.5). `alerts/index.test.tsx` pasa de 68 a 70 (+2 en E3.4).
+- El FINAL del cierre pasa de 427 a 433 tests y el ALL de 2893 a 2899, con
+  100 suites en los dos casos.
+- Ningún recuento agregado de R16 se mueve: no hay `testID`, clase, `style`
+  ni copy nuevos en producción.
+- La lista cerrada sigue en 20 ficheros.
+- traceability.md suma los commits de E3 a la columna «Commit» de R3, R5, R6,
+  R8, R10 y R15.
+
 ## Aprobación
 
 - [x] Aprobado por humano (fecha: 2026-10-12) ← gate obligatorio antes de implementar
 - [x] Enmienda E1 aprobada por humano (fecha: 2026-10-12)
 - [x] Enmienda E2 aprobada por humano (fecha: 2026-10-12)
+- [ ] Enmienda E3 aprobada por humano (fecha: ____)
 
 ## Smoke R17
 

@@ -626,6 +626,13 @@ no añade tests ni código, solo comprueba:
   de `pet-map` en `src/app/__tests__/alert-detail.navigation.test.tsx`, con las
   cinco líneas literales de E2 justo debajo del mock de `floating-tab-bar`.
   Verde: esa suite da `Tests: 1 passed, 1 total`.
+- [ ] (Enmienda E3) Antes de la suite completa, seis commits de tests, uno
+  por bloque de E3.1 a E3.6 de requirements.md, con los literales de la
+  enmienda. Cada uno nace verde porque producción ya cumple. Su sonda (SE3.1 a
+  SE3.7) se planta sobre el commit, se mide solo en su fichero y se revierte
+  con `git checkout HEAD --`. Verde final: `alert-detail/index.test.tsx` 82 y
+  `alerts/index.test.tsx` 70. Los comandos literales están en la corrección 16
+  del handoff.
 - [ ] Suite completa en verde, sin pipe:
   `cd mobile-pet-tracker && bunx jest; echo "exit=$?"`.
 

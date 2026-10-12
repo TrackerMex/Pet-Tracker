@@ -132,6 +132,296 @@
 >     actualizado. En c27, la celda «Commit» de R8 en traceability.md
 >     termina con `; E2: <hash> test(mobile-alerts-grouped-and-detail-map): #170 E2 pet-map double in the alert detail navigation test`.
 >     El impl registra cE2 con su línea `Tests:`, typecheck y lint.
+>
+> 16. **Enmienda E3 (tras el rechazo de la ronda 1 del reviewer).** El
+>     reviewer rechazó sobre `3719eb75`
+>     (`progress/review_mobile-alerts-grouped-and-detail-map.md`). El leader ya
+>     corrigió el hallazgo 1, la columna de tests de traceability.md, en
+>     `003fa449`, así que esa columna no se toca. Los demás hallazgos son
+>     candados ciegos. requirements.md §Enmienda E3 añade o endurece tests en
+>     `D` y `A`, y producción no cambia. Por eso cada commit nace verde, y el
+>     rojo es su sonda, plantada después sobre el HEAD.
+>
+>     Son seis commits, c29-c34, en este orden. Los literales de cada test se
+>     copian de E3.1-E3.6 sin cambiar ni una coma. Todo se corre desde
+>     mobile-pet-tracker/. traceability.md no se toca hasta c35.
+>
+>     Las sondas siguen §COMMITS «Sondas» del cuerpo, con tres cambios:
+>
+>     - La mutación se planta con el comando literal de abajo.
+>     - Antes de medir, `plantada` comprueba que solo cambió el fichero de
+>       producción. Un `sed` que no casa daría verde y la parada no diría por
+>       qué.
+>     - La comprobación de limpio pasa a ser `git diff --cached --quiet &&
+>       <LIMPIO>`. El impl está trackeado desde c27, y `git diff --quiet` sin
+>       pathspec lo ve modificado.
+>
+>     Si `plantada`, `sonda` o `limpio` no dan 0, revierte con la última línea
+>     de la sonda y PARA.
+>
+>     El leader ensayó en un worktree desechable sobre `003fa449`:
+>
+>     - las seis ediciones juntas dan 152 tests verdes en D + A;
+>     - typecheck y eslint dan 0;
+>     - las anclas `grep` de abajo dan los valores de base y final;
+>     - cada mutación da sus `●`.
+>
+>     **c29, E3.1** (R8: en `'$fila: sin mapa'`, la primera línea del cuerpo
+>     pasa a las dos líneas de E3.1):
+>
+>     ```
+>     cd /home/claude/sites/Pet-Tracker-wt-170/mobile-pet-tracker && pwd \
+>       && test "$(grep -cF "makeAlert({ payload })" src/screens/alert-detail/index.test.tsx)" = 1 \
+>       && test "$(grep -cF "makeAlert({ geofenceId: 'zone-1', payload })" src/screens/alert-detail/index.test.tsx)" = 1 \
+>       && FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/alert-detail/index.test.tsx > /tmp/170-c29.txt 2>&1 \
+>       && grep -qE '^Tests: +78 passed, 78 total$' /tmp/170-c29.txt \
+>       && test ! -e .expo/types/router.d.ts && bun run typecheck \
+>       && bunx expo lint --no-cache > /tmp/170-lint.txt 2>&1 && test ! -s /tmp/170-lint.txt \
+>       && git add src/screens/alert-detail/index.test.tsx \
+>       && test "$(git diff --cached --name-only)" = 'mobile-pet-tracker/src/screens/alert-detail/index.test.tsx' \
+>       && <LIMPIO> \
+>       && git commit -m 'test(mobile-alerts-grouped-and-detail-map): #170 E3 R8 rows without a map carry a zone'
+>     ```
+>
+>     Sonda SE3.1, tras c29:
+>
+>     ```
+>     cd /home/claude/sites/Pet-Tracker-wt-170/mobile-pet-tracker && pwd
+>     sed -i "s|^  const position = alert ? alertPosition(alert.payload) : null;\$|&\n  useQuery({ queryKey: geofenceKeys.list(alert?.petId ?? ''), queryFn: () => listGeofences(baseUrl, token ?? '', alert?.petId ?? ''), enabled: alert !== undefined \&\& alert.geofenceId !== null \&\& position === null });|" src/screens/alert-detail/index.tsx
+>     test "$(git diff --name-only -- . ../docs ../specs)" = 'mobile-pet-tracker/src/screens/alert-detail/index.tsx'; echo "plantada=$?"
+>     FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/alert-detail/index.test.tsx > /tmp/170-se3-1.txt 2>&1; echo "exit=$?"
+>     grep -qE '^Tests: +10 failed, 68 passed, 78 total$' /tmp/170-se3-1.txt \
+>       && test "$(grep -E '^  ● ' /tmp/170-se3-1.txt | grep -cvxF '  ● Console')" = 10 \
+>       && test "$(grep -E '^  ● ' /tmp/170-se3-1.txt | grep -cF '#170 R8: pinta el mini-mapa con la posición de la alerta › ')" = 10 \
+>       && test "$(grep -E '^  ● ' /tmp/170-se3-1.txt | grep -cF ': sin mapa')" = 10 \
+>       && ! grep -qE 'Test suite failed to run|TypeError|ReferenceError|SyntaxError|Cannot find module' /tmp/170-se3-1.txt; echo "sonda=$?"
+>     git checkout HEAD -- src/screens/alert-detail/index.tsx && git diff --cached --quiet && <LIMPIO>; echo "limpio=$?"
+>     ```
+>
+>     Esperado: `plantada=0`, `exit=1`, `sonda=0` y `limpio=0`.
+>
+>     **c30, E3.2** (R10: el `it` nuevo de E3.2 (1) va justo después de
+>     `'pinta el círculo, el encuadre y «A 85 m de Casa»'`. En `'lee la zona de
+>     la caché compartida de geofenceKeys.list'`, la línea de `setQueryData`
+>     pasa a las dos de E3.2 (2)):
+>
+>     ```
+>     cd /home/claude/sites/Pet-Tracker-wt-170/mobile-pet-tracker && pwd \
+>       && test "$(grep -cF "it('consulta las zonas de la mascota de la alerta, no de la seleccionada'" src/screens/alert-detail/index.test.tsx)" = 1 \
+>       && test "$(grep -cF "geofenceKeys.list('pet-1')" src/screens/alert-detail/index.test.tsx)" = 2 \
+>       && test "$(grep -cF "geofenceKeys.list('pet-7')" src/screens/alert-detail/index.test.tsx)" = 1 \
+>       && FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/alert-detail/index.test.tsx > /tmp/170-c30.txt 2>&1 \
+>       && grep -qE '^Tests: +79 passed, 79 total$' /tmp/170-c30.txt \
+>       && test ! -e .expo/types/router.d.ts && bun run typecheck \
+>       && bunx expo lint --no-cache > /tmp/170-lint.txt 2>&1 && test ! -s /tmp/170-lint.txt \
+>       && git add src/screens/alert-detail/index.test.tsx \
+>       && test "$(git diff --cached --name-only)" = 'mobile-pet-tracker/src/screens/alert-detail/index.test.tsx' \
+>       && <LIMPIO> \
+>       && git commit -m 'test(mobile-alerts-grouped-and-detail-map): #170 E3 R10 zones come from the alert pet'
+>     ```
+>
+>     Sonda SE3.2, tras c30:
+>
+>     ```
+>     cd /home/claude/sites/Pet-Tracker-wt-170/mobile-pet-tracker && pwd
+>     sed -i "s|^  const zones = useQuery({\$|  const petId = useSelectedPet().selectedPetId ?? alert.petId;\n&|; s|geofenceKeys.list(alert.petId)|geofenceKeys.list(petId)|; s|listGeofences(baseUrl, token ?? '', alert.petId)|listGeofences(baseUrl, token ?? '', petId)|" src/screens/alert-detail/index.tsx
+>     test "$(git diff --name-only -- . ../docs ../specs)" = 'mobile-pet-tracker/src/screens/alert-detail/index.tsx'; echo "plantada=$?"
+>     FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/alert-detail/index.test.tsx > /tmp/170-se3-2.txt 2>&1; echo "exit=$?"
+>     grep -qE '^Tests: +2 failed, 77 passed, 79 total$' /tmp/170-se3-2.txt \
+>       && test "$(grep -E '^  ● ' /tmp/170-se3-2.txt | grep -cvxF '  ● Console')" = 2 \
+>       && test "$(grep -E '^  ● ' /tmp/170-se3-2.txt | grep -cF '#170 R10: pinta la zona y la distancia a su borde › consulta las zonas de la mascota de la alerta, no de la seleccionada')" = 1 \
+>       && test "$(grep -E '^  ● ' /tmp/170-se3-2.txt | grep -cF '#170 R10: pinta la zona y la distancia a su borde › lee la zona de la caché compartida de geofenceKeys.list')" = 1 \
+>       && ! grep -qE 'Test suite failed to run|TypeError|ReferenceError|SyntaxError|Cannot find module' /tmp/170-se3-2.txt; echo "sonda=$?"
+>     git checkout HEAD -- src/screens/alert-detail/index.tsx && git diff --cached --quiet && <LIMPIO>; echo "limpio=$?"
+>     ```
+>
+>     **c31, E3.3** (R3: las tres líneas de E3.3 van dentro del `for` de
+>     `'envuelve cada cabecera con la primera fila de su sección en un View
+>     gap-4'`, justo después de
+>     `expect(within(parent).getByTestId('alert-row-' + id)).toBeVisible();`):
+>
+>     ```
+>     cd /home/claude/sites/Pet-Tracker-wt-170/mobile-pet-tracker && pwd \
+>       && test "$(grep -cF "expect(elementChild(parent, 0).props.testID).toBe('alerts-section-' + section);" src/screens/alerts/index.test.tsx)" = 1 \
+>       && test "$(grep -A1 -F "expect(within(parent).getByTestId('alert-row-' + id)).toBeVisible();" src/screens/alerts/index.test.tsx | tail -1)" = "      expect(elementChild(parent, 0).props.testID).toBe('alerts-section-' + section);" \
+>       && FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/alerts/index.test.tsx > /tmp/170-c31.txt 2>&1 \
+>       && grep -qE '^Tests: +68 passed, 68 total$' /tmp/170-c31.txt \
+>       && test ! -e .expo/types/router.d.ts && bun run typecheck \
+>       && bunx expo lint --no-cache > /tmp/170-lint.txt 2>&1 && test ! -s /tmp/170-lint.txt \
+>       && git add src/screens/alerts/index.test.tsx \
+>       && test "$(git diff --cached --name-only)" = 'mobile-pet-tracker/src/screens/alerts/index.test.tsx' \
+>       && <LIMPIO> \
+>       && git commit -m 'test(mobile-alerts-grouped-and-detail-map): #170 E3 R3 section header before its first row'
+>     ```
+>
+>     Sonda SE3.3, tras c31 (pone `{card}` antes de la cabecera dentro del
+>     `View gap-4`):
+>
+>     ```
+>     cd /home/claude/sites/Pet-Tracker-wt-170/mobile-pet-tracker && pwd
+>     perl -0pi -e 's/(<View className="gap-4">\n)(\s*<Text testID=\{`alerts-section-\$\{section\}`\}.*?<\/Text>\n)(\s*\{card\}\n)/$1$3$2/s' src/screens/alerts/index.tsx
+>     test "$(git diff --name-only -- . ../docs ../specs)" = 'mobile-pet-tracker/src/screens/alerts/index.tsx'; echo "plantada=$?"
+>     FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/alerts/index.test.tsx > /tmp/170-se3-3.txt 2>&1; echo "exit=$?"
+>     grep -qE '^Tests: +1 failed, 67 passed, 68 total$' /tmp/170-se3-3.txt \
+>       && test "$(grep -E '^  ● ' /tmp/170-se3-3.txt | grep -cvxF '  ● Console')" = 1 \
+>       && test "$(grep -E '^  ● ' /tmp/170-se3-3.txt | grep -cF '#170 R3: agrupa la lista en Hoy, Esta semana y Anteriores › envuelve cada cabecera con la primera fila de su sección en un View gap-4')" = 1 \
+>       && ! grep -qE 'Test suite failed to run|TypeError|ReferenceError|SyntaxError|Cannot find module' /tmp/170-se3-3.txt; echo "sonda=$?"
+>     git checkout HEAD -- src/screens/alerts/index.tsx && git diff --cached --quiet && <LIMPIO>; echo "limpio=$?"
+>     ```
+>
+>     **c32, E3.4** (R5 y R6: cada `it.each` de E3.4 va al final de su
+>     describe, `#170 R5` en A y `#170 R6` en D):
+>
+>     ```
+>     cd /home/claude/sites/Pet-Tracker-wt-170/mobile-pet-tracker && pwd \
+>       && test "$(grep -cF "it.each(['ok', 'already-closed'] as const)('marcada leída en local (%s): pierde el borde de severidad'" src/screens/alerts/index.test.tsx)" = 1 \
+>       && test "$(grep -cF "it.each(['ok', 'already-closed'] as const)('marcada leída en local (%s): pierde el borde de severidad'" src/screens/alert-detail/index.test.tsx)" = 1 \
+>       && test "$(grep -cF "toBe('rounded-card border border-border bg-surface p-4 shadow-sm min-h-44 gap-3');" src/screens/alert-detail/index.test.tsx)" = 2 \
+>       && FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/alerts/index.test.tsx src/screens/alert-detail/index.test.tsx > /tmp/170-c32.txt 2>&1 \
+>       && grep -qE '^Tests: +151 passed, 151 total$' /tmp/170-c32.txt \
+>       && test ! -e .expo/types/router.d.ts && bun run typecheck \
+>       && bunx expo lint --no-cache > /tmp/170-lint.txt 2>&1 && test ! -s /tmp/170-lint.txt \
+>       && git add src/screens/alerts/index.test.tsx src/screens/alert-detail/index.test.tsx \
+>       && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'mobile-pet-tracker/src/screens/alert-detail/index.test.tsx mobile-pet-tracker/src/screens/alerts/index.test.tsx ' \
+>       && <LIMPIO> \
+>       && git commit -m 'test(mobile-alerts-grouped-and-detail-map): #170 E3 R5 R6 local ack drops the severity border'
+>     ```
+>
+>     Sondas SE3.4 y SE3.5, tras c32, una a una (la segunda empieza con
+>     `limpio=0` de la primera):
+>
+>     ```
+>     cd /home/claude/sites/Pet-Tracker-wt-170/mobile-pet-tracker && pwd
+>     sed -i "s|(item.status === 'open' ? \` border-2|(ordered[index].status === 'open' ? \` border-2|" src/screens/alerts/index.tsx
+>     test "$(git diff --name-only -- . ../docs ../specs)" = 'mobile-pet-tracker/src/screens/alerts/index.tsx'; echo "plantada=$?"
+>     FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/alerts/index.test.tsx > /tmp/170-se3-4.txt 2>&1; echo "exit=$?"
+>     grep -qE '^Tests: +2 failed, 68 passed, 70 total$' /tmp/170-se3-4.txt \
+>       && test "$(grep -E '^  ● ' /tmp/170-se3-4.txt | grep -cvxF '  ● Console')" = 2 \
+>       && test "$(grep -E '^  ● ' /tmp/170-se3-4.txt | grep -cF '#170 R5: la fila abierta lleva el borde de su tipo › marcada leída en local (')" = 2 \
+>       && ! grep -qE 'Test suite failed to run|TypeError|ReferenceError|SyntaxError|Cannot find module' /tmp/170-se3-4.txt; echo "sonda=$?"
+>     git checkout HEAD -- src/screens/alerts/index.tsx && git diff --cached --quiet && <LIMPIO>; echo "limpio=$?"
+>     ```
+>
+>     ```
+>     cd /home/claude/sites/Pet-Tracker-wt-170/mobile-pet-tracker && pwd
+>     sed -i "s|(alert.status === 'open' ? \` border-2|(found?.status === 'open' ? \` border-2|" src/screens/alert-detail/index.tsx
+>     test "$(git diff --name-only -- . ../docs ../specs)" = 'mobile-pet-tracker/src/screens/alert-detail/index.tsx'; echo "plantada=$?"
+>     FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/alert-detail/index.test.tsx > /tmp/170-se3-5.txt 2>&1; echo "exit=$?"
+>     grep -qE '^Tests: +2 failed, 79 passed, 81 total$' /tmp/170-se3-5.txt \
+>       && test "$(grep -E '^  ● ' /tmp/170-se3-5.txt | grep -cvxF '  ● Console')" = 2 \
+>       && test "$(grep -E '^  ● ' /tmp/170-se3-5.txt | grep -cF '#170 R6: la tarjeta abierta lleva el borde de su tipo › marcada leída en local (')" = 2 \
+>       && ! grep -qE 'Test suite failed to run|TypeError|ReferenceError|SyntaxError|Cannot find module' /tmp/170-se3-5.txt; echo "sonda=$?"
+>     git checkout HEAD -- src/screens/alert-detail/index.tsx && git diff --cached --quiet && <LIMPIO>; echo "limpio=$?"
+>     ```
+>
+>     **c33, E3.5** (R10: el `it` de E3.5 va justo antes de `'usa la zona
+>     aunque esté inactiva'`):
+>
+>     ```
+>     cd /home/claude/sites/Pet-Tracker-wt-170/mobile-pet-tracker && pwd \
+>       && test "$(grep -cF "it('redondea al metro: a 0,71 m del borde dice «A 1 m de Casa»'" src/screens/alert-detail/index.test.tsx)" = 1 \
+>       && test "$(grep -cF "{ lat: 19.4335057, lng: -99.1332 }" src/screens/alert-detail/index.test.tsx)" = 1 \
+>       && FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/alert-detail/index.test.tsx > /tmp/170-c33.txt 2>&1 \
+>       && grep -qE '^Tests: +82 passed, 82 total$' /tmp/170-c33.txt \
+>       && test ! -e .expo/types/router.d.ts && bun run typecheck \
+>       && bunx expo lint --no-cache > /tmp/170-lint.txt 2>&1 && test ! -s /tmp/170-lint.txt \
+>       && git add src/screens/alert-detail/index.test.tsx \
+>       && test "$(git diff --cached --name-only)" = 'mobile-pet-tracker/src/screens/alert-detail/index.test.tsx' \
+>       && <LIMPIO> \
+>       && git commit -m 'test(mobile-alerts-grouped-and-detail-map): #170 E3 R10 distance threshold rounds to the meter'
+>     ```
+>
+>     Sonda SE3.6, tras c33:
+>
+>     ```
+>     cd /home/claude/sites/Pet-Tracker-wt-170/mobile-pet-tracker && pwd
+>     sed -i "s|zone \&\& Math.round(d - zone.radiusM) >= 1 ?|zone \&\& d - zone.radiusM >= 1 ?|" src/screens/alert-detail/index.tsx
+>     test "$(git diff --name-only -- . ../docs ../specs)" = 'mobile-pet-tracker/src/screens/alert-detail/index.tsx'; echo "plantada=$?"
+>     FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/alert-detail/index.test.tsx > /tmp/170-se3-6.txt 2>&1; echo "exit=$?"
+>     grep -qE '^Tests: +1 failed, 81 passed, 82 total$' /tmp/170-se3-6.txt \
+>       && test "$(grep -E '^  ● ' /tmp/170-se3-6.txt | grep -cvxF '  ● Console')" = 1 \
+>       && test "$(grep -E '^  ● ' /tmp/170-se3-6.txt | grep -cF '#170 R10: pinta la zona y la distancia a su borde › redondea al metro: a 0,71 m del borde dice «A 1 m de Casa»')" = 1 \
+>       && ! grep -qE 'Test suite failed to run|TypeError|ReferenceError|SyntaxError|Cannot find module' /tmp/170-se3-6.txt; echo "sonda=$?"
+>     git checkout HEAD -- src/screens/alert-detail/index.tsx && git diff --cached --quiet && <LIMPIO>; echo "limpio=$?"
+>     ```
+>
+>     **c34, E3.6** (R15: la línea de E3.6 va en `'lo pinta en %s'`, justo
+>     después de `expect(button.props.accessibilityRole).toBe('button');`):
+>
+>     ```
+>     cd /home/claude/sites/Pet-Tracker-wt-170/mobile-pet-tracker && pwd \
+>       && test "$(grep -cF "expect(button.props.className.split(' ')).toContain('min-h-11');" src/screens/alert-detail/index.test.tsx)" = 1 \
+>       && FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/alert-detail/index.test.tsx > /tmp/170-c34.txt 2>&1 \
+>       && grep -qE '^Tests: +82 passed, 82 total$' /tmp/170-c34.txt \
+>       && test ! -e .expo/types/router.d.ts && bun run typecheck \
+>       && bunx expo lint --no-cache > /tmp/170-lint.txt 2>&1 && test ! -s /tmp/170-lint.txt \
+>       && git add src/screens/alert-detail/index.test.tsx \
+>       && test "$(git diff --cached --name-only)" = 'mobile-pet-tracker/src/screens/alert-detail/index.test.tsx' \
+>       && <LIMPIO> \
+>       && git commit -m 'test(mobile-alerts-grouped-and-detail-map): #170 E3 R15 view on map CTA keeps min-h-11'
+>     ```
+>
+>     Sonda SE3.7, tras c34:
+>
+>     ```
+>     cd /home/claude/sites/Pet-Tracker-wt-170/mobile-pet-tracker && pwd
+>     sed -i 's|className="min-h-11 rounded-xl border-2 border-b-6 border-lip-gray bg-surface"|className="rounded-xl border-2 border-b-6 border-lip-gray bg-surface"|' src/screens/alert-detail/index.tsx
+>     test "$(git diff --name-only -- . ../docs ../specs)" = 'mobile-pet-tracker/src/screens/alert-detail/index.tsx'; echo "plantada=$?"
+>     FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/alert-detail/index.test.tsx > /tmp/170-se3-7.txt 2>&1; echo "exit=$?"
+>     grep -qE '^Tests: +3 failed, 79 passed, 82 total$' /tmp/170-se3-7.txt \
+>       && test "$(grep -E '^  ● ' /tmp/170-se3-7.txt | grep -cvxF '  ● Console')" = 3 \
+>       && test "$(grep -E '^  ● ' /tmp/170-se3-7.txt | grep -cF '#170 R15: Ver en el mapa lleva al Mapa con la mascota de la alerta › lo pinta en ')" = 3 \
+>       && ! grep -qE 'Test suite failed to run|TypeError|ReferenceError|SyntaxError|Cannot find module' /tmp/170-se3-7.txt; echo "sonda=$?"
+>     git checkout HEAD -- src/screens/alert-detail/index.tsx && git diff --cached --quiet && <LIMPIO>; echo "limpio=$?"
+>     ```
+>
+>     **CIERRE otra vez.** Tras SE3.7 se repite el CIERRE entero del cuerpo,
+>     que ya está actualizado. Los valores que cambian son estos:
+>
+>     - FINAL: `Tests:       433 passed, 433 total`, con A 70 y D 82.
+>     - ALL: `Tests:       2899 passed, 2899 total`, con las mismas 100 suites.
+>       Va con la carga medida de la corrección 15.
+>     - El recuento de sombras de la corrección 14: el comando de producción
+>       sigue en 0, y el comando entero pasa de 5 a 6. El `shadow-sm` nuevo es
+>       el literal del `toBe` de E3.4 en D.
+>
+>     No cambian: las anclas H1-H44 y P1-P16, el leader las midió en el ensayo
+>     con E3 aplicada; las comprobaciones de T16; los dos diffs vacíos; y la
+>     lista cerrada, que sigue en 20.
+>
+>     **c35, trazabilidad.** En traceability.md, toca solo la columna «Commit
+>     (hash + mensaje)» de las filas R3, R5, R6, R8, R10 y R15. Al final de
+>     cada celda se añade `; E3: <hash> <mensaje>`. R10 lleva dos commits,
+>     `; E3: <hash c30> <mensaje>, <hash c33> <mensaje>`. R5 y R6 llevan los
+>     dos el de c32. En R8 va detrás de su `; E2: …`. Ninguna otra línea del
+>     fichero cambia. Desde la raíz:
+>
+>     ```
+>     cd /home/claude/sites/Pet-Tracker-wt-170 && pwd \
+>       && test "$(grep -c '; E3: ' specs/mobile-alerts-grouped-and-detail-map/traceability.md)" = 6 \
+>       && test "$(git diff --numstat -- specs/mobile-alerts-grouped-and-detail-map/traceability.md | cut -f1,2 | tr '\t' ' ')" = '6 6' \
+>       && git add specs/mobile-alerts-grouped-and-detail-map/traceability.md progress/impl_mobile-alerts-grouped-and-detail-map.md \
+>       && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'progress/impl_mobile-alerts-grouped-and-detail-map.md specs/mobile-alerts-grouped-and-detail-map/traceability.md ' \
+>       && git commit -m 'docs(mobile-alerts-grouped-and-detail-map): #170 E3 traceability'
+>     ```
+>
+>     **c36, lista cerrada.** El comando de la lista cerrada del cuerpo,
+>     redirigido al impl, debe dar exactamente los mismos 20 ficheros. Después:
+>
+>     ```
+>     cd /home/claude/sites/Pet-Tracker-wt-170 && pwd \
+>       && git commit --only progress/impl_mobile-alerts-grouped-and-detail-map.md -m 'docs(mobile-alerts-grouped-and-detail-map): #170 E3 closed file list'
+>     ```
+>
+>     **Impl.** Añade una sección `## Enmienda E3` con lo siguiente:
+>
+>     - c29-c34, cada uno con su hash, su línea `Tests:`, typecheck y lint;
+>     - SE3.1-SE3.7, cada una con `plantada`, la línea `Tests:` roja, sus `●`,
+>       `sonda` y `limpio`;
+>     - el CIERRE con los valores nuevos;
+>     - c35 y la lista cerrada.
+>
+>     La sección termina con `R17: pendiente del smoke humano`. No rebasees.
 
 ---
 
@@ -255,7 +545,8 @@ sin lanzar nada mas mientras corre):
      es 0, anota los `●` y PARA.
   ALL base (leader, H0): exit=0, `Test Suites: 98 passed, 98 total` y
   `Tests:       2775 passed, 2775 total`. Cierre esperado: 100 suites y
-  2893 tests (2775 + 118; #170 crea dos ficheros de test).
+  2899 tests (2775 + 124; #170 crea dos ficheros de test; los 6 ultimos son de
+  la Enmienda E3).
 
 Comando GUARDAS (los candados de carta; lo corre cada verde; siempre
 65 + 27 = 92):
@@ -978,11 +1269,11 @@ exacta de P8, sin `style`, `Button.Label` sin `className` con
 Desde mobile-pet-tracker/ (el `cd` literal de BASE otra vez), sin pipe, con
 salida al impl:
 - El comando FINAL -> exit=0, `Test Suites: 10 passed, 10 total` y
-  `Tests:       427 passed, 427 total`. Reparto: A 68, D 78, L 27, LP 26,
+  `Tests:       433 passed, 433 total`. Reparto: A 70, D 82, L 27, LP 26,
   UL 30, CC 67, design-drift 65, legibility 27, S 15, LOC 24.
 - `pgrep -af '[i]nit\.sh'` vacio; despues el comando ALL con la salida a
   /tmp/170-all.txt -> exit=0, `Test Suites: 100 passed, 100 total` y
-  `Tests:       2893 passed, 2893 total`. Copia las dos lineas. Mientras
+  `Tests:       2899 passed, 2899 total`. Copia las dos lineas. Mientras
   corre, no lances otra cosa. (Es la suite entera de tasks.md T16.)
 - `bun run typecheck; echo "exit=$?"` -> exit=0 y
   `bunx expo lint --no-cache; echo "exit=$?"` -> exit=0.
@@ -1122,7 +1413,7 @@ verde y cada commit de T11-T14 con sus lineas `Tests:`, GUARDAS (los
 verdes), typecheck y lint; las sondas S3.1, S4.1, S5.1, S6.1, S8.1, S9.1,
 S11.1, S12.1, S12.2, S13.1, S11.2, S14.1, S14.2, S15.1, S15.2, S15.3 y
 S16.1 con su linea `Tests:` roja, sus `●` y su `limpio=0`; el cierre (FINAL
-con 427, ALL con exit y total, typecheck, lint, los dos diffs vacios, el
+con 433, ALL con exit y total, typecheck, lint, los dos diffs vacios, el
 recuento de sombras, lista cerrada); los pasos del smoke R17; la linea
 `R17: pendiente del smoke humano`; y cualquier decision que la spec no
 cerrara literalmente.

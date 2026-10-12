@@ -153,9 +153,11 @@ i18n:
 Tests:
 - `src/utils/alert-sections.test.ts` — **nuevo** (R2).
 - `src/utils/alert-location.test.ts` — **nuevo** (R7).
-- `src/screens/alerts/index.test.tsx` (R3, R4, R5).
+- `src/screens/alerts/index.test.tsx` (R3, R4, R5; Enmienda E3 endurece R3 y
+  añade el borde tras marcar leída en R5).
 - `src/screens/alert-detail/index.test.tsx` (R6, R8–R15; cambia la aserción
-  exacta de `#100 R3` A11, B17/B19).
+  exacta de `#100 R3` A11, B17/B19; Enmienda E3 añade candados en R6, R8,
+  R10 y R15).
 - `src/app/__tests__/layout.test.tsx` (R9; cambia el `toEqual` de `#100 R2`,
   B18).
 - `src/providers/__tests__/language-provider.test.tsx` (R1).
