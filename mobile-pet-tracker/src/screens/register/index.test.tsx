@@ -26,6 +26,21 @@ jest.mock('../home/home-entrance', () => {
   };
 });
 
+jest.mock('reicon-react-native', () => {
+  const actual = jest.requireActual<typeof import('reicon-react-native')>('reicon-react-native');
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  const mockIcon = (testID: string) =>
+    function MockIcon(props: Record<string, unknown>) {
+      return React.createElement(View, { testID, ...props });
+    };
+  return { ...actual, AlertCircle: mockIcon('icon-alert-circle') };
+});
+
+jest.mock('../../theme/use-theme-colors', () => ({
+  useThemeColors: (tokens: string[]) => tokens.map((token) => `color:${token}`),
+}));
+
 jest.mock('../../api/auth', () => ({
   login: jest.fn(),
   register: jest.fn(),
@@ -345,5 +360,52 @@ describe('#167 R7: Pingo en la cabecera del registro', () => {
     ]) {
       expect(within(header).queryByTestId(id)).toBeNull();
     }
+  });
+});
+
+
+describe('#167 R8: el error del registro lleva icono', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockRegister.mockResolvedValue({ kind: 'email-taken' });
+    mockUseAuth.mockReturnValue({
+      status: 'unauthenticated', token: null, signIn: mockSignIn, signOut: jest.fn(),
+    } satisfies AuthContextValue);
+  });
+
+  it('#167 R8: el error general va en una fila con icono', async () => {
+    await renderRegister();
+    await fillForm();
+    await submit();
+    const row = screen.getByTestId('register-error-row');
+    expect(row.props.className).toBe('flex-row items-center gap-1.5');
+    expect(row.children.map((child) => typeof child === 'string' ? child : child.props.testID))
+      .toEqual(['icon-alert-circle', 'register-error']);
+  });
+
+  it('#167 R8: el icono del error mide 14 y usa danger', async () => {
+    await renderRegister();
+    await fillForm();
+    await submit();
+    const icon = screen.getByTestId('icon-alert-circle');
+    expect(icon.props.size).toBe(14);
+    expect(icon.props.color).toBe('color:danger');
+  });
+
+  it('#167 R8: el texto del error pesa como el icono', async () => {
+    await renderRegister();
+    await fillForm();
+    await submit();
+    expect(screen.getByTestId('register-error').props.className)
+      .toBe('flex-1 text-sm font-semibold text-danger');
+  });
+
+  it('#167 R8: sin error no hay fila; con error, sí', async () => {
+    await renderRegister();
+    expect(screen.queryByTestId('register-error-row')).toBeNull();
+    await fillForm();
+    await submit();
+    expect(screen.getByTestId('register-error-row')).toBeOnTheScreen();
   });
 });
