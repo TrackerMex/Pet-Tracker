@@ -10,7 +10,6 @@ import { listPets, type PetsState } from '../../api/pets';
 import { healthKeys, petKeys } from '../../api/query-keys';
 import { Card } from '../../components/card';
 import { EmptyState } from '../../components/empty-state';
-import { PetHeroHeader } from '../../components/pet-hero-header';
 import { PetSwitcher } from '../../components/pet-switcher';
 import { WeightChart } from '../../components/weight-chart';
 import { usePetSelection } from '../../hooks/use-pet-selection';
@@ -64,10 +63,6 @@ export function HealthScreen() {
     queryFn: () => listWeights(baseUrl, token ?? '', selectedPetId!),
     enabled: selectedPetId !== null,
   });
-  const selectedPet =
-    pets.data?.kind === 'ok'
-      ? pets.data.pets.find((pet) => pet.id === selectedPetId) ?? null
-      : null;
   const today = localTodayIso();
   const nextVaccine =
     vaccines.data?.kind === 'ok'
@@ -89,20 +84,22 @@ export function HealthScreen() {
       className="flex-1 bg-background"
       contentInsetAdjustmentBehavior="automatic"
       contentContainerStyle={{
+        padding: 24,
         gap: 16,
+        paddingTop: insets.top + 12,
         paddingBottom: insets.bottom + 96,
       }}
     >
+      <Text testID="health-title" className="text-3xl font-black tracking-tight text-foreground">
+        {t('health.health')}
+      </Text>
       {pets.data?.kind === 'ok' && pets.data.pets.length > 0 ? (
-        <>
-          <PetHeroHeader pet={selectedPet} variant="bleed">
+          <View testID="health-content" style={{ gap: 16 }}>
             <PetSwitcher
               pets={pets.data.pets}
               selectedPetId={selectedPetId}
               onSelect={selectPet}
             />
-          </PetHeroHeader>
-          <View testID="health-content" style={{ paddingHorizontal: 24, gap: 16 }}>
             {selectedPetId ? (
               <View testID="vaccines-section" className="gap-3">
                 <View className="flex-row items-center gap-2">
@@ -274,16 +271,11 @@ export function HealthScreen() {
               </Card>
             ) : null}
           </View>
-        </>
       ) : (
         <View
           testID="health-states"
-          style={{ paddingHorizontal: 24, paddingTop: insets.top + 12, gap: 16 }}
+          style={{ gap: 16 }}
         >
-          <Text className="text-2xl font-black text-foreground">
-            {t('health.health')}
-          </Text>
-
           {pets.data === undefined ? (
             <Skeleton testID="health-loading" className="h-12 w-full rounded-card" />
           ) : null}
