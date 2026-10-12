@@ -187,7 +187,7 @@ export function AlertsScreen() {
           const card = (
             <Card
               testID={rowId}
-              className="min-h-20 flex-row items-center gap-3"
+              className={'min-h-20 flex-row items-center gap-3' + (item.status === 'open' ? ` border-2 ${meta.border}` : '')}
             >
               <View
                 className={`size-11 items-center justify-center rounded-full ${meta.surface}`}
