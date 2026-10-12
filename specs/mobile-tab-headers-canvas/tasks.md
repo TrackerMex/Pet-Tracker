@@ -303,9 +303,9 @@ intermedio con el título encima del hero.
     `<PetHeroHeader`, exactamente `screens/home/index.tsx`; R12.3: en los tres
     ficheros de pantalla y sus tres tests, cero `[` dentro de un `className`
     literal, cero `StyleSheet`, cero `text-accent` sin sufijo; y **solo en los
-    tres de producción** (Enmienda E1.b), cero coincidencias de
-    `` new RegExp(String.raw`#(?!\d{2,3} R\d)[\da-f]{3,8}\b`, 'i') ``, el
-    `HEX_LITERAL` de `design-drift.test.ts` copiado literal). Mismo andamiaje de lectura que
+    tres de producción** (Enmienda E1.b), cero coincidencias del
+    `HEX_LITERAL` de `design-drift.test.ts`, copiado literal: el patrón está
+    en el bloque de código de la Enmienda E1.b de `requirements.md`). Mismo andamiaje de lectura que
     `consistency-classnames.test.ts` (`sourceFiles`, `readSource`).
   - Este bloque va **al final** y sus `it` nacen verdes (A–K ya dejaron el
     árbol como piden). Para que el candado no sea tautológico, antes del

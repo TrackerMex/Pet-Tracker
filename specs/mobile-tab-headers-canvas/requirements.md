@@ -638,9 +638,13 @@ En los tests no se cumple ni se puede cumplir sin borrar conducta viva:
 
 **R12.3 queda así**: los literales hex se vetan solo en los tres ficheros de
 **producción**, con el patrón `HEX_LITERAL` de
-`src/__tests__/design-drift.test.ts`
-(`` String.raw`#(?!\d{2,3} R\d)[\da-f]{3,8}\b` `` con bandera `i`), que hoy
-da 0 en los tres. Corchetes en `className`, `StyleSheet` y `text-accent`
+`src/__tests__/design-drift.test.ts`, que hoy da 0 en los tres:
+
+```ts
+new RegExp(String.raw`#(?!\d{2,3} R\d)[\da-f]{3,8}\b`, 'i')
+```
+
+Corchetes en `className`, `StyleSheet` y `text-accent`
 suelto siguen vetados en los seis ficheros (hoy, 0 en los seis).
 
 ### E1.c — R12.3: dos candados de guard que R6.2 y R8.2 obligan a tocar
