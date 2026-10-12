@@ -439,4 +439,4 @@ los rojos que T14 ya prevé: #62 R1 y #98 R10 por el recuento del acento,
 Que los rectángulos del confeti pasen de `rounded-sm` a esquina viva, y que
 el módulo de paleta gane `CONFETTI_FILLS`.
 
-- [ ] Enmienda E1 aprobada por humano (fecha: ____)
+- [x] Enmienda E1 aprobada por humano (fecha: 2026-10-12)
