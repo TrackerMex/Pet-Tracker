@@ -18499,7 +18499,7 @@ E3 aprobada por humano en requirements.md §Aprobación; feature #170 in_progres
 
 ### c29 — E3.1
 
-Literal de requirements.md E3.1 copiado en las diez filas sin mapa; filas con mapa intactas. Cadena del handoff, con LIMPIO expandido; pendiente de medida.
+Literal de requirements.md E3.1 copiado en las diez filas sin mapa; filas con mapa intactas. Cadena del handoff, con LIMPIO expandido; medida completada abajo.
 
 Cadena literal ejecutada:
 
@@ -18572,7 +18572,7 @@ Tests:       10 failed, 68 passed, 78 total
 
 ### c30 — E3.2
 
-Literal de requirements.md E3.2 copiado en su ubicación prescrita; pendiente de medida.
+Literal de requirements.md E3.2 copiado en su ubicación prescrita; medida completada abajo.
 
 Cadena literal ejecutada:
 
@@ -18637,7 +18637,7 @@ Tests:       2 failed, 77 passed, 79 total
 
 ### c31 — E3.3
 
-Literal de requirements.md E3.3 copiado en su ubicación prescrita; pendiente de medida.
+Literal de requirements.md E3.3 copiado en su ubicación prescrita; medida completada abajo.
 
 Cadena literal ejecutada:
 
@@ -18699,7 +18699,7 @@ Tests:       1 failed, 67 passed, 68 total
 
 ### c32 — E3.4
 
-Literal de requirements.md E3.4 copiado en su ubicación prescrita; pendiente de medida.
+Literal de requirements.md E3.4 copiado en su ubicación prescrita; medida completada abajo.
 
 Cadena literal ejecutada:
 
@@ -18793,7 +18793,7 @@ Tests:       2 failed, 79 passed, 81 total
 
 ### c33 — E3.5
 
-Literal de requirements.md E3.5 copiado en su ubicación prescrita; pendiente de medida.
+Literal de requirements.md E3.5 copiado en su ubicación prescrita; medida completada abajo.
 
 Cadena literal ejecutada:
 
@@ -18857,7 +18857,7 @@ Incidencia del editor auxiliar al preparar E3.6: la aserción sobre accessibilit
 
 ### c34 — E3.6
 
-Literal de requirements.md E3.6 copiado en su ubicación prescrita; pendiente de medida.
+Literal de requirements.md E3.6 copiado en su ubicación prescrita; medida completada abajo.
 
 Cadena literal ejecutada:
 
@@ -19389,5 +19389,58 @@ cd /home/claude/sites/Pet-Tracker-wt-170 && pwd \
   && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'progress/impl_mobile-alerts-grouped-and-detail-map.md specs/mobile-alerts-grouped-and-detail-map/traceability.md ' \
   && git commit -m 'docs(mobile-alerts-grouped-and-detail-map): #170 E3 traceability'
 ```
+
+R17: pendiente del smoke humano
+
+Resultado de c35:
+
+```text
+edf6ce12 docs(mobile-alerts-grouped-and-detail-map): #170 E3 traceability
+chain_exit=0
+6 celdas E3; numstat traceability 6 6; staged exactamente traceability e impl
+```
+
+### Lista cerrada — 20 ficheros
+
+```sh
+git diff --name-only 584ef2d9 HEAD -- . ':!feature_list.json' ':!progress/current.md' ':!progress/handoff_mobile-alerts-grouped-and-detail-map.md' ':!specs/mobile-alerts-grouped-and-detail-map/requirements.md' ':!specs/mobile-alerts-grouped-and-detail-map/design.md' ':!specs/mobile-alerts-grouped-and-detail-map/tasks.md' ':!progress/review_mobile-alerts-grouped-and-detail-map.md'
+```
+
+```text
+mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+mobile-pet-tracker/src/__tests__/ui-copy-table.ts
+mobile-pet-tracker/src/__tests__/ui-language.test.ts
+mobile-pet-tracker/src/app/__tests__/alert-detail.navigation.test.tsx
+mobile-pet-tracker/src/app/__tests__/layout.test.tsx
+mobile-pet-tracker/src/app/_layout.tsx
+mobile-pet-tracker/src/i18n/catalog.ts
+mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx
+mobile-pet-tracker/src/screens/alert-detail/index.test.tsx
+mobile-pet-tracker/src/screens/alert-detail/index.tsx
+mobile-pet-tracker/src/screens/alerts/index.test.tsx
+mobile-pet-tracker/src/screens/alerts/index.tsx
+mobile-pet-tracker/src/utils/alert-location.test.ts
+mobile-pet-tracker/src/utils/alert-location.ts
+mobile-pet-tracker/src/utils/alert-meta.ts
+mobile-pet-tracker/src/utils/alert-sections.test.ts
+mobile-pet-tracker/src/utils/alert-sections.ts
+progress/impl_mobile-alerts-grouped-and-detail-map.md
+specs/mobile-alerts-grouped-and-detail-map/traceability.md
+specs/mobile-ui-language/design.md
+exit=0
+```
+
+Lista cerrada exacta: los mismos 17 ficheros móviles y 3 de documentación; sin ficheros ajenos.
+
+### c36 — lista cerrada E3
+
+Comando prescrito, después de registrar la lista exacta:
+
+```sh
+cd /home/claude/sites/Pet-Tracker-wt-170 && pwd \
+  && git commit --only progress/impl_mobile-alerts-grouped-and-detail-map.md -m 'docs(mobile-alerts-grouped-and-detail-map): #170 E3 closed file list'
+```
+
+Validación final: git diff --check 9de61d9d sin salida, exit=0. Desde la firma E3 solo cambian A, D, traceability e impl. Se conservan c1–c28 y cE2; no hay rebase, init.sh, push ni PR. Las seis cadenas c29–c34 dieron exit=0; las siete sondas dieron plantada=0, exit=1, sonda=0 y limpio=0, con sus líneas Tests y encabezados exactos. FINAL 10/433; ALL 100/2899 al primer intento con carga 4,51 y pgrep vacío; typecheck y lint verdes, lint de 0 bytes; anclas, diffs, sombras y listas exactos. Las dos incidencias del auxiliar están documentadas y ocurrieron antes de ejecutar sus pasos dependientes, sin alterar literales ni producción.
 
 R17: pendiente del smoke humano
