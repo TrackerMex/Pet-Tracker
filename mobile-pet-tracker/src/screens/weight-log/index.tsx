@@ -10,7 +10,7 @@ import {
   TextField,
 } from 'heroui-native';
 import { useQuery } from '@tanstack/react-query';
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import { KeyboardAvoidingView, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Check, Minus, TrendDown, TrendUp } from 'reicon-react-native';
@@ -37,6 +37,7 @@ import { monthlyWeightDelta } from '../../utils/monthly-weight-delta';
 
 const MEASURED_AT_IN_FUTURE_MESSAGE =
   'measuredAt is too far in the future';
+const WEIGHT_TOAST_MS = 2500;
 
 function fmtVariation(variation: number | null): string {
   if (variation === null) return '—';
@@ -92,6 +93,10 @@ function WeightLogContent({ petId }: { petId: string }) {
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [toastVisible, setToastVisible] = useState(false);
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => {
+    if (toastTimer.current !== null) clearTimeout(toastTimer.current);
+  }, []);
   const me = useQuery({
     queryKey: userKeys.me(),
     queryFn: () => getMe(baseUrl, token ?? ''),
@@ -132,7 +137,12 @@ function WeightLogContent({ petId }: { petId: string }) {
           setWeightText('');
           setMeasuredAtDraft(null);
           setBodyConditionText('');
+          if (toastTimer.current !== null) clearTimeout(toastTimer.current);
           setToastVisible(true);
+          toastTimer.current = setTimeout(() => {
+            setToastVisible(false);
+            toastTimer.current = null;
+          }, WEIGHT_TOAST_MS);
           void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
           weights.refetch();
           return;
