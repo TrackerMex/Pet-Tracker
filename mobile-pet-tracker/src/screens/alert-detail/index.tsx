@@ -3,16 +3,29 @@ import { Button, Skeleton } from 'heroui-native';
 import { useEffect, useRef, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useUniwind } from 'uniwind';
 
 import { ackAlert } from '../../api/alerts';
 import type { Alert } from '../../api/types';
 import { Card } from '../../components/card';
+import { PetMap, type MapCoordinates } from '../../components/pet-map';
 import { useAlertsList } from '../../hooks/use-alerts-list';
 import { useAuth } from '../../providers/auth-provider';
 import { useLocale, useTranslate } from '../../providers/language-provider';
+import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { settleAlertAck } from '../../utils/alert-ack-outcome';
 import { alertTypeMeta } from '../../utils/alert-meta';
+import { alertPosition } from '../../utils/alert-location';
+
+function AlertDetailMap({ position }: { alert: Alert; position: MapCoordinates }) {
+  const { theme } = useUniwind();
+  return (
+    <View testID="alert-detail-map" className="h-52 overflow-hidden rounded-card" style={CONTINUOUS_CORNER}>
+      <PetMap center={position} marker={position} polylines={[]} circles={[]} colorScheme={theme === 'dark' ? 'dark' : 'light'} />
+    </View>
+  );
+}
 
 export function AlertDetailScreen({ alertId }: { alertId: string }) {
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
@@ -36,6 +49,7 @@ export function AlertDetailScreen({ alertId }: { alertId: string }) {
     .find((alert) => alert.id === alertId);
   const alert = found?.status === 'open' ? (acked ?? found) : found;
   const firstPage = alerts.data?.pages[0];
+  const position = alert ? alertPosition(alert.payload) : null;
 
   useEffect(() => {
     if (found === undefined && firstPage?.kind === 'ok' && !alerts.isFetching && !leavingRef.current) {
@@ -109,6 +123,7 @@ export function AlertDetailScreen({ alertId }: { alertId: string }) {
       {alert ? (
         <>
           {card}
+          {position ? <AlertDetailMap alert={alert} position={position} /> : null}
           {alert.status === 'open' ? (
             <Button testID="alert-detail-ack" accessibilityRole="button" className="min-h-11" isDisabled={acking} onPress={() => void handleAck()}>
               <Button.Label>{t('alerts.ack')}</Button.Label>
