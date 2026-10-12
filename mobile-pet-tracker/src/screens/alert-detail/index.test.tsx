@@ -461,7 +461,8 @@ describe('#170 R8: pinta el mini-mapa con la posición de la alerta', () => {
     { fila: 'lat fuera', payload: { position: { lat: 90.0001, lng: 0 } } },
     { fila: 'lng fuera', payload: { position: { lat: 0, lng: -180.0001 } } },
   ])('$fila: sin mapa', async ({ payload }) => {
-    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ payload })], nextCursor: null });
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ geofenceId: 'zone-1', payload })], nextCursor: null });
+    mockListGeofences.mockResolvedValue({ kind: 'ok', geofences: [ZONE] });
     await renderDetail();
     await screen.findByTestId('alert-detail-card');
     expect(screen.queryByTestId('alert-detail-map')).toBeNull();
