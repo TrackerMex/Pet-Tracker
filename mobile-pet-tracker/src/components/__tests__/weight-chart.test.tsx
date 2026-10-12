@@ -29,13 +29,23 @@ jest.mock('react-native-svg', () => {
 
 const mockUseReducedMotion = jest.fn(() => false);
 const mockWithTiming = jest.fn((value: number, _config?: unknown) => value);
+const mockUseSharedValue = jest.fn();
 
-jest.mock('react-native-reanimated', () => ({
-  ...jest.requireActual('react-native-reanimated'),
-  __esModule: true,
-  useReducedMotion: () => mockUseReducedMotion(),
-  withTiming: (value: number, config: unknown) => mockWithTiming(value, config),
-}));
+jest.mock('react-native-reanimated', () => {
+  const actual = jest.requireActual<typeof import('react-native-reanimated')>(
+    'react-native-reanimated',
+  );
+  return {
+    ...actual,
+    __esModule: true,
+    useReducedMotion: () => mockUseReducedMotion(),
+    withTiming: (value: number, config: unknown) => mockWithTiming(value, config),
+    useSharedValue: (initial: number) => {
+      mockUseSharedValue(initial);
+      return actual.useSharedValue(initial);
+    },
+  };
+});
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -276,6 +286,19 @@ describe('#169 R3: bajo reduce motion la gráfica sale completa', () => {
       .toEqual({ strokeDashoffset: 0 });
     expect(screen.getByTestId('weight-chart-points').props.jestAnimatedProps?.value)
       .toEqual({ opacity: 1 });
+  });
+
+  it('p arranca en 1 bajo reduce motion', async () => {
+    mockUseReducedMotion.mockReturnValue(true);
+    await render(
+      <WeightChart entries={[
+        makeWeight({ id: 'weight-2', weightKg: 14, measuredAt: '2026-08-21' }),
+        makeWeight({ id: 'weight-1', weightKg: 10, measuredAt: '2026-08-20' }),
+      ]} />,
+      { wrapper: WeightChartWrapper },
+    );
+
+    expect(mockUseSharedValue).toHaveBeenCalledWith(1);
   });
 });
 
