@@ -1,3 +1,4 @@
+import { Image } from 'expo-image';
 import { HeaderHeightContext } from 'expo-router/react-navigation';
 import { router } from 'expo-router';
 import {
@@ -16,6 +17,7 @@ import { login, register } from '../../api/auth';
 import type { FieldError as ApiFieldError } from '../../api/types';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
+import { HomeEntrance } from '../home/home-entrance';
 
 type RegisterField =
   | 'firstName'
@@ -162,9 +164,16 @@ export function RegisterScreen() {
           paddingBottom: insets.bottom + 96,
         }}
       >
-        <Text className="text-center text-2xl font-black text-foreground">
-          {t('register.createAccount')}
-        </Text>
+        <HomeEntrance testID="register-header" index={0} className="flex-row items-center justify-center gap-3">
+          <Image
+            testID="register-pingo"
+            source={require('../../../assets/images/pingo-clipboard.webp')}
+            style={{ width: 56, height: 56 }}
+          />
+          <Text className="text-center text-2xl font-black text-foreground">
+            {t('register.createAccount')}
+          </Text>
+        </HomeEntrance>
 
         <TextField isInvalid={Boolean(fieldErrors.firstName)}>
           <Label className="text-xs font-semibold text-foreground">
