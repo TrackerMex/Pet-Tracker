@@ -50,6 +50,16 @@
 >     `expect(count(/style=\{CONTINUOUS_CORNER\}/g)).toBe(31 + 1); // #41 R9: geofences-link`
 >     a `….toBe(31 + 1 + 1); // #41 R9: geofences-link, #170 R8: alert-detail-map`
 >     (requirements.md §Enmienda E1). La cadena de c16 de abajo ya lo recoge.
+11. **Lint con guarda de SIGKILL (desde c16).** `bunx expo lint` sale con 0
+    aunque eslint muera por SIGKILL (pasó en #169 c7 con la máquina cargada).
+    Desde c16, en toda cadena, `bunx expo lint --no-cache` se lee como
+    `bunx expo lint --no-cache > /tmp/170-lint.txt 2>&1 && test ! -s /tmp/170-lint.txt`.
+    Medido por el leader el 2026-10-12 sobre `0743ee26` con c16 sin stagear:
+    exit=0 y 0 bytes. En el CIERRE, lo mismo: exit=0 y
+    `wc -c < /tmp/170-lint.txt` -> 0. Si la cadena para ahí y el fichero
+    contiene `Failed to run`: `pgrep -af '[i]nit\.sh'` vacío, `sleep 60` y
+    la cadena entera otra vez, como mucho tres veces; a la tercera, PARA. Si
+    contiene cualquier otra cosa, PARA sin reintentar.
 
 ---
 
