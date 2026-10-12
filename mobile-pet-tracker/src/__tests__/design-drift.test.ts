@@ -814,3 +814,43 @@ export default function RegisterRoute() {
     );
   });
 });
+
+describe('#167 R14: las pantallas de cuenta no traen deriva', () => {
+  const featureFiles = [
+    'app/(auth)/login.tsx',
+    'app/(auth)/register.tsx',
+    'screens/login/index.tsx',
+    'screens/register/index.tsx',
+    'screens/forgot/index.tsx',
+    'screens/reset-password/index.tsx',
+    'screens/welcome/index.tsx',
+    'screens/home/home-entrance.tsx',
+    'components/pop-in.tsx',
+    'theme/motion.ts',
+  ];
+
+  it('#167 R14: sin hex, clases arbitrarias, StyleSheet ni sombras sueltas', () => {
+    expect(featureFiles.filter((file) =>
+      MEALS_BAR_STYLE_ESCAPES.test(readFileSync(join(sourceRoot, file), 'utf8')),
+    )).toEqual([]);
+  });
+
+  it('#167 R14: sin radios fuera de la escala', () => {
+    expect(featureFiles.filter((file) =>
+      /\brounded-(?:2xl|lg|md|sm)\b/.test(readFileSync(join(sourceRoot, file), 'utf8')),
+    )).toEqual([]);
+  });
+
+  it('#167 R14: sin text-accent suelto', () => {
+    expect(featureFiles.filter((file) =>
+      /text-accent(?![-\w])/.test(readFileSync(join(sourceRoot, file), 'utf8')),
+    )).toEqual([]);
+  });
+
+  it('#167 R14: sin dependencias vetadas, useThemeColor ni emoji', () => {
+    expect(featureFiles.filter((file) =>
+      /expo-linear-gradient|expo-symbols|lottie-react-native|@rive-app|\buseThemeColor\b|\p{Extended_Pictographic}/u
+        .test(readFileSync(join(sourceRoot, file), 'utf8')),
+    )).toEqual([]);
+  });
+});
