@@ -630,8 +630,11 @@ En los tests no se cumple ni se puede cumplir sin borrar conducta viva:
   `useThemeColors` (simula colores resueltos por tema) y dos en el `it` vivo
   `re-resolves the syringe token when a mounted tab changes theme`, que comprueba que
   el icono cambia de color al cambiar de tema;
-- los ids de feature son hex sintácticamente válidos de 3 dígitos: `#106` en
-  `src/app/(tabs)/__tests__/food.test.tsx`, `#115` y `#127` en el de Salud.
+- los ids de feature son hex sintácticamente válidos de 3 dígitos: `#115` y
+  `#127` en el de Salud, y `#106`, `#107` y `#113` en
+  `src/app/(tabs)/__tests__/food.test.tsx`. Los de Nutrición casan incluso
+  con `HEX_LITERAL`, cuya excepción solo cubre la forma `#NNN R<n>`: hoy da
+  10 coincidencias en ese fichero y 8 en el de Salud.
 
 **R12.3 queda así**: los literales hex se vetan solo en los tres ficheros de
 **producción**, con el patrón `HEX_LITERAL` de
