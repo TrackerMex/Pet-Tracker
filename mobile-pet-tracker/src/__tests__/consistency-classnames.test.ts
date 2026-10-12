@@ -588,6 +588,7 @@ describe('#166 R3: el secundario neutro lleva el labio gris', () => {
     [join('screens', 'forgot', 'index.tsx'), 'forgot-resend', 'secondary'],
     [join('screens', 'docs', 'index.tsx'), 'docs-upload-cancel', 'outline'],
     [join('screens', 'reminders', 'index.tsx'), 'reminders-delete-cancel', 'outline'],
+    [join('screens', 'alert-detail', 'index.tsx'), 'alert-detail-view-map', 'secondary'],
   ] as const;
 
   it.each(rows)('%s pinta %s con la receta del secundario en su tag de apertura', (path, testId, variant) => {
@@ -617,6 +618,7 @@ describe('#166 R3: el secundario neutro lleva el labio gris', () => {
     );
 
     expect(testIds.sort()).toEqual([
+      'alert-detail-view-map',
       'docs-upload-cancel',
       'forgot-resend',
       'reminders-delete-cancel',
@@ -626,8 +628,8 @@ describe('#166 R3: el secundario neutro lleva el labio gris', () => {
       (total, path) => total + (readFileSync(path, 'utf8').match(pattern) ?? []).length,
       0,
     );
-    expect(count(/border-lip-gray/g)).toBe(4);
-    expect(count(/\bborder-b-6\b/g)).toBe(4);
+    expect(count(/border-lip-gray/g)).toBe(4 + 1); // #170 R16
+    expect(count(/\bborder-b-6\b/g)).toBe(4 + 1); // #170 R16
   });
 });
 

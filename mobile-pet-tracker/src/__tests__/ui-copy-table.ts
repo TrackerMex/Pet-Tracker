@@ -499,6 +499,7 @@ export const R13_ALERT_DETAIL: UseRow[] = [
   { file: 'src/screens/alert-detail/index.tsx', key: 'common.somethingWentWrong' },
   { file: 'src/screens/alert-detail/index.tsx', key: 'common.retry' },
   { file: 'src/screens/alert-detail/index.tsx', key: 'alerts.distanceFromZone' }, // #170 R16
+  { file: 'src/screens/alert-detail/index.tsx', key: 'alerts.viewOnMap' }, // #170 R16
 ];
 
 export const R14_GEOFENCES: UseRow[] = [

@@ -659,3 +659,57 @@ describe('#170 R14: dentro o en el borde no dice distancia', () => {
     expect(screen.queryByTestId('alert-detail-distance')).toBeNull();
   });
 });
+
+describe('#170 R15: Ver en el mapa lleva al Mapa con la mascota de la alerta', () => {
+  it.each([
+    ['abierta geofence_exit con mapa', { type: 'geofence_exit', status: 'open', payload: REAL_PAYLOAD }],
+    ['acked battery_low sin mapa', { type: 'battery_low', status: 'acked', payload: { batteryPct: 12 } }],
+    ['closed mystery_type sin mapa', { type: 'mystery_type', status: 'closed', payload: {} }],
+  ] as const)('lo pinta en %s', async (_fila, overrides) => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert(overrides)], nextCursor: null });
+    await renderDetail();
+    const button = await screen.findByTestId('alert-detail-view-map');
+    expect(button.props.accessibilityRole).toBe('button');
+    expect(within(button).getByText('Ver en el mapa')).toBeVisible();
+  });
+  it('dice «View on map» en inglés', async () => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert()], nextCursor: null });
+    await renderDetail('alert-1', 'en');
+    const button = await screen.findByTestId('alert-detail-view-map');
+    expect(within(button).getByText('View on map')).toBeVisible();
+  });
+  it('no lo pinta mientras carga', async () => {
+    mockListAlerts.mockReturnValue(new Promise(() => undefined));
+    await renderDetail();
+    await screen.findByTestId('alert-detail-loading');
+    expect(screen.queryByTestId('alert-detail-view-map')).toBeNull();
+  });
+  it('no lo pinta con error', async () => {
+    mockListAlerts.mockResolvedValue({ kind: 'error' });
+    await renderDetail();
+    await screen.findByTestId('alert-detail-error');
+    expect(screen.queryByTestId('alert-detail-view-map')).toBeNull();
+  });
+  it('ordena tarjeta, mapa, distancia, CTA y ack', async () => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ geofenceId: 'zone-1', payload: REAL_PAYLOAD })], nextCursor: null });
+    mockListGeofences.mockResolvedValue({ kind: 'ok', geofences: [ZONE] });
+    await renderDetail();
+    expect(await screen.findByTestId('alert-detail-distance')).toHaveTextContent('A 85 m de Casa');
+    screen.getByTestId('alert-detail-view-map');
+    const card = screen.getByTestId('alert-detail-card');
+    const children = card.parent!.children.filter((child): child is TestInstance => typeof child !== 'string');
+    const indices = ['alert-detail-card', 'alert-detail-map', 'alert-detail-distance', 'alert-detail-view-map', 'alert-detail-ack'].map((id) => children.findIndex((child) => child.props.testID === id || within(child).queryByTestId(id) !== null));
+    expect(indices[0]).toBeGreaterThanOrEqual(0);
+    for (let index = 1; index < indices.length; index++) expect(indices[index - 1]).toBeLessThan(indices[index]);
+  });
+  it('selecciona la mascota de la alerta y después vuelve al Mapa', async () => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ petId: 'pet-7' })], nextCursor: null });
+    await renderDetail();
+    await fireEvent.press(await screen.findByTestId('alert-detail-view-map'));
+    expect(mockSelectPet).toHaveBeenCalledTimes(1);
+    expect(mockSelectPet).toHaveBeenCalledWith('pet-7');
+    expect(mockDismissTo).toHaveBeenCalledTimes(1);
+    expect(mockDismissTo).toHaveBeenCalledWith('/map');
+    expect(mockSelectPet.mock.invocationCallOrder[0]).toBeLessThan(mockDismissTo.mock.invocationCallOrder[0]);
+  });
+});
