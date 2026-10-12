@@ -1,5 +1,6 @@
 import { HeaderHeightContext } from 'expo-router/react-navigation';
 import { Redirect } from 'expo-router';
+import * as Haptics from 'expo-haptics';
 import {
   Button,
   Card as HeroUICard,
@@ -12,7 +13,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useContext, useState } from 'react';
 import { KeyboardAvoidingView, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Minus, TrendDown, TrendUp } from 'reicon-react-native';
+import { Check, Minus, TrendDown, TrendUp } from 'reicon-react-native';
 
 import {
   createWeight,
@@ -90,6 +91,7 @@ function WeightLogContent({ petId }: { petId: string }) {
   const [bodyConditionText, setBodyConditionText] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [toastVisible, setToastVisible] = useState(false);
   const me = useQuery({
     queryKey: userKeys.me(),
     queryFn: () => getMe(baseUrl, token ?? ''),
@@ -130,6 +132,8 @@ function WeightLogContent({ petId }: { petId: string }) {
           setWeightText('');
           setMeasuredAtDraft(null);
           setBodyConditionText('');
+          setToastVisible(true);
+          void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
           weights.refetch();
           return;
         case 'validation':
@@ -347,6 +351,19 @@ function WeightLogContent({ petId }: { petId: string }) {
             })
           : null}
       </ScrollView>
+      {toastVisible ? (
+        <View
+          testID="weight-toast"
+          className="absolute top-4 flex-row items-center gap-2 self-center rounded-full border border-border bg-surface px-4 py-2.5 shadow-sm"
+          pointerEvents="none"
+          accessibilityLiveRegion="polite"
+        >
+          <Check size={16} color={success} />
+          <Text className="text-sm font-semibold text-foreground">
+            {t('weightLog.weightLogged')}
+          </Text>
+        </View>
+      ) : null}
     </KeyboardAvoidingView>
   );
 }
