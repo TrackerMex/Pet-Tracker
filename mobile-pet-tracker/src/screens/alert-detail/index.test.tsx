@@ -497,3 +497,29 @@ describe('#170 R8: pinta el mini-mapa con la posición de la alerta', () => {
     expect(mapIndex).toBeLessThan(ackIndex);
   });
 });
+
+describe('#170 R9: ningún fondo encima del mapa', () => {
+  it('con mapa, la raíz es flex-1 y ningún ancestro del mapa declara fondo', async () => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ payload: REAL_PAYLOAD })], nextCursor: null });
+    await renderDetail();
+    await screen.findByTestId('pet-map-double');
+    expect(screen.getByTestId('screen-alert-detail').props.className).toBe('flex-1');
+    let node: TestInstance | null | undefined = screen.getByTestId('pet-map-double');
+    while (node) {
+      expect(node.props.className ?? '').not.toMatch(/bg-/);
+      for (const style of [node.props.style].flat(Infinity)) {
+        if (typeof style === 'object' && style !== null) expect(style).not.toHaveProperty('backgroundColor');
+      }
+      if (node.props.testID === 'screen-alert-detail') break;
+      node = node.parent;
+    }
+  });
+  it.each(['carga', 'error', 'payload sin posición'])('sin mapa (%s), la raíz conserva flex-1 bg-background', async (state) => {
+    if (state === 'carga') mockListAlerts.mockReturnValue(new Promise(() => undefined));
+    else if (state === 'error') mockListAlerts.mockResolvedValue({ kind: 'error' });
+    else mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert()], nextCursor: null });
+    await renderDetail();
+    await screen.findByTestId(state === 'carga' ? 'alert-detail-loading' : state === 'error' ? 'alert-detail-error' : 'alert-detail-card');
+    expect(screen.getByTestId('screen-alert-detail').props.className).toBe('flex-1 bg-background');
+  });
+});
