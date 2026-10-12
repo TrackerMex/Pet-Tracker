@@ -153,13 +153,13 @@ tags: [mobile, ui, motion, spec]
 ## T6 — R9: dos claves de catálogo
 
 - [ ] (1) Rojo, en `src/providers/__tests__/language-provider.test.tsx`:
-  - la última línea del recuento pasa de `- 1, // #159 R2` a `- 1 // #159 R2`, más una línea nueva `+ 2, // #169 R9`. Se ancla con `grep -cF -e '- 1, // #159 R2' src/providers/__tests__/language-provider.test.tsx` = 1 antes y 0 después; **medir tras el merge de #166**, que puede haber movido la cola;
+  - la última línea del recuento pasa de `- 1, // #159 R2` a `- 1 // #159 R2`, más una línea nueva `+ 2, // #169 R9`. Se ancla con `grep -cF -e '- 1, // #159 R2' src/providers/__tests__/language-provider.test.tsx` = 1 antes y 0 después; tras el merge de #166 (d2b8b0ae) sigue dando 1;
   - un `it('#169 R9: claves de peso nuevas')` que aserta los cuatro literales exactos de la Tabla de literales de [[requirements]]: `en` y `es` de `weightLog.weightLogged` y `weightLog.monthDelta`.
 
   Rojo por aserción. Commit: `test(mobile): claves de catálogo del resumen y el toast de peso (#169 R9)`.
 - [ ] (2) Verde:
   - las dos claves en los bloques `en` y `es` de `src/i18n/catalog.ts`, junto a las demás `weightLog.*`;
-  - en `specs/mobile-ui-language/design.md`, la sección `### §2.N — Añadidos por #169 — Peso` con el formato de `§2.23`. `N` se mide con `grep -c '^### §2\.' specs/mobile-ui-language/design.md` + 1; a 89fe2009 da 24, y hay que medirlo otra vez tras el merge de #166.
+  - en `specs/mobile-ui-language/design.md`, la sección `### §2.N — Añadidos por #169 — Peso` con el formato de `§2.23`. `N` se mide con `grep -c '^### §2\.' specs/mobile-ui-language/design.md` + 1; a 89fe2009 da 24, y tras el merge de #166 (d2b8b0ae) sigue dando 24.
 
   Commit: `feat(mobile): claves weightLog.weightLogged y monthDelta (#169 R9)`.
 - [ ] (3) Refactor si hace falta.

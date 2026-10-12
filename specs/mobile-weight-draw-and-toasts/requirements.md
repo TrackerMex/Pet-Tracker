@@ -11,8 +11,9 @@ tags: [mobile, ui, motion, spec]
 > Toda ancla está escrita como `grep -cF '<literal>' <ruta>` (rutas relativas a
 > `mobile-pet-tracker/` salvo que se diga otra cosa) con su salida a 89fe2009.
 > Nada se ancla por número de línea. Lo que depende de `weight-submit` o de las
-> clases del botón de alta se **mide tras el merge de #166**, que reescribe esos
-> classNames.
+> clases del botón de alta se volvió a medir tras el merge de #166 (d2b8b0ae), mergeado
+> en esta branch en 4d455cab: **todas las anclas de esta spec dan lo mismo**. #166
+> solo cambió el className de `weight-submit`, que #169 no toca.
 
 ## Alcance cerrado
 
@@ -223,7 +224,7 @@ Tabla de literales. Además:
   en una sección nueva `### §2.N — Añadidos por #169 — Peso`, con el formato
   de `§2.23`. N es la siguiente libre: a 89fe2009,
   `grep -c '^### §2\.' specs/mobile-ui-language/design.md` da 23 (N = 24).
-  Hay que medirla otra vez tras el merge de #166.
+  Tras el merge de #166 (d2b8b0ae) sigue dando 23 (N = 24).
 
 ### R10 — Toast y háptico tras un alta correcta
 
@@ -313,8 +314,8 @@ de §Aprobación:
 | `CONTINUOUS_CORNER` en Peso | `grep -cF "[join('screens', 'weight-log', 'index.tsx'), 1]," src/__tests__/consistency-classnames.test.ts` | 1 | Sin cambio: el toast es una cápsula (`rounded-full`) y #62 R14 prohíbe `CONTINUOUS_CORNER` en cápsulas | — |
 | `SCREEN_FILES` | — | — | Sin cambio: no hay pantalla nueva; el toast vive en `weight-log/index.tsx` | — |
 | Exports de `motion.ts` | `grep -cF "'MOTION_BLINK_TIMING'," src/theme/__tests__/motion.test.ts` | 1 | Sin cambio: no hay token nuevo | — |
-| `rounded-xl bg-accent` (botón de alta) | `grep -cF 'rounded-xl bg-accent' src/screens/weight-log/index.tsx` | 1 | Sin cambio por #169; **medir tras el merge de #166** | — |
-| `Button` en Peso | `grep -cF '<Button' src/screens/weight-log/index.tsx` | 3 | Sin cambio: #169 no añade ningún `Button`, `Pressable` ni primario. El toast es un `Animated.View` con `pointerEvents="none"`, y el resumen y los chips son `View`/`Text`. Así no mueve la lista cerrada de secundarios neutros de #166 R3 ni el recuento de `border-b-4` de #166 R2, #62 R1 y #98 R10. **Medir tras el merge de #166**: los dos `grep -cF` de esta fila y de la siguiente deben dar lo mismo antes y después de #169 | — |
+| `rounded-xl bg-accent` (botón de alta) | `grep -cF 'rounded-xl bg-accent' src/screens/weight-log/index.tsx` | 1 | Sin cambio por #169. Tras el merge de #166 (d2b8b0ae) sigue dando 1: ahora la línea es `rounded-xl bg-accent border-b-4 border-black/25` | — |
+| `Button` en Peso | `grep -cF '<Button' src/screens/weight-log/index.tsx` | 3 | Sin cambio: #169 no añade ningún `Button`, `Pressable` ni primario. El toast es un `Animated.View` con `pointerEvents="none"`, y el resumen y los chips son `View`/`Text`. Así no mueve la lista cerrada de secundarios neutros de #166 R3 ni el recuento de `border-b-4` de #166 R2, #62 R1 y #98 R10. Tras el merge de #166 (d2b8b0ae) siguen dando 3 y 0, y deben dar lo mismo antes y después de #169 | — |
 | `Pressable` en Peso | `grep -cF '<Pressable' src/screens/weight-log/index.tsx` | 0 | Sin cambio (ver la fila anterior) | — |
 
 Guardas de clases contrastadas; todas siguen verdes con lo prescrito:
