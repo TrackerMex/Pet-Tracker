@@ -1452,3 +1452,265 @@ Todo lo demas, igual que en el bloque principal: REGLAS CRITICAS, lista
 cerrada de 14, nada de ./init.sh, push ni PR, y lo que debe contener el
 impl al terminar.
 ```
+
+---
+
+## Reanudación 5 — Enmienda E1 (R1, R2, R3 y R5, solo tests)
+
+> La revisión sobre `dbe183a6` salió **rechazada**
+> (`progress/review_mobile-weight-draw-and-toasts.md`). Los bloqueantes son de
+> la spec, no del trabajo de Codex. Se resuelven con la Enmienda E1 de
+> requirements.md (`02da4c11`, ensanchada en `26e56880` tras el barrido del
+> reviewer), firmada por el humano vía Notion en `462ca164`.
+>
+> Son siete commits, todos de tests. La producción de
+> `src/components/weight-chart.tsx` y de `src/utils/monthly-weight-delta.ts`
+> acaba idéntica a `f314978d`. tasks.md §Enmienda E1 es el guion: allí están
+> los literales de cada `it`, de cada fila y de cada mutación. Este bloque
+> añade las cadenas y las anclas, que el leader midió contra las mutaciones
+> plantadas.
+>
+> Cambios frente al bloque principal:
+>
+> - el impl ya está trackeado (c26), así que la comprobación de limpieza de
+>   las sondas lleva pathspec;
+> - el ALL va tras un bucle de espera a otros jest e init.sh, y con
+>   `--testTimeout=30000`.
+>
+> Este commit del leader solo toca
+> `progress/handoff_mobile-weight-draw-and-toasts.md` y
+> `progress/current.md`, que la lista cerrada ya excluye.
+
+Pegar en Codex CLI:
+
+```
+Worktree: /home/claude/sites/Pet-Tracker-wt-169   <- PRIMERA LINEA. Trabaja AQUI y en ningun otro sitio
+Reanudas #169 mobile-weight-draw-and-toasts para la Enmienda E1 (la
+revision rechazo por huecos de candado de la spec, no por tu codigo).
+Lee, enteros y antes de tocar nada:
+  - specs/mobile-weight-draw-and-toasts/requirements.md §Enmienda E1 (al final; firmada en 462ca164)
+  - specs/mobile-weight-draw-and-toasts/tasks.md §Enmienda E1 — Reanudacion 5: es tu guion, con los
+    literales de cada it, fila y mutacion. Copialos TAL CUAL
+  - progress/handoff_mobile-weight-draw-and-toasts.md, esta Reanudacion 5 (al final del fichero)
+Siguen vigentes del bloque principal y las Reanudaciones 1-4: REGLAS
+CRITICAS, lint con salida vacia, un reintento entero por SIGKILL, la
+regla `exit=` de la Reanudacion 4 (cada medida acaba en `echo "exit=$?"`;
+no leas su log ni lances la cadena hasta ver `exit=`), nada de ./init.sh,
+push, PR, merge ni rebase, y no tocar otros worktrees. H0 sigue siendo
+fc384b44. Solo tocas cuatro ficheros de mobile-pet-tracker/ (los dos de
+produccion solo para plantar y revertir mutaciones), mas traceability.md
+y tu impl en el commit (7).
+
+== ARRANQUE ==
+cd /home/claude/sites/Pet-Tracker-wt-169/mobile-pet-tracker && pwd
+Pega en tu impl, bajo un titulo nuevo `## Reanudacion 5 (Enmienda E1)` al
+FINAL del fichero (no borres ni edites nada de lo que ya escribiste), las
+salidas de:
+  git branch --show-current          -> feature/169-mobile-weight-draw-and-toasts
+  git rev-parse --short HEAD         -> el commit del leader que anade esta Reanudacion 5
+  git log --oneline f314978d..HEAD   -> 5 commits del leader: dbe183a6, 02da4c11, 26e56880, 462ca164 y encima el nuevo
+  git status --short                 -> vacio
+PARA si algo de esto no sale asi.
+Despues, cada una con su exit al impl (tasks.md §Enmienda E1, «Antes»):
+  git merge-base --is-ancestor f314978d HEAD; echo "exit=$?"              -> exit=0
+  git diff --quiet f314978d HEAD -- . ; echo "exit=$?"                    -> exit=0
+  test ! -e .expo/types/router.d.ts; echo "exit=$?"                       -> exit=0
+  FORCE_COLOR=0 bunx jest --runTestsByPath src/components/__tests__/weight-chart.test.tsx > /tmp/169-e1-b1.txt 2>&1; echo "exit=$?"
+    -> exit=0 y `Tests:       15 passed, 15 total`
+  FORCE_COLOR=0 bunx jest --runTestsByPath src/utils/monthly-weight-delta.test.ts > /tmp/169-e1-b2.txt 2>&1; echo "exit=$?"
+    -> exit=0 y `Tests:       11 passed, 11 total`
+PARA si algo no da eso. Nada de BASE ni ALL de base.
+
+== NOTACION ==
+<GRAFICA>, <GUARDAS> y <LIMPIO> son los del bloque principal.
+<LINT> es:
+  bunx expo lint --no-cache > /tmp/169-lint.txt 2>&1 && test ! -s /tmp/169-lint.txt
+Las lineas que empiezan por `#` son titulos: NO las ejecutes. Cada cadena
+acaba en su `git commit`; no pegues nada detras.
+Sondas: tras medir, revierte con
+  git checkout HEAD -- <fichero>
+  git diff --quiet HEAD -- . ../docs ../specs; echo "limpio=$?"   -> limpio=0
+(el impl esta trackeado y lo vas editando: por eso el pathspec; nunca
+`git diff --quiet` sin el).
+
+# -- (1) rojo R1 y R2 --
+tasks.md (1): los tres it de R1 y el de R2 en
+src/components/__tests__/weight-chart.test.tsx, y la mutacion M1 + H1 + H2
+en src/components/weight-chart.tsx. Mide:
+  FORCE_COLOR=0 bunx jest --runTestsByPath src/components/__tests__/weight-chart.test.tsx > /tmp/169-e1-r1.txt 2>&1; echo "exit=$?"
+    -> exit=1 y `Tests:       4 failed, 15 passed, 19 total`
+Copia al impl cada it rojo con su Expected/Received (la tabla de tasks.md
+(1) dice cual recibe cada uno). Cadena:
+  grep -qE '^Tests: +4 failed, 15 passed, 19 total$' /tmp/169-e1-r1.txt \
+    && test "$(grep -E '^  ● ' /tmp/169-e1-r1.txt | grep -cvxF '  ● Console')" = 4 \
+    && test "$(grep -E '^  ● ' /tmp/169-e1-r1.txt | grep -cF '#169 R1: la línea se dibuja al montarse')" = 3 \
+    && test "$(grep -E '^  ● ' /tmp/169-e1-r1.txt | grep -cF '#169 R2: los puntos aparecen con el mismo progreso')" = 1 \
+    && ! grep -qE 'Test suite failed to run|TypeError|ReferenceError|SyntaxError|Cannot find module' /tmp/169-e1-r1.txt \
+    && ! grep -qF 'Unable to find' /tmp/169-e1-r1.txt \
+    && test "$(grep -cF 'strokeDashoffset: progress.get() >= 1 ? 0 : L,' src/components/weight-chart.tsx)" = 1 \
+    && test "$(grep -cF 'opacity: progress.get() >= 1 ? 1 : 0' src/components/weight-chart.tsx)" = 1 \
+    && test "$(grep -cF 'const L = Math.hypot(chartPoints[chartPoints.length - 1].x' src/components/weight-chart.tsx)" = 1 \
+    && test "$(grep -cF 'chartPoints.slice(1).reduce(' src/components/weight-chart.tsx)" = 0 \
+    && test "$(grep -cF 'const progress = useSharedValue(1);' src/components/weight-chart.tsx)" = 1 \
+    && test "$(grep -cF 'mockWithTiming.mockImplementation(() => 0.25);' src/components/__tests__/weight-chart.test.tsx)" = 2 \
+    && test "$(grep -cF 'expect.closeTo(111.8609, 3)' src/components/__tests__/weight-chart.test.tsx)" = 2 \
+    && test ! -e .expo/types/router.d.ts && bun run typecheck && <LINT> \
+    && git add src/components/__tests__/weight-chart.test.tsx src/components/weight-chart.tsx \
+    && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'mobile-pet-tracker/src/components/__tests__/weight-chart.test.tsx mobile-pet-tracker/src/components/weight-chart.tsx ' \
+    && <LIMPIO> \
+    && git commit -m 'test(mobile): progreso intermedio, longitud y origen del dibujo de la gráfica de peso (#169 R1, R2)'
+
+# -- (2) verde R1 y R2 --
+  git checkout f314978d -- src/components/weight-chart.tsx && git diff --quiet f314978d -- src/components/weight-chart.tsx; echo "exit=$?"   -> exit=0
+  FORCE_COLOR=0 bunx jest --runTestsByPath src/components/__tests__/weight-chart.test.tsx > /tmp/169-e1-g1c.txt 2>&1; echo "exit=$?"
+    -> exit=0 y `Tests:       19 passed, 19 total`
+  <GRAFICA> > /tmp/169-e1-g1.txt 2>&1; echo "exit=$?"
+    -> exit=0 y `Tests:       144 passed, 144 total`
+  <GUARDAS> > /tmp/169-e1-g1-guardas.txt 2>&1; echo "exit=$?"
+    -> exit=0 y `Tests:       92 passed, 92 total`
+  grep -qE '^Tests: +19 passed, 19 total$' /tmp/169-e1-g1c.txt \
+    && grep -qE '^Tests: +144 passed, 144 total$' /tmp/169-e1-g1.txt \
+    && grep -qE '^Tests: +92 passed, 92 total$' /tmp/169-e1-g1-guardas.txt \
+    && git diff --quiet f314978d -- src/components/weight-chart.tsx \
+    && test ! -e .expo/types/router.d.ts && bun run typecheck && <LINT> \
+    && git add src/components/weight-chart.tsx \
+    && test "$(git diff --cached --name-only)" = 'mobile-pet-tracker/src/components/weight-chart.tsx' \
+    && <LIMPIO> \
+    && git commit -m 'feat(mobile): la gráfica de peso vuelve a dibujarse en continuo desde 0 (#169 R1, R2)'
+
+# -- sondas M2 y H1b (tasks.md, sin commit, una a una, sobre el HEAD de (2)) --
+Mide solo weight-chart, salida a /tmp/169-e1-sM2.txt y /tmp/169-e1-sH1b.txt:
+  M2  -> exit=1 y `Tests:       2 failed, 17 passed, 19 total` (los dos it de 0.25, por asercion)
+  H1b -> exit=1 y `Tests:       1 failed, 18 passed, 19 total` (solo `con tres pesos no alineados la longitud es la suma de los dos segmentos`)
+Revierte cada una (checkout HEAD + limpio=0) antes de la siguiente. Si
+alguna da otra cuenta, PARA.
+
+# -- (3) rojo R3 --
+tasks.md (3): el doble de Reanimated con el espia de useSharedValue, el it
+`p arranca en 1 bajo reduce motion` al final de la describe de R3, y la
+mutacion H2b. Mide:
+  FORCE_COLOR=0 bunx jest --runTestsByPath src/components/__tests__/weight-chart.test.tsx > /tmp/169-e1-r3.txt 2>&1; echo "exit=$?"
+    -> exit=1 y `Tests:       1 failed, 19 passed, 20 total`
+Cadena:
+  grep -qE '^Tests: +1 failed, 19 passed, 20 total$' /tmp/169-e1-r3.txt \
+    && test "$(grep -E '^  ● ' /tmp/169-e1-r3.txt | grep -cvxF '  ● Console')" = 1 \
+    && test "$(grep -E '^  ● ' /tmp/169-e1-r3.txt | grep -cF '#169 R3: bajo reduce motion la gráfica sale completa › p arranca en 1 bajo reduce motion')" = 1 \
+    && ! grep -qE 'Test suite failed to run|TypeError|ReferenceError|SyntaxError|Cannot find module' /tmp/169-e1-r3.txt \
+    && ! grep -qF 'Unable to find' /tmp/169-e1-r3.txt \
+    && test "$(grep -cF 'const progress = useSharedValue(0);' src/components/weight-chart.tsx)" = 1 \
+    && test "$(grep -cF 'progress.set(reducedMotion ? 1 : withTiming(1, MOTION_FILL_TIMING));' src/components/weight-chart.tsx)" = 1 \
+    && test "$(grep -cF 'if (!reducedMotion) progress.set(' src/components/weight-chart.tsx)" = 0 \
+    && test "$(grep -cF 'const mockUseSharedValue = jest.fn();' src/components/__tests__/weight-chart.test.tsx)" = 1 \
+    && test "$(grep -cF 'expect(mockUseSharedValue).toHaveBeenCalledWith(1);' src/components/__tests__/weight-chart.test.tsx)" = 1 \
+    && test "$(grep -cF '__esModule: true,' src/components/__tests__/weight-chart.test.tsx)" = 2 \
+    && test ! -e .expo/types/router.d.ts && bun run typecheck && <LINT> \
+    && git add src/components/__tests__/weight-chart.test.tsx src/components/weight-chart.tsx \
+    && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'mobile-pet-tracker/src/components/__tests__/weight-chart.test.tsx mobile-pet-tracker/src/components/weight-chart.tsx ' \
+    && <LIMPIO> \
+    && git commit -m 'test(mobile): bajo reduce motion el progreso del dibujo arranca en 1 (#169 R3)'
+
+# -- (4) verde R3 --
+  git checkout f314978d -- src/components/weight-chart.tsx && git diff --quiet f314978d -- src/components/weight-chart.tsx; echo "exit=$?"   -> exit=0
+  FORCE_COLOR=0 bunx jest --runTestsByPath src/components/__tests__/weight-chart.test.tsx > /tmp/169-e1-g3c.txt 2>&1; echo "exit=$?"
+    -> exit=0 y `Tests:       20 passed, 20 total`
+  <GRAFICA> > /tmp/169-e1-g3.txt 2>&1; echo "exit=$?"
+    -> exit=0 y `Tests:       145 passed, 145 total`
+  <GUARDAS> > /tmp/169-e1-g3-guardas.txt 2>&1; echo "exit=$?"
+  grep -qE '^Tests: +20 passed, 20 total$' /tmp/169-e1-g3c.txt \
+    && grep -qE '^Tests: +145 passed, 145 total$' /tmp/169-e1-g3.txt \
+    && grep -qE '^Tests: +92 passed, 92 total$' /tmp/169-e1-g3-guardas.txt \
+    && git diff --quiet f314978d -- src/components/weight-chart.tsx \
+    && test ! -e .expo/types/router.d.ts && bun run typecheck && <LINT> \
+    && git add src/components/weight-chart.tsx \
+    && test "$(git diff --cached --name-only)" = 'mobile-pet-tracker/src/components/weight-chart.tsx' \
+    && <LIMPIO> \
+    && git commit -m 'feat(mobile): bajo reduce motion la gráfica vuelve a arrancar completa (#169 R3)'
+
+# -- (5) rojo R5 --
+tasks.md (5): las filas 12 a 15 al final de `cases` en
+src/utils/monthly-weight-delta.test.ts y la mutacion M3 + H3 en
+src/utils/monthly-weight-delta.ts. Mide:
+  FORCE_COLOR=0 bunx jest --runTestsByPath src/utils/monthly-weight-delta.test.ts > /tmp/169-e1-r5.txt 2>&1; echo "exit=$?"
+    -> exit=1 y `Tests:       4 failed, 11 passed, 15 total`
+Copia al impl el Received de cada fila (tabla de tasks.md (5)). Cadena:
+  grep -qE '^Tests: +4 failed, 11 passed, 15 total$' /tmp/169-e1-r5.txt \
+    && test "$(grep -E '^  ● ' /tmp/169-e1-r5.txt | grep -cvxF '  ● Console')" = 4 \
+    && test "$(grep -E '^  ● ' /tmp/169-e1-r5.txt | grep -cE '#169 R5: monthlyWeightDelta › fila 1[2-5] con hoy 2027-01-05$')" = 4 \
+    && ! grep -qE 'Test suite failed to run|TypeError|ReferenceError|SyntaxError|Cannot find module' /tmp/169-e1-r5.txt \
+    && ! grep -qF 'Unable to find' /tmp/169-e1-r5.txt \
+    && test "$(grep -cE "^    \[1[2-5], '2027-01-05', " src/utils/monthly-weight-delta.test.ts)" = 4 \
+    && test "$(grep -cF 'const newest = inMonth.reduce(' src/utils/monthly-weight-delta.ts)" = 1 \
+    && test "$(grep -cF 'if (baseline.measuredAt === newest.measuredAt) return null;' src/utils/monthly-weight-delta.ts)" = 1 \
+    && test "$(grep -cF 'entries.find(' src/utils/monthly-weight-delta.ts)" = 0 \
+    && test "$(grep -cF '* 10) / 10;' src/utils/monthly-weight-delta.ts)" = 1 \
+    && test "$(grep -cF '* 100) / 100;' src/utils/monthly-weight-delta.ts)" = 0 \
+    && test ! -e .expo/types/router.d.ts && bun run typecheck && <LINT> \
+    && git add src/utils/monthly-weight-delta.test.ts src/utils/monthly-weight-delta.ts \
+    && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'mobile-pet-tracker/src/utils/monthly-weight-delta.test.ts mobile-pet-tracker/src/utils/monthly-weight-delta.ts ' \
+    && <LIMPIO> \
+    && git commit -m 'test(mobile): el delta del mes elige por posición y redondea a 2 decimales (#169 R5)'
+
+# -- (6) verde R5 --
+  git checkout f314978d -- src/utils/monthly-weight-delta.ts && git diff --quiet f314978d -- src/utils/monthly-weight-delta.ts; echo "exit=$?"   -> exit=0
+  FORCE_COLOR=0 bunx jest --runTestsByPath src/utils/monthly-weight-delta.test.ts > /tmp/169-e1-g5.txt 2>&1; echo "exit=$?"
+    -> exit=0 y `Tests:       15 passed, 15 total`
+  <GUARDAS> > /tmp/169-e1-g5-guardas.txt 2>&1; echo "exit=$?"
+  grep -qE '^Tests: +15 passed, 15 total$' /tmp/169-e1-g5.txt \
+    && grep -qE '^Tests: +92 passed, 92 total$' /tmp/169-e1-g5-guardas.txt \
+    && git diff --quiet f314978d -- src/utils/monthly-weight-delta.ts \
+    && test ! -e .expo/types/router.d.ts && bun run typecheck && <LINT> \
+    && git add src/utils/monthly-weight-delta.ts \
+    && test "$(git diff --cached --name-only)" = 'mobile-pet-tracker/src/utils/monthly-weight-delta.ts' \
+    && <LIMPIO> \
+    && git commit -m 'feat(mobile): monthlyWeightDelta vuelve a elegir por posición y a redondear a 2 decimales (#169 R5)'
+
+# -- sondas M3a, M3b, M3c, M3d y H3b (tasks.md, sin commit, una a una, sobre el HEAD de (6)) --
+Mide solo monthly-weight-delta, salida a /tmp/169-e1-sM3a.txt etc. Cada una:
+exit=1 y `Tests:       1 failed, 14 passed, 15 total`, por asercion, con la
+fila y el Received de la tabla de tasks.md (M3a fila 12 recibe 0.2; M3b
+fila 12 recibe null; M3c fila 13 recibe 0.4; M3d fila 14 recibe null; H3b
+fila 15 recibe 0). Revierte cada una (checkout HEAD + limpio=0) antes de la
+siguiente. Si alguna da otra cuenta u otra fila, PARA.
+
+== CIERRE ==
+Desde mobile-pet-tracker/, sin pipe, con salida al impl:
+- El comando BASE del bloque principal con la salida a /tmp/169-e1-final.txt
+    -> exit=0, `Test Suites: 9 passed, 9 total` y `Tests:       368 passed, 368 total`
+- `FORCE_COLOR=0 bunx jest --runTestsByPath src/utils/monthly-weight-delta.test.ts > /tmp/169-e1-final-md.txt 2>&1; echo "exit=$?"`
+    -> exit=0 y `Tests:       15 passed, 15 total`
+- Espera a que no corra ningun otro jest ni init.sh en la maquina (UNA
+  llamada; puede tardar hasta 90 min):
+    for i in $(seq 1 90); do pgrep -f 'node_modules/(\.bin/jest|jest-worker)|[i]nit\.sh' > /dev/null || break; sleep 60; done; pgrep -af 'node_modules/(\.bin/jest|jest-worker)'; pgrep -af '[i]nit\.sh'; echo "fin-espera"
+  -> tras `fin-espera`, ninguna linea de proceso encima. Si las hay, PARA.
+- ALL, sin lanzar nada mas mientras corre:
+    FORCE_COLOR=0 bunx jest --testTimeout=30000 > /tmp/169-e1-all.txt 2>&1; echo "exit=$?"
+    -> exit=0, `Test Suites: 99 passed, 99 total` y `Tests:       2832 passed, 2832 total`
+  (al final puede salir el aviso de worker force-exit: es preexistente y no
+  cuenta).
+- `bun run typecheck; echo "exit=$?"` -> exit=0
+- `bunx expo lint --no-cache > /tmp/169-lint-final.txt 2>&1; echo "exit=$?"; test ! -s /tmp/169-lint-final.txt; echo "vacio=$?"`
+    -> exit=0 y vacio=0
+Desde la raiz (`cd /home/claude/sites/Pet-Tracker-wt-169 && pwd`):
+- `git diff --quiet f314978d HEAD -- mobile-pet-tracker/src/components/weight-chart.tsx mobile-pet-tracker/src/utils/monthly-weight-delta.ts; echo "exit=$?"` -> exit=0
+- `git diff --name-only f314978d HEAD -- mobile-pet-tracker/ | LC_ALL=C sort`
+    -> exactamente:
+       mobile-pet-tracker/src/components/__tests__/weight-chart.test.tsx
+       mobile-pet-tracker/src/utils/monthly-weight-delta.test.ts
+
+# -- (7) commit final --
+En specs/mobile-weight-draw-and-toasts/traceability.md, SOLO la columna
+«Commit», como dice tasks.md (7): R1 y R2 anaden
+`; Enmienda E1: <rojo (1)> → <verde (2)>` con sus mensajes y
+`sondas M2 y H1b`; R3 lo mismo con (3)-(4); R5 lo mismo con (5)-(6) y
+`sondas M3a-M3d y H3b`. La columna «Test» y el resto del fichero no se
+tocan. En el impl, la seccion `## Reanudacion 5 (Enmienda E1)` con cada
+medida (linea `Tests:` y `exit=`), los seis hashes y las siete sondas, y
+como ultima linea `R14: pendiente del smoke humano`. Desde la raiz:
+  git add specs/mobile-weight-draw-and-toasts/traceability.md progress/impl_mobile-weight-draw-and-toasts.md \
+    && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'progress/impl_mobile-weight-draw-and-toasts.md specs/mobile-weight-draw-and-toasts/traceability.md ' \
+    && git commit -m 'docs(mobile-weight-draw-and-toasts): #169 Enmienda E1, trazabilidad e impl'
+Despues, `git status --short` -> vacio, y la lista cerrada del bloque
+principal (contra fc384b44, con sus exclusiones) -> los mismos 14
+ficheros. Pega las dos salidas en tu respuesta final (no en el impl: ya
+esta commiteado) y PARA. El leader hace el push.
+```

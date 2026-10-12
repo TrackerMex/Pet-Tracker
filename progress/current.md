@@ -142,4 +142,13 @@
   - Cierre esperado: ALL 99/2832.
   - H2b entra en esta ronda y no pasa a deuda: es el mismo fichero y el mismo
     tipo de candado.
-- Pendiente de la firma humana vía Notion. Después, Reanudación 5 de Codex.
+- Enmienda E1 firmada por el humano vía Notion (firma `462ca164`,
+  2026-10-12). Notion: Estado del gate = Aprobado y Rol actual = Implementer.
+- Reanudación 5 en el handoff: siete commits, de (1) a (7), y siete sondas.
+  Las anclas `grep -cF` de cada rojo y los `●` de cada log se ejecutaron
+  contra las mutaciones plantadas y contra los logs del spike, todo verde.
+  Cierre esperado: BASE 368, monthly 15, ALL 99/2832, producción idéntica a
+  `f314978d` y la lista cerrada con los mismos 14 ficheros.
+- Siguiente: Codex termina → el leader lee el impl → pide permiso, avisa y
+  corre init.sh → re-revisión → smoke R14 → Notion Implementado/Completado →
+  PR.
