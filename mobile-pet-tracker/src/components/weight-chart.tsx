@@ -4,6 +4,7 @@ import Animated, { useAnimatedProps, useSharedValue, withTiming } from 'react-na
 import Svg, {
   Circle,
   Defs,
+  G,
   LinearGradient,
   Polygon,
   Polyline,
@@ -16,6 +17,7 @@ import { MOTION_FILL_TIMING } from '../theme/motion';
 import { useThemeColors } from '../theme/use-theme-colors';
 
 const AnimatedPolyline = Animated.createAnimatedComponent(Polyline);
+const AnimatedG = Animated.createAnimatedComponent(G);
 
 export function WeightChart({ entries }: { entries: WeightEntry[] }) {
   const t = useTranslate();
@@ -58,6 +60,7 @@ function WeightChartPlot({ entries }: { entries: WeightEntry[] }) {
   const lineProps = useAnimatedProps(() => ({
     strokeDashoffset: L * (1 - progress.get()),
   }));
+  const pointsProps = useAnimatedProps(() => ({ opacity: progress.get() }));
 
   return (
     <Svg
@@ -83,9 +86,11 @@ function WeightChartPlot({ entries }: { entries: WeightEntry[] }) {
         strokeLinejoin="round"
         strokeWidth={2.5}
       />
-      {chartPoints.map(({ x, y }, index) => (
-        <Circle key={index} cx={x} cy={y} r={3} fill={accent} />
-      ))}
+      <AnimatedG testID="weight-chart-points" animatedProps={pointsProps}>
+        {chartPoints.map(({ x, y }, index) => (
+          <Circle key={index} cx={x} cy={y} r={3} fill={accent} />
+        ))}
+      </AnimatedG>
     </Svg>
   );
 }
