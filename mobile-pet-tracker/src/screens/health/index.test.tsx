@@ -1073,7 +1073,7 @@ describe('#168 R3: cada vacuna lleva su tile pastel', () => {
     const scope = within(row);
     expect(row.children).toHaveLength(2);
     expect(row.props.className).toContain('flex-row items-center gap-3');
-    const tile = scope.getByTestId(`vaccine-tile-${id}`);
+    const tile = scope.getByTestId(`vaccine-tile-${id}`, { includeHiddenElements: true });
     const column = scope.getByTestId(`vaccine-text-${id}`);
     expect(elementChild(row, 0)).toBe(tile);
     expect(elementChild(row, 1)).toBe(column);
@@ -1082,7 +1082,7 @@ describe('#168 R3: cada vacuna lleva su tile pastel', () => {
     expect(tile.props.accessibilityElementsHidden).toBe(true);
     expect(tile.props.importantForAccessibility).toBe('no-hide-descendants');
     expect(tile.children).toHaveLength(1);
-    const glyph = within(tile).getByTestId(icon);
+    const glyph = within(tile).getByTestId(icon, { includeHiddenElements: true });
     expect(elementChild(tile, 0)).toBe(glyph);
     expect(glyph.props.size).toBe(20);
     expect(glyph.props.style).toEqual({ color });
