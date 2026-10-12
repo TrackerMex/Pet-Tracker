@@ -579,3 +579,97 @@ Candidatas a feature propia (las decide el humano, no se crean aquí):
   - [X] Candado: `src/__tests__/hero-header-amendments.test.ts` gana el `describe` `#168 R11`; los tres `it` de `#67 R10` no cambian (R11.4)
 - [ ] Prueba de humo R13 superada en dev build de Android (fecha: ____,
   dispositivo: ____) ← gate de cierre; el leader no marca `done` sin ella
+
+## Enmienda E1 — R8.4 y R12.3: premisas que el árbol desmiente
+
+> Escrita el 2026-10-12 sobre la spec aprobada (firma `a372efdc`), antes del
+> handoff a Codex, al inventariar contra la base `9d3d412c` (main `d2b8b0ae`
+> con #166 dentro) los `it` que rompen los cambios. No toca D1–D9, ni R1–R7,
+> ni R9–R11, ni R13, ni las casillas firmadas. Su casilla va **sin marcar**:
+> el humano reabre el gate solo para esta enmienda.
+
+### E1.a — R8.4: `accent` no lo usaba solo el tile `ForkKnife`
+
+R8.4 dice que la variable `accent` (token `'accent-strong'`) «solo usaba el
+tile `ForkKnife`» y manda sustituir el token por `'accent-foreground'` en la
+misma posición. Es falso. En `src/app/(tabs)/food.tsx` la usan también:
+
+- `<Clock size={17} color={served ? accent : muted} />` (el reloj de cada
+  comida servida);
+- `<Sparkles size={18} color={accent} />` (la tarjeta de recomendación).
+
+Y el `it` vivo `#98 R4: el estado servido sale de servedToday, no del reloj` ›
+`pinta badges y contador desde servedToday con el reloj del dispositivo en cualquier hora`
+aserta `color: 'accent-strong'` sobre `food-icon-clock`. Sustituir el token
+recolorearía dos iconos fuera de alcance y rompería ese `it`.
+
+**R8.4 queda así** en lo que toca al color (el resto del requisito no
+cambia): la llamada existente a `useThemeColors` **añade** un cuarto token al
+final, sin tocar los tres que tiene:
+
+```tsx
+const [muted, accent, foreground, accentForeground] = useThemeColors([
+  'muted',
+  'accent-strong',
+  'foreground',
+  'accent-foreground',
+]);
+```
+
+`accent` sigue alimentando `Clock` y `Sparkles`; los dos círculos del anillo
+usan `accentForeground`. El literal esperado en tests sigue siendo
+`'accent-foreground'` (el doble de `useThemeColors` de Nutrición devuelve el
+nombre del token).
+
+### E1.b — R12.3: el veto de hex no puede cubrir los tres tests
+
+R12.3 prohíbe literales hex en las tres pantallas **y en sus tres tests**.
+En los tests no se cumple ni se puede cumplir sin borrar conducta viva:
+
+- `src/screens/health/index.test.tsx` tiene seis literales hex en su doble de
+  `useThemeColors` (simula colores resueltos por tema) y dos en el `it` vivo
+  `re-resolves the syringe token when a mounted tab changes theme`, que comprueba que
+  el icono cambia de color al cambiar de tema;
+- los ids de feature son hex sintácticamente válidos de 3 dígitos: `#106` en
+  `src/app/(tabs)/__tests__/food.test.tsx`, `#115` y `#127` en el de Salud.
+
+**R12.3 queda así**: los literales hex se vetan solo en los tres ficheros de
+**producción**, con el patrón `HEX_LITERAL` de
+`src/__tests__/design-drift.test.ts`
+(`` String.raw`#(?!\d{2,3} R\d)[\da-f]{3,8}\b` `` con bandera `i`), que hoy
+da 0 en los tres. Corchetes en `className`, `StyleSheet` y `text-accent`
+suelto siguen vetados en los seis ficheros (hoy, 0 en los seis).
+
+### E1.c — R12.3: dos candados de guard que R6.2 y R8.2 obligan a tocar
+
+R12.3 dice que los guards siguen verdes «sin tocar sus tablas, salvo R12.1».
+Dos aserciones de `src/__tests__/consistency-classnames.test.ts` copian
+literalmente código que este ciclo cambia por mandato de la propia spec, así
+que la excepción se amplía a estas dos, y solo a ellas:
+
+| Id | `describe` › `it` | Por qué cambia | Reescritura | Bloque |
+|---|---|---|---|---|
+| C1 | `#62 R4: la app solo usa los radios de la escala declarada` › `lleva los tres tiles restantes a rounded-xl` | R8.2 borra el tile `ForkKnife`, cuyo `className` aserta | Se quita la aserción sobre `food.tsx`, con el comentario `// #168 R8: el tile ForkKnife sale de food.tsx`; las de `forgot` y `weight-log` no cambian | I |
+| C2 | `#62 R7: ningún glifo tipográfico hace de icono` › `profile usa cuatro ChevronRight de reicon` | R6.2 añade cuatro iconos al import de `reicon-react-native` | El literal del import pasa a `"import { Bell, ChevronRight, FileText, Map as MapIcon, Wifi } from 'reicon-react-native';"`; la cuenta de `<ChevronRight size={20} color={muted} />` (`3 + 1`) no cambia | F |
+
+En consecuencia, R6.2 fija esa línea de import exacta en
+`src/screens/profile/index.tsx` (orden alfabético, como los imports de
+`reicon-react-native` de Salud y Nutrición).
+
+### Correcciones de `tasks.md` que acompañan a E1 (sin firma propia)
+
+Consecuencias directas de requisitos ya firmados, que `tasks.md` no listaba;
+van en §Reescrituras como filas nuevas:
+
+- H9 y H10 (R2.2 y R2.4): dos `it` de Salud asertan las métricas viejas.
+- P5 (R6.1): `#41 R9` aserta el `className` viejo de `geofences-link` y de su
+  etiqueta; la etiqueta pasa a `flex-1 font-semibold text-foreground`.
+- Dobles: el de `useThemeColors` de Salud devuelve hex, no el nombre del
+  token (design D3 decía lo contrario), y Perfil no tiene doble (usa el hook
+  real, que en jest cae al color de `foreground`). Salud gana una rama que
+  devuelve el nombre de los tokens `category-*`; Perfil gana un doble que
+  devuelve el nombre del token, como el de Nutrición.
+
+### Aprobación de la Enmienda E1
+
+- [ ] Enmienda E1 aprobada por humano (fecha: ____) ← gate obligatorio antes del handoff a Codex

@@ -71,7 +71,7 @@ intermedio con el título encima del hero.
     - al `await fireEvent.press(getByTestId('pet-chip-<id2>'))` la lista de
       vacunas pasa a la de la segunda mascota (aserción sobre un nombre de
       vacuna que solo tiene ella).
-  - Reescrituras en el mismo commit (ver §Reescrituras, filas H1–H8).
+  - Reescrituras en el mismo commit (ver §Reescrituras, filas H1–H10).
 - [ ] (2) Verde `feat(mobile): Salud abre con el título grande (#168 R1, R2)`
   en `src/screens/health/index.tsx`.
 - [ ] (3) Refactor.
@@ -83,6 +83,11 @@ intermedio con el título encima del hero.
     `Check: icon('health-icon-check')` y `Clock: icon('health-icon-clock')`
     (intención: cada icono es un `View` con `testID` propio y su `color` en
     `style`, como los tres que ya hay);
+  - doble de `useThemeColors` del fichero (Enmienda E1, correcciones): hoy
+    devuelve hex para todo token. Gana, **antes** de sus ramas actuales,
+    `if (token.startsWith('category-')) return token;`. Las ramas de
+    `warning`, `muted` y el resto no cambian (las usa el `it` vivo
+    `re-resolves the syringe token when a mounted tab changes theme`);
   - fixture de cuatro vacunas y reloj fijo de requirements R3 (fechas que
     cruzan mes);
   - `describe('#168 R3: cada vacuna lleva su tile pastel')`, un `it` por fila
@@ -155,6 +160,15 @@ intermedio con el título encima del hero.
     `profile-icon-wifi`, `profile-icon-map`, `profile-icon-bell` y su `color`
     en `style`. El resto de iconos, reales. Verificar que los `it` de Perfil
     que ya existían siguen verdes con el doble antes de commitear el rojo.
+  - doble de `useThemeColors` **nuevo** en este fichero (Enmienda E1,
+    correcciones): hoy Perfil usa el hook real, que en jest cae al color de
+    `foreground` para todo token. Intención: devuelve el nombre de cada token,
+    como el de Nutrición (`useThemeColors: (tokens) => tokens`). Mismo control:
+    los `it` de Perfil existentes siguen verdes con él antes del rojo.
+  - Reescrituras en el mismo commit: P5 y C2 (§Reescrituras).
+  - El import de iconos de `src/screens/profile/index.tsx` queda exactamente
+    `import { Bell, ChevronRight, FileText, Map as MapIcon, Wifi } from 'reicon-react-native';`
+    (Enmienda E1.c; C2 lo aserta).
   - un `it` por fila (`documents-link`, `pairing-link`, `geofences-link`,
     `reminders-link`) con `within(<fila>)`: `children.length` 3; primer hijo
     `<fila>-tile` con `className` exacto, `style` literal de
@@ -208,10 +222,13 @@ intermedio con el título encima del hero.
       `absolute inset-0` y sin `style`;
     - `food-plan-percent` y `food-plan-consumed` con `className` exacto y
       `style` igual a `TABULAR_NUMS` escrito literal.
-  - Reescrituras F2–F4 en el mismo commit.
+  - Reescrituras F2–F4 y C1 en el mismo commit.
 - [ ] (2) Verde `feat(mobile): anillo de kcal en Nutrición (#168 R8)`.
-  Fuera `ForkKnife` del import; `'accent-strong'` sustituido por
-  `'accent-foreground'` en `useThemeColors`.
+  Fuera `ForkKnife` del import. En `useThemeColors`, **se añade**
+  `'accent-foreground'` como cuarto token (variable `accentForeground`) y los
+  tres que hay no se tocan: `accent` sigue en `Clock` y `Sparkles`
+  (Enmienda E1.a). El `it` `#98 R4` que aserta `color: 'accent-strong'` en
+  `food-icon-clock` sigue verde sin cambios.
 - [ ] (3) Refactor.
 
 ## Bloque J — Nutrición: R9 (progreso del anillo)
@@ -285,8 +302,10 @@ intermedio con el título encima del hero.
     `describe('#168 R12: alcance cerrado')` (R12.2: ficheros de producción con
     `<PetHeroHeader`, exactamente `screens/home/index.tsx`; R12.3: en los tres
     ficheros de pantalla y sus tres tests, cero `[` dentro de un `className`
-    literal, cero `#` hex de 3/6/8 dígitos, cero `StyleSheet`, cero
-    `text-accent` sin sufijo). Mismo andamiaje de lectura que
+    literal, cero `StyleSheet`, cero `text-accent` sin sufijo; y **solo en los
+    tres de producción** (Enmienda E1.b), cero coincidencias de
+    `` new RegExp(String.raw`#(?!\d{2,3} R\d)[\da-f]{3,8}\b`, 'i') ``, el
+    `HEX_LITERAL` de `design-drift.test.ts` copiado literal). Mismo andamiaje de lectura que
     `consistency-classnames.test.ts` (`sourceFiles`, `readSource`).
   - Este bloque va **al final** y sus `it` nacen verdes (A–K ya dejaron el
     árbol como piden). Para que el candado no sea tautológico, antes del
@@ -347,10 +366,15 @@ que la conducta deja de existir por decisión N1 y la cubre un `it` nuevo de
 | H6 | `H` | ídem › `pone el PetSwitcher en el slot del hero` | Borrar; la cubre `#168 R2` (primer hijo de `health-content`) | A |
 | H7 | `H` | ídem › `cambia el hero al pulsar otra mascota` | Borrar; la cubre `#168 R2` (cambio de vacunas al pulsar otro chip) | A |
 | H8 | `H` | `#155 R4: Salud sin mascotas presenta a Pingo` › `queda en el sitio del vacío que sustituye` | Reescribir: `slot.parent` sigue siendo `health-states`; sus hijos pasan de `['Text', 'health-empty']` a `['health-empty']` | A |
+| H9 | `H` | `R4: health resuelve la mascota seleccionada` › `shows the hub and a loading state while pets are pending` | Reescribir solo el `contentContainerStyle` esperado: de `{ gap: 16, paddingBottom: 120 }` a `{ padding: 24, gap: 16, paddingTop: 52, paddingBottom: 120 }` (R2.2) | A |
+| H10 | `H` | ídem › `R5 (mobile-design-drift): aplica el safe area superior al contenido` | Reescribir: el safe area superior pasa al scroll; aserta `contentContainerStyle.paddingTop` 52 sobre `screen-health` y `style` de `health-states` igual a `{ gap: 16 }` (R2.2, R2.4) | A |
 | P1 | `P` | `R6: Profile usa el hero compartido` (los cuatro `it`) | Borrar el `describe`; lo cubre `#168 R4` (tarjeta, foto, `change-photo` debajo, sin `pet-hero`) | D |
 | P2 | `P` | `renders the active pet hero, switcher, pills and information rows` | Reescribir solo la línea que aserta `pet-hero-media` visible: pasa a `profile-pet-avatar` | D |
 | P3 | `P` | `keeps the old photo and shows an error when upload fails` | Reescribir la aserción de `pet-hero-media` a `profile-pet-avatar` con `source` **objeto** `{ uri: 'http://example.test/old.jpg', cacheKey: 'pet-1' }` | D |
 | P4 | `P` | `#87 R16: ProfileScreen lee por TanStack Query` › `deja cuenta, mascotas y detalle en sus claves canónicas` | Reescribir `findByTestId('pet-hero')` a `findByTestId('profile-pet-card')` | D |
+| P5 | `P` | `#41 R9: Perfil enlaza a las zonas seguras de la mascota activa` › `pinta la fila de zonas seguras tras la de GPS y abre la ruta de la mascota activa` | Reescribir dos literales: `className` de la fila a `flex-row items-center gap-3 rounded-xl bg-default px-3 py-2` y el de su etiqueta `Zonas seguras` a `flex-1 font-semibold text-foreground` (R6.1); el resto del `it` no cambia | F |
+| C1 | `C` | `#62 R4: la app solo usa los radios de la escala declarada` › `lleva los tres tiles restantes a rounded-xl` | Quitar la aserción sobre `food.tsx` y dejar `// #168 R8: el tile ForkKnife sale de food.tsx`; las de `forgot` y `weight-log` no cambian (Enmienda E1.c) | I |
+| C2 | `C` | `#62 R7: ningún glifo tipográfico hace de icono` › `profile usa cuatro ChevronRight de reicon` | El literal del import pasa a `"import { Bell, ChevronRight, FileText, Map as MapIcon, Wifi } from 'reicon-react-native';"`; la cuenta `3 + 1` no cambia (Enmienda E1.c) | F |
 | F1 | `F` | `#155 R4: Comida sin mascotas presenta a Pingo` › `queda en el sitio del vacío que sustituye` | Reescribir: hijos de `['Text', 'food-empty']` a `['food-title', 'food-empty']` | H |
 | F2 | `F` | `#113 R2: …` › `compone la tarjeta: fila intacta y bloque de progreso debajo` | Borrar; lo cubre `#168 R8` | I |
 | F3 | `F` | `#113 R2: …` › `con merKcal $merKcal y kcalConsumedToday $kcal pinta $consumed y $percent` (`it.each`) | Reescribir: conserva filas y aserciones de `food-plan-consumed` y `food-plan-percent`; quita la de ancho de `food-plan-fill` (el desfase lo candea `#168 R9`) | I |

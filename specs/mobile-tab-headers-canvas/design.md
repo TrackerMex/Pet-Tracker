@@ -66,9 +66,11 @@ Superficie y tinta salen de `src/utils/category-palette.ts`
 icono no puede ser una clase: `reicon-react-native` recibe `color` como
 string, así que se lee `category-<slot>-strong` con `useThemeColors`, ampliando
 la llamada que cada pantalla ya tiene (`[warning, muted]` en Salud,
-`[muted]` en Perfil). En tests, el doble de `useThemeColors` devuelve el
-nombre del token, así que el color esperado es el literal
-`'category-rose-strong'`, etc.
+`[muted]` en Perfil). En tests, el color esperado es el literal
+`'category-rose-strong'`, etc.: el doble de Nutrición ya devuelve el nombre
+del token; el de Salud devuelve hex y gana una rama `category-*` que devuelve
+el nombre, y Perfil, que hoy usa el hook real, gana un doble que devuelve el
+nombre (Enmienda E1, correcciones; tasks.md bloques B y F).
 
 Asignación de huecos (carta §Dirección de arte 1: el color se ata al dato,
 nunca al índice):
