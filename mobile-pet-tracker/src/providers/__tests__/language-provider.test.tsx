@@ -60,7 +60,8 @@ describe('#65 R12: el catálogo tiene los dos idiomas y t resuelve claves y par�
         + 5 // #155 R1
         + 12 // #158 R1
         + 4 // #159 R1
-        - 1, // #159 R2
+        - 1 // #159 R2
+        + 1, // #167 R5
     );
     expect(spanishKeys).toEqual(englishKeys);
     for (const key of englishKeys) {
@@ -506,5 +507,26 @@ describe('#158 R1: claves y nueva frase de Pingo', () => {
       );
     }
     expect(languageDesign).toContain('### §2.22 — Añadidos por #158 — Subir documentos');
+  });
+});
+
+describe('#167 R5: el saludo de Pingo en login', () => {
+  it('#167 R5: declara login.pingoGreeting en los dos idiomas y su registro', () => {
+    const english = en as Record<string, string>;
+    const spanish = es as Record<string, string>;
+    const key = 'login.pingoGreeting';
+    const languageDesign = readFileSync(
+      join(process.cwd(), '../specs/mobile-ui-language/design.md'),
+      'utf8',
+    );
+    expect(english[key]).toBe('Good to see you again.');
+    expect(spanish[key]).toBe('Qué bueno verte de nuevo.');
+    expect(languageDesign).toMatch(
+      new RegExp(
+        '\\| — \\| `' + escapeRegExp(key) +
+          '`[^\\n]*← (?:añadida|cambiada) por #167 \\(R5\\)',
+      ),
+    );
+    expect(languageDesign).toContain('### §2.24 — Añadidos por #167 — Pingo en las pantallas de cuenta');
   });
 });
