@@ -597,3 +597,23 @@ describe('#170 R11: sin geofenceId pinta el mapa sin zona', () => {
     expect(mockListGeofences).not.toHaveBeenCalled();
   });
 });
+
+describe('#170 R12: sin la zona de la alerta no pinta zona', () => {
+  it.each([
+    { fila: 'lista vacía', geofences: [] },
+    { fila: 'otra zona llamada Casa', geofences: [{ ...ZONE, id: 'zone-2' }] },
+  ])('$fila', async ({ geofences }) => {
+    const queryClient = createQueryClient(jest.fn(), 60_000);
+    queryClient.setQueryData(geofenceKeys.list('pet-1'), { kind: 'ok', geofences });
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ geofenceId: 'zone-1', payload: REAL_PAYLOAD })], nextCursor: null });
+    try {
+      await render(<QueryClientProvider client={queryClient}><DetailWrapper><AlertDetailScreen alertId="alert-1" /></DetailWrapper></QueryClientProvider>);
+      const map = await screen.findByTestId('pet-map-double');
+      expect(map.props.circles).toEqual([]);
+      expect(map.props.zoom).toBeUndefined();
+      expect(screen.queryByTestId('alert-detail-distance')).toBeNull();
+    } finally {
+      queryClient.clear();
+    }
+  });
+});
