@@ -9,6 +9,8 @@ import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
+import type { TestInstance } from 'test-renderer';
+import type { CircleProps, SvgProps } from 'react-native-svg';
 import { Easing, ReduceMotion } from 'react-native-reanimated';
 
 import {
@@ -85,6 +87,21 @@ jest.mock('react-native-reanimated', () => ({
   withRepeat: jest.fn((animation: unknown) => animation),
   withSequence: jest.fn((...steps: unknown[]) => steps.at(-1)),
 }));
+
+jest.mock('react-native-svg', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const actual = jest.requireActual<typeof import('react-native-svg')>('react-native-svg');
+  const { View } = jest.requireActual('react-native');
+  class MockCircle extends React.Component<CircleProps> {
+    render() { return <View {...this.props} />; }
+  }
+  return {
+    ...actual,
+    __esModule: true,
+    default: (props: SvgProps) => <View {...props} />,
+    Circle: MockCircle,
+  };
+});
 
 jest.mock('reicon-react-native', () => {
   const { View } = jest.requireActual('react-native');
@@ -1026,58 +1043,6 @@ describe('#113 R2: la tarjeta Objetivo diario pinta las kcal servidas contra mer
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
   });
 
-  it('compone la tarjeta: fila intacta y bloque de progreso debajo', async () => {
-    mockGetNutritionPlan.mockResolvedValue({
-      kind: 'ok',
-      plan: makePlan({ merKcal: 1420, kcalConsumedToday: 890, servedToday: ['07:30'] }),
-    });
-    await renderFood();
-
-    const card = await screen.findByTestId('food-plan-card');
-    expect(card.children).toHaveLength(2);
-    const row = card.children[0];
-    const progress = card.children[1];
-    if (typeof row === 'string' || typeof progress === 'string') {
-      throw new Error('Expected element children');
-    }
-    expect(row.props.className).toBe('flex-row items-center justify-between gap-4');
-    expect(row.children).toHaveLength(2);
-    const column = row.children[0];
-    const tile = row.children[1];
-    if (typeof column === 'string' || typeof tile === 'string') {
-      throw new Error('Expected element children');
-    }
-    expect(within(column).getByTestId('food-plan-kcal')).toBeVisible();
-    expect(within(tile).getByTestId('food-icon-fork-knife')).toBeVisible();
-    expect(progress.props.testID).toBe('food-plan-progress');
-    expect(progress.props.className).toBe('gap-1.5');
-    expect(progress.props.onPress).toBeUndefined();
-    expect(progress.children).toHaveLength(2);
-    const header = progress.children[0];
-    const track = progress.children[1];
-    if (typeof header === 'string' || typeof track === 'string') {
-      throw new Error('Expected element children');
-    }
-    expect(header.props.className).toBe('flex-row items-center justify-between');
-    expect(header.children).toHaveLength(2);
-    expect(header.children[0]).toHaveProperty('props.testID', 'food-plan-consumed');
-    expect(header.children[1]).toHaveProperty('props.testID', 'food-plan-percent');
-    for (const testID of ['food-plan-consumed', 'food-plan-percent']) {
-      const text = screen.getByTestId(testID);
-      expect(text.props.className).toBe('text-xs font-normal text-accent-foreground');
-      expect(text.props.style).toEqual({ fontVariant: ['tabular-nums'] });
-    }
-    expect(track.props.testID).toBe('food-plan-track');
-    expect(track.props.className).toBe('h-2 overflow-hidden rounded-full bg-accent-foreground/20');
-    expect(track.children).toHaveLength(1);
-    const fill = track.children[0];
-    if (typeof fill === 'string') {
-      throw new Error('Expected element child');
-    }
-    expect(fill.props.testID).toBe('food-plan-fill');
-    expect(fill.props.className).toBe('h-full rounded-full bg-accent-foreground');
-    expect(screen.getAllByTestId('food-plan-progress')).toHaveLength(1);
-  });
 
   it.each([
     { merKcal: 656, mealsPerDay: 2, mealTimes: ['07:30', '19:30'], servedToday: [], kcal: 0, consumed: '0 kcal', percent: '0%' },
@@ -1095,7 +1060,6 @@ describe('#113 R2: la tarjeta Objetivo diario pinta las kcal servidas contra mer
     await renderFood();
     expect(await screen.findByTestId('food-plan-consumed')).toHaveTextContent(consumed);
     expect(screen.getByTestId('food-plan-percent')).toHaveTextContent(percent);
-    expect(screen.getByTestId('food-plan-fill')).toHaveAnimatedStyle({ width: percent });
   });
 
   it('no pinta el bloque sin plan', async () => {
@@ -1138,45 +1102,6 @@ describe('#113 R3: el progreso es un único elemento accesible con su clave de c
   });
 });
 
-describe('#113 R4: el relleno transiciona su ancho al servir y al deshacer (mobile-kcal-consumed-bar #113)', () => {
-  afterEach(() => mockGetNutritionPlan.mockReset());
-
-  it('anima a 50, sube a 100 al servir y baja a 50 al deshacer con 250 ms y ease-in-out', async () => {
-    const half = makePlan({ merKcal: 1420, servedToday: ['07:30'], kcalConsumedToday: 710 });
-    const full = makePlan({ merKcal: 1420, servedToday: ['07:30', '19:30'], kcalConsumedToday: 1420 });
-    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
-    mockGetNutritionPlan
-      .mockResolvedValueOnce({ kind: 'ok', plan: half })
-      .mockResolvedValueOnce({ kind: 'ok', plan: full })
-      .mockResolvedValue({ kind: 'ok', plan: half });
-    mockServeMeal.mockResolvedValue({ kind: 'ok' });
-    mockUnserveMeal.mockResolvedValue({ kind: 'ok' });
-
-    await renderFood();
-    expect(await screen.findByTestId('food-plan-consumed')).toHaveTextContent('710 kcal');
-    expect(screen.getByTestId('food-plan-percent')).toHaveTextContent('50%');
-    expect(screen.getByTestId('food-plan-fill')).toHaveAnimatedStyle({ width: '50%' });
-    expectKcalBarTiming(50);
-
-    mockWithTiming.mockClear();
-    await fireEvent.press(screen.getByTestId('meal-toggle-1'));
-    await screen.findByTestId('meal-served-1');
-    expect(screen.getByTestId('food-plan-consumed')).toHaveTextContent('1420 kcal');
-    expect(screen.getByTestId('food-plan-percent')).toHaveTextContent('100%');
-    expect(screen.getByTestId('food-plan-fill')).toHaveAnimatedStyle({ width: '100%' });
-    expectKcalBarTiming(100);
-
-    await waitFor(() => expect(screen.getByTestId('meal-toggle-1')).toBeEnabled());
-    mockWithTiming.mockClear();
-    await fireEvent.press(screen.getByTestId('meal-toggle-1'));
-    await screen.findByTestId('meal-pending-1');
-    expect(screen.getByTestId('food-plan-consumed')).toHaveTextContent('710 kcal');
-    expect(screen.getByTestId('food-plan-percent')).toHaveTextContent('50%');
-    expect(screen.getByTestId('food-plan-fill')).toHaveAnimatedStyle({ width: '50%' });
-    expectKcalBarTiming(50);
-  });
-});
-
 describe('#65 R17: los títulos de card se localizan por testID y su copy sigue asertada', () => {
   beforeEach(() => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
@@ -1206,33 +1131,6 @@ describe('#113 R5: el esqueleto del plan reserva el alto de la tarjeta con progr
     mockListPets.mockReturnValue(pending<PetsState>());
     await renderFood();
     expect(screen.getByTestId('food-plan-skeleton').props.className).toBe('skeleton__root h-40 w-full rounded-card');
-  });
-});
-
-describe('#113 R7: los nodos no-texto de la barra no llevan más estilo que el ancho (mobile-kcal-consumed-bar #113)', () => {
-  it.each([
-    { merKcal: 656, kcal: 0, servedToday: [], width: '0%' },
-    { merKcal: 1420, kcal: 890, servedToday: ['07:30'], width: '63%' },
-  ])('con merKcal $merKcal y kcalConsumedToday $kcal el relleno solo lleva width $width', async ({ merKcal, kcal, servedToday, width }) => {
-    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
-    mockGetNutritionPlan.mockResolvedValue({
-      kind: 'ok',
-      plan: makePlan({ merKcal, servedToday, kcalConsumedToday: kcal }),
-    });
-    await renderFood();
-
-    expect(await screen.findByTestId('food-plan-fill')).toHaveAnimatedStyle(
-      { width },
-      { shouldMatchAllProps: true },
-    );
-    const progress = screen.getByTestId('food-plan-progress');
-    expect(progress.props.style).toBeUndefined();
-    const header = progress.children[0];
-    if (typeof header === 'string') {
-      throw new Error('Expected element child');
-    }
-    expect(header.props.style).toBeUndefined();
-    expect(screen.getByTestId('food-plan-track').props.style).toBeUndefined();
   });
 });
 
@@ -1353,5 +1251,112 @@ describe('#168 R1: Nutrición pinta el título grande en todas sus ramas', () =>
     expect(title.props.className).toBe('text-3xl font-black tracking-tight text-foreground');
     expect(title).toHaveTextContent('Nutrición');
     expect(title.parent!.children[0]).toBe(title);
+  });
+});
+
+function foodChild(node: TestInstance, index: number): TestInstance {
+  const child = node.children[index];
+  if (typeof child === 'string') throw new Error('Expected an element child');
+  return child;
+}
+
+describe('#168 R8: food-plan-card pinta el anillo', () => {
+  beforeEach(setupFood168);
+
+  it('agrupa progreso y columna como únicos hijos del resumen', async () => {
+    await renderFood();
+    const card = await screen.findByTestId('food-plan-card');
+    expect(card.children).toHaveLength(1);
+    const summary = within(card).getByTestId('food-plan-summary');
+    expect(foodChild(card, 0)).toBe(summary);
+    expect(summary.props.className).toBe('flex-row items-center gap-4');
+    expect(summary.children).toHaveLength(2);
+    expect(foodChild(summary, 0)).toBe(within(summary).getByTestId('food-plan-progress'));
+    const column = foodChild(summary, 1);
+    expect(column.props.className).toBe('flex-1 gap-1');
+    expect(column.children).toHaveLength(3);
+    expect(foodChild(column, 0).props.className).toBe('text-xs font-semibold uppercase tracking-widest text-accent-foreground');
+    expect(foodChild(column, 0)).toHaveTextContent('Objetivo diario');
+    const kcal = within(column).getByTestId('food-plan-kcal');
+    const grams = within(column).getByTestId('food-plan-grams');
+    expect(foodChild(column, 1)).toBe(kcal);
+    expect(foodChild(column, 2)).toBe(grams);
+    expect(kcal.props.className).toBe('text-3xl font-black text-accent-foreground');
+    expect(grams.props.className).toBe('font-semibold text-accent-foreground');
+    expect(kcal).toHaveTextContent('656 kcal / día');
+    expect(grams).toHaveTextContent('187 g / día');
+  });
+
+  it('retira la pista, el relleno y el tile ForkKnife de la barra', async () => {
+    await renderFood();
+    await screen.findByTestId('food-plan-card');
+    expect(screen.queryByTestId('food-plan-track')).toBeNull();
+    expect(screen.queryByTestId('food-plan-fill')).toBeNull();
+    expect(screen.queryByTestId('food-icon-fork-knife')).toBeNull();
+  });
+
+  it('ordena el progreso en anillo, porcentaje y kcal', async () => {
+    await renderFood();
+    const progress = await screen.findByTestId('food-plan-progress');
+    expect(progress.props.className).toBe('size-26 items-center justify-center');
+    expect(progress.children).toHaveLength(3);
+    expect(progress.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['food-plan-ring', 'food-plan-percent', 'food-plan-consumed']);
+  });
+
+  it('la pista tiene exactamente su receta de Circle', async () => {
+    await renderFood();
+    await screen.findByTestId('food-plan-card');
+    const track = screen.getByTestId('food-plan-ring-track');
+    const props = { ...track.props };
+    delete props.children;
+    expect(props).toEqual({ testID: 'food-plan-ring-track', cx: 52, cy: 52, r: 44, fill: 'none', stroke: 'accent-foreground', strokeOpacity: 0.2, strokeWidth: 12 });
+  });
+
+  it('el relleno tiene exactamente su receta y solo anima strokeDashoffset', async () => {
+    await renderFood();
+    await screen.findByTestId('food-plan-card');
+    const fill = screen.getByTestId('food-plan-ring-fill');
+    expect(fill.props.strokeDasharray).toBeCloseTo(276.46, 2);
+    expect(fill.props.strokeDashoffset).toBeCloseTo(276.46, 2);
+    expect(fill.props.nativeID).toBeUndefined();
+    expect(fill.props.collapsable).toBe(false);
+    expect(fill.props.style).toBeUndefined();
+    expect(fill.props.jestInlineStyle).toBeUndefined();
+    expect(fill.props.jestAnimatedStyle.value).toEqual({});
+    await waitFor(() => {
+      expect(Object.keys(fill.props.jestAnimatedProps.value)).toEqual(['strokeDashoffset']);
+      expect(fill.props.jestAnimatedProps.value.strokeDashoffset).toBeCloseTo(276.46, 2);
+    });
+    const props = { ...fill.props };
+    for (const key of ['children', 'nativeID', 'collapsable', 'style', 'jestInlineStyle', 'jestAnimatedStyle', 'jestAnimatedProps', 'strokeDasharray', 'strokeDashoffset']) delete props[key];
+    expect(props).toEqual({ testID: 'food-plan-ring-fill', cx: 52, cy: 52, r: 44, fill: 'none', stroke: 'accent-foreground', strokeWidth: 12, strokeLinecap: 'round', transform: 'rotate(-90 52 52)' });
+  });
+
+  it('el anillo contiene un SVG de 104 y dos círculos en orden, sin style', async () => {
+    await renderFood();
+    await screen.findByTestId('food-plan-card');
+    const ring = screen.getByTestId('food-plan-ring');
+    expect(ring.props.className).toBe('absolute inset-0');
+    expect(ring.props.style).toBeUndefined();
+    expect(ring.children).toHaveLength(1);
+    const svg = foodChild(ring, 0);
+    expect(svg.props.width).toBe(104);
+    expect(svg.props.height).toBe(104);
+    expect(svg.props.viewBox).toBe('0 0 104 104');
+    expect(svg.children).toHaveLength(2);
+    expect(foodChild(svg, 0)).toBe(within(svg).getByTestId('food-plan-ring-track'));
+    expect(foodChild(svg, 1)).toBe(within(svg).getByTestId('food-plan-ring-fill'));
+  });
+
+  it('porcentaje y kcal llevan sus clases y cifras tabulares', async () => {
+    await renderFood();
+    const percent = await screen.findByTestId('food-plan-percent');
+    const consumed = screen.getByTestId('food-plan-consumed');
+    expect(percent.props.className).toBe('text-lg font-black text-accent-foreground');
+    expect(consumed.props.className).toBe('text-xs font-normal text-accent-foreground');
+    expect(percent.props.style).toEqual({ fontVariant: ['tabular-nums'] });
+    expect(consumed.props.style).toEqual({ fontVariant: ['tabular-nums'] });
+    expect(percent).toHaveTextContent('0%');
+    expect(consumed).toHaveTextContent('0 kcal');
   });
 });
