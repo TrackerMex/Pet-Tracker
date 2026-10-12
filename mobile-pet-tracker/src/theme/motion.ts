@@ -45,3 +45,8 @@ export const MOTION_CONFETTI_FALL_TIMING = { easing: Easing.bezier(0.2, 0.6, 0.4
 export const MOTION_CONFETTI_MIN_MS = 2400;
 // #171 R6
 export const MOTION_CONFETTI_SPREAD_MS = 1200;
+
+// #171 R7
+export const MOTION_POP_SCALE = 0.6;
+// #171 R7
+export const MOTION_POP_SPRING = { duration: 400, dampingRatio: 0.5, reduceMotion: ReduceMotion.System };

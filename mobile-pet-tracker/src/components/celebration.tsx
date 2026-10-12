@@ -2,10 +2,10 @@ import { useEffect } from 'react';
 import { Image } from 'expo-image';
 import { Button } from 'heroui-native';
 import { Modal, Text, View, useWindowDimensions } from 'react-native';
-import Animated, { interpolate, useAnimatedStyle, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
+import Animated, { interpolate, useAnimatedStyle, useSharedValue, withDelay, withSpring, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { MOTION_CONFETTI_FALL_TIMING, MOTION_CONFETTI_MIN_MS, MOTION_CONFETTI_SPREAD_MS } from '../theme/motion';
+import { MOTION_CONFETTI_FALL_TIMING, MOTION_CONFETTI_MIN_MS, MOTION_CONFETTI_SPREAD_MS, MOTION_FADE_TIMING, MOTION_POP_SCALE, MOTION_POP_SPRING, MOTION_SURFACE_MS } from '../theme/motion';
 import { CONFETTI_FILLS } from '../utils/category-palette';
 
 type CelebrationProps = {
@@ -20,6 +20,23 @@ type CelebrationProps = {
 export function Celebration({ testID, title, body, details, primary, secondary }: CelebrationProps) {
   const insets = useSafeAreaInsets();
   const height = useWindowDimensions().height;
+  const pingoScale = useSharedValue(MOTION_POP_SCALE);
+  const pingoOpacity = useSharedValue(0);
+  const badgeScale = useSharedValue(MOTION_POP_SCALE);
+  const badgeOpacity = useSharedValue(0);
+  const pingoStyle = useAnimatedStyle(() => ({
+    opacity: pingoOpacity.get(), transform: [{ scale: pingoScale.get() }],
+  }));
+  const badgeStyle = useAnimatedStyle(() => ({
+    opacity: badgeOpacity.get(), transform: [{ scale: badgeScale.get() }],
+  }));
+
+  useEffect(() => {
+    pingoOpacity.set(withTiming(1, MOTION_FADE_TIMING));
+    badgeOpacity.set(withDelay(MOTION_SURFACE_MS, withTiming(1, MOTION_FADE_TIMING)));
+    pingoScale.set(withSpring(1, MOTION_POP_SPRING));
+    badgeScale.set(withDelay(MOTION_SURFACE_MS, withSpring(1, MOTION_POP_SPRING)));
+  }, [badgeOpacity, badgeScale, pingoOpacity, pingoScale]);
 
   return (
     <Modal
@@ -47,7 +64,7 @@ export function Celebration({ testID, title, body, details, primary, secondary }
           ))}
         </View>
         <View testID={`${testID}-hero`} style={{ width: 200, height: 200 }}>
-          <Animated.View testID={`${testID}-pingo`} style={{ width: 200, height: 200 }}>
+          <Animated.View testID={`${testID}-pingo`} style={[pingoStyle, { width: 200, height: 200 }]}>
             <Image
               testID={`${testID}-pose`}
               source={require('../../assets/images/pingo-celebrate.webp')}
@@ -58,7 +75,7 @@ export function Celebration({ testID, title, body, details, primary, secondary }
           </Animated.View>
           <Animated.View
             testID={`${testID}-badge`}
-            style={{ position: 'absolute', right: 0, bottom: 0 }}
+            style={[badgeStyle, { position: 'absolute', right: 0, bottom: 0 }]}
             importantForAccessibility="no-hide-descendants"
             accessibilityElementsHidden
           >
