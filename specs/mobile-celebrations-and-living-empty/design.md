@@ -54,8 +54,9 @@ Por qué:
   → `1`.
 - En el manejador de guardar, **antes** de `await createPet(...)`:
   `const wasFirst = pets.data?.kind === 'ok' && pets.data.pets.length === 0;`.
-  Es una foto fija: la invalidación de `petKeys.list()` que sigue al alta no
-  la cambia.
+  Es una foto fija, tomada antes del alta: lo que pase después con la caché
+  de `petKeys.list()` no la cambia. Hoy Añadir mascota no invalida esa
+  clave; esta feature no lo cambia.
 - Tras `ok`, y tras la subida de foto si la hay y va bien:
   - si `wasFirst`, se guarda el nombre en estado,
     `setCelebratePetName(result.pet.name)`, y se pinta `Celebration`;
@@ -147,13 +148,48 @@ No hay `setState` por frame.
 
 ### 4.1 Confeti (R6)
 
-Constantes de módulo dentro de `celebration.tsx`, sin exportar:
+Constantes de módulo dentro de `celebration.tsx`, sin exportar (forma
+enmendada en E1):
 
 ```ts
 const CONFETTI_COUNT = 24;
-const COLORS = ['bg-accent', 'bg-category-amber-strong', 'bg-category-violet-strong', 'bg-category-blue-strong', 'bg-category-rose-strong', 'bg-category-green-strong'];
-const SHAPES = ['h-1.5 w-2 rounded-full', 'h-3.5 w-2.5 rounded-sm', 'h-4 w-3 rounded-sm'];
+const COLORS = ['bg-accent', ...CONFETTI_FILLS];
+const SHAPES = ['h-1.5 w-2 rounded-full', 'h-3.5 w-2.5', 'h-4 w-3'];
 ```
+
+`CONFETTI_FILLS` se importa con nombre,
+`import { CONFETTI_FILLS } from '../utils/category-palette';`, y se declara
+al final de `src/utils/category-palette.ts`, tras `documentCategory`:
+
+```ts
+/**
+ * #171 R6: el relleno del confeti son las tintas fuertes de los cinco huecos
+ * de color. Viven aquí porque este es el único módulo que nombra clases de
+ * categoría (#64 R9).
+ */
+export const CONFETTI_FILLS = [
+  'bg-category-amber-strong',
+  'bg-category-violet-strong',
+  'bg-category-blue-strong',
+  'bg-category-rose-strong',
+  'bg-category-green-strong',
+] as const;
+```
+
+Desplegada, la tabla de colores que copia el test de R6.1 es
+`['bg-accent', 'bg-category-amber-strong', 'bg-category-violet-strong', 'bg-category-blue-strong', 'bg-category-rose-strong', 'bg-category-green-strong']`,
+y la de formas, la de `SHAPES`. El test no importa `CONFETTI_FILLS`.
+
+**Por qué E1.** La forma firmada nombraba las cinco clases de categoría en
+`celebration.tsx` y redondeaba los rectángulos con `rounded-sm`. Un spike del
+leader sobre la base del handoff puso rojos tres candados vivos:
+`#62 R4 › no deja la clase fuera de escala rounded-sm en producción`, la
+última línea de `#98 R10` (el mismo veto) y
+`#64 R9 › centraliza las diez clases completas y prohíbe interpolarlas`, que
+solo admite clases de categoría en `utils/category-palette.ts`. Los
+rectángulos van sin radio: el siguiente de la escala, `rounded-xl`, es más
+ancho que la pieza y la vuelve píldora. Las tintas se mudan al módulo de
+paleta, que es lo que pide #64 R9; el color en pantalla no cambia.
 
 Las seis clases de color ya existen en el tema, en claro y en oscuro. Para
 cada `<c>` de `accent`, `category-amber-strong`, `category-violet-strong`,
@@ -232,8 +268,12 @@ Va en un efecto propio, declarado **antes** del efecto del pop, en el
 componente `Celebration`:
 
 ```
-useEffect(() => { void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); }, []);
+useEffect(() => { void notificationAsync(NotificationFeedbackType.Success); }, []);
 ```
+
+El import es con nombre,
+`import { NotificationFeedbackType, notificationAsync } from 'expo-haptics';`,
+para que los tests lo lean con `jest.mocked(notificationAsync)`.
 
 Los dos efectos corren en el mismo commit de montaje. El háptico coincide
 con el primer frame del pop, sin temporizador y una vez por montaje: un
@@ -255,7 +295,9 @@ export const MOTION_CONFETTI_SPREAD_MS = 1200;
 - Bajo jest, `Easing.bezier` se serializa como `{ bezier: [...] }` y
   `ReduceMotion.System` como `'system'`. Es el patrón de `MOTION_FILL_TIMING`
   en `src/theme/__tests__/motion.test.ts`.
-- `it('no exporta nada más')` suma los cinco nombres en orden alfabético.
+- `it('no exporta nada más')` suma los cinco nombres en orden alfabético. Ya
+  lee el módulo con `require('../motion')`, así que su rojo no rompe el
+  typecheck.
 - El retardo de la insignia reutiliza `MOTION_SURFACE_MS` (400), que ya
   existe.
 
@@ -302,13 +344,20 @@ Modificados:
 - `src/components/empty-state.tsx` y
   `src/components/__tests__/empty-state.test.tsx` — R10 y R11.
 - `src/theme/motion.ts` y `src/theme/__tests__/motion.test.ts` — §4.4.
+- `src/utils/category-palette.ts` — `CONFETTI_FILLS` (R6, §4.1, E1).
 - `src/i18n/catalog.ts` — R12. Codex confirma la ruta con
   `grep -rlF "'pairing.trackerIsReady'" src --include=*.ts`.
 - `src/__tests__/ui-copy-table.ts` — `R9_ADD_PET` +4 usos (R12.3).
 - `src/providers/__tests__/language-provider.test.tsx` — `+ 4 // #171 R12`.
 - `src/screens/welcome/index.test.tsx` — la lista de poses (R1.2).
 - `src/__tests__/consistency-classnames.test.ts` — §7.
-- `src/__tests__/design-drift.test.ts` — `describe('#171 R13')`.
+- `src/__tests__/design-drift.test.ts` — `describe('#171 R13')` (R13.1 y la
+  fuente de R13.2). Las claves animadas de R13.2 van en
+  `celebration.test.tsx`.
+- `src/__tests__/ui-language.test.ts` — la longitud de `R9_ADD_PET` del `it`
+  de #65 R9 (§7).
+- `src/screens/docs/index.test.tsx` — los hijos del vacío de #158 R4
+  (`docs-empty-pose` → `docs-empty-float`, R10.2; §7).
 - `specs/mobile-ui-language/design.md` — §2.24 (R12.3).
 - `docs/ui-guidelines.md` — enmienda de §8 (R15).
 
@@ -334,20 +383,23 @@ Cada ancla se midió en 89fe2009 y se ejecuta desde `mobile-pet-tracker/`.
 | Candado | Ancla (`grep -cF`) → base | Cambio |
 |---|---|---|
 | Bienvenida, poses | `"it('no mete otras poses de Pingo'" src/screens/welcome/index.test.tsx` → `1` | `'pingo-celebrate.webp'` entra en su sitio alfabético de la lista ordenada: en 89fe2009, **primero**, antes de `'pingo-clipboard.webp'`. La lista se re-mide en §9.3 paso 5 (R1.2) |
-| EmptyState, imports permitidos | `"it('EmptyState solo importa de react, react-native, expo-image y heroui-native'" src/components/__tests__/empty-state.test.tsx` → `1` | Se reescribe: la lista admitida suma `'react-native-reanimated'` y `'../theme/motion'`, y el nombre del `it` lo dice |
+| EmptyState, imports permitidos | `"it('EmptyState solo importa de react, react-native, expo-image y heroui-native'" src/components/__tests__/empty-state.test.tsx` → `1` | Se reescribe: la lista admitida suma `'react-native-reanimated'` y `'../theme/motion'`, y el nombre del `it` lo dice. Nace verde en el rojo de T12 |
 | EmptyState, no anima | `"it('EmptyState no anima', ()" src/components/__tests__/empty-state.test.tsx` → `1` | Se **elimina**: lo sustituyen los candados de R10 y R11 |
 | EmptyState, imports exactos | `"it('EmptyState importa exactamente Image, Button, Text y View'" src/components/__tests__/empty-state.test.tsx` → `1` | La lista exacta pasa a ser la de §4.5; `require(` sigue en 6 |
-| EmptyState, sin Animated | `"it('EmptyState no anima con Animated, LayoutAnimation ni transiciones'" src/components/__tests__/empty-state.test.tsx` → `1` | Se reescribe: veta `LayoutAnimation`, `transition`, `animate-`, `entering=` y `exiting=`, ya no `Animated` |
+| EmptyState, sin Animated | `"it('EmptyState no anima con Animated, LayoutAnimation ni transiciones'" src/components/__tests__/empty-state.test.tsx` → `1` | Se reescribe: veta `LayoutAnimation`, `transition`, `animate-`, `entering=` y `exiting=`, ya no `Animated`. Nace verde en el rojo de T12 |
 | EmptyState, hijos directos con acción | `"it('con acción pinta pose, título, cuerpo y botón como hijos directos, en ese orden'" src/components/__tests__/empty-state.test.tsx` → `1` | El primer hijo pasa de `{testID}-pose` a `{testID}-float` (R10.2) |
 | EmptyState, hijos directos sin acción | `"it('sin acción pinta pose, título y cuerpo como hijos directos, en ese orden'" src/components/__tests__/empty-state.test.tsx` → `1` | Igual |
+| Docs, hijos del vacío (#158 R4) | `"'docs-empty-pose', 'docs-empty-title', 'docs-empty-body'," src/screens/docs/index.test.tsx` → `1` | `'docs-empty-pose'` → `'docs-empty-float'`, con `// #171 R10` (R10.2). Es un `it.each` de tres roles: tres rojos en T12. Añadido tras la firma: un spike del leader lo destapó y no cambia ningún requisito |
 | CONTINUOUS_CORNER del repo | `"expect(count(/style=\{CONTINUOUS_CORNER\}/g)).toBe(31 + 1);" src/__tests__/consistency-classnames.test.ts` → `1` | `31 + 1 - 1`, con `// #171 R3: ready-done` |
 | CONTINUOUS_CORNER de Vincular | `"[join('screens', 'pairing', 'index.tsx'), 2]," src/__tests__/consistency-classnames.test.ts` → `1` | `2` → `1` |
 | bg-accent-soft (recuento 1) | `"expect(count(/bg-accent-soft/g)).toBe(16 + 2 + 1);" src/__tests__/consistency-classnames.test.ts` → `1` | `16 + 2 + 1 - 1`, con `// #171 R3` |
 | bg-accent-soft (recuento 2) | `"expect(accentSoftCount).toBe(16 + 2 + 1);" src/__tests__/consistency-classnames.test.ts` → `1` | `16 + 2 + 1 - 1`, con `// #171 R3` |
 | Catálogo, longitud | `-- "- 1, // #159 R2" src/providers/__tests__/language-provider.test.tsx` → `1` | Se inserta la línea `+ 4 // #171 R12` justo antes. #167 R5.3 reescribe esta línea; si #167 mergea antes, el ancla se re-mide en §9.3 paso 6 |
-| `R9_ADD_PET` | `"export const R9_ADD_PET: UseRow[] = [" src/__tests__/ui-copy-table.ts` → `1` | +4 filas (§6) |
+| `R9_ADD_PET` | `"export const R9_ADD_PET: UseRow[] = [" src/__tests__/ui-copy-table.ts` → `1` | +4 filas (§6). Entran en el rojo de T10 + T11, no en T9: `checkUses` exige que el código ya use la clave |
+| `R9_ADD_PET`, longitud (#65 R9) | `"it('resuelve las 41 ocurrencias normativas'" src/__tests__/ui-language.test.ts` → `1` | Pasa a `45`, y la longitud a `42 + 1 - 2 + 4` con `// +1 #95 R4, -2 #95 R5, +4 #171 R12`. Mismo commit que la fila de arriba |
 | `SCREEN_FILES` | — | +0 (no hay ruta nueva) |
 | motion, exports | `"it('no exporta nada más'" src/theme/__tests__/motion.test.ts` → `1` | +5 nombres (§4.4) |
+| Paleta, clases (#64 R9, E1) | `"it('centraliza las diez clases completas y prohíbe interpolarlas'" src/__tests__/consistency-classnames.test.ts` → `1`; `"'text-category-rose-strong'," src/__tests__/consistency-classnames.test.ts` → `1` | Tras `'text-category-rose-strong',` del `toEqual`, la línea `// #171 R6: el relleno del confeti` y las cinco clases de `CONFETTI_FILLS` en su orden (§4.1). El título pasa a `'centraliza las quince clases completas y prohíbe interpolarlas'`. Rojo en T3 |
 
 Mediciones de apoyo:
 
@@ -369,7 +421,11 @@ los ficheros de §5 es parada, no adaptación. Los conocidos son:
 - `design-drift` escanea también tests, así que `celebration.test.tsx` no
   puede contener `StyleSheet` ni hex;
 - `legibility-classnames` veta `text-accent` suelto: `celebration.tsx` no lo
-  usa (solo `text-accent-foreground`).
+  usa (solo `text-accent-foreground`);
+- `consistency-classnames` veta `rounded-sm` en producción (#62 R4 y la
+  última línea de #98 R10) y cualquier clase `bg-category-*` o
+  `text-category-*` fuera de `src/utils/category-palette.ts` (#64 R9). De ahí
+  E1 (§4.1).
 
 ## 8. Enmienda a la carta (R15) — texto literal
 
@@ -543,6 +599,9 @@ El leader:
      cambia; solo hay que comprobar que el bloque de §8 sigue siendo cierto.
    Si #167 mergea **después** que #171, le toca a #167 renumerar su §2.24 y
    re-medir la línea del catálogo.
+
+   Re-comprobado al escribir el handoff (2026-10-12): `origin/main` sigue en
+   d2b8b0ae y #167 no ha mergeado, así que este paso no aplica.
 
 R14 y sus tests (T14) quedan desbloqueados. Si al arrancar Codex
 `origin/main` ya no es d2b8b0ae, rige el paso 5 sobre las

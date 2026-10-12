@@ -392,3 +392,51 @@ dice otra cosa en el gate.
 - [x] Aprobado por humano (fecha: 2026-10-12) ← gate obligatorio antes de implementar
 - [x] Enmienda a la carta de [[design]] §8 aprobada por humano (R15)
 - [ ] R16: smoke en dev build de Android completado por humano (fecha: ____)
+
+---
+
+## Enmienda E1 — el confeti respeta la escala de radios y la paleta categórica
+
+> Escrita el 2026-10-12 sobre la spec aprobada (firma `1b20491c`), antes del
+> handoff a Codex. No toca ningún requisito: R6.1 sigue diciendo
+> «`<forma> <color>` según la tabla de [[design]] §4.1», y lo que cambia es
+> esa tabla. Su casilla va **sin marcar**: el humano reabre el gate solo para
+> esta enmienda, y Codex no arranca hasta que esté marcada.
+
+### El hecho medido
+
+Un spike del leader fuera del árbol (la `celebration.tsx` de [[design]] §3 y
+§4.1 sobre `origin/main` d2b8b0ae) puso rojos tres candados vivos de
+`src/__tests__/consistency-classnames.test.ts`:
+
+| Candado | Por qué |
+|---|---|
+| `#62 R4 › no deja la clase fuera de escala rounded-sm en producción` | `SHAPES` usaba `rounded-sm` en dos formas |
+| `#98 R10 › deja CONTINUOUS_CORNER, bg-accent-soft y el acento donde estaban` | su última línea repite el veto a `rounded-sm` |
+| `#64 R9 › centraliza las diez clases completas y prohíbe interpolarlas` | solo `src/utils/category-palette.ts` puede nombrar clases `bg-category-*`, y `COLORS` nombraba cinco |
+
+Con la forma enmendada, el mismo spike deja los tres en verde. Solo quedan
+los rojos que T14 ya prevé: #62 R1 y #98 R10 por el recuento del acento,
+#166 R2 ×2 y #166 R3. `tsc` no da errores en los dos ficheros.
+
+### Qué cambia
+
+1. **Formas.** Los dos rectángulos pierden el radio:
+   `SHAPES = ['h-1.5 w-2 rounded-full', 'h-3.5 w-2.5', 'h-4 w-3']`. El
+   siguiente radio de la escala, `rounded-xl`, es más ancho que la pieza y la
+   convertiría en píldora.
+2. **Colores.** Las cinco tintas de categoría se declaran en
+   `src/utils/category-palette.ts` como `CONFETTI_FILLS`, y `celebration.tsx`
+   hace `COLORS = ['bg-accent', ...CONFETTI_FILLS]`. El color en pantalla y el
+   orden no cambian.
+3. **Un candado más se mueve.** El `toEqual` de #64 R9 gana esas cinco
+   clases y su título pasa de «diez» a «quince» ([[design]] §7). Entra en el
+   rojo de T3.
+4. **Un fichero más.** `src/utils/category-palette.ts` entra en [[design]] §5.
+
+### Qué firma el humano
+
+Que los rectángulos del confeti pasen de `rounded-sm` a esquina viva, y que
+el módulo de paleta gane `CONFETTI_FILLS`.
+
+- [ ] Enmienda E1 aprobada por humano (fecha: ____)
