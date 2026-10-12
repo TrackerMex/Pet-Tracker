@@ -11,6 +11,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useEffect, useState, type ReactNode } from 'react';
 import { Linking, Text, TextInput } from 'react-native';
 import { Uniwind } from 'uniwind';
+import type { TestInstance } from 'test-renderer';
 
 import { withThemeTransition } from 'react-native-nitro-theme-transition';
 
@@ -1073,5 +1074,49 @@ describe('#41 R9: Perfil enlaza a las zonas seguras de la mascota activa', () =>
     await fireEvent.press(link);
     expect(mockRouter.push).toHaveBeenCalledTimes(1);
     expect(mockRouter.push).toHaveBeenCalledWith('/pets/pet-1/geofences');
+  });
+});
+
+function profileChild(node: TestInstance, index: number): TestInstance {
+  const child = node.children[index];
+  if (typeof child === 'string') throw new Error('Expected an element child');
+  return child;
+}
+
+function setupProfile168() {
+  jest.clearAllMocks();
+  process.env.EXPO_PUBLIC_API_URL = apiUrl;
+  mockUseAuth.mockReturnValue({
+    status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn(),
+  } satisfies AuthContextValue);
+  mockUseFocusEffect.mockReset();
+  mockUseNotificationsBlocked.mockReturnValue(false);
+  mockGetMe.mockReturnValue(pending<MeState>());
+  mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+  mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet() });
+}
+
+const PROFILE_BRANCHES_168 = [
+  { name: 'mascotas pendientes', pets: pending<PetsState>(), detail: pending<PetState>(), branch: 'profile-hero-skeleton' },
+  { name: 'sin mascotas', pets: { kind: 'ok', pets: [] } as PetsState, detail: pending<PetState>(), branch: 'profile-pets-empty' },
+  { name: 'error de mascotas', pets: { kind: 'error' } as PetsState, detail: pending<PetState>(), branch: 'profile-pets-error' },
+  { name: 'detalle pendiente', pets: { kind: 'ok', pets: [makePet()] } as PetsState, detail: pending<PetState>(), branch: 'profile-hero-skeleton' },
+  { name: 'error de detalle', pets: { kind: 'ok', pets: [makePet()] } as PetsState, detail: { kind: 'error' } as PetState, branch: 'profile-pet-error' },
+  { name: 'detalle cargado', pets: { kind: 'ok', pets: [makePet()] } as PetsState, detail: { kind: 'ok', pet: makePet() } as PetState, branch: 'pet-info-card' },
+];
+
+describe('#168 R1: Perfil pinta el título grande en todas sus ramas', () => {
+  beforeEach(setupProfile168);
+
+  it.each(PROFILE_BRANCHES_168)('pinta el título grande ($name)', async ({ pets, detail, branch }) => {
+    mockListPets.mockImplementation(async () => pets);
+    mockGetPet.mockImplementation(async () => detail);
+    await renderProfile();
+    await screen.findByTestId(branch);
+    const title = screen.getByTestId('profile-title');
+    expect(title.props.className).toBe('text-3xl font-black tracking-tight text-foreground');
+    expect(title).toHaveTextContent('Perfil');
+    expect(profileChild(title.parent!, 0)).toBe(title);
+    expect(profileChild(title.parent!.parent!, 0)).toBe(title.parent);
   });
 });
