@@ -937,6 +937,18 @@ copy completa en cada una.
 | — | `geofences.needsCollar` | `Safe zones need a collar with an active plan.` | `Las zonas seguras necesitan un collar con plan activo.` | ← cambiada por #159 (R7) |
 | — | `home.activityNeedsCollar` | `Activity needs a collar with an active plan` | `La actividad necesita un collar con plan activo` | ← cambiada por #159 (R8) |
 
+### §2.24 — Añadidos por #170 — Alertas agrupadas y mini-mapa
+
+| # | Clave | `en` | `es` | Origen |
+|---|---|---|---|---|
+| — | `alerts.newOne` | `1 new` | `1 nueva` | ← añadida por #170 (R1) |
+| — | `alerts.newMany` | `{{count}} new` | `{{count}} nuevas` | ← añadida por #170 (R1) |
+| — | `alerts.sectionToday` | `Today` | `Hoy` | ← añadida por #170 (R1) |
+| — | `alerts.sectionThisWeek` | `This week` | `Esta semana` | ← añadida por #170 (R1) |
+| — | `alerts.sectionEarlier` | `Earlier` | `Anteriores` | ← añadida por #170 (R1) |
+| — | `alerts.distanceFromZone` | `{{distance}} from {{zone}}` | `A {{distance}} de {{zone}}` | ← añadida por #170 (R1) |
+| — | `alerts.viewOnMap` | `View on map` | `Ver en el mapa` | ← añadida por #170 (R1) |
+
 ## 3. La infraestructura
 
 ### 3.1 Decisiones
