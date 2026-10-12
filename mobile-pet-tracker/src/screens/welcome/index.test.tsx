@@ -410,7 +410,7 @@ describe('#153 R5: la escena de Pingo sustituye al logo', () => {
     expect(scene.props.className.split(' ')).toEqual(expect.arrayContaining([
       'rounded-card', 'bg-surface-secondary', 'w-full', 'items-center', 'gap-3', 'py-6',
     ]));
-    expect((scene.children as TestInstance[]).map((child) => child.props.testID)).toEqual(['welcome-bubble', 'welcome-pingo']);
+    expect((scene.children as TestInstance[]).map((child) => child.props.testID)).toEqual(['welcome-bubble', 'welcome-stage']);
   });
 
   it('pinta el bocadillo como card de superficie con el saludo', async () => {
@@ -746,5 +746,102 @@ Ninguna otra pantalla usa anillos de ping sin una enmienda propia.`.trimEnd();
 
   it('#167 R11: el checklist de autocrítica sigue apareciendo una vez', () => {
     expect(charter.split('## Checklist de autocrítica').length - 1).toBe(1);
+  });
+});
+
+
+describe('#167 R12: anillos de ping', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    mockUseReducedMotion.mockReturnValue(false);
+  });
+  afterEach(() => jest.useRealTimers());
+
+  it('#167 R12: el escenario apila tres anillos bajo Pingo', async () => {
+    await renderWelcome();
+    expect(screen.getByTestId('welcome-stage').children
+      .map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual([
+      'welcome-ring-0', 'welcome-ring-1', 'welcome-ring-2', 'welcome-pingo',
+    ]);
+  });
+
+  it('#167 R12: el escenario centra su contenido', async () => {
+    await renderWelcome();
+    expect(screen.getByTestId('welcome-stage').props.className).toBe('items-center justify-center');
+  });
+
+  it.each([0, 1, 2])('#167 R12: el anillo %i es un círculo de borde acento', async (index) => {
+    await renderWelcome();
+    expect(screen.getByTestId(`welcome-ring-${index}`).props.className)
+      .toBe('absolute size-65 rounded-full border-2 border-accent');
+  });
+
+  it('#167 R12: los anillos se repiten sin invertir', async () => {
+    await renderWelcome();
+    const args = mockWithRepeat.mock.calls.map((call) => call.slice(1));
+    expect(args.filter((values) => values.length === 2 && values[0] === -1 && values[1] === false))
+      .toHaveLength(6);
+  });
+
+  it('#167 R12: a los 0 ms los tres anillos están en su inicio', async () => {
+    await renderWelcome();
+    await act(async () => { jest.advanceTimersByTime(0); });
+    for (const index of [0, 1, 2]) {
+      expect(getAnimatedStyle(screen.getByTestId(`welcome-ring-${index}`)))
+        .toEqual({ opacity: 0.55, transform: [{ scale: 0.55 }] });
+    }
+  });
+
+  it('#167 R12: a los 700 ms solo ha arrancado el anillo 0', async () => {
+    await renderWelcome();
+    await act(async () => { jest.advanceTimersByTime(700); });
+    expect(getAnimatedStyle(screen.getByTestId('welcome-ring-0')))
+      .not.toEqual({ opacity: 0.55, transform: [{ scale: 0.55 }] });
+    for (const index of [1, 2]) {
+      expect(getAnimatedStyle(screen.getByTestId(`welcome-ring-${index}`)))
+        .toEqual({ opacity: 0.55, transform: [{ scale: 0.55 }] });
+    }
+  });
+
+  it('#167 R12: a los 1500 ms han arrancado los anillos 0 y 1', async () => {
+    await renderWelcome();
+    await act(async () => { jest.advanceTimersByTime(1500); });
+    for (const index of [0, 1]) {
+      expect(getAnimatedStyle(screen.getByTestId(`welcome-ring-${index}`)))
+        .not.toEqual({ opacity: 0.55, transform: [{ scale: 0.55 }] });
+    }
+    expect(getAnimatedStyle(screen.getByTestId('welcome-ring-2')))
+      .toEqual({ opacity: 0.55, transform: [{ scale: 0.55 }] });
+  });
+
+  it('#167 R12: a los 2500 ms el anillo 0 ha terminado y los otros siguen', async () => {
+    await renderWelcome();
+    await act(async () => { jest.advanceTimersByTime(2500); });
+    expect(getAnimatedStyle(screen.getByTestId('welcome-ring-0')))
+      .toEqual({ opacity: 0, transform: [{ scale: 1.5 }] });
+    for (const index of [1, 2]) {
+      expect(getAnimatedStyle(screen.getByTestId(`welcome-ring-${index}`)))
+        .not.toEqual({ opacity: 0, transform: [{ scale: 1.5 }] });
+    }
+  });
+
+  it('#167 R12: a los 3300 ms los anillos 0 y 1 han terminado y el 2 sigue', async () => {
+    await renderWelcome();
+    await act(async () => { jest.advanceTimersByTime(3300); });
+    for (const index of [0, 1]) {
+      expect(getAnimatedStyle(screen.getByTestId(`welcome-ring-${index}`)))
+        .toEqual({ opacity: 0, transform: [{ scale: 1.5 }] });
+    }
+    expect(getAnimatedStyle(screen.getByTestId('welcome-ring-2')))
+      .not.toEqual({ opacity: 0, transform: [{ scale: 1.5 }] });
+  });
+
+  it('#167 R12: a los 4100 ms los tres anillos han terminado', async () => {
+    await renderWelcome();
+    await act(async () => { jest.advanceTimersByTime(4100); });
+    for (const index of [0, 1, 2]) {
+      expect(getAnimatedStyle(screen.getByTestId(`welcome-ring-${index}`)))
+        .toEqual({ opacity: 0, transform: [{ scale: 1.5 }] });
+    }
   });
 });
