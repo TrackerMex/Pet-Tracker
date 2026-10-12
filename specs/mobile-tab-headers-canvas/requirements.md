@@ -742,4 +742,4 @@ no se toca.
 
 ### Aprobación de la Enmienda E2
 
-- [ ] Enmienda E2 aprobada por humano (fecha: ____, vía Notion) ← gate obligatorio antes del handoff a Codex
+- [X] Enmienda E2 aprobada por humano (fecha: 2026-10-12, vía Notion) ← gate obligatorio antes del handoff a Codex
