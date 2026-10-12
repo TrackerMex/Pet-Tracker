@@ -1,0 +1,6307 @@
+/home/claude/sites/Pet-Tracker-wt-171
+feature/171-mobile-celebrations-and-living-empty
+d01b03bf
+git status --short: (vacío)
+
+# Implementación #171 — mobile-celebrations-and-living-empty
+
+H0: `d01b03bf`. Inicio: 2026-10-12. Único worktree autorizado: el indicado arriba.
+
+Skills cargadas: `ponytail:ponytail`, `building-native-ui`
+(`/home/claude/.codex/plugins/cache/openai-curated/expo/11c74d6b/skills/building-native-ui/SKILL.md`),
+`animate-expo` (`.agents/skills/animate-expo/SKILL.md`) y
+`appllama-app-design-skill` (`.agents/skills/appllama-app-design-skill/SKILL.md`).
+Se han leído requirements.md completo (E1 incluida), design.md, tasks.md y traceability.md.
+La spec y la carta mandan sobre las skills; el humo y la verificación visual quedan para el humano en Android.
+El handoff específico ordena no ejecutar init.sh ni tocar los archivos de bookkeeping del leader, no hacer push ni abrir PR.
+
+## Base y anclas H0
+
+Comandos iniciales (desde la raíz), ejecutados antes de cualquier modificación:
+
+```bash
+pwd
+git branch --show-current
+git rev-parse --short HEAD
+git status --short
+```
+
+La cuarta salida estaba vacía; las otras tres están al principio de este fichero.
+
+```text
+cd /home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker && pwd
+/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker
+
+git fetch origin
+exit=0 (sin salida)
+git merge-base --is-ancestor origin/main HEAD; echo "exit=$?"
+exit=0
+
+test -d node_modules && echo presente
+presente
+
+test ! -e .expo/types/router.d.ts; echo "exit=$?"
+exit=0
+
+pgrep -af '[i]nit\.sh'
+(salida vacía)
+```
+
+### BASE
+
+```bash
+FORCE_COLOR=0 bunx jest --runTestsByPath src/screens/welcome/index.test.tsx src/screens/pairing/index.test.tsx src/__tests__/ui-language.test.ts src/screens/add-pet/index.test.tsx src/providers/__tests__/language-provider.test.tsx src/components/__tests__/empty-state.test.tsx src/__tests__/design-drift.test.ts src/__tests__/consistency-classnames.test.ts src/theme/__tests__/motion.test.ts src/__tests__/legibility-classnames.test.ts src/utils/__tests__/category-palette.test.ts src/screens/docs/index.test.tsx > /tmp/171-base.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+Test Suites: 12 passed, 12 total
+Tests:       582 passed, 582 total
+```
+
+### ALL de la base — PARADA
+
+Antes de ALL: `pgrep -af '[i]nit\.sh'` sin pipe, salida vacía.
+No se lanzó ningún otro comando mientras corría ALL; solo se esperó su finalización.
+
+```bash
+FORCE_COLOR=0 bunx jest > /tmp/171-all-base.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=1
+Test Suites: 2 failed, 96 passed, 98 total
+Tests:       6 failed, 2769 passed, 2775 total
+```
+
+Regla literal del handoff, sección BASE: «Si exit no es 0, anota los `●` y PARA.»
+
+Los `●` se copian sin filtrar, incluidos Console y los encabezados repetidos del resumen de Jest:
+
+```text
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● R9: desvincular pide confirmación nativa, libera el collar y vuelve al formulario › shows the exact error for $kind
+  ● R9: desvincular pide confirmación nativa, libera el collar y vuelve al formulario › shows the exact error for $kind
+  ● R9: desvincular pide confirmación nativa, libera el collar y vuelve al formulario › shows the exact error for $kind
+  ● R9: desvincular pide confirmación nativa, libera el collar y vuelve al formulario › shows the exact error for $kind
+  ● R9: desvincular pide confirmación nativa, libera el collar y vuelve al formulario › signs out for unauthorized without showing a local error (#72 R2)
+  ● Console
+  ● #147 R6: Añadir comida abre el selector a las 12:00 y publica el POST › al cerrar el selector sin elegir no llama a nada
+  ● #147 R7: tras un éxito refetchea plan y mascota, sin estado optimista › tras ok refetchea el plan y el detalle de la mascota y repinta con la hora nueva
+  ● #147 R7: tras un éxito refetchea plan y mascota, sin estado optimista › mientras la edición vuela, todos los controles están deshabilitados y la lista no cambia
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● R9: desvincular pide confirmación nativa, libera el collar y vuelve al formulario › shows the exact error for $kind
+  ● R9: desvincular pide confirmación nativa, libera el collar y vuelve al formulario › shows the exact error for $kind
+  ● R9: desvincular pide confirmación nativa, libera el collar y vuelve al formulario › shows the exact error for $kind
+  ● R9: desvincular pide confirmación nativa, libera el collar y vuelve al formulario › shows the exact error for $kind
+  ● R9: desvincular pide confirmación nativa, libera el collar y vuelve al formulario › signs out for unauthorized without showing a local error (#72 R2)
+  ● #147 R6: Añadir comida abre el selector a las 12:00 y publica el POST › al cerrar el selector sin elegir no llama a nada
+  ● #147 R7: tras un éxito refetchea plan y mascota, sin estado optimista › tras ok refetchea el plan y el detalle de la mascota y repinta con la hora nueva
+  ● #147 R7: tras un éxito refetchea plan y mascota, sin estado optimista › mientras la edición vuela, todos los controles están deshabilitados y la lista no cambia
+```
+
+Resumen completo de los fallos (salida literal de Jest):
+
+```text
+FAIL src/screens/pairing/index.test.tsx (94.515 s)
+  ● R9: desvincular pide confirmación nativa, libera el collar y vuelve al formulario › shows the exact error for $kind
+
+    thrown: "Exceeded timeout of 5000 ms for a test.
+    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+      828 |     [{ kind: 'error' }, 'Algo salió mal'],
+      829 |     [{ kind: 'missing-config' }, 'Algo salió mal'],
+    > 830 |   ])('shows the exact error for $kind', async (state, message) => {
+          |     ^
+      831 |     mockReleaseDevice.mockResolvedValue(state);
+      832 |     await openUnpairAlert();
+      833 |
+
+      at node_modules/jest-each/build/bind.js:47:15
+          at Array.forEach (<anonymous>)
+      at src/screens/pairing/index.test.tsx:830:5
+      at Object.describe (src/screens/pairing/index.test.tsx:743:1)
+
+  ● R9: desvincular pide confirmación nativa, libera el collar y vuelve al formulario › shows the exact error for $kind
+
+    thrown: "Exceeded timeout of 5000 ms for a hook.
+    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+      1 | import { HeaderHeightContext } from 'expo-router/react-navigation';
+    > 2 | import {
+        | ^
+      3 |   act,
+      4 |   fireEvent,
+      5 |   screen,
+
+      at Object.afterEach (node_modules/@testing-library/react-native/src/index.ts:14:5)
+      at Object.require (src/screens/pairing/index.test.tsx:2:1)
+
+  ● R9: desvincular pide confirmación nativa, libera el collar y vuelve al formulario › shows the exact error for $kind
+
+    thrown: "Exceeded timeout of 5000 ms for a test.
+    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+      828 |     [{ kind: 'error' }, 'Algo salió mal'],
+      829 |     [{ kind: 'missing-config' }, 'Algo salió mal'],
+    > 830 |   ])('shows the exact error for $kind', async (state, message) => {
+          |     ^
+      831 |     mockReleaseDevice.mockResolvedValue(state);
+      832 |     await openUnpairAlert();
+      833 |
+
+      at node_modules/jest-each/build/bind.js:47:15
+          at Array.forEach (<anonymous>)
+      at src/screens/pairing/index.test.tsx:830:5
+      at Object.describe (src/screens/pairing/index.test.tsx:743:1)
+
+  ● R9: desvincular pide confirmación nativa, libera el collar y vuelve al formulario › shows the exact error for $kind
+
+    thrown: "Exceeded timeout of 5000 ms for a hook.
+    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+      1 | import { HeaderHeightContext } from 'expo-router/react-navigation';
+    > 2 | import {
+        | ^
+      3 |   act,
+      4 |   fireEvent,
+      5 |   screen,
+
+      at Object.afterEach (node_modules/@testing-library/react-native/src/index.ts:14:5)
+      at Object.require (src/screens/pairing/index.test.tsx:2:1)
+
+  ● R9: desvincular pide confirmación nativa, libera el collar y vuelve al formulario › signs out for unauthorized without showing a local error (#72 R2)
+
+    waitFor was aborted by cleanup
+
+      at finalizeWaitFor (node_modules/@testing-library/react-native/src/wait-for.ts:115:16)
+      at finalizeWaitFor (node_modules/@testing-library/react-native/src/wait-for.ts:45:40)
+      at fn (node_modules/@testing-library/react-native/src/cleanup.ts:11:11)
+      at Object.<anonymous> (node_modules/@testing-library/react-native/src/index.ts:16:7)
+
+FAIL src/screens/meal-schedule/index.test.tsx (98.819 s)
+  ● #147 R6: Añadir comida abre el selector a las 12:00 y publica el POST › al cerrar el selector sin elegir no llama a nada
+
+    thrown: "Exceeded timeout of 5000 ms for a test.
+    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+      746 |   });
+      747 |
+    > 748 |   it('al cerrar el selector sin elegir no llama a nada', async () => {
+          |   ^
+      749 |     await renderMealSchedule();
+      750 |     await fireEvent.press(await screen.findByTestId('add-meal-time-button'));
+      751 |     expect(screen.queryByTestId('meal-time-picker')).not.toBeNull();
+
+      at it (src/screens/meal-schedule/index.test.tsx:748:3)
+      at Object.describe (src/screens/meal-schedule/index.test.tsx:706:1)
+
+  ● #147 R7: tras un éxito refetchea plan y mascota, sin estado optimista › tras ok refetchea el plan y el detalle de la mascota y repinta con la hora nueva
+
+    thrown: "Exceeded timeout of 5000 ms for a test.
+    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+      769 |   });
+      770 |
+    > 771 |   it('tras ok refetchea el plan y el detalle de la mascota y repinta con la hora nueva', async () => {
+          |   ^
+      772 |     mockGetNutritionPlan
+      773 |       .mockResolvedValueOnce({ kind: 'ok', plan: makePlan() })
+      774 |       .mockResolvedValueOnce({ kind: 'ok', plan: makePlan({ mealTimes: ['07:30', '20:05'] }) });
+
+      at it (src/screens/meal-schedule/index.test.tsx:771:3)
+      at Object.describe (src/screens/meal-schedule/index.test.tsx:764:1)
+
+  ● #147 R7: tras un éxito refetchea plan y mascota, sin estado optimista › mientras la edición vuela, todos los controles están deshabilitados y la lista no cambia
+
+    thrown: "Exceeded timeout of 5000 ms for a test.
+    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+      785 |   });
+      786 |
+    > 787 |   it('mientras la edición vuela, todos los controles están deshabilitados y la lista no cambia', async () => {
+          |   ^
+      788 |     let resolve!: (state: EditMealTimeState) => void;
+      789 |     mockMoveMealTime.mockReturnValue(new Promise((done) => { resolve = done; }));
+      790 |     await renderMealSchedule();
+
+      at it (src/screens/meal-schedule/index.test.tsx:787:3)
+      at Object.describe (src/screens/meal-schedule/index.test.tsx:764:1)
+
+
+Test Suites: 2 failed, 96 passed, 98 total
+Tests:       6 failed, 2769 passed, 2775 total
+Snapshots:   1 passed, 1 total
+Time:        191.98 s
+Ran all test suites.
+```
+
+Jest también imprimió:
+
+```text
+A worker process has failed to exit gracefully and has been force exited. This is likely caused by tests leaking due to improper teardown. Try running with --detectOpenHandles to find leaks. Active timers can also cause this, ensure that .unref() was called on them.
+```
+
+Los fallos observados son timeouts de 5000 ms de tests y hooks en Vincular y Añadir comida,
+y una espera abortada por cleanup. La causa no se ha investigado: rige la parada del handoff.
+BASE había ejecutado pairing en verde; no se interpreta esa diferencia como permiso para reintentar ALL.
+
+No se ejecutaron las anclas A1-A70/H1-H5 ni P1-P10; no se empezó c1.
+No hay commits de implementación, sondas, cambios de código, activos, dependencias ni specs.
+Typecheck, lint y cierre no se ejecutaron, porque pertenecen a pasos posteriores a la parada.
+No se ejecutó init.sh, no hubo push, PR, merge ni rebase.
+El único fichero creado es este impl, sin stagear como exige el handoff hasta c29.
+Logs originales: `/tmp/171-base.txt` y `/tmp/171-all-base.txt`.
+
+R16: pendiente del smoke humano
+
+## Reanudación 1
+
+2026-10-12. Reanudación autorizada por el humano; handoff actualizado releído del disco.
+H0 sigue siendo `d01b03bf`. HEAD comprobado: `03b2c961`.
+`git diff --name-only d01b03bf HEAD` solo muestra `progress/handoff_mobile-celebrations-and-living-empty.md`.
+`git status --short` solo muestra `?? progress/impl_mobile-celebrations-and-living-empty.md`.
+No se repite el arranque ni BASE. ALL usa ahora `--testTimeout=30000`.
+Cualquier rojo en ALL con el flag nuevo exige PARADA sin reintento.
+
+### ALL de la base (nuevo comando)
+
+`pgrep -af '[i]nit\.sh'`: salida vacía.
+
+```bash
+FORCE_COLOR=0 bunx jest --testTimeout=30000 > /tmp/171-all-base.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+Test Suites: 98 passed, 98 total
+Tests:       2775 passed, 2775 total
+```
+
+### Anclas H0 (árbol de la app intacto)
+
+**A1** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF "return { ...actual, __esModule: true, useReducedMotion: () => mockUseReducedMotion(), withRepeat: jest.fn((animation: unknown) => animation) };" src/screens/welcome/index.test.tsx
+```
+
+```text
+1
+```
+
+**A2** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF "jest.mock('expo-haptics', () => ({" 'src/app/(tabs)/__tests__/food.test.tsx'
+```
+
+```text
+1
+```
+
+**A3** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF "declare function require(moduleName: '../motion'): Record<string, unknown>;" src/theme/__tests__/motion.test.ts
+```
+
+```text
+1
+```
+
+**A4** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF "useSafeAreaInsets: () => ({ top: 40, right: 0, bottom: 24, left: 0 })," src/screens/pairing/index.test.tsx
+```
+
+```text
+1
+```
+
+**A5** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF "expect(bytes.toString('ascii', 12, 16)).toBe('VP8X');" src/components/__tests__/empty-state.test.tsx
+```
+
+```text
+1
+```
+
+**A6** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF "it('no mete otras poses de Pingo'" src/screens/welcome/index.test.tsx
+```
+
+```text
+1
+```
+
+**A7** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+ls assets/images | grep -cE '^(pingo|mascot)-'
+```
+
+```text
+8
+```
+
+**A8** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+sha256sum /home/claude/pet-tracker-mascot/webp/pingo-celebrate.webp
+```
+
+```text
+b8e9745f73dedc6d72f89a588046a7440f32df4b2e9685e70fa96a2b70e3a254  /home/claude/pet-tracker-mascot/webp/pingo-celebrate.webp
+```
+
+**A9** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+test -e assets/images/pingo-celebrate.webp; echo "exit=$?"
+```
+
+```text
+exit=1
+```
+
+**A10** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF "queryFn: () => listPets(baseUrl, token ?? '')," src/screens/pairing/index.tsx
+```
+
+```text
+1
+```
+
+**A11** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF 'testID="pairing-ready"' src/screens/pairing/index.tsx
+```
+
+```text
+1
+```
+
+**A12** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF "<Celebration" src/screens/pairing/index.tsx
+```
+
+```text
+0
+```
+
+**A13** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF "<Pressable" src/screens/pairing/index.tsx
+```
+
+```text
+1
+```
+
+**A14** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF "router.push('/pairing')}" src/screens/home/index.tsx
+```
+
+```text
+1
+```
+
+**A15** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+for c in accent category-amber-strong category-violet-strong category-blue-strong category-rose-strong category-green-strong; do printf '%s ' "$c"; grep -cE -- "--color-$c:" src/theme/global.css; done
+```
+
+```text
+accent 2
+category-amber-strong 2
+category-violet-strong 2
+category-blue-strong 2
+category-rose-strong 2
+category-green-strong 2
+```
+
+**A16** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF "it('EmptyState solo importa de react, react-native, expo-image y heroui-native'" src/components/__tests__/empty-state.test.tsx
+```
+
+```text
+1
+```
+
+**A17** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF "it('EmptyState no anima', ()" src/components/__tests__/empty-state.test.tsx
+```
+
+```text
+1
+```
+
+**A18** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF "it('EmptyState importa exactamente Image, Button, Text y View'" src/components/__tests__/empty-state.test.tsx
+```
+
+```text
+1
+```
+
+**A19** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF "it('EmptyState no anima con Animated, LayoutAnimation ni transiciones'" src/components/__tests__/empty-state.test.tsx
+```
+
+```text
+1
+```
+
+**A20** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF "it('con acción pinta pose, título, cuerpo y botón como hijos directos, en ese orden'" src/components/__tests__/empty-state.test.tsx
+```
+
+```text
+1
+```
+
+**A21** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF "it('sin acción pinta pose, título y cuerpo como hijos directos, en ese orden'" src/components/__tests__/empty-state.test.tsx
+```
+
+```text
+1
+```
+
+**A22** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF "'docs-empty-pose', 'docs-empty-title', 'docs-empty-body'," src/screens/docs/index.test.tsx
+```
+
+```text
+1
+```
+
+**A23** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF "expect(count(/style=\{CONTINUOUS_CORNER\}/g)).toBe(31 + 1);" src/__tests__/consistency-classnames.test.ts
+```
+
+```text
+1
+```
+
+**A24** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF "[join('screens', 'pairing', 'index.tsx'), 2]," src/__tests__/consistency-classnames.test.ts
+```
+
+```text
+1
+```
+
+**A25** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF "expect(count(/bg-accent-soft/g)).toBe(16 + 2 + 1);" src/__tests__/consistency-classnames.test.ts
+```
+
+```text
+1
+```
+
+**A26** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF "expect(accentSoftCount).toBe(16 + 2 + 1);" src/__tests__/consistency-classnames.test.ts
+```
+
+```text
+1
+```
+
+**A27** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF -- "- 1, // #159 R2" src/providers/__tests__/language-provider.test.tsx
+```
+
+```text
+1
+```
+
+**A28** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF "export const R9_ADD_PET: UseRow[] = [" src/__tests__/ui-copy-table.ts
+```
+
+```text
+1
+```
+
+**A29** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF "it('resuelve las 41 ocurrencias normativas'" src/__tests__/ui-language.test.ts
+```
+
+```text
+1
+```
+
+**A30** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF "it('no exporta nada más'" src/theme/__tests__/motion.test.ts
+```
+
+```text
+1
+```
+
+**A31** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF "it('centraliza las diez clases completas y prohíbe interpolarlas'" src/__tests__/consistency-classnames.test.ts
+```
+
+```text
+1
+```
+
+**A32** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF "'text-category-rose-strong'," src/__tests__/consistency-classnames.test.ts
+```
+
+```text
+1
+```
+
+**A33** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF "style={CONTINUOUS_CORNER}" src/screens/pairing/index.tsx
+```
+
+```text
+2
+```
+
+**A34** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF "bg-accent-soft" src/screens/pairing/index.tsx
+```
+
+```text
+2
+```
+
+**A35** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF "it('inventaría los diecinueve primarios con labio, fichero a fichero'" src/__tests__/consistency-classnames.test.ts
+```
+
+```text
+1
+```
+
+**A36** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF "[join('components', 'empty-state.tsx')]: 1," src/__tests__/consistency-classnames.test.ts
+```
+
+```text
+1
+```
+
+**A37** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF "[join('screens', 'pairing', 'index.tsx')]: 2," src/__tests__/consistency-classnames.test.ts
+```
+
+```text
+1
+```
+
+**A38** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF 'expect(count(/\bborder-b-4\b/g)).toBe(19);' src/__tests__/consistency-classnames.test.ts
+```
+
+```text
+1
+```
+
+**A39** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF 'expect(count(/border-black\/25/g)).toBe(19);' src/__tests__/consistency-classnames.test.ts
+```
+
+```text
+1
+```
+
+**A40** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF "expect(primaryRadius).toHaveLength(13 + 1 + 1 + 1 + 1 + 1 + 1);" src/__tests__/consistency-classnames.test.ts
+```
+
+```text
+1
+```
+
+**A41** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF ".toBe(13 + 1 + 1 + 1 + 1 + 1 + 1);" src/__tests__/consistency-classnames.test.ts
+```
+
+```text
+1
+```
+
+**A42** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF "it('inventaría los cuatro secundarios neutros de toda la app'" src/__tests__/consistency-classnames.test.ts
+```
+
+```text
+1
+```
+
+**A43** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF 'return neutral ? [tag.match(/testID="([^"]+)"/)?.[1]] : [];' src/__tests__/consistency-classnames.test.ts
+```
+
+```text
+1
+```
+
+**A44** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF "expect(count(/border-lip-gray/g)).toBe(4);" src/__tests__/consistency-classnames.test.ts
+```
+
+```text
+1
+```
+
+**A45** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF 'expect(count(/\bborder-b-6\b/g)).toBe(4);' src/__tests__/consistency-classnames.test.ts
+```
+
+```text
+1
+```
+
+**A46** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF "it.each(rows)('%s pinta %s con la receta del secundario en su tag de apertura'" src/__tests__/consistency-classnames.test.ts
+```
+
+```text
+1
+```
+
+**A47** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF -- '--color-lip-gray: ' src/theme/global.css
+```
+
+```text
+2
+```
+
+**A48** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF '`rounded-xl bg-accent border-b-4 border-black/25`' ../docs/ui-guidelines.md
+```
+
+```text
+1
+```
+
+**A49** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF '`rounded-xl border-2 border-b-6 border-lip-gray bg-surface`' ../docs/ui-guidelines.md
+```
+
+```text
+1
+```
+
+**A50** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF "it('lleva el labio gris en el CTA secundario'" src/screens/welcome/index.test.tsx
+```
+
+```text
+1
+```
+
+**A51** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF "it('declara el botón primario con labio'" src/components/__tests__/empty-state.test.tsx
+```
+
+```text
+1
+```
+
+**A52** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF "it('declara el botón sin size ni variant'" src/components/__tests__/empty-state.test.tsx
+```
+
+```text
+1
+```
+
+**A53** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF "expect(screen.getByTestId('ready-model')).toHaveTextContent('TrailTag Pro');" src/screens/pairing/index.test.tsx
+```
+
+```text
+1
+```
+
+**A54** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF "async function renderReady(" src/screens/pairing/index.test.tsx
+```
+
+```text
+1
+```
+
+**A55** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF "describe('R7: tras el 201 muestra" src/screens/pairing/index.test.tsx
+```
+
+```text
+1
+```
+
+**A56** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF "describe('#95 R8: ver en el mapa desapila pairing'" src/screens/pairing/index.test.tsx
+```
+
+```text
+1
+```
+
+**A57** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF "it('mantiene la base más las claves de #68 y los mismos marcadores en ambos idiomas'" src/providers/__tests__/language-provider.test.tsx
+```
+
+```text
+1
+```
+
+**A58** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF "'addPet.savePet': 'Save pet'," src/i18n/catalog.ts
+```
+
+```text
+1
+```
+
+**A59** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF "'addPet.savePet': 'Guardar mascota'," src/i18n/catalog.ts
+```
+
+```text
+1
+```
+
+**A60** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF "jest.mock('../../api/pets', () => ({ createPet: jest.fn() }));" src/screens/add-pet/index.test.tsx
+```
+
+```text
+1
+```
+
+**A61** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF "describe('R7: foto opcional tras alta'" src/screens/add-pet/index.test.tsx
+```
+
+```text
+1
+```
+
+**A62** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF "it('posts selected fields, numeric months, and omits blank optionals'" src/screens/add-pet/index.test.tsx
+```
+
+```text
+1
+```
+
+**A63** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF "it('uploads a chosen preview only after createPet succeeds'" src/screens/add-pet/index.test.tsx
+```
+
+```text
+1
+```
+
+**A64** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF "export async function renderWithProviders(" test/render-with-providers.tsx
+```
+
+```text
+1
+```
+
+**A65** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF '## Checklist de autocrítica' ../docs/ui-guidelines.md
+```
+
+```text
+1
+```
+
+**A66** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF '## Enmienda #171' ../docs/ui-guidelines.md
+```
+
+```text
+0
+```
+
+**A67** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF '### §2.23 — Añadidos por #159 — Pingo sin collar' ../specs/mobile-ui-language/design.md
+```
+
+```text
+1
+```
+
+**A68** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF '| — | `home.activityNeedsCollar` |' ../specs/mobile-ui-language/design.md
+```
+
+```text
+1
+```
+
+**A69** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF '### §2.24' ../specs/mobile-ui-language/design.md
+```
+
+```text
+0
+```
+
+**A70** (desde `/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker`)
+
+```bash
+grep -cF '## 3. La infraestructura' ../specs/mobile-ui-language/design.md
+```
+
+```text
+1
+```
+
+**H1** (desde `/home/claude/sites/Pet-Tracker-wt-171`)
+
+```bash
+grep -cF -- '- [x] Aprobado por humano (fecha: 2026-10-12)' specs/mobile-celebrations-and-living-empty/requirements.md
+```
+
+```text
+1
+```
+
+**H2** (desde `/home/claude/sites/Pet-Tracker-wt-171`)
+
+```bash
+grep -cF -- '- [x] Enmienda E1 aprobada por humano (fecha: 2026-10-12)' specs/mobile-celebrations-and-living-empty/requirements.md
+```
+
+```text
+1
+```
+
+**H3** (desde `/home/claude/sites/Pet-Tracker-wt-171`)
+
+```bash
+grep -cF -- '- [ ] R16: smoke en dev build de Android completado por humano (fecha: ____)' specs/mobile-celebrations-and-living-empty/requirements.md
+```
+
+```text
+1
+```
+
+**H4** (desde `/home/claude/sites/Pet-Tracker-wt-171`)
+
+```bash
+grep -cF '"status": "in_progress"' feature_list.json
+```
+
+```text
+1
+```
+
+**H5** (desde `/home/claude/sites/Pet-Tracker-wt-171`)
+
+```bash
+grep -rlF '#171' mobile-pet-tracker/src | wc -l
+```
+
+```text
+0
+```
+
+
+### c1 — T1 R1 rojo; medida previa al commit
+
+```bash
+FORCE_COLOR=0 bunx jest --runTestsByPath src/components/__tests__/celebration.test.tsx src/screens/welcome/index.test.tsx > /tmp/171-c1.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=1
+  ● #171 R1: la pose celebrate › pingo-celebrate.webp es WebP con alfa, sin animación, 1024 × 1024 y como mucho 100000 bytes
+  ● Console
+  ● #153 R3: las poses entran como WebP › no mete otras poses de Pingo
+Test Suites: 2 failed, 2 total
+Tests:       2 failed, 64 passed, 66 total
+```
+
+```text
+  ● #171 R1: la pose celebrate › pingo-celebrate.webp es WebP con alfa, sin animación, 1024 × 1024 y como mucho 100000 bytes
+
+    ENOENT: no such file or directory, open '/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker/assets/images/pingo-celebrate.webp'
+
+      4 | describe('#171 R1: la pose celebrate', () => {
+      5 |   it('pingo-celebrate.webp es WebP con alfa, sin animación, 1024 × 1024 y como mucho 100000 bytes', () => {
+```
+
+```text
+  ● #153 R3: las poses entran como WebP › no mete otras poses de Pingo
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 0
+
+    @@ -1,7 +1,6 @@
+      Array [
+    -   "pingo-celebrate.webp",
+        "pingo-clipboard.webp",
+        "pingo-collar.webp",
+        "pingo-food.webp",
+        "pingo-health.webp",
+        "pingo-sleep.webp",
+
+      351 |   it('no mete otras poses de Pingo', () => {
+      352 |     expect(readdirSync(join(process.cwd(), 'assets', 'images')).filter((name) => /^(pingo|mascot)-/.test(name)).sort())
+```
+
+
+Commit c1 R1: `45120511 test(mobile): falta la pose celebrate de Pingo (R1)`.
+Cadena c1: exit=0; typecheck exit=0; lint exit=0 y fichero vacío; <LIMPIO> exit=0.
+
+
+### c2 — T1 R1 verde
+
+```bash
+FORCE_COLOR=0 bunx jest --runTestsByPath src/components/__tests__/celebration.test.tsx src/screens/welcome/index.test.tsx > /tmp/171-c2.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+  ● Console
+Test Suites: 2 passed, 2 total
+Tests:       66 passed, 66 total
+```
+
+```bash
+FORCE_COLOR=0 bunx jest --runTestsByPath src/__tests__/design-drift.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/171-c2-guardas.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+Test Suites: 2 passed, 2 total
+Tests:       92 passed, 92 total
+```
+
+```bash
+FORCE_COLOR=0 bunx jest --testTimeout=30000 > /tmp/171-c2-all.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+Test Suites: 99 passed, 99 total
+Tests:       2776 passed, 2776 total
+```
+
+Commit: `8589eede feat(mobile): pose celebrate de Pingo (R1)`.
+
+Cadena del handoff: exit=0. Typecheck: exit=0. Lint: exit=0; fichero vacío. <LIMPIO>: exit=0.
+
+
+### c3 — T2 R2 rojo; cadena interrumpida por SIGKILL de eslint
+
+```bash
+FORCE_COLOR=0 bunx jest --runTestsByPath src/components/__tests__/celebration.test.tsx > /tmp/171-c3.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=1
+  ● Test suite failed to run
+Test Suites: 1 failed, 1 total
+Tests:       0 total
+```
+
+```text
+  ● Test suite failed to run
+
+    Cannot find module '../celebration' from 'src/components/__tests__/celebration.test.tsx'
+
+      3 | import type { ReactNode } from 'react';
+      4 |
+```
+
+```text
+$ tsc --noEmit
+src/components/__tests__/celebration.test.tsx(5,29): error TS2307: Cannot find module '../celebration' or its corresponding type declarations.
+
+```
+
+```text
+error: Failed to run "eslint" due to signal SIGKILL
+
+```
+
+
+Cadena c3: exit=1 antes de git add/commit, en el eslabón `! bunx expo lint --no-cache > /tmp/171-c3-lint.txt 2>&1`.
+El lint imprimió `error: Failed to run "eslint" due to signal SIGKILL` y Expo devolvió 0 (por eso falló la negación).
+Se aplica la excepción de SIGKILL del handoff: pgrep vacío, espera de 60 s y reintento 1 de 2 de la cadena completa.
+No se cambian las aserciones ni los tests.
+
+### c3 — T2 R2 rojo; reintento 1 de SIGKILL completado
+
+```bash
+FORCE_COLOR=0 bunx jest --runTestsByPath src/components/__tests__/celebration.test.tsx > /tmp/171-c3.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=1
+  ● Test suite failed to run
+Test Suites: 1 failed, 1 total
+Tests:       0 total
+```
+
+```text
+  ● Test suite failed to run
+
+    Cannot find module '../celebration' from 'src/components/__tests__/celebration.test.tsx'
+
+      3 | import type { ReactNode } from 'react';
+      4 |
+```
+
+Commit: `10e0b296 test(mobile): falta el componente Celebration (R2)`.
+
+Cadena del handoff: exit=0. Typecheck: exit=1 (TS2307 esperado). Lint: exit=1 (import/no-unresolved esperado). <LIMPIO>: exit=0.
+
+```text
+$ tsc --noEmit
+src/components/__tests__/celebration.test.tsx(5,29): error TS2307: Cannot find module '../celebration' or its corresponding type declarations.
+
+```
+
+```text
+
+/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker/src/components/__tests__/celebration.test.tsx
+  5:29  error  Unable to resolve path to module '../celebration'  import/no-unresolved
+
+✖ 1 problem (1 error, 0 warnings)
+
+error: "eslint" exited with code 1
+
+```
+
+
+### c4 — T2 R2 verde
+
+```bash
+FORCE_COLOR=0 bunx jest --runTestsByPath src/components/__tests__/celebration.test.tsx > /tmp/171-c4.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+Test Suites: 1 passed, 1 total
+Tests:       13 passed, 13 total
+```
+
+```bash
+FORCE_COLOR=0 bunx jest --runTestsByPath src/__tests__/design-drift.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/171-c4-guardas.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+Test Suites: 2 passed, 2 total
+Tests:       92 passed, 92 total
+```
+
+```bash
+FORCE_COLOR=0 bunx jest --testTimeout=30000 > /tmp/171-c4-all.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+Test Suites: 99 passed, 99 total
+Tests:       2788 passed, 2788 total
+```
+
+Commit: `e9133499 feat(mobile): componente Celebration (R2)`.
+
+Cadena del handoff: exit=0. Typecheck: exit=0. Lint: exit=0; fichero vacío. <LIMPIO>: exit=0.
+
+Decisión de T2(3): no se extrae DetailChip; el componente completo tiene 84 líneas, por debajo de ~120 de JSX.
+
+### c5 — T14 R14 rojo; medida previa al commit
+
+```bash
+FORCE_COLOR=0 bunx jest --runTestsByPath src/components/__tests__/celebration.test.tsx src/__tests__/consistency-classnames.test.ts > /tmp/171-c5.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=1
+  ● Console
+  ● #171 R14: botones con labio › R14.1 el primario lleva la receta y la etiqueta del acento
+  ● #171 R14: botones con labio › R14.2 el secundario lleva el labio gris sin variant y su etiqueta
+  ● #62 R1: la escala de radios está declarada y el botón primario tiene un solo radio › deja todos los botones primarios sólidos en un único radio
+  ● #98 R10: los candados que esta feature no mueve › deja CONTINUOUS_CORNER, bg-accent-soft y el acento donde estaban
+  ● #166 R2: todo primario sólido lleva el labio detrás de bg-accent › inventaría los diecinueve primarios con labio, fichero a fichero
+  ● #166 R2: todo primario sólido lleva el labio detrás de bg-accent › no deja la receta del labio fuera de un primario
+  ● #166 R3: el secundario neutro lleva el labio gris › inventaría los cinco secundarios neutros de toda la app
+Test Suites: 2 failed, 2 total
+Tests:       7 failed, 71 passed, 78 total
+```
+
+```text
+  ● #171 R14: botones con labio › R14.1 el primario lleva la receta y la etiqueta del acento
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "min-h-11 w-full rounded-xl bg-accent border-b-4 border-black/25"
+    Received: "min-h-11 w-full rounded-xl"
+
+      153 |   it('R14.1 el primario lleva la receta y la etiqueta del acento', async () => {
+      154 |     await renderProbe();
+```
+
+```text
+  ● #171 R14: botones con labio › R14.2 el secundario lleva el labio gris sin variant y su etiqueta
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "min-h-11 w-full rounded-xl border-2 border-b-6 border-lip-gray bg-surface"
+    Received: "min-h-11 w-full rounded-xl"
+
+      159 |   it('R14.2 el secundario lleva el labio gris sin variant y su etiqueta', async () => {
+      160 |     await renderProbe();
+```
+
+```text
+  ● #62 R1: la escala de radios está declarada y el botón primario tiene un solo radio › deja todos los botones primarios sólidos en un único radio
+
+    expect(received).toHaveLength(expected)
+
+    Expected length: 20
+    Received length: 19
+    Received array:  ["rounded-xl bg-accent", "rounded-xl bg-accent", "rounded-xl bg-accent", "rounded-xl bg-accent", "rounded-xl bg-accent", "rounded-xl bg-accent", "rounded-xl bg-accent", "rounded-xl bg-accent", "rounded-xl bg-accent", "rounded-xl bg-accent", …]
+
+      100 |     );
+      101 |
+```
+
+```text
+  ● #98 R10: los candados que esta feature no mueve › deja CONTINUOUS_CORNER, bg-accent-soft y el acento donde estaban
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 20
+    Received: 19
+
+      397 |     expect(food.match(/style=\{CONTINUOUS_CORNER\}/g)).toHaveLength(2);
+      398 |     expect(count(/style=\{CONTINUOUS_CORNER\}/g)).toBe(31 + 1); // #41 R9: geofences-link
+```
+
+```text
+  ● #166 R2: todo primario sólido lleva el labio detrás de bg-accent › inventaría los diecinueve primarios con labio, fichero a fichero
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 0
+
+    @@ -1,9 +1,8 @@
+      Object {
+        "app/(auth)/login.tsx": 1,
+        "app/(auth)/register.tsx": 1,
+    -   "components/celebration.tsx": 1,
+        "components/empty-state.tsx": 1,
+        "screens/add-pet/index.tsx": 1,
+        "screens/add-reminder/index.tsx": 1,
+        "screens/docs/index.tsx": 2,
+        "screens/forgot/index.tsx": 1,
+
+      565 |     );
+      566 |
+```
+
+```text
+  ● #166 R2: todo primario sólido lleva el labio detrás de bg-accent › no deja la receta del labio fuera de un primario
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 20
+    Received: 19
+
+      575 |     );
+      576 |
+```
+
+```text
+  ● #166 R3: el secundario neutro lleva el labio gris › inventaría los cinco secundarios neutros de toda la app
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 0
+
+      Array [
+        "docs-upload-cancel",
+        "forgot-resend",
+        "reminders-delete-cancel",
+    -   "secondary.testID",
+        "welcome-have-account",
+      ]
+
+      616 |     );
+      617 |
+```
+
+
+Commit c5 R14: `520dd605 test(mobile): los botones de la celebración llevan labio (R14)`.
+Cadena c5: exit=0; typecheck exit=0; lint exit=0 y fichero vacío; <LIMPIO> exit=0.
+
+
+### c6 — T14 R14 verde
+
+```bash
+FORCE_COLOR=0 bunx jest --runTestsByPath src/components/__tests__/celebration.test.tsx src/__tests__/consistency-classnames.test.ts > /tmp/171-c6.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+  ● Console
+Test Suites: 2 passed, 2 total
+Tests:       78 passed, 78 total
+```
+
+```bash
+FORCE_COLOR=0 bunx jest --runTestsByPath src/__tests__/design-drift.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/171-c6-guardas.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+Test Suites: 2 passed, 2 total
+Tests:       92 passed, 92 total
+```
+
+```bash
+FORCE_COLOR=0 bunx jest --testTimeout=30000 > /tmp/171-c6-all.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+Test Suites: 99 passed, 99 total
+Tests:       2790 passed, 2790 total
+```
+
+Commit: `eaea2ce5 feat(mobile): labio en los botones de la celebración (R14)`.
+
+Cadena del handoff: exit=0. Typecheck: exit=0. Lint: exit=0; fichero vacío. <LIMPIO>: exit=0.
+
+
+### c7 — T3 R6 rojo; medida previa al commit
+
+```bash
+FORCE_COLOR=0 bunx jest --runTestsByPath src/components/__tests__/celebration.test.tsx src/theme/__tests__/motion.test.ts src/__tests__/consistency-classnames.test.ts > /tmp/171-c7.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=1
+  ● #152 R1: las duraciones y el preset de movimiento viven en un solo sitio › no exporta nada más
+  ● #171 R6: las constantes de confeti viven en motion.ts › declara MOTION_CONFETTI_FALL_TIMING
+  ● #171 R6: las constantes de confeti viven en motion.ts › declara MOTION_CONFETTI_MIN_MS
+  ● #171 R6: las constantes de confeti viven en motion.ts › declara MOTION_CONFETTI_SPREAD_MS
+  ● #64 R9: el color categórico solo se nombra en el módulo de paleta › centraliza las quince clases completas y prohíbe interpolarlas
+  ● Console
+  ● #171 R6: confeti › R6.1 pinta 24 piezas con sus formas y colores en orden
+  ● #171 R6: confeti › R6.2 cada pieza empieza arriba y transparente, en su posición
+  ● #171 R6: confeti › R6.3 la pieza 0 está en vuelo a los 1200 ms
+  ● #171 R6: confeti › R6.3 la pieza 22 conserva el retardo a los 1100 ms
+  ● #171 R6: confeti › R6.4 a los 5000 ms todas las piezas terminaron y desaparecieron
+Test Suites: 3 failed, 3 total
+Tests:       10 failed, 88 passed, 98 total
+```
+
+```text
+  ● #152 R1: las duraciones y el preset de movimiento viven en un solo sitio › no exporta nada más
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 3
+    + Received  + 0
+
+    @@ -1,11 +1,8 @@
+      Array [
+        "MOTION_BLINK_INTERVAL_MS",
+        "MOTION_BLINK_TIMING",
+    -   "MOTION_CONFETTI_FALL_TIMING",
+    -   "MOTION_CONFETTI_MIN_MS",
+    -   "MOTION_CONFETTI_SPREAD_MS",
+        "MOTION_ENTRANCE_OFFSET_Y",
+        "MOTION_ENTRANCE_SCALE",
+        "MOTION_FADE_TIMING",
+        "MOTION_FEEDBACK_MS",
+        "MOTION_FILL_TIMING",
+
+      68 |
+      69 |   it('no exporta nada más', () => {
+```
+
+```text
+  ● #171 R6: las constantes de confeti viven en motion.ts › declara MOTION_CONFETTI_FALL_TIMING
+
+    expect(received).toEqual(expected) // deep equality
+
+    Expected: {"easing": {"bezier": [0.2, 0.6, 0.4, 1]}, "reduceMotion": "system"}
+    Received: undefined
+
+      140 | describe('#171 R6: las constantes de confeti viven en motion.ts', () => {
+      141 |   it('declara MOTION_CONFETTI_FALL_TIMING', () => {
+```
+
+```text
+  ● #171 R6: las constantes de confeti viven en motion.ts › declara MOTION_CONFETTI_MIN_MS
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 2400
+    Received: undefined
+
+      146 |
+      147 |   it('declara MOTION_CONFETTI_MIN_MS', () => {
+```
+
+```text
+  ● #171 R6: las constantes de confeti viven en motion.ts › declara MOTION_CONFETTI_SPREAD_MS
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 1200
+    Received: undefined
+
+      150 |
+      151 |   it('declara MOTION_CONFETTI_SPREAD_MS', () => {
+```
+
+```text
+  ● #64 R9: el color categórico solo se nombra en el módulo de paleta › centraliza las quince clases completas y prohíbe interpolarlas
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 5
+    + Received  + 0
+
+    @@ -7,11 +7,6 @@
+        "text-category-green-strong",
+        "bg-category-violet",
+        "text-category-violet-strong",
+        "bg-category-rose",
+        "text-category-rose-strong",
+    -   "bg-category-amber-strong",
+    -   "bg-category-violet-strong",
+    -   "bg-category-blue-strong",
+    -   "bg-category-rose-strong",
+    -   "bg-category-green-strong",
+      ]
+
+      439 |     expect(inventory.files).toEqual([join('utils', 'category-palette.ts')]);
+      440 |     expect(inventory.interpolatedFiles).toEqual([]);
+```
+
+```text
+  ● #171 R6: confeti › R6.1 pinta 24 piezas con sus formas y colores en orden
+
+    expect(received).toHaveLength(expected)
+
+    Expected length: 24
+    Received length: 0
+    Received array:  []
+
+      180 |     await renderProbe();
+      181 |     const layer = screen.getByTestId('probe-confetti', { includeHiddenElements: true });
+```
+
+```text
+  ● #171 R6: confeti › R6.2 cada pieza empieza arriba y transparente, en su posición
+
+    Unable to find an element with testID: probe-confetti-0
+
+    [36m<RNCSafeAreaProvider>[39m
+      [36m<Modal[39m
+        [33mtestID[39m=[32m"probe-modal"[39m
+      [36m>[39m
+        [36m<View[39m
+          [33mtestID[39m=[32m"probe"[39m
+        [36m>[39m
+          [36m<View[39m
+            [33maccessibilityElementsHidden[39m=[32m{true}[39m
+            [33mimportantForAccessibility[39m=[32m"no-hide-descendants"[39m
+            [33mpointerEvents[39m=[32m"none"[39m
+            [33mtestID[39m=[32m"probe-confetti"[39m
+          [36m/>[39m
+          [36m<View[39m
+            [33mtestID[39m=[32m"probe-hero"[39m
+          [36m>[39m
+            [36m<View[39m
+              [33mtestID[39m=[32m"probe-pingo"[39m
+            [36m>[39m
+              [36m<ViewManagerAdapter_ExpoImage[39m
+                [33maccessible[39m=[32m{false}[39m
+                [33mplaceholder[39m=[32m{[]}[39m
+                [33mtestID[39m=[32m"probe-pose"[39m
+              [36m/>[39m
+            [36m</View>[39m
+            [36m<View[39m
+              [33maccessibilityElementsHidden[39m=[32m{true}[39m
+              [33mimportantForAccessibility[39m=[32m"no-hide-descendants"[39m
+              [33mtestID[39m=[32m"probe-badge"[39m
+            [36m>[39m
+              [36m<View>[39m
+                [36m<Text>[39m
+                  [0m✓[0m
+                [36m</Text>[39m
+              [36m</View>[39m
+            [36m</View>[39m
+          [36m</View>[39m
+          [36m<Text[39m
+            [33mtestID[39m=[32m"probe-title"[39m
+          [36m>[39m
+            [0mTítulo de prueba[0m
+          [36m</Text>[39m
+          [36m<Text[39m
+            [33mtestID[39m=[32m"probe-body"[39m
+          [36m>[39m
+            [0mCuerpo de prueba.[0m
+          [36m</Text>[39m
+          [36m<View[39m
+            [33mtestID[39m=[32m"probe-details"[39m
+          [36m>[39m
+            [36m<View>[39m
+              [36m<Text>[39m
+                [0mModelo[0m
+              [36m</Text>[39m
+              [36m<Text[39m
+                [33mtestID[39m=[32m"probe-a"[39m
+              [36m>[39m
+                [0mTrailTag Pro[0m
+              [36m</Text>[39m
+            [36m</View>[39m
+            [36m<View>[39m
+              [36m<Text>[39m
+                [0mESN[0m
+              [36m</Text>[39m
+              [36m<Text[39m
+                [33mtestID[39m=[32m"probe-b"[39m
+              [36m>[39m
+                [0mESN-4242[0m
+              [36m</Text>[39m
+            [36m</View>[39m
+          [36m</View>[39m
+          [36m<View[39m
+            [33mtestID[39m=[32m"probe-actions"[39m
+          [36m>[39m
+            [36m<View[39m
+              [33mtestID[39m=[32m"probe-primary"[39m
+            [36m>[39m
+              [36m<Text>[39m
+                [0mVer en el mapa[0m
+              [36m</Text>[39m
+            [36m</View>[39m
+            [36m<View[39m
+              [33mtestID[39m=[32m"probe-secondary"[39m
+            [36m>[39m
+              [36m<Text>[39m
+                [0mListo[0m
+              [36m</Text>[39m
+            [36m</View>[39m
+          [36m</View>[39m
+        [36m</View>[39m
+      [36m</Modal>[39m
+    [36m</RNCSafeAreaProvider>[39m
+
+      194 |     await renderProbe();
+      195 |     for (let i = 0; i < 24; i++) {
+```
+
+```text
+  ● #171 R6: confeti › R6.3 la pieza 0 está en vuelo a los 1200 ms
+
+    Unable to find an element with testID: probe-confetti-0
+
+    [36m<RNCSafeAreaProvider>[39m
+      [36m<Modal[39m
+        [33mtestID[39m=[32m"probe-modal"[39m
+      [36m>[39m
+        [36m<View[39m
+          [33mtestID[39m=[32m"probe"[39m
+        [36m>[39m
+          [36m<View[39m
+            [33maccessibilityElementsHidden[39m=[32m{true}[39m
+            [33mimportantForAccessibility[39m=[32m"no-hide-descendants"[39m
+            [33mpointerEvents[39m=[32m"none"[39m
+            [33mtestID[39m=[32m"probe-confetti"[39m
+          [36m/>[39m
+          [36m<View[39m
+            [33mtestID[39m=[32m"probe-hero"[39m
+          [36m>[39m
+            [36m<View[39m
+              [33mtestID[39m=[32m"probe-pingo"[39m
+            [36m>[39m
+              [36m<ViewManagerAdapter_ExpoImage[39m
+                [33maccessible[39m=[32m{false}[39m
+                [33mplaceholder[39m=[32m{[]}[39m
+                [33mtestID[39m=[32m"probe-pose"[39m
+              [36m/>[39m
+            [36m</View>[39m
+            [36m<View[39m
+              [33maccessibilityElementsHidden[39m=[32m{true}[39m
+              [33mimportantForAccessibility[39m=[32m"no-hide-descendants"[39m
+              [33mtestID[39m=[32m"probe-badge"[39m
+            [36m>[39m
+              [36m<View>[39m
+                [36m<Text>[39m
+                  [0m✓[0m
+                [36m</Text>[39m
+              [36m</View>[39m
+            [36m</View>[39m
+          [36m</View>[39m
+          [36m<Text[39m
+            [33mtestID[39m=[32m"probe-title"[39m
+          [36m>[39m
+            [0mTítulo de prueba[0m
+          [36m</Text>[39m
+          [36m<Text[39m
+            [33mtestID[39m=[32m"probe-body"[39m
+          [36m>[39m
+            [0mCuerpo de prueba.[0m
+          [36m</Text>[39m
+          [36m<View[39m
+            [33mtestID[39m=[32m"probe-details"[39m
+          [36m>[39m
+            [36m<View>[39m
+              [36m<Text>[39m
+                [0mModelo[0m
+              [36m</Text>[39m
+              [36m<Text[39m
+                [33mtestID[39m=[32m"probe-a"[39m
+              [36m>[39m
+                [0mTrailTag Pro[0m
+              [36m</Text>[39m
+            [36m</View>[39m
+            [36m<View>[39m
+              [36m<Text>[39m
+                [0mESN[0m
+              [36m</Text>[39m
+              [36m<Text[39m
+                [33mtestID[39m=[32m"probe-b"[39m
+              [36m>[39m
+                [0mESN-4242[0m
+              [36m</Text>[39m
+            [36m</View>[39m
+          [36m</View>[39m
+          [36m<View[39m
+            [33mtestID[39m=[32m"probe-actions"[39m
+          [36m>[39m
+            [36m<View[39m
+              [33mtestID[39m=[32m"probe-primary"[39m
+            [36m>[39m
+              [36m<Text>[39m
+                [0mVer en el mapa[0m
+              [36m</Text>[39m
+            [36m</View>[39m
+            [36m<View[39m
+              [33mtestID[39m=[32m"probe-secondary"[39m
+            [36m>[39m
+              [36m<Text>[39m
+                [0mListo[0m
+              [36m</Text>[39m
+            [36m</View>[39m
+          [36m</View>[39m
+        [36m</View>[39m
+      [36m</Modal>[39m
+    [36m</RNCSafeAreaProvider>[39m
+
+      204 |     await renderProbe();
+      205 |     act(() => { jest.advanceTimersByTime(1200); });
+```
+
+```text
+  ● #171 R6: confeti › R6.3 la pieza 22 conserva el retardo a los 1100 ms
+
+    Unable to find an element with testID: probe-confetti-22
+
+      212 |     await renderProbe();
+      213 |     act(() => { jest.advanceTimersByTime(1100); });
+```
+
+```text
+  ● #171 R6: confeti › R6.4 a los 5000 ms todas las piezas terminaron y desaparecieron
+
+    Unable to find an element with testID: probe-confetti-0
+
+      222 |     act(() => { jest.advanceTimersByTime(5000); });
+      223 |     for (let i = 0; i < 24; i++) {
+```
+
+
+Commit c7 R6: `166f78c8 test(mobile): confeti de la celebración (R6)`.
+Cadena c7: exit=0; typecheck exit=0; lint exit=0 y fichero vacío; <LIMPIO> exit=0.
+
+
+### c8 — T3 R6 verde esperado — PARADA por medida roja
+
+```bash
+FORCE_COLOR=0 bunx jest --runTestsByPath src/components/__tests__/celebration.test.tsx src/theme/__tests__/motion.test.ts src/__tests__/consistency-classnames.test.ts > /tmp/171-c8.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=1
+  ● Console
+  ● #171 R6: confeti › R6.3 la pieza 22 conserva el retardo a los 1100 ms
+  ● #171 R6: confeti › R6.4 a los 5000 ms todas las piezas terminaron y desaparecieron
+Test Suites: 1 failed, 2 passed, 3 total
+Tests:       2 failed, 96 passed, 98 total
+```
+
+```text
+  ● #171 R6: confeti › R6.3 la pieza 22 conserva el retardo a los 1100 ms
+
+    Unable to find an element with testID: probe-confetti-22
+
+      212 |     await renderProbe();
+      213 |     act(() => { jest.advanceTimersByTime(1100); });
+```
+
+```text
+  ● #171 R6: confeti › R6.4 a los 5000 ms todas las piezas terminaron y desaparecieron
+
+    Unable to find an element with testID: probe-confetti-0
+
+      222 |     act(() => { jest.advanceTimersByTime(5000); });
+      223 |     for (let i = 0; i < 24; i++) {
+```
+
+
+PARADA en c8: la medida dio exit=1 y `Tests:       2 failed, 96 passed, 98 total`; se esperaba exit=0 y 98 passed.
+La cadena c8 salió con exit=1 en su primer eslabón: `grep -qE '^Tests: +98 passed, 98 total$' /tmp/171-c8.txt`.
+No llegó a typecheck, lint, git add ni commit. No se ejecutaron GUARDAS ni ALL de c8; no se reintentó la medida.
+No se adapta el test ni se corrige código tras esta parada: el handoff exige parar ante una medida distinta.
+La causa no se ha investigado. Los cambios de producción de c8 quedan sin stagear, para revisión.
+Último commit confirmado: c7 `166f78c8`. Completados c1-c7; c8 y todos los pasos posteriores pendientes.
+Sin init.sh, push, PR, merge ni rebase.
+
+R16: pendiente del smoke humano
+
+## Reanudación 2
+
+Nota de cabecera y bloque c7.1 releídos del disco. H0 sigue siendo `d01b03bf`.
+HEAD: `7914486c`. Estado verificado:
+
+```text
+ M mobile-pet-tracker/src/components/celebration.tsx
+ M mobile-pet-tracker/src/theme/motion.ts
+ M mobile-pet-tracker/src/utils/category-palette.ts
+?? progress/impl_mobile-celebrations-and-living-empty.md
+```
+
+No se repite el arranque. Los cambios de producción de c8 se mantienen intactos.
+La corrección autorizada c7.1 cambia únicamente tres avances de temporizadores a `await act(async () => { … })`.
+Se aplicará esta forma asíncrona a todos los nuevos tests de animación.
+c7.1 no tiene medida propia: la medida completa de c8 es su prueba.
+
+
+### c7.1 — corrección autorizada de act (R6)
+
+Commit: `f65fc05d test(mobile): el confeti espera a act (R6)`.
+Cadena c7.1: exit=0; 3 llamadas con await act, 0 llamadas sin await, diff del test 3 inserciones/3 borrados; typecheck exit=0; lint exit=0 y fichero vacío; stage solo celebration.test.tsx.
+El diff de los tres archivos de producción de c8 es idéntico al de antes de c7.1.
+
+
+### c8 — T3 R6 verde; Reanudación 2
+
+```bash
+FORCE_COLOR=0 bunx jest --runTestsByPath src/components/__tests__/celebration.test.tsx src/theme/__tests__/motion.test.ts src/__tests__/consistency-classnames.test.ts > /tmp/171-c8.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+  ● Console
+Test Suites: 3 passed, 3 total
+Tests:       98 passed, 98 total
+```
+
+```bash
+FORCE_COLOR=0 bunx jest --runTestsByPath src/__tests__/design-drift.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/171-c8-guardas.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+Test Suites: 2 passed, 2 total
+Tests:       92 passed, 92 total
+```
+
+```bash
+FORCE_COLOR=0 bunx jest --testTimeout=30000 > /tmp/171-c8-all.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+Test Suites: 99 passed, 99 total
+Tests:       2798 passed, 2798 total
+```
+
+Commit: `f22c2d42 feat(mobile): confeti de una sola pasada (R6)`.
+
+Cadena del handoff: exit=0. Typecheck: exit=0. Lint: exit=0; fichero vacío. <LIMPIO>: exit=0.
+
+Detalle de implementación de T3: el efecto depende de index y del shared value estable para cumplir exhaustive-deps; el índice de cada pieza es fijo y no repite la pasada al rerenderizar.
+
+### c9 — T4 R7 rojo; medida previa al commit
+
+```bash
+FORCE_COLOR=0 bunx jest --runTestsByPath src/components/__tests__/celebration.test.tsx src/theme/__tests__/motion.test.ts > /tmp/171-c9.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=1
+  ● #152 R1: las duraciones y el preset de movimiento viven en un solo sitio › no exporta nada más
+  ● #171 R7: las constantes de pop viven en motion.ts › declara MOTION_POP_SCALE
+  ● #171 R7: las constantes de pop viven en motion.ts › declara MOTION_POP_SPRING
+  ● Console
+  ● #171 R7: pop › R7.1 Pingo empieza transparente y a escala 0.6
+  ● #171 R7: pop › R7.2 la insignia empieza transparente y a escala 0.6
+  ● #171 R7: pop › R7.3 Pingo llega a opacidad y escala 1 a los 2000 ms
+  ● #171 R7: pop › R7.3 la insignia sigue en reposo a los 300 ms
+  ● #171 R7: pop › R7.3 la insignia llega a opacidad y escala 1 a los 2400 ms
+Test Suites: 2 failed, 2 total
+Tests:       8 failed, 34 passed, 42 total
+```
+
+```text
+  ● #152 R1: las duraciones y el preset de movimiento viven en un solo sitio › no exporta nada más
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 2
+    + Received  + 0
+
+    @@ -9,12 +9,10 @@
+        "MOTION_FADE_TIMING",
+        "MOTION_FEEDBACK_MS",
+        "MOTION_FILL_TIMING",
+        "MOTION_FLOAT_OFFSET_Y",
+        "MOTION_FLOAT_TIMING",
+    -   "MOTION_POP_SCALE",
+    -   "MOTION_POP_SPRING",
+        "MOTION_SETTLE_SPRING",
+        "MOTION_STAGGER_MS",
+        "MOTION_SURFACE_MS",
+        "MOTION_TRANSITION_MS",
+      ]
+
+      68 |
+      69 |   it('no exporta nada más', () => {
+```
+
+```text
+  ● #171 R7: las constantes de pop viven en motion.ts › declara MOTION_POP_SCALE
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 0.6
+    Received: undefined
+
+      158 | describe('#171 R7: las constantes de pop viven en motion.ts', () => {
+      159 |   it('declara MOTION_POP_SCALE', () => {
+```
+
+```text
+  ● #171 R7: las constantes de pop viven en motion.ts › declara MOTION_POP_SPRING
+
+    expect(received).toEqual(expected) // deep equality
+
+    Expected: {"dampingRatio": 0.5, "duration": 400, "reduceMotion": "system"}
+    Received: undefined
+
+      162 |
+      163 |   it('declara MOTION_POP_SPRING', () => {
+```
+
+```text
+  ● #171 R7: pop › R7.1 Pingo empieza transparente y a escala 0.6
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 6
+    + Received  + 0
+
+      Object {
+        "height": 200,
+    -   "opacity": 0,
+    -   "transform": Array [
+    -     Object {
+    -       "scale": 0.6,
+    -     },
+    -   ],
+        "width": 200,
+      }
+
+      236 |   it('R7.1 Pingo empieza transparente y a escala 0.6', async () => {
+      237 |     await renderProbe();
+```
+
+```text
+  ● #171 R7: pop › R7.2 la insignia empieza transparente y a escala 0.6
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 6
+    + Received  + 0
+
+      Object {
+        "bottom": 0,
+    -   "opacity": 0,
+        "position": "absolute",
+        "right": 0,
+    -   "transform": Array [
+    -     Object {
+    -       "scale": 0.6,
+    -     },
+    -   ],
+      }
+
+      243 |   it('R7.2 la insignia empieza transparente y a escala 0.6', async () => {
+      244 |     await renderProbe();
+```
+
+```text
+  ● #171 R7: pop › R7.3 Pingo llega a opacidad y escala 1 a los 2000 ms
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 6
+    + Received  + 0
+
+      Object {
+        "height": 200,
+    -   "opacity": 1,
+    -   "transform": Array [
+    -     Object {
+    -       "scale": 1,
+    -     },
+    -   ],
+        "width": 200,
+      }
+
+      251 |     await renderProbe();
+      252 |     await act(async () => { jest.advanceTimersByTime(2000); });
+```
+
+```text
+  ● #171 R7: pop › R7.3 la insignia sigue en reposo a los 300 ms
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 6
+    + Received  + 0
+
+      Object {
+        "bottom": 0,
+    -   "opacity": 0,
+        "position": "absolute",
+        "right": 0,
+    -   "transform": Array [
+    -     Object {
+    -       "scale": 0.6,
+    -     },
+    -   ],
+      }
+
+      259 |     await renderProbe();
+      260 |     await act(async () => { jest.advanceTimersByTime(300); });
+```
+
+```text
+  ● #171 R7: pop › R7.3 la insignia llega a opacidad y escala 1 a los 2400 ms
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 6
+    + Received  + 0
+
+      Object {
+        "bottom": 0,
+    -   "opacity": 1,
+        "position": "absolute",
+        "right": 0,
+    -   "transform": Array [
+    -     Object {
+    -       "scale": 1,
+    -     },
+    -   ],
+      }
+
+      267 |     await renderProbe();
+      268 |     await act(async () => { jest.advanceTimersByTime(2400); });
+```
+
+
+Commit c9 R7: `f470deca test(mobile): pop de Pingo y la insignia (R7)`.
+Cadena c9: exit=0; typecheck exit=0; lint exit=0 y fichero vacío; <LIMPIO> exit=0.
+Los cinco rojos de getAnimatedStyle fueron por toEqual sobre estilos estáticos, sin excepción.
+
+
+### c10 — T4 R7 verde
+
+```bash
+FORCE_COLOR=0 bunx jest --runTestsByPath src/components/__tests__/celebration.test.tsx src/theme/__tests__/motion.test.ts > /tmp/171-c10.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+  ● Console
+Test Suites: 2 passed, 2 total
+Tests:       42 passed, 42 total
+```
+
+```bash
+FORCE_COLOR=0 bunx jest --runTestsByPath src/__tests__/design-drift.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/171-c10-guardas.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+Test Suites: 2 passed, 2 total
+Tests:       92 passed, 92 total
+```
+
+```bash
+FORCE_COLOR=0 bunx jest --testTimeout=30000 > /tmp/171-c10-all.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+Test Suites: 99 passed, 99 total
+Tests:       2805 passed, 2805 total
+```
+
+Commit: `086df0c1 feat(mobile): pop de Pingo y la insignia (R7)`.
+
+Cadena del handoff: exit=0. Typecheck: exit=0. Lint: exit=0; fichero vacío. <LIMPIO>: exit=0.
+
+
+### c11 — T5 R8 rojo; medida previa al commit
+
+```bash
+FORCE_COLOR=0 bunx jest --runTestsByPath src/components/__tests__/celebration.test.tsx > /tmp/171-c11.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=1
+  ● #171 R8: reduce motion › R8.1 no monta confeti ni piezas
+  ● #171 R8: reduce motion › R8.1 los hijos directos omiten el confeti
+  ● #171 R8: reduce motion › R8.2 Pingo empieza transparente a escala 1
+  ● #171 R8: reduce motion › R8.3 la insignia empieza transparente a escala 1
+Test Suites: 1 failed, 1 total
+Tests:       4 failed, 27 passed, 31 total
+```
+
+```text
+  ● #171 R8: reduce motion › R8.1 no monta confeti ni piezas
+
+    expect(received).toBeNull()
+
+    Received: <View accessibilityElementsHidden={true} className="absolute inset-0" importantForAccessibility="no-hide-descendants" pointerEvents="none" testID="probe-confetti"><View collapsable={false} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"left": "7%", "opacity": 0, "position": "absolute", "top": 0, "transform": [Array]}}} jestInlineStyle={{}} style={[{"left": "7%", "opacity": 0, "position": "absolute", "top": 0, "transform": [Array]}]} testID="probe-confetti-0"><View className="h-1.5 w-2 rounded-full bg-accent" /></View><View collapsable={false} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"left": "48%", "opacity": 0, "position": "absolute", "top": 0, "transform": [Array]}}} jestInlineStyle={{}} style={[{"left": "48%", "opacity": 0, "position": "absolute", "top": 0, "transform": [Array]}]} testID="probe-confetti-1"><View className="h-1.5 w-2 rounded-full bg-category-amber-strong" /></View><View collapsable={false} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"left": "89%", "opacity": 0, "position": "absolute", "top": 0, "transform": [Array]}}} jestInlineStyle={{}} style={[{"left": "89%", "opacity": 0, "position": "absolute", "top": 0, "transform": [Array]}]} testID="probe-confetti-2"><View className="h-1.5 w-2 rounded-full bg-category-violet-strong" /></View><View collapsable={false} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"left": "30%", "opacity": 0, "position": "absolute", "top": 0, "transform": [Array]}}} jestInlineStyle={{}} style={[{"left": "30%", "opacity": 0, "position": "absolute", "top": 0, "transform": [Array]}]} testID="probe-confetti-3"><View className="h-1.5 w-2 rounded-full bg-category-blue-strong" /></View><View collapsable={false} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"left": "71%", "opacity": 0, "position": "absolute", "top": 0, "transform": [Array]}}} jestInlineStyle={{}} style={[{"left": "71%", "opacity": 0, "position": "absolute", "top": 0, "transform": [Array]}]} testID="probe-confetti-4"><View className="h-1.5 w-2 rounded-full bg-category-rose-strong" /></View><View collapsable={false} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"left": "12%", "opacity": 0, "position": "absolute", "top": 0, "transform": [Array]}}} jestInlineStyle={{}} style={[{"left": "12%", "opacity": 0, "position": "absolute", "top": 0, "transform": [Array]}]} testID="probe-confetti-5"><View className="h-1.5 w-2 rounded-full bg-category-green-strong" /></View><View collapsable={false} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"left": "53%", "opacity": 0, "position": "absolute", "top": 0, "transform": [Array]}}} jestInlineStyle={{}} style={[{"left": "53%", "opacity": 0, "position": "absolute", "top": 0, "transform": [Array]}]} testID="probe-confetti-6"><View className="h-1.5 w-2 rounded-full bg-accent" /></View><View collapsable={false} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"left": "94%", "opacity": 0, "position": "absolute", "top": 0, "transform": [Array]}}} jestInlineStyle={{}} style={[{"left": "94%", "opacity": 0, "position": "absolute", "top": 0, "transform": [Array]}]} testID="probe-confetti-7"><View className="h-1.5 w-2 rounded-full bg-category-amber-strong" /></View><View collapsable={false} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"left": "35%", "opacity": 0, "position": "absolute", "top": 0, "transform": [Array]}}} jestInlineStyle={{}} style={[{"left": "35%", "opacity": 0, "position": "absolute", "top": 0, "transform": [Array]}]} testID="probe-confetti-8"><View className="h-3.5 w-2.5 bg-category-violet-strong" /></View><View collapsable={false} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"left": "76%", "opacity": 0, "position": "absolute", "top": 0, "transform": [Array]}}} jestInlineStyle={{}} style={[{"left": "76%", "opacity": 0, "position": "absolute", "top": 0, "transform": [Array]}]} testID="probe-confetti-9"><View className="h-3.5 w-2.5 bg-category-blue-strong" /></View><View collapsable={false} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"left": "17%", "opacity": 0, "position": "absolute", "top": 0, "transform": [Array]}}} jestInlineStyle={{}} style={[{"left": "17%", "opacity": 0, "position": "absolute", "top": 0, "transform": [Array]}]} testID="probe-confetti-10"><View className="h-3.5 w-2.5 bg-category-rose-strong" /></View><View collapsable={false} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"left": "58%", "opacity": 0, "position": "absolute", "top": 0, "transform": [Array]}}} jestInlineStyle={{}} style={[{"left": "58%", "opacity": 0, "position": "absolute", "top": 0, "transform": [Array]}]} testID="probe-confetti-11"><View className="h-3.5 w-2.5 bg-category-green-strong" /></View><View collapsable={false} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"left": "99%", "opacity": 0, "position": "absolute", "top": 0, "transform": [Array]}}} jestInlineStyle={{}} style={[{"left": "99%", "opacity": 0, "position": "absolute", "top": 0, "transform": [Array]}]} testID="probe-confetti-12"><View className="h-3.5 w-2.5 bg-accent" /></View><View collapsable={false} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"left": "40%", "opacity": 0, "position": "absolute", "top": 0, "transform": [Array]}}} jestInlineStyle={{}} style={[{"left": "40%", "opacity": 0, "position": "absolute", "top": 0, "transform": [Array]}]} testID="probe-confetti-13"><View className="h-3.5 w-2.5 bg-category-amber-strong" /></View><View collapsable={false} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"left": "81%", "opacity": 0, "position": "absolute", "top": 0, "transform": [Array]}}} jestInlineStyle={{}} style={[{"left": "81%", "opacity": 0, "position": "absolute", "top": 0, "transform": [Array]}]} testID="probe-confetti-14"><View className="h-3.5 w-2.5 bg-category-violet-strong" /></View><View collapsable={false} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"left": "22%", "opacity": 0, "position": "absolute", "top": 0, "transform": [Array]}}} jestInlineStyle={{}} style={[{"left": "22%", "opacity": 0, "position": "absolute", "top": 0, "transform": [Array]}]} testID="probe-confetti-15"><View className="h-3.5 w-2.5 bg-category-blue-strong" /></View><View collapsable={false} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"left": "63%", "opacity": 0, "position": "absolute", "top": 0, "transform": [Array]}}} jestInlineStyle={{}} style={[{"left": "63%", "opacity": 0, "position": "absolute", "top": 0, "transform": [Array]}]} testID="probe-confetti-16"><View className="h-4 w-3 bg-category-rose-strong" /></View><View collapsable={false} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"left": "4%", "opacity": 0, "position": "absolute", "top": 0, "transform": [Array]}}} jestInlineStyle={{}} style={[{"left": "4%", "opacity": 0, "position": "absolute", "top": 0, "transform": [Array]}]} testID="probe-confetti-17"><View className="h-4 w-3 bg-category-green-strong" /></View><View collapsable={false} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"left": "45%", "opacity": 0, "position": "absolute", "top": 0, "transform": [Array]}}} jestInlineStyle={{}} style={[{"left": "45%", "opacity": 0, "position": "absolute", "top": 0, "transform": [Array]}]} testID="probe-confetti-18"><View className="h-4 w-3 bg-accent" /></View><View collapsable={false} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"left": "86%", "opacity": 0, "position": "absolute", "top": 0, "transform": [Array]}}} jestInlineStyle={{}} style={[{"left": "86%", "opacity": 0, "position": "absolute", "top": 0, "transform": [Array]}]} testID="probe-confetti-19"><View className="h-4 w-3 bg-category-amber-strong" /></View><View collapsable={false} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"left": "27%", "opacity": 0, "position": "absolute", "top": 0, "transform": [Array]}}} jestInlineStyle={{}} style={[{"left": "27%", "opacity": 0, "position": "absolute", "top": 0, "transform": [Array]}]} testID="probe-confetti-20"><View className="h-4 w-3 bg-category-violet-strong" /></View><View collapsable={false} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"left": "68%", "opacity": 0, "position": "absolute", "top": 0, "transform": [Array]}}} jestInlineStyle={{}} style={[{"left": "68%", "opacity": 0, "position": "absolute", "top": 0, "transform": [Array]}]} testID="probe-confetti-21"><View className="h-4 w-3 bg-category-blue-strong" /></View><View collapsable={false} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"left": "9%", "opacity": 0, "position": "absolute", "top": 0, "transform": [Array]}}} jestInlineStyle={{}} style={[{"left": "9%", "opacity": 0, "position": "absolute", "top": 0, "transform": [Array]}]} testID="probe-confetti-22"><View className="h-4 w-3 bg-category-rose-strong" /></View><View collapsable={false} jestAnimatedProps={{"value": {}}} jestAnimatedStyle={{"value": {"left": "50%", "opacity": 0, "position": "absolute", "top": 0, "transform": [Array]}}} jestInlineStyle={{}} style={[{"left": "50%", "opacity": 0, "position": "absolute", "top": 0, "transform": [Array]}]} testID="probe-confetti-23"><View className="h-4 w-3 bg-category-green-strong" /></View></View>
+
+      282 |   it('R8.1 no monta confeti ni piezas', async () => {
+      283 |     await renderProbe();
+```
+
+```text
+  ● #171 R8: reduce motion › R8.1 los hijos directos omiten el confeti
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 0
+    + Received  + 1
+
+    @@ -1,6 +1,7 @@
+      Array [
+    +   "probe-confetti",
+        "probe-hero",
+        "probe-title",
+        "probe-body",
+        "probe-details",
+        "probe-actions",
+
+      289 |     await renderProbe();
+      290 |     expect(screen.getByTestId('probe').children.map((child) => typeof child === 'string' ? child : child.props.testID))
+```
+
+```text
+  ● #171 R8: reduce motion › R8.2 Pingo empieza transparente a escala 1
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Object {
+        "height": 200,
+        "opacity": 0,
+        "transform": Array [
+          Object {
+    -       "scale": 1,
+    +       "scale": 0.6,
+          },
+        ],
+        "width": 200,
+      }
+
+      294 |   it('R8.2 Pingo empieza transparente a escala 1', async () => {
+      295 |     await renderProbe();
+```
+
+```text
+  ● #171 R8: reduce motion › R8.3 la insignia empieza transparente a escala 1
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+    @@ -3,9 +3,9 @@
+        "opacity": 0,
+        "position": "absolute",
+        "right": 0,
+        "transform": Array [
+          Object {
+    -       "scale": 1,
+    +       "scale": 0.6,
+          },
+        ],
+      }
+
+      309 |   it('R8.3 la insignia empieza transparente a escala 1', async () => {
+      310 |     await renderProbe();
+```
+
+
+Commit c11 R8: `28d8f15b test(mobile): la celebración respeta reduce motion (R8)`.
+Cadena c11: exit=0; typecheck exit=0; lint exit=0 y fichero vacío; <LIMPIO> exit=0.
+
+
+### c12 — T5 R8 verde
+
+```bash
+FORCE_COLOR=0 bunx jest --runTestsByPath src/components/__tests__/celebration.test.tsx > /tmp/171-c12.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+Test Suites: 1 passed, 1 total
+Tests:       31 passed, 31 total
+```
+
+```bash
+FORCE_COLOR=0 bunx jest --runTestsByPath src/__tests__/design-drift.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/171-c12-guardas.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+Test Suites: 2 passed, 2 total
+Tests:       92 passed, 92 total
+```
+
+```bash
+FORCE_COLOR=0 bunx jest --testTimeout=30000 > /tmp/171-c12-all.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+Test Suites: 99 passed, 99 total
+Tests:       2811 passed, 2811 total
+```
+
+Commit: `fd6be85b feat(mobile): la celebración respeta reduce motion (R8)`.
+
+Cadena del handoff: exit=0. Typecheck: exit=0. Lint: exit=0; fichero vacío. <LIMPIO>: exit=0.
+
+
+### S5.1 — quitar el fundido de Pingo
+
+HEAD de la sonda: fd6be85b.
+
+```bash
+FORCE_COLOR=0 bunx jest --runTestsByPath src/components/__tests__/celebration.test.tsx > /tmp/171-s5_1.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=1
+  ● #171 R7: pop › R7.3 Pingo llega a opacidad y escala 1 a los 2000 ms
+  ● #171 R8: reduce motion › R8.2 Pingo conserva el fundido a los 2000 ms
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 29 passed, 31 total
+```
+
+S5.1 revertida con git checkout HEAD; limpio=0. Línea Tests y ambos encabezados coinciden.
+
+### S5.2 — quitar el retardo del fundido de la insignia
+
+HEAD de la sonda: fd6be85b.
+
+```bash
+FORCE_COLOR=0 bunx jest --runTestsByPath src/components/__tests__/celebration.test.tsx > /tmp/171-s5_2.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=1
+  ● #171 R7: pop › R7.3 la insignia sigue en reposo a los 300 ms
+  ● #171 R8: reduce motion › R8.3 la insignia conserva el fundido retardado a los 300 y 2400 ms
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 29 passed, 31 total
+```
+
+S5.2 revertida con git checkout HEAD; limpio=0. Línea Tests y ambos encabezados coinciden.
+
+### c13 — T6 R9 rojo; medida previa al commit
+
+```bash
+FORCE_COLOR=0 bunx jest --runTestsByPath src/components/__tests__/celebration.test.tsx > /tmp/171-c13.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=1
+  ● #171 R9: háptico › R9.1 al montar notifica éxito una vez sin avanzar temporizadores
+  ● #171 R9: háptico › R9.2 rerenderizar con otro título no repite el háptico
+  ● #171 R9: háptico › R9.3 reduce motion conserva el háptico una vez
+Test Suites: 1 failed, 1 total
+Tests:       3 failed, 31 passed, 34 total
+```
+
+```text
+  ● #171 R9: háptico › R9.1 al montar notifica éxito una vez sin avanzar temporizadores
+
+    expect(jest.fn()).toHaveBeenCalledTimes(expected)
+
+    Expected number of calls: 1
+    Received number of calls: 0
+
+      339 |   it('R9.1 al montar notifica éxito una vez sin avanzar temporizadores', async () => {
+      340 |     await renderProbe();
+```
+
+```text
+  ● #171 R9: háptico › R9.2 rerenderizar con otro título no repite el háptico
+
+    expect(jest.fn()).toHaveBeenCalledTimes(expected)
+
+    Expected number of calls: 1
+    Received number of calls: 0
+
+      346 |     await renderProbe();
+      347 |     await screen.rerender(<HeroUINativeProvider><Celebration {...probeProps} title="Otro título" /></HeroUINativeProvider>);
+```
+
+```text
+  ● #171 R9: háptico › R9.3 reduce motion conserva el háptico una vez
+
+    expect(jest.fn()).toHaveBeenCalledTimes(expected)
+
+    Expected number of calls: 1
+    Received number of calls: 0
+
+      352 |     mockUseReducedMotion.mockReturnValue(true);
+      353 |     await renderProbe();
+```
+
+
+Commit c13 R9: `5a5d3014 test(mobile): háptico de éxito al celebrar (R9)`.
+Cadena c13: exit=0; typecheck exit=0; lint exit=0 y fichero vacío; <LIMPIO> exit=0.
+
+
+### Espera previa al ALL de c14
+
+Medida c14: exit=0, 34 passed; GUARDAS: exit=0, 92 passed.
+`pgrep -af '[i]nit\.sh'` detectó el proceso `579274 bash ./init.sh` de otra sesión.
+Se espera su finalización antes de lanzar ALL, como exige el handoff; no se toca esa sesión ni la infraestructura.
+
+
+### c14 — T6 R9 verde
+
+```bash
+FORCE_COLOR=0 bunx jest --runTestsByPath src/components/__tests__/celebration.test.tsx > /tmp/171-c14.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+Test Suites: 1 passed, 1 total
+Tests:       34 passed, 34 total
+```
+
+```bash
+FORCE_COLOR=0 bunx jest --runTestsByPath src/__tests__/design-drift.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/171-c14-guardas.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+Test Suites: 2 passed, 2 total
+Tests:       92 passed, 92 total
+```
+
+```bash
+FORCE_COLOR=0 bunx jest --testTimeout=30000 > /tmp/171-c14-all.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+Test Suites: 99 passed, 99 total
+Tests:       2814 passed, 2814 total
+```
+
+Commit: `7803220e feat(mobile): háptico de éxito al celebrar (R9)`.
+
+Cadena del handoff: exit=0. Typecheck: exit=0. Lint: exit=0; fichero vacío. <LIMPIO>: exit=0.
+
+Antes de ALL c14, el pgrep finalmente salió vacío después de las sesiones de init.sh (579274 y luego 588182). Solo entonces se lanzó ALL, que pasó en su primera ejecución.
+
+### c15 — T7 R13 verde de regresión
+
+```bash
+FORCE_COLOR=0 bunx jest --runTestsByPath src/__tests__/design-drift.test.ts src/components/__tests__/celebration.test.tsx > /tmp/171-c15.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+  ● Console
+Test Suites: 2 passed, 2 total
+Tests:       104 passed, 104 total
+```
+
+```bash
+FORCE_COLOR=0 bunx jest --runTestsByPath src/__tests__/design-drift.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/171-c15-guardas.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+Test Suites: 2 passed, 2 total
+Tests:       96 passed, 96 total
+```
+
+```bash
+FORCE_COLOR=0 bunx jest --testTimeout=30000 > /tmp/171-c15-all.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+Test Suites: 99 passed, 99 total
+Tests:       2819 passed, 2819 total
+```
+
+Commit: `a74fefca test(mobile): candados de drift de la celebración (R13)`.
+
+Cadena del handoff: exit=0. Typecheck: exit=0. Lint: exit=0; fichero vacío. <LIMPIO>: exit=0.
+
+Antes de ALL c15 se esperó al init.sh de otra sesión (597291). El pgrep salió vacío antes de la única ejecución de ALL c15.
+
+### S7.1 — plantar un hex en className
+
+HEAD de la sonda: a74fefca.
+
+```bash
+FORCE_COLOR=0 bunx jest --runTestsByPath src/__tests__/design-drift.test.ts > /tmp/171-s7_1.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=1
+  ● #171 R13: sin drift en la celebración › R13.1 src/components/celebration.tsx no deja escapes de estilo
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 68 passed, 69 total
+```
+
+S7.1 revertida; limpio=0. Entre los rojos está R13.1 de src/components/celebration.tsx.
+
+### S7.2 — plantar withRepeat en la fuente
+
+HEAD de la sonda: a74fefca.
+
+```bash
+FORCE_COLOR=0 bunx jest --runTestsByPath src/__tests__/design-drift.test.ts > /tmp/171-s7_2.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=1
+  ● #171 R13: sin drift en la celebración › R13.2 la fuente no usa LayoutAnimation, entering/exiting ni bucles
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 68 passed, 69 total
+```
+
+S7.2 revertida; limpio=0. Entre los rojos está R13.2 de fuente.
+
+### S7.3 — añadir width al estilo animado de una pieza
+
+HEAD de la sonda: a74fefca.
+
+```bash
+FORCE_COLOR=0 bunx jest --runTestsByPath src/components/__tests__/celebration.test.tsx > /tmp/171-s7_3.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=1
+  ● #171 R6: confeti › R6.2 cada pieza empieza arriba y transparente, en su posición
+  ● #171 R6: confeti › R6.3 la pieza 22 conserva el retardo a los 1100 ms
+  ● #171 R6: confeti › R6.4 a los 5000 ms todas las piezas terminaron y desaparecieron
+  ● #171 R13: solo anima transform y opacity › R13.2 conserva las claves de layout y solo anima transform y opacity a los 0 y 1200 ms
+Test Suites: 1 failed, 1 total
+Tests:       4 failed, 31 passed, 35 total
+```
+
+S7.3 revertida; limpio=0. La línea Tests se anota; entre los rojos está #171 R13: solo anima transform y opacity.
+
+### c16 — T8 R3 rojo; medida previa al commit
+
+```bash
+FORCE_COLOR=0 bunx jest --runTestsByPath src/screens/pairing/index.test.tsx > /tmp/171-c16.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=1
+  ● R7: tras el 201 muestra "El collar está listo" con el collar y sus CTAs › #171 R3: celebración al vincular › R3.1 el Modal muestra título y cuerpo del collar de Luna
+  ● R7: tras el 201 muestra "El collar está listo" con el collar y sus CTAs › #171 R3: celebración al vincular › R3.1 las fichas contienen Modelo y ESN exactos
+  ● R7: tras el 201 muestra "El collar está listo" con el collar y sus CTAs › #171 R3: celebración al vincular › R3.1 las acciones contienen Ver en el mapa y Listo
+  ● R7: tras el 201 muestra "El collar está listo" con el collar y sus CTAs › #171 R3: celebración al vincular › R3.2 atrás de Android vuelve una vez y retira la celebración
+  ● R7: tras el 201 muestra "El collar está listo" con el collar y sus CTAs › #171 R3: celebración al vincular › R3.3 sustituye el bloque en línea por un único Celebration
+  ● R7: tras el 201 muestra "El collar está listo" con el collar y sus CTAs › #171 R3: celebración al vincular › R3 al llegar a ready notifica éxito una vez
+Test Suites: 1 failed, 1 total
+Tests:       6 failed, 55 passed, 61 total
+```
+
+```text
+  ● R7: tras el 201 muestra "El collar está listo" con el collar y sus CTAs › #171 R3: celebración al vincular › R3.1 el Modal muestra título y cuerpo del collar de Luna
+
+    Unable to find an element with testID: pairing-ready-modal
+
+    [36m<RNCSafeAreaProvider>[39m
+      [36m<View[39m
+        [33mtestID[39m=[32m"screen-pairing"[39m
+      [36m>[39m
+        [36m<RCTScrollView[39m
+          [33mtestID[39m=[32m"pairing-form"[39m
+        [36m>[39m
+          [36m<View>[39m
+            [36m<RCTScrollView>[39m
+              [36m<View>[39m
+                [36m<View>[39m
+                  [36m<View[39m
+                    [33maccessibilityLabel[39m=[32m"Luna"[39m
+                    [33maccessibilityRole[39m=[32m"button"[39m
+                    [33maccessibilityState[39m=[32m{
+                      {
+                        "selected": true,
+                      }
+                    }[39m
+                    [33maccessible[39m=[32m{true}[39m
+                    [33mtestID[39m=[32m"pet-chip-pet-1"[39m
+                  [36m>[39m
+                    [36m<View>[39m
+                      [36m<View[39m
+                        [33maria-label[39m=[32m"Avatar"[39m
+                        [33mrole[39m=[32m"img"[39m
+                        [33mtestID[39m=[32m"pet-avatar-fallback-pet-1"[39m
+                      [36m>[39m
+                        [36m<Text>[39m
+                          [0mL[0m
+                        [36m</Text>[39m
+                      [36m</View>[39m
+                    [36m</View>[39m
+                  [36m</View>[39m
+                [36m</View>[39m
+              [36m</View>[39m
+            [36m</RCTScrollView>[39m
+            [36m<View[39m
+              [33mtestID[39m=[32m"pairing-ready"[39m
+            [36m>[39m
+              [36m<View>[39m
+                [36m<Text>[39m
+                  [0m✓[0m
+                [36m</Text>[39m
+              [36m</View>[39m
+              [36m<View>[39m
+                [36m<Text>[39m
+                  [0mEl collar está listo[0m
+                [36m</Text>[39m
+                [36m<Text>[39m
+                  [0mEl collar de Luna está vinculado. El rastreo GPS está activo.[0m
+                [36m</Text>[39m
+              [36m</View>[39m
+              [36m<View>[39m
+                [36m<View>[39m
+                  [36m<View>[39m
+                    [36m<Text>[39m
+                      [0mModelo[0m
+                    [36m</Text>[39m
+                    [36m<Text[39m
+                      [33mtestID[39m=[32m"ready-model"[39m
+                    [36m>[39m
+                      [0mTrailTag Pro[0m
+                    [36m</Text>[39m
+                  [36m</View>[39m
+                  [36m<View>[39m
+                    [36m<Text>[39m
+                      [0mESN[0m
+                    [36m</Text>[39m
+                    [36m<Text[39m
+                      [33mtestID[39m=[32m"ready-esn"[39m
+                    [36m>[39m
+                      [0mESN-4242[0m
+                    [36m</Text>[39m
+                  [36m</View>[39m
+                [36m</View>[39m
+              [36m</View>[39m
+              [36m<View[39m
+                [33maccessibilityRole[39m=[32m"button"[39m
+                [33maccessibilityState[39m=[32m{
+                  {
+                    "disabled": false,
+                  }
+                }[39m
+                [33maccessible[39m=[32m{true}[39m
+                [33mtestID[39m=[32m"ready-map"[39m
+              [36m>[39m
+                [36m<View[39m
+                  [33mpointerEvents[39m=[32m"none"[39m
+                  [33mstyle[39m=[32m{
+                    {
+                      "opacity": 0,
+                    }
+                  }[39m
+                [36m/>[39m
+                [36m<Text>[39m
+                  [0mVer en el mapa[0m
+                [36m</Text>[39m
+              [36m</View>[39m
+              [36m<View[39m
+                [33maccessibilityRole[39m=[32m"button"[39m
+                [33maccessible[39m=[32m{true}[39m
+                [33mtestID[39m=[32m"ready-done"[39m
+              [36m>[39m
+                [36m<Text>[39m
+                  [0mListo[0m
+                [36m</Text>[39m
+              [36m</View>[39m
+            [36m</View>[39m
+          [36m</View>[39m
+        [36m</RCTScrollView>[39m
+      [36m</View>[39m
+    [36m</RNCSafeAreaProvider>[39m
+
+      553 |     it('R3.1 el Modal muestra título y cuerpo del collar de Luna', async () => {
+      554 |       await renderReady();
+```
+
+```text
+  ● R7: tras el 201 muestra "El collar está listo" con el collar y sus CTAs › #171 R3: celebración al vincular › R3.1 las fichas contienen Modelo y ESN exactos
+
+    Unable to find an element with testID: pairing-ready-details
+
+    [36m<RNCSafeAreaProvider>[39m
+      [36m<View[39m
+        [33mtestID[39m=[32m"screen-pairing"[39m
+      [36m>[39m
+        [36m<RCTScrollView[39m
+          [33mtestID[39m=[32m"pairing-form"[39m
+        [36m>[39m
+          [36m<View>[39m
+            [36m<RCTScrollView>[39m
+              [36m<View>[39m
+                [36m<View>[39m
+                  [36m<View[39m
+                    [33maccessibilityLabel[39m=[32m"Luna"[39m
+                    [33maccessibilityRole[39m=[32m"button"[39m
+                    [33maccessibilityState[39m=[32m{
+                      {
+                        "selected": true,
+                      }
+                    }[39m
+                    [33maccessible[39m=[32m{true}[39m
+                    [33mtestID[39m=[32m"pet-chip-pet-1"[39m
+                  [36m>[39m
+                    [36m<View>[39m
+                      [36m<View[39m
+                        [33maria-label[39m=[32m"Avatar"[39m
+                        [33mrole[39m=[32m"img"[39m
+                        [33mtestID[39m=[32m"pet-avatar-fallback-pet-1"[39m
+                      [36m>[39m
+                        [36m<Text>[39m
+                          [0mL[0m
+                        [36m</Text>[39m
+                      [36m</View>[39m
+                    [36m</View>[39m
+                  [36m</View>[39m
+                [36m</View>[39m
+              [36m</View>[39m
+            [36m</RCTScrollView>[39m
+            [36m<View[39m
+              [33mtestID[39m=[32m"pairing-ready"[39m
+            [36m>[39m
+              [36m<View>[39m
+                [36m<Text>[39m
+                  [0m✓[0m
+                [36m</Text>[39m
+              [36m</View>[39m
+              [36m<View>[39m
+                [36m<Text>[39m
+                  [0mEl collar está listo[0m
+                [36m</Text>[39m
+                [36m<Text>[39m
+                  [0mEl collar de Luna está vinculado. El rastreo GPS está activo.[0m
+                [36m</Text>[39m
+              [36m</View>[39m
+              [36m<View>[39m
+                [36m<View>[39m
+                  [36m<View>[39m
+                    [36m<Text>[39m
+                      [0mModelo[0m
+                    [36m</Text>[39m
+                    [36m<Text[39m
+                      [33mtestID[39m=[32m"ready-model"[39m
+                    [36m>[39m
+                      [0mTrailTag Pro[0m
+                    [36m</Text>[39m
+                  [36m</View>[39m
+                  [36m<View>[39m
+                    [36m<Text>[39m
+                      [0mESN[0m
+                    [36m</Text>[39m
+                    [36m<Text[39m
+                      [33mtestID[39m=[32m"ready-esn"[39m
+                    [36m>[39m
+                      [0mESN-4242[0m
+                    [36m</Text>[39m
+                  [36m</View>[39m
+                [36m</View>[39m
+              [36m</View>[39m
+              [36m<View[39m
+                [33maccessibilityRole[39m=[32m"button"[39m
+                [33maccessibilityState[39m=[32m{
+                  {
+                    "disabled": false,
+                  }
+                }[39m
+                [33maccessible[39m=[32m{true}[39m
+                [33mtestID[39m=[32m"ready-map"[39m
+              [36m>[39m
+                [36m<View[39m
+                  [33mpointerEvents[39m=[32m"none"[39m
+                  [33mstyle[39m=[32m{
+                    {
+                      "opacity": 0,
+                    }
+                  }[39m
+                [36m/>[39m
+                [36m<Text>[39m
+                  [0mVer en el mapa[0m
+                [36m</Text>[39m
+              [36m</View>[39m
+              [36m<View[39m
+                [33maccessibilityRole[39m=[32m"button"[39m
+                [33maccessible[39m=[32m{true}[39m
+                [33mtestID[39m=[32m"ready-done"[39m
+              [36m>[39m
+                [36m<Text>[39m
+                  [0mListo[0m
+                [36m</Text>[39m
+              [36m</View>[39m
+            [36m</View>[39m
+          [36m</View>[39m
+        [36m</RCTScrollView>[39m
+      [36m</View>[39m
+    [36m</RNCSafeAreaProvider>[39m
+
+      560 |     it('R3.1 las fichas contienen Modelo y ESN exactos', async () => {
+      561 |       await renderReady();
+```
+
+```text
+  ● R7: tras el 201 muestra "El collar está listo" con el collar y sus CTAs › #171 R3: celebración al vincular › R3.1 las acciones contienen Ver en el mapa y Listo
+
+    Unable to find an element with testID: pairing-ready-actions
+
+    [36m<RNCSafeAreaProvider>[39m
+      [36m<View[39m
+        [33mtestID[39m=[32m"screen-pairing"[39m
+      [36m>[39m
+        [36m<RCTScrollView[39m
+          [33mtestID[39m=[32m"pairing-form"[39m
+        [36m>[39m
+          [36m<View>[39m
+            [36m<RCTScrollView>[39m
+              [36m<View>[39m
+                [36m<View>[39m
+                  [36m<View[39m
+                    [33maccessibilityLabel[39m=[32m"Luna"[39m
+                    [33maccessibilityRole[39m=[32m"button"[39m
+                    [33maccessibilityState[39m=[32m{
+                      {
+                        "selected": true,
+                      }
+                    }[39m
+                    [33maccessible[39m=[32m{true}[39m
+                    [33mtestID[39m=[32m"pet-chip-pet-1"[39m
+                  [36m>[39m
+                    [36m<View>[39m
+                      [36m<View[39m
+                        [33maria-label[39m=[32m"Avatar"[39m
+                        [33mrole[39m=[32m"img"[39m
+                        [33mtestID[39m=[32m"pet-avatar-fallback-pet-1"[39m
+                      [36m>[39m
+                        [36m<Text>[39m
+                          [0mL[0m
+                        [36m</Text>[39m
+                      [36m</View>[39m
+                    [36m</View>[39m
+                  [36m</View>[39m
+                [36m</View>[39m
+              [36m</View>[39m
+            [36m</RCTScrollView>[39m
+            [36m<View[39m
+              [33mtestID[39m=[32m"pairing-ready"[39m
+            [36m>[39m
+              [36m<View>[39m
+                [36m<Text>[39m
+                  [0m✓[0m
+                [36m</Text>[39m
+              [36m</View>[39m
+              [36m<View>[39m
+                [36m<Text>[39m
+                  [0mEl collar está listo[0m
+                [36m</Text>[39m
+                [36m<Text>[39m
+                  [0mEl collar de Luna está vinculado. El rastreo GPS está activo.[0m
+                [36m</Text>[39m
+              [36m</View>[39m
+              [36m<View>[39m
+                [36m<View>[39m
+                  [36m<View>[39m
+                    [36m<Text>[39m
+                      [0mModelo[0m
+                    [36m</Text>[39m
+                    [36m<Text[39m
+                      [33mtestID[39m=[32m"ready-model"[39m
+                    [36m>[39m
+                      [0mTrailTag Pro[0m
+                    [36m</Text>[39m
+                  [36m</View>[39m
+                  [36m<View>[39m
+                    [36m<Text>[39m
+                      [0mESN[0m
+                    [36m</Text>[39m
+                    [36m<Text[39m
+                      [33mtestID[39m=[32m"ready-esn"[39m
+                    [36m>[39m
+                      [0mESN-4242[0m
+                    [36m</Text>[39m
+                  [36m</View>[39m
+                [36m</View>[39m
+              [36m</View>[39m
+              [36m<View[39m
+                [33maccessibilityRole[39m=[32m"button"[39m
+                [33maccessibilityState[39m=[32m{
+                  {
+                    "disabled": false,
+                  }
+                }[39m
+                [33maccessible[39m=[32m{true}[39m
+                [33mtestID[39m=[32m"ready-map"[39m
+              [36m>[39m
+                [36m<View[39m
+                  [33mpointerEvents[39m=[32m"none"[39m
+                  [33mstyle[39m=[32m{
+                    {
+                      "opacity": 0,
+                    }
+                  }[39m
+                [36m/>[39m
+                [36m<Text>[39m
+                  [0mVer en el mapa[0m
+                [36m</Text>[39m
+              [36m</View>[39m
+              [36m<View[39m
+                [33maccessibilityRole[39m=[32m"button"[39m
+                [33maccessible[39m=[32m{true}[39m
+                [33mtestID[39m=[32m"ready-done"[39m
+              [36m>[39m
+                [36m<Text>[39m
+                  [0mListo[0m
+                [36m</Text>[39m
+              [36m</View>[39m
+            [36m</View>[39m
+          [36m</View>[39m
+        [36m</RCTScrollView>[39m
+      [36m</View>[39m
+    [36m</RNCSafeAreaProvider>[39m
+
+      567 |     it('R3.1 las acciones contienen Ver en el mapa y Listo', async () => {
+      568 |       await renderReady();
+```
+
+```text
+  ● R7: tras el 201 muestra "El collar está listo" con el collar y sus CTAs › #171 R3: celebración al vincular › R3.2 atrás de Android vuelve una vez y retira la celebración
+
+    Unable to find an element with testID: pairing-ready-modal
+
+    [36m<RNCSafeAreaProvider>[39m
+      [36m<View[39m
+        [33mtestID[39m=[32m"screen-pairing"[39m
+      [36m>[39m
+        [36m<RCTScrollView[39m
+          [33mtestID[39m=[32m"pairing-form"[39m
+        [36m>[39m
+          [36m<View>[39m
+            [36m<RCTScrollView>[39m
+              [36m<View>[39m
+                [36m<View>[39m
+                  [36m<View[39m
+                    [33maccessibilityLabel[39m=[32m"Luna"[39m
+                    [33maccessibilityRole[39m=[32m"button"[39m
+                    [33maccessibilityState[39m=[32m{
+                      {
+                        "selected": true,
+                      }
+                    }[39m
+                    [33maccessible[39m=[32m{true}[39m
+                    [33mtestID[39m=[32m"pet-chip-pet-1"[39m
+                  [36m>[39m
+                    [36m<View>[39m
+                      [36m<View[39m
+                        [33maria-label[39m=[32m"Avatar"[39m
+                        [33mrole[39m=[32m"img"[39m
+                        [33mtestID[39m=[32m"pet-avatar-fallback-pet-1"[39m
+                      [36m>[39m
+                        [36m<Text>[39m
+                          [0mL[0m
+                        [36m</Text>[39m
+                      [36m</View>[39m
+                    [36m</View>[39m
+                  [36m</View>[39m
+                [36m</View>[39m
+              [36m</View>[39m
+            [36m</RCTScrollView>[39m
+            [36m<View[39m
+              [33mtestID[39m=[32m"pairing-ready"[39m
+            [36m>[39m
+              [36m<View>[39m
+                [36m<Text>[39m
+                  [0m✓[0m
+                [36m</Text>[39m
+              [36m</View>[39m
+              [36m<View>[39m
+                [36m<Text>[39m
+                  [0mEl collar está listo[0m
+                [36m</Text>[39m
+                [36m<Text>[39m
+                  [0mEl collar de Luna está vinculado. El rastreo GPS está activo.[0m
+                [36m</Text>[39m
+              [36m</View>[39m
+              [36m<View>[39m
+                [36m<View>[39m
+                  [36m<View>[39m
+                    [36m<Text>[39m
+                      [0mModelo[0m
+                    [36m</Text>[39m
+                    [36m<Text[39m
+                      [33mtestID[39m=[32m"ready-model"[39m
+                    [36m>[39m
+                      [0mTrailTag Pro[0m
+                    [36m</Text>[39m
+                  [36m</View>[39m
+                  [36m<View>[39m
+                    [36m<Text>[39m
+                      [0mESN[0m
+                    [36m</Text>[39m
+                    [36m<Text[39m
+                      [33mtestID[39m=[32m"ready-esn"[39m
+                    [36m>[39m
+                      [0mESN-4242[0m
+                    [36m</Text>[39m
+                  [36m</View>[39m
+                [36m</View>[39m
+              [36m</View>[39m
+              [36m<View[39m
+                [33maccessibilityRole[39m=[32m"button"[39m
+                [33maccessibilityState[39m=[32m{
+                  {
+                    "disabled": false,
+                  }
+                }[39m
+                [33maccessible[39m=[32m{true}[39m
+                [33mtestID[39m=[32m"ready-map"[39m
+              [36m>[39m
+                [36m<View[39m
+                  [33mpointerEvents[39m=[32m"none"[39m
+                  [33mstyle[39m=[32m{
+                    {
+                      "opacity": 0,
+                    }
+                  }[39m
+                [36m/>[39m
+                [36m<Text>[39m
+                  [0mVer en el mapa[0m
+                [36m</Text>[39m
+              [36m</View>[39m
+              [36m<View[39m
+                [33maccessibilityRole[39m=[32m"button"[39m
+                [33maccessible[39m=[32m{true}[39m
+                [33mtestID[39m=[32m"ready-done"[39m
+              [36m>[39m
+                [36m<Text>[39m
+                  [0mListo[0m
+                [36m</Text>[39m
+              [36m</View>[39m
+            [36m</View>[39m
+          [36m</View>[39m
+        [36m</RCTScrollView>[39m
+      [36m</View>[39m
+    [36m</RNCSafeAreaProvider>[39m
+
+      574 |     it('R3.2 atrás de Android vuelve una vez y retira la celebración', async () => {
+      575 |       await renderReady();
+```
+
+```text
+  ● R7: tras el 201 muestra "El collar está listo" con el collar y sus CTAs › #171 R3: celebración al vincular › R3.3 sustituye el bloque en línea por un único Celebration
+
+    expect(received).not.toContain(expected) // indexOf
+
+    Expected substring: not "<Pressable"
+    Received string:        "import { HeaderHeightContext } from 'expo-router/react-navigation';
+    import { useQuery } from '@tanstack/react-query';
+    import { router, useFocusEffect } from 'expo-router';
+    import { Button, Skeleton } from 'heroui-native';
+    import { useContext, useCallback, useEffect, useState } from 'react';
+    import {
+      KeyboardAvoidingView,
+      Alert,
+      Pressable,
+      ScrollView,
+      Text,
+      TextInput,
+      View,
+    } from 'react-native';
+    import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+    import { claimDevice, releaseDevice } from '../../api/devices';
+    import { listPets, type PetsState } from '../../api/pets';
+    import { deviceKeys, petKeys } from '../../api/query-keys';
+    import { getPetTracking, type PetTrackingState } from '../../api/subscriptions';
+    import type { DeviceStatus } from '../../api/types';
+```
+
+```text
+  ● R7: tras el 201 muestra "El collar está listo" con el collar y sus CTAs › #171 R3: celebración al vincular › R3 al llegar a ready notifica éxito una vez
+
+    expect(jest.fn()).toHaveBeenCalledTimes(expected)
+
+    Expected number of calls: 1
+    Received number of calls: 0
+
+      593 |     it('R3 al llegar a ready notifica éxito una vez', async () => {
+      594 |       await renderReady();
+```
+
+
+Commit c16 R3: `56ae7a8c test(mobile): Vincular celebra el collar listo (R3)`.
+Cadena c16: exit=0; typecheck exit=0; lint exit=0 y fichero vacío; <LIMPIO> exit=0.
+
+
+### c17 — T8 R3 verde esperado — PARADA por cifra distinta
+
+```bash
+FORCE_COLOR=0 bunx jest --runTestsByPath src/screens/pairing/index.test.tsx src/__tests__/consistency-classnames.test.ts > /tmp/171-c17.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=1
+  ● #62 R14: toda esquina no-cápsula que dibuja el repo es continua › fusiona la esquina una vez y la entrega a las dos ramas de Card
+  ● Console
+Test Suites: 1 failed, 1 passed, 2 total
+Tests:       1 failed, 123 passed, 124 total
+```
+
+```text
+  ● #62 R14: toda esquina no-cápsula que dibuja el repo es continua › fusiona la esquina una vez y la entrega a las dos ramas de Card
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 34
+    Received: 33
+
+      312 |     expect(
+      313 |       directUses.reduce((total, [, count]) => total + count, 2),
+```
+
+
+PARADA en c17: medida exit=1, Tests: 1 failed, 123 passed, 124 total; se esperaba exit=0 y 124 passed.
+La cadena salió con exit=1 en su primer eslabón: grep de 124 passed en /tmp/171-c17.txt.
+No se ejecutaron GUARDAS ni ALL de c17, ni typecheck/lint de c17; no se hizo git add ni commit.
+No se reintentó ni se adaptó el test o el código tras la parada.
+Último commit confirmado: c16 56ae7a8c. c1-c16 y c7.1 completados; sondas S5.1-S5.2 y S7.1-S7.3 medidas y revertidas, limpio=0.
+Los cambios de c17 en pairing/index.tsx y consistency-classnames.test.ts quedan sin stagear para revisión.
+No se ejecutó init.sh, ni push, PR, merge o rebase.
+
+R16: pendiente del smoke humano
+
+## Reanudación 3
+
+Nota de cabecera releída del disco. H0 sigue siendo `d01b03bf`; HEAD comprobado: `e716375a`.
+Estado comprobado, exactamente:
+
+```text
+ M mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+ M mobile-pet-tracker/src/screens/pairing/index.tsx
+?? progress/impl_mobile-celebrations-and-living-empty.md
+```
+
+No se repite el arranque. Se aplica únicamente la línea autorizada del total de CONTINUOUS_CORNER, conservando el resto de c17.
+
+
+### c17 — T8 R3 verde; Reanudación 3
+
+```bash
+FORCE_COLOR=0 bunx jest --runTestsByPath src/screens/pairing/index.test.tsx src/__tests__/consistency-classnames.test.ts > /tmp/171-c17.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+  ● Console
+Test Suites: 2 passed, 2 total
+Tests:       124 passed, 124 total
+```
+
+```bash
+FORCE_COLOR=0 bunx jest --runTestsByPath src/__tests__/design-drift.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/171-c17-guardas.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+Test Suites: 2 passed, 2 total
+Tests:       96 passed, 96 total
+```
+
+```bash
+FORCE_COLOR=0 bunx jest --testTimeout=30000 > /tmp/171-c17-all.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+Test Suites: 99 passed, 99 total
+Tests:       2826 passed, 2826 total
+```
+
+Commit: `2e7d60bd feat(mobile): Vincular celebra el collar listo (R3)`.
+
+Cadena del handoff: exit=0. Typecheck: exit=0. Lint: exit=0; fichero vacío. <LIMPIO>: exit=0.
+
+El bloque grep/sed de Reanudación 3 salió con exit=0: ancla anterior 1, sustitución única y ancla nueva 1. No se cambió el resto de c17.
+
+### S8.1 — forzar ready en el error del claim
+
+HEAD de la sonda: 2e7d60bd.
+
+```bash
+FORCE_COLOR=0 bunx jest --runTestsByPath src/screens/pairing/index.test.tsx > /tmp/171-s8_1.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=1
+  ● R5: sin collar muestra el formulario de vinculación y publica el claim solo al enviar › submits the trimmed code exactly once for the selected pet
+  ● R5: sin collar muestra el formulario de vinculación y publica el claim solo al enviar › disables submit while the claim request is in flight
+  ● R6: el claim mapea cada kind a su mensaje y permite reintentar › shows the exact message for $kind and allows retry
+  ● R6: el claim mapea cada kind a su mensaje y permite reintentar › shows the exact message for $kind and allows retry
+  ● R7: tras el 201 muestra "El collar está listo" con el collar y sus CTAs › #171 R3: celebración al vincular › R3.4 un error del claim no monta el Modal ni dispara el háptico
+Test Suites: 1 failed, 1 total
+Tests:       5 failed, 56 passed, 61 total
+```
+
+S8.1 revertida; limpio=0. Coinciden 5 failed/56 passed/61 total y los cinco encabezados: R3.4, dos R5 y dos R6.
+
+### c18 — T9 R12 rojo; medida previa al commit
+
+```bash
+FORCE_COLOR=0 bunx jest --runTestsByPath src/components/__tests__/celebration.test.tsx src/providers/__tests__/language-provider.test.tsx > /tmp/171-c18.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=1
+  ● #65 R12: el catálogo tiene los dos idiomas y t resuelve claves y parámetros › mantiene la base más las claves de #68 y los mismos marcadores en ambos idiomas
+  ● Console
+  ● #171 R12: copy de la variante sin collar › addPet.celebrateTitle tiene su literal en los dos idiomas
+  ● #171 R12: copy de la variante sin collar › addPet.celebrateBody tiene su literal en los dos idiomas
+  ● #171 R12: copy de la variante sin collar › addPet.celebratePair tiene su literal en los dos idiomas
+  ● #171 R12: copy de la variante sin collar › addPet.celebrateLater tiene su literal en los dos idiomas
+  ● #171 R12: copy de la variante sin collar › addPet.celebrateTitle exclama con ¡…! en español
+  ● #171 R12: copy de la variante sin collar › addPet.celebrateTitle exclama con …! en inglés
+  ● #171 R12: copy de la variante sin collar › body, pair y later no exclaman en ningún idioma
+  ● #171 R12: copy de la variante sin collar › ninguna de las cuatro lleva emoji
+  ● #171 R12: copy de la variante sin collar › addPet.celebrateBody termina en punto en los dos idiomas
+  ● #171 R12: copy de la variante sin collar › registra las cuatro claves en §2.24 de mobile-ui-language
+Test Suites: 2 failed, 2 total
+Tests:       11 failed, 59 passed, 70 total
+```
+
+```text
+  ● #65 R12: el catálogo tiene los dos idiomas y t resuelve claves y parámetros › mantiene la base más las claves de #68 y los mismos marcadores en ambos idiomas
+
+    expect(received).toHaveLength(expected)
+
+    Expected length: 390
+    Received length: 386
+    Received array:  ["addPet.addPet", "addPet.age", "addPet.approxMonths", "addPet.avatarPreview", "addPet.basicDetails", "addPet.birthDate", "addPet.breed", "addPet.cat", "addPet.checkPetDetails", "addPet.chooseBirthDate", …]
+
+      53 |     const spanishKeys = Object.keys(es).sort();
+      54 |
+```
+
+```text
+  ● #171 R12: copy de la variante sin collar › addPet.celebrateTitle tiene su literal en los dos idiomas
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "{{petName}} is home!"
+    Received: undefined
+
+      390 | describe('#171 R12: copy de la variante sin collar', () => {
+      391 |   it.each(copyRows)('%s tiene su literal en los dos idiomas', (key, english, spanish) => {
+```
+
+```text
+  ● #171 R12: copy de la variante sin collar › addPet.celebrateBody tiene su literal en los dos idiomas
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "I'll help you look after {{petName}}. Pair a collar and I'll keep track of where they are."
+    Received: undefined
+
+      390 | describe('#171 R12: copy de la variante sin collar', () => {
+      391 |   it.each(copyRows)('%s tiene su literal en los dos idiomas', (key, english, spanish) => {
+```
+
+```text
+  ● #171 R12: copy de la variante sin collar › addPet.celebratePair tiene su literal en los dos idiomas
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "Pair a collar"
+    Received: undefined
+
+      390 | describe('#171 R12: copy de la variante sin collar', () => {
+      391 |   it.each(copyRows)('%s tiene su literal en los dos idiomas', (key, english, spanish) => {
+```
+
+```text
+  ● #171 R12: copy de la variante sin collar › addPet.celebrateLater tiene su literal en los dos idiomas
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "Not now"
+    Received: undefined
+
+      390 | describe('#171 R12: copy de la variante sin collar', () => {
+      391 |   it.each(copyRows)('%s tiene su literal en los dos idiomas', (key, english, spanish) => {
+```
+
+```text
+  ● #171 R12: copy de la variante sin collar › addPet.celebrateTitle exclama con ¡…! en español
+
+    expect(received).toMatch(expected)
+
+    Matcher error: received value must be a string
+
+    Received has value: undefined
+
+      395 |
+      396 |   it('addPet.celebrateTitle exclama con ¡…! en español', () => {
+```
+
+```text
+  ● #171 R12: copy de la variante sin collar › addPet.celebrateTitle exclama con …! en inglés
+
+    expect(received).toMatch(expected)
+
+    Matcher error: received value must be a string
+
+    Received has value: undefined
+
+      399 |
+      400 |   it('addPet.celebrateTitle exclama con …! en inglés', () => {
+```
+
+```text
+  ● #171 R12: copy de la variante sin collar › body, pair y later no exclaman en ningún idioma
+
+    expect(received).not.toMatch(expected)
+
+    Matcher error: received value must be a string
+
+    Received has value: undefined
+
+      404 |   it('body, pair y later no exclaman en ningún idioma', () => {
+      405 |     for (const key of ['addPet.celebrateBody', 'addPet.celebratePair', 'addPet.celebrateLater']) {
+```
+
+```text
+  ● #171 R12: copy de la variante sin collar › ninguna de las cuatro lleva emoji
+
+    expect(received).not.toMatch(expected)
+
+    Matcher error: received value must be a string
+
+    Received has value: undefined
+
+      410 |   it('ninguna de las cuatro lleva emoji', () => {
+      411 |     for (const [key] of copyRows) {
+```
+
+```text
+  ● #171 R12: copy de la variante sin collar › addPet.celebrateBody termina en punto en los dos idiomas
+
+    expect(received).toMatch(expected)
+
+    Matcher error: received value must be a string
+
+    Received has value: undefined
+
+      415 |
+      416 |   it('addPet.celebrateBody termina en punto en los dos idiomas', () => {
+```
+
+```text
+  ● #171 R12: copy de la variante sin collar › registra las cuatro claves en §2.24 de mobile-ui-language
+
+    expect(received).toHaveLength(expected)
+
+    Expected length: 2
+    Received length: 1
+    Received array:  ["---
+    feature: \"mobile-ui-language\"
+    status: approved     # draft | approved
+    tags: [harness, spec]
+    ---·
+    # Diseño — [[mobile-ui-language]]·
+    > Ver [[requirements]] para los requisitos que este diseño implementa,
+    > [[copy-review]] para la hoja de revisión humana de la copy (no normativa),
+    > [[../../docs/ui-guidelines|ui-guidelines]] (carta de UI) y
+    > [[../../docs/conventions|conventions]] para las reglas que la implementación
+    > debe respetar. Fuente del alcance: `progress/explore_design-gap-vs-make.md`
+    > §4 y su ampliación del 2026-09-05. Fuente del vocabulario español:
+    > `specs/mobile-figma-polish/design-src/App.tsx` (el export del Figma Make ya
+    > versionado en el repo).·
+    Esta spec es **autosuficiente**: Codex CLI no ve la conversación que la
+    originó. Todo el copy y todas las claves están en §2. **Codex no redacta texto
+    de producto y no inventa claves**: si encuentra una cadena visible que no está
+    en la tabla, para y lo anota en `progress/impl_mobile-ui-language.md`.·
+    ---·
+    ## 1. El inventario·
+```
+
+
+Commit c18 R12: `a708d8a5 test(mobile): copy de la celebración de la primera mascota (R12)`.
+Cadena c18: exit=0; typecheck exit=0; lint exit=0 y fichero vacío; <LIMPIO> exit=0.
+
+
+### c19 — T9 R12 verde
+
+```bash
+FORCE_COLOR=0 bunx jest --runTestsByPath src/components/__tests__/celebration.test.tsx src/providers/__tests__/language-provider.test.tsx > /tmp/171-c19.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+  ● Console
+Test Suites: 2 passed, 2 total
+Tests:       70 passed, 70 total
+```
+
+```bash
+FORCE_COLOR=0 bunx jest --runTestsByPath src/__tests__/design-drift.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/171-c19-guardas.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+Test Suites: 2 passed, 2 total
+Tests:       96 passed, 96 total
+```
+
+```bash
+FORCE_COLOR=0 bunx jest --testTimeout=30000 > /tmp/171-c19-all.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+Test Suites: 99 passed, 99 total
+Tests:       2836 passed, 2836 total
+```
+
+Commit: `1393436f feat(mobile): copy de la celebración de la primera mascota (R12)`.
+
+Cadena del handoff: exit=0. Typecheck: exit=0. Lint: exit=0; fichero vacío. <LIMPIO>: exit=0.
+
+
+### c20 — T10/T11 refactor verde
+
+```bash
+FORCE_COLOR=0 bunx jest --runTestsByPath src/screens/add-pet/index.test.tsx > /tmp/171-c20.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+Test Suites: 1 passed, 1 total
+Tests:       26 passed, 26 total
+```
+
+```bash
+FORCE_COLOR=0 bunx jest --runTestsByPath src/__tests__/design-drift.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/171-c20-guardas.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+Test Suites: 2 passed, 2 total
+Tests:       96 passed, 96 total
+```
+
+```bash
+FORCE_COLOR=0 bunx jest --testTimeout=30000 > /tmp/171-c20-all.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+Test Suites: 99 passed, 99 total
+Tests:       2836 passed, 2836 total
+```
+
+Commit: `1df6f3ef test(mobile): add-pet renderiza con QueryClient (R4)`.
+
+Cadena del handoff: exit=0. Typecheck: exit=0. Lint: exit=0; fichero vacío. <LIMPIO>: exit=0.
+
+
+### c21 — T10/T11 rojo R4 y R5
+
+```bash
+FORCE_COLOR=0 bunx jest --runTestsByPath src/screens/add-pet/index.test.tsx src/__tests__/ui-language.test.ts > /tmp/171-c21.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=1
+  ● #65 R9: el alta de mascota resuelve su copy por clave › resuelve las 45 ocurrencias normativas
+  ● #65 R18: los sitios resuelven por clave y no queda copy suelta › resuelve cada ocurrencia de la tabla contra la clave exacta
+  ● Console
+  ● #171 R4: primera mascota › R4.1 consulta la lista con la URL y el token
+  ● #171 R4: primera mascota › R4.3 celebra la primera mascota sin foto
+  ● #171 R4: primera mascota › R4.3 celebra la primera mascota después de subir la foto
+  ● #171 R4: primera mascota › R4.4 vuelve sin celebrar si ya hay una mascota
+  ● #171 R4: primera mascota › R4.5 vuelve sin celebrar si la lista da error
+  ● #171 R4: primera mascota › R4.5 vuelve sin celebrar si la lista está inaccesible
+  ● #171 R4: primera mascota › R4.5 vuelve sin celebrar si la lista no está autorizada
+  ● #171 R4: primera mascota › R4.6 no celebra si falla la subida de la foto
+  ● #171 R5: variante sin collar › R5.1 muestra el título y el cuerpo con el nombre de Nala
+  ● #171 R5: variante sin collar › R5.1 existe sin fichas de collar
+  ● #171 R5: variante sin collar › R5.2 Vincular un collar reemplaza por pairing
+  ● #171 R5: variante sin collar › R5.3 Ahora no vuelve una sola vez
+  ● #171 R5: variante sin collar › R5.3 requestClose vuelve una sola vez
+Test Suites: 2 failed, 2 total
+Tests:       15 failed, 55 passed, 70 total
+```
+
+```text
+  ● #65 R9: el alta de mascota resuelve su copy por clave › resuelve las 45 ocurrencias normativas
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Object {
+        "file": "src/screens/add-pet/index.tsx",
+        "key": "addPet.celebrateTitle",
+    -   "uses": 1,
+    +   "uses": 0,
+      }
+
+      60 |       (directCalls?.length ?? 0) + (keyedConstants?.length ?? 0);
+      61 |
+```
+
+```text
+  ● #65 R18: los sitios resuelven por clave y no queda copy suelta › resuelve cada ocurrencia de la tabla contra la clave exacta
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Object {
+        "file": "src/screens/add-pet/index.tsx",
+        "key": "addPet.celebrateTitle",
+    -   "uses": 1,
+    +   "uses": 0,
+      }
+
+      60 |       (directCalls?.length ?? 0) + (keyedConstants?.length ?? 0);
+      61 |
+```
+
+```text
+  ● #171 R4: primera mascota › R4.1 consulta la lista con la URL y el token
+
+    expect(jest.fn()).toHaveBeenCalledTimes(expected)
+
+    Expected number of calls: 1
+    Received number of calls: 0
+
+      684 |   it('R4.1 consulta la lista con la URL y el token', async () => {
+      685 |     await renderAddPet();
+```
+
+```text
+  ● #171 R4: primera mascota › R4.3 celebra la primera mascota sin foto
+
+    expect(received).toEqual(expected) // deep equality
+
+    Expected: {"kind": "ok", "pets": []}
+    Received: undefined
+
+      624 |   mockListPets.mockResolvedValue(state);
+      625 |   const { queryClient } = await renderAddPet();
+```
+
+```text
+  ● #171 R4: primera mascota › R4.3 celebra la primera mascota después de subir la foto
+
+    expect(received).toEqual(expected) // deep equality
+
+    Expected: {"kind": "ok", "pets": []}
+    Received: undefined
+
+      624 |   mockListPets.mockResolvedValue(state);
+      625 |   const { queryClient } = await renderAddPet();
+```
+
+```text
+  ● #171 R4: primera mascota › R4.4 vuelve sin celebrar si ya hay una mascota
+
+    expect(received).toEqual(expected) // deep equality
+
+    Expected: {"kind": "ok", "pets": [{"id": "pet-1", "name": "Milo"}]}
+    Received: undefined
+
+      624 |   mockListPets.mockResolvedValue(state);
+      625 |   const { queryClient } = await renderAddPet();
+```
+
+```text
+  ● #171 R4: primera mascota › R4.5 vuelve sin celebrar si la lista da error
+
+    expect(received).toEqual(expected) // deep equality
+
+    Expected: {"kind": "error"}
+    Received: undefined
+
+      624 |   mockListPets.mockResolvedValue(state);
+      625 |   const { queryClient } = await renderAddPet();
+```
+
+```text
+  ● #171 R4: primera mascota › R4.5 vuelve sin celebrar si la lista está inaccesible
+
+    expect(received).toEqual(expected) // deep equality
+
+    Expected: {"kind": "unreachable", "message": "offline"}
+    Received: undefined
+
+      624 |   mockListPets.mockResolvedValue(state);
+      625 |   const { queryClient } = await renderAddPet();
+```
+
+```text
+  ● #171 R4: primera mascota › R4.5 vuelve sin celebrar si la lista no está autorizada
+
+    expect(received).toEqual(expected) // deep equality
+
+    Expected: {"kind": "unauthorized"}
+    Received: undefined
+
+      624 |   mockListPets.mockResolvedValue(state);
+      625 |   const { queryClient } = await renderAddPet();
+```
+
+```text
+  ● #171 R4: primera mascota › R4.6 no celebra si falla la subida de la foto
+
+    expect(received).toEqual(expected) // deep equality
+
+    Expected: {"kind": "ok", "pets": []}
+    Received: undefined
+
+      624 |   mockListPets.mockResolvedValue(state);
+      625 |   const { queryClient } = await renderAddPet();
+```
+
+```text
+  ● #171 R5: variante sin collar › R5.1 muestra el título y el cuerpo con el nombre de Nala
+
+    expect(received).toEqual(expected) // deep equality
+
+    Expected: {"kind": "ok", "pets": []}
+    Received: undefined
+
+      624 |   mockListPets.mockResolvedValue(state);
+      625 |   const { queryClient } = await renderAddPet();
+```
+
+```text
+  ● #171 R5: variante sin collar › R5.1 existe sin fichas de collar
+
+    expect(received).toEqual(expected) // deep equality
+
+    Expected: {"kind": "ok", "pets": []}
+    Received: undefined
+
+      624 |   mockListPets.mockResolvedValue(state);
+      625 |   const { queryClient } = await renderAddPet();
+```
+
+```text
+  ● #171 R5: variante sin collar › R5.2 Vincular un collar reemplaza por pairing
+
+    expect(received).toEqual(expected) // deep equality
+
+    Expected: {"kind": "ok", "pets": []}
+    Received: undefined
+
+      624 |   mockListPets.mockResolvedValue(state);
+      625 |   const { queryClient } = await renderAddPet();
+```
+
+```text
+  ● #171 R5: variante sin collar › R5.3 Ahora no vuelve una sola vez
+
+    expect(received).toEqual(expected) // deep equality
+
+    Expected: {"kind": "ok", "pets": []}
+    Received: undefined
+
+      624 |   mockListPets.mockResolvedValue(state);
+      625 |   const { queryClient } = await renderAddPet();
+```
+
+```text
+  ● #171 R5: variante sin collar › R5.3 requestClose vuelve una sola vez
+
+    expect(received).toEqual(expected) // deep equality
+
+    Expected: {"kind": "ok", "pets": []}
+    Received: undefined
+
+      624 |   mockListPets.mockResolvedValue(state);
+      625 |   const { queryClient } = await renderAddPet();
+```
+
+
+Cadena c21 completa: typecheck=0; lint=0 y 0 bytes; índice exacto y LIMPIO=0. Commit: 468e3327 test(mobile): celebración de la primera mascota (R4, R5).
+
+Pre-ALL c22: pgrep -af `'[i]nit\.sh'` detectó 642255 bash ./init.sh; ALL no se lanzó mientras estuvo activo. Esperas de 30 s y nueva comprobación.
+
+### c22 — T10/T11 verde R4 y R5
+
+```bash
+FORCE_COLOR=0 bunx jest --runTestsByPath src/screens/add-pet/index.test.tsx src/__tests__/ui-language.test.ts > /tmp/171-c22.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+  ● Console
+Test Suites: 2 passed, 2 total
+Tests:       70 passed, 70 total
+```
+
+```bash
+FORCE_COLOR=0 bunx jest --runTestsByPath src/__tests__/design-drift.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/171-c22-guardas.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+Test Suites: 2 passed, 2 total
+Tests:       96 passed, 96 total
+```
+
+```bash
+FORCE_COLOR=0 bunx jest --testTimeout=30000 > /tmp/171-c22-all.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+Test Suites: 99 passed, 99 total
+Tests:       2850 passed, 2850 total
+```
+
+Commit: `32bafc4d feat(mobile): celebración de la primera mascota (R4, R5)`.
+
+Cadena del handoff: exit=0. Typecheck: exit=0. Lint: exit=0; fichero vacío. <LIMPIO>: exit=0.
+
+
+### S11.1 — wasFirst fijo en true
+
+HEAD de la sonda: 32bafc4d.
+
+```bash
+FORCE_COLOR=0 bunx jest --runTestsByPath src/screens/add-pet/index.test.tsx > /tmp/171-s11-1.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=1
+  ● R6: alta de mascota › uses Host + community DateTimePicker and keeps exactly birthDate
+  ● R7: foto opcional tras alta › uploads a chosen preview only after createPet succeeds
+  ● #171 R4: primera mascota › R4.4 vuelve sin celebrar si ya hay una mascota
+  ● #171 R4: primera mascota › R4.5 vuelve sin celebrar si la lista está pendiente
+  ● #171 R4: primera mascota › R4.5 vuelve sin celebrar si la lista da error
+  ● #171 R4: primera mascota › R4.5 vuelve sin celebrar si la lista está inaccesible
+  ● #171 R4: primera mascota › R4.5 vuelve sin celebrar si la lista no está autorizada
+Test Suites: 1 failed, 1 total
+Tests:       7 failed, 33 passed, 40 total
+```
+
+S11.1: están R4.4 y las cuatro R4.5 entre los rojos, más los dos existentes previstos. Restaurada con git checkout HEAD -- mobile-pet-tracker/src/screens/add-pet/index.tsx; limpio=0.
+
+### S11.2 — una lista no ok cuenta como primera
+
+HEAD de la sonda: 32bafc4d.
+
+```bash
+FORCE_COLOR=0 bunx jest --runTestsByPath src/screens/add-pet/index.test.tsx > /tmp/171-s11-2.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=1
+  ● #171 R4: primera mascota › R4.5 vuelve sin celebrar si la lista está pendiente
+  ● #171 R4: primera mascota › R4.5 vuelve sin celebrar si la lista da error
+  ● #171 R4: primera mascota › R4.5 vuelve sin celebrar si la lista está inaccesible
+  ● #171 R4: primera mascota › R4.5 vuelve sin celebrar si la lista no está autorizada
+Test Suites: 1 failed, 1 total
+Tests:       4 failed, 36 passed, 40 total
+```
+
+S11.2: están las cuatro R4.5 entre los rojos. Restaurada con git checkout HEAD -- mobile-pet-tracker/src/screens/add-pet/index.tsx; limpio=0.
+
+### S11.3 — celebrar antes de la subida de foto
+
+HEAD de la sonda: 32bafc4d.
+
+```bash
+FORCE_COLOR=0 bunx jest --runTestsByPath src/screens/add-pet/index.test.tsx > /tmp/171-s11-3.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=1
+  ● #171 R4: primera mascota › R4.6 no celebra si falla la subida de la foto
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 39 passed, 40 total
+```
+
+S11.3: R4.6 está entre los rojos. Restaurada con git checkout HEAD -- mobile-pet-tracker/src/screens/add-pet/index.tsx; limpio=0.
+
+### c23 — T12 rojo R10
+
+```bash
+FORCE_COLOR=0 bunx jest --runTestsByPath src/components/__tests__/empty-state.test.tsx src/screens/docs/index.test.tsx > /tmp/171-c23.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=1
+  ● Console
+  ● #155 R3: un único componente pinta los vacíos ilustrados › con acción pinta pose, título, cuerpo y botón como hijos directos, en ese orden
+  ● #155 R3: un único componente pinta los vacíos ilustrados › sin acción pinta pose, título y cuerpo como hijos directos, en ese orden
+  ● #155 R11: los vacíos no traen movimiento ni dependencias › EmptyState importa exactamente lo de la flotación
+  ● #171 R10: Pingo flota › R10.2 envuelve la pose en float con su estilo inicial
+  ● #171 R10: Pingo flota › R10.3 arranca un bucle infinito reversible una sola vez
+  ● #171 R10: Pingo flota › R10.3 sube cuatro puntos en 1200 ms
+  ● Console
+  ● #158 R4: family, walker y vet no ven la acción › en el vacío › solo Pingo para family
+  ● #158 R4: family, walker y vet no ven la acción › en el vacío › solo Pingo para walker
+  ● #158 R4: family, walker y vet no ven la acción › en el vacío › solo Pingo para vet
+Test Suites: 2 failed, 2 total
+Tests:       9 failed, 197 passed, 206 total
+```
+
+```text
+  ● #155 R3: un único componente pinta los vacíos ilustrados › con acción pinta pose, título, cuerpo y botón como hijos directos, en ese orden
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Array [
+    -   "probe-float",
+    +   "probe-pose",
+        "probe-title",
+        "probe-body",
+        "probe-action",
+      ]
+
+      148 |     expect(root.type).toBe('View');
+      149 |     expect(root.props.style).toBeUndefined();
+```
+
+```text
+  ● #155 R3: un único componente pinta los vacíos ilustrados › sin acción pinta pose, título y cuerpo como hijos directos, en ese orden
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Array [
+    -   "probe-float",
+    +   "probe-pose",
+        "probe-title",
+        "probe-body",
+      ]
+
+      157 |     expect(root.type).toBe('View');
+      158 |     expect(root.props.style).toBeUndefined();
+```
+
+```text
+  ● #155 R11: los vacíos no traen movimiento ni dependencias › EmptyState importa exactamente lo de la flotación
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 3
+    + Received  + 0
+
+      Array [
+    -   "import { useEffect } from 'react';",
+        "import { Image } from 'expo-image';",
+        "import { Button } from 'heroui-native';",
+        "import { Text, View } from 'react-native';",
+    -   "import Animated, { useAnimatedStyle, useReducedMotion, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';",
+    -   "import { MOTION_FLOAT_OFFSET_Y, MOTION_FLOAT_TIMING } from '../theme/motion';",
+      ]
+
+      237 |   it('EmptyState importa exactamente lo de la flotación', () => {
+      238 |     const source = readFileSync(join(process.cwd(), 'src', 'components', 'empty-state.tsx'), 'utf8');
+```
+
+```text
+  ● #171 R10: Pingo flota › R10.2 envuelve la pose en float con su estilo inicial
+
+    Unable to find an element with testID: probe-float
+
+    [36m<RNCSafeAreaProvider>[39m
+      [36m<View[39m
+        [33mtestID[39m=[32m"probe-frame"[39m
+      [36m>[39m
+        [36m<View[39m
+          [33mtestID[39m=[32m"probe"[39m
+        [36m>[39m
+          [36m<ViewManagerAdapter_ExpoImage[39m
+            [33mplaceholder[39m=[32m{[]}[39m
+            [33mtestID[39m=[32m"probe-pose"[39m
+          [36m/>[39m
+          [36m<Text[39m
+            [33mtestID[39m=[32m"probe-title"[39m
+          [36m>[39m
+            [0mTítulo de prueba[0m
+          [36m</Text>[39m
+          [36m<Text[39m
+            [33mtestID[39m=[32m"probe-body"[39m
+          [36m>[39m
+            [0mCuerpo de prueba.[0m
+          [36m</Text>[39m
+        [36m</View>[39m
+      [36m</View>[39m
+    [36m</RNCSafeAreaProvider>[39m
+
+      390 |   it('R10.2 envuelve la pose en float con su estilo inicial', async () => {
+      391 |     await renderProbe();
+```
+
+```text
+  ● #171 R10: Pingo flota › R10.3 arranca un bucle infinito reversible una sola vez
+
+    expect(jest.fn()).toHaveBeenCalledTimes(expected)
+
+    Expected number of calls: 1
+    Received number of calls: 0
+
+      397 |   it('R10.3 arranca un bucle infinito reversible una sola vez', async () => {
+      398 |     await renderProbe();
+```
+
+```text
+  ● #171 R10: Pingo flota › R10.3 sube cuatro puntos en 1200 ms
+
+    Unable to find an element with testID: probe-float
+
+    [36m<RNCSafeAreaProvider>[39m
+      [36m<View[39m
+        [33mtestID[39m=[32m"probe-frame"[39m
+      [36m>[39m
+        [36m<View[39m
+          [33mtestID[39m=[32m"probe"[39m
+        [36m>[39m
+          [36m<ViewManagerAdapter_ExpoImage[39m
+            [33mplaceholder[39m=[32m{[]}[39m
+            [33mtestID[39m=[32m"probe-pose"[39m
+          [36m/>[39m
+          [36m<Text[39m
+            [33mtestID[39m=[32m"probe-title"[39m
+          [36m>[39m
+            [0mTítulo de prueba[0m
+          [36m</Text>[39m
+          [36m<Text[39m
+            [33mtestID[39m=[32m"probe-body"[39m
+          [36m>[39m
+            [0mCuerpo de prueba.[0m
+          [36m</Text>[39m
+        [36m</View>[39m
+      [36m</View>[39m
+    [36m</RNCSafeAreaProvider>[39m
+
+      404 |     await renderProbe();
+      405 |     await act(async () => { jest.advanceTimersByTime(1200); });
+```
+
+```text
+  ● #158 R4: family, walker y vet no ven la acción › en el vacío › solo Pingo para family
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Array [
+    -   "docs-empty-float",
+    +   "docs-empty-pose",
+        "docs-empty-title",
+        "docs-empty-body",
+      ]
+
+      510 |       expect(screen.queryByTestId('docs-upload')).toBeNull();
+      511 |       expect(screen.queryByTestId('docs-empty-action')).toBeNull();
+```
+
+```text
+  ● #158 R4: family, walker y vet no ven la acción › en el vacío › solo Pingo para walker
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Array [
+    -   "docs-empty-float",
+    +   "docs-empty-pose",
+        "docs-empty-title",
+        "docs-empty-body",
+      ]
+
+      510 |       expect(screen.queryByTestId('docs-upload')).toBeNull();
+      511 |       expect(screen.queryByTestId('docs-empty-action')).toBeNull();
+```
+
+```text
+  ● #158 R4: family, walker y vet no ven la acción › en el vacío › solo Pingo para vet
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Array [
+    -   "docs-empty-float",
+    +   "docs-empty-pose",
+        "docs-empty-title",
+        "docs-empty-body",
+      ]
+
+      510 |       expect(screen.queryByTestId('docs-upload')).toBeNull();
+      511 |       expect(screen.queryByTestId('docs-empty-action')).toBeNull();
+```
+
+
+Cadena c23 completa: typecheck=0; lint=0 y 0 bytes; índice exacto y LIMPIO=0. Commit: 6c9f98d1 test(mobile): Pingo flota en los vacíos (R10).
+
+### c24 — T12 verde R10 — PARADA por aviso de worker
+
+```bash
+FORCE_COLOR=0 bunx jest --runTestsByPath src/components/__tests__/empty-state.test.tsx src/screens/docs/index.test.tsx > /tmp/171-c24.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+  ● Console
+  ● Console
+Test Suites: 2 passed, 2 total
+Tests:       206 passed, 206 total
+```
+
+```bash
+FORCE_COLOR=0 bunx jest --runTestsByPath src/__tests__/design-drift.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/171-c24-guardas.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+Test Suites: 2 passed, 2 total
+Tests:       96 passed, 96 total
+```
+
+```bash
+FORCE_COLOR=0 bunx jest --testTimeout=30000 > /tmp/171-c24-all.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+Test Suites: 99 passed, 99 total
+Tests:       2853 passed, 2853 total
+```
+
+
+### PARADA — c24 / T12: aviso de cierre del worker
+
+La medida c24 pasó con exit=0 y 206/206; GUARDAS pasó con exit=0 y 96/96. Antes de ALL, `pgrep -af '[i]nit\.sh'` salió vacío. ALL se ejecutó una única vez con --testTimeout=30000, sin lanzar otros comandos mientras corría: exit=0, 99 suites y 2853 tests verdes. Sin embargo, su log incluye este aviso:
+
+```text
+A worker process has failed to exit gracefully and has been force exited. This is likely caused by tests leaking due to improper teardown. Try running with --detectOpenHandles to find leaks. Active timers can also cause this, ensure that .unref() was called on them.
+```
+
+T12 y c24 ordenan PARADA si una suite consumidora cuelga o avisa de handles abiertos. El aviso no identifica la suite; se registra la parada sin relanzar ALL, sin --detectOpenHandles y sin añadir mocks en otras suites.
+
+La cadena literal c24 se lanzó en la misma llamada que leyó el resumen y el aviso; llegó a `bun run typecheck`. Al detectar el aviso, se interrumpió únicamente su shell (PID 667659, SIGTERM; exit=143), antes de lint, git add y git commit. No hay resultado completo de typecheck/lint de c24 ni commit verde c24. Se conserva la implementación sin stagear para revisión.
+
+Último commit confirmado: 6c9f98d1 test(mobile): Pingo flota en los vacíos (R10).
+
+```text
+ M mobile-pet-tracker/src/components/empty-state.tsx
+?? progress/impl_mobile-celebrations-and-living-empty.md
+```
+
+S12.1, c25–c30 y Cierre no se ejecutaron. No se ejecutó init.sh; no hubo push, PR, merge ni rebase. R16: pendiente del smoke humano.
+
+## Reanudación 4
+
+Leída del disco la nota «Reanudación 4». H0 sigue siendo d01b03bf. No se repiten las comprobaciones de arranque.
+
+```text
+HEAD=0e717f00
+ M mobile-pet-tracker/src/components/empty-state.tsx
+?? progress/impl_mobile-celebrations-and-living-empty.md
+```
+
+Los tres logs de c24 existen. La nota aclara que el aviso suelto al final del ALL no activa la parada; sigue siendo PARADA cualquier suite consumidora roja, cualquier Exceeded timeout, o el aviso en medida/GUARDAS. Se conserva empty-state.tsx sin cambios. Se continúa únicamente la cadena c24 desde su primer grep -qE; no se repite medida, GUARDAS ni ALL.
+
+### c24 — T12 verde R10 — cadena reanudada con logs existentes
+
+```bash
+FORCE_COLOR=0 bunx jest --runTestsByPath src/components/__tests__/empty-state.test.tsx src/screens/docs/index.test.tsx > /tmp/171-c24.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+  ● Console
+  ● Console
+Test Suites: 2 passed, 2 total
+Tests:       206 passed, 206 total
+```
+
+```bash
+FORCE_COLOR=0 bunx jest --runTestsByPath src/__tests__/design-drift.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/171-c24-guardas.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+Test Suites: 2 passed, 2 total
+Tests:       96 passed, 96 total
+```
+
+```bash
+FORCE_COLOR=0 bunx jest --testTimeout=30000 > /tmp/171-c24-all.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+Test Suites: 99 passed, 99 total
+Tests:       2853 passed, 2853 total
+```
+
+Commit: `a8f8f08c feat(mobile): Pingo flota en los vacíos (R10)`.
+
+Cadena del handoff: exit=0. Typecheck: exit=0. Lint: exit=0; fichero vacío. <LIMPIO>: exit=0.
+
+
+### S12.1 — celebrate añadido a la unión de EmptyStatePose
+
+HEAD de la sonda: a8f8f08c.
+
+```bash
+FORCE_COLOR=0 bunx jest --runTestsByPath src/components/__tests__/empty-state.test.tsx > /tmp/171-s12-1.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=1
+  ● #171 R10: Pingo flota › R10.1 conserva exactamente las seis poses de EmptyState
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 97 passed, 98 total
+```
+
+S12.1 dio exactamente 1 failed, 97 passed, 98 total; el único rojo es R10.1. Restaurada con git checkout HEAD -- mobile-pet-tracker/src/components/empty-state.tsx; limpio=0.
+
+### c25 — T13 rojo R11
+
+```bash
+FORCE_COLOR=0 bunx jest --runTestsByPath src/components/__tests__/empty-state.test.tsx > /tmp/171-c25.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=1
+  ● #171 R11: reduce motion en los vacíos › R11.1 no arranca el bucle con reduce motion
+  ● #171 R11: reduce motion en los vacíos › R11.1 conserva la posición a los 1200 y los 10000 ms
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 98 passed, 100 total
+```
+
+```text
+  ● #171 R11: reduce motion en los vacíos › R11.1 no arranca el bucle con reduce motion
+
+    expect(jest.fn()).not.toHaveBeenCalled()
+
+    Expected number of calls: 0
+    Received number of calls: 1
+
+    1: {"callback": undefined, "current": 0, "easing": [Function BezierEasing], "onFrame": [Function timing], "onStart": [Function anonymous], "progress": 0, "reduceMotion": false, "startTime": 0, "startValue": 0, "timestamp": 0, "toValue": -4, "type": "timing"}, -1, true
+
+      421 |   it('R11.1 no arranca el bucle con reduce motion', async () => {
+      422 |     await renderProbe();
+```
+
+```text
+  ● #171 R11: reduce motion en los vacíos › R11.1 conserva la posición a los 1200 y los 10000 ms
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Object {
+        "height": 160,
+        "transform": Array [
+          Object {
+    -       "translateY": 0,
+    +       "translateY": -4,
+          },
+        ],
+        "width": 160,
+      }
+
+      427 |     await renderProbe();
+      428 |     await act(async () => { jest.advanceTimersByTime(1200); });
+```
+
+
+Cadena c25 completa: typecheck=0; lint=0 y 0 bytes; índice exacto y LIMPIO=0. Commit: 1240c206 test(mobile): Pingo quieto con reduce motion (R11).
+
+c26: pgrep vacío antes del ALL; ALL corrió solo. Ningún Exceeded timeout en los tres logs; ningún aviso de worker en medida ni GUARDAS. El aviso suelto al final del ALL es el permitido por Reanudación 4.
+
+### c26 — T13 verde R11
+
+```bash
+FORCE_COLOR=0 bunx jest --runTestsByPath src/components/__tests__/empty-state.test.tsx > /tmp/171-c26.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+Test Suites: 1 passed, 1 total
+Tests:       100 passed, 100 total
+```
+
+```bash
+FORCE_COLOR=0 bunx jest --runTestsByPath src/__tests__/design-drift.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/171-c26-guardas.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+Test Suites: 2 passed, 2 total
+Tests:       96 passed, 96 total
+```
+
+```bash
+FORCE_COLOR=0 bunx jest --testTimeout=30000 > /tmp/171-c26-all.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+Test Suites: 99 passed, 99 total
+Tests:       2855 passed, 2855 total
+```
+
+Commit: `fd0a3132 feat(mobile): Pingo quieto con reduce motion (R11)`.
+
+Cadena del handoff: exit=0. Typecheck: exit=0. Lint: exit=0; fichero vacío. <LIMPIO>: exit=0.
+
+
+### c27 — T15 rojo R15
+
+```bash
+FORCE_COLOR=0 bunx jest --runTestsByPath src/components/__tests__/celebration.test.tsx > /tmp/171-c27.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=1
+  ● #171 R15: docs/ui-guidelines.md declara la enmienda del confeti
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 45 passed, 46 total
+```
+
+```text
+  ● #171 R15: docs/ui-guidelines.md declara la enmienda del confeti
+
+    expect(received).toHaveLength(expected)
+
+    Expected length: 2
+    Received length: 1
+    Received array:  ["# Carta de UI — mobile-pet-tracker·
+    > Fuente de verdad de UI/UX móvil para TODOS los agentes (Claude, subagentes,
+    > Codex CLI). Toda spec, implementación y review de trabajo móvil se valida
+    > contra este documento. Complementa `docs/conventions.md` §Convenciones de
+    > la app móvil; ante conflicto, gana el más específico.·
+    ## Skills: quién carga qué·
+    Las guías genéricas viven en las skills oficiales de Expo — instaladas en
+    Claude Code (plugin `expo`) y en Codex CLI (`codex plugin add
+    expo@openai-curated`, mismo contenido v1.12+). Este doc NO las duplica:
+    fija las decisiones ya tomadas en ESTE repo.·
+    | Tarea móvil | Skill a cargar antes de trabajar |
+    |---|---|
+    | Cualquiera (routing/entrada) | `expo-overview` → deriva a la específica |
+    | Tokens, tema, componentes reusables | `expo-design-system` |
+    | Estilo nativo, safe areas, HIG | `expo-native-ui` |
+    | Sheets, pickers, menus, toggles | `expo-ui` |
+    | Animaciones, gestos, haptics | `expo-animation` (en Claude: `animate-expo`) |
+    | Tailwind/uniwind | `expo-tailwind-setup` |
+    | Diseñar/mejorar una pantalla o flujo completo | `appllama-app-design-skill` (obligatoria, ver abajo) |·
+    Subagentes y handoffs a Codex deben instruir explícitamente la carga de la
+```
+
+
+Cadena c27 completa: typecheck=0; lint=0 y 0 bytes; índice exacto y LIMPIO=0. Commit: 9dbfebbb test(mobile): la carta declara el confeti (R15).
+
+c28: pgrep se comprobó sin pipe y se esperó en intervalos de 30 s hasta quedar vacío; ALL corrió solo. Ningún Exceeded timeout en los tres logs; ningún aviso de worker en medida ni GUARDAS. El aviso suelto al final del ALL es el permitido por Reanudación 4.
+
+### c28 — T15 verde R15
+
+```bash
+FORCE_COLOR=0 bunx jest --runTestsByPath src/components/__tests__/celebration.test.tsx > /tmp/171-c28.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+Test Suites: 1 passed, 1 total
+Tests:       46 passed, 46 total
+```
+
+```bash
+FORCE_COLOR=0 bunx jest --runTestsByPath src/__tests__/design-drift.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/171-c28-guardas.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+Test Suites: 2 passed, 2 total
+Tests:       96 passed, 96 total
+```
+
+```bash
+FORCE_COLOR=0 bunx jest --testTimeout=30000 > /tmp/171-c28-all.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+Test Suites: 99 passed, 99 total
+Tests:       2856 passed, 2856 total
+```
+
+Commit: `eb9da969 docs(mobile): enmienda de la carta, confeti de celebración (R15)`.
+
+Cadena del handoff: exit=0. Typecheck: exit=0. Lint: exit=0; fichero vacío. <LIMPIO>: exit=0.
+
+
+## Cierre
+
+Se relee el handoff del disco y se ejecuta BASE con celebration.test.tsx añadido al final. Se respetan los valores de cierre de A1–A70, H1–H5 y P1–P10, sin alterar las expectativas del handoff.
+
+### Cierre — BASE más Celebration
+
+HEAD de la sonda: eb9da969.
+
+```bash
+FORCE_COLOR=0 bunx jest --runTestsByPath src/screens/welcome/index.test.tsx src/screens/pairing/index.test.tsx src/__tests__/ui-language.test.ts src/screens/add-pet/index.test.tsx src/providers/__tests__/language-provider.test.tsx src/components/__tests__/empty-state.test.tsx src/__tests__/design-drift.test.ts src/__tests__/consistency-classnames.test.ts src/theme/__tests__/motion.test.ts src/__tests__/legibility-classnames.test.ts src/utils/__tests__/category-palette.test.ts src/screens/docs/index.test.tsx src/components/__tests__/celebration.test.tsx > /tmp/171-final.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+Test Suites: 13 passed, 13 total
+Tests:       663 passed, 663 total
+```
+
+
+### Cierre — ALL
+
+HEAD de la sonda: eb9da969.
+
+```bash
+FORCE_COLOR=0 bunx jest --testTimeout=30000 > /tmp/171-all.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+Test Suites: 99 passed, 99 total
+Tests:       2856 passed, 2856 total
+```
+
+pgrep vacío antes de ALL; no se lanzaron otros comandos durante ALL. Ningún Exceeded timeout; medida final sin aviso de worker. El aviso suelto al final de ALL es el permitido por Reanudación 4.
+
+Cierre: `bun run typecheck; echo "exit=$?"` → exit=0.
+
+Cierre: bunx expo lint --no-cache > /tmp/171-final-lint.txt 2>&1; echo "exit=$?" → exit=0.
+
+```bash
+test ! -s /tmp/171-final-lint.txt; echo "vacio=$?"
+```
+
+```text
+vacio=0
+shell_exit=0
+```
+
+```bash
+git diff --quiet d01b03bf -- package.json bun.lock app.json; echo "exit=$?"
+```
+
+```text
+exit=0
+shell_exit=0
+```
+
+```bash
+git diff d01b03bf -- src | grep -cE '^\+.*(shadow-|elevation|boxShadow)'
+```
+
+```text
+0
+shell_exit=1
+```
+
+### Anclas de cierre A1–A70, H1–H5 y P1–P10
+
+Se relee el handoff del disco para sus comandos y valores de cierre. PROD se define en ambas carpetas. Las anclas se ejecutan en orden; cualquier diferencia para un valor fijado es PARADA.
+
+#### A1
+
+```bash
+grep -cF "return { ...actual, __esModule: true, useReducedMotion: () => mockUseReducedMotion(), withRepeat: jest.fn((animation: unknown) => animation) };" src/screens/welcome/index.test.tsx
+```
+
+Esperado: 1.
+
+```text
+exit=0
+1
+```
+
+#### A2
+
+```bash
+grep -cF "jest.mock('expo-haptics', () => ({" 'src/app/(tabs)/__tests__/food.test.tsx'
+```
+
+Esperado: 1.
+
+```text
+exit=0
+1
+```
+
+#### A3
+
+```bash
+grep -cF "declare function require(moduleName: '../motion'): Record<string, unknown>;" src/theme/__tests__/motion.test.ts
+```
+
+Esperado: 1.
+
+```text
+exit=0
+1
+```
+
+#### A4
+
+```bash
+grep -cF "useSafeAreaInsets: () => ({ top: 40, right: 0, bottom: 24, left: 0 })," src/screens/pairing/index.test.tsx
+```
+
+Esperado: 1.
+
+```text
+exit=0
+1
+```
+
+#### A5
+
+```bash
+grep -cF "expect(bytes.toString('ascii', 12, 16)).toBe('VP8X');" src/components/__tests__/empty-state.test.tsx
+```
+
+Esperado: 1.
+
+```text
+exit=0
+1
+```
+
+#### A6
+
+```bash
+grep -cF "it('no mete otras poses de Pingo'" src/screens/welcome/index.test.tsx
+```
+
+Esperado: 1.
+
+```text
+exit=0
+1
+```
+
+#### A7
+
+```bash
+ls assets/images | grep -cE '^(pingo|mascot)-'
+```
+
+Esperado: 9.
+
+```text
+exit=0
+9
+```
+
+#### A8
+
+```bash
+sha256sum /home/claude/pet-tracker-mascot/webp/pingo-celebrate.webp
+```
+
+Esperado: b8e9745f73dedc6d72f89a588046a7440f32df4b2e9685e70fa96a2b70e3a254 (si el sandbox deniega la lectura, PARA: el humano hara el `cp` de c2).
+
+```text
+exit=0
+b8e9745f73dedc6d72f89a588046a7440f32df4b2e9685e70fa96a2b70e3a254  /home/claude/pet-tracker-mascot/webp/pingo-celebrate.webp
+```
+
+#### A9
+
+```bash
+test -e assets/images/pingo-celebrate.webp; echo "exit=$?"
+```
+
+Esperado: exit=0.
+
+```text
+exit=0
+exit=0
+```
+
+#### A10
+
+```bash
+grep -cF "queryFn: () => listPets(baseUrl, token ?? '')," src/screens/pairing/index.tsx
+```
+
+Esperado: 1.
+
+```text
+exit=0
+1
+```
+
+#### A11
+
+```bash
+grep -cF 'testID="pairing-ready"' src/screens/pairing/index.tsx
+```
+
+Esperado: 1.
+
+```text
+exit=0
+1
+```
+
+#### A12
+
+```bash
+grep -cF "<Celebration" src/screens/pairing/index.tsx
+```
+
+Esperado: 1.
+
+```text
+exit=0
+1
+```
+
+#### A13
+
+```bash
+grep -cF "<Pressable" src/screens/pairing/index.tsx
+```
+
+Esperado: 0.
+
+```text
+exit=1
+0
+```
+
+#### A14
+
+```bash
+grep -cF "router.push('/pairing')}" src/screens/home/index.tsx
+```
+
+Esperado: 1.
+
+```text
+exit=0
+1
+```
+
+#### A15
+
+```bash
+for c in accent category-amber-strong category-violet-strong category-blue-strong category-rose-strong category-green-strong; do printf '%s ' "$c"; grep -cE -- "--color-$c:" src/theme/global.css; done
+```
+
+Esperado: seis lineas, cada una terminada en 2.
+
+```text
+exit=0
+accent 2
+category-amber-strong 2
+category-violet-strong 2
+category-blue-strong 2
+category-rose-strong 2
+category-green-strong 2
+```
+
+#### A16
+
+```bash
+grep -cF "it('EmptyState solo importa de react, react-native, expo-image y heroui-native'" src/components/__tests__/empty-state.test.tsx
+```
+
+Esperado: 0.
+
+```text
+exit=1
+0
+```
+
+#### A17
+
+```bash
+grep -cF "it('EmptyState no anima', ()" src/components/__tests__/empty-state.test.tsx
+```
+
+Esperado: 0.
+
+```text
+exit=1
+0
+```
+
+#### A18
+
+```bash
+grep -cF "it('EmptyState importa exactamente Image, Button, Text y View'" src/components/__tests__/empty-state.test.tsx
+```
+
+Esperado: 0.
+
+```text
+exit=1
+0
+```
+
+#### A19
+
+```bash
+grep -cF "it('EmptyState no anima con Animated, LayoutAnimation ni transiciones'" src/components/__tests__/empty-state.test.tsx
+```
+
+Esperado: 0.
+
+```text
+exit=1
+0
+```
+
+#### A20
+
+```bash
+grep -cF "it('con acción pinta pose, título, cuerpo y botón como hijos directos, en ese orden'" src/components/__tests__/empty-state.test.tsx
+```
+
+Esperado: 1.
+
+```text
+exit=0
+1
+```
+
+#### A21
+
+```bash
+grep -cF "it('sin acción pinta pose, título y cuerpo como hijos directos, en ese orden'" src/components/__tests__/empty-state.test.tsx
+```
+
+Esperado: 1.
+
+```text
+exit=0
+1
+```
+
+#### A22
+
+```bash
+grep -cF "'docs-empty-pose', 'docs-empty-title', 'docs-empty-body'," src/screens/docs/index.test.tsx
+```
+
+Esperado: 0.
+
+```text
+exit=1
+0
+```
+
+#### A23
+
+```bash
+grep -cF "expect(count(/style=\{CONTINUOUS_CORNER\}/g)).toBe(31 + 1);" src/__tests__/consistency-classnames.test.ts
+```
+
+Esperado: 0.
+
+```text
+exit=1
+0
+```
+
+#### A24
+
+```bash
+grep -cF "[join('screens', 'pairing', 'index.tsx'), 2]," src/__tests__/consistency-classnames.test.ts
+```
+
+Esperado: 0.
+
+```text
+exit=1
+0
+```
+
+#### A25
+
+```bash
+grep -cF "expect(count(/bg-accent-soft/g)).toBe(16 + 2 + 1);" src/__tests__/consistency-classnames.test.ts
+```
+
+Esperado: sin cifra fijada; se anota.
+
+```text
+exit=1
+0
+```
+
+#### A26
+
+```bash
+grep -cF "expect(accentSoftCount).toBe(16 + 2 + 1);" src/__tests__/consistency-classnames.test.ts
+```
+
+Esperado: sin cifra fijada; se anota.
+
+```text
+exit=1
+0
+```
+
+#### A27
+
+```bash
+grep -cF -- "- 1, // #159 R2" src/providers/__tests__/language-provider.test.tsx
+```
+
+Esperado: 1.
+
+```text
+exit=0
+1
+```
+
+#### A28
+
+```bash
+grep -cF "export const R9_ADD_PET: UseRow[] = [" src/__tests__/ui-copy-table.ts
+```
+
+Esperado: 1.
+
+```text
+exit=0
+1
+```
+
+#### A29
+
+```bash
+grep -cF "it('resuelve las 41 ocurrencias normativas'" src/__tests__/ui-language.test.ts
+```
+
+Esperado: 0.
+
+```text
+exit=1
+0
+```
+
+#### A30
+
+```bash
+grep -cF "it('no exporta nada más'" src/theme/__tests__/motion.test.ts
+```
+
+Esperado: 1.
+
+```text
+exit=0
+1
+```
+
+#### A31
+
+```bash
+grep -cF "it('centraliza las diez clases completas y prohíbe interpolarlas'" src/__tests__/consistency-classnames.test.ts
+```
+
+Esperado: 0.
+
+```text
+exit=1
+0
+```
+
+#### A32
+
+```bash
+grep -cF "'text-category-rose-strong'," src/__tests__/consistency-classnames.test.ts
+```
+
+Esperado: 1.
+
+```text
+exit=0
+1
+```
+
+#### A33
+
+```bash
+grep -cF "style={CONTINUOUS_CORNER}" src/screens/pairing/index.tsx
+```
+
+Esperado: 1.
+
+```text
+exit=0
+1
+```
+
+#### A34
+
+```bash
+grep -cF "bg-accent-soft" src/screens/pairing/index.tsx
+```
+
+Esperado: 1.
+
+```text
+exit=0
+1
+```
+
+#### A35
+
+```bash
+grep -cF "it('inventaría los diecinueve primarios con labio, fichero a fichero'" src/__tests__/consistency-classnames.test.ts
+```
+
+Esperado: 1.
+
+```text
+exit=0
+1
+```
+
+#### A36
+
+```bash
+grep -cF "[join('components', 'empty-state.tsx')]: 1," src/__tests__/consistency-classnames.test.ts
+```
+
+Esperado: 1.
+
+```text
+exit=0
+1
+```
+
+#### A37
+
+```bash
+grep -cF "[join('screens', 'pairing', 'index.tsx')]: 2," src/__tests__/consistency-classnames.test.ts
+```
+
+Esperado: 0.
+
+```text
+exit=1
+0
+```
+
+#### A38
+
+```bash
+grep -cF 'expect(count(/\bborder-b-4\b/g)).toBe(19);' src/__tests__/consistency-classnames.test.ts
+```
+
+Esperado: sin cifra fijada; se anota.
+
+```text
+exit=1
+0
+```
+
+#### A39
+
+```bash
+grep -cF 'expect(count(/border-black\/25/g)).toBe(19);' src/__tests__/consistency-classnames.test.ts
+```
+
+Esperado: sin cifra fijada; se anota.
+
+```text
+exit=1
+0
+```
+
+#### A40
+
+```bash
+grep -cF "expect(primaryRadius).toHaveLength(13 + 1 + 1 + 1 + 1 + 1 + 1);" src/__tests__/consistency-classnames.test.ts
+```
+
+Esperado: sin cifra fijada; se anota.
+
+```text
+exit=1
+0
+```
+
+#### A41
+
+```bash
+grep -cF ".toBe(13 + 1 + 1 + 1 + 1 + 1 + 1);" src/__tests__/consistency-classnames.test.ts
+```
+
+Esperado: sin cifra fijada; se anota.
+
+```text
+exit=1
+0
+```
+
+#### A42
+
+```bash
+grep -cF "it('inventaría los cuatro secundarios neutros de toda la app'" src/__tests__/consistency-classnames.test.ts
+```
+
+Esperado: 0.
+
+```text
+exit=1
+0
+```
+
+#### A43
+
+```bash
+grep -cF 'return neutral ? [tag.match(/testID="([^"]+)"/)?.[1]] : [];' src/__tests__/consistency-classnames.test.ts
+```
+
+Esperado: 0.
+
+```text
+exit=1
+0
+```
+
+#### A44
+
+```bash
+grep -cF "expect(count(/border-lip-gray/g)).toBe(4);" src/__tests__/consistency-classnames.test.ts
+```
+
+Esperado: sin cifra fijada; se anota.
+
+```text
+exit=1
+0
+```
+
+#### A45
+
+```bash
+grep -cF 'expect(count(/\bborder-b-6\b/g)).toBe(4);' src/__tests__/consistency-classnames.test.ts
+```
+
+Esperado: sin cifra fijada; se anota.
+
+```text
+exit=1
+0
+```
+
+#### A46
+
+```bash
+grep -cF "it.each(rows)('%s pinta %s con la receta del secundario en su tag de apertura'" src/__tests__/consistency-classnames.test.ts
+```
+
+Esperado: 1.
+
+```text
+exit=0
+1
+```
+
+#### A47
+
+```bash
+grep -cF -- '--color-lip-gray: ' src/theme/global.css
+```
+
+Esperado: 2.
+
+```text
+exit=0
+2
+```
+
+#### A48
+
+```bash
+grep -cF '`rounded-xl bg-accent border-b-4 border-black/25`' ../docs/ui-guidelines.md
+```
+
+Esperado: 1.
+
+```text
+exit=0
+1
+```
+
+#### A49
+
+```bash
+grep -cF '`rounded-xl border-2 border-b-6 border-lip-gray bg-surface`' ../docs/ui-guidelines.md
+```
+
+Esperado: 1.
+
+```text
+exit=0
+1
+```
+
+#### A50
+
+```bash
+grep -cF "it('lleva el labio gris en el CTA secundario'" src/screens/welcome/index.test.tsx
+```
+
+Esperado: 1.
+
+```text
+exit=0
+1
+```
+
+#### A51
+
+```bash
+grep -cF "it('declara el botón primario con labio'" src/components/__tests__/empty-state.test.tsx
+```
+
+Esperado: 1.
+
+```text
+exit=0
+1
+```
+
+#### A52
+
+```bash
+grep -cF "it('declara el botón sin size ni variant'" src/components/__tests__/empty-state.test.tsx
+```
+
+Esperado: 1.
+
+```text
+exit=0
+1
+```
+
+#### A53
+
+```bash
+grep -cF "expect(screen.getByTestId('ready-model')).toHaveTextContent('TrailTag Pro');" src/screens/pairing/index.test.tsx
+```
+
+Esperado: 1.
+
+```text
+exit=0
+1
+```
+
+#### A54
+
+```bash
+grep -cF "async function renderReady(" src/screens/pairing/index.test.tsx
+```
+
+Esperado: 1.
+
+```text
+exit=0
+1
+```
+
+#### A55
+
+```bash
+grep -cF "describe('R7: tras el 201 muestra" src/screens/pairing/index.test.tsx
+```
+
+Esperado: 1.
+
+```text
+exit=0
+1
+```
+
+#### A56
+
+```bash
+grep -cF "describe('#95 R8: ver en el mapa desapila pairing'" src/screens/pairing/index.test.tsx
+```
+
+Esperado: 1.
+
+```text
+exit=0
+1
+```
+
+#### A57
+
+```bash
+grep -cF "it('mantiene la base más las claves de #68 y los mismos marcadores en ambos idiomas'" src/providers/__tests__/language-provider.test.tsx
+```
+
+Esperado: 1.
+
+```text
+exit=0
+1
+```
+
+#### A58
+
+```bash
+grep -cF "'addPet.savePet': 'Save pet'," src/i18n/catalog.ts
+```
+
+Esperado: 1.
+
+```text
+exit=0
+1
+```
+
+#### A59
+
+```bash
+grep -cF "'addPet.savePet': 'Guardar mascota'," src/i18n/catalog.ts
+```
+
+Esperado: 1.
+
+```text
+exit=0
+1
+```
+
+#### A60
+
+```bash
+grep -cF "jest.mock('../../api/pets', () => ({ createPet: jest.fn() }));" src/screens/add-pet/index.test.tsx
+```
+
+Esperado: 1.
+
+```text
+exit=1
+0
+```
+
+### PARADA — Cierre / A60
+
+Cifra esperada: 1. Salida observada: 0. No se adapta la expectativa ni se relanza el ancla. Se detiene la cadena antes de las restantes anclas y de c29/c30.
+
+### Evidencia y estado de la parada A60
+
+A1–A59 coinciden con los valores de cierre (los valores no fijados se anotaron). A60 busca el literal antiguo `jest.mock('../../api/pets', () => ({ createPet: jest.fn() }));` y da 0 (grep exit=1, sin coincidencias), frente al 1 que el handoff conserva. La lista «Valores al cerrar» no redefine A60 ni la deja sin fijar.
+
+T10 + T11 (0), c20, exige sustituir ese literal por `jest.mock('../../api/pets', () => ({ createPet: jest.fn(), listPets: jest.fn() }));`. Ese mock está en src/screens/add-pet/index.test.tsx:20. No se modifica el código correcto de c20 ni se añade una coincidencia artificial para satisfacer A60. La expectativa tampoco se adapta.
+
+Reanudación 4 completó c24, S12.1 (restaurada), c25, c26, c27 y c28. Cierre: BASE 13/663 y ALL 99/2856, ambos exit=0; typecheck=0; lint=0 y 0 bytes; dependencias sin cambios; sombras=0. Los avisos sueltos finales de ALL son los permitidos por Reanudación 4; no hubo timeouts ni avisos en las medidas/GUARDAS.
+
+Último commit confirmado: eb9da969 docs(mobile): enmienda de la carta, confeti de celebración (R15).
+
+```text
+?? progress/impl_mobile-celebrations-and-living-empty.md
+```
+
+No se ejecutan A61–A70, H1–H5, P1–P10 ni las comprobaciones posteriores del Cierre. Trazabilidad permanece intacta; c29 y c30 no se hicieron. No se relanzaron medidas ni ALL. No hubo init.sh, push, PR, merge ni rebase.
+
+R16: pendiente del smoke humano
+
+## Reanudación 5
+
+Leída del disco la nota «Reanudación 5». H0 sigue siendo d01b03bf. No se repiten las comprobaciones de arranque ni BASE, ALL, typecheck, lint, dependencias o sombras del Cierre. Sus tres logs existen y se conservan los resultados ya documentados.
+
+```text
+HEAD=e9891dae
+?? progress/impl_mobile-celebrations-and-living-empty.md
+```
+
+La lista de valores de cierre redefine A60 a 0; c20 permanece intacto. Se reanuda en A60 y después A61–A70, H1–H5, P1–P10, los tres diff, trazabilidad, c29, lista cerrada y c30.
+
+### Anclas de cierre reanudadas: A60–A70, H1–H5 y P1–P10
+
+Se relee el handoff del disco para sus comandos y valores de cierre. PROD se define en ambas carpetas. Las anclas se ejecutan en orden; cualquier diferencia para un valor fijado es PARADA.
+
+#### A60
+
+```bash
+grep -cF "jest.mock('../../api/pets', () => ({ createPet: jest.fn() }));" src/screens/add-pet/index.test.tsx
+```
+
+Esperado: 0.
+
+```text
+exit=1
+0
+```
+
+#### A61
+
+```bash
+grep -cF "describe('R7: foto opcional tras alta'" src/screens/add-pet/index.test.tsx
+```
+
+Esperado: 1.
+
+```text
+exit=0
+1
+```
+
+#### A62
+
+```bash
+grep -cF "it('posts selected fields, numeric months, and omits blank optionals'" src/screens/add-pet/index.test.tsx
+```
+
+Esperado: 1.
+
+```text
+exit=0
+1
+```
+
+#### A63
+
+```bash
+grep -cF "it('uploads a chosen preview only after createPet succeeds'" src/screens/add-pet/index.test.tsx
+```
+
+Esperado: 1.
+
+```text
+exit=0
+1
+```
+
+#### A64
+
+```bash
+grep -cF "export async function renderWithProviders(" test/render-with-providers.tsx
+```
+
+Esperado: 1.
+
+```text
+exit=0
+1
+```
+
+#### A65
+
+```bash
+grep -cF '## Checklist de autocrítica' ../docs/ui-guidelines.md
+```
+
+Esperado: 1.
+
+```text
+exit=0
+1
+```
+
+#### A66
+
+```bash
+grep -cF '## Enmienda #171' ../docs/ui-guidelines.md
+```
+
+Esperado: 1.
+
+```text
+exit=0
+1
+```
+
+#### A67
+
+```bash
+grep -cF '### §2.23 — Añadidos por #159 — Pingo sin collar' ../specs/mobile-ui-language/design.md
+```
+
+Esperado: 1.
+
+```text
+exit=0
+1
+```
+
+#### A68
+
+```bash
+grep -cF '| — | `home.activityNeedsCollar` |' ../specs/mobile-ui-language/design.md
+```
+
+Esperado: 1.
+
+```text
+exit=0
+1
+```
+
+#### A69
+
+```bash
+grep -cF '### §2.24' ../specs/mobile-ui-language/design.md
+```
+
+Esperado: 1.
+
+```text
+exit=0
+1
+```
+
+#### A70
+
+```bash
+grep -cF '## 3. La infraestructura' ../specs/mobile-ui-language/design.md
+```
+
+Esperado: 1.
+
+```text
+exit=0
+1
+```
+
+#### H1
+
+```bash
+grep -cF -- '- [x] Aprobado por humano (fecha: 2026-10-12)' specs/mobile-celebrations-and-living-empty/requirements.md
+```
+
+Esperado: 1.
+
+```text
+exit=0
+1
+```
+
+#### H2
+
+```bash
+grep -cF -- '- [x] Enmienda E1 aprobada por humano (fecha: 2026-10-12)' specs/mobile-celebrations-and-living-empty/requirements.md
+```
+
+Esperado: 1.
+
+```text
+exit=0
+1
+```
+
+#### H3
+
+```bash
+grep -cF -- '- [ ] R16: smoke en dev build de Android completado por humano (fecha: ____)' specs/mobile-celebrations-and-living-empty/requirements.md
+```
+
+Esperado: 1.
+
+```text
+exit=0
+1
+```
+
+#### H4
+
+```bash
+grep -cF '"status": "in_progress"' feature_list.json
+```
+
+Esperado: 1.
+
+```text
+exit=0
+1
+```
+
+#### H5
+
+```bash
+grep -rlF '#171' mobile-pet-tracker/src | wc -l
+```
+
+Esperado: sin cifra fijada; se anota.
+
+```text
+exit=0
+12
+```
+
+#### P1
+
+```bash
+cmp -s mobile-pet-tracker/assets/images/pingo-celebrate.webp /home/claude/pet-tracker-mascot/webp/pingo-celebrate.webp; echo "cmp=$?"
+```
+
+Esperado: cmp=0.
+
+```text
+exit=0
+cmp=0
+```
+
+#### P2
+
+```bash
+grep -cF 'export const CONFETTI_FILLS' mobile-pet-tracker/src/utils/category-palette.ts
+```
+
+Esperado: 1.
+
+```text
+exit=0
+1
+```
+
+#### P3
+
+```bash
+grep -cE '^export const MOTION_(POP_SCALE|POP_SPRING|CONFETTI_FALL_TIMING|CONFETTI_MIN_MS|CONFETTI_SPREAD_MS) = ' mobile-pet-tracker/src/theme/motion.ts
+```
+
+Esperado: 5.
+
+```text
+exit=0
+5
+```
+
+#### P4
+
+```bash
+grep -cF '<Celebration' mobile-pet-tracker/src/screens/pairing/index.tsx mobile-pet-tracker/src/screens/add-pet/index.tsx
+```
+
+Esperado: las dos con :1.
+
+```text
+exit=0
+mobile-pet-tracker/src/screens/pairing/index.tsx:1
+mobile-pet-tracker/src/screens/add-pet/index.tsx:1
+```
+
+#### P5
+
+```bash
+grep -cF "'addPet.celebrate" mobile-pet-tracker/src/i18n/catalog.ts
+```
+
+Esperado: 8.
+
+```text
+exit=0
+8
+```
+
+#### P6
+
+```bash
+grep -cF '### §2.24 — Añadidos por #171 — Celebraciones' specs/mobile-ui-language/design.md
+```
+
+Esperado: 1.
+
+```text
+exit=0
+1
+```
+
+#### P7
+
+```bash
+grep -cF '## Enmienda #171 — confeti de celebración' docs/ui-guidelines.md
+```
+
+Esperado: 1.
+
+```text
+exit=0
+1
+```
+
+#### P8
+
+```bash
+grep -cF "describe('#171 R" mobile-pet-tracker/src/components/__tests__/celebration.test.tsx
+```
+
+Esperado: 9.
+
+```text
+exit=0
+9
+```
+
+#### P9
+
+```bash
+grep -cF -- '        + 4 // #171 R12' mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx
+```
+
+Esperado: 1.
+
+```text
+exit=0
+1
+```
+
+#### P10
+
+```bash
+grep -cF "queryFn: () => listPets(baseUrl, token ?? '')," mobile-pet-tracker/src/screens/add-pet/index.tsx
+```
+
+Esperado: 1.
+
+```text
+exit=0
+1
+```
+
+### Tres diff del Cierre
+
+H0=d01b03bf. Comandos ejecutados desde la raíz.
+
+```bash
+git diff --stat d01b03bf -- backend-pet-tracker/ infra-pet-tracker/
+```
+
+```text
+exit=0
+```
+
+backend e infra: coincide con el handoff.
+
+```bash
+git diff --name-only d01b03bf HEAD -- docs/
+```
+
+```text
+exit=0
+docs/ui-guidelines.md
+```
+
+docs: coincide con el handoff.
+
+```bash
+git diff --name-only d01b03bf HEAD -- mobile-pet-tracker/ | LC_ALL=C sort
+```
+
+```text
+exit=0
+mobile-pet-tracker/assets/images/pingo-celebrate.webp
+mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+mobile-pet-tracker/src/__tests__/design-drift.test.ts
+mobile-pet-tracker/src/__tests__/ui-copy-table.ts
+mobile-pet-tracker/src/__tests__/ui-language.test.ts
+mobile-pet-tracker/src/components/__tests__/celebration.test.tsx
+mobile-pet-tracker/src/components/__tests__/empty-state.test.tsx
+mobile-pet-tracker/src/components/celebration.tsx
+mobile-pet-tracker/src/components/empty-state.tsx
+mobile-pet-tracker/src/i18n/catalog.ts
+mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx
+mobile-pet-tracker/src/screens/add-pet/index.test.tsx
+mobile-pet-tracker/src/screens/add-pet/index.tsx
+mobile-pet-tracker/src/screens/docs/index.test.tsx
+mobile-pet-tracker/src/screens/pairing/index.test.tsx
+mobile-pet-tracker/src/screens/pairing/index.tsx
+mobile-pet-tracker/src/screens/welcome/index.test.tsx
+mobile-pet-tracker/src/theme/__tests__/motion.test.ts
+mobile-pet-tracker/src/theme/motion.ts
+mobile-pet-tracker/src/utils/category-palette.ts
+```
+
+mobile (20): coincide con el handoff.
+
+### Commits c1–c28 y corrección c7.1
+
+| Paso | R-id | Commit (hash y mensaje) |
+|---|---|---|
+| c1 | R1 | 45120511 test(mobile): falta la pose celebrate de Pingo (R1) |
+| c2 | R1 | 8589eede feat(mobile): pose celebrate de Pingo (R1) |
+| c3 | R2 | 10e0b296 test(mobile): falta el componente Celebration (R2) |
+| c4 | R2 | e9133499 feat(mobile): componente Celebration (R2) |
+| c5 | R14 | 520dd605 test(mobile): los botones de la celebración llevan labio (R14) |
+| c6 | R14 | eaea2ce5 feat(mobile): labio en los botones de la celebración (R14) |
+| c7 | R6 | 166f78c8 test(mobile): confeti de la celebración (R6) |
+| c7.1 | R6 | f65fc05d test(mobile): el confeti espera a act (R6) |
+| c8 | R6 | f22c2d42 feat(mobile): confeti de una sola pasada (R6) |
+| c9 | R7 | f470deca test(mobile): pop de Pingo y la insignia (R7) |
+| c10 | R7 | 086df0c1 feat(mobile): pop de Pingo y la insignia (R7) |
+| c11 | R8 | 28d8f15b test(mobile): la celebración respeta reduce motion (R8) |
+| c12 | R8 | fd6be85b feat(mobile): la celebración respeta reduce motion (R8) |
+| c13 | R9 | 5a5d3014 test(mobile): háptico de éxito al celebrar (R9) |
+| c14 | R9 | 7803220e feat(mobile): háptico de éxito al celebrar (R9) |
+| c15 | R13 | a74fefca test(mobile): candados de drift de la celebración (R13) |
+| c16 | R3 | 56ae7a8c test(mobile): Vincular celebra el collar listo (R3) |
+| c17 | R3 | 2e7d60bd feat(mobile): Vincular celebra el collar listo (R3) |
+| c18 | R12 | a708d8a5 test(mobile): copy de la celebración de la primera mascota (R12) |
+| c19 | R12 | 1393436f feat(mobile): copy de la celebración de la primera mascota (R12) |
+| c20 | R4 | 1df6f3ef test(mobile): add-pet renderiza con QueryClient (R4) |
+| c21 | R4, R5 | 468e3327 test(mobile): celebración de la primera mascota (R4, R5) |
+| c22 | R4, R5 | 32bafc4d feat(mobile): celebración de la primera mascota (R4, R5) |
+| c23 | R10 | 6c9f98d1 test(mobile): Pingo flota en los vacíos (R10) |
+| c24 | R10 | a8f8f08c feat(mobile): Pingo flota en los vacíos (R10) |
+| c25 | R11 | 1240c206 test(mobile): Pingo quieto con reduce motion (R11) |
+| c26 | R11 | fd0a3132 feat(mobile): Pingo quieto con reduce motion (R11) |
+| c27 | R15 | 9dbfebbb test(mobile): la carta declara el confeti (R15) |
+| c28 | R15 | eb9da969 docs(mobile): enmienda de la carta, confeti de celebración (R15) |
+
+### Trazabilidad para c29
+
+Se rellenó únicamente la columna de commits de R1–R15, con hash corto y mensaje rojo → verde. R13 conserva el commit único c15; R4 y R5 incluyen c20 como refactor previo; R6 incluye la corrección mecánica c7.1. Se verificó por reconstrucción que el frontmatter, la columna de tests y el resto del fichero son idénticos al original. R16 permanece pendiente, sin tocar su casilla.
+
+### R16 — pasos del humo humano en dev build de Android
+
+Lo corre el **humano** en un **dev build de Android**, no en Expo Go. Con dos
+transportes adb, usa `adb -s <ip:puerto>`.
+
+1. Con una cuenta **sin mascotas**, en Añadir mascota guarda `Nala` sin foto:
+   - sale la celebración a pantalla completa: confeti, Pingo con pop, la
+     insignia ✓ un instante después y vibración de éxito;
+   - el título es «¡Nala ya está en casa!» y no hay fichas de Modelo/ESN.
+2. Pulsa «Vincular un collar»: abre Vincular con Nala seleccionada.
+3. Vuelve, añade una segunda mascota: guarda y vuelve atrás **sin**
+   celebración.
+4. En Vincular, empareja un collar:
+   - sale la celebración con las fichas Modelo y ESN;
+   - «Ver en el mapa» lleva al mapa;
+   - repite y «Listo» vuelve atrás;
+   - repite y el botón atrás de Android equivale a «Listo».
+5. Repite el paso 1 con otra cuenta vacía y pulsa el atrás de Android:
+   equivale a «Ahora no».
+6. Abre una pantalla con vacío de Pingo (por ejemplo, Recordatorios sin
+   recordatorios): Pingo sube y baja suave, en bucle.
+7. Activa Ajustes → Accesibilidad → Quitar animaciones:
+   - repite 4: sin confeti ni rebote, la imagen solo aparece con un fundido
+     y la vibración sigue;
+   - en el paso 6, Pingo está quieto.
+8. Repite 1 y 4 en modo oscuro: la celebración es legible y el confeti se
+   ve sobre el fondo.
+
+### Resultado del Cierre
+
+A1–A59 conservan su comprobación previa; A60=0 y A61–A70, H1–H5 y P1–P10 coinciden. Backend e infra: diff vacío; docs: solo ui-guidelines.md; móvil: los 20 ficheros permitidos. Se conservan BASE 13/663, ALL 99/2856, typecheck=0, lint=0 y vacío, dependencias sin cambios y sombras=0. La casilla de la enmienda de la carta sigue desmarcada. No se corrió init.sh, no hubo push, PR, merge ni rebase. Trazabilidad y evidencia listas para c29; después se comprobará la lista cerrada para c30.
+
+R16: pendiente del smoke humano
