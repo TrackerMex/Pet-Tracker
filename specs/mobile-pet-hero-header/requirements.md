@@ -283,6 +283,7 @@ ya pide. Ver [[design]] §7.
   `{ gap: 16, paddingBottom: 120 }` con el mock de insets actual. ROJO primero.*
 
 ### R6 — Profile sustituye su `PetHero` local por el compartido
+**Enmendado por #168 (B2)**: Profile deja el hero compartido y pinta profile-pet-card con PetAvatar circular; profile-hero-skeleton conserva su nombre y pasa a h-52 (#168 R4).
 
 - **R6**: WHEN se abre la pestaña Profile con una mascota seleccionada THE
   SYSTEM SHALL renderizar `PetHeroHeader` con `variant="card"` y **sin slot**, y
@@ -558,3 +559,17 @@ banda gris ni oscura en la transición a la banda opaca; que el selector de
 mascota sigue alcanzable y utilizable en la zona superior; que la foto no se
 recorta por arriba dejando fuera la cara del animal; y que al errar el detalle
 se puede cambiar de mascota sin salir de la pantalla.
+
+## Enmienda #168 — título grande en Salud, Nutrición y Perfil
+
+`mobile-tab-headers-canvas` (#168) modifica una decisión que esta spec dejó
+aprobada. La spec de origen es `specs/mobile-tab-headers-canvas/`; el detalle
+de la enmienda está en su `requirements.md` §R11.
+
+- Spec enmendada: `mobile-pet-hero-header`
+- Qué cambia: `R6: Profile deja el hero compartido; Home lo conserva`
+- Qué NO cambia: ningún otro requisito de esta spec ni su estado de
+  aprobación. Los tests que cubren lo enmendado se reescriben en #168 (lista
+  en su `tasks.md`).
+
+- [ ] Enmienda #168 aprobada por humano

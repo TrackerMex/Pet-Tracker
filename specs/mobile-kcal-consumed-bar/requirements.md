@@ -141,6 +141,7 @@ campos no casa `kcalConsumedToday?:`, así que un campo opcional también pone
 rojo. Rojo real: hoy los dos últimos son `generatedAt`, `servedToday`.
 
 ### R2 — La tarjeta «Objetivo diario» pinta las kcal servidas contra `merKcal`
+**Enmendado por #168 (B3)**: la barra y el tile ForkKnife se sustituyen por el anillo food-plan-ring; R4 y R7 se reescriben sobre el anillo; R3 y R5 no cambian (#168 R8-R10).
 
 **WHEN** el plan de la mascota seleccionada está cargado (`loadedPlan !== null`),
 **THE SYSTEM SHALL** pintar dentro de `food-plan-card`, **como segundo hijo y
@@ -480,3 +481,17 @@ cambia. Recuento esperado: `food.test.tsx` 53 → **55**; suite móvil
 ### Aprobación de la Enmienda E1
 
 - [x] Enmienda E1 aprobada por humano (fecha: 2026-09-23, vía Notion) ← gate obligatorio antes de la ronda 2 de Codex
+
+## Enmienda #168 — título grande en Salud, Nutrición y Perfil
+
+`mobile-tab-headers-canvas` (#168) modifica una decisión que esta spec dejó
+aprobada. La spec de origen es `specs/mobile-tab-headers-canvas/`; el detalle
+de la enmienda está en su `requirements.md` §R11.
+
+- Spec enmendada: `mobile-kcal-consumed-bar`
+- Qué cambia: `R2, R4 y R7: el anillo sustituye a la barra`
+- Qué NO cambia: ningún otro requisito de esta spec ni su estado de
+  aprobación. Los tests que cubren lo enmendado se reescriben en #168 (lista
+  en su `tasks.md`).
+
+- [ ] Enmienda #168 aprobada por humano
