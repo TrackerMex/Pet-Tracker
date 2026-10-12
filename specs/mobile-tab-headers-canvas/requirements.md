@@ -679,4 +679,4 @@ van en §Reescrituras como filas nuevas:
 
 ### Aprobación de la Enmienda E1
 
-- [ ] Enmienda E1 aprobada por humano (fecha: ____) ← gate obligatorio antes del handoff a Codex
+- [X] Enmienda E1 aprobada por humano (fecha: 2026-10-11, vía Notion) ← gate obligatorio antes del handoff a Codex
