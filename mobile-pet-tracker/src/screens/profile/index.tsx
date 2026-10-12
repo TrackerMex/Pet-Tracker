@@ -195,7 +195,7 @@ export function ProfileScreen() {
       }}
     >
       <View className="flex-row items-center justify-between gap-3">
-        <Text className="text-2xl font-black text-foreground">
+        <Text testID="profile-title" className="text-3xl font-black tracking-tight text-foreground">
           {t('profile.profile')}
         </Text>
         <Button
