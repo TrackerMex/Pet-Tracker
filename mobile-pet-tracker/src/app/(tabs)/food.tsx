@@ -2,7 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import * as Haptics from 'expo-haptics';
 import { router, type Href } from 'expo-router';
 import { Button, Skeleton, Spinner } from 'heroui-native';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { Easing, ReduceMotion, useAnimatedProps, useSharedValue } from 'react-native-reanimated';
@@ -80,6 +80,9 @@ export default function FoodScreen() {
   const kcalRingProps = useAnimatedProps(() => ({
     strokeDashoffset: KCAL_RING_CIRCUMFERENCE * (1 - kcalRingPct.get() / 100),
   }));
+  useEffect(() => {
+    kcalRingPct.set(Math.min(kcalPct, 100));
+  }, [kcalPct, kcalRingPct]);
 
   async function toggleMeal(mealTime: string, served: boolean) {
     if (pendingMealTime !== null || selectedPetId === null) {
