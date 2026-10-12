@@ -159,6 +159,8 @@ Tests:
 - `src/app/__tests__/layout.test.tsx` (R9; cambia el `toEqual` de `#100 R2`,
   B18).
 - `src/providers/__tests__/language-provider.test.tsx` (R1).
+- `src/app/__tests__/alert-detail.navigation.test.tsx` (Enmienda E2: doble de
+  `pet-map`, porque la ruta del detalle ya importa el mini-mapa).
 - `src/__tests__/ui-copy-table.ts`, `src/__tests__/ui-language.test.ts`,
   `src/__tests__/consistency-classnames.test.ts` (R16).
 

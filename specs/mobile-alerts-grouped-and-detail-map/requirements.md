@@ -462,10 +462,68 @@ está commiteado. El rojo de este candado es la medida de la parada: 32 contra
 33 con el mapa montado. Ningún otro requisito cambia: R16 gana esta línea, y la
 tabla de candados agregados gana su fila.
 
+## Enmienda E2 — el doble de `pet-map` en el test de navegación de `#100 R8`
+
+Codex paró en el ALL del cierre (Reanudación 5) el 2026-10-12, con
+`Test Suites: 4 failed, 96 passed, 100 total` y
+`Tests: 4 failed, 2888 passed, 2892 total` (evidencia en
+`progress/impl_mobile-alerts-grouped-and-detail-map.md`, §Reanudación 5). Hubo
+dos causas distintas:
+
+- Cuatro `Exceeded timeout of 30000 ms`: uno en Alertas, dos en Mapa y uno en
+  Home. Se deben a la carga del VPS, que tenía tres sesiones de Codex corriendo
+  jest a la vez. No son defectos del árbol.
+- La suite `src/app/__tests__/alert-detail.navigation.test.tsx` no arrancó por
+  `Cannot find native module 'ExpoMaps'`. El stack pasa por
+  `src/app/alerts/[alertId].tsx`, luego `src/screens/alert-detail/index.tsx`, y
+  termina en `src/components/pet-map.tsx`. Ese test (el ida y vuelta de
+  `#100 R8`) monta la ruta real del detalle, que desde R8 importa el mini-mapa.
+  Esta spec no lo listaba entre los tests tocados. Por eso salen 2892 y no 2893:
+  la suite no llega a ejecutar su único test.
+
+El leader barrió contra el árbol en `0331642b` los tests que importan la
+pantalla o la ruta del detalle:
+
+- `alert-detail.notification.test.tsx` sustituye `alerts/[alertId]` por un stub.
+- `detail-stack.test.tsx`, `ui-language`, `design-drift` y los de
+  `src/api/` solo leen el fichero como texto o no lo importan.
+- `src/screens/alert-detail/index.test.tsx` ya lleva el doble.
+
+Solo falla el de navegación. Ningún candado lee ese fichero ni cuenta
+`pet-map-double`.
+
+Spike del leader, fuera del árbol y ya borrado: con el doble insertado justo
+debajo del mock de `floating-tab-bar`, la suite da `Tests: 1 passed, 1 total`
+con exit 0. `makeAlert` lleva `geofenceId: null`, así que la consulta de la
+geocerca no se activa y no hace falta otro doble.
+
+**THE SYSTEM SHALL**, en un commit propio
+`test(mobile-alerts-grouped-and-detail-map): #170 E2 pet-map double in the alert detail navigation test`,
+insertar en `src/app/__tests__/alert-detail.navigation.test.tsx`, justo después
+de la línea
+`jest.mock('../../components/floating-tab-bar', () => ({ FloatingTabBar: () => null }));`,
+estas cinco líneas. Son literales e iguales a las de
+`src/screens/alert-detail/index.test.tsx`:
+
+```
+jest.mock('../../components/pet-map', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return { PetMap: (props: Record<string, unknown>) => React.createElement(View, { ...props, testID: 'pet-map-double' }) };
+});
+```
+
+No hay rojo previo: el rojo es la medida de la parada (la suite no arranca).
+Ningún otro requisito cambia y ningún recuento de producción se mueve. El ALL
+del cierre pasa a esperar 100 suites y 2893 tests, sin cambios respecto al
+recuento ya prescrito. La lista cerrada gana este fichero: son 17 bajo
+`mobile-pet-tracker/` y 20 en total.
+
 ## Aprobación
 
 - [x] Aprobado por humano (fecha: 2026-10-12) ← gate obligatorio antes de implementar
 - [x] Enmienda E1 aprobada por humano (fecha: 2026-10-12)
+- [ ] Enmienda E2 aprobada por humano (fecha: ____)
 
 ## Smoke R17
 

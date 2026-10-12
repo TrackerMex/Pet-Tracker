@@ -88,6 +88,50 @@
 >     El comando entero -> 5. El leader lo midió el 2026-10-12 sobre
 >     `643c2f2d`. Esto cierra la revisión del criterio que quedó pendiente en
 >     Reanudacion 2.
+>
+> 15. **Enmienda E2 y carga del ALL (tras la parada en el ALL de
+>     Reanudación 5).** La suite `src/app/__tests__/alert-detail.navigation.test.tsx`
+>     no arrancaba por `Cannot find native module 'ExpoMaps'`, porque monta la
+>     ruta real del detalle, que desde R8 importa `pet-map`. requirements.md
+>     §Enmienda E2 prescribe el doble. Antes del CIERRE, el commit cE2, desde
+>     mobile-pet-tracker/:
+>
+>     ```
+>     cd /home/claude/sites/Pet-Tracker-wt-170/mobile-pet-tracker && pwd \
+>       && test "$(grep -cF "jest.mock('../../components/pet-map'" src/app/__tests__/alert-detail.navigation.test.tsx)" = 1 \
+>       && test "$(grep -cF "testID: 'pet-map-double'" src/app/__tests__/alert-detail.navigation.test.tsx)" = 1 \
+>       && test "$(grep -A1 -F "jest.mock('../../components/floating-tab-bar'" src/app/__tests__/alert-detail.navigation.test.tsx | tail -1)" = "jest.mock('../../components/pet-map', () => {" \
+>       && FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/app/__tests__/alert-detail.navigation.test.tsx > /tmp/170-e2.txt 2>&1 \
+>       && grep -qF 'Tests:       1 passed, 1 total' /tmp/170-e2.txt \
+>       && test ! -e .expo/types/router.d.ts && bun run typecheck \
+>       && bunx expo lint --no-cache > /tmp/170-lint.txt 2>&1 && test ! -s /tmp/170-lint.txt \
+>       && git add src/app/__tests__/alert-detail.navigation.test.tsx \
+>       && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'mobile-pet-tracker/src/app/__tests__/alert-detail.navigation.test.tsx ' \
+>       && <LIMPIO> \
+>       && git commit -m 'test(mobile-alerts-grouped-and-detail-map): #170 E2 pet-map double in the alert detail navigation test'
+>     ```
+>
+>     Las cinco líneas van literales, copiadas de requirements.md §Enmienda
+>     E2, justo debajo del mock de `floating-tab-bar`. No hay commit rojo: el
+>     rojo es la medida de la parada. El leader corrió las tres anclas `grep`
+>     contra una copia del fichero fuera del árbol: con el doble dan `1`, `1`
+>     y la línea del mock; sin él, `0`, `0` y otra línea. Si la cadena para
+>     antes del `git commit`, PARA.
+>
+>     **El ALL, con la carga medida.** Antes de lanzar ALL, comprueba dos
+>     cosas: `pgrep -af '[i]nit\.sh'` vacío y `cut -d' ' -f1 /proc/loadavg`
+>     por debajo de 6 (la máquina tiene 4 CPU). Si no se cumplen, `sleep 300`
+>     y mide otra vez, como mucho seis veces. A la sexta, PARA. Anota cada
+>     medida en el impl. Si el ALL sale rojo y **todos** sus `●` son
+>     `Exceeded timeout`, anótalos, vuelve a medir la carga igual y relanza
+>     ALL una sola vez. Cualquier otro rojo, o un segundo ALL rojo, PARA. El
+>     ALL esperado no cambia: exit=0, 100 suites y 2893 tests.
+>
+>     **Recuentos.** La lista cerrada gana el test de navegación: son 17
+>     ficheros bajo mobile-pet-tracker/ y 20 en total. El cuerpo ya está
+>     actualizado. En c27, la celda «Commit» de R8 en traceability.md
+>     termina con `; E2: <hash> test(mobile-alerts-grouped-and-detail-map): #170 E2 pet-map double in the alert detail navigation test`.
+>     El impl registra cE2 con su línea `Tests:`, typecheck y lint.
 
 ---
 
@@ -951,7 +995,7 @@ Desde la raiz del repo (`cd /home/claude/sites/Pet-Tracker-wt-170 && pwd`):
   de tasks.md T16 (todas estan entre H11, H12, P2-P5, P13 y P14).
 - `git diff --stat <H0> -- backend-pet-tracker/ infra-pet-tracker/ docs/`   -> vacio
 - `git diff --name-only <H0> HEAD -- mobile-pet-tracker/ | LC_ALL=C sort`
-  -> exactamente los 16 de mobile-pet-tracker/ de la lista de abajo
+  -> exactamente los 17 de mobile-pet-tracker/ de la lista de abajo
 
 Despues rellena specs/mobile-alerts-grouped-and-detail-map/traceability.md,
 solo la columna «Commit (hash + mensaje)»: hash corto + mensaje del rojo y
@@ -966,7 +1010,7 @@ tests, ni el resto del fichero. Termina el impl con la linea
     && git commit -m 'docs(mobile-alerts-grouped-and-detail-map): #170 traceability'
 Despues, la lista cerrada, con salida al impl:
   git diff --name-only <H0> HEAD -- . ':!feature_list.json' ':!progress/current.md' ':!progress/handoff_mobile-alerts-grouped-and-detail-map.md' ':!specs/mobile-alerts-grouped-and-detail-map/requirements.md' ':!specs/mobile-alerts-grouped-and-detail-map/design.md' ':!specs/mobile-alerts-grouped-and-detail-map/tasks.md' ':!progress/review_mobile-alerts-grouped-and-detail-map.md'
-    -> exactamente los 19 ficheros de abajo
+    -> exactamente los 20 ficheros de abajo
 y c28, desde la raiz:
   git commit --only progress/impl_mobile-alerts-grouped-and-detail-map.md -m 'docs(mobile-alerts-grouped-and-detail-map): #170 closed file list'
 No rebasees despues de escribir hashes.
@@ -1034,10 +1078,11 @@ No rebasees despues de escribir hashes.
   por otro que haga lo mismo con otra herramienta.
 - NO hagas push ni abras la PR: lo hace el leader al cerrar.
 
-Ficheros que TU cambias (19, ni uno mas):
+Ficheros que TU cambias (20, ni uno mas):
   mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
   mobile-pet-tracker/src/__tests__/ui-copy-table.ts
   mobile-pet-tracker/src/__tests__/ui-language.test.ts
+  mobile-pet-tracker/src/app/__tests__/alert-detail.navigation.test.tsx
   mobile-pet-tracker/src/app/__tests__/layout.test.tsx
   mobile-pet-tracker/src/app/_layout.tsx
   mobile-pet-tracker/src/i18n/catalog.ts
@@ -1054,7 +1099,7 @@ Ficheros que TU cambias (19, ni uno mas):
   progress/impl_mobile-alerts-grouped-and-detail-map.md
   specs/mobile-alerts-grouped-and-detail-map/traceability.md
   specs/mobile-ui-language/design.md
-  (y ninguno mas: 16 bajo mobile-pet-tracker/, uno en specs/mobile-ui-language/,
+  (y ninguno mas: 17 bajo mobile-pet-tracker/, uno en specs/mobile-ui-language/,
   traceability e impl)
 Si el leader commitea en mitad (una correccion), solo tocara ficheros
 excluidos por los pathspecs de la lista cerrada; cualquier otro fichero

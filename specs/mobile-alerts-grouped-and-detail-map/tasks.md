@@ -622,6 +622,10 @@ no añade tests ni código, solo comprueba:
 - [ ] Sonda T16-a: borra `t('alerts.viewOnMap')` del detalle (deja la etiqueta
   vacía). Rojo esperado: `ui-language.test.ts` ›
   `'registra cada ocurrencia del detalle'`.
+- [ ] (Enmienda E2) Antes de la suite completa, en un commit propio, el doble
+  de `pet-map` en `src/app/__tests__/alert-detail.navigation.test.tsx`, con las
+  cinco líneas literales de E2 justo debajo del mock de `floating-tab-bar`.
+  Verde: esa suite da `Tests: 1 passed, 1 total`.
 - [ ] Suite completa en verde, sin pipe:
   `cd mobile-pet-tracker && bunx jest; echo "exit=$?"`.
 
