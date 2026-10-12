@@ -1529,3 +1529,87 @@ mas estas dos, que ajustan las suyas:
   el handoff dice 27 y 25, o la Reanudacion 2 dice 28 y 26, cuenta 29
   y 27.
 ```
+
+## Reanudación 6: parada antes de la cadena de c10 (2026-10-12)
+
+> c7b, c8 y c9 quedaron commiteados y bien (`b550084e`, `30db66c1`,
+> `11ef23d5`). El verde de E está escrito (11 inserciones y 16 borrados en
+> `src/screens/profile/index.tsx`, sin stagear) y sus dos medidas dieron lo
+> prescrito: `113 passed, 113 total` y GUARDAS 92. Codex paró porque el
+> extractor de medidas que usa tomó como medida de c10 todo lo que hay entre
+> la línea `c10, ...` y la `c11, ...`. Ese tramo incluye el «Control antes
+> del rojo» del bloque F, que corrió antes de añadir los dobles y comparó
+> contra 92. El handoff no tiene error y el código tampoco: solo se ejecutó
+> un jest de más, que no escribe en el árbol. La cadena de c10 no llegó a
+> ejecutarse. Esta reanudación repite las dos medidas de c10 (el árbol no ha
+> cambiado, pero así la cadena lee medidas de esta sesión), ejecuta su
+> cadena y sigue por el bloque F. H0 sigue siendo `b082f6e5`. Este commit
+> solo toca este fichero, que está fuera de la lista cerrada.
+
+Pegar en Codex CLI:
+
+```
+Worktree: /home/claude/sites/Pet-Tracker-wt-168   <- PRIMERA LINEA. Trabaja AQUI y en ningun otro sitio
+Reanudacion 6 de #168 tras la parada antes de la cadena de c10. Ejecuta
+y pega en progress/impl_mobile-tab-headers-canvas.md, bajo una seccion
+nueva «## Reanudacion 6»:
+  cd /home/claude/sites/Pet-Tracker-wt-168 && pwd
+  git branch --show-current
+  git rev-parse --short HEAD~1
+  git log --oneline b082f6e5..HEAD
+  git status --short
+PARA si:
+- la branch no es feature/168-mobile-tab-headers-canvas;
+- HEAD~1 no es 11ef23d5 (tu c9);
+- el log no son exactamente diecisiete commits: el del leader que anade
+  esta reanudacion, 11ef23d5, 30db66c1, b550084e, ae5085bf, 31605b09,
+  ce060f18, e65457de, bb71dc3b, 74447b19, 9039b87b, 675c465e, f08b7b79,
+  2c01414a, 1abc7950, c5618f43 y fdd98bcf;
+- `git status --short` no es exactamente estas dos lineas:
+   M mobile-pet-tracker/src/screens/profile/index.tsx
+  ?? progress/impl_mobile-tab-headers-canvas.md
+H0 sigue siendo b082f6e5. Siguen en vigor todas las reglas del handoff
+original, las correcciones del paso 5 de la Reanudacion 2, el
+`<LINT n>` con reintento de la Reanudacion 4 y las dos correcciones del
+paso 5 de la Reanudacion 5 (fila R4 con c7 + c7b; 29 commits en total y
+27 en A-M).
+
+Regla de extraccion: cada cadena empieza en su primera linea de comando
+y termina en su linea `git commit -m '...'`, esa incluida. Nada de lo
+que va detras es comando: ni las cabeceras `-- Bloque ... --`, ni las
+lineas `cN, ...`, ni la prosa. Las lineas con `->` son lo esperado, no
+comandos.
+
+Regla de medidas: la medida de cada cN son SOLO las lineas
+`FORCE_COLOR=0 bunx jest ...` y `<GUARDAS> ...` que van entre su linea
+`cN, ...` y la primera linea de su cadena (`grep -qE '^Tests: ...`).
+Lo que va detras del `git commit` de cN no es de cN. Los controles con
+nombre propio («Control antes del rojo» de F y los que haya en otros
+bloques) se miden en su momento, despues de hacer lo que su parrafo
+pide, y se comparan con su propia linea `->`, nunca con la de otro
+paso. Si tu extractor no puede respetar eso, extrae a mano.
+
+Anclas, desde mobile-pet-tracker/
+(`cd /home/claude/sites/Pet-Tracker-wt-168/mobile-pet-tracker && pwd`):
+  git diff --numstat -- src/screens/profile/index.tsx | cut -f1   -> 11
+  git diff --numstat -- src/screens/profile/index.tsx | cut -f2   -> 16
+  git diff --name-only HEAD -- . | wc -l   -> 1
+  git diff --cached --name-only | wc -l   -> 0
+  grep -c 'bg-accent-soft' src/screens/profile/index.tsx   -> 1
+  grep -cF "jest.mock('reicon-react-native'" src/screens/profile/index.test.tsx   -> 0
+Si alguna no da su cifra, PARA.
+
+Paso 1: c10 entero, tal como esta en el handoff original: sus dos
+medidas (a /tmp/168-g5.txt, `Tests:       113 passed, 113 total`, y
+GUARDAS a /tmp/168-g5-guardas.txt, 92) y su cadena, con el `<LINT 0>`
+de la Reanudacion 4, sin cambiar ninguna cifra. Mensaje:
+`feat(mobile): chips pastel en Perfil (#168 R5)`.
+
+Paso 2: el «Control antes del rojo» del bloque F, tal como esta en el
+handoff original: primero anade SOLO los dos dobles nuevos de P y
+despues mide a /tmp/168-f-control.txt -> `Tests:       50 passed, 50
+total`. Si no da eso, PARA.
+
+Paso 3: c11 y el resto del handoff original hasta c27, con todas las
+correcciones citadas arriba.
+```
