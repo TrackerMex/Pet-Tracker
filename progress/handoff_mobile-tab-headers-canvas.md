@@ -2141,3 +2141,103 @@ codigo).
 Paso 3: el paso 3 de la Reanudacion 10 tal cual. Solo se hace con el
 paso 2 entero en verde.
 ```
+
+## Reanudación 12: A8 y P18 llevaban un valor de cierre equivocado (2026-10-12)
+
+> La Reanudación 11 dejó en verde todo lo que tocaba antes de las anclas:
+> - el ALL dio `99 passed, 99 total` y `2833 passed, 2833 total`;
+> - el grep de `reading 'canceled'` dio 0;
+> - typecheck, `<LINT 0>`, R12.4/R12.5 y la comprobación de sombras
+>   también pasaron.
+>
+> Paró en A8, y paró bien. El error es del handoff, no del código:
+> - **A8**: el handoff decía «sin cambios» (las dos con `:0`). Pero R4
+>   (requirements.md, punto 2 del orden de `profile-pet-card`) prescribe
+>   `profile-pet-name` con `className="text-2xl font-black text-foreground"`,
+>   y su test lo asevera literal. Por eso Perfil da `:1`. Esa coincidencia
+>   no es el título viejo: es la aserción del nombre de la mascota.
+> - **P18**: el handoff decía 1. En H0, `pet-info-skeleton` ya llevaba
+>   `h-52 w-full rounded-card`, y R4 pasa `profile-hero-skeleton` de
+>   `h-80` a `h-52`. Por eso el fichero da 2.
+>
+> El leader corrió en `ebd25da4` todas las anclas de cierre, una a una:
+> A1-A14, H1-H30, P1-P18, `backend-pet-tracker/` e `infra-pet-tracker/`
+> vacíos, `docs/` y los 9 de `mobile-pet-tracker/`. Solo fallan A8 y P18,
+> por lo dicho arriba. La lista cerrada da hoy 13 ficheros: los 15
+> menos traceability.md y el impl, que entran en c26.
+>
+> Esta reanudación corrige los dos valores, añade a cada uno un ancla
+> que fija qué línea es la coincidencia legítima, y sigue el CIERRE
+> desde A9. No se repiten ni el ALL, ni el typecheck, ni el lint, ni las
+> comprobaciones por diff: el árbol no ha cambiado desde la Reanudación
+> 11 (lo comprueban las anclas). H0 sigue siendo `b082f6e5`. Este commit
+> solo toca este fichero, que está fuera de la lista cerrada.
+
+Pegar en Codex CLI:
+
+```
+Worktree: /home/claude/sites/Pet-Tracker-wt-168   <- PRIMERA LINEA. Trabaja AQUI y en ningun otro sitio
+Reanudacion 12 de #168 tras la parada en A8 de CIERRE. NO repitas las
+Reanudaciones 8 a 11. Ejecuta y pega en
+progress/impl_mobile-tab-headers-canvas.md, bajo una seccion nueva
+«## Reanudacion 12»:
+  cd /home/claude/sites/Pet-Tracker-wt-168 && pwd
+  git branch --show-current
+  git rev-parse --short HEAD~1
+  git log --oneline b082f6e5..HEAD | wc -l
+  git log --oneline 5c27b858..HEAD
+  git status --short
+PARA si:
+- la branch no es feature/168-mobile-tab-headers-canvas;
+- HEAD~1 no es ebd25da4 (la Reanudacion 11 del leader);
+- el recuento no es 40;
+- el segundo log no son exactamente dos commits: el del leader que
+  anade esta reanudacion y ebd25da4;
+- `git status --short` no es exactamente esta linea:
+  ?? progress/impl_mobile-tab-headers-canvas.md
+H0 sigue siendo b082f6e5. Siguen en vigor todas las reglas del handoff
+original, las correcciones del paso 5 de la Reanudacion 2, el
+`<LINT n>` con reintento de la Reanudacion 4, la regla de medidas de la
+Reanudacion 6, las dos correcciones del paso 5 de la Reanudacion 7
+(fila R8 con c17 + c17b; 30 commits en total y 28 en A-M) y la regla
+de error de invocacion ampliada de la Reanudacion 8.
+
+Anclas, desde mobile-pet-tracker/
+(`cd /home/claude/sites/Pet-Tracker-wt-168/mobile-pet-tracker && pwd`):
+  git diff --name-only HEAD -- . ../docs ../specs | wc -l   -> 0
+  git diff --cached --name-only | wc -l   -> 0
+  git ls-files --others --exclude-standard -- . ../docs ../specs | wc -l   -> 0
+  git diff --name-only b082f6e5 HEAD -- . | wc -l   -> 9
+  grep -c '^Tests:       2833 passed, 2833 total$' /tmp/168-all-r10.txt   -> 1
+  grep -c "reading 'canceled'" /tmp/168-all-r10.txt   -> 0
+  grep -c 'text-2xl font-black text-foreground' 'src/app/(tabs)/__tests__/food.test.tsx'   -> 0
+  grep -c 'text-2xl font-black text-foreground' src/screens/profile/index.test.tsx   -> 1
+  grep -cF "expect(name.props.className).toBe('text-2xl font-black text-foreground');" src/screens/profile/index.test.tsx   -> 1
+  grep -cF 'h-52 w-full rounded-card' src/screens/profile/index.tsx   -> 2
+  grep -cF '<Skeleton testID="profile-hero-skeleton" className="h-52 w-full rounded-card" />' src/screens/profile/index.tsx   -> 1
+Si alguna no da su cifra, PARA.
+
+Correccion de los valores de cierre del bloque == ANCLAS == del handoff
+original (sustituyen a los que alli figuran; el resto no cambia):
+- A8 al cerrar -> `src/app/(tabs)/__tests__/food.test.tsx:0` y
+  `src/screens/profile/index.test.tsx:1`. La unica coincidencia de
+  Perfil es la asercion de R4 sobre `profile-pet-name`; la fijan las
+  anclas 8 y 9 de arriba.
+- P18 al cerrar -> 2 (`pet-info-skeleton`, que ya estaba en H0, y
+  `profile-hero-skeleton`, por R4). La fija el ancla 11 de arriba.
+
+Paso 1: copia al impl, como A8 de cierre, la salida de las anclas 7 a 9
+de arriba. Despues sigue el CIERRE del handoff original en la ancla
+A9: A9-A14 desde mobile-pet-tracker/ con PROD definida, y H1-H30 y
+P1-P18 desde la raiz con PROD definida, cada una con su valor de
+cierre y con las dos correcciones de arriba. Despues, las tres
+comprobaciones de la raiz (backend e infra vacios, docs/ y los 9 de
+mobile-pet-tracker/). Si alguna no da su valor, PARA.
+
+NO repitas el ALL, ni el typecheck, ni `<LINT 0>`, ni R12.4/R12.5, ni
+la de sombras: pasaron en la Reanudacion 11 con este mismo arbol.
+
+Paso 2: traceability, c26, la lista cerrada (15) y c27, tal como estan
+en el CIERRE del handoff original, con las correcciones citadas arriba
+(fila R8 con c17 `3abdfbc3` + c17b `e37b72a3`).
+```
