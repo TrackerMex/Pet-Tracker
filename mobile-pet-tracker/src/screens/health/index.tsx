@@ -3,7 +3,7 @@ import { router } from 'expo-router';
 import { Button, Skeleton } from 'heroui-native';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ChevronRight, HeartPulse, Syringe } from 'reicon-react-native';
+import { Check, ChevronRight, Clock, HeartPulse, Syringe } from 'reicon-react-native';
 
 import { listVaccines, listWeights } from '../../api/health-records';
 import { listPets, type PetsState } from '../../api/pets';
@@ -22,6 +22,7 @@ import {
 } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { TOUCH_SLOP } from '../../theme/touch-target';
+import { CATEGORY_SLOTS } from '../../utils/category-palette';
 import { calendarDaysUntil, fmtDate } from '../home/format';
 
 function isPetsError(state: PetsState): boolean {
@@ -41,7 +42,9 @@ function fmtVariation(variation: number | null): string {
 }
 
 export function HealthScreen() {
-  const [warning, muted] = useThemeColors(['warning', 'muted']);
+  const [warning, muted, rose, amber, green] = useThemeColors([
+    'warning', 'muted', 'category-rose-strong', 'category-amber-strong', 'category-green-strong',
+  ]);
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { token } = useAuth();
   const t = useTranslate();
@@ -175,12 +178,28 @@ export function HealthScreen() {
                 ) : null}
 
                 {vaccines.data?.kind === 'ok'
-                  ? vaccines.data.vaccines.map((vaccine) => (
+                  ? vaccines.data.vaccines.map((vaccine) => {
+                      const slot = vaccine.nextDoseAt !== null && vaccine.nextDoseAt < today
+                        ? 'rose'
+                        : vaccine.id === nextVaccine?.id ? 'amber' : 'green';
+                      const Icon = slot === 'green' ? Check : Clock;
+                      const color = slot === 'rose' ? rose : slot === 'amber' ? amber : green;
+                      return (
                       <Card
                         key={vaccine.id}
                         testID={`vaccine-row-${vaccine.id}`}
-                        className="gap-1"
+                        className="flex-row items-center gap-3"
                       >
+                        <View
+                          testID={`vaccine-tile-${vaccine.id}`}
+                          className={`size-10 items-center justify-center rounded-xl ${CATEGORY_SLOTS[slot].surface}`}
+                          style={CONTINUOUS_CORNER}
+                          accessibilityElementsHidden
+                          importantForAccessibility="no-hide-descendants"
+                        >
+                          <Icon size={20} color={color} />
+                        </View>
+                        <View testID={`vaccine-text-${vaccine.id}`} className="flex-1 gap-1">
                         <Text className="font-bold text-foreground">
                           {vaccine.name}
                         </Text>
@@ -198,8 +217,10 @@ export function HealthScreen() {
                             {vaccine.nextDoseAt}
                           </Text>
                         ) : null}
+                        </View>
                       </Card>
-                    ))
+                      );
+                    })
                   : null}
               </View>
             ) : null}
