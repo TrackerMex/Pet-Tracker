@@ -222,7 +222,7 @@ describe('R4: health resuelve la mascota seleccionada', () => {
     expect(screen.getByText('Salud')).toBeVisible();
     expect(screen.getByTestId('health-loading')).toBeVisible();
     expect(screen.getByTestId('screen-health').props.contentContainerStyle).toEqual(
-      { gap: 16, paddingBottom: 120 },
+      { padding: 24, gap: 16, paddingTop: 52, paddingBottom: 120 },
     );
   });
 
@@ -231,9 +231,8 @@ describe('R4: health resuelve la mascota seleccionada', () => {
 
     await renderHealth();
 
-    expect((await screen.findByTestId('health-states')).props.style).toEqual(
-      { paddingHorizontal: 24, paddingTop: 52, gap: 16 },
-    );
+    expect(screen.getByTestId('screen-health').props.contentContainerStyle.paddingTop).toBe(52);
+    expect((await screen.findByTestId('health-states')).props.style).toEqual({ gap: 16 });
   });
 
   it('R8 (mobile-design-drift): reserva la altura del loading con Skeleton', async () => {
@@ -735,117 +734,6 @@ describe('#127 R2: el skeleton de vacunas lleva su receta en el árbol', () => {
   });
 });
 
-describe('#115 R2: Salud abre con el hero a sangre (A9)', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-    process.env.EXPO_PUBLIC_API_URL = apiUrl;
-    mockUseAuth.mockReturnValue({
-      status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn(),
-    } satisfies AuthContextValue);
-    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
-    mockListVaccines.mockResolvedValue({ kind: 'ok', vaccines: [] });
-    mockListWeights.mockResolvedValue({ kind: 'ok', weights: [] });
-  });
-
-  it('con mascotas, pet-hero y health-content son los únicos hijos del scroll, en ese orden', async () => {
-    await renderHealth();
-    await waitFor(() => expect(screen.getByTestId('pet-hero-name')).toHaveTextContent('Luna'));
-
-    const hero = screen.getByTestId('pet-hero');
-    const content = screen.getByTestId('health-content');
-    expect(hero.parent).toBe(content.parent);
-    expect(hero.parent!.parent).toBe(screen.getByTestId('screen-health'));
-    expect(hero.parent!.children).toHaveLength(2);
-    expect(elementChild(hero.parent!, 0)).toBe(hero);
-    expect(elementChild(hero.parent!, 1)).toBe(content);
-    expect(hero.props.className).toBe('overflow-hidden bg-default');
-    expect(screen.queryByTestId('health-states')).toBeNull();
-  });
-
-  it('saca el padding horizontal a health-content y deja gap y paddingBottom en el scroll', async () => {
-    await renderHealth();
-    await waitFor(() => {
-      const content = screen.getByTestId('health-content');
-      expect(within(content).getByTestId('vaccines-section')).toBeVisible();
-      expect(within(content).getByTestId('weight-card')).toBeVisible();
-    });
-    const content = screen.getByTestId('health-content');
-
-    expect(screen.getByTestId('screen-health').props.contentContainerStyle).toEqual({ gap: 16, paddingBottom: 120 });
-    expect(content.props.style).toEqual({ paddingHorizontal: 24, gap: 16 });
-    expect(within(content).getByTestId('vaccines-section')).toBeVisible();
-    expect(within(content).getByTestId('weight-card')).toBeVisible();
-  });
-
-  it('con contenido no pinta el título Salud', async () => {
-    await renderHealth();
-    await screen.findByTestId('pet-hero-name');
-
-    expect(screen.queryByText('Salud')).toBeNull();
-  });
-
-  it.each([
-    { name: 'pendiente', state: pending<PetsState>(), branch: 'health-loading' },
-    { name: 'error', state: { kind: 'error' } as const, branch: 'health-error' },
-    { name: 'unreachable', state: { kind: 'unreachable', message: 'network down' } as const, branch: 'health-error' },
-    { name: 'missing-config', state: { kind: 'missing-config' } as const, branch: 'health-error' },
-    { name: 'vacía', state: { kind: 'ok', pets: [] } as PetsState, branch: 'health-empty' },
-  ])('sin contenido ($name), agrupa título y rama en health-states sin hero', async ({ state, branch }) => {
-    mockListPets.mockImplementation(async () => state);
-    await renderHealth();
-    await waitFor(() => expect(within(screen.getByTestId('health-states')).getByTestId(branch)).toBeVisible());
-
-    const states = screen.getByTestId('health-states');
-    expect(states.props.style).toEqual({ paddingHorizontal: 24, paddingTop: 52, gap: 16 });
-    expect(within(states).getByText('Salud')).toBeVisible();
-    expect(within(states).getByText('Salud').props.className).toBe('text-2xl font-black text-foreground');
-    expect(screen.getByTestId('screen-health').props.contentContainerStyle).toEqual({ gap: 16, paddingBottom: 120 });
-    if (branch === 'health-error') expect(within(states).getByTestId('health-retry')).toBeVisible();
-    expect(screen.queryByTestId('pet-hero')).toBeNull();
-    expect(screen.queryByTestId('health-content')).toBeNull();
-  });
-});
-
-describe('#115 R3: el hero muestra la mascota seleccionada de la lista', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-    process.env.EXPO_PUBLIC_API_URL = apiUrl;
-    mockUseAuth.mockReturnValue({
-      status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn(),
-    } satisfies AuthContextValue);
-    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
-    mockListVaccines.mockResolvedValue({ kind: 'ok', vaccines: [] });
-    mockListWeights.mockResolvedValue({ kind: 'ok', weights: [] });
-  });
-
-  it('pinta nombre, raza y media de la mascota sin estado ni dato destacado', async () => {
-    await renderHealth();
-    await waitFor(() => expect(screen.getByTestId('pet-hero-name')).toHaveTextContent('Luna'));
-
-    expect(screen.getByTestId('pet-hero-breed')).toHaveTextContent('Mixed');
-    expect(screen.getByTestId('pet-hero-media')).toBeVisible();
-    expect(screen.queryByTestId('pet-hero-skeleton')).toBeNull();
-    expect(screen.queryByTestId('pet-hero-status')).toBeNull();
-    expect(screen.queryByTestId('pet-hero-highlight-value')).toBeNull();
-  });
-
-  it('pone el PetSwitcher en el slot del hero', async () => {
-    await renderHealth();
-    const slot = await screen.findByTestId('pet-hero-slot');
-
-    expect(within(slot).getByTestId('pet-chip-pet-1')).toBeVisible();
-    expect(slot.children).toHaveLength(1);
-  });
-
-  it('cambia el hero al pulsar otra mascota', async () => {
-    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet(), makePet({ id: 'pet-2', name: 'Max' })] });
-    await renderHealth();
-    await waitFor(() => expect(within(screen.getByTestId('pet-hero')).getByTestId('pet-hero-name')).toHaveTextContent('Luna'));
-    await fireEvent.press(screen.getByTestId('pet-chip-pet-2'));
-    await waitFor(() => expect(within(screen.getByTestId('pet-hero')).getByTestId('pet-hero-name')).toHaveTextContent('Max'));
-  });
-});
-
 describe('#115 R5: la weight card dibuja la evolución con WeightChart', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -1044,7 +932,7 @@ describe('#155 R4: Salud sin mascotas presenta a Pingo', () => {
     await screen.findByTestId('health-empty-pose');
     const slot = screen.getByTestId('health-empty');
     expect(slot.parent?.props.testID).toBe('health-states');
-    expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['Text', 'health-empty']);
+    expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['health-empty']);
   });
 
   it('pinta la pose, el título y la frase de Pingo', async () => {
@@ -1066,5 +954,92 @@ describe('#155 R4: Salud sin mascotas presenta a Pingo', () => {
     await fireEvent.press(action);
     expect(mockRouter.push).toHaveBeenCalledTimes(1);
     expect(mockRouter.push).toHaveBeenCalledWith('/pets/add');
+  });
+});
+
+const HEALTH_BRANCHES_168 = [
+  { name: 'pendiente', state: pending<PetsState>(), branch: 'health-loading' },
+  { name: 'error', state: { kind: 'error' } as const, branch: 'health-error' },
+  { name: 'unreachable', state: { kind: 'unreachable', message: 'network down' } as const, branch: 'health-error' },
+  { name: 'missing-config', state: { kind: 'missing-config' } as const, branch: 'health-error' },
+  { name: 'sin mascotas', state: { kind: 'ok', pets: [] } as PetsState, branch: 'health-empty' },
+  { name: 'con mascotas', state: { kind: 'ok', pets: [makePet(), makePet({ id: 'pet-2', name: 'Max' })] } as PetsState, branch: 'health-content' },
+];
+
+function setupHealth168() {
+  jest.clearAllMocks();
+  process.env.EXPO_PUBLIC_API_URL = apiUrl;
+  mockUseAuth.mockReturnValue({
+    status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn(),
+  } satisfies AuthContextValue);
+  mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet(), makePet({ id: 'pet-2', name: 'Max' })] });
+  mockListVaccines.mockImplementation(async (_url, _token, petId) => ({
+    kind: 'ok', vaccines: [makeVaccine({ name: petId === 'pet-2' ? 'Vacuna de Max' : 'Vacuna de Luna' })],
+  }));
+  mockListWeights.mockResolvedValue({ kind: 'ok', weights: [makeWeight()] });
+}
+
+describe('#168 R1: Salud pinta el título grande en todas sus ramas', () => {
+  beforeEach(setupHealth168);
+
+  it.each(HEALTH_BRANCHES_168)('pinta el título grande ($name)', async ({ state, branch }) => {
+    mockListPets.mockImplementation(async () => state);
+    await renderHealth();
+    await screen.findByTestId(branch);
+    const title = screen.getByTestId('health-title');
+    expect(title.props.className).toBe('text-3xl font-black tracking-tight text-foreground');
+    expect(title).toHaveTextContent('Salud');
+    expect(elementChild(title.parent!, 0)).toBe(title);
+  });
+});
+
+describe('#168 R2: Salud sin hero y con métricas estándar', () => {
+  beforeEach(setupHealth168);
+
+  it('con mascotas, health-title y health-content son los únicos hijos del scroll, en ese orden', async () => {
+    await renderHealth();
+    const content = await screen.findByTestId('health-content');
+    expect(content.parent!.parent).toBe(screen.getByTestId('screen-health'));
+    expect(content.parent!.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['health-title', 'health-content']);
+    expect(screen.queryByTestId('pet-hero')).toBeNull();
+  });
+
+  it('aplica las métricas estándar al scroll y gap a health-content', async () => {
+    await renderHealth();
+    const content = await screen.findByTestId('health-content');
+    expect(screen.getByTestId('screen-health').props.contentContainerStyle).toEqual({ padding: 24, gap: 16, paddingTop: 52, paddingBottom: 120 });
+    expect(content.props.style).toEqual({ gap: 16 });
+  });
+
+  it('pone el PetSwitcher como primer hijo de health-content', async () => {
+    await renderHealth();
+    const content = await screen.findByTestId('health-content');
+    const switcher = within(elementChild(content, 0));
+    expect(switcher.getByTestId('pet-chip-pet-1')).toBeVisible();
+    expect(switcher.getByTestId('pet-chip-pet-2')).toBeVisible();
+    expect(elementChild(content, 1).props.testID).toBe('vaccines-section');
+    expect(elementChild(content, 2).props.testID).toBe('weight-card');
+  });
+
+  it('cambia vacunas y peso al pulsar otra mascota', async () => {
+    mockListWeights.mockImplementation(async (_url, _token, petId) => ({ kind: 'ok', weights: [makeWeight({ weightKg: petId === 'pet-2' ? 20 : 12 })] }));
+    await renderHealth();
+    await within(await screen.findByTestId('vaccine-row-vaccine-1')).findByText('Vacuna de Luna');
+    const switcher = within(elementChild(screen.getByTestId('health-content'), 0));
+    await fireEvent.press(switcher.getByTestId('pet-chip-pet-2'));
+    await waitFor(() => expect(within(screen.getByTestId('vaccine-row-vaccine-1')).getByText('Vacuna de Max')).toBeVisible());
+    await waitFor(() => expect(screen.getByTestId('weight-current')).toHaveTextContent('20 kg'));
+    expect(screen.queryByText('Vacuna de Luna')).toBeNull();
+  });
+
+  it.each(HEALTH_BRANCHES_168.slice(0, 5))('sin contenido ($name), health-title precede a health-states', async ({ state, branch }) => {
+    mockListPets.mockImplementation(async () => state);
+    await renderHealth();
+    await screen.findByTestId(branch);
+    const states = screen.getByTestId('health-states');
+    expect(states.parent!.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['health-title', 'health-states']);
+    expect(states.props.style).toEqual({ gap: 16 });
+    expect(within(states).queryByTestId('health-title')).toBeNull();
+    expect(screen.queryByTestId('pet-hero')).toBeNull();
   });
 });
