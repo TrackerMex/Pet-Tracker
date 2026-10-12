@@ -6,8 +6,8 @@ import type { ReactNode } from 'react';
 import type { TestInstance } from 'test-renderer';
 
 import { ackAlert, listAlerts, type AlertsState } from '../../api/alerts';
-import { listGeofences } from '../../api/geofences';
-import { alertKeys } from '../../api/query-keys';
+import { listGeofences, type Geofence } from '../../api/geofences';
+import { alertKeys, geofenceKeys } from '../../api/query-keys';
 import type { Alert } from '../../api/types';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import { LanguageProvider } from '../../providers/language-provider';
@@ -80,6 +80,13 @@ let mockTheme: 'light' | 'dark' = 'light';
 const mockSelectPet = jest.fn();
 const mockUseSelectedPet = jest.mocked(useSelectedPet);
 const mockListGeofences = jest.mocked(listGeofences);
+const ZONE: Geofence = {
+  id: 'zone-1', petId: 'pet-1', name: 'Casa', type: 'safe_circle',
+  centerLat: 19.4326, centerLng: -99.1332, radiusM: 100, active: true,
+  state: { value: 'unknown', updatedAt: null },
+  createdAt: '2026-09-11T10:00:00.000Z', updatedAt: '2026-09-11T10:00:00.000Z',
+};
+const POS_FAR = { lat: 19.4446371, lng: -99.1332 };
 const POS_OUT = { lat: 19.4342637, lng: -99.1332 };
 const REAL_PAYLOAD = { position: { ...POS_OUT, ts: '2026-09-11T10:00:00.000Z', flags: [] }, geofenceName: 'Casa' };
 const apiUrl = 'http://example.test/v1';
@@ -521,5 +528,60 @@ describe('#170 R9: ningún fondo encima del mapa', () => {
     await renderDetail();
     await screen.findByTestId(state === 'carga' ? 'alert-detail-loading' : state === 'error' ? 'alert-detail-error' : 'alert-detail-card');
     expect(screen.getByTestId('screen-alert-detail').props.className).toBe('flex-1 bg-background');
+  });
+});
+
+describe('#170 R10: pinta la zona y la distancia a su borde', () => {
+  beforeEach(() => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ geofenceId: 'zone-1', payload: REAL_PAYLOAD })], nextCursor: null });
+    mockListGeofences.mockResolvedValue({ kind: 'ok', geofences: [ZONE] });
+  });
+  it('pinta el círculo, el encuadre y «A 85 m de Casa»', async () => {
+    await renderDetail();
+    const distance = await screen.findByTestId('alert-detail-distance');
+    expect(distance).toHaveTextContent('A 85 m de Casa');
+    expect(distance.props.className).toBe('text-sm font-semibold text-foreground');
+    expect(distance.props.style).toEqual({ fontVariant: ['tabular-nums'] });
+    const map = screen.getByTestId('pet-map-double');
+    expect(map.props.circles).toEqual([{ id: 'zone-1', center: { latitude: 19.4326, longitude: -99.1332 }, radius: 100 }]);
+    expect(map.props.zoom).toBeCloseTo(16.0740, 3);
+    expect(mockListGeofences).toHaveBeenCalledWith('http://example.test/v1', 'token-1', 'pet-1');
+  });
+  it('dice «85 m from Casa» en inglés', async () => {
+    await renderDetail('alert-1', 'en');
+    expect(await screen.findByTestId('alert-detail-distance')).toHaveTextContent('85 m from Casa');
+  });
+  it('pasa a km desde 1000 m: «A 1.2 km de Casa»', async () => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ geofenceId: 'zone-1', payload: { ...REAL_PAYLOAD, position: POS_FAR } })], nextCursor: null });
+    await renderDetail();
+    expect(await screen.findByTestId('alert-detail-distance')).toHaveTextContent('A 1.2 km de Casa');
+    expect(screen.getByTestId('pet-map-double').props.zoom).toBeCloseTo(13.7385, 3);
+  });
+  it('usa la zona aunque esté inactiva', async () => {
+    mockListGeofences.mockResolvedValue({ kind: 'ok', geofences: [{ ...ZONE, active: false }] });
+    await renderDetail();
+    expect(await screen.findByTestId('alert-detail-distance')).toHaveTextContent('A 85 m de Casa');
+    expect(screen.getByTestId('pet-map-double').props.circles).toEqual([{ id: 'zone-1', center: { latitude: 19.4326, longitude: -99.1332 }, radius: 100 }]);
+  });
+  it('lee la zona de la caché compartida de geofenceKeys.list', async () => {
+    const queryClient = createQueryClient(jest.fn(), 60_000);
+    queryClient.setQueryData(geofenceKeys.list('pet-1'), { kind: 'ok', geofences: [ZONE] });
+    mockListGeofences.mockReturnValue(new Promise(() => undefined));
+    try {
+      await render(<QueryClientProvider client={queryClient}><DetailWrapper><AlertDetailScreen alertId="alert-1" /></DetailWrapper></QueryClientProvider>);
+      expect(await screen.findByTestId('alert-detail-distance')).toHaveTextContent('A 85 m de Casa');
+    } finally {
+      queryClient.clear();
+    }
+  });
+  it('pinta la distancia bajo el mapa', async () => {
+    await renderDetail();
+    await screen.findByTestId('alert-detail-distance');
+    const card = screen.getByTestId('alert-detail-card');
+    const children = card.parent!.children.filter((child): child is TestInstance => typeof child !== 'string');
+    const mapIndex = children.findIndex((child) => child.props.testID === 'alert-detail-map');
+    const distanceIndex = children.findIndex((child) => child.props.testID === 'alert-detail-distance');
+    expect(mapIndex).toBeGreaterThanOrEqual(0);
+    expect(distanceIndex).toBe(mapIndex + 1);
   });
 });
