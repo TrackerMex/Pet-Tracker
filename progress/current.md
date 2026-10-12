@@ -92,6 +92,19 @@
   - Reanudación 4 en el handoff: cada medida acaba en `echo "exit=$?"` y no
     se lee su log ni se lanza la cadena hasta ver `exit=`. Repetir c16
     entera. Sigue en c17.
+
+### Codex terminado (2026-10-12)
+
+- 27 commits, de `98db0006` a `f314978d`. Hubo dos reintentos de lint por
+  SIGKILL (c21 y c23), con `pgrep` de init.sh vacío y sin cambios de código.
+- R11 nace verde, como preveía el handoff. S11 dio `9 failed, 45 passed,
+  54 total` por aserción, igual que el valor prescrito.
+- Medidas de cierre de Codex: BASE 9/363, `monthly-weight-delta` 1/11, ALL
+  99/2823, todas con exit 0. typecheck 0 y lint con salida vacía.
+- Lista cerrada contra H0 fc384b44: 14 ficheros, verificada también por el
+  leader. origin/main sin commits nuevos respecto a la branch.
+- Pusheado a origin. El humano autorizó init.sh. Queda en cola tras el
+  init.sh de Frontend (#167, wt-167) → reviewer.
 - Choques conocidos al mergear main, avisados por Frontend:
   - #167 cambia la misma línea `- 1, // #159 R2` de language-provider.
     Resolución: `- 1 // #159 R2`, `+ 1 // #167 R5`, `+ 2, // #169 R9`.
