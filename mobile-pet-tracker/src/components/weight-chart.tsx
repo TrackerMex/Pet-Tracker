@@ -41,7 +41,7 @@ export function WeightChart({ entries }: { entries: WeightEntry[] }) {
 function WeightChartPlot({ entries }: { entries: WeightEntry[] }) {
   const [accent] = useThemeColors(['accent-strong']);
   const reducedMotion = useReducedMotion();
-  const progress = useSharedValue(reducedMotion ? 1 : 0);
+  const progress = useSharedValue(1);
 
   useEffect(() => {
     if (!reducedMotion) progress.set(withTiming(1, MOTION_FILL_TIMING));
@@ -60,17 +60,11 @@ function WeightChartPlot({ entries }: { entries: WeightEntry[] }) {
     });
   const points = chartPoints.map(({ x, y }) => `${x},${y}`).join(' ');
   const areaPoints = `${points} 100,40 0,40`;
-  const L = chartPoints.slice(1).reduce(
-    (length, point, index) => length + Math.hypot(
-      point.x - chartPoints[index].x,
-      point.y - chartPoints[index].y,
-    ),
-    0,
-  );
+  const L = Math.hypot(chartPoints[chartPoints.length - 1].x - chartPoints[0].x, chartPoints[chartPoints.length - 1].y - chartPoints[0].y);
   const lineProps = useAnimatedProps(() => ({
-    strokeDashoffset: L * (1 - progress.get()),
+    strokeDashoffset: progress.get() >= 1 ? 0 : L,
   }));
-  const pointsProps = useAnimatedProps(() => ({ opacity: progress.get() }));
+  const pointsProps = useAnimatedProps(() => ({ opacity: progress.get() >= 1 ? 1 : 0 }));
 
   return (
     <Svg

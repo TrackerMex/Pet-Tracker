@@ -149,6 +149,50 @@ describe('#169 R1: la línea se dibuja al montarse', () => {
       .toEqual({ strokeDashoffset: expect.closeTo(104.9952, 3) });
   });
 
+  it('con progreso 0.25 el desplazamiento es tres cuartos de L', async () => {
+    mockWithTiming.mockImplementation(() => 0.25);
+    await render(<WeightChart entries={entries} />, { wrapper: WeightChartWrapper });
+
+    await waitFor(() =>
+      expect(screen.getByTestId('weight-chart-line').props.jestAnimatedProps?.value)
+        .toEqual({ strokeDashoffset: expect.closeTo(78.7464, 3) }),
+    );
+  });
+
+  it('con tres pesos no alineados la longitud es la suma de los dos segmentos', async () => {
+    await render(
+      <WeightChart entries={[
+        makeWeight({ id: 'weight-3', weightKg: 12, measuredAt: '2026-08-21' }),
+        makeWeight({ id: 'weight-2', weightKg: 14, measuredAt: '2026-08-20' }),
+        makeWeight({ id: 'weight-1', weightKg: 10, measuredAt: '2026-08-19' }),
+      ]} />,
+      { wrapper: WeightChartWrapper },
+    );
+
+    expect(screen.getByTestId('weight-chart-line').props.strokeDasharray).toEqual([
+      expect.closeTo(111.8609, 3),
+      expect.closeTo(111.8609, 3),
+    ]);
+  });
+
+  it('p parte de 0: con una animación que no avanza, la línea y los puntos siguen ocultos', async () => {
+    mockWithTiming.mockImplementation(() => ({
+      onStart: (animation: { current?: number }, value: number) => {
+        animation.current = value;
+      },
+      onFrame: () => true,
+      current: undefined,
+    }) as unknown as number);
+    await render(<WeightChart entries={entries} />, { wrapper: WeightChartWrapper });
+
+    await waitFor(() =>
+      expect(screen.getByTestId('weight-chart-line').props.jestAnimatedProps?.value)
+        .toEqual({ strokeDashoffset: expect.closeTo(104.9952, 3) }),
+    );
+    expect(screen.getByTestId('weight-chart-points').props.jestAnimatedProps?.value)
+      .toEqual({ opacity: 0 });
+  });
+
   it('con dos pesos iguales la longitud es 100', async () => {
     mockWithTiming.mockImplementation(() => 0);
     await render(
@@ -193,6 +237,16 @@ describe('#169 R2: los puntos aparecen con el mismo progreso', () => {
     const points = screen.getByTestId('weight-chart-points');
 
     expect(points.props.jestAnimatedProps?.value).toEqual({ opacity: 0 });
+  });
+
+  it('con progreso 0.25 la opacidad de los puntos es 0.25', async () => {
+    mockWithTiming.mockImplementation(() => 0.25);
+    await render(<WeightChart entries={entries} />, { wrapper: WeightChartWrapper });
+
+    await waitFor(() =>
+      expect(screen.getByTestId('weight-chart-points').props.jestAnimatedProps?.value)
+        .toEqual({ opacity: 0.25 }),
+    );
   });
 
   it('agrupa un Circle por entrada y ninguno fuera', async () => {
