@@ -108,3 +108,146 @@ Veredicto: RECHAZADO
 2. R8: «no llama a listGeofences» sin posición, tautológico por `geofenceId: null` (sonda F).
 3. R10: la consulta de zonas por `alert.petId` no está fijada; la mascota de la alerta coincide con la seleccionada (sonda C).
 4. R3.2: no se comprueba que la cabecera vaya antes de su primera fila (sonda A).
+
+## Barrido de la Enmienda E3
+
+Fecha: 2026-10-12. Revisado sobre `906d06e4`: requirements.md §Enmienda E3,
+corrección 16 del handoff (leída entera), la nota E3 de tasks.md y la lista de
+tests de design.md. Barrido de solo lectura: no he corrido jest, init.sh ni
+expo lint. Las siete mutaciones se ensayaron con `sed` sobre copias fuera del
+árbol, en el scratchpad.
+
+Resultado: **sin problemas bloqueantes.** Hay cinco notas no bloqueantes; la
+5 la tiene que cumplir el leader antes de relanzar a Codex.
+
+### (a) Cada candado cubre su cláusula entera
+
+- **E3.1 (R8, «no llama a `listGeofences`» sin posición): OK.** Las diez filas
+  `'$fila: sin mapa'` pasan a llevar `geofenceId: 'zone-1'` y una zona que
+  resuelve. Así la única razón para no consultar es que falta la posición, que
+  es justo la cláusula. Las filas «con mapa» no cambian.
+- **E3.2 (R10, consulta por `alert.petId`): OK.** La alerta es de `pet-7` y la
+  mascota seleccionada es `pet-1`. El `it` comprueba la llamada con `pet-7` y
+  la ausencia de la llamada con `pet-1`. El cambio de la clave de caché a
+  `list('pet-7')` cubre la otra mitad: la clave, no solo la función.
+- **E3.3 (R3.2, cabecera antes de su primera fila): OK.** Comprueba el orden
+  dentro del envoltorio y no solo que estén los dos.
+- **E3.4 (borde de la fila según el estado de la propia fila): OK, con un
+  matiz no bloqueante.** Solo cubre el tipo por defecto (`geofence_exit`). Basta,
+  porque el eje de la mutación es de dónde sale el estado, no el tipo.
+- **E3.5 (borde del detalle con el estado leído tras el ack): OK.**
+- **E3.6 (umbral de redondeo y `min-h-11` del CTA): OK.**
+
+### (b) Mutaciones de la ronda 1 y sus hermanas con E3 aplicada
+
+**OK, no sobrevive ninguna.**
+
+- **Las siete sondas.** Los siete comandos literales de mutación (SE3.1 a
+  SE3.7) casan y producen exactamente la mutación descrita:
+  - SE3.1: una `useQuery` incondicional tras `const position = …`;
+  - SE3.2: la línea de `petId` más la clave y la función reescritas;
+  - SE3.3: `{card}` antes de la cabecera;
+  - SE3.4: `ordered[index].status`;
+  - SE3.5: `found?.status`;
+  - SE3.6: sin `Math.round`;
+  - SE3.7: sin `min-h-11`.
+- **Hermanas de C (E3.2).** Mutarlo todo a la vez lo detectan las dos aserciones
+  de E3.2. Mutar solo la clave lo detecta el test de caché, que pasa a
+  `list('pet-7')`: la caché queda vacía y el fetch, que nunca resuelve, agota
+  el `findBy`. Mutar solo la función lo detecta `toHaveBeenCalledWith(…, 'pet-7')`.
+- **Hermanas del umbral (E3.6).** `Math.ceil` cae en la fila de 0,41 m de R14 y
+  `Math.floor` cae en E3.5.
+- **A y F de la ronda 1.** Quedan cerradas por SE3.3 y SE3.1.
+- **E.** Ya la cubría #78.
+
+### (c) Recuentos por commit y líneas rojas de las sondas
+
+**OK.**
+
+- **Tests por commit.** Las cifras 78, 79, 68, 70/81, 82 y 82 cuadran con los
+  `it` que añade cada E3.x sobre la base de cada fichero. E3.1, E3.3 y E3.6
+  editan cuerpos y no añaden `it`.
+- **FINAL.** Da 433 (A 70, D 82).
+- **ALL.** Da 2899 tests en 100 suites.
+- **Sombras.** El recuento completo de sombras pasa de 5 a 6 por el literal
+  `border-border` nuevo en un test que ve design-drift. El de producción se
+  queda en 0.
+- **Trazabilidad.** `grep -c '; E3: '` = 6, con numstat `6 6`.
+- **Lista cerrada.** 20 ficheros (excluye `progress/review_…`).
+- **Líneas rojas de las sondas.** Los `●` esperados casan con los `it` que toca
+  cada mutación; en SE3.1 son las diez filas `'$fila: sin mapa'`.
+
+### (d) Anclas y guardas de la corrección 16
+
+**OK.**
+
+- **Valores de partida medidos en `906d06e4`.** Cuadran con la tabla de abajo.
+  El `it` nuevo de E3.2 y los demás títulos nuevos no existen en la base.
+
+| Ancla | Base | Tras su commit |
+|---|---|---|
+| `makeAlert({ payload })` en D | 2 | 1 |
+| `makeAlert({ geofenceId: 'zone-1', payload })` en D | 0 | 1 |
+| clave `list('pet-1')` en D | 3 | 2 |
+| clave `list('pet-7')` en D | 0 | 1 |
+| literal `toBe` de `border-border` en D | 1 | 2 |
+| línea `toBeVisible` del bucle `envuelve` en A (sangría de 6 espacios) | 1, única | — |
+
+- **cwd, comillas y expansión.**
+  - Cada cadena abre con `cd …/mobile-pet-tracker && pwd`.
+  - Las comillas simples y dobles anidan bien.
+  - `!==` dentro de comillas simples no dispara la expansión del historial.
+- **`plantada`.** Falla en seguro: si un `sed` no casa, el nombre de fichero
+  esperado no aparece y la sonda para antes de medir.
+- **Limpio.** `<LIMPIO>` va acotado por pathspec (`. ../docs ../specs` desde
+  mobile-pet-tracker/). Ni el impl trackeado ni el handoff ni este fichero de
+  revisión lo tocan. `git diff --cached --quiet` cubre el índice.
+- **Guardas de error.** La guarda de error no la activan los mensajes de
+  aserción, y la de lint (`> /tmp/170-lint.txt 2>&1 && test ! -s`) es la ya
+  asentada.
+- **Guardas del FINAL.** Ningún literal de E3 casa con las regex de design-drift
+  (clases arbitrarias y C8) que escanean tests.
+
+### Notas no bloqueantes
+
+1. **c29 no fija la segunda línea de E3.1.**
+   - Hoy la cadena solo ancla la primera. Si Codex omite
+     `mockListGeofences.mockResolvedValue({ kind: 'ok', geofences: [ZONE] });`,
+     las diez filas siguen en verde y siguen siendo útiles contra SE3.1, porque
+     la llamada ya cuenta aunque no resuelva. Pero el literal de la spec no
+     queda verificado.
+   - Base medida: 3.
+   - Arreglo literal, tras la segunda ancla de c29:
+     `&& test "$(grep -cF "mockListGeofences.mockResolvedValue({ kind: 'ok', geofences: [ZONE] });" src/screens/alert-detail/index.test.tsx)" = 4 \`
+2. **Solo SE3.1 lleva la línea de resultado esperado.**
+   - Es la línea ``Esperado: `plantada=0`, `exit=1`, `sonda=0` y `limpio=0`.``
+     SE3.2 a SE3.7 no la llevan.
+   - Es cosmético, porque la regla general de la corrección 16 lo cubre.
+   - Arreglo: copiar esa línea bajo cada sonda.
+3. **El CIERRE del cuerpo sigue con un valor que ya no rige.**
+   - En la línea 1283 dice
+     `git diff <H0> -- src | grep -cE '^\+.*(shadow-|elevation|boxShadow)'   -> 0`.
+   - Lo sustituyen la corrección 14 (sin tests, 0) y la corrección 16
+     (completo, 6), y la corrección manda sobre el cuerpo.
+   - Arreglo opcional: anotar en esa línea «ver correcciones 14 y 16».
+4. **No verificado por mí.**
+   - La salida de jest de los seis commits y de las siete sondas.
+   - El FINAL y el ALL.
+   - El ensayo literal de las cadenas c29-c36 de punta a punta. Tampoco consta
+     ensayado por el leader.
+   - Las cifras de arriba son aritmética sobre los ficheros, no medidas.
+5. **Prompt de reanudación (lo tiene que cumplir el leader antes de relanzar).**
+   - El prompt principal del handoff define H0 como «el commit que añade este
+     handoff» y exige `git status --short` vacío. La corrección 16 no dice nada
+     de H0.
+   - Un Codex que releyera el prompt sin más tomaría el HEAD actual como H0, y
+     el CIERRE (`git diff --name-only <H0> HEAD`, lista cerrada de 20) saldría
+     solo con los ficheros de E3.
+   - El prompt de reanudación (Reanudación 7) tiene que fijar:
+     - H0 = `584ef2d9` (la que ya registra el impl);
+     - el HEAD esperado = el commit del leader que incluya este barrido y la
+       firma humana de E3;
+     - status vacío;
+     - empezar en la corrección 16, c29, sin repetir c1-c28 ni cE2.
+   - Este fichero queda sin commitear: si Codex arranca antes de que el leader
+     lo commitee, para en el control de status.

@@ -173,6 +173,7 @@
 >     cd /home/claude/sites/Pet-Tracker-wt-170/mobile-pet-tracker && pwd \
 >       && test "$(grep -cF "makeAlert({ payload })" src/screens/alert-detail/index.test.tsx)" = 1 \
 >       && test "$(grep -cF "makeAlert({ geofenceId: 'zone-1', payload })" src/screens/alert-detail/index.test.tsx)" = 1 \
+>       && test "$(grep -cF "mockListGeofences.mockResolvedValue({ kind: 'ok', geofences: [ZONE] });" src/screens/alert-detail/index.test.tsx)" = 4 \
 >       && FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/alert-detail/index.test.tsx > /tmp/170-c29.txt 2>&1 \
 >       && grep -qE '^Tests: +78 passed, 78 total$' /tmp/170-c29.txt \
 >       && test ! -e .expo/types/router.d.ts && bun run typecheck \
@@ -235,6 +236,8 @@
 >     git checkout HEAD -- src/screens/alert-detail/index.tsx && git diff --cached --quiet && <LIMPIO>; echo "limpio=$?"
 >     ```
 >
+>     Esperado: `plantada=0`, `exit=1`, `sonda=0` y `limpio=0`.
+>
 >     **c31, E3.3** (R3: las tres líneas de E3.3 van dentro del `for` de
 >     `'envuelve cada cabecera con la primera fila de su sección en un View
 >     gap-4'`, justo después de
@@ -269,6 +272,8 @@
 >     git checkout HEAD -- src/screens/alerts/index.tsx && git diff --cached --quiet && <LIMPIO>; echo "limpio=$?"
 >     ```
 >
+>     Esperado: `plantada=0`, `exit=1`, `sonda=0` y `limpio=0`.
+>
 >     **c32, E3.4** (R5 y R6: cada `it.each` de E3.4 va al final de su
 >     describe, `#170 R5` en A y `#170 R6` en D):
 >
@@ -302,6 +307,8 @@
 >     git checkout HEAD -- src/screens/alerts/index.tsx && git diff --cached --quiet && <LIMPIO>; echo "limpio=$?"
 >     ```
 >
+>     Esperado: `plantada=0`, `exit=1`, `sonda=0` y `limpio=0`.
+>
 >     ```
 >     cd /home/claude/sites/Pet-Tracker-wt-170/mobile-pet-tracker && pwd
 >     sed -i "s|(alert.status === 'open' ? \` border-2|(found?.status === 'open' ? \` border-2|" src/screens/alert-detail/index.tsx
@@ -313,6 +320,8 @@
 >       && ! grep -qE 'Test suite failed to run|TypeError|ReferenceError|SyntaxError|Cannot find module' /tmp/170-se3-5.txt; echo "sonda=$?"
 >     git checkout HEAD -- src/screens/alert-detail/index.tsx && git diff --cached --quiet && <LIMPIO>; echo "limpio=$?"
 >     ```
+>
+>     Esperado: `plantada=0`, `exit=1`, `sonda=0` y `limpio=0`.
 >
 >     **c33, E3.5** (R10: el `it` de E3.5 va justo antes de `'usa la zona
 >     aunque esté inactiva'`):
@@ -345,6 +354,8 @@
 >     git checkout HEAD -- src/screens/alert-detail/index.tsx && git diff --cached --quiet && <LIMPIO>; echo "limpio=$?"
 >     ```
 >
+>     Esperado: `plantada=0`, `exit=1`, `sonda=0` y `limpio=0`.
+>
 >     **c34, E3.6** (R15: la línea de E3.6 va en `'lo pinta en %s'`, justo
 >     después de `expect(button.props.accessibilityRole).toBe('button');`):
 >
@@ -374,6 +385,8 @@
 >       && ! grep -qE 'Test suite failed to run|TypeError|ReferenceError|SyntaxError|Cannot find module' /tmp/170-se3-7.txt; echo "sonda=$?"
 >     git checkout HEAD -- src/screens/alert-detail/index.tsx && git diff --cached --quiet && <LIMPIO>; echo "limpio=$?"
 >     ```
+>
+>     Esperado: `plantada=0`, `exit=1`, `sonda=0` y `limpio=0`.
 >
 >     **CIERRE otra vez.** Tras SE3.7 se repite el CIERRE entero del cuerpo,
 >     que ya está actualizado. Los valores que cambian son estos:
@@ -1280,7 +1293,8 @@ salida al impl:
 - Lo que no se toca:
   `git diff --quiet <H0> -- package.json bun.lock app.json src/components/pet-map.tsx src/components/card.tsx src/api; echo "exit=$?"`   -> exit=0
 - Sin sombras nuevas:
-  `git diff <H0> -- src | grep -cE '^\+.*(shadow-|elevation|boxShadow)'`   -> 0
+  `git diff <H0> -- src | grep -cE '^\+.*(shadow-|elevation|boxShadow)'`   -> ya no rige:
+  ver correcciones 14 (sin tests, 0) y 16 (completo, 6)
 Desde la raiz del repo (`cd /home/claude/sites/Pet-Tracker-wt-170 && pwd`):
 - Las anclas H1-H44 con sus valores de cierre, P1-P16 y las comprobaciones
   de tasks.md T16 (todas estan entre H11, H12, P2-P5, P13 y P14).
