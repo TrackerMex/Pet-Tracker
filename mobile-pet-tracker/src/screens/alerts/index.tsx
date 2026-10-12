@@ -11,6 +11,7 @@ import { EmptyState } from '../../components/empty-state';
 import { useAlertsList } from '../../hooks/use-alerts-list';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
+import { TABULAR_NUMS } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { settleAlertAck } from '../../utils/alert-ack-outcome';
 import { alertTypeMeta } from '../../utils/alert-meta';
@@ -72,6 +73,7 @@ export function AlertsScreen() {
   const rows = ordered.map((alert) =>
     alert.status === 'open' ? (acked[alert.id] ?? alert) : alert,
   );
+  const count = rows.filter((alert) => alert.status === 'open').length;
   const firstPage = alerts.data?.pages[0];
   const firstPageFailed =
     firstPage !== undefined &&
@@ -144,6 +146,13 @@ export function AlertsScreen() {
 
   return (
     <View testID="screen-alerts" className="flex-1 bg-background">
+      {count > 0 ? (
+        <View testID="alerts-new-count" className="mx-6 mt-6 self-start rounded-full bg-danger px-3 py-1">
+          <Text testID="alerts-new-count-text" className="text-xs font-bold text-danger-foreground" style={TABULAR_NUMS}>
+            {count === 1 ? t('alerts.newOne') : t('alerts.newMany', { count })}
+          </Text>
+        </View>
+      ) : null}
       <FlatList<Alert>
         testID="alerts-list"
         className="flex-1 bg-background"
