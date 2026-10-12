@@ -750,13 +750,13 @@ no se toca.
 > del `reviewer` en `53f0e8f9` (`progress/review_mobile-tab-headers-canvas.md`,
 > O1, O2 y O3). El código de producción ya hace lo correcto en todas las ramas:
 > lo que faltaba era el `it` que las fija, y la spec no lo pedía. E3 añade
-> cinco `it` y no cambia ninguna conducta. No toca D1–D9, el texto EARS de
+> seis `it` y no cambia ninguna conducta. No toca D1–D9, el texto EARS de
 > R1–R13, E1, E2 ni las casillas firmadas. Su casilla va **sin marcar**: el
 > humano reabre el gate solo para esta enmienda.
 
 ### Cómo se prueba un `it` que nace verde
 
-Los cinco `it` nacen verdes, porque la producción ya es correcta. No hay commit
+Los seis `it` nacen verdes, porque la producción ya es correcta. No hay commit
 `feat`: la prueba de que cada `it` muerde es una **sonda de mutación**. Para
 cada `it`:
 
@@ -770,15 +770,17 @@ cada `it`:
 
 El rojo esperado es **exactamente uno**, el del `it` nuevo. Si cae otro `it`,
 o ninguno, se para. Medido el 2026-10-12 en un worktree fuera del árbol sobre
-`53f0e8f9`, con los cinco `it` insertados a la vez. Los recuentos de cada commit
+`53f0e8f9`, con los seis `it` insertados a la vez. Los recuentos de cada commit
 son acumulados y están en `tasks.md` §Bloque O:
 
 | Sonda | `it` | Mutación en producción | Rojo esperado |
 |---|---|---|---|
-| P2 | E3.a peso | `src/screens/profile/index.tsx`: el `text` del chip de peso pasa a `` `${pet.currentWeightKg} kg` `` sin la guarda `=== null` | `1 failed, 62 passed, 63 total` |
-| P3 | E3.a edad | mismo fichero: el `text` del chip de edad pasa a `t('profile.ageMonths', { months: pet.ageMonths })` sin la guarda `Number.isFinite` | `1 failed, 62 passed, 63 total` |
-| P4c | E3.a esterilizado | mismo fichero: `pet.sterilized ? t('profile.sterilized')` pasa a `pet.sterilized !== undefined ? t('profile.sterilized')` | `1 failed, 62 passed, 63 total` |
-| P13 | E3.b | mismo fichero: el bloque `{photoError ? (… testID="photo-upload-error" …) : null}` se mueve delante de `<Button testID="change-photo"` | `1 failed, 62 passed, 63 total` |
+| P2 | E3.a peso | `src/screens/profile/index.tsx`: el `text` del chip de peso pasa a `` `${pet.currentWeightKg} kg` `` sin la guarda `=== null` | `1 failed, 63 passed, 64 total` |
+| P3 | E3.a edad | mismo fichero: el `text` del chip de edad pasa a `t('profile.ageMonths', { months: pet.ageMonths })` sin la guarda `Number.isFinite` | `1 failed, 63 passed, 64 total` |
+| P4c | E3.a esterilizado | mismo fichero: `pet.sterilized ? t('profile.sterilized')` pasa a `pet.sterilized !== undefined ? t('profile.sterilized')` | `1 failed, 63 passed, 64 total` |
+| P2t | E3.a cero | mismo fichero: el `text` del chip de peso pasa a `` pet.currentWeightKg ? `${pet.currentWeightKg} kg` : null `` (guarda por *truthiness*) | `1 failed, 63 passed, 64 total` |
+| P3t | E3.a cero | mismo fichero: `Number.isFinite(pet.ageMonths) ?` pasa a `pet.ageMonths ?` en el `text` del chip de edad | `1 failed, 63 passed, 64 total` |
+| P13 | E3.b | mismo fichero: el bloque `{photoError ? (… testID="photo-upload-error" …) : null}` se mueve delante de `<Button testID="change-photo"` | `1 failed, 63 passed, 64 total` |
 | F17 | E3.c | `src/app/(tabs)/food.tsx`: `now: kcalPct }}` pasa a `now: Math.min(kcalPct, 100) }}` | `1 failed, 83 passed, 84 total` |
 
 Las mutaciones se localizan por contenido con `grep -nF`, nunca por número de
@@ -788,13 +790,17 @@ línea.
 
 R5.3 («IF un dato falta») cubre los cuatro datos, y R5.1 da dos textos para el
 chip de esterilizado. Los candados de R5 solo usaban dos fixtures: la completa
-y la que pone `sex` y `sterilized` a `null`. Sin `it` quedaban tres ramas:
+y la que pone `sex` y `sterilized` a `null`. Sin `it` quedaban cuatro ramas:
 
 - el peso `null`: la sonda P2 pintaba «null kg» y pasaba en verde;
 - la edad no finita: P3 pintaba «NaN meses» y pasaba en verde;
-- `sterilized: false`: P4c pintaba «Esterilizado» y pasaba en verde.
+- `sterilized: false`: P4c pintaba «Esterilizado» y pasaba en verde;
+- el valor `0` en la edad y en el peso: `ageMonths` es `number` y `currentWeightKg`
+  es `number | null`, así que 0 es un dato válido. Una guarda por *truthiness*
+  (sondas P3t y P2t) omitía «0 meses» y «0 kg», y pasaba en verde incluso con
+  los tres `it` anteriores.
 
-Los tres `it` van en `mobile-pet-tracker/src/screens/profile/index.test.tsx`,
+Los cuatro `it` van en `mobile-pet-tracker/src/screens/profile/index.test.tsx`,
 dentro de `describe('#168 R5: Perfil pinta chips pastel por dato')`,
 justo **antes** de `it('centra y agrupa los chips con gap-2'`. Usan los
 helpers que ya existen (`makePet`, `renderProfile` y `expectProfileChip168`) y
@@ -830,6 +836,16 @@ literales ES, nunca el catálogo:
     expect(root.children).toHaveLength(4);
     expect(root.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['profile-pet-chip-sex', 'profile-pet-chip-sterilized', 'profile-pet-chip-age', 'profile-pet-chip-weight']);
     expectProfileChip168(root, 'profile-pet-chip-sterilized', 'rounded-full px-3 py-1 bg-category-green', 'text-xs font-bold text-category-green-strong', 'Sin esterilizar');
+  });
+
+  it('con 0 meses y 0 kg pinta los cuatro chips', async () => {
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet({ ageMonths: 0, currentWeightKg: 0 }) });
+    await renderProfile();
+    const root = await screen.findByTestId('profile-pet-chips');
+    expect(root.children).toHaveLength(4);
+    expect(root.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['profile-pet-chip-sex', 'profile-pet-chip-sterilized', 'profile-pet-chip-age', 'profile-pet-chip-weight']);
+    expectProfileChip168(root, 'profile-pet-chip-age', 'rounded-full px-3 py-1 bg-category-amber', 'text-xs font-bold text-category-amber-strong', '0 meses');
+    expectProfileChip168(root, 'profile-pet-chip-weight', 'rounded-full px-3 py-1 bg-category-violet', 'text-xs font-bold text-category-violet-strong', '0 kg');
   });
 
 ```
@@ -901,18 +917,18 @@ prescribe, y la semántica vive en `food-plan-progress`.
 
 Medidos en el mismo spike, salvo la suite móvil:
 
-- `src/screens/profile/index.test.tsx`: 59 → 63 `it`;
+- `src/screens/profile/index.test.tsx`: 59 → 64 `it`;
 - `src/app/(tabs)/__tests__/food.test.tsx`: 83 → 84;
-- los dos ficheros juntos: 147 passed;
-- suite móvil: 99 suites y 2833 → 2838 tests (no medido: 2833 del ALL verde de la
-  Reanudación 11 más los cinco `it`);
+- los dos ficheros juntos: 148 passed;
+- suite móvil: 99 suites y 2833 → 2839 tests (no medido: 2833 del ALL verde de la
+  Reanudación 11 más los seis `it`);
 - `bun run typecheck` y `bunx eslint --no-cache` sobre los dos ficheros de
   test: salida 0;
 - las 8 suites globales de `src/__tests__/`: 206 passed, sin cambios.
 
 ### Correcciones de `tasks.md` y `traceability.md` que acompañan a E3 (sin firma propia)
 
-- `tasks.md`: el bloque O lista los cinco `it` con su sonda.
+- `tasks.md`: el bloque O lista los seis `it` con su sonda.
 - `traceability.md`: las filas R4, R5 y R9 suman su `it` nuevo y su commit
   `test`, que se anota como «nace verde; sonda <id> en impl». Las escribe
   Codex en la Reanudación 13.

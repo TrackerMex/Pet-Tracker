@@ -357,15 +357,18 @@ Rige `requirements.md` §Enmienda E3. Hay un commit `test` por `it`, sin commit
 `feat`. Antes de cada commit, la sonda de su fila da exactamente un rojo, y se
 restaura con `git checkout HEAD --`. Los recuentos son acumulados: cada sonda
 corre con los `it` de las filas anteriores ya commiteados y con el suyo
-insertado. La tabla de la spec da 63 en las cuatro sondas de Perfil porque se
-midió con los cinco `it` a la vez.
+insertado. La tabla de la spec da 64 en las seis sondas de Perfil porque se
+midió con los seis `it` a la vez. O4 lleva dos sondas: las dos se plantan,
+una cada vez, sobre el mismo `it`.
 
 - [ ] O1 — R5, peso `null` (sonda P2): `1 failed, 59 passed, 60 total`.
 - [ ] O2 — R5, edad no finita (sonda P3): `1 failed, 60 passed, 61 total`.
 - [ ] O3 — R5, «Sin esterilizar» (sonda P4c): `1 failed, 61 passed, 62 total`.
-- [ ] O4 — R4.3, `photo-upload-error` tras `change-photo` (sonda P13):
+- [ ] O4 — R5, 0 meses y 0 kg (sondas P2t y P3t): cada una
   `1 failed, 62 passed, 63 total`.
-- [ ] O5 — R9.3, `now` 150 (sonda F17): `1 failed, 83 passed, 84 total`.
+- [ ] O5 — R4.3, `photo-upload-error` tras `change-photo` (sonda P13):
+  `1 failed, 63 passed, 64 total`.
+- [ ] O6 — R9.3, `now` 150 (sonda F17): `1 failed, 83 passed, 84 total`.
 
 ## Reescrituras de tests existentes (dónde y cómo)
 
