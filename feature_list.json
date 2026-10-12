@@ -3257,7 +3257,7 @@
   {
     "id": 167,
     "name": "mobile-account-screens-pingo",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P2",
     "description": "Registrada el 2026-10-11 por decisión del humano («si es necesario para cada una crea una feature»): una feature por fila del canvas, en el orden del canvas. Fila 1 «Bienvenida y cuenta» de el canvas aprobado el 2026-10-06 (https://claude.ai/artifact/VqaQQsRTtis9Dbttqy3z7j): artboards Bienvenida, Iniciar sesión, Crear cuenta, Recuperar contraseña y Nueva contraseña. Alcance (candidatas C3 y la parte de Bienvenida de C8): Pingo con entrada «rise» en src/app/(auth)/login.tsx, src/app/(auth)/register.tsx, src/screens/forgot/index.tsx y src/screens/reset-password/index.tsx; icono en el error inline de Registro; check con pop en la confirmación de Nueva contraseña; los tres anillos ping alrededor de Pingo en Bienvenida (src/screens/welcome/index.tsx). Decisión abierta N4: si login y register (rutas gordas) migran a src/screens/ aquí o aparte. Ya hecho en la fila: Bienvenida (#118, #153); el CTA chunky y el secundario gris son de #166. Plan y brecha medida en progress/explore_ui-canvas-parity.md (§1 tabla por artboard, §4 decisiones del humano del 2026-10-11, §6 reparto por fila). Rutas relativas a mobile-pet-tracker/. La spec puede escribirse ya; la implementación con Codex espera a que #166 mobile-chunky-cta esté mergeada, porque #166 cambia los primarios de todas las filas y el recuento de consistency-classnames. Las premisas del explore marcadas con * no están verificadas: contrastarlas contra el árbol y medir la base al arrancar. El copy del canvas no está aprobado: va a Preguntas abiertas con la voz de Pingo de docs/ui-guidelines.md §7."
   },
