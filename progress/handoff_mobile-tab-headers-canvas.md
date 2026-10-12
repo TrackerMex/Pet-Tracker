@@ -1028,3 +1028,79 @@ sombras, diffs vacios, lista cerrada); los pasos S1-S10 de la prueba de
 humo R13; la linea `R13: pendiente del smoke humano`; y cualquier
 decision que la spec no cerrara literalmente.
 ```
+
+## Reanudación 1: parada en el rojo de A (2026-10-12)
+
+> Codex paró antes de la cadena c1 con el árbol sucio y sin commits desde
+> H0 `b082f6e5`. La cuenta del rojo cuadraba (18 failed, 53 passed, 71
+> total), pero el it `#168 R2 › cambia vacunas y peso al pulsar otra
+> mascota` caía por `Found multiple elements with text: Vacuna de Luna`.
+> La parada fue correcta: la fixture de `makeVaccine` trae `nextDoseAt`
+> `2099-08-01`, así que el nombre sale dos veces, en `next-vaccine-card` y
+> en `vaccine-row-vaccine-1`, y la ambigüedad seguiría con el verde de A.
+> tasks.md pedía «aserción sobre un nombre de vacuna que solo tiene ella»
+> sin decir dónde buscarlo; el hueco era de la spec.
+>
+> Corrección del leader, sin enmienda: no cambia ningún requisito, solo
+> el ámbito de dos consultas del mismo it, que pasan a la fila
+> `vaccine-row-vaccine-1` (R3.1 la conserva). Los otros 17 rojos caen por
+> la razón prescrita (el leader lo comprobó sobre `/tmp/168-r1.txt`). Con la
+> corrección, ese it cae en el rojo por `Unable to find an element with
+> testID: pet-chip-pet-2`, que está en la lista permitida de A, y la cuenta
+> sigue en 18/53/71. H0 sigue siendo `b082f6e5`. Este commit solo toca este
+> fichero, que está fuera de la lista cerrada.
+
+Pegar en Codex CLI:
+
+```
+Worktree: /home/claude/sites/Pet-Tracker-wt-168   <- PRIMERA LINEA. Trabaja AQUI y en ningun otro sitio
+Reanudacion 1 de #168 tras tu parada en el rojo de A. Ejecuta y pega en
+progress/impl_mobile-tab-headers-canvas.md, bajo una seccion nueva
+«## Reanudacion 1»:
+  cd /home/claude/sites/Pet-Tracker-wt-168 && pwd
+  git branch --show-current
+  git rev-parse --short HEAD~1
+  git log --oneline b082f6e5..HEAD
+  git status --short
+PARA si:
+- la branch no es feature/168-mobile-tab-headers-canvas;
+- HEAD~1 no es b082f6e5 (H0);
+- el log no es exactamente un commit, el del leader que anade esta
+  reanudacion;
+- `git status --short` no son exactamente estas dos lineas:
+   M mobile-pet-tracker/src/screens/health/index.test.tsx
+  ?? progress/impl_mobile-tab-headers-canvas.md
+H0 sigue siendo b082f6e5: todos los diffs se miden contra el. Siguen en
+vigor todas las reglas del handoff original. No descartes tu cambio sin
+commitear en H: retomas sobre el.
+
+Anclas, desde mobile-pet-tracker/
+(`cd /home/claude/sites/Pet-Tracker-wt-168/mobile-pet-tracker && pwd`):
+  grep -cF "    await screen.findByText('Vacuna de Luna');" src/screens/health/index.test.tsx   -> 1
+  grep -cF "    await waitFor(() => expect(screen.getByText('Vacuna de Max')).toBeVisible());" src/screens/health/index.test.tsx   -> 1
+  grep -cF "    expect(screen.queryByText('Vacuna de Luna')).toBeNull();" src/screens/health/index.test.tsx   -> 1
+  grep -cF "testID={\`vaccine-row-\${vaccine.id}\`}" src/screens/health/index.tsx   -> 1
+Si alguna no da su cifra, PARA.
+
+Lo que cambia, y solo esto: en el it `cambia vacunas y peso al pulsar
+otra mascota` de `#168 R2: Salud sin hero y con métricas estándar`,
+sustituye las dos primeras lineas de las anclas, con su sangria, por:
+    await within(await screen.findByTestId('vaccine-row-vaccine-1')).findByText('Vacuna de Luna');
+    await waitFor(() => expect(within(screen.getByTestId('vaccine-row-vaccine-1')).getByText('Vacuna de Max')).toBeVisible());
+La tercera linea (`queryByText('Vacuna de Luna')` sobre toda la
+pantalla) se queda tal cual: tras el cambio de mascota, ni la fila ni
+`next-vaccine-card` dicen Luna. Nada mas cambia en H.
+
+Comprueba:
+  grep -cF "within(await screen.findByTestId('vaccine-row-vaccine-1')).findByText('Vacuna de Luna')" src/screens/health/index.test.tsx   -> 1
+  grep -cF "within(screen.getByTestId('vaccine-row-vaccine-1')).getByText('Vacuna de Max')" src/screens/health/index.test.tsx   -> 1
+  grep -cF "screen.findByText('Vacuna de Luna')" src/screens/health/index.test.tsx   -> 0
+
+Donde retomas: c1 entero, tal como esta en el handoff (medida a
+/tmp/168-r1.txt y su cadena, sin cambiar ninguna cifra). Lo esperado es
+`Tests:       18 failed, 53 passed, 71 total`, y el it `cambia vacunas y
+peso` cae ahora por `Unable to find an element with testID:
+pet-chip-pet-2`. Copia al impl el `●` de ese it con su `Unable to find`.
+Si cae por cualquier otra cosa, PARA. Despues sigue con c2 y el resto
+del handoff hasta c27, sin cambios.
+```
