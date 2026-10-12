@@ -66,12 +66,14 @@ jest.mock('react-native-safe-area-context', () => ({
 jest.mock('reicon-react-native', () => {
   const { View } = jest.requireActual('react-native');
   const icon = (testID: string) =>
-    function MockIcon({ color }: { color?: string }) {
-      return <View testID={testID} style={{ color }} />;
+    function MockIcon({ color, size }: { color?: string; size?: number }) {
+      return <View {...{ size }} testID={testID} style={{ color }} />;
     };
 
   return {
+    Check: icon('health-icon-check'),
     ChevronRight: icon('health-icon-chevron-right'),
+    Clock: icon('health-icon-clock'),
     HeartPulse: icon('health-icon-heart-pulse'),
     Syringe: icon('health-icon-syringe'),
   };
@@ -82,6 +84,7 @@ jest.mock(
   () => ({
     useThemeColors: (tokens: string[]) =>
       tokens.map((token) => {
+        if (token.startsWith('category-')) return token;
         if (token === 'warning') {
           return mockTheme === 'dark' ? '#FBBF24' : '#F59E0B';
         }
@@ -1041,5 +1044,54 @@ describe('#168 R2: Salud sin hero y con métricas estándar', () => {
     expect(states.props.style).toEqual({ gap: 16 });
     expect(within(states).queryByTestId('health-title')).toBeNull();
     expect(screen.queryByTestId('pet-hero')).toBeNull();
+  });
+});
+
+const VACCINES_168 = [
+  makeVaccine({ id: 'overdue', name: 'Vencida', appliedAt: '2026-01-01', nextDoseAt: '2026-02-28' }),
+  makeVaccine({ id: 'next', name: 'Próxima', appliedAt: '2026-01-02', nextDoseAt: '2026-03-31' }),
+  makeVaccine({ id: 'future', name: 'Futura', appliedAt: '2026-01-03', nextDoseAt: '2026-04-02' }),
+  makeVaccine({ id: 'completed', name: 'Sin próxima dosis', appliedAt: '2026-01-04', nextDoseAt: null }),
+];
+
+describe('#168 R3: cada vacuna lleva su tile pastel', () => {
+  beforeEach(() => {
+    setupHealth168();
+    jest.useFakeTimers({ now: new Date('2026-03-31T12:00:00Z') });
+    mockListVaccines.mockResolvedValue({ kind: 'ok', vaccines: VACCINES_168 });
+  });
+  afterEach(() => jest.useRealTimers());
+
+  it.each([
+    { id: 'overdue', surface: 'size-10 items-center justify-center rounded-xl bg-category-rose', icon: 'health-icon-clock', color: 'category-rose-strong', texts: ['Vencida', '2026-01-01', '2026-02-28'], dateClass: 'font-normal text-danger' },
+    { id: 'next', surface: 'size-10 items-center justify-center rounded-xl bg-category-amber', icon: 'health-icon-clock', color: 'category-amber-strong', texts: ['Próxima', '2026-01-02', '2026-03-31'], dateClass: 'font-normal text-muted' },
+    { id: 'future', surface: 'size-10 items-center justify-center rounded-xl bg-category-green', icon: 'health-icon-check', color: 'category-green-strong', texts: ['Futura', '2026-01-03', '2026-04-02'], dateClass: 'font-normal text-muted' },
+    { id: 'completed', surface: 'size-10 items-center justify-center rounded-xl bg-category-green', icon: 'health-icon-check', color: 'category-green-strong', texts: ['Sin próxima dosis', '2026-01-04'], dateClass: 'font-normal text-muted' },
+  ])('pinta el estado de $id con su icono y textos', async ({ id, surface, icon, color, texts, dateClass }) => {
+    await renderHealth();
+    const row = await screen.findByTestId(`vaccine-row-${id}`);
+    const scope = within(row);
+    expect(row.children).toHaveLength(2);
+    expect(row.props.className).toContain('flex-row items-center gap-3');
+    const tile = scope.getByTestId(`vaccine-tile-${id}`);
+    const column = scope.getByTestId(`vaccine-text-${id}`);
+    expect(elementChild(row, 0)).toBe(tile);
+    expect(elementChild(row, 1)).toBe(column);
+    expect(tile.props.className).toBe(surface);
+    expect(tile.props.style).toEqual({ borderCurve: 'continuous' });
+    expect(tile.props.accessibilityElementsHidden).toBe(true);
+    expect(tile.props.importantForAccessibility).toBe('no-hide-descendants');
+    expect(tile.children).toHaveLength(1);
+    const glyph = within(tile).getByTestId(icon);
+    expect(elementChild(tile, 0)).toBe(glyph);
+    expect(glyph.props.size).toBe(20);
+    expect(glyph.props.style).toEqual({ color });
+    expect(column.props.className).toBe('flex-1 gap-1');
+    expect(column.children).toHaveLength(texts.length);
+    texts.forEach((text, index) => {
+      const node = within(column).getByText(text);
+      expect(elementChild(column, index)).toBe(node);
+      expect(node.props.className).toBe(index === 0 ? 'font-bold text-foreground' : index === 1 ? 'font-normal text-muted' : dateClass);
+    });
   });
 });
