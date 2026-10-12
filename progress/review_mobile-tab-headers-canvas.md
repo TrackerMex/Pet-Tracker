@@ -233,3 +233,51 @@ Lo corrió el leader sobre `53f0e8f9` (`review168/head` = `53f0e8f99211548e2e7d8
 exit=0
 ```
 El aviso de `.env` (claves de Anthropic y Resend) es del entorno y no afecta a #168. «A worker process has failed to exit gracefully» (37453) aparece antes del resumen verde de mobile y no cambia el exit.
+
+## Barrido pre-firma de la Enmienda E3 (701d29d5)
+Fecha: 2026-10-12. No es la re-review de cierre: no corrí `init.sh` ni la suite entera.
+
+Lo medí en el spike desprendido `<scratchpad>/spike168e3b` (`dc5ed2e7`, la misma producción que `53f0e8f9`, con los 6 `it` de E3 insertados), desde `mobile-pet-tracker/`, con `bunx jest --testTimeout=30000 --maxWorkers=2 --runTestsByPath <fichero>` y un solo jest a la vez. Cada mutación se localiza por contenido. Después de cada una restauré con `git checkout HEAD -- <producción>`, y `git diff --quiet -- <producción>` y `git diff --cached --quiet` dieron `0 0` en todas. Bases: Perfil 64 passed, Comida 84 passed. «Vecinas» son `ui-language`, `tab-headers-canvas` (G), `(tabs)/__tests__/profile.test.tsx`, `design-drift` y `consistency-classnames`, con 166 passed. Repetí las siete sondas de la tabla de E3 y todas dan el rojo único que declara la spec, sobre el `it` previsto.
+
+| Id | Alternativa | Cláusula | `it` que la tumba | ¿Medida? |
+|---|---|---|---|---|
+| P2 | peso sin guarda («null kg») | R5.3 peso | E3 `sin peso omite su chip…` | sí: 1 failed / 64 |
+| P2t | peso por *truthiness* (omite 0) | R5.1 peso | E3 `con 0 meses y 0 kg…` | sí: 1 / 64 |
+| — | peso con `!= null` o `typeof === 'number'` | R5.1 peso | ninguno; es equivalente dentro de `number \| null` | no (equivalente) |
+| N6 | peso con `toFixed(1)` («0.0 kg», «12.0 kg») | R5.1 texto | E3 `con 0 meses y 0 kg…` + `R2: estructura Figma` | sí: 2 / 64 |
+| P3 | edad sin guarda («NaN meses») | R5.3 edad | E3 `con la edad no finita…` | sí: 1 / 64 |
+| P3t | edad por *truthiness* (omite 0) | R5.1 edad | E3 `con 0 meses y 0 kg…` | sí: 1 / 64 |
+| — | edad con `!= null`, `typeof === 'number'` o `> 0` | R5.1 edad | E3 `no finita` (NaN pasa las dos primeras) o E3 `0 meses` (`> 0`) | no, por lectura |
+| **N1** | **edad con `!Number.isNaN(pet.ageMonths)`**: `Infinity` y `-Infinity` pintan «Infinity meses» | **R5.1 (`Number.isFinite`) / R5.3** | **ninguno**: el `it` de E3 se titula «no finita», pero solo usa `NaN` | **sí: verde, 64 / 64; vecinas 166 / 166** |
+| P4c | esterilizado `!== undefined` (false pinta «Esterilizado») | R5.1 texto | E3 `sin esterilizar…` | sí: 1 / 64 |
+| N7 | esterilizado por *truthiness* (omite `false`) | R5.1 / R5.3 | E3 `sin esterilizar…` | sí: 1 / 64 |
+| — | esterilizado con `== null` | R5.1 | ninguno; es equivalente dentro de `boolean \| null` | no (equivalente) |
+| — | sexo por *truthiness* | R5.1 sexo | ninguno; es equivalente porque `PetSex` es `'male' \| 'female'` y `''` no existe | no (equivalente) |
+| N8 | «Sin esterilizar» como literal ES en vez de `t()` | R5.1 texto ES/EN | `ui-language` `#65 R7` y `#65 R18` (3 rojos); Perfil sigue verde | sí: Perfil 64 / 64, `ui-language` 3 failed / 30 |
+| **N2** | **la guarda de esterilizado lee `pet.sex`** (`text: pet.sex === null ? null : pet.sterilized ? …`). Con sexo presente y esterilizado `null` pinta «Sin esterilizar»; con sexo `null` y esterilizado `true` omite el chip | **R5.3** | **ninguno** | **sí: verde, 64 / 64; vecinas 166 / 166** |
+| **N3** | **la guarda de sexo lee `pet.sterilized`** (`text: pet.sterilized === null ? null : pet.sex`). Con sexo presente y esterilizado `null` omite el chip de sexo | **R5.3** | **ninguno** | **sí: verde, 64 / 64; vecinas 166 / 166** |
+| N5 | color por el índice de la lista filtrada | R5.3 (el hueco viaja con el dato) | `sin sexo ni esterilización…` (ya existía) + E3 `edad no finita` | sí: 2 / 64 |
+| — | color por índice inverso | R5.3 | E3 `sin peso…` y E3 `edad no finita` (sexo azul) | no, por lectura |
+| — | color por rama (verde solo con `true`) | R5.1 / R5.2 | E3 `sin esterilizar…` (asevera `bg-category-green` con `false`) | no, por lectura |
+| — | orden de chips cambiado | R5.1 orden | `ordena los cuatro chips` + el orden de cada `it` de E3 | no, por lectura (P1 del review) |
+| N4 | `key={pill.text}` en vez de `key={pill.testID}` | R5.1 `key` | ninguno; no es observable: React no expone `key` y dos textos solo coinciden con datos imposibles | sí: verde, 64 / 64. No la cuento |
+| P13 | `photo-upload-error` delante de `change-photo` | R4.3 | E3 `con la subida fallida…` | sí: 1 / 64 |
+| N10 | `photo-upload-error` como cuarto hijo de la tarjeta | R4.3 «fuera de ella» | E3 `con la subida fallida…` | sí: 1 / 64 |
+| N11 | `photo-upload-error` envuelto en un `View` | R4.3 «inmediatamente después» | E3 `con la subida fallida…` | sí: 1 / 64 |
+| — | un `View` que envuelve `change-photo` y el error | R4.3 | `deja change-photo inmediatamente después…` + E3 | no, por lectura |
+| — | error tras `pet-info-card` | R4.3 | E3 (`index + 2`) | no, por lectura |
+| F17 | `now: Math.min(kcalPct, 100)` | R9.3 | E3 `anuncia el valor sin acotar…` | sí: 1 failed / 84 |
+| N13 | `now` sin redondear (62.676) | R9.3 | `#113 R3` fila 890/1420 | sí: 1 / 84 |
+| — | `now` con `Math.floor` | R9.3 | `#113 R3` fila 890/1420 (62 frente a 63) | no, por lectura |
+| N12 | `now` con `Math.ceil` en una expresión aparte de `kcalPct` | R9.3 | ninguno (las filas que miran `now` son 62.68, 0 y 150, y ahí `ceil` coincide con `round`) | sí: verde, 84 / 84. Plausibilidad baja |
+| N14 | `now` aparte sin la guarda `merKcal > 0` (NaN con 0/0) | R9.3 | ninguno (la fila `merKcal 0` de R9 no mira `accessibilityValue`) | sí: verde, 84 / 84. Plausibilidad baja |
+| — | `accessible`, `accessibilityRole` y `accessibilityLabel` | R9.3 | `#113 R3` (dos filas) | no, por lectura |
+
+Lectura:
+- **O1, O2 y O3 quedan cerradas.** P2, P3 y P4c (O1), P13 (O2) y F17 (O3) dan cada una un único rojo, en el `it` de E3 que declara la spec. P2t y P3t también. Los recuentos coinciden con la tabla de E3 y con el bloque O de `tasks.md` (60 → 64 en Perfil y 84 en Comida, acumulados).
+- **N2 y N3 (R5.3) siguen sin candado.** Las fixtures de R5 nunca separan sexo y esterilizado: la de «sin sexo ni esterilización» los pone a `null` a la vez, y el resto lleva los dos presentes. Una guarda cruzada entre los dos datos pasa en verde contra Perfil y contra las vecinas. N2 además pinta un dato falso («Sin esterilizar» cuando no se sabe). Los casos son reales: `create-pet.dto.ts` deja `sex` y `sterilized` opcionales por separado. Faltan dos fixtures: sexo `null` con esterilizado presente, y esterilizado `null` con sexo presente. Cada una debe aseverar los tres chips restantes en sus huecos, igual que los `it` de E3.a. Los demás cruces (edad y peso con cualquier otro dato) ya los tumban las fixtures de E3, que anulan un solo dato cada vez.
+- **N1 (R5.1) sigue sin candado.** La condición de presencia es `Number.isFinite`, y el `it` de E3 dice «no finita» pero solo prueba `NaN`. Hoy la API no puede mandar `Infinity`, igual que no puede mandar `NaN`. Aun así, la cláusula abarca `NaN`, `Infinity` y `-Infinity`, y `!Number.isNaN` pasa en verde.
+- N4, N12 y N14 no los cuento. N4 no es observable. N12 y N14 exigen reescribir `now: kcalPct` como una expresión aparte, y R9.3 manda no tocar esa línea. Quedan anotados por si el leader quiere ensanchar E3.c a las filas 333/1000 y 0/0 de la tabla de R9.
+- No toqué código ni tests de `Pet-Tracker-wt-168`. El único cambio es esta sección, sin commitear. El spike conserva los 6 `it` de E3; la producción está restaurada.
+
+**Veredicto del barrido: E3 no cierra. Cierra O1-O3, pero faltan candados para R5.3 con sexo o esterilizado ausentes por separado (N2 y N3 verdes) y para la edad `±Infinity` de R5.1 (N1 verde).**
