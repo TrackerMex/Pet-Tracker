@@ -42,6 +42,34 @@ function fmtVariation(variation: number | null): string {
   return variation > 0 ? `+${variation} kg` : `${variation} kg`;
 }
 
+function weightTone(variation: number | null) {
+  if (variation !== null && variation > 0) {
+    return {
+      tileClassName: 'bg-danger-soft',
+      rowClassName: 'text-xs font-semibold text-danger',
+      summaryClassName: 'text-sm font-semibold text-danger',
+      Icon: TrendUp,
+      color: 'danger' as const,
+    };
+  }
+  if (variation !== null && variation < 0) {
+    return {
+      tileClassName: 'bg-success-soft',
+      rowClassName: 'text-xs font-semibold text-success',
+      summaryClassName: 'text-sm font-semibold text-success',
+      Icon: TrendDown,
+      color: 'success' as const,
+    };
+  }
+  return {
+    tileClassName: 'bg-default',
+    rowClassName: 'text-xs font-semibold text-muted',
+    summaryClassName: 'text-sm font-semibold text-muted',
+    Icon: Minus,
+    color: 'muted' as const,
+  };
+}
+
 function isWeightsError(state: WeightsState): boolean {
   return ['error', 'unreachable', 'missing-config'].includes(state.kind);
 }
@@ -75,6 +103,8 @@ function WeightLogContent({ petId }: { petId: string }) {
   });
   const entries = weights.data?.kind === 'ok' ? weights.data.weights : [];
   const monthDelta = monthlyWeightDelta(entries, civilTodayIso(profileTimeZone));
+  const monthTone = weightTone(monthDelta);
+  const toneColors = { success, danger, muted };
 
   async function handleSubmit() {
     const weightKg = parseFloat(weightText);
@@ -165,20 +195,10 @@ function WeightLogContent({ petId }: { petId: string }) {
                 </Text>
                 {monthDelta !== null ? (
                   <View testID="weight-month-delta" className="flex-row items-center gap-1.5">
-                    {monthDelta > 0 ? (
-                      <TrendUp size={15} color={danger} />
-                    ) : monthDelta < 0 ? (
-                      <TrendDown size={15} color={success} />
-                    ) : (
-                      <Minus size={15} color={muted} />
-                    )}
+                    <monthTone.Icon size={15} color={toneColors[monthTone.color]} />
                     <Text
                       testID="weight-month-delta-text"
-                      className={monthDelta > 0
-                        ? 'text-sm font-semibold text-danger'
-                        : monthDelta < 0
-                          ? 'text-sm font-semibold text-success'
-                          : 'text-sm font-semibold text-muted'}
+                      className={monthTone.summaryClassName}
                       style={TABULAR_NUMS}
                     >
                       {t('weightLog.monthDelta', { value: fmtVariation(monthDelta) })}
@@ -280,18 +300,7 @@ function WeightLogContent({ petId }: { petId: string }) {
 
         {weights.data?.kind === 'ok'
           ? weights.data.weights.map((entry) => {
-              const tileClassName =
-                entry.variation === null || entry.variation === 0
-                  ? 'bg-default'
-                  : entry.variation > 0
-                    ? 'bg-danger-soft'
-                    : 'bg-success-soft';
-              const variationClassName =
-                entry.variation === null || entry.variation === 0
-                  ? 'text-muted'
-                  : entry.variation > 0
-                    ? 'text-danger'
-                    : 'text-success';
+              const { tileClassName, rowClassName, Icon, color } = weightTone(entry.variation);
 
               return (
                 <HeroUICard
@@ -304,13 +313,7 @@ function WeightLogContent({ petId }: { petId: string }) {
                     className={`size-8 shrink-0 items-center justify-center rounded-xl ${tileClassName}`}
                     style={CONTINUOUS_CORNER}
                   >
-                    {entry.variation === null || entry.variation === 0 ? (
-                      <Minus size={15} color={muted} />
-                    ) : entry.variation > 0 ? (
-                      <TrendUp size={15} color={danger} />
-                    ) : (
-                      <TrendDown size={15} color={success} />
-                    )}
+                    <Icon size={15} color={toneColors[color]} />
                   </View>
                   <View className="min-w-0 flex-1 gap-1">
                     <View className="flex-row items-baseline gap-1.5">
@@ -322,7 +325,7 @@ function WeightLogContent({ petId }: { petId: string }) {
                       </Text>
                       <Text
                         testID={`weight-row-${entry.id}-delta`}
-                        className={`text-xs font-semibold ${variationClassName}`}
+                        className={rowClassName}
                         style={TABULAR_NUMS}
                       >
                         {fmtVariation(entry.variation)}
