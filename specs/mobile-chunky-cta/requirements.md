@@ -323,4 +323,4 @@ spec se enmienda antes del handoff.
 ## Aprobación
 
 - [x] Aprobado por humano, con P1 a P3 resueltas (fecha: 2026-10-11) ← gate obligatorio antes de implementar
-- [ ] Prueba de humo R5 superada en dev build de Android (fecha: ____) ← gate de cierre; el leader no marca `done` sin ella
+- [X] Prueba de humo R5 superada en dev build de Android (fecha: 2026-10-11) ← gate de cierre; el leader no marca `done` sin ella
