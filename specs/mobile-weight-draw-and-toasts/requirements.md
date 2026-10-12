@@ -1,6 +1,6 @@
 ---
 feature: "mobile-weight-draw-and-toasts"
-status: spec_ready     # draft | spec_ready | approved
+status: approved       # draft | spec_ready | approved
 tags: [mobile, ui, motion, spec]
 ---
 
@@ -360,7 +360,7 @@ Guardas de clases contrastadas; todas siguen verdes con lo prescrito:
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [x] Aprobado por humano (fecha: 2026-10-11) ← gate obligatorio antes de implementar
 
 ### Aprobación de R14 (prueba de humo en dev build de Android)
 
