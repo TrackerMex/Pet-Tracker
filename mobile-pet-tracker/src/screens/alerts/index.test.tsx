@@ -1310,6 +1310,9 @@ describe('#170 R3: agrupa la lista en Hoy, Esta semana y Anteriores', () => {
       const parent = screen.getByTestId('alerts-section-' + section).parent!;
       expect(parent.props.className).toBe('gap-4');
       expect(within(parent).getByTestId('alert-row-' + id)).toBeVisible();
+      expect(elementChild(parent, 0).props.testID).toBe('alerts-section-' + section);
+      const first = elementChild(parent, 1);
+      expect(first.props.testID === 'alert-row-' + id || within(first).queryByTestId('alert-row-' + id) !== null).toBe(true);
     }
   });
   it.each([
