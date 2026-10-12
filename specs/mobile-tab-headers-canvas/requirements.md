@@ -680,3 +680,66 @@ van en §Reescrituras como filas nuevas:
 ### Aprobación de la Enmienda E1
 
 - [X] Enmienda E1 aprobada por humano (fecha: 2026-10-11, vía Notion) ← gate obligatorio antes del handoff a Codex
+
+## Enmienda E2 — R4.5: la forma de `source` que leen los tests
+
+> Escrita el 2026-10-12 sobre la spec aprobada con E1 (firma `a2e684ee`),
+> antes del handoff a Codex, al barrer las premisas de R1–R12 contra la base
+> `9d3d412c`. Solo toca la última frase de R4.5 y el paréntesis de R4.2 que la
+> anticipa; la conducta no cambia. No toca D1–D9, R1–R3, R5–R13, E1 ni las
+> casillas firmadas. Su casilla va **sin marcar**: el humano reabre el gate
+> solo para esta enmienda.
+
+### E2.a — R4.5: el host de `PetAvatar` expone un array, también en el hero
+
+R4.5 dice que `PetAvatar` pasa a `source` un **objeto** `{ uri, cacheKey }`,
+que «el hero pasaba un array» y que los `it` reescritos esperan el objeto.
+Falso en los dos puntos:
+
+- el hero no tiene imagen propia: `src/components/pet-hero-header.tsx` monta
+  el mismo `PetAvatar` con `testID="pet-hero-media"`. No hay dos formas;
+- `PetAvatar` sí pasa un objeto a la `Image` de `expo-image`, pero el elemento
+  host que devuelve `getByTestId` lleva `source` normalizado a **array**.
+  `src/components/__tests__/pet-avatar.test.tsx` aserta
+  `toEqual([{ uri: 'http://example.test/luna.jpg', cacheKey: 'pet-1' }])`, y el
+  `it` vivo de Perfil `keeps the old photo and shows an error when upload fails`
+  aserta `[{ uri: 'http://example.test/old.jpg', cacheKey: 'pet-1' }]` sobre
+  `pet-hero-media`.
+
+Un `it` que espere el objeto falla contra la implementación correcta. Medido
+el 2026-10-12 con un spike fuera del árbol: `PetAvatar` con foto,
+`cacheKey="pet-1"` y `size={96}` da en el host
+`source` = `[{ uri: 'http://example.test/old.jpg', cacheKey: 'pet-1' }]` y
+`style` = `{ width: 96, height: 96, borderRadius: 48 }` (objeto plano, sin
+aplanar; los tests de Perfil no pueden usar `StyleSheet`, R12.3).
+
+**R4.5 queda así** en su última frase: las aserciones sobre
+`profile-pet-avatar` con foto esperan el **array** de un elemento, p. ej.
+`toEqual([{ uri: 'http://example.test/old.jpg', cacheKey: 'pet-1' }])`, y su
+`style` con `toEqual({ width: 96, height: 96, borderRadius: 48 })`. El `it` de
+subida fallida solo cambia el `testID` (`pet-hero-media` →
+`profile-pet-avatar`); el array que ya aserta no cambia.
+
+El paréntesis de R4.2 (`source={{ uri, cacheKey }}`) describe la prop que
+`PetAvatar` pasa a `Image`, no lo que lee el test. `src/components/pet-avatar.tsx`
+no se toca.
+
+### Correcciones de `tasks.md` que acompañan a E2 (sin firma propia)
+
+- Bloque D, `it` «con foto», y fila P3 de §Reescrituras: `source` como array.
+- Fila F5 de §Reescrituras: pasa del bloque K al bloque I. El verde de I borra
+  `food-plan-fill`, que F5 aserta; dejarla para K deja la suite roja entre I y
+  K. Su conducta la recupera el `it` de transición de `#168 R10` en K.
+- Bloques I, J y K: entre el rojo de I y el verde de K hay símbolos sin uso
+  que K vuelve a usar, y `bunx expo lint` da avisos
+  `@typescript-eslint/no-unused-vars` con salida 0 (severidad medida el
+  2026-10-12 con `eslint --stdin`). Son esperados y no se borran:
+  `'expectKcalBarTiming' is defined but never used` en el test de Nutrición
+  (desde el rojo de I, que borra F5, hasta el rojo de K) y
+  `'KCAL_BAR_TIMING' is assigned a value but never used` en `food.tsx` (desde
+  el verde de I hasta el verde de K; R10.2 la conserva). Cuenta: rojo de I, 1;
+  verde de I, rojo y verde de J, 2; rojo de K, 1; verde de K, 0.
+
+### Aprobación de la Enmienda E2
+
+- [ ] Enmienda E2 aprobada por humano (fecha: ____, vía Notion) ← gate obligatorio antes del handoff a Codex

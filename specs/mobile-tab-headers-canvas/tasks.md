@@ -119,9 +119,10 @@ intermedio con el título encima del hero.
     - hijos de `profile-pet-card` exactamente
       `['profile-pet-avatar', 'profile-pet-name', 'profile-pet-chips']`;
       `className` de la tarjeta `items-center gap-3`;
-    - con foto: `profile-pet-avatar` con `source` igual a
-      `{ uri: <photoUrl de la fixture>, cacheKey: <id> }` y `style` con
-      `width`/`height` 96 y `borderRadius` 48;
+    - con foto: `profile-pet-avatar` con `source` igual al **array**
+      `[{ uri: <photoUrl de la fixture>, cacheKey: <id> }]` (Enmienda E2) y
+      `style` con `toEqual({ width: 96, height: 96, borderRadius: 48 })`, sin
+      aplanar;
     - sin foto (`photoUrl: null`): `profile-pet-avatar` sin `source`, con
       `width` y `height` 96 (R4.6);
     - el hermano siguiente a `profile-pet-card` es `change-photo`, y
@@ -222,7 +223,7 @@ intermedio con el título encima del hero.
       `absolute inset-0` y sin `style`;
     - `food-plan-percent` y `food-plan-consumed` con `className` exacto y
       `style` igual a `TABULAR_NUMS` escrito literal.
-  - Reescrituras F2–F4 y C1 en el mismo commit.
+  - Reescrituras F2–F5 y C1 en el mismo commit.
 - [ ] (2) Verde `feat(mobile): anillo de kcal en Nutrición (#168 R8)`.
   Fuera `ForkKnife` del import. En `useThemeColors`, **se añade**
   `'accent-foreground'` como cuarto token (variable `accentForeground`) y los
@@ -248,7 +249,7 @@ intermedio con el título encima del hero.
 ## Bloque K — Nutrición: R10 (transición y reduce motion)
 
 - [ ] (1) Rojo `test(mobile): el anillo transiciona con reduce motion (#168 R10)`:
-  - `it` de transición (reemplaza al de #113 R4, F3): con `merKcal` 1420
+  - `it` de transición (sustituye al de #113 R4 que borró F5 en I): con `merKcal` 1420
     monta a 710 (`expectKcalBarTiming(50)` y desfase 138.23), servir sube a
     1420 (`expectKcalBarTiming(100)` y desfase 0), deshacer baja a 710
     (`expectKcalBarTiming(50)` y desfase 138.23). Esperas: las de
@@ -370,7 +371,7 @@ que la conducta deja de existir por decisión N1 y la cubre un `it` nuevo de
 | H10 | `H` | ídem › `R5 (mobile-design-drift): aplica el safe area superior al contenido` | Reescribir: el safe area superior pasa al scroll; aserta `contentContainerStyle.paddingTop` 52 sobre `screen-health` y `style` de `health-states` igual a `{ gap: 16 }` (R2.2, R2.4) | A |
 | P1 | `P` | `R6: Profile usa el hero compartido` (los cuatro `it`) | Borrar el `describe`; lo cubre `#168 R4` (tarjeta, foto, `change-photo` debajo, sin `pet-hero`) | D |
 | P2 | `P` | `renders the active pet hero, switcher, pills and information rows` | Reescribir solo la línea que aserta `pet-hero-media` visible: pasa a `profile-pet-avatar` | D |
-| P3 | `P` | `keeps the old photo and shows an error when upload fails` | Reescribir la aserción de `pet-hero-media` a `profile-pet-avatar` con `source` **objeto** `{ uri: 'http://example.test/old.jpg', cacheKey: 'pet-1' }` | D |
+| P3 | `P` | `keeps the old photo and shows an error when upload fails` | Reescribir la aserción de `pet-hero-media` a `profile-pet-avatar` con el mismo `source` **array** `[{ uri: 'http://example.test/old.jpg', cacheKey: 'pet-1' }]` (Enmienda E2) | D |
 | P4 | `P` | `#87 R16: ProfileScreen lee por TanStack Query` › `deja cuenta, mascotas y detalle en sus claves canónicas` | Reescribir `findByTestId('pet-hero')` a `findByTestId('profile-pet-card')` | D |
 | P5 | `P` | `#41 R9: Perfil enlaza a las zonas seguras de la mascota activa` › `pinta la fila de zonas seguras tras la de GPS y abre la ruta de la mascota activa` | Reescribir dos literales: `className` de la fila a `flex-row items-center gap-3 rounded-xl bg-default px-3 py-2` y el de su etiqueta `Zonas seguras` a `flex-1 font-semibold text-foreground` (R6.1); el resto del `it` no cambia | F |
 | C1 | `C` | `#62 R4: la app solo usa los radios de la escala declarada` › `lleva los tres tiles restantes a rounded-xl` | Quitar la aserción sobre `food.tsx` y dejar `// #168 R8: el tile ForkKnife sale de food.tsx`; las de `forgot` y `weight-log` no cambian (Enmienda E1.c) | I |
@@ -379,7 +380,7 @@ que la conducta deja de existir por decisión N1 y la cubre un `it` nuevo de
 | F2 | `F` | `#113 R2: …` › `compone la tarjeta: fila intacta y bloque de progreso debajo` | Borrar; lo cubre `#168 R8` | I |
 | F3 | `F` | `#113 R2: …` › `con merKcal $merKcal y kcalConsumedToday $kcal pinta $consumed y $percent` (`it.each`) | Reescribir: conserva filas y aserciones de `food-plan-consumed` y `food-plan-percent`; quita la de ancho de `food-plan-fill` (el desfase lo candea `#168 R9`) | I |
 | F4 | `F` | `#113 R7: los nodos no-texto de la barra no llevan más estilo que el ancho …` (`it.each`) | Borrar el `describe`; lo cubre el `it` de props exhaustivas de `#168 R8` | I |
-| F5 | `F` | `#113 R4: el relleno transiciona su ancho …` › `anima a 50, sube a 100 al servir y baja a 50 al deshacer con 250 ms y ease-in-out` | Borrar; lo cubre `#168 R10` (mismo recorrido sobre el anillo) | K |
+| F5 | `F` | `#113 R4: el relleno transiciona su ancho …` › `anima a 50, sube a 100 al servir y baja a 50 al deshacer con 250 ms y ease-in-out` | Borrar; lo cubre `#168 R10` en K (mismo recorrido sobre el anillo). Va en I porque el verde de I borra `food-plan-fill` (Enmienda E2) | I |
 | F6 | `F` | `#113 R2: …` › `no pinta el bloque sin plan` | Conservar; si consulta `food-plan-track` o `food-plan-fill`, cambiar a `food-plan-ring` | I |
 
 No se tocan: `#113 R1`, `#113 R3` (semántica accesible), `#113 R5`
