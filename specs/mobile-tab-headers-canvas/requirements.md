@@ -899,12 +899,13 @@ prescribe, y la semántica vive en `food-plan-progress`.
 
 ### Recuentos tras E3
 
-Medidos en el mismo spike:
+Medidos en el mismo spike, salvo la suite móvil:
 
 - `src/screens/profile/index.test.tsx`: 59 → 63 `it`;
 - `src/app/(tabs)/__tests__/food.test.tsx`: 83 → 84;
 - los dos ficheros juntos: 147 passed;
-- suite móvil: 99 suites y 2833 → 2838 tests;
+- suite móvil: 99 suites y 2833 → 2838 tests (no medido: 2833 del ALL verde de la
+  Reanudación 11 más los cinco `it`);
 - `bun run typecheck` y `bunx eslint --no-cache` sobre los dos ficheros de
   test: salida 0;
 - las 8 suites globales de `src/__tests__/`: 206 passed, sin cambios.
