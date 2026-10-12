@@ -13,6 +13,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useContext, useEffect, useRef, useState } from 'react';
 import { KeyboardAvoidingView, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { Check, Minus, TrendDown, TrendUp } from 'reicon-react-native';
 
 import {
@@ -32,6 +33,7 @@ import {
   TABULAR_NUMS,
 } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
+import { MOTION_FEEDBACK_MS, MOTION_TRANSITION_MS } from '../../theme/motion';
 import { civilTodayIso } from '../../utils/civil-today-iso';
 import { monthlyWeightDelta } from '../../utils/monthly-weight-delta';
 
@@ -362,8 +364,10 @@ function WeightLogContent({ petId }: { petId: string }) {
           : null}
       </ScrollView>
       {toastVisible ? (
-        <View
+        <Animated.View
           testID="weight-toast"
+          entering={FadeIn.duration(MOTION_TRANSITION_MS)}
+          exiting={FadeOut.duration(MOTION_FEEDBACK_MS)}
           className="absolute top-4 flex-row items-center gap-2 self-center rounded-full border border-border bg-surface px-4 py-2.5 shadow-sm"
           pointerEvents="none"
           accessibilityLiveRegion="polite"
@@ -372,7 +376,7 @@ function WeightLogContent({ petId }: { petId: string }) {
           <Text className="text-sm font-semibold text-foreground">
             {t('weightLog.weightLogged')}
           </Text>
-        </View>
+        </Animated.View>
       ) : null}
     </KeyboardAvoidingView>
   );
