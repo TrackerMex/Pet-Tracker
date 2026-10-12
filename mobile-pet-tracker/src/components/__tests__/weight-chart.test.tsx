@@ -224,3 +224,44 @@ describe('#169 R3: bajo reduce motion la gráfica sale completa', () => {
       .toEqual({ opacity: 1 });
   });
 });
+
+describe('#169 R4: cuándo se vuelve a dibujar', () => {
+  const entries = [
+    makeWeight({ id: 'weight-3', weightKg: 14 }),
+    makeWeight({ id: 'weight-2', weightKg: 12 }),
+    makeWeight({ id: 'weight-1', weightKg: 10 }),
+  ];
+
+  it('R4a: con la gráfica montada, otros datos no repiten el dibujo', async () => {
+    await render(<WeightChart entries={entries} />, { wrapper: WeightChartWrapper });
+    expect(screen.getByTestId('weight-chart-line').props.strokeDasharray).toEqual([
+      expect.closeTo(104.9952, 3), expect.closeTo(104.9952, 3),
+    ]);
+    await screen.rerender(
+      <WeightChart entries={[makeWeight({ id: 'weight-2' }), makeWeight()]} />,
+    );
+
+    expect(screen.getByTestId('weight-chart-line').props.strokeDasharray)
+      .toEqual([100, 100]);
+    await waitFor(() =>
+      expect(screen.getByTestId('weight-chart-line').props.jestAnimatedProps?.value)
+        .toEqual({ strokeDashoffset: 0 }),
+    );
+    expect(mockWithTiming).toHaveBeenCalledTimes(1);
+  });
+
+  it('R4b: pasar de una entrada a tres dibuja una vez', async () => {
+    await render(<WeightChart entries={[makeWeight()]} />, { wrapper: WeightChartWrapper });
+    await screen.rerender(<WeightChart entries={entries} />);
+
+    expect(mockWithTiming).toHaveBeenCalledTimes(1);
+  });
+
+  it('R4c: volver a menos de dos entradas y otra vez a tres dibuja de nuevo', async () => {
+    await render(<WeightChart entries={entries} />, { wrapper: WeightChartWrapper });
+    await screen.rerender(<WeightChart entries={[makeWeight()]} />);
+    await screen.rerender(<WeightChart entries={entries} />);
+
+    expect(mockWithTiming).toHaveBeenCalledTimes(2);
+  });
+});
