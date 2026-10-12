@@ -1107,6 +1107,6 @@ describe('#168 R4: Perfil sustituye el hero por profile-pet-card', () => {
     mockGetPet.mockReturnValue(pending<PetState>());
     await renderProfile();
     const skeleton = screen.getByTestId('profile-hero-skeleton');
-    expect(skeleton.props.className).toBe('h-52 w-full rounded-card');
+    expect(skeleton.props.className).toBe('skeleton__root h-52 w-full rounded-card');
   });
 });
