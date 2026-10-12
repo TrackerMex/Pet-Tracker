@@ -1214,3 +1214,51 @@ describe('#168 R6: cada fila de navegación lleva su tile pastel', () => {
     expect(mockRouter.push).toHaveBeenCalledWith(destination);
   });
 });
+
+describe('#168 R7: la cuenta muestra el avatar de iniciales', () => {
+  beforeEach(setupProfile168);
+
+  it.each([
+    { firstName: 'Ana', lastName: 'García', initials: 'AG', name: 'Ana García' },
+    { firstName: ' ana ', lastName: '', initials: 'A', name: ' ana  ' },
+    { firstName: '', lastName: 'núñez', initials: 'N', name: ' núñez' },
+    { firstName: 'élodie', lastName: 'ñúñez', initials: 'ÉÑ', name: 'élodie ñúñez' },
+    { firstName: '', lastName: ' ', initials: null, name: '  ' },
+  ])('pinta las iniciales de «$firstName» / «$lastName»', async ({ firstName, lastName, initials, name }) => {
+    mockGetMe.mockResolvedValue({ kind: 'ok', me: {
+      id: 'user-1', email: 'ana@example.test', firstName, lastName,
+      phone: '+525500000000', country: 'MX', timezone: 'America/Mexico_City',
+      createdAt: '2026-08-20T00:00:00.000Z', updatedAt: '2026-08-21T00:00:00.000Z',
+    } });
+    await renderProfile();
+    await screen.findByText('ana@example.test');
+    const identity = screen.getByTestId('me-identity');
+    const scope = within(identity);
+    expect(identity.props.className).toBe('flex-row items-center gap-3');
+    expect(identity.children).toHaveLength(initials === null ? 1 : 2);
+    const text = scope.getByTestId('me-identity-text');
+    expect(text.props.className).toBe('flex-1 gap-1');
+    expect(text.children).toHaveLength(2);
+    expect(profileChild(text, 0).props.children).toBe(name);
+    expect(profileChild(text, 0).props.className).toBe('text-lg font-bold text-foreground');
+    expect(profileChild(text, 1)).toBe(within(text).getByText('ana@example.test'));
+    expect(profileChild(text, 1).props.className).toBe('font-normal text-muted');
+    if (initials === null) {
+      expect(profileChild(identity, 0)).toBe(text);
+      expect(scope.queryByTestId('me-avatar', { includeHiddenElements: true })).toBeNull();
+      expect(scope.queryByTestId('me-avatar-initials', { includeHiddenElements: true })).toBeNull();
+    } else {
+      const avatar = scope.getByTestId('me-avatar', { includeHiddenElements: true });
+      expect(profileChild(identity, 0)).toBe(avatar);
+      expect(profileChild(identity, 1)).toBe(text);
+      expect(avatar.props.className).toBe('size-10 items-center justify-center rounded-full bg-default');
+      expect(avatar.props.accessibilityElementsHidden).toBe(true);
+      expect(avatar.props.importantForAccessibility).toBe('no-hide-descendants');
+      expect(avatar.children).toHaveLength(1);
+      const label = within(avatar).getByTestId('me-avatar-initials', { includeHiddenElements: true });
+      expect(profileChild(avatar, 0)).toBe(label);
+      expect(label.props.className).toBe('text-sm font-black text-foreground');
+      expect(label).toHaveTextContent(initials);
+    }
+  });
+});
