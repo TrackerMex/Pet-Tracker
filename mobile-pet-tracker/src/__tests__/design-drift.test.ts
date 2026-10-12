@@ -793,3 +793,24 @@ describe('#134 R7: el ack no toca la caché de la lista', () => {
     }
   });
 });
+
+describe('#167 R1: las rutas de login y registro son delgadas', () => {
+  it('#167 R1: cada ruta solo renderiza su pantalla', () => {
+    expect(readFileSync(join(sourceRoot, 'app', '(auth)', 'login.tsx'), 'utf8')).toBe(
+      `import { LoginScreen } from '../../screens/login';
+
+export default function LoginRoute() {
+  return <LoginScreen />;
+}
+`,
+    );
+    expect(readFileSync(join(sourceRoot, 'app', '(auth)', 'register.tsx'), 'utf8')).toBe(
+      `import { RegisterScreen } from '../../screens/register';
+
+export default function RegisterRoute() {
+  return <RegisterScreen />;
+}
+`,
+    );
+  });
+});
