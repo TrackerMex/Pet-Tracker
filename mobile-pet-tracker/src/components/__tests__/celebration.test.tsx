@@ -1,4 +1,5 @@
 import { act, fireEvent, render, screen, within } from '@testing-library/react-native';
+import { NotificationFeedbackType, notificationAsync } from 'expo-haptics';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
 import { Dimensions } from 'react-native';
@@ -321,5 +322,35 @@ describe('#171 R8: reduce motion', () => {
     expect(getAnimatedStyle(screen.getByTestId('probe-badge', { includeHiddenElements: true }))).toEqual({
       position: 'absolute', right: 0, bottom: 0, opacity: 1, transform: [{ scale: 1 }],
     });
+  });
+});
+
+jest.mock('expo-haptics', () => ({
+  notificationAsync: jest.fn(() => Promise.resolve()),
+  NotificationFeedbackType: { Success: 'mock-success', Error: 'mock-error' },
+}));
+
+const mockNotificationAsync = jest.mocked(notificationAsync);
+
+describe('#171 R9: háptico', () => {
+  beforeEach(() => { jest.useFakeTimers(); });
+  afterEach(() => { jest.useRealTimers(); });
+
+  it('R9.1 al montar notifica éxito una vez sin avanzar temporizadores', async () => {
+    await renderProbe();
+    expect(mockNotificationAsync).toHaveBeenCalledTimes(1);
+    expect(mockNotificationAsync).toHaveBeenCalledWith(NotificationFeedbackType.Success);
+  });
+
+  it('R9.2 rerenderizar con otro título no repite el háptico', async () => {
+    await renderProbe();
+    await screen.rerender(<HeroUINativeProvider><Celebration {...probeProps} title="Otro título" /></HeroUINativeProvider>);
+    expect(mockNotificationAsync).toHaveBeenCalledTimes(1);
+  });
+
+  it('R9.3 reduce motion conserva el háptico una vez', async () => {
+    mockUseReducedMotion.mockReturnValue(true);
+    await renderProbe();
+    expect(mockNotificationAsync).toHaveBeenCalledTimes(1);
   });
 });
