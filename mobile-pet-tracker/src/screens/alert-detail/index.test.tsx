@@ -643,3 +643,19 @@ describe('#170 R13: si la consulta de zonas no da ok, mapa sin zona y sin error'
     }
   });
 });
+
+describe('#170 R14: dentro o en el borde no dice distancia', () => {
+  it.each([
+    { fila: 'en el centro', position: { lat: 19.4326, lng: -99.1332 }, zoom: 17.5850 },
+    { fila: 'a 0,41 m del borde', position: { lat: 19.43350305, lng: -99.1332 }, zoom: 16.5820 },
+  ])('$fila', async ({ position, zoom }) => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ geofenceId: 'zone-1', payload: { ...REAL_PAYLOAD, position } })], nextCursor: null });
+    mockListGeofences.mockResolvedValue({ kind: 'ok', geofences: [ZONE] });
+    await renderDetail();
+    await waitFor(() => expect(screen.getByTestId('pet-map-double').props.circles).toHaveLength(1));
+    const map = screen.getByTestId('pet-map-double');
+    expect(map.props.circles).toEqual([{ id: 'zone-1', center: { latitude: 19.4326, longitude: -99.1332 }, radius: 100 }]);
+    expect(map.props.zoom).toBeCloseTo(zoom, 3);
+    expect(screen.queryByTestId('alert-detail-distance')).toBeNull();
+  });
+});
