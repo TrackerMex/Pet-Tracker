@@ -39,3 +39,22 @@
 - Cola acordada entre sesiones: Backend → UI-Pet → sites-99 → sites-4c.
   Lanzado tras el aviso de UI-Pet (EXIT=0). Terminado: EXIT=0, «Todo verde»
   (medido sin pipe). Avisados sites-4c [87612b] y Frontend.
+
+### Paradas de Codex
+
+- Parada 1 (c7, 2026-10-12): `bunx expo lint --no-cache` imprimió
+  `Failed to run "eslint" due to signal SIGKILL` pero salió con 0. El `&&`
+  dejó pasar el commit `9f78ebbc`, y Codex paró sin reset ni amend, como
+  debía. Causa: el entorno, no el código. La carga media fue de 36 en 5 min
+  con otras sesiones (16 GB, sin swap).
+  - Verificación del leader: lint sobre 9f78ebbc con exit 0 y salida
+    vacía, y `bunx eslint --stdin` del fichero de cada commit, c1–c6,
+    limpio.
+  - Reanudación 1 en el handoff: el lint de las cadenas exige salida vacía
+    (`> /tmp/169-lint.txt 2>&1 && test ! -s`) y se permite un reintento
+    entero ante SIGKILL. Sigue en S4a/S4b → c8.
+- Choques conocidos al mergear main, avisados por Frontend:
+  - #167 cambia la misma línea `- 1, // #159 R2` de language-provider.
+    Resolución: `- 1 // #159 R2`, `+ 1 // #167 R5`, `+ 2, // #169 R9`.
+  - §2.24 de specs/mobile-ui-language/design.md la abren también #167 y
+    #170: quien mergee después renumera.

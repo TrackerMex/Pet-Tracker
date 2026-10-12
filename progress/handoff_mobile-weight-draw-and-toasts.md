@@ -1060,3 +1060,85 @@ typecheck, lint, diffs vacios, lista cerrada); los pasos de la prueba de
 humo R14; la linea `R14: pendiente del smoke humano`; y cualquier
 decision que la spec no cerrara literalmente.
 ```
+
+---
+
+## Reanudación 1 — tras la parada de c7 (eslint muerto por SIGKILL)
+
+> Codex paró bien en c7: `bunx expo lint --no-cache` imprimió
+> `error: Failed to run "eslint" due to signal SIGKILL` y aun así salió con
+> 0, así que el `&&` dejó pasar el commit `9f78ebbc`. El SIGKILL vino del
+> entorno, no del código: la máquina (16 GB, sin swap) iba con carga media
+> 36 en los 5 minutos previos por otras sesiones. El leader lo verificó el
+> 2026-10-12:
+>
+> - `bunx expo lint --no-cache` sobre `9f78ebbc`: exit 0 y salida vacía;
+> - `bunx eslint --stdin` del fichero que cambia cada commit, c1 a c6, en su
+>   propio commit: los seis limpios.
+>
+> c7 vale tal cual: ni reset ni amend. `bunx expo lint` no propaga la señal
+> de eslint, y por eso el lint de todas las cadenas restantes pasa a exigir
+> salida vacía. H0 sigue siendo `fc384b44`. Este commit del leader solo toca
+> `progress/handoff_mobile-weight-draw-and-toasts.md` y
+> `progress/current.md`, que la lista cerrada ya excluye.
+
+Pegar en Codex CLI:
+
+```
+Worktree: /home/claude/sites/Pet-Tracker-wt-169   <- PRIMERA LINEA. Trabaja AQUI y en ningun otro sitio
+Reanudas #169 mobile-weight-draw-and-toasts tras tu parada en c7. Relee
+progress/handoff_mobile-weight-draw-and-toasts.md entero: el bloque
+principal sigue mandando, con los cambios de esta Reanudacion 1 (al final
+del fichero). H0 sigue siendo fc384b44.
+
+== ARRANQUE ==
+cd /home/claude/sites/Pet-Tracker-wt-169 && pwd
+Pega en tu impl, bajo un titulo nuevo `## Reanudacion 1` al FINAL del
+fichero (no borres ni edites nada de lo que ya escribiste, PARADA
+incluida), las salidas de:
+  git branch --show-current          -> feature/169-mobile-weight-draw-and-toasts
+  git rev-parse --short HEAD         -> el commit del leader que anade esta Reanudacion 1
+  git log --oneline fc384b44..HEAD   -> tus 7 commits (98db0006 a 9f78ebbc) y encima el del leader
+  git status --short                 -> SOLO `?? progress/impl_mobile-weight-draw-and-toasts.md`
+PARA si algo de esto no sale asi. No repitas las anclas, ni BASE, ni ALL de
+la base: ya estan en tu impl y el leader las dio por buenas.
+
+== QUE CAMBIA ==
+1. Lint en TODAS las cadenas que quedan (c9-c25; c8 sigue con su medida
+   aparte, que ya exige `✖ 1 problem`): donde la cadena dice
+     bunx expo lint --no-cache \
+   escribe
+     bunx expo lint --no-cache > /tmp/169-lint.txt 2>&1 && test ! -s /tmp/169-lint.txt \
+   Con el arbol limpio, expo lint no imprime nada. Cualquier salida (un
+   error, un warning o `Failed to run "eslint"`) rompe la cadena antes del
+   commit.
+   En el CIERRE, la medida de lint pasa a ser:
+     bunx expo lint --no-cache > /tmp/169-lint-final.txt 2>&1; echo "exit=$?"; test ! -s /tmp/169-lint-final.txt; echo "vacio=$?"
+     -> exit=0 y vacio=0
+2. Reintento por SIGKILL. Si una cadena se corta y el UNICO motivo es que
+   un log (/tmp/169-lint.txt, el de jest o el de tsc) contiene
+   `due to signal SIGKILL`, o una linea `Killed`, no es una parada a la
+   primera:
+   - anotalo en el impl;
+   - espera a que `pgrep -af '[i]nit\.sh'` salga vacio;
+   - repite la cadena ENTERA una vez, con sus medidas.
+   Si vuelve a pasar, PARA. Cualquier otro fallo sigue siendo parada, como
+   en el bloque principal.
+3. Si el commit ya se hizo y despues ves un SIGKILL en la salida, PARA sin
+   reset ni amend (como hiciste en c7).
+
+== QUE HACES ==
+Sigue en el punto exacto donde paraste:
+1. Las sondas S4a y S4b sobre el HEAD actual (src/components/weight-chart.tsx
+   esta igual que en 9f78ebbc: el commit del leader no lo toca), una a una,
+   midiendo solo src/components/__tests__/weight-chart.test.tsx, con su
+   reversion y `limpio=0`.
+2. c8 a c25, las cadenas del bloque principal con el cambio 1.
+3. El CIERRE, c26 y c27, como dice el bloque principal.
+La lista cerrada se mide contra fc384b44 y ya excluye los dos ficheros que
+toca el leader.
+
+Todo lo demas, igual que en el bloque principal: REGLAS CRITICAS, lista
+cerrada de 14, nada de ./init.sh, push ni PR, y lo que debe contener el
+impl al terminar.
+```
