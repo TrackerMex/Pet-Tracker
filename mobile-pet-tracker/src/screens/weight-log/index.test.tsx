@@ -29,6 +29,15 @@ import {
 import { WeightLogScreen } from '.';
 import { renderWithProviders } from '../../../test/render-with-providers';
 
+declare function require(moduleName: 'fs'): {
+  readFileSync: (path: string, encoding: 'utf8') => string;
+};
+declare function require(moduleName: 'path'): {
+  join: (...paths: string[]) => string;
+};
+const { readFileSync } = require('fs');
+const { join } = require('path');
+
 jest.mock('../../api/health-records', () => ({
   createWeight: jest.fn(),
   listWeights: jest.fn(),
@@ -87,6 +96,13 @@ jest.mock('../../theme/use-theme-colors', () => {
   };
   return { useThemeColors: (tokens: readonly string[]) => tokens.map((token) => colors[token]) };
 });
+
+jest.mock('expo-haptics', () => ({
+  notificationAsync: jest.fn(() => Promise.resolve()),
+  NotificationFeedbackType: { Success: 'mock-success', Error: 'mock-error' },
+}));
+
+const mockHaptics = jest.requireMock('expo-haptics');
 
 const originalOS = Platform.OS;
 
@@ -908,5 +924,55 @@ describe('#169 R7: tono del delta del mes', () => {
     expect(icon.props.size).toBe(15);
     expect(icon.props.style.color).toBe(color);
     for (const other of absent) expect(delta.queryByTestId(other)).toBeNull();
+  });
+});
+
+describe('#169 R10: toast y háptico tras un alta correcta', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2026-09-17T23:30:00Z'));
+    prepareWeightLogTests();
+  });
+  afterEach(() => jest.useRealTimers());
+
+  it('muestra el toast y el háptico solo tras resolver el alta', async () => {
+    let resolveCreate!: (result: CreateWeightState) => void;
+    mockCreateWeight.mockReturnValue(new Promise((resolve) => { resolveCreate = resolve; }));
+    await renderWeightLog();
+    await waitFor(() => expect(screen.getByTestId('weight-input')).toBeVisible());
+    await fireEvent.changeText(screen.getByTestId('weight-input'), '12.4');
+    await fireEvent.press(screen.getByTestId('weight-submit'));
+
+    expect(screen.queryByTestId('weight-toast')).toBeNull();
+    expect(mockHaptics.notificationAsync).not.toHaveBeenCalled();
+    await act(async () => { resolveCreate({ kind: 'ok', weight: makeWeight({ weightKg: 12.4 }) }); });
+    await act(async () => {});
+    expect(screen.queryByTestId('weight-toast')).not.toBeNull();
+    const toast = screen.getByTestId('weight-toast');
+    expect(toast.props.className)
+      .toBe('absolute top-4 flex-row items-center gap-2 self-center rounded-full border border-border bg-surface px-4 py-2.5 shadow-sm');
+    expect(toast.props.pointerEvents).toBe('none');
+    expect(toast.props.accessibilityLiveRegion).toBe('polite');
+    const copy = within(toast).getByText('Anotado. Ya lo puse en la gráfica.');
+    expect(copy).toHaveTextContent('Anotado. Ya lo puse en la gráfica.', { exact: true });
+    expect(copy.props.className).toBe('text-sm font-semibold text-foreground');
+    const check = within(toast).getByTestId('icon-check');
+    expect(check.props.size).toBe(16);
+    expect(check.props.style.color).toBe('green');
+    expect(within(screen.getByTestId('screen-weight-log')).getByTestId('weight-toast')).toBe(toast);
+    expect(within(screen.getByTestId('weight-log-form')).queryByTestId('weight-toast')).toBeNull();
+    expect(within(screen.getByTestId('screen-weight-log'))
+      .getAllByTestId(/^weight-(log-form|toast)$/).map((node) => node.props.testID))
+      .toEqual(['weight-log-form', 'weight-toast']);
+    expect(mockHaptics.notificationAsync).toHaveBeenCalledTimes(1);
+    expect(mockHaptics.notificationAsync).toHaveBeenCalledWith('mock-success');
+  });
+
+  it('llama al háptico una sola vez en la rama ok del fuente', () => {
+    const source = readFileSync(join(process.cwd(), 'src/screens/weight-log/index.tsx'), 'utf8');
+    const start = source.indexOf("case 'ok':");
+    const okBranch = source.slice(start, source.indexOf("case 'validation':", start));
+    expect(okBranch.split('Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)').length - 1)
+      .toBe(1);
   });
 });
