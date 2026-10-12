@@ -12,3 +12,5 @@
 - dependencia: la implementación con Codex espera al merge de #166 mobile-chunky-cta (className de primarios y secundarios; labio del botón de EmptyState)
 - plan: spec_author escribe `specs/mobile-celebrations-and-living-empty/` → leader espeja a Notion (En revisión) → PARA hasta el gate humano
 - espejo Notion (2026-10-11): https://app.notion.com/p/3f66115a9b2781e0bfd6fba81768b1e1, desde 4a133b16, Estado del gate = En revisión, Rol actual = Spec Author. Avisado a Frontend. PARADA en el gate humano
+- enmienda R1.2 (2026-10-11, 7f80b664): poses relativas a origin/main del handoff, re-medidas en design §9.3 paso 5 (petición de Frontend por #167/#170)
+- #166 mergeada (d2b8b0ae, PR #209): origin/main mergeada en 5fbe9eed (merge, sin rebase) y design §9 re-medida en ebdbeb75. R14 sin enmienda, anclas grep -cF en §9.2, poses siguen en ocho. Espejo Notion re-espejado desde ebdbeb75. Gate sigue En revisión: PARADA en el gate humano
