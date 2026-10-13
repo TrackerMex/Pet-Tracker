@@ -1640,4 +1640,4 @@ de que #173 y #171 nombran sus tamaños de texto por su valor (`--text-13`,
 - Nada más cambia: ni valores, ni recuentos, ni rojos, ni la Enmienda a la
   carta.
 
-- [ ] Enmienda E1 aprobada por humano (fecha: ____) ← gate antes de lanzar Codex
+- [x] Enmienda E1 aprobada por humano (fecha: 2026-10-13) ← gate antes de lanzar Codex
