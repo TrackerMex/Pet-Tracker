@@ -405,6 +405,18 @@ describe('#171 R10: Pingo flota', () => {
     await act(async () => { jest.advanceTimersByTime(1200); });
     expect(getAnimatedStyle(screen.getByTestId('probe-float'))).toEqual({ width: 160, height: 160, transform: [{ translateY: -4 }] });
   });
+
+  it('R10.4 sigue la curva de 1200 ms a los 300, 600 y 900 ms', async () => {
+    await renderProbe();
+    const samples: number[] = [];
+    for (let step = 0; step < 3; step++) {
+      await act(async () => { jest.advanceTimersByTime(300); });
+      const style = getAnimatedStyle(screen.getByTestId('probe-float')) as unknown as { transform: [{ translateY: number }] };
+      samples.push(style.transform[0].translateY);
+    }
+    expect(samples).toHaveLength(3);
+    samples.forEach((value, i) => expect(value).toBeCloseTo([-0.579, -2, -3.421][i], 2));
+  });
 });
 
 describe('#171 R11: reduce motion en los vacíos', () => {
