@@ -10,6 +10,7 @@ import { login } from '../../api/auth';
 import { Card } from '../../components/card';
 import { BackButton } from '../../components/back-button';
 import { useAuth } from '../../providers/auth-provider';
+import { PasswordInput } from '../../components/password-input';
 import { FormError } from '../../components/form-error';
 import { useTranslate } from '../../providers/language-provider';
 import { HomeEntrance } from '../home/home-entrance';
@@ -119,10 +120,8 @@ export function LoginScreen() {
                 {t('login.password')}
               </Label.Text>
             </Label>
-            <Input
+            <PasswordInput
               testID="login-password"
-              className="rounded-xl bg-default"
-              secureTextEntry
               value={password}
               onChangeText={setPassword}
             />

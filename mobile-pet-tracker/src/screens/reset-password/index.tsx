@@ -1,7 +1,7 @@
 import { Image } from 'expo-image';
 import { HeaderHeightContext } from 'expo-router/react-navigation';
 import { router, useLocalSearchParams } from 'expo-router';
-import { Button, Input, Label, LinkButton, TextField } from 'heroui-native';
+import { Button, Label, LinkButton, TextField } from 'heroui-native';
 import { useContext, useState } from 'react';
 import { KeyboardAvoidingView, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -11,6 +11,7 @@ import { resetPassword } from '../../api/auth';
 import { Card } from '../../components/card';
 import { PopIn } from '../../components/pop-in';
 import { PingoFloat } from '../../components/pingo-float';
+import { PasswordInput } from '../../components/password-input';
 import { FormError } from '../../components/form-error';
 import { useTranslate } from '../../providers/language-provider';
 import { useThemeColors } from '../../theme/use-theme-colors';
@@ -196,12 +197,10 @@ export function ResetPasswordScreen() {
                 {t('resetPassword.newPassword')}
               </Label.Text>
             </Label>
-            <Input
+            <PasswordInput
               testID="reset-password"
-              className="rounded-xl bg-default"
               autoCapitalize="none"
               autoComplete="new-password"
-              secureTextEntry
               value={password}
               onChangeText={setPassword}
             />
@@ -213,12 +212,10 @@ export function ResetPasswordScreen() {
                 {t('resetPassword.confirmNewPassword')}
               </Label.Text>
             </Label>
-            <Input
+            <PasswordInput
               testID="reset-password-confirm"
-              className="rounded-xl bg-default"
               autoCapitalize="none"
               autoComplete="new-password"
-              secureTextEntry
               value={passwordConfirmation}
               onChangeText={setPasswordConfirmation}
             />

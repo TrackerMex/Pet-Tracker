@@ -18,6 +18,7 @@ import type { FieldError as ApiFieldError } from '../../api/types';
 import { BackButton } from '../../components/back-button';
 import { useAuth } from '../../providers/auth-provider';
 import { PingoFloat } from '../../components/pingo-float';
+import { PasswordInput } from '../../components/password-input';
 import { FormError } from '../../components/form-error';
 import { useTranslate } from '../../providers/language-provider';
 import { HomeEntrance } from '../home/home-entrance';
@@ -254,10 +255,8 @@ export function RegisterScreen() {
               {t('register.password')}
             </Label.Text>
           </Label>
-          <Input
+          <PasswordInput
             testID="register-password"
-            className="rounded-xl bg-default"
-            secureTextEntry
             value={password}
             onChangeText={setPassword}
           />
@@ -270,10 +269,8 @@ export function RegisterScreen() {
               {t('register.confirmPassword')}
             </Label.Text>
           </Label>
-          <Input
+          <PasswordInput
             testID="register-password-confirmation"
-            className="rounded-xl bg-default"
-            secureTextEntry
             value={passwordConfirmation}
             onChangeText={setPasswordConfirmation}
           />
