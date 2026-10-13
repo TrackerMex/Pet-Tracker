@@ -1383,6 +1383,17 @@ describe('#168 R9: el anillo dice el porcentaje acotado', () => {
       expect(fill.props.jestAnimatedProps.value.strokeDashoffset).toBeCloseTo(offset, 2);
     });
   });
+
+  it('anuncia el valor sin acotar cuando pasa de 100', async () => {
+    mockGetNutritionPlan.mockResolvedValue({
+      kind: 'ok',
+      plan: makePlan({ merKcal: 656, kcalConsumedToday: 984 }),
+    });
+    await renderFood();
+    const progress = await screen.findByTestId('food-plan-progress');
+    await waitFor(() => expect(screen.getByTestId('food-plan-percent')).toHaveTextContent('150%'));
+    expect(progress.props.accessibilityValue).toEqual({ min: 0, max: 100, now: 150 });
+  });
 });
 
 
