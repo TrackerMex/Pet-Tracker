@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { login } from '../../api/auth';
 import { Card } from '../../components/card';
+import { BackButton } from '../../components/back-button';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
 import { HomeEntrance } from '../home/home-entrance';
@@ -76,6 +77,7 @@ export function LoginScreen() {
         }}
       >
         <HomeEntrance testID="login-header" index={0} className="gap-4">
+          <BackButton testID="login-back" fallback="/welcome" />
           <View testID="login-greeting" className="flex-row items-center gap-3">
             <Image
               testID="login-pingo"

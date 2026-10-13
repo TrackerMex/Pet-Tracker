@@ -3,11 +3,12 @@ import { HeaderHeightContext } from 'expo-router/react-navigation';
 import { router } from 'expo-router';
 import { Button, Input, Label, LinkButton, TextField } from 'heroui-native';
 import { useContext, useState } from 'react';
-import { KeyboardAvoidingView, ScrollView, Text } from 'react-native';
+import { KeyboardAvoidingView, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Lock } from 'reicon-react-native';
 
 import { forgotPassword } from '../../api/auth';
+import { BackButton } from '../../components/back-button';
 import { PopIn } from '../../components/pop-in';
 import { PingoFloat } from '../../components/pingo-float';
 import { useTranslate } from '../../providers/language-provider';
@@ -75,6 +76,9 @@ export function ForgotScreen() {
           paddingBottom: insets.bottom + 24,
         }}
       >
+        <View testID="forgot-top" className="w-full">
+          <BackButton testID="forgot-back" fallback="/login" />
+        </View>
         <PingoFloat testID="forgot-pingo-float">
           <Image
             testID="forgot-pingo"

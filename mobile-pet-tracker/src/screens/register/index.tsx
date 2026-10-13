@@ -16,6 +16,7 @@ import { AlertCircle } from 'reicon-react-native';
 
 import { login, register } from '../../api/auth';
 import type { FieldError as ApiFieldError } from '../../api/types';
+import { BackButton } from '../../components/back-button';
 import { useAuth } from '../../providers/auth-provider';
 import { PingoFloat } from '../../components/pingo-float';
 import { useTranslate } from '../../providers/language-provider';
@@ -168,14 +169,17 @@ export function RegisterScreen() {
           paddingBottom: insets.bottom + 96,
         }}
       >
-        <HomeEntrance testID="register-header" index={0} className="flex-row items-center justify-center gap-3">
-          <PingoFloat testID="register-pingo-float">
-            <Image
-              testID="register-pingo"
-              source={require('../../../assets/images/pingo-clipboard.webp')}
-              style={{ width: 56, height: 56 }}
-            />
-          </PingoFloat>
+        <HomeEntrance testID="register-header" index={0} className="gap-2">
+          <View testID="register-top" className="flex-row items-center justify-between">
+            <BackButton testID="register-back" fallback="/welcome" />
+            <PingoFloat testID="register-pingo-float">
+              <Image
+                testID="register-pingo"
+                source={require('../../../assets/images/pingo-clipboard.webp')}
+                style={{ width: 56, height: 56 }}
+              />
+            </PingoFloat>
+          </View>
           <Text className="text-center text-2xl font-black text-foreground">
             {t('register.createAccount')}
           </Text>
