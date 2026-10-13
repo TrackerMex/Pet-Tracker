@@ -140,3 +140,110 @@ La línea base S0 es celebration + empty-state: 146/146 en verde.
    - R16 queda pendiente del smoke humano en dev build de Android, como prevé la spec; no bloquea.
    - La casilla de la enmienda #171 en `docs/ui-guidelines.md` queda sin marcar a propósito para el humano.
    - Las sondas S6–S9b, S11 y S13 rojean donde deben, en el `it` correcto y por aserción.
+
+## Ronda 2
+Fecha: 2026-10-13 17:02 UTC (comprobaciones) – 17:11 UTC (sondas y veredicto)
+HEAD revisado: 0da89d9e (branch feature/171-mobile-celebrations-and-living-empty). H1 del handoff de la ronda 2: d65a2140. El merge de origin/main (#167/#168/#169) no entra en esta ronda: es la ronda 3 con la Enmienda E3.
+Veredicto: APROBADO
+
+### Comprobaciones
+
+1. **C4, test primero.** `git show --numstat` de los cuatro commits de test da solo líneas añadidas (columna de borradas a 0):
+   - e090b609 (R6): `47 0` en celebration.test.tsx;
+   - 58885e74 (R7): `37 0` en celebration.test.tsx;
+   - 11c13470 (R10): `12 0` en empty-state.test.tsx;
+   - 67fde1b5 (R5): `7 0` en add-pet/index.test.tsx.
+
+   `git diff --stat d65a2140..0da89d9e` sobre `src/components/celebration.tsx`, `src/components/empty-state.tsx`, `src/theme/motion.ts` y `src/screens/add-pet/index.tsx` sale vacío: producción no cambia.
+2. **Lista cerrada.** `git diff --name-only d65a2140..0da89d9e` da exactamente los cinco ficheros esperados: los tres tests, `progress/impl_mobile-celebrations-and-living-empty.md` y `specs/mobile-celebrations-and-living-empty/traceability.md`. Nada en `backend-pet-tracker/` ni en `infra/`.
+3. **Los tests casan con la spec.** Comparé por script cada línea no vacía de los bloques `ts` de tasks.md §E2.1–E2.4 (93 líneas) con los tres ficheros:
+   - las 93 están, literales;
+   - no hay ninguna línea añadida que no salga de esos bloques.
+
+   La tabla `CONFETTI_AT_1200` de tasks.md es idéntica, fila a fila, a la de requirements.md §Enmienda E2. También coinciden con R7.4 `POP_SAMPLES` y los instantes 50/100/150/200 y 450/500/550/600 ms, y con R10.4 los valores −0.579/−2/−3.421 a 300/600/900 ms. Las tolerancias son las de la spec:
+   - `toBeCloseTo(…, 2)`, es decir ±0,005, para la opacidad, la escala y el translateY del flote;
+   - `toBeCloseTo(…, 0)`, es decir ±0,5, para el translateY y los grados del confeti.
+
+   Los nombres cubren R5.4, R6.5, R7.4 (×2) y R10.4. Los comentarios son `// #171 R6 (E2):` y `// #171 R7 (E2):`; `grep -cF '#171 E2'` da 0 en los tres ficheros.
+4. **C5, trazabilidad.**
+   - R1–R15 tienen columna de tests. Comprobé por script que cada nombre `archivo::describe > it` citado existe en su fichero: 0 ausentes.
+   - En las filas R5, R6, R7 y R10, el word-diff confirma que solo se añadió al final de la celda de commits `; \`<hash> <mensaje>\` (E2, nace verde)`. La columna de tests no se tocó.
+   - Los 36 hashes citados en traceability.md son ancestros de HEAD (`git merge-base --is-ancestor`) y su asunto coincide con el mensaje citado. Entre ellos están 67fde1b5, e090b609, 58885e74 y 11c13470.
+   - R16 sigue `pendiente`, a la espera del smoke humano.
+5. **Sondas:** las once rojean donde deben, por aserción. Ver la tabla y §Ejecución de las sondas.
+
+### Checklist C2–C7 (ronda de solo tests)
+- **C2** [x]
+  - `feature_list.json` tiene solo #171 en `in_progress`.
+  - `progress/current.md` describe la sesión activa de #171 (ver la observación 2).
+- **C3** [x] Solo cambian tests de la capa de presentación móvil. No cambia producción ni ninguna otra capa.
+- **C4** [x] Los cuatro commits `test(mobile): … (R<n>, E2)` solo añaden líneas. Son requisitos de verificación que nacen verdes, declarados por escrito en la Enmienda E2 antes del handoff (vía (b) de C4). Las once sondas de mutación de abajo los cierran: cada mutación rojea exactamente el `it` nombrado, por aserción.
+- **C5** [x] Ninguna fila R1–R15 está «pendiente»; R16 es el smoke humano. Los commits siguen el formato `test(mobile): <desc> (R<n>, E2)`.
+- **C6** [x]
+  - requirements.md sigue en `status: approved` y tiene marcada `- [x] Enmienda E2 aprobada por humano (fecha: 2026-10-12)`, firmada en 5b7ab10a.
+  - requirements.md no cambia después de la firma.
+  - tasks.md solo cambia en d65a2140, en los dos comentarios (`#171 E2:` pasa a `#171 R6 (E2):` y `#171 R7 (E2):`). Es mecánica de test por `HEX_LITERAL`, sin valores ni requisitos nuevos.
+- **C7** N/A: esta ronda no reemplaza nada.
+
+### Output de ./init.sh
+Lo corrió el leader sobre 0da89d9e (subagente sin permiso). Lo leí del log `/tmp/claude-1002/-home-claude-sites-Pet-Tracker/955d966a-80a9-4f5e-a229-fd9e5ecf2412/scratchpad/init171-r2.log`:
+```
+Test Suites: 187 passed, 187 total
+Tests:       1474 passed, 1474 total          (backend unit)
+Test Suites: 99 passed, 99 total
+Tests:       2861 passed, 2861 total          (móvil = 2856 de la ronda 1 + 5 its de E2)
+Test Suites: 3 skipped, 30 passed, 30 of 33 total
+Tests:       8 skipped, 468 passed, 476 total (e2e backend)
+✅ Lint sin errores
+✅ Typecheck sin errores
+✅ Todo verde. Listo para trabajar.
+```
+El aviso `A worker process has failed to exit gracefully` del ALL móvil ya existía antes de esta ronda y no la afecta.
+
+### Sondas de mutación (ronda 2)
+
+| Sonda | Mutación (`sed` del handoff) | Fuente | Test | Rojo esperado | Rojo observado | Veredicto |
+|---|---|---|---|---|---|---|
+| S1 | `duration: MOTION_CONFETTI_MIN_MS` | celebration.tsx | celebration.test.tsx | 1/49: R6.5 | `1 failed, 48 passed, 49 total`: R6.5. Expected 0.194, Received 0.1714 | rojo correcto |
+| S2 | borrar `...MOTION_CONFETTI_FALL_TIMING,` | celebration.tsx | celebration.test.tsx | 1/49: R6.5 | `1 failed, 48 passed, 49 total`: R6.5. Expected 0.154, Received 0.5556 | rojo correcto |
+| S3 | `[0, 0.5, 1]` | celebration.tsx | celebration.test.tsx | 1/49: R6.5 | `1 failed, 48 passed, 49 total`: R6.5. Expected 0.154, Received 0.2766 | rojo correcto |
+| S4 | `index * 53` | celebration.tsx | celebration.test.tsx | 1/49: R6.5 | `1 failed, 48 passed, 49 total`: R6.5. Expected 0.275, Received 0 (la pieza aún no ha arrancado) | rojo correcto |
+| S5 | `pingoScale.set(withTiming(1, MOTION_FADE_TIMING))` | celebration.tsx | celebration.test.tsx | 1/49: R7.4 Pingo | `1 failed, 48 passed, 49 total`: R7.4 Pingo. Expected 0.944, Received 0.8727 | rojo correcto |
+| S5i | `badgeScale … withTiming(1, MOTION_FADE_TIMING)` | celebration.tsx | celebration.test.tsx | 1/49: R7.4 insignia | `1 failed, 48 passed, 49 total`: R7.4 insignia. Expected 0.944, Received 0.8727 | rojo correcto |
+| S5b | `dampingRatio: 1` | motion.ts | celebration.test.tsx | 2/49: los dos R7.4 | `2 failed, 47 passed, 49 total`: R7.4 Pingo y R7.4 insignia. Expected 0.944, Received 0.7102 | rojo correcto |
+| Sfade | `pingoOpacity … MOTION_FILL_TIMING` + import | celebration.tsx | celebration.test.tsx | 1/49: R7.4 Pingo | `1 failed, 48 passed, 49 total`: R7.4 Pingo. Expected 0.682, Received 0.0305 (numstat `2 2`) | rojo correcto |
+| S10 | `{ ...MOTION_FLOAT_TIMING, duration: 600 }` | empty-state.tsx | empty-state.test.tsx | 1/101: R10.4 | `1 failed, 100 passed, 101 total`: R10.4. Expected −0.579, Received −2 | rojo correcto |
+| S10c | `{ duration: 1200 }` | empty-state.tsx | empty-state.test.tsx | 1/101: R10.4 | `1 failed, 100 passed, 101 total`: R10.4. Expected −0.579, Received −0.5 | rojo correcto |
+| S12 | `setCelebratePetName(input.name)` | add-pet/index.tsx | add-pet/index.test.tsx | 1/41: R5.4 | `1 failed, 40 passed, 41 total`: R5.4. Expected `"¡Kira ya está en casa!"`, Received `"¡Nala ya está en casa!"` | rojo correcto |
+
+Cada sonda cumplió los tres controles del handoff:
+- `mutada=0`: el numstat del fichero mutado es el esperado;
+- `sonda=0`: la línea `Tests:` es exacta, la lista de `●` (sin `  ● Console`) es exactamente el `it` nombrado, y no hay `Unable to find|TypeError|ReferenceError|Test suite failed to run`. Es decir, rojo por aserción y no por excepción;
+- `limpio=0` tras `git checkout HEAD -- <fichero>`.
+
+Las salidas completas están en `/tmp/claude-1002/-home-claude-sites-Pet-Tracker/955d966a-80a9-4f5e-a229-fd9e5ecf2412/scratchpad/r2-<sonda>.txt`.
+
+### Ejecución de las sondas
+- **Primer intento (17:02 UTC).** Antes de S1, `pgrep -fa 'node_modules/(\.bin/jest|jest-worker)|[i]nit\.sh'` encontró un `./init.sh` ajeno: pid 1471745, en `/home/claude/sites/Pet-Tracker-wt-170`. No lancé ningún jest y devolví «esperando carga ajena».
+- **Reanudación.** El coordinador avisó de que la máquina estaba libre y él tenía el turno.
+  - Corrí las once sondas una a una, con `jest --testTimeout=30000 -w 1 --runTestsByPath <fichero>` y el `pgrep` justo antes de cada una.
+  - Durante S3–S5b apareció el jest del spike del leader, con cwd en `…/scratchpad/spike171m/mobile-pet-tracker`. Lo ignoré, como indicó el coordinador.
+  - No apareció ningún `init.sh` ajeno ni ningún jest de otro worktree de `/home/claude/sites/*`.
+- **Control `limpio` de S1.** La primera comprobación dio `limpio=1`, por un pathspec mal formado y no por la mutación:
+  - el `':!progress/…'` relativo al cwd `mobile-pet-tracker/` no excluía este informe;
+  - `git status --short` confirmó que solo este informe estaba modificado y que `src/components/celebration.tsx` estaba limpio.
+
+  De S2 en adelante usé `git diff --cached --quiet && git diff --quiet HEAD -- ':(top)' ':(top,exclude)progress/review_mobile-celebrations-and-living-empty.md'`, que dio `limpio=0` tras cada reversión.
+- **Estado final.** HEAD = 0da89d9e, índice vacío, y el único fichero modificado es este informe (sin commitear; lo commitea el leader).
+
+### Observaciones (no bloqueantes)
+1. **Historial del impl.**
+   - a00b8706 reordenó secciones de la ronda 1 de `progress/impl_mobile-celebrations-and-living-empty.md`, y 0da89d9e las devolvió a su orden. Por eso `--numstat` da 3973/3713 y 3750/3740.
+   - El efecto neto `d65a2140..0da89d9e` es solo un añadido: las 6349 primeras líneas son idénticas byte a byte a las de d65a2140, y se añaden 270 líneas de `## Ronda 2`.
+   - El fichero final está bien. Solo el commit intermedio lo desordenó.
+2. **`progress/current.md` no se actualiza desde d01b03bf** (el handoff de la ronda 1). No recoge:
+   - el rechazo de la ronda 1;
+   - la Enmienda E2 ni su firma (562c4650, 5b7ab10a);
+   - el handoff de la ronda 2.
+
+   Describe la sesión activa, así que C2 se cumple, pero está desfasado. Le toca al leader.
