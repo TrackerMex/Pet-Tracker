@@ -44,7 +44,7 @@ marca en el cierre citando esa edición. El candado de R11.3 acepta las dos.
 
 ## Firma de la prueba de humo (R15)
 
-- [ ] Prueba de humo en dev build de Android superada (tasks.md T16, pasos 1–7)
-- Dispositivo: ____
-- Fecha: ____
-- Observaciones: ____
+- [X] Prueba de humo en dev build de Android superada (tasks.md T16, pasos 1–7)
+- Dispositivo: OnePlus Nord 5
+- Fecha: 2026-10-13
+- Observaciones: Mejorar la pantalla de Inicio de sesión debe de ser como el diseño del artifact, tambien aplica para crear cuenta aplica grid o flex para las columnas, recuperar contraseña, al igual el tamaño de textos, aplicar bold a los textos destacados, lo botonos también deben de ser consistentes con el diseño ocupa todo el ancho disponible de la pantalla para el contenido, falta agrear el row de regresar a la pantalla anterior en Iniciar sesión, Crear cuenta y recuperar contraseña, tambien los mensaje de validación deben de ser consistentes con el diseño del artifact.
