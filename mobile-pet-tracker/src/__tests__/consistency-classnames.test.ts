@@ -331,7 +331,7 @@ describe('#62 R15: todo contador usa cifras tabulares', () => {
     ],
     [join('screens', 'home', 'weekly-activity-chart.tsx'), 4],
     [join('screens', 'health', 'index.tsx'), 2 + 1], // #115 R6
-    [join('screens', 'weight-log', 'index.tsx'), 2],
+    [join('screens', 'weight-log', 'index.tsx'), 2 + 2], // #169 R6
     [join('screens', 'reminders', 'index.tsx'), 3],
     [join('screens', 'geofence-editor', 'index.tsx'), 1],
     [join('screens', 'meals-history', 'index.tsx'), 2], // #105 R11
@@ -348,7 +348,7 @@ describe('#62 R15: todo contador usa cifras tabulares', () => {
 
   it('#69 R10: mantiene la base cerrada más los deltas medidos', () => {
     expect(counters.reduce((total, [, count]) => total + count, 0)).toBe(
-      14 + 4 + 1 + 1 + 1 + 1 + 1 + 2 + 1 + 1, // #146 R18, #105 R11, #116 R5, #115 R6
+      14 + 4 + 1 + 1 + 1 + 1 + 1 + 2 + 1 + 1 + 2, // #146 R18, #105 R11, #116 R5, #115 R6, #169 R6
     );
   });
 

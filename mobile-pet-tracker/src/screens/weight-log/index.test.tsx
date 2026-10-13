@@ -9,6 +9,7 @@ import {
 } from '@testing-library/react-native';
 import { HeroUINativeProvider } from 'heroui-native';
 import { useEffect } from 'react';
+import { FadeIn, FadeOut } from 'react-native-reanimated';
 
 import {
   createWeight,
@@ -28,6 +29,15 @@ import {
 } from '../../providers/selected-pet-provider';
 import { WeightLogScreen } from '.';
 import { renderWithProviders } from '../../../test/render-with-providers';
+
+declare function require(moduleName: 'fs'): {
+  readFileSync: (path: string, encoding: 'utf8') => string;
+};
+declare function require(moduleName: 'path'): {
+  join: (...paths: string[]) => string;
+};
+const { readFileSync } = require('fs');
+const { join } = require('path');
 
 jest.mock('../../api/health-records', () => ({
   createWeight: jest.fn(),
@@ -62,6 +72,38 @@ jest.mock('react-native-safe-area-context', () => ({
   ...jest.requireActual('react-native-safe-area-context'),
   useSafeAreaInsets: () => ({ top: 40, right: 0, bottom: 24, left: 0 }),
 }));
+
+jest.mock('reicon-react-native', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
+  const icon = (testID: string) =>
+    function MockIcon({ size, color }: { size?: number; color?: string }) {
+      const props = { testID, size, style: { color } };
+      return React.createElement(Text, props);
+    };
+
+  return {
+    ...jest.requireActual('reicon-react-native'),
+    Minus: icon('icon-minus'),
+    TrendUp: icon('icon-trend-up'),
+    TrendDown: icon('icon-trend-down'),
+    Check: icon('icon-check'),
+  };
+});
+
+jest.mock('../../theme/use-theme-colors', () => {
+  const colors: Record<string, string> = {
+    success: 'green', danger: 'red', muted: 'gray', 'accent-strong': 'blue',
+  };
+  return { useThemeColors: (tokens: readonly string[]) => tokens.map((token) => colors[token]) };
+});
+
+jest.mock('expo-haptics', () => ({
+  notificationAsync: jest.fn(() => Promise.resolve()),
+  NotificationFeedbackType: { Success: 'mock-success', Error: 'mock-error' },
+}));
+
+const mockHaptics = jest.requireMock('expo-haptics');
 
 const originalOS = Platform.OS;
 
@@ -224,7 +266,7 @@ describe('R7: weight log lista el historial', () => {
     await waitFor(() =>
       expect(screen.getByTestId('weight-row-weight-1')).toBeVisible(),
     );
-    expect(screen.getAllByTestId(/^weight-row-/).map(({ props }) => props.testID)).toEqual([
+    expect(screen.getAllByTestId(/^weight-row-weight-\d+$/).map(({ props }) => props.testID)).toEqual([
       'weight-row-weight-1',
       'weight-row-weight-2',
     ]);
@@ -734,5 +776,324 @@ describe('#148 R8: weight-log entrega el primer toque con el teclado abierto', (
     await waitFor(() => expect(screen.getByTestId('screen-weight-log')).toBeVisible());
 
     expect(screen.getByTestId('weight-log-form').props.keyboardShouldPersistTaps).toBe('handled');
+  });
+});
+
+function prepareWeightLogTests() {
+  jest.clearAllMocks();
+  process.env.EXPO_PUBLIC_API_URL = apiUrl;
+  mockUseAuth.mockReturnValue({
+    status: 'authenticated', token: 'jwt-token',
+    signIn: jest.fn(), signOut: jest.fn(),
+  } satisfies AuthContextValue);
+  mockCreateWeight.mockReturnValue(pending<CreateWeightState>());
+  mockListWeights.mockResolvedValue({ kind: 'ok', weights: [] });
+}
+
+describe('#169 R8: chip de delta por entrada', () => {
+  const cases = [
+    ['w-up', 0.4, 'bg-danger-soft', 'text-danger', 'icon-trend-up', 'red', '+0.4 kg'],
+    ['w-down', -0.2, 'bg-success-soft', 'text-success', 'icon-trend-down', 'green', '-0.2 kg'],
+    ['w-flat', 0, 'bg-default', 'text-muted', 'icon-minus', 'gray', '0 kg'],
+    ['w-none', null, 'bg-default', 'text-muted', 'icon-minus', 'gray', '—'],
+  ] as const;
+
+  beforeEach(() => {
+    prepareWeightLogTests();
+    mockListWeights.mockResolvedValue({
+      kind: 'ok',
+      weights: cases.map(([id, variation]) => makeWeight({ id, variation })),
+    });
+  });
+
+  it.each(cases)('fila %s con su tono, icono y texto', async (
+    id, _variation, tileClassName, textClassName, iconId, color, text,
+  ) => {
+    await renderWeightLog();
+    await waitFor(() => expect(screen.getByTestId('weight-row-w-up')).toBeVisible());
+    const tile = screen.getByTestId(`weight-row-${id}-tone`);
+
+    expect(tile.props.className).toContain(tileClassName);
+    for (const other of ['bg-danger-soft', 'bg-success-soft', 'bg-default']) {
+      if (other !== tileClassName) expect(tile.props.className).not.toContain(other);
+    }
+    const icon = within(tile).getByTestId(iconId);
+    expect(icon.props.style.color).toBe(color);
+    expect(icon.props.size).toBe(15);
+    for (const other of ['icon-trend-up', 'icon-trend-down', 'icon-minus']) {
+      if (other !== iconId) expect(within(tile).queryByTestId(other)).toBeNull();
+    }
+    const delta = screen.getByTestId(`weight-row-${id}-delta`);
+    expect(delta).toHaveTextContent(text, { exact: true });
+    expect(delta.props.className).toContain(textClassName);
+    for (const other of ['text-danger', 'text-success', 'text-muted']) {
+      if (other !== textClassName) expect(delta.props.className).not.toContain(other);
+    }
+  });
+});
+
+describe('#169 R6: resumen del peso en la card de la gráfica', () => {
+  const entries = [
+    makeWeight({ id: 'weight-3', measuredAt: '2026-09-30', weightKg: 12.4 }),
+    makeWeight({ id: 'weight-2', measuredAt: '2026-09-29', weightKg: 12.0 }),
+    makeWeight({ id: 'weight-1', measuredAt: '2026-08-31', weightKg: 11.0 }),
+  ];
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2026-10-01T05:00:00Z'));
+    prepareWeightLogTests();
+    mockListWeights.mockResolvedValue({ kind: 'ok', weights: entries });
+  });
+  afterEach(() => jest.useRealTimers());
+
+  it.each([
+    ['Pacific/Pago_Pago', '2026-09-30', '+1.4 kg este mes'],
+    ['Pacific/Kiritimati', '2026-10-01', null],
+  ] as const)('en %s pinta el peso actual y el delta del día civil', async (timezone, today, delta) => {
+    mockGetMe.mockResolvedValue({ kind: 'ok', me: makeProfile(timezone) });
+    await renderWeightLog();
+    await waitFor(() => expect(screen.getByTestId('weight-date-input').props.value).toBe(today));
+
+    const current = screen.getByTestId('weight-current');
+    expect(current).toHaveTextContent('12.4 kg', { exact: true });
+    expect(current.props.className).toBe('text-3xl font-black text-foreground');
+    expect(current.props.style).toEqual({ fontVariant: ['tabular-nums'] });
+    if (delta !== null) {
+      const deltaText = screen.getByTestId('weight-month-delta-text');
+      expect(deltaText).toHaveTextContent('+1.4 kg este mes', { exact: true });
+      expect(deltaText.props.style).toEqual({ fontVariant: ['tabular-nums'] });
+      expect(screen.getByTestId('weight-month-delta').props.className)
+        .toBe('flex-row items-center gap-1.5');
+    } else {
+      expect(screen.queryByTestId('weight-month-delta')).toBeNull();
+    }
+  });
+
+  it('pinta el resumen dentro de la card y antes de la gráfica', async () => {
+    await renderWeightLog();
+    await waitFor(() => expect(screen.getByTestId('weight-chart-card')).toBeVisible());
+
+    within(screen.getByTestId('weight-chart-card')).getByTestId('weight-summary');
+    expect(within(screen.getByTestId('weight-chart-card'))
+      .getAllByTestId(/^weight-(summary|chart)$/).map((node) => node.props.testID))
+      .toEqual(['weight-summary', 'weight-chart']);
+  });
+
+  it('no pinta el resumen sin entradas', async () => {
+    mockListWeights.mockResolvedValue({ kind: 'ok', weights: [] });
+    await renderWeightLog();
+    await waitFor(() => expect(screen.getByTestId('weight-chart-empty'))
+      .toHaveTextContent('Aún no hay datos suficientes'));
+
+    expect(screen.queryByTestId('weight-summary')).toBeNull();
+  });
+});
+
+describe('#169 R7: tono del delta del mes', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2026-09-17T18:00:00Z'));
+    prepareWeightLogTests();
+    mockGetMe.mockResolvedValue({ kind: 'ok', me: makeProfile('America/Mexico_City') });
+  });
+  afterEach(() => jest.useRealTimers());
+
+  it.each([
+    ['> 0', [
+      makeWeight({ id: 'weight-2', measuredAt: '2026-09-15', weightKg: 12.4 }),
+      makeWeight({ id: 'weight-1', measuredAt: '2026-09-02', weightKg: 12.0 }),
+    ], '+0.4 kg este mes', 'text-sm font-semibold text-danger', 'icon-trend-up', 'red', ['icon-trend-down', 'icon-minus']],
+    ['< 0', [
+      makeWeight({ id: 'weight-2', measuredAt: '2026-09-15', weightKg: 11.7 }),
+      makeWeight({ id: 'weight-1', measuredAt: '2026-08-30', weightKg: 12.0 }),
+    ], '-0.3 kg este mes', 'text-sm font-semibold text-success', 'icon-trend-down', 'green', ['icon-trend-up', 'icon-minus']],
+    ['= 0', [
+      makeWeight({ id: 'weight-2', measuredAt: '2026-09-15', weightKg: 12.0 }),
+      makeWeight({ id: 'weight-1', measuredAt: '2026-08-30', weightKg: 12.0 }),
+    ], '0 kg este mes', 'text-sm font-semibold text-muted', 'icon-minus', 'gray', ['icon-trend-up', 'icon-trend-down']],
+  ] as const)('rama %s: texto, clase e icono', async (_branch, entries, text, className, iconId, color, absent) => {
+    mockListWeights.mockResolvedValue({ kind: 'ok', weights: [...entries] });
+    await renderWeightLog();
+    await waitFor(() => expect(screen.getByTestId('weight-month-delta-text'))
+      .toHaveTextContent(text, { exact: true }));
+
+    expect(screen.getByTestId('weight-month-delta-text')).toHaveTextContent(text, { exact: true });
+    expect(screen.getByTestId('weight-month-delta-text').props.className).toBe(className);
+    const delta = within(screen.getByTestId('weight-month-delta'));
+    const icon = delta.getByTestId(iconId);
+    expect(icon.props.size).toBe(15);
+    expect(icon.props.style.color).toBe(color);
+    for (const other of absent) expect(delta.queryByTestId(other)).toBeNull();
+  });
+});
+
+describe('#169 R10: toast y háptico tras un alta correcta', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2026-09-17T23:30:00Z'));
+    prepareWeightLogTests();
+  });
+  afterEach(() => jest.useRealTimers());
+
+  it('muestra el toast y el háptico solo tras resolver el alta', async () => {
+    let resolveCreate!: (result: CreateWeightState) => void;
+    mockCreateWeight.mockReturnValue(new Promise((resolve) => { resolveCreate = resolve; }));
+    await renderWeightLog();
+    await waitFor(() => expect(screen.getByTestId('weight-input')).toBeVisible());
+    await fireEvent.changeText(screen.getByTestId('weight-input'), '12.4');
+    await fireEvent.press(screen.getByTestId('weight-submit'));
+
+    expect(screen.queryByTestId('weight-toast')).toBeNull();
+    expect(mockHaptics.notificationAsync).not.toHaveBeenCalled();
+    await act(async () => { resolveCreate({ kind: 'ok', weight: makeWeight({ weightKg: 12.4 }) }); });
+    await act(async () => {});
+    expect(screen.queryByTestId('weight-toast')).not.toBeNull();
+    const toast = screen.getByTestId('weight-toast');
+    expect(toast.props.className)
+      .toBe('absolute top-4 flex-row items-center gap-2 self-center rounded-full border border-border bg-surface px-4 py-2.5 shadow-sm');
+    expect(toast.props.pointerEvents).toBe('none');
+    expect(toast.props.accessibilityLiveRegion).toBe('polite');
+    const copy = within(toast).getByText('Anotado. Ya lo puse en la gráfica.');
+    expect(copy).toHaveTextContent('Anotado. Ya lo puse en la gráfica.', { exact: true });
+    expect(copy.props.className).toBe('text-sm font-semibold text-foreground');
+    const check = within(toast).getByTestId('icon-check');
+    expect(check.props.size).toBe(16);
+    expect(check.props.style.color).toBe('green');
+    expect(within(screen.getByTestId('screen-weight-log')).getByTestId('weight-toast')).toBe(toast);
+    expect(within(screen.getByTestId('weight-log-form')).queryByTestId('weight-toast')).toBeNull();
+    expect(within(screen.getByTestId('screen-weight-log'))
+      .getAllByTestId(/^weight-(log-form|toast)$/).map((node) => node.props.testID))
+      .toEqual(['weight-log-form', 'weight-toast']);
+    expect(mockHaptics.notificationAsync).toHaveBeenCalledTimes(1);
+    expect(mockHaptics.notificationAsync).toHaveBeenCalledWith('mock-success');
+  });
+
+  it('llama al háptico una sola vez en la rama ok del fuente', () => {
+    const source = readFileSync(join(process.cwd(), 'src/screens/weight-log/index.tsx'), 'utf8');
+    const start = source.indexOf("case 'ok':");
+    const okBranch = source.slice(start, source.indexOf("case 'validation':", start));
+    expect(okBranch.split('Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)').length - 1)
+      .toBe(1);
+  });
+});
+describe('#169 R11: ni toast ni háptico fuera de la rama ok', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2026-09-17T23:30:00.000Z'));
+    prepareWeightLogTests();
+  });
+
+  afterEach(() => jest.useRealTimers());
+
+  const cases: [string, CreateWeightState | null, string | null][] = [
+    ['peso no numérico', null, 'Introduce un peso válido'],
+    ['validation', { kind: 'validation', errors: [{ path: 'weightKg', message: 'weightKg must be positive' }] }, 'weightKg must be positive'],
+    ['forbidden', { kind: 'forbidden' }, 'Solo el dueño puede registrar pesos'],
+    ['unreachable', { kind: 'unreachable', message: 'x' }, 'No se pudo conectar con el servidor'],
+    ['unauthorized', { kind: 'unauthorized' }, null],
+    ['error', { kind: 'error' }, 'Algo salió mal'],
+    ['missing-config', { kind: 'missing-config' }, 'Algo salió mal'],
+    ['excepción', null, 'Algo salió mal'],
+  ];
+
+  it.each(cases)('rama %s: ni toast ni háptico', async (branch, result, message) => {
+    if (branch === 'excepción') {
+      mockCreateWeight.mockRejectedValue(new Error('boom'));
+    } else if (result !== null) {
+      mockCreateWeight.mockResolvedValue(result);
+    }
+
+    await renderWeightLog();
+    await waitFor(() => expect(screen.getByTestId('weight-input')).toBeVisible());
+    await fireEvent.changeText(screen.getByTestId('weight-input'), branch === 'peso no numérico' ? 'abc' : '12.4');
+    await fireEvent.press(screen.getByTestId('weight-submit'));
+
+    if (branch === 'unauthorized') {
+      await waitFor(() => expect(mockUseAuth().signOut).toHaveBeenCalledTimes(1));
+    } else {
+      await waitFor(() => {
+        expect(screen.getByTestId('weight-form-error')).toHaveTextContent(message!);
+        expect(screen.getByTestId('weight-form-error')).toBeVisible();
+      });
+      expect(screen.getByTestId('weight-form-error')).toHaveTextContent(message!);
+      if (branch === 'peso no numérico') expect(mockCreateWeight).not.toHaveBeenCalled();
+    }
+    expect(screen.queryByTestId('weight-toast')).toBeNull();
+    expect(mockHaptics.notificationAsync).not.toHaveBeenCalled();
+  });
+});
+
+describe('#169 R12: el toast se va solo', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2026-09-17T23:30:00.000Z'));
+    prepareWeightLogTests();
+    mockCreateWeight.mockResolvedValue({ kind: 'ok', weight: makeWeight() });
+  });
+
+  afterEach(() => jest.useRealTimers());
+
+  it('se ve a los 2400 ms y se va a los 2650 ms', async () => {
+    await renderWeightLog();
+    await waitFor(() => expect(screen.getByTestId('weight-input')).toBeVisible());
+    await fireEvent.changeText(screen.getByTestId('weight-input'), '12.4');
+    await fireEvent.press(screen.getByTestId('weight-submit'));
+    await act(async () => {});
+
+    await act(async () => { jest.advanceTimersByTime(2400); });
+    expect(screen.queryByTestId('weight-toast')).not.toBeNull();
+    await act(async () => { jest.advanceTimersByTime(250); });
+    expect(screen.queryByTestId('weight-toast')).toBeNull();
+  });
+
+  it('otra alta reinicia la cuenta y vibra otra vez', async () => {
+    await renderWeightLog();
+    await waitFor(() => expect(screen.getByTestId('weight-input')).toBeVisible());
+    await fireEvent.changeText(screen.getByTestId('weight-input'), '12.4');
+    await fireEvent.press(screen.getByTestId('weight-submit'));
+    await act(async () => {});
+
+    await act(async () => { jest.advanceTimersByTime(2000); });
+    await fireEvent.changeText(screen.getByTestId('weight-input'), '12.5');
+    await fireEvent.press(screen.getByTestId('weight-submit'));
+    await act(async () => {});
+
+    await act(async () => { jest.advanceTimersByTime(2400); });
+    expect(screen.queryByTestId('weight-toast')).not.toBeNull();
+    await act(async () => { jest.advanceTimersByTime(250); });
+    expect(screen.queryByTestId('weight-toast')).toBeNull();
+    expect(mockHaptics.notificationAsync).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('#169 R13: movimiento del toast', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2026-09-17T23:30:00.000Z'));
+    prepareWeightLogTests();
+    mockCreateWeight.mockResolvedValue({ kind: 'ok', weight: makeWeight() });
+  });
+
+  afterEach(() => jest.useRealTimers());
+
+  it('el fuente declara el fundido sin ReduceMotion.Never', () => {
+    const source = readFileSync(join(process.cwd(), 'src/screens/weight-log/index.tsx'), 'utf8');
+    expect(source).toContain('entering={FadeIn.duration(MOTION_TRANSITION_MS)}');
+    expect(source).toContain('exiting={FadeOut.duration(MOTION_FEEDBACK_MS)}');
+    expect(source.split('ReduceMotion.Never').length - 1).toBe(0);
+  });
+
+  it('el toast lleva FadeIn y FadeOut', async () => {
+    await renderWeightLog();
+    await waitFor(() => expect(screen.getByTestId('weight-input')).toBeVisible());
+    await fireEvent.changeText(screen.getByTestId('weight-input'), '12.4');
+    await fireEvent.press(screen.getByTestId('weight-submit'));
+    await act(async () => {});
+
+    expect(screen.queryByTestId('weight-toast')).not.toBeNull();
+    const toast = screen.getByTestId('weight-toast');
+    expect(toast.props.entering).toBeInstanceOf(FadeIn);
+    expect(toast.props.exiting).toBeInstanceOf(FadeOut);
   });
 });

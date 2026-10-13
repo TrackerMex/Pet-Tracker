@@ -1,7 +1,15 @@
+import { useEffect } from 'react';
 import { Text } from 'react-native';
+import Animated, {
+  useAnimatedProps,
+  useReducedMotion,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 import Svg, {
   Circle,
   Defs,
+  G,
   LinearGradient,
   Polygon,
   Polyline,
@@ -10,10 +18,13 @@ import Svg, {
 
 import type { WeightEntry } from '../api/types';
 import { useTranslate } from '../providers/language-provider';
+import { MOTION_FILL_TIMING } from '../theme/motion';
 import { useThemeColors } from '../theme/use-theme-colors';
 
+const AnimatedPolyline = Animated.createAnimatedComponent(Polyline);
+const AnimatedG = Animated.createAnimatedComponent(G);
+
 export function WeightChart({ entries }: { entries: WeightEntry[] }) {
-  const [accent] = useThemeColors(['accent-strong']);
   const t = useTranslate();
 
   if (entries.length < 2) {
@@ -23,6 +34,18 @@ export function WeightChart({ entries }: { entries: WeightEntry[] }) {
       </Text>
     );
   }
+
+  return <WeightChartPlot entries={entries} />;
+}
+
+function WeightChartPlot({ entries }: { entries: WeightEntry[] }) {
+  const [accent] = useThemeColors(['accent-strong']);
+  const reducedMotion = useReducedMotion();
+  const progress = useSharedValue(reducedMotion ? 1 : 0);
+
+  useEffect(() => {
+    if (!reducedMotion) progress.set(withTiming(1, MOTION_FILL_TIMING));
+  }, [progress, reducedMotion]);
 
   const ascending = [...entries].reverse();
   const values = ascending.map(({ weightKg }) => weightKg);
@@ -37,6 +60,17 @@ export function WeightChart({ entries }: { entries: WeightEntry[] }) {
     });
   const points = chartPoints.map(({ x, y }) => `${x},${y}`).join(' ');
   const areaPoints = `${points} 100,40 0,40`;
+  const L = chartPoints.slice(1).reduce(
+    (length, point, index) => length + Math.hypot(
+      point.x - chartPoints[index].x,
+      point.y - chartPoints[index].y,
+    ),
+    0,
+  );
+  const lineProps = useAnimatedProps(() => ({
+    strokeDashoffset: L * (1 - progress.get()),
+  }));
+  const pointsProps = useAnimatedProps(() => ({ opacity: progress.get() }));
 
   return (
     <Svg
@@ -52,7 +86,9 @@ export function WeightChart({ entries }: { entries: WeightEntry[] }) {
         </LinearGradient>
       </Defs>
       <Polygon points={areaPoints} fill="url(#weight-area-gradient)" />
-      <Polyline
+      <AnimatedPolyline
+        strokeDasharray={[L, L]}
+        animatedProps={lineProps}
         points={points}
         fill="none"
         stroke={accent}
@@ -60,9 +96,11 @@ export function WeightChart({ entries }: { entries: WeightEntry[] }) {
         strokeLinejoin="round"
         strokeWidth={2.5}
       />
-      {chartPoints.map(({ x, y }, index) => (
-        <Circle key={index} cx={x} cy={y} r={3} fill={accent} />
-      ))}
+      <AnimatedG testID="weight-chart-points" animatedProps={pointsProps}>
+        {chartPoints.map(({ x, y }, index) => (
+          <Circle key={index} cx={x} cy={y} r={3} fill={accent} />
+        ))}
+      </AnimatedG>
     </Svg>
   );
 }
