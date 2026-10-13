@@ -8783,3 +8783,53 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
   design, tasks y traceability a `approved` (O2), `done` en
   `feature_list.json`, STATUS, Notion (Implementado / Completado) y PR #210
   contra `main`. Merge: humano. Tras el merge: borrar el worktree.
+
+## Sesión 2026-10-13 — mobile-weight-draw-and-toasts (id: 169)
+
+- **Feature:** fila 3 «Salud y rutina» del canvas, parte 1. `WeightChart`
+  dibuja la línea con un trazo animado (`strokeDashoffset` sobre la suma de
+  segmentos, `MOTION_FILL_TIMING`, respeta reduce motion) y Salud lo hereda.
+  Peso gana el resumen con el peso actual grande y el delta del mes calculado
+  en cliente (`monthlyWeightDelta`, zona del perfil), los testIDs que candan
+  el chip de delta por entrada y un toast con háptico solo tras un alta
+  correcta. Dos claves nuevas en el catálogo (§2.25 de la spec de idioma).
+- **Spec:** [[specs/mobile-weight-draw-and-toasts/requirements|spec]], firmada
+  desde Notion (`ccb4ad61`, 2026-10-12; P1 a P7 con su valor por defecto).
+  Enmiendas E1 (`462ca164`) y E2 (`b3a20ffa`), las dos solo de tests, también
+  firmadas desde Notion. Decisión del humano del 2026-10-11: «Solo peso
+  (Recommended)»; el toast al completar un recordatorio queda fuera porque la
+  app no tiene esa acción.
+- **Acciones:** sesión sites-99, worktree `Pet-Tracker-wt-169`, asignada por
+  Frontend. `spec_author`, gate humano en Notion y handoff a Codex CLI
+  (27 commits, de `98db0006` a `f314978d`). Codex paró cuatro veces: lint con
+  SIGKILL que salía 0 (c7), un doble de reicon que no pasaba tsc (c12), un
+  selector por prefijo `/^weight-row-/` de mobile-health R7 que atrapaba los
+  testIDs nuevos (c13) y una medida leída antes de terminar (c16). Cada parada
+  cerró con su reanudación en el handoff. #166 se mergeó en la branch
+  (`4d455cab`) y la spec se re-midió sin cambios.
+- **Revisión:** ronda 1 RECHAZADA (E1 trazabilidad, E2 y E3 candados que solo
+  muestreaban los extremos); la Enmienda E1 los cerró, ensanchada por el
+  leader (M3c, M3d) y por el barrido del reviewer (H1, H2, H2b, H3).
+  Reanudación 5 de Codex (`ab183a46`..`4ddcbf5c`). Ronda 2 RECHAZADA por
+  R2-E1: la cuerda en `strokeDashoffset` (X3) seguía verde porque todos los
+  `it` del desplazamiento usaban fixtures colineales. Enmienda E2: un `it`
+  con la fixture no colineal y `p = 0.25`. Reanudación 6 (`b03fe344` rojo,
+  `27f256e1` verde, `f666fc0b` docs). Ronda 3 **APROBADA** (`d4ccf05c`,
+  0 bloqueantes; R3-N1 no bloqueante: la fixture no colineal solo muestrea
+  `p = 0.25`). La producción de `weight-chart.tsx` y `monthly-weight-delta.ts`
+  quedó idéntica a `f314978d` en las dos enmiendas.
+- **Resultado:** `./init.sh` del leader sobre `f666fc0b`: exit 0, «Todo verde»
+  (backend 187/1474, móvil 99/2833, e2e 468 + 8 saltados). Smoke R14 en el dev
+  build de Android (OnePlus Nord 5) firmado por el humano en `084d9fc3`.
+- **Merge de main en el cierre:** `6f96bef6`, trae #167 (PR #210). Dos conflictos:
+  `language-provider.test.tsx` (recuento `+ 1 // #167 R5` seguido de
+  `+ 2, // #169 R9`, y los dos `describe` completos; lo resolvió el subagente
+  `implementer` como cambio trivial de cierre, igual que en `e61c5bb5`) y
+  `specs/mobile-ui-language/design.md` (§2.24 queda para #167 y #169 pasa a
+  §2.25).
+- **Pendiente aparte:** registrar la feature «completar recordatorio» cuando
+  exista la acción. A 2026-10-13 los ids #172 (mobile-account-screens-polish,
+  Frontend) y #173 (mobile-tab-screens-canvas-fidelity, UI-Pet) ya están
+  tomados: usar #174 o superior, contrastado con origin/main y con los peers.
+- **Estado final:** done. Notion: Implementado / Completado. PR contra `main`;
+  el merge lo hace el humano. Tras el merge: borrar el worktree.

@@ -1,10 +1,10 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-10-13
-**Features completadas**: 155/171 (`feature_list.json`)
-**En progreso**: ninguna en esta rama. #167 cerrada en `feature/167-mobile-account-screens-pingo`, PR #210 pendiente de merge humano.
+**Features completadas**: 156/171 (`feature_list.json`)
+**En progreso**: ninguna en esta rama. #169 cerrada en `feature/169-mobile-weight-draw-and-toasts`, PR pendiente de merge humano.
 
-**Pendientes**: 16 (#60, #119, #129, #144, #150, #151, #154, #160, #163, #164, #165, #168, #169, #170, #171 y #172). **#167 `mobile-account-screens-pingo` cerrada**: Pingo llega a las pantallas de cuenta. Login y Registro migran a ruta delgada + `src/screens/`. Login saluda con la clave nueva `login.pingoGreeting` y entra en dos tiempos; Registro lleva a Pingo en la cabecera y un icono en el error general; Recuperar y Nueva contraseña ganan a Pingo y un «pop» (componente `PopIn`, cuatro tokens nuevos en `motion.ts`); la Bienvenida suma tres anillos de ping, que la carta declara en la Enmienda #167. Ronda 1 de Codex rechazada (B1-B4, cláusulas sin candado); la Enmienda E1, solo tests, se firmó desde Notion (`c32ae760`) y la ronda 2 la aprobó el reviewer (`82a72c09`). El humano firmó el smoke R15 en `3f3ee0f3`, con observaciones de diseño que pasan a #172. Móvil 98/2775 → 99/2851.
+**Pendientes**: 15 (#60, #119, #129, #144, #150, #151, #154, #160, #163, #164, #165, #168, #170, #171 y #172). **#169 `mobile-weight-draw-and-toasts` cerrada**: fila 3 «Salud y rutina» del canvas, parte 1. `WeightChart` dibuja la línea con un trazo animado (`strokeDashoffset`, `MOTION_FILL_TIMING`, respeta reduce motion) y Salud lo hereda; Peso gana el resumen con el peso actual y el delta del mes (`monthlyWeightDelta`) y un toast con háptico tras un alta correcta. Dos claves nuevas (§2.25 de la spec de idioma). Rondas 1 y 2 rechazadas (candados que solo muestreaban extremos o fixtures colineales); las Enmiendas E1 y E2, solo tests, se firmaron desde Notion y la ronda 3 la aprobó el reviewer (`d4ccf05c`). El humano firmó el smoke R14 en `084d9fc3`. Móvil 98/2775 → 99/2833 medido sobre la branch antes de mergear #167. **#167 `mobile-account-screens-pingo` cerrada**: Pingo llega a las pantallas de cuenta. Login y Registro migran a ruta delgada + `src/screens/`. Login saluda con la clave nueva `login.pingoGreeting` y entra en dos tiempos; Registro lleva a Pingo en la cabecera y un icono en el error general; Recuperar y Nueva contraseña ganan a Pingo y un «pop» (componente `PopIn`, cuatro tokens nuevos en `motion.ts`); la Bienvenida suma tres anillos de ping, que la carta declara en la Enmienda #167. Ronda 1 de Codex rechazada (B1-B4, cláusulas sin candado); la Enmienda E1, solo tests, se firmó desde Notion (`c32ae760`) y la ronda 2 la aprobó el reviewer (`82a72c09`). El humano firmó el smoke R15 en `3f3ee0f3`, con observaciones de diseño que pasan a #172. Móvil 98/2775 → 99/2851.
 
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
@@ -88,6 +88,14 @@ debe listar las 4 URLs de cola.
 
 ## Estado actual
 
+- **`mobile-weight-draw-and-toasts` (#169) done** (2026-10-13, worktree
+  `Pet-Tracker-wt-169`, sesión sites-99): trazo animado en `WeightChart`,
+  resumen de Peso con delta mensual y toast con háptico tras el alta. Reviewer
+  ronda 3 APROBADO (`d4ccf05c`) sobre `f666fc0b`; `./init.sh` exit 0 sobre
+  `f666fc0b` (backend 187/1474, móvil 99/2833, e2e 468 + 8 saltados). Smoke R14
+  en el dev build de Android firmado por el humano en `084d9fc3`. Merge de
+  `origin/main` (#167) en `6f96bef6`; la suite completa sobre el árbol mergeado
+  la corre el CI de la PR.
 - **`mobile-account-screens-pingo` (#167) done** (2026-10-13, worktree
   `Pet-Tracker-wt-167`, sesión Frontend): Pingo en Login, Registro, Recuperar
   y Nueva contraseña, anillos de ping en la Bienvenida y migración de Login y
@@ -1465,6 +1473,12 @@ debe listar las 4 URLs de cola.
 
 ## Última sesión
 
+- **2026-10-13** — **#169 `mobile-weight-draw-and-toasts` cerrada** (worktree
+  `Pet-Tracker-wt-169`, sesión sites-99). Spec firmada desde Notion
+  (`ccb4ad61`). Rondas 1 y 2 rechazadas; Enmiendas E1 (`462ca164`) y E2
+  (`b3a20ffa`), solo tests, firmadas desde Notion. Ronda 3 aprobada
+  (`d4ccf05c`). Smoke R14 firmado en `084d9fc3`. Notion: Implementado /
+  Completado. Detalle en `progress/history.md`.
 - **2026-10-13** — **#167 `mobile-account-screens-pingo` cerrada** (worktree
   `Pet-Tracker-wt-167`, sesión Frontend). Spec firmada desde Notion
   (`ed8158b6`). Ronda 1 de Codex rechazada (B1-B4); Enmienda E1 de solo tests
