@@ -185,6 +185,23 @@ describe('#169 R1: la línea se dibuja al montarse', () => {
     ]);
   });
 
+  it('con tres pesos no alineados y progreso 0.25 el desplazamiento es tres cuartos de la suma de los segmentos', async () => {
+    mockWithTiming.mockImplementation(() => 0.25);
+    await render(
+      <WeightChart entries={[
+        makeWeight({ id: 'weight-3', weightKg: 12, measuredAt: '2026-08-21' }),
+        makeWeight({ id: 'weight-2', weightKg: 14, measuredAt: '2026-08-20' }),
+        makeWeight({ id: 'weight-1', weightKg: 10, measuredAt: '2026-08-19' }),
+      ]} />,
+      { wrapper: WeightChartWrapper },
+    );
+
+    await waitFor(() =>
+      expect(screen.getByTestId('weight-chart-line').props.jestAnimatedProps?.value)
+        .toEqual({ strokeDashoffset: expect.closeTo(83.8957, 3) }),
+    );
+  });
+
   it('p parte de 0: con una animación que no avanza, la línea y los puntos siguen ocultos', async () => {
     mockWithTiming.mockImplementation(() => ({
       onStart: (animation: { current?: number }, value: number) => {

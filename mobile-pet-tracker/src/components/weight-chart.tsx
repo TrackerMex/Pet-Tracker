@@ -68,7 +68,7 @@ function WeightChartPlot({ entries }: { entries: WeightEntry[] }) {
     0,
   );
   const lineProps = useAnimatedProps(() => ({
-    strokeDashoffset: L * (1 - progress.get()),
+    strokeDashoffset: Math.hypot(chartPoints[chartPoints.length - 1].x - chartPoints[0].x, chartPoints[chartPoints.length - 1].y - chartPoints[0].y) * (1 - progress.get()),
   }));
   const pointsProps = useAnimatedProps(() => ({ opacity: progress.get() }));
 
