@@ -1190,6 +1190,15 @@ describe('#168 R5: Perfil pinta chips pastel por dato', () => {
     expectProfileChip168(root, 'profile-pet-chip-weight', 'rounded-full px-3 py-1 bg-category-violet', 'text-xs font-bold text-category-violet-strong', '12.4 kg');
   });
 
+  it('sin esterilizar pinta el chip verde con «Sin esterilizar»', async () => {
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet({ sterilized: false, ageMonths: 26, currentWeightKg: 12.4 }) });
+    await renderProfile();
+    const root = await screen.findByTestId('profile-pet-chips');
+    expect(root.children).toHaveLength(4);
+    expect(root.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['profile-pet-chip-sex', 'profile-pet-chip-sterilized', 'profile-pet-chip-age', 'profile-pet-chip-weight']);
+    expectProfileChip168(root, 'profile-pet-chip-sterilized', 'rounded-full px-3 py-1 bg-category-green', 'text-xs font-bold text-category-green-strong', 'Sin esterilizar');
+  });
+
   it('centra y agrupa los chips con gap-2', async () => {
     await renderProfile();
     const root = await screen.findByTestId('profile-pet-chips');
