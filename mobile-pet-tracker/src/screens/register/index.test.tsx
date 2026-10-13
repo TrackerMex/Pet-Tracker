@@ -63,6 +63,8 @@ jest.mock('../../providers/auth-provider', () => ({
 jest.mock('expo-router', () => ({
   router: {
     replace: jest.fn(),
+    back: jest.fn(),
+    canGoBack: jest.fn(),
   },
 }));
 
@@ -338,16 +340,29 @@ describe('#167 R7: Pingo en la cabecera del registro', () => {
     expect(Object.fromEntries(mockHomeEntrance.mock.calls.map(([p]) => [
       p.testID, { index: p.index, className: p.className },
     ]))).toEqual({
-      'register-header': { index: 0, className: 'flex-row items-center justify-center gap-3' },
+      'register-header': { index: 0, className: 'gap-2' },
     });
   });
 
-  it('#167 R7: la cabecera lleva a Pingo y después el título', async () => {
+  it('#172 R3: la cabecera lleva la fila Volver-Pingo y después el título', async () => {
     await renderRegister();
     const header = screen.getByTestId('register-header');
+    expect(header.children[0]).toHaveProperty('props.testID', 'register-top');
     expect(header.children).toHaveLength(2);
-    expect(header.children[0]).toHaveProperty('props.testID', 'register-pingo-float');
     expect(header.children[1]).toBe(within(header).getByText('Crear cuenta'));
+    const top = screen.getByTestId('register-top');
+    expect(top.children).toEqual([
+      screen.getByTestId('register-back'), screen.getByTestId('register-pingo-float'),
+    ]);
+    expect(top.props.className).toBe('flex-row items-center justify-between');
+    expect(header.props.className).toBe('gap-2');
+  });
+
+  it('#172 R3: Volver del registro vuelve a la bienvenida sin historial', async () => {
+    mockRouter.canGoBack.mockReturnValue(false);
+    await renderRegister();
+    await fireEvent.press(screen.getByTestId('register-back'));
+    expect(mockRouter.replace).toHaveBeenCalledWith('/welcome');
   });
 
   it('#172 R5: Pingo del registro flota', async () => {

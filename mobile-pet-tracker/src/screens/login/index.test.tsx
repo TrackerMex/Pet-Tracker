@@ -34,6 +34,8 @@ jest.mock('expo-router', () => ({
   router: {
     push: jest.fn(),
     replace: jest.fn(),
+    back: jest.fn(),
+    canGoBack: jest.fn(),
   },
 }));
 
@@ -234,12 +236,20 @@ describe('#167 R6: Pingo saluda en login y la pantalla entra en dos tiempos', ()
     });
   });
 
-  it('#167 R6: la cabecera lleva el saludo y después el título', async () => {
+  it('#172 R3: la cabecera lleva Volver, el saludo y el título', async () => {
     await renderLogin();
     const header = screen.getByTestId('login-header');
-    expect(header.children).toHaveLength(2);
-    expect(header.children[0]).toHaveProperty('props.testID', 'login-greeting');
-    expect(header.children[1]).toBe(within(header).getByText('Iniciar sesión'));
+    expect(header.children).toHaveLength(3);
+    expect(header.children[0]).toHaveProperty('props.testID', 'login-back');
+    expect(header.children[1]).toHaveProperty('props.testID', 'login-greeting');
+    expect(header.children[2]).toBe(within(header).getByText('Iniciar sesión'));
+  });
+
+  it('#172 R3: Volver de login vuelve a la bienvenida sin historial', async () => {
+    mockRouter.canGoBack.mockReturnValue(false);
+    await renderLogin();
+    await fireEvent.press(screen.getByTestId('login-back'));
+    expect(mockRouter.replace).toHaveBeenCalledWith('/welcome');
   });
 
   it('#167 R6: el cuerpo lleva el formulario en el orden de siempre', async () => {

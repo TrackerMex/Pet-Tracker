@@ -35,7 +35,7 @@ jest.mock('../../api/auth', () => ({
 }));
 
 jest.mock('expo-router', () => ({
-  router: { push: jest.fn() },
+  router: { push: jest.fn(), back: jest.fn(), canGoBack: jest.fn(), replace: jest.fn() },
 }));
 
 jest.mock('react-native-safe-area-context', () => ({
@@ -591,5 +591,31 @@ describe('#172 R5: flotación de recuperar', () => {
     await renderRoute();
     expect(screen.getByTestId('forgot-pingo').parent)
       .toHaveProperty('props.testID', 'forgot-pingo-float');
+  });
+});
+
+
+describe('#172 R3: Volver en recuperar', () => {
+  it('#172 R3: la fila Volver encabeza el scroll en los dos estados', async () => {
+    mockForgotPassword.mockResolvedValue({ kind: 'ok' });
+    await renderRoute();
+    const expectTop = () => {
+      const top = screen.getByTestId('forgot-top');
+      expect(top.parent?.parent).toHaveProperty('props.testID', 'forgot-form');
+      expect(top.parent?.children[0]).toBe(top);
+      expect(top.children).toEqual([screen.getByTestId('forgot-back')]);
+      expect(top.props.className).toBe('w-full');
+    };
+    expectTop();
+    await submitForgot();
+    expect(await screen.findByText('Revisa tu correo')).toBeOnTheScreen();
+    expectTop();
+  });
+
+  it('#172 R3: Volver de recuperar va al login sin historial', async () => {
+    mockRouter.canGoBack.mockReturnValue(false);
+    await renderRoute();
+    await fireEvent.press(screen.getByTestId('forgot-back'));
+    expect(mockRouter.replace).toHaveBeenCalledWith('/login');
   });
 });
