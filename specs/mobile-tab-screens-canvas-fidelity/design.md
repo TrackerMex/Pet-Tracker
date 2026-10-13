@@ -93,7 +93,7 @@ tags: [harness, spec, mobile, ui]
   claves nuevas, Perfil pasa a usar `addPet.male`, `addPet.female`, `map.justNow`, `map.agoMinutes` y
   `map.agoHours`.
 - Todos los candados globales se mueven **por delta** con `// #173 Rn`. La tabla está en requirements R15.1.
-  Si #170 (PR #213) o #171 mergean antes, H0 vuelve a medir la base y el delta no cambia.
+  #170 ya está en la base (`57a61544`). Si #171 mergea antes, H0 vuelve a medir la base y el delta no cambia.
 
 ## 2. Bloque canónico de enmienda (R14)
 
@@ -121,7 +121,7 @@ el detalle de la enmienda está en su `requirements.md` §R14.
 
 - En las nueve specs, al **final** del documento.
 - En la carta, también al final, tras la última sección `## Enmienda` que exista al arrancar. En la base es
-  `## Enmienda #168 — título grande en Salud, Nutrición y Perfil`. Si #170 o #171 añaden la suya antes, va
+  `## Enmienda #168 — título grande en Salud, Nutrición y Perfil`. Si #171 añade la suya antes, va
   detrás de esa.
 - La firma se comprueba con `/- \[[ xX]\] Enmienda #173 aprobada por humano/`, para que el test no se ponga
   rojo cuando el humano firma.

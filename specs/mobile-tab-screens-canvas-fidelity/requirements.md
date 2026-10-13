@@ -19,8 +19,8 @@ Se rige por `docs/ui-guidelines.md` (carta de UI).
 ## §0. Contexto y decisiones del humano (no se reabren)
 
 - **Base medida**: worktree `Pet-Tracker-wt-173`, branch `feature/173-mobile-tab-screens-canvas-fidelity`,
-  HEAD `cbcefe96` (merge de `origin/main` `ad432ca4`, que trae #169). Todas las medidas de §1 son de
-  ese HEAD.
+  HEAD `57a61544` (merge de `origin/main` `788d1f89`, que trae #169 y #170). Todas las medidas de §1 son
+  de ese HEAD.
 - **Fuentes**: `progress/explore_mobile-tab-screens-canvas-fidelity.md` §8 (decisiones cerradas por el humano)
   y el canvas aprobado (memoria «Canvas propuesta UI aprobado»).
 - **Alcance**: la pantalla Perfil (`mobile-pet-tracker/src/screens/profile/index.tsx`) y los cimientos F0.
@@ -54,7 +54,7 @@ Se rige por `docs/ui-guidelines.md` (carta de UI).
 - **Dependencias**: cero dependencias nuevas de npm. El único fichero binario nuevo es
   `assets/fonts/Inter-ExtraBold.ttf` (R1).
 
-## §1. Medidas en la base (`cbcefe96`)
+## §1. Medidas en la base (`57a61544`)
 
 Comandos desde `mobile-pet-tracker/`. «Al cerrar» es el valor que debe dar el mismo comando con #173 terminada.
 
@@ -76,7 +76,7 @@ Comandos desde `mobile-pet-tracker/`. «Al cerrar» es el valor que debe dar el 
 | M14 | `grep -cF "import { Bell, ChevronRight, FileText, Map as MapIcon, Wifi } from 'reicon-react-native';" src/screens/profile/index.tsx` | 1 | 0 | R10 |
 | M15 | `grep -cF "import { Bell, Camera, FileText, Map as MapIcon, Plus, Wifi } from 'reicon-react-native';" src/screens/profile/index.tsx` | 0 | 1 | R5, R6, R10 |
 | M16 | `grep -cF "[join('screens', 'profile', 'index.tsx'), 3 + 1 + 4], // #41 R9; #168 R6" src/__tests__/consistency-classnames.test.ts` | 1 | 0 | R15 |
-| M17 | `grep -cF 'toBe(31 + 1 + 4)' src/__tests__/consistency-classnames.test.ts` | 1 | 0 | R15 |
+| M17 | `grep -cF 'toBe(31 + 1 + 4 + 1)' src/__tests__/consistency-classnames.test.ts` | 1 | 0 | R15 |
 | M18 | `grep -cF 'toBe(13 + 1 + 1 + 1 + 1 + 1 + 1)' src/__tests__/consistency-classnames.test.ts` | 1 | 0 | R15 |
 | M19 | `grep -cF 'expect(count(/bg-accent-soft/g)).toBe(16 + 2 + 1 - 1);' src/__tests__/consistency-classnames.test.ts` | 1 | 0 | R15 |
 | M20 | `grep -cF 'expect(accentSoftCount).toBe(16 + 2 + 1 - 1);' src/__tests__/consistency-classnames.test.ts` | 1 | 0 | R15 |
@@ -86,7 +86,7 @@ Comandos desde `mobile-pet-tracker/`. «Al cerrar» es el valor que debe dar el 
 | M24 | `grep -cF "[join('screens', 'profile', 'index.tsx'), 1]," src/__tests__/legibility-classnames.test.ts` | 1 | 0 | R15 |
 | M25 | `grep -cF 'expect(R7_PROFILE).toHaveLength(35 - 1 + 2 + 1 + 16);' src/__tests__/ui-language.test.ts` | 1 | 0 | R13 |
 | M26 | `grep -c "file: 'src/screens/profile/index.tsx'" src/__tests__/ui-copy-table.ts` | 31 | 35 | R13 |
-| M27 | `grep -cF '+ 2, // #169 R9' src/providers/__tests__/language-provider.test.tsx` | 1 | 0 | R13 |
+| M27 | `grep -cF '+ 7, // #170 R1' src/providers/__tests__/language-provider.test.tsx` | 1 | 0 | R13 |
 | M28 | `grep -cF "expect(rawEnumList).toContain('\`pet.sex\`');" src/__tests__/design-drift.test.ts` | 1 | 0 | R7 |
 | M29 | `grep -cF "'screens/profile/index.tsx': 2," src/__tests__/design-drift.test.ts` | 1 | 1 | — (no cambia, R11) |
 | M30 | `grep -cF -- "--font-black: 'Inter-Black';" src/theme/global.css` | 1 | 1 | — |
@@ -96,23 +96,25 @@ Comandos desde `mobile-pet-tracker/`. «Al cerrar» es el valor que debe dar el 
 | M34 | `grep -cF -- '--radius-tile: 18px;' src/theme/global.css` | 0 | 1 | R2 |
 | M35 | `ls assets/fonts/ \| grep -c 'Inter-'` | 5 | 6 | R1 |
 | M36 | `grep -cF 'border-2 border-accent bg-accent-soft p-1' src/components/pet-switcher.tsx` | 1 | 1 | — (default intacta, R4) |
+| M37 | `grep -cF 'toBe(33 + 1 + 1 - 1 - 1 + 1 + 1 - 1 + 4 + 1);' src/__tests__/consistency-classnames.test.ts` | 1 | 0 | R15 |
 
 Notas de medida:
 
 - **R7_PROFILE**: la tabla `R7_PROFILE` de `src/__tests__/ui-copy-table.ts` tiene **53** filas en la base
   (31 de `src/screens/profile/index.tsx`).
 - **Valores globales en la base**:
-  - `style={CONTINUOUS_CORNER}`: 36 en total (`31 + 1 + 4`).
+  - `style={CONTINUOUS_CORNER}`: 37 en total (`31 + 1 + 4 + 1`).
+  - Suma de la tabla `directUses` de `#62 R14`: 39 (`33 + 1 + 1 - 1 - 1 + 1 + 1 - 1 + 4 + 1`).
   - `rounded-xl bg-accent(?=…)`: 19.
   - `bg-accent-soft`: 18.
   - `text-accent-strong`: 18 en suma de `inkSites`.
   - `border-b-4` y `border-black/25`: 19 cada uno.
   - Los da la fórmula de cada candado. Nadie los reescribe a mano.
-- **Si #170 (PR #213) o #171 mergean antes que #173**: la base se vuelve a medir en H0 y se conserva el
-  **delta** de #173 (R15). #170 añade al catálogo `+ 7 // #170 R1` como último término de la fórmula de
-  `englishKeys` y ocupa §2.26 de `specs/mobile-ui-language/design.md`. Con #213 mergeada:
-  - M27 deja de ser el último término;
-  - el delta de #173 se añade detrás de `// #170 R1`.
+- **#170 (PR #213) ya está en la base**: añadió `+ 7, // #170 R1` como último término de `englishKeys`
+  (M27), ocupa §2.26 de `specs/mobile-ui-language/design.md` y sumó una esquina continua en
+  `alert-detail` (M17, M37).
+- **Si #171 mergea antes que #173**: la base se vuelve a medir en H0 y se conserva el **delta** de #173
+  (R15).
 
 ## Requisitos funcionales
 
@@ -586,8 +588,7 @@ comparan escritas en el propio test, nunca importando una constante de producci�
 
 - **R13.3** THE SYSTEM SHALL mover la longitud del catálogo por delta (−4 +3 = −1). En
   `src/providers/__tests__/language-provider.test.tsx`, el término `- 4 + 3 // #173 R13` se añade como
-  **último** término de la fórmula de `englishKeys`. En la base va detrás de `+ 2, // #169 R9` (M27). Si
-  #213 (#170) mergea antes, la base suma 7 y el término de #173 va detrás de `// #170 R1`.
+  **último** término de la fórmula de `englishKeys`. En la base va detrás de `+ 7, // #170 R1` (M27).
 - **R13.4** THE SYSTEM SHALL actualizar `R7_PROFILE` en `src/__tests__/ui-copy-table.ts`.
   - Quita las filas de `profile.information`, `profile.gpsSettings`, `profile.account` y
     `profile.useLightTheme` (−4).
@@ -623,7 +624,7 @@ comparan escritas en el propio test, nunca importando una constante de producci�
   `design.md` §2. El bloque se copia del cercado canónico y se sustituyen `<FEATURE>` y `<QUÉ CAMBIA>`. El
   título es `## Enmienda #173 — Perfil fiel al canvas`. En la carta va detrás de la última sección
   `## Enmienda` que exista al arrancar. En la base es
-  `## Enmienda #168 — título grande en Salud, Nutrición y Perfil`; si #170 o #171 añaden la suya antes, va
+  `## Enmienda #168 — título grande en Salud, Nutrición y Perfil`; si #171 añade la suya antes, va
   detrás de esa.
 
   | Fichero | `<FEATURE>` | `<QUÉ CAMBIA>` |
@@ -685,7 +686,8 @@ comparan escritas en el propio test, nunca importando una constante de producci�
   | Candado (fichero de test) | Cambio | Base → cierre |
   |---|---|---|
   | `#62 R14` fila de Perfil (consistency) | `3 + 1 + 4` → `3 + 1 + 4 - 7, // … #173 R10: ProfileTile` | 8 → 1 |
-  | `#98 R10` `style={CONTINUOUS_CORNER}` global | `toBe(31 + 1 + 4 - 7)` | 36 → 29 |
+  | `#62 R14` suma de `directUses` (M37) | `toBe(33 + 1 + 1 - 1 - 1 + 1 + 1 - 1 + 4 + 1 - 7)`, `// … #173 R10: ProfileTile` | 39 → 32 |
+  | `#98 R10` `style={CONTINUOUS_CORNER}` global | `toBe(31 + 1 + 4 + 1 - 7)` | 37 → 30 |
   | `#98 R10` `rounded-xl bg-accent` global | `toBe(13 + 1 + 1 + 1 + 1 + 1 + 1 - 1)` | 19 → 18 |
   | `#98 R10` `bg-accent-soft` (dos sitios, M19 y M20) | `16 + 2 + 1 - 1 - 1` | 18 → 17 |
   | `#166 R2` mapa `expected` | se quita la fila de Perfil (M21); título `'inventaría los dieciocho primarios con labio, fichero a fichero'` | 19 → 18 |
@@ -697,8 +699,8 @@ comparan escritas en el propio test, nunca importando una constante de producci�
   | `englishKeys` (language-provider) | ver R13.3 | −1 |
   | `R7_PROFILE` (ui-language) | ver R13.4 | 53 → 57 |
 
-  Si #170 o #171 mergean antes y mueven alguno de estos candados, en H0 se vuelve a medir la base y se
-  aplica el mismo delta. Las cifras «Base → cierre» de la tabla son las de `cbcefe96`.
+  Si #171 mergea antes y mueve alguno de estos candados, en H0 se vuelve a medir la base y se aplica el
+  mismo delta. Las cifras «Base → cierre» de la tabla son las de `57a61544`.
 - **R15.2** THE SYSTEM SHALL dejar `screens/profile/index.tsx`, `components/card.tsx` y
   `components/pet-switcher.tsx` sin:
   - clases arbitrarias (`[...]`);

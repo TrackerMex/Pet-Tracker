@@ -40,11 +40,11 @@ tags: [harness, spec, mobile, ui]
 
 - [ ] H0.1 Comprobar la base:
   - `git rev-parse HEAD`;
-  - `git merge-base --is-ancestor cbcefe96 HEAD && echo ok` debe imprimir `ok`.
+  - `git merge-base --is-ancestor 57a61544 HEAD && echo ok` debe imprimir `ok`.
 - [ ] H0.2 `test ! -e .expo/types/router.d.ts`. Si el fichero existe, **parar** y avisar al humano. No se
   borra desde el handoff.
-- [ ] H0.3 Correr M1–M36 de requirements §1 y apuntar la salida de cada uno en `progress/impl_<feature>.md`.
-  - Si alguna medida difiere de la columna «Base», la diferencia viene de #170 (PR #213) o #171 mergeadas.
+- [ ] H0.3 Correr M1–M37 de requirements §1 y apuntar la salida de cada uno en `progress/impl_<feature>.md`.
+  - Si alguna medida difiere de la columna «Base», la diferencia viene de #171 mergeada.
   - En ese caso se apunta la base nueva y se conserva el **delta** de R15.1 y R13.
 - [ ] H0.4 (**pendiente de medir**: el spec_author no pudo ejecutar jest). Solo cuando
   `pgrep -af '[i]nit\.sh|node_modules/(\.bin/jest|jest-worker)'` no devuelva nada:
@@ -226,8 +226,9 @@ tags: [harness, spec, mobile, ui]
   - En `src/__tests__/consistency-classnames.test.ts`:
     - `#62 R7`: el `it` se renombra a `'profile usa los glifos de reicon sin ChevronRight (#173 R10)'`, con el
       import final de R10.3 y `profile.match(/ChevronRight/g)` `toBeNull()`;
-    - `#62 R14`: `3 + 1 + 4 - 7` (`// #173 R10: ProfileTile`);
-    - `#98 R10`: `toBe(31 + 1 + 4 - 7)`.
+    - `#62 R14`: fila de Perfil `3 + 1 + 4 - 7` (`// #173 R10: ProfileTile`) y, en el mismo commit, la suma
+      de `directUses` `toBe(33 + 1 + 1 - 1 - 1 + 1 + 1 - 1 + 4 + 1 - 7)`;
+    - `#98 R10`: `toBe(31 + 1 + 4 + 1 - 7)`.
   - `language-provider` `#173 R13`: filas de `profile.gpsCollar` (presente) y `profile.gpsSettings`
     (ausente).
 - [ ] (2) Verde:
@@ -302,7 +303,7 @@ tags: [harness, spec, mobile, ui]
     variante `hero` de `card.tsx`, correr el describe y ver exactamente 1 fallo.
   - Restaurar con `git checkout HEAD -- src/components/card.tsx` y comprobar `git diff --cached --quiet`.
   - Anotar la sonda en `progress/impl_<feature>.md`.
-- [ ] (2) Verde: comprobar M1–M36 contra «Al cerrar» (o contra base de H0 + delta si la base cambió) y la
+- [ ] (2) Verde: comprobar M1–M37 contra «Al cerrar» (o contra base de H0 + delta si la base cambió) y la
   tabla R15.1 completa.
 - [ ] (3) Refactor: ALL móvil solo cuando
   `pgrep -af '[i]nit\.sh|node_modules/(\.bin/jest|jest-worker)'` no devuelva nada:
