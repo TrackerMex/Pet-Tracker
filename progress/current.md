@@ -152,3 +152,23 @@
 - Siguiente: Codex termina → el leader lee el impl → pide permiso, avisa y
   corre init.sh → re-revisión → smoke R14 → Notion Implementado/Completado →
   PR.
+
+### Reanudación 5 terminada (2026-10-13)
+
+- Siete commits de Codex, de `ab183a46` a `4ddcbf5c`. Cada rojo versiona su
+  mutación con el test y cada verde la revierte desde `f314978d`.
+  - Rojos: 4/15/19, 1/19/20 y 4/11/15, por aserción.
+  - Verdes: weight-chart 19 y 20, GRAFICA 144 y 145, GUARDAS 92, monthly 15.
+  - Siete sondas con el recuento y la fila prescritos, revertidas con
+    limpio=0.
+  - Cierre: BASE 9/368, ALL 99/2832 con exit 0 tras el bucle de espera;
+    typecheck 0 y lint vacío.
+- Verificado por el leader:
+  - cada commit toca solo sus ficheros;
+  - producción idéntica a `f314978d`, y el diff móvil neto son los dos tests;
+  - lista cerrada contra H0: 14 ficheros;
+  - monthly-weight-delta.test.ts es idéntico al del spike del leader;
+  - weight-chart.test.tsx difiere solo en una línea en blanco;
+  - origin/main sin commits nuevos.
+- Siguiente: init.sh del leader, en cola tras el de Backend (#170, wt-170) →
+  re-revisión → smoke R14.
