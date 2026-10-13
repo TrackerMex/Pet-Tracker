@@ -252,35 +252,35 @@ describe('#167 R6: Pingo saluda en login y la pantalla entra en dos tiempos', ()
     expect(mockRouter.replace).toHaveBeenCalledWith('/welcome');
   });
 
-  it('#167 R6: el cuerpo lleva el formulario en el orden de siempre', async () => {
+  it('#172 R7: el cuerpo lleva correo, contraseña, olvido, envío y registro', async () => {
     mockLogin.mockResolvedValue({ kind: 'invalid-credentials' });
     await renderLogin();
     const body = screen.getByTestId('login-body');
     expect(within(body).getAllByTestId(/^(login-email|login-password|login-submit|link-register|link-forgot)$/)
       .map((node) => node.props.testID)).toEqual([
-      'login-email', 'login-password', 'login-submit', 'link-register', 'link-forgot',
+      'login-email', 'login-password', 'link-forgot', 'login-submit', 'link-register',
     ]);
     await submit();
     expect(within(body).getByTestId('login-error')).toBeOnTheScreen();
   });
 
-  it('#167 R6: con error, el error va entre la contraseña y el envío', async () => {
+  it('#172 R7: con error, el error va entre el olvido y el envío', async () => {
     mockLogin.mockResolvedValue({ kind: 'invalid-credentials' });
     await renderLogin();
     await submit();
     const body = screen.getByTestId('login-body');
     expect(within(body).getAllByTestId(/^(login-email|login-password|login-error|login-submit|link-register|link-forgot)$/)
       .map((node) => node.props.testID)).toEqual([
-      'login-email', 'login-password', 'login-error', 'login-submit', 'link-register', 'link-forgot',
+      'login-email', 'login-password', 'link-forgot', 'login-error', 'login-submit', 'link-register',
     ]);
   });
 
-  it('#167 R6: sin error, el cuerpo no lleva el error', async () => {
+  it('#172 R7: sin error, el cuerpo no lleva el error', async () => {
     await renderLogin();
     const body = screen.getByTestId('login-body');
     expect(within(body).getAllByTestId(/^(login-email|login-password|login-error|login-submit|link-register|link-forgot)$/)
       .map((node) => node.props.testID)).toEqual([
-      'login-email', 'login-password', 'login-submit', 'link-register', 'link-forgot',
+      'login-email', 'login-password', 'link-forgot', 'login-submit', 'link-register',
     ]);
   });
 

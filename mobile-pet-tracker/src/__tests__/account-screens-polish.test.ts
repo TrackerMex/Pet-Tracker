@@ -40,3 +40,18 @@ describe('#172 R6: recetas de texto de cuenta', () => {
     });
   });
 });
+
+
+describe('#172 R7: enlaces de cuenta', () => {
+  it('#172 R7: los enlaces de login y recuperar llevan su receta', () => {
+    const login = readFileSync(join(sourceRoot, 'screens/login/index.tsx'), 'utf8');
+    const forgot = readFileSync(join(sourceRoot, 'screens/forgot/index.tsx'), 'utf8');
+    expect(login.match(/testID="link-forgot"\s+className="min-h-11 self-end"/g) ?? []).toHaveLength(1);
+    expect(login.match(/testID="link-register"\s+className="h-13 w-full"/g) ?? []).toHaveLength(1);
+    expect(forgot.match(/testID="link-login"\s+className="h-13 w-full"/g) ?? []).toHaveLength(1);
+    expect(login.split('<LinkButton.Label className="text-sm font-semibold text-accent-strong">').length - 1).toBe(1);
+    expect(login.split('<LinkButton.Label className="text-base font-bold text-accent-strong">').length - 1).toBe(1);
+    expect(forgot.split('<LinkButton.Label className="text-base font-bold text-accent-strong">').length - 1).toBe(1);
+    expect(login.split('self-center').length - 1).toBe(0);
+  });
+});
