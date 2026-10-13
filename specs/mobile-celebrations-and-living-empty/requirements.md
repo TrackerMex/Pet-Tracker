@@ -159,6 +159,12 @@ Cada requisito nombra en [[tasks]] el test que lo verifica. En los testIDs,
   (`t('addPet.celebrateLater')`) o el `Modal` emite `requestClose` THE SYSTEM
   SHALL llamar a `router.back()` una vez y no llamar a `router.replace`.
   `router.back()` es el destino que guardar tiene hoy.
+- **R5.4** *(Enmienda E2)* WHEN `createPet` responde `ok` con un `pet.name`
+  distinto del nombre escrito THE SYSTEM SHALL pintar ese `pet.name` en el
+  título y el cuerpo. Con el formulario del test (escribe `' Nala '`) y la
+  respuesta `{ id: 'pet-new', name: 'Kira' }`, el título es
+  `¡Kira ya está en casa!` y el cuerpo,
+  `Te ayudo a cuidar de Kira. Vincula un collar y estaré pendiente de dónde está.`
 
 ### R6 — Confeti
 
@@ -183,6 +189,11 @@ Cada requisito nombra en [[tasks]] el test que lo verifica. En los testIDs,
   cada pieza con `opacity: 0`, `translateY` igual al alto de ventana + 40 y
   `rotate: '540deg'`. La última pieza en terminar es la 17, a los
   `D_17 + T_17 = 901 + 3529 = 4430` ms.
+- **R6.5** *(Enmienda E2)* WHEN han pasado 1200 ms desde el montaje THE
+  SYSTEM SHALL dejar cada pieza `i` en la opacidad, el `translateY` y los
+  grados de `rotate` de la tabla `CONFETTI_AT_1200` de la Enmienda E2. La
+  tolerancia es ±0,005 en la opacidad y ±0,5 en las otras dos
+  (`toBeCloseTo(…, 2)` y `toBeCloseTo(…, 0)`).
 
 ### R7 — Pop de Pingo y de la insignia
 
@@ -202,6 +213,12 @@ Cada requisito nombra en [[tasks]] el test que lo verifica. En los testIDs,
     `{ width: 200, height: 200, opacity: 1, transform: [{ scale: 1 }] }`;
   - WHEN han pasado 300 ms, `{id}-badge` sigue en opacidad 0 y escala 0.6;
   - WHEN han pasado 2400 ms, `{id}-badge` está en opacidad 1 y escala 1.
+- **R7.4** *(Enmienda E2)* WHILE reduce motion no está activo THE SYSTEM
+  SHALL dejar `{id}-pingo` a los 50, 100, 150 y 200 ms, y `{id}-badge` a los
+  450, 500, 550 y 600 ms, en estos pares `[opacidad, escala]`, con
+  tolerancia ±0,005: `[0.682, 0.944]`, `[0.925, 1.06]`, `[0.986, 1]` y
+  `[0.999, 0.992]`. El 1,06 de la segunda muestra es el rebote de
+  `dampingRatio: 0.5` (P5).
 
 ### R8 — Reduce motion en la celebración
 
@@ -241,6 +258,9 @@ Cada requisito nombra en [[tasks]] el test que lo verifica. En los testIDs,
   montarse
   `withRepeat(withTiming(-MOTION_FLOAT_OFFSET_Y, MOTION_FLOAT_TIMING), -1, true)`
   sobre `translateY`, igual que la bienvenida.
+- **R10.4** *(Enmienda E2)* WHILE reduce motion no está activo THE SYSTEM
+  SHALL dejar `{testID}-float` con `translateY` igual a `-0.579`, `-2` y
+  `-3.421`, con tolerancia ±0,005, a los 300, 600 y 900 ms del montaje.
 
 ### R11 — Reduce motion en los vacíos
 
@@ -440,3 +460,113 @@ Que los rectángulos del confeti pasen de `rounded-sm` a esquina viva, y que
 el módulo de paleta gane `CONFETTI_FILLS`.
 
 - [x] Enmienda E1 aprobada por humano (fecha: 2026-10-12)
+
+---
+
+## Enmienda E2 — los candados muestrean la curva, no solo sus extremos
+
+> Escrita el 2026-10-13 tras el rechazo de la ronda 1
+> (`progress/review_mobile-celebrations-and-living-empty.md`, sobre
+> `9b825948`). No cambia ningún comportamiento: la implementación revisada ya
+> cumple R5.1, R6.3, R7.1, R7.2 y R10.3. Añade R5.4, R6.5, R7.4 y R10.4, que
+> fijan con valores medidos lo que esas cláusulas ya exigen, para que una
+> mutación de la fórmula no pase en verde. Su casilla va **sin marcar**: el
+> humano reabre el gate solo para esta enmienda, y Codex no arranca la ronda
+> 2 hasta que esté marcada.
+
+### El hecho medido
+
+El reviewer plantó en producción estas mutaciones, y la suite siguió verde:
+
+| Sonda | Mutación | Cláusula que viola |
+|---|---|---|
+| S1 | `duration: MOTION_CONFETTI_MIN_MS`, sin `+ (index * 137) % MOTION_CONFETTI_SPREAD_MS` | R6.3 `T_i` |
+| S2 | quitar `...MOTION_CONFETTI_FALL_TIMING` del `withTiming` | R6.3 curva |
+| S3 | opacidad `interpolate(p, [0, 0.5, 1], …)` | R6.3 opacidad |
+| S4 | retardo `index * 53`, sin `% MOTION_CONFETTI_SPREAD_MS` | R6.3 `D_i` (solo cambia la pieza 23: 1219 ms en vez de 19) |
+| S5 | escala de Pingo con `withTiming(1, MOTION_FADE_TIMING)` | R7.1 muelle |
+| S5b | `MOTION_POP_SPRING` con `dampingRatio: 1` | R7.1 y R7.2, P5 |
+| S10 | flote con `{ ...MOTION_FLOAT_TIMING, duration: 600 }` | R10.3 |
+| S12 | `setCelebratePetName(input.name)` | R5.1 |
+
+Los candados de la ronda 1 solo miraban el estado inicial y el final, la
+pieza 0 (cuya `T_0` es justo 2400) o una opacidad «entre 0 y 1». Y el doble
+de `createPet` devolvía el mismo nombre que el test escribe.
+
+El leader añadió tres sondas más, una por cada pieza que las del reviewer no
+tocan:
+
+| Sonda | Mutación | Cláusula que viola |
+|---|---|---|
+| S5i | escala de la insignia con `withDelay(MOTION_SURFACE_MS, withTiming(1, MOTION_FADE_TIMING))` | R7.2 muelle |
+| Sfade | opacidad de Pingo con `MOTION_FILL_TIMING` | R7.1 fundido |
+| S10c | flote con `{ duration: 1200 }`, sin la curva | R10.3 curva |
+
+La spike de la enmienda se hizo el 2026-10-13, en una copia fuera del árbol
+sobre `9b825948`, con los bloques de [[tasks]] §E2 aplicados tal cual.
+
+- **Base verde:** `celebration.test.tsx` pasa 49 de 49 y `empty-state.test.tsx`
+  101 de 101. `add-pet/index.test.tsx` pasa 15 de 15 con `-t '#171'`. `tsc` y
+  `eslint` sobre los tres ficheros salen con 0.
+- **Cada sonda, plantada sola, pone en rojo el `it` nuevo de su cláusula y
+  ningún otro.** Todas por aserción (`toBeCloseTo`, o `toBe` en S12) y ninguna
+  por excepción:
+
+| Sonda | `it` en rojo |
+|---|---|
+| S1, S2, S3, S4 | R6.5 a los 1200 ms cada pieza sigue su retardo, su duración y su curva |
+| S5, Sfade | R7.4 Pingo rebota por encima de 1 y se asienta a los 50, 100, 150 y 200 ms |
+| S5i | R7.4 la insignia repite el rebote a los 450, 500, 550 y 600 ms |
+| S5b | los dos R7.4 |
+| S10, S10c | R10.4 sigue la curva de 1200 ms a los 300, 600 y 900 ms |
+| S12 | R5.4 toma el nombre de la respuesta y no el del formulario |
+
+### Qué cambia
+
+1. **Cuatro criterios nuevos**, cada uno en su requisito: R5.4, R6.5, R7.4 y
+   R10.4. Sus valores salen de la spike, no de las fórmulas.
+2. **Tabla `CONFETTI_AT_1200`** de R6.5, `[opacidad, translateY, grados]`
+   por pieza a los 1200 ms. El alto de ventana del entorno de jest es 1334.
+   A esa hora ya arrancaron todas las piezas (el mayor `D_i` es el de la 22,
+   1166 ms) y no terminó ninguna. La 21 y la 22 van por la rama de subida de
+   la opacidad (progreso < 0,1) y el resto, por la de bajada.
+
+   | i | opacidad | translateY | grados |
+   |---|---|---|---|
+   | 0 | 0.154 | 1178.4 | 465.3 |
+   | 1 | 0.194 | 1127.3 | 445.8 |
+   | 2 | 0.236 | 1073.5 | 425.2 |
+   | 3 | 0.28 | 1017.6 | 403.9 |
+   | 4 | 0.325 | 960 | 381.9 |
+   | 5 | 0.371 | 901.3 | 359.5 |
+   | 6 | 0.418 | 841.8 | 336.8 |
+   | 7 | 0.465 | 781.9 | 313.9 |
+   | 8 | 0.512 | 721.8 | 290.9 |
+   | 9 | 0.381 | 889.8 | 355.1 |
+   | 10 | 0.44 | 813.4 | 325.9 |
+   | 11 | 0.501 | 736.7 | 296.6 |
+   | 12 | 0.561 | 660.1 | 267.4 |
+   | 13 | 0.621 | 584.3 | 238.4 |
+   | 14 | 0.679 | 509.8 | 210 |
+   | 15 | 0.736 | 436.9 | 182.1 |
+   | 16 | 0.792 | 366.1 | 155.1 |
+   | 17 | 0.846 | 297.6 | 128.9 |
+   | 18 | 0.803 | 351.9 | 149.7 |
+   | 19 | 0.877 | 258.2 | 113.9 |
+   | 20 | 0.947 | 169.4 | 80 |
+   | 21 | 0.89 | 85.9 | 48.1 |
+   | 22 | 0.336 | 7.5 | 18.2 |
+   | 23 | 0.275 | 1024.4 | 406.5 |
+
+3. **Cinco `it`** en tres ficheros de test, con el código literal de
+   [[tasks]] §E2. Nacen verdes; producción no cambia.
+4. **[[traceability]]**: el leader rellenó la columna de tests de R1–R15,
+   que la ronda 1 dejó en «pendiente» (C5 del rechazo). No forma parte de la
+   firma.
+
+### Qué firma el humano
+
+Que la ronda 2 añada los cinco `it` de R5.4, R6.5, R7.4 (dos) y R10.4 con
+los valores medidos de arriba, sin tocar producción.
+
+- [ ] Enmienda E2 aprobada por humano (fecha: ____)

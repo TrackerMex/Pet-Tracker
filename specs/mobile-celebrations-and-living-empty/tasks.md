@@ -694,3 +694,172 @@ transportes adb, usa `adb -s <ip:puerto>`.
    ve sobre el fondo.
 
 Firma: casilla «R16» de §Aprobación en [[requirements]], con fecha y nombre.
+
+## E2 — Ronda 2: candados que muestrean la curva (Enmienda E2)
+
+Tras el rechazo de la ronda 1 ([[requirements]] §Enmienda E2). Solo toca
+tres ficheros de test; **producción no cambia**. Los cinco `it` nacen
+**verdes**: son candados de una implementación que ya cumple, como los de
+R13. El rojo de cada uno ante su mutación lo midió la spike del leader
+(tabla de la Enmienda E2) y lo repite el reviewer. Cada bloque es un commit
+`test(mobile): …` propio, con el fichero de test entero en verde antes de
+commitear.
+
+Los valores son literales medidos: el test no los calcula con las fórmulas
+ni con constantes de producción (sería un candado tautológico).
+
+### E2.1 — R6.5: el confeti a los 1200 ms
+
+En `src/components/__tests__/celebration.test.tsx`, justo después de la línea
+`const COLORS = [...]` (la de `'bg-accent', 'bg-category-amber-strong'`), el
+bloque siguiente, literal:
+
+```ts
+// #171 E2: [opacidad, translateY, grados] de cada pieza a los 1200 ms, medidos en la spike de la enmienda.
+const CONFETTI_AT_1200 = [
+  [0.154, 1178.4, 465.3],
+  [0.194, 1127.3, 445.8],
+  [0.236, 1073.5, 425.2],
+  [0.28, 1017.6, 403.9],
+  [0.325, 960, 381.9],
+  [0.371, 901.3, 359.5],
+  [0.418, 841.8, 336.8],
+  [0.465, 781.9, 313.9],
+  [0.512, 721.8, 290.9],
+  [0.381, 889.8, 355.1],
+  [0.44, 813.4, 325.9],
+  [0.501, 736.7, 296.6],
+  [0.561, 660.1, 267.4],
+  [0.621, 584.3, 238.4],
+  [0.679, 509.8, 210],
+  [0.736, 436.9, 182.1],
+  [0.792, 366.1, 155.1],
+  [0.846, 297.6, 128.9],
+  [0.803, 351.9, 149.7],
+  [0.877, 258.2, 113.9],
+  [0.947, 169.4, 80],
+  [0.89, 85.9, 48.1],
+  [0.336, 7.5, 18.2],
+  [0.275, 1024.4, 406.5],
+];
+
+function sampleConfetti(testID: string) {
+  const style = getAnimatedStyle(screen.getByTestId(testID, { includeHiddenElements: true })) as unknown as {
+    opacity: number;
+    transform: [{ translateY: number }, { rotate: string }];
+  };
+  return [style.opacity, style.transform[0].translateY, Number.parseFloat(style.transform[1].rotate)];
+}
+
+function expectSamples(actual: number[][], expected: number[][], digits: number[]) {
+  expect(actual).toHaveLength(expected.length);
+  actual.forEach((row, i) => row.forEach((value, k) => expect(value).toBeCloseTo(expected[i][k], digits[k])));
+}
+```
+
+Y como **último `it`** de `describe('#171 R6: confeti')`, tras el de R6.4:
+
+```ts
+  it('R6.5 a los 1200 ms cada pieza sigue su retardo, su duración y su curva', async () => {
+    await renderProbe();
+    await act(async () => { jest.advanceTimersByTime(1200); });
+    expectSamples(Array.from({ length: 24 }, (_, i) => sampleConfetti(`probe-confetti-${i}`)), CONFETTI_AT_1200, [2, 0, 0]);
+  });
+```
+
+Commit: `test(mobile): el confeti muestrea cada pieza en vuelo (R6, E2)`.
+
+### E2.2 — R7.4: el rebote del pop
+
+En el mismo fichero, justo después del bloque de E2.1 (tras la función
+`expectSamples`):
+
+```ts
+// #171 E2: [opacidad, escala] a 50, 100, 150 y 200 ms del arranque de cada pop.
+const POP_SAMPLES = [
+  [0.682, 0.944],
+  [0.925, 1.06],
+  [0.986, 1],
+  [0.999, 0.992],
+];
+
+function samplePop(testID: string) {
+  const style = getAnimatedStyle(screen.getByTestId(testID, { includeHiddenElements: true })) as unknown as {
+    opacity: number;
+    transform: [{ scale: number }];
+  };
+  return [style.opacity, style.transform[0].scale];
+}
+```
+
+Y como **dos últimos `it`** de `describe('#171 R7: pop')`, tras el de R7.3
+a los 2400 ms:
+
+```ts
+  it('R7.4 Pingo rebota por encima de 1 y se asienta a los 50, 100, 150 y 200 ms', async () => {
+    await renderProbe();
+    const samples: number[][] = [];
+    for (let step = 0; step < 4; step++) {
+      await act(async () => { jest.advanceTimersByTime(50); });
+      samples.push(samplePop('probe-pingo'));
+    }
+    expectSamples(samples, POP_SAMPLES, [2, 2]);
+  });
+
+  it('R7.4 la insignia repite el rebote a los 450, 500, 550 y 600 ms', async () => {
+    await renderProbe();
+    await act(async () => { jest.advanceTimersByTime(400); });
+    const samples: number[][] = [];
+    for (let step = 0; step < 4; step++) {
+      await act(async () => { jest.advanceTimersByTime(50); });
+      samples.push(samplePop('probe-badge'));
+    }
+    expectSamples(samples, POP_SAMPLES, [2, 2]);
+  });
+```
+
+Commit: `test(mobile): el pop muestrea el rebote de Pingo y la insignia (R7, E2)`.
+
+### E2.3 — R10.4: la curva del flote
+
+En `src/components/__tests__/empty-state.test.tsx`, como **último `it`** de
+`describe('#171 R10: Pingo flota')`, tras `R10.3 sube cuatro puntos en 1200 ms`:
+
+```ts
+  it('R10.4 sigue la curva de 1200 ms a los 300, 600 y 900 ms', async () => {
+    await renderProbe();
+    const samples: number[] = [];
+    for (let step = 0; step < 3; step++) {
+      await act(async () => { jest.advanceTimersByTime(300); });
+      const style = getAnimatedStyle(screen.getByTestId('probe-float')) as unknown as { transform: [{ translateY: number }] };
+      samples.push(style.transform[0].translateY);
+    }
+    expect(samples).toHaveLength(3);
+    samples.forEach((value, i) => expect(value).toBeCloseTo([-0.579, -2, -3.421][i], 2));
+  });
+```
+
+Commit: `test(mobile): el flote muestrea su curva (R10, E2)`.
+
+### E2.4 — R5.4: el nombre sale de la respuesta
+
+En `src/screens/add-pet/index.test.tsx`, como **último `it`** de
+`describe('#171 R5: variante sin collar')`, que es el final del fichero, tras
+`R5.3 requestClose vuelve una sola vez`:
+
+```ts
+  it('R5.4 toma el nombre de la respuesta y no el del formulario', async () => {
+    mockCreatePet.mockResolvedValue({ kind: 'ok', pet: { id: 'pet-new', name: 'Kira' } as never });
+    await celebrateNala();
+    expect(screen.getByTestId('add-pet-celebration-title').props.children).toBe('¡Kira ya está en casa!');
+    expect(screen.getByTestId('add-pet-celebration-body').props.children).toBe('Te ayudo a cuidar de Kira. Vincula un collar y estaré pendiente de dónde está.');
+  });
+```
+
+Commit: `test(mobile): la celebración toma el nombre de la respuesta (R5, E2)`.
+
+### E2.5 — Trazabilidad
+
+En [[traceability]], la columna de tests ya nombra los cinco `it` (la
+rellenó el leader). Codex añade en la columna de commits de R5, R6, R7 y R10
+el hash y el mensaje de su commit de E2, con la marca `(E2, nace verde)`.
