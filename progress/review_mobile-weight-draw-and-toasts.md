@@ -630,3 +630,129 @@ Lo corrió el leader con permiso del humano sobre `eb9b77f1` (`init-169-r2.head`
 ```
 
 En el log no hay `Failed to run`, ni líneas `FAIL`, ni recuentos `failed`. Móvil cuadra con 2823 de la ronda 1 + 5 its + 4 filas = 2832.
+
+## Ronda 3 — Enmienda E2 (sobre f666fc0b)
+
+Fecha: 2026-10-13. HEAD `f666fc0b`, igual a `origin/feature/169-mobile-weight-draw-and-toasts`. H0 `fc384b44`. Ámbito: el delta `a7b93c16..f666fc0b` (3 commits de Codex) y el cierre de R2-E1.
+
+**Veredicto de la ronda 3: APROBADO.** Bloqueantes: 0. No bloqueantes: 1 (R3-N1).
+
+### Resumen
+
+- R2-E1 queda cerrado. El `it` nuevo asevera `strokeDashoffset` con la fixture no colineal (`12`, `14`, `10`) y `p = 0.25`. X3 cae por aserción y ningún otro `it` falla.
+- El `it` es literal al de tasks.md §Enmienda E2 y está dentro de `describe('#169 R1: la línea se dibuja al montarse'`.
+- El rojo versiona X3 en producción y no toca el doble. El verde deja `weight-chart.tsx` idéntico a `f314978d`.
+- La trazabilidad, la lista cerrada y la deriva son correctas. init.sh sale verde sobre `f666fc0b`.
+
+### Checklist C2 — Estado coherente
+- [x] Solo una feature está `in_progress` en `feature_list.json` (`grep -c '"status": "in_progress"'` da 1).
+- [x] `progress/current.md` no cambia en el delta. Es commit del leader (`a7b93c16`) y está fuera del ámbito de Codex.
+
+### Checklist C3 — Arquitectura (móvil)
+- [x] Sin cambios. La producción queda idéntica a `f314978d`: `git diff --quiet f314978d f666fc0b -- mobile-pet-tracker/src/components/weight-chart.tsx mobile-pet-tracker/src/utils/monthly-weight-delta.ts` da 0.
+
+### Checklist C4 — TDD
+- [x] Hay un par rojo → verde: `b03fe344 → 27f256e1`.
+  - El rojo toca 2 ficheros: el test (+17) y `weight-chart.tsx`, donde versiona X3 en una sola línea, literal a tasks.md.
+  - El verde toca solo `weight-chart.tsx`: `git diff --quiet f314978d 27f256e1 -- mobile-pet-tracker/src/components/weight-chart.tsx` da 0.
+  - El test no cambia después del rojo: `git diff --quiet b03fe344 f666fc0b -- …/weight-chart.test.tsx` da 0.
+- [x] Quinto punto: el candado es sobre código ya correcto, así que el rojo muta producción y no el doble. `mockWithTiming` no cambia en el delta.
+- [x] El rojo cae solo por ese `it` y por aserción. Lo medí fuera del árbol sobre `git archive b03fe344`: `Tests: 1 failed, 20 passed, 21 total`, `exit=1`. Falla solo `con tres pesos no alineados y progreso 0.25 el desplazamiento es tres cuartos de la suma de los segmentos`, que recibe `"strokeDashoffset": 75.95393340703298` contra `NumberCloseTo 83.8957 (3 digits)`. No hay `TypeError`, `ReferenceError` ni `SyntaxError`.
+- [x] El verde, medido igual sobre `git archive f666fc0b`, da `Tests: 21 passed, 21 total`, `exit=0`.
+- [x] El `it` nuevo nombra su R-id porque está dentro de `describe('#169 R1: la línea se dibuja al montarse'` (medido con awk: el `it` está en la línea 188 del fichero en `f666fc0b`, y el último `describe(` abierto antes de esa línea es el de R1).
+- [x] Es literal. Extraje el bloque `tsx` de tasks.md §Enmienda E2, le quité la sangría de 4 espacios y lo comparé con las líneas `+` del test en `b03fe344`: `diff` da 0. Va justo antes de `it('p parte de 0: …'`. Ningún `it` existente cambia.
+
+### Checklist C5 — Trazabilidad
+- [x] La fila R1 añade, en la columna «Commit», `; Enmienda E2: b03fe344 test(mobile): el desplazamiento del dibujo usa la suma de los segmentos (#169 R1) → 27f256e1 feat(mobile): el desplazamiento del dibujo vuelve a usar la suma de los segmentos (#169 R1); sondas X3b, H1 y H1b`. Los dos hashes y sus mensajes coinciden con `git log`.
+- [x] La columna «Test» no cambia en `f666fc0b`: el diff de la fila solo añade texto al final de la columna «Commit».
+- [x] Ninguna fila queda «pendiente», salvo R14, que es la excepción que la propia regla de traceability.md prevé para la prueba de humo humana.
+- [x] Los tres commits siguen el formato `<tipo>(<scope>): <desc> (#169 R1)`.
+
+### Checklist C6 — Spec aprobada
+- [x] requirements.md §Aprobación de la Enmienda E2 tiene la casilla marcada (`- [x] … 2026-10-12, vía Notion`, `b3a20ffa`), anterior a `b03fe344`.
+
+### Checklist C7 — Sin código huérfano
+- [x] N/A: la enmienda solo añade tests y no reemplaza nada.
+
+### Delta, lista cerrada y deriva
+- `git diff --name-only a7b93c16 f666fc0b`: `weight-chart.test.tsx`, `progress/impl_…` y `specs/…/traceability.md`. `weight-chart.tsx` no aparece porque su cambio neto es cero.
+- `git diff --name-only fc384b44 f666fc0b | wc -l` da 19, igual que en `eb9b77f1`. No hay ficheros nuevos, y los 14 de la lista cerrada no cambian.
+- Deriva: `git diff 27f256e1 f666fc0b --stat` toca solo `progress/impl_mobile-weight-draw-and-toasts.md` (+313) y `specs/mobile-weight-draw-and-toasts/traceability.md` (1 línea).
+- `f666fc0b` es igual a `origin/feature/169-mobile-weight-draw-and-toasts`, y `4ddcbf5c` y `a7b93c16` son ancestros de HEAD.
+- El impl §«Reanudacion 6 (Enmienda E2)» tiene cada medida con su `exit=`:
+  - base 20/20;
+  - rojo 1 failed / 21;
+  - verde 21/21;
+  - GRAFICA 146/146;
+  - GUARDAS 92/92;
+  - X3b 1 failed / 21, H1 y H1b 2 failed / 21 cada una;
+  - BASE 369/369;
+  - ALL 99 suites y 2833/2833, tras el bucle de espera;
+  - typecheck y lint con `exit=0`, y el lint con salida vacía.
+
+### Sondas propias (fuera del árbol)
+
+Para cada sonda copié `git archive f666fc0b mobile-pet-tracker` al scratch y enlacé `node_modules` con un symlink al de wt-169. En `src/components/weight-chart.tsx` sustituí una sola cadena con un script que exige que aparezca exactamente una vez. Después de cada sonda restauré el fichero con `cp` y lo comprobé con `cmp`.
+
+El comando de cada sonda fue `FORCE_COLOR=0 ./node_modules/.bin/jest --testTimeout=30000 --runTestsByPath src/components/__tests__/weight-chart.test.tsx`. En ninguna apareció un `TypeError`, un `ReferenceError` ni un `SyntaxError`: todas cayeron por aserción. En wt-169 no edité nada salvo este review.
+
+`CH` es la cuerda del primer punto al último: `Math.hypot(chartPoints[n-1].x - chartPoints[0].x, chartPoints[n-1].y - chartPoints[0].y)`.
+
+| Id | Mutación de `strokeDashoffset` (o de `L`) | Recuento | Qué falla | Recibe |
+|---|---|---|---|---|
+| X3 | `CH * (1 - p)` | `1 failed, 20 passed, 21 total` | el `it` nuevo | `75.95393340703298` |
+| X3b | `(n − 1) ·` primer segmento `· (1 - p)` | `1 failed, 20 passed, 21 total` | el `it` nuevo | `89.04493247793498` |
+| Y1 | `L - CH * p` | `1 failed, 20 passed, 21 total` | el `it` nuevo | `86.54292950990575` |
+| X3c | `(n − 1) ·` último segmento `· (1 - p)` | `1 failed, 20 passed, 21 total` | el `it` nuevo | `78.74642849044012` |
+| Y5 | `((L + CH) / 2) * (1 - p)` | `1 failed, 20 passed, 21 total` | el `it` nuevo | `79.92480694561027` |
+| Y8 | `hypot(100, Σ\|Δy\|) * (1 - p)` | `1 failed, 20 passed, 21 total` | el `it` nuevo | `83.19254774317228` |
+| Y10 | `hypot(100, max y − min y) * (1 - p)` | `1 failed, 20 passed, 21 total` | el `it` nuevo | `78.74642849044012` |
+| H1 | las siete líneas de `L` pasan a `CH` | `2 failed, 19 passed, 21 total` | el `it` nuevo y `con tres pesos no alineados la longitud es la suma de los dos segmentos` | `75.95393340703298` |
+| H1b | las siete líneas de `L` pasan a `(n − 1) ·` primer segmento | `2 failed, 19 passed, 21 total` | los mismos dos | `89.04493247793498` |
+| S10 | `p === 0 ? CH : L * (1 - p)` | `21 passed, 21 total` | ninguno | — |
+| S11 | `L * (1 - p) + (L - CH) * (1 - 4 * p)` | `21 passed, 21 total` | ninguno | — |
+
+- X3, X3b e `L − cuerda · p` (Y1) caen exactamente con los valores que prevén requirements.md y tasks.md §Enmienda E2. H1 y H1b caen con el recuento previsto.
+- Todas las variantes con fórmula uniforme en `p` que coinciden con `L` en las fixtures colineales (X3c, Y5, Y8, Y10) caen solo por el `it` nuevo. Sin la E2 habrían salido verdes.
+- S10 y S11 siguen verdes. Son R3-N1.
+
+### Bloqueantes
+
+Ninguno.
+
+### No bloqueantes
+
+- **R3-N1 — en la fixture no colineal, el desplazamiento solo se mide en `p = 0.25`.**
+  - Una producción que dependa de `p` de forma no afín puede pasar todo el suite y fallar en otros valores de `p`. Las dos sondas que lo muestran necesitan una rama sobre el valor exacto que muestrea un test (S10, `p === 0`) o un coeficiente ajustado a `0.25` (S11, `1 - 4p`).
+  - Con S10, en un primer frame real con pesos que suben y bajan, el desplazamiento sería `101.27` en vez de `111.86`.
+  - Con S11, la línea arrancaría con `122.45` y acabaría con `−31.77` en vez de `0`.
+  - Ninguna de las dos es una variante natural de la fórmula: todas las variantes afines en `p` caen (tabla de arriba).
+  - La propia Enmienda E2, firmada, eligió `p = 0.25` sobre `p = 0` y deja el origen a `p parte de 0` (H2), que usa la fixture colineal. Es el límite conocido de muestrear un continuo, no un hueco respecto a la spec firmada.
+  - Queda registrado por si el humano quiere cerrar los extremos `p = 0` y `p = 1` con la fixture no colineal en otra feature.
+
+### Output de ./init.sh
+
+No lo corrí yo, por instrucción del leader. Él lo corrió sobre `f666fc0b` en wt-169 con permiso del humano:
+
+- log: `/tmp/claude-1002/-home-claude-sites-Pet-Tracker/1ae97024-4d11-46d9-91a2-b927a28b3390/scratchpad/init-169-r3.log`;
+- inicio `2026-10-13T04:53:41Z` (`init-169-r3.log.start`), después del commit `f666fc0b` (`2026-10-13T04:46:36Z`);
+- fin `2026-10-13T04:58:46Z` con `exit=0` (`init-169-r3.log.exit`);
+- las rutas del log son `/home/claude/sites/Pet-Tracker-wt-169/…`.
+
+Líneas del log:
+
+```
+219:Test Suites: 187 passed, 187 total
+220:Tests:       1474 passed, 1474 total
+232:Test Suites: 2 passed, 2 total
+233:Tests:       14 passed, 14 total
+32863:Test Suites: 99 passed, 99 total
+32864:Tests:       2833 passed, 2833 total
+33185:Test Suites: 3 skipped, 30 passed, 30 of 33 total
+33186:Tests:       8 skipped, 468 passed, 476 total
+33209:✅ Todo verde. Listo para trabajar.
+```
+
+- Móvil: 99 suites y `Tests: 2833 passed, 2833 total`. Son los 2832 de la ronda 2 más el `it` nuevo.
+- El log no tiene líneas `FAIL`, ni `Failed to run`, ni recuentos `failed`. La única coincidencia de «failed» está en la línea 32861: es el aviso preexistente de worker force-exit, que no es un fallo.
+- Mientras medía había un jest de wt-171 en la máquina. Por eso corrí solo jest de un fichero, sin ALL ni GRAFICA.

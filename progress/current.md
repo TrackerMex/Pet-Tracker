@@ -22,6 +22,12 @@
   ALL 99 suites / 2823.
 - #166 mobile-chunky-cta mergeado en main (PR #209, d2b8b0ae) y en esta branch
   (merge, no rebase) en 4d455cab; spec re-medida en 259c7c8f sin cambios.
+- 2026-10-13: Enmienda E2 firmada (b3a20ffa), Reanudación 6 de Codex
+  (b03fe344 rojo, 27f256e1 verde, f666fc0b docs). init.sh del leader sobre
+  f666fc0b: exit 0, móvil 99 suites / 2833. Revisión ronda 3 **aprobada**
+  (0 bloqueantes; R3-N1 no bloqueante). Falta el smoke R14 del humano en el
+  dev build de Android; después feature_list done, Notion
+  Implementado/Completado y PR.
 
 ### Decisiones del humano
 
