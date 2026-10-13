@@ -34,7 +34,7 @@ jest.mock('reicon-react-native', () => {
     function MockIcon(props: Record<string, unknown>) {
       return React.createElement(View, { testID, ...props });
     };
-  return { ...actual, AlertCircle: mockIcon('icon-alert-circle') };
+  return { ...actual, Eye: mockIcon('icon-eye'), EyeOff: mockIcon('icon-eye-off'), AlertCircle: mockIcon('icon-alert-circle') };
 });
 
 jest.mock('../../theme/use-theme-colors', () => ({
@@ -365,6 +365,22 @@ describe('#167 R7: Pingo en la cabecera del registro', () => {
     expect(mockRouter.replace).toHaveBeenCalledWith('/welcome');
   });
 
+  it.each(['register-password', 'register-password-confirmation'])('#172 R8: %s lleva su propio ojo', async (field) => {
+    await renderRegister();
+    const input = screen.getByTestId(field);
+    expect(input.props.secureTextEntry).toBe(true);
+    const toggle = screen.getByTestId(`${field}-toggle`);
+    expect(toggle.props.accessibilityLabel).toBe('Mostrar contraseña');
+    const group = screen.getByTestId(`${field}-group`);
+    expect(group).toContainElement(input);
+    expect(group).toContainElement(toggle);
+    await fireEvent.press(toggle);
+    expect(screen.getByTestId(field).props.secureTextEntry).toBe(false);
+    expect(screen.getByTestId(`${field}-toggle`).props.accessibilityLabel).toBe('Ocultar contraseña');
+    const other = field === 'register-password' ? 'register-password-confirmation' : 'register-password';
+    expect(screen.getByTestId(other).props.secureTextEntry).toBe(true);
+  });
+
   it('#172 R5: Pingo del registro flota', async () => {
     await renderRegister();
     const pingo = screen.getByTestId('register-pingo');
@@ -405,8 +421,9 @@ describe('#167 R7: Pingo en la cabecera del registro', () => {
     expect(content?.parent).toHaveProperty('props.testID', 'register-form');
     for (const field of fields) {
       const input = screen.getByTestId(`register-${field}`);
-      expect(input.parent?.parent).toBe(content);
-      expect(screen.getByTestId(`register-${field}-error`).parent).toBe(input.parent);
+      const root = screen.getByTestId(`register-${field}-error`).parent;
+      expect(root?.parent).toBe(content);
+      expect(root).toContainElement(input);
     }
     expect(screen.getByTestId('register-terms').parent?.parent).toBe(content);
     expect(screen.getByTestId('register-error-row').parent).toBe(content);

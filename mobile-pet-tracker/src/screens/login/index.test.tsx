@@ -30,7 +30,7 @@ jest.mock('reicon-react-native', () => {
     function MockIcon(props: Record<string, unknown>) {
       return React.createElement(View, { testID, ...props });
     };
-  return { ...actual, AlertCircle: mockIcon('icon-alert-circle') };
+  return { ...actual, Eye: mockIcon('icon-eye'), EyeOff: mockIcon('icon-eye-off'), AlertCircle: mockIcon('icon-alert-circle') };
 });
 
 jest.mock('../../theme/use-theme-colors', () => ({
@@ -288,6 +288,20 @@ describe('#167 R6: Pingo saluda en login y la pantalla entra en dos tiempos', ()
       .map((node) => node.props.testID)).toEqual([
       'login-email', 'login-password', 'link-forgot', 'login-error', 'login-submit', 'link-register',
     ]);
+  });
+
+  it('#172 R8: la contraseña de login lleva su ojo', async () => {
+    await renderLogin();
+    const input = screen.getByTestId('login-password');
+    expect(input.props.secureTextEntry).toBe(true);
+    const toggle = screen.getByTestId('login-password-toggle');
+    expect(toggle.props.accessibilityLabel).toBe('Mostrar contraseña');
+    const group = screen.getByTestId('login-password-group');
+    expect(group).toContainElement(input);
+    expect(group).toContainElement(toggle);
+    await fireEvent.press(toggle);
+    expect(screen.getByTestId('login-password').props.secureTextEntry).toBe(false);
+    expect(screen.getByTestId('login-password-toggle').props.accessibilityLabel).toBe('Ocultar contraseña');
   });
 
   it('#172 R9: el error de login va con icono en su fila', async () => {

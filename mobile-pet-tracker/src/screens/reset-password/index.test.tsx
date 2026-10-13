@@ -47,7 +47,7 @@ jest.mock('reicon-react-native', () => {
     function MockIcon(props: Record<string, unknown>) {
       return React.createElement(View, { testID, ...props });
     };
-  return { ...actual, AlertCircle: mockIcon('icon-alert-circle'), Check: mockIcon('icon-check') };
+  return { ...actual, Eye: mockIcon('icon-eye'), EyeOff: mockIcon('icon-eye-off'), AlertCircle: mockIcon('icon-alert-circle'), Check: mockIcon('icon-check') };
 });
 
 jest.mock('../../theme/use-theme-colors', () => ({
@@ -365,6 +365,22 @@ describe('#167 R10: Pingo y tarjeta de estado en nueva contraseña', () => {
     jest.clearAllMocks();
     process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
     mockResetPassword.mockResolvedValue({ kind: 'ok' });
+  });
+
+  it.each(['reset-password', 'reset-password-confirm'])('#172 R8: %s lleva su propio ojo', async (field) => {
+    await renderRoute('reset-token-172');
+    const input = screen.getByTestId(field);
+    expect(input.props.secureTextEntry).toBe(true);
+    const toggle = screen.getByTestId(`${field}-toggle`);
+    expect(toggle.props.accessibilityLabel).toBe('Mostrar contraseña');
+    const group = screen.getByTestId(`${field}-group`);
+    expect(group).toContainElement(input);
+    expect(group).toContainElement(toggle);
+    await fireEvent.press(toggle);
+    expect(screen.getByTestId(field).props.secureTextEntry).toBe(false);
+    expect(screen.getByTestId(`${field}-toggle`).props.accessibilityLabel).toBe('Ocultar contraseña');
+    const other = field === 'reset-password' ? 'reset-password-confirm' : 'reset-password';
+    expect(screen.getByTestId(other).props.secureTextEntry).toBe(true);
   });
 
   it('#172 R5: Pingo de nueva contraseña flota en el formulario y en el éxito', async () => {
