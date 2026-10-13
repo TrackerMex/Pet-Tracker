@@ -798,4 +798,11 @@ describe('#171 R5: variante sin collar', () => {
     expect(mockRouter.back).toHaveBeenCalledTimes(1);
     expect(mockRouter.replace).not.toHaveBeenCalled();
   });
+
+  it('R5.4 toma el nombre de la respuesta y no el del formulario', async () => {
+    mockCreatePet.mockResolvedValue({ kind: 'ok', pet: { id: 'pet-new', name: 'Kira' } as never });
+    await celebrateNala();
+    expect(screen.getByTestId('add-pet-celebration-title').props.children).toBe('¡Kira ya está en casa!');
+    expect(screen.getByTestId('add-pet-celebration-body').props.children).toBe('Te ayudo a cuidar de Kira. Vincula un collar y estaré pendiente de dónde está.');
+  });
 });
