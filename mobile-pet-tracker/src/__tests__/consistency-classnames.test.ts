@@ -263,6 +263,7 @@ describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () 
     [join('screens', 'add-pet', 'index.tsx'), 5],
     [join('screens', 'add-reminder', 'index.tsx'), 3],
     [join('screens', 'pairing', 'index.tsx'), 2],
+    [join('screens', 'alert-detail', 'index.tsx'), 1], // #170 R16
   ] as const;
 
   it('declara las dos constantes nativas compartidas', () => {
@@ -309,7 +310,7 @@ describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () 
     // #138 R3: minus one more, collar-pair-link's corner travels in its own.
     expect(
       directUses.reduce((total, [, count]) => total + count, 2),
-    ).toBe(33 + 1 + 1 - 1 - 1 + 1 + 1 - 1 + 4); // #41 R9: geofences-link; #168 R3, R8, R6
+    ).toBe(33 + 1 + 1 - 1 - 1 + 1 + 1 - 1 + 4 + 1); // #41 R9: geofences-link; #168 R3, R8, R6; #170 R16
   });
 });
 
@@ -335,6 +336,8 @@ describe('#62 R15: todo contador usa cifras tabulares', () => {
     [join('screens', 'reminders', 'index.tsx'), 3],
     [join('screens', 'geofence-editor', 'index.tsx'), 1],
     [join('screens', 'meals-history', 'index.tsx'), 2], // #105 R11
+    [join('screens', 'alerts', 'index.tsx'), 1], // #170 R16
+    [join('screens', 'alert-detail', 'index.tsx'), 1], // #170 R16
   ] as const;
 
   it.each(counters)('%s aplica TABULAR_NUMS a sus %i valores', (path, count) => {
@@ -348,7 +351,7 @@ describe('#62 R15: todo contador usa cifras tabulares', () => {
 
   it('#69 R10: mantiene la base cerrada más los deltas medidos', () => {
     expect(counters.reduce((total, [, count]) => total + count, 0)).toBe(
-      14 + 4 + 1 + 1 + 1 + 1 + 1 + 2 + 1 + 1 + 2, // #146 R18, #105 R11, #116 R5, #115 R6, #169 R6
+      14 + 4 + 1 + 1 + 1 + 1 + 1 + 2 + 1 + 1 + 2 + 1 + 1, // #146 R18, #105 R11, #116 R5, #115 R6, #169 R6, #170 R16
     );
   });
 
@@ -393,7 +396,7 @@ describe('#98 R10: los candados que esta feature no mueve', () => {
     // With no match, match() returns null: the ?? [] keeps the count readable.
     expect(home.match(/style=\{CONTINUOUS_CORNER\}/g) ?? []).toHaveLength(0);
     expect(food.match(/style=\{CONTINUOUS_CORNER\}/g)).toHaveLength(1);
-    expect(count(/style=\{CONTINUOUS_CORNER\}/g)).toBe(31 + 1 + 4); // #41 R9: geofences-link; #168
+    expect(count(/style=\{CONTINUOUS_CORNER\}/g)).toBe(31 + 1 + 4 + 1); // #41 R9: geofences-link; #168; #170 R8: alert-detail-map
     expect(count(/rounded-xl bg-accent(?=[\s'"`])/g)).toBe(13 + 1 + 1 + 1 + 1 + 1 + 1); // #146 R8, #146 R9; #118 R7; #155 R3 // #158 R3: docs-upload; // #158 R5: docs-upload-submit
     expect(count(/bg-accent-soft/g)).toBe(16 + 2 + 1 - 1); // #147 R4: meal-time-edit y add-meal-time-button; #105 R11; #168 R5: PetPills pasa a huecos pastel
     expect(home.match(/text-accent-strong\b/g)).toHaveLength(2);
@@ -583,6 +586,7 @@ describe('#166 R3: el secundario neutro lleva el labio gris', () => {
     [join('screens', 'forgot', 'index.tsx'), 'forgot-resend', 'secondary'],
     [join('screens', 'docs', 'index.tsx'), 'docs-upload-cancel', 'outline'],
     [join('screens', 'reminders', 'index.tsx'), 'reminders-delete-cancel', 'outline'],
+    [join('screens', 'alert-detail', 'index.tsx'), 'alert-detail-view-map', 'secondary'],
   ] as const;
 
   it.each(rows)('%s pinta %s con la receta del secundario en su tag de apertura', (path, testId, variant) => {
@@ -612,6 +616,7 @@ describe('#166 R3: el secundario neutro lleva el labio gris', () => {
     );
 
     expect(testIds.sort()).toEqual([
+      'alert-detail-view-map',
       'docs-upload-cancel',
       'forgot-resend',
       'reminders-delete-cancel',
@@ -621,8 +626,8 @@ describe('#166 R3: el secundario neutro lleva el labio gris', () => {
       (total, path) => total + (readFileSync(path, 'utf8').match(pattern) ?? []).length,
       0,
     );
-    expect(count(/border-lip-gray/g)).toBe(4);
-    expect(count(/\bborder-b-6\b/g)).toBe(4);
+    expect(count(/border-lip-gray/g)).toBe(4 + 1); // #170 R16
+    expect(count(/\bborder-b-6\b/g)).toBe(4 + 1); // #170 R16
   });
 });
 

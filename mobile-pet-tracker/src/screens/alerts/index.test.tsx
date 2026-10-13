@@ -1255,3 +1255,213 @@ describe('#155 R5: sin alertas, Pingo duerme', () => {
     expect(screen.queryByTestId('alerts-empty-action')).toBeNull();
   });
 });
+
+describe('#170 R3: agrupa la lista en Hoy, Esta semana y Anteriores', () => {
+  const hostProcess = process.getBuiltinModule('process');
+  let previousTZ: string | undefined;
+  const S = [
+    makeAlert({ id: 'earlier-closed', status: 'closed', openedAt: '2026-12-26T12:00:00.000Z' }),
+    makeAlert({ id: 'today-acked', status: 'acked', openedAt: '2027-01-02T15:00:00.000Z' }),
+    makeAlert({ id: 'earlier-open', status: 'open', openedAt: '2026-12-20T12:00:00.000Z' }),
+    makeAlert({ id: 'week-open', status: 'open', openedAt: '2027-01-01T12:00:00.000Z' }),
+    makeAlert({ id: 'today-open', status: 'open', openedAt: '2027-01-02T07:00:00.000Z' }),
+  ];
+  beforeEach(() => {
+    previousTZ = hostProcess.env.TZ;
+    hostProcess.env.TZ = 'America/Mexico_City';
+    jest.spyOn(Date, 'now').mockReturnValue(Date.parse('2027-01-02T16:00:00.000Z'));
+    jest.clearAllMocks();
+    mockListAlerts.mockReset().mockResolvedValue({ kind: 'ok', items: S, nextCursor: null });
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() });
+  });
+  afterEach(() => {
+    if (previousTZ === undefined) delete hostProcess.env.TZ;
+    else hostProcess.env.TZ = previousTZ;
+    jest.restoreAllMocks();
+  });
+  it('ordena por sección y, dentro, abiertas primero en el orden del servidor', async () => {
+    await renderAlerts();
+    await screen.findByTestId('alert-row-today-open');
+    expect(screen.getByTestId('alerts-list').props.data.map((a: Alert) => a.id)).toEqual(['today-open', 'today-acked', 'week-open', 'earlier-open', 'earlier-closed']);
+  });
+  it('pinta una cabecera por sección con su copy en español', async () => {
+    await renderAlerts();
+    await screen.findByTestId('alert-row-today-open');
+    for (const [section, copy] of [['today', 'Hoy'], ['week', 'Esta semana'], ['earlier', 'Anteriores']]) {
+      const headers = screen.getAllByTestId('alerts-section-' + section);
+      expect(headers).toHaveLength(1);
+      expect(headers[0]).toHaveTextContent(copy);
+      expect(headers[0].props.accessibilityRole).toBe('header');
+      expect(headers[0].props.className).toBe('text-xs font-bold uppercase text-muted');
+    }
+  });
+  it('pinta las cabeceras en inglés', async () => {
+    await renderAlertsInEnglish();
+    await screen.findByTestId('alert-row-today-open');
+    for (const [section, copy] of [['today', 'Today'], ['week', 'This week'], ['earlier', 'Earlier']]) {
+      expect(screen.getByTestId('alerts-section-' + section)).toHaveTextContent(copy);
+    }
+  });
+  it('envuelve cada cabecera con la primera fila de su sección en un View gap-4', async () => {
+    await renderAlerts();
+    await screen.findByTestId('alert-row-today-open');
+    for (const [section, id] of [['today', 'today-open'], ['week', 'week-open'], ['earlier', 'earlier-open']]) {
+      const parent = screen.getByTestId('alerts-section-' + section).parent!;
+      expect(parent.props.className).toBe('gap-4');
+      expect(within(parent).getByTestId('alert-row-' + id)).toBeVisible();
+      expect(elementChild(parent, 0).props.testID).toBe('alerts-section-' + section);
+      const first = elementChild(parent, 1);
+      expect(first.props.testID === 'alert-row-' + id || within(first).queryByTestId('alert-row-' + id) !== null).toBe(true);
+    }
+  });
+  it.each([
+    ['today', S.filter((a) => !a.id.startsWith('today'))],
+    ['week', S.filter((a) => !a.id.startsWith('week'))],
+    ['earlier', S.filter((a) => !a.id.startsWith('earlier'))],
+  ] as const)('omite la cabecera de %s cuando la sección queda vacía', async (section, items) => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items, nextCursor: null });
+    await renderAlerts();
+    await screen.findByTestId('alert-row-' + items[0].id);
+    expect(screen.queryByTestId('alerts-section-' + section)).toBeNull();
+  });
+  it('pinta cada cabecera una sola vez al cargar la página siguiente', async () => {
+    mockListAlerts.mockResolvedValueOnce({ kind: 'ok', items: [
+      makeAlert({ id: 'today-1', openedAt: '2027-01-02T14:00:00.000Z' }),
+      makeAlert({ id: 'week-1', openedAt: '2026-12-30T12:00:00.000Z' }),
+    ], nextCursor: 'c1' }).mockResolvedValue({ kind: 'ok', items: [
+      makeAlert({ id: 'week-2', status: 'acked', openedAt: '2026-12-29T12:00:00.000Z' }),
+      makeAlert({ id: 'earlier-1', openedAt: '2026-12-01T12:00:00.000Z' }),
+    ], nextCursor: null });
+    await renderAlerts();
+    await screen.findByTestId('alert-row-today-1');
+    await fireEvent(screen.getByTestId('alerts-list'), 'onEndReached');
+    await waitFor(() => expect(screen.getByTestId('alerts-list').props.data).toHaveLength(4));
+    expect(screen.getByTestId('alerts-list').props.data.map((a: Alert) => a.id)).toEqual(['today-1', 'week-1', 'week-2', 'earlier-1']);
+    expect(screen.getAllByTestId('alerts-section-week')).toHaveLength(1);
+  });
+  it('no reordena al marcar leída una fila abierta', async () => {
+    mockAckAlert.mockResolvedValue({ kind: 'ok', alert: { ...S[4], status: 'acked' } });
+    await renderAlerts();
+    await fireEvent.press(await screen.findByTestId('alert-row-today-open-ack'));
+    await screen.findByTestId('alert-row-today-open-status');
+    expect(screen.getByTestId('alerts-list').props.data.map((a: Alert) => a.id)).toEqual(['today-open', 'today-acked', 'week-open', 'earlier-open', 'earlier-closed']);
+  });
+});
+
+describe('#170 R4: cuenta las alertas nuevas', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockListAlerts.mockReset();
+    mockAckAlert.mockReset();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() });
+  });
+  it.each(['carga', 'error', 'vacía', 'todas leídas'])('no pinta el contador con 0 nuevas: %s', async (state) => {
+    if (state === 'carga') mockListAlerts.mockReturnValue(pending<AlertsState>());
+    else if (state === 'error') mockListAlerts.mockResolvedValue({ kind: 'error' });
+    else mockListAlerts.mockResolvedValue({ kind: 'ok', items: state === 'vacía' ? [] : [makeAlert({ id: 'a', status: 'acked' }), makeAlert({ id: 'b', status: 'closed' })], nextCursor: null });
+    await renderAlerts();
+    await screen.findByTestId(state === 'carga' ? 'alerts-loading' : state === 'error' ? 'alerts-error' : state === 'vacía' ? 'alerts-empty' : 'alert-row-a');
+    expect(screen.queryByTestId('alerts-new-count')).toBeNull();
+  });
+  it('pinta «1 nueva» con una abierta', async () => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert()], nextCursor: null });
+    await renderAlerts();
+    expect(await screen.findByTestId('alerts-new-count-text')).toHaveTextContent('1 nueva');
+  });
+  it('pinta «1 new» en inglés', async () => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert()], nextCursor: null });
+    await renderAlertsInEnglish();
+    expect(await screen.findByTestId('alerts-new-count-text')).toHaveTextContent('1 new');
+  });
+  it('suma las abiertas de todas las páginas cargadas', async () => {
+    mockListAlerts.mockResolvedValueOnce({ kind: 'ok', items: [makeAlert({ id: 'a' }), makeAlert({ id: 'b' }), makeAlert({ id: 'c', status: 'acked' })], nextCursor: 'c1' })
+      .mockResolvedValue({ kind: 'ok', items: [makeAlert({ id: 'd' })], nextCursor: null });
+    await renderAlerts();
+    expect(await screen.findByTestId('alerts-new-count-text')).toHaveTextContent('2 nuevas');
+    await fireEvent(screen.getByTestId('alerts-list'), 'onEndReached');
+    await waitFor(() => expect(screen.getByTestId('alerts-new-count-text')).toHaveTextContent('3 nuevas'));
+  });
+  it('pinta «2 new» en inglés', async () => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ id: 'a' }), makeAlert({ id: 'b' })], nextCursor: null });
+    await renderAlertsInEnglish();
+    expect(await screen.findByTestId('alerts-new-count-text')).toHaveTextContent('2 new');
+  });
+  it('baja al marcar leída y desaparece en 0', async () => {
+    const a = makeAlert({ id: 'a' });
+    const b = makeAlert({ id: 'b' });
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [a, b], nextCursor: null });
+    mockAckAlert.mockResolvedValueOnce({ kind: 'ok', alert: { ...a, status: 'acked' } }).mockResolvedValue({ kind: 'ok', alert: { ...b, status: 'acked' } });
+    await renderAlerts();
+    expect(await screen.findByTestId('alerts-new-count-text')).toHaveTextContent('2 nuevas');
+    await fireEvent.press(screen.getByTestId('alert-row-a-ack'));
+    await waitFor(() => expect(screen.getByTestId('alerts-new-count-text')).toHaveTextContent('1 nueva'));
+    await fireEvent.press(screen.getByTestId('alert-row-b-ack'));
+    await screen.findByTestId('alert-row-b-status');
+    expect(screen.queryByTestId('alerts-new-count')).toBeNull();
+  });
+  it('pinta el contador como hermano anterior de la lista con su anatomía', async () => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert()], nextCursor: null });
+    await renderAlerts();
+    const counter = await screen.findByTestId('alerts-new-count');
+    const root = screen.getByTestId('screen-alerts');
+    expect(elementChild(root, 0).props.testID).toBe('alerts-new-count');
+    expect(elementChild(root, 1).props.testID).toBe('alerts-list');
+    expect(counter.props.className).toBe('mx-6 mt-6 self-start rounded-full bg-danger px-3 py-1');
+    expect(counter.children).toHaveLength(1);
+    const text = elementChild(counter, 0);
+    expect(text.props.testID).toBe('alerts-new-count-text');
+    expect(text.props.className).toBe('text-xs font-bold text-danger-foreground');
+    expect(text.props.style).toEqual({ fontVariant: ['tabular-nums'] });
+  });
+});
+
+describe('#170 R5: la fila abierta lleva el borde de su tipo', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockListAlerts.mockReset();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() });
+  });
+  it.each([
+    { type: 'geofence_exit', border: 'border-danger', iconName: 'LocationSlash', labelKey: 'alerts.typeGeofenceExit', surface: 'bg-danger-soft', ink: '--color-danger', label: 'Salió de la zona' },
+    { type: 'battery_low', border: 'border-warning-strong', iconName: 'BatteryLow', labelKey: 'alerts.typeBatteryLow', surface: 'bg-warning-soft', ink: '--color-warning-strong', label: 'Batería baja' },
+    { type: 'mystery_type', border: 'border-muted', iconName: 'Bell', labelKey: 'alerts.typeUnknown', surface: 'bg-default', ink: '--color-muted', label: 'Aviso' },
+  ])('abierta $type: border-2 y $border, con $iconName y $labelKey', async ({ type, border, iconName, surface, ink, label }) => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ type })], nextCursor: null });
+    await renderAlerts();
+    const row = await screen.findByTestId('alert-row-alert-1');
+    const classes = row.props.className.split(' ');
+    expect(classes).toContain('border-2');
+    expect(classes).toContain(border);
+    expect(classes).not.toContain('border-border');
+    const icon = within(row).getByTestId('alert-row-alert-1-icon');
+    expect(icon.props.iconName).toBe(iconName);
+    expect(icon.props.color).toBe(ink);
+    expect(icon.parent?.props.className.split(' ')).toContain(surface);
+    expect(within(row).getByTestId('alert-row-alert-1-type')).toHaveTextContent(label);
+  });
+  it.each(['acked', 'closed'] as const)('%s: sin borde de severidad', async (status) => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ status })], nextCursor: null });
+    await renderAlerts();
+    const row = await screen.findByTestId('alert-row-alert-1');
+    const classes = row.props.className.split(' ');
+    expect(classes).toContain('border');
+    expect(classes).toContain('border-border');
+    expect(classes).not.toContain('border-2');
+    expect(classes).not.toContain('border-danger');
+  });
+  it.each(['ok', 'already-closed'] as const)('marcada leída en local (%s): pierde el borde de severidad', async (rama) => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert()], nextCursor: null });
+    mockAckAlert.mockResolvedValue(rama === 'ok' ? { kind: 'ok', alert: makeAlert({ status: 'acked' }) } : { kind: 'already-closed' });
+    await renderAlerts();
+    await fireEvent.press(await screen.findByTestId('alert-row-alert-1-ack'));
+    await waitFor(() => expect(screen.getByTestId('alert-row-alert-1-status')).toHaveTextContent(rama === 'ok' ? es['alerts.statusAcked'] : es['alerts.statusClosed']));
+    const classes = screen.getByTestId('alert-row-alert-1').props.className.split(' ');
+    expect(classes).toContain('border');
+    expect(classes).toContain('border-border');
+    expect(classes).not.toContain('border-2');
+    expect(classes).not.toContain('border-danger');
+  });
+});

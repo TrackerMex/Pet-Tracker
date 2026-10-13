@@ -62,7 +62,8 @@ describe('#65 R12: el catálogo tiene los dos idiomas y t resuelve claves y par�
         + 4 // #159 R1
         - 1 // #159 R2
         + 1 // #167 R5
-        + 2, // #169 R9
+        + 2 // #169 R9
+        + 7, // #170 R1
     );
     expect(spanishKeys).toEqual(englishKeys);
     for (const key of englishKeys) {
@@ -553,5 +554,32 @@ describe('#169 R9: claves de peso nuevas', () => {
       ));
     }
     expect(languageDesign).toContain('### §2.25 — Añadidos por #169 — Peso');
+  });
+});
+
+describe('#170 R1: claves de alertas agrupadas y mini-mapa', () => {
+  it('#170 R1: declara los 7 pares exactos y su registro', () => {
+    const english = en as Record<string, string>;
+    const spanish = es as Record<string, string>;
+    const languageDesign = readFileSync(
+      join(process.cwd(), '../specs/mobile-ui-language/design.md'),
+      'utf8',
+    );
+    const translations = [
+      ['alerts.newOne', '1 new', '1 nueva'],
+      ['alerts.newMany', '{{count}} new', '{{count}} nuevas'],
+      ['alerts.sectionToday', 'Today', 'Hoy'],
+      ['alerts.sectionThisWeek', 'This week', 'Esta semana'],
+      ['alerts.sectionEarlier', 'Earlier', 'Anteriores'],
+      ['alerts.distanceFromZone', '{{distance}} from {{zone}}', 'A {{distance}} de {{zone}}'],
+      ['alerts.viewOnMap', 'View on map', 'Ver en el mapa'],
+    ] as const;
+    for (const [key, englishValue, spanishValue] of translations) {
+      expect(english[key]).toBe(englishValue);
+      expect(spanish[key]).toBe(spanishValue);
+      expect(languageDesign).toMatch(
+        new RegExp('\\| — \\| `' + escapeRegExp(key) + '`[^\\n]*← añadida por #170 \\(R1\\)'),
+      );
+    }
   });
 });
