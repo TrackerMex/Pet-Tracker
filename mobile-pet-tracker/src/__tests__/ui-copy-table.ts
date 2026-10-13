@@ -3,16 +3,17 @@ import type { TranslationKey } from '../i18n/catalog';
 export type UseRow = { file: string; key: TranslationKey };
 
 export const R1_AUTH: UseRow[] = [
-  { file: 'src/app/(auth)/login.tsx', key: 'login.invalidCredentials' },
-  { file: 'src/app/(auth)/login.tsx', key: 'common.cannotReachServer' },
-  { file: 'src/app/(auth)/login.tsx', key: 'common.somethingWentWrong' },
-  { file: 'src/app/(auth)/login.tsx', key: 'common.somethingWentWrong' },
-  { file: 'src/app/(auth)/login.tsx', key: 'login.signIn' },
-  { file: 'src/app/(auth)/login.tsx', key: 'login.email' },
-  { file: 'src/app/(auth)/login.tsx', key: 'login.password' },
-  { file: 'src/app/(auth)/login.tsx', key: 'login.signIn' },
-  { file: 'src/app/(auth)/login.tsx', key: 'login.createAccount' },
-  { file: 'src/app/(auth)/login.tsx', key: 'login.forgotPassword' },
+  { file: 'src/screens/login/index.tsx', key: 'login.invalidCredentials' },
+  { file: 'src/screens/login/index.tsx', key: 'common.cannotReachServer' },
+  { file: 'src/screens/login/index.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/screens/login/index.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/screens/login/index.tsx', key: 'login.signIn' },
+  { file: 'src/screens/login/index.tsx', key: 'login.email' },
+  { file: 'src/screens/login/index.tsx', key: 'login.password' },
+  { file: 'src/screens/login/index.tsx', key: 'login.signIn' },
+  { file: 'src/screens/login/index.tsx', key: 'login.createAccount' },
+  { file: 'src/screens/login/index.tsx', key: 'login.forgotPassword' },
+  { file: 'src/screens/login/index.tsx', key: 'login.pingoGreeting' }, // #167 R6
   { file: 'src/screens/forgot/index.tsx', key: 'forgot.invalidEmail' }, // #117 R7
   { file: 'src/screens/forgot/index.tsx', key: 'forgot.tooManyAttempts' }, // #117 R7
   { file: 'src/screens/forgot/index.tsx', key: 'common.cannotReachServer' }, // #117 R7
@@ -25,20 +26,20 @@ export const R1_AUTH: UseRow[] = [
   { file: 'src/screens/forgot/index.tsx', key: 'forgot.email' }, // #117 R10
   { file: 'src/screens/forgot/index.tsx', key: 'forgot.sendRecoveryLink' }, // #117 R10
   { file: 'src/screens/forgot/index.tsx', key: 'forgot.backToSignIn' }, // #117 R10
-  { file: 'src/app/(auth)/register.tsx', key: 'register.emailAlreadyRegistered' },
-  { file: 'src/app/(auth)/register.tsx', key: 'common.cannotReachServer' },
-  { file: 'src/app/(auth)/register.tsx', key: 'common.somethingWentWrong' },
-  { file: 'src/app/(auth)/register.tsx', key: 'common.somethingWentWrong' },
-  { file: 'src/app/(auth)/register.tsx', key: 'register.createAccount' },
-  { file: 'src/app/(auth)/register.tsx', key: 'register.firstName' },
-  { file: 'src/app/(auth)/register.tsx', key: 'register.lastName' },
-  { file: 'src/app/(auth)/register.tsx', key: 'register.email' },
-  { file: 'src/app/(auth)/register.tsx', key: 'register.phone' },
-  { file: 'src/app/(auth)/register.tsx', key: 'register.password' },
-  { file: 'src/app/(auth)/register.tsx', key: 'register.confirmPassword' },
-  { file: 'src/app/(auth)/register.tsx', key: 'register.country' },
-  { file: 'src/app/(auth)/register.tsx', key: 'register.iAcceptTerms' },
-  { file: 'src/app/(auth)/register.tsx', key: 'register.createAccount' },
+  { file: 'src/screens/register/index.tsx', key: 'register.emailAlreadyRegistered' },
+  { file: 'src/screens/register/index.tsx', key: 'common.cannotReachServer' },
+  { file: 'src/screens/register/index.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/screens/register/index.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/screens/register/index.tsx', key: 'register.createAccount' },
+  { file: 'src/screens/register/index.tsx', key: 'register.firstName' },
+  { file: 'src/screens/register/index.tsx', key: 'register.lastName' },
+  { file: 'src/screens/register/index.tsx', key: 'register.email' },
+  { file: 'src/screens/register/index.tsx', key: 'register.phone' },
+  { file: 'src/screens/register/index.tsx', key: 'register.password' },
+  { file: 'src/screens/register/index.tsx', key: 'register.confirmPassword' },
+  { file: 'src/screens/register/index.tsx', key: 'register.country' },
+  { file: 'src/screens/register/index.tsx', key: 'register.iAcceptTerms' },
+  { file: 'src/screens/register/index.tsx', key: 'register.createAccount' },
 ];
 
 export const R2_TABS: UseRow[] = [
@@ -169,6 +170,8 @@ export const R5_HEALTH: UseRow[] = [
   { file: 'src/screens/weight-log/index.tsx', key: 'weightLog.bodyConditionValue' },
   { file: 'src/screens/weight-log/index.tsx', key: 'weightLog.dateCannotBeAfterToday' },
   { file: 'src/components/weight-chart.tsx', key: 'weightChart.notEnoughDataYet' },
+  { file: 'src/screens/weight-log/index.tsx', key: 'weightLog.monthDelta' },
+  { file: 'src/screens/weight-log/index.tsx', key: 'weightLog.weightLogged' },
 ];
 
 export const R6_FOOD: UseRow[] = [
@@ -486,6 +489,11 @@ export const R12_ALERTS: UseRow[] = [
   { file: 'src/screens/alerts/index.tsx', key: 'alerts.ack' },
   { file: 'src/screens/alerts/index.tsx', key: 'alerts.statusAcked' },
   { file: 'src/screens/alerts/index.tsx', key: 'alerts.statusClosed' },
+  { file: 'src/screens/alerts/index.tsx', key: 'alerts.sectionToday' }, // #170 R16
+  { file: 'src/screens/alerts/index.tsx', key: 'alerts.sectionThisWeek' }, // #170 R16
+  { file: 'src/screens/alerts/index.tsx', key: 'alerts.sectionEarlier' }, // #170 R16
+  { file: 'src/screens/alerts/index.tsx', key: 'alerts.newOne' }, // #170 R16
+  { file: 'src/screens/alerts/index.tsx', key: 'alerts.newMany' }, // #170 R16
 ];
 
 export const R13_ALERT_DETAIL: UseRow[] = [
@@ -497,6 +505,8 @@ export const R13_ALERT_DETAIL: UseRow[] = [
   { file: 'src/screens/alert-detail/index.tsx', key: 'alerts.ack' },
   { file: 'src/screens/alert-detail/index.tsx', key: 'common.somethingWentWrong' },
   { file: 'src/screens/alert-detail/index.tsx', key: 'common.retry' },
+  { file: 'src/screens/alert-detail/index.tsx', key: 'alerts.distanceFromZone' }, // #170 R16
+  { file: 'src/screens/alert-detail/index.tsx', key: 'alerts.viewOnMap' }, // #170 R16
 ];
 
 export const R14_GEOFENCES: UseRow[] = [

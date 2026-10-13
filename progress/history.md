@@ -8706,3 +8706,194 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
 - Cierre: `done` en `feature_list.json`, trazabilidad `approved` con R5,
   STATUS, Notion (Implementado / Completado) y PR contra `main`. Merge:
   humano. Tras el merge: avisar a #167-#171 y borrar el worktree.
+
+## #167 `mobile-account-screens-pingo` — Pingo en las pantallas de cuenta — 2026-10-13
+
+- **Inicio**: 2026-10-12, sesión Frontend (leader), worktree
+  `Pet-Tracker-wt-167`, branch `feature/167-mobile-account-screens-pingo`
+  desde `origin/main` d2b8b0ae (merge de #166).
+- **Estado**: `in_progress` desde 2026-10-12 (spec firmada en Notion, edición
+  2026-10-12T15:24:14Z). Implementa Codex CLI.
+- **Decisiones del humano (2026-10-12, cuestionario de opción cerrada,
+  literal)**:
+  - **N4**: «Migrar en #167». Login y Registro pasan de rutas gordas en
+    `src/app/(auth)/` a route delgado + `src/screens/`. Primero va un commit
+    que solo mueve y después los cambios de Pingo.
+  - **Tamaño**: «Una sola spec #167». Fila 1 entera: Bienvenida (anillos
+    ping), Login, Registro, Recuperar y Nueva contraseña.
+- **Spec**: `spec_ready` en `specs/mobile-account-screens-pingo/` (R1–R15,
+  P1–P8). Revisión previa del leader: anclas B1–B31 dan lo declarado sobre
+  d2b8b0ae, `AlertCircle`/`Check` existen en reicon y `--color-danger` y
+  `--color-accent-foreground` están en `src/theme/global.css`.
+- **Choque previsto al integrar main**: #167 R5.2, #169 y #170 abren todas
+  `### §2.24` en `specs/mobile-ui-language/design.md`. La que mergee después
+  renumera su sección y sus candados al siguiente §2.N libre.
+- **Espejo Notion** (2026-10-12): https://app.notion.com/p/3f76115a9b27812d88b4ebbe02174d7c
+  (base Specs, «En revisión», espejo de 8ffd31a1). Las tres celdas de §Deltas con
+  `+ n`/`- n` se pasaron a notas (a)-(c) bajo la tabla: Notion convierte `+ ` dentro
+  de una celda en viñeta. sites-4c [87612b] avisado: #167 no pide poses nuevas.
+- **Solapes con #171** (sites-4c, 169e92c9): si #171 mergea antes del handoff de #167,
+  re-medir al hacer el handoff: §2.24 pasa a §2.25; B15 (`- 1, // #159 R2`) ya no
+  casa, porque #171 R12 reescribe esa suma; y la carta termina en `## Enmienda #171`.
+  R11.2 sigue añadiendo al final, y R11.3 solo pide «una sola vez», sin posición
+  (verificado con grep: ningún candado de #167 usa endsWith ni lastIndexOf).
+- **Solapes con #169** (sites-99, H0 fc384b44): los mismos de #170 (§2.24, la línea
+  `- 1, // #159 R2`, `ui-copy-table.ts`, `ui-language.test.ts` y
+  `consistency-classnames.test.ts`). Se tratan igual.
+- **Solapes con #170** (Backend, handoff 4a68bfe0, Codex en marcha): #170 también
+  abre §2.24, suma +7 al catálogo (la misma expresión que B15) y toca
+  `ui-copy-table.ts`, `ui-language.test.ts` y `consistency-classnames.test.ts`. Si
+  mergea antes del handoff de #167, re-medir B5–B10, B15 y §2.N. Los conflictos se
+  resuelven en el merge sumando los deltas. Antes de lanzar init.sh, avisar a Backend.
+- **Firma (2026-10-12)**: `Estado del gate` = Aprobado en Notion. Antes del
+  commit de firma, el leader corrigió R11.3 cláusula 3: aseveraba el cuerpo de
+  R11.2 con `- [ ] Enmienda aprobada por humano`, así que se habría puesto rojo
+  en cuanto se marcara la casilla. Ahora tolera `[ xX]`, como `#65 R19`. El
+  humano marcó `[X]` en esa casilla en Notion (P8): el leader la marca en
+  `docs/ui-guidelines.md` en el cierre, citando esa edición.
+- **Trabajo futuro**: las ocho viñetas [F] de §Fuera de alcance quedan como
+  #172 `mobile-account-screens-polish` (`pending`, sin spec), a petición del humano.
+- **Handoff** (2026-10-12): `progress/handoff_mobile-account-screens-pingo.md`, 26 commits
+  c1–c26 + trazabilidad + impl. 51 anclas re-medidas en H0 con origin/main = d2b8b0ae
+  (#168–#171 sin mergear). Cifras no medidas en el árbol real, marcadas `<SIN MEDIR>`:
+  ALL tras c1 (2775) y ALL final (99/2841 = 2775 + 66); la simulación tuvo rojos de
+  entorno (copia sin `.env.example` ni `hosting/`). Correcciones del leader a
+  tasks.md/design.md en H0, listadas en la cabecera del handoff.
+- **Ronda 1 rechazada; Enmienda E1** (solo tests) firmada en Notion y commiteada en
+  c32ae760. Handoff de la ronda 2 en 26989b9e: bloque `== ENMIENDA E1 - RONDA 2 ==`
+  con las mutaciones y las sondas como parches en `specs/mobile-account-screens-pingo/e1/`.
+  Validado en un spike ejecutando sus cadenas, ALL medido 99/2851. La validación
+  destapó dos fallos del handoff, ya corregidos: lint con SIGKILL por carga (regla
+  de reintento de la cola) y una espera con pgrep que casaba consigo misma.
+- **Ronda 2** (2026-10-13): Codex terminó sin desviaciones (`b8577bfc`..`e00fe2c7`).
+  init.sh del leader sobre `e00fe2c7` en verde (móvil 99/2851). Reviewer ronda 2
+  **aprobado** en `82a72c09`, sin bloqueantes; E2-1 va a #172 con O5 y O6. PR #210
+  abierta.
+- Reviewer ronda 2: **APROBADO** (`82a72c09`, veredicto sobre `e00fe2c7`), sin
+  bloqueantes. E1 cierra B1-B4, el bloqueante X1 del barrido, X2-X5 y O4.
+  E2-1 (un `login-error` fuera del scroll no lo ve nadie) queda fuera de R6.
+- Smoke R15 en el dev build de Android (OnePlus Nord 5) firmado por el
+  humano en `3f3ee0f3`, con observaciones de diseño: Login, Registro y
+  Recuperar como el canvas (columnas, tamaños de texto, negritas, botones a
+  todo el ancho, fila «Volver» y mensajes de validación). Van a #172 junto con
+  O5, O6 y E2-1; el humano autorizó cambiar clases existentes para llegar al
+  canvas. #172 sube a P2.
+- Cierre: casilla de la Enmienda #167 marcada en `docs/ui-guidelines.md`
+  (firma del gate en Notion, edición 2026-10-12T15:24:14Z, P8), frontmatter de
+  design, tasks y traceability a `approved` (O2), `done` en
+  `feature_list.json`, STATUS, Notion (Implementado / Completado) y PR #210
+  contra `main`. Merge: humano. Tras el merge: borrar el worktree.
+
+## #168 `mobile-tab-headers-canvas` — Título grande del canvas en Salud, Nutrición y Perfil — 2026-10-13
+
+- **Inicio**: 2026-10-12, worktree `Pet-Tracker-wt-168`, branch
+  `feature/168-mobile-tab-headers-canvas`. Fila 2 (parte 1) del plan de
+  paridad con el canvas (`progress/explore_ui-canvas-parity.md`, decisión N1
+  del humano: «Título grande del canvas»).
+- **Firma**: spec firmada vía Notion (`a372efdc`); enmiendas E1 (`a2e684ee`)
+  y E2 (`c8c6aee3`) antes del handoff.
+- **Handoff**: `progress/handoff_mobile-tab-headers-canvas.md`, 27 commits
+  (A-L rojo/verde, M nace verde con sondas S1-S8, trazabilidad y lista
+  cerrada). Anclas A1-A14 y H1-H30 ejecutadas por el leader en H0.
+- **Ronda 1 rechazada** (`53f0e8f9`): el código era correcto, pero faltaban
+  candados en la spec (O1/O2: R5 con peso null, edad no finita, «Sin
+  esterilizar»; R4.3, posición de `photo-upload-error`). La **Enmienda E3**,
+  solo tests, añade 8 `it` (10 tests) que nacen verdes con sonda, más N1 (edad
+  ±Infinity) y N2/N3 (sexo y esterilizado por separado) del barrido pre-firma
+  del reviewer, y O3 (R9.3 con `now` 150). Se firmó vía Notion (`938188b8`).
+  El leader verificó los recuentos acumulados paso a paso en un worktree fuera
+  del árbol, con cada sonda y su rojo exacto.
+- **Ronda 2**: Codex ejecutó la Reanudación 13 (c28-c37) sin paradas, hasta
+  `824c67b8`. init.sh del leader en verde. Reviewer ronda 2 **aprobado**
+  (`d3cb4d1a`): replantó las sondas E3 con su rojo exacto y añadió Z1/Z2
+  propias en R4.3.
+- **Merge de main** (`64187ab8`, trae #167): conflicto en
+  `docs/ui-guidelines.md`, resuelto dejando la Enmienda #167 y después la
+  #168. init.sh exit 0 (backend 187/1474, infra 2/14, móvil 100/2919, e2e 30
+  de 33 suites, 468 passed y 8 skipped).
+- **Smoke R13** (S1-S10) en el dev build de Android (OnePlus Nord 5), firmado
+  por el humano en `0b3cc585`. Las cuatro casillas de la Enmienda #168 (tres
+  specs y la carta) las marcó el humano en `ddbbab8d`. El candado R11 sigue
+  verde con `[X]` (no acepta `[x]` minúscula).
+- **Trabajo futuro**: el humano pide acercar mucho más Perfil, Nutrición y
+  Salud al canvas y autoriza cambiar la estructura (clases y componentes). Se
+  registra como #173 `mobile-tab-screens-canvas-fidelity` en su propio
+  worktree; el explorer mide la brecha.
+- **Cierre**: errata «taNutrición» en S7 corregida; frontmatter de design,
+  tasks y traceability a `approved`; `done` en `feature_list.json`; STATUS;
+  Notion (Implementado / Completado); PR #213 contra `main`. Merge: humano. Tras el
+  merge: #119 a `done` como superada por #168 (N1) y por el canvas del
+  2026-10-06, y borrar el worktree.
+
+## Sesión 2026-10-13 — mobile-weight-draw-and-toasts (id: 169)
+
+- **Feature:** fila 3 «Salud y rutina» del canvas, parte 1. `WeightChart`
+  dibuja la línea con un trazo animado (`strokeDashoffset` sobre la suma de
+  segmentos, `MOTION_FILL_TIMING`, respeta reduce motion) y Salud lo hereda.
+  Peso gana el resumen con el peso actual grande y el delta del mes calculado
+  en cliente (`monthlyWeightDelta`, zona del perfil), los testIDs que candan
+  el chip de delta por entrada y un toast con háptico solo tras un alta
+  correcta. Dos claves nuevas en el catálogo (§2.25 de la spec de idioma).
+- **Spec:** [[specs/mobile-weight-draw-and-toasts/requirements|spec]], firmada
+  desde Notion (`ccb4ad61`, 2026-10-12; P1 a P7 con su valor por defecto).
+  Enmiendas E1 (`462ca164`) y E2 (`b3a20ffa`), las dos solo de tests, también
+  firmadas desde Notion. Decisión del humano del 2026-10-11: «Solo peso
+  (Recommended)»; el toast al completar un recordatorio queda fuera porque la
+  app no tiene esa acción.
+- **Acciones:** sesión sites-99, worktree `Pet-Tracker-wt-169`, asignada por
+  Frontend. `spec_author`, gate humano en Notion y handoff a Codex CLI
+  (27 commits, de `98db0006` a `f314978d`). Codex paró cuatro veces: lint con
+  SIGKILL que salía 0 (c7), un doble de reicon que no pasaba tsc (c12), un
+  selector por prefijo `/^weight-row-/` de mobile-health R7 que atrapaba los
+  testIDs nuevos (c13) y una medida leída antes de terminar (c16). Cada parada
+  cerró con su reanudación en el handoff. #166 se mergeó en la branch
+  (`4d455cab`) y la spec se re-midió sin cambios.
+- **Revisión:** ronda 1 RECHAZADA (E1 trazabilidad, E2 y E3 candados que solo
+  muestreaban los extremos); la Enmienda E1 los cerró, ensanchada por el
+  leader (M3c, M3d) y por el barrido del reviewer (H1, H2, H2b, H3).
+  Reanudación 5 de Codex (`ab183a46`..`4ddcbf5c`). Ronda 2 RECHAZADA por
+  R2-E1: la cuerda en `strokeDashoffset` (X3) seguía verde porque todos los
+  `it` del desplazamiento usaban fixtures colineales. Enmienda E2: un `it`
+  con la fixture no colineal y `p = 0.25`. Reanudación 6 (`b03fe344` rojo,
+  `27f256e1` verde, `f666fc0b` docs). Ronda 3 **APROBADA** (`d4ccf05c`,
+  0 bloqueantes; R3-N1 no bloqueante: la fixture no colineal solo muestrea
+  `p = 0.25`). La producción de `weight-chart.tsx` y `monthly-weight-delta.ts`
+  quedó idéntica a `f314978d` en las dos enmiendas.
+- **Resultado:** `./init.sh` del leader sobre `f666fc0b`: exit 0, «Todo verde»
+  (backend 187/1474, móvil 99/2833, e2e 468 + 8 saltados). Smoke R14 en el dev
+  build de Android (OnePlus Nord 5) firmado por el humano en `084d9fc3`.
+- **Merge de main en el cierre:** `6f96bef6`, trae #167 (PR #210). Dos conflictos:
+  `language-provider.test.tsx` (recuento `+ 1 // #167 R5` seguido de
+  `+ 2, // #169 R9`, y los dos `describe` completos; lo resolvió el subagente
+  `implementer` como cambio trivial de cierre, igual que en `e61c5bb5`) y
+  `specs/mobile-ui-language/design.md` (§2.24 queda para #167 y #169 pasa a
+  §2.25).
+- **Pendiente aparte:** registrar la feature «completar recordatorio» cuando
+  exista la acción. A 2026-10-13 los ids #172 (mobile-account-screens-polish,
+  Frontend) y #173 (mobile-tab-screens-canvas-fidelity, UI-Pet) ya están
+  tomados: usar #174 o superior, contrastado con origin/main y con los peers.
+- **Estado final:** done. Notion: Implementado / Completado. PR #212 contra `main`;
+  el merge lo hace el humano. Tras el merge: borrar el worktree.
+
+## #170 `mobile-alerts-grouped-and-detail-map` — Alertas agrupadas y mini-mapa — 2026-10-13
+
+
+- Worktree: `../Pet-Tracker-wt-170`, branch `feature/170-mobile-alerts-grouped-and-detail-map` desde origin/main 89fe2009.
+- Asignada por Frontend (fila 4 del canvas, parte 1, C7). Estado: `pending` → spec_author.
+- init.sh verde en wt-170 (EXIT=0). Cola de init.sh acordada: Backend → UI-Pet → sites-99 → sites-4c.
+- Premisa falsa del explore §2 corregida: la alerta ya trae `geofenceId` en la raíz; la distancia se deriva en cliente con `geofenceId` + `payload.position`, sin backend. Confirmado por Frontend.
+- Implementación con Codex espera al merge de #166 (CTA chunky).
+- Spec escrita y commiteada (83f733e9, `spec_ready`, frontmatter `draft`). Espejo en Notion: https://app.notion.com/p/3f66115a9b2781ffb484e077f2675684 (Estado del gate = En revisión, Rol actual = Spec Author). Frontend avisado.
+- PARADA en el gate humano. Al aprobar: verificar «Aprobado» y `page_last_edited_at`, frontmatter a `approved`, commit de firma citando página y hora, Rol actual = Implementer, y re-medir M1–M6 antes del handoff a Codex.
+- Para M2 (Frontend, 2026-10-11): #166 fija en `docs/ui-guidelines.md` punto 13 el secundario neutro `rounded-xl border-2 border-b-6 border-lip-gray bg-surface`. Su inventario `#166 R3` en `consistency-classnames` cierra los secundarios neutros en 4 testIDs, así que `alert-detail-view-map` (R15) tiene que entrar ahí con +1, como ya pide M2. Además #166 suma 8 its a `consistency-classnames` (R2–R4) y 2 a `global-css`. Todo se re-mide tras el merge.
+- 2026-10-12: #166 mergeada (PR #209, `d2b8b0ae`). `origin/main` integrado por merge en `c865f856`. Re-medido: M1 `['done']`, B1–B19 iguales, M3/M4 sin cambio, M5 siguiente libre `§2.24`, M6 ausente. Spec enmendada antes de la firma: R15 congela `min-h-11 rounded-xl border-2 border-b-6 border-lip-gray bg-surface` sin `style`; R16 añade la fila de `#166 R3`, el testID en el inventario y `border-lip-gray`/`border-b-6` a `4 + 1`; M2 cerrada con anclas `grep -cF` verificadas; sonda T15-c nueva. Notion re-espejado. Sigue parada en el gate humano.
+- 2026-10-12: gate humano aprobado en Notion (`Estado del gate` = Aprobado, casilla de §Aprobación marcada con fecha 2026-10-12, leído a las 14:18:34Z sobre el espejo de `814fb7e8`). Frontmatter de requirements/design/tasks a `approved`; commit de firma. Siguiente: Rol actual = Implementer y handoff a Codex.
+- 2026-10-12: handoff a Codex escrito en `progress/handoff_mobile-alerts-grouped-and-detail-map.md` (28 commits, 17 sondas, anclas H1–H44 y P1–P16 ejecutadas por el leader contra el árbol del handoff). Correcciones sobre tasks.md en su cabecera: coma de T1, longitud de `R13_ALERT_DETAIL`, sumas de `consistency-classnames`, sondas T4-a (5 rojos), T8-a, T9-a (4 rojos), T11-b, T13-a, T14-b y T16-a (2 rojos). `feature_list.json` a `in_progress`. Siguiente: el humano lanza Codex en wt-170; el leader solo toca docs/specs/progress hasta que Codex termine; después init.sh (avisando a Frontend) y reviewer.
+- 2026-10-12, Frontend sobre #167 (aún en gate, sin Codex): solapa con #170 en `specs/mobile-ui-language/design.md` §2.24 (renumera quien mergee después), en la expresión de `language-provider.test.tsx` (#167 también quita la coma de `- 1, // #159 R2` y añade `+ 1, // #167 R5`; en el merge se suman las dos líneas), en `ui-copy-table.ts` (#167 mueve rutas de login/register y añade `login.pingoGreeting`), en `ui-language.test.ts` (SCREEN_FILES y R1_AUTH) y en `consistency-classnames.test.ts` (renombra rutas de `(auth)` sin cambiar recuentos). `#166 R3` no lo toca. Si #170 mergea antes, Frontend re-mide sus anclas.
+- 2026-10-12: Codex paró en c16 (T8 verde): el recuento global `style={CONTINUOUS_CORNER}` de `#98 R10` en `consistency-classnames.test.ts` dio 33 contra 32 y la spec no lo movía. Enmienda E1 (fc57d517): la línea pasa a `31 + 1 + 1` en el verde de T8; handoff corrección 10. El humano la firmó en Notion (página `3f66115a…`, `page_last_edited_at` 2026-10-12T18:29:29.050Z). Siguiente: Reanudación 4 de Codex desde el commit de firma; la implementación de R8 de c16 sigue sin stagear en el árbol.
+- 2026-10-12: el ALL del cierre (Reanudación 5) salió rojo con 4 `Exceeded timeout of 30000 ms` por carga (tres jest de Codex en 4 CPU) y con `src/app/__tests__/alert-detail.navigation.test.tsx` sin arrancar (`Cannot find native module 'ExpoMaps'`): monta la ruta real del detalle, que desde R8 importa `pet-map`, y la spec no lo listaba. Enmienda E2 (962509ac): el doble de `pet-map` en ese test, en un commit propio cE2; handoff corrección 15 (cadena cE2, ALL solo con loadavg < 6 y un relanzamiento si todos los rojos son timeout, lista cerrada a 17 + 3). El humano la firmó en Notion (página `3f66115a…`, `page_last_edited_at` 2026-10-12T19:55:57.528Z). Siguiente: Reanudación 6 de Codex desde el commit de firma: cE2 y el CIERRE entero.
+- 2026-10-12: Codex cerró la Reanudación 6 (3719eb75) y el reviewer rechazó la ronda 1: la columna de tests de traceability.md (corregida por el leader en 003fa449) y cinco candados ciegos en `D` y `A`. Enmienda E3 (906d06e4): seis commits de tests c29-c34, sin cambios de producción, con sus sondas SE3.1-SE3.7; handoff corrección 16. Barrido del reviewer sin bloqueantes (6191b2fd) y ensayo literal del leader en un worktree desechable: cadenas, sondas y FINAL de 433 exactos (d09c7eb5). El humano la firmó en Notion (página `3f66115a…`, `page_last_edited_at` 2026-10-12T22:36:09.791Z). Siguiente: Reanudación 7 de Codex desde el commit de firma: corrección 16 desde c29, sin repetir c1-c28 ni cE2.
+- 2026-10-13: Codex ejecutó la Reanudación 7 (c29-c36, `b91c815c`..`ae6dddf5`) sin paradas. Gate del leader: `./init.sh` exit 0 sobre `ae6dddf5` (backend 187/1474, infra 2/14, móvil 100/2899, e2e 30 de 33 suites, 468 passed y 8 skipped), corrido en cola con sites-4c (#171) y sites-99 (#169). Reviewer ronda 2 **APROBADO** (`27c881a6`), en dos fases: lectura sin jest primero y sondas con jest solo tras los avisos de fin de los peers.
+- 2026-10-13: smoke R17 en dev build de Android (OnePlus Nord 5, tema claro y oscuro) firmado por el humano en `33a4bcde`. Observación del humano al firmar, literal: «listo ya firme #170 salio bien, al igual que otras sesiones falta mejorar el diseño para acercarnos al artifact». Se registra como #174 `mobile-alerts-canvas-fidelity`.
+- 2026-10-13: merges de main por merge, sin rebase: `fa71f66b` (#167 y #168) y `2f84afa3` (#169). Conflictos resueltos sumando las dos features: `consistency-classnames.test.ts` (inventario de cabeceras, total de `CONTINUOUS_CORNER` y base cerrada de `#69 R10`), la longitud del catálogo en `language-provider.test.tsx` (`+ 1` de #167 R5, `+ 2` de #169 R9 y `+ 7` de #170 R1) y la sección de #170 en `specs/mobile-ui-language/design.md`, que pasa a §2.26 (#167 tiene §2.24 y #169 §2.25; ningún test ancla el título de #170). `./init.sh` exit 0 sobre `2f84afa3` (backend 187/1474, infra 2/14, móvil 103/3101, e2e 30 de 33 suites, 468 passed y 8 skipped).
+- **Cierre**: trazabilidad `approved` con R17; `done` en `feature_list.json`; #174 registrada como `pending`; STATUS; Notion (Implementado / Completado); PR #213 contra `main`. Merge: humano. Tras el merge: borrar el worktree y la rama local.

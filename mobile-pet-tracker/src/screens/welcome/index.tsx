@@ -19,7 +19,7 @@ import { ForkKnife, Map, Stethoscope } from 'reicon-react-native';
 import { Card } from '../../components/card';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
-import { MOTION_FADE_TIMING, MOTION_SETTLE_SPRING, MOTION_ENTRANCE_OFFSET_Y, MOTION_ENTRANCE_SCALE, MOTION_FLOAT_OFFSET_Y, MOTION_FLOAT_TIMING, MOTION_BLINK_INTERVAL_MS, MOTION_BLINK_TIMING, MOTION_FEEDBACK_MS } from '../../theme/motion';
+import { MOTION_FADE_TIMING, MOTION_SETTLE_SPRING, MOTION_ENTRANCE_OFFSET_Y, MOTION_ENTRANCE_SCALE, MOTION_FLOAT_OFFSET_Y, MOTION_FLOAT_TIMING, MOTION_BLINK_INTERVAL_MS, MOTION_BLINK_TIMING, MOTION_FEEDBACK_MS, MOTION_PING_FROM, MOTION_PING_TO_SCALE, MOTION_PING_TIMING } from '../../theme/motion';
 import { useThemeColors } from '../../theme/use-theme-colors';
 
 const WELCOME_CHIPS = [
@@ -27,6 +27,30 @@ const WELCOME_CHIPS = [
   { testID: 'welcome-chip-health', Icon: Stethoscope, labelKey: 'welcome.chipHealth' },
   { testID: 'welcome-chip-nutrition', Icon: ForkKnife, labelKey: 'welcome.chipNutrition' },
 ] as const;
+
+function PingRing({ index }: { index: number }) {
+  const scale = useSharedValue(MOTION_PING_FROM);
+  const opacity = useSharedValue(MOTION_PING_FROM);
+
+  useEffect(() => {
+    const delayMs = index * (MOTION_PING_TIMING.duration / 3);
+    scale.set(withDelay(delayMs, withRepeat(withTiming(MOTION_PING_TO_SCALE, MOTION_PING_TIMING), -1, false)));
+    opacity.set(withDelay(delayMs, withRepeat(withTiming(0, MOTION_PING_TIMING), -1, false)));
+  }, [index, opacity, scale]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    opacity: opacity.get(),
+    transform: [{ scale: scale.get() }],
+  }));
+
+  return (
+    <Animated.View
+      testID={`welcome-ring-${index}`}
+      className="absolute size-65 rounded-full border-2 border-accent"
+      style={animatedStyle}
+    />
+  );
+}
 
 export function WelcomeScreen() {
   const { status } = useAuth();
@@ -83,12 +107,15 @@ export function WelcomeScreen() {
           <Card testID="welcome-bubble" variant="surface" className="px-4 py-3">
             <Text testID="welcome-bubble-text" className="text-center text-sm font-semibold text-foreground">{t('welcome.pingoGreeting')}</Text>
           </Card>
-          <Animated.View testID="welcome-pingo" style={[pingoStyle, { width: 200, height: 200 }]}>
-            <Image testID="welcome-pingo-wave" source={require('../../../assets/images/pingo-wave.webp')} style={{ width: 200, height: 200 }} contentFit="contain" />
-            <Animated.View testID="welcome-pingo-blink" style={[blinkStyle, { position: 'absolute', top: 0, left: 0 }]}>
-              <Image testID="welcome-pingo-blink-image" source={require('../../../assets/images/pingo-wave-blink.webp')} style={{ width: 200, height: 200 }} contentFit="contain" />
+          <View testID="welcome-stage" className="items-center justify-center">
+            {reduceMotion ? null : [0, 1, 2].map((index) => <PingRing key={index} index={index} />)}
+            <Animated.View testID="welcome-pingo" style={[pingoStyle, { width: 200, height: 200 }]}>
+              <Image testID="welcome-pingo-wave" source={require('../../../assets/images/pingo-wave.webp')} style={{ width: 200, height: 200 }} contentFit="contain" />
+              <Animated.View testID="welcome-pingo-blink" style={[blinkStyle, { position: 'absolute', top: 0, left: 0 }]}>
+                <Image testID="welcome-pingo-blink-image" source={require('../../../assets/images/pingo-wave-blink.webp')} style={{ width: 200, height: 200 }} contentFit="contain" />
+              </Animated.View>
             </Animated.View>
-          </Animated.View>
+          </View>
         </Card>
         <View testID="welcome-chips" className="flex-row justify-center gap-2">
           {WELCOME_CHIPS.map(({ testID, Icon, labelKey }) => (

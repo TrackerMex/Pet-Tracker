@@ -69,7 +69,7 @@ function checkUses(uses: UseRow[]) {
 
 describe('#65 R1: el grupo (auth) resuelve su copy por clave', () => {
   it('resuelve las 36 ocurrencias normativas', () => {
-    expect(R1_AUTH).toHaveLength(29 + 7); // #117 R10
+    expect(R1_AUTH).toHaveLength(29 + 7 + 1); // #117 R10, #167 R6
     checkUses(R1_AUTH);
   });
 });
@@ -134,7 +134,7 @@ describe('#65 R4: Map resuelve su copy por clave', () => {
 
 describe('#65 R5: Health resuelve su copy por clave', () => {
   it('resuelve las 32 ocurrencias normativas', () => {
-    expect(R5_HEALTH).toHaveLength(32 + 1 + 1 - 2 + 3 + 2); // +1 #90 R5, +1 #95 R4, -2 #95 R5, +3 #115 R1, +2 #155 R4
+    expect(R5_HEALTH).toHaveLength(32 + 1 + 1 - 2 + 3 + 2 + 1 + 1); // +1 #90 R5, +1 #95 R4, -2 #95 R5, +3 #115 R1, +2 #155 R4, +1 #169 R6, +1 #169 R10
     checkUses(R5_HEALTH);
   });
 });
@@ -248,7 +248,7 @@ describe('#78 R12: el centro de alertas resuelve su copy por clave', () => {
 
 describe('#100 R10: el detalle de alerta resuelve su copy por clave', () => {
   it('registra cada ocurrencia del detalle', () => {
-    expect(R13_ALERT_DETAIL).toHaveLength(11 - 3); // #134 R6
+    expect(R13_ALERT_DETAIL).toHaveLength(11 - 3 + 2); // #170 R16
     expect(R13_ALERT_DETAIL.every(({ file }) =>
       file === 'src/app/_layout.tsx' || file === 'src/screens/alert-detail/index.tsx',
     )).toBe(true);
@@ -497,7 +497,8 @@ describe('#65 R18: los sitios resuelven por clave y no queda copy suelta', () =>
       19 + 2 + 1 + 1 + 1 + 1 + 1 + 1 + 1 // #100 R10, #41 R10, #146 R10, #105 R5
         + 1 - 1 // #117 R10: sale app/(auth)/forgot.tsx, entra screens/forgot/index.tsx
         + 1 // #118 R1
-        + 1, // #134 R6
+        + 1 // #134 R6
+        + 2 - 2, // #167 R1: salen app/(auth)/login.tsx y app/(auth)/register.tsx, entran screens/login/index.tsx y screens/register/index.tsx
     );
 
     for (const file of SCREEN_FILES) {

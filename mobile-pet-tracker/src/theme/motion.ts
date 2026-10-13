@@ -39,6 +39,23 @@ export const MOTION_BLINK_TIMING = {
   reduceMotion: ReduceMotion.System,
 };
 
+// #167 R2
+export const MOTION_POP_SPRING = {
+  duration: MOTION_SURFACE_MS,
+  dampingRatio: 0.6,
+  reduceMotion: ReduceMotion.System,
+};
+// #167 R2
+export const MOTION_PING_FROM = 0.55;
+// #167 R2
+export const MOTION_PING_TO_SCALE = 1.5;
+// #167 R2
+export const MOTION_PING_TIMING = {
+  duration: 2400,
+  easing: Easing.bezier(0.23, 1, 0.32, 1),
+  reduceMotion: ReduceMotion.System,
+};
+
 // #171 R6
 export const MOTION_CONFETTI_FALL_TIMING = { easing: Easing.bezier(0.2, 0.6, 0.4, 1), reduceMotion: ReduceMotion.System };
 // #171 R6

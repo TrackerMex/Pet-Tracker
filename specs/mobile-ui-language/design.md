@@ -937,6 +937,31 @@ copy completa en cada una.
 | — | `geofences.needsCollar` | `Safe zones need a collar with an active plan.` | `Las zonas seguras necesitan un collar con plan activo.` | ← cambiada por #159 (R7) |
 | — | `home.activityNeedsCollar` | `Activity needs a collar with an active plan` | `La actividad necesita un collar con plan activo` | ← cambiada por #159 (R8) |
 
+### §2.24 — Añadidos por #167 — Pingo en las pantallas de cuenta
+
+| # | Clave | `en` | `es` | Origen |
+|---|---|---|---|---|
+| — | `login.pingoGreeting` | `Good to see you again.` | `Qué bueno verte de nuevo.` | ← añadida por #167 (R5) |
+
+### §2.25 — Añadidos por #169 — Peso
+
+| # | Clave | `en` | `es` | Origen |
+|---|---|---|---|---|
+| — | `weightLog.weightLogged` | `Logged. I've added it to the chart.` | `Anotado. Ya lo puse en la gráfica.` | ← añadida por #169 (R9) |
+| — | `weightLog.monthDelta` | `{{value}} this month` | `{{value}} este mes` | ← añadida por #169 (R9) |
+
+### §2.26 — Añadidos por #170 — Alertas agrupadas y mini-mapa
+
+| # | Clave | `en` | `es` | Origen |
+|---|---|---|---|---|
+| — | `alerts.newOne` | `1 new` | `1 nueva` | ← añadida por #170 (R1) |
+| — | `alerts.newMany` | `{{count}} new` | `{{count}} nuevas` | ← añadida por #170 (R1) |
+| — | `alerts.sectionToday` | `Today` | `Hoy` | ← añadida por #170 (R1) |
+| — | `alerts.sectionThisWeek` | `This week` | `Esta semana` | ← añadida por #170 (R1) |
+| — | `alerts.sectionEarlier` | `Earlier` | `Anteriores` | ← añadida por #170 (R1) |
+| — | `alerts.distanceFromZone` | `{{distance}} from {{zone}}` | `A {{distance}} de {{zone}}` | ← añadida por #170 (R1) |
+| — | `alerts.viewOnMap` | `View on map` | `Ver en el mapa` | ← añadida por #170 (R1) |
+
 ### §2.27 — Añadidos por #171 — Celebraciones
 
 | # | Clave | `en` | `es` | Origen |
