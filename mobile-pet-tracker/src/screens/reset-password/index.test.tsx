@@ -421,6 +421,42 @@ describe('#167 R10: Pingo y tarjeta de estado en nueva contraseña', () => {
     expect(screen.queryByTestId('reset-body')).toBeNull();
   });
 
+  it('#167 R10: el éxito conserva la cabecera del formulario', async () => {
+    await renderRoute('reset-token-167');
+    await submitReset();
+    expect(await screen.findByTestId('reset-success')).toBeOnTheScreen();
+    const header = screen.getByTestId('reset-header');
+    expect({ index: header.props.index, className: header.props.className }).toEqual({
+      index: 0, className: 'flex-row items-center justify-center gap-3',
+    });
+    expect(header.children).toHaveLength(2);
+    expect(header.children[0]).toHaveProperty('props.testID', 'reset-pingo');
+    expect(header.children[1]).toBe(within(header).getByText('Restablecer contraseña'));
+  });
+
+  it('#167 R10: con error, el error va entre la confirmación y el envío', async () => {
+    mockResetPassword.mockResolvedValue({ kind: 'invalid-token' });
+    await renderRoute('reset-token-167');
+    await submitReset();
+    const body = screen.getByTestId('reset-body');
+    expect(within(body).getAllByTestId(/^(reset-password|reset-password-confirm|reset-error|reset-submit)$/)
+      .map((node) => node.props.testID)).toEqual([
+      'reset-password', 'reset-password-confirm', 'reset-error', 'reset-submit',
+    ]);
+  });
+
+  it('#167 R10: sin error, el cuerpo no lleva el error', async () => {
+    await renderRoute('reset-token-167');
+    expect(within(screen.getByTestId('reset-body')).queryByTestId('reset-error')).toBeNull();
+  });
+
+  it('#167 R10: la cabecera va antes que el cuerpo en el scroll', async () => {
+    await renderRoute('reset-token-167');
+    const header = screen.getByTestId('reset-header');
+    expect(header.parent?.parent).toHaveProperty('props.testID', 'reset-password-form');
+    expect(header.parent?.children).toEqual([header, screen.getByTestId('reset-body')]);
+  });
+
   it('#167 R10: la tarjeta de estado es secondary con check y texto', async () => {
     await renderRoute('reset-token-167');
     await submitReset();
