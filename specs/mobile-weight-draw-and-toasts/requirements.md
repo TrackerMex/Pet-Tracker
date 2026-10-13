@@ -364,7 +364,7 @@ Guardas de clases contrastadas; todas siguen verdes con lo prescrito:
 
 ### Aprobación de R14 (prueba de humo en dev build de Android)
 
-- [ ] Smoke de R14 superado por humano (fecha: ____, dispositivo: ____)
+- [X] Smoke de R14 superado por humano (fecha: 2026-10-13, dispositivo: OnePlus Nord 5)
 
 ## Enmienda E1 — candados de R1, R2, R3 y R5 (revisión rechazada, 2026-10-12)
 
