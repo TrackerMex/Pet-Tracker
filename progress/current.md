@@ -61,7 +61,12 @@
   Validado en un spike ejecutando sus cadenas, ALL medido 99/2851. La validación
   destapó dos fallos del handoff, ya corregidos: lint con SIGKILL por carga (regla
   de reintento de la cola) y una espera con pgrep que casaba consigo misma.
-- **Siguiente**: esperar a Codex (ronda 2). Después: avisar a Backend (#170) y sites-99 (#169),
-  init.sh (pgrep antes), reviewer ronda 2 (diff contra H1, sin review_*.md), push y PR,
-  smoke R15 del humano y cierre (marcar la casilla de la carta citando la edición de
-  Notion 2026-10-12T15:24:14Z).
+- **Ronda 2** (2026-10-13): Codex terminó sin desviaciones (`b8577bfc`..`e00fe2c7`).
+  init.sh del leader sobre `e00fe2c7` en verde (móvil 99/2851). Reviewer ronda 2
+  **aprobado** en `82a72c09`, sin bloqueantes; E2-1 va a #172 con O5 y O6. PR #210
+  abierta.
+- **Siguiente**: smoke R15 del humano (tasks.md T16, firma en traceability.md
+  §Firma de la prueba de humo). Después, cierre: fetch, diff de deriva contra
+  `82a72c09`, casilla de la carta citando la edición de Notion
+  2026-10-12T15:24:14Z, frontmatter a approved (O2), `done`, tablero Notion y
+  O5/O6/E2-1 en #172.
