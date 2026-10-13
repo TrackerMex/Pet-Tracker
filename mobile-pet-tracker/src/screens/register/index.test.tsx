@@ -1,5 +1,5 @@
 import { DeviceEventEmitter, Platform } from 'react-native';
-import { act, waitFor, fireEvent, render, screen } from '@testing-library/react-native';
+import { act, waitFor, fireEvent, render, screen, within } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
@@ -8,17 +8,45 @@ import {
   login,
   register as registerApi,
   type RegisterState,
-} from '../../../api/auth';
-import { useAuth, type AuthContextValue } from '../../../providers/auth-provider';
-import { LanguageProvider } from '../../../providers/language-provider';
-import Register from '../register';
+} from '../../api/auth';
+import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
+import { LanguageProvider } from '../../providers/language-provider';
+import RegisterRoute from '../../app/(auth)/register';
 
-jest.mock('../../../api/auth', () => ({
+const mockHomeEntrance = jest.fn<void, [import('react-native').ViewProps & { index: number }]>();
+
+jest.mock('../home/home-entrance', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return {
+    HomeEntrance(props: import('react-native').ViewProps & { index: number }) {
+      mockHomeEntrance(props);
+      return React.createElement(View, props);
+    },
+  };
+});
+
+jest.mock('reicon-react-native', () => {
+  const actual = jest.requireActual<typeof import('reicon-react-native')>('reicon-react-native');
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  const mockIcon = (testID: string) =>
+    function MockIcon(props: Record<string, unknown>) {
+      return React.createElement(View, { testID, ...props });
+    };
+  return { ...actual, AlertCircle: mockIcon('icon-alert-circle') };
+});
+
+jest.mock('../../theme/use-theme-colors', () => ({
+  useThemeColors: (tokens: string[]) => tokens.map((token) => `color:${token}`),
+}));
+
+jest.mock('../../api/auth', () => ({
   login: jest.fn(),
   register: jest.fn(),
 }));
 
-jest.mock('../../../providers/auth-provider', () => ({
+jest.mock('../../providers/auth-provider', () => ({
   useAuth: jest.fn(),
 }));
 
@@ -62,7 +90,7 @@ function AuthScreenWrapper({ children }: { children: ReactNode }) {
 }
 
 async function renderRegister() {
-  await render(<Register />, { wrapper: AuthScreenWrapper });
+  await render(<RegisterRoute />, { wrapper: AuthScreenWrapper });
 }
 
 async function fillForm({ acceptTerms = true }: { acceptTerms?: boolean } = {}) {
@@ -283,5 +311,133 @@ describe('#148 R2: register se aparta del teclado en Android', () => {
       });
     });
     await waitFor(() => expect(screen.getByTestId('screen-register')).toHaveStyle({ paddingBottom: 200 }));
+  });
+});
+
+
+describe('#167 R7: Pingo en la cabecera del registro', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockUseAuth.mockReturnValue({
+      status: 'unauthenticated', token: null, signIn: mockSignIn, signOut: jest.fn(),
+    } satisfies AuthContextValue);
+  });
+
+  it('#167 R7: la cabecera entra con rise', async () => {
+    await renderRegister();
+    expect(Object.fromEntries(mockHomeEntrance.mock.calls.map(([p]) => [
+      p.testID, { index: p.index, className: p.className },
+    ]))).toEqual({
+      'register-header': { index: 0, className: 'flex-row items-center justify-center gap-3' },
+    });
+  });
+
+  it('#167 R7: la cabecera lleva a Pingo y después el título', async () => {
+    await renderRegister();
+    const header = screen.getByTestId('register-header');
+    expect(header.children).toHaveLength(2);
+    expect(header.children[0]).toHaveProperty('props.testID', 'register-pingo');
+    expect(header.children[1]).toBe(within(header).getByText('Crear cuenta'));
+  });
+
+  it('#167 R7: Pingo del registro usa la pose de la tablilla', async () => {
+    await renderRegister();
+    const pingo = screen.getByTestId('register-pingo');
+    expect(pingo.props.source).toEqual([
+      expect.objectContaining({ testUri: expect.stringMatching(/pingo-clipboard\.webp$/) }),
+    ]);
+    expect(pingo.props.style).toEqual({ width: 56, height: 56 });
+    expect(pingo.props.accessibilityLabel).toBeUndefined();
+  });
+
+  it('#167 R7: el título de la cabecera conserva su clase', async () => {
+    await renderRegister();
+    expect(within(screen.getByTestId('register-header')).getByText('Crear cuenta').props.className)
+      .toBe('text-center text-2xl font-black text-foreground');
+  });
+
+  it('#167 R7: campos, errores, términos y envío cuelgan del scroll', async () => {
+    const fields = [
+      'first-name', 'last-name', 'email', 'phone', 'password', 'password-confirmation', 'country',
+    ] as const;
+    mockRegister.mockResolvedValue({
+      kind: 'validation',
+      errors: [
+        'firstName', 'lastName', 'email', 'phone', 'password', 'passwordConfirmation', 'country', 'termsAccepted',
+      ].map((path) => ({ path, message: `${path} no vale` })),
+    });
+    await renderRegister();
+    await fillForm();
+    await submit();
+    const content = screen.getByTestId('register-header').parent;
+    expect(content?.parent).toHaveProperty('props.testID', 'register-form');
+    for (const field of fields) {
+      const input = screen.getByTestId(`register-${field}`);
+      expect(input.parent?.parent).toBe(content);
+      expect(screen.getByTestId(`register-${field}-error`).parent).toBe(input.parent);
+    }
+    expect(screen.getByTestId('register-terms').parent?.parent).toBe(content);
+    expect(screen.getByTestId('register-error-row').parent).toBe(content);
+    expect(screen.getByTestId('register-submit').parent).toBe(content);
+    expect(content?.children[0]).toBe(screen.getByTestId('register-header'));
+  });
+
+  it('#167 R7: ningún campo ni el envío quedan dentro de la cabecera', async () => {
+    await renderRegister();
+    const header = screen.getByTestId('register-header');
+    for (const id of [
+      'register-first-name', 'register-last-name', 'register-email', 'register-phone',
+      'register-password', 'register-password-confirmation', 'register-country',
+      'register-terms', 'register-submit',
+    ]) {
+      expect(within(header).queryByTestId(id)).toBeNull();
+    }
+  });
+});
+
+
+describe('#167 R8: el error del registro lleva icono', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockRegister.mockResolvedValue({ kind: 'email-taken' });
+    mockUseAuth.mockReturnValue({
+      status: 'unauthenticated', token: null, signIn: mockSignIn, signOut: jest.fn(),
+    } satisfies AuthContextValue);
+  });
+
+  it('#167 R8: el error general va en una fila con icono', async () => {
+    await renderRegister();
+    await fillForm();
+    await submit();
+    const row = screen.getByTestId('register-error-row');
+    expect(row.props.className).toBe('flex-row items-center gap-1.5');
+    expect(row.children.map((child) => typeof child === 'string' ? child : child.props.testID))
+      .toEqual(['icon-alert-circle', 'register-error']);
+  });
+
+  it('#167 R8: el icono del error mide 14 y usa danger', async () => {
+    await renderRegister();
+    await fillForm();
+    await submit();
+    const icon = screen.getByTestId('icon-alert-circle');
+    expect(icon.props.size).toBe(14);
+    expect(icon.props.color).toBe('color:danger');
+  });
+
+  it('#167 R8: el texto del error pesa como el icono', async () => {
+    await renderRegister();
+    await fillForm();
+    await submit();
+    expect(screen.getByTestId('register-error').props.className)
+      .toBe('flex-1 text-sm font-semibold text-danger');
+  });
+
+  it('#167 R8: sin error no hay fila; con error, sí', async () => {
+    await renderRegister();
+    expect(screen.queryByTestId('register-error-row')).toBeNull();
+    await fillForm();
+    await submit();
+    expect(screen.getByTestId('register-error-row')).toBeOnTheScreen();
   });
 });

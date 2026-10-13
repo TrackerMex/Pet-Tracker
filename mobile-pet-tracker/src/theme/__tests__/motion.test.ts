@@ -13,6 +13,10 @@ import {
   MOTION_FLOAT_TIMING,
   MOTION_BLINK_INTERVAL_MS,
   MOTION_BLINK_TIMING,
+  MOTION_PING_FROM,
+  MOTION_PING_TIMING,
+  MOTION_PING_TO_SCALE,
+  MOTION_POP_SPRING,
 } from '../motion';
 
 declare function require(moduleName: '../motion'): Record<string, unknown>;
@@ -77,6 +81,10 @@ describe('#152 R1: las duraciones y el preset de movimiento viven en un solo sit
       'MOTION_FILL_TIMING',
       'MOTION_FLOAT_OFFSET_Y',
       'MOTION_FLOAT_TIMING',
+      'MOTION_PING_FROM',
+      'MOTION_PING_TIMING',
+      'MOTION_PING_TO_SCALE',
+      'MOTION_POP_SPRING',
       'MOTION_SETTLE_SPRING',
       'MOTION_STAGGER_MS',
       'MOTION_SURFACE_MS',
@@ -131,5 +139,31 @@ describe('#153 R4: las constantes de Pingo viven en motion.ts', () => {
   it('declara el intervalo y el cambio instantáneo del parpadeo', () => {
     expect(MOTION_BLINK_INTERVAL_MS).toBe(4000);
     expect(MOTION_BLINK_TIMING).toEqual({ duration: 0, reduceMotion: ReduceMotion.System });
+  });
+});
+
+describe('#167 R2: los tokens de pop y ping viven en motion.ts', () => {
+  it('#167 R2: MOTION_POP_SPRING es un muelle de 400 ms con dampingRatio 0.6', () => {
+    expect(MOTION_POP_SPRING).toEqual({
+      duration: 400,
+      dampingRatio: 0.6,
+      reduceMotion: ReduceMotion.System,
+    });
+  });
+
+  it('#167 R2: MOTION_PING_FROM vale 0.55', () => {
+    expect(MOTION_PING_FROM).toEqual(0.55);
+  });
+
+  it('#167 R2: MOTION_PING_TO_SCALE vale 1.5', () => {
+    expect(MOTION_PING_TO_SCALE).toEqual(1.5);
+  });
+
+  it('#167 R2: MOTION_PING_TIMING dura 2400 ms con la curva de salida', () => {
+    expect(MOTION_PING_TIMING).toEqual({
+      duration: 2400,
+      easing: { bezier: [0.23, 1, 0.32, 1] },
+      reduceMotion: ReduceMotion.System,
+    });
   });
 });

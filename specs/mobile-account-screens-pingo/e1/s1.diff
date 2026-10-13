@@ -1,0 +1,20 @@
+diff --git a/mobile-pet-tracker/src/screens/register/index.tsx b/mobile-pet-tracker/src/screens/register/index.tsx
+index e8b8bb71..b04ba409 100644
+--- a/mobile-pet-tracker/src/screens/register/index.tsx
++++ b/mobile-pet-tracker/src/screens/register/index.tsx
+@@ -178,6 +178,7 @@ export function RegisterScreen() {
+           </Text>
+         </HomeEntrance>
+ 
++        <View>
+         <TextField isInvalid={Boolean(fieldErrors.firstName)}>
+           <Label className="text-xs font-semibold text-foreground">
+             {t('register.firstName')}
+@@ -192,6 +193,7 @@ export function RegisterScreen() {
+             {fieldErrors.firstName}
+           </FieldError>
+         </TextField>
++        </View>
+ 
+         <TextField isInvalid={Boolean(fieldErrors.lastName)}>
+           <Label className="text-xs font-semibold text-foreground">
