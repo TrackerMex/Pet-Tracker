@@ -127,6 +127,16 @@ export function LoginScreen() {
             />
           </TextField>
 
+          <LinkButton
+            testID="link-forgot"
+            className="min-h-11 self-end"
+            onPress={() => router.push('/forgot')}
+          >
+            <LinkButton.Label className="text-sm font-semibold text-accent-strong">
+              {t('login.forgotPassword')}
+            </LinkButton.Label>
+          </LinkButton>
+
           {error ? (
             <Text testID="login-error" className="text-danger">
               {error}
@@ -146,20 +156,11 @@ export function LoginScreen() {
 
           <LinkButton
             testID="link-register"
-            className="self-center"
+            className="h-13 w-full"
             onPress={() => router.push('/register')}
           >
-            <LinkButton.Label className="font-semibold text-accent-strong">
+            <LinkButton.Label className="text-base font-bold text-accent-strong">
               {t('login.createAccount')}
-            </LinkButton.Label>
-          </LinkButton>
-          <LinkButton
-            testID="link-forgot"
-            className="self-center"
-            onPress={() => router.push('/forgot')}
-          >
-            <LinkButton.Label className="font-semibold text-accent-strong">
-              {t('login.forgotPassword')}
             </LinkButton.Label>
           </LinkButton>
         </HomeEntrance>

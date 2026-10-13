@@ -153,8 +153,8 @@ export function ForgotScreen() {
           </Button>
         ) : null}
 
-        <LinkButton testID="link-login" onPress={() => router.push('/login')}>
-          <LinkButton.Label className="font-semibold text-accent-strong">
+        <LinkButton testID="link-login" className="h-13 w-full" onPress={() => router.push('/login')}>
+          <LinkButton.Label className="text-base font-bold text-accent-strong">
             {t('forgot.backToSignIn')}
           </LinkButton.Label>
         </LinkButton>
