@@ -493,3 +493,19 @@ reduce motion no se pintan.
 Ninguna otra pantalla usa anillos de ping sin una enmienda propia.
 
 - [X] Enmienda aprobada por humano
+
+## Enmienda #168 — título grande en Salud, Nutrición y Perfil
+
+`mobile-tab-headers-canvas` (#168) modifica una decisión que esta spec dejó
+aprobada. La spec de origen es `specs/mobile-tab-headers-canvas/`; el detalle
+de la enmienda está en su `requirements.md` §R11.
+
+- Spec enmendada: `docs/ui-guidelines.md`
+- Qué cambia: `regla N1: título grande en Salud, Nutrición y Perfil; hero solo en Inicio`
+- Qué NO cambia: ningún otro requisito de esta spec ni su estado de
+  aprobación. Los tests que cubren lo enmendado se reescriben en #168 (lista
+  en su `tasks.md`).
+
+- [X] Enmienda #168 aprobada por humano
+
+**Regla N1 (enmienda B4 de #168)**: Salud, Nutrición y Perfil abren con el título grande; Inicio es la única pestaña con PetHeroHeader. Devolver el hero a una de las tres es una enmienda a #168.
