@@ -1,12 +1,14 @@
+import { Image } from 'expo-image';
 import { HeaderHeightContext } from 'expo-router/react-navigation';
 import { router } from 'expo-router';
 import { Button, Input, Label, LinkButton, TextField } from 'heroui-native';
 import { useContext, useState } from 'react';
-import { KeyboardAvoidingView, ScrollView, Text, View } from 'react-native';
+import { KeyboardAvoidingView, ScrollView, Text } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Lock } from 'reicon-react-native';
 
 import { forgotPassword } from '../../api/auth';
+import { PopIn } from '../../components/pop-in';
 import { useTranslate } from '../../providers/language-provider';
 import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
@@ -72,12 +74,18 @@ export function ForgotScreen() {
           paddingBottom: insets.bottom + 24,
         }}
       >
-        <View
+        <Image
+          testID="forgot-pingo"
+          source={require('../../../assets/images/pingo-talk.webp')}
+          style={{ width: 120, height: 120, transform: [{ rotate: '6deg' }] }}
+        />
+        <PopIn
+          testID="forgot-lock-tile"
           className="size-16 items-center justify-center rounded-xl bg-accent-soft"
           style={CONTINUOUS_CORNER}
         >
           <Lock size={28} color={accentStrong} />
-        </View>
+        </PopIn>
         <Text testID="forgot-title" className="text-center text-2xl font-black text-foreground">
           {sent ? t('forgot.checkYourEmail') : t('forgot.forgotPassword')}
         </Text>

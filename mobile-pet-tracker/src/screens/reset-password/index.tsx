@@ -1,15 +1,22 @@
+import { Image } from 'expo-image';
 import { HeaderHeightContext } from 'expo-router/react-navigation';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Button, Input, Label, LinkButton, TextField } from 'heroui-native';
 import { useContext, useState } from 'react';
-import { KeyboardAvoidingView, ScrollView, Text } from 'react-native';
+import { KeyboardAvoidingView, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Check } from 'reicon-react-native';
 
 import { resetPassword } from '../../api/auth';
+import { Card } from '../../components/card';
+import { PopIn } from '../../components/pop-in';
 import { useTranslate } from '../../providers/language-provider';
+import { useThemeColors } from '../../theme/use-theme-colors';
+import { HomeEntrance } from '../home/home-entrance';
 
 export function ResetPasswordScreen() {
   const headerHeight = useContext(HeaderHeightContext);
+  const [accentForeground] = useThemeColors(['accent-foreground']);
   const { token } = useLocalSearchParams<{ token?: string }>();
   const insets = useSafeAreaInsets();
   const t = useTranslate();
@@ -111,16 +118,26 @@ export function ResetPasswordScreen() {
           paddingBottom: insets.bottom + 24,
         }}
       >
-        <Text className="text-center text-2xl font-black text-foreground">
-          {t('resetPassword.resetPassword')}
-        </Text>
-        <Text
-          testID="reset-success"
-          className="text-center text-foreground"
-          selectable
-        >
-          {t('resetPassword.passwordUpdated')}
-        </Text>
+        <HomeEntrance testID="reset-header" index={0} className="flex-row items-center justify-center gap-3">
+          <Image
+            testID="reset-pingo"
+            source={require('../../../assets/images/pingo-clipboard.webp')}
+            style={{ width: 72, height: 72 }}
+          />
+          <Text className="text-center text-2xl font-black text-foreground">
+            {t('resetPassword.resetPassword')}
+          </Text>
+        </HomeEntrance>
+        <PopIn testID="reset-success-pop" className="w-full">
+          <Card testID="reset-success-card" variant="secondary" className="flex-row items-center gap-3 px-4 py-3.5">
+            <View testID="reset-success-check" className="size-8 items-center justify-center rounded-full bg-accent">
+              <Check size={18} color={accentForeground} />
+            </View>
+            <Text testID="reset-success" className="flex-1 font-bold text-accent-strong" selectable>
+              {t('resetPassword.passwordUpdated')}
+            </Text>
+          </Card>
+        </PopIn>
         <LinkButton
           testID="link-login"
           className="self-center"
@@ -155,56 +172,65 @@ export function ResetPasswordScreen() {
           paddingBottom: insets.bottom + 24,
         }}
       >
-        <Text className="text-center text-2xl font-black text-foreground">
-          {t('resetPassword.resetPassword')}
-        </Text>
-
-        <TextField>
-          <Label className="text-xs font-semibold text-foreground">
-            {t('resetPassword.newPassword')}
-          </Label>
-          <Input
-            testID="reset-password"
-            className="rounded-xl bg-default"
-            autoCapitalize="none"
-            autoComplete="new-password"
-            secureTextEntry
-            value={password}
-            onChangeText={setPassword}
+        <HomeEntrance testID="reset-header" index={0} className="flex-row items-center justify-center gap-3">
+          <Image
+            testID="reset-pingo"
+            source={require('../../../assets/images/pingo-clipboard.webp')}
+            style={{ width: 72, height: 72 }}
           />
-        </TextField>
-
-        <TextField>
-          <Label className="text-xs font-semibold text-foreground">
-            {t('resetPassword.confirmNewPassword')}
-          </Label>
-          <Input
-            testID="reset-password-confirm"
-            className="rounded-xl bg-default"
-            autoCapitalize="none"
-            autoComplete="new-password"
-            secureTextEntry
-            value={passwordConfirmation}
-            onChangeText={setPasswordConfirmation}
-          />
-        </TextField>
-
-        {error ? (
-          <Text testID="reset-error" className="text-danger" selectable>
-            {error}
+          <Text className="text-center text-2xl font-black text-foreground">
+            {t('resetPassword.resetPassword')}
           </Text>
-        ) : null}
+        </HomeEntrance>
 
-        <Button
-          testID="reset-submit"
-          className="w-full rounded-xl bg-accent border-b-4 border-black/25"
-          isDisabled={submitting}
-          onPress={() => void handleSubmit()}
-        >
-          <Button.Label className="font-bold text-accent-foreground">
-            {t('resetPassword.updatePassword')}
-          </Button.Label>
-        </Button>
+        <HomeEntrance testID="reset-body" index={1} className="gap-4">
+          <TextField>
+            <Label className="text-xs font-semibold text-foreground">
+              {t('resetPassword.newPassword')}
+            </Label>
+            <Input
+              testID="reset-password"
+              className="rounded-xl bg-default"
+              autoCapitalize="none"
+              autoComplete="new-password"
+              secureTextEntry
+              value={password}
+              onChangeText={setPassword}
+            />
+          </TextField>
+
+          <TextField>
+            <Label className="text-xs font-semibold text-foreground">
+              {t('resetPassword.confirmNewPassword')}
+            </Label>
+            <Input
+              testID="reset-password-confirm"
+              className="rounded-xl bg-default"
+              autoCapitalize="none"
+              autoComplete="new-password"
+              secureTextEntry
+              value={passwordConfirmation}
+              onChangeText={setPasswordConfirmation}
+            />
+          </TextField>
+
+          {error ? (
+            <Text testID="reset-error" className="text-danger" selectable>
+              {error}
+            </Text>
+          ) : null}
+
+          <Button
+            testID="reset-submit"
+            className="w-full rounded-xl bg-accent border-b-4 border-black/25"
+            isDisabled={submitting}
+            onPress={() => void handleSubmit()}
+          >
+            <Button.Label className="font-bold text-accent-foreground">
+              {t('resetPassword.updatePassword')}
+            </Button.Label>
+          </Button>
+        </HomeEntrance>
       </ScrollView>
     </KeyboardAvoidingView>
   );

@@ -64,9 +64,9 @@ function openingTagWithTestId(source: string, testId: string): string {
 
 describe('#62 R1: la escala de radios está declarada y el botón primario tiene un solo radio', () => {
   const primaryButtons = [
-    [join('app', '(auth)', 'login.tsx'), 'login-submit'],
+    [join('screens', 'login', 'index.tsx'), 'login-submit'],
     [join('screens', 'forgot', 'index.tsx'), 'forgot-submit'], // #117 R10
-    [join('app', '(auth)', 'register.tsx'), 'register-submit'],
+    [join('screens', 'register', 'index.tsx'), 'register-submit'],
     [join('screens', 'reset-password', 'index.tsx'), 'reset-submit'],
   ] as const;
 
@@ -536,8 +536,8 @@ describe('#98 R11: la carta y la spec de Food registran la enmienda', () => {
 
 describe('#166 R2: todo primario sólido lleva el labio detrás de bg-accent', () => {
   const expected = {
-    [join('app', '(auth)', 'login.tsx')]: 1,
-    [join('app', '(auth)', 'register.tsx')]: 1,
+    [join('screens', 'login', 'index.tsx')]: 1,
+    [join('screens', 'register', 'index.tsx')]: 1,
     [join('components', 'empty-state.tsx')]: 1,
     [join('screens', 'add-pet', 'index.tsx')]: 1,
     [join('screens', 'add-reminder', 'index.tsx')]: 1,

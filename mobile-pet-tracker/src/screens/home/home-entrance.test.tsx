@@ -126,4 +126,11 @@ describe('#152 R4: HomeEntrance escalona por índice y respeta reduce motion', (
       screen.getByTestId('child'),
     ]);
   });
+
+  it('#167 R4: pasa className tal cual sin añadir style', async () => {
+    await render(<HomeEntrance index={0} testID="entrance" className="gap-4"><Text>Hijo</Text></HomeEntrance>);
+    const entrance = screen.getByTestId('entrance');
+    expect(entrance.props.className).toBe('gap-4');
+    expect(entrance.props.style).toBeUndefined();
+  });
 });

@@ -1,0 +1,314 @@
+import { Image } from 'expo-image';
+import { HeaderHeightContext } from 'expo-router/react-navigation';
+import { router } from 'expo-router';
+import {
+  Button,
+  Checkbox,
+  FieldError,
+  Input,
+  Label,
+  TextField,
+} from 'heroui-native';
+import { useContext, useState } from 'react';
+import { KeyboardAvoidingView, ScrollView, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { AlertCircle } from 'reicon-react-native';
+
+import { login, register } from '../../api/auth';
+import type { FieldError as ApiFieldError } from '../../api/types';
+import { useAuth } from '../../providers/auth-provider';
+import { useTranslate } from '../../providers/language-provider';
+import { useThemeColors } from '../../theme/use-theme-colors';
+import { HomeEntrance } from '../home/home-entrance';
+
+type RegisterField =
+  | 'firstName'
+  | 'lastName'
+  | 'email'
+  | 'phone'
+  | 'password'
+  | 'passwordConfirmation'
+  | 'country';
+
+type RegisterFieldErrors = Partial<Record<RegisterField, string>>;
+
+const registerFields = new Set<RegisterField>([
+  'firstName',
+  'lastName',
+  'email',
+  'phone',
+  'password',
+  'passwordConfirmation',
+  'country',
+]);
+
+function isRegisterField(path: string): path is RegisterField {
+  return registerFields.has(path as RegisterField);
+}
+
+function mapValidationErrors(errors: ApiFieldError[]): {
+  fields: RegisterFieldErrors;
+  general: string | null;
+} {
+  const fields: RegisterFieldErrors = {};
+  const general: string[] = [];
+
+  for (const error of errors) {
+    if (isRegisterField(error.path)) {
+      fields[error.path] = fields[error.path]
+        ? `${fields[error.path]}\n${error.message}`
+        : error.message;
+    } else {
+      general.push(error.message);
+    }
+  }
+
+  return { fields, general: general.length > 0 ? general.join('\n') : null };
+}
+
+function deviceTimezone(): string | undefined {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+export function RegisterScreen() {
+  const headerHeight = useContext(HeaderHeightContext);
+  const [danger] = useThemeColors(['danger']);
+  const insets = useSafeAreaInsets();
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('');
+  const [passwordConfirmation, setPasswordConfirmation] = useState('');
+  const [country, setCountry] = useState('');
+  const [terms, setTerms] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<RegisterFieldErrors>({});
+  const [generalError, setGeneralError] = useState<string | null>(null);
+  const { signIn } = useAuth();
+  const t = useTranslate();
+
+  async function handleSubmit() {
+    setSubmitting(true);
+    setFieldErrors({});
+    setGeneralError(null);
+
+    try {
+      const result = await register(process.env.EXPO_PUBLIC_API_URL, {
+        firstName,
+        lastName,
+        email,
+        phone,
+        password,
+        passwordConfirmation,
+        country,
+        timezone: deviceTimezone(),
+        termsAccepted: true,
+      });
+
+      switch (result.kind) {
+        case 'ok': {
+          const loginResult = await login(process.env.EXPO_PUBLIC_API_URL, {
+            email,
+            password,
+          });
+
+          if (loginResult.kind === 'ok') {
+            await signIn(loginResult.accessToken);
+            router.replace('/home');
+          } else {
+            router.replace('/login');
+          }
+          return;
+        }
+        case 'email-taken':
+          setGeneralError(t('register.emailAlreadyRegistered'));
+          return;
+        case 'validation': {
+          const validation = mapValidationErrors(result.errors);
+          setFieldErrors(validation.fields);
+          setGeneralError(validation.general);
+          return;
+        }
+        case 'unreachable':
+          setGeneralError(t('common.cannotReachServer'));
+          return;
+        case 'error':
+        case 'missing-config':
+          setGeneralError(t('common.somethingWentWrong'));
+      }
+    } catch {
+      setGeneralError(t('common.somethingWentWrong'));
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <KeyboardAvoidingView
+      testID="screen-register"
+      className="flex-1"
+      behavior="padding"
+      keyboardVerticalOffset={headerHeight}
+    >
+      <ScrollView
+        testID="register-form"
+        className="flex-1 bg-background"
+        keyboardShouldPersistTaps="handled"
+        contentInsetAdjustmentBehavior="automatic"
+        contentContainerStyle={{
+          padding: 24,
+          gap: 16,
+          paddingTop: insets.top + 12,
+          paddingBottom: insets.bottom + 96,
+        }}
+      >
+        <HomeEntrance testID="register-header" index={0} className="flex-row items-center justify-center gap-3">
+          <Image
+            testID="register-pingo"
+            source={require('../../../assets/images/pingo-clipboard.webp')}
+            style={{ width: 56, height: 56 }}
+          />
+          <Text className="text-center text-2xl font-black text-foreground">
+            {t('register.createAccount')}
+          </Text>
+        </HomeEntrance>
+
+        <TextField isInvalid={Boolean(fieldErrors.firstName)}>
+          <Label className="text-xs font-semibold text-foreground">
+            {t('register.firstName')}
+          </Label>
+          <Input
+            testID="register-first-name"
+            className="rounded-xl bg-default"
+            value={firstName}
+            onChangeText={setFirstName}
+          />
+          <FieldError testID="register-first-name-error">
+            {fieldErrors.firstName}
+          </FieldError>
+        </TextField>
+
+        <TextField isInvalid={Boolean(fieldErrors.lastName)}>
+          <Label className="text-xs font-semibold text-foreground">
+            {t('register.lastName')}
+          </Label>
+          <Input
+            testID="register-last-name"
+            className="rounded-xl bg-default"
+            value={lastName}
+            onChangeText={setLastName}
+          />
+          <FieldError testID="register-last-name-error">{fieldErrors.lastName}</FieldError>
+        </TextField>
+
+        <TextField isInvalid={Boolean(fieldErrors.email)}>
+          <Label className="text-xs font-semibold text-foreground">
+            {t('register.email')}
+          </Label>
+          <Input
+            testID="register-email"
+            className="rounded-xl bg-default"
+            autoCapitalize="none"
+            keyboardType="email-address"
+            value={email}
+            onChangeText={setEmail}
+          />
+          <FieldError testID="register-email-error">{fieldErrors.email}</FieldError>
+        </TextField>
+
+        <TextField isInvalid={Boolean(fieldErrors.phone)}>
+          <Label className="text-xs font-semibold text-foreground">
+            {t('register.phone')}
+          </Label>
+          <Input
+            testID="register-phone"
+            className="rounded-xl bg-default"
+            keyboardType="phone-pad"
+            value={phone}
+            onChangeText={setPhone}
+          />
+          <FieldError testID="register-phone-error">{fieldErrors.phone}</FieldError>
+        </TextField>
+
+        <TextField isInvalid={Boolean(fieldErrors.password)}>
+          <Label className="text-xs font-semibold text-foreground">
+            {t('register.password')}
+          </Label>
+          <Input
+            testID="register-password"
+            className="rounded-xl bg-default"
+            secureTextEntry
+            value={password}
+            onChangeText={setPassword}
+          />
+          <FieldError testID="register-password-error">{fieldErrors.password}</FieldError>
+        </TextField>
+
+        <TextField isInvalid={Boolean(fieldErrors.passwordConfirmation)}>
+          <Label className="text-xs font-semibold text-foreground">
+            {t('register.confirmPassword')}
+          </Label>
+          <Input
+            testID="register-password-confirmation"
+            className="rounded-xl bg-default"
+            secureTextEntry
+            value={passwordConfirmation}
+            onChangeText={setPasswordConfirmation}
+          />
+          <FieldError testID="register-password-confirmation-error">
+            {fieldErrors.passwordConfirmation}
+          </FieldError>
+        </TextField>
+
+        <TextField isInvalid={Boolean(fieldErrors.country)}>
+          <Label className="text-xs font-semibold text-foreground">
+            {t('register.country')}
+          </Label>
+          <Input
+            testID="register-country"
+            className="rounded-xl bg-default"
+            autoCapitalize="characters"
+            maxLength={2}
+            value={country}
+            onChangeText={(value) => setCountry(value.toUpperCase())}
+          />
+          <FieldError testID="register-country-error">{fieldErrors.country}</FieldError>
+        </TextField>
+
+        <View className="flex-row items-center gap-3">
+          <Checkbox
+            testID="register-terms"
+            isSelected={terms}
+            onSelectedChange={setTerms}
+          />
+          <Text className="text-foreground">{t('register.iAcceptTerms')}</Text>
+        </View>
+
+        {generalError ? (
+          <View testID="register-error-row" className="flex-row items-center gap-1.5">
+            <AlertCircle size={14} color={danger} />
+            <Text testID="register-error" className="flex-1 text-sm font-semibold text-danger">
+              {generalError}
+            </Text>
+          </View>
+        ) : null}
+
+        <Button
+          testID="register-submit"
+          className="w-full rounded-xl bg-accent border-b-4 border-black/25"
+          isDisabled={!terms || submitting}
+          onPress={() => void handleSubmit()}
+        >
+          <Button.Label className="font-bold text-accent-foreground">
+            {t('register.createAccount')}
+          </Button.Label>
+        </Button>
+      </ScrollView>
+    </KeyboardAvoidingView>
+  );
+}
