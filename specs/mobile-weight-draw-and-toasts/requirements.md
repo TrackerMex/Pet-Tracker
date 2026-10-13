@@ -598,4 +598,4 @@ texto literal de tasks.md:
 
 ### Aprobación de la Enmienda E2
 
-- [ ] Enmienda E2 aprobada por humano (fecha: ____, vía Notion) ← gate obligatorio antes de la Reanudación 6 de Codex
+- [x] Enmienda E2 aprobada por humano (fecha: 2026-10-12, vía Notion) ← gate obligatorio antes de la Reanudación 6 de Codex
