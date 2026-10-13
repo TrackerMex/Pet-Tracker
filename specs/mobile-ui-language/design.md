@@ -261,7 +261,7 @@ total sin repetir es 252 + 3 del interruptor = **255**.
 | 201 | `register.phone` | `Phone` | `Teléfono` |
 | 214 | `register.password` | `Password` | `Contraseña` |
 | 228 | `register.confirmPassword` | `Confirm password` | `Confirmar contraseña` |
-| 244 | `register.country` | `Country (2-letter code)` | `País (código de 2 letras)` |
+| 244 | `register.country` | `Country` | `País` | ← literal cambiado por #172 (R16); antes `Country (2-letter code)` / `País (código de 2 letras)` |
 | 263 | `register.iAcceptTerms` | `I accept the terms` | `Acepto los términos` |
 | 279 | `register.createAccount` | `Create account` | `Crear cuenta` |
 
@@ -961,6 +961,15 @@ copy completa en cada una.
 | — | `alerts.sectionEarlier` | `Earlier` | `Anteriores` | ← añadida por #170 (R1) |
 | — | `alerts.distanceFromZone` | `{{distance}} from {{zone}}` | `A {{distance}} de {{zone}}` | ← añadida por #170 (R1) |
 | — | `alerts.viewOnMap` | `View on map` | `Ver en el mapa` | ← añadida por #170 (R1) |
+
+### §2.27 — Añadidos por #172 — Las pantallas de cuenta como el canvas
+
+| # | Clave | `en` | `es` | Origen |
+|---|---|---|---|---|
+| — | `common.back` | `Back` | `Volver` | ← añadida por #172 (R16) |
+| — | `common.showPassword` | `Show password` | `Mostrar contraseña` | ← añadida por #172 (R16) |
+| — | `common.hidePassword` | `Hide password` | `Ocultar contraseña` | ← añadida por #172 (R16) |
+| — | `register.country` | `Country` | `País` | ← cambiada por #172 (R16) |
 
 ## 3. La infraestructura
 
