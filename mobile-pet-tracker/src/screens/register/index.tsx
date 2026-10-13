@@ -197,7 +197,7 @@ export function RegisterScreen() {
             onChangeText={setFirstName}
           />
           <FieldError testID="register-first-name-error">
-            {fieldErrors.firstName}
+            {fieldErrors.firstName ? <FormError testID="register-first-name-message" message={fieldErrors.firstName} /> : null}
           </FieldError>
         </TextField>
 
@@ -213,7 +213,9 @@ export function RegisterScreen() {
             value={lastName}
             onChangeText={setLastName}
           />
-          <FieldError testID="register-last-name-error">{fieldErrors.lastName}</FieldError>
+          <FieldError testID="register-last-name-error">
+            {fieldErrors.lastName ? <FormError testID="register-last-name-message" message={fieldErrors.lastName} /> : null}
+          </FieldError>
         </TextField>
 
         <TextField isInvalid={Boolean(fieldErrors.email)}>
@@ -230,7 +232,9 @@ export function RegisterScreen() {
             value={email}
             onChangeText={setEmail}
           />
-          <FieldError testID="register-email-error">{fieldErrors.email}</FieldError>
+          <FieldError testID="register-email-error">
+            {fieldErrors.email ? <FormError testID="register-email-message" message={fieldErrors.email} /> : null}
+          </FieldError>
         </TextField>
 
         <TextField isInvalid={Boolean(fieldErrors.phone)}>
@@ -246,7 +250,9 @@ export function RegisterScreen() {
             value={phone}
             onChangeText={setPhone}
           />
-          <FieldError testID="register-phone-error">{fieldErrors.phone}</FieldError>
+          <FieldError testID="register-phone-error">
+            {fieldErrors.phone ? <FormError testID="register-phone-message" message={fieldErrors.phone} /> : null}
+          </FieldError>
         </TextField>
 
         <TextField isInvalid={Boolean(fieldErrors.password)}>
@@ -260,7 +266,9 @@ export function RegisterScreen() {
             value={password}
             onChangeText={setPassword}
           />
-          <FieldError testID="register-password-error">{fieldErrors.password}</FieldError>
+          <FieldError testID="register-password-error">
+            {fieldErrors.password ? <FormError testID="register-password-message" message={fieldErrors.password} /> : null}
+          </FieldError>
         </TextField>
 
         <TextField isInvalid={Boolean(fieldErrors.passwordConfirmation)}>
@@ -275,7 +283,7 @@ export function RegisterScreen() {
             onChangeText={setPasswordConfirmation}
           />
           <FieldError testID="register-password-confirmation-error">
-            {fieldErrors.passwordConfirmation}
+            {fieldErrors.passwordConfirmation ? <FormError testID="register-password-confirmation-message" message={fieldErrors.passwordConfirmation} /> : null}
           </FieldError>
         </TextField>
 
@@ -293,7 +301,9 @@ export function RegisterScreen() {
             value={country}
             onChangeText={(value) => setCountry(value.toUpperCase())}
           />
-          <FieldError testID="register-country-error">{fieldErrors.country}</FieldError>
+          <FieldError testID="register-country-error">
+            {fieldErrors.country ? <FormError testID="register-country-message" message={fieldErrors.country} /> : null}
+          </FieldError>
         </TextField>
 
         <View className="flex-row items-center gap-3">
