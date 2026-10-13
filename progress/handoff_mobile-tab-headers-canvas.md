@@ -2241,3 +2241,433 @@ Paso 2: traceability, c26, la lista cerrada (15) y c27, tal como estan
 en el CIERRE del handoff original, con las correcciones citadas arriba
 (fila R8 con c17 `3abdfbc3` + c17b `e37b72a3`).
 ```
+
+## Reanudación 13: bloque O de la Enmienda E3 (2026-10-13)
+
+> El `reviewer` rechazó en `00623a2e` el cierre de Codex (`53f0e8f9`). No
+> encontró fallos en la producción. Lo que faltaba era el `it` que fija
+> ciertas ramas de R5, R4.3 y R9.3 (O1-O3 del review). La Enmienda E3
+> añade ocho `it`, uno de ellos un `it.each` de tres filas: diez tests en
+> total. El barrido pre-firma del `reviewer` la dio por buena (N1-N3
+> incluidos), y el humano la firmó en `938188b8`.
+>
+> Los ocho `it` nacen verdes, así que no hay commit `feat`. La prueba de
+> que muerden son las sondas de mutación de requirements.md §E3. El
+> leader las midió en un worktree fuera del árbol, sobre el mismo código
+> de producción, aplicando los `it` uno a uno en el orden de esta
+> reanudación. Los recuentos acumulados de abajo salen de esa medida:
+> coinciden con tasks.md §Bloque O.
+>
+> La producción no cambia: el diff de `53f0e8f9` a HEAD en
+> `mobile-pet-tracker/` debe ser solo los dos ficheros de test. H0 sigue
+> siendo `b082f6e5`. Este commit toca este fichero y
+> `progress/current.md`, los dos fuera de la lista cerrada.
+
+Pegar en Codex CLI:
+
+```
+Worktree: /home/claude/sites/Pet-Tracker-wt-168   <- PRIMERA LINEA. Trabaja AQUI y en ningun otro sitio
+Reanudacion 13 de #168: el bloque O de la Enmienda E3 (ocho `it` que
+nacen verdes) y un cierre corto. NO repitas las Reanudaciones 1 a 12.
+NO lances ./init.sh ni toques Postgres ni LocalStack. Ejecuta y pega en
+progress/impl_mobile-tab-headers-canvas.md, bajo una seccion nueva
+«## Reanudacion 13»:
+  cd /home/claude/sites/Pet-Tracker-wt-168 && pwd
+  git branch --show-current
+  git rev-parse --short HEAD~1
+  git log --oneline b082f6e5..HEAD | wc -l
+  git log --oneline 53f0e8f9..HEAD
+  git status --short
+PARA si:
+- la branch no es feature/168-mobile-tab-headers-canvas;
+- HEAD~1 no es 938188b8 (la firma de la Enmienda E3);
+- el recuento no es 51;
+- el segundo log no son exactamente nueve commits: el del leader que
+  anade esta reanudacion y los ocho de 00623a2e a 938188b8 (review,
+  Enmienda E3 y su firma; no son tuyos);
+- `git status --short` no sale vacio.
+H0 sigue siendo b082f6e5. Siguen en vigor todas las reglas del handoff
+original (REGLAS CRITICAS, `<GUARDAS>`, `<LIMPIO>`, la regla de los `●`
+sin `  ● Console`), el `<LINT n>` con reintento de la Reanudacion 4, la
+regla de error de invocacion ampliada de la Reanudacion 8 y la espera
+de la Reanudacion 11. En esta reanudacion `<LINT n>` es siempre
+`<LINT 0>`, y cada medida es la que va escrita en su paso.
+
+Lee antes de empezar, enteras, requirements.md §Enmienda E3 y tasks.md
+§Bloque O. El codigo de cada `it` es el literal de §E3.a, §E3.b y
+§E3.c: copialo tal cual, sin reformatear, sin cambiar titulos, fixtures
+ni aserciones, y sin tocar ningun otro `it`.
+
+Anclas, desde mobile-pet-tracker/
+(`cd /home/claude/sites/Pet-Tracker-wt-168/mobile-pet-tracker && pwd`):
+  grep -cF "describe('#168 R5: Perfil pinta chips pastel por dato'" src/screens/profile/index.test.tsx   -> 1
+  grep -cF "it('centra y agrupa los chips con gap-2'" src/screens/profile/index.test.tsx   -> 1
+  grep -cF "describe('#168 R4: Perfil sustituye el hero por profile-pet-card'" src/screens/profile/index.test.tsx   -> 1
+  grep -cF "it('no monta el hero compartido'" src/screens/profile/index.test.tsx   -> 1
+  grep -cF 'sin peso omite su chip' src/screens/profile/index.test.tsx   -> 0
+  grep -cF 'con la subida fallida deja change-photo' src/screens/profile/index.test.tsx   -> 0
+  grep -cF "describe('#168 R9: el anillo dice el porcentaje acotado'" 'src/app/(tabs)/__tests__/food.test.tsx'   -> 1
+  grep -cF "describe('#168 R10: el anillo transiciona con reduce motion'" 'src/app/(tabs)/__tests__/food.test.tsx'   -> 1
+  grep -cF 'anuncia el valor sin acotar' 'src/app/(tabs)/__tests__/food.test.tsx'   -> 0
+  grep -cF 'text: pet.currentWeightKg === null ? null : `${pet.currentWeightKg} kg`' src/screens/profile/index.tsx   -> 1
+  grep -cF "text: Number.isFinite(pet.ageMonths) ? t('profile.ageMonths', { months: pet.ageMonths }) : null" src/screens/profile/index.tsx   -> 1
+  grep -cF "pet.sterilized ? t('profile.sterilized') : t('profile.notSterilized')" src/screens/profile/index.tsx   -> 1
+  grep -cF 'text: pet.sterilized === null ? null : pet.sterilized ?' src/screens/profile/index.tsx   -> 1
+  grep -cF "slot: 'blue', text: pet.sex }" src/screens/profile/index.tsx   -> 1
+  grep -cF 'testID="change-photo"' src/screens/profile/index.tsx   -> 1
+  grep -cF 'testID="photo-upload-error"' src/screens/profile/index.tsx   -> 1
+  grep -cF 'now: kcalPct }}' 'src/app/(tabs)/food.tsx'   -> 1
+  git diff --name-only b082f6e5 HEAD -- . | wc -l   -> 9
+Si alguna no da su cifra, PARA.
+
+Reglas del bloque O:
+- Ocho pasos, O1 a O8, en ese orden, y un commit `test` por paso (c28 a
+  c35). Ningun commit `feat`. No toques ningun fichero de produccion
+  salvo para plantar una sonda, que siempre se revierte.
+- En cada paso, todo desde mobile-pet-tracker/ y sin pipe: (1) inserta
+  su bloque; (2) mide el verde; (3) planta sus sondas de UNA EN UNA, y
+  tras cada una mide, copia al impl la linea `Tests:`, el exit y los
+  `●` (sin los `  ● Console`), revierte con `git checkout HEAD --` y
+  comprueba `limpio=0`; (4) ejecuta su cadena.
+- El fichero de test sigue modificado sin commitear mientras sondeas:
+  por eso el `git diff --quiet` de `limpio` lleva las dos rutas de
+  produccion. Nunca `git checkout <commit> --`.
+- Si un verde no da su `Tests:`, o una sonda no da EXACTAMENTE su linea
+  `Tests:` y sus `●` (los mismos titulos, ni uno mas ni uno menos), PARA
+  con la sonda revertida y `limpio=0`. No re-midas ni toques el test.
+- Sondas (sustituciones literales; localizalas con `grep -nF`, nunca por
+  numero de linea; cada cadena de origen sale una vez, lo fijan las
+  anclas):
+  P2  en src/screens/profile/index.tsx, sustituye
+        text: pet.currentWeightKg === null ? null : `${pet.currentWeightKg} kg`
+      por
+        text: `${pet.currentWeightKg} kg`
+  P2t mismo fichero, sustituye
+        text: pet.currentWeightKg === null ? null : `${pet.currentWeightKg} kg`
+      por
+        text: pet.currentWeightKg ? `${pet.currentWeightKg} kg` : null
+  P3  mismo fichero, sustituye
+        text: Number.isFinite(pet.ageMonths) ? t('profile.ageMonths', { months: pet.ageMonths }) : null
+      por
+        text: t('profile.ageMonths', { months: pet.ageMonths })
+  P3t mismo fichero, sustituye
+        text: Number.isFinite(pet.ageMonths) ? t('profile.ageMonths', { months: pet.ageMonths }) : null
+      por
+        text: pet.ageMonths ? t('profile.ageMonths', { months: pet.ageMonths }) : null
+  N1  mismo fichero, sustituye `text: Number.isFinite(pet.ageMonths) ?`
+      por `text: !Number.isNaN(pet.ageMonths) ?`
+  P4c mismo fichero, sustituye
+        pet.sterilized ? t('profile.sterilized') : t('profile.notSterilized')
+      por
+        pet.sterilized !== undefined ? t('profile.sterilized') : t('profile.notSterilized')
+  N2  mismo fichero, sustituye
+        text: pet.sterilized === null ? null : pet.sterilized ?
+      por
+        text: pet.sex === null ? null : pet.sterilized ?
+  N3  mismo fichero, sustituye `slot: 'blue', text: pet.sex }`
+      por `slot: 'blue', text: pet.sterilized === null ? null : pet.sex }`
+  P13 mismo fichero: el bloque de cinco lineas que empieza en
+      `{photoError ? (` y acaba en `) : null}` (va justo despues del
+      `</Button>` de `testID="change-photo"`) se mueve, con la misma
+      sangria, justo delante de la linea `<Button` que abre el boton de
+      `testID="change-photo"`.
+  F17 en src/app/(tabs)/food.tsx, sustituye `now: kcalPct }}` por
+      `now: Math.min(kcalPct, 100) }}`.
+
+Desde aqui, cada paso. Las lineas que empiezan por `# --` son
+cabeceras, no comandos. Cada cadena empieza en su `<GUARDAS>` y acaba en
+su `git commit`, ese incluido.
+
+# -- O1: R5, peso null (sonda P2) --
+Inserta el primer bloque de §E3.a (`it('sin peso omite su chip y
+conserva sexo, esterilización y edad en sus huecos'`) dentro de
+`describe('#168 R5: Perfil pinta chips pastel por dato')`, justo antes
+de `it('centra y agrupa los chips con gap-2'`, con una linea en blanco
+entre los dos `it`.
+Verde:
+  FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/profile/index.test.tsx > /tmp/168-o1.txt 2>&1; echo "exit=$?"
+    -> exit=0 y `Tests:       60 passed, 60 total`
+Sonda P2: plantala (tabla de sondas) y despues:
+  FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/profile/index.test.tsx > /tmp/168-o1-P2.txt 2>&1; echo "exit=$?"
+    -> exit=1, `Tests:       1 failed, 59 passed, 60 total` y 1 `●`:
+     ● #168 R5: Perfil pinta chips pastel por dato › sin peso omite su chip y conserva sexo, esterilización y edad en sus huecos
+  git checkout HEAD -- src/screens/profile/index.tsx
+  git diff --quiet -- src/screens/profile/index.tsx 'src/app/(tabs)/food.tsx' && git diff --cached --quiet; echo "limpio=$?"   -> limpio=0
+c28, con la sonda revertida y `limpio=0`:
+  <GUARDAS> > /tmp/168-o1-guardas.txt 2>&1; echo "exit=$?"
+  grep -qE '^Tests: +60 passed, 60 total$' /tmp/168-o1.txt \
+    && grep -qE '^Tests: +92 passed, 92 total$' /tmp/168-o1-guardas.txt \
+    && test ! -e .expo/types/router.d.ts && bun run typecheck && <LINT 0> \
+    && git add src/screens/profile/index.test.tsx \
+    && test "$(git diff --cached --name-only)" = 'mobile-pet-tracker/src/screens/profile/index.test.tsx' \
+    && <LIMPIO> \
+    && git commit -m 'test(mobile): sin peso, Perfil omite su chip (#168 R5)' -m 'Nace verde (Enmienda E3). Sonda antes del commit, revertida con limpio=0:
+P2 peso sin la guarda === null: 1 failed (sin peso omite su chip)'
+
+# -- O2: R5, edad no finita (sondas P3 y N1) --
+Inserta el segundo bloque de §E3.a (el `it.each` de `con la edad %p
+omite su chip y deja el peso en violeta`) justo antes de
+`it('centra y agrupa los chips con gap-2'`, es decir, detras del de O1,
+con una linea en blanco entre bloques.
+Verde:
+  FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/profile/index.test.tsx > /tmp/168-o2.txt 2>&1; echo "exit=$?"
+    -> exit=0 y `Tests:       63 passed, 63 total`
+Sonda P3: plantala (tabla de sondas) y despues:
+  FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/profile/index.test.tsx > /tmp/168-o2-P3.txt 2>&1; echo "exit=$?"
+    -> exit=1, `Tests:       3 failed, 60 passed, 63 total` y 3 `●`:
+     ● #168 R5: Perfil pinta chips pastel por dato › con la edad NaN omite su chip y deja el peso en violeta
+     ● #168 R5: Perfil pinta chips pastel por dato › con la edad Infinity omite su chip y deja el peso en violeta
+     ● #168 R5: Perfil pinta chips pastel por dato › con la edad -Infinity omite su chip y deja el peso en violeta
+  git checkout HEAD -- src/screens/profile/index.tsx
+  git diff --quiet -- src/screens/profile/index.tsx 'src/app/(tabs)/food.tsx' && git diff --cached --quiet; echo "limpio=$?"   -> limpio=0
+Sonda N1: plantala (tabla de sondas) y despues:
+  FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/profile/index.test.tsx > /tmp/168-o2-N1.txt 2>&1; echo "exit=$?"
+    -> exit=1, `Tests:       2 failed, 61 passed, 63 total` y 2 `●`:
+     ● #168 R5: Perfil pinta chips pastel por dato › con la edad Infinity omite su chip y deja el peso en violeta
+     ● #168 R5: Perfil pinta chips pastel por dato › con la edad -Infinity omite su chip y deja el peso en violeta
+  git checkout HEAD -- src/screens/profile/index.tsx
+  git diff --quiet -- src/screens/profile/index.tsx 'src/app/(tabs)/food.tsx' && git diff --cached --quiet; echo "limpio=$?"   -> limpio=0
+c29, con las sondas revertidas y `limpio=0`:
+  <GUARDAS> > /tmp/168-o2-guardas.txt 2>&1; echo "exit=$?"
+  grep -qE '^Tests: +63 passed, 63 total$' /tmp/168-o2.txt \
+    && grep -qE '^Tests: +92 passed, 92 total$' /tmp/168-o2-guardas.txt \
+    && test ! -e .expo/types/router.d.ts && bun run typecheck && <LINT 0> \
+    && git add src/screens/profile/index.test.tsx \
+    && test "$(git diff --cached --name-only)" = 'mobile-pet-tracker/src/screens/profile/index.test.tsx' \
+    && <LIMPIO> \
+    && git commit -m 'test(mobile): con la edad no finita, Perfil omite su chip (#168 R5)' -m 'Nace verde (Enmienda E3). Sondas antes del commit, una a una, revertidas con limpio=0:
+P3 edad sin la guarda Number.isFinite: 3 failed (NaN, Infinity y -Infinity)
+N1 guarda !Number.isNaN: 2 failed (Infinity y -Infinity)'
+
+# -- O3: R5, «Sin esterilizar» (sonda P4c) --
+Inserta el tercer bloque de §E3.a (`it('sin esterilizar pinta el chip
+verde con «Sin esterilizar»'`) en el mismo sitio, detras del de O2.
+Verde:
+  FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/profile/index.test.tsx > /tmp/168-o3.txt 2>&1; echo "exit=$?"
+    -> exit=0 y `Tests:       64 passed, 64 total`
+Sonda P4c: plantala (tabla de sondas) y despues:
+  FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/profile/index.test.tsx > /tmp/168-o3-P4c.txt 2>&1; echo "exit=$?"
+    -> exit=1, `Tests:       1 failed, 63 passed, 64 total` y 1 `●`:
+     ● #168 R5: Perfil pinta chips pastel por dato › sin esterilizar pinta el chip verde con «Sin esterilizar»
+  git checkout HEAD -- src/screens/profile/index.tsx
+  git diff --quiet -- src/screens/profile/index.tsx 'src/app/(tabs)/food.tsx' && git diff --cached --quiet; echo "limpio=$?"   -> limpio=0
+c30, con la sonda revertida y `limpio=0`:
+  <GUARDAS> > /tmp/168-o3-guardas.txt 2>&1; echo "exit=$?"
+  grep -qE '^Tests: +64 passed, 64 total$' /tmp/168-o3.txt \
+    && grep -qE '^Tests: +92 passed, 92 total$' /tmp/168-o3-guardas.txt \
+    && test ! -e .expo/types/router.d.ts && bun run typecheck && <LINT 0> \
+    && git add src/screens/profile/index.test.tsx \
+    && test "$(git diff --cached --name-only)" = 'mobile-pet-tracker/src/screens/profile/index.test.tsx' \
+    && <LIMPIO> \
+    && git commit -m 'test(mobile): chip verde «Sin esterilizar» en Perfil (#168 R5)' -m 'Nace verde (Enmienda E3). Sonda antes del commit, revertida con limpio=0:
+P4c guarda sterilized !== undefined: 1 failed (sin esterilizar pinta el chip verde)'
+
+# -- O4: R5, 0 meses y 0 kg (sondas P2t y P3t) --
+Inserta el cuarto bloque de §E3.a (`it('con 0 meses y 0 kg pinta los
+cuatro chips'`) en el mismo sitio, detras del de O3.
+Verde:
+  FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/profile/index.test.tsx > /tmp/168-o4.txt 2>&1; echo "exit=$?"
+    -> exit=0 y `Tests:       65 passed, 65 total`
+Sonda P2t: plantala (tabla de sondas) y despues:
+  FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/profile/index.test.tsx > /tmp/168-o4-P2t.txt 2>&1; echo "exit=$?"
+    -> exit=1, `Tests:       1 failed, 64 passed, 65 total` y 1 `●`:
+     ● #168 R5: Perfil pinta chips pastel por dato › con 0 meses y 0 kg pinta los cuatro chips
+  git checkout HEAD -- src/screens/profile/index.tsx
+  git diff --quiet -- src/screens/profile/index.tsx 'src/app/(tabs)/food.tsx' && git diff --cached --quiet; echo "limpio=$?"   -> limpio=0
+Sonda P3t: plantala (tabla de sondas) y despues:
+  FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/profile/index.test.tsx > /tmp/168-o4-P3t.txt 2>&1; echo "exit=$?"
+    -> exit=1, `Tests:       3 failed, 62 passed, 65 total` y 3 `●`:
+     ● #168 R5: Perfil pinta chips pastel por dato › con la edad Infinity omite su chip y deja el peso en violeta
+     ● #168 R5: Perfil pinta chips pastel por dato › con la edad -Infinity omite su chip y deja el peso en violeta
+     ● #168 R5: Perfil pinta chips pastel por dato › con 0 meses y 0 kg pinta los cuatro chips
+  git checkout HEAD -- src/screens/profile/index.tsx
+  git diff --quiet -- src/screens/profile/index.tsx 'src/app/(tabs)/food.tsx' && git diff --cached --quiet; echo "limpio=$?"   -> limpio=0
+c31, con las sondas revertidas y `limpio=0`:
+  <GUARDAS> > /tmp/168-o4-guardas.txt 2>&1; echo "exit=$?"
+  grep -qE '^Tests: +65 passed, 65 total$' /tmp/168-o4.txt \
+    && grep -qE '^Tests: +92 passed, 92 total$' /tmp/168-o4-guardas.txt \
+    && test ! -e .expo/types/router.d.ts && bun run typecheck && <LINT 0> \
+    && git add src/screens/profile/index.test.tsx \
+    && test "$(git diff --cached --name-only)" = 'mobile-pet-tracker/src/screens/profile/index.test.tsx' \
+    && <LIMPIO> \
+    && git commit -m 'test(mobile): 0 meses y 0 kg pintan sus chips (#168 R5)' -m 'Nace verde (Enmienda E3). Sondas antes del commit, una a una, revertidas con limpio=0:
+P2t guarda de peso por truthiness: 1 failed (0 meses y 0 kg)
+P3t guarda de edad por truthiness: 3 failed (0 meses y 0 kg, Infinity y -Infinity)'
+
+# -- O5: R5.3, sin sexo (sonda N2) --
+Inserta el quinto bloque de §E3.a (`it('sin sexo conserva
+esterilización, edad y peso en sus huecos'`) en el mismo sitio, detras
+del de O4.
+Verde:
+  FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/profile/index.test.tsx > /tmp/168-o5.txt 2>&1; echo "exit=$?"
+    -> exit=0 y `Tests:       66 passed, 66 total`
+Sonda N2: plantala (tabla de sondas) y despues:
+  FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/profile/index.test.tsx > /tmp/168-o5-N2.txt 2>&1; echo "exit=$?"
+    -> exit=1, `Tests:       1 failed, 65 passed, 66 total` y 1 `●`:
+     ● #168 R5: Perfil pinta chips pastel por dato › sin sexo conserva esterilización, edad y peso en sus huecos
+  git checkout HEAD -- src/screens/profile/index.tsx
+  git diff --quiet -- src/screens/profile/index.tsx 'src/app/(tabs)/food.tsx' && git diff --cached --quiet; echo "limpio=$?"   -> limpio=0
+c32, con la sonda revertida y `limpio=0`:
+  <GUARDAS> > /tmp/168-o5-guardas.txt 2>&1; echo "exit=$?"
+  grep -qE '^Tests: +66 passed, 66 total$' /tmp/168-o5.txt \
+    && grep -qE '^Tests: +92 passed, 92 total$' /tmp/168-o5-guardas.txt \
+    && test ! -e .expo/types/router.d.ts && bun run typecheck && <LINT 0> \
+    && git add src/screens/profile/index.test.tsx \
+    && test "$(git diff --cached --name-only)" = 'mobile-pet-tracker/src/screens/profile/index.test.tsx' \
+    && <LIMPIO> \
+    && git commit -m 'test(mobile): sin sexo, Perfil conserva los otros chips (#168 R5)' -m 'Nace verde (Enmienda E3). Sonda antes del commit, revertida con limpio=0:
+N2 esterilizado leyendo pet.sex: 1 failed (sin sexo conserva)'
+
+# -- O6: R5.3, sin esterilizacion (sondas N3 y N2) --
+Inserta el sexto bloque de §E3.a (`it('sin esterilización conserva
+sexo, edad y peso en sus huecos'`) en el mismo sitio, detras del de O5.
+Verde:
+  FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/profile/index.test.tsx > /tmp/168-o6.txt 2>&1; echo "exit=$?"
+    -> exit=0 y `Tests:       67 passed, 67 total`
+Sonda N3: plantala (tabla de sondas) y despues:
+  FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/profile/index.test.tsx > /tmp/168-o6-N3.txt 2>&1; echo "exit=$?"
+    -> exit=1, `Tests:       1 failed, 66 passed, 67 total` y 1 `●`:
+     ● #168 R5: Perfil pinta chips pastel por dato › sin esterilización conserva sexo, edad y peso en sus huecos
+  git checkout HEAD -- src/screens/profile/index.tsx
+  git diff --quiet -- src/screens/profile/index.tsx 'src/app/(tabs)/food.tsx' && git diff --cached --quiet; echo "limpio=$?"   -> limpio=0
+Sonda N2: plantala (tabla de sondas) y despues:
+  FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/profile/index.test.tsx > /tmp/168-o6-N2.txt 2>&1; echo "exit=$?"
+    -> exit=1, `Tests:       2 failed, 65 passed, 67 total` y 2 `●`:
+     ● #168 R5: Perfil pinta chips pastel por dato › sin sexo conserva esterilización, edad y peso en sus huecos
+     ● #168 R5: Perfil pinta chips pastel por dato › sin esterilización conserva sexo, edad y peso en sus huecos
+  git checkout HEAD -- src/screens/profile/index.tsx
+  git diff --quiet -- src/screens/profile/index.tsx 'src/app/(tabs)/food.tsx' && git diff --cached --quiet; echo "limpio=$?"   -> limpio=0
+c33, con las sondas revertidas y `limpio=0`:
+  <GUARDAS> > /tmp/168-o6-guardas.txt 2>&1; echo "exit=$?"
+  grep -qE '^Tests: +67 passed, 67 total$' /tmp/168-o6.txt \
+    && grep -qE '^Tests: +92 passed, 92 total$' /tmp/168-o6-guardas.txt \
+    && test ! -e .expo/types/router.d.ts && bun run typecheck && <LINT 0> \
+    && git add src/screens/profile/index.test.tsx \
+    && test "$(git diff --cached --name-only)" = 'mobile-pet-tracker/src/screens/profile/index.test.tsx' \
+    && <LIMPIO> \
+    && git commit -m 'test(mobile): sin esterilización, Perfil conserva los otros chips (#168 R5)' -m 'Nace verde (Enmienda E3). Sondas antes del commit, una a una, revertidas con limpio=0:
+N3 sexo leyendo pet.sterilized: 1 failed (sin esterilización conserva)
+N2 esterilizado leyendo pet.sex: 2 failed (sin sexo conserva y sin esterilización conserva)'
+
+# -- O7: R4.3, photo-upload-error tras change-photo (sonda P13) --
+Inserta el bloque de §E3.b (`it('con la subida fallida deja
+change-photo y luego photo-upload-error tras la tarjeta'`) dentro de
+`describe('#168 R4: Perfil sustituye el hero por profile-pet-card')`,
+justo antes de `it('no monta el hero compartido'`, con una linea en
+blanco entre los dos `it`.
+Verde:
+  FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/profile/index.test.tsx > /tmp/168-o7.txt 2>&1; echo "exit=$?"
+    -> exit=0 y `Tests:       68 passed, 68 total`
+Sonda P13: plantala (tabla de sondas) y despues:
+  FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/profile/index.test.tsx > /tmp/168-o7-P13.txt 2>&1; echo "exit=$?"
+    -> exit=1, `Tests:       1 failed, 67 passed, 68 total` y 1 `●`:
+     ● #168 R4: Perfil sustituye el hero por profile-pet-card › con la subida fallida deja change-photo y luego photo-upload-error tras la tarjeta
+  git checkout HEAD -- src/screens/profile/index.tsx
+  git diff --quiet -- src/screens/profile/index.tsx 'src/app/(tabs)/food.tsx' && git diff --cached --quiet; echo "limpio=$?"   -> limpio=0
+c34, con la sonda revertida y `limpio=0`:
+  <GUARDAS> > /tmp/168-o7-guardas.txt 2>&1; echo "exit=$?"
+  grep -qE '^Tests: +68 passed, 68 total$' /tmp/168-o7.txt \
+    && grep -qE '^Tests: +92 passed, 92 total$' /tmp/168-o7-guardas.txt \
+    && test ! -e .expo/types/router.d.ts && bun run typecheck && <LINT 0> \
+    && git add src/screens/profile/index.test.tsx \
+    && test "$(git diff --cached --name-only)" = 'mobile-pet-tracker/src/screens/profile/index.test.tsx' \
+    && <LIMPIO> \
+    && git commit -m 'test(mobile): photo-upload-error va tras change-photo (#168 R4)' -m 'Nace verde (Enmienda E3). Sonda antes del commit, revertida con limpio=0:
+P13 error de subida delante de change-photo: 1 failed (con la subida fallida)'
+
+# -- O8: R9.3, now sin acotar (sonda F17) --
+Inserta el bloque de §E3.c (`it('anuncia el valor sin acotar cuando
+pasa de 100'`) como ULTIMO `it` de
+`describe('#168 R9: el anillo dice el porcentaje acotado')`: justo
+antes de la linea `});` que cierra ese describe (la que va dos lineas
+en blanco antes de `describe('#168 R10: el anillo transiciona con
+reduce motion'`), con una linea en blanco entre el `it.each` y el
+`it` nuevo.
+Verde:
+  FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath 'src/app/(tabs)/__tests__/food.test.tsx' > /tmp/168-o8.txt 2>&1; echo "exit=$?"
+    -> exit=0 y `Tests:       84 passed, 84 total`
+Sonda F17: plantala (tabla de sondas) y despues:
+  FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath 'src/app/(tabs)/__tests__/food.test.tsx' > /tmp/168-o8-F17.txt 2>&1; echo "exit=$?"
+    -> exit=1, `Tests:       1 failed, 83 passed, 84 total` y 1 `●`:
+     ● #168 R9: el anillo dice el porcentaje acotado › anuncia el valor sin acotar cuando pasa de 100
+  git checkout HEAD -- 'src/app/(tabs)/food.tsx'
+  git diff --quiet -- src/screens/profile/index.tsx 'src/app/(tabs)/food.tsx' && git diff --cached --quiet; echo "limpio=$?"   -> limpio=0
+c35, con la sonda revertida y `limpio=0`:
+  <GUARDAS> > /tmp/168-o8-guardas.txt 2>&1; echo "exit=$?"
+  grep -qE '^Tests: +84 passed, 84 total$' /tmp/168-o8.txt \
+    && grep -qE '^Tests: +92 passed, 92 total$' /tmp/168-o8-guardas.txt \
+    && test ! -e .expo/types/router.d.ts && bun run typecheck && <LINT 0> \
+    && git add 'src/app/(tabs)/__tests__/food.test.tsx' \
+    && test "$(git diff --cached --name-only)" = 'mobile-pet-tracker/src/app/(tabs)/__tests__/food.test.tsx' \
+    && <LIMPIO> \
+    && git commit -m 'test(mobile): el anillo anuncia now sin acotar (#168 R9)' -m 'Nace verde (Enmienda E3). Sonda antes del commit, revertida con limpio=0:
+F17 now acotado a 100: 1 failed (anuncia el valor sin acotar)'
+
+# -- CIERRE --
+Paso 1, desde mobile-pet-tracker/, como comando PROPIO. Puede tardar
+hasta 90 minutos: no lo cortes ni lo repitas:
+  for i in $(seq 1 90); do pgrep -f 'node_modules/(\.bin/jest|jest-worker)|[i]nit\.sh' > /dev/null || break; sleep 60; done; pgrep -af 'node_modules/(\.bin/jest|jest-worker)'; pgrep -af '[i]nit\.sh'; echo "fin-espera"
+    -> solo la linea `fin-espera`
+Si sale algun proceso, PARA y copia la salida.
+
+Paso 2, nada mas terminar el paso 1, desde mobile-pet-tracker/, sin
+pipe y sin lanzar nada mas mientras corre:
+  FORCE_COLOR=0 bunx jest --testTimeout=30000 > /tmp/168-all-r13.txt 2>&1; echo "exit=$?"
+    -> exit=0, `Test Suites: 99 passed, 99 total` y
+       `Tests:       2843 passed, 2843 total` (2833 + 10)
+Copia las dos lineas y despues, como comando propio:
+  grep -c "reading 'canceled'" /tmp/168-all-r13.txt
+    -> 0
+El aviso `A worker process has failed to exit gracefully` sale en todo
+ALL movil desde main: copialo, no es parada. Si algo mas no da lo
+esperado, copia los `●` (sin los `  ● Console`) y la linea `FAIL` de
+cada suite roja, y PARA. No midas suites solas, no repitas el ALL, no
+toques tests ni codigo.
+
+Paso 3, solo con el paso 2 entero en verde. Desde mobile-pet-tracker/:
+  git diff --name-only 53f0e8f9 HEAD -- . | LC_ALL=C sort
+    -> exactamente estas dos lineas:
+       mobile-pet-tracker/src/app/(tabs)/__tests__/food.test.tsx
+       mobile-pet-tracker/src/screens/profile/index.test.tsx
+  git diff --name-only 53f0e8f9 HEAD -- ../docs ../backend-pet-tracker ../infra-pet-tracker | wc -l   -> 0
+  git log --oneline 938188b8..HEAD | wc -l   -> 9
+Si algo no da eso, PARA.
+
+Paso 4, traceability. En specs/mobile-tab-headers-canvas/traceability.md
+toca solo las filas R4, R5 y R9, y en cada una anade al final de cada
+columna (no borres nada):
+- columna de test: `; E3: ` y los titulos de sus `it` nuevos entre
+  comillas invertidas, separados por `; ` (R5: los seis de §E3.a, el de
+  edad con su `%p` tal como esta en el codigo; R4: el de §E3.b; R9: el
+  de §E3.c);
+- columna de commit: `; E3: ` y, por cada commit suyo de este bloque,
+  `<hash corto> <mensaje>` entre comillas invertidas seguido de
+  `(nace verde; sonda <ids> en impl)`, separados por `; ` (R5: c28-c33;
+  R4: c34; R9: c35).
+No toques el frontmatter ni ninguna otra fila. c36, desde la raiz
+(`cd /home/claude/sites/Pet-Tracker-wt-168 && pwd`):
+  git add specs/mobile-tab-headers-canvas/traceability.md progress/impl_mobile-tab-headers-canvas.md \
+    && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'progress/impl_mobile-tab-headers-canvas.md specs/mobile-tab-headers-canvas/traceability.md ' \
+    && git commit -m 'docs(mobile-tab-headers-canvas): #168 traceability E3'
+Despues, la lista cerrada, con salida al impl:
+  git diff --name-only b082f6e5 HEAD -- . ':!feature_list.json' ':!progress/current.md' ':!progress/handoff_mobile-tab-headers-canvas.md' ':!specs/mobile-tab-headers-canvas/requirements.md' ':!specs/mobile-tab-headers-canvas/design.md' ':!specs/mobile-tab-headers-canvas/tasks.md' ':!progress/review_mobile-tab-headers-canvas.md'
+    -> exactamente los 15 ficheros de la lista del handoff original
+y c37, desde la raiz:
+  git commit --only progress/impl_mobile-tab-headers-canvas.md -m 'docs(mobile-tab-headers-canvas): #168 closed file list E3'
+Al final, `git status --short` -> vacio. No rebasees despues de
+escribir hashes. NO hagas push ni abras la PR.
+
+Ficheros que tocas en esta reanudacion (4, ni uno mas; las sondas,
+revertidas, no cuentan):
+  mobile-pet-tracker/src/screens/profile/index.test.tsx
+  mobile-pet-tracker/src/app/(tabs)/__tests__/food.test.tsx
+  specs/mobile-tab-headers-canvas/traceability.md
+  progress/impl_mobile-tab-headers-canvas.md
+
+En el impl, bajo «## Reanudacion 13»: las comprobaciones previas y las
+anclas; por paso, el verde (`Tests:` y exit), cada sonda (`Tests:`,
+exit, sus `●`, `limpio=0`), GUARDAS, typecheck, lint y el hash del
+commit; el cierre (espera, ALL con sus dos lineas y el grep, los tres
+diffs del paso 3, la lista cerrada); y cualquier decision que la spec
+no cerrara literalmente.
+```
