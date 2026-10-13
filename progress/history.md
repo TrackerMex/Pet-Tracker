@@ -8821,7 +8821,7 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
   worktree; el explorer mide la brecha.
 - **Cierre**: errata «taNutrición» en S7 corregida; frontmatter de design,
   tasks y traceability a `approved`; `done` en `feature_list.json`; STATUS;
-  Notion (Implementado / Completado); PR contra `main`. Merge: humano. Tras el
+  Notion (Implementado / Completado); PR #213 contra `main`. Merge: humano. Tras el
   merge: #119 a `done` como superada por #168 (N1) y por el canvas del
   2026-10-06, y borrar el worktree.
 
@@ -8896,4 +8896,4 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
 - 2026-10-13: Codex ejecutó la Reanudación 7 (c29-c36, `b91c815c`..`ae6dddf5`) sin paradas. Gate del leader: `./init.sh` exit 0 sobre `ae6dddf5` (backend 187/1474, infra 2/14, móvil 100/2899, e2e 30 de 33 suites, 468 passed y 8 skipped), corrido en cola con sites-4c (#171) y sites-99 (#169). Reviewer ronda 2 **APROBADO** (`27c881a6`), en dos fases: lectura sin jest primero y sondas con jest solo tras los avisos de fin de los peers.
 - 2026-10-13: smoke R17 en dev build de Android (OnePlus Nord 5, tema claro y oscuro) firmado por el humano en `33a4bcde`. Observación del humano al firmar, literal: «listo ya firme #170 salio bien, al igual que otras sesiones falta mejorar el diseño para acercarnos al artifact». Se registra como #174 `mobile-alerts-canvas-fidelity`.
 - 2026-10-13: merges de main por merge, sin rebase: `fa71f66b` (#167 y #168) y `2f84afa3` (#169). Conflictos resueltos sumando las dos features: `consistency-classnames.test.ts` (inventario de cabeceras, total de `CONTINUOUS_CORNER` y base cerrada de `#69 R10`), la longitud del catálogo en `language-provider.test.tsx` (`+ 1` de #167 R5, `+ 2` de #169 R9 y `+ 7` de #170 R1) y la sección de #170 en `specs/mobile-ui-language/design.md`, que pasa a §2.26 (#167 tiene §2.24 y #169 §2.25; ningún test ancla el título de #170). `./init.sh` exit 0 sobre `2f84afa3` (backend 187/1474, infra 2/14, móvil 103/3101, e2e 30 de 33 suites, 468 passed y 8 skipped).
-- **Cierre**: trazabilidad `approved` con R17; `done` en `feature_list.json`; #174 registrada como `pending`; STATUS; Notion (Implementado / Completado); PR contra `main`. Merge: humano. Tras el merge: borrar el worktree y la rama local.
+- **Cierre**: trazabilidad `approved` con R17; `done` en `feature_list.json`; #174 registrada como `pending`; STATUS; Notion (Implementado / Completado); PR #213 contra `main`. Merge: humano. Tras el merge: borrar el worktree y la rama local.
