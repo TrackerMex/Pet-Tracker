@@ -11,10 +11,10 @@ tags: [mobile, ui, spec]
 
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
-| R1 | pendiente | pendiente |
-| R2 | pendiente | pendiente |
+| R1 | `src/theme/__tests__/global-css.test.ts::#172 R1: define text-13, text-15 y text-17 con sus valores exactos dentro de @theme`; sonda S1 verificada | `3a87fac0 test(mobile): tokens de texto 13, 15 y 17 (R1)`; `67ff28c3 feat(mobile): tokens de texto 13, 15 y 17 (R1)` |
+| R2 | `src/components/__tests__/back-button.test.tsx::#172 R2: es un botón de 44 con nombre accesible «Volver»`; `#172 R2: en inglés se llama «Back»`; `#172 R2: pinta ChevronLeft de 24 en foreground`; `#172 R2: con historial vuelve atrás y no reemplaza`; `#172 R2: sin historial reemplaza por el fallback`; sondas S2a/S2b verificadas | `b3fe30be test(mobile): BackButton vuelve o reemplaza (R2)`; `4cdb12db feat(mobile): BackButton (R2)` |
 | R3 | pendiente | pendiente |
-| R4 | pendiente | pendiente |
+| R4 | `src/components/__tests__/pingo-float.test.tsx::#172 R4: flota 10 px arriba en 1,5 s y vuelve en bucle`; `#172 R4: con reduce motion no se mueve`; `#172 R4: pasa testID y children`; `src/theme/__tests__/motion.test.ts::no exporta nada más`; `#172 R4: declara la flotación de Pingo del canvas: 10 px y medio ciclo de 1500 ms ease-in-out`. Pendiente: gate c8 bloqueado por el orden prescrito en T4; ver informe | `e31582c3 test(mobile): Pingo flota 10 px en 3 s en cuenta (R4)`; implementación pendiente |
 | R5 | pendiente | pendiente |
 | R6 | pendiente | pendiente |
 | R7 | pendiente | pendiente |
@@ -26,17 +26,24 @@ tags: [mobile, ui, spec]
 | R13 | pendiente | pendiente |
 | R14 | pendiente | pendiente |
 | R15 | pendiente | pendiente |
-| R16 | pendiente | pendiente |
+| R16 | `src/providers/__tests__/language-provider.test.tsx::mantiene la base más las claves de #68 y los mismos marcadores en ambos idiomas`; `#172 R16: declara las claves de cuenta en los dos idiomas y su registro`; sonda S16c verificada. Pendiente: T17/c32 y sondas S16a/S16b | `c1bd4a6a test(mobile): claves de Volver, del ojo y País (R16)`; `505332c9 feat(mobile): claves de Volver, del ojo y País (R16)`; c32 pendiente |
 | R17 | pendiente | pendiente |
 | R18 | pendiente | pendiente |
 | R19 | pendiente | pendiente |
 | R20 | pendiente | pendiente |
-| R21 | prueba de humo en dev build de Android (humano) | pendiente |
+| R21 | prueba de humo en dev build de Android (humano) | pendiente (humano) |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente", salvo R21, que
 se firma después de su veredicto.
 Convención de commit: `test(mobile): … (Rn)` para el rojo y `feat(mobile): …
 (Rn)` para el verde.
+
+**Implementación detenida el 2026-10-13 en T4/c8.** El gate produce un rojo
+inesperado en `no exporta nada más`: `.sort()` coloca `MOTION_PINGO_FLOAT_*`
+antes de `MOTION_PING_FROM`, mientras T4 y R4 los prescriben después de
+`MOTION_PING_TO_SCALE`. No se modificó ese contrato. La implementación de c8
+se retiró del árbol y quedó documentada, junto con la salida exacta, en
+`progress/impl_mobile-account-screens-polish.md`. No se ejecutaron T5–T22.
 
 Spec y Enmienda #172 aprobadas en Notion
 (https://app.notion.com/p/3f86115a9b27815b91d6ec6acd75a969): `Estado del gate` =
