@@ -1,0 +1,20 @@
+diff --git a/mobile-pet-tracker/src/screens/register/index.tsx b/mobile-pet-tracker/src/screens/register/index.tsx
+index e8b8bb71..16603beb 100644
+--- a/mobile-pet-tracker/src/screens/register/index.tsx
++++ b/mobile-pet-tracker/src/screens/register/index.tsx
+@@ -280,6 +280,7 @@ export function RegisterScreen() {
+           <FieldError testID="register-country-error">{fieldErrors.country}</FieldError>
+         </TextField>
+ 
++        <View>
+         <View className="flex-row items-center gap-3">
+           <Checkbox
+             testID="register-terms"
+@@ -288,6 +289,7 @@ export function RegisterScreen() {
+           />
+           <Text className="text-foreground">{t('register.iAcceptTerms')}</Text>
+         </View>
++        </View>
+ 
+         {generalError ? (
+           <View testID="register-error-row" className="flex-row items-center gap-1.5">

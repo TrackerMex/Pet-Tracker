@@ -64,9 +64,9 @@ function openingTagWithTestId(source: string, testId: string): string {
 
 describe('#62 R1: la escala de radios está declarada y el botón primario tiene un solo radio', () => {
   const primaryButtons = [
-    [join('app', '(auth)', 'login.tsx'), 'login-submit'],
+    [join('screens', 'login', 'index.tsx'), 'login-submit'],
     [join('screens', 'forgot', 'index.tsx'), 'forgot-submit'], // #117 R10
-    [join('app', '(auth)', 'register.tsx'), 'register-submit'],
+    [join('screens', 'register', 'index.tsx'), 'register-submit'],
     [join('screens', 'reset-password', 'index.tsx'), 'reset-submit'],
   ] as const;
 
@@ -160,9 +160,7 @@ describe('#62 R4: la app solo usa los radios de la escala declarada', () => {
   });
 
   it('lleva los tres tiles restantes a rounded-xl', () => {
-    expect(readSource(join('app', '(tabs)', 'food.tsx'))).toContain(
-      'size-14 items-center justify-center rounded-xl bg-surface-secondary',
-    );
+    // #168 R8: el tile ForkKnife sale de food.tsx
     expect(readSource(join('screens', 'forgot', 'index.tsx'))).toContain( // #117 R10
       'size-16 items-center justify-center rounded-xl bg-accent-soft',
     );
@@ -187,7 +185,7 @@ describe('#62 R7: ningún glifo tipográfico hace de icono', () => {
     const profile = readSource(join('screens', 'profile', 'index.tsx'));
 
     expect(profile).toContain(
-      "import { ChevronRight } from 'reicon-react-native';",
+      "import { Bell, ChevronRight, FileText, Map as MapIcon, Wifi } from 'reicon-react-native';",
     );
     expect(
       profile.match(/<ChevronRight size=\{20\} color=\{muted\} \/>/g),
@@ -254,13 +252,13 @@ describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () 
     // The row stays at 0 to lock that and the import.
     [join('screens', 'home', 'index.tsx'), 0],
     [join('screens', 'home', 'weekly-activity-chart.tsx'), 1],
-    [join('screens', 'health', 'index.tsx'), 2],
-    [join('app', '(tabs)', 'food.tsx'), 2],
+    [join('screens', 'health', 'index.tsx'), 2 + 1], // #168 R3
+    [join('app', '(tabs)', 'food.tsx'), 2 - 1], // #168 R8
     [join('screens', 'map', 'index.tsx'), 4],
     [join('screens', 'meal-schedule', 'index.tsx'), 1],
     [join('screens', 'weight-log', 'index.tsx'), 1],
     [join('screens', 'docs', 'index.tsx'), 1],
-    [join('screens', 'profile', 'index.tsx'), 3 + 1], // #41 R9
+    [join('screens', 'profile', 'index.tsx'), 3 + 1 + 4], // #41 R9; #168 R6
     [join('screens', 'reminders', 'index.tsx'), 4],
     [join('screens', 'add-pet', 'index.tsx'), 5],
     [join('screens', 'add-reminder', 'index.tsx'), 3],
@@ -312,7 +310,7 @@ describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () 
     // #138 R3: minus one more, collar-pair-link's corner travels in its own.
     expect(
       directUses.reduce((total, [, count]) => total + count, 2),
-    ).toBe(33 + 1 + 1 - 1 - 1 + 1 + 1); // #41 R9: geofences-link, #170 R16
+    ).toBe(33 + 1 + 1 - 1 - 1 + 1 + 1 - 1 + 4 + 1); // #41 R9: geofences-link; #168 R3, R8, R6; #170 R16
   });
 });
 
@@ -397,10 +395,10 @@ describe('#98 R10: los candados que esta feature no mueve', () => {
     // #138 R3: collar-pair-link's corner moved too, so the Home has none left.
     // With no match, match() returns null: the ?? [] keeps the count readable.
     expect(home.match(/style=\{CONTINUOUS_CORNER\}/g) ?? []).toHaveLength(0);
-    expect(food.match(/style=\{CONTINUOUS_CORNER\}/g)).toHaveLength(2);
-    expect(count(/style=\{CONTINUOUS_CORNER\}/g)).toBe(31 + 1 + 1); // #41 R9: geofences-link, #170 R8: alert-detail-map
+    expect(food.match(/style=\{CONTINUOUS_CORNER\}/g)).toHaveLength(1);
+    expect(count(/style=\{CONTINUOUS_CORNER\}/g)).toBe(31 + 1 + 4 + 1); // #41 R9: geofences-link; #168; #170 R8: alert-detail-map
     expect(count(/rounded-xl bg-accent(?=[\s'"`])/g)).toBe(13 + 1 + 1 + 1 + 1 + 1 + 1); // #146 R8, #146 R9; #118 R7; #155 R3 // #158 R3: docs-upload; // #158 R5: docs-upload-submit
-    expect(count(/bg-accent-soft/g)).toBe(16 + 2 + 1); // #147 R4: meal-time-edit y add-meal-time-button; #105 R11
+    expect(count(/bg-accent-soft/g)).toBe(16 + 2 + 1 - 1); // #147 R4: meal-time-edit y add-meal-time-button; #105 R11; #168 R5: PetPills pasa a huecos pastel
     expect(home.match(/text-accent-strong\b/g)).toHaveLength(2);
     expect(food.match(/text-accent-strong\b/g)).toHaveLength(1);
     expect(filesMatching(/\brounded-(?:2xl|lg|md|sm)\b/)).toEqual([]);
@@ -466,7 +464,7 @@ describe('#64 R9: el color categórico solo se nombra en el módulo de paleta', 
     const reminders = readSource(join('screens', 'reminders', 'index.tsx'));
     const docs = readSource(join('screens', 'docs', 'index.tsx'));
 
-    expect(accentSoftCount).toBe(16 + 2 + 1); // #147 R4, #105 R11
+    expect(accentSoftCount).toBe(16 + 2 + 1 - 1); // #147 R4, #105 R11; #168 R5: PetPills pasa a huecos pastel
     expect(reminders.match(/bg-accent-soft/g)).toHaveLength(1);
     expect(docs.match(/bg-accent-soft/g)).toBeNull();
   });
@@ -539,8 +537,8 @@ describe('#98 R11: la carta y la spec de Food registran la enmienda', () => {
 
 describe('#166 R2: todo primario sólido lleva el labio detrás de bg-accent', () => {
   const expected = {
-    [join('app', '(auth)', 'login.tsx')]: 1,
-    [join('app', '(auth)', 'register.tsx')]: 1,
+    [join('screens', 'login', 'index.tsx')]: 1,
+    [join('screens', 'register', 'index.tsx')]: 1,
     [join('components', 'empty-state.tsx')]: 1,
     [join('screens', 'add-pet', 'index.tsx')]: 1,
     [join('screens', 'add-reminder', 'index.tsx')]: 1,

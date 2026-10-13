@@ -7,6 +7,19 @@ import { forgotPassword, type ForgotPasswordState } from '../../api/auth';
 import ForgotRoute from '../../app/(auth)/forgot';
 import { LanguageProvider } from '../../providers/language-provider';
 
+const mockPopIn = jest.fn<void, [import('react-native').ViewProps]>();
+
+jest.mock('../../components/pop-in', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return {
+    PopIn(props: import('react-native').ViewProps) {
+      mockPopIn(props);
+      return React.createElement(View, props);
+    },
+  };
+});
+
 jest.mock('../../api/auth', () => ({
   forgotPassword: jest.fn(),
 }));
@@ -503,5 +516,60 @@ describe('#117 R11: la pantalla de éxito es la misma para cualquier correo', ()
     expect(titles[0]).toBe('Revisa tu correo');
     expect(titles[1]).toBe(titles[0]);
     expect(bodies[1]).toBe(bodies[0]);
+  });
+});
+
+
+function expectPingoBeforeLock() {
+  const pingo = screen.getByTestId('forgot-pingo');
+  const title = screen.getByTestId('forgot-title');
+  expect(pingo.props.source).toEqual([
+    expect.objectContaining({ testUri: expect.stringMatching(/pingo-talk\.webp$/) }),
+  ]);
+  expect(pingo.props.style).toEqual({ width: 120, height: 120, transform: [{ rotate: '6deg' }] });
+  expect(pingo.props.accessibilityLabel).toBeUndefined();
+  expect(pingo.parent).toBe(title.parent);
+  const siblings = title.parent?.children ?? [];
+  expect(siblings.indexOf(pingo)).toBe(siblings.findIndex((child) => child === lockTile()) - 1);
+}
+
+describe('#167 R9: Pingo y pop del candado en recuperar', () => {
+  it('#167 R9: Pingo precede al tile del candado en el formulario', async () => {
+    await renderRoute();
+    expectPingoBeforeLock();
+  });
+
+  it('#167 R9: Pingo precede al tile del candado tras enviar', async () => {
+    mockForgotPassword.mockResolvedValue({ kind: 'ok' });
+    await renderRoute();
+    await submitForgot();
+    expectPingoBeforeLock();
+  });
+
+  it('#167 R9: el tile entra con pop en el formulario', async () => {
+    await renderRoute();
+    expect(Object.fromEntries(mockPopIn.mock.calls.map(([p]) => [
+      p.testID, { className: p.className, style: p.style },
+    ]))).toEqual({
+      'forgot-lock-tile': {
+        className: 'size-16 items-center justify-center rounded-xl bg-accent-soft',
+        style: { borderCurve: 'continuous' },
+      },
+    });
+  });
+
+  it('#167 R9: el tile entra con pop tras enviar', async () => {
+    mockForgotPassword.mockResolvedValue({ kind: 'ok' });
+    await renderRoute();
+    mockPopIn.mockClear();
+    await submitForgot();
+    expect(Object.fromEntries(mockPopIn.mock.calls.map(([p]) => [
+      p.testID, { className: p.className, style: p.style },
+    ]))).toEqual({
+      'forgot-lock-tile': {
+        className: 'size-16 items-center justify-center rounded-xl bg-accent-soft',
+        style: { borderCurve: 'continuous' },
+      },
+    });
   });
 });

@@ -5,7 +5,7 @@ import { Button, Skeleton } from 'heroui-native';
 import { useCallback, useState } from 'react';
 import { Linking, Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ChevronRight } from 'reicon-react-native';
+import { Bell, ChevronRight, FileText, Map as MapIcon, Wifi } from 'reicon-react-native';
 import { useUniwind } from 'uniwind';
 
 import {
@@ -18,7 +18,7 @@ import { petKeys, userKeys } from '../../api/query-keys';
 import type { PetProfile } from '../../api/types';
 import { getMe } from '../../api/users';
 import { Card } from '../../components/card';
-import { PetHeroHeader } from '../../components/pet-hero-header';
+import { PetAvatar } from '../../components/pet-avatar';
 import { PetSwitcher } from '../../components/pet-switcher';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useNotificationsBlocked } from '../../hooks/use-push-registration';
@@ -33,6 +33,7 @@ import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { useThemeTransition } from '../../theme/theme-transition';
 import { TOUCH_SLOP } from '../../theme/touch-target';
 import { useThemeColors } from '../../theme/use-theme-colors';
+import { CATEGORY_SLOTS, type CategorySlot } from '../../utils/category-palette';
 
 function InfoRow({
   isLast = false,
@@ -63,24 +64,18 @@ function InfoRow({
 
 function PetPills({ pet }: { pet: PetProfile }) {
   const t = useTranslate();
-  const pills = [
-    pet.sex,
-    pet.sterilized === null
-      ? null
-      : pet.sterilized
-        ? t('profile.sterilized')
-        : t('profile.notSterilized'),
-    Number.isFinite(pet.ageMonths)
-      ? t('profile.ageMonths', { months: pet.ageMonths })
-      : null,
-    pet.currentWeightKg === null ? null : `${pet.currentWeightKg} kg`,
-  ].filter((value): value is string => value !== null);
+  const pills: { testID: string; slot: CategorySlot; text: string | null }[] = [
+    { testID: 'profile-pet-chip-sex', slot: 'blue', text: pet.sex },
+    { testID: 'profile-pet-chip-sterilized', slot: 'green', text: pet.sterilized === null ? null : pet.sterilized ? t('profile.sterilized') : t('profile.notSterilized') },
+    { testID: 'profile-pet-chip-age', slot: 'amber', text: Number.isFinite(pet.ageMonths) ? t('profile.ageMonths', { months: pet.ageMonths }) : null },
+    { testID: 'profile-pet-chip-weight', slot: 'violet', text: pet.currentWeightKg === null ? null : `${pet.currentWeightKg} kg` },
+  ];
 
   return (
-    <View className="flex-row flex-wrap gap-2">
-      {pills.map((pill) => (
-        <View key={pill} className="rounded-full bg-accent-soft px-3 py-2">
-          <Text className="text-xs font-bold text-foreground">{pill}</Text>
+    <View testID="profile-pet-chips" className="flex-row flex-wrap justify-center gap-2">
+      {pills.filter(({ text }) => text !== null).map((pill) => (
+        <View key={pill.testID} testID={pill.testID} className={`rounded-full px-3 py-1 ${CATEGORY_SLOTS[pill.slot].surface}`}>
+          <Text className={`text-xs font-bold ${CATEGORY_SLOTS[pill.slot].ink}`}>{pill.text}</Text>
         </View>
       ))}
     </View>
@@ -97,7 +92,7 @@ export function ProfileScreen() {
   const { theme } = useUniwind();
   const switchTheme = useThemeTransition();
   const insets = useSafeAreaInsets();
-  const [muted] = useThemeColors(['muted']);
+  const [muted, blue, green, amber, violet] = useThemeColors(['muted', 'category-blue-strong', 'category-green-strong', 'category-amber-strong', 'category-violet-strong']);
   const [photoUploading, setPhotoUploading] = useState(false);
   const [photoError, setPhotoError] = useState<string | null>(null);
   const notificationsBlocked = useNotificationsBlocked();
@@ -127,6 +122,9 @@ export function ProfileScreen() {
 
   const pet = detail.data?.kind === 'ok' ? detail.data.pet : null;
   const petLoading = pets.data === undefined || (selectedPetId !== null && detail.data === undefined);
+  const initials = me.data?.kind === 'ok'
+    ? [me.data.me.firstName, me.data.me.lastName].map((part) => part.trim().charAt(0)).join('').toUpperCase()
+    : '';
 
   async function handleChangePhoto() {
     if (!pet) return;
@@ -195,7 +193,7 @@ export function ProfileScreen() {
       }}
     >
       <View className="flex-row items-center justify-between gap-3">
-        <Text className="text-2xl font-black text-foreground">
+        <Text testID="profile-title" className="text-3xl font-black tracking-tight text-foreground">
           {t('profile.profile')}
         </Text>
         <Button
@@ -246,7 +244,7 @@ export function ProfileScreen() {
 
       {petLoading ? (
         <>
-          <Skeleton testID="profile-hero-skeleton" className="h-80 w-full rounded-card" />
+          <Skeleton testID="profile-hero-skeleton" className="h-52 w-full rounded-card" />
           <Skeleton testID="pet-info-skeleton" className="h-52 w-full rounded-card" />
         </>
       ) : null}
@@ -265,8 +263,13 @@ export function ProfileScreen() {
 
       {pet ? (
         <>
-          <PetHeroHeader pet={pet} variant="card" />
-          <PetPills pet={pet} />
+          <Card variant="secondary" testID="profile-pet-card" className="items-center gap-3">
+            <PetAvatar name={pet.name} photoUrl={pet.photoUrl} cacheKey={pet.id} size={96} testID="profile-pet-avatar" />
+            <Text testID="profile-pet-name" className="text-2xl font-black text-foreground">
+              {pet.name}
+            </Text>
+            <PetPills pet={pet} />
+          </Card>
           <Button
             testID="change-photo"
             className="rounded-xl bg-accent-soft"
@@ -309,11 +312,20 @@ export function ProfileScreen() {
             accessibilityRole="button"
             testID="documents-link"
             hitSlop={TOUCH_SLOP}
-            className="flex-row items-center justify-between rounded-xl bg-default px-3 py-2"
+            className="flex-row items-center gap-3 rounded-xl bg-default px-3 py-2"
             style={CONTINUOUS_CORNER}
             onPress={() => router.push(`/pets/${pet.id}/docs` as Href)}
           >
-            <Text className="font-semibold text-foreground">
+            <View
+              testID="documents-link-tile"
+              className={`size-9 items-center justify-center rounded-xl ${CATEGORY_SLOTS['blue'].surface}`}
+              style={CONTINUOUS_CORNER}
+              accessibilityElementsHidden
+              importantForAccessibility="no-hide-descendants"
+            >
+              <FileText size={18} color={blue} />
+            </View>
+            <Text className="flex-1 font-semibold text-foreground">
               {t('profile.documents')}
             </Text>
             <ChevronRight size={20} color={muted} />
@@ -322,11 +334,20 @@ export function ProfileScreen() {
           <Pressable
             accessibilityRole="button"
             testID="pairing-link"
-            className="flex-row items-center justify-between rounded-xl bg-default px-3 py-2"
+            className="flex-row items-center gap-3 rounded-xl bg-default px-3 py-2"
             style={CONTINUOUS_CORNER}
             onPress={() => router.push('/pairing' as Href)}
           >
-            <Text className="font-semibold text-foreground">
+            <View
+              testID="pairing-link-tile"
+              className={`size-9 items-center justify-center rounded-xl ${CATEGORY_SLOTS['green'].surface}`}
+              style={CONTINUOUS_CORNER}
+              accessibilityElementsHidden
+              importantForAccessibility="no-hide-descendants"
+            >
+              <Wifi size={18} color={green} />
+            </View>
+            <Text className="flex-1 font-semibold text-foreground">
               {t('profile.gpsSettings')}
             </Text>
             <ChevronRight size={20} color={muted} />
@@ -336,11 +357,20 @@ export function ProfileScreen() {
             accessibilityRole="button"
             testID="geofences-link"
             hitSlop={TOUCH_SLOP}
-            className="flex-row items-center justify-between rounded-xl bg-default px-3 py-2"
+            className="flex-row items-center gap-3 rounded-xl bg-default px-3 py-2"
             style={CONTINUOUS_CORNER}
             onPress={() => router.push(`/pets/${pet.id}/geofences` as Href)}
           >
-            <Text className="font-semibold text-foreground">
+            <View
+              testID="geofences-link-tile"
+              className={`size-9 items-center justify-center rounded-xl ${CATEGORY_SLOTS['amber'].surface}`}
+              style={CONTINUOUS_CORNER}
+              accessibilityElementsHidden
+              importantForAccessibility="no-hide-descendants"
+            >
+              <MapIcon size={18} color={amber} />
+            </View>
+            <Text className="flex-1 font-semibold text-foreground">
               {t('geofences.title')}
             </Text>
             <ChevronRight size={20} color={muted} />
@@ -352,11 +382,20 @@ export function ProfileScreen() {
         accessibilityRole="button"
         testID="reminders-link"
         hitSlop={TOUCH_SLOP}
-        className="flex-row items-center justify-between rounded-xl bg-default px-3 py-2"
+        className="flex-row items-center gap-3 rounded-xl bg-default px-3 py-2"
         style={CONTINUOUS_CORNER}
         onPress={() => router.push('/reminders' as Href)}
       >
-        <Text className="font-semibold text-foreground">
+        <View
+          testID="reminders-link-tile"
+          className={`size-9 items-center justify-center rounded-xl ${CATEGORY_SLOTS['violet'].surface}`}
+          style={CONTINUOUS_CORNER}
+          accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants"
+        >
+          <Bell size={18} color={violet} />
+        </View>
+        <Text className="flex-1 font-semibold text-foreground">
           {t('profile.reminders')}
         </Text>
         <ChevronRight size={20} color={muted} />
@@ -370,11 +409,25 @@ export function ProfileScreen() {
           <Skeleton testID="me-card-skeleton" className="h-12 w-full rounded-xl" />
         ) : null}
         {me.data?.kind === 'ok' ? (
-          <View className="gap-1">
+          <View testID="me-identity" className="flex-row items-center gap-3">
+            {initials ? (
+              <View
+                testID="me-avatar"
+                className="size-10 items-center justify-center rounded-full bg-default"
+                accessibilityElementsHidden
+                importantForAccessibility="no-hide-descendants"
+              >
+                <Text testID="me-avatar-initials" className="text-sm font-black text-foreground">
+                  {initials}
+                </Text>
+              </View>
+            ) : null}
+          <View testID="me-identity-text" className="flex-1 gap-1">
             <Text className="text-lg font-bold text-foreground">
               {`${me.data.me.firstName} ${me.data.me.lastName}`}
             </Text>
             <Text className="font-normal text-muted">{me.data.me.email}</Text>
+          </View>
           </View>
         ) : null}
         {me.data && me.data.kind !== 'ok' && me.data.kind !== 'unauthorized' ? (

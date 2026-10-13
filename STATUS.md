@@ -1,10 +1,10 @@
 # pet-tracker — Status
 
-**Última actualización**: 2026-10-11
-**Features completadas**: 154/170 (`feature_list.json`)
-**En progreso**: ninguna en esta rama. #166 cerrada en `feature/166-mobile-chunky-cta`, PR pendiente de merge humano.
+**Última actualización**: 2026-10-13
+**Features completadas**: 156/171 (`feature_list.json`)
+**En progreso**: ninguna en esta rama. #168 cerrada en `feature/168-mobile-tab-headers-canvas`, PR pendiente de merge humano.
 
-**Pendientes**: 16 (#60, #119, #129, #144, #150, #151, #154, #160, #163, #164, #165, #167, #168, #169, #170 y #171). **#166 `mobile-chunky-cta` cerrada**: el labio «chunky» de Bienvenida pasa a los 19 botones primarios sólidos de la app (`rounded-xl bg-accent border-b-4 border-black/25`), y los 4 secundarios neutros ganan un labio gris con el token nuevo `--color-lip-gray`, definido en los dos temas. Se revierte el candado de #153 que prohibía el labio en el secundario de Bienvenida. La carta (`docs/ui-guidelines.md`) gana el punto 13, «botón con cuerpo». Codex trabajó en una ronda (c1-c10) con una parada en c3 por un contador del handoff, corregida por el leader (`f1c47164`). El reviewer la aprobó (`b69d8e86`, 0 bloqueantes) y el humano firmó el smoke R5 en `b6a31bb9`. Móvil 98/2765 → 98/2775.
+**Pendientes**: 15 (#60, #119, #129, #144, #150, #151, #154, #160, #163, #164, #165, #169, #170, #171 y #172). **#168 `mobile-tab-headers-canvas` cerrada**: Salud, Nutrición y Perfil abren con el título grande del canvas en lugar del hero fotográfico (decisión N1, que revierte la Enmienda #67 en esas tres pestañas; Inicio conserva `PetHeroHeader`). Salud pinta un tile pastel por estado en cada vacuna; Perfil cambia el hero por la tarjeta `profile-pet-card` con avatar circular, chips pastel atados al dato, tiles en las cuatro filas y avatar de iniciales en la cuenta; Nutrición sustituye la barra y el tile `ForkKnife` por el anillo de kcal animado, acotado a 100 y con reduce motion. La Enmienda #168 queda declarada en tres specs aprobadas y en la carta, con su candado. Ronda 1 de Codex rechazada por candados que faltaban en la spec (O1/O2); la Enmienda E3, solo tests, se firmó desde Notion (`938188b8`) y la ronda 2 la aprobó el reviewer (`d3cb4d1a`). El humano firmó el smoke R13 en `0b3cc585` y las cuatro casillas de la enmienda en `ddbbab8d`. Móvil 99/2851 → 100/2919. #119 se cierra como superada tras el merge.
 
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
@@ -88,6 +88,25 @@ debe listar las 4 URLs de cola.
 
 ## Estado actual
 
+- **`mobile-tab-headers-canvas` (#168) done** (2026-10-13, worktree
+  `Pet-Tracker-wt-168`): título grande del canvas en Salud, Nutrición y Perfil,
+  tiles pastel en vacunas y filas de Perfil, tarjeta de mascota con chips por
+  dato, avatar de iniciales y anillo de kcal animado en Nutrición. Reviewer
+  ronda 2 APROBADO (`d3cb4d1a`, veredicto sobre `824c67b8`). Gate: `./init.sh`
+  exit 0 sobre el merge de main `64187ab8` (backend 187/1474, infra 2/14,
+  móvil 100/2919, e2e 30 de 33 suites, 468 passed y 8 skipped). Smoke R13
+  firmado por el humano en `0b3cc585` (OnePlus Nord 5) y Enmienda #168 en
+  `ddbbab8d`. La paridad que falta con el canvas en las tres pantallas pasa a
+  #173. PR pendiente de merge.
+- **`mobile-account-screens-pingo` (#167) done** (2026-10-13, worktree
+  `Pet-Tracker-wt-167`, sesión Frontend): Pingo en Login, Registro, Recuperar
+  y Nueva contraseña, anillos de ping en la Bienvenida y migración de Login y
+  Registro a `src/screens/`. Reviewer ronda 2 APROBADO (`82a72c09`, veredicto
+  sobre `e00fe2c7`). Gate: `./init.sh` exit 0 sobre `e00fe2c7` (backend
+  187/1474, infra 2/14, móvil 99/2851, e2e 30 de 33 suites, 476 tests con 8
+  saltados). Smoke R15 firmado por el humano en `3f3ee0f3`; sus observaciones
+  de diseño (paridad con el canvas en Login, Registro y Recuperar) amplían
+  #172. PR #210 abierta.
 - **`mobile-chunky-cta` (#166) done** (2026-10-12, worktree
   `Pet-Tracker-wt-166`, sesion Frontend): labio en los 19 primarios sólidos
   y labio gris (`--color-lip-gray`) en los 4 secundarios neutros, más el
@@ -1455,6 +1474,13 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Última sesión
+
+- **2026-10-13** — **#167 `mobile-account-screens-pingo` cerrada** (worktree
+  `Pet-Tracker-wt-167`, sesión Frontend). Spec firmada desde Notion
+  (`ed8158b6`). Ronda 1 de Codex rechazada (B1-B4); Enmienda E1 de solo tests
+  firmada desde Notion (`c32ae760`) y ronda 2 aprobada por el reviewer
+  (`82a72c09`). Smoke R15 firmado por el humano en `3f3ee0f3`. PR #210
+  abierta; siguiente: merge humano y spec de #172.
 
 - **2026-10-12** — **#166 `mobile-chunky-cta` cerrada** (worktree
   `Pet-Tracker-wt-166`, sesión Frontend). Spec firmada desde Notion
