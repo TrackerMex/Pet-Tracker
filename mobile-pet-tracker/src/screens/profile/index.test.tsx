@@ -1209,6 +1209,17 @@ describe('#168 R5: Perfil pinta chips pastel por dato', () => {
     expectProfileChip168(root, 'profile-pet-chip-weight', 'rounded-full px-3 py-1 bg-category-violet', 'text-xs font-bold text-category-violet-strong', '0 kg');
   });
 
+  it('sin sexo conserva esterilización, edad y peso en sus huecos', async () => {
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet({ sex: null, sterilized: true, ageMonths: 26, currentWeightKg: 12.4 }) });
+    await renderProfile();
+    const root = await screen.findByTestId('profile-pet-chips');
+    expect(root.children).toHaveLength(3);
+    expect(root.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['profile-pet-chip-sterilized', 'profile-pet-chip-age', 'profile-pet-chip-weight']);
+    expectProfileChip168(root, 'profile-pet-chip-sterilized', 'rounded-full px-3 py-1 bg-category-green', 'text-xs font-bold text-category-green-strong', 'Esterilizado');
+    expectProfileChip168(root, 'profile-pet-chip-age', 'rounded-full px-3 py-1 bg-category-amber', 'text-xs font-bold text-category-amber-strong', '26 meses');
+    expectProfileChip168(root, 'profile-pet-chip-weight', 'rounded-full px-3 py-1 bg-category-violet', 'text-xs font-bold text-category-violet-strong', '12.4 kg');
+  });
+
   it('centra y agrupa los chips con gap-2', async () => {
     await renderProfile();
     const root = await screen.findByTestId('profile-pet-chips');
