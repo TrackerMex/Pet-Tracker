@@ -49,4 +49,4 @@ export const MOTION_CONFETTI_SPREAD_MS = 1200;
 // #171 R7
 export const MOTION_POP_SCALE = 0.6;
 // #171 R7
-export const MOTION_POP_SPRING = { duration: 400, dampingRatio: 0.5, reduceMotion: ReduceMotion.System };
+export const MOTION_CELEBRATION_SPRING = { duration: 400, dampingRatio: 0.5, reduceMotion: ReduceMotion.System };

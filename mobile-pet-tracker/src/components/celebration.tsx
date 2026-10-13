@@ -6,7 +6,7 @@ import { Modal, Text, View, useWindowDimensions } from 'react-native';
 import Animated, { interpolate, useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withSpring, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { MOTION_CONFETTI_FALL_TIMING, MOTION_CONFETTI_MIN_MS, MOTION_CONFETTI_SPREAD_MS, MOTION_FADE_TIMING, MOTION_POP_SCALE, MOTION_POP_SPRING, MOTION_SURFACE_MS } from '../theme/motion';
+import { MOTION_CELEBRATION_SPRING, MOTION_CONFETTI_FALL_TIMING, MOTION_CONFETTI_MIN_MS, MOTION_CONFETTI_SPREAD_MS, MOTION_FADE_TIMING, MOTION_POP_SCALE, MOTION_SURFACE_MS } from '../theme/motion';
 import { CONFETTI_FILLS } from '../utils/category-palette';
 
 type CelebrationProps = {
@@ -39,8 +39,8 @@ export function Celebration({ testID, title, body, details, primary, secondary }
     pingoOpacity.set(withTiming(1, MOTION_FADE_TIMING));
     badgeOpacity.set(withDelay(MOTION_SURFACE_MS, withTiming(1, MOTION_FADE_TIMING)));
     if (!reduceMotion) {
-      pingoScale.set(withSpring(1, MOTION_POP_SPRING));
-      badgeScale.set(withDelay(MOTION_SURFACE_MS, withSpring(1, MOTION_POP_SPRING)));
+      pingoScale.set(withSpring(1, MOTION_CELEBRATION_SPRING));
+      badgeScale.set(withDelay(MOTION_SURFACE_MS, withSpring(1, MOTION_CELEBRATION_SPRING)));
     }
   }, [badgeOpacity, badgeScale, pingoOpacity, pingoScale, reduceMotion]);
 
