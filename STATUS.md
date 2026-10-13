@@ -1,10 +1,10 @@
 # pet-tracker — Status
 
-**Última actualización**: 2026-10-11
-**Features completadas**: 154/170 (`feature_list.json`)
-**En progreso**: ninguna en esta rama. #166 cerrada en `feature/166-mobile-chunky-cta`, PR pendiente de merge humano.
+**Última actualización**: 2026-10-13
+**Features completadas**: 155/171 (`feature_list.json`)
+**En progreso**: ninguna en esta rama. #167 cerrada en `feature/167-mobile-account-screens-pingo`, PR #210 pendiente de merge humano.
 
-**Pendientes**: 16 (#60, #119, #129, #144, #150, #151, #154, #160, #163, #164, #165, #167, #168, #169, #170 y #171). **#166 `mobile-chunky-cta` cerrada**: el labio «chunky» de Bienvenida pasa a los 19 botones primarios sólidos de la app (`rounded-xl bg-accent border-b-4 border-black/25`), y los 4 secundarios neutros ganan un labio gris con el token nuevo `--color-lip-gray`, definido en los dos temas. Se revierte el candado de #153 que prohibía el labio en el secundario de Bienvenida. La carta (`docs/ui-guidelines.md`) gana el punto 13, «botón con cuerpo». Codex trabajó en una ronda (c1-c10) con una parada en c3 por un contador del handoff, corregida por el leader (`f1c47164`). El reviewer la aprobó (`b69d8e86`, 0 bloqueantes) y el humano firmó el smoke R5 en `b6a31bb9`. Móvil 98/2765 → 98/2775.
+**Pendientes**: 16 (#60, #119, #129, #144, #150, #151, #154, #160, #163, #164, #165, #168, #169, #170, #171 y #172). **#167 `mobile-account-screens-pingo` cerrada**: Pingo llega a las pantallas de cuenta. Login y Registro migran a ruta delgada + `src/screens/`. Login saluda con la clave nueva `login.pingoGreeting` y entra en dos tiempos; Registro lleva a Pingo en la cabecera y un icono en el error general; Recuperar y Nueva contraseña ganan a Pingo y un «pop» (componente `PopIn`, cuatro tokens nuevos en `motion.ts`); la Bienvenida suma tres anillos de ping, que la carta declara en la Enmienda #167. Ronda 1 de Codex rechazada (B1-B4, cláusulas sin candado); la Enmienda E1, solo tests, se firmó desde Notion (`c32ae760`) y la ronda 2 la aprobó el reviewer (`82a72c09`). El humano firmó el smoke R15 en `3f3ee0f3`, con observaciones de diseño que pasan a #172. Móvil 98/2775 → 99/2851.
 
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
@@ -88,6 +88,15 @@ debe listar las 4 URLs de cola.
 
 ## Estado actual
 
+- **`mobile-account-screens-pingo` (#167) done** (2026-10-13, worktree
+  `Pet-Tracker-wt-167`, sesión Frontend): Pingo en Login, Registro, Recuperar
+  y Nueva contraseña, anillos de ping en la Bienvenida y migración de Login y
+  Registro a `src/screens/`. Reviewer ronda 2 APROBADO (`82a72c09`, veredicto
+  sobre `e00fe2c7`). Gate: `./init.sh` exit 0 sobre `e00fe2c7` (backend
+  187/1474, infra 2/14, móvil 99/2851, e2e 30 de 33 suites, 476 tests con 8
+  saltados). Smoke R15 firmado por el humano en `3f3ee0f3`; sus observaciones
+  de diseño (paridad con el canvas en Login, Registro y Recuperar) amplían
+  #172. PR #210 abierta.
 - **`mobile-chunky-cta` (#166) done** (2026-10-12, worktree
   `Pet-Tracker-wt-166`, sesion Frontend): labio en los 19 primarios sólidos
   y labio gris (`--color-lip-gray`) en los 4 secundarios neutros, más el
@@ -1455,6 +1464,13 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Última sesión
+
+- **2026-10-13** — **#167 `mobile-account-screens-pingo` cerrada** (worktree
+  `Pet-Tracker-wt-167`, sesión Frontend). Spec firmada desde Notion
+  (`ed8158b6`). Ronda 1 de Codex rechazada (B1-B4); Enmienda E1 de solo tests
+  firmada desde Notion (`c32ae760`) y ronda 2 aprobada por el reviewer
+  (`82a72c09`). Smoke R15 firmado por el humano en `3f3ee0f3`. PR #210
+  abierta; siguiente: merge humano y spec de #172.
 
 - **2026-10-12** — **#166 `mobile-chunky-cta` cerrada** (worktree
   `Pet-Tracker-wt-166`, sesión Frontend). Spec firmada desde Notion

@@ -937,7 +937,13 @@ copy completa en cada una.
 | — | `geofences.needsCollar` | `Safe zones need a collar with an active plan.` | `Las zonas seguras necesitan un collar con plan activo.` | ← cambiada por #159 (R7) |
 | — | `home.activityNeedsCollar` | `Activity needs a collar with an active plan` | `La actividad necesita un collar con plan activo` | ← cambiada por #159 (R8) |
 
-### §2.24 — Añadidos por #169 — Peso
+### §2.24 — Añadidos por #167 — Pingo en las pantallas de cuenta
+
+| # | Clave | `en` | `es` | Origen |
+|---|---|---|---|---|
+| — | `login.pingoGreeting` | `Good to see you again.` | `Qué bueno verte de nuevo.` | ← añadida por #167 (R5) |
+
+### §2.25 — Añadidos por #169 — Peso
 
 | # | Clave | `en` | `es` | Origen |
 |---|---|---|---|---|

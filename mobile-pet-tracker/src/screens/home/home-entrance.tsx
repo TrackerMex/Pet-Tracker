@@ -30,15 +30,17 @@ export function homeEntering(delayMs: number, offsetY: number) {
 }
 
 
-export function HomeEntrance({ index, testID, children }: {
+export function HomeEntrance({ index, testID, className, children }: {
   index: number;
   testID: string;
+  className?: string;
   children: ReactNode;
 }) {
   const reducedMotion = useReducedMotion();
   return (
     <Animated.View
       testID={testID}
+      className={className}
       entering={homeEntering(index * MOTION_STAGGER_MS, reducedMotion ? 0 : MOTION_ENTRANCE_OFFSET_Y)}
     >
       {children}

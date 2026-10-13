@@ -703,7 +703,7 @@ describe('#118 R11: la bienvenida no mete drift de estilo', () => {
 
 describe('#149 R4: solo cuatro ficheros de producción navegan a login', () => {
   const loginRoutes: Record<string, number> = {
-    'app/(auth)/register.tsx': 1,
+    'screens/register/index.tsx': 1,
     'screens/forgot/index.tsx': 1,
     'screens/reset-password/index.tsx': 2,
     'screens/welcome/index.tsx': 1,
@@ -791,5 +791,66 @@ describe('#134 R7: el ack no toca la caché de la lista', () => {
         refs: source.match(/alertKeys|invalidateQueries|setQueryData|useQueryClient|queryClient/g) ?? [],
       }).toEqual({ file, refs: [] });
     }
+  });
+});
+
+describe('#167 R1: las rutas de login y registro son delgadas', () => {
+  it('#167 R1: cada ruta solo renderiza su pantalla', () => {
+    expect(readFileSync(join(sourceRoot, 'app', '(auth)', 'login.tsx'), 'utf8')).toBe(
+      `import { LoginScreen } from '../../screens/login';
+
+export default function LoginRoute() {
+  return <LoginScreen />;
+}
+`,
+    );
+    expect(readFileSync(join(sourceRoot, 'app', '(auth)', 'register.tsx'), 'utf8')).toBe(
+      `import { RegisterScreen } from '../../screens/register';
+
+export default function RegisterRoute() {
+  return <RegisterScreen />;
+}
+`,
+    );
+  });
+});
+
+describe('#167 R14: las pantallas de cuenta no traen deriva', () => {
+  const featureFiles = [
+    'app/(auth)/login.tsx',
+    'app/(auth)/register.tsx',
+    'screens/login/index.tsx',
+    'screens/register/index.tsx',
+    'screens/forgot/index.tsx',
+    'screens/reset-password/index.tsx',
+    'screens/welcome/index.tsx',
+    'screens/home/home-entrance.tsx',
+    'components/pop-in.tsx',
+    'theme/motion.ts',
+  ];
+
+  it('#167 R14: sin hex, clases arbitrarias, StyleSheet ni sombras sueltas', () => {
+    expect(featureFiles.filter((file) =>
+      MEALS_BAR_STYLE_ESCAPES.test(readFileSync(join(sourceRoot, file), 'utf8')),
+    )).toEqual([]);
+  });
+
+  it('#167 R14: sin radios fuera de la escala', () => {
+    expect(featureFiles.filter((file) =>
+      /\brounded-(?:2xl|lg|md|sm)\b/.test(readFileSync(join(sourceRoot, file), 'utf8')),
+    )).toEqual([]);
+  });
+
+  it('#167 R14: sin text-accent suelto', () => {
+    expect(featureFiles.filter((file) =>
+      /text-accent(?![-\w])/.test(readFileSync(join(sourceRoot, file), 'utf8')),
+    )).toEqual([]);
+  });
+
+  it('#167 R14: sin dependencias vetadas, useThemeColor ni emoji', () => {
+    expect(featureFiles.filter((file) =>
+      /expo-linear-gradient|expo-symbols|lottie-react-native|@rive-app|\buseThemeColor\b|\p{Extended_Pictographic}/u
+        .test(readFileSync(join(sourceRoot, file), 'utf8')),
+    )).toEqual([]);
   });
 });

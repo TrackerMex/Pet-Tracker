@@ -144,9 +144,9 @@ describe('#61 R3: ningún texto sobre bg-accent se compone con opacidad', () => 
 describe('#61 R4: el acento como tinta usa accent-strong', () => {
   const inkSites: [string, number][] = [
     [join('components', 'floating-tab-bar.tsx'), 1],
-    [join('app', '(auth)', 'login.tsx'), 2],
+    [join('screens', 'login', 'index.tsx'), 2],
     [join('screens', 'forgot', 'index.tsx'), 1], // #117 R10
-    [join('screens', 'reset-password', 'index.tsx'), 2],
+    [join('screens', 'reset-password', 'index.tsx'), 3],
     [join('screens', 'home', 'index.tsx'), 2],
     [join('screens', 'health', 'index.tsx'), 1],
     [join('app', '(tabs)', 'food.tsx'), 1],
@@ -166,7 +166,8 @@ describe('#61 R4: el acento como tinta usa accent-strong', () => {
       inkSites.reduce((total, [, sites]) => total + sites, 0),
     ).toBe(
       13 + 1 + 1
-        + 2, // #118 R11
+        + 2 // #118 R11
+        + 1, // #167 R10
     );
   });
 
