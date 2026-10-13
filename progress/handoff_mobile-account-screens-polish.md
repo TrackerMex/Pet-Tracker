@@ -24,7 +24,7 @@ Ni bunx jest sin rutas, ni push, ni PR, ni amend, ni rebase, ni prettier.
 
 == GUION ==
 Lee ENTEROS specs/mobile-account-screens-polish/requirements.md, design.md y tasks.md.
-El guion es tasks.md T0-T22, en orden, con sus mensajes de commit literales (c1-c39) y sus gates.
+El guion es tasks.md T0-T22, en orden, con sus mensajes de commit literales (c1-c7, c7b, c8-c39) y sus gates.
 Si este handoff y tasks.md discrepan, manda este handoff.
 
 == REGLAS CRITICAS ==
@@ -71,3 +71,39 @@ Di en el impl cuales cargaste.
   `git commit --only ../progress/impl_mobile-account-screens-polish.md -m 'docs(mobile-account-screens-polish): #172 informe de implementación'`.
 - No toques feature_list.json, progress/current.md ni el frontmatter de la spec: son del leader.
 ```
+
+## Reanudación 1 — Enmienda E2 (2026-10-13)
+
+Paraste bien en T4/c8: la spec ponía los dos nombres de Pingo en una posición
+que `.sort()` no da. La Enmienda E2 (requirements.md §Enmienda E2, tasks.md T4
+«(1b) Corrección del rojo, c7b») lo corrige.
+
+```text
+Worktree: /home/claude/sites/Pet-Tracker-wt-172   <- PRIMERA LINEA. Trabaja AQUI y en ningun otro sitio
+Branch:   feature/172-mobile-account-screens-polish
+Siguen en vigor TODAS las reglas de arriba (init.sh, push, PR, amend, rebase, prettier, JEST/LINT/CARGA, SKILLS).
+
+== ANTES DE TOCAR NADA ==
+1. command grep -c -F -- '- [x] Enmienda E2 aprobada por humano' specs/mobile-account-screens-polish/requirements.md
+   -> 1. Si da 0, PARA: E2 no esta firmada.
+2. git status --short -> sin salida.
+3. git log -1 --format=%h -- mobile-pet-tracker -> e31582c3 (tu c7).
+4. H0 sigue siendo e0178ab5. Los commits del leader entre H0 y HEAD no son tuyos: 94ddc750 (firma E1) y los
+   de E2 (enmienda, handoff y firma). No los toques, no los reviertas y no los cuentes como tuyos.
+
+== GUION DE LA REANUDACION ==
+1. c7b segun tasks.md T4 (1b): cd mobile-pet-tracker; mueve SOLO las dos lineas en motion.test.ts; anclas de
+   c7b; gate = mismo comando y mismos rojos que c7 (2 suites failed; Tests: 2 failed, 15 passed, 17 total).
+   Commit literal: test(mobile): orden de sort en el inventario de motion (R4)
+2. c8 segun T4 (2). Puedes reconstruir la candidata desde /tmp/pingo-float-c8-172.tsx y el diff de motion.ts
+   de tu informe, pero vuelve a correr TODAS sus anclas y su gate: exit=0, sin rojos.
+3. Sondas S4a-S4e, y sigue T5-T22 en orden, sin renumerar (c9-c39).
+
+== CIERRE ==
+- Reescribe progress/impl_mobile-account-screens-polish.md (el mismo fichero): Estado al final, tabla con c7b,
+  y una seccion "Reanudacion 1" con lo que paso. La seccion de bloqueo queda como historia, no la borres.
+- Trazabilidad completa en specs/mobile-account-screens-polish/traceability.md. Commits literales:
+  docs(mobile-account-screens-polish): #172 trazabilidad completa
+  y luego git commit --only ../progress/impl_mobile-account-screens-polish.md -m 'docs(mobile-account-screens-polish): #172 informe de implementación completo'
+```
+

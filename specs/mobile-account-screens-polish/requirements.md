@@ -352,9 +352,10 @@ ese `testID` y el estilo animado `transform: [{ translateY }]`:
 
 - Candados de las constantes en `src/theme/__tests__/motion.test.ts`:
   - `no exporta nada más` pasa de 17 a 19 nombres: añade
-    `'MOTION_PINGO_FLOAT_OFFSET_Y'` y `'MOTION_PINGO_FLOAT_TIMING'`, en orden
-    alfabético entre `'MOTION_PING_TO_SCALE'` y `'MOTION_POP_SPRING'`. El
-    título no cambia.
+    `'MOTION_PINGO_FLOAT_OFFSET_Y'` y `'MOTION_PINGO_FLOAT_TIMING'`, en el orden de
+    `.sort()` entre `'MOTION_FLOAT_TIMING'` y `'MOTION_PING_FROM'` (Enmienda
+    E2: `.sort()` compara unidades UTF-16 y `O` va antes que `_`). El título no
+    cambia.
   - `#172 R4: declara la flotación de Pingo del canvas: 10 px y medio ciclo de
     1500 ms ease-in-out`, en un `describe` nuevo `#172 R4: la flotación de
     Pingo en cuenta vive en motion.ts`. Asevera
@@ -1461,7 +1462,7 @@ revierte» marca los candados de `#61 R8` cuyo centrado vertical deshace R19
 | `src/__tests__/ui-copy-table.ts` | `R1_AUTH` | 37 filas (B10) | B10 de H0 + 4 (en la base, 41) | R16 |
 | ídem | `R11_RESET` | 15 filas | 16 filas: `resetPassword.backToSignIn` del formulario | R19 |
 | `src/providers/__tests__/language-provider.test.tsx` | `it` de longitud del catálogo | termina en `+ 7, // #170 R1` | `+ 3, // #172 R16` como último sumando; `+ 7, // #170 R1` pierde su coma | R16 |
-| `src/theme/__tests__/motion.test.ts` | `no exporta nada más` | 17 nombres (B21) | 19 nombres: `'MOTION_PINGO_FLOAT_OFFSET_Y'` y `'MOTION_PINGO_FLOAT_TIMING'` entre `'MOTION_PING_TO_SCALE'` y `'MOTION_POP_SPRING'` | R4 |
+| `src/theme/__tests__/motion.test.ts` | `no exporta nada más` | 17 nombres (B21) | 19 nombres: `'MOTION_PINGO_FLOAT_OFFSET_Y'` y `'MOTION_PINGO_FLOAT_TIMING'` entre `'MOTION_FLOAT_TIMING'` y `'MOTION_PING_FROM'` (Enmienda E2) | R4 |
 | `src/screens/login/index.test.tsx` | `#167 R6: la cabecera lleva el saludo y después el título` | 2 hijos | sustituido por `#172 R3: la cabecera lleva Volver, el saludo y el título` | R3 |
 | ídem | `#167 R6: el título de la cabecera conserva su clase` | `'text-center text-2xl font-black text-foreground'` | sustituido por `#172 R6: el título de la cabecera pesa 30/900 al inicio` | R6 |
 | ídem | `#167 R6: la burbuja dice el saludo en español` | `'text-sm font-semibold text-foreground'` | `'text-15 font-semibold text-foreground'`; el título no cambia | R6 |
@@ -1641,3 +1642,28 @@ de que #173 y #171 nombran sus tamaños de texto por su valor (`--text-13`,
   carta.
 
 - [x] Enmienda E1 aprobada por humano (fecha: 2026-10-13) ← gate antes de lanzar Codex
+
+## Enmienda E2 (2026-10-13) — orden de `.sort()` en el inventario de motion
+
+Codex paró en el gate verde de c8 (`progress/impl_mobile-account-screens-polish.md`,
+§Bloqueo): con la implementación de R4, `no exporta nada más` seguía rojo
+por aserción. La spec situaba `'MOTION_PINGO_FLOAT_OFFSET_Y'` y
+`'MOTION_PINGO_FLOAT_TIMING'` entre `'MOTION_PING_TO_SCALE'` y
+`'MOTION_POP_SPRING'`. `Object.keys(...).sort()` compara unidades UTF-16, y
+`O` (0x4F) va antes que `_` (0x5F): los dos nombres van entre
+`'MOTION_FLOAT_TIMING'` y `'MOTION_PING_FROM'`. El leader lo comprobó con
+`node` sobre la lista corregida (19 nombres, igual a su `.sort()`).
+
+- R4 y la fila de `motion.test.ts` en §Deltas de candados dicen la posición
+  nueva.
+- tasks.md T4 añade **c7b**, `test(mobile): orden de sort en el inventario de
+  motion (R4)`. Solo mueve esas dos líneas en `motion.test.ts`, porque c7 ya
+  está commiteado con la posición vieja. Su gate da los mismos rojos que c7.
+  Después siguen c8–c39 sin renumerar. T22 paso 7 cuenta c7b.
+- Barrido: es la única lista de la spec que se compara con `.sort()`. Las
+  demás son órdenes de pintado (`children` en el orden en que se pintan) o
+  inserciones en `featureFiles` (R17), que se recorre con `flatMap` y no depende del orden.
+- Nada más cambia: ni valores, ni recuentos de `it`, ni la Enmienda a la
+  carta. R4 sigue en 19 nombres.
+
+- [ ] Enmienda E2 aprobada por humano (fecha: ____) ← gate antes de reanudar Codex

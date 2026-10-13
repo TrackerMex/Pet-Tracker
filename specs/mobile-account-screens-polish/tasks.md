@@ -371,7 +371,8 @@ Gate: `Test Suites: 1 failed`, 0 tests.
 - `src/theme/__tests__/motion.test.ts`:
   - en `no exporta nada más`, la lista pasa de 17 a 19 nombres, con
     `'MOTION_PINGO_FLOAT_OFFSET_Y'` y `'MOTION_PINGO_FLOAT_TIMING'` entre
-    `'MOTION_PING_TO_SCALE'` y `'MOTION_POP_SPRING'`;
+    `'MOTION_FLOAT_TIMING'` y `'MOTION_PING_FROM'`, el orden de `.sort()`
+    (Enmienda E2);
   - añade el `describe('#172 R4: la flotación de Pingo en cuenta vive en
     motion.ts')` con el `it` `#172 R4: declara la flotación de Pingo del
     canvas: 10 px y medio ciclo de 1500 ms ease-in-out`, con las aserciones de
@@ -387,6 +388,28 @@ Gate: `Test Suites: 2 failed`, con 1 suite que no arranca y 2 tests failed en
 `motion.test.ts`. En Jest, importar dos nombres que aún no existen da
 `undefined`, no un error de módulo; solo `tsc` lo rechaza, y el gate del rojo
 no corre `typecheck`.
+
+**(1b) Corrección del rojo, c7b (Enmienda E2):** `test(mobile): orden de sort
+en el inventario de motion (R4)`.
+
+c7 se commiteó con las dos líneas nuevas entre `'MOTION_PING_TO_SCALE'` y
+`'MOTION_POP_SPRING'`. c7b solo las mueve, en `src/theme/__tests__/motion.test.ts`,
+a justo después de `'MOTION_FLOAT_TIMING',` y antes de `'MOTION_PING_FROM',`.
+No toca nada más.
+
+- Anclas:
+
+  | Comando | Esperado |
+  |---|---|
+  | `grep -A3 -F "'MOTION_FLOAT_TIMING'," src/theme/__tests__/motion.test.ts \| tr -d " ,'" \| paste -sd' '` | `MOTION_FLOAT_TIMING MOTION_PINGO_FLOAT_OFFSET_Y MOTION_PINGO_FLOAT_TIMING MOTION_PING_FROM` |
+  | `grep -cF "'MOTION_PINGO_FLOAT_" src/theme/__tests__/motion.test.ts` | `2` |
+  | `git diff --shortstat HEAD -- src/theme/__tests__/motion.test.ts` (antes de commitear) | ` 1 file changed, 2 insertions(+), 2 deletions(-)` |
+
+- Gate: el mismo comando que c7 y los mismos rojos: `Test Suites: 2 failed,
+  2 total` y `Tests: 2 failed, 15 passed, 17 total`, con 1 suite que no
+  arranca (`Cannot find module '../pingo-float'`) y 2 aserciones en
+  `motion.test.ts`. En `no exporta nada más`, el diff marca con `-` las dos
+  líneas nuevas entre `"MOTION_FLOAT_TIMING"` y `"MOTION_PING_FROM"`.
 
 **(2) Verde, c8:** `feat(mobile): Pingo flota 10 px en 3 s en cuenta (R4)`.
 
@@ -1477,7 +1500,8 @@ Gate:
    → `exit=0`. `src/theme/motion.ts` sí cambia (R4): solo añade las dos
    constantes de Pingo, y `MOTION_FLOAT_OFFSET_Y` y `MOTION_FLOAT_TIMING`
    siguen como en H0.
-7. **Historial.** `git log --oneline <H0>..HEAD` muestra c1–c39 en orden.
+7. **Historial.** `git log --oneline <H0>..HEAD` muestra c1–c7, c7b y c8–c39 en orden (Enmienda E2),
+   más los commits del leader y los dos `docs` de la parada de c8.
    Ningún commit mezcla tests rojos con implementación.
 8. **Informe y trazabilidad.**
    - Escribe `progress/impl_mobile-account-screens-polish.md`, con las salidas
