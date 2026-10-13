@@ -3742,3 +3742,316 @@ Siete sondas medidas por aserción y revertidas con limpio=0: M2 (2 failed, 17 p
 Cierre: BASE 9/368, utilitario 1/15, ALL 99/2832, todo exit=0; typecheck exit=0; lint exit=0 y vacio=0. Producción idéntica a f314978d; diff neto móvil de la Enmienda E1 limitado a los dos tests. No se ejecutó init.sh, push, PR, merge ni rebase; no se tocaron otros worktrees. El leader continúa con gate y re-revisión; el humano firma R14. La salida de status y la lista cerrada posterior al commit (7) se entregan en la respuesta final, como manda el handoff.
 
 R14: pendiente del smoke humano
+
+## Reanudacion 6 (Enmienda E2)
+
+### ARRANQUE
+
+Worktree exclusivo: `/home/claude/sites/Pet-Tracker-wt-169`. H0: `fc384b44`.
+Leídos completos requirements.md §Enmienda E2 (firma humana marcada), tasks.md §Enmienda E2 y handoff §Reanudación 6, con las reglas heredadas. Skill aplicada: ponytail; documentación Expo SDK 57 consultada según mobile-pet-tracker/AGENTS.md. Se sigue el orden rojo, verde y documentación; las medidas llevan `--testTimeout=30000` y se lee cada log solo después de ver `exit=`.
+
+```text
+$ cd /home/claude/sites/Pet-Tracker-wt-169/mobile-pet-tracker && pwd
+/home/claude/sites/Pet-Tracker-wt-169/mobile-pet-tracker
+$ git branch --show-current
+feature/169-mobile-weight-draw-and-toasts
+$ git rev-parse --short HEAD
+a7b93c16
+$ git log --oneline 4ddcbf5c..HEAD
+a7b93c16 docs(mobile-weight-draw-and-toasts): #169 Reanudación 6 de Codex (Enmienda E2)
+b3a20ffa docs(specs): firma de la Enmienda E2 de #169 aprobada vía Notion
+3435ed0b docs(mobile-weight-draw-and-toasts): #169 Enmienda E2 para la firma humana
+5deacd49 docs(mobile-weight-draw-and-toasts): #169 review ronda 2, rechazado
+eb9b77f1 docs(mobile-weight-draw-and-toasts): #169 Reanudación 5 terminada, en cola para init.sh
+$ git status --short
+```
+
+ARRANQUE conforme: branch exacta, HEAD a7b93c16, cinco commits del leader y status vacío antes de este registro.
+
+Skills requeridas por las reglas heredadas cargadas antes de editar código: `building-native-ui`, `appllama-app-design-skill` y `animate-expo`. Mandan los literales de la spec y los límites de docs/ui-guidelines.md; el smoke de Android queda para el humano.
+
+### Antes: anclas y base
+
+```text
+$ git merge-base --is-ancestor 4ddcbf5c HEAD; echo "exit=$?"
+exit=0
+$ git diff --quiet f314978d HEAD -- src/components/weight-chart.tsx src/utils/monthly-weight-delta.ts; echo "exit=$?"
+exit=0
+$ test ! -e .expo/types/router.d.ts; echo "exit=$?"
+exit=0
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/components/__tests__/weight-chart.test.tsx > /tmp/169-e2-b1.txt 2>&1; echo "exit=$?"
+Test Suites: 1 passed, 1 total
+Tests:       20 passed, 20 total
+exit=0
+```
+
+No se midieron BASE ni ALL de base, conforme a la Reanudación 6.
+
+### (1) Rojo R1: test literal y mutación X3 versionada
+
+Se añadió únicamente el `it` literal de E2, justo antes de `p parte de 0`, y se plantó X3 únicamente en `strokeDashoffset`. La suma de segmentos de `L` se conserva.
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/components/__tests__/weight-chart.test.tsx > /tmp/169-e2-r1.txt 2>&1; echo "exit=$?"
+  ● #169 R1: la línea se dibuja al montarse › con tres pesos no alineados y progreso 0.25 el desplazamiento es tres cuartos de la suma de los segmentos
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Object {
+    -   "strokeDashoffset": NumberCloseTo 83.8957 (3 digits),
+    +   "strokeDashoffset": 75.95393340703298,
+      }
+
+Matcher del it:
+expect(screen.getByTestId('weight-chart-line').props.jestAnimatedProps?.value)
+  .toEqual({ strokeDashoffset: expect.closeTo(83.8957, 3) })
+
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 20 passed, 21 total
+exit=1
+```
+
+Solo falla el it nuevo por aserción; el matcher y Expected/Received coinciden con el handoff. Se ejecuta la cadena literal del commit (1), con LINT y LIMPIO expandidos.
+
+Cadena (1) completada: exit=0. Anclas del log y fuente conformes, router.d.ts ausente; `bun run typecheck` exit=0 (`$ tsc --noEmit`), lint exit=0 con salida vacía, lista stageada exacta de dos ficheros y LIMPIO conforme.
+
+```text
+[feature/169-mobile-weight-draw-and-toasts b03fe344] test(mobile): el desplazamiento del dibujo usa la suma de los segmentos (#169 R1)
+2 files changed, 18 insertions(+), 1 deletion(-)
+```
+
+Hash rojo (1): `b03fe344`. Incluye el test nuevo y X3; el test todavía falla.
+
+### (2) Verde R1: restauración de producción desde f314978d
+
+```text
+$ git checkout f314978d -- src/components/weight-chart.tsx && git diff --quiet f314978d -- src/components/weight-chart.tsx; echo "exit=$?"
+exit=0
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/components/__tests__/weight-chart.test.tsx > /tmp/169-e2-g1c.txt 2>&1; echo "exit=$?"
+Test Suites: 1 passed, 1 total
+Tests:       21 passed, 21 total
+exit=0
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/components/__tests__/weight-chart.test.tsx src/screens/health/index.test.tsx src/screens/weight-log/index.test.tsx > /tmp/169-e2-g1.txt 2>&1; echo "exit=$?"
+  ● Console
+  ● Console
+  ● Console
+Test Suites: 3 passed, 3 total
+Tests:       146 passed, 146 total
+exit=0
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/__tests__/design-drift.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/169-e2-g1-guardas.txt 2>&1; echo "exit=$?"
+Test Suites: 2 passed, 2 total
+Tests:       92 passed, 92 total
+exit=0
+```
+
+Recuentos conformes; se ejecuta la cadena literal del commit (2), con LINT y LIMPIO expandidos.
+
+Cadena (2) completada: exit=0. Anclas de los tres logs conformes; producción idéntica a f314978d, router.d.ts ausente; `bun run typecheck` exit=0 (`$ tsc --noEmit`), lint exit=0 con salida vacía, lista stageada exacta de un fichero y LIMPIO conforme.
+
+```text
+[feature/169-mobile-weight-draw-and-toasts 27f256e1] feat(mobile): el desplazamiento del dibujo vuelve a usar la suma de los segmentos (#169 R1)
+1 file changed, 1 insertion(+), 1 deletion(-)
+```
+
+Hash verde (2): `27f256e1`. Solo restaura `src/components/weight-chart.tsx` desde f314978d; el test pertenece exclusivamente al rojo b03fe344.
+
+### Sondas sobre 27f256e1, sin commit y una a una
+
+#### X3b: desplazamiento con (n − 1) por el primer segmento
+
+Mutación literal de tasks.md §Enmienda E2, solo en `strokeDashoffset`.
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/components/__tests__/weight-chart.test.tsx > /tmp/169-e2-sX3b.txt 2>&1; echo "exit=$?"
+  ● #169 R1: la línea se dibuja al montarse › con tres pesos no alineados y progreso 0.25 el desplazamiento es tres cuartos de la suma de los segmentos
+
+    expect(received).toEqual(expected) // deep equality
+      Object {
+    -   "strokeDashoffset": NumberCloseTo 83.8957 (3 digits),
+    +   "strokeDashoffset": 89.04493247793498,
+      }
+
+Matcher: .toEqual({ strokeDashoffset: expect.closeTo(83.8957, 3) })
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 20 passed, 21 total
+exit=1
+```
+
+Solo falla el it nuevo por aserción; cuenta, it y Received conformes.
+
+```text
+$ git checkout HEAD -- src/components/weight-chart.tsx
+$ git diff --quiet HEAD -- src/components/weight-chart.tsx; echo "exit=$?"
+exit=0
+$ git diff --quiet HEAD -- . ../docs ../specs; echo "limpio=$?"
+limpio=0
+```
+
+X3b revertida antes de H1.
+
+#### H1: L sustituida por la cuerda
+
+Las siete líneas de `L` se sustituyeron por la línea literal H1 de tasks.md §Enmienda E1; `strokeDashoffset` sigue usando L · (1 − p).
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/components/__tests__/weight-chart.test.tsx > /tmp/169-e2-sH1.txt 2>&1; echo "exit=$?"
+  ● #169 R1: la línea se dibuja al montarse › con tres pesos no alineados la longitud es la suma de los dos segmentos
+
+    expect(received).toEqual(expected) // deep equality
+      Array [
+    -   NumberCloseTo 111.8609 (3 digits),
+    -   NumberCloseTo 111.8609 (3 digits),
+    +   101.27191120937731,
+    +   101.27191120937731,
+      ]
+
+Matcher: expect(screen.getByTestId('weight-chart-line').props.strokeDasharray)
+  .toEqual([expect.closeTo(111.8609, 3), expect.closeTo(111.8609, 3)])
+
+  ● #169 R1: la línea se dibuja al montarse › con tres pesos no alineados y progreso 0.25 el desplazamiento es tres cuartos de la suma de los segmentos
+
+    expect(received).toEqual(expected) // deep equality
+      Object {
+    -   "strokeDashoffset": NumberCloseTo 83.8957 (3 digits),
+    +   "strokeDashoffset": 75.95393340703298,
+      }
+
+Matcher: .toEqual({ strokeDashoffset: expect.closeTo(83.8957, 3) })
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 19 passed, 21 total
+exit=1
+```
+
+Solo fallan los dos its prescritos, por aserción; recuento y Received conformes.
+
+```text
+$ git checkout HEAD -- src/components/weight-chart.tsx
+$ git diff --quiet HEAD -- src/components/weight-chart.tsx; echo "exit=$?"
+exit=0
+$ git diff --quiet HEAD -- . ../docs ../specs; echo "limpio=$?"
+limpio=0
+```
+
+H1 revertida antes de H1b.
+
+#### H1b: L sustituida por (n − 1) por el primer segmento
+
+Las siete líneas de `L` se sustituyeron por la línea literal H1b de tasks.md §Enmienda E1; `strokeDashoffset` sigue usando L · (1 − p).
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/components/__tests__/weight-chart.test.tsx > /tmp/169-e2-sH1b.txt 2>&1; echo "exit=$?"
+  ● #169 R1: la línea se dibuja al montarse › con tres pesos no alineados la longitud es la suma de los dos segmentos
+
+    expect(received).toEqual(expected) // deep equality
+      Array [
+    -   NumberCloseTo 111.8609 (3 digits),
+    -   NumberCloseTo 111.8609 (3 digits),
+    +   118.72657663724664,
+    +   118.72657663724664,
+      ]
+
+Matcher: expect(screen.getByTestId('weight-chart-line').props.strokeDasharray)
+  .toEqual([expect.closeTo(111.8609, 3), expect.closeTo(111.8609, 3)])
+
+  ● #169 R1: la línea se dibuja al montarse › con tres pesos no alineados y progreso 0.25 el desplazamiento es tres cuartos de la suma de los segmentos
+
+    expect(received).toEqual(expected) // deep equality
+      Object {
+    -   "strokeDashoffset": NumberCloseTo 83.8957 (3 digits),
+    +   "strokeDashoffset": 89.04493247793498,
+      }
+
+Matcher: .toEqual({ strokeDashoffset: expect.closeTo(83.8957, 3) })
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 19 passed, 21 total
+exit=1
+```
+
+Solo fallan los dos its prescritos, por aserción; recuento y Received conformes.
+
+```text
+$ git checkout HEAD -- src/components/weight-chart.tsx
+$ git diff --quiet HEAD -- src/components/weight-chart.tsx; echo "exit=$?"
+exit=0
+$ git diff --quiet HEAD -- . ../docs ../specs; echo "limpio=$?"
+limpio=0
+```
+
+H1b revertida antes del cierre; las tres sondas quedaron sin commit y con limpio=0.
+
+### Cierre: BASE de nueve ficheros
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/__tests__/ui-language.test.ts src/__tests__/legibility-classnames.test.ts src/components/__tests__/weight-chart.test.tsx src/__tests__/design-drift.test.ts src/__tests__/consistency-classnames.test.ts src/providers/__tests__/language-provider.test.tsx src/theme/__tests__/motion.test.ts src/screens/health/index.test.tsx src/screens/weight-log/index.test.tsx > /tmp/169-e2-final.txt 2>&1; echo "exit=$?"
+  ● Console
+  ● Console
+  ● Console
+Test Suites: 9 passed, 9 total
+Tests:       369 passed, 369 total
+exit=0
+```
+
+### Cierre: espera previa a ALL
+
+Se lanza una única llamada del bucle literal de la Reanudación 6; ALL espera a `fin-espera` sin líneas de proceso.
+
+```text
+$ for i in $(seq 1 90); do pgrep -f 'node_modules/(\.bin/jest|jest-worker)|[i]nit\.sh' > /dev/null || break; sleep 60; done; pgrep -af 'node_modules/(\.bin/jest|jest-worker)'; pgrep -af '[i]nit\.sh'; echo "fin-espera"
+fin-espera
+```
+
+Ninguna línea de proceso encima de fin-espera. Se inicia ALL sin lanzar otros comandos mientras corre.
+
+### Cierre: ALL con --testTimeout=30000
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 > /tmp/169-e2-all.txt 2>&1; echo "exit=$?"
+Test Suites: 99 passed, 99 total
+Tests:       2833 passed, 2833 total
+exit=0
+```
+
+ALL conforme. El log contiene únicamente encabezados `● Console`; al final apareció el aviso preexistente de worker force-exit que el handoff permite. No se lanzaron otros comandos mientras ALL corría.
+
+### Cierre: typecheck, lint y diff de producción
+
+```text
+$ bun run typecheck; echo "exit=$?"
+$ tsc --noEmit
+exit=0
+$ bunx expo lint --no-cache > /tmp/169-lint-final.txt 2>&1; echo "exit=$?"; test ! -s /tmp/169-lint-final.txt; echo "vacio=$?"
+exit=0
+vacio=0
+```
+
+Desde la raíz:
+
+```text
+$ cd /home/claude/sites/Pet-Tracker-wt-169 && pwd
+/home/claude/sites/Pet-Tracker-wt-169
+$ git diff --quiet f314978d HEAD -- mobile-pet-tracker/src/components/weight-chart.tsx mobile-pet-tracker/src/utils/monthly-weight-delta.ts; echo "exit=$?"
+exit=0
+$ git diff --name-only f314978d HEAD -- mobile-pet-tracker/ | LC_ALL=C sort
+mobile-pet-tracker/src/components/__tests__/weight-chart.test.tsx
+mobile-pet-tracker/src/utils/monthly-weight-delta.test.ts
+```
+
+Producción idéntica a f314978d. Diff móvil neto frente a ese hash limitado a los dos tests de las enmiendas E1 y E2.
+
+### (3) Trazabilidad e impl
+
+Solo la columna Commit de la fila R1 añade `; Enmienda E2: b03fe344 → 27f256e1`, con los mensajes literales del par y `sondas X3b, H1 y H1b`. Se conservan la columna Test y todo el resto de traceability.md. El impl añade únicamente esta sección al final; no se borra ni edita el registro anterior.
+
+Dos hashes de esta ronda:
+
+- (1) rojo R1: `b03fe344 test(mobile): el desplazamiento del dibujo usa la suma de los segmentos (#169 R1)`; test nuevo y mutación X3 versionada, 1 failed / 20 passed / 21 total, exit=1.
+- (2) verde R1: `27f256e1 feat(mobile): el desplazamiento del dibujo vuelve a usar la suma de los segmentos (#169 R1)`; solo restaura producción desde f314978d, 21/21 verde, GRAFICA 146, GUARDAS 92, todo exit=0.
+
+Las tres sondas se midieron por aserción sobre el verde y se revirtieron una a una con exit=0 y limpio=0: X3b (1 failed, 20 passed, 21 total), H1 y H1b (2 failed, 19 passed, 21 total cada una). Encabezados, matchers y Expected/Received registrados arriba; ninguna sonda queda versionada.
+
+Cierre conforme: BASE 9/369 y ALL 99/2833 con exit=0, typecheck exit=0, lint exit=0 y vacio=0, producción idéntica a f314978d. La cadena del commit (3) stagea exactamente traceability.md y este impl. El status y la lista cerrada contra H0 fc384b44 se entregan en la respuesta final después del commit, como manda el handoff. No se ejecutó init.sh, push, PR, merge ni rebase; no se tocaron otros worktrees. El leader continúa con push y gate; el humo de R14 sigue pendiente de la firma humana.
+
+R14: pendiente del smoke humano
