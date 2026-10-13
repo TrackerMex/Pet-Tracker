@@ -184,3 +184,56 @@ No cambian:
   (C10/P13).
 - **Clave nueva `profile.language` («Idioma»)** para la fila de idioma: añade copy sin necesidad. Se
   recomienda `profile.changeLanguage`; queda como casilla.
+
+## 5. Spike uniwind: tamaños numéricos
+
+Hecho el 2026-10-13, **fuera del árbol**, antes de fijar las clases de §1 «Perfil píxel exacto». Veredicto:
+**funciona**.
+
+**Versiones**: `uniwind@1.11.0` (con `@tailwindcss/node@4.3.2` y `@tailwindcss/oxide@4.3.2`) y
+`tailwindcss@4.3.3`. Son las del `bun.lock` de la branch y las instaladas en `node_modules/` del árbol
+principal; el worktree de #173 no tiene `node_modules/`.
+
+**Cómo compila uniwind**: `withUniwindConfig` (en `metro.config.js`, `cssEntryFile: './src/theme/global.css'`)
+instala `uniwind/dist/metro/transformer.cjs`. Cuando Metro transforma el fichero de entrada CSS, llama a
+`compileCSS`. Esa función pasa el CSS por `@tailwindcss/node.compile` y lo escanea con `oxide` (`@source` más
+`**/*` bajo `src/theme/`). Después `compileNativeCSS` lo convierte en un objeto JS
+`{ vars, stylesheet }` que se inyecta con `Uniwind.__reinit`. En jest no interviene: `\.css$` va a
+`test/css-stub.js`, así que los tests solo ven la cadena `className`.
+
+**Método**:
+
+1. Copia en el scratchpad (`…/scratchpad/spike173/`) de `src/theme/global.css` de la branch, con
+   `node_modules` enlazado al del árbol principal. En `@theme` se añadieron `--text-13: 13px;`,
+   `--text-15: 15px;`, `--text-26: 26px;`, `--tracking-title: -0.02em;` y `--radius-hero: 28px;`.
+2. `src/probe.tsx` con las clases `text-13 text-15 text-26 text-2xs text-sm size-8.5 size-9 size-13 p-4.5
+   py-2.75 px-5 gap-3.5 tracking-title rounded-hero`.
+3. Script de Node que carga `transformer.cjs` con su ruta real, expone `compileCSS` y lo ejecuta con
+   `UniwindBundlerConfig.fromMetroConfig({ cssEntryFile }, 'android')` y `cwd` = la copia. Sale con
+   `exit=0`.
+
+**Resultado** (extracto literal del objeto generado):
+
+| Clase | Entrada generada | Variable resuelta | px |
+|---|---|---|---|
+| `text-13` | `["fontSize", vars["--text-13"]]`, `["--uniwind-em", vars["--text-13"]]` | `"--text-13": vars => 13` | 13 |
+| `text-15` | ídem con `--text-15` | `"--text-15": vars => 15` | 15 |
+| `text-26` | ídem con `--text-26` | `"--text-26": vars => 26` | 26 |
+| `size-8.5` | `["width", vars["--spacing"] * 8.5]` (y `height`) | `"--spacing": vars => 4` | 34 |
+| `size-9` | `["width", vars["--spacing"] * 9]` | ídem | 36 |
+| `size-13` | `["width", vars["--spacing"] * 13]` | ídem | 52 |
+| `p-4.5` | `["padding", vars["--spacing"] * 4.5]` | ídem | 18 |
+| `py-2.75` | `["paddingVertical", vars["--spacing"] * 2.75]` | ídem | 11 |
+| `px-5` | `["paddingHorizontal", vars["--spacing"] * 5]` | ídem | 20 |
+| `gap-3.5` | `["gap", vars["--spacing"] * 3.5]` | ídem | 14 |
+| `tracking-title` | `["letterSpacing", vars["--tracking-title"]]` | `vars["--uniwind-em"] * -0.02` | −0,02 × tamaño de letra |
+| `rounded-hero` | `["borderRadius", vars["--radius-hero"]]` | `"--radius-hero": vars => 28` | 28 |
+
+**Diferencia con las clases de la escala**: `text-sm` genera además
+`["lineHeight", vars["--tw-leading"] ?? vars["--text-sm--line-height"]]`. Un `--text-N` sin
+`--text-N--line-height` **no** emite `lineHeight`: el texto usa la altura de línea por defecto de RN salvo que
+el elemento lleve `leading-*`. Por eso §1 «Perfil píxel exacto» solo define `--text-N--line-height` donde el
+artboard fija una altura de línea, y no donde no la fija.
+
+**Letter-spacing en em**: uniwind lo convierte (`--uniwind-em` × factor, y `--uniwind-em` lo fija cada
+`text-*`). Se puede usar, pero solo si un elemento local de Perfil lo necesita; ver §1.
