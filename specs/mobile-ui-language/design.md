@@ -937,7 +937,7 @@ copy completa en cada una.
 | — | `geofences.needsCollar` | `Safe zones need a collar with an active plan.` | `Las zonas seguras necesitan un collar con plan activo.` | ← cambiada por #159 (R7) |
 | — | `home.activityNeedsCollar` | `Activity needs a collar with an active plan` | `La actividad necesita un collar con plan activo` | ← cambiada por #159 (R8) |
 
-### §2.24 — Añadidos por #171 — Celebraciones
+### §2.27 — Añadidos por #171 — Celebraciones
 
 | # | Clave | `en` | `es` | Origen |
 |---|---|---|---|---|
