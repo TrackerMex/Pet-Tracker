@@ -254,8 +254,8 @@ Dos shared values por elemento animado, `scale` y `opacity`, para
   pingoOpacity.set(withTiming(1, MOTION_FADE_TIMING));
   badgeOpacity.set(withDelay(MOTION_SURFACE_MS, withTiming(1, MOTION_FADE_TIMING)));
   if (!reduceMotion) {
-    pingoScale.set(withSpring(1, MOTION_POP_SPRING));
-    badgeScale.set(withDelay(MOTION_SURFACE_MS, withSpring(1, MOTION_POP_SPRING)));
+    pingoScale.set(withSpring(1, MOTION_CELEBRATION_SPRING));
+    badgeScale.set(withDelay(MOTION_SURFACE_MS, withSpring(1, MOTION_CELEBRATION_SPRING)));
   }
   ```
 - `MOTION_FADE_TIMING` lleva `reduceMotion: ReduceMotion.Never`, así que el
@@ -286,12 +286,15 @@ Se añaden al final, cada una con su comentario `// #171 R7` o `// #171 R6`:
 
 ```ts
 export const MOTION_POP_SCALE = 0.6;
-export const MOTION_POP_SPRING = { duration: 400, dampingRatio: 0.5, reduceMotion: ReduceMotion.System };
+export const MOTION_CELEBRATION_SPRING = { duration: 400, dampingRatio: 0.5, reduceMotion: ReduceMotion.System };
 export const MOTION_CONFETTI_FALL_TIMING = { easing: Easing.bezier(0.2, 0.6, 0.4, 1), reduceMotion: ReduceMotion.System };
 export const MOTION_CONFETTI_MIN_MS = 2400;
 export const MOTION_CONFETTI_SPREAD_MS = 1200;
 ```
 
+- *(Enmienda E3)* `MOTION_CELEBRATION_SPRING` se llamaba `MOTION_POP_SPRING`.
+  Ese nombre lo ocupa el pop de #167 (`dampingRatio: 0.6`, que usa
+  `src/components/pop-in.tsx`), y #171 ni lo declara ni lo importa.
 - Bajo jest, `Easing.bezier` se serializa como `{ bezier: [...] }` y
   `ReduceMotion.System` como `'system'`. Es el patrón de `MOTION_FILL_TIMING`
   en `src/theme/__tests__/motion.test.ts`.
@@ -358,7 +361,7 @@ Modificados:
   de #65 R9 (§7).
 - `src/screens/docs/index.test.tsx` — los hijos del vacío de #158 R4
   (`docs-empty-pose` → `docs-empty-float`, R10.2; §7).
-- `specs/mobile-ui-language/design.md` — §2.24 (R12.3).
+- `specs/mobile-ui-language/design.md` — §2.<n>, la siguiente libre (R12.3, Enmienda E3).
 - `docs/ui-guidelines.md` — enmienda de §8 (R15).
 
 ## 6. Copy (R12)
@@ -603,6 +606,18 @@ El leader:
 
    Re-comprobado al escribir el handoff (2026-10-12): `origin/main` sigue en
    d2b8b0ae y #167 no ha mergeado, así que este paso no aplica.
+
+   Re-medido al preparar la ronda 3 (2026-10-13, Enmienda E3): `origin/main`
+   está en `ad432ca4` y trae #167, #168 y #169. El paso aplica, con tres
+   diferencias sobre lo previsto:
+   - #169 ocupa §2.25, así que la sección de #171 es la siguiente libre
+     (§2.26; §2.27 si #170, PR #213, mergea antes). El número exacto lo fija
+     el handoff de la ronda 3.
+   - #167 declara su propio `MOTION_POP_SPRING` (0.6). #171 pasa a
+     `MOTION_CELEBRATION_SPRING` (§4.4).
+   - El catálogo suma además `+ 2, // #169 R9`. Los recuentos agregados de
+     `consistency-classnames.test.ts` (#168) se suman, no se sustituyen. La
+     resolución exacta, medida en spike, va en el handoff.
 
 R14 y sus tests (T14) quedan desbloqueados. Si al arrancar Codex
 `origin/main` ya no es d2b8b0ae, rige el paso 5 sobre las

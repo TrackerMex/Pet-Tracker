@@ -201,7 +201,8 @@ Cada requisito nombra en [[tasks]] el test que lo verifica. En los testIDs,
   `{id}-pingo` con el estilo
   `{ width: 200, height: 200, opacity: 0, transform: [{ scale: 0.6 }] }`.
   En el mismo efecto de montaje anima la escala a 1 con
-  `withSpring(1, MOTION_POP_SPRING)` y la opacidad a 1 con
+  `withSpring(1, MOTION_CELEBRATION_SPRING)` *(Enmienda E3; antes
+  `MOTION_POP_SPRING`)* y la opacidad a 1 con
   `withTiming(1, MOTION_FADE_TIMING)`.
 - **R7.2** WHILE reduce motion no está activo THE SYSTEM SHALL montar
   `{id}-badge` con el estilo
@@ -280,15 +281,15 @@ Cada requisito nombra en [[tasks]] el test que lo verifica. En los testIDs,
     `addPet.celebrateLater` no exclaman;
   - ninguna de las cuatro lleva emoji;
   - `addPet.celebrateBody` termina en punto.
-- **R12.3** THE SYSTEM SHALL registrar las cuatro claves en una sección
-  `### §2.24 — Añadidos por #171 — Celebraciones` de
-  `specs/mobile-ui-language/design.md`, después de §2.23 y antes de
-  `## 3. La infraestructura`. Cada fila sigue el formato
+- **R12.3** *(Enmienda E3)* THE SYSTEM SHALL registrar las cuatro claves en
+  una sección `### §2.<n> — Añadidos por #171 — Celebraciones` de
+  `specs/mobile-ui-language/design.md`, donde `<n>` es la siguiente libre en
+  `origin/main` al escribir el handoff de la ronda 3: §2.26 sobre
+  `ad432ca4`, §2.27 si #170 ha mergeado antes. Va después de §2.23 y de las
+  secciones `§2.*` que la sigan, y antes de `## 3. La infraestructura`. Cada
+  fila sigue el formato
   `| — | \`<clave>\` | \`<en>\` | \`<es>\` | ← añadida por #171 (R12) |`.
-  **El número de sección no se congela aquí**: #167 abre también una §2.24.
-  Si #167 está en `origin/main` al hacer el handoff, esta sección pasa a ser
-  la siguiente libre (§2.25), después de la de #167. El leader lo re-mide en
-  [[design]] §9.3 (paso 6).
+  El leader fija `<n>` en el handoff tras medirlo ([[design]] §9.3, paso 6).
   Además suma sus cuatro usos a `R9_ADD_PET` en
   `src/__tests__/ui-copy-table.ts`.
 
@@ -485,7 +486,7 @@ El reviewer plantó en producción estas mutaciones, y la suite siguió verde:
 | S3 | opacidad `interpolate(p, [0, 0.5, 1], …)` | R6.3 opacidad |
 | S4 | retardo `index * 53`, sin `% MOTION_CONFETTI_SPREAD_MS` | R6.3 `D_i` (solo cambia la pieza 23: 1219 ms en vez de 19) |
 | S5 | escala de Pingo con `withTiming(1, MOTION_FADE_TIMING)` | R7.1 muelle |
-| S5b | `MOTION_POP_SPRING` con `dampingRatio: 1` | R7.1 y R7.2, P5 |
+| S5b | `MOTION_POP_SPRING` con `dampingRatio: 1` (tras E3, `MOTION_CELEBRATION_SPRING`) | R7.1 y R7.2, P5 |
 | S10 | flote con `{ ...MOTION_FLOAT_TIMING, duration: 600 }` | R10.3 |
 | S12 | `setCelebratePetName(input.name)` | R5.1 |
 
@@ -570,3 +571,79 @@ Que la ronda 2 añada los cinco `it` de R5.4, R6.5, R7.4 (dos) y R10.4 con
 los valores medidos de arriba, sin tocar producción.
 
 - [x] Enmienda E2 aprobada por humano (fecha: 2026-10-12)
+
+---
+
+## Enmienda E3 — la celebración tiene su propio muelle y su copy cambia de sección
+
+> Escrita el 2026-10-13, al preparar el merge de `origin/main` (`ad432ca4`,
+> que ya trae #167, #168 y #169) en la branch, después de la ronda 2. No
+> cambia ningún comportamiento ni ningún valor medido. Su casilla va **sin
+> marcar**: el humano reabre el gate solo para esta enmienda, y la ronda 3
+> no arranca hasta que esté marcada.
+
+### El hecho medido
+
+1. **Choque de nombre.** #167 (PR #210) declara en `src/theme/motion.ts` su
+   propio `MOTION_POP_SPRING`, con `dampingRatio: 0.6` y
+   `duration: MOTION_SURFACE_MS`. Lo usa `src/components/pop-in.tsx` y lo
+   fija `#167 R2` en `src/theme/__tests__/motion.test.ts`. #171 declara un
+   `MOTION_POP_SPRING` con `dampingRatio: 0.5`. Los dos no caben en el mismo
+   módulo: `git merge origin/main` deja en conflicto `motion.ts` y
+   `motion.test.ts`. Quedarse con cualquiera de los dos valores rompe al
+   otro. Con 0.6 caen los dos `it` de R7.4 (medido en el spike); con 0.5 cae
+   `#167 R2`.
+2. **Numeración.** En `origin/main` (`ad432ca4`),
+   `specs/mobile-ui-language/design.md` ya tiene `### §2.24` (#167) y
+   `### §2.25` (#169). La siguiente libre, la que pide R12.3, es §2.26, no la
+   §2.25 que R12.3 anticipaba entre paréntesis. Además #170 (PR #213, cerrada
+   y sin mergear) abre otra §2.26; si mergea antes, la libre será §2.27.
+3. **Spike del leader**: el merge de `ad432ca4` resuelto fuera del árbol,
+   con este cambio aplicado. `tsc` y `expo lint` salen limpios, y los ocho
+   suites que tocan los conflictos (353 `it`) pasan en verde. El jest completo de
+   `mobile-pet-tracker` sobre el spike da 102 suites y 3063 `it`, todos
+   verdes. En la primera corrida, los 4 `it` de `hosting-artifacts.test.ts`
+   fallaron con ENOENT porque el spike no copiaba `hosting/`, `.env.example`
+   ni `AGENTS.md` de la raíz. Con esos ficheros copiados, esa suite pasa
+   7 de 7.
+
+### Qué cambia
+
+1. **Nombre del muelle.** `motion.ts` declara, bajo `// #171 R7`:
+   `export const MOTION_CELEBRATION_SPRING = { duration: 400, dampingRatio: 0.5, reduceMotion: ReduceMotion.System };`.
+   R7.1 pasa a decir `withSpring(1, MOTION_CELEBRATION_SPRING)`, y R7.2 lo
+   hereda («igual que en R7.1»). `MOTION_POP_SPRING` queda como lo dejó #167
+   (0.6): #171 no lo declara ni lo importa.
+2. **Su test.** En `motion.test.ts`, `it('declara MOTION_POP_SPRING'` pasa a
+   `it('declara MOTION_CELEBRATION_SPRING'`, con el mismo valor
+   `{ duration: 400, dampingRatio: 0.5, reduceMotion: 'system' }`. La lista
+   de `no exporta nada más` gana `MOTION_CELEBRATION_SPRING`, además de los
+   tokens que trae #167.
+3. **Sección de copy.** R12.3 registra las cuatro claves en
+   `### §2.26 — Añadidos por #171 — Celebraciones`, después de la §2.25 de
+   #169 y antes de `## 3. La infraestructura`. Su `it` pasa a
+   `it('registra las cuatro claves en §2.26 de mobile-ui-language')`, con el
+   literal `'### §2.26 — Añadidos por #171 — Celebraciones'`. Las dos
+   aserciones de posición (detrás de `### §2.23 `, delante de
+   `## 3. La infraestructura`) no cambian.
+4. **Sonda S5b** de la tabla de E2: muta `dampingRatio: 0.5` en
+   `MOTION_CELEBRATION_SPRING`. Sigue siendo un literal único en
+   `motion.ts`, porque el muelle de #167 usa 0.6.
+
+### Qué no cambia
+
+- Ningún valor: los pares de R7.4, P5 (`dampingRatio: 0.5`), R7.3 y el
+  resto de requisitos siguen igual.
+- Ningún comportamiento: en producción, el merge solo cambia en #171 el
+  nombre del símbolo en `celebration.tsx` (import y dos usos).
+- Los recuentos agregados que mueve el merge (catálogo, clases, labios) son
+  mecánica de la resolución, no requisitos. Van en el handoff de la ronda 3.
+
+### Qué firma el humano
+
+Que el pop de la celebración use su propio muelle `MOTION_CELEBRATION_SPRING`
+(0.5) en vez de compartir nombre con el pop de #167 (0.6), y que su sección
+de copy sea la siguiente libre al hacer el merge (§2.26, o §2.27 si #170
+mergea antes).
+
+- [ ] Enmienda E3 aprobada por humano (fecha: ____)

@@ -265,7 +265,7 @@ cualquier `grep -cF` que no dé `1` es **parada**.
   | R7.3 a los 2000 ms, `probe-pingo` es igual a `{ width: 200, height: 200, opacity: 1, transform: [{ scale: 1 }] }` | igual |
   | R7.3 a los 300 ms, `probe-badge` sigue en `opacity: 0` y `scale: 0.6` | igual |
   | R7.3 a los 2400 ms, `probe-badge` está en `opacity: 1` y `scale: 1` | igual |
-  | `motion.test`: `MOTION_POP_SCALE` es `0.6` y `MOTION_POP_SPRING` es igual a `{ duration: 400, dampingRatio: 0.5, reduceMotion: 'system' }`, con `require('../motion')`. **Un `it` por constante**, con `// #171 R7`; `no exporta nada más` suma dos nombres | **por aserción** |
+  | `motion.test`: `MOTION_POP_SCALE` es `0.6` y `MOTION_CELEBRATION_SPRING` *(Enmienda E3; antes `MOTION_POP_SPRING`)* es igual a `{ duration: 400, dampingRatio: 0.5, reduceMotion: 'system' }`, con `require('../motion')`. **Un `it` por constante**, con `// #171 R7`; `no exporta nada más` suma dos nombres | **por aserción** |
 
   Cuenta: +5 en `celebration` y +2 en `motion`. Rojos: 5 + 3. La lista
   final de `no exporta nada más`, en orden:
@@ -276,6 +276,12 @@ cualquier `grep -cF` que no dé `1` es **parada**.
   `MOTION_FILL_TIMING`, `MOTION_FLOAT_OFFSET_Y`, `MOTION_FLOAT_TIMING`,
   `MOTION_POP_SCALE`, `MOTION_POP_SPRING`, `MOTION_SETTLE_SPRING`,
   `MOTION_STAGGER_MS`, `MOTION_SURFACE_MS`, `MOTION_TRANSITION_MS`.
+
+  *(Enmienda E3)* Tras el merge de la ronda 3, la lista lleva
+  `MOTION_CELEBRATION_SPRING` detrás de `MOTION_BLINK_TIMING`, y
+  `MOTION_PING_FROM`, `MOTION_PING_TIMING` y `MOTION_PING_TO_SCALE` delante
+  de `MOTION_POP_SCALE`. `MOTION_POP_SPRING` sigue en la lista, pero ahora
+  es el de #167.
 
 - [ ] (2) Verde: el efecto de pop de [[design]] §4.2, **sin** mirar reduce
   motion: la escala inicial es siempre `MOTION_POP_SCALE` y el muelle se
@@ -428,7 +434,7 @@ cuando el código ya puede usarlas (lección «candados agregados de #65 R18»).
   | R12.2 `it('body, pair y later no exclaman en ningún idioma')`: ninguno de los seis valores casa con `/[!¡]/` | **por aserción** |
   | R12.2 `it('ninguna de las cuatro lleva emoji')`: ninguno de los ocho valores casa con `/\p{Extended_Pictographic}/u` | **por aserción** |
   | R12.2 `it('addPet.celebrateBody termina en punto en los dos idiomas')`: los dos casan con `/\.$/` | **por aserción** |
-  | R12.3 `it('registra las cuatro claves en §2.24 de mobile-ui-language')`: ver abajo | **por aserción** |
+  | R12.3 `it('registra las cuatro claves en §2.<n> de mobile-ui-language')` *(Enmienda E3: `<n>` lo fija el handoff de la ronda 3)*: ver abajo | **por aserción** |
 
   R12.3 lee `join(process.cwd(), '..', 'specs', 'mobile-ui-language', 'design.md')`
   con el `readFileSync` de `jest.requireActual<typeof import('fs')>('fs')`.
@@ -436,7 +442,7 @@ cuando el código ya puede usarlas (lección «candados agregados de #65 R18»).
 
   ```ts
   const SECTION = [
-    '### §2.24 — Añadidos por \u0023171 — Celebraciones',
+    '### §2.<n> — Añadidos por \u0023171 — Celebraciones',
     '',
     '| # | Clave | `en` | `es` | Origen |',
     '|---|---|---|---|---|',
