@@ -502,10 +502,10 @@ describe('#171 R12: copy de la variante sin collar', () => {
     expect(esCatalog['addPet.celebrateBody']).toMatch(/\.$/);
   });
 
-  it('registra las cuatro claves en §2.24 de mobile-ui-language', () => {
+  it('registra las cuatro claves en §2.27 de mobile-ui-language', () => {
     const doc = readFileSync(join(process.cwd(), '..', 'specs', 'mobile-ui-language', 'design.md'), 'utf8');
     const SECTION = [
-      '### §2.24 — Añadidos por \u0023171 — Celebraciones',
+      '### §2.27 — Añadidos por \u0023171 — Celebraciones',
       '',
       '| # | Clave | `en` | `es` | Origen |',
       '|---|---|---|---|---|',
