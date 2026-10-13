@@ -3,14 +3,13 @@ import { router } from 'expo-router';
 import { Button, Skeleton } from 'heroui-native';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ChevronRight, HeartPulse, Syringe } from 'reicon-react-native';
+import { Check, ChevronRight, Clock, HeartPulse, Syringe } from 'reicon-react-native';
 
 import { listVaccines, listWeights } from '../../api/health-records';
 import { listPets, type PetsState } from '../../api/pets';
 import { healthKeys, petKeys } from '../../api/query-keys';
 import { Card } from '../../components/card';
 import { EmptyState } from '../../components/empty-state';
-import { PetHeroHeader } from '../../components/pet-hero-header';
 import { PetSwitcher } from '../../components/pet-switcher';
 import { WeightChart } from '../../components/weight-chart';
 import { usePetSelection } from '../../hooks/use-pet-selection';
@@ -23,6 +22,7 @@ import {
 } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { TOUCH_SLOP } from '../../theme/touch-target';
+import { CATEGORY_SLOTS } from '../../utils/category-palette';
 import { calendarDaysUntil, fmtDate } from '../home/format';
 
 function isPetsError(state: PetsState): boolean {
@@ -42,7 +42,9 @@ function fmtVariation(variation: number | null): string {
 }
 
 export function HealthScreen() {
-  const [warning, muted] = useThemeColors(['warning', 'muted']);
+  const [warning, muted, rose, amber, green] = useThemeColors([
+    'warning', 'muted', 'category-rose-strong', 'category-amber-strong', 'category-green-strong',
+  ]);
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { token } = useAuth();
   const t = useTranslate();
@@ -64,10 +66,6 @@ export function HealthScreen() {
     queryFn: () => listWeights(baseUrl, token ?? '', selectedPetId!),
     enabled: selectedPetId !== null,
   });
-  const selectedPet =
-    pets.data?.kind === 'ok'
-      ? pets.data.pets.find((pet) => pet.id === selectedPetId) ?? null
-      : null;
   const today = localTodayIso();
   const nextVaccine =
     vaccines.data?.kind === 'ok'
@@ -89,20 +87,22 @@ export function HealthScreen() {
       className="flex-1 bg-background"
       contentInsetAdjustmentBehavior="automatic"
       contentContainerStyle={{
+        padding: 24,
         gap: 16,
+        paddingTop: insets.top + 12,
         paddingBottom: insets.bottom + 96,
       }}
     >
+      <Text testID="health-title" className="text-3xl font-black tracking-tight text-foreground">
+        {t('health.health')}
+      </Text>
       {pets.data?.kind === 'ok' && pets.data.pets.length > 0 ? (
-        <>
-          <PetHeroHeader pet={selectedPet} variant="bleed">
+          <View testID="health-content" style={{ gap: 16 }}>
             <PetSwitcher
               pets={pets.data.pets}
               selectedPetId={selectedPetId}
               onSelect={selectPet}
             />
-          </PetHeroHeader>
-          <View testID="health-content" style={{ paddingHorizontal: 24, gap: 16 }}>
             {selectedPetId ? (
               <View testID="vaccines-section" className="gap-3">
                 <View className="flex-row items-center gap-2">
@@ -178,12 +178,28 @@ export function HealthScreen() {
                 ) : null}
 
                 {vaccines.data?.kind === 'ok'
-                  ? vaccines.data.vaccines.map((vaccine) => (
+                  ? vaccines.data.vaccines.map((vaccine) => {
+                      const slot = vaccine.nextDoseAt !== null && vaccine.nextDoseAt < today
+                        ? 'rose'
+                        : vaccine.id === nextVaccine?.id ? 'amber' : 'green';
+                      const Icon = slot === 'green' ? Check : Clock;
+                      const color = slot === 'rose' ? rose : slot === 'amber' ? amber : green;
+                      return (
                       <Card
                         key={vaccine.id}
                         testID={`vaccine-row-${vaccine.id}`}
-                        className="gap-1"
+                        className="flex-row items-center gap-3"
                       >
+                        <View
+                          testID={`vaccine-tile-${vaccine.id}`}
+                          className={`size-10 items-center justify-center rounded-xl ${CATEGORY_SLOTS[slot].surface}`}
+                          style={CONTINUOUS_CORNER}
+                          accessibilityElementsHidden
+                          importantForAccessibility="no-hide-descendants"
+                        >
+                          <Icon size={20} color={color} />
+                        </View>
+                        <View testID={`vaccine-text-${vaccine.id}`} className="flex-1 gap-1">
                         <Text className="font-bold text-foreground">
                           {vaccine.name}
                         </Text>
@@ -201,8 +217,10 @@ export function HealthScreen() {
                             {vaccine.nextDoseAt}
                           </Text>
                         ) : null}
+                        </View>
                       </Card>
-                    ))
+                      );
+                    })
                   : null}
               </View>
             ) : null}
@@ -274,16 +292,11 @@ export function HealthScreen() {
               </Card>
             ) : null}
           </View>
-        </>
       ) : (
         <View
           testID="health-states"
-          style={{ paddingHorizontal: 24, paddingTop: insets.top + 12, gap: 16 }}
+          style={{ gap: 16 }}
         >
-          <Text className="text-2xl font-black text-foreground">
-            {t('health.health')}
-          </Text>
-
           {pets.data === undefined ? (
             <Skeleton testID="health-loading" className="h-12 w-full rounded-card" />
           ) : null}

@@ -8784,6 +8784,47 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
   `feature_list.json`, STATUS, Notion (Implementado / Completado) y PR #210
   contra `main`. Merge: humano. Tras el merge: borrar el worktree.
 
+## #168 `mobile-tab-headers-canvas` — Título grande del canvas en Salud, Nutrición y Perfil — 2026-10-13
+
+- **Inicio**: 2026-10-12, worktree `Pet-Tracker-wt-168`, branch
+  `feature/168-mobile-tab-headers-canvas`. Fila 2 (parte 1) del plan de
+  paridad con el canvas (`progress/explore_ui-canvas-parity.md`, decisión N1
+  del humano: «Título grande del canvas»).
+- **Firma**: spec firmada vía Notion (`a372efdc`); enmiendas E1 (`a2e684ee`)
+  y E2 (`c8c6aee3`) antes del handoff.
+- **Handoff**: `progress/handoff_mobile-tab-headers-canvas.md`, 27 commits
+  (A-L rojo/verde, M nace verde con sondas S1-S8, trazabilidad y lista
+  cerrada). Anclas A1-A14 y H1-H30 ejecutadas por el leader en H0.
+- **Ronda 1 rechazada** (`53f0e8f9`): el código era correcto, pero faltaban
+  candados en la spec (O1/O2: R5 con peso null, edad no finita, «Sin
+  esterilizar»; R4.3, posición de `photo-upload-error`). La **Enmienda E3**,
+  solo tests, añade 8 `it` (10 tests) que nacen verdes con sonda, más N1 (edad
+  ±Infinity) y N2/N3 (sexo y esterilizado por separado) del barrido pre-firma
+  del reviewer, y O3 (R9.3 con `now` 150). Se firmó vía Notion (`938188b8`).
+  El leader verificó los recuentos acumulados paso a paso en un worktree fuera
+  del árbol, con cada sonda y su rojo exacto.
+- **Ronda 2**: Codex ejecutó la Reanudación 13 (c28-c37) sin paradas, hasta
+  `824c67b8`. init.sh del leader en verde. Reviewer ronda 2 **aprobado**
+  (`d3cb4d1a`): replantó las sondas E3 con su rojo exacto y añadió Z1/Z2
+  propias en R4.3.
+- **Merge de main** (`64187ab8`, trae #167): conflicto en
+  `docs/ui-guidelines.md`, resuelto dejando la Enmienda #167 y después la
+  #168. init.sh exit 0 (backend 187/1474, infra 2/14, móvil 100/2919, e2e 30
+  de 33 suites, 468 passed y 8 skipped).
+- **Smoke R13** (S1-S10) en el dev build de Android (OnePlus Nord 5), firmado
+  por el humano en `0b3cc585`. Las cuatro casillas de la Enmienda #168 (tres
+  specs y la carta) las marcó el humano en `ddbbab8d`. El candado R11 sigue
+  verde con `[X]` (no acepta `[x]` minúscula).
+- **Trabajo futuro**: el humano pide acercar mucho más Perfil, Nutrición y
+  Salud al canvas y autoriza cambiar la estructura (clases y componentes). Se
+  registra como #173 `mobile-tab-screens-canvas-fidelity` en su propio
+  worktree; el explorer mide la brecha.
+- **Cierre**: errata «taNutrición» en S7 corregida; frontmatter de design,
+  tasks y traceability a `approved`; `done` en `feature_list.json`; STATUS;
+  Notion (Implementado / Completado); PR contra `main`. Merge: humano. Tras el
+  merge: #119 a `done` como superada por #168 (N1) y por el canvas del
+  2026-10-06, y borrar el worktree.
+
 ## Sesión 2026-10-13 — mobile-weight-draw-and-toasts (id: 169)
 
 - **Feature:** fila 3 «Salud y rutina» del canvas, parte 1. `WeightChart`
