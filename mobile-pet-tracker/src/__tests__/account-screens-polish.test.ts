@@ -55,3 +55,11 @@ describe('#172 R7: enlaces de cuenta', () => {
     expect(login.split('self-center').length - 1).toBe(0);
   });
 });
+
+
+describe('#172 R10: bordes de error del registro', () => {
+  it('#172 R10: los siete campos del registro marcan isInvalid', () => {
+    const source = readFileSync(join(sourceRoot, 'screens/register/index.tsx'), 'utf8');
+    expect(source.split('isInvalid={Boolean(fieldErrors.').length - 1).toBe(7);
+  });
+});

@@ -404,6 +404,36 @@ describe('#167 R7: Pingo en la cabecera del registro', () => {
       .toBe('text-3xl font-black text-foreground');
   });
 
+  it('#172 R10: cada campo con error lleva icono y texto seleccionable', async () => {
+    const fields = [
+      ['first-name', 'firstName'], ['last-name', 'lastName'], ['email', 'email'],
+      ['phone', 'phone'], ['country', 'country'], ['password', 'password'],
+      ['password-confirmation', 'passwordConfirmation'],
+    ] as const;
+    mockRegister.mockResolvedValue({
+      kind: 'validation',
+      errors: [...fields.map(([, path]) => ({ path, message: `${path} no vale` })),
+        { path: 'termsAccepted', message: 'termsAccepted no vale' }],
+    });
+    await renderRegister();
+    await fillForm();
+    await submit();
+    for (const [field, path] of fields) {
+      const error = screen.getByTestId(`register-${field}-error`);
+      const row = within(error).getByTestId(`register-${field}-message-row`);
+      const text = within(row).getByTestId(`register-${field}-message`);
+      expect(row.children).toEqual([within(row).getByTestId('icon-alert-circle'), text]);
+      expect(text).toHaveTextContent(`${path} no vale`);
+      expect(text.props.selectable).toBe(true);
+    }
+    expect(screen.getAllByTestId(/^register-.+-message-row$/)).toHaveLength(7);
+  });
+
+  it('#172 R10: sin errores ningún campo pinta mensaje', async () => {
+    await renderRegister();
+    expect(screen.queryAllByTestId(/^register-.+-message(-row)?$/)).toHaveLength(0);
+  });
+
   it('#167 R7: campos, errores, términos y envío cuelgan del scroll', async () => {
     const fields = [
       'first-name', 'last-name', 'email', 'phone', 'password', 'password-confirmation', 'country',
