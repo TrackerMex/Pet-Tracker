@@ -10,6 +10,7 @@ import { Check } from 'reicon-react-native';
 import { resetPassword } from '../../api/auth';
 import { Card } from '../../components/card';
 import { PopIn } from '../../components/pop-in';
+import { PingoFloat } from '../../components/pingo-float';
 import { useTranslate } from '../../providers/language-provider';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { HomeEntrance } from '../home/home-entrance';
@@ -119,11 +120,13 @@ export function ResetPasswordScreen() {
         }}
       >
         <HomeEntrance testID="reset-header" index={0} className="flex-row items-center justify-center gap-3">
-          <Image
-            testID="reset-pingo"
-            source={require('../../../assets/images/pingo-clipboard.webp')}
-            style={{ width: 72, height: 72 }}
-          />
+          <PingoFloat testID="reset-pingo-float">
+            <Image
+              testID="reset-pingo"
+              source={require('../../../assets/images/pingo-clipboard.webp')}
+              style={{ width: 72, height: 72 }}
+            />
+          </PingoFloat>
           <Text className="text-center text-2xl font-black text-foreground">
             {t('resetPassword.resetPassword')}
           </Text>
@@ -173,11 +176,13 @@ export function ResetPasswordScreen() {
         }}
       >
         <HomeEntrance testID="reset-header" index={0} className="flex-row items-center justify-center gap-3">
-          <Image
-            testID="reset-pingo"
-            source={require('../../../assets/images/pingo-clipboard.webp')}
-            style={{ width: 72, height: 72 }}
-          />
+          <PingoFloat testID="reset-pingo-float">
+            <Image
+              testID="reset-pingo"
+              source={require('../../../assets/images/pingo-clipboard.webp')}
+              style={{ width: 72, height: 72 }}
+            />
+          </PingoFloat>
           <Text className="text-center text-2xl font-black text-foreground">
             {t('resetPassword.resetPassword')}
           </Text>

@@ -9,6 +9,7 @@ import { Lock } from 'reicon-react-native';
 
 import { forgotPassword } from '../../api/auth';
 import { PopIn } from '../../components/pop-in';
+import { PingoFloat } from '../../components/pingo-float';
 import { useTranslate } from '../../providers/language-provider';
 import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
@@ -74,11 +75,13 @@ export function ForgotScreen() {
           paddingBottom: insets.bottom + 24,
         }}
       >
-        <Image
-          testID="forgot-pingo"
-          source={require('../../../assets/images/pingo-talk.webp')}
-          style={{ width: 120, height: 120, transform: [{ rotate: '6deg' }] }}
-        />
+        <PingoFloat testID="forgot-pingo-float">
+          <Image
+            testID="forgot-pingo"
+            source={require('../../../assets/images/pingo-talk.webp')}
+            style={{ width: 120, height: 120, transform: [{ rotate: '6deg' }] }}
+          />
+        </PingoFloat>
         <PopIn
           testID="forgot-lock-tile"
           className="size-16 items-center justify-center rounded-xl bg-accent-soft"

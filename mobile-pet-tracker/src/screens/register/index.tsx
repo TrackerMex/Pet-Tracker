@@ -17,6 +17,7 @@ import { AlertCircle } from 'reicon-react-native';
 import { login, register } from '../../api/auth';
 import type { FieldError as ApiFieldError } from '../../api/types';
 import { useAuth } from '../../providers/auth-provider';
+import { PingoFloat } from '../../components/pingo-float';
 import { useTranslate } from '../../providers/language-provider';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { HomeEntrance } from '../home/home-entrance';
@@ -168,11 +169,13 @@ export function RegisterScreen() {
         }}
       >
         <HomeEntrance testID="register-header" index={0} className="flex-row items-center justify-center gap-3">
-          <Image
-            testID="register-pingo"
-            source={require('../../../assets/images/pingo-clipboard.webp')}
-            style={{ width: 56, height: 56 }}
-          />
+          <PingoFloat testID="register-pingo-float">
+            <Image
+              testID="register-pingo"
+              source={require('../../../assets/images/pingo-clipboard.webp')}
+              style={{ width: 56, height: 56 }}
+            />
+          </PingoFloat>
           <Text className="text-center text-2xl font-black text-foreground">
             {t('register.createAccount')}
           </Text>
