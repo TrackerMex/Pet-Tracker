@@ -1,3 +1,215 @@
+# Ronda 2 (Enmienda E1)
+Fecha: 2026-10-13T04:07Z
+HEAD revisado: `e00fe2c7ba6a8a0d0249663900e49c44342c0d7a` (branch `feature/167-mobile-account-screens-pingo`, worktree `Pet-Tracker-wt-167`)
+H1 (handoff E1): `b62267407dad091de3e8ed9c0f7042cdaa983eb0` · producción de la ronda 1: `108bd291` · H0: `7c2ffe6b`
+Veredicto: **APROBADO**
+
+E1 cierra B1–B4 y el bloqueante X1 del barrido, y también X2–X5 y O4. Los diez
+`it` nuevos son, carácter a carácter, los tres bloques `tsx` de tasks.md
+§Enmienda E1. Cada rojo versiona el parche de `e1/` byte a byte. Cada verde
+deja la pantalla idéntica a `108bd291`. Los tres rojos los reproduje yo, con
+las cifras declaradas y todos por aserción. Ninguna de mis sondas sobre
+cláusulas de R6, R7 y R10 queda verde. La única verde, Z2, cae fuera del
+alcance de R6 (observación E2-1).
+
+## C2 — Estado coherente
+- [x] Solo 1 feature `in_progress`: `grep -c '"in_progress"' feature_list.json` → 1, la #167
+- [x] `progress/current.md` describe la Enmienda E1: firmada (c32ae760), handoff (26989b9e), «Siguiente: esperar a Codex (ronda 2) … reviewer ronda 2». Es coherente con H1. Codex no lo toca, porque no está en su lista
+
+## C3 — Arquitectura
+- [x] No aplica a capas backend: la ronda 2 solo toca tres ficheros de test, el informe y la trazabilidad. `git diff --name-only 7c2ffe6b..HEAD | grep -cE '^(backend-pet-tracker|infra)/'` → 0
+- [x] Producción sin cambios respecto a la ronda 1: `git diff --quiet 108bd291 HEAD` → `exit=0` en `src/screens/{login,register,reset-password}/index.tsx`
+
+## C4 — TDD
+- [x] Los diez `it` nuevos nombran su R-id (`#167 R6:` ×4, `#167 R7:` ×2, `#167 R10:` ×4) y están dentro del `describe` de #167 que prescribe tasks.md, delante del `it` ancla. Recuento por R-id en HEAD: R6 = 13, R7 = 6 y R10 = 14. `it` estáticos: 21 / 21 / 27, como declara tasks.md
+- [x] Test primero y por pares: `b8577bfc` → `743e2591`, `3636fcb1` → `7c33bc15`, `1bb945c1` → `edecd414`, en ese orden (`git rev-list --reverse b6226740..HEAD`)
+- [x] **Punto 5 (mutación de producción, no del doble).** Cada commit rojo lleva el `index.test.tsx` y la pantalla, los dos en el mismo commit (numstat abajo). Aplicar `specs/mobile-account-screens-pingo/e1/<p>.diff` sobre `108bd291` da un blob **idéntico** (`cmp`) al de la pantalla en su commit rojo, en las tres pantallas
+- [x] Cada verde restaura desde `108bd291`: `git diff --quiet 108bd291 <verde> -- <pantalla>` → `exit=0` en `743e2591`, `7c33bc15` y `edecd414`. Cada verde toca solo su pantalla
+- [x] Rojos por aserción, sin `Unable to find` (reproducidos abajo). El único rojo por consulta es el de S4, que tasks.md declara así
+- [x] Sin `ReferenceError`: los helpers (`renderLogin`, `submit`, `renderRegister`, `fillForm`, `renderRoute`, `submitReset`) son de la ronda 1
+- [x] Regresión: los `it` de la ronda 1 no cambian. El diff de los tres tests entre `108bd291` y HEAD es `101 insertions(+)`, sin borrados
+
+| Commit | Ficheros (numstat) |
+|---|---|
+| `b8577bfc` rojo R6 | `33 0 login/index.test.tsx` · `21 24 login/index.tsx` |
+| `743e2591` verde R6 | `24 21 login/index.tsx` |
+| `3636fcb1` rojo R7 | `32 0 register/index.test.tsx` · `13 11 register/index.tsx` |
+| `7c33bc15` verde R7 | `11 13 register/index.tsx` |
+| `1bb945c1` rojo R10 | `36 0 reset-password/index.test.tsx` · `15 17 reset-password/index.tsx` |
+| `edecd414` verde R10 | `17 15 reset-password/index.tsx` |
+| `2a413a46` | `3 3 specs/mobile-account-screens-pingo/traceability.md` |
+| `e00fe2c7` | `78 0 progress/impl_mobile-account-screens-pingo.md` |
+
+## C5 — Trazabilidad
+- [x] Solo queda `pendiente` en R15, que es «pendiente (humano)», como en la ronda 1
+- [x] Las filas R6, R7 y R10 pasan de `(9)/(4)/(10)` a `(13)/(6)/(14)`, que es el recuento real de `it('#167 Rn:` en cada fichero. Cada fila añade `E1: <rojo> … <verde> …`
+- [x] Los 32 pares `hash` + mensaje de traceability.md coinciden con `git log -1 --format=%s`, sin ningún `MISMATCH`. Todos los hashes son ancestros de HEAD
+- [x] Mensajes: `test(mobile): #167 E1 rojo, … (Rn)`, `fix(mobile): #167 E1 verde, … (Rn)` y `docs(mobile-account-screens-pingo): #167 E1 …`, los que prescribe tasks.md
+
+## C6 — Spec aprobada
+- [x] `requirements.md` en `status: approved`. §Aprobación de la Enmienda E1 tiene la casilla `[x]` (2026-10-12, vía Notion, cuenta y página citadas), en `c32ae760`
+- [x] `requirements.md`, `design.md` y `tasks.md` sin cambios entre `c32ae760` y HEAD: `git diff --quiet` → `exit=0`
+
+## C7 — Sin código huérfano
+- [x] N/A: E1 no reemplaza nada. Las mutaciones se revierten en el verde y la producción queda en `108bd291`
+
+## C8 — UI móvil
+- [x] Sin cambios de UI en esta ronda: la producción es idéntica a `108bd291`, así que el C8 de la ronda 1 sigue en pie. Los tests nuevos no usan `StyleSheet`, hex ni clases arbitrarias. design-drift, consistency-classnames y legibility-classnames pasan en el init.sh de `e00fe2c7`
+- [x] Skills: el informe cita `building-native-ui`, nombre del catálogo de Codex, y `appllama-app-design-skill`. Yo cargué `expo:expo-overview`
+
+## Cobertura B1–B4 y del barrido, por cláusula
+
+| Hallazgo | Cláusula | Candado E1 | Rojo que lo prueba | Zona ciega sondeada |
+|---|---|---|---|---|
+| B1 | R6.2, `login-error` entre contraseña y envío | `con error, el error va entre la contraseña y el envío`: `toEqual` de los seis ids dentro de `login-body` | `b8577bfc` (A) | — |
+| X1 | R6.2, sin error no hay `login-error` en el cuerpo | `sin error, el cuerpo no lleva el error`: `toEqual` de los cinco ids | `b8577bfc` (H1) | Z1 rojo y Z2 verde (E2-1) |
+| X3 | R6.1, cabecera antes del cuerpo | `la cabecera va antes que el cuerpo en el scroll`: abuelo `login-form` e hijos `[header, body]` | `b8577bfc` (H2) | Z1: nodo intruso entre los dos, rojo |
+| B4 | R6.2, la clase del título de login | `el título de la cabecera conserva su clase` (`toBe`) | `b8577bfc` (R2) | Z3: título envuelto en un `View`, rojo por el `it` de cabecera de la ronda 1 |
+| B4 | R7.1, la clase del título de registro | `el título de la cabecera conserva su clase` (`toBe`) | `3636fcb1` (R1) | — |
+| B3 | R7.3, los siete campos con su `FieldError`, términos, error general y envío cuelgan del scroll | `campos, errores, términos y envío cuelgan del scroll`: un bucle sobre los siete campos más tres igualdades de padre | `3636fcb1` (O1) y S1–S4 del informe | — |
+| X4 | R7.1, `register-header` sustituye al título suelto | la última línea del mismo `it` (`children[0]`) | S6, reproducida | Z4: título suelto conservado detrás de la cabecera, rojo por #61 R7 |
+| B2 | R10.3, la cabecera de la rama de éxito «es la misma de R10.1» | `el éxito conserva la cabecera del formulario`: `index`, `className`, dos hijos y `[reset-pingo, título]` | `1bb945c1` (G) y S5, reproducida | Z7: pose de Pingo en la rama de éxito, rojo por R10.2 de la ronda 1 |
+| O4 | R10.1, orden de `reset-body` | `con error, el error va entre la confirmación y el envío` | `1bb945c1` (N) | — |
+| X2 | R10.1, `reset-error` solo cuando lo hay | `sin error, el cuerpo no lleva el error` (`toBeNull`) | `1bb945c1` (H1b) | Z6: `reset-error` siempre presente en la cabecera, rojo |
+| X5 | R10.1, cabecera antes del cuerpo en el formulario | `la cabecera va antes que el cuerpo en el scroll` | `1bb945c1` (H2b) | Z8: envoltorio común en las dos, rojo por el abuelo |
+
+Las cuatro cláusulas que la ronda 1 dejó sin candado ya lo tienen entero:
+
+- **B1:** las dos ramas del error.
+- **B2:** los cuatro atributos de «el mismo», y además la pose (R10.2).
+- **B3:** los siete campos, sus siete `FieldError`, los términos, el error general y el envío.
+- **B4:** las dos pantallas.
+
+X6 sigue sin cambios: `git diff --quiet 108bd291 HEAD -- src/theme/motion.ts src/i18n/catalog.ts src/__tests__/ui-copy-table.ts specs/mobile-ui-language/design.md` → `exit=0`.
+
+## Rojos reproducidos
+
+En el propio worktree: `git checkout <rojo> -- <test> <pantalla>`, después
+`FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath <test>` y por
+último `git checkout HEAD -- <directorio de la pantalla>`. Tras cada uno,
+`git diff --cached --quiet` → 0 y `git diff --quiet -- mobile-pet-tracker` → 0.
+
+```
+b8577bfc (R6)
+    ✕ #167 R6: con error, el error va entre la contraseña y el envío
+    ✕ #167 R6: sin error, el cuerpo no lleva el error
+    ✕ #167 R6: la cabecera va antes que el cuerpo en el scroll
+    ✕ #167 R6: el título de la cabecera conserva su clase
+Tests:       4 failed, 20 passed, 24 total
+      1     expect(received).toBe(expected) // Object.is equality
+      3     expect(received).toEqual(expected) // deep equality
+Unable to find: 0
+
+3636fcb1 (R7)
+    ✕ #167 R7: el título de la cabecera conserva su clase
+    ✕ #167 R7: campos, errores, términos y envío cuelgan del scroll
+Tests:       2 failed, 21 passed, 23 total
+      2     expect(received).toBe(expected) // Object.is equality
+Unable to find: 0
+
+1bb945c1 (R10)
+    ✕ #167 R10: el éxito conserva la cabecera del formulario
+    ✕ #167 R10: con error, el error va entre la confirmación y el envío
+    ✕ #167 R10: sin error, el cuerpo no lleva el error
+    ✕ #167 R10: la cabecera va antes que el cuerpo en el scroll
+Tests:       4 failed, 29 passed, 33 total
+      1     expect(received).toBeNull()
+      3     expect(received).toEqual(expected) // deep equality
+Unable to find: 0
+
+HEAD (los tres ficheros juntos)
+Test Suites: 3 passed, 3 total
+Tests:       80 passed, 80 total          (24 + 23 + 33)
+```
+
+Los tres coinciden con tasks.md y con el informe: cifras, `it` y matcher.
+
+## Producción idéntica a 108bd291 y lista cerrada
+
+- **Pantallas.** `git diff --quiet 108bd291 HEAD -- mobile-pet-tracker/src/screens/<p>/index.tsx` → `exit=0` en login, register y reset-password. También en H1.
+- **Diff contra H1.** `git diff --name-only b6226740..HEAD` da exactamente estas cinco rutas, ni una más:
+  - `mobile-pet-tracker/src/screens/login/index.test.tsx`
+  - `mobile-pet-tracker/src/screens/register/index.test.tsx`
+  - `mobile-pet-tracker/src/screens/reset-password/index.test.tsx`
+  - `progress/impl_mobile-account-screens-pingo.md`
+  - `specs/mobile-account-screens-pingo/traceability.md`
+- **Lista K5 contra H0.** `git diff --no-renames --name-only 7c2ffe6b..HEAD`, con las mismas exclusiones de la ronda 1 más `specs/mobile-account-screens-pingo/e1/*.diff` (del leader), deja **31 rutas**, idénticas a las de `7c2ffe6b..a27664f8`.
+
+## Sondas propias
+
+Cada sonda muta una pantalla en el worktree y corre solo su fichero de test,
+con `--testTimeout=30000`. Después la revierte con `git checkout HEAD --`.
+Todas terminaron en `limpio=0`, comprobado con:
+
+```
+git diff --cached --quiet && git diff --quiet -- mobile-pet-tracker && test -z "$(git ls-files --others --exclude-standard -- mobile-pet-tracker)"
+```
+
+Ninguna sonda dio `Exceeded timeout` ni `Unable to find`.
+
+| Sonda | Pantalla | Mutación | Salida literal |
+|---|---|---|---|
+| Z1 | login | `{error ? null : <Text testID="login-error" …>{error}</Text>}` entre `login-header` y `login-body`, como hijo del scroll | `✕ #167 R6: la cabecera va antes que el cuerpo en el scroll` · `Tests: 1 failed, 23 passed, 24 total` · `toEqual` |
+| Z2 | login | la misma línea, pero detrás de `</ScrollView>`, como hijo del `KeyboardAvoidingView` | `Tests: 24 passed, 24 total`, **verde**. Ver E2-1 |
+| Z3 | login | el título de la cabecera envuelto en `<View className="items-center">`, con la misma clase | `✕ #167 R6: la cabecera lleva el saludo y después el título` · `Tests: 1 failed, 23 passed, 24 total` · `toBe` |
+| Z4 | register | un `Text` suelto «Crear cuenta» con la clase de la base, como segundo hijo del scroll, detrás de `register-header` | `✕ conserva los campos del formulario como hijos directos del scroll` · `Tests: 1 failed, 22 passed, 23 total` · `toHaveLength` |
+| Z6 | reset | `<Text testID="reset-error" …>{error}</Text>` sin ternario, como tercer hijo de la `reset-header` del formulario | `✕ #167 R10: la cabecera lleva a Pingo y después el título`, más 6 `it` de error que ven el id duplicado · `Tests: 7 failed, 26 passed, 33 total` |
+| Z7 | reset | primera `style={{ width: 72, height: 72 }}` (rama de éxito) → `56` | `✕ #167 R10: Pingo en el éxito usa la tablilla` · `Tests: 1 failed, 32 passed, 33 total` · `toEqual` |
+| Z8 | reset | `<View>` … `</View>` envuelve `reset-header` y `reset-body` en la rama de formulario | `✕ #167 R10: la cabecera va antes que el cuerpo en el scroll` · `Tests: 1 failed, 32 passed, 33 total` · `toHaveProperty` (el abuelo; `children` sigue siendo `[header, body]`) |
+| S5 | reset | `git apply specs/mobile-account-screens-pingo/e1/s5.diff` (versionada) | `✕ #167 R10: el éxito conserva la cabecera del formulario` · `Tests: 1 failed, 32 passed, 33 total` · `toHaveProperty` |
+| S6 | register | `git apply specs/mobile-account-screens-pingo/e1/s6.diff` (versionada) | `✕ #167 R7: campos, errores, términos y envío cuelgan del scroll` · `Tests: 1 failed, 22 passed, 23 total` · `toBe` |
+
+Los scripts de las sondas y los logs están en
+`/tmp/claude-1002/-home-claude-sites-Pet-Tracker/5bf0fe41-c38a-4318-8d51-90f545e0be95/scratchpad/r2-167/`
+(`probe.sh`, `z*.py` y `probe-*.log`).
+
+## Observaciones
+
+No hay bloqueantes.
+
+**E2-1. Z2: un `login-error` fantasma fuera del scroll no lo ve nadie.** No bloquea.
+- **Qué pasa.** La tabla de E1 resume X1 como «sin error, `login-error` no existe». El candado firmado, en cambio, comprueba que no esté en `login-body`: en la §Decisión, «la misma lista sale sin `login-error`».
+- **Por qué no bloquea.** R6.2, cuyo texto E1 no toca, solo habla de lo que contiene `login-body`. R6.1 solo habla del contenido del scroll. Un nodo hermano del scroll dentro del `KeyboardAvoidingView` cae fuera de R6. Además, cualquier nodo nuevo en ese sitio sería igual de invisible, sea `login-error` o no. Dentro del scroll el hueco está cerrado (Z1).
+
+**E2-2.** El informe no trae las salidas de EK5. Dice que van en la respuesta de cierre de Codex, «como indica el bloque». No afecta al veredicto: el árbol queda limpio, hay 8 commits entre H1 y HEAD, y la lista cerrada la medí yo.
+
+**E2-3.** Lo pendiente de la ronda 1 que E1 deja fuera sigue igual. Toca al leader en el cierre:
+- O2: el frontmatter `draft` de design, tasks y traceability;
+- O5 y O6: van a #172;
+- R15: la prueba de humo humana, todavía `pendiente (humano)`.
+
+## Output de ./init.sh
+
+No lo ejecuté, porque el clasificador se lo deniega al reviewer. Lo corrió el
+leader sobre `e00fe2c7`, y leí el log entero:
+`/tmp/claude-1002/-home-claude-sites-Pet-Tracker/5bf0fe41-c38a-4318-8d51-90f545e0be95/scratchpad/init-167-r2-e00fe2c7.log`.
+
+- **Tamaño y origen.** 35 505 líneas. Todas las rutas absolutas son de `/home/claude/sites/Pet-Tracker-wt-167` (23 apariciones).
+- **Orden temporal.** El log se escribió por última vez a las 03:58:02Z, después del commit `e00fe2c7` (03:43:15Z).
+- **HEAD.** Sigue en `e00fe2c7ba6a8a0d0249663900e49c44342c0d7a`. `git status --short` solo muestra este fichero.
+
+```
+✅ Build exitoso
+backend unit   Test Suites: 187 passed, 187 total / Tests: 1474 passed, 1474 total
+harness        Test Suites: 2 passed, 2 total     / Tests: 14 passed, 14 total
+mobile         Test Suites: 99 passed, 99 total   / Tests: 2851 passed, 2851 total
+               0 líneas FAIL, 0 «Exceeded timeout»; PASS en login, register y reset-password
+backend e2e    Test Suites: 3 skipped, 30 passed, 30 of 33 total / Tests: 8 skipped, 468 passed, 476 total
+✅ Lint sin errores
+✅ Typecheck sin errores
+✅ Todo verde. Listo para trabajar.
+avisos: ".env desactualizado: faltan 6 claves de .env.example";
+        "STATUS.md desactualizado (154/170 declarado vs 154/171 real)";
+        "A worker process has failed to exit gracefully" (preexistente)
+```
+
+El total móvil cuadra: 2841 de la ronda 1 + 10 `it` de E1 = 2851, en las
+mismas 99 suites.
+
+---
+
+# Ronda 1
+
 # review: mobile-account-screens-pingo (#167)
 Fecha: 2026-10-12T21:36Z
 HEAD revisado: `a27664f8192cd523a8f289bead5d66d0a53304c7` (branch `feature/167-mobile-account-screens-pingo`, worktree `Pet-Tracker-wt-167`, árbol limpio)
