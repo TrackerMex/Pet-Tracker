@@ -173,7 +173,7 @@ export function RegisterScreen() {
             source={require('../../../assets/images/pingo-clipboard.webp')}
             style={{ width: 56, height: 56 }}
           />
-          <Text className="text-center text-xl font-black text-foreground">
+          <Text className="text-center text-2xl font-black text-foreground">
             {t('register.createAccount')}
           </Text>
         </HomeEntrance>
@@ -298,18 +298,16 @@ export function RegisterScreen() {
           </View>
         ) : null}
 
-        <View>
-          <Button
-            testID="register-submit"
-            className="w-full rounded-xl bg-accent border-b-4 border-black/25"
-            isDisabled={!terms || submitting}
-            onPress={() => void handleSubmit()}
-          >
-            <Button.Label className="font-bold text-accent-foreground">
-              {t('register.createAccount')}
-            </Button.Label>
-          </Button>
-        </View>
+        <Button
+          testID="register-submit"
+          className="w-full rounded-xl bg-accent border-b-4 border-black/25"
+          isDisabled={!terms || submitting}
+          onPress={() => void handleSubmit()}
+        >
+          <Button.Label className="font-bold text-accent-foreground">
+            {t('register.createAccount')}
+          </Button.Label>
+        </Button>
       </ScrollView>
     </KeyboardAvoidingView>
   );
