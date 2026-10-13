@@ -648,4 +648,4 @@ Que el pop de la celebración use su propio muelle `MOTION_CELEBRATION_SPRING`
 de copy sea la siguiente libre al hacer el merge (§2.26, o §2.27 si #170
 mergea antes).
 
-- [ ] Enmienda E3 aprobada por humano (fecha: ____)
+- [x] Enmienda E3 aprobada por humano (fecha: 2026-10-13)
