@@ -31,3 +31,10 @@
 - **Convivencia con #173 (UI-Pet):** #173 cambia `src/components/card.tsx` y
   `pet-switcher.tsx`; los agregados compartidos se anclan a la base medida en
   el handoff.
+- **Spec:** `specs/mobile-docs-canvas-fidelity/` en `spec_ready` (`192329aa`).
+  Espejada a Notion el 2026-10-13 desde ese commit
+  (https://app.notion.com/p/3f86115a9b278161ab5ae6da7176cb0f, Estado del gate =
+  En revisión). Esperando la firma del humano; P1 a P12 llevan valor por
+  defecto. Abierto con Backend: tracking 0.06em (Alertas) frente a 0.08em
+  (Documentos); si su humano unifica o renombra, se enmiendan R1, R2 y R5 y se
+  re-espeja.
