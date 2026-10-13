@@ -47,7 +47,7 @@ jest.mock('reicon-react-native', () => {
     function MockIcon(props: Record<string, unknown>) {
       return React.createElement(View, { testID, ...props });
     };
-  return { ...actual, Check: mockIcon('icon-check') };
+  return { ...actual, AlertCircle: mockIcon('icon-alert-circle'), Check: mockIcon('icon-check') };
 });
 
 jest.mock('../../theme/use-theme-colors', () => ({
@@ -463,6 +463,17 @@ describe('#167 R10: Pingo y tarjeta de estado en nueva contraseña', () => {
       .map((node) => node.props.testID)).toEqual([
       'reset-password', 'reset-password-confirm', 'reset-error', 'reset-submit',
     ]);
+  });
+
+  it('#172 R9: el error de nueva contraseña va con icono en su fila', async () => {
+    mockResetPassword.mockResolvedValue({ kind: 'invalid-token' });
+    await renderRoute('reset-token-167');
+    await submitReset();
+    const row = await screen.findByTestId('reset-error-row');
+    expect(row.children).toEqual([
+      screen.getByTestId('icon-alert-circle'), screen.getByTestId('reset-error'),
+    ]);
+    expect(screen.getByTestId('reset-error').props.selectable).toBe(true);
   });
 
   it('#167 R10: sin error, el cuerpo no lleva el error', async () => {

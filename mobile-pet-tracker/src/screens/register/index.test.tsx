@@ -443,7 +443,7 @@ describe('#167 R8: el error del registro lleva icono', () => {
     await fillForm();
     await submit();
     const row = screen.getByTestId('register-error-row');
-    expect(row.props.className).toBe('flex-row items-center gap-1.5');
+    expect(row.props.className).toBe('w-full flex-row items-center gap-1.5');
     expect(row.children.map((child) => typeof child === 'string' ? child : child.props.testID))
       .toEqual(['icon-alert-circle', 'register-error']);
   });
@@ -462,7 +462,7 @@ describe('#167 R8: el error del registro lleva icono', () => {
     await fillForm();
     await submit();
     expect(screen.getByTestId('register-error').props.className)
-      .toBe('flex-1 text-sm font-semibold text-danger');
+      .toBe('flex-1 text-13 font-semibold text-danger');
   });
 
   it('#167 R8: sin error no hay fila; con error, sí', async () => {

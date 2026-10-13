@@ -30,6 +30,21 @@ jest.mock('../../components/pingo-float', () => {
   };
 });
 
+jest.mock('reicon-react-native', () => {
+  const actual = jest.requireActual<typeof import('reicon-react-native')>('reicon-react-native');
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  const mockIcon = (testID: string) =>
+    function MockIcon(props: Record<string, unknown>) {
+      return React.createElement(View, { testID, ...props });
+    };
+  return { ...actual, AlertCircle: mockIcon('icon-alert-circle') };
+});
+
+jest.mock('../../theme/use-theme-colors', () => ({
+  useThemeColors: (tokens: string[]) => tokens.map((token) => `color:${token}`),
+}));
+
 jest.mock('../../api/auth', () => ({
   forgotPassword: jest.fn(),
 }));
@@ -617,5 +632,19 @@ describe('#172 R3: Volver en recuperar', () => {
     await renderRoute();
     await fireEvent.press(screen.getByTestId('forgot-back'));
     expect(mockRouter.replace).toHaveBeenCalledWith('/login');
+  });
+});
+
+
+describe('#172 R9: error de recuperar', () => {
+  it('#172 R9: el error de recuperar va con icono en su fila', async () => {
+    mockForgotPassword.mockResolvedValue({ kind: 'rate-limited' });
+    await renderRoute();
+    await submitForgot();
+    const row = await screen.findByTestId('forgot-error-row');
+    expect(row.children).toEqual([
+      screen.getByTestId('icon-alert-circle'), screen.getByTestId('forgot-error'),
+    ]);
+    expect(screen.getByTestId('forgot-error').props.selectable).toBe(true);
   });
 });

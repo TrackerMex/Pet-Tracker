@@ -22,6 +22,21 @@ jest.mock('../home/home-entrance', () => {
   };
 });
 
+jest.mock('reicon-react-native', () => {
+  const actual = jest.requireActual<typeof import('reicon-react-native')>('reicon-react-native');
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  const mockIcon = (testID: string) =>
+    function MockIcon(props: Record<string, unknown>) {
+      return React.createElement(View, { testID, ...props });
+    };
+  return { ...actual, AlertCircle: mockIcon('icon-alert-circle') };
+});
+
+jest.mock('../../theme/use-theme-colors', () => ({
+  useThemeColors: (tokens: string[]) => tokens.map((token) => `color:${token}`),
+}));
+
 jest.mock('../../api/auth', () => ({
   login: jest.fn(),
 }));
@@ -273,6 +288,17 @@ describe('#167 R6: Pingo saluda en login y la pantalla entra en dos tiempos', ()
       .map((node) => node.props.testID)).toEqual([
       'login-email', 'login-password', 'link-forgot', 'login-error', 'login-submit', 'link-register',
     ]);
+  });
+
+  it('#172 R9: el error de login va con icono en su fila', async () => {
+    mockLogin.mockResolvedValue({ kind: 'invalid-credentials' });
+    await renderLogin();
+    await submit();
+    const row = await screen.findByTestId('login-error-row');
+    expect(row.children).toEqual([
+      screen.getByTestId('icon-alert-circle'), screen.getByTestId('login-error'),
+    ]);
+    expect(screen.getByTestId('login-error').props.selectable).toBe(true);
   });
 
   it('#172 R7: sin error, el cuerpo no lleva el error', async () => {
