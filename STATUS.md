@@ -1,10 +1,10 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-10-13
-**Features completadas**: 155/171 (`feature_list.json`)
-**En progreso**: ninguna en esta rama. #167 cerrada en `feature/167-mobile-account-screens-pingo`, PR #210 pendiente de merge humano.
+**Features completadas**: 156/171 (`feature_list.json`)
+**En progreso**: ninguna en esta rama. #168 cerrada en `feature/168-mobile-tab-headers-canvas`, PR pendiente de merge humano.
 
-**Pendientes**: 16 (#60, #119, #129, #144, #150, #151, #154, #160, #163, #164, #165, #168, #169, #170, #171 y #172). **#167 `mobile-account-screens-pingo` cerrada**: Pingo llega a las pantallas de cuenta. Login y Registro migran a ruta delgada + `src/screens/`. Login saluda con la clave nueva `login.pingoGreeting` y entra en dos tiempos; Registro lleva a Pingo en la cabecera y un icono en el error general; Recuperar y Nueva contraseña ganan a Pingo y un «pop» (componente `PopIn`, cuatro tokens nuevos en `motion.ts`); la Bienvenida suma tres anillos de ping, que la carta declara en la Enmienda #167. Ronda 1 de Codex rechazada (B1-B4, cláusulas sin candado); la Enmienda E1, solo tests, se firmó desde Notion (`c32ae760`) y la ronda 2 la aprobó el reviewer (`82a72c09`). El humano firmó el smoke R15 en `3f3ee0f3`, con observaciones de diseño que pasan a #172. Móvil 98/2775 → 99/2851.
+**Pendientes**: 15 (#60, #119, #129, #144, #150, #151, #154, #160, #163, #164, #165, #169, #170, #171 y #172). **#168 `mobile-tab-headers-canvas` cerrada**: Salud, Nutrición y Perfil abren con el título grande del canvas en lugar del hero fotográfico (decisión N1, que revierte la Enmienda #67 en esas tres pestañas; Inicio conserva `PetHeroHeader`). Salud pinta un tile pastel por estado en cada vacuna; Perfil cambia el hero por la tarjeta `profile-pet-card` con avatar circular, chips pastel atados al dato, tiles en las cuatro filas y avatar de iniciales en la cuenta; Nutrición sustituye la barra y el tile `ForkKnife` por el anillo de kcal animado, acotado a 100 y con reduce motion. La Enmienda #168 queda declarada en tres specs aprobadas y en la carta, con su candado. Ronda 1 de Codex rechazada por candados que faltaban en la spec (O1/O2); la Enmienda E3, solo tests, se firmó desde Notion (`938188b8`) y la ronda 2 la aprobó el reviewer (`d3cb4d1a`). El humano firmó el smoke R13 en `0b3cc585` y las cuatro casillas de la enmienda en `ddbbab8d`. Móvil 99/2851 → 100/2919. #119 se cierra como superada tras el merge.
 
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
@@ -88,6 +88,16 @@ debe listar las 4 URLs de cola.
 
 ## Estado actual
 
+- **`mobile-tab-headers-canvas` (#168) done** (2026-10-13, worktree
+  `Pet-Tracker-wt-168`): título grande del canvas en Salud, Nutrición y Perfil,
+  tiles pastel en vacunas y filas de Perfil, tarjeta de mascota con chips por
+  dato, avatar de iniciales y anillo de kcal animado en Nutrición. Reviewer
+  ronda 2 APROBADO (`d3cb4d1a`, veredicto sobre `824c67b8`). Gate: `./init.sh`
+  exit 0 sobre el merge de main `64187ab8` (backend 187/1474, infra 2/14,
+  móvil 100/2919, e2e 30 de 33 suites, 468 passed y 8 skipped). Smoke R13
+  firmado por el humano en `0b3cc585` (OnePlus Nord 5) y Enmienda #168 en
+  `ddbbab8d`. La paridad que falta con el canvas en las tres pantallas pasa a
+  #173. PR pendiente de merge.
 - **`mobile-account-screens-pingo` (#167) done** (2026-10-13, worktree
   `Pet-Tracker-wt-167`, sesión Frontend): Pingo en Login, Registro, Recuperar
   y Nueva contraseña, anillos de ping en la Bienvenida y migración de Login y

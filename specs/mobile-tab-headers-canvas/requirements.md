@@ -473,7 +473,7 @@ Lista del smoke:
   blobatar. Cambiar foto actualiza el círculo.
 - [X] S6 — Perfil: chips azul/verde/ámbar/violeta en ese orden; las cuatro filas
   con su tile; el avatar de cuenta muestra tus iniciales.
-- [X] S7 — taNutrición: servir una comida llena el anillo con una transición
+- [X] S7 — Nutrición: servir una comida llena el anillo con una transición
   corta; deshacer lo vacía. Con «Quitar animaciones» activo en Android
   (Ajustes → Accesibilidad), el anillo salta sin animar.
 - [X] S8 — Nutrición: con TalkBack, el anillo se lee como una única barra de
