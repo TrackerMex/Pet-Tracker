@@ -1,10 +1,11 @@
 # Sesion activa
 
-## Sesión 2026-10-13 — mobile-docs-canvas-fidelity (id: 175)
+## Sesión 2026-10-13 — mobile-routine-canvas-fidelity (id: 178)
 
-- **Sesión:** sites-99, worktree `Pet-Tracker-wt-175`, branch
-  `feature/175-mobile-docs-canvas-fidelity` (antes `feature/175-mobile-routine-canvas-fidelity`) desde `origin/main` `788d1f89`
-  (con #168, #169 y #170 dentro).
+- **Sesión:** sites-99, worktree `Pet-Tracker-wt-178`, branch
+  `feature/178-mobile-routine-canvas-fidelity` desde `fb5b209f` (= `origin/main`
+  `788d1f89` + registro, explore y reparto de #175/#178/#179, compartidos con
+  la branch de #175).
 - **Origen:** el humano, tras cerrar #169: «continua escribiendo la spec desde
   #175». Id #175 confirmado libre con UI-Pet (no aparta ids desde #175) y
   Backend (#174 es suyo). Relatado por Backend: «el diseño final debe de
@@ -26,8 +27,20 @@
   #178 `mobile-routine-canvas-fidelity` (Recordatorios + Nuevo recordatorio,
   C12); #179 `mobile-meal-schedule-canvas-fidelity` (Horario + Historial).
   #176 y #177 los reservó sites-4c (sin registrar aún); #180 lo tomó Backend; siguiente libre #181.
-- **Plan:** `spec_author` de #175 Documentos ya (la spec puede escribirse en
-  paralelo); la implementación espera a que mergee #173. Gate desde Notion.
+- **Plan:** las tres specs se escriben ya; las implementaciones esperan a que
+  mergee #173. Gate desde Notion. #175 firmada (`0e2b91cf`, branch de #175).
 - **Convivencia con #173 (UI-Pet):** #173 cambia `src/components/card.tsx` y
   `pet-switcher.tsx`; los agregados compartidos se anclan a la base medida en
   el handoff.
+- **Spec:** `specs/mobile-routine-canvas-fidelity/` en `spec_ready` (`5e790ab3`,
+  P3 sin «+» suelto en `0a881a3e`). R1–R13 automatizables y R14 prueba de humo
+  en dev build de Android con casilla propia. Reutiliza `--tracking-title` y
+  comparte con #175 la sección «Enmienda de fidelidad al canvas» (texto
+  idéntico; la primera que mergee la escribe). No toca cuerpos de botón (#177,
+  D9). Espejo en Notion: https://app.notion.com/p/3f86115a9b278100a9a1ccfe63ef8d7c
+  (Estado del gate = En revisión, `page_last_edited_at` 2026-10-13T23:23:38.084Z
+  tras el espejo de `0a881a3e`).
+- **Siguiente:** esperar la firma del humano en Notion. Al firmar: diff del
+  cuerpo contra el espejo, commit de firma citando página y hora. La
+  implementación espera a #173: merge de `origin/main`, `init.sh` con aviso a
+  peers, H0 (D1–D9, S1–S6) y handoff a Codex.
