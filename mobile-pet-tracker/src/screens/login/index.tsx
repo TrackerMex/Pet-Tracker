@@ -75,24 +75,6 @@ export function LoginScreen() {
           paddingBottom: insets.bottom + 24,
         }}
       >
-        <HomeEntrance testID="login-header" index={0} className="gap-4">
-          <View testID="login-greeting" className="flex-row items-center gap-3">
-            <Image
-              testID="login-pingo"
-              source={require('../../../assets/images/pingo-wave.webp')}
-              style={{ width: 88, height: 88, transform: [{ rotate: '-8deg' }] }}
-            />
-            <Card testID="login-bubble" variant="secondary" className="flex-1 px-4 py-3">
-              <Text testID="login-bubble-text" className="text-sm font-semibold text-foreground">
-                {t('login.pingoGreeting')}
-              </Text>
-            </Card>
-          </View>
-          <Text className="text-center text-2xl font-black text-foreground">
-            {t('login.signIn')}
-          </Text>
-        </HomeEntrance>
-
         <HomeEntrance testID="login-body" index={1} className="gap-4">
           <TextField>
             <Label className="text-xs font-semibold text-foreground">
@@ -120,12 +102,6 @@ export function LoginScreen() {
               onChangeText={setPassword}
             />
           </TextField>
-
-          {error ? (
-            <Text testID="login-error" className="text-danger">
-              {error}
-            </Text>
-          ) : null}
 
           <Button
             testID="login-submit"
@@ -156,6 +132,27 @@ export function LoginScreen() {
               {t('login.forgotPassword')}
             </LinkButton.Label>
           </LinkButton>
+          <Text testID="login-error" className="text-danger">
+            {error}
+          </Text>
+        </HomeEntrance>
+
+        <HomeEntrance testID="login-header" index={0} className="gap-4">
+          <View testID="login-greeting" className="flex-row items-center gap-3">
+            <Image
+              testID="login-pingo"
+              source={require('../../../assets/images/pingo-wave.webp')}
+              style={{ width: 88, height: 88, transform: [{ rotate: '-8deg' }] }}
+            />
+            <Card testID="login-bubble" variant="secondary" className="flex-1 px-4 py-3">
+              <Text testID="login-bubble-text" className="text-sm font-semibold text-foreground">
+                {t('login.pingoGreeting')}
+              </Text>
+            </Card>
+          </View>
+          <Text className="text-center text-xl font-black text-foreground">
+            {t('login.signIn')}
+          </Text>
         </HomeEntrance>
       </ScrollView>
     </KeyboardAvoidingView>

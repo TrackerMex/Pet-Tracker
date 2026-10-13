@@ -254,6 +254,39 @@ describe('#167 R6: Pingo saluda en login y la pantalla entra en dos tiempos', ()
     expect(within(body).getByTestId('login-error')).toBeOnTheScreen();
   });
 
+  it('#167 R6: con error, el error va entre la contraseña y el envío', async () => {
+    mockLogin.mockResolvedValue({ kind: 'invalid-credentials' });
+    await renderLogin();
+    await submit();
+    const body = screen.getByTestId('login-body');
+    expect(within(body).getAllByTestId(/^(login-email|login-password|login-error|login-submit|link-register|link-forgot)$/)
+      .map((node) => node.props.testID)).toEqual([
+      'login-email', 'login-password', 'login-error', 'login-submit', 'link-register', 'link-forgot',
+    ]);
+  });
+
+  it('#167 R6: sin error, el cuerpo no lleva el error', async () => {
+    await renderLogin();
+    const body = screen.getByTestId('login-body');
+    expect(within(body).getAllByTestId(/^(login-email|login-password|login-error|login-submit|link-register|link-forgot)$/)
+      .map((node) => node.props.testID)).toEqual([
+      'login-email', 'login-password', 'login-submit', 'link-register', 'link-forgot',
+    ]);
+  });
+
+  it('#167 R6: la cabecera va antes que el cuerpo en el scroll', async () => {
+    await renderLogin();
+    const header = screen.getByTestId('login-header');
+    expect(header.parent?.parent).toHaveProperty('props.testID', 'login-form');
+    expect(header.parent?.children).toEqual([header, screen.getByTestId('login-body')]);
+  });
+
+  it('#167 R6: el título de la cabecera conserva su clase', async () => {
+    await renderLogin();
+    expect(within(screen.getByTestId('login-header')).getByText('Iniciar sesión').props.className)
+      .toBe('text-center text-2xl font-black text-foreground');
+  });
+
   it('#167 R6: la cabecera y el cuerpo no se mezclan', async () => {
     await renderLogin();
     const header = screen.getByTestId('login-header');
