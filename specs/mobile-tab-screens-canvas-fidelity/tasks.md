@@ -294,7 +294,7 @@ tags: [harness, spec, mobile, ui]
   - los diez bloques, al final de cada fichero; en la carta, tras la última `## Enmienda`;
   - los cambios aditivos de R14.2 en §12, §13 y decisión 4.
 - [ ] (3) Refactor: los `it` de #62 R4 y #166 R4 siguen verdes.
-  `grep -cF '**Control, tile, input, botón y píldora de dato** → \`rounded-xl\`' ../docs/ui-guidelines.md` da `1`.
+  `` grep -cF '**Control, tile, input, botón y píldora de dato** → `rounded-xl`' ../docs/ui-guidelines.md `` da `1`.
 
 ## R15 — Candados por delta y grep-limpio
 

@@ -341,10 +341,10 @@ comparan escritas en el propio test, nunca importando una constante de producci�
     clases nuevas.
 - **R7.3** THE SYSTEM SHALL enmendar la viñeta de enums crudos de la carta (R14): `pet.sex` sale de la lista.
   - `src/__tests__/design-drift.test.ts`:
-    - `#68 E1` pasa a `expect(rawEnumList).not.toContain('\`pet.sex\`');`;
+    - `#68 E1` pasa a `` expect(rawEnumList).not.toContain('`pet.sex`'); ``;
     - el título del `it` pasa a `'conserva crudos solo los tres ámbitos aún pendientes'`;
-    - el mismo `it` asevera `toContain('\`pet.sex\` se localiza desde #173 con \`addPet.male\` / \`addPet.female\`')`
-      sobre la carta.
+    - el mismo `it` asevera, sobre `corollary` (no sobre `rawEnumList`),
+      `` expect(corollary).toContain('`pet.sex` se localiza desde #173 con `addPet.male` / `addPet.female`'); ``.
   - La viñeta de la carta se edita en el verde de R7, no en R14: el test de R7.3 la necesita.
   - La viñeta queda así:
     - la lista anterior a `. Siguen` pasa a `` `document.type`, `foodType`, `activityLevel` ``;
@@ -607,7 +607,7 @@ comparan escritas en el propio test, nunca importando una constante de producci�
     formato de la fila `map.trackingNeedsCollar` de §2.23.
   - Se añade una sección `### §2.<n> — Añadidos por #173 — Perfil fiel al canvas`, donde `<n>` es el
     **siguiente número libre tras §2.26**, que ocupa #170. Lleva las tres filas
-    `| — | \`clave\` | \`en\` | \`es\` | ← añadida por #173 (R13) |`.
+    `` | — | `clave` | `en` | `es` | ← añadida por #173 (R13) | ``.
 - **Tests**: `src/providers/__tests__/language-provider.test.tsx`, describe nuevo
   `#173 R13: Perfil retira cuatro claves y añade tres`. Comprueba:
   - las tres claves en `en` y `es` con los literales de R13.2;
@@ -650,16 +650,20 @@ comparan escritas en el propio test, nunca importando una constante de producci�
   - **§13 Botón con cuerpo**: la viñeta «Sin labio» suma el tonal `bg-tab-pill` (cápsula «Añadir mascota»).
   - **Decisión fija 4** (`card.tsx`): las variantes pasan a ser `surface | accent | secondary | hero | flat`.
     `hero` y `flat` no llevan sombra y solo las usa Perfil.
-  - **Viñeta de enums crudos**: `pet.sex` sale de la lista. Se añade la frase «`pet.sex` se localiza desde
-    #173 con `addPet.male` / `addPet.female`».
+  - **Viñeta de enums crudos**: `pet.sex` sale de la lista, que queda en `document.type`, `foodType` y
+    `activityLevel`. La frase «`pet.sex` se localiza desde #173 con `addPet.male` / `addPet.female`.» se
+    añade como **última línea de la viñeta**, detrás de la que termina en
+    `` `src/utils/device-connectivity.ts`. ``, y entera en una sola línea. Tiene que quedar detrás de
+    `. Siguen`: el test corta `rawEnumList` en ese punto, y si la frase cae antes, `rawEnumList` vuelve a
+    contener `` `pet.sex` `` y el `not.toContain` de R7.3 se pone rojo.
   - **Cambios solo aditivos en §12 y §13**: se conservan **literalmente** las frases que ya aseveran dos `it`
     de `src/__tests__/consistency-classnames.test.ts`:
     - `'declara en la carta los tres radios y prohíbe el drift'` (#62 R4);
     - `'declara las dos recetas y el orden del labio'` (#166 R4).
 
-    Por ejemplo, `**Control, tile, input, botón y píldora de dato** → \`rounded-xl\`` se queda: sigue
+    Por ejemplo, `` **Control, tile, input, botón y píldora de dato** → `rounded-xl` `` se queda: sigue
     rigiendo fuera de Perfil, y la excepción de los tiles de Perfil entra como frase nueva.
-    Ancla: `grep -cF '**Control, tile, input, botón y píldora de dato** → \`rounded-xl\`' docs/ui-guidelines.md`
+    Ancla: `` grep -cF '**Control, tile, input, botón y píldora de dato** → `rounded-xl`' docs/ui-guidelines.md ``
     da `1` antes y después.
 - **R14.3** THE SYSTEM SHALL verificar cada bloque con `src/__tests__/profile-canvas-fidelity.test.ts`
   (el mismo fichero nuevo de R2–R4 y R15), describe `#173 R14: enmiendas`, con la técnica de
