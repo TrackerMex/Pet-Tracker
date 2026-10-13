@@ -1,6 +1,6 @@
 ---
 feature: "mobile-account-screens-pingo"
-status: draft   # draft | spec_ready | approved — pendiente de firma humana
+status: approved   # draft | spec_ready | approved
 tags: [mobile, ui, spec]
 ---
 
@@ -27,7 +27,7 @@ tags: [mobile, ui, spec]
 | R12 | `src/screens/welcome/index.test.tsx::#167 R12: …` (10) y la aserción de hijos de `welcome-scene` | `fc49e87f` test(mobile): anillos de ping alrededor de Pingo (R12)<br>`13835918` feat(mobile): anillos de ping alrededor de Pingo (R12) |
 | R13 | `src/screens/welcome/index.test.tsx::#167 R13: …` (2) y los dos `it` de la base con `expect(mockWithRepeat).not.toHaveBeenCalled()` | `7c4f727d` test(mobile): sin anillos con reduce motion (R13) |
 | R14 | `src/__tests__/design-drift.test.ts::#167 R14: …` (4) | `108bd291` test(mobile): las pantallas de cuenta no traen deriva (R14) |
-| R15 | prueba de humo en dev build de Android (humano) | pendiente (humano) |
+| R15 | prueba de humo en dev build de Android (humano) | firmada por el humano el 2026-10-13: `3f3ee0f3 Record Android smoke test results for account screens` |
 
 ---
 

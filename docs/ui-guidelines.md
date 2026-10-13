@@ -492,4 +492,4 @@ reduce motion no se pintan.
 
 Ninguna otra pantalla usa anillos de ping sin una enmienda propia.
 
-- [ ] Enmienda aprobada por humano
+- [X] Enmienda aprobada por humano

@@ -1,6 +1,6 @@
 ---
 feature: "mobile-account-screens-pingo"
-status: draft   # draft | spec_ready | approved — pendiente de firma humana
+status: approved   # draft | spec_ready | approved
 tags: [mobile, ui, spec]
 ---
 
