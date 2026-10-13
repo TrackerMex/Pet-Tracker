@@ -55,3 +55,11 @@ export const MOTION_PING_TIMING = {
   easing: Easing.bezier(0.23, 1, 0.32, 1),
   reduceMotion: ReduceMotion.System,
 };
+
+// #172 R4
+export const MOTION_PINGO_FLOAT_OFFSET_Y = 10;
+export const MOTION_PINGO_FLOAT_TIMING = {
+  duration: 1500,
+  easing: Easing.bezier(0.42, 0, 0.58, 1),
+  reduceMotion: ReduceMotion.System,
+};
