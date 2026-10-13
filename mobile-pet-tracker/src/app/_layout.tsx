@@ -99,7 +99,7 @@ function RootStack() {
         <Stack.Screen name="pairing" options={{ ...headerOptions, title: '' }} />
         <Stack.Screen name="reminders" options={{ ...headerOptions, title: t('reminders.reminders') }} />
         <Stack.Screen name="alerts" dangerouslySingular options={{ ...headerOptions, title: t('alerts.title') }} />
-        <Stack.Screen name="alerts/[alertId]" dangerouslySingular options={{ ...headerOptions, title: t('alerts.detailTitle') }} />
+        <Stack.Screen name="alerts/[alertId]" dangerouslySingular options={{ ...headerOptions, title: t('alerts.detailTitle'), contentStyle: { backgroundColor: background } }} />
         <Stack.Screen name="pets/[petId]/geofences" options={{ ...headerOptions, title: t('geofences.title') }} />
         <Stack.Screen name="pets/[petId]/geofence-editor" options={{ ...headerOptions, title: t('geofenceEditor.title') }} />
         <Stack.Screen name="meals-history" options={{ ...headerOptions, title: t('mealsHistory.mealsHistory') }} />

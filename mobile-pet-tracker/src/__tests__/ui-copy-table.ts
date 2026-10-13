@@ -485,6 +485,11 @@ export const R12_ALERTS: UseRow[] = [
   { file: 'src/screens/alerts/index.tsx', key: 'alerts.ack' },
   { file: 'src/screens/alerts/index.tsx', key: 'alerts.statusAcked' },
   { file: 'src/screens/alerts/index.tsx', key: 'alerts.statusClosed' },
+  { file: 'src/screens/alerts/index.tsx', key: 'alerts.sectionToday' }, // #170 R16
+  { file: 'src/screens/alerts/index.tsx', key: 'alerts.sectionThisWeek' }, // #170 R16
+  { file: 'src/screens/alerts/index.tsx', key: 'alerts.sectionEarlier' }, // #170 R16
+  { file: 'src/screens/alerts/index.tsx', key: 'alerts.newOne' }, // #170 R16
+  { file: 'src/screens/alerts/index.tsx', key: 'alerts.newMany' }, // #170 R16
 ];
 
 export const R13_ALERT_DETAIL: UseRow[] = [
@@ -496,6 +501,8 @@ export const R13_ALERT_DETAIL: UseRow[] = [
   { file: 'src/screens/alert-detail/index.tsx', key: 'alerts.ack' },
   { file: 'src/screens/alert-detail/index.tsx', key: 'common.somethingWentWrong' },
   { file: 'src/screens/alert-detail/index.tsx', key: 'common.retry' },
+  { file: 'src/screens/alert-detail/index.tsx', key: 'alerts.distanceFromZone' }, // #170 R16
+  { file: 'src/screens/alert-detail/index.tsx', key: 'alerts.viewOnMap' }, // #170 R16
 ];
 
 export const R14_GEOFENCES: UseRow[] = [

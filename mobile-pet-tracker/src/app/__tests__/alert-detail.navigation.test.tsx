@@ -45,6 +45,11 @@ jest.mock('react-native-gesture-handler', () => ({
 }));
 jest.mock('../../hooks/use-push-registration', () => ({ usePushRegistration: jest.fn() }));
 jest.mock('../../components/floating-tab-bar', () => ({ FloatingTabBar: () => null }));
+jest.mock('../../components/pet-map', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return { PetMap: (props: Record<string, unknown>) => React.createElement(View, { ...props, testID: 'pet-map-double' }) };
+});
 jest.mock('../../api/alerts', () => ({ ackAlert: jest.fn(), listAlerts: jest.fn() }));
 jest.mock('../../providers/auth-provider', () => ({
   AuthProvider: ({ children }: { children: React.ReactNode }) => children,

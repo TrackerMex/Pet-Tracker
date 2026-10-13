@@ -950,6 +950,18 @@ copy completa en cada una.
 | — | `weightLog.weightLogged` | `Logged. I've added it to the chart.` | `Anotado. Ya lo puse en la gráfica.` | ← añadida por #169 (R9) |
 | — | `weightLog.monthDelta` | `{{value}} this month` | `{{value}} este mes` | ← añadida por #169 (R9) |
 
+### §2.26 — Añadidos por #170 — Alertas agrupadas y mini-mapa
+
+| # | Clave | `en` | `es` | Origen |
+|---|---|---|---|---|
+| — | `alerts.newOne` | `1 new` | `1 nueva` | ← añadida por #170 (R1) |
+| — | `alerts.newMany` | `{{count}} new` | `{{count}} nuevas` | ← añadida por #170 (R1) |
+| — | `alerts.sectionToday` | `Today` | `Hoy` | ← añadida por #170 (R1) |
+| — | `alerts.sectionThisWeek` | `This week` | `Esta semana` | ← añadida por #170 (R1) |
+| — | `alerts.sectionEarlier` | `Earlier` | `Anteriores` | ← añadida por #170 (R1) |
+| — | `alerts.distanceFromZone` | `{{distance}} from {{zone}}` | `A {{distance}} de {{zone}}` | ← añadida por #170 (R1) |
+| — | `alerts.viewOnMap` | `View on map` | `Ver en el mapa` | ← añadida por #170 (R1) |
+
 ## 3. La infraestructura
 
 ### 3.1 Decisiones
