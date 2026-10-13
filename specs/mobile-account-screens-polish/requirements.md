@@ -1666,4 +1666,4 @@ por aserción. La spec situaba `'MOTION_PINGO_FLOAT_OFFSET_Y'` y
 - Nada más cambia: ni valores, ni recuentos de `it`, ni la Enmienda a la
   carta. R4 sigue en 19 nombres.
 
-- [ ] Enmienda E2 aprobada por humano (fecha: ____) ← gate antes de reanudar Codex
+- [x] Enmienda E2 aprobada por humano (fecha: 2026-10-13) ← gate antes de reanudar Codex
