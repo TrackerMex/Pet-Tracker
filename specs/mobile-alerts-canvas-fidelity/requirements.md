@@ -75,10 +75,10 @@ P1–P7 las trae #173. P5 y P6 son los textos literales compartidos con #173 y #
 | S1 | `grep -cF -- '--text-15: 15px;' src/theme/global.css` | 0 o 1 | 1 | R1 |
 | S2 | `grep -cF -- '--tracking-title: -0.02em;' src/theme/global.css` | 0 o 1 | 1 | R1 |
 | S3 | `grep -cF '## Enmienda de fidelidad al canvas (2026-10-13)' ../docs/ui-guidelines.md` | 0 o 1 | 1 | R11 |
-| S4 | `grep -cF "- Títulos de pantalla: título en contenido y cabecera nativa con \`title: ''\` (Enmienda de fidelidad al canvas)." ../docs/ui-guidelines.md` | 0 o 1 | 1 | R11 |
+| S4 | `` grep -cF -- "- Títulos de pantalla: título en contenido y cabecera nativa con \`title: ''\` (Enmienda de fidelidad al canvas)." ../docs/ui-guidelines.md `` | 0 o 1 | 1 | R11 |
 | S5 | `grep -cF 'la superficie siempre acompaña a un icono de reicon-react-native y a un texto.' ../docs/ui-guidelines.md` | 0 o 1 | 1 | R11 |
 | S6 | `grep -cF 'Tracking fuera de la escala de Tailwind' ../docs/ui-guidelines.md` | 0 o 1 | 1 | R11 |
-| S7 | `grep -cF -- '\`--text-15: 15px\`' ../docs/ui-guidelines.md` | 0 o 1 | 1 | R11 |
+| S7 | `` grep -cF -- '`--text-15: 15px`' ../docs/ui-guidelines.md `` | 0 o 1 | 1 | R11 |
 
 Si una pieza existe en H0 con **otro** texto o valor que el de `192329aa`, PARA y avisa al leader.
 
@@ -182,8 +182,8 @@ con `await`.
 - **R2.3** THE SYSTEM SHALL documentar en `specs/mobile-ui-language/design.md`:
   - sección nueva `### §2.<N> — Añadidos por #174 — Alertas fieles al canvas` justo antes de
     `## 3. La infraestructura`, con `<N>` = la siguiente libre en H0 (M27; en la base, `27`), cabecera
-    `| # | Clave | \`en\` | \`es\` | Origen |` y la fila
-    `| — | \`alerts.dayAgo\` | \`1 day ago\` | \`Hace 1 día\` | ← añadida por #174 (R2) |`;
+    `` | # | Clave | `en` | `es` | Origen | `` y la fila
+    `` | — | `alerts.dayAgo` | `1 day ago` | `Hace 1 día` | ← añadida por #174 (R2) | ``;
   - en la fila existente de `alerts.daysAgo`: los valores nuevos, conservando su sufijo
     `← añadida por #78 (R3)` y añadiendo detrás ` · valor cambiado por #174 (R2)`.
 - **Tests**:
@@ -496,7 +496,7 @@ con `await`.
 | L4 | `specs/mobile-ui-language/design.md` | fila de `alerts.daysAgo` | valores nuevos + ` · valor cambiado por #174 (R2)` | R2 |
 | L5 | `ui-copy-table.ts` › `R12_ALERTS` | `{ file: 'src/app/_layout.tsx', key: 'alerts.title' }, // #114 R4` | `{ file: 'src/screens/alerts/index.tsx', key: 'alerts.title' }, // #174 R3` | R3 |
 | L6 | L › `#114 R4` | `['alerts', 't:alerts.title'],` | `['alerts', ''], // #174 R3` | R3 |
-| L7 | `specs/mobile-ui-language/design.md` | fila completa de `alerts.title` (la que termina en `· se pinta desde \`src/app/_layout.tsx\` por #114 (R4)`) | la cola pasa a `· se pinta en \`src/screens/alerts/index.tsx\` por #174 (R3)`; la fila de `reminders.title` no se toca | R3 |
+| L7 | `specs/mobile-ui-language/design.md` | fila completa de `alerts.title` (la que termina en `` · se pinta desde `src/app/_layout.tsx` por #114 (R4) ``) | la cola pasa a `` · se pinta en `src/screens/alerts/index.tsx` por #174 (R3) ``; la fila de `reminders.title` no se toca | R3 |
 | L8 | CC › `#166 R3` | `toBe(4 + 1); // #170 R16` (lip-gray) | `<H0> + 1`, `// #170 R16, #174 R8`; regex e inventario de R8 | R8 |
 | L9 | PF › `#173 R2.4` | (de #173) | R12.2 | R3, R4, R6 |
 | L10 | inventarios de #175 de `text-15` / `tracking-title` (solo si #175 está en H0) | lista de H0 | `+ 'screens/alerts/index.tsx'`, `// #174 R12` | R3, R7 |
