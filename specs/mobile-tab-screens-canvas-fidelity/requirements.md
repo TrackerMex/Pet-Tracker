@@ -531,8 +531,12 @@ comparan escritas en el propio test, nunca importando una constante de producci�
 - **Tests**: `src/screens/profile/index.test.tsx`, describe nuevo `#173 R11: cuenta en Card flat con Switch e idioma`.
   - Un `it` por fila de la tabla de R11.1 con `children` exactos.
   - **Tema**:
-    - claro: `getByTestId('theme-toggle').props.accessibilityState` `toEqual({ checked: false, disabled: false })`;
-    - oscuro (`mockTheme = 'dark'`): `toEqual({ checked: true, disabled: false })`;
+    - claro: `getByTestId('theme-toggle').props.accessibilityState.checked` `toBe(false)`;
+    - oscuro (`mockTheme = 'dark'`): `.checked` `toBe(true)`;
+    - no se asevera `disabled`: R11.2 no pasa `isDisabled` y heroui-native 1.0.8 deja entonces
+      `accessibilityState.disabled` en `undefined` (primitivo `Switch.Root`), así que un
+      `toEqual({ checked, disabled: false })` daría rojo. `geofence-editor` sí lo asevera porque pasa
+      `isDisabled` booleano;
     - la etiqueta es `Usar tema oscuro` en los dos temas y `Use dark theme` en inglés.
   - **Idioma**:
     - es: `language-value` muestra `Español` y `accessibilityValue` es `{ text: 'Español' }`;

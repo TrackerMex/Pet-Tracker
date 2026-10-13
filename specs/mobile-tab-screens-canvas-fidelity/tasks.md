@@ -14,7 +14,9 @@ tags: [harness, spec, mobile, ui]
 - **Comandos** (desde `mobile-pet-tracker/`, siempre con `cd` explícito, con `bunx`/`bun`, nunca `npx`):
   - tests acotados: `bunx jest <ruta> --testTimeout=30000`;
   - tipos: `bun run typecheck`;
-  - lint: `bun run lint > /tmp/lint173.log 2>&1; grep -qF 'Failed to run' /tmp/lint173.log && exit 1`.
+  - lint: `bun run lint > /tmp/lint173.log 2>&1 && ! grep -qF 'Failed to run' /tmp/lint173.log`. Sale distinto
+    de 0 si eslint falla **o** si `expo lint` muere por SIGKILL (que sale 0 e imprime `Failed to run`). Ante
+    `Failed to run`, reintentar una vez antes de tratarlo como rojo.
 - **Formato**: `bunx prettier --write` sobre los ficheros tocados antes de cada commit.
 - **Rutas con paréntesis**: ninguna ruta de esta feature los tiene. Si hiciera falta una, se escapa
   (`\(tabs\)`).
