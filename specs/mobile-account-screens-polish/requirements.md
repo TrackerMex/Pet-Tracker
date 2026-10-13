@@ -1,6 +1,6 @@
 ---
 feature: "mobile-account-screens-polish"
-status: spec_ready
+status: approved
 tags: [mobile, ui, spec]
 ---
 
@@ -1529,10 +1529,10 @@ la CTA de cuenta y en la de `forgot-resend`, que ocupa su sitio.
 (`src/components/password-input.tsx`), con un botón de 44 que alterna
 «Mostrar contraseña» y «Ocultar contraseña».
 
-- [ ] Enmienda aprobada por humano
+- [x] Enmienda aprobada por humano
 ```
 
-- [ ] Enmienda aprobada por humano (fecha: ____). La firma el humano aquí, en el
+- [x] Enmienda aprobada por humano (fecha: 2026-10-13). La firma el humano aquí, en el
   gate de la spec. R18 copia en la carta esta casilla en el estado en que esté.
 
 ## Fuera de alcance
@@ -1615,4 +1615,4 @@ literales. Cada una dice dónde entra en la spec.
 Ninguna.
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [x] Aprobado por humano (fecha: 2026-10-13) ← gate obligatorio antes de implementar

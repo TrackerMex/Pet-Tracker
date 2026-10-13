@@ -38,6 +38,12 @@ se firma después de su veredicto.
 Convención de commit: `test(mobile): … (Rn)` para el rojo y `feat(mobile): …
 (Rn)` para el verde.
 
+Spec y Enmienda #172 aprobadas en Notion
+(https://app.notion.com/p/3f86115a9b27815b91d6ec6acd75a969): `Estado del gate` =
+Aprobado y las dos casillas marcadas, última edición 2026-10-13T18:43Z. La
+casilla del bloque de §Enmienda a la carta ya va marcada, así que R18 la copia
+marcada; su candado acepta `[ xX]`.
+
 ---
 
 ## Prueba de humo (R21)
