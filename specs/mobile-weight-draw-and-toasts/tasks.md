@@ -661,3 +661,104 @@ tags: [mobile, ui, motion, spec]
     `exit=`), los hashes y las siete sondas.
   - La lista cerrada de ficheros no cambia: la enmienda solo toca ficheros
     que ya están en ella, y deja la producción idéntica a `f314978d`.
+
+## Enmienda E2 — Reanudación 6 (R1, solo tests)
+
+> Solo tras la firma humana de la Enmienda E2 (requirements.md §Enmienda E2).
+> La producción de `src/components/weight-chart.tsx` queda **idéntica** a
+> `f314978d` al final de la ronda: el commit verde la restaura desde ese hash.
+> Rutas relativas a `mobile-pet-tracker/`. Nada de números de línea: todo se
+> localiza por contenido. Cada medida acaba en `echo "exit=$?"` y su log no se
+> lee hasta ver `exit=`.
+
+- [ ] **Antes.**
+  - `git merge-base --is-ancestor 4ddcbf5c HEAD; echo "exit=$?"` → `exit=0`.
+  - `git diff --quiet f314978d HEAD -- src/components/weight-chart.tsx src/utils/monthly-weight-delta.ts; echo "exit=$?"` → `exit=0`.
+  - `test ! -e .expo/types/router.d.ts; echo "exit=$?"` → `exit=0`.
+  - Base: `FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/components/__tests__/weight-chart.test.tsx`
+    → `Tests: 20 passed, 20 total`. Si no da eso, **para**: la base no es la
+    de la revisión.
+
+- [ ] **(1) Commit rojo de R1** `test(mobile): el desplazamiento del dibujo usa la suma de los segmentos (#169 R1)`.
+  - En `src/components/__tests__/weight-chart.test.tsx`, dentro de
+    `describe('#169 R1: la línea se dibuja al montarse'`, justo antes de
+    `it('p parte de 0: con una animación que no avanza, la línea y los puntos siguen ocultos'`:
+
+    ```tsx
+      it('con tres pesos no alineados y progreso 0.25 el desplazamiento es tres cuartos de la suma de los segmentos', async () => {
+        mockWithTiming.mockImplementation(() => 0.25);
+        await render(
+          <WeightChart entries={[
+            makeWeight({ id: 'weight-3', weightKg: 12, measuredAt: '2026-08-21' }),
+            makeWeight({ id: 'weight-2', weightKg: 14, measuredAt: '2026-08-20' }),
+            makeWeight({ id: 'weight-1', weightKg: 10, measuredAt: '2026-08-19' }),
+          ]} />,
+          { wrapper: WeightChartWrapper },
+        );
+
+        await waitFor(() =>
+          expect(screen.getByTestId('weight-chart-line').props.jestAnimatedProps?.value)
+            .toEqual({ strokeDashoffset: expect.closeTo(83.8957, 3) }),
+        );
+      });
+    ```
+
+    - La lectura de `jestAnimatedProps` va con `waitFor`, como en los `it` de
+      0.25 de E1 (§Reglas comunes, «Props animadas»).
+    - `makeWeight`, `waitFor` y `mockWithTiming` ya están en el fichero.
+      Ningún `it` existente cambia, ni de nombre ni de cuerpo.
+  - **Mutación versionada X3** en `src/components/weight-chart.tsx`, una
+    sustitución: `    strokeDashoffset: L * (1 - progress.get()),` pasa a
+
+    ```ts
+        strokeDashoffset: Math.hypot(chartPoints[chartPoints.length - 1].x - chartPoints[0].x, chartPoints[chartPoints.length - 1].y - chartPoints[0].y) * (1 - progress.get()),
+    ```
+
+  - Rojo esperado, midiendo solo `src/components/__tests__/weight-chart.test.tsx`:
+    `Tests: 1 failed, 20 passed, 21 total`. Falla solo
+    `con tres pesos no alineados y progreso 0.25 el desplazamiento es tres cuartos de la suma de los segmentos`,
+    por aserción dentro del `waitFor`: recibe
+    `{ strokeDashoffset: 75.95393340703298 }`. Con la mutación,
+    `bun run typecheck` y el lint dan 0 (medido). Cualquier otro `it` rojo, un
+    `TypeError` o un `ReferenceError` es un error de medida: **para**.
+
+- [ ] **(2) Commit verde de R1** `feat(mobile): el desplazamiento del dibujo vuelve a usar la suma de los segmentos (#169 R1)`.
+  - `git checkout f314978d -- src/components/weight-chart.tsx`, y después
+    `git diff --quiet f314978d -- src/components/weight-chart.tsx; echo "exit=$?"` → `exit=0`.
+  - Gate:
+    - weight-chart solo → `Tests: 21 passed, 21 total`;
+    - el comando GRAFICA del handoff → `Tests: 146 passed, 146 total`;
+    - GUARDAS → `Tests: 92 passed, 92 total`;
+    - `bun run typecheck` y el lint con salida vacía.
+
+- [ ] **Sondas X3b, H1 y H1b**, sin commit, sobre el verde, por separado, en
+  `src/components/weight-chart.tsx`. Mide solo weight-chart. Restaura cada
+  una con `git checkout HEAD -- src/components/weight-chart.tsx` y
+  `git diff --quiet HEAD -- src/components/weight-chart.tsx; echo "exit=$?"` → `exit=0`
+  antes de la siguiente.
+
+  | Sonda | Mutación | Esperado | Qué falla (por aserción) |
+  |---|---|---|---|
+  | X3b | `    strokeDashoffset: L * (1 - progress.get()),` pasa a `    strokeDashoffset: (chartPoints.length - 1) * Math.hypot(chartPoints[1].x - chartPoints[0].x, chartPoints[1].y - chartPoints[0].y) * (1 - progress.get()),` | `1 failed, 20 passed, 21 total` | el `it` nuevo (recibe `89.04493247793498`) |
+  | H1 | las siete líneas de `L` pasan a la cuerda, igual que H1 en §Enmienda E1 | `2 failed, 19 passed, 21 total` | el `it` nuevo (recibe `75.95393340703298`) y `con tres pesos no alineados la longitud es la suma de los dos segmentos` |
+  | H1b | las siete líneas de `L` pasan a `(n − 1)` · el primer segmento, igual que H1b en §Enmienda E1 | `2 failed, 19 passed, 21 total` | el `it` nuevo (recibe `89.04493247793498`) y `con tres pesos no alineados la longitud es la suma de los dos segmentos` |
+
+- [ ] **Cierre.**
+  - `git diff --quiet f314978d HEAD -- mobile-pet-tracker/src/components/weight-chart.tsx mobile-pet-tracker/src/utils/monthly-weight-delta.ts; echo "exit=$?"`
+    → `exit=0` (desde la raíz): la producción queda idéntica.
+  - El comando BASE del handoff (los 9 ficheros) → `Tests: 369 passed, 369 total`
+    (368 + 1, con weight-chart en 21).
+  - El comando ALL, tras el bucle de espera del handoff → `Test Suites: 99 passed, 99 total`
+    y `Tests: 2833 passed, 2833 total` (2832 + 1).
+  - `bun run typecheck` y el lint con salida vacía.
+
+- [ ] **(3) Commit final** `docs(mobile-weight-draw-and-toasts): #169 Enmienda E2, trazabilidad e impl`.
+  - En `traceability.md`, fila R1, columna «Commit»: añade
+    `; Enmienda E2: <hash rojo> → <hash verde>` del par (1)-(2), con sus
+    mensajes, y `sondas X3b, H1 y H1b`. La columna «Test» no se toca: la
+    rellenó el leader con la enmienda.
+  - En `progress/impl_mobile-weight-draw-and-toasts.md`, una sección
+    `## Reanudación 6 (Enmienda E2)` con cada medida (sus líneas `Tests:` y su
+    `exit=`), los hashes y las tres sondas.
+  - La lista cerrada de ficheros no cambia: la enmienda solo toca un fichero
+    que ya está en ella, y deja la producción idéntica a `f314978d`.

@@ -516,3 +516,86 @@ eslint, con el texto literal de tasks.md:
 ### Aprobación de la Enmienda E1
 
 - [x] Enmienda E1 aprobada por humano (fecha: 2026-10-12, vía Notion) ← gate obligatorio antes de la Reanudación 5 de Codex
+
+## Enmienda E2 — candado de `strokeDashoffset` con `L` no colineal (revisión ronda 2 rechazada, 2026-10-13)
+
+> Escrita el 2026-10-13, tras la ronda 2 de la revisión, **rechazada**
+> (`progress/review_mobile-weight-draw-and-toasts.md` §Ronda 2, sobre
+> `eb9b77f1`) por su único bloqueante, R2-E1.
+>
+> No toca D1-D7, ni el texto de R1-R14, ni la firma original, ni la Enmienda
+> E1. **Solo tests**: la producción de `f314978d` es correcta y queda idéntica.
+> Su casilla va **sin marcar**: el humano reabre el gate solo para esta
+> enmienda.
+
+### El hecho medido
+
+R1 dice `strokeDashoffset = L · (1 − p)`, con `L` igual a la suma de las
+longitudes de los segmentos.
+
+- La Enmienda E1 candó `L` (la suma) solo sobre `strokeDasharray`, con la
+  fixture no colineal `12`, `14`, `10`.
+- Todos los `it` que aseveran `strokeDashoffset` usan fixtures colineales. En
+  ellas, la cuerda y la suma de segmentos dan la misma `L`.
+
+Por eso, si solo el desplazamiento usa la cuerda, nada lo ve:
+
+| Id | Mutación en `src/components/weight-chart.tsx` | Qué rompe en producción | Estado en `eb9b77f1` |
+|---|---|---|---|
+| X3 | `strokeDashoffset: L * (1 - progress.get())` pasa a la cuerda del primer punto al último `* (1 - progress.get())` | con pesos que suben y bajan, el primer frame desplaza `101.27` en vez de `111.86`: la línea arranca con unas 10.6 unidades ya visibles | **verde**: weight-chart 20/20 (dos veces) y GRAFICA 145/145 (reviewer) |
+
+### Decisión: E2 añade un `it` a R1, no reescribe su texto
+
+- **R1**, un `it` más en `describe('#169 R1: la línea se dibuja al montarse')`,
+  con la fixture no colineal de E1 (`12`, `14` y `10` en el orden de la API,
+  puntos `0,36 50,4 100,20`).
+- El doble de `withTiming` devuelve `0.25`, y el `it` espera
+  `strokeDashoffset = 0.75 · L ≈ 83.8957`
+  (`expect.closeTo(83.8957, 3)`; `0.75 · 111.86090731… = 83.89568048…`).
+  - Con la cuerda, el `it` recibiría `75.9539`.
+  - Con `(n − 1)` · el primer segmento, recibiría `89.0449`.
+- Elige `p = 0.25` y no `p = 0`, que es lo que propuso el reviewer, porque así
+  el mismo `it` vigila la suma de segmentos y el factor `(1 − p)` a la vez.
+  - Una mutación que solo acierta en el origen (`L − cuerda · p`, que da `L`
+    en `p = 0`) cae aquí con `86.5429` y con `p = 0` no caería.
+  - El origen `p = 0` ya lo vigila `p parte de 0` (H2) desde E1.
+
+Los `it` y las filas que ya existen no cambian.
+
+**No entra:** la fila 16 que el reviewer propone para R5 (X12, el inicio de
+año en vez del inicio de mes). No es un hueco del suite. R6 la caza en
+weight-log (`Pacific/Kiritimati`, 1 failed / 58, medido por el reviewer). El
+reviewer la dejó como no bloqueante.
+
+### Cómo se prueba que el candado vigila (CHECKPOINTS.md C4, quinto punto)
+
+Es un candado sobre código **ya correcto**. Por eso su rojo versiona la
+mutación X3 de producción, y el verde deja `weight-chart.tsx` idéntico a
+`f314978d`.
+
+| Rojo | Mutación versionada | Qué falla | Recuento |
+|---|---|---|---|
+| R1 | X3 | el `it` nuevo, ninguno más | `1 failed, 20 passed, 21 total` |
+
+Después vienen tres sondas sin commit sobre el árbol verde: X3b (`(n − 1)` ·
+el primer segmento en el desplazamiento), H1 y H1b. Cada una se restaura antes
+de la siguiente. tasks.md §Enmienda E2 da las mutaciones literales y los
+recuentos.
+
+Medido por el leader fuera del árbol sobre `eb9b77f1` (copia por
+`git archive`), con jest (`--testTimeout=30000`), `tsc` y eslint, y con el
+texto literal de tasks.md:
+
+- El `it` nuevo nace verde: weight-chart 21/21 y `GRAFICA` 146/146 (era 145).
+- X3 da `1 failed, 20 passed, 21 total`. Solo cae el `it` nuevo, por
+  aserción, con `75.95393340703298`. Con X3, `tsc` y eslint dan 0.
+- X3b da 1 failed / 21: solo el `it` nuevo, con `89.04493247793498`.
+- H1 y H1b dan 2 failed / 21 cada una: el `it` nuevo y el de la suma de E1.
+- `L − cuerda · p` da 1 failed / 21: solo el `it` nuevo, con
+  `86.54292950990575`.
+- `GUARDAS` da 92/92 con el `it` nuevo (medido). `BASE` pasa de 368 a 369 y
+  ALL de 2832 a 2833 (por cálculo: un `it` más).
+
+### Aprobación de la Enmienda E2
+
+- [ ] Enmienda E2 aprobada por humano (fecha: ____, vía Notion) ← gate obligatorio antes de la Reanudación 6 de Codex

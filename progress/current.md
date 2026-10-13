@@ -172,3 +172,29 @@
   - origin/main sin commits nuevos.
 - Siguiente: init.sh del leader, en cola tras el de Backend (#170, wt-170) →
   re-revisión → smoke R14.
+
+### Re-revisión ronda 2 (2026-10-13)
+
+- init.sh del leader sobre `eb9b77f1`: EXIT=0, «Todo verde» (móvil 99/2832,
+  backend 1474, e2e 468 + 8 skipped).
+- Durante la revisión, el reviewer pausó sus jest a petición de Frontend, que
+  tenía init.sh de #167 en wt-167. Ya había terminado sus sondas de jest; le
+  faltaron tsc y eslint del cierre que propone.
+- Reviewer: **RECHAZADO** (§Ronda 2 de la revisión, commit `5deacd49`). E1, E2,
+  E3, H1, H2, H2b y H3 quedan cerrados. Queda un bloqueante, R2-E1: la
+  mutación X3 (la cuerda en `strokeDashoffset`) sigue verde, porque todo `it`
+  que asevera el desplazamiento usa fixtures colineales. El hueco viene del
+  cierre de H1 que propuso el propio reviewer en la ronda 1: solo candaba
+  `strokeDasharray`.
+- Enmienda E2 en requirements.md y tasks.md: un `it` en R1 con la fixture no
+  colineal y `p = 0.25` (espera 83.8957). Tiene un par rojo → verde con X3
+  versionada y tres sondas (X3b, H1 y H1b).
+  - Se elige `p = 0.25` y no el `p = 0` del reviewer, porque así el mismo `it`
+    vigila también el factor `(1 − p)`.
+  - La fila 16 de R5 (X12) no entra: R6 ya la caza.
+- Columna «Test» de traceability para R1: la rellena el leader.
+- Siguiente:
+  1. el leader mide fuera del árbol, tras el aviso de fin de Frontend;
+  2. espejo en Notion y firma humana;
+  3. Reanudación 6 para Codex;
+  4. init.sh y ronda 3.
