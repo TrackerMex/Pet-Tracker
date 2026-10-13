@@ -6,10 +6,9 @@ tags: [mobile, ui, spec]
 
 # Tareas — [[mobile-account-screens-polish]] (#172)
 
-> Base congelada `b7284682`; B19–B28 y la cuenta de `font-registration.test.ts`
-> se midieron sobre `51968761` (requirements.md §Base medida). Las cifras que
-> otras features pueden mover (#170, PR #213: requirements.md §Choques de
-> integración) van como «H0 + delta». Requisitos en [requirements.md](requirements.md) y
+> Base congelada `3f9a60e2`, que ya trae #168, #169 y #170 (requirements.md
+> §Base medida). Las cifras que otras features pueden mover (requirements.md
+> §Choques de integración) van como «H0 + delta». Requisitos en [requirements.md](requirements.md) y
 > diseño en [design.md](design.md). Cada R tiene un bloque (1) test rojo,
 > (2) implementación mínima y (3) refactor. Lo que asevera cada `it` está en su
 > R de requirements.md; aquí van el orden, los ficheros, los rojos esperados y
@@ -119,7 +118,7 @@ tags: [mobile, ui, spec]
 | Fichero | Base | Commit | Añade | Total |
 |---|---|---|---|---|
 | `src/theme/__tests__/global-css.test.ts` | 30 | c1 (R1) | 1 | 31 |
-| `src/providers/__tests__/language-provider.test.tsx` | 17 | c3 (R16) | 1 | 18 |
+| `src/providers/__tests__/language-provider.test.tsx` | 19 | c3 (R16) | 1 | 20 |
 | `src/components/__tests__/back-button.test.tsx` (nuevo) | 0 | c5 (R2) | 5 | 5 |
 | `src/components/__tests__/pingo-float.test.tsx` (nuevo) | 0 | c7 (R4) | 3 | 3 |
 | `src/theme/__tests__/motion.test.ts` | 16 | c7 (R4) | 1 | 17 |
@@ -173,7 +172,7 @@ Al cerrar hay 52 bloques `it` más. En Jest son 61 tests más, porque los cuatro
 2. Comprueba la rama, el HEAD y el árbol:
    - `git branch --show-current` → `feature/172-mobile-account-screens-polish`;
    - `git rev-parse HEAD` → el HEAD del handoff (H0);
-   - `git merge-base --is-ancestor 51968761 HEAD; echo "exit=$?"` → `exit=0`;
+   - `git merge-base --is-ancestor 3f9a60e2 HEAD; echo "exit=$?"` → `exit=0`;
    - `git status --short` → vacío.
 3. Mide B2 **antes** de instalar.
    - Si da `1`, ejecuta `bun install --frozen-lockfile; echo "exit=$?"` →
@@ -247,7 +246,7 @@ estas claves, y `typecheck` exige que existan.
 - Fichero: `src/providers/__tests__/language-provider.test.tsx`.
 - En el `it` de longitud del catálogo, `+ 3, // #172 R16` va como **último**
   sumando. El sumando que cierra la suma en H0 pierde su coma final: en la
-  base es `+ 1, // #167 R5`; si #170 ha mergeado, es el `// #170 R1`.
+  base es `+ 7, // #170 R1`.
 - Añade un `describe('#172 R16: el copy de las pantallas de cuenta como el
   canvas')` con el `it` `#172 R16: declara las claves de cuenta en los dos
   idiomas y su registro`.
@@ -275,7 +274,8 @@ Gate: 2 failed.
 - `../specs/mobile-ui-language/design.md`:
   - el encabezado es `### §2.N — Añadidos por #172 — Las pantallas de cuenta
     como el canvas`, con N igual al último `### §2.N` medido en H0 más uno
-    (en la base, 25);
+    (en la base, 27, tras `### §2.26 — Añadidos por #170 — Alertas agrupadas
+    y mini-mapa`);
   - va después de la tabla de esa última §2.N y justo antes de `## 3. La
     infraestructura`;
   - debajo lleva la cabecera de tabla de §2.24 y las cuatro filas de R16;
@@ -287,7 +287,7 @@ Gate: 2 failed.
 
   | Comando | Esperado |
   |---|---|
-  | B11 | B11 de H0 + 6 (en la base, `756`) |
+  | B11 | B11 de H0 + 6 (en la base, `774`) |
   | `grep -cF "'common.back':" src/i18n/catalog.ts` | `2` |
   | `grep -cF "'register.country': 'País'," src/i18n/catalog.ts` | `1` |
   | `grep -cF '← añadida por #172 (R16)' ../specs/mobile-ui-language/design.md` | `3` |
@@ -1042,8 +1042,8 @@ Gate: 1 failed.
 | forgot | `#172 R14: el candado es un tile acento…` | aserción (`toBe`) |
 | consistency | `lleva los tres tiles restantes a rounded-xl` | aserción (`toContain`) |
 | consistency | `resuelve el Lock de Forgot con accent-foreground` | aserción (`toContain`) |
-| consistency | `deja CONTINUOUS_CORNER, bg-accent-soft y el acento donde estaban` | aserción (19 en lugar de 18) |
-| consistency | `conserva los usos de bg-accent-soft que sí son acento` | aserción (19 en lugar de 18) |
+| consistency | `deja CONTINUOUS_CORNER, bg-accent-soft y el acento donde estaban` | aserción (18 en lugar de 17) |
+| consistency | `conserva los usos de bg-accent-soft que sí son acento` | aserción (18 en lugar de 17) |
 | consistency | `no deja la receta del labio fuera de un primario salvo el candado de Recuperar` | aserción (19 en lugar de 20) |
 
 Las cifras entre paréntesis son las de la base. Si H0 mide otra base en
@@ -1064,9 +1064,9 @@ Gate: 9 failed, repartidos así: forgot 4 y consistency 5. Ningún
 - Anclas:
   - `grep -cF 'size-13 items-center justify-center rounded-xl border-b-4 border-black/25 bg-accent' src/screens/forgot/index.tsx`
     → `1`;
-  - B7 → B7 de H0 − 1 (en la base, `18`);
+  - B7 → B7 de H0 − 1 (en la base, `17`);
   - B8 → B8 de H0 + 1, las dos (en la base, `20` y `20`);
-  - B9 → B9 de H0 (en la base, `32`);
+  - B9 → B9 de H0 (en la base, `37`);
   - B17 viejo → `0`, `0`;
   - el literal nuevo en el test de recuperar → `5`, y en consistency → `1`;
   - `grep -c 'LOCK_TILE_CLASS' src/screens/forgot/index.test.tsx` → `0`.
@@ -1079,7 +1079,7 @@ forgot y consistency y espera 7 failed:
 
 - forgot 4: los cuatro de la tabla del rojo;
 - consistency 3: `lleva los tres tiles…` y los dos recuentos de
-  `bg-accent-soft` (en la base, 19 en lugar de 18).
+  `bg-accent-soft` (en la base, 18 en lugar de 17).
 
 ---
 
@@ -1439,15 +1439,15 @@ Gate:
    | B5 | `2`, `0`, `1`, `4` |
    | B6 | `0`, `1`, `1`, `3` (las comillas dobles de `fallback="/login"` no cuentan) |
    | `grep -c 'fallback="/login"' src/screens/forgot/index.tsx` | `1` |
-   | B7 | B7 de H0 − 1 (en la base, `18`) |
+   | B7 | B7 de H0 − 1 (en la base, `17`) |
    | B8 | B8 de H0 + 1, las dos (en la base, `20` y `20`) |
-   | B9 | B9 de H0 (en la base, `32`) |
+   | B9 | B9 de H0 (en la base, `37`) |
    | B10 | B10 de H0 + 4 (en la base, `41`) |
-   | B11 | B11 de H0 + 6 (en la base, `756`) |
+   | B11 | B11 de H0 + 6 (en la base, `774`) |
    | B12 | `7` |
    | B14 | `1` |
    | B15 | `1` |
-   | B16 | `### §2.N — Añadidos por #172 — Las pantallas de cuenta como el canvas`, con N el siguiente libre tras la última §2 de H0 |
+   | B16 | `### §2.N — Añadidos por #172 — Las pantallas de cuenta como el canvas`, con N el siguiente libre tras la última §2 de H0 (en la base, 27) |
    | B17 (literal viejo) | `0`, `0` |
    | literal nuevo del tile | `5` en el test de recuperar, `1` en consistency, `1` en `src/screens/forgot/index.tsx` |
    | `grep -c 'LOCK_TILE_CLASS' src/screens/forgot/index.test.tsx` | `0` |

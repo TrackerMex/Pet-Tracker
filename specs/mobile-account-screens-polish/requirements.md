@@ -20,35 +20,37 @@ tags: [mobile, ui, spec]
 
 ## Base medida
 
-Medida sobre el HEAD `b7284682` (punta de #167, branch
-`feature/172-mobile-account-screens-polish`). B19–B28 y el recuento de
-`font-registration.test.ts` se midieron el 2026-10-13 sobre `51968761`, que
-mezcla `origin/main` en la branch sin tocar `mobile-pet-tracker/`, la carta
-ni `specs/mobile-ui-language/` (`git diff b7284682 51968761 -- <esas rutas>`
-vacío). Todos los comandos se ejecutan
-desde `mobile-pet-tracker/` salvo que digan otra cosa. **Base congelada**: si
-al arrancar (H0 del handoff) alguna salida difiere, la cifra futura es
-`base medida en H0 + delta de esta spec`, nunca el número de esta tabla.
-Otras features (#168–#171) tocan los mismos ficheros.
+Medida el 2026-10-13 sobre el HEAD `3f9a60e2` de la branch
+`feature/172-mobile-account-screens-polish`, que mezcla `origin/main` en
+`788d1f89` (tras #170, PR #213). Esa mezcla trajo #168, #169 y #170. Todas
+las filas se volvieron a medir sobre ese HEAD. Respecto a la medida anterior
+(`b7284682`) cambian B7 (`19` → `18`, #168 R5), B9 (`32` → `37`), B11
+(`750` → `768`), B16 (§2.24 → §2.26) y los `it` de
+`language-provider.test.tsx` (`17` → `19`). Las demás salidas no cambian.
+Todos los comandos se ejecutan desde `mobile-pet-tracker/` salvo que digan
+otra cosa. **Base congelada**: si al arrancar (H0 del handoff) alguna salida
+difiere, la cifra futura es `base medida en H0 + delta de esta spec`, nunca
+el número de esta tabla. Otras features (#171 y las que mergeen después)
+pueden tocar los mismos ficheros.
 
 | # | Comando | Salida |
 |---|---|---|
-| B1 | `git rev-parse --short HEAD` | `b7284682` |
+| B1 | `git rev-parse --short HEAD` | `3f9a60e2` |
 | B2 | `test -d node_modules; echo $?` | `1` (el worktree no trae dependencias; ver design.md §Entorno) |
 | B3 | `grep -cF 'text-xs font-semibold text-foreground' src/screens/login/index.tsx src/screens/register/index.tsx src/screens/forgot/index.tsx` | `2`, `7`, `1` |
 | B4 | `grep -c 'selectable' src/screens/login/index.tsx src/screens/register/index.tsx src/screens/forgot/index.tsx src/screens/reset-password/index.tsx` | `0`, `0`, `1`, `3` |
 | B5 | `grep -c 'text-accent-strong' src/screens/login/index.tsx src/screens/register/index.tsx src/screens/forgot/index.tsx src/screens/reset-password/index.tsx` | `2`, `0`, `1`, `3` |
 | B6 | `grep -cF "'/login'" src/screens/login/index.tsx src/screens/register/index.tsx src/screens/forgot/index.tsx src/screens/reset-password/index.tsx` | `0`, `1`, `1`, `2` |
-| B7 | ocurrencias de `bg-accent-soft` en ficheros `.ts`/`.tsx` de `src` que no son test | `19` |
+| B7 | ocurrencias de `bg-accent-soft` en ficheros `.ts`/`.tsx` de `src` que no son test | `18` |
 | B8 | igual que B7 con `\bborder-b-4\b` y con `border-black/25` | `19` y `19` |
-| B9 | igual que B7 con `style=\{CONTINUOUS_CORNER\}` | `32` |
+| B9 | igual que B7 con `style=\{CONTINUOUS_CORNER\}` | `37` |
 | B10 | `awk '/export const R1_AUTH/{f=1;next} f&&/^\];/{print n; exit} f&&/\{ file:/{n++}' src/__tests__/ui-copy-table.ts` | `37` |
-| B11 | `grep -cE "^  '[a-zA-Z]+\.[a-zA-Z.]+':" src/i18n/catalog.ts` | `750` (375 por idioma) |
+| B11 | `grep -cE "^  '[a-zA-Z]+\.[a-zA-Z.]+':" src/i18n/catalog.ts` | `768` (384 por idioma) |
 | B12 | `grep -c 'isInvalid={Boolean(fieldErrors\.' src/screens/register/index.tsx` | `7` |
 | B13 | `grep -rl 'InputGroup' src \| wc -l` ; `grep -rl 'flex-2' src \| wc -l` | `0` ; `0` |
 | B14 | `grep -c 'accessibilityLiveRegion' src/screens/reset-password/index.tsx` | `0` |
 | B15 | `grep -cF '## Enmienda #172' ../docs/ui-guidelines.md` | `0` |
-| B16 | último `### §2.N` de `../specs/mobile-ui-language/design.md` | `### §2.24 — Añadidos por #167 — Pingo en las pantallas de cuenta` |
+| B16 | último `### §2.N` de `../specs/mobile-ui-language/design.md` | `### §2.26 — Añadidos por #170 — Alertas agrupadas y mini-mapa` |
 | B17 | `grep -cF 'size-16 items-center justify-center rounded-xl bg-accent-soft' src/screens/forgot/index.test.tsx src/__tests__/consistency-classnames.test.ts` | `5`, `1` |
 | B18 | `grep -rn -- '-message"' src/screens/register` ; regex de `getAllByTestId` con prefijo `register-` en los tests | sin salida ; ninguno |
 | B19 | `grep -rlF -e 'Country (2-letter code)' -e 'País (código de 2 letras)' src \| grep -v 'src/i18n/catalog.ts'` | sin salida |
@@ -75,7 +77,7 @@ Otras features (#168–#171) tocan los mismos ficheros.
 | `src/__tests__/consistency-classnames.test.ts` | 33 |
 | `src/__tests__/legibility-classnames.test.ts` | 12 |
 | `src/theme/__tests__/global-css.test.ts` | 30 |
-| `src/providers/__tests__/language-provider.test.tsx` | 17 |
+| `src/providers/__tests__/language-provider.test.tsx` | 19 |
 | `src/theme/__tests__/motion.test.ts` | 16 |
 | `src/theme/__tests__/font-registration.test.ts` | 3 |
 
@@ -106,27 +108,38 @@ Hechos verificados contra el árbol (no son premisas de explore):
 
 ### Choques de integración
 
-Medidos el 2026-10-13. No se mide contra ramas sin mergear: cada cifra
-absoluta que dependa de ellas se mide en H0 y la cifra futura es
-`H0 + delta de #172`.
+Medidos el 2026-10-13 sobre `3f9a60e2`. No se mide contra ramas sin
+mergear: cada cifra absoluta que dependa de ellas se mide en H0 y la cifra
+futura es `H0 + delta de #172`.
 
-- **#170, PR #213, sin mergear.** Si mergea antes del H0 de #172, trae:
-  - `### §2.26` en `specs/mobile-ui-language/design.md`. La sección de #172
-    toma el siguiente §2.N libre al integrar (R16), después de la última que
-    haya en H0.
-  - `+ 7` en la suma de longitud del catálogo de
-    `src/providers/__tests__/language-provider.test.tsx` (`// #170 R1`). El
-    `+ 3, // #172 R16` va detrás, como último sumando, y el sumando que cierre
-    la suma en H0 pierde su coma final. B11 al cerrar es B11 de H0 + 6.
-  - `+ 1` fila en cada uno de tres inventarios de
-    `src/__tests__/consistency-classnames.test.ts`: `directUses`
-    (`CONTINUOUS_CORNER`), los secundarios de `#166 R3` y los contadores de
-    `#69 R10`. #172 no añade filas a ninguno de los tres: no crea ningún
-    `style={CONTINUOUS_CORNER}` (B9 al cerrar = B9 de H0), no crea ningún
-    secundario neutro (`forgot-resend` ya está, y su receta se busca con
-    `toContain`) y no toca `counters`. Los deltas de #172 en ese fichero (R14)
-    se escriben sobre la expresión que haya en H0, añadiendo su término al
-    final.
+- **#168, #169 y #170, ya mergeadas en la base** (`788d1f89`, PR #213 la
+  última). Lo que dejan en los ficheros de esta spec ya está en las cifras de
+  §Base medida:
+  - `specs/mobile-ui-language/design.md` termina en `### §2.26` (B16). La
+    sección de #172 es la siguiente libre, §2.27 en la base, justo después de
+    la tabla de §2.26 (R16).
+  - La suma de longitud del catálogo de
+    `src/providers/__tests__/language-provider.test.tsx` termina en
+    `+ 2 // #169 R9` y `+ 7, // #170 R1`. El `+ 3, // #172 R16` va detrás,
+    como último sumando, y `+ 7, // #170 R1` pierde su coma final. B11 al
+    cerrar es B11 de H0 + 6 (en la base, 774).
+  - En `src/__tests__/consistency-classnames.test.ts`, los dos recuentos de
+    `bg-accent-soft` son `16 + 2 + 1 - 1` (#168 R5). #168, #169 y #170
+    añadieron o cambiaron filas en `directUses` (`CONTINUOUS_CORNER`), en los
+    secundarios de `#166 R3` y en los contadores de `#69 R10`. #172 no añade
+    filas a ninguno de los tres: no crea ningún `style={CONTINUOUS_CORNER}` (B9 al cerrar = B9 de
+    H0), no crea ningún secundario neutro (`forgot-resend` ya está, y su
+    receta se busca con `toContain`) y no toca `counters`. El `it` `lleva los
+    tres tiles restantes a rounded-xl` ya no lista el tile de `food.tsx`
+    (#168 R8), pero conserva su título y el literal de Recuperar que cambia
+    R14.
+  - `src/__tests__/ui-copy-table.ts` (`R1_AUTH`, `R11_RESET`),
+    `src/__tests__/ui-language.test.ts` (los dos `toHaveLength` que toca
+    #172 y el sumatorio de `SCREEN_FILES`), las cuatro pantallas de cuenta,
+    sus tests, `legibility-classnames`, `design-drift`, `motion.ts`,
+    `global-css` y `font-registration` no cambiaron con la mezcla.
+- Los deltas de #172 se escriben sobre la expresión que haya en H0,
+  añadiendo su término al final.
 - Toda tabla de esta spec con «antes» y «después» (Deltas de candados, las
   anclas de tasks.md) da el «después» como delta: si H0 mide otra cosa en un
   término ajeno a #172, ese término se conserva tal cual y solo se aplica el
@@ -951,7 +964,7 @@ un botón (Enmienda #172).
   - §Deltas de candados recoge los cambios de `consistency-classnames.test.ts`.
 - Sonda S14: poner `bg-accent-soft` en lugar de `bg-accent` pone rojo
   `#172 R14` por `toBe`, y también `consistency-classnames`, porque
-  `bg-accent-soft` cuenta 19 y no 18.
+  `bg-accent-soft` cuenta 18 y no 17 (en la base).
 
 ### R15 — El error de login cuelga del scroll (E2-1 de la review de #167)
 
@@ -996,10 +1009,10 @@ THE SYSTEM SHALL registrar las cuatro claves en
 
 - bajo un encabezado nuevo, `### §2.N — Añadidos por #172 — Las pantallas de
   cuenta como el canvas`, justo después de la tabla de la última sección
-  `### §2.N` que haya en H0 (en la base, §2.24; B16). N es el siguiente número
-  libre al integrar, medido en H0: en la base sería 25, pero #170 trae §2.26 y
-  otra feature puede ocupar más (§Choques de integración). El candado lo busca
-  con `§2\.\d+`, así que no depende de N. La tabla lleva la cabecera de §2.24
+  `### §2.N` que haya en H0 (en la base, §2.26; B16). N es el siguiente número
+  libre, medido en H0: en la base, 27. Si otra feature ocupa §2.27 antes, N
+  sube (§Choques de integración). El candado lo busca con `§2\.\d+`, así que
+  no depende de N. La tabla lleva la cabecera de §2.24
   (`| # | Clave | \`en\` | \`es\` | Origen |`) y estas cuatro filas:
 
   ```
@@ -1037,9 +1050,8 @@ la misma.
     - casa `/### §2\.\d+ — Añadidos por #172 — Las pantallas de cuenta como el canvas/`.
   - El `it` de longitud del catálogo del mismo fichero suma `+ 3, // #172 R16`
     como último sumando. El sumando que cierre la suma en H0 pierde su coma
-    final: en la base es `+ 1, // #167 R5`; si #170 entra antes, es el suyo
-    (`// #170 R1`). `register.country` no suma: cambia de valor, no de
-    número.
+    final: en la base es `+ 7, // #170 R1`. `register.country` no suma:
+    cambia de valor, no de número.
   - En `src/__tests__/ui-language.test.ts`, `resuelve las 36 ocurrencias
     normativas` pasa a `resuelve las 41 ocurrencias normativas`, con
     `toHaveLength(29 + 7 + 1 + 4); // #117 R10, #167 R6, #172 R16`. Esto cierra
@@ -1430,8 +1442,8 @@ revierte» marca los candados de `#61 R8` cuyo centrado vertical deshace R19
 |---|---|---|---|---|
 | `src/__tests__/consistency-classnames.test.ts` | `lleva los tres tiles restantes a rounded-xl` | `'size-16 items-center justify-center rounded-xl bg-accent-soft'` | `'size-13 items-center justify-center rounded-xl border-b-4 border-black/25 bg-accent'` | R14 |
 | ídem | `resuelve el Lock de Forgot con accent-strong` | título; `"const [accentStrong] = useThemeColors(['accent-strong']);"`; `'<Lock size={28} color={accentStrong} />'` | título `resuelve el Lock de Forgot con accent-foreground`; `"const [accentForeground] = useThemeColors(['accent-foreground']);"`; `'<Lock size={26} color={accentForeground} />'`. El `import` no cambia | R14 |
-| ídem | `deja CONTINUOUS_CORNER, bg-accent-soft y el acento donde estaban` | `count(/bg-accent-soft/g)).toBe(16 + 2 + 1)` | `toBe(16 + 2 + 1 - 1)` con `// … #172 R14: forgot-lock-tile pasa a bg-accent`. Primarios (19) y `CONTINUOUS_CORNER` sin cambios | R14 |
-| ídem | `conserva los usos de bg-accent-soft que sí son acento` | `toBe(16 + 2 + 1)` | `toBe(16 + 2 + 1 - 1)` con `// #147 R4, #105 R11, #172 R14` | R14 |
+| ídem | `deja CONTINUOUS_CORNER, bg-accent-soft y el acento donde estaban` | `count(/bg-accent-soft/g)).toBe(16 + 2 + 1 - 1)` (#168 R5) | `toBe(16 + 2 + 1 - 1 - 1)` con el comentario de hoy más `; #172 R14: forgot-lock-tile pasa a bg-accent`. Primarios (19) y `CONTINUOUS_CORNER` sin cambios | R14 |
+| ídem | `conserva los usos de bg-accent-soft que sí son acento` | `toBe(16 + 2 + 1 - 1)` (#168 R5) | `toBe(16 + 2 + 1 - 1 - 1)` con el comentario de hoy más `; #172 R14` | R14 |
 | ídem | `no deja la receta del labio fuera de un primario` | `toBe(19)` ×2 | título `no deja la receta del labio fuera de un primario salvo el candado de Recuperar`; `toBe(19 + 1)` ×2 con `// #172 R14: forgot-lock-tile (Enmienda #172)` | R14 |
 | ídem | `inventaría los diecinueve primarios con labio, fichero a fichero` | forgot `1` | sin cambios: el tile no casa con `rounded-xl bg-accent`, y `h-14` va delante de `rounded-xl` | R14, R20 |
 | `src/__tests__/legibility-classnames.test.ts` | `inkSites` (`%s pinta con text-accent-strong (%i)`) | reset-password `3` | `4, // #172 R19: link-login del formulario`. Login 2 y forgot 1 sin cambios | R19 |
@@ -1443,7 +1455,7 @@ revierte» marca los candados de `#61 R8` cuyo centrado vertical deshace R19
 | ídem | `no deja ningún valor fijo del catálogo como literal entero en las pantallas` | sumatorio de `SCREEN_FILES` (B20: 30) | `+ 2 // #172 R16: back-button y password-input` como último sumando (B20 de H0 + 2; en la base, 32) | R16 |
 | `src/__tests__/ui-copy-table.ts` | `R1_AUTH` | 37 filas (B10) | B10 de H0 + 4 (en la base, 41) | R16 |
 | ídem | `R11_RESET` | 15 filas | 16 filas: `resetPassword.backToSignIn` del formulario | R19 |
-| `src/providers/__tests__/language-provider.test.tsx` | `it` de longitud del catálogo | termina en `+ 1, // #167 R5` | `+ 3, // #172 R16` como último sumando; el que cierre en H0 pierde su coma (si #170 entra antes, `// #170 R1`) | R16 |
+| `src/providers/__tests__/language-provider.test.tsx` | `it` de longitud del catálogo | termina en `+ 7, // #170 R1` | `+ 3, // #172 R16` como último sumando; `+ 7, // #170 R1` pierde su coma | R16 |
 | `src/theme/__tests__/motion.test.ts` | `no exporta nada más` | 17 nombres (B21) | 19 nombres: `'MOTION_PINGO_FLOAT_OFFSET_Y'` y `'MOTION_PINGO_FLOAT_TIMING'` entre `'MOTION_PING_TO_SCALE'` y `'MOTION_POP_SPRING'` | R4 |
 | `src/screens/login/index.test.tsx` | `#167 R6: la cabecera lleva el saludo y después el título` | 2 hijos | sustituido por `#172 R3: la cabecera lleva Volver, el saludo y el título` | R3 |
 | ídem | `#167 R6: el título de la cabecera conserva su clase` | `'text-center text-2xl font-black text-foreground'` | sustituido por `#172 R6: el título de la cabecera pesa 30/900 al inicio` | R6 |

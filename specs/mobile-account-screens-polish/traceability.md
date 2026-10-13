@@ -6,7 +6,7 @@ tags: [mobile, ui, spec]
 
 # Trazabilidad — [[mobile-account-screens-polish]] (#172)
 
-> Rutas relativas a `mobile-pet-tracker/`. Base congelada `b7284682`. Codex
+> Rutas relativas a `mobile-pet-tracker/`. Base congelada `3f9a60e2`. Codex
 > rellena cada fila con el hash y el mensaje de sus commits al terminar.
 
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
