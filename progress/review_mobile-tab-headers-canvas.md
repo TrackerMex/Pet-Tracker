@@ -301,3 +301,134 @@ No volví a medir lo que ya midió el leader. Comprobé que los tres bloques `ts
    Con los 68 `it`, las cifras coinciden con la tabla de la spec.
 
 **Veredicto del re-barrido: E3 cierra O1-O3 y N1-N3.**
+
+## Ronda 2 (HEAD 824c67b8, 2026-10-13)
+
+Veredicto: **APROBADO** sobre HEAD `824c67b8` (= `origin/feature/168-mobile-tab-headers-canvas`).
+
+Alcance: el delta `53f0e8f9..824c67b8`, es decir, la Enmienda E3 y el bloque O (c28-c37), sobre H0 `b082f6e5`. Lo de la ronda 1 que el delta no toca (R1-R3, R6-R8, R10-R12 y las sondas H*, P*, F* y A*) sigue valiendo y no lo repito.
+
+### Checklist C2 — Estado coherente
+- [x] Solo 1 feature `in_progress` en `feature_list.json`: #168.
+- [x] `progress/current.md` refleja el rechazo de la ronda 1, E3, la Reanudación 13 y lo siguiente (re-review, firmas B1-B4, R13).
+
+### Checklist C3 — Arquitectura
+- [x] Producción sin cambios. `git diff --name-only 53f0e8f9 824c67b8 -- mobile-pet-tracker` da solo `src/app/(tabs)/__tests__/food.test.tsx` y `src/screens/profile/index.test.tsx`. En `docs/`, `backend-pet-tracker/` e `infra-pet-tracker/` hay 0 ficheros.
+- [x] El delta no toca capas, contratos ni dependencias. Los dos diffs de test son solo altas: `--numstat` da 11/0 y 82/0.
+
+### Checklist C4 — TDD
+- [x] Los 8 bloques nuevos viven dentro de `describe` que nombran su R-id: `#168 R4: …`, `#168 R5: …` y `#168 R9: …`.
+- [x] Historial: un commit `test` por `it`, en el orden O1-O8 de `tasks.md` §Bloque O. Ningún commit `feat` y ningún rojo por `ReferenceError` ni por mutar un doble. Estos `it` son de verificación sobre código ya correcto. E3 eligió por escrito, antes del handoff (firma `938188b8`), la vía (b) de C4: cierre por mutación de producción. Las sondas de abajo son la evidencia que C4 (b) pide en el reporte del reviewer.
+- [x] Recuentos por commit en el impl (§Reanudación 13): O1 60, O2 63/63, O3 64, O4 65/65, O5 66, O6 67/67, O7 68, O8 84. Coinciden fila a fila con §Bloque O, también en los títulos de cada rojo.
+
+### Checklist C5 — Trazabilidad
+- [x] `traceability.md` no tiene filas «pendiente». La única coincidencia del grep es la línea 30, la regla.
+- [x] Las filas R4, R5 y R9 suman los 8 `it` de E3 y sus 8 hashes reales. Cada hash es ancestro de `824c67b8` (`merge-base --is-ancestor`), su asunto coincide con el citado y solo toca el fichero de test que le corresponde. La anotación «nace verde; sonda <id> en impl» cuadra con las sondas de cada commit. El frontmatter no cambia.
+- [x] Formato de commits: `test(mobile): <desc> (#168 R<n>)` y `docs(mobile-tab-headers-canvas): …`, como el resto de la feature.
+
+### Checklist C6 — Spec aprobada
+- [x] `requirements.md` está en `status: approved`. La casilla de E3 está en `[X]` (fecha 2026-10-12, vía Notion). La marcó `938188b8`, que cita la página, `page_last_edited_at` y la confirmación del humano.
+- [x] Entre el re-barrido `2cb3cd5c` y `824c67b8`, `requirements.md` solo cambia en esa casilla (1+/1-) y `tasks.md` no cambia. Lo firmado es lo que barrí. Desde `53f0e8f9`, `requirements.md` solo tiene altas: E3 no toca D1-D9, el EARS de R1-R13, E1 ni E2.
+
+### Checklist C7 — Sin código huérfano
+- [x] N/A en el delta: E3 no reemplaza nada. Lo de la ronda 1 (hero fuera de las tres pestañas, sondas S1-S8 de G) no cambia.
+
+### Checklist C8 — Carta UI
+- [x] El delta solo toca tests. Las líneas añadidas no tienen hex, ni clases arbitrarias `[...]`, ni `StyleSheet`, ni shadow/elevation (grep vacío). Los literales de clase que asertan los `it` nuevos son los de R5.2 (`CATEGORY_SLOTS` de la carta). Los puntos de C8 sobre la UI ya los marqué en la ronda 1 y la UI no ha cambiado.
+
+### Literales y ubicación (punto 2)
+- Extraje los tres bloques `ts` de §E3.a, §E3.b y §E3.c, con su línea en blanco final, y los busqué en el árbol. Cada bloque aparece **byte a byte una vez**: E3.a y E3.b en `profile/index.test.tsx`, E3.c en `food.test.tsx`.
+- Ubicación, por grep de contenido en HEAD:
+  - los seis bloques de E3.a, dentro de `describe('#168 R5: Perfil pinta chips pastel por dato')`, justo antes de `it('centra y agrupa los chips con gap-2'`;
+  - E3.b, dentro de `describe('#168 R4: …')`, justo antes de `it('no monta el hero compartido'`;
+  - E3.c, último `it` de `describe('#168 R9: …')`, tras su `it.each` y antes de `describe('#168 R10: …')`.
+- Ningún otro `it` cambió: el diff de los dos ficheros no tiene ni una línea `-`.
+
+### Sondas (punto 3)
+Las replanté todas en un worktree aparte, `<scratchpad>/wt168-r2`, creado con `git worktree add --detach … 824c67b8`. Los `node_modules` eran un symlink a los de wt-168.
+- Base: `FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath` sobre los dos ficheros da `152 passed`.
+- Cada sonda: una mutación, localizada por contenido (asserts `count == 1`). Después, el fichero de test entero con `--maxWorkers=2`. Después, `git checkout HEAD -- <prod>`.
+- Tras cada sonda, `git diff --quiet` + `git diff --cached --quiet` = 0. No había otro jest ni otro init.sh en vuelo (`pgrep` vacío).
+- Las 10 de E3 dan **exactamente** el rojo de la tabla de la spec, con los 8 `it` a la vez: mismo recuento y solo los títulos que nombra la fila.
+
+| Sonda | Mutación | Resultado | Tests rojos |
+|---|---|---|---|
+| P2 | peso sin la guarda `=== null` | 1 failed, 67 passed, 68 total | `sin peso omite su chip…` |
+| P3 | edad sin `Number.isFinite` | 3 failed, 65 passed, 68 total | `con la edad NaN / Infinity / -Infinity…` |
+| N1 | `!Number.isNaN(pet.ageMonths) ?` | 2 failed, 66 passed, 68 total | `Infinity`, `-Infinity` |
+| P4c | `pet.sterilized !== undefined ? t('profile.sterilized')` | 1 failed, 67 passed, 68 total | `sin esterilizar pinta el chip verde…` |
+| P2t | peso por *truthiness* | 1 failed, 67 passed, 68 total | `con 0 meses y 0 kg…` |
+| P3t | `pet.ageMonths ?` | 3 failed, 65 passed, 68 total | `con 0 meses y 0 kg…`, `Infinity`, `-Infinity` |
+| N2 | esterilizado guardado por `pet.sex === null` | 2 failed, 66 passed, 68 total | `sin sexo conserva…`, `sin esterilización conserva…` |
+| N3 | sexo guardado por `pet.sterilized === null` | 1 failed, 67 passed, 68 total | `sin esterilización conserva…` |
+| P13 | bloque `photoError` delante de `<Button testID="change-photo"` | 1 failed, 67 passed, 68 total | `con la subida fallida deja change-photo…` |
+| F17 | `now: Math.min(kcalPct, 100) }}` | 1 failed, 83 passed, 84 total | `anuncia el valor sin acotar cuando pasa de 100` |
+
+Dos sondas propias en la zona ciega de R4.3, donde podría no mirar el `it` nuevo:
+
+| Sonda | Mutación | Resultado | Lectura |
+|---|---|---|---|
+| Z1 | bloque `photoError` movido tras el cierre de `pet-info-card` | 1 failed, 67 passed, 68 total (`con la subida fallida…`) | el `index + 2` mira el hermano inmediato, no solo «después» |
+| Z2 | bloque `photoError` dentro de `profile-pet-card`, tras `PetPills` | 1 failed, 67 passed, 68 total (`con la subida fallida…`) | la rama «fuera de ella» de R4.3 queda candada para el error, no solo para `change-photo` |
+
+Las cifras de Codex por commit, en recuentos acumulados (§Reanudación 13), coinciden con las mías en el estado final. El worktree está borrado: quité el symlink, `git worktree remove --force` dio rc=0 y ya no sale en `git worktree list`. No ejecuté sondas ni checkouts en wt-168.
+
+### O1-O3 de la ronda 1 (punto 4)
+- **O1, cerrado.** Cada rama de R5.1/R5.3 tiene su `it`:
+  - peso `null`;
+  - edad `NaN` y `±Infinity`;
+  - `sterilized: false`;
+  - el 0 válido en edad y en peso;
+  - sexo `null` y esterilizado `null`, cada uno por separado.
+
+  Las fixtures distinguen las alternativas que el barrido pre-firma encontró en verde: N1 (`!isNaN`), P2t y P3t (*truthiness*), N2 y N3 (guardas cruzadas). Todas muerden ahora (tabla de arriba). El helper `expectProfileChip168` aserta con `getByText` exacto, `className` con `toBe` y un único hijo, así que «Sin esterilizar» no lo satisface «Esterilizado».
+- **O2, cerrado.** P13, Z1 y Z2 dan rojo. R4.3 queda candado en sus dos nodos, su orden y su «fuera de la tarjeta».
+- **O3, cerrado.** F17 da rojo en un `it` de `#168 R9`, sin tocar los de `#113 R3`, como manda R9.3.
+- **Sin huecos nuevos.** El `it` de E3.b arma `mockRequestPhotoUploadUrl` sin resetearlo después, igual que el `it` vivo `keeps the old photo…` (`:612-627`). No contamina: el `beforeEach` global (`:178-181`) devuelve el picker a «cancelado» en cada test, así que nadie vuelve a llamar a la subida. `#72 R3` sigue verde. O4 y las N4, N12 y N14 quedan fuera por decisión escrita de E3. No las cuento.
+
+### Lista cerrada (punto 6)
+Corrí desde la raíz, sobre `824c67b8`, el pathspec del cierre: `git diff --name-only b082f6e5 824c67b8 -- . ':!feature_list.json' ':!progress/current.md' ':!progress/handoff_mobile-tab-headers-canvas.md' ':!specs/mobile-tab-headers-canvas/requirements.md' ':!specs/mobile-tab-headers-canvas/design.md' ':!specs/mobile-tab-headers-canvas/tasks.md' ':!progress/review_mobile-tab-headers-canvas.md'`.
+- Da **15 ficheros**, idénticos (`diff` vacío) a la misma orden sobre `53f0e8f9` y a la lista del impl tras c36.
+- c37 (`824c67b8`) solo toca el impl (`commit --only`).
+- c36 (`ffc73b59`) toca exactamente `traceability.md` y el impl.
+
+### init.sh (punto 4 de la plantilla; no lo relancé)
+Lo corrió el leader con permiso del humano. `init168-r13.head` = `824c67b8`. El log termina en «✅ Todo verde. Listo para trabajar.», que init.sh solo imprime con todos los pasos verdes. No hay fichero de exit; el exit 0 lo da el leader. Líneas decisivas:
+```
+58:    ✅ Build exitoso
+219:   Test Suites: 187 passed, 187 total
+220:   Tests:       1474 passed, 1474 total          (backend unit; igual que la ronda 1)
+232:   Test Suites: 2 passed, 2 total
+233:   Tests:       14 passed, 14 total              (infra)
+458/507/655: # pass 28 / 5 / 15, # fail 0           (harness node tests)
+38372: Test Suites: 99 passed, 99 total
+38373: Tests:       2843 passed, 2843 total          (mobile: 2833 de la ronda 1 + los 10 tests de E3, como predice §Recuentos tras E3)
+38377: ✅ Tests pasados
+38694: Test Suites: 3 skipped, 30 passed, 30 of 33 total
+38695: Tests:       8 skipped, 468 passed, 476 total  (backend e2e; igual que la ronda 1)
+38699: ✅ Tests e2e pasados
+38711: ✅ Lint sin errores                            (0 coincidencias de 'Failed to run|SIGKILL|Killed')
+38715: ✅ Typecheck sin errores
+38718: ✅ Todo verde. Listo para trabajar.
+```
+Los `ERROR` de Nest son ruido preexistente. Lo confirmé así:
+- Hay 7, todos del backend, que el delta no toca (0 ficheros).
+- Seis salen en los unit tests que ejercitan a propósito rutas de error. Son `AlertsEngineConsumerService` («malformed message body»), `PositionsConsumerService` y 4 de `PollerService`.
+- Uno sale en un e2e: `DrizzleQueryError` por la FK `pet_users_user_id_users_id_fk`.
+- El recuento por emisor es idéntico al de `review168/init.log`, el log de la ronda 1 sobre `53f0e8f9`.
+
+El aviso «A worker process has failed to exit gracefully» (38370) es el preexistente de todo ALL móvil.
+
+### Gates humanos (punto 8): fuera de este veredicto
+Este veredicto no cubre los gates humanos. Siguen **sin marcar** y no los toqué:
+- las cuatro firmas `- [ ] Enmienda #168 aprobada por humano` (B1-B4), en `specs/mobile-health-make-parity/requirements.md:622`, `specs/mobile-pet-hero-header/requirements.md:575`, `specs/mobile-kcal-consumed-bar/requirements.md:497` y `docs/ui-guidelines.md:495`. Al firmarlas, con `X` mayúscula: la sonda A3 de la ronda 1 muestra que el candado de R11 se pone rojo con `[x]`;
+- el smoke R13, S1-S10 en dev build de Android.
+
+La feature no puede pasar a `done` hasta que el humano cierre las dos cosas.
+
+### Observaciones
+Ninguna bloqueante.
+1. `tasks.md` §Bloque O deja O1-O8 en `[ ]`. Es coherente con el resto del fichero: 0 casillas marcadas en todos los bloques. No lo cuento como fallo.
+2. Lo que queda del árbol de wt-168 es este fichero, sin commitear. `git status --short` = ` M progress/review_mobile-tab-headers-canvas.md`.
+
+**Veredicto ronda 2: APROBADO, HEAD `824c67b8`.** El gate del reviewer queda cerrado. Faltan las firmas B1-B4 y el smoke R13 del humano.
