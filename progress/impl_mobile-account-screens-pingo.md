@@ -802,3 +802,81 @@ Su transcripción se guarda en `/tmp/167-k5.txt` y el resultado posterior al com
 En este cierre no se lanzó init.sh ni se hizo push, PR o merge. El handoff editado por el leader queda sin commit. La casilla de la enmienda sigue sin marcar. R15: **pendiente (humano)**.
 
 Desviación adicional autorizada: `--runInBand` únicamente en K3, tras fallar el nuevo ALL literal con un timeout y dos consultas. Las paradas previas y sus salidas exactas permanecen en el historial de este informe.
+
+## Enmienda E1
+
+H1: `b62267407dad091de3e8ed9c0f7042cdaa983eb0`. Worktree: `/home/claude/sites/Pet-Tracker-wt-167`; branch: `feature/167-mobile-account-screens-pingo`.
+
+### E0
+
+```text
+/home/claude/sites/Pet-Tracker-wt-167/mobile-pet-tracker
+feature/167-mobile-account-screens-pingo
+b62267407dad091de3e8ed9c0f7042cdaa983eb0
+0
+git merge-base --is-ancestor 108bd291 HEAD: exit=0
+git diff --quiet 108bd291 HEAD -- .: exit=0
+test ! -e .expo/types/router.d.ts: exit=0
+```
+
+`git apply --check`: login, register, reset-password, s1, s2, s3, s4, s5 y s6 dieron `exit=0`.
+
+```text
+E0 BASE: exit=0
+Test Suites: 3 passed, 3 total
+Tests:       70 passed, 70 total
+it estáticos: login=17, register=19, reset-password=23; its-ok
+```
+
+Anclas: describe e it existentes de R6, R7 y R10 dieron `1`; los it nuevos de R6, R7 y R10 dieron `0`.
+
+### E1–E6
+
+| Commit | Requisito y tipo | Mensaje | `Tests:` literal | `●` / `Unable to find` | Typecheck y lint |
+|---|---|---|---|---|---|
+| `b8577bfc` | R6 rojo | `test(mobile): #167 E1 rojo, candados de login con la mutación versionada (R6)` | `Tests:       4 failed, 20 passed, 24 total` | 4 / 0; `toEqual` ×3, `toBe` ×1 | exit=0 / exit=0, vacío |
+| `743e2591` | R6 verde | `fix(mobile): #167 E1 verde, login restaurado desde 108bd291 (R6)` | `Tests:       24 passed, 24 total` | — | exit=0 / exit=0, vacío |
+| `3636fcb1` | R7 rojo | `test(mobile): #167 E1 rojo, candados del registro con la mutación versionada (R7)` | `Tests:       2 failed, 21 passed, 23 total` | 2 / 0; `toBe` ×2 | exit=0 / exit=0, vacío |
+| `7c33bc15` | R7 verde | `fix(mobile): #167 E1 verde, registro restaurado desde 108bd291 (R7)` | `Tests:       23 passed, 23 total` | — | exit=0 / exit=0, vacío |
+| `1bb945c1` | R10 rojo | `test(mobile): #167 E1 rojo, cabeceras y error de nueva contraseña con la mutación versionada (R10)` | `Tests:       4 failed, 29 passed, 33 total` | 4 / 0; `toEqual` ×3, `toBeNull` ×1 | exit=0 / exit=0, vacío |
+| `edecd414` | R10 verde | `fix(mobile): #167 E1 verde, nueva contraseña restaurada desde 108bd291 (R10)` | `Tests:       33 passed, 33 total` | — | exit=0 / exit=0, vacío |
+
+Los seis commits se hicieron en ese orden. Cada rojo versiona sus tests con la mutación indicada; cada verde restaura producción desde `108bd291`.
+
+### S1–S6
+
+| Sonda | `Tests:` literal | Único fallo | `Unable to find` | `limpio` |
+|---|---|---|---:|---:|
+| S1 | `Tests:       1 failed, 22 passed, 23 total` | `#167 R7: Pingo en la cabecera del registro › #167 R7: campos, errores, términos y envío cuelgan del scroll` | 0 | 0 |
+| S2 | `Tests:       1 failed, 22 passed, 23 total` | `#167 R7: Pingo en la cabecera del registro › #167 R7: campos, errores, términos y envío cuelgan del scroll` | 0 | 0 |
+| S3 | `Tests:       1 failed, 22 passed, 23 total` | `#167 R7: Pingo en la cabecera del registro › #167 R7: campos, errores, términos y envío cuelgan del scroll` | 0 | 0 |
+| S4 | `Tests:       1 failed, 22 passed, 23 total` | `#167 R7: Pingo en la cabecera del registro › #167 R7: campos, errores, términos y envío cuelgan del scroll` | 1: `Unable to find an element with testID: register-country-error` | 0 |
+| S5 | `Tests:       1 failed, 32 passed, 33 total` | `#167 R10: Pingo y tarjeta de estado en nueva contraseña › #167 R10: el éxito conserva la cabecera del formulario` | 0 | 0 |
+| S6 | `Tests:       1 failed, 22 passed, 23 total` | `#167 R7: Pingo en la cabecera del registro › #167 R7: campos, errores, términos y envío cuelgan del scroll` | 0 | 0 |
+
+### EK1–EK5
+
+```text
+EK1: its-ok
+EK2: exit=0
+Test Suites: 13 passed, 13 total
+Tests:       443 passed, 443 total
+EK3 espera: fin-espera
+EK3 ALL: exit=0
+Test Suites: 99 passed, 99 total
+Tests:       2851 passed, 2851 total
+typecheck: exit=0
+lint: exit=0; vacio=0
+git log H1..HEAD antes de la documentación: 6
+git diff --quiet 108bd291 HEAD -- las tres pantallas: exit=0
+```
+
+E7 actualizó solo las filas R6, R7 y R10 de traceability.md (13, 6 y 14 tests). Commit: `2a413a46` `docs(mobile-account-screens-pingo): #167 E1 trazabilidad`.
+
+EK5 se ejecuta inmediatamente después del commit de este informe, como indica el bloque; sus dos salidas se dejan en la respuesta de cierre para no requerir un commit adicional del informe.
+
+Skills cargadas: `building-native-ui`, consultada para las pautas de Expo del cliente móvil; `appllama-app-design-skill`, cargada según `docs/ui-guidelines.md` para seguir los criterios móviles del repositorio. No se modificó UI de producción en esta enmienda.
+
+Desviaciones: ninguna. La guarda EK3 encontró procesos en otros worktrees, esperó hasta que terminaran y produjo `fin-espera` sin reintentos ni cambios al comando.
+
+R15: **pendiente (humano)**.
