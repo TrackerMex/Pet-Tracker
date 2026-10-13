@@ -24,6 +24,7 @@ tags: [harness, spec, mobile, ui]
 | R14 | pendiente | pendiente |
 | R15 | pendiente | pendiente |
 | R16 | pendiente (gate humano: casilla de requirements §Aprobación) | n/a |
+| R17 | pendiente | pendiente |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente", salvo R16, que cierra el humano.
 Convención de commit: `feat(mobile): <desc> (#173 R1)`. Los rojos van en `test(mobile): … (#173 Rn)`.

@@ -39,6 +39,11 @@ Se rige por `docs/ui-guidelines.md` (carta de UI).
   - P6: la fila del collar muestra un estado (vinculado / sin collar) y no el modelo.
   - El chip de sexo se localiza.
   - Se autorizan cambios estructurales en Perfil.
+  - **Píxel exacto** (2026-10-13, cerrada en §Preguntas abiertas): Perfil queda con las medidas del artboard
+    del canvas, con los mismos tokens y clases que #174 (Alertas). Directiva literal del humano: «si, dale
+    aclara en las otras sesiones que el diseño final debe de quedar como el artifac». Lo ejecutan R2.3,
+    R4.2, R6, R7.2, R8.2, R11.5, R14.5 y R17. Las diferencias que quedan están en §Fuera de alcance, cada
+    una con su causa.
 - **Convenciones de esta spec**:
   - Las rutas de código son relativas a `mobile-pet-tracker/`. Las rutas `specs/…`, `docs/…` y
     `feature_list.json` son relativas a la raíz del repo.
@@ -97,6 +102,20 @@ Comandos desde `mobile-pet-tracker/`. «Al cerrar» es el valor que debe dar el 
 | M35 | `ls assets/fonts/ \| grep -c 'Inter-'` | 5 | 6 | R1 |
 | M36 | `grep -cF 'border-2 border-accent bg-accent-soft p-1' src/components/pet-switcher.tsx` | 1 | 1 | — (default intacta, R4) |
 | M37 | `grep -cF 'toBe(33 + 1 + 1 - 1 - 1 + 1 + 1 - 1 + 4 + 1);' src/__tests__/consistency-classnames.test.ts` | 1 | 0 | R15 |
+| M38 | `grep -cF -- '--text-13: 13px;' src/theme/global.css` | 0 | 1 | R2 |
+| M39 | `grep -cF -- '--text-26: 26px;' src/theme/global.css` | 0 | 1 | R2 |
+| M40 | `grep -cF -- '--text-2xs: 10px;' src/theme/global.css` | 1 | 1 | — (punto de inserción de R2.3) |
+| M41 | `grep -cF 'padding: 24,' src/screens/profile/index.tsx` | 1 | 0 | R17 |
+| M42 | `grep -cF 'gap: 16,' src/screens/profile/index.tsx` | 1 | 0 | R17 |
+| M43 | `grep -cF 'padding: 20,' src/screens/profile/index.tsx` | 0 | 1 | R17 |
+| M44 | `grep -cF 'gap: 14,' src/screens/profile/index.tsx` | 0 | 1 | R17 |
+| M45 | `grep -cF 'text-2xl' src/screens/profile/index.tsx` | 1 | 0 | R6 |
+| M46 | `grep -cF 'py-3' src/screens/profile/index.tsx` | 2 | 0 | R8, R11 |
+| M47 | `grep -cF 'size-10' src/screens/profile/index.tsx` | 1 | 0 | R11 |
+| M48 | `grep -cF 'text-lg font-bold text-foreground' src/screens/profile/index.tsx` | 1 | 0 | R11 |
+| M49 | `grep -cF 'h-12 w-full rounded-xl' src/screens/profile/index.tsx` | 1 | 0 | R11 |
+| M50 | `grep -cF '**Excepción nombrada (fidelidad al canvas, 2026-10-13)**' ../docs/conventions.md` | 0 | 1 | R14 |
+| M51 | `grep -cF '**Excepción nombrada (fidelidad al canvas, 2026-10-13)**' ../docs/ui-guidelines.md` | 0 | 1 | R14 |
 
 Notas de medida:
 
@@ -115,6 +134,9 @@ Notas de medida:
   `alert-detail` (M17, M37).
 - **Si #171 mergea antes que #173**: la base se vuelve a medir en H0 y se conserva el **delta** de #173
   (R15).
+- **M50 y M51 con #174 o #175 delante**: las dos excepciones de R14.5 las comparten #173, #174 y #175, y las
+  lleva quien mergea primero. Si en H0 ya dan `1`, el paso de R14.5 no hace nada y el valor al cerrar sigue
+  siendo `1`.
 
 ## Requisitos funcionales
 
@@ -141,7 +163,7 @@ comparan escritas en el propio test, nunca importando una constante de producci�
 
   El describe `R3` existente y su array `interFonts` no se tocan.
 
-### R2 — Radios `hero` y `tile` (F0, D2)
+### R2 — Radios `hero` y `tile` y tamaños de letra `13` y `26` (F0, D2, píxel exacto)
 
 - **R2.1** THE SYSTEM SHALL declarar `--radius-hero: 28px;` y `--radius-tile: 18px;` en el bloque `@theme` de
   `src/theme/global.css`, justo después de `--radius-card: 20px;`.
@@ -150,10 +172,28 @@ comparan escritas en el propio test, nunca importando una constante de producci�
   - `rounded-hero`: exactamente en `components/card.tsx` (variante `hero`, R3) y
     `screens/profile/index.tsx` (`profile-hero-skeleton`, R6);
   - `rounded-tile`: exactamente en `screens/profile/index.tsx` (`ProfileTile`, R10).
+- **R2.3** THE SYSTEM SHALL declarar `--text-13: 13px;` y `--text-26: 26px;` en el bloque `@theme` de
+  `src/theme/global.css`, justo después de `--text-2xs: 10px;` y en ese orden.
+  - No se declara `--text-13--line-height` ni `--text-26--line-height`: la clase solo fija `fontSize`
+    (spike de `design.md` §5).
+  - Los tamaños de la escala de Tailwind conservan su clase: `text-xs` 12, `text-sm` 14, `text-base` 16,
+    `text-lg` 18, `text-2xl` 24 y `text-3xl` 30.
+  - Las clases arbitrarias (`text-[13px]`) siguen prohibidas (R15.2).
+- **R2.4** THE SYSTEM SHALL usar las clases nuevas solo en `screens/profile/index.tsx` entre los ficheros de
+  producción (mismo alcance que R2.2):
+  - `text-26`: en `profile-pet-name` (R6.1);
+  - `text-13`: en `me-avatar-initials` (R11.5).
 - **Tests**:
   - `src/theme/__tests__/global-css.test.ts`, describe nuevo `#173 R2: tokens de radio hero y tile`. Usa el
     mismo parser que ya verifica `'radius-card': '20px'` y comprueba
     `toMatchObject({ 'radius-hero': '28px', 'radius-tile': '18px' })`.
+  - Mismo fichero, describe nuevo `#173 R2.3: tamaños de letra 13 y 26`. Con el mismo parser comprueba
+    `toMatchObject({ 'text-13': '13px', 'text-26': '26px' })`. Se escribe en el rojo de T2.
+  - `src/__tests__/profile-canvas-fidelity.test.ts`, describe `#173 R2.4: inventario de tamaños nuevos`.
+    Compara la lista de ficheros de producción que casan `/\btext-26\b/` y `/\btext-13\b/` con
+    `['screens/profile/index.tsx']`.
+    - El `it` de `text-26` se escribe en el rojo de R6.
+    - El de `text-13` se escribe en el rojo de R11.
   - `src/__tests__/profile-canvas-fidelity.test.ts` (nuevo), describe `#173 R2: inventario de radios nuevos`.
     Compara la lista de ficheros que casan `/\brounded-hero\b/` y `/\brounded-tile\b/` con las del R2.2,
     ordenadas.
@@ -203,8 +243,10 @@ comparan escritas en el propio test, nunca importando una constante de producci�
     - conserva `testID="pet-chip-<id>"`, `accessibilityRole="button"`, `accessibilityLabel={pet.name}`,
       `accessibilityState={{ selected }}` y el `onPress` que llama a `onSelect(pet.id)`;
     - `className`:
-      - seleccionado: `'rounded-full border-2 border-accent p-0.5'`;
-      - no seleccionado: `'rounded-full border-2 border-transparent p-0.5'`;
+      - seleccionado: `'rounded-full border-2 border-accent p-0.75'`;
+      - no seleccionado: `'rounded-full border-2 border-transparent p-0.75'`;
+      - el anillo mide 3 pt de hueco más 2 pt de borde, como el artboard (Salud dibuja
+        `box-shadow: 0 0 0 3px` del fondo y `0 0 0 5px` del accent);
     - tiene **exactamente un** hijo: el `View` `testID="pet-avatar-<id>"`.
   - **El `View` `pet-avatar-<id>`**:
     - `className` `` `size-10 items-center justify-center overflow-hidden rounded-full ${CATEGORY_SLOTS[slot].surface}` ``,
@@ -278,7 +320,8 @@ comparan escritas en el propio test, nunca importando una constante de producci�
   es `'rounded-hero bg-surface-secondary p-4.5 items-center gap-2.5'` y tiene **exactamente tres** hijos, en
   orden:
   1. `View` `testID="profile-pet-avatar-ring"` con `className="relative rounded-full border-4 border-surface"`;
-  2. `Text` `profile-pet-name`, sin cambios (`text-2xl font-black text-foreground`);
+  2. `Text` `profile-pet-name` con `className="text-26 font-black text-foreground"` (antes `text-2xl`; 26 pt
+     del artboard, R2.3);
   3. `View` `profile-pet-chips` (R7).
 - **R6.2** THE SYSTEM SHALL dar al anillo exactamente dos hijos:
   - el `PetAvatar` actual (`size={96}`, `cacheKey={pet.id}`, `testID="profile-pet-avatar"`);
@@ -287,7 +330,8 @@ comparan escritas en el propio test, nunca importando una constante de producci�
       `accessibilityLabel={t('profile.changePhoto')}` (única llamada a esa clave);
     - `accessibilityState={{ disabled: photoUploading }}`, `disabled={photoUploading}` y
       `hitSlop={TOUCH_SLOP}`;
-    - `className="absolute bottom-0 right-0 size-8.5 items-center justify-center rounded-full border-3 border-surface-secondary bg-accent"`;
+    - `className="absolute -bottom-0.5 -right-0.5 size-8.5 items-center justify-center rounded-full border-3 border-surface-secondary bg-accent"`
+      (sobresale 2 pt del anillo, como en el artboard);
     - un único hijo `<Camera size={16} color={accentForeground} />`.
   - El `Button` `change-photo` anterior (`rounded-xl bg-accent-soft`, `variant="secondary"`) desaparece.
 - **R6.3** IF la subida falla, THE SYSTEM SHALL pintar `photo-upload-error` (sin cambios de clase ni de copy)
@@ -320,13 +364,13 @@ comparan escritas en el propio test, nunca importando una constante de producci�
   indexado.
 - **R7.2** THE SYSTEM SHALL pintar los chips así:
   - contenedor `profile-pet-chips`: `className="flex-row flex-wrap justify-center gap-1.5"`;
-  - cada chip: `className` `` `rounded-full px-2.5 py-1 ${surface}` ``;
+  - cada chip: `className` `` `rounded-full px-2.5 py-1.25 ${surface}` `` (5 × 10 pt del artboard);
   - el texto de cada chip: `` `text-xs font-extrabold ${ink}` ``.
 
   Huecos, testIDs, orden y reglas de los otros tres chips (esterilizado, edad, peso) no cambian.
 - **Tests**: `src/screens/profile/index.test.tsx`, describe `#168 R5` reescrito como
   `#168 R5 (enmendado por #173 R7): chips pastel con sexo localizado`.
-  - El helper `expectProfileChip168` pasa a esperar `rounded-full px-2.5 py-1 <surface>` y
+  - El helper `expectProfileChip168` pasa a esperar `rounded-full px-2.5 py-1.25 <surface>` y
     `text-xs font-extrabold <ink>`.
   - Un `it` por combinación:
 
@@ -364,7 +408,10 @@ comparan escritas en el propio test, nunca importando una constante de producci�
 - **R8.2** THE SYSTEM SHALL cambiar el `Text` de valor de `InfoRow`:
   - clase por defecto: `'flex-1 text-right text-sm font-bold text-foreground'`;
   - nueva prop `tone?: 'default' | 'accent'`; con `tone="accent"`, la clase es
-    `'flex-1 text-right text-sm font-bold text-accent-strong'`.
+    `'flex-1 text-right text-sm font-bold text-accent-strong'`;
+  - el `View` raíz de `InfoRow` pasa de `py-3` a `py-2.75` (11 pt del artboard):
+    - sin `isLast`: `'flex-row items-center justify-between gap-4 border-b border-separator py-2.75'`;
+    - con `isLast`: `'flex-row items-center justify-between gap-4 py-2.75'`.
 
   El separador por `isLast` y la etiqueta `text-sm font-normal text-muted` no cambian.
 - **R8.3** THE SYSTEM SHALL pintar la fila del collar con la etiqueta `t('profile.gpsDevice')` (sin cambio):
@@ -378,6 +425,8 @@ comparan escritas en el propio test, nunca importando una constante de producci�
   - Con collar: texto `Vinculado` (es) / `Linked` (en) con la clase accent. Sin collar: `Sin collar` /
     `No collar` con la clase foreground. Un `it` por idioma y rama.
   - `queryByText('PetTrack One')` es `null`.
+  - La fila de raza (`(await findByText('Raza')).parent`) y la de última señal
+    (`getByText('Última señal').parent`) tienen, con `toBe`, las dos clases de fila de R8.2.
   - El describe `#61 R9` se sustituye por `#61 R9 (enmendado por #173 R8): pet-info-card no lleva etiqueta de sección`,
     que comprueba lo mismo que este R8.
   - `R2: estructura Figma` actualiza:
@@ -487,8 +536,8 @@ comparan escritas en el propio test, nunca importando una constante de producci�
 
 ### R11 — Tarjeta de cuenta `flat`: interruptor de tema y fila de idioma
 
-- **R11.1** THE SYSTEM SHALL renderizar `<Card variant="flat" testID="me-card" className="pt-3">`.
-  - Clase efectiva: `'rounded-card border border-border bg-surface px-3.5 py-1 pt-3'`.
+- **R11.1** THE SYSTEM SHALL renderizar `<Card variant="flat" testID="me-card">` sin `className`.
+  - Clase efectiva: `'rounded-card border border-border bg-surface px-3.5 py-1'`.
   - No lleva etiqueta de sección: `t('profile.account')` desaparece del fichero.
   - Sus hijos son, en orden:
 
@@ -499,10 +548,10 @@ comparan escritas en el propio test, nunca importando una constante de producci�
     | otro `kind` que no sea `'unauthorized'` | `[me-card-state, theme-row, language-toggle]` |
     | `kind === 'unauthorized'` | `[theme-row, language-toggle]` |
 
-  - `me-identity`, `me-avatar`, `me-card-skeleton` y `me-card-state` no cambian. #168 R7 sigue sin cambios.
+  - `me-identity`, `me-avatar`, `me-card-skeleton` y `me-card-state` toman las medidas del artboard (R11.5).
 - **R11.2** THE SYSTEM SHALL pintar `theme-row` así:
   - `View` `testID="theme-row"`,
-    `className="flex-row items-center justify-between gap-4 border-t border-separator py-3"`;
+    `className="flex-row items-center justify-between gap-4 border-t border-separator py-2.5"`;
   - **exactamente dos** hijos:
     - `Text` `className="text-sm font-semibold text-foreground"` con la etiqueta fija;
     - `Switch` de `heroui-native` con:
@@ -516,7 +565,7 @@ comparan escritas en el propio test, nunca importando una constante de producci�
 - **R11.3** THE SYSTEM SHALL pintar `language-toggle` como `Pressable` con:
   - `testID="language-toggle"`, `accessibilityRole="button"`;
   - `accessibilityLabel={changeLanguageLabel}` y `accessibilityValue={{ text: currentLanguageName }}`;
-  - `className="flex-row items-center justify-between gap-4 border-t border-separator py-3"`;
+  - `className="flex-row items-center justify-between gap-4 border-t border-separator py-2.5"`;
   - `onPress={() => setLanguage(language === 'es' ? 'en' : 'es')}`;
   - **exactamente dos** hijos:
     - `Text` `className="text-sm font-semibold text-foreground"` con `changeLanguageLabel`;
@@ -530,6 +579,24 @@ comparan escritas en el propio test, nunca importando una constante de producci�
   El valor es el idioma **actual**, no el de destino.
 - **R11.4** THE SYSTEM SHALL dejar `profile-sign-out` donde está y sin cambios. #87 R19 sigue con
   `'screens/profile/index.tsx': 2,`.
+- **R11.5** THE SYSTEM SHALL pintar la identidad y sus estados con las medidas del artboard: filas con 10 pt
+  de padding vertical, avatar de 34 pt, iniciales de 13, nombre de 14 y correo de 12.
+  - No cambian: los testIDs, los textos, la regla que decide si se pinta `me-avatar`, sus props
+    `accessibilityElementsHidden` e `importantForAccessibility` ni el orden de hijos.
+  - `me-identity` tiene uno o dos hijos (`me-avatar` si se pinta, y `me-identity-text`); `me-avatar` tiene
+    **exactamente un** hijo (`me-avatar-initials`); `me-identity-text` tiene **exactamente dos** hijos
+    `Text` (nombre y correo).
+
+  | Nodo | `className` |
+  |---|---|
+  | `me-identity` | `flex-row items-center gap-2.5 py-2.5` |
+  | `me-avatar` | `size-8.5 items-center justify-center rounded-full bg-default` |
+  | `me-avatar-initials` | `text-13 font-extrabold text-foreground` |
+  | `me-identity-text` | `flex-1` |
+  | hijo 0 de `me-identity-text` (nombre) | `text-sm font-extrabold text-foreground` |
+  | hijo 1 de `me-identity-text` (correo) | `text-xs font-normal text-muted` |
+  | `me-card-skeleton` | `my-2.5 h-9 w-full rounded-xl` (efectiva `'skeleton__root my-2.5 h-9 w-full rounded-xl'`) |
+  | `me-card-state` | `py-2.5 font-normal text-muted` |
 - **Tests**: `src/screens/profile/index.test.tsx`, describe nuevo `#173 R11: cuenta en Card flat con Switch e idioma`.
   - Un `it` por fila de la tabla de R11.1 con `children` exactos.
   - **Tema**:
@@ -547,6 +614,14 @@ comparan escritas en el propio test, nunca importando una constante de producci�
   - Los tres `it` de `R4: toggle persiste` se conservan y pasan a `await fireEvent.press`.
   - `#65 R14` se reescribe como `#65 R14 (enmendado por #173 R11)`: tras pulsar, `language-value` repinta el
     idioma nuevo sin reiniciar.
+  - `theme-row` y `language-toggle` se comprueban con `toBe` sobre las clases de R11.2 y R11.3.
+  - **Identidad (R11.5)**: el describe `#168 R7` se reescribe como
+    `#168 R7 (enmendado por #173 R11): la identidad de la cuenta toma las medidas del artboard`.
+    - Conserva sus ramas (con y sin `me-avatar`) y su técnica (`profileChild`, `includeHiddenElements: true`
+      para `me-avatar` y `me-avatar-initials`).
+    - Cambia las clases que asevera con `toBe` por las de la tabla de R11.5.
+    - Suma un `it` para `me-card-skeleton` (`me.data` `undefined`) y otro para `me-card-state` (otro `kind`),
+      cada uno con `toBe` sobre su clase.
 
 ### R12 — Entrada escalonada (rise)
 
@@ -630,11 +705,11 @@ comparan escritas en el propio test, nunca importando una constante de producci�
   | Fichero | `<FEATURE>` | `<QUÉ CAMBIA>` |
   |---|---|---|
   | `docs/ui-guidelines.md` | `ui-guidelines` | ver «Cambios en la carta» |
-  | `specs/mobile-pets-profile/requirements.md` | `mobile-pets-profile` | `R2: estructura de Perfil (hero, rejilla, Card flat); R4: el tema se alterna con un Switch de etiqueta fija` |
+  | `specs/mobile-pets-profile/requirements.md` | `mobile-pets-profile` | `R2: estructura de Perfil (hero, rejilla, Card flat) y métricas del artboard (padding 20, gap 14); R4: el tema se alterna con un Switch de etiqueta fija` |
   | `specs/mobile-ui-legibility-polish/requirements.md` | `mobile-ui-legibility-polish` | `#61 R9: pet-info-card y me-card dejan de llevar etiqueta de sección` |
   | `specs/mobile-ui-consistency-polish/requirements.md` | `mobile-ui-consistency-polish` | `#62 R4: la escala suma rounded-hero y rounded-tile; #62 R7: Perfil deja ChevronRight; #62 R14: Perfil aplica CONTINUOUS_CORNER una vez (ProfileTile)` |
   | `specs/mobile-ui-language/requirements.md` | `mobile-ui-language` | `#65 R14: la fila de idioma muestra el idioma actual como valor` |
-  | `specs/mobile-tab-headers-canvas/requirements.md` | `mobile-tab-headers-canvas` | `#168 R4: profile-pet-card pasa a Card hero con anillo y cámara; #168 R5: chips con sexo localizado y font-extrabold; #168 R6: las filas pasan a tiles en rejilla 2×2` |
+  | `specs/mobile-tab-headers-canvas/requirements.md` | `mobile-tab-headers-canvas` | `#168 R4: profile-pet-card pasa a Card hero con anillo y cámara; #168 R5: chips con sexo localizado y font-extrabold; #168 R6: las filas pasan a tiles en rejilla 2×2; #168 R7: la identidad de la cuenta toma las medidas del artboard` |
   | `specs/mobile-device-pairing/requirements.md` | `mobile-device-pairing` | `R10: la fila de configuración GPS pasa al tile «Collar GPS»` |
   | `specs/mobile-geofences/requirements.md` | `mobile-geofences` | `#41 R9: la fila de zonas seguras pasa a tile de la rejilla` |
   | `specs/mobile-chunky-cta/requirements.md` | `mobile-chunky-cta` | `#166 R2: el primario de Perfil pasa a cápsula tonal sin labio (19 → 18 primarios)` |
@@ -642,6 +717,11 @@ comparan escritas en el propio test, nunca importando una constante de producci�
 
 - **R14.2** Cambios en la carta (`docs/ui-guidelines.md`). THE SYSTEM SHALL editar el texto vigente
   además de añadir el bloque:
+  - **Regla 2** (tokens): se añade al final de la regla una línea propia con el texto
+    «Tamaños de letra fuera de la escala de Tailwind (fidelidad al canvas, #173): `--text-13: 13px`, `--text-26: 26px`; cada uno es token aunque se use una vez, porque la clase arbitraria está prohibida.»
+    - Si al arrancar ya existe una línea que empieza por «Tamaños de letra fuera de la escala de Tailwind»
+      (la puede traer #174 o #175), se añaden a su lista `--text-13: 13px` y `--text-26: 26px`, sin duplicar
+      los que ya estén, en vez de crear otra.
   - **§12 Escala de radios**: declara cinco radios. A los tres actuales se suman:
     - `rounded-hero` (28 px): tarjeta hero de Perfil, vía `Card variant="hero"`;
     - `rounded-tile` (18 px): tiles de acceso de Perfil.
@@ -678,9 +758,30 @@ comparan escritas en el propio test, nunca importando una constante de producci�
   `#173 R14: la carta declara los cambios`, con `toContain` sobre:
   - `rounded-hero` y `rounded-tile` dentro de la §12;
   - `bg-tab-pill` dentro de la §13;
-  - `hero | flat`.
+  - `hero | flat`;
+  - `--text-13: 13px` y `--text-26: 26px`, sobre el texto completo de la carta;
+  - los dos textos de R14.5, cada uno en su fichero, con el espacio en blanco normalizado en los dos lados
+    (`s.replace(/\s+/g, ' ')`): el texto puede estar partido en varias líneas.
 
   La frase de `pet.sex` la asevera R7.3.
+- **R14.5** THE SYSTEM SHALL añadir la excepción de márgenes que comparten #173, #174 y #175. La lleva quien
+  mergea primero: si en H0 el ancla ya da `1`, el paso no hace nada. Al cerrar, cada ancla da `1` (M50, M51).
+  - **`docs/conventions.md`**, viñeta «Dimensiones de pantalla uniformes»: párrafo nuevo detrás del párrafo
+    A11 (el que termina en `` `reset-password`. ``) y antes de la línea en blanco que precede a
+    `## Enmienda #67 — cabecera fotográfica compartida`. Va precedido de una línea en blanco y con sangría de
+    dos espacios. Texto literal:
+
+    «**Excepción nombrada (fidelidad al canvas, 2026-10-13)**: una pantalla llevada al canvas aprobado (directiva del humano «el diseño final debe de quedar como el artifact») usa las métricas de su artboard: padding lateral 20 en vez de 24 y el `gap` que el artboard dibuja. El resto de reglas de esta viñeta se mantiene; la spec de cada pantalla nombra sus valores.»
+  - **`docs/ui-guidelines.md`**, regla 6: párrafo nuevo detrás del párrafo A11 (el que termina en
+    `` `reset-password`. ``) y justo antes de `7. **Estados de carga**`. Va precedido de una línea en blanco
+    y con sangría de tres espacios. Texto literal:
+
+    «**Excepción nombrada (fidelidad al canvas, 2026-10-13)**: una pantalla llevada al canvas aprobado usa padding lateral 20 y el `gap` de su artboard; ver conventions.md §Dimensiones, misma excepción.»
+  - Se puede partir en varias líneas, pero el marcador en negrita
+    `**Excepción nombrada (fidelidad al canvas, 2026-10-13)**` queda entero en una línea: es el ancla de M50 y
+    M51.
+  - Ningún test existente lee el párrafo A11 de ninguno de los dos ficheros (medido en la base), así que no hay
+    candado que mover. La aserción es la de R14.4.
 
 ### R15 — Candados globales por delta y grep-limpio
 
@@ -702,6 +803,10 @@ comparan escritas en el propio test, nunca importando una constante de producci�
   | `#68 E1` (design-drift) | ver R7.3 | — |
   | `englishKeys` (language-provider) | ver R13.3 | −1 |
   | `R7_PROFILE` (ui-language) | ver R13.4 | 53 → 57 |
+  | `R2: estructura Figma`, `it` de métricas (profile) | ver R17 | 24/16 → 20/14 |
+  | `#168 R4` clase del nombre (profile) | ver R6.1: `text-2xl` → `text-26` | — |
+  | `#168 R5` helper `expectProfileChip168` (profile) | ver R7.2: `py-1` → `py-1.25` | — |
+  | `#168 R7` identidad de cuenta (profile) | ver R11.5 | — |
 
   Si #171 mergea antes y mueve alguno de estos candados, en H0 se vuelve a medir la base y se aplica el
   mismo delta. Las cifras «Base → cierre» de la tabla son las de `57a61544`.
@@ -716,7 +821,7 @@ comparan escritas en el propio test, nunca importando una constante de producci�
   `src/__tests__/profile-canvas-fidelity.test.ts`, describe `#173 R15: grep-limpio`. Ese describe
   comprueba que los tres ficheros no casan `/\[[^\]]*\]/` dentro de `className`, `/#[0-9a-fA-F]{3,8}\b/`,
   `/StyleSheet\.create/` ni `/\bshadow-/`. `card.tsx` sí usa `StyleSheet.flatten`, que está permitido.
-- **R15.3** THE SYSTEM SHALL dejar M1–M15 y M29–M36 con su valor «Al cerrar» de §1. El reviewer los mide con
+- **R15.3** THE SYSTEM SHALL dejar M1–M15, M29–M36 y M38–M51 con su valor «Al cerrar» de §1. El reviewer los mide con
   el mismo comando.
 
 ### R16 — Prueba de humo en dispositivo (gate humano)
@@ -733,29 +838,57 @@ comparan escritas en el propio test, nunca importando una constante de producci�
   7. El `Switch` alterna el tema con el fundido. La etiqueta no cambia.
   8. La fila de idioma muestra el idioma actual y lo alterna.
   9. Los títulos de los tiles, la cápsula y el idioma se ven en ExtraBold, distinguible de Bold.
+  10. Comparada lado a lado con el artboard Perfil del canvas a 390 pt de ancho, solo quedan las diferencias
+      de §Fuera de alcance.
 - Ninguna prueba contra AWS. La casilla vive en §Aprobación.
+
+### R17 — Contenedor de Perfil con las métricas del artboard (píxel exacto)
+
+- **R17.1** THE SYSTEM SHALL pasar al `contentContainerStyle` del `ScrollView` `screen-profile`
+  `{ padding: 20, gap: 14, paddingTop: insets.top + 12, paddingBottom: insets.bottom + 96 }`.
+  - Padding lateral 20 y hueco 14 entre bloques: los del artboard. Es la excepción nombrada de
+    `docs/conventions.md` (R14.5); las demás pantallas siguen con 24 / 16.
+  - `paddingTop` y `paddingBottom` no cambian: dependen del dispositivo y de la tab bar.
+- **Test**: `src/screens/profile/index.test.tsx`, describe `R2: estructura Figma`. El `it`
+  `'uses uniform dimensions and content-sized skeletons while loading'` se renombra a
+  `'uses the canvas artboard metrics (#173 R17) and content-sized skeletons while loading'` y su `toEqual`
+  pasa a `{ padding: 20, gap: 14, paddingTop: 52, paddingBottom: 120 }` (el doble de insets da 40 y 24). Las
+  dos aserciones de skeleton no cambian.
 
 ## Fuera de alcance
 
 Cada viñeta está clasificada como **delimitación** (diferencia consciente con el canvas) o **feature
 aparte**.
 
-- **Delimitación — espaciado**:
-  - el padding 24 / gap 16 del `contentContainerStyle` (estilo en línea existente) no se toca;
-  - las filas de cuenta usan `py-3` (12 pt), no los 11 del canvas;
-  - los chips usan `py-1` (4 pt), no los 5 del canvas.
-- **Delimitación — tamaños**:
-  - el nombre de la mascota se queda en `text-2xl` (24 pt), no en 26;
-  - la identidad de la cuenta (34/14/12 en el canvas) no cambia;
-  - #168 R7 sigue sin cambios.
-- **Delimitación — hero**:
-  - el anillo del avatar es `border-4` (4 pt), no 3;
-  - la cámara va en `bottom-0 right-0` y no a −2 pt;
-  - sin sombra en el avatar y sin token `--shadow`.
+Desde la decisión «Píxel exacto» (§0), espaciado, tamaños, anillo y cámara siguen el artboard. Lo que queda
+es esto:
+
+- **Delimitación — altura de línea**:
+  - las clases de la escala traen su `lineHeight` (16 en `text-xs`, 20 en `text-sm`) y los tokens de R2.3 no
+    fijan ninguno; el canvas hereda 1.4 del `body`;
+  - por eso la fila de identidad mide 56 pt y no 54, y los chips unos 26 y no unos 24,5;
+  - ningún elemento propio de Perfil fija en el artboard un `line-height` ni un `letter-spacing` propios, así
+    que no hay token de interlineado.
+- **Delimitación — paleta**: `--border` en claro es 0.07 en el canvas y 0.08 en la app. Igualarlo es un cambio
+  global de token, no de Perfil.
+- **Delimitación — controles**: el `Switch` (C10) sustituye a la casilla de 20 × 20 del canvas. La altura de
+  la fila la marca el control.
+- **Delimitación — switcher**: el artboard de Perfil no lo dibuja. El anillo de R4 ocupa sitio en RN (en el
+  canvas es `box-shadow`), así que los centros de dos avatares quedan a 56 pt y no a 46.
+- **Delimitación — márgenes verticales**: `paddingTop` (`insets.top + 12`) y `paddingBottom`
+  (`insets.bottom + 96`) dependen del dispositivo y de la tab bar, no del artboard (R17).
+- **Delimitación — hero**: sin sombra en el avatar.
+  - El canvas usa `box-shadow: var(--shadow)`: en claro `0 1px 2px rgba(13,17,23,0.04), 0 8px 24px
+    rgba(13,17,23,0.06)` y en oscuro `0 1px 2px rgba(0,0,0,0.4)`.
+  - Pediría un token por tema, y R15.2 prohíbe `shadow-*` en Perfil (D8).
 - **Delimitación — entrada**: escalonado de 60 ms y desplazamiento de 12 pt (`HomeEntrance`), no los 80 ms y
   14 pt del canvas.
 - **Delimitación — formato de tiempo**: `fmtAgo` de `screens/map` no se extrae a un módulo compartido. Perfil
   tiene su propia función, que comparte las claves `map.*`.
+- **Delimitación — estados no dibujados**: el aviso, «Cerrar sesión» y los estados de carga y de error no
+  están en el artboard. Usan las métricas de esta spec.
+- **Delimitación — cabecera y tab bar**: el título compartido de las pestañas (#168) y la tab bar no entran.
+  El `gap-3` de la fila de cabecera no se ve porque la fila usa `justify-between`.
 - **Feature aparte**:
   - Salud y Nutrición fieles al canvas;
   - el vidrio de la tab bar.
@@ -766,6 +899,14 @@ aparte**.
 Cada pregunta trae una recomendación. La casilla de reversión correspondiente está en §Aprobación: si el
 humano no la marca, rige la recomendación.
 
+- **Píxel exacto — cerrada (2026-10-13)**. Sin casilla: no se reabre.
+  - Pregunta al humano (AskUserQuestion): ¿alinear #173 con el criterio «Píxel exacto» de #174?
+  - Opción elegida, literal: «Píxel exacto también (Recommended)», con la descripción «Corrijo la spec de
+    #173 antes de que la firmes, reutilizando los mismos tokens o clases que use #174, para que Perfil y
+    Alertas queden con las mismas medidas.»
+  - Directiva literal: «si, dale aclara en las otras sesiones que el diseño final debe de quedar como el
+    artifac».
+  - Lo ejecutan R2.3, R4.2, R6, R7.2, R8.2, R11.5, R14.5 y R17.
 - **D4 — Color de avatar**: por índice o por hash del id. Recomendado: **por índice**
   (`i % 5`, R4.2). Es estable mientras el orden de `pets` lo sea y se puede probar con literales.
 - **D12/P10 — Cerrar sesión**: el canvas no lo muestra. Recomendado: **mantenerlo** tal cual (R11.4).

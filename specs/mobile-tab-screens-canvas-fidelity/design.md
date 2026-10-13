@@ -87,6 +87,57 @@ tags: [harness, spec, mobile, ui]
     componente nuevo.
   - Los índices son fijos para que el orden visual no dependa de si hay mascota.
 
+### Perfil píxel exacto (decisión del 2026-10-13)
+
+Fuente: el artboard Perfil del canvas aprobado (`Perfil.dc.html`, 390 pt de ancho). El esquema es el mismo
+que usan #174 y #175:
+
+1. **Tamaños de letra**: los de la escala de Tailwind conservan su clase. Los que caen fuera llevan un token
+   `--text-N: Npx;` en `@theme` (R2.3: `--text-13` y `--text-26`). Nada de clases arbitrarias.
+2. **Margen lateral y hueco**: 20 y el `gap` del artboard en el estilo del contenedor (R17), con la excepción
+   nombrada de `docs/conventions.md` y de la regla 6 de la carta (R14.5).
+3. **Espaciados fuera de la escala de 4**: clases fraccionarias de `--spacing` (4 × N), que el spike de §5
+   valida: `py-2.75` = 11, `py-1.25` = 5, `p-0.75` = 3 y `-bottom-0.5` = −2. Sin tokens.
+4. **Interlineado y tracking**: el artboard no fija ni `line-height` ni `letter-spacing` en ningún elemento
+   propio de Perfil, así que no hay tokens. La diferencia con el 1.4 que hereda el canvas está en
+   requirements §Fuera de alcance.
+5. **Radios**: `--radius-hero` y `--radius-tile` (R2). Un radio nuevo seguiría `--radius-<px>`; Perfil no
+   necesita más.
+
+**Tamaño de caja**: el canvas no lleva un reset global. El `span` del avatar es content-box (96 + 2 × 4 = 104
+por fuera) y los `<button>` son border-box (la cámara mide 34 por fuera con el borde de 3 dentro). RN siempre
+es border-box: el anillo `border-4` alrededor del `PetAvatar` de 96 da 104, y la cámara `size-8.5` con
+`border-3` da 34. Las dos coinciden.
+
+Elemento a elemento. «Cambios» cuenta las decisiones que cambia #173 sobre lo que ya fijaba esta spec; en los
+elementos repetidos se cuenta por hijo del contenedor, con un único molde para todos:
+
+| Elemento | Artboard | Clase o estilo | Cambios | R |
+|---|---|---|---|---|
+| Contenedor `screen-profile` | padding lateral 20, gap 14 | `padding: 20`, `gap: 14` (los insets no cambian) | 2 | R17 |
+| Cápsula «Añadir mascota» | — | la de R5 | 0 | R5 |
+| Switcher, cada `pet-chip-<id>` (un hijo por mascota) | anillo de 3 de hueco y 2 de borde | `p-0.75` (antes `p-0.5`) | 1 por hijo | R4.2 |
+| `profile-pet-card` | radio 28, padding 18, gap 10 | la variante `hero` de R3 con `items-center gap-2.5` | 0 | R6.1 |
+| `profile-pet-avatar-ring` | borde 4 | `border-4 border-surface` | 0 | R6.1 |
+| `change-photo` | 34 con borde 3, desplazado −2 | `-bottom-0.5 -right-0.5 size-8.5 … border-3` (antes `bottom-0 right-0`) | 2 | R6.2 |
+| `profile-pet-name` | 26, peso 900 | `text-26 font-black` (antes `text-2xl`) | 1 | R6.1 |
+| Cada chip de `profile-pet-chips` (hasta 4 hijos) | padding 5 × 10, texto 12 / 800 | `px-2.5 py-1.25` (antes `py-1`) | 1 por hijo | R7.2 |
+| `pet-info-card` | padding 4 × 14 | variante `flat` | 0 | R8.1 |
+| Cada `InfoRow` (4 hijos; el último sin borde) | padding vertical 11 | `py-2.75` (antes `py-3`) | 1 por hijo | R8.2 |
+| Tiles de la rejilla (4 hijos) | — | los de R10 | 0 | R10 |
+| `me-card` | padding 4 × 14 | variante `flat` sin `pt-3` | 1 | R11.1 |
+| `me-identity` | padding vertical 10, gap 10 | `gap-2.5 py-2.5` | 2 | R11.5 |
+| `me-avatar` | 34 | `size-8.5` | 1 | R11.5 |
+| `me-avatar-initials` | 13, peso 800 | `text-13 font-extrabold` | 2 | R11.5 |
+| `me-identity-text` (2 hijos) | sin hueco | `flex-1` (sin `gap-1`) | 1 | R11.5 |
+| Nombre (hijo 0) | 14, peso 800 | `text-sm font-extrabold` | 2 | R11.5 |
+| Correo (hijo 1) | 12, peso 400 | `text-xs font-normal text-muted` | 1 | R11.5 |
+| `me-card-skeleton` | — (no dibujado) | `my-2.5 h-9`: ocupa los 56 pt de la fila de identidad en RN | 2 | R11.5 |
+| `me-card-state` | — (no dibujado) | `py-2.5`, como una fila | 1 | R11.5 |
+| `theme-row` y `language-toggle` (2 hijos) | padding vertical 10 | `py-2.5` (antes `py-3`) | 1 por hijo | R11.2, R11.3 |
+
+La cabecera compartida de las pestañas (#168) y la tab bar no entran.
+
 ### Catálogo, tabla de copy y candados (R13, R15)
 
 - El catálogo baja de forma neta en 1 clave (−4 +3). La tabla `R7_PROFILE` sube 4 (−4 +8): además de las 3
@@ -137,16 +188,16 @@ Rutas relativas a `mobile-pet-tracker/` salvo las de `docs/` y `specs/`.
 |---|---|---|
 | `assets/fonts/Inter-ExtraBold.ttf` | nuevo (binario, OFL) | R1 |
 | `src/app/_layout.tsx` | `+1` entrada en `useFonts` | R1 |
-| `src/theme/global.css` | `--font-extrabold`, `--radius-hero`, `--radius-tile` | R1, R2 |
+| `src/theme/global.css` | `--font-extrabold`, `--radius-hero`, `--radius-tile`, `--text-13`, `--text-26` | R1, R2 |
 | `src/components/card.tsx` | variantes `hero` y `flat` | R3 |
 | `src/components/pet-switcher.tsx` | prop `variant`, rama `avatars` | R4 |
-| `src/screens/profile/index.tsx` | cápsula, hero, chips, info, `formatLastSignal`, `ProfileTile`, cuenta, entrada | R5–R12 |
+| `src/screens/profile/index.tsx` | cápsula, hero, chips, info, `formatLastSignal`, `ProfileTile`, cuenta, entrada, contenedor | R5–R12, R17 |
 | `src/i18n/catalog.ts` | −4 / +3 claves en `en` y `es` | R13 |
 | `src/theme/__tests__/font-registration.test.ts` | describe `#173 R1` | R1 |
-| `src/theme/__tests__/global-css.test.ts` | describe `#173 R2` | R2 |
+| `src/theme/__tests__/global-css.test.ts` | describes `#173 R2` y `#173 R2.3` | R2 |
 | `src/components/__tests__/card.test.tsx` | describe `#173 R3` | R3 |
 | `src/components/__tests__/pet-switcher.test.tsx` | describe `#173 R4` | R4 |
-| `src/screens/profile/index.test.tsx` | dobles (`mockPetSwitcher`, `mockHomeEntrance`, `Plus`, `Camera`) y describes R4–R12 nuevos o reescritos | R4–R12 |
+| `src/screens/profile/index.test.tsx` | dobles (`mockPetSwitcher`, `mockHomeEntrance`, `Plus`, `Camera`) y describes R4–R12 nuevos o reescritos; `it` de métricas de `R2: estructura Figma` | R4–R12, R17 |
 | `src/__tests__/profile-canvas-fidelity.test.ts` | nuevo: inventarios R2–R4, enmiendas R14, grep-limpio R15 | R2–R4, R14, R15 |
 | `src/__tests__/consistency-classnames.test.ts` | deltas #62 R7, #62 R14, #98 R10, #166 R2 | R10, R15 |
 | `src/__tests__/legibility-classnames.test.ts` | delta #61 R4 | R15 |
@@ -154,7 +205,8 @@ Rutas relativas a `mobile-pet-tracker/` salvo las de `docs/` y `specs/`.
 | `src/__tests__/ui-copy-table.ts` | `R7_PROFILE` −4 +8 | R13 |
 | `src/__tests__/ui-language.test.ts` | longitud `R7_PROFILE` | R13 |
 | `src/providers/__tests__/language-provider.test.tsx` | longitud del catálogo, describe `#173 R13` | R13 |
-| `docs/ui-guidelines.md` | §12, §13, decisión 4, viñeta de enums y bloque | R14 |
+| `docs/ui-guidelines.md` | regla 2, regla 6 (excepción), §12, §13, decisión 4, viñeta de enums y bloque | R14 |
+| `docs/conventions.md` | excepción nombrada en «Dimensiones de pantalla uniformes» (si no la trajo #174 o #175) | R14 |
 | `specs/mobile-ui-language/design.md` | 4 filas retiradas y sección §2.<n> | R13 |
 | `specs/{mobile-pets-profile,mobile-ui-legibility-polish,mobile-ui-consistency-polish,mobile-ui-language,mobile-tab-headers-canvas,mobile-device-pairing,mobile-geofences,mobile-chunky-cta,mobile-home-weekly-activity}/requirements.md` | bloque de enmienda al final | R14 |
 
@@ -237,3 +289,20 @@ artboard fija una altura de línea, y no donde no la fija.
 
 **Letter-spacing en em**: uniwind lo convierte (`--uniwind-em` × factor, y `--uniwind-em` lo fija cada
 `text-*`). Se puede usar, pero solo si un elemento local de Perfil lo necesita; ver §1.
+
+**Segunda sonda** (misma copia, `src/probe2.tsx`), para las clases fraccionarias y negativas de §1 «Perfil
+píxel exacto». Sale con `exit=0` y todas generan su entrada:
+
+| Clase | Propiedad | px |
+|---|---|---|
+| `-bottom-0.5` | `bottom` | −2 |
+| `-right-0.5` | `right` | −2 |
+| `p-0.75` | `padding` | 3 |
+| `py-1.25` | `paddingVertical` | 5 |
+| `py-2.5` | `paddingVertical` | 10 |
+| `gap-2.5` | `gap` | 10 |
+| `h-9` | `height` | 36 |
+| `border-3` | `borderWidth` | 3 |
+
+Las clases de espaciado de la escala bastan con valores fraccionarios y negativos: no hacen falta tokens de
+espaciado.

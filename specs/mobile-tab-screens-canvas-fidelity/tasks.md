@@ -43,7 +43,7 @@ tags: [harness, spec, mobile, ui]
   - `git merge-base --is-ancestor 57a61544 HEAD && echo ok` debe imprimir `ok`.
 - [ ] H0.2 `test ! -e .expo/types/router.d.ts`. Si el fichero existe, **parar** y avisar al humano. No se
   borra desde el handoff.
-- [ ] H0.3 Correr M1–M37 de requirements §1 y apuntar la salida de cada uno en `progress/impl_<feature>.md`.
+- [ ] H0.3 Correr M1–M51 de requirements §1 y apuntar la salida de cada uno en `progress/impl_<feature>.md`.
   - Si alguna medida difiere de la columna «Base», la diferencia viene de #171 mergeada.
   - En ese caso se apunta la base nueva y se conserva el **delta** de R15.1 y R13.
 - [ ] H0.4 (**pendiente de medir**: el spec_author no pudo ejecutar jest). Solo cuando
@@ -69,17 +69,22 @@ tags: [harness, spec, mobile, ui]
   - `--font-extrabold` detrás de `--font-bold`.
 - [ ] (3) Refactor: nada esperado. El describe `R3` y su `interFonts` no se tocan.
 
-## R2 — Tokens `--radius-hero` y `--radius-tile`
+## R2 — Tokens `--radius-hero`, `--radius-tile`, `--text-13` y `--text-26`
 
-- [ ] (1) Rojo: describe `#173 R2: tokens de radio hero y tile` en `src/theme/__tests__/global-css.test.ts`,
-  con
-  `toMatchObject({ 'radius-hero': '28px', 'radius-tile': '18px' })` sobre el mismo parser que da
-  `'radius-card': '20px'`.
-- [ ] (2) Verde: dos líneas en `@theme` justo detrás de `--radius-card: 20px;`.
-- [ ] (3) Refactor: nada esperado.
-- Los inventarios de R2.2 **no** se escriben aquí, porque sus sujetos aún no existen:
-  - el de `rounded-hero` va en T6.1;
-  - el de `rounded-tile` va en T10.1.
+- [ ] (1) Rojo, dos describes en `src/theme/__tests__/global-css.test.ts`, sobre el mismo parser que da
+  `'radius-card': '20px'`:
+  - `#173 R2: tokens de radio hero y tile`, con
+    `toMatchObject({ 'radius-hero': '28px', 'radius-tile': '18px' })`;
+  - `#173 R2.3: tamaños de letra 13 y 26`, con `toMatchObject({ 'text-13': '13px', 'text-26': '26px' })`.
+- [ ] (2) Verde, cuatro líneas en `@theme`:
+  - `--radius-hero: 28px;` y `--radius-tile: 18px;` justo detrás de `--radius-card: 20px;`;
+  - `--text-13: 13px;` y `--text-26: 26px;` justo detrás de `--text-2xs: 10px;`, en ese orden y sin
+    `--line-height`.
+- [ ] (3) Refactor: nada esperado. M38, M39 y M40 dan `1`.
+- Los inventarios de R2.2 y R2.4 **no** se escriben aquí, porque sus sujetos aún no existen:
+  - el de `rounded-hero` y el de `text-26` van en T6.1;
+  - el de `rounded-tile` va en T10.1;
+  - el de `text-13` va en T11.1.
 
 ## R3 — Variantes `hero` y `flat` de `Card`
 
@@ -146,6 +151,7 @@ tags: [harness, spec, mobile, ui]
   - En `profile-canvas-fidelity.test.ts`:
     - `#173 R2`: `it` de `rounded-hero` con
       `[components/card.tsx, screens/profile/index.tsx]`;
+    - `#173 R2.4`: `it` de `text-26` con `['screens/profile/index.tsx']`;
     - `#173 R3`: `it` de `variant="hero"` igual a 1.
   - Candados:
     - `#98 R10`: las dos cuentas `toBe(16 + 2 + 1 - 1)` (M19 y M20) pasan a `toBe(16 + 2 + 1 - 1 - 1) // #173 R6`;
@@ -153,7 +159,8 @@ tags: [harness, spec, mobile, ui]
     - `#62 R7`: el import pasa a
       `import { Bell, Camera, ChevronRight, FileText, Map as MapIcon, Plus, Wifi } from 'reicon-react-native';`.
 - [ ] (2) Verde:
-  - `Card variant="hero"` con anillo y cámara;
+  - `Card variant="hero"` con anillo y cámara (`absolute -bottom-0.5 -right-0.5 …`, requirements R6.2);
+  - nombre `text-26 font-black text-foreground`;
   - skeleton `rounded-hero`;
   - `photo-upload-error` detrás de `profile-pet-card`;
   - `Camera` entra en el import;
@@ -164,7 +171,7 @@ tags: [harness, spec, mobile, ui]
 
 - [ ] (1) Rojo:
   - `#168 R5` se reescribe como `#168 R5 (enmendado por #173 R7): …`. `expectProfileChip168` pasa a las
-    clases nuevas y hay un `it` por combinación de idioma × `'male'`/`'female'`/`null`/`'other'`.
+    clases nuevas (`py-1.25`) y hay un `it` por combinación de idioma × `'male'`/`'female'`/`null`/`'other'`.
   - `#68 E1` en `src/__tests__/design-drift.test.ts` se cambia según R7.3.
 - [ ] (2) Verde:
   - dos llamadas literales `t('addPet.male')` y `t('addPet.female')`;
@@ -183,6 +190,7 @@ tags: [harness, spec, mobile, ui]
   - `#61 R9` se sustituye por `#61 R9 (enmendado por #173 R8): …`.
   - En el `it` `'uses No registrado for nullable information'`, `toHaveLength(4)` pasa a `toHaveLength(3)`.
   - El `it` que asevera `PetTrack One` pasa a `Vinculado`.
+  - El `it` de clases de fila de R8.2 (raza y última señal, `toBe`). `#62 R6` no se toca.
   - En `src/providers/__tests__/language-provider.test.tsx` se crea el describe
     `#173 R13: Perfil retira cuatro claves y añade tres`, con las filas de esta tarea:
     - `profile.gpsLinked` y `profile.gpsNoCollar` presentes con sus literales;
@@ -190,7 +198,7 @@ tags: [harness, spec, mobile, ui]
     - sus marcas en `specs/mobile-ui-language/design.md`.
 - [ ] (2) Verde:
   - `Card variant="flat"` sin etiqueta;
-  - `InfoRow` con `tone`;
+  - `InfoRow` con `tone` y filas `py-2.75`;
   - fila del collar con estado;
   - **mismo commit**:
     - catálogo: `-profile.information`, `+profile.gpsLinked` y `+profile.gpsNoCollar` en `en` y `es`;
@@ -251,8 +259,12 @@ tags: [harness, spec, mobile, ui]
   - `#65 R14` se reescribe como `#65 R14 (enmendado por #173 R11)`.
   - En `profile-canvas-fidelity.test.ts`, `#173 R3`: `it` de `variant="flat"` igual a 2.
   - `language-provider` `#173 R13`: filas de `profile.account` y `profile.useLightTheme`, las dos ausentes.
+  - `#168 R7` se reescribe como `#168 R7 (enmendado por #173 R11): …` con la tabla de requirements R11.5, más
+    los dos `it` de `me-card-skeleton` y `me-card-state`.
+  - En `profile-canvas-fidelity.test.ts`, `#173 R2.4`: `it` de `text-13` con `['screens/profile/index.tsx']`.
 - [ ] (2) Verde:
-  - `Card variant="flat"` con `theme-row` (`Switch`) y `language-toggle`;
+  - `Card variant="flat"` sin `className`, con `theme-row` (`Switch`) y `language-toggle`, las dos en `py-2.5`;
+  - identidad, skeleton y estado con las clases de R11.5;
   - `Switch` de `heroui-native` importado junto a `Skeleton`. `Button` sigue importado por `profile-sign-out`;
   - **mismo commit**:
     - catálogo: `-profile.account` y `-profile.useLightTheme`, con `- 2 // #173 R11`;
@@ -289,12 +301,28 @@ tags: [harness, spec, mobile, ui]
 - [ ] (1) Rojo: en `profile-canvas-fidelity.test.ts`:
   - describe `#173 R14: enmiendas`, con un `it` por fichero de R14.1, extracción del cercado de `design.md` §2
     y firma tolerante `[ xX]`;
-  - describe `#173 R14: la carta declara los cambios`.
+  - describe `#173 R14: la carta declara los cambios`, con los `toContain` de R14.4 (también los tokens de
+    la regla 2 y los dos textos de R14.5 con el espacio normalizado).
+  - Si en H0 M50 y M51 ya daban `1` (lo trajo #174 o #175), sus dos `it` nacen verdes; se anota en
+    `progress/impl_<feature>.md`.
 - [ ] (2) Verde:
   - los diez bloques, al final de cada fichero; en la carta, tras la última `## Enmienda`;
-  - los cambios aditivos de R14.2 en §12, §13 y decisión 4.
+  - los cambios aditivos de R14.2 en la regla 2, §12, §13 y decisión 4;
+  - los dos párrafos de R14.5, salvo que ya estén. M50 y M51 dan `1`.
 - [ ] (3) Refactor: los `it` de #62 R4 y #166 R4 siguen verdes.
   `` grep -cF '**Control, tile, input, botón y píldora de dato** → `rounded-xl`' ../docs/ui-guidelines.md `` da `1`.
+
+## R17 — Contenedor con las métricas del artboard
+
+Va antes de T15 porque T15 comprueba M41–M44.
+
+- [ ] (1) Rojo: en `src/screens/profile/index.test.tsx`, describe `R2: estructura Figma`, el `it`
+  `'uses uniform dimensions and content-sized skeletons while loading'` se renombra a
+  `'uses the canvas artboard metrics (#173 R17) and content-sized skeletons while loading'` y su `toEqual`
+  pasa a `{ padding: 20, gap: 14, paddingTop: 52, paddingBottom: 120 }`. Falla solo ese `it`.
+- [ ] (2) Verde: `contentContainerStyle` de `screen-profile` con `padding: 20` y `gap: 14`. `paddingTop` y
+  `paddingBottom` no cambian.
+- [ ] (3) Refactor: nada esperado. M41 y M42 dan `0`; M43 y M44 dan `1`.
 
 ## R15 — Candados por delta y grep-limpio
 
@@ -303,7 +331,7 @@ tags: [harness, spec, mobile, ui]
     variante `hero` de `card.tsx`, correr el describe y ver exactamente 1 fallo.
   - Restaurar con `git checkout HEAD -- src/components/card.tsx` y comprobar `git diff --cached --quiet`.
   - Anotar la sonda en `progress/impl_<feature>.md`.
-- [ ] (2) Verde: comprobar M1–M37 contra «Al cerrar» (o contra base de H0 + delta si la base cambió) y la
+- [ ] (2) Verde: comprobar M1–M51 contra «Al cerrar» (o contra base de H0 + delta si la base cambió) y la
   tabla R15.1 completa.
 - [ ] (3) Refactor: ALL móvil solo cuando
   `pgrep -af '[i]nit\.sh|node_modules/(\.bin/jest|jest-worker)'` no devuelva nada:
@@ -316,6 +344,6 @@ tags: [harness, spec, mobile, ui]
 ## R16 — Prueba de humo (humano)
 
 - [ ] (1) N/A: es un gate manual.
-- [ ] (2) El humano recorre los nueve pasos de requirements R16 en dev build de Android, con tema claro y
+- [ ] (2) El humano recorre los diez pasos de requirements R16 en dev build de Android, con tema claro y
   oscuro, en es y en.
 - [ ] (3) El humano marca la casilla de R16 en requirements §Aprobación (fecha, dispositivo, temas).
