@@ -118,7 +118,7 @@ export function ResetPasswordScreen() {
           paddingBottom: insets.bottom + 24,
         }}
       >
-        <HomeEntrance testID="reset-header" index={3} className="items-center gap-8">
+        <HomeEntrance testID="reset-header" index={0} className="flex-row items-center justify-center gap-3">
           <Image
             testID="reset-pingo"
             source={require('../../../assets/images/pingo-clipboard.webp')}
@@ -172,11 +172,18 @@ export function ResetPasswordScreen() {
           paddingBottom: insets.bottom + 24,
         }}
       >
-        <HomeEntrance testID="reset-body" index={1} className="gap-4">
-          <Text testID="reset-error" className="text-danger" selectable>
-            {error}
+        <HomeEntrance testID="reset-header" index={0} className="flex-row items-center justify-center gap-3">
+          <Image
+            testID="reset-pingo"
+            source={require('../../../assets/images/pingo-clipboard.webp')}
+            style={{ width: 72, height: 72 }}
+          />
+          <Text className="text-center text-2xl font-black text-foreground">
+            {t('resetPassword.resetPassword')}
           </Text>
+        </HomeEntrance>
 
+        <HomeEntrance testID="reset-body" index={1} className="gap-4">
           <TextField>
             <Label className="text-xs font-semibold text-foreground">
               {t('resetPassword.newPassword')}
@@ -207,6 +214,12 @@ export function ResetPasswordScreen() {
             />
           </TextField>
 
+          {error ? (
+            <Text testID="reset-error" className="text-danger" selectable>
+              {error}
+            </Text>
+          ) : null}
+
           <Button
             testID="reset-submit"
             className="w-full rounded-xl bg-accent border-b-4 border-black/25"
@@ -217,17 +230,6 @@ export function ResetPasswordScreen() {
               {t('resetPassword.updatePassword')}
             </Button.Label>
           </Button>
-        </HomeEntrance>
-
-        <HomeEntrance testID="reset-header" index={0} className="flex-row items-center justify-center gap-3">
-          <Image
-            testID="reset-pingo"
-            source={require('../../../assets/images/pingo-clipboard.webp')}
-            style={{ width: 72, height: 72 }}
-          />
-          <Text className="text-center text-2xl font-black text-foreground">
-            {t('resetPassword.resetPassword')}
-          </Text>
         </HomeEntrance>
       </ScrollView>
     </KeyboardAvoidingView>
