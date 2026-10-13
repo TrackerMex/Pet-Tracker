@@ -61906,3 +61906,36 @@ $ git add specs/mobile-tab-headers-canvas/traceability.md progress/impl_mobile-t
   && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'progress/impl_mobile-tab-headers-canvas.md specs/mobile-tab-headers-canvas/traceability.md ' \
   && git commit -m 'docs(mobile-tab-headers-canvas): #168 traceability E3'
 ```
+
+c36: `ffc73b59 docs(mobile-tab-headers-canvas): #168 traceability E3`, exit=0, dos ficheros stageados exactos.
+
+Lista cerrada desde la raíz, tras c36:
+
+```text
+$ git diff --name-only b082f6e5 HEAD -- . ':!feature_list.json' ':!progress/current.md' ':!progress/handoff_mobile-tab-headers-canvas.md' ':!specs/mobile-tab-headers-canvas/requirements.md' ':!specs/mobile-tab-headers-canvas/design.md' ':!specs/mobile-tab-headers-canvas/tasks.md' ':!progress/review_mobile-tab-headers-canvas.md'
+docs/ui-guidelines.md
+mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+mobile-pet-tracker/src/__tests__/hero-header-amendments.test.ts
+mobile-pet-tracker/src/__tests__/tab-headers-canvas.test.ts
+mobile-pet-tracker/src/app/(tabs)/__tests__/food.test.tsx
+mobile-pet-tracker/src/app/(tabs)/food.tsx
+mobile-pet-tracker/src/screens/health/index.test.tsx
+mobile-pet-tracker/src/screens/health/index.tsx
+mobile-pet-tracker/src/screens/profile/index.test.tsx
+mobile-pet-tracker/src/screens/profile/index.tsx
+progress/impl_mobile-tab-headers-canvas.md
+specs/mobile-health-make-parity/requirements.md
+specs/mobile-kcal-consumed-bar/requirements.md
+specs/mobile-pet-hero-header/requirements.md
+specs/mobile-tab-headers-canvas/traceability.md
+```
+
+La lista coincide exactamente con los 15 ficheros del handoff original. Esta reanudación solo modifica los cuatro autorizados: los dos tests, traceability y este impl; las sondas están revertidas. No se rebasearon los hashes, no se lanzó init.sh, no se tocó infraestructura, no se hizo push ni se abrió PR.
+
+Cierre documental c37 desde la raíz:
+
+```text
+$ git commit --only progress/impl_mobile-tab-headers-canvas.md -m 'docs(mobile-tab-headers-canvas): #168 closed file list E3'
+```
+
+Después de c37 se comprueba `git status --short` vacío como salida final de la sesión.
