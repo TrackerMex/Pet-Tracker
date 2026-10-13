@@ -382,10 +382,10 @@ describe('#167 R7: Pingo en la cabecera del registro', () => {
     expect(pingo.props.accessibilityLabel).toBeUndefined();
   });
 
-  it('#167 R7: el título de la cabecera conserva su clase', async () => {
+  it('#172 R6: el título de la cabecera pesa 30/900 al inicio', async () => {
     await renderRegister();
     expect(within(screen.getByTestId('register-header')).getByText('Crear cuenta').props.className)
-      .toBe('text-center text-2xl font-black text-foreground');
+      .toBe('text-3xl font-black text-foreground');
   });
 
   it('#167 R7: campos, errores, términos y envío cuelgan del scroll', async () => {

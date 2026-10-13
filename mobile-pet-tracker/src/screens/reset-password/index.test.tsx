@@ -506,7 +506,7 @@ describe('#167 R10: Pingo y tarjeta de estado en nueva contraseña', () => {
     await renderRoute('reset-token-167');
     await submitReset();
     const text = await screen.findByTestId('reset-success');
-    expect(text.props.className).toBe('flex-1 font-bold text-accent-strong');
+    expect(text.props.className).toBe('flex-1 text-15 font-bold text-accent-strong');
     expect(text.props.selectable).toBe(true);
     expect(text).toHaveTextContent('Contraseña actualizada');
   });

@@ -291,10 +291,10 @@ describe('#167 R6: Pingo saluda en login y la pantalla entra en dos tiempos', ()
     expect(header.parent?.children).toEqual([header, screen.getByTestId('login-body')]);
   });
 
-  it('#167 R6: el título de la cabecera conserva su clase', async () => {
+  it('#172 R6: el título de la cabecera pesa 30/900 al inicio', async () => {
     await renderLogin();
     expect(within(screen.getByTestId('login-header')).getByText('Iniciar sesión').props.className)
-      .toBe('text-center text-2xl font-black text-foreground');
+      .toBe('text-3xl font-black text-foreground');
   });
 
   it('#167 R6: la cabecera y el cuerpo no se mezclan', async () => {
@@ -338,7 +338,7 @@ describe('#167 R6: Pingo saluda en login y la pantalla entra en dos tiempos', ()
     const bubble = screen.getByTestId('login-bubble');
     const text = screen.getByTestId('login-bubble-text');
     expect(bubble.children).toEqual([text]);
-    expect(text.props.className).toBe('text-sm font-semibold text-foreground');
+    expect(text.props.className).toBe('text-15 font-semibold text-foreground');
     expect(text).toHaveTextContent('Qué bueno verte de nuevo.');
   });
 

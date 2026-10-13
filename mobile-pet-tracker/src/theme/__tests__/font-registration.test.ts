@@ -44,3 +44,12 @@ describe('R3: el layout registra los pesos estáticos de Inter sin bloquear', ()
     expect(globalCss).toContain("--font-black: 'Inter-Black';");
   });
 });
+
+
+describe('#172 R6: el peso 800 del CTA es Inter ExtraBold', () => {
+  it('#172 R6: carga Inter ExtraBold y la expone como font-extrabold', () => {
+    expect(existsSync(`${projectRoot}/assets/fonts/Inter-ExtraBold.ttf`)).toBe(true);
+    expect(rootLayout).toContain("'Inter-ExtraBold': require('../../assets/fonts/Inter-ExtraBold.ttf')");
+    expect(globalCss).toContain("--font-extrabold: 'Inter-ExtraBold';");
+  });
+});
