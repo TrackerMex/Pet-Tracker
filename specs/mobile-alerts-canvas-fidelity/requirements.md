@@ -124,7 +124,7 @@ Si una pieza existe en H0 con **otro** texto o valor que el de `192329aa`, PARA 
 | M35 | `grep -cF 'categoría: la superficie siempre acompaña a un emoji y a un texto.' ../docs/ui-guidelines.md` | 1 | 0 | R11 |
 | M36 | `grep -cF 'Enmienda #174' ../docs/ui-guidelines.md` | 0 | 2 | R11 |
 | M37 | `git diff --quiet <H0> -- src/screens/alert-detail/; echo $?` | — | 0 | R12 |
-| M38 | `git diff --stat <H0> -- ../backend-pet-tracker/ ../infra-pet-tracker/` | — | vacío | R12 |
+| M38 | `git diff --stat <H0> -- ../backend-pet-tracker/ ../infra/` | — | vacío | R12 |
 
 Los valores «(H0)» de la base cambian si #173 u otra feature mergea antes: se mide en H0 y el cierre es
 H0 + delta. Ninguna cifra se recalcula a mano.
