@@ -1,10 +1,10 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-10-13
-**Features completadas**: 156/171 (`feature_list.json`)
-**En progreso**: ninguna en esta rama. #168 cerrada en `feature/168-mobile-tab-headers-canvas`, PR pendiente de merge humano.
+**Features completadas**: 157/171 (`feature_list.json`)
+**En progreso**: ninguna en esta rama. #169 cerrada en `feature/169-mobile-weight-draw-and-toasts`, PR #212 pendiente de merge humano.
 
-**Pendientes**: 15 (#60, #119, #129, #144, #150, #151, #154, #160, #163, #164, #165, #169, #170, #171 y #172). **#168 `mobile-tab-headers-canvas` cerrada**: Salud, Nutrición y Perfil abren con el título grande del canvas en lugar del hero fotográfico (decisión N1, que revierte la Enmienda #67 en esas tres pestañas; Inicio conserva `PetHeroHeader`). Salud pinta un tile pastel por estado en cada vacuna; Perfil cambia el hero por la tarjeta `profile-pet-card` con avatar circular, chips pastel atados al dato, tiles en las cuatro filas y avatar de iniciales en la cuenta; Nutrición sustituye la barra y el tile `ForkKnife` por el anillo de kcal animado, acotado a 100 y con reduce motion. La Enmienda #168 queda declarada en tres specs aprobadas y en la carta, con su candado. Ronda 1 de Codex rechazada por candados que faltaban en la spec (O1/O2); la Enmienda E3, solo tests, se firmó desde Notion (`938188b8`) y la ronda 2 la aprobó el reviewer (`d3cb4d1a`). El humano firmó el smoke R13 en `0b3cc585` y las cuatro casillas de la enmienda en `ddbbab8d`. Móvil 99/2851 → 100/2919. #119 se cierra como superada tras el merge.
+**Pendientes**: 14 (#60, #119, #129, #144, #150, #151, #154, #160, #163, #164, #165, #170, #171 y #172). **#169 `mobile-weight-draw-and-toasts` cerrada**: fila 3 «Salud y rutina» del canvas, parte 1. `WeightChart` dibuja la línea con un trazo animado (`strokeDashoffset`, `MOTION_FILL_TIMING`, respeta reduce motion) y Salud lo hereda; Peso gana el resumen con el peso actual y el delta del mes (`monthlyWeightDelta`) y un toast con háptico tras un alta correcta. Dos claves nuevas (§2.25 de la spec de idioma). Rondas 1 y 2 rechazadas (candados que solo muestreaban extremos o fixtures colineales); las Enmiendas E1 y E2, solo tests, se firmaron desde Notion y la ronda 3 la aprobó el reviewer (`d4ccf05c`). El humano firmó el smoke R14 en `084d9fc3`. Móvil 98/2775 → 99/2833 medido sobre la branch antes de mergear #167. **#168 `mobile-tab-headers-canvas` cerrada**: Salud, Nutrición y Perfil abren con el título grande del canvas en lugar del hero fotográfico (decisión N1, que revierte la Enmienda #67 en esas tres pestañas; Inicio conserva `PetHeroHeader`). Salud pinta un tile pastel por estado en cada vacuna; Perfil cambia el hero por la tarjeta `profile-pet-card` con avatar circular, chips pastel atados al dato, tiles en las cuatro filas y avatar de iniciales en la cuenta; Nutrición sustituye la barra y el tile `ForkKnife` por el anillo de kcal animado, acotado a 100 y con reduce motion. La Enmienda #168 queda declarada en tres specs aprobadas y en la carta, con su candado. Ronda 1 de Codex rechazada por candados que faltaban en la spec (O1/O2); la Enmienda E3, solo tests, se firmó desde Notion (`938188b8`) y la ronda 2 la aprobó el reviewer (`d3cb4d1a`). El humano firmó el smoke R13 en `0b3cc585` y las cuatro casillas de la enmienda en `ddbbab8d`. Móvil 99/2851 → 100/2919. #119 se cierra como superada tras el merge.
 
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
@@ -88,6 +88,14 @@ debe listar las 4 URLs de cola.
 
 ## Estado actual
 
+- **`mobile-weight-draw-and-toasts` (#169) done** (2026-10-13, worktree
+  `Pet-Tracker-wt-169`, sesión sites-99): trazo animado en `WeightChart`,
+  resumen de Peso con delta mensual y toast con háptico tras el alta. Reviewer
+  ronda 3 APROBADO (`d4ccf05c`) sobre `f666fc0b`; `./init.sh` exit 0 sobre
+  `f666fc0b` (backend 187/1474, móvil 99/2833, e2e 468 + 8 saltados). Smoke R14
+  en el dev build de Android firmado por el humano en `084d9fc3`. Merge de
+  `origin/main` (#167) en `6f96bef6`; la suite completa sobre el árbol mergeado
+  la corre el CI de la PR.
 - **`mobile-tab-headers-canvas` (#168) done** (2026-10-13, worktree
   `Pet-Tracker-wt-168`): título grande del canvas en Salud, Nutrición y Perfil,
   tiles pastel en vacunas y filas de Perfil, tarjeta de mascota con chips por
@@ -1475,6 +1483,12 @@ debe listar las 4 URLs de cola.
 
 ## Última sesión
 
+- **2026-10-13** — **#169 `mobile-weight-draw-and-toasts` cerrada** (worktree
+  `Pet-Tracker-wt-169`, sesión sites-99). Spec firmada desde Notion
+  (`ccb4ad61`). Rondas 1 y 2 rechazadas; Enmiendas E1 (`462ca164`) y E2
+  (`b3a20ffa`), solo tests, firmadas desde Notion. Ronda 3 aprobada
+  (`d4ccf05c`). Smoke R14 firmado en `084d9fc3`. Notion: Implementado /
+  Completado. PR #212 abierta. Detalle en `progress/history.md`.
 - **2026-10-13** — **#167 `mobile-account-screens-pingo` cerrada** (worktree
   `Pet-Tracker-wt-167`, sesión Frontend). Spec firmada desde Notion
   (`ed8158b6`). Ronda 1 de Codex rechazada (B1-B4); Enmienda E1 de solo tests

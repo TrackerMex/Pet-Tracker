@@ -943,7 +943,14 @@ copy completa en cada una.
 |---|---|---|---|---|
 | — | `login.pingoGreeting` | `Good to see you again.` | `Qué bueno verte de nuevo.` | ← añadida por #167 (R5) |
 
-### §2.25 — Añadidos por #170 — Alertas agrupadas y mini-mapa
+### §2.25 — Añadidos por #169 — Peso
+
+| # | Clave | `en` | `es` | Origen |
+|---|---|---|---|---|
+| — | `weightLog.weightLogged` | `Logged. I've added it to the chart.` | `Anotado. Ya lo puse en la gráfica.` | ← añadida por #169 (R9) |
+| — | `weightLog.monthDelta` | `{{value}} this month` | `{{value}} este mes` | ← añadida por #169 (R9) |
+
+### §2.26 — Añadidos por #170 — Alertas agrupadas y mini-mapa
 
 | # | Clave | `en` | `es` | Origen |
 |---|---|---|---|---|

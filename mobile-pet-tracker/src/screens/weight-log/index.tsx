@@ -1,5 +1,6 @@
 import { HeaderHeightContext } from 'expo-router/react-navigation';
 import { Redirect } from 'expo-router';
+import * as Haptics from 'expo-haptics';
 import {
   Button,
   Card as HeroUICard,
@@ -9,10 +10,11 @@ import {
   TextField,
 } from 'heroui-native';
 import { useQuery } from '@tanstack/react-query';
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import { KeyboardAvoidingView, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Minus, TrendDown, TrendUp } from 'reicon-react-native';
+import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
+import { Check, Minus, TrendDown, TrendUp } from 'reicon-react-native';
 
 import {
   createWeight,
@@ -31,14 +33,45 @@ import {
   TABULAR_NUMS,
 } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
+import { MOTION_FEEDBACK_MS, MOTION_TRANSITION_MS } from '../../theme/motion';
 import { civilTodayIso } from '../../utils/civil-today-iso';
+import { monthlyWeightDelta } from '../../utils/monthly-weight-delta';
 
 const MEASURED_AT_IN_FUTURE_MESSAGE =
   'measuredAt is too far in the future';
+const WEIGHT_TOAST_MS = 2500;
 
 function fmtVariation(variation: number | null): string {
   if (variation === null) return '—';
   return variation > 0 ? `+${variation} kg` : `${variation} kg`;
+}
+
+function weightTone(variation: number | null) {
+  if (variation !== null && variation > 0) {
+    return {
+      tileClassName: 'bg-danger-soft',
+      rowClassName: 'text-xs font-semibold text-danger',
+      summaryClassName: 'text-sm font-semibold text-danger',
+      Icon: TrendUp,
+      color: 'danger' as const,
+    };
+  }
+  if (variation !== null && variation < 0) {
+    return {
+      tileClassName: 'bg-success-soft',
+      rowClassName: 'text-xs font-semibold text-success',
+      summaryClassName: 'text-sm font-semibold text-success',
+      Icon: TrendDown,
+      color: 'success' as const,
+    };
+  }
+  return {
+    tileClassName: 'bg-default',
+    rowClassName: 'text-xs font-semibold text-muted',
+    summaryClassName: 'text-sm font-semibold text-muted',
+    Icon: Minus,
+    color: 'muted' as const,
+  };
 }
 
 function isWeightsError(state: WeightsState): boolean {
@@ -61,6 +94,11 @@ function WeightLogContent({ petId }: { petId: string }) {
   const [bodyConditionText, setBodyConditionText] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [toastVisible, setToastVisible] = useState(false);
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => {
+    if (toastTimer.current !== null) clearTimeout(toastTimer.current);
+  }, []);
   const me = useQuery({
     queryKey: userKeys.me(),
     queryFn: () => getMe(baseUrl, token ?? ''),
@@ -72,6 +110,10 @@ function WeightLogContent({ petId }: { petId: string }) {
     queryKey: healthKeys.weights(petId, undefined),
     queryFn: () => listWeights(baseUrl, token ?? '', petId),
   });
+  const entries = weights.data?.kind === 'ok' ? weights.data.weights : [];
+  const monthDelta = monthlyWeightDelta(entries, civilTodayIso(profileTimeZone));
+  const monthTone = weightTone(monthDelta);
+  const toneColors = { success, danger, muted };
 
   async function handleSubmit() {
     const weightKg = parseFloat(weightText);
@@ -97,6 +139,13 @@ function WeightLogContent({ petId }: { petId: string }) {
           setWeightText('');
           setMeasuredAtDraft(null);
           setBodyConditionText('');
+          if (toastTimer.current !== null) clearTimeout(toastTimer.current);
+          setToastVisible(true);
+          toastTimer.current = setTimeout(() => {
+            setToastVisible(false);
+            toastTimer.current = null;
+          }, WEIGHT_TOAST_MS);
+          void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
           weights.refetch();
           return;
         case 'validation':
@@ -150,7 +199,30 @@ function WeightLogContent({ petId }: { petId: string }) {
         }}
       >
         {weights.data?.kind === 'ok' ? (
-          <Card testID="weight-chart-card">
+          <Card testID="weight-chart-card" className="gap-4">
+            {entries.length > 0 ? (
+              <View testID="weight-summary">
+                <Text
+                  testID="weight-current"
+                  className="text-3xl font-black text-foreground"
+                  style={TABULAR_NUMS}
+                >
+                  {`${entries[0].weightKg} kg`}
+                </Text>
+                {monthDelta !== null ? (
+                  <View testID="weight-month-delta" className="flex-row items-center gap-1.5">
+                    <monthTone.Icon size={15} color={toneColors[monthTone.color]} />
+                    <Text
+                      testID="weight-month-delta-text"
+                      className={monthTone.summaryClassName}
+                      style={TABULAR_NUMS}
+                    >
+                      {t('weightLog.monthDelta', { value: fmtVariation(monthDelta) })}
+                    </Text>
+                  </View>
+                ) : null}
+              </View>
+            ) : null}
             <WeightChart entries={weights.data.weights} />
           </Card>
         ) : null}
@@ -244,18 +316,7 @@ function WeightLogContent({ petId }: { petId: string }) {
 
         {weights.data?.kind === 'ok'
           ? weights.data.weights.map((entry) => {
-              const tileClassName =
-                entry.variation === null || entry.variation === 0
-                  ? 'bg-default'
-                  : entry.variation > 0
-                    ? 'bg-danger-soft'
-                    : 'bg-success-soft';
-              const variationClassName =
-                entry.variation === null || entry.variation === 0
-                  ? 'text-muted'
-                  : entry.variation > 0
-                    ? 'text-danger'
-                    : 'text-success';
+              const { tileClassName, rowClassName, Icon, color } = weightTone(entry.variation);
 
               return (
                 <HeroUICard
@@ -264,16 +325,11 @@ function WeightLogContent({ petId }: { petId: string }) {
                   className="flex-row items-center gap-3 rounded-xl border border-border bg-surface px-3.5 py-3 shadow-sm"
                 >
                   <View
+                    testID={`weight-row-${entry.id}-tone`}
                     className={`size-8 shrink-0 items-center justify-center rounded-xl ${tileClassName}`}
                     style={CONTINUOUS_CORNER}
                   >
-                    {entry.variation === null || entry.variation === 0 ? (
-                      <Minus size={15} color={muted} />
-                    ) : entry.variation > 0 ? (
-                      <TrendUp size={15} color={danger} />
-                    ) : (
-                      <TrendDown size={15} color={success} />
-                    )}
+                    <Icon size={15} color={toneColors[color]} />
                   </View>
                   <View className="min-w-0 flex-1 gap-1">
                     <View className="flex-row items-baseline gap-1.5">
@@ -284,7 +340,8 @@ function WeightLogContent({ petId }: { petId: string }) {
                         {entry.weightKg} kg
                       </Text>
                       <Text
-                        className={`text-xs font-semibold ${variationClassName}`}
+                        testID={`weight-row-${entry.id}-delta`}
+                        className={rowClassName}
                         style={TABULAR_NUMS}
                       >
                         {fmtVariation(entry.variation)}
@@ -306,6 +363,21 @@ function WeightLogContent({ petId }: { petId: string }) {
             })
           : null}
       </ScrollView>
+      {toastVisible ? (
+        <Animated.View
+          testID="weight-toast"
+          entering={FadeIn.duration(MOTION_TRANSITION_MS)}
+          exiting={FadeOut.duration(MOTION_FEEDBACK_MS)}
+          className="absolute top-4 flex-row items-center gap-2 self-center rounded-full border border-border bg-surface px-4 py-2.5 shadow-sm"
+          pointerEvents="none"
+          accessibilityLiveRegion="polite"
+        >
+          <Check size={16} color={success} />
+          <Text className="text-sm font-semibold text-foreground">
+            {t('weightLog.weightLogged')}
+          </Text>
+        </Animated.View>
+      ) : null}
     </KeyboardAvoidingView>
   );
 }
