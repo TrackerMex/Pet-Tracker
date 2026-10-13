@@ -61110,3 +61110,799 @@ git commit --only progress/impl_mobile-tab-headers-canvas.md -m 'docs(mobile-tab
 Los commits de A–M son 28; con c26 y c27, el cierre cuenta 30 commits. Las cuatro firmas de enmienda y el smoke de Android siguen a cargo del humano. No se ha ejecutado init.sh, push ni PR.
 
 R13: pendiente del smoke humano
+
+## Reanudacion 13
+
+Comprobaciones previas ejecutadas en el worktree indicado; `git status --short` vacío:
+
+```text
+/home/claude/sites/Pet-Tracker-wt-168
+feature/168-mobile-tab-headers-canvas
+938188b8
+51
+ad1f9fc0 docs(mobile-tab-headers-canvas): #168 handoff Reanudación 13 (bloque O, E3)
+938188b8 docs(specs): firma de la Enmienda E3 de #168 aprobada vía Notion
+595e2a6a docs(mobile-tab-headers-canvas): #168 re-barrido de E3, cierra O1-O3 y N1-N3
+2cb3cd5c docs(specs): Enmienda E3 de #168 cierra el barrido pre-firma del reviewer
+701d29d5 docs(specs): Enmienda E3 de #168 suma el it de 0 meses y 0 kg
+54e3f3a9 docs(harness): #168 rechazo del review y enmienda E3 en current
+dc5ed2e7 docs(mobile-tab-headers-canvas): #168 E3, el total móvil es derivado
+d83eafd7 docs(mobile-tab-headers-canvas): #168 enmienda E3, candados de R5, R4.3 y R9.3
+00623a2e docs(mobile-tab-headers-canvas): #168 review, rechazado
+```
+
+H0: `b082f6e5`. E3 aprobada por humano en `938188b8`. Leídas E3 completa, Bloque O y las reglas vigentes del handoff. Skill cargada en esta sesión: ponytail. Esta reanudación copia tests literales y usa los helpers existentes; no modifica UI ni movimiento. El mandato específico excluye init.sh, infraestructura, push, PR y bookkeeping del leader.
+
+Anclas desde mobile-pet-tracker/:
+
+```text
+$ grep -cF "describe('#168 R5: Perfil pinta chips pastel por dato'" src/screens/profile/index.test.tsx
+1
+$ grep -cF "it('centra y agrupa los chips con gap-2'" src/screens/profile/index.test.tsx
+1
+$ grep -cF "describe('#168 R4: Perfil sustituye el hero por profile-pet-card'" src/screens/profile/index.test.tsx
+1
+$ grep -cF "it('no monta el hero compartido'" src/screens/profile/index.test.tsx
+1
+$ grep -cF 'sin peso omite su chip' src/screens/profile/index.test.tsx
+0
+$ grep -cF 'con la subida fallida deja change-photo' src/screens/profile/index.test.tsx
+0
+$ grep -cF "describe('#168 R9: el anillo dice el porcentaje acotado'" 'src/app/(tabs)/__tests__/food.test.tsx'
+1
+$ grep -cF "describe('#168 R10: el anillo transiciona con reduce motion'" 'src/app/(tabs)/__tests__/food.test.tsx'
+1
+$ grep -cF 'anuncia el valor sin acotar' 'src/app/(tabs)/__tests__/food.test.tsx'
+0
+$ grep -cF 'text: pet.currentWeightKg === null ? null : `${pet.currentWeightKg} kg`' src/screens/profile/index.tsx
+1
+$ grep -cF "text: Number.isFinite(pet.ageMonths) ? t('profile.ageMonths', { months: pet.ageMonths }) : null" src/screens/profile/index.tsx
+1
+$ grep -cF "pet.sterilized ? t('profile.sterilized') : t('profile.notSterilized')" src/screens/profile/index.tsx
+1
+$ grep -cF 'text: pet.sterilized === null ? null : pet.sterilized ?' src/screens/profile/index.tsx
+1
+$ grep -cF "slot: 'blue', text: pet.sex }" src/screens/profile/index.tsx
+1
+$ grep -cF 'testID="change-photo"' src/screens/profile/index.tsx
+1
+$ grep -cF 'testID="photo-upload-error"' src/screens/profile/index.tsx
+1
+$ grep -cF 'now: kcalPct }}' 'src/app/(tabs)/food.tsx'
+1
+$ git diff --name-only b082f6e5 HEAD -- . | wc -l
+9
+```
+
+Todas las comprobaciones y anclas coinciden con el handoff.
+
+Nota de invocación: la preparación del script temporal detectó con un assert una separación incorrecta de los encabezados «Sonda». Falló antes de insertar tests o lanzar medidas; se corrigió solo el parser en /tmp. No se repitió ninguna medida.
+
+### O1 / c28
+
+Bloque literal de requirements.md §E3 insertado en su ancla, sin alterar otros `it`.
+
+Verde O1
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/profile/index.test.tsx > /tmp/168-o1.txt 2>&1; echo "exit=$?"
+Tests:       60 passed, 60 total
+exit=0
+```
+
+Localización literal de la sonda P2
+
+```text
+$ grep -nF 'text: pet.currentWeightKg === null ? null : `${pet.currentWeightKg} kg`' src/screens/profile/index.tsx
+71:    { testID: 'profile-pet-chip-weight', slot: 'violet', text: pet.currentWeightKg === null ? null : `${pet.currentWeightKg} kg` },
+```
+
+Sonda P2
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/profile/index.test.tsx > /tmp/168-o1-P2.txt 2>&1; echo "exit=$?"
+Tests:       1 failed, 59 passed, 60 total
+exit=1
+  ● #168 R5: Perfil pinta chips pastel por dato › sin peso omite su chip y conserva sexo, esterilización y edad en sus huecos
+```
+
+Sonda P2 revertida
+
+```text
+$ git checkout HEAD -- src/screens/profile/index.tsx
+git diff --quiet -- src/screens/profile/index.tsx 'src/app/(tabs)/food.tsx' && git diff --cached --quiet; echo "limpio=$?"
+limpio=0
+```
+
+Cadena c28 (GUARDAS, typecheck, LINT 0, staging, LIMPIO y commit), intento 1
+
+```text
+$ FORCE_COLOR=0 bunx jest --runTestsByPath src/__tests__/design-drift.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/168-o1-guardas.txt 2>&1; echo "exit=$?"
+grep -qE '^Tests: +60 passed, 60 total$' /tmp/168-o1.txt \
+  && grep -qE '^Tests: +92 passed, 92 total$' /tmp/168-o1-guardas.txt \
+  && test ! -e .expo/types/router.d.ts && bun run typecheck && bunx expo lint --no-cache > /tmp/168-lint.txt 2>&1 && ! grep -qF 'Failed to run' /tmp/168-lint.txt && test "$(grep -cE '^ +[0-9]+:[0-9]+ +warning ' /tmp/168-lint.txt)" = 0 \
+  && git add src/screens/profile/index.test.tsx \
+  && test "$(git diff --cached --name-only)" = 'mobile-pet-tracker/src/screens/profile/index.test.tsx' \
+  && git diff --quiet -- . ../docs ../specs && test -z "$(git ls-files --others --exclude-standard -- . ../docs ../specs)" \
+  && git commit -m 'test(mobile): sin peso, Perfil omite su chip (#168 R5)' -m 'Nace verde (Enmienda E3). Sonda antes del commit, revertida con limpio=0:
+P2 peso sin la guarda === null: 1 failed (sin peso omite su chip)'
+exit=0
+[feature/168-mobile-tab-headers-canvas b8ab9cf8] test(mobile): sin peso, Perfil omite su chip (#168 R5)
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 1 file changed, 11 insertions(+)
+$ tsc --noEmit
+
+Test Suites: 2 passed, 2 total
+Tests:       92 passed, 92 total
+chain_exit=0
+Lint:
+```
+GUARDAS: exit=0, `Tests:       92 passed, 92 total`; typecheck: exit=0; LINT 0: exit=0, 0 warnings; lista stageada exacta y LIMPIO correctos.
+c28: `b8ab9cf8 test(mobile): sin peso, Perfil omite su chip (#168 R5)`.
+
+### O2 / c29
+
+Bloque literal de requirements.md §E3 insertado en su ancla, sin alterar otros `it`.
+
+Verde O2
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/profile/index.test.tsx > /tmp/168-o2.txt 2>&1; echo "exit=$?"
+Tests:       63 passed, 63 total
+exit=0
+```
+
+Localización literal de la sonda P3
+
+```text
+$ grep -nF 'text: Number.isFinite(pet.ageMonths) ? t('"'"'profile.ageMonths'"'"', { months: pet.ageMonths }) : null' src/screens/profile/index.tsx
+70:    { testID: 'profile-pet-chip-age', slot: 'amber', text: Number.isFinite(pet.ageMonths) ? t('profile.ageMonths', { months: pet.ageMonths }) : null },
+```
+
+Sonda P3
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/profile/index.test.tsx > /tmp/168-o2-P3.txt 2>&1; echo "exit=$?"
+Tests:       3 failed, 60 passed, 63 total
+exit=1
+  ● #168 R5: Perfil pinta chips pastel por dato › con la edad NaN omite su chip y deja el peso en violeta
+  ● #168 R5: Perfil pinta chips pastel por dato › con la edad Infinity omite su chip y deja el peso en violeta
+  ● #168 R5: Perfil pinta chips pastel por dato › con la edad -Infinity omite su chip y deja el peso en violeta
+```
+
+Sonda P3 revertida
+
+```text
+$ git checkout HEAD -- src/screens/profile/index.tsx
+git diff --quiet -- src/screens/profile/index.tsx 'src/app/(tabs)/food.tsx' && git diff --cached --quiet; echo "limpio=$?"
+limpio=0
+```
+
+Localización literal de la sonda N1
+
+```text
+$ grep -nF 'text: Number.isFinite(pet.ageMonths) ?' src/screens/profile/index.tsx
+70:    { testID: 'profile-pet-chip-age', slot: 'amber', text: Number.isFinite(pet.ageMonths) ? t('profile.ageMonths', { months: pet.ageMonths }) : null },
+```
+
+Sonda N1
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/profile/index.test.tsx > /tmp/168-o2-N1.txt 2>&1; echo "exit=$?"
+Tests:       2 failed, 61 passed, 63 total
+exit=1
+  ● #168 R5: Perfil pinta chips pastel por dato › con la edad Infinity omite su chip y deja el peso en violeta
+  ● #168 R5: Perfil pinta chips pastel por dato › con la edad -Infinity omite su chip y deja el peso en violeta
+```
+
+Sonda N1 revertida
+
+```text
+$ git checkout HEAD -- src/screens/profile/index.tsx
+git diff --quiet -- src/screens/profile/index.tsx 'src/app/(tabs)/food.tsx' && git diff --cached --quiet; echo "limpio=$?"
+limpio=0
+```
+
+Cadena c29 (GUARDAS, typecheck, LINT 0, staging, LIMPIO y commit), intento 1
+
+```text
+$ FORCE_COLOR=0 bunx jest --runTestsByPath src/__tests__/design-drift.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/168-o2-guardas.txt 2>&1; echo "exit=$?"
+grep -qE '^Tests: +63 passed, 63 total$' /tmp/168-o2.txt \
+  && grep -qE '^Tests: +92 passed, 92 total$' /tmp/168-o2-guardas.txt \
+  && test ! -e .expo/types/router.d.ts && bun run typecheck && bunx expo lint --no-cache > /tmp/168-lint.txt 2>&1 && ! grep -qF 'Failed to run' /tmp/168-lint.txt && test "$(grep -cE '^ +[0-9]+:[0-9]+ +warning ' /tmp/168-lint.txt)" = 0 \
+  && git add src/screens/profile/index.test.tsx \
+  && test "$(git diff --cached --name-only)" = 'mobile-pet-tracker/src/screens/profile/index.test.tsx' \
+  && git diff --quiet -- . ../docs ../specs && test -z "$(git ls-files --others --exclude-standard -- . ../docs ../specs)" \
+  && git commit -m 'test(mobile): con la edad no finita, Perfil omite su chip (#168 R5)' -m 'Nace verde (Enmienda E3). Sondas antes del commit, una a una, revertidas con limpio=0:
+P3 edad sin la guarda Number.isFinite: 3 failed (NaN, Infinity y -Infinity)
+N1 guarda !Number.isNaN: 2 failed (Infinity y -Infinity)'
+exit=0
+[feature/168-mobile-tab-headers-canvas 8e286d97] test(mobile): con la edad no finita, Perfil omite su chip (#168 R5)
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 1 file changed, 11 insertions(+)
+$ tsc --noEmit
+
+Test Suites: 2 passed, 2 total
+Tests:       92 passed, 92 total
+chain_exit=0
+Lint:
+```
+GUARDAS: exit=0, `Tests:       92 passed, 92 total`; typecheck: exit=0; LINT 0: exit=0, 0 warnings; lista stageada exacta y LIMPIO correctos.
+c29: `8e286d97 test(mobile): con la edad no finita, Perfil omite su chip (#168 R5)`.
+
+### O3 / c30
+
+Bloque literal de requirements.md §E3 insertado en su ancla, sin alterar otros `it`.
+
+Verde O3
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/profile/index.test.tsx > /tmp/168-o3.txt 2>&1; echo "exit=$?"
+Tests:       64 passed, 64 total
+exit=0
+```
+
+Localización literal de la sonda P4c
+
+```text
+$ grep -nF 'pet.sterilized ? t('"'"'profile.sterilized'"'"') : t('"'"'profile.notSterilized'"'"')' src/screens/profile/index.tsx
+69:    { testID: 'profile-pet-chip-sterilized', slot: 'green', text: pet.sterilized === null ? null : pet.sterilized ? t('profile.sterilized') : t('profile.notSterilized') },
+```
+
+Sonda P4c
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/profile/index.test.tsx > /tmp/168-o3-P4c.txt 2>&1; echo "exit=$?"
+Tests:       1 failed, 63 passed, 64 total
+exit=1
+  ● #168 R5: Perfil pinta chips pastel por dato › sin esterilizar pinta el chip verde con «Sin esterilizar»
+```
+
+Sonda P4c revertida
+
+```text
+$ git checkout HEAD -- src/screens/profile/index.tsx
+git diff --quiet -- src/screens/profile/index.tsx 'src/app/(tabs)/food.tsx' && git diff --cached --quiet; echo "limpio=$?"
+limpio=0
+```
+
+Cadena c30 (GUARDAS, typecheck, LINT 0, staging, LIMPIO y commit), intento 1
+
+```text
+$ FORCE_COLOR=0 bunx jest --runTestsByPath src/__tests__/design-drift.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/168-o3-guardas.txt 2>&1; echo "exit=$?"
+grep -qE '^Tests: +64 passed, 64 total$' /tmp/168-o3.txt \
+  && grep -qE '^Tests: +92 passed, 92 total$' /tmp/168-o3-guardas.txt \
+  && test ! -e .expo/types/router.d.ts && bun run typecheck && bunx expo lint --no-cache > /tmp/168-lint.txt 2>&1 && ! grep -qF 'Failed to run' /tmp/168-lint.txt && test "$(grep -cE '^ +[0-9]+:[0-9]+ +warning ' /tmp/168-lint.txt)" = 0 \
+  && git add src/screens/profile/index.test.tsx \
+  && test "$(git diff --cached --name-only)" = 'mobile-pet-tracker/src/screens/profile/index.test.tsx' \
+  && git diff --quiet -- . ../docs ../specs && test -z "$(git ls-files --others --exclude-standard -- . ../docs ../specs)" \
+  && git commit -m 'test(mobile): chip verde «Sin esterilizar» en Perfil (#168 R5)' -m 'Nace verde (Enmienda E3). Sonda antes del commit, revertida con limpio=0:
+P4c guarda sterilized !== undefined: 1 failed (sin esterilizar pinta el chip verde)'
+exit=0
+[feature/168-mobile-tab-headers-canvas 9204d37a] test(mobile): chip verde «Sin esterilizar» en Perfil (#168 R5)
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 1 file changed, 9 insertions(+)
+$ tsc --noEmit
+
+Test Suites: 2 passed, 2 total
+Tests:       92 passed, 92 total
+chain_exit=0
+Lint:
+```
+GUARDAS: exit=0, `Tests:       92 passed, 92 total`; typecheck: exit=0; LINT 0: exit=0, 0 warnings; lista stageada exacta y LIMPIO correctos.
+c30: `9204d37a test(mobile): chip verde «Sin esterilizar» en Perfil (#168 R5)`.
+
+### O4 / c31
+
+Bloque literal de requirements.md §E3 insertado en su ancla, sin alterar otros `it`.
+
+Verde O4
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/profile/index.test.tsx > /tmp/168-o4.txt 2>&1; echo "exit=$?"
+Tests:       65 passed, 65 total
+exit=0
+```
+
+Localización literal de la sonda P2t
+
+```text
+$ grep -nF 'text: pet.currentWeightKg === null ? null : `${pet.currentWeightKg} kg`' src/screens/profile/index.tsx
+71:    { testID: 'profile-pet-chip-weight', slot: 'violet', text: pet.currentWeightKg === null ? null : `${pet.currentWeightKg} kg` },
+```
+
+Sonda P2t
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/profile/index.test.tsx > /tmp/168-o4-P2t.txt 2>&1; echo "exit=$?"
+Tests:       1 failed, 64 passed, 65 total
+exit=1
+  ● #168 R5: Perfil pinta chips pastel por dato › con 0 meses y 0 kg pinta los cuatro chips
+```
+
+Sonda P2t revertida
+
+```text
+$ git checkout HEAD -- src/screens/profile/index.tsx
+git diff --quiet -- src/screens/profile/index.tsx 'src/app/(tabs)/food.tsx' && git diff --cached --quiet; echo "limpio=$?"
+limpio=0
+```
+
+Localización literal de la sonda P3t
+
+```text
+$ grep -nF 'text: Number.isFinite(pet.ageMonths) ? t('"'"'profile.ageMonths'"'"', { months: pet.ageMonths }) : null' src/screens/profile/index.tsx
+70:    { testID: 'profile-pet-chip-age', slot: 'amber', text: Number.isFinite(pet.ageMonths) ? t('profile.ageMonths', { months: pet.ageMonths }) : null },
+```
+
+Sonda P3t
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/profile/index.test.tsx > /tmp/168-o4-P3t.txt 2>&1; echo "exit=$?"
+Tests:       3 failed, 62 passed, 65 total
+exit=1
+  ● #168 R5: Perfil pinta chips pastel por dato › con la edad Infinity omite su chip y deja el peso en violeta
+  ● #168 R5: Perfil pinta chips pastel por dato › con la edad -Infinity omite su chip y deja el peso en violeta
+  ● #168 R5: Perfil pinta chips pastel por dato › con 0 meses y 0 kg pinta los cuatro chips
+```
+
+Sonda P3t revertida
+
+```text
+$ git checkout HEAD -- src/screens/profile/index.tsx
+git diff --quiet -- src/screens/profile/index.tsx 'src/app/(tabs)/food.tsx' && git diff --cached --quiet; echo "limpio=$?"
+limpio=0
+```
+
+Cadena c31 (GUARDAS, typecheck, LINT 0, staging, LIMPIO y commit), intento 1
+
+```text
+$ FORCE_COLOR=0 bunx jest --runTestsByPath src/__tests__/design-drift.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/168-o4-guardas.txt 2>&1; echo "exit=$?"
+grep -qE '^Tests: +65 passed, 65 total$' /tmp/168-o4.txt \
+  && grep -qE '^Tests: +92 passed, 92 total$' /tmp/168-o4-guardas.txt \
+  && test ! -e .expo/types/router.d.ts && bun run typecheck && bunx expo lint --no-cache > /tmp/168-lint.txt 2>&1 && ! grep -qF 'Failed to run' /tmp/168-lint.txt && test "$(grep -cE '^ +[0-9]+:[0-9]+ +warning ' /tmp/168-lint.txt)" = 0 \
+  && git add src/screens/profile/index.test.tsx \
+  && test "$(git diff --cached --name-only)" = 'mobile-pet-tracker/src/screens/profile/index.test.tsx' \
+  && git diff --quiet -- . ../docs ../specs && test -z "$(git ls-files --others --exclude-standard -- . ../docs ../specs)" \
+  && git commit -m 'test(mobile): 0 meses y 0 kg pintan sus chips (#168 R5)' -m 'Nace verde (Enmienda E3). Sondas antes del commit, una a una, revertidas con limpio=0:
+P2t guarda de peso por truthiness: 1 failed (0 meses y 0 kg)
+P3t guarda de edad por truthiness: 3 failed (0 meses y 0 kg, Infinity y -Infinity)'
+exit=0
+[feature/168-mobile-tab-headers-canvas 94284199] test(mobile): 0 meses y 0 kg pintan sus chips (#168 R5)
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 1 file changed, 10 insertions(+)
+$ tsc --noEmit
+
+Test Suites: 2 passed, 2 total
+Tests:       92 passed, 92 total
+chain_exit=0
+Lint:
+```
+GUARDAS: exit=0, `Tests:       92 passed, 92 total`; typecheck: exit=0; LINT 0: exit=0, 0 warnings; lista stageada exacta y LIMPIO correctos.
+c31: `94284199 test(mobile): 0 meses y 0 kg pintan sus chips (#168 R5)`.
+
+### O5 / c32
+
+Bloque literal de requirements.md §E3 insertado en su ancla, sin alterar otros `it`.
+
+Verde O5
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/profile/index.test.tsx > /tmp/168-o5.txt 2>&1; echo "exit=$?"
+Tests:       66 passed, 66 total
+exit=0
+```
+
+Localización literal de la sonda N2
+
+```text
+$ grep -nF 'text: pet.sterilized === null ? null : pet.sterilized ?' src/screens/profile/index.tsx
+69:    { testID: 'profile-pet-chip-sterilized', slot: 'green', text: pet.sterilized === null ? null : pet.sterilized ? t('profile.sterilized') : t('profile.notSterilized') },
+```
+
+Sonda N2
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/profile/index.test.tsx > /tmp/168-o5-N2.txt 2>&1; echo "exit=$?"
+Tests:       1 failed, 65 passed, 66 total
+exit=1
+  ● #168 R5: Perfil pinta chips pastel por dato › sin sexo conserva esterilización, edad y peso en sus huecos
+```
+
+Sonda N2 revertida
+
+```text
+$ git checkout HEAD -- src/screens/profile/index.tsx
+git diff --quiet -- src/screens/profile/index.tsx 'src/app/(tabs)/food.tsx' && git diff --cached --quiet; echo "limpio=$?"
+limpio=0
+```
+
+Cadena c32 (GUARDAS, typecheck, LINT 0, staging, LIMPIO y commit), intento 1
+
+```text
+$ FORCE_COLOR=0 bunx jest --runTestsByPath src/__tests__/design-drift.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/168-o5-guardas.txt 2>&1; echo "exit=$?"
+grep -qE '^Tests: +66 passed, 66 total$' /tmp/168-o5.txt \
+  && grep -qE '^Tests: +92 passed, 92 total$' /tmp/168-o5-guardas.txt \
+  && test ! -e .expo/types/router.d.ts && bun run typecheck && bunx expo lint --no-cache > /tmp/168-lint.txt 2>&1 && ! grep -qF 'Failed to run' /tmp/168-lint.txt && test "$(grep -cE '^ +[0-9]+:[0-9]+ +warning ' /tmp/168-lint.txt)" = 0 \
+  && git add src/screens/profile/index.test.tsx \
+  && test "$(git diff --cached --name-only)" = 'mobile-pet-tracker/src/screens/profile/index.test.tsx' \
+  && git diff --quiet -- . ../docs ../specs && test -z "$(git ls-files --others --exclude-standard -- . ../docs ../specs)" \
+  && git commit -m 'test(mobile): sin sexo, Perfil conserva los otros chips (#168 R5)' -m 'Nace verde (Enmienda E3). Sonda antes del commit, revertida con limpio=0:
+N2 esterilizado leyendo pet.sex: 1 failed (sin sexo conserva)'
+exit=0
+[feature/168-mobile-tab-headers-canvas ede0e288] test(mobile): sin sexo, Perfil conserva los otros chips (#168 R5)
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 1 file changed, 11 insertions(+)
+$ tsc --noEmit
+
+Test Suites: 2 passed, 2 total
+Tests:       92 passed, 92 total
+chain_exit=0
+Lint:
+```
+GUARDAS: exit=0, `Tests:       92 passed, 92 total`; typecheck: exit=0; LINT 0: exit=0, 0 warnings; lista stageada exacta y LIMPIO correctos.
+c32: `ede0e288 test(mobile): sin sexo, Perfil conserva los otros chips (#168 R5)`.
+
+### O6 / c33
+
+Bloque literal de requirements.md §E3 insertado en su ancla, sin alterar otros `it`.
+
+Verde O6
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/profile/index.test.tsx > /tmp/168-o6.txt 2>&1; echo "exit=$?"
+Tests:       67 passed, 67 total
+exit=0
+```
+
+Localización literal de la sonda N3
+
+```text
+$ grep -nF 'slot: '"'"'blue'"'"', text: pet.sex }' src/screens/profile/index.tsx
+68:    { testID: 'profile-pet-chip-sex', slot: 'blue', text: pet.sex },
+```
+
+Sonda N3
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/profile/index.test.tsx > /tmp/168-o6-N3.txt 2>&1; echo "exit=$?"
+Tests:       1 failed, 66 passed, 67 total
+exit=1
+  ● #168 R5: Perfil pinta chips pastel por dato › sin esterilización conserva sexo, edad y peso en sus huecos
+```
+
+Sonda N3 revertida
+
+```text
+$ git checkout HEAD -- src/screens/profile/index.tsx
+git diff --quiet -- src/screens/profile/index.tsx 'src/app/(tabs)/food.tsx' && git diff --cached --quiet; echo "limpio=$?"
+limpio=0
+```
+
+Localización literal de la sonda N2
+
+```text
+$ grep -nF 'text: pet.sterilized === null ? null : pet.sterilized ?' src/screens/profile/index.tsx
+69:    { testID: 'profile-pet-chip-sterilized', slot: 'green', text: pet.sterilized === null ? null : pet.sterilized ? t('profile.sterilized') : t('profile.notSterilized') },
+```
+
+Sonda N2
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/profile/index.test.tsx > /tmp/168-o6-N2.txt 2>&1; echo "exit=$?"
+Tests:       2 failed, 65 passed, 67 total
+exit=1
+  ● #168 R5: Perfil pinta chips pastel por dato › sin sexo conserva esterilización, edad y peso en sus huecos
+  ● #168 R5: Perfil pinta chips pastel por dato › sin esterilización conserva sexo, edad y peso en sus huecos
+```
+
+Sonda N2 revertida
+
+```text
+$ git checkout HEAD -- src/screens/profile/index.tsx
+git diff --quiet -- src/screens/profile/index.tsx 'src/app/(tabs)/food.tsx' && git diff --cached --quiet; echo "limpio=$?"
+limpio=0
+```
+
+Cadena c33 (GUARDAS, typecheck, LINT 0, staging, LIMPIO y commit), intento 1
+
+```text
+$ FORCE_COLOR=0 bunx jest --runTestsByPath src/__tests__/design-drift.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/168-o6-guardas.txt 2>&1; echo "exit=$?"
+grep -qE '^Tests: +67 passed, 67 total$' /tmp/168-o6.txt \
+  && grep -qE '^Tests: +92 passed, 92 total$' /tmp/168-o6-guardas.txt \
+  && test ! -e .expo/types/router.d.ts && bun run typecheck && bunx expo lint --no-cache > /tmp/168-lint.txt 2>&1 && ! grep -qF 'Failed to run' /tmp/168-lint.txt && test "$(grep -cE '^ +[0-9]+:[0-9]+ +warning ' /tmp/168-lint.txt)" = 0 \
+  && git add src/screens/profile/index.test.tsx \
+  && test "$(git diff --cached --name-only)" = 'mobile-pet-tracker/src/screens/profile/index.test.tsx' \
+  && git diff --quiet -- . ../docs ../specs && test -z "$(git ls-files --others --exclude-standard -- . ../docs ../specs)" \
+  && git commit -m 'test(mobile): sin esterilización, Perfil conserva los otros chips (#168 R5)' -m 'Nace verde (Enmienda E3). Sondas antes del commit, una a una, revertidas con limpio=0:
+N3 sexo leyendo pet.sterilized: 1 failed (sin esterilización conserva)
+N2 esterilizado leyendo pet.sex: 2 failed (sin sexo conserva y sin esterilización conserva)'
+exit=0
+[feature/168-mobile-tab-headers-canvas 4a77bd67] test(mobile): sin esterilización, Perfil conserva los otros chips (#168 R5)
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 1 file changed, 11 insertions(+)
+$ tsc --noEmit
+
+Test Suites: 2 passed, 2 total
+Tests:       92 passed, 92 total
+chain_exit=0
+Lint:
+```
+GUARDAS: exit=0, `Tests:       92 passed, 92 total`; typecheck: exit=0; LINT 0: exit=0, 0 warnings; lista stageada exacta y LIMPIO correctos.
+c33: `4a77bd67 test(mobile): sin esterilización, Perfil conserva los otros chips (#168 R5)`.
+
+### O7 / c34
+
+Bloque literal de requirements.md §E3 insertado en su ancla, sin alterar otros `it`.
+
+Verde O7
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/profile/index.test.tsx > /tmp/168-o7.txt 2>&1; echo "exit=$?"
+Tests:       68 passed, 68 total
+exit=0
+```
+
+Localización literal de la sonda P13
+
+```text
+$ grep -nF '{photoError ? (' src/screens/profile/index.tsx
+284:          {photoError ? (
+```
+
+Sonda P13
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/profile/index.test.tsx > /tmp/168-o7-P13.txt 2>&1; echo "exit=$?"
+Tests:       1 failed, 67 passed, 68 total
+exit=1
+  ● #168 R4: Perfil sustituye el hero por profile-pet-card › con la subida fallida deja change-photo y luego photo-upload-error tras la tarjeta
+```
+
+Sonda P13 revertida
+
+```text
+$ git checkout HEAD -- src/screens/profile/index.tsx
+git diff --quiet -- src/screens/profile/index.tsx 'src/app/(tabs)/food.tsx' && git diff --cached --quiet; echo "limpio=$?"
+limpio=0
+```
+
+Cadena c34 (GUARDAS, typecheck, LINT 0, staging, LIMPIO y commit), intento 1
+
+```text
+$ FORCE_COLOR=0 bunx jest --runTestsByPath src/__tests__/design-drift.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/168-o7-guardas.txt 2>&1; echo "exit=$?"
+grep -qE '^Tests: +68 passed, 68 total$' /tmp/168-o7.txt \
+  && grep -qE '^Tests: +92 passed, 92 total$' /tmp/168-o7-guardas.txt \
+  && test ! -e .expo/types/router.d.ts && bun run typecheck && bunx expo lint --no-cache > /tmp/168-lint.txt 2>&1 && ! grep -qF 'Failed to run' /tmp/168-lint.txt && test "$(grep -cE '^ +[0-9]+:[0-9]+ +warning ' /tmp/168-lint.txt)" = 0 \
+  && git add src/screens/profile/index.test.tsx \
+  && test "$(git diff --cached --name-only)" = 'mobile-pet-tracker/src/screens/profile/index.test.tsx' \
+  && git diff --quiet -- . ../docs ../specs && test -z "$(git ls-files --others --exclude-standard -- . ../docs ../specs)" \
+  && git commit -m 'test(mobile): photo-upload-error va tras change-photo (#168 R4)' -m 'Nace verde (Enmienda E3). Sonda antes del commit, revertida con limpio=0:
+P13 error de subida delante de change-photo: 1 failed (con la subida fallida)'
+exit=0
+[feature/168-mobile-tab-headers-canvas a3d416e1] test(mobile): photo-upload-error va tras change-photo (#168 R4)
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 1 file changed, 19 insertions(+)
+$ tsc --noEmit
+
+Test Suites: 2 passed, 2 total
+Tests:       92 passed, 92 total
+chain_exit=0
+Lint:
+```
+GUARDAS: exit=0, `Tests:       92 passed, 92 total`; typecheck: exit=0; LINT 0: exit=0, 0 warnings; lista stageada exacta y LIMPIO correctos.
+c34: `a3d416e1 test(mobile): photo-upload-error va tras change-photo (#168 R4)`.
+
+### O8 / c35
+
+Bloque literal de requirements.md §E3 insertado en su ancla, sin alterar otros `it`.
+
+Verde O8
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath 'src/app/(tabs)/__tests__/food.test.tsx' > /tmp/168-o8.txt 2>&1; echo "exit=$?"
+Tests:       84 passed, 84 total
+exit=0
+```
+
+Localización literal de la sonda F17
+
+```text
+$ grep -nF 'now: kcalPct }}' 'src/app/(tabs)/food.tsx'
+216:                    accessibilityValue={{ min: 0, max: 100, now: kcalPct }}
+```
+
+Sonda F17
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath 'src/app/(tabs)/__tests__/food.test.tsx' > /tmp/168-o8-F17.txt 2>&1; echo "exit=$?"
+Tests:       1 failed, 83 passed, 84 total
+exit=1
+  ● #168 R9: el anillo dice el porcentaje acotado › anuncia el valor sin acotar cuando pasa de 100
+```
+
+Sonda F17 revertida
+
+```text
+$ git checkout HEAD -- 'src/app/(tabs)/food.tsx'
+git diff --quiet -- src/screens/profile/index.tsx 'src/app/(tabs)/food.tsx' && git diff --cached --quiet; echo "limpio=$?"
+limpio=0
+```
+
+Cadena c35 (GUARDAS, typecheck, LINT 0, staging, LIMPIO y commit), intento 1
+
+```text
+$ FORCE_COLOR=0 bunx jest --runTestsByPath src/__tests__/design-drift.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/168-o8-guardas.txt 2>&1; echo "exit=$?"
+grep -qE '^Tests: +84 passed, 84 total$' /tmp/168-o8.txt \
+  && grep -qE '^Tests: +92 passed, 92 total$' /tmp/168-o8-guardas.txt \
+  && test ! -e .expo/types/router.d.ts && bun run typecheck && bunx expo lint --no-cache > /tmp/168-lint.txt 2>&1 && ! grep -qF 'Failed to run' /tmp/168-lint.txt && test "$(grep -cE '^ +[0-9]+:[0-9]+ +warning ' /tmp/168-lint.txt)" = 0 \
+  && git add 'src/app/(tabs)/__tests__/food.test.tsx' \
+  && test "$(git diff --cached --name-only)" = 'mobile-pet-tracker/src/app/(tabs)/__tests__/food.test.tsx' \
+  && git diff --quiet -- . ../docs ../specs && test -z "$(git ls-files --others --exclude-standard -- . ../docs ../specs)" \
+  && git commit -m 'test(mobile): el anillo anuncia now sin acotar (#168 R9)' -m 'Nace verde (Enmienda E3). Sonda antes del commit, revertida con limpio=0:
+F17 now acotado a 100: 1 failed (anuncia el valor sin acotar)'
+exit=0
+[feature/168-mobile-tab-headers-canvas da4a0db6] test(mobile): el anillo anuncia now sin acotar (#168 R9)
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 1 file changed, 11 insertions(+)
+$ tsc --noEmit
+
+Test Suites: 2 passed, 2 total
+Tests:       92 passed, 92 total
+chain_exit=0
+Lint:
+```
+GUARDAS: exit=0, `Tests:       92 passed, 92 total`; typecheck: exit=0; LINT 0: exit=0, 0 warnings; lista stageada exacta y LIMPIO correctos.
+c35: `da4a0db6 test(mobile): el anillo anuncia now sin acotar (#168 R9)`.
+
+### Cierre E3
+
+Paso 1, comando propio desde mobile-pet-tracker/, sin cortar ni repetir:
+
+```text
+$ for i in $(seq 1 90); do pgrep -f 'node_modules/(\.bin/jest|jest-worker)|[i]nit\.sh' > /dev/null || break; sleep 60; done; pgrep -af 'node_modules/(\.bin/jest|jest-worker)'; pgrep -af '[i]nit\.sh'; echo "fin-espera"
+fin-espera
+```
+
+La espera se mantuvo mientras había procesos activos. Dos consultas de lectura al final (`pgrep -af` de Jest y `pgrep -f` de init.sh) dieron salida vacía; no se cortó ni se repitió la espera. El ALL se lanzó inmediatamente después de `fin-espera`.
+
+Paso 2, sin pipe y sin lanzar nada más mientras corría:
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 > /tmp/168-all-r13.txt 2>&1; echo "exit=$?"
+exit=0
+A worker process has failed to exit gracefully and has been force exited. This is likely caused by tests leaking due to improper teardown. Try running with --detectOpenHandles to find leaks. Active timers can also cause this, ensure that .unref() was called on them.
+Test Suites: 99 passed, 99 total
+Tests:       2843 passed, 2843 total
+```
+
+Como comando propio:
+
+```text
+$ grep -c "reading 'canceled'" /tmp/168-all-r13.txt
+0
+```
+
+El exit 1 de grep es el esperado para cero coincidencias. Aviso conocido de worker copiado arriba; no hubo suites rojas. ALL ejecutado una vez, sin medir suites solas ni repetirlo.
+
+Paso 3, solo con el paso 2 entero verde:
+
+```text
+$ git diff --name-only 53f0e8f9 HEAD -- . | LC_ALL=C sort
+mobile-pet-tracker/src/app/(tabs)/__tests__/food.test.tsx
+mobile-pet-tracker/src/screens/profile/index.test.tsx
+```
+
+```text
+$ git diff --name-only 53f0e8f9 HEAD -- ../docs ../backend-pet-tracker ../infra-pet-tracker | wc -l
+0
+```
+
+```text
+$ git log --oneline 938188b8..HEAD | wc -l
+9
+```
+
+Los tres diffs/recuentos coinciden. Pwd de las anclas y de todas las medidas móviles: `/home/claude/sites/Pet-Tracker-wt-168/mobile-pet-tracker`.
+
+Paso 4: solo las filas R4, R5 y R9 de traceability suman `; E3: ` al final de las columnas de test y commit, conservando todo lo anterior y el frontmatter. Los ocho bloques del árbol coinciden literalmente con §E3.a/b/c y los ocho mensajes coinciden con el handoff. No quedaron decisiones de conducta abiertas.
+
+Nota de invocación documental: un assert del parser contó diez mensajes con `&& git commit`, pero el handoff contiene nueve (c37 no lleva `&&`). Se corrigió ese recuento antes de escribir la trazabilidad; no se repitió ninguna medida.
+
+Cierre documental c36 desde la raíz:
+
+```text
+$ cd /home/claude/sites/Pet-Tracker-wt-168 && pwd
+/home/claude/sites/Pet-Tracker-wt-168
+$ git add specs/mobile-tab-headers-canvas/traceability.md progress/impl_mobile-tab-headers-canvas.md \
+  && test "$(git diff --cached --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'progress/impl_mobile-tab-headers-canvas.md specs/mobile-tab-headers-canvas/traceability.md ' \
+  && git commit -m 'docs(mobile-tab-headers-canvas): #168 traceability E3'
+```
