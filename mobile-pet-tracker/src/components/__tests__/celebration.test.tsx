@@ -213,6 +213,22 @@ function expectSamples(actual: number[][], expected: number[][], digits: number[
   actual.forEach((row, i) => row.forEach((value, k) => expect(value).toBeCloseTo(expected[i][k], digits[k])));
 }
 
+// #171 R7 (E2): [opacidad, escala] a 50, 100, 150 y 200 ms del arranque de cada pop.
+const POP_SAMPLES = [
+  [0.682, 0.944],
+  [0.925, 1.06],
+  [0.986, 1],
+  [0.999, 0.992],
+];
+
+function samplePop(testID: string) {
+  const style = getAnimatedStyle(screen.getByTestId(testID, { includeHiddenElements: true })) as unknown as {
+    opacity: number;
+    transform: [{ scale: number }];
+  };
+  return [style.opacity, style.transform[0].scale];
+}
+
 describe('#171 R6: confeti', () => {
   const H = Dimensions.get('window').height;
 
@@ -318,6 +334,27 @@ describe('#171 R7: pop', () => {
     expect(getAnimatedStyle(screen.getByTestId('probe-badge', { includeHiddenElements: true }))).toEqual({
       position: 'absolute', right: 0, bottom: 0, opacity: 1, transform: [{ scale: 1 }],
     });
+  });
+
+  it('R7.4 Pingo rebota por encima de 1 y se asienta a los 50, 100, 150 y 200 ms', async () => {
+    await renderProbe();
+    const samples: number[][] = [];
+    for (let step = 0; step < 4; step++) {
+      await act(async () => { jest.advanceTimersByTime(50); });
+      samples.push(samplePop('probe-pingo'));
+    }
+    expectSamples(samples, POP_SAMPLES, [2, 2]);
+  });
+
+  it('R7.4 la insignia repite el rebote a los 450, 500, 550 y 600 ms', async () => {
+    await renderProbe();
+    await act(async () => { jest.advanceTimersByTime(400); });
+    const samples: number[][] = [];
+    for (let step = 0; step < 4; step++) {
+      await act(async () => { jest.advanceTimersByTime(50); });
+      samples.push(samplePop('probe-badge'));
+    }
+    expectSamples(samples, POP_SAMPLES, [2, 2]);
   });
 });
 
