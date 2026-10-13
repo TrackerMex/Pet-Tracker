@@ -620,12 +620,14 @@ los valores medidos de arriba, sin tocar producción.
    de `no exporta nada más` gana `MOTION_CELEBRATION_SPRING`, además de los
    tokens que trae #167.
 3. **Sección de copy.** R12.3 registra las cuatro claves en
-   `### §2.26 — Añadidos por #171 — Celebraciones`, después de la §2.25 de
-   #169 y antes de `## 3. La infraestructura`. Su `it` pasa a
-   `it('registra las cuatro claves en §2.26 de mobile-ui-language')`, con el
-   literal `'### §2.26 — Añadidos por #171 — Celebraciones'`. Las dos
-   aserciones de posición (detrás de `### §2.23 `, delante de
-   `## 3. La infraestructura`) no cambian.
+   `### §2.<n> — Añadidos por #171 — Celebraciones`, la siguiente libre en
+   `origin/main` al escribir el handoff de la ronda 3: §2.26 sobre
+   `ad432ca4` (después de la §2.25 de #169), o §2.27 si #170 mergea antes.
+   Va antes de `## 3. La infraestructura`. Su `it` pasa a
+   `it('registra las cuatro claves en §2.<n> de mobile-ui-language')`, con el
+   literal `'### §2.<n> — Añadidos por #171 — Celebraciones'`; el leader
+   fija `<n>` en el handoff. Las dos aserciones de posición (detrás de
+   `### §2.23 `, delante de `## 3. La infraestructura`) no cambian.
 4. **Sonda S5b** de la tabla de E2: muta `dampingRatio: 0.5` en
    `MOTION_CELEBRATION_SPRING`. Sigue siendo un literal único en
    `motion.ts`, porque el muelle de #167 usa 0.6.
