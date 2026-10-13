@@ -715,7 +715,7 @@ En `src/components/__tests__/celebration.test.tsx`, justo después de la línea
 bloque siguiente, literal:
 
 ```ts
-// #171 E2: [opacidad, translateY, grados] de cada pieza a los 1200 ms, medidos en la spike de la enmienda.
+// #171 R6 (E2): [opacidad, translateY, grados] de cada pieza a los 1200 ms, medidos en la spike de la enmienda.
 const CONFETTI_AT_1200 = [
   [0.154, 1178.4, 465.3],
   [0.194, 1127.3, 445.8],
@@ -775,7 +775,7 @@ En el mismo fichero, justo después del bloque de E2.1 (tras la función
 `expectSamples`):
 
 ```ts
-// #171 E2: [opacidad, escala] a 50, 100, 150 y 200 ms del arranque de cada pop.
+// #171 R7 (E2): [opacidad, escala] a 50, 100, 150 y 200 ms del arranque de cada pop.
 const POP_SAMPLES = [
   [0.682, 0.944],
   [0.925, 1.06],
