@@ -727,4 +727,4 @@ handoff (corrección 16).
 
 ## Smoke R17
 
-- [ ] Smoke R17 en dev build de Android verificado por humano (fecha: ____, build: ____, tema claro ☐ oscuro ☐)
+- [X] Smoke R17 en dev build de Android verificado por humano (fecha: 2026-10-13, build: OnePlus Nord 5, tema claro X oscuro X)
