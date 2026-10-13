@@ -54,6 +54,16 @@ jest.mock('../../theme/use-theme-colors', () => ({
   useThemeColors: (tokens: string[]) => tokens.map((token) => `color:${token}`),
 }));
 
+jest.mock('../../components/pingo-float', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return {
+    PingoFloat(props: { testID: string; children: import('react').ReactNode }) {
+      return React.createElement(View, props);
+    },
+  };
+});
+
 jest.mock('../../api/auth', () => ({
   resetPassword: jest.fn(),
 }));
@@ -357,6 +367,16 @@ describe('#167 R10: Pingo y tarjeta de estado en nueva contraseña', () => {
     mockResetPassword.mockResolvedValue({ kind: 'ok' });
   });
 
+  it('#172 R5: Pingo de nueva contraseña flota en el formulario y en el éxito', async () => {
+    await renderRoute('reset-token-172');
+    expect(screen.getByTestId('reset-pingo').parent)
+      .toHaveProperty('props.testID', 'reset-pingo-float');
+    await submitReset();
+    expect(await screen.findByTestId('reset-success')).toBeOnTheScreen();
+    expect(screen.getByTestId('reset-pingo').parent)
+      .toHaveProperty('props.testID', 'reset-pingo-float');
+  });
+
   it('#167 R10: el formulario entra en dos tiempos', async () => {
     await renderRoute('reset-token-167');
     expect(Object.fromEntries(mockHomeEntrance.mock.calls.map(([p]) => [
@@ -371,7 +391,7 @@ describe('#167 R10: Pingo y tarjeta de estado en nueva contraseña', () => {
     await renderRoute('reset-token-167');
     const header = screen.getByTestId('reset-header');
     expect(header.children).toHaveLength(2);
-    expect(header.children[0]).toHaveProperty('props.testID', 'reset-pingo');
+    expect(header.children[0]).toHaveProperty('props.testID', 'reset-pingo-float');
     expect(header.children[1]).toBe(within(header).getByText('Restablecer contraseña'));
   });
 
@@ -430,7 +450,7 @@ describe('#167 R10: Pingo y tarjeta de estado en nueva contraseña', () => {
       index: 0, className: 'flex-row items-center justify-center gap-3',
     });
     expect(header.children).toHaveLength(2);
-    expect(header.children[0]).toHaveProperty('props.testID', 'reset-pingo');
+    expect(header.children[0]).toHaveProperty('props.testID', 'reset-pingo-float');
     expect(header.children[1]).toBe(within(header).getByText('Restablecer contraseña'));
   });
 

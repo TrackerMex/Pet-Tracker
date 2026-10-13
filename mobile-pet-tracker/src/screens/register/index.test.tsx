@@ -41,6 +41,16 @@ jest.mock('../../theme/use-theme-colors', () => ({
   useThemeColors: (tokens: string[]) => tokens.map((token) => `color:${token}`),
 }));
 
+jest.mock('../../components/pingo-float', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return {
+    PingoFloat(props: { testID: string; children: import('react').ReactNode }) {
+      return React.createElement(View, props);
+    },
+  };
+});
+
 jest.mock('../../api/auth', () => ({
   login: jest.fn(),
   register: jest.fn(),
@@ -336,8 +346,15 @@ describe('#167 R7: Pingo en la cabecera del registro', () => {
     await renderRegister();
     const header = screen.getByTestId('register-header');
     expect(header.children).toHaveLength(2);
-    expect(header.children[0]).toHaveProperty('props.testID', 'register-pingo');
+    expect(header.children[0]).toHaveProperty('props.testID', 'register-pingo-float');
     expect(header.children[1]).toBe(within(header).getByText('Crear cuenta'));
+  });
+
+  it('#172 R5: Pingo del registro flota', async () => {
+    await renderRegister();
+    const pingo = screen.getByTestId('register-pingo');
+    expect(pingo.parent).toHaveProperty('props.testID', 'register-pingo-float');
+    expect(pingo.parent?.children).toEqual([pingo]);
   });
 
   it('#167 R7: Pingo del registro usa la pose de la tablilla', async () => {

@@ -20,6 +20,16 @@ jest.mock('../../components/pop-in', () => {
   };
 });
 
+jest.mock('../../components/pingo-float', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return {
+    PingoFloat(props: { testID: string; children: import('react').ReactNode }) {
+      return React.createElement(View, props);
+    },
+  };
+});
+
 jest.mock('../../api/auth', () => ({
   forgotPassword: jest.fn(),
 }));
@@ -528,9 +538,10 @@ function expectPingoBeforeLock() {
   ]);
   expect(pingo.props.style).toEqual({ width: 120, height: 120, transform: [{ rotate: '6deg' }] });
   expect(pingo.props.accessibilityLabel).toBeUndefined();
-  expect(pingo.parent).toBe(title.parent);
+  const float = screen.getByTestId('forgot-pingo-float');
+  expect(float.parent).toBe(title.parent);
   const siblings = title.parent?.children ?? [];
-  expect(siblings.indexOf(pingo)).toBe(siblings.findIndex((child) => child === lockTile()) - 1);
+  expect(siblings.indexOf(float)).toBe(siblings.findIndex((child) => child === lockTile()) - 1);
 }
 
 describe('#167 R9: Pingo y pop del candado en recuperar', () => {
@@ -571,5 +582,14 @@ describe('#167 R9: Pingo y pop del candado en recuperar', () => {
         style: { borderCurve: 'continuous' },
       },
     });
+  });
+});
+
+
+describe('#172 R5: flotación de recuperar', () => {
+  it('#172 R5: Pingo de recuperar flota', async () => {
+    await renderRoute();
+    expect(screen.getByTestId('forgot-pingo').parent)
+      .toHaveProperty('props.testID', 'forgot-pingo-float');
   });
 });
