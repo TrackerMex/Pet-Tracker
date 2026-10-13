@@ -210,8 +210,8 @@ comparan escritas en el propio test, nunca importando una constante de producci√
     - `className` `` `size-10 items-center justify-center overflow-hidden rounded-full ${CATEGORY_SLOTS[slot].surface}` ``,
       con `slot = (['amber', 'violet', 'blue', 'green', 'rose'] as const)[i % 5]`;
     - tiene **exactamente un** hijo:
-      - IF `pet.photoUrl` no es nulo: `<PetAvatar name={pet.name} photoUrl={pet.photoUrl} size={40} cacheKey={pet.id} testID={`pet-avatar-image-${pet.id}`} />`;
-      - IF `pet.photoUrl` es nulo: `<Text testID={`pet-avatar-fallback-${pet.id}`}>` con
+      - IF `pet.photoUrl` no es nulo: `` <PetAvatar name={pet.name} photoUrl={pet.photoUrl} size={40} cacheKey={pet.id} testID={`pet-avatar-image-${pet.id}`} /> ``;
+      - IF `pet.photoUrl` es nulo: `` <Text testID={`pet-avatar-fallback-${pet.id}`}> `` con
         `className` `` `text-sm font-extrabold ${CATEGORY_SLOTS[slot].ink}` `` y texto
         `pet.name.charAt(0).toUpperCase()`.
   - La variante `avatars` no usa el `Avatar` de heroui.
@@ -447,7 +447,7 @@ comparan escritas en el propio test, nunca importando una constante de producci√
   - `testID={testID}`, `accessibilityRole="button"`, `hitSlop={TOUCH_SLOP}`, `style={CONTINUOUS_CORNER}`;
   - `className` `` `flex-1 gap-1.5 rounded-tile p-3 ${CATEGORY_SLOTS[slot].surface}` ``;
   - **exactamente dos** hijos:
-    - `View` `testID={`${testID}-icon`}` oculto a accesibilidad, que contiene `icon`;
+    - `View` `` testID={`${testID}-icon`} `` oculto a accesibilidad, que contiene `icon`;
     - `Text` con `className` `` `text-sm font-extrabold ${CATEGORY_SLOTS[slot].ink}` `` y `label`.
 
   Sin `ChevronRight`, sin tile interior y sin `-tile`.
