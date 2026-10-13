@@ -450,3 +450,21 @@ Total sin F0 ni E1: **27-33 R-ids**. En una sola spec superaría con mucho el ta
 | D15 | #119 frente a F2 | ¿Se cierra #119 como absorbida por F2, o se resuelve antes? | §7.3 |
 
 Más el copy de §5: P1-P7, P9, P11, P13 y P14 necesitan respuesta del humano antes de la spec; P8 es una confirmación; P10 y P12 traen recomendación.
+
+<!-- S8 -->
+## 8. Decisiones del humano (2026-10-13)
+
+Tomadas en dos cuestionarios de opción cerrada en la sesión del leader. Se copia literal la opción elegida.
+
+| # | Decisión | Opción elegida (literal) | Consecuencia |
+|---|---|---|---|
+| D13 | Partición | «3 features, Perfil primero» | #173 pasa a ser **Perfil**. Nutrición y Salud se registran como features propias cuando les toque: Nutrición tras el merge de #168 y Salud tras #169. |
+| D1 | Peso 800 | «Añadir Inter-ExtraBold» | `Inter-ExtraBold.ttf` en `assets/fonts/`, registro en `useFonts` de `src/app/_layout.tsx` y `--font-extrabold` en `@theme`. Entra en #173 porque Perfil va primero. |
+| D2 | Escala de radios | «Tokens nuevos + enmienda» | Opción B: `--radius-hero` (28) y `--radius-tile` (16-18; el valor lo fija la spec), con enmienda de la carta §12 y del guard `#62 R4`, y su casilla de firma. Entra en #173. |
+| D8 | Sombras de tarjeta | «Sin sombra solo aquí» | Variante nueva de `Card` sin sombra (y sin borde donde el canvas no lo dibuja). Los 19 consumidores actuales no cambian. |
+| D3 | PetSwitcher en Perfil | «Conservarlo, con avatares» | Variante con avatares de 40 pt, color por mascota y anillo doble en la seleccionada. Inicio, Recordatorios y Collar conservan el aspecto por defecto. D4 (color por índice o por hash del `id`) queda como pregunta de la spec. |
+| C10, P13, P14 | Tema e idioma | «Filas del canvas» | Fila «Tema oscuro» con `Switch` de heroui-native y etiqueta fija; fila «Idioma» con el **idioma actual** como valor; al tocar la fila se cambia. |
+| P9 | Etiquetas «Información» y «Cuenta» | «Quitarlas» | Se enmienda `#61 R9`. |
+| P6 | Fila del collar | «Estado» | «Vinculado» / sin collar, en lugar del modelo. El texto exacto es copy nuevo y se aprueba en la spec. |
+
+Siguen abiertas para la spec de Perfil, cada una con su recomendación: D4, D12/P10 (cerrar sesión; recomendado conservarlo), D14 (temas del smoke), P5 («Collar GPS» o «Dispositivo GPS» en el tile), P7 (última señal relativa), P8 (confirmar `addPet.male` / `addPet.female`).
