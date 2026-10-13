@@ -8831,5 +8831,5 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
   exista la acción. A 2026-10-13 los ids #172 (mobile-account-screens-polish,
   Frontend) y #173 (mobile-tab-screens-canvas-fidelity, UI-Pet) ya están
   tomados: usar #174 o superior, contrastado con origin/main y con los peers.
-- **Estado final:** done. Notion: Implementado / Completado. PR contra `main`;
+- **Estado final:** done. Notion: Implementado / Completado. PR #212 contra `main`;
   el merge lo hace el humano. Tras el merge: borrar el worktree.

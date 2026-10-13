@@ -2,7 +2,7 @@
 
 **Última actualización**: 2026-10-13
 **Features completadas**: 156/171 (`feature_list.json`)
-**En progreso**: ninguna en esta rama. #169 cerrada en `feature/169-mobile-weight-draw-and-toasts`, PR pendiente de merge humano.
+**En progreso**: ninguna en esta rama. #169 cerrada en `feature/169-mobile-weight-draw-and-toasts`, PR #212 pendiente de merge humano.
 
 **Pendientes**: 15 (#60, #119, #129, #144, #150, #151, #154, #160, #163, #164, #165, #168, #170, #171 y #172). **#169 `mobile-weight-draw-and-toasts` cerrada**: fila 3 «Salud y rutina» del canvas, parte 1. `WeightChart` dibuja la línea con un trazo animado (`strokeDashoffset`, `MOTION_FILL_TIMING`, respeta reduce motion) y Salud lo hereda; Peso gana el resumen con el peso actual y el delta del mes (`monthlyWeightDelta`) y un toast con háptico tras un alta correcta. Dos claves nuevas (§2.25 de la spec de idioma). Rondas 1 y 2 rechazadas (candados que solo muestreaban extremos o fixtures colineales); las Enmiendas E1 y E2, solo tests, se firmaron desde Notion y la ronda 3 la aprobó el reviewer (`d4ccf05c`). El humano firmó el smoke R14 en `084d9fc3`. Móvil 98/2775 → 99/2833 medido sobre la branch antes de mergear #167. **#167 `mobile-account-screens-pingo` cerrada**: Pingo llega a las pantallas de cuenta. Login y Registro migran a ruta delgada + `src/screens/`. Login saluda con la clave nueva `login.pingoGreeting` y entra en dos tiempos; Registro lleva a Pingo en la cabecera y un icono en el error general; Recuperar y Nueva contraseña ganan a Pingo y un «pop» (componente `PopIn`, cuatro tokens nuevos en `motion.ts`); la Bienvenida suma tres anillos de ping, que la carta declara en la Enmienda #167. Ronda 1 de Codex rechazada (B1-B4, cláusulas sin candado); la Enmienda E1, solo tests, se firmó desde Notion (`c32ae760`) y la ronda 2 la aprobó el reviewer (`82a72c09`). El humano firmó el smoke R15 en `3f3ee0f3`, con observaciones de diseño que pasan a #172. Móvil 98/2775 → 99/2851.
 
@@ -1478,7 +1478,7 @@ debe listar las 4 URLs de cola.
   (`ccb4ad61`). Rondas 1 y 2 rechazadas; Enmiendas E1 (`462ca164`) y E2
   (`b3a20ffa`), solo tests, firmadas desde Notion. Ronda 3 aprobada
   (`d4ccf05c`). Smoke R14 firmado en `084d9fc3`. Notion: Implementado /
-  Completado. Detalle en `progress/history.md`.
+  Completado. PR #212 abierta. Detalle en `progress/history.md`.
 - **2026-10-13** — **#167 `mobile-account-screens-pingo` cerrada** (worktree
   `Pet-Tracker-wt-167`, sesión Frontend). Spec firmada desde Notion
   (`ed8158b6`). Ronda 1 de Codex rechazada (B1-B4); Enmienda E1 de solo tests
