@@ -572,4 +572,4 @@ de la enmienda está en su `requirements.md` §R11.
   aprobación. Los tests que cubren lo enmendado se reescriben en #168 (lista
   en su `tasks.md`).
 
-- [ ] Enmienda #168 aprobada por humano
+- [X] Enmienda #168 aprobada por humano

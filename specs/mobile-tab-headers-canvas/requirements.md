@@ -569,7 +569,7 @@ Candidatas a feature propia (las decide el humano, no se crean aquí):
 - [X] Aprobado por humano (fecha: 2026-10-11) ← gate obligatorio antes de implementar
 - Reversiones, una casilla cada una. Los bloques los inserta Codex en el
   bloque L de `tasks.md`, así que el humano firma aquí **y** en la casilla
-  `- [ ] Enmienda #168 aprobada por humano` de cada documento tras la
+  `- [X] Enmienda #168 aprobada por humano` de cada documento tras la
   implementación y antes del cierre. El leader no marca `done` sin las cinco.
   La frase relatada en §0.1 no sustituye a ninguna:
   - [X] B1: Salud deja el hero (enmienda a `specs/mobile-health-make-parity/`, R2 y R3)

@@ -506,6 +506,6 @@ de la enmienda está en su `requirements.md` §R11.
   aprobación. Los tests que cubren lo enmendado se reescriben en #168 (lista
   en su `tasks.md`).
 
-- [ ] Enmienda #168 aprobada por humano
+- [X] Enmienda #168 aprobada por humano
 
 **Regla N1 (enmienda B4 de #168)**: Salud, Nutrición y Perfil abren con el título grande; Inicio es la única pestaña con PetHeroHeader. Devolver el hero a una de las tres es una enmienda a #168.
