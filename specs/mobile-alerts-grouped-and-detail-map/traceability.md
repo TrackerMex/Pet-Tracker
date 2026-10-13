@@ -1,6 +1,6 @@
 ---
 feature: "mobile-alerts-grouped-and-detail-map"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec, mobile]
 ---
 
@@ -29,7 +29,7 @@ Rutas de test relativas a `mobile-pet-tracker/`. La columna de test da el
 | R14 | `src/screens/alert-detail/index.test.tsx::#170 R14: dentro o en el borde no dice distancia` | dfa09ead test(mobile-alerts-grouped-and-detail-map): #170 R14 inside or on the edge (nace verde tras R10) |
 | R15 | `src/screens/alert-detail/index.test.tsx::#170 R15: Ver en el mapa lleva al Mapa con la mascota de la alerta` | rojo: 0d90d684 test(mobile-alerts-grouped-and-detail-map): #170 R15 red view on map CTA → verde: e63bbba4 feat(mobile-alerts-grouped-and-detail-map): #170 R15 view on map CTA; E3: 3361aea0 test(mobile-alerts-grouped-and-detail-map): #170 E3 R15 view on map CTA keeps min-h-11 |
 | R16 | `src/__tests__/ui-language.test.ts` (R12/R13) + `src/__tests__/consistency-classnames.test.ts` (`#62 R14`, `#62 R15` › `#69 R10: mantiene la base cerrada más los deltas medidos`, `#98 R10`, `#166 R3`), sin `it` propio: comentarios `// #170 R16` en las cuentas que mueve, como prescribe tasks.md | fe0ca64a test(mobile-alerts-grouped-and-detail-map): #170 R3 red list sections; 6ff10527 test(mobile-alerts-grouped-and-detail-map): #170 R4 red new alerts counter; fd7a129f test(mobile-alerts-grouped-and-detail-map): #170 R8 red alert mini-map; e1ac4901 test(mobile-alerts-grouped-and-detail-map): #170 R10 red zone and distance to its edge; 0d90d684 test(mobile-alerts-grouped-and-detail-map): #170 R15 red view on map CTA |
-| R17 | pendiente (humano): smoke en dev build de Android, casilla `## Smoke R17` de requirements.md | pendiente |
+| R17 | prueba de humo en dev build de Android (humano), casilla `## Smoke R17` de requirements.md | firmada por el humano el 2026-10-13 (OnePlus Nord 5, tema claro y oscuro): `33a4bcde Record Android R17 smoke verification` |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente".
 Convención de commit: `test(mobile-alerts-grouped-and-detail-map): #170 R<n> red …`
