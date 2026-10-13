@@ -13,14 +13,14 @@ tags: [mobile, ui, spec]
 |---|---|---|
 | R1 | `src/theme/__tests__/global-css.test.ts::#172 R1: define text-13, text-15 y text-17 con sus valores exactos dentro de @theme`; sonda S1 verificada | `3a87fac0 test(mobile): tokens de texto 13, 15 y 17 (R1)`; `67ff28c3 feat(mobile): tokens de texto 13, 15 y 17 (R1)` |
 | R2 | `src/components/__tests__/back-button.test.tsx::#172 R2: es un botón de 44 con nombre accesible «Volver»`; `#172 R2: en inglés se llama «Back»`; `#172 R2: pinta ChevronLeft de 24 en foreground`; `#172 R2: con historial vuelve atrás y no reemplaza`; `#172 R2: sin historial reemplaza por el fallback`; sondas S2a/S2b verificadas | `b3fe30be test(mobile): BackButton vuelve o reemplaza (R2)`; `4cdb12db feat(mobile): BackButton (R2)` |
-| R3 | pendiente | pendiente |
-| R4 | `src/components/__tests__/pingo-float.test.tsx::#172 R4: flota 10 px arriba en 1,5 s y vuelve en bucle`; `#172 R4: con reduce motion no se mueve`; `#172 R4: pasa testID y children`; `src/theme/__tests__/motion.test.ts::no exporta nada más`; `#172 R4: declara la flotación de Pingo del canvas: 10 px y medio ciclo de 1500 ms ease-in-out`. Pendiente: gate c8 bloqueado por el orden prescrito en T4; ver informe | `e31582c3 test(mobile): Pingo flota 10 px en 3 s en cuenta (R4)`; implementación pendiente |
-| R5 | pendiente | pendiente |
-| R6 | pendiente | pendiente |
-| R7 | pendiente | pendiente |
-| R8 | pendiente | pendiente |
-| R9 | pendiente | pendiente |
-| R10 | pendiente | pendiente |
+| R3 | `src/screens/login/index.test.tsx::#172 R3: la cabecera lleva Volver, el saludo y el título`; `src/screens/login/index.test.tsx::#172 R3: Volver de login vuelve a la bienvenida sin historial`; `src/screens/register/index.test.tsx::#172 R3: la cabecera lleva la fila Volver-Pingo y después el título`; `src/screens/register/index.test.tsx::#172 R3: Volver del registro vuelve a la bienvenida sin historial`; `src/screens/forgot/index.test.tsx::#172 R3: la fila Volver encabeza el scroll en los dos estados`; `src/screens/forgot/index.test.tsx::#172 R3: Volver de recuperar va al login sin historial`; `src/screens/register/index.test.tsx::#167 R7: la cabecera entra con rise`; S3a–S3c verificadas. | `29e2acf6 test(mobile): fila Volver en login, registro y recuperar (R3)`; `984043e1 feat(mobile): fila Volver en login, registro y recuperar (R3)` |
+| R4 | `src/components/__tests__/pingo-float.test.tsx::#172 R4: flota 10 px arriba en 1,5 s y vuelve en bucle`; `src/components/__tests__/pingo-float.test.tsx::#172 R4: con reduce motion no se mueve`; `src/components/__tests__/pingo-float.test.tsx::#172 R4: pasa testID y children`; `src/theme/__tests__/motion.test.ts::#172 R4: declara la flotación de Pingo del canvas: 10 px y medio ciclo de 1500 ms ease-in-out`; `src/theme/__tests__/motion.test.ts::no exporta nada más`; E2 y tipado corregidos; S4a–S4e verificadas. | `e31582c3 test(mobile): Pingo flota 10 px en 3 s en cuenta (R4)`; `75f849a6 test(mobile): orden de sort en el inventario de motion (R4)`; `edf99020 test(mobile): tipa translateY en el candado de Pingo (R4)`; `c12c676f feat(mobile): Pingo flota 10 px en 3 s en cuenta (R4)` |
+| R5 | `src/screens/register/index.test.tsx::#172 R5: Pingo del registro flota`; `src/screens/forgot/index.test.tsx::#172 R5: Pingo de recuperar flota`; `src/screens/reset-password/index.test.tsx::#172 R5: Pingo de nueva contraseña flota en el formulario y en el éxito`; `src/screens/forgot/index.test.tsx::#167 R9: Pingo precede al tile del candado en el formulario`; `src/screens/forgot/index.test.tsx::#167 R9: Pingo precede al tile del candado tras enviar`; `src/screens/reset-password/index.test.tsx::#167 R10: la cabecera lleva a Pingo y después el título`; `src/screens/reset-password/index.test.tsx::#167 R10: el éxito conserva la cabecera del formulario`; S5 verificada. | `1b4551c7 test(mobile): Pingo flota en registro, recuperar y nueva contraseña (R5)`; `60d26f5c feat(mobile): Pingo flota en registro, recuperar y nueva contraseña (R5)` |
+| R6 | `src/screens/login/index.test.tsx::#172 R6: el título de la cabecera pesa 30/900 al inicio`; `src/screens/register/index.test.tsx::#172 R6: el título de la cabecera pesa 30/900 al inicio`; `src/theme/__tests__/font-registration.test.ts::#172 R6: carga Inter ExtraBold y la expone como font-extrabold`; `src/__tests__/account-screens-polish.test.ts::#172 R6: %s pinta títulos, etiquetas, cuerpos y CTA con su receta`; `src/screens/login/index.test.tsx::#167 R6: la burbuja dice el saludo en español`; `src/screens/reset-password/index.test.tsx::#167 R10: el texto de éxito es tinta accent-strong y seleccionable`; S6a–S6c verificadas. | `b8384616 test(mobile): recetas de texto e Inter ExtraBold en cuenta (R6)`; `4b5675c6 feat(mobile): recetas de texto e Inter ExtraBold en cuenta (R6)` |
+| R7 | `src/screens/login/index.test.tsx::#172 R7: el cuerpo lleva correo, contraseña, olvido, envío y registro`; `src/screens/login/index.test.tsx::#172 R7: con error, el error va entre el olvido y el envío`; `src/screens/login/index.test.tsx::#172 R7: sin error, el cuerpo no lleva el error`; `src/__tests__/account-screens-polish.test.ts::#172 R7: los enlaces de login y recuperar llevan su receta`; S7 verificada. | `36f46603 test(mobile): enlaces y orden del cuerpo de login (R7)`; `7d56bacb feat(mobile): enlaces y orden del cuerpo de login (R7)` |
+| R8 | `src/screens/login/index.test.tsx::#172 R8: la contraseña de login lleva su ojo`; `src/screens/register/index.test.tsx::#172 R8: %s lleva su propio ojo`; `src/screens/reset-password/index.test.tsx::#172 R8: %s lleva su propio ojo`; `src/components/__tests__/password-input.test.tsx::#172 R8: arranca oculta con «Mostrar contraseña» y el ojo`; `src/components/__tests__/password-input.test.tsx::#172 R8: el ojo alterna mostrar y ocultar`; `src/components/__tests__/password-input.test.tsx::#172 R8: en inglés dice «Show password» y «Hide password»`; `src/components/__tests__/password-input.test.tsx::#172 R8: el grupo envuelve el campo de 52 y el botón de 44`; Los it.each cubren ambos campos de registro y ambos de reset; S8a–S8d verificadas. | `1ad828d3 test(mobile): mostrar y ocultar la contraseña en cuenta (R8)`; `45e4c40e feat(mobile): mostrar y ocultar la contraseña en cuenta (R8)` |
+| R9 | `src/screens/login/index.test.tsx::#172 R9: el error de login va con icono en su fila`; `src/screens/forgot/index.test.tsx::#172 R9: el error de recuperar va con icono en su fila`; `src/screens/reset-password/index.test.tsx::#172 R9: el error de nueva contraseña va con icono en su fila`; `src/components/__tests__/form-error.test.tsx::#172 R9: la fila lleva el icono y después el texto`; `src/components/__tests__/form-error.test.tsx::#172 R9: el icono mide 14 y usa danger`; `src/components/__tests__/form-error.test.tsx::#172 R9: el texto pesa 13/600 en danger, es seleccionable y dice el mensaje`; `src/screens/register/index.test.tsx::#167 R8: el error general va en una fila con icono`; `src/screens/register/index.test.tsx::#167 R8: el texto del error pesa como el icono`; S9a–S9c verificadas. | `28ad44aa test(mobile): FormError con icono y texto seleccionable (R9)`; `e1dcae38 feat(mobile): FormError en las cuatro pantallas de cuenta (R9)` |
+| R10 | `src/screens/register/index.test.tsx::#172 R10: cada campo con error lleva icono y texto seleccionable`; `src/screens/register/index.test.tsx::#172 R10: sin errores ningún campo pinta mensaje`; `src/__tests__/account-screens-polish.test.ts::#172 R10: los siete campos del registro marcan isInvalid`; Gates c21/c22 verdes; S10a/S10c verificadas. Pendiente: S10b produjo otro it rojo, requiere reconciliar la spec antes de continuar. | `ca1bac6b test(mobile): errores por campo del registro con icono (R10)`; `14c69144 feat(mobile): errores por campo del registro con icono (R10)` |
 | R11 | pendiente | pendiente |
 | R12 | pendiente | pendiente |
 | R13 | pendiente | pendiente |
@@ -38,12 +38,19 @@ se firma después de su veredicto.
 Convención de commit: `test(mobile): … (Rn)` para el rojo y `feat(mobile): …
 (Rn)` para el verde.
 
-**Implementación detenida el 2026-10-13 en T4/c8.** El gate produce un rojo
-inesperado en `no exporta nada más`: `.sort()` coloca `MOTION_PINGO_FLOAT_*`
-antes de `MOTION_PING_FROM`, mientras T4 y R4 los prescriben después de
-`MOTION_PING_TO_SCALE`. No se modificó ese contrato. La implementación de c8
-se retiró del árbol y quedó documentada, junto con la salida exacta, en
-`progress/impl_mobile-account-screens-polish.md`. No se ejecutaron T5–T22.
+**Bloqueo inicial T4/c8 resuelto en Reanudación 1.** E2, firmada por humano,
+corrige el orden de `.sort()` en c7b. C8 y sus sondas pasan; se ejecutaron
+c9–c22 en orden, con rojo y verde separados. Hubo un commit de tests
+adicional que corrige solo el tipado de translateY (R4), sin cambiar aserciones.
+
+**Bloqueo actual T11/S10b.** Tras el gate verde de c22, S10b produjo un rojo
+distinto del prescrito: falla `#172 R10: cada campo con error lleva icono y
+texto seleccionable` por texto vacío, mientras `#172 R10: sin errores ningún
+campo pinta mensaje` sigue verde. `FieldError` devuelve null cuando isInvalid
+es false. No se ajustó la sonda ni el test para cuadrar. Todas las mutaciones
+están revertidas; T12–T22 no se empezaron. La salida exacta, el diagnóstico y
+los commits constan en `progress/impl_mobile-account-screens-polish.md`
+§Reanudación 1. La feature sigue incompleta y R21 pendiente (humano).
 
 Spec y Enmienda #172 aprobadas en Notion
 (https://app.notion.com/p/3f86115a9b27815b91d6ec6acd75a969): `Estado del gate` =
