@@ -7298,3 +7298,23 @@ $ grep -cF '(E3)' specs/mobile-celebrations-and-living-empty/traceability.md
 c42 registra la trazabilidad y la bitácora; c43 registra la lista cerrada desde H1. R16 conserva su casilla pendiente. La verificación global del repositorio queda a cargo del leader.
 
 R16: pendiente del smoke humano
+
+
+### Lista cerrada desde H1 (ronda 3)
+
+Cadena c42: exit=0. Commit `212e50b1 docs(mobile-celebrations-and-living-empty): #171 traceability round 3`.
+
+```text
+$ git log --first-parent --no-merges --format= --name-only f0a9fe294dae775c02b18660c71a4079d32cac66..HEAD | sed '/^$/d' | LC_ALL=C sort -u
+mobile-pet-tracker/src/components/__tests__/celebration.test.tsx
+mobile-pet-tracker/src/components/celebration.tsx
+mobile-pet-tracker/src/theme/__tests__/motion.test.ts
+mobile-pet-tracker/src/theme/motion.ts
+progress/impl_mobile-celebrations-and-living-empty.md
+specs/mobile-celebrations-and-living-empty/traceability.md
+specs/mobile-ui-language/design.md
+```
+
+Los siete ficheros coinciden exactamente con la lista cerrada del handoff. Medida desde H1, con `--first-parent --no-merges`.
+
+R16: pendiente del smoke humano
