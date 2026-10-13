@@ -70,6 +70,7 @@ describe('#152 R1: las duraciones y el preset de movimiento viven en un solo sit
     expect(Object.keys(require('../motion')).sort()).toEqual([
       'MOTION_BLINK_INTERVAL_MS',
       'MOTION_BLINK_TIMING',
+      'MOTION_CELEBRATION_SPRING',
       'MOTION_CONFETTI_FALL_TIMING',
       'MOTION_CONFETTI_MIN_MS',
       'MOTION_CONFETTI_SPREAD_MS',
@@ -81,7 +82,6 @@ describe('#152 R1: las duraciones y el preset de movimiento viven en un solo sit
       'MOTION_FLOAT_OFFSET_Y',
       'MOTION_FLOAT_TIMING',
       'MOTION_POP_SCALE',
-      'MOTION_POP_SPRING',
       'MOTION_SETTLE_SPRING',
       'MOTION_STAGGER_MS',
       'MOTION_SURFACE_MS',
@@ -160,7 +160,7 @@ describe('#171 R7: las constantes de pop viven en motion.ts', () => {
     expect(require('../motion').MOTION_POP_SCALE).toBe(0.6);
   });
 
-  it('declara MOTION_POP_SPRING', () => {
-    expect(require('../motion').MOTION_POP_SPRING).toEqual({ duration: 400, dampingRatio: 0.5, reduceMotion: 'system' });
+  it('declara MOTION_CELEBRATION_SPRING', () => {
+    expect(require('../motion').MOTION_CELEBRATION_SPRING).toEqual({ duration: 400, dampingRatio: 0.5, reduceMotion: 'system' });
   });
 });
