@@ -247,3 +247,134 @@ Las salidas completas están en `/tmp/claude-1002/-home-claude-sites-Pet-Tracker
    - el handoff de la ronda 2.
 
    Describe la sesión activa, así que C2 se cumple, pero está desfasado. Le toca al leader.
+
+## Ronda 3
+Fecha: 2026-10-13 22:20–22:55 UTC
+HEAD revisado: 7eb051e2 (branch feature/171-mobile-celebrations-and-living-empty, sin push). H1 del handoff de la ronda 3: f0a9fe29. La Enmienda E3 se firmó en 34446b87. El merge de origin/main es 788d1f89 (#167, #168, #169, #170).
+Veredicto: APROBADO
+
+### Comprobaciones
+
+1. **E3 implementada.**
+   - `src/theme/motion.ts` declara, bajo `// #171 R7`, `MOTION_CELEBRATION_SPRING = { duration: 400, dampingRatio: 0.5, reduceMotion: ReduceMotion.System }`. El `MOTION_POP_SPRING` de #167 sigue intacto (`duration: MOTION_SURFACE_MS`, `dampingRatio: 0.6`).
+   - `src/components/celebration.tsx` importa `MOTION_CELEBRATION_SPRING` y lo usa en sus dos `withSpring`. `grep -c MOTION_POP_SPRING` da 0.
+   - Fuera de `motion.ts` y su test, el único uso de `MOTION_POP_SPRING` es `src/components/pop-in.tsx`, que es de #167.
+   - En `motion.test.ts`:
+     - `it('declara MOTION_CELEBRATION_SPRING')` tiene el valor 0.5 de E3;
+     - `no exporta nada más` lista `MOTION_CELEBRATION_SPRING` y los tokens de #167;
+     - `#167 R2: MOTION_POP_SPRING … 0.6` sigue vivo.
+   - `specs/mobile-ui-language/design.md` va §2.23 → §2.24 (#167) → §2.25 (#169) → §2.26 (#170) → §2.27 (#171) → `## 3. La infraestructura`. Las cuatro filas de §2.27 son idénticas a las de la ronda 2. Frente a origin/main, design.md solo añade esas 9 líneas.
+   - Las anclas de cierre A5 y A6 del handoff, medidas por mí, cuadran: `MOTION_POP_SPRING` sale motion.test.ts 4, motion.ts 1, celebration.tsx 0; `MOTION_CELEBRATION_SPRING` sale 3, 1 y 3.
+   - Las anclas H1 y H2 también: §2.24 de #171 da 0, y §2.25–2.29 dan 3.
+2. **C4, test primero en E3.** Tanto `git show --numstat` como los diffs confirman el orden rojo → verde:
+   - 87b4fdf0 (R7, test, `3 3` en motion.test.ts) va antes de 3547a943 (R7, refactor, celebration.tsx `3 3` + motion.ts `1 1`);
+   - 2cc05156 (R12, test, `2 2` en celebration.test.tsx) va antes de f5e50953 (R12, docs, design.md `1 1`).
+
+   Reproduje los dos rojos yo mismo:
+   - **c37.** Con motion.ts y motion.test.ts de 87b4fdf0 (par anterior al merge), sale `2 failed, 15 passed, 17 total`. Los dos `●` son `#152 R1 … › no exporta nada más` y `#171 R7 … › declara MOTION_CELEBRATION_SPRING`, la misma lista que registró Codex.
+   - **c39.** celebration.test.tsx es igual en 2cc05156 y en HEAD. Con design.md de 2cc05156, sale `1 failed, 48 passed, 49 total`, con `●` `#171 R12 … › registra las cuatro claves en §2.27 de mobile-ui-language`.
+
+   Restauré los dos con `git checkout HEAD --`; después, `diff --cached` y `diff` salen limpios.
+3. **El merge 1647ce72.** Sus padres son f5e50953 y 788d1f89, con merge-base d2b8b0ae. Lo comprobé así:
+   - **Sin cambios de más.** Ningún fichero difiere de origin/main salvo los que #171 cambió desde la base. Y ningún fichero difiere de f5e50953 salvo los que main cambió desde la base.
+   - **Ficheros que tocan los dos lados.** Son 12. Cinco son idénticos a `git merge-file` (feature_list.json, ui-copy-table.ts, ui-language.test.ts, catalog.ts, welcome/index.test.tsx).
+   - **Los siete conflictos** se resolvieron así, revisados uno a uno con `git show --cc`:
+     - `motion.ts`, `motion.test.ts`, `design-drift.test.ts`, `docs/ui-guidelines.md` y `specs/mobile-ui-language/design.md`: unión de los dos lados. Lo único que cambia es la línea en blanco que los separa. Lo verifiqué comparando, por lado, el conjunto de líneas +/−.
+     - `language-provider.test.tsx`: `+ 4 // #171 R12` junto a `+ 1 // #167 R5`, `+ 2 // #169 R9` y `+ 7 // #170 R1`.
+     - `consistency-classnames.test.ts`: cada recuento es base + delta de main + delta de #171.
+   - **Recuentos de consistency-classnames:**
+
+     | Recuento | Valor resuelto |
+     |---|---|
+     | `directUses` | `… + 4 + 1 - 1` |
+     | CONTINUOUS_CORNER | `31 + 1 + 4 + 1 - 1` |
+     | `rounded-xl bg-accent` (main no lo tocó) | el de #171 |
+     | `bg-accent-soft` y `accentSoftCount` | `16 + 2 + 1 - 1 - 1` |
+     | `border-lip-gray` y `border-b-6` | `4 + 1 + 1` |
+
+     Además, `food` pasa a 1 (#168). En `#166 R2` quedan las rutas `screens/login|register` de #167 y la fila `components/celebration.tsx` de #171.
+   - **Nada de main se pierde.** Frente a 788d1f89, solo quitan líneas los ficheros que #171 ya cambiaba en la ronda 2, y lo que quitan es el diff de #171 desde la base.
+   - **Nada de #171 se pierde.** Frente a f5e50953, solo quitan líneas los ficheros que main cambió.
+   - **Lo que añade #171 sobre origin/main** sigue siendo el mismo conjunto de ficheros de la ronda 2.
+4. **Lista cerrada.** `git log --first-parent --no-merges --name-only f0a9fe29..HEAD` da exactamente los siete ficheros del handoff:
+   - celebration.test.tsx, celebration.tsx, motion.test.ts y motion.ts;
+   - el impl;
+   - traceability.md;
+   - `specs/mobile-ui-language/design.md`.
+
+   `git diff 1647ce72 HEAD` sobre `mobile-pet-tracker/`, `docs/` y `specs/mobile-ui-language/` sale vacío. Frente a origin/main no cambia nada en `backend-pet-tracker/` ni en `infra/`. El script del merge no cambia desde H1.
+5. **C5, trazabilidad.**
+   - Los 40 hashes citados en traceability.md son ancestros de HEAD, y su asunto coincide con el mensaje citado. Entre ellos están 87b4fdf0, 3547a943, 2cc05156 y f5e50953.
+   - Los 30 nombres `archivo::describe > it` citados existen en su fichero: 0 ausentes.
+   - El word-diff frente a a9b1a1a4 solo añade `; … (E3)` al final de la celda de commits de R7 y de R12.
+   - R16 sigue `pendiente` (smoke humano), y su casilla en requirements.md sigue abierta (ancla H6 = 1).
+6. **Spec.**
+   - requirements.md sigue en `status: approved`, con `- [x] Enmienda E3 aprobada por humano (fecha: 2026-10-13)`, firmada en 34446b87 vía Notion.
+   - `git diff 34446b87 HEAD -- specs/mobile-celebrations-and-living-empty/` solo toca traceability.md.
+
+### Checklist C2–C8
+- **C2** [x] `feature_list.json` tiene solo #171 en `in_progress`. `progress/current.md` describe la sesión de #171 y la decisión de E3 (ver la observación 2).
+- **C3** [x] Solo cambian la capa de presentación móvil (un token de tema y su uso) y un spec de copy. Ninguna otra capa.
+- **C4** [x] Cada requisito de E3 tiene su commit rojo antes del verde. Los dos rojos están reproducidos arriba, y los tests nombran su R-id (`#171 R7: …`, `#171 R12: …`).
+- **C5** [x]
+  - Ninguna fila R1–R15 está «pendiente»; R16 es el smoke humano.
+  - Los commits de la ronda siguen `<tipo>(<scope>): <desc> (R<n>, E3)`. `refactor` y `docs` son tipos admitidos en `docs/conventions.md` y los prescribe el handoff.
+- **C6** [x] La spec está aprobada, la casilla de E3 está marcada por el humano y requirements.md no cambia tras la firma.
+- **C7** [x] E3 renombra el muelle de #171: ya no hay un `MOTION_POP_SPRING` de 0.5 ni su `it`. Solo queda el de #167, que es otro token con su propio test. Las menciones de `MOTION_POP_SPRING` en design.md, tasks.md y requirements.md de #171 son históricas («se llamaba»).
+- **C8** [x] E3 no cambia la UI. Tras el merge, la enmienda `## Enmienda #171 — confeti de celebración` sigue en `docs/ui-guidelines.md`, detrás de las de #167 y #168. R15.1 admite enmiendas detrás o delante, y su casilla sigue como en la ronda 2. Los guards de la carta (consistency-classnames, design-drift, ui-language) pasan en el init.sh de HEAD.
+
+### Output de ./init.sh
+Lo corrió el leader sobre 7eb051e2; el subagente no tiene permiso para correrlo. Lo leí del log `/tmp/claude-1002/-home-claude-sites-Pet-Tracker/955d966a-80a9-4f5e-a229-fd9e5ecf2412/scratchpad/r3-init-7eb051e2.log`.
+
+Comprobé que corresponde a HEAD:
+- el log nace a las 22:41:27 UTC, después del commit 7eb051e2 (22:37:30);
+- el reflog no tiene ninguna entrada posterior;
+- las rutas del log son `/home/claude/sites/Pet-Tracker-wt-171/…`;
+- 0 líneas `❌` o `FAIL`.
+
+```
+Test Suites: 187 passed, 187 total
+Tests:       1474 passed, 1474 total          (backend unit)
+Test Suites: 104 passed, 104 total
+Tests:       3187 passed, 3187 total          (móvil; igual al ALL de c41 de Codex)
+Test Suites: 3 skipped, 30 passed, 30 of 33 total
+Tests:       8 skipped, 468 passed, 476 total (e2e backend)
+✅ Lint sin errores
+✅ Typecheck sin errores
+✅ Todo verde. Listo para trabajar.
+```
+El aviso `A worker process has failed to exit gracefully` y las líneas ERROR de Nest ya existían antes de esta ronda.
+
+### Sondas de mutación (ronda 3)
+
+Base en HEAD: motion.test.ts + celebration.test.tsx dan `70 passed, 70 total`.
+
+Corrí cada sonda con `jest --testTimeout=30000 -w 1 --runTestsByPath` y la revertí con `git checkout HEAD -- <fichero>`. Tras cada una, `git diff --cached --quiet && git diff --quiet HEAD` (excluyendo este informe) dio `limpio=0`. Ninguna salida contiene `Unable to find|TypeError|ReferenceError|Test suite failed to run`, así que todos los rojos son por aserción.
+
+| Sonda | Requisito | Mutación | numstat | Tests | Rojo observado | Veredicto |
+|---|---|---|---|---|---|---|
+| P1 | E3 §1 / R7.1–R7.2 | celebration.tsx importa y usa `MOTION_POP_SPRING` (el 0.6 de #167) en vez de `MOTION_CELEBRATION_SPRING` | `3 3` | celebration | `2 failed, 47 passed, 49 total`: los dos `R7.4`. Expected 0.944, Received 0.8625 | rojo correcto |
+| P2 | E3 §1–2 (nombre) | motion.ts exporta `MOTION_CELEBRATE_SPRING` | `1 1` | motion | `2 failed, 19 passed, 21 total`: `no exporta nada más` y `declara MOTION_CELEBRATION_SPRING` (Received undefined) | rojo correcto |
+| P3 | E3 §4 (S5b) | `dampingRatio: 0.5` → `0.6` solo en `MOTION_CELEBRATION_SPRING` | `1 1` | motion + celebration | `3 failed, 67 passed, 70 total`: los dos `R7.4` y `declara MOTION_CELEBRATION_SPRING` | rojo correcto |
+| P4 | E3 §3 / R12.3 (número) | `### §2.27 — … #171` → `### §2.26 — …`, que duplica la de #170 | `1 1` | celebration | `1 failed, 48 passed, 49 total`: `registra las cuatro claves en §2.27` | rojo correcto |
+| P6 | merge: #167 R2 sobrevive | `dampingRatio: 0.6` → `0.5` en el `MOTION_POP_SPRING` de #167 | `1 1` | motion | `1 failed, 20 passed, 21 total`: `#167 R2: MOTION_POP_SPRING … 0.6` | rojo correcto |
+| P5 | R12.3 (posición) | mover el bloque §2.27 entre §2.23 y §2.24 | `9 9` | celebration + language-provider | `77 passed, 77 total`, verde | zona ciega (ver la observación 1) |
+
+Las salidas completas están en `/tmp/claude-1002/-home-claude-sites-Pet-Tracker/955d966a-80a9-4f5e-a229-fd9e5ecf2412/scratchpad/r3rev-<sonda>.txt`, y los rojos de C4 en `r3rev-red-c37.txt` y `r3rev-red-c39.txt`.
+
+Al empezar las sondas, `pgrep` vio un jest focalizado de `/home/claude/sites/Pet-Tracker-wt-172`. No había ningún `init.sh` ajeno, y ninguna sonda dio timeout.
+
+### Observaciones (no bloqueantes)
+1. **La posición de §2.27 frente a las §2.* posteriores a §2.23 no tiene candado.** El texto de E3 en R12.3 dice «Va después de §2.23 y de las secciones `§2.*` que la sigan». El `it` R12 solo asevera `> indexOf('### §2.23 ')` y `< indexOf('## 3. La infraestructura')`.
+   - La sonda P5 sale verde con el bloque entre §2.23 y §2.24.
+   - Implementer y handoff cumplen la spec: E3 «Qué cambia» punto 3, firmado por el humano, dice que «las dos aserciones de posición … no cambian».
+   - El estado actual del fichero es correcto (§2.27 detrás de §2.26).
+   - Es una brecha de la spec, no del trabajo de esta ronda. No bloquea porque el humano firmó el candado tal cual y afecta al orden de un documento, no al comportamiento. Si el leader quiere cerrarla, basta una aserción `indexOf(SECTION) > indexOf('### §2.26 ')` en una feature futura.
+   - Los candados de §2.24 (#167) y §2.25 (#169) en language-provider.test.tsx usan `toContain`, sin posición. Es el mismo patrón de la casa.
+2. **`progress/current.md` no se actualiza desde 0cb0a506** (redacción de E3). No recoge:
+   - la firma 34446b87;
+   - el handoff de la ronda 3 (f0a9fe29);
+   - el fin de Codex ni el init.sh de 7eb051e2.
+
+   Describe la sesión activa, así que C2 se cumple. Le toca al leader.
+3. **R16 (smoke humano en dev build de Android) sigue pendiente,** con su casilla abierta. No bloquea este veredicto, pero sí el `done` (CLAUDE.md: requisitos que solo cierra un humano).

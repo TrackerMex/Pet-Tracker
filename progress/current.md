@@ -26,3 +26,14 @@
 - handoff de la ronda 2 (d65a2140): `progress/handoff_mobile-celebrations-and-living-empty_ronda2.md`, c31-c36, anclas B/M/H ejecutadas por el leader desde el fichero
 - ronda 2 (Codex, cierre 0da89d9e): init.sh del leader EXIT=0 (móvil 99/2861). Reviewer APROBADO (a9b1a1a4), once sondas rojas por aserción
 - merge pendiente con origin/main ad432ca4 (#167, #168, #169): 7 conflictos. #167 declara su propio `MOTION_POP_SPRING` (0.6) y choca con el de #171 (0.5). Decisión del humano (AskUserQuestion, 2026-10-13): «Nombre propio 0.5», la celebración pasa a `MOTION_CELEBRATION_SPRING` y #167 no se toca. La sección de copy de R12.3 pasa a la siguiente libre (§2.26; §2.27 si #170, PR #213, mergea antes). Va en la enmienda E3 con firma humana, y luego la ronda 3 de Codex hace el merge
+- firma de E3 (2026-10-13): aprobada desde Notion, commit de firma 34446b87
+- directiva del humano (2026-10-13, relatada por Backend): «el diseño final debe de quedar como el artifac». El informe de paridad está en `progress/explore_171-canvas-parity.md`. Decisiones del humano (AskUserQuestion, 2026-10-13):
+  - separar por dueño: la celebración (filas 1–14) va a #171 como E4; el vacío de Inicio pasa a #176 y la receta global de botones a #177. Los ids están reservados y confirmados con todos los peers; se registran en feature_list al cerrar #171;
+  - bucles como el canvas, apagados con reduce motion;
+  - copy en la voz B de Pingo;
+  - confeti con el mismo hex en los dos temas;
+  - cuerpo de 15 px con `text-15` (el token de #173, firmada en f3b0a4a8);
+  - `rounded-xs` con excepción acotada en la carta.
+- handoff de la ronda 3 (f0a9fe29): E3 más el merge de origin/main 788d1f89 (#167, #168, #169, #170) con resolvedor versionado; c37–c43
+- ronda 3 (Codex, cierre 7eb051e2): init.sh del leader EXIT=0 (backend 187/1474, móvil 104/3187, e2e 30/468 con 3 suites/8 tests saltados). Reviewer APROBADO, con seis sondas: cinco en rojo por aserción y P5 verde (zona ciega de la posición de §2.27, que es brecha de la spec; E4 la candará)
+- siguiente: aplicar E4 a la spec (el borrador del spec_author está fuera del árbol), espejarla a Notion para la firma, hacer un spike de las tablas analíticas y del resolvedor de uniwind, y escribir el handoff de la ronda 4. R16 (smoke humano) sigue pendiente
