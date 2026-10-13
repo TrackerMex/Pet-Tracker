@@ -134,6 +134,7 @@ Sin cambios (anclas negativas, ver R7): longitud del catálogo en
 `specs/mobile-ui-language/design.md` (una fila por clave, no por uso).
 
 ### R2 — Hero a sangre con el patrón A9
+**Enmendado por #168 (B1)**: Salud ya no abre con el hero a sangre; abre con el título grande y el PetSwitcher como primer hijo de health-content (#168 R1, R2).
 
 - WHEN la lista de mascotas resuelve `ok` con al menos una mascota THE SYSTEM
   SHALL pintar como únicos hijos del contenedor del scroll `screen-health`,
@@ -605,3 +606,17 @@ plural de la fila n se queda en Fuera de alcance.
 ### Prueba de humo
 
 - [x] La casilla «Smoke aprobado por humano» de R9 (S1–S11) (fecha: 2026-10-06, OnePlus Nord 5, `5bb934a8`)
+
+## Enmienda #168 — título grande en Salud, Nutrición y Perfil
+
+`mobile-tab-headers-canvas` (#168) modifica una decisión que esta spec dejó
+aprobada. La spec de origen es `specs/mobile-tab-headers-canvas/`; el detalle
+de la enmienda está en su `requirements.md` §R11.
+
+- Spec enmendada: `mobile-health-make-parity`
+- Qué cambia: `R2 y R3: Salud abre con el título grande, sin hero`
+- Qué NO cambia: ningún otro requisito de esta spec ni su estado de
+  aprobación. Los tests que cubren lo enmendado se reescriben en #168 (lista
+  en su `tasks.md`).
+
+- [X] Enmienda #168 aprobada por humano

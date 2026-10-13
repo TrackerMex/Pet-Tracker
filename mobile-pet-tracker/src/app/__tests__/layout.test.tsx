@@ -431,8 +431,19 @@ describe('#100 R2: la guarda de RootStack declara el detalle de alerta tras aler
       headerTintColor: 'token:foreground',
       headerTitleStyle: { fontFamily: 'Inter-Bold' },
       headerShadowVisible: false,
+      contentStyle: { backgroundColor: 'token:background' },
     });
   });
+  it('#170 R9: pinta el fondo del tema bajo el detalle de alerta', async () => {
+    await render(<RootLayout />);
+    await screen.findByTestId('root-stack');
+    const stack = jest.mocked(Stack).mock.calls.at(-1)?.[0];
+    const group = Children.toArray(stack?.children)[4];
+    if (!isValidElement<{ children: ReactNode }>(group)) throw new Error('Expected protected group');
+    const detail = Children.toArray(group.props.children)[8];
+    expect(isValidElement<{ options?: { contentStyle?: unknown } }>(detail) ? detail.props.options?.contentStyle : undefined).toEqual({ backgroundColor: 'token:background' });
+  });
+
 });
 
 describe('#41 R4: la guarda de RootStack declara las zonas seguras tras el detalle de alerta', () => {

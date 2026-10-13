@@ -134,7 +134,7 @@ describe('#65 R4: Map resuelve su copy por clave', () => {
 
 describe('#65 R5: Health resuelve su copy por clave', () => {
   it('resuelve las 32 ocurrencias normativas', () => {
-    expect(R5_HEALTH).toHaveLength(32 + 1 + 1 - 2 + 3 + 2); // +1 #90 R5, +1 #95 R4, -2 #95 R5, +3 #115 R1, +2 #155 R4
+    expect(R5_HEALTH).toHaveLength(32 + 1 + 1 - 2 + 3 + 2 + 1 + 1); // +1 #90 R5, +1 #95 R4, -2 #95 R5, +3 #115 R1, +2 #155 R4, +1 #169 R6, +1 #169 R10
     checkUses(R5_HEALTH);
   });
 });
@@ -248,7 +248,7 @@ describe('#78 R12: el centro de alertas resuelve su copy por clave', () => {
 
 describe('#100 R10: el detalle de alerta resuelve su copy por clave', () => {
   it('registra cada ocurrencia del detalle', () => {
-    expect(R13_ALERT_DETAIL).toHaveLength(11 - 3); // #134 R6
+    expect(R13_ALERT_DETAIL).toHaveLength(11 - 3 + 2); // #170 R16
     expect(R13_ALERT_DETAIL.every(({ file }) =>
       file === 'src/app/_layout.tsx' || file === 'src/screens/alert-detail/index.tsx',
     )).toBe(true);
