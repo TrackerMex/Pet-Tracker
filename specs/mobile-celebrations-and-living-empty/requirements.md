@@ -569,4 +569,4 @@ sobre `9b825948`, con los bloques de [[tasks]] §E2 aplicados tal cual.
 Que la ronda 2 añada los cinco `it` de R5.4, R6.5, R7.4 (dos) y R10.4 con
 los valores medidos de arriba, sin tocar producción.
 
-- [ ] Enmienda E2 aprobada por humano (fecha: ____)
+- [x] Enmienda E2 aprobada por humano (fecha: 2026-10-12)
