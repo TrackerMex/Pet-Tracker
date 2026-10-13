@@ -392,7 +392,7 @@ cada artboard): **Nueva mascota está en la fila 4**, no en la 5.
 |---|---|---|---|
 | 1 Bienvenida y cuenta | Bienvenida, Login, Registro, Recuperar, Nueva contraseña | #167 mobile-account-screens-pingo (fila entera) | — |
 | 2 Pestañas principales | Inicio, Mapa, Salud, Nutrición, Perfil | #168 mobile-tab-headers-canvas (Salud, Nutrición, Perfil) | Inicio con frase del día + píldora de la tab bar (C5); ping del marcador en Mapa tras un spike (C8) |
-| 3 Salud y rutina | Recordatorios, Nuevo recordatorio, Peso, Horario, Historial, Documentos | #169 mobile-weight-draw-and-toasts (Peso, toasts) | Vista previa de Nuevo recordatorio (C12), chips de Documentos (C11), agrupación por día |
+| 3 Salud y rutina | Recordatorios, Nuevo recordatorio, Peso, Horario, Historial, Documentos | #169 mobile-weight-draw-and-toasts (Peso y su toast; el toast al completar un recordatorio salió del alcance el 2026-10-11: esa acción no existe en la app) | Vista previa de Nuevo recordatorio (C12), chips de Documentos (C11), agrupación por día; toast al completar un recordatorio cuando exista la acción |
 | 4 Collar y seguridad | Alertas, Detalle, Vincular, Zonas, Editor de zona, Nueva mascota | #170 mobile-alerts-grouped-and-detail-map (C7) | Zonas + Editor (pastel, breathe); Vincular + Nueva mascota en 2 pasos (C9), después de #171 |
 | 5 Propuestas nuevas | Inicio sin mascota, Collar vinculado | #171 mobile-celebrations-and-living-empty (fila entera) | — |
 
