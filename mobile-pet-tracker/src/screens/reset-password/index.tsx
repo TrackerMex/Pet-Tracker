@@ -11,6 +11,7 @@ import { resetPassword } from '../../api/auth';
 import { Card } from '../../components/card';
 import { PopIn } from '../../components/pop-in';
 import { PingoFloat } from '../../components/pingo-float';
+import { FormError } from '../../components/form-error';
 import { useTranslate } from '../../providers/language-provider';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { HomeEntrance } from '../home/home-entrance';
@@ -224,9 +225,7 @@ export function ResetPasswordScreen() {
           </TextField>
 
           {error ? (
-            <Text testID="reset-error" className="text-danger" selectable>
-              {error}
-            </Text>
+            <FormError testID="reset-error" message={error} />
           ) : null}
 
           <Button

@@ -10,6 +10,7 @@ import { login } from '../../api/auth';
 import { Card } from '../../components/card';
 import { BackButton } from '../../components/back-button';
 import { useAuth } from '../../providers/auth-provider';
+import { FormError } from '../../components/form-error';
 import { useTranslate } from '../../providers/language-provider';
 import { HomeEntrance } from '../home/home-entrance';
 
@@ -138,9 +139,7 @@ export function LoginScreen() {
           </LinkButton>
 
           {error ? (
-            <Text testID="login-error" className="text-danger">
-              {error}
-            </Text>
+            <FormError testID="login-error" message={error} />
           ) : null}
 
           <Button

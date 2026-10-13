@@ -11,6 +11,7 @@ import { forgotPassword } from '../../api/auth';
 import { BackButton } from '../../components/back-button';
 import { PopIn } from '../../components/pop-in';
 import { PingoFloat } from '../../components/pingo-float';
+import { FormError } from '../../components/form-error';
 import { useTranslate } from '../../providers/language-provider';
 import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
@@ -121,9 +122,7 @@ export function ForgotScreen() {
         ) : null}
 
         {error ? (
-          <Text testID="forgot-error" className="text-danger" selectable>
-            {error}
-          </Text>
+          <FormError testID="forgot-error" message={error} />
         ) : null}
 
         {!sent ? (

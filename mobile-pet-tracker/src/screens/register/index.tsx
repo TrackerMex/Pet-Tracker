@@ -12,15 +12,14 @@ import {
 import { useContext, useState } from 'react';
 import { KeyboardAvoidingView, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { AlertCircle } from 'reicon-react-native';
 
 import { login, register } from '../../api/auth';
 import type { FieldError as ApiFieldError } from '../../api/types';
 import { BackButton } from '../../components/back-button';
 import { useAuth } from '../../providers/auth-provider';
 import { PingoFloat } from '../../components/pingo-float';
+import { FormError } from '../../components/form-error';
 import { useTranslate } from '../../providers/language-provider';
-import { useThemeColors } from '../../theme/use-theme-colors';
 import { HomeEntrance } from '../home/home-entrance';
 
 type RegisterField =
@@ -78,7 +77,6 @@ function deviceTimezone(): string | undefined {
 
 export function RegisterScreen() {
   const headerHeight = useContext(HeaderHeightContext);
-  const [danger] = useThemeColors(['danger']);
   const insets = useSafeAreaInsets();
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -311,12 +309,7 @@ export function RegisterScreen() {
         </View>
 
         {generalError ? (
-          <View testID="register-error-row" className="flex-row items-center gap-1.5">
-            <AlertCircle size={14} color={danger} />
-            <Text testID="register-error" className="flex-1 text-sm font-semibold text-danger">
-              {generalError}
-            </Text>
-          </View>
+          <FormError testID="register-error" message={generalError} />
         ) : null}
 
         <Button
