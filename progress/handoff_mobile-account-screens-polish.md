@@ -9,6 +9,12 @@
 > El leader instaló dependencias (`bun install --frozen-lockfile`, sin
 > cambios en `package.json` ni `bun.lock`), así que en T0 B2 da **`0`**:
 > anótalo y no reinstales.
+>
+> **Enmienda E1 (2026-10-13), firmada antes de lanzarte.** Los tokens de texto
+> de R1 se llaman por su valor: `--text-13`, `--text-15` y `--text-17` (clases
+> `text-13`, `text-15`, `text-17`). requirements.md, design.md y tasks.md ya
+> lo dicen; si encuentras `text-label`, `text-body` o `text-cta` fuera de
+> §Enmienda E1, PARA y reporta.
 
 ```text
 Worktree: /home/claude/sites/Pet-Tracker-wt-172   <- PRIMERA LINEA. Trabaja AQUI y en ningun otro sitio

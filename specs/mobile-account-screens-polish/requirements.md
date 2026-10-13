@@ -138,6 +138,11 @@ futura es `H0 + delta de #172`.
     #172 y el sumatorio de `SCREEN_FILES`), las cuatro pantallas de cuenta,
     sus tests, `legibility-classnames`, `design-drift`, `motion.ts`,
     `global-css` y `font-registration` no cambiaron con la mezcla.
+- **Tokens de texto compartidos** (Enmienda E1). #173 declara
+  `--text-13: 13px;` y #171 `--text-15: 15px;`, con la misma línea que R1. Si
+  alguna ya está en el `@theme` de H0, c2 añade solo las que falten, y no
+  duplica ninguna. El `it` de R1 sigue rojo en c1 mientras falte una, y el
+  ancla de c2 sigue dando `3`. Si las tres ya están en H0, PARA y reporta.
 - Los deltas de #172 se escriben sobre la expresión que haya en H0,
   añadiendo su término al final.
 - Toda tabla de esta spec con «antes» y «después» (Deltas de candados, las
@@ -185,15 +190,15 @@ y se revierten con `git checkout HEAD -- <ruta>`.
 ### R1 — Tokens de tamaño de texto
 
 THE SYSTEM SHALL declarar en el bloque `@theme` de `src/theme/global.css` los
-tokens `--text-label: 13px`, `--text-body: 15px` y `--text-cta: 17px`.
+tokens `--text-13: 13px`, `--text-15: 15px` y `--text-17: 17px`.
 
 - Candado: `src/theme/__tests__/global-css.test.ts` :: `#172 R1: define
-  text-label, text-body y text-cta con sus valores exactos dentro de @theme`.
-  Asevera `expect(parseVariables(extractTheme())).toMatchObject({ 'text-label':
-  '13px', 'text-body': '15px', 'text-cta': '17px' })`, como el `it` de
+  text-13, text-15 y text-17 con sus valores exactos dentro de @theme`.
+  Asevera `expect(parseVariables(extractTheme())).toMatchObject({ 'text-13':
+  '13px', 'text-15': '15px', 'text-17': '17px' })`, como el `it` de
   `R1: tokens rounded-card y text-2xs`. Las claves van sin `--` porque
   `parseVariables` lo quita.
-- Sonda S1: `--text-label: 12px` en `global.css` pone rojo ese `it` por
+- Sonda S1: `--text-13: 12px` en `global.css` pone rojo ese `it` por
   `toMatchObject`.
 
 ### R2 — Botón «Volver» compartido
@@ -468,15 +473,15 @@ contraseña estas recetas, contadas por literal en la fuente de cada pantalla:
 | `className="text-3xl font-black text-foreground"` | 1 | 1 | 0 | 0 |
 | `className="text-center text-3xl font-black text-foreground"` | 0 | 0 | 1 | 0 |
 | `className="flex-1 text-3xl font-black text-foreground"` | 0 | 0 | 0 | 2 |
-| `<Label.Text className="text-label font-semibold text-muted">` | 2 | 7 | 1 | 2 |
+| `<Label.Text className="text-13 font-semibold text-muted">` | 2 | 7 | 1 | 2 |
 | `<Label>` | 2 | 7 | 1 | 2 |
 | `<Label className=` | 0 | 0 | 0 | 0 |
-| `className="text-body font-semibold text-foreground"` (burbuja) | 1 | 0 | 0 | 0 |
-| `className="text-body font-medium text-foreground"` (términos) | 0 | 1 | 0 | 0 |
-| `className="text-center text-body font-normal text-muted"` (`forgot-body`) | 0 | 0 | 1 | 0 |
-| `className="flex-1 text-body font-bold text-accent-strong"` (`reset-success`) | 0 | 0 | 0 | 1 |
-| `<Button.Label className="text-cta font-extrabold text-accent-foreground">` | 1 | 1 | 1 | 1 |
-| `<Button.Label className="text-cta font-extrabold text-foreground">` (`forgot-resend`) | 0 | 0 | 1 | 0 |
+| `className="text-15 font-semibold text-foreground"` (burbuja) | 1 | 0 | 0 | 0 |
+| `className="text-15 font-medium text-foreground"` (términos) | 0 | 1 | 0 | 0 |
+| `className="text-center text-15 font-normal text-muted"` (`forgot-body`) | 0 | 0 | 1 | 0 |
+| `className="flex-1 text-15 font-bold text-accent-strong"` (`reset-success`) | 0 | 0 | 0 | 1 |
+| `<Button.Label className="text-17 font-extrabold text-accent-foreground">` | 1 | 1 | 1 | 1 |
+| `<Button.Label className="text-17 font-extrabold text-foreground">` (`forgot-resend`) | 0 | 0 | 1 | 0 |
 | `font-bold text-accent-foreground` | 0 | 0 | 0 | 0 |
 | `text-2xl` | 0 | 0 | 0 | 1 |
 | `text-xs` | 0 | 0 | 0 | 0 |
@@ -514,16 +519,16 @@ que pesa como él.
     30/900 al inicio`, con el mismo valor.
   - En `src/screens/login/index.test.tsx`, `#167 R6: la burbuja dice el saludo
     en español` conserva su título, y su `.toBe('text-sm font-semibold
-    text-foreground')` pasa a `.toBe('text-body font-semibold
+    text-foreground')` pasa a `.toBe('text-15 font-semibold
     text-foreground')`.
   - En `src/screens/reset-password/index.test.tsx`, `#167 R10: el texto de
     éxito es tinta accent-strong y seleccionable` conserva su título, y su
     `.toBe('flex-1 font-bold text-accent-strong')` pasa a
-    `.toBe('flex-1 text-body font-bold text-accent-strong')`.
+    `.toBe('flex-1 text-15 font-bold text-accent-strong')`.
 - Sonda S6a: devolver una de las siete `Label.Text` de registro a
   `text-xs font-semibold text-foreground` pone roja la fila `register` del
   `it.each` (6 en lugar de 7).
-- Sonda S6b: poner `text-cta font-bold text-accent-foreground` en
+- Sonda S6b: poner `text-17 font-bold text-accent-foreground` en
   `reset-submit` pone roja la fila `reset-password` (CTA 0 en lugar de 1, y
   `font-bold text-accent-foreground` 1 en lugar de 0).
 - Sonda S6c: quitar `--font-extrabold: 'Inter-ExtraBold';` de `global.css`
@@ -724,7 +729,7 @@ gap-1.5"` con exactamente dos hijos, en este orden:
 
 1. `<AlertCircle size={14} color={danger} />`, con
    `const [danger] = useThemeColors(['danger']);`;
-2. `<Text testID={testID} selectable className="flex-1 text-label
+2. `<Text testID={testID} selectable className="flex-1 text-13
    font-semibold text-danger">{message}</Text>`.
 
 IF una pantalla de cuenta tiene un error general, THEN THE SYSTEM SHALL
@@ -751,7 +756,7 @@ cambia (P7).
     mapeados a `testID` son `['icon-alert-circle', 'err']`.
   - `#172 R9: el icono mide 14 y usa danger`.
   - `#172 R9: el texto pesa 13/600 en danger, es seleccionable y dice el
-    mensaje`. El `className` es exactamente `flex-1 text-label font-semibold
+    mensaje`. El `className` es exactamente `flex-1 text-13 font-semibold
     text-danger`, `selectable` es `true` y cumple
     `toHaveTextContent('Algo falló')`.
 - Candados de pantalla:
@@ -777,7 +782,7 @@ cambia (P7).
   - `src/screens/register/index.test.tsx`: en `#167 R8: el error general va en
     una fila con icono`, el `className` esperado pasa a
     `w-full flex-row items-center gap-1.5`. En `#167 R8: el texto del error pesa
-    como el icono`, pasa a `flex-1 text-label font-semibold text-danger`. Los
+    como el icono`, pasa a `flex-1 text-13 font-semibold text-danger`. Los
     demás `it` de `#167 R8` siguen verdes sin cambios.
 - Sonda S9a: quitar `selectable` en `form-error.tsx` pone rojos el tercer `it`
   de form-error y `#172 R9: el error de login…`.
@@ -1459,7 +1464,7 @@ revierte» marca los candados de `#61 R8` cuyo centrado vertical deshace R19
 | `src/theme/__tests__/motion.test.ts` | `no exporta nada más` | 17 nombres (B21) | 19 nombres: `'MOTION_PINGO_FLOAT_OFFSET_Y'` y `'MOTION_PINGO_FLOAT_TIMING'` entre `'MOTION_PING_TO_SCALE'` y `'MOTION_POP_SPRING'` | R4 |
 | `src/screens/login/index.test.tsx` | `#167 R6: la cabecera lleva el saludo y después el título` | 2 hijos | sustituido por `#172 R3: la cabecera lleva Volver, el saludo y el título` | R3 |
 | ídem | `#167 R6: el título de la cabecera conserva su clase` | `'text-center text-2xl font-black text-foreground'` | sustituido por `#172 R6: el título de la cabecera pesa 30/900 al inicio` | R6 |
-| ídem | `#167 R6: la burbuja dice el saludo en español` | `'text-sm font-semibold text-foreground'` | `'text-body font-semibold text-foreground'`; el título no cambia | R6 |
+| ídem | `#167 R6: la burbuja dice el saludo en español` | `'text-sm font-semibold text-foreground'` | `'text-15 font-semibold text-foreground'`; el título no cambia | R6 |
 | ídem | los tres `it` de orden `#167 R6` | `link-register` antes que `link-forgot` | sustituidos por los tres `#172 R7` | R7 |
 | ídem | `#167 R6: entra en dos tiempos, cabecera y cuerpo` | `'login-body'`: `className: 'gap-4'` | `className: 'flex-1 gap-4'` | R19 |
 | ídem | `centra el contenido dentro de un ScrollView con los insets aplicados` (`#61 R8`) | `justifyContent: 'center'` en el `toEqual` | se revierte: sustituido por `#172 R19: ancla el contenido al pie dentro de un ScrollView con los insets aplicados`, sin `justifyContent` | R19 |
@@ -1469,7 +1474,7 @@ revierte» marca los candados de `#61 R8` cuyo centrado vertical deshace R19
 | ídem | `#167 R7: el título de la cabecera conserva su clase` | `'text-center text-2xl font-black text-foreground'` | sustituido por `#172 R6: el título de la cabecera pesa 30/900 al inicio` | R6 |
 | ídem | `#167 R7: campos, errores, términos y envío cuelgan del scroll` | estructura plana | en T10, la raíz de cada campo se toma del padre de su `FieldError` (R8); en T12, sustituido por `#172 R11: cabecera, rejilla, términos, error y envío cuelgan del scroll` (9 hijos); en T20, 10 hijos con `register-spacer` | R8, R11, R19 |
 | ídem | `#167 R8: el error general va en una fila con icono` | `'flex-row items-center gap-1.5'` | `'w-full flex-row items-center gap-1.5'` | R9 |
-| ídem | `#167 R8: el texto del error pesa como el icono` | `'flex-1 text-sm font-semibold text-danger'` | `'flex-1 text-label font-semibold text-danger'` | R9 |
+| ídem | `#167 R8: el texto del error pesa como el icono` | `'flex-1 text-sm font-semibold text-danger'` | `'flex-1 text-13 font-semibold text-danger'` | R9 |
 | ídem | `aplica el padding del contentContainerStyle con los safe-area insets` (`#61 R7`) | `{ padding: 24, gap: 16, paddingTop: 52, paddingBottom: 120 }` | `{ flexGrow: 1, padding: 24, gap: 16, paddingTop: 52, paddingBottom: 120 }`; el título no cambia | R19 |
 | ídem | `pinta register-submit, deshabilitado al montar, con la clase exacta, rounded-xl y bg-accent incluidos, la vea o no el recorte de fuente` (`#127 R1`) | `… w-full rounded-xl …` | `… w-full h-14 rounded-xl …` | R20 |
 | `src/screens/forgot/index.test.tsx` | helper `lockTile()` y `LOCK_TILE_CLASS` | busca por `className` | busca por `testID`; la constante desaparece | R14 |
@@ -1480,7 +1485,7 @@ revierte» marca los candados de `#61 R8` cuyo centrado vertical deshace R19
 | `src/screens/reset-password/index.test.tsx` | `#167 R10: la cabecera lleva a Pingo y después el título` | `children[0]` es `reset-pingo` | `children[0]` es `reset-pingo-float` | R5 |
 | ídem | `#167 R10: el éxito conserva la cabecera del formulario` | `children[0]` es `reset-pingo`; `className` `'flex-row items-center justify-center gap-3'` | `children[0]` es `reset-pingo-float` (T5); `className` `'flex-row items-center gap-3'` (T20) | R5, R19 |
 | ídem | `#167 R10: el formulario entra en dos tiempos` | `'reset-header'`: `'flex-row items-center justify-center gap-3'`; `'reset-body'`: `'gap-4'` | `'flex-row items-center gap-3'` y `'flex-1 gap-4'` | R19 |
-| ídem | `#167 R10: el texto de éxito es tinta accent-strong y seleccionable` | `'flex-1 font-bold text-accent-strong'` | `'flex-1 text-body font-bold text-accent-strong'`; el título no cambia | R6 |
+| ídem | `#167 R10: el texto de éxito es tinta accent-strong y seleccionable` | `'flex-1 font-bold text-accent-strong'` | `'flex-1 text-15 font-bold text-accent-strong'`; el título no cambia | R6 |
 | ídem | `describe` `#61 R8: las tres ramas de reset tienen contenedor de scroll`, constante `metrics` | con `justifyContent: 'center'` | sin `justifyContent` | R19 |
 | ídem | `la rama sin token centra también en horizontal` (`#61 R8`) | `{ ...metrics, alignItems: 'center' }` | `{ ...metrics, justifyContent: 'center', alignItems: 'center' }`: el mismo objeto; el título no cambia | R19 |
 | ídem | `la rama de éxito centra también en horizontal` (`#61 R8`) | `{ ...metrics, alignItems: 'center' }` | se revierte: sustituido por `#172 R19: la rama de éxito ancla el enlace al pie y no centra`, con `toEqual(metrics)` | R19 |
@@ -1616,3 +1621,23 @@ Ninguna.
 ## Aprobación
 
 - [x] Aprobado por humano (fecha: 2026-10-13) ← gate obligatorio antes de implementar
+
+## Enmienda E1 (2026-10-13) — tokens con nombre de valor
+
+Se pidió tras la firma y antes de lanzar Codex: no hay código. sites-4c avisó
+de que #173 y #171 nombran sus tamaños de texto por su valor (`--text-13`,
+`--text-15`), la regla compartida del 2026-10-13. Con los nombres firmados, el
+`@theme` acabaría con dos tokens para los mismos 15 px. El humano eligió
+«Enmendar ya».
+
+- R1: `--text-label: 13px`, `--text-body: 15px` y `--text-cta: 17px` pasan a
+  `--text-13: 13px`, `--text-15: 15px` y `--text-17: 17px`, y las clases
+  `text-label`, `text-body` y `text-cta` pasan a `text-13`, `text-15` y
+  `text-17` en todos los R-id, tablas, sondas y anclas, y en tasks.md (incluidos
+  los mensajes de c1 y c2: `tokens de texto 13, 15 y 17 (R1)`).
+- design.md D6 dice por qué. §Choques de integración dice qué pasa si
+  `--text-13` o `--text-15` ya están en H0.
+- Nada más cambia: ni valores, ni recuentos, ni rojos, ni la Enmienda a la
+  carta.
+
+- [ ] Enmienda E1 aprobada por humano (fecha: ____) ← gate antes de lanzar Codex

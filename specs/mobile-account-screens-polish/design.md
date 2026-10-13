@@ -52,9 +52,12 @@ tags: [mobile, ui, spec]
 - **D5 — El borde `danger` lo pone heroui** (R10). `Input` ya lo aplica cuando
   su `TextField` lleva `isInvalid`, que registro ya pasa (B12). No se añade
   clase de borde a mano.
-- **D6 — Tokens de texto `label`, `body` y `cta`** (R1, R6). El canvas usa
-  13, 15 y 17 px, que no existen en la escala de Tailwind. Tres tokens en
-  `@theme` de `global.css`, junto a `text-2xs` de #61.
+- **D6 — Tokens de texto `13`, `15` y `17`** (R1, R6; Enmienda E1). El canvas
+  usa 13, 15 y 17 px, que no existen en la escala de Tailwind. Tres tokens en
+  `@theme` de `global.css`, junto a `text-2xs` de #61. Se nombran por su valor
+  (`--text-<px>`), la regla compartida del 2026-10-13: #173 declara
+  `--text-13` y #171 `--text-15` con la misma línea, y el spike de #173 (su
+  design.md §5) confirmó que uniwind compila los tamaños numéricos.
 - **D7 — Títulos en `text-3xl`** (R6). El canvas dibuja 30 px en login y
   registro, y 28 px en recuperar y nueva contraseña. Un token para 2 px no se
   justifica: los cuatro van a `text-3xl`.

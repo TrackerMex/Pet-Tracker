@@ -208,10 +208,10 @@ Al cerrar hay 52 bloques `it` más. En Jest son 61 tests más, porque los cuatro
 
 ## T1 — R1: tokens de texto (c1, c2)
 
-**(1) Rojo, c1:** `test(mobile): tokens de texto label, body y cta (R1)`.
+**(1) Rojo, c1:** `test(mobile): tokens de texto 13, 15 y 17 (R1)`.
 
 - Fichero: `src/theme/__tests__/global-css.test.ts`.
-- Añade el `it` `#172 R1: define text-label, text-body y text-cta con sus
+- Añade el `it` `#172 R1: define text-13, text-15 y text-17 con sus
   valores exactos dentro de @theme` junto al de `R1: tokens rounded-card y
   text-2xs`, con la aserción de R1.
 
@@ -221,17 +221,17 @@ Al cerrar hay 52 bloques `it` más. En Jest son 61 tests más, porque los cuatro
 
 Gate: 1 failed.
 
-**(2) Verde, c2:** `feat(mobile): tokens de texto label, body y cta (R1)`.
+**(2) Verde, c2:** `feat(mobile): tokens de texto 13, 15 y 17 (R1)`.
 
 - Fichero: `src/theme/global.css`.
 - Añade los tres tokens de R1 dentro de `@theme`, junto a `--text-2xs`.
-- Ancla: `grep -cE -- '--text-(label: 13px|body: 15px|cta: 17px);' src/theme/global.css`
+- Ancla: `grep -cE -- '--text-(13: 13px|15: 15px|17: 17px);' src/theme/global.css`
   → `3`.
 - Gate verde sobre `global-css.test.ts`.
 
 **(3) Refactor:** ninguno.
 
-**Sonda S1:** `--text-label: 12px`. Corre `global-css.test.ts` y espera 1
+**Sonda S1:** `--text-13: 12px`. Corre `global-css.test.ts` y espera 1
 failed: `#172 R1`.
 
 ---
@@ -573,12 +573,12 @@ Gate: 8 failed, repartidos así: login 2, register 3, forgot 2 y design-drift 1.
   - `#167 R6: el título de la cabecera conserva su clase` se sustituye por
     `#172 R6: el título de la cabecera pesa 30/900 al inicio`;
   - en `#167 R6: la burbuja dice el saludo en español`, el `.toBe` pasa a
-    `'text-body font-semibold text-foreground'`.
+    `'text-15 font-semibold text-foreground'`.
 - **Registro:** `#167 R7: el título de la cabecera conserva su clase` se
   sustituye por `#172 R6: el título de la cabecera pesa 30/900 al inicio`.
 - **Nueva contraseña:** en `#167 R10: el texto de éxito es tinta accent-strong
   y seleccionable`, el `.toBe` pasa a
-  `'flex-1 text-body font-bold text-accent-strong'`.
+  `'flex-1 text-15 font-bold text-accent-strong'`.
 
 | Fichero | `it` | Rojo |
 |---|---|---|
@@ -623,13 +623,13 @@ register 1 y reset 1.
   `--font-extrabold: 'Inter-ExtraBold';`.
 - Las cuatro pantallas, según la tabla de R6:
   - cada `<Label className="text-xs font-semibold text-foreground">` pasa a
-    `<Label><Label.Text className="text-label font-semibold text-muted">…</Label.Text></Label>`;
+    `<Label><Label.Text className="text-13 font-semibold text-muted">…</Label.Text></Label>`;
   - en Nueva contraseña, los dos títulos con token (formulario y éxito) pasan
     a `className="flex-1 text-3xl font-black text-foreground"`. El título de
     la rama sin token conserva su `text-2xl`;
   - el `Button.Label` de cada CTA pasa a
-    `className="text-cta font-extrabold text-accent-foreground"`, y el de
-    `forgot-resend` a `className="text-cta font-extrabold text-foreground"`.
+    `className="text-17 font-extrabold text-accent-foreground"`, y el de
+    `forgot-resend` a `className="text-17 font-extrabold text-foreground"`.
 - Anclas:
 
   | Comando | Esperado |
@@ -654,7 +654,7 @@ register 1 y reset 1.
 | Sonda | Mutación | Corre | Esperado |
 |---|---|---|---|
 | S6a | devolver una de las siete `Label.Text` de registro a `text-xs font-semibold text-foreground` | polish | 1 failed: fila `register` (6 en lugar de 7) |
-| S6b | `text-cta font-bold text-accent-foreground` en el `Button.Label` de `reset-submit` | polish | 1 failed: fila `reset-password` |
+| S6b | `text-17 font-bold text-accent-foreground` en el `Button.Label` de `reset-submit` | polish | 1 failed: fila `reset-password` |
 | S6c | quitar `--font-extrabold: 'Inter-ExtraBold';` de `global.css` | font-registration | 1 failed: `#172 R6: carga Inter ExtraBold…` (`toContain`) |
 
 ---
