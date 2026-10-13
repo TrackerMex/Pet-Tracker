@@ -940,7 +940,7 @@ cambiarlo al firmar; si lo hace, el leader enmienda antes del handoff.
 |---|---|---|
 | P1 | D-RAD: ¿radios 14/16/22 del artboard como tokens, o los de la escala (12/20)? | tokens `rounded-14/16/22` (directiva «píxel exacto»), enmendando §12 (R1, R2) |
 | P2 | D-L: ¿labio en el chip seleccionado? | sí, `border-b-3 border-black/25` como el artboard, con viñeta propia en §13 (R2.7) |
-| P3 | D-C: el artboard pinta badge y borde de la fila próxima en ámbar crudo, el labio del «Nuevo» de 3 px y el círculo del sheet en rojo crudo | tokens `warning-soft`/`warning-strong` (#61 R5), labio 4 de la receta primaria (§13), `bg-category-rose` + `danger` |
+| P3 | D-C: el artboard pinta badge y borde de la fila próxima en ámbar crudo, el labio del «Nuevo» de 3 px y el círculo del sheet en rojo crudo | tokens `warning-soft`/`warning-strong` (#61 R5), labio 4 de la receta primaria (§13), `bg-category-rose` con `danger` |
 | P4 | D-SH: ¿sombra en la fila? | sin sombra: la fila es un `View`, no un `Card` (R6) |
 | P5 | D-F: ¿borde de foco solo en el título de Nuevo recordatorio o en los seis `TextInput`? | solo en `title-input` (R11); los otros cinco quedan como están |
 | P6 | D-R1: el artboard no dibuja el botón de borrar por fila | se queda, sin cambio (carta §Dirección de arte 5) |
