@@ -973,4 +973,4 @@ Medidos en el mismo spike, salvo la suite móvil:
 
 ### Aprobación de la Enmienda E3
 
-- [ ] Enmienda E3 aprobada por humano (fecha: ____, vía Notion) ← gate obligatorio antes del handoff a Codex
+- [X] Enmienda E3 aprobada por humano (fecha: 2026-10-12, vía Notion) ← gate obligatorio antes del handoff a Codex
