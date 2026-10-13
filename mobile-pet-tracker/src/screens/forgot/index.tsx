@@ -93,17 +93,19 @@ export function ForgotScreen() {
         >
           <Lock size={28} color={accentStrong} />
         </PopIn>
-        <Text testID="forgot-title" className="text-center text-2xl font-black text-foreground">
+        <Text testID="forgot-title" className="text-center text-3xl font-black text-foreground">
           {sent ? t('forgot.checkYourEmail') : t('forgot.forgotPassword')}
         </Text>
-        <Text testID="forgot-body" className="text-center font-normal text-muted">
+        <Text testID="forgot-body" className="text-center text-15 font-normal text-muted">
           {sent ? t('forgot.sentTo', { email: submittedEmail }) : t('forgot.instructions')}
         </Text>
 
         {!sent ? (
           <TextField className="w-full">
-            <Label className="text-xs font-semibold text-foreground">
-              {t('forgot.email')}
+            <Label>
+              <Label.Text className="text-13 font-semibold text-muted">
+                {t('forgot.email')}
+              </Label.Text>
             </Label>
             <Input
               testID="forgot-email"
@@ -131,7 +133,7 @@ export function ForgotScreen() {
             isDisabled={email.trim() === '' || submitting}
             onPress={() => void send(email.trim())}
           >
-            <Button.Label className="font-bold text-accent-foreground">
+            <Button.Label className="text-17 font-extrabold text-accent-foreground">
               {t('forgot.sendRecoveryLink')}
             </Button.Label>
           </Button>
@@ -145,7 +147,7 @@ export function ForgotScreen() {
             isDisabled={submitting}
             onPress={() => void send(submittedEmail)}
           >
-            <Button.Label className="font-bold text-foreground">
+            <Button.Label className="text-17 font-extrabold text-foreground">
               {t('forgot.resend')}
             </Button.Label>
           </Button>

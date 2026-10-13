@@ -85,20 +85,22 @@ export function LoginScreen() {
               style={{ width: 88, height: 88, transform: [{ rotate: '-8deg' }] }}
             />
             <Card testID="login-bubble" variant="secondary" className="flex-1 px-4 py-3">
-              <Text testID="login-bubble-text" className="text-sm font-semibold text-foreground">
+              <Text testID="login-bubble-text" className="text-15 font-semibold text-foreground">
                 {t('login.pingoGreeting')}
               </Text>
             </Card>
           </View>
-          <Text className="text-center text-2xl font-black text-foreground">
+          <Text className="text-3xl font-black text-foreground">
             {t('login.signIn')}
           </Text>
         </HomeEntrance>
 
         <HomeEntrance testID="login-body" index={1} className="gap-4">
           <TextField>
-            <Label className="text-xs font-semibold text-foreground">
-              {t('login.email')}
+            <Label>
+              <Label.Text className="text-13 font-semibold text-muted">
+                {t('login.email')}
+              </Label.Text>
             </Label>
             <Input
               testID="login-email"
@@ -111,8 +113,10 @@ export function LoginScreen() {
           </TextField>
 
           <TextField>
-            <Label className="text-xs font-semibold text-foreground">
-              {t('login.password')}
+            <Label>
+              <Label.Text className="text-13 font-semibold text-muted">
+                {t('login.password')}
+              </Label.Text>
             </Label>
             <Input
               testID="login-password"
@@ -135,7 +139,7 @@ export function LoginScreen() {
             isDisabled={submitting}
             onPress={() => void handleSubmit()}
           >
-            <Button.Label className="font-bold text-accent-foreground">
+            <Button.Label className="text-17 font-extrabold text-accent-foreground">
               {t('login.signIn')}
             </Button.Label>
           </Button>

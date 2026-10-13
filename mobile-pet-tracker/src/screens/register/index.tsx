@@ -180,14 +180,16 @@ export function RegisterScreen() {
               />
             </PingoFloat>
           </View>
-          <Text className="text-center text-2xl font-black text-foreground">
+          <Text className="text-3xl font-black text-foreground">
             {t('register.createAccount')}
           </Text>
         </HomeEntrance>
 
         <TextField isInvalid={Boolean(fieldErrors.firstName)}>
-          <Label className="text-xs font-semibold text-foreground">
-            {t('register.firstName')}
+          <Label>
+            <Label.Text className="text-13 font-semibold text-muted">
+              {t('register.firstName')}
+            </Label.Text>
           </Label>
           <Input
             testID="register-first-name"
@@ -201,8 +203,10 @@ export function RegisterScreen() {
         </TextField>
 
         <TextField isInvalid={Boolean(fieldErrors.lastName)}>
-          <Label className="text-xs font-semibold text-foreground">
-            {t('register.lastName')}
+          <Label>
+            <Label.Text className="text-13 font-semibold text-muted">
+              {t('register.lastName')}
+            </Label.Text>
           </Label>
           <Input
             testID="register-last-name"
@@ -214,8 +218,10 @@ export function RegisterScreen() {
         </TextField>
 
         <TextField isInvalid={Boolean(fieldErrors.email)}>
-          <Label className="text-xs font-semibold text-foreground">
-            {t('register.email')}
+          <Label>
+            <Label.Text className="text-13 font-semibold text-muted">
+              {t('register.email')}
+            </Label.Text>
           </Label>
           <Input
             testID="register-email"
@@ -229,8 +235,10 @@ export function RegisterScreen() {
         </TextField>
 
         <TextField isInvalid={Boolean(fieldErrors.phone)}>
-          <Label className="text-xs font-semibold text-foreground">
-            {t('register.phone')}
+          <Label>
+            <Label.Text className="text-13 font-semibold text-muted">
+              {t('register.phone')}
+            </Label.Text>
           </Label>
           <Input
             testID="register-phone"
@@ -243,8 +251,10 @@ export function RegisterScreen() {
         </TextField>
 
         <TextField isInvalid={Boolean(fieldErrors.password)}>
-          <Label className="text-xs font-semibold text-foreground">
-            {t('register.password')}
+          <Label>
+            <Label.Text className="text-13 font-semibold text-muted">
+              {t('register.password')}
+            </Label.Text>
           </Label>
           <Input
             testID="register-password"
@@ -257,8 +267,10 @@ export function RegisterScreen() {
         </TextField>
 
         <TextField isInvalid={Boolean(fieldErrors.passwordConfirmation)}>
-          <Label className="text-xs font-semibold text-foreground">
-            {t('register.confirmPassword')}
+          <Label>
+            <Label.Text className="text-13 font-semibold text-muted">
+              {t('register.confirmPassword')}
+            </Label.Text>
           </Label>
           <Input
             testID="register-password-confirmation"
@@ -273,8 +285,10 @@ export function RegisterScreen() {
         </TextField>
 
         <TextField isInvalid={Boolean(fieldErrors.country)}>
-          <Label className="text-xs font-semibold text-foreground">
-            {t('register.country')}
+          <Label>
+            <Label.Text className="text-13 font-semibold text-muted">
+              {t('register.country')}
+            </Label.Text>
           </Label>
           <Input
             testID="register-country"
@@ -293,7 +307,7 @@ export function RegisterScreen() {
             isSelected={terms}
             onSelectedChange={setTerms}
           />
-          <Text className="text-foreground">{t('register.iAcceptTerms')}</Text>
+          <Text className="text-15 font-medium text-foreground">{t('register.iAcceptTerms')}</Text>
         </View>
 
         {generalError ? (
@@ -311,7 +325,7 @@ export function RegisterScreen() {
           isDisabled={!terms || submitting}
           onPress={() => void handleSubmit()}
         >
-          <Button.Label className="font-bold text-accent-foreground">
+          <Button.Label className="text-17 font-extrabold text-accent-foreground">
             {t('register.createAccount')}
           </Button.Label>
         </Button>

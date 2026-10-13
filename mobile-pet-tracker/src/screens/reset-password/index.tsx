@@ -127,7 +127,7 @@ export function ResetPasswordScreen() {
               style={{ width: 72, height: 72 }}
             />
           </PingoFloat>
-          <Text className="text-center text-2xl font-black text-foreground">
+          <Text className="flex-1 text-3xl font-black text-foreground">
             {t('resetPassword.resetPassword')}
           </Text>
         </HomeEntrance>
@@ -136,7 +136,7 @@ export function ResetPasswordScreen() {
             <View testID="reset-success-check" className="size-8 items-center justify-center rounded-full bg-accent">
               <Check size={18} color={accentForeground} />
             </View>
-            <Text testID="reset-success" className="flex-1 font-bold text-accent-strong" selectable>
+            <Text testID="reset-success" className="flex-1 text-15 font-bold text-accent-strong" selectable>
               {t('resetPassword.passwordUpdated')}
             </Text>
           </Card>
@@ -183,15 +183,17 @@ export function ResetPasswordScreen() {
               style={{ width: 72, height: 72 }}
             />
           </PingoFloat>
-          <Text className="text-center text-2xl font-black text-foreground">
+          <Text className="flex-1 text-3xl font-black text-foreground">
             {t('resetPassword.resetPassword')}
           </Text>
         </HomeEntrance>
 
         <HomeEntrance testID="reset-body" index={1} className="gap-4">
           <TextField>
-            <Label className="text-xs font-semibold text-foreground">
-              {t('resetPassword.newPassword')}
+            <Label>
+              <Label.Text className="text-13 font-semibold text-muted">
+                {t('resetPassword.newPassword')}
+              </Label.Text>
             </Label>
             <Input
               testID="reset-password"
@@ -205,8 +207,10 @@ export function ResetPasswordScreen() {
           </TextField>
 
           <TextField>
-            <Label className="text-xs font-semibold text-foreground">
-              {t('resetPassword.confirmNewPassword')}
+            <Label>
+              <Label.Text className="text-13 font-semibold text-muted">
+                {t('resetPassword.confirmNewPassword')}
+              </Label.Text>
             </Label>
             <Input
               testID="reset-password-confirm"
@@ -231,7 +235,7 @@ export function ResetPasswordScreen() {
             isDisabled={submitting}
             onPress={() => void handleSubmit()}
           >
-            <Button.Label className="font-bold text-accent-foreground">
+            <Button.Label className="text-17 font-extrabold text-accent-foreground">
               {t('resetPassword.updatePassword')}
             </Button.Label>
           </Button>
