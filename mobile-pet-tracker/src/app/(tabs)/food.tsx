@@ -5,8 +5,9 @@ import { Button, Skeleton, Spinner } from 'heroui-native';
 import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Animated, { Easing, ReduceMotion, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
-import { ChevronRight, Clock, ForkKnife, Sparkles } from 'reicon-react-native';
+import Animated, { Easing, ReduceMotion, useAnimatedProps, useSharedValue, withTiming } from 'react-native-reanimated';
+import { ChevronRight, Clock, Sparkles } from 'reicon-react-native';
+import Svg, { Circle } from 'react-native-svg';
 
 import {
   getNutritionPlan,
@@ -25,7 +26,8 @@ import { useSelectedPet } from '../../providers/selected-pet-provider';
 import { CONTINUOUS_CORNER, TABULAR_NUMS } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
 
-const AnimatedView = Animated.createAnimatedComponent(View);
+const AnimatedCircle = Animated.createAnimatedComponent(Circle);
+const KCAL_RING_CIRCUMFERENCE = 2 * Math.PI * 44;
 const KCAL_BAR_TIMING = {
   duration: 250,
   easing: Easing.bezier(0.77, 0, 0.175, 1),
@@ -37,10 +39,11 @@ function isPetsError(state: PetsState): boolean {
 }
 
 export default function FoodScreen() {
-  const [muted, accent, foreground] = useThemeColors([
+  const [muted, accent, foreground, accentForeground] = useThemeColors([
     'muted',
     'accent-strong',
     'foreground',
+    'accent-foreground',
   ]);
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { token } = useAuth();
@@ -73,13 +76,13 @@ export default function FoodScreen() {
     loadedPlan !== null && loadedPlan.merKcal > 0
       ? Math.round((loadedPlan.kcalConsumedToday / loadedPlan.merKcal) * 100)
       : 0;
-  const kcalBarWidth = useSharedValue(kcalPct);
-  const kcalBarStyle = useAnimatedStyle(() => ({
-    width: `${kcalBarWidth.get()}%` as `${number}%`,
+  const kcalRingPct = useSharedValue(0);
+  const kcalRingProps = useAnimatedProps(() => ({
+    strokeDashoffset: KCAL_RING_CIRCUMFERENCE * (1 - kcalRingPct.get() / 100),
   }));
   useEffect(() => {
-    kcalBarWidth.set(withTiming(kcalPct, KCAL_BAR_TIMING));
-  }, [kcalBarWidth, kcalPct]);
+    kcalRingPct.set(withTiming(Math.min(kcalPct, 100), KCAL_BAR_TIMING));
+  }, [kcalPct, kcalRingPct]);
 
   async function toggleMeal(mealTime: string, served: boolean) {
     if (pendingMealTime !== null || selectedPetId === null) {
@@ -127,7 +130,7 @@ export default function FoodScreen() {
         paddingBottom: insets.bottom + 96,
       }}
     >
-      <Text className="text-2xl font-black text-foreground">
+      <Text testID="food-title" className="text-3xl font-black tracking-tight text-foreground">
         {t('food.food')}
       </Text>
 
@@ -200,7 +203,49 @@ export default function FoodScreen() {
                 variant="accent"
                 className="gap-4"
               >
-                <View className="flex-row items-center justify-between gap-4">
+                <View testID="food-plan-summary" className="flex-row items-center gap-4">
+                  <View
+                    testID="food-plan-progress"
+                    className="size-26 items-center justify-center"
+                    accessible
+                    accessibilityRole="progressbar"
+                    accessibilityLabel={t('food.kcalConsumedOfTarget', {
+                      consumed: loadedPlan.kcalConsumedToday,
+                      target: loadedPlan.merKcal,
+                    })}
+                    accessibilityValue={{ min: 0, max: 100, now: kcalPct }}
+                  >
+                    <View testID="food-plan-ring" className="absolute inset-0">
+                      <Svg width={104} height={104} viewBox="0 0 104 104">
+                        <Circle
+                          testID="food-plan-ring-track"
+                          cx={52} cy={52} r={44} fill="none"
+                          stroke={accentForeground} strokeOpacity={0.2} strokeWidth={12}
+                        />
+                        <AnimatedCircle
+                          testID="food-plan-ring-fill"
+                          cx={52} cy={52} r={44} fill="none"
+                          stroke={accentForeground} strokeWidth={12} strokeLinecap="round"
+                          strokeDasharray={KCAL_RING_CIRCUMFERENCE} transform="rotate(-90 52 52)"
+                          animatedProps={kcalRingProps}
+                        />
+                      </Svg>
+                    </View>
+                    <Text
+                      testID="food-plan-percent"
+                      className="text-lg font-black text-accent-foreground"
+                      style={TABULAR_NUMS}
+                    >
+                      {kcalPct}%
+                    </Text>
+                    <Text
+                      testID="food-plan-consumed"
+                      className="text-xs font-normal text-accent-foreground"
+                      style={TABULAR_NUMS}
+                    >
+                      {loadedPlan.kcalConsumedToday} kcal
+                    </Text>
+                  </View>
                   <View className="flex-1 gap-1">
                     <Text className="text-xs font-semibold uppercase tracking-widest text-accent-foreground">
                       {t('food.dailyTarget')}
@@ -215,54 +260,8 @@ export default function FoodScreen() {
                       testID="food-plan-grams"
                       className="font-semibold text-accent-foreground"
                     >
-                      {t('food.dailyGrams', {
-                        grams: loadedPlan.dailyGrams,
-                      })}
+                      {t('food.dailyGrams', { grams: loadedPlan.dailyGrams })}
                     </Text>
-                  </View>
-                  <View
-                    className="size-14 items-center justify-center rounded-xl bg-surface-secondary"
-                    style={CONTINUOUS_CORNER}
-                  >
-                    <ForkKnife size={26} color={accent} />
-                  </View>
-                </View>
-                <View
-                  testID="food-plan-progress"
-                  className="gap-1.5"
-                  accessible
-                  accessibilityRole="progressbar"
-                  accessibilityLabel={t('food.kcalConsumedOfTarget', {
-                    consumed: loadedPlan.kcalConsumedToday,
-                    target: loadedPlan.merKcal,
-                  })}
-                  accessibilityValue={{ min: 0, max: 100, now: kcalPct }}
-                >
-                  <View className="flex-row items-center justify-between">
-                    <Text
-                      testID="food-plan-consumed"
-                      className="text-xs font-normal text-accent-foreground"
-                      style={TABULAR_NUMS}
-                    >
-                      {loadedPlan.kcalConsumedToday} kcal
-                    </Text>
-                    <Text
-                      testID="food-plan-percent"
-                      className="text-xs font-normal text-accent-foreground"
-                      style={TABULAR_NUMS}
-                    >
-                      {kcalPct}%
-                    </Text>
-                  </View>
-                  <View
-                    testID="food-plan-track"
-                    className="h-2 overflow-hidden rounded-full bg-accent-foreground/20"
-                  >
-                    <AnimatedView
-                      testID="food-plan-fill"
-                      className="h-full rounded-full bg-accent-foreground"
-                      style={kcalBarStyle}
-                    />
                   </View>
                 </View>
               </Card>

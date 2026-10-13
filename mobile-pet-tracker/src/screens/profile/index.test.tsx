@@ -11,6 +11,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useEffect, useState, type ReactNode } from 'react';
 import { Linking, Text, TextInput } from 'react-native';
 import { Uniwind } from 'uniwind';
+import type { TestInstance } from 'test-renderer';
 
 import { withThemeTransition } from 'react-native-nitro-theme-transition';
 
@@ -135,6 +136,27 @@ jest.mock('expo-router', () => ({
 jest.mock('react-native-safe-area-context', () => ({
   ...jest.requireActual('react-native-safe-area-context'),
   useSafeAreaInsets: () => ({ top: 40, right: 0, bottom: 24, left: 0 }),
+}));
+
+jest.mock('reicon-react-native', () => {
+  const actual = jest.requireActual<typeof import('reicon-react-native')>('reicon-react-native');
+  const { View } = jest.requireActual('react-native');
+  const icon = (testID: string) =>
+    function MockIcon({ color, size }: { color?: string; size?: number }) {
+      return <View {...{ size }} testID={testID} style={{ color }} />;
+    };
+  return {
+    ...actual,
+    __esModule: true,
+    FileText: icon('profile-icon-file-text'),
+    Wifi: icon('profile-icon-wifi'),
+    Map: icon('profile-icon-map'),
+    Bell: icon('profile-icon-bell'),
+  };
+});
+
+jest.mock('../../theme/use-theme-colors', () => ({
+  useThemeColors: (tokens: string[]) => tokens,
 }));
 
 const apiUrl = 'http://example.test/v1';
@@ -375,7 +397,7 @@ describe('R2: estructura Figma', () => {
     await renderProfile();
 
     await waitFor(() => expect(screen.getByTestId('pet-info-card')).toBeVisible());
-    expect(screen.getByTestId('pet-hero-media')).toBeVisible();
+    expect(screen.getByTestId('profile-pet-avatar')).toBeVisible();
     expect(screen.getAllByText('Luna').length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText('Mixed').length).toBeGreaterThanOrEqual(1);
     expect(screen.getByTestId('pet-chip-pet-1')).toBeVisible();
@@ -599,7 +621,7 @@ describe('R7: cambiar foto', () => {
     await fireEvent.press(screen.getByTestId('change-photo'));
 
     await waitFor(() => expect(screen.getByTestId('photo-upload-error')).toBeVisible());
-    expect(screen.getByTestId('pet-hero-media').props.source).toEqual([
+    expect(screen.getByTestId('profile-pet-avatar').props.source).toEqual([
       { uri: 'http://example.test/old.jpg', cacheKey: 'pet-1' },
     ]);
     expect(mockUploadPhotoToUrl).not.toHaveBeenCalled();
@@ -835,75 +857,6 @@ describe('#62 R6: la última fila de pet-info-card no cuelga su separador', () =
   });
 });
 
-describe('R6: Profile usa el hero compartido', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-    process.env.EXPO_PUBLIC_API_URL = apiUrl;
-    mockUseAuth.mockReturnValue({
-      status: 'authenticated',
-      token: 'jwt-token',
-      signIn: jest.fn(),
-      signOut: jest.fn(),
-    } satisfies AuthContextValue);
-    mockGetMe.mockReturnValue(pending<MeState>());
-  });
-
-  it('monta el hero en variante card con la foto de la mascota', async () => {
-    const pet = makePet({ photoUrl: 'http://example.test/luna.jpg' });
-    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
-    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
-
-    renderProfile();
-
-    await waitFor(() => expect(screen.getByTestId('pet-hero')).toBeVisible());
-    expect(screen.getByTestId('pet-hero').props.className).toContain(
-      'rounded-card',
-    );
-    expect(screen.getByTestId('pet-hero-media').props.source).toEqual([
-      { uri: pet.photoUrl, cacheKey: pet.id },
-    ]);
-    expect(screen.queryByTestId('profile-pet-photo')).toBeNull();
-  });
-
-  it('no pasa slot: la zona superior del hero no existe en Profile', async () => {
-    const pet = makePet();
-    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
-    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
-
-    renderProfile();
-
-    await waitFor(() => expect(screen.getByTestId('pet-hero')).toBeVisible());
-    expect(screen.queryByTestId('pet-hero-slot')).toBeNull();
-    expect(screen.queryByTestId('pet-hero-fade-top')).toBeNull();
-    expect(screen.getByTestId('pet-chip-pet-1')).toBeVisible();
-  });
-
-  it('no pinta dato destacado', async () => {
-    const pet = makePet();
-    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
-    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
-
-    renderProfile();
-
-    await waitFor(() => expect(screen.getByTestId('pet-hero')).toBeVisible());
-    expect(screen.queryByTestId('pet-hero-highlight-value')).toBeNull();
-    expect(screen.queryByTestId('pet-hero-highlight-label')).toBeNull();
-  });
-
-  it('deja change-photo debajo del hero, nunca encima de la foto', async () => {
-    const pet = makePet();
-    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
-    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
-
-    renderProfile();
-
-    await waitFor(() => expect(screen.getByTestId('change-photo')).toBeVisible());
-    expect(
-      within(screen.getByTestId('pet-hero')).queryByTestId('change-photo'),
-    ).toBeNull();
-  });
-});
-
 describe('#87 R16: ProfileScreen lee por TanStack Query', () => {
   it('deja cuenta, mascotas y detalle en sus claves canónicas', async () => {
     jest.clearAllMocks();
@@ -938,7 +891,7 @@ describe('#87 R16: ProfileScreen lee por TanStack Query', () => {
     const { queryClient } = await renderWithProviders(<ProfileScreen />, {
       wrapper: ProfileWrapper,
     });
-    await screen.findByTestId('pet-hero');
+    await screen.findByTestId('profile-pet-card');
 
     expect(queryClient.getQueryData(userKeys.me())).toEqual(meState);
     expect(queryClient.getQueryData(petKeys.list())).toEqual(petsState);
@@ -1064,14 +1017,330 @@ describe('#41 R9: Perfil enlaza a las zonas seguras de la mascota activa', () =>
     expect(link).toHaveTextContent('Zonas seguras');
     expect(link.props.accessibilityRole).toBe('button');
     expect(link.props.hitSlop).toEqual({ top: 6, bottom: 6, left: 6, right: 6 });
-    expect(link.props.className).toBe('flex-row items-center justify-between rounded-xl bg-default px-3 py-2');
+    expect(link.props.className).toBe('flex-row items-center gap-3 rounded-xl bg-default px-3 py-2');
     expect(link).toHaveStyle({ borderCurve: 'continuous' });
-    expect(within(link).getByText('Zonas seguras').props.className).toBe('font-semibold text-foreground');
+    expect(within(link).getByText('Zonas seguras').props.className).toBe('flex-1 font-semibold text-foreground');
     expect(screen.getAllByTestId(/-link$/).map((row) => row.props.testID)).toEqual([
       'documents-link', 'pairing-link', 'geofences-link', 'reminders-link',
     ]);
     await fireEvent.press(link);
     expect(mockRouter.push).toHaveBeenCalledTimes(1);
     expect(mockRouter.push).toHaveBeenCalledWith('/pets/pet-1/geofences');
+  });
+});
+
+function profileChild(node: TestInstance, index: number): TestInstance {
+  const child = node.children[index];
+  if (typeof child === 'string') throw new Error('Expected an element child');
+  return child;
+}
+
+function setupProfile168() {
+  jest.clearAllMocks();
+  process.env.EXPO_PUBLIC_API_URL = apiUrl;
+  mockUseAuth.mockReturnValue({
+    status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn(),
+  } satisfies AuthContextValue);
+  mockUseFocusEffect.mockReset();
+  mockUseNotificationsBlocked.mockReturnValue(false);
+  mockGetMe.mockReturnValue(pending<MeState>());
+  mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+  mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet() });
+}
+
+const PROFILE_BRANCHES_168 = [
+  { name: 'mascotas pendientes', pets: pending<PetsState>(), detail: pending<PetState>(), branch: 'profile-hero-skeleton' },
+  { name: 'sin mascotas', pets: { kind: 'ok', pets: [] } as PetsState, detail: pending<PetState>(), branch: 'profile-pets-empty' },
+  { name: 'error de mascotas', pets: { kind: 'error' } as PetsState, detail: pending<PetState>(), branch: 'profile-pets-error' },
+  { name: 'detalle pendiente', pets: { kind: 'ok', pets: [makePet()] } as PetsState, detail: pending<PetState>(), branch: 'profile-hero-skeleton' },
+  { name: 'error de detalle', pets: { kind: 'ok', pets: [makePet()] } as PetsState, detail: { kind: 'error' } as PetState, branch: 'profile-pet-error' },
+  { name: 'detalle cargado', pets: { kind: 'ok', pets: [makePet()] } as PetsState, detail: { kind: 'ok', pet: makePet() } as PetState, branch: 'pet-info-card' },
+];
+
+describe('#168 R1: Perfil pinta el título grande en todas sus ramas', () => {
+  beforeEach(setupProfile168);
+
+  it.each(PROFILE_BRANCHES_168)('pinta el título grande ($name)', async ({ pets, detail, branch }) => {
+    mockListPets.mockImplementation(async () => pets);
+    mockGetPet.mockImplementation(async () => detail);
+    await renderProfile();
+    await screen.findByTestId(branch);
+    const title = screen.getByTestId('profile-title');
+    expect(title.props.className).toBe('text-3xl font-black tracking-tight text-foreground');
+    expect(title).toHaveTextContent('Perfil');
+    expect(profileChild(title.parent!, 0)).toBe(title);
+    expect(profileChild(title.parent!.parent!, 0)).toBe(title.parent);
+  });
+});
+
+describe('#168 R4: Perfil sustituye el hero por profile-pet-card', () => {
+  beforeEach(setupProfile168);
+
+  it('ordena la tarjeta en avatar, nombre y chips', async () => {
+    await renderProfile();
+    const card = await screen.findByTestId('profile-pet-card');
+    const scope = within(card);
+    expect(card.props.className).toBe('rounded-card border border-border bg-surface-secondary p-4 items-center gap-3');
+    expect(card.children).toHaveLength(3);
+    expect(card.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['profile-pet-avatar', 'profile-pet-name', 'profile-pet-chips']);
+    expect(profileChild(card, 0)).toBe(scope.getByTestId('profile-pet-avatar'));
+    const name = scope.getByTestId('profile-pet-name');
+    expect(profileChild(card, 1)).toBe(name);
+    expect(name.props.className).toBe('text-2xl font-black text-foreground');
+    expect(name).toHaveTextContent('Luna');
+    expect(profileChild(card, 2)).toBe(scope.getByTestId('profile-pet-chips'));
+  });
+
+  it('con foto pinta el avatar circular de 96 con su cacheKey', async () => {
+    await renderProfile();
+    await screen.findByTestId('pet-info-card');
+    const avatar = screen.getByTestId('profile-pet-avatar');
+    expect(avatar.props.source).toEqual([{ uri: 'http://example.test/luna.jpg', cacheKey: 'pet-1' }]);
+    expect(avatar.props.style).toEqual({ width: 96, height: 96, borderRadius: 48 });
+  });
+
+  it('sin foto pinta el blobatar de 96 sin source', async () => {
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet({ photoUrl: null }) });
+    await renderProfile();
+    await screen.findByTestId('pet-info-card');
+    const avatar = screen.getByTestId('profile-pet-avatar');
+    expect(avatar.props.source).toBeUndefined();
+    expect(avatar.props.xml).toContain('<svg');
+    expect(avatar.props.width).toBe(96);
+    expect(avatar.props.height).toBe(96);
+  });
+
+  it('deja change-photo inmediatamente después de la tarjeta', async () => {
+    await renderProfile();
+    const card = await screen.findByTestId('profile-pet-card');
+    const index = card.parent!.children.indexOf(card);
+    expect(profileChild(card.parent!, index + 1)).toBe(screen.getByTestId('change-photo'));
+    expect(within(card).queryByTestId('change-photo')).toBeNull();
+  });
+
+  it('con la subida fallida deja change-photo y luego photo-upload-error tras la tarjeta', async () => {
+    mockLaunchImageLibrary.mockResolvedValue({
+      canceled: false,
+      assets: [{ uri: 'file:///luna.webp', mimeType: 'image/webp' } as never],
+    });
+    mockRequestPhotoUploadUrl.mockResolvedValue({ kind: 'error' });
+    await renderProfile();
+    await waitFor(() => expect(screen.getByTestId('change-photo')).toBeVisible());
+
+    await fireEvent.press(screen.getByTestId('change-photo'));
+
+    const error = await screen.findByTestId('photo-upload-error');
+    const card = screen.getByTestId('profile-pet-card');
+    const index = card.parent!.children.indexOf(card);
+    expect(profileChild(card.parent!, index + 1)).toBe(screen.getByTestId('change-photo'));
+    expect(profileChild(card.parent!, index + 2)).toBe(error);
+    expect(within(card).queryByTestId('photo-upload-error')).toBeNull();
+  });
+
+  it('no monta el hero compartido', async () => {
+    await renderProfile();
+    await screen.findByTestId('pet-info-card');
+    expect(screen.queryByTestId('pet-hero')).toBeNull();
+  });
+
+  it('reserva h-52 mientras carga el detalle', async () => {
+    mockGetPet.mockReturnValue(pending<PetState>());
+    await renderProfile();
+    const skeleton = screen.getByTestId('profile-hero-skeleton');
+    expect(skeleton.props.className).toBe('skeleton__root h-52 w-full rounded-card');
+  });
+});
+
+function expectProfileChip168(root: TestInstance, id: string, surface: string, ink: string, text: string) {
+  const chip = within(root).getByTestId(id);
+  expect(chip.props.className).toBe(surface);
+  expect(chip.children).toHaveLength(1);
+  const label = within(chip).getByText(text);
+  expect(profileChild(chip, 0)).toBe(label);
+  expect(label.props.className).toBe(ink);
+}
+
+describe('#168 R5: Perfil pinta chips pastel por dato', () => {
+  beforeEach(() => {
+    setupProfile168();
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet({ ageMonths: 26, currentWeightKg: 12.4 }) });
+  });
+
+  it('ordena los cuatro chips con el hueco y texto de su dato', async () => {
+    await renderProfile();
+    const root = await screen.findByTestId('profile-pet-chips');
+    expect(root.children).toHaveLength(4);
+    expect(root.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['profile-pet-chip-sex', 'profile-pet-chip-sterilized', 'profile-pet-chip-age', 'profile-pet-chip-weight']);
+    expectProfileChip168(root, 'profile-pet-chip-sex', 'rounded-full px-3 py-1 bg-category-blue', 'text-xs font-bold text-category-blue-strong', 'female');
+    expectProfileChip168(root, 'profile-pet-chip-sterilized', 'rounded-full px-3 py-1 bg-category-green', 'text-xs font-bold text-category-green-strong', 'Esterilizado');
+    expectProfileChip168(root, 'profile-pet-chip-age', 'rounded-full px-3 py-1 bg-category-amber', 'text-xs font-bold text-category-amber-strong', '26 meses');
+    expectProfileChip168(root, 'profile-pet-chip-weight', 'rounded-full px-3 py-1 bg-category-violet', 'text-xs font-bold text-category-violet-strong', '12.4 kg');
+  });
+
+  it('sin sexo ni esterilización conserva edad ámbar y peso violeta', async () => {
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet({ sex: null, sterilized: null, ageMonths: 26, currentWeightKg: 12.4 }) });
+    await renderProfile();
+    const root = await screen.findByTestId('profile-pet-chips');
+    expect(root.children).toHaveLength(2);
+    expect(root.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['profile-pet-chip-age', 'profile-pet-chip-weight']);
+    expectProfileChip168(root, 'profile-pet-chip-age', 'rounded-full px-3 py-1 bg-category-amber', 'text-xs font-bold text-category-amber-strong', '26 meses');
+    expectProfileChip168(root, 'profile-pet-chip-weight', 'rounded-full px-3 py-1 bg-category-violet', 'text-xs font-bold text-category-violet-strong', '12.4 kg');
+  });
+
+  it('sin peso omite su chip y conserva sexo, esterilización y edad en sus huecos', async () => {
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet({ ageMonths: 26, currentWeightKg: null }) });
+    await renderProfile();
+    const root = await screen.findByTestId('profile-pet-chips');
+    expect(root.children).toHaveLength(3);
+    expect(root.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['profile-pet-chip-sex', 'profile-pet-chip-sterilized', 'profile-pet-chip-age']);
+    expectProfileChip168(root, 'profile-pet-chip-sex', 'rounded-full px-3 py-1 bg-category-blue', 'text-xs font-bold text-category-blue-strong', 'female');
+    expectProfileChip168(root, 'profile-pet-chip-sterilized', 'rounded-full px-3 py-1 bg-category-green', 'text-xs font-bold text-category-green-strong', 'Esterilizado');
+    expectProfileChip168(root, 'profile-pet-chip-age', 'rounded-full px-3 py-1 bg-category-amber', 'text-xs font-bold text-category-amber-strong', '26 meses');
+  });
+
+  it.each([Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY])('con la edad %p omite su chip y deja el peso en violeta', async (ageMonths) => {
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet({ ageMonths, currentWeightKg: 12.4 }) });
+    await renderProfile();
+    const root = await screen.findByTestId('profile-pet-chips');
+    expect(root.children).toHaveLength(3);
+    expect(root.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['profile-pet-chip-sex', 'profile-pet-chip-sterilized', 'profile-pet-chip-weight']);
+    expectProfileChip168(root, 'profile-pet-chip-sex', 'rounded-full px-3 py-1 bg-category-blue', 'text-xs font-bold text-category-blue-strong', 'female');
+    expectProfileChip168(root, 'profile-pet-chip-sterilized', 'rounded-full px-3 py-1 bg-category-green', 'text-xs font-bold text-category-green-strong', 'Esterilizado');
+    expectProfileChip168(root, 'profile-pet-chip-weight', 'rounded-full px-3 py-1 bg-category-violet', 'text-xs font-bold text-category-violet-strong', '12.4 kg');
+  });
+
+  it('sin esterilizar pinta el chip verde con «Sin esterilizar»', async () => {
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet({ sterilized: false, ageMonths: 26, currentWeightKg: 12.4 }) });
+    await renderProfile();
+    const root = await screen.findByTestId('profile-pet-chips');
+    expect(root.children).toHaveLength(4);
+    expect(root.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['profile-pet-chip-sex', 'profile-pet-chip-sterilized', 'profile-pet-chip-age', 'profile-pet-chip-weight']);
+    expectProfileChip168(root, 'profile-pet-chip-sterilized', 'rounded-full px-3 py-1 bg-category-green', 'text-xs font-bold text-category-green-strong', 'Sin esterilizar');
+  });
+
+  it('con 0 meses y 0 kg pinta los cuatro chips', async () => {
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet({ ageMonths: 0, currentWeightKg: 0 }) });
+    await renderProfile();
+    const root = await screen.findByTestId('profile-pet-chips');
+    expect(root.children).toHaveLength(4);
+    expect(root.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['profile-pet-chip-sex', 'profile-pet-chip-sterilized', 'profile-pet-chip-age', 'profile-pet-chip-weight']);
+    expectProfileChip168(root, 'profile-pet-chip-age', 'rounded-full px-3 py-1 bg-category-amber', 'text-xs font-bold text-category-amber-strong', '0 meses');
+    expectProfileChip168(root, 'profile-pet-chip-weight', 'rounded-full px-3 py-1 bg-category-violet', 'text-xs font-bold text-category-violet-strong', '0 kg');
+  });
+
+  it('sin sexo conserva esterilización, edad y peso en sus huecos', async () => {
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet({ sex: null, sterilized: true, ageMonths: 26, currentWeightKg: 12.4 }) });
+    await renderProfile();
+    const root = await screen.findByTestId('profile-pet-chips');
+    expect(root.children).toHaveLength(3);
+    expect(root.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['profile-pet-chip-sterilized', 'profile-pet-chip-age', 'profile-pet-chip-weight']);
+    expectProfileChip168(root, 'profile-pet-chip-sterilized', 'rounded-full px-3 py-1 bg-category-green', 'text-xs font-bold text-category-green-strong', 'Esterilizado');
+    expectProfileChip168(root, 'profile-pet-chip-age', 'rounded-full px-3 py-1 bg-category-amber', 'text-xs font-bold text-category-amber-strong', '26 meses');
+    expectProfileChip168(root, 'profile-pet-chip-weight', 'rounded-full px-3 py-1 bg-category-violet', 'text-xs font-bold text-category-violet-strong', '12.4 kg');
+  });
+
+  it('sin esterilización conserva sexo, edad y peso en sus huecos', async () => {
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet({ sex: 'female', sterilized: null, ageMonths: 26, currentWeightKg: 12.4 }) });
+    await renderProfile();
+    const root = await screen.findByTestId('profile-pet-chips');
+    expect(root.children).toHaveLength(3);
+    expect(root.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['profile-pet-chip-sex', 'profile-pet-chip-age', 'profile-pet-chip-weight']);
+    expectProfileChip168(root, 'profile-pet-chip-sex', 'rounded-full px-3 py-1 bg-category-blue', 'text-xs font-bold text-category-blue-strong', 'female');
+    expectProfileChip168(root, 'profile-pet-chip-age', 'rounded-full px-3 py-1 bg-category-amber', 'text-xs font-bold text-category-amber-strong', '26 meses');
+    expectProfileChip168(root, 'profile-pet-chip-weight', 'rounded-full px-3 py-1 bg-category-violet', 'text-xs font-bold text-category-violet-strong', '12.4 kg');
+  });
+
+  it('centra y agrupa los chips con gap-2', async () => {
+    await renderProfile();
+    const root = await screen.findByTestId('profile-pet-chips');
+    expect(root.props.className).toBe('flex-row flex-wrap justify-center gap-2');
+  });
+});
+
+describe('#168 R6: cada fila de navegación lleva su tile pastel', () => {
+  beforeEach(setupProfile168);
+
+  it.each([
+    ['documents-link', 'size-9 items-center justify-center rounded-xl bg-category-blue', 'profile-icon-file-text', 'category-blue-strong', 'Documentos', '/pets/pet-1/docs'],
+    ['pairing-link', 'size-9 items-center justify-center rounded-xl bg-category-green', 'profile-icon-wifi', 'category-green-strong', 'Configuración del Dispositivo GPS', '/pairing'],
+    ['geofences-link', 'size-9 items-center justify-center rounded-xl bg-category-amber', 'profile-icon-map', 'category-amber-strong', 'Zonas seguras', '/pets/pet-1/geofences'],
+    ['reminders-link', 'size-9 items-center justify-center rounded-xl bg-category-violet', 'profile-icon-bell', 'category-violet-strong', 'Recordatorios', '/reminders'],
+  ])('pinta el tile y conserva el destino de %s', async (id, surface, icon, color, label, destination) => {
+    await renderProfile();
+    await screen.findByTestId('pet-info-card');
+    const row = screen.getByTestId(id);
+    const scope = within(row);
+    expect(row.children).toHaveLength(3);
+    expect(row.props.className).toBe('flex-row items-center gap-3 rounded-xl bg-default px-3 py-2');
+    expect(row.props.style).toEqual({ borderCurve: 'continuous' });
+    const tile = scope.getByTestId(`${id}-tile`, { includeHiddenElements: true });
+    expect(profileChild(row, 0)).toBe(tile);
+    expect(tile.props.className).toBe(surface);
+    expect(tile.props.style).toEqual({ borderCurve: 'continuous' });
+    expect(tile.props.accessibilityElementsHidden).toBe(true);
+    expect(tile.props.importantForAccessibility).toBe('no-hide-descendants');
+    expect(tile.children).toHaveLength(1);
+    const glyph = within(tile).getByTestId(icon, { includeHiddenElements: true });
+    expect(profileChild(tile, 0)).toBe(glyph);
+    expect(glyph.props.size).toBe(18);
+    expect(glyph.props.style).toEqual({ color });
+    const text = scope.getByText(label);
+    expect(profileChild(row, 1)).toBe(text);
+    expect(text.props.className).toBe('flex-1 font-semibold text-foreground');
+    const chevron = profileChild(row, 2);
+    expect(chevron.props.width).toBe(20);
+    expect(chevron.props.height).toBe(20);
+    expect(chevron.props.xml).toContain('muted');
+    await fireEvent.press(row);
+    expect(mockRouter.push).toHaveBeenCalledTimes(1);
+    expect(mockRouter.push).toHaveBeenCalledWith(destination);
+  });
+});
+
+describe('#168 R7: la cuenta muestra el avatar de iniciales', () => {
+  beforeEach(setupProfile168);
+
+  it.each([
+    { firstName: 'Ana', lastName: 'García', initials: 'AG', name: 'Ana García' },
+    { firstName: ' ana ', lastName: '', initials: 'A', name: ' ana  ' },
+    { firstName: '', lastName: 'núñez', initials: 'N', name: ' núñez' },
+    { firstName: 'élodie', lastName: 'ñúñez', initials: 'ÉÑ', name: 'élodie ñúñez' },
+    { firstName: '', lastName: ' ', initials: null, name: '  ' },
+  ])('pinta las iniciales de «$firstName» / «$lastName»', async ({ firstName, lastName, initials, name }) => {
+    mockGetMe.mockResolvedValue({ kind: 'ok', me: {
+      id: 'user-1', email: 'ana@example.test', firstName, lastName,
+      phone: '+525500000000', country: 'MX', timezone: 'America/Mexico_City',
+      createdAt: '2026-08-20T00:00:00.000Z', updatedAt: '2026-08-21T00:00:00.000Z',
+    } });
+    await renderProfile();
+    await screen.findByText('ana@example.test');
+    const identity = screen.getByTestId('me-identity');
+    const scope = within(identity);
+    expect(identity.props.className).toBe('flex-row items-center gap-3');
+    expect(identity.children).toHaveLength(initials === null ? 1 : 2);
+    const text = scope.getByTestId('me-identity-text');
+    expect(text.props.className).toBe('flex-1 gap-1');
+    expect(text.children).toHaveLength(2);
+    expect(profileChild(text, 0).props.children).toBe(name);
+    expect(profileChild(text, 0).props.className).toBe('text-lg font-bold text-foreground');
+    expect(profileChild(text, 1)).toBe(within(text).getByText('ana@example.test'));
+    expect(profileChild(text, 1).props.className).toBe('font-normal text-muted');
+    if (initials === null) {
+      expect(profileChild(identity, 0)).toBe(text);
+      expect(scope.queryByTestId('me-avatar', { includeHiddenElements: true })).toBeNull();
+      expect(scope.queryByTestId('me-avatar-initials', { includeHiddenElements: true })).toBeNull();
+    } else {
+      const avatar = scope.getByTestId('me-avatar', { includeHiddenElements: true });
+      expect(profileChild(identity, 0)).toBe(avatar);
+      expect(profileChild(identity, 1)).toBe(text);
+      expect(avatar.props.className).toBe('size-10 items-center justify-center rounded-full bg-default');
+      expect(avatar.props.accessibilityElementsHidden).toBe(true);
+      expect(avatar.props.importantForAccessibility).toBe('no-hide-descendants');
+      expect(avatar.children).toHaveLength(1);
+      const label = within(avatar).getByTestId('me-avatar-initials', { includeHiddenElements: true });
+      expect(profileChild(avatar, 0)).toBe(label);
+      expect(label.props.className).toBe('text-sm font-black text-foreground');
+      expect(label).toHaveTextContent(initials);
+    }
   });
 });

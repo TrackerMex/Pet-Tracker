@@ -66,12 +66,14 @@ jest.mock('react-native-safe-area-context', () => ({
 jest.mock('reicon-react-native', () => {
   const { View } = jest.requireActual('react-native');
   const icon = (testID: string) =>
-    function MockIcon({ color }: { color?: string }) {
-      return <View testID={testID} style={{ color }} />;
+    function MockIcon({ color, size }: { color?: string; size?: number }) {
+      return <View {...{ size }} testID={testID} style={{ color }} />;
     };
 
   return {
+    Check: icon('health-icon-check'),
     ChevronRight: icon('health-icon-chevron-right'),
+    Clock: icon('health-icon-clock'),
     HeartPulse: icon('health-icon-heart-pulse'),
     Syringe: icon('health-icon-syringe'),
   };
@@ -82,6 +84,7 @@ jest.mock(
   () => ({
     useThemeColors: (tokens: string[]) =>
       tokens.map((token) => {
+        if (token.startsWith('category-')) return token;
         if (token === 'warning') {
           return mockTheme === 'dark' ? '#FBBF24' : '#F59E0B';
         }
@@ -222,7 +225,7 @@ describe('R4: health resuelve la mascota seleccionada', () => {
     expect(screen.getByText('Salud')).toBeVisible();
     expect(screen.getByTestId('health-loading')).toBeVisible();
     expect(screen.getByTestId('screen-health').props.contentContainerStyle).toEqual(
-      { gap: 16, paddingBottom: 120 },
+      { padding: 24, gap: 16, paddingTop: 52, paddingBottom: 120 },
     );
   });
 
@@ -231,9 +234,8 @@ describe('R4: health resuelve la mascota seleccionada', () => {
 
     await renderHealth();
 
-    expect((await screen.findByTestId('health-states')).props.style).toEqual(
-      { paddingHorizontal: 24, paddingTop: 52, gap: 16 },
-    );
+    expect(screen.getByTestId('screen-health').props.contentContainerStyle.paddingTop).toBe(52);
+    expect((await screen.findByTestId('health-states')).props.style).toEqual({ gap: 16 });
   });
 
   it('R8 (mobile-design-drift): reserva la altura del loading con Skeleton', async () => {
@@ -735,117 +737,6 @@ describe('#127 R2: el skeleton de vacunas lleva su receta en el árbol', () => {
   });
 });
 
-describe('#115 R2: Salud abre con el hero a sangre (A9)', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-    process.env.EXPO_PUBLIC_API_URL = apiUrl;
-    mockUseAuth.mockReturnValue({
-      status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn(),
-    } satisfies AuthContextValue);
-    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
-    mockListVaccines.mockResolvedValue({ kind: 'ok', vaccines: [] });
-    mockListWeights.mockResolvedValue({ kind: 'ok', weights: [] });
-  });
-
-  it('con mascotas, pet-hero y health-content son los únicos hijos del scroll, en ese orden', async () => {
-    await renderHealth();
-    await waitFor(() => expect(screen.getByTestId('pet-hero-name')).toHaveTextContent('Luna'));
-
-    const hero = screen.getByTestId('pet-hero');
-    const content = screen.getByTestId('health-content');
-    expect(hero.parent).toBe(content.parent);
-    expect(hero.parent!.parent).toBe(screen.getByTestId('screen-health'));
-    expect(hero.parent!.children).toHaveLength(2);
-    expect(elementChild(hero.parent!, 0)).toBe(hero);
-    expect(elementChild(hero.parent!, 1)).toBe(content);
-    expect(hero.props.className).toBe('overflow-hidden bg-default');
-    expect(screen.queryByTestId('health-states')).toBeNull();
-  });
-
-  it('saca el padding horizontal a health-content y deja gap y paddingBottom en el scroll', async () => {
-    await renderHealth();
-    await waitFor(() => {
-      const content = screen.getByTestId('health-content');
-      expect(within(content).getByTestId('vaccines-section')).toBeVisible();
-      expect(within(content).getByTestId('weight-card')).toBeVisible();
-    });
-    const content = screen.getByTestId('health-content');
-
-    expect(screen.getByTestId('screen-health').props.contentContainerStyle).toEqual({ gap: 16, paddingBottom: 120 });
-    expect(content.props.style).toEqual({ paddingHorizontal: 24, gap: 16 });
-    expect(within(content).getByTestId('vaccines-section')).toBeVisible();
-    expect(within(content).getByTestId('weight-card')).toBeVisible();
-  });
-
-  it('con contenido no pinta el título Salud', async () => {
-    await renderHealth();
-    await screen.findByTestId('pet-hero-name');
-
-    expect(screen.queryByText('Salud')).toBeNull();
-  });
-
-  it.each([
-    { name: 'pendiente', state: pending<PetsState>(), branch: 'health-loading' },
-    { name: 'error', state: { kind: 'error' } as const, branch: 'health-error' },
-    { name: 'unreachable', state: { kind: 'unreachable', message: 'network down' } as const, branch: 'health-error' },
-    { name: 'missing-config', state: { kind: 'missing-config' } as const, branch: 'health-error' },
-    { name: 'vacía', state: { kind: 'ok', pets: [] } as PetsState, branch: 'health-empty' },
-  ])('sin contenido ($name), agrupa título y rama en health-states sin hero', async ({ state, branch }) => {
-    mockListPets.mockImplementation(async () => state);
-    await renderHealth();
-    await waitFor(() => expect(within(screen.getByTestId('health-states')).getByTestId(branch)).toBeVisible());
-
-    const states = screen.getByTestId('health-states');
-    expect(states.props.style).toEqual({ paddingHorizontal: 24, paddingTop: 52, gap: 16 });
-    expect(within(states).getByText('Salud')).toBeVisible();
-    expect(within(states).getByText('Salud').props.className).toBe('text-2xl font-black text-foreground');
-    expect(screen.getByTestId('screen-health').props.contentContainerStyle).toEqual({ gap: 16, paddingBottom: 120 });
-    if (branch === 'health-error') expect(within(states).getByTestId('health-retry')).toBeVisible();
-    expect(screen.queryByTestId('pet-hero')).toBeNull();
-    expect(screen.queryByTestId('health-content')).toBeNull();
-  });
-});
-
-describe('#115 R3: el hero muestra la mascota seleccionada de la lista', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-    process.env.EXPO_PUBLIC_API_URL = apiUrl;
-    mockUseAuth.mockReturnValue({
-      status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn(),
-    } satisfies AuthContextValue);
-    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
-    mockListVaccines.mockResolvedValue({ kind: 'ok', vaccines: [] });
-    mockListWeights.mockResolvedValue({ kind: 'ok', weights: [] });
-  });
-
-  it('pinta nombre, raza y media de la mascota sin estado ni dato destacado', async () => {
-    await renderHealth();
-    await waitFor(() => expect(screen.getByTestId('pet-hero-name')).toHaveTextContent('Luna'));
-
-    expect(screen.getByTestId('pet-hero-breed')).toHaveTextContent('Mixed');
-    expect(screen.getByTestId('pet-hero-media')).toBeVisible();
-    expect(screen.queryByTestId('pet-hero-skeleton')).toBeNull();
-    expect(screen.queryByTestId('pet-hero-status')).toBeNull();
-    expect(screen.queryByTestId('pet-hero-highlight-value')).toBeNull();
-  });
-
-  it('pone el PetSwitcher en el slot del hero', async () => {
-    await renderHealth();
-    const slot = await screen.findByTestId('pet-hero-slot');
-
-    expect(within(slot).getByTestId('pet-chip-pet-1')).toBeVisible();
-    expect(slot.children).toHaveLength(1);
-  });
-
-  it('cambia el hero al pulsar otra mascota', async () => {
-    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet(), makePet({ id: 'pet-2', name: 'Max' })] });
-    await renderHealth();
-    await waitFor(() => expect(within(screen.getByTestId('pet-hero')).getByTestId('pet-hero-name')).toHaveTextContent('Luna'));
-    await fireEvent.press(screen.getByTestId('pet-chip-pet-2'));
-    await waitFor(() => expect(within(screen.getByTestId('pet-hero')).getByTestId('pet-hero-name')).toHaveTextContent('Max'));
-  });
-});
-
 describe('#115 R5: la weight card dibuja la evolución con WeightChart', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -1044,7 +935,7 @@ describe('#155 R4: Salud sin mascotas presenta a Pingo', () => {
     await screen.findByTestId('health-empty-pose');
     const slot = screen.getByTestId('health-empty');
     expect(slot.parent?.props.testID).toBe('health-states');
-    expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['Text', 'health-empty']);
+    expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['health-empty']);
   });
 
   it('pinta la pose, el título y la frase de Pingo', async () => {
@@ -1066,5 +957,141 @@ describe('#155 R4: Salud sin mascotas presenta a Pingo', () => {
     await fireEvent.press(action);
     expect(mockRouter.push).toHaveBeenCalledTimes(1);
     expect(mockRouter.push).toHaveBeenCalledWith('/pets/add');
+  });
+});
+
+const HEALTH_BRANCHES_168 = [
+  { name: 'pendiente', state: pending<PetsState>(), branch: 'health-loading' },
+  { name: 'error', state: { kind: 'error' } as const, branch: 'health-error' },
+  { name: 'unreachable', state: { kind: 'unreachable', message: 'network down' } as const, branch: 'health-error' },
+  { name: 'missing-config', state: { kind: 'missing-config' } as const, branch: 'health-error' },
+  { name: 'sin mascotas', state: { kind: 'ok', pets: [] } as PetsState, branch: 'health-empty' },
+  { name: 'con mascotas', state: { kind: 'ok', pets: [makePet(), makePet({ id: 'pet-2', name: 'Max' })] } as PetsState, branch: 'health-content' },
+];
+
+function setupHealth168() {
+  jest.clearAllMocks();
+  process.env.EXPO_PUBLIC_API_URL = apiUrl;
+  mockUseAuth.mockReturnValue({
+    status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn(),
+  } satisfies AuthContextValue);
+  mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet(), makePet({ id: 'pet-2', name: 'Max' })] });
+  mockListVaccines.mockImplementation(async (_url, _token, petId) => ({
+    kind: 'ok', vaccines: [makeVaccine({ name: petId === 'pet-2' ? 'Vacuna de Max' : 'Vacuna de Luna' })],
+  }));
+  mockListWeights.mockResolvedValue({ kind: 'ok', weights: [makeWeight()] });
+}
+
+describe('#168 R1: Salud pinta el título grande en todas sus ramas', () => {
+  beforeEach(setupHealth168);
+
+  it.each(HEALTH_BRANCHES_168)('pinta el título grande ($name)', async ({ state, branch }) => {
+    mockListPets.mockImplementation(async () => state);
+    await renderHealth();
+    await screen.findByTestId(branch);
+    const title = screen.getByTestId('health-title');
+    expect(title.props.className).toBe('text-3xl font-black tracking-tight text-foreground');
+    expect(title).toHaveTextContent('Salud');
+    expect(elementChild(title.parent!, 0)).toBe(title);
+  });
+});
+
+describe('#168 R2: Salud sin hero y con métricas estándar', () => {
+  beforeEach(setupHealth168);
+
+  it('con mascotas, health-title y health-content son los únicos hijos del scroll, en ese orden', async () => {
+    await renderHealth();
+    const content = await screen.findByTestId('health-content');
+    expect(content.parent!.parent).toBe(screen.getByTestId('screen-health'));
+    expect(content.parent!.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['health-title', 'health-content']);
+    expect(screen.queryByTestId('pet-hero')).toBeNull();
+  });
+
+  it('aplica las métricas estándar al scroll y gap a health-content', async () => {
+    await renderHealth();
+    const content = await screen.findByTestId('health-content');
+    expect(screen.getByTestId('screen-health').props.contentContainerStyle).toEqual({ padding: 24, gap: 16, paddingTop: 52, paddingBottom: 120 });
+    expect(content.props.style).toEqual({ gap: 16 });
+  });
+
+  it('pone el PetSwitcher como primer hijo de health-content', async () => {
+    await renderHealth();
+    const content = await screen.findByTestId('health-content');
+    const switcher = within(elementChild(content, 0));
+    expect(switcher.getByTestId('pet-chip-pet-1')).toBeVisible();
+    expect(switcher.getByTestId('pet-chip-pet-2')).toBeVisible();
+    expect(elementChild(content, 1).props.testID).toBe('vaccines-section');
+    expect(elementChild(content, 2).props.testID).toBe('weight-card');
+  });
+
+  it('cambia vacunas y peso al pulsar otra mascota', async () => {
+    mockListWeights.mockImplementation(async (_url, _token, petId) => ({ kind: 'ok', weights: [makeWeight({ weightKg: petId === 'pet-2' ? 20 : 12 })] }));
+    await renderHealth();
+    await within(await screen.findByTestId('vaccine-row-vaccine-1')).findByText('Vacuna de Luna');
+    const switcher = within(elementChild(screen.getByTestId('health-content'), 0));
+    await fireEvent.press(switcher.getByTestId('pet-chip-pet-2'));
+    await waitFor(() => expect(within(screen.getByTestId('vaccine-row-vaccine-1')).getByText('Vacuna de Max')).toBeVisible());
+    await waitFor(() => expect(screen.getByTestId('weight-current')).toHaveTextContent('20 kg'));
+    expect(screen.queryByText('Vacuna de Luna')).toBeNull();
+  });
+
+  it.each(HEALTH_BRANCHES_168.slice(0, 5))('sin contenido ($name), health-title precede a health-states', async ({ state, branch }) => {
+    mockListPets.mockImplementation(async () => state);
+    await renderHealth();
+    await screen.findByTestId(branch);
+    const states = screen.getByTestId('health-states');
+    expect(states.parent!.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['health-title', 'health-states']);
+    expect(states.props.style).toEqual({ gap: 16 });
+    expect(within(states).queryByTestId('health-title')).toBeNull();
+    expect(screen.queryByTestId('pet-hero')).toBeNull();
+  });
+});
+
+const VACCINES_168 = [
+  makeVaccine({ id: 'overdue', name: 'Vencida', appliedAt: '2026-01-01', nextDoseAt: '2026-02-28' }),
+  makeVaccine({ id: 'next', name: 'Próxima', appliedAt: '2026-01-02', nextDoseAt: '2026-03-31' }),
+  makeVaccine({ id: 'future', name: 'Futura', appliedAt: '2026-01-03', nextDoseAt: '2026-04-02' }),
+  makeVaccine({ id: 'completed', name: 'Sin próxima dosis', appliedAt: '2026-01-04', nextDoseAt: null }),
+];
+
+describe('#168 R3: cada vacuna lleva su tile pastel', () => {
+  beforeEach(() => {
+    setupHealth168();
+    jest.useFakeTimers({ now: new Date('2026-03-31T12:00:00Z') });
+    mockListVaccines.mockResolvedValue({ kind: 'ok', vaccines: VACCINES_168 });
+  });
+  afterEach(() => jest.useRealTimers());
+
+  it.each([
+    { id: 'overdue', surface: 'size-10 items-center justify-center rounded-xl bg-category-rose', icon: 'health-icon-clock', color: 'category-rose-strong', texts: ['Vencida', '2026-01-01', '2026-02-28'], dateClass: 'font-normal text-danger' },
+    { id: 'next', surface: 'size-10 items-center justify-center rounded-xl bg-category-amber', icon: 'health-icon-clock', color: 'category-amber-strong', texts: ['Próxima', '2026-01-02', '2026-03-31'], dateClass: 'font-normal text-muted' },
+    { id: 'future', surface: 'size-10 items-center justify-center rounded-xl bg-category-green', icon: 'health-icon-check', color: 'category-green-strong', texts: ['Futura', '2026-01-03', '2026-04-02'], dateClass: 'font-normal text-muted' },
+    { id: 'completed', surface: 'size-10 items-center justify-center rounded-xl bg-category-green', icon: 'health-icon-check', color: 'category-green-strong', texts: ['Sin próxima dosis', '2026-01-04'], dateClass: 'font-normal text-muted' },
+  ])('pinta el estado de $id con su icono y textos', async ({ id, surface, icon, color, texts, dateClass }) => {
+    await renderHealth();
+    const row = await screen.findByTestId(`vaccine-row-${id}`);
+    const scope = within(row);
+    expect(row.children).toHaveLength(2);
+    expect(row.props.className).toContain('flex-row items-center gap-3');
+    const tile = scope.getByTestId(`vaccine-tile-${id}`, { includeHiddenElements: true });
+    const column = scope.getByTestId(`vaccine-text-${id}`);
+    expect(elementChild(row, 0)).toBe(tile);
+    expect(elementChild(row, 1)).toBe(column);
+    expect(tile.props.className).toBe(surface);
+    expect(tile.props.style).toEqual({ borderCurve: 'continuous' });
+    expect(tile.props.accessibilityElementsHidden).toBe(true);
+    expect(tile.props.importantForAccessibility).toBe('no-hide-descendants');
+    expect(tile.children).toHaveLength(1);
+    const glyph = within(tile).getByTestId(icon, { includeHiddenElements: true });
+    expect(elementChild(tile, 0)).toBe(glyph);
+    expect(glyph.props.size).toBe(20);
+    expect(glyph.props.style).toEqual({ color });
+    expect(column.props.className).toBe('flex-1 gap-1');
+    expect(column.children).toHaveLength(texts.length);
+    texts.forEach((text, index) => {
+      const node = within(column).getByText(text);
+      expect(elementChild(column, index)).toBe(node);
+      expect(node.props.className).toBe(index === 0 ? 'font-bold text-foreground' : index === 1 ? 'font-normal text-muted' : dateClass);
+    });
   });
 });
