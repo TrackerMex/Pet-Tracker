@@ -350,6 +350,38 @@ describe('#167 R7: Pingo en la cabecera del registro', () => {
     expect(pingo.props.accessibilityLabel).toBeUndefined();
   });
 
+  it('#167 R7: el título de la cabecera conserva su clase', async () => {
+    await renderRegister();
+    expect(within(screen.getByTestId('register-header')).getByText('Crear cuenta').props.className)
+      .toBe('text-center text-2xl font-black text-foreground');
+  });
+
+  it('#167 R7: campos, errores, términos y envío cuelgan del scroll', async () => {
+    const fields = [
+      'first-name', 'last-name', 'email', 'phone', 'password', 'password-confirmation', 'country',
+    ] as const;
+    mockRegister.mockResolvedValue({
+      kind: 'validation',
+      errors: [
+        'firstName', 'lastName', 'email', 'phone', 'password', 'passwordConfirmation', 'country', 'termsAccepted',
+      ].map((path) => ({ path, message: `${path} no vale` })),
+    });
+    await renderRegister();
+    await fillForm();
+    await submit();
+    const content = screen.getByTestId('register-header').parent;
+    expect(content?.parent).toHaveProperty('props.testID', 'register-form');
+    for (const field of fields) {
+      const input = screen.getByTestId(`register-${field}`);
+      expect(input.parent?.parent).toBe(content);
+      expect(screen.getByTestId(`register-${field}-error`).parent).toBe(input.parent);
+    }
+    expect(screen.getByTestId('register-terms').parent?.parent).toBe(content);
+    expect(screen.getByTestId('register-error-row').parent).toBe(content);
+    expect(screen.getByTestId('register-submit').parent).toBe(content);
+    expect(content?.children[0]).toBe(screen.getByTestId('register-header'));
+  });
+
   it('#167 R7: ningún campo ni el envío quedan dentro de la cabecera', async () => {
     await renderRegister();
     const header = screen.getByTestId('register-header');
