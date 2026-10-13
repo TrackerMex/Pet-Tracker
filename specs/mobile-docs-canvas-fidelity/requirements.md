@@ -1,6 +1,6 @@
 ---
 feature: "mobile-docs-canvas-fidelity"
-status: draft
+status: approved
 tags: [mobile, ui, spec]
 ---
 
@@ -806,4 +806,4 @@ responderla, rige ese valor.
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____)
+- [x] Aprobado por humano (fecha: 2026-10-13)
