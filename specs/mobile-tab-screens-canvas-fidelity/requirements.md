@@ -869,7 +869,7 @@ es esto:
   - por eso la fila de identidad mide 56 pt y no 54, y los chips unos 26 y no unos 24,5;
   - ningún elemento propio de Perfil fija en el artboard un `line-height` ni un `letter-spacing` propios, así
     que no hay token de interlineado.
-- **Delimitación — paleta**: `--border` en claro es 0.07 en el canvas y 0.08 en la app. Igualarlo es un cambio
+- **Delimitación — paleta**: `--border` en claro es 0.08 en el canvas y 0.07 en la app. Igualarlo es un cambio
   global de token, no de Perfil.
 - **Delimitación — controles**: el `Switch` (C10) sustituye a la casilla de 20 × 20 del canvas. La altura de
   la fila la marca el control.
