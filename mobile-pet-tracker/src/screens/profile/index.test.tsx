@@ -1118,6 +1118,25 @@ describe('#168 R4: Perfil sustituye el hero por profile-pet-card', () => {
     expect(within(card).queryByTestId('change-photo')).toBeNull();
   });
 
+  it('con la subida fallida deja change-photo y luego photo-upload-error tras la tarjeta', async () => {
+    mockLaunchImageLibrary.mockResolvedValue({
+      canceled: false,
+      assets: [{ uri: 'file:///luna.webp', mimeType: 'image/webp' } as never],
+    });
+    mockRequestPhotoUploadUrl.mockResolvedValue({ kind: 'error' });
+    await renderProfile();
+    await waitFor(() => expect(screen.getByTestId('change-photo')).toBeVisible());
+
+    await fireEvent.press(screen.getByTestId('change-photo'));
+
+    const error = await screen.findByTestId('photo-upload-error');
+    const card = screen.getByTestId('profile-pet-card');
+    const index = card.parent!.children.indexOf(card);
+    expect(profileChild(card.parent!, index + 1)).toBe(screen.getByTestId('change-photo'));
+    expect(profileChild(card.parent!, index + 2)).toBe(error);
+    expect(within(card).queryByTestId('photo-upload-error')).toBeNull();
+  });
+
   it('no monta el hero compartido', async () => {
     await renderProfile();
     await screen.findByTestId('pet-info-card');
