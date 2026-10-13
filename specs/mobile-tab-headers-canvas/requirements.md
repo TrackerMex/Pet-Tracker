@@ -462,26 +462,26 @@ desfase esperado se escribe **literal** con dos decimales, nunca importando
 
 Lista del smoke:
 
-- [ ] S1 — Tema claro, ES: Salud, Nutrición y Perfil abren con «Salud»,
+- [x] S1 — Tema claro, ES: Salud, Nutrición y Perfil abren con «Salud»,
   «Nutrición», «Perfil» en grande; Inicio sigue con su hero a sangre.
-- [ ] S2 — Tema oscuro: los tres títulos, los tiles pastel y los chips se leen
+- [X] S2 — Tema oscuro: los tres títulos, los tiles pastel y los chips se leen
   (contraste de `category-*-strong` sobre `category-*`).
-- [ ] S3 — EN: «Health», «Food», «Profile»; ningún título se corta.
-- [ ] S4 — Salud: una vacuna vencida sale con tile rosa y reloj; la próxima con
+- [X] S3 — EN: «Health», «Food», «Profile»; ningún título se corta.
+- [X] S4 — Salud: una vacuna vencida sale con tile rosa y reloj; la próxima con
   tile ámbar; las demás con tile verde y check.
-- [ ] S5 — Perfil: mascota con foto muestra la foto circular; sin foto, el
+- [X] S5 — Perfil: mascota con foto muestra la foto circular; sin foto, el
   blobatar. Cambiar foto actualiza el círculo.
-- [ ] S6 — Perfil: chips azul/verde/ámbar/violeta en ese orden; las cuatro filas
+- [X] S6 — Perfil: chips azul/verde/ámbar/violeta en ese orden; las cuatro filas
   con su tile; el avatar de cuenta muestra tus iniciales.
-- [ ] S7 — Nutrición: servir una comida llena el anillo con una transición
+- [X] S7 — taNutrición: servir una comida llena el anillo con una transición
   corta; deshacer lo vacía. Con «Quitar animaciones» activo en Android
   (Ajustes → Accesibilidad), el anillo salta sin animar.
-- [ ] S8 — Nutrición: con TalkBack, el anillo se lee como una única barra de
+- [X] S8 — Nutrición: con TalkBack, el anillo se lee como una única barra de
   progreso con la frase de kcal consumidas de objetivo.
-- [ ] S9 — Nutrición: «1200 kcal / día» (o el objetivo real) cabe junto al
+- [X] S9 — Nutrición: «1200 kcal / día» (o el objetivo real) cabe junto al
   anillo sin solaparse; con texto del sistema grande puede partir línea pero no
   se tapa.
-- [ ] S10 — Cambiar de mascota en Salud y en Perfil sigue funcionando sin hero.
+- [X] S10 — Cambiar de mascota en Salud y en Perfil sigue funcionando sin hero.
 
 ## Fuera de alcance (cada viñeta clasificada)
 
@@ -577,8 +577,8 @@ Candidatas a feature propia (las decide el humano, no se crean aquí):
   - [X] B3: el anillo sustituye a la barra (enmienda a `specs/mobile-kcal-consumed-bar/`, R2, R4 y R7)
   - [X] B4: regla N1 en la carta (`docs/ui-guidelines.md`)
   - [X] Candado: `src/__tests__/hero-header-amendments.test.ts` gana el `describe` `#168 R11`; los tres `it` de `#67 R10` no cambian (R11.4)
-- [ ] Prueba de humo R13 superada en dev build de Android (fecha: ____,
-  dispositivo: ____) ← gate de cierre; el leader no marca `done` sin ella
+- [X] Prueba de humo R13 superada en dev build de Android (fecha: 2026-10-13,
+  dispositivo: OnePlus Nord 5) ← gate de cierre; el leader no marca `done` sin ella
 
 ## Enmienda E1 — R8.4 y R12.3: premisas que el árbol desmiente
 
