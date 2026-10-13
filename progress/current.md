@@ -31,10 +31,17 @@
 - **Convivencia con #173 (UI-Pet):** #173 cambia `src/components/card.tsx` y
   `pet-switcher.tsx`; los agregados compartidos se anclan a la base medida en
   el handoff.
-- **Spec:** `specs/mobile-docs-canvas-fidelity/` en `spec_ready` (`192329aa`).
-  Espejada a Notion el 2026-10-13 desde ese commit
-  (https://app.notion.com/p/3f86115a9b278161ab5ae6da7176cb0f, Estado del gate =
-  En revisión). Esperando la firma del humano; P1 a P12 llevan valor por
-  defecto. Abierto con Backend: tracking 0.06em (Alertas) frente a 0.08em
-  (Documentos); si su humano unifica o renombra, se enmiendan R1, R2 y R5 y se
-  re-espeja.
+- **Spec:** `specs/mobile-docs-canvas-fidelity/` **approved**. Firmada desde
+  Notion (https://app.notion.com/p/3f86115a9b278161ab5ae6da7176cb0f,
+  `page_last_edited_at` 2026-10-13T22:35:12.773Z, sobre el espejo de
+  `192329aa`); commit de firma `0e2b91cf`. Único cambio frente al espejo: la
+  casilla marcada. P1 a P12 quedan con su valor por defecto. Notion: Rol
+  actual = Implementer, Bloqueadores = espera a #173.
+- **Tracking con #174:** cerrado sin enmienda. La spec firmada de #174
+  (`954de067`) comparte `--tracking-title: -0.02em` (mismo nombre y valor) y
+  usa su propio `--tracking-caps: 0.06em`; R1 de #175 ya reutiliza un token
+  existente con el mismo valor, así que el orden de merge no importa.
+- **Siguiente:** la implementación espera a que mergee #173 (firmada a las
+  22:33Z, sin implementar todavía). Entonces: merge de `origin/main` en la
+  branch, `init.sh` con aviso a peers, H0 (D1 a D8 y tabla base) y handoff a
+  Codex; `feature_list.json` pasa a `in_progress` al arrancar.
