@@ -251,3 +251,248 @@ Resultado: **sin problemas bloqueantes.** Hay cinco notas no bloqueantes; la
      - empezar en la corrección 16, c29, sin repetir c1-c28 ni cE2.
    - Este fichero queda sin commitear: si Codex arranca antes de que el leader
      lo commitee, para en el control de status.
+
+---
+
+## Ronda 2 (sobre ae6dddf5)
+
+Fecha: 2026-10-13
+Rama: `feature/170-mobile-alerts-grouped-and-detail-map`, HEAD `ae6dddf5`
+(c36), H0 del handoff `584ef2d9`, ronda 1 rechazada sobre `3719eb75`, firma
+de E3 en `9de61d9d`.
+Veredicto: **APROBADO** (Fase B cerrada abajo).
+
+### Fase A (solo lectura: git, grep, sed)
+
+#### A1. Cada hallazgo de la ronda 1 cerrado por E3 (o por `003fa449`)
+
+Literales comprobados con `grep -cF` contra el árbol en HEAD. Todos coinciden
+con el texto de §Enmienda E3 de `requirements.md`.
+
+| Hallazgo ronda 1 | Cierre | Evidencia en el árbol |
+|---|---|---|
+| 1. traceability con 16 celdas «(pendiente)» | `003fa449` + c35 `edf6ce12` | Ninguna celda «pendiente» salvo R17 «pendiente (humano)» (gate humano, esperado) |
+| 2. R8 sonda F tautológica (`geofenceId: null`) | E3.1, c29 `b91c815c` | D, `#170 R8` › `'$fila: sin mapa'`: `makeAlert({ geofenceId: 'zone-1', payload })` + `mockListGeofences.mockResolvedValue({ kind: 'ok', geofences: [ZONE] })` |
+| 3. R10 sonda C: mascota de la alerta sin fijar | E3.2, c30 `4f4cfbdb` | D, `#170 R10`: `it('consulta las zonas de la mascota de la alerta, no de la seleccionada')` con `toHaveBeenCalledWith(…, 'pet-7')` y `not.toHaveBeenCalledWith(…, 'pet-1')`; el test de caché pasa a `pet-7` y `geofenceKeys.list('pet-7')` |
+| 4. R3.2 sonda A: orden cabecera-antes-de-fila | E3.3, c31 `1fba836c` | A, `#170 R3` › 'envuelve cada cabecera…': `elementChild(parent, 0).props.testID` = cabecera y `elementChild(parent, 1)` es o contiene la fila |
+| Obs. 2 (borde tras ack local, Bl/Bd) | E3.4, c32 `d1ff55b6` | D, final de `#170 R6`: `it.each(['ok', 'already-closed'] as const)('marcada leída en local (%s): pierde el borde de severidad', …)` hasta `className` exacto `rounded-card border border-border bg-surface p-4 shadow-sm min-h-44 gap-3`; A, final de `#170 R5`: `it.each` ok/already-closed con `border` y `border-border` presentes y sin `border-2` ni `border-danger` |
+| Obs. 3 (umbral de redondeo, sonda D) | E3.5, c33 `dc074638` | D, `#170 R10`: `it('redondea al metro: a 0,71 m del borde dice «A 1 m de Casa»')` con lat `19.4335057`, antes de 'usa la zona aunque esté inactiva' |
+| Obs. 5 (`min-h-11`) | E3.6, c34 `3361aea0` | D, `#170 R15` › 'lo pinta en %s': `expect(button.props.className.split(' ')).toContain('min-h-11')` tras la línea de `accessibilityRole` |
+
+Las its de E3 nacen verdes porque protegen código correcto. Su rojo legítimo
+es la sonda de mutación de producción no versionada (C4 punto 5), declarada en
+la tabla SE3.1-SE3.7 y firmada por el humano. Esa sonda la repite el reviewer
+en la Fase B.
+
+#### A2. Alcance del cambio en `mobile-pet-tracker/`
+
+- `git diff --stat 3719eb75 HEAD -- mobile-pet-tracker/`: solo
+  `src/screens/alert-detail/index.test.tsx` (D) y
+  `src/screens/alerts/index.test.tsx` (A).
+- El comando de sombras entero (con tests) desde `3719eb75` da 1: es el
+  literal `shadow-sm` del `className` exacto que asevera E3.4 en D (base de
+  `Card`, como los 5 de la corrección 14). No es producción: ningún fichero de
+  producción cambia.
+- Sombras de producción desde `584ef2d9` = 0; recuento completo = 6. Coincide
+  con el impl.
+- `git diff --quiet 584ef2d9 HEAD -- package.json bun.lock app.json src/components/pet-map.tsx src/components/card.tsx src/api` → exit 0.
+- Sin cambios en backend, infra ni `docs/`.
+- `git diff --check 9de61d9d HEAD` → limpio.
+- Nada en `requirements.md`, `design.md` ni `tasks.md` cambia después de
+  `9de61d9d`. Entre el espejo `906d06e4` y la firma `9de61d9d`, la spec solo
+  cambia la casilla de E3 (`[ ]` → `[x]`, fecha 2026-10-12).
+
+#### A3. Evidencia del impl contra la corrección 16
+
+El impl tiene 19 446 líneas y se leyó por rangos desde §Enmienda E3 (línea
+18483). Los comandos que registra coinciden literalmente con la corrección 16
+del handoff (líneas 136-447).
+
+- **c29-c34.** Jest, typecheck y lint dan exit 0 en las seis cadenas; el log
+  de lint queda en 0 bytes. Tests por cadena: 78, 79, 68, 151 (A70 + D81), 82
+  y 82. Coinciden con los recuentos de E3: D 78→82, A 68→70.
+- **SE3.1-SE3.7.** Las siete sondas dan `plantada=0`, `exit=1`, `sonda=0` y
+  `limpio=0`, con estas líneas `Tests:` exactas:
+  - SE3.1: 10 fallidos, 68 aprobados, 78 en total;
+  - SE3.2: 2 fallidos, 77 aprobados, 79 en total;
+  - SE3.3: 1 fallido, 67 aprobados, 68 en total;
+  - SE3.4: 2 fallidos, 68 aprobados, 70 en total;
+  - SE3.5: 2 fallidos, 79 aprobados, 81 en total;
+  - SE3.6: 1 fallido, 81 aprobados, 82 en total;
+  - SE3.7: 3 fallidos, 79 aprobados, 82 en total.
+
+  Los marcadores ● listados cuadran con la tabla de la spec.
+- **CIERRE.**
+  - FINAL: exit 0, 10 suites, 433 tests (70+82+27+26+30+67+65+27+15+24).
+  - ALL: exit 0, 100 suites, 2899 tests, al primer intento, con loadavg 4.51
+    y `pgrep` vacío antes de lanzarlo.
+  - Sombras de producción 0 y recuento completo 6.
+  - Los diffs de dependencias y ficheros compartidos contra `584ef2d9` salen
+    vacíos.
+  - `git diff --quiet 9de61d9d -- src (sin tests)` → exit 0.
+  - H1-H44 y P1-P16 en sus valores de cierre: H4=9, H5=4, H6=0, H8=0, H11=25,
+    H12=10, H13=0, H14=0, H17=0, H18=0, H21=0, H24=0, H29=3, H34=1, H36=4, y
+    P1-P16 como se esperaba.
+- **c35** (`edf6ce12`): `grep -c '; E3: '` = 6, numstat 6/6.
+- **c36** (`ae6dddf5`): lista cerrada de 20 ficheros.
+- **Incidencias de Codex con sus scripts auxiliares.** Las dos son inocuas.
+  - *Editor de E3.6.* El selector auxiliar casaba dos aserciones
+    `accessibilityRole` y paró por AssertionError antes de escribir. Se
+    restringió a R15. El diff confirma una sola línea, dentro de R15 'lo pinta
+    en %s'. Sin efecto.
+  - *Registrador del FINAL.* Intentó contar líneas ✓ en un log no verbose y
+    falló antes de escribir. Jest había salido con exit 0 y 10/433. El reparto
+    es coherente: los otros ocho ficheros no cambian desde la ronda 1, y
+    433 − 152 = 281 = 427 − 146. Sin efecto.
+
+#### A4. Trazabilidad
+
+- Los 34 hashes citados son ancestros de HEAD, y cada mensaje de commit casa
+  con su celda. `3719eb75` solo se cita en prosa.
+- Llevan su commit de E3:
+  - R3 y R5/R6 (`d1ff55b6`; R3 también `1fba836c`);
+  - R8 (tras el `0359fe6c` de E2, `b91c815c`);
+  - R10 (`4f4cfbdb` y `dc074638`);
+  - R15 (`3361aea0`).
+- Los 17 nombres de `describe` tienen `grep -cF` = 1 en el árbol, igual que el
+  it de R9 en el layout y el it de R1.
+- La única fila «pendiente» es R17 «pendiente (humano)», el smoke del dev build
+  de Android, que es un gate humano aparte. No cuenta como fila pendiente del
+  implementer.
+
+#### A5. Carta de UI (C8) y C2-C7, solo sobre lo que cambia E3
+
+- Se cargó `expo:expo-overview` antes de esta comprobación.
+- **C8.** E3 no toca UI: producción es idéntica a `3719eb75`/`9de61d9d`. El
+  grep de las líneas añadidas por E3 (hex, clases arbitrarias, `StyleSheet`,
+  `elevation`, `Platform.OS`, `boxShadow`) no da coincidencias. Las clases que
+  asevera E3.4 (`border border-border`) y E3.6 (`min-h-11`) ya estaban en
+  producción y ya pasaron la carta en la ronda 1.
+- **C2.** `feature_list.json` solo tiene la 170 en `in_progress`.
+- **C3.** Sin cambios de capas: E3 solo toca tests.
+- **C4.** Cada it nuevo vive bajo el `describe` de su R-id (`#170 R3`, `R5`,
+  `R6`, `R8`, `R10`, `R15`). El cierre por mutación (C4 3(b)) exige evidencia
+  propia del reviewer, que falta hasta la Fase B.
+- **C5.** Trazabilidad cubierta en A4. Los commits c29-c36 siguen el formato
+  `test(...)`/`docs(...)` con R-id y E3, como en la ronda 1.
+- **C6.** `requirements.md` tiene `status: approved`. §Aprobación tiene cuatro
+  casillas marcadas (base, E1, E2 y E3), todas del 2026-10-12.
+- **C7.** N/A: no se reemplaza nada.
+
+#### A6. Lista cerrada
+
+Recalculada con el comando del cuerpo del handoff (línea 1324):
+`git diff --name-only 584ef2d9 HEAD -- . ':!feature_list.json' ':!progress/current.md' ':!progress/handoff_mobile-alerts-grouped-and-detail-map.md' ':!specs/mobile-alerts-grouped-and-detail-map/requirements.md' ':!specs/mobile-alerts-grouped-and-detail-map/design.md' ':!specs/mobile-alerts-grouped-and-detail-map/tasks.md' ':!progress/review_mobile-alerts-grouped-and-detail-map.md'`.
+Da 20 ficheros, idénticos a los que lista el impl (líneas 19403-19440). Las
+rutas de mobile son 17.
+
+#### A7. init.sh (lo corrió el leader, el reviewer lee el log)
+
+- Log `scratchpad/init170-r2.log`, de 33 895 líneas; `init170-r2.head` =
+  `ae6dddf5`.
+- Backend: 187 suites, 1474 tests. Infra: 2 suites, 14 tests. Mobile: 100
+  suites, 2899 tests. e2e: 30 aprobadas + 3 saltadas, 468 tests + 8 saltados.
+- Lint y Typecheck OK, «Todo verde».
+- 0 ✕, ningún ● salvo `● Console`, ningún `FAIL` y ningún «Failed to run».
+- El aviso «A worker process has failed to exit gracefully» es preexistente
+  desde main.
+- El log no registra una línea `exit=`. El exit 0 lo reporta el leader.
+- 2899 = 2893 + 6, que son las seis its que añade E3. Sin regresiones.
+
+#### A8. Smoke R17 y E3
+
+E3 no afecta al smoke R17 (dev build de Android). Solo cambia tests, y el
+código de producción es idéntico al de `3719eb75`/`9de61d9d`. La casilla de
+§Smoke R17 sigue `[ ]`. Es un gate humano y no forma parte de este veredicto.
+
+#### Observaciones no bloqueantes
+
+1. **Bloque de anclas pegado en el FINAL del impl.** El code fence «CIERRE —
+   FINAL» (líneas 18927-18991 del impl) incluye, después del comando de jest,
+   el bloque «== ANCLAS ==» del handoff (líneas 579-639): los valores base de
+   H y «Valores al cerrar». Un lector podría tomar esos valores base por
+   medidas. Las medidas reales están desde la línea 19117 y son correctas.
+2. **`progress/current.md` sin actualizar.** Su última línea de #170 sigue
+   diciendo «Siguiente: Reanudación 7 de Codex…» y no registra que Codex
+   terminó. Lo actualiza el leader.
+3. **Frontmatter de `traceability.md` en `status: draft`.** Hay otras 26 specs
+   del repo en draft, así que la convención es mixta. Si se quiere uniformar
+   con las features done que usan `approved`, el leader puede cambiarlo al
+   cerrar.
+
+#### Hallazgos bloqueantes de la Fase A
+
+Ninguno.
+
+### Fase B (réplica de sondas, tras «jest permitido»)
+
+Se replantaron sobre HEAD `ae6dddf5` las tres sondas que cierran los tres
+hallazgos bloqueantes de tests de la ronda 1: SE3.1, SE3.2 y SE3.3.
+
+Método:
+
+- Mutación literal de la corrección 16 (sed/perl), aplicada desde
+  `mobile-pet-tracker/`.
+- Jest de un solo fichero:
+  `FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath <test>`.
+- Revertido con `git checkout HEAD -- <fichero>`.
+- LIMPIO =
+  `git diff --cached --quiet && git diff --quiet -- . ../docs ../specs && test -z "$(git ls-files --others --exclude-standard -- . ../docs ../specs)"`.
+- Logs en el scratchpad de la sesión: `r2-se3-1.txt`, `r2-se3-2.txt` y
+  `r2-se3-3.txt`.
+- Carga (loadavg en 4 CPU): 1.58, 2.58 y 4.05; `pgrep` de jest e init.sh
+  vacío al empezar.
+- No apareció ningún `Exceeded timeout`.
+
+Los recuentos difieren de los del handoff porque la sonda se corre sobre HEAD,
+no sobre el commit cN de su cadena. D tiene 82 its en HEAD frente a 78 tras c29
+y 79 tras c30; A tiene 70 frente a 68 tras c31. Los fallidos son exactamente
+los mismos.
+
+| Sonda | Mutación | plantada | exit | `Tests:` en HEAD | ● (sin Console) | Errores de suite/tipo | limpio |
+|---|---|---|---|---|---|---|---|
+| SE3.1 (R8, E3.1) | `useQuery` de zonas sin posición en `alert-detail/index.tsx` | 0 | 1 | `10 failed, 72 passed, 82 total` | 10, los diez `#170 R8 › …: sin mapa` | 0 | 0 |
+| SE3.2 (R10, E3.2) | zonas de `useSelectedPet().selectedPetId ?? alert.petId` | 0 | 1 | `2 failed, 80 passed, 82 total` | 2: `consulta las zonas de la mascota de la alerta, no de la seleccionada` y `lee la zona de la caché compartida de geofenceKeys.list` | 0 | 0 |
+| SE3.3 (R3.2, E3.3) | `{card}` antes de la cabecera dentro del `View gap-4` en `alerts/index.tsx` | 0 | 1 | `1 failed, 69 passed, 70 total` | 1: `#170 R3 › envuelve cada cabecera con la primera fila de su sección en un View gap-4` | 0 | 0 |
+
+Cada rojo cae en la aserción que E3 añadió, no en una consulta previa:
+
+- SE3.1 falla en `expect(mockListGeofences).not.toHaveBeenCalled()` con
+  `Received number of calls: 1` (`"pet-1"`). Ahora que `geofenceId` es
+  `'zone-1'`, el candado ya no es tautológico, y queda cerrado el hallazgo 2
+  de la ronda 1.
+- SE3.2 falla en las dos its que fijan `pet-7`. Queda cerrado el hallazgo 3.
+- SE3.3 falla en `expect(elementChild(parent, 0).props.testID)` con
+  `Expected: "alerts-section-today"` / `Received: "alert-row-today-open"`.
+  Queda cerrado el hallazgo 4.
+
+Estado tras las tres reversiones:
+
+- `git diff --quiet HEAD -- mobile-pet-tracker` → 0.
+- `git diff --cached --quiet` → 0.
+- `git status --short` muestra solo
+  `M progress/review_mobile-alerts-grouped-and-detail-map.md`, que es este
+  fichero, sin commitear por instrucción del leader. No queda ninguna
+  mutación en el árbol.
+
+### Veredicto ronda 2: APROBADO
+
+- **init.sh en verde sobre `ae6dddf5`** (log del leader): mobile 2899/2899,
+  sin regresiones (2893 + 6 its de E3), y backend, infra, e2e, lint y
+  typecheck en verde.
+- **Hallazgos de la ronda 1.** Los cuatro bloqueantes están cerrados: el 1 por
+  `003fa449` + c35, y el 2, el 3 y el 4 por E3, con el cierre por mutación
+  replicado por el reviewer (C4 3(b)). Las observaciones 2, 3 y 5 quedan
+  candadas por E3.4-E3.6, verificadas en el árbol y en la evidencia de Codex.
+- **Trazabilidad.** No queda ninguna fila «pendiente» del implementer. Todos
+  los hashes son ancestros de HEAD, y cada test nombra su R-id vía su
+  `describe`.
+- **Spec.** Aprobada con las casillas base, E1, E2 y E3. Producción es
+  idéntica a `3719eb75`; C8 sin cambios de UI.
+- **Gate humano pendiente: smoke R17 (dev build de Android).** La casilla de
+  §Smoke R17 sigue `[ ]` y la fila R17 de traceability dice «pendiente
+  (humano)». E3 no lo afecta. La feature no debe marcarse `done` hasta que el
+  humano lo cierre.
+- **Observaciones no bloqueantes 1-3 de la Fase A.** Son el bloque de anclas
+  pegado en el FINAL del impl, `current.md` y el frontmatter `draft` de
+  traceability. Quedan para el cierre del leader.
