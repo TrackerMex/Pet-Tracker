@@ -6617,3 +6617,684 @@ specs/mobile-celebrations-and-living-empty/traceability.md
 ```
 
 R16: pendiente del smoke humano
+
+
+## Ronda 3
+
+H1: `f0a9fe294dae775c02b18660c71a4079d32cac66`. Inicio: 2026-10-13. Plan: c37–c40 (E3, rojo/verde), c41 (merge medido), sondas S5/S5i/S5b/S5p y c42–c43 (trazabilidad y lista cerrada). Sin init.sh, push ni PR: los coordina el leader.
+
+Skills cargadas: `building-native-ui` (`/home/claude/.codex/plugins/cache/openai-curated/expo/11c74d6b/skills/building-native-ui/SKILL.md`), `animate-expo` (`.agents/skills/animate-expo/SKILL.md`) y `ponytail` (`/home/claude/.codex/plugins/cache/ponytail/ponytail/5.1.0/skills/ponytail/SKILL.md`). La spec prevalece sobre las skills. E3 aprobada por humano, T4 y R12.3 leídos; resolutor leído entero y sin editar.
+
+### Comprobaciones iniciales
+
+```text
+$ cd /home/claude/sites/Pet-Tracker-wt-171 && pwd
+/home/claude/sites/Pet-Tracker-wt-171
+$ git branch --show-current
+feature/171-mobile-celebrations-and-living-empty
+$ git rev-parse HEAD
+f0a9fe294dae775c02b18660c71a4079d32cac66
+$ git log --oneline -4
+f0a9fe29 docs(progress): #171 round 3 Codex handoff, merge resolver and canvas parity report
+34446b87 docs(specs): firma de la enmienda E3 de #171 aprobada vía Notion
+e67032e7 docs(mobile-celebrations-and-living-empty): #171 E3 no fija §2.26 en «Qué cambia»
+0cb0a506 docs(mobile-celebrations-and-living-empty): #171 enmienda E3, muelle propio y sección de copy libre
+$ git status --short
+$ git fetch origin && git rev-parse origin/main
+788d1f896d2de11cde7a6ab5e1fbf1bb548b620f
+$ git merge-base --is-ancestor origin/main HEAD; echo "exit=$?"
+exit=1
+$ git rev-parse HEAD:mobile-pet-tracker HEAD:docs HEAD:specs/mobile-ui-language
+73c090742c6ddb4b2220317cbc8055161edae3c5
+41a2ec8a694b8a02fa0fafd55e334d1402c50ac4
+132eaf52942cb64ddc7bf0194aba3f7263b6f2e2
+$ git ls-tree HEAD | awk '$4 != "progress"' | git hash-object --stdin
+ae107c2bf49a256a81e561aadca242da58ccd51b
+```
+
+### Base y anclas iniciales
+
+```text
+cwd
+$ cd /home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker && pwd
+/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker
+```
+
+```text
+node_modules
+$ test -d node_modules && echo presente
+presente
+```
+
+```text
+router
+$ test ! -e .expo/types/router.d.ts; echo "exit=$?"
+exit=0
+```
+
+```text
+A1
+$ grep -cxF "      'MOTION_BLINK_TIMING'," src/theme/__tests__/motion.test.ts
+1
+```
+
+```text
+A2
+$ grep -cxF "      'MOTION_POP_SPRING'," src/theme/__tests__/motion.test.ts
+1
+```
+
+```text
+A3
+$ grep -cF "it('declara MOTION_POP_SPRING'" src/theme/__tests__/motion.test.ts
+1
+```
+
+```text
+A4
+$ grep -cF "require('../motion').MOTION_POP_SPRING)" src/theme/__tests__/motion.test.ts
+1
+```
+
+```text
+A5
+$ grep -cF 'MOTION_POP_SPRING' src/theme/__tests__/motion.test.ts src/theme/motion.ts src/components/celebration.tsx src/components/__tests__/celebration.test.tsx
+src/theme/__tests__/motion.test.ts:3
+src/theme/motion.ts:1
+src/components/celebration.tsx:3
+src/components/__tests__/celebration.test.tsx:0
+```
+
+```text
+A6
+$ grep -cF 'MOTION_CELEBRATION_SPRING' src/theme/__tests__/motion.test.ts src/theme/motion.ts src/components/celebration.tsx src/components/__tests__/celebration.test.tsx
+src/theme/__tests__/motion.test.ts:0
+src/theme/motion.ts:0
+src/components/celebration.tsx:0
+src/components/__tests__/celebration.test.tsx:0
+```
+
+```text
+A7
+$ grep -cF 'export const MOTION_POP_SPRING = { duration: 400, dampingRatio: 0.5' src/theme/motion.ts
+1
+```
+
+```text
+A8
+$ grep -cF 'import { MOTION_CONFETTI_FALL_TIMING, ' src/components/celebration.tsx
+1
+```
+
+```text
+A9
+$ grep -cF ', MOTION_POP_SCALE, MOTION_POP_SPRING, MOTION_SURFACE_MS }' src/components/celebration.tsx
+1
+```
+
+```text
+A10
+$ grep -cF 'withSpring(1, MOTION_POP_SPRING)' src/components/celebration.tsx
+2
+```
+
+```text
+A11
+$ grep -cF '§2.2' src/components/__tests__/celebration.test.tsx
+3
+```
+
+```text
+A12
+$ grep -cF 'en §2.24 de mobile-ui-language' src/components/__tests__/celebration.test.tsx
+1
+```
+
+```text
+A13
+$ grep -cF '### §2.24 — Añadidos por ' src/components/__tests__/celebration.test.tsx
+1
+```
+
+```text
+A14
+$ grep -cF 'dampingRatio: 0.' src/theme/motion.ts
+1
+```
+
+```text
+H1
+$ grep -cxF '### §2.24 — Añadidos por #171 — Celebraciones' specs/mobile-ui-language/design.md
+1
+```
+
+```text
+H2
+$ grep -cE '^### §2\.2[5-9] ' specs/mobile-ui-language/design.md
+0
+```
+
+```text
+H3
+$ git show origin/main:specs/mobile-ui-language/design.md | grep -cE '^### §2\.2[4-6] '
+3
+```
+
+```text
+H4
+$ git show origin/main:specs/mobile-ui-language/design.md | grep -cE '^### §2\.(2[7-9]|[3-9][0-9]) '
+0
+```
+
+```text
+H5
+$ grep -cF -- '- [x] Enmienda E3 aprobada por humano (fecha: 2026-10-13)' specs/mobile-celebrations-and-living-empty/requirements.md
+1
+```
+
+```text
+H6
+$ grep -cF -- '- [ ] R16: smoke en dev build de Android completado por humano (fecha: ____)' specs/mobile-celebrations-and-living-empty/requirements.md
+1
+```
+
+```text
+H7
+$ grep -cF '(E3)' specs/mobile-celebrations-and-living-empty/traceability.md
+0
+```
+
+```text
+H8
+$ git diff --quiet $(git merge-base HEAD origin/main) origin/main -- mobile-pet-tracker/package.json mobile-pet-tracker/bun.lock; echo "deps=$?"
+deps=0
+```
+
+### Medida base
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/theme/__tests__/motion.test.ts src/components/__tests__/celebration.test.tsx > /tmp/171-r3-base.txt 2>&1; echo "exit=$?"
+exit=0
+  ● Console
+Test Suites: 2 passed, 2 total
+Tests:       66 passed, 66 total
+```
+
+Base coincidente: motion 17, celebration 49. No se repitió el ALL de H1.
+
+### c37 — E3 R7, rojo
+
+```text
+hash motion.test.ts: 9ea29f15b87d3f896b328d6dc30908db6b6d6e2f
+medida /tmp/171-c37.txt: exit=1
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 15 passed, 17 total
+  ● #152 R1: las duraciones y el preset de movimiento viven en un solo sitio › no exporta nada más
+  ● #171 R7: las constantes de pop viven en motion.ts › declara MOTION_CELEBRATION_SPRING
+```
+
+Rojos previstos: la lista aún recibe MOTION_POP_SPRING y falta MOTION_CELEBRATION_SPRING; el símbolo nuevo recibe undefined frente al preset esperado { duration: 400, dampingRatio: 0.5, reduceMotion: 'system' }.
+
+Incidencia de registro: un helper de JavaScript no quedó visible fuera de eval (ReferenceError: append is not defined), antes de invocar Python; se corrigió su ámbito. Ningún comando del handoff falló por esa incidencia y no cambió ningún fichero.
+
+Guardas /tmp/171-c37-guardas.txt: `exit=0`, `Test Suites: 2 passed, 2 total`, `Tests:       96 passed, 96 total`.
+
+Cadena c37: exit=0; typecheck verde, lint vacío, índice exclusivo (3/3), árbol móvil 8d60b785d89ade8b74107a1d9873bb2c0fc35b2e y LIMPIO verificados. Commit: `87b4fdf0 test(mobile): el muelle de la celebración se llama MOTION_CELEBRATION_SPRING (R7, E3)`.
+
+### c38 — E3 R7, verde
+
+```text
+hash motion.ts: 120cd75ab9e655d0538f8920d1640582db8c8d08
+hash celebration.tsx: 5f8271b32ade1e381c79d2f2c7d11254893e7e1b
+medida /tmp/171-c38.txt: exit=0
+  ● Console
+Test Suites: 2 passed, 2 total
+Tests:       66 passed, 66 total
+```
+
+Guardas /tmp/171-c38-guardas.txt: `exit=0`, `Test Suites: 2 passed, 2 total`, `Tests:       96 passed, 96 total`.
+
+Espera previa al ALL c38: `espera=2` (≤90).
+
+ALL /tmp/171-c38-all.txt: `exit=0`.
+
+```text
+Test Suites: 99 passed, 99 total
+Tests:       2861 passed, 2861 total
+Snapshots:   1 passed, 1 total
+```
+
+Aviso único al final del ALL: `A worker process has failed to exit gracefully and has been force exited.` Es el aviso permitido por el handoff y tasks.md para el ALL completo; no apareció en la medida ni las guardas.
+
+Cadena c38: exit=0; typecheck verde, lint vacío, índice exclusivo (celebration 3/3; motion 1/1), árbol móvil e027ae08a74a0a0e9f6e68d8881b9271343ae18c y LIMPIO verificados. Commit: `3547a943 refactor(mobile): la celebración usa su propio muelle (R7, E3)`.
+
+### c39 — E3 R12, rojo
+
+```text
+hash celebration.test.tsx: d287e3b383dd8cd81db60590627192dfea74a62c
+medida /tmp/171-c39.txt: exit=1
+  ● #171 R12: copy de la variante sin collar › registra las cuatro claves en §2.27 de mobile-ui-language
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 48 passed, 49 total
+```
+
+Rojo previsto por aserción: `Expected length: 2`, `Received length: 1`; la sección todavía es §2.24.
+
+Guardas /tmp/171-c39-guardas.txt: `exit=0`, `Test Suites: 2 passed, 2 total`, `Tests:       96 passed, 96 total`.
+
+Cadena c39: exit=0; typecheck verde, lint vacío, índice exclusivo (2/2), árbol móvil 9b17319ca682d1feaacc036a340a3aff362d7003 y LIMPIO verificados. Commit: `2cc05156 test(mobile): el copy de la celebración se registra en §2.27 (R12, E3)`.
+
+### c40 — E3 R12, verde
+
+```text
+hash mobile-ui-language/design.md: b09340652de6ec01e506ca8b74622d6f970df80c
+medida /tmp/171-c40.txt: exit=0
+Test Suites: 1 passed, 1 total
+Tests:       49 passed, 49 total
+```
+
+Guardas /tmp/171-c40-guardas.txt: `exit=0`, `Test Suites: 2 passed, 2 total`, `Tests:       96 passed, 96 total`.
+
+Cadena c40: exit=0; typecheck verde, lint vacío, índice exclusivo (1/1), árbol móvil 9b17319ca682d1feaacc036a340a3aff362d7003, árbol specs/mobile-ui-language 4269e4a856afc6ff8e440b913d66ff54671edd53 y LIMPIO verificados. Commit: `f5e50953 docs(mobile-ui-language): las claves de la celebración pasan a §2.27 (R12, E3)`.
+
+### c41 — merge de origin/main 788d1f89
+
+```text
+$ cd /home/claude/sites/Pet-Tracker-wt-171 && pwd
+/home/claude/sites/Pet-Tracker-wt-171
+```
+
+```text
+$ git rev-parse HEAD
+f5e509536085605151cf42169285c042e4d17b9b
+```
+
+```text
+$ git -c merge.conflictStyle=merge -c rerere.enabled=false merge --no-ff --no-commit origin/main > /tmp/171-c41-merge.txt 2>&1; echo "exit=$?"
+exit=1
+```
+
+```text
+$ test "$(git diff --name-only --diff-filter=U | tr '\n' '|')" = 'docs/ui-guidelines.md|mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts|mobile-pet-tracker/src/__tests__/design-drift.test.ts|mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx|mobile-pet-tracker/src/theme/__tests__/motion.test.ts|mobile-pet-tracker/src/theme/motion.ts|specs/mobile-ui-language/design.md|'; echo "conflictos=$?"
+conflictos=0
+```
+
+```text
+$ python3 -I progress/merge_ronda3_mobile-celebrations-and-living-empty.py . > /tmp/171-c41-resolve.txt 2>&1; echo "exit=$?"
+exit=0
+```
+
+```text
+$ test "$(tr '\n' '|' < /tmp/171-c41-resolve.txt)" = 'docs/ui-guidelines.md hunks 1|mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts hunks 6|mobile-pet-tracker/src/__tests__/design-drift.test.ts hunks 1|mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx hunks 1|mobile-pet-tracker/src/theme/__tests__/motion.test.ts hunks 2|mobile-pet-tracker/src/theme/motion.ts hunks 1|specs/mobile-ui-language/design.md hunks 1|'; echo "resuelto=$?"
+resuelto=0
+```
+
+```text
+$ git add docs/ui-guidelines.md mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts mobile-pet-tracker/src/__tests__/design-drift.test.ts mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx mobile-pet-tracker/src/theme/__tests__/motion.test.ts mobile-pet-tracker/src/theme/motion.ts specs/mobile-ui-language/design.md
+```
+
+```text
+$ test -z "$(git diff --name-only --diff-filter=U)" && test "$(git write-tree --prefix=mobile-pet-tracker/)" = d27a09c60c44bca7ea15a22807d81c243c0dfb51 && test "$(git write-tree --prefix=docs/)" = ae2d6b497ae1b114ac757cba665048aaf26882ed && test "$(git write-tree --prefix=specs/mobile-ui-language/)" = 3075171b76e407ef3c09b82c718b0f27bb7efb2c && test "$(git ls-tree "$(git write-tree)" | awk '$4 != "progress"' | git hash-object --stdin)" = 44d0fbeb9305ba4a6efceccf65b572c0baca9cf6; echo "arbol=$?"
+arbol=0
+```
+
+```text
+$ cd /home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker && pwd
+/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker
+```
+
+Medida /tmp/171-c41.txt: `exit=0` (motion 21, celebration 49).
+
+```text
+  ● Console
+Test Suites: 2 passed, 2 total
+Tests:       70 passed, 70 total
+```
+
+Guardas /tmp/171-c41-guardas.txt: `exit=0`, `Test Suites: 2 passed, 2 total`, `Tests:       101 passed, 101 total`.
+
+Espera previa al ALL c41: `espera=0`.
+
+ALL /tmp/171-c41-all.txt: `exit=0`.
+
+```text
+Test Suites: 104 passed, 104 total
+Tests:       3187 passed, 3187 total
+Snapshots:   1 passed, 1 total
+```
+
+Aviso único al final del ALL: `A worker process has failed to exit gracefully and has been force exited.` Permitido por el handoff; medidas y guardas sin ese aviso.
+
+Cadena c41: exit=0; MERGE_HEAD, ausencia de conflictos, árbol móvil d27a09c60c44bca7ea15a22807d81c243c0dfb51, router ausente, typecheck verde, lint vacío y LIMPIO verificados. Commit: `1647ce72 Merge origin/main (#167, #168, #169, #170) into feature/171-mobile-celebrations-and-living-empty`.
+
+### Padres del merge y anclas M antes de sondas
+
+```text
+$ git rev-parse HEAD^1 HEAD^2
+f5e509536085605151cf42169285c042e4d17b9b
+788d1f896d2de11cde7a6ab5e1fbf1bb548b620f
+```
+
+```text
+$ git rev-parse HEAD:mobile-pet-tracker
+d27a09c60c44bca7ea15a22807d81c243c0dfb51
+```
+
+```text
+$ grep -cF 'pingoScale.set(withSpring(1, MOTION_CELEBRATION_SPRING))' src/components/celebration.tsx
+1
+```
+
+```text
+$ grep -cF 'badgeScale.set(withDelay(MOTION_SURFACE_MS, withSpring(1, MOTION_CELEBRATION_SPRING)))' src/components/celebration.tsx
+1
+```
+
+```text
+$ grep -cF 'dampingRatio: 0.5' src/theme/motion.ts
+1
+```
+
+```text
+$ grep -cF 'MOTION_CELEBRATION_SPRING' src/components/celebration.tsx
+3
+```
+
+```text
+$ grep -cF 'MOTION_POP_SPRING' src/components/celebration.tsx
+0
+```
+
+### S5 — R7.1, muelle de Pingo
+
+```text
+$ sed -i 's|pingoScale\.set(withSpring(1, MOTION_CELEBRATION_SPRING))|pingoScale.set(withTiming(1, MOTION_FADE_TIMING))|' src/components/celebration.tsx
+mutada=0
+```
+
+```text
+exit=1
+  ● #171 R7: pop › R7.4 Pingo rebota por encima de 1 y se asienta a los 50, 100, 150 y 200 ms
+Tests:       1 failed, 48 passed, 49 total
+```
+
+```text
+sonda=0
+```
+
+Revertida con `git checkout HEAD -- src/components/celebration.tsx`.
+
+```text
+limpio=0
+```
+
+### S5i — R7.2, muelle de la insignia
+
+```text
+$ sed -i 's|badgeScale\.set(withDelay(MOTION_SURFACE_MS, withSpring(1, MOTION_CELEBRATION_SPRING)))|badgeScale.set(withDelay(MOTION_SURFACE_MS, withTiming(1, MOTION_FADE_TIMING)))|' src/components/celebration.tsx
+mutada=0
+```
+
+```text
+exit=1
+  ● #171 R7: pop › R7.4 la insignia repite el rebote a los 450, 500, 550 y 600 ms
+Tests:       1 failed, 48 passed, 49 total
+```
+
+```text
+sonda=0
+```
+
+Revertida con `git checkout HEAD -- src/components/celebration.tsx`.
+
+```text
+limpio=0
+```
+
+### S5b — E3 §4, rebote de Pingo e insignia
+
+```text
+$ sed -i 's|dampingRatio: 0\.5|dampingRatio: 1|' src/theme/motion.ts
+mutada=0
+```
+
+```text
+exit=1
+  ● #171 R7: pop › R7.4 Pingo rebota por encima de 1 y se asienta a los 50, 100, 150 y 200 ms
+  ● #171 R7: pop › R7.4 la insignia repite el rebote a los 450, 500, 550 y 600 ms
+Tests:       2 failed, 47 passed, 49 total
+```
+
+```text
+sonda=0
+```
+
+Revertida con `git checkout HEAD -- src/theme/motion.ts`.
+
+```text
+limpio=0
+```
+
+### S5p — E3 §1, celebración con el muelle de #167
+
+```text
+$ sed -i 's|MOTION_CELEBRATION_SPRING|MOTION_POP_SPRING|g' src/components/celebration.tsx
+mutada=0
+```
+
+```text
+exit=1
+  ● #171 R7: pop › R7.4 Pingo rebota por encima de 1 y se asienta a los 50, 100, 150 y 200 ms
+  ● #171 R7: pop › R7.4 la insignia repite el rebote a los 450, 500, 550 y 600 ms
+Tests:       2 failed, 47 passed, 49 total
+```
+
+```text
+sonda=0
+```
+
+Revertida con `git checkout HEAD -- src/components/celebration.tsx`.
+
+```text
+limpio=0
+```
+
+### Anclas A, H y M tras S5p
+
+```text
+A1
+$ grep -cxF "      'MOTION_BLINK_TIMING'," src/theme/__tests__/motion.test.ts
+1
+```
+
+```text
+A2
+$ grep -cxF "      'MOTION_POP_SPRING'," src/theme/__tests__/motion.test.ts
+1
+```
+
+```text
+A3
+$ grep -cF "it('declara MOTION_POP_SPRING'" src/theme/__tests__/motion.test.ts
+0
+```
+
+```text
+A4
+$ grep -cF "require('../motion').MOTION_POP_SPRING)" src/theme/__tests__/motion.test.ts
+0
+```
+
+```text
+A5
+$ grep -cF 'MOTION_POP_SPRING' src/theme/__tests__/motion.test.ts src/theme/motion.ts src/components/celebration.tsx src/components/__tests__/celebration.test.tsx
+src/theme/__tests__/motion.test.ts:4
+src/theme/motion.ts:1
+src/components/celebration.tsx:0
+src/components/__tests__/celebration.test.tsx:0
+```
+
+```text
+A6
+$ grep -cF 'MOTION_CELEBRATION_SPRING' src/theme/__tests__/motion.test.ts src/theme/motion.ts src/components/celebration.tsx src/components/__tests__/celebration.test.tsx
+src/theme/__tests__/motion.test.ts:3
+src/theme/motion.ts:1
+src/components/celebration.tsx:3
+src/components/__tests__/celebration.test.tsx:0
+```
+
+```text
+A7
+$ grep -cF 'export const MOTION_POP_SPRING = { duration: 400, dampingRatio: 0.5' src/theme/motion.ts
+0
+```
+
+```text
+A8
+$ grep -cF 'import { MOTION_CONFETTI_FALL_TIMING, ' src/components/celebration.tsx
+0
+```
+
+```text
+A9
+$ grep -cF ', MOTION_POP_SCALE, MOTION_POP_SPRING, MOTION_SURFACE_MS }' src/components/celebration.tsx
+0
+```
+
+```text
+A10
+$ grep -cF 'withSpring(1, MOTION_POP_SPRING)' src/components/celebration.tsx
+0
+```
+
+```text
+A11
+$ grep -cF '§2.2' src/components/__tests__/celebration.test.tsx
+3
+```
+
+```text
+A12
+$ grep -cF 'en §2.24 de mobile-ui-language' src/components/__tests__/celebration.test.tsx
+0
+```
+
+```text
+A13
+$ grep -cF '### §2.24 — Añadidos por ' src/components/__tests__/celebration.test.tsx
+0
+```
+
+```text
+A14
+$ grep -cF 'dampingRatio: 0.' src/theme/motion.ts
+2
+```
+
+```text
+H1
+$ grep -cxF '### §2.24 — Añadidos por #171 — Celebraciones' specs/mobile-ui-language/design.md
+0
+```
+
+```text
+H2
+$ grep -cE '^### §2\.2[5-9] ' specs/mobile-ui-language/design.md
+3
+```
+
+```text
+H3
+$ git show origin/main:specs/mobile-ui-language/design.md | grep -cE '^### §2\.2[4-6] '
+3
+```
+
+```text
+H4
+$ git show origin/main:specs/mobile-ui-language/design.md | grep -cE '^### §2\.(2[7-9]|[3-9][0-9]) '
+0
+```
+
+```text
+H5
+$ grep -cF -- '- [x] Enmienda E3 aprobada por humano (fecha: 2026-10-13)' specs/mobile-celebrations-and-living-empty/requirements.md
+1
+```
+
+```text
+H6
+$ grep -cF -- '- [ ] R16: smoke en dev build de Android completado por humano (fecha: ____)' specs/mobile-celebrations-and-living-empty/requirements.md
+1
+```
+
+```text
+H7
+$ grep -cF '(E3)' specs/mobile-celebrations-and-living-empty/traceability.md
+0
+```
+
+```text
+H8
+$ git diff --quiet $(git merge-base HEAD origin/main) origin/main -- mobile-pet-tracker/package.json mobile-pet-tracker/bun.lock; echo "deps=$?"
+deps=0
+```
+
+```text
+M1
+$ grep -cF 'pingoScale.set(withSpring(1, MOTION_CELEBRATION_SPRING))' src/components/celebration.tsx
+1
+```
+
+```text
+M2
+$ grep -cF 'badgeScale.set(withDelay(MOTION_SURFACE_MS, withSpring(1, MOTION_CELEBRATION_SPRING)))' src/components/celebration.tsx
+1
+```
+
+```text
+M3
+$ grep -cF 'dampingRatio: 0.5' src/theme/motion.ts
+1
+```
+
+```text
+M4
+$ grep -cF 'MOTION_CELEBRATION_SPRING' src/components/celebration.tsx
+3
+```
+
+```text
+M5
+$ grep -cF 'MOTION_POP_SPRING' src/components/celebration.tsx
+0
+```
+
+Todas las anclas finales coinciden con el handoff; H7 sigue en 0 antes de c42.
+
+### Cierre de la ronda 3
+
+```text
+$ cd /home/claude/sites/Pet-Tracker-wt-171 && pwd
+/home/claude/sites/Pet-Tracker-wt-171
+```
+
+Ficheros móviles tocados por los commits propios (merge excluido):
+
+```text
+$ git log --first-parent --no-merges --format= --name-only f0a9fe294dae775c02b18660c71a4079d32cac66..HEAD -- mobile-pet-tracker/ | sed '/^$/d' | LC_ALL=C sort -u
+mobile-pet-tracker/src/components/__tests__/celebration.test.tsx
+mobile-pet-tracker/src/components/celebration.tsx
+mobile-pet-tracker/src/theme/__tests__/motion.test.ts
+mobile-pet-tracker/src/theme/motion.ts
+```
+
+Trazabilidad: solo las celdas de commits de R7 y R12 añaden c37 → c38 y c39 → c40 respectivamente, con `(E3)`. Tests, frontmatter y resto del fichero conservados. El merge no se añade a la tabla.
+
+```text
+$ grep -cF '(E3)' specs/mobile-celebrations-and-living-empty/traceability.md
+2
+```
+
+c42 registra la trazabilidad y la bitácora; c43 registra la lista cerrada desde H1. R16 conserva su casilla pendiente. La verificación global del repositorio queda a cargo del leader.
+
+R16: pendiente del smoke humano
