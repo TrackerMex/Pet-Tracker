@@ -172,6 +172,47 @@ const LEFT = [7, 48, 89, 30, 71, 12, 53, 94, 35, 76, 17, 58, 99, 40, 81, 22, 63,
 const SHAPES = ['h-1.5 w-2 rounded-full', 'h-3.5 w-2.5', 'h-4 w-3'];
 const COLORS = ['bg-accent', 'bg-category-amber-strong', 'bg-category-violet-strong', 'bg-category-blue-strong', 'bg-category-rose-strong', 'bg-category-green-strong'];
 
+// #171 R6 (E2): [opacidad, translateY, grados] de cada pieza a los 1200 ms, medidos en la spike de la enmienda.
+const CONFETTI_AT_1200 = [
+  [0.154, 1178.4, 465.3],
+  [0.194, 1127.3, 445.8],
+  [0.236, 1073.5, 425.2],
+  [0.28, 1017.6, 403.9],
+  [0.325, 960, 381.9],
+  [0.371, 901.3, 359.5],
+  [0.418, 841.8, 336.8],
+  [0.465, 781.9, 313.9],
+  [0.512, 721.8, 290.9],
+  [0.381, 889.8, 355.1],
+  [0.44, 813.4, 325.9],
+  [0.501, 736.7, 296.6],
+  [0.561, 660.1, 267.4],
+  [0.621, 584.3, 238.4],
+  [0.679, 509.8, 210],
+  [0.736, 436.9, 182.1],
+  [0.792, 366.1, 155.1],
+  [0.846, 297.6, 128.9],
+  [0.803, 351.9, 149.7],
+  [0.877, 258.2, 113.9],
+  [0.947, 169.4, 80],
+  [0.89, 85.9, 48.1],
+  [0.336, 7.5, 18.2],
+  [0.275, 1024.4, 406.5],
+];
+
+function sampleConfetti(testID: string) {
+  const style = getAnimatedStyle(screen.getByTestId(testID, { includeHiddenElements: true })) as unknown as {
+    opacity: number;
+    transform: [{ translateY: number }, { rotate: string }];
+  };
+  return [style.opacity, style.transform[0].translateY, Number.parseFloat(style.transform[1].rotate)];
+}
+
+function expectSamples(actual: number[][], expected: number[][], digits: number[]) {
+  expect(actual).toHaveLength(expected.length);
+  actual.forEach((row, i) => row.forEach((value, k) => expect(value).toBeCloseTo(expected[i][k], digits[k])));
+}
+
 describe('#171 R6: confeti', () => {
   const H = Dimensions.get('window').height;
 
@@ -228,6 +269,12 @@ describe('#171 R6: confeti', () => {
         transform: [{ translateY: H + 40 }, { rotate: '540deg' }],
       });
     }
+  });
+
+  it('R6.5 a los 1200 ms cada pieza sigue su retardo, su duración y su curva', async () => {
+    await renderProbe();
+    await act(async () => { jest.advanceTimersByTime(1200); });
+    expectSamples(Array.from({ length: 24 }, (_, i) => sampleConfetti(`probe-confetti-${i}`)), CONFETTI_AT_1200, [2, 0, 0]);
   });
 });
 
