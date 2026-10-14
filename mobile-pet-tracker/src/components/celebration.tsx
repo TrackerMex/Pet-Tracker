@@ -7,7 +7,7 @@ import Animated, { interpolate, useAnimatedStyle, useReducedMotion, useSharedVal
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 
-import { MOTION_CELEBRATION_BADGE_DELAY_MS, MOTION_CELEBRATION_BADGE_POP_MS, MOTION_CELEBRATION_EASE_OUT, MOTION_CELEBRATION_POP_MS, MOTION_CELEBRATION_POP_PEAK, MOTION_CONFETTI_FALL_TIMING, MOTION_FADE_TIMING, MOTION_POP_SCALE } from '../theme/motion';
+import { MOTION_CELEBRATION_BADGE_DELAY_MS, MOTION_CELEBRATION_BADGE_POP_MS, MOTION_CELEBRATION_EASE_OUT, MOTION_CELEBRATION_PING_MS, MOTION_CELEBRATION_POP_MS, MOTION_CELEBRATION_POP_PEAK, MOTION_CONFETTI_FALL_TIMING, MOTION_FADE_TIMING, MOTION_PING_FROM, MOTION_PING_TO_SCALE, MOTION_POP_SCALE } from '../theme/motion';
 import { useThemeColors } from '../theme/use-theme-colors';
 
 type CelebrationProps = {
@@ -29,11 +29,17 @@ export function Celebration({ testID, title, body, details, primary, secondary }
   const pingoTranslateY = useSharedValue(0);
   const badgeScale = useSharedValue(reduceMotion ? 1 : MOTION_POP_SCALE);
   const badgeOpacity = useSharedValue(0);
+  const ringScale = useSharedValue(MOTION_PING_FROM);
+  const ringOpacity = useSharedValue(MOTION_PING_FROM);
   const pingoStyle = useAnimatedStyle(() => ({
     opacity: pingoOpacity.get(), transform: [{ translateY: pingoTranslateY.get() }, { scale: pingoScale.get() }],
   }));
   const badgeStyle = useAnimatedStyle(() => ({
     opacity: badgeOpacity.get(), transform: [{ scale: badgeScale.get() }],
+  }));
+
+  const ringStyle = useAnimatedStyle(() => ({
+    opacity: ringOpacity.get(), transform: [{ scale: ringScale.get() }],
   }));
 
   useEffect(() => { void notificationAsync(NotificationFeedbackType.Success); }, []);
@@ -56,7 +62,13 @@ export function Celebration({ testID, title, body, details, primary, secondary }
       withTiming(MOTION_CELEBRATION_POP_PEAK, { ...MOTION_CELEBRATION_EASE_OUT, duration: MOTION_CELEBRATION_BADGE_POP_MS * 0.6 }),
       withTiming(1, { ...MOTION_CELEBRATION_EASE_OUT, duration: MOTION_CELEBRATION_BADGE_POP_MS * 0.4 }),
     )));
-  }, [badgeOpacity, badgeScale, pingoOpacity, pingoScale, reduceMotion]);
+    ringScale.set(withRepeat(withTiming(MOTION_PING_TO_SCALE, {
+      ...MOTION_CELEBRATION_EASE_OUT, duration: MOTION_CELEBRATION_PING_MS,
+    }), -1, false));
+    ringOpacity.set(withRepeat(withTiming(0, {
+      ...MOTION_CELEBRATION_EASE_OUT, duration: MOTION_CELEBRATION_PING_MS,
+    }), -1, false));
+  }, [badgeOpacity, badgeScale, pingoOpacity, pingoScale, reduceMotion, ringOpacity, ringScale]);
 
   return (
     <Modal
@@ -86,6 +98,14 @@ export function Celebration({ testID, title, body, details, primary, secondary }
           </View>
         ) : null}
         <View testID={`${testID}-hero`} className="mt-10 items-center justify-center" style={{ width: 220, height: 220 }}>
+          <Animated.View
+            testID={`${testID}-ring`}
+            className="absolute inset-0 rounded-full bg-accent"
+            style={ringStyle}
+            pointerEvents="none"
+            accessibilityElementsHidden
+            importantForAccessibility="no-hide-descendants"
+          />
           <Animated.View testID={`${testID}-pingo`} style={[pingoStyle, { width: 170, height: 170 }]}>
             <Image
               testID={`${testID}-pose`}
