@@ -465,8 +465,11 @@ marcar sus dos filas del registro con `← retirada por #179 (R5)`.
 
 - los cinco triples `[clave, en, es]` escritos literales;
 - por cada triple, `english[key]` y `spanish[key]` con `toBe`;
-- el registro casa
-  `new RegExp('\\| — \\| \`' + escapeRegExp(key) + '\`[^\\n]*← añadida por #179 \\(R3\\)')`.
+- el registro casa con esta regex:
+
+  ```ts
+  new RegExp('\\| — \\| `' + escapeRegExp(key) + '`[^\\n]*← añadida por #179 \\(R3\\)')
+  ```
 
 ### R4 — Horario: marco y título en contenido
 
