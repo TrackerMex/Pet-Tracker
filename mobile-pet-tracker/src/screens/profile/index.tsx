@@ -34,6 +34,7 @@ import { useThemeTransition } from '../../theme/theme-transition';
 import { TOUCH_SLOP } from '../../theme/touch-target';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { CATEGORY_SLOTS, type CategorySlot } from '../../utils/category-palette';
+import { HomeEntrance } from '../home/home-entrance';
 
 function formatLastSignal(
   iso: string | null,
@@ -341,7 +342,7 @@ export function ProfileScreen() {
 
       {pet ? (
         <>
-          <Card variant="hero" testID="profile-pet-card" className="items-center gap-2.5">
+          <HomeEntrance index={0} testID="profile-entrance-hero"><Card variant="hero" testID="profile-pet-card" className="items-center gap-2.5">
             <View testID="profile-pet-avatar-ring" className="relative rounded-full border-4 border-surface">
               <PetAvatar name={pet.name} photoUrl={pet.photoUrl} cacheKey={pet.id} size={96} testID="profile-pet-avatar" />
               <Pressable
@@ -361,14 +362,14 @@ export function ProfileScreen() {
               {pet.name}
             </Text>
             <PetPills pet={pet} />
-          </Card>
+          </Card></HomeEntrance>
           {photoError ? (
             <Text testID="photo-upload-error" className="text-danger">
               {photoError}
             </Text>
           ) : null}
 
-          <Card variant="flat" testID="pet-info-card">
+          <HomeEntrance index={1} testID="profile-entrance-info"><Card variant="flat" testID="pet-info-card">
             <InfoRow label={t('profile.breed')} value={pet.breed} />
             <InfoRow label={t('profile.microchip')} value={pet.microchip} />
             <InfoRow
@@ -381,12 +382,12 @@ export function ProfileScreen() {
               label={t('profile.lastSignal')}
               value={formatLastSignal(pet.lastCommunicationAt, detail.dataUpdatedAt, t, locale)}
             />
-          </Card>
+          </Card></HomeEntrance>
 
         </>
       ) : null}
 
-      <View testID="profile-links" className="gap-2">
+      <HomeEntrance index={2} testID="profile-entrance-links"><View testID="profile-links" className="gap-2">
         {pet ? (
           <>
             <View testID="profile-links-row-0" className="flex-row gap-2">
@@ -421,9 +422,9 @@ export function ProfileScreen() {
             {remindersLink}
           </View>
         )}
-      </View>
+      </View></HomeEntrance>
 
-      <Card variant="flat" testID="me-card">
+      <HomeEntrance index={3} testID="profile-entrance-account"><Card variant="flat" testID="me-card">
         {me.data === undefined ? (
           <Skeleton testID="me-card-skeleton" className="my-2.5 h-9 w-full rounded-xl" />
         ) : null}
@@ -475,7 +476,7 @@ export function ProfileScreen() {
           <Text className="text-sm font-semibold text-foreground">{changeLanguageLabel}</Text>
           <Text testID="language-value" className="text-sm font-extrabold text-accent-strong">{currentLanguageName}</Text>
         </Pressable>
-      </Card>
+      </Card></HomeEntrance>
 
       <Button
         testID="profile-sign-out"
