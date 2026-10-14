@@ -507,7 +507,7 @@ añadidas por #68, registradas como delta sobre la tabla existente
 | 287 | `profile.gpsDevice` *(ya en español)* | `GPS device` | `Dispositivo GPS` |
 | 290 | `profile.lastSignal` *(ya en español)* | `Last signal` | `Última señal` |
 | 307 | `profile.documents` *(ya en español)* | `Documents` | `Documentos` |
-| 319 | `profile.gpsSettings` *(ya en español)* | `GPS device settings` | `Configuración del Dispositivo GPS` |
+| 319 | `profile.gpsSettings` ← retirada por #173 (R13) *(ya en español)* | `GPS device settings` | `Configuración del Dispositivo GPS` |
 | 334 | `profile.reminders` | `Reminders` | `Recordatorios` |
 | 340 | `profile.account` | `Account` | `Cuenta` |
 | 355 | `profile.accountUnavailable` | `Account unavailable` | `Cuenta no disponible` |
@@ -968,6 +968,7 @@ copy completa en cada una.
 |---|---|---|---|---|
 | — | `profile.gpsLinked` | `Linked` | `Vinculado` | ← añadida por #173 (R13) |
 | — | `profile.gpsNoCollar` | `No collar` | `Sin collar` | ← añadida por #173 (R13) |
+| — | `profile.gpsCollar` | `GPS collar` | `Collar GPS` | ← añadida por #173 (R13) |
 
 ## 3. La infraestructura
 

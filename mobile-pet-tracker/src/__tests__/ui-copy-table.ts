@@ -271,7 +271,7 @@ export const R7_PROFILE: UseRow[] = [
   { file: 'src/screens/profile/index.tsx', key: 'profile.gpsNoCollar' }, // #173 R8
   { file: 'src/screens/profile/index.tsx', key: 'profile.lastSignal' },
   { file: 'src/screens/profile/index.tsx', key: 'profile.documents' },
-  { file: 'src/screens/profile/index.tsx', key: 'profile.gpsSettings' },
+  { file: 'src/screens/profile/index.tsx', key: 'profile.gpsCollar' }, // #173 R10
   { file: 'src/screens/profile/index.tsx', key: 'geofences.title' }, // #41 R9
   { file: 'src/screens/profile/index.tsx', key: 'profile.reminders' },
   { file: 'src/screens/profile/index.tsx', key: 'profile.account' },

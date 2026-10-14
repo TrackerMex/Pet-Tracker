@@ -2,10 +2,10 @@ import { useQuery } from '@tanstack/react-query';
 import { router, type Href, useFocusEffect } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { Button, Skeleton } from 'heroui-native';
-import { useCallback, useState } from 'react';
+import { useCallback, useState, type ReactNode } from 'react';
 import { Linking, Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Bell, Camera, ChevronRight, FileText, Map as MapIcon, Plus, Wifi } from 'reicon-react-native';
+import { Bell, Camera, FileText, Map as MapIcon, Plus, Wifi } from 'reicon-react-native';
 import { useUniwind } from 'uniwind';
 
 import {
@@ -110,6 +110,34 @@ function PetPills({ pet }: { pet: PetProfile }) {
   );
 }
 
+function ProfileTile({ testID, slot, icon, label, onPress }: {
+  testID: string;
+  slot: CategorySlot;
+  icon: ReactNode;
+  label: string;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      testID={testID}
+      accessibilityRole="button"
+      hitSlop={TOUCH_SLOP}
+      style={CONTINUOUS_CORNER}
+      className={`flex-1 gap-1.5 rounded-tile p-3 ${CATEGORY_SLOTS[slot].surface}`}
+      onPress={onPress}
+    >
+      <View
+        testID={`${testID}-icon`}
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+      >
+        {icon}
+      </View>
+      <Text className={`text-sm font-extrabold ${CATEGORY_SLOTS[slot].ink}`}>{label}</Text>
+    </Pressable>
+  );
+}
+
 export function ProfileScreen() {
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { signOut, token } = useAuth();
@@ -120,7 +148,7 @@ export function ProfileScreen() {
   const { theme } = useUniwind();
   const switchTheme = useThemeTransition();
   const insets = useSafeAreaInsets();
-  const [muted, blue, green, amber, violet, accentStrong, accentForeground] = useThemeColors(['muted', 'category-blue-strong', 'category-green-strong', 'category-amber-strong', 'category-violet-strong', 'accent-strong', 'accent-foreground']);
+  const [blue, green, amber, violet, accentStrong, accentForeground] = useThemeColors(['category-blue-strong', 'category-green-strong', 'category-amber-strong', 'category-violet-strong', 'accent-strong', 'accent-foreground']);
   const [photoUploading, setPhotoUploading] = useState(false);
   const [photoError, setPhotoError] = useState<string | null>(null);
   const notificationsBlocked = useNotificationsBlocked();
@@ -207,6 +235,16 @@ export function ProfileScreen() {
       setPhotoUploading(false);
     }
   }
+
+  const remindersLink = (
+    <ProfileTile
+      testID="reminders-link"
+      slot="violet"
+      icon={<Bell size={22} color={violet} />}
+      label={t('profile.reminders')}
+      onPress={() => router.push('/reminders' as Href)}
+    />
+  );
 
   return (
     <ScrollView
@@ -342,98 +380,45 @@ export function ProfileScreen() {
             />
           </Card>
 
-          <Pressable
-            accessibilityRole="button"
-            testID="documents-link"
-            hitSlop={TOUCH_SLOP}
-            className="flex-row items-center gap-3 rounded-xl bg-default px-3 py-2"
-            style={CONTINUOUS_CORNER}
-            onPress={() => router.push(`/pets/${pet.id}/docs` as Href)}
-          >
-            <View
-              testID="documents-link-tile"
-              className={`size-9 items-center justify-center rounded-xl ${CATEGORY_SLOTS['blue'].surface}`}
-              style={CONTINUOUS_CORNER}
-              accessibilityElementsHidden
-              importantForAccessibility="no-hide-descendants"
-            >
-              <FileText size={18} color={blue} />
-            </View>
-            <Text className="flex-1 font-semibold text-foreground">
-              {t('profile.documents')}
-            </Text>
-            <ChevronRight size={20} color={muted} />
-          </Pressable>
-
-          <Pressable
-            accessibilityRole="button"
-            testID="pairing-link"
-            className="flex-row items-center gap-3 rounded-xl bg-default px-3 py-2"
-            style={CONTINUOUS_CORNER}
-            onPress={() => router.push('/pairing' as Href)}
-          >
-            <View
-              testID="pairing-link-tile"
-              className={`size-9 items-center justify-center rounded-xl ${CATEGORY_SLOTS['green'].surface}`}
-              style={CONTINUOUS_CORNER}
-              accessibilityElementsHidden
-              importantForAccessibility="no-hide-descendants"
-            >
-              <Wifi size={18} color={green} />
-            </View>
-            <Text className="flex-1 font-semibold text-foreground">
-              {t('profile.gpsSettings')}
-            </Text>
-            <ChevronRight size={20} color={muted} />
-          </Pressable>
-
-          <Pressable
-            accessibilityRole="button"
-            testID="geofences-link"
-            hitSlop={TOUCH_SLOP}
-            className="flex-row items-center gap-3 rounded-xl bg-default px-3 py-2"
-            style={CONTINUOUS_CORNER}
-            onPress={() => router.push(`/pets/${pet.id}/geofences` as Href)}
-          >
-            <View
-              testID="geofences-link-tile"
-              className={`size-9 items-center justify-center rounded-xl ${CATEGORY_SLOTS['amber'].surface}`}
-              style={CONTINUOUS_CORNER}
-              accessibilityElementsHidden
-              importantForAccessibility="no-hide-descendants"
-            >
-              <MapIcon size={18} color={amber} />
-            </View>
-            <Text className="flex-1 font-semibold text-foreground">
-              {t('geofences.title')}
-            </Text>
-            <ChevronRight size={20} color={muted} />
-          </Pressable>
         </>
       ) : null}
 
-      <Pressable
-        accessibilityRole="button"
-        testID="reminders-link"
-        hitSlop={TOUCH_SLOP}
-        className="flex-row items-center gap-3 rounded-xl bg-default px-3 py-2"
-        style={CONTINUOUS_CORNER}
-        onPress={() => router.push('/reminders' as Href)}
-      >
-        <View
-          testID="reminders-link-tile"
-          className={`size-9 items-center justify-center rounded-xl ${CATEGORY_SLOTS['violet'].surface}`}
-          style={CONTINUOUS_CORNER}
-          accessibilityElementsHidden
-          importantForAccessibility="no-hide-descendants"
-        >
-          <Bell size={18} color={violet} />
-        </View>
-        <Text className="flex-1 font-semibold text-foreground">
-          {t('profile.reminders')}
-        </Text>
-        <ChevronRight size={20} color={muted} />
-      </Pressable>
+      <View testID="profile-links" className="gap-2">
+        {pet ? (
+          <>
+            <View testID="profile-links-row-0" className="flex-row gap-2">
+              <ProfileTile
+                testID="documents-link"
+                slot="blue"
+                icon={<FileText size={22} color={blue} />}
+                label={t('profile.documents')}
+                onPress={() => router.push(`/pets/${pet.id}/docs` as Href)}
+              />
+              <ProfileTile
+                testID="pairing-link"
+                slot="green"
+                icon={<Wifi size={22} color={green} />}
+                label={t('profile.gpsCollar')}
+                onPress={() => router.push('/pairing' as Href)}
+              />
+            </View>
+            <View testID="profile-links-row-1" className="flex-row gap-2">
+              <ProfileTile
+                testID="geofences-link"
+                slot="amber"
+                icon={<MapIcon size={22} color={amber} />}
+                label={t('geofences.title')}
+                onPress={() => router.push(`/pets/${pet.id}/geofences` as Href)}
+              />
+              {remindersLink}
+            </View>
+          </>
+        ) : (
+          <View testID="profile-links-row-0" className="flex-row gap-2">
+            {remindersLink}
+          </View>
+        )}
+      </View>
 
       <Card testID="me-card" className="gap-2">
         <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
