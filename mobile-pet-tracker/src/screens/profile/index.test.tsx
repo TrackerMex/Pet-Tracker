@@ -35,6 +35,18 @@ import { TOUCH_SLOP } from '../../theme/touch-target';
 import { renderWithProviders } from '../../../test/render-with-providers';
 
 let mockTheme: 'light' | 'dark' = 'light';
+const mockHomeEntrance = jest.fn<void, [import('react-native').ViewProps & { index: number }]>();
+
+jest.mock('../home/home-entrance', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return {
+    HomeEntrance(props: import('react-native').ViewProps & { index: number }) {
+      mockHomeEntrance(props);
+      return React.createElement(View, props);
+    },
+  };
+});
 
 const mockPetSwitcher = jest.fn<void, [{
   pets: PetProfile[];
@@ -1371,7 +1383,7 @@ describe('#168 R4 (enmendado por #173 R6): profile-pet-card es la Card hero con 
     expect(glyph.props.style).toEqual({ color: 'accent-foreground' });
   });
 
-  it('con la subida fallida deja photo-upload-error inmediatamente tras la tarjeta', async () => {
+  it('con la subida fallida deja photo-upload-error inmediatamente tras la entrada del hero', async () => {
     mockLaunchImageLibrary.mockResolvedValue({
       canceled: false,
       assets: [{ uri: 'file:///luna.webp', mimeType: 'image/webp' } as never],
@@ -1384,8 +1396,10 @@ describe('#168 R4 (enmendado por #173 R6): profile-pet-card es la Card hero con 
 
     const error = await screen.findByTestId('photo-upload-error');
     const card = screen.getByTestId('profile-pet-card');
-    const index = card.parent!.children.indexOf(card);
-    expect(profileChild(card.parent!, index + 1)).toBe(error);
+    const block = screen.getByTestId('profile-entrance-hero');
+    const index = block.parent!.children.indexOf(block);
+    expect(profileChild(block.parent!, index + 1)).toBe(error);
+    expect(within(block).queryByTestId('photo-upload-error')).toBeNull();
     expect(within(card).queryByTestId('photo-upload-error')).toBeNull();
   });
 
@@ -1628,6 +1642,52 @@ describe('#168 R6 (enmendado por #173 R10): los accesos son tiles pastel en reji
     expect(row.children).toHaveLength(1);
     expect(profileChild(row, 0)).toBe(screen.getByTestId('reminders-link'));
     expect(profileChild(row, 0).props.className).toBe('flex-1 gap-1.5 rounded-tile p-3 bg-category-violet');
+  });
+});
+
+describe('#173 R12: entrada escalonada', () => {
+  beforeEach(setupProfile168);
+
+  it('con mascota envuelve cuatro bloques con índices fijos', async () => {
+    await renderProfile();
+    await screen.findByTestId('pet-info-card');
+    expect(Object.fromEntries(mockHomeEntrance.mock.calls.map(([props]) => [props.testID, props.index]))).toEqual({
+      'profile-entrance-hero': 0,
+      'profile-entrance-info': 1,
+      'profile-entrance-links': 2,
+      'profile-entrance-account': 3,
+    });
+    for (const [id, child] of [
+      ['profile-entrance-hero', 'profile-pet-card'],
+      ['profile-entrance-info', 'pet-info-card'],
+      ['profile-entrance-links', 'profile-links'],
+      ['profile-entrance-account', 'me-card'],
+    ]) {
+      const entrance = screen.getByTestId(id);
+      expect(entrance.children).toHaveLength(1);
+      expect(profileChild(entrance, 0)).toBe(screen.getByTestId(child));
+    }
+  });
+
+  it('sin mascota conserva los índices 2 y 3 para links y cuenta', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    mockGetPet.mockReturnValue(pending<PetState>());
+    await renderProfile();
+    await screen.findByTestId('profile-pets-empty');
+    expect(Object.fromEntries(mockHomeEntrance.mock.calls.map(([props]) => [props.testID, props.index]))).toEqual({
+      'profile-entrance-links': 2,
+      'profile-entrance-account': 3,
+    });
+    expect(screen.queryByTestId('profile-entrance-hero')).toBeNull();
+    expect(screen.queryByTestId('profile-entrance-info')).toBeNull();
+    for (const [id, child] of [
+      ['profile-entrance-links', 'profile-links'],
+      ['profile-entrance-account', 'me-card'],
+    ]) {
+      const entrance = screen.getByTestId(id);
+      expect(entrance.children).toHaveLength(1);
+      expect(profileChild(entrance, 0)).toBe(screen.getByTestId(child));
+    }
   });
 });
 
