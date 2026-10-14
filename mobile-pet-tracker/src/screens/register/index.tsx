@@ -184,39 +184,40 @@ export function RegisterScreen() {
           </Text>
         </HomeEntrance>
 
-        <TextField isInvalid={Boolean(fieldErrors.firstName)}>
-          <Label>
-            <Label.Text className="text-13 font-semibold text-muted">
-              {t('register.firstName')}
-            </Label.Text>
-          </Label>
-          <Input
-            testID="register-first-name"
-            className="rounded-xl bg-default"
-            value={firstName}
-            onChangeText={setFirstName}
-          />
-          <FieldError testID="register-first-name-error">
-            {fieldErrors.firstName ? <FormError testID="register-first-name-message" message={fieldErrors.firstName} /> : null}
-          </FieldError>
-        </TextField>
-
-        <TextField isInvalid={Boolean(fieldErrors.lastName)}>
-          <Label>
-            <Label.Text className="text-13 font-semibold text-muted">
-              {t('register.lastName')}
-            </Label.Text>
-          </Label>
-          <Input
-            testID="register-last-name"
-            className="rounded-xl bg-default"
-            value={lastName}
-            onChangeText={setLastName}
-          />
-          <FieldError testID="register-last-name-error">
-            {fieldErrors.lastName ? <FormError testID="register-last-name-message" message={fieldErrors.lastName} /> : null}
-          </FieldError>
-        </TextField>
+        <View testID="register-names-row" className="flex-row gap-3">
+          <TextField className="flex-1" isInvalid={Boolean(fieldErrors.firstName)}>
+            <Label>
+              <Label.Text className="text-13 font-semibold text-muted">
+                {t('register.firstName')}
+              </Label.Text>
+            </Label>
+            <Input
+              testID="register-first-name"
+              className="rounded-xl bg-default"
+              value={firstName}
+              onChangeText={setFirstName}
+            />
+            <FieldError testID="register-first-name-error">
+              {fieldErrors.firstName ? <FormError testID="register-first-name-message" message={fieldErrors.firstName} /> : null}
+            </FieldError>
+          </TextField>
+          <TextField className="flex-1" isInvalid={Boolean(fieldErrors.lastName)}>
+            <Label>
+              <Label.Text className="text-13 font-semibold text-muted">
+                {t('register.lastName')}
+              </Label.Text>
+            </Label>
+            <Input
+              testID="register-last-name"
+              className="rounded-xl bg-default"
+              value={lastName}
+              onChangeText={setLastName}
+            />
+            <FieldError testID="register-last-name-error">
+              {fieldErrors.lastName ? <FormError testID="register-last-name-message" message={fieldErrors.lastName} /> : null}
+            </FieldError>
+          </TextField>
+        </View>
 
         <TextField isInvalid={Boolean(fieldErrors.email)}>
           <Label>
@@ -237,23 +238,43 @@ export function RegisterScreen() {
           </FieldError>
         </TextField>
 
-        <TextField isInvalid={Boolean(fieldErrors.phone)}>
-          <Label>
-            <Label.Text className="text-13 font-semibold text-muted">
-              {t('register.phone')}
-            </Label.Text>
-          </Label>
-          <Input
-            testID="register-phone"
-            className="rounded-xl bg-default"
-            keyboardType="phone-pad"
-            value={phone}
-            onChangeText={setPhone}
-          />
-          <FieldError testID="register-phone-error">
-            {fieldErrors.phone ? <FormError testID="register-phone-message" message={fieldErrors.phone} /> : null}
-          </FieldError>
-        </TextField>
+        <View testID="register-contact-row" className="flex-row gap-3">
+          <TextField className="flex-2" isInvalid={Boolean(fieldErrors.phone)}>
+            <Label>
+              <Label.Text className="text-13 font-semibold text-muted">
+                {t('register.phone')}
+              </Label.Text>
+            </Label>
+            <Input
+              testID="register-phone"
+              className="rounded-xl bg-default"
+              keyboardType="phone-pad"
+              value={phone}
+              onChangeText={setPhone}
+            />
+            <FieldError testID="register-phone-error">
+              {fieldErrors.phone ? <FormError testID="register-phone-message" message={fieldErrors.phone} /> : null}
+            </FieldError>
+          </TextField>
+          <TextField className="flex-1" isInvalid={Boolean(fieldErrors.country)}>
+            <Label>
+              <Label.Text className="text-13 font-semibold text-muted">
+                {t('register.country')}
+              </Label.Text>
+            </Label>
+            <Input
+              testID="register-country"
+              className="rounded-xl bg-default"
+              autoCapitalize="characters"
+              maxLength={2}
+              value={country}
+              onChangeText={(value) => setCountry(value.toUpperCase())}
+            />
+            <FieldError testID="register-country-error">
+              {fieldErrors.country ? <FormError testID="register-country-message" message={fieldErrors.country} /> : null}
+            </FieldError>
+          </TextField>
+        </View>
 
         <TextField isInvalid={Boolean(fieldErrors.password)}>
           <Label>
@@ -284,25 +305,6 @@ export function RegisterScreen() {
           />
           <FieldError testID="register-password-confirmation-error">
             {fieldErrors.passwordConfirmation ? <FormError testID="register-password-confirmation-message" message={fieldErrors.passwordConfirmation} /> : null}
-          </FieldError>
-        </TextField>
-
-        <TextField isInvalid={Boolean(fieldErrors.country)}>
-          <Label>
-            <Label.Text className="text-13 font-semibold text-muted">
-              {t('register.country')}
-            </Label.Text>
-          </Label>
-          <Input
-            testID="register-country"
-            className="rounded-xl bg-default"
-            autoCapitalize="characters"
-            maxLength={2}
-            value={country}
-            onChangeText={(value) => setCountry(value.toUpperCase())}
-          />
-          <FieldError testID="register-country-error">
-            {fieldErrors.country ? <FormError testID="register-country-message" message={fieldErrors.country} /> : null}
           </FieldError>
         </TextField>
 
