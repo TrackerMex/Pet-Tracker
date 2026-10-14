@@ -455,15 +455,15 @@ describe('R2: estructura Figma', () => {
     mockGetMe.mockReturnValue(pending<MeState>());
   });
 
-  it('uses uniform dimensions and content-sized skeletons while loading', async () => {
+  it('uses the canvas artboard metrics (#173 R17) and content-sized skeletons while loading', async () => {
     mockListPets.mockReturnValue(pending<PetsState>());
     mockGetPet.mockReturnValue(pending<PetState>());
 
     await renderProfile();
 
     expect(screen.getByTestId('screen-profile').props.contentContainerStyle).toEqual({
-      padding: 24,
-      gap: 16,
+      padding: 20,
+      gap: 14,
       paddingTop: 52,
       paddingBottom: 120,
     });
