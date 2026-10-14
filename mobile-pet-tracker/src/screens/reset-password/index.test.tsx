@@ -278,7 +278,6 @@ describe('R8: el submit completa el reset y mapea los errores', () => {
 describe('#61 R8: las tres ramas de reset tienen contenedor de scroll', () => {
   const metrics = {
     flexGrow: 1,
-    justifyContent: 'center',
     padding: 24,
     gap: 16,
     paddingTop: 52,
@@ -292,12 +291,13 @@ describe('#61 R8: las tres ramas de reset tienen contenedor de scroll', () => {
 
     expect(screenRoot.props.contentContainerStyle).toEqual({
       ...metrics,
+      justifyContent: 'center',
       alignItems: 'center',
     });
     expect(screenRoot.props.contentInsetAdjustmentBehavior).toBe('automatic');
   });
 
-  it('la rama de éxito centra también en horizontal', async () => {
+  it('#172 R19: la rama de éxito ancla el enlace al pie y no centra', async () => {
     mockResetPassword.mockResolvedValue({ kind: 'ok' });
     await renderRoute('token-123');
     await submitReset();
@@ -306,10 +306,10 @@ describe('#61 R8: las tres ramas de reset tienen contenedor de scroll', () => {
 
     expect(
       screen.getByTestId('screen-reset-password').props.contentContainerStyle,
-    ).toEqual({ ...metrics, alignItems: 'center' });
+    ).toEqual(metrics);
   });
 
-  it('la rama del formulario no centra en horizontal', async () => {
+  it('#172 R19: la rama del formulario ancla el envío al pie y no centra', async () => {
     await renderRoute('token-123');
 
     const screenRoot = screen.getByTestId('reset-password-form');
@@ -398,8 +398,8 @@ describe('#167 R10: Pingo y tarjeta de estado en nueva contraseña', () => {
     expect(Object.fromEntries(mockHomeEntrance.mock.calls.map(([p]) => [
       p.testID, { index: p.index, className: p.className },
     ]))).toEqual({
-      'reset-header': { index: 0, className: 'flex-row items-center justify-center gap-3' },
-      'reset-body': { index: 1, className: 'gap-4' },
+      'reset-header': { index: 0, className: 'flex-row items-center gap-3' },
+      'reset-body': { index: 1, className: 'flex-1 gap-4' },
     });
   });
 
@@ -457,6 +457,55 @@ describe('#167 R10: Pingo y tarjeta de estado en nueva contraseña', () => {
     expect(screen.queryByTestId('reset-body')).toBeNull();
   });
 
+  it('#172 R19: el espaciador empuja el envío al pie del formulario', async () => {
+    mockResetPassword.mockResolvedValue({ kind: 'invalid-token' });
+    await renderRoute('reset-token-172');
+    function expectSpacer(withError = false) {
+      const spacer = screen.getByTestId('reset-spacer');
+      const cta = screen.getByTestId('reset-submit');
+      expect(spacer.parent).toBe(cta.parent);
+      expect(spacer.parent).toBe(screen.getByTestId('reset-body'));
+      const children = spacer.parent?.children ?? [];
+      const index = children.indexOf(spacer);
+      expect(index).toBe(children.indexOf(cta) - 1);
+      expect(spacer.props.className).toBe('flex-1');
+      expect(spacer.children).toHaveLength(0);
+      if (withError) {
+        expect(children.indexOf(screen.getByTestId('reset-error-row'))).toBe(index - 1);
+      }
+    }
+    expectSpacer();
+    await submitReset();
+    expectSpacer(true);
+  });
+
+  it('#172 R19: el espaciador empuja el enlace al pie del éxito', async () => {
+    await renderRoute('reset-token-172');
+    await submitReset();
+    expect(await screen.findByTestId('reset-success')).toBeOnTheScreen();
+    const spacer = screen.getByTestId('reset-spacer');
+    const cta = screen.getByTestId('link-login');
+    expect(spacer.parent).toBe(cta.parent);
+    expect(spacer.parent).toBe(screen.getByTestId('reset-header').parent);
+    const children = spacer.parent?.children ?? [];
+    const index = children.indexOf(spacer);
+    expect(index).toBe(children.indexOf(cta) - 1);
+    expect(spacer.props.className).toBe('flex-1');
+    expect(spacer.children).toHaveLength(0);
+    expect(children.indexOf(screen.getByTestId('reset-success-pop'))).toBe(index - 1);
+  });
+
+  it('#172 R19: el formulario lleva el enlace de vuelta al login bajo el envío', async () => {
+    await renderRoute('reset-token-172');
+    const body = screen.getByTestId('reset-body');
+    const link = within(body).getByTestId('link-login');
+    expect(link).toHaveTextContent('Volver al inicio de sesión');
+    expect(body.children.indexOf(link)).toBe(body.children.indexOf(screen.getByTestId('reset-submit')) + 1);
+    await fireEvent.press(link);
+    expect(mockRouter.push).toHaveBeenCalledWith('/login');
+    expect(mockResetPassword).not.toHaveBeenCalled();
+  });
+
   it('#172 R13: la tarjeta de estado avisa con liveRegion polite', async () => {
     await renderRoute('reset-token-172');
     await submitReset();
@@ -470,7 +519,7 @@ describe('#167 R10: Pingo y tarjeta de estado en nueva contraseña', () => {
     expect(await screen.findByTestId('reset-success')).toBeOnTheScreen();
     const header = screen.getByTestId('reset-header');
     expect({ index: header.props.index, className: header.props.className }).toEqual({
-      index: 0, className: 'flex-row items-center justify-center gap-3',
+      index: 0, className: 'flex-row items-center gap-3',
     });
     expect(header.children).toHaveLength(2);
     expect(header.children[0]).toHaveProperty('props.testID', 'reset-pingo-float');

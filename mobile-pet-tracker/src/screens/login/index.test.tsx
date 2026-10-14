@@ -161,14 +161,13 @@ describe('R7: login llama a la api y navega', () => {
 });
 
 describe('#61 R8: login tiene contenedor de scroll con safe areas', () => {
-  it('centra el contenido dentro de un ScrollView con los insets aplicados', async () => {
+  it('#172 R19: ancla el contenido al pie dentro de un ScrollView con los insets aplicados', async () => {
     await renderLogin();
 
     const screenRoot = screen.getByTestId('login-form');
 
     expect(screenRoot.props.contentContainerStyle).toEqual({
       flexGrow: 1,
-      justifyContent: 'center',
       padding: 24,
       gap: 16,
       paddingTop: 52,
@@ -247,7 +246,7 @@ describe('#167 R6: Pingo saluda en login y la pantalla entra en dos tiempos', ()
       p.testID, { index: p.index, className: p.className },
     ]))).toEqual({
       'login-header': { index: 0, className: 'gap-4' },
-      'login-body': { index: 1, className: 'gap-4' },
+      'login-body': { index: 1, className: 'flex-1 gap-4' },
     });
   });
 
@@ -288,6 +287,28 @@ describe('#167 R6: Pingo saluda en login y la pantalla entra en dos tiempos', ()
       .map((node) => node.props.testID)).toEqual([
       'login-email', 'login-password', 'link-forgot', 'login-error', 'login-submit', 'link-register',
     ]);
+  });
+
+  it('#172 R19: el espaciador empuja el envío al pie', async () => {
+    mockLogin.mockResolvedValue({ kind: 'invalid-credentials' });
+    await renderLogin();
+    function expectSpacer(withError = false) {
+      const spacer = screen.getByTestId('login-spacer');
+      const cta = screen.getByTestId('login-submit');
+      expect(spacer.parent).toBe(cta.parent);
+      expect(spacer.parent).toBe(screen.getByTestId('login-body'));
+      const children = spacer.parent?.children ?? [];
+      const index = children.indexOf(spacer);
+      expect(index).toBe(children.indexOf(cta) - 1);
+      expect(spacer.props.className).toBe('flex-1');
+      expect(spacer.children).toHaveLength(0);
+      if (withError) {
+        expect(children.indexOf(screen.getByTestId('login-error-row'))).toBe(index - 1);
+      }
+    }
+    expectSpacer();
+    await submit();
+    expectSpacer(true);
   });
 
   it('#172 R15: el error cuelga del scroll y no del contenedor del teclado', async () => {

@@ -78,3 +78,21 @@ it('#172 R18: la carta declara la enmienda #172 y su casilla', () => {
     expect(amendment).toContain(literal);
   }
 });
+
+
+it('#172 R19: el contenido de cuenta no se centra en vertical y el enlace de nueva contraseña lleva su receta', () => {
+  for (const [name, counts] of [
+    ['login', [0, 0, 1, 0, 1, 0]],
+    ['register', [0, 0, 1, 0, 0, 0]],
+    ['forgot', [0, 1, 1, 1, 1, 0]],
+    ['reset-password', [1, 1, 2, 2, 2, 0]],
+  ] as const) {
+    const source = readFileSync(join(sourceRoot, 'screens', name, 'index.tsx'), 'utf8');
+    expect(source.split("justifyContent: 'center'").length - 1).toBe(counts[0]);
+    expect(source.split("alignItems: 'center'").length - 1).toBe(counts[1]);
+    expect(source.split('-spacer" className="flex-1" />').length - 1).toBe(counts[2]);
+    expect(source.match(/testID="link-login"\s+className="h-13 w-full"/g) ?? []).toHaveLength(counts[3]);
+    expect(source.split('<LinkButton.Label className="text-base font-bold text-accent-strong">').length - 1).toBe(counts[4]);
+    expect(source.split('self-center').length - 1).toBe(counts[5]);
+  }
+});

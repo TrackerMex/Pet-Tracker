@@ -465,6 +465,7 @@ export const R11_RESET: UseRow[] = [
   { file: 'src/screens/reset-password/index.tsx', key: 'resetPassword.newPassword' },
   { file: 'src/screens/reset-password/index.tsx', key: 'resetPassword.confirmNewPassword' },
   { file: 'src/screens/reset-password/index.tsx', key: 'resetPassword.updatePassword' },
+  { file: 'src/screens/reset-password/index.tsx', key: 'resetPassword.backToSignIn' }, // #172 R19
 ];
 
 export const R12_ALERTS: UseRow[] = [

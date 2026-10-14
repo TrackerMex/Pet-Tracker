@@ -256,6 +256,7 @@ describe('#61 R7: register usa las métricas de pantalla uniformes', () => {
     expect(
       screen.getByTestId('register-form').props.contentContainerStyle,
     ).toEqual({
+      flexGrow: 1,
       padding: 24,
       gap: 16,
       paddingTop: 52,
@@ -471,7 +472,7 @@ describe('#167 R7: Pingo en la cabecera del registro', () => {
     const names = screen.getByTestId('register-names-row');
     const content = screen.getByTestId('register-header').parent;
     expect(content?.parent).toHaveProperty('props.testID', 'register-form');
-    expect(content?.children).toHaveLength(9);
+    expect(content?.children).toHaveLength(10);
     expect(content?.children).toEqual([
       screen.getByTestId('register-header'), names,
       screen.getByTestId('register-email').parent,
@@ -479,8 +480,32 @@ describe('#167 R7: Pingo en la cabecera del registro', () => {
       screen.getByTestId('register-password-group').parent,
       screen.getByTestId('register-password-confirmation-group').parent,
       screen.getByTestId('register-terms').parent,
-      screen.getByTestId('register-error-row'), screen.getByTestId('register-submit'),
+      screen.getByTestId('register-error-row'), screen.getByTestId('register-spacer'),
+      screen.getByTestId('register-submit'),
     ]);
+  });
+
+  it('#172 R19: el espaciador empuja el envío al pie', async () => {
+    mockRegister.mockResolvedValue({ kind: 'email-taken' });
+    await renderRegister();
+    function expectSpacer(withError = false) {
+      const spacer = screen.getByTestId('register-spacer');
+      const cta = screen.getByTestId('register-submit');
+      expect(spacer.parent).toBe(cta.parent);
+      expect(spacer.parent).toBe(screen.getByTestId('register-header').parent);
+      const children = spacer.parent?.children ?? [];
+      const index = children.indexOf(spacer);
+      expect(index).toBe(children.indexOf(cta) - 1);
+      expect(spacer.props.className).toBe('flex-1');
+      expect(spacer.children).toHaveLength(0);
+      if (withError) {
+        expect(children.indexOf(screen.getByTestId('register-error-row'))).toBe(index - 1);
+      }
+    }
+    expectSpacer();
+    await fillForm();
+    await submit();
+    expectSpacer(true);
   });
 
   it('#172 R11: nombres a 1fr 1fr y teléfono-país a 2fr 1fr', async () => {

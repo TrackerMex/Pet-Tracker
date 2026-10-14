@@ -194,8 +194,8 @@ describe('#65 R10: el emparejado del collar resuelve su copy por clave', () => {
 });
 
 describe('#65 R11: restablecer contraseña resuelve su copy por clave', () => {
-  it('resuelve las 15 ocurrencias normativas', () => {
-    expect(R11_RESET).toHaveLength(15);
+  it('resuelve las 16 ocurrencias normativas', () => {
+    expect(R11_RESET).toHaveLength(15 + 1); // #172 R19
     checkUses(R11_RESET);
   });
 });

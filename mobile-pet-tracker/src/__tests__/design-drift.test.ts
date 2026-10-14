@@ -705,7 +705,7 @@ describe('#149 R4: solo cuatro ficheros de producción navegan a login', () => {
   const loginRoutes: Record<string, number> = {
     'screens/register/index.tsx': 1,
     'screens/forgot/index.tsx': 2, // #172 R17: forgot-back
-    'screens/reset-password/index.tsx': 2,
+    'screens/reset-password/index.tsx': 3, // #172 R19: link-login del formulario
     'screens/welcome/index.tsx': 1,
   };
 

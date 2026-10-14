@@ -115,14 +115,13 @@ describe('#117 R3: la ruta forgot delega en ForgotScreen', () => {
 });
 
 describe('#61 R8: forgot tiene contenedor de scroll con safe areas', () => {
-  it('conserva el centrado de hoy dentro de un ScrollView con insets', async () => {
+  it('#172 R19: centra en horizontal pero no en vertical dentro de un ScrollView con insets', async () => {
     mockForgotPassword.mockResolvedValue({ kind: 'ok' });
     await renderRoute();
     const screenRoot = screen.getByTestId('forgot-form');
 
     expect(screenRoot.props.contentContainerStyle).toEqual({
       flexGrow: 1,
-      justifyContent: 'center',
       alignItems: 'center',
       padding: 24,
       gap: 16,
@@ -663,4 +662,24 @@ it('#172 R14: el candado es un tile acento con labio y Lock de 26', async () => 
   await submitForgot();
   await waitFor(() => expect(screen.getByTestId('forgot-title')).toHaveTextContent('Revisa tu correo'));
   expectTile();
+});
+
+
+it('#172 R19: el espaciador empuja la CTA al pie en los dos estados', async () => {
+  mockForgotPassword.mockResolvedValue({ kind: 'ok' });
+  await renderRoute();
+  function expectSpacer(ctaId: string) {
+    const spacer = screen.getByTestId('forgot-spacer');
+    const cta = screen.getByTestId(ctaId);
+    expect(spacer.parent).toBe(cta.parent);
+    expect(spacer.parent).toBe(screen.getByTestId('forgot-top').parent);
+    const children = spacer.parent?.children ?? [];
+    expect(children.indexOf(spacer)).toBe(children.indexOf(cta) - 1);
+    expect(spacer.props.className).toBe('flex-1');
+    expect(spacer.children).toHaveLength(0);
+  }
+  expectSpacer('forgot-submit');
+  await submitForgot();
+  await waitFor(() => expect(screen.getByTestId('forgot-title')).toHaveTextContent('Revisa tu correo'));
+  expectSpacer('forgot-resend');
 });
