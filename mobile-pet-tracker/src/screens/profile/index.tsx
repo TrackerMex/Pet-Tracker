@@ -224,6 +224,7 @@ export function ProfileScreen() {
 
       {pets.data?.kind === 'ok' && pets.data.pets.length > 0 ? (
         <PetSwitcher
+          variant="avatars"
           pets={pets.data.pets}
           selectedPetId={selectedPetId}
           onSelect={selectPet}
