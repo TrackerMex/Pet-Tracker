@@ -274,10 +274,8 @@ export const R7_PROFILE: UseRow[] = [
   { file: 'src/screens/profile/index.tsx', key: 'profile.gpsCollar' }, // #173 R10
   { file: 'src/screens/profile/index.tsx', key: 'geofences.title' }, // #41 R9
   { file: 'src/screens/profile/index.tsx', key: 'profile.reminders' },
-  { file: 'src/screens/profile/index.tsx', key: 'profile.account' },
   { file: 'src/screens/profile/index.tsx', key: 'profile.accountUnavailable' },
   { file: 'src/screens/profile/index.tsx', key: 'profile.useDarkTheme' },
-  { file: 'src/screens/profile/index.tsx', key: 'profile.useLightTheme' },
   { file: 'src/screens/profile/index.tsx', key: 'profile.signOut' },
   { file: 'src/screens/docs/index.tsx', key: 'docs.documentsOf' },
   { file: 'src/screens/docs/index.tsx', key: 'docs.pet' },

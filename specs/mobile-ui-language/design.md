@@ -509,10 +509,10 @@ añadidas por #68, registradas como delta sobre la tabla existente
 | 307 | `profile.documents` *(ya en español)* | `Documents` | `Documentos` |
 | 319 | `profile.gpsSettings` ← retirada por #173 (R13) *(ya en español)* | `GPS device settings` | `Configuración del Dispositivo GPS` |
 | 334 | `profile.reminders` | `Reminders` | `Recordatorios` |
-| 340 | `profile.account` | `Account` | `Cuenta` |
+| 340 | `profile.account` ← retirada por #173 (R13) | `Account` | `Cuenta` |
 | 355 | `profile.accountUnavailable` | `Account unavailable` | `Cuenta no disponible` |
 | 365 | `profile.useDarkTheme` | `Use dark theme` | `Usar tema oscuro` |
-| 365 | `profile.useLightTheme` | `Use light theme` | `Usar tema claro` |
+| 365 | `profile.useLightTheme` ← retirada por #173 (R13) | `Use light theme` | `Usar tema claro` |
 | 376 | `profile.signOut` | `Sign out` | `Cerrar sesión` |
 
 **`mobile-pet-tracker/src/screens/docs/index.tsx`** — 7 ocurrencias

@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { router, type Href, useFocusEffect } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
-import { Button, Skeleton } from 'heroui-native';
+import { Button, Skeleton, Switch } from 'heroui-native';
 import { useCallback, useState, type ReactNode } from 'react';
 import { Linking, Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -181,6 +181,9 @@ export function ProfileScreen() {
   const initials = me.data?.kind === 'ok'
     ? [me.data.me.firstName, me.data.me.lastName].map((part) => part.trim().charAt(0)).join('').toUpperCase()
     : '';
+  const useDarkThemeLabel = t('profile.useDarkTheme');
+  const changeLanguageLabel = t('profile.changeLanguage');
+  const currentLanguageName = language === 'es' ? t('profile.languageSpanish') : t('profile.languageEnglish');
 
   async function handleChangePhoto() {
     if (!pet) return;
@@ -420,65 +423,58 @@ export function ProfileScreen() {
         )}
       </View>
 
-      <Card testID="me-card" className="gap-2">
-        <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
-          {t('profile.account')}
-        </Text>
+      <Card variant="flat" testID="me-card">
         {me.data === undefined ? (
-          <Skeleton testID="me-card-skeleton" className="h-12 w-full rounded-xl" />
+          <Skeleton testID="me-card-skeleton" className="my-2.5 h-9 w-full rounded-xl" />
         ) : null}
         {me.data?.kind === 'ok' ? (
-          <View testID="me-identity" className="flex-row items-center gap-3">
+          <View testID="me-identity" className="flex-row items-center gap-2.5 py-2.5">
             {initials ? (
               <View
                 testID="me-avatar"
-                className="size-10 items-center justify-center rounded-full bg-default"
+                className="size-8.5 items-center justify-center rounded-full bg-default"
                 accessibilityElementsHidden
                 importantForAccessibility="no-hide-descendants"
               >
-                <Text testID="me-avatar-initials" className="text-sm font-black text-foreground">
+                <Text testID="me-avatar-initials" className="text-13 font-extrabold text-foreground">
                   {initials}
                 </Text>
               </View>
             ) : null}
-          <View testID="me-identity-text" className="flex-1 gap-1">
-            <Text className="text-lg font-bold text-foreground">
-              {`${me.data.me.firstName} ${me.data.me.lastName}`}
-            </Text>
-            <Text className="font-normal text-muted">{me.data.me.email}</Text>
-          </View>
+            <View testID="me-identity-text" className="flex-1">
+              <Text className="text-sm font-extrabold text-foreground">
+                {`${me.data.me.firstName} ${me.data.me.lastName}`}
+              </Text>
+              <Text className="text-xs font-normal text-muted">{me.data.me.email}</Text>
+            </View>
           </View>
         ) : null}
         {me.data && me.data.kind !== 'ok' && me.data.kind !== 'unauthorized' ? (
-          <Text testID="me-card-state" className="font-normal text-muted">
+          <Text testID="me-card-state" className="py-2.5 font-normal text-muted">
             {t('profile.accountUnavailable')}
           </Text>
         ) : null}
-        <Button
-          testID="theme-toggle"
-          className="mt-2 rounded-xl bg-default"
-          variant="secondary"
-          onPress={() => switchTheme(theme === 'dark' ? 'light' : 'dark')}
-        >
-          <Button.Label className="font-semibold text-foreground">
-            {theme === 'dark'
-              ? t('profile.useLightTheme')
-              : t('profile.useDarkTheme')}
-          </Button.Label>
-        </Button>
-        <Button
+        <View testID="theme-row" className="flex-row items-center justify-between gap-4 border-t border-separator py-2.5">
+          <Text className="text-sm font-semibold text-foreground">{useDarkThemeLabel}</Text>
+          <Switch
+            testID="theme-toggle"
+            isSelected={theme === 'dark'}
+            onSelectedChange={(selected) => switchTheme(selected ? 'dark' : 'light')}
+            accessibilityLabel={useDarkThemeLabel}
+            hitSlop={TOUCH_SLOP}
+          />
+        </View>
+        <Pressable
           testID="language-toggle"
-          accessibilityLabel={t('profile.changeLanguage')}
-          className="mt-2 rounded-xl bg-default"
-          variant="secondary"
+          accessibilityRole="button"
+          accessibilityLabel={changeLanguageLabel}
+          accessibilityValue={{ text: currentLanguageName }}
+          className="flex-row items-center justify-between gap-4 border-t border-separator py-2.5"
           onPress={() => setLanguage(language === 'es' ? 'en' : 'es')}
         >
-          <Button.Label className="font-semibold text-foreground">
-            {language === 'es'
-              ? t('profile.languageEnglish')
-              : t('profile.languageSpanish')}
-          </Button.Label>
-        </Button>
+          <Text className="text-sm font-semibold text-foreground">{changeLanguageLabel}</Text>
+          <Text testID="language-value" className="text-sm font-extrabold text-accent-strong">{currentLanguageName}</Text>
+        </Pressable>
       </Card>
 
       <Button
