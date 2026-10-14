@@ -9931,3 +9931,43 @@ specs/mobile-celebrations-and-living-empty/traceability.md
 Los 14 ficheros coinciden exactamente con la lista cerrada del handoff, medida desde H1. Anclas A/K exactas, A7=11. ALL final: 104 suites/3210 tests, exit=0. P1–P12 exactas y restauradas. R16 conserva su fila y su casilla pendiente; la verificación global queda a cargo del leader.
 
 R16: pendiente del smoke humano
+
+## Corrección del timeout (fallback implementer, 2026-10-14)
+
+Base: `feature/171-mobile-celebrations-and-living-empty` en `bba94dae`. Implementador: subagente `implementer` como fallback (CLAUDE.md §Excepciones, cambio de una línea).
+
+### Cambio
+
+En `mobile-pet-tracker/src/components/__tests__/celebration.test.tsx`, tras el bloque `jest.mock('heroui-native', ...)` e inmediatamente antes de `const probeProps = {`, dos líneas más una en blanco (tasks.md §E4-D, «Timeout del fichero»):
+
+```ts
+// Los bucles de R6 y R18 avanzan hasta 13830 ms con timers falsos y no caben en los 5000 ms por defecto.
+jest.setTimeout(60_000);
+```
+
+`git diff --stat`: 1 fichero, 3 inserciones. Líneas añadidas con `#`: 0.
+
+### Verificación (desde `mobile-pet-tracker/`, sin `--testTimeout`)
+
+Antes de cada jest, `pgrep -f 'node_modules/(\.bin/jest|jest-worker)|[i]nit\.sh'` vacío. Una primera corrida de design-drift se lanzó con un jest de wt-173 en marcha (verde, exit=0); se descartó y se repitió tras esperar a que el pgrep quedara vacío.
+
+| # | Comando | exit | Resultado |
+|---|---|---|---|
+| 1 | `FORCE_COLOR=0 bunx jest --runTestsByPath src/components/__tests__/celebration.test.tsx` | 0 | `Tests: 66 passed, 66 total` (Time 54.995 s) |
+| 2 | `FORCE_COLOR=0 bunx jest --runTestsByPath src/__tests__/design-drift.test.ts` | 0 | `Tests: 74 passed, 74 total` |
+| 3 | `bunx eslint src/components/__tests__/celebration.test.tsx` | 0 | sin salida |
+| 4 | `bunx prettier --check src/components/__tests__/celebration.test.tsx` | **1** | `[warn] Code style issues found in the above file.` |
+
+### FALLO: el paso 4 sale 1, sin commit
+
+El handoff manda no commitear si algún chequeo falla, así que **no se ha commiteado nada**. El cambio queda sin commitear en el working tree del worktree.
+
+Indicios de que el rojo ya estaba en la base y no lo causa este cambio (que decida el leader):
+
+- `mobile-pet-tracker/` no tiene prettier: no está en `node_modules/.bin/prettier` ni en `package.json`, no hay `.prettierrc*` ni en `mobile-pet-tracker/` ni en la raíz, y el `eslint.config.*` no lo referencia. `bunx` descarga cada vez prettier 3.9.10 con la configuración por defecto («Resolved, downloaded and extracted [2]»).
+- La versión de HEAD (`git show HEAD:...celebration.test.tsx | bunx prettier --stdin-filepath ... --check`) también sale 1.
+- `diff` entre el fichero y su salida de prettier da 1184 líneas `<`/`>` tanto en HEAD como en el working tree: el mismo delta. Ninguna de las dos líneas añadidas aparece en él (las diferencias son de estilo por defecto, p. ej. comillas simples pasadas a dobles).
+
+Para cerrar: o se acepta el paso 4 como no aplicable a `mobile-pet-tracker/` y se commitean los dos ficheros con el mensaje del handoff, o se sustituye por otro chequeo de formato que el proyecto sí use.
+
+El leader retira el paso 4: mobile-pet-tracker no usa prettier (eslint es su chequeo de formato). Se commitea con los pasos 1-3 en verde.

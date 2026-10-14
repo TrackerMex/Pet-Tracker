@@ -64,6 +64,9 @@ jest.mock('heroui-native', () => {
   };
 });
 
+// Los bucles de R6 y R18 avanzan hasta 13830 ms con timers falsos y no caben en los 5000 ms por defecto.
+jest.setTimeout(60_000);
+
 const probeProps = {
   testID: 'probe',
   title: 'Título de prueba',
