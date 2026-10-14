@@ -434,10 +434,7 @@ describe('#167 R7: Pingo en la cabecera del registro', () => {
     expect(screen.queryAllByTestId(/^register-.+-message(-row)?$/)).toHaveLength(0);
   });
 
-  it('#167 R7: campos, errores, términos y envío cuelgan del scroll', async () => {
-    const fields = [
-      'first-name', 'last-name', 'email', 'phone', 'password', 'password-confirmation', 'country',
-    ] as const;
+  it('#172 R11: cabecera, rejilla, términos, error y envío cuelgan del scroll', async () => {
     mockRegister.mockResolvedValue({
       kind: 'validation',
       errors: [
@@ -447,18 +444,39 @@ describe('#167 R7: Pingo en la cabecera del registro', () => {
     await renderRegister();
     await fillForm();
     await submit();
+    const names = screen.getByTestId('register-names-row');
     const content = screen.getByTestId('register-header').parent;
     expect(content?.parent).toHaveProperty('props.testID', 'register-form');
-    for (const field of fields) {
-      const input = screen.getByTestId(`register-${field}`);
-      const root = screen.getByTestId(`register-${field}-error`).parent;
-      expect(root?.parent).toBe(content);
-      expect(root).toContainElement(input);
+    expect(content?.children).toHaveLength(9);
+    expect(content?.children).toEqual([
+      screen.getByTestId('register-header'), names,
+      screen.getByTestId('register-email').parent,
+      screen.getByTestId('register-contact-row'),
+      screen.getByTestId('register-password-group').parent,
+      screen.getByTestId('register-password-confirmation-group').parent,
+      screen.getByTestId('register-terms').parent,
+      screen.getByTestId('register-error-row'), screen.getByTestId('register-submit'),
+    ]);
+  });
+
+  it('#172 R11: nombres a 1fr 1fr y teléfono-país a 2fr 1fr', async () => {
+    await renderRegister();
+    const names = screen.getByTestId('register-names-row');
+    const contact = screen.getByTestId('register-contact-row');
+    const first = screen.getByTestId('register-first-name').parent;
+    const last = screen.getByTestId('register-last-name').parent;
+    const phone = screen.getByTestId('register-phone').parent;
+    const country = screen.getByTestId('register-country').parent;
+    expect(names.children).toEqual([first, last]);
+    expect(contact.children).toEqual([phone, country]);
+    expect(names.props.className).toBe('flex-row gap-3');
+    expect(contact.props.className).toBe('flex-row gap-3');
+    for (const root of [first, last, country]) {
+      expect(root?.props.className.split(' ')).toContain('flex-1');
+      expect(root?.props.className.split(' ')).not.toContain('flex-2');
     }
-    expect(screen.getByTestId('register-terms').parent?.parent).toBe(content);
-    expect(screen.getByTestId('register-error-row').parent).toBe(content);
-    expect(screen.getByTestId('register-submit').parent).toBe(content);
-    expect(content?.children[0]).toBe(screen.getByTestId('register-header'));
+    expect(phone?.props.className.split(' ')).toContain('flex-2');
+    expect(phone?.props.className.split(' ')).not.toContain('flex-1');
   });
 
   it('#167 R7: ningún campo ni el envío quedan dentro de la cabecera', async () => {
