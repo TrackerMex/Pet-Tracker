@@ -134,7 +134,7 @@ export function ResetPasswordScreen() {
           </Text>
         </HomeEntrance>
         <PopIn testID="reset-success-pop" className="w-full">
-          <Card testID="reset-success-card" variant="secondary" className="flex-row items-center gap-3 px-4 py-3.5">
+          <Card testID="reset-success-card" accessibilityLiveRegion="polite" variant="secondary" className="flex-row items-center gap-3 px-4 py-3.5">
             <View testID="reset-success-check" className="size-8 items-center justify-center rounded-full bg-accent">
               <Check size={18} color={accentForeground} />
             </View>
