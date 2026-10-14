@@ -572,6 +572,18 @@ describe('#171 R8: reduce motion', () => {
       position: 'absolute', right: 18, bottom: 26, opacity: 1, transform: [{ scale: 1 }],
     });
   });
+
+  it('R8.4 con reduce motion no monta el anillo y Pingo no flota', async () => {
+    await renderProbe();
+    expect(screen.queryByTestId('probe-ring', { includeHiddenElements: true })).toBeNull();
+    await advance(2000);
+    expect(animated('probe-pingo').transform[0].translateY).toBe(0);
+  });
+
+  it('R8.5 con reduce motion el texto y las acciones aparecen sin subir', async () => {
+    await renderProbe();
+    expect(RISE_IDS.map(rise)).toEqual([[1, 0], [1, 0], [1, 0], [1, 0]]);
+  });
 });
 
 jest.mock('expo-haptics', () => ({
