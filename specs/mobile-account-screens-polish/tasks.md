@@ -21,7 +21,9 @@ tags: [mobile, ui, spec]
 > - en c21 nacen verdes `#172 R10: sin errores ningún campo pinta mensaje` y
 >   `#172 R10: los siete campos del registro marcan isInvalid`;
 > - en c29 nace verde el cambio del helper `lockTile()`;
-> - en c38 nace verde la fila `password-input` de `#172 R20` (sonda S20d).
+> - en c38 nace verde la fila `password-input` de `#172 R20` (sonda S20d);
+> - nacen verdes los cinco `it` de la Enmienda E6 (T24: c40–c42, sondas S2c,
+>   S4f–S4h y S12b–S12d).
 
 ---
 
@@ -160,9 +162,13 @@ tags: [mobile, ui, spec]
 | `src/__tests__/design-drift.test.ts` | 51 | c11, c33, c36 | 0 | 51 |
 | `src/__tests__/consistency-classnames.test.ts` | 33 | c29 (R14) | 0 | 33 |
 | `src/__tests__/legibility-classnames.test.ts` | 12 | c36 (R19) | 0 | 12 |
+| `src/components/__tests__/pingo-float.test.tsx` | 3 | c40 (R4, E6) | 2 | 5 |
+| `src/components/__tests__/back-button.test.tsx` | 5 | c41 (R2, E6) | 1 | 6 |
+| `src/screens/register/index.test.tsx` | 30 | c42 (R12, E6) | 2 (uno es `it.each` de 2 filas) | 32 |
 
-Al cerrar hay 52 bloques `it` más. En Jest son 61 tests más, porque los cuatro
-`it.each` dan 2, 2, 4 y 5, y hay 5 suites más.
+Al cerrar hay 57 bloques `it` más: 52, más 5 de la Enmienda E6. En Jest son
+67 tests más, porque los cinco `it.each` dan 2, 2, 4, 5 y 2, y hay 5 suites
+más.
 
 ---
 
@@ -1453,6 +1459,145 @@ Gate:
 
 ---
 
+## T24 — Enmienda E6: candados de la review ronda 1 (c40–c42, nacen verdes)
+
+Va después de T21 y antes del cierre T22. Los tres commits solo traen tests.
+Producción ya cumple, así que cada `it` nace verde y se prueba con su sonda
+(requirements.md R2, R4 y R12, bullets «Enmienda E6»). No hay commit `feat`.
+
+En cada commit el orden es: ancla, añadir el `it` literal, gate verde, sondas
+de su tabla y commit. Si una sonda no da exactamente su rojo, PARA: no toques
+ni el test ni producción.
+
+Las sondas siguen el §Preámbulo y corren solo el fichero de test del commit.
+Tras cada una, `git checkout HEAD -- <fichero de producción>` y
+`git diff --quiet HEAD -- <fichero de producción>; echo "exit=$?"` → `exit=0`.
+
+### c40 — R4: forma y curva de la flotación
+
+Commit: `test(mobile): la flotación de Pingo solo mueve translateY y sigue ease-in-out (R4)`.
+
+1. Ancla: `grep -cF "it('#172 R4: pasa testID y children'" src/components/__tests__/pingo-float.test.tsx`
+   → `1`.
+2. En `src/components/__tests__/pingo-float.test.tsx`, dentro del
+   `describe('#172 R4: PingoFloat'` y justo después de ese `it`, añade:
+
+   ```tsx
+     it('#172 R4: la subida y la bajada siguen ease-in-out, no una recta', async () => {
+       await render(<PingoFloat testID="float"><Text>Hijo</Text></PingoFloat>);
+       await act(async () => { jest.advanceTimersByTime(375); });
+       expect(floatTranslateY())
+         .toBeCloseTo(-1.3, 0);
+       await act(async () => { jest.advanceTimersByTime(750); });
+       expect(floatTranslateY())
+         .toBeCloseTo(-8.7, 0);
+     });
+
+     it('#172 R4: el estilo animado solo lleva translateY', async () => {
+       mockUseReducedMotion.mockReturnValue(true);
+       await render(<PingoFloat testID="float"><Text>Hijo</Text></PingoFloat>);
+       const float = screen.getByTestId('float');
+       expect(float.props.style).toEqual([{ transform: [{ translateY: 0 }] }]);
+     });
+   ```
+
+3. Gate verde, según §Preámbulo, con `src/components/__tests__/pingo-float.test.tsx`:
+   `exit=0` y `Tests: 5 passed` en ese fichero (base 3 + 2).
+4. Sondas en `src/components/pingo-float.tsx`:
+
+   | Sonda | Mutación | Rojos | Tipo |
+   |---|---|---|---|
+   | S4f | añade la línea `opacity: 0,` al objeto de `useAnimatedStyle`, debajo de `transform: [{ translateY: translateY.get() }],` | 1: `#172 R4: el estilo animado solo lleva translateY` | aserción (`toEqual`) |
+   | S4g | `style={animatedStyle}` → `style={[animatedStyle, { opacity: 0 }]}` | 1: `#172 R4: el estilo animado solo lleva translateY` | aserción (`toEqual`) |
+   | S4h | añade `Easing,` a la import de `react-native-reanimated`, y en `withTiming` cambia el segundo argumento `MOTION_PINGO_FLOAT_TIMING` por `{ ...MOTION_PINGO_FLOAT_TIMING, easing: Easing.linear }` | 1: `#172 R4: la subida y la bajada siguen ease-in-out, no una recta` | aserción (`toBeCloseTo`: `-2.5` frente a `-1.3`) |
+
+5. `git add src/components/__tests__/pingo-float.test.tsx` y commit.
+
+### c41 — R2: opacidad al pulsar
+
+Commit: `test(mobile): BackButton baja la opacidad al pulsar (R2)`.
+
+1. Ancla: `grep -cF "it('#172 R2: sin historial reemplaza por el fallback'" src/components/__tests__/back-button.test.tsx`
+   → `1`.
+2. En `src/components/__tests__/back-button.test.tsx`, dentro del
+   `describe('#172 R2: BackButton'` y justo después de ese `it`, añade:
+
+   ```tsx
+     it('#172 R2: suelto pinta opacidad 1 y pulsado 0,8', async () => {
+       await renderBack();
+       const back = screen.getByTestId('back');
+       expect(back.props.style).toEqual({ opacity: 1 });
+       await fireEvent(back, 'responderGrant', { nativeEvent: {}, persist: () => undefined });
+       expect(back.props.style).toEqual({ opacity: 0.8 });
+     });
+   ```
+
+3. Gate verde con `src/components/__tests__/back-button.test.tsx`: `exit=0` y
+   `Tests: 6 passed` en ese fichero (base 5 + 1).
+4. Sonda en `src/components/back-button.tsx`:
+
+   | Sonda | Mutación | Rojos | Tipo |
+   |---|---|---|---|
+   | S2c | borra la línea `style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}` | 1: `#172 R2: suelto pinta opacidad 1 y pulsado 0,8` | aserción (`toEqual`) |
+
+5. `git add src/components/__tests__/back-button.test.tsx` y commit.
+
+### c42 — R12: el envío sigue vivo tras un correo inválido
+
+Commit: `test(mobile): el registro sigue enviando tras un correo inválido (R12)`.
+
+1. Ancla: `grep -cF "it('#172 R11: cabecera, rejilla, términos, error y envío cuelgan del scroll'" src/screens/register/index.test.tsx`
+   → `1`.
+2. En `src/screens/register/index.test.tsx`, justo antes de ese `it` (en el
+   mismo `describe`, `#167 R7: Pingo en la cabecera del registro`, donde ya
+   viven los dos `#172 R12`), añade:
+
+   ```tsx
+     it('#172 R12: tras un correo inválido el envío sigue activo y el corregido sí llama a la API', async () => {
+       mockRegister.mockResolvedValue({ kind: 'email-taken' });
+       await renderRegister();
+       await fillForm();
+       await fireEvent.changeText(screen.getByTestId('register-email'), 'alex.example.com');
+       await submit();
+       await waitFor(() => expect(screen.getByTestId('register-email-message'))
+         .toHaveTextContent('Ingresa un correo electrónico válido'));
+       expect(screen.getByTestId('register-submit')).not.toBeDisabled();
+       await fireEvent.changeText(screen.getByTestId('register-email'), '  alex@example.com  ');
+       await submit();
+       await waitFor(() => expect(screen.getByTestId('register-error'))
+         .toHaveTextContent('Ese correo ya está registrado'));
+       expect(screen.queryByTestId('register-email-message')).toBeNull();
+       expect(mockRegister).toHaveBeenCalledTimes(1);
+     });
+
+     it.each(['alex@example', 'alex @example.com'])('#172 R12: «%s» tampoco es un correo y no llama a la API', async (email) => {
+       mockRegister.mockResolvedValue({ kind: 'email-taken' });
+       await renderRegister();
+       await fillForm();
+       await fireEvent.changeText(screen.getByTestId('register-email'), email);
+       await submit();
+       await waitFor(() => expect(screen.getByTestId('register-email-message'))
+         .toHaveTextContent('Ingresa un correo electrónico válido'));
+       expect(mockRegister).not.toHaveBeenCalled();
+     });
+
+   ```
+
+   La cadena `'  alex@example.com  '` lleva dos espacios a cada lado.
+3. Gate verde con `src/screens/register/index.test.tsx`: `exit=0` y
+   `Tests: 36 passed` en ese fichero (base 33 + 3).
+4. Sondas en `src/screens/register/index.tsx`:
+
+   | Sonda | Mutación | Rojos | Tipo |
+   |---|---|---|---|
+   | S12b | borra `setSubmitting(true);` (la línea antes de `try {`) y escríbelo justo debajo de `setGeneralError(null);`, antes del `if (!EMAIL_PATTERN…` | 1: `#172 R12: tras un correo inválido el envío sigue activo y el corregido sí llama a la API` | aserción (`not.toBeDisabled`) |
+   | S12c | `const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;` → `const EMAIL_PATTERN = /@/;` | 2: `#172 R12: «alex@example» tampoco es un correo y no llama a la API` y `#172 R12: «alex @example.com» tampoco es un correo y no llama a la API` | consulta (`register-email-message`) |
+   | S12d | `EMAIL_PATTERN.test(email.trim())` → `EMAIL_PATTERN.test(email)` | 1: `#172 R12: tras un correo inválido el envío sigue activo y el corregido sí llama a la API` | consulta (`register-error`) |
+
+5. `git add src/screens/register/index.test.tsx` y commit.
+
+---
+
 ## T22 — Cierre técnico (sin commit de código)
 
 1. `cd mobile-pet-tracker`
@@ -1460,7 +1605,7 @@ Gate:
 3. **Jest.**
    - `$J $BASE src/components/__tests__/back-button.test.tsx src/components/__tests__/pingo-float.test.tsx src/components/__tests__/form-error.test.tsx src/components/__tests__/password-input.test.tsx src/__tests__/account-screens-polish.test.ts; echo "exit=$?"`
      → `exit=0`, con `Test Suites: 17 passed`. Los tests son los de T0 paso 7
-     más 61.
+     más 67 (Enmienda E6).
    - `$J $READERS; echo "exit=$?"` → `exit=0`.
 4. **Typecheck y lint**, según §Preámbulo.
 5. **Anclas al cerrar:**
@@ -1510,8 +1655,9 @@ Gate:
    → `exit=0`. `src/theme/motion.ts` sí cambia (R4): solo añade las dos
    constantes de Pingo, y `MOTION_FLOAT_OFFSET_Y` y `MOTION_FLOAT_TIMING`
    siguen como en H0.
-7. **Historial.** `git log --oneline <H0>..HEAD` muestra c1–c7, c7b y c8–c39 en orden (Enmienda E2),
-   más los commits del leader y los dos `docs` de la parada de c8.
+7. **Historial.** `git log --oneline <H0>..HEAD` muestra c1–c7, c7b y c8–c42 en orden (Enmiendas E2 y E6),
+   más los commits del leader, la review b6c09d5e, los dos `docs` de la parada de c8 y los dos `docs`
+   del primer cierre (trazabilidad e informe).
    Ningún commit mezcla tests rojos con implementación.
 8. **Informe y trazabilidad.**
    - Escribe `progress/impl_mobile-account-screens-polish.md`, con las salidas

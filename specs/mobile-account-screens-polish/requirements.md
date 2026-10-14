@@ -246,6 +246,13 @@ THE SYSTEM SHALL llamar `router.replace(fallback)` una vez y no llamar
   los dos últimos `it` por `toHaveBeenCalledTimes`.
 - Sonda S2b: quitar `accessibilityLabel` pone rojos los dos primeros `it`,
   porque `getByRole` no encuentra el nombre.
+- `#172 R2: suelto pinta opacidad 1 y pulsado 0,8` (Enmienda E6). Sin pulsar,
+  `getByTestId('back').props.style` es `{ opacity: 1 }` con `toEqual`. Tras
+  `await fireEvent(back, 'responderGrant', { nativeEvent: {}, persist: () =>
+  undefined })`, el patrón de `#122 R2` en `src/screens/home/index.test.tsx`,
+  es `{ opacity: 0.8 }`.
+- Sonda S2c (Enmienda E6): borrar la línea `style={({ pressed }) => …}` de
+  `back-button.tsx` pone rojo solo ese `it`, por aserción.
 
 ### R3 — Fila «Volver» en Iniciar sesión, Crear cuenta y Recuperar
 
@@ -400,6 +407,36 @@ ese `testID` y el estilo animado `transform: [{ translateY }]`:
 - Sonda S4e: `MOTION_PINGO_FLOAT_OFFSET_Y = 4` en `motion.ts` pone rojo
   `#172 R4: declara la flotación de Pingo…` por `toBe(10)`, y también
   `#172 R4: flota…`.
+- `#172 R4: la subida y la bajada siguen ease-in-out, no una recta` (Enmienda
+  E6). Desde el montaje, `translateY` está cerca de `-1.3` a los 375 ms y de
+  `-8.7` a los 1125 ms, los dos con `toBeCloseTo(valor, 0)`. Son los puntos a
+  un cuarto y a tres cuartos del tramo, donde la curva no es simétrica: una
+  recta daría `-2.5` y `-7.5`. Los literales salen de evaluar
+  `bezier(0.42, 0, 0.58, 1)` fuera de Jest (`-1.292` y `-8.708`), no de la
+  constante importada.
+- `#172 R4: el estilo animado solo lleva translateY` (Enmienda E6). Con
+  `useReducedMotion` en `true`, `getByTestId('float').props.style` es
+  exactamente `[{ transform: [{ translateY: 0 }] }]` con `toEqual`. Así cae
+  cualquier clave colada en el estilo animado o en un estilo estático a su
+  lado.
+- Sonda S4f (Enmienda E6): añadir `opacity: 0` al objeto de
+  `useAnimatedStyle` pone rojo solo `#172 R4: el estilo animado solo lleva
+  translateY`, por aserción.
+- Sonda S4g (Enmienda E6): `style={[animatedStyle, { opacity: 0 }]}` en el
+  `Animated.View` pone rojo el mismo `it`, por aserción.
+- Sonda S4h (Enmienda E6): `withTiming(-MOTION_PINGO_FLOAT_OFFSET_Y, {
+  ...MOTION_PINGO_FLOAT_TIMING, easing: Easing.linear })`, con `Easing`
+  importado de `react-native-reanimated`, pone rojo solo `#172 R4: la subida y
+  la bajada…`, por aserción a los 375 ms.
+- Límites declarados (Enmienda E6):
+  - Ningún `it` ve que se quite el `easing` y quede el de serie de
+    `withTiming` (`inOut(quad)`). Las dos curvas se separan como mucho
+    0,12 px en todo el tramo, y esa diferencia no se ve.
+  - Ningún `it` ve que se quite `return () => cancelAnimation(translateY)`.
+    Es un mutante equivalente: `useSharedValue` de Reanimated 4.5.1 ya cancela
+    la animación al desmontar. El gate de lint lo caza igual, porque
+    `cancelAnimation` queda importado sin uso (aviso
+    `@typescript-eslint/no-unused-vars`) y el log de lint deja de salir vacío.
 
 ### R5 — Pingo flota en Crear cuenta, Recuperar y Nueva contraseña
 
@@ -931,6 +968,25 @@ literal nuevo.
     porque `alex@example.com` es válido.
 - Sonda S12: quitar la comprobación pone rojos los dos `it`: `mockRegister` se
   llama 1 vez y `getByTestId('register-email-message')` lanza.
+- `#172 R12: tras un correo inválido el envío sigue activo y el corregido sí
+  llama a la API` (Enmienda E6). Tras enviar con `alex.example.com` y ver su
+  mensaje (en un `waitFor`), `register-submit` no está deshabilitado. Después
+  cambia el correo a `  alex@example.com  `, con dos espacios a cada lado, y
+  envía otra vez. Con `{ kind: 'email-taken' }`, `register-error` dice `Ese
+  correo ya está registrado` (en un `waitFor`), `register-email-message` ya no
+  está y `mockRegister` tiene 1 llamada.
+- `#172 R12: «%s» tampoco es un correo y no llama a la API` (Enmienda E6), un
+  `it.each` de 2 filas: `alex@example` (sin punto en el dominio) y
+  `alex @example.com` (con un espacio dentro). Cada fila pinta el mensaje del
+  campo (en un `waitFor`) y deja `mockRegister` con 0 llamadas.
+- Sonda S12b (Enmienda E6): mover `setSubmitting(true);` justo debajo de
+  `setGeneralError(null);`, antes de la comprobación, pone rojo solo `#172
+  R12: tras un correo inválido…`, por aserción (`not.toBeDisabled`).
+- Sonda S12c (Enmienda E6): `const EMAIL_PATTERN = /@/;` pone rojas las 2
+  filas del `it.each`, por consulta: `register-email-message` no aparece.
+- Sonda S12d (Enmienda E6): `EMAIL_PATTERN.test(email)`, sin `.trim()`, pone
+  rojo solo `#172 R12: tras un correo inválido…`, por consulta:
+  `register-error` no aparece, porque el segundo envío no sale.
 
 ### R13 — La tarjeta de estado de Nueva contraseña se anuncia
 
@@ -1772,3 +1828,34 @@ cambió el título y el orden, pero mantuvo la consulta.
   está.
 
 - [x] Enmienda E5 aprobada por humano (fecha: 2026-10-14) ← gate antes de reanudar Codex
+
+## Enmienda E6 (2026-10-14) — candados de la review ronda 1
+
+La review ronda 1 (`progress/review_mobile-account-screens-polish.md`,
+b6c09d5e) rechazó #172. Producción cumple la spec, pero cuatro mutaciones de
+producción pasaban con todo en verde. Los cuatro huecos eran de la spec y no de
+Codex: ningún `it` prescrito miraba ahí.
+
+| Hueco | Mutación | Candado nuevo | Sondas |
+|---|---|---|---|
+| G1 | `opacity: 0` en el `useAnimatedStyle` de `PingoFloat` | `#172 R4: el estilo animado solo lleva translateY` | S4f, S4g |
+| G2 | `easing: Easing.linear` en el `withTiming` de `PingoFloat` | `#172 R4: la subida y la bajada siguen ease-in-out, no una recta` | S4h |
+| G3 | `setSubmitting(true)` antes de la comprobación del correo | `#172 R12: tras un correo inválido el envío sigue activo y el corregido sí llama a la API` | S12b |
+| G4 | sin el `style` de `pressed` en `BackButton` | `#172 R2: suelto pinta opacidad 1 y pulsado 0,8` | S2c |
+| G6 (menor) | `EMAIL_PATTERN = /@/`, o sin `.trim()` | `#172 R12: «%s» tampoco es un correo y no llama a la API`, y el de G3 con espacios | S12c, S12d |
+
+- G5 (menor) no lleva candado: es un mutante equivalente y el gate de lint lo
+  caza (límites declarados en R4).
+- Los 5 `it` nuevos (6 tests en Jest) nacen verdes, porque producción ya
+  cumple, y cada uno se prueba con su sonda. Van en tasks.md T24, commits
+  c40–c42, y ninguno toca producción.
+- El leader los probó fuera del árbol, en un worktree sobre b6c09d5e. Todos
+  salen verdes en HEAD, cada sonda da exactamente los rojos de su tabla, y
+  typecheck y eslint quedan limpios en los tres ficheros.
+- Cifras: pingo-float pasa de 3 a 5 `it`, back-button de 5 a 6 y register de
+  30 a 32 (de 33 a 36 tests en Jest). Al cerrar hay 57 bloques `it` más que
+  en H0 y 67 tests más.
+- No cambian los requisitos EARS ni producción. Solo se añaden candados y
+  sondas a R2, R4 y R12.
+
+- [ ] Enmienda E6 aprobada por humano (fecha: ____) ← gate antes de reanudar Codex

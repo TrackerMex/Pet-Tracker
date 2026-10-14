@@ -219,3 +219,47 @@ incluida la de comparar el titulo de cada ● con su tabla antes de avanzar (Rea
   docs(mobile-account-screens-polish): #172 trazabilidad completa
   y luego git commit --only ../progress/impl_mobile-account-screens-polish.md -m 'docs(mobile-account-screens-polish): #172 informe de implementación completo'
 ```
+
+## Reanudación 5 — Enmienda E6 (2026-10-14)
+
+La review ronda 1 rechazó #172 (b6c09d5e). Producción cumple, pero cuatro
+mutaciones de producción pasaban en verde porque la spec no prescribía su
+candado. El hueco era de la spec, no tuyo. La Enmienda E6 (requirements.md
+§Enmienda E6 y tasks.md T24) añade cinco `it` que nacen verdes, cada uno con
+su sonda, en tres commits `test(mobile)` (c40–c42). No se toca producción.
+
+```text
+Worktree: /home/claude/sites/Pet-Tracker-wt-172   <- PRIMERA LINEA. Trabaja AQUI y en ningun otro sitio
+Branch:   feature/172-mobile-account-screens-polish
+Siguen en vigor TODAS las reglas de arriba (init.sh, push, PR, amend, rebase, prettier, JEST/LINT/CARGA, SKILLS),
+incluida la de comparar el titulo de cada ● con su tabla antes de avanzar (Reanudacion 2, paso 2).
+
+== ANTES DE TOCAR NADA ==
+1. command grep -c -F -- '- [x] Enmienda E6 aprobada por humano' specs/mobile-account-screens-polish/requirements.md
+   -> 1. Si da 0, PARA: E6 no esta firmada.
+2. git status --short -> sin salida.
+3. git log -1 --format=%h -- mobile-pet-tracker -> 4ba7e139 (tu c39).
+4. H0 sigue siendo e0178ab5. Entre H0 y HEAD hay commits que no son tuyos: 94ddc750, los de E2 a E6
+   (enmienda, handoff y firma) y la review b6c09d5e. No los toques, no los reviertas y no los cuentes como tuyos.
+   progress/review_mobile-account-screens-polish.md tampoco es tuyo: no lo edites.
+5. Base de la reanudacion. Desde mobile-pet-tracker, con J del Preambulo de tasks.md:
+   $J src/components/__tests__/pingo-float.test.tsx src/components/__tests__/back-button.test.tsx src/screens/register/index.test.tsx; echo "exit=$?"
+   -> exit=0 y Tests: 41 passed (3 + 5 + 33). Si da otra cifra, anotala y aplica el delta de T24 (+2, +1, +3).
+
+== GUION DE LA REANUDACION ==
+1. tasks.md T24 en orden: c40, c41 y c42. Cada commit trae solo su fichero de test, con el codigo literal de T24.
+   Ningun commit toca produccion.
+2. Orden dentro de cada commit: ancla (grep -cF, debe dar 1), anadir el it, gate verde, sondas de su tabla, commit.
+   Las sondas mutan produccion y se revierten con git checkout HEAD -- <fichero>; nunca se commitean.
+   Si una sonda no da exactamente los rojos y el tipo de su tabla, PARA: no cambies ni el test ni produccion.
+3. Despues, T22 entero con las cifras de E6: 67 tests mas que H0, 17 suites, e historial c1-c7, c7b y c8-c42.
+
+== CIERRE ==
+- Reescribe progress/impl_mobile-account-screens-polish.md (el mismo fichero): Estado al final, tabla completa y una
+  seccion "Reanudacion 5" con la salida literal de cada gate y de cada sonda (S4f, S4g, S4h, S2c, S12b, S12c, S12d).
+  Las secciones anteriores quedan como historia, no las borres.
+- traceability.md: anade los it nuevos y los hashes de c40-c42 a las filas de R2, R4 y R12, y anota las sondas de E6.
+  Commits literales:
+  docs(mobile-account-screens-polish): #172 trazabilidad completa
+  y luego git commit --only ../progress/impl_mobile-account-screens-polish.md -m 'docs(mobile-account-screens-polish): #172 informe de implementación completo'
+```

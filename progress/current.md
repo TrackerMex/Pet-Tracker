@@ -10,6 +10,10 @@
   Base congelada `3f9a60e2` (contiene `origin/main` 788d1f89, merge de #170).
 - **Estado**: `in_progress` desde 2026-10-13. La spec y la Enmienda #172 se
   firmaron en Notion (última edición 2026-10-13T18:43Z). Implementa Codex CLI.
+- **Review ronda 1** (2026-10-14, b6c09d5e): rechazada. Producción cumple,
+  pero faltaban candados (G1–G4). La Enmienda E6 añade cinco `it` que nacen
+  verdes (tasks.md T24, c40–c42) y el handoff «Reanudación 5». Está en el gate
+  humano.
 - **Plan**: Login, Registro, Recuperar y Nueva contraseña como el canvas
   (R1–R20): «Volver» arriba, CTA de 56 anclada al pie, inputs de 52,
   `PasswordInput` con ojo en cinco campos, errores con icono, `PingoFloat`
