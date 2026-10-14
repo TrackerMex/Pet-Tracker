@@ -151,7 +151,7 @@ describe('#61 R4: el acento como tinta usa accent-strong', () => {
     [join('screens', 'health', 'index.tsx'), 1],
     [join('app', '(tabs)', 'food.tsx'), 1],
     [join('screens', 'map', 'index.tsx'), 2],
-    [join('screens', 'profile', 'index.tsx'), 1],
+    [join('screens', 'profile', 'index.tsx'), 1 + 1], // #173 R5
     [join('screens', 'add-pet', 'index.tsx'), 1],
     [join('components', 'pet-hero-header.tsx'), 1],
     [join('screens', 'welcome', 'index.tsx'), 2],
@@ -167,7 +167,8 @@ describe('#61 R4: el acento como tinta usa accent-strong', () => {
     ).toBe(
       13 + 1 + 1
         + 2 // #118 R11
-        + 1, // #167 R10
+        + 1 // #167 R10
+        + 1, // #173 R5
     );
   });
 

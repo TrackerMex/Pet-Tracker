@@ -185,7 +185,7 @@ describe('#62 R7: ningún glifo tipográfico hace de icono', () => {
     const profile = readSource(join('screens', 'profile', 'index.tsx'));
 
     expect(profile).toContain(
-      "import { Bell, ChevronRight, FileText, Map as MapIcon, Wifi } from 'reicon-react-native';",
+      "import { Bell, ChevronRight, FileText, Map as MapIcon, Plus, Wifi } from 'reicon-react-native';",
     );
     expect(
       profile.match(/<ChevronRight size=\{20\} color=\{muted\} \/>/g),
@@ -397,7 +397,7 @@ describe('#98 R10: los candados que esta feature no mueve', () => {
     expect(home.match(/style=\{CONTINUOUS_CORNER\}/g) ?? []).toHaveLength(0);
     expect(food.match(/style=\{CONTINUOUS_CORNER\}/g)).toHaveLength(1);
     expect(count(/style=\{CONTINUOUS_CORNER\}/g)).toBe(31 + 1 + 4 + 1); // #41 R9: geofences-link; #168; #170 R8: alert-detail-map
-    expect(count(/rounded-xl bg-accent(?=[\s'"`])/g)).toBe(13 + 1 + 1 + 1 + 1 + 1 + 1); // #146 R8, #146 R9; #118 R7; #155 R3 // #158 R3: docs-upload; // #158 R5: docs-upload-submit
+    expect(count(/rounded-xl bg-accent(?=[\s'"`])/g)).toBe(13 + 1 + 1 + 1 + 1 + 1 + 1 - 1); // #146 R8, #146 R9; #118 R7; #155 R3 // #158 R3: docs-upload; // #158 R5: docs-upload-submit; // #173 R5
     expect(count(/bg-accent-soft/g)).toBe(16 + 2 + 1 - 1); // #147 R4: meal-time-edit y add-meal-time-button; #105 R11; #168 R5: PetPills pasa a huecos pastel
     expect(home.match(/text-accent-strong\b/g)).toHaveLength(2);
     expect(food.match(/text-accent-strong\b/g)).toHaveLength(1);
@@ -549,14 +549,13 @@ describe('#166 R2: todo primario sólido lleva el labio detrás de bg-accent', (
     [join('screens', 'home', 'index.tsx')]: 1,
     [join('screens', 'meal-schedule', 'index.tsx')]: 1,
     [join('screens', 'pairing', 'index.tsx')]: 2,
-    [join('screens', 'profile', 'index.tsx')]: 1,
     [join('screens', 'reminders', 'index.tsx')]: 1,
     [join('screens', 'reset-password', 'index.tsx')]: 1,
     [join('screens', 'weight-log', 'index.tsx')]: 1,
     [join('screens', 'welcome', 'index.tsx')]: 1,
   };
 
-  it('inventaría los diecinueve primarios con labio, fichero a fichero', () => {
+  it('inventaría los dieciocho primarios con labio, fichero a fichero', () => {
     const inventory = (pattern: RegExp) => Object.fromEntries(
       sourceFiles().flatMap((path) => {
         const count = (readFileSync(path, 'utf8').match(pattern) ?? []).length;
@@ -574,8 +573,8 @@ describe('#166 R2: todo primario sólido lleva el labio detrás de bg-accent', (
       0,
     );
 
-    expect(count(/\bborder-b-4\b/g)).toBe(19);
-    expect(count(/border-black\/25/g)).toBe(19);
+    expect(count(/\bborder-b-4\b/g)).toBe(19 - 1); // #173 R5
+    expect(count(/border-black\/25/g)).toBe(19 - 1); // #173 R5
   });
 });
 

@@ -159,6 +159,8 @@ jest.mock('reicon-react-native', () => {
     Wifi: icon('profile-icon-wifi'),
     Map: icon('profile-icon-map'),
     Bell: icon('profile-icon-bell'),
+    Plus: icon('profile-icon-plus'),
+    Camera: icon('profile-icon-camera'),
   };
 });
 
@@ -270,6 +272,56 @@ function ProfileWrapper({ children }: { children: ReactNode }) {
 function renderProfile() {
   return renderWithProviders(<ProfileScreen />, { wrapper: ProfileWrapper });
 }
+
+describe('#173 R5: cápsula de añadir mascota', () => {
+  beforeEach(setupProfile168);
+
+  it('pinta la cápsula tras el título con icono oculto y texto en español', async () => {
+    await renderProfile();
+    await screen.findByTestId('pet-info-card');
+    const capsule = screen.getByTestId('profile-add-pet');
+
+    expect(capsule.props.className).toBe('h-9 flex-row items-center gap-1.5 rounded-full bg-tab-pill px-3.5');
+    expect(capsule.props.accessibilityRole).toBe('button');
+    expect(capsule.props.hitSlop).toEqual(TOUCH_SLOP);
+    expect(capsule.props.style?.borderCurve).toBeUndefined();
+    expect(profileChild(capsule.parent!, 0)).toBe(screen.getByTestId('profile-title'));
+    expect(profileChild(capsule.parent!, 1)).toBe(capsule);
+    expect(capsule.children).toHaveLength(2);
+    const icon = within(capsule).getByTestId('profile-add-pet-icon', { includeHiddenElements: true });
+    expect(profileChild(capsule, 0)).toBe(icon);
+    expect(icon.props.accessibilityElementsHidden).toBe(true);
+    expect(icon.props.importantForAccessibility).toBe('no-hide-descendants');
+    expect(icon.children).toHaveLength(1);
+    const glyph = within(icon).getByTestId('profile-icon-plus', { includeHiddenElements: true });
+    expect(profileChild(icon, 0)).toBe(glyph);
+    expect(glyph.props.size).toBe(16);
+    expect(glyph.props.style).toEqual({ color: 'accent-strong' });
+    const label = within(capsule).getByText('Añadir mascota');
+    expect(profileChild(capsule, 1)).toBe(label);
+    expect(label.props.className).toBe('text-sm font-extrabold text-accent-strong');
+  });
+
+  it('pinta Add pet en inglés con la misma receta', async () => {
+    await renderProfile();
+    await screen.findByTestId('pet-info-card');
+    await fireEvent.press(screen.getByTestId('language-toggle'));
+
+    const capsule = screen.getByTestId('profile-add-pet');
+    const label = await within(capsule).findByText('Add pet');
+    expect(label.props.className).toBe('text-sm font-extrabold text-accent-strong');
+  });
+
+  it('pulsar la cápsula abre el alta de mascotas', async () => {
+    await renderProfile();
+    await screen.findByTestId('pet-info-card');
+
+    await fireEvent.press(screen.getByTestId('profile-add-pet'));
+
+    expect(mockRouter.push).toHaveBeenCalledTimes(1);
+    expect(mockRouter.push).toHaveBeenCalledWith('/pets/add');
+  });
+});
 
 describe('#173 R4: Perfil pide la variante avatars', () => {
   beforeEach(setupProfile168);
