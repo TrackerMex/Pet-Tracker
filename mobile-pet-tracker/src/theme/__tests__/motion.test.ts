@@ -80,6 +80,9 @@ describe('#152 R1: las duraciones y el preset de movimiento viven en un solo sit
       'MOTION_CELEBRATION_PING_MS',
       'MOTION_CELEBRATION_POP_MS',
       'MOTION_CELEBRATION_POP_PEAK',
+      'MOTION_CELEBRATION_RISE_DELAY_MS',
+      'MOTION_CELEBRATION_RISE_OFFSET_Y',
+      'MOTION_CELEBRATION_RISE_STAGGER_MS',
       'MOTION_CONFETTI_FALL_TIMING',
       'MOTION_ENTRANCE_OFFSET_Y',
       'MOTION_ENTRANCE_SCALE',
@@ -204,6 +207,11 @@ describe('#171 E4: las constantes de la celebración viven en motion.ts', () => 
 
   it('declara la duración del ping', () => {
     expect(require('../motion').MOTION_CELEBRATION_PING_MS).toBe(2200);
+  });
+
+  it('declara la entrada escalonada', () => {
+    const m = require('../motion');
+    expect([m.MOTION_CELEBRATION_RISE_DELAY_MS, m.MOTION_CELEBRATION_RISE_STAGGER_MS, m.MOTION_CELEBRATION_RISE_OFFSET_Y]).toEqual([500, 80, 14]);
   });
 
   it('declara la flotación de Pingo', () => {

@@ -469,6 +469,32 @@ describe('#171 R18: flotación de Pingo', () => {
   });
 });
 
+const RISE_IDS = ['probe-title', 'probe-body', 'probe-details', 'probe-actions'];
+const rise = (id: string) => { const style = animated(id); return [style.opacity, style.transform?.[0]?.translateY as number]; };
+
+describe('#171 R19: entrada escalonada', () => {
+  beforeEach(() => { jest.useFakeTimers(); });
+  afterEach(() => { jest.useRealTimers(); });
+
+  it('R19.1 título, cuerpo, fichas y acciones suben escalonados a los 700 ms', async () => {
+    await renderProbe();
+    await advance(700);
+    expectSamples(RISE_IDS.map(rise), [[0.685, 4.41], [0.445, 7.77], [0.161, 11.75], [0, 14]], [2, 1]);
+  });
+
+  it('R19.1 a los 1200 ms el texto y las acciones están en reposo', async () => {
+    await renderProbe();
+    await advance(1200);
+    expect(RISE_IDS.map(rise)).toEqual([[1, 0], [1, 0], [1, 0], [1, 0]]);
+  });
+
+  it('R19.2 sin fichas las acciones conservan su retardo de 740 ms', async () => {
+    await renderProbe({ details: [] });
+    await advance(700);
+    expect(rise('probe-actions')).toEqual([0, 14]);
+  });
+});
+
 describe('#171 R20: maquetación del artboard', () => {
   it('R20.1 el hero mide 220 con margen superior y Pingo 170', async () => {
     await renderProbe();
@@ -590,6 +616,10 @@ describe('#171 R13: solo anima transform y opacity', () => {
       ['probe-badge', ['bottom', 'opacity', 'position', 'right', 'transform']],
       ['probe-confetti-0', ['left', 'opacity', 'position', 'top', 'transform']],
       ['probe-ring', ['opacity', 'transform']],
+      ['probe-title', ['opacity', 'transform']],
+      ['probe-body', ['opacity', 'transform']],
+      ['probe-details', ['opacity', 'transform']],
+      ['probe-actions', ['opacity', 'transform']],
     ] as const;
     for (const elapsed of [0, 1200]) {
       if (elapsed) await act(async () => { jest.advanceTimersByTime(1200); });

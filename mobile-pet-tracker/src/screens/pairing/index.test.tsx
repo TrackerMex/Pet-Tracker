@@ -499,12 +499,12 @@ describe('R7: tras el 201 muestra "El collar está listo" con el collar y sus CT
   it('shows the success copy, device values, and refreshes pets', async () => {
     await renderReady();
 
-    expect(screen.getByText('El collar está listo')).toBeVisible();
+    expect(screen.getByText('El collar está listo')).toBeOnTheScreen();
     expect(
       screen.getByText(
         'El collar de Luna está vinculado. El rastreo GPS está activo.',
       ),
-    ).toBeVisible();
+    ).toBeOnTheScreen();
     expect(screen.getByTestId('ready-model')).toHaveTextContent('TrailTag Pro');
     expect(screen.getByTestId('ready-esn')).toHaveTextContent('ESN-4242');
     expect(screen.queryByTestId('activation-code-input')).toBeNull();
