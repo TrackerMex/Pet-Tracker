@@ -73,4 +73,12 @@ describe('#172 R2: BackButton', () => {
     expect(mockRouter.replace).toHaveBeenCalledWith('/welcome');
     expect(mockRouter.back).not.toHaveBeenCalled();
   });
+
+  it('#172 R2: suelto pinta opacidad 1 y pulsado 0,8', async () => {
+    await renderBack();
+    const back = screen.getByTestId('back');
+    expect(back.props.style).toEqual({ opacity: 1 });
+    await fireEvent(back, 'responderGrant', { nativeEvent: {}, persist: () => undefined });
+    expect(back.props.style).toEqual({ opacity: 0.8 });
+  });
 });
