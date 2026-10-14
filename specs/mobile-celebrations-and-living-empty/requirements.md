@@ -1143,5 +1143,5 @@ las preguntas del borrador de esta enmienda, distintas de las P1–P5 de
 5. Que la prueba de humo R16 suma los pasos de E4 (`tasks.md` T16, pasos 9
    a 12).
 
-- [ ] Enmienda E4 aprobada por humano (fecha: ____)
-- [ ] Texto de la carta de E4.13 aprobado por humano (R15) (fecha: ____)
+- [x] Enmienda E4 aprobada por humano (fecha: 2026-10-14)
+- [x] Texto de la carta de E4.13 aprobado por humano (R15) (fecha: 2026-10-14)
