@@ -459,6 +459,34 @@ describe('#167 R7: Pingo en la cabecera del registro', () => {
     expect(mockRegister).not.toHaveBeenCalled();
   });
 
+  it('#172 R12: tras un correo inválido el envío sigue activo y el corregido sí llama a la API', async () => {
+    mockRegister.mockResolvedValue({ kind: 'email-taken' });
+    await renderRegister();
+    await fillForm();
+    await fireEvent.changeText(screen.getByTestId('register-email'), 'alex.example.com');
+    await submit();
+    await waitFor(() => expect(screen.getByTestId('register-email-message'))
+      .toHaveTextContent('Ingresa un correo electrónico válido'));
+    expect(screen.getByTestId('register-submit')).not.toBeDisabled();
+    await fireEvent.changeText(screen.getByTestId('register-email'), '  alex@example.com  ');
+    await submit();
+    await waitFor(() => expect(screen.getByTestId('register-error'))
+      .toHaveTextContent('Ese correo ya está registrado'));
+    expect(screen.queryByTestId('register-email-message')).toBeNull();
+    expect(mockRegister).toHaveBeenCalledTimes(1);
+  });
+
+  it.each(['alex@example', 'alex @example.com'])('#172 R12: «%s» tampoco es un correo y no llama a la API', async (email) => {
+    mockRegister.mockResolvedValue({ kind: 'email-taken' });
+    await renderRegister();
+    await fillForm();
+    await fireEvent.changeText(screen.getByTestId('register-email'), email);
+    await submit();
+    await waitFor(() => expect(screen.getByTestId('register-email-message'))
+      .toHaveTextContent('Ingresa un correo electrónico válido'));
+    expect(mockRegister).not.toHaveBeenCalled();
+  });
+
   it('#172 R11: cabecera, rejilla, términos, error y envío cuelgan del scroll', async () => {
     mockRegister.mockResolvedValue({
       kind: 'validation',
