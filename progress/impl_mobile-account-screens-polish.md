@@ -4436,7 +4436,7 @@ S14 tiene un desajuste con la spec. Se paró inmediatamente después de
 inspeccionarla y restaurarla. C31–c39, sus sondas y T22 no se ejecutaron.
 R21 continúa pendiente (humano). La feature no se declara terminada.
 
-### Bloqueo actual — T15/S14
+### Bloqueo de T15/S14 — historia (resuelto por E4)
 
 Commit de producción sobre el que se plantó la sonda:
 `7ddda8f5 feat(mobile): el candado de recuperar es un tile acento con labio (R14)`.
@@ -5981,3 +5981,26 @@ alcanzado es c30: 5 suites y 234 tests verdes, typecheck `exit=0`, lint
 El informe se cierra en un commit separado con `git commit --only` sobre
 este mismo fichero. Ambos son documentación del bloqueo, no el cierre
 completo de T22.
+
+
+## Reanudacion 3
+
+Inicio: 2026-10-14, HEAD del leader `8b53e55867a941cc6c8af6278a3734997703deaf`.
+H0 sigue siendo `e0178ab5c1f67e917cf4116332a0e9196d67b344`.
+
+```text
+command grep -c -F -- '- [x] Enmienda E4 aprobada por humano' specs/mobile-account-screens-polish/requirements.md
+1
+git status --short
+(sin salida)
+git log -1 --format=%h -- mobile-pet-tracker
+7ddda8f5
+git branch --show-current
+feature/172-mobile-account-screens-polish
+```
+
+**S14 conforme a E4.** La salida ya registrada, `Tests: 6 failed, 101 passed,
+107 total`, contiene exactamente los seis títulos de T15 corregida: cuatro
+de forgot y los dos recuentos de bg-accent-soft de consistency. Se conserva
+su restauración con `exit=0`. No se repite S14 ni se cambia c29/c30.
+Se continúa T16–T22 (c31–c39), sin renumerar.
