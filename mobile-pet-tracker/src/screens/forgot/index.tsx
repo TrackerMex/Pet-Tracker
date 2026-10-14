@@ -18,7 +18,7 @@ import { useThemeColors } from '../../theme/use-theme-colors';
 
 export function ForgotScreen() {
   const headerHeight = useContext(HeaderHeightContext);
-  const [accentStrong] = useThemeColors(['accent-strong']);
+  const [accentForeground] = useThemeColors(['accent-foreground']);
   const insets = useSafeAreaInsets();
   const t = useTranslate();
   const [email, setEmail] = useState('');
@@ -89,10 +89,10 @@ export function ForgotScreen() {
         </PingoFloat>
         <PopIn
           testID="forgot-lock-tile"
-          className="size-16 items-center justify-center rounded-xl bg-accent-soft"
+          className="size-13 items-center justify-center rounded-xl border-b-4 border-black/25 bg-accent"
           style={CONTINUOUS_CORNER}
         >
-          <Lock size={28} color={accentStrong} />
+          <Lock size={26} color={accentForeground} />
         </PopIn>
         <Text testID="forgot-title" className="text-center text-3xl font-black text-foreground">
           {sent ? t('forgot.checkYourEmail') : t('forgot.forgotPassword')}
