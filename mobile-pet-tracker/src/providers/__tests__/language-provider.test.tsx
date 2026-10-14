@@ -171,6 +171,28 @@ describe('#98 R3: el catálogo trae las cuatro claves de comidas servidas', () =
   });
 });
 
+describe('#173 R13: Perfil retira cuatro claves y añade tres', () => {
+  const english = en as Record<string, string>;
+  const spanish = es as Record<string, string>;
+  const languageDesign = readFileSync(join(process.cwd(), '../specs/mobile-ui-language/design.md'), 'utf8');
+
+  it.each([
+    ['profile.gpsLinked', 'Linked', 'Vinculado'],
+    ['profile.gpsNoCollar', 'No collar', 'Sin collar'],
+  ])('declara %s en ambos idiomas y registra su añadido', (key, englishValue, spanishValue) => {
+    expect(english[key]).toBe(englishValue);
+    expect(spanish[key]).toBe(spanishValue);
+    expect(languageDesign).toMatch(new RegExp('\\| — \\| `' + escapeRegExp(key) + '`[^\\n]*← añadida por #173 \\(R13\\)'));
+    expect(languageDesign).toContain('### §2.27 — Añadidos por #173 — Perfil fiel al canvas');
+  });
+
+  it.each(['profile.information'])('retira %s de ambos idiomas y documenta la retirada', (key) => {
+    expect(english[key]).toBeUndefined();
+    expect(spanish[key]).toBeUndefined();
+    expect(languageDesign).toMatch(new RegExp('`' + escapeRegExp(key) + '`[^\\n]*← retirada por #173 \\(R13\\)'));
+  });
+});
+
 describe('#41 R1: el catálogo trae las once claves de zonas seguras', () => {
   it('registra las once claves en los dos idiomas y en la tabla de la spec de idioma', () => {
     const english = en as Record<string, string>;

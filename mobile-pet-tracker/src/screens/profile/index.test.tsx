@@ -476,7 +476,7 @@ describe('R2: estructura Figma', () => {
     expect(screen.getByText('30 meses')).toBeVisible();
     expect(screen.getByText('12 kg')).toBeVisible();
     expect(screen.getByText('985141004123456')).toBeVisible();
-    expect(screen.getByText('PetTrack One')).toBeVisible();
+    expect(screen.getByText('Vinculado')).toBeVisible();
     expect(screen.getByTestId('change-photo')).toBeVisible();
     expect(screen.getByTestId('documents-link')).toBeVisible();
     expect(mockGetPet).toHaveBeenCalledWith(apiUrl, 'jwt-token', 'pet-1');
@@ -495,7 +495,7 @@ describe('R2: estructura Figma', () => {
     await renderProfile();
 
     await waitFor(() => expect(screen.getByTestId('pet-info-card')).toBeVisible());
-    expect(screen.getAllByText('No registrado')).toHaveLength(4);
+    expect(screen.getAllByText('No registrado')).toHaveLength(3);
   });
 
   it('changes the active pet through the shared PetSwitcher', async () => {
@@ -841,7 +841,7 @@ describe('R10 (mobile-device-pairing): el perfil enlaza a /pairing', () => {
   });
 });
 
-describe('#61 R9: la etiqueta de sección de pet-info-card vuelve a #46 R10', () => {
+describe('#61 R9 (enmendado por #173 R8): pet-info-card no lleva etiqueta de sección', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     process.env.EXPO_PUBLIC_API_URL = apiUrl;
@@ -854,7 +854,7 @@ describe('#61 R9: la etiqueta de sección de pet-info-card vuelve a #46 R10', ()
     mockGetMe.mockReturnValue(pending<MeState>());
   });
 
-  it('usa el mismo tratamiento de etiqueta de sección que me-card', async () => {
+  it('pinta cuatro filas en Card flat sin etiqueta de sección', async () => {
     const pet = makePet();
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
     mockGetPet.mockResolvedValue({ kind: 'ok', pet });
@@ -865,9 +865,52 @@ describe('#61 R9: la etiqueta de sección de pet-info-card vuelve a #46 R10', ()
       expect(screen.getByTestId('pet-info-card')).toBeVisible(),
     );
 
-    expect(screen.getByText('Información').props.className).toBe(
-      'pb-2 text-xs font-semibold uppercase tracking-widest text-muted',
-    );
+    const card = screen.getByTestId('pet-info-card');
+    expect(card.props.className).toBe('rounded-card border border-border bg-surface px-3.5 py-1');
+    expect(card.children).toHaveLength(4);
+    expect(screen.queryByText('Información')).toBeNull();
+    expect(screen.queryByText('Information')).toBeNull();
+  });
+});
+
+describe('#173 R8: información en Card flat', () => {
+  beforeEach(setupProfile168);
+
+  it('contiene solo las cuatro filas de datos, sin texto de sección', async () => {
+    await renderProfile();
+    const card = await screen.findByTestId('pet-info-card');
+    expect(card.props.className).toBe('rounded-card border border-border bg-surface px-3.5 py-1');
+    expect(card.children).toHaveLength(4);
+    for (let index = 0; index < 4; index++) {
+      expect(profileChild(card, index).children).toHaveLength(2);
+    }
+    expect(screen.queryByText('Información')).toBeNull();
+    expect(screen.queryByText('Information')).toBeNull();
+  });
+
+  it.each([
+    { language: 'es', linked: true, value: 'Vinculado', className: 'flex-1 text-right text-sm font-bold text-accent-strong' },
+    { language: 'en', linked: true, value: 'Linked', className: 'flex-1 text-right text-sm font-bold text-accent-strong' },
+    { language: 'es', linked: false, value: 'Sin collar', className: 'flex-1 text-right text-sm font-bold text-foreground' },
+    { language: 'en', linked: false, value: 'No collar', className: 'flex-1 text-right text-sm font-bold text-foreground' },
+  ])('pinta el estado del collar ($linked) en $language', async ({ language, linked, value, className }) => {
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet({ device: linked ? makePet().device : null }) });
+    await renderProfile();
+    const card = await screen.findByTestId('pet-info-card');
+    if (language === 'en') await fireEvent.press(screen.getByTestId('language-toggle'));
+    expect(within(card).getByText(value).props.className).toBe(className);
+    expect(screen.queryByText('PetTrack One')).toBeNull();
+    expect(screen.queryByText('Información')).toBeNull();
+    expect(screen.queryByText('Information')).toBeNull();
+  });
+
+  it('usa padding de 11 pt en raza y última señal con separador solo en raza', async () => {
+    await renderProfile();
+    const breed = await screen.findByText('Raza');
+    expect(breed.parent!.props.className).toBe('flex-row items-center justify-between gap-4 border-b border-separator py-2.75');
+    expect(screen.getByText('Última señal').parent!.props.className).toBe('flex-row items-center justify-between gap-4 py-2.75');
+    expect(screen.getByText('Mixed').props.className).toBe('flex-1 text-right text-sm font-bold text-foreground');
+    expect(breed.props.className).toBe('text-sm font-normal text-muted');
   });
 });
 
