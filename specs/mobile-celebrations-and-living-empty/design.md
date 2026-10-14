@@ -264,7 +264,7 @@ Dos shared values por elemento animado, `scale` y `opacity`, para
 - Efecto de montaje del pop:
   ```
   pingoOpacity.set(withTiming(1, MOTION_FADE_TIMING));
-  badgeOpacity.set(withDelay(MOTION_SURFACE_MS, withTiming(1, MOTION_FADE_TIMING)));
+  badgeOpacity.set(withDelay(MOTION_CELEBRATION_BADGE_DELAY_MS, withTiming(1, MOTION_FADE_TIMING)));
   if (!reduceMotion) {
     pingoScale.set(withSpring(1, MOTION_CELEBRATION_SPRING));
     badgeScale.set(withDelay(MOTION_SURFACE_MS, withSpring(1, MOTION_CELEBRATION_SPRING)));
@@ -316,8 +316,9 @@ export const MOTION_CONFETTI_SPREAD_MS = 1200;
 - `it('no exporta nada más')` suma los cinco nombres en orden alfabético. Ya
   lee el módulo con `require('../motion')`, así que su rojo no rompe el
   typecheck.
-- El retardo de la insignia reutiliza `MOTION_SURFACE_MS` (400), que ya
-  existe.
+- El retardo de la insignia es `MOTION_CELEBRATION_BADGE_DELAY_MS` (450), el
+  mismo que sin reduce motion (E4.3). Antes de E4 reutilizaba
+  `MOTION_SURFACE_MS` (400); corregido tras la review de la ronda 4.
 
 ### 4.5 `EmptyState` flota (R10, R11)
 

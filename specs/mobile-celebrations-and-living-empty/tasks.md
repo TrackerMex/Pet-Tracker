@@ -701,6 +701,9 @@ transportes adb, usa `adb -s <ip:puerto>`.
 9. *(Enmienda E4)* Sin quitar animaciones, en la celebración del paso 1:
    - el confeti sigue cayendo mientras la pantalla está abierta (espera al
      menos 10 s);
+   - el confeti cae fluido, sin tirones, durante esos 10 s (observación 3
+     de la review de la ronda 4: cada frame reenvía las claves de layout de
+     las 36 piezas; si hay tirones, anótalo);
    - un anillo de acento late detrás de Pingo;
    - tras el pop, Pingo flota arriba y abajo;
    - título, cuerpo y botones suben escalonados al entrar.
