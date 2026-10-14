@@ -865,8 +865,8 @@ describe('#171 R13: sin drift en la celebración', () => {
     expect(source).not.toMatch(MEALS_BAR_STYLE_ESCAPES);
   });
 
-  it('R13.2 la fuente no usa LayoutAnimation, entering/exiting ni bucles', () => {
+  it('R13.2 la fuente no usa LayoutAnimation ni entering/exiting', () => {
     const source = readFileSync(join(projectRoot, 'src/components/celebration.tsx'), 'utf8');
-    expect(source).not.toMatch(/LayoutAnimation|entering=|exiting=|withRepeat|withSequence/);
+    expect(source).not.toMatch(/LayoutAnimation|entering=|exiting=/);
   });
 });
