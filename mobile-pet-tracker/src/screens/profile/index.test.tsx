@@ -36,6 +36,13 @@ import { renderWithProviders } from '../../../test/render-with-providers';
 
 let mockTheme: 'light' | 'dark' = 'light';
 
+const mockPetSwitcher = jest.fn<void, [{
+  pets: PetProfile[];
+  selectedPetId: string | null;
+  onSelect: (petId: string) => void;
+  variant?: 'default' | 'avatars';
+}]>();
+
 jest.mock('react-native-nitro-theme-transition', () => ({
   withThemeTransition: jest.fn((apply: () => void) => {
     apply();
@@ -99,16 +106,15 @@ jest.mock('../../components/pet-switcher', () => {
   );
 
   return {
-    PetSwitcher: ({
-      pets,
-      selectedPetId,
-      onSelect,
-    }: {
+    PetSwitcher: (props: {
       pets: PetProfile[];
       selectedPetId: string | null;
       onSelect: (petId: string) => void;
-    }) =>
-      React.createElement(
+      variant?: 'default' | 'avatars';
+    }) => {
+      mockPetSwitcher(props);
+      const { pets, selectedPetId, onSelect } = props;
+      return React.createElement(
         View,
         null,
         pets.map((pet) =>
@@ -123,7 +129,8 @@ jest.mock('../../components/pet-switcher', () => {
             React.createElement(Text, null, pet.name),
           ),
         ),
-      ),
+      );
+    },
   };
 });
 
@@ -263,6 +270,17 @@ function ProfileWrapper({ children }: { children: ReactNode }) {
 function renderProfile() {
   return renderWithProviders(<ProfileScreen />, { wrapper: ProfileWrapper });
 }
+
+describe('#173 R4: Perfil pide la variante avatars', () => {
+  beforeEach(setupProfile168);
+
+  it('pasa avatars al selector compartido cuando carga la mascota', async () => {
+    await renderProfile();
+    await screen.findByTestId('pet-info-card');
+
+    expect(mockPetSwitcher.mock.lastCall?.[0].variant).toBe('avatars');
+  });
+});
 
 describe('R1: me card', () => {
   beforeEach(() => {
