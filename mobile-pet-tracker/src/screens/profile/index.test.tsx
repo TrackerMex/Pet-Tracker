@@ -914,6 +914,46 @@ describe('#173 R8: información en Card flat', () => {
   });
 });
 
+describe('#173 R9: última señal relativa', () => {
+  let nowSpy: jest.SpyInstance<number, []>;
+  beforeEach(() => {
+    setupProfile168();
+    nowSpy = jest.spyOn(Date, 'now').mockReturnValue(Date.parse('2026-10-13T12:00:00.000Z'));
+  });
+  afterEach(() => nowSpy.mockRestore());
+
+  const cases = [
+    { iso: '2026-10-13T11:59:30.000Z', es: 'Justo ahora', en: 'Just now' },
+    { iso: '2026-10-13T12:05:00.000Z', es: 'Justo ahora', en: 'Just now' },
+    { iso: '2026-10-13T11:59:01.000Z', es: 'Justo ahora', en: 'Just now' },
+    { iso: '2026-10-13T11:59:00.000Z', es: 'hace 1 min', en: '1m ago' },
+    { iso: '2026-10-13T11:15:00.000Z', es: 'hace 45 min', en: '45m ago' },
+    { iso: '2026-10-13T11:00:01.000Z', es: 'hace 59 min', en: '59m ago' },
+    { iso: '2026-10-13T11:00:00.000Z', es: 'hace 1 h', en: '1h ago' },
+    { iso: '2026-10-13T06:30:00.000Z', es: 'hace 5 h', en: '5h ago' },
+    { iso: '2026-10-12T12:00:01.000Z', es: 'hace 23 h', en: '23h ago' },
+    { iso: '2026-10-12T12:00:00.000Z', es: '12 oct', en: 'Oct 12' },
+    { iso: '2026-08-21T12:00:00.000Z', es: '21 ago', en: 'Aug 21' },
+    { iso: '2025-12-30T12:00:00.000Z', es: '30 dic 2025', en: 'Dec 30, 2025' },
+    { iso: null, es: 'No registrado', en: 'Not registered' },
+  ];
+
+  it.each(cases)('formatea $iso en español como $es', async ({ iso, es: value }) => {
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet({ lastCommunicationAt: iso }) });
+    await renderProfile();
+    const card = await screen.findByTestId('pet-info-card');
+    expect(await within(card).findByText(value)).toBeVisible();
+  });
+
+  it.each(cases)('formatea $iso en inglés como $en', async ({ iso, en: value }) => {
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet({ lastCommunicationAt: iso }) });
+    await renderProfile();
+    const card = await screen.findByTestId('pet-info-card');
+    await fireEvent.press(screen.getByTestId('language-toggle'));
+    expect(await within(card).findByText(value)).toBeVisible();
+  });
+});
+
 describe('#61 R10: los controles táctiles declaran TOUCH_SLOP', () => {
   beforeEach(() => {
     jest.clearAllMocks();
