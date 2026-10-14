@@ -501,7 +501,7 @@ añadidas por #68, registradas como delta sobre la tabla existente
 | 253 | `profile.couldNotLoadPet` | `Could not load pet profile` | `No se pudo cargar el perfil de la mascota` |
 | 255 | `common.retry` | `Retry` | `Reintentar` |
 | 272 | `profile.changePhoto` | `Change photo` | `Cambiar foto` |
-| 283 | `profile.information` *(ya en español)* | `Information` | `Información` |
+| 283 | `profile.information` ← retirada por #173 (R13) *(ya en español)* | `Information` | `Información` |
 | 285 | `profile.breed` *(ya en español)* | `Breed` | `Raza` |
 | 286 | `profile.microchip` *(ya en español)* | `Microchip` | `Microchip` |
 | 287 | `profile.gpsDevice` *(ya en español)* | `GPS device` | `Dispositivo GPS` |
@@ -961,6 +961,13 @@ copy completa en cada una.
 | — | `alerts.sectionEarlier` | `Earlier` | `Anteriores` | ← añadida por #170 (R1) |
 | — | `alerts.distanceFromZone` | `{{distance}} from {{zone}}` | `A {{distance}} de {{zone}}` | ← añadida por #170 (R1) |
 | — | `alerts.viewOnMap` | `View on map` | `Ver en el mapa` | ← añadida por #170 (R1) |
+
+### §2.27 — Añadidos por #173 — Perfil fiel al canvas
+
+| # | Clave | `en` | `es` | Origen |
+|---|---|---|---|---|
+| — | `profile.gpsLinked` | `Linked` | `Vinculado` | ← añadida por #173 (R13) |
+| — | `profile.gpsNoCollar` | `No collar` | `Sin collar` | ← añadida por #173 (R13) |
 
 ## 3. La infraestructura
 

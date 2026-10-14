@@ -261,10 +261,11 @@ export const R7_PROFILE: UseRow[] = [
   { file: 'src/screens/profile/index.tsx', key: 'profile.couldNotLoadPet' },
   { file: 'src/screens/profile/index.tsx', key: 'common.retry' },
   { file: 'src/screens/profile/index.tsx', key: 'profile.changePhoto' },
-  { file: 'src/screens/profile/index.tsx', key: 'profile.information' },
   { file: 'src/screens/profile/index.tsx', key: 'profile.breed' },
   { file: 'src/screens/profile/index.tsx', key: 'profile.microchip' },
   { file: 'src/screens/profile/index.tsx', key: 'profile.gpsDevice' },
+  { file: 'src/screens/profile/index.tsx', key: 'profile.gpsLinked' }, // #173 R8
+  { file: 'src/screens/profile/index.tsx', key: 'profile.gpsNoCollar' }, // #173 R8
   { file: 'src/screens/profile/index.tsx', key: 'profile.lastSignal' },
   { file: 'src/screens/profile/index.tsx', key: 'profile.documents' },
   { file: 'src/screens/profile/index.tsx', key: 'profile.gpsSettings' },

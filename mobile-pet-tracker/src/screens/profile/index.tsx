@@ -38,24 +38,29 @@ import { CATEGORY_SLOTS, type CategorySlot } from '../../utils/category-palette'
 function InfoRow({
   isLast = false,
   label,
+  tone = 'default',
   value,
 }: {
   isLast?: boolean;
   label: string;
+  tone?: 'default' | 'accent';
   value: string | null;
 }) {
   const t = useTranslate();
+  const valueClassName = tone === 'accent'
+    ? 'flex-1 text-right text-sm font-bold text-accent-strong'
+    : 'flex-1 text-right text-sm font-bold text-foreground';
 
   return (
     <View
       className={
         isLast
-          ? 'flex-row items-center justify-between gap-4 py-3'
-          : 'flex-row items-center justify-between gap-4 border-b border-separator py-3'
+          ? 'flex-row items-center justify-between gap-4 py-2.75'
+          : 'flex-row items-center justify-between gap-4 border-b border-separator py-2.75'
       }
     >
       <Text className="text-sm font-normal text-muted">{label}</Text>
-      <Text className="flex-1 text-right text-sm font-semibold text-foreground">
+      <Text className={valueClassName}>
         {value ?? t('profile.notRegistered')}
       </Text>
     </View>
@@ -305,15 +310,13 @@ export function ProfileScreen() {
             </Text>
           ) : null}
 
-          <Card testID="pet-info-card" className="gap-0">
-            <Text className="pb-2 text-xs font-semibold uppercase tracking-widest text-muted">
-              {t('profile.information')}
-            </Text>
+          <Card variant="flat" testID="pet-info-card">
             <InfoRow label={t('profile.breed')} value={pet.breed} />
             <InfoRow label={t('profile.microchip')} value={pet.microchip} />
             <InfoRow
               label={t('profile.gpsDevice')}
-              value={pet.device?.model ?? null}
+              value={pet.device ? t('profile.gpsLinked') : t('profile.gpsNoCollar')}
+              tone={pet.device ? 'accent' : 'default'}
             />
             <InfoRow
               isLast
