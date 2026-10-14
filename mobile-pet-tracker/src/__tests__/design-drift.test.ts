@@ -827,6 +827,10 @@ describe('#167 R14: las pantallas de cuenta no traen deriva', () => {
     'screens/home/home-entrance.tsx',
     'components/pop-in.tsx',
     'theme/motion.ts',
+    'components/back-button.tsx',
+    'components/form-error.tsx',
+    'components/pingo-float.tsx',
+    'components/password-input.tsx',
   ];
 
   it('#167 R14: sin hex, clases arbitrarias, StyleSheet ni sombras sueltas', () => {
