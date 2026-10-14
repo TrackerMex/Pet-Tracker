@@ -7,7 +7,7 @@ import Animated, { interpolate, useAnimatedStyle, useReducedMotion, useSharedVal
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 
-import { MOTION_CELEBRATION_BADGE_DELAY_MS, MOTION_CELEBRATION_BADGE_POP_MS, MOTION_CELEBRATION_EASE_OUT, MOTION_CELEBRATION_PING_MS, MOTION_CELEBRATION_POP_MS, MOTION_CELEBRATION_POP_PEAK, MOTION_CONFETTI_FALL_TIMING, MOTION_FADE_TIMING, MOTION_PING_FROM, MOTION_PING_TO_SCALE, MOTION_POP_SCALE } from '../theme/motion';
+import { MOTION_CELEBRATION_BADGE_DELAY_MS, MOTION_CELEBRATION_BADGE_POP_MS, MOTION_CELEBRATION_EASE_OUT, MOTION_CELEBRATION_PING_MS, MOTION_CELEBRATION_POP_MS, MOTION_CELEBRATION_POP_PEAK, MOTION_CONFETTI_FALL_TIMING, MOTION_FADE_TIMING, MOTION_PINGO_FLOAT_OFFSET_Y, MOTION_PINGO_FLOAT_TIMING, MOTION_PING_FROM, MOTION_PING_TO_SCALE, MOTION_POP_SCALE } from '../theme/motion';
 import { useThemeColors } from '../theme/use-theme-colors';
 
 type CelebrationProps = {
@@ -62,13 +62,16 @@ export function Celebration({ testID, title, body, details, primary, secondary }
       withTiming(MOTION_CELEBRATION_POP_PEAK, { ...MOTION_CELEBRATION_EASE_OUT, duration: MOTION_CELEBRATION_BADGE_POP_MS * 0.6 }),
       withTiming(1, { ...MOTION_CELEBRATION_EASE_OUT, duration: MOTION_CELEBRATION_BADGE_POP_MS * 0.4 }),
     )));
+    pingoTranslateY.set(withDelay(MOTION_CELEBRATION_POP_MS,
+      withRepeat(withTiming(-MOTION_PINGO_FLOAT_OFFSET_Y, MOTION_PINGO_FLOAT_TIMING), -1, true),
+    ));
     ringScale.set(withRepeat(withTiming(MOTION_PING_TO_SCALE, {
       ...MOTION_CELEBRATION_EASE_OUT, duration: MOTION_CELEBRATION_PING_MS,
     }), -1, false));
     ringOpacity.set(withRepeat(withTiming(0, {
       ...MOTION_CELEBRATION_EASE_OUT, duration: MOTION_CELEBRATION_PING_MS,
     }), -1, false));
-  }, [badgeOpacity, badgeScale, pingoOpacity, pingoScale, reduceMotion, ringOpacity, ringScale]);
+  }, [badgeOpacity, badgeScale, pingoOpacity, pingoScale, pingoTranslateY, reduceMotion, ringOpacity, ringScale]);
 
   return (
     <Modal

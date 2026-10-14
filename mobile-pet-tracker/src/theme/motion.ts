@@ -68,3 +68,5 @@ export const MOTION_CELEBRATION_POP_PEAK = 1.08;
 export const MOTION_CELEBRATION_BADGE_POP_MS = 500;
 export const MOTION_CELEBRATION_BADGE_DELAY_MS = 450;
 export const MOTION_CELEBRATION_PING_MS = 2200;
+export const MOTION_PINGO_FLOAT_OFFSET_Y = 10;
+export const MOTION_PINGO_FLOAT_TIMING = { duration: 1500, easing: Easing.bezier(0.42, 0, 0.58, 1), reduceMotion: ReduceMotion.System };
