@@ -25,6 +25,7 @@ describe('#171 R1: la pose celebrate', () => {
 });
 
 const mockUseReducedMotion = jest.fn<boolean, []>(() => false);
+const mockCancelAnimation = jest.fn();
 
 jest.mock('react-native-safe-area-context', () => ({
   ...jest.requireActual('react-native-safe-area-context'),
@@ -32,7 +33,12 @@ jest.mock('react-native-safe-area-context', () => ({
 }));
 jest.mock('react-native-reanimated', () => {
   const actual = jest.requireActual<typeof import('react-native-reanimated')>('react-native-reanimated');
-  return { ...actual, __esModule: true, useReducedMotion: () => mockUseReducedMotion() };
+  return {
+    ...actual,
+    __esModule: true,
+    useReducedMotion: () => mockUseReducedMotion(),
+    cancelAnimation: (...args: Parameters<typeof actual.cancelAnimation>) => { mockCancelAnimation(...args); return actual.cancelAnimation(...args); },
+  };
 });
 jest.mock('react-native-svg', () => {
   const React = jest.requireActual<typeof import('react')>('react');
@@ -519,6 +525,19 @@ describe('#171 R20: maquetación del artboard', () => {
     const root = screen.getByTestId('probe');
     expect(root.props.className).toBe('flex-1 items-center gap-3.5 bg-surface-secondary px-6');
     expect(root.props.style).toEqual({ paddingTop: 120, paddingBottom: 64 });
+  });
+});
+
+describe('#171 R21: desmontar cancela los bucles', () => {
+  beforeEach(() => { jest.useFakeTimers(); });
+  afterEach(() => { jest.useRealTimers(); });
+
+  it('R21.1 desmontar cancela los 39 bucles', async () => {
+    await renderProbe();
+    await advance(1000);
+    mockCancelAnimation.mockClear();
+    await screen.unmount();
+    expect(mockCancelAnimation).toHaveBeenCalledTimes(39);
   });
 });
 
