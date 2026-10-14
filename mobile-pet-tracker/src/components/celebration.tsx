@@ -7,7 +7,7 @@ import Animated, { interpolate, useAnimatedStyle, useReducedMotion, useSharedVal
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 
-import { MOTION_CELEBRATION_BADGE_DELAY_MS, MOTION_CELEBRATION_BADGE_POP_MS, MOTION_CELEBRATION_EASE_OUT, MOTION_CELEBRATION_PING_MS, MOTION_CELEBRATION_POP_MS, MOTION_CELEBRATION_POP_PEAK, MOTION_CONFETTI_FALL_TIMING, MOTION_FADE_TIMING, MOTION_PINGO_FLOAT_OFFSET_Y, MOTION_PINGO_FLOAT_TIMING, MOTION_PING_FROM, MOTION_PING_TO_SCALE, MOTION_POP_SCALE } from '../theme/motion';
+import { MOTION_CELEBRATION_BADGE_DELAY_MS, MOTION_CELEBRATION_BADGE_POP_MS, MOTION_CELEBRATION_EASE_OUT, MOTION_CELEBRATION_PING_MS, MOTION_CELEBRATION_POP_MS, MOTION_CELEBRATION_POP_PEAK, MOTION_CELEBRATION_RISE_DELAY_MS, MOTION_CELEBRATION_RISE_OFFSET_Y, MOTION_CELEBRATION_RISE_STAGGER_MS, MOTION_CONFETTI_FALL_TIMING, MOTION_FADE_TIMING, MOTION_PINGO_FLOAT_OFFSET_Y, MOTION_PINGO_FLOAT_TIMING, MOTION_PING_FROM, MOTION_PING_TO_SCALE, MOTION_POP_SCALE, MOTION_SURFACE_MS } from '../theme/motion';
 import { useThemeColors } from '../theme/use-theme-colors';
 
 type CelebrationProps = {
@@ -24,6 +24,10 @@ export function Celebration({ testID, title, body, details, primary, secondary }
   const height = useWindowDimensions().height;
   const reduceMotion = useReducedMotion();
   const [check] = useThemeColors(['accent-foreground']);
+  const titleStyle = useRise(0);
+  const bodyStyle = useRise(1);
+  const detailsStyle = useRise(2);
+  const actionsStyle = useRise(3);
   const pingoScale = useSharedValue(reduceMotion ? 1 : MOTION_POP_SCALE);
   const pingoOpacity = useSharedValue(0);
   const pingoTranslateY = useSharedValue(0);
@@ -131,29 +135,47 @@ export function Celebration({ testID, title, body, details, primary, secondary }
             </View>
           </Animated.View>
         </View>
-        <Text testID={`${testID}-title`} className="mt-2 text-center text-3xl font-black tracking-tight text-foreground">{title}</Text>
-        <Text testID={`${testID}-body`} className="max-w-75 text-center text-15 leading-5.5 text-muted" selectable>{body}</Text>
+        <Animated.Text testID={`${testID}-title`} className="mt-2 text-center text-3xl font-black tracking-tight text-foreground" style={titleStyle}>{title}</Animated.Text>
+        <Animated.Text testID={`${testID}-body`} className="max-w-75 text-center text-15 leading-5.5 text-muted" style={bodyStyle} selectable>{body}</Animated.Text>
         {details?.length ? (
-          <View testID={`${testID}-details`} className="flex-row flex-wrap justify-center gap-2">
+          <Animated.View testID={`${testID}-details`} className="flex-row flex-wrap justify-center gap-2" style={detailsStyle}>
             {details.map((detail) => (
               <View key={detail.testID} className="flex-row items-center gap-1.5 rounded-full bg-surface px-3 py-1.5">
                 <Text className="text-xs font-bold text-muted">{detail.label}</Text>
                 <Text testID={detail.testID} className="text-xs font-bold text-foreground" selectable>{detail.value}</Text>
               </View>
             ))}
-          </View>
+          </Animated.View>
         ) : null}
-        <View testID={`${testID}-actions`} className="mt-auto w-full gap-3">
+        <Animated.View testID={`${testID}-actions`} className="mt-auto w-full gap-3" style={actionsStyle}>
           <Button testID={primary.testID} className="min-h-11 w-full rounded-xl bg-accent border-b-4 border-black/25" onPress={primary.onPress}>
             <Button.Label className="font-bold text-accent-foreground">{primary.label}</Button.Label>
           </Button>
           <Button testID={secondary.testID} className="min-h-11 w-full rounded-xl border-2 border-b-6 border-lip-gray bg-surface" onPress={secondary.onPress}>
             <Button.Label className="font-bold text-foreground">{secondary.label}</Button.Label>
           </Button>
-        </View>
+        </Animated.View>
       </View>
     </Modal>
   );
+}
+
+function useRise(k: number) {
+  const reduceMotion = useReducedMotion();
+  const opacity = useSharedValue(0);
+  const translateY = useSharedValue(MOTION_CELEBRATION_RISE_OFFSET_Y);
+
+  useEffect(() => {
+    if (reduceMotion) return;
+    const delay = MOTION_CELEBRATION_RISE_DELAY_MS + k * MOTION_CELEBRATION_RISE_STAGGER_MS;
+    const timing = { ...MOTION_CELEBRATION_EASE_OUT, duration: MOTION_SURFACE_MS };
+    opacity.set(withDelay(delay, withTiming(1, timing)));
+    translateY.set(withDelay(delay, withTiming(0, timing)));
+  }, [k, opacity, reduceMotion, translateY]);
+
+  return useAnimatedStyle(() => ({
+    opacity: opacity.get(), transform: [{ translateY: translateY.get() }],
+  }));
 }
 
 const CONFETTI = [
