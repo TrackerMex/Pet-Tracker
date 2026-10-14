@@ -20,11 +20,11 @@ tags: [mobile, ui, spec]
 | R7 | `src/screens/login/index.test.tsx::#172 R7: el cuerpo lleva correo, contraseña, olvido, envío y registro`; `src/screens/login/index.test.tsx::#172 R7: con error, el error va entre el olvido y el envío`; `src/screens/login/index.test.tsx::#172 R7: sin error, el cuerpo no lleva el error`; `src/__tests__/account-screens-polish.test.ts::#172 R7: los enlaces de login y recuperar llevan su receta`; S7 verificada. | `36f46603 test(mobile): enlaces y orden del cuerpo de login (R7)`; `7d56bacb feat(mobile): enlaces y orden del cuerpo de login (R7)` |
 | R8 | `src/screens/login/index.test.tsx::#172 R8: la contraseña de login lleva su ojo`; `src/screens/register/index.test.tsx::#172 R8: %s lleva su propio ojo`; `src/screens/reset-password/index.test.tsx::#172 R8: %s lleva su propio ojo`; `src/components/__tests__/password-input.test.tsx::#172 R8: arranca oculta con «Mostrar contraseña» y el ojo`; `src/components/__tests__/password-input.test.tsx::#172 R8: el ojo alterna mostrar y ocultar`; `src/components/__tests__/password-input.test.tsx::#172 R8: en inglés dice «Show password» y «Hide password»`; `src/components/__tests__/password-input.test.tsx::#172 R8: el grupo envuelve el campo de 52 y el botón de 44`; Los it.each cubren ambos campos de registro y ambos de reset; S8a–S8d verificadas. | `1ad828d3 test(mobile): mostrar y ocultar la contraseña en cuenta (R8)`; `45e4c40e feat(mobile): mostrar y ocultar la contraseña en cuenta (R8)` |
 | R9 | `src/screens/login/index.test.tsx::#172 R9: el error de login va con icono en su fila`; `src/screens/forgot/index.test.tsx::#172 R9: el error de recuperar va con icono en su fila`; `src/screens/reset-password/index.test.tsx::#172 R9: el error de nueva contraseña va con icono en su fila`; `src/components/__tests__/form-error.test.tsx::#172 R9: la fila lleva el icono y después el texto`; `src/components/__tests__/form-error.test.tsx::#172 R9: el icono mide 14 y usa danger`; `src/components/__tests__/form-error.test.tsx::#172 R9: el texto pesa 13/600 en danger, es seleccionable y dice el mensaje`; `src/screens/register/index.test.tsx::#167 R8: el error general va en una fila con icono`; `src/screens/register/index.test.tsx::#167 R8: el texto del error pesa como el icono`; S9a–S9c verificadas. | `28ad44aa test(mobile): FormError con icono y texto seleccionable (R9)`; `e1dcae38 feat(mobile): FormError en las cuatro pantallas de cuenta (R9)` |
-| R10 | `src/screens/register/index.test.tsx::#172 R10: cada campo con error lleva icono y texto seleccionable`; `src/screens/register/index.test.tsx::#172 R10: sin errores ningún campo pinta mensaje`; `src/__tests__/account-screens-polish.test.ts::#172 R10: los siete campos del registro marcan isInvalid`; Gates c21/c22 verdes; S10a/S10c verificadas. Pendiente: S10b produjo otro it rojo, requiere reconciliar la spec antes de continuar. | `ca1bac6b test(mobile): errores por campo del registro con icono (R10)`; `14c69144 feat(mobile): errores por campo del registro con icono (R10)` |
-| R11 | pendiente | pendiente |
-| R12 | pendiente | pendiente |
-| R13 | pendiente | pendiente |
-| R14 | pendiente | pendiente |
+| R10 | `src/screens/register/index.test.tsx::#172 R10: cada campo con error lleva icono y texto seleccionable`; `src/screens/register/index.test.tsx::#172 R10: sin errores ningún campo pinta mensaje`; `src/__tests__/account-screens-polish.test.ts::#172 R10: los siete campos del registro marcan isInvalid`; Gates c21/c22 verdes; S10a/S10c verificadas. S10b corregida por E3 verificada en Reanudacion 2 (3 fallos con los títulos y mensajes exactos); todas restauradas. | `ca1bac6b test(mobile): errores por campo del registro con icono (R10)`; `14c69144 feat(mobile): errores por campo del registro con icono (R10)` |
+| R11 | `src/screens/register/index.test.tsx::#172 R11: cabecera, rejilla, términos, error y envío cuelgan del scroll`; `src/screens/register/index.test.tsx::#172 R11: nombres a 1fr 1fr y teléfono-país a 2fr 1fr`; S11a/S11b verificadas. | `d7604772 test(mobile): rejilla del registro (R11)`; `fbcb4e9e feat(mobile): rejilla del registro (R11)` |
+| R12 | `src/screens/register/index.test.tsx::#172 R12: un correo sin arroba no llama a la API y marca el campo`; `src/screens/register/index.test.tsx::#172 R12: en inglés el correo inválido dice «Enter a valid email address»`; S12 verificada. | `ded50874 test(mobile): validación del correo en el registro (R12)`; `b2607357 feat(mobile): validación del correo en el registro (R12)` |
+| R13 | `src/screens/reset-password/index.test.tsx::#172 R13: la tarjeta de estado avisa con liveRegion polite`; S13 verificada. | `2103b60e test(mobile): la tarjeta de éxito avisa con liveRegion (R13)`; `81a3a4c6 feat(mobile): la tarjeta de éxito avisa con liveRegion (R13)` |
+| R14 | `src/screens/forgot/index.test.tsx::#172 R14: el candado es un tile acento con labio y Lock de 26`; `el tile Lock sigue en pie en los dos estados`; dos `#167 R9: el tile entra con pop…`; `src/__tests__/consistency-classnames.test.ts::lleva los tres tiles restantes a rounded-xl`; `resuelve el Lock de Forgot con accent-foreground`; dos recuentos de bg-accent-soft; `no deja la receta del labio fuera de un primario salvo el candado de Recuperar`. Gate c30 verde. **Pendiente: S14 da 6 fallos en vez de 7; bloqueo.** | `7b4c79b3 test(mobile): el candado de recuperar es un tile acento con labio (R14)`; `7ddda8f5 feat(mobile): el candado de recuperar es un tile acento con labio (R14)` |
 | R15 | pendiente | pendiente |
 | R16 | `src/providers/__tests__/language-provider.test.tsx::mantiene la base más las claves de #68 y los mismos marcadores en ambos idiomas`; `#172 R16: declara las claves de cuenta en los dos idiomas y su registro`; sonda S16c verificada. Pendiente: T17/c32 y sondas S16a/S16b | `c1bd4a6a test(mobile): claves de Volver, del ojo y País (R16)`; `505332c9 feat(mobile): claves de Volver, del ojo y País (R16)`; c32 pendiente |
 | R17 | pendiente | pendiente |
@@ -43,7 +43,7 @@ corrige el orden de `.sort()` en c7b. C8 y sus sondas pasan; se ejecutaron
 c9–c22 en orden, con rojo y verde separados. Hubo un commit de tests
 adicional que corrige solo el tipado de translateY (R4), sin cambiar aserciones.
 
-**Bloqueo actual T11/S10b.** Tras el gate verde de c22, S10b produjo un rojo
+**Bloqueo de T11/S10b — historia (resuelto por E3).** Tras el gate verde de c22, S10b produjo un rojo
 distinto del prescrito: falla `#172 R10: cada campo con error lleva icono y
 texto seleccionable` por texto vacío, mientras `#172 R10: sin errores ningún
 campo pinta mensaje` sigue verde. `FieldError` devuelve null cuando isInvalid
@@ -51,6 +51,20 @@ es false. No se ajustó la sonda ni el test para cuadrar. Todas las mutaciones
 están revertidas; T12–T22 no se empezaron. La salida exacta, el diagnóstico y
 los commits constan en `progress/impl_mobile-account-screens-polish.md`
 §Reanudación 1. La feature sigue incompleta y R21 pendiente (humano).
+
+
+**Reanudacion 2 — E3 verificada, c23–c30 ejecutados.** S10b corregida dio
+los tres fallos prescritos. Se completaron R11–R13 y sus sondas. R14 pasa
+su gate verde de c30 (234 tests, typecheck y lint limpios).
+
+**Bloqueo actual T15/S14.** Sobre `7ddda8f5`, el cambio de bg-accent a
+bg-accent-soft dio `Tests: 6 failed, 101 passed, 107 total`, no los 7 fallos
+prescritos. Falta `lleva los tres tiles restantes a rounded-xl`: su
+`toContain` busca un literal que es prefijo del mutado. Los cuatro fallos de
+forgot y los dos recuentos de bg-accent-soft sí coinciden con la tabla.
+La sonda quedó restaurada con `exit=0`; no se ajustaron test ni spec, ni se
+empezó T16. R15–R20 conservan sus pendientes (R16 parcial), y T22 no se
+alcanzó. El informe registra los comandos, títulos, mensajes y salidas.
 
 Spec y Enmienda #172 aprobadas en Notion
 (https://app.notion.com/p/3f86115a9b27815b91d6ec6acd75a969): `Estado del gate` =
