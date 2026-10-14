@@ -919,7 +919,7 @@ Gate: 1 failed.
 | Sonda | Mutación | Fichero que se corre | Esperado |
 |---|---|---|---|
 | S10a | dejar en el país `{fieldErrors.country}` como hijo de texto | register | 1 failed: `#172 R10: cada campo…` |
-| S10b | pintar en apellidos `<FormError testID="register-last-name-message" message="" />` sin condición | register | 1 failed: `#172 R10: sin errores…` (longitud 2) |
+| S10b (E3) | en registro, las tres líneas del `FieldError` de apellidos pasan a ser `<FieldError testID="register-last-name-error">{null}</FieldError>` seguido de `<FormError testID="register-last-name-message" message={fieldErrors.lastName ?? ''} />` | register | 3 failed: `#172 R10: sin errores…` (aserción, longitud 2), `#172 R10: cada campo…` (consulta, `register-last-name-message-row`) y `#167 R8: el icono del error mide 14 y usa danger` (consulta, varios `icon-alert-circle`) |
 | S10c | quitar `isInvalid={Boolean(fieldErrors.country)}` del `TextField` del país | polish | 1 failed: `#172 R10: los siete campos…` (6 en lugar de 7) |
 
 ---

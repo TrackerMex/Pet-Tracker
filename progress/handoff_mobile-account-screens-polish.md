@@ -107,3 +107,48 @@ Siguen en vigor TODAS las reglas de arriba (init.sh, push, PR, amend, rebase, pr
   y luego git commit --only ../progress/impl_mobile-account-screens-polish.md -m 'docs(mobile-account-screens-polish): #172 informe de implementación completo'
 ```
 
+
+## Reanudación 2 — Enmienda E3 (2026-10-14)
+
+Paraste bien en S10b: el rojo que pedía la spec era imposible, porque
+`FieldError` no pinta sus hijos con el campo válido. La Enmienda E3
+(requirements.md §Enmienda E3, R10 y la fila S10b de tasks.md T11) define la
+sonda de nuevo. c21 y c22 se quedan como están.
+
+```text
+Worktree: /home/claude/sites/Pet-Tracker-wt-172   <- PRIMERA LINEA. Trabaja AQUI y en ningun otro sitio
+Branch:   feature/172-mobile-account-screens-polish
+Siguen en vigor TODAS las reglas de arriba (init.sh, push, PR, amend, rebase, prettier, JEST/LINT/CARGA, SKILLS).
+
+== ANTES DE TOCAR NADA ==
+1. command grep -c -F -- '- [x] Enmienda E3 aprobada por humano' specs/mobile-account-screens-polish/requirements.md
+   -> 1. Si da 0, PARA: E3 no esta firmada.
+2. git status --short -> sin salida.
+3. git log -1 --format=%h -- mobile-pet-tracker -> 14c69144 (tu c22).
+4. H0 sigue siendo e0178ab5. Los commits del leader entre H0 y HEAD no son tuyos: 94ddc750 (firma E1), los de E2
+   y los de E3 (enmienda, handoff y firma). No los toques, no los reviertas y no los cuentes como tuyos.
+
+== GUION DE LA REANUDACION ==
+1. Sonda S10b nueva. cd mobile-pet-tracker. En src/screens/register/index.tsx sustituye las tres lineas del
+   FieldError de apellidos (desde <FieldError testID="register-last-name-error"> hasta su </FieldError>) por estas dos:
+     <FieldError testID="register-last-name-error">{null}</FieldError>
+     <FormError testID="register-last-name-message" message={fieldErrors.lastName ?? ''} />
+   Ancla: command grep -cF '<FieldError testID="register-last-name-error">{null}</FieldError>' src/screens/register/index.tsx -> 1
+   $J src/screens/register/index.test.tsx -> Tests: 3 failed, 26 passed, 29 total
+   Los tres bloques ● (sin contar los "● Console") son EXACTAMENTE estos, en cualquier orden:
+     #172 R10: cada campo con error lleva icono y texto seleccionable -> Unable to find an element with testID: register-last-name-message-row
+     #172 R10: sin errores ningún campo pinta mensaje -> Received length: 2
+     #167 R8: el icono del error mide 14 y usa danger -> Found multiple elements with testID: icon-alert-circle
+   Restaura: git checkout HEAD -- src/screens/register/index.tsx; git diff --quiet HEAD -- src/screens/register/index.tsx; echo "exit=$?" -> exit=0
+   S10a y S10c ya salieron como pedia la spec: no las repitas.
+2. Desde aqui, en CADA rojo y en CADA sonda, compara el titulo de cada ● con su tabla ANTES de pasar al paso
+   siguiente. Que cuadren el exit y el numero de fallos no basta.
+3. Sigue T12-T22 en orden, sin renumerar (c23-c39).
+
+== CIERRE ==
+- Reescribe progress/impl_mobile-account-screens-polish.md (el mismo fichero): Estado al final, tabla completa y una
+  seccion "Reanudacion 2" con la salida literal de S10b. Las secciones de bloqueo quedan como historia, no las borres.
+- Trazabilidad completa en specs/mobile-account-screens-polish/traceability.md. Commits literales:
+  docs(mobile-account-screens-polish): #172 trazabilidad completa
+  y luego git commit --only ../progress/impl_mobile-account-screens-polish.md -m 'docs(mobile-account-screens-polish): #172 informe de implementación completo'
+```

@@ -840,8 +840,16 @@ Esta spec no lo reimplementa.
 - Sonda S10a: dejar en el campo país `{fieldErrors.country}` como hijo de texto,
   como hoy, pone rojo `#172 R10: cada campo…`, porque la longitud es 6 y no 7
   y el `getByTestId` del país lanza.
-- Sonda S10b: pintar `FormError` en apellidos con `message=""` aunque no haya
-  error pone rojo `#172 R10: sin errores…` (longitud 2 en lugar de 0).
+- Sonda S10b (Enmienda E3): sacar el mensaje de apellidos de su `FieldError` y
+  pintarlo siempre pone rojo `#172 R10: sin errores…` (longitud 2 en lugar de
+  0). También pone rojo `#172 R10: cada campo…`, porque el `within` del
+  `FieldError` ya no ve la fila, y `#167 R8: el icono del error mide 14 y usa
+  danger`, porque hay dos `icon-alert-circle`. La mutación literal está en
+  tasks.md T11.
+- `FieldError` de heroui-native 1.0.8 devuelve `null` cuando su campo es válido
+  (`field-error.tsx`: `if (!isInvalid) return null;`). Un mensaje dentro del
+  `FieldError` no se pinta nunca sin error. `#172 R10: sin errores…` guarda que
+  ningún mensaje se pinte **fuera** de ese gate.
 
 ### R11 — Rejilla de Crear cuenta
 
@@ -1667,3 +1675,33 @@ por aserción. La spec situaba `'MOTION_PINGO_FLOAT_OFFSET_Y'` y
   carta. R4 sigue en 19 nombres.
 
 - [x] Enmienda E2 aprobada por humano (fecha: 2026-10-13) ← gate antes de reanudar Codex
+
+## Enmienda E3 (2026-10-14) — sonda S10b fuera del gate de `FieldError`
+
+Codex paró en la sonda S10b de T11 (`progress/impl_mobile-account-screens-polish.md`,
+§Bloqueo actual — T11/S10b). La mutación pintaba
+`<FormError testID="register-last-name-message" message="" />` sin condición,
+pero **dentro** del `FieldError` de apellidos. `FieldError` de heroui-native
+1.0.8 devuelve `null` cuando su campo es válido
+(`node_modules/heroui-native/src/components/field-error/field-error.tsx`:
+`if (!isInvalid) return null;`). Sin errores, el hijo no llega al árbol y
+`#172 R10: sin errores…` sigue verde. Con errores, el mensaje vacío pone rojo
+`#172 R10: cada campo…`. El rojo que pedía la spec era imposible.
+
+- R10 y la fila S10b de tasks.md T11 definen la sonda de nuevo: el mensaje de
+  apellidos sale del `FieldError` y se pinta siempre. El leader la midió sobre
+  `14c69144` (c22) en un worktree desechable: `Tests: 3 failed, 26 passed, 29
+  total`, con los tres títulos de la fila.
+- R10 dice qué guarda `#172 R10: sin errores…`: que ningún mensaje se pinte
+  fuera del gate de `FieldError`. Dentro del gate ya lo impide heroui.
+- No cambian ni tests, ni producción, ni recuentos de `it`. c21 y c22 se quedan
+  como están. S10a y S10c ya salieron como pedía la spec y no se repiten.
+- Barrido de las sondas que quedan (S11a–S20d):
+  - Solo el registro usa `FieldError`; login, Recuperar, Nueva contraseña y
+    `password-input.tsx` no lo importan.
+  - S12 necesita que `email-taken` pinte el error general y no el del campo.
+    `register/index.tsx` lo hace: `setGeneralError(t('register.emailAlreadyRegistered'))`.
+  - S15 mueve `login-error`, que no va dentro de un `FieldError`.
+  - Ninguna otra sonda espera el rojo de un hijo de `FieldError` sin error.
+
+- [ ] Enmienda E3 aprobada por humano (fecha: ____) ← gate antes de reanudar Codex
