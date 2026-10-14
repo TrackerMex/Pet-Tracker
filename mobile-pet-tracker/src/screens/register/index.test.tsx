@@ -434,6 +434,30 @@ describe('#167 R7: Pingo en la cabecera del registro', () => {
     expect(screen.queryAllByTestId(/^register-.+-message(-row)?$/)).toHaveLength(0);
   });
 
+  it('#172 R12: un correo sin arroba no llama a la API y marca el campo', async () => {
+    mockRegister.mockResolvedValue({ kind: 'email-taken' });
+    await renderRegister();
+    await fillForm();
+    await fireEvent.changeText(screen.getByTestId('register-email'), 'alex.example.com');
+    await submit();
+    await waitFor(() => expect(screen.getByTestId('register-email-message'))
+      .toHaveTextContent('Ingresa un correo electrónico válido'));
+    expect(mockRegister).not.toHaveBeenCalled();
+  });
+
+  it('#172 R12: en inglés el correo inválido dice «Enter a valid email address»', async () => {
+    mockRegister.mockResolvedValue({ kind: 'email-taken' });
+    await render(
+      <HeroUINativeProvider><LanguageProvider initial="en"><RegisterRoute /></LanguageProvider></HeroUINativeProvider>,
+    );
+    await fillForm();
+    await fireEvent.changeText(screen.getByTestId('register-email'), 'alex.example.com');
+    await submit();
+    await waitFor(() => expect(screen.getByTestId('register-email-message'))
+      .toHaveTextContent('Enter a valid email address'));
+    expect(mockRegister).not.toHaveBeenCalled();
+  });
+
   it('#172 R11: cabecera, rejilla, términos, error y envío cuelgan del scroll', async () => {
     mockRegister.mockResolvedValue({
       kind: 'validation',
