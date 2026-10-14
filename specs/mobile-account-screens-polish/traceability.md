@@ -24,8 +24,8 @@ tags: [mobile, ui, spec]
 | R11 | `src/screens/register/index.test.tsx::#172 R11: cabecera, rejilla, términos, error y envío cuelgan del scroll`; `src/screens/register/index.test.tsx::#172 R11: nombres a 1fr 1fr y teléfono-país a 2fr 1fr`; S11a/S11b verificadas. | `d7604772 test(mobile): rejilla del registro (R11)`; `fbcb4e9e feat(mobile): rejilla del registro (R11)` |
 | R12 | `src/screens/register/index.test.tsx::#172 R12: un correo sin arroba no llama a la API y marca el campo`; `src/screens/register/index.test.tsx::#172 R12: en inglés el correo inválido dice «Enter a valid email address»`; S12 verificada. | `ded50874 test(mobile): validación del correo en el registro (R12)`; `b2607357 feat(mobile): validación del correo en el registro (R12)` |
 | R13 | `src/screens/reset-password/index.test.tsx::#172 R13: la tarjeta de estado avisa con liveRegion polite`; S13 verificada. | `2103b60e test(mobile): la tarjeta de éxito avisa con liveRegion (R13)`; `81a3a4c6 feat(mobile): la tarjeta de éxito avisa con liveRegion (R13)` |
-| R14 | `src/screens/forgot/index.test.tsx::#172 R14: el candado es un tile acento con labio y Lock de 26`; `el tile Lock sigue en pie en los dos estados`; dos `#167 R9: el tile entra con pop…`; `src/__tests__/consistency-classnames.test.ts::lleva los tres tiles restantes a rounded-xl`; `resuelve el Lock de Forgot con accent-foreground`; dos recuentos de bg-accent-soft; `no deja la receta del labio fuera de un primario salvo el candado de Recuperar`. Gate c30 verde. **Pendiente: S14 da 6 fallos en vez de 7; bloqueo.** | `7b4c79b3 test(mobile): el candado de recuperar es un tile acento con labio (R14)`; `7ddda8f5 feat(mobile): el candado de recuperar es un tile acento con labio (R14)` |
-| R15 | pendiente | pendiente |
+| R14 | `src/screens/forgot/index.test.tsx::#172 R14: el candado es un tile acento con labio y Lock de 26`; `el tile Lock sigue en pie en los dos estados`; dos `#167 R9: el tile entra con pop…`; `src/__tests__/consistency-classnames.test.ts::lleva los tres tiles restantes a rounded-xl`; `resuelve el Lock de Forgot con accent-foreground`; dos recuentos de bg-accent-soft; `no deja la receta del labio fuera de un primario salvo el candado de Recuperar`. Gate c30 verde. S14 conforme a E4: los seis títulos y restauración ya registrados; no se repite. | `7b4c79b3 test(mobile): el candado de recuperar es un tile acento con labio (R14)`; `7ddda8f5 feat(mobile): el candado de recuperar es un tile acento con labio (R14)` |
+| R15 | `src/screens/login/index.test.tsx::#172 R15: el error cuelga del scroll y no del contenedor del teclado`; gate c31 verde. **Pendiente: S15 dio 3 fallos en vez de los 2 prescritos; bloqueo.** | `0e5bb776 test(mobile): el error de login cuelga del scroll (R15)` |
 | R16 | `src/providers/__tests__/language-provider.test.tsx::mantiene la base más las claves de #68 y los mismos marcadores en ambos idiomas`; `#172 R16: declara las claves de cuenta en los dos idiomas y su registro`; sonda S16c verificada. Pendiente: T17/c32 y sondas S16a/S16b | `c1bd4a6a test(mobile): claves de Volver, del ojo y País (R16)`; `505332c9 feat(mobile): claves de Volver, del ojo y País (R16)`; c32 pendiente |
 | R17 | pendiente | pendiente |
 | R18 | pendiente | pendiente |
@@ -57,7 +57,7 @@ los commits constan en `progress/impl_mobile-account-screens-polish.md`
 los tres fallos prescritos. Se completaron R11–R13 y sus sondas. R14 pasa
 su gate verde de c30 (234 tests, typecheck y lint limpios).
 
-**Bloqueo actual T15/S14.** Sobre `7ddda8f5`, el cambio de bg-accent a
+**Bloqueo de T15/S14 — historia (resuelto por E4).** Sobre `7ddda8f5`, el cambio de bg-accent a
 bg-accent-soft dio `Tests: 6 failed, 101 passed, 107 total`, no los 7 fallos
 prescritos. Falta `lleva los tres tiles restantes a rounded-xl`: su
 `toContain` busca un literal que es prefijo del mutado. Los cuatro fallos de
@@ -65,6 +65,24 @@ forgot y los dos recuentos de bg-accent-soft sí coinciden con la tabla.
 La sonda quedó restaurada con `exit=0`; no se ajustaron test ni spec, ni se
 empezó T16. R15–R20 conservan sus pendientes (R16 parcial), y T22 no se
 alcanzó. El informe registra los comandos, títulos, mensajes y salidas.
+
+
+**Reanudacion 3 — E4 firmada y c31 ejecutado.** Las comprobaciones iniciales
+coincidieron: firma E4=1, árbol limpio, último commit móvil `7ddda8f5`,
+branch correcta y H0 conservado. S14 se acepta como conforme a E4 (6 failed),
+sin repetirla ni cambiar tests o producción de R14. C31 nace verde y pasa
+222 tests con las cuatro guardas, typecheck y lint vacío.
+
+**Bloqueo actual T16/S15.** Sobre `0e5bb776`, mover el bloque condicional
+FormError de login justo después de `</ScrollView>` produjo
+`Tests: 3 failed, 25 passed, 28 total`, no los dos fallos de T16.
+Caen R15 por consulta login-error, R7 «con error» por aserción de orden, y
+además R7 «el cuerpo lleva correo, contraseña, olvido, envío y registro»
+por consulta login-error dentro de login-body. Esta última comprobación ya
+existía en H0 en `#167 R6: el cuerpo lleva el formulario en el orden de
+siempre`. La mutación quedó restaurada con `exit=0`; no se ajustaron tests
+ni spec para cuadrar, y no se empezó T17. C32–c39 y T22 siguen pendientes.
+El informe conserva la salida literal y los tres títulos de S15.
 
 Spec y Enmienda #172 aprobadas en Notion
 (https://app.notion.com/p/3f86115a9b27815b91d6ec6acd75a969): `Estado del gate` =
