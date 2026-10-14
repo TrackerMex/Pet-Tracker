@@ -88,6 +88,8 @@ describe('#152 R1: las duraciones y el preset de movimiento viven en un solo sit
       'MOTION_FILL_TIMING',
       'MOTION_FLOAT_OFFSET_Y',
       'MOTION_FLOAT_TIMING',
+      'MOTION_PINGO_FLOAT_OFFSET_Y',
+      'MOTION_PINGO_FLOAT_TIMING',
       'MOTION_PING_FROM',
       'MOTION_PING_TIMING',
       'MOTION_PING_TO_SCALE',
@@ -202,5 +204,11 @@ describe('#171 E4: las constantes de la celebración viven en motion.ts', () => 
 
   it('declara la duración del ping', () => {
     expect(require('../motion').MOTION_CELEBRATION_PING_MS).toBe(2200);
+  });
+
+  it('declara la flotación de Pingo', () => {
+    const m = require('../motion');
+    expect(m.MOTION_PINGO_FLOAT_OFFSET_Y).toBe(10);
+    expect(m.MOTION_PINGO_FLOAT_TIMING).toEqual({ duration: 1500, easing: { bezier: [0.42, 0, 0.58, 1] }, reduceMotion: ReduceMotion.System });
   });
 });

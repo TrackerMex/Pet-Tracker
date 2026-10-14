@@ -446,6 +446,29 @@ describe('#171 R17: anillo de ping', () => {
   });
 });
 
+describe('#171 R18: flotación de Pingo', () => {
+  beforeEach(() => { jest.useFakeTimers(); });
+  afterEach(() => { jest.useRealTimers(); });
+
+  it('R18.1 Pingo flota desde los 600 ms: 0, -5 y -10 a los 600, 1350 y 2100 ms', async () => {
+    await renderProbe();
+    const samples: number[] = [];
+    for (const step of [600, 750, 750]) {
+      await advance(step);
+      samples.push(animated('probe-pingo').transform[0].translateY as number);
+    }
+    [0, -5, -10].forEach((value, i) => expect(samples[i]).toBeCloseTo(value, 1));
+  });
+
+  it('R18.2 la flotación sigue en bucle: 0 a los 3600 ms y -10 a los 5100 ms', async () => {
+    await renderProbe();
+    await advance(3600);
+    expect(animated('probe-pingo').transform[0].translateY).toBeCloseTo(0, 1);
+    await advance(1500);
+    expect(animated('probe-pingo').transform[0].translateY).toBeCloseTo(-10, 1);
+  });
+});
+
 describe('#171 R20: maquetación del artboard', () => {
   it('R20.1 el hero mide 220 con margen superior y Pingo 170', async () => {
     await renderProbe();
