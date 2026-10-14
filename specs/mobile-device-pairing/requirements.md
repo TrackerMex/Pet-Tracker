@@ -333,3 +333,17 @@ claim feliz con su `activation_code`; no es obligatorio para cerrar.
 ## Aprobación
 
 - [X] Aprobado por humano (fecha: 2026-09-03) ← gate obligatorio antes de implementar
+
+## Enmienda #173 — Perfil fiel al canvas
+
+`mobile-tab-screens-canvas-fidelity` (#173) modifica una decisión que esta spec
+dejó aprobada. La spec de origen es `specs/mobile-tab-screens-canvas-fidelity/`;
+el detalle de la enmienda está en su `requirements.md` §R14.
+
+- Spec enmendada: `mobile-device-pairing`
+- Qué cambia: `R10: la fila de configuración GPS pasa al tile «Collar GPS»`
+- Qué NO cambia: ningún otro requisito de esta spec ni su estado de
+  aprobación. Los tests que cubren lo enmendado se reescriben en #173 (lista
+  en su `tasks.md`).
+
+- [ ] Enmienda #173 aprobada por humano

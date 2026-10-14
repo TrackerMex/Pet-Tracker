@@ -921,3 +921,17 @@ al mapa solo aparece en hoy; que las barras animan al entrar y **no** animan con
 horizontalmente en pantalla estrecha; que en emparejado la conexión ya no dice
 `LTE`; y que TalkBack anuncia las siete columnas por separado, cada una con su
 día y su valor.
+
+## Enmienda #173 — Perfil fiel al canvas
+
+`mobile-tab-screens-canvas-fidelity` (#173) modifica una decisión que esta spec
+dejó aprobada. La spec de origen es `specs/mobile-tab-screens-canvas-fidelity/`;
+el detalle de la enmienda está en su `requirements.md` §R14.
+
+- Spec enmendada: `mobile-home-weekly-activity`
+- Qué cambia: `#68 E1: pet.sex deja de pintarse crudo`
+- Qué NO cambia: ningún otro requisito de esta spec ni su estado de
+  aprobación. Los tests que cubren lo enmendado se reescriben en #173 (lista
+  en su `tasks.md`).
+
+- [ ] Enmienda #173 aprobada por humano

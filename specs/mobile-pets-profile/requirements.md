@@ -281,3 +281,17 @@ la enmienda está en su `requirements.md` §R10.
   aprobación, ni los tests que ya la cubren.
 
 - [X] Enmienda aprobada por humano
+
+## Enmienda #173 — Perfil fiel al canvas
+
+`mobile-tab-screens-canvas-fidelity` (#173) modifica una decisión que esta spec
+dejó aprobada. La spec de origen es `specs/mobile-tab-screens-canvas-fidelity/`;
+el detalle de la enmienda está en su `requirements.md` §R14.
+
+- Spec enmendada: `mobile-pets-profile`
+- Qué cambia: `R2: estructura de Perfil (hero, rejilla, Card flat) y métricas del artboard (padding 20, gap 14); R4: el tema se alterna con un Switch de etiqueta fija`
+- Qué NO cambia: ningún otro requisito de esta spec ni su estado de
+  aprobación. Los tests que cubren lo enmendado se reescriben en #173 (lista
+  en su `tasks.md`).
+
+- [ ] Enmienda #173 aprobada por humano

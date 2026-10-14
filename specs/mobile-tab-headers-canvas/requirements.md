@@ -974,3 +974,17 @@ Medidos en el mismo spike, salvo la suite móvil:
 ### Aprobación de la Enmienda E3
 
 - [X] Enmienda E3 aprobada por humano (fecha: 2026-10-12, vía Notion) ← gate obligatorio antes del handoff a Codex
+
+## Enmienda #173 — Perfil fiel al canvas
+
+`mobile-tab-screens-canvas-fidelity` (#173) modifica una decisión que esta spec
+dejó aprobada. La spec de origen es `specs/mobile-tab-screens-canvas-fidelity/`;
+el detalle de la enmienda está en su `requirements.md` §R14.
+
+- Spec enmendada: `mobile-tab-headers-canvas`
+- Qué cambia: `#168 R4: profile-pet-card pasa a Card hero con anillo y cámara; #168 R5: chips con sexo localizado y font-extrabold; #168 R6: las filas pasan a tiles en rejilla 2×2; #168 R7: la identidad de la cuenta toma las medidas del artboard`
+- Qué NO cambia: ningún otro requisito de esta spec ni su estado de
+  aprobación. Los tests que cubren lo enmendado se reescriben en #173 (lista
+  en su `tasks.md`).
+
+- [ ] Enmienda #173 aprobada por humano

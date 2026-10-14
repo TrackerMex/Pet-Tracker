@@ -324,3 +324,17 @@ spec se enmienda antes del handoff.
 
 - [x] Aprobado por humano, con P1 a P3 resueltas (fecha: 2026-10-11) ← gate obligatorio antes de implementar
 - [X] Prueba de humo R5 superada en dev build de Android (fecha: 2026-10-11) ← gate de cierre; el leader no marca `done` sin ella
+
+## Enmienda #173 — Perfil fiel al canvas
+
+`mobile-tab-screens-canvas-fidelity` (#173) modifica una decisión que esta spec
+dejó aprobada. La spec de origen es `specs/mobile-tab-screens-canvas-fidelity/`;
+el detalle de la enmienda está en su `requirements.md` §R14.
+
+- Spec enmendada: `mobile-chunky-cta`
+- Qué cambia: `#166 R2: el primario de Perfil pasa a cápsula tonal sin labio (19 → 18 primarios)`
+- Qué NO cambia: ningún otro requisito de esta spec ni su estado de
+  aprobación. Los tests que cubren lo enmendado se reescriben en #173 (lista
+  en su `tasks.md`).
+
+- [ ] Enmienda #173 aprobada por humano
