@@ -242,6 +242,8 @@ export const R6_FOOD: UseRow[] = [
 ];
 
 export const R7_PROFILE: UseRow[] = [
+  { file: 'src/screens/profile/index.tsx', key: 'addPet.male' }, // #173 R7
+  { file: 'src/screens/profile/index.tsx', key: 'addPet.female' }, // #173 R7
   { file: 'src/screens/profile/index.tsx', key: 'profile.notRegistered' },
   { file: 'src/screens/profile/index.tsx', key: 'profile.sterilized' },
   { file: 'src/screens/profile/index.tsx', key: 'profile.notSterilized' },

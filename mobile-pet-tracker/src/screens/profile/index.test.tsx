@@ -471,7 +471,7 @@ describe('R2: estructura Figma', () => {
     expect(screen.getAllByText('Luna').length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText('Mixed').length).toBeGreaterThanOrEqual(1);
     expect(screen.getByTestId('pet-chip-pet-1')).toBeVisible();
-    expect(screen.getByText('female')).toBeVisible();
+    expect(screen.getByText('Hembra')).toBeVisible();
     expect(screen.getByText('Esterilizado')).toBeVisible();
     expect(screen.getByText('30 meses')).toBeVisible();
     expect(screen.getByText('12 kg')).toBeVisible();

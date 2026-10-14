@@ -319,11 +319,12 @@ Tres corolarios que nadie debe confundir con lo anterior:
   Traducirlos es una feature de backend. Al revés, las advertencias
   nutricionales del backend ya llegan en español y se muestran tal cual — y en
   inglés también, porque tampoco se traducen.
-- **Los valores de enum que la API devuelve se pintan crudos**: `pet.sex`,
-  `document.type`, `foodType`, `activityLevel`. Siguen en inglés en los dos
+- **Los valores de enum que la API devuelve se pintan crudos**: `document.type`,
+  `foodType`, `activityLevel`. Siguen en inglés en los dos
   idiomas. Mapearlos es cambio de conducta y va a feature propia.
   `device.connectivity` dejó de pintarse crudo en la feature #68 (R16): se
   resuelve por catálogo en `src/utils/device-connectivity.ts`.
+  `pet.sex` se localiza desde #173 con `addPet.male` / `addPet.female`.
 
 **7. Voz de Pingo: guardián sereno.** Decidido por el humano el 2026-10-07
 (D1 de la feature #153): la mascota se llama **Pingo** y habla con la voz B,

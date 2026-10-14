@@ -65,17 +65,23 @@ function InfoRow({
 function PetPills({ pet }: { pet: PetProfile }) {
   const t = useTranslate();
   const pills: { testID: string; slot: CategorySlot; text: string | null }[] = [
-    { testID: 'profile-pet-chip-sex', slot: 'blue', text: pet.sex },
+    {
+      testID: 'profile-pet-chip-sex',
+      slot: 'blue',
+      text: pet.sex === 'male'
+        ? t('addPet.male')
+        : pet.sex === 'female' ? t('addPet.female') : null,
+    },
     { testID: 'profile-pet-chip-sterilized', slot: 'green', text: pet.sterilized === null ? null : pet.sterilized ? t('profile.sterilized') : t('profile.notSterilized') },
     { testID: 'profile-pet-chip-age', slot: 'amber', text: Number.isFinite(pet.ageMonths) ? t('profile.ageMonths', { months: pet.ageMonths }) : null },
     { testID: 'profile-pet-chip-weight', slot: 'violet', text: pet.currentWeightKg === null ? null : `${pet.currentWeightKg} kg` },
   ];
 
   return (
-    <View testID="profile-pet-chips" className="flex-row flex-wrap justify-center gap-2">
+    <View testID="profile-pet-chips" className="flex-row flex-wrap justify-center gap-1.5">
       {pills.filter(({ text }) => text !== null).map((pill) => (
-        <View key={pill.testID} testID={pill.testID} className={`rounded-full px-3 py-1 ${CATEGORY_SLOTS[pill.slot].surface}`}>
-          <Text className={`text-xs font-bold ${CATEGORY_SLOTS[pill.slot].ink}`}>{pill.text}</Text>
+        <View key={pill.testID} testID={pill.testID} className={`rounded-full px-2.5 py-1.25 ${CATEGORY_SLOTS[pill.slot].surface}`}>
+          <Text className={`text-xs font-extrabold ${CATEGORY_SLOTS[pill.slot].ink}`}>{pill.text}</Text>
         </View>
       ))}
     </View>
