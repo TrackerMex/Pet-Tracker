@@ -2,7 +2,6 @@ import { act, fireEvent, render, screen, within } from '@testing-library/react-n
 import { NotificationFeedbackType, notificationAsync } from 'expo-haptics';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
-import { Dimensions } from 'react-native';
 import { getAnimatedStyle } from 'react-native-reanimated';
 
 import { Celebration } from '../celebration';
@@ -168,37 +167,60 @@ describe('#171 R14: botones con labio', () => {
   });
 });
 
-const LEFT = [7, 48, 89, 30, 71, 12, 53, 94, 35, 76, 17, 58, 99, 40, 81, 22, 63, 4, 45, 86, 27, 68, 9, 50];
-const SHAPES = ['h-1.5 w-2 rounded-full', 'h-3.5 w-2.5', 'h-4 w-3'];
-const COLORS = ['bg-accent', 'bg-category-amber-strong', 'bg-category-violet-strong', 'bg-category-blue-strong', 'bg-category-rose-strong', 'bg-category-green-strong'];
+const CONFETTI = [
+  [42, 'h-1.5 w-3 rounded-full bg-accent', 3008, 308],
+  [9, 'h-4.5 w-2.5 rounded-xs bg-confetti-amber', 2392, 1097],
+  [7, 'h-1.5 w-2 rounded-full bg-confetti-violet', 2639, 1039],
+  [57, 'h-1.5 w-2 rounded-full bg-confetti-blue', 2343, 856],
+  [72, 'h-1.5 w-3 rounded-full bg-confetti-rose', 2321, 869],
+  [29, 'h-1.5 w-3 rounded-full bg-confetti-green', 3484, 1291],
+  [76, 'h-1.5 w-2 rounded-full bg-accent', 3012, 1199],
+  [6, 'h-3.5 w-2.5 rounded-xs bg-confetti-amber', 2472, 1140],
+  [19, 'h-3.5 w-3 rounded-xs bg-confetti-violet', 2441, 1107],
+  [73, 'h-4.5 w-2 rounded-xs bg-confetti-blue', 2570, 1396],
+  [75, 'h-1.5 w-2.5 rounded-full bg-confetti-rose', 2584, 1308],
+  [72, 'h-4.5 w-2 rounded-xs bg-confetti-green', 3355, 128],
+  [27, 'h-3.5 w-3 rounded-xs bg-accent', 3593, 1016],
+  [41, 'h-3.5 w-2.5 rounded-xs bg-confetti-amber', 3399, 953],
+  [39, 'h-1.5 w-3 rounded-full bg-confetti-violet', 2568, 508],
+  [11, 'h-3.5 w-3 rounded-xs bg-confetti-blue', 2814, 1176],
+  [45, 'h-1.5 w-3 rounded-full bg-confetti-rose', 2789, 919],
+  [15, 'h-3.5 w-2 rounded-xs bg-confetti-green', 3056, 1048],
+  [20, 'h-4.5 w-2 rounded-xs bg-accent', 3063, 1001],
+  [10, 'h-3.5 w-2.5 rounded-xs bg-confetti-amber', 3373, 1142],
+  [91, 'h-4.5 w-2.5 rounded-xs bg-confetti-violet', 3417, 717],
+  [60, 'h-3.5 w-2.5 rounded-xs bg-confetti-blue', 2391, 140],
+  [91, 'h-4.5 w-2 rounded-xs bg-confetti-rose', 2333, 1360],
+  [92, 'h-4.5 w-3 rounded-xs bg-confetti-green', 3525, 634],
+  [58, 'h-3.5 w-3 rounded-xs bg-accent', 2990, 582],
+  [3, 'h-4.5 w-2 rounded-xs bg-confetti-amber', 2927, 945],
+  [15, 'h-3.5 w-2 rounded-xs bg-confetti-violet', 2320, 1011],
+  [17, 'h-3.5 w-2.5 rounded-xs bg-confetti-blue', 3014, 507],
+  [11, 'h-4.5 w-2.5 rounded-xs bg-confetti-rose', 3119, 340],
+  [36, 'h-3.5 w-3 rounded-xs bg-confetti-green', 3081, 280],
+  [93, 'h-3.5 w-3 rounded-xs bg-accent', 2934, 850],
+  [30, 'h-1.5 w-2 rounded-full bg-confetti-amber', 2369, 309],
+  [30, 'h-3.5 w-2 rounded-xs bg-confetti-violet', 2677, 1348],
+  [77, 'h-1.5 w-2.5 rounded-full bg-confetti-blue', 2738, 373],
+  [19, 'h-4.5 w-2.5 rounded-xs bg-confetti-rose', 3294, 858],
+  [74, 'h-4.5 w-3 rounded-xs bg-confetti-green', 2457, 652],
+] as const;
 
-// #171 R6 (E2): [opacidad, translateY, grados] de cada pieza a los 1200 ms, medidos en la spike de la enmienda.
-const CONFETTI_AT_1200 = [
-  [0.154, 1178.4, 465.3],
-  [0.194, 1127.3, 445.8],
-  [0.236, 1073.5, 425.2],
-  [0.28, 1017.6, 403.9],
-  [0.325, 960, 381.9],
-  [0.371, 901.3, 359.5],
-  [0.418, 841.8, 336.8],
-  [0.465, 781.9, 313.9],
-  [0.512, 721.8, 290.9],
-  [0.381, 889.8, 355.1],
-  [0.44, 813.4, 325.9],
-  [0.501, 736.7, 296.6],
-  [0.561, 660.1, 267.4],
-  [0.621, 584.3, 238.4],
-  [0.679, 509.8, 210],
-  [0.736, 436.9, 182.1],
-  [0.792, 366.1, 155.1],
-  [0.846, 297.6, 128.9],
-  [0.803, 351.9, 149.7],
-  [0.877, 258.2, 113.9],
-  [0.947, 169.4, 80],
-  [0.89, 85.9, 48.1],
-  [0.336, 7.5, 18.2],
-  [0.275, 1024.4, 406.5],
-];
+// E4: [opacidad, translateY, grados] de cada pieza a los 1500 ms.
+const CONFETTI_AT_1500 = [
+  [0.25, 1055.8, 418.5], [0.627, 575.7, 235.1], [0.613, 593.9, 242.1],
+  [0.416, 844.2, 337.7], [0.421, 837.8, 335.2], [0.919, 204.2, 93.2],
+  [0.803, 352.5, 149.9], [0.682, 505.8, 208.5], [0.645, 553.3, 226.6],
+  [0.98, 127.2, 63.9], [0.876, 258.8, 114.1], [0.236, 1073.2, 425.1],
+  [0.71, 470.8, 195.1], [0.645, 553.1, 226.5], [0.261, 1041.5, 413.0],
+  [0.761, 405.5, 170.1], [0.54, 686.8, 277.6], [0.677, 513.0, 211.2],
+  [0.64, 559.1, 228.8], [0.785, 374.4, 158.3], [0.498, 739.7, 297.8],
+  [0.107, 1237.9, 488.0], [0.919, 204.2, 93.3], [0.467, 779.3, 312.9],
+  [0.366, 908.9, 362.4], [0.58, 636.3, 258.3], [0.535, 693.2, 280.0],
+  [0.333, 950.1, 378.1], [0.278, 1020.0, 404.8], [0.25, 1055.4, 418.3],
+  [0.513, 720.8, 290.5], [0.152, 1181.1, 466.3], [0.929, 191.7, 88.5],
+  [0.234, 1076.8, 426.5], [0.568, 650.8, 263.8], [0.312, 977.1, 388.4],
+] as const;
 
 function sampleConfetti(testID: string) {
   const style = getAnimatedStyle(screen.getByTestId(testID, { includeHiddenElements: true })) as unknown as {
@@ -208,7 +230,7 @@ function sampleConfetti(testID: string) {
   return [style.opacity, style.transform[0].translateY, Number.parseFloat(style.transform[1].rotate)];
 }
 
-function expectSamples(actual: number[][], expected: number[][], digits: number[]) {
+function expectSamples(actual: number[][], expected: readonly (readonly number[])[], digits: number[]) {
   expect(actual).toHaveLength(expected.length);
   actual.forEach((row, i) => row.forEach((value, k) => expect(value).toBeCloseTo(expected[i][k], digits[k])));
 }
@@ -229,68 +251,65 @@ function samplePop(testID: string) {
   return [style.opacity, style.transform[0].scale];
 }
 
-describe('#171 R6: confeti', () => {
-  const H = Dimensions.get('window').height;
+async function advance(ms: number) {
+  await act(async () => { jest.advanceTimersByTime(ms); });
+}
 
+describe('#171 R6: confeti', () => {
   beforeEach(() => { jest.useFakeTimers(); });
   afterEach(() => { jest.useRealTimers(); });
 
-  it('R6.1 pinta 24 piezas con sus formas y colores en orden', async () => {
+  it('R6.1 pinta 36 piezas con la clase de su fila', async () => {
     await renderProbe();
     const layer = screen.getByTestId('probe-confetti', { includeHiddenElements: true });
-    expect(layer.children).toHaveLength(24);
+    expect(layer.children).toHaveLength(36);
     expect(layer.children.map((child) => typeof child === 'string' ? child : child.props.testID))
-      .toEqual(Array.from({ length: 24 }, (_, index) => `probe-confetti-${index}`));
-    for (let i = 0; i < 24; i++) {
+      .toEqual(Array.from({ length: 36 }, (_, index) => `probe-confetti-${index}`));
+    for (let i = 0; i < 36; i++) {
       const piece = screen.getByTestId(`probe-confetti-${i}`, { includeHiddenElements: true });
-      expect(piece.children).toHaveLength(1);
-      expect(piece.children.map((child) => typeof child === 'string' ? child : child.props.className))
-        .toEqual([SHAPES[Math.floor(i / 8)] + ' ' + COLORS[i % 6]]);
+      expect(piece.children.map((child) => typeof child === 'string' ? child : child.props.className)).toEqual([CONFETTI[i][1]]);
     }
   });
 
   it('R6.2 cada pieza empieza arriba y transparente, en su posición', async () => {
     await renderProbe();
-    for (let i = 0; i < 24; i++) {
+    for (let i = 0; i < 36; i++) {
       expect(getAnimatedStyle(screen.getByTestId(`probe-confetti-${i}`, { includeHiddenElements: true }))).toEqual({
-        position: 'absolute', top: 0, left: `${LEFT[i]}%`, opacity: 0,
+        position: 'absolute', top: 0, left: `${CONFETTI[i][0]}%`, opacity: 0,
         transform: [{ translateY: -40 }, { rotate: '0deg' }],
       });
     }
   });
 
-  it('R6.3 la pieza 0 está en vuelo a los 1200 ms', async () => {
+  it('R6.3 la pieza 9 sigue arriba y transparente a los 1390 ms', async () => {
     await renderProbe();
-    await act(async () => { jest.advanceTimersByTime(1200); });
-    const style = getAnimatedStyle(screen.getByTestId('probe-confetti-0', { includeHiddenElements: true }));
-    expect(style.opacity).toBeGreaterThan(0);
-    expect(style.opacity).toBeLessThan(1);
-  });
-
-  it('R6.3 la pieza 22 conserva el retardo a los 1100 ms', async () => {
-    await renderProbe();
-    await act(async () => { jest.advanceTimersByTime(1100); });
-    expect(getAnimatedStyle(screen.getByTestId('probe-confetti-22', { includeHiddenElements: true }))).toEqual({
-      position: 'absolute', top: 0, left: '9%', opacity: 0,
+    await advance(1390);
+    expect(getAnimatedStyle(screen.getByTestId('probe-confetti-9', { includeHiddenElements: true }))).toEqual({
+      position: 'absolute', top: 0, left: `${CONFETTI[9][0]}%`, opacity: 0,
       transform: [{ translateY: -40 }, { rotate: '0deg' }],
     });
   });
 
-  it('R6.4 a los 5000 ms todas las piezas terminaron y desaparecieron', async () => {
+  it('R6.4 la pieza 21 vuelve a caer desde arriba tras terminar', async () => {
     await renderProbe();
-    await act(async () => { jest.advanceTimersByTime(5000); });
-    for (let i = 0; i < 24; i++) {
-      expect(getAnimatedStyle(screen.getByTestId(`probe-confetti-${i}`, { includeHiddenElements: true }))).toEqual({
-        position: 'absolute', top: 0, left: `${LEFT[i]}%`, opacity: 0,
-        transform: [{ translateY: H + 40 }, { rotate: '540deg' }],
-      });
-    }
+    await advance(2500);
+    expect(sampleConfetti('probe-confetti-21')[1]).toBeGreaterThan(1300);
+    await advance(100);
+    const [, y] = sampleConfetti('probe-confetti-21');
+    expect(y).toBeGreaterThan(0);
+    expect(y).toBeLessThan(400);
   });
 
-  it('R6.5 a los 1200 ms cada pieza sigue su retardo, su duración y su curva', async () => {
+  it('R6.5 a los 1500 ms cada pieza sigue su retardo, su duración y su curva', async () => {
     await renderProbe();
-    await act(async () => { jest.advanceTimersByTime(1200); });
-    expectSamples(Array.from({ length: 24 }, (_, i) => sampleConfetti(`probe-confetti-${i}`)), CONFETTI_AT_1200, [2, 0, 0]);
+    await advance(1500);
+    expectSamples(Array.from({ length: 36 }, (_, i) => sampleConfetti(`probe-confetti-${i}`)), CONFETTI_AT_1500, [2, 0, 0]);
+  });
+
+  it('R6.6 a los 13830 ms las 36 piezas siguen en vuelo', async () => {
+    await renderProbe();
+    await advance(13830);
+    for (let i = 0; i < 36; i++) expect(sampleConfetti(`probe-confetti-${i}`)[0]).toBeGreaterThan(0);
   });
 });
 

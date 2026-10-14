@@ -76,8 +76,6 @@ describe('#152 R1: las duraciones y el preset de movimiento viven en un solo sit
       'MOTION_BLINK_TIMING',
       'MOTION_CELEBRATION_SPRING',
       'MOTION_CONFETTI_FALL_TIMING',
-      'MOTION_CONFETTI_MIN_MS',
-      'MOTION_CONFETTI_SPREAD_MS',
       'MOTION_ENTRANCE_OFFSET_Y',
       'MOTION_ENTRANCE_SCALE',
       'MOTION_FADE_TIMING',
@@ -178,14 +176,6 @@ describe('#171 R6: las constantes de confeti viven en motion.ts', () => {
     expect(require('../motion').MOTION_CONFETTI_FALL_TIMING).toEqual({
       easing: { bezier: [0.2, 0.6, 0.4, 1] }, reduceMotion: 'system',
     });
-  });
-
-  it('declara MOTION_CONFETTI_MIN_MS', () => {
-    expect(require('../motion').MOTION_CONFETTI_MIN_MS).toBe(2400);
-  });
-
-  it('declara MOTION_CONFETTI_SPREAD_MS', () => {
-    expect(require('../motion').MOTION_CONFETTI_SPREAD_MS).toBe(1200);
   });
 });
 

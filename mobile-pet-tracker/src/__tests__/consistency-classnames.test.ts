@@ -149,6 +149,14 @@ describe('#62 R4: la app solo usa los radios de la escala declarada', () => {
     },
   );
 
+  it('reserva rounded-xs al confeti de la celebración', () => {
+    expect(filesMatching(/\brounded-xs\b/)).toEqual([join('components', 'celebration.tsx')]);
+  });
+
+  it('solo la celebración nombra los colores del confeti', () => {
+    expect(filesMatching(/\bconfetti-(amber|violet|blue|rose|green)\b/)).toEqual([join('components', 'celebration.tsx')]);
+  });
+
   it('lleva las tres píldoras de resumen de reminders a rounded-xl en su tag de apertura (#120 R1)', () => {
     const reminders = readSource(join('screens', 'reminders', 'index.tsx'));
 
@@ -434,7 +442,7 @@ describe('#64 R9: el color categórico solo se nombra en el módulo de paleta', 
     };
   }
 
-  it('centraliza las quince clases completas y prohíbe interpolarlas', () => {
+  it('centraliza las diez clases completas y prohíbe interpolarlas', () => {
     const inventory = categoryClassInventory();
 
     expect(inventory.files).toEqual([join('utils', 'category-palette.ts')]);
@@ -450,12 +458,6 @@ describe('#64 R9: el color categórico solo se nombra en el módulo de paleta', 
       'text-category-violet-strong',
       'bg-category-rose',
       'text-category-rose-strong',
-      // #171 R6: el relleno del confeti
-      'bg-category-amber-strong',
-      'bg-category-violet-strong',
-      'bg-category-blue-strong',
-      'bg-category-rose-strong',
-      'bg-category-green-strong',
     ]);
   });
 
