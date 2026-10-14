@@ -70,3 +70,41 @@ describe('#62 R14: el Card compartido fusiona borderCurve con el style del llama
     });
   });
 });
+
+describe('#173 R3: variantes hero y flat sin sombra', () => {
+  it('hero usa su receta sin className del llamador', async () => {
+    await render(<Card testID="card" variant="hero" />);
+
+    const card = screen.getByTestId('card');
+    expect(card.props.className).toBe('rounded-hero bg-surface-secondary p-4.5');
+    expect(card.props.className).not.toContain('shadow');
+    expect(card.props.style).toEqual({ borderCurve: 'continuous' });
+  });
+
+  it('hero fusiona las clases del llamador después de su receta', async () => {
+    await render(<Card testID="card" variant="hero" className="items-center gap-2.5" />);
+
+    const card = screen.getByTestId('card');
+    expect(card.props.className).toBe('rounded-hero bg-surface-secondary p-4.5 items-center gap-2.5');
+    expect(card.props.className).not.toContain('shadow');
+    expect(card.props.style).toEqual({ borderCurve: 'continuous' });
+  });
+
+  it('flat usa su receta sin className del llamador', async () => {
+    await render(<Card testID="card" variant="flat" />);
+
+    const card = screen.getByTestId('card');
+    expect(card.props.className).toBe('rounded-card border border-border bg-surface px-3.5 py-1');
+    expect(card.props.className).not.toContain('shadow');
+    expect(card.props.style).toEqual({ borderCurve: 'continuous' });
+  });
+
+  it('flat fusiona las clases del llamador después de su receta', async () => {
+    await render(<Card testID="card" variant="flat" className="pt-3" />);
+
+    const card = screen.getByTestId('card');
+    expect(card.props.className).toBe('rounded-card border border-border bg-surface px-3.5 py-1 pt-3');
+    expect(card.props.className).not.toContain('shadow');
+    expect(card.props.style).toEqual({ borderCurve: 'continuous' });
+  });
+});
