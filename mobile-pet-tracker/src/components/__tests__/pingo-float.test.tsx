@@ -56,4 +56,21 @@ describe('#172 R4: PingoFloat', () => {
     await render(<PingoFloat testID="float"><Text>Hijo</Text></PingoFloat>);
     expect(within(screen.getByTestId('float')).getByText('Hijo')).toBeOnTheScreen();
   });
+
+  it('#172 R4: la subida y la bajada siguen ease-in-out, no una recta', async () => {
+    await render(<PingoFloat testID="float"><Text>Hijo</Text></PingoFloat>);
+    await act(async () => { jest.advanceTimersByTime(375); });
+    expect(floatTranslateY())
+      .toBeCloseTo(-1.3, 0);
+    await act(async () => { jest.advanceTimersByTime(750); });
+    expect(floatTranslateY())
+      .toBeCloseTo(-8.7, 0);
+  });
+
+  it('#172 R4: el estilo animado solo lleva translateY', async () => {
+    mockUseReducedMotion.mockReturnValue(true);
+    await render(<PingoFloat testID="float"><Text>Hijo</Text></PingoFloat>);
+    const float = screen.getByTestId('float');
+    expect(float.props.style).toEqual([{ transform: [{ translateY: 0 }] }]);
+  });
 });
