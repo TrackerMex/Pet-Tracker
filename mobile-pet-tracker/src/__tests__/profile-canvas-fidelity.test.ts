@@ -43,6 +43,9 @@ describe('#173 R2: inventario de radios nuevos', () => {
   it('reserva rounded-hero al Card compartido y el skeleton de Perfil', () => {
     expect(filesMatching(/\brounded-hero\b/)).toEqual(['components/card.tsx', 'screens/profile/index.tsx']);
   });
+  it('reserva rounded-tile a los accesos de Perfil', () => {
+    expect(filesMatching(/\brounded-tile\b/)).toEqual(['screens/profile/index.tsx']);
+  });
 });
 
 describe('#173 R2.4: inventario de tamaños nuevos', () => {

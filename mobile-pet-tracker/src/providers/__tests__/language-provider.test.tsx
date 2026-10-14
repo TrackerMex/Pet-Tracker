@@ -180,6 +180,7 @@ describe('#173 R13: Perfil retira cuatro claves y añade tres', () => {
   it.each([
     ['profile.gpsLinked', 'Linked', 'Vinculado'],
     ['profile.gpsNoCollar', 'No collar', 'Sin collar'],
+    ['profile.gpsCollar', 'GPS collar', 'Collar GPS'],
   ])('declara %s en ambos idiomas y registra su añadido', (key, englishValue, spanishValue) => {
     expect(english[key]).toBe(englishValue);
     expect(spanish[key]).toBe(spanishValue);
@@ -187,7 +188,7 @@ describe('#173 R13: Perfil retira cuatro claves y añade tres', () => {
     expect(languageDesign).toContain('### §2.27 — Añadidos por #173 — Perfil fiel al canvas');
   });
 
-  it.each(['profile.information'])('retira %s de ambos idiomas y documenta la retirada', (key) => {
+  it.each(['profile.information', 'profile.gpsSettings'])('retira %s de ambos idiomas y documenta la retirada', (key) => {
     expect(english[key]).toBeUndefined();
     expect(spanish[key]).toBeUndefined();
     expect(languageDesign).toMatch(new RegExp('`' + escapeRegExp(key) + '`[^\\n]*← retirada por #173 \\(R13\\)'));

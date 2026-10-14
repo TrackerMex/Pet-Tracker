@@ -819,14 +819,15 @@ describe('R10 (mobile-device-pairing): el perfil enlaza a /pairing', () => {
     mockGetPet.mockResolvedValue({ kind: 'ok', pet });
   });
 
-  it('shows the GPS configuration row and opens pairing', async () => {
+  it('shows the GPS collar tile and opens pairing', async () => {
     await renderProfile();
 
     const link = await screen.findByTestId('pairing-link');
     expect(
-      screen.getByText('Configuración del Dispositivo GPS'),
+      screen.getByText('Collar GPS'),
     ).toBeVisible();
     expect(link.props.accessibilityRole).toBe('button');
+    expect(link.props.className).toBe('flex-1 gap-1.5 rounded-tile p-3 bg-category-green');
     await fireEvent.press(link);
 
     expect(mockRouter.push).toHaveBeenCalledWith('/pairing');
@@ -1170,9 +1171,9 @@ describe('#41 R9: Perfil enlaza a las zonas seguras de la mascota activa', () =>
     expect(link).toHaveTextContent('Zonas seguras');
     expect(link.props.accessibilityRole).toBe('button');
     expect(link.props.hitSlop).toEqual({ top: 6, bottom: 6, left: 6, right: 6 });
-    expect(link.props.className).toBe('flex-row items-center gap-3 rounded-xl bg-default px-3 py-2');
+    expect(link.props.className).toBe('flex-1 gap-1.5 rounded-tile p-3 bg-category-amber');
     expect(link).toHaveStyle({ borderCurve: 'continuous' });
-    expect(within(link).getByText('Zonas seguras').props.className).toBe('flex-1 font-semibold text-foreground');
+    expect(within(link).getByText('Zonas seguras').props.className).toBe('text-sm font-extrabold text-category-amber-strong');
     expect(screen.getAllByTestId(/-link$/).map((row) => row.props.testID)).toEqual([
       'documents-link', 'pairing-link', 'geofences-link', 'reminders-link',
     ]);
@@ -1474,43 +1475,74 @@ describe('#168 R5 (enmendado por #173 R7): chips pastel con sexo localizado', ()
   });
 });
 
-describe('#168 R6: cada fila de navegación lleva su tile pastel', () => {
+describe('#168 R6 (enmendado por #173 R10): los accesos son tiles pastel en rejilla 2×2', () => {
   beforeEach(setupProfile168);
 
   it.each([
-    ['documents-link', 'size-9 items-center justify-center rounded-xl bg-category-blue', 'profile-icon-file-text', 'category-blue-strong', 'Documentos', '/pets/pet-1/docs'],
-    ['pairing-link', 'size-9 items-center justify-center rounded-xl bg-category-green', 'profile-icon-wifi', 'category-green-strong', 'Configuración del Dispositivo GPS', '/pairing'],
-    ['geofences-link', 'size-9 items-center justify-center rounded-xl bg-category-amber', 'profile-icon-map', 'category-amber-strong', 'Zonas seguras', '/pets/pet-1/geofences'],
-    ['reminders-link', 'size-9 items-center justify-center rounded-xl bg-category-violet', 'profile-icon-bell', 'category-violet-strong', 'Recordatorios', '/reminders'],
-  ])('pinta el tile y conserva el destino de %s', async (id, surface, icon, color, label, destination) => {
+    ['documents-link', 'flex-1 gap-1.5 rounded-tile p-3 bg-category-blue', 'text-sm font-extrabold text-category-blue-strong', 'profile-icon-file-text', 'category-blue-strong', 'Documentos', '/pets/pet-1/docs'],
+    ['pairing-link', 'flex-1 gap-1.5 rounded-tile p-3 bg-category-green', 'text-sm font-extrabold text-category-green-strong', 'profile-icon-wifi', 'category-green-strong', 'Collar GPS', '/pairing'],
+    ['geofences-link', 'flex-1 gap-1.5 rounded-tile p-3 bg-category-amber', 'text-sm font-extrabold text-category-amber-strong', 'profile-icon-map', 'category-amber-strong', 'Zonas seguras', '/pets/pet-1/geofences'],
+    ['reminders-link', 'flex-1 gap-1.5 rounded-tile p-3 bg-category-violet', 'text-sm font-extrabold text-category-violet-strong', 'profile-icon-bell', 'category-violet-strong', 'Recordatorios', '/reminders'],
+  ])('pinta el tile y conserva el destino de %s', async (id, surface, ink, icon, color, label, destination) => {
     await renderProfile();
     await screen.findByTestId('pet-info-card');
     const row = screen.getByTestId(id);
     const scope = within(row);
-    expect(row.children).toHaveLength(3);
-    expect(row.props.className).toBe('flex-row items-center gap-3 rounded-xl bg-default px-3 py-2');
+    expect(row.children).toHaveLength(2);
+    expect(row.props.className).toBe(surface);
+    expect(row.props.accessibilityRole).toBe('button');
+    expect(row.props.hitSlop).toEqual(TOUCH_SLOP);
     expect(row.props.style).toEqual({ borderCurve: 'continuous' });
-    const tile = scope.getByTestId(`${id}-tile`, { includeHiddenElements: true });
+    const tile = scope.getByTestId(`${id}-icon`, { includeHiddenElements: true });
     expect(profileChild(row, 0)).toBe(tile);
-    expect(tile.props.className).toBe(surface);
-    expect(tile.props.style).toEqual({ borderCurve: 'continuous' });
     expect(tile.props.accessibilityElementsHidden).toBe(true);
     expect(tile.props.importantForAccessibility).toBe('no-hide-descendants');
     expect(tile.children).toHaveLength(1);
     const glyph = within(tile).getByTestId(icon, { includeHiddenElements: true });
     expect(profileChild(tile, 0)).toBe(glyph);
-    expect(glyph.props.size).toBe(18);
+    expect(glyph.props.size).toBe(22);
     expect(glyph.props.style).toEqual({ color });
     const text = scope.getByText(label);
     expect(profileChild(row, 1)).toBe(text);
-    expect(text.props.className).toBe('flex-1 font-semibold text-foreground');
-    const chevron = profileChild(row, 2);
-    expect(chevron.props.width).toBe(20);
-    expect(chevron.props.height).toBe(20);
-    expect(chevron.props.xml).toContain('muted');
+    expect(text.props.className).toBe(ink);
     await fireEvent.press(row);
     expect(mockRouter.push).toHaveBeenCalledTimes(1);
     expect(mockRouter.push).toHaveBeenCalledWith(destination);
+  });
+
+  it('con mascota ordena dos filas de dos tiles', async () => {
+    await renderProfile();
+    await screen.findByTestId('pet-info-card');
+    const grid = screen.getByTestId('profile-links');
+    expect(grid.props.className).toBe('gap-2');
+    expect(grid.children).toHaveLength(2);
+    const first = profileChild(grid, 0);
+    const second = profileChild(grid, 1);
+    expect(first.props.testID).toBe('profile-links-row-0');
+    expect(second.props.testID).toBe('profile-links-row-1');
+    expect(first.props.className).toBe('flex-row gap-2');
+    expect(second.props.className).toBe('flex-row gap-2');
+    expect(first.children).toHaveLength(2);
+    expect(second.children).toHaveLength(2);
+    expect(first.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['documents-link', 'pairing-link']);
+    expect(second.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['geofences-link', 'reminders-link']);
+    expect(screen.queryAllByTestId(/-link-tile$/, { includeHiddenElements: true })).toHaveLength(0);
+  });
+
+  it('sin mascota deja recordatorios solo y a ancho completo', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    mockGetPet.mockReturnValue(pending<PetState>());
+    await renderProfile();
+    await screen.findByTestId('profile-pets-empty');
+    const grid = screen.getByTestId('profile-links');
+    expect(grid.props.className).toBe('gap-2');
+    expect(grid.children).toHaveLength(1);
+    const row = profileChild(grid, 0);
+    expect(row.props.testID).toBe('profile-links-row-0');
+    expect(row.props.className).toBe('flex-row gap-2');
+    expect(row.children).toHaveLength(1);
+    expect(profileChild(row, 0)).toBe(screen.getByTestId('reminders-link'));
+    expect(profileChild(row, 0).props.className).toBe('flex-1 gap-1.5 rounded-tile p-3 bg-category-violet');
   });
 });
 
