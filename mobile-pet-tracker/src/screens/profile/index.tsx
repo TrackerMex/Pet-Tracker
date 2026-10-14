@@ -256,8 +256,8 @@ export function ProfileScreen() {
       className="flex-1 bg-background"
       contentInsetAdjustmentBehavior="automatic"
       contentContainerStyle={{
-        padding: 24,
-        gap: 16,
+        padding: 20,
+        gap: 14,
         paddingTop: insets.top + 12,
         paddingBottom: insets.bottom + 96,
       }}
