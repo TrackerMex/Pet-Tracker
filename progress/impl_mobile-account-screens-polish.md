@@ -3,14 +3,14 @@
 > Worktree: `/home/claude/sites/Pet-Tracker-wt-172`.
 > Branch: `feature/172-mobile-account-screens-polish`.
 > H0 al arrancar: `e0178ab5c1f67e917cf4116332a0e9196d67b344`.
-> Fecha de cierre: 2026-10-14. Estado final: **detenida en T15/S14; feature incompleta**.
+> Fecha de cierre: 2026-10-14. Estado final: **detenida en T16/S15; feature incompleta**.
 
 
 
-> Reanudación 2 verificó S10b con E3 y completó c23–c30. R1–R13 pasan
-> sus gates y sondas; R14 pasa el gate de c30, pero S14 da 6 fallos y no los
-> 7 prescritos. No se empezó T16 ni se alcanzó T22. R15 y R17–R20 siguen
-> pendientes; R16 es parcial; R21 queda **pendiente (humano)**.
+> Reanudación 3 acepta S14 conforme a E4, sin repetirla, y ejecuta c31.
+> R1–R14 están verificados; R15 pasa su gate, pero S15 da 3 fallos y no
+> los 2 prescritos. R16 es parcial; R17–R20 siguen pendientes. No se empezó
+> T17 ni se alcanzó T22. R21 queda **pendiente (humano)**.
 
 ## Bloqueo inicial y punto de reanudación — historia
 
@@ -191,15 +191,15 @@ los bloqueos anteriores quedan documentados en sus secciones históricas.
 | c28 | 81a3a4c6 | `feat(mobile): la tarjeta de éxito avisa con liveRegion (R13)` | `Tests:       232 passed, 232 total` | 0 |
 | c29 | 7b4c79b3 | `test(mobile): el candado de recuperar es un tile acento con labio (R14)` | `Tests:       9 failed, 98 passed, 107 total` | 9 aserciones: forgot 4, consistency 5 |
 | c30 | 7ddda8f5 | `feat(mobile): el candado de recuperar es un tile acento con labio (R14)` | `Tests:       234 passed, 234 total` | 0 |
-| c31 | — | `test(mobile): el error de login cuelga del scroll (R15)` | No ejecutado | pendiente tras el bloqueo S14 |
-| c32 | — | `test(mobile): filas de uso de las claves de cuenta (R16)` | No ejecutado | pendiente tras el bloqueo S14 |
-| c33 | — | `test(mobile): los componentes nuevos entran en la guarda de deriva (R17)` | No ejecutado | pendiente tras el bloqueo S14 |
-| c34 | — | `test(mobile): la carta declara la enmienda de las pantallas de cuenta (R18)` | No ejecutado | pendiente tras el bloqueo S14 |
-| c35 | — | `docs(ui): enmienda de la carta para las pantallas de cuenta (R18)` | No ejecutado | pendiente tras el bloqueo S14 |
-| c36 | — | `test(mobile): la CTA de cuenta se ancla al pie (R19)` | No ejecutado | pendiente tras el bloqueo S14 |
-| c37 | — | `feat(mobile): la CTA de cuenta se ancla al pie (R19)` | No ejecutado | pendiente tras el bloqueo S14 |
-| c38 | — | `test(mobile): CTA de 56 e inputs de 52 en las pantallas de cuenta (R20)` | No ejecutado | pendiente tras el bloqueo S14 |
-| c39 | — | `feat(mobile): CTA de 56 e inputs de 52 en las pantallas de cuenta (R20)` | No ejecutado | pendiente tras el bloqueo S14 |
+| c31 | 0e5bb776 | `test(mobile): el error de login cuelga del scroll (R15)` | `Tests:       222 passed, 222 total` | 0; nace verde, S15 bloqueada por 3 fallos en vez de 2 |
+| c32 | — | `test(mobile): filas de uso de las claves de cuenta (R16)` | No ejecutado | pendiente tras el bloqueo S15 |
+| c33 | — | `test(mobile): los componentes nuevos entran en la guarda de deriva (R17)` | No ejecutado | pendiente tras el bloqueo S15 |
+| c34 | — | `test(mobile): la carta declara la enmienda de las pantallas de cuenta (R18)` | No ejecutado | pendiente tras el bloqueo S15 |
+| c35 | — | `docs(ui): enmienda de la carta para las pantallas de cuenta (R18)` | No ejecutado | pendiente tras el bloqueo S15 |
+| c36 | — | `test(mobile): la CTA de cuenta se ancla al pie (R19)` | No ejecutado | pendiente tras el bloqueo S15 |
+| c37 | — | `feat(mobile): la CTA de cuenta se ancla al pie (R19)` | No ejecutado | pendiente tras el bloqueo S15 |
+| c38 | — | `test(mobile): CTA de 56 e inputs de 52 en las pantallas de cuenta (R20)` | No ejecutado | pendiente tras el bloqueo S15 |
+| c39 | — | `feat(mobile): CTA de 56 e inputs de 52 en las pantallas de cuenta (R20)` | No ejecutado | pendiente tras el bloqueo S15 |
 
 ## Gates ejecutados — comandos y salidas
 
@@ -6004,3 +6004,528 @@ feature/172-mobile-account-screens-polish
 de forgot y los dos recuentos de bg-accent-soft de consistency. Se conserva
 su restauración con `exit=0`. No se repite S14 ni se cambia c29/c30.
 Se continúa T16–T22 (c31–c39), sin renumerar.
+
+
+### Estado al final de Reanudacion 3
+
+S14 queda conforme a E4 y no se repitió. C31 se implementó en el commit
+`0e5bb776 test(mobile): el error de login cuelga del scroll (R15)` (solo
+el nuevo test, 9 líneas). Su gate verde dio 5 suites y 222 tests;
+la guarda del router, typecheck y lint dieron exit=0, con lint vacío.
+El fichero tiene los 25 bloques de it previstos (28 casos de Jest).
+
+S15 dio un título adicional al compararla con T16. Se detuvo el guion
+inmediatamente y se restauró el fichero con exit=0. No se empezó c32,
+no se alcanzó T22, y la feature permanece incompleta. No se ajustó el
+candado de R7 ni la tabla para forzar dos fallos.
+
+### Bloqueo actual — T16/S15
+
+Commit sobre el que se plantó la sonda: `0e5bb776` (c31). Mutación exacta:
+se quitó el siguiente bloque de login-body y se colocó inmediatamente
+tras `</ScrollView>`, dentro de screen-login:
+
+```tsx
+          {error ? (
+            <FormError testID="login-error" message={error} />
+          ) : null}
+```
+
+T16 espera dos fallos: R15 por consulta dentro de login-form y R7 «con
+error» por aserción de orden. Salieron esos dos y un tercero: R7 «el cuerpo
+lleva correo, contraseña, olvido, envío y registro» también consulta
+login-error dentro de login-body después de enviar credenciales malas.
+
+Esa consulta ya está en H0 (`git show e0178ab5:mobile-pet-tracker/src/screens/login/index.test.tsx`),
+en el it que entonces se llamaba `#167 R6: el cuerpo lleva el formulario
+en el orden de siempre`. T8 cambió su título y el orden, conservando la
+comprobación existente. Por eso la sonda también pone rojo ese it.
+
+| Bloque ●, sin Console | Tipo y mensaje | Contraste con T16 |
+|---|---|---|
+| #172 R7: el cuerpo lleva correo, contraseña, olvido, envío y registro | consulta: Unable to find an element with testID: login-error | adicional, no listado |
+| #172 R7: con error, el error va entre el olvido y el envío | aserción toEqual: falta login-error en el orden de login-body | esperado |
+| #172 R15: el error cuelga del scroll y no del contenedor del teclado | consulta: Unable to find an element with testID: login-error | esperado |
+
+Hace falta reconciliar la tabla de S15 con esta comprobación existente
+antes de continuar. Tests, producción y spec quedan sin ajustes para
+cuadrar el resultado.
+
+### Gates y sonda — salida literal
+
+Se preservan los comandos, bloques de fallo íntegros y resúmenes. Solo se
+omiten avisos Console y códigos ANSI de color.
+
+
+#### c31 — jest
+
+```bash
+bunx jest --testTimeout=30000 --runTestsByPath src/screens/login/index.test.tsx src/__tests__/ui-language.test.ts src/__tests__/design-drift.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/legibility-classnames.test.ts
+```
+
+```text
+PASS src/__tests__/consistency-classnames.test.ts
+PASS src/__tests__/ui-language.test.ts (5.34 s)
+PASS src/__tests__/design-drift.test.ts
+PASS src/__tests__/legibility-classnames.test.ts
+PASS src/screens/login/index.test.tsx (16.036 s)
+Test Suites: 5 passed, 5 total
+Tests:       222 passed, 222 total
+Time:        17.377 s
+exit=0
+```
+
+#### c31 — router
+
+```bash
+test ! -e .expo/types/router.d.ts
+```
+
+```text
+
+exit=0
+```
+
+#### c31 — typecheck
+
+```bash
+bun run typecheck
+```
+
+```text
+$ tsc --noEmit
+exit=0
+```
+
+#### c31 — lint
+
+```bash
+bunx expo lint --no-cache > /tmp/lint-172.log 2>&1
+```
+
+```text
+
+vacio=0
+exit=0
+```
+
+#### S15 — jest
+
+```bash
+bunx jest --testTimeout=30000 --runTestsByPath src/screens/login/index.test.tsx
+```
+
+```text
+FAIL src/screens/login/index.test.tsx (11.135 s)
+Test Suites: 1 failed, 1 total
+Tests:       3 failed, 25 passed, 28 total
+Time:        11.324 s, estimated 17 s
+  ● #167 R6: Pingo saluda en login y la pantalla entra en dos tiempos › #172 R7: el cuerpo lleva correo, contraseña, olvido, envío y registro
+
+    Unable to find an element with testID: login-error
+
+    <RNCSafeAreaProvider>
+      <View
+        testID="screen-login"
+      >
+        <RCTScrollView
+          testID="login-form"
+        >
+          <View>
+            <View
+              testID="login-header"
+            >
+              <View
+                accessibilityLabel="Volver"
+                accessibilityRole="button"
+                accessible={true}
+                testID="login-back"
+              >
+                <RNSVGSvgView>
+                  <RNSVGGroup>
+                    <RNSVGGroup>
+                      <RNSVGPath />
+                    </RNSVGGroup>
+                  </RNSVGGroup>
+                </RNSVGSvgView>
+              </View>
+              <View
+                testID="login-greeting"
+              >
+                <ViewManagerAdapter_ExpoImage
+                  placeholder={[]}
+                  testID="login-pingo"
+                />
+                <View
+                  testID="login-bubble"
+                >
+                  <Text
+                    testID="login-bubble-text"
+                  >
+                    Qué bueno verte de nuevo.
+                  </Text>
+                </View>
+              </View>
+              <Text>
+                Iniciar sesión
+              </Text>
+            </View>
+            <View
+              testID="login-body"
+            >
+              <View>
+                <View
+                  accessible={true}
+                >
+                  <Text>
+                    Correo electrónico
+                  </Text>
+                </View>
+                <TextInput
+                  editable={true}
+                  testID="login-email"
+                  value="alex@example.com"
+                />
+              </View>
+              <View>
+                <View
+                  accessible={true}
+                >
+                  <Text>
+                    Contraseña
+                  </Text>
+                </View>
+                <View
+                  testID="login-password-group"
+                >
+                  <TextInput
+                    editable={true}
+                    testID="login-password"
+                    value="correct horse"
+                  />
+                  <View>
+                    <View
+                      accessibilityLabel="Mostrar contraseña"
+                      accessibilityRole="button"
+                      accessible={true}
+                      testID="login-password-toggle"
+                    >
+                      <View
+                        testID="icon-eye"
+                      />
+                    </View>
+                  </View>
+                </View>
+              </View>
+              <View
+                accessibilityRole="button"
+                accessibilityState={
+                  {
+                    "disabled": false,
+                  }
+                }
+                accessible={true}
+                testID="link-forgot"
+              >
+                <Text>
+                  ¿Olvidaste tu contraseña?
+                </Text>
+              </View>
+              <View
+                accessibilityRole="button"
+                accessibilityState={
+                  {
+                    "disabled": false,
+                  }
+                }
+                accessible={true}
+                testID="login-submit"
+              >
+                <View
+                  pointerEvents="none"
+                  style={
+                    {
+                      "opacity": 0,
+                    }
+                  }
+                />
+                <Text>
+                  Iniciar sesión
+                </Text>
+              </View>
+              <View
+                accessibilityRole="button"
+                accessibilityState={
+                  {
+                    "disabled": false,
+                  }
+                }
+                accessible={true}
+                testID="link-register"
+              >
+                <Text>
+                  Crear cuenta
+                </Text>
+              </View>
+            </View>
+          </View>
+        </RCTScrollView>
+        <View
+          testID="login-error-row"
+        >
+          <View
+            testID="icon-alert-circle"
+          />
+          <Text
+            testID="login-error"
+          >
+            Credenciales inválidas
+          </Text>
+        </View>
+      </View>
+    </RNCSafeAreaProvider>
+
+      277 |     ]);
+      278 |     await submit();
+    > 279 |     expect(within(body).getByTestId('login-error')).toBeOnTheScreen();
+          |                         ^
+      280 |   });
+      281 |
+      282 |   it('#172 R7: con error, el error va entre el olvido y el envío', async () => {
+
+      at Object.getByTestId (src/screens/login/index.test.tsx:279:25)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+  ● #167 R6: Pingo saluda en login y la pantalla entra en dos tiempos › #172 R7: con error, el error va entre el olvido y el envío
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 0
+
+      Array [
+        "login-email",
+        "login-password",
+        "link-forgot",
+    -   "login-error",
+        "login-submit",
+        "link-register",
+      ]
+
+      286 |     const body = screen.getByTestId('login-body');
+      287 |     expect(within(body).getAllByTestId(/^(login-email|login-password|login-error|login-submit|link-register|link-forgot)$/)
+    > 288 |       .map((node) => node.props.testID)).toEqual([
+          |                                          ^
+      289 |       'login-email', 'login-password', 'link-forgot', 'login-error', 'login-submit', 'link-register',
+      290 |     ]);
+      291 |   });
+
+      at Object.toEqual (src/screens/login/index.test.tsx:288:42)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+  ● #167 R6: Pingo saluda en login y la pantalla entra en dos tiempos › #172 R15: el error cuelga del scroll y no del contenedor del teclado
+
+    Unable to find an element with testID: login-error
+
+    <RNCSafeAreaProvider>
+      <View
+        testID="screen-login"
+      >
+        <RCTScrollView
+          testID="login-form"
+        >
+          <View>
+            <View
+              testID="login-header"
+            >
+              <View
+                accessibilityLabel="Volver"
+                accessibilityRole="button"
+                accessible={true}
+                testID="login-back"
+              >
+                <RNSVGSvgView>
+                  <RNSVGGroup>
+                    <RNSVGGroup>
+                      <RNSVGPath />
+                    </RNSVGGroup>
+                  </RNSVGGroup>
+                </RNSVGSvgView>
+              </View>
+              <View
+                testID="login-greeting"
+              >
+                <ViewManagerAdapter_ExpoImage
+                  placeholder={[]}
+                  testID="login-pingo"
+                />
+                <View
+                  testID="login-bubble"
+                >
+                  <Text
+                    testID="login-bubble-text"
+                  >
+                    Qué bueno verte de nuevo.
+                  </Text>
+                </View>
+              </View>
+              <Text>
+                Iniciar sesión
+              </Text>
+            </View>
+            <View
+              testID="login-body"
+            >
+              <View>
+                <View
+                  accessible={true}
+                >
+                  <Text>
+                    Correo electrónico
+                  </Text>
+                </View>
+                <TextInput
+                  editable={true}
+                  testID="login-email"
+                  value="alex@example.com"
+                />
+              </View>
+              <View>
+                <View
+                  accessible={true}
+                >
+                  <Text>
+                    Contraseña
+                  </Text>
+                </View>
+                <View
+                  testID="login-password-group"
+                >
+                  <TextInput
+                    editable={true}
+                    testID="login-password"
+                    value="correct horse"
+                  />
+                  <View>
+                    <View
+                      accessibilityLabel="Mostrar contraseña"
+                      accessibilityRole="button"
+                      accessible={true}
+                      testID="login-password-toggle"
+                    >
+                      <View
+                        testID="icon-eye"
+                      />
+                    </View>
+                  </View>
+                </View>
+              </View>
+              <View
+                accessibilityRole="button"
+                accessibilityState={
+                  {
+                    "disabled": false,
+                  }
+                }
+                accessible={true}
+                testID="link-forgot"
+              >
+                <Text>
+                  ¿Olvidaste tu contraseña?
+                </Text>
+              </View>
+              <View
+                accessibilityRole="button"
+                accessibilityState={
+                  {
+                    "disabled": false,
+                  }
+                }
+                accessible={true}
+                testID="login-submit"
+              >
+                <View
+                  pointerEvents="none"
+                  style={
+                    {
+                      "opacity": 0,
+                    }
+                  }
+                />
+                <Text>
+                  Iniciar sesión
+                </Text>
+              </View>
+              <View
+                accessibilityRole="button"
+                accessibilityState={
+                  {
+                    "disabled": false,
+                  }
+                }
+                accessible={true}
+                testID="link-register"
+              >
+                <Text>
+                  Crear cuenta
+                </Text>
+              </View>
+            </View>
+          </View>
+        </RCTScrollView>
+        <View
+          testID="login-error-row"
+        >
+          <View
+            testID="icon-alert-circle"
+          />
+          <Text
+            testID="login-error"
+          >
+            Credenciales inválidas
+          </Text>
+        </View>
+      </View>
+    </RNCSafeAreaProvider>
+
+      296 |     await submit();
+      297 |     const form = screen.getByTestId('login-form');
+    > 298 |     expect(within(form).getByTestId('login-error')).toBeOnTheScreen();
+          |                         ^
+      299 |     expect(screen.getByTestId('screen-login').children).toEqual([form]);
+      300 |   });
+      301 |
+
+      at Object.getByTestId (src/screens/login/index.test.tsx:298:25)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+exit=1
+```
+
+#### S15 — restore
+
+```bash
+git checkout HEAD -- src/screens/login/index.tsx; git diff --quiet HEAD -- src/screens/login/index.tsx; echo "exit=$?"
+```
+
+```text
+exit=0
+exit=0
+```
+
+### Desviaciones y entrega
+
+- S15 dio 3 fallos en vez de 2; se detuvo T16 conforme a la regla crítica
+  3 del handoff y se verificó cada título antes de detenerse.
+- El informe se marcó conforme a E4 antes de empezar c31, en el commit
+  de documentación `5aa8fa5e docs(mobile-account-screens-polish): #172 S14 conforme a E4`.
+  No se cuenta como commit numerado del guion, y no mezcla tests con producción.
+- La trazabilidad parcial se actualizó en el commit separado
+  `944b727a docs(mobile-account-screens-polish): #172 trazabilidad parcial hasta c31`.
+  No se usan los mensajes de cierre completo mientras existan pendientes.
+- Las skills ya cargadas siguen vigentes; no se repitió S14. H0 y los
+  commits del leader siguen intactos. No hubo Exceeded timeout, SIGKILL,
+  instalaciones nuevas ni cambios en dependencias.
+- No se ejecutaron init.sh, push, PR, amend, rebase ni prettier. T22 y la
+  prueba de humo R21 siguen pendientes. La sonda está restaurada y el
+  árbol queda limpio tras el commit de este informe.
