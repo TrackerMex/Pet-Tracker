@@ -290,6 +290,15 @@ describe('#167 R6: Pingo saluda en login y la pantalla entra en dos tiempos', ()
     ]);
   });
 
+  it('#172 R15: el error cuelga del scroll y no del contenedor del teclado', async () => {
+    mockLogin.mockResolvedValue({ kind: 'invalid-credentials' });
+    await renderLogin();
+    await submit();
+    const form = screen.getByTestId('login-form');
+    expect(within(form).getByTestId('login-error')).toBeOnTheScreen();
+    expect(screen.getByTestId('screen-login').children).toEqual([form]);
+  });
+
   it('#172 R8: la contraseña de login lleva su ojo', async () => {
     await renderLogin();
     const input = screen.getByTestId('login-password');
