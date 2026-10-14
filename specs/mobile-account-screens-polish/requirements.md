@@ -1858,4 +1858,4 @@ Codex: ningún `it` prescrito miraba ahí.
 - No cambian los requisitos EARS ni producción. Solo se añaden candados y
   sondas a R2, R4 y R12.
 
-- [ ] Enmienda E6 aprobada por humano (fecha: ____) ← gate antes de reanudar Codex
+- [x] Enmienda E6 aprobada por humano (fecha: 2026-10-14) ← gate antes de reanudar Codex
