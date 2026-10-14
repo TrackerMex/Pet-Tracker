@@ -105,14 +105,16 @@ export function Celebration({ testID, title, body, details, primary, secondary }
           </View>
         ) : null}
         <View testID={`${testID}-hero`} className="mt-10 items-center justify-center" style={{ width: 220, height: 220 }}>
-          <Animated.View
-            testID={`${testID}-ring`}
-            className="absolute inset-0 rounded-full bg-accent"
-            style={ringStyle}
-            pointerEvents="none"
-            accessibilityElementsHidden
-            importantForAccessibility="no-hide-descendants"
-          />
+          {!reduceMotion ? (
+            <Animated.View
+              testID={`${testID}-ring`}
+              className="absolute inset-0 rounded-full bg-accent"
+              style={ringStyle}
+              pointerEvents="none"
+              accessibilityElementsHidden
+              importantForAccessibility="no-hide-descendants"
+            />
+          ) : null}
           <Animated.View testID={`${testID}-pingo`} style={[pingoStyle, { width: 170, height: 170 }]}>
             <Image
               testID={`${testID}-pose`}
@@ -162,8 +164,8 @@ export function Celebration({ testID, title, body, details, primary, secondary }
 
 function useRise(k: number) {
   const reduceMotion = useReducedMotion();
-  const opacity = useSharedValue(0);
-  const translateY = useSharedValue(MOTION_CELEBRATION_RISE_OFFSET_Y);
+  const opacity = useSharedValue(reduceMotion ? 1 : 0);
+  const translateY = useSharedValue(reduceMotion ? 0 : MOTION_CELEBRATION_RISE_OFFSET_Y);
 
   useEffect(() => {
     if (reduceMotion) return;
