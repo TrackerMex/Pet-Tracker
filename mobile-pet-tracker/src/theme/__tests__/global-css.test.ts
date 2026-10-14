@@ -736,3 +736,22 @@ describe('#166 R1: global.css declara el labio gris en los dos temas', () => {
     });
   });
 });
+
+describe('#173 R2: tokens de radio hero y tile', () => {
+  it('declara los radios del artboard dentro de @theme', () => {
+    expect(parseVariables(extractTheme())).toMatchObject({
+      'radius-hero': '28px',
+      'radius-tile': '18px',
+    });
+  });
+});
+
+describe('#173 R2.3: tamaños de letra 13 y 26', () => {
+  it('declara los tamaños fuera de escala sin imponer interlineado', () => {
+    const variables = parseVariables(extractTheme());
+
+    expect(variables).toMatchObject({ 'text-13': '13px', 'text-26': '26px' });
+    expect(variables).not.toHaveProperty('text-13--line-height');
+    expect(variables).not.toHaveProperty('text-26--line-height');
+  });
+});
