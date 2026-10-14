@@ -34,6 +34,16 @@ jest.mock('react-native-reanimated', () => {
   const actual = jest.requireActual<typeof import('react-native-reanimated')>('react-native-reanimated');
   return { ...actual, __esModule: true, useReducedMotion: () => mockUseReducedMotion() };
 });
+jest.mock('react-native-svg', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  function Svg(props: Record<string, unknown>) { return React.createElement(View, props); }
+  function Path(props: Record<string, unknown>) { return React.createElement(View, props); }
+  return { __esModule: true, default: Svg, Svg, Path };
+});
+jest.mock('../../theme/use-theme-colors', () => ({
+  useThemeColors: (tokens: readonly string[]) => tokens.map((token) => `sentinel-${token}`),
+}));
 jest.mock('heroui-native', () => {
   const actual = jest.requireActual<typeof import('heroui-native')>('heroui-native');
   const React = jest.requireActual<typeof import('react')>('react');
@@ -96,11 +106,17 @@ describe('#171 R2: Celebration', () => {
       .toEqual(['probe-confetti', 'probe-hero', 'probe-title', 'probe-body', 'probe-actions']);
   });
 
-  it('R2.4 Pingo usa celebrate y la insignia contiene ✓', async () => {
+  it('R2.4 Pingo usa celebrate y la insignia contiene el check del artboard', async () => {
     await renderProbe();
     const image = within(screen.getByTestId('probe-pingo')).getByTestId('probe-pose');
     expect(image.props.source).toEqual([require('../../../assets/images/pingo-celebrate.webp')]);
-    expect(within(screen.getByTestId('probe-badge', { includeHiddenElements: true })).getByText('✓', { includeHiddenElements: true })).toHaveTextContent('✓');
+    const check = within(screen.getByTestId('probe-badge', { includeHiddenElements: true })).getByTestId('probe-check', { includeHiddenElements: true });
+    expect([check.props.width, check.props.height, check.props.viewBox]).toEqual([28, 28, '0 0 24 24']);
+    expect(check.children).toHaveLength(1);
+    const path = check.children[0];
+    expect(typeof path === 'string' ? path : path.props).toEqual(expect.objectContaining({
+      d: 'M20 6 9 17l-5-5', strokeWidth: 3, stroke: 'sentinel-accent-foreground',
+    }));
   });
 
   it('R2.5 las fichas conservan orden, etiquetas y valores separados', async () => {
@@ -320,14 +336,14 @@ describe('#171 R7: pop', () => {
   it('R7.1 Pingo empieza transparente y a escala 0.6', async () => {
     await renderProbe();
     expect(getAnimatedStyle(screen.getByTestId('probe-pingo'))).toEqual({
-      width: 200, height: 200, opacity: 0, transform: [{ scale: 0.6 }],
+      width: 170, height: 170, opacity: 0, transform: [{ scale: 0.6 }],
     });
   });
 
   it('R7.2 la insignia empieza transparente y a escala 0.6', async () => {
     await renderProbe();
     expect(getAnimatedStyle(screen.getByTestId('probe-badge', { includeHiddenElements: true }))).toEqual({
-      position: 'absolute', right: 0, bottom: 0, opacity: 0, transform: [{ scale: 0.6 }],
+      position: 'absolute', right: 18, bottom: 26, opacity: 0, transform: [{ scale: 0.6 }],
     });
   });
 
@@ -335,7 +351,7 @@ describe('#171 R7: pop', () => {
     await renderProbe();
     await act(async () => { jest.advanceTimersByTime(2000); });
     expect(getAnimatedStyle(screen.getByTestId('probe-pingo'))).toEqual({
-      width: 200, height: 200, opacity: 1, transform: [{ scale: 1 }],
+      width: 170, height: 170, opacity: 1, transform: [{ scale: 1 }],
     });
   });
 
@@ -343,7 +359,7 @@ describe('#171 R7: pop', () => {
     await renderProbe();
     await act(async () => { jest.advanceTimersByTime(300); });
     expect(getAnimatedStyle(screen.getByTestId('probe-badge', { includeHiddenElements: true }))).toEqual({
-      position: 'absolute', right: 0, bottom: 0, opacity: 0, transform: [{ scale: 0.6 }],
+      position: 'absolute', right: 18, bottom: 26, opacity: 0, transform: [{ scale: 0.6 }],
     });
   });
 
@@ -351,7 +367,7 @@ describe('#171 R7: pop', () => {
     await renderProbe();
     await act(async () => { jest.advanceTimersByTime(2400); });
     expect(getAnimatedStyle(screen.getByTestId('probe-badge', { includeHiddenElements: true }))).toEqual({
-      position: 'absolute', right: 0, bottom: 0, opacity: 1, transform: [{ scale: 1 }],
+      position: 'absolute', right: 18, bottom: 26, opacity: 1, transform: [{ scale: 1 }],
     });
   });
 
@@ -377,6 +393,33 @@ describe('#171 R7: pop', () => {
   });
 });
 
+describe('#171 R20: maquetación del artboard', () => {
+  it('R20.1 el hero mide 220 con margen superior y Pingo 170', async () => {
+    await renderProbe();
+    const hero = screen.getByTestId('probe-hero');
+    expect(hero.props.className).toBe('mt-10 items-center justify-center');
+    expect(hero.props.style).toEqual({ width: 220, height: 220 });
+    expect(screen.getByTestId('probe-pose').props.style).toEqual({ width: 170, height: 170 });
+  });
+
+  it('R20.4 el título lleva el tracking y el margen del artboard', async () => {
+    await renderProbe();
+    expect(screen.getByTestId('probe-title').props.className).toBe('mt-2 text-center text-3xl font-black tracking-tight text-foreground');
+  });
+
+  it('R20.5 el cuerpo mide 15 px con ancho máximo de 300', async () => {
+    await renderProbe();
+    expect(screen.getByTestId('probe-body').props.className).toBe('max-w-75 text-center text-15 leading-5.5 text-muted');
+  });
+
+  it('R20.6 la raíz separa 14 px y deja 40 abajo', async () => {
+    await renderProbe();
+    const root = screen.getByTestId('probe');
+    expect(root.props.className).toBe('flex-1 items-center gap-3.5 bg-surface-secondary px-6');
+    expect(root.props.style).toEqual({ paddingTop: 120, paddingBottom: 64 });
+  });
+});
+
 describe('#171 R8: reduce motion', () => {
   beforeEach(() => {
     mockUseReducedMotion.mockReturnValue(true);
@@ -399,7 +442,7 @@ describe('#171 R8: reduce motion', () => {
   it('R8.2 Pingo empieza transparente a escala 1', async () => {
     await renderProbe();
     expect(getAnimatedStyle(screen.getByTestId('probe-pingo'))).toEqual({
-      width: 200, height: 200, opacity: 0, transform: [{ scale: 1 }],
+      width: 170, height: 170, opacity: 0, transform: [{ scale: 1 }],
     });
   });
 
@@ -407,14 +450,14 @@ describe('#171 R8: reduce motion', () => {
     await renderProbe();
     await act(async () => { jest.advanceTimersByTime(2000); });
     expect(getAnimatedStyle(screen.getByTestId('probe-pingo'))).toEqual({
-      width: 200, height: 200, opacity: 1, transform: [{ scale: 1 }],
+      width: 170, height: 170, opacity: 1, transform: [{ scale: 1 }],
     });
   });
 
   it('R8.3 la insignia empieza transparente a escala 1', async () => {
     await renderProbe();
     expect(getAnimatedStyle(screen.getByTestId('probe-badge', { includeHiddenElements: true }))).toEqual({
-      position: 'absolute', right: 0, bottom: 0, opacity: 0, transform: [{ scale: 1 }],
+      position: 'absolute', right: 18, bottom: 26, opacity: 0, transform: [{ scale: 1 }],
     });
   });
 
@@ -424,7 +467,7 @@ describe('#171 R8: reduce motion', () => {
     expect(getAnimatedStyle(screen.getByTestId('probe-badge', { includeHiddenElements: true })).opacity).toBe(0);
     await act(async () => { jest.advanceTimersByTime(2100); });
     expect(getAnimatedStyle(screen.getByTestId('probe-badge', { includeHiddenElements: true }))).toEqual({
-      position: 'absolute', right: 0, bottom: 0, opacity: 1, transform: [{ scale: 1 }],
+      position: 'absolute', right: 18, bottom: 26, opacity: 1, transform: [{ scale: 1 }],
     });
   });
 });
