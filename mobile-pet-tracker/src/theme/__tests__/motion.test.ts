@@ -77,6 +77,7 @@ describe('#152 R1: las duraciones y el preset de movimiento viven en un solo sit
       'MOTION_CELEBRATION_BADGE_DELAY_MS',
       'MOTION_CELEBRATION_BADGE_POP_MS',
       'MOTION_CELEBRATION_EASE_OUT',
+      'MOTION_CELEBRATION_PING_MS',
       'MOTION_CELEBRATION_POP_MS',
       'MOTION_CELEBRATION_POP_PEAK',
       'MOTION_CONFETTI_FALL_TIMING',
@@ -197,5 +198,9 @@ describe('#171 E4: las constantes de la celebración viven en motion.ts', () => 
   it('declara los pops de Pingo y de la insignia', () => {
     const m = require('../motion');
     expect([m.MOTION_CELEBRATION_POP_MS, m.MOTION_CELEBRATION_POP_PEAK, m.MOTION_CELEBRATION_BADGE_POP_MS, m.MOTION_CELEBRATION_BADGE_DELAY_MS]).toEqual([600, 1.08, 500, 450]);
+  });
+
+  it('declara la duración del ping', () => {
+    expect(require('../motion').MOTION_CELEBRATION_PING_MS).toBe(2200);
   });
 });

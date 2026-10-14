@@ -267,6 +267,13 @@ async function advance(ms: number) {
   await act(async () => { jest.advanceTimersByTime(ms); });
 }
 
+function animated(testID: string) {
+  return getAnimatedStyle(screen.getByTestId(testID, { includeHiddenElements: true })) as unknown as {
+    opacity: number;
+    transform: Record<string, number | string>[];
+  };
+}
+
 describe('#171 R6: confeti', () => {
   beforeEach(() => { jest.useFakeTimers(); });
   afterEach(() => { jest.useRealTimers(); });
@@ -404,6 +411,41 @@ describe('#171 R7: pop', () => {
   });
 });
 
+describe('#171 R17: anillo de ping', () => {
+  beforeEach(() => { jest.useFakeTimers(); });
+  afterEach(() => { jest.useRealTimers(); });
+
+  it('R17.1 el anillo es el primer hijo del hero, de acento y oculto a accesibilidad', async () => {
+    await renderProbe();
+    const first = screen.getByTestId('probe-hero').children[0];
+    expect(typeof first === 'string' ? first : first.props.testID).toBe('probe-ring');
+    const ring = screen.getByTestId('probe-ring', { includeHiddenElements: true });
+    expect(ring.props.className).toBe('absolute inset-0 rounded-full bg-accent');
+    expect(ring.props.pointerEvents).toBe('none');
+    expect(ring.props.accessibilityElementsHidden).toBe(true);
+    expect(ring.props.importantForAccessibility).toBe('no-hide-descendants');
+  });
+
+  it('R17.2 el anillo crece y se apaga a los 0, 550, 1100 y 2100 ms', async () => {
+    await renderProbe();
+    const ring = () => { const style = animated('probe-ring'); return [style.transform[0].scale as number, style.opacity]; };
+    const samples = [ring()];
+    for (const step of [550, 550, 1000]) {
+      await advance(step);
+      samples.push(ring());
+    }
+    expectSamples(samples, [[0.55, 0.55], [0.9092, 0.342], [1.2004, 0.1734], [1.4965, 0.002]], [3, 3]);
+  });
+
+  it('R17.3 el anillo vuelve a empezar tras 2200 ms', async () => {
+    await renderProbe();
+    await advance(2750);
+    const style = animated('probe-ring');
+    expect(style.transform[0].scale).toBeLessThan(1);
+    expect(style.opacity).toBeGreaterThan(0.3);
+  });
+});
+
 describe('#171 R20: maquetación del artboard', () => {
   it('R20.1 el hero mide 220 con margen superior y Pingo 170', async () => {
     await renderProbe();
@@ -524,6 +566,7 @@ describe('#171 R13: solo anima transform y opacity', () => {
       ['probe-pingo', ['height', 'opacity', 'transform', 'width']],
       ['probe-badge', ['bottom', 'opacity', 'position', 'right', 'transform']],
       ['probe-confetti-0', ['left', 'opacity', 'position', 'top', 'transform']],
+      ['probe-ring', ['opacity', 'transform']],
     ] as const;
     for (const elapsed of [0, 1200]) {
       if (elapsed) await act(async () => { jest.advanceTimersByTime(1200); });
