@@ -5,7 +5,7 @@ import { Button, Skeleton } from 'heroui-native';
 import { useCallback, useState } from 'react';
 import { Linking, Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Bell, ChevronRight, FileText, Map as MapIcon, Wifi } from 'reicon-react-native';
+import { Bell, ChevronRight, FileText, Map as MapIcon, Plus, Wifi } from 'reicon-react-native';
 import { useUniwind } from 'uniwind';
 
 import {
@@ -92,7 +92,7 @@ export function ProfileScreen() {
   const { theme } = useUniwind();
   const switchTheme = useThemeTransition();
   const insets = useSafeAreaInsets();
-  const [muted, blue, green, amber, violet] = useThemeColors(['muted', 'category-blue-strong', 'category-green-strong', 'category-amber-strong', 'category-violet-strong']);
+  const [muted, blue, green, amber, violet, accentStrong] = useThemeColors(['muted', 'category-blue-strong', 'category-green-strong', 'category-amber-strong', 'category-violet-strong', 'accent-strong']);
   const [photoUploading, setPhotoUploading] = useState(false);
   const [photoError, setPhotoError] = useState<string | null>(null);
   const notificationsBlocked = useNotificationsBlocked();
@@ -196,16 +196,24 @@ export function ProfileScreen() {
         <Text testID="profile-title" className="text-3xl font-black tracking-tight text-foreground">
           {t('profile.profile')}
         </Text>
-        <Button
+        <Pressable
           testID="profile-add-pet"
-          className="rounded-xl bg-accent border-b-4 border-black/25"
-          size="sm"
+          accessibilityRole="button"
+          hitSlop={TOUCH_SLOP}
+          className="h-9 flex-row items-center gap-1.5 rounded-full bg-tab-pill px-3.5"
           onPress={() => router.push('/pets/add' as Href)}
         >
-          <Button.Label className="font-bold text-accent-foreground">
+          <View
+            testID="profile-add-pet-icon"
+            accessibilityElementsHidden
+            importantForAccessibility="no-hide-descendants"
+          >
+            <Plus size={16} color={accentStrong} />
+          </View>
+          <Text className="text-sm font-extrabold text-accent-strong">
             {t('profile.addPet')}
-          </Button.Label>
-        </Button>
+          </Text>
+        </Pressable>
       </View>
 
       {notificationsBlocked ? (

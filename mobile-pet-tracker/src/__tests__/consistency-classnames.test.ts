@@ -99,7 +99,7 @@ describe('#62 R1: la escala de radios está declarada y el botón primario tiene
       readFileSync(path, 'utf8').match(/rounded-xl bg-accent(?=[\s'"`])/g) ?? [],
     );
 
-    expect(primaryRadius).toHaveLength(13 + 1 + 1 + 1 + 1 + 1 + 1); // #146 R8, #146 R9; #118 R7; #155 R3 // #158 R3: docs-upload; // #158 R5: docs-upload-submit
+    expect(primaryRadius).toHaveLength(13 + 1 + 1 + 1 + 1 + 1 + 1 - 1); // #146 R8, #146 R9; #118 R7; #155 R3 // #158 R3: docs-upload; // #158 R5: docs-upload-submit; // #173 R5
     expect(filesMatching(/rounded-2xl bg-accent(?=[\s'"`])/)).toEqual([]);
   });
 });
