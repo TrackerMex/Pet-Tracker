@@ -131,3 +131,23 @@ describe('#173 R14: la carta declara los cambios', () => {
     expect(normalize(charter)).toContain(normalize('**Excepción nombrada (fidelidad al canvas, 2026-10-13)**: una pantalla llevada al canvas aprobado usa padding lateral 20 y el `gap` de su artboard; ver conventions.md §Dimensiones, misma excepción.'));
   });
 });
+
+describe('#173 R15: grep-limpio', () => {
+  it.each(['screens/profile/index.tsx', 'components/card.tsx', 'components/pet-switcher.tsx'])('%s no tiene escapes de estilo', (file) => {
+    const source = readFileSync(join(sourceRoot, file), 'utf8');
+    const classSections: string[] = source.match(/className=(?:"[^"]*"|\{[\s\S]*?\}(?=[\s>]))/g) ?? [];
+    const cardRecipes = source.match(/const variantClassNames = \{([\s\S]*?)\} as const;/)?.[1];
+    if (cardRecipes) classSections.push(cardRecipes);
+    for (const section of classSections) {
+      const quotedClasses = section.match(/'[^']*'|"[^"]*"/g) ?? [];
+      const templateClasses = section.replace(/\$\{[^}]*\}/g, '').match(/`[^`]*`/g) ?? [];
+      for (const classes of [...quotedClasses, ...templateClasses]) {
+        expect(classes).not.toMatch(/\[[^\]]*\]/);
+      }
+    }
+    expect(source).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
+    expect(source).not.toMatch(/StyleSheet\.create/);
+    // #173 R3.2: surface y accent conservan su shadow-sm; ningún otro shadow-.
+    expect(source.match(/\bshadow-/g) ?? []).toHaveLength(file === 'components/card.tsx' ? 2 : 0);
+  });
+});
