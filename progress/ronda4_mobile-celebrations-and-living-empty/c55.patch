@@ -1,0 +1,93 @@
+diff --git a/mobile-pet-tracker/src/components/__tests__/celebration.test.tsx b/mobile-pet-tracker/src/components/__tests__/celebration.test.tsx
+index fdde0c295fa61b57afd5b61d24de81aa8a3296dc..5360a0b70b45d9c9206272707253feff3f81882d 100644
+--- a/mobile-pet-tracker/src/components/__tests__/celebration.test.tsx
++++ b/mobile-pet-tracker/src/components/__tests__/celebration.test.tsx
+@@ -469,6 +469,32 @@ describe('#171 R18: flotación de Pingo', () => {
+   });
+ });
+ 
++const RISE_IDS = ['probe-title', 'probe-body', 'probe-details', 'probe-actions'];
++const rise = (id: string) => { const style = animated(id); return [style.opacity, style.transform?.[0]?.translateY as number]; };
++
++describe('#171 R19: entrada escalonada', () => {
++  beforeEach(() => { jest.useFakeTimers(); });
++  afterEach(() => { jest.useRealTimers(); });
++
++  it('R19.1 título, cuerpo, fichas y acciones suben escalonados a los 700 ms', async () => {
++    await renderProbe();
++    await advance(700);
++    expectSamples(RISE_IDS.map(rise), [[0.685, 4.41], [0.445, 7.77], [0.161, 11.75], [0, 14]], [2, 1]);
++  });
++
++  it('R19.1 a los 1200 ms el texto y las acciones están en reposo', async () => {
++    await renderProbe();
++    await advance(1200);
++    expect(RISE_IDS.map(rise)).toEqual([[1, 0], [1, 0], [1, 0], [1, 0]]);
++  });
++
++  it('R19.2 sin fichas las acciones conservan su retardo de 740 ms', async () => {
++    await renderProbe({ details: [] });
++    await advance(700);
++    expect(rise('probe-actions')).toEqual([0, 14]);
++  });
++});
++
+ describe('#171 R20: maquetación del artboard', () => {
+   it('R20.1 el hero mide 220 con margen superior y Pingo 170', async () => {
+     await renderProbe();
+@@ -590,6 +616,10 @@ describe('#171 R13: solo anima transform y opacity', () => {
+       ['probe-badge', ['bottom', 'opacity', 'position', 'right', 'transform']],
+       ['probe-confetti-0', ['left', 'opacity', 'position', 'top', 'transform']],
+       ['probe-ring', ['opacity', 'transform']],
++      ['probe-title', ['opacity', 'transform']],
++      ['probe-body', ['opacity', 'transform']],
++      ['probe-details', ['opacity', 'transform']],
++      ['probe-actions', ['opacity', 'transform']],
+     ] as const;
+     for (const elapsed of [0, 1200]) {
+       if (elapsed) await act(async () => { jest.advanceTimersByTime(1200); });
+diff --git a/mobile-pet-tracker/src/screens/pairing/index.test.tsx b/mobile-pet-tracker/src/screens/pairing/index.test.tsx
+index 156a465a80e747afc0c177ed9c81e0d86c87692d..10b20fa52880a35fa842740b381afa38171a5a45 100644
+--- a/mobile-pet-tracker/src/screens/pairing/index.test.tsx
++++ b/mobile-pet-tracker/src/screens/pairing/index.test.tsx
+@@ -499,12 +499,12 @@ describe('R7: tras el 201 muestra "El collar está listo" con el collar y sus CT
+   it('shows the success copy, device values, and refreshes pets', async () => {
+     await renderReady();
+ 
+-    expect(screen.getByText('El collar está listo')).toBeVisible();
++    expect(screen.getByText('El collar está listo')).toBeOnTheScreen();
+     expect(
+       screen.getByText(
+         'El collar de Luna está vinculado. El rastreo GPS está activo.',
+       ),
+-    ).toBeVisible();
++    ).toBeOnTheScreen();
+     expect(screen.getByTestId('ready-model')).toHaveTextContent('TrailTag Pro');
+     expect(screen.getByTestId('ready-esn')).toHaveTextContent('ESN-4242');
+     expect(screen.queryByTestId('activation-code-input')).toBeNull();
+diff --git a/mobile-pet-tracker/src/theme/__tests__/motion.test.ts b/mobile-pet-tracker/src/theme/__tests__/motion.test.ts
+index bb1d56bb373176aabda647581334309036d0d938..7a38a622829773aaa3d24616cf99a4c34b9ef2a2 100644
+--- a/mobile-pet-tracker/src/theme/__tests__/motion.test.ts
++++ b/mobile-pet-tracker/src/theme/__tests__/motion.test.ts
+@@ -80,6 +80,9 @@ describe('#152 R1: las duraciones y el preset de movimiento viven en un solo sit
+       'MOTION_CELEBRATION_PING_MS',
+       'MOTION_CELEBRATION_POP_MS',
+       'MOTION_CELEBRATION_POP_PEAK',
++      'MOTION_CELEBRATION_RISE_DELAY_MS',
++      'MOTION_CELEBRATION_RISE_OFFSET_Y',
++      'MOTION_CELEBRATION_RISE_STAGGER_MS',
+       'MOTION_CONFETTI_FALL_TIMING',
+       'MOTION_ENTRANCE_OFFSET_Y',
+       'MOTION_ENTRANCE_SCALE',
+@@ -206,6 +209,11 @@ describe('#171 E4: las constantes de la celebración viven en motion.ts', () =>
+     expect(require('../motion').MOTION_CELEBRATION_PING_MS).toBe(2200);
+   });
+ 
++  it('declara la entrada escalonada', () => {
++    const m = require('../motion');
++    expect([m.MOTION_CELEBRATION_RISE_DELAY_MS, m.MOTION_CELEBRATION_RISE_STAGGER_MS, m.MOTION_CELEBRATION_RISE_OFFSET_Y]).toEqual([500, 80, 14]);
++  });
++
+   it('declara la flotación de Pingo', () => {
+     const m = require('../motion');
+     expect(m.MOTION_PINGO_FLOAT_OFFSET_Y).toBe(10);

@@ -1,0 +1,20 @@
+diff --git a/mobile-pet-tracker/src/components/__tests__/celebration.test.tsx b/mobile-pet-tracker/src/components/__tests__/celebration.test.tsx
+index b73eac6e8f0c05dbd90b897dbc1e2e49b9e8eee0..787c8b45d3e39c21cd933a8b0ca1b7b00349ace3 100644
+--- a/mobile-pet-tracker/src/components/__tests__/celebration.test.tsx
++++ b/mobile-pet-tracker/src/components/__tests__/celebration.test.tsx
+@@ -724,10 +724,13 @@ describe('#171 R12: copy de la variante sin collar', () => {
+ });
+ 
+ 
+-it('#171 R15: docs/ui-guidelines.md declara la enmienda del confeti', () => {
++it('#171 R15: docs/ui-guidelines.md declara la enmienda de la celebración', () => {
+   const source = readFileSync(join(process.cwd(), '..', 'docs', 'ui-guidelines.md'), 'utf8');
+-  const amendment = "## Enmienda \u0023171 — confeti de celebración\n\nEl punto 7 solo admite como bucles los «Bucles de reposo» de Pingo. El confeti de `Celebration`\n(`src/components/celebration.tsx`) no es un bucle: es **una sola pasada** de\n24 piezas que caen con `withTiming` (`MOTION_CONFETTI_FALL_TIMING`, entre\n`MOTION_CONFETTI_MIN_MS` y `MOTION_CONFETTI_MIN_MS + MOTION_CONFETTI_SPREAD_MS`\nde duración) y se desvanecen. Las reglas son:\n\n- solo en celebraciones del tier «raro» (vincular un collar, primera mascota);\n- es decorativo: `pointerEvents=\"none\"` y oculto a la accesibilidad;\n- con reduce motion activo **no se monta**;\n- solo anima `transform` y `opacity`.";
++  const amendment = "## Enmienda \u0023171 — confeti, ping y flotación de la celebración\n\n`Celebration` (`src/components/celebration.tsx`) se mueve como su artboard,\n`specs/mobile-welcome-pingo/design-src/celebration.dc.html`:\n\n- **Confeti.** 36 piezas que caen en bucle con `withRepeat` mientras la\n  celebración está abierta. La tabla de posición, forma, color, duración y\n  retardo vive en `celebration.tsx`; la curva, en\n  `MOTION_CONFETTI_FALL_TIMING` de `motion.ts`. Los colores son `bg-accent` y\n  los cinco tokens `confetti-*` de `global.css`, que ninguna otra pantalla\n  usa. `rounded-xs` (2 px) es una excepción a la escala de radios del\n  punto 12 que solo vale para las piezas del confeti. Esas piezas tampoco\n  declaran `CONTINUOUS_CORNER`: con 2 px el squircle no se distingue.\n- **Ping.** Un anillo `bg-accent` detrás de Pingo crece de 0.55 a 1.5 y se\n  apaga de 0.55 a 0 en 2200 ms ease-out, en bucle.\n- **Pop y flotación.** Pingo entra con un pop de 600 ms que pasa por 1.08 y\n  después flota 10 px arriba y abajo, 1500 ms por tramo, en bucle. La\n  insignia hace un pop de 500 ms con 450 ms de retardo.\n- **Entrada.** Título, cuerpo, fichas y acciones suben 14 px y aparecen en\n  400 ms ease-out, desde los 500 ms y cada 80 ms.\n- Solo se animan `transform` y `opacity`, sin `entering`, `exiting` ni\n  `LayoutAnimation`. Al desmontar sin reduce motion, `cancelAnimation`\n  para los bucles.\n- Con reduce motion no se montan el confeti ni el anillo, Pingo no flota y el\n  texto aparece sin subir; Pingo y la insignia conservan su fundido.\n- El confeti es de tier «raro»: solo lo monta `Celebration`, y\n  `Celebration` solo cierra el alta de una mascota o la vinculación de un\n  collar.";
++  const point7 = "  `src/theme/motion.ts` y no arrancan con reduce motion.\n  La enmienda \u0023171 suma a esta lista la flotación y el anillo de ping de\n  Pingo en la celebración, y la lluvia de confeti que la acompaña: los tres\n  se repiten mientras la celebración está abierta.";
+   expect(source.split(amendment)).toHaveLength(2);
+   expect(source.indexOf(amendment)).toBeGreaterThan(source.indexOf('## Checklist de autocrítica'));
+   expect(source.slice(source.indexOf(amendment) + amendment.length)).toMatch(/^\n\n- \[[ xX]\] Aprobada por humano \(fecha: [^)\n]*\)(?:\n|$)/);
++  expect(source.split(point7)).toHaveLength(2);
++  expect(source.indexOf(point7)).toBeLessThan(source.indexOf('## Checklist de autocrítica'));
+ });

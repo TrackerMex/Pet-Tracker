@@ -1,0 +1,15 @@
+diff --git a/mobile-pet-tracker/src/__tests__/design-drift.test.ts b/mobile-pet-tracker/src/__tests__/design-drift.test.ts
+index e6c8c06bf7bec18f83c7e06f61ae080a63474e0a..1749cb0ce76d3697898859dc90f1bdf665fc4c13 100644
+--- a/mobile-pet-tracker/src/__tests__/design-drift.test.ts
++++ b/mobile-pet-tracker/src/__tests__/design-drift.test.ts
+@@ -865,8 +865,8 @@ describe('#171 R13: sin drift en la celebración', () => {
+     expect(source).not.toMatch(MEALS_BAR_STYLE_ESCAPES);
+   });
+ 
+-  it('R13.2 la fuente no usa LayoutAnimation, entering/exiting ni bucles', () => {
++  it('R13.2 la fuente no usa LayoutAnimation ni entering/exiting', () => {
+     const source = readFileSync(join(projectRoot, 'src/components/celebration.tsx'), 'utf8');
+-    expect(source).not.toMatch(/LayoutAnimation|entering=|exiting=|withRepeat|withSequence/);
++    expect(source).not.toMatch(/LayoutAnimation|entering=|exiting=/);
+   });
+ });
