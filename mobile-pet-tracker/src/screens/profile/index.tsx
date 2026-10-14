@@ -35,6 +35,23 @@ import { TOUCH_SLOP } from '../../theme/touch-target';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { CATEGORY_SLOTS, type CategorySlot } from '../../utils/category-palette';
 
+function formatLastSignal(
+  iso: string | null,
+  nowMs: number,
+  t: ReturnType<typeof useTranslate>,
+  locale: string,
+): string | null {
+  if (iso === null) return null;
+  const s = Math.floor((nowMs - Date.parse(iso)) / 1000);
+  if (s < 60) return t('map.justNow');
+  if (s < 3600) return t('map.agoMinutes', { minutes: Math.floor(s / 60) });
+  if (s < 86400) return t('map.agoHours', { hours: Math.floor(s / 3600) });
+  const date = new Date(iso);
+  return date.getFullYear() === new Date(nowMs).getFullYear()
+    ? date.toLocaleDateString(locale, { day: 'numeric', month: 'short' })
+    : date.toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
 function InfoRow({
   isLast = false,
   label,
@@ -321,11 +338,7 @@ export function ProfileScreen() {
             <InfoRow
               isLast
               label={t('profile.lastSignal')}
-              value={
-                pet.lastCommunicationAt
-                  ? new Date(pet.lastCommunicationAt).toLocaleString(locale)
-                  : null
-              }
+              value={formatLastSignal(pet.lastCommunicationAt, detail.dataUpdatedAt, t, locale)}
             />
           </Card>
 

@@ -242,6 +242,9 @@ export const R6_FOOD: UseRow[] = [
 ];
 
 export const R7_PROFILE: UseRow[] = [
+  { file: 'src/screens/profile/index.tsx', key: 'map.justNow' }, // #173 R9
+  { file: 'src/screens/profile/index.tsx', key: 'map.agoMinutes' }, // #173 R9
+  { file: 'src/screens/profile/index.tsx', key: 'map.agoHours' }, // #173 R9
   { file: 'src/screens/profile/index.tsx', key: 'addPet.male' }, // #173 R7
   { file: 'src/screens/profile/index.tsx', key: 'addPet.female' }, // #173 R7
   { file: 'src/screens/profile/index.tsx', key: 'profile.notRegistered' },
