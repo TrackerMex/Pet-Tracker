@@ -1737,4 +1737,4 @@ dentro de `bg-accent-soft`.
     incluidos.
   - Las demás son de estructura (S15, S19) o de `checkUses` (S16).
 
-- [ ] Enmienda E4 aprobada por humano (fecha: ____) ← gate antes de reanudar Codex
+- [x] Enmienda E4 aprobada por humano (fecha: 2026-10-14) ← gate antes de reanudar Codex
