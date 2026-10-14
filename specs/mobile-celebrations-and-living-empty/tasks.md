@@ -1072,6 +1072,14 @@ reviewer las repite. Cada una da rojo en los `it` listados y en ninguno más:
 - **Bucles y suites que montan `Celebration`.** Ninguna usa `runAllTimers`,
   que con bucles infinitos no terminaría. Add-pet y Vincular siguen verdes en
   el spike (41/41 y 61/61), y R21 acota el trabajo al desmontar.
+- **Timeout del fichero (corrección tras la ronda 4, 2026-10-14).** Los
+  `it` de E4 avanzan los 39 bucles con timers falsos y tardan más que los
+  5000 ms por defecto de jest, que es como corre `./init.sh`: con el fichero
+  solo, R6.6 tarda unos 20 s, R6.4 8,5 s, R18.2 7 s y R6.5 5,2 s. El spike y
+  el handoff midieron con `--testTimeout=30000` y no lo vieron, e init.sh dio
+  rojo por timeout en R6.6 y R18.2. `celebration.test.tsx` declara
+  `jest.setTimeout(60_000);` en su nivel superior, tras los `jest.mock`. No
+  cambia ningún requisito ni ninguna aserción.
 
 ### E4-E — Trazabilidad
 
