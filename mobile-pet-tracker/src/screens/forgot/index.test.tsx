@@ -38,7 +38,7 @@ jest.mock('reicon-react-native', () => {
     function MockIcon(props: Record<string, unknown>) {
       return React.createElement(View, { testID, ...props });
     };
-  return { ...actual, AlertCircle: mockIcon('icon-alert-circle') };
+  return { ...actual, AlertCircle: mockIcon('icon-alert-circle'), Lock: mockIcon('icon-lock') };
 });
 
 jest.mock('../../theme/use-theme-colors', () => ({
@@ -192,12 +192,10 @@ async function submitForgot(email = 'ana@example.com') {
   await fireEvent.press(screen.getByTestId('forgot-submit'));
 }
 
-const LOCK_TILE_CLASS = 'size-16 items-center justify-center rounded-xl bg-accent-soft';
-
 function lockTile() {
   const siblings = (screen.getByTestId('forgot-title').parent?.children ?? []) as unknown[];
   return siblings.filter((c) => typeof c !== 'string').find(
-    (c) => (c as { props: { className?: string } }).props.className === LOCK_TILE_CLASS,
+    (c) => (c as { props: { testID?: string } }).props.testID === 'forgot-lock-tile',
   );
 }
 
@@ -283,13 +281,13 @@ describe('#117 R5: enviar pasa la pantalla a «Revisa tu correo»', () => {
     const before = (screen.getByTestId('forgot-title').parent?.children ?? []) as unknown[];
 
     expect(before.filter((c) => typeof c !== 'string').find(
-      (c) => (c as { props: { className?: string } }).props.className === 'size-16 items-center justify-center rounded-xl bg-accent-soft',
+      (c) => (c as { props: { className?: string } }).props.className === 'size-13 items-center justify-center rounded-xl border-b-4 border-black/25 bg-accent',
     )).toBeDefined();
     await submitForgot();
     expect(await screen.findByText('Revisa tu correo')).toBeVisible();
     const after = (screen.getByTestId('forgot-title').parent?.children ?? []) as unknown[];
     expect(after.filter((c) => typeof c !== 'string').find(
-      (c) => (c as { props: { className?: string } }).props.className === 'size-16 items-center justify-center rounded-xl bg-accent-soft',
+      (c) => (c as { props: { className?: string } }).props.className === 'size-13 items-center justify-center rounded-xl border-b-4 border-black/25 bg-accent',
     )).toBeDefined();
   });
 });
@@ -578,7 +576,7 @@ describe('#167 R9: Pingo y pop del candado en recuperar', () => {
       p.testID, { className: p.className, style: p.style },
     ]))).toEqual({
       'forgot-lock-tile': {
-        className: 'size-16 items-center justify-center rounded-xl bg-accent-soft',
+        className: 'size-13 items-center justify-center rounded-xl border-b-4 border-black/25 bg-accent',
         style: { borderCurve: 'continuous' },
       },
     });
@@ -593,7 +591,7 @@ describe('#167 R9: Pingo y pop del candado en recuperar', () => {
       p.testID, { className: p.className, style: p.style },
     ]))).toEqual({
       'forgot-lock-tile': {
-        className: 'size-16 items-center justify-center rounded-xl bg-accent-soft',
+        className: 'size-13 items-center justify-center rounded-xl border-b-4 border-black/25 bg-accent',
         style: { borderCurve: 'continuous' },
       },
     });
@@ -647,4 +645,22 @@ describe('#172 R9: error de recuperar', () => {
     ]);
     expect(screen.getByTestId('forgot-error').props.selectable).toBe(true);
   });
+});
+
+
+it('#172 R14: el candado es un tile acento con labio y Lock de 26', async () => {
+  mockForgotPassword.mockResolvedValue({ kind: 'ok' });
+  await renderRoute();
+  function expectTile() {
+    const tile = screen.getByTestId('forgot-lock-tile');
+    expect(tile.props.className).toBe('size-13 items-center justify-center rounded-xl border-b-4 border-black/25 bg-accent');
+    const icon = screen.getByTestId('icon-lock');
+    expect(tile.children).toEqual([icon]);
+    expect(icon.props.size).toBe(26);
+    expect(icon.props.color).toBe('color:accent-foreground');
+  }
+  expectTile();
+  await submitForgot();
+  await waitFor(() => expect(screen.getByTestId('forgot-title')).toHaveTextContent('Revisa tu correo'));
+  expectTile();
 });
