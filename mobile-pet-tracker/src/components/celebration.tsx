@@ -5,8 +5,10 @@ import { Button } from 'heroui-native';
 import { Modal, Text, View, useWindowDimensions } from 'react-native';
 import Animated, { interpolate, useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withRepeat, withSpring, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Svg, { Path } from 'react-native-svg';
 
 import { MOTION_CELEBRATION_SPRING, MOTION_CONFETTI_FALL_TIMING, MOTION_FADE_TIMING, MOTION_POP_SCALE, MOTION_SURFACE_MS } from '../theme/motion';
+import { useThemeColors } from '../theme/use-theme-colors';
 
 type CelebrationProps = {
   testID: string;
@@ -21,6 +23,7 @@ export function Celebration({ testID, title, body, details, primary, secondary }
   const insets = useSafeAreaInsets();
   const height = useWindowDimensions().height;
   const reduceMotion = useReducedMotion();
+  const [check] = useThemeColors(['accent-foreground']);
   const pingoScale = useSharedValue(reduceMotion ? 1 : MOTION_POP_SCALE);
   const pingoOpacity = useSharedValue(0);
   const badgeScale = useSharedValue(reduceMotion ? 1 : MOTION_POP_SCALE);
@@ -54,8 +57,8 @@ export function Celebration({ testID, title, body, details, primary, secondary }
     >
       <View
         testID={testID}
-        className="flex-1 items-center gap-4 bg-surface-secondary px-6"
-        style={{ paddingTop: insets.top + 80, paddingBottom: insets.bottom + 24 }}
+        className="flex-1 items-center gap-3.5 bg-surface-secondary px-6"
+        style={{ paddingTop: insets.top + 80, paddingBottom: insets.bottom + 40 }}
       >
         {!reduceMotion ? (
           <View
@@ -70,29 +73,31 @@ export function Celebration({ testID, title, body, details, primary, secondary }
             ))}
           </View>
         ) : null}
-        <View testID={`${testID}-hero`} style={{ width: 200, height: 200 }}>
-          <Animated.View testID={`${testID}-pingo`} style={[pingoStyle, { width: 200, height: 200 }]}>
+        <View testID={`${testID}-hero`} className="mt-10 items-center justify-center" style={{ width: 220, height: 220 }}>
+          <Animated.View testID={`${testID}-pingo`} style={[pingoStyle, { width: 170, height: 170 }]}>
             <Image
               testID={`${testID}-pose`}
               source={require('../../assets/images/pingo-celebrate.webp')}
-              style={{ width: 200, height: 200 }}
+              style={{ width: 170, height: 170 }}
               contentFit="contain"
               accessible={false}
             />
           </Animated.View>
           <Animated.View
             testID={`${testID}-badge`}
-            style={[badgeStyle, { position: 'absolute', right: 0, bottom: 0 }]}
+            style={[badgeStyle, { position: 'absolute', right: 18, bottom: 26 }]}
             importantForAccessibility="no-hide-descendants"
             accessibilityElementsHidden
           >
             <View className="size-14 items-center justify-center rounded-full border-4 border-surface-secondary bg-accent">
-              <Text className="text-2xl font-black text-accent-foreground">✓</Text>
+              <Svg testID={`${testID}-check`} width={28} height={28} viewBox="0 0 24 24" fill="none">
+                <Path d="M20 6 9 17l-5-5" stroke={check} strokeWidth={3} strokeLinecap="round" strokeLinejoin="round" />
+              </Svg>
             </View>
           </Animated.View>
         </View>
-        <Text testID={`${testID}-title`} className="text-center text-3xl font-black text-foreground">{title}</Text>
-        <Text testID={`${testID}-body`} className="text-center text-base text-muted" selectable>{body}</Text>
+        <Text testID={`${testID}-title`} className="mt-2 text-center text-3xl font-black tracking-tight text-foreground">{title}</Text>
+        <Text testID={`${testID}-body`} className="max-w-75 text-center text-15 leading-5.5 text-muted" selectable>{body}</Text>
         {details?.length ? (
           <View testID={`${testID}-details`} className="flex-row flex-wrap justify-center gap-2">
             {details.map((detail) => (
