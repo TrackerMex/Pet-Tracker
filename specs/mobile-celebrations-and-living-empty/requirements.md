@@ -923,11 +923,15 @@ al escribir el handoff, y las reutiliza si sí. E4 no usa el componente
 - **R20.2** THE SYSTEM SHALL colocar `{id}-badge` en `right: 18` y
   `bottom: 26` (R7.2). El `View` interior no cambia.
 - **R20.3** THE SYSTEM SHALL sustituir el glifo de texto «✓» de la insignia
-  por
-  `<Svg testID={`${testID}-check`} width={28} height={28} viewBox="0 0 24 24" fill="none">`
-  con un único
-  `<Path d="M20 6 9 17l-5-5" stroke={check} strokeWidth={3} strokeLinecap="round" strokeLinejoin="round" />`,
-  donde `const [check] = useThemeColors(['accent-foreground'])`.
+  por este SVG, con un único `Path`, donde
+  `const [check] = useThemeColors(['accent-foreground'])`:
+
+  ```tsx
+  <Svg testID={`${testID}-check`} width={28} height={28} viewBox="0 0 24 24" fill="none">
+    <Path d="M20 6 9 17l-5-5" stroke={check} strokeWidth={3} strokeLinecap="round" strokeLinejoin="round" />
+  </Svg>
+  ```
+
   `react-native-svg` ya está instalado. Se descarta el `Check` de reicons:
   es un trazado relleno y más fino que el del artboard. R2.4 pasa a decir
   «la insignia `{id}-badge` con el check `{id}-check`».
