@@ -457,6 +457,13 @@ describe('#167 R10: Pingo y tarjeta de estado en nueva contraseña', () => {
     expect(screen.queryByTestId('reset-body')).toBeNull();
   });
 
+  it('#172 R13: la tarjeta de estado avisa con liveRegion polite', async () => {
+    await renderRoute('reset-token-172');
+    await submitReset();
+    expect(await screen.findByTestId('reset-success')).toBeOnTheScreen();
+    expect(screen.getByTestId('reset-success-card').props.accessibilityLiveRegion).toBe('polite');
+  });
+
   it('#167 R10: el éxito conserva la cabecera del formulario', async () => {
     await renderRoute('reset-token-167');
     await submitReset();
