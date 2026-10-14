@@ -328,7 +328,7 @@ describe('#127 R1: el botón de envío de reset-password lleva su receta en el �
     await renderRoute('reset-token-127');
 
     expect(screen.getByTestId('reset-submit').props.className).toBe(
-      'pressable-feedback__root button__root button__root--variant-primary button__root--size-md w-full rounded-xl bg-accent border-b-4 border-black/25',
+      'pressable-feedback__root button__root button__root--variant-primary button__root--size-md w-full h-14 rounded-xl bg-accent border-b-4 border-black/25',
     );
   });
 });
