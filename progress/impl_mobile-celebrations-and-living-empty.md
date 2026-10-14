@@ -7318,3 +7318,2590 @@ specs/mobile-ui-language/design.md
 Los siete ficheros coinciden exactamente con la lista cerrada del handoff. Medida desde H1, con `--first-parent --no-merges`.
 
 R16: pendiente del smoke humano
+
+
+## Ronda 4
+
+Inicio: 2026-10-14. H1 = `0bfd45fd0b45b72cda845ae57490d030cd26db97`. Feature 171 en curso, E4 y carta aprobadas. Plan: c44–c63 en orden, P1–P12, anclas de cierre, c64–c65. El leader ejecuta el gate global; no se ejecuta init.sh ni se publica la rama.
+
+Skills cargadas: `building-native-ui` del plugin Expo (`/home/claude/.codex/plugins/cache/openai-curated/expo/11c74d6b/skills/building-native-ui/SKILL.md`), `animate-expo` del repo (`.agents/skills/animate-expo/SKILL.md`), `appllama-app-design-skill` exigida por la carta y `ponytail`. La spec E4 manda sobre todas. Tier raro; propósito: delight. Reanimated en UI thread, solo transform y opacity, curvas y duraciones literales de E4; smoke humano R16 pendiente.
+
+### Handoff y anclas iniciales
+
+```text
+$ cd /home/claude/sites/Pet-Tracker-wt-171 && pwd
+/home/claude/sites/Pet-Tracker-wt-171
+```
+
+```text
+$ git branch --show-current
+feature/171-mobile-celebrations-and-living-empty
+```
+
+```text
+$ git rev-parse HEAD
+0bfd45fd0b45b72cda845ae57490d030cd26db97
+```
+
+```text
+$ git log --oneline -4
+0bfd45fd docs(progress): #171 round 4 handoff, patches and traceability tests column
+0268e9bd docs(specs): firma de la enmienda E4 de #171 aprobada vía Notion
+e56e7b4b docs(progress): #171 E4 mirrored to Notion from 9f2beafb
+9f2beafb docs(mobile-celebrations-and-living-empty): #171 E4 R20.3 SVG as a code block
+```
+
+```text
+$ git status --short
+```
+
+```text
+$ git fetch origin && git rev-parse origin/main
+788d1f896d2de11cde7a6ab5e1fbf1bb548b620f
+```
+
+```text
+$ git merge-base --is-ancestor origin/main HEAD; echo "exit=$?"
+exit=0
+```
+
+```text
+$ git rev-parse HEAD:mobile-pet-tracker HEAD:docs HEAD:specs/mobile-ui-language
+d27a09c60c44bca7ea15a22807d81c243c0dfb51
+ae2d6b497ae1b114ac757cba665048aaf26882ed
+3075171b76e407ef3c09b82c718b0f27bb7efb2c
+```
+
+```text
+$ git ls-tree HEAD | awk '$4 != "progress"' | git hash-object --stdin
+eff43d610babbe75490fad886e2010bf106ac5d0
+```
+
+cwd:
+
+```text
+$ cd /home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker && pwd
+/home/claude/sites/Pet-Tracker-wt-171/mobile-pet-tracker
+```
+
+node_modules:
+
+```text
+$ test -d node_modules && echo presente
+presente
+```
+
+router:
+
+```text
+$ test ! -e .expo/types/router.d.ts; echo "exit=$?"
+exit=0
+```
+
+A1:
+
+```text
+$ git hash-object src/__tests__/design-drift.test.ts src/__tests__/consistency-classnames.test.ts src/components/__tests__/celebration.test.tsx src/theme/__tests__/global-css.test.ts src/theme/__tests__/motion.test.ts src/__tests__/tab-headers-canvas.test.ts src/screens/pairing/index.test.tsx ../docs/ui-guidelines.md
+e6c8c06bf7bec18f83c7e06f61ae080a63474e0a
+ef41e8707ffb76b8e78c96a539eee44e214c5c9f
+d287e3b383dd8cd81db60590627192dfea74a62c
+f627fe3ac031a042a7a727237f5f048042a494b0
+e2130ee6bdd3cd304d846d6ff75092a0da343691
+eb6db235a507193dcc28aeec35393152da544362
+156a465a80e747afc0c177ed9c81e0d86c87692d
+e8fa5e5f9a28fac11c4260266dfc56b42ff0c0d6
+```
+
+A2:
+
+```text
+$ grep -cF 'CONFETTI_FILLS' src/utils/category-palette.ts src/components/celebration.tsx
+src/utils/category-palette.ts:1
+src/components/celebration.tsx:2
+```
+
+A3:
+
+```text
+$ grep -cE 'MOTION_CONFETTI_(MIN|SPREAD)_MS|MOTION_CELEBRATION_SPRING' src/theme/motion.ts src/components/celebration.tsx
+src/theme/motion.ts:3
+src/components/celebration.tsx:5
+```
+
+A4:
+
+```text
+$ grep -cF 'MOTION_PINGO_FLOAT_' src/theme/motion.ts
+0
+```
+
+A5:
+
+```text
+$ grep -cxF '  --text-15: 15px;' src/theme/global.css
+0
+```
+
+A6:
+
+```text
+$ grep -cF -- '--color-confetti-' src/theme/global.css
+0
+```
+
+A7:
+
+```text
+$ grep -cE 'withRepeat|withSequence|cancelAnimation' src/components/celebration.tsx
+0
+```
+
+A8:
+
+```text
+$ grep -cxF 'export const MOTION_PING_FROM = 0.55;' src/theme/motion.ts
+1
+```
+
+A9:
+
+```text
+$ grep -cxF 'export const MOTION_PING_TO_SCALE = 1.5;' src/theme/motion.ts
+1
+```
+
+A10:
+
+```text
+$ grep -cF '"react-native-svg": "15.15.4"' package.json
+1
+```
+
+A11:
+
+```text
+$ grep -cF 'export function useThemeColors' src/theme/use-theme-colors.ts
+1
+```
+
+A12:
+
+```text
+$ grep -rlF 'rounded-xs' src --include=*.tsx --include=*.ts | LC_ALL=C sort | tr '\n' ' '; echo
+
+```
+
+K1:
+
+```text
+$ grep -cF -- '- [x] Enmienda E4 aprobada por humano (fecha: 2026-10-14)' specs/mobile-celebrations-and-living-empty/requirements.md
+1
+```
+
+K2:
+
+```text
+$ grep -cF -- '- [x] Texto de la carta de E4.13 aprobado por humano (R15) (fecha: 2026-10-14)' specs/mobile-celebrations-and-living-empty/requirements.md
+1
+```
+
+K3:
+
+```text
+$ grep -cF -- '- [ ] R16: smoke en dev build de Android completado por humano (fecha: ____)' specs/mobile-celebrations-and-living-empty/requirements.md
+1
+```
+
+K4:
+
+```text
+$ grep -cF '(E4)' specs/mobile-celebrations-and-living-empty/traceability.md
+0
+```
+
+K5:
+
+```text
+$ grep -cF '| pendiente |' specs/mobile-celebrations-and-living-empty/traceability.md
+6
+```
+
+K6:
+
+```text
+$ git merge-base --is-ancestor origin/main HEAD; echo "exit=$?"
+exit=0
+```
+
+K7:
+
+```text
+$ grep -cE '^### §2\.2[3-7] ' specs/mobile-ui-language/design.md
+5
+```
+
+K8:
+
+```text
+$ git hash-object specs/mobile-ui-language/design.md
+9a4e61aa084a4066ed148d476d83386f52b0afec
+```
+
+K9:
+
+```text
+$ git hash-object progress/ronda4_mobile-celebrations-and-living-empty/c*.patch
+ca4ac4eee73b981dfb6b1bd6a89d653f70b848df
+0d302fbc6591a2746f796ef93731b1ccc24674b1
+b520fd2205cba71ac8f9dee2ad3829f5bd23610b
+b773f8be6276de60cae55a5a5ad02f61c4fda38c
+876278ab879a2d8b2285f92b9c6a4aceff1c1665
+a6de4997da51207f14b4f836d5b3e03ddcb85108
+cda6b081de34493d07a2253df4aa704e17b20e42
+b214ab7abe44b2931204405745a1011c8fe1eb74
+522315a7b603c9d5551af2ed8cc5671863acd9f7
+27327d8a4ab18adf2b05a1d73825bd2426ddf8d3
+af4d9fb10c43a7dc24c38a4aceea3520e16206ad
+9b0c027cb6599935a043efe054084effb1e6f68c
+```
+
+K10:
+
+```text
+$ git diff --quiet origin/main HEAD -- mobile-pet-tracker/package.json mobile-pet-tracker/bun.lock; echo "deps=$?"
+deps=0
+```
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/components/__tests__/celebration.test.tsx src/theme/__tests__/motion.test.ts src/__tests__/consistency-classnames.test.ts src/theme/__tests__/global-css.test.ts src/__tests__/tab-headers-canvas.test.ts src/screens/pairing/index.test.tsx src/screens/welcome/index.test.tsx > /tmp/171-r4-base.txt 2>&1; echo "exit=$?"
+exit=0
+  ● Console
+  ● Console
+  ● Console
+Test Suites: 7 passed, 7 total
+Tests:       343 passed, 343 total
+Unable to find=0
+```
+
+### c44
+
+```text
+$ git -C .. apply --check progress/ronda4_mobile-celebrations-and-living-empty/c44.patch && git -C .. apply progress/ronda4_mobile-celebrations-and-living-empty/c44.patch; echo "exit=$?"
+exit=0
+```
+
+Hashes del parche (exit=0):
+
+```text
+1749cb0ce76d3697898859dc90f1bdf665fc4c13
+```
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/__tests__/design-drift.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/171-c44-guardas.txt 2>&1; echo "exit=$?"
+exit=0
+Test Suites: 2 passed, 2 total
+Tests:       101 passed, 101 total
+Unable to find=0
+```
+
+Cadena c44: exit=1. Typecheck y lint según el handoff; lint exigido vacío.
+
+```text
+$ tsc --noEmit
+```
+
+Incidencia c44: primer intento de cadena, lint imprimió `error: Failed to run "eslint" due to signal SIGKILL`. Sin archivos stageados y router.d.ts ausente (exit=0). Excepción de memoria del handoff: espera literal, 60 s adicionales y reintento de la cadena entera (reintento 1 de 2).
+
+```text
+$ W=0; while pgrep -f 'node_modules/(\.bin/jest|jest-worker)|[i]nit\.sh' > /dev/null; do W=$((W+1)); test $W -le 90 || break; sleep 60; done; echo "espera=$W"
+espera=3
+```
+
+Espera adicional c44: `sleep 60`, exit=0.
+
+Cadena c44: exit=0. Typecheck y lint según el handoff; lint exigido vacío.
+
+```text
+$ tsc --noEmit
+[feature/171-mobile-celebrations-and-living-empty b92f7db0] test(mobile): design-drift deja de prohibir los bucles de la celebración (R13, E4)
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+```
+
+### c45
+
+```text
+$ git -C .. apply --check progress/ronda4_mobile-celebrations-and-living-empty/c45.patch && git -C .. apply progress/ronda4_mobile-celebrations-and-living-empty/c45.patch; echo "exit=$?"
+exit=0
+```
+
+Hashes del parche (exit=0):
+
+```text
+2e588c6545625aac41d387f4c05b9868a0f4336c
+39be13facb94453ac52092f80ea59f0e7899b3ac
+e13a55f276195614771fe6d50553758a90ee612c
+36e34e9aa655f30bbecc21fa88b2e2612eca2b3e
+```
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/components/__tests__/celebration.test.tsx src/theme/__tests__/motion.test.ts src/__tests__/consistency-classnames.test.ts src/theme/__tests__/global-css.test.ts > /tmp/171-c45.txt 2>&1; echo "exit=$?"
+exit=1
+  ● #62 R4: la app solo usa los radios de la escala declarada › reserva rounded-xs al confeti de la celebración
+  ● #62 R4: la app solo usa los radios de la escala declarada › solo la celebración nombra los colores del confeti
+  ● #64 R9: el color categórico solo se nombra en el módulo de paleta › centraliza las diez clases completas y prohíbe interpolarlas
+  ● #171 E4: tokens de la celebración › #171 E4: @theme declara los cinco colores del confeti
+  ● #152 R1: las duraciones y el preset de movimiento viven en un solo sitio › no exporta nada más
+  ● Console
+  ● #171 R6: confeti › R6.1 pinta 36 piezas con la clase de su fila
+  ● #171 R6: confeti › R6.2 cada pieza empieza arriba y transparente, en su posición
+  ● #171 R6: confeti › R6.3 la pieza 9 sigue arriba y transparente a los 1390 ms
+  ● #171 R6: confeti › R6.4 la pieza 21 vuelve a caer desde arriba tras terminar
+  ● #171 R6: confeti › R6.5 a los 1500 ms cada pieza sigue su retardo, su duración y su curva
+  ● #171 R6: confeti › R6.6 a los 13830 ms las 36 piezas siguen en vuelo
+Test Suites: 4 failed, 4 total
+Tests:       11 failed, 180 passed, 191 total
+Unable to find=1
+```
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/__tests__/design-drift.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/171-c45-guardas.txt 2>&1; echo "exit=$?"
+exit=0
+Test Suites: 2 passed, 2 total
+Tests:       101 passed, 101 total
+Unable to find=0
+```
+
+Cadena c45: exit=1. Typecheck y lint según el handoff; lint exigido vacío.
+
+```text
+$ tsc --noEmit
+```
+
+Incidencia c45: primer intento de cadena, lint imprimió `error: Failed to run "eslint" due to signal SIGKILL`. Índice vacío. Se aplica la espera y los 60 s adicionales; reintento 1 de 2 de la cadena completa.
+
+```text
+$ W=0; while pgrep -f 'node_modules/(\.bin/jest|jest-worker)|[i]nit\.sh' > /dev/null; do W=$((W+1)); test $W -le 90 || break; sleep 60; done; echo "espera=$W"
+espera=5
+```
+
+Espera adicional c45: `sleep 60`, exit=0.
+
+Cadena c45: exit=0. Typecheck y lint según el handoff; lint exigido vacío.
+
+```text
+$ tsc --noEmit
+[feature/171-mobile-celebrations-and-living-empty 569db569] test(mobile): 36 piezas de confeti en bucle con sus tokens (R6, E4)
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 4 files changed, 100 insertions(+), 83 deletions(-)
+```
+
+### c46
+
+Producción propia, intento 1: solo CE, MO, GL y CP. Confeti de 36 filas literal, retardo fuera del bucle; sin adelantar maquetación, pop, reduce motion ni cancelación.
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/components/__tests__/celebration.test.tsx src/theme/__tests__/motion.test.ts src/__tests__/consistency-classnames.test.ts src/theme/__tests__/global-css.test.ts > /tmp/171-c46.txt 2>&1; echo "exit=$?"
+exit=0
+  ● Console
+Test Suites: 4 passed, 4 total
+Tests:       191 passed, 191 total
+Unable to find=0
+```
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/__tests__/design-drift.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/171-c46-guardas.txt 2>&1; echo "exit=$?"
+exit=0
+Test Suites: 2 passed, 2 total
+Tests:       101 passed, 101 total
+Unable to find=0
+```
+
+```text
+$ W=0; while pgrep -f 'node_modules/(\.bin/jest|jest-worker)|[i]nit\.sh' > /dev/null; do W=$((W+1)); test $W -le 90 || break; sleep 60; done; echo "espera=$W"
+espera=0
+```
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 > /tmp/171-c46-all.txt 2>&1; echo "exit=$?"
+exit=0
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+Test Suites: 104 passed, 104 total
+Tests:       3188 passed, 3188 total
+Unable to find=0
+```
+
+Cadena c46: exit=0. Typecheck y lint según el handoff; lint exigido vacío.
+
+```text
+$ tsc --noEmit
+[feature/171-mobile-celebrations-and-living-empty 8316c80b] feat(mobile): 36 piezas de confeti en bucle con sus tokens (R6, E4)
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 4 files changed, 52 insertions(+), 32 deletions(-)
+```
+
+Resultado c46: producción verde al intento 1; cero títulos `●` de fallo intermedios (Console excluido). ALL 104/3188 y cadena exit=0; commit `8316c80b feat(mobile): 36 piezas de confeti en bucle con sus tokens (R6, E4)`.
+
+### c47
+
+```text
+$ git -C .. apply --check progress/ronda4_mobile-celebrations-and-living-empty/c47.patch && git -C .. apply progress/ronda4_mobile-celebrations-and-living-empty/c47.patch; echo "exit=$?"
+exit=0
+```
+
+Hashes del parche (exit=0):
+
+```text
+f96029ffe1f270f431ed6bbe99a8a1196439423a
+b481f2c75d98631f88bec6072b108d464dcf96b9
+67455d441f3554df003f9e6b3ae0fbe8b01587c8
+```
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/components/__tests__/celebration.test.tsx src/theme/__tests__/global-css.test.ts src/__tests__/tab-headers-canvas.test.ts > /tmp/171-c47.txt 2>&1; echo "exit=$?"
+exit=1
+  ● #168 R1: el título grande vive en las tres pestañas › limita el literal a las tres pestañas y a la celebración
+  ● #171 E4: tokens de la celebración › #171 E4: @theme declara text-15 de 15 px
+  ● Console
+  ● #171 R2: Celebration › R2.4 Pingo usa celebrate y la insignia contiene el check del artboard
+  ● #171 R7: pop › R7.1 Pingo empieza transparente y a escala 0.6
+  ● #171 R7: pop › R7.2 la insignia empieza transparente y a escala 0.6
+  ● #171 R7: pop › R7.3 Pingo llega a opacidad y escala 1 a los 2000 ms
+  ● #171 R7: pop › R7.3 la insignia sigue en reposo a los 300 ms
+  ● #171 R7: pop › R7.3 la insignia llega a opacidad y escala 1 a los 2400 ms
+  ● #171 R20: maquetación del artboard › R20.1 el hero mide 220 con margen superior y Pingo 170
+  ● #171 R20: maquetación del artboard › R20.4 el título lleva el tracking y el margen del artboard
+  ● #171 R20: maquetación del artboard › R20.5 el cuerpo mide 15 px con ancho máximo de 300
+  ● #171 R20: maquetación del artboard › R20.6 la raíz separa 14 px y deja 40 abajo
+  ● #171 R8: reduce motion › R8.2 Pingo empieza transparente a escala 1
+  ● #171 R8: reduce motion › R8.2 Pingo conserva el fundido a los 2000 ms
+  ● #171 R8: reduce motion › R8.3 la insignia empieza transparente a escala 1
+  ● #171 R8: reduce motion › R8.3 la insignia conserva el fundido retardado a los 300 y 2400 ms
+Test Suites: 3 failed, 3 total
+Tests:       16 failed, 99 passed, 115 total
+Unable to find=1
+```
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/__tests__/design-drift.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/171-c47-guardas.txt 2>&1; echo "exit=$?"
+exit=0
+Test Suites: 2 passed, 2 total
+Tests:       101 passed, 101 total
+Unable to find=0
+```
+
+Cadena c47, intento 1: exit=0. Typecheck y lint según el handoff; lint exigido vacío.
+
+```text
+$ tsc --noEmit
+[feature/171-mobile-celebrations-and-living-empty 03f02ec9] test(mobile): maquetación del artboard, check en SVG y text-15 (R2, R20, E4)
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 3 files changed, 60 insertions(+), 12 deletions(-)
+```
+
+### c48
+
+Producción propia, intento 1: solo CE y GL. Medidas, clases y SVG literales de R20; se conserva el muelle de E3 y la entrada estática.
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/components/__tests__/celebration.test.tsx src/theme/__tests__/global-css.test.ts src/__tests__/tab-headers-canvas.test.ts > /tmp/171-c48.txt 2>&1; echo "exit=$?"
+exit=0
+  ● Console
+Test Suites: 3 passed, 3 total
+Tests:       115 passed, 115 total
+Unable to find=0
+```
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/__tests__/design-drift.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/171-c48-guardas.txt 2>&1; echo "exit=$?"
+exit=0
+Test Suites: 2 passed, 2 total
+Tests:       101 passed, 101 total
+Unable to find=0
+```
+
+```text
+$ W=0; while pgrep -f 'node_modules/(\.bin/jest|jest-worker)|[i]nit\.sh' > /dev/null; do W=$((W+1)); test $W -le 90 || break; sleep 60; done; echo "espera=$W"
+espera=0
+```
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 > /tmp/171-c48-all.txt 2>&1; echo "exit=$?"
+exit=0
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+Test Suites: 104 passed, 104 total
+Tests:       3193 passed, 3193 total
+Unable to find=0
+```
+
+Cadena c48, intento 1: exit=0. Typecheck y lint según el handoff; lint exigido vacío.
+
+```text
+$ tsc --noEmit
+[feature/171-mobile-celebrations-and-living-empty 2e6bb5e1] feat(mobile): maquetación del artboard, check en SVG y text-15 (R2, R20, E4)
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 2 files changed, 15 insertions(+), 9 deletions(-)
+```
+
+Resultado c48: producción verde al intento 1; cero títulos `●` de fallo intermedios (Console excluido). Commit `2e6bb5e1 feat(mobile): maquetación del artboard, check en SVG y text-15 (R2, R20, E4)`.
+
+### c49
+
+```text
+$ git -C .. apply --check progress/ronda4_mobile-celebrations-and-living-empty/c49.patch && git -C .. apply progress/ronda4_mobile-celebrations-and-living-empty/c49.patch; echo "exit=$?"
+exit=0
+```
+
+Hashes del parche (exit=0):
+
+```text
+deaefd6fa5894774dbc2334e41226b8feb334a4f
+a11b1ef2d4f62cd6f0b939f26b63de788f988752
+```
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/components/__tests__/celebration.test.tsx src/theme/__tests__/motion.test.ts > /tmp/171-c49.txt 2>&1; echo "exit=$?"
+exit=1
+  ● #152 R1: las duraciones y el preset de movimiento viven en un solo sitio › no exporta nada más
+  ● #171 E4: las constantes de la celebración viven en motion.ts › declara la curva ease-out de CSS
+  ● #171 E4: las constantes de la celebración viven en motion.ts › declara los pops de Pingo y de la insignia
+  ● Console
+  ● #171 R7: pop › R7.1 Pingo empieza transparente y a escala 0.6
+  ● #171 R7: pop › R7.4 Pingo sigue el primer tramo del pop a los 0, 100, 200 y 300 ms
+  ● #171 R7: pop › R7.4 la insignia sigue el primer tramo del pop a los 450, 550 y 650 ms
+  ● #171 R7: pop › R7.4 Pingo baja de 1.08 a 1 entre los 420 y los 540 ms
+  ● #171 R7: pop › R7.4 la insignia baja de 1.08 a 1 entre los 800 y los 900 ms
+  ● #171 R8: reduce motion › R8.2 Pingo empieza transparente a escala 1
+  ● #171 R8: reduce motion › R8.2 Pingo conserva el fundido a los 2000 ms
+Test Suites: 2 failed, 2 total
+Tests:       10 failed, 65 passed, 75 total
+Unable to find=0
+```
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/__tests__/design-drift.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/171-c49-guardas.txt 2>&1; echo "exit=$?"
+exit=0
+Test Suites: 2 passed, 2 total
+Tests:       101 passed, 101 total
+Unable to find=0
+```
+
+Cadena c49, intento 1: exit=0. Typecheck y lint según el handoff; lint exigido vacío.
+
+```text
+$ tsc --noEmit
+[feature/171-mobile-celebrations-and-living-empty f559feef] test(mobile): pop por keyframes de Pingo y la insignia (R7, E4)
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 2 files changed, 56 insertions(+), 34 deletions(-)
+```
+
+### c50
+
+Producción propia, intento 1: solo CE y MO. Pop por dos tramos ease-out, cinco constantes literales y translateY de Pingo inicial 0. Sin anillo, flotación, entrada ni cancelación.
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/components/__tests__/celebration.test.tsx src/theme/__tests__/motion.test.ts > /tmp/171-c50.txt 2>&1; echo "exit=$?"
+exit=0
+  ● Console
+Test Suites: 2 passed, 2 total
+Tests:       75 passed, 75 total
+Unable to find=0
+```
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/__tests__/design-drift.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/171-c50-guardas.txt 2>&1; echo "exit=$?"
+exit=0
+Test Suites: 2 passed, 2 total
+Tests:       101 passed, 101 total
+Unable to find=0
+```
+
+```text
+$ W=0; while pgrep -f 'node_modules/(\.bin/jest|jest-worker)|[i]nit\.sh' > /dev/null; do W=$((W+1)); test $W -le 90 || break; sleep 60; done; echo "espera=$W"
+espera=0
+```
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 > /tmp/171-c50-all.txt 2>&1; echo "exit=$?"
+exit=0
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+Test Suites: 104 passed, 104 total
+Tests:       3196 passed, 3196 total
+Unable to find=0
+```
+
+Cadena c50, intento 1: exit=0. Typecheck y lint según el handoff; lint exigido vacío.
+
+```text
+$ tsc --noEmit
+[feature/171-mobile-celebrations-and-living-empty 7f31932c] feat(mobile): pop por keyframes de Pingo y la insignia (R7, E4)
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 2 files changed, 25 insertions(+), 9 deletions(-)
+```
+
+Resultado c50: producción verde al intento 1; cero títulos `●` de fallo intermedios (Console excluido). Commit `7f31932c feat(mobile): pop por keyframes de Pingo y la insignia (R7, E4)`.
+
+### c51
+
+```text
+$ git -C .. apply --check progress/ronda4_mobile-celebrations-and-living-empty/c51.patch && git -C .. apply progress/ronda4_mobile-celebrations-and-living-empty/c51.patch; echo "exit=$?"
+exit=0
+```
+
+Hashes del parche (exit=0):
+
+```text
+3ff2e9983592941f3e6e1847378a2add6a810e7e
+aa2385d0d0953e479a1d48d3767747ac8f22db51
+```
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/components/__tests__/celebration.test.tsx src/theme/__tests__/motion.test.ts > /tmp/171-c51.txt 2>&1; echo "exit=$?"
+exit=1
+  ● #152 R1: las duraciones y el preset de movimiento viven en un solo sitio › no exporta nada más
+  ● #171 E4: las constantes de la celebración viven en motion.ts › declara la duración del ping
+  ● Console
+  ● #171 R17: anillo de ping › R17.1 el anillo es el primer hijo del hero, de acento y oculto a accesibilidad
+  ● #171 R17: anillo de ping › R17.2 el anillo crece y se apaga a los 0, 550, 1100 y 2100 ms
+  ● #171 R17: anillo de ping › R17.3 el anillo vuelve a empezar tras 2200 ms
+  ● #171 R13: solo anima transform y opacity › R13.2 conserva las claves de layout y solo anima transform y opacity a los 0 y 1200 ms
+Test Suites: 2 failed, 2 total
+Tests:       6 failed, 73 passed, 79 total
+Unable to find=3
+```
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/__tests__/design-drift.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/171-c51-guardas.txt 2>&1; echo "exit=$?"
+exit=0
+Test Suites: 2 passed, 2 total
+Tests:       101 passed, 101 total
+Unable to find=0
+```
+
+Cadena c51, intento 1: exit=0. Typecheck y lint según el handoff; lint exigido vacío.
+
+```text
+$ tsc --noEmit
+[feature/171-mobile-celebrations-and-living-empty b6a63f50] test(mobile): anillo de ping detrás de Pingo (R17, E4)
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 2 files changed, 48 insertions(+)
+```
+
+### c52
+
+Producción propia, intento 1: solo CE y MO. Anillo como primer hijo del hero y dos bucles de 2200 ms. El anillo se monta también con reduce motion; su condicional se reserva a c58.
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/components/__tests__/celebration.test.tsx src/theme/__tests__/motion.test.ts > /tmp/171-c52.txt 2>&1; echo "exit=$?"
+exit=0
+  ● Console
+Test Suites: 2 passed, 2 total
+Tests:       79 passed, 79 total
+Unable to find=0
+```
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/__tests__/design-drift.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/171-c52-guardas.txt 2>&1; echo "exit=$?"
+exit=0
+Test Suites: 2 passed, 2 total
+Tests:       101 passed, 101 total
+Unable to find=0
+```
+
+```text
+$ W=0; while pgrep -f 'node_modules/(\.bin/jest|jest-worker)|[i]nit\.sh' > /dev/null; do W=$((W+1)); test $W -le 90 || break; sleep 60; done; echo "espera=$W"
+espera=3
+```
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 > /tmp/171-c52-all.txt 2>&1; echo "exit=$?"
+exit=0
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+Test Suites: 104 passed, 104 total
+Tests:       3200 passed, 3200 total
+Unable to find=0
+```
+
+Cadena c52, intento 1: exit=0. Typecheck y lint según el handoff; lint exigido vacío.
+
+```text
+$ tsc --noEmit
+[feature/171-mobile-celebrations-and-living-empty e71fe950] feat(mobile): anillo de ping detrás de Pingo (R17, E4)
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 2 files changed, 23 insertions(+), 2 deletions(-)
+```
+
+Resultado c52: producción verde al intento 1; cero títulos `●` de fallo intermedios (Console excluido). Commit `e71fe950 feat(mobile): anillo de ping detrás de Pingo (R17, E4)`.
+
+### c53
+
+```text
+$ git -C .. apply --check progress/ronda4_mobile-celebrations-and-living-empty/c53.patch && git -C .. apply progress/ronda4_mobile-celebrations-and-living-empty/c53.patch; echo "exit=$?"
+exit=0
+```
+
+Hashes del parche (exit=0):
+
+```text
+fdde0c295fa61b57afd5b61d24de81aa8a3296dc
+bb1d56bb373176aabda647581334309036d0d938
+```
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/components/__tests__/celebration.test.tsx src/theme/__tests__/motion.test.ts > /tmp/171-c53.txt 2>&1; echo "exit=$?"
+exit=1
+  ● #152 R1: las duraciones y el preset de movimiento viven en un solo sitio › no exporta nada más
+  ● #171 E4: las constantes de la celebración viven en motion.ts › declara la flotación de Pingo
+  ● Console
+  ● #171 R18: flotación de Pingo › R18.1 Pingo flota desde los 600 ms: 0, -5 y -10 a los 600, 1350 y 2100 ms
+  ● #171 R18: flotación de Pingo › R18.2 la flotación sigue en bucle: 0 a los 3600 ms y -10 a los 5100 ms
+Test Suites: 2 failed, 2 total
+Tests:       4 failed, 78 passed, 82 total
+Unable to find=0
+```
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/__tests__/design-drift.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/171-c53-guardas.txt 2>&1; echo "exit=$?"
+exit=0
+Test Suites: 2 passed, 2 total
+Tests:       101 passed, 101 total
+Unable to find=0
+```
+
+Cadena c53, intento 1: exit=0. Typecheck y lint según el handoff; lint exigido vacío.
+
+```text
+$ tsc --noEmit
+[feature/171-mobile-celebrations-and-living-empty 289a5189] test(mobile): Pingo flota tras el pop (R18, E4)
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 2 files changed, 31 insertions(+)
+```
+
+### c54
+
+Producción propia, intento 1: solo CE y MO. Dos constantes literales de flotación y translateY en bucle desde los 600 ms, en el efecto del pop sin reduce motion.
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/components/__tests__/celebration.test.tsx src/theme/__tests__/motion.test.ts > /tmp/171-c54.txt 2>&1; echo "exit=$?"
+exit=0
+  ● Console
+Test Suites: 2 passed, 2 total
+Tests:       82 passed, 82 total
+Unable to find=0
+```
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/__tests__/design-drift.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/171-c54-guardas.txt 2>&1; echo "exit=$?"
+exit=0
+Test Suites: 2 passed, 2 total
+Tests:       101 passed, 101 total
+Unable to find=0
+```
+
+```text
+$ W=0; while pgrep -f 'node_modules/(\.bin/jest|jest-worker)|[i]nit\.sh' > /dev/null; do W=$((W+1)); test $W -le 90 || break; sleep 60; done; echo "espera=$W"
+espera=0
+```
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 > /tmp/171-c54-all.txt 2>&1; echo "exit=$?"
+exit=0
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+Test Suites: 104 passed, 104 total
+Tests:       3203 passed, 3203 total
+Unable to find=0
+```
+
+Cadena c54, intento 1: exit=0. Typecheck y lint según el handoff; lint exigido vacío.
+
+```text
+$ tsc --noEmit
+[feature/171-mobile-celebrations-and-living-empty c265cfda] feat(mobile): Pingo flota tras el pop (R18, E4)
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 2 files changed, 7 insertions(+), 2 deletions(-)
+```
+
+Resultado c54: producción verde al intento 1; cero títulos `●` de fallo intermedios (Console excluido). Commit `c265cfda feat(mobile): Pingo flota tras el pop (R18, E4)`.
+
+### c55
+
+```text
+$ git -C .. apply --check progress/ronda4_mobile-celebrations-and-living-empty/c55.patch && git -C .. apply progress/ronda4_mobile-celebrations-and-living-empty/c55.patch; echo "exit=$?"
+exit=0
+```
+
+Hashes del parche (exit=0):
+
+```text
+5360a0b70b45d9c9206272707253feff3f81882d
+10b20fa52880a35fa842740b381afa38171a5a45
+7a38a622829773aaa3d24616cf99a4c34b9ef2a2
+```
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/components/__tests__/celebration.test.tsx src/theme/__tests__/motion.test.ts src/screens/pairing/index.test.tsx > /tmp/171-c55.txt 2>&1; echo "exit=$?"
+exit=1
+  ● #152 R1: las duraciones y el preset de movimiento viven en un solo sitio › no exporta nada más
+  ● #171 E4: las constantes de la celebración viven en motion.ts › declara la entrada escalonada
+  ● Console
+  ● Console
+  ● #171 R19: entrada escalonada › R19.1 título, cuerpo, fichas y acciones suben escalonados a los 700 ms
+  ● #171 R19: entrada escalonada › R19.1 a los 1200 ms el texto y las acciones están en reposo
+  ● #171 R19: entrada escalonada › R19.2 sin fichas las acciones conservan su retardo de 740 ms
+  ● #171 R13: solo anima transform y opacity › R13.2 conserva las claves de layout y solo anima transform y opacity a los 0 y 1200 ms
+Test Suites: 2 failed, 1 passed, 3 total
+Tests:       6 failed, 141 passed, 147 total
+Unable to find=0
+```
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/__tests__/design-drift.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/171-c55-guardas.txt 2>&1; echo "exit=$?"
+exit=0
+Test Suites: 2 passed, 2 total
+Tests:       101 passed, 101 total
+Unable to find=0
+```
+
+Cadena c55, intento 1: exit=0. Typecheck y lint según el handoff; lint exigido vacío.
+
+```text
+$ tsc --noEmit
+[feature/171-mobile-celebrations-and-living-empty 8edfce08] test(mobile): entrada escalonada del texto y las acciones (R19, E4)
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 3 files changed, 40 insertions(+), 2 deletions(-)
+```
+
+### c56
+
+Producción propia, intento 1: solo CE y MO. Cuatro nodos animados sin envoltorios, k fijos 0/1/2/3. Los valores iniciales son siempre 0 y 14; la dependencia de reduce motion se reserva a c58.
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/components/__tests__/celebration.test.tsx src/theme/__tests__/motion.test.ts src/screens/pairing/index.test.tsx > /tmp/171-c56.txt 2>&1; echo "exit=$?"
+exit=1
+  ● Test suite failed to run
+  ● Test suite failed to run
+Test Suites: 2 failed, 1 passed, 3 total
+Tests:       23 passed, 23 total
+Unable to find=0
+```
+
+Iteración c56, intento 1: `exit=1`, dos `● Test suite failed to run`, `Tests:       23 passed, 23 total`. Error propio de producción: `SyntaxError: Expected corresponding JSX closing tag for <View>. (105:10)`; Received: `</Animated.View>` en el cierre del contenedor de confeti; Expected: `</View>`. La sustitución de etiquetas alcanzó también ese cierre. Sin cadena ni commit c56; se corrige solo CE y se repite la medida según la autorización de iterar producción en un verde.
+
+Intento 2 de c56: restituir el cierre de View del confeti, conservando los cuatro nodos animados de R19.
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/components/__tests__/celebration.test.tsx src/theme/__tests__/motion.test.ts src/screens/pairing/index.test.tsx > /tmp/171-c56.txt 2>&1; echo "exit=$?"
+exit=0
+  ● Console
+  ● Console
+Test Suites: 3 passed, 3 total
+Tests:       147 passed, 147 total
+Unable to find=0
+```
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/__tests__/design-drift.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/171-c56-guardas.txt 2>&1; echo "exit=$?"
+exit=0
+Test Suites: 2 passed, 2 total
+Tests:       101 passed, 101 total
+Unable to find=0
+```
+
+```text
+$ W=0; while pgrep -f 'node_modules/(\.bin/jest|jest-worker)|[i]nit\.sh' > /dev/null; do W=$((W+1)); test $W -le 90 || break; sleep 60; done; echo "espera=$W"
+espera=0
+```
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 > /tmp/171-c56-all.txt 2>&1; echo "exit=$?"
+exit=0
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+Test Suites: 104 passed, 104 total
+Tests:       3207 passed, 3207 total
+Unable to find=0
+```
+
+Cadena c56, intento 1: exit=0. Typecheck y lint según el handoff; lint exigido vacío.
+
+```text
+$ tsc --noEmit
+[feature/171-mobile-celebrations-and-living-empty aada4b5e] feat(mobile): entrada escalonada del texto y las acciones (R19, E4)
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 2 files changed, 32 insertions(+), 7 deletions(-)
+```
+
+Resultado c56: producción verde al intento 2. Intermedio del intento 1: dos `● Test suite failed to run` por el cierre JSX; intento 2: cero títulos `●` de fallo (Console excluido). Commit `aada4b5e feat(mobile): entrada escalonada del texto y las acciones (R19, E4)`.
+
+### c57
+
+```text
+$ git -C .. apply --check progress/ronda4_mobile-celebrations-and-living-empty/c57.patch && git -C .. apply progress/ronda4_mobile-celebrations-and-living-empty/c57.patch; echo "exit=$?"
+exit=0
+```
+
+Hashes del parche (exit=0):
+
+```text
+a2fe2359756656e605b5aab9d28479d9558c2308
+```
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/components/__tests__/celebration.test.tsx > /tmp/171-c57.txt 2>&1; echo "exit=$?"
+exit=1
+  ● #171 R8: reduce motion › R8.4 con reduce motion no monta el anillo y Pingo no flota
+  ● #171 R8: reduce motion › R8.5 con reduce motion el texto y las acciones aparecen sin subir
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 63 passed, 65 total
+Unable to find=0
+```
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/__tests__/design-drift.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/171-c57-guardas.txt 2>&1; echo "exit=$?"
+exit=0
+Test Suites: 2 passed, 2 total
+Tests:       101 passed, 101 total
+Unable to find=0
+```
+
+Cadena c57, intento 1: exit=0. Typecheck y lint según el handoff; lint exigido vacío.
+
+```text
+$ tsc --noEmit
+[feature/171-mobile-celebrations-and-living-empty edc66e23] test(mobile): reduce motion apaga el anillo, la flotación y la subida (R8, E4)
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 1 file changed, 12 insertions(+)
+```
+
+### c58
+
+Producción propia, intento 1: solo CE. Anillo condicionado a reduce motion; entrada inicial 1/0 con reduce motion. El efecto de useRise ya retorna sin animar ni hacer set. Sin cancelAnimation.
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/components/__tests__/celebration.test.tsx src/theme/__tests__/motion.test.ts src/screens/pairing/index.test.tsx > /tmp/171-c58.txt 2>&1; echo "exit=$?"
+exit=0
+  ● Console
+  ● Console
+Test Suites: 3 passed, 3 total
+Tests:       149 passed, 149 total
+Unable to find=0
+```
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/__tests__/design-drift.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/171-c58-guardas.txt 2>&1; echo "exit=$?"
+exit=0
+Test Suites: 2 passed, 2 total
+Tests:       101 passed, 101 total
+Unable to find=0
+```
+
+```text
+$ W=0; while pgrep -f 'node_modules/(\.bin/jest|jest-worker)|[i]nit\.sh' > /dev/null; do W=$((W+1)); test $W -le 90 || break; sleep 60; done; echo "espera=$W"
+espera=0
+```
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 > /tmp/171-c58-all.txt 2>&1; echo "exit=$?"
+exit=0
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+Test Suites: 104 passed, 104 total
+Tests:       3209 passed, 3209 total
+Unable to find=0
+```
+
+Cadena c58, intento 1: exit=0. Typecheck y lint según el handoff; lint exigido vacío.
+
+```text
+$ tsc --noEmit
+[feature/171-mobile-celebrations-and-living-empty d9e96a60] feat(mobile): reduce motion apaga el anillo, la flotación y la subida (R8, E4)
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 1 file changed, 12 insertions(+), 10 deletions(-)
+```
+
+Resultado c58: producción verde al intento 1; cero títulos `●` de fallo intermedios (Console excluido). Commit `d9e96a60 feat(mobile): reduce motion apaga el anillo, la flotación y la subida (R8, E4)`.
+
+### c59
+
+```text
+$ git -C .. apply --check progress/ronda4_mobile-celebrations-and-living-empty/c59.patch && git -C .. apply progress/ronda4_mobile-celebrations-and-living-empty/c59.patch; echo "exit=$?"
+exit=0
+```
+
+Hashes del parche (exit=0):
+
+```text
+54688dd53c5e2840704c9d16b18b12c49ffdc883
+```
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/components/__tests__/celebration.test.tsx > /tmp/171-c59.txt 2>&1; echo "exit=$?"
+exit=1
+  ● #171 R21: desmontar cancela los bucles › R21.1 desmontar cancela los 39 bucles
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 65 passed, 66 total
+Unable to find=0
+```
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/__tests__/design-drift.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/171-c59-guardas.txt 2>&1; echo "exit=$?"
+exit=0
+Test Suites: 2 passed, 2 total
+Tests:       101 passed, 101 total
+Unable to find=0
+```
+
+Cadena c59, intento 1: exit=0. Typecheck y lint según el handoff; lint exigido vacío.
+
+```text
+$ tsc --noEmit
+[feature/171-mobile-celebrations-and-living-empty 0a605fbd] test(mobile): desmontar cancela los 39 bucles (R21, E4)
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 1 file changed, 20 insertions(+), 1 deletion(-)
+```
+
+### c60
+
+Producción propia, intento 1: solo CE. Cleanup de los 36 progresos del confeti, escala y opacidad del anillo y translateY de Pingo: 39 llamadas sin cancelar pops ni entrada.
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/components/__tests__/celebration.test.tsx src/theme/__tests__/motion.test.ts src/screens/pairing/index.test.tsx > /tmp/171-c60.txt 2>&1; echo "exit=$?"
+exit=0
+  ● Console
+  ● Console
+Test Suites: 3 passed, 3 total
+Tests:       150 passed, 150 total
+Unable to find=0
+```
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/__tests__/design-drift.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/171-c60-guardas.txt 2>&1; echo "exit=$?"
+exit=0
+Test Suites: 2 passed, 2 total
+Tests:       101 passed, 101 total
+Unable to find=0
+```
+
+```text
+$ W=0; while pgrep -f 'node_modules/(\.bin/jest|jest-worker)|[i]nit\.sh' > /dev/null; do W=$((W+1)); test $W -le 90 || break; sleep 60; done; echo "espera=$W"
+espera=0
+```
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 > /tmp/171-c60-all.txt 2>&1; echo "exit=$?"
+exit=0
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+Test Suites: 104 passed, 104 total
+Tests:       3210 passed, 3210 total
+Unable to find=0
+```
+
+Cadena c60, intento 1: exit=0. Typecheck y lint según el handoff; lint exigido vacío.
+
+```text
+$ tsc --noEmit
+[feature/171-mobile-celebrations-and-living-empty e8acaafe] feat(mobile): desmontar cancela los 39 bucles (R21, E4)
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+```
+
+Resultado c60: producción verde al intento 1; cero títulos `●` de fallo intermedios (Console excluido). Commit `e8acaafe feat(mobile): desmontar cancela los 39 bucles (R21, E4)`.
+
+### c61
+
+```text
+$ git -C .. apply --check progress/ronda4_mobile-celebrations-and-living-empty/c61.patch && git -C .. apply progress/ronda4_mobile-celebrations-and-living-empty/c61.patch; echo "exit=$?"
+exit=0
+```
+
+Hashes del parche (exit=0):
+
+```text
+b73eac6e8f0c05dbd90b897dbc1e2e49b9e8eee0
+```
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/components/__tests__/celebration.test.tsx > /tmp/171-c61.txt 2>&1; echo "exit=$?"
+exit=0
+Test Suites: 1 passed, 1 total
+Tests:       66 passed, 66 total
+Unable to find=0
+```
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/__tests__/design-drift.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/171-c61-guardas.txt 2>&1; echo "exit=$?"
+exit=0
+Test Suites: 2 passed, 2 total
+Tests:       101 passed, 101 total
+Unable to find=0
+```
+
+Cadena c61, intento 1: exit=0. Typecheck y lint según el handoff; lint exigido vacío.
+
+```text
+$ tsc --noEmit
+[feature/171-mobile-celebrations-and-living-empty ab15d95e] test(mobile): el copy de §2.27 exige sus encabezados vecinos (R12, E4)
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 1 file changed, 3 insertions(+)
+```
+
+### c62
+
+```text
+$ git -C .. apply --check progress/ronda4_mobile-celebrations-and-living-empty/c62.patch && git -C .. apply progress/ronda4_mobile-celebrations-and-living-empty/c62.patch; echo "exit=$?"
+exit=0
+```
+
+Hashes del parche (exit=0):
+
+```text
+787c8b45d3e39c21cd933a8b0ca1b7b00349ace3
+```
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/components/__tests__/celebration.test.tsx src/screens/welcome/index.test.tsx > /tmp/171-c62.txt 2>&1; echo "exit=$?"
+exit=1
+  ● Console
+  ● Console
+  ● #171 R15: docs/ui-guidelines.md declara la enmienda de la celebración
+Test Suites: 1 failed, 1 passed, 2 total
+Tests:       1 failed, 150 passed, 151 total
+Unable to find=0
+```
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/__tests__/design-drift.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/171-c62-guardas.txt 2>&1; echo "exit=$?"
+exit=0
+Test Suites: 2 passed, 2 total
+Tests:       101 passed, 101 total
+Unable to find=0
+```
+
+Cadena c62, intento 1: exit=0. Typecheck y lint según el handoff; lint exigido vacío.
+
+```text
+$ tsc --noEmit
+[feature/171-mobile-celebrations-and-living-empty f9298644] test(mobile): la carta declara la enmienda de la celebración (R15, E4)
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+```
+
+### c63
+
+```text
+$ git -C .. apply --check progress/ronda4_mobile-celebrations-and-living-empty/c63.patch && git -C .. apply progress/ronda4_mobile-celebrations-and-living-empty/c63.patch; echo "exit=$?"
+exit=0
+```
+
+Hashes del parche (exit=0):
+
+```text
+aba25a00911cc5708346551662fef2e411beb144
+```
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/components/__tests__/celebration.test.tsx src/screens/welcome/index.test.tsx > /tmp/171-c63.txt 2>&1; echo "exit=$?"
+exit=0
+  ● Console
+  ● Console
+Test Suites: 2 passed, 2 total
+Tests:       151 passed, 151 total
+Unable to find=0
+```
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/__tests__/design-drift.test.ts src/__tests__/legibility-classnames.test.ts > /tmp/171-c63-guardas.txt 2>&1; echo "exit=$?"
+exit=0
+Test Suites: 2 passed, 2 total
+Tests:       101 passed, 101 total
+Unable to find=0
+```
+
+```text
+$ W=0; while pgrep -f 'node_modules/(\.bin/jest|jest-worker)|[i]nit\.sh' > /dev/null; do W=$((W+1)); test $W -le 90 || break; sleep 60; done; echo "espera=$W"
+espera=0
+```
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 > /tmp/171-c63-all.txt 2>&1; echo "exit=$?"
+exit=0
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+  ● Console
+Test Suites: 104 passed, 104 total
+Tests:       3210 passed, 3210 total
+Unable to find=0
+```
+
+Cadena c63, intento 1: exit=0. Typecheck y lint según el handoff; lint exigido vacío.
+
+```text
+$ tsc --noEmit
+[feature/171-mobile-celebrations-and-living-empty fb89bd3f] docs(mobile): enmienda de la carta, confeti, ping y flotación (R15, E4)
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 1 file changed, 33 insertions(+), 14 deletions(-)
+```
+
+### Sondas sobre c63
+
+HEAD de c63: `fb89bd3f docs(mobile): enmienda de la carta, confeti, ping y flotación (R15, E4)`. Producción verde: 7 verdes al primer intento; c56 al segundo por el cierre JSX. Las medidas intermedias constan arriba. Sin cambios manuales en tests ni carta. P1–P12 se ejecutan secuencialmente, cada una restaurada antes de la siguiente.
+
+#### P1
+
+```diff
+diff --git a/mobile-pet-tracker/src/components/celebration.tsx b/mobile-pet-tracker/src/components/celebration.tsx
+index 1d6aff60..a954b317 100644
+--- a/mobile-pet-tracker/src/components/celebration.tsx
++++ b/mobile-pet-tracker/src/components/celebration.tsx
+@@ -240,7 +240,7 @@ function ConfettiPiece({ testID, index, height }: { testID: string; index: numbe
+   useEffect(() => {
+     progress.set(withDelay(
+       delay,
+-      withRepeat(withTiming(1, { ...MOTION_CONFETTI_FALL_TIMING, duration }), -1, false),
++      withRepeat(withTiming(1, { ...MOTION_CONFETTI_FALL_TIMING, duration }), 1, false),
+     ));
+     return () => cancelAnimation(progress);
+   }, [delay, duration, progress]);
+```
+
+```text
+$ git diff --cached --quiet && test "$(git diff --name-only -- . ../docs ../specs)" = 'mobile-pet-tracker/src/components/celebration.tsx'; echo "mutada=$?"
+mutada=0
+```
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/components/__tests__/celebration.test.tsx > /tmp/171-r4-P1.txt 2>&1; echo "exit=$?"
+exit=1
+  ● #171 R6: confeti › R6.4 la pieza 21 vuelve a caer desde arriba tras terminar
+  ● #171 R6: confeti › R6.6 a los 13830 ms las 36 piezas siguen en vuelo
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 64 passed, 66 total
+Unable to find=0
+```
+
+```text
+$ grep -qE '^Tests: +2 failed, 64 passed, 66 total$' /tmp/171-r4-P1.txt && test "$(grep -E '^  ● ' /tmp/171-r4-P1.txt | grep -vxF '  ● Console' | LC_ALL=C sort | tr '\n' '|')" = '  ● #171 R6: confeti › R6.4 la pieza 21 vuelve a caer desde arriba tras terminar|  ● #171 R6: confeti › R6.6 a los 13830 ms las 36 piezas siguen en vuelo|' && test "$(grep -cF 'Unable to find' /tmp/171-r4-P1.txt)" = 0 && ! grep -qE 'TypeError|ReferenceError|Test suite failed to run' /tmp/171-r4-P1.txt; echo "sonda=$?"
+sonda=0
+```
+
+```text
+$ git checkout HEAD -- src/components/celebration.tsx
+git diff --cached --quiet && git diff --quiet -- . ../docs ../specs; echo "limpio=$?"
+limpio=0
+```
+
+#### P2
+
+```diff
+diff --git a/mobile-pet-tracker/src/components/celebration.tsx b/mobile-pet-tracker/src/components/celebration.tsx
+index 1d6aff60..7e8fa8b8 100644
+--- a/mobile-pet-tracker/src/components/celebration.tsx
++++ b/mobile-pet-tracker/src/components/celebration.tsx
+@@ -238,9 +238,9 @@ function ConfettiPiece({ testID, index, height }: { testID: string; index: numbe
+   });
+ 
+   useEffect(() => {
+-    progress.set(withDelay(
+-      delay,
+-      withRepeat(withTiming(1, { ...MOTION_CONFETTI_FALL_TIMING, duration }), -1, false),
++    progress.set(withRepeat(
++      withDelay(delay, withTiming(1, { ...MOTION_CONFETTI_FALL_TIMING, duration })),
++      -1, false,
+     ));
+     return () => cancelAnimation(progress);
+   }, [delay, duration, progress]);
+```
+
+```text
+$ git diff --cached --quiet && test "$(git diff --name-only -- . ../docs ../specs)" = 'mobile-pet-tracker/src/components/celebration.tsx'; echo "mutada=$?"
+mutada=0
+```
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/components/__tests__/celebration.test.tsx > /tmp/171-r4-P2.txt 2>&1; echo "exit=$?"
+exit=1
+  ● #171 R6: confeti › R6.4 la pieza 21 vuelve a caer desde arriba tras terminar
+  ● #171 R6: confeti › R6.6 a los 13830 ms las 36 piezas siguen en vuelo
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 64 passed, 66 total
+Unable to find=0
+```
+
+```text
+$ grep -qE '^Tests: +2 failed, 64 passed, 66 total$' /tmp/171-r4-P2.txt && test "$(grep -E '^  ● ' /tmp/171-r4-P2.txt | grep -vxF '  ● Console' | LC_ALL=C sort | tr '\n' '|')" = '  ● #171 R6: confeti › R6.4 la pieza 21 vuelve a caer desde arriba tras terminar|  ● #171 R6: confeti › R6.6 a los 13830 ms las 36 piezas siguen en vuelo|' && test "$(grep -cF 'Unable to find' /tmp/171-r4-P2.txt)" = 0 && ! grep -qE 'TypeError|ReferenceError|Test suite failed to run' /tmp/171-r4-P2.txt; echo "sonda=$?"
+sonda=0
+```
+
+```text
+$ git checkout HEAD -- src/components/celebration.tsx
+git diff --cached --quiet && git diff --quiet -- . ../docs ../specs; echo "limpio=$?"
+limpio=0
+```
+
+#### P3
+
+```text
+$ sed -i "s/\[73, 'h-4\.5 w-2 rounded-xs bg-confetti-blue', 2570, 1396\],/[73, 'h-4.5 w-2 rounded-xs bg-category-blue-strong', 2570, 1396],/" src/components/celebration.tsx
+exit=0
+```
+
+```diff
+diff --git a/mobile-pet-tracker/src/components/celebration.tsx b/mobile-pet-tracker/src/components/celebration.tsx
+index 1d6aff60..796a890b 100644
+--- a/mobile-pet-tracker/src/components/celebration.tsx
++++ b/mobile-pet-tracker/src/components/celebration.tsx
+@@ -195,7 +195,7 @@ const CONFETTI = [
+   [76, 'h-1.5 w-2 rounded-full bg-accent', 3012, 1199],
+   [6, 'h-3.5 w-2.5 rounded-xs bg-confetti-amber', 2472, 1140],
+   [19, 'h-3.5 w-3 rounded-xs bg-confetti-violet', 2441, 1107],
+-  [73, 'h-4.5 w-2 rounded-xs bg-confetti-blue', 2570, 1396],
++  [73, 'h-4.5 w-2 rounded-xs bg-category-blue-strong', 2570, 1396],
+   [75, 'h-1.5 w-2.5 rounded-full bg-confetti-rose', 2584, 1308],
+   [72, 'h-4.5 w-2 rounded-xs bg-confetti-green', 3355, 128],
+   [27, 'h-3.5 w-3 rounded-xs bg-accent', 3593, 1016],
+```
+
+```text
+$ git diff --cached --quiet && test "$(git diff --name-only -- . ../docs ../specs)" = 'mobile-pet-tracker/src/components/celebration.tsx' && test "$(git diff --numstat -- src/components/celebration.tsx | cut -f1,2 | tr '\t' ' ')" = '1 1'; echo "mutada=$?"
+mutada=0
+```
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/components/__tests__/celebration.test.tsx src/__tests__/consistency-classnames.test.ts > /tmp/171-r4-P3.txt 2>&1; echo "exit=$?"
+exit=1
+  ● #64 R9: el color categórico solo se nombra en el módulo de paleta › centraliza las diez clases completas y prohíbe interpolarlas
+  ● Console
+  ● #171 R6: confeti › R6.1 pinta 36 piezas con la clase de su fila
+Test Suites: 2 failed, 2 total
+Tests:       2 failed, 133 passed, 135 total
+Unable to find=0
+```
+
+```text
+$ grep -qE '^Tests: +2 failed, 133 passed, 135 total$' /tmp/171-r4-P3.txt && test "$(grep -E '^  ● ' /tmp/171-r4-P3.txt | grep -vxF '  ● Console' | LC_ALL=C sort | tr '\n' '|')" = '  ● #171 R6: confeti › R6.1 pinta 36 piezas con la clase de su fila|  ● #64 R9: el color categórico solo se nombra en el módulo de paleta › centraliza las diez clases completas y prohíbe interpolarlas|' && test "$(grep -cF 'Unable to find' /tmp/171-r4-P3.txt)" = 0 && ! grep -qE 'TypeError|ReferenceError|Test suite failed to run' /tmp/171-r4-P3.txt; echo "sonda=$?"
+sonda=0
+```
+
+```text
+$ git checkout HEAD -- src/components/celebration.tsx
+git diff --cached --quiet && git diff --quiet -- . ../docs ../specs; echo "limpio=$?"
+limpio=0
+```
+
+#### P4
+
+```diff
+diff --git a/mobile-pet-tracker/src/components/celebration.tsx b/mobile-pet-tracker/src/components/celebration.tsx
+index 1d6aff60..78368aba 100644
+--- a/mobile-pet-tracker/src/components/celebration.tsx
++++ b/mobile-pet-tracker/src/components/celebration.tsx
+@@ -110,7 +110,7 @@ export function Celebration({ testID, title, body, details, primary, secondary }
+           </View>
+         ) : null}
+         <View testID={`${testID}-hero`} className="mt-10 items-center justify-center" style={{ width: 220, height: 220 }}>
+-          {!reduceMotion ? (
++          {false ? (
+             <Animated.View
+               testID={`${testID}-ring`}
+               className="absolute inset-0 rounded-full bg-accent"
+```
+
+```text
+$ git diff --cached --quiet && test "$(git diff --name-only -- . ../docs ../specs)" = 'mobile-pet-tracker/src/components/celebration.tsx'; echo "mutada=$?"
+mutada=0
+```
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/components/__tests__/celebration.test.tsx > /tmp/171-r4-P4.txt 2>&1; echo "exit=$?"
+exit=1
+  ● #171 R17: anillo de ping › R17.1 el anillo es el primer hijo del hero, de acento y oculto a accesibilidad
+  ● #171 R17: anillo de ping › R17.2 el anillo crece y se apaga a los 0, 550, 1100 y 2100 ms
+  ● #171 R17: anillo de ping › R17.3 el anillo vuelve a empezar tras 2200 ms
+  ● #171 R13: solo anima transform y opacity › R13.2 conserva las claves de layout y solo anima transform y opacity a los 0 y 1200 ms
+Test Suites: 1 failed, 1 total
+Tests:       4 failed, 62 passed, 66 total
+Unable to find=3
+```
+
+```text
+$ grep -qE '^Tests: +4 failed, 62 passed, 66 total$' /tmp/171-r4-P4.txt && test "$(grep -E '^  ● ' /tmp/171-r4-P4.txt | grep -vxF '  ● Console' | LC_ALL=C sort | tr '\n' '|')" = '  ● #171 R13: solo anima transform y opacity › R13.2 conserva las claves de layout y solo anima transform y opacity a los 0 y 1200 ms|  ● #171 R17: anillo de ping › R17.1 el anillo es el primer hijo del hero, de acento y oculto a accesibilidad|  ● #171 R17: anillo de ping › R17.2 el anillo crece y se apaga a los 0, 550, 1100 y 2100 ms|  ● #171 R17: anillo de ping › R17.3 el anillo vuelve a empezar tras 2200 ms|' && test "$(grep -cF 'Unable to find' /tmp/171-r4-P4.txt)" = 3 && ! grep -qE 'TypeError|ReferenceError|Test suite failed to run' /tmp/171-r4-P4.txt; echo "sonda=$?"
+sonda=0
+```
+
+```text
+$ git checkout HEAD -- src/components/celebration.tsx
+git diff --cached --quiet && git diff --quiet -- . ../docs ../specs; echo "limpio=$?"
+limpio=0
+```
+
+#### P5
+
+```diff
+diff --git a/mobile-pet-tracker/src/components/celebration.tsx b/mobile-pet-tracker/src/components/celebration.tsx
+index 1d6aff60..3c208f43 100644
+--- a/mobile-pet-tracker/src/components/celebration.tsx
++++ b/mobile-pet-tracker/src/components/celebration.tsx
+@@ -66,9 +66,7 @@ export function Celebration({ testID, title, body, details, primary, secondary }
+       withTiming(MOTION_CELEBRATION_POP_PEAK, { ...MOTION_CELEBRATION_EASE_OUT, duration: MOTION_CELEBRATION_BADGE_POP_MS * 0.6 }),
+       withTiming(1, { ...MOTION_CELEBRATION_EASE_OUT, duration: MOTION_CELEBRATION_BADGE_POP_MS * 0.4 }),
+     )));
+-    pingoTranslateY.set(withDelay(MOTION_CELEBRATION_POP_MS,
+-      withRepeat(withTiming(-MOTION_PINGO_FLOAT_OFFSET_Y, MOTION_PINGO_FLOAT_TIMING), -1, true),
+-    ));
++    pingoTranslateY.set(withRepeat(withTiming(-MOTION_PINGO_FLOAT_OFFSET_Y, MOTION_PINGO_FLOAT_TIMING), -1, true));
+     ringScale.set(withRepeat(withTiming(MOTION_PING_TO_SCALE, {
+       ...MOTION_CELEBRATION_EASE_OUT, duration: MOTION_CELEBRATION_PING_MS,
+     }), -1, false));
+```
+
+```text
+$ git diff --cached --quiet && test "$(git diff --name-only -- . ../docs ../specs)" = 'mobile-pet-tracker/src/components/celebration.tsx'; echo "mutada=$?"
+mutada=0
+```
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/components/__tests__/celebration.test.tsx > /tmp/171-r4-P5.txt 2>&1; echo "exit=$?"
+exit=1
+  ● #171 R18: flotación de Pingo › R18.1 Pingo flota desde los 600 ms: 0, -5 y -10 a los 600, 1350 y 2100 ms
+  ● #171 R18: flotación de Pingo › R18.2 la flotación sigue en bucle: 0 a los 3600 ms y -10 a los 5100 ms
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 64 passed, 66 total
+Unable to find=0
+```
+
+```text
+$ grep -qE '^Tests: +2 failed, 64 passed, 66 total$' /tmp/171-r4-P5.txt && test "$(grep -E '^  ● ' /tmp/171-r4-P5.txt | grep -vxF '  ● Console' | LC_ALL=C sort | tr '\n' '|')" = '  ● #171 R18: flotación de Pingo › R18.1 Pingo flota desde los 600 ms: 0, -5 y -10 a los 600, 1350 y 2100 ms|  ● #171 R18: flotación de Pingo › R18.2 la flotación sigue en bucle: 0 a los 3600 ms y -10 a los 5100 ms|' && test "$(grep -cF 'Unable to find' /tmp/171-r4-P5.txt)" = 0 && ! grep -qE 'TypeError|ReferenceError|Test suite failed to run' /tmp/171-r4-P5.txt; echo "sonda=$?"
+sonda=0
+```
+
+```text
+$ git checkout HEAD -- src/components/celebration.tsx
+git diff --cached --quiet && git diff --quiet -- . ../docs ../specs; echo "limpio=$?"
+limpio=0
+```
+
+#### P6
+
+```diff
+diff --git a/mobile-pet-tracker/src/components/celebration.tsx b/mobile-pet-tracker/src/components/celebration.tsx
+index 1d6aff60..8c0b2e52 100644
+--- a/mobile-pet-tracker/src/components/celebration.tsx
++++ b/mobile-pet-tracker/src/components/celebration.tsx
+@@ -27,7 +27,7 @@ export function Celebration({ testID, title, body, details, primary, secondary }
+   const titleStyle = useRise(0);
+   const bodyStyle = useRise(1);
+   const detailsStyle = useRise(2);
+-  const actionsStyle = useRise(3);
++  const actionsStyle = useRise(details?.length ? 3 : 2);
+   const pingoScale = useSharedValue(reduceMotion ? 1 : MOTION_POP_SCALE);
+   const pingoOpacity = useSharedValue(0);
+   const pingoTranslateY = useSharedValue(0);
+```
+
+```text
+$ git diff --cached --quiet && test "$(git diff --name-only -- . ../docs ../specs)" = 'mobile-pet-tracker/src/components/celebration.tsx'; echo "mutada=$?"
+mutada=0
+```
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/components/__tests__/celebration.test.tsx > /tmp/171-r4-P6.txt 2>&1; echo "exit=$?"
+exit=1
+  ● #171 R19: entrada escalonada › R19.2 sin fichas las acciones conservan su retardo de 740 ms
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 65 passed, 66 total
+Unable to find=0
+```
+
+```text
+$ grep -qE '^Tests: +1 failed, 65 passed, 66 total$' /tmp/171-r4-P6.txt && test "$(grep -E '^  ● ' /tmp/171-r4-P6.txt | grep -vxF '  ● Console' | LC_ALL=C sort | tr '\n' '|')" = '  ● #171 R19: entrada escalonada › R19.2 sin fichas las acciones conservan su retardo de 740 ms|' && test "$(grep -cF 'Unable to find' /tmp/171-r4-P6.txt)" = 0 && ! grep -qE 'TypeError|ReferenceError|Test suite failed to run' /tmp/171-r4-P6.txt; echo "sonda=$?"
+sonda=0
+```
+
+```text
+$ git checkout HEAD -- src/components/celebration.tsx
+git diff --cached --quiet && git diff --quiet -- . ../docs ../specs; echo "limpio=$?"
+limpio=0
+```
+
+#### P7
+
+```diff
+diff --git a/mobile-pet-tracker/src/components/celebration.tsx b/mobile-pet-tracker/src/components/celebration.tsx
+index 1d6aff60..4c1911ff 100644
+--- a/mobile-pet-tracker/src/components/celebration.tsx
++++ b/mobile-pet-tracker/src/components/celebration.tsx
+@@ -76,8 +76,6 @@ export function Celebration({ testID, title, body, details, primary, secondary }
+       ...MOTION_CELEBRATION_EASE_OUT, duration: MOTION_CELEBRATION_PING_MS,
+     }), -1, false));
+     return () => {
+-      cancelAnimation(ringScale);
+-      cancelAnimation(ringOpacity);
+       cancelAnimation(pingoTranslateY);
+     };
+   }, [badgeOpacity, badgeScale, pingoOpacity, pingoScale, pingoTranslateY, reduceMotion, ringOpacity, ringScale]);
+```
+
+```text
+$ git diff --cached --quiet && test "$(git diff --name-only -- . ../docs ../specs)" = 'mobile-pet-tracker/src/components/celebration.tsx'; echo "mutada=$?"
+mutada=0
+```
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/components/__tests__/celebration.test.tsx > /tmp/171-r4-P7.txt 2>&1; echo "exit=$?"
+exit=1
+  ● #171 R21: desmontar cancela los bucles › R21.1 desmontar cancela los 39 bucles
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 65 passed, 66 total
+Unable to find=0
+```
+
+```text
+$ grep -qE '^Tests: +1 failed, 65 passed, 66 total$' /tmp/171-r4-P7.txt && test "$(grep -E '^  ● ' /tmp/171-r4-P7.txt | grep -vxF '  ● Console' | LC_ALL=C sort | tr '\n' '|')" = '  ● #171 R21: desmontar cancela los bucles › R21.1 desmontar cancela los 39 bucles|' && test "$(grep -cF 'Unable to find' /tmp/171-r4-P7.txt)" = 0 && ! grep -qE 'TypeError|ReferenceError|Test suite failed to run' /tmp/171-r4-P7.txt; echo "sonda=$?"
+sonda=0
+```
+
+```text
+$ git checkout HEAD -- src/components/celebration.tsx
+git diff --cached --quiet && git diff --quiet -- . ../docs ../specs; echo "limpio=$?"
+limpio=0
+```
+
+#### P8
+
+```diff
+diff --git a/mobile-pet-tracker/src/components/celebration.tsx b/mobile-pet-tracker/src/components/celebration.tsx
+index 1d6aff60..2e6ce6fa 100644
+--- a/mobile-pet-tracker/src/components/celebration.tsx
++++ b/mobile-pet-tracker/src/components/celebration.tsx
+@@ -110,7 +110,7 @@ export function Celebration({ testID, title, body, details, primary, secondary }
+           </View>
+         ) : null}
+         <View testID={`${testID}-hero`} className="mt-10 items-center justify-center" style={{ width: 220, height: 220 }}>
+-          {!reduceMotion ? (
++          {true ? (
+             <Animated.View
+               testID={`${testID}-ring`}
+               className="absolute inset-0 rounded-full bg-accent"
+```
+
+```text
+$ git diff --cached --quiet && test "$(git diff --name-only -- . ../docs ../specs)" = 'mobile-pet-tracker/src/components/celebration.tsx'; echo "mutada=$?"
+mutada=0
+```
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/components/__tests__/celebration.test.tsx > /tmp/171-r4-P8.txt 2>&1; echo "exit=$?"
+exit=1
+  ● #171 R8: reduce motion › R8.4 con reduce motion no monta el anillo y Pingo no flota
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 65 passed, 66 total
+Unable to find=0
+```
+
+```text
+$ grep -qE '^Tests: +1 failed, 65 passed, 66 total$' /tmp/171-r4-P8.txt && test "$(grep -E '^  ● ' /tmp/171-r4-P8.txt | grep -vxF '  ● Console' | LC_ALL=C sort | tr '\n' '|')" = '  ● #171 R8: reduce motion › R8.4 con reduce motion no monta el anillo y Pingo no flota|' && test "$(grep -cF 'Unable to find' /tmp/171-r4-P8.txt)" = 0 && ! grep -qE 'TypeError|ReferenceError|Test suite failed to run' /tmp/171-r4-P8.txt; echo "sonda=$?"
+sonda=0
+```
+
+```text
+$ git checkout HEAD -- src/components/celebration.tsx
+git diff --cached --quiet && git diff --quiet -- . ../docs ../specs; echo "limpio=$?"
+limpio=0
+```
+
+#### P9
+
+```diff
+diff --git a/mobile-pet-tracker/src/components/celebration.tsx b/mobile-pet-tracker/src/components/celebration.tsx
+index 1d6aff60..db8cd95d 100644
+--- a/mobile-pet-tracker/src/components/celebration.tsx
++++ b/mobile-pet-tracker/src/components/celebration.tsx
+@@ -169,8 +169,8 @@ export function Celebration({ testID, title, body, details, primary, secondary }
+ 
+ function useRise(k: number) {
+   const reduceMotion = useReducedMotion();
+-  const opacity = useSharedValue(reduceMotion ? 1 : 0);
+-  const translateY = useSharedValue(reduceMotion ? 0 : MOTION_CELEBRATION_RISE_OFFSET_Y);
++  const opacity = useSharedValue(0);
++  const translateY = useSharedValue(MOTION_CELEBRATION_RISE_OFFSET_Y);
+ 
+   useEffect(() => {
+     if (reduceMotion) return;
+```
+
+```text
+$ git diff --cached --quiet && test "$(git diff --name-only -- . ../docs ../specs)" = 'mobile-pet-tracker/src/components/celebration.tsx'; echo "mutada=$?"
+mutada=0
+```
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/components/__tests__/celebration.test.tsx > /tmp/171-r4-P9.txt 2>&1; echo "exit=$?"
+exit=1
+  ● #171 R8: reduce motion › R8.5 con reduce motion el texto y las acciones aparecen sin subir
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 65 passed, 66 total
+Unable to find=0
+```
+
+```text
+$ grep -qE '^Tests: +1 failed, 65 passed, 66 total$' /tmp/171-r4-P9.txt && test "$(grep -E '^  ● ' /tmp/171-r4-P9.txt | grep -vxF '  ● Console' | LC_ALL=C sort | tr '\n' '|')" = '  ● #171 R8: reduce motion › R8.5 con reduce motion el texto y las acciones aparecen sin subir|' && test "$(grep -cF 'Unable to find' /tmp/171-r4-P9.txt)" = 0 && ! grep -qE 'TypeError|ReferenceError|Test suite failed to run' /tmp/171-r4-P9.txt; echo "sonda=$?"
+sonda=0
+```
+
+```text
+$ git checkout HEAD -- src/components/celebration.tsx
+git diff --cached --quiet && git diff --quiet -- . ../docs ../specs; echo "limpio=$?"
+limpio=0
+```
+
+#### P10
+
+```text
+$ python3 -I -c 'p="../specs/mobile-ui-language/design.md"; s=open(p,encoding="utf-8").read(); i=s.index("### §2.27 "); j=s.index("\n## 3. La infraestructura", i); b=s[i:j]; s=s[:i]+s[j:]; a=s.index("### §2.26 "); open(p,"w",encoding="utf-8").write(s[:a]+b.rstrip("\n")+"\n\n"+s[a:])'
+exit=0
+```
+
+```diff
+diff --git a/specs/mobile-ui-language/design.md b/specs/mobile-ui-language/design.md
+index 9a4e61aa..c58397b8 100644
+--- a/specs/mobile-ui-language/design.md
++++ b/specs/mobile-ui-language/design.md
+@@ -950,6 +950,15 @@ copy completa en cada una.
+ | — | `weightLog.weightLogged` | `Logged. I've added it to the chart.` | `Anotado. Ya lo puse en la gráfica.` | ← añadida por #169 (R9) |
+ | — | `weightLog.monthDelta` | `{{value}} this month` | `{{value}} este mes` | ← añadida por #169 (R9) |
+ 
++### §2.27 — Añadidos por #171 — Celebraciones
++
++| # | Clave | `en` | `es` | Origen |
++|---|---|---|---|---|
++| — | `addPet.celebrateTitle` | `{{petName}} is home!` | `¡{{petName}} ya está en casa!` | ← añadida por #171 (R12) |
++| — | `addPet.celebrateBody` | `I'll help you look after {{petName}}. Pair a collar and I'll keep track of where they are.` | `Te ayudo a cuidar de {{petName}}. Vincula un collar y estaré pendiente de dónde está.` | ← añadida por #171 (R12) |
++| — | `addPet.celebratePair` | `Pair a collar` | `Vincular un collar` | ← añadida por #171 (R12) |
++| — | `addPet.celebrateLater` | `Not now` | `Ahora no` | ← añadida por #171 (R12) |
++
+ ### §2.26 — Añadidos por #170 — Alertas agrupadas y mini-mapa
+ 
+ | # | Clave | `en` | `es` | Origen |
+@@ -962,14 +971,6 @@ copy completa en cada una.
+ | — | `alerts.distanceFromZone` | `{{distance}} from {{zone}}` | `A {{distance}} de {{zone}}` | ← añadida por #170 (R1) |
+ | — | `alerts.viewOnMap` | `View on map` | `Ver en el mapa` | ← añadida por #170 (R1) |
+ 
+-### §2.27 — Añadidos por #171 — Celebraciones
+-
+-| # | Clave | `en` | `es` | Origen |
+-|---|---|---|---|---|
+-| — | `addPet.celebrateTitle` | `{{petName}} is home!` | `¡{{petName}} ya está en casa!` | ← añadida por #171 (R12) |
+-| — | `addPet.celebrateBody` | `I'll help you look after {{petName}}. Pair a collar and I'll keep track of where they are.` | `Te ayudo a cuidar de {{petName}}. Vincula un collar y estaré pendiente de dónde está.` | ← añadida por #171 (R12) |
+-| — | `addPet.celebratePair` | `Pair a collar` | `Vincular un collar` | ← añadida por #171 (R12) |
+-| — | `addPet.celebrateLater` | `Not now` | `Ahora no` | ← añadida por #171 (R12) |
+ 
+ ## 3. La infraestructura
+ 
+```
+
+```text
+$ git diff --cached --quiet && test "$(git diff --name-only -- . ../docs ../specs)" = 'specs/mobile-ui-language/design.md' && test "$(git hash-object ../specs/mobile-ui-language/design.md)" = 'c58397b81ad12ba9759f2f0d80dbda6e22eb8412' && test "$(git diff --numstat -- ../specs/mobile-ui-language/design.md | cut -f1,2 | tr '\t' ' ')" = '9 8'; echo "mutada=$?"
+mutada=0
+```
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/components/__tests__/celebration.test.tsx > /tmp/171-r4-P10.txt 2>&1; echo "exit=$?"
+exit=1
+  ● #171 R12: copy de la variante sin collar › registra las cuatro claves en §2.27 de mobile-ui-language
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 65 passed, 66 total
+Unable to find=0
+```
+
+```text
+$ grep -qE '^Tests: +1 failed, 65 passed, 66 total$' /tmp/171-r4-P10.txt && test "$(grep -E '^  ● ' /tmp/171-r4-P10.txt | grep -vxF '  ● Console' | LC_ALL=C sort | tr '\n' '|')" = '  ● #171 R12: copy de la variante sin collar › registra las cuatro claves en §2.27 de mobile-ui-language|' && test "$(grep -cF 'Unable to find' /tmp/171-r4-P10.txt)" = 0 && ! grep -qE 'TypeError|ReferenceError|Test suite failed to run' /tmp/171-r4-P10.txt; echo "sonda=$?"
+sonda=0
+```
+
+```text
+$ git checkout HEAD -- ../specs/mobile-ui-language/design.md
+git diff --cached --quiet && git diff --quiet -- . ../docs ../specs; echo "limpio=$?"
+limpio=0
+```
+
+#### P11
+
+```text
+$ sed -i 's/^### §2\.26 — Añadidos por #170/### §2.26b — Añadidos por #170/' ../specs/mobile-ui-language/design.md
+exit=0
+```
+
+```diff
+diff --git a/specs/mobile-ui-language/design.md b/specs/mobile-ui-language/design.md
+index 9a4e61aa..e89813e8 100644
+--- a/specs/mobile-ui-language/design.md
++++ b/specs/mobile-ui-language/design.md
+@@ -950,7 +950,7 @@ copy completa en cada una.
+ | — | `weightLog.weightLogged` | `Logged. I've added it to the chart.` | `Anotado. Ya lo puse en la gráfica.` | ← añadida por #169 (R9) |
+ | — | `weightLog.monthDelta` | `{{value}} this month` | `{{value}} este mes` | ← añadida por #169 (R9) |
+ 
+-### §2.26 — Añadidos por #170 — Alertas agrupadas y mini-mapa
++### §2.26b — Añadidos por #170 — Alertas agrupadas y mini-mapa
+ 
+ | # | Clave | `en` | `es` | Origen |
+ |---|---|---|---|---|
+```
+
+```text
+$ git diff --cached --quiet && test "$(git diff --name-only -- . ../docs ../specs)" = 'specs/mobile-ui-language/design.md' && test "$(git hash-object ../specs/mobile-ui-language/design.md)" = 'e89813e8ae6e7ae514b9f5e39cb64734ff7c02bb' && test "$(git diff --numstat -- ../specs/mobile-ui-language/design.md | cut -f1,2 | tr '\t' ' ')" = '1 1'; echo "mutada=$?"
+mutada=0
+```
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/components/__tests__/celebration.test.tsx > /tmp/171-r4-P11.txt 2>&1; echo "exit=$?"
+exit=1
+  ● #171 R12: copy de la variante sin collar › registra las cuatro claves en §2.27 de mobile-ui-language
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 65 passed, 66 total
+Unable to find=0
+```
+
+```text
+$ grep -qE '^Tests: +1 failed, 65 passed, 66 total$' /tmp/171-r4-P11.txt && test "$(grep -E '^  ● ' /tmp/171-r4-P11.txt | grep -vxF '  ● Console' | LC_ALL=C sort | tr '\n' '|')" = '  ● #171 R12: copy de la variante sin collar › registra las cuatro claves en §2.27 de mobile-ui-language|' && test "$(grep -cF 'Unable to find' /tmp/171-r4-P11.txt)" = 0 && ! grep -qE 'TypeError|ReferenceError|Test suite failed to run' /tmp/171-r4-P11.txt; echo "sonda=$?"
+sonda=0
+```
+
+```text
+$ git checkout HEAD -- ../specs/mobile-ui-language/design.md
+git diff --cached --quiet && git diff --quiet -- . ../docs ../specs; echo "limpio=$?"
+limpio=0
+```
+
+#### P12
+
+```text
+$ sed -i 's/^### §2\.23 — Añadidos por #159/### §2.23b — Añadidos por #159/' ../specs/mobile-ui-language/design.md
+exit=0
+```
+
+```diff
+diff --git a/specs/mobile-ui-language/design.md b/specs/mobile-ui-language/design.md
+index 9a4e61aa..053812a6 100644
+--- a/specs/mobile-ui-language/design.md
++++ b/specs/mobile-ui-language/design.md
+@@ -925,7 +925,7 @@ copy completa en cada una.
+ | — | `docs.errorUploadFailed` | `The file could not be uploaded. Try again` | `No se pudo subir el archivo. Inténtalo de nuevo` | ← añadida por #158 (R1) |
+ | — | `docs.emptyBody` | `When a medical document for your pet is uploaded, I'll keep it here.` | `Cuando se suba un documento médico de tu mascota, te lo guardo aquí.` | ← cambiada por #158 (R1) |
+ 
+-### §2.23 — Añadidos por #159 — Pingo sin collar
++### §2.23b — Añadidos por #159 — Pingo sin collar
+ 
+ | # | Clave | `en` | `es` | Origen |
+ |---|---|---|---|---|
+```
+
+```text
+$ git diff --cached --quiet && test "$(git diff --name-only -- . ../docs ../specs)" = 'specs/mobile-ui-language/design.md' && test "$(git hash-object ../specs/mobile-ui-language/design.md)" = '053812a6e68874a35ed3c605b163c4a0a0d7e46e' && test "$(git diff --numstat -- ../specs/mobile-ui-language/design.md | cut -f1,2 | tr '\t' ' ')" = '1 1'; echo "mutada=$?"
+mutada=0
+```
+
+```text
+$ FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/components/__tests__/celebration.test.tsx > /tmp/171-r4-P12.txt 2>&1; echo "exit=$?"
+exit=1
+  ● #171 R12: copy de la variante sin collar › registra las cuatro claves en §2.27 de mobile-ui-language
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 65 passed, 66 total
+Unable to find=0
+```
+
+```text
+$ grep -qE '^Tests: +1 failed, 65 passed, 66 total$' /tmp/171-r4-P12.txt && test "$(grep -E '^  ● ' /tmp/171-r4-P12.txt | grep -vxF '  ● Console' | LC_ALL=C sort | tr '\n' '|')" = '  ● #171 R12: copy de la variante sin collar › registra las cuatro claves en §2.27 de mobile-ui-language|' && test "$(grep -cF 'Unable to find' /tmp/171-r4-P12.txt)" = 0 && ! grep -qE 'TypeError|ReferenceError|Test suite failed to run' /tmp/171-r4-P12.txt; echo "sonda=$?"
+sonda=0
+```
+
+```text
+$ git checkout HEAD -- ../specs/mobile-ui-language/design.md
+git diff --cached --quiet && git diff --quiet -- . ../docs ../specs; echo "limpio=$?"
+limpio=0
+```
+
+### Anclas después de P12
+
+Doce sondas exactas, todas restauradas. Anclas medidas antes de c64: la trazabilidad todavía conserva 0 marcas E4 y las 6 celdas pendientes.
+
+A1:
+
+```text
+$ git hash-object src/__tests__/design-drift.test.ts src/__tests__/consistency-classnames.test.ts src/components/__tests__/celebration.test.tsx src/theme/__tests__/global-css.test.ts src/theme/__tests__/motion.test.ts src/__tests__/tab-headers-canvas.test.ts src/screens/pairing/index.test.tsx ../docs/ui-guidelines.md
+1749cb0ce76d3697898859dc90f1bdf665fc4c13
+2e588c6545625aac41d387f4c05b9868a0f4336c
+787c8b45d3e39c21cd933a8b0ca1b7b00349ace3
+67455d441f3554df003f9e6b3ae0fbe8b01587c8
+7a38a622829773aaa3d24616cf99a4c34b9ef2a2
+f96029ffe1f270f431ed6bbe99a8a1196439423a
+10b20fa52880a35fa842740b381afa38171a5a45
+aba25a00911cc5708346551662fef2e411beb144
+```
+
+A2:
+
+```text
+$ grep -cF 'CONFETTI_FILLS' src/utils/category-palette.ts src/components/celebration.tsx
+src/utils/category-palette.ts:0
+src/components/celebration.tsx:0
+```
+
+A3:
+
+```text
+$ grep -cE 'MOTION_CONFETTI_(MIN|SPREAD)_MS|MOTION_CELEBRATION_SPRING' src/theme/motion.ts src/components/celebration.tsx
+src/theme/motion.ts:0
+src/components/celebration.tsx:0
+```
+
+A4:
+
+```text
+$ grep -cF 'MOTION_PINGO_FLOAT_' src/theme/motion.ts
+2
+```
+
+A5:
+
+```text
+$ grep -cxF '  --text-15: 15px;' src/theme/global.css
+1
+```
+
+A6:
+
+```text
+$ grep -cF -- '--color-confetti-' src/theme/global.css
+5
+```
+
+A7:
+
+```text
+$ grep -cE 'withRepeat|withSequence|cancelAnimation' src/components/celebration.tsx
+11
+```
+
+A8:
+
+```text
+$ grep -cxF 'export const MOTION_PING_FROM = 0.55;' src/theme/motion.ts
+1
+```
+
+A9:
+
+```text
+$ grep -cxF 'export const MOTION_PING_TO_SCALE = 1.5;' src/theme/motion.ts
+1
+```
+
+A10:
+
+```text
+$ grep -cF '"react-native-svg": "15.15.4"' package.json
+1
+```
+
+A11:
+
+```text
+$ grep -cF 'export function useThemeColors' src/theme/use-theme-colors.ts
+1
+```
+
+A12:
+
+```text
+$ grep -rlF 'rounded-xs' src --include=*.tsx --include=*.ts | LC_ALL=C sort | tr '\n' ' '; echo
+src/__tests__/consistency-classnames.test.ts src/components/__tests__/celebration.test.tsx src/components/celebration.tsx 
+```
+
+K1:
+
+```text
+$ grep -cF -- '- [x] Enmienda E4 aprobada por humano (fecha: 2026-10-14)' specs/mobile-celebrations-and-living-empty/requirements.md
+1
+```
+
+K2:
+
+```text
+$ grep -cF -- '- [x] Texto de la carta de E4.13 aprobado por humano (R15) (fecha: 2026-10-14)' specs/mobile-celebrations-and-living-empty/requirements.md
+1
+```
+
+K3:
+
+```text
+$ grep -cF -- '- [ ] R16: smoke en dev build de Android completado por humano (fecha: ____)' specs/mobile-celebrations-and-living-empty/requirements.md
+1
+```
+
+K4:
+
+```text
+$ grep -cF '(E4)' specs/mobile-celebrations-and-living-empty/traceability.md
+0
+```
+
+K5:
+
+```text
+$ grep -cF '| pendiente |' specs/mobile-celebrations-and-living-empty/traceability.md
+6
+```
+
+K6:
+
+```text
+$ git merge-base --is-ancestor origin/main HEAD; echo "exit=$?"
+exit=0
+```
+
+K7:
+
+```text
+$ grep -cE '^### §2\.2[3-7] ' specs/mobile-ui-language/design.md
+5
+```
+
+K8:
+
+```text
+$ git hash-object specs/mobile-ui-language/design.md
+9a4e61aa084a4066ed148d476d83386f52b0afec
+```
+
+K9:
+
+```text
+$ git hash-object progress/ronda4_mobile-celebrations-and-living-empty/c*.patch
+ca4ac4eee73b981dfb6b1bd6a89d653f70b848df
+0d302fbc6591a2746f796ef93731b1ccc24674b1
+b520fd2205cba71ac8f9dee2ad3829f5bd23610b
+b773f8be6276de60cae55a5a5ad02f61c4fda38c
+876278ab879a2d8b2285f92b9c6a4aceff1c1665
+a6de4997da51207f14b4f836d5b3e03ddcb85108
+cda6b081de34493d07a2253df4aa704e17b20e42
+b214ab7abe44b2931204405745a1011c8fe1eb74
+522315a7b603c9d5551af2ed8cc5671863acd9f7
+27327d8a4ab18adf2b05a1d73825bd2426ddf8d3
+af4d9fb10c43a7dc24c38a4aceea3520e16206ad
+9b0c027cb6599935a043efe054084effb1e6f68c
+```
+
+K10:
+
+```text
+$ git diff --quiet origin/main HEAD -- mobile-pet-tracker/package.json mobile-pet-tracker/bun.lock; echo "deps=$?"
+deps=0
+```
+
+### Cierre desde H1
+
+```text
+$ cd /home/claude/sites/Pet-Tracker-wt-171 && pwd
+/home/claude/sites/Pet-Tracker-wt-171
+$ git log --no-merges --format= --name-only 0bfd45fd0b45b72cda845ae57490d030cd26db97..HEAD -- mobile-pet-tracker/ | sed '/^$/d' | LC_ALL=C sort -u
+mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+mobile-pet-tracker/src/__tests__/design-drift.test.ts
+mobile-pet-tracker/src/__tests__/tab-headers-canvas.test.ts
+mobile-pet-tracker/src/components/__tests__/celebration.test.tsx
+mobile-pet-tracker/src/components/celebration.tsx
+mobile-pet-tracker/src/screens/pairing/index.test.tsx
+mobile-pet-tracker/src/theme/__tests__/global-css.test.ts
+mobile-pet-tracker/src/theme/__tests__/motion.test.ts
+mobile-pet-tracker/src/theme/global.css
+mobile-pet-tracker/src/theme/motion.ts
+mobile-pet-tracker/src/utils/category-palette.ts
+```
+
+Hashes y mensajes de la ronda 4:
+
+```text
+$ git log --format='%h %s' --abbrev=8 0bfd45fd0b45b72cda845ae57490d030cd26db97..HEAD
+fb89bd3f docs(mobile): enmienda de la carta, confeti, ping y flotación (R15, E4)
+f9298644 test(mobile): la carta declara la enmienda de la celebración (R15, E4)
+ab15d95e test(mobile): el copy de §2.27 exige sus encabezados vecinos (R12, E4)
+e8acaafe feat(mobile): desmontar cancela los 39 bucles (R21, E4)
+0a605fbd test(mobile): desmontar cancela los 39 bucles (R21, E4)
+d9e96a60 feat(mobile): reduce motion apaga el anillo, la flotación y la subida (R8, E4)
+edc66e23 test(mobile): reduce motion apaga el anillo, la flotación y la subida (R8, E4)
+aada4b5e feat(mobile): entrada escalonada del texto y las acciones (R19, E4)
+8edfce08 test(mobile): entrada escalonada del texto y las acciones (R19, E4)
+c265cfda feat(mobile): Pingo flota tras el pop (R18, E4)
+289a5189 test(mobile): Pingo flota tras el pop (R18, E4)
+e71fe950 feat(mobile): anillo de ping detrás de Pingo (R17, E4)
+b6a63f50 test(mobile): anillo de ping detrás de Pingo (R17, E4)
+7f31932c feat(mobile): pop por keyframes de Pingo y la insignia (R7, E4)
+f559feef test(mobile): pop por keyframes de Pingo y la insignia (R7, E4)
+2e6bb5e1 feat(mobile): maquetación del artboard, check en SVG y text-15 (R2, R20, E4)
+03f02ec9 test(mobile): maquetación del artboard, check en SVG y text-15 (R2, R20, E4)
+8316c80b feat(mobile): 36 piezas de confeti en bucle con sus tokens (R6, E4)
+569db569 test(mobile): 36 piezas de confeti en bucle con sus tokens (R6, E4)
+b92f7db0 test(mobile): design-drift deja de prohibir los bucles de la celebración (R13, E4)
+```
+
+Trazabilidad: solo las celdas de commits de los 12 R-ids indicados. Columnas de tests, frontmatter, R16 y resto del fichero: sin cambios.
+Celdas de commits E4: 12; pendientes: 1 (R16).
+
+R16: pendiente del smoke humano
