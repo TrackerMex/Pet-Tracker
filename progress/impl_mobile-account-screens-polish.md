@@ -3,14 +3,15 @@
 > Worktree: `/home/claude/sites/Pet-Tracker-wt-172`.
 > Branch: `feature/172-mobile-account-screens-polish`.
 > H0 al arrancar: `e0178ab5c1f67e917cf4116332a0e9196d67b344`.
-> Fecha de cierre: 2026-10-14. Estado final: **detenida en T16/S15; feature incompleta**.
+> Fecha de cierre: 2026-10-14. Estado final: **R1–R20 implementados; T22 completo; R21 pendiente (humano)**.
 
 
 
-> Reanudación 3 acepta S14 conforme a E4, sin repetirla, y ejecuta c31.
-> R1–R14 están verificados; R15 pasa su gate, pero S15 da 3 fallos y no
-> los 2 prescritos. R16 es parcial; R17–R20 siguen pendientes. No se empezó
-> T17 ni se alcanzó T22. R21 queda **pendiente (humano)**.
+> Reanudación 4 acepta S15 conforme a E5, sin repetirla, y completa
+> c32–c39 y T22. Las 17 suites pasan 470 tests; los lectores de la carta
+> pasan 192 tests; typecheck y lint están limpios. Todas las sondas están
+> restauradas y todas las anclas finales coinciden. La prueba de humo R21
+> corresponde al humano; el leader ejecuta init.sh antes del reviewer.
 
 ## Bloqueo inicial y punto de reanudación — historia
 
@@ -154,7 +155,7 @@ vacio=0
 ## Tabla completa de commits del guion — estado actual
 
 H0 sigue siendo `e0178ab5`. Los commits del leader (firmas y enmiendas E1,
-E2 y E3) no se cuentan como commits propios. La tentativa inicial de c8 y
+E2, E3, E4 y E5) no se cuentan como commits propios. La tentativa inicial de c8 y
 los bloqueos anteriores quedan documentados en sus secciones históricas.
 
 | Commit | Hash | Mensaje literal | Línea Tests: | Rojos y tipo |
@@ -191,15 +192,15 @@ los bloqueos anteriores quedan documentados en sus secciones históricas.
 | c28 | 81a3a4c6 | `feat(mobile): la tarjeta de éxito avisa con liveRegion (R13)` | `Tests:       232 passed, 232 total` | 0 |
 | c29 | 7b4c79b3 | `test(mobile): el candado de recuperar es un tile acento con labio (R14)` | `Tests:       9 failed, 98 passed, 107 total` | 9 aserciones: forgot 4, consistency 5 |
 | c30 | 7ddda8f5 | `feat(mobile): el candado de recuperar es un tile acento con labio (R14)` | `Tests:       234 passed, 234 total` | 0 |
-| c31 | 0e5bb776 | `test(mobile): el error de login cuelga del scroll (R15)` | `Tests:       222 passed, 222 total` | 0; nace verde, S15 bloqueada por 3 fallos en vez de 2 |
-| c32 | — | `test(mobile): filas de uso de las claves de cuenta (R16)` | No ejecutado | pendiente tras el bloqueo S15 |
-| c33 | — | `test(mobile): los componentes nuevos entran en la guarda de deriva (R17)` | No ejecutado | pendiente tras el bloqueo S15 |
-| c34 | — | `test(mobile): la carta declara la enmienda de las pantallas de cuenta (R18)` | No ejecutado | pendiente tras el bloqueo S15 |
-| c35 | — | `docs(ui): enmienda de la carta para las pantallas de cuenta (R18)` | No ejecutado | pendiente tras el bloqueo S15 |
-| c36 | — | `test(mobile): la CTA de cuenta se ancla al pie (R19)` | No ejecutado | pendiente tras el bloqueo S15 |
-| c37 | — | `feat(mobile): la CTA de cuenta se ancla al pie (R19)` | No ejecutado | pendiente tras el bloqueo S15 |
-| c38 | — | `test(mobile): CTA de 56 e inputs de 52 en las pantallas de cuenta (R20)` | No ejecutado | pendiente tras el bloqueo S15 |
-| c39 | — | `feat(mobile): CTA de 56 e inputs de 52 en las pantallas de cuenta (R20)` | No ejecutado | pendiente tras el bloqueo S15 |
+| c31 | 0e5bb776 | `test(mobile): el error de login cuelga del scroll (R15)` | `Tests:       222 passed, 222 total` | 0; nace verde, S15 conforme a E5 |
+| c32 | 9f1b2350 | `test(mobile): filas de uso de las claves de cuenta (R16)` | `Tests:       194 passed, 194 total` | 0; nace verde |
+| c33 | 3f10a364 | `test(mobile): los componentes nuevos entran en la guarda de deriva (R17)` | `Tests:       194 passed, 194 total` | 0; nace verde |
+| c34 | 10763864 | `test(mobile): la carta declara la enmienda de las pantallas de cuenta (R18)` | `Tests:       1 failed, 6 passed, 7 total` | 1 aserción (toContain del encabezado) |
+| c35 | dc6df815 | `docs(ui): enmienda de la carta para las pantallas de cuenta (R18)` | `Tests:       393 passed, 393 total` | 0; lint verde tras espera y único reintento |
+| c36 | e040579e | `test(mobile): la CTA de cuenta se ancla al pie (R19)` | `Tests:       20 failed, 259 passed, 279 total` | 20: 14 aserciones y 6 consultas |
+| c37 | 398f074b | `feat(mobile): la CTA de cuenta se ancla al pie (R19)` | `Tests:       346 passed, 346 total` | 0 |
+| c38 | 9cf701c4 | `test(mobile): CTA de 56 e inputs de 52 en las pantallas de cuenta (R20)` | `Tests:       8 failed, 149 passed, 157 total` | 8 aserciones |
+| c39 | 4ba7e139 | `feat(mobile): CTA de 56 e inputs de 52 en las pantallas de cuenta (R20)` | `Tests:       355 passed, 355 total` | 0 |
 
 ## Gates ejecutados — comandos y salidas
 
@@ -6552,3 +6553,4567 @@ feature/172-mobile-account-screens-polish
 correo…» (consulta), R7 «con error…» (aserción) y R15 (consulta). La sonda
 quedó restaurada con exit=0 y no se repite. C31 se conserva.
 Se continúa T17–T22 (c32–c39); S17b espera dos fallos según E5.
+
+
+### Estado al final de Reanudacion 4
+
+R1–R20 están implementados y verificados. T17–T22 se completaron, con
+c32–c39 en su orden y sus mensajes literales. C32 y c33 nacieron verdes;
+c34/c35, c36/c37 y c38/c39 mantuvieron rojo e implementación separados.
+Cada rojo y cada sonda se contrastó con todos los títulos y tipos de su
+fila antes de avanzar. S17b dio los dos fallos prescritos por E5.
+S14 y S15 se aceptan con las salidas previas corregidas por E4/E5 y no se
+repitieron. Todos los bloqueos anteriores quedan conservados como historia.
+
+T22 quedó completo sobre `4ba7e139` (c39):
+
+- 341 bloques de it, frente a 289 en H0: delta +52; todos los ficheros dan
+  su cuenta final prescrita.
+- 17 suites, `Tests: 470 passed, 470 total`: 409 de base +61.
+- Lectores de la carta: 4 suites, `Tests: 192 passed, 192 total`.
+- Guarda del router, typecheck y lint: exit=0; lint vacío.
+- Todas las anclas finales coinciden con H0 + delta; fuente ExtraBold con
+  el sha256 previsto, seis assets de fuente, un único InputGroup y un
+  único fichero de producción con flex-2.
+- Package.json, bun.lock, Card y Bienvenida conservados frente a H0;
+  motion añade únicamente las dos constantes de Pingo y sus valores.
+- Historial de c1–c39, c7b y el correctivo c7c verificado: 41 commits del
+  guion, sin mezclar tests rojos con implementación. Firmas y enmiendas del
+  leader conservadas y excluidas del conteo propio.
+
+**R21 queda pendiente (humano)**. No se firma la prueba de humo ni se marca
+la feature done: feature_list.json, progress/current.md, STATUS y el
+frontmatter de la spec pertenecen al leader y no se modifican.
+No se ejecutaron init.sh, push, PR, amend, rebase ni prettier.
+
+### Contraste de rojos y sondas de Reanudacion 4
+
+| Paso | Títulos y tipos contrastados | Resultado |
+|---|---|---|
+| S16a | normativa R1_AUTH, tabla completa y copy literal: uses 0 para common.back y es:common.back = Volver | 3/3 aserciones |
+| S16b | normativa R1_AUTH y tabla completa: uses 0 para password-input | 2/2 aserciones |
+| S17a | #167 R14 sin escapes: pingo-float en la lista de infracciones | 1/1 aserción |
+| S17b | C8 clases entre corchetes y #167 R14 sin escapes: password-input en ambas listas | 2/2 aserciones, conforme a E5 |
+| S17c | #149 R4 inventario a login: forgot 1 en vez de 2 | 1/1 aserción |
+| c34 | #172 R18 encabezado de la enmienda: toContain | 1/1 aserción |
+| S18a | #172 R18 casilla: toMatch | 1/1 aserción |
+| S18b | #172 R18 constante de Pingo: toContain | 1/1 aserción |
+| c36 | los 20 títulos de T20: login 3, register 3, forgot 2, reset 7, polish 1, legibility 1, ui-language 2, design-drift 1 | 20/20; 14 aserciones y 6 consultas |
+| S19a | contenido de login y fuente polish, ambos por centrado vertical | 2/2 aserciones |
+| S19b | espaciador de login: índice inmediatamente anterior a la CTA | 1/1 aserción |
+| S19c | espaciador de recuperar: consulta forgot-spacer tras Revisa tu correo | 1/1 consulta |
+| S19d | #167 R10 formulario entra en dos tiempos: className de reset-body | 1/1 aserción |
+| S19e | enlace del formulario fuera del cuerpo; #167 R10 cabecera/cuerpo con tres hermanos | 2/2: consulta y aserción |
+| S19f | padding/insets del registro: falta flexGrow | 1/1 aserción |
+| S17d | enlace del formulario; polish de reset; legibility de reset; normativa R11_RESET; tabla completa; inventario de login | 6/6: 1 consulta y 5 aserciones |
+| c38 | cuatro filas de CTA en polish y cuatro #127 R1 de clase exacta | 8/8 aserciones |
+| S20a | fila forgot de R20 por altura de resend | 1/1 aserción |
+| S20b | fila login de R20 por altura del correo | 1/1 aserción |
+| S20c | #127 R1 reset-submit: size-lg en vez de size-md | 1/1 aserción |
+| S20d | fila password-input de R20 y #172 R8 grupo 52/botón 44: falta h-13 | 2/2 aserciones |
+
+Todas las sondas de esta tabla se restauraron con git checkout HEAD y se
+comprobó el diff quiet con exit=0, antes de pasar a la siguiente.
+
+### Gates y sondas — salidas literales de Reanudacion 4
+
+Se reproducen los comandos, bloques de fallo completos, resúmenes y exits.
+Se omiten únicamente los avisos Console y los códigos ANSI. En las anclas,
+el exit=1 de un grep sin coincidencias acompaña el contador 0 esperado;
+no representa un fallo del gate de Jest ni del chequeo de valores.
+
+
+#### c32 — jest
+
+```bash
+bunx jest --testTimeout=30000 --runTestsByPath src/__tests__/ui-language.test.ts src/__tests__/design-drift.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/legibility-classnames.test.ts
+```
+
+```text
+PASS src/__tests__/design-drift.test.ts
+PASS src/__tests__/consistency-classnames.test.ts
+PASS src/__tests__/legibility-classnames.test.ts
+PASS src/__tests__/ui-language.test.ts (7.227 s)
+Test Suites: 4 passed, 4 total
+Tests:       194 passed, 194 total
+Time:        8.341 s
+exit=0
+```
+
+#### c32 — router
+
+```bash
+test ! -e .expo/types/router.d.ts
+```
+
+```text
+
+exit=0
+```
+
+#### c32 — typecheck
+
+```bash
+bun run typecheck
+```
+
+```text
+$ tsc --noEmit
+exit=0
+```
+
+#### c32 — lint
+
+```bash
+bunx expo lint --no-cache > /tmp/lint-172.log 2>&1
+```
+
+```text
+vacio=0
+exit=0
+```
+
+#### S16a — jest
+
+```bash
+bunx jest --testTimeout=30000 --runTestsByPath src/__tests__/ui-language.test.ts
+```
+
+```text
+FAIL src/__tests__/ui-language.test.ts
+Test Suites: 1 failed, 1 total
+Tests:       3 failed, 27 passed, 30 total
+Time:        2.531 s, estimated 8 s
+  ● #65 R1: el grupo (auth) resuelve su copy por clave › resuelve las 41 ocurrencias normativas
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Object {
+        "file": "src/components/back-button.tsx",
+        "key": "common.back",
+    -   "uses": 1,
+    +   "uses": 0,
+      }
+
+      60 |       (directCalls?.length ?? 0) + (keyedConstants?.length ?? 0);
+      61 |
+    > 62 |     expect({ file, key, uses: resolvedUses }).toEqual({
+         |                                               ^
+      63 |       file,
+      64 |       key,
+      65 |       uses: expected,
+
+      at toEqual (src/__tests__/ui-language.test.ts:62:47)
+      at Object.checkUses (src/__tests__/ui-language.test.ts:73:5)
+  ● #65 R18: los sitios resuelven por clave y no queda copy suelta › resuelve cada ocurrencia de la tabla contra la clave exacta
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Object {
+        "file": "src/components/back-button.tsx",
+        "key": "common.back",
+    -   "uses": 1,
+    +   "uses": 0,
+      }
+
+      60 |       (directCalls?.length ?? 0) + (keyedConstants?.length ?? 0);
+      61 |
+    > 62 |     expect({ file, key, uses: resolvedUses }).toEqual({
+         |                                               ^
+      63 |       file,
+      64 |       key,
+      65 |       uses: expected,
+
+      at toEqual (src/__tests__/ui-language.test.ts:62:47)
+      at Object.checkUses (src/__tests__/ui-language.test.ts:492:5)
+  ● #65 R18: los sitios resuelven por clave y no queda copy suelta › no deja ningún valor fijo del catálogo como literal entero en las pantallas
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 3
+
+      Object {
+        "file": "src/components/back-button.tsx",
+    -   "looseCopy": Array [],
+    +   "looseCopy": Array [
+    +     "es:common.back = Volver",
+    +   ],
+      }
+
+      509 |       ).map((entry) => `${entry.language}:${entry.key} = ${entry.value}`);
+      510 |
+    > 511 |       expect({ file, looseCopy }).toEqual({ file, looseCopy: [] });
+          |                                   ^
+      512 |     }
+      513 |   });
+      514 | });
+
+      at toEqual (src/__tests__/ui-language.test.ts:511:35)
+      at Object._loop (src/__tests__/ui-language.test.ts:505:36)
+exit=1
+```
+
+#### S16a — restore
+
+```bash
+git checkout HEAD -- src/components/back-button.tsx; git diff --quiet HEAD -- src/components/back-button.tsx; echo "exit=$?"
+```
+
+```text
+exit=0
+exit=0
+```
+
+#### S16b — jest
+
+```bash
+bunx jest --testTimeout=30000 --runTestsByPath src/__tests__/ui-language.test.ts
+```
+
+```text
+FAIL src/__tests__/ui-language.test.ts
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 28 passed, 30 total
+Time:        2.014 s, estimated 3 s
+  ● #65 R1: el grupo (auth) resuelve su copy por clave › resuelve las 41 ocurrencias normativas
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Object {
+        "file": "src/components/password-input.tsx",
+        "key": "common.showPassword",
+    -   "uses": 1,
+    +   "uses": 0,
+      }
+
+      60 |       (directCalls?.length ?? 0) + (keyedConstants?.length ?? 0);
+      61 |
+    > 62 |     expect({ file, key, uses: resolvedUses }).toEqual({
+         |                                               ^
+      63 |       file,
+      64 |       key,
+      65 |       uses: expected,
+
+      at toEqual (src/__tests__/ui-language.test.ts:62:47)
+      at Object.checkUses (src/__tests__/ui-language.test.ts:73:5)
+  ● #65 R18: los sitios resuelven por clave y no queda copy suelta › resuelve cada ocurrencia de la tabla contra la clave exacta
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Object {
+        "file": "src/components/password-input.tsx",
+        "key": "common.showPassword",
+    -   "uses": 1,
+    +   "uses": 0,
+      }
+
+      60 |       (directCalls?.length ?? 0) + (keyedConstants?.length ?? 0);
+      61 |
+    > 62 |     expect({ file, key, uses: resolvedUses }).toEqual({
+         |                                               ^
+      63 |       file,
+      64 |       key,
+      65 |       uses: expected,
+
+      at toEqual (src/__tests__/ui-language.test.ts:62:47)
+      at Object.checkUses (src/__tests__/ui-language.test.ts:492:5)
+exit=1
+```
+
+#### S16b — restore
+
+```bash
+git checkout HEAD -- src/components/password-input.tsx; git diff --quiet HEAD -- src/components/password-input.tsx; echo "exit=$?"
+```
+
+```text
+exit=0
+exit=0
+```
+
+#### c33 — jest
+
+```bash
+bunx jest --testTimeout=30000 --runTestsByPath src/__tests__/design-drift.test.ts src/__tests__/ui-language.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/legibility-classnames.test.ts
+```
+
+```text
+PASS src/__tests__/consistency-classnames.test.ts
+PASS src/__tests__/legibility-classnames.test.ts
+PASS src/__tests__/design-drift.test.ts
+PASS src/__tests__/ui-language.test.ts
+Test Suites: 4 passed, 4 total
+Tests:       194 passed, 194 total
+Time:        3.638 s, estimated 5 s
+exit=0
+```
+
+#### c33 — router
+
+```bash
+test ! -e .expo/types/router.d.ts
+```
+
+```text
+
+exit=0
+```
+
+#### c33 — typecheck
+
+```bash
+bun run typecheck
+```
+
+```text
+$ tsc --noEmit
+exit=0
+```
+
+#### c33 — lint
+
+```bash
+bunx expo lint --no-cache > /tmp/lint-172.log 2>&1
+```
+
+```text
+vacio=0
+exit=0
+```
+
+#### S17a — jest
+
+```bash
+bunx jest --testTimeout=30000 --runTestsByPath src/__tests__/design-drift.test.ts
+```
+
+```text
+FAIL src/__tests__/design-drift.test.ts
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 69 passed, 70 total
+Time:        1.532 s, estimated 3 s
+  ● #167 R14: las pantallas de cuenta no traen deriva › #167 R14: sin hex, clases arbitrarias, StyleSheet ni sombras sueltas
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 3
+
+    - Array []
+    + Array [
+    +   "components/pingo-float.tsx",
+    + ]
+
+      837 |     expect(featureFiles.filter((file) =>
+      838 |       MEALS_BAR_STYLE_ESCAPES.test(readFileSync(join(sourceRoot, file), 'utf8')),
+    > 839 |     )).toEqual([]);
+          |        ^
+      840 |   });
+      841 |
+      842 |   it('#167 R14: sin radios fuera de la escala', () => {
+
+      at Object.toEqual (src/__tests__/design-drift.test.ts:839:8)
+exit=1
+```
+
+#### S17a — restore
+
+```bash
+git checkout HEAD -- src/components/pingo-float.tsx; git diff --quiet HEAD -- src/components/pingo-float.tsx; echo "exit=$?"
+```
+
+```text
+exit=0
+exit=0
+```
+
+#### S17b — jest
+
+```bash
+bunx jest --testTimeout=30000 --runTestsByPath src/__tests__/design-drift.test.ts
+```
+
+```text
+FAIL src/__tests__/design-drift.test.ts
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 68 passed, 70 total
+Time:        1.376 s, estimated 2 s
+  ● C8: la UI no usa clases arbitrarias › no deja ninguna clase Tailwind con valores entre corchetes
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 3
+
+    - Array []
+    + Array [
+    +   "components/password-input.tsx",
+    + ]
+
+      77 | describe('C8: la UI no usa clases arbitrarias', () => {
+      78 |   it('no deja ninguna clase Tailwind con valores entre corchetes', () => {
+    > 79 |     expect(filesMatching(/[A-Za-z0-9_-]+-\[[^\]]+\]/)).toEqual([]);
+         |                                                        ^
+      80 |   });
+      81 | });
+      82 |
+
+      at Object.toEqual (src/__tests__/design-drift.test.ts:79:56)
+  ● #167 R14: las pantallas de cuenta no traen deriva › #167 R14: sin hex, clases arbitrarias, StyleSheet ni sombras sueltas
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 3
+
+    - Array []
+    + Array [
+    +   "components/password-input.tsx",
+    + ]
+
+      837 |     expect(featureFiles.filter((file) =>
+      838 |       MEALS_BAR_STYLE_ESCAPES.test(readFileSync(join(sourceRoot, file), 'utf8')),
+    > 839 |     )).toEqual([]);
+          |        ^
+      840 |   });
+      841 |
+      842 |   it('#167 R14: sin radios fuera de la escala', () => {
+
+      at Object.toEqual (src/__tests__/design-drift.test.ts:839:8)
+exit=1
+```
+
+#### S17b — restore
+
+```bash
+git checkout HEAD -- src/components/password-input.tsx; git diff --quiet HEAD -- src/components/password-input.tsx; echo "exit=$?"
+```
+
+```text
+exit=0
+exit=0
+```
+
+#### S17c — jest
+
+```bash
+bunx jest --testTimeout=30000 --runTestsByPath src/__tests__/design-drift.test.ts
+```
+
+```text
+FAIL src/__tests__/design-drift.test.ts
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 69 passed, 70 total
+Time:        1.426 s, estimated 2 s
+  ● #149 R4: solo cuatro ficheros de producción navegan a login › #149 R4: inventaría cada ruta a login en producción
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Object {
+    -   "screens/forgot/index.tsx": 2,
+    +   "screens/forgot/index.tsx": 1,
+        "screens/register/index.tsx": 1,
+        "screens/reset-password/index.tsx": 2,
+        "screens/welcome/index.tsx": 1,
+      }
+
+      735 |     );
+      736 |
+    > 737 |     expect(actual).toEqual(loginRoutes);
+          |                    ^
+      738 |   });
+      739 | });
+      740 |
+
+      at Object.toEqual (src/__tests__/design-drift.test.ts:737:20)
+exit=1
+```
+
+#### S17c — restore
+
+```bash
+git checkout HEAD -- src/screens/forgot/index.tsx; git diff --quiet HEAD -- src/screens/forgot/index.tsx; echo "exit=$?"
+```
+
+```text
+exit=0
+exit=0
+```
+
+#### c34 — jest
+
+```bash
+bunx jest --testTimeout=30000 --runTestsByPath src/__tests__/account-screens-polish.test.ts
+```
+
+```text
+FAIL src/__tests__/account-screens-polish.test.ts
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 6 passed, 7 total
+Time:        1.866 s, estimated 2 s
+  ● #172 R18: la carta declara la enmienda #172 y su casilla
+
+    expect(received).toContain(expected) // indexOf
+
+    Expected substring: "## Enmienda #172 — Las pantallas de cuenta como el canvas"
+    Received string:    "# Carta de UI — mobile-pet-tracker·
+    > Fuente de verdad de UI/UX móvil para TODOS los agentes (Claude, subagentes,
+    > Codex CLI). Toda spec, implementación y review de trabajo móvil se valida
+    > contra este documento. Complementa `docs/conventions.md` §Convenciones de
+    > la app móvil; ante conflicto, gana el más específico.·
+    ## Skills: quién carga qué·
+    Las guías genéricas viven en las skills oficiales de Expo — instaladas en
+    Claude Code (plugin `expo`) y en Codex CLI (`codex plugin add
+    expo@openai-curated`, mismo contenido v1.12+). Este doc NO las duplica:
+    fija las decisiones ya tomadas en ESTE repo.·
+    | Tarea móvil | Skill a cargar antes de trabajar |
+    |---|---|
+    | Cualquiera (routing/entrada) | `expo-overview` → deriva a la específica |
+    | Tokens, tema, componentes reusables | `expo-design-system` |
+    | Estilo nativo, safe areas, HIG | `expo-native-ui` |
+    | Sheets, pickers, menus, toggles | `expo-ui` |
+    | Animaciones, gestos, haptics | `expo-animation` (en Claude: `animate-expo`) |
+    | Tailwind/uniwind | `expo-tailwind-setup` |
+    | Diseñar/mejorar una pantalla o flujo completo | `appllama-app-design-skill` (obligatoria, ver abajo) |·
+    Subagentes y handoffs a Codex deben instruir explícitamente la carga de la
+    skill pertinente (regla ya en memoria de sesión; aquí queda oficial).·
+    ### `appllama-app-design-skill`: cuándo y con qué límites·
+    Instalada en `.agents/skills/` (universal: Claude Code y Codex CLI la ven).
+    Se carga en **toda** tarea de UI móvil — pantalla nueva, rediseño, flujo,
+    onboarding, estados vacíos, jerarquía visual, semántica de navegación
+    (push vs replace, sheet vs modal, puertas de un solo sentido). Aporta el
+    listón de \"se siente nativa\" y la disciplina anti-slop.·
+    Tres límites, no negociables:·
+    1. **La carta gana siempre sobre la skill.** La skill asume colores
+       semánticos nativos (`Color.ios.label`) y su propio sistema de estilos;
+       este repo usa Tailwind v4 + uniwind + heroui-native con tokens en
+       `global.css` (§Decisiones fijas 1-3). De la skill se toma el **patrón**
+       (esqueleto, jerarquía, motion, navegación), nunca el sistema de estilos.
+       Cualquier sugerencia suya que meta hex, `StyleSheet.create` o clases
+       arbitrarias se descarta: rompe el grep-clean.
+    2. **Su \"simulator loop\" no aplica tal cual.** Pide iOS Simulator en macOS
+       (`xcrun simctl io recordVideo`); aquí la verificación es la prueba de
+       humo que corre el humano en Android (dev build o Expo Go según la
+       feature). El checklist de la skill sirve como guion de esa prueba, no
+       como comando a ejecutar.
+    3. **`appllama-usage` sí está disponible, pero solo en Claude Code.** El
+       MCP `mcp.appllama.io` se contrató el 2026-10-04 (plan Pro: 1500 créditos
+       al mes, cada llamada gasta uno, `get_credits` es gratis) y la skill
+       `appllama-usage` está instalada en Claude. La fase «estudiar 20-30
+       pantallas reales antes de diseñar» la corre el **leader** antes de
+       lanzar al `spec_author` y deja el resultado en
+       `progress/explore_<tema>.md` con ids durables de app y pantalla (las URL
+       de imagen caducan en una hora, así que nunca se enlazan). Del material se
+       toma el patrón, no los píxeles; se ignora la marca de agua y no se barre
+       el catálogo. **Codex no tiene el MCP** (mismo hueco que B5): el handoff
+       le pasa el fichero de explore y la spec, nunca le pide que investigue.
+       El primer explore de este tipo es `progress/explore_ui-appllama.md`
+       (#115-#119).·
+    ## Decisiones fijas de este repo (no re-litigar)·
+    1. **Sistema de estilos**: Tailwind v4 + uniwind + heroui-native. Tokens en
+       `mobile-pet-tracker/src/theme/global.css` — ÚNICA entrada. Prohibido
+       crear un segundo sistema (theme.ts paralelo, StyleSheet.create,
+       styled-components).
+    2. **Tokens obligatorios**: todo valor visual repetido es un token en
+       `@theme` de global.css. Existentes: colores semánticos light/dark,
+       fuentes Inter, `--radius-card: 20px`, `--text-2xs: 10px`. Si un valor
+       nuevo se repite 2+, se añade token — no clase arbitraria.
+    3. **Grep-clean permanente** (criterio de aceptación de toda feature móvil):
+       - cero hex fuera de `src/theme/`
+       - cero clases arbitrarias `[...]` (`rounded-[20px]`, `text-[10px]`,
+         `p-[13px]`...) — usar el token; si no existe, crearlo primero
+       - cero `StyleSheet.create`, cero shadow/elevation legacy (solo `boxShadow`)
+    4. **Componentes compartidos** (`src/components/`): `card.tsx`
+       (surface|accent|secondary — usa `--radius-card`, NUNCA heredar `--radius`
+       de heroui/shadcn, bug #46), `pet-switcher.tsx` (selector de mascota,
+       siempre este), `floating-tab-bar.tsx`, `weight-chart.tsx`, `pet-map.tsx`
+       (adapta el contrato del tab Map a la API nativa de `expo-maps`). Regla de
+       extracción: ≥2 pantallas + rol nombrable + API menor que implementación.
+       Promoción: inline → `src/screens/<x>/` → `src/components/`.
+    5. **Base de componentes**: heroui-native (Button, Skeleton, TextField,
+       Avatar, Chip...). `@expo/ui` para lo que heroui no cubre, PERO con esta
+       distinción (aprendida por crash real en el smoke de #39, Android + Expo
+       Go): **la capa root/universal de `@expo/ui` (SwiftUI/Jetpack) crashea en
+       Expo Go Android**. El default se mantiene en la capa
+       **`@expo/ui/community/*`** porque sus wrappers funcionan tanto en Expo Go
+       como en dev builds:
+       `community/bottom-sheet` (montado sobre @gorhom/bottom-sheet — esa dep es
+       peer del wrapper, NO removerla), `community/datetime-picker`,
+       `community/menu`, `community/picker`, `community/slider`,
+       `community/segmented-control`. Adoptar la capa root de `@expo/ui`, aunque
+       el smoke use dev build desde #54, requiere una feature separada; esta
+       decisión no se cambia de paso. `List`+`ListItem` solo para filas agrupadas
+       cortas estilo Settings — NO es virtualizada; listas de datos de longitud
+       desconocida: FlatList/FlashList. Prohibido: importar @gorhom directamente
+       (siempre vía el wrapper community), Reanimated para sheets,
+       Picker/SafeAreaView/WebView de RN (removidos).
+    6. **Dimensiones de pantalla**: conventions.md §Dimensiones — `paddingTop:
+       insets.top + 12`, `padding: 24`, `gap: 16`, `paddingBottom: insets.bottom
+       + 96` vía `useSafeAreaInsets` en `contentContainerStyle` (nunca en el
+       ScrollView mismo). Overlays absolutos usan `insets.top + 12`, jamás
+       top fijo. `contentInsetAdjustmentBehavior=\"automatic\"` NO sustituye el
+       paddingTop (no-op en Android).
+       **Excepción nombrada, enmienda A9 de #67**: si el primer hijo del scroll es
+       una **cabecera a sangre**, el `contentContainerStyle` conserva `gap` y
+       `paddingBottom`, el padding horizontal de 24 baja a un envoltorio interior,
+       y el `paddingTop: insets.top + 12` lo asume la cabecera vía su slot. Las
+       ramas de estado sin cabecera llevan su propio envoltorio con ese
+       `paddingTop`.·
+       **Excepción nombrada (enmienda A11 de #95, 2026-09-23)**: una pantalla empujada
+       sobre el Stack raíz con cabecera nativa (`headerShown: true`) —hoy
+       `add-reminder`, `pets/add`, `pets/[petId]/docs`, `weight-log`,
+       `meal-schedule`, `pairing`, `reminders`, `alerts` (estas dos por la enmienda A13 de #114, 2026-09-23), `alerts/[alertId]` (por la enmienda A15 de #100, 2026-09-28), `pets/[petId]/geofences` (por la enmienda A18 de #41, 2026-10-02) y `pets/[petId]/geofence-editor` (por la enmienda A19 de #146, 2026-10-02) y `meals-history` (por la enmienda A20 de #105, 2026-10-04)— no lleva `paddingTop: insets.top + 12`, porque
+       el inset superior lo consume la cabecera, ni `paddingBottom: insets.bottom +
+       96`, porque sobre ella no flota el `FloatingTabBar`. Su
+       `contentContainerStyle` es `padding: 24`, `gap: 16` y `paddingBottom:
+       insets.bottom + 24`, la misma holgura inferior que `(auth)` y
+       `reset-password`.
+    7. **Estados de carga**: Skeleton de heroui dimensionado como el contenido
+       final. Prohibido Spinner suelto que salte el layout.
+    8. **Estructura**: route delgado en `src/app/` + pantalla en `src/screens/`
+       (conventions.md §estructura Expo oficial, desde #39). Archivos kebab-case.
+       Rutas con extensión de plataforma jamás dentro de `src/app/`.
+    9. **Tema**: light/dark vía uniwind; colores para código imperativo (mapas,
+       iconos) SIEMPRE vía `useThemeColors` de `src/theme/use-theme-colors.ts`
+       (reactivo; bug de resolución stale ya visto en #46). El mapa traduce la
+       preferencia guardada a `colorScheme` de `expo-maps` mediante
+       `src/components/pet-map.tsx`.
+    10. **Composición de mapas nativos**: ningún ancestro de una vista nativa de
+        mapa puede declarar fondo opaco (`bg-*`). El mapa se compone por detrás de
+        la ventana y un fondo encima lo tapa sin producir ningún error. Los estados
+        sin mapa declaran su fondo cada uno.
+    11. **Desviación declarada del Figma en el acento** (feature #61,
+        2026-09-03). `--accent` vale **`#178255`**, no el `#2AB87C` que #46 R1
+        tomó del Make. El verde del diseño da 2,55:1 con etiqueta blanca encima y
+        no hay forma de pasar AA conservándolo: o se oscurece el relleno o se
+        oscurece la letra, y el humano eligió lo primero para que el CTA siga
+        siendo verde con letra blanca. Se conserva el hue (154,7°, el mismo del
+        Make) y se baja la luminancia hasta **4,82:1** con blanco. Consecuencia
+        asumida: los rellenos ya **no** coinciden 1:1 con el Make y el smoke lado
+        a lado lo verá; es esperado, no un defecto. El acento como **tinta**
+        (texto, enlaces, iconos, trazos) es `--accent-strong`, que en dark
+        recupera el `#2AB87C` original porque sobre fondo oscuro un verde oscuro
+        es ilegible. Regla mecánica: **fondo ⇒ `--accent`; encima de otra cosa ⇒
+        `--accent-strong`.**
+    12. **Escala de radios** (feature #62, 2026-09-04). Tres radios, uno por rol,
+        y ninguno más:
+        - **Superficie de card** → `rounded-card` (token `--radius-card`, 20 px).
+          Se obtiene usando `src/components/card.tsx`, no repitiendo la clase.
+        - **Control, tile, input, botón y píldora de dato** → `rounded-xl`
+          (12 px), que es el mismo valor que `--field-radius: 0.75rem`, de modo
+          que botón e input comparten esquina dentro de un formulario.
+        - **Cápsula** (chip, avatar, píldora de pestaña, botón circular de
+          volver) → `rounded-full`.·
+        `rounded-2xl`, `rounded-lg`, `rounded-md` y `rounded-sm` quedan
+        **prohibidos en `mobile-pet-tracker/src/`**: no son un cuarto rol, son
+        drift. El grep que lo verifica vive en
+        `src/__tests__/consistency-classnames.test.ts`.·
+        Dos corolarios mecánicos: todo `Skeleton` lleva el radio del contenido
+        que sustituye (card ⇒ `rounded-card`, control ⇒ `rounded-xl`), y toda
+        esquina no-cápsula **que el repo dibuja por su cuenta** (`View`,
+        `Pressable`, `TextInput`, el `Card` compartido) declara
+        `style={CONTINUOUS_CORNER}` de `src/theme/native-styles.ts` — los
+        componentes de heroui-native ya lo traen de fábrica y no se envuelven
+        para añadírselo.·
+    13. **Botón con cuerpo** (feature #166, 2026-10-11). Los botones de acción
+        llevan un labio inferior: un borde inferior más grueso que los
+        laterales, nunca una sombra.
+        - **Primario sólido** (todo `Button` con `rounded-xl bg-accent`):
+          `rounded-xl bg-accent border-b-4 border-black/25`
+          El labio va detrás de `bg-accent`, nunca delante: el recuento de
+          primarios de `consistency-classnames` busca `rounded-xl bg-accent`
+          seguido de espacio o comilla.
+        - **Secundario neutro** (`variant=\"outline\"` o `variant=\"secondary\"`
+          sin relleno tonal, y el secundario de Bienvenida):
+          `rounded-xl border-2 border-b-6 border-lip-gray bg-surface`
+          El gris sale del token `--color-lip-gray` de `src/theme/global.css`,
+          nunca de un hex ni de una clase entre corchetes.
+        - **Sin labio**: los tonales (`bg-accent-soft`, `bg-default`), los
+          destructivos (`bg-danger`, `variant=\"danger-soft\"`) y las primarias
+          de heroui sin color en `className` (reintentos, confirmar alerta).
+        Los inventarios que lo verifican viven en
+        `src/__tests__/consistency-classnames.test.ts`.·
+    ## Animación (decisiones por defecto)·
+    - Reanimated 4 en UI thread; nada que dependa de JS thread para gestos.
+    - Springs sobre timings para elementos que entran/salen o responden a
+      gesto; timings solo para opacidad/color. Duraciones: 150ms feedback,
+      250ms transición, 400ms superficies grandes — viven en
+      `src/theme/motion.ts` (enmienda A21 de #152).
+    - Entering/exiting de Reanimated para cambios de estado visibles
+      (aparición de cards, resultados de fetch).
+    - Nunca pasar valores `Color`/`PlatformColor`/var CSS a estilos de
+      Reanimated — color estático resuelto con `useThemeColors`.
+    - Interrumpible siempre: un gesto puede cortar cualquier animación en curso.
+    - `prefers-reduced-motion` respetado (Reanimated `ReducedMotionConfig` o
+      guard equivalente).
+    - expo-haptics está instalado desde #106 (2026-09-21), autorizado por el
+      humano en el gate de specs/mobile-meals-bar-motion/. Se usa con la tabla de
+      la skill expo-animation §8: selectionAsync para un detent, impactAsync para
+      un commit de gesto, notificationAsync(Success|Error) para una operación que
+      termina bien o mal. Tres reglas absolutas: mismo frame que el visual, uno
+      por acción del usuario, y nunca el único feedback.
+    - El runtime de smoke del humano es el dev build de Android desde 2026-08-27;
+      `expo-maps` no está disponible en Expo Go.
+    - Backlog priorizado con valores exactos: `progress/audit_animations_mobile.md`.·
+    ## Micro-reglas de pulido (de expo-native-ui, adoptadas)·
+    - `borderCurve: 'continuous'` en toda esquina redondeada no-cápsula.
+    - `gap` sobre margin; padding sobre margin.
+    - `<Text selectable />` en datos copiables y mensajes de error.
+    - Contadores/números alineados: `fontVariant: ['tabular-nums']`.
+    - Números grandes formateados (1.4M, 38k).
+    - Feedback pressed en TODO elemento tappable (Pressable style function o
+      componente heroui que ya lo trae); touch target ≥ 44pt.
+    - Títulos de pantalla: header del stack cuando exista, no Text suelto.·
+    ## Dirección de arte·
+    > Añadida el 2026-09-04 tras `progress/explore_design-gap-vs-make.md`. Hasta
+    > aquí esta carta era un sistema de estilos —tokens, radios, componentes— y no
+    > decía nada sobre qué debe *parecer* ni qué debe *responder* una pantalla. El
+    > brief del producto sí lo dice, y las specs no lo estaban leyendo.·
+    **1. Paleta pastel categórica.** El brief pide un producto \"amigable, lúdico,
+    con colores pastel\". Cuando una pantalla distingue **categorías** —tipos de
+    recordatorio, tipos de documento, destinos de acceso rápido— cada categoría
+    lleva su propio fondo pastel, no el mismo `accent-soft` para todas. Esos
+    fondos son **tokens de `global.css`**, nunca hex sueltos ni clases arbitrarias:
+    la regla de §Decisiones fijas 3 no tiene excepción por ser \"un color de
+    adorno\". Los valores del Make son de tema claro y no traen equivalente
+    oscuro: el dark se diseña, no se copia, y cada par texto/superficie se
+    verifica AA con contraste **calculado**, como fijó #61.·
+    Los seis huecos, cerrados (feature #64, 2026-09-04). Toda sección categórica
+    consume estos tokens; ninguna inventa un hex ni una clase arbitraria:·
+    | Hueco | Superficie | Tinta | Tipos que lo ocupan |
+    |---|---|---|---|
+    | azul | `bg-category-blue` | `text-category-blue-strong` | recordatorio `vaccine`; documento de vacunación |
+    | ámbar | `bg-category-amber` | `text-category-amber-strong` | recordatorio `medication`; documento de desparasitación |
+    | verde | `bg-category-green` | `text-category-green-strong` | recordatorio `appointment`; documento de consulta |
+    | violeta | `bg-category-violet` | `text-category-violet-strong` | recordatorio `deworming`; documento de análisis |
+    | rosa | `bg-category-rose` | `text-category-rose-strong` | recordatorio `food` |
+    | neutral | `bg-default` | `text-muted` | recordatorio `weight` y `custom`; cualquier tipo de documento desconocido |·
+    El reparto vive en `src/utils/category-palette.ts` y es el **único** sitio donde
+    se escriben esos nombres de clase. El color nunca es el único portador de la
+    categoría: la superficie siempre acompaña a un emoji y a un texto.·
+    **2. Fotografía y su respaldo.** Las cabeceras fotográficas asumen que la
+    mascota tiene foto. Cuando no la tiene, el respaldo es el **blobatar**
+    determinista de la mascota, que es lo que `pet-avatar` pinta de verdad. Ni
+    ilustración por especie ni foto obligatoria en el alta. Y sea cual sea la
+    imagen, **el texto que va encima pasa AA**.·
+    > **Enmendado por #67 (A8) — corrección de un hecho falso.** Hasta el
+    > 2026-09-06 este punto decía *\"el respaldo es degradado con la inicial —el
+    > patrón que ya usa `pet-avatar`—, decidido por el humano el 2026-09-04\"*.
+    > Era falso de origen: `src/components/pet-avatar.tsx` pinta `blobatar(name)`
+    > con `SvgXml` y nunca una inicial, y la R5 aprobada de #40 (2026-08-21)
+    > sustituyó explícitamente el fallback de inicial por el blobatar. El error
+    > venía de `progress/explore_design-gap-vs-make.md` y se propagó también al
+    > enunciado de #67 en `feature_list.json`. Y la garantía de AA no la da el
+    > degradado: la da la **banda opaca** bajo el texto (#67 R3), porque ningún
+    > velo sobre una foto arbitraria llega a 4,5:1.·
+    **3. Las siete preguntas de la Home.** El brief fija qué debe responder la
+    pantalla principal: ¿está segura?, ¿dónde está?, ¿el collar está conectado?,
+    ¿tiene batería?, ¿tiene algún recordatorio pendiente?, ¿cómo fue su actividad
+    hoy?, ¿hay alguna alerta? Toda spec que toque la Home **declara cuáles de las
+    siete responde y cuáles no**, y por qué. No es decoración: es el criterio de
+    aceptación de la pantalla.·
+    **4. Nada de jerga del proveedor.** El brief lo prohíbe explícitamente: los
+    términos técnicos de Wialon no se muestran al usuario final. Si un dato solo
+    se puede explicar con vocabulario de la integración, se traduce o no se
+    enseña.·
+    **5. Fidelidad no es pérdida de información.** El diseño oculta datos que la
+    app ya sirve (la rejilla del mapa, el perfil nutricional, los avisos de plan)
+    y no dibuja estados que existen de verdad, como el 402 de \"sin suscripción\".
+    Parecerse al diseño **no** autoriza a borrar un dato útil: la spec que se
+    encuentre con uno o lo conserva, o escribe por qué se va.·
+    **6. Idioma: catálogo de dos idiomas, español por defecto.** Decidido por el
+    humano el 2026-09-04 (español) y el 2026-09-05 (catálogo + interruptor), y
+    ejecutado por la feature #65. **Ninguna pantalla escribe texto**: todo lo que
+    ve el usuario —títulos, etiquetas, placeholders, `accessibilityLabel`,
+    mensajes de error, botones de `Alert`— se resuelve con `t('<ámbito>.<clave>')`
+    contra `mobile-pet-tracker/src/i18n/catalog.ts`. Toda spec que introduzca copy
+    nueva **añade su clave en los dos idiomas** en el mismo gate y la registra en
+    la tabla de `specs/mobile-ui-language/design.md` §2; una clave que exista en un
+    idioma y no en el otro no compila. Donde el diseño del Make da la palabra en
+    español se usa **la del diseño**. **No hay librería de i18n y no se instala
+    una**, ni `expo-localization`: el idioma es elección explícita del usuario en
+    Profile, no detección del idioma del teléfono. Las fechas y las horas siguen al
+    idioma elegido (`es-MX` / `en-US`), no al locale del sistema.·
+    Tres corolarios que nadie debe confundir con lo anterior:·
+    - **El idioma del código no cambia.** Nombres de variables, funciones, tipos,
+      ficheros, `testID`, rutas y **las claves del catálogo** siguen en inglés, y
+      los mensajes de commit también (`docs/conventions.md` §Commits).
+    - **El backend sigue devolviendo validaciones en inglés, en los dos idiomas.**
+      Se ve en `login-error`, `register-*-error`, `weight-form-error` y
+      `reset-error`, porque son mensajes de Zod de `backend-pet-tracker/`.
+      Traducirlos es una feature de backend. Al revés, las advertencias
+      nutricionales del backend ya llegan en español y se muestran tal cual — y en
+      inglés también, porque tampoco se traducen.
+    - **Los valores de enum que la API devuelve se pintan crudos**: `pet.sex`,
+      `document.type`, `foodType`, `activityLevel`. Siguen en inglés en los dos
+      idiomas. Mapearlos es cambio de conducta y va a feature propia.
+      `device.connectivity` dejó de pintarse crudo en la feature #68 (R16): se
+      resuelve por catálogo en `src/utils/device-connectivity.ts`.·
+    **7. Voz de Pingo: guardián sereno.** Decidido por el humano el 2026-10-07
+    (D1 de la feature #153): la mascota se llama **Pingo** y habla con la voz B,
+    «guardián sereno». Rige todo texto que la app pone en boca de Pingo
+    (bocadillos, estados vacíos, celebraciones, avisos); el resto del copy sigue el
+    punto 6 sin más. Cada frase nueva de Pingo entra con su clave en los dos
+    idiomas, como cualquier otra copy.·
+    - **Tono:** tranquilo y cálido; da seguridad. En español, tutea.
+    - **Persona:** Pingo habla en primera persona («te ayudo», «te recomiendo») y
+      llama a la mascota del usuario por su nombre, con el marcador `{{petName}}`.
+    - **Sin emoji**, en ningún idioma.
+    - **Exclamaciones solo para celebrar.** Un saludo, un aviso o un estado vacío
+      terminan en punto.
+    - **Sin bromas en las alertas.** Una alerta de Pingo dice qué pasa y qué hacer.
+    - **En inglés, registro neutro.**
+    - **Bucles de reposo.** Flotar, parpadear y los tres anillos de ping que
+      rodean a Pingo en la bienvenida son las únicas animaciones continuas de
+      Pingo, y una excepción declarada a §Animación: animan `translateY`,
+      `scale` y `opacity` con timing y duraciones fuera de 150/250/400,
+      porque no entran, ni salen, ni responden a un gesto. Sus constantes viven en
+      `src/theme/motion.ts` y no arrancan con reduce motion.·
+    ## Checklist de autocrítica (cierra toda pantalla nueva o modificada)·
+    Screenshot mental (o real en smoke) contra: jerarquía (lo importante
+    primero), proximidad (relacionado más cerca), repetición (esquinas/sombras/
+    acentos iguales = tokens), alineación (bordes comparten ejes). Si una
+    pantalla falla el mismo check dos veces, el fix va al theme o a un
+    componente — no a la pantalla.·
+    ## Enmienda #67 — cabecera fotográfica compartida·
+    `mobile-pet-hero-header` (#67) modifica una decisión que esta spec dejó
+    aprobada. La spec de origen es `specs/mobile-pet-hero-header/`; el detalle de
+    la enmienda está en su `requirements.md` §R10.·
+    - Spec enmendada: `docs/ui-guidelines.md`
+    - Qué cambia: `enmiendas A8 y A9 de la tabla de #67 §R10`
+    - Qué NO cambia: ningún otro requisito de esta spec, ni su estado de
+      aprobación, ni los tests que ya la cubren.·
+    - [X] Enmienda aprobada por humano·
+    ## Enmienda #70 — elementos repetidos: qué hay que candar·
+    > Añadida el 2026-09-09. Tres features seguidas —#69, #71, #70— cerraron con el
+    > mismo patrón: la revisión destapa una dimensión sin vigilar, se cierra, y la
+    > siguiente revisión destapa otra por el mismo mecanismo. Cuatro rondas, cuatro
+    > dimensiones. Esta lista existe para que la quinta no haga falta.·
+    Cuando una pantalla pinta un **elemento repetido** —una celda de una tira, un
+    tile de una rejilla, una fila de una lista— la spec enumera **todas** las
+    decisiones que ese elemento toma, y el criterio de aceptación es siempre el
+    mismo: **cruzar cualquiera de ellas entre dos elementos pone la suite roja**,
+    observado con `within(elemento)`.·
+    **Decisiones de conducta, una por elemento:**·
+    1. el **dato que muestra** — el más olvidado;
+    2. componente de icono;
+    3. etiqueta visible / clave de copy;
+    4. **nombre accesible** — se cruza igual en un elemento solo-icono, donde
+       ninguna aserción de texto lo ve;
+    5. color o hueco de fondo;
+    6. **tinta del icono**;
+    7. **color y receta tipográfica de cada texto** — no solo del principal;
+    8. destino de navegación;
+    9. **condición de render** — mueve la cardinalidad, así que el recuento se
+       verifica en más de un escenario;
+    10. **forma del contenedor** (`flex-row items-center gap-*`) — y en **todas** sus
+        ramas, no solo la cargada: si el estado vacío promete \"la misma anatomía de
+        fila\", eso es una aserción, no una frase del título del test;
+    11. **envoltorios de agrupación** (`flex-1` y equivalentes) que reparten el
+        espacio;
+    12. **orden de los hijos**. `within(row).getByTestId(...)` es **agnóstico al
+        orden**: intercambiar dos textos deja la suite entera verde. Se cierra
+        fijando la posición, p. ej.
+        `expect(row.children[1]).toHaveProperty('props.className', 'flex-1')`.·
+    **Estructurales, del contenedor:** identidad, orden y cardinalidad. El recuento
+    se cierra con `children.length`, **nunca contando coincidencias de `testID`** —
+    un recuento por prefijo deja pasar cualquier hijo sin `testID`.·
+    **Invariantes compartidos, a inventariar aparte:** tamaño de icono, objetivo
+    táctil y reparto, radio, rol y agrupación accesible, sitio de render, y feedback
+    de pulsado.·
+    > **Inventariar no es candar.** Añadido el 2026-09-09 tras #85: la spec copió
+    > esta lista en prosa —incluido \"tamaño de icono\"— y aun así el `size={20}` del
+    > icono de fila quedó sin una sola aserción: ponerlo a `28` dejó la suite móvil
+    > completa verde. Cada invariante de esta lista necesita **un `expect`**, no una
+    > mención. Y ojo con el caso que lo produjo: un `size` renderizado **por
+    > variable** no lo ve ningún recuento de literales en el fuente.·
+    **Método**: cada candado se demuestra con una sonda —cruzar el valor en
+    producción, ver el rojo, restaurar con `git diff` vacío— y la evidencia se
+    escribe. Un candado que nadie vio fallar no es un candado.·
+    ## Enmienda #98 — la barra de comidas de la Home·
+    `mobile-meals-served-ui` (#98) añade a la sección de recordatorios una barra
+    informativa de las comidas servidas hoy. Se pinta solo con detalle cargado y
+    `mealsToday !== null`, inmediatamente después de la próxima vacuna y antes del
+    estado vacío o de las filas de recordatorio.·
+    **Decisiones de conducta de la barra:**·
+    1. el dato es `mealsToday.served` de `mealsToday.total`;
+    2. el icono es `ForkKnife`, con `size={20}`;
+    3. el título usa la clave `food.mealsToday`;
+    4. el contador usa como nombre accesible la clave
+       `food.mealsServedOfTotal`, con `served` y `total`;
+    5. el disco del icono ocupa el hueco **rosa** de la paleta categórica:
+       `bg-category-rose`, asignado al tipo `food`;
+    6. la tinta del icono es `category-rose-strong` resuelta por
+       `useThemeColors`;
+    7. el título usa `text-sm font-semibold text-foreground` y el contador
+       `text-xs font-normal text-muted` con cifras tabulares;
+    8. no navega ni lleva `onPress`;
+    9. solo se renderiza cuando el detalle es `ok` y `mealsToday !== null`;
+    10. el `Card` compone una fila `flex-row items-center gap-3`;
+    11. el contenido se agrupa en una columna `flex-1 gap-1.5`, con cabecera y
+        carril;
+    12. el orden es disco del icono y columna; dentro de la columna, cabecera y
+        carril; dentro de la cabecera, título y contador.·
+    **Estructura e invariantes:** la fila tiene dos hijos, igual que la columna y
+    la cabecera; el carril tiene un único relleno. El disco es una cápsula de
+    36 px, el carril usa `h-1.5 overflow-hidden rounded-full bg-default` y el
+    relleno usa `h-full rounded-full bg-accent`. Esto último aplica la regla fija
+    **fondo ⇒ `bg-accent`**; `bg-accent-strong` sería tinta, no fondo. El ancho se
+    calcula como el porcentaje redondeado de `served / total`, o `0%` si el total
+    es cero.·
+    - [X] Enmienda aprobada por humano··
+    ## Enmienda #152 — el movimiento vive en src/theme/motion.ts·
+    Enmienda A21: Reanimated consume números y §Animación prohíbe pasarle
+    variables CSS. Las duraciones y configuraciones compartidas de movimiento
+    viven en `src/theme/motion.ts`.·
+    `motion.ts` no es un segundo sistema de estilos en el sentido de
+    §Decisiones fijas 1: no contiene colores, espaciados, radios ni clases,
+    solo duraciones y configuraciones de Reanimated. Tiene los precedentes
+    `native-styles.ts` y `touch-target.ts` en la misma carpeta.·
+    Las constantes anteriores a #152 (`MEALS_BAR_TIMING`, `KCAL_BAR_TIMING`,
+    `BAR_ENTRY_*`, `METRIC_TAB_SPRING` y `TAB_INDICATOR_SPRING`) migran a
+    `motion.ts` en una feature posterior, fuera del alcance de esta.
+    `WELCOME_ENTRANCE_MS` no está en la lista: la retiró #153, cuya bienvenida
+    usa `MOTION_FADE_TIMING` y `MOTION_SETTLE_SPRING` (enmienda E1 de #153).·
+    - [X] Enmienda aprobada por humano·
+    ## Enmienda #167 — anillos de ping de la bienvenida·
+    Los tres anillos de ping de la bienvenida amplían los bucles de reposo de
+    §Animación punto 7. Cada anillo es un círculo de borde `border-accent` que
+    crece de `MOTION_PING_FROM` a `MOTION_PING_TO_SCALE` mientras su opacidad cae
+    de `MOTION_PING_FROM` a 0, con `MOTION_PING_TIMING`, en bucle infinito y sin
+    invertir. Los anillos arrancan escalonados un tercio de la duración. Con
+    reduce motion no se pintan.·
+    Ninguna otra pantalla usa anillos de ping sin una enmienda propia.·
+    - [X] Enmienda aprobada por humano·
+    ## Enmienda #168 — título grande en Salud, Nutrición y Perfil·
+    `mobile-tab-headers-canvas` (#168) modifica una decisión que esta spec dejó
+    aprobada. La spec de origen es `specs/mobile-tab-headers-canvas/`; el detalle
+    de la enmienda está en su `requirements.md` §R11.·
+    - Spec enmendada: `docs/ui-guidelines.md`
+    - Qué cambia: `regla N1: título grande en Salud, Nutrición y Perfil; hero solo en Inicio`
+    - Qué NO cambia: ningún otro requisito de esta spec ni su estado de
+      aprobación. Los tests que cubren lo enmendado se reescriben en #168 (lista
+      en su `tasks.md`).·
+    - [X] Enmienda #168 aprobada por humano·
+    **Regla N1 (enmienda B4 de #168)**: Salud, Nutrición y Perfil abren con el título grande; Inicio es la única pestaña con PetHeroHeader. Devolver el hero a una de las tres es una enmienda a #168.
+    "
+
+      69 |   const charter = readFileSync(join(process.cwd(), '..', 'docs', 'ui-guidelines.md'), 'utf8');
+      70 |   const heading = '## Enmienda #172 — Las pantallas de cuenta como el canvas';
+    > 71 |   expect(charter).toContain(heading);
+         |                   ^
+      72 |   const amendment = charter.slice(charter.indexOf(heading));
+      73 |   expect(amendment).toMatch(/- \[[ xX]\] Enmienda aprobada por humano/);
+      74 |   for (const literal of [
+
+      at Object.toContain (src/__tests__/account-screens-polish.test.ts:71:19)
+exit=1
+```
+
+#### c35 — jest
+
+```bash
+bunx jest --testTimeout=30000 --runTestsByPath src/__tests__/account-screens-polish.test.ts src/theme/__tests__/motion.test.ts 'src/app/(tabs)/__tests__/food.test.tsx' src/__tests__/hero-header-amendments.test.ts src/screens/welcome/index.test.tsx src/__tests__/ui-language.test.ts src/__tests__/design-drift.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/legibility-classnames.test.ts
+```
+
+```text
+PASS src/theme/__tests__/motion.test.ts
+PASS src/__tests__/account-screens-polish.test.ts
+PASS src/__tests__/design-drift.test.ts
+PASS src/__tests__/ui-language.test.ts
+PASS src/__tests__/consistency-classnames.test.ts
+PASS src/__tests__/hero-header-amendments.test.ts
+PASS src/__tests__/legibility-classnames.test.ts
+PASS src/app/(tabs)/__tests__/food.test.tsx (14.686 s)
+PASS src/screens/welcome/index.test.tsx (20.509 s)
+Test Suites: 9 passed, 9 total
+Tests:       393 passed, 393 total
+Time:        24.514 s
+exit=0
+```
+
+#### c35 — router
+
+```bash
+test ! -e .expo/types/router.d.ts
+```
+
+```text
+
+exit=0
+```
+
+#### c35 — typecheck
+
+```bash
+bun run typecheck
+```
+
+```text
+$ tsc --noEmit
+exit=0
+```
+
+#### c35 — lint
+
+```bash
+bunx expo lint --no-cache > /tmp/lint-172.log 2>&1
+```
+
+```text
+error: Failed to run "eslint" due to signal SIGKILL
+vacio=1
+exit=0
+```
+
+#### c35 — lint_SIGKILL
+
+```bash
+bunx expo lint --no-cache > /tmp/lint-172.log 2>&1; test ! -s /tmp/lint-172.log
+```
+
+```text
+error: Failed to run "eslint" due to signal SIGKILL
+vacio=1
+exit=1
+```
+
+#### c35 — espera_carga
+
+```bash
+cd /home/claude/sites/Pet-Tracker-wt-172/mobile-pet-tracker && for i in $(seq 1 30); do pgrep -f 'node_modules/(\.bin/(jest|eslint)|jest-worker)|[i]nit\.sh' > /dev/null || break; sleep 60; done; echo "fin-espera"
+```
+
+```text
+fin-espera
+exit=0
+```
+
+#### c35 — lint_reintento
+
+```bash
+bunx expo lint --no-cache > /tmp/lint-172.log 2>&1
+```
+
+```text
+vacio=0
+exit=0
+```
+
+#### S18a — jest
+
+```bash
+bunx jest --testTimeout=30000 --runTestsByPath src/__tests__/account-screens-polish.test.ts
+```
+
+```text
+FAIL src/__tests__/account-screens-polish.test.ts
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 6 passed, 7 total
+Time:        1.769 s, estimated 3 s
+  ● #172 R18: la carta declara la enmienda #172 y su casilla
+
+    expect(received).toMatch(expected)
+
+    Expected pattern: /- \[[ xX]\] Enmienda aprobada por humano/
+    Received string:  "## Enmienda #172 — Las pantallas de cuenta como el canvas·
+    Iniciar sesión, Crear cuenta, Recuperar contraseña y Nueva contraseña siguen
+    el canvas de #172 (`specs/mobile-account-screens-polish/canvas/`).·
+    **Pingo flota.** Los bucles de reposo de §Animación se amplían a tres
+    pantallas de cuenta: en Crear cuenta, Recuperar contraseña y Nueva contraseña,
+    Pingo flota con el componente compartido `PingoFloat`
+    (`src/components/pingo-float.tsx`). Anima `translateY` hasta
+    `-MOTION_PINGO_FLOAT_OFFSET_Y` (10) con `MOTION_PINGO_FLOAT_TIMING` (1500 ms
+    por tramo, `ease-in-out`), en bucle infinito e invertido, y lo cancela al
+    desmontar. Con reduce motion no arranca. La bienvenida conserva su flotación
+    de 4 px. Iniciar sesión no flota: Pingo saluda con su burbuja. Ninguna otra
+    pantalla usa `PingoFloat` sin una enmienda propia.·
+    **El candado lleva labio.** El tile del candado de Recuperar
+    (`forgot-lock-tile`) es un tile acento con labio: `rounded-xl border-b-4
+    border-black/25 bg-accent`. Es la única excepción a la regla de que solo los
+    botones llevan labio, y el labio va delante de `bg-accent` para no contar como
+    primario.·
+    **La CTA va al pie.** En las cuatro pantallas, la CTA se ancla al pie con un
+    espaciador `flex-1` y el contenido deja de centrarse en vertical. Esto revierte
+    el centrado de `#61 R8` en esas pantallas. El `ScrollView`,
+    `keyboardShouldPersistTaps` y el comportamiento de teclado no cambian. La rama
+    sin token de Nueva contraseña sigue centrada.·
+    **Alturas.** La CTA de cuenta mide 56 (`h-14`) y los inputs de cuenta 52
+    (`h-13`).·
+    **Peso 800.** `font-extrabold` (Inter ExtraBold) se usa solo en la etiqueta de
+    la CTA de cuenta y en la de `forgot-resend`, que ocupa su sitio.·
+    **Ojo de contraseña.** Todo campo de contraseña de cuenta usa `PasswordInput`
+    (`src/components/password-input.tsx`), con un botón de 44 que alterna
+    «Mostrar contraseña» y «Ocultar contraseña».·
+    "
+
+      71 |   expect(charter).toContain(heading);
+      72 |   const amendment = charter.slice(charter.indexOf(heading));
+    > 73 |   expect(amendment).toMatch(/- \[[ xX]\] Enmienda aprobada por humano/);
+         |                     ^
+      74 |   for (const literal of [
+      75 |     'PingoFloat', 'MOTION_PINGO_FLOAT_OFFSET_Y', 'forgot-lock-tile',
+      76 |     'font-extrabold', 'h-14', 'h-13', 'PasswordInput',
+
+      at Object.toMatch (src/__tests__/account-screens-polish.test.ts:73:21)
+exit=1
+```
+
+#### S18a — restore
+
+```bash
+git checkout HEAD -- ../docs/ui-guidelines.md; git diff --quiet HEAD -- ../docs/ui-guidelines.md; echo "exit=$?"
+```
+
+```text
+exit=0
+exit=0
+```
+
+#### S18b — jest
+
+```bash
+bunx jest --testTimeout=30000 --runTestsByPath src/__tests__/account-screens-polish.test.ts
+```
+
+```text
+FAIL src/__tests__/account-screens-polish.test.ts
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 6 passed, 7 total
+Time:        1.19 s, estimated 2 s
+  ● #172 R18: la carta declara la enmienda #172 y su casilla
+
+    expect(received).toContain(expected) // indexOf
+
+    Expected substring: "MOTION_PINGO_FLOAT_OFFSET_Y"
+    Received string:    "## Enmienda #172 — Las pantallas de cuenta como el canvas·
+    Iniciar sesión, Crear cuenta, Recuperar contraseña y Nueva contraseña siguen
+    el canvas de #172 (`specs/mobile-account-screens-polish/canvas/`).·
+    **Pingo flota.** Los bucles de reposo de §Animación se amplían a tres
+    pantallas de cuenta: en Crear cuenta, Recuperar contraseña y Nueva contraseña,
+    Pingo flota con el componente compartido `PingoFloat`
+    (`src/components/pingo-float.tsx`). Anima `translateY` hasta
+    `-MOTION_FLOAT_OFFSET_Y` (10) con `MOTION_PINGO_FLOAT_TIMING` (1500 ms
+    por tramo, `ease-in-out`), en bucle infinito e invertido, y lo cancela al
+    desmontar. Con reduce motion no arranca. La bienvenida conserva su flotación
+    de 4 px. Iniciar sesión no flota: Pingo saluda con su burbuja. Ninguna otra
+    pantalla usa `PingoFloat` sin una enmienda propia.·
+    **El candado lleva labio.** El tile del candado de Recuperar
+    (`forgot-lock-tile`) es un tile acento con labio: `rounded-xl border-b-4
+    border-black/25 bg-accent`. Es la única excepción a la regla de que solo los
+    botones llevan labio, y el labio va delante de `bg-accent` para no contar como
+    primario.·
+    **La CTA va al pie.** En las cuatro pantallas, la CTA se ancla al pie con un
+    espaciador `flex-1` y el contenido deja de centrarse en vertical. Esto revierte
+    el centrado de `#61 R8` en esas pantallas. El `ScrollView`,
+    `keyboardShouldPersistTaps` y el comportamiento de teclado no cambian. La rama
+    sin token de Nueva contraseña sigue centrada.·
+    **Alturas.** La CTA de cuenta mide 56 (`h-14`) y los inputs de cuenta 52
+    (`h-13`).·
+    **Peso 800.** `font-extrabold` (Inter ExtraBold) se usa solo en la etiqueta de
+    la CTA de cuenta y en la de `forgot-resend`, que ocupa su sitio.·
+    **Ojo de contraseña.** Todo campo de contraseña de cuenta usa `PasswordInput`
+    (`src/components/password-input.tsx`), con un botón de 44 que alterna
+    «Mostrar contraseña» y «Ocultar contraseña».·
+    - [x] Enmienda aprobada por humano
+    "
+
+      76 |     'font-extrabold', 'h-14', 'h-13', 'PasswordInput',
+      77 |   ]) {
+    > 78 |     expect(amendment).toContain(literal);
+         |                       ^
+      79 |   }
+      80 | });
+      81 |
+
+      at Object.toContain (src/__tests__/account-screens-polish.test.ts:78:23)
+exit=1
+```
+
+#### S18b — restore
+
+```bash
+git checkout HEAD -- ../docs/ui-guidelines.md; git diff --quiet HEAD -- ../docs/ui-guidelines.md; echo "exit=$?"
+```
+
+```text
+exit=0
+exit=0
+```
+
+#### c36 — jest
+
+```bash
+bunx jest --testTimeout=30000 --runTestsByPath src/screens/login/index.test.tsx src/screens/register/index.test.tsx src/screens/forgot/index.test.tsx src/screens/reset-password/index.test.tsx src/__tests__/account-screens-polish.test.ts src/__tests__/legibility-classnames.test.ts src/__tests__/ui-language.test.ts src/__tests__/design-drift.test.ts
+```
+
+```text
+FAIL src/screens/login/index.test.tsx (10.396 s)
+FAIL src/screens/reset-password/index.test.tsx (10.465 s)
+FAIL src/__tests__/account-screens-polish.test.ts
+FAIL src/__tests__/design-drift.test.ts
+FAIL src/screens/register/index.test.tsx (13.052 s)
+FAIL src/__tests__/ui-language.test.ts
+FAIL src/__tests__/legibility-classnames.test.ts
+FAIL src/screens/forgot/index.test.tsx
+Test Suites: 8 failed, 8 total
+Tests:       20 failed, 259 passed, 279 total
+Time:        14.838 s, estimated 21 s
+  ● #61 R8: login tiene contenedor de scroll con safe areas › #172 R19: ancla el contenido al pie dentro de un ScrollView con los insets aplicados
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 0
+    + Received  + 1
+
+      Object {
+        "flexGrow": 1,
+        "gap": 16,
+    +   "justifyContent": "center",
+        "padding": 24,
+        "paddingBottom": 48,
+        "paddingTop": 52,
+      }
+
+      167 |     const screenRoot = screen.getByTestId('login-form');
+      168 |
+    > 169 |     expect(screenRoot.props.contentContainerStyle).toEqual({
+          |                                                    ^
+      170 |       flexGrow: 1,
+      171 |       padding: 24,
+      172 |       gap: 16,
+
+      at Object.toEqual (src/screens/login/index.test.tsx:169:52)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+  ● #167 R6: Pingo saluda en login y la pantalla entra en dos tiempos › #167 R6: entra en dos tiempos, cabecera y cuerpo
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+    @@ -1,8 +1,8 @@
+      Object {
+        "login-body": Object {
+    -     "className": "flex-1 gap-4",
+    +     "className": "gap-4",
+          "index": 1,
+        },
+        "login-header": Object {
+          "className": "gap-4",
+          "index": 0,
+
+      245 |     expect(Object.fromEntries(mockHomeEntrance.mock.calls.map(([p]) => [
+      246 |       p.testID, { index: p.index, className: p.className },
+    > 247 |     ]))).toEqual({
+          |          ^
+      248 |       'login-header': { index: 0, className: 'gap-4' },
+      249 |       'login-body': { index: 1, className: 'flex-1 gap-4' },
+      250 |     });
+
+      at Object.toEqual (src/screens/login/index.test.tsx:247:10)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+  ● #167 R6: Pingo saluda en login y la pantalla entra en dos tiempos › #172 R19: el espaciador empuja el envío al pie
+
+    Unable to find an element with testID: login-spacer
+
+    <RNCSafeAreaProvider>
+      <View
+        testID="screen-login"
+      >
+        <RCTScrollView
+          testID="login-form"
+        >
+          <View>
+            <View
+              testID="login-header"
+            >
+              <View
+                accessibilityLabel="Volver"
+                accessibilityRole="button"
+                accessible={true}
+                testID="login-back"
+              >
+                <RNSVGSvgView>
+                  <RNSVGGroup>
+                    <RNSVGGroup>
+                      <RNSVGPath />
+                    </RNSVGGroup>
+                  </RNSVGGroup>
+                </RNSVGSvgView>
+              </View>
+              <View
+                testID="login-greeting"
+              >
+                <ViewManagerAdapter_ExpoImage
+                  placeholder={[]}
+                  testID="login-pingo"
+                />
+                <View
+                  testID="login-bubble"
+                >
+                  <Text
+                    testID="login-bubble-text"
+                  >
+                    Qué bueno verte de nuevo.
+                  </Text>
+                </View>
+              </View>
+              <Text>
+                Iniciar sesión
+              </Text>
+            </View>
+            <View
+              testID="login-body"
+            >
+              <View>
+                <View
+                  accessible={true}
+                >
+                  <Text>
+                    Correo electrónico
+                  </Text>
+                </View>
+                <TextInput
+                  editable={true}
+                  testID="login-email"
+                  value=""
+                />
+              </View>
+              <View>
+                <View
+                  accessible={true}
+                >
+                  <Text>
+                    Contraseña
+                  </Text>
+                </View>
+                <View
+                  testID="login-password-group"
+                >
+                  <TextInput
+                    editable={true}
+                    testID="login-password"
+                    value=""
+                  />
+                  <View>
+                    <View
+                      accessibilityLabel="Mostrar contraseña"
+                      accessibilityRole="button"
+                      accessible={true}
+                      testID="login-password-toggle"
+                    >
+                      <View
+                        testID="icon-eye"
+                      />
+                    </View>
+                  </View>
+                </View>
+              </View>
+              <View
+                accessibilityRole="button"
+                accessibilityState={
+                  {
+                    "disabled": false,
+                  }
+                }
+                accessible={true}
+                testID="link-forgot"
+              >
+                <Text>
+                  ¿Olvidaste tu contraseña?
+                </Text>
+              </View>
+              <View
+                accessibilityRole="button"
+                accessibilityState={
+                  {
+                    "disabled": false,
+                  }
+                }
+                accessible={true}
+                testID="login-submit"
+              >
+                <View
+                  pointerEvents="none"
+                  style={
+                    {
+                      "opacity": 0,
+                    }
+                  }
+                />
+                <Text>
+                  Iniciar sesión
+                </Text>
+              </View>
+              <View
+                accessibilityRole="button"
+                accessibilityState={
+                  {
+                    "disabled": false,
+                  }
+                }
+                accessible={true}
+                testID="link-register"
+              >
+                <Text>
+                  Crear cuenta
+                </Text>
+              </View>
+            </View>
+          </View>
+        </RCTScrollView>
+      </View>
+    </RNCSafeAreaProvider>
+
+      294 |     await renderLogin();
+      295 |     function expectSpacer(withError = false) {
+    > 296 |       const spacer = screen.getByTestId('login-spacer');
+          |                             ^
+      297 |       const cta = screen.getByTestId('login-submit');
+      298 |       expect(spacer.parent).toBe(cta.parent);
+      299 |       expect(spacer.parent).toBe(screen.getByTestId('login-body'));
+
+      at getByTestId (src/screens/login/index.test.tsx:296:29)
+      at Object.expectSpacer (src/screens/login/index.test.tsx:309:5)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+FAIL src/screens/reset-password/index.test.tsx (10.465 s)
+  ● #61 R8: las tres ramas de reset tienen contenedor de scroll › #172 R19: la rama de éxito ancla el enlace al pie y no centra
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 0
+    + Received  + 2
+
+      Object {
+    +   "alignItems": "center",
+        "flexGrow": 1,
+        "gap": 16,
+    +   "justifyContent": "center",
+        "padding": 24,
+        "paddingBottom": 48,
+        "paddingTop": 52,
+      }
+
+      307 |     expect(
+      308 |       screen.getByTestId('screen-reset-password').props.contentContainerStyle,
+    > 309 |     ).toEqual(metrics);
+          |       ^
+      310 |   });
+      311 |
+      312 |   it('#172 R19: la rama del formulario ancla el envío al pie y no centra', async () => {
+
+      at Object.toEqual (src/screens/reset-password/index.test.tsx:309:7)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+  ● #61 R8: las tres ramas de reset tienen contenedor de scroll › #172 R19: la rama del formulario ancla el envío al pie y no centra
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 0
+    + Received  + 1
+
+      Object {
+        "flexGrow": 1,
+        "gap": 16,
+    +   "justifyContent": "center",
+        "padding": 24,
+        "paddingBottom": 48,
+        "paddingTop": 52,
+      }
+
+      315 |     const screenRoot = screen.getByTestId('reset-password-form');
+      316 |
+    > 317 |     expect(screenRoot.props.contentContainerStyle).toEqual(metrics);
+          |                                                    ^
+      318 |     expect(screenRoot.props.keyboardShouldPersistTaps).toBe('handled');
+      319 |   });
+      320 | });
+
+      at Object.toEqual (src/screens/reset-password/index.test.tsx:317:52)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+  ● #167 R10: Pingo y tarjeta de estado en nueva contraseña › #167 R10: el formulario entra en dos tiempos
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 2
+    + Received  + 2
+
+      Object {
+        "reset-body": Object {
+    -     "className": "flex-1 gap-4",
+    +     "className": "gap-4",
+          "index": 1,
+        },
+        "reset-header": Object {
+    -     "className": "flex-row items-center gap-3",
+    +     "className": "flex-row items-center justify-center gap-3",
+          "index": 0,
+        },
+      }
+
+      398 |     expect(Object.fromEntries(mockHomeEntrance.mock.calls.map(([p]) => [
+      399 |       p.testID, { index: p.index, className: p.className },
+    > 400 |     ]))).toEqual({
+          |          ^
+      401 |       'reset-header': { index: 0, className: 'flex-row items-center gap-3' },
+      402 |       'reset-body': { index: 1, className: 'flex-1 gap-4' },
+      403 |     });
+
+      at Object.toEqual (src/screens/reset-password/index.test.tsx:400:10)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+  ● #167 R10: Pingo y tarjeta de estado en nueva contraseña › #172 R19: el espaciador empuja el envío al pie del formulario
+
+    Unable to find an element with testID: reset-spacer
+
+    <RNCSafeAreaProvider>
+      <View
+        testID="screen-reset-password"
+      >
+        <RCTScrollView
+          testID="reset-password-form"
+        >
+          <View>
+            <View
+              testID="reset-header"
+            >
+              <View
+                testID="reset-pingo-float"
+              >
+                <ViewManagerAdapter_ExpoImage
+                  placeholder={[]}
+                  testID="reset-pingo"
+                />
+              </View>
+              <Text>
+                Restablecer contraseña
+              </Text>
+            </View>
+            <View
+              testID="reset-body"
+            >
+              <View>
+                <View
+                  accessible={true}
+                >
+                  <Text>
+                    Nueva contraseña
+                  </Text>
+                </View>
+                <View
+                  testID="reset-password-group"
+                >
+                  <TextInput
+                    editable={true}
+                    testID="reset-password"
+                    value=""
+                  />
+                  <View>
+                    <View
+                      accessibilityLabel="Mostrar contraseña"
+                      accessibilityRole="button"
+                      accessible={true}
+                      testID="reset-password-toggle"
+                    >
+                      <View
+                        testID="icon-eye"
+                      />
+                    </View>
+                  </View>
+                </View>
+              </View>
+              <View>
+                <View
+                  accessible={true}
+                >
+                  <Text>
+                    Confirmar nueva contraseña
+                  </Text>
+                </View>
+                <View
+                  testID="reset-password-confirm-group"
+                >
+                  <TextInput
+                    editable={true}
+                    testID="reset-password-confirm"
+                    value=""
+                  />
+                  <View>
+                    <View
+                      accessibilityLabel="Mostrar contraseña"
+                      accessibilityRole="button"
+                      accessible={true}
+                      testID="reset-password-confirm-toggle"
+                    >
+                      <View
+                        testID="icon-eye"
+                      />
+                    </View>
+                  </View>
+                </View>
+              </View>
+              <View
+                accessibilityRole="button"
+                accessibilityState={
+                  {
+                    "disabled": false,
+                  }
+                }
+                accessible={true}
+                testID="reset-submit"
+              >
+                <View
+                  pointerEvents="none"
+                  style={
+                    {
+                      "opacity": 0,
+                    }
+                  }
+                />
+                <Text>
+                  Actualizar contraseña
+                </Text>
+              </View>
+            </View>
+          </View>
+        </RCTScrollView>
+      </View>
+    </RNCSafeAreaProvider>
+
+      462 |     await renderRoute('reset-token-172');
+      463 |     function expectSpacer(withError = false) {
+    > 464 |       const spacer = screen.getByTestId('reset-spacer');
+          |                             ^
+      465 |       const cta = screen.getByTestId('reset-submit');
+      466 |       expect(spacer.parent).toBe(cta.parent);
+      467 |       expect(spacer.parent).toBe(screen.getByTestId('reset-body'));
+
+      at getByTestId (src/screens/reset-password/index.test.tsx:464:29)
+      at Object.expectSpacer (src/screens/reset-password/index.test.tsx:477:5)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+  ● #167 R10: Pingo y tarjeta de estado en nueva contraseña › #172 R19: el espaciador empuja el enlace al pie del éxito
+
+    Unable to find an element with testID: reset-spacer
+
+    <RNCSafeAreaProvider>
+      <RCTScrollView
+        testID="screen-reset-password"
+      >
+        <View>
+          <View
+            testID="reset-header"
+          >
+            <View
+              testID="reset-pingo-float"
+            >
+              <ViewManagerAdapter_ExpoImage
+                placeholder={[]}
+                testID="reset-pingo"
+              />
+            </View>
+            <Text>
+              Restablecer contraseña
+            </Text>
+          </View>
+          <View
+            testID="reset-success-pop"
+          >
+            <View
+              testID="reset-success-card"
+            >
+              <View
+                testID="reset-success-check"
+              >
+                <View
+                  testID="icon-check"
+                />
+              </View>
+              <Text
+                testID="reset-success"
+              >
+                Contraseña actualizada
+              </Text>
+            </View>
+          </View>
+          <View
+            accessibilityRole="button"
+            accessibilityState={
+              {
+                "disabled": false,
+              }
+            }
+            accessible={true}
+            testID="link-login"
+          >
+            <Text>
+              Volver al inicio de sesión
+            </Text>
+          </View>
+        </View>
+      </RCTScrollView>
+    </RNCSafeAreaProvider>
+
+      484 |     await submitReset();
+      485 |     expect(await screen.findByTestId('reset-success')).toBeOnTheScreen();
+    > 486 |     const spacer = screen.getByTestId('reset-spacer');
+          |                           ^
+      487 |     const cta = screen.getByTestId('link-login');
+      488 |     expect(spacer.parent).toBe(cta.parent);
+      489 |     expect(spacer.parent).toBe(screen.getByTestId('reset-header').parent);
+
+      at Object.getByTestId (src/screens/reset-password/index.test.tsx:486:27)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+  ● #167 R10: Pingo y tarjeta de estado en nueva contraseña › #172 R19: el formulario lleva el enlace de vuelta al login bajo el envío
+
+    Unable to find an element with testID: link-login
+
+    <RNCSafeAreaProvider>
+      <View
+        testID="screen-reset-password"
+      >
+        <RCTScrollView
+          testID="reset-password-form"
+        >
+          <View>
+            <View
+              testID="reset-header"
+            >
+              <View
+                testID="reset-pingo-float"
+              >
+                <ViewManagerAdapter_ExpoImage
+                  placeholder={[]}
+                  testID="reset-pingo"
+                />
+              </View>
+              <Text>
+                Restablecer contraseña
+              </Text>
+            </View>
+            <View
+              testID="reset-body"
+            >
+              <View>
+                <View
+                  accessible={true}
+                >
+                  <Text>
+                    Nueva contraseña
+                  </Text>
+                </View>
+                <View
+                  testID="reset-password-group"
+                >
+                  <TextInput
+                    editable={true}
+                    testID="reset-password"
+                    value=""
+                  />
+                  <View>
+                    <View
+                      accessibilityLabel="Mostrar contraseña"
+                      accessibilityRole="button"
+                      accessible={true}
+                      testID="reset-password-toggle"
+                    >
+                      <View
+                        testID="icon-eye"
+                      />
+                    </View>
+                  </View>
+                </View>
+              </View>
+              <View>
+                <View
+                  accessible={true}
+                >
+                  <Text>
+                    Confirmar nueva contraseña
+                  </Text>
+                </View>
+                <View
+                  testID="reset-password-confirm-group"
+                >
+                  <TextInput
+                    editable={true}
+                    testID="reset-password-confirm"
+                    value=""
+                  />
+                  <View>
+                    <View
+                      accessibilityLabel="Mostrar contraseña"
+                      accessibilityRole="button"
+                      accessible={true}
+                      testID="reset-password-confirm-toggle"
+                    >
+                      <View
+                        testID="icon-eye"
+                      />
+                    </View>
+                  </View>
+                </View>
+              </View>
+              <View
+                accessibilityRole="button"
+                accessibilityState={
+                  {
+                    "disabled": false,
+                  }
+                }
+                accessible={true}
+                testID="reset-submit"
+              >
+                <View
+                  pointerEvents="none"
+                  style={
+                    {
+                      "opacity": 0,
+                    }
+                  }
+                />
+                <Text>
+                  Actualizar contraseña
+                </Text>
+              </View>
+            </View>
+          </View>
+        </RCTScrollView>
+      </View>
+    </RNCSafeAreaProvider>
+
+      499 |     await renderRoute('reset-token-172');
+      500 |     const body = screen.getByTestId('reset-body');
+    > 501 |     const link = within(body).getByTestId('link-login');
+          |                               ^
+      502 |     expect(link).toHaveTextContent('Volver al inicio de sesión');
+      503 |     expect(body.children.indexOf(link)).toBe(body.children.indexOf(screen.getByTestId('reset-submit')) + 1);
+      504 |     await fireEvent.press(link);
+
+      at Object.getByTestId (src/screens/reset-password/index.test.tsx:501:31)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+  ● #167 R10: Pingo y tarjeta de estado en nueva contraseña › #167 R10: el éxito conserva la cabecera del formulario
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Object {
+    -   "className": "flex-row items-center gap-3",
+    +   "className": "flex-row items-center justify-center gap-3",
+        "index": 0,
+      }
+
+      519 |     expect(await screen.findByTestId('reset-success')).toBeOnTheScreen();
+      520 |     const header = screen.getByTestId('reset-header');
+    > 521 |     expect({ index: header.props.index, className: header.props.className }).toEqual({
+          |                                                                              ^
+      522 |       index: 0, className: 'flex-row items-center gap-3',
+      523 |     });
+      524 |     expect(header.children).toHaveLength(2);
+
+      at Object.toEqual (src/screens/reset-password/index.test.tsx:521:78)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+FAIL src/__tests__/account-screens-polish.test.ts
+  ● #172 R19: el contenido de cuenta no se centra en vertical y el enlace de nueva contraseña lleva su receta
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 0
+    Received: 1
+
+      89 |   ] as const) {
+      90 |     const source = readFileSync(join(sourceRoot, 'screens', name, 'index.tsx'), 'utf8');
+    > 91 |     expect(source.split("justifyContent: 'center'").length - 1).toBe(counts[0]);
+         |                                                                 ^
+      92 |     expect(source.split("alignItems: 'center'").length - 1).toBe(counts[1]);
+      93 |     expect(source.split('-spacer" className="flex-1" />').length - 1).toBe(counts[2]);
+      94 |     expect(source.match(/testID="link-login"\s+className="h-13 w-full"/g) ?? []).toHaveLength(counts[3]);
+
+      at Object.toBe (src/__tests__/account-screens-polish.test.ts:91:65)
+
+FAIL src/__tests__/design-drift.test.ts
+  ● #149 R4: solo cuatro ficheros de producción navegan a login › #149 R4: inventaría cada ruta a login en producción
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Object {
+        "screens/forgot/index.tsx": 2,
+        "screens/register/index.tsx": 1,
+    -   "screens/reset-password/index.tsx": 3,
+    +   "screens/reset-password/index.tsx": 2,
+        "screens/welcome/index.tsx": 1,
+      }
+
+      735 |     );
+      736 |
+    > 737 |     expect(actual).toEqual(loginRoutes);
+          |                    ^
+      738 |   });
+      739 | });
+      740 |
+
+      at Object.toEqual (src/__tests__/design-drift.test.ts:737:20)
+
+FAIL src/screens/register/index.test.tsx (13.052 s)
+  ● #61 R7: register usa las métricas de pantalla uniformes › aplica el padding del contentContainerStyle con los safe-area insets
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 0
+
+      Object {
+    -   "flexGrow": 1,
+        "gap": 16,
+        "padding": 24,
+        "paddingBottom": 120,
+        "paddingTop": 52,
+      }
+
+      256 |     expect(
+      257 |       screen.getByTestId('register-form').props.contentContainerStyle,
+    > 258 |     ).toEqual({
+          |       ^
+      259 |       flexGrow: 1,
+      260 |       padding: 24,
+      261 |       gap: 16,
+
+      at Object.toEqual (src/screens/register/index.test.tsx:258:7)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+  ● #167 R7: Pingo en la cabecera del registro › #172 R11: cabecera, rejilla, términos, error y envío cuelgan del scroll
+
+    expect(received).toHaveLength(expected)
+
+    Expected length: 10
+    Received length: 9
+    Received array:  [<View … />, <View … />, <View … />, <View … />, <View … />, <View … />, <View … />, <View … />, <View … />]
+
+      473 |     const content = screen.getByTestId('register-header').parent;
+      474 |     expect(content?.parent).toHaveProperty('props.testID', 'register-form');
+    > 475 |     expect(content?.children).toHaveLength(10);
+          |                               ^
+      476 |     expect(content?.children).toEqual([
+      477 |       screen.getByTestId('register-header'), names,
+      478 |       screen.getByTestId('register-email').parent,
+
+      at Object.toHaveLength (src/screens/register/index.test.tsx:475:31)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+  ● #167 R7: Pingo en la cabecera del registro › #172 R19: el espaciador empuja el envío al pie
+
+    Unable to find an element with testID: register-spacer
+
+    <RNCSafeAreaProvider>
+      <View
+        testID="screen-register"
+      >
+        <RCTScrollView
+          testID="register-form"
+        >
+          <View>
+            <View
+              testID="register-header"
+            >
+              <View
+                testID="register-top"
+              >
+                <View
+                  accessibilityLabel="Volver"
+                  accessibilityRole="button"
+                  accessible={true}
+                  testID="register-back"
+                >
+                  <RNSVGSvgView>
+                    <RNSVGGroup>
+                      <RNSVGGroup>
+                        <RNSVGPath />
+                      </RNSVGGroup>
+                    </RNSVGGroup>
+                  </RNSVGSvgView>
+                </View>
+                <View
+                  testID="register-pingo-float"
+                >
+                  <ViewManagerAdapter_ExpoImage
+                    placeholder={[]}
+                    testID="register-pingo"
+                  />
+                </View>
+              </View>
+              <Text>
+                Crear cuenta
+              </Text>
+            </View>
+            <View
+              testID="register-names-row"
+            >
+              <View>
+                <View
+                  accessible={true}
+                >
+                  <Text>
+                    Nombres
+                  </Text>
+                </View>
+                <TextInput
+                  editable={true}
+                  testID="register-first-name"
+                  value=""
+                />
+              </View>
+              <View>
+                <View
+                  accessible={true}
+                >
+                  <Text>
+                    Apellidos
+                  </Text>
+                </View>
+                <TextInput
+                  editable={true}
+                  testID="register-last-name"
+                  value=""
+                />
+              </View>
+            </View>
+            <View>
+              <View
+                accessible={true}
+              >
+                <Text>
+                  Correo electrónico
+                </Text>
+              </View>
+              <TextInput
+                editable={true}
+                testID="register-email"
+                value=""
+              />
+            </View>
+            <View
+              testID="register-contact-row"
+            >
+              <View>
+                <View
+                  accessible={true}
+                >
+                  <Text>
+                    Teléfono
+                  </Text>
+                </View>
+                <TextInput
+                  editable={true}
+                  testID="register-phone"
+                  value=""
+                />
+              </View>
+              <View>
+                <View
+                  accessible={true}
+                >
+                  <Text>
+                    País
+                  </Text>
+                </View>
+                <TextInput
+                  editable={true}
+                  testID="register-country"
+                  value=""
+                />
+              </View>
+            </View>
+            <View>
+              <View
+                accessible={true}
+              >
+                <Text>
+                  Contraseña
+                </Text>
+              </View>
+              <View
+                testID="register-password-group"
+              >
+                <TextInput
+                  editable={true}
+                  testID="register-password"
+                  value=""
+                />
+                <View>
+                  <View
+                    accessibilityLabel="Mostrar contraseña"
+                    accessibilityRole="button"
+                    accessible={true}
+                    testID="register-password-toggle"
+                  >
+                    <View
+                      testID="icon-eye"
+                    />
+                  </View>
+                </View>
+              </View>
+            </View>
+            <View>
+              <View
+                accessible={true}
+              >
+                <Text>
+                  Confirmar contraseña
+                </Text>
+              </View>
+              <View
+                testID="register-password-confirmation-group"
+              >
+                <TextInput
+                  editable={true}
+                  testID="register-password-confirmation"
+                  value=""
+                />
+                <View>
+                  <View
+                    accessibilityLabel="Mostrar contraseña"
+                    accessibilityRole="button"
+                    accessible={true}
+                    testID="register-password-confirmation-toggle"
+                  >
+                    <View
+                      testID="icon-eye"
+                    />
+                  </View>
+                </View>
+              </View>
+            </View>
+            <View>
+              <View
+                accessibilityState={
+                  {
+                    "checked": false,
+                    "disabled": false,
+                  }
+                }
+                accessible={true}
+                role="checkbox"
+                testID="register-terms"
+              >
+                <View
+                  aria-disabled={false}
+                  aria-hidden={true}
+                  role="presentation"
+                  style={
+                    {
+                      "opacity": 0,
+                    }
+                  }
+                >
+                  <RNSVGSvgView>
+                    <RNSVGGroup>
+                      <RNSVGPath />
+                    </RNSVGGroup>
+                  </RNSVGSvgView>
+                </View>
+              </View>
+              <Text>
+                Acepto los términos
+              </Text>
+            </View>
+            <View
+              accessibilityRole="button"
+              accessibilityState={
+                {
+                  "disabled": true,
+                }
+              }
+              accessible={true}
+              testID="register-submit"
+            >
+              <View
+                pointerEvents="none"
+                style={
+                  {
+                    "opacity": 0,
+                  }
+                }
+              />
+              <Text>
+                Crear cuenta
+              </Text>
+            </View>
+          </View>
+        </RCTScrollView>
+      </View>
+    </RNCSafeAreaProvider>
+
+      490 |     await renderRegister();
+      491 |     function expectSpacer(withError = false) {
+    > 492 |       const spacer = screen.getByTestId('register-spacer');
+          |                             ^
+      493 |       const cta = screen.getByTestId('register-submit');
+      494 |       expect(spacer.parent).toBe(cta.parent);
+      495 |       expect(spacer.parent).toBe(screen.getByTestId('register-header').parent);
+
+      at getByTestId (src/screens/register/index.test.tsx:492:29)
+      at Object.expectSpacer (src/screens/register/index.test.tsx:505:5)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+FAIL src/__tests__/ui-language.test.ts
+  ● #65 R11: restablecer contraseña resuelve su copy por clave › resuelve las 16 ocurrencias normativas
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Object {
+        "file": "src/screens/reset-password/index.tsx",
+        "key": "resetPassword.backToSignIn",
+    -   "uses": 3,
+    +   "uses": 2,
+      }
+
+      60 |       (directCalls?.length ?? 0) + (keyedConstants?.length ?? 0);
+      61 |
+    > 62 |     expect({ file, key, uses: resolvedUses }).toEqual({
+         |                                               ^
+      63 |       file,
+      64 |       key,
+      65 |       uses: expected,
+
+      at toEqual (src/__tests__/ui-language.test.ts:62:47)
+      at Object.checkUses (src/__tests__/ui-language.test.ts:199:5)
+  ● #65 R18: los sitios resuelven por clave y no queda copy suelta › resuelve cada ocurrencia de la tabla contra la clave exacta
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Object {
+        "file": "src/screens/reset-password/index.tsx",
+        "key": "resetPassword.backToSignIn",
+    -   "uses": 3,
+    +   "uses": 2,
+      }
+
+      60 |       (directCalls?.length ?? 0) + (keyedConstants?.length ?? 0);
+      61 |
+    > 62 |     expect({ file, key, uses: resolvedUses }).toEqual({
+         |                                               ^
+      63 |       file,
+      64 |       key,
+      65 |       uses: expected,
+
+      at toEqual (src/__tests__/ui-language.test.ts:62:47)
+      at Object.checkUses (src/__tests__/ui-language.test.ts:492:5)
+
+FAIL src/__tests__/legibility-classnames.test.ts
+  ● #61 R4: el acento como tinta usa accent-strong › screens/reset-password/index.tsx pinta con text-accent-strong (4)
+
+    expect(received).toHaveLength(expected)
+
+    Expected length: 4
+    Received length: 3
+    Received array:  ["text-accent-strong", "text-accent-strong", "text-accent-strong"]
+
+      159 |
+      160 |   it.each(inkSites)('%s pinta con text-accent-strong (%i)', (path, sites) => {
+    > 161 |     expect(readSource(path).match(/text-accent-strong\b/g)).toHaveLength(sites);
+          |                                                             ^
+      162 |   });
+      163 |
+      164 |   it('suma las trece ocurrencias que enumera la spec', () => {
+
+      at toHaveLength (src/__tests__/legibility-classnames.test.ts:161:61)
+
+FAIL src/screens/forgot/index.test.tsx
+  ● #61 R8: forgot tiene contenedor de scroll con safe areas › #172 R19: centra en horizontal pero no en vertical dentro de un ScrollView con insets
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 0
+    + Received  + 1
+
+      Object {
+        "alignItems": "center",
+        "flexGrow": 1,
+        "gap": 16,
+    +   "justifyContent": "center",
+        "padding": 24,
+        "paddingBottom": 48,
+        "paddingTop": 52,
+      }
+
+      121 |     const screenRoot = screen.getByTestId('forgot-form');
+      122 |
+    > 123 |     expect(screenRoot.props.contentContainerStyle).toEqual({
+          |                                                    ^
+      124 |       flexGrow: 1,
+      125 |       alignItems: 'center',
+      126 |       padding: 24,
+
+      at Object.toEqual (src/screens/forgot/index.test.tsx:123:52)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+  ● #172 R19: el espaciador empuja la CTA al pie en los dos estados
+
+    Unable to find an element with testID: forgot-spacer
+
+    <RNCSafeAreaProvider>
+      <View
+        testID="screen-forgot"
+      >
+        <RCTScrollView
+          testID="forgot-form"
+        >
+          <View>
+            <View
+              testID="forgot-top"
+            >
+              <View
+                accessibilityLabel="Volver"
+                accessibilityRole="button"
+                accessible={true}
+                testID="forgot-back"
+              >
+                <RNSVGSvgView>
+                  <RNSVGGroup>
+                    <RNSVGGroup>
+                      <RNSVGPath />
+                    </RNSVGGroup>
+                  </RNSVGGroup>
+                </RNSVGSvgView>
+              </View>
+            </View>
+            <View
+              testID="forgot-pingo-float"
+            >
+              <ViewManagerAdapter_ExpoImage
+                placeholder={[]}
+                testID="forgot-pingo"
+              />
+            </View>
+            <View
+              testID="forgot-lock-tile"
+            >
+              <View
+                testID="icon-lock"
+              />
+            </View>
+            <Text
+              testID="forgot-title"
+            >
+              Recuperar contraseña
+            </Text>
+            <Text
+              testID="forgot-body"
+            >
+              Ingresa el correo electrónico asociado a tu cuenta y te enviaremos un enlace para restablecer tu contraseña.
+            </Text>
+            <View>
+              <View
+                accessible={true}
+              >
+                <Text>
+                  Correo electrónico
+                </Text>
+              </View>
+              <TextInput
+                editable={true}
+                testID="forgot-email"
+                value=""
+              />
+            </View>
+            <View
+              accessibilityRole="button"
+              accessibilityState={
+                {
+                  "disabled": true,
+                }
+              }
+              accessible={true}
+              testID="forgot-submit"
+            >
+              <View
+                pointerEvents="none"
+                style={
+                  {
+                    "opacity": 0,
+                  }
+                }
+              />
+              <Text>
+                Enviar enlace de recuperación
+              </Text>
+            </View>
+            <View
+              accessibilityRole="button"
+              accessibilityState={
+                {
+                  "disabled": false,
+                }
+              }
+              accessible={true}
+              testID="link-login"
+            >
+              <Text>
+                Volver al inicio de sesión
+              </Text>
+            </View>
+          </View>
+        </RCTScrollView>
+      </View>
+    </RNCSafeAreaProvider>
+
+      670 |   await renderRoute();
+      671 |   function expectSpacer(ctaId: string) {
+    > 672 |     const spacer = screen.getByTestId('forgot-spacer');
+          |                           ^
+      673 |     const cta = screen.getByTestId(ctaId);
+      674 |     expect(spacer.parent).toBe(cta.parent);
+      675 |     expect(spacer.parent).toBe(screen.getByTestId('forgot-top').parent);
+
+      at getByTestId (src/screens/forgot/index.test.tsx:672:27)
+      at Object.expectSpacer (src/screens/forgot/index.test.tsx:681:3)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+exit=1
+```
+
+#### c37 — jest
+
+```bash
+bunx jest --testTimeout=30000 --runTestsByPath src/screens/login/index.test.tsx src/screens/register/index.test.tsx src/screens/forgot/index.test.tsx src/screens/reset-password/index.test.tsx src/__tests__/account-screens-polish.test.ts src/__tests__/ui-language.test.ts src/__tests__/design-drift.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/legibility-classnames.test.ts
+```
+
+```text
+PASS src/screens/login/index.test.tsx (7.537 s)
+PASS src/screens/reset-password/index.test.tsx (8.309 s)
+PASS src/__tests__/ui-language.test.ts
+PASS src/__tests__/design-drift.test.ts
+PASS src/__tests__/account-screens-polish.test.ts
+PASS src/__tests__/legibility-classnames.test.ts
+PASS src/__tests__/consistency-classnames.test.ts
+PASS src/screens/register/index.test.tsx (11.47 s)
+PASS src/screens/forgot/index.test.tsx
+Test Suites: 9 passed, 9 total
+Tests:       346 passed, 346 total
+Time:        12.693 s, estimated 14 s
+exit=0
+```
+
+#### c37 — router
+
+```bash
+test ! -e .expo/types/router.d.ts
+```
+
+```text
+
+exit=0
+```
+
+#### c37 — typecheck
+
+```bash
+bun run typecheck
+```
+
+```text
+$ tsc --noEmit
+exit=0
+```
+
+#### c37 — lint
+
+```bash
+bunx expo lint --no-cache > /tmp/lint-172.log 2>&1
+```
+
+```text
+vacio=0
+exit=0
+```
+
+#### S19a — jest
+
+```bash
+bunx jest --testTimeout=30000 --runTestsByPath src/screens/login/index.test.tsx src/__tests__/account-screens-polish.test.ts
+```
+
+```text
+FAIL src/__tests__/account-screens-polish.test.ts
+FAIL src/screens/login/index.test.tsx (6.557 s)
+Test Suites: 2 failed, 2 total
+Tests:       2 failed, 35 passed, 37 total
+Time:        7.271 s, estimated 8 s
+  ● #172 R19: el contenido de cuenta no se centra en vertical y el enlace de nueva contraseña lleva su receta
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 0
+    Received: 1
+
+      89 |   ] as const) {
+      90 |     const source = readFileSync(join(sourceRoot, 'screens', name, 'index.tsx'), 'utf8');
+    > 91 |     expect(source.split("justifyContent: 'center'").length - 1).toBe(counts[0]);
+         |                                                                 ^
+      92 |     expect(source.split("alignItems: 'center'").length - 1).toBe(counts[1]);
+      93 |     expect(source.split('-spacer" className="flex-1" />').length - 1).toBe(counts[2]);
+      94 |     expect(source.match(/testID="link-login"\s+className="h-13 w-full"/g) ?? []).toHaveLength(counts[3]);
+
+      at Object.toBe (src/__tests__/account-screens-polish.test.ts:91:65)
+
+FAIL src/screens/login/index.test.tsx (6.557 s)
+  ● #61 R8: login tiene contenedor de scroll con safe areas › #172 R19: ancla el contenido al pie dentro de un ScrollView con los insets aplicados
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 0
+    + Received  + 1
+
+      Object {
+        "flexGrow": 1,
+        "gap": 16,
+    +   "justifyContent": "center",
+        "padding": 24,
+        "paddingBottom": 48,
+        "paddingTop": 52,
+      }
+
+      167 |     const screenRoot = screen.getByTestId('login-form');
+      168 |
+    > 169 |     expect(screenRoot.props.contentContainerStyle).toEqual({
+          |                                                    ^
+      170 |       flexGrow: 1,
+      171 |       padding: 24,
+      172 |       gap: 16,
+
+      at Object.toEqual (src/screens/login/index.test.tsx:169:52)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+exit=1
+```
+
+#### S19a — restore
+
+```bash
+git checkout HEAD -- src/screens/login/index.tsx; git diff --quiet HEAD -- src/screens/login/index.tsx; echo "exit=$?"
+```
+
+```text
+exit=0
+exit=0
+```
+
+#### S19b — jest
+
+```bash
+bunx jest --testTimeout=30000 --runTestsByPath src/screens/login/index.test.tsx
+```
+
+```text
+FAIL src/screens/login/index.test.tsx (7.736 s)
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 28 passed, 29 total
+Time:        7.899 s
+  ● #167 R6: Pingo saluda en login y la pantalla entra en dos tiempos › #172 R19: el espaciador empuja el envío al pie
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 2
+    Received: 4
+
+      300 |       const children = spacer.parent?.children ?? [];
+      301 |       const index = children.indexOf(spacer);
+    > 302 |       expect(index).toBe(children.indexOf(cta) - 1);
+          |                     ^
+      303 |       expect(spacer.props.className).toBe('flex-1');
+      304 |       expect(spacer.children).toHaveLength(0);
+      305 |       if (withError) {
+
+      at toBe (src/screens/login/index.test.tsx:302:21)
+      at Object.expectSpacer (src/screens/login/index.test.tsx:309:5)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+exit=1
+```
+
+#### S19b — restore
+
+```bash
+git checkout HEAD -- src/screens/login/index.tsx; git diff --quiet HEAD -- src/screens/login/index.tsx; echo "exit=$?"
+```
+
+```text
+exit=0
+exit=0
+```
+
+#### S19c — jest
+
+```bash
+bunx jest --testTimeout=30000 --runTestsByPath src/screens/forgot/index.test.tsx
+```
+
+```text
+FAIL src/screens/forgot/index.test.tsx (13.22 s)
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 40 passed, 41 total
+Time:        13.437 s
+  ● #172 R19: el espaciador empuja la CTA al pie en los dos estados
+
+    Unable to find an element with testID: forgot-spacer
+
+    <RNCSafeAreaProvider>
+      <View
+        testID="screen-forgot"
+      >
+        <RCTScrollView
+          testID="forgot-form"
+        >
+          <View>
+            <View
+              testID="forgot-top"
+            >
+              <View
+                accessibilityLabel="Volver"
+                accessibilityRole="button"
+                accessible={true}
+                testID="forgot-back"
+              >
+                <RNSVGSvgView>
+                  <RNSVGGroup>
+                    <RNSVGGroup>
+                      <RNSVGPath />
+                    </RNSVGGroup>
+                  </RNSVGGroup>
+                </RNSVGSvgView>
+              </View>
+            </View>
+            <View
+              testID="forgot-pingo-float"
+            >
+              <ViewManagerAdapter_ExpoImage
+                placeholder={[]}
+                testID="forgot-pingo"
+              />
+            </View>
+            <View
+              testID="forgot-lock-tile"
+            >
+              <View
+                testID="icon-lock"
+              />
+            </View>
+            <Text
+              testID="forgot-title"
+            >
+              Revisa tu correo
+            </Text>
+            <Text
+              testID="forgot-body"
+            >
+              Si existe una cuenta para ana@example.com, te enviamos un enlace para restablecer tu contraseña. Revisa tu bandeja de entrada y la carpeta de spam.
+            </Text>
+            <View
+              accessibilityRole="button"
+              accessibilityState={
+                {
+                  "disabled": false,
+                }
+              }
+              accessible={true}
+              testID="forgot-resend"
+            >
+              <View
+                pointerEvents="none"
+                style={
+                  {
+                    "opacity": 0,
+                  }
+                }
+              />
+              <Text>
+                Reenviar
+              </Text>
+            </View>
+            <View
+              accessibilityRole="button"
+              accessibilityState={
+                {
+                  "disabled": false,
+                }
+              }
+              accessible={true}
+              testID="link-login"
+            >
+              <Text>
+                Volver al inicio de sesión
+              </Text>
+            </View>
+          </View>
+        </RCTScrollView>
+      </View>
+    </RNCSafeAreaProvider>
+
+      670 |   await renderRoute();
+      671 |   function expectSpacer(ctaId: string) {
+    > 672 |     const spacer = screen.getByTestId('forgot-spacer');
+          |                           ^
+      673 |     const cta = screen.getByTestId(ctaId);
+      674 |     expect(spacer.parent).toBe(cta.parent);
+      675 |     expect(spacer.parent).toBe(screen.getByTestId('forgot-top').parent);
+
+      at getByTestId (src/screens/forgot/index.test.tsx:672:27)
+      at Object.expectSpacer (src/screens/forgot/index.test.tsx:684:3)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+exit=1
+```
+
+#### S19c — restore
+
+```bash
+git checkout HEAD -- src/screens/forgot/index.tsx; git diff --quiet HEAD -- src/screens/forgot/index.tsx; echo "exit=$?"
+```
+
+```text
+exit=0
+exit=0
+```
+
+#### S19d — jest
+
+```bash
+bunx jest --testTimeout=30000 --runTestsByPath src/screens/reset-password/index.test.tsx
+```
+
+```text
+FAIL src/screens/reset-password/index.test.tsx (7.609 s)
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 40 passed, 41 total
+Time:        7.764 s, estimated 9 s
+  ● #167 R10: Pingo y tarjeta de estado en nueva contraseña › #167 R10: el formulario entra en dos tiempos
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+    @@ -1,8 +1,8 @@
+      Object {
+        "reset-body": Object {
+    -     "className": "flex-1 gap-4",
+    +     "className": "gap-4",
+          "index": 1,
+        },
+        "reset-header": Object {
+          "className": "flex-row items-center gap-3",
+          "index": 0,
+
+      398 |     expect(Object.fromEntries(mockHomeEntrance.mock.calls.map(([p]) => [
+      399 |       p.testID, { index: p.index, className: p.className },
+    > 400 |     ]))).toEqual({
+          |          ^
+      401 |       'reset-header': { index: 0, className: 'flex-row items-center gap-3' },
+      402 |       'reset-body': { index: 1, className: 'flex-1 gap-4' },
+      403 |     });
+
+      at Object.toEqual (src/screens/reset-password/index.test.tsx:400:10)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+exit=1
+```
+
+#### S19d — restore
+
+```bash
+git checkout HEAD -- src/screens/reset-password/index.tsx; git diff --quiet HEAD -- src/screens/reset-password/index.tsx; echo "exit=$?"
+```
+
+```text
+exit=0
+exit=0
+```
+
+#### S19e — jest
+
+```bash
+bunx jest --testTimeout=30000 --runTestsByPath src/screens/reset-password/index.test.tsx
+```
+
+```text
+FAIL src/screens/reset-password/index.test.tsx (7.309 s)
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 39 passed, 41 total
+Time:        7.456 s, estimated 8 s
+  ● #167 R10: Pingo y tarjeta de estado en nueva contraseña › #172 R19: el formulario lleva el enlace de vuelta al login bajo el envío
+
+    Unable to find an element with testID: link-login
+
+    <RNCSafeAreaProvider>
+      <View
+        testID="screen-reset-password"
+      >
+        <RCTScrollView
+          testID="reset-password-form"
+        >
+          <View>
+            <View
+              testID="reset-header"
+            >
+              <View
+                testID="reset-pingo-float"
+              >
+                <ViewManagerAdapter_ExpoImage
+                  placeholder={[]}
+                  testID="reset-pingo"
+                />
+              </View>
+              <Text>
+                Restablecer contraseña
+              </Text>
+            </View>
+            <View
+              testID="reset-body"
+            >
+              <View>
+                <View
+                  accessible={true}
+                >
+                  <Text>
+                    Nueva contraseña
+                  </Text>
+                </View>
+                <View
+                  testID="reset-password-group"
+                >
+                  <TextInput
+                    editable={true}
+                    testID="reset-password"
+                    value=""
+                  />
+                  <View>
+                    <View
+                      accessibilityLabel="Mostrar contraseña"
+                      accessibilityRole="button"
+                      accessible={true}
+                      testID="reset-password-toggle"
+                    >
+                      <View
+                        testID="icon-eye"
+                      />
+                    </View>
+                  </View>
+                </View>
+              </View>
+              <View>
+                <View
+                  accessible={true}
+                >
+                  <Text>
+                    Confirmar nueva contraseña
+                  </Text>
+                </View>
+                <View
+                  testID="reset-password-confirm-group"
+                >
+                  <TextInput
+                    editable={true}
+                    testID="reset-password-confirm"
+                    value=""
+                  />
+                  <View>
+                    <View
+                      accessibilityLabel="Mostrar contraseña"
+                      accessibilityRole="button"
+                      accessible={true}
+                      testID="reset-password-confirm-toggle"
+                    >
+                      <View
+                        testID="icon-eye"
+                      />
+                    </View>
+                  </View>
+                </View>
+              </View>
+              <View
+                testID="reset-spacer"
+              />
+              <View
+                accessibilityRole="button"
+                accessibilityState={
+                  {
+                    "disabled": false,
+                  }
+                }
+                accessible={true}
+                testID="reset-submit"
+              >
+                <View
+                  pointerEvents="none"
+                  style={
+                    {
+                      "opacity": 0,
+                    }
+                  }
+                />
+                <Text>
+                  Actualizar contraseña
+                </Text>
+              </View>
+            </View>
+            <View
+              accessibilityRole="button"
+              accessibilityState={
+                {
+                  "disabled": false,
+                }
+              }
+              accessible={true}
+              testID="link-login"
+            >
+              <Text>
+                Volver al inicio de sesión
+              </Text>
+            </View>
+          </View>
+        </RCTScrollView>
+      </View>
+    </RNCSafeAreaProvider>
+
+      499 |     await renderRoute('reset-token-172');
+      500 |     const body = screen.getByTestId('reset-body');
+    > 501 |     const link = within(body).getByTestId('link-login');
+          |                               ^
+      502 |     expect(link).toHaveTextContent('Volver al inicio de sesión');
+      503 |     expect(body.children.indexOf(link)).toBe(body.children.indexOf(screen.getByTestId('reset-submit')) + 1);
+      504 |     await fireEvent.press(link);
+
+      at Object.getByTestId (src/screens/reset-password/index.test.tsx:501:31)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+  ● #167 R10: Pingo y tarjeta de estado en nueva contraseña › #167 R10: la cabecera va antes que el cuerpo en el scroll
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  -  0
+    + Received  + 88
+
+    @@ -458,6 +458,94 @@
+            >
+              Actualizar contraseña
+            </Text>
+          </View>
+        </View>,
+    +   <View
+    +     accessibilityRole="button"
+    +     accessibilityState={
+    +       Object {
+    +         "busy": undefined,
+    +         "checked": undefined,
+    +         "disabled": false,
+    +         "expanded": undefined,
+    +         "selected": undefined,
+    +       }
+    +     }
+    +     accessibilityValue={
+    +       Object {
+    +         "max": undefined,
+    +         "min": undefined,
+    +         "now": undefined,
+    +         "text": undefined,
+    +       }
+    +     }
+    +     accessible={true}
+    +     className="pressable-feedback__root button__root button__root--variant-ghost button__root--size-md link-button__root h-13 w-full"
+    +     collapsable={false}
+    +     focusable={true}
+    +     jestAnimatedProps={
+    +       Object {
+    +         "value": Object {},
+    +       }
+    +     }
+    +     jestAnimatedStyle={
+    +       Object {
+    +         "value": Object {
+    +           "transform": Array [
+    +             Object {
+    +               "scale": 1,
+    +             },
+    +           ],
+    +         },
+    +       }
+    +     }
+    +     jestInlineStyle={
+    +       Array [
+    +         Object {
+    +           "borderCurve": "continuous",
+    +         },
+    +         Array [
+    +           Object {
+    +             "borderCurve": "continuous",
+    +           },
+    +           undefined,
+    +         ],
+    +       ]
+    +     }
+    +     onBlur={[Function onBlur]}
+    +     onClick={[Function onClick]}
+    +     onFocus={[Function onFocus]}
+    +     onLayout={[Function anonymous]}
+    +     onResponderGrant={[Function onResponderGrant]}
+    +     onResponderMove={[Function onResponderMove]}
+    +     onResponderRelease={[Function onResponderRelease]}
+    +     onResponderTerminate={[Function onResponderTerminate]}
+    +     onResponderTerminationRequest={[Function onResponderTerminationRequest]}
+    +     onStartShouldSetResponder={[Function onStartShouldSetResponder]}
+    +     style={
+    +       Array [
+    +         Object {
+    +           "borderCurve": "continuous",
+    +         },
+    +         Object {
+    +           "transform": Array [
+    +             Object {
+    +               "scale": 1,
+    +             },
+    +           ],
+    +         },
+    +         Object {
+    +           "borderCurve": "continuous",
+    +         },
+    +         undefined,
+    +       ]
+    +     }
+    +     testID="link-login"
+    +   >
+    +     <Text
+    +       className="button__label button__label--variant-ghost button__label--size-md text-base font-bold text-accent-strong"
+    +     >
+    +       Volver al inicio de sesión
+    +     </Text>
+    +   </View>,
+      ]
+
+      558 |     const header = screen.getByTestId('reset-header');
+      559 |     expect(header.parent?.parent).toHaveProperty('props.testID', 'reset-password-form');
+    > 560 |     expect(header.parent?.children).toEqual([header, screen.getByTestId('reset-body')]);
+          |                                     ^
+      561 |   });
+      562 |
+      563 |   it('#167 R10: la tarjeta de estado es secondary con check y texto', async () => {
+
+      at Object.toEqual (src/screens/reset-password/index.test.tsx:560:37)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+exit=1
+```
+
+#### S19e — restore
+
+```bash
+git checkout HEAD -- src/screens/reset-password/index.tsx; git diff --quiet HEAD -- src/screens/reset-password/index.tsx; echo "exit=$?"
+```
+
+```text
+exit=0
+exit=0
+```
+
+#### S19f — jest
+
+```bash
+bunx jest --testTimeout=30000 --runTestsByPath src/screens/register/index.test.tsx
+```
+
+```text
+FAIL src/screens/register/index.test.tsx (8.782 s)
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 32 passed, 33 total
+Time:        8.925 s, estimated 12 s
+  ● #61 R7: register usa las métricas de pantalla uniformes › aplica el padding del contentContainerStyle con los safe-area insets
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 0
+
+      Object {
+    -   "flexGrow": 1,
+        "gap": 16,
+        "padding": 24,
+        "paddingBottom": 120,
+        "paddingTop": 52,
+      }
+
+      256 |     expect(
+      257 |       screen.getByTestId('register-form').props.contentContainerStyle,
+    > 258 |     ).toEqual({
+          |       ^
+      259 |       flexGrow: 1,
+      260 |       padding: 24,
+      261 |       gap: 16,
+
+      at Object.toEqual (src/screens/register/index.test.tsx:258:7)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+exit=1
+```
+
+#### S19f — restore
+
+```bash
+git checkout HEAD -- src/screens/register/index.tsx; git diff --quiet HEAD -- src/screens/register/index.tsx; echo "exit=$?"
+```
+
+```text
+exit=0
+exit=0
+```
+
+#### S17d — jest
+
+```bash
+bunx jest --testTimeout=30000 --runTestsByPath src/screens/reset-password/index.test.tsx src/__tests__/account-screens-polish.test.ts src/__tests__/legibility-classnames.test.ts src/__tests__/ui-language.test.ts src/__tests__/design-drift.test.ts
+```
+
+```text
+FAIL src/__tests__/account-screens-polish.test.ts
+FAIL src/__tests__/ui-language.test.ts
+FAIL src/__tests__/design-drift.test.ts
+FAIL src/__tests__/legibility-classnames.test.ts
+FAIL src/screens/reset-password/index.test.tsx (10.736 s)
+Test Suites: 5 failed, 5 total
+Tests:       6 failed, 170 passed, 176 total
+Time:        11.498 s
+  ● #172 R19: el contenido de cuenta no se centra en vertical y el enlace de nueva contraseña lleva su receta
+
+    expect(received).toHaveLength(expected)
+
+    Expected length: 2
+    Received length: 1
+    Received array:  ["testID=\"link-login\"
+              className=\"h-13 w-full\""]
+
+      92 |     expect(source.split("alignItems: 'center'").length - 1).toBe(counts[1]);
+      93 |     expect(source.split('-spacer" className="flex-1" />').length - 1).toBe(counts[2]);
+    > 94 |     expect(source.match(/testID="link-login"\s+className="h-13 w-full"/g) ?? []).toHaveLength(counts[3]);
+         |                                                                                  ^
+      95 |     expect(source.split('<LinkButton.Label className="text-base font-bold text-accent-strong">').length - 1).toBe(counts[4]);
+      96 |     expect(source.split('self-center').length - 1).toBe(counts[5]);
+      97 |   }
+
+      at Object.toHaveLength (src/__tests__/account-screens-polish.test.ts:94:82)
+
+FAIL src/__tests__/ui-language.test.ts
+  ● #65 R11: restablecer contraseña resuelve su copy por clave › resuelve las 16 ocurrencias normativas
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Object {
+        "file": "src/screens/reset-password/index.tsx",
+        "key": "resetPassword.backToSignIn",
+    -   "uses": 3,
+    +   "uses": 2,
+      }
+
+      60 |       (directCalls?.length ?? 0) + (keyedConstants?.length ?? 0);
+      61 |
+    > 62 |     expect({ file, key, uses: resolvedUses }).toEqual({
+         |                                               ^
+      63 |       file,
+      64 |       key,
+      65 |       uses: expected,
+
+      at toEqual (src/__tests__/ui-language.test.ts:62:47)
+      at Object.checkUses (src/__tests__/ui-language.test.ts:199:5)
+  ● #65 R18: los sitios resuelven por clave y no queda copy suelta › resuelve cada ocurrencia de la tabla contra la clave exacta
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Object {
+        "file": "src/screens/reset-password/index.tsx",
+        "key": "resetPassword.backToSignIn",
+    -   "uses": 3,
+    +   "uses": 2,
+      }
+
+      60 |       (directCalls?.length ?? 0) + (keyedConstants?.length ?? 0);
+      61 |
+    > 62 |     expect({ file, key, uses: resolvedUses }).toEqual({
+         |                                               ^
+      63 |       file,
+      64 |       key,
+      65 |       uses: expected,
+
+      at toEqual (src/__tests__/ui-language.test.ts:62:47)
+      at Object.checkUses (src/__tests__/ui-language.test.ts:492:5)
+
+FAIL src/__tests__/design-drift.test.ts
+  ● #149 R4: solo cuatro ficheros de producción navegan a login › #149 R4: inventaría cada ruta a login en producción
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Object {
+        "screens/forgot/index.tsx": 2,
+        "screens/register/index.tsx": 1,
+    -   "screens/reset-password/index.tsx": 3,
+    +   "screens/reset-password/index.tsx": 2,
+        "screens/welcome/index.tsx": 1,
+      }
+
+      735 |     );
+      736 |
+    > 737 |     expect(actual).toEqual(loginRoutes);
+          |                    ^
+      738 |   });
+      739 | });
+      740 |
+
+      at Object.toEqual (src/__tests__/design-drift.test.ts:737:20)
+
+FAIL src/__tests__/legibility-classnames.test.ts
+  ● #61 R4: el acento como tinta usa accent-strong › screens/reset-password/index.tsx pinta con text-accent-strong (4)
+
+    expect(received).toHaveLength(expected)
+
+    Expected length: 4
+    Received length: 3
+    Received array:  ["text-accent-strong", "text-accent-strong", "text-accent-strong"]
+
+      159 |
+      160 |   it.each(inkSites)('%s pinta con text-accent-strong (%i)', (path, sites) => {
+    > 161 |     expect(readSource(path).match(/text-accent-strong\b/g)).toHaveLength(sites);
+          |                                                             ^
+      162 |   });
+      163 |
+      164 |   it('suma las trece ocurrencias que enumera la spec', () => {
+
+      at toHaveLength (src/__tests__/legibility-classnames.test.ts:161:61)
+
+FAIL src/screens/reset-password/index.test.tsx (10.736 s)
+  ● #167 R10: Pingo y tarjeta de estado en nueva contraseña › #172 R19: el formulario lleva el enlace de vuelta al login bajo el envío
+
+    Unable to find an element with testID: link-login
+
+    <RNCSafeAreaProvider>
+      <View
+        testID="screen-reset-password"
+      >
+        <RCTScrollView
+          testID="reset-password-form"
+        >
+          <View>
+            <View
+              testID="reset-header"
+            >
+              <View
+                testID="reset-pingo-float"
+              >
+                <ViewManagerAdapter_ExpoImage
+                  placeholder={[]}
+                  testID="reset-pingo"
+                />
+              </View>
+              <Text>
+                Restablecer contraseña
+              </Text>
+            </View>
+            <View
+              testID="reset-body"
+            >
+              <View>
+                <View
+                  accessible={true}
+                >
+                  <Text>
+                    Nueva contraseña
+                  </Text>
+                </View>
+                <View
+                  testID="reset-password-group"
+                >
+                  <TextInput
+                    editable={true}
+                    testID="reset-password"
+                    value=""
+                  />
+                  <View>
+                    <View
+                      accessibilityLabel="Mostrar contraseña"
+                      accessibilityRole="button"
+                      accessible={true}
+                      testID="reset-password-toggle"
+                    >
+                      <View
+                        testID="icon-eye"
+                      />
+                    </View>
+                  </View>
+                </View>
+              </View>
+              <View>
+                <View
+                  accessible={true}
+                >
+                  <Text>
+                    Confirmar nueva contraseña
+                  </Text>
+                </View>
+                <View
+                  testID="reset-password-confirm-group"
+                >
+                  <TextInput
+                    editable={true}
+                    testID="reset-password-confirm"
+                    value=""
+                  />
+                  <View>
+                    <View
+                      accessibilityLabel="Mostrar contraseña"
+                      accessibilityRole="button"
+                      accessible={true}
+                      testID="reset-password-confirm-toggle"
+                    >
+                      <View
+                        testID="icon-eye"
+                      />
+                    </View>
+                  </View>
+                </View>
+              </View>
+              <View
+                testID="reset-spacer"
+              />
+              <View
+                accessibilityRole="button"
+                accessibilityState={
+                  {
+                    "disabled": false,
+                  }
+                }
+                accessible={true}
+                testID="reset-submit"
+              >
+                <View
+                  pointerEvents="none"
+                  style={
+                    {
+                      "opacity": 0,
+                    }
+                  }
+                />
+                <Text>
+                  Actualizar contraseña
+                </Text>
+              </View>
+            </View>
+          </View>
+        </RCTScrollView>
+      </View>
+    </RNCSafeAreaProvider>
+
+      499 |     await renderRoute('reset-token-172');
+      500 |     const body = screen.getByTestId('reset-body');
+    > 501 |     const link = within(body).getByTestId('link-login');
+          |                               ^
+      502 |     expect(link).toHaveTextContent('Volver al inicio de sesión');
+      503 |     expect(body.children.indexOf(link)).toBe(body.children.indexOf(screen.getByTestId('reset-submit')) + 1);
+      504 |     await fireEvent.press(link);
+
+      at Object.getByTestId (src/screens/reset-password/index.test.tsx:501:31)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+exit=1
+```
+
+#### S17d — restore
+
+```bash
+git checkout HEAD -- src/screens/reset-password/index.tsx; git diff --quiet HEAD -- src/screens/reset-password/index.tsx; echo "exit=$?"
+```
+
+```text
+exit=0
+exit=0
+```
+
+#### c38 — jest
+
+```bash
+bunx jest --testTimeout=30000 --runTestsByPath src/__tests__/account-screens-polish.test.ts src/screens/login/index.test.tsx src/screens/register/index.test.tsx src/screens/forgot/index.test.tsx src/screens/reset-password/index.test.tsx
+```
+
+```text
+FAIL src/screens/reset-password/index.test.tsx (16.814 s)
+FAIL src/screens/forgot/index.test.tsx (17.47 s)
+FAIL src/__tests__/account-screens-polish.test.ts
+FAIL src/screens/login/index.test.tsx
+FAIL src/screens/register/index.test.tsx (22.167 s)
+Test Suites: 5 failed, 5 total
+Tests:       8 failed, 149 passed, 157 total
+Time:        24.404 s
+  ● #127 R1: el botón de envío de reset-password lleva su receta en el árbol › pinta reset-submit con la clase exacta, rounded-xl y bg-accent incluidos, la vea o no el recorte de fuente
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "pressable-feedback__root button__root button__root--variant-primary button__root--size-md w-full h-14 rounded-xl bg-accent border-b-4 border-black/25"
+    Received: "pressable-feedback__root button__root button__root--variant-primary button__root--size-md w-full rounded-xl bg-accent border-b-4 border-black/25"
+
+      328 |     await renderRoute('reset-token-127');
+      329 |
+    > 330 |     expect(screen.getByTestId('reset-submit').props.className).toBe(
+          |                                                                ^
+      331 |       'pressable-feedback__root button__root button__root--variant-primary button__root--size-md w-full h-14 rounded-xl bg-accent border-b-4 border-black/25',
+      332 |     );
+      333 |   });
+
+      at Object.toBe (src/screens/reset-password/index.test.tsx:330:64)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+FAIL src/screens/forgot/index.test.tsx (17.47 s)
+  ● #127 R1: el botón de envío de forgot lleva su receta en el árbol › pinta forgot-submit, deshabilitado, con la clase exacta, rounded-xl y bg-accent incluidos, la vea o no el recorte de fuente
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "pressable-feedback__root button__root button__root--variant-primary button__root--size-md disabled:element-disabled w-full h-14 rounded-xl bg-accent border-b-4 border-black/25"
+    Received: "pressable-feedback__root button__root button__root--variant-primary button__root--size-md disabled:element-disabled w-full rounded-xl bg-accent border-b-4 border-black/25"
+
+      139 |     await renderRoute();
+      140 |
+    > 141 |     expect(screen.getByTestId('forgot-submit').props.className).toBe(
+          |                                                                 ^
+      142 |       'pressable-feedback__root button__root button__root--variant-primary button__root--size-md disabled:element-disabled w-full h-14 rounded-xl bg-accent border-b-4 border-black/25',
+      143 |     );
+      144 |   });
+
+      at Object.toBe (src/screens/forgot/index.test.tsx:141:65)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+FAIL src/__tests__/account-screens-polish.test.ts
+  ● #172 R20: login pinta la CTA de 56 y los inputs de 52
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 1
+    Received: 0
+
+      107 | ] as const)('#172 R20: %s pinta la CTA de 56 y los inputs de 52', (_name, path, counts) => {
+      108 |   const source = readFileSync(join(sourceRoot, path), 'utf8');
+    > 109 |   expect(source.split('w-full h-14 rounded-xl bg-accent border-b-4 border-black/25').length - 1).toBe(counts[2]);
+          |                                                                                                  ^
+      110 |   expect(source.split('className="h-13 rounded-xl bg-default"').length - 1).toBe(counts[0]);
+      111 |   expect(source.split('className="rounded-xl bg-default"').length - 1).toBe(counts[1]);
+      112 |   expect(source.split('w-full rounded-xl').length - 1).toBe(counts[3]);
+
+      at toBe (src/__tests__/account-screens-polish.test.ts:109:98)
+  ● #172 R20: register pinta la CTA de 56 y los inputs de 52
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 1
+    Received: 0
+
+      107 | ] as const)('#172 R20: %s pinta la CTA de 56 y los inputs de 52', (_name, path, counts) => {
+      108 |   const source = readFileSync(join(sourceRoot, path), 'utf8');
+    > 109 |   expect(source.split('w-full h-14 rounded-xl bg-accent border-b-4 border-black/25').length - 1).toBe(counts[2]);
+          |                                                                                                  ^
+      110 |   expect(source.split('className="h-13 rounded-xl bg-default"').length - 1).toBe(counts[0]);
+      111 |   expect(source.split('className="rounded-xl bg-default"').length - 1).toBe(counts[1]);
+      112 |   expect(source.split('w-full rounded-xl').length - 1).toBe(counts[3]);
+
+      at toBe (src/__tests__/account-screens-polish.test.ts:109:98)
+  ● #172 R20: forgot pinta la CTA de 56 y los inputs de 52
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 1
+    Received: 0
+
+      107 | ] as const)('#172 R20: %s pinta la CTA de 56 y los inputs de 52', (_name, path, counts) => {
+      108 |   const source = readFileSync(join(sourceRoot, path), 'utf8');
+    > 109 |   expect(source.split('w-full h-14 rounded-xl bg-accent border-b-4 border-black/25').length - 1).toBe(counts[2]);
+          |                                                                                                  ^
+      110 |   expect(source.split('className="h-13 rounded-xl bg-default"').length - 1).toBe(counts[0]);
+      111 |   expect(source.split('className="rounded-xl bg-default"').length - 1).toBe(counts[1]);
+      112 |   expect(source.split('w-full rounded-xl').length - 1).toBe(counts[3]);
+
+      at toBe (src/__tests__/account-screens-polish.test.ts:109:98)
+  ● #172 R20: reset-password pinta la CTA de 56 y los inputs de 52
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 1
+    Received: 0
+
+      107 | ] as const)('#172 R20: %s pinta la CTA de 56 y los inputs de 52', (_name, path, counts) => {
+      108 |   const source = readFileSync(join(sourceRoot, path), 'utf8');
+    > 109 |   expect(source.split('w-full h-14 rounded-xl bg-accent border-b-4 border-black/25').length - 1).toBe(counts[2]);
+          |                                                                                                  ^
+      110 |   expect(source.split('className="h-13 rounded-xl bg-default"').length - 1).toBe(counts[0]);
+      111 |   expect(source.split('className="rounded-xl bg-default"').length - 1).toBe(counts[1]);
+      112 |   expect(source.split('w-full rounded-xl').length - 1).toBe(counts[3]);
+
+      at toBe (src/__tests__/account-screens-polish.test.ts:109:98)
+
+FAIL src/screens/login/index.test.tsx
+  ● #127 R1: el botón de envío de login lleva su receta en el árbol › pinta login-submit con la clase exacta, rounded-xl y bg-accent incluidos, la vea o no el recorte de fuente
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "pressable-feedback__root button__root button__root--variant-primary button__root--size-md w-full h-14 rounded-xl bg-accent border-b-4 border-black/25"
+    Received: "pressable-feedback__root button__root button__root--variant-primary button__root--size-md w-full rounded-xl bg-accent border-b-4 border-black/25"
+
+      200 |     await renderLogin();
+      201 |
+    > 202 |     expect(screen.getByTestId('login-submit').props.className).toBe(
+          |                                                                ^
+      203 |       'pressable-feedback__root button__root button__root--variant-primary button__root--size-md w-full h-14 rounded-xl bg-accent border-b-4 border-black/25',
+      204 |     );
+      205 |   });
+
+      at Object.toBe (src/screens/login/index.test.tsx:202:64)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+FAIL src/screens/register/index.test.tsx (22.167 s)
+  ● #127 R1: el botón de envío de register lleva su receta en el árbol › pinta register-submit, deshabilitado al montar, con la clase exacta, rounded-xl y bg-accent incluidos, la vea o no el recorte de fuente
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "pressable-feedback__root button__root button__root--variant-primary button__root--size-md disabled:element-disabled w-full h-14 rounded-xl bg-accent border-b-4 border-black/25"
+    Received: "pressable-feedback__root button__root button__root--variant-primary button__root--size-md disabled:element-disabled w-full rounded-xl bg-accent border-b-4 border-black/25"
+
+      296 |     await renderRegister();
+      297 |
+    > 298 |     expect(screen.getByTestId('register-submit').props.className).toBe(
+          |                                                                   ^
+      299 |       'pressable-feedback__root button__root button__root--variant-primary button__root--size-md disabled:element-disabled w-full h-14 rounded-xl bg-accent border-b-4 border-black/25',
+      300 |     );
+      301 |   });
+
+      at Object.toBe (src/screens/register/index.test.tsx:298:67)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+exit=1
+```
+
+#### c39 — jest
+
+```bash
+bunx jest --testTimeout=30000 --runTestsByPath src/__tests__/account-screens-polish.test.ts src/components/__tests__/password-input.test.tsx src/screens/login/index.test.tsx src/screens/register/index.test.tsx src/screens/forgot/index.test.tsx src/screens/reset-password/index.test.tsx src/__tests__/ui-language.test.ts src/__tests__/design-drift.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/legibility-classnames.test.ts
+```
+
+```text
+PASS src/screens/forgot/index.test.tsx (9.988 s)
+PASS src/screens/reset-password/index.test.tsx (10.373 s)
+PASS src/components/__tests__/password-input.test.tsx
+PASS src/screens/register/index.test.tsx (13.886 s)
+PASS src/__tests__/ui-language.test.ts
+PASS src/screens/login/index.test.tsx
+PASS src/__tests__/account-screens-polish.test.ts
+PASS src/__tests__/legibility-classnames.test.ts
+PASS src/__tests__/design-drift.test.ts
+PASS src/__tests__/consistency-classnames.test.ts
+Test Suites: 10 passed, 10 total
+Tests:       355 passed, 355 total
+Time:        16.048 s, estimated 25 s
+exit=0
+```
+
+#### c39 — router
+
+```bash
+test ! -e .expo/types/router.d.ts
+```
+
+```text
+
+exit=0
+```
+
+#### c39 — typecheck
+
+```bash
+bun run typecheck
+```
+
+```text
+$ tsc --noEmit
+exit=0
+```
+
+#### c39 — lint
+
+```bash
+bunx expo lint --no-cache > /tmp/lint-172.log 2>&1
+```
+
+```text
+vacio=0
+exit=0
+```
+
+#### S20a — jest
+
+```bash
+bunx jest --testTimeout=30000 --runTestsByPath src/__tests__/account-screens-polish.test.ts
+```
+
+```text
+FAIL src/__tests__/account-screens-polish.test.ts
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 12 passed, 13 total
+Time:        1.686 s
+  ● #172 R20: forgot pinta la CTA de 56 y los inputs de 52
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 0
+    Received: 1
+
+      110 |   expect(source.split('className="h-13 rounded-xl bg-default"').length - 1).toBe(counts[0]);
+      111 |   expect(source.split('className="rounded-xl bg-default"').length - 1).toBe(counts[1]);
+    > 112 |   expect(source.split('w-full rounded-xl').length - 1).toBe(counts[3]);
+          |                                                        ^
+      113 |   expect(source.split('w-full h-14 rounded-xl border-2 border-b-6 border-lip-gray bg-surface').length - 1).toBe(counts[4]);
+      114 | });
+      115 |
+
+      at toBe (src/__tests__/account-screens-polish.test.ts:112:56)
+exit=1
+```
+
+#### S20a — restore
+
+```bash
+git checkout HEAD -- src/screens/forgot/index.tsx; git diff --quiet HEAD -- src/screens/forgot/index.tsx; echo "exit=$?"
+```
+
+```text
+exit=0
+exit=0
+```
+
+#### S20b — jest
+
+```bash
+bunx jest --testTimeout=30000 --runTestsByPath src/__tests__/account-screens-polish.test.ts
+```
+
+```text
+FAIL src/__tests__/account-screens-polish.test.ts
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 12 passed, 13 total
+Time:        1.208 s, estimated 2 s
+  ● #172 R20: login pinta la CTA de 56 y los inputs de 52
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 1
+    Received: 0
+
+      108 |   const source = readFileSync(join(sourceRoot, path), 'utf8');
+      109 |   expect(source.split('w-full h-14 rounded-xl bg-accent border-b-4 border-black/25').length - 1).toBe(counts[2]);
+    > 110 |   expect(source.split('className="h-13 rounded-xl bg-default"').length - 1).toBe(counts[0]);
+          |                                                                             ^
+      111 |   expect(source.split('className="rounded-xl bg-default"').length - 1).toBe(counts[1]);
+      112 |   expect(source.split('w-full rounded-xl').length - 1).toBe(counts[3]);
+      113 |   expect(source.split('w-full h-14 rounded-xl border-2 border-b-6 border-lip-gray bg-surface').length - 1).toBe(counts[4]);
+
+      at toBe (src/__tests__/account-screens-polish.test.ts:110:77)
+exit=1
+```
+
+#### S20b — restore
+
+```bash
+git checkout HEAD -- src/screens/login/index.tsx; git diff --quiet HEAD -- src/screens/login/index.tsx; echo "exit=$?"
+```
+
+```text
+exit=0
+exit=0
+```
+
+#### S20c — jest
+
+```bash
+bunx jest --testTimeout=30000 --runTestsByPath src/screens/reset-password/index.test.tsx
+```
+
+```text
+FAIL src/screens/reset-password/index.test.tsx (10.96 s)
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 40 passed, 41 total
+Time:        11.11 s
+  ● #127 R1: el botón de envío de reset-password lleva su receta en el árbol › pinta reset-submit con la clase exacta, rounded-xl y bg-accent incluidos, la vea o no el recorte de fuente
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "pressable-feedback__root button__root button__root--variant-primary button__root--size-md w-full h-14 rounded-xl bg-accent border-b-4 border-black/25"
+    Received: "pressable-feedback__root button__root button__root--variant-primary button__root--size-lg w-full h-14 rounded-xl bg-accent border-b-4 border-black/25"
+
+      328 |     await renderRoute('reset-token-127');
+      329 |
+    > 330 |     expect(screen.getByTestId('reset-submit').props.className).toBe(
+          |                                                                ^
+      331 |       'pressable-feedback__root button__root button__root--variant-primary button__root--size-md w-full h-14 rounded-xl bg-accent border-b-4 border-black/25',
+      332 |     );
+      333 |   });
+
+      at Object.toBe (src/screens/reset-password/index.test.tsx:330:64)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+exit=1
+```
+
+#### S20c — restore
+
+```bash
+git checkout HEAD -- src/screens/reset-password/index.tsx; git diff --quiet HEAD -- src/screens/reset-password/index.tsx; echo "exit=$?"
+```
+
+```text
+exit=0
+exit=0
+```
+
+#### S20d — jest
+
+```bash
+bunx jest --testTimeout=30000 --runTestsByPath src/__tests__/account-screens-polish.test.ts src/components/__tests__/password-input.test.tsx
+```
+
+```text
+FAIL src/__tests__/account-screens-polish.test.ts
+FAIL src/components/__tests__/password-input.test.tsx (5.141 s)
+Test Suites: 2 failed, 2 total
+Tests:       2 failed, 15 passed, 17 total
+Time:        5.639 s
+  ● #172 R20: password-input pinta la CTA de 56 y los inputs de 52
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 1
+    Received: 0
+
+      108 |   const source = readFileSync(join(sourceRoot, path), 'utf8');
+      109 |   expect(source.split('w-full h-14 rounded-xl bg-accent border-b-4 border-black/25').length - 1).toBe(counts[2]);
+    > 110 |   expect(source.split('className="h-13 rounded-xl bg-default"').length - 1).toBe(counts[0]);
+          |                                                                             ^
+      111 |   expect(source.split('className="rounded-xl bg-default"').length - 1).toBe(counts[1]);
+      112 |   expect(source.split('w-full rounded-xl').length - 1).toBe(counts[3]);
+      113 |   expect(source.split('w-full h-14 rounded-xl border-2 border-b-6 border-lip-gray bg-surface').length - 1).toBe(counts[4]);
+
+      at toBe (src/__tests__/account-screens-polish.test.ts:110:77)
+
+FAIL src/components/__tests__/password-input.test.tsx (5.141 s)
+  ● #172 R8: PasswordInput › #172 R8: el grupo envuelve el campo de 52 y el botón de 44
+
+    expect(received).toContain(expected) // indexOf
+
+    Expected value: "h-13"
+    Received array: ["input__input", "ios:outline-2", "ios:outline-transparent", "ios:focus:outline-accent", "android:border-[1.5px]", "android:border-transparent", "android:focus:border-accent", "rtl:text-right", "input__input--variant-primary", "ios:shadow-field", …]
+
+      72 |     expect(group).toContainElement(toggle);
+      73 |     for (const token of ['h-13', 'rounded-xl', 'bg-default']) {
+    > 74 |       expect(input.props.className.split(' ')).toContain(token);
+         |                                                ^
+      75 |     }
+      76 |     expect(toggle.props.className).toBe('size-11 items-center justify-center');
+      77 |   });
+
+      at Object.toContain (src/components/__tests__/password-input.test.tsx:74:48)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+exit=1
+```
+
+#### S20d — restore
+
+```bash
+git checkout HEAD -- src/components/password-input.tsx; git diff --quiet HEAD -- src/components/password-input.tsx; echo "exit=$?"
+```
+
+```text
+exit=0
+exit=0
+```
+
+#### T22-counts — counts
+
+```bash
+command grep -cE '^\s*it(\.each)?[(<]' src/screens/login/index.test.tsx src/screens/register/index.test.tsx src/screens/forgot/index.test.tsx src/screens/reset-password/index.test.tsx src/__tests__/ui-language.test.ts src/__tests__/design-drift.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/legibility-classnames.test.ts src/theme/__tests__/global-css.test.ts src/providers/__tests__/language-provider.test.tsx src/theme/__tests__/motion.test.ts src/theme/__tests__/font-registration.test.ts src/components/__tests__/back-button.test.tsx src/components/__tests__/pingo-float.test.tsx src/components/__tests__/form-error.test.tsx src/components/__tests__/password-input.test.tsx src/__tests__/account-screens-polish.test.ts
+```
+
+```text
+src/screens/login/index.test.tsx:26
+src/screens/register/index.test.tsx:30
+src/screens/forgot/index.test.tsx:34
+src/screens/reset-password/index.test.tsx:34
+src/__tests__/ui-language.test.ts:28
+src/__tests__/design-drift.test.ts:51
+src/__tests__/consistency-classnames.test.ts:33
+src/__tests__/legibility-classnames.test.ts:12
+src/theme/__tests__/global-css.test.ts:31
+src/providers/__tests__/language-provider.test.tsx:20
+src/theme/__tests__/motion.test.ts:17
+src/theme/__tests__/font-registration.test.ts:4
+src/components/__tests__/back-button.test.tsx:5
+src/components/__tests__/pingo-float.test.tsx:3
+src/components/__tests__/form-error.test.tsx:3
+src/components/__tests__/password-input.test.tsx:4
+src/__tests__/account-screens-polish.test.ts:6
+Bloques finales=341; H0=289; delta=52
+exit=0
+```
+
+#### T22-wait — espera_carga
+
+```bash
+cd /home/claude/sites/Pet-Tracker-wt-172/mobile-pet-tracker && for i in $(seq 1 90); do pgrep -f 'node_modules/(\.bin/(jest|eslint)|jest-worker)|[i]nit\.sh' > /dev/null || break; sleep 60; done; echo "fin-espera"
+```
+
+```text
+fin-espera
+exit=0
+```
+
+#### T22-base — jest
+
+```bash
+bunx jest --testTimeout=30000 --runTestsByPath src/screens/login/index.test.tsx src/screens/register/index.test.tsx src/screens/forgot/index.test.tsx src/screens/reset-password/index.test.tsx src/theme/__tests__/global-css.test.ts src/providers/__tests__/language-provider.test.tsx src/theme/__tests__/motion.test.ts src/theme/__tests__/font-registration.test.ts src/__tests__/ui-language.test.ts src/__tests__/design-drift.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/legibility-classnames.test.ts src/components/__tests__/back-button.test.tsx src/components/__tests__/pingo-float.test.tsx src/components/__tests__/form-error.test.tsx src/components/__tests__/password-input.test.tsx src/__tests__/account-screens-polish.test.ts
+```
+
+```text
+PASS src/components/__tests__/form-error.test.tsx (6.139 s)
+PASS src/components/__tests__/back-button.test.tsx
+PASS src/components/__tests__/password-input.test.tsx (8.118 s)
+PASS src/providers/__tests__/language-provider.test.tsx
+PASS src/__tests__/account-screens-polish.test.ts
+PASS src/components/__tests__/pingo-float.test.tsx
+PASS src/theme/__tests__/global-css.test.ts
+PASS src/theme/__tests__/font-registration.test.ts
+PASS src/screens/reset-password/index.test.tsx (10.949 s)
+PASS src/screens/forgot/index.test.tsx
+PASS src/theme/__tests__/motion.test.ts
+PASS src/screens/login/index.test.tsx
+PASS src/__tests__/design-drift.test.ts
+PASS src/__tests__/ui-language.test.ts
+PASS src/__tests__/legibility-classnames.test.ts
+PASS src/__tests__/consistency-classnames.test.ts
+PASS src/screens/register/index.test.tsx (9.637 s)
+Test Suites: 17 passed, 17 total
+Tests:       470 passed, 470 total
+Time:        20.101 s, estimated 23 s
+exit=0
+```
+
+#### T22-readers — jest
+
+```bash
+bunx jest --testTimeout=30000 --runTestsByPath src/theme/__tests__/motion.test.ts 'src/app/(tabs)/__tests__/food.test.tsx' src/__tests__/hero-header-amendments.test.ts src/screens/welcome/index.test.tsx
+```
+
+```text
+PASS src/__tests__/hero-header-amendments.test.ts
+PASS src/theme/__tests__/motion.test.ts
+PASS src/screens/welcome/index.test.tsx (8.452 s)
+PASS src/app/(tabs)/__tests__/food.test.tsx (9.118 s)
+Test Suites: 4 passed, 4 total
+Tests:       192 passed, 192 total
+Time:        10.206 s, estimated 21 s
+exit=0
+```
+
+#### T22-final — router
+
+```bash
+test ! -e .expo/types/router.d.ts
+```
+
+```text
+
+exit=0
+```
+
+#### T22-final — typecheck
+
+```bash
+bun run typecheck
+```
+
+```text
+$ tsc --noEmit
+exit=0
+```
+
+#### T22-final — lint
+
+```bash
+bunx expo lint --no-cache > /tmp/lint-172.log 2>&1
+```
+
+```text
+vacio=0
+exit=0
+```
+
+#### T22-B3 — anchor
+
+```bash
+command grep -cF 'text-xs font-semibold text-foreground' src/screens/login/index.tsx src/screens/register/index.tsx src/screens/forgot/index.tsx
+```
+
+```text
+src/screens/login/index.tsx:0
+src/screens/register/index.tsx:0
+src/screens/forgot/index.tsx:0
+exit=1
+```
+
+#### T22-B4 — anchor
+
+```bash
+command grep -c 'selectable' src/screens/login/index.tsx src/screens/register/index.tsx src/screens/forgot/index.tsx src/screens/reset-password/index.tsx
+```
+
+```text
+src/screens/login/index.tsx:0
+src/screens/register/index.tsx:0
+src/screens/forgot/index.tsx:0
+src/screens/reset-password/index.tsx:2
+exit=0
+```
+
+#### T22-B5 — anchor
+
+```bash
+command grep -c 'text-accent-strong' src/screens/login/index.tsx src/screens/register/index.tsx src/screens/forgot/index.tsx src/screens/reset-password/index.tsx
+```
+
+```text
+src/screens/login/index.tsx:2
+src/screens/register/index.tsx:0
+src/screens/forgot/index.tsx:1
+src/screens/reset-password/index.tsx:4
+exit=0
+```
+
+#### T22-B6 — anchor
+
+```bash
+command grep -cF "'/login'" src/screens/login/index.tsx src/screens/register/index.tsx src/screens/forgot/index.tsx src/screens/reset-password/index.tsx
+```
+
+```text
+src/screens/login/index.tsx:0
+src/screens/register/index.tsx:1
+src/screens/forgot/index.tsx:1
+src/screens/reset-password/index.tsx:3
+exit=0
+```
+
+#### T22-fallback — anchor
+
+```bash
+command grep -c 'fallback="/login"' src/screens/forgot/index.tsx
+```
+
+```text
+1
+exit=0
+```
+
+#### T22-B10 — anchor
+
+```bash
+awk '/export const R1_AUTH/{f=1;next} f&&/^\];/{print n; exit} f&&/\{ file:/{n++}' src/__tests__/ui-copy-table.ts
+```
+
+```text
+41
+exit=0
+```
+
+#### T22-B11 — anchor
+
+```bash
+command grep -cE "^  '[a-zA-Z]+\.[a-zA-Z.]+':" src/i18n/catalog.ts
+```
+
+```text
+774
+exit=0
+```
+
+#### T22-B12 — anchor
+
+```bash
+command grep -c 'isInvalid={Boolean(fieldErrors\.' src/screens/register/index.tsx
+```
+
+```text
+7
+exit=0
+```
+
+#### T22-B14 — anchor
+
+```bash
+command grep -c 'accessibilityLiveRegion' src/screens/reset-password/index.tsx
+```
+
+```text
+1
+exit=0
+```
+
+#### T22-B15 — anchor
+
+```bash
+command grep -cF '## Enmienda #172' ../docs/ui-guidelines.md
+```
+
+```text
+1
+exit=0
+```
+
+#### T22-B16 — anchor
+
+```bash
+command grep '^### §2\.' ../specs/mobile-ui-language/design.md | tail -1
+```
+
+```text
+### §2.27 — Añadidos por #172 — Las pantallas de cuenta como el canvas
+exit=0
+```
+
+#### T22-B17 — anchor
+
+```bash
+command grep -cF 'size-16 items-center justify-center rounded-xl bg-accent-soft' src/screens/forgot/index.test.tsx src/__tests__/consistency-classnames.test.ts
+```
+
+```text
+src/screens/forgot/index.test.tsx:0
+src/__tests__/consistency-classnames.test.ts:0
+exit=1
+```
+
+#### T22-tile-nuevo — anchor
+
+```bash
+command grep -cF 'size-13 items-center justify-center rounded-xl border-b-4 border-black/25 bg-accent' src/screens/forgot/index.test.tsx src/__tests__/consistency-classnames.test.ts src/screens/forgot/index.tsx
+```
+
+```text
+src/screens/forgot/index.test.tsx:5
+src/__tests__/consistency-classnames.test.ts:1
+src/screens/forgot/index.tsx:1
+exit=0
+```
+
+#### T22-lock-helper — anchor
+
+```bash
+command grep -c 'LOCK_TILE_CLASS' src/screens/forgot/index.test.tsx
+```
+
+```text
+0
+exit=1
+```
+
+#### T22-messages — anchor
+
+```bash
+command grep -c -- '-message"' src/screens/register/index.tsx
+```
+
+```text
+7
+exit=0
+```
+
+#### T22-B21 — anchor
+
+```bash
+command grep -c '^export const' src/theme/motion.ts
+```
+
+```text
+19
+exit=0
+```
+
+#### T22-B22 — anchor
+
+```bash
+command grep -cF 'rounded-xl bg-default"' src/screens/login/index.tsx src/screens/register/index.tsx src/screens/forgot/index.tsx src/screens/reset-password/index.tsx
+```
+
+```text
+src/screens/login/index.tsx:1
+src/screens/register/index.tsx:5
+src/screens/forgot/index.tsx:1
+src/screens/reset-password/index.tsx:0
+exit=0
+```
+
+#### T22-B23-justify — anchor
+
+```bash
+command grep -cF "justifyContent: 'center'" src/screens/login/index.tsx src/screens/register/index.tsx src/screens/forgot/index.tsx src/screens/reset-password/index.tsx
+```
+
+```text
+src/screens/login/index.tsx:0
+src/screens/register/index.tsx:0
+src/screens/forgot/index.tsx:0
+src/screens/reset-password/index.tsx:1
+exit=0
+```
+
+#### T22-B23-align — anchor
+
+```bash
+command grep -cF "alignItems: 'center'" src/screens/login/index.tsx src/screens/register/index.tsx src/screens/forgot/index.tsx src/screens/reset-password/index.tsx
+```
+
+```text
+src/screens/login/index.tsx:0
+src/screens/register/index.tsx:0
+src/screens/forgot/index.tsx:1
+src/screens/reset-password/index.tsx:1
+exit=0
+```
+
+#### T22-font-token — anchor
+
+```bash
+command grep -cF -- "--font-extrabold: 'Inter-ExtraBold';" src/theme/global.css
+```
+
+```text
+1
+exit=0
+```
+
+#### T22-font-sha — anchor
+
+```bash
+sha256sum assets/fonts/Inter-ExtraBold.ttf
+```
+
+```text
+e6756ad5690b77606aa62249a7b420d9902d45cae4b0048a24911fd4324b0a22  assets/fonts/Inter-ExtraBold.ttf
+exit=0
+```
+
+#### T22-B26-primarios — anchor
+
+```bash
+command grep -cF 'w-full rounded-xl bg-accent border-b-4 border-black/25' src/screens/login/index.tsx src/screens/register/index.tsx src/screens/forgot/index.tsx src/screens/reset-password/index.tsx
+```
+
+```text
+src/screens/login/index.tsx:0
+src/screens/register/index.tsx:0
+src/screens/forgot/index.tsx:0
+src/screens/reset-password/index.tsx:0
+exit=1
+```
+
+#### T22-B26-botones — anchor
+
+```bash
+command grep -cF 'w-full rounded-xl' src/screens/login/index.tsx src/screens/register/index.tsx src/screens/forgot/index.tsx src/screens/reset-password/index.tsx
+```
+
+```text
+src/screens/login/index.tsx:0
+src/screens/register/index.tsx:0
+src/screens/forgot/index.tsx:0
+src/screens/reset-password/index.tsx:0
+exit=1
+```
+
+#### T22-B27 — anchor
+
+```bash
+command grep -cF 'text-xs font-semibold text-foreground' src/screens/reset-password/index.tsx
+```
+
+```text
+0
+exit=1
+```
+
+#### T22-B28 — anchor
+
+```bash
+command grep -c 'secureTextEntry' src/screens/login/index.tsx src/screens/register/index.tsx src/screens/forgot/index.tsx src/screens/reset-password/index.tsx
+```
+
+```text
+src/screens/login/index.tsx:0
+src/screens/register/index.tsx:0
+src/screens/forgot/index.tsx:0
+src/screens/reset-password/index.tsx:0
+exit=1
+```
+
+#### T22-casillas — anchor
+
+```bash
+command grep -cE '^- \[[ xX]\] Enmienda aprobada por humano' ../docs/ui-guidelines.md
+```
+
+```text
+5
+exit=0
+```
+
+#### T22-missing-token — anchor
+
+```bash
+git diff -U0 e0178ab5 -- src/screens/reset-password/index.tsx | command grep -c '^[-+].*reset-missing-token'
+```
+
+```text
+0
+exit=1
+```
+
+#### T22-immutable — anchor
+
+```bash
+git diff --quiet e0178ab5 -- package.json bun.lock src/components/card.tsx src/screens/welcome
+```
+
+```text
+
+exit=0
+```
+
+#### T22-motion-diff — anchor
+
+```bash
+git diff e0178ab5 -- src/theme/motion.ts
+```
+
+```text
+diff --git a/mobile-pet-tracker/src/theme/motion.ts b/mobile-pet-tracker/src/theme/motion.ts
+index 374d6d33..6ed4d3ad 100644
+--- a/mobile-pet-tracker/src/theme/motion.ts
++++ b/mobile-pet-tracker/src/theme/motion.ts
+@@ -55,3 +55,11 @@ export const MOTION_PING_TIMING = {
+   easing: Easing.bezier(0.23, 1, 0.32, 1),
+   reduceMotion: ReduceMotion.System,
+ };
++
++// #172 R4
++export const MOTION_PINGO_FLOAT_OFFSET_Y = 10;
++export const MOTION_PINGO_FLOAT_TIMING = {
++  duration: 1500,
++  easing: Easing.bezier(0.42, 0, 0.58, 1),
++  reduceMotion: ReduceMotion.System,
++};
+exit=0
+```
+
+#### T22-B7 — anchor
+
+```bash
+command grep -rhoE --include=*.ts --include=*.tsx --exclude=*.test.ts --exclude=*.test.tsx --exclude-dir=__tests__ bg-accent-soft src | wc -l
+```
+
+```text
+17
+exit=0
+```
+
+#### T22-B8-a — anchor
+
+```bash
+command grep -rhoE --include=*.ts --include=*.tsx --exclude=*.test.ts --exclude=*.test.tsx --exclude-dir=__tests__ '\bborder-b-4\b' src | wc -l
+```
+
+```text
+20
+exit=0
+```
+
+#### T22-B8-b — anchor
+
+```bash
+command grep -rhoE --include=*.ts --include=*.tsx --exclude=*.test.ts --exclude=*.test.tsx --exclude-dir=__tests__ border-black/25 src | wc -l
+```
+
+```text
+20
+exit=0
+```
+
+#### T22-B9 — anchor
+
+```bash
+command grep -rhoE --include=*.ts --include=*.tsx --exclude=*.test.ts --exclude=*.test.tsx --exclude-dir=__tests__ 'style=\{CONTINUOUS_CORNER\}' src | wc -l
+```
+
+```text
+37
+exit=0
+```
+
+#### T22-InputGroup — anchor
+
+```bash
+command grep -rlE --include=*.ts --include=*.tsx --exclude=*.test.ts --exclude=*.test.tsx --exclude-dir=__tests__ InputGroup src | wc -l
+```
+
+```text
+1
+exit=0
+```
+
+#### T22-flex-2 — anchor
+
+```bash
+command grep -rlE --include=*.ts --include=*.tsx --exclude=*.test.ts --exclude=*.test.tsx --exclude-dir=__tests__ flex-2 src | wc -l
+```
+
+```text
+1
+exit=0
+```
+
+#### T22-extrabold — anchor
+
+```bash
+command grep -rlE --include=*.ts --include=*.tsx --exclude=*.test.ts --exclude=*.test.tsx --exclude-dir=__tests__ 'extrabold|ExtraBold' src | wc -l
+```
+
+```text
+5
+exit=0
+```
+
+#### T22-B25 — anchor
+
+```bash
+command grep -rlE --include=*.ts --include=*.tsx --exclude=*.test.ts --exclude=*.test.tsx --exclude-dir=__tests__ '\bh-1[34]\b' src | wc -l
+```
+
+```text
+5
+exit=0
+```
+
+#### T22-B19 — anchor
+
+```bash
+command grep -rlF -e 'Country (2-letter code)' -e 'País (código de 2 letras)' src | command grep -v 'src/i18n/catalog.ts'
+```
+
+```text
+
+exit=1
+```
+
+#### T22-fonts — anchor
+
+```bash
+ls assets/fonts | wc -l
+```
+
+```text
+6
+exit=0
+```
+
+#### T22-B20 — anchor
+
+```bash
+sumatorio SCREEN_FILES en src/__tests__/ui-language.test.ts
+```
+
+```text
+19 + 2 + 1 + 1 + 1 + 1 + 1 + 1 + 1
+        + 1 - 1
+        + 1
+        + 1
+        + 2 - 2
+        + 2
+B20=32
+exit=0
+```
+
+#### T22-history — history
+
+```bash
+git log --oneline e0178ab5..HEAD
+```
+
+```text
+4ba7e139 feat(mobile): CTA de 56 e inputs de 52 en las pantallas de cuenta (R20)
+9cf701c4 test(mobile): CTA de 56 e inputs de 52 en las pantallas de cuenta (R20)
+398f074b feat(mobile): la CTA de cuenta se ancla al pie (R19)
+e040579e test(mobile): la CTA de cuenta se ancla al pie (R19)
+dc6df815 docs(ui): enmienda de la carta para las pantallas de cuenta (R18)
+10763864 test(mobile): la carta declara la enmienda de las pantallas de cuenta (R18)
+3f10a364 test(mobile): los componentes nuevos entran en la guarda de deriva (R17)
+9f1b2350 test(mobile): filas de uso de las claves de cuenta (R16)
+1bb27800 docs(mobile-account-screens-polish): #172 S15 conforme a E5
+8959232c docs(mobile-account-screens-polish): #172 firma Enmienda E5
+2ae3d423 docs(mobile-account-screens-polish): #172 Enmienda E5, S15 y S17b con sus rojos en cascada
+aa26cdaa docs(mobile-account-screens-polish): #172 bloqueo en S15
+944b727a docs(mobile-account-screens-polish): #172 trazabilidad parcial hasta c31
+0e5bb776 test(mobile): el error de login cuelga del scroll (R15)
+5aa8fa5e docs(mobile-account-screens-polish): #172 S14 conforme a E4
+8b53e558 docs(mobile-account-screens-polish): #172 firma Enmienda E4
+e2382088 docs(mobile-account-screens-polish): #172 Enmienda E4, la sonda S14 da 6 fallos
+bc67060b docs(mobile-account-screens-polish): #172 bloqueo en S14
+ca0049df docs(mobile-account-screens-polish): #172 trazabilidad parcial hasta c30
+7ddda8f5 feat(mobile): el candado de recuperar es un tile acento con labio (R14)
+7b4c79b3 test(mobile): el candado de recuperar es un tile acento con labio (R14)
+81a3a4c6 feat(mobile): la tarjeta de éxito avisa con liveRegion (R13)
+2103b60e test(mobile): la tarjeta de éxito avisa con liveRegion (R13)
+b2607357 feat(mobile): validación del correo en el registro (R12)
+ded50874 test(mobile): validación del correo en el registro (R12)
+fbcb4e9e feat(mobile): rejilla del registro (R11)
+d7604772 test(mobile): rejilla del registro (R11)
+ddd467d9 docs(mobile-account-screens-polish): #172 firma Enmienda E3
+74fc9a8a docs(mobile-account-screens-polish): #172 Enmienda E3, sonda S10b fuera del gate de FieldError
+4ed76d4c docs(mobile-account-screens-polish): #172 bloqueo en S10b
+14c69144 feat(mobile): errores por campo del registro con icono (R10)
+ca1bac6b test(mobile): errores por campo del registro con icono (R10)
+45e4c40e feat(mobile): mostrar y ocultar la contraseña en cuenta (R8)
+1ad828d3 test(mobile): mostrar y ocultar la contraseña en cuenta (R8)
+e1dcae38 feat(mobile): FormError en las cuatro pantallas de cuenta (R9)
+28ad44aa test(mobile): FormError con icono y texto seleccionable (R9)
+7d56bacb feat(mobile): enlaces y orden del cuerpo de login (R7)
+36f46603 test(mobile): enlaces y orden del cuerpo de login (R7)
+4b5675c6 feat(mobile): recetas de texto e Inter ExtraBold en cuenta (R6)
+b8384616 test(mobile): recetas de texto e Inter ExtraBold en cuenta (R6)
+984043e1 feat(mobile): fila Volver en login, registro y recuperar (R3)
+29e2acf6 test(mobile): fila Volver en login, registro y recuperar (R3)
+60d26f5c feat(mobile): Pingo flota en registro, recuperar y nueva contraseña (R5)
+1b4551c7 test(mobile): Pingo flota en registro, recuperar y nueva contraseña (R5)
+c12c676f feat(mobile): Pingo flota 10 px en 3 s en cuenta (R4)
+edf99020 test(mobile): tipa translateY en el candado de Pingo (R4)
+75f849a6 test(mobile): orden de sort en el inventario de motion (R4)
+a03a9d98 docs(mobile-account-screens-polish): #172 firma Enmienda E2
+02a31628 docs(mobile-account-screens-polish): #172 Enmienda E2, orden de sort en motion
+8ac30127 docs(mobile-account-screens-polish): #172 informe de implementación
+09a8e195 docs(mobile-account-screens-polish): #172 trazabilidad
+e31582c3 test(mobile): Pingo flota 10 px en 3 s en cuenta (R4)
+4cdb12db feat(mobile): BackButton (R2)
+b3fe30be test(mobile): BackButton vuelve o reemplaza (R2)
+505332c9 feat(mobile): claves de Volver, del ojo y País (R16)
+c1bd4a6a test(mobile): claves de Volver, del ojo y País (R16)
+67ff28c3 feat(mobile): tokens de texto 13, 15 y 17 (R1)
+3a87fac0 test(mobile): tokens de texto 13, 15 y 17 (R1)
+94ddc750 docs(mobile-account-screens-polish): #172 firma Enmienda E1
+exit=0
+```
+
+### Anclas intermedias verificadas
+
+```text
+c32: B10=41; B20=32
+c32: toHaveLength(29 + 7 + 1 + 4); // #117 R10, #167 R6, #172 R16 =1
+c32: + 2 // #172 R16: back-button y password-input =1
+c35: ## Enmienda #172 =1; casillas Enmienda aprobada por humano =5
+c37: justifyContent=0,0,0,1; alignItems=0,0,1,1
+c37: espaciadores flex-1=1,1,1,2; self-center=0,0,0,0
+c37: login-body y reset-body flex-1 gap-4=1,1; B5=2,0,1,4; B6=0,1,1,3
+c37: líneas de diff que cambian reset-missing-token=0
+c39: B22=1,5,1,0; Input viejo=0,0,0,0; B26=0,0,0,0; B25=5
+```
+
+Las anclas literales completas de T22 están reproducidas arriba, en sus
+entradas T22-B3 hasta T22-B20 y los demás nombres descriptivos.
+
+### Desviaciones y cierre
+
+1. **Carga en c35.** El lint inicial devolvió exit=0 pero dejó en el log
+   `error: Failed to run "eslint" due to signal SIGKILL` y vacio=1; el gate
+   combinado salió con exit=1. Se ejecutó literalmente la espera de hasta
+   30 iteraciones y se obtuvo fin-espera. El filtro primero detectaba Jest
+   ajeno y después un shell de espera cuyo comando mencionaba Jest. Se
+   mantuvo el comando prescrito hasta terminar el bucle, sin alterar ni
+   cancelar procesos ajenos. Se relanzó solo lint una vez: exit=0, vacio=0.
+   No se repitieron el Jest ni typecheck de c35. La espera de T22 (hasta 90
+   iteraciones) terminó de inmediato con fin-espera.
+2. **Mediciones auxiliares.** Un conteo auxiliar de B10 incluyó la
+   declaración UseRow y dio 42; se sustituyó por el awk normativo, que dio
+   41. El primer cálculo Python del sumatorio B20 falló por conservar los
+   saltos de línea; al normalizar el texto dio 32. No se ajustaron tests,
+   anclas ni producción: las mediciones normativas y sus gates coincidieron.
+3. **Documentación de reanudación.** Se marcó S15 conforme a E5 antes de
+   empezar c32 en `1bb27800 docs(mobile-account-screens-polish): #172 S15 conforme a E5`.
+   Ese commit de informe no se renumera como parte del guion. S14 y S15
+   conservan sus salidas históricas y no se repitieron.
+4. En esta reanudación no hubo discrepancias con las tablas firmadas, nuevos
+   timeouts, instalaciones nuevas, cambios en dependencias ni cambios en los
+   commits del leader. Las skills cargadas y las prohibiciones del handoff
+   siguieron vigentes. Los bloqueos y el correctivo de tipado de R4 de las
+   reanudaciones previas quedan documentados en sus secciones históricas.
+5. Trazabilidad completa R1–R20 en
+   `b04f1289 docs(mobile-account-screens-polish): #172 trazabilidad completa`.
+   El informe se cierra aparte con el comando literal:
+
+   ```bash
+   git commit --only ../progress/impl_mobile-account-screens-polish.md -m 'docs(mobile-account-screens-polish): #172 informe de implementación completo'
+   ```
+
+   R21 queda pendiente (humano). El árbol queda limpio al cierre, y el
+   leader conserva la revisión, init.sh y el bookkeeping.
