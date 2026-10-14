@@ -200,7 +200,7 @@ export function RegisterScreen() {
             </Label>
             <Input
               testID="register-first-name"
-              className="rounded-xl bg-default"
+              className="h-13 rounded-xl bg-default"
               value={firstName}
               onChangeText={setFirstName}
             />
@@ -216,7 +216,7 @@ export function RegisterScreen() {
             </Label>
             <Input
               testID="register-last-name"
-              className="rounded-xl bg-default"
+              className="h-13 rounded-xl bg-default"
               value={lastName}
               onChangeText={setLastName}
             />
@@ -234,7 +234,7 @@ export function RegisterScreen() {
           </Label>
           <Input
             testID="register-email"
-            className="rounded-xl bg-default"
+            className="h-13 rounded-xl bg-default"
             autoCapitalize="none"
             keyboardType="email-address"
             value={email}
@@ -254,7 +254,7 @@ export function RegisterScreen() {
             </Label>
             <Input
               testID="register-phone"
-              className="rounded-xl bg-default"
+              className="h-13 rounded-xl bg-default"
               keyboardType="phone-pad"
               value={phone}
               onChangeText={setPhone}
@@ -271,7 +271,7 @@ export function RegisterScreen() {
             </Label>
             <Input
               testID="register-country"
-              className="rounded-xl bg-default"
+              className="h-13 rounded-xl bg-default"
               autoCapitalize="characters"
               maxLength={2}
               value={country}
@@ -332,7 +332,7 @@ export function RegisterScreen() {
 
         <Button
           testID="register-submit"
-          className="w-full rounded-xl bg-accent border-b-4 border-black/25"
+          className="w-full h-14 rounded-xl bg-accent border-b-4 border-black/25"
           isDisabled={!terms || submitting}
           onPress={() => void handleSubmit()}
         >

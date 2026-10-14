@@ -105,7 +105,7 @@ export function LoginScreen() {
             </Label>
             <Input
               testID="login-email"
-              className="rounded-xl bg-default"
+              className="h-13 rounded-xl bg-default"
               autoCapitalize="none"
               keyboardType="email-address"
               value={email}
@@ -144,7 +144,7 @@ export function LoginScreen() {
 
           <Button
             testID="login-submit"
-            className="w-full rounded-xl bg-accent border-b-4 border-black/25"
+            className="w-full h-14 rounded-xl bg-accent border-b-4 border-black/25"
             isDisabled={submitting}
             onPress={() => void handleSubmit()}
           >
