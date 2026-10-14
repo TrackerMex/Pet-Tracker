@@ -218,3 +218,216 @@ Test Suites: 3 skipped, 30 passed, 30 of 33 total   (e2e)
 Tests:       8 skipped, 468 passed, 476 total
 exit=0 end=2026-10-14T19:05:28+00:00 load=2.87 9.22 9.10
 ```
+
+## Ronda 2 (2026-10-14)
+Fecha: 2026-10-14T20:30Z
+HEAD revisado: `f17eec10` (branch `feature/172-mobile-account-screens-polish`, worktree `Pet-Tracker-wt-172`)
+Base de la ronda: `b6c09d5e` (veredicto de la ronda 1). H0 del handoff: `e0178ab5`.
+Commits de Codex evaluados: `62b62e4b` (c40), `0b706e05` (c41), `71e7f0c6` (c42), `b44f7034` (trazabilidad) y `f17eec10` (informe).
+Veredicto: APROBADO
+
+Las siete sondas de E6, replantadas por el reviewer, dan exactamente el rojo y
+el tipo de su tabla. G1, G2, G3, G4 y G6 de la ronda 1 ya se ponen rojos.
+Además se plantaron 11 variantes en zona ciega: 7 caen y 4 sobreviven. Ninguna
+de las 4 bloquea: dos son mutantes de orden superior (añaden estructura que el
+código no tiene), una está en código previo a #172 y fuera de R12, y otra es de
+la categoría menor de G6. Detalle en §R2-2.
+
+### Checklist C2 — Estado coherente
+- [x] Solo 1 feature in_progress (`feature_list.json`: #172).
+- [x] progress/current.md con la sección #172 (último toque del leader en `0740dc01`).
+
+### Checklist C3 — Arquitectura
+- [x] Producción sin cambios desde la ronda 1. `git diff --name-only d795ee66..HEAD`,
+  sin contar `progress/` ni `specs/`, solo da los 3 ficheros de test de E6.
+  En `b6c09d5e..HEAD`, los commits de Codex tocan esos 3 tests, traceability.md
+  e impl. Los del leader (`da45bc50`, `866d685c`, `0740dc01`) solo tocan
+  `progress/` y `specs/`. Lo aprobado en C3, C7 y C8 de la ronda 1 sigue en pie.
+
+### Checklist C4 — TDD
+- [x] c40, c41 y c42 tocan cada uno solo su fichero de test. Nacen verdes por
+  diseño, porque E6 no lleva commit `feat`, y cada uno queda probado por sonda
+  (§R2-1).
+- [x] El código coincide con el literal de tasks.md T24. Se compararon las
+  líneas añadidas de cada commit con los bloques `tsx` de T24, sin contar las
+  líneas en blanco: son idénticas en los tres. Cada `it` está donde lo pide T24:
+  tras `pasa testID y children`, tras `sin historial reemplaza por el fallback`
+  y antes de `#172 R11: cabecera, rejilla…`, dentro de
+  `#167 R7: Pingo en la cabecera del registro`. Se conservan los dos espacios a
+  cada lado de `'  alex@example.com  '`.
+- [x] Los 5 `it` nuevos nombran `#172 R4`, `#172 R2` o `#172 R12`.
+
+### Checklist C5 — Trazabilidad
+- [x] La única fila «pendiente» es R21, que es humana: `pendiente (humano)`.
+- [x] Las filas R2, R4 y R12 incluyen los `it` nuevos, sus sondas (S2c,
+  S4f–S4h, S12b–S12d) y los hashes `0b706e05`, `62b62e4b` y `71e7f0c6`. Los
+  cinco commits de Codex son ancestros de HEAD (`merge-base --is-ancestor`).
+- [x] Los commits siguen el formato `test(mobile): <desc> (Rn)` y
+  `docs(mobile-account-screens-polish): …`.
+- Nota, no bloquea: el frontmatter de traceability.md sigue en
+  `status: spec_ready`. Lo cierra el leader.
+- Nota cosmética, no bloquea: en R4 y R12 aparece «verificadas.;». La nota de
+  Reanudación 5 llama «review ronda 1 del leader» a `b6c09d5e`, pero esa review
+  es del reviewer.
+
+### Checklist C6 — Spec aprobada
+- [x] requirements.md tiene `status: approved`. La casilla
+  `- [x] Enmienda E6 aprobada por humano (fecha: 2026-10-14)` está marcada
+  (`866d685c`).
+
+### Checklist C7 — Sin código huérfano
+- [x] N/A en esta ronda: E6 no reemplaza nada. La ronda 1 sigue vigente.
+
+### Checklist C8 — Carta de UI
+- [x] Producción está intacta. Las cuatro guardas (`ui-language`,
+  `design-drift`, `consistency-classnames` y `legibility-classnames`) pasan en
+  verde en HEAD, dentro de las 17 suites.
+
+### Cifras medidas por el reviewer
+- Corrí las 17 suites de T22 en HEAD con
+  `bunx jest --testTimeout=30000 --runTestsByPath $BASE <5 suites nuevas>`.
+  Resultado: `Test Suites: 17 passed, 17 total`, `Tests: 476 passed, 476 total`,
+  exit=0. La ronda 1 midió 470, y E6 suma 6 casos de Jest (2 + 1 + 3), así que
+  476 = 409 en H0 + 67. Cuadra con el informe.
+- Bloques `it`, contados con la regex de §Cuentas: HEAD 346, H0 289, delta
+  +57. Por fichero, pingo-float pasa de 3 a 5, back-button de 5 a 6 y register
+  de 30 a 32. En Jest son 5, 6 y 36 casos.
+- init.sh del leader: la parte móvil da 108/108 suites y 3168 tests, que son
+  los 3162 de la ronda 1 + 6.
+
+### §R2-1 — Mutaciones
+
+Método:
+- Comando: `bunx jest -i --testTimeout=30000 --runTestsByPath <rutas>`, desde
+  `mobile-pet-tracker/`.
+- Tras cada sonda: `git checkout HEAD -- <fichero>` y
+  `git diff --quiet HEAD -- <fichero>`. Dio `restore-exit=0` las 21 veces.
+- Al terminar: `git status --short` vacío, `git diff --quiet HEAD` → 0 y
+  `git diff --cached --quiet` → 0.
+- Ninguno de los 21 logs tiene `Exceeded timeout`.
+- Durante algunas corridas había Jest de `wt-171` y `wt-173` en marcha. La
+  carga solo produce rojos falsos, y todos los rojos fueron por aserción o por
+  consulta, del tipo que dice la spec.
+
+Rutas de cada lote:
+- **PF**: `pingo-float.test.tsx`, `account-screens-polish.test.ts`,
+  `design-drift.test.ts` y `motion.test.ts`. Las pantallas doblan `PingoFloat`,
+  así que no lo ven.
+- **PF+**: PF más las cuatro pantallas de cuenta.
+- **REG**: `src/screens/register/index.test.tsx`.
+
+| Hueco | Sonda | Mutación (fichero de producción) | Lote | Resultado | Rojo |
+|---|---|---|---|---|---|
+| G1 | S4f (= ronda 1) | `opacity: 0,` en el objeto de `useAnimatedStyle` (`pingo-float.tsx`) | PF+ (8 suites, 252 tests) | exit=1, 1 fallo | `#172 R4: el estilo animado solo lleva translateY`, aserción `toEqual` (`+ "opacity": 0`) |
+| G1 | S4g | `style={[animatedStyle, { opacity: 0 }]}` | PF (4, 105) | exit=1, 1 fallo | el mismo `it`, `toEqual` en `pingo-float.test.tsx:74` |
+| G1 | zona ciega | `transform: [{ translateY: … }, { scale: 0 }]`: otra entrada del array, donde el `it` de la tabla solo lee `[0]` | PF | exit=1, 1 fallo | el mismo `it`, `toEqual` |
+| G1 | zona ciega | `...(reduceMotion ? {} : { opacity: 0 }),` en `useAnimatedStyle` | PF | **exit=0, 105/105** | **sobrevive** (§R2-2.1) |
+| G2 | S4h (= ronda 1) | `{ ...MOTION_PINGO_FLOAT_TIMING, easing: Easing.linear }` | pingo-float, motion y account (3, 35) | exit=1, 1 fallo | `#172 R4: la subida y la bajada…`, `toBeCloseTo`: esperado -1.3, recibido -2.5 |
+| G2 | zona ciega | `easing: Easing.inOut(Easing.cubic)` | igual | exit=1, 1 fallo | el mismo `it`, recibido -0.625 |
+| G2 | zona ciega | bajada lineal: `withRepeat(withSequence(withTiming(-OFFSET, TIMING), withTiming(0, { ...TIMING, easing: Easing.linear })), -1, false)` | igual | **exit=0, 35/35** | **sobrevive** (§R2-2.2) |
+| G3 | S12b (= ronda 1) | `setSubmitting(true);` justo debajo de `setGeneralError(null);` (`register/index.tsx`) | REG, account, design-drift y ui-language (4, 149) | exit=1, 1 fallo | `#172 R12: tras un correo inválido…`, `not.toBeDisabled()` en `index.test.tsx:470` |
+| G3 | zona ciega | `setSubmitting(true);` dentro de la rama del correo inválido, antes del `return` | REG (36) | exit=1, 1 fallo | el mismo `it`, la misma aserción |
+| G3 | zona ciega | se borra `setSubmitting(false);` del `finally` | REG | **exit=0, 36/36** | **sobrevive** (§R2-2.3) |
+| G4 | S2c (= ronda 1) | se borra la línea `style={({ pressed }) => …}` (`back-button.tsx`) | back-button, login, register, forgot y design-drift (5, 182) | exit=1, 1 fallo | `#172 R2: suelto pinta opacidad 1 y pulsado 0,8`, `toEqual`: recibido `undefined` (línea 80) |
+| G4 | zona ciega | invertida: `pressed ? 1 : 0.8` | back-button y login | exit=1, 1 fallo | el mismo `it`, línea 80 (0.8 en lugar de 1) |
+| G4 | zona ciega | `pressed ? 0.5 : 1` | back-button | exit=1, 1 fallo | el mismo `it`, línea 82 (0.5 en lugar de 0.8) |
+| G6 | S12c | `const EMAIL_PATTERN = /@/;` | REG y account (2, 49) | exit=1, 2 fallos | `«alex@example»` y `«alex @example.com»`, consulta `register-email-message` |
+| G6 | S12d | `EMAIL_PATTERN.test(email)`, sin `.trim()` | REG | exit=1, 1 fallo | `tras un correo inválido…`, consulta `register-error` (línea 473) |
+| G6 | zona ciega | sin punto: `/^[^\s@]+@[^\s@]+$/` | REG | exit=1, 1 fallo | `«alex@example»`, consulta |
+| G6 | zona ciega | `email.trimStart()` | REG | exit=1, 1 fallo | `tras un correo inválido…`, consulta `register-error` |
+| G6 | zona ciega | sin anclas: `/[^\s@]+@[^\s@]+\.[^\s@]+/` | REG | **exit=0, 36/36** | **sobrevive** (§R2-2.4) |
+| G6 | zona ciega | `/^\S+@\S+\.\S+$/`, que admite varias `@` | REG | **exit=0, 36/36** | **sobrevive** (§R2-2.4) |
+| G5 | límite declarado | se borra `return () => cancelAnimation(translateY);` | `bunx eslint --no-cache src/components/pingo-float.tsx` | exit=0 con `3:3 warning 'cancelAnimation' is defined but never used @typescript-eslint/no-unused-vars` | Lo caza el gate «log vacío» del handoff. init.sh no lo caza, porque solo mira el exit code (`init.sh` ≈ l. 270–273) |
+
+El rojo de `pressed ? 0.5 : 1` sale en la segunda aserción (línea 82). Eso
+prueba que `responderGrant` sí cambia `pressed`, así que la aserción del estado
+pulsado no es tautológica. El único sitio de producción con la respuesta al
+pulsar es `back-button.tsx:16`. Las tres pantallas montan el `BackButton` real,
+porque ninguna lo dobla.
+
+### §R2-2 — Mutaciones que sobreviven (no bloquean)
+
+1. **G1, rama con movimiento.**
+   - El candado de E6 compara el estilo completo solo con `useReducedMotion` en
+     `true`. Con movimiento, que es el caso por defecto, la única lectura sigue
+     siendo `transform[0].translateY`.
+   - El mutante `...(reduceMotion ? {} : { opacity: 0 })` oculta a Pingo en
+     Crear cuenta, Recuperar y Nueva contraseña para todos los que no tienen
+     reduce motion, y la suite sigue en verde.
+   - La frase de E6 en R4 («Así cae cualquier clave colada en el estilo animado
+     o en un estilo estático a su lado») solo es cierta en la rama reducida.
+   - Por qué no bloquea:
+     - Es un mutante de orden superior: crea un condicional de `reduceMotion`
+       en el worklet que el código no tiene.
+     - Todos los mutantes de primer orden del código actual caen: clave
+       incondicional, estilo estático, entrada extra en `transform` y magnitud
+       de `translateY`.
+     - La prueba de humo R21 en el dispositivo mostraría a un Pingo invisible.
+   - El hueco, descrito tal cual: ningún `it` compara el estilo animado
+     completo en la rama con movimiento.
+2. **G2, la bajada.**
+   - El título dice «la subida y la bajada», pero las dos muestras (375 y
+     1125 ms) caen en la subida: de 0 a -10, entre 0 y 1500 ms.
+   - La bajada (1500–3000 ms) solo se muestrea a los 3000 ms, donde vale 0, y
+     en puntos simétricos que no distinguen curvas.
+   - Por qué no bloquea: en producción, la bajada es el reverso de
+     `withRepeat(…, -1, true)` con la misma configuración. Para que difiera hay
+     que reestructurar la animación (`withSequence`, `reverse` a `false` y un
+     import nuevo). El título promete más de lo que comprueba.
+3. **G3, el `finally`.**
+   - El `finally { setSubmitting(false); }` de `handleSubmit` ya existía,
+     idéntico, en H0. Viene de `e5ee5a5f`, el traslado de #167 R1.
+   - Queda fuera de R12 y de E6, cuyo candado solo cubre el correo inválido en
+     el cliente.
+   - Si se pierde, tras cualquier respuesta de la API que no sea `ok`
+     (`email-taken`, `validation`, `unreachable` o `error`), `register-submit`
+     se queda deshabilitado. Ningún test del registro lo ve.
+   - No es atribuible a #172. Si se registra como deuda, el límite es solo ese
+     `finally` de `src/screens/register/index.tsx`.
+4. **G6, el regex.**
+   - Sobreviven quitar las anclas y cambiar `[^\s@]` por `\S`. Solo difieren en
+     correos con texto delante o detrás, o con varias `@`.
+   - Es la misma categoría menor que G6 en la ronda 1, y el servidor valida con
+     `z.email()` (`backend-pet-tracker/src/modules/auth/application/dto/register-user.dto.ts:18`).
+5. **No es un mutante: nota de producto, previa a #172 y que no bloquea.**
+   - R12 valida `email.trim()`, pero `register(…)` envía `email` sin recortar
+     (`src/screens/register/index.tsx`, el objeto que se pasa a `register`).
+   - El backend valida `z.email().max(320)` sin `trim`. El `email.trim().toLowerCase()`
+     de `user.entity.ts:58` llega después de la validación.
+   - Por eso el caso de E6, `'  alex@example.com  '`, pasa en el cliente, pero
+     el servidor real lo rechazaría. El test no lo ve porque dobla `register`.
+   - Antes de #172 se enviaba lo mismo, así que no empeora nada, y R12 no pide
+     enviar el correo recortado. Lo anoto por si el leader quiere registrarlo.
+
+### §R2-3 — Proceso
+- El informe de Reanudación 5 dice que la espera previa a T22 terminó en
+  «fin-espera» con procesos de otras sesiones vivos. No cambia nada, porque mi
+  medida de 476 coincide con la suya.
+- R21, la prueba de humo humana en dev build de Android, sigue pendiente. Este
+  veredicto no la cierra: la feature solo puede marcarse `done` cuando la firme
+  el humano.
+
+### Output de ./init.sh (ronda 2)
+
+No lo corrió el reviewer, por instrucción del leader. Se usa el log del leader,
+`init-172-r2-f17eec10.log`. El log no imprime HEAD, pero corresponde a
+f17eec10 por tres motivos:
+- se modificó a las 20:18Z, después del commit de f17eec10 (20:02Z), y no hay
+  commits posteriores;
+- sus rutas son de `Pet-Tracker-wt-172`;
+- el móvil da 3168 tests, que son los 3162 de la ronda 1 más los 6 de E6.
+
+```
+Test Suites: 187 passed, 187 total          (backend unit)
+Tests:       1474 passed, 1474 total
+Test Suites: 2 passed, 2 total              (infra)
+Tests:       14 passed, 14 total
+Test Suites: 108 passed, 108 total          (mobile)
+Tests:       3168 passed, 3168 total
+Test Suites: 3 skipped, 30 passed, 30 of 33 total   (e2e)
+Tests:       8 skipped, 468 passed, 476 total
+✅ Lint sin errores
+✅ Typecheck sin errores
+✅ Todo verde. Listo para trabajar.
+exit=0
+```
