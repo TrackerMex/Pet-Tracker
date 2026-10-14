@@ -152,3 +152,35 @@ Siguen en vigor TODAS las reglas de arriba (init.sh, push, PR, amend, rebase, pr
   docs(mobile-account-screens-polish): #172 trazabilidad completa
   y luego git commit --only ../progress/impl_mobile-account-screens-polish.md -m 'docs(mobile-account-screens-polish): #172 informe de implementación completo'
 ```
+
+## Reanudación 3 — Enmienda E4 (2026-10-14)
+
+Paraste bien en S14: la tabla de T15 contaba un candado que no ve
+`bg-accent-soft`. La Enmienda E4 (requirements.md §Enmienda E4 y tasks.md T15)
+pide 6 fallos, que son los que diste. S14 no se repite.
+
+```text
+Worktree: /home/claude/sites/Pet-Tracker-wt-172   <- PRIMERA LINEA. Trabaja AQUI y en ningun otro sitio
+Branch:   feature/172-mobile-account-screens-polish
+Siguen en vigor TODAS las reglas de arriba (init.sh, push, PR, amend, rebase, prettier, JEST/LINT/CARGA, SKILLS),
+incluida la de comparar el titulo de cada ● con su tabla antes de avanzar (Reanudacion 2, paso 2).
+
+== ANTES DE TOCAR NADA ==
+1. command grep -c -F -- '- [x] Enmienda E4 aprobada por humano' specs/mobile-account-screens-polish/requirements.md
+   -> 1. Si da 0, PARA: E4 no esta firmada.
+2. git status --short -> sin salida.
+3. git log -1 --format=%h -- mobile-pet-tracker -> 7ddda8f5 (tu c30).
+4. H0 sigue siendo e0178ab5. Los commits del leader entre H0 y HEAD no son tuyos: 94ddc750, los de E2, los de E3
+   y los de E4 (enmienda, handoff y firma). No los toques, no los reviertas y no los cuentes como tuyos.
+
+== GUION DE LA REANUDACION ==
+1. En el informe, marca S14 como conforme a E4 (6 failed, los seis titulos que ya anotaste). No la repitas.
+2. Sigue T16-T22 en orden, sin renumerar (c31-c39).
+
+== CIERRE ==
+- Reescribe progress/impl_mobile-account-screens-polish.md (el mismo fichero): Estado al final, tabla completa y una
+  seccion "Reanudacion 3". Las secciones de bloqueo quedan como historia, no las borres.
+- Trazabilidad completa en specs/mobile-account-screens-polish/traceability.md. Commits literales:
+  docs(mobile-account-screens-polish): #172 trazabilidad completa
+  y luego git commit --only ../progress/impl_mobile-account-screens-polish.md -m 'docs(mobile-account-screens-polish): #172 informe de implementación completo'
+```

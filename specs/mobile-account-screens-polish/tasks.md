@@ -1097,12 +1097,16 @@ Gate: 9 failed, repartidos así: forgot 4 y consistency 5. Ningún
 
 **(3) Refactor:** ninguno.
 
-**Sonda S14:** pon `bg-accent-soft` en lugar de `bg-accent` en el tile. Corre
-forgot y consistency y espera 7 failed:
+**Sonda S14 (Enmienda E4):** pon `bg-accent-soft` en lugar de `bg-accent` en
+el tile. Corre forgot y consistency y espera 6 failed:
 
 - forgot 4: los cuatro de la tabla del rojo;
-- consistency 3: `lleva los tres tiles…` y los dos recuentos de
-  `bg-accent-soft` (en la base, 18 en lugar de 17).
+- consistency 2: los dos recuentos de `bg-accent-soft` (en la base, 18 en
+  lugar de 17).
+
+`lleva los tres tiles…` sigue verde: su `toContain` termina en `bg-accent`,
+que también está dentro de `bg-accent-soft`. Ese candado guarda el radio, no
+el fondo. Al fondo lo guardan el `toBe` de `#172 R14` y los dos recuentos.
 
 ---
 

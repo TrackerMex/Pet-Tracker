@@ -979,6 +979,10 @@ un botón (Enmienda #172).
 - Sonda S14: poner `bg-accent-soft` en lugar de `bg-accent` pone rojo
   `#172 R14` por `toBe`, y también `consistency-classnames`, porque
   `bg-accent-soft` cuenta 18 y no 17 (en la base).
+- Los literales que acaban en `bg-accent` (el `toContain` de `lleva los tres
+  tiles restantes a rounded-xl` y las anclas `grep -cF` de arriba) también
+  casan con `bg-accent-soft`. No guardan el fondo: lo guardan el `toBe` de
+  `#172 R14` y los dos recuentos (Enmienda E4).
 
 ### R15 — El error de login cuelga del scroll (E2-1 de la review de #167)
 
@@ -1705,3 +1709,32 @@ pero **dentro** del `FieldError` de apellidos. `FieldError` de heroui-native
   - Ninguna otra sonda espera el rojo de un hijo de `FieldError` sin error.
 
 - [x] Enmienda E3 aprobada por humano (fecha: 2026-10-14) ← gate antes de reanudar Codex
+
+## Enmienda E4 (2026-10-14) — la sonda S14 da 6 fallos y no 7
+
+Codex paró en la sonda S14 de T15 (`progress/impl_mobile-account-screens-polish.md`,
+§Bloqueo actual — T15/S14). Con el fondo del tile en `bg-accent-soft` cayeron
+6 `it` y no los 7 que pedía tasks.md: los cuatro de Recuperar y los dos
+recuentos de `bg-accent-soft`. `lleva los tres tiles restantes a rounded-xl`
+siguió verde. Su `toContain` termina en `bg-accent`, y ese texto también está
+dentro de `bg-accent-soft`.
+
+- La tabla de T15 estaba mal; R14 y el candado están bien. Ese candado guarda el
+  radio `rounded-xl`, y al fondo ya lo guardan el `toBe` de `#172 R14` y los dos
+  recuentos. tasks.md T15 pide ahora 6 fallos y R14 dice qué literales no
+  guardan el fondo.
+- La salida de S14 que Codex dejó en el informe ya es la que pide la enmienda,
+  con sus seis títulos. La mutación se revirtió (`exit=0`) y S14 no se repite.
+- No cambian ni tests, ni producción, ni recuentos de `it`. c29 y c30 se quedan
+  como están.
+- Barrido de las sondas que quedan (S15–S20d) buscando literales que casan como
+  prefijo o subcadena de la mutación:
+  - Las de R20 cuentan con `split(literal).length - 1`, y
+    `className="rounded-xl bg-default"` no es subcadena de
+    `className="h-13 rounded-xl bg-default"`. `w-full rounded-xl` tampoco lo
+    es de `w-full h-14 rounded-xl`.
+  - S17a busca el hex con la bandera `i` sobre el fichero entero, comentarios
+    incluidos.
+  - Las demás son de estructura (S15, S19) o de `checkUses` (S16).
+
+- [ ] Enmienda E4 aprobada por humano (fecha: ____) ← gate antes de reanudar Codex
