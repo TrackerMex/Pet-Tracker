@@ -1771,4 +1771,4 @@ cambió el título y el orden, pero mantuvo la consulta.
 - No cambian ni tests, ni producción, ni recuentos de `it`. c31 se queda como
   está.
 
-- [ ] Enmienda E5 aprobada por humano (fecha: ____) ← gate antes de reanudar Codex
+- [x] Enmienda E5 aprobada por humano (fecha: 2026-10-14) ← gate antes de reanudar Codex
