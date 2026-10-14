@@ -714,8 +714,11 @@ describe('#171 R12: copy de la variante sin collar', () => {
       '| — | `addPet.celebratePair` | `Pair a collar` | `Vincular un collar` | ← añadida por \u0023171 (R12) |',
       '| — | `addPet.celebrateLater` | `Not now` | `Ahora no` | ← añadida por \u0023171 (R12) |',
     ].join('\n');
+    expect(doc.split('### §2.23 ')).toHaveLength(2);
+    expect(doc.split('### §2.26 ')).toHaveLength(2);
     expect(doc.split(SECTION)).toHaveLength(2);
     expect(doc.indexOf(SECTION)).toBeGreaterThan(doc.indexOf('### §2.23 '));
+    expect(doc.indexOf(SECTION)).toBeGreaterThan(doc.indexOf('### §2.26 '));
     expect(doc.indexOf('## 3. La infraestructura')).toBeGreaterThan(doc.indexOf(SECTION));
   });
 });
