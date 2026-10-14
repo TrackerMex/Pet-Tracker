@@ -40,6 +40,10 @@ export const R1_AUTH: UseRow[] = [
   { file: 'src/screens/register/index.tsx', key: 'register.country' },
   { file: 'src/screens/register/index.tsx', key: 'register.iAcceptTerms' },
   { file: 'src/screens/register/index.tsx', key: 'register.createAccount' },
+  { file: 'src/components/password-input.tsx', key: 'common.showPassword' }, // #172 R16
+  { file: 'src/components/password-input.tsx', key: 'common.hidePassword' }, // #172 R16
+  { file: 'src/screens/register/index.tsx', key: 'forgot.invalidEmail' }, // #172 R16
+  { file: 'src/components/back-button.tsx', key: 'common.back' }, // #172 R16
 ];
 
 export const R2_TABS: UseRow[] = [
