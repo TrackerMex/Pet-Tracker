@@ -533,7 +533,7 @@ describe('R4: toggle persiste', () => {
 
   it('switches light to dark and persists it', async () => {
     await renderProfile();
-    fireEvent.press(screen.getByTestId('theme-toggle'));
+    await fireEvent.press(screen.getByTestId('theme-toggle'));
 
     expect(mockSetTheme).toHaveBeenCalledWith('dark');
     expect(mockSetStoredTheme).toHaveBeenCalledWith('dark');
@@ -542,7 +542,7 @@ describe('R4: toggle persiste', () => {
   it('switches dark to light and persists it', async () => {
     mockTheme = 'dark';
     await renderProfile();
-    fireEvent.press(screen.getByTestId('theme-toggle'));
+    await fireEvent.press(screen.getByTestId('theme-toggle'));
 
     expect(mockSetTheme).toHaveBeenCalledWith('light');
     expect(mockSetStoredTheme).toHaveBeenCalledWith('light');
@@ -550,7 +550,7 @@ describe('R4: toggle persiste', () => {
 
   it('R2: el toggle dispara el fade vía withThemeTransition', async () => {
     await renderProfile();
-    fireEvent.press(screen.getByTestId('theme-toggle'));
+    await fireEvent.press(screen.getByTestId('theme-toggle'));
 
     expect(jest.mocked(withThemeTransition)).toHaveBeenCalledTimes(1);
     expect(mockSetTheme).toHaveBeenCalledWith('dark');
@@ -558,7 +558,92 @@ describe('R4: toggle persiste', () => {
   });
 });
 
-describe('#65 R14: Profile cambia el idioma y repinta sin reiniciar', () => {
+describe('#173 R11: cuenta en Card flat con Switch e idioma', () => {
+  const account: MeState = { kind: 'ok', me: {
+    id: 'user-1', email: 'ana@example.test', firstName: 'Ana', lastName: 'García',
+    phone: '+525500000000', country: 'MX', timezone: 'America/Mexico_City',
+    createdAt: '2026-08-20T00:00:00.000Z', updatedAt: '2026-08-21T00:00:00.000Z',
+  } };
+  beforeEach(() => {
+    setupProfile168();
+    mockTheme = 'light';
+    mockSetStoredTheme.mockResolvedValue();
+    mockSetStoredLanguage.mockResolvedValue();
+  });
+
+  it.each<{
+    name: string;
+    state: MeState | undefined;
+    children: string[];
+  }>([
+    { name: 'pendiente', state: undefined, children: ['me-card-skeleton', 'theme-row', 'language-toggle'] },
+    { name: 'ok', state: account, children: ['me-identity', 'theme-row', 'language-toggle'] },
+    { name: 'error', state: { kind: 'error' }, children: ['me-card-state', 'theme-row', 'language-toggle'] },
+    { name: 'unauthorized', state: { kind: 'unauthorized' }, children: ['theme-row', 'language-toggle'] },
+  ])('ordena los hijos de la cuenta $name sin etiqueta de sección', async ({ state, children }) => {
+    if (state !== undefined) mockGetMe.mockResolvedValue(state);
+    await renderProfile();
+    const card = screen.getByTestId('me-card');
+    await waitFor(() => expect(card.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(children));
+    expect(card.children).toHaveLength(children.length);
+    expect(card.props.className).toBe('rounded-card border border-border bg-surface px-3.5 py-1');
+    expect(screen.queryByText('Cuenta')).toBeNull();
+    expect(screen.queryByText('Account')).toBeNull();
+  });
+
+  it.each([
+    { theme: 'light' as const, language: 'es', checked: false, label: 'Usar tema oscuro' },
+    { theme: 'dark' as const, language: 'es', checked: true, label: 'Usar tema oscuro' },
+    { theme: 'light' as const, language: 'en', checked: false, label: 'Use dark theme' },
+    { theme: 'dark' as const, language: 'en', checked: true, label: 'Use dark theme' },
+  ])('expone el Switch $theme en $language con etiqueta fija', async ({ theme, language, checked, label }) => {
+    mockTheme = theme;
+    await renderProfile();
+    if (language === 'en') await fireEvent.press(screen.getByTestId('language-toggle'));
+    const toggle = screen.getByTestId('theme-toggle');
+    expect(toggle.props.accessibilityState?.checked).toBe(checked);
+    expect(toggle.props.accessibilityLabel).toBe(label);
+    expect(toggle.props.hitSlop).toEqual(TOUCH_SLOP);
+    expect(within(screen.getByTestId('theme-row')).getByText(label)).toBeVisible();
+  });
+
+  it('usa las recetas y el orden de las dos filas de ajustes', async () => {
+    await renderProfile();
+    const themeRow = screen.getByTestId('theme-row');
+    expect(themeRow.props.className).toBe('flex-row items-center justify-between gap-4 border-t border-separator py-2.5');
+    expect(themeRow.children).toHaveLength(2);
+    expect(profileChild(themeRow, 0).props.className).toBe('text-sm font-semibold text-foreground');
+    expect(profileChild(themeRow, 0).props.children).toBe('Usar tema oscuro');
+    expect(profileChild(themeRow, 1)).toBe(screen.getByTestId('theme-toggle'));
+    const languageRow = screen.getByTestId('language-toggle');
+    expect(languageRow.props.className).toBe('flex-row items-center justify-between gap-4 border-t border-separator py-2.5');
+    expect(languageRow.props.accessibilityRole).toBe('button');
+    expect(languageRow.props.accessibilityLabel).toBe('Cambiar idioma');
+    expect(languageRow.children).toHaveLength(2);
+    expect(profileChild(languageRow, 0).props.className).toBe('text-sm font-semibold text-foreground');
+    expect(profileChild(languageRow, 0).props.children).toBe('Cambiar idioma');
+    expect(profileChild(languageRow, 1)).toBe(screen.getByTestId('language-value'));
+    expect(profileChild(languageRow, 1).props.className).toBe('text-sm font-extrabold text-accent-strong');
+  });
+
+  it.each([
+    { language: 'es', current: 'Español', next: 'en', nextName: 'English' },
+    { language: 'en', current: 'English', next: 'es', nextName: 'Español' },
+  ])('muestra $current como valor y cambia a $next', async ({ language, current, next, nextName }) => {
+    await renderProfile();
+    if (language === 'en') await fireEvent.press(screen.getByTestId('language-toggle'));
+    const row = screen.getByTestId('language-toggle');
+    expect(row.props.accessibilityValue).toEqual({ text: current });
+    expect(screen.getByTestId('language-value')).toHaveTextContent(current);
+    mockSetStoredLanguage.mockClear();
+    await fireEvent.press(row);
+    expect(mockSetStoredLanguage).toHaveBeenCalledTimes(1);
+    expect(mockSetStoredLanguage).toHaveBeenCalledWith(next);
+    expect(screen.getByTestId('language-value')).toHaveTextContent(nextName);
+  });
+});
+
+describe('#65 R14 (enmendado por #173 R11): Profile cambia el idioma y repinta sin reiniciar', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockTheme = 'light';
@@ -575,20 +660,20 @@ describe('#65 R14: Profile cambia el idioma y repinta sin reiniciar', () => {
     mockSetStoredLanguage.mockResolvedValue();
   });
 
-  it('shows the opposite endonym and changes the live Profile copy', async () => {
+  it('shows the current endonym and changes the live Profile copy', async () => {
     await renderProfile();
 
     expect(screen.getByText('Perfil')).toBeVisible();
-    expect(screen.getByText('English')).toBeVisible();
+    expect(screen.getByTestId('language-value')).toHaveTextContent('Español');
     expect(screen.getByTestId('theme-toggle')).toBeVisible();
 
     await act(async () => {
-      fireEvent.press(screen.getByTestId('language-toggle'));
+      await fireEvent.press(screen.getByTestId('language-toggle'));
       await Promise.resolve();
     });
 
     await waitFor(() => expect(screen.getByText('Profile')).toBeVisible());
-    expect(screen.getByText('Español')).toBeVisible();
+    expect(screen.getByTestId('language-value')).toHaveTextContent('English');
     expect(mockSetStoredLanguage).toHaveBeenCalledWith('en');
   });
 
@@ -604,7 +689,7 @@ describe('#65 R14: Profile cambia el idioma y repinta sin reiniciar', () => {
     );
 
     await act(async () => {
-      fireEvent.press(screen.getByTestId('language-toggle'));
+      await fireEvent.press(screen.getByTestId('language-toggle'));
       await Promise.resolve();
     });
 
@@ -1546,7 +1631,7 @@ describe('#168 R6 (enmendado por #173 R10): los accesos son tiles pastel en reji
   });
 });
 
-describe('#168 R7: la cuenta muestra el avatar de iniciales', () => {
+describe('#168 R7 (enmendado por #173 R11): la identidad de la cuenta toma las medidas del artboard', () => {
   beforeEach(setupProfile168);
 
   it.each([
@@ -1565,15 +1650,15 @@ describe('#168 R7: la cuenta muestra el avatar de iniciales', () => {
     await screen.findByText('ana@example.test');
     const identity = screen.getByTestId('me-identity');
     const scope = within(identity);
-    expect(identity.props.className).toBe('flex-row items-center gap-3');
+    expect(identity.props.className).toBe('flex-row items-center gap-2.5 py-2.5');
     expect(identity.children).toHaveLength(initials === null ? 1 : 2);
     const text = scope.getByTestId('me-identity-text');
-    expect(text.props.className).toBe('flex-1 gap-1');
+    expect(text.props.className).toBe('flex-1');
     expect(text.children).toHaveLength(2);
     expect(profileChild(text, 0).props.children).toBe(name);
-    expect(profileChild(text, 0).props.className).toBe('text-lg font-bold text-foreground');
+    expect(profileChild(text, 0).props.className).toBe('text-sm font-extrabold text-foreground');
     expect(profileChild(text, 1)).toBe(within(text).getByText('ana@example.test'));
-    expect(profileChild(text, 1).props.className).toBe('font-normal text-muted');
+    expect(profileChild(text, 1).props.className).toBe('text-xs font-normal text-muted');
     if (initials === null) {
       expect(profileChild(identity, 0)).toBe(text);
       expect(scope.queryByTestId('me-avatar', { includeHiddenElements: true })).toBeNull();
@@ -1582,14 +1667,26 @@ describe('#168 R7: la cuenta muestra el avatar de iniciales', () => {
       const avatar = scope.getByTestId('me-avatar', { includeHiddenElements: true });
       expect(profileChild(identity, 0)).toBe(avatar);
       expect(profileChild(identity, 1)).toBe(text);
-      expect(avatar.props.className).toBe('size-10 items-center justify-center rounded-full bg-default');
+      expect(avatar.props.className).toBe('size-8.5 items-center justify-center rounded-full bg-default');
       expect(avatar.props.accessibilityElementsHidden).toBe(true);
       expect(avatar.props.importantForAccessibility).toBe('no-hide-descendants');
       expect(avatar.children).toHaveLength(1);
       const label = within(avatar).getByTestId('me-avatar-initials', { includeHiddenElements: true });
       expect(profileChild(avatar, 0)).toBe(label);
-      expect(label.props.className).toBe('text-sm font-black text-foreground');
+      expect(label.props.className).toBe('text-13 font-extrabold text-foreground');
       expect(label).toHaveTextContent(initials);
     }
+  });
+
+  it('reserva el alto de la identidad mientras carga la cuenta', async () => {
+    await renderProfile();
+    expect(screen.getByTestId('me-card-skeleton').props.className).toBe('skeleton__root my-2.5 h-9 w-full rounded-xl');
+  });
+
+  it('da padding vertical al estado de cuenta no disponible', async () => {
+    mockGetMe.mockResolvedValue({ kind: 'error' });
+    await renderProfile();
+    const state = await screen.findByTestId('me-card-state');
+    expect(state.props.className).toBe('py-2.5 font-normal text-muted');
   });
 });

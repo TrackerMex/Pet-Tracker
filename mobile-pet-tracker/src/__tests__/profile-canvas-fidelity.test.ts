@@ -52,6 +52,9 @@ describe('#173 R2.4: inventario de tamaños nuevos', () => {
   it('reserva text-26 al nombre de la mascota en Perfil', () => {
     expect(filesMatching(/\btext-26\b/)).toEqual(['screens/profile/index.tsx']);
   });
+  it('reserva text-13 a las iniciales de la cuenta en Perfil', () => {
+    expect(filesMatching(/\btext-13\b/)).toEqual(['screens/profile/index.tsx']);
+  });
 });
 
 describe('#173 R3: Card hero y flat solo en Perfil', () => {
@@ -59,5 +62,10 @@ describe('#173 R3: Card hero y flat solo en Perfil', () => {
     expect(filesMatching(/variant="hero"/)).toEqual(['screens/profile/index.tsx']);
     const profile = readFileSync(join(sourceRoot, 'screens/profile/index.tsx'), 'utf8');
     expect(profile.match(/variant="hero"/g)).toHaveLength(1);
+  });
+  it('Perfil es el único consumidor de Card flat y lo usa dos veces', () => {
+    expect(filesMatching(/variant="flat"/)).toEqual(['screens/profile/index.tsx']);
+    const profile = readFileSync(join(sourceRoot, 'screens/profile/index.tsx'), 'utf8');
+    expect(profile.match(/variant="flat"/g)).toHaveLength(2);
   });
 });

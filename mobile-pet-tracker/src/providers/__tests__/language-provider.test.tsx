@@ -188,7 +188,7 @@ describe('#173 R13: Perfil retira cuatro claves y añade tres', () => {
     expect(languageDesign).toContain('### §2.27 — Añadidos por #173 — Perfil fiel al canvas');
   });
 
-  it.each(['profile.information', 'profile.gpsSettings'])('retira %s de ambos idiomas y documenta la retirada', (key) => {
+  it.each(['profile.information', 'profile.gpsSettings', 'profile.account', 'profile.useLightTheme'])('retira %s de ambos idiomas y documenta la retirada', (key) => {
     expect(english[key]).toBeUndefined();
     expect(spanish[key]).toBeUndefined();
     expect(languageDesign).toMatch(new RegExp('`' + escapeRegExp(key) + '`[^\\n]*← retirada por #173 \\(R13\\)'));
