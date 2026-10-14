@@ -74,7 +74,11 @@ describe('#152 R1: las duraciones y el preset de movimiento viven en un solo sit
     expect(Object.keys(require('../motion')).sort()).toEqual([
       'MOTION_BLINK_INTERVAL_MS',
       'MOTION_BLINK_TIMING',
-      'MOTION_CELEBRATION_SPRING',
+      'MOTION_CELEBRATION_BADGE_DELAY_MS',
+      'MOTION_CELEBRATION_BADGE_POP_MS',
+      'MOTION_CELEBRATION_EASE_OUT',
+      'MOTION_CELEBRATION_POP_MS',
+      'MOTION_CELEBRATION_POP_PEAK',
       'MOTION_CONFETTI_FALL_TIMING',
       'MOTION_ENTRANCE_OFFSET_Y',
       'MOTION_ENTRANCE_SCALE',
@@ -183,8 +187,15 @@ describe('#171 R7: las constantes de pop viven en motion.ts', () => {
   it('declara MOTION_POP_SCALE', () => {
     expect(require('../motion').MOTION_POP_SCALE).toBe(0.6);
   });
+});
 
-  it('declara MOTION_CELEBRATION_SPRING', () => {
-    expect(require('../motion').MOTION_CELEBRATION_SPRING).toEqual({ duration: 400, dampingRatio: 0.5, reduceMotion: 'system' });
+describe('#171 E4: las constantes de la celebración viven en motion.ts', () => {
+  it('declara la curva ease-out de CSS', () => {
+    expect(require('../motion').MOTION_CELEBRATION_EASE_OUT).toEqual({ easing: { bezier: [0, 0, 0.58, 1] }, reduceMotion: ReduceMotion.System });
+  });
+
+  it('declara los pops de Pingo y de la insignia', () => {
+    const m = require('../motion');
+    expect([m.MOTION_CELEBRATION_POP_MS, m.MOTION_CELEBRATION_POP_PEAK, m.MOTION_CELEBRATION_BADGE_POP_MS, m.MOTION_CELEBRATION_BADGE_DELAY_MS]).toEqual([600, 1.08, 500, 450]);
   });
 });

@@ -251,20 +251,16 @@ function expectSamples(actual: number[][], expected: readonly (readonly number[]
   actual.forEach((row, i) => row.forEach((value, k) => expect(value).toBeCloseTo(expected[i][k], digits[k])));
 }
 
-// #171 R7 (E2): [opacidad, escala] a 50, 100, 150 y 200 ms del arranque de cada pop.
-const POP_SAMPLES = [
-  [0.682, 0.944],
-  [0.925, 1.06],
-  [0.986, 1],
-  [0.999, 0.992],
-];
+// E4: [opacidad, escala] del primer tramo de cada pop.
+const PINGO_POP = [[0, 0.6], [0.4157, 0.7995], [0.7422, 0.9563], [0.9555, 1.0586]];
+const BADGE_POP = [[0, 0.6], [0.4884, 0.8344], [0.8438, 1.005]];
 
 function samplePop(testID: string) {
   const style = getAnimatedStyle(screen.getByTestId(testID, { includeHiddenElements: true })) as unknown as {
     opacity: number;
-    transform: [{ scale: number }];
+    transform: { scale?: number; translateY?: number }[];
   };
-  return [style.opacity, style.transform[0].scale];
+  return [style.opacity, style.transform[style.transform.length - 1].scale as number];
 }
 
 async function advance(ms: number) {
@@ -336,7 +332,7 @@ describe('#171 R7: pop', () => {
   it('R7.1 Pingo empieza transparente y a escala 0.6', async () => {
     await renderProbe();
     expect(getAnimatedStyle(screen.getByTestId('probe-pingo'))).toEqual({
-      width: 170, height: 170, opacity: 0, transform: [{ scale: 0.6 }],
+      width: 170, height: 170, opacity: 0, transform: [{ translateY: 0 }, { scale: 0.6 }],
     });
   });
 
@@ -347,49 +343,64 @@ describe('#171 R7: pop', () => {
     });
   });
 
-  it('R7.3 Pingo llega a opacidad y escala 1 a los 2000 ms', async () => {
+  it('R7.3 Pingo llega a opacidad y escala 1 a los 650 ms', async () => {
     await renderProbe();
-    await act(async () => { jest.advanceTimersByTime(2000); });
-    expect(getAnimatedStyle(screen.getByTestId('probe-pingo'))).toEqual({
-      width: 170, height: 170, opacity: 1, transform: [{ scale: 1 }],
-    });
+    await advance(650);
+    expect(samplePop('probe-pingo')).toEqual([1, 1]);
   });
 
   it('R7.3 la insignia sigue en reposo a los 300 ms', async () => {
     await renderProbe();
-    await act(async () => { jest.advanceTimersByTime(300); });
+    await advance(300);
     expect(getAnimatedStyle(screen.getByTestId('probe-badge', { includeHiddenElements: true }))).toEqual({
       position: 'absolute', right: 18, bottom: 26, opacity: 0, transform: [{ scale: 0.6 }],
     });
   });
 
-  it('R7.3 la insignia llega a opacidad y escala 1 a los 2400 ms', async () => {
+  it('R7.3 la insignia llega a opacidad y escala 1 a los 1000 ms', async () => {
     await renderProbe();
-    await act(async () => { jest.advanceTimersByTime(2400); });
+    await advance(1000);
     expect(getAnimatedStyle(screen.getByTestId('probe-badge', { includeHiddenElements: true }))).toEqual({
       position: 'absolute', right: 18, bottom: 26, opacity: 1, transform: [{ scale: 1 }],
     });
   });
 
-  it('R7.4 Pingo rebota por encima de 1 y se asienta a los 50, 100, 150 y 200 ms', async () => {
+  it('R7.4 Pingo sigue el primer tramo del pop a los 0, 100, 200 y 300 ms', async () => {
     await renderProbe();
-    const samples: number[][] = [];
-    for (let step = 0; step < 4; step++) {
-      await act(async () => { jest.advanceTimersByTime(50); });
+    const samples = [samplePop('probe-pingo')];
+    for (let step = 0; step < 3; step++) {
+      await advance(100);
       samples.push(samplePop('probe-pingo'));
     }
-    expectSamples(samples, POP_SAMPLES, [2, 2]);
+    expectSamples(samples, PINGO_POP, [3, 3]);
   });
 
-  it('R7.4 la insignia repite el rebote a los 450, 500, 550 y 600 ms', async () => {
+  it('R7.4 la insignia sigue el primer tramo del pop a los 450, 550 y 650 ms', async () => {
     await renderProbe();
-    await act(async () => { jest.advanceTimersByTime(400); });
-    const samples: number[][] = [];
-    for (let step = 0; step < 4; step++) {
-      await act(async () => { jest.advanceTimersByTime(50); });
+    await advance(450);
+    const samples = [samplePop('probe-badge')];
+    for (let step = 0; step < 2; step++) {
+      await advance(100);
       samples.push(samplePop('probe-badge'));
     }
-    expectSamples(samples, POP_SAMPLES, [2, 2]);
+    expectSamples(samples, BADGE_POP, [3, 3]);
+  });
+
+  it.each([
+    ['Pingo', 420, 540, 'probe-pingo'],
+    ['la insignia', 800, 900, 'probe-badge'],
+  ] as const)('R7.4 %s baja de 1.08 a 1 entre los %s y los %s ms', async (_name, first, second, id) => {
+    await renderProbe();
+    await advance(first);
+    const [opacityA, scaleA] = samplePop(id);
+    await advance(second - first);
+    const [opacityB, scaleB] = samplePop(id);
+    expect([opacityA, opacityB]).toEqual([1, 1]);
+    for (const scale of [scaleA, scaleB]) {
+      expect(scale).toBeGreaterThan(1);
+      expect(scale).toBeLessThan(1.08);
+    }
+    expect(scaleB).toBeLessThan(scaleA);
   });
 });
 
@@ -442,7 +453,7 @@ describe('#171 R8: reduce motion', () => {
   it('R8.2 Pingo empieza transparente a escala 1', async () => {
     await renderProbe();
     expect(getAnimatedStyle(screen.getByTestId('probe-pingo'))).toEqual({
-      width: 170, height: 170, opacity: 0, transform: [{ scale: 1 }],
+      width: 170, height: 170, opacity: 0, transform: [{ translateY: 0 }, { scale: 1 }],
     });
   });
 
@@ -450,7 +461,7 @@ describe('#171 R8: reduce motion', () => {
     await renderProbe();
     await act(async () => { jest.advanceTimersByTime(2000); });
     expect(getAnimatedStyle(screen.getByTestId('probe-pingo'))).toEqual({
-      width: 170, height: 170, opacity: 1, transform: [{ scale: 1 }],
+      width: 170, height: 170, opacity: 1, transform: [{ translateY: 0 }, { scale: 1 }],
     });
   });
 
