@@ -25,12 +25,12 @@ tags: [mobile, ui, spec]
 | R12 | `src/screens/register/index.test.tsx::#172 R12: un correo sin arroba no llama a la API y marca el campo`; `src/screens/register/index.test.tsx::#172 R12: en inglés el correo inválido dice «Enter a valid email address»`; S12 verificada. | `ded50874 test(mobile): validación del correo en el registro (R12)`; `b2607357 feat(mobile): validación del correo en el registro (R12)` |
 | R13 | `src/screens/reset-password/index.test.tsx::#172 R13: la tarjeta de estado avisa con liveRegion polite`; S13 verificada. | `2103b60e test(mobile): la tarjeta de éxito avisa con liveRegion (R13)`; `81a3a4c6 feat(mobile): la tarjeta de éxito avisa con liveRegion (R13)` |
 | R14 | `src/screens/forgot/index.test.tsx::#172 R14: el candado es un tile acento con labio y Lock de 26`; `el tile Lock sigue en pie en los dos estados`; dos `#167 R9: el tile entra con pop…`; `src/__tests__/consistency-classnames.test.ts::lleva los tres tiles restantes a rounded-xl`; `resuelve el Lock de Forgot con accent-foreground`; dos recuentos de bg-accent-soft; `no deja la receta del labio fuera de un primario salvo el candado de Recuperar`. Gate c30 verde. S14 conforme a E4: los seis títulos y restauración ya registrados; no se repite. | `7b4c79b3 test(mobile): el candado de recuperar es un tile acento con labio (R14)`; `7ddda8f5 feat(mobile): el candado de recuperar es un tile acento con labio (R14)` |
-| R15 | `src/screens/login/index.test.tsx::#172 R15: el error cuelga del scroll y no del contenedor del teclado`; gate c31 verde. **Pendiente: S15 dio 3 fallos en vez de los 2 prescritos; bloqueo.** | `0e5bb776 test(mobile): el error de login cuelga del scroll (R15)` |
-| R16 | `src/providers/__tests__/language-provider.test.tsx::mantiene la base más las claves de #68 y los mismos marcadores en ambos idiomas`; `#172 R16: declara las claves de cuenta en los dos idiomas y su registro`; sonda S16c verificada. Pendiente: T17/c32 y sondas S16a/S16b | `c1bd4a6a test(mobile): claves de Volver, del ojo y País (R16)`; `505332c9 feat(mobile): claves de Volver, del ojo y País (R16)`; c32 pendiente |
-| R17 | pendiente | pendiente |
-| R18 | pendiente | pendiente |
-| R19 | pendiente | pendiente |
-| R20 | pendiente | pendiente |
+| R15 | `src/screens/login/index.test.tsx::#172 R15: el error cuelga del scroll y no del contenedor del teclado`; gate c31 verde. S15 conforme a E5 con sus tres títulos ya registrados y restauración exit=0; no se repite. | `0e5bb776 test(mobile): el error de login cuelga del scroll (R15)` |
+| R16 | `src/providers/__tests__/language-provider.test.tsx::mantiene la base más las claves de #68 y los mismos marcadores en ambos idiomas`; `#172 R16: declara las claves de cuenta en los dos idiomas y su registro`; sonda S16c verificada. T17/c32 completo: `src/__tests__/ui-language.test.ts::resuelve las 41 ocurrencias normativas` (#65 R1), `resuelve cada ocurrencia de la tabla contra la clave exacta` y `no deja ningún valor fijo del catálogo como literal entero en las pantallas`; cuatro filas de R1_AUTH registradas; S16a/S16b verificadas. | `c1bd4a6a test(mobile): claves de Volver, del ojo y País (R16)`; `505332c9 feat(mobile): claves de Volver, del ojo y País (R16)`; `9f1b2350 test(mobile): filas de uso de las claves de cuenta (R16)` |
+| R17 | `src/__tests__/design-drift.test.ts::#167 R14: sin hex, clases arbitrarias, StyleSheet ni sombras sueltas`; `#167 R14: sin radios fuera de la escala`; `#167 R14: sin text-accent suelto`; `#167 R14: sin dependencias vetadas, useThemeColor ni emoji`; `#149 R4: inventaría cada ruta a login en producción`; `no deja ninguna clase Tailwind con valores entre corchetes`. Cuatro componentes nuevos incluidos. S17a/S17b/S17c/S17d verificadas (S17b: 2 fallos conforme a E5). | `3f10a364 test(mobile): los componentes nuevos entran en la guarda de deriva (R17)`; rutas del formulario en `e040579e test(mobile): la CTA de cuenta se ancla al pie (R19)` y `398f074b feat(mobile): la CTA de cuenta se ancla al pie (R19)` |
+| R18 | `src/__tests__/account-screens-polish.test.ts::#172 R18: la carta declara la enmienda #172 y su casilla`; lectores motion, food, hero-header-amendments, welcome y las cuatro guardas verdes. Bloque de la carta copiado literalmente con firma. S18a/S18b verificadas. | `10763864 test(mobile): la carta declara la enmienda de las pantallas de cuenta (R18)`; `dc6df815 docs(ui): enmienda de la carta para las pantallas de cuenta (R18)` |
+| R19 | `src/screens/login/index.test.tsx::#172 R19: ancla el contenido al pie dentro de un ScrollView con los insets aplicados`; `#172 R19: el espaciador empuja el envío al pie`; `#167 R6: entra en dos tiempos, cabecera y cuerpo`; `src/screens/register/index.test.tsx::aplica el padding del contentContainerStyle con los safe-area insets`; `#172 R19: el espaciador empuja el envío al pie`; `#172 R11: cabecera, rejilla, términos, error y envío cuelgan del scroll`; `src/screens/forgot/index.test.tsx::#172 R19: centra en horizontal pero no en vertical dentro de un ScrollView con insets`; `#172 R19: el espaciador empuja la CTA al pie en los dos estados`; `src/screens/reset-password/index.test.tsx::#172 R19: la rama de éxito ancla el enlace al pie y no centra`; `#172 R19: la rama del formulario ancla el envío al pie y no centra`; `#172 R19: el espaciador empuja el envío al pie del formulario`; `#172 R19: el espaciador empuja el enlace al pie del éxito`; `#172 R19: el formulario lleva el enlace de vuelta al login bajo el envío`; `#167 R10: el formulario entra en dos tiempos`; `#167 R10: el éxito conserva la cabecera del formulario`; `la rama sin token centra también en horizontal` conservada; `src/__tests__/account-screens-polish.test.ts::#172 R19: el contenido de cuenta no se centra en vertical y el enlace de nueva contraseña lleva su receta`; `src/__tests__/legibility-classnames.test.ts::%s pinta con text-accent-strong (%i)` (reset-password), `suma las trece ocurrencias que enumera la spec`; `src/__tests__/ui-language.test.ts::resuelve las 16 ocurrencias normativas`, `resuelve cada ocurrencia de la tabla contra la clave exacta`; `src/__tests__/design-drift.test.ts::#149 R4: inventaría cada ruta a login en producción`. S19a–S19f y S17d verificadas. | `e040579e test(mobile): la CTA de cuenta se ancla al pie (R19)`; `398f074b feat(mobile): la CTA de cuenta se ancla al pie (R19)` |
+| R20 | `src/__tests__/account-screens-polish.test.ts::#172 R20: %s pinta la CTA de 56 y los inputs de 52` (login, register, forgot, reset-password y password-input); los cuatro `#127 R1` de clase exacta en `src/screens/{login,register,forgot,reset-password}/index.test.tsx`: `pinta login-submit con la clase exacta, rounded-xl y bg-accent incluidos, la vea o no el recorte de fuente`; `pinta register-submit, deshabilitado al montar, con la clase exacta, rounded-xl y bg-accent incluidos, la vea o no el recorte de fuente`; `pinta forgot-submit, deshabilitado, con la clase exacta, rounded-xl y bg-accent incluidos, la vea o no el recorte de fuente`; `pinta reset-submit con la clase exacta, rounded-xl y bg-accent incluidos, la vea o no el recorte de fuente`; `src/components/__tests__/password-input.test.tsx::#172 R8: el grupo envuelve el campo de 52 y el botón de 44`. S20a–S20d verificadas. | `9cf701c4 test(mobile): CTA de 56 e inputs de 52 en las pantallas de cuenta (R20)`; `4ba7e139 feat(mobile): CTA de 56 e inputs de 52 en las pantallas de cuenta (R20)` |
 | R21 | prueba de humo en dev build de Android (humano) | pendiente (humano) |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente", salvo R21, que
@@ -73,7 +73,7 @@ branch correcta y H0 conservado. S14 se acepta como conforme a E4 (6 failed),
 sin repetirla ni cambiar tests o producción de R14. C31 nace verde y pasa
 222 tests con las cuatro guardas, typecheck y lint vacío.
 
-**Bloqueo actual T16/S15.** Sobre `0e5bb776`, mover el bloque condicional
+**Bloqueo de T16/S15 — historia (resuelto por E5).** Sobre `0e5bb776`, mover el bloque condicional
 FormError de login justo después de `</ScrollView>` produjo
 `Tests: 3 failed, 25 passed, 28 total`, no los dos fallos de T16.
 Caen R15 por consulta login-error, R7 «con error» por aserción de orden, y
@@ -83,6 +83,28 @@ existía en H0 en `#167 R6: el cuerpo lleva el formulario en el orden de
 siempre`. La mutación quedó restaurada con `exit=0`; no se ajustaron tests
 ni spec para cuadrar, y no se empezó T17. C32–c39 y T22 siguen pendientes.
 El informe conserva la salida literal y los tres títulos de S15.
+
+
+**Reanudacion 4 — E5 y cierre técnico T22 completos (2026-10-14).**
+S15 se acepta conforme a E5, sin repetirla. C32–c39 se ejecutaron en orden;
+cada rojo y sonda coincidió con los títulos y tipos de su tabla, incluida
+S17b con dos fallos. Todas las mutaciones están restauradas con exit=0.
+
+R1–R20 están implementados y verificados. T22: 17 suites / 470 tests verdes
+(base 409 + 61); lectores de la carta: 4 suites / 192 tests; guarda del
+router, typecheck y lint exit=0, con lint vacío. Cuentas de it: 341 bloques
+(base 289 + 52). Todas las anclas finales coinciden con H0 + los deltas.
+Package.json, bun.lock, Card y Bienvenida se conservan; motion solo añade
+las dos constantes de Pingo. El historial separa rojo e implementación.
+
+El lint inicial de c35 sufrió SIGKILL por carga, con vacio=1. Se ejecutó
+la espera prescrita (30 iteraciones), se relanzó solo lint una vez y pasó
+con exit=0 y vacio=0. No hubo Exceeded timeout ni cambios de dependencias.
+El informe conserva los bloqueos anteriores y la evidencia literal.
+
+**R21 queda pendiente (humano)**. No se ejecutaron init.sh, push ni PR,
+conforme al handoff; el leader corre init.sh antes del reviewer. Los archivos
+de bookkeeping y el frontmatter de la spec se conservan para el leader.
 
 Spec y Enmienda #172 aprobadas en Notion
 (https://app.notion.com/p/3f86115a9b27815b91d6ec6acd75a969): `Estado del gate` =
