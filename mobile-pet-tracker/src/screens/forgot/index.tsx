@@ -69,7 +69,6 @@ export function ForgotScreen() {
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{
           flexGrow: 1,
-          justifyContent: 'center',
           alignItems: 'center',
           padding: 24,
           gap: 16,
@@ -124,6 +123,8 @@ export function ForgotScreen() {
         {error ? (
           <FormError testID="forgot-error" message={error} />
         ) : null}
+
+        <View testID="forgot-spacer" className="flex-1" />
 
         {!sent ? (
           <Button

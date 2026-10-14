@@ -71,7 +71,6 @@ export function LoginScreen() {
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{
           flexGrow: 1,
-          justifyContent: 'center',
           padding: 24,
           gap: 16,
           paddingTop: insets.top + 12,
@@ -97,7 +96,7 @@ export function LoginScreen() {
           </Text>
         </HomeEntrance>
 
-        <HomeEntrance testID="login-body" index={1} className="gap-4">
+        <HomeEntrance testID="login-body" index={1} className="flex-1 gap-4">
           <TextField>
             <Label>
               <Label.Text className="text-13 font-semibold text-muted">
@@ -140,6 +139,8 @@ export function LoginScreen() {
           {error ? (
             <FormError testID="login-error" message={error} />
           ) : null}
+
+          <View testID="login-spacer" className="flex-1" />
 
           <Button
             testID="login-submit"

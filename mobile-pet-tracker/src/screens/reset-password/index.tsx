@@ -113,15 +113,13 @@ export function ResetPasswordScreen() {
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{
           flexGrow: 1,
-          justifyContent: 'center',
-          alignItems: 'center',
           padding: 24,
           gap: 16,
           paddingTop: insets.top + 12,
           paddingBottom: insets.bottom + 24,
         }}
       >
-        <HomeEntrance testID="reset-header" index={0} className="flex-row items-center justify-center gap-3">
+        <HomeEntrance testID="reset-header" index={0} className="flex-row items-center gap-3">
           <PingoFloat testID="reset-pingo-float">
             <Image
               testID="reset-pingo"
@@ -143,12 +141,13 @@ export function ResetPasswordScreen() {
             </Text>
           </Card>
         </PopIn>
+        <View testID="reset-spacer" className="flex-1" />
         <LinkButton
           testID="link-login"
-          className="self-center"
+          className="h-13 w-full"
           onPress={() => router.push('/login')}
         >
-          <LinkButton.Label className="font-semibold text-accent-strong">
+          <LinkButton.Label className="text-base font-bold text-accent-strong">
             {t('resetPassword.backToSignIn')}
           </LinkButton.Label>
         </LinkButton>
@@ -170,14 +169,13 @@ export function ResetPasswordScreen() {
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{
           flexGrow: 1,
-          justifyContent: 'center',
           padding: 24,
           gap: 16,
           paddingTop: insets.top + 12,
           paddingBottom: insets.bottom + 24,
         }}
       >
-        <HomeEntrance testID="reset-header" index={0} className="flex-row items-center justify-center gap-3">
+        <HomeEntrance testID="reset-header" index={0} className="flex-row items-center gap-3">
           <PingoFloat testID="reset-pingo-float">
             <Image
               testID="reset-pingo"
@@ -190,7 +188,7 @@ export function ResetPasswordScreen() {
           </Text>
         </HomeEntrance>
 
-        <HomeEntrance testID="reset-body" index={1} className="gap-4">
+        <HomeEntrance testID="reset-body" index={1} className="flex-1 gap-4">
           <TextField>
             <Label>
               <Label.Text className="text-13 font-semibold text-muted">
@@ -225,6 +223,8 @@ export function ResetPasswordScreen() {
             <FormError testID="reset-error" message={error} />
           ) : null}
 
+          <View testID="reset-spacer" className="flex-1" />
+
           <Button
             testID="reset-submit"
             className="w-full rounded-xl bg-accent border-b-4 border-black/25"
@@ -235,6 +235,11 @@ export function ResetPasswordScreen() {
               {t('resetPassword.updatePassword')}
             </Button.Label>
           </Button>
+          <LinkButton testID="link-login" className="h-13 w-full" onPress={() => router.push('/login')}>
+            <LinkButton.Label className="text-base font-bold text-accent-strong">
+              {t('resetPassword.backToSignIn')}
+            </LinkButton.Label>
+          </LinkButton>
         </HomeEntrance>
       </ScrollView>
     </KeyboardAvoidingView>

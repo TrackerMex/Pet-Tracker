@@ -168,6 +168,7 @@ export function RegisterScreen() {
         keyboardShouldPersistTaps="handled"
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{
+          flexGrow: 1,
           padding: 24,
           gap: 16,
           paddingTop: insets.top + 12,
@@ -326,6 +327,8 @@ export function RegisterScreen() {
         {generalError ? (
           <FormError testID="register-error" message={generalError} />
         ) : null}
+
+        <View testID="register-spacer" className="flex-1" />
 
         <Button
           testID="register-submit"
