@@ -1117,13 +1117,18 @@ Commit: `test(mobile): el error de login cuelga del scroll (R15)`.
 1. En login, añade `#172 R15: el error cuelga del scroll y no del contenedor
    del teclado`, con el arreglo de `#172 R7: con error…`.
 2. **Nace verde** (declarado): hoy el error ya está dentro del scroll. Gate:
-   login en verde (25 `it`).
+   login en verde (28 tests en el resumen de jest; Enmienda E5).
 3. **Sonda S15:** mueve el bloque del error (`<FormError testID="login-error"
    …/>` con su condición) justo después de `</ScrollView>`. Corre login y
-   espera 2 failed:
+   espera 3 failed (Enmienda E5):
    - `#172 R15`, por consulta: `within(login-form)` no lo ve;
    - `#172 R7: con error, el error va entre el olvido y el envío`, por
-     aserción: el error sale de `login-body`.
+     aserción: el error sale de `login-body`;
+   - `#172 R7: el cuerpo lleva correo, contraseña, olvido, envío y registro`,
+     por consulta: tras el login fallido,
+     `within(login-body).getByTestId('login-error')` no lo encuentra (aserción
+     heredada de H0, `#167 R6: el cuerpo lleva el formulario en el orden de
+     siempre`).
 
 ---
 
@@ -1184,12 +1189,13 @@ Commit: `test(mobile): los componentes nuevos entran en la guarda de deriva (R17
    La entrada de recuperar de `#149 R4` ya se cambió en c11; la de nueva
    contraseña la cambia c36 (R19).
 2. **Nace verde** (declarado). Gate: design-drift en verde (51 `it`).
-3. **Sondas** (corre design-drift; cada una da 1 failed):
+3. **Sondas** (corre design-drift; S17a y S17c dan 1 failed, S17b da 2;
+   Enmienda E5):
 
    | Sonda | Mutación | `it` rojo |
    |---|---|---|
    | S17a | `// sonda '#FFFFFF'` en `src/components/pingo-float.tsx` | `#167 R14: sin hex, clases arbitrarias, StyleSheet ni sombras sueltas` |
-   | S17b | `className="h-[52px] rounded-xl bg-default"` en `src/components/password-input.tsx` | `#167 R14: sin hex, clases arbitrarias…` (`ARBITRARY_CLASS`) |
+   | S17b | `className="h-[52px] rounded-xl bg-default"` en `src/components/password-input.tsx` | `#167 R14: sin hex, clases arbitrarias…` (`ARBITRARY_CLASS`) y `no deja ninguna clase Tailwind con valores entre corchetes` (`C8: la UI no usa clases arbitrarias`, que recorre todo `src/`) |
    | S17c | `fallback="/welcome"` en recuperar | `#149 R4: inventaría cada ruta a login en producción` (forgot 1 en lugar de 2) |
 
    S17d va en T20, porque el enlace que mira lo crea R19.

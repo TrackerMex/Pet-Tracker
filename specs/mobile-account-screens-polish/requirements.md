@@ -997,7 +997,8 @@ THE SYSTEM SHALL pintar `login-error` dentro del scroll `login-form`, y dejar
   demuestra la sonda, no un commit de test previo (tasks.md T16).
 - Sonda S15 (la Z2 de la review): mover el bloque del error justo después de
   `</ScrollView>` pone rojo el `it`, por `within(...).getByTestId` y por la
-  longitud de `children`.
+  longitud de `children`. Caen con él los dos `it` de R7 que miran el error
+  dentro de `login-body` (Enmienda E5; 3 failed en total, tasks.md T16).
 
 ### R16 — Copy nuevo, «País» y tabla de usos
 
@@ -1128,7 +1129,9 @@ Las entradas de registro y bienvenida no cambian, y el título del `describe`
 - Sonda S17a: un hex (`'#FFFFFF'`) en `pingo-float.tsx` pone rojo `#167 R14:
   sin hex, clases arbitrarias, StyleSheet ni sombras sueltas`.
 - Sonda S17b: `className="h-[52px] rounded-xl bg-default"` en
-  `password-input.tsx` pone rojo el mismo `it` por `ARBITRARY_CLASS`.
+  `password-input.tsx` pone rojo el mismo `it` por `ARBITRARY_CLASS`, y
+  también `C8: la UI no usa clases arbitrarias`, que recorre todo `src/`
+  (Enmienda E5; 2 failed).
 - Sonda S17c: `fallback="/welcome"` en recuperar pone rojo `#149 R4` (forgot 1
   en lugar de 2), además de S3b.
 - Sonda S17d: quitar el `link-login` del formulario de nueva contraseña pone
@@ -1738,3 +1741,34 @@ dentro de `bg-accent-soft`.
   - Las demás son de estructura (S15, S19) o de `checkUses` (S16).
 
 - [x] Enmienda E4 aprobada por humano (fecha: 2026-10-14) ← gate antes de reanudar Codex
+
+## Enmienda E5 (2026-10-14) — S15 y S17b con sus rojos en cascada
+
+Codex paró en la sonda S15 de T16 (`progress/impl_mobile-account-screens-polish.md`,
+§Bloqueo actual — T16/S15). Al sacar el error de `login-body` cayeron 3 `it` y
+no los 2 que pedía tasks.md. El tercero es `#172 R7: el cuerpo lleva correo,
+contraseña, olvido, envío y registro`. Tras el login fallido hace
+`within(login-body).getByTestId('login-error')`, y esa consulta ya estaba en H0
+en `#167 R6: el cuerpo lleva el formulario en el orden de siempre`. T8 le
+cambió el título y el orden, pero mantuvo la consulta.
+
+- La tabla de T16 estaba mal; R15 y los candados están bien. tasks.md T16 pide
+  ahora 3 fallos, y el bullet de la sonda S15 en R15 nombra los dos `it` de R7.
+- La salida de S15 que Codex dejó en el informe ya es la que pide la enmienda,
+  con sus tres títulos. La mutación se revirtió (`exit=0`) y S15 no se repite.
+- El gate de T16 decía «login en verde (25 `it`)». El resumen de jest da 28
+  tests, porque el `it.each` de mensajes se expande. tasks.md dice ahora 28.
+- Barrido preventivo de las sondas que quedan (S16a–S20d), con todos los `it`
+  de las suites que corre cada una:
+  - **S17b** también estaba mal. `h-[52px]` en `password-input.tsx` pone rojo
+    `#167 R14` (`ARBITRARY_CLASS`) y, además, `C8: la UI no usa clases
+    arbitrarias` › `no deja ninguna clase Tailwind con valores entre
+    corchetes`. Ese `it` recorre todo `src/` con el mismo patrón. tasks.md T18
+    pide ahora 2 fallos para S17b, y el bullet de la sonda en R17 lo dice.
+  - Las demás cuadran con su tabla: S16a (3), S16b (2), S17a (1), S17c (1),
+    S17d (6), S18a y S18b (1 cada una), S19a (2), S19b, S19c y S19d (1 cada
+    una), S19e (2), S19f (1), S20a, S20b y S20c (1 cada una) y S20d (2).
+- No cambian ni tests, ni producción, ni recuentos de `it`. c31 se queda como
+  está.
+
+- [ ] Enmienda E5 aprobada por humano (fecha: ____) ← gate antes de reanudar Codex

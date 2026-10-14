@@ -184,3 +184,38 @@ incluida la de comparar el titulo de cada ● con su tabla antes de avanzar (Rea
   docs(mobile-account-screens-polish): #172 trazabilidad completa
   y luego git commit --only ../progress/impl_mobile-account-screens-polish.md -m 'docs(mobile-account-screens-polish): #172 informe de implementación completo'
 ```
+
+## Reanudación 4 — Enmienda E5 (2026-10-14)
+
+Paraste bien en S15: la tabla de T16 no contaba la consulta de `login-error`
+dentro de `login-body` que R7 heredó de H0. La Enmienda E5 (requirements.md
+§Enmienda E5 y tasks.md T16) pide 3 fallos, que son los que diste. S15 no se
+repite. La E5 también corrige S17b (T18): ahora da 2 fallos, porque `C8: la UI
+no usa clases arbitrarias` recorre todo `src/`. Y el gate de T16 cuenta 28
+tests en login, no 25.
+
+```text
+Worktree: /home/claude/sites/Pet-Tracker-wt-172   <- PRIMERA LINEA. Trabaja AQUI y en ningun otro sitio
+Branch:   feature/172-mobile-account-screens-polish
+Siguen en vigor TODAS las reglas de arriba (init.sh, push, PR, amend, rebase, prettier, JEST/LINT/CARGA, SKILLS),
+incluida la de comparar el titulo de cada ● con su tabla antes de avanzar (Reanudacion 2, paso 2).
+
+== ANTES DE TOCAR NADA ==
+1. command grep -c -F -- '- [x] Enmienda E5 aprobada por humano' specs/mobile-account-screens-polish/requirements.md
+   -> 1. Si da 0, PARA: E5 no esta firmada.
+2. git status --short -> sin salida.
+3. git log -1 --format=%h -- mobile-pet-tracker -> 0e5bb776 (tu c31).
+4. H0 sigue siendo e0178ab5. Los commits del leader entre H0 y HEAD no son tuyos: 94ddc750, los de E2, los de E3,
+   los de E4 y los de E5 (enmienda, handoff y firma). No los toques, no los reviertas y no los cuentes como tuyos.
+
+== GUION DE LA REANUDACION ==
+1. En el informe, marca S15 como conforme a E5 (3 failed, los tres titulos que ya anotaste). No la repitas.
+2. Sigue T17-T22 en orden, sin renumerar (c32-c39). S17b espera 2 failed (tabla de T18).
+
+== CIERRE ==
+- Reescribe progress/impl_mobile-account-screens-polish.md (el mismo fichero): Estado al final, tabla completa y una
+  seccion "Reanudacion 4". Las secciones de bloqueo quedan como historia, no las borres.
+- Trazabilidad completa en specs/mobile-account-screens-polish/traceability.md. Commits literales:
+  docs(mobile-account-screens-polish): #172 trazabilidad completa
+  y luego git commit --only ../progress/impl_mobile-account-screens-polish.md -m 'docs(mobile-account-screens-polish): #172 informe de implementación completo'
+```
