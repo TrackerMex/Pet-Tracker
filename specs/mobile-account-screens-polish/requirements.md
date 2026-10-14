@@ -1704,4 +1704,4 @@ pero **dentro** del `FieldError` de apellidos. `FieldError` de heroui-native
   - S15 mueve `login-error`, que no va dentro de un `FieldError`.
   - Ninguna otra sonda espera el rojo de un hijo de `FieldError` sin error.
 
-- [ ] Enmienda E3 aprobada por humano (fecha: ____) ← gate antes de reanudar Codex
+- [x] Enmienda E3 aprobada por humano (fecha: 2026-10-14) ← gate antes de reanudar Codex
