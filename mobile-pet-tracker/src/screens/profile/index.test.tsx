@@ -1269,7 +1269,7 @@ function expectProfileChip168(root: TestInstance, id: string, surface: string, i
   expect(label.props.className).toBe(ink);
 }
 
-describe('#168 R5: Perfil pinta chips pastel por dato', () => {
+describe('#168 R5 (enmendado por #173 R7): chips pastel con sexo localizado', () => {
   beforeEach(() => {
     setupProfile168();
     mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet({ ageMonths: 26, currentWeightKg: 12.4 }) });
@@ -1280,10 +1280,10 @@ describe('#168 R5: Perfil pinta chips pastel por dato', () => {
     const root = await screen.findByTestId('profile-pet-chips');
     expect(root.children).toHaveLength(4);
     expect(root.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['profile-pet-chip-sex', 'profile-pet-chip-sterilized', 'profile-pet-chip-age', 'profile-pet-chip-weight']);
-    expectProfileChip168(root, 'profile-pet-chip-sex', 'rounded-full px-3 py-1 bg-category-blue', 'text-xs font-bold text-category-blue-strong', 'female');
-    expectProfileChip168(root, 'profile-pet-chip-sterilized', 'rounded-full px-3 py-1 bg-category-green', 'text-xs font-bold text-category-green-strong', 'Esterilizado');
-    expectProfileChip168(root, 'profile-pet-chip-age', 'rounded-full px-3 py-1 bg-category-amber', 'text-xs font-bold text-category-amber-strong', '26 meses');
-    expectProfileChip168(root, 'profile-pet-chip-weight', 'rounded-full px-3 py-1 bg-category-violet', 'text-xs font-bold text-category-violet-strong', '12.4 kg');
+    expectProfileChip168(root, 'profile-pet-chip-sex', 'rounded-full px-2.5 py-1.25 bg-category-blue', 'text-xs font-extrabold text-category-blue-strong', 'Hembra');
+    expectProfileChip168(root, 'profile-pet-chip-sterilized', 'rounded-full px-2.5 py-1.25 bg-category-green', 'text-xs font-extrabold text-category-green-strong', 'Esterilizado');
+    expectProfileChip168(root, 'profile-pet-chip-age', 'rounded-full px-2.5 py-1.25 bg-category-amber', 'text-xs font-extrabold text-category-amber-strong', '26 meses');
+    expectProfileChip168(root, 'profile-pet-chip-weight', 'rounded-full px-2.5 py-1.25 bg-category-violet', 'text-xs font-extrabold text-category-violet-strong', '12.4 kg');
   });
 
   it('sin sexo ni esterilización conserva edad ámbar y peso violeta', async () => {
@@ -1292,8 +1292,8 @@ describe('#168 R5: Perfil pinta chips pastel por dato', () => {
     const root = await screen.findByTestId('profile-pet-chips');
     expect(root.children).toHaveLength(2);
     expect(root.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['profile-pet-chip-age', 'profile-pet-chip-weight']);
-    expectProfileChip168(root, 'profile-pet-chip-age', 'rounded-full px-3 py-1 bg-category-amber', 'text-xs font-bold text-category-amber-strong', '26 meses');
-    expectProfileChip168(root, 'profile-pet-chip-weight', 'rounded-full px-3 py-1 bg-category-violet', 'text-xs font-bold text-category-violet-strong', '12.4 kg');
+    expectProfileChip168(root, 'profile-pet-chip-age', 'rounded-full px-2.5 py-1.25 bg-category-amber', 'text-xs font-extrabold text-category-amber-strong', '26 meses');
+    expectProfileChip168(root, 'profile-pet-chip-weight', 'rounded-full px-2.5 py-1.25 bg-category-violet', 'text-xs font-extrabold text-category-violet-strong', '12.4 kg');
   });
 
   it('sin peso omite su chip y conserva sexo, esterilización y edad en sus huecos', async () => {
@@ -1302,9 +1302,9 @@ describe('#168 R5: Perfil pinta chips pastel por dato', () => {
     const root = await screen.findByTestId('profile-pet-chips');
     expect(root.children).toHaveLength(3);
     expect(root.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['profile-pet-chip-sex', 'profile-pet-chip-sterilized', 'profile-pet-chip-age']);
-    expectProfileChip168(root, 'profile-pet-chip-sex', 'rounded-full px-3 py-1 bg-category-blue', 'text-xs font-bold text-category-blue-strong', 'female');
-    expectProfileChip168(root, 'profile-pet-chip-sterilized', 'rounded-full px-3 py-1 bg-category-green', 'text-xs font-bold text-category-green-strong', 'Esterilizado');
-    expectProfileChip168(root, 'profile-pet-chip-age', 'rounded-full px-3 py-1 bg-category-amber', 'text-xs font-bold text-category-amber-strong', '26 meses');
+    expectProfileChip168(root, 'profile-pet-chip-sex', 'rounded-full px-2.5 py-1.25 bg-category-blue', 'text-xs font-extrabold text-category-blue-strong', 'Hembra');
+    expectProfileChip168(root, 'profile-pet-chip-sterilized', 'rounded-full px-2.5 py-1.25 bg-category-green', 'text-xs font-extrabold text-category-green-strong', 'Esterilizado');
+    expectProfileChip168(root, 'profile-pet-chip-age', 'rounded-full px-2.5 py-1.25 bg-category-amber', 'text-xs font-extrabold text-category-amber-strong', '26 meses');
   });
 
   it.each([Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY])('con la edad %p omite su chip y deja el peso en violeta', async (ageMonths) => {
@@ -1313,9 +1313,9 @@ describe('#168 R5: Perfil pinta chips pastel por dato', () => {
     const root = await screen.findByTestId('profile-pet-chips');
     expect(root.children).toHaveLength(3);
     expect(root.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['profile-pet-chip-sex', 'profile-pet-chip-sterilized', 'profile-pet-chip-weight']);
-    expectProfileChip168(root, 'profile-pet-chip-sex', 'rounded-full px-3 py-1 bg-category-blue', 'text-xs font-bold text-category-blue-strong', 'female');
-    expectProfileChip168(root, 'profile-pet-chip-sterilized', 'rounded-full px-3 py-1 bg-category-green', 'text-xs font-bold text-category-green-strong', 'Esterilizado');
-    expectProfileChip168(root, 'profile-pet-chip-weight', 'rounded-full px-3 py-1 bg-category-violet', 'text-xs font-bold text-category-violet-strong', '12.4 kg');
+    expectProfileChip168(root, 'profile-pet-chip-sex', 'rounded-full px-2.5 py-1.25 bg-category-blue', 'text-xs font-extrabold text-category-blue-strong', 'Hembra');
+    expectProfileChip168(root, 'profile-pet-chip-sterilized', 'rounded-full px-2.5 py-1.25 bg-category-green', 'text-xs font-extrabold text-category-green-strong', 'Esterilizado');
+    expectProfileChip168(root, 'profile-pet-chip-weight', 'rounded-full px-2.5 py-1.25 bg-category-violet', 'text-xs font-extrabold text-category-violet-strong', '12.4 kg');
   });
 
   it('sin esterilizar pinta el chip verde con «Sin esterilizar»', async () => {
@@ -1324,7 +1324,7 @@ describe('#168 R5: Perfil pinta chips pastel por dato', () => {
     const root = await screen.findByTestId('profile-pet-chips');
     expect(root.children).toHaveLength(4);
     expect(root.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['profile-pet-chip-sex', 'profile-pet-chip-sterilized', 'profile-pet-chip-age', 'profile-pet-chip-weight']);
-    expectProfileChip168(root, 'profile-pet-chip-sterilized', 'rounded-full px-3 py-1 bg-category-green', 'text-xs font-bold text-category-green-strong', 'Sin esterilizar');
+    expectProfileChip168(root, 'profile-pet-chip-sterilized', 'rounded-full px-2.5 py-1.25 bg-category-green', 'text-xs font-extrabold text-category-green-strong', 'Sin esterilizar');
   });
 
   it('con 0 meses y 0 kg pinta los cuatro chips', async () => {
@@ -1333,8 +1333,8 @@ describe('#168 R5: Perfil pinta chips pastel por dato', () => {
     const root = await screen.findByTestId('profile-pet-chips');
     expect(root.children).toHaveLength(4);
     expect(root.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['profile-pet-chip-sex', 'profile-pet-chip-sterilized', 'profile-pet-chip-age', 'profile-pet-chip-weight']);
-    expectProfileChip168(root, 'profile-pet-chip-age', 'rounded-full px-3 py-1 bg-category-amber', 'text-xs font-bold text-category-amber-strong', '0 meses');
-    expectProfileChip168(root, 'profile-pet-chip-weight', 'rounded-full px-3 py-1 bg-category-violet', 'text-xs font-bold text-category-violet-strong', '0 kg');
+    expectProfileChip168(root, 'profile-pet-chip-age', 'rounded-full px-2.5 py-1.25 bg-category-amber', 'text-xs font-extrabold text-category-amber-strong', '0 meses');
+    expectProfileChip168(root, 'profile-pet-chip-weight', 'rounded-full px-2.5 py-1.25 bg-category-violet', 'text-xs font-extrabold text-category-violet-strong', '0 kg');
   });
 
   it('sin sexo conserva esterilización, edad y peso en sus huecos', async () => {
@@ -1343,9 +1343,9 @@ describe('#168 R5: Perfil pinta chips pastel por dato', () => {
     const root = await screen.findByTestId('profile-pet-chips');
     expect(root.children).toHaveLength(3);
     expect(root.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['profile-pet-chip-sterilized', 'profile-pet-chip-age', 'profile-pet-chip-weight']);
-    expectProfileChip168(root, 'profile-pet-chip-sterilized', 'rounded-full px-3 py-1 bg-category-green', 'text-xs font-bold text-category-green-strong', 'Esterilizado');
-    expectProfileChip168(root, 'profile-pet-chip-age', 'rounded-full px-3 py-1 bg-category-amber', 'text-xs font-bold text-category-amber-strong', '26 meses');
-    expectProfileChip168(root, 'profile-pet-chip-weight', 'rounded-full px-3 py-1 bg-category-violet', 'text-xs font-bold text-category-violet-strong', '12.4 kg');
+    expectProfileChip168(root, 'profile-pet-chip-sterilized', 'rounded-full px-2.5 py-1.25 bg-category-green', 'text-xs font-extrabold text-category-green-strong', 'Esterilizado');
+    expectProfileChip168(root, 'profile-pet-chip-age', 'rounded-full px-2.5 py-1.25 bg-category-amber', 'text-xs font-extrabold text-category-amber-strong', '26 meses');
+    expectProfileChip168(root, 'profile-pet-chip-weight', 'rounded-full px-2.5 py-1.25 bg-category-violet', 'text-xs font-extrabold text-category-violet-strong', '12.4 kg');
   });
 
   it('sin esterilización conserva sexo, edad y peso en sus huecos', async () => {
@@ -1354,15 +1354,40 @@ describe('#168 R5: Perfil pinta chips pastel por dato', () => {
     const root = await screen.findByTestId('profile-pet-chips');
     expect(root.children).toHaveLength(3);
     expect(root.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['profile-pet-chip-sex', 'profile-pet-chip-age', 'profile-pet-chip-weight']);
-    expectProfileChip168(root, 'profile-pet-chip-sex', 'rounded-full px-3 py-1 bg-category-blue', 'text-xs font-bold text-category-blue-strong', 'female');
-    expectProfileChip168(root, 'profile-pet-chip-age', 'rounded-full px-3 py-1 bg-category-amber', 'text-xs font-bold text-category-amber-strong', '26 meses');
-    expectProfileChip168(root, 'profile-pet-chip-weight', 'rounded-full px-3 py-1 bg-category-violet', 'text-xs font-bold text-category-violet-strong', '12.4 kg');
+    expectProfileChip168(root, 'profile-pet-chip-sex', 'rounded-full px-2.5 py-1.25 bg-category-blue', 'text-xs font-extrabold text-category-blue-strong', 'Hembra');
+    expectProfileChip168(root, 'profile-pet-chip-age', 'rounded-full px-2.5 py-1.25 bg-category-amber', 'text-xs font-extrabold text-category-amber-strong', '26 meses');
+    expectProfileChip168(root, 'profile-pet-chip-weight', 'rounded-full px-2.5 py-1.25 bg-category-violet', 'text-xs font-extrabold text-category-violet-strong', '12.4 kg');
   });
 
-  it('centra y agrupa los chips con gap-2', async () => {
+  it('centra y agrupa los chips con gap-1.5', async () => {
     await renderProfile();
     const root = await screen.findByTestId('profile-pet-chips');
-    expect(root.props.className).toBe('flex-row flex-wrap justify-center gap-2');
+    expect(root.props.className).toBe('flex-row flex-wrap justify-center gap-1.5');
+  });
+
+  it.each([
+    { language: 'es', sex: 'male', label: 'Macho' },
+    { language: 'es', sex: 'female', label: 'Hembra' },
+    { language: 'es', sex: null, label: null },
+    { language: 'es', sex: 'other', label: null },
+    { language: 'en', sex: 'male', label: 'Male' },
+    { language: 'en', sex: 'female', label: 'Female' },
+    { language: 'en', sex: null, label: null },
+    { language: 'en', sex: 'other', label: null },
+  ])('localiza u omite el sexo $sex en $language', async ({ language, sex, label }) => {
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet({ sex }) });
+    await renderProfile();
+    const root = await screen.findByTestId('profile-pet-chips');
+    if (language === 'en') await fireEvent.press(screen.getByTestId('language-toggle'));
+    if (label === null) {
+      expect(within(root).queryByTestId('profile-pet-chip-sex')).toBeNull();
+      expect(root.children).toHaveLength(3);
+      expect(root.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['profile-pet-chip-sterilized', 'profile-pet-chip-age', 'profile-pet-chip-weight']);
+    } else {
+      expectProfileChip168(root, 'profile-pet-chip-sex', 'rounded-full px-2.5 py-1.25 bg-category-blue', 'text-xs font-extrabold text-category-blue-strong', label);
+    }
+    expect(screen.queryByText('male')).toBeNull();
+    expect(screen.queryByText('female')).toBeNull();
   });
 });
 
