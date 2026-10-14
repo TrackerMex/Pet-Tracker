@@ -14,6 +14,9 @@
   pero faltaban candados (G1–G4). La Enmienda E6 añade cinco `it` que nacen
   verdes (tasks.md T24, c40–c42) y el handoff «Reanudación 5». Firmada en
   Notion (866d685c, última edición 2026-10-14T19:40Z); Codex en Reanudación 5.
+- **Review ronda 2** (2026-10-14, e2745566): aprobada sobre f17eec10, init.sh
+  verde en ese HEAD. Falta R21, la prueba de humo del humano en dev build de
+  Android (traceability.md §Prueba de humo).
 - **Plan**: Login, Registro, Recuperar y Nueva contraseña como el canvas
   (R1–R20): «Volver» arriba, CTA de 56 anclada al pie, inputs de 52,
   `PasswordInput` con ojo en cinco campos, errores con icono, `PingoFloat`
