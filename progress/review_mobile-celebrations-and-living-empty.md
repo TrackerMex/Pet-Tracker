@@ -378,3 +378,104 @@ Al empezar las sondas, `pgrep` vio un jest focalizado de `/home/claude/sites/Pet
 
    Describe la sesión activa, así que C2 se cumple. Le toca al leader.
 3. **R16 (smoke humano en dev build de Android) sigue pendiente,** con su casilla abierta. No bloquea este veredicto, pero sí el `done` (CLAUDE.md: requisitos que solo cierra un humano).
+
+## Ronda 4
+Fecha: 2026-10-14 20:45–21:30 UTC
+HEAD revisado: f5e8cc68 (branch feature/171-mobile-celebrations-and-living-empty). H1 del handoff de la ronda 4: 0bfd45fd. Firma de E4: 0268e9bd. origin/main: 788d1f89.
+Veredicto: APROBADO
+
+### Comprobaciones
+1. **Parches del leader intactos (OK).** `git patch-id --stable` de cada commit rojo o de carta coincide con el de su parche `progress/ronda4_mobile-celebrations-and-living-empty/cNN.patch`: c44 b92f7db0, c45 569db569, c47 03f02ec9, c49 f559feef, c51 b6a63f50, c53 289a5189, c55 8edfce08, c57 edc66e23, c59 0a605fbd, c61 ab15d95e, c62 f9298644, c63 fb89bd3f. Los commits verdes (c46 8316c80b, c48 2e6bb5e1, c50 7f31932c, c52 e71fe950, c54 c265cfda, c56 aada4b5e, c58 d9e96a60, c60 e8acaafe) solo tocan producción: celebration.tsx, motion.ts, global.css y category-palette.ts. Ninguno toca un test ni la carta.
+2. **Lista cerrada (OK).** `0bfd45fd..a7f20923` toca exactamente los 14 ficheros del CIERRE del handoff. `a7f20923..HEAD` solo toca `progress/current.md`, `specs/.../tasks.md` (bba94dae, leader), `celebration.test.tsx` y el impl (f5e8cc68). El diff de f5e8cc68 en móvil son tres líneas: un comentario sin `#`, `jest.setTimeout(60_000);` y una línea en blanco, detrás del `jest.mock('heroui-native')`. No cambia ninguna aserción.
+3. **C5, trazabilidad (OK).** Las 12 celdas `(E4)` (R2, R6, R7, R8, R12, R13, R15, R17–R21) citan el par del mapa del CIERRE. R12 c61 y R13 c44 nacen verdes. Los 57 hashes citados son ancestros de HEAD con el asunto citado. El diff de traceability.md solo cambia la última columna (12/12 líneas). `(E4)` cuenta 12 y `| pendiente |` cuenta 1 (R16).
+4. **C4, test primero (OK).** Los nueve rojos (c45, c47, c49, c51, c53, c55, c57, c59, c62) van antes de su verde, y c44 y c61 nacen verdes como dice el handoff. Comparé por script la lista `●` que el impl registra en cada rojo con la que exige la cadena del handoff: c45 11/11, c47 16/16, c49 10/10, c51 6/6, c53 4/4, c55 6/6, c57 2/2, c59 1/1 y c62 1/1, idénticas. Los verdes salen a la primera salvo c56: el intento 1 dio dos `● Test suite failed to run` por un cierre JSX mal sustituido (`</Animated.View>` en el contenedor del confeti), corregido solo en producción y anotado en el impl. Las tres trampas de alcance mínimo se respetaron: el condicional del anillo y los valores iniciales de la entrada según reduce motion llegan en c58 (d9e96a60), y `cancelAnimation` en c60 (e8acaafe; antes, 0 apariciones).
+5. **Producción contra E4.1–E4.14 (OK).** Leí `celebration.tsx` de HEAD entero y los diffs de `motion.ts`, `global.css` y `category-palette.ts`:
+   - **E4.1 / R6.** La tabla `CONFETTI` es byte a byte la de E4.1. Cada pieza arranca en `{ position, top: 0, left: '<left>%', opacity: 0, transform: [{ translateY: -40 }, { rotate: '0deg' }] }` y anima con `withDelay(delay, withRepeat(withTiming(1, { ...MOTION_CONFETTI_FALL_TIMING, duration }), -1, false))`.
+   - **E4.2.** Los cinco `--color-confetti-*` están en `@theme {` con los hex de la spec. `CONFETTI_FILLS` y su comentario salen de `category-palette.ts`. Fuera de los tests, solo `celebration.tsx` nombra `confetti-*` (y `global.css` los declara), y solo `celebration.tsx` usa `rounded-xs`.
+   - **E4.3 / R7.** El pop de Pingo es `withTiming(1, 360)` en opacidad y `withSequence(1.08 en 360, 1 en 240)` en escala (`MOTION_CELEBRATION_POP_MS * 0.6` = 360). La insignia hace lo mismo con 300/200 dentro de `withDelay(MOTION_CELEBRATION_BADGE_DELAY_MS)`, en `right: 18, bottom: 26`.
+   - **E4.4 / R17.** El anillo es el primer hijo del hero, con `absolute inset-0 rounded-full bg-accent`, `pointerEvents="none"` y oculto a accesibilidad. Escala 0.55→1.5 y opacidad 0.55→0 con `withRepeat(withTiming(..., EASE_OUT 2200), -1, false)`.
+   - **E4.5 / R18.** `withDelay(MOTION_CELEBRATION_POP_MS, withRepeat(withTiming(-10, MOTION_PINGO_FLOAT_TIMING), -1, true))`.
+   - **E4.6 / R19.** `useRise(k)` con `k` fijo (título 0, cuerpo 1, fichas 2 y acciones 3, también sin fichas), `withDelay(500 + 80k, withTiming(..., EASE_OUT 400))`. Título y cuerpo son `Animated.Text`, fichas y acciones `Animated.View`, sin envoltorios nuevos.
+   - **E4.7 / R20.** Hero, Pingo, check SVG, título, cuerpo y raíz con las clases y los estilos exactos de la spec.
+   - **E4.8 / R21.** La limpieza del efecto cancela anillo (escala y opacidad) y `translateY` de Pingo, y cada `ConfettiPiece` cancela su progreso: 3 + 36 = 39. Pops y entrada no se cancelan. Con reduce motion el efecto sale antes de registrar limpieza: 0 llamadas.
+   - **E4.9 / R8.** Con reduce motion no se montan confeti ni anillo, Pingo no flota y la entrada arranca en opacidad 1 y `translateY` 0 desde el `useSharedValue` (el efecto de `useRise` sale sin `.set`). Pingo y la insignia conservan su fundido a escala 1 (ver la observación 1 sobre el retardo).
+   - **E4.10.** Solo se anima `transform` y `opacity`. `grep` de `LayoutAnimation`, `entering=` y `exiting=` en `celebration.tsx` da 0.
+   - **E4.11.** `motion.ts` borra `MOTION_CONFETTI_MIN_MS`, `MOTION_CONFETTI_SPREAD_MS` y `MOTION_CELEBRATION_SPRING`, y añade las once constantes literales de E4.11 bajo el `// #171 R7` existente, sin la línea `// Solo si #172 ...`.
+   - **Restos y `#`.** `grep` de `CONFETTI_FILLS|CONFETTI_COUNT|MOTION_CONFETTI_MIN_MS|MOTION_CONFETTI_SPREAD_MS|MOTION_CELEBRATION_SPRING` en `mobile-pet-tracker/src` y `docs/` da 0. Ninguna línea de `celebration.tsx`, `motion.ts` ni del comentario de f5e8cc68 tiene un `#` fuera de `#NNN R<n>`.
+6. **C8, la carta (OK).** fb89bd3f solo toca `docs/ui-guidelines.md`. El párrafo del punto 7 aparece una vez, justo tras «…no arrancan con reduce motion.» y con dos espacios de sangría. La sección `## Enmienda #171 — confeti, ping y flotación de la celebración` es, línea a línea, el bloque de E4.13 (comparado por script tras quitar la sangría de la spec). Sustituye a la anterior en la misma posición, detrás de la de #168, y solo hay una sección `## Enmienda #171`. Su casilla queda `- [x] Aprobada por humano (fecha: 2026-10-14)`, que es la fecha de la casilla de carta de E4. Las clases de producción pasan los guards de la carta (design-drift, legibility-classnames y consistency-classnames) en el init.sh de HEAD.
+7. **Spec (OK).** `status: approved`, con `- [x] Enmienda E4 aprobada por humano (fecha: 2026-10-14)` y la casilla de carta de R15 marcadas, firmadas en 0268e9bd. Desde la firma, requirements.md no cambia. Solo cambian traceability.md (0bfd45fd del leader y b5e0ef84 de Codex) y tasks.md (bba94dae, nota del timeout).
+8. **Duraciones de los tests (observación, OK).** Con la máquina libre y `--verbose`, sobre HEAD: R6.4 3022 ms, R6.5 2277, R6.6 14271, R17.3 3108 y R18.2 5791. Con el `celebration.tsx` del sim del leader (`scratchpad/sim4`) copiado encima, los mismos tests dan 2947, 1840, 14973, 3055 y 5526 ms. La diferencia es ruido. Los 8,5 s de R6.4 que midió Codex vienen de la carga de la máquina, no de trabajo evitable de su producción. El coste es lineal con el tiempo falso avanzado: unos 45 estilos animados por frame.
+
+### Checklist C2–C8
+- **C2** [x] `feature_list.json` tiene solo #171 en `in_progress`. `progress/current.md` describe la ronda 4, el rojo por timeout del init.sh sobre a7f20923 y el fallback al subagente `implementer` para `jest.setTimeout`, como exige CLAUDE.md §Excepciones.
+- **C3** [x] Solo cambia la capa de presentación móvil: un componente, tokens de tema (`motion.ts`, `global.css`), la paleta (borrado) y la carta. Ni dominio, ni aplicación, ni backend.
+- **C4** [x] Cada R-id de E4 tiene su rojo antes de su verde. Las nueve listas `●` del impl son idénticas a las del handoff, y los parches de test llegan intactos (patch-id). Todos los `it` nuevos o cambiados nombran su R-id (`#171 R6: …` a `#171 R21: …`, `#171 R15: …`, `#171 E4: …`).
+- **C5** [x] Ninguna fila R1–R15 ni R17–R21 dice «pendiente». R16 es el smoke humano. Los commits siguen `<tipo>(mobile): <desc> (R<n>, E4)`.
+- **C6** [x] La spec está aprobada y las dos casillas de E4 están marcadas por el humano. requirements.md no cambia tras la firma.
+- **C7** [x] E4 sustituye el confeti de una pasada, el muelle de E3 y la paleta `CONFETTI_FILLS`. Sus símbolos (`CONFETTI_COUNT`, `COLORS`, `SHAPES`, `CONFETTI_FILLS`, `MOTION_CONFETTI_MIN_MS`, `MOTION_CONFETTI_SPREAD_MS`, `MOTION_CELEBRATION_SPRING`) y sus `it` (R6.4/R6.5 de E2, R7.3/R7.4 del muelle) ya no existen. `withSpring` sale de `celebration.tsx`.
+- **C8** [x] Ver la comprobación 6.
+
+### Output de ./init.sh
+Lo corrió el leader sobre f5e8cc68; el subagente no tiene permiso para correrlo. Lo leí de `/tmp/claude-1002/-home-claude-sites-Pet-Tracker/955d966a-80a9-4f5e-a229-fd9e5ecf2412/scratchpad/r4/init-r4b.log`, con grep sobre la copia sin ANSI `init-r4b.clean.log`.
+
+Comprobé que corresponde a HEAD:
+- el log se escribe a las 20:39:21 UTC, después del commit f5e8cc68 (20:32:34);
+- el reflog no tiene ninguna entrada posterior a f5e8cc68;
+- sus 23 rutas absolutas son `/home/claude/sites/Pet-Tracker-wt-171/…`;
+- 0 líneas `❌` o `FAIL`.
+
+```
+Test Suites: 187 passed, 187 total
+Tests:       1474 passed, 1474 total          (backend unit)
+Test Suites: 2 passed, 2 total
+Tests:       14 passed, 14 total              (infra)
+Test Suites: 104 passed, 104 total
+Tests:       3210 passed, 3210 total          (móvil; igual al ALL de cierre del sim del leader)
+Test Suites: 3 skipped, 30 passed, 30 of 33 total
+Tests:       8 skipped, 468 passed, 476 total (e2e backend)
+✅ Lint sin errores
+✅ Typecheck sin errores
+✅ Todo verde. Listo para trabajar.
+```
+`PASS src/components/__tests__/celebration.test.tsx (62.088 s)`. El aviso `A worker process has failed to exit gracefully` ya existía antes de esta ronda.
+
+Como referencia, `init-r4.log` sobre a7f20923 salía `2 failed, 3208 passed, 3210 total` con R6.6 y R18.2 por `Exceeded timeout of 5000 ms`, sin ningún rojo por aserción. f5e8cc68 lo corrige con `jest.setTimeout(60_000)` en el fichero.
+
+### Sondas de mutación (ronda 4)
+
+Base en HEAD: `celebration.test.tsx` da `66 passed, 66 total` (55,5 s).
+
+Ninguna sonda repite P1–P12 de Codex ni las de §E4-C. Las corrí con `FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/components/__tests__/celebration.test.tsx`, a veces con `-t` cuando el rojo esperado vive en pocos `describe`. Antes de cada corrida, `pgrep -f 'node_modules/(\.bin/jest|jest-worker)|[i]nit\.sh'` salió vacío. Revertí cada sonda con `git checkout HEAD -- src/components/celebration.tsx`, y después `git diff --cached --quiet && git diff --quiet -- mobile-pet-tracker docs specs` dio `limpio=0`. Ninguna salida contiene `Unable to find|TypeError|ReferenceError|Test suite failed to run`, así que todos los rojos son por aserción.
+
+| Sonda | Requisito | Mutación | numstat | Tests | Rojo observado | Veredicto |
+|---|---|---|---|---|---|---|
+| S2 | R21.1 | borrar `cancelAnimation(pingoTranslateY)` | `0 1` | fichero entero | `1 failed, 65 passed`: `R21.1`. Expected calls 39, Received 38 | rojo correcto |
+| S10 | R21.1 («ni una más») | añadir `cancelAnimation(pingoScale)` tras el de `pingoTranslateY` | `1 0` | `-t R21` | `1 failed`: `R21.1`. Expected 39, Received 40 | rojo correcto |
+| S3 | R17.3 (mitad de opacidad) | solo el `withRepeat` de `ringOpacity` con `reverse = true` | `1 1` | fichero entero | `1 failed, 65 passed`: `R17.3`. Expected > 0.3, Received 0.208 | rojo correcto |
+| S4 | R6.5 (grados) | `rotate` de la pieza `p * 540` → `p * 360` | `1 1` | fichero entero | `1 failed, 65 passed`: `R6.5`. Expected 418.5, Received 278.98 | rojo correcto |
+| S5 | R7.4 (insignia) | la opacidad de la insignia dura `MOTION_CELEBRATION_POP_MS * 0.6` (360) en vez de `BADGE_POP_MS * 0.6` (300) | `1 1` | `-t 'R7\|R13\|R8'` | `2 failed`: los dos `R7.4` de la insignia. Expected 0.4884, Received 0.4157 | rojo correcto |
+| S7 | R18.2 | la flotación con `withRepeat(..., -1, false)` | `1 1` | `-t 'R18\|R7\|R13'` | `1 failed`: `R18.2`. Expected 0, Received -10 | rojo correcto |
+| S8 | R8.5 (mitad de `translateY`) | `useSharedValue(MOTION_CELEBRATION_RISE_OFFSET_Y)` sin depender de reduce motion; la opacidad sí depende | `1 1` | `-t 'R8\|R19\|R13'` | `1 failed`: `R8.5`. Las cuatro filas dan `[1, 14]` contra `[1, 0]` | rojo correcto |
+| S9 | R6.4 | el `withRepeat` del confeti con `reverse = true` | `1 1` | fichero entero | `1 failed, 65 passed`: `R6.4`. Expected < 400, Received 1253.8 (R6.6 sigue verde) | rojo correcto |
+| S1 | R8.3 (retardo) | el fundido de la insignia con reduce motion vuelve a `withDelay(MOTION_SURFACE_MS, …)` (400, el de antes de E4) | `1 1` | `-t R8` | `8 passed`, verde | zona ciega (ver la observación 1) |
+| S2b | R21.1 (qué se cancela) | `cancelAnimation(pingoTranslateY)` → `cancelAnimation(pingoScale)` | `1 1` | `-t 'R21\|R18'` | `3 passed`, verde | zona ciega (ver la observación 2) |
+| S11 | R6.2 / R13.2 (claves de layout) | `position`, `top` y `left` salen del worklet de la pieza a un estilo estático: `style={[{ position: 'absolute', top: 0, left }, pieceStyle]}` | `1 2` | `-t 'R6\|R13'` | `7 passed`, verde | informativa (ver la observación 3) |
+
+Las salidas completas están en `/tmp/claude-1002/-home-claude-sites-Pet-Tracker/955d966a-80a9-4f5e-a229-fd9e5ecf2412/scratchpad/r4rev-<sonda>.txt`, y las de tiempos en `r4rev-time-head.txt` y `r4rev-time-sim.txt`.
+
+### Observaciones (no bloqueantes)
+1. **El retardo del fundido de la insignia con reduce motion pasó de 400 a 450 ms, y ningún test lo mira.**
+   - En c50 (7f31932c), la rama de reduce motion cambió `withDelay(MOTION_SURFACE_MS, …)` por `withDelay(MOTION_CELEBRATION_BADGE_DELAY_MS, …)`. `design.md` §R7–R8 (líneas 267 y 319) aún dice `MOTION_SURFACE_MS` (400), y el sim del leader también usa 400.
+   - No lo considero un incumplimiento. R8.3 dice «conserva su fundido retardado» sin fijar el número, E4.3 lleva el retardo de la insignia a 450 y el puntero E4 de `design.md` (línea 255) remite a E4.3–E4.9. El handoff de c50 solo pedía conservar los fundidos de R8.2 y R8.3.
+   - La sonda S1 confirma que R8.3 solo muestrea a los 300 y 2400 ms, así que no distingue 400 de 450.
+   - Si el leader quiere 400, falta un candado (por ejemplo, la opacidad a los 425 ms) y devolver la constante. Si quiere 450, basta con actualizar las líneas 267 y 319 de `design.md`.
+2. **R21.1 cuenta llamadas pero no mira a quién cancelan.** La sonda S2b cancela `pingoScale` en vez de `pingoTranslateY`, sigue en 39 llamadas y sale verde. La producción es correcta (cancela `ringScale`, `ringOpacity`, `pingoTranslateY` y los 36 `progress`). La brecha está en el test: `mockCancelAnimation` recibe el shared value y podría compararse por identidad con su valor.
+3. **Riesgo de rendimiento en dispositivo, para el smoke R16.**
+   - Cada `ConfettiPiece` devuelve `position`, `top` y `left` constantes dentro del worklet.
+   - En Reanimated 4.5.1, `styleUpdater` (`node_modules/react-native-reanimated/src/hook/useAnimatedStyle.ts`, rama sin animaciones inline) llama a `updateProps` con todo `newValues` siempre que `!shallowEqual(oldValues, newValues)`. El array de `transform` es nuevo en cada frame, así que cada frame reenvía también las tres claves de layout de 36 piezas, en bucle mientras la celebración está abierta. Con Fabric, las props de layout no van por la vía rápida de props de UI.
+   - Viene de la ronda 1 (`design.md:238` y R6.2 prescriben ese estilo inicial). Con una sola pasada pesaba poco; con 36 bucles infinitos, el coste dura todo lo que la celebración esté abierta.
+   - La sonda S11 muestra que sacarlas a un estilo estático, como ya hacen Pingo y la insignia, deja verdes R6 y R13: `getAnimatedStyle` ve el estilo combinado.
+   - Que el smoke R16 vigile tirones del confeti en Android. Si aparecen, el arreglo cabe en una línea sin tocar tests.
+4. **El timeout de 60 s tiene margen de algo más de 2× bajo carga.** Con la máquina libre, R6.6 tarda 14,3 s. En el init.sh, el fichero entero tardó 62 s. Si varios jest corren a la vez (memoria `jest-timeout-por-carga-entre-codex`), R6.6 puede acercarse al límite. Por ahora es solo una nota.
+5. **c56 necesitó dos intentos.** El primero rompió el cierre JSX del contenedor del confeti (dos `● Test suite failed to run`). Codex lo corrigió solo en producción y lo anotó en el impl, como permite el handoff. No afecta a C4.
+6. **R16 (smoke humano en dev build de Android) sigue pendiente,** con su casilla abierta. No bloquea este veredicto, pero sí el `done` (CLAUDE.md: requisitos que solo cierra un humano). El smoke debería cubrir también la observación 3.
