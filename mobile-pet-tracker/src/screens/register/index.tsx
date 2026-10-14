@@ -23,6 +23,8 @@ import { FormError } from '../../components/form-error';
 import { useTranslate } from '../../providers/language-provider';
 import { HomeEntrance } from '../home/home-entrance';
 
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 type RegisterField =
   | 'firstName'
   | 'lastName'
@@ -94,9 +96,13 @@ export function RegisterScreen() {
   const t = useTranslate();
 
   async function handleSubmit() {
-    setSubmitting(true);
     setFieldErrors({});
     setGeneralError(null);
+    if (!EMAIL_PATTERN.test(email.trim())) {
+      setFieldErrors({ email: t('forgot.invalidEmail') });
+      return;
+    }
+    setSubmitting(true);
 
     try {
       const result = await register(process.env.EXPO_PUBLIC_API_URL, {
