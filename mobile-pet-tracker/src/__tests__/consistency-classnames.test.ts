@@ -185,7 +185,7 @@ describe('#62 R7: ningún glifo tipográfico hace de icono', () => {
     const profile = readSource(join('screens', 'profile', 'index.tsx'));
 
     expect(profile).toContain(
-      "import { Bell, ChevronRight, FileText, Map as MapIcon, Plus, Wifi } from 'reicon-react-native';",
+      "import { Bell, Camera, ChevronRight, FileText, Map as MapIcon, Plus, Wifi } from 'reicon-react-native';",
     );
     expect(
       profile.match(/<ChevronRight size=\{20\} color=\{muted\} \/>/g),
@@ -398,7 +398,7 @@ describe('#98 R10: los candados que esta feature no mueve', () => {
     expect(food.match(/style=\{CONTINUOUS_CORNER\}/g)).toHaveLength(1);
     expect(count(/style=\{CONTINUOUS_CORNER\}/g)).toBe(31 + 1 + 4 + 1); // #41 R9: geofences-link; #168; #170 R8: alert-detail-map
     expect(count(/rounded-xl bg-accent(?=[\s'"`])/g)).toBe(13 + 1 + 1 + 1 + 1 + 1 + 1 - 1); // #146 R8, #146 R9; #118 R7; #155 R3 // #158 R3: docs-upload; // #158 R5: docs-upload-submit; // #173 R5
-    expect(count(/bg-accent-soft/g)).toBe(16 + 2 + 1 - 1); // #147 R4: meal-time-edit y add-meal-time-button; #105 R11; #168 R5: PetPills pasa a huecos pastel
+    expect(count(/bg-accent-soft/g)).toBe(16 + 2 + 1 - 1 - 1); // #147 R4: meal-time-edit y add-meal-time-button; #105 R11; #168 R5: PetPills pasa a huecos pastel; // #173 R6
     expect(home.match(/text-accent-strong\b/g)).toHaveLength(2);
     expect(food.match(/text-accent-strong\b/g)).toHaveLength(1);
     expect(filesMatching(/\brounded-(?:2xl|lg|md|sm)\b/)).toEqual([]);
@@ -464,7 +464,7 @@ describe('#64 R9: el color categórico solo se nombra en el módulo de paleta', 
     const reminders = readSource(join('screens', 'reminders', 'index.tsx'));
     const docs = readSource(join('screens', 'docs', 'index.tsx'));
 
-    expect(accentSoftCount).toBe(16 + 2 + 1 - 1); // #147 R4, #105 R11; #168 R5: PetPills pasa a huecos pastel
+    expect(accentSoftCount).toBe(16 + 2 + 1 - 1 - 1); // #147 R4, #105 R11; #168 R5: PetPills pasa a huecos pastel; // #173 R6
     expect(reminders.match(/bg-accent-soft/g)).toHaveLength(1);
     expect(docs.match(/bg-accent-soft/g)).toBeNull();
   });

@@ -38,3 +38,23 @@ describe('#173 R4: avatars solo en Perfil', () => {
     expect(filesMatching(/variant="avatars"/)).toEqual(['screens/profile/index.tsx']);
   });
 });
+
+describe('#173 R2: inventario de radios nuevos', () => {
+  it('reserva rounded-hero al Card compartido y el skeleton de Perfil', () => {
+    expect(filesMatching(/\brounded-hero\b/)).toEqual(['components/card.tsx', 'screens/profile/index.tsx']);
+  });
+});
+
+describe('#173 R2.4: inventario de tamaños nuevos', () => {
+  it('reserva text-26 al nombre de la mascota en Perfil', () => {
+    expect(filesMatching(/\btext-26\b/)).toEqual(['screens/profile/index.tsx']);
+  });
+});
+
+describe('#173 R3: Card hero y flat solo en Perfil', () => {
+  it('Perfil es el único consumidor de Card hero y lo usa una vez', () => {
+    expect(filesMatching(/variant="hero"/)).toEqual(['screens/profile/index.tsx']);
+    const profile = readFileSync(join(sourceRoot, 'screens/profile/index.tsx'), 'utf8');
+    expect(profile.match(/variant="hero"/g)).toHaveLength(1);
+  });
+});

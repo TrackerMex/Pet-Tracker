@@ -1143,20 +1143,25 @@ describe('#168 R1: Perfil pinta el título grande en todas sus ramas', () => {
   });
 });
 
-describe('#168 R4: Perfil sustituye el hero por profile-pet-card', () => {
+describe('#168 R4 (enmendado por #173 R6): profile-pet-card es la Card hero con anillo y cámara', () => {
   beforeEach(setupProfile168);
 
   it('ordena la tarjeta en avatar, nombre y chips', async () => {
     await renderProfile();
     const card = await screen.findByTestId('profile-pet-card');
     const scope = within(card);
-    expect(card.props.className).toBe('rounded-card border border-border bg-surface-secondary p-4 items-center gap-3');
+    expect(card.props.className).toBe('rounded-hero bg-surface-secondary p-4.5 items-center gap-2.5');
     expect(card.children).toHaveLength(3);
-    expect(card.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['profile-pet-avatar', 'profile-pet-name', 'profile-pet-chips']);
-    expect(profileChild(card, 0)).toBe(scope.getByTestId('profile-pet-avatar'));
+    expect(card.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['profile-pet-avatar-ring', 'profile-pet-name', 'profile-pet-chips']);
+    const ring = scope.getByTestId('profile-pet-avatar-ring');
+    expect(profileChild(card, 0)).toBe(ring);
+    expect(ring.props.className).toBe('relative rounded-full border-4 border-surface');
+    expect(ring.children).toHaveLength(2);
+    expect(profileChild(ring, 0)).toBe(within(ring).getByTestId('profile-pet-avatar'));
+    expect(profileChild(ring, 1)).toBe(within(ring).getByTestId('change-photo'));
     const name = scope.getByTestId('profile-pet-name');
     expect(profileChild(card, 1)).toBe(name);
-    expect(name.props.className).toBe('text-2xl font-black text-foreground');
+    expect(name.props.className).toBe('text-26 font-black text-foreground');
     expect(name).toHaveTextContent('Luna');
     expect(profileChild(card, 2)).toBe(scope.getByTestId('profile-pet-chips'));
   });
@@ -1180,15 +1185,24 @@ describe('#168 R4: Perfil sustituye el hero por profile-pet-card', () => {
     expect(avatar.props.height).toBe(96);
   });
 
-  it('deja change-photo inmediatamente después de la tarjeta', async () => {
+  it('superpone la cámara en el anillo con su tamaño, tinta y objetivo táctil', async () => {
     await renderProfile();
     const card = await screen.findByTestId('profile-pet-card');
-    const index = card.parent!.children.indexOf(card);
-    expect(profileChild(card.parent!, index + 1)).toBe(screen.getByTestId('change-photo'));
-    expect(within(card).queryByTestId('change-photo')).toBeNull();
+    const ring = within(card).getByTestId('profile-pet-avatar-ring');
+    const camera = within(ring).getByTestId('change-photo');
+    expect(camera.props.className).toBe('absolute -bottom-0.5 -right-0.5 size-8.5 items-center justify-center rounded-full border-3 border-surface-secondary bg-accent');
+    expect(camera.props.accessibilityRole).toBe('button');
+    expect(camera.props.accessibilityLabel).toBe('Cambiar foto');
+    expect(camera.props.hitSlop).toEqual(TOUCH_SLOP);
+    expect(camera.props.variant).toBeUndefined();
+    expect(camera.children).toHaveLength(1);
+    const glyph = within(camera).getByTestId('profile-icon-camera');
+    expect(profileChild(camera, 0)).toBe(glyph);
+    expect(glyph.props.size).toBe(16);
+    expect(glyph.props.style).toEqual({ color: 'accent-foreground' });
   });
 
-  it('con la subida fallida deja change-photo y luego photo-upload-error tras la tarjeta', async () => {
+  it('con la subida fallida deja photo-upload-error inmediatamente tras la tarjeta', async () => {
     mockLaunchImageLibrary.mockResolvedValue({
       canceled: false,
       assets: [{ uri: 'file:///luna.webp', mimeType: 'image/webp' } as never],
@@ -1202,9 +1216,34 @@ describe('#168 R4: Perfil sustituye el hero por profile-pet-card', () => {
     const error = await screen.findByTestId('photo-upload-error');
     const card = screen.getByTestId('profile-pet-card');
     const index = card.parent!.children.indexOf(card);
-    expect(profileChild(card.parent!, index + 1)).toBe(screen.getByTestId('change-photo'));
-    expect(profileChild(card.parent!, index + 2)).toBe(error);
+    expect(profileChild(card.parent!, index + 1)).toBe(error);
     expect(within(card).queryByTestId('photo-upload-error')).toBeNull();
+  });
+
+  it('expone la cámara habilitada en reposo', async () => {
+    await renderProfile();
+    await screen.findByTestId('profile-pet-card');
+
+    expect(screen.getByTestId('change-photo').props.accessibilityState).toEqual({ disabled: false });
+    expect(screen.getByTestId('change-photo').props.accessibilityLabel).toBe('Cambiar foto');
+  });
+
+  it('expone la cámara deshabilitada mientras la subida está en curso', async () => {
+    let finish!: (value: { kind: 'error' }) => void;
+    const requested = new Promise<{ kind: 'error' }>((resolve) => { finish = resolve; });
+    mockLaunchImageLibrary.mockResolvedValue({
+      canceled: false,
+      assets: [{ uri: 'file:///luna.webp', mimeType: 'image/webp' } as never],
+    });
+    mockRequestPhotoUploadUrl.mockReturnValue(requested);
+    await renderProfile();
+    await screen.findByTestId('profile-pet-card');
+
+    await fireEvent.press(screen.getByTestId('change-photo'));
+
+    await waitFor(() => expect(screen.getByTestId('change-photo').props.accessibilityState).toEqual({ disabled: true }));
+    await act(async () => { finish({ kind: 'error' }); });
+    await screen.findByTestId('photo-upload-error');
   });
 
   it('no monta el hero compartido', async () => {
@@ -1217,7 +1256,7 @@ describe('#168 R4: Perfil sustituye el hero por profile-pet-card', () => {
     mockGetPet.mockReturnValue(pending<PetState>());
     await renderProfile();
     const skeleton = screen.getByTestId('profile-hero-skeleton');
-    expect(skeleton.props.className).toBe('skeleton__root h-52 w-full rounded-card');
+    expect(skeleton.props.className).toBe('skeleton__root h-52 w-full rounded-hero');
   });
 });
 
