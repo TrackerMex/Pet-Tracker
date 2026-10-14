@@ -509,3 +509,42 @@ de la enmienda está en su `requirements.md` §R11.
 - [X] Enmienda #168 aprobada por humano
 
 **Regla N1 (enmienda B4 de #168)**: Salud, Nutrición y Perfil abren con el título grande; Inicio es la única pestaña con PetHeroHeader. Devolver el hero a una de las tres es una enmienda a #168.
+
+## Enmienda #172 — Las pantallas de cuenta como el canvas
+
+Iniciar sesión, Crear cuenta, Recuperar contraseña y Nueva contraseña siguen
+el canvas de #172 (`specs/mobile-account-screens-polish/canvas/`).
+
+**Pingo flota.** Los bucles de reposo de §Animación se amplían a tres
+pantallas de cuenta: en Crear cuenta, Recuperar contraseña y Nueva contraseña,
+Pingo flota con el componente compartido `PingoFloat`
+(`src/components/pingo-float.tsx`). Anima `translateY` hasta
+`-MOTION_PINGO_FLOAT_OFFSET_Y` (10) con `MOTION_PINGO_FLOAT_TIMING` (1500 ms
+por tramo, `ease-in-out`), en bucle infinito e invertido, y lo cancela al
+desmontar. Con reduce motion no arranca. La bienvenida conserva su flotación
+de 4 px. Iniciar sesión no flota: Pingo saluda con su burbuja. Ninguna otra
+pantalla usa `PingoFloat` sin una enmienda propia.
+
+**El candado lleva labio.** El tile del candado de Recuperar
+(`forgot-lock-tile`) es un tile acento con labio: `rounded-xl border-b-4
+border-black/25 bg-accent`. Es la única excepción a la regla de que solo los
+botones llevan labio, y el labio va delante de `bg-accent` para no contar como
+primario.
+
+**La CTA va al pie.** En las cuatro pantallas, la CTA se ancla al pie con un
+espaciador `flex-1` y el contenido deja de centrarse en vertical. Esto revierte
+el centrado de `#61 R8` en esas pantallas. El `ScrollView`,
+`keyboardShouldPersistTaps` y el comportamiento de teclado no cambian. La rama
+sin token de Nueva contraseña sigue centrada.
+
+**Alturas.** La CTA de cuenta mide 56 (`h-14`) y los inputs de cuenta 52
+(`h-13`).
+
+**Peso 800.** `font-extrabold` (Inter ExtraBold) se usa solo en la etiqueta de
+la CTA de cuenta y en la de `forgot-resend`, que ocupa su sitio.
+
+**Ojo de contraseña.** Todo campo de contraseña de cuenta usa `PasswordInput`
+(`src/components/password-input.tsx`), con un botón de 44 que alterna
+«Mostrar contraseña» y «Ocultar contraseña».
+
+- [x] Enmienda aprobada por humano
