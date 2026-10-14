@@ -649,3 +649,495 @@ de copy sea la siguiente libre al hacer el merge (§2.26, o §2.27 si #170
 mergea antes).
 
 - [x] Enmienda E3 aprobada por humano (fecha: 2026-10-13)
+
+---
+
+## Enmienda E4 — la celebración como su artboard
+
+> Escrita el 2026-10-14, después de aprobar la ronda 3 (`b94c9295`). A
+> diferencia de E1–E3, **cambia el comportamiento**: la celebración pasa a
+> moverse y a medir como su artboard,
+> `specs/mobile-welcome-pingo/design-src/celebration.dc.html`. Su casilla va
+> **sin marcar**: el humano reabre el gate solo para esta enmienda, y la
+> ronda 4 no arranca hasta que esté marcada. Los `it` que cambian, los nuevos
+> y las sondas están en `tasks.md` §E4.
+
+Mandato del humano (2026-10-13), literal: «si, dale aclara en las otras
+sesiones que el diseño final debe de quedar como el artifac». Donde el build y
+el artboard difieren, gana el artboard. E4 cubre las filas 1–14 del informe
+de divergencias (`progress/explore_171-canvas-parity.md`). La fila 15
+(botones) es de #177 y las filas 16–24 (vacío de Inicio), de #176.
+
+### El hecho medido
+
+«Hoy» es `src/components/celebration.tsx` en `b94c9295`. La altura de ventana
+en jest es `H = 1334`, la misma con la que E2 cuadró su tabla.
+
+| # | Artboard | Hoy | Lo fija hoy |
+|---|---|---|---|
+| 1 | Cada pieza lleva `fall … infinite`: llueve mientras la pantalla está abierta | Una sola pasada (`withDelay` + `withTiming`, sin repetir); la última termina a los 4430 ms | R6.4; `design-drift` R13.2 (prohíbe `withRepeat`) |
+| 2 | 36 piezas | 24 piezas | R6.1, R6.5 (E2) y el texto de la carta |
+| 3 | `var(--accent)` y #F79009, #7A5AF8, #2E90FA, #F04438, #12B76A, seis piezas de cada | `bg-accent` y `CONFETTI_FILLS` (cinco `bg-category-*-strong`, más oscuros) | E1; R6.1; `consistency-classnames` #64 R9 (quince clases) |
+| 4 | 11 elipses de 8–12 × 6 px y 25 rectángulos de 8–12 × 14/18 px con radio 2 px | Tres formas (8×6 redonda, 10×14 y 12×16 rectas), ocho de cada | E1; R6.1. #62 R4 veta `rounded-2xl/lg/md/sm`, **no** `rounded-xs` |
+| 5 | Duraciones de 2320 a 3593 ms y retardos de 128 a 1396 ms, pieza a pieza; curva `cubic-bezier(.2,.6,.4,1)` | Fórmulas `(i·137) % 1200` y `(i·53) % 1200`; la curva coincide | R6.3, R6.5 |
+| 6 | Anillo de acento detrás de Pingo, `ping 2.2s ease-out infinite` (escala .55→1.5, opacidad .55→0) | No existe | Fuera de alcance (D); punto 7 de la carta |
+| 7 | Pop de 600 ms y luego `float 3s ease-in-out 600ms infinite` (0 → −10 px → 0) | Solo el pop; Pingo queda quieto | Fuera de alcance (D); `design-drift` R13.2 |
+| 8 | Hero de 220×220 con `margin-top: 40`; imagen de 170 px | Hero e imagen de 200×200, sin margen | R7.1, R7.3, R8.2 |
+| 9 | Insignia de 56 px en right 18 / bottom 26; check **SVG** de 28 px, trazo 3; pop de 500 ms con 450 ms de retardo | `size-14` en right 0 / bottom 0; glifo de texto «✓»; retardo de 400 ms | R2.4, R7.2, R7.4 |
+| 10 | Keyframes `pop`: escala .6 y opacidad 0; al 60 %, escala 1.08 y opacidad 1; al 100 %, escala 1. `ease-out` por tramo | `withSpring(1, MOTION_CELEBRATION_SPRING)` (400 ms, 0.5) | R7.4; `motion.test` (E3) |
+| 11 | `rise 400ms ease-out` (opacidad 0→1, translateY 14→0) en título (500 ms), cuerpo (580), fichas (660) y acciones (740) | Estáticos | Fuera de alcance (D) |
+| 12 | Título 30 px, 900, `letter-spacing: -0.02em`, `margin-top: 8` | `text-3xl font-black`, sin tracking ni margen | `tab-headers-canvas` #168 R1 reserva el literal con `tracking-tight` a las tres pestañas |
+| 13 | Cuerpo 15 px, `line-height: 1.5`, `max-width: 300` | `text-base` (16 px), sin ancho máximo | `design-drift` R13.1 (sin corchetes) |
+| 14 | `gap: 14`; padding 80 / 24 / 40 | `gap-4`; abajo `insets.bottom + 24` | Ningún `it` |
+
+Precisiones medidas en el spike del leader (fuera del árbol, sobre
+`b94c9295`, con esta enmienda aplicada):
+
+- Tailwind v4 genera el espaciado de forma dinámica: `gap-3.5` = 14 px,
+  `max-w-75` = 300 px, `mt-10` = 40 px, `h-4.5` = 18 px, `leading-5.5` =
+  22 px. `rounded-xs` da 2 px con el `--radius` de heroui-native. Solo los
+  15 px del cuerpo necesitan token.
+- En jest no se resuelve ninguna clase: los candados aseveran `className`.
+- El `opacity: .16` inline del anillo solo se ve con la animación parada; los
+  keyframes lo pisan. E4 adopta .55 → 0.
+- Uniwind traduce `em` multiplicando por el rem (16), no por el `font-size`
+  del nodo. `tracking-tight` (−0.025em) da −0.4 px en nativo sobre el título
+  de 30 px, no −0.75 px. Pasa lo mismo hoy en las tres pestañas. El
+  `--tracking-title: -0.02em` de #173 tampoco lo arregla (−0.32 px). Lo
+  decide la prueba de humo.
+- Todos los valores de esta enmienda salen de Reanimated en jest. La deriva
+  de reinicio de `withRepeat` y `withSequence` es 0. Con la enmienda
+  aplicada, `celebration.test.tsx` pasa 66 de 66 y siguen verdes
+  `design-drift`, `consistency-classnames`, `motion.test`, `global-css`,
+  `tab-headers-canvas`, Vincular, la bienvenida, Añadir mascota,
+  `legibility-classnames`, `language-provider` y `empty-state`. `tsc` sale
+  con 0.
+
+### Qué cambia
+
+**E4.1 — R6 reescrito: 36 piezas de confeti en bucle (filas 1, 2, 4 y 5).**
+`celebration.tsx` sustituye `CONFETTI_COUNT`, `COLORS`, `SHAPES` y las
+fórmulas de posición, retardo y duración por esta tabla literal
+`[left %, className, duración ms, retardo ms]`. Sale del artboard:
+`left = round(px / 390 · 100)`; ancho 8/10/12 → `w-2`/`w-2.5`/`w-3`; alto
+6/14/18 → `h-1.5`/`h-3.5`/`h-4.5`; elipse → `rounded-full`, rectángulo →
+`rounded-xs`; color por `i % 6`.
+
+```ts
+const CONFETTI = [
+  [42, 'h-1.5 w-3 rounded-full bg-accent', 3008, 308],
+  [9, 'h-4.5 w-2.5 rounded-xs bg-confetti-amber', 2392, 1097],
+  [7, 'h-1.5 w-2 rounded-full bg-confetti-violet', 2639, 1039],
+  [57, 'h-1.5 w-2 rounded-full bg-confetti-blue', 2343, 856],
+  [72, 'h-1.5 w-3 rounded-full bg-confetti-rose', 2321, 869],
+  [29, 'h-1.5 w-3 rounded-full bg-confetti-green', 3484, 1291],
+  [76, 'h-1.5 w-2 rounded-full bg-accent', 3012, 1199],
+  [6, 'h-3.5 w-2.5 rounded-xs bg-confetti-amber', 2472, 1140],
+  [19, 'h-3.5 w-3 rounded-xs bg-confetti-violet', 2441, 1107],
+  [73, 'h-4.5 w-2 rounded-xs bg-confetti-blue', 2570, 1396],
+  [75, 'h-1.5 w-2.5 rounded-full bg-confetti-rose', 2584, 1308],
+  [72, 'h-4.5 w-2 rounded-xs bg-confetti-green', 3355, 128],
+  [27, 'h-3.5 w-3 rounded-xs bg-accent', 3593, 1016],
+  [41, 'h-3.5 w-2.5 rounded-xs bg-confetti-amber', 3399, 953],
+  [39, 'h-1.5 w-3 rounded-full bg-confetti-violet', 2568, 508],
+  [11, 'h-3.5 w-3 rounded-xs bg-confetti-blue', 2814, 1176],
+  [45, 'h-1.5 w-3 rounded-full bg-confetti-rose', 2789, 919],
+  [15, 'h-3.5 w-2 rounded-xs bg-confetti-green', 3056, 1048],
+  [20, 'h-4.5 w-2 rounded-xs bg-accent', 3063, 1001],
+  [10, 'h-3.5 w-2.5 rounded-xs bg-confetti-amber', 3373, 1142],
+  [91, 'h-4.5 w-2.5 rounded-xs bg-confetti-violet', 3417, 717],
+  [60, 'h-3.5 w-2.5 rounded-xs bg-confetti-blue', 2391, 140],
+  [91, 'h-4.5 w-2 rounded-xs bg-confetti-rose', 2333, 1360],
+  [92, 'h-4.5 w-3 rounded-xs bg-confetti-green', 3525, 634],
+  [58, 'h-3.5 w-3 rounded-xs bg-accent', 2990, 582],
+  [3, 'h-4.5 w-2 rounded-xs bg-confetti-amber', 2927, 945],
+  [15, 'h-3.5 w-2 rounded-xs bg-confetti-violet', 2320, 1011],
+  [17, 'h-3.5 w-2.5 rounded-xs bg-confetti-blue', 3014, 507],
+  [11, 'h-4.5 w-2.5 rounded-xs bg-confetti-rose', 3119, 340],
+  [36, 'h-3.5 w-3 rounded-xs bg-confetti-green', 3081, 280],
+  [93, 'h-3.5 w-3 rounded-xs bg-accent', 2934, 850],
+  [30, 'h-1.5 w-2 rounded-full bg-confetti-amber', 2369, 309],
+  [30, 'h-3.5 w-2 rounded-xs bg-confetti-violet', 2677, 1348],
+  [77, 'h-1.5 w-2.5 rounded-full bg-confetti-blue', 2738, 373],
+  [19, 'h-4.5 w-2.5 rounded-xs bg-confetti-rose', 3294, 858],
+  [74, 'h-4.5 w-3 rounded-xs bg-confetti-green', 2457, 652],
+] as const;
+```
+
+- **R6.1** WHILE reduce motion no está activo THE SYSTEM SHALL pintar en
+  `{id}-confetti` exactamente 36 hijos directos, `{id}-confetti-0` …
+  `{id}-confetti-35`. El único hijo `View` de la pieza `i` lleva exactamente
+  la `className` de la fila `i` de `CONFETTI`.
+- **R6.2** THE SYSTEM SHALL que cada pieza, al montarse y antes de su
+  retardo, tenga el estilo
+  `{ position: 'absolute', top: 0, left: '<left>%', opacity: 0, transform: [{ translateY: -40 }, { rotate: '0deg' }] }`,
+  con `<left>` de su fila.
+- **R6.3** THE SYSTEM SHALL animar el progreso de cada pieza con
+  `withDelay(retardo, withRepeat(withTiming(1, { ...MOTION_CONFETTI_FALL_TIMING, duration }), -1, false))`,
+  con `retardo` y `duration` de su fila. El mapeo no cambia: opacidad
+  `interpolate(progreso, [0, 0.1, 1], [0, 1, 0])`,
+  `translateY = -40 + progreso * (alto de ventana + 80)` y
+  `rotate = progreso * 540` grados. Antes de su retardo, la pieza sigue en
+  sus valores iniciales.
+- **R6.4** WHILE la celebración está abierta, WHEN una pieza termina su
+  caída, THE SYSTEM SHALL volver a lanzarla desde arriba sin repetir el
+  retardo. Con la pieza 21 (retardo 140, duración 2391): a los 2500 ms
+  `translateY` > 1300, y a los 2600 ms `translateY` > 0 y < 400 (medido:
+  1373.91 y 80.24). Si el retardo se repitiera, a los 2600 ms seguiría en −40.
+- **R6.5** WHEN han pasado 1500 ms desde el montaje THE SYSTEM SHALL dejar
+  cada pieza `i` en la opacidad, el `translateY` y los grados de `rotate` de
+  la tabla `CONFETTI_AT_1500`, con las tolerancias de E2
+  (`toBeCloseTo(…, 2)` en opacidad y `toBeCloseTo(…, 0)` en las otras dos). A
+  esa hora todas las piezas arrancaron (el mayor retardo es 1396 ms) y
+  ninguna terminó su primer ciclo (el primero en terminar acaba a los
+  2531 ms).
+
+  ```ts
+  const CONFETTI_AT_1500 = [
+    [0.25, 1055.8, 418.5], [0.627, 575.7, 235.1], [0.613, 593.9, 242.1],
+    [0.416, 844.2, 337.7], [0.421, 837.8, 335.2], [0.919, 204.2, 93.2],
+    [0.803, 352.5, 149.9], [0.682, 505.8, 208.5], [0.645, 553.3, 226.6],
+    [0.98, 127.2, 63.9], [0.876, 258.8, 114.1], [0.236, 1073.2, 425.1],
+    [0.71, 470.8, 195.1], [0.645, 553.1, 226.5], [0.261, 1041.5, 413.0],
+    [0.761, 405.5, 170.1], [0.54, 686.8, 277.6], [0.677, 513.0, 211.2],
+    [0.64, 559.1, 228.8], [0.785, 374.4, 158.3], [0.498, 739.7, 297.8],
+    [0.107, 1237.9, 488.0], [0.919, 204.2, 93.3], [0.467, 779.3, 312.9],
+    [0.366, 908.9, 362.4], [0.58, 636.3, 258.3], [0.535, 693.2, 280.0],
+    [0.333, 950.1, 378.1], [0.278, 1020.0, 404.8], [0.25, 1055.4, 418.3],
+    [0.513, 720.8, 290.5], [0.152, 1181.1, 466.3], [0.929, 191.7, 88.5],
+    [0.234, 1076.8, 426.5], [0.568, 650.8, 263.8], [0.312, 977.1, 388.4],
+  ] as const;
+  ```
+
+  La tabla depende del alto de ventana de jest (1334). Si cambia, se
+  recalcula la tabla y no la tolerancia.
+- **R6.6** WHEN han pasado 13830 ms desde el montaje THE SYSTEM SHALL tener
+  las 36 piezas con opacidad > 0: todas en vuelo, con 204 ms de margen frente
+  a la frontera de ciclo más cercana.
+
+**E4.2 — Colores del confeti como tokens (fila 3).**
+
+- `src/theme/global.css` declara en `@theme`, una sola vez para los dos
+  temas (decisión E4-P1): `--color-confetti-amber: #F79009;`,
+  `--color-confetti-violet: #7A5AF8;`, `--color-confetti-blue: #2E90FA;`,
+  `--color-confetti-rose: #F04438;` y `--color-confetti-green: #12B76A;`.
+- `CONFETTI_FILLS` sale de `src/utils/category-palette.ts` y de
+  `celebration.tsx`. El inventario de #64 R9 vuelve a diez clases.
+- Ningún fichero de producción salvo `celebration.tsx` nombra
+  `confetti-amber`, `confetti-violet`, `confetti-blue`, `confetti-rose` ni
+  `confetti-green`, y ninguno salvo él usa `rounded-xs`.
+
+**E4.3 — R7 reescrito: pop por keyframes (filas 9 y 10).** La numeración se
+conserva para que cada `it` siga nombrando su requisito.
+
+- **R7.1** WHILE reduce motion no está activo THE SYSTEM SHALL montar
+  `{id}-pingo` con el estilo
+  `{ width: 170, height: 170, opacity: 0, transform: [{ translateY: 0 }, { scale: 0.6 }] }`
+  (`MOTION_POP_SCALE`; el `translateY` es la flotación de R18, en el mismo
+  nodo). En el mismo efecto de montaje anima la opacidad con
+  `withTiming(1, { ...MOTION_CELEBRATION_EASE_OUT, duration: 360 })` y la
+  escala con
+  `withSequence(withTiming(MOTION_CELEBRATION_POP_PEAK, { ...MOTION_CELEBRATION_EASE_OUT, duration: 360 }), withTiming(1, { ...MOTION_CELEBRATION_EASE_OUT, duration: 240 }))`.
+  360 y 240 son el 60 % y el 40 % de `MOTION_CELEBRATION_POP_MS` (600).
+- **R7.2** WHILE reduce motion no está activo THE SYSTEM SHALL montar
+  `{id}-badge` con el estilo
+  `{ position: 'absolute', right: 18, bottom: 26, opacity: 0, transform: [{ scale: 0.6 }] }`.
+  Anima opacidad y escala como en R7.1, con `MOTION_CELEBRATION_BADGE_POP_MS`
+  (500: tramos de 300 y 200 ms), y cada una envuelta en
+  `withDelay(MOTION_CELEBRATION_BADGE_DELAY_MS, …)` (450).
+- **R7.3** THE SYSTEM SHALL cumplir estos tiempos:
+  - WHEN han pasado 650 ms, `{id}-pingo` está en opacidad 1 y escala 1 (solo
+    esas dos: su `translateY` ya vale −0.0213, porque la flotación arrancó a
+    los 600 ms);
+  - WHEN han pasado 300 ms, `{id}-badge` sigue en opacidad 0 y escala 0.6;
+  - WHEN han pasado 1000 ms, `{id}-badge` está en opacidad 1 y escala 1.
+- **R7.4** WHILE reduce motion no está activo THE SYSTEM SHALL dejar estos
+  pares `[opacidad, escala]`, comparados con `toBeCloseTo(…, 3)`:
+  - `{id}-pingo`: a los 0 ms `[0, 0.6]`, a los 100 `[0.4157, 0.7995]`, a los
+    200 `[0.7422, 0.9563]` y a los 300 `[0.9555, 1.0586]`;
+  - `{id}-badge`: a los 300 y 450 ms `[0, 0.6]`, a los 550
+    `[0.4884, 0.8344]` y a los 650 `[0.8438, 1.0050]`.
+
+  Y en el segundo tramo, sin `toBeCloseTo` (el reinicio de tramo puede
+  llegar un frame tarde en jest): Pingo a los 420 y 540 ms, y la insignia a
+  los 800 y 900 ms, tienen opacidad 1 y `1 < escala < 1.08`, con la escala
+  de la segunda muestra menor que la de la primera. No se muestrea en la
+  frontera de `withSequence` (360 ms Pingo, 750 ms insignia).
+
+**E4.4 — R17 nuevo: anillo de ping (fila 6).**
+
+- **R17.1** WHILE reduce motion no está activo THE SYSTEM SHALL pintar
+  `{id}-ring` como primer hijo de `{id}-hero`, con
+  `className="absolute inset-0 rounded-full bg-accent"`,
+  `pointerEvents="none"`, `accessibilityElementsHidden` e
+  `importantForAccessibility="no-hide-descendants"`.
+- **R17.2** THE SYSTEM SHALL animar la escala del anillo de
+  `MOTION_PING_FROM` (0.55) a `MOTION_PING_TO_SCALE` (1.5) y su opacidad de
+  `MOTION_PING_FROM` (0.55) a 0, cada una con
+  `withRepeat(withTiming(destino, { ...MOTION_CELEBRATION_EASE_OUT, duration: MOTION_CELEBRATION_PING_MS }), -1, false)`
+  (2200 ms). Pares `[escala, opacidad]`, con `toBeCloseTo(…, 3)`: a los 0 ms
+  `[0.55, 0.55]`, a los 550 `[0.9092, 0.3420]`, a los 1100
+  `[1.2004, 0.1734]` y a los 2100 `[1.4965, 0.0020]`.
+- **R17.3** WHILE la celebración está abierta THE SYSTEM SHALL reiniciar el
+  anillo: a los 2750 ms, escala < 1 y opacidad > 0.3.
+
+**E4.5 — R18 nuevo: Pingo flota (fila 7).**
+
+- **R18.1** WHILE reduce motion no está activo THE SYSTEM SHALL animar el
+  `translateY` de `{id}-pingo` con
+  `withDelay(MOTION_CELEBRATION_POP_MS, withRepeat(withTiming(-MOTION_PINGO_FLOAT_OFFSET_Y, MOTION_PINGO_FLOAT_TIMING), -1, true))`.
+  Valores: 0 a los 600 ms, −5 a los 1350 y −10 a los 2100.
+- **R18.2** WHILE la celebración está abierta THE SYSTEM SHALL seguir
+  flotando: 0 a los 3600 ms y −10 a los 5100 (extremos de tramo, con
+  `toBeCloseTo(…, 1)`).
+
+Las constantes son las de #172 (`MOTION_PINGO_FLOAT_OFFSET_Y = 10` y
+`MOTION_PINGO_FLOAT_TIMING`, 1500 ms por tramo con `bezier(0.42, 0, 0.58, 1)`),
+con su nombre y su valor (decisión E4-P5). E4 las declara si #172 no ha mergeado
+al escribir el handoff, y las reutiliza si sí. E4 no usa el componente
+`PingoFloat` de #172.
+
+**E4.6 — R19 nuevo: entrada escalonada (fila 11).**
+
+- **R19.1** WHILE reduce motion no está activo THE SYSTEM SHALL pintar
+  `{id}-title`, `{id}-body`, `{id}-details` y `{id}-actions` como nodos
+  animados (`Animated.Text` o `Animated.View`, con su `className`) que
+  empiezan con opacidad 0 y `translateY` `MOTION_CELEBRATION_RISE_OFFSET_Y`
+  (14). Animan a 1 y 0 con
+  `withDelay(MOTION_CELEBRATION_RISE_DELAY_MS + k * MOTION_CELEBRATION_RISE_STAGGER_MS, withTiming(…, { ...MOTION_CELEBRATION_EASE_OUT, duration: MOTION_SURFACE_MS }))`,
+  con `k` fijo por nodo: título 0, cuerpo 1, fichas 2 y acciones 3. A los
+  700 ms, `[opacidad, translateY]` vale `[0.685, 4.41]` en el título,
+  `[0.445, 7.77]` en el cuerpo, `[0.161, 11.75]` en las fichas y `[0, 14]` en
+  las acciones. A los 1200 ms, los cuatro valen `[1, 0]`.
+- **R19.2** IF la celebración no trae fichas THEN THE SYSTEM SHALL conservar
+  `k = 3` en las acciones (740 ms): el escalonado no se compacta. A los
+  700 ms las acciones siguen en `[0, 14]`.
+- El orden de hijos directos de R2.3 no cambia: no hay envoltorios nuevos.
+
+**E4.7 — R20 nuevo: maquetación (filas 8, 9, 12, 13 y 14).**
+
+- **R20.1** THE SYSTEM SHALL pintar `{id}-hero` con
+  `className="mt-10 items-center justify-center"` y
+  `style={{ width: 220, height: 220 }}`. `{id}-pingo` y su imagen
+  `{id}-pose` miden 170 × 170.
+- **R20.2** THE SYSTEM SHALL colocar `{id}-badge` en `right: 18` y
+  `bottom: 26` (R7.2). El `View` interior no cambia.
+- **R20.3** THE SYSTEM SHALL sustituir el glifo de texto «✓» de la insignia
+  por
+  `<Svg testID={`${testID}-check`} width={28} height={28} viewBox="0 0 24 24" fill="none">`
+  con un único
+  `<Path d="M20 6 9 17l-5-5" stroke={check} strokeWidth={3} strokeLinecap="round" strokeLinejoin="round" />`,
+  donde `const [check] = useThemeColors(['accent-foreground'])`.
+  `react-native-svg` ya está instalado. Se descarta el `Check` de reicons:
+  es un trazado relleno y más fino que el del artboard. R2.4 pasa a decir
+  «la insignia `{id}-badge` con el check `{id}-check`».
+- **R20.4** THE SYSTEM SHALL pintar `{id}-title` con
+  `className="mt-2 text-center text-3xl font-black tracking-tight text-foreground"`
+  (`tracking-tight` es la clase de escala más cercana a −0.02em; ver la
+  precisión de uniwind arriba).
+- **R20.5** THE SYSTEM SHALL pintar `{id}-body` con
+  `className="max-w-75 text-center text-15 leading-5.5 text-muted"`: 15 px,
+  ancho máximo de 300 e interlineado de 22 px (el artboard da 22.5).
+  `text-15` es el `--text-15: 15px` de #173 (decisión E4-P2): E4 lo declara en
+  `@theme` si #173 no ha mergeado al escribir el handoff, y lo reutiliza si
+  sí.
+- **R20.6** THE SYSTEM SHALL pintar la raíz `{id}` con
+  `className="flex-1 items-center gap-3.5 bg-surface-secondary px-6"` y
+  `style={{ paddingTop: insets.top + 80, paddingBottom: insets.bottom + 40 }}`.
+
+**E4.8 — R21 nuevo: desmontar cancela los bucles.**
+
+- **R21.1** WHEN `Celebration` se desmonta tras montarse sin reduce motion
+  THE SYSTEM SHALL llamar a `cancelAnimation` sobre los 36 progresos del
+  confeti, la escala y la opacidad del anillo y el `translateY` de Pingo:
+  39 llamadas, ni una más. Los pops y la entrada terminan solos y no se
+  cancelan. Con reduce motion no hay bucles, y el spike midió 0 llamadas.
+
+**E4.9 — R8 ampliado: reduce motion.**
+
+- R8.1–R8.3 conservan su sustancia: sin confeti, y Pingo y la insignia con su
+  fundido a escala 1. Cambian las medidas (170 × 170 y 18 / 26), y el
+  `transform` de Pingo pasa a `[{ translateY: 0 }, { scale: 1 }]`.
+- **R8.4** WHILE reduce motion está activo THE SYSTEM SHALL no montar
+  `{id}-ring` y mantener `{id}-pingo` en `translateY: 0` (a los 2000 ms
+  sigue en 0).
+- **R8.5** WHILE reduce motion está activo THE SYSTEM SHALL pintar título,
+  cuerpo, fichas y acciones con opacidad 1 y `translateY: 0` desde el primer
+  render. El valor inicial de cada `useSharedValue` depende de
+  `useReducedMotion()`: no basta con el `ReduceMotion.System` del config,
+  que salta al final un frame tarde.
+
+**E4.10 — R13.2 reescrito.** THE SYSTEM SHALL que `Celebration` solo anime
+`transform` y `opacity`, y que no use `LayoutAnimation`, `entering=` ni
+`exiting=`. `withRepeat` y `withSequence` dejan de estar prohibidos.
+
+**E4.11 — `src/theme/motion.ts`.** Salen `MOTION_CONFETTI_MIN_MS`,
+`MOTION_CONFETTI_SPREAD_MS` y `MOTION_CELEBRATION_SPRING` (el muelle de E3).
+Se quedan `MOTION_CONFETTI_FALL_TIMING`, `MOTION_POP_SCALE`,
+`MOTION_SURFACE_MS`, `MOTION_FADE_TIMING`, `MOTION_PING_FROM` y
+`MOTION_PING_TO_SCALE`; los dos últimos son de #167 y tienen el valor del
+artboard. Entran, bajo un comentario `// #171 R7` (la regex de hex de `design-drift` R13.1
+exime `#NNN R<dígito>`, pero un `// #171 E4` la pone en rojo):
+
+```ts
+export const MOTION_CELEBRATION_EASE_OUT = { easing: Easing.bezier(0, 0, 0.58, 1), reduceMotion: ReduceMotion.System };
+export const MOTION_CELEBRATION_POP_MS = 600;
+export const MOTION_CELEBRATION_POP_PEAK = 1.08;
+export const MOTION_CELEBRATION_BADGE_POP_MS = 500;
+export const MOTION_CELEBRATION_BADGE_DELAY_MS = 450;
+export const MOTION_CELEBRATION_PING_MS = 2200;
+export const MOTION_CELEBRATION_RISE_DELAY_MS = 500;
+export const MOTION_CELEBRATION_RISE_STAGGER_MS = 80;
+export const MOTION_CELEBRATION_RISE_OFFSET_Y = 14;
+// Solo si #172 no ha mergeado al escribir el handoff, con el texto de su spec:
+export const MOTION_PINGO_FLOAT_OFFSET_Y = 10;
+export const MOTION_PINGO_FLOAT_TIMING = { duration: 1500, easing: Easing.bezier(0.42, 0, 0.58, 1), reduceMotion: ReduceMotion.System };
+```
+
+La curva es la `ease-out` literal de CSS, `bezier(0, 0, 0.58, 1)` (decisión
+E4-P6). La lista de `no exporta nada más` queda en la base medida al escribir
+el handoff, menos 3 y más 9 (más 2 si #172 no ha mergeado).
+
+**E4.12 — R12.3: candado de posición de §2.27.** Lo pide la observación 1
+del review de la ronda 3: una sonda movió el bloque entre §2.23 y §2.24 y
+salió verde. El `it` de R12 suma
+`expect(doc.indexOf(SECTION)).toBeGreaterThan(doc.indexOf('### §2.26 '))`.
+Antes de las aserciones de posición suma
+`expect(doc.split('### §2.23 ')).toHaveLength(2)` y
+`expect(doc.split('### §2.26 ')).toHaveLength(2)`: sin ellas, si un
+encabezado desaparece o se renombra, `indexOf` da −1 y la comparación pasa
+en verde. El spike lo midió: con `### §2.26 ` renombrado, 0 rojos sin los
+`split` y R12 en rojo con ellos.
+
+**E4.13 — R15 reescrito: la carta.** THE SYSTEM SHALL, en
+`docs/ui-guidelines.md`:
+
+1. Añadir al punto 7, justo después de «…no arrancan con reduce motion.» y
+   con la sangría de dos espacios de sus líneas de continuación:
+
+   ```md
+     La enmienda #171 suma a esta lista la flotación y el anillo de ping de
+     Pingo en la celebración, y la lluvia de confeti que la acompaña: los tres
+     se repiten mientras la celebración está abierta.
+   ```
+
+2. Sustituir la sección `## Enmienda #171 — confeti de celebración`, en la
+   misma posición y hasta su casilla incluida, por:
+
+   ```md
+   ## Enmienda #171 — confeti, ping y flotación de la celebración
+
+   `Celebration` (`src/components/celebration.tsx`) se mueve como su artboard,
+   `specs/mobile-welcome-pingo/design-src/celebration.dc.html`:
+
+   - **Confeti.** 36 piezas que caen en bucle con `withRepeat` mientras la
+     celebración está abierta. La tabla de posición, forma, color, duración y
+     retardo vive en `celebration.tsx`; la curva, en
+     `MOTION_CONFETTI_FALL_TIMING` de `motion.ts`. Los colores son `bg-accent` y
+     los cinco tokens `confetti-*` de `global.css`, que ninguna otra pantalla
+     usa. `rounded-xs` (2 px) es una excepción a la escala de radios del
+     punto 12 que solo vale para las piezas del confeti. Esas piezas tampoco
+     declaran `CONTINUOUS_CORNER`: con 2 px el squircle no se distingue.
+   - **Ping.** Un anillo `bg-accent` detrás de Pingo crece de 0.55 a 1.5 y se
+     apaga de 0.55 a 0 en 2200 ms ease-out, en bucle.
+   - **Pop y flotación.** Pingo entra con un pop de 600 ms que pasa por 1.08 y
+     después flota 10 px arriba y abajo, 1500 ms por tramo, en bucle. La
+     insignia hace un pop de 500 ms con 450 ms de retardo.
+   - **Entrada.** Título, cuerpo, fichas y acciones suben 14 px y aparecen en
+     400 ms ease-out, desde los 500 ms y cada 80 ms.
+   - Solo se animan `transform` y `opacity`, sin `entering`, `exiting` ni
+     `LayoutAnimation`. Al desmontar sin reduce motion, `cancelAnimation`
+     para los bucles.
+   - Con reduce motion no se montan el confeti ni el anillo, Pingo no flota y el
+     texto aparece sin subir; Pingo y la insignia conservan su fundido.
+   - El confeti es de tier «raro»: solo lo monta `Celebration`, y
+     `Celebration` solo cierra el alta de una mascota o la vinculación de un
+     collar.
+
+   - [ ] Aprobada por humano (fecha: ____)
+   ```
+
+El handoff de la ronda 4 se escribe después de la firma de E4, así que la
+casilla de la sección va marcada con la fecha en que el humano marque la
+casilla de carta de esta enmienda, abajo. El `it` de R15 asevera los dos
+textos y acepta la casilla marcada o sin marcar (`- \[[ xX]\]`).
+
+**E4.14 — Lo que queda sin efecto en esta spec.**
+
+- R6.4 y R6.5 de antes (una pasada que termina a los 4430 ms, tabla
+  `CONFETTI_AT_1200` de E2), R7.3 y R7.4 de antes (2000 / 2400 ms y los pares
+  del muelle) y el `MOTION_CELEBRATION_SPRING` de E3.
+- En «Fuera de alcance», las viñetas (D) del anillo «ping» con la flotación
+  en la celebración, y del texto que entra sin la subida escalonada.
+- En «Preguntas abiertas», P4 (confeti de una sola pasada): el humano eligió
+  los bucles del canvas el 2026-10-13. Y P5 (pop con muelle y rebote): lo
+  sustituye el pop por keyframes de E4.3.
+- Lo que la ronda 3 cerró con valores (E2 y E3) se re-mide con los de E4.
+
+**Candados compartidos con #172 y #173.** El handoff los mide en su base
+(«base medida + delta», nunca una cifra de esta enmienda):
+
+| Candado | Fichero | Quién más lo mueve |
+|---|---|---|
+| `no exporta nada más` | `src/theme/__tests__/motion.test.ts` | #172 (los dos `MOTION_PINGO_FLOAT_*`) |
+| Tokens de `@theme` | `src/theme/global.css`, `global-css.test.ts` | #172 R1, #173 R2 (`--text-15`, radios) |
+| #62 R1 / R4 y punto 12 de la carta | `consistency-classnames.test.ts`, `docs/ui-guidelines.md` | #173 (radios nuevos) |
+| #168 R1 (literal del título grande) | `tab-headers-canvas.test.ts` | #172, si toca títulos |
+| Secciones de enmienda al final de la carta y punto 7 | `docs/ui-guidelines.md` | #172 (enmienda de `PingoFloat`), #173 (punto 12) |
+
+### Qué no cambia
+
+- **Copy.** Voz B y la P1 aprobada; R12.1 y R12.2 intactos.
+- **Fila 15 (botones)**, de #177: R14 y las clases de `{id}-actions` no
+  cambian, salvo que el nodo pasa a ser animado (R19).
+- **Filas 16–24 (vacío de Inicio)**, de #176. R10 y R11 no cambian.
+- **Recorrido del confeti:** sigue de −40 a alto de ventana + 40. Los 760 px
+  fijos del artboard no entran.
+- `paddingTop: insets.top + 80` y `px-6`, que ya coinciden con el artboard.
+- R1, R2.1–R2.3, R2.5–R2.7, R3, R4, R5, R9 y R14.
+- Los fundidos con reduce motion de R8.2 y R8.3.
+- `MOTION_CONFETTI_FALL_TIMING`, `MOTION_POP_SCALE` y los tokens de ping de
+  #167 conservan su valor.
+- El texto actual del punto 7 de la carta: E4 solo añade un párrafo detrás.
+
+### Decisiones del humano (2026-10-13)
+
+Respondidas en la sesión del leader, con AskUserQuestion. E4-P1 … E4-P7 son
+las preguntas del borrador de esta enmienda, distintas de las P1–P5 de
+«Preguntas abiertas»:
+
+- **Separar por dueño:** filas 1–14 en #171 como E4, el vacío de Inicio en
+  #176 y la receta de botones en #177.
+- **Bucles** como en el canvas, apagados con reduce motion.
+- **Copy:** se queda la voz B de Pingo.
+- **E4-P1:** el mismo hex del confeti en los dos temas.
+- **E4-P2:** `text-15`, con el nombre por píxel de #173 (`--text-15: 15px`).
+  #172 declara el mismo valor como `--text-body`; Frontend queda avisado del
+  duplicado.
+- **E4-P3:** `rounded-xs`, con la excepción acotada de la carta.
+- **E4-P4 … E4-P7:** las recomendaciones del borrador. E4-P4, `max-w-75`, que
+  confirma la prueba de humo. E4-P5, los nombres y valores de las constantes
+  de flotación de #172 sin su componente `PingoFloat`, que arranca al montar
+  y no comparte nodo con el pop. E4-P6, la curva `ease-out` literal de CSS
+  (la de #167, `bezier(0.23, 1, 0.32, 1)`, cambiaría las tablas). E4-P7,
+  ampliar el inventario de #168 R1 con `components/celebration.tsx` en vez
+  de reordenar las clases para esquivarlo.
+
+### Qué firma el humano
+
+1. Que las filas 1–14 se adoptan tal como las fija «Qué cambia», con tres
+   desviaciones conocidas del artboard: el recorrido del confeti relativo al
+   alto de ventana (no 760 px), `tracking-tight` (−0.025em frente a −0.02em,
+   −0.4 px en nativo) y el interlineado de 22 px (frente a 22.5).
+2. Los bucles infinitos y el texto de la carta de E4.13: el párrafo del
+   punto 7 y la sección «Enmienda #171» reescrita.
+3. Que cambian `it` de otras features: #64 R9 (`consistency-classnames`),
+   #168 R1 (`tab-headers-canvas`), `design-drift` R13.2 y un `toBeVisible()`
+   de Vincular que pasa a `toBeOnTheScreen()` (`tasks.md` §E4).
+4. El orden frente a #172 y #173: E4 no espera a ninguna, y la segunda en
+   mergear re-mide los candados compartidos de la tabla de arriba.
+5. Que la prueba de humo R16 suma los pasos de E4 (`tasks.md` T16, pasos 9
+   a 12).
+
+- [ ] Enmienda E4 aprobada por humano (fecha: ____)
+- [ ] Texto de la carta de E4.13 aprobado por humano (R15) (fecha: ____)

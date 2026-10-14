@@ -69,6 +69,10 @@ Por qué:
 
 ## 3. Composición y clases (R2)
 
+> *(Enmienda E4)* Las medidas y clases del hero, la insignia, el título, el
+> cuerpo y la raíz pasan a las del artboard: [[requirements]] E4.7 (R20). El
+> check de la insignia es un SVG (R20.3).
+
 ```
 Modal testID="{id}-modal"
 └─ View testID="{id}"  className="flex-1 items-center gap-4 bg-surface-secondary px-6"
@@ -147,6 +151,10 @@ Gate de la skill expo-animation: tier «raro / primera vez», propósito
 No hay `setState` por frame.
 
 ### 4.1 Confeti (R6)
+
+> *(Enmienda E4)* Esta sección queda sustituida por [[requirements]] E4.1 y
+> E4.2: 36 piezas en bucle con la tabla literal `CONFETTI` y los tokens
+> `confetti-*`.
 
 Constantes de módulo dentro de `celebration.tsx`, sin exportar (forma
 enmendada en E1):
@@ -244,6 +252,10 @@ Candados de tiempo, además de R6.4 a 5000 ms:
 
 ### 4.2 Pop (R7, R8)
 
+> *(Enmienda E4)* El pop pasa a keyframes (E4.3), y se suman el anillo de
+> ping (R17), la flotación (R18), la entrada escalonada (R19) y la
+> cancelación al desmontar (R21): [[requirements]] E4.3–E4.9.
+
 Dos shared values por elemento animado, `scale` y `opacity`, para
 `{id}-pingo` y `{id}-badge`.
 
@@ -281,6 +293,9 @@ re-render no lo repite porque las dependencias están vacías. `expo-haptics`
 ya está instalado y lo usa la pantalla de comidas.
 
 ### 4.4 Constantes nuevas en `src/theme/motion.ts`
+
+> *(Enmienda E4)* La lista de constantes de la celebración la sustituye
+> [[requirements]] E4.11.
 
 Se añaden al final, cada una con su comentario `// #171 R7` o `// #171 R6`:
 
@@ -331,6 +346,9 @@ export const MOTION_CONFETTI_SPREAD_MS = 1200;
 
 ## 5. Archivos afectados (todos en la capa de presentación)
 
+> *(Enmienda E4)* La ronda 4 suma `src/theme/global.css`,
+> `src/utils/category-palette.ts` y los tests de [[tasks]] §E4-A y §E4-B.
+
 Nuevos:
 
 - `mobile-pet-tracker/src/components/celebration.tsx` — `Celebration` y
@@ -380,6 +398,10 @@ Los cuatro usos en `R9_ADD_PET` siguen el formato de las filas vecinas de esa
 constante y apuntan a `src/screens/add-pet/index.tsx`.
 
 ## 7. Candados que se mueven (sin #166)
+
+> *(Enmienda E4)* Los candados que mueve la ronda 4 están en [[tasks]]
+> §E4-A, y los compartidos con #172 y #173, en [[requirements]]
+> §Enmienda E4.
 
 Cada ancla se midió en 89fe2009 y se ejecuta desde `mobile-pet-tracker/`.
 
@@ -432,6 +454,9 @@ los ficheros de §5 es parada, no adaptación. Los conocidos son:
   E1 (§4.1).
 
 ## 8. Enmienda a la carta (R15) — texto literal
+
+> *(Enmienda E4)* El texto literal de abajo queda sustituido por el de
+> [[requirements]] E4.13, que además añade un párrafo al punto 7.
 
 Se añade al final de `docs/ui-guidelines.md`, tal cual:
 
