@@ -63,3 +63,18 @@ describe('#172 R10: bordes de error del registro', () => {
     expect(source.split('isInvalid={Boolean(fieldErrors.').length - 1).toBe(7);
   });
 });
+
+
+it('#172 R18: la carta declara la enmienda #172 y su casilla', () => {
+  const charter = readFileSync(join(process.cwd(), '..', 'docs', 'ui-guidelines.md'), 'utf8');
+  const heading = '## Enmienda #172 — Las pantallas de cuenta como el canvas';
+  expect(charter).toContain(heading);
+  const amendment = charter.slice(charter.indexOf(heading));
+  expect(amendment).toMatch(/- \[[ xX]\] Enmienda aprobada por humano/);
+  for (const literal of [
+    'PingoFloat', 'MOTION_PINGO_FLOAT_OFFSET_Y', 'forgot-lock-tile',
+    'font-extrabold', 'h-14', 'h-13', 'PasswordInput',
+  ]) {
+    expect(amendment).toContain(literal);
+  }
+});
