@@ -6019,7 +6019,7 @@ inmediatamente y se restauró el fichero con exit=0. No se empezó c32,
 no se alcanzó T22, y la feature permanece incompleta. No se ajustó el
 candado de R7 ni la tabla para forzar dos fallos.
 
-### Bloqueo actual — T16/S15
+### Bloqueo de T16/S15 — historia (resuelto por E5)
 
 Commit sobre el que se plantó la sonda: `0e5bb776` (c31). Mutación exacta:
 se quitó el siguiente bloque de login-body y se colocó inmediatamente
@@ -6529,3 +6529,26 @@ exit=0
 - No se ejecutaron init.sh, push, PR, amend, rebase ni prettier. T22 y la
   prueba de humo R21 siguen pendientes. La sonda está restaurada y el
   árbol queda limpio tras el commit de este informe.
+
+
+## Reanudacion 4
+
+Inicio: 2026-10-14, HEAD del leader `8959232cbfb8ac689da789dc070965e5f056a45c`.
+H0 sigue siendo `e0178ab5c1f67e917cf4116332a0e9196d67b344`.
+
+```text
+command grep -c -F -- '- [x] Enmienda E5 aprobada por humano' specs/mobile-account-screens-polish/requirements.md
+1
+git status --short
+(sin salida)
+git log -1 --format=%h -- mobile-pet-tracker
+0e5bb776
+git branch --show-current
+feature/172-mobile-account-screens-polish
+```
+
+**S15 conforme a E5.** La salida ya registrada, `Tests: 3 failed, 25 passed,
+28 total`, contiene los tres títulos de T16 corregida: R7 «el cuerpo lleva
+correo…» (consulta), R7 «con error…» (aserción) y R15 (consulta). La sonda
+quedó restaurada con exit=0 y no se repite. C31 se conserva.
+Se continúa T17–T22 (c32–c39); S17b espera dos fallos según E5.
