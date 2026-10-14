@@ -9905,3 +9905,29 @@ Trazabilidad: solo las celdas de commits de los 12 R-ids indicados. Columnas de 
 Celdas de commits E4: 12; pendientes: 1 (R16).
 
 R16: pendiente del smoke humano
+
+### Lista cerrada desde H1 (ronda 4)
+
+Cadena c64: exit=0. Commit `b5e0ef84 docs(mobile-celebrations-and-living-empty): #171 traceability round 4`.
+
+```text
+$ git log --no-merges --format= --name-only 0bfd45fd0b45b72cda845ae57490d030cd26db97..HEAD | sed '/^$/d' | LC_ALL=C sort -u
+docs/ui-guidelines.md
+mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+mobile-pet-tracker/src/__tests__/design-drift.test.ts
+mobile-pet-tracker/src/__tests__/tab-headers-canvas.test.ts
+mobile-pet-tracker/src/components/__tests__/celebration.test.tsx
+mobile-pet-tracker/src/components/celebration.tsx
+mobile-pet-tracker/src/screens/pairing/index.test.tsx
+mobile-pet-tracker/src/theme/__tests__/global-css.test.ts
+mobile-pet-tracker/src/theme/__tests__/motion.test.ts
+mobile-pet-tracker/src/theme/global.css
+mobile-pet-tracker/src/theme/motion.ts
+mobile-pet-tracker/src/utils/category-palette.ts
+progress/impl_mobile-celebrations-and-living-empty.md
+specs/mobile-celebrations-and-living-empty/traceability.md
+```
+
+Los 14 ficheros coinciden exactamente con la lista cerrada del handoff, medida desde H1. Anclas A/K exactas, A7=11. ALL final: 104 suites/3210 tests, exit=0. P1–P12 exactas y restauradas. R16 conserva su fila y su casilla pendiente; la verificación global queda a cargo del leader.
+
+R16: pendiente del smoke humano
