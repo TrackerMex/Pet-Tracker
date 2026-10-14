@@ -3,7 +3,7 @@ import { NotificationFeedbackType, notificationAsync } from 'expo-haptics';
 import { Image } from 'expo-image';
 import { Button } from 'heroui-native';
 import { Modal, Text, View, useWindowDimensions } from 'react-native';
-import Animated, { interpolate, useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withRepeat, withSequence, withTiming } from 'react-native-reanimated';
+import Animated, { cancelAnimation, interpolate, useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withRepeat, withSequence, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 
@@ -75,6 +75,11 @@ export function Celebration({ testID, title, body, details, primary, secondary }
     ringOpacity.set(withRepeat(withTiming(0, {
       ...MOTION_CELEBRATION_EASE_OUT, duration: MOTION_CELEBRATION_PING_MS,
     }), -1, false));
+    return () => {
+      cancelAnimation(ringScale);
+      cancelAnimation(ringOpacity);
+      cancelAnimation(pingoTranslateY);
+    };
   }, [badgeOpacity, badgeScale, pingoOpacity, pingoScale, pingoTranslateY, reduceMotion, ringOpacity, ringScale]);
 
   return (
@@ -237,6 +242,7 @@ function ConfettiPiece({ testID, index, height }: { testID: string; index: numbe
       delay,
       withRepeat(withTiming(1, { ...MOTION_CONFETTI_FALL_TIMING, duration }), -1, false),
     ));
+    return () => cancelAnimation(progress);
   }, [delay, duration, progress]);
 
   return (
