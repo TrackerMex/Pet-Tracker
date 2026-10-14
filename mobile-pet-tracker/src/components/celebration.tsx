@@ -3,11 +3,11 @@ import { NotificationFeedbackType, notificationAsync } from 'expo-haptics';
 import { Image } from 'expo-image';
 import { Button } from 'heroui-native';
 import { Modal, Text, View, useWindowDimensions } from 'react-native';
-import Animated, { interpolate, useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withRepeat, withSpring, withTiming } from 'react-native-reanimated';
+import Animated, { interpolate, useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withRepeat, withSequence, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 
-import { MOTION_CELEBRATION_SPRING, MOTION_CONFETTI_FALL_TIMING, MOTION_FADE_TIMING, MOTION_POP_SCALE, MOTION_SURFACE_MS } from '../theme/motion';
+import { MOTION_CELEBRATION_BADGE_DELAY_MS, MOTION_CELEBRATION_BADGE_POP_MS, MOTION_CELEBRATION_EASE_OUT, MOTION_CELEBRATION_POP_MS, MOTION_CELEBRATION_POP_PEAK, MOTION_CONFETTI_FALL_TIMING, MOTION_FADE_TIMING, MOTION_POP_SCALE } from '../theme/motion';
 import { useThemeColors } from '../theme/use-theme-colors';
 
 type CelebrationProps = {
@@ -26,10 +26,11 @@ export function Celebration({ testID, title, body, details, primary, secondary }
   const [check] = useThemeColors(['accent-foreground']);
   const pingoScale = useSharedValue(reduceMotion ? 1 : MOTION_POP_SCALE);
   const pingoOpacity = useSharedValue(0);
+  const pingoTranslateY = useSharedValue(0);
   const badgeScale = useSharedValue(reduceMotion ? 1 : MOTION_POP_SCALE);
   const badgeOpacity = useSharedValue(0);
   const pingoStyle = useAnimatedStyle(() => ({
-    opacity: pingoOpacity.get(), transform: [{ scale: pingoScale.get() }],
+    opacity: pingoOpacity.get(), transform: [{ translateY: pingoTranslateY.get() }, { scale: pingoScale.get() }],
   }));
   const badgeStyle = useAnimatedStyle(() => ({
     opacity: badgeOpacity.get(), transform: [{ scale: badgeScale.get() }],
@@ -38,12 +39,23 @@ export function Celebration({ testID, title, body, details, primary, secondary }
   useEffect(() => { void notificationAsync(NotificationFeedbackType.Success); }, []);
 
   useEffect(() => {
-    pingoOpacity.set(withTiming(1, MOTION_FADE_TIMING));
-    badgeOpacity.set(withDelay(MOTION_SURFACE_MS, withTiming(1, MOTION_FADE_TIMING)));
-    if (!reduceMotion) {
-      pingoScale.set(withSpring(1, MOTION_CELEBRATION_SPRING));
-      badgeScale.set(withDelay(MOTION_SURFACE_MS, withSpring(1, MOTION_CELEBRATION_SPRING)));
+    if (reduceMotion) {
+      pingoOpacity.set(withTiming(1, MOTION_FADE_TIMING));
+      badgeOpacity.set(withDelay(MOTION_CELEBRATION_BADGE_DELAY_MS, withTiming(1, MOTION_FADE_TIMING)));
+      return;
     }
+    pingoOpacity.set(withTiming(1, { ...MOTION_CELEBRATION_EASE_OUT, duration: MOTION_CELEBRATION_POP_MS * 0.6 }));
+    pingoScale.set(withSequence(
+      withTiming(MOTION_CELEBRATION_POP_PEAK, { ...MOTION_CELEBRATION_EASE_OUT, duration: MOTION_CELEBRATION_POP_MS * 0.6 }),
+      withTiming(1, { ...MOTION_CELEBRATION_EASE_OUT, duration: MOTION_CELEBRATION_POP_MS * 0.4 }),
+    ));
+    badgeOpacity.set(withDelay(MOTION_CELEBRATION_BADGE_DELAY_MS,
+      withTiming(1, { ...MOTION_CELEBRATION_EASE_OUT, duration: MOTION_CELEBRATION_BADGE_POP_MS * 0.6 }),
+    ));
+    badgeScale.set(withDelay(MOTION_CELEBRATION_BADGE_DELAY_MS, withSequence(
+      withTiming(MOTION_CELEBRATION_POP_PEAK, { ...MOTION_CELEBRATION_EASE_OUT, duration: MOTION_CELEBRATION_BADGE_POP_MS * 0.6 }),
+      withTiming(1, { ...MOTION_CELEBRATION_EASE_OUT, duration: MOTION_CELEBRATION_BADGE_POP_MS * 0.4 }),
+    )));
   }, [badgeOpacity, badgeScale, pingoOpacity, pingoScale, reduceMotion]);
 
   return (

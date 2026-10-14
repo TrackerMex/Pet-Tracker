@@ -62,4 +62,8 @@ export const MOTION_CONFETTI_FALL_TIMING = { easing: Easing.bezier(0.2, 0.6, 0.4
 // #171 R7
 export const MOTION_POP_SCALE = 0.6;
 // #171 R7
-export const MOTION_CELEBRATION_SPRING = { duration: 400, dampingRatio: 0.5, reduceMotion: ReduceMotion.System };
+export const MOTION_CELEBRATION_EASE_OUT = { easing: Easing.bezier(0, 0, 0.58, 1), reduceMotion: ReduceMotion.System };
+export const MOTION_CELEBRATION_POP_MS = 600;
+export const MOTION_CELEBRATION_POP_PEAK = 1.08;
+export const MOTION_CELEBRATION_BADGE_POP_MS = 500;
+export const MOTION_CELEBRATION_BADGE_DELAY_MS = 450;
