@@ -3,13 +3,14 @@
 > Worktree: `/home/claude/sites/Pet-Tracker-wt-172`.
 > Branch: `feature/172-mobile-account-screens-polish`.
 > H0 al arrancar: `e0178ab5c1f67e917cf4116332a0e9196d67b344`.
-> Fecha: 2026-10-13. Estado final: **detenida en T11/S10b; feature incompleta**.
+> Fecha de cierre: 2026-10-14. Estado final: **detenida en T15/S14; feature incompleta**.
 
 
-> Reanudación 1 resolvió el bloqueo inicial con E2 y avanzó hasta c22.
-> El bloqueo actual es S10b: falla un `it` distinto del prescrito. R1–R9 están
-> implementados y verificados en sus gates; R10 queda pendiente de reconciliar
-> la sonda. R16 es parcial; R11–R15 y R17–R20 siguen pendientes; R21 es humano.
+
+> Reanudación 2 verificó S10b con E3 y completó c23–c30. R1–R13 pasan
+> sus gates y sondas; R14 pasa el gate de c30, pero S14 da 6 fallos y no los
+> 7 prescritos. No se empezó T16 ni se alcanzó T22. R15 y R17–R20 siguen
+> pendientes; R16 es parcial; R21 queda **pendiente (humano)**.
 
 ## Bloqueo inicial y punto de reanudación — historia
 
@@ -150,7 +151,11 @@ exit=0
 vacio=0
 ```
 
-## Tabla de commits del guion
+## Tabla completa de commits del guion — estado actual
+
+H0 sigue siendo `e0178ab5`. Los commits del leader (firmas y enmiendas E1,
+E2 y E3) no se cuentan como commits propios. La tentativa inicial de c8 y
+los bloqueos anteriores quedan documentados en sus secciones históricas.
 
 | Commit | Hash | Mensaje literal | Línea Tests: | Rojos y tipo |
 |---|---|---|---|---|
@@ -161,12 +166,40 @@ vacio=0
 | c5 | b3fe30be | `test(mobile): BackButton vuelve o reemplaza (R2)` | `Tests:       0 total` | 1 suite módulo; 0 tests |
 | c6 | 4cdb12db | `feat(mobile): BackButton (R2)` | `Tests:       199 passed, 199 total` | 0 |
 | c7 | e31582c3 | `test(mobile): Pingo flota 10 px en 3 s en cuenta (R4)` | `Tests:       2 failed, 15 passed, 17 total` | 1 suite módulo + 2 tests por aserción |
-| c8 | — | `feat(mobile): Pingo flota 10 px en 3 s en cuenta (R4) — NO COMMITTEADO` | `Tests:       1 failed, 213 passed, 214 total` | 1 aserción inesperada (no exporta nada más); esperado 0 |
-
-Los commits rojos solo incluyen tests. c2, c4 y c6 incluyen solo producción
-(c4 también registra el copy en la spec de idioma). Todos los commits se
-hicieron tras comprobar la rama y con `git add` de rutas explícitas.
-`git status --short` quedó vacío tras cada commit.
+| c7b | 75f849a6 | `test(mobile): orden de sort en el inventario de motion (R4)` | `Tests:       2 failed, 15 passed, 17 total` | 1 suite módulo + 2 aserciones |
+| c7c (correctivo) | edf99020 | `test(mobile): tipa translateY en el candado de Pingo (R4)` | `Tests:       2 failed, 15 passed, 17 total` | 1 suite módulo + 2 aserciones |
+| c8 | c12c676f | `feat(mobile): Pingo flota 10 px en 3 s en cuenta (R4)` | `Tests:       214 passed, 214 total` | 0 |
+| c9 | 1b4551c7 | `test(mobile): Pingo flota en registro, recuperar y nueva contraseña (R5)` | `Tests:       8 failed, 86 passed, 94 total` | 8: 6 aserciones + 2 consultas |
+| c10 | 60d26f5c | `feat(mobile): Pingo flota en registro, recuperar y nueva contraseña (R5)` | `Tests:       288 passed, 288 total` | 0 |
+| c11 | 29e2acf6 | `test(mobile): fila Volver en login, registro y recuperar (R3)` | `Tests:       8 failed, 150 passed, 158 total` | 8: 4 aserciones + 4 consultas |
+| c12 | 984043e1 | `feat(mobile): fila Volver en login, registro y recuperar (R3)` | `Tests:       282 passed, 282 total` | 0 |
+| c13 | b8384616 | `test(mobile): recetas de texto e Inter ExtraBold en cuenta (R6)` | `Tests:       9 failed, 83 passed, 92 total` | 9 aserciones |
+| c14 | 4b5675c6 | `feat(mobile): recetas de texto e Inter ExtraBold en cuenta (R6)` | `Tests:       324 passed, 324 total` | 0 |
+| c15 | 36f46603 | `test(mobile): enlaces y orden del cuerpo de login (R7)` | `Tests:       4 failed, 26 passed, 30 total` | 4 aserciones |
+| c16 | 7d56bacb | `feat(mobile): enlaces y orden del cuerpo de login (R7)` | `Tests:       262 passed, 262 total` | 0 |
+| c17 | 28ad44aa | `test(mobile): FormError con icono y texto seleccionable (R9)` | `Tests:       5 failed, 120 passed, 125 total` | 1 suite módulo + 5 tests (3 consultas y 2 aserciones) |
+| c18 | e1dcae38 | `feat(mobile): FormError en las cuatro pantallas de cuenta (R9)` | `Tests:       322 passed, 322 total` | 0 |
+| c19 | 1ad828d3 | `test(mobile): mostrar y ocultar la contraseña en cuenta (R8)` | `Tests:       5 failed, 86 passed, 91 total` | 1 suite módulo + 5 consultas |
+| c20 | 45e4c40e | `feat(mobile): mostrar y ocultar la contraseña en cuenta (R8)` | `Tests:       289 passed, 289 total` | 0 |
+| c21 | ca1bac6b | `test(mobile): errores por campo del registro con icono (R10)` | `Tests:       1 failed, 34 passed, 35 total` | 1 consulta; 2 it nacen verdes |
+| c22 | 14c69144 | `feat(mobile): errores por campo del registro con icono (R10)` | `Tests:       229 passed, 229 total` | 0 |
+| c23 | d7604772 | `test(mobile): rejilla del registro (R11)` | `Tests:       2 failed, 28 passed, 30 total` | 2 consultas (register-names-row) |
+| c24 | fbcb4e9e | `feat(mobile): rejilla del registro (R11)` | `Tests:       224 passed, 224 total` | 0 |
+| c25 | ded50874 | `test(mobile): validación del correo en el registro (R12)` | `Tests:       2 failed, 30 passed, 32 total` | 2 consultas (register-email-message) |
+| c26 | b2607357 | `feat(mobile): validación del correo en el registro (R12)` | `Tests:       226 passed, 226 total` | 0 |
+| c27 | 2103b60e | `test(mobile): la tarjeta de éxito avisa con liveRegion (R13)` | `Tests:       1 failed, 37 passed, 38 total` | 1 aserción (toBe polite) |
+| c28 | 81a3a4c6 | `feat(mobile): la tarjeta de éxito avisa con liveRegion (R13)` | `Tests:       232 passed, 232 total` | 0 |
+| c29 | 7b4c79b3 | `test(mobile): el candado de recuperar es un tile acento con labio (R14)` | `Tests:       9 failed, 98 passed, 107 total` | 9 aserciones: forgot 4, consistency 5 |
+| c30 | 7ddda8f5 | `feat(mobile): el candado de recuperar es un tile acento con labio (R14)` | `Tests:       234 passed, 234 total` | 0 |
+| c31 | — | `test(mobile): el error de login cuelga del scroll (R15)` | No ejecutado | pendiente tras el bloqueo S14 |
+| c32 | — | `test(mobile): filas de uso de las claves de cuenta (R16)` | No ejecutado | pendiente tras el bloqueo S14 |
+| c33 | — | `test(mobile): los componentes nuevos entran en la guarda de deriva (R17)` | No ejecutado | pendiente tras el bloqueo S14 |
+| c34 | — | `test(mobile): la carta declara la enmienda de las pantallas de cuenta (R18)` | No ejecutado | pendiente tras el bloqueo S14 |
+| c35 | — | `docs(ui): enmienda de la carta para las pantallas de cuenta (R18)` | No ejecutado | pendiente tras el bloqueo S14 |
+| c36 | — | `test(mobile): la CTA de cuenta se ancla al pie (R19)` | No ejecutado | pendiente tras el bloqueo S14 |
+| c37 | — | `feat(mobile): la CTA de cuenta se ancla al pie (R19)` | No ejecutado | pendiente tras el bloqueo S14 |
+| c38 | — | `test(mobile): CTA de 56 e inputs de 52 en las pantallas de cuenta (R20)` | No ejecutado | pendiente tras el bloqueo S14 |
+| c39 | — | `feat(mobile): CTA de 56 e inputs de 52 en las pantallas de cuenta (R20)` | No ejecutado | pendiente tras el bloqueo S14 |
 
 ## Gates ejecutados — comandos y salidas
 
@@ -1076,7 +1109,7 @@ e31582c3
 - No se empezaron T12/c23 ni tareas posteriores. No se ejecutó T22.
 - No se declara la feature completa ni se hace push/PR. R21 queda pendiente (humano).
 
-### Bloqueo actual — T11/S10b
+### Bloqueo de T11/S10b — historia (resuelto por E3)
 
 La spec prescribe pintar en apellidos
 `<FormError testID="register-last-name-message" message="" />` sin condición.
@@ -4362,3 +4395,1589 @@ medidas las cifras finales de la feature que sigue incompleta.
 La rama ya no queda en el rojo de c7: todos los commits de producción
 llegan a gates verdes, incluido c22. La verificación total y la prueba
 visual de Android siguen pendientes. La spec necesita reconciliar S10b.
+
+
+## Reanudacion 2
+
+### Comprobaciones antes de tocar código
+
+```text
+pwd
+/home/claude/sites/Pet-Tracker-wt-172
+command grep -c -F -- '- [x] Enmienda E3 aprobada por humano' specs/mobile-account-screens-polish/requirements.md
+1
+git status --short
+(sin salida)
+git branch --show-current
+feature/172-mobile-account-screens-polish
+git log -1 --format=%h -- mobile-pet-tracker
+14c69144
+git rev-parse HEAD
+ddd467d9c51c5e96f9b5528859840ee4f285174f
+```
+
+H0 no cambió. Se respetaron los commits ajenos, las firmas y todas las
+prohibiciones del handoff. S10a y S10c no se repitieron.
+
+### Estado al final
+
+Se ejecutaron T12–T15 (c23–c30), con cada rojo separado de la implementación.
+En cada rojo y cada sonda se inspeccionaron los títulos y mensajes de todos
+los bloques `●` que no eran `Console` antes de avanzar. Todos coincidieron
+con sus tablas hasta S14. Cada verde pasó su Jest con las cuatro guardas,
+la guarda del router, typecheck y lint vacío. No hubo timeouts ni SIGKILL.
+
+S10b corregida por E3 dio los tres títulos y mensajes prescritos; R10 queda
+verificado. S11a/S11b, S12 y S13 dieron los fallos previstos y quedaron
+restauradas con `exit=0`. R11–R13 están implementados y verificados.
+
+R14 está implementado en c30 (`7ddda8f5`), con el gate verde, pero su sonda
+S14 tiene un desajuste con la spec. Se paró inmediatamente después de
+inspeccionarla y restaurarla. C31–c39, sus sondas y T22 no se ejecutaron.
+R21 continúa pendiente (humano). La feature no se declara terminada.
+
+### Bloqueo actual — T15/S14
+
+Commit de producción sobre el que se plantó la sonda:
+`7ddda8f5 feat(mobile): el candado de recuperar es un tile acento con labio (R14)`.
+La mutación cambió únicamente el fondo del tile de `bg-accent` a
+`bg-accent-soft`, sin tocar tests. El comando exacto fue:
+
+```bash
+cd /home/claude/sites/Pet-Tracker-wt-172/mobile-pet-tracker
+bunx jest --testTimeout=30000 --runTestsByPath src/screens/forgot/index.test.tsx src/__tests__/consistency-classnames.test.ts
+```
+
+La tabla T15/S14 exige 7 fallos: cuatro de forgot y tres de consistency.
+Se obtuvieron 6: los cuatro de forgot y los dos recuentos de bg-accent-soft.
+El título ausente es `lleva los tres tiles restantes a rounded-xl`.
+
+Su candado usa `toContain('size-13 items-center justify-center rounded-xl
+border-b-4 border-black/25 bg-accent')`. Ese literal es prefijo del literal
+mutado, que termina en `bg-accent-soft`; `toContain` sigue pasando.
+La causa está en el candado prescrito, no en el número base de otras features.
+No se cambió unilateralmente el test, la sonda ni la spec para cuadrarlo.
+Hace falta reconciliar la expectativa de S14 y su candado antes de continuar.
+
+```text
+git checkout HEAD -- src/screens/forgot/index.tsx
+git diff --quiet HEAD -- src/screens/forgot/index.tsx; echo "exit=$?"
+exit=0
+git status --short
+(sin salida antes de actualizar estos documentos)
+```
+
+### S10b de E3 — salida literal
+
+Ancla durante la mutación:
+
+```text
+command grep -cF '<FieldError testID="register-last-name-error">{null}</FieldError>' src/screens/register/index.tsx
+1
+```
+
+Se reproducen los bloques de fallo y el resumen literal; solo se omiten los
+avisos de `Console` y los códigos ANSI de color.
+
+
+```bash
+bunx jest --testTimeout=30000 --runTestsByPath src/screens/register/index.test.tsx
+```
+
+```text
+FAIL src/screens/register/index.test.tsx (12.451 s)
+Test Suites: 1 failed, 1 total
+Tests:       3 failed, 26 passed, 29 total
+Time:        12.668 s
+  ● #167 R7: Pingo en la cabecera del registro › #172 R10: cada campo con error lleva icono y texto seleccionable
+
+    Unable to find an element with testID: register-last-name-message-row
+
+    <RNCSafeAreaProvider>
+      <View
+        testID="screen-register"
+      >
+        <RCTScrollView
+          testID="register-form"
+        >
+          <View>
+            <View
+              testID="register-header"
+            >
+              <View
+                testID="register-top"
+              >
+                <View
+                  accessibilityLabel="Volver"
+                  accessibilityRole="button"
+                  accessible={true}
+                  testID="register-back"
+                >
+                  <RNSVGSvgView>
+                    <RNSVGGroup>
+                      <RNSVGGroup>
+                        <RNSVGPath />
+                      </RNSVGGroup>
+                    </RNSVGGroup>
+                  </RNSVGSvgView>
+                </View>
+                <View
+                  testID="register-pingo-float"
+                >
+                  <ViewManagerAdapter_ExpoImage
+                    placeholder={[]}
+                    testID="register-pingo"
+                  />
+                </View>
+              </View>
+              <Text>
+                Crear cuenta
+              </Text>
+            </View>
+            <View>
+              <View
+                accessible={true}
+              >
+                <Text>
+                  Nombres
+                </Text>
+              </View>
+              <TextInput
+                editable={true}
+                testID="register-first-name"
+                value="Alex"
+              />
+              <View
+                testID="register-first-name-error"
+              >
+                <View
+                  testID="register-first-name-message-row"
+                >
+                  <View
+                    testID="icon-alert-circle"
+                  />
+                  <Text
+                    testID="register-first-name-message"
+                  >
+                    firstName no vale
+                  </Text>
+                </View>
+              </View>
+            </View>
+            <View>
+              <View
+                accessible={true}
+              >
+                <Text>
+                  Apellidos
+                </Text>
+              </View>
+              <TextInput
+                editable={true}
+                testID="register-last-name"
+                value="Smith"
+              />
+              <View
+                testID="register-last-name-error"
+              />
+              <View
+                testID="register-last-name-message-row"
+              >
+                <View
+                  testID="icon-alert-circle"
+                />
+                <Text
+                  testID="register-last-name-message"
+                >
+                  lastName no vale
+                </Text>
+              </View>
+            </View>
+            <View>
+              <View
+                accessible={true}
+              >
+                <Text>
+                  Correo electrónico
+                </Text>
+              </View>
+              <TextInput
+                editable={true}
+                testID="register-email"
+                value="alex@example.com"
+              />
+              <View
+                testID="register-email-error"
+              >
+                <View
+                  testID="register-email-message-row"
+                >
+                  <View
+                    testID="icon-alert-circle"
+                  />
+                  <Text
+                    testID="register-email-message"
+                  >
+                    email no vale
+                  </Text>
+                </View>
+              </View>
+            </View>
+            <View>
+              <View
+                accessible={true}
+              >
+                <Text>
+                  Teléfono
+                </Text>
+              </View>
+              <TextInput
+                editable={true}
+                testID="register-phone"
+                value="+525555555555"
+              />
+              <View
+                testID="register-phone-error"
+              >
+                <View
+                  testID="register-phone-message-row"
+                >
+                  <View
+                    testID="icon-alert-circle"
+                  />
+                  <Text
+                    testID="register-phone-message"
+                  >
+                    phone no vale
+                  </Text>
+                </View>
+              </View>
+            </View>
+            <View>
+              <View
+                accessible={true}
+              >
+                <Text>
+                  Contraseña
+                </Text>
+              </View>
+              <View
+                testID="register-password-group"
+              >
+                <TextInput
+                  editable={true}
+                  testID="register-password"
+                  value="correct horse"
+                />
+                <View>
+                  <View
+                    accessibilityLabel="Mostrar contraseña"
+                    accessibilityRole="button"
+                    accessible={true}
+                    testID="register-password-toggle"
+                  >
+                    <View
+                      testID="icon-eye"
+                    />
+                  </View>
+                </View>
+              </View>
+              <View
+                testID="register-password-error"
+              >
+                <View
+                  testID="register-password-message-row"
+                >
+                  <View
+                    testID="icon-alert-circle"
+                  />
+                  <Text
+                    testID="register-password-message"
+                  >
+                    password no vale
+                  </Text>
+                </View>
+              </View>
+            </View>
+            <View>
+              <View
+                accessible={true}
+              >
+                <Text>
+                  Confirmar contraseña
+                </Text>
+              </View>
+              <View
+                testID="register-password-confirmation-group"
+              >
+                <TextInput
+                  editable={true}
+                  testID="register-password-confirmation"
+                  value="correct horse"
+                />
+                <View>
+                  <View
+                    accessibilityLabel="Mostrar contraseña"
+                    accessibilityRole="button"
+                    accessible={true}
+                    testID="register-password-confirmation-toggle"
+                  >
+                    <View
+                      testID="icon-eye"
+                    />
+                  </View>
+                </View>
+              </View>
+              <View
+                testID="register-password-confirmation-error"
+              >
+                <View
+                  testID="register-password-confirmation-message-row"
+                >
+                  <View
+                    testID="icon-alert-circle"
+                  />
+                  <Text
+                    testID="register-password-confirmation-message"
+                  >
+                    passwordConfirmation no vale
+                  </Text>
+                </View>
+              </View>
+            </View>
+            <View>
+              <View
+                accessible={true}
+              >
+                <Text>
+                  País
+                </Text>
+              </View>
+              <TextInput
+                editable={true}
+                testID="register-country"
+                value="MX"
+              />
+              <View
+                testID="register-country-error"
+              >
+                <View
+                  testID="register-country-message-row"
+                >
+                  <View
+                    testID="icon-alert-circle"
+                  />
+                  <Text
+                    testID="register-country-message"
+                  >
+                    country no vale
+                  </Text>
+                </View>
+              </View>
+            </View>
+            <View>
+              <View
+                accessibilityState={
+                  {
+                    "checked": true,
+                    "disabled": false,
+                  }
+                }
+                accessible={true}
+                role="checkbox"
+                testID="register-terms"
+              >
+                <View
+                  aria-disabled={false}
+                  aria-hidden={false}
+                  role="presentation"
+                  style={
+                    {
+                      "opacity": 0,
+                    }
+                  }
+                >
+                  <RNSVGSvgView>
+                    <RNSVGGroup>
+                      <RNSVGPath />
+                    </RNSVGGroup>
+                  </RNSVGSvgView>
+                </View>
+              </View>
+              <Text>
+                Acepto los términos
+              </Text>
+            </View>
+            <View
+              testID="register-error-row"
+            >
+              <View
+                testID="icon-alert-circle"
+              />
+              <Text
+                testID="register-error"
+              >
+                termsAccepted no vale
+              </Text>
+            </View>
+            <View
+              accessibilityRole="button"
+              accessibilityState={
+                {
+                  "disabled": false,
+                }
+              }
+              accessible={true}
+              testID="register-submit"
+            >
+              <View
+                pointerEvents="none"
+                style={
+                  {
+                    "opacity": 0,
+                  }
+                }
+              />
+              <Text>
+                Crear cuenta
+              </Text>
+            </View>
+          </View>
+        </RCTScrollView>
+      </View>
+    </RNCSafeAreaProvider>
+
+      421 |     for (const [field, path] of fields) {
+      422 |       const error = screen.getByTestId(`register-${field}-error`);
+    > 423 |       const row = within(error).getByTestId(`register-${field}-message-row`);
+          |                                 ^
+      424 |       const text = within(row).getByTestId(`register-${field}-message`);
+      425 |       expect(row.children).toEqual([within(row).getByTestId('icon-alert-circle'), text]);
+      426 |       expect(text).toHaveTextContent(`${path} no vale`);
+
+      at Object.getByTestId (src/screens/register/index.test.tsx:423:33)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+  ● #167 R7: Pingo en la cabecera del registro › #172 R10: sin errores ningún campo pinta mensaje
+
+    expect(received).toHaveLength(expected)
+
+    Expected length: 0
+    Received length: 2
+    Received array:  [<View className="w-full flex-row items-center gap-1.5" testID="register-last-name-message-row"><View color="color:danger" size={14} testID="icon-alert-circle" /><Text className="flex-1 text-13 font-semibold text-danger" selectable={true} testID="register-last-name-message" /></View>, <Text className="flex-1 text-13 font-semibold text-danger" selectable={true} testID="register-last-name-message" />]
+
+      432 |   it('#172 R10: sin errores ningún campo pinta mensaje', async () => {
+      433 |     await renderRegister();
+    > 434 |     expect(screen.queryAllByTestId(/^register-.+-message(-row)?$/)).toHaveLength(0);
+          |                                                                     ^
+      435 |   });
+      436 |
+      437 |   it('#167 R7: campos, errores, términos y envío cuelgan del scroll', async () => {
+
+      at Object.toHaveLength (src/screens/register/index.test.tsx:434:69)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+  ● #167 R8: el error del registro lleva icono › #167 R8: el icono del error mide 14 y usa danger
+
+    Found multiple elements with testID: icon-alert-circle
+
+      500 |     await fillForm();
+      501 |     await submit();
+    > 502 |     const icon = screen.getByTestId('icon-alert-circle');
+          |                         ^
+      503 |     expect(icon.props.size).toBe(14);
+      504 |     expect(icon.props.color).toBe('color:danger');
+      505 |   });
+
+      at Object.getByTestId (src/screens/register/index.test.tsx:502:25)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+exit=1
+```
+
+Restauración literal:
+
+```bash
+git checkout HEAD -- src/screens/register/index.tsx; git diff --quiet HEAD -- src/screens/register/index.tsx; echo "exit=$?"
+```
+
+```text
+exit=0
+exit=0
+```
+
+### Contraste de cada rojo y sonda con su tabla
+
+| Paso | Bloques comprobados | Resultado |
+|---|---|---|
+| S10b E3 | R10 cada campo: consulta last-name-message-row; R10 sin errores: longitud 2; #167 R8 icono: múltiples icon-alert-circle | 3/3; restaurada |
+| c23 | dos R11: cabecera/rejilla y proporciones; ambos por consulta register-names-row | 2/2 |
+| S11a | R11 proporciones: falta flex-2 | 1/1; restaurada |
+| S11b | R11 proporciones: orden teléfono-país (toEqual) | 1/1; restaurada |
+| c25 / S12 | dos R12: correo español y correo inglés; consulta register-email-message | 2/2 en cada ejecución; sonda restaurada |
+| c27 / S13 | R13 liveRegion: toBe('polite'), recibido undefined | 1/1 en cada ejecución; sonda restaurada |
+| c29 | forgot: tile en dos estados, pop formulario, pop enviado y R14; consistency: tiles restantes, Lock foreground, dos recuentos bg-accent-soft, excepción labio | 9/9; tipos de aserción prescritos |
+| S14 | forgot: los mismos cuatro; consistency: solo dos recuentos bg-accent-soft; falta tiles restantes | **6/7: bloqueo; restaurada; no se avanzó** |
+
+### Gates y sondas de c23–c30 — extractos literales
+
+Los siguientes extractos preservan títulos, mensajes, resúmenes, comandos y
+exits. Se omiten Console y códigos ANSI; los bloques extensos de árboles se
+cortan después del mensaje y la primera parte de la aserción.
+
+
+#### c23 — jest
+
+```bash
+bunx jest --testTimeout=30000 --runTestsByPath src/screens/register/index.test.tsx
+```
+
+```text
+FAIL src/screens/register/index.test.tsx (10.066 s)
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 28 passed, 30 total
+Time:        10.233 s, estimated 13 s
+  ● #167 R7: Pingo en la cabecera del registro › #172 R11: cabecera, rejilla, términos, error y envío cuelgan del scroll
+
+    Unable to find an element with testID: register-names-row
+
+    <RNCSafeAreaProvider>
+      <View
+        testID="screen-register"
+      >
+        <RCTScrollView
+          testID="register-form"
+        >
+          <View>
+            <View
+              testID="register-header"
+            >
+              <View
+                testID="register-top"
+              >
+                <View
+                  accessibilityLabel="Volver"
+                  accessibilityRole="button"
+                  accessible={true}
+                  testID="register-back"
+                >
+                  <RNSVGSvgView>
+                    <RNSVGGroup>
+                      <RNSVGGroup>
+                        <RNSVGPath />
+                      </RNSVGGroup>
+                    </RNSVGGroup>
+                  </RNSVGSvgView>
+                </View>
+                <View
+                  testID="register-pingo-float"
+                >
+                  <ViewManagerAdapter_ExpoImage
+                    placeholder={[]}
+                    testID="register-pingo"
+  ● #167 R7: Pingo en la cabecera del registro › #172 R11: nombres a 1fr 1fr y teléfono-país a 2fr 1fr
+
+    Unable to find an element with testID: register-names-row
+
+    <RNCSafeAreaProvider>
+      <View
+        testID="screen-register"
+      >
+        <RCTScrollView
+          testID="register-form"
+        >
+          <View>
+            <View
+              testID="register-header"
+            >
+              <View
+                testID="register-top"
+              >
+                <View
+                  accessibilityLabel="Volver"
+                  accessibilityRole="button"
+                  accessible={true}
+                  testID="register-back"
+                >
+                  <RNSVGSvgView>
+                    <RNSVGGroup>
+                      <RNSVGGroup>
+                        <RNSVGPath />
+                      </RNSVGGroup>
+                    </RNSVGGroup>
+                  </RNSVGSvgView>
+                </View>
+                <View
+                  testID="register-pingo-float"
+                >
+                  <ViewManagerAdapter_ExpoImage
+                    placeholder={[]}
+                    testID="register-pingo"
+                  />
+exit=1
+```
+
+#### c24 — jest
+
+```bash
+bunx jest --testTimeout=30000 --runTestsByPath src/screens/register/index.test.tsx src/__tests__/ui-language.test.ts src/__tests__/design-drift.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/legibility-classnames.test.ts
+```
+
+```text
+PASS src/__tests__/design-drift.test.ts
+PASS src/__tests__/consistency-classnames.test.ts
+PASS src/__tests__/ui-language.test.ts
+PASS src/__tests__/legibility-classnames.test.ts
+PASS src/screens/register/index.test.tsx (9.55 s)
+Test Suites: 5 passed, 5 total
+Tests:       224 passed, 224 total
+Time:        10.523 s, estimated 11 s
+exit=0
+```
+
+#### c24 — router
+
+```bash
+test ! -e .expo/types/router.d.ts
+```
+
+```text
+
+exit=0
+```
+
+#### c24 — typecheck
+
+```bash
+bun run typecheck
+```
+
+```text
+$ tsc --noEmit
+exit=0
+```
+
+#### c24 — lint
+
+```bash
+bunx expo lint --no-cache > /tmp/lint-172.log 2>&1
+```
+
+```text
+
+vacio=0
+exit=0
+```
+
+#### S11a — jest
+
+```bash
+bunx jest --testTimeout=30000 --runTestsByPath src/screens/register/index.test.tsx
+```
+
+```text
+FAIL src/screens/register/index.test.tsx (11.127 s)
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 29 passed, 30 total
+Time:        11.346 s
+  ● #167 R7: Pingo en la cabecera del registro › #172 R11: nombres a 1fr 1fr y teléfono-país a 2fr 1fr
+
+    expect(received).toContain(expected) // indexOf
+
+    Expected value: "flex-2"
+    Received array: ["text-field__root", "flex-1"]
+
+      476 |       expect(root?.props.className.split(' ')).not.toContain('flex-2');
+      477 |     }
+    > 478 |     expect(phone?.props.className.split(' ')).toContain('flex-2');
+          |                                               ^
+      479 |     expect(phone?.props.className.split(' ')).not.toContain('flex-1');
+      480 |   });
+      481 |
+
+      at Object.toContain (src/screens/register/index.test.tsx:478:47)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+exit=1
+```
+
+#### S11a — restore
+
+```bash
+git checkout HEAD -- src/screens/register/index.tsx; git diff --quiet HEAD -- src/screens/register/index.tsx; echo "exit=$?"
+```
+
+```text
+exit=0
+exit=0
+```
+
+#### S11b — jest
+
+```bash
+bunx jest --testTimeout=30000 --runTestsByPath src/screens/register/index.test.tsx
+```
+
+```text
+FAIL src/screens/register/index.test.tsx (11.773 s)
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 29 passed, 30 total
+Time:        11.984 s, estimated 12 s
+  ● #167 R7: Pingo en la cabecera del registro › #172 R11: nombres a 1fr 1fr y teléfono-país a 2fr 1fr
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 11
+    + Received  + 11
+
+    @@ -1,8 +1,8 @@
+      Array [
+        <View
+    -     className="text-field__root flex-2"
+    +     className="text-field__root flex-1"
+        >
+          <View
+            accessibilityState={
+              Object {
+                "busy": undefined,
+    @@ -41,34 +41,35 @@
+                  undefined,
+                  undefined,
+                ]
+              }
+            >
+    -         Teléfono
+    +         País
+            </Text>
+          </View>
+          <TextInput
+    +       autoCapitalize="characters"
+            className="input__input ios:outline-2 ios:outline-transparent ios:focus:outline-accent android:border-[1.5px] android:border-transparent android:focus:border-accent rtl:text-right input__input--variant-primary ios:shadow-field android:shadow-sm rounded-xl bg-default"
+            editable={true}
+    -       keyboardType="phone-pad"
+    -       onChangeText={[Function bound dispatchSetState]}
+    +       maxLength={2}
+    +       onChangeText={[Function
+exit=1
+```
+
+#### S11b — restore
+
+```bash
+git checkout HEAD -- src/screens/register/index.tsx; git diff --quiet HEAD -- src/screens/register/index.tsx; echo "exit=$?"
+```
+
+```text
+exit=0
+exit=0
+```
+
+#### c25 — jest
+
+```bash
+bunx jest --testTimeout=30000 --runTestsByPath src/screens/register/index.test.tsx
+```
+
+```text
+FAIL src/screens/register/index.test.tsx (13.117 s)
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 30 passed, 32 total
+Time:        13.308 s
+  ● #167 R7: Pingo en la cabecera del registro › #172 R12: un correo sin arroba no llama a la API y marca el campo
+
+    Unable to find an element with testID: register-email-message
+
+    <RNCSafeAreaProvider>
+      <View
+        testID="screen-register"
+      >
+        <RCTScrollView
+          testID="register-form"
+        >
+          <View>
+            <View
+              testID="register-header"
+            >
+              <View
+                testID="register-top"
+              >
+                <View
+                  accessibilityLabel="Volver"
+                  accessibilityRole="button"
+                  accessible={true}
+                  testID="register-back"
+                >
+                  <RNSVGSvgView>
+                    <RNSVGGroup>
+                      <RNSVGGroup>
+                        <RNSVGPath />
+                      </RNSVGGroup>
+                    </RNSVGGroup>
+                  </RNSVGSvgView>
+                </View>
+                <View
+                  testID="register-pingo-float"
+                >
+                  <ViewManagerAdapter_ExpoImage
+                    placeholder={[]}
+                    testID="register-pingo"
+  ● #167 R7: Pingo en la cabecera del registro › #172 R12: en inglés el correo inválido dice «Enter a valid email address»
+
+    Unable to find an element with testID: register-email-message
+
+    <RNCSafeAreaProvider>
+      <View
+        testID="screen-register"
+      >
+        <RCTScrollView
+          testID="register-form"
+        >
+          <View>
+            <View
+              testID="register-header"
+            >
+              <View
+                testID="register-top"
+              >
+                <View
+                  accessibilityLabel="Back"
+                  accessibilityRole="button"
+                  accessible={true}
+                  testID="register-back"
+                >
+                  <RNSVGSvgView>
+                    <RNSVGGroup>
+                      <RNSVGGroup>
+                        <RNSVGPath />
+                      </RNSVGGroup>
+                    </RNSVGGroup>
+                  </RNSVGSvgView>
+                </View>
+                <View
+                  testID="register-pingo-float"
+                >
+                  <ViewManagerAdapter_ExpoImage
+                    placeholder={[]}
+                    testID="register-pingo"
+exit=1
+```
+
+#### c26 — jest
+
+```bash
+bunx jest --testTimeout=30000 --runTestsByPath src/screens/register/index.test.tsx src/__tests__/ui-language.test.ts src/__tests__/design-drift.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/legibility-classnames.test.ts
+```
+
+```text
+PASS src/__tests__/design-drift.test.ts
+PASS src/__tests__/consistency-classnames.test.ts
+PASS src/__tests__/legibility-classnames.test.ts
+PASS src/__tests__/ui-language.test.ts
+PASS src/screens/register/index.test.tsx (12.837 s)
+Test Suites: 5 passed, 5 total
+Tests:       226 passed, 226 total
+Time:        14.834 s
+exit=0
+```
+
+#### c26 — router
+
+```bash
+test ! -e .expo/types/router.d.ts
+```
+
+```text
+
+exit=0
+```
+
+#### c26 — typecheck
+
+```bash
+bun run typecheck
+```
+
+```text
+$ tsc --noEmit
+exit=0
+```
+
+#### c26 — lint
+
+```bash
+bunx expo lint --no-cache > /tmp/lint-172.log 2>&1
+```
+
+```text
+
+vacio=0
+exit=0
+```
+
+#### S12 — jest
+
+```bash
+bunx jest --testTimeout=30000 --runTestsByPath src/screens/register/index.test.tsx
+```
+
+```text
+FAIL src/screens/register/index.test.tsx (20.642 s)
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 30 passed, 32 total
+Time:        20.857 s
+  ● #167 R7: Pingo en la cabecera del registro › #172 R12: un correo sin arroba no llama a la API y marca el campo
+
+    Unable to find an element with testID: register-email-message
+
+    <RNCSafeAreaProvider>
+      <View
+        testID="screen-register"
+      >
+        <RCTScrollView
+          testID="register-form"
+        >
+          <View>
+            <View
+              testID="register-header"
+            >
+              <View
+                testID="register-top"
+              >
+                <View
+                  accessibilityLabel="Volver"
+                  accessibilityRole="button"
+                  accessible={true}
+                  testID="register-back"
+                >
+                  <RNSVGSvgView>
+                    <RNSVGGroup>
+                      <RNSVGGroup>
+                        <RNSVGPath />
+                      </RNSVGGroup>
+                    </RNSVGGroup>
+                  </RNSVGSvgView>
+                </View>
+                <View
+                  testID="register-pingo-float"
+                >
+                  <ViewManagerAdapter_ExpoImage
+                    placeholder={[]}
+                    testID="register-pingo"
+  ● #167 R7: Pingo en la cabecera del registro › #172 R12: en inglés el correo inválido dice «Enter a valid email address»
+
+    Unable to find an element with testID: register-email-message
+
+    <RNCSafeAreaProvider>
+      <View
+        testID="screen-register"
+      >
+        <RCTScrollView
+          testID="register-form"
+        >
+          <View>
+            <View
+              testID="register-header"
+            >
+              <View
+                testID="register-top"
+              >
+                <View
+                  accessibilityLabel="Back"
+                  accessibilityRole="button"
+                  accessible={true}
+                  testID="register-back"
+                >
+                  <RNSVGSvgView>
+                    <RNSVGGroup>
+                      <RNSVGGroup>
+                        <RNSVGPath />
+                      </RNSVGGroup>
+                    </RNSVGGroup>
+                  </RNSVGSvgView>
+                </View>
+                <View
+                  testID="register-pingo-float"
+                >
+                  <ViewManagerAdapter_ExpoImage
+                    placeholder={[]}
+                    testID="register-pingo"
+exit=1
+```
+
+#### S12 — restore
+
+```bash
+git checkout HEAD -- src/screens/register/index.tsx; git diff --quiet HEAD -- src/screens/register/index.tsx; echo "exit=$?"
+```
+
+```text
+exit=0
+exit=0
+```
+
+#### c27 — jest
+
+```bash
+bunx jest --testTimeout=30000 --runTestsByPath src/screens/reset-password/index.test.tsx
+```
+
+```text
+FAIL src/screens/reset-password/index.test.tsx (46.829 s)
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 37 passed, 38 total
+Time:        55.87 s
+  ● #167 R10: Pingo y tarjeta de estado en nueva contraseña › #172 R13: la tarjeta de estado avisa con liveRegion polite
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "polite"
+    Received: undefined
+
+      462 |     await submitReset();
+      463 |     expect(await screen.findByTestId('reset-success')).toBeOnTheScreen();
+    > 464 |     expect(screen.getByTestId('reset-success-card').props.accessibilityLiveRegion).toBe('polite');
+          |                                                                                    ^
+      465 |   });
+      466 |
+      467 |   it('#167 R10: el éxito conserva la cabecera del formulario', async () => {
+
+      at Object.toBe (src/screens/reset-password/index.test.tsx:464:84)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+exit=1
+```
+
+#### c28 — jest
+
+```bash
+bunx jest --testTimeout=30000 --runTestsByPath src/screens/reset-password/index.test.tsx src/__tests__/ui-language.test.ts src/__tests__/design-drift.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/legibility-classnames.test.ts
+```
+
+```text
+PASS src/__tests__/design-drift.test.ts (5.481 s)
+PASS src/__tests__/ui-language.test.ts (6.122 s)
+PASS src/__tests__/consistency-classnames.test.ts
+PASS src/__tests__/legibility-classnames.test.ts
+PASS src/screens/reset-password/index.test.tsx (18.922 s)
+Test Suites: 5 passed, 5 total
+Tests:       232 passed, 232 total
+Time:        20.53 s, estimated 47 s
+exit=0
+```
+
+#### c28 — router
+
+```bash
+test ! -e .expo/types/router.d.ts
+```
+
+```text
+
+exit=0
+```
+
+#### c28 — typecheck
+
+```bash
+bun run typecheck
+```
+
+```text
+$ tsc --noEmit
+exit=0
+```
+
+#### c28 — lint
+
+```bash
+bunx expo lint --no-cache > /tmp/lint-172.log 2>&1
+```
+
+```text
+
+vacio=0
+exit=0
+```
+
+#### S13 — jest
+
+```bash
+bunx jest --testTimeout=30000 --runTestsByPath src/screens/reset-password/index.test.tsx
+```
+
+```text
+FAIL src/screens/reset-password/index.test.tsx (9.215 s)
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 37 passed, 38 total
+Time:        9.482 s, estimated 19 s
+  ● #167 R10: Pingo y tarjeta de estado en nueva contraseña › #172 R13: la tarjeta de estado avisa con liveRegion polite
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "polite"
+    Received: undefined
+
+      462 |     await submitReset();
+      463 |     expect(await screen.findByTestId('reset-success')).toBeOnTheScreen();
+    > 464 |     expect(screen.getByTestId('reset-success-card').props.accessibilityLiveRegion).toBe('polite');
+          |                                                                                    ^
+      465 |   });
+      466 |
+      467 |   it('#167 R10: el éxito conserva la cabecera del formulario', async () => {
+
+      at Object.toBe (src/screens/reset-password/index.test.tsx:464:84)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+exit=1
+```
+
+#### S13 — restore
+
+```bash
+git checkout HEAD -- src/screens/reset-password/index.tsx; git diff --quiet HEAD -- src/screens/reset-password/index.tsx; echo "exit=$?"
+```
+
+```text
+exit=0
+exit=0
+```
+
+#### c29 — jest
+
+```bash
+bunx jest --testTimeout=30000 --runTestsByPath src/screens/forgot/index.test.tsx src/__tests__/consistency-classnames.test.ts
+```
+
+```text
+FAIL src/__tests__/consistency-classnames.test.ts
+FAIL src/screens/forgot/index.test.tsx (12.385 s)
+Test Suites: 2 failed, 2 total
+Tests:       9 failed, 98 passed, 107 total
+Time:        13.475 s
+  ● #62 R4: la app solo usa los radios de la escala declarada › lleva los tres tiles restantes a rounded-xl
+
+    expect(received).toContain(expected) // indexOf
+
+    Expected substring: "size-13 items-center justify-center rounded-xl border-b-4 border-black/25 bg-accent"
+    Received string:    "import { Image } from 'expo-image';
+    import { HeaderHeightContext } from 'expo-router/react-navigation';
+    import { router } from 'expo-router';
+    import { Button, Input, Label, LinkButton, TextField } from 'heroui-native';
+    import { useContext, useState } from 'react';
+    import { KeyboardAvoidingView, ScrollView, Text, View } from 'react-native';
+    import { useSafeAreaInsets } from 'react-native-safe-area-context';
+    import { Lock } from 'reicon-react-native';·
+    import { forgotPassword } from '../../api/auth';
+    import { BackButton } from '../../components/back-button';
+    import { PopIn } from '../../components/pop-in';
+    import { PingoFloat } from '../../components/pingo-float';
+    import { FormError } from '../../components/form-error';
+    import { useTranslate } from '../../providers/language-provider';
+    import { CONTINUOUS_CORNER } from '../../theme/native
+  ● #62 R13: el color imperativo sale siempre de useThemeColors del repo › resuelve el Lock de Forgot con accent-foreground
+
+    expect(received).toContain(expected) // indexOf
+
+    Expected substring: "const [accentForeground] = useThemeColors(['accent-foreground']);"
+    Received string:    "import { Image } from 'expo-image';
+    import { HeaderHeightContext } from 'expo-router/react-navigation';
+    import { router } from 'expo-router';
+    import { Button, Input, Label, LinkButton, TextField } from 'heroui-native';
+    import { useContext, useState } from 'react';
+    import { KeyboardAvoidingView, ScrollView, Text, View } from 'react-native';
+    import { useSafeAreaInsets } from 'react-native-safe-area-context';
+    import { Lock } from 'reicon-react-native';·
+    import { forgotPassword } from '../../api/auth';
+    import { BackButton } from '../../components/back-button';
+    import { PopIn } from '../../components/pop-in';
+    import { PingoFloat } from '../../components/pingo-float';
+    import { FormError } from '../../components/form-error';
+    import { useTranslate } from '../../providers/language-provider';
+    import { CONTINUOUS_CORNER } from '../../theme/native-s
+  ● #98 R10: los candados que esta feature no mueve › deja CONTINUOUS_CORNER, bg-accent-soft y el acento donde estaban
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 17
+    Received: 18
+
+      399 |     expect(count(/style=\{CONTINUOUS_CORNER\}/g)).toBe(31 + 1 + 4 + 1); // #41 R9: geofences-link; #168; #170 R8: alert-detail-map
+      400 |     expect(count(/rounded-xl bg-accent(?=[\s'"`])/g)).toBe(13 + 1 + 1 + 1 + 1 + 1 + 1); // #146 R8, #146 R9; #118 R7; #155 R3 // #158 R3: docs-upload; // #158 R5: docs-upload-submit
+    > 401 |     expect(count(/bg-accent-soft/g)).toBe(16 + 2 + 1 - 1 - 1); // #147 R4: meal-time-edit y add-meal-time-button; #105 R11; #168 R5: PetPills pasa a huecos pastel; #172 R14: forgot-lock-tile pasa a bg-accent
+          |                                      ^
+      402 |     expect(home.match(/text-accent-strong\b/g)).toHaveLength(2);
+      403 |     expect(food.match(/text-accent-strong\b/g)).toHaveLength(1);
+      404 |     expect(filesMatching(/\brounded-(?:2xl|lg|md|sm)\b/)).toEqual([]);
+
+      at Object.toBe (src/__tests__/consistency-classnames.test.ts:401:38)
+  ● #64 R9: el color categórico solo se nombra en el módulo de paleta › conserva los usos de bg-accent-soft que sí son acento
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 17
+    Received: 18
+
+      465 |     const docs = readSource(join('screens', 'docs', 'index.tsx'));
+      466 |
+    > 467 |     expect(accentSoftCount).toBe(16 + 2 + 1 - 1 - 1); // #147 R4, #105 R11; #168 R5: PetPills pasa a huecos pastel; #172 R14: forgot-lock-tile pasa a bg-accent
+          |                             ^
+      468 |     expect(reminders.match(/bg-accent-soft/g)).toHaveLength(1);
+      469 |     expect(docs.match(/bg-accent-soft/g)).toBeNull();
+      470 |   });
+
+      at Object.toBe (src/__tests__/consistency-classnames.test.ts:467:29)
+  ● #166 R2: todo primario sólido lleva el labio detrás de bg-accent › no deja la receta del labio fuera de un primario salvo el candado de Recuperar
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 20
+    Received: 19
+
+      575 |     );
+      576 |
+    > 577 |     expect(count(/\bborder-b-4\b/g)).toBe(19 + 1); // #172 R14: forgot-lock-tile (Enmienda #172)
+          |                                      ^
+      578 |     expect(count(/border-black\/25/g)).toBe(19 + 1); // #172 R14: forgot-lock-tile (Enmienda #172)
+      579 |   });
+      580 | });
+
+      at Object.toBe (src/__tests__/consistency-classnames.test.ts:577:38)
+
+FAIL src/screens/forgot/index.test.tsx (12.385 s)
+  ● #117 R5: enviar pasa la pantalla a «Revisa tu correo» › el tile Lock sigue en pie en los dos estados
+
+    expect(received).toBeDefined()
+
+    Received: undefined
+
+      283 |     expect(before.filter((c) => typeof c !== 'string').find(
+      284 |       (c) => (c as { props: { className?: string } }).props.className === 'size-13 items-center justify-center rounded-xl border-b-4 border-black/25 bg-accent',
+    > 285 |     )).toBeDefined();
+          |        ^
+      286 |     await submitForgot();
+      287 |     expect(await screen.findByText('Revisa tu correo')).toBeVisible();
+      288 |     const after = (screen.getByTestId('forgot-title').parent?.children ?? []) as unknown[];
+
+      at Object.toBeDefined (src/screens/forgot/index.test.tsx:285:8)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+  ● #167 R9: Pingo y pop del candado en recuperar › #167 R9: el tile entra con pop en el formulario
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Object {
+        "forgot-lock-tile": Object {
+    -     "className": "size-13 items-center justify-center rounded-xl border-b-4 border-black/25 bg-accent",
+    +     "className": "size-16 items-center justify-center rounded-xl bg-accent-soft",
+          "style": Object {
+            "borderCurve": "continuous",
+          },
+        },
+      }
+
+      575 |     expect(Object.fromEntries(mockPopIn.mock.calls.map(([p]) => [
+      576 |       p.testID, { className: p.className, style: p.style },
+    > 577 |     ]))).toEqual({
+          |          ^
+      578 |       'forgot-lock-tile': {
+      579 |         className: 'size-13 items-center justify-center rounded-xl border-b-4 border-black/25 bg-accent',
+      580 |         style: { borderCurve: 'continuous' },
+
+      at Object.toEqual (src/screens/forgot/index.test.tsx:577:10)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.j
+  ● #167 R9: Pingo y pop del candado en recuperar › #167 R9: el tile entra con pop tras enviar
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Object {
+        "forgot-lock-tile": Object {
+    -     "className": "size-13 items-center justify-center rounded-xl border-b-4 border-black/25 bg-accent",
+    +     "className": "size-16 items-center justify-center rounded-xl bg-accent-soft",
+          "style": Object {
+            "borderCurve": "continuous",
+          },
+        },
+      }
+
+      590 |     expect(Object.fromEntries(mockPopIn.mock.calls.map(([p]) => [
+      591 |       p.testID, { className: p.className, style: p.style },
+    > 592 |     ]))).toEqual({
+          |          ^
+      593 |       'forgot-lock-tile': {
+      594 |         className: 'size-13 items-center justify-center rounded-xl border-b-4 border-black/25 bg-accent',
+      595 |         style: { borderCurve: 'continuous' },
+
+      at Object.toEqual (src/screens/forgot/index.test.tsx:592:10)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:
+  ● #172 R14: el candado es un tile acento con labio y Lock de 26
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "size-13 items-center justify-center rounded-xl border-b-4 border-black/25 bg-accent"
+    Received: "size-16 items-center justify-center rounded-xl bg-accent-soft"
+
+      654 |   function expectTile() {
+      655 |     const tile = screen.getByTestId('forgot-lock-tile');
+    > 656 |     expect(tile.props.className).toBe('size-13 items-center justify-center rounded-xl border-b-4 border-black/25 bg-accent');
+          |                                  ^
+      657 |     const icon = screen.getByTestId('icon-lock');
+      658 |     expect(tile.children).toEqual([icon]);
+      659 |     expect(icon.props.size).toBe(26);
+
+      at toBe (src/screens/forgot/index.test.tsx:656:34)
+      at Object.expectTile (src/screens/forgot/index.test.tsx:662:3)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+exit=1
+```
+
+#### c30 — jest
+
+```bash
+bunx jest --testTimeout=30000 --runTestsByPath src/screens/forgot/index.test.tsx src/__tests__/consistency-classnames.test.ts src/__tests__/ui-language.test.ts src/__tests__/design-drift.test.ts src/__tests__/legibility-classnames.test.ts
+```
+
+```text
+PASS src/__tests__/consistency-classnames.test.ts
+PASS src/__tests__/design-drift.test.ts
+PASS src/__tests__/ui-language.test.ts (5.192 s)
+PASS src/__tests__/legibility-classnames.test.ts
+PASS src/screens/forgot/index.test.tsx (12.475 s)
+Test Suites: 5 passed, 5 total
+Tests:       234 passed, 234 total
+Time:        13.916 s
+exit=0
+```
+
+#### c30 — router
+
+```bash
+test ! -e .expo/types/router.d.ts
+```
+
+```text
+
+exit=0
+```
+
+#### c30 — typecheck
+
+```bash
+bun run typecheck
+```
+
+```text
+$ tsc --noEmit
+exit=0
+```
+
+#### c30 — lint
+
+```bash
+bunx expo lint --no-cache > /tmp/lint-172.log 2>&1
+```
+
+```text
+
+vacio=0
+exit=0
+```
+
+#### S14 — jest (bloques y resumen íntegros)
+
+```bash
+bunx jest --testTimeout=30000 --runTestsByPath src/screens/forgot/index.test.tsx src/__tests__/consistency-classnames.test.ts
+```
+
+```text
+FAIL src/__tests__/consistency-classnames.test.ts
+FAIL src/screens/forgot/index.test.tsx (9.195 s)
+Test Suites: 2 failed, 2 total
+Tests:       6 failed, 101 passed, 107 total
+Time:        10.217 s, estimated 13 s
+  ● #98 R10: los candados que esta feature no mueve › deja CONTINUOUS_CORNER, bg-accent-soft y el acento donde estaban
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 17
+    Received: 18
+
+      399 |     expect(count(/style=\{CONTINUOUS_CORNER\}/g)).toBe(31 + 1 + 4 + 1); // #41 R9: geofences-link; #168; #170 R8: alert-detail-map
+      400 |     expect(count(/rounded-xl bg-accent(?=[\s'"`])/g)).toBe(13 + 1 + 1 + 1 + 1 + 1 + 1); // #146 R8, #146 R9; #118 R7; #155 R3 // #158 R3: docs-upload; // #158 R5: docs-upload-submit
+    > 401 |     expect(count(/bg-accent-soft/g)).toBe(16 + 2 + 1 - 1 - 1); // #147 R4: meal-time-edit y add-meal-time-button; #105 R11; #168 R5: PetPills pasa a huecos pastel; #172 R14: forgot-lock-tile pasa a bg-accent
+          |                                      ^
+      402 |     expect(home.match(/text-accent-strong\b/g)).toHaveLength(2);
+      403 |     expect(food.match(/text-accent-strong\b/g)).toHaveLength(1);
+      404 |     expect(filesMatching(/\brounded-(?:2xl|lg|md|sm)\b/)).toEqual([]);
+
+      at Object.toBe (src/__tests__/consistency-classnames.test.ts:401:38)
+  ● #64 R9: el color categórico solo se nombra en el módulo de paleta › conserva los usos de bg-accent-soft que sí son acento
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 17
+    Received: 18
+
+      465 |     const docs = readSource(join('screens', 'docs', 'index.tsx'));
+      466 |
+    > 467 |     expect(accentSoftCount).toBe(16 + 2 + 1 - 1 - 1); // #147 R4, #105 R11; #168 R5: PetPills pasa a huecos pastel; #172 R14: forgot-lock-tile pasa a bg-accent
+          |                             ^
+      468 |     expect(reminders.match(/bg-accent-soft/g)).toHaveLength(1);
+      469 |     expect(docs.match(/bg-accent-soft/g)).toBeNull();
+      470 |   });
+
+      at Object.toBe (src/__tests__/consistency-classnames.test.ts:467:29)
+
+FAIL src/screens/forgot/index.test.tsx (9.195 s)
+  ● #117 R5: enviar pasa la pantalla a «Revisa tu correo» › el tile Lock sigue en pie en los dos estados
+
+    expect(received).toBeDefined()
+
+    Received: undefined
+
+      283 |     expect(before.filter((c) => typeof c !== 'string').find(
+      284 |       (c) => (c as { props: { className?: string } }).props.className === 'size-13 items-center justify-center rounded-xl border-b-4 border-black/25 bg-accent',
+    > 285 |     )).toBeDefined();
+          |        ^
+      286 |     await submitForgot();
+      287 |     expect(await screen.findByText('Revisa tu correo')).toBeVisible();
+      288 |     const after = (screen.getByTestId('forgot-title').parent?.children ?? []) as unknown[];
+
+      at Object.toBeDefined (src/screens/forgot/index.test.tsx:285:8)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+  ● #167 R9: Pingo y pop del candado en recuperar › #167 R9: el tile entra con pop en el formulario
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Object {
+        "forgot-lock-tile": Object {
+    -     "className": "size-13 items-center justify-center rounded-xl border-b-4 border-black/25 bg-accent",
+    +     "className": "size-13 items-center justify-center rounded-xl border-b-4 border-black/25 bg-accent-soft",
+          "style": Object {
+            "borderCurve": "continuous",
+          },
+        },
+      }
+
+      575 |     expect(Object.fromEntries(mockPopIn.mock.calls.map(([p]) => [
+      576 |       p.testID, { className: p.className, style: p.style },
+    > 577 |     ]))).toEqual({
+          |          ^
+      578 |       'forgot-lock-tile': {
+      579 |         className: 'size-13 items-center justify-center rounded-xl border-b-4 border-black/25 bg-accent',
+      580 |         style: { borderCurve: 'continuous' },
+
+      at Object.toEqual (src/screens/forgot/index.test.tsx:577:10)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+  ● #167 R9: Pingo y pop del candado en recuperar › #167 R9: el tile entra con pop tras enviar
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Object {
+        "forgot-lock-tile": Object {
+    -     "className": "size-13 items-center justify-center rounded-xl border-b-4 border-black/25 bg-accent",
+    +     "className": "size-13 items-center justify-center rounded-xl border-b-4 border-black/25 bg-accent-soft",
+          "style": Object {
+            "borderCurve": "continuous",
+          },
+        },
+      }
+
+      590 |     expect(Object.fromEntries(mockPopIn.mock.calls.map(([p]) => [
+      591 |       p.testID, { className: p.className, style: p.style },
+    > 592 |     ]))).toEqual({
+          |          ^
+      593 |       'forgot-lock-tile': {
+      594 |         className: 'size-13 items-center justify-center rounded-xl border-b-4 border-black/25 bg-accent',
+      595 |         style: { borderCurve: 'continuous' },
+
+      at Object.toEqual (src/screens/forgot/index.test.tsx:592:10)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+  ● #172 R14: el candado es un tile acento con labio y Lock de 26
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "size-13 items-center justify-center rounded-xl border-b-4 border-black/25 bg-accent"
+    Received: "size-13 items-center justify-center rounded-xl border-b-4 border-black/25 bg-accent-soft"
+
+      654 |   function expectTile() {
+      655 |     const tile = screen.getByTestId('forgot-lock-tile');
+    > 656 |     expect(tile.props.className).toBe('size-13 items-center justify-center rounded-xl border-b-4 border-black/25 bg-accent');
+          |                                  ^
+      657 |     const icon = screen.getByTestId('icon-lock');
+      658 |     expect(tile.children).toEqual([icon]);
+      659 |     expect(icon.props.size).toBe(26);
+
+      at toBe (src/screens/forgot/index.test.tsx:656:34)
+      at Object.expectTile (src/screens/forgot/index.test.tsx:662:3)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+exit=1
+```
+
+#### S14 — restore
+
+```bash
+git checkout HEAD -- src/screens/forgot/index.tsx; git diff --quiet HEAD -- src/screens/forgot/index.tsx; echo "exit=$?"
+```
+
+```text
+exit=0
+exit=0
+```
+
+### Anclas ejecutadas en Reanudacion 2
+
+```text
+c24: register-names-row=1; register-contact-row=1; ficheros de producción con flex-2=1
+c26: const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; =1
+c26: t('forgot.invalidEmail')=1
+c28: accessibilityLiveRegion="polite"=1
+c30: B7=17; B8=20,20; B9=37
+c30: tile nuevo en forgot/index.tsx=1; forgot/index.test.tsx=5; consistency-classnames.test.ts=1
+c30: tile viejo en forgot/index.test.tsx=0; consistency-classnames.test.ts=0
+c30: LOCK_TILE_CLASS en forgot/index.test.tsx=0
+```
+
+No se ejecutaron las anclas de T22 ni su gate final. El último gate completo
+alcanzado es c30: 5 suites y 234 tests verdes, typecheck `exit=0`, lint
+`exit=0` con `vacio=0`.
+
+### Desviaciones y entrega de Reanudacion 2
+
+1. S14 da 6 fallos en vez de 7 por una búsqueda de subcadena que también
+   acepta bg-accent-soft. Se detuvo el guion conforme a la regla crítica 3,
+   sin continuar T16 ni modificar los candados para forzar el resultado.
+2. La trazabilidad se actualiza hasta c30, conservando los pendientes. Los
+   mensajes de cierre completo no se usan mientras la feature esté bloqueada.
+3. No hubo nuevas instalaciones, Exceeded timeout, SIGKILL, alteración de
+   dependencias ni cambios en firmas o commits del leader. No se ejecutaron
+   init.sh, push, PR, amend, rebase ni prettier.
+4. Las mutaciones de esta reanudación están restauradas. El árbol queda
+   limpio tras los commits de documentación del bloqueo; la prueba de humo
+   de Android sigue pendiente (humano).
+
+
+### Commit de trazabilidad del bloqueo
+
+`ca0049df docs(mobile-account-screens-polish): #172 trazabilidad parcial hasta c30`.
+El informe se cierra en un commit separado con `git commit --only` sobre
+este mismo fichero. Ambos son documentación del bloqueo, no el cierre
+completo de T22.
