@@ -3,15 +3,16 @@
 > Worktree: `/home/claude/sites/Pet-Tracker-wt-172`.
 > Branch: `feature/172-mobile-account-screens-polish`.
 > H0 al arrancar: `e0178ab5c1f67e917cf4116332a0e9196d67b344`.
-> Fecha de cierre: 2026-10-14. Estado final: **R1–R20 implementados; T22 completo; R21 pendiente (humano)**.
+> Fecha de cierre: 2026-10-14. Estado final: **E6 y c40–c42 completos; T22 repetido con 476 tests; R21 pendiente (humano)**.
 
 
 
-> Reanudación 4 acepta S15 conforme a E5, sin repetirla, y completa
-> c32–c39 y T22. Las 17 suites pasan 470 tests; los lectores de la carta
-> pasan 192 tests; typecheck y lint están limpios. Todas las sondas están
-> restauradas y todas las anclas finales coinciden. La prueba de humo R21
-> corresponde al humano; el leader ejecuta init.sh antes del reviewer.
+> Reanudación 5 ejecuta E6: cinco it nuevos (seis casos Jest), con el
+> código literal de T24, solo en los tres tests de c40–c42. Producción se
+> conserva. Las siete sondas coinciden con sus títulos y tipos y están
+> restauradas. T22 pasa 17 suites / 476 tests (+67 frente a H0), lectores
+> 192, typecheck y lint limpios, cuentas y anclas conformes. La review del
+> leader se conserva; R21 sigue pendiente del humano y falta la nueva review.
 
 ## Bloqueo inicial y punto de reanudación — historia
 
@@ -155,7 +156,7 @@ vacio=0
 ## Tabla completa de commits del guion — estado actual
 
 H0 sigue siendo `e0178ab5`. Los commits del leader (firmas y enmiendas E1,
-E2, E3, E4 y E5) no se cuentan como commits propios. La tentativa inicial de c8 y
+E2, E3, E4, E5 y E6) y la review b6c09d5e no se cuentan como commits propios. La tentativa inicial de c8 y
 los bloqueos anteriores quedan documentados en sus secciones históricas.
 
 | Commit | Hash | Mensaje literal | Línea Tests: | Rojos y tipo |
@@ -201,6 +202,9 @@ los bloqueos anteriores quedan documentados en sus secciones históricas.
 | c37 | 398f074b | `feat(mobile): la CTA de cuenta se ancla al pie (R19)` | `Tests:       346 passed, 346 total` | 0 |
 | c38 | 9cf701c4 | `test(mobile): CTA de 56 e inputs de 52 en las pantallas de cuenta (R20)` | `Tests:       8 failed, 149 passed, 157 total` | 8 aserciones |
 | c39 | 4ba7e139 | `feat(mobile): CTA de 56 e inputs de 52 en las pantallas de cuenta (R20)` | `Tests:       355 passed, 355 total` | 0 |
+| c40 | 62b62e4b | `test(mobile): la flotación de Pingo solo mueve translateY y sigue ease-in-out (R4)` | `Tests:       199 passed, 199 total` | 0; nace verde, sondas de E6 conformes antes del commit |
+| c41 | 0b706e05 | `test(mobile): BackButton baja la opacidad al pulsar (R2)` | `Tests:       200 passed, 200 total` | 0; nace verde, sondas de E6 conformes antes del commit |
+| c42 | 71e7f0c6 | `test(mobile): el registro sigue enviando tras un correo inválido (R12)` | `Tests:       230 passed, 230 total` | 0; nace verde, sondas de E6 conformes antes del commit |
 
 ## Gates ejecutados — comandos y salidas
 
@@ -11117,3 +11121,2130 @@ entradas T22-B3 hasta T22-B20 y los demás nombres descriptivos.
 
    R21 queda pendiente (humano). El árbol queda limpio al cierre, y el
    leader conserva la revisión, init.sh y el bookkeeping.
+
+
+## Reanudacion 5
+
+### Cinco chequeos antes de tocar archivos
+
+Worktree: /home/claude/sites/Pet-Tracker-wt-172. Branch:
+feature/172-mobile-account-screens-polish. H0 sigue siendo
+`e0178ab5c1f67e917cf4116332a0e9196d67b344`.
+
+```text
+pwd
+/home/claude/sites/Pet-Tracker-wt-172
+command grep -c -F -- '- [x] Enmienda E6 aprobada por humano' specs/mobile-account-screens-polish/requirements.md
+1
+exit=0
+git status --short
+(sin salida)
+exit=0
+git log -1 --format=%h -- mobile-pet-tracker
+4ba7e139
+exit=0
+git branch --show-current
+feature/172-mobile-account-screens-polish
+git rev-parse e0178ab5
+e0178ab5c1f67e917cf4116332a0e9196d67b344
+git merge-base --is-ancestor e0178ab5 HEAD
+exit=0
+git rev-parse HEAD
+0740dc013acaecd9bcfdf665ac529ddc43e519cd
+```
+
+Los commits del leader, incluidas las firmas E1–E6 y la review b6c09d5e,
+se conservan y no se cuentan como propios. El quinto chequeo, la base con
+pingo-float, back-button y register, dio `Tests: 41 passed, 41 total`, exit=0
+(3 + 5 + 33). Su salida literal se reproduce abajo.
+
+### Estado al final
+
+Se ejecutó T24 en orden (c40, c41 y c42). En cada commit: ancla grep-cF=1,
+código literal de T24, gate verde con las cuatro guardas, guarda del router,
+typecheck y lint, después sondas una a una y el commit al final. Cada sonda
+se contrastó por título y tipo antes de avanzar y se restauró con git
+checkout HEAD; su diff quiet dio exit=0. Ninguna sonda se committeó.
+
+| Commit | Único fichero modificado | Casos de ese fichero | Gate con guardas |
+|---|---|---|---|
+| c40 / 62b62e4b | src/components/__tests__/pingo-float.test.tsx | 5 (3 + 2) | 199 tests verdes, typecheck y lint limpios |
+| c41 / 0b706e05 | src/components/__tests__/back-button.test.tsx | 6 (5 + 1) | 200 tests verdes, typecheck y lint limpios |
+| c42 / 71e7f0c6 | src/screens/register/index.test.tsx | 36 (33 + 3) | 230 tests verdes, typecheck y lint limpios |
+
+Se comprobó literalmente cada bloque contra T24 y que desde 0740dc01 los
+únicos cambios de mobile-pet-tracker son esos tres ficheros de test.
+Producción no cambia en E6. La cadena del correo corregido conserva dos
+espacios a cada lado: `'  alex@example.com  '`.
+
+T22 se repitió entero sobre c42:
+
+- 346 bloques de it: 289 en H0 +57, y cada fichero tiene la cuenta de E6.
+- 17 suites, `Tests: 476 passed, 476 total`: 409 en H0 +67.
+- Lectores de la carta: 4 suites, `Tests: 192 passed, 192 total`.
+- Guarda del router, typecheck y lint exit=0; log de lint vacío.
+- Todas las anclas finales coinciden; se conservan los invariantes de H0
+  (package.json, bun.lock, Card y Bienvenida), y motion solo añade las dos
+  constantes de Pingo respecto de H0.
+- Historial c1–c42, c7b y el correctivo de tipos c7c: 44 commits del guion,
+  con tests e implementación separados. Los tres nuevos commits contienen
+  exclusivamente su fichero de test. La review y el bookkeeping del leader
+  se conservan.
+
+R21 queda **pendiente (humano)**. La review ronda 1 queda como la escribió
+el leader; este cierre no se auto-aprueba ni firma la prueba de humo. Se
+mantienen las prohibiciones de init.sh, push, PR, amend, rebase y prettier.
+Las secciones anteriores del informe se conservan como historia.
+
+### Contraste de las siete sondas de E6
+
+| Sonda | Título que cayó | Tipo y mensaje | Resultado y restauración |
+|---|---|---|---|
+| S4f | #172 R4: el estilo animado solo lleva translateY | aserción toEqual: opacity 0 dentro del estilo animado | 1/1; exit=0 |
+| S4g | #172 R4: el estilo animado solo lleva translateY | aserción toEqual: objeto adicional opacity 0 | 1/1; exit=0 |
+| S4h | #172 R4: la subida y la bajada siguen ease-in-out, no una recta | aserción toBeCloseTo: -2.5 frente a -1.3 a 375 ms | 1/1; exit=0 |
+| S2c | #172 R2: suelto pinta opacidad 1 y pulsado 0,8 | aserción toEqual: style undefined frente a opacity 1 | 1/1; exit=0 |
+| S12b | #172 R12: tras un correo inválido el envío sigue activo y el corregido sí llama a la API | aserción not.toBeDisabled: register-submit deshabilitado | 1/1; exit=0 |
+| S12c | #172 R12: «alex@example» tampoco es un correo y no llama a la API; #172 R12: «alex @example.com» tampoco es un correo y no llama a la API | consulta: register-email-message ausente en los dos casos | 2/2; exit=0 |
+| S12d | #172 R12: tras un correo inválido el envío sigue activo y el corregido sí llama a la API | consulta: register-error ausente tras el correo corregido con espacios | 1/1; exit=0 |
+
+Las mutaciones son exactamente las de T24: opacity en el objeto animado,
+opacity en un estilo estático adyacente, Easing.linear en withTiming, borrar
+el style de BackButton, adelantar setSubmitting(true), usar /@/ y quitar
+.trim() en la validación. No se modificaron ni relajaron tests o producción
+para cuadrar los resultados.
+
+### Gates, anclas y sondas — salidas literales
+
+Todos los comandos Jest, typecheck, lint, anclas y restauraciones de este
+bloque se ejecutaron desde mobile-pet-tracker. Se preservan los comandos,
+bloques de fallo completos, resúmenes y exits. Solo se omiten los avisos
+Console y los códigos ANSI. Los greps con 0 coincidencias devuelven exit=1;
+es su lectura esperada, no un fallo del gate.
+
+
+#### E6-base — jest
+
+```bash
+bunx jest --testTimeout=30000 --runTestsByPath src/components/__tests__/pingo-float.test.tsx src/components/__tests__/back-button.test.tsx src/screens/register/index.test.tsx
+```
+
+```text
+PASS src/components/__tests__/pingo-float.test.tsx
+PASS src/components/__tests__/back-button.test.tsx (5.237 s)
+PASS src/screens/register/index.test.tsx (9.825 s)
+Test Suites: 3 passed, 3 total
+Tests:       41 passed, 41 total
+Time:        11.039 s
+exit=0
+```
+
+#### c40-E6 — anchor
+
+```bash
+command grep -cF "it('#172 R4: pasa testID y children'" src/components/__tests__/pingo-float.test.tsx
+```
+
+```text
+1
+exit=0
+```
+
+#### c40 — jest
+
+```bash
+bunx jest --testTimeout=30000 --runTestsByPath src/components/__tests__/pingo-float.test.tsx src/__tests__/ui-language.test.ts src/__tests__/design-drift.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/legibility-classnames.test.ts
+```
+
+```text
+PASS src/__tests__/design-drift.test.ts
+PASS src/__tests__/ui-language.test.ts
+PASS src/__tests__/consistency-classnames.test.ts
+PASS src/components/__tests__/pingo-float.test.tsx
+PASS src/__tests__/legibility-classnames.test.ts
+Test Suites: 5 passed, 5 total
+Tests:       199 passed, 199 total
+Time:        4.197 s
+exit=0
+```
+
+#### c40 — router
+
+```bash
+test ! -e .expo/types/router.d.ts
+```
+
+```text
+
+exit=0
+```
+
+#### c40 — typecheck
+
+```bash
+bun run typecheck
+```
+
+```text
+$ tsc --noEmit
+exit=0
+```
+
+#### c40 — lint
+
+```bash
+bunx expo lint --no-cache > /tmp/lint-172.log 2>&1
+```
+
+```text
+vacio=0
+exit=0
+```
+
+#### S4f — jest
+
+```bash
+bunx jest --testTimeout=30000 --runTestsByPath src/components/__tests__/pingo-float.test.tsx
+```
+
+```text
+FAIL src/components/__tests__/pingo-float.test.tsx
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 4 passed, 5 total
+Time:        2.576 s, estimated 4 s
+  ● #172 R4: PingoFloat › #172 R4: el estilo animado solo lleva translateY
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 0
+    + Received  + 1
+
+    @@ -1,7 +1,8 @@
+      Array [
+        Object {
+    +     "opacity": 0,
+          "transform": Array [
+            Object {
+              "translateY": 0,
+            },
+          ],
+
+      72 |     await render(<PingoFloat testID="float"><Text>Hijo</Text></PingoFloat>);
+      73 |     const float = screen.getByTestId('float');
+    > 74 |     expect(float.props.style).toEqual([{ transform: [{ translateY: 0 }] }]);
+         |                               ^
+      75 |   });
+      76 | });
+      77 |
+
+      at Object.toEqual (src/components/__tests__/pingo-float.test.tsx:74:31)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+exit=1
+```
+
+#### S4f — restore
+
+```bash
+git checkout HEAD -- src/components/pingo-float.tsx; git diff --quiet HEAD -- src/components/pingo-float.tsx; echo "exit=$?"
+```
+
+```text
+exit=0
+exit=0
+```
+
+#### S4g — jest
+
+```bash
+bunx jest --testTimeout=30000 --runTestsByPath src/components/__tests__/pingo-float.test.tsx
+```
+
+```text
+FAIL src/components/__tests__/pingo-float.test.tsx
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 4 passed, 5 total
+Time:        2.324 s, estimated 3 s
+  ● #172 R4: PingoFloat › #172 R4: el estilo animado solo lleva translateY
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 0
+    + Received  + 3
+
+    @@ -4,6 +4,9 @@
+            Object {
+              "translateY": 0,
+            },
+          ],
+        },
+    +   Object {
+    +     "opacity": 0,
+    +   },
+      ]
+
+      72 |     await render(<PingoFloat testID="float"><Text>Hijo</Text></PingoFloat>);
+      73 |     const float = screen.getByTestId('float');
+    > 74 |     expect(float.props.style).toEqual([{ transform: [{ translateY: 0 }] }]);
+         |                               ^
+      75 |   });
+      76 | });
+      77 |
+
+      at Object.toEqual (src/components/__tests__/pingo-float.test.tsx:74:31)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+exit=1
+```
+
+#### S4g — restore
+
+```bash
+git checkout HEAD -- src/components/pingo-float.tsx; git diff --quiet HEAD -- src/components/pingo-float.tsx; echo "exit=$?"
+```
+
+```text
+exit=0
+exit=0
+```
+
+#### S4h — jest
+
+```bash
+bunx jest --testTimeout=30000 --runTestsByPath src/components/__tests__/pingo-float.test.tsx
+```
+
+```text
+FAIL src/components/__tests__/pingo-float.test.tsx
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 4 passed, 5 total
+Time:        1.508 s, estimated 3 s
+  ● #172 R4: PingoFloat › #172 R4: la subida y la bajada siguen ease-in-out, no una recta
+
+    expect(received).toBeCloseTo(expected, precision)
+
+    Expected: -1.3
+    Received: -2.5
+
+    Expected precision:    0
+    Expected difference: < 0.5
+    Received difference:   1.2
+
+      62 |     await act(async () => { jest.advanceTimersByTime(375); });
+      63 |     expect(floatTranslateY())
+    > 64 |       .toBeCloseTo(-1.3, 0);
+         |        ^
+      65 |     await act(async () => { jest.advanceTimersByTime(750); });
+      66 |     expect(floatTranslateY())
+      67 |       .toBeCloseTo(-8.7, 0);
+
+      at Object.toBeCloseTo (src/components/__tests__/pingo-float.test.tsx:64:8)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+exit=1
+```
+
+#### S4h — restore
+
+```bash
+git checkout HEAD -- src/components/pingo-float.tsx; git diff --quiet HEAD -- src/components/pingo-float.tsx; echo "exit=$?"
+```
+
+```text
+exit=0
+exit=0
+```
+
+#### c41-E6 — anchor
+
+```bash
+command grep -cF "it('#172 R2: sin historial reemplaza por el fallback'" src/components/__tests__/back-button.test.tsx
+```
+
+```text
+1
+exit=0
+```
+
+#### c41 — jest
+
+```bash
+bunx jest --testTimeout=30000 --runTestsByPath src/components/__tests__/back-button.test.tsx src/__tests__/ui-language.test.ts src/__tests__/design-drift.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/legibility-classnames.test.ts
+```
+
+```text
+PASS src/__tests__/design-drift.test.ts
+PASS src/__tests__/ui-language.test.ts
+PASS src/__tests__/consistency-classnames.test.ts
+PASS src/__tests__/legibility-classnames.test.ts
+PASS src/components/__tests__/back-button.test.tsx (9.853 s)
+Test Suites: 5 passed, 5 total
+Tests:       200 passed, 200 total
+Time:        10.594 s
+exit=0
+```
+
+#### c41 — router
+
+```bash
+test ! -e .expo/types/router.d.ts
+```
+
+```text
+
+exit=0
+```
+
+#### c41 — typecheck
+
+```bash
+bun run typecheck
+```
+
+```text
+$ tsc --noEmit
+exit=0
+```
+
+#### c41 — lint
+
+```bash
+bunx expo lint --no-cache > /tmp/lint-172.log 2>&1
+```
+
+```text
+vacio=0
+exit=0
+```
+
+#### S2c — jest
+
+```bash
+bunx jest --testTimeout=30000 --runTestsByPath src/components/__tests__/back-button.test.tsx
+```
+
+```text
+FAIL src/components/__tests__/back-button.test.tsx (9.329 s)
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 5 passed, 6 total
+Time:        9.746 s, estimated 10 s
+  ● #172 R2: BackButton › #172 R2: suelto pinta opacidad 1 y pulsado 0,8
+
+    expect(received).toEqual(expected) // deep equality
+
+    Expected: {"opacity": 1}
+    Received: undefined
+
+      78 |     await renderBack();
+      79 |     const back = screen.getByTestId('back');
+    > 80 |     expect(back.props.style).toEqual({ opacity: 1 });
+         |                              ^
+      81 |     await fireEvent(back, 'responderGrant', { nativeEvent: {}, persist: () => undefined });
+      82 |     expect(back.props.style).toEqual({ opacity: 0.8 });
+      83 |   });
+
+      at Object.toEqual (src/components/__tests__/back-button.test.tsx:80:30)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+exit=1
+```
+
+#### S2c — restore
+
+```bash
+git checkout HEAD -- src/components/back-button.tsx; git diff --quiet HEAD -- src/components/back-button.tsx; echo "exit=$?"
+```
+
+```text
+exit=0
+exit=0
+```
+
+#### c42-E6 — anchor
+
+```bash
+command grep -cF "it('#172 R11: cabecera, rejilla, términos, error y envío cuelgan del scroll'" src/screens/register/index.test.tsx
+```
+
+```text
+1
+exit=0
+```
+
+#### c42 — jest
+
+```bash
+bunx jest --testTimeout=30000 --runTestsByPath src/screens/register/index.test.tsx src/__tests__/ui-language.test.ts src/__tests__/design-drift.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/legibility-classnames.test.ts
+```
+
+```text
+PASS src/__tests__/design-drift.test.ts
+PASS src/__tests__/ui-language.test.ts
+PASS src/__tests__/consistency-classnames.test.ts
+PASS src/__tests__/legibility-classnames.test.ts
+PASS src/screens/register/index.test.tsx (12.802 s)
+Test Suites: 5 passed, 5 total
+Tests:       230 passed, 230 total
+Time:        14.044 s
+exit=0
+```
+
+#### c42 — router
+
+```bash
+test ! -e .expo/types/router.d.ts
+```
+
+```text
+
+exit=0
+```
+
+#### c42 — typecheck
+
+```bash
+bun run typecheck
+```
+
+```text
+$ tsc --noEmit
+exit=0
+```
+
+#### c42 — lint
+
+```bash
+bunx expo lint --no-cache > /tmp/lint-172.log 2>&1
+```
+
+```text
+vacio=0
+exit=0
+```
+
+#### S12b — jest
+
+```bash
+bunx jest --testTimeout=30000 --runTestsByPath src/screens/register/index.test.tsx
+```
+
+```text
+FAIL src/screens/register/index.test.tsx (10.665 s)
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 35 passed, 36 total
+Time:        10.815 s, estimated 13 s
+  ● #167 R7: Pingo en la cabecera del registro › #172 R12: tras un correo inválido el envío sigue activo y el corregido sí llama a la API
+
+    expect(instance).not.toBeDisabled()
+
+    Received instance is disabled:
+      <View
+        accessibilityRole="button"
+        accessibilityState={
+          {
+            "disabled": true,
+          }
+        }
+        accessible={true}
+        testID="register-submit"
+      />
+
+      468 |     await waitFor(() => expect(screen.getByTestId('register-email-message'))
+      469 |       .toHaveTextContent('Ingresa un correo electrónico válido'));
+    > 470 |     expect(screen.getByTestId('register-submit')).not.toBeDisabled();
+          |                                                       ^
+      471 |     await fireEvent.changeText(screen.getByTestId('register-email'), '  alex@example.com  ');
+      472 |     await submit();
+      473 |     await waitFor(() => expect(screen.getByTestId('register-error'))
+
+      at Object.toBeDisabled (src/screens/register/index.test.tsx:470:55)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+exit=1
+```
+
+#### S12b — restore
+
+```bash
+git checkout HEAD -- src/screens/register/index.tsx; git diff --quiet HEAD -- src/screens/register/index.tsx; echo "exit=$?"
+```
+
+```text
+exit=0
+exit=0
+```
+
+#### S12c — jest
+
+```bash
+bunx jest --testTimeout=30000 --runTestsByPath src/screens/register/index.test.tsx
+```
+
+```text
+FAIL src/screens/register/index.test.tsx (12.456 s)
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 34 passed, 36 total
+Time:        12.614 s
+  ● #167 R7: Pingo en la cabecera del registro › #172 R12: «alex@example» tampoco es un correo y no llama a la API
+
+    Unable to find an element with testID: register-email-message
+
+    <RNCSafeAreaProvider>
+      <View
+        testID="screen-register"
+      >
+        <RCTScrollView
+          testID="register-form"
+        >
+          <View>
+            <View
+              testID="register-header"
+            >
+              <View
+                testID="register-top"
+              >
+                <View
+                  accessibilityLabel="Volver"
+                  accessibilityRole="button"
+                  accessible={true}
+                  testID="register-back"
+                >
+                  <RNSVGSvgView>
+                    <RNSVGGroup>
+                      <RNSVGGroup>
+                        <RNSVGPath />
+                      </RNSVGGroup>
+                    </RNSVGGroup>
+                  </RNSVGSvgView>
+                </View>
+                <View
+                  testID="register-pingo-float"
+                >
+                  <ViewManagerAdapter_ExpoImage
+                    placeholder={[]}
+                    testID="register-pingo"
+                  />
+                </View>
+              </View>
+              <Text>
+                Crear cuenta
+              </Text>
+            </View>
+            <View
+              testID="register-names-row"
+            >
+              <View>
+                <View
+                  accessible={true}
+                >
+                  <Text>
+                    Nombres
+                  </Text>
+                </View>
+                <TextInput
+                  editable={true}
+                  testID="register-first-name"
+                  value="Alex"
+                />
+              </View>
+              <View>
+                <View
+                  accessible={true}
+                >
+                  <Text>
+                    Apellidos
+                  </Text>
+                </View>
+                <TextInput
+                  editable={true}
+                  testID="register-last-name"
+                  value="Smith"
+                />
+              </View>
+            </View>
+            <View>
+              <View
+                accessible={true}
+              >
+                <Text>
+                  Correo electrónico
+                </Text>
+              </View>
+              <TextInput
+                editable={true}
+                testID="register-email"
+                value="alex@example"
+              />
+            </View>
+            <View
+              testID="register-contact-row"
+            >
+              <View>
+                <View
+                  accessible={true}
+                >
+                  <Text>
+                    Teléfono
+                  </Text>
+                </View>
+                <TextInput
+                  editable={true}
+                  testID="register-phone"
+                  value="+525555555555"
+                />
+              </View>
+              <View>
+                <View
+                  accessible={true}
+                >
+                  <Text>
+                    País
+                  </Text>
+                </View>
+                <TextInput
+                  editable={true}
+                  testID="register-country"
+                  value="MX"
+                />
+              </View>
+            </View>
+            <View>
+              <View
+                accessible={true}
+              >
+                <Text>
+                  Contraseña
+                </Text>
+              </View>
+              <View
+                testID="register-password-group"
+              >
+                <TextInput
+                  editable={true}
+                  testID="register-password"
+                  value="correct horse"
+                />
+                <View>
+                  <View
+                    accessibilityLabel="Mostrar contraseña"
+                    accessibilityRole="button"
+                    accessible={true}
+                    testID="register-password-toggle"
+                  >
+                    <View
+                      testID="icon-eye"
+                    />
+                  </View>
+                </View>
+              </View>
+            </View>
+            <View>
+              <View
+                accessible={true}
+              >
+                <Text>
+                  Confirmar contraseña
+                </Text>
+              </View>
+              <View
+                testID="register-password-confirmation-group"
+              >
+                <TextInput
+                  editable={true}
+                  testID="register-password-confirmation"
+                  value="correct horse"
+                />
+                <View>
+                  <View
+                    accessibilityLabel="Mostrar contraseña"
+                    accessibilityRole="button"
+                    accessible={true}
+                    testID="register-password-confirmation-toggle"
+                  >
+                    <View
+                      testID="icon-eye"
+                    />
+                  </View>
+                </View>
+              </View>
+            </View>
+            <View>
+              <View
+                accessibilityState={
+                  {
+                    "checked": true,
+                    "disabled": false,
+                  }
+                }
+                accessible={true}
+                role="checkbox"
+                testID="register-terms"
+              >
+                <View
+                  aria-disabled={false}
+                  aria-hidden={false}
+                  role="presentation"
+                  style={
+                    {
+                      "opacity": 0,
+                    }
+                  }
+                >
+                  <RNSVGSvgView>
+                    <RNSVGGroup>
+                      <RNSVGPath />
+                    </RNSVGGroup>
+                  </RNSVGSvgView>
+                </View>
+              </View>
+              <Text>
+                Acepto los términos
+              </Text>
+            </View>
+            <View
+              testID="register-error-row"
+            >
+              <View
+                testID="icon-alert-circle"
+              />
+              <Text
+                testID="register-error"
+              >
+                Ese correo ya está registrado
+              </Text>
+            </View>
+            <View
+              testID="register-spacer"
+            />
+            <View
+              accessibilityRole="button"
+              accessibilityState={
+                {
+                  "disabled": false,
+                }
+              }
+              accessible={true}
+              testID="register-submit"
+            >
+              <View
+                pointerEvents="none"
+                style={
+                  {
+                    "opacity": 0,
+                  }
+                }
+              />
+              <Text>
+                Crear cuenta
+              </Text>
+            </View>
+          </View>
+        </RCTScrollView>
+      </View>
+    </RNCSafeAreaProvider>
+
+      483 |     await fireEvent.changeText(screen.getByTestId('register-email'), email);
+      484 |     await submit();
+    > 485 |     await waitFor(() => expect(screen.getByTestId('register-email-message'))
+          |                  ^
+      486 |       .toHaveTextContent('Ingresa un correo electrónico válido'));
+      487 |     expect(mockRegister).not.toHaveBeenCalled();
+      488 |   });
+
+      at src/screens/register/index.test.tsx:485:18
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+  ● #167 R7: Pingo en la cabecera del registro › #172 R12: «alex @example.com» tampoco es un correo y no llama a la API
+
+    Unable to find an element with testID: register-email-message
+
+    <RNCSafeAreaProvider>
+      <View
+        testID="screen-register"
+      >
+        <RCTScrollView
+          testID="register-form"
+        >
+          <View>
+            <View
+              testID="register-header"
+            >
+              <View
+                testID="register-top"
+              >
+                <View
+                  accessibilityLabel="Volver"
+                  accessibilityRole="button"
+                  accessible={true}
+                  testID="register-back"
+                >
+                  <RNSVGSvgView>
+                    <RNSVGGroup>
+                      <RNSVGGroup>
+                        <RNSVGPath />
+                      </RNSVGGroup>
+                    </RNSVGGroup>
+                  </RNSVGSvgView>
+                </View>
+                <View
+                  testID="register-pingo-float"
+                >
+                  <ViewManagerAdapter_ExpoImage
+                    placeholder={[]}
+                    testID="register-pingo"
+                  />
+                </View>
+              </View>
+              <Text>
+                Crear cuenta
+              </Text>
+            </View>
+            <View
+              testID="register-names-row"
+            >
+              <View>
+                <View
+                  accessible={true}
+                >
+                  <Text>
+                    Nombres
+                  </Text>
+                </View>
+                <TextInput
+                  editable={true}
+                  testID="register-first-name"
+                  value="Alex"
+                />
+              </View>
+              <View>
+                <View
+                  accessible={true}
+                >
+                  <Text>
+                    Apellidos
+                  </Text>
+                </View>
+                <TextInput
+                  editable={true}
+                  testID="register-last-name"
+                  value="Smith"
+                />
+              </View>
+            </View>
+            <View>
+              <View
+                accessible={true}
+              >
+                <Text>
+                  Correo electrónico
+                </Text>
+              </View>
+              <TextInput
+                editable={true}
+                testID="register-email"
+                value="alex @example.com"
+              />
+            </View>
+            <View
+              testID="register-contact-row"
+            >
+              <View>
+                <View
+                  accessible={true}
+                >
+                  <Text>
+                    Teléfono
+                  </Text>
+                </View>
+                <TextInput
+                  editable={true}
+                  testID="register-phone"
+                  value="+525555555555"
+                />
+              </View>
+              <View>
+                <View
+                  accessible={true}
+                >
+                  <Text>
+                    País
+                  </Text>
+                </View>
+                <TextInput
+                  editable={true}
+                  testID="register-country"
+                  value="MX"
+                />
+              </View>
+            </View>
+            <View>
+              <View
+                accessible={true}
+              >
+                <Text>
+                  Contraseña
+                </Text>
+              </View>
+              <View
+                testID="register-password-group"
+              >
+                <TextInput
+                  editable={true}
+                  testID="register-password"
+                  value="correct horse"
+                />
+                <View>
+                  <View
+                    accessibilityLabel="Mostrar contraseña"
+                    accessibilityRole="button"
+                    accessible={true}
+                    testID="register-password-toggle"
+                  >
+                    <View
+                      testID="icon-eye"
+                    />
+                  </View>
+                </View>
+              </View>
+            </View>
+            <View>
+              <View
+                accessible={true}
+              >
+                <Text>
+                  Confirmar contraseña
+                </Text>
+              </View>
+              <View
+                testID="register-password-confirmation-group"
+              >
+                <TextInput
+                  editable={true}
+                  testID="register-password-confirmation"
+                  value="correct horse"
+                />
+                <View>
+                  <View
+                    accessibilityLabel="Mostrar contraseña"
+                    accessibilityRole="button"
+                    accessible={true}
+                    testID="register-password-confirmation-toggle"
+                  >
+                    <View
+                      testID="icon-eye"
+                    />
+                  </View>
+                </View>
+              </View>
+            </View>
+            <View>
+              <View
+                accessibilityState={
+                  {
+                    "checked": true,
+                    "disabled": false,
+                  }
+                }
+                accessible={true}
+                role="checkbox"
+                testID="register-terms"
+              >
+                <View
+                  aria-disabled={false}
+                  aria-hidden={false}
+                  role="presentation"
+                  style={
+                    {
+                      "opacity": 0,
+                    }
+                  }
+                >
+                  <RNSVGSvgView>
+                    <RNSVGGroup>
+                      <RNSVGPath />
+                    </RNSVGGroup>
+                  </RNSVGSvgView>
+                </View>
+              </View>
+              <Text>
+                Acepto los términos
+              </Text>
+            </View>
+            <View
+              testID="register-error-row"
+            >
+              <View
+                testID="icon-alert-circle"
+              />
+              <Text
+                testID="register-error"
+              >
+                Ese correo ya está registrado
+              </Text>
+            </View>
+            <View
+              testID="register-spacer"
+            />
+            <View
+              accessibilityRole="button"
+              accessibilityState={
+                {
+                  "disabled": false,
+                }
+              }
+              accessible={true}
+              testID="register-submit"
+            >
+              <View
+                pointerEvents="none"
+                style={
+                  {
+                    "opacity": 0,
+                  }
+                }
+              />
+              <Text>
+                Crear cuenta
+              </Text>
+            </View>
+          </View>
+        </RCTScrollView>
+      </View>
+    </RNCSafeAreaProvider>
+
+      483 |     await fireEvent.changeText(screen.getByTestId('register-email'), email);
+      484 |     await submit();
+    > 485 |     await waitFor(() => expect(screen.getByTestId('register-email-message'))
+          |                  ^
+      486 |       .toHaveTextContent('Ingresa un correo electrónico válido'));
+      487 |     expect(mockRegister).not.toHaveBeenCalled();
+      488 |   });
+
+      at src/screens/register/index.test.tsx:485:18
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+exit=1
+```
+
+#### S12c — restore
+
+```bash
+git checkout HEAD -- src/screens/register/index.tsx; git diff --quiet HEAD -- src/screens/register/index.tsx; echo "exit=$?"
+```
+
+```text
+exit=0
+exit=0
+```
+
+#### S12d — jest
+
+```bash
+bunx jest --testTimeout=30000 --runTestsByPath src/screens/register/index.test.tsx
+```
+
+```text
+FAIL src/screens/register/index.test.tsx (11.233 s)
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 35 passed, 36 total
+Time:        11.373 s, estimated 13 s
+  ● #167 R7: Pingo en la cabecera del registro › #172 R12: tras un correo inválido el envío sigue activo y el corregido sí llama a la API
+
+    Unable to find an element with testID: register-error
+
+    <RNCSafeAreaProvider>
+      <View
+        testID="screen-register"
+      >
+        <RCTScrollView
+          testID="register-form"
+        >
+          <View>
+            <View
+              testID="register-header"
+            >
+              <View
+                testID="register-top"
+              >
+                <View
+                  accessibilityLabel="Volver"
+                  accessibilityRole="button"
+                  accessible={true}
+                  testID="register-back"
+                >
+                  <RNSVGSvgView>
+                    <RNSVGGroup>
+                      <RNSVGGroup>
+                        <RNSVGPath />
+                      </RNSVGGroup>
+                    </RNSVGGroup>
+                  </RNSVGSvgView>
+                </View>
+                <View
+                  testID="register-pingo-float"
+                >
+                  <ViewManagerAdapter_ExpoImage
+                    placeholder={[]}
+                    testID="register-pingo"
+                  />
+                </View>
+              </View>
+              <Text>
+                Crear cuenta
+              </Text>
+            </View>
+            <View
+              testID="register-names-row"
+            >
+              <View>
+                <View
+                  accessible={true}
+                >
+                  <Text>
+                    Nombres
+                  </Text>
+                </View>
+                <TextInput
+                  editable={true}
+                  testID="register-first-name"
+                  value="Alex"
+                />
+              </View>
+              <View>
+                <View
+                  accessible={true}
+                >
+                  <Text>
+                    Apellidos
+                  </Text>
+                </View>
+                <TextInput
+                  editable={true}
+                  testID="register-last-name"
+                  value="Smith"
+                />
+              </View>
+            </View>
+            <View>
+              <View
+                accessible={true}
+              >
+                <Text>
+                  Correo electrónico
+                </Text>
+              </View>
+              <TextInput
+                editable={true}
+                testID="register-email"
+                value="  alex@example.com  "
+              />
+              <View
+                testID="register-email-error"
+              >
+                <View
+                  testID="register-email-message-row"
+                >
+                  <View
+                    testID="icon-alert-circle"
+                  />
+                  <Text
+                    testID="register-email-message"
+                  >
+                    Ingresa un correo electrónico válido
+                  </Text>
+                </View>
+              </View>
+            </View>
+            <View
+              testID="register-contact-row"
+            >
+              <View>
+                <View
+                  accessible={true}
+                >
+                  <Text>
+                    Teléfono
+                  </Text>
+                </View>
+                <TextInput
+                  editable={true}
+                  testID="register-phone"
+                  value="+525555555555"
+                />
+              </View>
+              <View>
+                <View
+                  accessible={true}
+                >
+                  <Text>
+                    País
+                  </Text>
+                </View>
+                <TextInput
+                  editable={true}
+                  testID="register-country"
+                  value="MX"
+                />
+              </View>
+            </View>
+            <View>
+              <View
+                accessible={true}
+              >
+                <Text>
+                  Contraseña
+                </Text>
+              </View>
+              <View
+                testID="register-password-group"
+              >
+                <TextInput
+                  editable={true}
+                  testID="register-password"
+                  value="correct horse"
+                />
+                <View>
+                  <View
+                    accessibilityLabel="Mostrar contraseña"
+                    accessibilityRole="button"
+                    accessible={true}
+                    testID="register-password-toggle"
+                  >
+                    <View
+                      testID="icon-eye"
+                    />
+                  </View>
+                </View>
+              </View>
+            </View>
+            <View>
+              <View
+                accessible={true}
+              >
+                <Text>
+                  Confirmar contraseña
+                </Text>
+              </View>
+              <View
+                testID="register-password-confirmation-group"
+              >
+                <TextInput
+                  editable={true}
+                  testID="register-password-confirmation"
+                  value="correct horse"
+                />
+                <View>
+                  <View
+                    accessibilityLabel="Mostrar contraseña"
+                    accessibilityRole="button"
+                    accessible={true}
+                    testID="register-password-confirmation-toggle"
+                  >
+                    <View
+                      testID="icon-eye"
+                    />
+                  </View>
+                </View>
+              </View>
+            </View>
+            <View>
+              <View
+                accessibilityState={
+                  {
+                    "checked": true,
+                    "disabled": false,
+                  }
+                }
+                accessible={true}
+                role="checkbox"
+                testID="register-terms"
+              >
+                <View
+                  aria-disabled={false}
+                  aria-hidden={false}
+                  role="presentation"
+                  style={
+                    {
+                      "opacity": 0,
+                    }
+                  }
+                >
+                  <RNSVGSvgView>
+                    <RNSVGGroup>
+                      <RNSVGPath />
+                    </RNSVGGroup>
+                  </RNSVGSvgView>
+                </View>
+              </View>
+              <Text>
+                Acepto los términos
+              </Text>
+            </View>
+            <View
+              testID="register-spacer"
+            />
+            <View
+              accessibilityRole="button"
+              accessibilityState={
+                {
+                  "disabled": false,
+                }
+              }
+              accessible={true}
+              testID="register-submit"
+            >
+              <View
+                pointerEvents="none"
+                style={
+                  {
+                    "opacity": 0,
+                  }
+                }
+              />
+              <Text>
+                Crear cuenta
+              </Text>
+            </View>
+          </View>
+        </RCTScrollView>
+      </View>
+    </RNCSafeAreaProvider>
+
+      471 |     await fireEvent.changeText(screen.getByTestId('register-email'), '  alex@example.com  ');
+      472 |     await submit();
+    > 473 |     await waitFor(() => expect(screen.getByTestId('register-error'))
+          |                  ^
+      474 |       .toHaveTextContent('Ese correo ya está registrado'));
+      475 |     expect(screen.queryByTestId('register-email-message')).toBeNull();
+      476 |     expect(mockRegister).toHaveBeenCalledTimes(1);
+
+      at Object.<anonymous> (src/screens/register/index.test.tsx:473:18)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+exit=1
+```
+
+#### S12d — restore
+
+```bash
+git checkout HEAD -- src/screens/register/index.tsx; git diff --quiet HEAD -- src/screens/register/index.tsx; echo "exit=$?"
+```
+
+```text
+exit=0
+exit=0
+```
+
+#### E6-T22-counts — counts
+
+```bash
+command grep -cE '^\s*it(\.each)?[(<]' src/screens/login/index.test.tsx src/screens/register/index.test.tsx src/screens/forgot/index.test.tsx src/screens/reset-password/index.test.tsx src/__tests__/ui-language.test.ts src/__tests__/design-drift.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/legibility-classnames.test.ts src/theme/__tests__/global-css.test.ts src/providers/__tests__/language-provider.test.tsx src/theme/__tests__/motion.test.ts src/theme/__tests__/font-registration.test.ts src/components/__tests__/back-button.test.tsx src/components/__tests__/pingo-float.test.tsx src/components/__tests__/form-error.test.tsx src/components/__tests__/password-input.test.tsx src/__tests__/account-screens-polish.test.ts
+```
+
+```text
+src/screens/login/index.test.tsx:26
+src/screens/register/index.test.tsx:32
+src/screens/forgot/index.test.tsx:34
+src/screens/reset-password/index.test.tsx:34
+src/__tests__/ui-language.test.ts:28
+src/__tests__/design-drift.test.ts:51
+src/__tests__/consistency-classnames.test.ts:33
+src/__tests__/legibility-classnames.test.ts:12
+src/theme/__tests__/global-css.test.ts:31
+src/providers/__tests__/language-provider.test.tsx:20
+src/theme/__tests__/motion.test.ts:17
+src/theme/__tests__/font-registration.test.ts:4
+src/components/__tests__/back-button.test.tsx:6
+src/components/__tests__/pingo-float.test.tsx:5
+src/components/__tests__/form-error.test.tsx:3
+src/components/__tests__/password-input.test.tsx:4
+src/__tests__/account-screens-polish.test.ts:6
+Bloques finales=346; H0=289; delta=57
+exit=0
+```
+
+#### E6-T22-wait — espera_carga
+
+```bash
+cd /home/claude/sites/Pet-Tracker-wt-172/mobile-pet-tracker && for i in $(seq 1 90); do pgrep -f 'node_modules/(\.bin/(jest|eslint)|jest-worker)|[i]nit\.sh' > /dev/null || break; sleep 60; done; echo "fin-espera"
+```
+
+```text
+fin-espera
+exit=0
+```
+
+#### E6-T22-base — jest
+
+```bash
+bunx jest --testTimeout=30000 --runTestsByPath src/screens/login/index.test.tsx src/screens/register/index.test.tsx src/screens/forgot/index.test.tsx src/screens/reset-password/index.test.tsx src/theme/__tests__/global-css.test.ts src/providers/__tests__/language-provider.test.tsx src/theme/__tests__/motion.test.ts src/theme/__tests__/font-registration.test.ts src/__tests__/ui-language.test.ts src/__tests__/design-drift.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/legibility-classnames.test.ts src/components/__tests__/back-button.test.tsx src/components/__tests__/pingo-float.test.tsx src/components/__tests__/form-error.test.tsx src/components/__tests__/password-input.test.tsx src/__tests__/account-screens-polish.test.ts
+```
+
+```text
+PASS src/components/__tests__/pingo-float.test.tsx
+PASS src/components/__tests__/back-button.test.tsx (5.647 s)
+PASS src/screens/reset-password/index.test.tsx (10.178 s)
+PASS src/screens/forgot/index.test.tsx (7.626 s)
+PASS src/__tests__/ui-language.test.ts
+PASS src/screens/register/index.test.tsx (16.287 s)
+PASS src/screens/login/index.test.tsx
+PASS src/__tests__/design-drift.test.ts
+PASS src/components/__tests__/password-input.test.tsx
+PASS src/__tests__/account-screens-polish.test.ts
+PASS src/theme/__tests__/motion.test.ts
+PASS src/theme/__tests__/global-css.test.ts
+PASS src/components/__tests__/form-error.test.tsx
+PASS src/providers/__tests__/language-provider.test.tsx
+PASS src/__tests__/consistency-classnames.test.ts
+PASS src/__tests__/legibility-classnames.test.ts
+PASS src/theme/__tests__/font-registration.test.ts
+Test Suites: 17 passed, 17 total
+Tests:       476 passed, 476 total
+Time:        20.909 s, estimated 21 s
+exit=0
+```
+
+#### E6-T22-readers — jest
+
+```bash
+bunx jest --testTimeout=30000 --runTestsByPath src/theme/__tests__/motion.test.ts 'src/app/(tabs)/__tests__/food.test.tsx' src/__tests__/hero-header-amendments.test.ts src/screens/welcome/index.test.tsx
+```
+
+```text
+PASS src/__tests__/hero-header-amendments.test.ts
+PASS src/theme/__tests__/motion.test.ts
+PASS src/app/(tabs)/__tests__/food.test.tsx (11.288 s)
+PASS src/screens/welcome/index.test.tsx (11.587 s)
+Test Suites: 4 passed, 4 total
+Tests:       192 passed, 192 total
+Time:        13.153 s
+exit=0
+```
+
+#### E6-T22-final — router
+
+```bash
+test ! -e .expo/types/router.d.ts
+```
+
+```text
+
+exit=0
+```
+
+#### E6-T22-final — typecheck
+
+```bash
+bun run typecheck
+```
+
+```text
+$ tsc --noEmit
+exit=0
+```
+
+#### E6-T22-final — lint
+
+```bash
+bunx expo lint --no-cache > /tmp/lint-172.log 2>&1
+```
+
+```text
+vacio=0
+exit=0
+```
+
+#### T22-B3 — anchor
+
+```bash
+command grep -cF 'text-xs font-semibold text-foreground' src/screens/login/index.tsx src/screens/register/index.tsx src/screens/forgot/index.tsx
+```
+
+```text
+src/screens/login/index.tsx:0
+src/screens/register/index.tsx:0
+src/screens/forgot/index.tsx:0
+exit=1
+```
+
+#### T22-B4 — anchor
+
+```bash
+command grep -c 'selectable' src/screens/login/index.tsx src/screens/register/index.tsx src/screens/forgot/index.tsx src/screens/reset-password/index.tsx
+```
+
+```text
+src/screens/login/index.tsx:0
+src/screens/register/index.tsx:0
+src/screens/forgot/index.tsx:0
+src/screens/reset-password/index.tsx:2
+exit=0
+```
+
+#### T22-B5 — anchor
+
+```bash
+command grep -c 'text-accent-strong' src/screens/login/index.tsx src/screens/register/index.tsx src/screens/forgot/index.tsx src/screens/reset-password/index.tsx
+```
+
+```text
+src/screens/login/index.tsx:2
+src/screens/register/index.tsx:0
+src/screens/forgot/index.tsx:1
+src/screens/reset-password/index.tsx:4
+exit=0
+```
+
+#### T22-B6 — anchor
+
+```bash
+command grep -cF "'/login'" src/screens/login/index.tsx src/screens/register/index.tsx src/screens/forgot/index.tsx src/screens/reset-password/index.tsx
+```
+
+```text
+src/screens/login/index.tsx:0
+src/screens/register/index.tsx:1
+src/screens/forgot/index.tsx:1
+src/screens/reset-password/index.tsx:3
+exit=0
+```
+
+#### T22-fallback — anchor
+
+```bash
+command grep -c 'fallback="/login"' src/screens/forgot/index.tsx
+```
+
+```text
+1
+exit=0
+```
+
+#### T22-B10 — anchor
+
+```bash
+awk '/export const R1_AUTH/{f=1;next} f&&/^\];/{print n; exit} f&&/\{ file:/{n++}' src/__tests__/ui-copy-table.ts
+```
+
+```text
+41
+exit=0
+```
+
+#### T22-B11 — anchor
+
+```bash
+command grep -cE "^  '[a-zA-Z]+\.[a-zA-Z.]+':" src/i18n/catalog.ts
+```
+
+```text
+774
+exit=0
+```
+
+#### T22-B12 — anchor
+
+```bash
+command grep -c 'isInvalid={Boolean(fieldErrors\.' src/screens/register/index.tsx
+```
+
+```text
+7
+exit=0
+```
+
+#### T22-B14 — anchor
+
+```bash
+command grep -c 'accessibilityLiveRegion' src/screens/reset-password/index.tsx
+```
+
+```text
+1
+exit=0
+```
+
+#### T22-B15 — anchor
+
+```bash
+command grep -cF '## Enmienda #172' ../docs/ui-guidelines.md
+```
+
+```text
+1
+exit=0
+```
+
+#### T22-B16 — anchor
+
+```bash
+command grep '^### §2\.' ../specs/mobile-ui-language/design.md | tail -1
+```
+
+```text
+### §2.27 — Añadidos por #172 — Las pantallas de cuenta como el canvas
+exit=0
+```
+
+#### T22-B17 — anchor
+
+```bash
+command grep -cF 'size-16 items-center justify-center rounded-xl bg-accent-soft' src/screens/forgot/index.test.tsx src/__tests__/consistency-classnames.test.ts
+```
+
+```text
+src/screens/forgot/index.test.tsx:0
+src/__tests__/consistency-classnames.test.ts:0
+exit=1
+```
+
+#### T22-tile-nuevo — anchor
+
+```bash
+command grep -cF 'size-13 items-center justify-center rounded-xl border-b-4 border-black/25 bg-accent' src/screens/forgot/index.test.tsx src/__tests__/consistency-classnames.test.ts src/screens/forgot/index.tsx
+```
+
+```text
+src/screens/forgot/index.test.tsx:5
+src/__tests__/consistency-classnames.test.ts:1
+src/screens/forgot/index.tsx:1
+exit=0
+```
+
+#### T22-lock-helper — anchor
+
+```bash
+command grep -c 'LOCK_TILE_CLASS' src/screens/forgot/index.test.tsx
+```
+
+```text
+0
+exit=1
+```
+
+#### T22-messages — anchor
+
+```bash
+command grep -c -- '-message"' src/screens/register/index.tsx
+```
+
+```text
+7
+exit=0
+```
+
+#### T22-B21 — anchor
+
+```bash
+command grep -c '^export const' src/theme/motion.ts
+```
+
+```text
+19
+exit=0
+```
+
+#### T22-B22 — anchor
+
+```bash
+command grep -cF 'rounded-xl bg-default"' src/screens/login/index.tsx src/screens/register/index.tsx src/screens/forgot/index.tsx src/screens/reset-password/index.tsx
+```
+
+```text
+src/screens/login/index.tsx:1
+src/screens/register/index.tsx:5
+src/screens/forgot/index.tsx:1
+src/screens/reset-password/index.tsx:0
+exit=0
+```
+
+#### T22-B23-justify — anchor
+
+```bash
+command grep -cF "justifyContent: 'center'" src/screens/login/index.tsx src/screens/register/index.tsx src/screens/forgot/index.tsx src/screens/reset-password/index.tsx
+```
+
+```text
+src/screens/login/index.tsx:0
+src/screens/register/index.tsx:0
+src/screens/forgot/index.tsx:0
+src/screens/reset-password/index.tsx:1
+exit=0
+```
+
+#### T22-B23-align — anchor
+
+```bash
+command grep -cF "alignItems: 'center'" src/screens/login/index.tsx src/screens/register/index.tsx src/screens/forgot/index.tsx src/screens/reset-password/index.tsx
+```
+
+```text
+src/screens/login/index.tsx:0
+src/screens/register/index.tsx:0
+src/screens/forgot/index.tsx:1
+src/screens/reset-password/index.tsx:1
+exit=0
+```
+
+#### T22-font-token — anchor
+
+```bash
+command grep -cF -- "--font-extrabold: 'Inter-ExtraBold';" src/theme/global.css
+```
+
+```text
+1
+exit=0
+```
+
+#### T22-font-sha — anchor
+
+```bash
+sha256sum assets/fonts/Inter-ExtraBold.ttf
+```
+
+```text
+e6756ad5690b77606aa62249a7b420d9902d45cae4b0048a24911fd4324b0a22  assets/fonts/Inter-ExtraBold.ttf
+exit=0
+```
+
+#### T22-B26-primarios — anchor
+
+```bash
+command grep -cF 'w-full rounded-xl bg-accent border-b-4 border-black/25' src/screens/login/index.tsx src/screens/register/index.tsx src/screens/forgot/index.tsx src/screens/reset-password/index.tsx
+```
+
+```text
+src/screens/login/index.tsx:0
+src/screens/register/index.tsx:0
+src/screens/forgot/index.tsx:0
+src/screens/reset-password/index.tsx:0
+exit=1
+```
+
+#### T22-B26-botones — anchor
+
+```bash
+command grep -cF 'w-full rounded-xl' src/screens/login/index.tsx src/screens/register/index.tsx src/screens/forgot/index.tsx src/screens/reset-password/index.tsx
+```
+
+```text
+src/screens/login/index.tsx:0
+src/screens/register/index.tsx:0
+src/screens/forgot/index.tsx:0
+src/screens/reset-password/index.tsx:0
+exit=1
+```
+
+#### T22-B27 — anchor
+
+```bash
+command grep -cF 'text-xs font-semibold text-foreground' src/screens/reset-password/index.tsx
+```
+
+```text
+0
+exit=1
+```
+
+#### T22-B28 — anchor
+
+```bash
+command grep -c 'secureTextEntry' src/screens/login/index.tsx src/screens/register/index.tsx src/screens/forgot/index.tsx src/screens/reset-password/index.tsx
+```
+
+```text
+src/screens/login/index.tsx:0
+src/screens/register/index.tsx:0
+src/screens/forgot/index.tsx:0
+src/screens/reset-password/index.tsx:0
+exit=1
+```
+
+#### T22-casillas — anchor
+
+```bash
+command grep -cE '^- \[[ xX]\] Enmienda aprobada por humano' ../docs/ui-guidelines.md
+```
+
+```text
+5
+exit=0
+```
+
+#### T22-missing-token — anchor
+
+```bash
+git diff -U0 e0178ab5 -- src/screens/reset-password/index.tsx | command grep -c '^[-+].*reset-missing-token'
+```
+
+```text
+0
+exit=1
+```
+
+#### T22-immutable — anchor
+
+```bash
+git diff --quiet e0178ab5 -- package.json bun.lock src/components/card.tsx src/screens/welcome
+```
+
+```text
+
+exit=0
+```
+
+#### T22-motion-diff — anchor
+
+```bash
+git diff e0178ab5 -- src/theme/motion.ts
+```
+
+```text
+diff --git a/mobile-pet-tracker/src/theme/motion.ts b/mobile-pet-tracker/src/theme/motion.ts
+index 374d6d33..6ed4d3ad 100644
+--- a/mobile-pet-tracker/src/theme/motion.ts
++++ b/mobile-pet-tracker/src/theme/motion.ts
+@@ -55,3 +55,11 @@ export const MOTION_PING_TIMING = {
+   easing: Easing.bezier(0.23, 1, 0.32, 1),
+   reduceMotion: ReduceMotion.System,
+ };
++
++// #172 R4
++export const MOTION_PINGO_FLOAT_OFFSET_Y = 10;
++export const MOTION_PINGO_FLOAT_TIMING = {
++  duration: 1500,
++  easing: Easing.bezier(0.42, 0, 0.58, 1),
++  reduceMotion: ReduceMotion.System,
++};
+exit=0
+```
+
+#### T22-B7 — anchor
+
+```bash
+command grep -rhoE --include=*.ts --include=*.tsx --exclude=*.test.ts --exclude=*.test.tsx --exclude-dir=__tests__ bg-accent-soft src | wc -l
+```
+
+```text
+17
+exit=0
+```
+
+#### T22-B8-a — anchor
+
+```bash
+command grep -rhoE --include=*.ts --include=*.tsx --exclude=*.test.ts --exclude=*.test.tsx --exclude-dir=__tests__ '\bborder-b-4\b' src | wc -l
+```
+
+```text
+20
+exit=0
+```
+
+#### T22-B8-b — anchor
+
+```bash
+command grep -rhoE --include=*.ts --include=*.tsx --exclude=*.test.ts --exclude=*.test.tsx --exclude-dir=__tests__ border-black/25 src | wc -l
+```
+
+```text
+20
+exit=0
+```
+
+#### T22-B9 — anchor
+
+```bash
+command grep -rhoE --include=*.ts --include=*.tsx --exclude=*.test.ts --exclude=*.test.tsx --exclude-dir=__tests__ 'style=\{CONTINUOUS_CORNER\}' src | wc -l
+```
+
+```text
+37
+exit=0
+```
+
+#### T22-InputGroup — anchor
+
+```bash
+command grep -rlE --include=*.ts --include=*.tsx --exclude=*.test.ts --exclude=*.test.tsx --exclude-dir=__tests__ InputGroup src | wc -l
+```
+
+```text
+1
+exit=0
+```
+
+#### T22-flex-2 — anchor
+
+```bash
+command grep -rlE --include=*.ts --include=*.tsx --exclude=*.test.ts --exclude=*.test.tsx --exclude-dir=__tests__ flex-2 src | wc -l
+```
+
+```text
+1
+exit=0
+```
+
+#### T22-extrabold — anchor
+
+```bash
+command grep -rlE --include=*.ts --include=*.tsx --exclude=*.test.ts --exclude=*.test.tsx --exclude-dir=__tests__ 'extrabold|ExtraBold' src | wc -l
+```
+
+```text
+5
+exit=0
+```
+
+#### T22-B25 — anchor
+
+```bash
+command grep -rlE --include=*.ts --include=*.tsx --exclude=*.test.ts --exclude=*.test.tsx --exclude-dir=__tests__ '\bh-1[34]\b' src | wc -l
+```
+
+```text
+5
+exit=0
+```
+
+#### T22-B19 — anchor
+
+```bash
+command grep -rlF -e 'Country (2-letter code)' -e 'País (código de 2 letras)' src | command grep -v 'src/i18n/catalog.ts'
+```
+
+```text
+
+exit=1
+```
+
+#### T22-fonts — anchor
+
+```bash
+ls assets/fonts | wc -l
+```
+
+```text
+6
+exit=0
+```
+
+#### T22-B20 — anchor
+
+```bash
+sumatorio SCREEN_FILES en src/__tests__/ui-language.test.ts
+```
+
+```text
+19 + 2 + 1 + 1 + 1 + 1 + 1 + 1 + 1
+        + 1 - 1
+        + 1
+        + 1
+        + 2 - 2
+        + 2
+B20=32
+exit=0
+```
+
+#### E6-T22-history — history
+
+```bash
+git log --oneline e0178ab5..HEAD
+```
+
+```text
+71e7f0c6 test(mobile): el registro sigue enviando tras un correo inválido (R12)
+0b706e05 test(mobile): BackButton baja la opacidad al pulsar (R2)
+62b62e4b test(mobile): la flotación de Pingo solo mueve translateY y sigue ease-in-out (R4)
+0740dc01 docs(progress): #172 E6 firmada, Codex en Reanudación 5
+866d685c docs(mobile-account-screens-polish): #172 firma Enmienda E6
+da45bc50 docs(mobile-account-screens-polish): #172 Enmienda E6, candados de la review ronda 1
+b6c09d5e docs(mobile-account-screens-polish): #172 review ronda 1, rechazado
+d795ee66 docs(mobile-account-screens-polish): #172 informe de implementación completo
+b04f1289 docs(mobile-account-screens-polish): #172 trazabilidad completa
+4ba7e139 feat(mobile): CTA de 56 e inputs de 52 en las pantallas de cuenta (R20)
+9cf701c4 test(mobile): CTA de 56 e inputs de 52 en las pantallas de cuenta (R20)
+398f074b feat(mobile): la CTA de cuenta se ancla al pie (R19)
+e040579e test(mobile): la CTA de cuenta se ancla al pie (R19)
+dc6df815 docs(ui): enmienda de la carta para las pantallas de cuenta (R18)
+10763864 test(mobile): la carta declara la enmienda de las pantallas de cuenta (R18)
+3f10a364 test(mobile): los componentes nuevos entran en la guarda de deriva (R17)
+9f1b2350 test(mobile): filas de uso de las claves de cuenta (R16)
+1bb27800 docs(mobile-account-screens-polish): #172 S15 conforme a E5
+8959232c docs(mobile-account-screens-polish): #172 firma Enmienda E5
+2ae3d423 docs(mobile-account-screens-polish): #172 Enmienda E5, S15 y S17b con sus rojos en cascada
+aa26cdaa docs(mobile-account-screens-polish): #172 bloqueo en S15
+944b727a docs(mobile-account-screens-polish): #172 trazabilidad parcial hasta c31
+0e5bb776 test(mobile): el error de login cuelga del scroll (R15)
+5aa8fa5e docs(mobile-account-screens-polish): #172 S14 conforme a E4
+8b53e558 docs(mobile-account-screens-polish): #172 firma Enmienda E4
+e2382088 docs(mobile-account-screens-polish): #172 Enmienda E4, la sonda S14 da 6 fallos
+bc67060b docs(mobile-account-screens-polish): #172 bloqueo en S14
+ca0049df docs(mobile-account-screens-polish): #172 trazabilidad parcial hasta c30
+7ddda8f5 feat(mobile): el candado de recuperar es un tile acento con labio (R14)
+7b4c79b3 test(mobile): el candado de recuperar es un tile acento con labio (R14)
+81a3a4c6 feat(mobile): la tarjeta de éxito avisa con liveRegion (R13)
+2103b60e test(mobile): la tarjeta de éxito avisa con liveRegion (R13)
+b2607357 feat(mobile): validación del correo en el registro (R12)
+ded50874 test(mobile): validación del correo en el registro (R12)
+fbcb4e9e feat(mobile): rejilla del registro (R11)
+d7604772 test(mobile): rejilla del registro (R11)
+ddd467d9 docs(mobile-account-screens-polish): #172 firma Enmienda E3
+74fc9a8a docs(mobile-account-screens-polish): #172 Enmienda E3, sonda S10b fuera del gate de FieldError
+4ed76d4c docs(mobile-account-screens-polish): #172 bloqueo en S10b
+14c69144 feat(mobile): errores por campo del registro con icono (R10)
+ca1bac6b test(mobile): errores por campo del registro con icono (R10)
+45e4c40e feat(mobile): mostrar y ocultar la contraseña en cuenta (R8)
+1ad828d3 test(mobile): mostrar y ocultar la contraseña en cuenta (R8)
+e1dcae38 feat(mobile): FormError en las cuatro pantallas de cuenta (R9)
+28ad44aa test(mobile): FormError con icono y texto seleccionable (R9)
+7d56bacb feat(mobile): enlaces y orden del cuerpo de login (R7)
+36f46603 test(mobile): enlaces y orden del cuerpo de login (R7)
+4b5675c6 feat(mobile): recetas de texto e Inter ExtraBold en cuenta (R6)
+b8384616 test(mobile): recetas de texto e Inter ExtraBold en cuenta (R6)
+984043e1 feat(mobile): fila Volver en login, registro y recuperar (R3)
+29e2acf6 test(mobile): fila Volver en login, registro y recuperar (R3)
+60d26f5c feat(mobile): Pingo flota en registro, recuperar y nueva contraseña (R5)
+1b4551c7 test(mobile): Pingo flota en registro, recuperar y nueva contraseña (R5)
+c12c676f feat(mobile): Pingo flota 10 px en 3 s en cuenta (R4)
+edf99020 test(mobile): tipa translateY en el candado de Pingo (R4)
+75f849a6 test(mobile): orden de sort en el inventario de motion (R4)
+a03a9d98 docs(mobile-account-screens-polish): #172 firma Enmienda E2
+02a31628 docs(mobile-account-screens-polish): #172 Enmienda E2, orden de sort en motion
+8ac30127 docs(mobile-account-screens-polish): #172 informe de implementación
+09a8e195 docs(mobile-account-screens-polish): #172 trazabilidad
+e31582c3 test(mobile): Pingo flota 10 px en 3 s en cuenta (R4)
+4cdb12db feat(mobile): BackButton (R2)
+b3fe30be test(mobile): BackButton vuelve o reemplaza (R2)
+505332c9 feat(mobile): claves de Volver, del ojo y País (R16)
+c1bd4a6a test(mobile): claves de Volver, del ojo y País (R16)
+67ff28c3 feat(mobile): tokens de texto 13, 15 y 17 (R1)
+3a87fac0 test(mobile): tokens de texto 13, 15 y 17 (R1)
+94ddc750 docs(mobile-account-screens-polish): #172 firma Enmienda E1
+exit=0
+```
+
+### Cierre y desviaciones de Reanudacion 5
+
+**Ninguna discrepancia con las tablas de E6.** No hubo Exceeded timeout,
+SIGKILL, nuevas instalaciones ni cambios en dependencias. La espera de hasta
+90 iteraciones antes de T22 detectó procesos de otras sesiones y terminó
+con fin-espera; no se alteraron ni cancelaron procesos ajenos.
+
+C40–c42 copian los cinco it literales de T24 y no cambian producción.
+Las skills ya cargadas siguieron vigentes. Se preservaron la review,
+los commits, el frontmatter y los archivos de control del leader. Se
+mantuvieron los mensajes literales, el orden de las sondas y la limpieza
+tras cada commit.
+
+Trazabilidad de R2, R4 y R12 actualizada en
+`b44f7034 docs(mobile-account-screens-polish): #172 trazabilidad completa`.
+El informe se cierra por separado con el comando literal:
+
+```bash
+git commit --only ../progress/impl_mobile-account-screens-polish.md -m 'docs(mobile-account-screens-polish): #172 informe de implementación completo'
+```
+
+El árbol queda limpio al cierre. R21 sigue pendiente (humano); la nueva
+review y el init.sh corresponden al leader y al reviewer.
