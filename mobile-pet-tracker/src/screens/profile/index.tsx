@@ -5,7 +5,7 @@ import { Button, Skeleton } from 'heroui-native';
 import { useCallback, useState } from 'react';
 import { Linking, Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Bell, ChevronRight, FileText, Map as MapIcon, Plus, Wifi } from 'reicon-react-native';
+import { Bell, Camera, ChevronRight, FileText, Map as MapIcon, Plus, Wifi } from 'reicon-react-native';
 import { useUniwind } from 'uniwind';
 
 import {
@@ -92,7 +92,7 @@ export function ProfileScreen() {
   const { theme } = useUniwind();
   const switchTheme = useThemeTransition();
   const insets = useSafeAreaInsets();
-  const [muted, blue, green, amber, violet, accentStrong] = useThemeColors(['muted', 'category-blue-strong', 'category-green-strong', 'category-amber-strong', 'category-violet-strong', 'accent-strong']);
+  const [muted, blue, green, amber, violet, accentStrong, accentForeground] = useThemeColors(['muted', 'category-blue-strong', 'category-green-strong', 'category-amber-strong', 'category-violet-strong', 'accent-strong', 'accent-foreground']);
   const [photoUploading, setPhotoUploading] = useState(false);
   const [photoError, setPhotoError] = useState<string | null>(null);
   const notificationsBlocked = useNotificationsBlocked();
@@ -253,7 +253,7 @@ export function ProfileScreen() {
 
       {petLoading ? (
         <>
-          <Skeleton testID="profile-hero-skeleton" className="h-52 w-full rounded-card" />
+          <Skeleton testID="profile-hero-skeleton" className="h-52 w-full rounded-hero" />
           <Skeleton testID="pet-info-skeleton" className="h-52 w-full rounded-card" />
         </>
       ) : null}
@@ -272,24 +272,27 @@ export function ProfileScreen() {
 
       {pet ? (
         <>
-          <Card variant="secondary" testID="profile-pet-card" className="items-center gap-3">
-            <PetAvatar name={pet.name} photoUrl={pet.photoUrl} cacheKey={pet.id} size={96} testID="profile-pet-avatar" />
-            <Text testID="profile-pet-name" className="text-2xl font-black text-foreground">
+          <Card variant="hero" testID="profile-pet-card" className="items-center gap-2.5">
+            <View testID="profile-pet-avatar-ring" className="relative rounded-full border-4 border-surface">
+              <PetAvatar name={pet.name} photoUrl={pet.photoUrl} cacheKey={pet.id} size={96} testID="profile-pet-avatar" />
+              <Pressable
+                testID="change-photo"
+                accessibilityRole="button"
+                accessibilityLabel={t('profile.changePhoto')}
+                accessibilityState={{ disabled: photoUploading }}
+                disabled={photoUploading}
+                hitSlop={TOUCH_SLOP}
+                className="absolute -bottom-0.5 -right-0.5 size-8.5 items-center justify-center rounded-full border-3 border-surface-secondary bg-accent"
+                onPress={() => void handleChangePhoto()}
+              >
+                <Camera size={16} color={accentForeground} />
+              </Pressable>
+            </View>
+            <Text testID="profile-pet-name" className="text-26 font-black text-foreground">
               {pet.name}
             </Text>
             <PetPills pet={pet} />
           </Card>
-          <Button
-            testID="change-photo"
-            className="rounded-xl bg-accent-soft"
-            variant="secondary"
-            isDisabled={photoUploading}
-            onPress={() => void handleChangePhoto()}
-          >
-            <Button.Label className="font-bold text-accent-strong">
-              {t('profile.changePhoto')}
-            </Button.Label>
-          </Button>
           {photoError ? (
             <Text testID="photo-upload-error" className="text-danger">
               {photoError}
