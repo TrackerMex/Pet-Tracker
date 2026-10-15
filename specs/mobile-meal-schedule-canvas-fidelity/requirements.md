@@ -1049,8 +1049,12 @@ cambiarlo al firmar; si lo hace, el leader enmienda antes del handoff.
 ### Qué se midió
 
 - `src/theme/global.css` ya declara `--text-15: 15px` y `--text-17: 17px` (una
-  vez cada una). Faltan `--text-22`, `--radius-10`, `--radius-14`,
-  `--radius-24`, `--tracking-title` y `--tracking-caps`.
+  vez cada una). En `3a613925` faltaban `--text-22`, `--radius-10`,
+  `--radius-14`, `--radius-24`, `--tracking-title` y `--tracking-caps`. Tras
+  fusionar `main` con #174 (`deaf4e6d`, 2026-10-15) `--radius-10`,
+  `--tracking-title` y `--tracking-caps` ya existen, con los mismos valores
+  que pide R1 (S2, S5 y S6 dan 1): faltan `--text-22`, `--radius-14` y
+  `--radius-24`.
 - `text-17` ya lo usan `forgot`, `login`, `register` y `reset-password`
   (`screens/<x>/index.tsx`); `text-22` no lo usa ningún fichero de `src/`.
 - `src/__tests__/profile-canvas-fidelity.test.ts` lista los ficheros con
@@ -1060,15 +1064,18 @@ cambiarlo al firmar; si lo hace, el leader enmienda antes del handoff.
   cuenta `rounded-xl bg-accent` (`#62 R1`, `primaryRadius`) además del de
   `#98 R10`, y los dos bajan en 1.
 
-### E1.1 — R1 (D5): seis líneas, no ocho
+### E1.1 — R1 (D5): tres líneas, no ocho
 
 `global.css` ya trae `--text-15` y `--text-17`; la spec (D5) supuso
-`--text-17` ausente. R1 añade **seis** líneas: `--text-22: 22px` justo tras
-`--text-17`, y tras `--radius-tile`: `--radius-10: 10px`, `--radius-14: 14px`,
-`--radius-24: 24px`, `--tracking-title: -0.02em` y `--tracking-caps: 0.06em`.
-El test pide los diez tokens con `toMatchObject` y la unicidad de los ocho
-declarados por esta feature (`match(/--x:/g)` de longitud 1). El rojo de R1
-sigue garantizado por los seis ausentes.
+`--text-17` ausente. Con #174 fusionada, además, ya trae `--radius-10`,
+`--tracking-title` y `--tracking-caps`. R1 añade **tres** líneas:
+`--text-22: 22px` justo tras `--text-17: 17px;`, y `--radius-14: 14px` y
+`--radius-24: 24px` tras la última línea `--radius-*` del bloque (hoy
+`--radius-10: 10px;`), en ese orden. Si otra feature declara alguno de los
+tres antes de H0, S3, S4 o el equivalente de `--text-22` dan 1 y esa línea no
+se toca. El test pide los diez tokens con `toMatchObject` y la unicidad de
+los ocho declarados por esta feature o por #174 (`match(/--x:/g)` de longitud
+1). El rojo de R1 sigue garantizado por los tres ausentes.
 
 ### E1.2 — R13, punto 9
 
