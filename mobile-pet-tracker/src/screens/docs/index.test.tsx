@@ -1240,3 +1240,105 @@ describe('#175 R8: chips de filtro', () => {
     expect(screen.queryByTestId('docs-filters')).toBeNull();
   });
 });
+
+describe('#175 R9: filtrar por categoría', () => {
+  it.each([
+    ['blue', 'vaccine'], ['green', 'checkup'], ['amber', 'deworming'],
+    ['violet', 'analysis'], ['neutral', 'unknown'],
+  ] as const)('filtra %s, conserva el orden y renumera las entradas', async (slot, id) => {
+    const original = filterDocs.find((document) => document.id === id)!;
+    mockListPetDocs.mockResolvedValue({ kind: 'ok', docs: [{ ...original, id: 'extra' }, ...filterDocs] });
+    await renderDocs();
+    await screen.findByTestId('doc-unknown');
+    await fireEvent.press(screen.getByTestId(`docs-filter-${slot}`));
+    await waitFor(() => expect(docsChildren()).toEqual([
+      'View', 'docs-filters', 'docs-entry-extra', `docs-entry-${id}`, 'docs-upload',
+    ]));
+    expect(screen.getByTestId('docs-entry-extra').props.index).toBe(0);
+    expect(screen.getByTestId(`docs-entry-${id}`).props.index).toBe(1);
+    for (const candidate of ['all', 'blue', 'green', 'amber', 'violet', 'neutral']) {
+      expect(screen.getByTestId(`docs-filter-${candidate}`).props.accessibilityState).toEqual({ selected: candidate === slot });
+    }
+    const selected = screen.getByTestId(`docs-filter-${slot}`);
+    expect(selected.props.className).toBe('h-8.5 items-center justify-center rounded-full px-3 bg-foreground');
+    expect(selected.children[0]).toHaveProperty('props.className', 'text-13 font-extrabold text-background');
+    const all = screen.getByTestId('docs-filter-all');
+    expect(all.props.className).toBe('h-8.5 items-center justify-center rounded-full px-3 bg-default');
+    expect(within(all).getByText('Todos').props.className).toBe('text-13 font-extrabold text-foreground');
+  });
+
+  it.each([
+    ['vacuna', 'blue', 'vaccine'], ['Vaccination', 'blue', 'vaccine'],
+    ['  VACUNACIÓN  ', 'blue', 'vaccine'], ['vacunacion', 'blue', 'vaccine'],
+    ['checkup', 'green', 'checkup'], ['Deworming', 'amber', 'deworming'],
+    ['lab', 'violet', 'analysis'],
+  ] as const)('incluye el sinónimo %s en %s', async (type, slot, originalId) => {
+    mockListPetDocs.mockResolvedValue({ kind: 'ok', docs: [...filterDocs, { ...docOne, id: 'variant', type }] });
+    await renderDocs();
+    await screen.findByTestId('doc-variant');
+    await fireEvent.press(screen.getByTestId(`docs-filter-${slot}`));
+    await waitFor(() => expect(docsChildren()).toEqual([
+      'View', 'docs-filters', `docs-entry-${originalId}`, 'docs-entry-variant', 'docs-upload',
+    ]));
+    expect(within(screen.getByTestId('doc-variant')).getByText('Antirrábica')).toBeVisible();
+  });
+
+  it('incluye Radiografía y Receta solo en Otros', async () => {
+    mockListPetDocs.mockResolvedValue({ kind: 'ok', docs: [
+      ...filterDocs.filter((document) => ['unknown', 'analysis', 'vaccine'].includes(document.id)),
+      { ...docOne, id: 'prescription', type: 'Receta' },
+    ] });
+    await renderDocs();
+    await screen.findByTestId('doc-prescription');
+    await fireEvent.press(screen.getByTestId('docs-filter-neutral'));
+    await waitFor(() => expect(docsChildren()).toEqual([
+      'View', 'docs-filters', 'docs-entry-unknown', 'docs-entry-prescription', 'docs-upload',
+    ]));
+    expect(within(screen.getByTestId('doc-unknown')).getByText('Radiografía')).toBeVisible();
+    expect(within(screen.getByTestId('doc-prescription')).getByText('Receta')).toBeVisible();
+    for (const [slot, id] of [['blue', 'vaccine'], ['violet', 'analysis']]) {
+      await fireEvent.press(screen.getByTestId(`docs-filter-${slot}`));
+      await waitFor(() => expect(docsChildren()).toEqual([
+        'View', 'docs-filters', `docs-entry-${id}`, 'docs-upload',
+      ]));
+      expect(screen.queryByTestId('doc-unknown')).toBeNull();
+      expect(screen.queryByTestId('doc-prescription')).toBeNull();
+    }
+  });
+
+  it('restaura con Todos las entradas y el orden del backend', async () => {
+    mockListPetDocs.mockResolvedValue({ kind: 'ok', docs: filterDocs });
+    await renderDocs();
+    await screen.findByTestId('doc-unknown');
+    await fireEvent.press(screen.getByTestId('docs-filter-blue'));
+    await waitFor(() => expect(screen.getByTestId('docs-filter-blue').props.accessibilityState).toEqual({ selected: true }));
+    await fireEvent.press(screen.getByTestId('docs-filter-all'));
+    await waitFor(() => expect(screen.getByTestId('docs-filter-all').props.accessibilityState).toEqual({ selected: true }));
+    expect(docsChildren()).toEqual([
+      'View', 'docs-filters', 'docs-entry-unknown', 'docs-entry-analysis', 'docs-entry-checkup',
+      'docs-entry-vaccine', 'docs-entry-deworming', 'docs-upload',
+    ]);
+  });
+
+  it('vuelve a Todos después de una subida correcta con Análisis seleccionado', async () => {
+    const analysis = { ...docOne, id: 'analysis', type: 'Análisis' };
+    mockListPetDocs.mockResolvedValueOnce({ kind: 'ok', docs: [analysis, docOne] });
+    mockListPetDocs.mockResolvedValueOnce({ kind: 'ok', docs: [analysis, docOne, docTwo] });
+    mockGetDocumentAsync.mockResolvedValueOnce({ canceled: false, assets: [documentAsset] });
+    await renderDocs();
+    await screen.findByTestId('doc-analysis');
+    await fireEvent.press(screen.getByTestId('docs-filter-violet'));
+    await waitFor(() => expect(screen.getByTestId('docs-filter-violet').props.accessibilityState).toEqual({ selected: true }));
+    await fireEvent.press(screen.getByTestId('docs-upload'));
+    await screen.findByTestId('docs-upload-form');
+    await fillDocumentForm();
+    await fireEvent.press(screen.getByTestId('docs-upload-submit'));
+    await screen.findByTestId('doc-doc-2');
+    await waitFor(() => expect(screen.getByTestId('docs-filter-all').props.accessibilityState).toEqual({ selected: true }));
+    expect(screen.getByTestId('docs-filter-violet').props.accessibilityState).toEqual({ selected: false });
+    expect(docsChildren()).toEqual([
+      'View', 'docs-filters', 'docs-entry-analysis', 'docs-entry-doc-1', 'docs-entry-doc-2', 'docs-upload',
+    ]);
+    expect(screen.queryByTestId('docs-upload-form')).toBeNull();
+  });
+});
