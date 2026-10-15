@@ -142,3 +142,327 @@ exit=0
 
 El aviso `A worker process has failed to exit gracefully` del ALL móvil ya
 sale en main y no cuenta.
+
+## Barrido exhaustivo previo a E1
+
+Lo pidió el leader antes de redactar la enmienda, para no enmendar a trozos. El
+veredicto no cambia: **RECHAZADO**.
+
+**Método.**
+
+- Cada EARS de R1–R7 se parte en cada WHEN/IF, cada «o», «cualquier» o «cada», y cada efecto.
+- Cada fila de §Reglas se cruza por campo con las tablas C, L, G, F y N.
+- Cada cláusula se cruza con su pantalla y su campo.
+- Las sondas mutan solo producción y se corren con `bunx jest --testTimeout=30000 --runTestsByPath <suites>`. Nunca corrí jest sin rutas ni `init.sh`.
+- Cada sonda se revierte con `git checkout HEAD -- <f>`. En todas, `git diff --quiet HEAD` y `git diff --cached --quiet` dieron 0, y ninguna tuvo timeouts.
+- Las sondas se plantaron sobre `a2e2a37e`. Su `mobile-pet-tracker/` es idéntico al de `d3ac0fdd` (`git diff --quiet` = 0).
+- Las filas propuestas para §Reglas se midieron, además, con un spike fuera del árbol: copias mutadas de `account-rules.ts` evaluadas con bun.
+- Las filas de correo propuestas se midieron con el escaneo de mutantes del literal y con `z.email()` de zod 4.4.3 en `backend-pet-tracker/`.
+
+**Abreviaturas de ficheros de test** (todos bajo `mobile-pet-tracker/src/`):
+
+| Abreviatura | Fichero |
+|---|---|
+| AR | `utils/account-rules.test.ts` |
+| LG | `screens/login/index.test.tsx` |
+| RG | `screens/register/index.test.tsx` |
+| FG | `screens/forgot/index.test.tsx` |
+| RS | `screens/reset-password/index.test.tsx` |
+| LP | `providers/__tests__/language-provider.test.tsx` |
+| UL | `__tests__/ui-language.test.ts` |
+
+Las líneas de producción citadas son las de HEAD. Una sonda «S» es de Codex; su salida está en
+`progress/impl_mobile-account-client-validation.md`.
+
+### Tabla cláusula × rama × candado × sonda × resultado
+
+#### R1. Catálogo
+
+| Cláusula | Rama | Candado | Sonda | Resultado |
+|---|---|---|---|---|
+| Nueve claves con valor literal | `en` | LP:647 | C29: `catalog.ts:10` cambia «Check them» por «Check it» | cazada |
+| Nueve claves con valor literal | `es` | LP:647 | C30: `catalog.ts:426` cambia «Revísalos» por «Revisa» | cazada |
+| Marcadores `{{min}}` y `{{max}}` iguales en los dos idiomas | — | LP:51, LP:647 | C32: `catalog.ts:421`, en `es`, `{{min}}` pasa a `{{max}}` | cazada, 2 rojos |
+| Longitud del catálogo `+ 9` | — | LP:51 | S1.2: borra `countryLetters` en los dos idiomas | cazada (Codex) |
+| Fila en `specs/mobile-ui-language/design.md` §2.N | — | LP:647 lee design.md | sin sonda: el fichero no es producción | no medido (delimitación) |
+
+#### R2. Validadores
+
+| Cláusula | Rama | Candado | Sonda | Resultado |
+|---|---|---|---|---|
+| `EMAIL_PATTERN` es el literal de zod | 27 mutantes del literal | AR:26–44 (15 filas C) | escaneo con node; en jest, B4 (dominio sin `-`), B5 (TLD `{2,6}`) y B6 (último carácter local sin `_`) | **15 sobreviven** al escaneo: 14 reales y la bandera `i`, que es equivalente. B4–B6 dan 216 verdes en AR, LG, RG y FG. Ver H11 |
+| Una entrada por campo inválido, sin `undefined` | — | `toStrictEqual` en L, G, F y N | A4: `account-rules.ts:23` asigna `undefined` | cazada en L1–L3 y L6 |
+| `{}` cuando todo cumple | — | L1, G1, F1, N1 | todas las sondas de frontera de abajo | cazada |
+| `labelKey` literal una sola vez | — | UL:491, UL:71 | A35: `:55` usa un literal en línea | cazada |
+| Parámetro de `tooShort` | — | G15, G16, G28, G33, N2, N7 | A37: `:17`, `min` pasa a `min + 1` | cazada, 6 rojos |
+| Parámetro de `tooLong` | — | F4, G5, G9, G13, G19, G31, N5 | A36: `:18`, `max` pasa a `max + 1` | cazada |
+| Register compone forgot y reset | — | G10–G14, G28–G33 | A34: `:40` borra el spread de `validateForgot` | cazada |
+
+#### §Reglas por campo
+
+| Cláusula | Rama | Candado | Sonda | Resultado |
+|---|---|---|---|---|
+| Correo de login | formato | L3, L5 + tabla C | (ver `EMAIL_PATTERN`) | ver H11 |
+| Correo de login | sin `max` | L6 | A5: añade `max 320` | cazada |
+| Correo de login | el validador no recorta | — | A1: `:22` recorta | equivalente: la pantalla recorta antes (C39) |
+| Contraseña de login | `min 1` | L4, L5 | A2: `< 2` | cazada en L2 |
+| Contraseña de login | sin recortar | L2 | A3 | cazada en L2 |
+| Nombre | requerido tras recortar | G2, G3 | A7 | cazada en G3 |
+| Nombre | frontera `min 1`: una letra pasa | — | A6/B1: `:42`, `< 1` pasa a `< 2` | **130 verdes** (AR + RG): H8 |
+| Nombre | `max 120` tras recortar | G4 | A8 | cazada |
+| Nombre | frontera 120 | G4, G5 | A9: `>= 120` | cazada |
+| Nombre | requerido antes que `max` | — | A38: `:43`, `else if` pasa a `if` | equivalente: las dos reglas no fallan a la vez |
+| Apellidos | requerido tras recortar | G6, G7 | A11 | cazada en G7 |
+| Apellidos | frontera `min 1` | — | A10/B2: `:44`, `< 1` pasa a `< 2` | **130 verdes**: H9 |
+| Apellidos | frontera 120 | G8, G9 | A12: `>= 120` | cazada |
+| Apellidos | `max 120` tras recortar | — | RV5 | **130 verdes**: H5 (E2) |
+| Correo de registro y recuperar | formato antes que longitud | G14, F5 | A20 | cazada |
+| Correo de registro y recuperar | `else` | G14, F5 | A21 | cazada |
+| Correo de registro y recuperar | frontera 320 | G12, G13, F3, F4 | A22: `>= 320` | cazada en F3 y G12 |
+| Correo de registro y recuperar | el validador no recorta | — | A19 | equivalente: las pantallas recortan (RV2, C40, C41) |
+| Teléfono | `min 7` tras recortar | G16 | A13 | cazada |
+| Teléfono | frontera 7 | G15, G17, G18 | A14 | cazada en G17 y G18 |
+| Teléfono | `max 20` tras recortar | G20 | A15 | cazada |
+| Teléfono | frontera 20 | G19, G20 | RV1 | cazada |
+| País | sin recortar | — | RV6 | **130 verdes**: H6 (E2) |
+| País | longitud 2 | G21–G24 | A16: `!== 2` pasa a `< 2` | cazada en G23 |
+| País | solo letras A–Z, sin bandera `i` | G25–G27 | A18 | cazada en G25 |
+| País | longitud antes que letras | G21–G24 | A17 | cazada |
+| Contraseña de registro y reset | frontera `min 8` | G29, N3 | A23: `< 9` | cazada |
+| Contraseña de registro y reset | `min` sin recortar | G29, N3 | A24 | cazada |
+| Contraseña de registro y reset | frontera `max 128` | G30, N4 | A25: `>= 128` | cazada |
+| Contraseña de registro y reset | `max` sin recortar | — | A26/B3: `:63` mide `trim().length` | **177 verdes** (AR, RG, RS): H10 |
+| Confirmación | `===` distingue mayúsculas | G32 | A27 | cazada |
+| Confirmación | independiente de la regla de contraseña | G33, N7 | A28 | cazada |
+| Confirmación | recorte de un solo lado | G29, N3 | A29, A30 | cazadas |
+| Confirmación | recorte de los dos lados | — | RV7 | **177 verdes**: H7 (E2) |
+
+#### R3. Login
+
+| Cláusula | Rama | Candado | Sonda | Resultado |
+|---|---|---|---|---|
+| WHEN inválido: pinta en el `FieldError` del campo | correo | LG:444 ×4 | C1: `login/index.tsx:109` sin `isInvalid` | cazada, 7 rojos |
+| WHEN inválido: pinta en el `FieldError` del campo | contraseña | LG:453 | C2: `:128` | cazada, 4 rojos |
+| WHEN inválido: pinta en el `FieldError` del campo | cada mensaje en su campo | LG:444, 453, 462 | C4: `:36` cruza correo y contraseña | cazada, 8 rojos |
+| Con icono | — | LG:444–497 | C34: `form-error.tsx:11` borra el icono | cazada, 9 rojos |
+| Con texto seleccionable | — | LG:444–497 | C33: `form-error.tsx:12` sin `selectable` | cazada, 9 rojos |
+| Borrar `login-error` | — | LG:449, 458, 468 y 493 son tautológicas | RV8: `:32` | **39 verdes**: H1 (E1) |
+| No llamar a `login` | — | LG:444, 453, 462 | C35: `:37` borra el `return` | cazada, 8 rojos (= S3.2) |
+| Reenviar válido limpia los mensajes | — | LG:497 | RV3: `:31` | cazada |
+| WHEN pasa: `email.trim()` | — | LG:479 | C39: `:42` envía `{ email, password }` | cazada (= S3.1) |
+| WHEN pasa: `password` sin recortar | — | LG:472 | C3: `:33` | cazada |
+| Copy en inglés | — | LG:486 (literales), LP:647 | sin sonda propia: C29 toca `checkDetails`, no el copy de R3 | candado por literal exacto; no sondeado aparte |
+
+#### R4. Registro
+
+| Cláusula | Rama | Candado | Sonda | Resultado |
+|---|---|---|---|---|
+| Pinta en el `FieldError` de cada campo | nombre | RG:634, 700, 710 | C14: `register/index.tsx:153` | cazada, 7 rojos |
+| Pinta en el `FieldError` de cada campo | apellidos | ídem | C45: `:169` | cazada, 5 rojos |
+| Pinta en el `FieldError` de cada campo | correo | ídem | C46: `:187` | cazada, 11 rojos |
+| Pinta en el `FieldError` de cada campo | teléfono | ídem | C15: `:207` apunta a `country` | cazada |
+| Pinta en el `FieldError` de cada campo | país | ídem | C47: `:224` | cazada, 7 rojos |
+| Pinta en el `FieldError` de cada campo | contraseña | ídem | C48: `:244` | cazada, 5 rojos |
+| Pinta en el `FieldError` de cada campo | confirmación | ídem | C49: `:260` | cazada, 4 rojos |
+| Parámetros por campo | nombre, apellidos, correo, teléfono, contraseña | RG:634, filas 3, 5, 8, 9–10 y 15–16 | C9, C10, C11, C12, C13 | cazadas |
+| Borrar `register-error` | — | RG:663, tautológica | RV9: `:63` | **64 verdes**: H2 (E1) |
+| No llamar a `register` | — | RG:634, 700 | C36: `:70` borra el `return` | cazada, 24 rojos (= S4.4) |
+| Reenviar válido limpia los mensajes | — | RG:456 (#172 R12) | C8: `:62` | cazada |
+| WHEN pasa: `email.trim()` | a `register` | RG:722 | C40: `:76` envía `email` sin recortar | cazada |
+| WHEN pasa: `email.trim()` | al `login` siguiente | RG:722 | C41: `:84` | cazada |
+| Sin el `EMAIL_PATTERN` local de #172 | — | RG:634, filas 6–8 | C31: `:67` reintroduce el patrón de #172 | cazada, 3 rojos. El grep de `EMAIL_PATTERN` fuera de `account-rules.ts` da 0 |
+
+#### R5. Recuperar
+
+| Cláusula | Rama | Candado | Sonda | Resultado |
+|---|---|---|---|---|
+| Valida `email.trim()` | — | FG:688 | RV2 | cazada, 11 rojos |
+| Pinta en `forgot-email-error` | — | FG:688 ×4, FG:717 | C44: `forgot/index.tsx:118` | cazada, 5 rojos |
+| Parámetro `max 320` | — | FG:688, fila 4 | C22: `:135` | cazada |
+| Borrar `forgot-error` | — | FG:184, 203…, tautológicas | RV10: `:34` | **47 verdes**: H3 (E1) |
+| Sigue en el formulario | — | FG:688, FG:717 | C21: `setSent(true)` tras marcar | cazada |
+| No llamar a `forgotPassword` | — | FG:688 | C37: `:39` borra el `return` | cazada, 5 rojos (= S5.1) |
+| Reenviar válido limpia el mensaje | — | FG:717 es tautológica | C18: `:33` | **47 verdes**: H12 |
+| Botón desactivado | vacío o solo espacios | FG:166, FG:296 ×5 | C19: `:150` sin `trim()` | cazada |
+| Un correo de 320 pasa | — | FG:708, F3 | A22 | cazada |
+| El reenvío no se revalida | — | FG:396 (#117 R6) | — | delimitación de la spec |
+| Copy literal vía `t()` | — | UL:495 | C50: `:135` copy fijo en español | cazada |
+
+#### R6. Nueva contraseña
+
+| Cláusula | Rama | Candado | Sonda | Resultado |
+|---|---|---|---|---|
+| Pinta en el `FieldError` de cada campo | contraseña | RS:616, filas 1–2; RS:633 | C25: `reset-password/index.tsx:200` | cazada |
+| Pinta en el `FieldError` de cada campo | confirmación | RS:616, fila 3; RS:633 | C43: `:218` | cazada, 2 rojos (= S6.2) |
+| Parámetros | — | RS:616 | RV4 | cazada, 3 rojos |
+| Borrar `reset-error` | — | ninguno en `#183 R6` | RV11: `:37` | **47 verdes**: H4 (E1) |
+| No llamar a `resetPassword` | — | RS:616 ×3, RS:633 | C38: `:42` borra el `return` | cazada, 4 rojos (= S6.1) |
+| Contraseña sin recortar | — | RS:645, fila `' '.repeat(8)` | C42: `:38` | cazada (= S6.3) |
+| Reenviar válido limpia los mensajes | — | ninguno | C26: `:36` | **47 verdes**: H13 |
+| Copy literal | — | UL:495 | — | mismo guard que C50; no sondeado aparte |
+
+#### R7. Un 400 en las cuatro pantallas
+
+| Pantalla | Rama | Candado | Sonda | Resultado |
+|---|---|---|---|---|
+| Login | genérico exacto | LG:146 | C6: añade los `path` | cazada |
+| Login | sin `message` | LG:147–148 | S7.1 | cazada (Codex) |
+| Login | sin `path` | LG:146, exacto | C6 | cazada |
+| Login | sin marcar campo | LG:149 | C5: `:56` marca el correo | cazada |
+| Registro | genérico exacto | RG:223 | C16: añade los `message` | cazada |
+| Registro | sin `message` | RG:224–226 | C16 | cazada |
+| Registro | sin `path` | RG:223, exacto | mismo mecanismo que C16 | no sondeado aparte |
+| Registro | sin marcar campo | RG:227 | C17: `:100` marca el nombre | cazada (= S7.2) |
+| Recuperar | genérico exacto | FG:297/308 | C23: añade los `message` | cazada, 3 rojos |
+| Recuperar | sin `message` ni `path` | FG:308, exacto | C23 | cazada |
+| Recuperar | sin marcar campo | ninguno | C20: `:55` marca el correo | **47 verdes**: H14 |
+| Nueva contraseña | genérico exacto | RS:246–249 (`toBe`) | C28 | cazada |
+| Nueva contraseña | sin `message` ni `path` | RS:246–249, exacto | C28 | cazada |
+| Nueva contraseña | sin marcar campo | ninguno | C27: `:63` marca la confirmación | **47 verdes**: H15 |
+| Copy en inglés | — | LP:647 | C29 | cazada |
+
+**Equivalentes y delimitaciones (no son huecos):**
+
+- **A1 y A19** (el validador recorta el correo): las pantallas ya recortan, y RV2, C39, C40 y C41 lo candan.
+- **A38** (`else if` pasa a `if` entre `min` y `max`): las dos reglas no pueden fallar a la vez. Lo mismo vale para teléfono y contraseña.
+- **La bandera `i` en `EMAIL_PATTERN`**: todas las clases ya incluyen `A-Za-z`, y sin `u` ningún carácter no ASCII se pliega a ASCII.
+- **El reenvío de R5 no se revalida.** Es una delimitación de la spec.
+- **El borrado al teclear (P7)** queda fuera de alcance: los mensajes persisten hasta el siguiente envío.
+- **El registro en design.md** queda candado por LP:647, pero no lo sondeé porque no es producción.
+
+### Huecos
+
+**Por qué falla el candado en H1–H4.** Toda aserción `queryByTestId('<x>-error')).toBeNull()` de R3–R6 parte de una pantalla sin error general previo.
+
+1. **H1 (E1, R3).**
+   - **Mutación:** se borra `setError(null);` en `login/index.tsx:32` (RV8).
+   - **Resultado:** 39 verdes.
+   - **Candado:** en LG:133 (`#183 R7`), tras la línea 149:
+     - `await submit('', 'correct horse')`;
+     - `login-error` pasa a null;
+     - `login-email-message` dice «Ingresa un correo electrónico válido»;
+     - `mockLogin` se llamó 1 vez.
+
+     El título pasa a nombrar también R3. El recuento no cambia.
+2. **H2 (E1, R4).**
+   - **Mutación:** se borra `setGeneralError(null);` en `register/index.tsx:63` (RV9).
+   - **Resultado:** 64 verdes.
+   - **Candado:** en RG:209 (`#183 R7`), tras la línea 227:
+     - se cambia `register-email` a `alex.example.com` y se envía;
+     - `register-error` pasa a null;
+     - `register-email-message` está presente;
+     - `mockRegister` se llamó 1 vez.
+
+     El título nombra también R4. El recuento no cambia.
+3. **H3 (E1, R5).**
+   - **Mutación:** se borra el `setError(null);` de `submit()` en `forgot/index.tsx:34` (RV10).
+   - **Resultado:** 47 verdes.
+   - **Candado:** en el cuerpo del `it.each` FG:296 (`#117 R7`, 5 kinds), tras `expectFormState` y antes del `'   '` final:
+     - `await submitForgot('alex.example.com')`;
+     - `forgot-error` pasa a null;
+     - `forgot-email-message` está presente;
+     - `mockForgotPassword` se llamó 1 vez.
+
+     Cubre los cinco kinds. El recuento no cambia, pero el título heredado debe nombrar `#183 R5` o la fila debe citarlo en traceability.
+4. **H4 (E1, R6).**
+   - **Mutación:** se borra `setError(null);` en `reset-password/index.tsx:37` (RV11).
+   - **Resultado:** 47 verdes.
+   - **Candado:** en RS:231 (`#183 R7`), tras la línea 250:
+     - contraseña y confirmación pasan a `'1234567'` y se envía;
+     - `reset-error` pasa a null;
+     - `reset-password-message` dice «Usa al menos 8 caracteres»;
+     - `mockResetPassword` se llamó 1 vez.
+
+     El título nombra también R6. El recuento no cambia.
+5. **H5 (E2).**
+   - **Mutación:** en `account-rules.ts:45`, `values.lastName.trim().length > 120` pasa a `values.lastName.length > 120` (RV5).
+   - **Resultado:** 130 verdes.
+   - **Candado:** G8 pasa a `{ lastName: ' ' + 'a'.repeat(120) + ' ' }` → `{}`. Es el espejo de G4.
+   - **Spike:** caza RV5, y A12 sigue cazada por la misma fila. El recuento no cambia.
+6. **H6 (E2).**
+   - **Mutación:** antes de `account-rules.ts:48` se inserta `values.country = values.country.trim();` (RV6).
+   - **Resultado:** 130 verdes.
+   - **Candado:** G23 pasa de `'MEX'` a `'MX '` → `countryLength`.
+   - **Spike:** caza RV6 y sigue cazando A16 y A17. El recuento no cambia.
+   - **Alternativa:** una fila G34 `' MX'` (+1).
+7. **H7 (E2).**
+   - **Mutación:** en `account-rules.ts:64`, la comparación pasa a `values.password.trim() !== values.passwordConfirmation.trim()` (RV7).
+   - **Resultado:** 177 verdes.
+   - **Candado:** la confirmación de N6 pasa de `'new-password-124'` a `'new-password-123 '` → `passwordsDontMatch`. G32 conserva la diferencia de letras.
+   - **Spike:** caza RV7. El recuento no cambia.
+8. **H8.**
+   - **Mutación:** en `account-rules.ts:42`, `< 1` pasa a `< 2` (A6/B1).
+   - **Resultado:** 130 verdes.
+   - **Candado:** `VALID.firstName` pasa de `'Alex'` a `'A'`, y G1 lo caza.
+   - **Spike:** caza A6. El recuento no cambia. `VALID` está prescrito literalmente en requirements.md:328, así que la enmienda lo cambia allí.
+9. **H9.**
+   - **Mutación:** en `account-rules.ts:44`, `< 1` pasa a `< 2` (A10/B2).
+   - **Resultado:** 130 verdes.
+   - **Candado:** `VALID.lastName` pasa de `'Smith'` a `'S'`.
+   - **Spike:** caza A10. El recuento no cambia.
+10. **H10.**
+    - **Mutación:** en `account-rules.ts:63`, `values.password.length > 128` pasa a `values.password.trim().length > 128` (A26/B3).
+    - **Resultado:** 177 verdes.
+    - **Candado:** N5 pasa a `'a'.repeat(128) + ' '` en los dos campos → `tooLong(128)`. G31 puede cambiar igual, aunque no hace falta.
+    - **Spike:** caza A26, y A25 sigue cazada por G30 y N4. El recuento no cambia.
+11. **H11.** El escaneo del literal deja 14 mutantes reales vivos:
+    - parte local sin `_`, `-`, `.` o dígitos;
+    - último carácter local sin `_`, `+`, `-` o dígitos;
+    - primer carácter del dominio sin dígitos;
+    - resto del dominio sin `-` o sin dígitos, o admitiendo `_`;
+    - TLD `{2,6}`;
+    - parte local con `+` en vez de `*`.
+
+    Tres de ellos (B4–B6) se midieron también en jest: 216 verdes.
+    - **Candado más barato** (el recuento no cambia): en el cuerpo de AR:42–44 se añaden estas dos líneas, con el literal tecleado a mano desde §Reglas. No compara `EMAIL_PATTERN` consigo mismo, así que no choca con la convención de requirements.md:227:
+      ```ts
+      expect(EMAIL_PATTERN.source).toBe(String.raw`^(?!\.)(?!.*\.\.)([A-Za-z0-9_'+\-\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\-]*\.)+[A-Za-z]{2,}$`);
+      expect(EMAIL_PATTERN.flags).toBe('');
+      ```
+    - **Alternativa de comportamiento** (+5 filas C). Matan los 14 en el escaneo, y zod 4.4.3 da los mismos booleanos:
+      - `['a_1-b.c_@x2-y.example.technology', true]`
+      - `['z9@1x.io', true]`
+      - `['+@b.co', true]`
+      - `['a-@b.co', true]`
+      - `['a@b_c.co', false]`
+12. **H12 (R5).**
+    - **Mutación:** se borra `setFieldErrors({});` en `forgot/index.tsx:33` (C18).
+    - **Resultado:** 47 verdes.
+    - **Por qué:** FG:717 reenvía con `kind: 'ok'`, que sustituye el formulario por «Revisa tu correo», así que el null de `forgot-email-message` es tautológico.
+    - **Candado:** en el mismo cuerpo que H3, tras el envío inválido:
+      - `await submitForgot('  Ana@Example.com ')`, con el mock aún en el kind fallido;
+      - `forgot-email-message` pasa a null;
+      - `forgot-error` vuelve a decir el copy de la fila;
+      - `mockForgotPassword` se llamó 2 veces.
+
+      El recuento no cambia.
+13. **H13 (R6).**
+    - **Mutación:** se borra `setFieldErrors({});` en `reset-password/index.tsx:36` (C26).
+    - **Resultado:** 47 verdes.
+    - **Por qué:** ningún `it` reenvía tras un error de campo.
+    - **Candado:** en RS:231, tras H4:
+      - contraseña y confirmación pasan a `'new-password-123'` y se envía, con el mock aún en `validation`;
+      - `reset-password-message` pasa a null;
+      - `reset-error` vuelve al genérico;
+      - `mockResetPassword` se llamó 2 veces.
+
+      El recuento no cambia.
+14. **H14 (R7 en recuperar).**
+    - **Mutación:** en el caso `validation` de `forgot/index.tsx:55` se añade `setFieldErrors({ email: { labelKey: "forgot.invalidEmail" } });` (C20).
+    - **Resultado:** 47 verdes.
+    - **Candado:** en el cuerpo de FG:296, justo tras `findByTestId('forgot-error')`, `expect(screen.queryAllByTestId(/^forgot-.+-message-row$/)).toHaveLength(0)`. Vale para los cinco kinds. El recuento no cambia.
+15. **H15 (R7 en nueva contraseña).**
+    - **Mutación:** en el caso `validation` de `reset-password/index.tsx:63` se añade `setFieldErrors({ passwordConfirmation: { labelKey: "validation.passwordsDontMatch" } });` (C27).
+    - **Resultado:** 47 verdes.
+    - **Candado:** en RS:231, tras la línea 250, `expect(screen.queryAllByTestId(/^reset-password(-confirm)?-message-row$/)).toHaveLength(0)`. El recuento no cambia.
+
+**Resumen.**
+
+- Hay 15 huecos:
+  - **E1** son H1–H4.
+  - **E2** son H5–H7.
+  - Ocho son nuevos: H8–H15.
+- Todos los candados propuestos caben en `it` o filas existentes. Lo único que suma recuento es la alternativa de comportamiento de H11 (+5) o la alternativa de H6 (+1).
+- Los candados de H5–H10 están medidos con el spike.
+- Los de H1–H4 y H12–H15 no tienen spike, porque escribir tests en el árbol queda fuera de mi papel. La enmienda debe añadir a su tabla de sondas RV8–RV11, C18, C20, C26 y C27, y exigir `await` en cada `fireEvent` y `waitFor` sobre el mensaje del campo (RNTL 14).
+- G8, G23, N5, N6, `VALID` y la tabla C están prescritos literalmente en requirements.md, así que la enmienda los cambia allí antes de volver a Codex.
