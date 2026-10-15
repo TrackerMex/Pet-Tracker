@@ -111,6 +111,7 @@ export function DocsScreen({ petId }: { petId: string }) {
   const [date, setDate] = useState(() => civilTodayIso(undefined));
   const [vet, setVet] = useState('');
   const [actionError, setActionError] = useState<ActionError | null>(null);
+  const [filter, setFilter] = useState<'all' | CategorySlot>('all');
   const pet = useQuery({
     queryKey: petKeys.detail(petId),
     queryFn: () => getPet(baseUrl, token ?? '', petId),
@@ -120,10 +121,12 @@ export function DocsScreen({ petId }: { petId: string }) {
     queryFn: () => listPetDocs(baseUrl, token ?? '', petId),
   });
   const petName = pet.data?.kind === 'ok' ? pet.data.pet.name : null;
-  const filter = 'all';
   const presentSlots = FILTER_SLOTS.filter(({ slot }) =>
     docs.data?.kind === 'ok' && docs.data.docs.some((document) => documentCategory(document.type) === slot),
   );
+  const visibleDocs = docs.data?.kind === 'ok'
+    ? docs.data.docs.filter((document) => filter === 'all' || documentCategory(document.type) === filter)
+    : [];
   const isOwner = pet.data?.kind === 'ok' && pet.data.pet.myRole === 'owner';
   const actionErrorText = actionError ? {
     'file-format': t('docs.errorFileFormat'),
@@ -232,6 +235,7 @@ export function DocsScreen({ petId }: { petId: string }) {
         return;
       }
       await docs.refetch();
+      setFilter('all');
       cancelUpload();
     } catch {
       setActionError(readingAsset ? 'upload-failed' : 'unknown');
@@ -304,6 +308,7 @@ export function DocsScreen({ petId }: { petId: string }) {
                     testID={`docs-filter-${slot}`}
                     accessibilityRole="button"
                     accessibilityState={{ selected }}
+                    onPress={() => setFilter(slot)}
                     hitSlop={TOUCH_SLOP}
                     className={`h-8.5 items-center justify-center rounded-full px-3 ${surface}`}
                     style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
@@ -313,7 +318,7 @@ export function DocsScreen({ petId }: { petId: string }) {
                 );
               })}
             </View>
-            {docs.data.docs.map((document, index) => (
+            {visibleDocs.map((document, index) => (
               <HomeEntrance key={document.id} index={index} testID={`docs-entry-${document.id}`}>
                 <DocumentRow document={document} onPress={() => openDocument(document)} />
               </HomeEntrance>
