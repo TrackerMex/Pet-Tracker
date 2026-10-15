@@ -40,6 +40,18 @@ const { readFileSync } = require('fs');
 const { join } = require('path');
 
 const mockPopIn = jest.fn<void, [import('react-native').ViewProps]>();
+const mockHomeEntrance = jest.fn<void, [import('react-native').ViewProps & { index: number }]>();
+
+jest.mock('../home/home-entrance', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return {
+    HomeEntrance(props: import('react-native').ViewProps & { index: number }) {
+      mockHomeEntrance(props);
+      return React.createElement(View, props);
+    },
+  };
+});
 
 jest.mock('../../components/pop-in', () => {
   const React = jest.requireActual<typeof import('react')>('react');
@@ -1526,5 +1538,36 @@ describe('#170 R5: la fila abierta lleva el borde de su tipo', () => {
     expect(classes).toContain('border-border');
     expect(classes).not.toContain('border-2');
     expect(classes).not.toContain('border-danger');
+  });
+});
+
+
+describe('#174 R10: entrada escalonada de las cinco primeras filas', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockListAlerts.mockReset().mockResolvedValue({
+      kind: 'ok',
+      items: Array.from({ length: 6 }, (_, index) => makeAlert({ id: `e${index}` })),
+      nextCursor: null,
+    });
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() });
+  });
+
+  it('envuelve e0 a e4 con su índice y deja e5 sin envoltorio', async () => {
+    await renderAlerts();
+    await screen.findByTestId('alert-row-e5');
+    for (let index = 0; index < 5; index += 1) {
+      const rowId = `alert-row-e${index}`;
+      const entranceId = `${rowId}-entrance`;
+      const entrance = screen.getByTestId(entranceId);
+      expect(entrance.children).toHaveLength(1);
+      expect(within(entrance).getByTestId(rowId)).toBe(screen.getByTestId(rowId));
+      const props = mockHomeEntrance.mock.calls.filter(([props]) => props.testID === entranceId).at(-1)?.[0];
+      expect(props?.index).toBe(index);
+    }
+    expect(screen.queryByTestId('alert-row-e5-entrance')).toBeNull();
+    expect(screen.getByTestId('alert-row-e5')).toBeVisible();
+    expect(screen.getByTestId('alert-row-e0-entrance').parent?.props.className).toBe('gap-3');
   });
 });
