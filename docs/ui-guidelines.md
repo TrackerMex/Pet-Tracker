@@ -71,7 +71,8 @@ Tres límites, no negociables:
    `@theme` de global.css. Existentes: colores semánticos light/dark,
    fuentes Inter, `--radius-card: 20px`, `--text-2xs: 10px`. Si un valor
    nuevo se repite 2+, se añade token — no clase arbitraria.
-   Tamaños de letra fuera de la escala de Tailwind (fidelidad al canvas, #173): `--text-13: 13px`, `--text-26: 26px`; cada uno es token aunque se use una vez, porque la clase arbitraria está prohibida.
+   Tamaños de letra fuera de la escala de Tailwind (fidelidad al canvas, #173): `--text-13: 13px`, `--text-26: 26px`, `--text-11: 11px`, `--text-15: 15px`; cada uno es token aunque se use una vez, porque la clase arbitraria está prohibida.
+   Tracking fuera de la escala de Tailwind (fidelidad al canvas, #175): `--tracking-title: -0.02em`, `--tracking-eyebrow: 0.08em`; la clase `tracking-*` va con una clase `text-*` en el mismo elemento, porque uniwind multiplica el `em` por su tamaño.
 3. **Grep-clean permanente** (criterio de aceptación de toda feature móvil):
    - cero hex fuera de `src/theme/`
    - cero clases arbitrarias `[...]` (`rounded-[20px]`, `text-[10px]`,
@@ -181,6 +182,8 @@ Tres límites, no negociables:
     componentes de heroui-native ya lo traen de fábrica y no se envuelven
     para añadírselo.
 
+    Fuera de la escala, por fidelidad al canvas (#175): `rounded-24` (24 px), zona de subida de Documentos.
+
 13. **Botón con cuerpo** (feature #166, 2026-10-11). Los botones de acción
     llevan un labio inferior: un borde inferior más grueso que los
     laterales, nunca una sombra.
@@ -234,7 +237,7 @@ Tres límites, no negociables:
 - Números grandes formateados (1.4M, 38k).
 - Feedback pressed en TODO elemento tappable (Pressable style function o
   componente heroui que ya lo trae); touch target ≥ 44pt.
-- Títulos de pantalla: header del stack cuando exista, no Text suelto.
+- Títulos de pantalla: título en contenido y cabecera nativa con `title: ''` (Enmienda de fidelidad al canvas).
 
 ## Dirección de arte
 
@@ -267,7 +270,7 @@ consume estos tokens; ninguna inventa un hex ni una clase arbitraria:
 
 El reparto vive en `src/utils/category-palette.ts` y es el **único** sitio donde
 se escriben esos nombres de clase. El color nunca es el único portador de la
-categoría: la superficie siempre acompaña a un emoji y a un texto.
+categoría: la superficie siempre acompaña a un icono de reicon-react-native y a un texto.
 
 **2. Fotografía y su respaldo.** Las cabeceras fotográficas asumen que la
 mascota tiene foto. Cuando no la tiene, el respaldo es el **blobatar**
@@ -607,3 +610,13 @@ el detalle de la enmienda está en su `requirements.md` §R14.
   en su `tasks.md`).
 
 - [X] Enmienda #173 aprobada por humano
+
+## Enmienda de fidelidad al canvas (2026-10-13)
+
+Directiva del humano del 2026-10-13: «el diseño final debe de quedar como el artifact» (canvas aprobado, https://claude.ai/artifact/VqaQQsRTtis9Dbttqy3z7j). Rige para toda pantalla que una spec lleve al canvas; la spec de cada pantalla nombra sus valores y los candados que revierte.
+
+- **Título en contenido (D-H).** El título de pantalla va dentro del contenido (eyebrow opcional y título); la cabecera nativa del stack queda con `title: ''` y solo aporta el botón de volver.
+- **Iconos reicon (D-I).** Los iconos de la interfaz son componentes de `reicon-react-native` coloreados con un token vía `useThemeColors`; ningún emoji hace de icono. La superficie de categoría acompaña a un icono y a un texto.
+- **Medidas del artboard.** Donde la escala no llega al valor del artboard se usa un token del `@theme` nombrado por su valor y listado en la regla 2 (tamaños y tracking) o en la regla 12 (radios); las clases con corchetes (regla 3) y los radios `2xl`, `lg`, `md` y `sm` (regla 12) siguen prohibidos, y las esquinas que no son cápsula siguen llevando `CONTINUOUS_CORNER`.
+
+- [ ] Enmienda de fidelidad al canvas aprobada por humano (fecha: ____)
