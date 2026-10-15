@@ -316,6 +316,14 @@ describe('#117 R7: cada kind distinto de ok pinta su copy en forgot-error', () =
     expect(screen.getByTestId('forgot-submit')).toBeDisabled();
   });
 
+  it('#183 R7: un 400 de validación en recuperar pinta el aviso genérico y ningún mensaje de campo', async () => {
+    mockForgotPassword.mockResolvedValue({ kind: 'validation', errors: [{ path: 'email', message: 'Invalid email' }] });
+    await renderRoute();
+    await submitForgot();
+    expect(await screen.findByTestId('forgot-error')).toHaveTextContent('Algo no cuadra en los datos. Revísalos y vuelve a intentarlo.');
+    expect(screen.queryAllByTestId(/^forgot-.+-message-row$/)).toHaveLength(0);
+  });
+
   it('un reintento desde el formulario que vuelve a fallar pinta el copy del nuevo kind', async () => {
     mockForgotPassword
       .mockResolvedValueOnce({ kind: 'error' })
@@ -725,5 +733,22 @@ describe('#183 R5: recuperar valida en cliente', () => {
     expect(screen.queryByTestId('forgot-email-message')).toBeNull();
     expect(mockForgotPassword).toHaveBeenCalledTimes(1);
     expect(mockForgotPassword).toHaveBeenCalledWith(apiUrl, { email: 'Ana@Example.com' });
+  });
+
+  it('#183 R5: un correo inválido tras un aviso general lo retira, y el corregido quita el mensaje y vuelve a llamar', async () => {
+    mockForgotPassword.mockResolvedValue({ kind: 'error' });
+    await renderRoute();
+    await submitForgot();
+    expect(await screen.findByTestId('forgot-error')).toHaveTextContent('Algo salió mal');
+    await waitFor(() => expect(screen.getByTestId('forgot-submit')).not.toBeDisabled());
+    await submitForgot('alex.example.com');
+    await waitFor(() => expect(screen.getByTestId('forgot-email-message')).toHaveTextContent('Ingresa un correo electrónico válido'));
+    expect(screen.queryByTestId('forgot-error')).toBeNull();
+    expect(mockForgotPassword).toHaveBeenCalledTimes(1);
+    await submitForgot('  Ana@Example.com ');
+    await waitFor(() => expect(screen.getByTestId('forgot-error')).toHaveTextContent('Algo salió mal'));
+    expect(screen.queryByTestId('forgot-email-message')).toBeNull();
+    expect(mockForgotPassword).toHaveBeenCalledTimes(2);
+    expect(mockForgotPassword).toHaveBeenLastCalledWith(apiUrl, { email: 'Ana@Example.com' });
   });
 });
