@@ -15,11 +15,15 @@
   --radius-card: 20px;
   --radius-hero: 28px;
   --radius-tile: 18px;
+  --radius-24: 24px;
+  --tracking-title: -0.02em;
+  --tracking-eyebrow: 0.08em;
   --text-2xs: 10px;
   --text-13: 13px;
   --text-15: 15px;
   --text-17: 17px;
   --text-26: 26px;
+  --text-11: 11px;
   --color-confetti-amber: #F79009;
   --color-confetti-violet: #7A5AF8;
   --color-confetti-blue: #2E90FA;
