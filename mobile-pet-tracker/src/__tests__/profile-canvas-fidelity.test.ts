@@ -59,6 +59,7 @@ describe('#173 R2.4: inventario de tamaños nuevos', () => {
   it('limita text-13 a Perfil y a las pantallas de cuenta de #172 (E8)', () => {
     expect(filesMatching(/\btext-13\b/)).toEqual([
       'components/form-error.tsx',
+      'screens/alerts/index.tsx', // #174 R4, R6
       'screens/forgot/index.tsx',
       'screens/login/index.tsx',
       'screens/profile/index.tsx',

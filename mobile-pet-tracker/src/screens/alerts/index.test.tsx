@@ -39,6 +39,19 @@ declare function require(moduleName: 'path'): {
 const { readFileSync } = require('fs');
 const { join } = require('path');
 
+const mockPopIn = jest.fn<void, [import('react-native').ViewProps]>();
+
+jest.mock('../../components/pop-in', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return {
+    PopIn(props: import('react-native').ViewProps) {
+      mockPopIn(props);
+      return React.createElement(View, props);
+    },
+  };
+});
+
 jest.mock('../../api/alerts', () => ({
   ackAlert: jest.fn(),
   listAlerts: jest.fn(),
@@ -1371,6 +1384,10 @@ describe('#170 R4: cuenta las alertas nuevas', () => {
     await renderAlerts();
     await screen.findByTestId(state === 'carga' ? 'alerts-loading' : state === 'error' ? 'alerts-error' : state === 'vacía' ? 'alerts-empty' : 'alert-row-a');
     expect(screen.queryByTestId('alerts-new-count')).toBeNull();
+    expect(screen.getByTestId('alerts-title-row').children).toHaveLength(1);
+    const root = screen.getByTestId('screen-alerts');
+    expect(root.children).toHaveLength(1);
+    expect(elementChild(root, 0).props.testID).toBe('alerts-list');
   });
   it('pinta «1 nueva» con una abierta', async () => {
     mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert()], nextCursor: null });
@@ -1408,20 +1425,30 @@ describe('#170 R4: cuenta las alertas nuevas', () => {
     await screen.findByTestId('alert-row-b-status');
     expect(screen.queryByTestId('alerts-new-count')).toBeNull();
   });
-  it('pinta el contador como hermano anterior de la lista con su anatomía', async () => {
-    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert()], nextCursor: null });
+  it('pinta el contador junto al título con su anatomía (enmendado por #174 R4)', async () => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ id: 'a' }), makeAlert({ id: 'b' })], nextCursor: null });
     await renderAlerts();
     const counter = await screen.findByTestId('alerts-new-count');
-    const root = screen.getByTestId('screen-alerts');
-    expect(elementChild(root, 0).props.testID).toBe('alerts-new-count');
-    expect(elementChild(root, 1).props.testID).toBe('alerts-list');
-    expect(counter.props.className).toBe('mx-6 mt-6 self-start rounded-full bg-danger px-3 py-1');
+    const titleRow = screen.getByTestId('alerts-title-row');
+    expect(titleRow.children).toHaveLength(2);
+    expect(elementChild(titleRow, 0).props.testID).toBe('alerts-title');
+    expect(elementChild(titleRow, 1).props.testID).toBe('alerts-new-count');
+    expect(mockPopIn).toHaveBeenCalledWith(expect.objectContaining({
+      testID: 'alerts-new-count',
+      className: 'rounded-full bg-danger px-2.5 py-1',
+    }));
+    expect(counter.props.className).toBe('rounded-full bg-danger px-2.5 py-1');
     expect(counter.children).toHaveLength(1);
     const text = elementChild(counter, 0);
     expect(text.props.testID).toBe('alerts-new-count-text');
-    expect(text.props.className).toBe('text-xs font-bold text-danger-foreground');
+    expect(text.props.className).toBe('text-13 font-extrabold text-danger-foreground');
     expect(text.props.style).toEqual({ fontVariant: ['tabular-nums'] });
+    expect(text).toHaveTextContent('2 nuevas', { exact: true });
+    const root = screen.getByTestId('screen-alerts');
+    expect(root.children).toHaveLength(1);
+    expect(elementChild(root, 0).props.testID).toBe('alerts-list');
   });
+
 });
 
 describe('#170 R5: la fila abierta lleva el borde de su tipo', () => {
