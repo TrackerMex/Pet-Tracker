@@ -793,7 +793,7 @@ copy completa en cada una.
 
 | Línea | Clave | `en` | `es` | Nota |
 |---|---|---|---|---|
-| — | `alerts.title` | `Alerts` | `Alertas` | ← añadida por #78 (R3) · se pinta desde `src/app/_layout.tsx` por #114 (R4)
+| — | `alerts.title` | `Alerts` | `Alertas` | ← añadida por #78 (R3) · se pinta en `src/screens/alerts/index.tsx` por #174 (R3)
 | — | `alerts.empty` | `No alerts` | `No hay alertas` | ← añadida por #78 (R3)
 | — | `alerts.ack` | `Mark as read` | `Marcar leída` | ← añadida por #78 (R3)
 | — | `alerts.typeGeofenceExit` | `Left the safe zone` | `Salió de la zona` | ← añadida por #78 (R3)

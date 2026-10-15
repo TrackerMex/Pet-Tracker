@@ -169,11 +169,20 @@ export function AlertsScreen() {
           if (!alerts.hasNextPage || alerts.isFetchingNextPage) return;
           void alerts.fetchNextPage();
         }}
-        ListHeaderComponent={displayedActionError ? (
-          <Text testID="alerts-action-error" className="text-danger">
-            {displayedActionError}
-          </Text>
-        ) : null}
+        ListHeaderComponent={(
+          <View testID="alerts-header" className="gap-3">
+            <View testID="alerts-title-row" className="flex-row items-center gap-2">
+              <Text testID="alerts-title" accessibilityRole="header" className="flex-1 text-26 font-black tracking-title text-foreground">
+                {t('alerts.title')}
+              </Text>
+            </View>
+            {displayedActionError ? (
+              <Text testID="alerts-action-error" className="text-danger">
+                {displayedActionError}
+              </Text>
+            ) : null}
+          </View>
+        )}
         ListEmptyComponent={empty}
         renderItem={({ item, index }) => {
           const rowId = `alert-row-${item.id}`;
