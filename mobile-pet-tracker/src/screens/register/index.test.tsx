@@ -34,12 +34,22 @@ jest.mock('reicon-react-native', () => {
     function MockIcon(props: Record<string, unknown>) {
       return React.createElement(View, { testID, ...props });
     };
-  return { ...actual, AlertCircle: mockIcon('icon-alert-circle') };
+  return { ...actual, Eye: mockIcon('icon-eye'), EyeOff: mockIcon('icon-eye-off'), AlertCircle: mockIcon('icon-alert-circle') };
 });
 
 jest.mock('../../theme/use-theme-colors', () => ({
   useThemeColors: (tokens: string[]) => tokens.map((token) => `color:${token}`),
 }));
+
+jest.mock('../../components/pingo-float', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return {
+    PingoFloat(props: { testID: string; children: import('react').ReactNode }) {
+      return React.createElement(View, props);
+    },
+  };
+});
 
 jest.mock('../../api/auth', () => ({
   login: jest.fn(),
@@ -53,6 +63,8 @@ jest.mock('../../providers/auth-provider', () => ({
 jest.mock('expo-router', () => ({
   router: {
     replace: jest.fn(),
+    back: jest.fn(),
+    canGoBack: jest.fn(),
   },
 }));
 
@@ -244,6 +256,7 @@ describe('#61 R7: register usa las métricas de pantalla uniformes', () => {
     expect(
       screen.getByTestId('register-form').props.contentContainerStyle,
     ).toEqual({
+      flexGrow: 1,
       padding: 24,
       gap: 16,
       paddingTop: 52,
@@ -283,7 +296,7 @@ describe('#127 R1: el botón de envío de register lleva su receta en el árbol'
     await renderRegister();
 
     expect(screen.getByTestId('register-submit').props.className).toBe(
-      'pressable-feedback__root button__root button__root--variant-primary button__root--size-md disabled:element-disabled w-full rounded-xl bg-accent border-b-4 border-black/25',
+      'pressable-feedback__root button__root button__root--variant-primary button__root--size-md disabled:element-disabled w-full h-14 rounded-xl bg-accent border-b-4 border-black/25',
     );
   });
 });
@@ -328,16 +341,52 @@ describe('#167 R7: Pingo en la cabecera del registro', () => {
     expect(Object.fromEntries(mockHomeEntrance.mock.calls.map(([p]) => [
       p.testID, { index: p.index, className: p.className },
     ]))).toEqual({
-      'register-header': { index: 0, className: 'flex-row items-center justify-center gap-3' },
+      'register-header': { index: 0, className: 'gap-2' },
     });
   });
 
-  it('#167 R7: la cabecera lleva a Pingo y después el título', async () => {
+  it('#172 R3: la cabecera lleva la fila Volver-Pingo y después el título', async () => {
     await renderRegister();
     const header = screen.getByTestId('register-header');
+    expect(header.children[0]).toHaveProperty('props.testID', 'register-top');
     expect(header.children).toHaveLength(2);
-    expect(header.children[0]).toHaveProperty('props.testID', 'register-pingo');
     expect(header.children[1]).toBe(within(header).getByText('Crear cuenta'));
+    const top = screen.getByTestId('register-top');
+    expect(top.children).toEqual([
+      screen.getByTestId('register-back'), screen.getByTestId('register-pingo-float'),
+    ]);
+    expect(top.props.className).toBe('flex-row items-center justify-between');
+    expect(header.props.className).toBe('gap-2');
+  });
+
+  it('#172 R3: Volver del registro vuelve a la bienvenida sin historial', async () => {
+    mockRouter.canGoBack.mockReturnValue(false);
+    await renderRegister();
+    await fireEvent.press(screen.getByTestId('register-back'));
+    expect(mockRouter.replace).toHaveBeenCalledWith('/welcome');
+  });
+
+  it.each(['register-password', 'register-password-confirmation'])('#172 R8: %s lleva su propio ojo', async (field) => {
+    await renderRegister();
+    const input = screen.getByTestId(field);
+    expect(input.props.secureTextEntry).toBe(true);
+    const toggle = screen.getByTestId(`${field}-toggle`);
+    expect(toggle.props.accessibilityLabel).toBe('Mostrar contraseña');
+    const group = screen.getByTestId(`${field}-group`);
+    expect(group).toContainElement(input);
+    expect(group).toContainElement(toggle);
+    await fireEvent.press(toggle);
+    expect(screen.getByTestId(field).props.secureTextEntry).toBe(false);
+    expect(screen.getByTestId(`${field}-toggle`).props.accessibilityLabel).toBe('Ocultar contraseña');
+    const other = field === 'register-password' ? 'register-password-confirmation' : 'register-password';
+    expect(screen.getByTestId(other).props.secureTextEntry).toBe(true);
+  });
+
+  it('#172 R5: Pingo del registro flota', async () => {
+    await renderRegister();
+    const pingo = screen.getByTestId('register-pingo');
+    expect(pingo.parent).toHaveProperty('props.testID', 'register-pingo-float');
+    expect(pingo.parent?.children).toEqual([pingo]);
   });
 
   it('#167 R7: Pingo del registro usa la pose de la tablilla', async () => {
@@ -350,16 +399,95 @@ describe('#167 R7: Pingo en la cabecera del registro', () => {
     expect(pingo.props.accessibilityLabel).toBeUndefined();
   });
 
-  it('#167 R7: el título de la cabecera conserva su clase', async () => {
+  it('#172 R6: el título de la cabecera pesa 30/900 al inicio', async () => {
     await renderRegister();
     expect(within(screen.getByTestId('register-header')).getByText('Crear cuenta').props.className)
-      .toBe('text-center text-2xl font-black text-foreground');
+      .toBe('text-3xl font-black text-foreground');
   });
 
-  it('#167 R7: campos, errores, términos y envío cuelgan del scroll', async () => {
+  it('#172 R10: cada campo con error lleva icono y texto seleccionable', async () => {
     const fields = [
-      'first-name', 'last-name', 'email', 'phone', 'password', 'password-confirmation', 'country',
+      ['first-name', 'firstName'], ['last-name', 'lastName'], ['email', 'email'],
+      ['phone', 'phone'], ['country', 'country'], ['password', 'password'],
+      ['password-confirmation', 'passwordConfirmation'],
     ] as const;
+    mockRegister.mockResolvedValue({
+      kind: 'validation',
+      errors: [...fields.map(([, path]) => ({ path, message: `${path} no vale` })),
+        { path: 'termsAccepted', message: 'termsAccepted no vale' }],
+    });
+    await renderRegister();
+    await fillForm();
+    await submit();
+    for (const [field, path] of fields) {
+      const error = screen.getByTestId(`register-${field}-error`);
+      const row = within(error).getByTestId(`register-${field}-message-row`);
+      const text = within(row).getByTestId(`register-${field}-message`);
+      expect(row.children).toEqual([within(row).getByTestId('icon-alert-circle'), text]);
+      expect(text).toHaveTextContent(`${path} no vale`);
+      expect(text.props.selectable).toBe(true);
+    }
+    expect(screen.getAllByTestId(/^register-.+-message-row$/)).toHaveLength(7);
+  });
+
+  it('#172 R10: sin errores ningún campo pinta mensaje', async () => {
+    await renderRegister();
+    expect(screen.queryAllByTestId(/^register-.+-message(-row)?$/)).toHaveLength(0);
+  });
+
+  it('#172 R12: un correo sin arroba no llama a la API y marca el campo', async () => {
+    mockRegister.mockResolvedValue({ kind: 'email-taken' });
+    await renderRegister();
+    await fillForm();
+    await fireEvent.changeText(screen.getByTestId('register-email'), 'alex.example.com');
+    await submit();
+    await waitFor(() => expect(screen.getByTestId('register-email-message'))
+      .toHaveTextContent('Ingresa un correo electrónico válido'));
+    expect(mockRegister).not.toHaveBeenCalled();
+  });
+
+  it('#172 R12: en inglés el correo inválido dice «Enter a valid email address»', async () => {
+    mockRegister.mockResolvedValue({ kind: 'email-taken' });
+    await render(
+      <HeroUINativeProvider><LanguageProvider initial="en"><RegisterRoute /></LanguageProvider></HeroUINativeProvider>,
+    );
+    await fillForm();
+    await fireEvent.changeText(screen.getByTestId('register-email'), 'alex.example.com');
+    await submit();
+    await waitFor(() => expect(screen.getByTestId('register-email-message'))
+      .toHaveTextContent('Enter a valid email address'));
+    expect(mockRegister).not.toHaveBeenCalled();
+  });
+
+  it('#172 R12: tras un correo inválido el envío sigue activo y el corregido sí llama a la API', async () => {
+    mockRegister.mockResolvedValue({ kind: 'email-taken' });
+    await renderRegister();
+    await fillForm();
+    await fireEvent.changeText(screen.getByTestId('register-email'), 'alex.example.com');
+    await submit();
+    await waitFor(() => expect(screen.getByTestId('register-email-message'))
+      .toHaveTextContent('Ingresa un correo electrónico válido'));
+    expect(screen.getByTestId('register-submit')).not.toBeDisabled();
+    await fireEvent.changeText(screen.getByTestId('register-email'), '  alex@example.com  ');
+    await submit();
+    await waitFor(() => expect(screen.getByTestId('register-error'))
+      .toHaveTextContent('Ese correo ya está registrado'));
+    expect(screen.queryByTestId('register-email-message')).toBeNull();
+    expect(mockRegister).toHaveBeenCalledTimes(1);
+  });
+
+  it.each(['alex@example', 'alex @example.com'])('#172 R12: «%s» tampoco es un correo y no llama a la API', async (email) => {
+    mockRegister.mockResolvedValue({ kind: 'email-taken' });
+    await renderRegister();
+    await fillForm();
+    await fireEvent.changeText(screen.getByTestId('register-email'), email);
+    await submit();
+    await waitFor(() => expect(screen.getByTestId('register-email-message'))
+      .toHaveTextContent('Ingresa un correo electrónico válido'));
+    expect(mockRegister).not.toHaveBeenCalled();
+  });
+
+  it('#172 R11: cabecera, rejilla, términos, error y envío cuelgan del scroll', async () => {
     mockRegister.mockResolvedValue({
       kind: 'validation',
       errors: [
@@ -369,17 +497,63 @@ describe('#167 R7: Pingo en la cabecera del registro', () => {
     await renderRegister();
     await fillForm();
     await submit();
+    const names = screen.getByTestId('register-names-row');
     const content = screen.getByTestId('register-header').parent;
     expect(content?.parent).toHaveProperty('props.testID', 'register-form');
-    for (const field of fields) {
-      const input = screen.getByTestId(`register-${field}`);
-      expect(input.parent?.parent).toBe(content);
-      expect(screen.getByTestId(`register-${field}-error`).parent).toBe(input.parent);
+    expect(content?.children).toHaveLength(10);
+    expect(content?.children).toEqual([
+      screen.getByTestId('register-header'), names,
+      screen.getByTestId('register-email').parent,
+      screen.getByTestId('register-contact-row'),
+      screen.getByTestId('register-password-group').parent,
+      screen.getByTestId('register-password-confirmation-group').parent,
+      screen.getByTestId('register-terms').parent,
+      screen.getByTestId('register-error-row'), screen.getByTestId('register-spacer'),
+      screen.getByTestId('register-submit'),
+    ]);
+  });
+
+  it('#172 R19: el espaciador empuja el envío al pie', async () => {
+    mockRegister.mockResolvedValue({ kind: 'email-taken' });
+    await renderRegister();
+    function expectSpacer(withError = false) {
+      const spacer = screen.getByTestId('register-spacer');
+      const cta = screen.getByTestId('register-submit');
+      expect(spacer.parent).toBe(cta.parent);
+      expect(spacer.parent).toBe(screen.getByTestId('register-header').parent);
+      const children = spacer.parent?.children ?? [];
+      const index = children.indexOf(spacer);
+      expect(index).toBe(children.indexOf(cta) - 1);
+      expect(spacer.props.className).toBe('flex-1');
+      expect(spacer.children).toHaveLength(0);
+      if (withError) {
+        expect(children.indexOf(screen.getByTestId('register-error-row'))).toBe(index - 1);
+      }
     }
-    expect(screen.getByTestId('register-terms').parent?.parent).toBe(content);
-    expect(screen.getByTestId('register-error-row').parent).toBe(content);
-    expect(screen.getByTestId('register-submit').parent).toBe(content);
-    expect(content?.children[0]).toBe(screen.getByTestId('register-header'));
+    expectSpacer();
+    await fillForm();
+    await submit();
+    expectSpacer(true);
+  });
+
+  it('#172 R11: nombres a 1fr 1fr y teléfono-país a 2fr 1fr', async () => {
+    await renderRegister();
+    const names = screen.getByTestId('register-names-row');
+    const contact = screen.getByTestId('register-contact-row');
+    const first = screen.getByTestId('register-first-name').parent;
+    const last = screen.getByTestId('register-last-name').parent;
+    const phone = screen.getByTestId('register-phone').parent;
+    const country = screen.getByTestId('register-country').parent;
+    expect(names.children).toEqual([first, last]);
+    expect(contact.children).toEqual([phone, country]);
+    expect(names.props.className).toBe('flex-row gap-3');
+    expect(contact.props.className).toBe('flex-row gap-3');
+    for (const root of [first, last, country]) {
+      expect(root?.props.className.split(' ')).toContain('flex-1');
+      expect(root?.props.className.split(' ')).not.toContain('flex-2');
+    }
+    expect(phone?.props.className.split(' ')).toContain('flex-2');
+    expect(phone?.props.className.split(' ')).not.toContain('flex-1');
   });
 
   it('#167 R7: ningún campo ni el envío quedan dentro de la cabecera', async () => {
@@ -411,7 +585,7 @@ describe('#167 R8: el error del registro lleva icono', () => {
     await fillForm();
     await submit();
     const row = screen.getByTestId('register-error-row');
-    expect(row.props.className).toBe('flex-row items-center gap-1.5');
+    expect(row.props.className).toBe('w-full flex-row items-center gap-1.5');
     expect(row.children.map((child) => typeof child === 'string' ? child : child.props.testID))
       .toEqual(['icon-alert-circle', 'register-error']);
   });
@@ -430,7 +604,7 @@ describe('#167 R8: el error del registro lleva icono', () => {
     await fillForm();
     await submit();
     expect(screen.getByTestId('register-error').props.className)
-      .toBe('flex-1 text-sm font-semibold text-danger');
+      .toBe('flex-1 text-13 font-semibold text-danger');
   });
 
   it('#167 R8: sin error no hay fila; con error, sí', async () => {

@@ -146,12 +146,12 @@ describe('#61 R4: el acento como tinta usa accent-strong', () => {
     [join('components', 'floating-tab-bar.tsx'), 1],
     [join('screens', 'login', 'index.tsx'), 2],
     [join('screens', 'forgot', 'index.tsx'), 1], // #117 R10
-    [join('screens', 'reset-password', 'index.tsx'), 3],
+    [join('screens', 'reset-password', 'index.tsx'), 4], // #172 R19: link-login del formulario
     [join('screens', 'home', 'index.tsx'), 2],
     [join('screens', 'health', 'index.tsx'), 1],
     [join('app', '(tabs)', 'food.tsx'), 1],
     [join('screens', 'map', 'index.tsx'), 2],
-    [join('screens', 'profile', 'index.tsx'), 1],
+    [join('screens', 'profile', 'index.tsx'), 1 + 1 - 1 + 1 + 1], // #173 R5; #173 R6; #173 R8; #173 R11
     [join('screens', 'add-pet', 'index.tsx'), 1],
     [join('components', 'pet-hero-header.tsx'), 1],
     [join('screens', 'welcome', 'index.tsx'), 2],
@@ -167,7 +167,12 @@ describe('#61 R4: el acento como tinta usa accent-strong', () => {
     ).toBe(
       13 + 1 + 1
         + 2 // #118 R11
-        + 1, // #167 R10
+        + 1 // #167 R10
+        + 1 // #172 R19
+        + 1 // #173 R5
+        - 1 // #173 R6
+        + 1 // #173 R8
+        + 1, // #173 R11
     );
   });
 

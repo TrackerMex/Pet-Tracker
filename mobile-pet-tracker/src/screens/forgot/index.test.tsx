@@ -20,12 +20,37 @@ jest.mock('../../components/pop-in', () => {
   };
 });
 
+jest.mock('../../components/pingo-float', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return {
+    PingoFloat(props: { testID: string; children: import('react').ReactNode }) {
+      return React.createElement(View, props);
+    },
+  };
+});
+
+jest.mock('reicon-react-native', () => {
+  const actual = jest.requireActual<typeof import('reicon-react-native')>('reicon-react-native');
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  const mockIcon = (testID: string) =>
+    function MockIcon(props: Record<string, unknown>) {
+      return React.createElement(View, { testID, ...props });
+    };
+  return { ...actual, AlertCircle: mockIcon('icon-alert-circle'), Lock: mockIcon('icon-lock') };
+});
+
+jest.mock('../../theme/use-theme-colors', () => ({
+  useThemeColors: (tokens: string[]) => tokens.map((token) => `color:${token}`),
+}));
+
 jest.mock('../../api/auth', () => ({
   forgotPassword: jest.fn(),
 }));
 
 jest.mock('expo-router', () => ({
-  router: { push: jest.fn() },
+  router: { push: jest.fn(), back: jest.fn(), canGoBack: jest.fn(), replace: jest.fn() },
 }));
 
 jest.mock('react-native-safe-area-context', () => ({
@@ -90,14 +115,13 @@ describe('#117 R3: la ruta forgot delega en ForgotScreen', () => {
 });
 
 describe('#61 R8: forgot tiene contenedor de scroll con safe areas', () => {
-  it('conserva el centrado de hoy dentro de un ScrollView con insets', async () => {
+  it('#172 R19: centra en horizontal pero no en vertical dentro de un ScrollView con insets', async () => {
     mockForgotPassword.mockResolvedValue({ kind: 'ok' });
     await renderRoute();
     const screenRoot = screen.getByTestId('forgot-form');
 
     expect(screenRoot.props.contentContainerStyle).toEqual({
       flexGrow: 1,
-      justifyContent: 'center',
       alignItems: 'center',
       padding: 24,
       gap: 16,
@@ -115,7 +139,7 @@ describe('#127 R1: el botón de envío de forgot lleva su receta en el árbol', 
     await renderRoute();
 
     expect(screen.getByTestId('forgot-submit').props.className).toBe(
-      'pressable-feedback__root button__root button__root--variant-primary button__root--size-md disabled:element-disabled w-full rounded-xl bg-accent border-b-4 border-black/25',
+      'pressable-feedback__root button__root button__root--variant-primary button__root--size-md disabled:element-disabled w-full h-14 rounded-xl bg-accent border-b-4 border-black/25',
     );
   });
 });
@@ -167,12 +191,10 @@ async function submitForgot(email = 'ana@example.com') {
   await fireEvent.press(screen.getByTestId('forgot-submit'));
 }
 
-const LOCK_TILE_CLASS = 'size-16 items-center justify-center rounded-xl bg-accent-soft';
-
 function lockTile() {
   const siblings = (screen.getByTestId('forgot-title').parent?.children ?? []) as unknown[];
   return siblings.filter((c) => typeof c !== 'string').find(
-    (c) => (c as { props: { className?: string } }).props.className === LOCK_TILE_CLASS,
+    (c) => (c as { props: { testID?: string } }).props.testID === 'forgot-lock-tile',
   );
 }
 
@@ -258,13 +280,13 @@ describe('#117 R5: enviar pasa la pantalla a «Revisa tu correo»', () => {
     const before = (screen.getByTestId('forgot-title').parent?.children ?? []) as unknown[];
 
     expect(before.filter((c) => typeof c !== 'string').find(
-      (c) => (c as { props: { className?: string } }).props.className === 'size-16 items-center justify-center rounded-xl bg-accent-soft',
+      (c) => (c as { props: { className?: string } }).props.className === 'size-13 items-center justify-center rounded-xl border-b-4 border-black/25 bg-accent',
     )).toBeDefined();
     await submitForgot();
     expect(await screen.findByText('Revisa tu correo')).toBeVisible();
     const after = (screen.getByTestId('forgot-title').parent?.children ?? []) as unknown[];
     expect(after.filter((c) => typeof c !== 'string').find(
-      (c) => (c as { props: { className?: string } }).props.className === 'size-16 items-center justify-center rounded-xl bg-accent-soft',
+      (c) => (c as { props: { className?: string } }).props.className === 'size-13 items-center justify-center rounded-xl border-b-4 border-black/25 bg-accent',
     )).toBeDefined();
   });
 });
@@ -528,9 +550,10 @@ function expectPingoBeforeLock() {
   ]);
   expect(pingo.props.style).toEqual({ width: 120, height: 120, transform: [{ rotate: '6deg' }] });
   expect(pingo.props.accessibilityLabel).toBeUndefined();
-  expect(pingo.parent).toBe(title.parent);
+  const float = screen.getByTestId('forgot-pingo-float');
+  expect(float.parent).toBe(title.parent);
   const siblings = title.parent?.children ?? [];
-  expect(siblings.indexOf(pingo)).toBe(siblings.findIndex((child) => child === lockTile()) - 1);
+  expect(siblings.indexOf(float)).toBe(siblings.findIndex((child) => child === lockTile()) - 1);
 }
 
 describe('#167 R9: Pingo y pop del candado en recuperar', () => {
@@ -552,7 +575,7 @@ describe('#167 R9: Pingo y pop del candado en recuperar', () => {
       p.testID, { className: p.className, style: p.style },
     ]))).toEqual({
       'forgot-lock-tile': {
-        className: 'size-16 items-center justify-center rounded-xl bg-accent-soft',
+        className: 'size-13 items-center justify-center rounded-xl border-b-4 border-black/25 bg-accent',
         style: { borderCurve: 'continuous' },
       },
     });
@@ -567,9 +590,96 @@ describe('#167 R9: Pingo y pop del candado en recuperar', () => {
       p.testID, { className: p.className, style: p.style },
     ]))).toEqual({
       'forgot-lock-tile': {
-        className: 'size-16 items-center justify-center rounded-xl bg-accent-soft',
+        className: 'size-13 items-center justify-center rounded-xl border-b-4 border-black/25 bg-accent',
         style: { borderCurve: 'continuous' },
       },
     });
   });
+});
+
+
+describe('#172 R5: flotación de recuperar', () => {
+  it('#172 R5: Pingo de recuperar flota', async () => {
+    await renderRoute();
+    expect(screen.getByTestId('forgot-pingo').parent)
+      .toHaveProperty('props.testID', 'forgot-pingo-float');
+  });
+});
+
+
+describe('#172 R3: Volver en recuperar', () => {
+  it('#172 R3: la fila Volver encabeza el scroll en los dos estados', async () => {
+    mockForgotPassword.mockResolvedValue({ kind: 'ok' });
+    await renderRoute();
+    const expectTop = () => {
+      const top = screen.getByTestId('forgot-top');
+      expect(top.parent?.parent).toHaveProperty('props.testID', 'forgot-form');
+      expect(top.parent?.children[0]).toBe(top);
+      expect(top.children).toEqual([screen.getByTestId('forgot-back')]);
+      expect(top.props.className).toBe('w-full');
+    };
+    expectTop();
+    await submitForgot();
+    expect(await screen.findByText('Revisa tu correo')).toBeOnTheScreen();
+    expectTop();
+  });
+
+  it('#172 R3: Volver de recuperar va al login sin historial', async () => {
+    mockRouter.canGoBack.mockReturnValue(false);
+    await renderRoute();
+    await fireEvent.press(screen.getByTestId('forgot-back'));
+    expect(mockRouter.replace).toHaveBeenCalledWith('/login');
+  });
+});
+
+
+describe('#172 R9: error de recuperar', () => {
+  it('#172 R9: el error de recuperar va con icono en su fila', async () => {
+    mockForgotPassword.mockResolvedValue({ kind: 'rate-limited' });
+    await renderRoute();
+    await submitForgot();
+    const row = await screen.findByTestId('forgot-error-row');
+    expect(row.children).toEqual([
+      screen.getByTestId('icon-alert-circle'), screen.getByTestId('forgot-error'),
+    ]);
+    expect(screen.getByTestId('forgot-error').props.selectable).toBe(true);
+  });
+});
+
+
+it('#172 R14: el candado es un tile acento con labio y Lock de 26', async () => {
+  mockForgotPassword.mockResolvedValue({ kind: 'ok' });
+  await renderRoute();
+  function expectTile() {
+    const tile = screen.getByTestId('forgot-lock-tile');
+    expect(tile.props.className).toBe('size-13 items-center justify-center rounded-xl border-b-4 border-black/25 bg-accent');
+    const icon = screen.getByTestId('icon-lock');
+    expect(tile.children).toEqual([icon]);
+    expect(icon.props.size).toBe(26);
+    expect(icon.props.color).toBe('color:accent-foreground');
+  }
+  expectTile();
+  await submitForgot();
+  await waitFor(() => expect(screen.getByTestId('forgot-title')).toHaveTextContent('Revisa tu correo'));
+  expectTile();
+});
+
+
+it('#172 R19: el espaciador empuja la CTA al pie en los dos estados', async () => {
+  mockForgotPassword.mockResolvedValue({ kind: 'ok' });
+  await renderRoute();
+  function expectSpacer(ctaId: string) {
+    const spacer = screen.getByTestId('forgot-spacer');
+    const cta = screen.getByTestId(ctaId);
+    expect(spacer.parent).toBe(cta.parent);
+    expect(spacer.parent).toBe(screen.getByTestId('forgot-top').parent);
+    const children = spacer.parent?.children ?? [];
+    expect(children.indexOf(spacer)).toBe(children.indexOf(cta) - 1);
+    expect(spacer.props.className).toBe('flex-1');
+    expect(spacer.children).toHaveLength(0);
+  }
+  expectSpacer('forgot-submit');
+  await submitForgot();
+  await waitFor(() => expect(screen.getByTestId('forgot-title')).toHaveTextContent('Revisa tu correo'));
+  expectSpacer('forgot-resend');
 });

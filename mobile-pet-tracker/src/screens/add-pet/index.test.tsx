@@ -1,20 +1,23 @@
 import { HeaderHeightContext } from 'expo-router/react-navigation';
-import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react-native';
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react-native';
 import { router } from 'expo-router';
+import { notificationAsync } from 'expo-haptics';
 import { HeroUINativeProvider } from 'heroui-native';
 import * as ImagePicker from 'expo-image-picker';
 import { DeviceEventEmitter, Platform } from 'react-native';
 
 import { requestPhotoUploadUrl, uploadPhotoToUrl } from '../../api/media';
-import { createPet } from '../../api/pets';
+import { createPet, listPets, type PetsState } from '../../api/pets';
+import { petKeys } from '../../api/query-keys';
 import { es } from '../../i18n/catalog';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import { LanguageProvider } from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
 import { AddPetScreen } from '.';
 import { TOUCH_SLOP } from '../../theme/touch-target';
+import { renderWithProviders } from '../../../test/render-with-providers';
 
-jest.mock('../../api/pets', () => ({ createPet: jest.fn() }));
+jest.mock('../../api/pets', () => ({ createPet: jest.fn(), listPets: jest.fn() }));
 jest.mock('../../api/media', () => ({
   ...jest.requireActual('../../api/media'),
   requestPhotoUploadUrl: jest.fn(),
@@ -58,6 +61,8 @@ jest.mock('react-native-safe-area-context', () => ({
 }));
 
 const mockCreatePet = jest.mocked(createPet);
+const mockListPets = jest.mocked(listPets);
+const mockNotificationAsync = jest.mocked(notificationAsync);
 const mockLaunchImageLibrary = jest.mocked(ImagePicker.launchImageLibraryAsync);
 const mockRequestPhotoUploadUrl = jest.mocked(requestPhotoUploadUrl);
 const mockUploadPhotoToUrl = jest.mocked(uploadPhotoToUrl);
@@ -71,7 +76,7 @@ function pending<T>(): Promise<T> {
 }
 
 async function renderAddPet() {
-  return render(
+  return renderWithProviders(
     <HeroUINativeProvider>
       <LanguageProvider initial="es">
         <HeaderHeightContext.Provider value={91}>
@@ -94,6 +99,8 @@ async function pressPickPhoto(): Promise<void> {
 beforeEach(() => {
   mockLaunchImageLibrary.mockReset();
   mockLaunchImageLibrary.mockResolvedValue({ canceled: true, assets: null });
+  mockListPets.mockReset();
+  mockListPets.mockResolvedValue({ kind: 'ok', pets: [{ id: 'pet-1', name: 'Milo' } as never] });
 });
 
 describe('R6: alta de mascota', () => {
@@ -603,5 +610,199 @@ describe('#148 R8: add-pet entrega el primer toque con el teclado abierto', () =
     await renderAddPet();
 
     expect(screen.getByTestId('add-pet-form').props.keyboardShouldPersistTaps).toBe('handled');
+  });
+});
+
+
+jest.mock('expo-haptics', () => ({
+  notificationAsync: jest.fn(() => Promise.resolve()),
+  NotificationFeedbackType: { Success: 'mock-success', Error: 'mock-error' },
+}));
+
+// #171 R4: la lista debe llegar a la caché antes de guardar.
+async function renderWithPetList(state: PetsState) {
+  mockListPets.mockResolvedValue(state);
+  const { queryClient } = await renderAddPet();
+  await waitFor(() => expect(queryClient.getQueryData(petKeys.list())).toEqual(state));
+}
+
+async function saveNala() {
+  await fireEvent.press(screen.getByTestId('species-cat'));
+  await fireEvent.changeText(screen.getByTestId('name-input'), ' Nala ');
+  await fireEvent.changeText(screen.getByTestId('breed-input'), '   ');
+  await fireEvent.press(screen.getByTestId('sex-male'));
+  await fireEvent.press(screen.getByTestId('size-small'));
+  await fireEvent.press(screen.getByTestId('sterilized-false'));
+  await fireEvent.changeText(screen.getByTestId('microchip-input'), ' CHIP-9 ');
+  await fireEvent.press(screen.getByTestId('age-mode-months'));
+  await fireEvent.changeText(screen.getByTestId('approx-age-input'), '15');
+  await fireEvent.press(screen.getByTestId('add-pet-submit'));
+}
+
+function armNalaPhoto() {
+  const body = new Blob(['photo'], { type: 'image/jpeg' });
+  mockLaunchImageLibrary.mockResolvedValue({
+    canceled: false,
+    assets: [{ uri: 'file:///new-pet.jpg', mimeType: 'image/jpeg' } as never],
+  });
+  mockRequestPhotoUploadUrl.mockResolvedValue({
+    kind: 'ok', uploadUrl: 'http://localstack.test/new-pet', expiresInSeconds: 600,
+  });
+  mockUploadPhotoToUrl.mockResolvedValue({ kind: 'ok' });
+  globalThis.fetch = jest.fn().mockResolvedValue({
+    blob: jest.fn().mockResolvedValue(body),
+  }) as unknown as typeof fetch;
+}
+
+async function saveNalaWithPhoto() {
+  await pressPickPhoto();
+  await waitFor(() => expect(screen.getByTestId('pet-avatar').props.photoUrl).toBe('file:///new-pet.jpg'));
+  await fireEvent.changeText(screen.getByTestId('name-input'), 'Nala');
+  await fireEvent.press(screen.getByTestId('age-mode-months'));
+  await fireEvent.changeText(screen.getByTestId('approx-age-input'), '8');
+  await fireEvent.press(screen.getByTestId('add-pet-submit'));
+}
+
+async function expectReturnWithoutCelebration() {
+  await waitFor(() => expect(screen.getByTestId('add-pet-submit')).not.toBeDisabled());
+  expect(mockRouter.back).toHaveBeenCalledTimes(1);
+  expect(screen.queryByTestId('add-pet-celebration-modal')).toBeNull();
+  expect(mockNotificationAsync).not.toHaveBeenCalled();
+}
+
+describe('#171 R4: primera mascota', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockUseSelectedPet.mockReturnValue({ selectedPetId: null, selectPet });
+    mockCreatePet.mockResolvedValue({ kind: 'ok', pet: { id: 'pet-new', name: 'Nala' } as never });
+  });
+
+  it('R4.1 consulta la lista con la URL y el token', async () => {
+    await renderAddPet();
+    await waitFor(() => expect(mockListPets).toHaveBeenCalledTimes(1));
+    expect(mockListPets).toHaveBeenCalledWith('http://example.test/v1', 'jwt-token');
+  });
+
+  it('R4.3 celebra la primera mascota sin foto', async () => {
+    await renderWithPetList({ kind: 'ok', pets: [] });
+    await saveNala();
+    await screen.findByTestId('add-pet-celebration-modal');
+    expect(mockRouter.back).not.toHaveBeenCalled();
+    expect(mockNotificationAsync).toHaveBeenCalledTimes(1);
+  });
+
+  it('R4.3 celebra la primera mascota después de subir la foto', async () => {
+    armNalaPhoto();
+    await renderWithPetList({ kind: 'ok', pets: [] });
+    await saveNalaWithPhoto();
+    await screen.findByTestId('add-pet-celebration-modal');
+    expect(mockRouter.back).not.toHaveBeenCalled();
+    expect(mockNotificationAsync).toHaveBeenCalledTimes(1);
+  });
+
+  it('R4.4 vuelve sin celebrar si ya hay una mascota', async () => {
+    await renderWithPetList({ kind: 'ok', pets: [{ id: 'pet-1', name: 'Milo' } as never] });
+    await saveNala();
+    await expectReturnWithoutCelebration();
+  });
+
+  it('R4.5 vuelve sin celebrar si la lista está pendiente', async () => {
+    mockListPets.mockReturnValue(new Promise(() => {}));
+    await renderAddPet();
+    await saveNala();
+    await expectReturnWithoutCelebration();
+  });
+
+  it('R4.5 vuelve sin celebrar si la lista da error', async () => {
+    await renderWithPetList({ kind: 'error' });
+    await saveNala();
+    await expectReturnWithoutCelebration();
+  });
+
+  it('R4.5 vuelve sin celebrar si la lista está inaccesible', async () => {
+    await renderWithPetList({ kind: 'unreachable', message: 'offline' });
+    await saveNala();
+    await expectReturnWithoutCelebration();
+  });
+
+  it('R4.5 vuelve sin celebrar si la lista no está autorizada', async () => {
+    await renderWithPetList({ kind: 'unauthorized' });
+    await saveNala();
+    await expectReturnWithoutCelebration();
+  });
+
+  it('R4.6 no celebra si falla la subida de la foto', async () => {
+    armNalaPhoto();
+    mockUploadPhotoToUrl.mockResolvedValue({ kind: 'error' });
+    await renderWithPetList({ kind: 'ok', pets: [] });
+    await saveNalaWithPhoto();
+    await screen.findByText('Se creó la mascota, pero no se pudo subir la foto');
+    expect(screen.queryByTestId('add-pet-celebration-modal')).toBeNull();
+    expect(mockRouter.back).not.toHaveBeenCalled();
+  });
+});
+
+describe('#171 R5: variante sin collar', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockUseSelectedPet.mockReturnValue({ selectedPetId: null, selectPet });
+    mockCreatePet.mockResolvedValue({ kind: 'ok', pet: { id: 'pet-new', name: 'Nala' } as never });
+  });
+
+  async function celebrateNala() {
+    await renderWithPetList({ kind: 'ok', pets: [] });
+    await saveNala();
+    await screen.findByTestId('add-pet-celebration-modal');
+  }
+
+  it('R5.1 muestra el título y el cuerpo con el nombre de Nala', async () => {
+    await celebrateNala();
+    expect(screen.getByTestId('add-pet-celebration-title').props.children).toBe('¡Nala ya está en casa!');
+    expect(screen.getByTestId('add-pet-celebration-body').props.children).toBe('Te ayudo a cuidar de Nala. Vincula un collar y estaré pendiente de dónde está.');
+  });
+
+  it('R5.1 existe sin fichas de collar', async () => {
+    await celebrateNala();
+    expect(screen.getByTestId('add-pet-celebration')).toBeTruthy();
+    expect(screen.queryByTestId('add-pet-celebration-details')).toBeNull();
+  });
+
+  it('R5.2 Vincular un collar reemplaza por pairing', async () => {
+    await celebrateNala();
+    expect(screen.getByTestId('add-pet-celebration-pair')).toHaveTextContent('Vincular un collar');
+    await fireEvent.press(screen.getByTestId('add-pet-celebration-pair'));
+    expect(mockRouter.replace).toHaveBeenCalledTimes(1);
+    expect(mockRouter.replace).toHaveBeenCalledWith('/pairing');
+    expect(mockRouter.back).not.toHaveBeenCalled();
+  });
+
+  it('R5.3 Ahora no vuelve una sola vez', async () => {
+    await celebrateNala();
+    expect(screen.getByTestId('add-pet-celebration-later')).toHaveTextContent('Ahora no');
+    await fireEvent.press(screen.getByTestId('add-pet-celebration-later'));
+    expect(mockRouter.back).toHaveBeenCalledTimes(1);
+    expect(mockRouter.replace).not.toHaveBeenCalled();
+  });
+
+  it('R5.3 requestClose vuelve una sola vez', async () => {
+    await celebrateNala();
+    await fireEvent(screen.getByTestId('add-pet-celebration-modal'), 'requestClose');
+    expect(mockRouter.back).toHaveBeenCalledTimes(1);
+    expect(mockRouter.replace).not.toHaveBeenCalled();
+  });
+
+  it('R5.4 toma el nombre de la respuesta y no el del formulario', async () => {
+    mockCreatePet.mockResolvedValue({ kind: 'ok', pet: { id: 'pet-new', name: 'Kira' } as never });
+    await celebrateNala();
+    expect(screen.getByTestId('add-pet-celebration-title').props.children).toBe('¡Kira ya está en casa!');
+    expect(screen.getByTestId('add-pet-celebration-body').props.children).toBe('Te ayudo a cuidar de Kira. Vincula un collar y estaré pendiente de dónde está.');
   });
 });
