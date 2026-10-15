@@ -1,6 +1,6 @@
 ---
 feature: "mobile-routine-canvas-fidelity"
-status: draft
+status: approved
 tags: [mobile, ui, spec]
 ---
 
@@ -961,4 +961,4 @@ cambiarlo al firmar; si lo hace, el leader enmienda antes del handoff.
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____)
+- [x] Aprobado por humano (fecha: 2026-10-15)
