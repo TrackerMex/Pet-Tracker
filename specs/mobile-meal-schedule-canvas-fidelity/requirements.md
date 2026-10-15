@@ -1032,3 +1032,106 @@ cambiarlo al firmar; si lo hace, el leader enmienda antes del handoff.
 
 - [x] Aprobado por humano (fecha: 2026-10-15)
 - [ ] Prueba de humo #179 R14 firmada por: ____ — fecha: ____
+
+## Enmienda E1 — premisas de la spec que el árbol desmiente y candados que no inventarió
+
+> Escrita el 2026-10-15, al contrastar la spec firmada (`334fcebc`) contra el
+> árbol en `3a613925` para escribir el handoff a Codex
+> (`progress/handoff_mobile-meal-schedule-canvas-fidelity.md`, commit
+> `fe55b000`). **No cambia ninguna decisión de comportamiento ni de diseño de
+> Horario ni de Historial.** Corrige dos premisas falsas (R1/D5 y R13 punto 9)
+> y registra candados que §Deltas no nombra. Cambia alcance de ficheros:
+> `profile-canvas-fidelity.test.ts` entra en la lista cerrada. Ningún `it` se
+> añade, se quita ni se renombra. Su casilla va **sin marcar**: el humano
+> reabre el gate solo para esta enmienda. Cada punto manda sobre el cuerpo de
+> la spec.
+
+### Qué se midió
+
+- `src/theme/global.css` ya declara `--text-15: 15px` y `--text-17: 17px` (una
+  vez cada una). Faltan `--text-22`, `--radius-10`, `--radius-14`,
+  `--radius-24`, `--tracking-title` y `--tracking-caps`.
+- `text-17` ya lo usan `forgot`, `login`, `register` y `reset-password`
+  (`screens/<x>/index.tsx`); `text-22` no lo usa ningún fichero de `src/`.
+- `src/__tests__/profile-canvas-fidelity.test.ts` lista los ficheros con
+  `text-13` (sin `screens/meal-schedule/index.tsx`) y con `variant="flat"`
+  (solo `screens/profile/index.tsx`, con su recuento en 2).
+- `src/__tests__/consistency-classnames.test.ts` tiene un segundo sitio que
+  cuenta `rounded-xl bg-accent` (`#62 R1`, `primaryRadius`) además del de
+  `#98 R10`, y los dos bajan en 1.
+
+### E1.1 — R1 (D5): seis líneas, no ocho
+
+`global.css` ya trae `--text-15` y `--text-17`; la spec (D5) supuso
+`--text-17` ausente. R1 añade **seis** líneas: `--text-22: 22px` justo tras
+`--text-17`, y tras `--radius-tile`: `--radius-10: 10px`, `--radius-14: 14px`,
+`--radius-24: 24px`, `--tracking-title: -0.02em` y `--tracking-caps: 0.06em`.
+El test pide los diez tokens con `toMatchObject` y la unicidad de los ocho
+declarados por esta feature (`match(/--x:/g)` de longitud 1). El rojo de R1
+sigue garantizado por los seis ausentes.
+
+### E1.2 — R13, punto 9
+
+El punto 9 pedía `filesMatching(/\btext-(17|22)\b/)` igual a
+`['screens/meal-schedule/index.tsx']`, falso en H0 por los cuatro ficheros de
+cuenta. Se sustituye por dos aserciones:
+
+- `filesMatching(/\btext-22\b/)` es exactamente `['screens/meal-schedule/index.tsx']`;
+- `filesMatching(/\btext-17\b/)` es exactamente, ordenada: `screens/forgot/index.tsx`,
+  `screens/login/index.tsx`, `screens/meal-schedule/index.tsx`,
+  `screens/register/index.tsx`, `screens/reset-password/index.tsx`.
+
+Los otros once puntos del `describe` no cambian.
+
+### E1.3 — R6 y R8: `text-13` en el inventario de #173
+
+En `src/__tests__/profile-canvas-fidelity.test.ts`, el `it`
+`'limita text-13 a Perfil y a las pantallas de cuenta de #172 (E8)'` gana
+`'screens/meal-schedule/index.tsx', // #179 R6` entre `login` y `profile`
+(orden `LC_ALL=C`). Viaja en el rojo de R6. El título no cambia.
+
+### E1.4 — R6: `variant="flat"` en el inventario de #173
+
+En ese mismo fichero, el `it` que lista los ficheros con `variant="flat"` pasa
+a `['screens/meal-schedule/index.tsx', 'screens/profile/index.tsx']`. El
+recuento de Perfil **sigue en 2**: lo que dice §Deltas (Δ22, «H0 + 1») es
+falso. El título no cambia.
+
+### E1.5 — R5 a R12: deltas de `consistency-classnames.test.ts`
+
+Δ27 a Δ35 de §Deltas están caducos: Δ32 y Δ33 son falsos (no cambia ninguna
+regex de extracción; la lista de neutrales gana `` `meal-time-edit-${index` `` y
+`add-meal-time-button`) y falta el segundo sitio de `rounded-xl bg-accent`
+(`#62 R1`, `primaryRadius`), que también baja en 1. Los sustituyen los deltas
+literales de la sección «DELTAS DE CANDADOS» de
+`progress/handoff_mobile-meal-schedule-canvas-fidelity.md` (commit `fe55b000`),
+cifras escritas como base H0 + delta con `#179 Rn` en el comentario. Si otra
+feature mergea antes, el leader re-mide esa sección; el criterio no cambia.
+
+### E1.6 — R7: Δ8 entra entero en un solo commit
+
+Δ8 va completo en el rojo de R7 (c14), sin partirse: el rojo de R5 (c11) ya
+retira `ForkKnife` de Horario. La cadena de c14 comprueba que el fichero lo
+cuenta 0 veces antes de lanzar jest.
+
+### Dónde viaja cada delta
+
+| Enmienda | Commit | Fichero |
+|---|---|---|
+| E1.1 | c2 (rojo R1) y su verde | `global-css.test.ts`, `global.css` |
+| E1.2 | c26 (R13, nace verde, sondas S1 a S7) | `design-drift.test.ts` |
+| E1.3 | c12 (rojo R6) | `profile-canvas-fidelity.test.ts` |
+| E1.4 | c12 (rojo R6) | `profile-canvas-fidelity.test.ts` |
+| E1.5 | c10, c12, c14 y los rojos siguientes de R8 a R12 | `consistency-classnames.test.ts` |
+| E1.6 | c14 (rojo R7) | `meal-schedule/index.test.tsx` |
+
+- `src/__tests__/profile-canvas-fidelity.test.ts` entra en la lista cerrada de
+  ficheros, solo en c12 y solo en las aserciones de E1.3 y E1.4.
+- Los comentarios de trazabilidad son `// #179 Rn`; nunca `// #179 E1`
+  (HEX_LITERAL de design-drift).
+- Los deltas de E1.3, E1.4 y E1.5 se suman a §Deltas de candados (registro de
+  cambios de candados, P12).
+
+### Aprobación de la Enmienda E1
+
+- [ ] Enmienda E1 aprobada por humano ← gate obligatorio antes de lanzar a Codex
