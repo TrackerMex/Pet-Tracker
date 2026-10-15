@@ -502,9 +502,9 @@ describe('#78 R6: cada fila de alerta trae su icono, su hueco, su tinta y sus tr
     }
     expect(open.queryByTestId('alert-row-open-status')).toBeNull();
 
-    for (const [status, labelKey] of [
-      ['acked', 'alerts.statusAcked'],
-      ['closed', 'alerts.statusClosed'],
+    for (const [status, labelKey, className] of [
+      ['acked', 'alerts.statusAcked', 'rounded-full bg-default px-2.5 py-1 text-xs font-bold text-muted'],
+      ['closed', 'alerts.statusClosed', 'rounded-full bg-category-green px-2.5 py-1 text-xs font-extrabold text-category-green-strong'],
     ] as const) {
       const rowScope = within(
         within(list).getByTestId(`alert-row-${status}`),
@@ -512,9 +512,7 @@ describe('#78 R6: cada fila de alerta trae su icono, su hueco, su tinta y sus tr
       const pill = rowScope.getByTestId(`alert-row-${status}-status`);
       expect(rowScope.queryByTestId(`alert-row-${status}-ack`)).toBeNull();
       expect(pill).toHaveTextContent(es[labelKey]);
-      expect(pill.props.className).toBe(
-        'rounded-full bg-default px-2 py-0.5 text-2xs font-bold text-muted',
-      );
+      expect(pill.props.className).toBe(className);
     }
   });
 
