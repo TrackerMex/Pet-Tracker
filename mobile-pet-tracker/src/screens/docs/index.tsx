@@ -27,6 +27,7 @@ import { EmptyState } from '../../components/empty-state';
 import { useAuth } from '../../providers/auth-provider';
 import { useLocale, useTranslate } from '../../providers/language-provider';
 import { CONTINUOUS_CORNER } from '../../theme/native-styles';
+import { TOUCH_SLOP } from '../../theme/touch-target';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import {
   CATEGORY_SLOTS,
@@ -36,6 +37,14 @@ import {
 import { civilTodayIso } from '../../utils/civil-today-iso';
 import { fmtDate } from '../home/format';
 import { HomeEntrance } from '../home/home-entrance';
+
+const FILTER_SLOTS = [
+  { slot: 'blue', labelKey: 'docs.categoryVaccination' },
+  { slot: 'green', labelKey: 'docs.categoryCheckup' },
+  { slot: 'amber', labelKey: 'docs.categoryDeworming' },
+  { slot: 'violet', labelKey: 'docs.categoryAnalysis' },
+  { slot: 'neutral', labelKey: 'docs.categoryOther' },
+] as const;
 
 const INK_TOKEN: Record<CategorySlot, string> = {
   blue: 'category-blue-strong',
@@ -111,6 +120,10 @@ export function DocsScreen({ petId }: { petId: string }) {
     queryFn: () => listPetDocs(baseUrl, token ?? '', petId),
   });
   const petName = pet.data?.kind === 'ok' ? pet.data.pet.name : null;
+  const filter = 'all';
+  const presentSlots = FILTER_SLOTS.filter(({ slot }) =>
+    docs.data?.kind === 'ok' && docs.data.docs.some((document) => documentCategory(document.type) === slot),
+  );
   const isOwner = pet.data?.kind === 'ok' && pet.data.pet.myRole === 'owner';
   const actionErrorText = actionError ? {
     'file-format': t('docs.errorFileFormat'),
@@ -277,13 +290,36 @@ export function DocsScreen({ petId }: { petId: string }) {
           />
         ) : null}
 
-        {docs.data?.kind === 'ok'
-          ? docs.data.docs.map((document, index) => (
+        {docs.data?.kind === 'ok' && docs.data.docs.length > 0 ? (
+          <>
+            <View testID="docs-filters" className="flex-row flex-wrap gap-1.5">
+              {[{ slot: 'all', labelKey: 'docs.filterAll' } as const, ...presentSlots].map(({ slot, labelKey }) => {
+                const selected = filter === slot;
+                const palette = slot === 'all' ? null : CATEGORY_SLOTS[slot];
+                const surface = selected ? 'bg-foreground' : palette?.surface ?? 'bg-default';
+                const ink = selected ? 'text-background' : palette?.ink ?? 'text-foreground';
+                return (
+                  <Pressable
+                    key={slot}
+                    testID={`docs-filter-${slot}`}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected }}
+                    hitSlop={TOUCH_SLOP}
+                    className={`h-8.5 items-center justify-center rounded-full px-3 ${surface}`}
+                    style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
+                  >
+                    <Text className={`text-13 font-extrabold ${ink}`}>{t(labelKey)}</Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+            {docs.data.docs.map((document, index) => (
               <HomeEntrance key={document.id} index={index} testID={`docs-entry-${document.id}`}>
                 <DocumentRow document={document} onPress={() => openDocument(document)} />
               </HomeEntrance>
-            ))
-          : null}
+            ))}
+          </>
+        ) : null}
 
         {docs.data && docs.data.kind !== 'ok' ? (
           <Card testID="docs-error" className="items-start gap-3">
