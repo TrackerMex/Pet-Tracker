@@ -11,10 +11,15 @@
   (ec508f88) y no de `origin/main`, porque toca las pantallas que #172 rehízo
   y #172 aún no está mergeada. Cuando #172 entre en main, se mergea
   `origin/main` aquí antes del handoff a Codex.
-- **Estado**: `pending`, spec en `29068b90`. Espejo en Notion (página
-  `3fa6115a9b27813fa1e7c36705b0a312`, base Specs), verificado el 2026-10-15:
-  29 tablas, R1-R8 y las dos casillas sin marcar. Espera el gate humano y
-  las respuestas a P1-P8.
+- **Estado**: spec firmada en `3c7e20c0` (aprobada vía Notion, página
+  `3fa6115a9b27813fa1e7c36705b0a312`, `page_last_edited_at`
+  2026-10-15T14:20:34.100Z; «Rol actual» = Implementer). P1–P8 cerradas con
+  el valor que trae el texto, confirmado por el humano en la sesión.
+  `origin/main` mergeado en `4a4abfed` (#172, #173 y #167 dentro); las
+  pantallas de cuenta no cambiaron desde ec508f88, solo `catalog.ts` y el
+  design de idioma, que la spec ya mide en H0 (B4, B5).
+- **Siguiente**: status `in_progress`, H0 y handoff a Codex. `init.sh`
+  coordinado con #174, #175, #178 y #179, que arrancan a la vez.
 - **Pedido del humano** (2026-10-15, tras firmar R21 de #172): validación en
   cliente con mensaje claro en todos los inputs de cuenta, como el correo de
   Crear cuenta, en lugar del error del servidor. Texto literal en
