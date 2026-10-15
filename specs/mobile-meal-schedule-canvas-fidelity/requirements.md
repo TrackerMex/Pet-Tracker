@@ -1156,4 +1156,4 @@ rojos de R4, R5, R6, R7, R9 y R11. No añade, quita ni renombra ningún `it`.
 
 ### Aprobación de la Enmienda E1
 
-- [ ] Enmienda E1 aprobada por humano ← gate obligatorio antes de lanzar a Codex
+- [X] Enmienda E1 aprobada por humano ← gate obligatorio antes de lanzar a Codex
