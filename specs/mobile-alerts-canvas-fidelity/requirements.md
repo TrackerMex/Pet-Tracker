@@ -759,9 +759,59 @@ jest.mock('react-native-reanimated', () => ({
   pantalla obliga a revisar **todo test que monte esa pantalla o su ruta**, no solo los que nombran el
   componente.
 
+## Enmienda E4 — el doble de reanimated de E3.1 no llega: `expo-router/testing-library` lo pisa
+
+Codex paró en c7b el 2026-10-15 (`cadena=1`): con las seis líneas de E3.1 en
+`src/app/__tests__/alert-detail.navigation.test.tsx` el test `#100 R8…` seguía en `Tests: 1 failed, 1 total`
+con el mismo `TypeError: (0 , _reactNativeReanimated.useReducedMotion) is not a function` en
+`src/components/pop-in.tsx:26`. La parada fue correcta: **el mecanismo de E3.1 estaba mal y es error del
+leader**, que lo firmó sin ejecutarlo (el spike que lo habría medido no fue concluyente y se dio por bueno).
+
+Causa medida: `expo-router/testing-library` (`build/testing-library/index.js`) hace `require("./mocks")` al
+importarse, y `build/testing-library/mocks.js` registra
+`jest.mock('react-native-reanimated', () => require('react-native-reanimated/mock') …)`. Ese registro
+llega **después** del `jest.mock` hoisteado del fichero de test y lo sustituye: la fábrica de E3.1 no llega a
+ejecutarse (`console.log` dentro de ella no sale), `require('react-native-reanimated').useReducedMotion` es
+`undefined` y el módulo no es `jest.requireActual('react-native-reanimated')`. Los dobles de
+`pop-in.test.tsx`, `empty-state.test.tsx`, `celebration.test.tsx`, `pet-hero-header.test.tsx`,
+`weight-chart.test.tsx`, `theme-transition.test.tsx` y `pingo-float.test.tsx` funcionan porque esos ficheros no
+importan `expo-router/testing-library`. El barrido (`progress/sweep_174_e4.md`) comprueba que el route test
+`alert-detail.navigation.test.tsx` es el único fichero que mezcla las dos cosas.
+
+Lo que sí manda es el subpath que `mocks.js` usa por dentro: doblar `react-native-reanimated/mock` hace que
+el `require('react-native-reanimated/mock')` de `mocks.js` reciba el doble. Medido por el leader sobre el árbol
+de Codex (c8 sin commitear + el texto de E4.1 en una copia desechable del route test): `Tests: 1 passed, 1
+total`, `tsc --noEmit` con 0 errores y `eslint` sin salida. Ningún R-id nuevo ni cambio de clases o copy.
+**Donde choque con E3.1, R4, R10, `tasks.md` o el handoff, manda E4.**
+
+### E4.1 — sustituye a E3.1: el bloque del route test
+
+En `src/app/__tests__/alert-detail.navigation.test.tsx`, justo antes de la línea
+`jest.mock('../../hooks/use-push-registration', …)`, va este bloque, byte a byte. Si el fichero aún trae las
+seis líneas de E3.1 (`jest.mock('react-native-reanimated', …)` sin `/mock`; es el estado en que paró Codex)
+se **sustituyen** por estas seis; si no las trae, se insertan:
+
+```ts
+// #174 R4: expo-router/testing-library re-mockea reanimated con su /mock al importarse; el doble va sobre ese subpath (PopIn R4 y HomeEntrance R10 llaman a useReducedMotion)
+jest.mock('react-native-reanimated/mock', () => ({
+  ...jest.requireActual('react-native-reanimated/mock'),
+  __esModule: true,
+  useReducedMotion: () => false,
+}));
+```
+
+- Todo lo demás de E3 sigue en pie: no se cambia ningún `it`, título ni aserción; no se dobla `PopIn` ni
+  `HomeEntrance`; commit propio **c7b** entre c7 y c8 (solo test, nace verde con el cambio de c8 sin
+  commitear en el árbol); la lista cerrada sigue en 23 rutas y hay 25 commits. La cadena de c7b añade el
+  ancla de que ya no queda ningún `jest.mock('react-native-reanimated', ` (con coma y sin `/mock`).
+- Ficha para quien implemente después: en un test que importe `expo-router/testing-library`, un
+  `jest.mock('react-native-reanimated')` propio **no sirve**; se dobla `react-native-reanimated/mock`. Y un
+  barrido de «qué test se rompe» se ejecuta, no se deduce: E2 y E3 fallaron por darlo por verde sin correrlo.
+
 ## Aprobación
 
 - [x] Aprobado por humano (fecha: 2026-10-13, vía Notion) ← gate obligatorio antes de implementar
 - [x] Enmienda E1 aprobada por humano (fecha: 2026-10-15, vía Notion)
 - [x] Enmienda E2 aprobada por humano (fecha: 2026-10-15, vía Notion)
 - [x] Enmienda E3 aprobada por humano (fecha: 2026-10-15, vía Notion)
+- [ ] Enmienda E4 aprobada por humano (fecha: ____, vía Notion)
