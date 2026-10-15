@@ -129,6 +129,7 @@ tags: [harness, spec, mobile, ui]
     - `#166 R2`: se quita la fila de Perfil de `expected`, el título pasa a `'inventaría los dieciocho primarios con labio, fichero a fichero'`
       y las dos cuentas `toBe(19)` pasan a `toBe(19 - 1) // #173 R5`;
     - `#98 R10`: `toBe(13 + 1 + 1 + 1 + 1 + 1 + 1 - 1) // #173 R5`;
+    - `#62 R1` (`consistency-classnames.test.ts`): la cuenta propia de `rounded-xl bg-accent` baja igual, `- 1) // #173 R5` (E1);
     - `#61 R4`: la fila de Perfil queda en `1 + 1` y la suma suma `+ 1`, con `// #173 R5`;
     - `#62 R7`: el literal del import pasa a
       `import { Bell, ChevronRight, FileText, Map as MapIcon, Plus, Wifi } from 'reicon-react-native';`.
@@ -155,6 +156,7 @@ tags: [harness, spec, mobile, ui]
     - `#173 R3`: `it` de `variant="hero"` igual a 1.
   - Candados:
     - `#98 R10`: las dos cuentas `toBe(16 + 2 + 1 - 1)` (M19 y M20) pasan a `toBe(16 + 2 + 1 - 1 - 1) // #173 R6`;
+    - `#64 R9`: su cuenta `16 + 2 + 1 - 1` también baja 1, con `// #173 R6` (y su `it` entra en la lista de rojos de este commit);
     - `#61 R4`: la fila de Perfil y la suma bajan 1, con `// #173 R6`;
     - `#62 R7`: el import pasa a
       `import { Bell, Camera, ChevronRight, FileText, Map as MapIcon, Plus, Wifi } from 'reicon-react-native';`.
@@ -331,6 +333,8 @@ Va antes de T15 porque T15 comprueba M41–M44.
     variante `hero` de `card.tsx`, correr el describe y ver exactamente 1 fallo.
   - Restaurar con `git checkout HEAD -- src/components/card.tsx` y comprobar `git diff --cached --quiet`.
   - Anotar la sonda en `progress/impl_<feature>.md`.
+  - El candado de `shadow-` es un recuento, no una ausencia: `card.tsx` conserva 2 (`surface` y `accent`, R3.2) y
+    los otros dos ficheros 0 (E7).
 - [ ] (2) Verde: comprobar M1–M51 contra «Al cerrar» (o contra base de H0 + delta si la base cambió) y la
   tabla R15.1 completa.
 - [ ] (3) Refactor: ALL móvil solo cuando

@@ -443,7 +443,9 @@ comparan escritas en el propio test, nunca importando una constante de producci�
   formatLastSignal(iso: string | null, nowMs: number, t: ReturnType<typeof useTranslate>, locale: string): string | null
   ```
 
-  - Se llama con `Date.now()` en el render y con el `locale` de `useLocale()`.
+  - Se llama con `detail.dataUpdatedAt` como `nowMs` (el instante de la última carga del detalle, que se recarga
+    en cada foco; mismo patrón que `screens/alerts`) y con el `locale` de `useLocale()`. `Date.now()` en el render
+    lo veta `react-hooks/purity` (E4).
   - Con `s = Math.floor((nowMs - Date.parse(iso)) / 1000)`:
     - IF `iso` es `null`: `null` (la fila pinta `t('profile.notRegistered')`, como hoy);
     - IF `s < 60`, incluido negativo (reloj adelantado): `t('map.justNow')`;
@@ -715,6 +717,11 @@ comparan escritas en el propio test, nunca importando una constante de producci�
   | `specs/mobile-chunky-cta/requirements.md` | `mobile-chunky-cta` | `#166 R2: el primario de Perfil pasa a cápsula tonal sin labio (19 → 18 primarios)` |
   | `specs/mobile-home-weekly-activity/requirements.md` | `mobile-home-weekly-activity` | `#68 E1: pet.sex deja de pintarse crudo` |
 
+  Además, `specs/mobile-ui-language/design.md` §6.3 (el cercado canónico del punto 6 de #65 R20) se edita igual
+  que la carta: el bullet de enums lista `document.type`, `foodType` y `activityLevel`, y suma la línea
+  «`pet.sex` se localiza desde #173 con `addPet.male` / `addPet.female`.» Es una edición de texto, no un bloque
+  de enmienda (E3).
+
 - **R14.2** Cambios en la carta (`docs/ui-guidelines.md`). THE SYSTEM SHALL editar el texto vigente
   además de añadir el bloque:
   - **Regla 2** (tokens): se añade al final de la regla una línea propia con el texto
@@ -821,6 +828,9 @@ comparan escritas en el propio test, nunca importando una constante de producci�
   `src/__tests__/profile-canvas-fidelity.test.ts`, describe `#173 R15: grep-limpio`. Ese describe
   comprueba que los tres ficheros no casan `/\[[^\]]*\]/` dentro de `className`, `/#[0-9a-fA-F]{3,8}\b/`,
   `/StyleSheet\.create/` ni `/\bshadow-/`. `card.tsx` sí usa `StyleSheet.flatten`, que está permitido.
+  - **Excepción heredada (E7)**: R3.2 conserva literales `surface` y `accent`, que llevan `shadow-sm`. En
+    `components/card.tsx` el candado exige exactamente 2 casos de `/\bshadow-/` (esas dos variantes); en
+    `screens/profile/index.tsx` y `components/pet-switcher.tsx`, 0. `hero` y `flat` no llevan sombra (R3.1).
 - **R15.3** THE SYSTEM SHALL dejar M1–M15, M29–M36 y M38–M51 con su valor «Al cerrar» de §1. El reviewer los mide con
   el mismo comando.
 
@@ -918,6 +928,22 @@ humano no la marca, rige la recomendación.
 - **Copy nuevo** (R13.2): `Vinculado`/`Linked`, `Sin collar`/`No collar`, `Collar GPS`/`GPS collar`.
 - **Etiqueta de la fila de idioma**: recomendado **reutilizar `profile.changeLanguage`** («Cambiar idioma»).
   La alternativa es crear `profile.language` («Idioma» / «Language»), que es copy nuevo.
+
+## Enmiendas durante la implementación
+
+Las hizo el leader entre paradas de Codex, sin cambiar el diseño. Cada una corrige un hecho que la spec dio por
+bueno y que el árbol desmintió. Detalle y pruebas en `progress/current.md` (Reanudaciones 3 a 10).
+
+| Id | Dónde | Qué cambió |
+|---|---|---|
+| E1 | tasks.md R5 (1) | `#62 R1` (`rounded-xl bg-accent`) tiene su propia cuenta en `consistency-classnames.test.ts`, además de la de `#98 R10`: c10 mueve las dos con `- 1` |
+| E2 | M13 | `grep -cF` cuenta líneas. El ternario de R7.1 va repartido en varias líneas, con `pet.sex` en dos de ellas, para que M13 dé 2 |
+| E3 | R14.1 | Se suman `specs/mobile-ui-language/design.md` §6.3 y el `it` de `R2: estructura Figma` (`profile/index.test.tsx`), que esperaba el sexo crudo y pasa a `'Hembra'` |
+| E4 | R9.1 | `formatLastSignal` recibe `detail.dataUpdatedAt`, no `Date.now()` |
+| E5 | handoff | El guard `<SINCRASH>` busca `ReferenceError:` y `SyntaxError:` con dos puntos |
+| E6 | handoff | La regla «Flake de un it ajeno» cuenta solo líneas `●` |
+| E7 | R15.2 | Excepción de los dos `shadow-sm` heredados de R3.2 |
+| — | tasks.md R6 (1) | La lista de rojos y los candados suman `#64 R9`: su segunda cuenta `16 + 2 + 1 - 1` está en ese describe, no en `#98 R10` |
 
 ## Aprobación
 
