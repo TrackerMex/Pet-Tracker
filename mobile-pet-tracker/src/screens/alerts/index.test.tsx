@@ -319,7 +319,7 @@ describe('#78 R4: la pantalla pinta su esqueleto, su error, su vacío y sus fila
     expect(screen.queryByTestId('alerts-empty')).toBeNull();
   });
 
-  it('respeta las dimensiones bajo cabecera nativa, el inset automático y los safe areas (#114 R6)', async () => {
+  it('respeta las dimensiones bajo cabecera nativa, el inset automático y los safe areas (#114 R6, enmendado por #174 R5)', async () => {
     mockListAlerts.mockResolvedValue({ kind: 'ok', items: [], nextCursor: null });
 
     await renderAlerts();
@@ -329,9 +329,10 @@ describe('#78 R4: la pantalla pinta su esqueleto, su error, su vacío y sus fila
     expect(list.props.className).toBe('flex-1 bg-background');
     expect(list.props.contentInsetAdjustmentBehavior).toBe('automatic');
     expect(list.props.contentContainerStyle).toEqual({
-      padding: 24,
-      gap: 16,
+      paddingHorizontal: 20,
+      paddingTop: 24,
       paddingBottom: 48,
+      gap: 12,
     });
   });
 });
