@@ -286,6 +286,7 @@ export const R7_PROFILE: UseRow[] = [
   { file: 'src/screens/docs/index.tsx', key: 'docs.noDocumentsYet' },
   { file: 'src/screens/docs/index.tsx', key: 'docs.emptyBody' },
   { file: 'src/screens/docs/index.tsx', key: 'docs.couldNotLoadDocuments' },
+  { file: 'src/screens/docs/index.tsx', key: 'docs.uploadHint' }, // #175 R7
   { file: 'src/screens/docs/index.tsx', key: 'common.retry' },
   { file: 'src/screens/docs/index.tsx', key: 'docs.upload' }, // #158 R12
   { file: 'src/screens/docs/index.tsx', key: 'docs.upload' }, // #158 R12

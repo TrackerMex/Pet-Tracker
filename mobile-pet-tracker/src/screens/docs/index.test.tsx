@@ -499,13 +499,11 @@ describe('#158 R3: el owner ve la acción de subir', () => {
     await screen.findByText('Luna');
     await screen.findByTestId('doc-doc-1');
     const button = await screen.findByTestId('docs-upload');
-    expect(button).toHaveTextContent('Subir documento');
-    expect(docsChildren()).toEqual(['View', 'docs-upload', 'docs-entry-doc-1']);
-    expect(button.props.className).toEqual(expect.stringContaining('rounded-xl'));
-    expect(button.props.className).toEqual(expect.stringContaining('bg-accent'));
+    expect(within(button).getByText('Subir documento')).toBeVisible();
+    expect(docsChildren()).toEqual(['View', 'docs-entry-doc-1', 'docs-upload']);
+    expect(button.props.className).not.toContain('bg-accent');
     const label = within(button).getByText('Subir documento');
-    expect(label.props.className).toEqual(expect.stringContaining('font-bold'));
-    expect(label.props.className).toEqual(expect.stringContaining('text-accent-foreground'));
+    expect(label.props.className).toBe('text-15 font-extrabold text-foreground');
   });
 
   it('en el vacío pinta la acción de Pingo', async () => {
@@ -649,8 +647,8 @@ describe('#158 R5: selector y formulario de subida', () => {
     await fireEvent.press(await screen.findByTestId(docs.length ? 'docs-upload' : 'docs-empty-action'));
     await screen.findByText('Elige un archivo PDF, JPEG o PNG');
     expect(docsChildren()).toEqual(docs.length
-      ? ['View', 'docs-upload', 'docs-action-error', 'docs-entry-doc-1']
-      : ['View', 'docs-action-error', 'docs-empty']);
+      ? ['View', 'docs-entry-doc-1', 'docs-upload', 'docs-action-error']
+      : ['View', 'docs-empty', 'docs-action-error']);
     const error = screen.getByTestId('docs-action-error');
     expect(error.props.selectable).toBe(true);
     expect(error.props.className).toBe('text-danger');
@@ -672,8 +670,8 @@ describe('#158 R5: selector y formulario de subida', () => {
   it.each([{ docs: [] }, { docs: [docOne] }])('sitúa el formulario y oculta las entradas con lista %j', async ({ docs }) => {
     await openUploadForm(docs);
     expect(docsChildren()).toEqual(docs.length
-      ? ['View', 'docs-upload-form', 'docs-entry-doc-1']
-      : ['View', 'docs-upload-form', 'docs-empty']);
+      ? ['View', 'docs-entry-doc-1', 'docs-upload-form']
+      : ['View', 'docs-empty', 'docs-upload-form']);
     expect(screen.queryByTestId('docs-upload')).toBeNull();
     expect(screen.queryByTestId('docs-empty-action')).toBeNull();
     expect(screen.getByTestId('docs-upload-file')).toHaveTextContent('vacuna.pdf');
@@ -758,8 +756,8 @@ describe('#158 R6: validación antes de leer o crear', () => {
     await fireEvent.press(screen.getByTestId('docs-upload-submit'));
     await screen.findByText('Añade un tipo, un nombre y una fecha con formato AAAA-MM-DD');
     expect(docsChildren()).toEqual(docs.length
-      ? ['View', 'docs-upload-form', 'docs-action-error', 'docs-entry-doc-1']
-      : ['View', 'docs-upload-form', 'docs-action-error', 'docs-empty']);
+      ? ['View', 'docs-entry-doc-1', 'docs-upload-form', 'docs-action-error']
+      : ['View', 'docs-empty', 'docs-upload-form', 'docs-action-error']);
     await fireEvent.press(screen.getByTestId('docs-upload-cancel'));
     await screen.findByTestId(docs.length ? 'docs-upload' : 'docs-empty-action');
     expect(screen.queryByTestId('docs-action-error')).toBeNull();
@@ -992,8 +990,8 @@ describe('#158 R10: cualquier miembro abre un documento', () => {
     await screen.findByText('Algo salió mal');
     expect(screen.getByTestId('doc-doc-1')).toBeVisible();
     expect(docsChildren()).toEqual(myRole === 'owner'
-      ? ['View', 'docs-upload', 'docs-action-error', 'docs-entry-doc-1']
-      : ['View', 'docs-action-error', 'docs-entry-doc-1']);
+      ? ['View', 'docs-entry-doc-1', 'docs-upload', 'docs-action-error']
+      : ['View', 'docs-entry-doc-1', 'docs-action-error']);
   });
 
   it('family limpia el error antes de abrir otra vez el navegador', async () => {
@@ -1134,5 +1132,34 @@ describe('#175 R6: fila del artboard', () => {
     expect(screen.getAllByTestId(/^doc-/).map(({ props }) => props.testID)).toEqual([
       'doc-third', 'doc-first', 'doc-second',
     ]);
+  });
+});
+
+describe('#175 R7: zona de subida del artboard', () => {
+  it('compone el círculo, el título y la pista con sus medidas exactas', async () => {
+    await renderDocs();
+    const zone = await screen.findByTestId('docs-upload');
+    expect(zone.props.accessibilityRole).toBe('button');
+    expect(zone.props.className).toBe('mt-1.5 items-center gap-1.5 rounded-24 border-2 border-dashed border-lip-gray p-4.5');
+    expect(zone.children).toHaveLength(3);
+    const [circle, title, hint] = zone.children;
+    if (typeof circle === 'string') throw new Error('Expected an upload circle');
+    expect(circle.props.className).toBe('size-12 items-center justify-center rounded-full bg-surface-secondary');
+    expect(circle.children).toHaveLength(1);
+    const icon = within(circle).getByTestId('docs-icon-upload', { includeHiddenElements: true });
+    expect(icon.props.size).toBe(22);
+    expect(icon.props.style.color).toBe('accent-strong');
+    expect(title).toHaveProperty('props.className', 'text-15 font-extrabold text-foreground');
+    expect(hint).toHaveProperty('props.className', 'text-center text-xs font-normal text-muted');
+    expect(within(zone).getByText('Subir documento')).toBeVisible();
+    expect(within(zone).getByText('PDF o foto de recetas, análisis y cartillas')).toBeVisible();
+  });
+
+  it('conserva esquinas continuas y responde al pulsado con opacidad', async () => {
+    await renderDocs();
+    const zone = await screen.findByTestId('docs-upload');
+    expect(zone).toHaveStyle({ borderCurve: 'continuous', opacity: 1 });
+    await fireEvent(zone, 'responderGrant', { nativeEvent: {}, persist: () => undefined });
+    expect(zone).toHaveStyle({ borderCurve: 'continuous', opacity: 0.8 });
   });
 });
