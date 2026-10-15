@@ -8,6 +8,7 @@ import { ackAlert } from '../../api/alerts';
 import type { Alert } from '../../api/types';
 import { Card } from '../../components/card';
 import { EmptyState } from '../../components/empty-state';
+import { PopIn } from '../../components/pop-in';
 import { useAlertsList } from '../../hooks/use-alerts-list';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
@@ -147,13 +148,6 @@ export function AlertsScreen() {
 
   return (
     <View testID="screen-alerts" className="flex-1 bg-background">
-      {count > 0 ? (
-        <View testID="alerts-new-count" className="mx-6 mt-6 self-start rounded-full bg-danger px-3 py-1">
-          <Text testID="alerts-new-count-text" className="text-xs font-bold text-danger-foreground" style={TABULAR_NUMS}>
-            {count === 1 ? t('alerts.newOne') : t('alerts.newMany', { count })}
-          </Text>
-        </View>
-      ) : null}
       <FlatList<Alert>
         testID="alerts-list"
         className="flex-1 bg-background"
@@ -175,6 +169,13 @@ export function AlertsScreen() {
               <Text testID="alerts-title" accessibilityRole="header" className="flex-1 text-26 font-black tracking-title text-foreground">
                 {t('alerts.title')}
               </Text>
+              {count > 0 ? (
+                <PopIn testID="alerts-new-count" className="rounded-full bg-danger px-2.5 py-1">
+                  <Text testID="alerts-new-count-text" className="text-13 font-extrabold text-danger-foreground" style={TABULAR_NUMS}>
+                    {count === 1 ? t('alerts.newOne') : t('alerts.newMany', { count })}
+                  </Text>
+                </PopIn>
+              ) : null}
             </View>
             {displayedActionError ? (
               <Text testID="alerts-action-error" className="text-danger">
