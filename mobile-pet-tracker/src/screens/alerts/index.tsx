@@ -8,14 +8,20 @@ import { ackAlert } from '../../api/alerts';
 import type { Alert } from '../../api/types';
 import { Card } from '../../components/card';
 import { EmptyState } from '../../components/empty-state';
+import { PopIn } from '../../components/pop-in';
 import { useAlertsList } from '../../hooks/use-alerts-list';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
 import { TABULAR_NUMS } from '../../theme/native-styles';
+import { TOUCH_SLOP } from '../../theme/touch-target';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { settleAlertAck } from '../../utils/alert-ack-outcome';
 import { alertTypeMeta } from '../../utils/alert-meta';
 import { alertSection } from '../../utils/alert-sections';
+import { CATEGORY_SLOTS } from '../../utils/category-palette';
+import { HomeEntrance } from '../home/home-entrance';
+
+const ALERT_ROW_ENTRANCE_LIMIT = 5;
 
 function fmtOpenedAt(
   iso: string,
@@ -29,7 +35,8 @@ function fmtOpenedAt(
   if (minutes < 60) return t('alerts.minutesAgo', { minutes });
   const hours = Math.floor(minutes / 60);
   if (hours < 24) return t('alerts.hoursAgo', { hours });
-  return t('alerts.daysAgo', { days: Math.floor(hours / 24) });
+  const days = Math.floor(hours / 24);
+  return days === 1 ? t('alerts.dayAgo') : t('alerts.daysAgo', { days });
 }
 
 export function AlertsScreen() {
@@ -146,21 +153,15 @@ export function AlertsScreen() {
 
   return (
     <View testID="screen-alerts" className="flex-1 bg-background">
-      {count > 0 ? (
-        <View testID="alerts-new-count" className="mx-6 mt-6 self-start rounded-full bg-danger px-3 py-1">
-          <Text testID="alerts-new-count-text" className="text-xs font-bold text-danger-foreground" style={TABULAR_NUMS}>
-            {count === 1 ? t('alerts.newOne') : t('alerts.newMany', { count })}
-          </Text>
-        </View>
-      ) : null}
       <FlatList<Alert>
         testID="alerts-list"
         className="flex-1 bg-background"
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{
-          padding: 24,
-          gap: 16,
+          paddingHorizontal: 20,
+          paddingTop: 24,
           paddingBottom: insets.bottom + 24,
+          gap: 12,
         }}
         data={rows}
         keyExtractor={(item) => item.id}
@@ -168,11 +169,27 @@ export function AlertsScreen() {
           if (!alerts.hasNextPage || alerts.isFetchingNextPage) return;
           void alerts.fetchNextPage();
         }}
-        ListHeaderComponent={displayedActionError ? (
-          <Text testID="alerts-action-error" className="text-danger">
-            {displayedActionError}
-          </Text>
-        ) : null}
+        ListHeaderComponent={(
+          <View testID="alerts-header" className="gap-3">
+            <View testID="alerts-title-row" className="flex-row items-center gap-2">
+              <Text testID="alerts-title" accessibilityRole="header" className="flex-1 text-26 font-black tracking-title text-foreground">
+                {t('alerts.title')}
+              </Text>
+              {count > 0 ? (
+                <PopIn testID="alerts-new-count" className="rounded-full bg-danger px-2.5 py-1">
+                  <Text testID="alerts-new-count-text" className="text-13 font-extrabold text-danger-foreground" style={TABULAR_NUMS}>
+                    {count === 1 ? t('alerts.newOne') : t('alerts.newMany', { count })}
+                  </Text>
+                </PopIn>
+              ) : null}
+            </View>
+            {displayedActionError ? (
+              <Text testID="alerts-action-error" className="text-danger">
+                {displayedActionError}
+              </Text>
+            ) : null}
+          </View>
+        )}
         ListEmptyComponent={empty}
         renderItem={({ item, index }) => {
           const rowId = `alert-row-${item.id}`;
@@ -187,17 +204,17 @@ export function AlertsScreen() {
           const card = (
             <Card
               testID={rowId}
-              className={'min-h-20 flex-row items-center gap-3' + (item.status === 'open' ? ` border-2 ${meta.border}` : '')}
+              className={`flex-row items-center gap-3 px-3.5 py-3 shadow-none${item.status === 'open' ? ` border-2 ${meta.border}` : ''}`}
             >
               <View
-                className={`size-11 items-center justify-center rounded-full ${meta.surface}`}
+                className={`size-11 items-center justify-center rounded-full ${meta.disc}`}
               >
-                <Icon testID={`${rowId}-icon`} size={20} color={color} />
+                <Icon testID={`${rowId}-icon`} size={22} color={color} />
               </View>
               <Pressable
                 testID={`${rowId}-link`}
                 accessibilityRole="button"
-                className="min-h-11 min-w-0 flex-1 gap-1"
+                className="min-h-11 min-w-0 flex-1 justify-center gap-0.5"
                 style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
                 onPress={() =>
                   router.push({ pathname: '/alerts/[alertId]', params: { alertId: item.id } })
@@ -205,37 +222,34 @@ export function AlertsScreen() {
               >
                 <Text
                   testID={`${rowId}-type`}
-                  className="text-sm font-bold text-foreground"
+                  className="text-15 font-extrabold text-foreground"
                 >
                   {t(meta.labelKey)}
                 </Text>
-                <Text
-                  testID={`${rowId}-pet`}
-                  className="text-xs font-semibold text-muted"
-                >
-                  {item.petName}
-                </Text>
-                <Text
-                  testID={`${rowId}-time`}
-                  className="text-xs font-normal text-muted"
-                >
-                  {fmtOpenedAt(item.openedAt, now, t)}
+                <Text testID={`${rowId}-subtitle`} className="text-xs font-normal text-muted">
+                  <Text testID={`${rowId}-pet`}>{item.petName}</Text>
+                  {' · '}
+                  <Text testID={`${rowId}-time`}>{fmtOpenedAt(item.openedAt, now, t)}</Text>
                 </Text>
               </Pressable>
               {item.status === 'open' ? (
                 <Button
                   testID={`${rowId}-ack`}
                   accessibilityRole="button"
-                  className="min-h-11"
+                  variant="secondary"
+                  className="h-8.5 rounded-10 border-2 border-b-5 border-lip-gray bg-surface px-3"
+                  hitSlop={TOUCH_SLOP}
                   isDisabled={ackingId !== null}
                   onPress={() => void handleAck(item)}
                 >
-                  <Button.Label>{t('alerts.ack')}</Button.Label>
+                  <Button.Label className="text-xs font-extrabold text-foreground">{t('alerts.ack')}</Button.Label>
                 </Button>
               ) : (
                 <Text
                   testID={`${rowId}-status`}
-                  className="rounded-full bg-default px-2 py-0.5 text-2xs font-bold text-muted"
+                  className={item.status === 'acked'
+                    ? 'rounded-full bg-default px-2.5 py-1 text-xs font-bold text-muted'
+                    : `rounded-full ${CATEGORY_SLOTS.green.surface} px-2.5 py-1 text-xs font-extrabold ${CATEGORY_SLOTS.green.ink}`}
                 >
                   {item.status === 'acked'
                     ? t('alerts.statusAcked')
@@ -244,16 +258,21 @@ export function AlertsScreen() {
               )}
             </Card>
           );
+          const row = index < ALERT_ROW_ENTRANCE_LIMIT ? (
+            <HomeEntrance index={index} testID={`${rowId}-entrance`}>
+              {card}
+            </HomeEntrance>
+          ) : card;
           const section = alertSection(item.openedAt, now);
           const firstInSection = index === 0 || alertSection(rows[index - 1].openedAt, now) !== section;
           return firstInSection ? (
-            <View className="gap-4">
-              <Text testID={`alerts-section-${section}`} accessibilityRole="header" className="text-xs font-bold uppercase text-muted">
+            <View className="gap-3">
+              <Text testID={`alerts-section-${section}`} accessibilityRole="header" className="mt-1.5 text-13 font-extrabold uppercase tracking-caps text-muted">
                 {sectionLabels[section]}
               </Text>
-              {card}
+              {row}
             </View>
-          ) : card;
+          ) : row;
         }}
       />
     </View>

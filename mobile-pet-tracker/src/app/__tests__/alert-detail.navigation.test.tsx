@@ -43,6 +43,12 @@ jest.mock('heroui-native', () => {
 jest.mock('react-native-gesture-handler', () => ({
   GestureHandlerRootView: ({ children }: { children: React.ReactNode }) => children,
 }));
+// #174 R4: expo-router/testing-library re-mockea reanimated con su /mock al importarse; el doble va sobre ese subpath (PopIn R4 y HomeEntrance R10 llaman a useReducedMotion)
+jest.mock('react-native-reanimated/mock', () => ({
+  ...jest.requireActual('react-native-reanimated/mock'),
+  __esModule: true,
+  useReducedMotion: () => false,
+}));
 jest.mock('../../hooks/use-push-registration', () => ({ usePushRegistration: jest.fn() }));
 jest.mock('../../components/floating-tab-bar', () => ({ FloatingTabBar: () => null }));
 jest.mock('../../components/pet-map', () => {
