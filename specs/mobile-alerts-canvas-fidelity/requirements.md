@@ -808,6 +808,36 @@ jest.mock('react-native-reanimated/mock', () => ({
   `jest.mock('react-native-reanimated')` propio **no sirve**; se dobla `react-native-reanimated/mock`. Y un
   barrido de «qué test se rompe» se ejecuta, no se deduce: E2 y E3 fallaron por darlo por verde sin correrlo.
 
+## Enmienda E5 — la sonda S12.6 mata tres candados, no dos
+
+Codex paró en la sonda S12.6 el 2026-10-15: planteó la mutación (quitar `text-13 ` del `className` de la
+cabecera de sección) y midió `Tests: 3 failed, 99 passed, 102 total` donde `tasks.md` declaraba un fallo en F
+y uno en A. La parada fue correcta: **el recuento declarado era error del leader**, que contó por requisito y
+no por `it` que contiene el literal. S12.1–S12.5 coincidieron con lo declarado (`progress/sweep_174_e5.md`).
+
+Los tres fallos medidos, sin tocar ningún candado:
+
+- En F: `#174 R12: grep-limpio › cada tracking-* va con su text-*` (R12.4), el que declaraba `tasks.md`.
+- En A: `#170 R3: agrupa la lista en Hoy, Esta semana y Anteriores › envuelve cada cabecera con la primera fila de
+  su sección en un View gap-3 (enmendado por #174 R6)`, el que declaraba `tasks.md`.
+- En A: `#170 R3: agrupa la lista en Hoy, Esta semana y Anteriores › pinta una cabecera por sección con su copy
+  en español (enmendado por #174 R6)`, que `tasks.md` no contó: también asevera con `toBe` la cadena literal
+  `mt-1.5 text-13 font-extrabold uppercase tracking-caps text-muted`. Un `grep -n 'mt-1.5 text-13'` sobre
+  `src/screens/alerts/index.test.tsx` da dos sitios, no uno.
+
+La mutación queda matada en tres sitios, más de lo declarado. No cambia producción, ni tests, ni ningún R-id.
+
+### E5.1 — la fila de S12.6 de `tasks.md`
+
+La columna «Resultado esperado» de S12.6 pasa de «1 failed (R12.4); en A, 1 failed (`it` de R6)» a:
+**«3 failed: 1 en F (R12.4) y 2 en A (los dos `it` de `#170 R3` enmendados por `#174 R6`)»**. Las otras cinco
+filas no cambian. La sonda y su comando no cambian: Codex relanza S12.6 tal cual y espera `Tests: 3 failed`,
+tres líneas `  ● ` (una de F y dos de A) y `limpio=0`. **Donde choque con la fila de `tasks.md` o con el handoff,
+manda E5.**
+
+- Ficha para quien escriba sondas después: el recuento esperado de una mutación es el número de `it` que
+  contienen el literal mutado, y se obtiene con `grep -n` sobre los tests, no contando requisitos.
+
 ## Aprobación
 
 - [x] Aprobado por humano (fecha: 2026-10-13, vía Notion) ← gate obligatorio antes de implementar
@@ -815,3 +845,4 @@ jest.mock('react-native-reanimated/mock', () => ({
 - [x] Enmienda E2 aprobada por humano (fecha: 2026-10-15, vía Notion)
 - [x] Enmienda E3 aprobada por humano (fecha: 2026-10-15, vía Notion)
 - [x] Enmienda E4 aprobada por humano (fecha: 2026-10-15, vía Notion)
+- [ ] Enmienda E5 aprobada por humano (fecha: ____, vía Notion)
