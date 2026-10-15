@@ -1,10 +1,10 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-10-15
-**Features completadas**: 163/178 (`feature_list.json`)
+**Features completadas**: 163/180 (`feature_list.json`)
 **En progreso**: ninguna en esta rama. #174 cerrada en `feature/174-mobile-alerts-canvas-fidelity`, PR #219 pendiente de merge humano.
 
-**Pendientes**: 15 (#60, #129, #144, #150, #151, #154, #160, #163, #164, #165, #176, #177, #180, #181 y #184). **#174 `mobile-alerts-canvas-fidelity` cerrada**: la lista de Alertas como su artboard del canvas. Título «Alertas» en el contenido con el contador en `PopIn`, métricas de 20 y 12, secciones con cabecera 13 ExtraBold, fila con disco de categoría y subtítulo en una línea, ack secundario compacto con labio, píldoras Leída y Resuelta, entrada escalonada de las cinco primeras filas, tokens `text-15`, `radius-10` y `--tracking-caps` y copy `alerts.dayAgo`/`alerts.daysAgo` con palabra completa. La carta y cinco specs llevan su enmienda R11 firmada. Cinco enmiendas (E1-E5), reviewer APROBADO en ronda 2 (`d3c5ff94`), smoke R13 firmado por el humano en `4af37a8a`. Pendiente de esta línea: el Detalle de alerta (#180).
+**Pendientes**: 17 (#60, #129, #144, #150, #151, #154, #160, #163, #164, #165, #176, #177, #180, #181, #184, #185 y #186). **#185 `mobile-docs-upload-form-polish` y #186 `mobile-forms-validation-global` registradas** (2026-10-15, pedido del humano al firmar R11 de #175), sin spec y sin arrancar: la subida de documentos y los errores de validación con componentes globales en toda la app. **#174 `mobile-alerts-canvas-fidelity` cerrada**: la lista de Alertas como su artboard del canvas. Título «Alertas» en el contenido con el contador en `PopIn`, métricas de 20 y 12, secciones con cabecera 13 ExtraBold, fila con disco de categoría y subtítulo en una línea, ack secundario compacto con labio, píldoras Leída y Resuelta, entrada escalonada de las cinco primeras filas, tokens `text-15`, `radius-10` y `--tracking-caps` y copy `alerts.dayAgo`/`alerts.daysAgo` con palabra completa. La carta y cinco specs llevan su enmienda R11 firmada. Cinco enmiendas (E1-E5), reviewer APROBADO en ronda 2 (`d3c5ff94`), smoke R13 firmado por el humano en `4af37a8a`. Pendiente de esta línea: el Detalle de alerta (#180).
 
 **En producción**: no
 
