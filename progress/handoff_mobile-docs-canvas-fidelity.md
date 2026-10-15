@@ -44,6 +44,12 @@
 >     c11** (text-26) y una linea mas en c16 (text-13). Titulos de los `it` intactos; ningun `it` nuevo. Lista
 >     cerrada: 15 ficheros; commits `(#175 R`: 21. Para retomar, sigue la seccion `== REANUDACION (E2) ==`:
 >     guarda tu c11 como parche, haz c10b y reaplica el parche. No tires tu c11: es el que da el verde.
+>
+> 13. **Parada en S5 (tuya, correcta; error mio).** El hex con corchetes de S5 (`bg-[#F0FBF6]`) lo vigilan tambien
+>     `C8` (clases con corchetes) y `R9: mobile-pets-profile` (`FEATURE_STYLE_ESCAPES`, que incluye `docs/index.tsx`): corrido
+>     el fichero entero caen tres `●`, no uno. El handoff decia uno; tasks.md ya decia `-t '#175 R10'`. Tu corrida es
+>     evidencia valida de que el `it` de hex de R10 cae, pero el contrato es un solo `●`: S5 se repite con `-t`. S1-S4 estan
+>     bien y NO se repiten. Para retomar: `== REANUDACION (S5) ==`. Ninguna otra cadena cambia.
 
 ```text
 Worktree: /home/claude/sites/Pet-Tracker-wt-175   <- PRIMERA LINEA. Trabaja AQUI y en ningun otro sitio
@@ -245,6 +251,18 @@ cd /home/claude/sites/Pet-Tracker-wt-175/mobile-pet-tracker && git apply /tmp/17
    -> c11-restaurado   (si el parche no existe en /tmp, reescribe "T5 (2)" a mano: eran 3 lineas en src/screens/docs/index.tsx)
    Despues sigue el orden normal: c11, c12 ... c20. La edicion de c16 sobre src/__tests__/profile-canvas-fidelity.test.ts (E2.2) esta en su cabecera.
 
+== REANUDACION (S5) — SOLO al retomar tras la parada de S5; si arrancas de cero, saltala ==
+Estado esperado: los 21 commits (c1-c20 y c10b) hechos, mas encima commits del leader (este handoff, current.md; ningun
+codigo). El arbol esta limpio salvo el impl sin trackear. H0 NO se mueve. No repitas B0-B1, ANCLAS, c1-c20 ni S1-S4.
+No repitas la espera: Reintento y Flake siguen vigentes. Si algo de lo de abajo no cuadra, PARA.
+# -- R1 estado --
+cd /home/claude/sites/Pet-Tracker-wt-175/mobile-pet-tracker && test "$(git log --format=%s $(git log --diff-filter=A --format=%H -1 -- ../progress/handoff_mobile-docs-canvas-fidelity.md)..HEAD | grep -c '(#175 R')" = 21 && test "$(git log --format=%s $(git log --diff-filter=A --format=%H -1 -- ../progress/handoff_mobile-docs-canvas-fidelity.md)..HEAD | grep -cF 'test(design-drift): Documentos sin deriva (#175 R10)')" = 1 && git diff --quiet -- . ../docs ../specs && test -z "$(git ls-files --others --exclude-standard -- . ../docs ../specs)" && echo c20-limpio
+   -> c20-limpio   (si no sale, PARA)
+# -- R2 repetir S5 con el ejecutor de S5 (SONDAS, abajo; ya lleva -t) --
+   -> sin salida del plantado ; `Tests:       1 failed, ...` ; UNA sola linea `  ● #175 R10: Documentos sin deriva › no deja hex, clases arbitrarias, StyleSheet ni sombras sueltas` ; limpio=0
+   Pega la salida en el impl (seccion S5, repetida) y deja la anterior como esta: es el historico.
+# -- R3 seguir con el CIERRE (K1-K5), sin repetir S1-S4 --
+
 == COMMITS ==
 # -- c1 T0.3 nace verde (paso 1, a mano): anade a src/screens/docs/index.test.tsx los tres dobles de design.md §4 (HomeEntrance, reicon-react-native, useThemeColors); ningun `it` nuevo, ningun fichero de produccion --
 # -- c1 (paso 2) cadena --
@@ -333,6 +351,7 @@ cd /home/claude/sites/Pet-Tracker-wt-175/mobile-pet-tracker && test "$(grep -cE 
 == SONDAS (tras c20; NUNCA se commitean) ==
 Cada sonda planta UN defecto en src/screens/docs/index.tsx, corre design-drift y revierte. Esperado en cada una:
   -> (sin salida del plantado) ; Tests: 1 failed, <n> passed, <n+1> total ; UNA sola linea `  ● #175 R10: Documentos sin deriva › ...` ; limpio=0
+  S5 es la excepcion: corre con -t '#175 R10' y su linea es `Tests: 1 failed, ...` (skipped/passed no fijados). Ver Nota 13.
   (si la sonda no imprime nada, el plantado fallo: PARA. Si limpio no es 0, PARA)
 # -- S1 sonda sobre el HEAD de c20 (NO se commitea) --
 cd /home/claude/sites/Pet-Tracker-wt-175/mobile-pet-tracker && printf '%s\n' "const S1 = '📄';" >> src/screens/docs/index.tsx && test "$(grep -cF -- 'const S1 = '\''📄'\'';' src/screens/docs/index.tsx)" = 1 && { FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/__tests__/design-drift.test.ts > /tmp/175-s1.txt 2>&1; true; }; grep -E '^Tests:' /tmp/175-s1.txt; grep -E '^  ● ' /tmp/175-s1.txt | grep -vxF '  ● Console'; cd /home/claude/sites/Pet-Tracker-wt-175/mobile-pet-tracker && git checkout HEAD -- src/screens/docs/index.tsx && git diff --cached --quiet && git diff --quiet -- . ../docs ../specs && test -z "$(git ls-files --others --exclude-standard -- . ../docs ../specs)"; echo "limpio=$?"
@@ -347,7 +366,7 @@ cd /home/claude/sites/Pet-Tracker-wt-175/mobile-pet-tracker && sed -i "s/h-14 w-
 cd /home/claude/sites/Pet-Tracker-wt-175/mobile-pet-tracker && sed -i "s/text-center text-xs font-normal text-muted/text-center text-xs font-normal text-accent/" src/screens/docs/index.tsx && test "$(grep -cF -- 'text-center text-xs font-normal text-accent' src/screens/docs/index.tsx)" = 1 && { FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/__tests__/design-drift.test.ts > /tmp/175-s4.txt 2>&1; true; }; grep -E '^Tests:' /tmp/175-s4.txt; grep -E '^  ● ' /tmp/175-s4.txt | grep -vxF '  ● Console'; cd /home/claude/sites/Pet-Tracker-wt-175/mobile-pet-tracker && git checkout HEAD -- src/screens/docs/index.tsx && git diff --cached --quiet && git diff --quiet -- . ../docs ../specs && test -z "$(git ls-files --others --exclude-standard -- . ../docs ../specs)"; echo "limpio=$?"
 
 # -- S5 sonda sobre el HEAD de c20 (NO se commitea) --
-cd /home/claude/sites/Pet-Tracker-wt-175/mobile-pet-tracker && sed -i "s/size-12 items-center justify-center rounded-full bg-surface-secondary/size-12 items-center justify-center rounded-full bg-[#F0FBF6]/" src/screens/docs/index.tsx && test "$(grep -cF -- 'rounded-full bg-[#F0FBF6]' src/screens/docs/index.tsx)" = 1 && { FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/__tests__/design-drift.test.ts > /tmp/175-s5.txt 2>&1; true; }; grep -E '^Tests:' /tmp/175-s5.txt; grep -E '^  ● ' /tmp/175-s5.txt | grep -vxF '  ● Console'; cd /home/claude/sites/Pet-Tracker-wt-175/mobile-pet-tracker && git checkout HEAD -- src/screens/docs/index.tsx && git diff --cached --quiet && git diff --quiet -- . ../docs ../specs && test -z "$(git ls-files --others --exclude-standard -- . ../docs ../specs)"; echo "limpio=$?"
+cd /home/claude/sites/Pet-Tracker-wt-175/mobile-pet-tracker && sed -i "s/size-12 items-center justify-center rounded-full bg-surface-secondary/size-12 items-center justify-center rounded-full bg-[#F0FBF6]/" src/screens/docs/index.tsx && test "$(grep -cF -- 'rounded-full bg-[#F0FBF6]' src/screens/docs/index.tsx)" = 1 && { FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/__tests__/design-drift.test.ts -t '#175 R10' > /tmp/175-s5.txt 2>&1; true; }; grep -E '^Tests:' /tmp/175-s5.txt; grep -E '^  ● ' /tmp/175-s5.txt | grep -vxF '  ● Console'; cd /home/claude/sites/Pet-Tracker-wt-175/mobile-pet-tracker && git checkout HEAD -- src/screens/docs/index.tsx && git diff --cached --quiet && git diff --quiet -- . ../docs ../specs && test -z "$(git ls-files --others --exclude-standard -- . ../docs ../specs)"; echo "limpio=$?"
 
 == CIERRE ==
 # -- K1 its estaticos finales --
@@ -444,7 +463,7 @@ Son ficheros del leader.
 - Los 21 commits (c1–c20 y c10b entre c10 y c11) están en orden, con los mensajes de arriba. Después van la trazabilidad y el impl.
 - Ningún commit mezcla tests rojos con implementación.
 - Todas las cadenas terminaron en `git commit`, sin que fallara ningún eslabón. Si hubo reintentos, están anotados.
-- Las sondas S1–S5 dieron cada una un solo `●`, de `#175 R10`, y `limpio=0`.
+- Las sondas S1–S5 dieron cada una un solo `●`, de `#175 R10`, y `limpio=0` (S5 con `-t '#175 R10'`; su primera corrida, sin `-t`, dio tres y queda como historico).
 - K1–K5 en verde: BASE25 = K (≥ 1286); ALL = 110 suites y `3389 + K − 1252` tests; typecheck y lint limpios;
   21 commits; lista cerrada exacta.
 - R11 queda pendiente del humano. Las dos casillas (enmienda de la carta y R11), sin marcar.

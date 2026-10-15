@@ -111,3 +111,22 @@
   en el árbol. `origin/main` sigue en `dea11875`.
 - **Siguiente:** prompt de reanudación a Codex; cuando termine, `init.sh`
   (permiso del humano) y `reviewer`.
+
+## Reanudación 2026-10-15 (4) — Codex paró en S5, handoff corregido
+
+- **Parada de Codex (S5):** la sonda de color hex en una clase con corchetes
+  dio 3 `●` en vez de 1. Evidencia validada en
+  `progress/impl_mobile-docs-canvas-fidelity.md`: S1 a S4 buenas, c1 a c20 y
+  c10b hechos, K1 a K5 sin correr.
+- **Causa: error del handoff, no de Codex.** El `bg-[#F0FBF6]` plantado también
+  cae en C8 (clases con corchetes) y en R9 de mobile-pets-profile, que heredan
+  el mismo fichero. `tasks.md` ya decía `bunx jest src/__tests__/design-drift.test.ts -t '#175 R10'`
+  y el handoff lo omitió. La parada de Codex fue correcta.
+- **Corrección:** S5 corre con `-t '#175 R10'` (generador `gen175.py`; H0 sigue
+  `d38e2787`). Simulada en una copia: `Tests: 1 failed, 81 skipped, 4 passed,
+  86 total` y un solo `●` de R10. Nota 13 y sección `== REANUDACION (S5) ==`
+  añadidas: R1 comprueba `c20-limpio` (21 commits `(#175 R`, uno con el
+  título de R10), R2 repite solo S5, R3 sigue con K1 a K5. S1 a S4 no se repiten.
+- **Siguiente:** prompt de reanudación a Codex; cuando termine K1 a K5,
+  permiso del humano para `init.sh`, `git fetch`, y `reviewer`. Avisarle del
+  flake de Home en c19 (`#98 R7`, `#106 R2`, 221/221 aislado) y de E2.
