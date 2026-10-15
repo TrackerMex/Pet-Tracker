@@ -1054,4 +1054,4 @@ Los títulos de los `it` no cambian y no se añade ni se quita ninguno.
 
 ### Aprobación de la Enmienda E3
 
-- [ ] Enmienda E3 aprobada por humano ← gate obligatorio antes de repetir la ronda de fusión con Codex
+- [x] Enmienda E3 aprobada por humano (fecha: 2026-10-15, vía repo) ← gate obligatorio antes de repetir la ronda de fusión con Codex
