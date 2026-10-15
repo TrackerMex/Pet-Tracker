@@ -857,3 +857,152 @@ No se ejecutó `init.sh`, no se usó prettier, no hubo push/PR/merge y no se
 modificaron código, tests, handoff, feature_list ni progress/current durante
 esta reanudación. Solo se cerraron trazabilidad e informe. R11 permanece
 pendiente (humano), y ambas casillas humanas siguen sin marcar.
+
+
+## Ronda de fusión con main (#174)
+
+2026-10-15. Ejecutado el handoff de fusión en orden hasta M4c. **Parada
+obligatoria en M4c** por dos colisiones semánticas con los inventarios de
+#174 R12. No se corrigieron los tests ni se repitió la corrida.
+
+- H0m y HEAD actual: `da705f4416f40bb3ab66b307e6f203ee52d72fc8`.
+- `origin/main` y `MERGE_HEAD`: `deaf4e6d99f46e8dcd3f8cd386e4312b9ce5f739`.
+- Hash del merge: pendiente; no se creó el commit de fusión.
+
+B0, salida literal:
+
+```text
+da705f4416f40bb3ab66b307e6f203ee52d72fc8
+B0-ok
+```
+
+M1: `exit=1`, con exactamente seis conflictos de contenido, sin add/add ni
+modify/delete. Lista literal:
+
+```text
+docs/ui-guidelines.md
+mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+mobile-pet-tracker/src/__tests__/profile-canvas-fidelity.test.ts
+mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx
+mobile-pet-tracker/src/theme/global.css
+specs/mobile-ui-language/design.md
+```
+
+M2, anclas ejecutadas tras resolver cada fichero según el handoff:
+
+```text
+A-ok
+B-ok
+C-ok
+D-ok
+E-ok
+F-ok
+```
+
+Comprobado a mano: las frases de #174 y #175 están, en ese orden, dentro de
+la regla 12, antes de la regla 13. Se conservó la firma procedente de main
+según R-f; no se firmó ninguna casilla nueva.
+
+M3, salida literal:
+
+```text
+M3-ok
+```
+
+M4a, espera literal y comprobación posterior de ausencia de procesos de
+init.sh, Jest y ESLint:
+
+```text
+fin-espera
+M4a-libre
+```
+
+M4b, salida literal (log de lint vacío):
+
+```text
+$ tsc --noEmit
+M4b-ok
+```
+
+M4c, primera y única corrida completa:
+
+```text
+exit=1
+Test Suites: 1 failed, 110 passed, 111 total
+Tests:       2 failed, 3481 passed, 3483 total
+      2   ● #174 R12: inventarios › limita text-15 a su inventario de producción
+      2   ● #174 R12: inventarios › limita tracking-title a su inventario de producción
+```
+
+El conteo de `grep` muestra cada fallo dos veces porque Jest repite los
+fallos en su resumen final; son **dos tests fallidos**, no cuatro.
+
+Salida completa de los dos fallos, copiada del resumen de Jest:
+
+```text
+Summary of all failing tests
+FAIL src/__tests__/alerts-canvas-fidelity.test.ts
+  ● #174 R12: inventarios › limita text-15 a su inventario de producción
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 0
+    + Received  + 1
+
+      Array [
+        "components/celebration.tsx",
+        "screens/alerts/index.tsx",
+    +   "screens/docs/index.tsx",
+        "screens/forgot/index.tsx",
+        "screens/login/index.tsx",
+        "screens/register/index.tsx",
+        "screens/reset-password/index.tsx",
+      ]
+
+      210 |     },
+      211 |   ])('limita $token a su inventario de producción', ({ pattern, files }) => {
+    > 212 |     expect(filesMatching(pattern)).toEqual(files);
+          |                                    ^
+      213 |   });
+      214 |
+      215 |   it('declara border-b-5 una sola vez', () => {
+
+      at toEqual (src/__tests__/alerts-canvas-fidelity.test.ts:212:36)
+
+  ● #174 R12: inventarios › limita tracking-title a su inventario de producción
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 0
+    + Received  + 1
+
+      Array [
+        "screens/alerts/index.tsx",
+    +   "screens/docs/index.tsx",
+      ]
+
+      210 |     },
+      211 |   ])('limita $token a su inventario de producción', ({ pattern, files }) => {
+    > 212 |     expect(filesMatching(pattern)).toEqual(files);
+          |                                    ^
+      213 |   });
+      214 |
+      215 |   it('declara border-b-5 una sola vez', () => {
+
+      at toEqual (src/__tests__/alerts-canvas-fidelity.test.ts:212:36)
+```
+
+Ambos inventarios reciben `screens/docs/index.tsx` además de sus rutas
+esperadas: Documentos utiliza `text-15` y `tracking-title`. El handoff no
+permite alterar esos candados; la decisión corresponde al leader.
+
+Aviso preexistente contado aparte: `A worker process has failed to exit
+gracefully`, 1 aparición. No se cuenta como fallo.
+
+Desviaciones de ejecución: ninguna. Se aplicó la parada prescrita por M4c.
+M5, M6 y el commit de la nota no se ejecutaron. La fusión sigue abierta y sin
+commit, con los seis conflictos resueltos y staged; este informe se deja
+sin stage para el leader. No se ejecutó `git merge --abort`, `rebase`,
+`init.sh` ni E2E. R11 sigue pendiente del humano y no se marcó su casilla.
+
+Log completo: `/tmp/175-merge-all.txt`; lint: `/tmp/175-merge-lint.txt`.
