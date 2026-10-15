@@ -958,4 +958,4 @@ bueno y que el árbol desmintió. Detalle y pruebas en `progress/current.md` (Re
 - [ ] Revertir etiqueta de idioma: clave nueva `profile.language` en vez de `profile.changeLanguage`
 - [ ] Enmiendas R14 revisadas (la firma de cada bloque es `- [ ] Enmienda #173 aprobada por humano`, en su
   fichero)
-- [ ] Prueba de humo R16 superada en dev build de Android (fecha: ____, dispositivo: ____, temas: ____)
+- [X] Prueba de humo R16 superada en dev build de Android (fecha: 2026-10-14, dispositivo: OnePlus Nord 5, temas:)
