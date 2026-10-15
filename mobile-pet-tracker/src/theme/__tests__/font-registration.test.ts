@@ -75,3 +75,11 @@ describe('#173 R1: registra Inter-ExtraBold como sexto peso', () => {
     expect(globalCss.indexOf("--font-bold: 'Inter-Bold';")).toBeLessThan(globalCss.indexOf(declaration));
   });
 });
+
+describe('#172 R6: el peso 800 del CTA es Inter ExtraBold', () => {
+  it('#172 R6: carga Inter ExtraBold y la expone como font-extrabold', () => {
+    expect(existsSync(`${projectRoot}/assets/fonts/Inter-ExtraBold.ttf`)).toBe(true);
+    expect(rootLayout).toContain("'Inter-ExtraBold': require('../../assets/fonts/Inter-ExtraBold.ttf')");
+    expect(globalCss).toContain("--font-extrabold: 'Inter-ExtraBold';");
+  });
+});

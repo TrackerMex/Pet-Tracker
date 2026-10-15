@@ -705,8 +705,8 @@ describe('#118 R11: la bienvenida no mete drift de estilo', () => {
 describe('#149 R4: solo cuatro ficheros de producción navegan a login', () => {
   const loginRoutes: Record<string, number> = {
     'screens/register/index.tsx': 1,
-    'screens/forgot/index.tsx': 1,
-    'screens/reset-password/index.tsx': 2,
+    'screens/forgot/index.tsx': 2, // #172 R17: forgot-back
+    'screens/reset-password/index.tsx': 3, // #172 R19: link-login del formulario
     'screens/welcome/index.tsx': 1,
   };
 
@@ -828,6 +828,10 @@ describe('#167 R14: las pantallas de cuenta no traen deriva', () => {
     'screens/home/home-entrance.tsx',
     'components/pop-in.tsx',
     'theme/motion.ts',
+    'components/back-button.tsx',
+    'components/form-error.tsx',
+    'components/pingo-float.tsx',
+    'components/password-input.tsx',
   ];
 
   it('#167 R14: sin hex, clases arbitrarias, StyleSheet ni sombras sueltas', () => {
@@ -853,5 +857,21 @@ describe('#167 R14: las pantallas de cuenta no traen deriva', () => {
       /expo-linear-gradient|expo-symbols|lottie-react-native|@rive-app|\buseThemeColor\b|\p{Extended_Pictographic}/u
         .test(readFileSync(join(sourceRoot, file), 'utf8')),
     )).toEqual([]);
+  });
+});
+
+describe('#171 R13: sin drift en la celebración', () => {
+  it.each([
+    'src/components/celebration.tsx',
+    'src/components/__tests__/celebration.test.tsx',
+    'src/theme/motion.ts',
+  ])('R13.1 %s no deja escapes de estilo', (relativePath) => {
+    const source = readFileSync(join(projectRoot, relativePath), 'utf8');
+    expect(source).not.toMatch(MEALS_BAR_STYLE_ESCAPES);
+  });
+
+  it('R13.2 la fuente no usa LayoutAnimation ni entering/exiting', () => {
+    const source = readFileSync(join(projectRoot, 'src/components/celebration.tsx'), 'utf8');
+    expect(source).not.toMatch(/LayoutAnimation|entering=|exiting=/);
   });
 });

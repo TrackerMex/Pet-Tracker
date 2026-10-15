@@ -4,7 +4,9 @@ import {
   fireEvent,
   screen,
   waitFor,
+  within,
 } from '@testing-library/react-native';
+import { notificationAsync } from 'expo-haptics';
 import { router, useFocusEffect } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
@@ -497,12 +499,12 @@ describe('R7: tras el 201 muestra "El collar está listo" con el collar y sus CT
   it('shows the success copy, device values, and refreshes pets', async () => {
     await renderReady();
 
-    expect(screen.getByText('El collar está listo')).toBeVisible();
+    expect(screen.getByText('El collar está listo')).toBeOnTheScreen();
     expect(
       screen.getByText(
         'El collar de Luna está vinculado. El rastreo GPS está activo.',
       ),
-    ).toBeVisible();
+    ).toBeOnTheScreen();
     expect(screen.getByTestId('ready-model')).toHaveTextContent('TrailTag Pro');
     expect(screen.getByTestId('ready-esn')).toHaveTextContent('ESN-4242');
     expect(screen.queryByTestId('activation-code-input')).toBeNull();
@@ -544,6 +546,63 @@ describe('R7: tras el 201 muestra "El collar está listo" con el collar y sus CT
       expect(mockRouter.dismissTo).toHaveBeenCalledTimes(1);
       expect(mockRouter.dismissTo).toHaveBeenCalledWith('/map');
       expect(mockRouter.push).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('#171 R3: celebración al vincular', () => {
+    it('R3.1 el Modal muestra título y cuerpo del collar de Luna', async () => {
+      await renderReady();
+      expect(screen.getByTestId('pairing-ready-modal')).toBeVisible();
+      expect(screen.getByTestId('pairing-ready-title')).toHaveTextContent('El collar está listo', { exact: true });
+      expect(screen.getByTestId('pairing-ready-body')).toHaveTextContent('El collar de Luna está vinculado. El rastreo GPS está activo.', { exact: true });
+    });
+
+    it('R3.1 las fichas contienen Modelo y ESN exactos', async () => {
+      await renderReady();
+      const details = within(screen.getByTestId('pairing-ready-details'));
+      expect(details.getByTestId('ready-model')).toHaveTextContent('TrailTag Pro', { exact: true });
+      expect(details.getByTestId('ready-esn')).toHaveTextContent('ESN-4242', { exact: true });
+    });
+
+    it('R3.1 las acciones contienen Ver en el mapa y Listo', async () => {
+      await renderReady();
+      const actions = within(screen.getByTestId('pairing-ready-actions'));
+      expect(actions.getByTestId('ready-map')).toHaveTextContent('Ver en el mapa', { exact: true });
+      expect(actions.getByTestId('ready-done')).toHaveTextContent('Listo', { exact: true });
+    });
+
+    it('R3.2 atrás de Android vuelve una vez y retira la celebración', async () => {
+      await renderReady();
+      await fireEvent(screen.getByTestId('pairing-ready-modal'), 'requestClose');
+      await screen.findByTestId('activation-code-input');
+      expect(mockRouter.back).toHaveBeenCalledTimes(1);
+      expect(mockRouter.dismissTo).not.toHaveBeenCalled();
+      expect(screen.queryByTestId('pairing-ready')).toBeNull();
+    });
+
+    it('R3.3 sustituye el bloque en línea por un único Celebration', () => {
+      const { readFileSync } = jest.requireActual<typeof import('fs')>('fs');
+      const { join } = jest.requireActual<typeof import('path')>('path');
+      const source = readFileSync(join(process.cwd(), 'src', 'screens', 'pairing', 'index.tsx'), 'utf8');
+      expect(source).not.toContain('<Pressable');
+      expect(source).not.toContain('size-16 items-center justify-center rounded-full bg-accent-soft');
+      expect(source).not.toContain('<Card className="w-full">');
+      expect(source.match(/<Celebration/g) ?? []).toHaveLength(1);
+    });
+
+    it('R3 al llegar a ready notifica éxito una vez', async () => {
+      await renderReady();
+      expect(mockNotificationAsync).toHaveBeenCalledTimes(1);
+    });
+
+    it('R3.4 un error del claim no monta el Modal ni dispara el háptico', async () => {
+      mockClaimDevice.mockResolvedValue({ kind: 'error' });
+      await renderPairing();
+      await fireEvent.changeText(await screen.findByTestId('activation-code-input'), 'ACT-READY');
+      await fireEvent.press(screen.getByTestId('pairing-submit'));
+      await screen.findByTestId('pairing-error');
+      expect(screen.queryByTestId('pairing-ready-modal')).toBeNull();
+      expect(mockNotificationAsync).not.toHaveBeenCalled();
     });
   });
 });
@@ -980,3 +1039,10 @@ describe('#148 R8: pairing entrega el primer toque con el teclado abierto', () =
     expect(screen.getByTestId('pairing-form').props.keyboardShouldPersistTaps).toBe('handled');
   });
 });
+
+
+jest.mock('expo-haptics', () => ({
+  notificationAsync: jest.fn(() => Promise.resolve()),
+  NotificationFeedbackType: { Success: 'mock-success', Error: 'mock-error' },
+}));
+const mockNotificationAsync = jest.mocked(notificationAsync);

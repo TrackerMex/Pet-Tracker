@@ -59,6 +59,16 @@ describe('R1: tokens rounded-card y text-2xs', () => {
   });
 });
 
+describe('#172 R1: tokens de texto de cuenta', () => {
+  it('#172 R1: define text-13, text-15 y text-17 con sus valores exactos dentro de @theme', () => {
+    expect(parseVariables(extractTheme())).toMatchObject({
+      'text-13': '13px',
+      'text-15': '15px',
+      'text-17': '17px',
+    });
+  });
+});
+
 describe('R1: global.css define los tokens light exactos del diseño', () => {
   it('incluye el código de la app en el escaneo de utilidades de Tailwind', () => {
     expect(globalCss).toMatch(/@source\s+['"]\.\.\/['"];?/);
@@ -753,5 +763,15 @@ describe('#173 R2.3: tamaños de letra 13 y 26', () => {
     expect(variables).toMatchObject({ 'text-13': '13px', 'text-26': '26px' });
     expect(variables).not.toHaveProperty('text-13--line-height');
     expect(variables).not.toHaveProperty('text-26--line-height');
+  });
+});
+
+describe('#171 E4: tokens de la celebración', () => {
+  it('#171 E4: @theme declara los cinco colores del confeti', () => {
+    expect(parseVariables(extractTheme())).toMatchObject({ 'color-confetti-amber': '#F79009', 'color-confetti-violet': '#7A5AF8', 'color-confetti-blue': '#2E90FA', 'color-confetti-rose': '#F04438', 'color-confetti-green': '#12B76A' });
+  });
+
+  it('#171 E4: @theme declara text-15 de 15 px', () => {
+    expect(parseVariables(extractTheme())).toMatchObject({ 'text-15': '15px' });
   });
 });

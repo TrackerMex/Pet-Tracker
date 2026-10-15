@@ -67,9 +67,10 @@ describe('#168 R1: el título grande vive en las tres pestañas', () => {
     }
   });
 
-  it('limita el literal a los tres ficheros de producción', () => {
+  it('limita el literal a las tres pestañas y a la celebración', () => {
     expect(filesMatching(/text-3xl font-black tracking-tight text-foreground/).sort()).toEqual([
       'app/(tabs)/food.tsx',
+      'components/celebration.tsx',
       'screens/health/index.tsx',
       'screens/profile/index.tsx',
     ]);

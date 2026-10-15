@@ -17,7 +17,14 @@
   --radius-tile: 18px;
   --text-2xs: 10px;
   --text-13: 13px;
+  --text-15: 15px;
+  --text-17: 17px;
   --text-26: 26px;
+  --color-confetti-amber: #F79009;
+  --color-confetti-violet: #7A5AF8;
+  --color-confetti-blue: #2E90FA;
+  --color-confetti-rose: #F04438;
+  --color-confetti-green: #12B76A;
 }
 
 @theme inline {

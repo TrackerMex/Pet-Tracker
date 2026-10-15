@@ -179,10 +179,13 @@ comparan escritas en el propio test, nunca importando una constante de producci�
   - Los tamaños de la escala de Tailwind conservan su clase: `text-xs` 12, `text-sm` 14, `text-base` 16,
     `text-lg` 18, `text-2xl` 24 y `text-3xl` 30.
   - Las clases arbitrarias (`text-[13px]`) siguen prohibidas (R15.2).
-- **R2.4** THE SYSTEM SHALL usar las clases nuevas solo en `screens/profile/index.tsx` entre los ficheros de
-  producción (mismo alcance que R2.2):
+- **R2.4** THE SYSTEM SHALL usar `text-26` solo en `screens/profile/index.tsx` entre los ficheros de
+  producción (mismo alcance que R2.2) y `text-13` solo en un inventario cerrado de seis ficheros:
   - `text-26`: en `profile-pet-name` (R6.1);
-  - `text-13`: en `me-avatar-initials` (R11.5).
+  - `text-13`: en `me-avatar-initials` (R11.5) de `screens/profile/index.tsx` y, desde que #172 mergeó
+    antes que esta feature (**E8**), en los cinco ficheros de producción que esa feature escribió con la
+    clase: `components/form-error.tsx`, `screens/forgot/index.tsx`, `screens/login/index.tsx`,
+    `screens/register/index.tsx` y `screens/reset-password/index.tsx`. Ningún otro fichero la usa.
 - **Tests**:
   - `src/theme/__tests__/global-css.test.ts`, describe nuevo `#173 R2: tokens de radio hero y tile`. Usa el
     mismo parser que ya verifica `'radius-card': '20px'` y comprueba
@@ -190,8 +193,9 @@ comparan escritas en el propio test, nunca importando una constante de producci�
   - Mismo fichero, describe nuevo `#173 R2.3: tamaños de letra 13 y 26`. Con el mismo parser comprueba
     `toMatchObject({ 'text-13': '13px', 'text-26': '26px' })`. Se escribe en el rojo de T2.
   - `src/__tests__/profile-canvas-fidelity.test.ts`, describe `#173 R2.4: inventario de tamaños nuevos`.
-    Compara la lista de ficheros de producción que casan `/\btext-26\b/` y `/\btext-13\b/` con
-    `['screens/profile/index.tsx']`.
+    Compara la lista de ficheros de producción que casan `/\btext-26\b/` con `['screens/profile/index.tsx']`
+    y la que casa `/\btext-13\b/` con los seis ficheros de arriba, ordenados como los devuelve
+    `filesMatching`.
     - El `it` de `text-26` se escribe en el rojo de R6.
     - El de `text-13` se escribe en el rojo de R11.
   - `src/__tests__/profile-canvas-fidelity.test.ts` (nuevo), describe `#173 R2: inventario de radios nuevos`.
@@ -943,6 +947,7 @@ bueno y que el árbol desmintió. Detalle y pruebas en `progress/current.md` (Re
 | E5 | handoff | El guard `<SINCRASH>` busca `ReferenceError:` y `SyntaxError:` con dos puntos |
 | E6 | handoff | La regla «Flake de un it ajeno» cuenta solo líneas `●` |
 | E7 | R15.2 | Excepción de los dos `shadow-sm` heredados de R3.2 |
+| E8 | R2.4 | Al mergear main con #171 y #172, `text-13` ya lo usan cinco ficheros de #172 (`form-error` y las cuatro pantallas de cuenta). El `it` de `text-13` pasa de `['screens/profile/index.tsx']` a ese inventario cerrado de seis ficheros; `text-26` no cambia. Cambio de test hecho en el merge, no por Codex |
 | — | tasks.md R6 (1) | La lista de rojos y los candados suman `#64 R9`: su segunda cuenta `16 + 2 + 1 - 1` está en ese describe, no en `#98 R10` |
 
 ## Aprobación

@@ -60,10 +60,12 @@ describe('#65 R12: el catálogo tiene los dos idiomas y t resuelve claves y par�
         + 5 // #155 R1
         + 12 // #158 R1
         + 4 // #159 R1
+        + 4 // #171 R12
         - 1 // #159 R2
         + 1 // #167 R5
         + 2 // #169 R9
         + 7 // #170 R1
+        + 3 // #172 R16
         - 4 + 3, // #173 R13
     );
     expect(spanishKeys).toEqual(englishKeys);
@@ -185,7 +187,7 @@ describe('#173 R13: Perfil retira cuatro claves y añade tres', () => {
     expect(english[key]).toBe(englishValue);
     expect(spanish[key]).toBe(spanishValue);
     expect(languageDesign).toMatch(new RegExp('\\| — \\| `' + escapeRegExp(key) + '`[^\\n]*← añadida por #173 \\(R13\\)'));
-    expect(languageDesign).toContain('### §2.27 — Añadidos por #173 — Perfil fiel al canvas');
+    expect(languageDesign).toContain('### §2.29 — Añadidos por #173 — Perfil fiel al canvas');
   });
 
   it.each(['profile.information', 'profile.gpsSettings', 'profile.account', 'profile.useLightTheme'])('retira %s de ambos idiomas y documenta la retirada', (key) => {
@@ -605,5 +607,36 @@ describe('#170 R1: claves de alertas agrupadas y mini-mapa', () => {
         new RegExp('\\| — \\| `' + escapeRegExp(key) + '`[^\\n]*← añadida por #170 \\(R1\\)'),
       );
     }
+  });
+});
+
+describe('#172 R16: el copy de las pantallas de cuenta como el canvas', () => {
+  it('#172 R16: declara las claves de cuenta en los dos idiomas y su registro', () => {
+    const english = en as Record<string, string>;
+    const spanish = es as Record<string, string>;
+    const languageDesign = readFileSync(
+      join(process.cwd(), '../specs/mobile-ui-language/design.md'),
+      'utf8',
+    );
+    const translations = [
+      ['common.back', 'Back', 'Volver'],
+      ['common.showPassword', 'Show password', 'Mostrar contraseña'],
+      ['common.hidePassword', 'Hide password', 'Ocultar contraseña'],
+      ['register.country', 'Country', 'País'],
+    ] as const;
+
+    for (const [key, englishValue, spanishValue] of translations) {
+      expect(english[key]).toBe(englishValue);
+      expect(spanish[key]).toBe(spanishValue);
+      expect(languageDesign).toMatch(
+        new RegExp(
+          '\\| — \\| `' + escapeRegExp(key) +
+            '`[^\\n]*← (?:añadida|cambiada) por #172 \\(R16\\)',
+        ),
+      );
+    }
+    expect(languageDesign).toMatch(
+      /### §2\.\d+ — Añadidos por #172 — Las pantallas de cuenta como el canvas/,
+    );
   });
 });

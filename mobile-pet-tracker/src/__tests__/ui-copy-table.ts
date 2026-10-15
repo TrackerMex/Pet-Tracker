@@ -40,6 +40,10 @@ export const R1_AUTH: UseRow[] = [
   { file: 'src/screens/register/index.tsx', key: 'register.country' },
   { file: 'src/screens/register/index.tsx', key: 'register.iAcceptTerms' },
   { file: 'src/screens/register/index.tsx', key: 'register.createAccount' },
+  { file: 'src/components/password-input.tsx', key: 'common.showPassword' }, // #172 R16
+  { file: 'src/components/password-input.tsx', key: 'common.hidePassword' }, // #172 R16
+  { file: 'src/screens/register/index.tsx', key: 'forgot.invalidEmail' }, // #172 R16
+  { file: 'src/components/back-button.tsx', key: 'common.back' }, // #172 R16
 ];
 
 export const R2_TABS: UseRow[] = [
@@ -396,6 +400,10 @@ export const R9_ADD_PET: UseRow[] = [
   { file: 'src/screens/add-pet/index.tsx', key: 'addPet.savePet' },
   { file: 'src/screens/add-pet/index.tsx', key: 'addPet.no' },
   { file: 'src/screens/add-pet/index.tsx', key: 'addPet.microchip' },
+  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.celebrateTitle' },
+  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.celebrateBody' },
+  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.celebratePair' },
+  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.celebrateLater' },
 ];
 
 export const R10_PAIRING: UseRow[] = [
@@ -465,6 +473,7 @@ export const R11_RESET: UseRow[] = [
   { file: 'src/screens/reset-password/index.tsx', key: 'resetPassword.newPassword' },
   { file: 'src/screens/reset-password/index.tsx', key: 'resetPassword.confirmNewPassword' },
   { file: 'src/screens/reset-password/index.tsx', key: 'resetPassword.updatePassword' },
+  { file: 'src/screens/reset-password/index.tsx', key: 'resetPassword.backToSignIn' }, // #172 R19
 ];
 
 export const R12_ALERTS: UseRow[] = [

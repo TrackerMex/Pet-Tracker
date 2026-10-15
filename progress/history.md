@@ -8897,3 +8897,89 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
 - 2026-10-13: smoke R17 en dev build de Android (OnePlus Nord 5, tema claro y oscuro) firmado por el humano en `33a4bcde`. Observación del humano al firmar, literal: «listo ya firme #170 salio bien, al igual que otras sesiones falta mejorar el diseño para acercarnos al artifact». Se registra como #174 `mobile-alerts-canvas-fidelity`.
 - 2026-10-13: merges de main por merge, sin rebase: `fa71f66b` (#167 y #168) y `2f84afa3` (#169). Conflictos resueltos sumando las dos features: `consistency-classnames.test.ts` (inventario de cabeceras, total de `CONTINUOUS_CORNER` y base cerrada de `#69 R10`), la longitud del catálogo en `language-provider.test.tsx` (`+ 1` de #167 R5, `+ 2` de #169 R9 y `+ 7` de #170 R1) y la sección de #170 en `specs/mobile-ui-language/design.md`, que pasa a §2.26 (#167 tiene §2.24 y #169 §2.25; ningún test ancla el título de #170). `./init.sh` exit 0 sobre `2f84afa3` (backend 187/1474, infra 2/14, móvil 103/3101, e2e 30 de 33 suites, 468 passed y 8 skipped).
 - **Cierre**: trazabilidad `approved` con R17; `done` en `feature_list.json`; #174 registrada como `pending`; STATUS; Notion (Implementado / Completado); PR #213 contra `main`. Merge: humano. Tras el merge: borrar el worktree y la rama local.
+
+## #171 `mobile-celebrations-and-living-empty` — Celebración y vacíos vivos — 2026-10-15
+
+- inicio: 2026-10-11, asignada por Frontend (fila 5 «Propuestas nuevas» del canvas, entera)
+- worktree: `/home/claude/sites/Pet-Tracker-wt-171`, rama `feature/171-mobile-celebrations-and-living-empty` desde origin/main `89fe2009`; `.env` copiado del árbol principal
+- init.sh: EXIT=0 «Todo verde» en wt-171 (2026-10-11, tras aviso de sites-99; medido sin pipe). EXIT enviado a Frontend, que va detrás (#166)
+- decisión del humano (AskUserQuestion, 2026-10-11): pose celebrate = «v2 brazos arriba» (`~/pet-tracker-mascot/mascot-03-celebrate-v2.png`)
+- dependencia: la implementación con Codex espera al merge de #166 mobile-chunky-cta (className de primarios y secundarios; labio del botón de EmptyState)
+- plan: spec_author escribe `specs/mobile-celebrations-and-living-empty/` → leader espeja a Notion (En revisión) → PARA hasta el gate humano
+- espejo Notion (2026-10-11): https://app.notion.com/p/3f66115a9b2781e0bfd6fba81768b1e1, desde 4a133b16, Estado del gate = En revisión, Rol actual = Spec Author. Avisado a Frontend. PARADA en el gate humano
+- enmienda R1.2 (2026-10-11, 7f80b664): poses relativas a origin/main del handoff, re-medidas en design §9.3 paso 5 (petición de Frontend por #167/#170)
+- #166 mergeada (d2b8b0ae, PR #209): origin/main mergeada en 5fbe9eed (merge, sin rebase) y design §9 re-medida en ebdbeb75. R14 sin enmienda, anclas grep -cF en §9.2, poses siguen en ocho. Espejo Notion re-espejado desde ebdbeb75. Gate sigue En revisión: PARADA en el gate humano
+- solapes con #167 (aviso de Frontend, 2026-10-12), en 169e92c9: R12.3 deja el número de §2.24 a re-medir (§2.25 si #167 mergea antes), design §9.3 paso 6 (catálogo `- 1, // #159 R2` que #167 reescribe), T15 ya no exige ser la última sección de la carta, §8 y fuera de alcance dejan de enumerar los bucles. Notion re-espejado desde 169e92c9. Sigue PARADA en el gate humano
+- firma del humano (2026-10-12): spec aprobada desde Notion, commit de firma 1b20491c
+- enmienda E1 (e6077848): el confeti en rectángulos sin radio y sus colores de categoría en `CONFETTI_FILLS` (category-palette.ts); con `rounded-sm` y las clases sueltas rompía #62 R4, #98 R10 y #64 R9. Notion re-espejado, En revisión
+- tasks.md corregido en el handoff (sin cambiar requisitos): sonda S8.1 (`phase !== 'idle'` no mutaba nada; ahora fuerza `ready` en la rama de error del claim, medida en 5 failed) y S11.1/S11.2 con la línea `Tests:` abierta
+- handoff a Codex CLI: `progress/handoff_mobile-celebrations-and-living-empty.md`, 30 commits (c1-c30), base 12 suites/582 y ALL 98/2775, cierre 13/663 y 99/2856. Anclas A1-A70 y H1-H5 ejecutadas por el leader desde el fichero
+- firma de E1 (2026-10-12): aprobada desde Notion, commit de firma 82eda89f
+- correcciones H0 tras la firma de E1 (tasks.md y handoff, sin cambiar requisitos): `{ includeHiddenElements: true }` en toda consulta a `{id}-confetti`, sus piezas y `{id}-badge` (spike del leader: sin ella `getByTestId` lanza y el `queryByTestId` de R8.1 nacía verde); la casilla de R15 en `docs/ui-guidelines.md` se comprueba aparte con `[ xX]`; S11.3 con la línea `Tests:` abierta; cabeceras `# --`, línea en blanco tras cada `git commit` y lint a fichero exigido vacío (SIGKILL de #168/#169)
+- ronda 1 (Codex, cierre 9b825948): RECHAZADA por el reviewer. C5 (columna de tests de traceability en «pendiente») y sondas S1-S4, S5, S5b, S10 y S12 en verde: los candados solo miraban el estado inicial y el final, nunca la curva
+- enmienda E2 (562c4650): cinco `it` que muestrean la curva (R5.4, R6.5, R7.4 ×2, R10.4), con valores medidos en spike; nacen verdes y producción no cambia. Firma del humano vía Notion: commit 5b7ab10a
+- handoff de la ronda 2 (d65a2140): `progress/handoff_mobile-celebrations-and-living-empty_ronda2.md`, c31-c36, anclas B/M/H ejecutadas por el leader desde el fichero
+- ronda 2 (Codex, cierre 0da89d9e): init.sh del leader EXIT=0 (móvil 99/2861). Reviewer APROBADO (a9b1a1a4), once sondas rojas por aserción
+- merge pendiente con origin/main ad432ca4 (#167, #168, #169): 7 conflictos. #167 declara su propio `MOTION_POP_SPRING` (0.6) y choca con el de #171 (0.5). Decisión del humano (AskUserQuestion, 2026-10-13): «Nombre propio 0.5», la celebración pasa a `MOTION_CELEBRATION_SPRING` y #167 no se toca. La sección de copy de R12.3 pasa a la siguiente libre (§2.26; §2.27 si #170, PR #213, mergea antes). Va en la enmienda E3 con firma humana, y luego la ronda 3 de Codex hace el merge
+- firma de E3 (2026-10-13): aprobada desde Notion, commit de firma 34446b87
+- directiva del humano (2026-10-13, relatada por Backend): «el diseño final debe de quedar como el artifac». El informe de paridad está en `progress/explore_171-canvas-parity.md`. Decisiones del humano (AskUserQuestion, 2026-10-13):
+  - separar por dueño: la celebración (filas 1–14) va a #171 como E4; el vacío de Inicio pasa a #176 y la receta global de botones a #177. Los ids están reservados y confirmados con todos los peers; se registran en feature_list al cerrar #171;
+  - bucles como el canvas, apagados con reduce motion;
+  - copy en la voz B de Pingo;
+  - confeti con el mismo hex en los dos temas;
+  - cuerpo de 15 px con `text-15` (el token de #173, firmada en f3b0a4a8);
+  - `rounded-xs` con excepción acotada en la carta.
+- handoff de la ronda 3 (f0a9fe29): E3 más el merge de origin/main 788d1f89 (#167, #168, #169, #170) con resolvedor versionado; c37–c43
+- ronda 3 (Codex, cierre 7eb051e2): init.sh del leader EXIT=0 (backend 187/1474, móvil 104/3187, e2e 30/468 con 3 suites/8 tests saltados). Reviewer APROBADO, con seis sondas: cinco en rojo por aserción y P5 verde (zona ciega de la posición de §2.27, que es brecha de la spec; E4 la candará)
+- spike E4 del leader (fuera del árbol, sobre b94c9295): `celebration.test.tsx` 66/66 con E4 aplicada, doce sondas rojas en su `it`, deriva de reinicio 0 en `withRepeat` y `withSequence`. Dos correcciones: R6.4 muestrea a los 2600 ms (a los 2700 la sonda del retardo repetido salía verde) y R12 suma `split` de §2.23 y §2.26 (con un encabezado renombrado, `indexOf` da −1 y pasaba)
+- E4 escrita en la spec (2026-10-14): requirements §Enmienda E4, tasks §E4 y T16 pasos 9–12, punteros en design. Casillas E4 y carta (R15) sin marcar; espejada a Notion desde 9f2beafb (R20.3 pasa su SVG a bloque de código) con Estado del gate = En revisión
+- firma de E4 y de la carta (R15) (2026-10-14): aprobadas desde Notion, commit de firma 0268e9bd
+- handoff de la ronda 4: `progress/handoff_mobile-celebrations-and-living-empty_ronda4.md`, c44–c65. Tests y carta llegan como parches del leader (`progress/ronda4_mobile-celebrations-and-living-empty/`); la producción la escribe Codex en los verdes, sin hashes. Simulado entero por el leader (sim sobre 0268e9bd): cierre ALL 104/3210, doce sondas rojas por aserción. La columna de tests de traceability la pone al día el leader en este mismo commit
+- ronda 4 (Codex, c44–c65, cierre a7f20923): los doce parches llegan intactos (patch-id igual en cada commit de parche). init.sh del leader EXIT=1: móvil 2 failed / 3210, R6.6 y R18.2 por `Exceeded timeout of 5000 ms`, ninguno por aserción. Medido con el fichero solo: R6.6 19,9 s, R6.4 8,5 s, R18.2 7,0 s y R6.5 5,2 s (en el sim del leader R6.6 tarda 16,3 s y R18.2 7,0 s, así que la lentitud viene de los tests de E4, que avanzan 13830 ms de 39 bucles con timers falsos). El fallo es del leader: spike, sim y handoff midieron con `--testTimeout=30000` y nunca contra los 5000 ms por defecto con que corre init.sh
+- arreglo del timeout por el **fallback al subagente `implementer`** (cambio trivial de una línea, CLAUDE.md §Excepciones): `jest.setTimeout(60_000)` al principio de `celebration.test.tsx`. Corrección de tasks §E4, no cambia ningún requisito
+- arreglo commiteado en f5e8cc68 (el paso `prettier --check` que prescribió el leader no aplica: `mobile-pet-tracker/` no usa prettier). init.sh del leader sobre f5e8cc68: EXIT=0 (backend 187/1474, móvil 104/3210, e2e 30/468 con 3 suites/8 tests saltados)
+- ronda 4: reviewer **APROBADO** (79b28820), ocho sondas rojas por aserción. Observaciones no bloqueantes: (1) el retardo de la insignia con reduce motion pasó de 400 a 450 ms, coherente con E4.3; design.md corregido a 450 en este commit; (2) R21.1 cuenta 39 llamadas a `cancelAnimation` pero no mira a qué shared value cancela (zona ciega del test, producción correcta); (3) riesgo de tirones del confeti en dispositivo, añadido al paso 9 del smoke T16
+- smoke R16 en el dev build de Android (tasks T16, pasos 1–12): firmado por el humano en `1052bb9f` y `50188740` (fecha 2026-10-14)
+- observaciones del humano al firmar (2026-10-15), registradas como features: el botón del vacío de Inicio lleva icono y texto en el canvas y aquí no (amplía #176, fila 23 del informe de paridad); con una cuenta sin mascotas, Inicio, Perfil y Recordatorios muestran «Algo salió mal» y «Reintentar», y el contenido de todas las pantallas debe centrarse como en Mapa (#181, id confirmado con UI-Pet, sites-99, Backend y Frontend; #182 queda para «completar recordatorio» de sites-99). #176 y #177, reservadas el 2026-10-13, se registran en `feature_list.json` en este mismo cierre
+- cierre: frontmatter de design, tasks y traceability a `approved`, fila R16 de traceability con los commits del smoke, `done` en `feature_list.json`, STATUS, Notion (Implementado / Completado) y PR contra `main`. Sin deriva de código entre el veredicto (`79b28820`) y el cierre. Merge: humano. Tras el merge: borrar el worktree
+
+## #172 `mobile-account-screens-polish` — Pantallas de cuenta como el canvas — 2026-10-15
+
+- **Inicio**: 2026-10-13, sesión Frontend (leader), worktree
+  `Pet-Tracker-wt-172`, branch `feature/172-mobile-account-screens-polish`.
+  Base congelada `3f9a60e2` (contiene `origin/main` 788d1f89, merge de #170).
+- **Estado**: `in_progress` desde 2026-10-13. La spec y la Enmienda #172 se
+  firmaron en Notion (última edición 2026-10-13T18:43Z). Implementa Codex CLI.
+- **Review ronda 1** (2026-10-14, b6c09d5e): rechazada. Producción cumple,
+  pero faltaban candados (G1–G4). La Enmienda E6 añade cinco `it` que nacen
+  verdes (tasks.md T24, c40–c42) y el handoff «Reanudación 5». Firmada en
+  Notion (866d685c, última edición 2026-10-14T19:40Z); Codex en Reanudación 5.
+- **Review ronda 2** (2026-10-14, e2745566): aprobada sobre f17eec10, init.sh
+  verde en ese HEAD. Falta R21, la prueba de humo del humano en dev build de
+  Android (traceability.md §Prueba de humo).
+- **R21 firmada** por el humano en 631826d9 (2026-10-14, OnePlus Nord 5). Sin
+  drift de código desde el veredicto (e2745566..631826d9 solo toca
+  current.md y la casilla).
+- **Merge de main** (2026-10-15): #171 entró en main (a288c7dc) y la branch
+  choca en cinco ficheros: la carta, §2.27 de mobile-ui-language, global.css,
+  motion.ts (los dos exportan `MOTION_PINGO_FLOAT_*` con los mismos valores) y
+  tres contadores de consistency-classnames. Resolución decidida hunk a hunk en
+  el handoff, §Reanudación 6; la hace Codex. Después, init.sh del leader y
+  reviewer sobre el merge; luego el cierre y la PR.
+- **Siguiente feature**: el humano pidió, tras el smoke, validación en cliente
+  con mensaje claro en todos los inputs de cuenta en lugar del error del
+  servidor. Va como #183, aparte, para no reabrir #172.
+- **Plan**: Login, Registro, Recuperar y Nueva contraseña como el canvas
+  (R1–R20): «Volver» arriba, CTA de 56 anclada al pie, inputs de 52,
+  `PasswordInput` con ojo en cinco campos, errores con icono, `PingoFloat`
+  (10 px / 3 s), Inter ExtraBold en la CTA y enmienda de la carta. R21 es la
+  prueba de humo del humano en el dev build de Android.
+- **Handoff**: `progress/handoff_mobile-account-screens-polish.md`.
+- **Ronda 3** (2026-10-15): Codex resolvió el merge de main (`4b355acb`, informe
+  `4f4dfd15`). init.sh del leader sobre `4f4dfd15` en verde (backend 187/1474,
+  infra 2/14, móvil 109/3277, e2e 468 passed y 8 skipped). Reviewer ronda 3
+  **aprobado** en `d1ea6a92`, sin deriva de código hasta el cierre.
+- **Cierre** (2026-10-15): frontmatter de design, tasks y traceability a
+  `approved`, fila R21 con `631826d9`, `done` en `feature_list.json`, STATUS,
+  Notion (Implementado / Completado) y PR contra `main`. Merge: humano. Tras
+  el merge: avisar a UI-Pet (#173) con el hash de main y borrar el worktree.

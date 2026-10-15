@@ -68,3 +68,16 @@
   - **Pendiente del humano:** R16 y las casillas; leer E1–E7 en la PR (O4).
   - **Pendiente del leader tras R16:** fetch, drift check contra el commit del veredicto, `feature_list.json` a `done`, tablero Notion a Implementado / Completado, y recién entonces `gh pr create`.
   - **Deuda a registrar (no ahora):** `findByText('Ada Lovelace')` en el me-card, y O1/O2/O6 según decida el humano.
+- 2026-10-15, Merge único de main (`9547115e`: #171 + #172): el humano mergeó #172
+  primero (PR #215). Resolución del leader en docs: carta con las enmiendas en
+  orden #171/#172/#173, `mobile-ui-language/design.md` con #173 en §2.29,
+  STATUS. **Fallback al subagente `implementer`** (CLAUDE.md §Excepciones, cambio
+  mecánico de merge; no es Codex): seis ficheros de código en conflicto
+  (`global.css`, `global-css.test.ts`, `consistency-classnames.test.ts`,
+  `legibility-classnames.test.ts`, `font-registration.test.ts`,
+  `language-provider.test.tsx`) y **E8**. Informe en
+  `progress/merge_main_mobile-tab-screens-canvas-fidelity.md`.
+  - **E8 (R2.4):** #172 usa `text-13` en `form-error` y en cuatro pantallas de
+    cuenta, así que el candado «solo Perfil» de #173 se puso rojo tras el merge.
+    El `it` de `text-13` pasa a un inventario cerrado de seis ficheros; `text-26`
+    no cambia. Lo aplicó el implementer (el humano lo lee en la PR, como E1–E7).

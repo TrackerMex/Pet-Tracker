@@ -261,7 +261,7 @@ total sin repetir es 252 + 3 del interruptor = **255**.
 | 201 | `register.phone` | `Phone` | `Teléfono` |
 | 214 | `register.password` | `Password` | `Contraseña` |
 | 228 | `register.confirmPassword` | `Confirm password` | `Confirmar contraseña` |
-| 244 | `register.country` | `Country (2-letter code)` | `País (código de 2 letras)` |
+| 244 | `register.country` | `Country` | `País` | ← literal cambiado por #172 (R16); antes `Country (2-letter code)` / `País (código de 2 letras)` |
 | 263 | `register.iAcceptTerms` | `I accept the terms` | `Acepto los términos` |
 | 279 | `register.createAccount` | `Create account` | `Crear cuenta` |
 
@@ -962,7 +962,25 @@ copy completa en cada una.
 | — | `alerts.distanceFromZone` | `{{distance}} from {{zone}}` | `A {{distance}} de {{zone}}` | ← añadida por #170 (R1) |
 | — | `alerts.viewOnMap` | `View on map` | `Ver en el mapa` | ← añadida por #170 (R1) |
 
-### §2.27 — Añadidos por #173 — Perfil fiel al canvas
+### §2.27 — Añadidos por #171 — Celebraciones
+
+| # | Clave | `en` | `es` | Origen |
+|---|---|---|---|---|
+| — | `addPet.celebrateTitle` | `{{petName}} is home!` | `¡{{petName}} ya está en casa!` | ← añadida por #171 (R12) |
+| — | `addPet.celebrateBody` | `I'll help you look after {{petName}}. Pair a collar and I'll keep track of where they are.` | `Te ayudo a cuidar de {{petName}}. Vincula un collar y estaré pendiente de dónde está.` | ← añadida por #171 (R12) |
+| — | `addPet.celebratePair` | `Pair a collar` | `Vincular un collar` | ← añadida por #171 (R12) |
+| — | `addPet.celebrateLater` | `Not now` | `Ahora no` | ← añadida por #171 (R12) |
+
+### §2.28 — Añadidos por #172 — Las pantallas de cuenta como el canvas
+
+| # | Clave | `en` | `es` | Origen |
+|---|---|---|---|---|
+| — | `common.back` | `Back` | `Volver` | ← añadida por #172 (R16) |
+| — | `common.showPassword` | `Show password` | `Mostrar contraseña` | ← añadida por #172 (R16) |
+| — | `common.hidePassword` | `Hide password` | `Ocultar contraseña` | ← añadida por #172 (R16) |
+| — | `register.country` | `Country` | `País` | ← cambiada por #172 (R16) |
+
+### §2.29 — Añadidos por #173 — Perfil fiel al canvas
 
 | # | Clave | `en` | `es` | Origen |
 |---|---|---|---|---|

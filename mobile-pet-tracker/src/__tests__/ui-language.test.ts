@@ -68,8 +68,8 @@ function checkUses(uses: UseRow[]) {
 }
 
 describe('#65 R1: el grupo (auth) resuelve su copy por clave', () => {
-  it('resuelve las 36 ocurrencias normativas', () => {
-    expect(R1_AUTH).toHaveLength(29 + 7 + 1); // #117 R10, #167 R6
+  it('resuelve las 41 ocurrencias normativas', () => {
+    expect(R1_AUTH).toHaveLength(29 + 7 + 1 + 4); // #117 R10, #167 R6, #172 R16
     checkUses(R1_AUTH);
   });
 });
@@ -180,8 +180,8 @@ describe('#65 R8: Recordatorios resuelve su copy por clave', () => {
 });
 
 describe('#65 R9: el alta de mascota resuelve su copy por clave', () => {
-  it('resuelve las 41 ocurrencias normativas', () => {
-    expect(R9_ADD_PET).toHaveLength(42 + 1 - 2); // +1 #95 R4, -2 #95 R5
+  it('resuelve las 45 ocurrencias normativas', () => {
+    expect(R9_ADD_PET).toHaveLength(42 + 1 - 2 + 4); // +1 #95 R4, -2 #95 R5, +4 #171 R12
     checkUses(R9_ADD_PET);
   });
 });
@@ -194,8 +194,8 @@ describe('#65 R10: el emparejado del collar resuelve su copy por clave', () => {
 });
 
 describe('#65 R11: restablecer contraseña resuelve su copy por clave', () => {
-  it('resuelve las 15 ocurrencias normativas', () => {
-    expect(R11_RESET).toHaveLength(15);
+  it('resuelve las 16 ocurrencias normativas', () => {
+    expect(R11_RESET).toHaveLength(15 + 1); // #172 R19
     checkUses(R11_RESET);
   });
 });
@@ -498,7 +498,8 @@ describe('#65 R18: los sitios resuelven por clave y no queda copy suelta', () =>
         + 1 - 1 // #117 R10: sale app/(auth)/forgot.tsx, entra screens/forgot/index.tsx
         + 1 // #118 R1
         + 1 // #134 R6
-        + 2 - 2, // #167 R1: salen app/(auth)/login.tsx y app/(auth)/register.tsx, entran screens/login/index.tsx y screens/register/index.tsx
+        + 2 - 2 // #167 R1: salen app/(auth)/login.tsx y app/(auth)/register.tsx, entran screens/login/index.tsx y screens/register/index.tsx
+        + 2 // #172 R16: back-button y password-input
     );
 
     for (const file of SCREEN_FILES) {

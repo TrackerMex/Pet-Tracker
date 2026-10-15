@@ -8,7 +8,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { login } from '../../api/auth';
 import { Card } from '../../components/card';
+import { BackButton } from '../../components/back-button';
 import { useAuth } from '../../providers/auth-provider';
+import { PasswordInput } from '../../components/password-input';
+import { FormError } from '../../components/form-error';
 import { useTranslate } from '../../providers/language-provider';
 import { HomeEntrance } from '../home/home-entrance';
 
@@ -68,7 +71,6 @@ export function LoginScreen() {
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{
           flexGrow: 1,
-          justifyContent: 'center',
           padding: 24,
           gap: 16,
           paddingTop: insets.top + 12,
@@ -76,6 +78,7 @@ export function LoginScreen() {
         }}
       >
         <HomeEntrance testID="login-header" index={0} className="gap-4">
+          <BackButton testID="login-back" fallback="/welcome" />
           <View testID="login-greeting" className="flex-row items-center gap-3">
             <Image
               testID="login-pingo"
@@ -83,24 +86,26 @@ export function LoginScreen() {
               style={{ width: 88, height: 88, transform: [{ rotate: '-8deg' }] }}
             />
             <Card testID="login-bubble" variant="secondary" className="flex-1 px-4 py-3">
-              <Text testID="login-bubble-text" className="text-sm font-semibold text-foreground">
+              <Text testID="login-bubble-text" className="text-15 font-semibold text-foreground">
                 {t('login.pingoGreeting')}
               </Text>
             </Card>
           </View>
-          <Text className="text-center text-2xl font-black text-foreground">
+          <Text className="text-3xl font-black text-foreground">
             {t('login.signIn')}
           </Text>
         </HomeEntrance>
 
-        <HomeEntrance testID="login-body" index={1} className="gap-4">
+        <HomeEntrance testID="login-body" index={1} className="flex-1 gap-4">
           <TextField>
-            <Label className="text-xs font-semibold text-foreground">
-              {t('login.email')}
+            <Label>
+              <Label.Text className="text-13 font-semibold text-muted">
+                {t('login.email')}
+              </Label.Text>
             </Label>
             <Input
               testID="login-email"
-              className="rounded-xl bg-default"
+              className="h-13 rounded-xl bg-default"
               autoCapitalize="none"
               keyboardType="email-address"
               value={email}
@@ -109,51 +114,52 @@ export function LoginScreen() {
           </TextField>
 
           <TextField>
-            <Label className="text-xs font-semibold text-foreground">
-              {t('login.password')}
+            <Label>
+              <Label.Text className="text-13 font-semibold text-muted">
+                {t('login.password')}
+              </Label.Text>
             </Label>
-            <Input
+            <PasswordInput
               testID="login-password"
-              className="rounded-xl bg-default"
-              secureTextEntry
               value={password}
               onChangeText={setPassword}
             />
           </TextField>
 
+          <LinkButton
+            testID="link-forgot"
+            className="min-h-11 self-end"
+            onPress={() => router.push('/forgot')}
+          >
+            <LinkButton.Label className="text-sm font-semibold text-accent-strong">
+              {t('login.forgotPassword')}
+            </LinkButton.Label>
+          </LinkButton>
+
           {error ? (
-            <Text testID="login-error" className="text-danger">
-              {error}
-            </Text>
+            <FormError testID="login-error" message={error} />
           ) : null}
+
+          <View testID="login-spacer" className="flex-1" />
 
           <Button
             testID="login-submit"
-            className="w-full rounded-xl bg-accent border-b-4 border-black/25"
+            className="w-full h-14 rounded-xl bg-accent border-b-4 border-black/25"
             isDisabled={submitting}
             onPress={() => void handleSubmit()}
           >
-            <Button.Label className="font-bold text-accent-foreground">
+            <Button.Label className="text-17 font-extrabold text-accent-foreground">
               {t('login.signIn')}
             </Button.Label>
           </Button>
 
           <LinkButton
             testID="link-register"
-            className="self-center"
+            className="h-13 w-full"
             onPress={() => router.push('/register')}
           >
-            <LinkButton.Label className="font-semibold text-accent-strong">
+            <LinkButton.Label className="text-base font-bold text-accent-strong">
               {t('login.createAccount')}
-            </LinkButton.Label>
-          </LinkButton>
-          <LinkButton
-            testID="link-forgot"
-            className="self-center"
-            onPress={() => router.push('/forgot')}
-          >
-            <LinkButton.Label className="font-semibold text-accent-strong">
-              {t('login.forgotPassword')}
             </LinkButton.Label>
           </LinkButton>
         </HomeEntrance>

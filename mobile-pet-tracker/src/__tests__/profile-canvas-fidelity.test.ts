@@ -53,8 +53,15 @@ describe('#173 R2.4: inventario de tamaños nuevos', () => {
   it('reserva text-26 al nombre de la mascota en Perfil', () => {
     expect(filesMatching(/\btext-26\b/)).toEqual(['screens/profile/index.tsx']);
   });
-  it('reserva text-13 a las iniciales de la cuenta en Perfil', () => {
-    expect(filesMatching(/\btext-13\b/)).toEqual(['screens/profile/index.tsx']);
+  it('limita text-13 a Perfil y a las pantallas de cuenta de #172 (E8)', () => {
+    expect(filesMatching(/\btext-13\b/)).toEqual([
+      'components/form-error.tsx',
+      'screens/forgot/index.tsx',
+      'screens/login/index.tsx',
+      'screens/profile/index.tsx',
+      'screens/register/index.tsx',
+      'screens/reset-password/index.tsx',
+    ]);
   });
 });
 

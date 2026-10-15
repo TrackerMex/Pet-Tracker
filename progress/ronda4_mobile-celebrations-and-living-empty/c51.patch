@@ -1,0 +1,89 @@
+diff --git a/mobile-pet-tracker/src/components/__tests__/celebration.test.tsx b/mobile-pet-tracker/src/components/__tests__/celebration.test.tsx
+index deaefd6fa5894774dbc2334e41226b8feb334a4f..3ff2e9983592941f3e6e1847378a2add6a810e7e 100644
+--- a/mobile-pet-tracker/src/components/__tests__/celebration.test.tsx
++++ b/mobile-pet-tracker/src/components/__tests__/celebration.test.tsx
+@@ -267,6 +267,13 @@ async function advance(ms: number) {
+   await act(async () => { jest.advanceTimersByTime(ms); });
+ }
+ 
++function animated(testID: string) {
++  return getAnimatedStyle(screen.getByTestId(testID, { includeHiddenElements: true })) as unknown as {
++    opacity: number;
++    transform: Record<string, number | string>[];
++  };
++}
++
+ describe('#171 R6: confeti', () => {
+   beforeEach(() => { jest.useFakeTimers(); });
+   afterEach(() => { jest.useRealTimers(); });
+@@ -404,6 +411,41 @@ describe('#171 R7: pop', () => {
+   });
+ });
+ 
++describe('#171 R17: anillo de ping', () => {
++  beforeEach(() => { jest.useFakeTimers(); });
++  afterEach(() => { jest.useRealTimers(); });
++
++  it('R17.1 el anillo es el primer hijo del hero, de acento y oculto a accesibilidad', async () => {
++    await renderProbe();
++    const first = screen.getByTestId('probe-hero').children[0];
++    expect(typeof first === 'string' ? first : first.props.testID).toBe('probe-ring');
++    const ring = screen.getByTestId('probe-ring', { includeHiddenElements: true });
++    expect(ring.props.className).toBe('absolute inset-0 rounded-full bg-accent');
++    expect(ring.props.pointerEvents).toBe('none');
++    expect(ring.props.accessibilityElementsHidden).toBe(true);
++    expect(ring.props.importantForAccessibility).toBe('no-hide-descendants');
++  });
++
++  it('R17.2 el anillo crece y se apaga a los 0, 550, 1100 y 2100 ms', async () => {
++    await renderProbe();
++    const ring = () => { const style = animated('probe-ring'); return [style.transform[0].scale as number, style.opacity]; };
++    const samples = [ring()];
++    for (const step of [550, 550, 1000]) {
++      await advance(step);
++      samples.push(ring());
++    }
++    expectSamples(samples, [[0.55, 0.55], [0.9092, 0.342], [1.2004, 0.1734], [1.4965, 0.002]], [3, 3]);
++  });
++
++  it('R17.3 el anillo vuelve a empezar tras 2200 ms', async () => {
++    await renderProbe();
++    await advance(2750);
++    const style = animated('probe-ring');
++    expect(style.transform[0].scale).toBeLessThan(1);
++    expect(style.opacity).toBeGreaterThan(0.3);
++  });
++});
++
+ describe('#171 R20: maquetación del artboard', () => {
+   it('R20.1 el hero mide 220 con margen superior y Pingo 170', async () => {
+     await renderProbe();
+@@ -524,6 +566,7 @@ describe('#171 R13: solo anima transform y opacity', () => {
+       ['probe-pingo', ['height', 'opacity', 'transform', 'width']],
+       ['probe-badge', ['bottom', 'opacity', 'position', 'right', 'transform']],
+       ['probe-confetti-0', ['left', 'opacity', 'position', 'top', 'transform']],
++      ['probe-ring', ['opacity', 'transform']],
+     ] as const;
+     for (const elapsed of [0, 1200]) {
+       if (elapsed) await act(async () => { jest.advanceTimersByTime(1200); });
+diff --git a/mobile-pet-tracker/src/theme/__tests__/motion.test.ts b/mobile-pet-tracker/src/theme/__tests__/motion.test.ts
+index a11b1ef2d4f62cd6f0b939f26b63de788f988752..aa2385d0d0953e479a1d48d3767747ac8f22db51 100644
+--- a/mobile-pet-tracker/src/theme/__tests__/motion.test.ts
++++ b/mobile-pet-tracker/src/theme/__tests__/motion.test.ts
+@@ -77,6 +77,7 @@ describe('#152 R1: las duraciones y el preset de movimiento viven en un solo sit
+       'MOTION_CELEBRATION_BADGE_DELAY_MS',
+       'MOTION_CELEBRATION_BADGE_POP_MS',
+       'MOTION_CELEBRATION_EASE_OUT',
++      'MOTION_CELEBRATION_PING_MS',
+       'MOTION_CELEBRATION_POP_MS',
+       'MOTION_CELEBRATION_POP_PEAK',
+       'MOTION_CONFETTI_FALL_TIMING',
+@@ -198,4 +199,8 @@ describe('#171 E4: las constantes de la celebración viven en motion.ts', () =>
+     const m = require('../motion');
+     expect([m.MOTION_CELEBRATION_POP_MS, m.MOTION_CELEBRATION_POP_PEAK, m.MOTION_CELEBRATION_BADGE_POP_MS, m.MOTION_CELEBRATION_BADGE_DELAY_MS]).toEqual([600, 1.08, 500, 450]);
+   });
++
++  it('declara la duración del ping', () => {
++    expect(require('../motion').MOTION_CELEBRATION_PING_MS).toBe(2200);
++  });
+ });
