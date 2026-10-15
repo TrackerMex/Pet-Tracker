@@ -1306,7 +1306,7 @@ describe('#170 R3: agrupa la lista en Hoy, Esta semana y Anteriores', () => {
     await screen.findByTestId('alert-row-today-open');
     expect(screen.getByTestId('alerts-list').props.data.map((a: Alert) => a.id)).toEqual(['today-open', 'today-acked', 'week-open', 'earlier-open', 'earlier-closed']);
   });
-  it('pinta una cabecera por sección con su copy en español', async () => {
+  it('pinta una cabecera por sección con su copy en español (enmendado por #174 R6)', async () => {
     await renderAlerts();
     await screen.findByTestId('alert-row-today-open');
     for (const [section, copy] of [['today', 'Hoy'], ['week', 'Esta semana'], ['earlier', 'Anteriores']]) {
@@ -1314,7 +1314,7 @@ describe('#170 R3: agrupa la lista en Hoy, Esta semana y Anteriores', () => {
       expect(headers).toHaveLength(1);
       expect(headers[0]).toHaveTextContent(copy);
       expect(headers[0].props.accessibilityRole).toBe('header');
-      expect(headers[0].props.className).toBe('text-xs font-bold uppercase text-muted');
+      expect(headers[0].props.className).toBe('mt-1.5 text-13 font-extrabold uppercase tracking-caps text-muted');
     }
   });
   it('pinta las cabeceras en inglés', async () => {
@@ -1324,12 +1324,16 @@ describe('#170 R3: agrupa la lista en Hoy, Esta semana y Anteriores', () => {
       expect(screen.getByTestId('alerts-section-' + section)).toHaveTextContent(copy);
     }
   });
-  it('envuelve cada cabecera con la primera fila de su sección en un View gap-4', async () => {
+  it('envuelve cada cabecera con la primera fila de su sección en un View gap-3 (enmendado por #174 R6)', async () => {
     await renderAlerts();
     await screen.findByTestId('alert-row-today-open');
     for (const [section, id] of [['today', 'today-open'], ['week', 'week-open'], ['earlier', 'earlier-open']]) {
       const parent = screen.getByTestId('alerts-section-' + section).parent!;
-      expect(parent.props.className).toBe('gap-4');
+      expect(parent.props.className).toBe('gap-3');
+      expect(parent.children).toHaveLength(2);
+      expect(elementChild(parent, 0).props.className).toBe(
+        'mt-1.5 text-13 font-extrabold uppercase tracking-caps text-muted',
+      );
       expect(within(parent).getByTestId('alert-row-' + id)).toBeVisible();
       expect(elementChild(parent, 0).props.testID).toBe('alerts-section-' + section);
       const first = elementChild(parent, 1);
