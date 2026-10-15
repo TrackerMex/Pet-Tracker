@@ -164,3 +164,22 @@
   la casilla de la carta. **Siguiente (leader, tras eso):** `git fetch`,
   diff origin vs `4b2d7e40`, STATUS.md (162/177 → 162/180), tablero Notion
   «Implementado / Completado», `done` en `feature_list.json`, `gh pr create`.
+
+## Reanudación 2026-10-15 (7) — #174 mergeó a main: ronda de fusión
+
+- **Qué pasó:** #174 llegó a `main` (`deaf4e6d`, PR #219) después del veredicto.
+  Fusionar `origin/main` en esta rama da **seis conflictos**: `docs/ui-guidelines.md`
+  (3), `consistency-classnames.test.ts`, `profile-canvas-fidelity.test.ts` (2),
+  `language-provider.test.tsx`, `global.css` y `specs/mobile-ui-language/design.md`.
+  Todos de inventarios y fórmulas compartidas; ninguno toca la pantalla de Documentos.
+- **Trampa semántica:** `border-lip-gray` aparece idéntico (`4 + 1 + 1 + 1`) en las
+  dos ramas; cada una sumó 1 a la misma base, así que la fusión es `4 + 1 + 1 + 1 + 1`.
+  El registro de copy de #175 pasa de `§2.30` a `§2.31` (gana #174, que mergeó antes).
+- **Casilla de la carta:** la sección «Enmienda de fidelidad al canvas» llega de
+  `main` ya firmada (`[X]`, 2026-10-15); la de #175 sin marcar se descarta por ser la
+  misma sección. Queda a decisión del humano si esa firma cubre también las líneas que
+  añade #175 (`--text-11`, `--tracking-eyebrow`, `rounded-24`).
+- **Plan:** Codex ejecuta `progress/handoff_mobile-docs-canvas-fidelity_merge.md`
+  (un commit de fusión, sin `rebase`, sin `init.sh`). Después reviewer sobre el delta de
+  la fusión, `./init.sh` corrido por el leader (cuando Frontend #183 avise) y los cierres
+  de siempre. R11 sigue válida: #174 solo toca Alertas.
