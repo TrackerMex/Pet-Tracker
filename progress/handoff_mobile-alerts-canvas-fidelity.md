@@ -1,7 +1,8 @@
 # Handoff a Codex CLI — #174 mobile-alerts-canvas-fidelity
 
 > **Nota del leader (2026-10-15).** Spec firmada vía Notion el 2026-10-13 y
-> **Enmienda E1 firmada el 2026-10-15** (commit `4ebe9e4e`). Lo que sigue manda
+> **Enmienda E1 firmada el 2026-10-15** (commit `4ebe9e4e`) y **Enmienda E2 firmada
+> en Notion tras la parada de Codex en c6** (texto en `d5ecf85c`). Lo que sigue manda
 > sobre `tasks.md` donde discrepen.
 >
 > 1. **H0 no tiene hash literal**: es el commit de este handoff, de asunto exacto
@@ -48,16 +49,42 @@
 >     specs): `- [ ] Enmienda #174 aprobada por humano`.
 > 14. **Skills (catálogo de Codex)**: `building-native-ui`, `appllama-app-design-skill` y
 >     `animate-expo`. No existen `expo-overview`, `expo-animation` ni `expo-router`.
+> 15. **Enmienda E2 (reanudación 1)**: Codex paró en c6 porque la firma no listó tres
+>     candados preexistentes de `alerts/index.test.tsx`. E2 los corrige en su sitio (ver
+>     §Enmienda E2 de `requirements.md`): E2.1 en un commit rojo nuevo **c5b**, E2.2 dentro
+>     de c11 y E2.3 dentro de c13. Hay **24 commits**: c1–c23 más c5b. El orden es
+>     c1–c5, **c5b**, c6–c23. Sigue «REANUDACION 1» al principio del bloque de texto.
 
 ```text
 Worktree: /home/claude/sites/Pet-Tracker-wt-174   <- PRIMERA LINEA. Trabaja AQUI y en ningun otro sitio
 Branch:   feature/174-mobile-alerts-canvas-fidelity   (H0 = el commit de asunto `docs(progress): #174 handoff a Codex (H0)`; anotalo en el impl)
 Confirma `pwd` y `git branch --show-current` antes de tocar nada (B0).
 
+== REANUDACION 1 (2026-10-15; Codex paro en c6; Enmienda E2 firmada) ==
+Estado de partida: c1-c5 hechos (cadena=0). La cadena de c6 dio cadena=1 en <VERDE>: el it de #155 R5 (candado que la
+firma no listo). Tu implementacion de c6 sigue SIN commitear en el arbol: _layout.tsx, alerts/index.tsx y
+specs/mobile-ui-language/design.md. NO la reescribas y NO toques tests de c1-c5 ya commiteados. B0-B2 y las ANCLAS ya
+pasaron: no se repiten. Hazlo en este orden:
+  RE1  Entra y comprueba (esperado: rama feature/174-mobile-alerts-canvas-fidelity; el ultimo commit tuyo es el de c5
+       `test(mobile): #174 R3 rojo — título Alertas en el contenido`, y encima hay commits del leader `docs(progress): #174 ...`):
+       cd /home/claude/sites/Pet-Tracker-wt-174/mobile-pet-tracker && git branch --show-current && git log --oneline -6 && git status --short
+  RE2  Aparta tu c6 (la cadena de c5b exige el arbol limpio y el rojo se mide sobre el estado de c5):
+       cd /home/claude/sites/Pet-Tracker-wt-174/mobile-pet-tracker && git stash push -- src/app/_layout.tsx src/screens/alerts/index.tsx ../specs/mobile-ui-language/design.md && git stash list | wc -l && git status --short
+       -> 1 ; y status sin ficheros modificados (solo el `??` de progress/impl_mobile-alerts-canvas-fidelity.md)
+  RE3  c5b: paso 1 a mano (E2.1 en PASO 1) y paso 2 con el ejecutor, c5b en lugar de cN:
+       cd /home/claude/sites/Pet-Tracker-wt-174/mobile-pet-tracker && bash -c "$(sed -n '/^# -- c5b (paso 2) cadena --$/{n;p;q}' ../progress/handoff_mobile-alerts-canvas-fidelity.md)"; echo "cadena=$?"
+  RE4  Recupera tu c6 y comprueba que sigue entera:
+       cd /home/claude/sites/Pet-Tracker-wt-174/mobile-pet-tracker && git stash pop && git stash list | wc -l && git status --short
+       -> 0 ; y status con exactamente esos tres ficheros ` M` (mas el `??` del impl)
+  RE5  Relanza la cadena de c6 TAL CUAL con el ejecutor (c6 en lugar de cN). Debe dar cadena=0 sin tocar codigo ni tests.
+       Si da otro rojo: PARA y reporta el `●`, no lo arregles.
+  RE6  Sigue con c7 en adelante normalmente. En el impl: anota en Desviaciones la parada de c6, el stash y c5b.
+Si algo de RE2-RE4 falla (p. ej. el stash pop da conflicto): PARA, no resuelvas nada y pega la salida en el impl.
+
 == QUE HACES ==
 Implementas #174: Alertas fiel al canvas (tokens, copy de dias, titulo en el contenido, contador con PopIn, metricas,
 secciones, fila con disco, ack compacto, pildoras, entrada escalonada) y las enmiendas a la carta y a 5 specs.
-Son 23 commits c1-c23, test-primero. Cada R tiene su commit ROJO (solo tests/candados) y despues su commit VERDE
+Son 24 commits (c1-c23 mas c5b, entre c5 y c6), test-primero. Cada R tiene su commit ROJO (solo tests/candados) y despues su commit VERDE
 (solo implementacion), nunca mezclados en el mismo commit. Excepciones declaradas:
   - c22 (R11 verde) es documentacion (docs/ y specs/).
   - c23 (R12) nace verde; su rojo lo demuestran las sondas S12.1-S12.6, que van DESPUES del commit.
@@ -69,7 +96,7 @@ Por commit:
   - verde: paso 1 a mano, implementa "Rn (2)"; paso 2, lanza la cadena.
   - Cada cadena es UNA linea que acaba en `git commit`. Las lineas `# -- ... --` son cabeceras: NO se ejecutan.
 EJECUTOR (paso 2 de cada cN y de cada sonda S12.n): NO copies la cadena; extraela del fichero y ejecutala asi,
-cambiando solo el numero (c1 ... c23):
+cambiando solo el numero (c1 ... c23 y c5b):
   cd /home/claude/sites/Pet-Tracker-wt-174/mobile-pet-tracker && bash -c "$(sed -n '/^# -- c1 (paso 2) cadena --$/{n;p;q}' ../progress/handoff_mobile-alerts-canvas-fidelity.md)"; echo "cadena=$?"
   cd /home/claude/sites/Pet-Tracker-wt-174/mobile-pet-tracker && bash -c "$(sed -n '/^# -- S12.1 sonda sobre el HEAD de c23 (NO se commitea) --$/{n;p;q}' ../progress/handoff_mobile-alerts-canvas-fidelity.md)"
   cadena=0 = commit hecho; cualquier otro valor = un eslabon fallo (ver Reintento / PARA).
@@ -174,7 +201,10 @@ R3   describe '#174 R3: el título vive en el contenido' (A; sustituye al '#114 
 R4   it 'pinta el contador junto al título con su anatomía (enmendado por #174 R4)' (A; reescribe el de '#170 R4')
 R5   it del '#114 R6' con sufijo '(#114 R6, enmendado por #174 R5)'  (A, bajo '#78 R4')
 R6   it 'envuelve cada cabecera con la primera fila de su sección en un View gap-3 (enmendado por #174 R6)' (A, '#170 R3')
+     y, por E2.2, it 'pinta una cabecera por sección con su copy en español (enmendado por #174 R6)' (A, '#170 R3')
 R7   sufijo ' (enmendado por #174 R7)' en los its de '#78 R6' (it.each), '#100 R6' y '#170 R5'  (A)
+     y, por E2.3, en 'alterna el tercer hijo entre ack y la píldora traducida' (A, '#78 R6'); R8 le apila su sufijo detras
+R3 (E2.1)  it 'queda en el sitio del vacío que sustituye (enmendado por #174 R3)' (A, describe '#155 R5'; commit c5b)
 R8   sufijo ' (enmendado por #174 R8)' APILADO tras el de R7 en esos its y en 'alterna…'  (A);
      it '#174 R8: el ack de fila es el secundario compacto' (consistency, describe '#166 R3')
 R9   its 'alterna el tercer hijo entre ack y la píldora traducida…' de A (ya con el sufijo de R8; sin renombre nuevo)
@@ -212,6 +242,15 @@ c5  A, L, ui-copy-table, PF. En PF aplica E1.1 (text-26) a mano; Antes -> Despue
         ]);
     Comprueba (1): grep -cF "'screens/alerts/index.tsx', // #174 R3" src/__tests__/profile-canvas-fidelity.test.ts
     ui-copy-table: la fila de alerts.title pasa de src/app/_layout.tsx a src/screens/alerts/index.tsx (L5).
+c5b A SOLO (REANUDACION 1, E2.1). En el it 'queda en el sitio del vacío que sustituye' del describe '#155 R5: sin alertas, Pingo duerme':
+    1) el titulo pasa a 'queda en el sitio del vacío que sustituye (enmendado por #174 R3)'
+    2) su ultimo expect pasa a (la linea `slot.parent?.parent?.props.testID` de antes NO cambia):
+       expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['View', 'alerts-empty']); // #174 R3: el primer hijo es el envoltorio del ListHeaderComponent
+    Comprueba (1, 1, 0 despues de editar):
+      grep -cF "it('queda en el sitio del vacío que sustituye (enmendado por #174 R3)'" src/screens/alerts/index.test.tsx
+      grep -cF ".toEqual(['View', 'alerts-empty']); // #174 R3: el primer hijo es el envoltorio del ListHeaderComponent" src/screens/alerts/index.test.tsx
+      grep -cF ".toEqual(['alerts-empty']);" src/screens/alerts/index.test.tsx
+    Antes de editar dan 0, 0 y 1 (en el estado de c5); despues, 1, 1 y 0. Rojo esperado: recibe ['alerts-empty'] (aun no hay encabezado).
 c6  _layout.tsx (options title ''), ListHeaderComponent en todos los estados, design.md de ui-language (L7). M10-M12.
 c7  A (con mockPopIn), PF. En PF aplica E1.1 (text-13): anade 'screens/alerts/index.tsx' ENTRE 'components/form-error.tsx' y
     'screens/forgot/index.tsx', con el comentario `// #174 R4, R6`. R6 NO vuelve a editar esta lista.
@@ -219,8 +258,11 @@ c7  A (con mockPopIn), PF. En PF aplica E1.1 (text-13): anade 'screens/alerts/in
 c8  contador con PopIn. M13 y M25.
 c9  A. El it del '#114 R6' espera { paddingHorizontal: 20, paddingTop: 24, paddingBottom: 48, gap: 12 }.
 c10 contentContainerStyle. M14 y M15.
-c11 A. c12 secciones (wrapper gap-3, cabecera 13 extrabold con tracking-caps). M16.
-c13 A (tres its con sufijo R7; columna disc bg-category-rose / bg-category-amber / bg-default).
+c11 A. En A aplica ademas E2.2: el it 'pinta una cabecera por sección con su copy en español' del describe '#170 R3: agrupa la lista en Hoy, Esta semana y Anteriores'
+    pasa a titulo '... (enmendado por #174 R6)' y su toBe('text-xs font-bold uppercase text-muted') a toBe('mt-1.5 text-13 font-extrabold uppercase tracking-caps text-muted').
+    Comprueba (1, 0; antes de editar daban 0 y 1): grep -cF "toBe('mt-1.5 text-13 font-extrabold uppercase tracking-caps text-muted')" src/screens/alerts/index.test.tsx ; grep -cF "toBe('text-xs font-bold uppercase text-muted')" src/screens/alerts/index.test.tsx
+    c12 secciones (wrapper gap-3, cabecera 13 extrabold con tracking-caps). M16.
+c13 A (tres its con sufijo R7 y, por E2.3, el it 'alterna el tercer hijo entre ack y la píldora traducida' con ' (enmendado por #174 R7)': su bucle `for (const alert of alerts)` aseverara que la fila contiene flex-row, items-center, gap-3, px-3.5, py-3 y shadow-none y NO contiene min-h-20 ni shadow-sm, y el enlace toBe('min-h-11 min-w-0 flex-1 justify-center gap-0.5'); la asercion size-11 no cambia; columna disc bg-category-rose / bg-category-amber / bg-default).
 c14 alert-meta.ts (disc) y la fila. M17-M21.
 c15 A y CC. En CC aplica E1.2 a mano, dentro del it 'inventaría los cinco secundarios neutros de toda la app' (titulo SIN cambios):
       1) la linea del regex pasa a (con la plantilla `...` como segunda alternativa):
@@ -260,6 +302,9 @@ cd /home/claude/sites/Pet-Tracker-wt-174/mobile-pet-tracker && python3 ../specs/
 # -- c5 R3 rojo (paso 1, a mano): escribe SOLO los tests/candados de "R3 (1)" de tasks.md (ningun fichero de produccion); incluye la correccion E1.1 (text-26) de PF --
 # -- c5 (paso 2) cadena --
 cd /home/claude/sites/Pet-Tracker-wt-174/mobile-pet-tracker && { FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/__tests__/account-screens-polish.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/design-drift.test.ts src/__tests__/hero-header-amendments.test.ts src/__tests__/legibility-classnames.test.ts src/__tests__/profile-canvas-fidelity.test.ts src/__tests__/tab-headers-canvas.test.ts src/__tests__/ui-language.test.ts src/app/__tests__/alert-detail.navigation.test.tsx src/app/__tests__/detail-stack.test.tsx src/app/__tests__/layout.test.tsx src/app/__tests__/reminders-alerts-stack.navigation.test.tsx src/components/__tests__/empty-state.test.tsx src/providers/__tests__/language-provider.test.tsx src/screens/alert-detail/index.test.tsx src/screens/alerts/index.test.tsx src/theme/__tests__/global-css.test.ts src/theme/__tests__/motion.test.ts > /tmp/174-c5.txt 2>&1; echo "exit=$?"; } && grep -qE '^Tests: +[0-9]+ failed, ' /tmp/174-c5.txt && test "$(grep -E '^  ● ' /tmp/174-c5.txt | grep -vxF '  ● Console' | grep -cvE '^  ● (#78 R4|#78 R8|#114 R4|#173 R2\.4|#78 R12|#65 R18|#174 R3)\b')" = 0 && grep -E '^  ● ' /tmp/174-c5.txt | grep -qE '#174 R3\b' && ! grep -qE "Test suite failed to run|ReferenceError:|SyntaxError:|Cannot find module|reading 'canceled'|Exceeded timeout" /tmp/174-c5.txt && test ! -e .expo/types/router.d.ts && { bun run typecheck > /tmp/174-tsc.txt 2>&1; true; } && test "$(grep 'error TS' /tmp/174-tsc.txt | grep -cvE '^src/(__tests__/ui-copy-table\.ts|[^(]+\.test\.tsx?)\(')" = 0 && { bunx expo lint --no-cache > /tmp/174-lint.txt 2>&1; true; } && ! grep -qF 'Failed to run' /tmp/174-lint.txt && test "$(grep -E '^/' /tmp/174-lint.txt | grep -cvE '(\.test\.tsx?|ui-copy-table\.ts)$')" = 0 && git add src/screens/alerts/index.test.tsx src/app/__tests__/layout.test.tsx src/__tests__/ui-copy-table.ts src/__tests__/profile-canvas-fidelity.test.ts && test "$(git diff --cached --no-renames --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'mobile-pet-tracker/src/__tests__/profile-canvas-fidelity.test.ts mobile-pet-tracker/src/__tests__/ui-copy-table.ts mobile-pet-tracker/src/app/__tests__/layout.test.tsx mobile-pet-tracker/src/screens/alerts/index.test.tsx ' && git diff --quiet -- . ../docs ../specs && test -z "$(git ls-files --others --exclude-standard -- . ../docs ../specs)" && git commit -m 'test(mobile): #174 R3 rojo — título Alertas en el contenido'
+# -- c5b E2.1 rojo (paso 1, a mano, REANUDACION 1): edita SOLO el it de #155 R5 de A segun E2.1 de requirements.md (ningun fichero de produccion) --
+# -- c5b (paso 2) cadena --
+cd /home/claude/sites/Pet-Tracker-wt-174/mobile-pet-tracker && { FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/__tests__/account-screens-polish.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/design-drift.test.ts src/__tests__/hero-header-amendments.test.ts src/__tests__/legibility-classnames.test.ts src/__tests__/profile-canvas-fidelity.test.ts src/__tests__/tab-headers-canvas.test.ts src/__tests__/ui-language.test.ts src/app/__tests__/alert-detail.navigation.test.tsx src/app/__tests__/detail-stack.test.tsx src/app/__tests__/layout.test.tsx src/app/__tests__/reminders-alerts-stack.navigation.test.tsx src/components/__tests__/empty-state.test.tsx src/providers/__tests__/language-provider.test.tsx src/screens/alert-detail/index.test.tsx src/screens/alerts/index.test.tsx src/theme/__tests__/global-css.test.ts src/theme/__tests__/motion.test.ts > /tmp/174-c5b.txt 2>&1; echo "exit=$?"; } && grep -qE '^Tests: +[0-9]+ failed, ' /tmp/174-c5b.txt && test "$(grep -E '^  ● ' /tmp/174-c5b.txt | grep -vxF '  ● Console' | grep -cvE '^  ● (#78 R4|#78 R8|#114 R4|#173 R2\.4|#78 R12|#65 R18|#174 R3|#155 R5)\b')" = 0 && grep -E '^  ● ' /tmp/174-c5b.txt | grep -qF 'queda en el sitio del vacío que sustituye (enmendado por #174 R3)' && ! grep -qE "Test suite failed to run|ReferenceError:|SyntaxError:|Cannot find module|reading 'canceled'|Exceeded timeout" /tmp/174-c5b.txt && test ! -e .expo/types/router.d.ts && { bun run typecheck > /tmp/174-tsc.txt 2>&1; true; } && test "$(grep 'error TS' /tmp/174-tsc.txt | grep -cvE '^src/[^(]+\.test\.tsx?\(')" = 0 && { bunx expo lint --no-cache > /tmp/174-lint.txt 2>&1; true; } && ! grep -qF 'Failed to run' /tmp/174-lint.txt && test "$(grep -E '^/' /tmp/174-lint.txt | grep -cvE '\.test\.tsx?$')" = 0 && git add src/screens/alerts/index.test.tsx && test "$(git diff --cached --no-renames --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'mobile-pet-tracker/src/screens/alerts/index.test.tsx ' && git diff --quiet -- . ../docs ../specs && test -z "$(git ls-files --others --exclude-standard -- . ../docs ../specs)" && git commit -m 'test(mobile): #174 R3 rojo — el vacío de #155 R5 ya tiene cabecera'
 # -- c6 R3 verde (paso 1, a mano): implementa "R3 (2)" de tasks.md (ningun test nuevo) --
 # -- c6 (paso 2) cadena --
 cd /home/claude/sites/Pet-Tracker-wt-174/mobile-pet-tracker && python3 ../specs/mobile-alerts-canvas-fidelity/mcheck.py cierre M10 M11 M12 && { FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/__tests__/account-screens-polish.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/design-drift.test.ts src/__tests__/hero-header-amendments.test.ts src/__tests__/legibility-classnames.test.ts src/__tests__/profile-canvas-fidelity.test.ts src/__tests__/tab-headers-canvas.test.ts src/__tests__/ui-language.test.ts src/app/__tests__/alert-detail.navigation.test.tsx src/app/__tests__/detail-stack.test.tsx src/app/__tests__/layout.test.tsx src/app/__tests__/reminders-alerts-stack.navigation.test.tsx src/components/__tests__/empty-state.test.tsx src/providers/__tests__/language-provider.test.tsx src/screens/alert-detail/index.test.tsx src/screens/alerts/index.test.tsx src/theme/__tests__/global-css.test.ts src/theme/__tests__/motion.test.ts > /tmp/174-c6.txt 2>&1; echo "exit=$?"; } && grep -qE '^Test Suites: +18 passed, 18 total$' /tmp/174-c6.txt && grep -qE '^Tests: +([0-9]+) passed, \1 total$' /tmp/174-c6.txt && test ! -e .expo/types/router.d.ts && bun run typecheck && bunx expo lint --no-cache > /tmp/174-lint.txt 2>&1 && test ! -s /tmp/174-lint.txt && git add src/app/_layout.tsx src/screens/alerts/index.tsx ../specs/mobile-ui-language/design.md && test "$(git diff --cached --no-renames --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'mobile-pet-tracker/src/app/_layout.tsx mobile-pet-tracker/src/screens/alerts/index.tsx specs/mobile-ui-language/design.md ' && git diff --quiet -- . ../docs ../specs && test -z "$(git ls-files --others --exclude-standard -- . ../docs ../specs)" && git commit -m 'feat(mobile): #174 R3 título de Alertas en el contenido (D-H)'
@@ -355,8 +400,8 @@ cd /home/claude/sites/Pet-Tracker-wt-174/mobile-pet-tracker && bun run typecheck
    -> exit=0
 cd /home/claude/sites/Pet-Tracker-wt-174/mobile-pet-tracker && bunx expo lint --no-cache > /tmp/174-lint.txt 2>&1; echo "exit=$?"; ! grep -qF 'Failed to run' /tmp/174-lint.txt && test ! -s /tmp/174-lint.txt && echo lint-ok
    -> exit=0 ; lint-ok
-cd /home/claude/sites/Pet-Tracker-wt-174/mobile-pet-tracker && git log --oneline $(git log -1 --format=%H --grep='^docs(progress): #174 handoff a Codex (H0)')..HEAD | wc -l
-   -> 23
+cd /home/claude/sites/Pet-Tracker-wt-174/mobile-pet-tracker && git log --oneline --invert-grep --grep='^docs(progress): #174 ' $(git log -1 --format=%H --grep='^docs(progress): #174 handoff a Codex (H0)')..HEAD | wc -l
+   -> 24   (c1-c23 y c5b; los commits `docs(progress): #174 ...` son del leader y no cuentan)
 # -- K4 trazabilidad (commit unico) y despues el impl con --only --
 Rellena specs/mobile-alerts-canvas-fidelity/traceability.md:
   - cada fila lleva el test (fichero::describe) y el hash + mensaje de sus commits (rojo y verde);
@@ -364,7 +409,7 @@ Rellena specs/mobile-alerts-canvas-fidelity/traceability.md:
 cd /home/claude/sites/Pet-Tracker-wt-174/mobile-pet-tracker && git add ../specs/mobile-alerts-canvas-fidelity/traceability.md && test "$(git diff --cached --no-renames --name-only)" = 'specs/mobile-alerts-canvas-fidelity/traceability.md' && git diff --quiet -- . ../docs ../specs && test -z "$(git ls-files --others --exclude-standard -- . ../docs ../specs)" && git commit -m 'docs(mobile): #174 trazabilidad'
 cd /home/claude/sites/Pet-Tracker-wt-174/mobile-pet-tracker && git add ../progress/impl_mobile-alerts-canvas-fidelity.md && git commit --only ../progress/impl_mobile-alerts-canvas-fidelity.md -m 'docs(mobile): informe de implementación de #174'
 # -- K5 lista cerrada contra <H0> --
-cd /home/claude/sites/Pet-Tracker-wt-174/mobile-pet-tracker && test "$(git diff --no-renames --name-only $(git log -1 --format=%H --grep='^docs(progress): #174 handoff a Codex (H0)')..HEAD -- .. | grep -vxE 'feature_list\.json|progress/current\.md|progress/handoff_mobile-alerts-canvas-fidelity\.md|specs/mobile-alerts-canvas-fidelity/(requirements|design|tasks)\.md|specs/mobile-alerts-canvas-fidelity/mcheck\.py|progress/review_mobile-alerts-canvas-fidelity\.md' | LC_ALL=C sort | tr '\n' ' ')" = 'docs/ui-guidelines.md mobile-pet-tracker/src/__tests__/alerts-canvas-fidelity.test.ts mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts mobile-pet-tracker/src/__tests__/profile-canvas-fidelity.test.ts mobile-pet-tracker/src/__tests__/ui-copy-table.ts mobile-pet-tracker/src/app/__tests__/layout.test.tsx mobile-pet-tracker/src/app/_layout.tsx mobile-pet-tracker/src/i18n/catalog.ts mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx mobile-pet-tracker/src/screens/alerts/index.test.tsx mobile-pet-tracker/src/screens/alerts/index.tsx mobile-pet-tracker/src/theme/__tests__/global-css.test.ts mobile-pet-tracker/src/theme/global.css mobile-pet-tracker/src/utils/alert-meta.ts progress/impl_mobile-alerts-canvas-fidelity.md specs/mobile-alert-detail-screen/requirements.md specs/mobile-alerts-canvas-fidelity/traceability.md specs/mobile-alerts-center/requirements.md specs/mobile-alerts-grouped-and-detail-map/requirements.md specs/mobile-chunky-cta/requirements.md specs/mobile-reminders-alerts-to-stack/requirements.md specs/mobile-ui-language/design.md ' && echo lista-ok
+cd /home/claude/sites/Pet-Tracker-wt-174/mobile-pet-tracker && test "$(git diff --no-renames --name-only $(git log -1 --format=%H --grep='^docs(progress): #174 handoff a Codex (H0)')..HEAD -- .. | grep -vxE 'feature_list\.json|progress/current\.md|progress/handoff_mobile-alerts-canvas-fidelity\.md|specs/mobile-alerts-canvas-fidelity/(requirements|design|tasks)\.md|specs/mobile-alerts-canvas-fidelity/mcheck\.py|progress/review_mobile-alerts-canvas-fidelity\.md|progress/sweep_174_e2\.md' | LC_ALL=C sort | tr '\n' ' ')" = 'docs/ui-guidelines.md mobile-pet-tracker/src/__tests__/alerts-canvas-fidelity.test.ts mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts mobile-pet-tracker/src/__tests__/profile-canvas-fidelity.test.ts mobile-pet-tracker/src/__tests__/ui-copy-table.ts mobile-pet-tracker/src/app/__tests__/layout.test.tsx mobile-pet-tracker/src/app/_layout.tsx mobile-pet-tracker/src/i18n/catalog.ts mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx mobile-pet-tracker/src/screens/alerts/index.test.tsx mobile-pet-tracker/src/screens/alerts/index.tsx mobile-pet-tracker/src/theme/__tests__/global-css.test.ts mobile-pet-tracker/src/theme/global.css mobile-pet-tracker/src/utils/alert-meta.ts progress/impl_mobile-alerts-canvas-fidelity.md specs/mobile-alert-detail-screen/requirements.md specs/mobile-alerts-canvas-fidelity/traceability.md specs/mobile-alerts-center/requirements.md specs/mobile-alerts-grouped-and-detail-map/requirements.md specs/mobile-chunky-cta/requirements.md specs/mobile-reminders-alerts-to-stack/requirements.md specs/mobile-ui-language/design.md ' && echo lista-ok
    -> lista-ok   (las 22 rutas de §Lista cerrada, abajo; si sale otra, PARA)
 
 == REGLAS CRITICAS ==
@@ -427,18 +472,18 @@ specs/mobile-ui-language/design.md
 Excluidos:
 - `feature_list.json`, `progress/current.md` y este handoff;
 - `specs/mobile-alerts-canvas-fidelity/{requirements,design,tasks}.md` y `mcheck.py`;
-- `progress/review_mobile-alerts-canvas-fidelity.md`.
+- `progress/review_mobile-alerts-canvas-fidelity.md` y `progress/sweep_174_e2.md`.
 
 Son ficheros del leader.
 
 ## Criterios de terminado
 
-- Los 23 commits c1–c23 están en orden, con los mensajes de arriba. Después van la trazabilidad y el impl.
+- Los 24 commits c1–c23 y c5b están en orden (c5b entre c5 y c6), con los mensajes de arriba. Después van la trazabilidad y el impl.
 - Ningún commit mezcla tests rojos con implementación.
 - Todas las cadenas terminaron en `git commit`, sin que fallara ningún eslabón. Si hubo reintentos, están anotados.
 - Las seis sondas S12.1–S12.6 dieron el recuento esperado y `limpio=0`.
 - El mcheck de cierre de c23 sale con `exit=0`: P1–P8, S1–S7 y M1–M38 = «Al cerrar».
-- K2–K5 en verde: BASE19 = K; ALL = 111 suites y `3389 + K − 670` tests; typecheck y lint limpios; 23 commits; lista cerrada exacta.
+- K2–K5 en verde: BASE19 = K; ALL = 111 suites y `3389 + K − 670` tests; typecheck y lint limpios; 24 commits; lista cerrada exacta.
 - R13 queda pendiente del humano. Las 6 casillas de enmienda, sin marcar.
 
 ## Contenido de `progress/impl_mobile-alerts-canvas-fidelity.md`
