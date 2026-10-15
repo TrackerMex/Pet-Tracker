@@ -814,4 +814,4 @@ jest.mock('react-native-reanimated/mock', () => ({
 - [x] Enmienda E1 aprobada por humano (fecha: 2026-10-15, vía Notion)
 - [x] Enmienda E2 aprobada por humano (fecha: 2026-10-15, vía Notion)
 - [x] Enmienda E3 aprobada por humano (fecha: 2026-10-15, vía Notion)
-- [ ] Enmienda E4 aprobada por humano (fecha: ____, vía Notion)
+- [x] Enmienda E4 aprobada por humano (fecha: 2026-10-15, vía Notion)
