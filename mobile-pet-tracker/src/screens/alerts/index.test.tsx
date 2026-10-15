@@ -1235,13 +1235,13 @@ describe('#155 R5: sin alertas, Pingo duerme', () => {
     mockListAlerts.mockReset();
   });
 
-  it('queda en el sitio del vacío que sustituye', async () => {
+  it('queda en el sitio del vacío que sustituye (enmendado por #174 R3)', async () => {
     mockListAlerts.mockResolvedValue({ kind: 'ok', items: [], nextCursor: null });
     await renderAlerts();
     await screen.findByTestId('alerts-empty-pose');
     const slot = screen.getByTestId('alerts-empty');
     expect(slot.parent?.parent?.props.testID).toBe('alerts-list');
-    expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['alerts-empty']);
+    expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['View', 'alerts-empty']); // #174 R3: el primer hijo es el envoltorio del ListHeaderComponent
   });
 
   it('pinta la pose, el título y la frase de Pingo', async () => {
