@@ -1,7 +1,7 @@
 import { Image } from 'expo-image';
 import { HeaderHeightContext } from 'expo-router/react-navigation';
 import { router } from 'expo-router';
-import { Button, Input, Label, LinkButton, TextField } from 'heroui-native';
+import { Button, FieldError, Input, Label, LinkButton, TextField } from 'heroui-native';
 import { useContext, useState } from 'react';
 import { KeyboardAvoidingView, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -14,6 +14,7 @@ import { PasswordInput } from '../../components/password-input';
 import { FormError } from '../../components/form-error';
 import { useTranslate } from '../../providers/language-provider';
 import { HomeEntrance } from '../home/home-entrance';
+import { validateLogin, type FieldIssues } from '../../utils/account-rules';
 
 export function LoginScreen() {
   const headerHeight = useContext(HeaderHeightContext);
@@ -22,15 +23,23 @@ export function LoginScreen() {
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<FieldIssues<'email' | 'password'>>({});
   const { signIn } = useAuth();
   const t = useTranslate();
 
   async function handleSubmit() {
-    setSubmitting(true);
+    setFieldErrors({});
     setError(null);
+    const values = { email: email.trim(), password };
+    const issues = validateLogin(values);
+    if (Object.keys(issues).length > 0) {
+      setFieldErrors(issues);
+      return;
+    }
+    setSubmitting(true);
 
     try {
-      const result = await login(process.env.EXPO_PUBLIC_API_URL, { email, password });
+      const result = await login(process.env.EXPO_PUBLIC_API_URL, values);
 
       switch (result.kind) {
         case 'ok':
@@ -97,7 +106,7 @@ export function LoginScreen() {
         </HomeEntrance>
 
         <HomeEntrance testID="login-body" index={1} className="flex-1 gap-4">
-          <TextField>
+          <TextField isInvalid={Boolean(fieldErrors.email)}>
             <Label>
               <Label.Text className="text-13 font-semibold text-muted">
                 {t('login.email')}
@@ -111,9 +120,12 @@ export function LoginScreen() {
               value={email}
               onChangeText={setEmail}
             />
+            <FieldError testID="login-email-error">
+              {fieldErrors.email ? <FormError testID="login-email-message" message={t(fieldErrors.email.labelKey, fieldErrors.email.params)} /> : null}
+            </FieldError>
           </TextField>
 
-          <TextField>
+          <TextField isInvalid={Boolean(fieldErrors.password)}>
             <Label>
               <Label.Text className="text-13 font-semibold text-muted">
                 {t('login.password')}
@@ -124,6 +136,9 @@ export function LoginScreen() {
               value={password}
               onChangeText={setPassword}
             />
+            <FieldError testID="login-password-error">
+              {fieldErrors.password ? <FormError testID="login-password-message" message={t(fieldErrors.password.labelKey, fieldErrors.password.params)} /> : null}
+            </FieldError>
           </TextField>
 
           <LinkButton
