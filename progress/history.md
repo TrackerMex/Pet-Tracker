@@ -9039,3 +9039,67 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
   me-card; O1 `disabled={photoUploading}` en `change-photo`; O2 `size`/`cacheKey`
   del `PetAvatar` en `PetSwitcher`; O6 `className` de `profile-sign-out` sin
   candado; Salud y Nutrición como features aparte.
+
+## #174 `mobile-alerts-canvas-fidelity` — Alertas fiel al canvas (lista) — 2026-10-15
+
+- **Inicio**: 2026-10-13, sesión Backend (leader), worktree
+  `Pet-Tracker-wt-174`, branch `feature/174-mobile-alerts-canvas-fidelity` desde
+  `origin/main` `788d1f89`. El humano la arrancó con «el diseño final debe de
+  quedar como el artifact». Respuestas a P-Q1..P-Q19: «Píxel exacto», dos
+  features (#174 la lista, #180 el detalle) y cabecera nativa ajustada. Copy
+  aprobado: `alerts.dayAgo` «Hace 1 día» / «1 day ago» y `alerts.daysAgo`
+  «Hace {{days}} días» / «{{days}} days ago».
+- **Spec**: R1-R13 (`specs/mobile-alerts-canvas-fidelity/`), espejo en Notion
+  (https://app.notion.com/p/3f86115a9b278171aff6edcaa48b4aaa). Firmada por el
+  humano en `954de067`. La branch absorbió main en `5fae110b` al mergear #173.
+- **Implementación**: Codex CLI, H0 `eeacbf11`, 23 commits test-primero c1-c23
+  más sondas S12.1-S12.6 y trazabilidad (handoff
+  `progress/handoff_mobile-alerts-canvas-fidelity.md`, informe
+  `progress/impl_mobile-alerts-canvas-fidelity.md`). R1 tokens `text-15`,
+  `radius-10` y `--tracking-caps`; R2 copy de días; R3 título en el contenido;
+  R4 contador con `PopIn`; R5 métricas de 20 y 12; R6 secciones; R7 fila con
+  disco de categoría; R8 ack compacto con labio; R9 píldoras Leída y Resuelta;
+  R10 entrada escalonada de las cinco primeras filas; R11 enmiendas a la carta y
+  a cinco specs; R12 inventarios y grep-limpio. Seis reanudaciones, todas por
+  fallos del handoff o de la spec:
+  - **E1** (firmada `4ebe9e4e`): tres premisas de la firma caducaron al mergear
+    #173: listas de `text-13`/`text-26` de #173 R2.4, regex y recuento de
+    `#166 R3` y última línea del catálogo.
+  - **E2** (`bc72e7a5`, c6): el `it` de #155 R5 asevera que el vacío es el único
+    hijo de su contenedor y R3 pone un encabezado antes; candados preexistentes
+    que la firma no listó.
+  - **E3** (`9529698e`, c8): `PopIn` llama a `useReducedMotion`, que el mock de
+    reanimated de jest no exporta; el route test monta la lista de verdad.
+  - **E4** (`20d02b28`, c7b): el doble tiene que ir sobre
+    `react-native-reanimated/mock`, porque `expo-router/testing-library` hace
+    `require` del módulo real.
+  - **E5** (`cfe436e2`, S12.6): la sonda mata tres candados, no cero; el
+    handoff esperaba 3 fallos.
+  - Reanudación 4 (c21): guard `SINCRASH` anclado a `thrown`.
+  - Reanudación 6 (K3F): el filtro del handoff solo excluía `docs(progress): #174 `
+    y contaba siete commits del leader (firmas y enmiendas) como de Codex
+    (`32` en vez de `25`). Corregido con tres `--grep` más; lección en memoria.
+- **Review ronda 1** (`eb522ec2`): RECHAZADO por una sola causa (C4, R9): el
+  test existía pero no lo nombraba, y el texto firmado de R9 dice que el `it` no
+  se renombra. Fallback del subagente `implementer` (cambio trivial, informe
+  `progress/impl_r9_anchor_174.md`): comentario `// #174 R9` en
+  `src/screens/alerts/index.test.tsx` (`479704d3`) y fila R9 de la trazabilidad
+  con ese hash.
+- **Review ronda 2** (`d3c5ff94`): APROBADO sobre el delta `5d221d42..eb522ec2`,
+  sin deriva de código. Gate del leader: `./init.sh` exit 0 sobre `5d221d42`
+  (backend 187/1474, infra 2/14, móvil 111/3428, e2e 30 suites). Los 40 `●` del
+  log son `● Console`.
+- **Firmas del humano** (`4af37a8a`): smoke R13 en el dev build de Android
+  (2026-10-15) y las siete casillas de las enmiendas R11 (carta y seis specs).
+- **Cierre** (2026-10-15): frontmatter de design, tasks y traceability a
+  `approved`, `done` en `feature_list.json`, STATUS, `progress/current.md` a
+  plantilla, Notion (Implementado / Completado) y PR contra `main`. Merge:
+  humano; tras el merge, borrar el worktree y avisar a #175, #178 y Frontend.
+- **Riesgo de merge**: #178 (sites-99) toca los inventarios de
+  `profile-canvas-fidelity` y las fórmulas de `consistency-classnames`, que #174
+  también toca. Resolver por contenido con un merge, nunca con rebase: un rebase
+  invalida los hashes de la trazabilidad.
+- **Pendiente fuera de #174**: el Detalle de alerta es #180 (el humano pidió
+  mejorarlo el 2026-10-15 y quedó anotado en su descripción);
+  `docs/ui-guidelines.md` conserva sin marcar la casilla de la enmienda anterior
+  de #173 (`fecha: ____`).

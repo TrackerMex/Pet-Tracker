@@ -533,7 +533,7 @@ describe('#114 R4: reminders y alerts declaran su cabecera nativa', () => {
 
   it.each([
     ['reminders', 't:reminders.reminders'],
-    ['alerts', 't:alerts.title'],
+    ['alerts', ''], // #174 R3
   ])('%s usa exactamente las opciones de cabecera acordadas', async (name, title) => {
     await render(<RootLayout />);
     await waitFor(() => expect(jest.mocked(Stack)).toHaveBeenCalled());

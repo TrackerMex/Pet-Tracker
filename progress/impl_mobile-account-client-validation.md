@@ -14498,3 +14498,19 @@ Trazabilidad de E1 commiteada: `5bcaf612a88492a0ce2194887e9e838b2338fc4b` — `d
 ```
 
 Este informe se incorpora con `docs(mobile-account-client-validation): #183 informe de E1`; a continuación se comprueba el árbol limpio.
+
+## Cierre — merge de origin/main con #174 (deaf4e6d)
+
+Excepción trivial de CLAUDE.md (fallback al subagente `implementer`, como en `e61c5bb5` y `6f96bef6`): resolución del conflicto del `git merge --no-ff --no-commit origin/main` (`deaf4e6d`, trae #174) en el único fichero en conflicto, `mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx`. Sin spec nueva ni TDD; ningún otro fichero de la app tocado. `specs/mobile-ui-language/design.md` lo resolvió el leader (§2.30 para #174, §2.31 para #183).
+
+- **Hunk de la longitud del catálogo** (tras `- 4 + 3 // #173 R13`): quedan las dos líneas, `+ 1 // #174 R2` (sin coma) y `+ 9, // #183 R1` (cierra con coma), antes del `);`.
+- **Hunk del final del fichero**: quedan los dos `describe` completos y sin cambios, primero `#174 R2: días con palabra completa` y después `#183 R1: el copy de la validación en cliente`, separados por una línea en blanco. Las líneas en blanco previas al conflicto quedan como estaban.
+- Marcadores: `grep -cE '^(<<<<<<<|=======|>>>>>>>)'` sobre el fichero = `0`. `git diff HEAD` del fichero solo añade lo de #174; `git diff origin/main` solo añade lo de #183 (más la coma movida).
+
+Verificación desde `mobile-pet-tracker/`, en primer plano y exit medido sin pipe:
+
+- `bunx jest --testTimeout=30000 --runTestsByPath src/providers/__tests__/language-provider.test.tsx`: exit 0, `Test Suites: 1 passed, 1 total`, `Tests: 41 passed, 41 total`.
+- `bunx tsc --noEmit`: exit 0, sin salida. `.expo/types/router.d.ts` no existía; no hubo que borrar nada.
+- `bunx eslint src/providers/__tests__/language-provider.test.tsx`: exit 0, sin salida.
+
+No se ejecutaron `./init.sh` ni la suite móvil completa. Solo `git add` del test y de este informe; sin commit, merge ni push (el commit de merge lo hace el leader).

@@ -793,7 +793,7 @@ copy completa en cada una.
 
 | Línea | Clave | `en` | `es` | Nota |
 |---|---|---|---|---|
-| — | `alerts.title` | `Alerts` | `Alertas` | ← añadida por #78 (R3) · se pinta desde `src/app/_layout.tsx` por #114 (R4)
+| — | `alerts.title` | `Alerts` | `Alertas` | ← añadida por #78 (R3) · se pinta en `src/screens/alerts/index.tsx` por #174 (R3)
 | — | `alerts.empty` | `No alerts` | `No hay alertas` | ← añadida por #78 (R3)
 | — | `alerts.ack` | `Mark as read` | `Marcar leída` | ← añadida por #78 (R3)
 | — | `alerts.typeGeofenceExit` | `Left the safe zone` | `Salió de la zona` | ← añadida por #78 (R3)
@@ -804,7 +804,7 @@ copy completa en cada una.
 | — | `alerts.justNow` | `Just now` | `Ahora mismo` | ← añadida por #78 (R3)
 | — | `alerts.minutesAgo` **(param)** | `{{minutes}} min ago` | `Hace {{minutes}} min` | ← añadida por #78 (R3)
 | — | `alerts.hoursAgo` **(param)** | `{{hours}} h ago` | `Hace {{hours}} h` | ← añadida por #78 (R3)
-| — | `alerts.daysAgo` **(param)** | `{{days}} d ago` | `Hace {{days}} d` | ← añadida por #78 (R3)
+| — | `alerts.daysAgo` **(param)** | `{{days}} days ago` | `Hace {{days}} días` | ← añadida por #78 (R3) · valor cambiado por #174 (R2)
 | — | `home.alertsBell` | `Alerts` | `Alertas` | ← añadida por #78 (R3)
 | — | `home.alertsBellUnread` | `Unread alerts` | `Alertas sin leer` | ← añadida por #78 (R3)
 
@@ -988,7 +988,13 @@ copy completa en cada una.
 | — | `profile.gpsNoCollar` | `No collar` | `Sin collar` | ← añadida por #173 (R13) |
 | — | `profile.gpsCollar` | `GPS collar` | `Collar GPS` | ← añadida por #173 (R13) |
 
-### §2.30 — Añadidos por #183 — Validación en cliente de las pantallas de cuenta
+### §2.30 — Añadidos por #174 — Alertas fieles al canvas
+
+| # | Clave | `en` | `es` | Origen |
+|---|---|---|---|---|
+| — | `alerts.dayAgo` | `1 day ago` | `Hace 1 día` | ← añadida por #174 (R2) |
+
+### §2.31 — Añadidos por #183 — Validación en cliente de las pantallas de cuenta
 
 | # | Clave | `en` | `es` | Origen |
 |---|---|---|---|---|
