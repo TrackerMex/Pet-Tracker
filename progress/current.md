@@ -144,3 +144,23 @@
 - **Siguiente:** permiso del humano para `init.sh` (lo corre el leader, tras
   esperar pgrep), `reviewer` leyendo log + HEAD, `git fetch` antes de las
   casillas, R11 y casilla de la enmienda de la carta (humano).
+
+## Reanudación 2026-10-15 (6) — Reviewer aprobó R1 a R10
+
+- **Veredicto:** APROBADO en `progress/review_mobile-docs-canvas-fidelity.md`
+  (HEAD `4b2d7e40`, base H0 `d38e2787`). Contrastado por el leader: el HEAD de
+  la rama coincide con el del veredicto, `git diff 4b2d7e40 HEAD -- mobile-pet-tracker`
+  vacío, `origin/main` sigue en `dea11875` (sin deriva), la aritmética
+  3389 + 1307 − 1252 = 3444 cuadra con el log de `init.sh`.
+- **Alcance:** solo lo automatizable. **R11** (prueba de humo en dev build de
+  Android) y la **casilla de la enmienda de la carta** (`docs/ui-guidelines.md`)
+  quedan abiertas a propósito; la feature no pasa a `done` hasta que el humano
+  las cierre.
+- **Observaciones no bloqueantes:** flake de Home (`#98 R7`) bajo carga, con el
+  alcance de ese `it` y no ensanchable; frontmatter de `design.md`, `tasks.md` y
+  `traceability.md` sigue en `draft` (se pasa a `approved` al cerrar);
+  líneas de más de 100 columnas en `docs/index.tsx` (móvil no tiene prettier).
+- **Siguiente (humano):** prueba de humo R11 en dev build de Android, firma de
+  la casilla de la carta. **Siguiente (leader, tras eso):** `git fetch`,
+  diff origin vs `4b2d7e40`, STATUS.md (162/177 → 162/180), tablero Notion
+  «Implementado / Completado», `done` en `feature_list.json`, `gh pr create`.
