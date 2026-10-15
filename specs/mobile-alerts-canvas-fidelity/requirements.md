@@ -764,4 +764,4 @@ jest.mock('react-native-reanimated', () => ({
 - [x] Aprobado por humano (fecha: 2026-10-13, vía Notion) ← gate obligatorio antes de implementar
 - [x] Enmienda E1 aprobada por humano (fecha: 2026-10-15, vía Notion)
 - [x] Enmienda E2 aprobada por humano (fecha: 2026-10-15, vía Notion)
-- [ ] Enmienda E3 aprobada por humano (fecha: ____, vía Notion)
+- [x] Enmienda E3 aprobada por humano (fecha: 2026-10-15, vía Notion)
