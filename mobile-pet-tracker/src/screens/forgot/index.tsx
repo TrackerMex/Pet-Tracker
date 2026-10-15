@@ -1,7 +1,7 @@
 import { Image } from 'expo-image';
 import { HeaderHeightContext } from 'expo-router/react-navigation';
 import { router } from 'expo-router';
-import { Button, Input, Label, LinkButton, TextField } from 'heroui-native';
+import { Button, FieldError, Input, Label, LinkButton, TextField } from 'heroui-native';
 import { useContext, useState } from 'react';
 import { KeyboardAvoidingView, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -15,6 +15,7 @@ import { FormError } from '../../components/form-error';
 import { useTranslate } from '../../providers/language-provider';
 import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
+import { validateForgot, type FieldIssues } from '../../utils/account-rules';
 
 export function ForgotScreen() {
   const headerHeight = useContext(HeaderHeightContext);
@@ -26,6 +27,19 @@ export function ForgotScreen() {
   const [sent, setSent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<FieldIssues<'email'>>({});
+
+  async function submit() {
+    setFieldErrors({});
+    setError(null);
+    const values = { email: email.trim() };
+    const issues = validateForgot(values);
+    if (Object.keys(issues).length > 0) {
+      setFieldErrors(issues);
+      return;
+    }
+    await send(values.email);
+  }
 
   async function send(target: string) {
     setSubmitting(true);
@@ -101,7 +115,7 @@ export function ForgotScreen() {
         </Text>
 
         {!sent ? (
-          <TextField className="w-full">
+          <TextField className="w-full" isInvalid={Boolean(fieldErrors.email)}>
             <Label>
               <Label.Text className="text-13 font-semibold text-muted">
                 {t('forgot.email')}
@@ -117,6 +131,9 @@ export function ForgotScreen() {
               value={email}
               onChangeText={setEmail}
             />
+            <FieldError testID="forgot-email-error">
+              {fieldErrors.email ? <FormError testID="forgot-email-message" message={t(fieldErrors.email.labelKey, fieldErrors.email.params)} /> : null}
+            </FieldError>
           </TextField>
         ) : null}
 
@@ -131,7 +148,7 @@ export function ForgotScreen() {
             testID="forgot-submit"
             className="w-full h-14 rounded-xl bg-accent border-b-4 border-black/25"
             isDisabled={email.trim() === '' || submitting}
-            onPress={() => void send(email.trim())}
+            onPress={() => void submit()}
           >
             <Button.Label className="text-17 font-extrabold text-accent-foreground">
               {t('forgot.sendRecoveryLink')}
