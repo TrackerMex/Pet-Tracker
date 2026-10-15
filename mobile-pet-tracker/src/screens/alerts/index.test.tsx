@@ -361,27 +361,27 @@ describe('#78 R6: cada fila de alerta trae su icono, su hueco, su tinta y sus tr
       type: 'geofence_exit',
       iconName: 'LocationSlash',
       labelKey: 'alerts.typeGeofenceExit',
-      surface: 'bg-danger-soft',
+      disc: 'bg-category-rose',
       color: '--color-danger',
     },
     {
       type: 'battery_low',
       iconName: 'BatteryLow',
       labelKey: 'alerts.typeBatteryLow',
-      surface: 'bg-warning-soft',
+      disc: 'bg-category-amber',
       color: '--color-warning-strong',
     },
     {
       type: 'future_alert_type',
       iconName: 'Bell',
       labelKey: 'alerts.typeUnknown',
-      surface: 'bg-default',
+      disc: 'bg-default',
       color: '--color-muted',
     },
   ] as const)(
-    'canda las doce decisiones para $type',
-    async ({ type, iconName, labelKey, surface, color }) => {
-      const alert = makeAlert({ id: type, type });
+    'canda las doce decisiones para $type (enmendado por #174 R7)',
+    async ({ type, iconName, labelKey, disc, color }) => {
+      const alert = makeAlert({ id: type, type, petName: 'Rocky' });
       mockListAlerts.mockResolvedValue({
         kind: 'ok',
         items: [alert],
@@ -395,6 +395,7 @@ describe('#78 R6: cada fila de alerta trae su icono, su hueco, su tinta y sus tr
       const rowId = `alert-row-${alert.id}`;
       const row = within(list).getByTestId(rowId);
       const rowScope = within(row);
+      const subtitle = rowScope.getByTestId(`${rowId}-subtitle`);
       const icon = rowScope.getByTestId(`${rowId}-icon`);
       const typeText = rowScope.getByTestId(`${rowId}-type`);
       const petText = rowScope.getByTestId(`${rowId}-pet`);
@@ -402,49 +403,53 @@ describe('#78 R6: cada fila de alerta trae su icono, su hueco, su tinta y sus tr
       const ack = rowScope.getByTestId(`${rowId}-ack`);
 
       expect(icon.props.iconName).toBe(iconName);
-      expect(icon.props.size).toBe(20);
+      expect(icon.props.size).toBe(22);
       expect(icon.props.color).toBe(color);
       expect(icon.parent?.props.className).toBe(
-        `size-11 items-center justify-center rounded-full ${surface}`,
+        `size-11 items-center justify-center rounded-full ${disc}`,
       );
       expect(typeText).toHaveTextContent(es[labelKey]);
       expect(typeText.props.className).toBe(
-        'text-sm font-bold text-foreground',
+        'text-15 font-extrabold text-foreground',
       );
       expect(petText).toHaveTextContent(alert.petName);
-      expect(petText.props.className).toBe(
-        'text-xs font-semibold text-muted',
-      );
+      expect(petText.props.className).toBeUndefined();
+      expect(subtitle.props.className).toBe('text-xs font-normal text-muted');
+      expect(subtitle).toHaveTextContent(`${alert.petName} · Hace 2 h`, { exact: true });
+      expect(subtitle.children).toHaveLength(3);
+      expect(elementChild(subtitle, 0).props.testID).toBe(`${rowId}-pet`);
+      expect(subtitle.children[1]).toBe(' · ');
+      expect(elementChild(subtitle, 2).props.testID).toBe(`${rowId}-time`);
       expect(timeText).toHaveTextContent(
         es['alerts.hoursAgo'].replace('{{hours}}', '2'),
       );
-      expect(timeText.props.className).toBe(
-        'text-xs font-normal text-muted',
-      );
+      expect(timeText.props.className).toBeUndefined();
       expect(ack.props.accessibilityRole).toBe('button');
       expect(ack.props.className).toContain('min-h-11');
       expect(rowScope.getByText(es['alerts.ack'])).toBeVisible();
       expect(rowScope.queryByTestId(`${rowId}-status`)).toBeNull();
       expect(row.props.onPress).toBeUndefined();
       expect(row.props.accessibilityRole).toBeUndefined();
-      expect(row.props.className).toContain(
-        'min-h-20 flex-row items-center gap-3',
-      );
+      const classes = row.props.className.split(' ');
+      for (const value of ['flex-row', 'items-center', 'gap-3', 'px-3.5', 'py-3', 'shadow-none']) {
+        expect(classes).toContain(value);
+      }
+      expect(classes).not.toContain('min-h-20');
+      expect(classes).not.toContain('shadow-sm');
       expect(row.children).toHaveLength(3);
       expect(elementChild(row, 0).props.className).toContain('size-11');
       expect(elementChild(row, 1).props.className).toBe(
-        'min-h-11 min-w-0 flex-1 gap-1',
+        'min-h-11 min-w-0 flex-1 justify-center gap-0.5',
       );
       const column = elementChild(row, 1);
-      expect(column.children).toHaveLength(3);
+      expect(column.children).toHaveLength(2);
       expect(elementChild(column, 0).props.testID).toBe(`${rowId}-type`);
-      expect(elementChild(column, 1).props.testID).toBe(`${rowId}-pet`);
-      expect(elementChild(column, 2).props.testID).toBe(`${rowId}-time`);
+      expect(elementChild(column, 1).props.testID).toBe(`${rowId}-subtitle`);
       expect(elementChild(row, 2).props.testID).toBe(`${rowId}-ack`);
     },
   );
 
-  it('alterna el tercer hijo entre ack y la píldora traducida', async () => {
+  it('alterna el tercer hijo entre ack y la píldora traducida (enmendado por #174 R7)', async () => {
     const alerts = [
       makeAlert({ id: 'open', status: 'open' }),
       makeAlert({ id: 'acked', status: 'acked' }),
@@ -463,12 +468,15 @@ describe('#78 R6: cada fila de alerta trae su icono, su hueco, su tinta y sus tr
       const rowId = `alert-row-${alert.id}`;
       const row = within(list).getByTestId(rowId);
       expect(row.children).toHaveLength(3);
-      expect(row.props.className).toContain(
-        'min-h-20 flex-row items-center gap-3',
-      );
+      const classes = row.props.className.split(' ');
+      for (const value of ['flex-row', 'items-center', 'gap-3', 'px-3.5', 'py-3', 'shadow-none']) {
+        expect(classes).toContain(value);
+      }
+      expect(classes).not.toContain('min-h-20');
+      expect(classes).not.toContain('shadow-sm');
       expect(elementChild(row, 0).props.className).toContain('size-11');
       expect(elementChild(row, 1).props.className).toBe(
-        'min-h-11 min-w-0 flex-1 gap-1',
+        'min-h-11 min-w-0 flex-1 justify-center gap-0.5',
       );
     }
 
@@ -1213,11 +1221,11 @@ describe('#100 R6: la columna de texto de cada fila abre su detalle', () => {
     });
   });
 
-  it('da rol, altura y opacidad de pulsado solo al enlace', async () => {
+  it('da rol, altura y opacidad de pulsado solo al enlace (enmendado por #174 R7)', async () => {
     await renderAlerts();
     const link = await screen.findByTestId('alert-row-alert-1-link');
     expect(link.props.accessibilityRole).toBe('button');
-    expect(link.props.className).toBe('min-h-11 min-w-0 flex-1 gap-1');
+    expect(link.props.className).toBe('min-h-11 min-w-0 flex-1 justify-center gap-0.5');
     expect(link).toHaveStyle({ opacity: 1 });
     const row = screen.getByTestId('alert-row-alert-1');
     expect(row.props.accessibilityRole).toBeUndefined();
@@ -1464,10 +1472,10 @@ describe('#170 R5: la fila abierta lleva el borde de su tipo', () => {
     mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() });
   });
   it.each([
-    { type: 'geofence_exit', border: 'border-danger', iconName: 'LocationSlash', labelKey: 'alerts.typeGeofenceExit', surface: 'bg-danger-soft', ink: '--color-danger', label: 'Salió de la zona' },
-    { type: 'battery_low', border: 'border-warning-strong', iconName: 'BatteryLow', labelKey: 'alerts.typeBatteryLow', surface: 'bg-warning-soft', ink: '--color-warning-strong', label: 'Batería baja' },
-    { type: 'mystery_type', border: 'border-muted', iconName: 'Bell', labelKey: 'alerts.typeUnknown', surface: 'bg-default', ink: '--color-muted', label: 'Aviso' },
-  ])('abierta $type: border-2 y $border, con $iconName y $labelKey', async ({ type, border, iconName, surface, ink, label }) => {
+    { type: 'geofence_exit', border: 'border-danger', iconName: 'LocationSlash', labelKey: 'alerts.typeGeofenceExit', disc: 'bg-category-rose', ink: '--color-danger', label: 'Salió de la zona' },
+    { type: 'battery_low', border: 'border-warning-strong', iconName: 'BatteryLow', labelKey: 'alerts.typeBatteryLow', disc: 'bg-category-amber', ink: '--color-warning-strong', label: 'Batería baja' },
+    { type: 'mystery_type', border: 'border-muted', iconName: 'Bell', labelKey: 'alerts.typeUnknown', disc: 'bg-default', ink: '--color-muted', label: 'Aviso' },
+  ])('abierta $type: border-2 y $border, con $iconName y $labelKey (enmendado por #174 R7)', async ({ type, border, iconName, disc, ink, label }) => {
     mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ type })], nextCursor: null });
     await renderAlerts();
     const row = await screen.findByTestId('alert-row-alert-1');
@@ -1478,7 +1486,7 @@ describe('#170 R5: la fila abierta lleva el borde de su tipo', () => {
     const icon = within(row).getByTestId('alert-row-alert-1-icon');
     expect(icon.props.iconName).toBe(iconName);
     expect(icon.props.color).toBe(ink);
-    expect(icon.parent?.props.className.split(' ')).toContain(surface);
+    expect(icon.parent?.props.className.split(' ')).toContain(disc);
     expect(within(row).getByTestId('alert-row-alert-1-type')).toHaveTextContent(label);
   });
   it.each(['acked', 'closed'] as const)('%s: sin borde de severidad', async (status) => {
