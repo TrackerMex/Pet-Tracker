@@ -341,7 +341,7 @@ con `await`.
   - CC, `#166 R3` (sufijo de `it` sin cambiar; comentarios `// #174 R8`):
     - en `'inventaría los cuatro secundarios neutros de toda la app'`, el `match` pasa a
       `` tag.match(/testID=(?:"([^"]+)"|\{`([^`]+)`\})/) `` y devuelve `m?.[1] ?? m?.[2]`; la lista esperada
-      suma `'${rowId}-ack'` (literal con `$`, ordena primero);
+      suma `'${rowId}-ack'` (literal con `$`, ordena primero; regex y recuento reales de H0 en E1.2);
     - `expect(count(/border-lip-gray/g)).toBe(<expresión H0> + 1); // … #174 R8` (base `4 + 1`, cierre `4 + 1 + 1`);
     - `expect(count(/\bborder-b-6\b/g))` **no** cambia (el ack usa `border-b-5`);
     - `it` nuevo `'#174 R8: el ack de fila es el secundario compacto'`: el tag de apertura del `<Button` de
@@ -455,7 +455,7 @@ con `await`.
     `'screens/alerts/index.tsx'` con `// #174 R12` (§3 L10).
 - **R12.2** THE SYSTEM SHALL mover los inventarios de #173 (PF, describe `#173 R2.4: inventario de tamaños nuevos`):
   las listas esperadas de `text-13` y de `text-26` suman `'screens/alerts/index.tsx'` en orden
-  (`['screens/alerts/index.tsx', 'screens/profile/index.tsx']`), con `// #174 R4, R6` y `// #174 R3`.
+  (`['screens/alerts/index.tsx', 'screens/profile/index.tsx']`), con `// #174 R4, R6` y `// #174 R3`. **Lista real de H0 y rojo de cada una: E1.1.**
 - **R12.3** THE SYSTEM SHALL dejar `screens/alerts/index.tsx` y `utils/alert-meta.ts` sin emoji
   (`/\p{Extended_Pictographic}/u`), sin `[`…`]` dentro de `className`, sin hex, sin `StyleSheet.create` y
   con `screens/alerts/index.tsx` sin `min-h-20`, `text-2xs` ni `shadow-sm` (F, describe `#174 R12: grep-limpio`).
@@ -501,6 +501,8 @@ con `await`.
 | L9 | PF › `#173 R2.4` | (de #173) | R12.2 | R3, R4, R6 |
 | L10 | inventarios de #175 de `text-15` / `tracking-title` (solo si #175 está en H0) | lista de H0 | `+ 'screens/alerts/index.tsx'`, `// #174 R12` | R3, R7 |
 
+Las filas L1, L8 y L9 las corrige la Enmienda E1 (E1.3, E1.2 y E1.1): manda E1.
+
 `SCREEN_FILES` no cambia: `src/app/_layout.tsx` sigue en la tabla por `reminders.title` y
 `alerts.detailTitle`, y `screens/alerts/index.tsx` ya estaba.
 
@@ -540,6 +542,124 @@ Features aparte:
 
 - [ ] Smoke #174 en dev build de Android (fecha: ____)
 
+## Enmienda E1 — premisas de la firma que caducaron al mergear #173
+
+La spec se firmó el 2026-10-13 contra `788d1f89`, con #173 sin mergear. #173 (PR #216)
+y #172 entraron después y la branch absorbió `main` en `5fae110b` (`origin/main`
+`dea11875`). El leader midió P1–P8 contra ese árbol y pasan todas, pero tres
+premisas de la firma ya no coinciden con los ficheros. Cada una habría parado a
+Codex en su primer rojo o en su verde. Esta enmienda las corrige; **donde choque con
+R8, R12.2, L1 o L8, manda E1.** Ningún R-id nuevo, ninguna clase ni copy cambian.
+
+### E1.1 — R12.2: las listas reales de `text-13` y `text-26`
+
+En `src/__tests__/profile-canvas-fidelity.test.ts` › describe
+`#173 R2.4: inventario de tamaños nuevos`, la lista de `text-13` ya no es
+`['screens/profile/index.tsx']`: #172 (E8) la amplió a seis ficheros
+(`it('limita text-13 a Perfil y a las pantallas de cuenta de #172 (E8)'`). La de
+`text-26` sí sigue con un solo fichero. Tras R3, R4 y R6 las dos listas esperadas
+quedan así (orden de `.sort()` verificado con node; los títulos de los `it` no cambian):
+
+```
+    expect(filesMatching(/\btext-26\b/)).toEqual([
+      'screens/alerts/index.tsx', // #174 R3
+      'screens/profile/index.tsx',
+    ]);
+```
+
+```
+    expect(filesMatching(/\btext-13\b/)).toEqual([
+      'components/form-error.tsx',
+      'screens/alerts/index.tsx', // #174 R4, R6
+      'screens/forgot/index.tsx',
+      'screens/login/index.tsx',
+      'screens/profile/index.tsx',
+      'screens/register/index.tsx',
+      'screens/reset-password/index.tsx',
+    ]);
+```
+
+La lista de `text-13` va en el commit rojo de R4 (primer uso, el contador); la de
+`text-26`, en el de R3. R6 no vuelve a editarla.
+
+### E1.2 — R8 / L8: el regex y el recuento de `#166 R3` en H0
+
+En `src/__tests__/consistency-classnames.test.ts` › describe
+`#166 R3: el secundario neutro lleva el labio gris`, el `it` se llama ya
+`'inventaría los cinco secundarios neutros de toda la app'` (el título no cambia) y
+#171 R14 ya cambió el regex a
+`/testID=(?:"([^"]+)"|\{([^}]+)\})/` con `match?.[1] ?? match?.[2]`. El regex que
+prescribía R8 (`\{`([^`]+)`\}`, sin la rama `\{([^}]+)\}`) devuelve `undefined` para
+`secondary.testID`; y el de H0 devuelve `` `${rowId `` para el ack, porque `[^}]+` se
+corta en la primera llave. Se comprobó con node. La línea nueva casa las tres formas:
+
+```
+        const match = tag.match(/testID=(?:"([^"]+)"|\{`([^`]+)`\}|\{([^}]+)\})/); // #171 R14: testID dinámico; #174 R8: plantilla
+        return neutral ? [match?.[1] ?? match?.[2] ?? match?.[3]] : [];
+```
+
+La lista esperada del inventario suma el ack **primero** (`$` ordena antes que `a`,
+comprobado con node) y conserva `'secondary.testID', // #171 R14`:
+
+```
+    expect(testIds.sort()).toEqual([
+      '${rowId}-ack', // #174 R8
+      'alert-detail-view-map',
+      'docs-upload-cancel',
+      'forgot-resend',
+      'reminders-delete-cancel',
+      'secondary.testID', // #171 R14
+      'welcome-have-account',
+    ]);
+```
+
+El recuento de `border-lip-gray` pasa de `4 + 1 + 1` a un tercer sumando; el de
+`border-b-6` **no** cambia (el ack lleva `border-b-5`):
+
+```
+    expect(count(/border-lip-gray/g)).toBe(4 + 1 + 1 + 1); // #170 R16; #171 R14; #174 R8
+```
+
+El `it` nuevo `'#174 R8: el ack de fila es el secundario compacto'` y el resto de R8
+quedan como están. Con el ack la lista tiene siete testIDs; el título `cinco` ya no
+cuadraba con la lista desde #171 R14 y no se toca. Eslint acepta `'${rowId}-ack'` entre comillas
+simples (probado con `bunx eslint --stdin`, salida vacía).
+
+### E1.3 — L1: la última línea del catálogo en H0
+
+La última línea de la expresión de longitud de
+`src/providers/__tests__/language-provider.test.tsx` es hoy
+`        - 4 + 3, // #173 R13`, no `+ 7, // #170 R1`. R2 la deja así (la anterior pierde la
+coma, la nueva cierra):
+
+```
+        - 4 + 3 // #173 R13
+        + 1, // #174 R2
+```
+
+Si otra feature mergeada antes de H0 añade líneas, la regla de §3 no cambia: la
+última línea de H0 pierde su coma y `+ 1, // #174 R2` cierra la expresión.
+
+### E1.4 — Barrido de los demás candados globales
+
+El leader barrió contra el árbol de `5fae110b` los recuentos globales de producción
+que las clases de esta feature podrían mover. `screens/alerts/index.tsx` y
+`utils/alert-meta.ts` aportan cero a todos, y ninguno cambia:
+
+- `bg-accent-soft` y `rounded-xl bg-accent` (`#98 R10`, `#166 R2`);
+- `border-b-4` y `border-black/25` (`#166 R2`);
+- `text-accent-strong` (`#61 R4`);
+- `style={CONTINUOUS_CORNER}` (`#98 R10`);
+- design-drift: `#87 R19` (`'screens/alerts/index.tsx': 0,`), `#134 R6` y `#134 R7`.
+
+### E1.5 — Base de las medidas
+
+La columna «Base (`788d1f89`)» de §1 y de §3 es la de la firma. Las filas marcadas
+«H0» se miden al arrancar sobre el árbol del commit del handoff, como ya decía §1,
+y la tabla de H0 manda sobre cualquier valor de base que haya caducado. P1–P8 se
+midieron el 2026-10-15 en `5fae110b` y pasan.
+
 ## Aprobación
 
 - [x] Aprobado por humano (fecha: 2026-10-13, vía Notion) ← gate obligatorio antes de implementar
+- [ ] Enmienda E1 aprobada por humano (fecha: ____)

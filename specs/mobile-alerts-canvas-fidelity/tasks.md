@@ -24,6 +24,7 @@ tocados, `bunx tsc --noEmit` y `bunx expo lint --no-cache` en verde.
    - `grep -c '^### §2\.' ../specs/mobile-ui-language/design.md` → `<N>` = valor + 1 (R2.3);
    - la última `## Enmienda #` de `../docs/ui-guidelines.md` (R11.1);
    - el describe `#173 R2.4: inventario de tamaños nuevos` de PF y sus dos listas (R12.2).
+   - las correcciones de la Enmienda E1 (R12.2, R8/L8 y L1) mandan sobre el texto firmado.
 
 ## R1 — Tokens
 
