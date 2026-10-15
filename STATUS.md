@@ -2,7 +2,7 @@
 
 **Última actualización**: 2026-10-15
 **Features completadas**: 163/178 (`feature_list.json`)
-**En progreso**: ninguna en esta rama. #174 cerrada en `feature/174-mobile-alerts-canvas-fidelity`, PR pendiente de merge humano.
+**En progreso**: ninguna en esta rama. #174 cerrada en `feature/174-mobile-alerts-canvas-fidelity`, PR #219 pendiente de merge humano.
 
 **Pendientes**: 15 (#60, #129, #144, #150, #151, #154, #160, #163, #164, #165, #176, #177, #180, #181 y #184). **#174 `mobile-alerts-canvas-fidelity` cerrada**: la lista de Alertas como su artboard del canvas. Título «Alertas» en el contenido con el contador en `PopIn`, métricas de 20 y 12, secciones con cabecera 13 ExtraBold, fila con disco de categoría y subtítulo en una línea, ack secundario compacto con labio, píldoras Leída y Resuelta, entrada escalonada de las cinco primeras filas, tokens `text-15`, `radius-10` y `--tracking-caps` y copy `alerts.dayAgo`/`alerts.daysAgo` con palabra completa. La carta y cinco specs llevan su enmienda R11 firmada. Cinco enmiendas (E1-E5), reviewer APROBADO en ronda 2 (`d3c5ff94`), smoke R13 firmado por el humano en `4af37a8a`. Pendiente de esta línea: el Detalle de alerta (#180).
 
@@ -1538,7 +1538,7 @@ debe listar las 4 URLs de cola.
   `Pet-Tracker-wt-174`, sesión Backend). Spec firmada desde Notion
   (`954de067`) y enmiendas E1-E5 firmadas también desde Notion. Reviewer ronda
   1 rechazada (R9 sin ancla) y ronda 2 aprobada (`d3c5ff94`). Smoke R13 firmado
-  por el humano en `4af37a8a`. PR abierta; siguiente: merge humano y spec de
+  por el humano en `4af37a8a`. PR #219 abierta; siguiente: merge humano y spec de
   #180.
 
 - **2026-10-15** — **#173 `mobile-tab-screens-canvas-fidelity` cerrada**
