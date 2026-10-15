@@ -1,10 +1,10 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-10-15
-**Features completadas**: 162/177 (`feature_list.json`)
-**En progreso**: ninguna en esta rama.
+**Features completadas**: 163/178 (`feature_list.json`)
+**En progreso**: ninguna en esta rama. #174 cerrada en `feature/174-mobile-alerts-canvas-fidelity`, PR pendiente de merge humano.
 
-**Pendientes**: 15 (#60, #129, #144, #150, #151, #154, #160, #163, #164, #165, #174, #176, #177, #181 y #184). **#173 `mobile-tab-screens-canvas-fidelity` cerrada**: Perfil como su artboard del canvas, más los cimientos que comparten las pantallas de pestaña. Cimientos: peso Inter-ExtraBold, radios `hero` (28) y `tile` (18), tamaños de letra 13 y 26, variantes `hero` y `flat` de `Card` y `PetSwitcher` con variante `avatars`. Perfil: cápsula «Añadir mascota» en la cabecera, hero de la mascota con anillo y cámara superpuesta, chips con el sexo localizado, tarjeta de información `flat` con el estado del collar y la última señal relativa, rejilla 2×2 de accesos, tarjeta de cuenta `flat` con interruptor de tema y fila de idioma, y entrada escalonada. Catálogo: Perfil retira cuatro claves y añade tres; la carta y las specs enmendadas llevan su enmienda R14 firmada. Ocho enmiendas (E1-E7 durante la implementación, E8 en el merge de main), reviewer APROBADO sobre `91b705ab` y sobre el merge `51254654`, smoke R16 firmado por el humano en `36abb01c`. Pendiente de esta línea: Salud y Nutrición.
+**Pendientes**: 15 (#60, #129, #144, #150, #151, #154, #160, #163, #164, #165, #176, #177, #180, #181 y #184). **#174 `mobile-alerts-canvas-fidelity` cerrada**: la lista de Alertas como su artboard del canvas. Título «Alertas» en el contenido con el contador en `PopIn`, métricas de 20 y 12, secciones con cabecera 13 ExtraBold, fila con disco de categoría y subtítulo en una línea, ack secundario compacto con labio, píldoras Leída y Resuelta, entrada escalonada de las cinco primeras filas, tokens `text-15`, `radius-10` y `--tracking-caps` y copy `alerts.dayAgo`/`alerts.daysAgo` con palabra completa. La carta y cinco specs llevan su enmienda R11 firmada. Cinco enmiendas (E1-E5), reviewer APROBADO en ronda 2 (`d3c5ff94`), smoke R13 firmado por el humano en `4af37a8a`. Pendiente de esta línea: el Detalle de alerta (#180).
 
 **En producción**: no
 
@@ -90,6 +90,17 @@ debe listar las 4 URLs de cola.
 
 ## Estado actual
 
+- **`mobile-alerts-canvas-fidelity` (#174) done** (2026-10-15, worktree
+  `Pet-Tracker-wt-174`, sesión Backend): la lista de Alertas fiel al artboard
+  `Alertas` del canvas (R1-R12). Codex CLI, c1-c23 test-primero más las sondas
+  S12.1-S12.6, con seis reanudaciones por fallos del handoff o de la spec.
+  Reviewer ronda 1 RECHAZADO por una sola causa (C4: ningún test nombraba R9; lo
+  corrigió el implementer con un comentario `// #174 R9`, `479704d3`) y ronda 2
+  APROBADO (`d3c5ff94`, delta `5d221d42..eb522ec2`). Gate: `./init.sh` exit 0
+  sobre `5d221d42` (backend 187/1474, infra 2/14, móvil 111/3428, e2e 30
+  suites). Smoke R13 en el dev build de Android y las siete casillas de
+  enmienda firmadas por el humano en `4af37a8a`. El Detalle de alerta queda en
+  #180.
 - **`mobile-tab-screens-canvas-fidelity` (#173) done** (2026-10-15, worktree
   `Pet-Tracker-wt-173`, sesión UI-Pet): Perfil como su artboard del canvas y los
   cimientos de las pestañas (Inter ExtraBold, radios `hero` 28 y `tile` 18,
@@ -1522,6 +1533,13 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Última sesión
+
+- **2026-10-15** — **#174 `mobile-alerts-canvas-fidelity` cerrada** (worktree
+  `Pet-Tracker-wt-174`, sesión Backend). Spec firmada desde Notion
+  (`954de067`) y enmiendas E1-E5 firmadas también desde Notion. Reviewer ronda
+  1 rechazada (R9 sin ancla) y ronda 2 aprobada (`d3c5ff94`). Smoke R13 firmado
+  por el humano en `4af37a8a`. PR abierta; siguiente: merge humano y spec de
+  #180.
 
 - **2026-10-15** — **#173 `mobile-tab-screens-canvas-fidelity` cerrada**
   (worktree `Pet-Tracker-wt-173`, sesión UI-Pet). Spec firmada desde Notion
