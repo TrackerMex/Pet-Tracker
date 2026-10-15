@@ -29,8 +29,11 @@
   #176 y #177 los reservó sites-4c (sin registrar aún); #180 lo tomó Backend.
   #181 lo tomó sites-4c el 2026-10-15: en una cuenta sin mascotas, quitar «Algo salió mal» y «Reintentar»
   de Inicio, Perfil y Recordatorios, y centrar el contenido como en Mapa. Se registra en el cierre
-  de #171. Solapa con #178 en `src/screens/reminders/`. Avisado; queda pendiente acordar
-  el orden de merge. #182 queda apartado para «completar recordatorio» (sin registrar).
+  de #171 (`5e6b446c`, PR #214) como pending. Solapa con #178 en `src/screens/reminders/`.
+  Orden acordado con sites-4c: #178 y #179 mergean primero; la spec de #181 se escribe
+  después sobre `origin/main` y se mide sobre las pantallas ya rehechas, así que #181
+  reconcilia. #178 y #179 no esperan a nadie por esto. #182 queda apartado para
+  «completar recordatorio» (sin registrar).
 - **Plan:** las tres specs se escriben ya; las implementaciones esperan a que
   mergee #173. Gate desde Notion. #175 firmada (`0e2b91cf`, branch de #175);
   #178 en revisión en Notion (branch de #178).
