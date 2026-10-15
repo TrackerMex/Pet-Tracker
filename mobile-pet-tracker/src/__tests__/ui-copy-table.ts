@@ -246,6 +246,11 @@ export const R6_FOOD: UseRow[] = [
 ];
 
 export const R7_PROFILE: UseRow[] = [
+  { file: 'src/screens/profile/index.tsx', key: 'map.justNow' }, // #173 R9
+  { file: 'src/screens/profile/index.tsx', key: 'map.agoMinutes' }, // #173 R9
+  { file: 'src/screens/profile/index.tsx', key: 'map.agoHours' }, // #173 R9
+  { file: 'src/screens/profile/index.tsx', key: 'addPet.male' }, // #173 R7
+  { file: 'src/screens/profile/index.tsx', key: 'addPet.female' }, // #173 R7
   { file: 'src/screens/profile/index.tsx', key: 'profile.notRegistered' },
   { file: 'src/screens/profile/index.tsx', key: 'profile.sterilized' },
   { file: 'src/screens/profile/index.tsx', key: 'profile.notSterilized' },
@@ -263,19 +268,18 @@ export const R7_PROFILE: UseRow[] = [
   { file: 'src/screens/profile/index.tsx', key: 'profile.couldNotLoadPet' },
   { file: 'src/screens/profile/index.tsx', key: 'common.retry' },
   { file: 'src/screens/profile/index.tsx', key: 'profile.changePhoto' },
-  { file: 'src/screens/profile/index.tsx', key: 'profile.information' },
   { file: 'src/screens/profile/index.tsx', key: 'profile.breed' },
   { file: 'src/screens/profile/index.tsx', key: 'profile.microchip' },
   { file: 'src/screens/profile/index.tsx', key: 'profile.gpsDevice' },
+  { file: 'src/screens/profile/index.tsx', key: 'profile.gpsLinked' }, // #173 R8
+  { file: 'src/screens/profile/index.tsx', key: 'profile.gpsNoCollar' }, // #173 R8
   { file: 'src/screens/profile/index.tsx', key: 'profile.lastSignal' },
   { file: 'src/screens/profile/index.tsx', key: 'profile.documents' },
-  { file: 'src/screens/profile/index.tsx', key: 'profile.gpsSettings' },
+  { file: 'src/screens/profile/index.tsx', key: 'profile.gpsCollar' }, // #173 R10
   { file: 'src/screens/profile/index.tsx', key: 'geofences.title' }, // #41 R9
   { file: 'src/screens/profile/index.tsx', key: 'profile.reminders' },
-  { file: 'src/screens/profile/index.tsx', key: 'profile.account' },
   { file: 'src/screens/profile/index.tsx', key: 'profile.accountUnavailable' },
   { file: 'src/screens/profile/index.tsx', key: 'profile.useDarkTheme' },
-  { file: 'src/screens/profile/index.tsx', key: 'profile.useLightTheme' },
   { file: 'src/screens/profile/index.tsx', key: 'profile.signOut' },
   { file: 'src/screens/docs/index.tsx', key: 'docs.documentsOf' },
   { file: 'src/screens/docs/index.tsx', key: 'docs.pet' },

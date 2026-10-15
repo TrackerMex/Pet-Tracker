@@ -1,6 +1,7 @@
 declare const require: (moduleName: 'fs') => {
   existsSync: (path: string) => boolean;
-  readFileSync: (path: string, encoding: 'utf8') => string;
+  readFileSync(path: string): Buffer;
+  readFileSync(path: string, encoding: 'utf8'): string;
 };
 
 const { existsSync, readFileSync } = require('fs');
@@ -45,6 +46,35 @@ describe('R3: el layout registra los pesos estáticos de Inter sin bloquear', ()
   });
 });
 
+describe('#173 R1: registra Inter-ExtraBold como sexto peso', () => {
+  const extraBoldPath = `${projectRoot}/assets/fonts/Inter-ExtraBold.ttf`;
+
+  it('versiona el archivo TTF oficial de ExtraBold', () => {
+    expect(existsSync(extraBoldPath)).toBe(true);
+  });
+
+  it('usa bytes distintos de los otros cinco pesos de Inter', () => {
+    const extraBold = readFileSync(extraBoldPath);
+
+    for (const [, fileName] of interFonts) {
+      const existing = readFileSync(`${projectRoot}/assets/fonts/${fileName}`);
+      expect(Buffer.compare(extraBold, existing)).not.toBe(0);
+    }
+  });
+
+  it('registra ExtraBold entre Bold y Black en useFonts', () => {
+    const registration = "'Inter-ExtraBold': require('../../assets/fonts/Inter-ExtraBold.ttf'),";
+    expect(rootLayout).toContain(registration);
+    expect(rootLayout.indexOf("'Inter-Bold':")).toBeLessThan(rootLayout.indexOf(registration));
+    expect(rootLayout.indexOf(registration)).toBeLessThan(rootLayout.indexOf("'Inter-Black':"));
+  });
+
+  it('expone la familia ExtraBold después de Bold en Uniwind', () => {
+    const declaration = "--font-extrabold: 'Inter-ExtraBold';";
+    expect(globalCss).toContain(declaration);
+    expect(globalCss.indexOf("--font-bold: 'Inter-Bold';")).toBeLessThan(globalCss.indexOf(declaration));
+  });
+});
 
 describe('#172 R6: el peso 800 del CTA es Inter ExtraBold', () => {
   it('#172 R6: carga Inter ExtraBold y la expone como font-extrabold', () => {

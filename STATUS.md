@@ -1,10 +1,12 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-10-15
-**Features completadas**: 160/175 (`feature_list.json`)
-**En progreso**: ninguna en esta rama. #172 cerrada en `feature/172-mobile-account-screens-polish`, PR pendiente de merge humano.
+**Features completadas**: 162/176 (`feature_list.json`)
+**En progreso**: ninguna en esta rama. #173 cerrada en `feature/173-mobile-tab-screens-canvas-fidelity`, PR pendiente de merge humano.
 
-**Pendientes**: 15 (#60, #119, #129, #144, #150, #151, #154, #160, #163, #164, #165, #174, #176, #177 y #181). **#172 `mobile-account-screens-polish` cerrada**: Login, Registro, Recuperar y Nueva contraseña quedan como el canvas. Llevan «Volver» arriba (`BackButton`), la CTA de 56 anclada al pie con Inter ExtraBold, inputs de 52 y `PasswordInput` con ojo en los cinco campos de contraseña. Los errores van con icono (`FieldError`, `FormError`) y Pingo flota (`PingoFloat`, 10 px / 3 s). Registro valida el correo antes de llamar a la API (R12), el éxito de Nueva contraseña avisa con liveRegion (R13) y el candado de Recuperar es un tile acento con labio (R14). La carta (`docs/ui-guidelines.md`) gana la Enmienda #172. Codex trabajó en seis reanudaciones, con seis enmiendas firmadas desde Notion (E1-E6). El reviewer rechazó la ronda 1 (`b6c09d5e`), aprobó la ronda 2 (`e2745566`) y aprobó la ronda 3 (`d1ea6a92`), que cubre el merge de main con #171 (`4b355acb`). El humano firmó el smoke R21 en `631826d9`. Tras el smoke pidió validación en cliente con mensaje claro en todos los inputs de cuenta, en lugar del error del servidor: va aparte como #183 `mobile-account-client-validation`, con la spec en su branch. Móvil 109/3277.
+**Pendientes**: 14 (#60, #129, #144, #150, #151, #154, #160, #163, #164, #165, #174, #176, #177 y #181). **#173 `mobile-tab-screens-canvas-fidelity` cerrada**: Perfil como su artboard del canvas, más los cimientos que comparten las pantallas de pestaña. Cimientos: peso Inter-ExtraBold, radios `hero` (28) y `tile` (18), tamaños de letra 13 y 26, variantes `hero` y `flat` de `Card` y `PetSwitcher` con variante `avatars`. Perfil: cápsula «Añadir mascota» en la cabecera, hero de la mascota con anillo y cámara superpuesta, chips con el sexo localizado, tarjeta de información `flat` con el estado del collar y la última señal relativa, rejilla 2×2 de accesos, tarjeta de cuenta `flat` con interruptor de tema y fila de idioma, y entrada escalonada. Catálogo: Perfil retira cuatro claves y añade tres; la carta y las specs enmendadas llevan su enmienda R14 firmada. Ocho enmiendas (E1-E7 durante la implementación, E8 en el merge de main), reviewer APROBADO sobre `91b705ab` y sobre el merge `51254654`, smoke R16 firmado por el humano en `36abb01c`. Pendiente de esta línea: Salud y Nutrición.
+
+**En producción**: no
 
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
@@ -88,6 +90,19 @@ debe listar las 4 URLs de cola.
 
 ## Estado actual
 
+- **`mobile-tab-screens-canvas-fidelity` (#173) done** (2026-10-15, worktree
+  `Pet-Tracker-wt-173`, sesión UI-Pet): Perfil como su artboard del canvas y los
+  cimientos de las pestañas (Inter ExtraBold, radios `hero` 28 y `tile` 18,
+  tamaños 13 y 26, `Card` `hero`/`flat`, `PetSwitcher` `avatars`). Reviewer
+  ronda 1 APROBADO (`91b705ab`, veredicto `75552846`) y ronda 2 APROBADO
+  (`2571e3b0`, sobre el merge único de main con #171 y #172, `51254654`).
+  Gate: `./init.sh` exit 0 sobre `51254654` (backend 187/1474, infra 2/14,
+  móvil 110/3389, e2e 30 de 33 suites, 468 passed y 8 skipped). Smoke R16 en el
+  dev build de Android firmado por el humano en `36abb01c` y las enmiendas R14 en
+  `f4e5d18b`. Enmiendas E1-E8 durante la implementación; **E8** (`text-13` pasa
+  a inventario cerrado de seis ficheros tras entrar #172) la aplicó el
+  implementer en el merge y el humano la lee en la PR. Salud y Nutrición quedan
+  para las siguientes. PR pendiente de merge.
 - **`mobile-account-screens-polish` (#172) done** (2026-10-15, worktree
   `Pet-Tracker-wt-172`, sesión Frontend): Login, Registro, Recuperar y Nueva
   contraseña con paridad con el canvas (CTA de 56 al pie, inputs de 52, ojo en
@@ -1506,6 +1521,14 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Última sesión
+
+- **2026-10-15** — **#173 `mobile-tab-screens-canvas-fidelity` cerrada**
+  (worktree `Pet-Tracker-wt-173`, sesión UI-Pet). Spec firmada desde Notion
+  (`f3b0a4a8`); enmiendas E1-E7 durante la implementación y E8 en el merge.
+  Reviewer ronda 1 aprobada (`91b705ab`) y ronda 2 aprobada (`2571e3b0`), esta
+  sobre el merge único de main con #171 y #172 tras decidir el humano que #172
+  entraba primero. Smoke R16 y enmiendas R14 firmados por el humano. PR abierta;
+  siguiente: merge humano.
 
 - **2026-10-15** — **#172 `mobile-account-screens-polish` cerrada**
   (worktree `Pet-Tracker-wt-172`, sesión Frontend). Spec y Enmienda #172

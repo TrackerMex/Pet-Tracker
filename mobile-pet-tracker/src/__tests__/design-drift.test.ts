@@ -380,12 +380,13 @@ describe('#68 E1: la carta retira connectivity de los enum crudos', () => {
   const corollary = charter.slice(start, end);
   const rawEnumList = corollary.slice(0, corollary.indexOf('. Siguen'));
 
-  it('conserva crudos solo los cuatro ámbitos aún pendientes', () => {
-    expect(rawEnumList).toContain('`pet.sex`');
+  it('conserva crudos solo los tres ámbitos aún pendientes', () => {
+    expect(rawEnumList).not.toContain('`pet.sex`');
     expect(rawEnumList).toContain('`document.type`');
     expect(rawEnumList).toContain('`foodType`');
     expect(rawEnumList).toContain('`activityLevel`');
     expect(rawEnumList).not.toContain('`device.connectivity`');
+    expect(corollary).toContain('`pet.sex` se localiza desde #173 con `addPet.male` / `addPet.female`');
   });
 
   it('registra que connectivity se resuelve por catálogo desde R16', () => {
