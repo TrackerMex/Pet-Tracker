@@ -53,11 +53,15 @@
   fuera del árbol: 37 sondas con sus rojos exactos, typecheck y eslint
   limpios, y los guards (252) verdes. Las tablas de sondas previas que
   cambian con los `it` de E1 están re-medidas.
-- **Siguiente**:
-  1. Pre-check del reviewer sobre E1 (parches y sondas).
-  2. Firma humana vía Notion.
-  3. Reanudación 2 a Codex (H0 sigue en `56a0b84a`), y después la ronda 2
-     del reviewer.
+- **Pre-check del reviewer** sobre E1 (`20965561`): lista para firma, sin
+  bloqueantes (P1–P4 anotadas en la review).
+- **E1 firmada** en `4046e500` (Notion, `page_last_edited_at`
+  2026-10-15T18:10:22.800Z; «Rol actual» = Implementer).
+- **Reanudación 2** en el handoff: c16–c20 por parche, con `sondas_e1.py` por
+  commit. Después, trazabilidad e informe. H0 sigue en `56a0b84a`.
+- **Siguiente**: Codex corre la Reanudación 2. Luego `./init.sh`, coordinado
+  con Backend (#174) y sites-99, y la ronda 2 del reviewer, que mide a mano la
+  parte UL de S7.3/S7.4 (P2).
 - **Pedido del humano** (2026-10-15, tras firmar R21 de #172): validación en
   cliente con mensaje claro en todos los inputs de cuenta, como el correo de
   Crear cuenta, en lugar del error del servidor. Texto literal en

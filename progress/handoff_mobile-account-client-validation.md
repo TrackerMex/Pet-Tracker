@@ -236,3 +236,126 @@ Cualquier otra linea: PARA. En CIERRE, despues del commit --only del informe, sa
 Anade una seccion "Reanudacion 1" con la salida literal de los pasos 1 y 2 y la tabla por commit desde c1.
 La seccion de la parada queda como historia: no la borres.
 ```
+
+## Reanudación 2 — Enmienda E1, commits c16–c20 (2026-10-15)
+
+La review ronda 1 rechazó #183 (`00ed2bc4`). Tu producción es correcta y no te
+desviaste, pero la spec dejaba 15 mutaciones sin candado. La Enmienda E1
+(requirements §Enmienda E1, firmada en `4046e500`) las cierra con cinco commits
+**solo de tests**, que nacen verdes. El rojo lo prueban las sondas, que corre
+un script. Los tests vienen en parches del leader. Tú aplicas, mides, corres
+las sondas y commiteas. No escribes tests ni tocas producción.
+
+```text
+Worktree: /home/claude/sites/Pet-Tracker-wt-183   <- PRIMERA LINEA. Trabaja AQUI y en ningun otro sitio
+Branch:   feature/183-mobile-account-client-validation
+H0 sigue siendo 56a0b84a. Siguen en vigor TODAS las reglas de arriba: NO ./init.sh, ni push, PR, amend, rebase,
+merge ni prettier; JEST/LINT/CARGA; comparar titulo y tipo de cada ● antes de avanzar; git add con rutas explicitas.
+La spec manda sobre cualquier skill, tambien sobre ponytail.
+NO toques produccion (src/**/*.tsx y src/**/*.ts que no acaben en .test.ts/.test.tsx), ni los parches, ni
+sondas_e1.py, ni la spec. Si un parche no aplica o una sonda no cuadra, PARA: no lo arregles a mano.
+
+== ANTES DE TOCAR NADA ==
+# -- 1. commits del leader desde tu ultimo commit (d3ac0fdd): no son tuyos, no los toques ni los cuentes
+cd /home/claude/sites/Pet-Tracker-wt-183
+git rev-list --count d3ac0fdd..HEAD                                                     -> 7
+git diff --name-only d3ac0fdd HEAD -- mobile-pet-tracker backend-pet-tracker | wc -l     -> 0
+git status --short                                                                       -> sin salida
+# -- 2. parches intactos y aplicables sobre HEAD
+sha256sum progress/e1_mobile-account-client-validation/c1[6-9].patch progress/e1_mobile-account-client-validation/c20.patch
+  -> c16 6498fa6e2d44d689318876128e496d6f2204529af7c81f5f62e1eb4da71582f1
+     c17 125b001f3410c7c724472367d10adbe2bd5296d245261fc9f0cb627a584ce56a
+     c18 494bbd1bdd53e02afce1c639d935c092622e17f0783660e3f3306d8431742599
+     c19 a1a10fb89095f17aff51a1272441be512b5dcdfd2a1373f750e10c8f116b2e76
+     c20 db1744205a53add247bbca49560bd95ad7fbff7ff1573d4304a91b230be1efb0
+for c in 16 17 18 19 20; do git apply --check progress/e1_mobile-account-client-validation/c$c.patch; echo "c$c exit=$?"; done
+  -> c16 exit=0 ... c20 exit=0
+# -- 3. base de las cinco suites que tocan los parches
+cd /home/claude/sites/Pet-Tracker-wt-183/mobile-pet-tracker
+$J src/utils/account-rules.test.ts src/screens/login/index.test.tsx src/screens/register/index.test.tsx src/screens/forgot/index.test.tsx src/screens/reset-password/index.test.tsx; echo "exit=$?"
+  -> exit=0 y Tests: 263 passed, 263 total (66 + 39 + 64 + 47 + 47)
+Si algo no cuadra, PARA.
+
+== REGLA 9 EN ESTA REANUDACION ==
+El informe ya esta commiteado. Tras cada commit, git status --short da sin salida, o exactamente:
+ M progress/impl_mobile-account-client-validation.md
+Cualquier otra linea: PARA.
+
+== POR COMMIT (c16 a c20, en orden; cada uno igual) ==
+Todo desde mobile-pet-tracker/. <p> es progress/e1_mobile-account-client-validation/cNN.patch (ruta desde la raiz
+del worktree, por eso git -C ..). Las sondas imprimen una linea OK/MAL por sonda y salen 0 solo si todas son OK;
+copia su salida literal al informe. Si sale MAL o PARA, o el exit no es 0, PARA y reporta la salida entera.
+El script revierte cada mutacion con git checkout HEAD -- <fichero de produccion>; despues de el, produccion debe
+estar igual que HEAD (el script lo comprueba).
+
+# -- c16
+cd /home/claude/sites/Pet-Tracker-wt-183/mobile-pet-tracker
+git -C .. apply --check progress/e1_mobile-account-client-validation/c16.patch && git -C .. apply progress/e1_mobile-account-client-validation/c16.patch; echo "exit=$?"   -> exit=0
+$J src/utils/account-rules.test.ts; echo "exit=$?"                                -> exit=0 y Tests: 71 passed, 71 total
+python3 ../progress/e1_mobile-account-client-validation/sondas_e1.py c16; echo "exit=$?"   -> 22 lineas OK y exit=0
+TC y LINT (los de arriba)                                                          -> exit=0, exit=0, vacio=0
+git add src/utils/account-rules.test.ts && git commit -m 'test(mobile): candados de E1 en account-rules (#183 R2)'
+
+# -- c17
+cd /home/claude/sites/Pet-Tracker-wt-183/mobile-pet-tracker
+git -C .. apply --check progress/e1_mobile-account-client-validation/c17.patch && git -C .. apply progress/e1_mobile-account-client-validation/c17.patch; echo "exit=$?"   -> exit=0
+$J src/screens/login/index.test.tsx; echo "exit=$?"                               -> exit=0 y Tests: 40 passed, 40 total
+python3 ../progress/e1_mobile-account-client-validation/sondas_e1.py c17; echo "exit=$?"   -> 2 lineas OK (RV8, S3.2) y exit=0
+TC y LINT
+git add src/screens/login/index.test.tsx && git commit -m 'test(mobile): candado de E1 en login (#183 R3)'
+
+# -- c18
+cd /home/claude/sites/Pet-Tracker-wt-183/mobile-pet-tracker
+git -C .. apply --check progress/e1_mobile-account-client-validation/c18.patch && git -C .. apply progress/e1_mobile-account-client-validation/c18.patch; echo "exit=$?"   -> exit=0
+$J src/screens/register/index.test.tsx; echo "exit=$?"                            -> exit=0 y Tests: 65 passed, 65 total
+python3 ../progress/e1_mobile-account-client-validation/sondas_e1.py c18; echo "exit=$?"   -> 2 lineas OK (RV9, S4.4) y exit=0
+TC y LINT
+git add src/screens/register/index.test.tsx && git commit -m 'test(mobile): candado de E1 en registro (#183 R4)'
+
+# -- c19
+cd /home/claude/sites/Pet-Tracker-wt-183/mobile-pet-tracker
+git -C .. apply --check progress/e1_mobile-account-client-validation/c19.patch && git -C .. apply progress/e1_mobile-account-client-validation/c19.patch; echo "exit=$?"   -> exit=0
+$J src/screens/forgot/index.test.tsx; echo "exit=$?"                              -> exit=0 y Tests: 49 passed, 49 total
+python3 ../progress/e1_mobile-account-client-validation/sondas_e1.py c19; echo "exit=$?"   -> 6 lineas OK (RV10, C18, C20, S5.1, S5.3, S7.3) y exit=0
+TC y LINT
+git add src/screens/forgot/index.test.tsx && git commit -m 'test(mobile): candados de E1 en recuperar (#183 R5, R7)'
+
+# -- c20
+cd /home/claude/sites/Pet-Tracker-wt-183/mobile-pet-tracker
+git -C .. apply --check progress/e1_mobile-account-client-validation/c20.patch && git -C .. apply progress/e1_mobile-account-client-validation/c20.patch; echo "exit=$?"   -> exit=0
+$J src/screens/reset-password/index.test.tsx; echo "exit=$?"                      -> exit=0 y Tests: 49 passed, 49 total
+python3 ../progress/e1_mobile-account-client-validation/sondas_e1.py c20; echo "exit=$?"   -> 5 lineas OK (RV11, C26, C27, S6.1, S7.4) y exit=0
+TC y LINT
+git add src/screens/reset-password/index.test.tsx && git commit -m 'test(mobile): candados de E1 en nueva contraseña (#183 R6, R7)'
+
+== CIERRE DE LA REANUDACION (sustituye los pasos 1-3 y 6 del CIERRE de arriba) ==
+# -- 1. guardas
+cd /home/claude/sites/Pet-Tracker-wt-183/mobile-pet-tracker
+$J src/__tests__/account-screens-polish.test.ts src/__tests__/design-drift.test.ts src/__tests__/legibility-classnames.test.ts src/providers/__tests__/language-provider.test.tsx src/__tests__/ui-language.test.ts src/utils/account-rules.test.ts; echo "exit=$?"
+  -> exit=0 y Tests: 252 passed, 252 total. Despues TC y LINT.
+# -- 2. las 7 suites de la feature SIN --testTimeout
+bunx jest --runTestsByPath src/utils/account-rules.test.ts src/screens/login/index.test.tsx src/screens/register/index.test.tsx src/screens/forgot/index.test.tsx src/screens/reset-password/index.test.tsx src/__tests__/ui-language.test.ts src/providers/__tests__/language-provider.test.tsx; echo "exit=$?"
+  -> exit=0 y Tests: 341 passed, 341 total (71 + 40 + 65 + 49 + 49 + 30 + 37)
+# -- 3. suite movil entera, UNA vez, con la misma espera y las mismas reglas de timeout que el paso 3 de arriba
+  -> exit=0, Test Suites: 111 passed, 111 total, y Tests: 3517 passed, 3517 total (3506 + 11)
+# -- 4. anclas de cierre: las del paso 4 de arriba (HomeEntrance 4, mockIcon 2, los dos diff contra 56a0b84a en 0,
+#       backend en 0), y ademas:
+git diff --name-only d3ac0fdd HEAD -- . | sort
+  -> exactamente estas cinco lineas:
+     mobile-pet-tracker/src/screens/forgot/index.test.tsx
+     mobile-pet-tracker/src/screens/login/index.test.tsx
+     mobile-pet-tracker/src/screens/register/index.test.tsx
+     mobile-pet-tracker/src/screens/reset-password/index.test.tsx
+     mobile-pet-tracker/src/utils/account-rules.test.ts
+  (cuenta solo mobile-pet-tracker/, porque `-- .` se resuelve desde ahi; los ficheros del leader quedan fuera)
+# -- 5. traceability.md (desde la raiz del worktree): en R2-R7 anade el hash y el mensaje de su commit de E1
+#       (R7 recibe c19 y c20) y sus it nuevos; R2 pasa de 66 a 71 casos; Verificacion de cierre pasa a 341
+#       y a 111 suites con 3517 tests. Nada mas.
+cd /home/claude/sites/Pet-Tracker-wt-183
+git add specs/mobile-account-client-validation/traceability.md && git commit -m 'docs(mobile-account-client-validation): #183 trazabilidad de E1'
+# -- 6. informe: seccion nueva "Reanudacion 2" al final, sin tocar las anteriores. Lleva la salida literal de
+#       ANTES DE TOCAR NADA; la tabla por commit c16-c20 (hash, mensaje, linea Tests:, salida literal de
+#       sondas_e1.py, TC y LINT); el cierre (pasos 1-4); y las desviaciones ("ninguna" si no hubo).
+git add progress/impl_mobile-account-client-validation.md && git commit --only progress/impl_mobile-account-client-validation.md -m 'docs(mobile-account-client-validation): #183 informe de E1'
+git status --short   -> sin salida
+```
