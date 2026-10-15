@@ -798,3 +798,30 @@ describe('#171 E4: tokens de la celebración', () => {
     expect(parseVariables(extractTheme())).toMatchObject({ 'text-15': '15px' });
   });
 });
+
+describe('#174 R1: tokens del canvas de Alertas', () => {
+  it('declara los tokens que usa Alertas', () => {
+    const variables = parseVariables(extractTheme());
+
+    expect(variables).toMatchObject({
+      'text-13': '13px',
+      'text-15': '15px',
+      'text-26': '26px',
+      'radius-10': '10px',
+      'tracking-title': '-0.02em',
+      'tracking-caps': '0.06em',
+    });
+    expect(variables).not.toHaveProperty('text-15--line-height');
+  });
+
+  it('declara cada token una sola vez', () => {
+    for (const pattern of [
+      /--text-15:/g,
+      /--radius-10:/g,
+      /--tracking-title:/g,
+      /--tracking-caps:/g,
+    ]) {
+      expect(extractTheme().match(pattern) ?? []).toHaveLength(1);
+    }
+  });
+});

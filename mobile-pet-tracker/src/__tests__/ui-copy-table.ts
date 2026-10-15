@@ -484,7 +484,7 @@ export const R11_RESET: UseRow[] = [
 ];
 
 export const R12_ALERTS: UseRow[] = [
-  { file: 'src/app/_layout.tsx', key: 'alerts.title' }, // #114 R4
+  { file: 'src/screens/alerts/index.tsx', key: 'alerts.title' }, // #174 R3
   { file: 'src/utils/alert-meta.ts', key: 'alerts.typeGeofenceExit' },
   { file: 'src/utils/alert-meta.ts', key: 'alerts.typeBatteryLow' },
   { file: 'src/utils/alert-meta.ts', key: 'alerts.typeUnknown' },
@@ -496,6 +496,7 @@ export const R12_ALERTS: UseRow[] = [
   { file: 'src/screens/alerts/index.tsx', key: 'alerts.minutesAgo' },
   { file: 'src/screens/alerts/index.tsx', key: 'alerts.hoursAgo' },
   { file: 'src/screens/alerts/index.tsx', key: 'alerts.daysAgo' },
+  { file: 'src/screens/alerts/index.tsx', key: 'alerts.dayAgo' }, // #174 R2
   { file: 'src/screens/alerts/index.tsx', key: 'common.somethingWentWrong' },
   { file: 'src/screens/alerts/index.tsx', key: 'common.somethingWentWrong' },
   { file: 'src/screens/alerts/index.tsx', key: 'common.somethingWentWrong' },

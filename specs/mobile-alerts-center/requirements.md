@@ -229,6 +229,8 @@ body:'{}'})`.
 
 ### R3 — catálogo: las catorce claves nuevas, en los dos idiomas
 
+> Enmendado por #174 (ver «Enmienda #174» al final).
+
 **WHEN** se ejecuta la suite móvil
 **THE SYSTEM SHALL** encontrar en `src/i18n/catalog.ts` estas **14 claves nuevas**,
 presentes en `en` y en `es` con los mismos marcadores `{{…}}`:
@@ -276,6 +278,8 @@ Rojo antes (las claves no existen: `en[key]` es `undefined`), verde después. El
 verde.
 
 ### R4 — pantalla: cuerpo, dimensiones y estados
+
+> Enmendado por #174 (ver «Enmienda #174» al final).
 
 **WHEN** se renderiza `AlertsScreen` desde `src/screens/alerts/index.tsx`
 **THE SYSTEM SHALL** pintar un `FlatList` con `testID="screen-alerts"` cuyo
@@ -364,6 +368,8 @@ pantalla y no es pestaña` — tres `it`:
     `expect(source).not.toContain('alerts')`.
 
 ### R6 — anatomía de la fila (elemento repetido: todas sus decisiones, candadas)
+
+> Enmendado por #174 (ver «Enmienda #174» al final).
 
 **WHILE** la pantalla tiene items cargados
 **THE SYSTEM SHALL** pintar cada alerta como un `Card` de `src/components/card.tsx`
@@ -1061,3 +1067,15 @@ conversación:
 4. **§0.4**: **DEROGADA por E1 el 2026-09-11** — cuando el humano firmó esta
    casilla (2026-09-10) la premisa era cierta; #87 la invalidó al mergearse. Lo
    que la sustituye está en E1-E8 y tiene su propio gate, abajo.
+
+## Enmienda #174 — Alertas fieles al canvas
+
+> Enmienda de `mobile-alerts-center` por `mobile-alerts-canvas-fidelity` (#174, 2026-10-13). Directiva del humano:
+> «el diseño final debe de quedar como el artifact».
+
+**Qué cambia**: #78 R3: alerts.daysAgo con palabra completa y alerts.dayAgo nueva; #78 R4: título en el contenido, padding lateral 20 y gap 12; #78 R6: la fila toma las medidas del artboard (disco de categoría, icono 22, subtítulo en una línea, ack compacto con labio).
+
+Detalle y tests en `specs/mobile-alerts-canvas-fidelity/requirements.md`. Los `it` citados se reescriben en
+su sitio con el sufijo `(enmendado por #174 Rn)`.
+
+- [X] Enmienda #174 aprobada por humano

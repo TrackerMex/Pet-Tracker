@@ -617,12 +617,13 @@ describe('#166 R3: el secundario neutro lleva el labio gris', () => {
           && !tag.includes('bg-accent-soft') && !tag.includes('bg-default'))
           || tag.includes('border-lip-gray');
 
-        const match = tag.match(/testID=(?:"([^"]+)"|\{([^}]+)\})/); // #171 R14: testID dinámico
-        return neutral ? [match?.[1] ?? match?.[2]] : [];
+        const match = tag.match(/testID=(?:"([^"]+)"|\{`([^`]+)`\}|\{([^}]+)\})/); // #171 R14: testID dinámico; #174 R8: plantilla
+        return neutral ? [match?.[1] ?? match?.[2] ?? match?.[3]] : [];
       }),
     );
 
     expect(testIds.sort()).toEqual([
+      '${rowId}-ack', // #174 R8
       'alert-detail-view-map',
       'docs-upload-cancel',
       'forgot-resend',
@@ -634,8 +635,20 @@ describe('#166 R3: el secundario neutro lleva el labio gris', () => {
       (total, path) => total + (readFileSync(path, 'utf8').match(pattern) ?? []).length,
       0,
     );
-    expect(count(/border-lip-gray/g)).toBe(4 + 1 + 1 + 1); // #170 R16; #171 R14; #175 R7: borde de la zona de subida
+    expect(count(/border-lip-gray/g)).toBe(4 + 1 + 1 + 1 + 1); // #170 R16; #171 R14; #174 R8; #175 R7: borde de la zona de subida
     expect(count(/\bborder-b-6\b/g)).toBe(4 + 1 + 1); // #170 R16; #171 R14
+  });
+
+  it('#174 R8: el ack de fila es el secundario compacto', () => {
+    const source = readSource(join('screens', 'alerts', 'index.tsx'));
+    const marker = 'onPress={() => void handleAck(item)}';
+    const anchor = source.indexOf(marker);
+    expect(anchor).toBeGreaterThan(-1);
+    expect(source.lastIndexOf(marker)).toBe(anchor);
+    const tag = source.slice(source.lastIndexOf('<', anchor), source.indexOf('<', anchor + marker.length));
+    expect(tag).toContain('variant="secondary"');
+    expect(tag).toContain('hitSlop={TOUCH_SLOP}');
+    expect(tag).toContain('className="h-8.5 rounded-10 border-2 border-b-5 border-lip-gray bg-surface px-3"');
   });
 });
 

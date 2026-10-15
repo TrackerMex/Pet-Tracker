@@ -52,6 +52,7 @@ describe('#173 R2: inventario de radios nuevos', () => {
 describe('#173 R2.4: inventario de tamaños nuevos', () => {
   it('reserva text-26 al nombre de la mascota en Perfil', () => {
     expect(filesMatching(/\btext-26\b/)).toEqual([
+      'screens/alerts/index.tsx', // #174 R3
       'screens/docs/index.tsx', // #175 R5
       'screens/profile/index.tsx',
     ]);
@@ -59,6 +60,7 @@ describe('#173 R2.4: inventario de tamaños nuevos', () => {
   it('limita text-13 a Perfil y a las pantallas de cuenta de #172 (E8)', () => {
     expect(filesMatching(/\btext-13\b/)).toEqual([
       'components/form-error.tsx',
+      'screens/alerts/index.tsx', // #174 R4, R6
       'screens/docs/index.tsx', // #175 R8
       'screens/forgot/index.tsx',
       'screens/login/index.tsx',
