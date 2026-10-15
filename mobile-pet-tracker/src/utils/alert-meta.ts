@@ -1,10 +1,13 @@
 import { BatteryLow, Bell, LocationSlash } from 'reicon-react-native';
 
+import { CATEGORY_SLOTS } from './category-palette';
+
 export const ALERT_TYPE_META = {
   geofence_exit: {
     Icon: LocationSlash,
     labelKey: 'alerts.typeGeofenceExit',
     surface: 'bg-danger-soft',
+    disc: CATEGORY_SLOTS.rose.surface,
     ink: 'danger',
     border: 'border-danger',
   },
@@ -12,6 +15,7 @@ export const ALERT_TYPE_META = {
     Icon: BatteryLow,
     labelKey: 'alerts.typeBatteryLow',
     surface: 'bg-warning-soft',
+    disc: CATEGORY_SLOTS.amber.surface,
     ink: 'warning-strong',
     border: 'border-warning-strong',
   },
@@ -21,6 +25,7 @@ export const UNKNOWN_ALERT_META = {
   Icon: Bell,
   labelKey: 'alerts.typeUnknown',
   surface: 'bg-default',
+  disc: CATEGORY_SLOTS.neutral.surface,
   ink: 'muted',
   border: 'border-muted',
 } as const;
