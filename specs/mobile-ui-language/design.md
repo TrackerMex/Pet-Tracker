@@ -1432,7 +1432,7 @@ y su ampliación). Esta spec ratificó el inglés en su día; esa parte queda
   idiomas** y esta enmienda no los toca
   (`specs/mobile-ui-language/requirements.md` §Fuera de alcance 1).
 
-- [X] Enmienda aprobada por humano (fecha: 2026-10-15)
+- [ ] Enmienda aprobada por humano (fecha: ____)
 ```
 
 La casilla la marca **el humano**, en el mismo gate que aprueba esta spec.
