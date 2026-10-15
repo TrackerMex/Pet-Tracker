@@ -919,3 +919,42 @@ describe('#171 R13: sin drift en la celebración', () => {
     expect(source).not.toMatch(/LayoutAnimation|entering=|exiting=/);
   });
 });
+
+describe('#175 R10: Documentos sin deriva', () => {
+  const featureFiles = ['screens/docs/index.tsx'];
+
+  it('no deja hex, clases arbitrarias, StyleSheet ni sombras sueltas', () => {
+    expect(featureFiles.filter((file) =>
+      MEALS_BAR_STYLE_ESCAPES.test(readFileSync(join(sourceRoot, file), 'utf8')),
+    )).toEqual([]);
+  });
+
+  it('usa solo los radios card, xl, full y 24', () => {
+    expect(featureFiles.filter((file) =>
+      /\brounded-(?!(?:card|xl|full|24)\b)[\w-]+/.test(readFileSync(join(sourceRoot, file), 'utf8')),
+    )).toEqual([]);
+  });
+
+  it('no deja text-accent suelto', () => {
+    expect(featureFiles.filter((file) =>
+      /text-accent(?![-\w])/.test(readFileSync(join(sourceRoot, file), 'utf8')),
+    )).toEqual([]);
+  });
+
+  it('no trae dependencias vetadas, useThemeColor ni emoji', () => {
+    expect(featureFiles.filter((file) =>
+      /expo-linear-gradient|expo-symbols|lottie-react-native|@rive-app|\buseThemeColor\b|\p{Extended_Pictographic}/u
+        .test(readFileSync(join(sourceRoot, file), 'utf8')),
+    )).toEqual([]);
+  });
+
+  it('importa exactamente los tres iconos desde un único import de reicon', () => {
+    const source = readFileSync(join(sourceRoot, featureFiles[0]), 'utf8');
+    const imports = [...source.matchAll(/import\s*\{([^}]+)\}\s*from ['"]reicon-react-native['"]/g)];
+    expect(source.match(/from ['"]reicon-react-native['"]/g)).toHaveLength(1);
+    expect(imports).toHaveLength(1);
+    expect(imports[0][1].split(',').map((name) => name.trim()).sort()).toEqual([
+      'ChevronRight', 'FileText', 'Upload',
+    ]);
+  });
+});
