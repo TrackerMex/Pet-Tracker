@@ -60,3 +60,30 @@
   corrige sin tocar decisiones. Casilla de E1 **sin marcar**.
 - **Siguiente:** el humano firma E1 (repo o Notion). Entonces: `feature_list.json`
   a `in_progress`, handoff a Codex con las cifras H0 de E1.
+
+## Reanudación 2026-10-15 (2) — E1 firmada, handoff a Codex
+
+- **E1 firmada** por el humano en el repo: `01718048` (2026-10-15, vía repo).
+  Verificado el commit y que `dea11875` es ancestro de la rama.
+- **`feature_list.json`:** #175 `in_progress`.
+- **Handoff:** `progress/handoff_mobile-docs-canvas-fidelity.md` (20 commits
+  c1 a c20, sondas S1 a S5, cierre K1 a K5, lista cerrada de 14 ficheros). Sus
+  50 anclas H0 se ejecutaron al generarlo y cuadran. Los rojos de c14 y c16 se
+  simularon en una copia; los del test de la pantalla no (los escribe Codex),
+  así que las cadenas rojas validan por lista de describes permitidos y paran
+  ante lo inesperado. H0 es el commit que añade el handoff.
+- **Esperando a Codex.** Mientras implementa solo se tocan `docs/`, `specs/`,
+  `progress/` y `feature_list.json`, y no los ficheros que Codex edita.
+- **Coordinación con peers (información, no aprobación):**
+  - Backend: #174 tiene su handoff y su Codex corre en `Pet-Tracker-wt-174`.
+    Solapan `global.css`, `catalog.ts`, `ui-copy-table.ts`,
+    `consistency-classnames.test.ts`, `ui-language.test.ts`,
+    `language-provider.test.tsx` y `docs/ui-guidelines.md`: quien mergee
+    segundo rebasa las líneas de cuenta compartidas.
+  - Frontend: #178 y #179 aprobadas en Notion (pendiente verificar
+    `page_last_edited_at`, diff del cuerpo y commit de firma en cada worktree).
+    #173 `done`. Antes de cualquier `init.sh` o jest completo, esperar con
+    `pgrep -f '[i]nit\.sh|node_modules/(\.bin/(jest|eslint)|jest-worker)'`.
+- **Siguiente:** cuando el humano confirme que Codex terminó, pedir permiso
+  para `init.sh`, `git fetch` antes de tocar casillas del humano, lanzar
+  `reviewer`; `done` solo con su veredicto y la prueba de humo R11 del humano.
