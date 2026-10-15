@@ -717,4 +717,4 @@ y el enlace `toBe('min-h-11 min-w-0 flex-1 gap-1')`. R7.1 quita `min-h-20` y R7.
 
 - [x] Aprobado por humano (fecha: 2026-10-13, vía Notion) ← gate obligatorio antes de implementar
 - [x] Enmienda E1 aprobada por humano (fecha: 2026-10-15, vía Notion)
-- [ ] Enmienda E2 aprobada por humano (fecha: ____, vía Notion)
+- [x] Enmienda E2 aprobada por humano (fecha: 2026-10-15, vía Notion)
