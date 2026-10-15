@@ -6,6 +6,7 @@ import { Button, Input, Label, Skeleton, TextField } from 'heroui-native';
 import { useContext, useState } from 'react';
 import { KeyboardAvoidingView, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ChevronRight, FileText } from 'reicon-react-native';
 
 import {
   confirmPetDocumentUpload,
@@ -24,13 +25,26 @@ import { mediaKeys, petKeys } from '../../api/query-keys';
 import { Card } from '../../components/card';
 import { EmptyState } from '../../components/empty-state';
 import { useAuth } from '../../providers/auth-provider';
-import { useTranslate } from '../../providers/language-provider';
+import { useLocale, useTranslate } from '../../providers/language-provider';
 import { CONTINUOUS_CORNER } from '../../theme/native-styles';
+import { useThemeColors } from '../../theme/use-theme-colors';
 import {
   CATEGORY_SLOTS,
   documentCategory,
+  type CategorySlot,
 } from '../../utils/category-palette';
 import { civilTodayIso } from '../../utils/civil-today-iso';
+import { fmtDate } from '../home/format';
+import { HomeEntrance } from '../home/home-entrance';
+
+const INK_TOKEN: Record<CategorySlot, string> = {
+  blue: 'category-blue-strong',
+  green: 'category-green-strong',
+  amber: 'category-amber-strong',
+  violet: 'category-violet-strong',
+  rose: 'category-rose-strong',
+  neutral: 'muted',
+};
 
 type ActionError =
   | 'file-format'
@@ -46,25 +60,30 @@ type SelectedDocument = {
 };
 
 function DocumentRow({ document, onPress }: { document: PetDocument; onPress: () => void }) {
-  const slot = CATEGORY_SLOTS[documentCategory(document.type)];
+  const slotName = documentCategory(document.type);
+  const slot = CATEGORY_SLOTS[slotName];
+  const [iconColor, muted] = useThemeColors([INK_TOKEN[slotName], 'muted']);
+  const locale = useLocale();
 
   return (
-    <Card testID={`doc-${document.id}`} className="flex-row items-center gap-3" onPress={onPress}>
+    <Card testID={`doc-${document.id}`} className="flex-row items-center gap-3 px-3.5 py-3 shadow-none" onPress={onPress}>
       <View
-        className={`size-10 items-center justify-center rounded-xl ${slot.surface}`}
+        testID={`docs-mosaic-${document.id}`}
+        className={`h-14 w-12 items-center justify-center rounded-xl ${slot.surface}`}
         style={CONTINUOUS_CORNER}
       >
-        <Text className="text-lg">📄</Text>
+        <FileText size={24} color={iconColor} />
       </View>
-      <View className="flex-1 gap-1">
+      <View className="min-w-0 flex-1 gap-0.75">
         <Text
-          className={`self-start rounded-full px-2 py-0.5 text-2xs font-bold ${slot.surface} ${slot.ink}`}
+          className={`self-start rounded-full px-2 py-0.5 text-11 font-extrabold ${slot.surface} ${slot.ink}`}
         >
           {document.type}
         </Text>
-        <Text className="font-bold text-foreground">{document.name}</Text>
-        <Text className="text-sm font-normal text-muted">{document.date}</Text>
+        <Text className="text-15 font-extrabold text-foreground" numberOfLines={1}>{document.name}</Text>
+        <Text className="text-xs font-normal text-muted">{fmtDate(document.date, locale)}</Text>
       </View>
+      <ChevronRight size={18} color={muted} />
     </Card>
   );
 }
@@ -353,8 +372,10 @@ export function DocsScreen({ petId }: { petId: string }) {
         ) : null}
 
         {docs.data?.kind === 'ok'
-          ? docs.data.docs.map((document) => (
-              <DocumentRow key={document.id} document={document} onPress={() => openDocument(document)} />
+          ? docs.data.docs.map((document, index) => (
+              <HomeEntrance key={document.id} index={index} testID={`docs-entry-${document.id}`}>
+                <DocumentRow document={document} onPress={() => openDocument(document)} />
+              </HomeEntrance>
             ))
           : null}
 
