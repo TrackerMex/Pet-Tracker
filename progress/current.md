@@ -26,7 +26,11 @@
 - **Reparto:** #175 pasa a `mobile-docs-canvas-fidelity` (Documentos, C11);
   #178 `mobile-routine-canvas-fidelity` (Recordatorios + Nuevo recordatorio,
   C12); #179 `mobile-meal-schedule-canvas-fidelity` (Horario + Historial).
-  #176 y #177 los reservó sites-4c (sin registrar aún); #180 lo tomó Backend; siguiente libre #181.
+  #176 y #177 los reservó sites-4c (sin registrar aún); #180 lo tomó Backend.
+  #181 lo tomó sites-4c el 2026-10-15: en una cuenta sin mascotas, quitar «Algo salió mal» y «Reintentar»
+  de Inicio, Perfil y Recordatorios, y centrar el contenido como en Mapa. Se registra en el cierre
+  de #171. Solapa con #178 en `src/screens/reminders/`. Avisado; queda pendiente acordar
+  el orden de merge. #182 queda apartado para «completar recordatorio» (sin registrar).
 - **Plan:** las tres specs se escriben ya; las implementaciones esperan a que
   mergee #173. Gate desde Notion. #175 firmada (`0e2b91cf`, branch de #175);
   #178 en revisión en Notion (branch de #178).
