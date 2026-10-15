@@ -61,4 +61,10 @@
   - **E7 (test, lo aplica Codex a mano):** en el describe `#173 R15: grep-limpio`, el candado de sombra pasa a `toHaveLength(file === 'components/card.tsx' ? 2 : 0)`. Además `classSections` se tipa `string[]`: sin el tipo, typecheck daba TS2345 en el `push` y c30 habría parado justo después.
   - El leader lo probó sobre una copia del árbol: 26/26, S15 da 1 rojo y una sola línea `●`, tsc y lint limpios, mcheck M1–M51 ok.
   - En esa copia, la BASE21 en paralelo dio rojos ajenos. Eran ENOENT de `hosting-artifacts`, porque la copia no tiene la raíz del repo, y `reading 'canceled'` en `R7: cambiar foto`. Sin carga, los tres ficheros de Perfil dieron 168/168.
-  - **Pendiente para el cierre (spec):** enmendar R15.2 con la excepción de los dos `shadow-sm` heredados de R3.2, y anotar E7 junto a E1–E6.
+  - Ya cumplida: E1–E7 están en requirements.md §Enmiendas y en tasks.md (91b705ab).
+- 2026-10-15, Revisión: Codex terminó (30 commits c1–c30 más trazabilidad e informe). El leader corrió `./init.sh` sin pipe: EXIT=0 (móvil 104 suites/3213, backend 187/1474 y 2/14, e2e 468 passed + 8 skipped, `reading 'canceled'` = 0). La primera corrida dio EXIT=1 porque el worktree tenía el `.env` de `.env.example` (5432); se copió el del árbol principal (5433) y se repitió.
+  - Veredicto del reviewer: **APROBADO, condicionado** a R16 (smoke humano en dev build Android, claro/oscuro, es/en) y a las casillas humanas sin firmar (requirements §Aprobación y los 10 bloques `Enmienda #173 aprobada por humano` de R14). Detalle y observaciones O1–O6 en `progress/review_mobile-tab-screens-canvas-fidelity.md`.
+  - O3 resuelta: la fila de R13 de traceability.md lleva ya los rojos `427079ac`, `44e0b9c6` y `506ad153`, y el frontmatter pasa a `approved`.
+  - **Pendiente del humano:** R16 y las casillas; leer E1–E7 en la PR (O4).
+  - **Pendiente del leader tras R16:** fetch, drift check contra el commit del veredicto, `feature_list.json` a `done`, tablero Notion a Implementado / Completado, y recién entonces `gh pr create`.
+  - **Deuda a registrar (no ahora):** `findByText('Ada Lovelace')` en el me-card, y O1/O2/O6 según decida el humano.
