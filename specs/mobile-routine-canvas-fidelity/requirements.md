@@ -996,8 +996,9 @@ Cada hueco se comprobó contra el árbol en `c6b6f30e`, sin ejecutar Codex:
 - **E1.** `src/__tests__/profile-canvas-fidelity.test.ts` (#173) cierra tres
   inventarios a una lista de ficheros: `rounded-tile`
   (`['screens/profile/index.tsx']`), `text-26`
-  (`['screens/profile/index.tsx']`) y `text-13` (seis ficheros, de
-  `components/form-error.tsx` a `screens/reset-password/index.tsx`). R4 pone
+  (`['screens/alerts/index.tsx', 'screens/profile/index.tsx']`, tras #174) y
+  `text-13` (siete ficheros, de `components/form-error.tsx` a
+  `screens/reset-password/index.tsx`, con `screens/alerts/index.tsx` de #174). R4 pone
   `text-26` en el título de Recordatorios, R6 y R12 ponen `text-13` en la meta
   de la fila y en la vista previa, y R12 pone `rounded-tile` en la vista
   previa. R13 promete un delta «en §Deltas» para este caso y §Deltas no lo
@@ -1039,6 +1040,7 @@ por `#173 R2` y `#173 R2.4`.
 
 ```
 expect(filesMatching(/\btext-26\b/)).toEqual([
+  'screens/alerts/index.tsx', // #174 R3
   'screens/profile/index.tsx',
   'screens/reminders/index.tsx', // #178 R4
 ]);
@@ -1054,7 +1056,8 @@ entre `'screens/register/index.tsx',` y `'screens/reset-password/index.tsx',`
 ```
 
 **E1.3 — R12, en el rojo c23.** En el mismo `it` de `text-13` se inserta entre
-`'components/form-error.tsx',` y `'screens/forgot/index.tsx',`:
+`'components/form-error.tsx',` y `'screens/alerts/index.tsx', // #174 R4, R6`
+(`add-reminder` precede a `alerts` en orden `LC_ALL=C`):
 
 ```
   'screens/add-reminder/index.tsx', // #178 R12
@@ -1071,9 +1074,10 @@ expect(filesMatching(/\brounded-tile\b/)).toEqual([
 
 Cada uno es rojo hasta el verde de su R-id (c8, c12 y c24), porque ese verde es
 el que escribe la clase. Quedan en el orden final `text-13`: `form-error`,
-`add-reminder`, `forgot`, `login`, `profile`, `register`, `reminders`,
-`reset-password`. #174 y #175 editan estas mismas listas (#175 E2 ya lo hace
-con `text-26` y `text-13`): quien mergee después reancla por contenido, no por
+`add-reminder`, `alerts`, `forgot`, `login`, `profile`, `register`,
+`reminders`, `reset-password`. #174 ya está en `main` y la rama de #178 lo
+tiene fusionado (2026-10-15): las listas de arriba parten de ese estado. #175
+edita estas mismas listas; quien mergee después reancla por contenido, no por
 línea.
 
 ### E2 — segunda fórmula de `CONTINUOUS_CORNER`
