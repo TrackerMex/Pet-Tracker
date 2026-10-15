@@ -1,6 +1,6 @@
 ---
 feature: "mobile-account-client-validation"
-status: spec_ready
+status: approved
 tags: [mobile, ui, spec]
 ---
 
@@ -1045,4 +1045,4 @@ Cada viñeta es una delimitación de esta feature, no una feature pendiente.
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [x] Aprobado por humano (fecha: 2026-10-15) ← gate obligatorio antes de implementar
