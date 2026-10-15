@@ -1200,8 +1200,8 @@ re-mide la fila; el criterio no cambia.
 
 ### Aprobación de las Enmiendas E1 a E5
 
-- [ ] Enmienda E1 aprobada por humano ← gate obligatorio antes de lanzar a Codex
-- [ ] Enmienda E2 aprobada por humano ← gate obligatorio antes de lanzar a Codex
-- [ ] Enmienda E3 aprobada por humano ← gate obligatorio antes de lanzar a Codex
-- [ ] Enmienda E4 aprobada por humano ← gate obligatorio antes de lanzar a Codex
-- [ ] Enmienda E5 aprobada por humano ← gate obligatorio antes de lanzar a Codex
+- [X] Enmienda E1 aprobada por humano ← gate obligatorio antes de lanzar a Codex
+- [X] Enmienda E2 aprobada por humano ← gate obligatorio antes de lanzar a Codex
+- [X] Enmienda E3 aprobada por humano ← gate obligatorio antes de lanzar a Codex
+- [X] Enmienda E4 aprobada por humano ← gate obligatorio antes de lanzar a Codex
+- [X] Enmienda E5 aprobada por humano ← gate obligatorio antes de lanzar a Codex
