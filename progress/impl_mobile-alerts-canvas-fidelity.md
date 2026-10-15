@@ -1,6 +1,6 @@
 # Implementación #174 — Alertas fieles al canvas
 
-**Estado actual: RE6-2 completado; K4 en curso.** K3F corregido devuelve 25. No se repitieron K1, K2 ni el resto de K3. Trazabilidad R1–R12 completada y commiteada en `6ed8e1c3`; R13 queda pendiente del humano. El informe se prepara para su commit; K5 se ejecutará después, en el orden del handoff.
+**Estado actual: implementación R1–R12 y cierre K1–K5 completados.** K3F corregido devuelve 25; trazabilidad e informe commiteados en K4; K5 devuelve `lista-ok` (23 rutas exactas contra H0). Se conservan BASE19 19 suites/709 tests, ALL 111 suites/3428 tests, typecheck y lint verdes de RE5; no se repitieron en RE6. S12.1–S12.6 coinciden, con S12.6 según E5. R13: **pendiente (humano)**. Este último cambio del informe registra la salida real de K5 posterior a K4.
 
 ## Base H0
 
@@ -118,7 +118,7 @@ Leídos requirements, design, tasks, handoff completo y carta. Consultada la doc
 
 ## Commits c1–c23, c5b y c7b
 
-Estado actual: c1–c23, c5b y c7b terminaron con `cadena=0` y su commit, en el orden prescrito (25 commits propios). El primer intento de c21 dio `cadena=1`; el mismo test pasó el guard corregido y se commiteó en RE4. La discrepancia original de S12.6 quedó aceptada por E5 y la repetición de RE5 coincide con el esperado corregido. El primer filtro de K3F midió 32 frente a 25 y obligó a parar; el filtro corregido por el leader devuelve 25 en RE6 y permite completar el cierre. Las paradas anteriores y sus reanudaciones se conservan como historial más abajo.
+Estado actual: c1–c23, c5b y c7b terminaron con `cadena=0` y su commit, en el orden prescrito (25 commits propios). El primer intento de c21 dio `cadena=1`; el mismo test pasó el guard corregido y se commiteó en RE4. La discrepancia original de S12.6 quedó aceptada por E5 y la repetición de RE5 coincide con el esperado corregido. El primer filtro de K3F midió 32 frente a 25 y obligó a parar; el filtro corregido por el leader devuelve 25 en RE6. K4 y K5 completados; R13 permanece pendiente del humano. Las paradas anteriores y sus reanudaciones se conservan como historial más abajo.
 
 Todas las cadenas se lanzaron con el EJECUTOR `bash -c "$(sed -n … ../progress/handoff_mobile-alerts-canvas-fidelity.md)"`, cambiando solo cN, c5b o c7b. c7b solo verifica el route test (1 test); los verdes c2–c20 verifican BASE18 y c22/c23 verifican BASE19. Todos los verdes commiteados completaron typecheck y lint vacío. Los rojos completados se detallan debajo.
 
@@ -663,8 +663,8 @@ El mcheck terminó correctamente y permitió continuar con Jest. El resultado fi
 | K1, `it` finales | Ejecutado; salida literal debajo |
 | K2, BASE19 | Verde: exit=0, 19 suites, 709/709 tests; K=709 |
 | K3, ALL, typecheck, lint y 25 commits | Verde: ALL 111/3428, typecheck exit=0, lint vacío y K3F corregido 25 en RE6; sin repetir los checks |
-| K4, trazabilidad e informe commiteados | Trazabilidad commiteada en `6ed8e1c317ae207362f3fcf4e4b53cdeb0bf4f22`; informe preparado para commit |
-| K5, lista cerrada | Pendiente del commit del informe de K4 |
+| K4, trazabilidad e informe commiteados | Verde: trazabilidad `6ed8e1c317ae207362f3fcf4e4b53cdeb0bf4f22` e informe `9340ee80c435ad667935bfdceb5892c3539bf978`; resultado posterior de K5 guardado en actualización documental del mismo informe |
+| K5, lista cerrada | Verde: exit=0, lista-ok; 23 rutas exactas contra H0 |
 
 ### K1 — salida literal
 
@@ -731,6 +731,33 @@ lint-ok
 ```
 
 En el primer intento, la shell devolvió 0, pero el valor esperado del handoff era **25**: la discrepancia motivó la parada. El filtro antiguo solo excluía `docs(progress): #174 …` e incluía siete commits del leader, además de las 25 cadenas. La evidencia íntegra queda en Desviaciones. RE6 relanza únicamente el filtro corregido por el leader: devuelve **25**, exit=0; K1, K2 y el resto de K3 no se repiten.
+
+### K4 — commits del cierre
+
+- `6ed8e1c317ae207362f3fcf4e4b53cdeb0bf4f22` — `docs(mobile): #174 trazabilidad`. Exit=0; solo `specs/mobile-alerts-canvas-fidelity/traceability.md`.
+- `9340ee80c435ad667935bfdceb5892c3539bf978` — `docs(mobile): informe de implementación de #174`. Exit=0; solo el informe, mediante el `--only` literal de K4.
+
+Extractos literales de las salidas de commit:
+
+```text
+[feature/174-mobile-alerts-canvas-fidelity 6ed8e1c3] docs(mobile): #174 trazabilidad
+ 1 file changed, 13 insertions(+), 13 deletions(-)
+[feature/174-mobile-alerts-canvas-fidelity 9340ee80] docs(mobile): informe de implementación de #174
+ 1 file changed, 1870 insertions(+)
+ create mode 100644 progress/impl_mobile-alerts-canvas-fidelity.md
+```
+
+R1–R12 enlazan tests/describes y los 25 hashes con sus mensajes. R13 queda `pendiente (gate humano: casilla de requirements §6)`.
+
+### K5 — salida literal
+
+Tras ambos commits de K4 se ejecutó la cadena literal del handoff contra H0. Exit=0; salida completa:
+
+```text
+lista-ok
+```
+
+Coinciden exactamente las 23 rutas de la lista cerrada, con las exclusiones del leader indicadas en el handoff. Se añade esta evidencia al mismo informe en un commit documental posterior a K5, porque la salida real no existía cuando K4 exigió commitear el informe. No se altera ninguna otra ruta ni se repiten verificaciones de código.
 
 Estado histórico en la primera parada de c6 (salida literal de `git status --short`):
 
@@ -993,6 +1020,9 @@ No se han ejecutado c9–c23, S12, mcheck completo de c23 ni K1–K5. No se actu
 
 
 - REANUDACION 6: el leader corrigió el filtro de K3F en `aee12fec`, añadiendo tres `--grep` para excluir firmas y enmiendas del leader. La parada previa con 32 era correcta. El nuevo comando literal devuelve `25`, exit=0. Solo se relanzó K3F; K1, K2 y el resto de K3 no se repitieron. Se reanuda K4–K5 sin tocar código ni tests.
+
+
+- Registro final de K5: el orden del handoff exige commitear el informe en K4 antes de medir K5, pero el contenido del informe exige su salida literal. Tras obtener `lista-ok` se guarda esa evidencia en una actualización documental adicional del mismo informe, sin amend. Los 25 commits de requisitos no cambian; no se añaden rutas ni se repiten K1, K2 o K3.
 
 
 ### REANUDACION 2: parada de c7b (2026-10-15)
@@ -1868,3 +1898,14 @@ Commit de trazabilidad: `6ed8e1c317ae207362f3fcf4e4b53cdeb0bf4f22` — `docs(mob
 ```
 
 El siguiente paso es el commit del informe con `--only`, seguido de la cadena literal K5. Su resultado se documentará después de ejecutarla; no se anticipa un resultado no medido. No se ejecutaron init.sh, prettier, push, merge, rebase ni amend; no se abrió ni editó la PR ni se tocaron los ficheros del leader. R13: **pendiente (humano)**.
+
+
+RE6-3 / K4 completado: informe commiteado con el comando literal `--only` en `9340ee80c435ad667935bfdceb5892c3539bf978` — `docs(mobile): informe de implementación de #174`, exit=0. Después se ejecutó K5 tal cual, sin modificar el filtro ni la lista. Resultado real, exit=0:
+
+```text
+lista-ok
+```
+
+La lista cerrada de 23 rutas coincide con H0 tras las exclusiones del leader. Se registra la salida en esta actualización documental posterior a K5, necesaria para que el informe incluya la evidencia medida. No se repitieron K1, K2, ALL, typecheck, lint, bases, ANCLAS ni sondas durante RE6. No hubo nuevos fallos ni reintentos.
+
+R1–R12 implementados y trazados; K1–K5 en verde. La prueba R13 queda **pendiente (humano)** y las seis casillas de enmienda de c22 siguen sin marcar. No se ejecutaron init.sh, prettier, push, merge, rebase ni amend; no se abrió ni editó la PR ni se tocaron los ficheros protegidos del leader. Tras guardar este informe, no queda trabajo pendiente del implementador dentro del handoff.
