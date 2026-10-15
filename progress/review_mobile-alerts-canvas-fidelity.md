@@ -73,3 +73,16 @@ Tests:       8 skipped, 468 passed, 476 total
 ✅ Todo verde. Listo para trabajar.
 init-exit=0
 ```
+
+## Ronda 2
+Fecha: 2026-10-15
+Veredicto: APROBADO
+
+HEAD revisado: `eb522ec261e82b4e369f0a7dc88567e7a43a6e9b`. Delta revisado: `5d221d42..HEAD` (2 commits: `479704d3` test, `eb522ec2` docs). Cierra el hallazgo 1 de la ronda 1; las observaciones 2-4 siguen siendo no bloqueantes (el `status: draft` de design/tasks/traceability lo cierra el leader).
+
+1. Delta exacto, sin deriva en código. `git diff --name-status 5d221d42 HEAD`: `M` `mobile-pet-tracker/src/screens/alerts/index.test.tsx`, `M` `progress/current.md`, `A` `progress/impl_r9_anchor_174.md`, `A` `progress/review_mobile-alerts-canvas-fidelity.md`, `M` `specs/mobile-alerts-canvas-fidelity/traceability.md`. El diff fuera de `progress/` y de `traceability.md` es una sola línea añadida en el test: `// #174 R9: una aserción de className exacto por rama, acked y closed`. `git show --stat 479704d3`: 1 fichero, 1 inserción. `traceability.md`: 1 línea cambiada, la fila R9; la única fila con "pendiente" sigue siendo R13 (gate humano). Cero cambios en `src/` de producción.
+2. Ancla en su sitio. `grep -rn "174 R9" mobile-pet-tracker/src` da 1: `src/screens/alerts/index.test.tsx:517`. Cae dentro del `it('alterna el tercer hijo entre ack y la píldora traducida …')` (abre en la línea 472, cierra en la 530), justo sobre el bucle que aserta `className` exacto en `acked` y `closed`. Los comentarios `#174 R<n>:` no chocan con el HEX_LITERAL de design-drift (solo exime `#NNN R<n>`, que es este patrón).
+3. Ejecuciones propias: `alerts/index.test.tsx` `Tests: 75 passed, 75 total`; `src/__tests__/design-drift.test.ts` (escanea tests) `Tests: 74 passed, 74 total`; `bunx tsc --noEmit` exit 0. Las cuentas coinciden con las esperadas.
+4. Hash de la fila R9: `479704d3c8c22b1f2cf52bc4de99cc6bdf5e2385` existe (`git cat-file -e`) y es ancestro de HEAD (`git merge-base --is-ancestor`), asunto `test(mobile): #174 R9 ancla el R-id en el it de las píldoras`. La fila conserva el rojo `3ea1e9e2` y el verde `f7fac40d`.
+5. R1-R12 con al menos un test que los nombra (`grep -rlE "174 R<n>\b" mobile-pet-tracker/src`): R1 `global-css.test.ts`; R2 `language-provider.test.tsx`, `alerts/index.test.tsx`; R3 `alerts/index.test.tsx`, `layout.test.tsx`; R4 `alerts/index.test.tsx`, `alert-detail.navigation.test.tsx`; R5, R6, R7, R10 `alerts/index.test.tsx`; R8 `consistency-classnames.test.ts`, `alerts/index.test.tsx`; R9 `alerts/index.test.tsx` (la ancla nueva); R11 y R12 `alerts-canvas-fidelity.test.ts`.
+6. init.sh no se repite: el del leader es sobre `5d221d42` (exit 0, móvil 111 suites / 3428 tests, backend 187/1474, e2e 30 passed, lint y typecheck limpios) y el delta de código desde entonces es un comentario de una línea en un test, sin efecto en ejecución; los dos suites que lo contienen o lo escanean y `tsc` quedaron verdes arriba. R13 sigue pendiente de gate humano (casilla `requirements.md` §6 sin marcar) y las 7 casillas de enmienda de otras specs y de la carta siguen sin marcar, como corresponde.
