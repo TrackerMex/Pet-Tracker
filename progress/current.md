@@ -87,3 +87,23 @@
 - **Siguiente:** cuando el humano confirme que Codex terminó, pedir permiso
   para `init.sh`, `git fetch` antes de tocar casillas del humano, lanzar
   `reviewer`; `done` solo con su veredicto y la prueba de humo R11 del humano.
+
+## Reanudación 2026-10-15 (3) — Codex paró en c11, enmienda E2
+
+- **Parada de Codex (c11, verde de R5):** `● #173 R2.4: inventario de tamaños
+  nuevos › reserva text-26 al nombre de la mascota en Perfil`. Causa: omisión de
+  la spec. `profile-canvas-fidelity.test.ts` (#173) reserva `text-26` y cierra
+  `text-13` a una lista de ficheros; R5 y R8 los usan en Documentos. Codex no
+  tocó ningún test. Informe: `progress/impl_mobile-docs-canvas-fidelity.md`
+  (c1 a c10 hechos, c11 sin commitear).
+- **Barrido:** solo esas dos aserciones del fichero chocan con #175.
+- **Enmienda E2** (`97d44e96`, casilla **sin marcar**): Δ18 (`text-26`, R5) y
+  Δ19 (`text-13`, R8); commit rojo nuevo **c10b** entre c10 y c11; la línea de
+  `text-13` va en c16; lista cerrada 14 → 15 ficheros; commits `(#175 R` 20 → 21.
+- **Handoff regenerado** (`336831c5`; H0 sigue `d38e2787`): sección
+  REANUDACION (Codex guarda su c11 como parche, `git checkout HEAD --`, hace
+  c10b, reaplica el parche). c10b simulado en una copia: 2 rojos exactos (el de
+  R5 de c10 y `#173 R2.4`); con el parche de c11 el fichero de Perfil pasa; con
+  la línea de `text-13` y sin chips falla solo el de `text-13`.
+- **Esperando:** que el humano firme E2 en el repo; entonces `git fetch` y el
+  prompt de reanudación a Codex. Hasta entonces nadie toca `docs/index.tsx`.
