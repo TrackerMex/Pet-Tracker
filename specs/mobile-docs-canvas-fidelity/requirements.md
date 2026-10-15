@@ -971,4 +971,4 @@ El título tampoco cambia.
 
 ### Aprobación de la Enmienda E2
 
-- [ ] Enmienda E2 aprobada por humano ← gate obligatorio antes de reanudar a Codex
+- [x] Enmienda E2 aprobada por humano (fecha: 2026-10-15, vía repo) ← gate obligatorio antes de reanudar a Codex
