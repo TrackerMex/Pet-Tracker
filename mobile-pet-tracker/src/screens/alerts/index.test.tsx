@@ -471,37 +471,34 @@ describe('#78 R6: cada fila de alerta trae su icono, su hueco, su tinta y sus tr
     }
   });
 
-  it('formatea ahora, minutos, horas y días por la clave correspondiente', async () => {
-    const alerts = [
-      makeAlert({ id: 'now', openedAt: '2026-09-11T11:59:30.000Z' }),
-      makeAlert({ id: 'minutes', openedAt: '2026-09-11T11:55:00.000Z' }),
-      makeAlert({ id: 'hours', openedAt: '2026-09-11T10:00:00.000Z' }),
-      makeAlert({ id: 'days', openedAt: '2026-09-08T12:00:00.000Z' }),
-    ];
-    mockListAlerts.mockResolvedValue({
-      kind: 'ok',
-      items: alerts,
-      nextCursor: null,
-    });
+  it('formatea ahora, minutos, horas y días por la clave correspondiente (enmendado por #174 R2)', async () => {
+    const cases = [
+      ['now', '2026-09-11T11:59:30.000Z', 'Ahora mismo', 'Just now'],
+      ['minutes', '2026-09-11T11:55:00.000Z', 'Hace 5 min', '5 min ago'],
+      ['hours', '2026-09-11T10:00:00.000Z', 'Hace 2 h', '2 h ago'],
+      ['oneDay', '2026-09-10T12:00:00.000Z', 'Hace 1 día', '1 day ago'],
+      ['almostTwoDays', '2026-09-09T13:00:00.000Z', 'Hace 1 día', '1 day ago'],
+      ['twoDays', '2026-09-09T12:00:00.000Z', 'Hace 2 días', '2 days ago'],
+      ['sevenDays', '2026-09-04T12:00:00.000Z', 'Hace 7 días', '7 days ago'],
+    ] as const;
+    const alerts = cases.map(([id, openedAt]) => makeAlert({ id, openedAt }));
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: alerts, nextCursor: null });
 
-    await renderAlerts();
-
-    const list = screen.getByTestId('alerts-list');
-    await waitFor(() => expect(list.props.data).toHaveLength(4));
-    const expected = {
-      now: es['alerts.justNow'],
-      minutes: es['alerts.minutesAgo'].replace('{{minutes}}', '5'),
-      hours: es['alerts.hoursAgo'].replace('{{hours}}', '2'),
-      days: es['alerts.daysAgo'].replace('{{days}}', '3'),
-    };
-    for (const alert of alerts) {
-      const row = within(list).getByTestId(`alert-row-${alert.id}`);
-      expect(
-        within(row).getByTestId(`alert-row-${alert.id}-time`),
-      ).toHaveTextContent(expected[alert.id as keyof typeof expected]);
-      expect(row.children).toHaveLength(3);
+    for (const language of ['es', 'en'] as const) {
+      const rendered = await (language === 'es' ? renderAlerts() : renderAlertsInEnglish());
+      await screen.findByTestId('alert-row-sevenDays-time');
+      for (const [id, , spanish, english] of cases) {
+        const rowId = `alert-row-${id}`;
+        expect(screen.getByTestId(`${rowId}-time`)).toHaveTextContent(
+          language === 'es' ? spanish : english,
+          { exact: true },
+        );
+        expect(screen.getByTestId(rowId).children).toHaveLength(3);
+      }
+      await rendered.unmount();
     }
   });
+
 });
 
 describe('#78 R7: pinta las abiertas primero y conserva la posición tras el ack', () => {

@@ -489,6 +489,7 @@ export const R12_ALERTS: UseRow[] = [
   { file: 'src/screens/alerts/index.tsx', key: 'alerts.minutesAgo' },
   { file: 'src/screens/alerts/index.tsx', key: 'alerts.hoursAgo' },
   { file: 'src/screens/alerts/index.tsx', key: 'alerts.daysAgo' },
+  { file: 'src/screens/alerts/index.tsx', key: 'alerts.dayAgo' }, // #174 R2
   { file: 'src/screens/alerts/index.tsx', key: 'common.somethingWentWrong' },
   { file: 'src/screens/alerts/index.tsx', key: 'common.somethingWentWrong' },
   { file: 'src/screens/alerts/index.tsx', key: 'common.somethingWentWrong' },
