@@ -807,3 +807,84 @@ responderla, rige ese valor.
 ## Aprobación
 
 - [x] Aprobado por humano (fecha: 2026-10-13)
+
+---
+
+## Enmienda E1 — anclas que caducaron al mergear #171, #172 y #173
+
+> Escrita el 2026-10-15 en H0, sobre la spec firmada (`0e2b91cf`), con la
+> rama al día con `origin/main` `dea11875` (merge `460263cd`; #173 `done`).
+> **No cambia ninguna decisión ni ningún requisito de comportamiento**: corrige
+> los literales que la base nueva dejó falsos o ambiguos. Su casilla va **sin
+> marcar**: el humano reabre el gate solo para esta enmienda.
+
+### Qué se midió en H0
+
+Las ocho dependencias D1 a D8 dan 1. De la tabla de base, estas son las que ya
+no dan su valor de `fb5b209f` (el resto, B1, B4 a B8, B11, B14, B15, B18 a B20,
+B22, B24 a B29, coincide):
+
+| Id | A `fb5b209f` | Medido en H0 | Qué lo movió |
+|---|---|---|---|
+| B3 | 0 | **1**: `--text-15: 15px;` ya está en `@theme` | #172 R1 (`text-13`, `text-15`, `text-17`) |
+| B9 | `toBe(19)` | `toBe(19 + 1 + 1 - 1 - 1)`, evalúa a 19 | #171 R3 y R14, #172 R14, #173 R5 |
+| B10 | `toBe(4 + 1)` | `toBe(4 + 1 + 1); // #170 R16; #171 R14` | #171 R14 |
+| B12 | `35 - 1 + 2 + 1 + 16`, título 53 | `35 - 1 + 2 + 1 + 16 - 4 + 8`, título **57** | #173 R13 |
+| B13 | termina en `+ 7, // #170 R1` | termina en `- 4 + 3, // #173 R13` (las líneas de #170 R1 ya no llevan coma) | #172 R16, #173 R13 |
+| B16 | `§2.26` | `§2.29` (siguiente: **§2.30**) | #171, #172, #173 |
+| B21 | `13 + 1 + 1 + 1 + 1 + 1 + 1` | `13 + 1 + 1 + 1 + 1 + 1 + 1 + 1 - 1 - 1` | #171 R3 y R14, #173 R5 |
+| B23 | «diecinueve» | «dieciocho» (18 entradas en `expected`) | #173 R5 |
+
+### E1.1 — R1: cuatro tokens nuevos, no cinco
+
+`--text-15: 15px;` ya existe (B3 = 1, con el mismo valor). R1 ya lo prevé
+(«si un token de la tabla ya existe con el mismo valor, se reutiliza y no se
+duplica»). Consecuencias, sin tocar el texto de R1:
+
+- T1 declara **cuatro** líneas: `--text-11` (tras `--text-26: 26px;`, que es la
+  última `--text-<n>`), `--radius-24`, `--tracking-title` y `--tracking-eyebrow`
+  en las posiciones de su tabla. La fila `--text-15` no se edita.
+- El `toMatchObject` de R1 se escribe entero (con `text-15` y `text-13`, que ya
+  están) y la unicidad de las cinco declaraciones también. El rojo de T1 falla
+  por las **cuatro** claves que faltan.
+- La carta (R2.4) añade `` `--text-11: 11px` `` y `` `--text-15: 15px` `` a su
+  línea de tamaños: esa línea hoy solo lista `--text-13` y `--text-26`.
+
+### E1.2 — R3 y Δ16: dónde va la línea de `englishKeys`
+
+La línea nueva `+ 7, // #175 R3` va **al final** de la fórmula de `englishKeys`
+en `language-provider.test.tsx`, después de `- 4 + 3, // #173 R13`. Esa línea
+pierde su coma (`- 4 + 3 // #173 R13`) y la coma pasa a la nueva. Sustituye a
+«justo después de `+ 7, // #170 R1`», que ya no existe con ese texto.
+La sección de `specs/mobile-ui-language/design.md` es **§2.30**.
+
+### E1.3 — Δ12: el título y el número ya no coinciden
+
+En la base de la spec el título «diecinueve» y el `toBe(19)` eran el mismo
+número. Hoy no: el título dice **dieciocho** (las 18 entradas de `expected`) y
+los dos `toBe` son `19 + 1 + 1 - 1 - 1`, que evalúa a 19 (18 primarios más el
+candado de Recuperar). Δ12 se aplica así:
+
+- `[join('screens', 'docs', 'index.tsx')]: 2,` pasa a `…: 1, // #175 R7`;
+- el título pasa de «dieciocho» a **«diecisiete»**;
+- cada uno de los dos `toBe` conserva su expresión y suma ` - 1` y
+  `; #175 R7: docs-upload`, igual que Δ11. Evalúan a 18.
+
+### E1.4 — Δ13 y su ancla de cierre
+
+La base ya es `toBe(4 + 1 + 1); // #170 R16; #171 R14` (B10). Tras R7:
+`toBe(4 + 1 + 1 + 1); // #170 R16; #171 R14; #175 R7: borde de la zona de subida`.
+La ancla de cierre de §Deltas
+(`grep -cF 'border-lip-gray/g)).toBe(4 + 1 + 1);' …` da 1) se lee ahora
+`grep -cF 'border-lip-gray/g)).toBe(4 + 1 + 1 + 1);' src/__tests__/consistency-classnames.test.ts`
+da **1**. La anterior daba 1 antes del cambio y 0 después.
+
+### E1.5 — Δ15: cifras de `ui-language.test.ts`
+
+Base H0: `toHaveLength(35 - 1 + 2 + 1 + 16 - 4 + 8)` y título **57**. Tras R7 y R8:
+`… + 8 + 1 + 6`, con los comentarios `#175 R7` y `#175 R8`, y título
+**64** (el «60» de Δ15 era la cifra a `fb5b209f`).
+
+### Aprobación de la Enmienda E1
+
+- [ ] Enmienda E1 aprobada por humano ← gate obligatorio antes del handoff a Codex
