@@ -198,7 +198,7 @@ de reglas, que es lógica pura sin dependencias de UI.
 | Fichero | R | Cambio |
 |---|---|---|
 | `src/utils/account-rules.ts` | R2 | nuevo |
-| `src/utils/account-rules.test.ts` | R2 | nuevo: tablas C, L, G, F y N (66 casos) |
+| `src/utils/account-rules.test.ts` | R2 | nuevo: tablas C, L, G, F y N (66 casos; 71 tras la Enmienda E1) |
 | `src/i18n/catalog.ts` | R1 | +9 claves × 2 idiomas |
 | `src/providers/__tests__/language-provider.test.tsx` | R1 | `+ 9` en la fórmula y el `describe` de `#183 R1` |
 | `src/__tests__/ui-copy-table.ts` | R2, R4, R7 | filas según requirements §Deltas de candados |

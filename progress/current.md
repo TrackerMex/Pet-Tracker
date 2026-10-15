@@ -45,12 +45,19 @@
   de R2 sin candado (apellidos `max` tras trim, país sin trim, confirmación
   sin trim; RV5–RV7). La causa está en los candados que prescribe la spec, así
   que hace falta una enmienda.
+- **Barrido exhaustivo** del reviewer (`ae7a50df`): H1–H15.
+- **Enmienda E1 redactada** (2026-10-15): requirements §Enmienda E1, el R2
+  ajustado, tasks §E1 y design.md:201. Son cinco commits solo de tests
+  (c16–c20), que nacen verdes, con sus parches y `sondas_e1.py` en
+  `progress/e1_mobile-account-client-validation/`. Todo se midió en un spike
+  fuera del árbol: 37 sondas con sus rojos exactos, typecheck y eslint
+  limpios, y los guards (252) verdes. Las tablas de sondas previas que
+  cambian con los `it` de E1 están re-medidas.
 - **Siguiente**:
-  1. Barrido exhaustivo del reviewer (cláusula × rama × candado × sonda),
-     antes de redactar la Enmienda E1.
-  2. Redactar E1 con tests por parche medidos en un spike, como en #171 r4.
-  3. Firma humana vía Notion.
-  4. Reanudación 2 a Codex, y después la ronda 2 del reviewer.
+  1. Pre-check del reviewer sobre E1 (parches y sondas).
+  2. Firma humana vía Notion.
+  3. Reanudación 2 a Codex (H0 sigue en `56a0b84a`), y después la ronda 2
+     del reviewer.
 - **Pedido del humano** (2026-10-15, tras firmar R21 de #172): validación en
   cliente con mensaje claro en todos los inputs de cuenta, como el correo de
   Crear cuenta, en lugar del error del servidor. Texto literal en

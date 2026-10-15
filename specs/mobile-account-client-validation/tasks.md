@@ -109,9 +109,35 @@ Cada verde cierra con `bun run typecheck` y `bun run lint` en verde.
 - [ ] (3) Refactor: se borra el código muerto que deje R7 en register
   (`RegisterFieldErrors` si queda sin uso). Los tests siguen verdes.
 
+## E1 — Candados de la review ronda 1
+
+Ver requirements §Enmienda E1. Son cinco commits, solo de tests, y nacen
+verdes: el rojo lo dan las sondas. Cada uno aplica su parche desde
+`mobile-pet-tracker/` con
+`git -C .. apply --check <p> && git -C .. apply <p>`, donde `<p>` es
+`progress/e1_mobile-account-client-validation/cNN.patch`. Después corre su
+suite, sus sondas con `python3 ../progress/e1_mobile-account-client-validation/sondas_e1.py cNN`
+(cada una revertida con `git checkout HEAD -- <fichero>`; requirements
+§Commits de E1), `bun run typecheck` y `bun run lint`.
+
+- [ ] c16: `src/utils/account-rules.test.ts` da 71. Sondas RV5–RV7, A6, A10,
+  A26, los 14 mutantes de `EMAIL_PATTERN`, S2.1 (9) y S2.9 (3). Commit
+  `test(mobile): candados de E1 en account-rules (#183 R2)`.
+- [ ] c17: `src/screens/login/index.test.tsx` da 40. Sondas RV8 y S3.2 (9).
+  Commit `test(mobile): candado de E1 en login (#183 R3)`.
+- [ ] c18: `src/screens/register/index.test.tsx` da 65. Sondas RV9 y S4.4 (25
+  en este fichero). Commit `test(mobile): candado de E1 en registro (#183 R4)`.
+- [ ] c19: `src/screens/forgot/index.test.tsx` da 49. Sondas RV10, C18, C20,
+  S5.1 (6), S5.3 (6) y S7.3 (4 en este fichero). Commit
+  `test(mobile): candados de E1 en recuperar (#183 R5, R7)`.
+- [ ] c20: `src/screens/reset-password/index.test.tsx` da 49. Sondas RV11,
+  C26, C27, S6.1 (5) y S7.4 (2 en este fichero). Commit
+  `test(mobile): candados de E1 en nueva contraseña (#183 R6, R7)`.
+
 ## Cierre
 
 - [ ] `bunx jest` completo, `bun run typecheck` y `bun run lint` en verde.
+  Tras E1, la suite móvil da 3517 tests en 111 suites.
 - [ ] Anclas del par sites-99 en `0` (requirements §Convenciones).
 - [ ] Anclas finales de requirements §Base medida recontadas: login, register,
   forgot y reset.

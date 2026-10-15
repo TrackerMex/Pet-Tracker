@@ -1,0 +1,21 @@
+diff --git a/mobile-pet-tracker/src/screens/register/index.test.tsx b/mobile-pet-tracker/src/screens/register/index.test.tsx
+--- a/mobile-pet-tracker/src/screens/register/index.test.tsx
++++ b/mobile-pet-tracker/src/screens/register/index.test.tsx
+@@ -733,4 +733,17 @@
+     });
+     expect(mockLogin).toHaveBeenCalledWith(apiUrl, { email: 'Alex@Example.com', password: 'correct horse' });
+   });
++
++  it('#183 R4: un envío inválido tras un aviso general lo retira y no vuelve a llamar a la API', async () => {
++    await renderRegister();
++    await fillForm();
++    await submit();
++    await waitFor(() => expect(screen.getByTestId('register-error')).toHaveTextContent('Ese correo ya está registrado'));
++    await waitFor(() => expect(screen.getByTestId('register-submit')).not.toBeDisabled());
++    await fireEvent.changeText(screen.getByTestId('register-email'), 'alex.example.com');
++    await submit();
++    await waitFor(() => expect(screen.getByTestId('register-email-message')).toHaveTextContent('Ingresa un correo electrónico válido'));
++    expect(screen.queryByTestId('register-error')).toBeNull();
++    expect(mockRegister).toHaveBeenCalledTimes(1);
++  });
+ });

@@ -326,7 +326,8 @@ fichero (constantes y los helpers `tooShort(min)` / `tooLong(max)`), así que
 **Candados** (`src/utils/account-rules.test.ts`, nuevo, colocado junto al
 módulo). Todas las comparaciones usan `toStrictEqual`, no `toEqual`, para que
 una entrada `{ email: undefined }` falle. `VALID` vale
-`{ firstName: 'Alex', lastName: 'Smith', email: 'alex@example.com', phone: '+525555555555', country: 'MX', password: 'correct horse', passwordConfirmation: 'correct horse' }`.
+`{ firstName: 'A', lastName: 'S', email: 'alex@example.com', phone: '+525555555555', country: 'MX', password: 'correct horse', passwordConfirmation: 'correct horse' }`
+(Enmienda E1: nombre y apellidos de un carácter, que es el mínimo del DTO).
 
 Tabla **C** — `it.each` `#183 R2: EMAIL_PATTERN decide «%s» como z.email() de zod 4.4.3 (%s)`.
 Cada fila asevera `EMAIL_PATTERN.test(valor)` contra el booleano literal:
@@ -348,6 +349,11 @@ Cada fila asevera `EMAIL_PATTERN.test(valor)` contra el booleano literal:
 | C13 | `alex.example.com` | `false` |
 | C14 | ` alex@example.com` (espacio delante) | `false` |
 | C15 | `` (vacío) | `false` |
+| C16 | `a_1-b.c_@x2-y.example.technology` (E1) | `true` |
+| C17 | `z9@1x.io` (E1) | `true` |
+| C18 | `+@b.co` (E1) | `true` |
+| C19 | `a-@b.co` (E1) | `true` |
+| C20 | `a@b_c.co` (E1) | `false` |
 
 Tabla **L** — `it.each` `#183 R2: validateLogin %s`:
 
@@ -372,7 +378,7 @@ Tabla **G** — `it.each` `#183 R2: validateRegister %s`. Cada fila sobreescribe
 | G5 | firstName `'a'.repeat(121)` | `firstName: { labelKey: 'validation.tooLong', params: { max: 120 } }` |
 | G6 | lastName `''` | `lastName: { labelKey: 'validation.lastNameRequired' }` |
 | G7 | lastName `'   '` | igual que G6 |
-| G8 | lastName `'a'.repeat(120)` | `{}` |
+| G8 | lastName `' ' + 'a'.repeat(120) + ' '` (E1) | `{}` |
 | G9 | lastName `'a'.repeat(121)` | `lastName: { labelKey: 'validation.tooLong', params: { max: 120 } }` |
 | G10 | email `'alex.example.com'` | `email: { labelKey: 'forgot.invalidEmail' }` |
 | G11 | email `'alex@example.c'` | igual que G10 |
@@ -387,7 +393,7 @@ Tabla **G** — `it.each` `#183 R2: validateRegister %s`. Cada fila sobreescribe
 | G20 | phone `' ' + '1'.repeat(20) + ' '` | `{}` |
 | G21 | country `''` | `country: { labelKey: 'validation.countryLength' }` |
 | G22 | country `'M'` | igual que G21 |
-| G23 | country `'MEX'` | igual que G21 |
+| G23 | country `'MX '` (E1; el DTO no recorta el país) | igual que G21 |
 | G24 | country `'m'` | igual que G21 (la longitud va antes que las letras) |
 | G25 | country `'mx'` | `country: { labelKey: 'validation.countryLetters' }` |
 | G26 | country `'M1'` | igual que G25 |
@@ -417,11 +423,11 @@ Tabla **N** — `it.each` `#183 R2: validateResetPassword %s`:
 | N2 | `'1234567'` / igual | `{ password: { labelKey: 'validation.tooShort', params: { min: 8 } } }` |
 | N3 | `' '.repeat(8)` / igual | `{}` |
 | N4 | `'a'.repeat(128)` / igual | `{}` |
-| N5 | `'a'.repeat(129)` / igual | `{ password: { labelKey: 'validation.tooLong', params: { max: 128 } } }` |
-| N6 | `'new-password-123'` / `'new-password-124'` | `{ passwordConfirmation: { labelKey: 'validation.passwordsDontMatch' } }` |
+| N5 | `'a'.repeat(128) + ' '` / igual (E1) | `{ password: { labelKey: 'validation.tooLong', params: { max: 128 } } }` |
+| N6 | `'new-password-123'` / `'new-password-123 '` (E1) | `{ passwordConfirmation: { labelKey: 'validation.passwordsDontMatch' } }` |
 | N7 | `'1234567'` / `'x'` | entradas de N2 y N6 |
 
-Total del fichero: 15 + 6 + 33 + 5 + 7 = **66** casos.
+Total del fichero: 20 + 6 + 33 + 5 + 7 = **71** casos (66 antes de E1).
 
 **Filas de `src/__tests__/ui-copy-table.ts`** (en el rojo de R2, al final de
 `R1_AUTH`, una por clave):
@@ -465,7 +471,7 @@ caen todos en `account-rules.test.ts` y son todos de aserción):
 
 | Sonda | Mutación | Rojos esperados |
 |---|---|---|
-| S2.1 | `EMAIL_PATTERN` pasa a ser el de #172, `/^[^\s@]+@[^\s@]+\.[^\s@]+$/` | 8: C4–C10 y G11 |
+| S2.1 | `EMAIL_PATTERN` pasa a ser el de #172, `/^[^\s@]+@[^\s@]+\.[^\s@]+$/` | 9: C4–C10, C20 (E1) y G11 |
 | S2.2 | login comprueba `password.trim().length < 1` | 1: L2 |
 | S2.3 | el nombre exige `length >= 1` sin recortar | 1: G3 |
 | S2.4 | los apellidos exigen `length >= 1` sin recortar | 1: G7 |
@@ -473,7 +479,7 @@ caen todos en `account-rules.test.ts` y son todos de aserción):
 | S2.6 | el `max 120` del nombre cuenta sin recortar | 1: G4 |
 | S2.7 | el `max` del correo pasa a 321 | 2: G13, F4 |
 | S2.8 | el `min` de la contraseña pasa a 7 | 4: G28, G33, N2, N7 |
-| S2.9 | la contraseña se recorta antes de medir | 2: G29, N3 |
+| S2.9 | la contraseña se recorta antes de medir | 3: G29, N3 y N5 (E1) |
 | S2.10 | el regex de país lleva la bandera `i` | 1: G25 |
 | S2.11 | en país, las letras se comprueban antes que la longitud | 4: G21, G22, G23, G24 |
 | S2.12 | en el correo, la longitud se comprueba antes que el formato | 2: G14, F5 |
@@ -562,7 +568,7 @@ valida y se envía.
 | Sonda | Mutación | Rojos esperados |
 |---|---|---|
 | S3.1 | la llamada usa `email` en vez de `values.email` | 1: `it` 5 (aserción) |
-| S3.2 | se borra el `return` tras `setFieldErrors(issues)` | 8: `it` 1 ×4, 2, 3, 6 y 7 (aserción) |
+| S3.2 | se borra el `return` tras `setFieldErrors(issues)` | 9: `it` 1 ×4, 2, 3, 6, 7 y el `it` de E1 (aserción) |
 | S3.3 | se valida `{ email, password }` sin recortar y se envía `values` | 1: `it` 5 (aserción: no se llamó) |
 
 **Anclas** (`src/screens/login/index.tsx`):
@@ -707,7 +713,7 @@ cual. R7 lo borra. design.md §Register fija la forma.
 | S4.1 | `register(...)` recibe `email` sin recortar | 1: `it` 5 (aserción) |
 | S4.2 | el `login(...)` posterior recibe `email` sin recortar | 1: `it` 5 (aserción) |
 | S4.3 | se quita `isInvalid` del `TextField` del teléfono | 6: `it` 1 filas 9 y 10, `it` 3, `it` 4 y `#172 R10: cada campo con error lleva icono y texto seleccionable` (consulta); además `#172 R10: los siete campos del registro marcan isInvalid` en `account-screens-polish.test.ts` (aserción, 6 ≠ 7) |
-| S4.4 | se borra el `return` tras `setFieldErrors(issues)` | 24 de aserción: `it` 1 ×17, `it` 3 y `it` 4. Más cinco `#172 R12` heredados: `un correo sin arroba…`, `en inglés el correo inválido…`, `tras un correo inválido…` (`toHaveBeenCalledTimes(1)`) y el `it.each` de dos casos |
+| S4.4 | se borra el `return` tras `setFieldErrors(issues)` | 25 de aserción: `it` 1 ×17, `it` 3, `it` 4 y el `it` de E1. Más cinco `#172 R12` heredados: `un correo sin arroba…`, `en inglés el correo inválido…`, `tras un correo inválido…` (`toHaveBeenCalledTimes(1)`) y el `it.each` de dos casos |
 
 **Anclas** (`src/screens/register/index.tsx`): `const EMAIL_PATTERN` → `0`
 (base 1); `t('forgot.invalidEmail')` → `0` (base 1); `t(fieldErrors.` → `7`
@@ -770,9 +776,9 @@ Total: **5** en rojo, todos de consulta, y 1 que nace verde.
 
 | Sonda | Mutación | Rojos esperados |
 |---|---|---|
-| S5.1 | se borra el `return` tras marcar el campo | 5: `it` 1 ×4 y `it` 3 (aserción) |
+| S5.1 | se borra el `return` tras marcar el campo | 6: `it` 1 ×4, `it` 3 y el `it` de E1 (aserción) |
 | S5.2 | la pantalla usa `EMAIL_PATTERN.test(...)` en vez de `validateForgot` | 1: `it` 1 fila 4 (consulta) |
-| S5.3 | se quita `isInvalid` del `TextField` | 5: `it` 1 ×4 y `it` 3 (consulta) |
+| S5.3 | se quita `isInvalid` del `TextField` | 6: `it` 1 ×4, `it` 3 y el `it` de E1 (consulta) |
 
 **Anclas** (`src/screens/forgot/index.tsx`): `isInvalid={Boolean(fieldErrors.`
 → `1`; `<FieldError` → `1`; `t(fieldErrors.` → `1`;
@@ -838,7 +844,7 @@ Total: **4** en rojo, todos de consulta, y 2 que nacen verdes.
 
 | Sonda | Mutación | Rojos esperados |
 |---|---|---|
-| S6.1 | se borra el `return` tras marcar los campos | 4: `it` 1 ×3 y `it` 2 (aserción) |
+| S6.1 | se borra el `return` tras marcar los campos | 5: `it` 1 ×3, `it` 2 y el `it` de E1 (aserción) |
 | S6.2 | se quita `isInvalid` del `TextField` de la confirmación | 2: `it` 1 fila 3 y `it` 2 (consulta) |
 | S6.3 | se valida `{ password: password.trim(), passwordConfirmation }` | 1: `it` 3 fila `' '.repeat(8)` (aserción: no se llamó) |
 
@@ -934,8 +940,8 @@ con el 400, `register-error-row` sigue existiendo.
 |---|---|---|
 | S7.1 | login vuelve a `result.errors.map(({ message }) => message).join('\n')` | 3: candado 1, `resuelve las <B_AUTH + 10>…` y `resuelve cada ocurrencia…` (aserción) |
 | S7.2 | el caso `validation` de register añade `setFieldErrors({ email: { labelKey: 'forgot.invalidEmail' } })` | 1: candado 2 (aserción) |
-| S7.3 | forgot vuelve a `t('forgot.invalidEmail')` en `validation` | 5: las 3 de forgot, `resuelve las <B_AUTH + 10>…` y `resuelve cada ocurrencia…` (aserción) |
-| S7.4 | reset vuelve a unir los mensajes crudos | 3: candado 5, `resuelve las <B_RESET + 1>…` y `resuelve cada ocurrencia…` (aserción) |
+| S7.3 | forgot vuelve a `t('forgot.invalidEmail')` en `validation` | 6: las 3 de forgot, el `it` de forgot de E1, `resuelve las <B_AUTH + 10>…` y `resuelve cada ocurrencia…` (aserción) |
+| S7.4 | reset vuelve a unir los mensajes crudos | 4: candado 5, el `it` de reset de E1, `resuelve las <B_RESET + 1>…` y `resuelve cada ocurrencia…` (aserción) |
 
 **Anclas** (las de base 1 o 2 ya son anclas negativas; S7.1 hace que
 `errors.map(` vuelva a 1 en login):
@@ -1046,3 +1052,164 @@ Cada viñeta es una delimitación de esta feature, no una feature pendiente.
 ## Aprobación
 
 - [x] Aprobado por humano (fecha: 2026-10-15) ← gate obligatorio antes de implementar
+
+## Enmienda E1 (2026-10-15) — candados de la review ronda 1
+
+La review ronda 1 (`progress/review_mobile-account-client-validation.md`,
+`00ed2bc4`) rechazó #183. Producción cumple la spec y Codex no se desvió, pero
+siete mutaciones de producción pasaban con todo en verde. El barrido
+exhaustivo que siguió (`ae7a50df`, §Barrido exhaustivo previo a E1) encontró
+ocho huecos más. Los quince son de la spec y no de Codex: ningún candado
+prescrito miraba ahí.
+
+| Hueco | Sonda | Mutación | Candado de E1 |
+|---|---|---|---|
+| H1 | RV8 | login: se borra el `setError(null);` de `submit` | `#183 R3: un envío inválido tras un aviso general lo retira y no vuelve a llamar a la API` |
+| H2 | RV9 | register: se borra el `setGeneralError(null);` de `submit` | `#183 R4: un envío inválido tras un aviso general lo retira y no vuelve a llamar a la API` |
+| H3 | RV10 | forgot: se borra el `setError(null);` de `submit` | `#183 R5: un correo inválido tras un aviso general lo retira, y el corregido quita el mensaje y vuelve a llamar` |
+| H12 | C18 | forgot: se borra el `setFieldErrors({});` de `submit` | el mismo `it` que H3 |
+| H4 | RV11 | reset: se borra el `setError(null);` de `submit` | `#183 R6: un envío inválido tras un aviso general lo retira, y el corregido quita el mensaje y vuelve a llamar` |
+| H13 | C26 | reset: se borra el `setFieldErrors({});` de `submit` | el mismo `it` que H4 |
+| H14 | C20 | forgot: el caso `validation` añade `setFieldErrors({ email: { labelKey: 'forgot.invalidEmail' } });` | `#183 R7: un 400 de validación en recuperar pinta el aviso genérico y ningún mensaje de campo` |
+| H15 | C27 | reset: el caso `validation` añade `setFieldErrors({ passwordConfirmation: { labelKey: 'validation.passwordsDontMatch' } });` | `#183 R7: un 400 de validación en nueva contraseña no marca ningún campo` |
+| H5 | RV5 | el `max 120` de los apellidos cuenta sin recortar | G8 |
+| H6 | RV6 | el país se recorta antes de medir | G23 |
+| H7 | RV7 | la confirmación se compara recortada | N6 |
+| H8 | A6 | el mínimo del nombre pasa de 1 a 2 | `VALID.firstName` = `'A'` |
+| H9 | A10 | el mínimo de los apellidos pasa de 1 a 2 | `VALID.lastName` = `'S'` |
+| H10 | A26 | el `max 128` de la contraseña cuenta recortado | N5 |
+| H11 | 14 mutantes del literal de correo | ver §Sondas de E1 | C16–C20 |
+
+### Qué cambia
+
+- **R2** (`src/utils/account-rules.test.ts`). Cambian `VALID`, G8, G23, N5 y
+  N6, y se añaden las filas C16–C20. Ya están escritos en R2 con la marca
+  «(E1)». El fichero pasa de 66 a **71** casos.
+  - H11 toma la alternativa de comportamiento del barrido (+5 filas C) y no el
+    candado sobre `EMAIL_PATTERN.source`. La tabla C ya es el contrato «decide
+    como `z.email()`», y estas cinco filas matan los 14 mutantes.
+    `z.email()` de zod 4.4.3 da los mismos cinco booleanos (medido).
+  - Sondas de R2 re-medidas sobre el fichero de E1: S2.1 pasa de 8 a 9 rojos
+    (C20) y S2.9 de 2 a 3 (N5). Las otras doce dan lo mismo que antes.
+- **R3–R7: seis `it` nuevos.** No se meten candados en `it` heredados, como
+  proponía el barrido. Así cada R-id tiene un `it` propio con título
+  `#183 Rn` para la traceability, y los heredados (`#117 R7`, `R8:`) no
+  cambian ni de título ni de cuerpo.
+  - Los de R3–R6 van al final de su `describe('#183 Rn: …')`.
+  - Los dos de R7 van dentro del `describe` heredado de su pantalla, como los
+    demás `#183 R7`:
+    - forgot, en `#117 R7: cada kind distinto de ok pinta su copy en forgot-error`,
+      justo antes de `un reintento desde el formulario que vuelve a fallar pinta el copy del nuevo kind`;
+    - reset, en `R8: el submit completa el reset y mapea los errores`, justo
+      antes de `deshabilita el boton mientras la peticion esta en vuelo`.
+  - Qué hace cada uno (el cuerpo exacto va en su parche, §Commits de E1):
+    - **R3, login.** Con `invalid-credentials`, el primer envío pinta
+      `Credenciales inválidas` en `login-error`. El reenvío con el correo vacío
+      marca el campo, retira `login-error` y no vuelve a llamar
+      (`toHaveBeenCalledTimes(1)`).
+    - **R4, register.** Es lo mismo con `Ese correo ya está registrado` (el
+      `email-taken` del `describe`) y el correo cambiado a `alex.example.com`.
+    - **R5, forgot.** Con `error`, el primer envío pinta `Algo salió mal`.
+      `alex.example.com` lo retira y marca el campo sin llamar. Luego
+      `'  Ana@Example.com '` quita el mensaje del campo, vuelve a llamar con
+      `{ email: 'Ana@Example.com' }` y pinta otra vez `Algo salió mal`.
+    - **R6, reset.** Es lo mismo con `1234567` en los dos campos y después los
+      valores válidos de `submitReset()`.
+    - **R7, forgot.** Un 400 con un error en `email` pinta el genérico en
+      `forgot-error` y ninguna fila `forgot-*-message-row`.
+    - **R7, reset.** Un 400 con un error en `passwordConfirmation` pinta el
+      genérico en `reset-error` y ninguna fila de campo.
+  - Todos usan `await` en cada render, envío y espera (RNTL 14), y esperan un
+    texto de la UI, no el contador del mock.
+- **Sondas de R3–R7 que suben** con los `it` nuevos (ya corregidas en sus
+  tablas): S3.2 de 8 a 9, S4.4 de 24 a 25, S5.1 y S5.3 de 5 a 6, S6.1 de 4 a 5,
+  S7.3 de 5 a 6 y S7.4 de 3 a 4. Las demás dan lo mismo.
+
+### Sondas de E1
+
+Se corren en el verde del commit que trae el candado, mutando producción y
+nada más. Cada una se revierte con `git checkout HEAD -- <fichero>`, y después
+`git diff --quiet HEAD` y `git diff --cached --quiet` salen 0. Todos los rojos
+son de aserción; ninguno es un timeout.
+
+| Sonda | Fichero mutado | Rojos esperados (exactos) |
+|---|---|---|
+| RV5 | `src/utils/account-rules.ts` | 1: G8 |
+| RV6 | `src/utils/account-rules.ts` | 1: G23 |
+| RV7 | `src/utils/account-rules.ts` | 1: N6 |
+| A6 | `src/utils/account-rules.ts` | 29: G1 y G6–G33 |
+| A10 | `src/utils/account-rules.ts` | 29: G1–G5 y G10–G33 |
+| A26 | `src/utils/account-rules.ts` | 1: N5 |
+| RV8 | `src/screens/login/index.tsx` | 1: el `it` de R3 de E1 |
+| RV9 | `src/screens/register/index.tsx` | 1: el `it` de R4 de E1 |
+| RV10, C18 | `src/screens/forgot/index.tsx` | 1 cada una: el `it` de R5 de E1 |
+| C20 | `src/screens/forgot/index.tsx` | 1: el `it` de R7 de forgot de E1 |
+| RV11, C26 | `src/screens/reset-password/index.tsx` | 1 cada una: el `it` de R6 de E1 |
+| C27 | `src/screens/reset-password/index.tsx` | 1: el `it` de R7 de reset de E1 |
+
+Los 14 mutantes de `EMAIL_PATTERN` cambian una sola clase del literal. Cada uno
+da **1** rojo en la tabla C:
+
+| Mutante | Cambio | Rojo |
+|---|---|---|
+| loc-_, loc--, loc-., loc-09 | la parte local pierde `_`, `-`, `.` o `0-9` | C16 |
+| loc-plus | la parte local pasa de `*` a `+` | C18 |
+| last-_ | el último carácter local pierde `_` | C16 |
+| last-+ | el último carácter local pierde `+` | C18 |
+| last-- | el último carácter local pierde `-` | C19 |
+| last-09 | el último carácter local pierde `0-9` | C17 |
+| dom1-09 | el primer carácter del dominio pierde `0-9` | C17 |
+| dom--, dom-09 | el resto del dominio pierde `-` o `0-9` | C16 |
+| dom+_ | el resto del dominio admite `_` | C20 |
+| tld6 | el TLD pasa de `{2,}` a `{2,6}` | C16 |
+
+La bandera `i` es un mutante equivalente: las clases ya admiten las dos cajas.
+Da 71 verdes y no lleva candado.
+
+### Commits de E1
+
+Los cinco son solo de tests y **nacen verdes**, porque producción ya cumple.
+El rojo de cada candado lo demuestran sus sondas, como en #172 E6. Ninguno toca
+producción, `catalog.ts`, `ui-copy-table.ts` ni las fórmulas de
+`ui-language.test.ts`.
+
+Cada commit aplica su parche desde `mobile-pet-tracker/`:
+`git -C .. apply --check <p> && git -C .. apply <p>`. Después corre la suite,
+las sondas de su fila, `bun run typecheck` y `bun run lint`. El leader los
+midió todos fuera del árbol sobre `ae7a50df`: salen verdes, cada sonda da
+exactamente sus rojos, y typecheck y eslint quedan limpios.
+
+Las sondas de cada commit las corre
+`progress/e1_mobile-account-client-validation/sondas_e1.py`, desde
+`mobile-pet-tracker/`: `python3 ../progress/e1_mobile-account-client-validation/sondas_e1.py c16`
+(o `c17` … `c20`). Para cada sonda, el script comprueba que el fichero de
+producción esté igual que `HEAD`, aplica la mutación, corre la suite del
+fichero, lo revierte con `git checkout HEAD --` y compara los títulos en rojo
+con los que midió el leader. Sale 0 solo si todas dan exactamente sus rojos y
+producción vuelve a `HEAD`; si no, imprime `MAL` con lo que falta y lo que
+sobra, o `PARA` con el ancla que no casó.
+
+| Commit | Parche (`progress/e1_mobile-account-client-validation/`) | sha256 | Suite | Sondas | Mensaje |
+|---|---|---|---|---|---|
+| c16 | `c16.patch` | `6498fa6e2d44d689318876128e496d6f2204529af7c81f5f62e1eb4da71582f1` | `src/utils/account-rules.test.ts`: 71 | RV5–RV7, A6, A10, A26, los 14 mutantes, S2.1 y S2.9 | `test(mobile): candados de E1 en account-rules (#183 R2)` |
+| c17 | `c17.patch` | `125b001f3410c7c724472367d10adbe2bd5296d245261fc9f0cb627a584ce56a` | `src/screens/login/index.test.tsx`: 40 | RV8, S3.2 | `test(mobile): candado de E1 en login (#183 R3)` |
+| c18 | `c18.patch` | `494bbd1bdd53e02afce1c639d935c092622e17f0783660e3f3306d8431742599` | `src/screens/register/index.test.tsx`: 65 | RV9, S4.4 | `test(mobile): candado de E1 en registro (#183 R4)` |
+| c19 | `c19.patch` | `a1a10fb89095f17aff51a1272441be512b5dcdfd2a1373f750e10c8f116b2e76` | `src/screens/forgot/index.test.tsx`: 49 | RV10, C18, C20, S5.1, S5.3, S7.3 (solo forgot: 4) | `test(mobile): candados de E1 en recuperar (#183 R5, R7)` |
+| c20 | `c20.patch` | `db1744205a53add247bbca49560bd95ad7fbff7ff1573d4304a91b230be1efb0` | `src/screens/reset-password/index.test.tsx`: 49 | RV11, C26, C27, S6.1, S7.4 (solo reset: 2) | `test(mobile): candados de E1 en nueva contraseña (#183 R6, R7)` |
+
+### Cifras
+
+- account-rules pasa de 66 a 71, login de 39 a 40, register de 64 a 65, forgot
+  de 47 a 49 y reset de 47 a 49.
+- Las suites de la feature pasan de 330 a **341** tests.
+- La suite móvil completa pasa de 3506 a **3517** (+11), con las mismas 111
+  suites.
+- Las cuatro pantallas dan 203 passed. Las guardas (`account-screens-polish`,
+  `design-drift`, `legibility-classnames`, `language-provider`, `ui-language`)
+  más `account-rules` dan 252 passed: 247 antes de E1, más las 5 filas C.
+
+Nada más cambia: ni los EARS, ni producción, ni el copy, ni los deltas de
+candados de §Deltas de candados. La traceability y el informe de Codex suman
+las filas de c16–c20 al cerrar.
+
+- [ ] Enmienda E1 aprobada por humano (fecha: ____) ← gate antes de reanudar Codex
