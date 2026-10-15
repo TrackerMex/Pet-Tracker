@@ -1037,11 +1037,11 @@ cambiarlo al firmar; si lo hace, el leader enmienda antes del handoff.
 
 > Escrita el 2026-10-15, al contrastar la spec firmada (`334fcebc`) contra el
 > árbol en `3a613925` para escribir el handoff a Codex
-> (`progress/handoff_mobile-meal-schedule-canvas-fidelity.md`, commit
-> `fe55b000`). **No cambia ninguna decisión de comportamiento ni de diseño de
-> Horario ni de Historial.** Corrige dos premisas falsas (R1/D5 y R13 punto 9)
-> y registra candados que §Deltas no nombra. Cambia alcance de ficheros:
-> `profile-canvas-fidelity.test.ts` entra en la lista cerrada. Ningún `it` se
+> (`progress/handoff_mobile-meal-schedule-canvas-fidelity.md`). **No cambia
+> ninguna decisión de comportamiento ni de diseño de Horario ni de Historial.**
+> Corrige dos premisas falsas (R1/D5 y R13 punto 9) y registra candados que
+> §Deltas no nombra. Cambia alcance de ficheros: `profile-canvas-fidelity.test.ts`
+> y `alerts-canvas-fidelity.test.ts` entran en la lista cerrada. Ningún `it` se
 > añade, se quita ni se renombra. Su casilla va **sin marcar**: el humano
 > reabre el gate solo para esta enmienda. Cada punto manda sobre el cuerpo de
 > la spec.
@@ -1109,10 +1109,11 @@ falso. El título no cambia.
 Δ27 a Δ35 de §Deltas están caducos: Δ32 y Δ33 son falsos (no cambia ninguna
 regex de extracción; la lista de neutrales gana `` `meal-time-edit-${index` `` y
 `add-meal-time-button`) y falta el segundo sitio de `rounded-xl bg-accent`
-(`#62 R1`, `primaryRadius`), que también baja en 1. Los sustituyen los deltas
-literales de la sección «DELTAS DE CANDADOS» de
-`progress/handoff_mobile-meal-schedule-canvas-fidelity.md` (commit `fe55b000`),
-cifras escritas como base H0 + delta con `#179 Rn` en el comentario. Si otra
+(`#62 R1`, `primaryRadius`), que también baja en 1. El id neutral que extrae
+la regex de #174 es `` `meal-time-edit-${index}` `` (con la llave de cierre).
+Los sustituyen los deltas literales de la sección «DELTAS DE CANDADOS» de
+`progress/handoff_mobile-meal-schedule-canvas-fidelity.md` (el que esté en el
+árbol al lanzar a Codex; no se cita por commit), cifras escritas como base H0 + delta con `#179 Rn` en el comentario. Si otra
 feature mergea antes, el leader re-mide esa sección; el criterio no cambia.
 
 ### E1.6 — R7: Δ8 entra entero en un solo commit
@@ -1120,6 +1121,17 @@ feature mergea antes, el leader re-mide esa sección; el criterio no cambia.
 Δ8 va completo en el rojo de R7 (c14), sin partirse: el rojo de R5 (c11) ya
 retira `ForkKnife` de Horario. La cadena de c14 comprueba que el fichero lo
 cuenta 0 veces antes de lanzar jest.
+
+### E1.7 — R4 a R11: inventarios de `alerts-canvas-fidelity.test.ts` (#174 R12)
+
+#174 mergeó con `src/__tests__/alerts-canvas-fidelity.test.ts`, cuyo
+`describe('#174 R12: inventarios')` lista los ficheros que consumen
+`rounded-10`, `border-b-5`, `tracking-caps`, `text-15` y `tracking-title`, y
+`declara border-b-5 una sola vez`. El estado final de #179 desborda esos
+inventarios. El fichero entra en la lista cerrada. Cada delta es una línea
+de `files:` (o el recuento de `border-b-5`), con `#179 Rn; #174 R12` en el
+comentario, y los fija la sección «DELTAS DE CANDADOS» del handoff en los
+rojos de R4, R5, R6, R7, R9 y R11. No añade, quita ni renombra ningún `it`.
 
 ### Dónde viaja cada delta
 
@@ -1131,9 +1143,12 @@ cuenta 0 veces antes de lanzar jest.
 | E1.4 | c12 (rojo R6) | `profile-canvas-fidelity.test.ts` |
 | E1.5 | c10, c12, c14 y los rojos siguientes de R8 a R12 | `consistency-classnames.test.ts` |
 | E1.6 | c14 (rojo R7) | `meal-schedule/index.test.tsx` |
+| E1.7 | c8, c10, c12, c14, c18 y c22 (rojos de R4, R5, R6, R7, R9 y R11) | `alerts-canvas-fidelity.test.ts` |
 
 - `src/__tests__/profile-canvas-fidelity.test.ts` entra en la lista cerrada de
   ficheros, solo en c12 y solo en las aserciones de E1.3 y E1.4.
+- `src/__tests__/alerts-canvas-fidelity.test.ts` entra en la lista cerrada,
+  solo en los commits de E1.7 y solo en sus inventarios.
 - Los comentarios de trazabilidad son `// #179 Rn`; nunca `// #179 E1`
   (HEX_LITERAL de design-drift).
 - Los deltas de E1.3, E1.4 y E1.5 se suman a §Deltas de candados (registro de

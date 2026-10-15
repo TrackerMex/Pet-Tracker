@@ -193,7 +193,10 @@ design-drift, language-provider); su recuento también es H0 + delta.
   punto, plantada y revertida sin commitear (`git checkout HEAD -- <ruta>`
   y `git diff --cached --quiet`). Sonda mínima: `shadow-sm` en la fila da
   rojo en el punto 3; `ForkKnife` de vuelta en el import, en el punto 2;
-  `rounded-xl` en el mosaico, en el punto 10.
+  `rounded-xl` en el mosaico, en el punto 10. Cada sonda se corre sobre
+  `design-drift.test.ts` entero y debe dar exactamente un `●`, el de
+  `#179 R13`: el literal plantado no puede caer también en otro guard global
+  (medido por simulación en el handoff, S1 a S7).
 - [ ] (2) Verde: nada que implementar.
 - [ ] (3) Refactor: `graphify update .`.
 

@@ -42,8 +42,8 @@
 >    de profile sigue siendo 2. Lo que dice la spec («H0 + 1 recuento», Δ22) es falso. El título del `it` no cambia.
 > 5. **E1.5 — Δ27–Δ35 de consistency-classnames están caducos** (BLOQUEANTE). Δ32/Δ33 son falsos: #174 ya cambió la regex de extracción
 >    de testID a `/testID=(?:"([^"]+)"|\{`([^`]+)`\}|\{([^}]+)\})/` (captura plantillas y llaves) y la lista de neutrales ganó `'${rowId}-ack'`;
->    #179 le añade `'meal-time-edit-${index}'` y `'add-meal-time-button'`, **con la llave de cierre** (la spec E1.5 escribe `${index` sin
->    ella: manda el id medido). Falta además un segundo sitio `rounded-xl bg-accent` (`#62 R1`, `primaryRadius`) que también baja en 1, y
+>    #179 le añade `'meal-time-edit-${index}'` y `'add-meal-time-button'`, **con la llave de cierre** (la spec E1.5 lo escribe igual,
+>    con llave; manda el id medido). Falta además un segundo sitio `rounded-xl bg-accent` (`#62 R1`, `primaryRadius`) que también baja en 1, y
 >    `border-lip-gray` parte hoy de `4 + 1 + 1 + 1`. Mandan los deltas literales de DELTAS DE CANDADOS, medidos sobre el H0 de hoy.
 > 6. **E1.6 — Δ8 va entero en c14**, sin partir (no bloqueante): c11 ya retira `ForkKnife` de Horario; la cadena de c14 comprueba que
 >    cuenta 0 en el fichero antes de lanzar el jest.
@@ -75,19 +75,15 @@
 > 13. **Candado nuevo de #174: `src/__tests__/alerts-canvas-fidelity.test.ts`.** Sus inventarios globales (`rounded-10`, `border-b-5`,
 >     `tracking-caps`, `text-15`, `tracking-title`) y `declara border-b-5 una sola vez` los desborda el estado final de #179: cae como
 >     `#174 R12` en los rojos de R4, R5, R6, R7, R9 y R11 y su delta literal viaja en esos commits (DELTAS DE CANDADOS). Es el fichero 23
->     de la lista cerrada. La Enmienda E1 de la spec aún no lo nombra (ver abajo): mientras no esté, manda este handoff.
+>     de la lista cerrada. La Enmienda E1 de la spec lo nombra como E1.7.
 
 ## Enmienda E1 (vive en la spec)
 
-La Enmienda E1 está escrita al final de `specs/mobile-meal-schedule-canvas-fidelity/requirements.md` (§Enmienda E1, E1.1–E1.6, con E1.1 corregida en `cd06ce7c`). Ya no
-se propone desde este fichero. Su casilla (`- [ ] Enmienda E1 aprobada por humano ← gate obligatorio antes de lanzar a Codex`) la marca el
-humano y B0 la comprueba. Cada punto manda sobre el cuerpo de la spec. Dónde la enmienda, tal como está escrita, queda por detrás de este
-handoff (el leader lo lleva a la spec antes de pedir la firma; hasta entonces manda este fichero):
+La Enmienda E1 está escrita al final de `specs/mobile-meal-schedule-canvas-fidelity/requirements.md` (§Enmienda E1, E1.1–E1.7; E1.1 corregida en
+`cd06ce7c`; E1.5 y E1.7 ajustadas al árbol con #174 fusionada). Ya no se propone desde este fichero. Su casilla
+(`- [ ] Enmienda E1 aprobada por humano ← gate obligatorio antes de lanzar a Codex`) la marca el humano y B0 la comprueba. Cada punto manda
+sobre el cuerpo de la spec. Una sola cosa de este handoff va más allá de la letra de la enmienda:
 
-- **E1.5, id neutral.** La spec escribe `` `meal-time-edit-${index` `` sin la llave de cierre; el id que extrae la regex de #174 es
-  `meal-time-edit-${index}`. Además cita este handoff por su commit `fe55b000`, ya sustituido.
-- **E1.7 (falta en la spec).** `src/__tests__/alerts-canvas-fidelity.test.ts` (#174 R12) entra en la lista cerrada, con sus deltas literales
-  en c8, c10, c12, c14, c18 y c22 (Nota 13). No añade, quita ni renombra ningún `it`.
 - **R2 en tres `it`** (Nota 7): la spec describe ocho aserciones; este handoff las agrupa para que ningún `it` nazca verde.
 
 ```text
