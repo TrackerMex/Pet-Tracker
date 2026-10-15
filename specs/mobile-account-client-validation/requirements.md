@@ -1222,4 +1222,4 @@ Nada más cambia: ni los EARS, ni producción, ni el copy, ni los deltas de
 candados de §Deltas de candados. La traceability y el informe de Codex suman
 las filas de c16–c20 al cerrar.
 
-- [ ] Enmienda E1 aprobada por humano (fecha: ____) ← gate antes de reanudar Codex
+- [x] Enmienda E1 aprobada por humano (fecha: 2026-10-15) ← gate antes de reanudar Codex
