@@ -187,20 +187,27 @@ describe('#78 R4: la pantalla pinta su esqueleto, su error, su vacío y sus fila
     } satisfies AuthContextValue);
   });
 
-  describe('#114 R5: el título vive en la cabecera nativa', () => {
-    it('no pinta título en carga ni con filas y deja la cabecera nula sin error', async () => {
-      let resolveAlerts!: (state: AlertsState) => void;
-      mockListAlerts.mockReturnValue(new Promise((resolve) => { resolveAlerts = resolve; }));
+  describe('#174 R3: el título vive en el contenido', () => {
+    it.each(['carga', 'error', 'vacía', 'filas'])('pinta el título en %s', async (state) => {
+      if (state === 'carga') mockListAlerts.mockReturnValue(pending<AlertsState>());
+      else if (state === 'error') mockListAlerts.mockResolvedValue({ kind: 'error' });
+      else mockListAlerts.mockResolvedValue({ kind: 'ok', items: state === 'vacía' ? [] : [makeAlert()], nextCursor: null });
       await renderAlerts();
 
-      await screen.findByTestId('alerts-loading');
-      expect(screen.queryByText(es['alerts.title'])).toBeNull();
+      const title = await screen.findByTestId('alerts-title');
+      expect(title).toHaveTextContent('Alertas', { exact: true });
+      expect(title.props.accessibilityRole).toBe('header');
+      expect(title.props.className).toBe('flex-1 text-26 font-black tracking-title text-foreground');
+      expect(title.parent?.props.testID).toBe('alerts-title-row');
+      expect(title.parent?.props.className).toBe('flex-row items-center gap-2');
+      expect(title.parent?.parent?.props.testID).toBe('alerts-header');
+      expect(title.parent?.parent?.props.className).toBe('gap-3');
+    });
 
-      await act(async () => resolveAlerts({ kind: 'ok', items: [makeAlert()], nextCursor: null }));
-      await screen.findByTestId(`alert-row-${makeAlert().id}`);
-      expect(screen.queryByText(es['alerts.title'])).toBeNull();
-      expect(screen.queryByTestId('alerts-action-error')).toBeNull();
-      expect(screen.getByTestId('alerts-list').props.ListHeaderComponent).toBeNull();
+    it('traduce el título en inglés', async () => {
+      mockListAlerts.mockResolvedValue({ kind: 'ok', items: [], nextCursor: null });
+      await renderAlertsInEnglish();
+      expect(await screen.findByTestId('alerts-title')).toHaveTextContent('Alerts', { exact: true });
     });
   });
 
@@ -647,6 +654,9 @@ describe('#78 R8: el ack cambia la fila sin recargar la lista', () => {
     expect(screen.getByTestId('alerts-action-error').props.className).toBe(
       'text-danger',
     );
+    const header = screen.getByTestId('alerts-header');
+    expect(screen.getByTestId('alerts-action-error').parent).toBe(header);
+    expect(elementChild(header, 1).props.testID).toBe('alerts-action-error');
     expect(screen.getByTestId('alert-row-alert-1-ack')).toBeVisible();
     await fireEvent.press(screen.getByTestId('alert-row-alert-1-ack'));
     await waitFor(() =>
