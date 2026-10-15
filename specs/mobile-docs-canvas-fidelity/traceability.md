@@ -1,6 +1,6 @@
 ---
 feature: "mobile-docs-canvas-fidelity"
-status: draft
+status: approved
 tags: [mobile, ui, spec]
 ---
 
@@ -18,7 +18,7 @@ tags: [mobile, ui, spec]
 | R8 | Chips de filtro: composición | `src/screens/docs/index.test.tsx` › `#175 R8: chips de filtro`; `ui-language` Δ15; `profile-canvas-fidelity` › `#173 R2.4` (Δ19, E2.2) | `c40f0b9b` — `test(docs): chips de filtro (#175 R8)` | `a5a8cfa0` — `feat(docs): chips de filtro (#175 R8)` | hecho |
 | R9 | Chips de filtro: comportamiento | `src/screens/docs/index.test.tsx` › `#175 R9: filtrar por categoría` | `90295de8` — `test(docs): filtrar por categoría (#175 R9)` | `88bdf16f` — `feat(docs): filtrar por categoría (#175 R9)` | hecho |
 | R10 | Candados de deriva e imports | `src/__tests__/design-drift.test.ts` › `#175 R10: Documentos sin deriva` + sondas S1–S5 | n/a (nace verde; rojo demostrado con S1–S5) | `12ca9dbe` — `test(design-drift): Documentos sin deriva (#175 R10)` | hecho |
-| R11 | Prueba de humo humana (dev build de Android) | §Prueba de humo R11 | n/a | n/a | pendiente (humano) |
+| R11 | Prueba de humo humana (dev build de Android) | §Prueba de humo R11 | n/a | n/a | superada (firma del humano) |
 
 ## Firma de la enmienda R2
 
