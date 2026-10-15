@@ -241,7 +241,7 @@ describe('R8: el submit completa el reset y mapea los errores', () => {
     });
     await renderRoute('reset-token-r8');
 
-    await submitReset('short', 'different');
+    await submitReset();
 
     const error = await screen.findByTestId('reset-error');
     expect(error.props.children).toBe(
@@ -602,5 +602,54 @@ describe('#167 R10: Pingo y tarjeta de estado en nueva contraseña', () => {
     expect(Object.fromEntries(mockPopIn.mock.calls.map(([p]) => [
       p.testID, { className: p.className, style: p.style },
     ]))).toEqual({ 'reset-success-pop': { className: 'w-full', style: undefined } });
+  });
+});
+
+describe('#183 R6: nueva contraseña valida en cliente', () => {
+  const apiUrl = 'http://example.test/v1';
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockResetPassword.mockResolvedValue({ kind: 'error' });
+  });
+
+  it.each<[[string, string], string, string]>([
+    [['1234567', '1234567'], 'Usa al menos 8 caracteres', 'reset-password-message'],
+    [['a'.repeat(129), 'a'.repeat(129)], 'Usa 128 caracteres o menos', 'reset-password-message'],
+    [['new-password-123', 'new-password-124'], 'Las contraseñas no coinciden', 'reset-password-confirm-message'],
+  ])('#183 R6: %p pinta «%s» en %s y no llama a la API', async ([password, confirmation], message, id) => {
+    await renderRoute('reset-token-r8');
+    await submitReset(password, confirmation);
+    await waitFor(() => expect(screen.getByTestId(id)).toHaveTextContent(message));
+    const text = screen.getByTestId(id);
+    const row = screen.getByTestId(`${id}-row`);
+    expect(screen.getAllByTestId(/^reset-password(-confirm)?-message-row$/)).toHaveLength(1);
+    expect(row.children).toEqual([within(row).getByTestId('icon-alert-circle'), text]);
+    expect(text.props.selectable).toBe(true);
+    expect(screen.queryByTestId('reset-error')).toBeNull();
+    expect(mockResetPassword).not.toHaveBeenCalled();
+  });
+
+  it('#183 R6: las dos reglas a la vez pintan los dos mensajes', async () => {
+    await renderRoute('reset-token-r8');
+    await submitReset('1234567', 'x');
+    await waitFor(() => {
+      expect(screen.getByTestId('reset-password-message')).toHaveTextContent('Usa al menos 8 caracteres');
+      expect(screen.getByTestId('reset-password-confirm-message')).toHaveTextContent('Las contraseñas no coinciden');
+    });
+    expect(screen.getAllByTestId(/^reset-password(-confirm)?-message-row$/)).toHaveLength(2);
+    expect(screen.queryByTestId('reset-error')).toBeNull();
+    expect(mockResetPassword).not.toHaveBeenCalled();
+  });
+
+  it.each([' '.repeat(8), 'a'.repeat(128)])('#183 R6: %p pasa como en el DTO y llama a la API', async (value) => {
+    mockResetPassword.mockResolvedValue({ kind: 'ok' });
+    await renderRoute('reset-token-r8');
+    await submitReset(value, value);
+    await waitFor(() => expect(screen.queryByTestId('reset-success')).not.toBeNull());
+    expect(screen.getByTestId('reset-success')).toHaveTextContent('Contraseña actualizada');
+    expect(mockResetPassword).toHaveBeenCalledWith(apiUrl, {
+      token: 'reset-token-r8', password: value, passwordConfirmation: value,
+    });
   });
 });
