@@ -24,6 +24,16 @@
   cliente con mensaje claro en todos los inputs de cuenta, como el correo de
   Crear cuenta, en lugar del error del servidor. Texto literal en
   `feature_list.json` #183.
+- **Pacto con Backend (#174)**, 2026-10-15: quien mergee segundo hace merge
+  de `origin/main` (no rebase) y suma. #174 añade en `catalog.ts` una sola
+  clave (`alerts.dayAgo`; `alerts.daysAgo` solo cambia de valor), así que la
+  fórmula de `language-provider.test.tsx` gana `+ 1, // #174 R2`. En el
+  design de idioma, #174 crea `### §2.30 — Añadidos por #174 — Alertas fiel
+  al canvas` y anota la fila daysAgo con ` · valor cambiado por #174 (R2)`.
+  Si en H0 la última sección es §2.29, la §2.N de #183 también sale §2.30, y
+  quien mergee segundo la renumera. #183 no toca `src/screens/alerts/` ni
+  `alert-detail/`, y avisa a Backend antes de cualquier `init.sh` o suite
+  móvil completa mientras Codex implementa #174.
 - **Restricción de sites-99** (#178/#179): sus handoffs copian el mock
   `HomeEntrance` de `src/screens/login/index.test.tsx` y el mock de reicon
   (`...actual` + `mockIcon(testID)`) de `src/screens/register/index.test.tsx`.
