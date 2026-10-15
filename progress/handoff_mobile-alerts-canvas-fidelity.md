@@ -74,13 +74,30 @@
 >     a la forma real de jest, `thrown: "Exceeded timeout` (medido: 0 líneas en el log de c21 y en
 >     docs/ specs/ y src/ móvil; los 42+ timeouts reales de otros logs empiezan así). Mismos 25 commits,
 >     misma lista cerrada. Sigue «REANUDACION 4», que va antes que la 3. Tu test de c21 está bien: **no lo toques**.
+> 19. **Enmienda E5 (reanudación 5)**: Codex paró en la sonda S12.6 con `Tests: 3 failed` donde `tasks.md`
+>     declaraba 2 (dos `it` de `#170 R3` asertan el literal `mt-1.5 text-13 …`; el recuento era del leader).
+>     E5.1 corrige solo el esperado de esa fila: **3 fallos, 1 en F y 2 en A**. La sonda no cambia. S12.1–S12.5 no se
+>     repiten. `progress/sweep_174_e5.md` es del leader (entra en la exclusión de K5). Mismos 25 commits y lista
+>     cerrada. Sigue «REANUDACION 5», que va antes que la 4.
 
 ```text
 Worktree: /home/claude/sites/Pet-Tracker-wt-174   <- PRIMERA LINEA. Trabaja AQUI y en ningun otro sitio
 Branch:   feature/174-mobile-alerts-canvas-fidelity   (H0 = el commit de asunto `docs(progress): #174 handoff a Codex (H0)`; anotalo en el impl)
 Confirma `pwd` y `git branch --show-current` antes de tocar nada (B0).
 
-== REANUDACION 4 (2026-10-15; Codex paro en c21; guard SINCRASH corregido, sin enmienda) ==
+== REANUDACION 5 (2026-10-15; Codex paro en S12.6; Enmienda E5 firmada) ==
+Estado de partida: c1-c23 hechos, S12.1-S12.5 hechas (recuento coincidente, limpio=0). El impl esta SIN commitear como `??`: DEJALO.
+Tu parada fue correcta. tasks.md declaraba 2 fallos para S12.6 y se miden 3: dos `it` de `#170 R3` de alerts/index.test.tsx asertan el literal
+`mt-1.5 text-13 font-extrabold uppercase tracking-caps text-muted`. Era un error de recuento del leader. E5.1 fija el esperado: 3 fallos (1 en F y 2 en A).
+RE5-1  Entra y comprueba (esperado: rama feature/174-mobile-alerts-canvas-fidelity; ultimo commit de c23 `test(mobile): #174 R12 inventarios y grep-limpio de Alertas`
+       entre los tuyos; status con exactamente `?? ../progress/impl_mobile-alerts-canvas-fidelity.md`):
+       cd /home/claude/sites/Pet-Tracker-wt-174/mobile-pet-tracker && git branch --show-current && git log --oneline -6 && git status --short
+RE5-2  Relanza S12.6 TAL CUAL con el ejecutor (S12.6 en lugar de cN; es la misma sonda, no la ajustes). Esperado: primer numero `0`,
+       `Tests: 3 failed, 99 passed, 102 total`, TRES lineas `  ● ` (una `#174 R12 ... cada tracking-* va con su text-*` y dos `#170 R3 ... (enmendado por #174 R6)`) y `limpio=0`.
+       Si el recuento es otro, o limpio no es 0: PARA y pegalo en el impl. Anota en §Sondas la parada previa y esta repeticion.
+RE5-3  Sigue con K1-K5 normalmente. Las ANCLAS, B0-B2 y S12.1-S12.5 no se repiten. En Desviaciones anota la parada de S12.6 y E5.
+
+== REANUDACION 4 (YA HECHA, no la repitas) (2026-10-15; Codex paro en c21; guard SINCRASH corregido, sin enmienda) ==
 Estado de partida: c1-c20 hechos (cadena=0; ultimo commit c20 R10). Tu c21 (src/__tests__/alerts-canvas-fidelity.test.ts) y el impl estan
 SIN commitear como `??`: DEJA AMBOS. El test no cambia ni una linea: tu rojo era el correcto (17 fallos de R11, 18 suites verdes).
 Tu parada fue correcta. El guard <SINCRASH> casaba con la prosa de una spec volcada por el toContain rojo (`Exceeded timeout of 30000 ms`
@@ -464,7 +481,7 @@ cd /home/claude/sites/Pet-Tracker-wt-174/mobile-pet-tracker && printf '// shadow
    -> 1 ; Tests: 1 failed, <n> passed, <n+1> total ; UNA linea de #174 R12 (clases salientes) ; limpio=0
 # -- S12.6 sonda sobre el HEAD de c23 (NO se commitea) --
 cd /home/claude/sites/Pet-Tracker-wt-174/mobile-pet-tracker && sed -i 's/mt-1.5 text-13 /mt-1.5 /' src/screens/alerts/index.tsx && test "$(grep -cF 'mt-1.5 text-13 ' src/screens/alerts/index.tsx)" = 0 && echo 0 && { FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/__tests__/alerts-canvas-fidelity.test.ts src/screens/alerts/index.test.tsx > /tmp/174-s12-6.txt 2>&1; true; }; grep -E '^Tests:' /tmp/174-s12-6.txt; grep -E '^  ● ' /tmp/174-s12-6.txt | grep -vxF '  ● Console'; cd /home/claude/sites/Pet-Tracker-wt-174/mobile-pet-tracker && git checkout HEAD -- src/screens/alerts/index.tsx && git diff --cached --quiet && git diff --quiet -- . ../docs ../specs && test -z "$(git ls-files --others --exclude-standard -- . ../docs ../specs)"; echo "limpio=$?"
-   -> 0 ; Tests: 2 failed, <n> passed, <n+2> total ; DOS lineas: una `  ● #174 R12: ...` (F, R12.4) y una de A (`#170 R3 ... (enmendado por #174 R6)`) ; limpio=0
+   -> 0 ; Tests: 3 failed, <n> passed, <n+3> total (E5.1; tasks.md decia 2) ; TRES lineas: una `  ● #174 R12: ...` (F, R12.4) y DOS de A (los dos `it` de `#170 R3 ... (enmendado por #174 R6)`) ; limpio=0
    (si el primer numero no es el esperado, la sonda no se planto: PARA. Si limpio no es 0, PARA. Si el recuento de
     fallos no cuadra, PARA y anotalo en el impl: no se ajusta la sonda.)
 
@@ -495,7 +512,7 @@ Rellena specs/mobile-alerts-canvas-fidelity/traceability.md:
 cd /home/claude/sites/Pet-Tracker-wt-174/mobile-pet-tracker && git add ../specs/mobile-alerts-canvas-fidelity/traceability.md && test "$(git diff --cached --no-renames --name-only)" = 'specs/mobile-alerts-canvas-fidelity/traceability.md' && git diff --quiet -- . ../docs ../specs && test -z "$(git ls-files --others --exclude-standard -- . ../docs ../specs)" && git commit -m 'docs(mobile): #174 trazabilidad'
 cd /home/claude/sites/Pet-Tracker-wt-174/mobile-pet-tracker && git add ../progress/impl_mobile-alerts-canvas-fidelity.md && git commit --only ../progress/impl_mobile-alerts-canvas-fidelity.md -m 'docs(mobile): informe de implementación de #174'
 # -- K5 lista cerrada contra <H0> --
-cd /home/claude/sites/Pet-Tracker-wt-174/mobile-pet-tracker && test "$(git diff --no-renames --name-only $(git log -1 --format=%H --grep='^docs(progress): #174 handoff a Codex (H0)')..HEAD -- .. | grep -vxE 'feature_list\.json|progress/current\.md|progress/handoff_mobile-alerts-canvas-fidelity\.md|specs/mobile-alerts-canvas-fidelity/(requirements|design|tasks)\.md|specs/mobile-alerts-canvas-fidelity/mcheck\.py|progress/review_mobile-alerts-canvas-fidelity\.md|progress/sweep_174_e[234]\.md' | LC_ALL=C sort | tr '\n' ' ')" = 'docs/ui-guidelines.md mobile-pet-tracker/src/__tests__/alerts-canvas-fidelity.test.ts mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts mobile-pet-tracker/src/__tests__/profile-canvas-fidelity.test.ts mobile-pet-tracker/src/__tests__/ui-copy-table.ts mobile-pet-tracker/src/app/__tests__/alert-detail.navigation.test.tsx mobile-pet-tracker/src/app/__tests__/layout.test.tsx mobile-pet-tracker/src/app/_layout.tsx mobile-pet-tracker/src/i18n/catalog.ts mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx mobile-pet-tracker/src/screens/alerts/index.test.tsx mobile-pet-tracker/src/screens/alerts/index.tsx mobile-pet-tracker/src/theme/__tests__/global-css.test.ts mobile-pet-tracker/src/theme/global.css mobile-pet-tracker/src/utils/alert-meta.ts progress/impl_mobile-alerts-canvas-fidelity.md specs/mobile-alert-detail-screen/requirements.md specs/mobile-alerts-canvas-fidelity/traceability.md specs/mobile-alerts-center/requirements.md specs/mobile-alerts-grouped-and-detail-map/requirements.md specs/mobile-chunky-cta/requirements.md specs/mobile-reminders-alerts-to-stack/requirements.md specs/mobile-ui-language/design.md ' && echo lista-ok
+cd /home/claude/sites/Pet-Tracker-wt-174/mobile-pet-tracker && test "$(git diff --no-renames --name-only $(git log -1 --format=%H --grep='^docs(progress): #174 handoff a Codex (H0)')..HEAD -- .. | grep -vxE 'feature_list\.json|progress/current\.md|progress/handoff_mobile-alerts-canvas-fidelity\.md|specs/mobile-alerts-canvas-fidelity/(requirements|design|tasks)\.md|specs/mobile-alerts-canvas-fidelity/mcheck\.py|progress/review_mobile-alerts-canvas-fidelity\.md|progress/sweep_174_e[2345]\.md' | LC_ALL=C sort | tr '\n' ' ')" = 'docs/ui-guidelines.md mobile-pet-tracker/src/__tests__/alerts-canvas-fidelity.test.ts mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts mobile-pet-tracker/src/__tests__/profile-canvas-fidelity.test.ts mobile-pet-tracker/src/__tests__/ui-copy-table.ts mobile-pet-tracker/src/app/__tests__/alert-detail.navigation.test.tsx mobile-pet-tracker/src/app/__tests__/layout.test.tsx mobile-pet-tracker/src/app/_layout.tsx mobile-pet-tracker/src/i18n/catalog.ts mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx mobile-pet-tracker/src/screens/alerts/index.test.tsx mobile-pet-tracker/src/screens/alerts/index.tsx mobile-pet-tracker/src/theme/__tests__/global-css.test.ts mobile-pet-tracker/src/theme/global.css mobile-pet-tracker/src/utils/alert-meta.ts progress/impl_mobile-alerts-canvas-fidelity.md specs/mobile-alert-detail-screen/requirements.md specs/mobile-alerts-canvas-fidelity/traceability.md specs/mobile-alerts-center/requirements.md specs/mobile-alerts-grouped-and-detail-map/requirements.md specs/mobile-chunky-cta/requirements.md specs/mobile-reminders-alerts-to-stack/requirements.md specs/mobile-ui-language/design.md ' && echo lista-ok
    -> lista-ok   (las 23 rutas de §Lista cerrada, abajo; si sale otra, PARA)
 
 == REGLAS CRITICAS ==
@@ -559,7 +576,7 @@ specs/mobile-ui-language/design.md
 Excluidos:
 - `feature_list.json`, `progress/current.md` y este handoff;
 - `specs/mobile-alerts-canvas-fidelity/{requirements,design,tasks}.md` y `mcheck.py`;
-- `progress/review_mobile-alerts-canvas-fidelity.md` y `progress/sweep_174_e2.md`, `progress/sweep_174_e3.md` y `progress/sweep_174_e4.md`.
+- `progress/review_mobile-alerts-canvas-fidelity.md` y `progress/sweep_174_e2.md`, `progress/sweep_174_e3.md`, `progress/sweep_174_e4.md` y `progress/sweep_174_e5.md`.
 
 Son ficheros del leader.
 
@@ -568,7 +585,7 @@ Son ficheros del leader.
 - Los 25 commits c1–c23, c5b y c7b están en orden (c5b entre c5 y c6, c7b entre c7 y c8), con los mensajes de arriba. Después van la trazabilidad y el impl.
 - Ningún commit mezcla tests rojos con implementación.
 - Todas las cadenas terminaron en `git commit`, sin que fallara ningún eslabón. Si hubo reintentos, están anotados.
-- Las seis sondas S12.1–S12.6 dieron el recuento esperado y `limpio=0`.
+- Las seis sondas S12.1–S12.6 dieron el recuento esperado y `limpio=0` (S12.6 con 3 fallos, no 2: E5.1).
 - El mcheck de cierre de c23 sale con `exit=0`: P1–P8, S1–S7 y M1–M38 = «Al cerrar».
 - K2–K5 en verde: BASE19 = K; ALL = 111 suites y `3389 + K − 670` tests; typecheck y lint limpios; 25 commits; lista cerrada exacta.
 - R13 queda pendiente del humano. Las 6 casillas de enmienda, sin marcar.
