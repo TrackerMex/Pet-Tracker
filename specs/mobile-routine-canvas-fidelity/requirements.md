@@ -903,6 +903,19 @@ de R4 a R13, **Codex para** y el leader enmienda la spec.
 - `global-css.test.ts`, `design-drift.test.ts`: `describe` nuevos (R1, R2,
   R13), sin cambiar los existentes salvo la regla de inventarios de R13.
 
+### Enmiendas E1 a E4 (2026-10-15)
+
+- `src/__tests__/profile-canvas-fidelity.test.ts` (E1): `text-26` suma
+  `screens/reminders/index.tsx` (`#178 R4`); `text-13` suma `screens/reminders/index.tsx`
+  (`#178 R6`) y `screens/add-reminder/index.tsx` (`#178 R12`); `rounded-tile` suma
+  `screens/add-reminder/index.tsx` (`#178 R12`). Títulos sin cambio.
+- `src/__tests__/consistency-classnames.test.ts` (E2): la suma de `directUses` de
+  `#62 R14` sube `+ 1` (R6) y `+ 2` (R12), `// #178 R6, R12`.
+- `src/screens/reminders/index.test.tsx` (E3): doble de fichero de
+  `'../../components/pop-in'`, en el rojo de R7.
+- `src/screens/add-reminder/index.test.tsx` (E4): `'💉 Vacuna'` → `'Vacuna'` y
+  `'📌 Otro'` → `'Otro'` en el rojo de R6, no de R10.
+
 ---
 
 ## Fuera de alcance
@@ -962,3 +975,192 @@ cambiarlo al firmar; si lo hace, el leader enmienda antes del handoff.
 ## Aprobación
 
 - [x] Aprobado por humano (fecha: 2026-10-15)
+
+## Enmiendas E1 a E4 — cuatro candados que la spec firmada no inventarió
+
+> Escritas el 2026-10-15, con el borrador del handoff
+> (`progress/handoff_mobile-routine-canvas-fidelity.md`, commit `c6b6f30e`)
+> contrastado contra el árbol de `feature/178-mobile-routine-canvas-fidelity`
+> antes de lanzar a Codex. Registran cuatro cosas que R4 a R13 rompen y que
+> §Deltas de candados no nombra. **Ninguna cambia una decisión de
+> comportamiento ni de diseño de las dos pantallas.** Cambian el alcance de
+> ficheros: `src/__tests__/profile-canvas-fidelity.test.ts` entra en la lista
+> cerrada, y dos deltas de `src/screens/add-reminder/index.test.tsx` pasan de
+> R10 a R6. Ningún `it` se añade, se quita ni se renombra. Sus casillas van
+> **sin marcar**: el humano reabre el gate solo para estas cuatro.
+
+### Qué se midió
+
+Cada hueco se comprobó contra el árbol en `c6b6f30e`, sin ejecutar Codex:
+
+- **E1.** `src/__tests__/profile-canvas-fidelity.test.ts` (#173) cierra tres
+  inventarios a una lista de ficheros: `rounded-tile`
+  (`['screens/profile/index.tsx']`), `text-26`
+  (`['screens/profile/index.tsx']`) y `text-13` (seis ficheros, de
+  `components/form-error.tsx` a `screens/reset-password/index.tsx`). R4 pone
+  `text-26` en el título de Recordatorios, R6 y R12 ponen `text-13` en la meta
+  de la fila y en la vista previa, y R12 pone `rounded-tile` en la vista
+  previa. R13 promete un delta «en §Deltas» para este caso y §Deltas no lo
+  trae.
+- **E2.** `src/__tests__/consistency-classnames.test.ts` tiene **dos**
+  fórmulas que cuentan `style={CONTINUOUS_CORNER}`: la global de
+  `#98 R10` (`toBe(31 + 1 + 4 + 1 - 1 - 7)`), que §Deltas sí nombra (B10), y
+  la de `#62 R14` (`toBe(33 + 1 + 1 - 1 - 1 + 1 + 1 - 1 + 4 + 1 - 1 - 7)`),
+  que suma la tabla `directUses` y que no. Las filas de esa tabla ya suben
+  por B11 (`4 + 1` y `3 + 1`), así que la suma sube con ellas.
+- **E3.** `src/components/pop-in.tsx` arranca con `useSharedValue(0)` de
+  opacidad. Cuando R7 envuelva el badge en `PopIn`, el `Text`
+  `reminder-upcoming-<id>` queda oculto bajo el `PopIn` real y los `it`
+  `#84 R3` y `#84 R6` de `src/screens/reminders/index.test.tsx` caen en
+  `toBeVisible()`. `src/screens/forgot/index.test.tsx` y
+  `src/screens/reset-password/index.test.tsx` resolvieron lo mismo con un
+  doble de `'../../components/pop-in'`; el de Recordatorios no lo tiene y
+  §Deltas no lo pide.
+- **E4.** R6 quita `emoji` de `REMINDER_TYPE_META`
+  (`src/utils/reminder-meta.ts`). Dos fuentes lo leen: la pantalla de
+  Recordatorios (`<Text className="text-xl">{meta.emoji}</Text>`, que R6
+  reescribe) y la de Nuevo recordatorio
+  (`` {`${meta.emoji} ${t(meta.labelKey)}`} `` en
+  `src/screens/add-reminder/index.tsx`, que no se toca hasta R10). Con el
+  verde de R6, `tsc` falla en esa línea y los `it` del formulario caen. Las
+  dos aserciones con emoji de esa pantalla
+  (`getByText('💉 Vacuna')` y `getByText('📌 Otro')`) viven en
+  `describe('R8: formulario de alta con chips y pickers')`.
+
+### E1 — inventarios de #173 R2 y R2.4
+
+Tres cambios en `src/__tests__/profile-canvas-fidelity.test.ts`. Los títulos de
+los `it` **no cambian**: las listas permitidas de los commits rojos los nombran
+por `#173 R2` y `#173 R2.4`.
+
+**E1.1 — R4, en el rojo c7.** El `it`
+`'reserva text-26 al nombre de la mascota en Perfil'` pasa de
+`toEqual(['screens/profile/index.tsx'])` a
+
+```
+expect(filesMatching(/\btext-26\b/)).toEqual([
+  'screens/profile/index.tsx',
+  'screens/reminders/index.tsx', // #178 R4
+]);
+```
+
+**E1.2 — R6, en el rojo c11.** En el `it`
+`'limita text-13 a Perfil y a las pantallas de cuenta de #172 (E8)'` se inserta
+entre `'screens/register/index.tsx',` y `'screens/reset-password/index.tsx',`
+(orden `LC_ALL=C`):
+
+```
+  'screens/reminders/index.tsx', // #178 R6
+```
+
+**E1.3 — R12, en el rojo c23.** En el mismo `it` de `text-13` se inserta entre
+`'components/form-error.tsx',` y `'screens/forgot/index.tsx',`:
+
+```
+  'screens/add-reminder/index.tsx', // #178 R12
+```
+
+y el `it` `'reserva rounded-tile a los accesos de Perfil'` pasa a
+
+```
+expect(filesMatching(/\brounded-tile\b/)).toEqual([
+  'screens/add-reminder/index.tsx', // #178 R12
+  'screens/profile/index.tsx',
+]);
+```
+
+Cada uno es rojo hasta el verde de su R-id (c8, c12 y c24), porque ese verde es
+el que escribe la clase. Quedan en el orden final `text-13`: `form-error`,
+`add-reminder`, `forgot`, `login`, `profile`, `register`, `reminders`,
+`reset-password`. #174 y #175 editan estas mismas listas (#175 E2 ya lo hace
+con `text-26` y `text-13`): quien mergee después reancla por contenido, no por
+línea.
+
+### E2 — segunda fórmula de `CONTINUOUS_CORNER`
+
+En `src/__tests__/consistency-classnames.test.ts`, dentro de
+`describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua')`,
+el `it` `'fusiona la esquina una vez y la entrega a las dos ramas de Card'`
+termina en `.toBe(33 + 1 + 1 - 1 - 1 + 1 + 1 - 1 + 4 + 1 - 1 - 7)`. Esa suma
+parte de `directUses`, así que sube **lo mismo que sus filas de B11**: `+ 1`
+cuando la fila de Recordatorios pasa a `4 + 1` (R6) y `+ 2` cuando la de Nuevo
+recordatorio pasa a `3 + 1` (R12), con el comentario `#178 R6, R12`. El título
+no cambia.
+
+La fórmula global de `#98 R10` ya está en B10 con `+ 2`; se escribe en los
+mismos dos pasos (`+ 1` en el rojo de R6, `+ 2` en el de R12), porque el
+verde de R6 no puede dar el segundo `+ 1`: la vista previa no existe hasta R12.
+
+### E3 — doble de `PopIn` en la prueba de Recordatorios
+
+En el rojo de R7 (c13), `src/screens/reminders/index.test.tsx` añade a nivel de
+fichero un doble de `'../../components/pop-in'` calcado del de
+`src/screens/forgot/index.test.tsx`, sin el espía:
+
+```
+jest.mock('../../components/pop-in', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return {
+    PopIn(props: import('react-native').ViewProps) {
+      return React.createElement(View, props);
+    },
+  };
+});
+```
+
+El doble pasa las props (incluido `testID`) a un `View`, de modo que
+`within(getByTestId('reminder-upcoming-pop-a')).getByTestId('reminder-upcoming-a')`
+de R7 sigue valiendo y `#84 R3` / `#84 R6` no ven el `PopIn` real. Se suma a
+los dobles de fichero de §Deltas (reicon y `'../home/home-entrance'`). Es verde
+en c13 (la pantalla aún no usa `PopIn`): no añade rojo.
+
+### E4 — el emoji de Nuevo recordatorio viaja con R6, no con R10
+
+R10 tenía dos deltas de `src/screens/add-reminder/index.test.tsx`
+(`getByText('💉 Vacuna')` → `getByText('Vacuna')` y
+`getByText('📌 Otro')` → `getByText('Otro')`). Pasan a **R6**:
+
+- **Rojo de R6 (c11):** esas dos aserciones cambian en
+  `describe('R8: formulario de alta con chips y pickers')`. Es rojo legítimo:
+  la pantalla aún pinta `` `${meta.emoji} ${t(meta.labelKey)}` ``.
+- **Verde de R6 (c12):** `src/screens/add-reminder/index.tsx` cambia esa línea
+  a `{t(meta.labelKey)}` y nada más. El resto de la pantalla es de R10 y R12.
+
+Consecuencias, todas de reparto, ninguna de comportamiento:
+
+- R10 conserva su texto («`type-chip-<tipo>` con `t(meta.labelKey)` solo»), que
+  desde c12 **nace verde**. El `it` de R10 sobre `type-chip-vaccine` sigue
+  rojo por la `className` seleccionada, que va en la misma aserción
+  compuesta; no se separa.
+- El `describe('R8: formulario de alta con chips y pickers')` entra en la lista
+  permitida del rojo c11, y `src/screens/add-reminder/index.tsx` en la del
+  verde c12.
+
+### Enmiendas E1 a E4 — dónde viaja cada delta
+
+| Enmienda | Commit | Fichero | Rojo hasta |
+|---|---|---|---|
+| E1.1 | c7 (rojo R4) | `profile-canvas-fidelity.test.ts` | c8 |
+| E1.2 | c11 (rojo R6) | `profile-canvas-fidelity.test.ts` | c12 |
+| E1.3 | c23 (rojo R12) | `profile-canvas-fidelity.test.ts` | c24 |
+| E2 | c11 y c23 | `consistency-classnames.test.ts` | c12 y c24 |
+| E3 | c13 (rojo R7) | `reminders/index.test.tsx` | nace verde |
+| E4 | c11 y c12 | `add-reminder/index.test.tsx`, `add-reminder/index.tsx` | c12 |
+
+- `src/__tests__/profile-canvas-fidelity.test.ts` entra en la lista cerrada de
+  ficheros, y solo en c7, c11 y c23, y solo en las aserciones de E1.
+- Los totales de `it` por commit y por feature no cambian. El número de
+  commits `(#178 R` tampoco: siguen siendo 25.
+- Los deltas de E1, E2 y E4 se suman a §Deltas de candados, que es el registro
+  de cambios de candados (P12); E3 es un doble de fichero y se suma a su lista
+  de dobles.
+- Los comentarios de trazabilidad son `// #178 Rn`; nunca `// #178 E1`
+  (HEX_LITERAL de design-drift).
+
+### Aprobación de las Enmiendas E1 a E4
+
+- [ ] Enmienda E1 aprobada por humano ← gate obligatorio antes de lanzar a Codex
+- [ ] Enmienda E2 aprobada por humano ← gate obligatorio antes de lanzar a Codex
+- [ ] Enmienda E3 aprobada por humano ← gate obligatorio antes de lanzar a Codex
+- [ ] Enmienda E4 aprobada por humano ← gate obligatorio antes de lanzar a Codex
