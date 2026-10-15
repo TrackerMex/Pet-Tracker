@@ -994,6 +994,18 @@ copy completa en cada una.
 |---|---|---|---|---|
 | — | `alerts.dayAgo` | `1 day ago` | `Hace 1 día` | ← añadida por #174 (R2) |
 
+### §2.31 — Añadidos por #175 — Documentos del canvas
+
+| # | Clave | `en` | `es` | Origen |
+|---|---|---|---|---|
+| — | `docs.filterAll` | `All` | `Todos` | ← añadida por #175 (R3) |
+| — | `docs.categoryVaccination` | `Vaccination` | `Vacunación` | ← añadida por #175 (R3) |
+| — | `docs.categoryCheckup` | `Checkup` | `Consulta` | ← añadida por #175 (R3) |
+| — | `docs.categoryDeworming` | `Deworming` | `Desparasitación` | ← añadida por #175 (R3) |
+| — | `docs.categoryAnalysis` | `Analysis` | `Análisis` | ← añadida por #175 (R3) |
+| — | `docs.categoryOther` | `Other` | `Otros` | ← añadida por #175 (R3) |
+| — | `docs.uploadHint` | `PDF or photo of prescriptions, lab results, and vaccine cards` | `PDF o foto de recetas, análisis y cartillas` | ← añadida por #175 (R3) |
+
 ## 3. La infraestructura
 
 ### 3.1 Decisiones

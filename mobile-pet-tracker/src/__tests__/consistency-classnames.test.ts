@@ -99,7 +99,7 @@ describe('#62 R1: la escala de radios está declarada y el botón primario tiene
       readFileSync(path, 'utf8').match(/rounded-xl bg-accent(?=[\s'"`])/g) ?? [],
     );
 
-    expect(primaryRadius).toHaveLength(13 + 1 + 1 + 1 + 1 + 1 + 1 + 1 - 1 - 1); // #171 R3: ready-map // #146 R8, #146 R9; #118 R7; #155 R3 // #158 R3: docs-upload; // #158 R5: docs-upload-submit // #171 R14: celebration // #173 R5
+    expect(primaryRadius).toHaveLength(13 + 1 + 1 + 1 + 1 + 1 + 1 + 1 - 1 - 1 - 1); // #171 R3: ready-map // #146 R8, #146 R9; #118 R7; #155 R3 // #158 R3: docs-upload; // #158 R5: docs-upload-submit // #171 R14: celebration // #173 R5; #175 R7: docs-upload pasa a zona de subida
     expect(filesMatching(/rounded-2xl bg-accent(?=[\s'"`])/)).toEqual([]);
   });
 });
@@ -403,7 +403,7 @@ describe('#98 R10: los candados que esta feature no mueve', () => {
     expect(home.match(/style=\{CONTINUOUS_CORNER\}/g) ?? []).toHaveLength(0);
     expect(food.match(/style=\{CONTINUOUS_CORNER\}/g)).toHaveLength(1);
     expect(count(/style=\{CONTINUOUS_CORNER\}/g)).toBe(31 + 1 + 4 + 1 - 1 - 7); // #41 R9: geofences-link; #168; #170 R8: alert-detail-map; #171 R3: ready-done; #173 R10: ProfileTile
-    expect(count(/rounded-xl bg-accent(?=[\s'"`])/g)).toBe(13 + 1 + 1 + 1 + 1 + 1 + 1 + 1 - 1 - 1); // #171 R3 // #146 R8, #146 R9; #118 R7; #155 R3 // #158 R3: docs-upload; // #158 R5: docs-upload-submit // #171 R14 // #173 R5
+    expect(count(/rounded-xl bg-accent(?=[\s'"`])/g)).toBe(13 + 1 + 1 + 1 + 1 + 1 + 1 + 1 - 1 - 1 - 1); // #171 R3 // #146 R8, #146 R9; #118 R7; #155 R3 // #158 R3: docs-upload; // #158 R5: docs-upload-submit // #171 R14 // #173 R5; #175 R7: docs-upload pasa a zona de subida
     expect(count(/bg-accent-soft/g)).toBe(16 + 2 + 1 - 1 - 1 - 1 - 1); // #147 R4: meal-time-edit y add-meal-time-button; #105 R11; #168 R5: PetPills pasa a huecos pastel; #172 R14: forgot-lock-tile pasa a bg-accent; #171 R3; #173 R6
     expect(home.match(/text-accent-strong\b/g)).toHaveLength(2);
     expect(food.match(/text-accent-strong\b/g)).toHaveLength(1);
@@ -549,7 +549,7 @@ describe('#166 R2: todo primario sólido lleva el labio detrás de bg-accent', (
     [join('components', 'empty-state.tsx')]: 1,
     [join('screens', 'add-pet', 'index.tsx')]: 1,
     [join('screens', 'add-reminder', 'index.tsx')]: 1,
-    [join('screens', 'docs', 'index.tsx')]: 2,
+    [join('screens', 'docs', 'index.tsx')]: 1, // #175 R7
     [join('screens', 'forgot', 'index.tsx')]: 1,
     [join('screens', 'geofence-editor', 'index.tsx')]: 1,
     [join('screens', 'geofences', 'index.tsx')]: 1,
@@ -562,7 +562,7 @@ describe('#166 R2: todo primario sólido lleva el labio detrás de bg-accent', (
     [join('screens', 'welcome', 'index.tsx')]: 1,
   };
 
-  it('inventaría los dieciocho primarios con labio, fichero a fichero', () => {
+  it('inventaría los diecisiete primarios con labio, fichero a fichero', () => {
     const inventory = (pattern: RegExp) => Object.fromEntries(
       sourceFiles().flatMap((path) => {
         const count = (readFileSync(path, 'utf8').match(pattern) ?? []).length;
@@ -580,8 +580,8 @@ describe('#166 R2: todo primario sólido lleva el labio detrás de bg-accent', (
       0,
     );
 
-    expect(count(/\bborder-b-4\b/g)).toBe(19 + 1 + 1 - 1 - 1); // #172 R14: forgot-lock-tile (Enmienda #172); #171 R3: ready-map // #171 R14 // #173 R5
-    expect(count(/border-black\/25/g)).toBe(19 + 1 + 1 - 1 - 1); // #172 R14: forgot-lock-tile (Enmienda #172); #171 R3: ready-map // #171 R14 // #173 R5
+    expect(count(/\bborder-b-4\b/g)).toBe(19 + 1 + 1 - 1 - 1 - 1); // #172 R14: forgot-lock-tile (Enmienda #172); #171 R3: ready-map // #171 R14 // #173 R5; #175 R7: docs-upload
+    expect(count(/border-black\/25/g)).toBe(19 + 1 + 1 - 1 - 1 - 1); // #172 R14: forgot-lock-tile (Enmienda #172); #171 R3: ready-map // #171 R14 // #173 R5; #175 R7: docs-upload
   });
 });
 
@@ -635,7 +635,7 @@ describe('#166 R3: el secundario neutro lleva el labio gris', () => {
       (total, path) => total + (readFileSync(path, 'utf8').match(pattern) ?? []).length,
       0,
     );
-    expect(count(/border-lip-gray/g)).toBe(4 + 1 + 1 + 1); // #170 R16; #171 R14; #174 R8
+    expect(count(/border-lip-gray/g)).toBe(4 + 1 + 1 + 1 + 1); // #170 R16; #171 R14; #174 R8; #175 R7: borde de la zona de subida
     expect(count(/\bborder-b-6\b/g)).toBe(4 + 1 + 1); // #170 R16; #171 R14
   });
 
