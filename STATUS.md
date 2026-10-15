@@ -1,10 +1,10 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-10-15
-**Features completadas**: 159/175 (`feature_list.json`)
-**En progreso**: ninguna en esta rama. #171 cerrada en `feature/171-mobile-celebrations-and-living-empty`, PR pendiente de merge humano.
+**Features completadas**: 160/175 (`feature_list.json`)
+**En progreso**: ninguna en esta rama. #172 cerrada en `feature/172-mobile-account-screens-polish`, PR pendiente de merge humano.
 
-**Pendientes**: 16 (#60, #119, #129, #144, #150, #151, #154, #160, #163, #164, #165, #172, #174, #176, #177 y #181). **#171 `mobile-celebrations-and-living-empty` cerrada**: fila 5 «Propuestas nuevas» del canvas. El componente `Celebration` cierra la vinculación del collar (Vincular) y el alta de la primera mascota (Nueva mascota), con la pose celebrate de Pingo, pop por keyframes, insignia con check en SVG, anillo de ping, flotación, 36 piezas de confeti en bucle, entrada escalonada del texto y las acciones, y háptico de éxito. Con reduce motion no hay confeti, anillo, flotación ni subida. Pingo flota en los vacíos de `EmptyState`. La carta (`docs/ui-guidelines.md`) gana la enmienda de la celebración. Cuatro rondas de Codex y cuatro enmiendas firmadas desde Notion (E1 `82eda89f`, E2 `5b7ab10a`, E3 `34446b87` con el merge de #167-#170, E4 `0268e9bd` con la paridad con el canvas). Reviewer ronda 4 APROBADO (`79b28820`); el humano firmó el smoke R16 en `1052bb9f` y `50188740`. Registradas al cerrar: #176 (vacío de Inicio como el canvas, con el botón de icono y texto), #177 (receta global de botones del canvas) y #181 (sin «Algo salió mal» en una cuenta sin mascotas y contenido centrado como Mapa). Móvil 104/3210.
+**Pendientes**: 15 (#60, #119, #129, #144, #150, #151, #154, #160, #163, #164, #165, #174, #176, #177 y #181). **#172 `mobile-account-screens-polish` cerrada**: Login, Registro, Recuperar y Nueva contraseña quedan como el canvas. Llevan «Volver» arriba (`BackButton`), la CTA de 56 anclada al pie con Inter ExtraBold, inputs de 52 y `PasswordInput` con ojo en los cinco campos de contraseña. Los errores van con icono (`FieldError`, `FormError`) y Pingo flota (`PingoFloat`, 10 px / 3 s). Registro valida el correo antes de llamar a la API (R12), el éxito de Nueva contraseña avisa con liveRegion (R13) y el candado de Recuperar es un tile acento con labio (R14). La carta (`docs/ui-guidelines.md`) gana la Enmienda #172. Codex trabajó en seis reanudaciones, con seis enmiendas firmadas desde Notion (E1-E6). El reviewer rechazó la ronda 1 (`b6c09d5e`), aprobó la ronda 2 (`e2745566`) y aprobó la ronda 3 (`d1ea6a92`), que cubre el merge de main con #171 (`4b355acb`). El humano firmó el smoke R21 en `631826d9`. Tras el smoke pidió validación en cliente con mensaje claro en todos los inputs de cuenta, en lugar del error del servidor: va aparte como #183 `mobile-account-client-validation`, con la spec en su branch. Móvil 109/3277.
 
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
@@ -88,6 +88,14 @@ debe listar las 4 URLs de cola.
 
 ## Estado actual
 
+- **`mobile-account-screens-polish` (#172) done** (2026-10-15, worktree
+  `Pet-Tracker-wt-172`, sesión Frontend): Login, Registro, Recuperar y Nueva
+  contraseña con paridad con el canvas (CTA de 56 al pie, inputs de 52, ojo en
+  las contraseñas, errores con icono, `PingoFloat`). Reviewer ronda 3 APROBADO
+  (`d1ea6a92`, veredicto sobre el merge de main `4b355acb`). Gate: `./init.sh`
+  exit 0 sobre `4f4dfd15` (backend 187/1474, infra 2/14, móvil 109/3277, e2e
+  30 de 33 suites, 468 passed y 8 skipped). Smoke R21 firmado por el humano en
+  `631826d9`; su petición de validar todos los inputs va a #183.
 - **`mobile-celebrations-and-living-empty` (#171) done** (2026-10-15, worktree
   `Pet-Tracker-wt-171`, sesión sites-4c): celebración a pantalla completa al
   vincular el collar y al guardar la primera mascota, con paridad con el canvas
@@ -1498,6 +1506,13 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Última sesión
+
+- **2026-10-15** — **#172 `mobile-account-screens-polish` cerrada**
+  (worktree `Pet-Tracker-wt-172`, sesión Frontend). Spec y Enmienda #172
+  firmadas desde Notion; enmiendas E1-E6 firmadas desde Notion. Ronda 1
+  rechazada; rondas 2 y 3 aprobadas por el reviewer (ronda 3 en `d1ea6a92`,
+  sobre el merge de main con #171). Smoke R21 firmado por el humano. #183
+  especificada en su propia branch. PR abierta; siguiente: merge humano.
 
 - **2026-10-15** — **#171 `mobile-celebrations-and-living-empty` cerrada**
   (worktree `Pet-Tracker-wt-171`, sesión sites-4c). Spec firmada desde Notion
