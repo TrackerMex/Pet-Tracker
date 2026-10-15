@@ -226,14 +226,14 @@ export function DocsScreen({ petId }: { petId: string }) {
           paddingBottom: insets.bottom + 24,
         }}
       >
-        <View className="gap-1">
-          <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
+        <View>
+          <Text className="text-11 font-extrabold uppercase tracking-eyebrow text-muted">
             {t('docs.documentsOf')}
           </Text>
           {pet.data === undefined ? (
             <Skeleton testID="docs-header-skeleton" className="h-8 w-36 rounded-xl" />
           ) : (
-            <Text className="text-2xl font-black text-foreground">
+            <Text className="text-26 font-black tracking-title text-foreground">
               {petName ?? t('docs.pet')}
             </Text>
           )}
