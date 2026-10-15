@@ -346,6 +346,9 @@ idiomas, como cualquier otra copy.
   `scale` y `opacity` con timing y duraciones fuera de 150/250/400,
   porque no entran, ni salen, ni responden a un gesto. Sus constantes viven en
   `src/theme/motion.ts` y no arrancan con reduce motion.
+  La enmienda #171 suma a esta lista la flotación y el anillo de ping de
+  Pingo en la celebración, y la lluvia de confeti que la acompaña: los tres
+  se repiten mientras la celebración está abierta.
 
 ## Checklist de autocrítica (cierra toda pantalla nueva o modificada)
 
@@ -509,6 +512,37 @@ de la enmienda está en su `requirements.md` §R11.
 - [X] Enmienda #168 aprobada por humano
 
 **Regla N1 (enmienda B4 de #168)**: Salud, Nutrición y Perfil abren con el título grande; Inicio es la única pestaña con PetHeroHeader. Devolver el hero a una de las tres es una enmienda a #168.
+
+## Enmienda #171 — confeti, ping y flotación de la celebración
+
+`Celebration` (`src/components/celebration.tsx`) se mueve como su artboard,
+`specs/mobile-welcome-pingo/design-src/celebration.dc.html`:
+
+- **Confeti.** 36 piezas que caen en bucle con `withRepeat` mientras la
+  celebración está abierta. La tabla de posición, forma, color, duración y
+  retardo vive en `celebration.tsx`; la curva, en
+  `MOTION_CONFETTI_FALL_TIMING` de `motion.ts`. Los colores son `bg-accent` y
+  los cinco tokens `confetti-*` de `global.css`, que ninguna otra pantalla
+  usa. `rounded-xs` (2 px) es una excepción a la escala de radios del
+  punto 12 que solo vale para las piezas del confeti. Esas piezas tampoco
+  declaran `CONTINUOUS_CORNER`: con 2 px el squircle no se distingue.
+- **Ping.** Un anillo `bg-accent` detrás de Pingo crece de 0.55 a 1.5 y se
+  apaga de 0.55 a 0 en 2200 ms ease-out, en bucle.
+- **Pop y flotación.** Pingo entra con un pop de 600 ms que pasa por 1.08 y
+  después flota 10 px arriba y abajo, 1500 ms por tramo, en bucle. La
+  insignia hace un pop de 500 ms con 450 ms de retardo.
+- **Entrada.** Título, cuerpo, fichas y acciones suben 14 px y aparecen en
+  400 ms ease-out, desde los 500 ms y cada 80 ms.
+- Solo se animan `transform` y `opacity`, sin `entering`, `exiting` ni
+  `LayoutAnimation`. Al desmontar sin reduce motion, `cancelAnimation`
+  para los bucles.
+- Con reduce motion no se montan el confeti ni el anillo, Pingo no flota y el
+  texto aparece sin subir; Pingo y la insignia conservan su fundido.
+- El confeti es de tier «raro»: solo lo monta `Celebration`, y
+  `Celebration` solo cierra el alta de una mascota o la vinculación de un
+  collar.
+
+- [x] Aprobada por humano (fecha: 2026-10-14)
 
 ## Enmienda #172 — Las pantallas de cuenta como el canvas
 

@@ -746,3 +746,13 @@ describe('#166 R1: global.css declara el labio gris en los dos temas', () => {
     });
   });
 });
+
+describe('#171 E4: tokens de la celebración', () => {
+  it('#171 E4: @theme declara los cinco colores del confeti', () => {
+    expect(parseVariables(extractTheme())).toMatchObject({ 'color-confetti-amber': '#F79009', 'color-confetti-violet': '#7A5AF8', 'color-confetti-blue': '#2E90FA', 'color-confetti-rose': '#F04438', 'color-confetti-green': '#12B76A' });
+  });
+
+  it('#171 E4: @theme declara text-15 de 15 px', () => {
+    expect(parseVariables(extractTheme())).toMatchObject({ 'text-15': '15px' });
+  });
+});

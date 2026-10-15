@@ -1,10 +1,10 @@
 # pet-tracker — Status
 
-**Última actualización**: 2026-10-13
-**Features completadas**: 158/172 (`feature_list.json`)
-**En progreso**: ninguna en esta rama. #170 cerrada en `feature/170-mobile-alerts-grouped-and-detail-map`, PR #213 pendiente de merge humano.
+**Última actualización**: 2026-10-15
+**Features completadas**: 159/175 (`feature_list.json`)
+**En progreso**: ninguna en esta rama. #171 cerrada en `feature/171-mobile-celebrations-and-living-empty`, PR pendiente de merge humano.
 
-**Pendientes**: 14 (#60, #119, #129, #144, #150, #151, #154, #160, #163, #164, #165, #171, #172 y #174). **#170 `mobile-alerts-grouped-and-detail-map` cerrada**: fila 4 «Collar y seguridad» del canvas, parte 1. Alertas agrupa por Hoy / Esta semana / Anteriores con el contador «N nuevas» y la severidad por color, icono y texto; el Detalle gana un mini-mapa con el marcador, el círculo de la zona y la distancia a su borde calculada en cliente (`geofenceId` + `payload.position`, sin backend), y el CTA secundario «Ver en el mapa». Siete claves nuevas (§2.26 de la spec de idioma). Enmiendas E1, E2 y E3 firmadas desde Notion; ronda 1 rechazada por candados ciegos y ronda 2 aprobada por el reviewer (`27c881a6`). El humano firmó el smoke R17 en `33a4bcde` y pidió acercar más las dos pantallas al canvas: queda como #174 `mobile-alerts-canvas-fidelity`. Móvil 100/2899 → 103/3101 sobre el árbol mergeado con #167, #168 y #169. **#169 `mobile-weight-draw-and-toasts` cerrada**: fila 3 «Salud y rutina» del canvas, parte 1. `WeightChart` dibuja la línea con un trazo animado (`strokeDashoffset`, `MOTION_FILL_TIMING`, respeta reduce motion) y Salud lo hereda; Peso gana el resumen con el peso actual y el delta del mes (`monthlyWeightDelta`) y un toast con háptico tras un alta correcta. Dos claves nuevas (§2.25 de la spec de idioma). Rondas 1 y 2 rechazadas (candados que solo muestreaban extremos o fixtures colineales); las Enmiendas E1 y E2, solo tests, se firmaron desde Notion y la ronda 3 la aprobó el reviewer (`d4ccf05c`). El humano firmó el smoke R14 en `084d9fc3`. Móvil 98/2775 → 99/2833 medido sobre la branch antes de mergear #167. **#168 `mobile-tab-headers-canvas` cerrada**: Salud, Nutrición y Perfil abren con el título grande del canvas en lugar del hero fotográfico (decisión N1, que revierte la Enmienda #67 en esas tres pestañas; Inicio conserva `PetHeroHeader`). Salud pinta un tile pastel por estado en cada vacuna; Perfil cambia el hero por la tarjeta `profile-pet-card` con avatar circular, chips pastel atados al dato, tiles en las cuatro filas y avatar de iniciales en la cuenta; Nutrición sustituye la barra y el tile `ForkKnife` por el anillo de kcal animado, acotado a 100 y con reduce motion. La Enmienda #168 queda declarada en tres specs aprobadas y en la carta, con su candado. Ronda 1 de Codex rechazada por candados que faltaban en la spec (O1/O2); la Enmienda E3, solo tests, se firmó desde Notion (`938188b8`) y la ronda 2 la aprobó el reviewer (`d3cb4d1a`). El humano firmó el smoke R13 en `0b3cc585` y las cuatro casillas de la enmienda en `ddbbab8d`. Móvil 99/2851 → 100/2919. #119 se cierra como superada tras el merge.
+**Pendientes**: 16 (#60, #119, #129, #144, #150, #151, #154, #160, #163, #164, #165, #172, #174, #176, #177 y #181). **#171 `mobile-celebrations-and-living-empty` cerrada**: fila 5 «Propuestas nuevas» del canvas. El componente `Celebration` cierra la vinculación del collar (Vincular) y el alta de la primera mascota (Nueva mascota), con la pose celebrate de Pingo, pop por keyframes, insignia con check en SVG, anillo de ping, flotación, 36 piezas de confeti en bucle, entrada escalonada del texto y las acciones, y háptico de éxito. Con reduce motion no hay confeti, anillo, flotación ni subida. Pingo flota en los vacíos de `EmptyState`. La carta (`docs/ui-guidelines.md`) gana la enmienda de la celebración. Cuatro rondas de Codex y cuatro enmiendas firmadas desde Notion (E1 `82eda89f`, E2 `5b7ab10a`, E3 `34446b87` con el merge de #167-#170, E4 `0268e9bd` con la paridad con el canvas). Reviewer ronda 4 APROBADO (`79b28820`); el humano firmó el smoke R16 en `1052bb9f` y `50188740`. Registradas al cerrar: #176 (vacío de Inicio como el canvas, con el botón de icono y texto), #177 (receta global de botones del canvas) y #181 (sin «Algo salió mal» en una cuenta sin mascotas y contenido centrado como Mapa). Móvil 104/3210.
 
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
@@ -88,6 +88,14 @@ debe listar las 4 URLs de cola.
 
 ## Estado actual
 
+- **`mobile-celebrations-and-living-empty` (#171) done** (2026-10-15, worktree
+  `Pet-Tracker-wt-171`, sesión sites-4c): celebración a pantalla completa al
+  vincular el collar y al guardar la primera mascota, con paridad con el canvas
+  (Enmienda E4), y Pingo que flota en los vacíos. Reviewer ronda 4 APROBADO
+  (`79b28820`, veredicto sobre `f5e8cc68`). Gate: `./init.sh` exit 0 sobre
+  `f5e8cc68` (backend 187/1474, infra 2/14, móvil 104/3210, e2e 30 de 33
+  suites, 468 passed y 8 skipped). Smoke R16 firmado por el humano en
+  `1052bb9f` y `50188740`; sus observaciones van a #176 y #181.
 - **`mobile-alerts-grouped-and-detail-map` (#170) done** (2026-10-13, worktree
   `Pet-Tracker-wt-170`, sesión Backend): Alertas agrupadas por fecha con
   contador de nuevas y severidad; mini-mapa con zona y distancia al borde en el
@@ -1490,6 +1498,13 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Última sesión
+
+- **2026-10-15** — **#171 `mobile-celebrations-and-living-empty` cerrada**
+  (worktree `Pet-Tracker-wt-171`, sesión sites-4c). Spec firmada desde Notion
+  (`1b20491c`) y enmiendas E1-E4 firmadas desde Notion. Ronda 1 rechazada;
+  rondas 2, 3 y 4 aprobadas por el reviewer (ronda 4 en `79b28820`). Smoke R16
+  firmado por el humano. #176, #177 y #181 registradas en `feature_list.json`.
+  PR abierta; siguiente: merge humano.
 
 - **2026-10-13** — **#170 `mobile-alerts-grouped-and-detail-map` cerrada**
   (worktree `Pet-Tracker-wt-170`, sesión Backend). Spec firmada desde Notion;
