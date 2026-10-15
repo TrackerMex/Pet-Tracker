@@ -79,13 +79,27 @@
 >     E5.1 corrige solo el esperado de esa fila: **3 fallos, 1 en F y 2 en A**. La sonda no cambia. S12.1–S12.5 no se
 >     repiten. `progress/sweep_174_e5.md` es del leader (entra en la exclusión de K5). Mismos 25 commits y lista
 >     cerrada. Sigue «REANUDACION 5», que va antes que la 4.
+> 20. **Filtro de K3F (reanudación 6)**: Codex paró en K3 con `32` donde el handoff esperaba `25`. Defecto del handoff:
+>     el filtro solo excluía los commits `docs(progress): #174 ` del leader y no las firmas ni las enmiendas
+>     (`docs(specs): firma de la Enmienda…`, `docs(specs): #174 Enmienda…`, `docs(mobile-alerts-canvas-fidelity): #174 enmienda…`),
+>     que son 7. Tus 25 commits estaban bien. Ahora el filtro los excluye todos (medido: 25). Solo se relanza K3F.
+>     Sigue «REANUDACION 6», que va antes que la 5.
 
 ```text
 Worktree: /home/claude/sites/Pet-Tracker-wt-174   <- PRIMERA LINEA. Trabaja AQUI y en ningun otro sitio
 Branch:   feature/174-mobile-alerts-canvas-fidelity   (H0 = el commit de asunto `docs(progress): #174 handoff a Codex (H0)`; anotalo en el impl)
 Confirma `pwd` y `git branch --show-current` antes de tocar nada (B0).
 
-== REANUDACION 5 (2026-10-15; Codex paro en S12.6; Enmienda E5 firmada) ==
+== REANUDACION 6 (2026-10-15; Codex paro en K3F; filtro del handoff corregido, sin enmienda) ==
+Estado de partida: c1-c23 hechos; S12.1-S12.6 hechas; K1, K2 y K3 (ALL 111 suites / 3428 tests, typecheck, lint) en verde. El impl esta SIN commitear como `??`: DEJALO.
+Tu parada fue correcta. El filtro de K3F solo excluia `docs(progress): #174 ` y contaba 7 commits del leader (firmas y enmiendas) como tuyos: 32 en vez de 25.
+Ahora la cadena K3F lleva tres `--grep` mas. Tus 25 commits no cambian y no se rehace nada.
+RE6-1  Entra y comprueba (esperado: rama feature/174-mobile-alerts-canvas-fidelity; status con exactamente `?? ../progress/impl_mobile-alerts-canvas-fidelity.md`):
+       cd /home/claude/sites/Pet-Tracker-wt-174/mobile-pet-tracker && git branch --show-current && git log --oneline -3 && git status --short
+RE6-2  Ejecuta SOLO la cadena K3F de abajo (la del filtro nuevo). Esperado: `25`. Otro numero: PARA y pegalo en el impl.
+RE6-3  Sigue con K4 y K5. K1, K2 y el resto de K3 no se repiten. En Desviaciones anota la parada de K3F.
+
+== REANUDACION 5 (YA HECHA, no la repitas) (2026-10-15; Codex paro en S12.6; Enmienda E5 firmada) ==
 Estado de partida: c1-c23 hechos, S12.1-S12.5 hechas (recuento coincidente, limpio=0). El impl esta SIN commitear como `??`: DEJALO.
 Tu parada fue correcta. tasks.md declaraba 2 fallos para S12.6 y se miden 3: dos `it` de `#170 R3` de alerts/index.test.tsx asertan el literal
 `mt-1.5 text-13 font-extrabold uppercase tracking-caps text-muted`. Era un error de recuento del leader. E5.1 fija el esperado: 3 fallos (1 en F y 2 en A).
@@ -503,8 +517,8 @@ cd /home/claude/sites/Pet-Tracker-wt-174/mobile-pet-tracker && bun run typecheck
    -> exit=0
 cd /home/claude/sites/Pet-Tracker-wt-174/mobile-pet-tracker && bunx expo lint --no-cache > /tmp/174-lint.txt 2>&1; echo "exit=$?"; ! grep -qF 'Failed to run' /tmp/174-lint.txt && test ! -s /tmp/174-lint.txt && echo lint-ok
    -> exit=0 ; lint-ok
-cd /home/claude/sites/Pet-Tracker-wt-174/mobile-pet-tracker && git log --oneline --invert-grep --grep='^docs(progress): #174 ' $(git log -1 --format=%H --grep='^docs(progress): #174 handoff a Codex (H0)')..HEAD | wc -l
-   -> 25   (c1-c23, c5b y c7b; los commits `docs(progress): #174 ...` son del leader y no cuentan)
+cd /home/claude/sites/Pet-Tracker-wt-174/mobile-pet-tracker && git log --oneline --invert-grep --grep='^docs(progress): #174 ' --grep='^docs(specs): firma de la Enmienda' --grep='^docs(specs): #174 Enmienda' --grep='^docs(mobile-alerts-canvas-fidelity): #174 enmienda' $(git log -1 --format=%H --grep='^docs(progress): #174 handoff a Codex (H0)')..HEAD | wc -l
+   -> 25   (c1-c23, c5b y c7b; los commits del leader no cuentan: `docs(progress): #174 ...`, firmas y enmiendas `docs(specs)` y `docs(mobile-alerts-canvas-fidelity)`)
 # -- K4 trazabilidad (commit unico) y despues el impl con --only --
 Rellena specs/mobile-alerts-canvas-fidelity/traceability.md:
   - cada fila lleva el test (fichero::describe) y el hash + mensaje de sus commits (rojo y verde);
