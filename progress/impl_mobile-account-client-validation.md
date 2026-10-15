@@ -14514,3 +14514,18 @@ Verificación desde `mobile-pet-tracker/`, en primer plano y exit medido sin pip
 - `bunx eslint src/providers/__tests__/language-provider.test.tsx`: exit 0, sin salida.
 
 No se ejecutaron `./init.sh` ni la suite móvil completa. Solo `git add` del test y de este informe; sin commit, merge ni push (el commit de merge lo hace el leader).
+
+## Cierre — merge de origin/main con #175 (58bf412c)
+
+Excepción trivial de CLAUDE.md (fallback al subagente `implementer`), igual que el cierre anterior: se resolvió el conflicto del `git merge --no-ff --no-commit origin/main` (`58bf412c`, trae #175, PR #221). Hubo un solo hunk, en el único fichero en conflicto: `mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx`. Antes de tocar nada se comprobó que `diff --name-only --diff-filter=U` daba solo ese fichero y que tenía exactamente 3 marcadores. No hay spec nueva ni TDD, y no se tocó ningún otro fichero de la app. `specs/mobile-ui-language/design.md` lo resolvió el leader: §2.31 para #175 y §2.32 para #183.
+
+- **Hunk de la longitud del catálogo** (tras `- 4 + 3 // #173 R13`): quedan `+ 7 // #175 R3`, `+ 1 // #174 R2` (sin coma) y `+ 9, // #183 R1` (cierra con coma), antes del `);`. Nada más del fichero cambia. El `describe('#175 R3: claves de Documentos del canvas', …)` lo fusionó git sin conflicto.
+- Marcadores: `grep -cE '^(<<<<<<<|=======|>>>>>>>)'` sobre el fichero da `0`. El `git diff HEAD` del fichero solo añade lo de #175. El `git diff origin/main` solo añade lo de #183, más la coma movida.
+
+Verificación desde `mobile-pet-tracker/`, en primer plano y con el exit medido sin pipe:
+
+- `bunx jest --testTimeout=30000 --runTestsByPath src/providers/__tests__/language-provider.test.tsx`: exit 0, `Test Suites: 1 passed, 1 total`, `Tests: 42 passed, 42 total`.
+- `bunx tsc --noEmit`: exit 0, sin salida. `.expo/types/router.d.ts` no existía.
+- `bunx eslint src/providers/__tests__/language-provider.test.tsx`: exit 0, sin salida.
+
+No se ejecutaron `./init.sh` ni la suite móvil completa. Solo se hizo `git add` del test y de este informe, sin commit, merge ni push.
