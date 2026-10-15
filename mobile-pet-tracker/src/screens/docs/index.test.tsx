@@ -380,6 +380,30 @@ describe('#175 R4: esqueleto del tamaño de la fila', () => {
   });
 });
 
+describe('#175 R5: cabecera del artboard', () => {
+  it('pinta una columna sin gap con eyebrow y título exactos', async () => {
+    await renderDocs();
+    await screen.findByText('Luna');
+    const container = screen.getByTestId('screen-docs').children[0];
+    if (typeof container === 'string') throw new Error('Expected scroll content');
+    const header = container.children[0];
+    if (typeof header === 'string') throw new Error('Expected a header element');
+
+    expect(header.props.className).toBeUndefined();
+    expect(header.children).toHaveLength(2);
+    expect(header.children[0]).toHaveProperty('props.className', 'text-11 font-extrabold uppercase tracking-eyebrow text-muted');
+    expect(header.children[1]).toHaveProperty('props.className', 'text-26 font-black tracking-title text-foreground');
+    expect(within(header).getByText('Documentos de')).toBeVisible();
+    expect(within(header).getByText('Luna')).toBeVisible();
+  });
+
+  it('conserva una sola cabecera nativa de Documentos con título vacío', () => {
+    const { readFileSync } = jest.requireActual<typeof import('fs')>('fs');
+    const layout = readFileSync(`${process.cwd()}/src/app/_layout.tsx`, 'utf8');
+    expect(layout.split("name=\"pets/[petId]/docs\" options={{ ...headerOptions, title: '' }}")).toHaveLength(2);
+  });
+});
+
 describe('#155 R7: sin documentos, Pingo los guarda', () => {
   beforeEach(() => {
     jest.clearAllMocks();
