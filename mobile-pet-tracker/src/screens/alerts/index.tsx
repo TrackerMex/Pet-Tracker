@@ -18,6 +18,7 @@ import { useThemeColors } from '../../theme/use-theme-colors';
 import { settleAlertAck } from '../../utils/alert-ack-outcome';
 import { alertTypeMeta } from '../../utils/alert-meta';
 import { alertSection } from '../../utils/alert-sections';
+import { CATEGORY_SLOTS } from '../../utils/category-palette';
 
 function fmtOpenedAt(
   iso: string,
@@ -243,7 +244,9 @@ export function AlertsScreen() {
               ) : (
                 <Text
                   testID={`${rowId}-status`}
-                  className="rounded-full bg-default px-2 py-0.5 text-2xs font-bold text-muted"
+                  className={item.status === 'acked'
+                    ? 'rounded-full bg-default px-2.5 py-1 text-xs font-bold text-muted'
+                    : `rounded-full ${CATEGORY_SLOTS.green.surface} px-2.5 py-1 text-xs font-extrabold ${CATEGORY_SLOTS.green.ink}`}
                 >
                   {item.status === 'acked'
                     ? t('alerts.statusAcked')
