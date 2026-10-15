@@ -713,8 +713,55 @@ y el enlace `toBe('min-h-11 min-w-0 flex-1 gap-1')`. R7.1 quita `min-h-20` y R7.
   `toBe('min-h-11 min-w-0 flex-1 justify-center gap-0.5')`. La aserción `size-11` del disco no cambia.
 - Va en el commit rojo de R7 (c13). Rojo: la fila recibe `min-h-20`.
 
+## Enmienda E3 — el route test que monta la lista de Alertas de verdad
+
+Codex paró en c8 el 2026-10-15 (`cadena=1`): al pintar el contador con `PopIn` (R4) se puso rojo
+`src/app/__tests__/alert-detail.navigation.test.tsx` › `#100 R8…`, un test que la spec no nombra.
+Ese test monta la ruta real `AlertsRoute` con dos alertas sin leer, así que `PopIn` se pinta, y
+`PopIn` llama a `useReducedMotion()`, que el mock de reanimated de jest no exporta
+(`node_modules/react-native-reanimated/src/mock.ts`: `// useReducedMotion: ADD ME IF NEEDED`). El leader
+repitió el test aislado sobre el árbol de Codex: `Uncaught error: TypeError: (0 ,
+_reactNativeReanimated.useReducedMotion) is not a function` y `Tests: 1 failed, 1 total`. La lista no
+se pinta, de ahí el `Unable to find an element with testID: alerts-list` que vio Codex. No es un flake.
+
+El barrido de E2 (`progress/sweep_174_e2.md`, fila 13) lo dio por verde sin ejecutarlo («`PopIn` y
+`HomeEntrance` reales bajo `setUpTests` no ocultan nada»): era falso. `HomeEntrance` (R10, c20)
+también llama a `useReducedMotion()`, así que el mismo test se pondría rojo otra vez en c20. El barrido
+nuevo (`progress/sweep_174_e3.md`) cubre ahora **cualquier** test que monte `screens/alerts/index.tsx`
+(directo o por la ruta): solo este lo hace. Los demás que nombran Alertas montan un stub o leen el fichero
+como texto. Ningún R-id nuevo y ninguna clase ni copy cambian. **Donde choque con R4, R10, `tasks.md` o
+el handoff, manda E3.**
+
+### E3.1 — R4 y R10: el doble de reanimated del route test
+
+En `src/app/__tests__/alert-detail.navigation.test.tsx` (**fichero nuevo en la lista cerrada**: pasan a ser 23
+rutas), justo antes de la línea `jest.mock('../../hooks/use-push-registration', …)`, se añade este bloque,
+byte a byte (misma forma que `src/components/__tests__/pop-in.test.tsx`; `__esModule` es obligatorio, sin
+él `Animated.View` sale `undefined`):
+
+```ts
+// #174 R4: el mock de reanimated de jest no trae useReducedMotion y PopIn (R4) y HomeEntrance (R10) lo llaman
+jest.mock('react-native-reanimated', () => ({
+  ...jest.requireActual('react-native-reanimated'),
+  __esModule: true,
+  useReducedMotion: () => false,
+}));
+```
+
+- No se cambia ningún `it`, título ni aserción del fichero: es un doble de entorno. No se dobla `PopIn` ni
+  `HomeEntrance`: el route test sigue montando los componentes reales.
+- Va en un commit propio, **c7b**, entre c7 y c8 (c7 ya está hecho y no se reescribe). Es un commit de solo
+  test, sin rojo propio: con el cambio de producción de c8 **aún sin commitear** en el árbol (Codex ya lo
+  tiene escrito, no se toca ni se aparta), el test pasa de `1 failed` a `1 passed`; esa es su prueba. En
+  c8 el árbol vuelve a tener solo `src/screens/alerts/index.tsx` sin commitear y la cadena de c8 no cambia.
+- Candado que se mueve: ninguno. Hay 25 commits (c1–c23, c5b y c7b).
+- Ficha para quien implemente después: un módulo nativo nuevo, o un componente que lo llama, en una
+  pantalla obliga a revisar **todo test que monte esa pantalla o su ruta**, no solo los que nombran el
+  componente.
+
 ## Aprobación
 
 - [x] Aprobado por humano (fecha: 2026-10-13, vía Notion) ← gate obligatorio antes de implementar
 - [x] Enmienda E1 aprobada por humano (fecha: 2026-10-15, vía Notion)
 - [x] Enmienda E2 aprobada por humano (fecha: 2026-10-15, vía Notion)
+- [ ] Enmienda E3 aprobada por humano (fecha: ____, vía Notion)
