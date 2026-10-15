@@ -44,6 +44,15 @@ export const R1_AUTH: UseRow[] = [
   { file: 'src/components/password-input.tsx', key: 'common.hidePassword' }, // #172 R16
   { file: 'src/screens/register/index.tsx', key: 'forgot.invalidEmail' }, // #172 R16
   { file: 'src/components/back-button.tsx', key: 'common.back' }, // #172 R16
+  { file: 'src/utils/account-rules.ts', key: 'forgot.invalidEmail' }, // #183 R2
+  { file: 'src/utils/account-rules.ts', key: 'validation.firstNameRequired' }, // #183 R2
+  { file: 'src/utils/account-rules.ts', key: 'validation.lastNameRequired' }, // #183 R2
+  { file: 'src/utils/account-rules.ts', key: 'validation.passwordRequired' }, // #183 R2
+  { file: 'src/utils/account-rules.ts', key: 'validation.tooShort' }, // #183 R2
+  { file: 'src/utils/account-rules.ts', key: 'validation.tooLong' }, // #183 R2
+  { file: 'src/utils/account-rules.ts', key: 'validation.passwordsDontMatch' }, // #183 R2
+  { file: 'src/utils/account-rules.ts', key: 'validation.countryLength' }, // #183 R2
+  { file: 'src/utils/account-rules.ts', key: 'validation.countryLetters' }, // #183 R2
 ];
 
 export const R2_TABS: UseRow[] = [

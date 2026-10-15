@@ -68,8 +68,8 @@ function checkUses(uses: UseRow[]) {
 }
 
 describe('#65 R1: el grupo (auth) resuelve su copy por clave', () => {
-  it('resuelve las 41 ocurrencias normativas', () => {
-    expect(R1_AUTH).toHaveLength(29 + 7 + 1 + 4); // #117 R10, #167 R6, #172 R16
+  it('resuelve las 50 ocurrencias normativas', () => {
+    expect(R1_AUTH).toHaveLength(29 + 7 + 1 + 4 + 9); // #117 R10, #167 R6, #172 R16, #183 R2
     checkUses(R1_AUTH);
   });
 });
@@ -500,6 +500,7 @@ describe('#65 R18: los sitios resuelven por clave y no queda copy suelta', () =>
         + 1 // #134 R6
         + 2 - 2 // #167 R1: salen app/(auth)/login.tsx y app/(auth)/register.tsx, entran screens/login/index.tsx y screens/register/index.tsx
         + 2 // #172 R16: back-button y password-input
+        + 1 // #183 R2: utils/account-rules.ts
     );
 
     for (const file of SCREEN_FILES) {
