@@ -431,3 +431,135 @@ Tests:       8 skipped, 468 passed, 476 total
 ✅ Todo verde. Listo para trabajar.
 exit=0
 ```
+
+## Ronda 3 — Merge con origin/main (2026-10-15)
+
+Veredicto: APROBADO
+
+Alcance acotado: solo el merge `4b355acb` de origin/main (#171) en la branch y
+el informe `4f4dfd15`. Lo aprobado en ronda 2 (`e2745566`) y la prueba de humo
+R21 (`631826d9`) no se revisan de nuevo.
+
+### 1. Padres y ficheros resueltos a mano
+
+- `git log -1 --format='%H %P' 4b355acb` → padres `ec508f88` (lado #172, M0,
+  hijo de `631826d9`) y `a288c7dc` (origin/main con #171). Merge-base `788d1f89`.
+- `git show --remerge-diff 4b355acb` lista exactamente 5 conflictos con
+  resolución manual: `docs/ui-guidelines.md`, `specs/mobile-ui-language/design.md`,
+  `mobile-pet-tracker/src/theme/global.css`, `mobile-pet-tracker/src/theme/motion.ts`,
+  `mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts`. Los mismos 5
+  de la Reanudación 6. Coincide con el paso 1 literal del informe de Codex.
+- `comm` de `git diff --name-only a288c7dc 4b355acb` y `git diff --name-only ec508f88 4b355acb`
+  da 12 ficheros, no 5. Los 7 de más son ficheros que tocaron las dos features
+  y que git mezcló sin conflicto: `feature_list.json`, `design-drift.test.ts`,
+  `ui-copy-table.ts`, `ui-language.test.ts`, `catalog.ts`,
+  `language-provider.test.tsx`, `global-css.test.ts`, `motion.test.ts`. El
+  remerge-diff no muestra cambios a mano en ninguno de ellos. `motion.ts` no
+  sale en la intersección porque queda idéntico a main
+  (`git diff a288c7dc 4b355acb -- motion.ts` vacío).
+
+### 2. Ficheros mezclados sin conflicto: ningún candado perdido
+
+Por fichero, comparé el multiconjunto de líneas `+/-` de `788d1f89..ec508f88`
+con el de `a288c7dc..4b355acb` (¿sigue todo #172?) y el de `788d1f89..a288c7dc`
+con el de `ec508f88..4b355acb` (¿sigue todo #171?):
+
+- `feature_list.json`, `design-drift.test.ts`, `ui-copy-table.ts`,
+  `ui-language.test.ts`, `catalog.ts`, `language-provider.test.tsx`,
+  `global-css.test.ts`: los dos lados se conservan enteros.
+- `motion.test.ts`: la única diferencia está en `'MOTION_PINGO_FLOAT_OFFSET_Y'` y
+  `'MOTION_PINGO_FLOAT_TIMING'`, que las dos features añadieron igual al
+  inventario `no exporta nada más`. Git las deja una sola vez y así tiene que
+  ser, porque es un `toEqual` de `Object.keys(...).sort()`. Siguen el
+  `describe('#172 R4: …')` (l. 111) y los `it` de #171 R6/R7/E4.
+- Suma de longitud del catálogo (`language-provider.test.tsx` l. 55-69): lleva
+  `+ 4 // #171 R12` y `+ 7 // #170 R1` / `+ 3, // #172 R16` como último sumando,
+  como dice la spec en su §Choques de integración.
+- `ui-language.test.ts`: R1_AUTH `29 + 7 + 1 + 4` y R11_RESET `15 + 1` (#172),
+  y R9_ADD_PET `42 + 1 - 2 + 4` (#171). Las tres siguen.
+- En los 5 ficheros resueltos, las únicas líneas de cada lado que faltan
+  en el merge son las que la Reanudación 6 manda sustituir: los 4 contadores
+  de cada lado, el bloque `// #172 R4` de `motion.ts` y el encabezado `§2.27 — … #172`.
+
+### 3. Cada hunk resuelto coincide con la Reanudación 6
+
+- `ui-guidelines.md`: `## Enmienda #171` en la l. 516 y `## Enmienda #172` en la l. 547,
+  separadas por una línea en blanco. Respecto a cada padre, el merge no quita
+  ninguna línea (`git diff -U0 ec508f88|a288c7dc 4b355acb` sin `-`), así que
+  los dos bloques se conservan sin cambiar ni un carácter.
+- `mobile-ui-language/design.md`: `### §2.27 — Añadidos por #171 — Celebraciones`
+  en la l. 965 y `### §2.28 — Añadidos por #172 — Las pantallas de cuenta como el canvas`
+  en la l. 974. Respecto a #172, solo se pierde el encabezado §2.27; las 4 filas
+  siguen iguales. El candado de #172 R16 busca `§2\.\d+`, así que no depende
+  de N (requirements.md, «Si otra feature ocupa §2.27 antes, N sube»). El de
+  #171 E4.12 exige que §2.27 vaya detrás de §2.26, y se cumple.
+- `global.css` `@theme`: `--text-13/15/17` seguidos de los 5 `--color-confetti-*`,
+  en el orden prescrito, con `--text-15` una sola vez.
+- `motion.ts`: idéntico a `a288c7dc`. Las constantes de main tienen los mismos
+  valores que tenía #172 (`MOTION_PINGO_FLOAT_OFFSET_Y = 10`;
+  `{ duration: 1500, easing: Easing.bezier(0.42, 0, 0.58, 1), reduceMotion: ReduceMotion.System }`).
+  Los candados `#172 R4` de `motion.test.ts` y `pingo-float.test.tsx` usan esos nombres.
+- `consistency-classnames.test.ts`: cada contador queda en base + Δ#172 + Δ#171:
+  - `CONTINUOUS_CORNER`: base `31+1+4+1`, #172 0, #171 −1 → `31 + 1 + 4 + 1 - 1`.
+  - `rounded-xl bg-accent`: base `13+1×6`, #172 0, #171 +1−1 → la línea de main.
+  - `bg-accent-soft` y `accentSoftCount`: base `16+2+1-1`, #172 −1, #171 −1 → `16 + 2 + 1 - 1 - 1 - 1`, ×2.
+  - `border-b-4` y `border-black/25`: base `19`, #172 +1, #171 +1−1 → `19 + 1 + 1 - 1`, ×2.
+
+### 4. El código de #172 no cambió fuera de las resoluciones
+
+- `git diff --stat e2745566 ec508f88`: solo `progress/current.md`,
+  `progress/handoff_…md` y `traceability.md`. Este último cambia una línea: la
+  casilla de humo R21 firmada (`[X] … 2026-10-14, OnePlus Nord 5`).
+- `git diff --stat 4b355acb 4f4dfd15`: solo `progress/impl_mobile-account-screens-polish.md`.
+- Ficheros que cambian en `e2745566..4f4dfd15` y que main no tocó: solo los 4
+  de `progress/`/`specs/` anteriores. Ningún fichero de código exclusivo de #172
+  cambió. Todo fichero que tocó main es igual a `a288c7dc`, salvo los 13 que
+  tocaron las dos features (vistos en los puntos 2 y 3).
+- `feature_list.json` tal como lo mezcló git: una sola feature `in_progress`
+  (#172) y #171 `done`. Coherente con C2.
+
+### 5. Gate (init.sh corrido por el leader; log leído, no reejecutado)
+
+Log: `/tmp/claude-1002/-home-claude-sites-Pet-Tracker/5bf0fe41-c38a-4318-8d51-90f545e0be95/scratchpad/init-172-merge.log` (50060 líneas).
+Las rutas de lint muestran que se corrió en `Pet-Tracker-wt-172`.
+
+```
+Test Suites: 187 passed, 187 total          (backend unit)
+Tests:       1474 passed, 1474 total
+Test Suites: 2 passed, 2 total              (infra)
+Tests:       14 passed, 14 total
+Test Suites: 109 passed, 109 total          (mobile)
+Tests:       3277 passed, 3277 total
+Test Suites: 3 skipped, 30 passed, 30 of 33 total   (e2e)
+Tests:       8 skipped, 468 passed, 476 total
+✅ Lint sin errores
+✅ Typecheck sin errores
+✅ Todo verde. Listo para trabajar.
+exit=0
+4f4dfd15380ff3ef7b7409c2e78cd39b9a7e492a
+```
+
+- 0 líneas `FAIL` y 0 títulos `●` fuera de `● Console`. La última línea es el
+  HEAD actual (`git rev-parse HEAD` = `4f4dfd15…`, árbol limpio).
+- Contraste con Codex (informe, paso 5): la suite móvil completa da
+  `109 passed / 3277 passed` y `exit=0`, la misma cifra que init.sh. Jest
+  dirigido (paso 4): 22 suites / 981 tests, typecheck `exit=0` y lint
+  `--no-cache` con log vacío. Las anclas del paso 3 dan las cifras prescritas.
+  Codex no corre backend ni e2e. Esas cifras (187/1474 y 30 de 33 con 468 + 8
+  skipped) solo las da init.sh y coinciden con las de la ronda 2.
+- Cuadre móvil: hay 102 ficheros `*.test.*` en la base, #172 añade 5 y #171
+  añade 1, y en el merge hay 108. Las suites son siempre ficheros + 1 (108 en
+  ronda 2, 104 en #171), así que 109 cuadra. Lo mismo con los tests:
+  3168 (ronda 2) + 3210 (#171; sin cambios móviles entre su última review y
+  `a288c7dc`) − 3277 da una base de 3101. Esa base no la medí; queda como
+  inferencia.
+
+### Observaciones
+
+- Ninguna bloqueante.
+- Informativa: según su informe, `git diff --cached --check` dio exit 2 por
+  espacios finales en `progress/impl_mobile-celebrations-and-living-empty.md` y
+  `progress/ronda4_…`. Esos ficheros vienen de main y son idénticos a
+  `origin/main`, así que no es deuda de #172.
+- No se ejecutó jest dirigido: el log de init.sh ya cubre las 109 suites en el
+  HEAD exacto.

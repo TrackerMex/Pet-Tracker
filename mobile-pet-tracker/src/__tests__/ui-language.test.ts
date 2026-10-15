@@ -166,8 +166,8 @@ describe('#98 R9: el copy de comidas servidas queda registrado', () => {
 });
 
 describe('#65 R7: Profile resuelve su copy por clave', () => {
-  it('resuelve las 53 ocurrencias normativas', () => {
-    expect(R7_PROFILE).toHaveLength(35 - 1 + 2 + 1 + 16); // #95 R5, +2 #99 R3, +1 #41 R9 // #158 R12
+  it('resuelve las 57 ocurrencias normativas', () => {
+    expect(R7_PROFILE).toHaveLength(35 - 1 + 2 + 1 + 16 - 4 + 8); // #95 R5, +2 #99 R3, +1 #41 R9 // #158 R12; - 4 + 8 // #173 R13
     checkUses(R7_PROFILE);
   });
 });
@@ -180,8 +180,8 @@ describe('#65 R8: Recordatorios resuelve su copy por clave', () => {
 });
 
 describe('#65 R9: el alta de mascota resuelve su copy por clave', () => {
-  it('resuelve las 41 ocurrencias normativas', () => {
-    expect(R9_ADD_PET).toHaveLength(42 + 1 - 2); // +1 #95 R4, -2 #95 R5
+  it('resuelve las 45 ocurrencias normativas', () => {
+    expect(R9_ADD_PET).toHaveLength(42 + 1 - 2 + 4); // +1 #95 R4, -2 #95 R5, +4 #171 R12
     checkUses(R9_ADD_PET);
   });
 });

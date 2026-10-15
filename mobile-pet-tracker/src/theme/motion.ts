@@ -56,10 +56,20 @@ export const MOTION_PING_TIMING = {
   reduceMotion: ReduceMotion.System,
 };
 
-// #172 R4
+// #171 R6
+export const MOTION_CONFETTI_FALL_TIMING = { easing: Easing.bezier(0.2, 0.6, 0.4, 1), reduceMotion: ReduceMotion.System };
+
+// #171 R7
+export const MOTION_POP_SCALE = 0.6;
+// #171 R7
+export const MOTION_CELEBRATION_EASE_OUT = { easing: Easing.bezier(0, 0, 0.58, 1), reduceMotion: ReduceMotion.System };
+export const MOTION_CELEBRATION_POP_MS = 600;
+export const MOTION_CELEBRATION_POP_PEAK = 1.08;
+export const MOTION_CELEBRATION_BADGE_POP_MS = 500;
+export const MOTION_CELEBRATION_BADGE_DELAY_MS = 450;
+export const MOTION_CELEBRATION_PING_MS = 2200;
+export const MOTION_CELEBRATION_RISE_DELAY_MS = 500;
+export const MOTION_CELEBRATION_RISE_STAGGER_MS = 80;
+export const MOTION_CELEBRATION_RISE_OFFSET_Y = 14;
 export const MOTION_PINGO_FLOAT_OFFSET_Y = 10;
-export const MOTION_PINGO_FLOAT_TIMING = {
-  duration: 1500,
-  easing: Easing.bezier(0.42, 0, 0.58, 1),
-  reduceMotion: ReduceMotion.System,
-};
+export const MOTION_PINGO_FLOAT_TIMING = { duration: 1500, easing: Easing.bezier(0.42, 0, 0.58, 1), reduceMotion: ReduceMotion.System };

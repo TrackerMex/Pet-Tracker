@@ -510,7 +510,7 @@ describe('#158 R4: family, walker y vet no ven la acción', () => {
       expect(screen.queryByTestId('docs-upload')).toBeNull();
       expect(screen.queryByTestId('docs-empty-action')).toBeNull();
       expect(empty.children.map(child => typeof child === 'string' ? child : child.props.testID)).toEqual([
-        'docs-empty-pose', 'docs-empty-title', 'docs-empty-body',
+        'docs-empty-float', 'docs-empty-title', 'docs-empty-body', // #171 R10
       ]);
     });
   });

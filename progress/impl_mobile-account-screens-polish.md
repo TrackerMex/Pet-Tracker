@@ -13248,3 +13248,312 @@ git commit --only ../progress/impl_mobile-account-screens-polish.md -m 'docs(mob
 
 El árbol queda limpio al cierre. R21 sigue pendiente (humano); la nueva
 review y el init.sh corresponden al leader y al reviewer.
+
+## Reanudacion 6 — Merge de origin/main (2026-10-15)
+
+- Worktree: `/home/claude/sites/Pet-Tracker-wt-172`.
+- Branch: `feature/172-mobile-account-screens-polish`.
+- M0: `ec508f88b3507f8be0e262a3f7b1a0e2f63c88ca`, commit del leader que trae Reanudación 6,
+  con padre `631826d9311d8d25797e91c06eb10fb36583e134`.
+- `origin/main` congelado: `a288c7dc4bc1567b9cca6e60f0661470304fb806`.
+- Merge: `4b355acb575ed6afe0aaad0593d14e3203a6bf8d`,
+  `chore(mobile): merge de origin/main (#171) en #172`.
+- Estado: resolución prescrita aplicada; anclas, typecheck, lint, Jest dirigido
+  y suite móvil completa conformes. R21 ya estaba firmada por el humano en
+  `631826d9`; las referencias anteriores a R21 pendiente quedan como historia.
+
+La resolución manual se limitó a los cinco ficheros y hunks de Reanudación 6.
+Los bloques de las enmiendas #171 y #172 conservan su texto, en ese orden;
+la tabla de #172 solo cambia su encabezado a §2.28. `motion.ts` queda
+idéntico al de `origin/main`. Los contadores suman los deltas de las dos
+features, y los ocho tokens quedan en el orden prescrito.
+
+### Paso 1 — Merge y conflictos (salidas literales)
+
+```bash
+git merge --no-ff --no-commit origin/main; echo "exit=$?"
+```
+
+```text
+Auto-merging docs/ui-guidelines.md
+CONFLICT (content): Merge conflict in docs/ui-guidelines.md
+Auto-merging feature_list.json
+Auto-merging mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+CONFLICT (content): Merge conflict in mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+Auto-merging mobile-pet-tracker/src/__tests__/design-drift.test.ts
+Auto-merging mobile-pet-tracker/src/__tests__/ui-copy-table.ts
+Auto-merging mobile-pet-tracker/src/__tests__/ui-language.test.ts
+Auto-merging mobile-pet-tracker/src/i18n/catalog.ts
+Auto-merging mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx
+Auto-merging mobile-pet-tracker/src/theme/__tests__/global-css.test.ts
+Auto-merging mobile-pet-tracker/src/theme/__tests__/motion.test.ts
+Auto-merging mobile-pet-tracker/src/theme/global.css
+CONFLICT (content): Merge conflict in mobile-pet-tracker/src/theme/global.css
+Auto-merging mobile-pet-tracker/src/theme/motion.ts
+CONFLICT (content): Merge conflict in mobile-pet-tracker/src/theme/motion.ts
+Auto-merging specs/mobile-ui-language/design.md
+CONFLICT (content): Merge conflict in specs/mobile-ui-language/design.md
+Automatic merge failed; fix conflicts and then commit the result.
+exit=1
+```
+
+```bash
+git diff --name-only --diff-filter=U
+```
+
+```text
+docs/ui-guidelines.md
+mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+mobile-pet-tracker/src/theme/global.css
+mobile-pet-tracker/src/theme/motion.ts
+specs/mobile-ui-language/design.md
+```
+
+### Paso 3 — Anclas (salidas literales)
+
+```bash
+command grep -cE '^(<<<<<<<|=======|>>>>>>>)' docs/ui-guidelines.md specs/mobile-ui-language/design.md mobile-pet-tracker/src/theme/global.css mobile-pet-tracker/src/theme/motion.ts mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+```
+
+```text
+docs/ui-guidelines.md:0
+specs/mobile-ui-language/design.md:0
+mobile-pet-tracker/src/theme/global.css:0
+mobile-pet-tracker/src/theme/motion.ts:0
+mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts:0
+```
+
+```bash
+command grep -cE '^## Enmienda #17[12] ' docs/ui-guidelines.md
+```
+
+```text
+2
+```
+
+```bash
+command grep -nE '^## Enmienda #17[12] ' docs/ui-guidelines.md
+```
+
+```text
+516:## Enmienda #171 — confeti, ping y flotación de la celebración
+547:## Enmienda #172 — Las pantallas de cuenta como el canvas
+```
+
+```bash
+command grep -cF '### §2.27 — Añadidos por #171 — Celebraciones' specs/mobile-ui-language/design.md
+```
+
+```text
+1
+```
+
+```bash
+command grep -cF '### §2.28 — Añadidos por #172 — Las pantallas de cuenta como el canvas' specs/mobile-ui-language/design.md
+```
+
+```text
+1
+```
+
+```bash
+command grep -cF '### §2.27 — Añadidos por #172' specs/mobile-ui-language/design.md
+```
+
+```text
+0
+```
+
+```bash
+command grep -cE -- '--text-1[357]: 1[357]px;|--color-confetti-' mobile-pet-tracker/src/theme/global.css
+```
+
+```text
+8
+```
+
+```bash
+command grep -cF 'export const MOTION_PINGO_FLOAT_OFFSET_Y = 10;' mobile-pet-tracker/src/theme/motion.ts
+```
+
+```text
+1
+```
+
+```bash
+command grep -cF 'export const MOTION_PINGO_FLOAT_TIMING = ' mobile-pet-tracker/src/theme/motion.ts
+```
+
+```text
+1
+```
+
+```bash
+command grep -cF '// #172 R4' mobile-pet-tracker/src/theme/motion.ts
+```
+
+```text
+0
+```
+
+```bash
+command grep -cF 'toBe(16 + 2 + 1 - 1 - 1 - 1)' mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+```
+
+```text
+2
+```
+
+```bash
+command grep -cF 'toBe(19 + 1 + 1 - 1)' mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+```
+
+```text
+2
+```
+
+### Paso 4 — Typecheck, lint y Jest dirigido (salidas literales)
+
+Las variables de rutas se expandieron como arrays de Bash para conservar el
+argumento literal `src/app/(tabs)/__tests__/food.test.tsx`. Se mantuvo la
+selección `$GUARDAS $BASE $READERS` del handoff y sus rutas repetidas:
+Jest informó 22 suites y 981 tests aprobados.
+
+```bash
+cd mobile-pet-tracker
+test ! -e .expo/types/router.d.ts; echo "exit=$?"
+```
+
+```text
+exit=0
+```
+
+```bash
+cd mobile-pet-tracker
+bun run typecheck; echo "exit=$?"
+```
+
+```text
+$ tsc --noEmit
+exit=0
+```
+
+```bash
+cd mobile-pet-tracker
+bunx expo lint --no-cache > /tmp/lint-172.log 2>&1; echo "exit=$?"; test ! -s /tmp/lint-172.log; echo "vacio=$?"
+```
+
+```text
+exit=0
+vacio=0
+```
+
+```bash
+cd mobile-pet-tracker
+J=(bunx jest --testTimeout=30000 --runTestsByPath)
+GUARDAS=(src/__tests__/ui-language.test.ts src/__tests__/design-drift.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/legibility-classnames.test.ts)
+BASE=(src/screens/login/index.test.tsx src/screens/register/index.test.tsx src/screens/forgot/index.test.tsx src/screens/reset-password/index.test.tsx src/theme/__tests__/global-css.test.ts src/providers/__tests__/language-provider.test.tsx src/theme/__tests__/motion.test.ts src/theme/__tests__/font-registration.test.ts "${GUARDAS[@]}")
+READERS=(src/theme/__tests__/motion.test.ts 'src/app/(tabs)/__tests__/food.test.tsx' src/__tests__/hero-header-amendments.test.ts src/screens/welcome/index.test.tsx)
+"${J[@]}" "${GUARDAS[@]}" "${BASE[@]}" "${READERS[@]}" src/components/__tests__/celebration.test.tsx src/theme/__tests__/global-css.test.ts; echo "exit=$?"
+```
+
+Salida literal del bloque final de Jest (se omiten los avisos de consola de las dependencias).
+
+```text
+Test Suites: 22 passed, 22 total
+Tests:       981 passed, 981 total
+Snapshots:   0 total
+Time:        60.163 s
+Ran all test suites within paths "src/__tests__/ui-language.test.ts", "src/__tests__/design-drift.test.ts", "src/__tests__/consistency-classnames.test.ts", "src/__tests__/legibility-classnames.test.ts", "src/screens/login/index.test.tsx", "src/screens/register/index.test.tsx", "src/screens/forgot/index.test.tsx", "src/screens/reset-password/index.test.tsx", "src/theme/__tests__/global-css.test.ts", "src/providers/__tests__/language-provider.test.tsx", "src/theme/__tests__/motion.test.ts", "src/theme/__tests__/font-registration.test.ts", "src/__tests__/ui-language.test.ts", "src/__tests__/design-drift.test.ts", "src/__tests__/consistency-classnames.test.ts", "src/__tests__/legibility-classnames.test.ts", "src/theme/__tests__/motion.test.ts", "src/app/(tabs)/__tests__/food.test.tsx", "src/__tests__/hero-header-amendments.test.ts", "src/screens/welcome/index.test.tsx", "src/components/__tests__/celebration.test.tsx", "src/theme/__tests__/global-css.test.ts".
+exit=0
+```
+
+### Paso 5 — Espera y única suite móvil completa (salidas literales)
+
+```bash
+cd /home/claude/sites/Pet-Tracker-wt-172/mobile-pet-tracker && for i in $(seq 1 90); do pgrep -f 'node_modules/(\.bin/(jest|eslint)|jest-worker)|[i]nit\.sh' > /dev/null || break; sleep 60; done; echo "fin-espera"
+```
+
+```text
+fin-espera
+```
+
+```bash
+cd mobile-pet-tracker
+bunx jest --testTimeout=30000 > /tmp/jest-all-172.log 2>&1; echo "exit=$?"; command grep -E '^(Test Suites|Tests):' /tmp/jest-all-172.log
+```
+
+```text
+exit=0
+Test Suites: 109 passed, 109 total
+Tests:       3277 passed, 3277 total
+```
+
+Se ejecutó una sola vez la suite sin rutas. Los dos recuentos de aprobados
+coinciden con sus totales: cero suites fallidas y cero tests fallidos.
+El final del log conserva el aviso preexistente permitido por el handoff:
+
+```text
+PASS src/utils/date-picker-value.test.ts
+PASS src/__tests__/ui-copy-table.ts
+PASS src/api/__tests__/push-tokens.test.ts
+A worker process has failed to exit gracefully and has been force exited. This is likely caused by tests leaking due to improper teardown. Try running with --detectOpenHandles to find leaks. Active timers can also cause this, ensure that .unref() was called on them.
+
+Test Suites: 109 passed, 109 total
+Tests:       3277 passed, 3277 total
+Snapshots:   1 passed, 1 total
+Time:        105.991 s, estimated 116 s
+Ran all test suites.
+```
+
+### Paso 6 — Commit y padres
+
+```bash
+git log -1 --format='%h %p'
+```
+
+```text
+4b355acb ec508f88 a288c7dc
+```
+
+`git diff --name-only --diff-filter=U` quedó sin salida antes del commit.
+`git status --short` quedó sin salida después del commit del merge.
+
+### Skills cargadas y desviaciones
+
+Se cargaron `ponytail:ponytail`, `building-native-ui` del plugin Expo,
+`.agents/skills/appllama-app-design-skill/SKILL.md` y
+`.agents/skills/animate-expo/SKILL.md`. La resolución del handoff mandó sobre
+las recomendaciones genéricas. También se leyó la documentación versionada
+de Expo SDK 57 exigida por `mobile-pet-tracker/AGENTS.md`.
+
+No hubo discrepancias con las salidas exigidas por Reanudación 6,
+`Exceeded timeout`, SIGKILL, reinstalaciones ni repeticiones de Jest.
+La espera devolvió `fin-espera` en su primera comprobación.
+
+Comprobación adicional: `git diff --cached --check` devolvió exit 2 por
+espacios finales en `progress/impl_mobile-celebrations-and-living-empty.md`
+y parches de `progress/ronda4_mobile-celebrations-and-living-empty/`,
+importados de #171. Los cinco ficheros resueltos pasaron `git diff --check`.
+Se comprobó que esos artefactos son idénticos a `origin/main`:
+
+```bash
+git diff --cached --quiet origin/main -- progress/impl_mobile-celebrations-and-living-empty.md progress/ronda4_mobile-celebrations-and-living-empty; echo "exit=$?"
+```
+
+```text
+exit=0
+```
+
+No se editaron esos artefactos. No hubo edición manual de
+`traceability.md`, `feature_list.json`, `progress/current.md` ni del
+frontmatter de la spec. Los cambios automáticos de main quedan en el merge.
+
+El cierre de este informe usa el commit separado prescrito:
+
+```bash
+git commit --only ../progress/impl_mobile-account-screens-polish.md -m 'docs(mobile-account-screens-polish): #172 informe del merge con main'
+```
+
+`init.sh`, la review sobre el merge y los siguientes pasos del leader
+quedan a su cargo, según el handoff.

@@ -71,18 +71,20 @@ Tres límites, no negociables:
    `@theme` de global.css. Existentes: colores semánticos light/dark,
    fuentes Inter, `--radius-card: 20px`, `--text-2xs: 10px`. Si un valor
    nuevo se repite 2+, se añade token — no clase arbitraria.
+   Tamaños de letra fuera de la escala de Tailwind (fidelidad al canvas, #173): `--text-13: 13px`, `--text-26: 26px`; cada uno es token aunque se use una vez, porque la clase arbitraria está prohibida.
 3. **Grep-clean permanente** (criterio de aceptación de toda feature móvil):
    - cero hex fuera de `src/theme/`
    - cero clases arbitrarias `[...]` (`rounded-[20px]`, `text-[10px]`,
      `p-[13px]`...) — usar el token; si no existe, crearlo primero
    - cero `StyleSheet.create`, cero shadow/elevation legacy (solo `boxShadow`)
 4. **Componentes compartidos** (`src/components/`): `card.tsx`
-   (surface|accent|secondary — usa `--radius-card`, NUNCA heredar `--radius`
+   (surface | accent | secondary | hero | flat — usa `--radius-card`, NUNCA heredar `--radius`
    de heroui/shadcn, bug #46), `pet-switcher.tsx` (selector de mascota,
    siempre este), `floating-tab-bar.tsx`, `weight-chart.tsx`, `pet-map.tsx`
    (adapta el contrato del tab Map a la API nativa de `expo-maps`). Regla de
    extracción: ≥2 pantallas + rol nombrable + API menor que implementación.
    Promoción: inline → `src/screens/<x>/` → `src/components/`.
+   Las variantes `hero` y `flat` no llevan sombra y solo las usa Perfil (#173).
 5. **Base de componentes**: heroui-native (Button, Skeleton, TextField,
    Avatar, Chip...). `@expo/ui` para lo que heroui no cubre, PERO con esta
    distinción (aprendida por crash real en el smoke de #39, Android + Expo
@@ -122,6 +124,8 @@ Tres límites, no negociables:
    `contentContainerStyle` es `padding: 24`, `gap: 16` y `paddingBottom:
    insets.bottom + 24`, la misma holgura inferior que `(auth)` y
    `reset-password`.
+
+   **Excepción nombrada (fidelidad al canvas, 2026-10-13)**: una pantalla llevada al canvas aprobado usa padding lateral 20 y el `gap` de su artboard; ver conventions.md §Dimensiones, misma excepción.
 7. **Estados de carga**: Skeleton de heroui dimensionado como el contenido
    final. Prohibido Spinner suelto que salte el layout.
 8. **Estructura**: route delgado en `src/app/` + pantalla en `src/screens/`
@@ -159,6 +163,11 @@ Tres límites, no negociables:
     - **Cápsula** (chip, avatar, píldora de pestaña, botón circular de
       volver) → `rounded-full`.
 
+    **Enmienda #173**: la escala suma dos radios para Perfil y queda en cinco:
+    - `rounded-hero` (28 px): tarjeta hero de Perfil, vía `Card variant="hero"`.
+    - `rounded-tile` (18 px): tiles de acceso de Perfil, excepción al control anterior.
+    También son cápsulas la acción de cabecera «Añadir mascota» y el botón de cámara.
+
     `rounded-2xl`, `rounded-lg`, `rounded-md` y `rounded-sm` quedan
     **prohibidos en `mobile-pet-tracker/src/`**: no son un cuarto rol, son
     drift. El grep que lo verifica vive en
@@ -188,6 +197,7 @@ Tres límites, no negociables:
     - **Sin labio**: los tonales (`bg-accent-soft`, `bg-default`), los
       destructivos (`bg-danger`, `variant="danger-soft"`) y las primarias
       de heroui sin color en `className` (reintentos, confirmar alerta).
+    La cápsula «Añadir mascota» con `bg-tab-pill` es tonal y no lleva labio (#173).
     Los inventarios que lo verifican viven en
     `src/__tests__/consistency-classnames.test.ts`.
 
@@ -319,11 +329,12 @@ Tres corolarios que nadie debe confundir con lo anterior:
   Traducirlos es una feature de backend. Al revés, las advertencias
   nutricionales del backend ya llegan en español y se muestran tal cual — y en
   inglés también, porque tampoco se traducen.
-- **Los valores de enum que la API devuelve se pintan crudos**: `pet.sex`,
-  `document.type`, `foodType`, `activityLevel`. Siguen en inglés en los dos
+- **Los valores de enum que la API devuelve se pintan crudos**: `document.type`,
+  `foodType`, `activityLevel`. Siguen en inglés en los dos
   idiomas. Mapearlos es cambio de conducta y va a feature propia.
   `device.connectivity` dejó de pintarse crudo en la feature #68 (R16): se
   resuelve por catálogo en `src/utils/device-connectivity.ts`.
+  `pet.sex` se localiza desde #173 con `addPet.male` / `addPet.female`.
 
 **7. Voz de Pingo: guardián sereno.** Decidido por el humano el 2026-10-07
 (D1 de la feature #153): la mascota se llama **Pingo** y habla con la voz B,
@@ -346,6 +357,9 @@ idiomas, como cualquier otra copy.
   `scale` y `opacity` con timing y duraciones fuera de 150/250/400,
   porque no entran, ni salen, ni responden a un gesto. Sus constantes viven en
   `src/theme/motion.ts` y no arrancan con reduce motion.
+  La enmienda #171 suma a esta lista la flotación y el anillo de ping de
+  Pingo en la celebración, y la lluvia de confeti que la acompaña: los tres
+  se repiten mientras la celebración está abierta.
 
 ## Checklist de autocrítica (cierra toda pantalla nueva o modificada)
 
@@ -510,6 +524,37 @@ de la enmienda está en su `requirements.md` §R11.
 
 **Regla N1 (enmienda B4 de #168)**: Salud, Nutrición y Perfil abren con el título grande; Inicio es la única pestaña con PetHeroHeader. Devolver el hero a una de las tres es una enmienda a #168.
 
+## Enmienda #171 — confeti, ping y flotación de la celebración
+
+`Celebration` (`src/components/celebration.tsx`) se mueve como su artboard,
+`specs/mobile-welcome-pingo/design-src/celebration.dc.html`:
+
+- **Confeti.** 36 piezas que caen en bucle con `withRepeat` mientras la
+  celebración está abierta. La tabla de posición, forma, color, duración y
+  retardo vive en `celebration.tsx`; la curva, en
+  `MOTION_CONFETTI_FALL_TIMING` de `motion.ts`. Los colores son `bg-accent` y
+  los cinco tokens `confetti-*` de `global.css`, que ninguna otra pantalla
+  usa. `rounded-xs` (2 px) es una excepción a la escala de radios del
+  punto 12 que solo vale para las piezas del confeti. Esas piezas tampoco
+  declaran `CONTINUOUS_CORNER`: con 2 px el squircle no se distingue.
+- **Ping.** Un anillo `bg-accent` detrás de Pingo crece de 0.55 a 1.5 y se
+  apaga de 0.55 a 0 en 2200 ms ease-out, en bucle.
+- **Pop y flotación.** Pingo entra con un pop de 600 ms que pasa por 1.08 y
+  después flota 10 px arriba y abajo, 1500 ms por tramo, en bucle. La
+  insignia hace un pop de 500 ms con 450 ms de retardo.
+- **Entrada.** Título, cuerpo, fichas y acciones suben 14 px y aparecen en
+  400 ms ease-out, desde los 500 ms y cada 80 ms.
+- Solo se animan `transform` y `opacity`, sin `entering`, `exiting` ni
+  `LayoutAnimation`. Al desmontar sin reduce motion, `cancelAnimation`
+  para los bucles.
+- Con reduce motion no se montan el confeti ni el anillo, Pingo no flota y el
+  texto aparece sin subir; Pingo y la insignia conservan su fundido.
+- El confeti es de tier «raro»: solo lo monta `Celebration`, y
+  `Celebration` solo cierra el alta de una mascota o la vinculación de un
+  collar.
+
+- [x] Aprobada por humano (fecha: 2026-10-14)
+
 ## Enmienda #172 — Las pantallas de cuenta como el canvas
 
 Iniciar sesión, Crear cuenta, Recuperar contraseña y Nueva contraseña siguen
@@ -548,3 +593,17 @@ la CTA de cuenta y en la de `forgot-resend`, que ocupa su sitio.
 «Mostrar contraseña» y «Ocultar contraseña».
 
 - [x] Enmienda aprobada por humano
+
+## Enmienda #173 — Perfil fiel al canvas
+
+`mobile-tab-screens-canvas-fidelity` (#173) modifica una decisión que esta spec
+dejó aprobada. La spec de origen es `specs/mobile-tab-screens-canvas-fidelity/`;
+el detalle de la enmienda está en su `requirements.md` §R14.
+
+- Spec enmendada: `ui-guidelines`
+- Qué cambia: `ver «Cambios en la carta»`
+- Qué NO cambia: ningún otro requisito de esta spec ni su estado de
+  aprobación. Los tests que cubren lo enmendado se reescriben en #173 (lista
+  en su `tasks.md`).
+
+- [X] Enmienda #173 aprobada por humano
