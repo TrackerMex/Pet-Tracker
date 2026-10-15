@@ -6,7 +6,6 @@ import { useContext, useCallback, useEffect, useState } from 'react';
 import {
   KeyboardAvoidingView,
   Alert,
-  Pressable,
   ScrollView,
   Text,
   TextInput,
@@ -20,6 +19,7 @@ import { deviceKeys, petKeys } from '../../api/query-keys';
 import { getPetTracking, type PetTrackingState } from '../../api/subscriptions';
 import type { DeviceStatus } from '../../api/types';
 import { Card } from '../../components/card';
+import { Celebration } from '../../components/celebration';
 import { PetSwitcher } from '../../components/pet-switcher';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
@@ -307,55 +307,17 @@ export function PairingScreen() {
         ) : null}
 
         {phase === 'ready' && readyDevice && selectedPet ? (
-          <View testID="pairing-ready" className="items-center gap-4">
-            <View className="size-16 items-center justify-center rounded-full bg-accent-soft">
-              <Text className="text-3xl font-black text-success">✓</Text>
-            </View>
-            <View className="items-center gap-2">
-              <Text className="text-2xl font-black text-foreground">
-                {t('pairing.trackerIsReady')}
-              </Text>
-              <Text className="text-center font-normal text-muted" selectable>
-                {t('pairing.readySubtitle', { petName: selectedPet.name })}
-              </Text>
-            </View>
-
-            <Card className="w-full">
-              <View className="gap-4">
-                <DeviceRow
-                  label={t('pairing.model')}
-                  testID="ready-model"
-                  value={readyDevice.model ?? '—'}
-                />
-                <DeviceRow
-                  label={t('pairing.esn')}
-                  testID="ready-esn"
-                  value={readyDevice.esn ?? '—'}
-                />
-              </View>
-            </Card>
-
-            <Button
-              testID="ready-map"
-              className="min-h-11 w-full rounded-xl bg-accent border-b-4 border-black/25"
-              onPress={() => leaveReady('map')}
-            >
-              <Button.Label className="font-bold text-accent-foreground">
-                {t('pairing.viewOnMap')}
-              </Button.Label>
-            </Button>
-            <Pressable
-              accessibilityRole="button"
-              testID="ready-done"
-              className="min-h-11 w-full items-center justify-center rounded-xl"
-              style={CONTINUOUS_CORNER}
-              onPress={() => leaveReady('back')}
-            >
-              <Text className="font-bold text-foreground">
-                {t('pairing.done')}
-              </Text>
-            </Pressable>
-          </View>
+          <Celebration
+            testID="pairing-ready"
+            title={t('pairing.trackerIsReady')}
+            body={t('pairing.readySubtitle', { petName: selectedPet.name })}
+            details={[
+              { testID: 'ready-model', label: t('pairing.model'), value: readyDevice.model ?? '—' },
+              { testID: 'ready-esn', label: t('pairing.esn'), value: readyDevice.esn ?? '—' },
+            ]}
+            primary={{ testID: 'ready-map', label: t('pairing.viewOnMap'), onPress: () => leaveReady('map') }}
+            secondary={{ testID: 'ready-done', label: t('pairing.done'), onPress: () => leaveReady('back') }}
+          />
         ) : null}
 
         {phase === 'idle' && selectedPet?.device === null ? (

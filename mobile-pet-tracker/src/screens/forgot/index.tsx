@@ -3,19 +3,22 @@ import { HeaderHeightContext } from 'expo-router/react-navigation';
 import { router } from 'expo-router';
 import { Button, Input, Label, LinkButton, TextField } from 'heroui-native';
 import { useContext, useState } from 'react';
-import { KeyboardAvoidingView, ScrollView, Text } from 'react-native';
+import { KeyboardAvoidingView, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Lock } from 'reicon-react-native';
 
 import { forgotPassword } from '../../api/auth';
+import { BackButton } from '../../components/back-button';
 import { PopIn } from '../../components/pop-in';
+import { PingoFloat } from '../../components/pingo-float';
+import { FormError } from '../../components/form-error';
 import { useTranslate } from '../../providers/language-provider';
 import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
 
 export function ForgotScreen() {
   const headerHeight = useContext(HeaderHeightContext);
-  const [accentStrong] = useThemeColors(['accent-strong']);
+  const [accentForeground] = useThemeColors(['accent-foreground']);
   const insets = useSafeAreaInsets();
   const t = useTranslate();
   const [email, setEmail] = useState('');
@@ -66,7 +69,6 @@ export function ForgotScreen() {
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{
           flexGrow: 1,
-          justifyContent: 'center',
           alignItems: 'center',
           padding: 24,
           gap: 16,
@@ -74,33 +76,40 @@ export function ForgotScreen() {
           paddingBottom: insets.bottom + 24,
         }}
       >
-        <Image
-          testID="forgot-pingo"
-          source={require('../../../assets/images/pingo-talk.webp')}
-          style={{ width: 120, height: 120, transform: [{ rotate: '6deg' }] }}
-        />
+        <View testID="forgot-top" className="w-full">
+          <BackButton testID="forgot-back" fallback="/login" />
+        </View>
+        <PingoFloat testID="forgot-pingo-float">
+          <Image
+            testID="forgot-pingo"
+            source={require('../../../assets/images/pingo-talk.webp')}
+            style={{ width: 120, height: 120, transform: [{ rotate: '6deg' }] }}
+          />
+        </PingoFloat>
         <PopIn
           testID="forgot-lock-tile"
-          className="size-16 items-center justify-center rounded-xl bg-accent-soft"
+          className="size-13 items-center justify-center rounded-xl border-b-4 border-black/25 bg-accent"
           style={CONTINUOUS_CORNER}
         >
-          <Lock size={28} color={accentStrong} />
+          <Lock size={26} color={accentForeground} />
         </PopIn>
-        <Text testID="forgot-title" className="text-center text-2xl font-black text-foreground">
+        <Text testID="forgot-title" className="text-center text-3xl font-black text-foreground">
           {sent ? t('forgot.checkYourEmail') : t('forgot.forgotPassword')}
         </Text>
-        <Text testID="forgot-body" className="text-center font-normal text-muted">
+        <Text testID="forgot-body" className="text-center text-15 font-normal text-muted">
           {sent ? t('forgot.sentTo', { email: submittedEmail }) : t('forgot.instructions')}
         </Text>
 
         {!sent ? (
           <TextField className="w-full">
-            <Label className="text-xs font-semibold text-foreground">
-              {t('forgot.email')}
+            <Label>
+              <Label.Text className="text-13 font-semibold text-muted">
+                {t('forgot.email')}
+              </Label.Text>
             </Label>
             <Input
               testID="forgot-email"
-              className="rounded-xl bg-default"
+              className="h-13 rounded-xl bg-default"
               autoCapitalize="none"
               keyboardType="email-address"
               autoComplete="email"
@@ -112,19 +121,19 @@ export function ForgotScreen() {
         ) : null}
 
         {error ? (
-          <Text testID="forgot-error" className="text-danger" selectable>
-            {error}
-          </Text>
+          <FormError testID="forgot-error" message={error} />
         ) : null}
+
+        <View testID="forgot-spacer" className="flex-1" />
 
         {!sent ? (
           <Button
             testID="forgot-submit"
-            className="w-full rounded-xl bg-accent border-b-4 border-black/25"
+            className="w-full h-14 rounded-xl bg-accent border-b-4 border-black/25"
             isDisabled={email.trim() === '' || submitting}
             onPress={() => void send(email.trim())}
           >
-            <Button.Label className="font-bold text-accent-foreground">
+            <Button.Label className="text-17 font-extrabold text-accent-foreground">
               {t('forgot.sendRecoveryLink')}
             </Button.Label>
           </Button>
@@ -134,18 +143,18 @@ export function ForgotScreen() {
           <Button
             testID="forgot-resend"
             variant="secondary"
-            className="w-full rounded-xl border-2 border-b-6 border-lip-gray bg-surface"
+            className="w-full h-14 rounded-xl border-2 border-b-6 border-lip-gray bg-surface"
             isDisabled={submitting}
             onPress={() => void send(submittedEmail)}
           >
-            <Button.Label className="font-bold text-foreground">
+            <Button.Label className="text-17 font-extrabold text-foreground">
               {t('forgot.resend')}
             </Button.Label>
           </Button>
         ) : null}
 
-        <LinkButton testID="link-login" onPress={() => router.push('/login')}>
-          <LinkButton.Label className="font-semibold text-accent-strong">
+        <LinkButton testID="link-login" className="h-13 w-full" onPress={() => router.push('/login')}>
+          <LinkButton.Label className="text-base font-bold text-accent-strong">
             {t('forgot.backToSignIn')}
           </LinkButton.Label>
         </LinkButton>

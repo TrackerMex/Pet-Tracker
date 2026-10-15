@@ -1,9 +1,17 @@
-import { fireEvent, render, screen, within } from '@testing-library/react-native';
+import { act, fireEvent, render, screen, within } from '@testing-library/react-native';
 import { HeroUINativeProvider } from 'heroui-native';
 import { View } from 'react-native';
+import { getAnimatedStyle, withRepeat } from 'react-native-reanimated';
 
 import { en, es } from '../../i18n/catalog';
 import { EmptyState } from '../empty-state';
+
+const mockUseReducedMotion = jest.fn<boolean, []>(() => false);
+jest.mock('react-native-reanimated', () => {
+  const actual = jest.requireActual('react-native-reanimated');
+  return { ...actual, __esModule: true, useReducedMotion: () => mockUseReducedMotion(), withRepeat: jest.fn((animation: unknown) => animation) };
+});
+const mockWithRepeat = jest.mocked(withRepeat);
 
 const { readFileSync, readdirSync } = jest.requireActual<typeof import('fs')>('fs');
 const { join } = jest.requireActual<typeof import('path')>('path');
@@ -139,7 +147,7 @@ describe('#155 R3: un único componente pinta los vacíos ilustrados', () => {
     expect(root.parent).toBe(screen.getByTestId('probe-frame'));
     expect(root.type).toBe('View');
     expect(root.props.style).toBeUndefined();
-    expect(root.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['probe-pose', 'probe-title', 'probe-body', 'probe-action']);
+    expect(root.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['probe-float', 'probe-title', 'probe-body', 'probe-action']); // #171 R10
   });
 
   it('sin acción pinta pose, título y cuerpo como hijos directos, en ese orden', async () => {
@@ -148,7 +156,7 @@ describe('#155 R3: un único componente pinta los vacíos ilustrados', () => {
     expect(root.parent).toBe(screen.getByTestId('probe-frame'));
     expect(root.type).toBe('View');
     expect(root.props.style).toBeUndefined();
-    expect(root.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['probe-pose', 'probe-title', 'probe-body']);
+    expect(root.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['probe-float', 'probe-title', 'probe-body']); // #171 R10
   });
 
   it('declara el botón sin size ni variant', () => {
@@ -219,31 +227,29 @@ describe('#155 R10: los vacíos que no se ilustran siguen en texto', () => {
 
 
 describe('#155 R11: los vacíos no traen movimiento ni dependencias', () => {
-  it('EmptyState solo importa de react, react-native, expo-image y heroui-native', () => {
+  it('EmptyState solo importa de react, react-native, expo-image, heroui-native, Reanimated y el tema de movimiento', () => {
     const source = readFileSync(join(process.cwd(), 'src', 'components', 'empty-state.tsx'), 'utf8');
     for (const [, specifier] of source.matchAll(/from '([^']+)'/g)) {
-      expect(['react', 'react-native', 'expo-image', 'heroui-native']).toContain(specifier);
+      expect(['react', 'react-native', 'expo-image', 'heroui-native', 'react-native-reanimated', '../theme/motion']).toContain(specifier);
     }
   });
 
-  it('EmptyState no anima', () => {
-    const source = readFileSync(join(process.cwd(), 'src', 'components', 'empty-state.tsx'), 'utf8');
-    expect(source).not.toMatch(/react-native-reanimated|entering=|MOTION_/);
-  });
-
-  it('EmptyState importa exactamente Image, Button, Text y View', () => {
+  it('EmptyState importa exactamente lo de la flotación', () => {
     const source = readFileSync(join(process.cwd(), 'src', 'components', 'empty-state.tsx'), 'utf8');
     expect(source.match(/^import\b.*$/gm)).toEqual([
+      "import { useEffect } from 'react';",
       "import { Image } from 'expo-image';",
       "import { Button } from 'heroui-native';",
       "import { Text, View } from 'react-native';",
+      "import Animated, { useAnimatedStyle, useReducedMotion, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';",
+      "import { MOTION_FLOAT_OFFSET_Y, MOTION_FLOAT_TIMING } from '../theme/motion';",
     ]);
     expect(source.match(/\brequire\(/g)).toHaveLength(6);
   });
 
-  it('EmptyState no anima con Animated, LayoutAnimation ni transiciones', () => {
+  it('EmptyState no anima con LayoutAnimation, transiciones ni entering/exiting', () => {
     const source = readFileSync(join(process.cwd(), 'src', 'components', 'empty-state.tsx'), 'utf8');
-    expect(source).not.toMatch(/\bAnimated\b|LayoutAnimation|transition|animate-/);
+    expect(source).not.toMatch(/LayoutAnimation|transition|animate-|entering=|exiting=/);
   });
 });
 
@@ -365,5 +371,75 @@ describe('#159 R9: los estados sin collar no traen movimiento ni dependencias', 
   ])('%s no contiene %s', (path, pattern) => {
     const source = readFileSync(join(process.cwd(), path), 'utf8');
     expect(source).not.toMatch(new RegExp(pattern));
+  });
+});
+
+describe('#171 R10: Pingo flota', () => {
+  beforeEach(() => {
+    mockWithRepeat.mockClear();
+    mockUseReducedMotion.mockReturnValue(false);
+    jest.useFakeTimers();
+  });
+  afterEach(() => jest.useRealTimers());
+
+  it('R10.1 conserva exactamente las seis poses de EmptyState', () => {
+    const source = readFileSync(join(process.cwd(), 'src', 'components', 'empty-state.tsx'), 'utf8');
+    expect(source.split("export type EmptyStatePose = 'talk' | 'sleep' | 'clipboard' | 'health' | 'collar' | 'food';")).toHaveLength(2);
+  });
+
+  it('R10.2 envuelve la pose en float con su estilo inicial', async () => {
+    await renderProbe();
+    const float = screen.getByTestId('probe-float');
+    expect(within(float).getByTestId('probe-pose').props.style).toEqual({ width: 160, height: 160 });
+    expect(getAnimatedStyle(float)).toEqual({ width: 160, height: 160, transform: [{ translateY: 0 }] });
+  });
+
+  it('R10.3 arranca un bucle infinito reversible una sola vez', async () => {
+    await renderProbe();
+    expect(mockWithRepeat).toHaveBeenCalledTimes(1);
+    expect(mockWithRepeat).toHaveBeenCalledWith(expect.anything(), -1, true);
+  });
+
+  it('R10.3 sube cuatro puntos en 1200 ms', async () => {
+    await renderProbe();
+    await act(async () => { jest.advanceTimersByTime(1200); });
+    expect(getAnimatedStyle(screen.getByTestId('probe-float'))).toEqual({ width: 160, height: 160, transform: [{ translateY: -4 }] });
+  });
+
+  it('R10.4 sigue la curva de 1200 ms a los 300, 600 y 900 ms', async () => {
+    await renderProbe();
+    const samples: number[] = [];
+    for (let step = 0; step < 3; step++) {
+      await act(async () => { jest.advanceTimersByTime(300); });
+      const style = getAnimatedStyle(screen.getByTestId('probe-float')) as unknown as { transform: [{ translateY: number }] };
+      samples.push(style.transform[0].translateY);
+    }
+    expect(samples).toHaveLength(3);
+    samples.forEach((value, i) => expect(value).toBeCloseTo([-0.579, -2, -3.421][i], 2));
+  });
+});
+
+describe('#171 R11: reduce motion en los vacíos', () => {
+  beforeEach(() => {
+    mockWithRepeat.mockClear();
+    mockUseReducedMotion.mockReturnValue(true);
+    jest.useFakeTimers();
+  });
+  afterEach(() => {
+    mockUseReducedMotion.mockReturnValue(false);
+    jest.useRealTimers();
+  });
+
+  it('R11.1 no arranca el bucle con reduce motion', async () => {
+    await renderProbe();
+    expect(mockWithRepeat).not.toHaveBeenCalled();
+  });
+
+  it('R11.1 conserva la posición a los 1200 y los 10000 ms', async () => {
+    await renderProbe();
+    await act(async () => { jest.advanceTimersByTime(1200); });
+    expect(getAnimatedStyle(screen.getByTestId('probe-float'))).toEqual({ width: 160, height: 160, transform: [{ translateY: 0 }] });
+    await act(async () => { jest.advanceTimersByTime(8800); });
+    expect(getAnimatedStyle(screen.getByTestId('probe-float'))).toEqual({ width: 160, height: 160, transform: [{ translateY: 0 }] });
   });
 });
