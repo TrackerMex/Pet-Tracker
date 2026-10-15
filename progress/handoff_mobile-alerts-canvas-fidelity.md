@@ -69,13 +69,16 @@ pasaron: no se repiten. Hazlo en este orden:
        `test(mobile): #174 R3 rojo — título Alertas en el contenido`, y encima hay commits del leader `docs(progress): #174 ...`):
        cd /home/claude/sites/Pet-Tracker-wt-174/mobile-pet-tracker && git branch --show-current && git log --oneline -6 && git status --short
   RE2  Aparta tu c6 (la cadena de c5b exige el arbol limpio y el rojo se mide sobre el estado de c5):
-       cd /home/claude/sites/Pet-Tracker-wt-174/mobile-pet-tracker && git stash push -- src/app/_layout.tsx src/screens/alerts/index.tsx ../specs/mobile-ui-language/design.md && git stash list | wc -l && git status --short
-       -> 1 ; y status sin ficheros modificados (solo el `??` de progress/impl_mobile-alerts-canvas-fidelity.md)
+       cd /home/claude/sites/Pet-Tracker-wt-174/mobile-pet-tracker && git stash push -- src/app/_layout.tsx src/screens/alerts/index.tsx ../specs/mobile-ui-language/design.md && git stash list && git status --short
+       -> el stash@{0} dice `WIP on feature/174-mobile-alerts-canvas-fidelity` ; y status sin ficheros modificados (solo el `??` de progress/impl_mobile-alerts-canvas-fidelity.md)
+       (la lista de stashes es de TODO el repo, no de este worktree: puede haber stashes ajenos, p. ej. uno de feature/45.
+       No los cuentes ni los toques. Solo importa que stash@{0} sea el tuyo.)
+       REANUDACION 1b: si ya ejecutaste RE2 y stash@{0} es tuyo con el arbol limpio, NO lo repitas: sigue en RE3.
   RE3  c5b: paso 1 a mano (E2.1 en PASO 1) y paso 2 con el ejecutor, c5b en lugar de cN:
        cd /home/claude/sites/Pet-Tracker-wt-174/mobile-pet-tracker && bash -c "$(sed -n '/^# -- c5b (paso 2) cadena --$/{n;p;q}' ../progress/handoff_mobile-alerts-canvas-fidelity.md)"; echo "cadena=$?"
   RE4  Recupera tu c6 y comprueba que sigue entera:
-       cd /home/claude/sites/Pet-Tracker-wt-174/mobile-pet-tracker && git stash pop && git stash list | wc -l && git status --short
-       -> 0 ; y status con exactamente esos tres ficheros ` M` (mas el `??` del impl)
+       cd /home/claude/sites/Pet-Tracker-wt-174/mobile-pet-tracker && git stash list | head -1 | grep -qF 'WIP on feature/174-mobile-alerts-canvas-fidelity' && git stash pop && git stash list | grep -cF 'feature/174-mobile-alerts-canvas-fidelity'; git status --short
+       -> 0 (ningun stash tuyo queda; los ajenos siguen) ; y status con exactamente esos tres ficheros ` M` (mas el `??` del impl)
   RE5  Relanza la cadena de c6 TAL CUAL con el ejecutor (c6 en lugar de cN). Debe dar cadena=0 sin tocar codigo ni tests.
        Si da otro rojo: PARA y reporta el `●`, no lo arregles.
   RE6  Sigue con c7 en adelante normalmente. En el impl: anota en Desviaciones la parada de c6, el stash y c5b.
