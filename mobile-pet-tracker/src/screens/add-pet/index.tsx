@@ -1,6 +1,7 @@
 import { HeaderHeightContext } from 'expo-router/react-navigation';
 import { Host } from '@expo/ui';
 import ExpoDateTimePicker from '@expo/ui/community/datetime-picker';
+import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { Button } from 'heroui-native';
@@ -14,7 +15,9 @@ import {
   type PhotoContentType,
   uploadPhotoToUrl,
 } from '../../api/media';
-import { createPet, type CreatePetInput } from '../../api/pets';
+import { createPet, listPets, type CreatePetInput } from '../../api/pets';
+import { petKeys } from '../../api/query-keys';
+import { Celebration } from '../../components/celebration';
 import { PetAvatar } from '../../components/pet-avatar';
 import { useAuth } from '../../providers/auth-provider';
 import {
@@ -84,6 +87,10 @@ export function AddPetScreen() {
   const headerHeight = useContext(HeaderHeightContext);
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { signOut, token } = useAuth();
+  const pets = useQuery({
+    queryKey: petKeys.list(),
+    queryFn: () => listPets(baseUrl, token ?? ''),
+  });
   const locale = useLocale();
   const t = useTranslate();
   const { selectPet } = useSelectedPet();
@@ -107,6 +114,7 @@ export function AddPetScreen() {
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [photoError, setPhotoError] = useState<string | null>(null);
+  const [celebratePetName, setCelebratePetName] = useState<string | null>(null);
 
   async function handlePickPhoto() {
     setPhotoError(null);
@@ -189,6 +197,7 @@ export function AddPetScreen() {
     setSubmitting(true);
     setFormError(null);
     try {
+      const wasFirst = pets.data?.kind === 'ok' && pets.data.pets.length === 0;
       const result = await createPet(baseUrl, token ?? '', input);
       switch (result.kind) {
         case 'ok':
@@ -197,7 +206,11 @@ export function AddPetScreen() {
             setPhotoError(t('addPet.errorPhotoAfterCreate'));
             return;
           }
-          router.back();
+          if (wasFirst) {
+            setCelebratePetName(result.pet.name);
+          } else {
+            router.back();
+          }
           return;
         case 'unauthorized':
           await signOut();
@@ -453,6 +466,23 @@ export function AddPetScreen() {
           <Text testID="add-pet-error" className="text-danger">{formError}</Text>
         ) : null}
       </ScrollView>
+      {celebratePetName !== null ? (
+        <Celebration
+          testID="add-pet-celebration"
+          title={t('addPet.celebrateTitle', { petName: celebratePetName })}
+          body={t('addPet.celebrateBody', { petName: celebratePetName })}
+          primary={{
+            testID: 'add-pet-celebration-pair',
+            label: t('addPet.celebratePair'),
+            onPress: () => router.replace('/pairing'),
+          }}
+          secondary={{
+            testID: 'add-pet-celebration-later',
+            label: t('addPet.celebrateLater'),
+            onPress: () => router.back(),
+          }}
+        />
+      ) : null}
     </KeyboardAvoidingView>
   );
 }

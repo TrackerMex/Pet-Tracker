@@ -261,7 +261,7 @@ total sin repetir es 252 + 3 del interruptor = **255**.
 | 201 | `register.phone` | `Phone` | `Teléfono` |
 | 214 | `register.password` | `Password` | `Contraseña` |
 | 228 | `register.confirmPassword` | `Confirm password` | `Confirmar contraseña` |
-| 244 | `register.country` | `Country (2-letter code)` | `País (código de 2 letras)` |
+| 244 | `register.country` | `Country` | `País` | ← literal cambiado por #172 (R16); antes `Country (2-letter code)` / `País (código de 2 letras)` |
 | 263 | `register.iAcceptTerms` | `I accept the terms` | `Acepto los términos` |
 | 279 | `register.createAccount` | `Create account` | `Crear cuenta` |
 
@@ -501,18 +501,18 @@ añadidas por #68, registradas como delta sobre la tabla existente
 | 253 | `profile.couldNotLoadPet` | `Could not load pet profile` | `No se pudo cargar el perfil de la mascota` |
 | 255 | `common.retry` | `Retry` | `Reintentar` |
 | 272 | `profile.changePhoto` | `Change photo` | `Cambiar foto` |
-| 283 | `profile.information` *(ya en español)* | `Information` | `Información` |
+| 283 | `profile.information` ← retirada por #173 (R13) *(ya en español)* | `Information` | `Información` |
 | 285 | `profile.breed` *(ya en español)* | `Breed` | `Raza` |
 | 286 | `profile.microchip` *(ya en español)* | `Microchip` | `Microchip` |
 | 287 | `profile.gpsDevice` *(ya en español)* | `GPS device` | `Dispositivo GPS` |
 | 290 | `profile.lastSignal` *(ya en español)* | `Last signal` | `Última señal` |
 | 307 | `profile.documents` *(ya en español)* | `Documents` | `Documentos` |
-| 319 | `profile.gpsSettings` *(ya en español)* | `GPS device settings` | `Configuración del Dispositivo GPS` |
+| 319 | `profile.gpsSettings` ← retirada por #173 (R13) *(ya en español)* | `GPS device settings` | `Configuración del Dispositivo GPS` |
 | 334 | `profile.reminders` | `Reminders` | `Recordatorios` |
-| 340 | `profile.account` | `Account` | `Cuenta` |
+| 340 | `profile.account` ← retirada por #173 (R13) | `Account` | `Cuenta` |
 | 355 | `profile.accountUnavailable` | `Account unavailable` | `Cuenta no disponible` |
 | 365 | `profile.useDarkTheme` | `Use dark theme` | `Usar tema oscuro` |
-| 365 | `profile.useLightTheme` | `Use light theme` | `Usar tema claro` |
+| 365 | `profile.useLightTheme` ← retirada por #173 (R13) | `Use light theme` | `Usar tema claro` |
 | 376 | `profile.signOut` | `Sign out` | `Cerrar sesión` |
 
 **`mobile-pet-tracker/src/screens/docs/index.tsx`** — 7 ocurrencias
@@ -961,6 +961,32 @@ copy completa en cada una.
 | — | `alerts.sectionEarlier` | `Earlier` | `Anteriores` | ← añadida por #170 (R1) |
 | — | `alerts.distanceFromZone` | `{{distance}} from {{zone}}` | `A {{distance}} de {{zone}}` | ← añadida por #170 (R1) |
 | — | `alerts.viewOnMap` | `View on map` | `Ver en el mapa` | ← añadida por #170 (R1) |
+
+### §2.27 — Añadidos por #171 — Celebraciones
+
+| # | Clave | `en` | `es` | Origen |
+|---|---|---|---|---|
+| — | `addPet.celebrateTitle` | `{{petName}} is home!` | `¡{{petName}} ya está en casa!` | ← añadida por #171 (R12) |
+| — | `addPet.celebrateBody` | `I'll help you look after {{petName}}. Pair a collar and I'll keep track of where they are.` | `Te ayudo a cuidar de {{petName}}. Vincula un collar y estaré pendiente de dónde está.` | ← añadida por #171 (R12) |
+| — | `addPet.celebratePair` | `Pair a collar` | `Vincular un collar` | ← añadida por #171 (R12) |
+| — | `addPet.celebrateLater` | `Not now` | `Ahora no` | ← añadida por #171 (R12) |
+
+### §2.28 — Añadidos por #172 — Las pantallas de cuenta como el canvas
+
+| # | Clave | `en` | `es` | Origen |
+|---|---|---|---|---|
+| — | `common.back` | `Back` | `Volver` | ← añadida por #172 (R16) |
+| — | `common.showPassword` | `Show password` | `Mostrar contraseña` | ← añadida por #172 (R16) |
+| — | `common.hidePassword` | `Hide password` | `Ocultar contraseña` | ← añadida por #172 (R16) |
+| — | `register.country` | `Country` | `País` | ← cambiada por #172 (R16) |
+
+### §2.29 — Añadidos por #173 — Perfil fiel al canvas
+
+| # | Clave | `en` | `es` | Origen |
+|---|---|---|---|---|
+| — | `profile.gpsLinked` | `Linked` | `Vinculado` | ← añadida por #173 (R13) |
+| — | `profile.gpsNoCollar` | `No collar` | `Sin collar` | ← añadida por #173 (R13) |
+| — | `profile.gpsCollar` | `GPS collar` | `Collar GPS` | ← añadida por #173 (R13) |
 
 ## 3. La infraestructura
 
@@ -1437,11 +1463,12 @@ Tres corolarios que nadie debe confundir con lo anterior:
   Traducirlos es una feature de backend. Al revés, las advertencias
   nutricionales del backend ya llegan en español y se muestran tal cual — y en
   inglés también, porque tampoco se traducen.
-- **Los valores de enum que la API devuelve se pintan crudos**: `pet.sex`,
-  `document.type`, `foodType`, `activityLevel`. Siguen en inglés en los dos
+- **Los valores de enum que la API devuelve se pintan crudos**: `document.type`,
+  `foodType`, `activityLevel`. Siguen en inglés en los dos
   idiomas. Mapearlos es cambio de conducta y va a feature propia.
   `device.connectivity` dejó de pintarse crudo en la feature #68 (R16): se
   resuelve por catálogo en `src/utils/device-connectivity.ts`.
+  `pet.sex` se localiza desde #173 con `addPet.male` / `addPet.female`.
 ```
 
 ---

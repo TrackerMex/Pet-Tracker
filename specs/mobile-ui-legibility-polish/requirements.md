@@ -343,3 +343,17 @@ smoke en **dev build de Android**, comparando lado a lado con el Figma, en
 tema **claro Y oscuro**, confirmando que el acento se ve más oscuro que el
 Make **a propósito**, que las etiquetas blancas se leen sobre él, y que el
 verde de tinta (links, iconos, gráfica) sigue vivo en dark.
+
+## Enmienda #173 — Perfil fiel al canvas
+
+`mobile-tab-screens-canvas-fidelity` (#173) modifica una decisión que esta spec
+dejó aprobada. La spec de origen es `specs/mobile-tab-screens-canvas-fidelity/`;
+el detalle de la enmienda está en su `requirements.md` §R14.
+
+- Spec enmendada: `mobile-ui-legibility-polish`
+- Qué cambia: `#61 R9: pet-info-card y me-card dejan de llevar etiqueta de sección`
+- Qué NO cambia: ningún otro requisito de esta spec ni su estado de
+  aprobación. Los tests que cubren lo enmendado se reescriben en #173 (lista
+  en su `tasks.md`).
+
+- [X] Enmienda #173 aprobada por humano

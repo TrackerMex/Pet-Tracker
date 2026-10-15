@@ -8,6 +8,8 @@ const variantClassNames = {
   accent: 'rounded-card bg-accent p-5 shadow-sm',
   secondary:
     'rounded-card border border-border bg-surface-secondary p-4',
+  hero: 'rounded-hero bg-surface-secondary p-4.5',
+  flat: 'rounded-card border border-border bg-surface px-3.5 py-1',
 } as const;
 
 export type CardVariant = keyof typeof variantClassNames;

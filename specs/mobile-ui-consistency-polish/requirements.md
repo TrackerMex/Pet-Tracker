@@ -447,3 +447,17 @@ consideran de riesgo.
 Si algo falla, **no marques nada**: dilo y se abre un handoff de corrección.
 `borderCurve` (R14) **no se puede ver** en este smoke: es no-op en Android.
 No lo busques.
+
+## Enmienda #173 — Perfil fiel al canvas
+
+`mobile-tab-screens-canvas-fidelity` (#173) modifica una decisión que esta spec
+dejó aprobada. La spec de origen es `specs/mobile-tab-screens-canvas-fidelity/`;
+el detalle de la enmienda está en su `requirements.md` §R14.
+
+- Spec enmendada: `mobile-ui-consistency-polish`
+- Qué cambia: `#62 R4: la escala suma rounded-hero y rounded-tile; #62 R7: Perfil deja ChevronRight; #62 R14: Perfil aplica CONTINUOUS_CORNER una vez (ProfileTile)`
+- Qué NO cambia: ningún otro requisito de esta spec ni su estado de
+  aprobación. Los tests que cubren lo enmendado se reescriben en #173 (lista
+  en su `tasks.md`).
+
+- [X] Enmienda #173 aprobada por humano
