@@ -170,7 +170,7 @@ describe('#62 R4: la app solo usa los radios de la escala declarada', () => {
   it('lleva los tres tiles restantes a rounded-xl', () => {
     // #168 R8: el tile ForkKnife sale de food.tsx
     expect(readSource(join('screens', 'forgot', 'index.tsx'))).toContain( // #117 R10
-      'size-16 items-center justify-center rounded-xl bg-accent-soft',
+      'size-13 items-center justify-center rounded-xl border-b-4 border-black/25 bg-accent',
     );
     expect(readSource(join('screens', 'weight-log', 'index.tsx'))).toContain(
       'size-8 shrink-0 items-center justify-center rounded-xl ${tileClassName}',
@@ -238,16 +238,16 @@ describe('#62 R13: el color imperativo sale siempre de useThemeColors del repo',
     expect(filesMatching(/\buseThemeColor\b/)).toEqual([]);
   });
 
-  it('resuelve el Lock de Forgot con accent-strong', () => {
+  it('resuelve el Lock de Forgot con accent-foreground', () => {
     const forgot = readSource(join('screens', 'forgot', 'index.tsx')); // #117 R10
 
     expect(forgot).toContain(
       "import { useThemeColors } from '../../theme/use-theme-colors';",
     );
     expect(forgot).toContain(
-      "const [accentStrong] = useThemeColors(['accent-strong']);",
+      "const [accentForeground] = useThemeColors(['accent-foreground']);",
     );
-    expect(forgot).toContain('<Lock size={28} color={accentStrong} />');
+    expect(forgot).toContain('<Lock size={26} color={accentForeground} />');
   });
 });
 
@@ -406,7 +406,7 @@ describe('#98 R10: los candados que esta feature no mueve', () => {
     expect(food.match(/style=\{CONTINUOUS_CORNER\}/g)).toHaveLength(1);
     expect(count(/style=\{CONTINUOUS_CORNER\}/g)).toBe(31 + 1 + 4 + 1 - 1); // #41 R9: geofences-link; #168; #170 R8: alert-detail-map; #171 R3: ready-done
     expect(count(/rounded-xl bg-accent(?=[\s'"`])/g)).toBe(13 + 1 + 1 + 1 + 1 + 1 + 1 + 1 - 1); // #171 R3 // #146 R8, #146 R9; #118 R7; #155 R3 // #158 R3: docs-upload; // #158 R5: docs-upload-submit // #171 R14
-    expect(count(/bg-accent-soft/g)).toBe(16 + 2 + 1 - 1 - 1); // #147 R4: meal-time-edit y add-meal-time-button; #105 R11; #168 R5: PetPills pasa a huecos pastel; #171 R3
+    expect(count(/bg-accent-soft/g)).toBe(16 + 2 + 1 - 1 - 1 - 1); // #147 R4: meal-time-edit y add-meal-time-button; #105 R11; #168 R5: PetPills pasa a huecos pastel; #172 R14: forgot-lock-tile pasa a bg-accent; #171 R3
     expect(home.match(/text-accent-strong\b/g)).toHaveLength(2);
     expect(food.match(/text-accent-strong\b/g)).toHaveLength(1);
     expect(filesMatching(/\brounded-(?:2xl|lg|md|sm)\b/)).toEqual([]);
@@ -472,7 +472,7 @@ describe('#64 R9: el color categórico solo se nombra en el módulo de paleta', 
     const reminders = readSource(join('screens', 'reminders', 'index.tsx'));
     const docs = readSource(join('screens', 'docs', 'index.tsx'));
 
-    expect(accentSoftCount).toBe(16 + 2 + 1 - 1 - 1); // #147 R4, #105 R11; #168 R5: PetPills pasa a huecos pastel; #171 R3
+    expect(accentSoftCount).toBe(16 + 2 + 1 - 1 - 1 - 1); // #147 R4, #105 R11; #168 R5: PetPills pasa a huecos pastel; #172 R14: forgot-lock-tile pasa a bg-accent; #171 R3
     expect(reminders.match(/bg-accent-soft/g)).toHaveLength(1);
     expect(docs.match(/bg-accent-soft/g)).toBeNull();
   });
@@ -577,14 +577,14 @@ describe('#166 R2: todo primario sólido lleva el labio detrás de bg-accent', (
     expect(inventory(/rounded-xl bg-accent(?=[\s'"`])/g)).toEqual(expected);
   });
 
-  it('no deja la receta del labio fuera de un primario', () => {
+  it('no deja la receta del labio fuera de un primario salvo el candado de Recuperar', () => {
     const count = (pattern: RegExp) => sourceFiles().reduce(
       (total, path) => total + (readFileSync(path, 'utf8').match(pattern) ?? []).length,
       0,
     );
 
-    expect(count(/\bborder-b-4\b/g)).toBe(19 + 1 - 1); // #171 R3: ready-map // #171 R14
-    expect(count(/border-black\/25/g)).toBe(19 + 1 - 1); // #171 R3: ready-map // #171 R14
+    expect(count(/\bborder-b-4\b/g)).toBe(19 + 1 + 1 - 1); // #172 R14: forgot-lock-tile (Enmienda #172); #171 R3: ready-map // #171 R14
+    expect(count(/border-black\/25/g)).toBe(19 + 1 + 1 - 1); // #172 R14: forgot-lock-tile (Enmienda #172); #171 R3: ready-map // #171 R14
   });
 });
 

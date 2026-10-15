@@ -16,6 +16,8 @@ import {
   MOTION_PING_FROM,
   MOTION_PING_TIMING,
   MOTION_PING_TO_SCALE,
+  MOTION_PINGO_FLOAT_OFFSET_Y,
+  MOTION_PINGO_FLOAT_TIMING,
   MOTION_POP_SPRING,
 } from '../motion';
 
@@ -103,6 +105,19 @@ describe('#152 R1: las duraciones y el preset de movimiento viven en un solo sit
       'MOTION_SURFACE_MS',
       'MOTION_TRANSITION_MS',
     ]);
+  });
+});
+
+describe('#172 R4: la flotación de Pingo en cuenta vive en motion.ts', () => {
+  it('#172 R4: declara la flotación de Pingo del canvas: 10 px y medio ciclo de 1500 ms ease-in-out', () => {
+    expect(MOTION_PINGO_FLOAT_OFFSET_Y).toBe(10);
+    expect(MOTION_PINGO_FLOAT_TIMING).toEqual({
+      duration: 1500,
+      easing: { bezier: [0.42, 0, 0.58, 1] },
+      reduceMotion: ReduceMotion.System,
+    });
+    expect(MOTION_FLOAT_OFFSET_Y).toBe(4);
+    expect(MOTION_FLOAT_TIMING.duration).toBe(1200);
   });
 });
 

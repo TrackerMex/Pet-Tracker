@@ -704,8 +704,8 @@ describe('#118 R11: la bienvenida no mete drift de estilo', () => {
 describe('#149 R4: solo cuatro ficheros de producción navegan a login', () => {
   const loginRoutes: Record<string, number> = {
     'screens/register/index.tsx': 1,
-    'screens/forgot/index.tsx': 1,
-    'screens/reset-password/index.tsx': 2,
+    'screens/forgot/index.tsx': 2, // #172 R17: forgot-back
+    'screens/reset-password/index.tsx': 3, // #172 R19: link-login del formulario
     'screens/welcome/index.tsx': 1,
   };
 
@@ -827,6 +827,10 @@ describe('#167 R14: las pantallas de cuenta no traen deriva', () => {
     'screens/home/home-entrance.tsx',
     'components/pop-in.tsx',
     'theme/motion.ts',
+    'components/back-button.tsx',
+    'components/form-error.tsx',
+    'components/pingo-float.tsx',
+    'components/password-input.tsx',
   ];
 
   it('#167 R14: sin hex, clases arbitrarias, StyleSheet ni sombras sueltas', () => {

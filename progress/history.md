@@ -8942,3 +8942,44 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
 - smoke R16 en el dev build de Android (tasks T16, pasos 1–12): firmado por el humano en `1052bb9f` y `50188740` (fecha 2026-10-14)
 - observaciones del humano al firmar (2026-10-15), registradas como features: el botón del vacío de Inicio lleva icono y texto en el canvas y aquí no (amplía #176, fila 23 del informe de paridad); con una cuenta sin mascotas, Inicio, Perfil y Recordatorios muestran «Algo salió mal» y «Reintentar», y el contenido de todas las pantallas debe centrarse como en Mapa (#181, id confirmado con UI-Pet, sites-99, Backend y Frontend; #182 queda para «completar recordatorio» de sites-99). #176 y #177, reservadas el 2026-10-13, se registran en `feature_list.json` en este mismo cierre
 - cierre: frontmatter de design, tasks y traceability a `approved`, fila R16 de traceability con los commits del smoke, `done` en `feature_list.json`, STATUS, Notion (Implementado / Completado) y PR contra `main`. Sin deriva de código entre el veredicto (`79b28820`) y el cierre. Merge: humano. Tras el merge: borrar el worktree
+
+## #172 `mobile-account-screens-polish` — Pantallas de cuenta como el canvas — 2026-10-15
+
+- **Inicio**: 2026-10-13, sesión Frontend (leader), worktree
+  `Pet-Tracker-wt-172`, branch `feature/172-mobile-account-screens-polish`.
+  Base congelada `3f9a60e2` (contiene `origin/main` 788d1f89, merge de #170).
+- **Estado**: `in_progress` desde 2026-10-13. La spec y la Enmienda #172 se
+  firmaron en Notion (última edición 2026-10-13T18:43Z). Implementa Codex CLI.
+- **Review ronda 1** (2026-10-14, b6c09d5e): rechazada. Producción cumple,
+  pero faltaban candados (G1–G4). La Enmienda E6 añade cinco `it` que nacen
+  verdes (tasks.md T24, c40–c42) y el handoff «Reanudación 5». Firmada en
+  Notion (866d685c, última edición 2026-10-14T19:40Z); Codex en Reanudación 5.
+- **Review ronda 2** (2026-10-14, e2745566): aprobada sobre f17eec10, init.sh
+  verde en ese HEAD. Falta R21, la prueba de humo del humano en dev build de
+  Android (traceability.md §Prueba de humo).
+- **R21 firmada** por el humano en 631826d9 (2026-10-14, OnePlus Nord 5). Sin
+  drift de código desde el veredicto (e2745566..631826d9 solo toca
+  current.md y la casilla).
+- **Merge de main** (2026-10-15): #171 entró en main (a288c7dc) y la branch
+  choca en cinco ficheros: la carta, §2.27 de mobile-ui-language, global.css,
+  motion.ts (los dos exportan `MOTION_PINGO_FLOAT_*` con los mismos valores) y
+  tres contadores de consistency-classnames. Resolución decidida hunk a hunk en
+  el handoff, §Reanudación 6; la hace Codex. Después, init.sh del leader y
+  reviewer sobre el merge; luego el cierre y la PR.
+- **Siguiente feature**: el humano pidió, tras el smoke, validación en cliente
+  con mensaje claro en todos los inputs de cuenta en lugar del error del
+  servidor. Va como #183, aparte, para no reabrir #172.
+- **Plan**: Login, Registro, Recuperar y Nueva contraseña como el canvas
+  (R1–R20): «Volver» arriba, CTA de 56 anclada al pie, inputs de 52,
+  `PasswordInput` con ojo en cinco campos, errores con icono, `PingoFloat`
+  (10 px / 3 s), Inter ExtraBold en la CTA y enmienda de la carta. R21 es la
+  prueba de humo del humano en el dev build de Android.
+- **Handoff**: `progress/handoff_mobile-account-screens-polish.md`.
+- **Ronda 3** (2026-10-15): Codex resolvió el merge de main (`4b355acb`, informe
+  `4f4dfd15`). init.sh del leader sobre `4f4dfd15` en verde (backend 187/1474,
+  infra 2/14, móvil 109/3277, e2e 468 passed y 8 skipped). Reviewer ronda 3
+  **aprobado** en `d1ea6a92`, sin deriva de código hasta el cierre.
+- **Cierre** (2026-10-15): frontmatter de design, tasks y traceability a
+  `approved`, fila R21 con `631826d9`, `done` en `feature_list.json`, STATUS,
+  Notion (Implementado / Completado) y PR contra `main`. Merge: humano. Tras
+  el merge: avisar a UI-Pet (#173) con el hash de main y borrar el worktree.

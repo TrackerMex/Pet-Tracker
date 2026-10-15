@@ -59,6 +59,16 @@ describe('R1: tokens rounded-card y text-2xs', () => {
   });
 });
 
+describe('#172 R1: tokens de texto de cuenta', () => {
+  it('#172 R1: define text-13, text-15 y text-17 con sus valores exactos dentro de @theme', () => {
+    expect(parseVariables(extractTheme())).toMatchObject({
+      'text-13': '13px',
+      'text-15': '15px',
+      'text-17': '17px',
+    });
+  });
+});
+
 describe('R1: global.css define los tokens light exactos del diseño', () => {
   it('incluye el código de la app en el escaneo de utilidades de Tailwind', () => {
     expect(globalCss).toMatch(/@source\s+['"]\.\.\/['"];?/);
