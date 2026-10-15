@@ -116,10 +116,10 @@ function makePet(): PetProfile {
   };
 }
 
-async function renderDocs() {
+async function renderDocs(language: 'es' | 'en' = 'es') {
   return renderWithProviders(
     <HeroUINativeProvider>
-      <LanguageProvider initial="es">
+      <LanguageProvider initial={language}>
         <HeaderHeightContext.Provider value={91}>
           <DocsScreen petId="pet-1" />
         </HeaderHeightContext.Provider>
@@ -166,9 +166,9 @@ describe('R8: pantalla Docs', () => {
     await waitFor(() => expect(screen.getByTestId('doc-doc-1')).toBeVisible());
     expect(screen.getByText('Documentos de')).toBeVisible();
     expect(screen.getByText('Luna')).toBeVisible();
-    expect(screen.getByText('Vacunación')).toBeVisible();
+    expect(within(screen.getByTestId('doc-doc-1')).getByText('Vacunación')).toBeVisible();
     expect(screen.getByText('Antirrábica')).toBeVisible();
-    expect(screen.getByText('2026-07-12')).toBeVisible();
+    expect(screen.getByText('12 jul 2026')).toBeVisible();
     expect(screen.getAllByTestId(/^doc-/).map(({ props }) => props.testID)).toEqual([
       'doc-doc-1',
       'doc-doc-2',
@@ -233,8 +233,8 @@ describe('#62 R10: el tipo de documento se lee como badge', () => {
   it('aplica la receta monocroma al tipo sin cambiar su texto', async () => {
     await renderDocs();
 
-    expect((await screen.findByText('Vacunación')).props.className).toBe(
-      'self-start rounded-full px-2 py-0.5 text-2xs font-bold bg-category-blue text-category-blue-strong',
+    expect(within(await screen.findByTestId('doc-doc-1')).getByText('Vacunación').props.className).toBe(
+      'self-start rounded-full px-2 py-0.5 text-11 font-extrabold bg-category-blue text-category-blue-strong',
     );
   });
 });
@@ -276,21 +276,21 @@ describe('#64 R8: la fila de documento pinta icono y badge con el color de su ti
 
     const vaccineRow = within(await screen.findByTestId('doc-vaccine'));
     const unknownRow = within(screen.getByTestId('doc-unknown'));
-    const vaccineTile = vaccineRow.getByText('📄').parent;
-    const unknownTile = unknownRow.getByText('📄').parent;
+    const vaccineTile = vaccineRow.getByTestId('docs-mosaic-vaccine', { includeHiddenElements: true });
+    const unknownTile = unknownRow.getByTestId('docs-mosaic-unknown', { includeHiddenElements: true });
 
     expect(vaccineTile?.props.className).toContain('bg-category-blue');
     expect(vaccineTile?.props.className).not.toContain('bg-accent-soft');
     expect(vaccineRow.getByText('Vacunación').props.className).toBe(
-      'self-start rounded-full px-2 py-0.5 text-2xs font-bold bg-category-blue text-category-blue-strong',
+      'self-start rounded-full px-2 py-0.5 text-11 font-extrabold bg-category-blue text-category-blue-strong',
     );
     expect(unknownTile?.props.className).toContain('bg-default');
     expect(unknownTile?.props.className).not.toContain('bg-accent-soft');
     expect(unknownRow.getByText('Radiografía').props.className).toBe(
-      'self-start rounded-full px-2 py-0.5 text-2xs font-bold bg-default text-muted',
+      'self-start rounded-full px-2 py-0.5 text-11 font-extrabold bg-default text-muted',
     );
-    expect(vaccineRow.getByText('📄')).toBeVisible();
-    expect(unknownRow.getByText('📄')).toBeVisible();
+    expect(vaccineRow.getByTestId('docs-icon-file-text', { includeHiddenElements: true })).toBeVisible();
+    expect(unknownRow.getByTestId('docs-icon-file-text', { includeHiddenElements: true })).toBeVisible();
   });
 });
 
@@ -500,7 +500,7 @@ describe('#158 R3: el owner ve la acción de subir', () => {
     await screen.findByTestId('doc-doc-1');
     const button = await screen.findByTestId('docs-upload');
     expect(button).toHaveTextContent('Subir documento');
-    expect(docsChildren()).toEqual(['View', 'docs-upload', 'doc-doc-1']);
+    expect(docsChildren()).toEqual(['View', 'docs-upload', 'docs-entry-doc-1']);
     expect(button.props.className).toEqual(expect.stringContaining('rounded-xl'));
     expect(button.props.className).toEqual(expect.stringContaining('bg-accent'));
     const label = within(button).getByText('Subir documento');
@@ -649,7 +649,7 @@ describe('#158 R5: selector y formulario de subida', () => {
     await fireEvent.press(await screen.findByTestId(docs.length ? 'docs-upload' : 'docs-empty-action'));
     await screen.findByText('Elige un archivo PDF, JPEG o PNG');
     expect(docsChildren()).toEqual(docs.length
-      ? ['View', 'docs-upload', 'docs-action-error', 'doc-doc-1']
+      ? ['View', 'docs-upload', 'docs-action-error', 'docs-entry-doc-1']
       : ['View', 'docs-action-error', 'docs-empty']);
     const error = screen.getByTestId('docs-action-error');
     expect(error.props.selectable).toBe(true);
@@ -672,7 +672,7 @@ describe('#158 R5: selector y formulario de subida', () => {
   it.each([{ docs: [] }, { docs: [docOne] }])('sitúa el formulario y oculta las entradas con lista %j', async ({ docs }) => {
     await openUploadForm(docs);
     expect(docsChildren()).toEqual(docs.length
-      ? ['View', 'docs-upload-form', 'doc-doc-1']
+      ? ['View', 'docs-upload-form', 'docs-entry-doc-1']
       : ['View', 'docs-upload-form', 'docs-empty']);
     expect(screen.queryByTestId('docs-upload')).toBeNull();
     expect(screen.queryByTestId('docs-empty-action')).toBeNull();
@@ -758,7 +758,7 @@ describe('#158 R6: validación antes de leer o crear', () => {
     await fireEvent.press(screen.getByTestId('docs-upload-submit'));
     await screen.findByText('Añade un tipo, un nombre y una fecha con formato AAAA-MM-DD');
     expect(docsChildren()).toEqual(docs.length
-      ? ['View', 'docs-upload-form', 'docs-action-error', 'doc-doc-1']
+      ? ['View', 'docs-upload-form', 'docs-action-error', 'docs-entry-doc-1']
       : ['View', 'docs-upload-form', 'docs-action-error', 'docs-empty']);
     await fireEvent.press(screen.getByTestId('docs-upload-cancel'));
     await screen.findByTestId(docs.length ? 'docs-upload' : 'docs-empty-action');
@@ -992,8 +992,8 @@ describe('#158 R10: cualquier miembro abre un documento', () => {
     await screen.findByText('Algo salió mal');
     expect(screen.getByTestId('doc-doc-1')).toBeVisible();
     expect(docsChildren()).toEqual(myRole === 'owner'
-      ? ['View', 'docs-upload', 'docs-action-error', 'doc-doc-1']
-      : ['View', 'docs-action-error', 'doc-doc-1']);
+      ? ['View', 'docs-upload', 'docs-action-error', 'docs-entry-doc-1']
+      : ['View', 'docs-action-error', 'docs-entry-doc-1']);
   });
 
   it('family limpia el error antes de abrir otra vez el navegador', async () => {
@@ -1036,5 +1036,103 @@ describe('#158 R11: el formulario se aparta del teclado en Android', () => {
     await openUploadForm();
     const scroll = await screen.findByTestId('screen-docs');
     expect(scroll.props.keyboardShouldPersistTaps).toBe('handled');
+  });
+});
+
+describe('#175 R6: fila del artboard', () => {
+  it.each([
+    ['Vacunación', 'bg-category-blue', 'text-category-blue-strong', 'category-blue-strong'],
+    ['Consulta', 'bg-category-green', 'text-category-green-strong', 'category-green-strong'],
+    ['Desparasitación', 'bg-category-amber', 'text-category-amber-strong', 'category-amber-strong'],
+    ['Análisis', 'bg-category-violet', 'text-category-violet-strong', 'category-violet-strong'],
+    ['Radiografía', 'bg-default', 'text-muted', 'muted'],
+  ] as const)('compone mosaico, columna y chevron para %s', async (type, surface, ink, iconColor) => {
+    mockListPetDocs.mockResolvedValue({ kind: 'ok', docs: [{ ...docOne, type }] });
+    await renderDocs();
+    const row = await screen.findByTestId('doc-doc-1');
+    expect(row.children).toHaveLength(3);
+    const classes = row.props.className.split(/\s+/);
+    expect(classes).toEqual(expect.arrayContaining(['flex-row', 'items-center', 'gap-3', 'px-3.5', 'py-3', 'shadow-none']));
+    expect(classes).not.toContain('shadow-sm');
+    const [mosaic, column, chevron] = row.children;
+    if (typeof mosaic === 'string' || typeof column === 'string' || typeof chevron === 'string') {
+      throw new Error('Expected row elements');
+    }
+    expect(mosaic.props.testID).toBe('docs-mosaic-doc-1');
+    expect(mosaic.props.className).toBe(`h-14 w-12 items-center justify-center rounded-xl ${surface}`);
+    expect(mosaic.props.style).toEqual({ borderCurve: 'continuous' });
+    expect(mosaic.children).toHaveLength(1);
+    const icon = within(mosaic).getByTestId('docs-icon-file-text', { includeHiddenElements: true });
+    expect(icon.props.size).toBe(24);
+    expect(icon.props.style.color).toBe(iconColor);
+    expect(column.props.className).toBe('min-w-0 flex-1 gap-0.75');
+    expect(column.children).toHaveLength(3);
+    expect(column.children[0]).toHaveProperty('props.className', `self-start rounded-full px-2 py-0.5 text-11 font-extrabold ${surface} ${ink}`);
+    expect(column.children[0]).toHaveTextContent(type);
+    expect(column.children[1]).toHaveTextContent('Antirrábica');
+    expect(column.children[2]).toHaveTextContent('12 jul 2026');
+    expect(column.children[2]).toHaveProperty('props.className', 'text-xs font-normal text-muted');
+    expect(chevron.props.testID).toBe('docs-icon-chevron-right');
+    expect(chevron.props.size).toBe(18);
+    expect(chevron.props.style.color).toBe('muted');
+  });
+
+  it('limita el nombre a una línea con la tipografía exacta', async () => {
+    await renderDocs();
+    const row = await screen.findByTestId('doc-doc-1');
+    const name = within(row).getByText('Antirrábica');
+    expect(name.props.numberOfLines).toBe(1);
+    expect(name.props.className).toBe('text-15 font-extrabold text-foreground');
+  });
+
+  it('formatea en español fechas que cruzan mes y año', async () => {
+    mockListPetDocs.mockResolvedValue({ kind: 'ok', docs: [
+      { ...docOne, date: '2026-01-10' },
+      { ...docOne, id: 'doc-2', date: '2025-12-02' },
+    ] });
+    await renderDocs();
+    const first = await screen.findByTestId('doc-doc-1');
+    const second = screen.getByTestId('doc-doc-2');
+    expect(within(first).getByText('10 ene 2026')).toBeVisible();
+    expect(within(second).getByText('2 dic 2025')).toBeVisible();
+    expect(screen.queryByText(/^2026-01-10$/)).toBeNull();
+    expect(screen.queryByText(/^2025-12-02$/)).toBeNull();
+  });
+
+  it('formatea en inglés fechas que cruzan mes y año', async () => {
+    mockListPetDocs.mockResolvedValue({ kind: 'ok', docs: [
+      { ...docOne, date: '2026-01-10' },
+      { ...docOne, id: 'doc-2', date: '2025-12-02' },
+    ] });
+    await renderDocs('en');
+    const first = await screen.findByTestId('doc-doc-1');
+    const second = screen.getByTestId('doc-doc-2');
+    expect(within(first).getByText('Jan 10, 2026')).toBeVisible();
+    expect(within(second).getByText('Dec 2, 2025')).toBeVisible();
+    expect(screen.queryByText(/^2026-01-10$/)).toBeNull();
+    expect(screen.queryByText(/^2025-12-02$/)).toBeNull();
+  });
+
+  it('envuelve cada fila con su índice y conserva el orden del backend', async () => {
+    mockListPetDocs.mockResolvedValue({ kind: 'ok', docs: [
+      { ...docOne, id: 'third' },
+      { ...docOne, id: 'first' },
+      { ...docOne, id: 'second' },
+    ] });
+    await renderDocs();
+    await screen.findByTestId('doc-third');
+    expect(docsChildren().filter((id) => typeof id === 'string' && id.startsWith('docs-entry-'))).toEqual([
+      'docs-entry-third', 'docs-entry-first', 'docs-entry-second',
+    ]);
+    for (const [index, id] of ['third', 'first', 'second'].entries()) {
+      const entry = screen.getByTestId(`docs-entry-${id}`);
+      expect(entry.props.index).toBe(index);
+      expect(entry.children).toHaveLength(1);
+      expect(entry.children[0]).toHaveProperty('props.testID', `doc-${id}`);
+      expect(mockHomeEntrance).toHaveBeenCalledWith(expect.objectContaining({ index, testID: `docs-entry-${id}` }));
+    }
+    expect(screen.getAllByTestId(/^doc-/).map(({ props }) => props.testID)).toEqual([
+      'doc-third', 'doc-first', 'doc-second',
+    ]);
   });
 });
