@@ -199,17 +199,17 @@ export function AlertsScreen() {
           const card = (
             <Card
               testID={rowId}
-              className={'min-h-20 flex-row items-center gap-3' + (item.status === 'open' ? ` border-2 ${meta.border}` : '')}
+              className={`flex-row items-center gap-3 px-3.5 py-3 shadow-none${item.status === 'open' ? ` border-2 ${meta.border}` : ''}`}
             >
               <View
-                className={`size-11 items-center justify-center rounded-full ${meta.surface}`}
+                className={`size-11 items-center justify-center rounded-full ${meta.disc}`}
               >
-                <Icon testID={`${rowId}-icon`} size={20} color={color} />
+                <Icon testID={`${rowId}-icon`} size={22} color={color} />
               </View>
               <Pressable
                 testID={`${rowId}-link`}
                 accessibilityRole="button"
-                className="min-h-11 min-w-0 flex-1 gap-1"
+                className="min-h-11 min-w-0 flex-1 justify-center gap-0.5"
                 style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
                 onPress={() =>
                   router.push({ pathname: '/alerts/[alertId]', params: { alertId: item.id } })
@@ -217,21 +217,14 @@ export function AlertsScreen() {
               >
                 <Text
                   testID={`${rowId}-type`}
-                  className="text-sm font-bold text-foreground"
+                  className="text-15 font-extrabold text-foreground"
                 >
                   {t(meta.labelKey)}
                 </Text>
-                <Text
-                  testID={`${rowId}-pet`}
-                  className="text-xs font-semibold text-muted"
-                >
-                  {item.petName}
-                </Text>
-                <Text
-                  testID={`${rowId}-time`}
-                  className="text-xs font-normal text-muted"
-                >
-                  {fmtOpenedAt(item.openedAt, now, t)}
+                <Text testID={`${rowId}-subtitle`} className="text-xs font-normal text-muted">
+                  <Text testID={`${rowId}-pet`}>{item.petName}</Text>
+                  {' · '}
+                  <Text testID={`${rowId}-time`}>{fmtOpenedAt(item.openedAt, now, t)}</Text>
                 </Text>
               </Pressable>
               {item.status === 'open' ? (
