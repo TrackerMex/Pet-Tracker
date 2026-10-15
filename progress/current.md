@@ -18,8 +18,22 @@
   `origin/main` mergeado en `4a4abfed` (#172, #173 y #167 dentro); las
   pantallas de cuenta no cambiaron desde ec508f88, solo `catalog.ts` y el
   design de idioma, que la spec ya mide en H0 (B4, B5).
-- **Siguiente**: status `in_progress`, H0 y handoff a Codex. `init.sh`
-  coordinado con #174, #175, #178 y #179, que arrancan a la vez.
+- **in_progress** (2026-10-15). `./init.sh` corrió después de que #174
+  acabara el suyo y salió con exit 1: backend verde, y en el móvil 10 rojos de
+  3389, todos `Exceeded timeout`, en pet-hero-header (3), meals-history (7) y
+  celebration (1). Ninguna de esas suites la toca #183, y la carga estaba en
+  17 con el jest de Codex en wt-174. Repetidas a solas: exit 0 y 131 passed.
+  Se clasifica como carga. El log rojo está en el scratchpad de la sesión
+  (`init-183-rojo-1.log`).
+- **H0** = el commit que trae
+  `progress/handoff_mobile-account-client-validation.md`. T0 medido: las 8
+  suites de la feature dan 300 passed, y las 12 anclas del handoff salen OK.
+  Hay dos derivas desde la base de la spec (`60dd9eda`), ambas por #173: B4
+  es 398 (la fórmula del catálogo acaba en `- 4 + 3, // #173 R13`) y B5 es
+  §2.29, así que #183 toma §2.30. El delta no cambia.
+- **Siguiente**: el humano lanza Codex con el handoff. Cuando Codex termine:
+  init.sh coordinado con los pares (#174, #178, #179), después reviewer, y
+  luego el cierre (Notion «Implementado» / «Completado», y la PR).
 - **Pedido del humano** (2026-10-15, tras firmar R21 de #172): validación en
   cliente con mensaje claro en todos los inputs de cuenta, como el correo de
   Crear cuenta, en lugar del error del servidor. Texto literal en
