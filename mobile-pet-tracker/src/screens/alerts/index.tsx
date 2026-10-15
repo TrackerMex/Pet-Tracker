@@ -29,7 +29,8 @@ function fmtOpenedAt(
   if (minutes < 60) return t('alerts.minutesAgo', { minutes });
   const hours = Math.floor(minutes / 60);
   if (hours < 24) return t('alerts.hoursAgo', { hours });
-  return t('alerts.daysAgo', { days: Math.floor(hours / 24) });
+  const days = Math.floor(hours / 24);
+  return days === 1 ? t('alerts.dayAgo') : t('alerts.daysAgo', { days });
 }
 
 export function AlertsScreen() {

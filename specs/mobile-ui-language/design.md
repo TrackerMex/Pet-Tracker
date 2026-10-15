@@ -804,7 +804,7 @@ copy completa en cada una.
 | — | `alerts.justNow` | `Just now` | `Ahora mismo` | ← añadida por #78 (R3)
 | — | `alerts.minutesAgo` **(param)** | `{{minutes}} min ago` | `Hace {{minutes}} min` | ← añadida por #78 (R3)
 | — | `alerts.hoursAgo` **(param)** | `{{hours}} h ago` | `Hace {{hours}} h` | ← añadida por #78 (R3)
-| — | `alerts.daysAgo` **(param)** | `{{days}} d ago` | `Hace {{days}} d` | ← añadida por #78 (R3)
+| — | `alerts.daysAgo` **(param)** | `{{days}} days ago` | `Hace {{days}} días` | ← añadida por #78 (R3) · valor cambiado por #174 (R2)
 | — | `home.alertsBell` | `Alerts` | `Alertas` | ← añadida por #78 (R3)
 | — | `home.alertsBellUnread` | `Unread alerts` | `Alertas sin leer` | ← añadida por #78 (R3)
 
@@ -987,6 +987,12 @@ copy completa en cada una.
 | — | `profile.gpsLinked` | `Linked` | `Vinculado` | ← añadida por #173 (R13) |
 | — | `profile.gpsNoCollar` | `No collar` | `Sin collar` | ← añadida por #173 (R13) |
 | — | `profile.gpsCollar` | `GPS collar` | `Collar GPS` | ← añadida por #173 (R13) |
+
+### §2.30 — Añadidos por #174 — Alertas fieles al canvas
+
+| # | Clave | `en` | `es` | Origen |
+|---|---|---|---|---|
+| — | `alerts.dayAgo` | `1 day ago` | `Hace 1 día` | ← añadida por #174 (R2) |
 
 ## 3. La infraestructura
 
