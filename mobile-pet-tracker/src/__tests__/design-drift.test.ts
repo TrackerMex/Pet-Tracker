@@ -22,6 +22,50 @@ const { join } = require('path');
 const sourceRoot = join(process.cwd(), 'src');
 const projectRoot = process.cwd();
 
+describe('#175 R2: enmienda de fidelidad al canvas', () => {
+  const charter = readFileSync(join(process.cwd(), '..', 'docs', 'ui-guidelines.md'), 'utf8');
+  const heading = '## Enmienda de fidelidad al canvas (2026-10-13)';
+
+  it('incluye una sola sección de fidelidad al canvas', () => {
+    expect(charter.split(heading)).toHaveLength(2);
+  });
+
+  it('conserva la casilla humana vacía o firmada bajo la sección', () => {
+    const section = charter.slice(charter.indexOf(heading) + heading.length);
+    expect(section).toMatch(/- \[[ xX]\] Enmienda de fidelidad al canvas aprobada por humano/);
+  });
+
+  it('incluye las tres directivas literales de fidelidad', () => {
+    expect(charter).toContain("- **Título en contenido (D-H).** El título de pantalla va dentro del contenido (eyebrow opcional y título); la cabecera nativa del stack queda con `title: ''` y solo aporta el botón de volver.");
+    expect(charter).toContain('- **Iconos reicon (D-I).** Los iconos de la interfaz son componentes de `reicon-react-native` coloreados con un token vía `useThemeColors`; ningún emoji hace de icono. La superficie de categoría acompaña a un icono y a un texto.');
+    expect(charter).toContain('- **Medidas del artboard.** Donde la escala no llega al valor del artboard se usa un token del `@theme` nombrado por su valor y listado en la regla 2 (tamaños y tracking) o en la regla 12 (radios); las clases con corchetes (regla 3) y los radios `2xl`, `lg`, `md` y `sm` (regla 12) siguen prohibidos, y las esquinas que no son cápsula siguen llevando `CONTINUOUS_CORNER`.');
+  });
+
+  it('sustituye una sola vez las frases de títulos y paleta', () => {
+    expect(charter).not.toContain('- Títulos de pantalla: header del stack cuando exista, no Text suelto.');
+    expect(charter).not.toContain('la superficie siempre acompaña a un emoji y a un texto.');
+    expect(charter.split("- Títulos de pantalla: título en contenido y cabecera nativa con `title: ''` (Enmienda de fidelidad al canvas).")).toHaveLength(2);
+    expect(charter.split('la superficie siempre acompaña a un icono de reicon-react-native y a un texto.')).toHaveLength(2);
+  });
+
+  it('enumera text-11 y text-15 en la línea de tamaños', () => {
+    const line = charter.split('\n').find((value) => value.trimStart().startsWith('Tamaños de letra fuera de la escala de Tailwind'));
+    expect(line).toContain('`--text-11: 11px`');
+    expect(line).toContain('`--text-15: 15px`');
+  });
+
+  it('enumera los dos tokens en la línea de tracking', () => {
+    const line = charter.split('\n').find((value) => value.trimStart().startsWith('Tracking fuera de la escala de Tailwind'));
+    expect(line).toContain('`--tracking-title: -0.02em`');
+    expect(line).toContain('`--tracking-eyebrow: 0.08em`');
+  });
+
+  it('añade rounded-24 dentro de la regla de radios', () => {
+    const radios = charter.slice(charter.indexOf('12. **Escala de radios**'), charter.indexOf('13. **Botón con cuerpo**'));
+    expect(radios).toContain('`rounded-24` (24 px)');
+  });
+});
+
 const HEX_LITERAL = String.raw`#(?!\d{2,3} R\d)[\da-f]{3,8}\b`;
 const ARBITRARY_CLASS = String.raw`[A-Za-z0-9_-]+-\[[^\]]+\]`;
 const SHADOW_ESCAPES = String.raw`shadowColor|shadowOffset|shadowOpacity|shadowRadius|\belevation\s*:`;
