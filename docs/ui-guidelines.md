@@ -71,8 +71,8 @@ Tres límites, no negociables:
    `@theme` de global.css. Existentes: colores semánticos light/dark,
    fuentes Inter, `--radius-card: 20px`, `--text-2xs: 10px`. Si un valor
    nuevo se repite 2+, se añade token — no clase arbitraria.
-   Tamaños de letra fuera de la escala de Tailwind (fidelidad al canvas, #173): `--text-13: 13px`, `--text-26: 26px`, `--text-15: 15px`; cada uno es token aunque se use una vez, porque la clase arbitraria está prohibida.
-   Tracking fuera de la escala de Tailwind (fidelidad al canvas, #174): `--tracking-title: -0.02em`, `--tracking-caps: 0.06em`; la clase `tracking-*` va con una clase `text-*` en el mismo elemento, porque uniwind multiplica el `em` por su tamaño.
+   Tamaños de letra fuera de la escala de Tailwind (fidelidad al canvas, #173): `--text-13: 13px`, `--text-26: 26px`, `--text-11: 11px`, `--text-15: 15px`; cada uno es token aunque se use una vez, porque la clase arbitraria está prohibida.
+   Tracking fuera de la escala de Tailwind (fidelidad al canvas, #174): `--tracking-title: -0.02em`, `--tracking-caps: 0.06em`, `--tracking-eyebrow: 0.08em`; la clase `tracking-*` va con una clase `text-*` en el mismo elemento, porque uniwind multiplica el `em` por su tamaño.
 3. **Grep-clean permanente** (criterio de aceptación de toda feature móvil):
    - cero hex fuera de `src/theme/`
    - cero clases arbitrarias `[...]` (`rounded-[20px]`, `text-[10px]`,
@@ -183,6 +183,7 @@ Tres límites, no negociables:
     para añadírselo.
 
     Fuera de la escala, por fidelidad al canvas (#174): `rounded-10` (10 px), ack compacto de fila de Alertas.
+    Fuera de la escala, por fidelidad al canvas (#175): `rounded-24` (24 px), zona de subida de Documentos.
 
 13. **Botón con cuerpo** (feature #166, 2026-10-11). Los botones de acción
     llevan un labio inferior: un borde inferior más grueso que los
