@@ -1,5 +1,5 @@
 import { DeviceEventEmitter, Platform } from 'react-native';
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 
@@ -682,4 +682,48 @@ it('#172 R19: el espaciador empuja la CTA al pie en los dos estados', async () =
   await submitForgot();
   await waitFor(() => expect(screen.getByTestId('forgot-title')).toHaveTextContent('Revisa tu correo'));
   expectSpacer('forgot-resend');
+});
+
+describe('#183 R5: recuperar valida en cliente', () => {
+  it.each<[string, string]>([
+    ['alex.example.com', 'Ingresa un correo electrónico válido'],
+    ['alex@example.c', 'Ingresa un correo electrónico válido'],
+    ['ñu@example.com', 'Ingresa un correo electrónico válido'],
+    ['a'.repeat(309) + '@example.com', 'Usa 320 caracteres o menos'],
+  ])('#183 R5: «%s» no llama a la API y marca forgot-email con «%s»', async (email, message) => {
+    mockForgotPassword.mockResolvedValue({ kind: 'error' });
+    await renderRoute();
+    await submitForgot(email);
+    await waitFor(() => expect(screen.getByTestId('forgot-email-message')).toHaveTextContent(message));
+    const text = screen.getByTestId('forgot-email-message');
+    const row = screen.getByTestId('forgot-email-message-row');
+    expect(row.children).toEqual([within(row).getByTestId('icon-alert-circle'), text]);
+    expect(text.props.selectable).toBe(true);
+    expect(screen.queryByTestId('forgot-error')).toBeNull();
+    expect(screen.getByTestId('forgot-title')).toHaveTextContent('Recuperar contraseña');
+    expect(screen.getByTestId('forgot-submit')).not.toBeDisabled();
+    expect(mockForgotPassword).not.toHaveBeenCalled();
+  });
+
+  it('#183 R5: un correo de 320 caracteres pasa como en el DTO y llama a la API', async () => {
+    mockForgotPassword.mockResolvedValue({ kind: 'ok' });
+    await renderRoute();
+    const email = 'a'.repeat(308) + '@example.com';
+    await submitForgot(email);
+    expect(await screen.findByText('Revisa tu correo')).toBeVisible();
+    expect(mockForgotPassword).toHaveBeenCalledWith(apiUrl, { email });
+  });
+
+  it('#183 R5: corregir el correo quita el mensaje y envía el recortado', async () => {
+    mockForgotPassword.mockResolvedValue({ kind: 'error' });
+    await renderRoute();
+    await submitForgot('alex.example.com');
+    await waitFor(() => expect(screen.getByTestId('forgot-email-message')).toHaveTextContent('Ingresa un correo electrónico válido'));
+    mockForgotPassword.mockResolvedValue({ kind: 'ok' });
+    await submitForgot('  Ana@Example.com ');
+    expect(await screen.findByText('Revisa tu correo')).toBeVisible();
+    expect(screen.queryByTestId('forgot-email-message')).toBeNull();
+    expect(mockForgotPassword).toHaveBeenCalledTimes(1);
+    expect(mockForgotPassword).toHaveBeenCalledWith(apiUrl, { email: 'Ana@Example.com' });
+  });
 });
