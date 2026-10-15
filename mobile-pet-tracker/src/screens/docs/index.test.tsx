@@ -28,6 +28,39 @@ import { LanguageProvider } from '../../providers/language-provider';
 import { DocsScreen } from '.';
 import { renderWithProviders } from '../../../test/render-with-providers';
 
+const mockHomeEntrance = jest.fn<void, [import('react-native').ViewProps & { index: number }]>();
+
+jest.mock('../home/home-entrance', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return {
+    HomeEntrance(props: import('react-native').ViewProps & { index: number }) {
+      mockHomeEntrance(props);
+      return React.createElement(View, props);
+    },
+  };
+});
+
+jest.mock('reicon-react-native', () => {
+  const actual = jest.requireActual<typeof import('reicon-react-native')>('reicon-react-native');
+  const { View } = jest.requireActual('react-native');
+  const icon = (testID: string) =>
+    function MockIcon({ color, size }: { color?: string; size?: number }) {
+      return <View {...{ size }} testID={testID} style={{ color }} />;
+    };
+  return {
+    ...actual,
+    __esModule: true,
+    FileText: icon('docs-icon-file-text'),
+    ChevronRight: icon('docs-icon-chevron-right'),
+    Upload: icon('docs-icon-upload'),
+  };
+});
+
+jest.mock('../../theme/use-theme-colors', () => ({
+  useThemeColors: (tokens: string[]) => tokens,
+}));
+
 jest.mock('../../api/media', () => ({
   ...jest.requireActual('../../api/media'),
   listPetDocs: jest.fn(),
