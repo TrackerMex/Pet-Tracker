@@ -573,3 +573,153 @@ Ninguno bloquea la firma.
   - No impide ejecutar la enmienda. El reviewer de la ronda 2 debe medir la parte de UL a mano.
 - **P3. «66 casos» en el paso verde de R2** (`requirements.md:466`). Es la historia de c1–c15 y como historia es correcta. `design.md:201` y la tabla de R2 ya dicen 71. Informativo.
 - **P4. «Borrar `<x>-error`» se candó con un solo campo inválido por pantalla** (los `it` nuevos de c17–c20). Producción limpia antes de validar, de forma incondicional (`setFieldErrors({}); setError(null);`). Un mutante que borre campo a campo no sale natural de ese código, y las rutas M1 y M2 sí están candadas. Informativo.
+
+## Ronda 2
+
+Fecha: 2026-10-15
+Veredicto: **APROBADO** (0 bloqueantes; R8, la prueba de humo humana, sigue pendiente y bloquea el paso a `done`)
+
+Revisado en `/home/claude/sites/Pet-Tracker-wt-183`, branch
+`feature/183-mobile-account-client-validation`, HEAD `5043e8e2`. Valida la
+Enmienda E1 (c16–c20, `ccf7d49a`..`9eea5bf4`).
+
+### 1. Alcance
+
+- `git diff --name-only 94ebf827 HEAD` da 7 ficheros: los 5 test, `progress/impl_mobile-account-client-validation.md` y `specs/mobile-account-client-validation/traceability.md`.
+- `git diff --name-only d3ac0fdd HEAD -- mobile-pet-tracker` da exactamente los 5 test. Backend: 0.
+- Cada commit c16–c20 toca un solo fichero, su test. `5bcaf612` toca solo la traceability y `5043e8e2` solo el informe.
+- Producción, parches, `sondas_e1.py` y spec no cambian desde `94ebf827`. Los sha256 de c16–c20 coinciden con la tabla de §Commits de E1.
+
+### 2. Parches = commits
+
+Exporté los 5 test de `d3ac0fdd` a `<scratchpad>/rev2-patchcheck`, apliqué c16–c20 (exit 0 en los cinco) y comparé con `cmp`. Cada fichero es byte-idéntico a su blob en el commit y en HEAD:
+
+| Parche | Commit | sha256 (16) |
+|---|---|---|
+| c16 | `ccf7d49a` | `e1ad412ebed26c36` |
+| c17 | `7a0cc473` | `8af0c91e16d2307b` |
+| c18 | `19b0ac1b` | `34d949aa32d8ed0a` |
+| c19 | `4ca57efe` | `68e6447ed72151c6` |
+| c20 | `9eea5bf4` | `37eaab29d68a02ca` |
+
+### 3. Sondas de E1 (`sondas_e1.py`, contra HEAD)
+
+Desde `mobile-pet-tracker/`, en primer plano, sin otro jest en marcha (`pgrep` vacío al empezar). Exit medido sin pipe, salida en `<scratchpad>/rev2-sondas-cNN.log`. Tras cada grupo, `git diff --quiet` y `git diff --cached --quiet` salen 0 fuera de este informe.
+
+| Grupo | OK | Exit | Rojos por sonda |
+|---|---|---|---|
+| c16 | 22 de 22 | 0 | RV5, RV6, RV7, A26: 1. A6, A10: 29. Los 14 mutantes de correo: 1. S2.1: 9. S2.9: 3 |
+| c17 | 2 de 2 | 0 | RV8: 1. S3.2: 9 |
+| c18 | 2 de 2 | 0 | RV9: 1. S4.4: 25 |
+| c19 | 6 de 6 | 0 | RV10, C18, C20: 1. S5.1, S5.3: 6. S7.3: 4 |
+| c20 | 5 de 5 | 0 | RV11, C26, C27: 1. S6.1: 5. S7.4: 2 |
+
+Ningún `timeout en el intento`. El script compara títulos exactos y rechaza cualquier `Exceeded timeout`.
+
+### 4. Mutaciones de la ronda 1 y huecos H1–H15, plantadas a mano contra HEAD
+
+Con mi propio script (`<scratchpad>/rev2-probe.py`), que reutiliza las mutaciones de `sondas_e1.py` y añade las mías. Imprime cada `●` con la primera línea de su error. Restaura con `git checkout HEAD --` y comprueba `git diff --quiet HEAD`. Logs en `<scratchpad>/rev2-probe-*.log`. Ningún timeout y todos los rojos son de aserción.
+
+| Hueco | Sonda | Tests | `●` exacto | Error |
+|---|---|---|---|---|
+| H1 | RV8 | 1 failed / 40 | `#183 R3: login valida en cliente › #183 R3: un envío inválido tras un aviso general lo retira y no vuelve a llamar a la API` | `expect(received).toBeNull()` |
+| H2 | RV9 | 1 failed / 65 | `#183 R4: registro valida en cliente › #183 R4: un envío inválido tras un aviso general lo retira y no vuelve a llamar a la API` | `toBeNull()` |
+| H3 | RV10 | 1 failed / 49 | `#183 R5: recuperar valida en cliente › #183 R5: un correo inválido tras un aviso general lo retira, y el corregido quita el mensaje y vuelve a llamar` | `toBeNull()` |
+| H12 | C18 | 1 failed / 49 | el mismo `it` de R5 | `toBeNull()` |
+| H4 | RV11 | 1 failed / 49 | `#183 R6: nueva contraseña valida en cliente › #183 R6: un envío inválido tras un aviso general lo retira, y el corregido quita el mensaje y vuelve a llamar` | `toBeNull()` |
+| H13 | C26 | 1 failed / 49 | el mismo `it` de R6 | `toBeNull()` |
+| H14 | C20 | 1 failed / 49 | `#117 R7: cada kind distinto de ok pinta su copy en forgot-error › #183 R7: un 400 de validación en recuperar pinta el aviso genérico y ningún mensaje de campo` | `expect(received).toHaveLength(expected)` |
+| H15 | C27 | 1 failed / 49 | `R8: el submit completa el reset y mapea los errores › #183 R7: un 400 de validación en nueva contraseña no marca ningún campo` | `toHaveLength` |
+| H5 | RV5 | 1 failed / 71 | `#183 R2: reglas de cuenta iguales a los DTO › #183 R2: validateRegister G8` | `toStrictEqual` |
+| H6 | RV6 | 1 failed / 71 | `… › #183 R2: validateRegister G23` | `toStrictEqual` |
+| H7 | RV7 | 1 failed / 71 | `… › #183 R2: validateResetPassword N6` | `toStrictEqual` |
+| H8 | A6 | 29 failed / 71 | G1 y G6–G33 | 29 × `toStrictEqual` |
+| H9 | A10 | 29 failed / 71 | G1–G5 y G10–G33 | 29 × `toStrictEqual` |
+| H10 | A26 | 1 failed / 71 | `… › #183 R2: validateResetPassword N5` | `toStrictEqual` |
+| H11 | los 14 mutantes, uno a uno | 1 failed / 71 cada uno | la fila C que asigna E1 en los 14: C16 `«a_1-b.c_@x2-y.example.technology» … (true)` para loc-_, loc--, loc-., loc-09, last-_, dom--, dom-09 y tld6; C17 `«z9@1x.io»` para last-09 y dom1-09; C18 `«+@b.co»` para loc-plus y last-+; C19 `«a-@b.co»` para last--; C20 `«a@b_c.co» … (false)` para dom+_ | 14 × `toStrictEqual` |
+
+Mutaciones mías, para buscar zonas ciegas junto a las de E1:
+
+| Sonda | Mutación | Resultado |
+|---|---|---|
+| X-L1 | login: `setError(null)` pasa a después de la validación | 1, el `it` de R3 de E1 (`toBeNull`) |
+| X-R1 | registro: lo mismo con `setGeneralError(null)` | 1, el `it` de R4 de E1 (`toBeNull`) |
+| X-P1 | nueva contraseña: lo mismo con `setError(null)` | 1, el `it` de R6 de E1 (`toBeNull`) |
+| X-F2 | recuperar: el 400 de validación marca `email` con otra clave | 1, el `it` de R7 de forgot de E1 (`toHaveLength`) |
+| X-P2 | nueva contraseña: el 400 de validación marca `password` (no la confirmación) | 1, el `it` de R7 de reset de E1 (`toHaveLength`) |
+| X1 | la confirmación compara solo longitudes | 1, G32 |
+| X-ph1, X-ph2 | el teléfono mide sin recortar (mínimo, máximo) | 1 cada uno, G16 y G20 |
+| X-fn | el máximo del nombre mide sin recortar | 1, G4 |
+| X-em | el máximo del correo pasa a 321 | 2, G13 y F4 |
+| Mi | bandera `i` en `EMAIL_PATTERN` | 0 (71 passed). Es el equivalente que E1 declara sin candado (§Sondas de E1) |
+
+En recuperar, mover `setFieldErrors({})` a después de la validación es equivalente: `setFieldErrors(issues)` sustituye el mapa entero. No lo cuento.
+
+Nada de E1 queda declarado fuera de alcance ni como deuda, salvo la bandera `i`, que está escrita como equivalente en §Sondas de E1.
+
+### 5. Pre-check P1–P4
+
+- **P1, cerrada.** §Commits de E1 ya lo dice (`requirements.md:1205–1208`): N6 es el candado del trim y G32 caza la comparación por longitudes. X1 da 1 rojo en G32, medido arriba.
+- **P2, cerrada.** Medí a mano la parte UL (`src/__tests__/ui-language.test.ts`, 30 tests) con las mutaciones de `sondas_e1.py`:
+  - S7.3: 2 failed, `#65 R1: el grupo (auth) resuelve su copy por clave › resuelve las 51 ocurrencias normativas` y `#65 R18: los sitios resuelven por clave y no queda copy suelta › resuelve cada ocurrencia de la tabla contra la clave exacta`. Con los 4 de forgot, S7.3 = **6**.
+  - S7.4: 2 failed, `#65 R11: restablecer contraseña resuelve su copy por clave › resuelve las 17 ocurrencias normativas` y el mismo `#65 R18`. Con los 2 de reset, S7.4 = **4**.
+  - Las dos cifras coinciden con `requirements.md:943–944`. Todos los rojos son `toEqual`.
+- **P3, sigue abierta e informativa.** «66 casos» sigue en `requirements.md:466`, en el paso verde de c1–c15. Como historia es correcta, y `:430` y `:1087` dicen 71. No bloquea.
+- **P4, sigue informativa.** Cada pantalla candó «borrar `<x>-error`» con un solo campo inválido. Producción limpia antes de validar y sin condiciones, y X-L1, X-R1 y X-P1 confirman que reordenar la limpieza también muere. No bloquea.
+
+### 6. Cuentas, typecheck y lint
+
+`bunx jest --testTimeout=30000 --runTestsByPath` sobre las cinco suites, a solas: exit 0, `Test Suites: 5 passed, 5 total`, `Tests: 274 passed, 274 total`, 0 `Exceeded timeout`. Por fichero (`--json`):
+
+| Suite | Declarada | Medida |
+|---|---|---|
+| `src/utils/account-rules.test.ts` | 71 | 71 |
+| `src/screens/login/index.test.tsx` | 40 | 40 |
+| `src/screens/register/index.test.tsx` | 65 | 65 |
+| `src/screens/forgot/index.test.tsx` | 49 | 49 |
+| `src/screens/reset-password/index.test.tsx` | 49 | 49 |
+
+Los seis `it` nuevos tardan entre 38 y 190 ms, lejos de los 5000 ms de init.sh.
+
+- TC, como lo define el handoff: `test ! -e .expo/types/router.d.ts` da 0 (no hizo falta borrar nada) y `bun run typecheck` sale con 0.
+- LINT: `bunx expo lint --no-cache` sale con 0, el log queda vacío (`vacio=0`) y no hay ninguna línea `Failed to run`.
+
+### 7. Trazabilidad e informe de Codex
+
+- Los cinco hashes de E1 en `traceability.md` son ancestros de HEAD (`git merge-base --is-ancestor`, exit 0) y sus mensajes coinciden con §Commits de E1. R7 recibe c19 y c20. Los 20 hashes del fichero son ancestros de HEAD.
+- Los seis `it` nuevos aparecen en su R-id con el título exacto, y cada título lleva `#183 Rn`. R2 pasa a 71 casos y la verificación de cierre pasa a 341, 111 suites y 3517 tests.
+- La única fila `pendiente` es R8, el gate humano. Ver §8.
+- El informe (§Reanudacion 2) cuadra con lo que medí: la tabla c16–c20 (hash, `Tests:`, 22/2/2/6/5 OK), las guardas con 252, las siete suites con 341, la suite completa con 111/3517, las anclas sites-99 (4, 2, 0, 0) y backend en 0. Las anclas sites-99 las volví a medir y dan lo mismo.
+- La única desviación que declara Codex es un error de sintaxis de shell antes del Cierre 3 (exit 2, Jest no llegó a arrancar). Se repitió el comando corregido. No afecta a nada.
+- El informe confirma que Codex no corrió init.sh.
+
+### 8. R8 y init.sh
+
+- **R8 (prueba de humo en dev build de Android) sigue sin firmar**: `requirements.md:984` tiene `- [ ]`. No bloquea este veredicto, pero **la feature no puede pasar a `done` hasta que el humano la firme**.
+- init.sh lo corrió el leader sobre `5043e8e2`, porque el clasificador se lo deniega al reviewer. Leí el log (`<scratchpad>/init-183-r2.log`) y su `.head` coincide con HEAD.
+  - backend unit: `Test Suites: 187 passed, 187 total`, `Tests: 1474 passed, 1474 total`.
+  - infra: 2 suites y 14 tests.
+  - móvil: `Test Suites: 111 passed, 111 total`, `Tests: 3517 passed, 3517 total`.
+  - e2e: `Test Suites: 3 skipped, 30 passed, 30 of 33 total`, `Tests: 8 skipped, 468 passed, 476 total`.
+  - Cierra con `✅ Lint sin errores`, `✅ Typecheck sin errores` y `✅ Todo verde. Listo para trabajar.`, y no hay ningún `Exceeded timeout`.
+  - El aviso `A worker process has failed to exit gracefully` es el que ya existía en main.
+
+### Checklist ronda 2
+
+- **C2.** [x] Solo #183 está `in_progress` en `feature_list.json`. [x] `progress/current.md` está al día (`94ebf827`).
+- **C3.** [x] E1 no toca producción: 0 ficheros fuera de `*.test.ts(x)` desde `d3ac0fdd`. Las capas siguen como en la ronda 1.
+- **C4.**
+  - [x] Cada `it` nuevo nombra su R-id: R3, R4, R5, R6 y R7 (dos). Las filas C y los ajustes de R2 van dentro de los `it.each` `#183 R2`.
+  - [x] Los commits de E1 son solo de tests y nacen verdes, como prescribe §Commits de E1. El rojo de cada candado lo prueban las 37 sondas y mis mutaciones, todas medidas en §3 y §4.
+- **C5.** [x] La traceability no tiene filas `pendiente` salvo R8, el gate humano. [x] Los mensajes siguen `test(mobile): … (#183 Rn)`.
+- **C6.** [x] `requirements.md` está en `status: approved`, con la casilla de E1 marcada (`:1225`, firma `4046e500`).
+- **C7.** [x] N/A: E1 no reemplaza nada.
+- **C8.** [x] N/A: E1 no cambia UI ni copy.
+
+### Observaciones ronda 2
+
+Ninguna bloqueante.
+
+- **O1 (informativa).** El frontmatter de `traceability.md` sigue en `status: spec_ready`. Lo actualiza el leader al cerrar.
+- **O2 (informativa).** R8 sigue pendiente del humano (§8).
+- **O3 (informativa).** P3 sigue abierta: «66 casos» en `requirements.md:466`, como historia de c1–c15.
