@@ -379,7 +379,7 @@ describe('#78 R6: cada fila de alerta trae su icono, su hueco, su tinta y sus tr
       color: '--color-muted',
     },
   ] as const)(
-    'canda las doce decisiones para $type (enmendado por #174 R7)',
+    'canda las doce decisiones para $type (enmendado por #174 R7) (enmendado por #174 R8)',
     async ({ type, iconName, labelKey, disc, color }) => {
       const alert = makeAlert({ id: type, type, petName: 'Rocky' });
       mockListAlerts.mockResolvedValue({
@@ -425,7 +425,15 @@ describe('#78 R6: cada fila de alerta trae su icono, su hueco, su tinta y sus tr
       );
       expect(timeText.props.className).toBeUndefined();
       expect(ack.props.accessibilityRole).toBe('button');
-      expect(ack.props.className).toContain('min-h-11');
+      for (const value of ['h-8.5', 'rounded-10', 'border-2', 'border-b-5', 'border-lip-gray', 'bg-surface', 'px-3']) {
+        expect(ack.props.className.split(' ')).toContain(value);
+      }
+      expect(ack.props.className.split(' ')).not.toContain('min-h-11');
+      expect(ack.props.hitSlop).toEqual({ top: 6, bottom: 6, left: 6, right: 6 });
+      const ackLabel = rowScope.getByText(es['alerts.ack']);
+      for (const value of ['text-xs', 'font-extrabold', 'text-foreground']) {
+        expect(ackLabel.props.className.split(' ')).toContain(value);
+      }
       expect(rowScope.getByText(es['alerts.ack'])).toBeVisible();
       expect(rowScope.queryByTestId(`${rowId}-status`)).toBeNull();
       expect(row.props.onPress).toBeUndefined();
@@ -449,7 +457,7 @@ describe('#78 R6: cada fila de alerta trae su icono, su hueco, su tinta y sus tr
     },
   );
 
-  it('alterna el tercer hijo entre ack y la píldora traducida (enmendado por #174 R7)', async () => {
+  it('alterna el tercer hijo entre ack y la píldora traducida (enmendado por #174 R7) (enmendado por #174 R8)', async () => {
     const alerts = [
       makeAlert({ id: 'open', status: 'open' }),
       makeAlert({ id: 'acked', status: 'acked' }),
@@ -481,7 +489,17 @@ describe('#78 R6: cada fila de alerta trae su icono, su hueco, su tinta y sus tr
     }
 
     const open = within(within(list).getByTestId('alert-row-open'));
-    expect(open.getByTestId('alert-row-open-ack')).toBeVisible();
+    const ack = open.getByTestId('alert-row-open-ack');
+    expect(ack).toBeVisible();
+    for (const value of ['h-8.5', 'rounded-10', 'border-2', 'border-b-5', 'border-lip-gray', 'bg-surface', 'px-3']) {
+      expect(ack.props.className.split(' ')).toContain(value);
+    }
+    expect(ack.props.className.split(' ')).not.toContain('min-h-11');
+    expect(ack.props.hitSlop).toEqual({ top: 6, bottom: 6, left: 6, right: 6 });
+    const ackLabel = open.getByText(es['alerts.ack']);
+    for (const value of ['text-xs', 'font-extrabold', 'text-foreground']) {
+      expect(ackLabel.props.className.split(' ')).toContain(value);
+    }
     expect(open.queryByTestId('alert-row-open-status')).toBeNull();
 
     for (const [status, labelKey] of [
@@ -1221,7 +1239,7 @@ describe('#100 R6: la columna de texto de cada fila abre su detalle', () => {
     });
   });
 
-  it('da rol, altura y opacidad de pulsado solo al enlace (enmendado por #174 R7)', async () => {
+  it('da rol, altura y opacidad de pulsado solo al enlace (enmendado por #174 R7) (enmendado por #174 R8)', async () => {
     await renderAlerts();
     const link = await screen.findByTestId('alert-row-alert-1-link');
     expect(link.props.accessibilityRole).toBe('button');
@@ -1475,7 +1493,7 @@ describe('#170 R5: la fila abierta lleva el borde de su tipo', () => {
     { type: 'geofence_exit', border: 'border-danger', iconName: 'LocationSlash', labelKey: 'alerts.typeGeofenceExit', disc: 'bg-category-rose', ink: '--color-danger', label: 'Salió de la zona' },
     { type: 'battery_low', border: 'border-warning-strong', iconName: 'BatteryLow', labelKey: 'alerts.typeBatteryLow', disc: 'bg-category-amber', ink: '--color-warning-strong', label: 'Batería baja' },
     { type: 'mystery_type', border: 'border-muted', iconName: 'Bell', labelKey: 'alerts.typeUnknown', disc: 'bg-default', ink: '--color-muted', label: 'Aviso' },
-  ])('abierta $type: border-2 y $border, con $iconName y $labelKey (enmendado por #174 R7)', async ({ type, border, iconName, disc, ink, label }) => {
+  ])('abierta $type: border-2 y $border, con $iconName y $labelKey (enmendado por #174 R7) (enmendado por #174 R8)', async ({ type, border, iconName, disc, ink, label }) => {
     mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ type })], nextCursor: null });
     await renderAlerts();
     const row = await screen.findByTestId('alert-row-alert-1');
