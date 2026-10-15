@@ -19,6 +19,9 @@ import { settleAlertAck } from '../../utils/alert-ack-outcome';
 import { alertTypeMeta } from '../../utils/alert-meta';
 import { alertSection } from '../../utils/alert-sections';
 import { CATEGORY_SLOTS } from '../../utils/category-palette';
+import { HomeEntrance } from '../home/home-entrance';
+
+const ALERT_ROW_ENTRANCE_LIMIT = 5;
 
 function fmtOpenedAt(
   iso: string,
@@ -255,6 +258,11 @@ export function AlertsScreen() {
               )}
             </Card>
           );
+          const row = index < ALERT_ROW_ENTRANCE_LIMIT ? (
+            <HomeEntrance index={index} testID={`${rowId}-entrance`}>
+              {card}
+            </HomeEntrance>
+          ) : card;
           const section = alertSection(item.openedAt, now);
           const firstInSection = index === 0 || alertSection(rows[index - 1].openedAt, now) !== section;
           return firstInSection ? (
@@ -262,9 +270,9 @@ export function AlertsScreen() {
               <Text testID={`alerts-section-${section}`} accessibilityRole="header" className="mt-1.5 text-13 font-extrabold uppercase tracking-caps text-muted">
                 {sectionLabels[section]}
               </Text>
-              {card}
+              {row}
             </View>
-          ) : card;
+          ) : row;
         }}
       />
     </View>
