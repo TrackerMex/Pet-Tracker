@@ -337,4 +337,4 @@ el detalle de la enmienda está en su `requirements.md` §R14.
   aprobación. Los tests que cubren lo enmendado se reescriben en #173 (lista
   en su `tasks.md`).
 
-- [ ] Enmienda #173 aprobada por humano
+- [X] Enmienda #173 aprobada por humano

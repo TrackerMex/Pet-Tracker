@@ -948,7 +948,7 @@ bueno y que el árbol desmintió. Detalle y pruebas en `progress/current.md` (Re
 ## Aprobación
 
 - [x] Aprobado por humano (fecha: 2026-10-13, vía Notion) ← gate obligatorio antes de implementar
-- [ ] Copy nuevo de R13.2 aprobado tal cual (si no, escribir aquí los literales: ____)
+- [X] Copy nuevo de R13.2 aprobado tal cual (si no, escribir aquí los literales: ____)
 - [ ] Revertir D4: color por hash del id en vez de por índice
 - [ ] Revertir D12/P10: quitar «Cerrar sesión» de Perfil
 - [ ] Revertir D14: smoke solo en tema claro
@@ -956,6 +956,6 @@ bueno y que el árbol desmintió. Detalle y pruebas en `progress/current.md` (Re
 - [ ] Revertir P7: fecha y hora absolutas en vez de relativa
 - [ ] Revertir P8: claves nuevas para el sexo en vez de `addPet.*`
 - [ ] Revertir etiqueta de idioma: clave nueva `profile.language` en vez de `profile.changeLanguage`
-- [ ] Enmiendas R14 revisadas (la firma de cada bloque es `- [ ] Enmienda #173 aprobada por humano`, en su
+- [X] Enmiendas R14 revisadas (la firma de cada bloque es `- [ ] Enmienda #173 aprobada por humano`, en su
   fichero)
 - [X] Prueba de humo R16 superada en dev build de Android (fecha: 2026-10-14, dispositivo: OnePlus Nord 5, temas:)
