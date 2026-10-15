@@ -887,4 +887,4 @@ Base H0: `toHaveLength(35 - 1 + 2 + 1 + 16 - 4 + 8)` y título **57**. Tras R7 y
 
 ### Aprobación de la Enmienda E1
 
-- [ ] Enmienda E1 aprobada por humano ← gate obligatorio antes del handoff a Codex
+- [x] Enmienda E1 aprobada por humano (fecha: 2026-10-15, vía repo) ← gate obligatorio antes del handoff a Codex
