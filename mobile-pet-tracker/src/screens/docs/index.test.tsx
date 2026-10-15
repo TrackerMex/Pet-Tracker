@@ -357,8 +357,26 @@ describe('#95 R6: métricas bajo cabecera nativa', () => {
     mockListPetDocs.mockReturnValue(pending<PetDocsState>());
     await renderDocs();
     expect(screen.getByTestId('screen-docs').props.contentContainerStyle).toEqual({
-      padding: 24, gap: 16, paddingBottom: 48,
+      paddingHorizontal: 20, paddingTop: 24, gap: 14, paddingBottom: 48,
     });
+  });
+});
+
+describe('#175 R4: esqueleto del tamaño de la fila', () => {
+  it('pinta tres esqueletos de 80 px con el radio de la fila', async () => {
+    mockGetPet.mockReturnValue(pending<PetState>());
+    mockListPetDocs.mockReturnValue(pending<PetDocsState>());
+    await renderDocs();
+
+    const skeleton = screen.getByTestId('docs-list-skeleton');
+    expect(skeleton.props.className).toBe('gap-3.5');
+    expect(skeleton.children).toHaveLength(3);
+    for (const child of skeleton.children) {
+      if (typeof child === 'string') throw new Error('Expected a skeleton element');
+      const classes = child.props.className.split(/\s+/);
+      expect(classes).toEqual(expect.arrayContaining(['h-20', 'w-full', 'rounded-card']));
+      expect(classes).not.toContain('h-24');
+    }
   });
 });
 
