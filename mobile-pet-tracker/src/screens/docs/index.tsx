@@ -220,8 +220,9 @@ export function DocsScreen({ petId }: { petId: string }) {
         contentInsetAdjustmentBehavior="automatic"
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={{
-          padding: 24,
-          gap: 16,
+          paddingHorizontal: 20,
+          paddingTop: 24,
+          gap: 14,
           paddingBottom: insets.bottom + 24,
         }}
       >
@@ -334,10 +335,10 @@ export function DocsScreen({ petId }: { petId: string }) {
         ) : null}
 
         {docs.data === undefined ? (
-          <View testID="docs-list-skeleton" className="gap-3">
-            <Skeleton className="h-24 w-full rounded-card" />
-            <Skeleton className="h-24 w-full rounded-card" />
-            <Skeleton className="h-24 w-full rounded-card" />
+          <View testID="docs-list-skeleton" className="gap-3.5">
+            <Skeleton className="h-20 w-full rounded-card" />
+            <Skeleton className="h-20 w-full rounded-card" />
+            <Skeleton className="h-20 w-full rounded-card" />
           </View>
         ) : null}
 
