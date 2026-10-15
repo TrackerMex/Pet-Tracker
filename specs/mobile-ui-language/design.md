@@ -962,6 +962,15 @@ copy completa en cada una.
 | — | `alerts.distanceFromZone` | `{{distance}} from {{zone}}` | `A {{distance}} de {{zone}}` | ← añadida por #170 (R1) |
 | — | `alerts.viewOnMap` | `View on map` | `Ver en el mapa` | ← añadida por #170 (R1) |
 
+### §2.27 — Añadidos por #171 — Celebraciones
+
+| # | Clave | `en` | `es` | Origen |
+|---|---|---|---|---|
+| — | `addPet.celebrateTitle` | `{{petName}} is home!` | `¡{{petName}} ya está en casa!` | ← añadida por #171 (R12) |
+| — | `addPet.celebrateBody` | `I'll help you look after {{petName}}. Pair a collar and I'll keep track of where they are.` | `Te ayudo a cuidar de {{petName}}. Vincula un collar y estaré pendiente de dónde está.` | ← añadida por #171 (R12) |
+| — | `addPet.celebratePair` | `Pair a collar` | `Vincular un collar` | ← añadida por #171 (R12) |
+| — | `addPet.celebrateLater` | `Not now` | `Ahora no` | ← añadida por #171 (R12) |
+
 ## 3. La infraestructura
 
 ### 3.1 Decisiones

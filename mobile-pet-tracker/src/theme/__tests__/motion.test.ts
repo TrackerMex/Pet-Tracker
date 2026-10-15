@@ -74,6 +74,16 @@ describe('#152 R1: las duraciones y el preset de movimiento viven en un solo sit
     expect(Object.keys(require('../motion')).sort()).toEqual([
       'MOTION_BLINK_INTERVAL_MS',
       'MOTION_BLINK_TIMING',
+      'MOTION_CELEBRATION_BADGE_DELAY_MS',
+      'MOTION_CELEBRATION_BADGE_POP_MS',
+      'MOTION_CELEBRATION_EASE_OUT',
+      'MOTION_CELEBRATION_PING_MS',
+      'MOTION_CELEBRATION_POP_MS',
+      'MOTION_CELEBRATION_POP_PEAK',
+      'MOTION_CELEBRATION_RISE_DELAY_MS',
+      'MOTION_CELEBRATION_RISE_OFFSET_Y',
+      'MOTION_CELEBRATION_RISE_STAGGER_MS',
+      'MOTION_CONFETTI_FALL_TIMING',
       'MOTION_ENTRANCE_OFFSET_Y',
       'MOTION_ENTRANCE_SCALE',
       'MOTION_FADE_TIMING',
@@ -81,9 +91,12 @@ describe('#152 R1: las duraciones y el preset de movimiento viven en un solo sit
       'MOTION_FILL_TIMING',
       'MOTION_FLOAT_OFFSET_Y',
       'MOTION_FLOAT_TIMING',
+      'MOTION_PINGO_FLOAT_OFFSET_Y',
+      'MOTION_PINGO_FLOAT_TIMING',
       'MOTION_PING_FROM',
       'MOTION_PING_TIMING',
       'MOTION_PING_TO_SCALE',
+      'MOTION_POP_SCALE',
       'MOTION_POP_SPRING',
       'MOTION_SETTLE_SPRING',
       'MOTION_STAGGER_MS',
@@ -165,5 +178,45 @@ describe('#167 R2: los tokens de pop y ping viven en motion.ts', () => {
       easing: { bezier: [0.23, 1, 0.32, 1] },
       reduceMotion: ReduceMotion.System,
     });
+  });
+});
+
+describe('#171 R6: las constantes de confeti viven en motion.ts', () => {
+  it('declara MOTION_CONFETTI_FALL_TIMING', () => {
+    expect(require('../motion').MOTION_CONFETTI_FALL_TIMING).toEqual({
+      easing: { bezier: [0.2, 0.6, 0.4, 1] }, reduceMotion: 'system',
+    });
+  });
+});
+
+describe('#171 R7: las constantes de pop viven en motion.ts', () => {
+  it('declara MOTION_POP_SCALE', () => {
+    expect(require('../motion').MOTION_POP_SCALE).toBe(0.6);
+  });
+});
+
+describe('#171 E4: las constantes de la celebración viven en motion.ts', () => {
+  it('declara la curva ease-out de CSS', () => {
+    expect(require('../motion').MOTION_CELEBRATION_EASE_OUT).toEqual({ easing: { bezier: [0, 0, 0.58, 1] }, reduceMotion: ReduceMotion.System });
+  });
+
+  it('declara los pops de Pingo y de la insignia', () => {
+    const m = require('../motion');
+    expect([m.MOTION_CELEBRATION_POP_MS, m.MOTION_CELEBRATION_POP_PEAK, m.MOTION_CELEBRATION_BADGE_POP_MS, m.MOTION_CELEBRATION_BADGE_DELAY_MS]).toEqual([600, 1.08, 500, 450]);
+  });
+
+  it('declara la duración del ping', () => {
+    expect(require('../motion').MOTION_CELEBRATION_PING_MS).toBe(2200);
+  });
+
+  it('declara la entrada escalonada', () => {
+    const m = require('../motion');
+    expect([m.MOTION_CELEBRATION_RISE_DELAY_MS, m.MOTION_CELEBRATION_RISE_STAGGER_MS, m.MOTION_CELEBRATION_RISE_OFFSET_Y]).toEqual([500, 80, 14]);
+  });
+
+  it('declara la flotación de Pingo', () => {
+    const m = require('../motion');
+    expect(m.MOTION_PINGO_FLOAT_OFFSET_Y).toBe(10);
+    expect(m.MOTION_PINGO_FLOAT_TIMING).toEqual({ duration: 1500, easing: { bezier: [0.42, 0, 0.58, 1] }, reduceMotion: ReduceMotion.System });
   });
 });

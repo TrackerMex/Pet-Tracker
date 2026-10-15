@@ -854,3 +854,19 @@ describe('#167 R14: las pantallas de cuenta no traen deriva', () => {
     )).toEqual([]);
   });
 });
+
+describe('#171 R13: sin drift en la celebración', () => {
+  it.each([
+    'src/components/celebration.tsx',
+    'src/components/__tests__/celebration.test.tsx',
+    'src/theme/motion.ts',
+  ])('R13.1 %s no deja escapes de estilo', (relativePath) => {
+    const source = readFileSync(join(projectRoot, relativePath), 'utf8');
+    expect(source).not.toMatch(MEALS_BAR_STYLE_ESCAPES);
+  });
+
+  it('R13.2 la fuente no usa LayoutAnimation ni entering/exiting', () => {
+    const source = readFileSync(join(projectRoot, 'src/components/celebration.tsx'), 'utf8');
+    expect(source).not.toMatch(/LayoutAnimation|entering=|exiting=/);
+  });
+});
