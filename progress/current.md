@@ -11,8 +11,10 @@
   (ec508f88) y no de `origin/main`, porque toca las pantallas que #172 rehízo
   y #172 aún no está mergeada. Cuando #172 entre en main, se mergea
   `origin/main` aquí antes del handoff a Codex.
-- **Estado**: `pending`. Spec en manos de `spec_author`; luego espejo en
-  Notion y gate humano.
+- **Estado**: `pending`, spec en `29068b90`. Espejo en Notion (página
+  `3fa6115a9b27813fa1e7c36705b0a312`, base Specs), verificado el 2026-10-15:
+  29 tablas, R1-R8 y las dos casillas sin marcar. Espera el gate humano y
+  las respuestas a P1-P8.
 - **Pedido del humano** (2026-10-15, tras firmar R21 de #172): validación en
   cliente con mensaje claro en todos los inputs de cuenta, como el correo de
   Crear cuenta, en lugar del error del servidor. Texto literal en
