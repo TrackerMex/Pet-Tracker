@@ -615,3 +615,128 @@ describe('#167 R8: el error del registro lleva icono', () => {
     expect(screen.getByTestId('register-error-row')).toBeOnTheScreen();
   });
 });
+
+describe('#183 R4: registro valida en cliente', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockSignIn.mockResolvedValue();
+    mockUseAuth.mockReturnValue({
+      status: 'unauthenticated', token: null, signIn: mockSignIn, signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockRegister.mockResolvedValue({ kind: 'email-taken' });
+    jest.spyOn(Intl.DateTimeFormat.prototype, 'resolvedOptions').mockReturnValue({
+      timeZone: 'America/Mexico_City',
+    } as Intl.ResolvedDateTimeFormatOptions);
+  });
+  afterEach(() => jest.restoreAllMocks());
+
+  async function changeFields(changes: Record<string, string>) {
+    for (const [id, value] of Object.entries(changes)) {
+      await fireEvent.changeText(screen.getByTestId(id), value);
+    }
+  }
+
+  it.each<[string, Record<string, string>, string]>([
+    ['first-name', { 'register-first-name': '' }, 'Escribe tu nombre'],
+    ['first-name', { 'register-first-name': '   ' }, 'Escribe tu nombre'],
+    ['first-name', { 'register-first-name': 'a'.repeat(121) }, 'Usa 120 caracteres o menos'],
+    ['last-name', { 'register-last-name': '' }, 'Escribe tus apellidos'],
+    ['last-name', { 'register-last-name': 'a'.repeat(121) }, 'Usa 120 caracteres o menos'],
+    ['email', { 'register-email': 'alex@example.c' }, 'Ingresa un correo electrónico válido'],
+    ['email', { 'register-email': 'ñu@example.com' }, 'Ingresa un correo electrónico válido'],
+    ['email', { 'register-email': 'a'.repeat(309) + '@example.com' }, 'Usa 320 caracteres o menos'],
+    ['phone', { 'register-phone': '123456' }, 'Usa al menos 7 caracteres'],
+    ['phone', { 'register-phone': '1'.repeat(21) }, 'Usa 20 caracteres o menos'],
+    ['country', { 'register-country': 'M' }, 'Escribe las 2 letras de tu país, como MX'],
+    ['country', { 'register-country': '' }, 'Escribe las 2 letras de tu país, como MX'],
+    ['country', { 'register-country': 'M1' }, 'Usa solo letras de la A a la Z'],
+    ['country', { 'register-country': 'ña' }, 'Usa solo letras de la A a la Z'],
+    ['password', { 'register-password': '1234567', 'register-password-confirmation': '1234567' }, 'Usa al menos 8 caracteres'],
+    ['password', { 'register-password': 'a'.repeat(129), 'register-password-confirmation': 'a'.repeat(129) }, 'Usa 128 caracteres o menos'],
+    ['password-confirmation', { 'register-password-confirmation': 'correct horsE' }, 'Las contraseñas no coinciden'],
+  ])('#183 R4: %s con %p pinta «%s» solo en ese campo y no llama a la API', async (field, changes, message) => {
+    await renderRegister();
+    await fillForm();
+    await changeFields(changes);
+    await submit();
+    await waitFor(() => expect(screen.getByTestId(`register-${field}-message`)).toHaveTextContent(message));
+    const text = screen.getByTestId(`register-${field}-message`);
+    const row = screen.getByTestId(`register-${field}-message-row`);
+    expect(screen.getAllByTestId(/^register-.+-message-row$/)).toHaveLength(1);
+    expect(row.children).toEqual([within(row).getByTestId('icon-alert-circle'), text]);
+    expect(text.props.selectable).toBe(true);
+    expect(screen.queryByTestId('register-error')).toBeNull();
+    expect(mockRegister).not.toHaveBeenCalled();
+  });
+
+  it.each<[string, Record<string, string>]>([
+    ['nombre de 120 recortado', { 'register-first-name': ' ' + 'a'.repeat(120) + ' ' }],
+    ['apellidos de 120', { 'register-last-name': 'a'.repeat(120) }],
+    ['correo de 320', { 'register-email': 'a'.repeat(308) + '@example.com' }],
+    ['teléfono de 7', { 'register-phone': '1234567' }],
+    ['teléfono con espacio', { 'register-phone': '55 1234' }],
+    ['teléfono de 20 recortado', { 'register-phone': ' ' + '1'.repeat(20) + ' ' }],
+    ['contraseña de espacios', { 'register-password': ' '.repeat(8), 'register-password-confirmation': ' '.repeat(8) }],
+    ['contraseña de 128', { 'register-password': 'a'.repeat(128), 'register-password-confirmation': 'a'.repeat(128) }],
+  ])('#183 R4: %s con %p pasa como en el DTO y llama a la API', async (_label, changes) => {
+    await renderRegister();
+    await fillForm();
+    await changeFields(changes);
+    await submit();
+    await waitFor(() => expect(screen.getByTestId('register-error')).toHaveTextContent('Ese correo ya está registrado'));
+    expect(screen.queryAllByTestId(/^register-.+-message-row$/)).toHaveLength(0);
+    expect(mockRegister).toHaveBeenCalledTimes(1);
+  });
+
+  async function expectAllMessages(messages: Record<string, string>) {
+    await fireEvent.press(screen.getByTestId('register-terms'));
+    await fireEvent.changeText(screen.getByTestId('register-password-confirmation'), 'x');
+    await submit();
+    await waitFor(() => {
+      for (const [field, message] of Object.entries(messages)) {
+        expect(screen.getByTestId(`register-${field}-message`)).toHaveTextContent(message);
+      }
+    });
+    expect(screen.getAllByTestId(/^register-.+-message-row$/)).toHaveLength(7);
+    expect(screen.queryByTestId('register-error')).toBeNull();
+    expect(mockRegister).not.toHaveBeenCalled();
+  }
+
+  it('#183 R4: con el formulario vacío pinta los siete mensajes a la vez y no llama a la API', async () => {
+    await renderRegister();
+    await expectAllMessages({
+      'first-name': 'Escribe tu nombre', 'last-name': 'Escribe tus apellidos',
+      email: 'Ingresa un correo electrónico válido', phone: 'Usa al menos 7 caracteres',
+      country: 'Escribe las 2 letras de tu país, como MX', password: 'Usa al menos 8 caracteres',
+      'password-confirmation': 'Las contraseñas no coinciden',
+    });
+  });
+
+  it('#183 R4: en inglés los siete mensajes salen en inglés', async () => {
+    await render(
+      <HeroUINativeProvider><LanguageProvider initial="en"><RegisterRoute /></LanguageProvider></HeroUINativeProvider>,
+    );
+    await expectAllMessages({
+      'first-name': 'Enter your first name', 'last-name': 'Enter your last name',
+      email: 'Enter a valid email address', phone: 'Use at least 7 characters',
+      country: "Enter your country's 2-letter code, like MX", password: 'Use at least 8 characters',
+      'password-confirmation': "Passwords don't match",
+    });
+  });
+
+  it('#183 R4: envía el correo sin espacios a register y al login que le sigue', async () => {
+    mockRegister.mockResolvedValue({ kind: 'ok', user });
+    mockLogin.mockResolvedValue({ kind: 'ok', accessToken: 'jwt-token' });
+    await renderRegister();
+    await fillForm();
+    await fireEvent.changeText(screen.getByTestId('register-email'), '  Alex@Example.com  ');
+    await submit();
+    expect(mockRegister).toHaveBeenCalledWith(apiUrl, {
+      firstName: 'Alex', lastName: 'Smith', email: 'Alex@Example.com', phone: '+525555555555',
+      password: 'correct horse', passwordConfirmation: 'correct horse', country: 'MX',
+      timezone: 'America/Mexico_City', termsAccepted: true,
+    });
+    expect(mockLogin).toHaveBeenCalledWith(apiUrl, { email: 'Alex@Example.com', password: 'correct horse' });
+  });
+});

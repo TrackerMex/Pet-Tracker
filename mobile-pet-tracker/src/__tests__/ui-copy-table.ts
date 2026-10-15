@@ -42,7 +42,6 @@ export const R1_AUTH: UseRow[] = [
   { file: 'src/screens/register/index.tsx', key: 'register.createAccount' },
   { file: 'src/components/password-input.tsx', key: 'common.showPassword' }, // #172 R16
   { file: 'src/components/password-input.tsx', key: 'common.hidePassword' }, // #172 R16
-  { file: 'src/screens/register/index.tsx', key: 'forgot.invalidEmail' }, // #172 R16
   { file: 'src/components/back-button.tsx', key: 'common.back' }, // #172 R16
   { file: 'src/utils/account-rules.ts', key: 'forgot.invalidEmail' }, // #183 R2
   { file: 'src/utils/account-rules.ts', key: 'validation.firstNameRequired' }, // #183 R2
