@@ -53,7 +53,7 @@ export function LoginScreen() {
           setError(t('common.cannotReachServer'));
           return;
         case 'validation':
-          setError(result.errors.map(({ message }) => message).join('\n'));
+          setError(t('validation.checkDetails'));
           return;
         case 'error':
         case 'missing-config':

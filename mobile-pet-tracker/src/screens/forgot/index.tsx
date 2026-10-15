@@ -52,7 +52,7 @@ export function ForgotScreen() {
           setSent(true);
           return;
         case 'validation':
-          setError(t('forgot.invalidEmail'));
+          setError(t('validation.checkDetails'));
           return;
         case 'rate-limited':
           setError(t('forgot.tooManyAttempts'));

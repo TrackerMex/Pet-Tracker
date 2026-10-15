@@ -14,7 +14,6 @@ import { KeyboardAvoidingView, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { login, register } from '../../api/auth';
-import type { FieldError as ApiFieldError } from '../../api/types';
 import { BackButton } from '../../components/back-button';
 import { useAuth } from '../../providers/auth-provider';
 import { PingoFloat } from '../../components/pingo-float';
@@ -33,42 +32,6 @@ type RegisterField =
   | 'password'
   | 'passwordConfirmation'
   | 'country';
-
-type RegisterFieldErrors = Partial<Record<RegisterField, string>>;
-
-const registerFields = new Set<RegisterField>([
-  'firstName',
-  'lastName',
-  'email',
-  'phone',
-  'password',
-  'passwordConfirmation',
-  'country',
-]);
-
-function isRegisterField(path: string): path is RegisterField {
-  return registerFields.has(path as RegisterField);
-}
-
-function mapValidationErrors(errors: ApiFieldError[]): {
-  fields: RegisterFieldErrors;
-  general: string | null;
-} {
-  const fields: RegisterFieldErrors = {};
-  const general: string[] = [];
-
-  for (const error of errors) {
-    if (isRegisterField(error.path)) {
-      fields[error.path] = fields[error.path]
-        ? `${fields[error.path]}\n${error.message}`
-        : error.message;
-    } else {
-      general.push(error.message);
-    }
-  }
-
-  return { fields, general: general.length > 0 ? general.join('\n') : null };
-}
 
 function deviceTimezone(): string | undefined {
   try {
@@ -91,15 +54,12 @@ export function RegisterScreen() {
   const [terms, setTerms] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<FieldIssues<RegisterField>>({});
-  // #183 R4: transición, la borra R7
-  const [serverFieldErrors, setServerFieldErrors] = useState<Partial<Record<RegisterField, string>>>({});
   const [generalError, setGeneralError] = useState<string | null>(null);
   const { signIn } = useAuth();
   const t = useTranslate();
 
   async function handleSubmit() {
     setFieldErrors({});
-    setServerFieldErrors({});
     setGeneralError(null);
     const values: RegisterValues = {
       firstName, lastName, email: email.trim(), phone, country, password, passwordConfirmation,
@@ -136,12 +96,9 @@ export function RegisterScreen() {
         case 'email-taken':
           setGeneralError(t('register.emailAlreadyRegistered'));
           return;
-        case 'validation': {
-          const validation = mapValidationErrors(result.errors);
-          setServerFieldErrors(validation.fields);
-          setGeneralError(validation.general);
+        case 'validation':
+          setGeneralError(t('validation.checkDetails'));
           return;
-        }
         case 'unreachable':
           setGeneralError(t('common.cannotReachServer'));
           return;
@@ -193,7 +150,7 @@ export function RegisterScreen() {
         </HomeEntrance>
 
         <View testID="register-names-row" className="flex-row gap-3">
-          <TextField className="flex-1" isInvalid={Boolean(fieldErrors.firstName ?? serverFieldErrors.firstName)}>
+          <TextField className="flex-1" isInvalid={Boolean(fieldErrors.firstName)}>
             <Label>
               <Label.Text className="text-13 font-semibold text-muted">
                 {t('register.firstName')}
@@ -206,10 +163,10 @@ export function RegisterScreen() {
               onChangeText={setFirstName}
             />
             <FieldError testID="register-first-name-error">
-              {fieldErrors.firstName || serverFieldErrors.firstName ? <FormError testID="register-first-name-message" message={fieldErrors.firstName ? t(fieldErrors.firstName.labelKey, fieldErrors.firstName.params) : serverFieldErrors.firstName ?? ''} /> : null}
+              {fieldErrors.firstName ? <FormError testID="register-first-name-message" message={t(fieldErrors.firstName.labelKey, fieldErrors.firstName.params)} /> : null}
             </FieldError>
           </TextField>
-          <TextField className="flex-1" isInvalid={Boolean(fieldErrors.lastName ?? serverFieldErrors.lastName)}>
+          <TextField className="flex-1" isInvalid={Boolean(fieldErrors.lastName)}>
             <Label>
               <Label.Text className="text-13 font-semibold text-muted">
                 {t('register.lastName')}
@@ -222,12 +179,12 @@ export function RegisterScreen() {
               onChangeText={setLastName}
             />
             <FieldError testID="register-last-name-error">
-              {fieldErrors.lastName || serverFieldErrors.lastName ? <FormError testID="register-last-name-message" message={fieldErrors.lastName ? t(fieldErrors.lastName.labelKey, fieldErrors.lastName.params) : serverFieldErrors.lastName ?? ''} /> : null}
+              {fieldErrors.lastName ? <FormError testID="register-last-name-message" message={t(fieldErrors.lastName.labelKey, fieldErrors.lastName.params)} /> : null}
             </FieldError>
           </TextField>
         </View>
 
-        <TextField isInvalid={Boolean(fieldErrors.email ?? serverFieldErrors.email)}>
+        <TextField isInvalid={Boolean(fieldErrors.email)}>
           <Label>
             <Label.Text className="text-13 font-semibold text-muted">
               {t('register.email')}
@@ -242,12 +199,12 @@ export function RegisterScreen() {
             onChangeText={setEmail}
           />
           <FieldError testID="register-email-error">
-            {fieldErrors.email || serverFieldErrors.email ? <FormError testID="register-email-message" message={fieldErrors.email ? t(fieldErrors.email.labelKey, fieldErrors.email.params) : serverFieldErrors.email ?? ''} /> : null}
+            {fieldErrors.email ? <FormError testID="register-email-message" message={t(fieldErrors.email.labelKey, fieldErrors.email.params)} /> : null}
           </FieldError>
         </TextField>
 
         <View testID="register-contact-row" className="flex-row gap-3">
-          <TextField className="flex-2" isInvalid={Boolean(fieldErrors.phone ?? serverFieldErrors.phone)}>
+          <TextField className="flex-2" isInvalid={Boolean(fieldErrors.phone)}>
             <Label>
               <Label.Text className="text-13 font-semibold text-muted">
                 {t('register.phone')}
@@ -261,10 +218,10 @@ export function RegisterScreen() {
               onChangeText={setPhone}
             />
             <FieldError testID="register-phone-error">
-              {fieldErrors.phone || serverFieldErrors.phone ? <FormError testID="register-phone-message" message={fieldErrors.phone ? t(fieldErrors.phone.labelKey, fieldErrors.phone.params) : serverFieldErrors.phone ?? ''} /> : null}
+              {fieldErrors.phone ? <FormError testID="register-phone-message" message={t(fieldErrors.phone.labelKey, fieldErrors.phone.params)} /> : null}
             </FieldError>
           </TextField>
-          <TextField className="flex-1" isInvalid={Boolean(fieldErrors.country ?? serverFieldErrors.country)}>
+          <TextField className="flex-1" isInvalid={Boolean(fieldErrors.country)}>
             <Label>
               <Label.Text className="text-13 font-semibold text-muted">
                 {t('register.country')}
@@ -279,12 +236,12 @@ export function RegisterScreen() {
               onChangeText={(value) => setCountry(value.toUpperCase())}
             />
             <FieldError testID="register-country-error">
-              {fieldErrors.country || serverFieldErrors.country ? <FormError testID="register-country-message" message={fieldErrors.country ? t(fieldErrors.country.labelKey, fieldErrors.country.params) : serverFieldErrors.country ?? ''} /> : null}
+              {fieldErrors.country ? <FormError testID="register-country-message" message={t(fieldErrors.country.labelKey, fieldErrors.country.params)} /> : null}
             </FieldError>
           </TextField>
         </View>
 
-        <TextField isInvalid={Boolean(fieldErrors.password ?? serverFieldErrors.password)}>
+        <TextField isInvalid={Boolean(fieldErrors.password)}>
           <Label>
             <Label.Text className="text-13 font-semibold text-muted">
               {t('register.password')}
@@ -296,11 +253,11 @@ export function RegisterScreen() {
             onChangeText={setPassword}
           />
           <FieldError testID="register-password-error">
-            {fieldErrors.password || serverFieldErrors.password ? <FormError testID="register-password-message" message={fieldErrors.password ? t(fieldErrors.password.labelKey, fieldErrors.password.params) : serverFieldErrors.password ?? ''} /> : null}
+            {fieldErrors.password ? <FormError testID="register-password-message" message={t(fieldErrors.password.labelKey, fieldErrors.password.params)} /> : null}
           </FieldError>
         </TextField>
 
-        <TextField isInvalid={Boolean(fieldErrors.passwordConfirmation ?? serverFieldErrors.passwordConfirmation)}>
+        <TextField isInvalid={Boolean(fieldErrors.passwordConfirmation)}>
           <Label>
             <Label.Text className="text-13 font-semibold text-muted">
               {t('register.confirmPassword')}
@@ -312,7 +269,7 @@ export function RegisterScreen() {
             onChangeText={setPasswordConfirmation}
           />
           <FieldError testID="register-password-confirmation-error">
-            {fieldErrors.passwordConfirmation || serverFieldErrors.passwordConfirmation ? <FormError testID="register-password-confirmation-message" message={fieldErrors.passwordConfirmation ? t(fieldErrors.passwordConfirmation.labelKey, fieldErrors.passwordConfirmation.params) : serverFieldErrors.passwordConfirmation ?? ''} /> : null}
+            {fieldErrors.passwordConfirmation ? <FormError testID="register-password-confirmation-message" message={t(fieldErrors.passwordConfirmation.labelKey, fieldErrors.passwordConfirmation.params)} /> : null}
           </FieldError>
         </TextField>
 

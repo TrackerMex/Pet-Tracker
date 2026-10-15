@@ -60,7 +60,7 @@ export function ResetPasswordScreen() {
           setError(t('resetPassword.errorExpiredToken'));
           return;
         case 'validation':
-          setError(result.errors.map(({ message }) => message).join('\n'));
+          setError(t('validation.checkDetails'));
           return;
         case 'unreachable':
           setError(t('common.cannotReachServer'));
