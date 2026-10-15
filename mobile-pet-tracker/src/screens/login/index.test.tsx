@@ -505,4 +505,16 @@ describe('#183 R3: login valida en cliente', () => {
     expect(screen.queryByTestId('login-password-message')).toBeNull();
     expect(mockLogin).toHaveBeenCalledTimes(1);
   });
+
+  it('#183 R3: un envío inválido tras un aviso general lo retira y no vuelve a llamar a la API', async () => {
+    mockLogin.mockResolvedValue({ kind: 'invalid-credentials' });
+    await renderLogin();
+    await submit();
+    expect(await screen.findByTestId('login-error')).toHaveTextContent('Credenciales inválidas');
+    await waitFor(() => expect(screen.getByTestId('login-submit')).not.toBeDisabled());
+    await submit('', 'correct horse');
+    await expectField('email', 'Ingresa un correo electrónico válido');
+    expect(screen.queryByTestId('login-error')).toBeNull();
+    expect(mockLogin).toHaveBeenCalledTimes(1);
+  });
 });
