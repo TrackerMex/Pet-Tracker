@@ -1,7 +1,7 @@
 ---
 feature: mobile-alerts-canvas-fidelity
 id: 174
-status: draft
+status: approved
 ---
 
 # Tareas — #174 Alertas fieles al canvas
