@@ -28,16 +28,29 @@
 - **H0** = el commit que trae
   `progress/handoff_mobile-account-client-validation.md`. T0 medido: las 8
   suites de la feature dan 300 passed, y las 12 anclas del handoff salen OK.
-  Hay dos derivas desde la base de la spec (`60dd9eda`), ambas por #173: B4
-  es 398 (la fórmula del catálogo acaba en `- 4 + 3, // #173 R13`) y B5 es
-  §2.29, así que #183 toma §2.30. El delta no cambia.
+  Hay dos derivas desde la base de la spec (`60dd9eda`). B4 es 402 (399, más
+  `+ 4 // #171 R12`, menos el `- 4 + 3, // #173 R13`), y B5 es §2.29, así que
+  #183 toma §2.30. El delta no cambia.
 - **Parada 1 de Codex en c1** (2026-10-15): la nota del leader decía que B4
   era 398 y es 402, porque faltó sumar `+ 4 // #171 R12`. Su rojo era el
   esperado. Se resuelve con la Reanudación 1 del handoff, sin cambiar la spec.
   El c1 queda sin commitear en el árbol hasta que Codex lo commitee.
-- **Siguiente**: el humano lanza Codex con el handoff. Cuando Codex termine:
-  init.sh coordinado con los pares (#174, #178, #179), después reviewer, y
-  luego el cierre (Notion «Implementado» / «Completado», y la PR).
+- **Codex terminó** c1–c14, con trazabilidad e informe (HEAD `d3ac0fdd`; c15
+  no aplica). `./init.sh` del leader sobre `d3ac0fdd`, coordinado con Backend
+  y sites-99: exit 0. Backend unit da 187/1474, el móvil 111/3506, y e2e
+  30 suites pasan de 33 (468 tests de 476, 8 omitidos).
+- **Review ronda 1: RECHAZADO** (`00ed2bc4`). La producción es correcta y
+  Codex no se desvió, pero sobreviven 7 mutaciones. E1: «borrar
+  `<pantalla>-error`» de R3–R6 no tiene candado (RV8–RV11). E2: tres reglas
+  de R2 sin candado (apellidos `max` tras trim, país sin trim, confirmación
+  sin trim; RV5–RV7). La causa está en los candados que prescribe la spec, así
+  que hace falta una enmienda.
+- **Siguiente**:
+  1. Barrido exhaustivo del reviewer (cláusula × rama × candado × sonda),
+     antes de redactar la Enmienda E1.
+  2. Redactar E1 con tests por parche medidos en un spike, como en #171 r4.
+  3. Firma humana vía Notion.
+  4. Reanudación 2 a Codex, y después la ronda 2 del reviewer.
 - **Pedido del humano** (2026-10-15, tras firmar R21 de #172): validación en
   cliente con mensaje claro en todos los inputs de cuenta, como el correo de
   Crear cuenta, en lugar del error del servidor. Texto literal en
