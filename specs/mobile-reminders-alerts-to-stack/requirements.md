@@ -147,6 +147,8 @@ Consecuencias de A, todas visibles en la prueba de humo:
 
 ### R4 — Cabecera nativa con el look de #95
 
+> Enmendado por #174 (ver «Enmienda #174» al final).
+
 - **R4**: WHEN se presenta `reminders` o `alerts` THE SYSTEM SHALL mostrar la
   cabecera nativa con **exactamente** las opciones de #95 R4 (`headerShown:
   true`, `headerStyle: { backgroundColor: <token background> }`,
@@ -160,6 +162,8 @@ Consecuencias de A, todas visibles en la prueba de humo:
   por pantalla con `toEqual` exacto sobre `options`.
 
 ### R5 — El título sale del cuerpo
+
+> Enmendado por #174 (ver «Enmienda #174» al final).
 
 - **R5**: WHEN se renderiza `RemindersScreen`, tanto cargando como con filas,
   THE SYSTEM SHALL **no** pintar en el cuerpo el texto de `reminders.reminders`
@@ -176,6 +180,8 @@ Consecuencias de A, todas visibles en la prueba de humo:
   carga).
 
 ### R6 — Métricas bajo cabecera nativa (A11)
+
+> Enmendado por #174 (ver «Enmienda #174» al final).
 
 - **R6**: WHEN se renderiza `reminders` o `alerts` THE SYSTEM SHALL usar en el
   `contentContainerStyle` de su lista (`ScrollView` `screen-reminders`,
@@ -425,3 +431,15 @@ Firmado por humano (fecha: 2026-09-23)
 ### Aprobación de la spec
 
 - [x] Aprobado por humano (fecha: 2026-09-23) ← gate obligatorio antes de implementar
+
+## Enmienda #174 — Alertas fieles al canvas
+
+> Enmienda de `mobile-reminders-alerts-to-stack` por `mobile-alerts-canvas-fidelity` (#174, 2026-10-13). Directiva del humano:
+> «el diseño final debe de quedar como el artifact».
+
+**Qué cambia**: #114 R4: alerts declara title vacío; #114 R5: en Alertas el título vuelve al contenido como Text de peso 900; #114 R6: Alertas usa padding lateral 20 y gap 12.
+
+Detalle y tests en `specs/mobile-alerts-canvas-fidelity/requirements.md`. Los `it` citados se reescriben en
+su sitio con el sufijo `(enmendado por #174 Rn)`.
+
+- [ ] Enmienda #174 aprobada por humano

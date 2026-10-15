@@ -185,6 +185,8 @@ su cadena nueva.
 
 ### R3. El secundario neutro lleva el labio gris
 
+> Enmendado por #174 (ver «Enmienda #174» al final).
+
 - **R3.1** WHEN se pinta `welcome-have-account`, `forgot-resend`,
   `docs-upload-cancel` o `reminders-delete-cancel` THE SYSTEM SHALL llevar
   en su tag de apertura la secuencia contigua
@@ -338,3 +340,15 @@ el detalle de la enmienda está en su `requirements.md` §R14.
   en su `tasks.md`).
 
 - [X] Enmienda #173 aprobada por humano
+
+## Enmienda #174 — Alertas fieles al canvas
+
+> Enmienda de `mobile-chunky-cta` por `mobile-alerts-canvas-fidelity` (#174, 2026-10-13). Directiva del humano:
+> «el diseño final debe de quedar como el artifact».
+
+**Qué cambia**: #166 R3: el ack de fila de Alertas es secundario compacto (h-8.5, rounded-10, border-b-5) y entra en el inventario de secundarios neutros.
+
+Detalle y tests en `specs/mobile-alerts-canvas-fidelity/requirements.md`. Los `it` citados se reescriben en
+su sitio con el sufijo `(enmendado por #174 Rn)`.
+
+- [ ] Enmienda #174 aprobada por humano

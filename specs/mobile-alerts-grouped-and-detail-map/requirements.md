@@ -115,7 +115,7 @@ R7.
   no es la semana de calendario (sin dependencia del primer día de semana del
   locale).
 
-- **R3 — Secciones en la lista.** WHEN la lista tiene filas THE SYSTEM SHALL:
+- **R3 — Secciones en la lista.** _(Enmendado por #174.)_ WHEN la lista tiene filas THE SYSTEM SHALL:
   1. ordenarlas por sección (`today`, `week`, `earlier`, con
      `alertSection(alert.openedAt, new Date(alerts.dataUpdatedAt))`) y, dentro
      de cada sección, abiertas primero y el resto después, conservando el
@@ -136,7 +136,7 @@ R7.
      página siguiente con filas de una sección que ya tiene cabecera THEN esa
      cabecera sigue saliendo una sola vez.
 
-- **R4 — Contador «N nuevas».** THE SYSTEM SHALL contar las filas abiertas de
+- **R4 — Contador «N nuevas».** _(Enmendado por #174.)_ THE SYSTEM SHALL contar las filas abiertas de
   todas las páginas cargadas (tras el solapamiento de `acked`) y:
   - IF el recuento es 0 (incluye carga, error y lista vacía) THEN no pinta
     `alerts-new-count`;
@@ -152,7 +152,7 @@ R7.
   único `Text` `testID="alerts-new-count-text"` con `className` exacto
   `text-xs font-bold text-danger-foreground` y `style={TABULAR_NUMS}`.
 
-- **R5 — Severidad en la fila.** THE SYSTEM SHALL añadir a `ALERT_TYPE_META`
+- **R5 — Severidad en la fila.** _(Enmendado por #174.)_ THE SYSTEM SHALL añadir a `ALERT_TYPE_META`
   y a `UNKNOWN_ALERT_META` (`src/utils/alert-meta.ts`) un campo `border`:
   `geofence_exit` → `border-danger`, `battery_low` → `border-warning-strong`,
   desconocido → `border-muted`; y la `Card` de cada fila `alert-row-<id>`:
@@ -728,3 +728,15 @@ handoff (corrección 16).
 ## Smoke R17
 
 - [X] Smoke R17 en dev build de Android verificado por humano (fecha: 2026-10-13, build: OnePlus Nord 5, tema claro X oscuro X)
+
+## Enmienda #174 — Alertas fieles al canvas
+
+> Enmienda de `mobile-alerts-grouped-and-detail-map` por `mobile-alerts-canvas-fidelity` (#174, 2026-10-13). Directiva del humano:
+> «el diseño final debe de quedar como el artifact».
+
+**Qué cambia**: #170 R3: secciones con gap-3 y cabecera text-13 extrabold con tracking-caps; #170 R4: el contador entra en la fila del título con PopIn; #170 R5: el disco de la fila toma la superficie de categoría.
+
+Detalle y tests en `specs/mobile-alerts-canvas-fidelity/requirements.md`. Los `it` citados se reescriben en
+su sitio con el sufijo `(enmendado por #174 Rn)`.
+
+- [ ] Enmienda #174 aprobada por humano

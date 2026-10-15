@@ -246,6 +246,8 @@ spec se reescribe antes de aprobarla.
 
 ### R6 — La columna de texto de cada fila abre su detalle
 
+> Enmendado por #174 (ver «Enmienda #174» al final).
+
 - **R6**: THE SYSTEM SHALL convertir la columna de texto de cada fila del
   centro (`src/screens/alerts/index.tsx`, hoy
   `<View className="min-w-0 flex-1 gap-1">`) en un `Pressable`
@@ -582,3 +584,15 @@ ningún módulo nativo. App en español salvo el paso 7.
 ### Aprobación de la spec
 
 - [x] Aprobado por humano (fecha: 2026-09-28) ← gate obligatorio antes de implementar
+
+## Enmienda #174 — Alertas fieles al canvas
+
+> Enmienda de `mobile-alert-detail-screen` por `mobile-alerts-canvas-fidelity` (#174, 2026-10-13). Directiva del humano:
+> «el diseño final debe de quedar como el artifact».
+
+**Qué cambia**: #100 R6: la columna de texto de la fila pasa a dos hijos (tipo y subtítulo) con justify-center y gap-0.5.
+
+Detalle y tests en `specs/mobile-alerts-canvas-fidelity/requirements.md`. Los `it` citados se reescriben en
+su sitio con el sufijo `(enmendado por #174 Rn)`.
+
+- [ ] Enmienda #174 aprobada por humano
