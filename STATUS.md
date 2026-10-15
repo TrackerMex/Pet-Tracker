@@ -4,7 +4,7 @@
 **Features completadas**: 162/176 (`feature_list.json`)
 **En progreso**: ninguna en esta rama. #173 cerrada en `feature/173-mobile-tab-screens-canvas-fidelity`, PR pendiente de merge humano.
 
-**Pendientes**: 14 (#60, #129, #144, #150, #151, #154, #160, #163, #164, #165, #174, #176, #177 y #181). **#173 `mobile-tab-screens-canvas-fidelity` cerrada**: Perfil como su artboard del canvas, más los cimientos que comparten las pantallas de pestaña. Cimientos: peso Inter-ExtraBold, radios `hero` (28) y `tile` (18), tamaños de letra 13 y 26, variantes `hero` y `flat` de `Card` y `PetSwitcher` con variante `avatars`. Perfil: cápsula «Añadir mascota» en la cabecera, hero de la mascota con anillo y cámara superpuesta, chips con el sexo localizado, tarjeta de información `flat` con el estado del collar y la última señal relativa, rejilla 2×2 de accesos, tarjeta de cuenta `flat` con interruptor de tema y fila de idioma, y entrada escalonada. Catálogo: Perfil retira cuatro claves y añade tres; la carta y las specs enmendadas llevan su enmienda R14 firmada. Siete enmiendas durante la implementación (E1-E7), reviewer APROBADO sobre `91b705ab`, smoke R16 firmado por el humano en `36abb01c`. Pendiente de esta línea: Salud y Nutrición.
+**Pendientes**: 14 (#60, #129, #144, #150, #151, #154, #160, #163, #164, #165, #174, #176, #177 y #181). **#173 `mobile-tab-screens-canvas-fidelity` cerrada**: Perfil como su artboard del canvas, más los cimientos que comparten las pantallas de pestaña. Cimientos: peso Inter-ExtraBold, radios `hero` (28) y `tile` (18), tamaños de letra 13 y 26, variantes `hero` y `flat` de `Card` y `PetSwitcher` con variante `avatars`. Perfil: cápsula «Añadir mascota» en la cabecera, hero de la mascota con anillo y cámara superpuesta, chips con el sexo localizado, tarjeta de información `flat` con el estado del collar y la última señal relativa, rejilla 2×2 de accesos, tarjeta de cuenta `flat` con interruptor de tema y fila de idioma, y entrada escalonada. Catálogo: Perfil retira cuatro claves y añade tres; la carta y las specs enmendadas llevan su enmienda R14 firmada. Ocho enmiendas (E1-E7 durante la implementación, E8 en el merge de main), reviewer APROBADO sobre `91b705ab` y sobre el merge `51254654`, smoke R16 firmado por el humano en `36abb01c`. Pendiente de esta línea: Salud y Nutrición.
 
 **En producción**: no
 
@@ -90,6 +90,19 @@ debe listar las 4 URLs de cola.
 
 ## Estado actual
 
+- **`mobile-tab-screens-canvas-fidelity` (#173) done** (2026-10-15, worktree
+  `Pet-Tracker-wt-173`, sesión UI-Pet): Perfil como su artboard del canvas y los
+  cimientos de las pestañas (Inter ExtraBold, radios `hero` 28 y `tile` 18,
+  tamaños 13 y 26, `Card` `hero`/`flat`, `PetSwitcher` `avatars`). Reviewer
+  ronda 1 APROBADO (`91b705ab`, veredicto `75552846`) y ronda 2 APROBADO
+  (`2571e3b0`, sobre el merge único de main con #171 y #172, `51254654`).
+  Gate: `./init.sh` exit 0 sobre `51254654` (backend 187/1474, infra 2/14,
+  móvil 110/3389, e2e 30 de 33 suites, 468 passed y 8 skipped). Smoke R16 en el
+  dev build de Android firmado por el humano en `36abb01c` y las enmiendas R14 en
+  `f4e5d18b`. Enmiendas E1-E8 durante la implementación; **E8** (`text-13` pasa
+  a inventario cerrado de seis ficheros tras entrar #172) la aplicó el
+  implementer en el merge y el humano la lee en la PR. Salud y Nutrición quedan
+  para las siguientes. PR pendiente de merge.
 - **`mobile-account-screens-polish` (#172) done** (2026-10-15, worktree
   `Pet-Tracker-wt-172`, sesión Frontend): Login, Registro, Recuperar y Nueva
   contraseña con paridad con el canvas (CTA de 56 al pie, inputs de 52, ojo en
@@ -1508,6 +1521,14 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Última sesión
+
+- **2026-10-15** — **#173 `mobile-tab-screens-canvas-fidelity` cerrada**
+  (worktree `Pet-Tracker-wt-173`, sesión UI-Pet). Spec firmada desde Notion
+  (`f3b0a4a8`); enmiendas E1-E7 durante la implementación y E8 en el merge.
+  Reviewer ronda 1 aprobada (`91b705ab`) y ronda 2 aprobada (`2571e3b0`), esta
+  sobre el merge único de main con #171 y #172 tras decidir el humano que #172
+  entraba primero. Smoke R16 y enmiendas R14 firmados por el humano. PR abierta;
+  siguiente: merge humano.
 
 - **2026-10-15** — **#172 `mobile-account-screens-polish` cerrada**
   (worktree `Pet-Tracker-wt-172`, sesión Frontend). Spec y Enmienda #172

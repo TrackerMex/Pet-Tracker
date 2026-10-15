@@ -8983,3 +8983,59 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
   `approved`, fila R21 con `631826d9`, `done` en `feature_list.json`, STATUS,
   Notion (Implementado / Completado) y PR contra `main`. Merge: humano. Tras
   el merge: avisar a UI-Pet (#173) con el hash de main y borrar el worktree.
+
+## #173 `mobile-tab-screens-canvas-fidelity` — Perfil fiel al canvas y cimientos de las pestañas — 2026-10-15
+
+- **Inicio**: 2026-10-13, sesión UI-Pet (leader), worktree
+  `Pet-Tracker-wt-173`, branch `feature/173-mobile-tab-screens-canvas-fidelity`.
+  Spec firmada desde Notion en `f3b0a4a8`. Base `origin/main` = `788d1f89`.
+- **Plan**: Perfil como su artboard del canvas más los cimientos que comparten
+  las pestañas (Inter ExtraBold, radios `hero` 28 y `tile` 18, tamaños 13 y 26,
+  `Card` `hero`/`flat`, `PetSwitcher` `avatars`). Catálogo: Perfil retira cuatro
+  claves y añade tres. Medidas M1-M51 con `specs/…/mcheck.py`.
+- **Implementación**: Codex CLI, 30 commits test-primero c1-c30 más trazabilidad e
+  informe (handoff `progress/handoff_mobile-tab-screens-canvas-fidelity.md`, H0
+  `adad3359`; informe `progress/impl_mobile-tab-screens-canvas-fidelity.md`).
+  Diez reanudaciones, todas por fallos del handoff o de la spec, ninguna por la
+  implementación:
+  - R1: macros con `$'` rotas por `String.replace` de Codex (exit 127); líneas ya
+    expandidas y ejecutor `sed`.
+  - R2-R3, R9-R10: el flake de `me card › shows the real account name and email`
+    (preexistente, `findByText` pendiente) y la regla «Flake de un it ajeno».
+  - **E1** (c10): segunda cuenta de `rounded-xl bg-accent` en `#62 R1`.
+    R4: lista SOLO sin `#64 R9`; `-i` en las cadenas rojas por el ciclo de
+    `toBe(instance)`.
+  - **E2** (c14): M13 cuenta líneas; ternario del sexo en siete líneas.
+  - **E3** (c14): `specs/mobile-ui-language/design.md` §6.3 y el `it` de R2 de
+    Perfil esperaban el sexo crudo.
+  - **E4** (c18): `react-hooks/purity` veta `Date.now()` en render;
+    `detail.dataUpdatedAt`, como en alerts.
+  - **E5** (c26): guard `ReferenceError:` con dos puntos.
+  - **E6**: conteo del flake con `grep -F 'TITULO' | grep -cF '●'`.
+  - **E7** (c30): `card.tsx` conserva `shadow-sm` en `surface` y `accent` (R3.2);
+    candado de sombra `toHaveLength(2)` solo ahí.
+- **Review ronda 1** (2026-10-15, `91b705ab`, veredicto `75552846`): APROBADO,
+  condicionado a R16 y a las casillas humanas. init.sh del leader: EXIT=0
+  (móvil 104/3213, backend 187/1474, infra 2/14, e2e 468 passed y 8 skipped).
+  Observaciones O1-O6 (O3 resuelta).
+- **Firmas del humano**: R16 (smoke en dev build de Android) en `36abb01c`;
+  casillas de la Enmienda #173 y de la spec en `f4e5d18b`. `temas:` de R16 quedó
+  en blanco.
+- **Merge único de main** (`9547115e`: #171 + #172, el humano eligió #172
+  primero). Merge `51254654`: la carta, `mobile-ui-language/design.md` §2.29 y
+  STATUS los resolvió el leader; seis ficheros de código en conflicto y **E8**
+  los resolvió el subagente `implementer` (fallback de CLAUDE.md §Excepciones,
+  informe `progress/merge_main_mobile-tab-screens-canvas-fidelity.md`). **E8**
+  (R2.4): #172 usa `text-13` en `form-error` y cuatro pantallas de cuenta, así
+  que el candado «solo Perfil» pasa a inventario cerrado de seis ficheros.
+- **Review ronda 2** (veredicto `2571e3b0`): APROBADO sobre `51254654`, sin deriva
+  de código. init.sh del leader sobre `51254654`: EXIT=0 (backend 187/1474, infra
+  2/14, móvil 110/3389, e2e 30 de 33 suites, 468 passed y 8 skipped).
+- **Cierre** (2026-10-15): frontmatter de design, tasks y traceability a
+  `approved`, fila R16 con `36abb01c`, `done` en `feature_list.json`, STATUS,
+  Notion (Implementado / Completado) y PR contra `main`. Merge: humano; tras el
+  merge, borrar el worktree.
+- **Deuda por registrar** (solo con confirmación del humano): `findByText` en el
+  me-card; O1 `disabled={photoUploading}` en `change-photo`; O2 `size`/`cacheKey`
+  del `PetAvatar` en `PetSwitcher`; O6 `className` de `profile-sign-out` sin
+  candado; Salud y Nutrición como features aparte.
