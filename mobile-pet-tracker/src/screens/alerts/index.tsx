@@ -153,9 +153,10 @@ export function AlertsScreen() {
         className="flex-1 bg-background"
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{
-          padding: 24,
-          gap: 16,
+          paddingHorizontal: 20,
+          paddingTop: 24,
           paddingBottom: insets.bottom + 24,
+          gap: 12,
         }}
         data={rows}
         keyExtractor={(item) => item.id}
