@@ -4,9 +4,9 @@ import { HeaderHeightContext } from 'expo-router/react-navigation';
 import { openBrowserAsync } from 'expo-web-browser';
 import { Button, Input, Label, Skeleton, TextField } from 'heroui-native';
 import { useContext, useState } from 'react';
-import { KeyboardAvoidingView, ScrollView, Text, View } from 'react-native';
+import { KeyboardAvoidingView, Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ChevronRight, FileText } from 'reicon-react-native';
+import { ChevronRight, FileText, Upload } from 'reicon-react-native';
 
 import {
   confirmPetDocumentUpload,
@@ -92,6 +92,7 @@ export function DocsScreen({ petId }: { petId: string }) {
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { token, signOut } = useAuth();
   const t = useTranslate();
+  const [uploadColor] = useThemeColors(['accent-strong']);
   const insets = useSafeAreaInsets();
   const headerHeight = useContext(HeaderHeightContext);
   const [selectedDocument, setSelectedDocument] = useState<SelectedDocument | null>(null);
@@ -258,12 +259,56 @@ export function DocsScreen({ petId }: { petId: string }) {
           )}
         </View>
 
+        {docs.data === undefined ? (
+          <View testID="docs-list-skeleton" className="gap-3.5">
+            <Skeleton className="h-20 w-full rounded-card" />
+            <Skeleton className="h-20 w-full rounded-card" />
+            <Skeleton className="h-20 w-full rounded-card" />
+          </View>
+        ) : null}
+
+        {docs.data?.kind === 'ok' && docs.data.docs.length === 0 ? (
+          <EmptyState
+            testID="docs-empty"
+            pose="health"
+            title={t('docs.noDocumentsYet')}
+            body={t('docs.emptyBody')}
+            action={isOwner && !selectedDocument ? { label: t('docs.upload'), onPress: pickDocument } : undefined}
+          />
+        ) : null}
+
+        {docs.data?.kind === 'ok'
+          ? docs.data.docs.map((document, index) => (
+              <HomeEntrance key={document.id} index={index} testID={`docs-entry-${document.id}`}>
+                <DocumentRow document={document} onPress={() => openDocument(document)} />
+              </HomeEntrance>
+            ))
+          : null}
+
+        {docs.data && docs.data.kind !== 'ok' ? (
+          <Card testID="docs-error" className="items-start gap-3">
+            <Text className="font-normal text-danger">
+              {t('docs.couldNotLoadDocuments')}
+            </Text>
+            <Button testID="docs-retry" onPress={() => void docs.refetch()}>
+              <Button.Label>{t('common.retry')}</Button.Label>
+            </Button>
+          </Card>
+        ) : null}
         {isOwner && !selectedDocument && docs.data?.kind === 'ok' && docs.data.docs.length > 0 ? (
-          <Button testID="docs-upload" className="rounded-xl bg-accent border-b-4 border-black/25" onPress={pickDocument}>
-            <Button.Label className="font-bold text-accent-foreground">
-              {t('docs.upload')}
-            </Button.Label>
-          </Button>
+          <Pressable
+            testID="docs-upload"
+            accessibilityRole="button"
+            className="mt-1.5 items-center gap-1.5 rounded-24 border-2 border-dashed border-lip-gray p-4.5"
+            style={({ pressed }) => ({ ...CONTINUOUS_CORNER, opacity: pressed ? 0.8 : 1 })}
+            onPress={pickDocument}
+          >
+            <View className="size-12 items-center justify-center rounded-full bg-surface-secondary">
+              <Upload size={22} color={uploadColor} />
+            </View>
+            <Text className="text-15 font-extrabold text-foreground">{t('docs.upload')}</Text>
+            <Text className="text-center text-xs font-normal text-muted">{t('docs.uploadHint')}</Text>
+          </Pressable>
         ) : null}
 
         {selectedDocument ? (
@@ -353,42 +398,6 @@ export function DocsScreen({ petId }: { petId: string }) {
           </Text>
         ) : null}
 
-        {docs.data === undefined ? (
-          <View testID="docs-list-skeleton" className="gap-3.5">
-            <Skeleton className="h-20 w-full rounded-card" />
-            <Skeleton className="h-20 w-full rounded-card" />
-            <Skeleton className="h-20 w-full rounded-card" />
-          </View>
-        ) : null}
-
-        {docs.data?.kind === 'ok' && docs.data.docs.length === 0 ? (
-          <EmptyState
-            testID="docs-empty"
-            pose="health"
-            title={t('docs.noDocumentsYet')}
-            body={t('docs.emptyBody')}
-            action={isOwner && !selectedDocument ? { label: t('docs.upload'), onPress: pickDocument } : undefined}
-          />
-        ) : null}
-
-        {docs.data?.kind === 'ok'
-          ? docs.data.docs.map((document, index) => (
-              <HomeEntrance key={document.id} index={index} testID={`docs-entry-${document.id}`}>
-                <DocumentRow document={document} onPress={() => openDocument(document)} />
-              </HomeEntrance>
-            ))
-          : null}
-
-        {docs.data && docs.data.kind !== 'ok' ? (
-          <Card testID="docs-error" className="items-start gap-3">
-            <Text className="font-normal text-danger">
-              {t('docs.couldNotLoadDocuments')}
-            </Text>
-            <Button testID="docs-retry" onPress={() => void docs.refetch()}>
-              <Button.Label>{t('common.retry')}</Button.Label>
-            </Button>
-          </Card>
-        ) : null}
       </ScrollView>
     </KeyboardAvoidingView>
   );
