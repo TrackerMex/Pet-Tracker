@@ -1006,3 +1006,112 @@ sin stage para el leader. No se ejecutó `git merge --abort`, `rebase`,
 `init.sh` ni E2E. R11 sigue pendiente del humano y no se marcó su casilla.
 
 Log completo: `/tmp/175-merge-all.txt`; lint: `/tmp/175-merge-lint.txt`.
+
+## Ronda de fusión con main (#174), segunda corrida
+
+2026-10-15. Ejecutado el handoff actualizado completo, incluida la edición
+literal de M3b autorizada por la Enmienda E3 firmada por humano. La primera
+corrida y su parada se conservan arriba como histórico.
+
+- H0m: `894f68441e9dc3d7adf10c2dc0380d1ad5a486a7`.
+- Commit de fusión: `5dd16a6036ead0a05cb47102f7544ff9a23fbd62`.
+- Primer padre: `894f68441e9dc3d7adf10c2dc0380d1ad5a486a7` (H0m).
+- Segundo padre: `deaf4e6d99f46e8dcd3f8cd386e4312b9ce5f739` (`origin/main`, #174).
+
+B0, salida literal:
+
+```text
+894f68441e9dc3d7adf10c2dc0380d1ad5a486a7
+B0-ok
+```
+
+M1, salida de estado y lista literal de los seis conflictos de contenido:
+
+```text
+exit=1
+docs/ui-guidelines.md
+mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+mobile-pet-tracker/src/__tests__/profile-canvas-fidelity.test.ts
+mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx
+mobile-pet-tracker/src/theme/global.css
+specs/mobile-ui-language/design.md
+```
+
+M2, anclas ejecutadas después de resolver cada fichero según el handoff:
+
+```text
+A-ok
+B-ok
+C-ok
+D-ok
+E-ok
+F-ok
+```
+
+Comprobado a mano: la frase de #174 precede a la de #175 dentro de la regla
+12, antes de la regla 13. La casilla firmada de la carta procede de main,
+según R-f; no se firmó ninguna casilla nueva. La plantilla de §6.2 del diseño
+de idiomas se conserva sin cambios.
+
+M3, salida literal:
+
+```text
+M3-ok
+```
+
+M3b, script literal del leader y sus anclas:
+
+```text
+E3-ok
+M3b-ok
+```
+
+El script añadió Documentos únicamente a los inventarios de `text-15`
+(#175 R6) y `tracking-title` (#175 R5), sin añadir ni quitar ningún `it`.
+
+M4a, espera y comprobación posterior de ausencia de procesos ajenos:
+
+```text
+fin-espera
+M4a-libre
+```
+
+M4b, salida literal (log de lint vacío):
+
+```text
+$ tsc --noEmit
+M4b-ok
+```
+
+M4c, primera y única corrida de esta segunda ronda, sin líneas de fallo `●`:
+
+```text
+exit=0
+Test Suites: 111 passed, 111 total
+Tests:       3483 passed, 3483 total
+```
+
+Aviso preexistente contado aparte: `A worker process has failed to exit
+gracefully`, una aparición; no es un fallo.
+
+M5, hashes obtenidos tras el commit de fusión:
+
+```text
+5dd16a6036ead0a05cb47102f7544ff9a23fbd62
+894f68441e9dc3d7adf10c2dc0380d1ad5a486a7
+deaf4e6d99f46e8dcd3f8cd386e4312b9ce5f739
+```
+
+M6, lista cerrada contra main: 24 ficheros y diff vacío.
+
+```text
+24
+M6-ok
+```
+
+Desviaciones respecto al handoff: ninguna. No se ejecutaron `init.sh` ni
+E2E. R11 sigue pendiente del humano y no se marcó su casilla.
+
+La nota se guarda con el commit `--only` prescrito en N. Su hash se comunica
+en el cierre, porque el contenido no puede incluir el hash de su propio
+commit.
