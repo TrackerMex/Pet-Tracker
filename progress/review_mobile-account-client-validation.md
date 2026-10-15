@@ -466,3 +466,110 @@ Las líneas de producción citadas son las de HEAD. Una sonda «S» es de Codex;
 - Los candados de H5–H10 están medidos con el spike.
 - Los de H1–H4 y H12–H15 no tienen spike, porque escribir tests en el árbol queda fuera de mi papel. La enmienda debe añadir a su tabla de sondas RV8–RV11, C18, C20, C26 y C27, y exigir `await` en cada `fireEvent` y `waitFor` sobre el mensaje del campo (RNTL 14).
 - G8, G23, N5, N6, `VALID` y la tabla C están prescritos literalmente en requirements.md, así que la enmienda los cambia allí antes de volver a Codex.
+
+## Pre-check de la Enmienda E1 (2026-10-15)
+
+Veredicto: **E1 LISTA PARA FIRMA**
+
+Sobre `9f32ba63`. Lo pidió el leader antes de la firma humana de E1; Codex aún no aplicó nada.
+
+Método: copié `mobile-pet-tracker/` al scratchpad con `git init` y un commit base. `node_modules`, `specs/`, `docs/` y `progress/` quedaron como enlaces simbólicos al worktree, porque LP y UL leen `../specs` y `../docs`. Apliqué c16–c20 con el comando literal de `tasks.md` §E1, un commit por parche. `sondas_e1.py` corrió en primer plano, un grupo cada vez, sin timeouts. El resto de mutaciones las planté a mano. Tras cada sonda restauré con `git checkout HEAD --` y comprobé `git diff --quiet HEAD` y `--cached`. El working tree del worktree no lo toqué salvo para este informe.
+
+### 1. Parches contra §Enmienda E1
+
+- Los cinco sha256 coinciden con la tabla de commits (`requirements.md` §Enmienda E1, c16–c20).
+- Las rutas relativas `../progress/e1_mobile-account-client-validation/cNN.patch`, ejecutadas desde `mobile-pet-tracker/`, resuelven (`git apply --check` en los dos sentidos). `python3` está en 3.12.3.
+- Los parches tocan solo los cinco ficheros de test: 86 inserciones y 5 borrados. Ninguno toca producción, `catalog.ts`, `ui-copy-table.ts` ni las fórmulas de `ui-language.test.ts`.
+- **c16** cambia `VALID` a `'A'`/`'S'` y añade las filas C16–C20. G8 pasa a `' ' + 'a'.repeat(120) + ' '`, G23 a `'MX '`, N5 a `'a'.repeat(128) + ' '` en los dos campos, y la confirmación de N6 a `'new-password-123 '`. Todo cuadra con R2 (`requirements.md:329`, `:352–356`, `:381`, `:396`, `:426–427`), con 71 casos en total.
+  - Las cinco decisiones de C16–C20 coinciden con `z.email()` de zod 4.4.3.
+  - `z.regexes.email` es idéntico al `EMAIL_PATTERN` de producción.
+- **c17** añade el `it` de R3 al final del describe `#183 R3`.
+- **c18** añade el `it` de R4 al final del describe `#183 R4`.
+- **c19** añade dos `it`:
+  - el de R7, dentro de `#117 R7…` y antes de `un reintento…`;
+  - el de R5, al final de `#183 R5`.
+- **c20** añade dos `it`:
+  - el de R7, dentro de `R8: el submit…` y antes de `deshabilita el boton…`;
+  - el de R6, al final de `#183 R6`.
+- Los `it` nuevos usan `await` en cada `fireEvent` y esperan el mensaje del campo con `waitFor`.
+- Pacto sites-99: `grep -cF HomeEntrance` sobre c17.patch da 0 y `grep -cF mockIcon` sobre c18.patch da 0. Los diffs de la copia tampoco tocan esos dobles.
+
+### 2. Tabla H1–H15 → candado → sonda → resultado
+
+| Hueco | Candado de E1 | Sonda | Rojos medidos |
+|---|---|---|---|
+| H1 | login, `#183 R3: un envío inválido tras un aviso general lo retira…` (c17) | RV8 | 1, el `it` nuevo |
+| H2 | registro, `#183 R4: un envío inválido tras un aviso general…` (c18) | RV9 | 1, el `it` nuevo |
+| H3 | recuperar, `#183 R5: un correo inválido tras un aviso general…` (c19) | RV10 | 1, el `it` nuevo |
+| H12 | el mismo `it` de R5 (c19) | C18 | 1 |
+| H4 | nueva contraseña, `#183 R6: un envío inválido tras un aviso general…` (c20) | RV11 | 1, el `it` nuevo |
+| H13 | el mismo `it` de R6 (c20) | C26 | 1 |
+| H14 | recuperar, `#183 R7: un 400 de validación en recuperar…` (c19) | C20 | 1 |
+| H15 | nueva contraseña, `#183 R7: un 400 de validación en nueva contraseña no marca ningún campo` (c20) | C27 | 1 |
+| H5 | G8 (c16) | RV5 | 1, G8 |
+| H6 | G23 (c16) | RV6 | 1, G23 |
+| H7 | N6 (c16) | RV7 | 1, N6 |
+| H8 | `VALID.firstName = 'A'` (c16) | A6 | 29: G1 y G6–G33 |
+| H9 | `VALID.lastName = 'S'` (c16) | A10 | 29: G1–G5 y G10–G33 |
+| H10 | N5 (c16) | A26 | 1, N5 |
+| H11 | C16–C20 (c16) | los 14 mutantes de la tabla de E1, incluidos B4, B5 y B6 | 1 cada uno, en la fila C que E1 asigna |
+
+`sondas_e1.py` dio 37 OK con exit 0:
+
+| Grupo | OK |
+|---|---|
+| c16 | 22 de 22 |
+| c17 | 2 de 2 |
+| c18 | 2 de 2 |
+| c19 | 6 de 6 |
+| c20 | 5 de 5 |
+
+Las mutaciones del script son las mismas, textualmente, que RV5–RV11, A6, A10, A26, C18, C20, C26, C27 y los mutantes de correo de mi barrido.
+
+Sondas extra que planté a mano para buscar zonas ciegas:
+
+| Sonda | Rojos |
+|---|---|
+| M1: la validación de reset pone un error en el campo de contraseña | 1, el `it` de R7 de reset de E1 |
+| M2: en login, `setError(null)` pasa a después de la validación | 1, el `it` de R3 de E1 |
+| Mi: flag `i` en `EMAIL_PATTERN` | 0, equivalente, como declara E1 |
+| X3: máximo de lastName >119 | 1, G8 |
+| X1: la confirmación solo compara longitudes | 1, G32. N6 ya no lo mata (ver P1) |
+| S2.2–S2.8 y S2.10–S2.14 | las mismas filas que declara R2 |
+| S3.1, S3.3 | 1 cada una |
+| S6.3 | 1 |
+| S7.1 | 3 |
+| S7.2 | 1 |
+
+### 3. Cifras
+
+Todo coincide con §Enmienda E1 y con `tasks.md` §E1.
+
+| Medida | Declarada | Medida |
+|---|---|---|
+| 7 suites de la feature | 330 → 341 | 330 → 341 |
+| AR | 66 → 71 | 71 |
+| login | 39 → 40 | 40 |
+| register | 64 → 65 | 65 |
+| forgot | 47 → 49 | 49 |
+| reset | 47 → 49 | 49 |
+| guards + AR | 252 | 252 |
+
+- UL da 30 y LP 37.
+- S2.1 = 9, S2.9 = 3, S3.2 = 9, S4.4 = 25, S5.1 = 6, S5.3 = 6, S6.1 = 5.
+- S7.3 = 6 (forgot 4 + UL 2). S7.4 = 4 (reset 2 + UL 2).
+- Typecheck sale con 0. Lint sale con 0, con `--no-cache` y 0 líneas `Failed to run`.
+- Los `it` nuevos tardan entre 41 y 132 ms, muy por debajo de los 5000 ms de init.sh.
+
+### 4. Hallazgos
+
+Ninguno bloquea la firma.
+
+- **P1. N6 pierde el mutante X1** (`requirements.md:427`). Con la confirmación `'new-password-123 '`, el mutante que compara solo longitudes deja de caer en N6. Lo sigue cazando G32, con 1 rojo medido. La cobertura de la cláusula no baja. Lo apunto para que nadie lea N6 como candado de longitud.
+- **P2. S7.3 y S7.4 solo se automatizan en la suite de pantalla** (`sondas_e1.py:49`, `:56`; `requirements.md:1197–1198`).
+  - La tabla de commits ya lo dice: «solo forgot: 4» y «solo reset: 2».
+  - Las cifras completas de `requirements.md:943–944` (6 y 4) suman los 2 `it` de UL, que el script no corre.
+  - Medí a mano UL con las dos mutaciones: +2 en cada una, así que S7.3 = 6 y S7.4 = 4.
+  - No impide ejecutar la enmienda. El reviewer de la ronda 2 debe medir la parte de UL a mano.
+- **P3. «66 casos» en el paso verde de R2** (`requirements.md:466`). Es la historia de c1–c15 y como historia es correcta. `design.md:201` y la tabla de R2 ya dicen 71. Informativo.
+- **P4. «Borrar `<x>-error`» se candó con un solo campo inválido por pantalla** (los `it` nuevos de c17–c20). Producción limpia antes de validar, de forma incondicional (`setFieldErrors({}); setError(null);`). Un mutante que borre campo a campo no sale natural de ese código, y las rutas M1 y M2 sí están candadas. Informativo.

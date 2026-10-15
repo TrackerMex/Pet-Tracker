@@ -1197,6 +1197,16 @@ sobra, o `PARA` con el ancla que no casó.
 | c19 | `c19.patch` | `a1a10fb89095f17aff51a1272441be512b5dcdfd2a1373f750e10c8f116b2e76` | `src/screens/forgot/index.test.tsx`: 49 | RV10, C18, C20, S5.1, S5.3, S7.3 (solo forgot: 4) | `test(mobile): candados de E1 en recuperar (#183 R5, R7)` |
 | c20 | `c20.patch` | `db1744205a53add247bbca49560bd95ad7fbff7ff1573d4304a91b230be1efb0` | `src/screens/reset-password/index.test.tsx`: 49 | RV11, C26, C27, S6.1, S7.4 (solo reset: 2) | `test(mobile): candados de E1 en nueva contraseña (#183 R6, R7)` |
 
+El script solo corre la suite de pantalla en S7.3 y S7.4. Los otros 2 rojos
+de cada una salen en `src/__tests__/ui-language.test.ts`, que E1 no toca, así
+que no cambian: las cifras completas siguen siendo S7.3 = 6 y S7.4 = 4 (pre-check
+del reviewer, P2).
+
+Con la confirmación de N6 en `'new-password-123 '`, N6 ya no caza el mutante
+que compara solo longitudes. Lo caza G32 (1 rojo medido en el pre-check, P1),
+así que la cláusula sigue candada; N6 es el candado del trim, no de la
+longitud.
+
 ### Cifras
 
 - account-rules pasa de 66 a 71, login de 39 a 40, register de 64 a 65, forgot
