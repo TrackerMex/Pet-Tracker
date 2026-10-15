@@ -351,4 +351,4 @@ el detalle de la enmienda está en su `requirements.md` §R14.
 Detalle y tests en `specs/mobile-alerts-canvas-fidelity/requirements.md`. Los `it` citados se reescriben en
 su sitio con el sufijo `(enmendado por #174 Rn)`.
 
-- [ ] Enmienda #174 aprobada por humano
+- [X] Enmienda #174 aprobada por humano

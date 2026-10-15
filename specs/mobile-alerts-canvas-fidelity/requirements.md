@@ -540,7 +540,7 @@ Features aparte:
 
 ## §6. Prueba de humo (humano)
 
-- [ ] Smoke #174 en dev build de Android (fecha: ____)
+- [X] Smoke #174 en dev build de Android (fecha: 2026-10-15)
 
 ## Enmienda E1 — premisas de la firma que caducaron al mergear #173
 
