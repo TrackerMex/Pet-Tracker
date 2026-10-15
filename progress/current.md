@@ -31,6 +31,10 @@
   Hay dos derivas desde la base de la spec (`60dd9eda`), ambas por #173: B4
   es 398 (la fórmula del catálogo acaba en `- 4 + 3, // #173 R13`) y B5 es
   §2.29, así que #183 toma §2.30. El delta no cambia.
+- **Parada 1 de Codex en c1** (2026-10-15): la nota del leader decía que B4
+  era 398 y es 402, porque faltó sumar `+ 4 // #171 R12`. Su rojo era el
+  esperado. Se resuelve con la Reanudación 1 del handoff, sin cambiar la spec.
+  El c1 queda sin commitear en el árbol hasta que Codex lo commitee.
 - **Siguiente**: el humano lanza Codex con el handoff. Cuando Codex termine:
   init.sh coordinado con los pares (#174, #178, #179), después reviewer, y
   luego el cierre (Notion «Implementado» / «Completado», y la PR).

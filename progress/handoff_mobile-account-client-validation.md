@@ -190,3 +190,49 @@ Di en el impl cuales cargaste.
    git commit --only progress/impl_mobile-account-client-validation.md -m 'docs(mobile-account-client-validation): #183 informe de implementación'
    git status --short -> sin salida.
 ```
+
+## Reanudación 1 — B4 era 402 (2026-10-15)
+
+Paraste bien en c1. El error estaba en la nota del leader: B4 en H0 es **402**,
+no 398. El leader no sumó `+ 4 // #171 R12` (399 + 4 − 1 = 402). La spec no
+cambia: dice que vale la medida de H0 y que el delta no cambia. La fórmula pide
+H0 + 9 = 411 y recibe 402, que es justo el rojo de la tabla de R1. Tu c1 sin
+commitear está conforme: `2 failed, 35 passed, 37 total`, con los dos títulos y
+tipos que anotaste. Al terminar #183, el catálogo tendrá 411 claves.
+
+```text
+Worktree: /home/claude/sites/Pet-Tracker-wt-183   <- PRIMERA LINEA. Trabaja AQUI y en ningun otro sitio
+Branch:   feature/183-mobile-account-client-validation
+Siguen en vigor TODAS las reglas de arriba (init.sh, push, PR, amend, rebase, prettier, JEST/LINT/CARGA, SKILLS),
+incluida la de comparar el titulo y el tipo de cada ● con su tabla antes de avanzar.
+La spec manda sobre cualquier skill, tambien sobre ponytail.
+
+== ANTES DE TOCAR NADA ==
+cd /home/claude/sites/Pet-Tracker-wt-183
+1. git rev-list --count 56a0b84a..HEAD -> 1
+   git diff --name-only 56a0b84a HEAD -> progress/current.md y progress/handoff_mobile-account-client-validation.md
+   H0 sigue siendo 56a0b84a. Ese commit del leader no es tuyo: no lo toques, no lo reviertas y no lo cuentes.
+2. git status --short -> exactamente estas dos lineas:
+    M mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx
+   ?? progress/impl_mobile-account-client-validation.md
+Si algo no cuadra, PARA.
+
+== GUION DE LA REANUDACION ==
+# -- c1
+cd /home/claude/sites/Pet-Tracker-wt-183/mobile-pet-tracker
+$J src/providers/__tests__/language-provider.test.tsx; echo "exit=$?"
+  -> exit=1 y Tests: 2 failed, 35 passed, 37 total, con los mismos dos ● que ya anotaste
+     (el de #65 R12 recibe 402 y espera 411; el de #183 R1 recibe undefined)
+git add src/providers/__tests__/language-provider.test.tsx && git commit -m 'test(mobile): copy de validación (#183 R1)'
+# -- despues
+Sigue con c2-c14 (y c15 solo si aplica) y despues con CIERRE, como estan arriba.
+
+== CAMBIO EN LA REGLA 9 ==
+El informe ya existe sin trackear. A partir de ahora, despues de cada commit, git status --short da exactamente:
+?? progress/impl_mobile-account-client-validation.md
+Cualquier otra linea: PARA. En CIERRE, despues del commit --only del informe, sale sin salida, como ya esta escrito.
+
+== INFORME ==
+Anade una seccion "Reanudacion 1" con la salida literal de los pasos 1 y 2 y la tabla por commit desde c1.
+La seccion de la parada queda como historia: no la borres.
+```
