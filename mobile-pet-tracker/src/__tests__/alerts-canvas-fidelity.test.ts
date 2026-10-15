@@ -1,4 +1,10 @@
+interface DirectoryEntry {
+  name: string;
+  isDirectory: () => boolean;
+}
+
 declare function require(moduleName: 'fs'): {
+  readdirSync: (path: string, options: { withFileTypes: true }) => DirectoryEntry[];
   readFileSync: (path: string, encoding: 'utf8') => string;
 };
 
@@ -6,7 +12,7 @@ declare function require(moduleName: 'path'): {
   join: (...paths: string[]) => string;
 };
 
-const { readFileSync } = require('fs');
+const { readdirSync, readFileSync } = require('fs');
 const { join } = require('path');
 const repositoryRoot = join(process.cwd(), '..');
 const readRepository = (path: string) => readFileSync(join(repositoryRoot, path), 'utf8');
@@ -136,5 +142,101 @@ describe('#174 R11: la carta declara los cambios', () => {
   it('declara el secundario compacto y limita la primaria sin labio al detalle', () => {
     expect(flat).toContain('- **Secundario compacto de fila** (#174): el ack de cada fila abierta de Alertas lleva `h-8.5 rounded-10 border-2 border-b-5 border-lip-gray bg-surface px-3`, etiqueta `text-xs font-extrabold text-foreground` y `hitSlop={TOUCH_SLOP}` (34 + 12 = 46 de diana). Es la única excepción a la receta del secundario neutro; el inventario de #166 R3 lo lista por su `testID`.');
     expect(flat).toContain('confirmar alerta en el detalle).');
+  });
+});
+
+
+const sourceRoot = join(process.cwd(), 'src');
+
+function sourceFiles(directory: string = sourceRoot): string[] {
+  return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const path = join(directory, entry.name);
+    if (entry.isDirectory()) {
+      return entry.name === '__tests__' ? [] : sourceFiles(path);
+    }
+    return /\.tsx?$/.test(entry.name) && !/\.test\.tsx?$/.test(entry.name) ? [path] : [];
+  });
+}
+
+function filesMatching(pattern: RegExp): string[] {
+  return sourceFiles()
+    .filter((path) => pattern.test(readFileSync(path, 'utf8')))
+    .map((path) => path.slice(sourceRoot.length + 1))
+    .sort();
+}
+
+function readSource(relativePath: string): string {
+  return readFileSync(join(sourceRoot, relativePath), 'utf8');
+}
+
+function classNames(source: string): string[] {
+  return [...source.matchAll(/className=(?:"([^"]*)"|'([^']*)'|\{`([^`]*)`\})/g)]
+    .map((match) => match[1] ?? match[2] ?? match[3]);
+}
+
+describe('#174 R12: inventarios', () => {
+  it.each([
+    {
+      token: 'rounded-10',
+      pattern: /(?<![\w-])rounded-10\b/,
+      files: ['screens/alerts/index.tsx'], // #174 R12
+    },
+    {
+      token: 'border-b-5',
+      pattern: /(?<![\w-])border-b-5\b/,
+      files: ['screens/alerts/index.tsx'], // #174 R12
+    },
+    {
+      token: 'tracking-caps',
+      pattern: /(?<![\w-])tracking-caps\b/,
+      files: ['screens/alerts/index.tsx'], // #174 R12
+    },
+    {
+      token: 'text-15',
+      pattern: /(?<![\w-])text-15\b/,
+      files: [
+        'components/celebration.tsx',
+        'screens/alerts/index.tsx', // #174 R12: delta sobre la lista medida en H0
+        'screens/forgot/index.tsx',
+        'screens/login/index.tsx',
+        'screens/register/index.tsx',
+        'screens/reset-password/index.tsx',
+      ],
+    },
+    {
+      token: 'tracking-title',
+      pattern: /(?<![\w-])tracking-title\b/,
+      files: ['screens/alerts/index.tsx'], // #174 R12: H0 sin consumidores
+    },
+  ])('limita $token a su inventario de producción', ({ pattern, files }) => {
+    expect(filesMatching(pattern)).toEqual(files);
+  });
+
+  it('declara border-b-5 una sola vez', () => {
+    const count = sourceFiles().reduce((total, path) => (
+      total + (readFileSync(path, 'utf8').match(/(?<![\w-])border-b-5\b/g)?.length ?? 0)
+    ), 0);
+    expect(count).toBe(1);
+  });
+});
+
+describe('#174 R12: grep-limpio', () => {
+  it.each(['screens/alerts/index.tsx', 'utils/alert-meta.ts'])('%s no introduce escapes de estilo ni emoji', (file) => {
+    const source = readSource(file);
+    expect(source).not.toMatch(/\p{Extended_Pictographic}/u);
+    expect(source).not.toMatch(new RegExp(String.raw`#(?!\d{2,3} R\d)[\da-f]{3,8}\b`, 'i'));
+    expect(source).not.toContain('StyleSheet.create');
+    for (const classes of classNames(source)) expect(classes).not.toMatch(/\[[^\]]*\]/);
+  });
+
+  it('retira las clases salientes de las filas', () => {
+    expect(readSource('screens/alerts/index.tsx')).not.toMatch(/(?<![\w-])(?:min-h-20|text-2xs|shadow-sm)\b/);
+  });
+
+  it('cada tracking-* va con su text-*', () => {
+    const tracked = classNames(readSource('screens/alerts/index.tsx'))
+      .filter((classes) => /(?<![\w-])tracking-/.test(classes));
+    expect(tracked).toHaveLength(2);
+    for (const classes of tracked) expect(classes).toMatch(/(?<![\w-])text-(?:13|15|26)\b/);
   });
 });
