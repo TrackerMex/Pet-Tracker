@@ -500,7 +500,7 @@ describe('#158 R3: el owner ve la acción de subir', () => {
     await screen.findByTestId('doc-doc-1');
     const button = await screen.findByTestId('docs-upload');
     expect(within(button).getByText('Subir documento')).toBeVisible();
-    expect(docsChildren()).toEqual(['View', 'docs-entry-doc-1', 'docs-upload']);
+    expect(docsChildren()).toEqual(['View', 'docs-filters', 'docs-entry-doc-1', 'docs-upload']);
     expect(button.props.className).not.toContain('bg-accent');
     const label = within(button).getByText('Subir documento');
     expect(label.props.className).toBe('text-15 font-extrabold text-foreground');
@@ -647,7 +647,7 @@ describe('#158 R5: selector y formulario de subida', () => {
     await fireEvent.press(await screen.findByTestId(docs.length ? 'docs-upload' : 'docs-empty-action'));
     await screen.findByText('Elige un archivo PDF, JPEG o PNG');
     expect(docsChildren()).toEqual(docs.length
-      ? ['View', 'docs-entry-doc-1', 'docs-upload', 'docs-action-error']
+      ? ['View', 'docs-filters', 'docs-entry-doc-1', 'docs-upload', 'docs-action-error']
       : ['View', 'docs-empty', 'docs-action-error']);
     const error = screen.getByTestId('docs-action-error');
     expect(error.props.selectable).toBe(true);
@@ -670,7 +670,7 @@ describe('#158 R5: selector y formulario de subida', () => {
   it.each([{ docs: [] }, { docs: [docOne] }])('sitúa el formulario y oculta las entradas con lista %j', async ({ docs }) => {
     await openUploadForm(docs);
     expect(docsChildren()).toEqual(docs.length
-      ? ['View', 'docs-entry-doc-1', 'docs-upload-form']
+      ? ['View', 'docs-filters', 'docs-entry-doc-1', 'docs-upload-form']
       : ['View', 'docs-empty', 'docs-upload-form']);
     expect(screen.queryByTestId('docs-upload')).toBeNull();
     expect(screen.queryByTestId('docs-empty-action')).toBeNull();
@@ -756,7 +756,7 @@ describe('#158 R6: validación antes de leer o crear', () => {
     await fireEvent.press(screen.getByTestId('docs-upload-submit'));
     await screen.findByText('Añade un tipo, un nombre y una fecha con formato AAAA-MM-DD');
     expect(docsChildren()).toEqual(docs.length
-      ? ['View', 'docs-entry-doc-1', 'docs-upload-form', 'docs-action-error']
+      ? ['View', 'docs-filters', 'docs-entry-doc-1', 'docs-upload-form', 'docs-action-error']
       : ['View', 'docs-empty', 'docs-upload-form', 'docs-action-error']);
     await fireEvent.press(screen.getByTestId('docs-upload-cancel'));
     await screen.findByTestId(docs.length ? 'docs-upload' : 'docs-empty-action');
@@ -990,8 +990,8 @@ describe('#158 R10: cualquier miembro abre un documento', () => {
     await screen.findByText('Algo salió mal');
     expect(screen.getByTestId('doc-doc-1')).toBeVisible();
     expect(docsChildren()).toEqual(myRole === 'owner'
-      ? ['View', 'docs-entry-doc-1', 'docs-upload', 'docs-action-error']
-      : ['View', 'docs-entry-doc-1', 'docs-action-error']);
+      ? ['View', 'docs-filters', 'docs-entry-doc-1', 'docs-upload', 'docs-action-error']
+      : ['View', 'docs-filters', 'docs-entry-doc-1', 'docs-action-error']);
   });
 
   it('family limpia el error antes de abrir otra vez el navegador', async () => {
@@ -1161,5 +1161,82 @@ describe('#175 R7: zona de subida del artboard', () => {
     expect(zone).toHaveStyle({ borderCurve: 'continuous', opacity: 1 });
     await fireEvent(zone, 'responderGrant', { nativeEvent: {}, persist: () => undefined });
     expect(zone).toHaveStyle({ borderCurve: 'continuous', opacity: 0.8 });
+  });
+});
+
+const filterDocs = [
+  { ...docOne, id: 'unknown', type: 'Radiografía' },
+  { ...docOne, id: 'analysis', type: 'Análisis' },
+  { ...docOne, id: 'checkup', type: 'Consulta' },
+  { ...docOne, id: 'vaccine', type: 'Vacunación' },
+  { ...docOne, id: 'deworming', type: 'Desparasitación' },
+];
+
+describe('#175 R8: chips de filtro', () => {
+  it('ordena las cinco categorías presentes y sus etiquetas antes de la primera entrada', async () => {
+    mockListPetDocs.mockResolvedValue({ kind: 'ok', docs: filterDocs });
+    await renderDocs();
+    await screen.findByTestId('doc-unknown');
+    const filters = screen.getByTestId('docs-filters');
+    expect(filters.props.className).toBe('flex-row flex-wrap gap-1.5');
+    expect(filters.children).toHaveLength(6);
+    expect(filters.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual([
+      'docs-filter-all', 'docs-filter-blue', 'docs-filter-green', 'docs-filter-amber', 'docs-filter-violet', 'docs-filter-neutral',
+    ]);
+    for (const [id, label] of [
+      ['all', 'Todos'], ['blue', 'Vacunación'], ['green', 'Consulta'],
+      ['amber', 'Desparasitación'], ['violet', 'Análisis'], ['neutral', 'Otros'],
+    ]) {
+      expect(within(screen.getByTestId(`docs-filter-${id}`)).getByText(label)).toBeVisible();
+    }
+    const order = docsChildren();
+    expect(order[order.indexOf('docs-entry-unknown') - 1]).toBe('docs-filters');
+  });
+
+  it('omite ámbar y neutral en la lista del artboard', async () => {
+    mockListPetDocs.mockResolvedValue({ kind: 'ok', docs: [
+      { ...docOne, id: 'analysis', type: 'Análisis' },
+      { ...docOne, id: 'vaccine', type: 'Vacunación' },
+      { ...docOne, id: 'checkup', type: 'Consulta' },
+    ] });
+    await renderDocs();
+    await screen.findByTestId('doc-analysis');
+    const filters = screen.getByTestId('docs-filters');
+    expect(filters.children).toHaveLength(4);
+    expect(filters.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual([
+      'docs-filter-all', 'docs-filter-blue', 'docs-filter-green', 'docs-filter-violet',
+    ]);
+  });
+
+  it.each([
+    ['all', 'Todos', 'bg-foreground', 'text-background', true],
+    ['blue', 'Vacunación', 'bg-category-blue', 'text-category-blue-strong', false],
+    ['green', 'Consulta', 'bg-category-green', 'text-category-green-strong', false],
+    ['amber', 'Desparasitación', 'bg-category-amber', 'text-category-amber-strong', false],
+    ['violet', 'Análisis', 'bg-category-violet', 'text-category-violet-strong', false],
+    ['neutral', 'Otros', 'bg-default', 'text-muted', false],
+  ] as const)('cierra clases, objetivo táctil y pulsado de %s', async (id, label, surface, ink, selected) => {
+    mockListPetDocs.mockResolvedValue({ kind: 'ok', docs: filterDocs });
+    await renderDocs();
+    await screen.findByTestId('doc-unknown');
+    const chip = screen.getByTestId(`docs-filter-${id}`);
+    expect(chip.props.className).toBe(`h-8.5 items-center justify-center rounded-full px-3 ${surface}`);
+    expect(chip.props.accessibilityRole).toBe('button');
+    expect(chip.props.accessibilityState).toEqual({ selected });
+    expect(chip.props.hitSlop).toEqual({ top: 6, bottom: 6, left: 6, right: 6 });
+    expect(chip.children).toHaveLength(1);
+    expect(within(chip).getByText(label).props.className).toBe(`text-13 font-extrabold ${ink}`);
+    expect(chip).toHaveStyle({ opacity: 1 });
+    await fireEvent(chip, 'responderGrant', { nativeEvent: {}, persist: () => undefined });
+    expect(chip).toHaveStyle({ opacity: 0.8 });
+  });
+
+  it.each(['empty', 'error', 'loading'] as const)('no pinta filtros con lista %s', async (state) => {
+    if (state === 'loading') mockListPetDocs.mockReturnValue(pending<PetDocsState>());
+    else if (state === 'error') mockListPetDocs.mockResolvedValue({ kind: 'error' });
+    else mockListPetDocs.mockResolvedValue({ kind: 'ok', docs: [] });
+    await renderDocs();
+    await screen.findByTestId(state === 'loading' ? 'docs-list-skeleton' : state === 'error' ? 'docs-error' : 'docs-empty');
+    expect(screen.queryByTestId('docs-filters')).toBeNull();
   });
 });
