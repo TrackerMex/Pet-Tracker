@@ -903,7 +903,7 @@ de R4 a R13, **Codex para** y el leader enmienda la spec.
 - `global-css.test.ts`, `design-drift.test.ts`: `describe` nuevos (R1, R2,
   R13), sin cambiar los existentes salvo la regla de inventarios de R13.
 
-### Enmiendas E1 a E4 (2026-10-15)
+### Enmiendas E1 a E5 (2026-10-15)
 
 - `src/__tests__/profile-canvas-fidelity.test.ts` (E1): `text-26` suma
   `screens/reminders/index.tsx` (`#178 R4`); `text-13` suma `screens/reminders/index.tsx`
@@ -915,6 +915,9 @@ de R4 a R13, **Codex para** y el leader enmienda la spec.
   `'../../components/pop-in'`, en el rojo de R7.
 - `src/screens/add-reminder/index.test.tsx` (E4): `'💉 Vacuna'` → `'Vacuna'` y
   `'📌 Otro'` → `'Otro'` en el rojo de R6, no de R10.
+- `src/__tests__/alerts-canvas-fidelity.test.ts` (E5): la fila `tracking-title`
+  de `#174 R12` pasa a `['screens/alerts/index.tsx', 'screens/reminders/index.tsx']`
+  (`#178 R4`) y a `[add-reminder, alerts, reminders]` (`#178 R10`).
 
 ---
 
@@ -976,18 +979,21 @@ cambiarlo al firmar; si lo hace, el leader enmienda antes del handoff.
 
 - [x] Aprobado por humano (fecha: 2026-10-15)
 
-## Enmiendas E1 a E4 — cuatro candados que la spec firmada no inventarió
+## Enmiendas E1 a E5 — cinco candados que la spec firmada no inventarió
 
 > Escritas el 2026-10-15, con el borrador del handoff
 > (`progress/handoff_mobile-routine-canvas-fidelity.md`, commit `c6b6f30e`)
 > contrastado contra el árbol de `feature/178-mobile-routine-canvas-fidelity`
-> antes de lanzar a Codex. Registran cuatro cosas que R4 a R13 rompen y que
+> antes de lanzar a Codex. E5 se añadió el mismo día, al regenerar el handoff
+> sobre `main` con #174 fusionada (`deaf4e6d`, handoff `23e52b9c`). Registran
+> cinco cosas que R4 a R13 rompen y que
 > §Deltas de candados no nombra. **Ninguna cambia una decisión de
 > comportamiento ni de diseño de las dos pantallas.** Cambian el alcance de
-> ficheros: `src/__tests__/profile-canvas-fidelity.test.ts` entra en la lista
+> ficheros: `src/__tests__/profile-canvas-fidelity.test.ts` y
+> `src/__tests__/alerts-canvas-fidelity.test.ts` entran en la lista
 > cerrada, y dos deltas de `src/screens/add-reminder/index.test.tsx` pasan de
 > R10 a R6. Ningún `it` se añade, se quita ni se renombra. Sus casillas van
-> **sin marcar**: el humano reabre el gate solo para estas cuatro.
+> **sin marcar**: el humano reabre el gate solo para estas cinco.
 
 ### Qué se midió
 
@@ -1027,6 +1033,15 @@ Cada hueco se comprobó contra el árbol en `c6b6f30e`, sin ejecutar Codex:
   dos aserciones con emoji de esa pantalla
   (`getByText('💉 Vacuna')` y `getByText('📌 Otro')`) viven en
   `describe('R8: formulario de alta con chips y pickers')`.
+- **E5.** `src/__tests__/alerts-canvas-fidelity.test.ts` (#174 R12, mergeado en
+  `deaf4e6d`) cierra el inventario `tracking-title` a
+  `['screens/alerts/index.tsx']` (`filesMatching(...)` con `toEqual`). R4 pone
+  `tracking-title` en el título de Recordatorios y R10 en el de Nuevo
+  recordatorio. Sin delta, el verde de R4 (c8) cae en
+  `#174 R12: inventarios › limita tracking-title a su inventario de producción`.
+  Los otros cuatro inventarios de #174 (`rounded-10`, `border-b-5`,
+  `tracking-caps`, `text-15`) se midieron en simulación y ninguna R de #178
+  los desborda.
 
 ### E1 — inventarios de #173 R2 y R2.4
 
@@ -1141,7 +1156,24 @@ Consecuencias, todas de reparto, ninguna de comportamiento:
   permitida del rojo c11, y `src/screens/add-reminder/index.tsx` en la del
   verde c12.
 
-### Enmiendas E1 a E4 — dónde viaja cada delta
+### E5 — inventario `tracking-title` de #174 R12
+
+En `src/__tests__/alerts-canvas-fidelity.test.ts`, la fila `tracking-title` del
+`it.each` de inventarios (`files: ['screens/alerts/index.tsx']`) crece en dos
+pasos, en orden `LC_ALL=C`. Con dos o más ficheros la lista se escribe
+multilínea, un fichero por línea como la de `text-15`, y el comentario de
+trazabilidad va en la línea del fichero nuevo:
+
+- **Rojo de R4 (c7):** `['screens/alerts/index.tsx', 'screens/reminders/index.tsx']`,
+  con `// #178 R4`. Es rojo legítimo: `reminders/index.tsx` aún no usa la clase.
+- **Rojo de R10 (c19):** `['screens/add-reminder/index.tsx', 'screens/alerts/index.tsx', 'screens/reminders/index.tsx']`,
+  con `// #178 R10`.
+
+Solo esa fila. Ningún `it` se añade, se quita ni se renombra. Si #179 mergea
+antes (también añade `screens/meal-schedule/index.tsx` a esta fila), el leader
+re-mide la fila; el criterio no cambia.
+
+### Enmiendas E1 a E5 — dónde viaja cada delta
 
 | Enmienda | Commit | Fichero | Rojo hasta |
 |---|---|---|---|
@@ -1151,20 +1183,25 @@ Consecuencias, todas de reparto, ninguna de comportamiento:
 | E2 | c11 y c23 | `consistency-classnames.test.ts` | c12 y c24 |
 | E3 | c13 (rojo R7) | `reminders/index.test.tsx` | nace verde |
 | E4 | c11 y c12 | `add-reminder/index.test.tsx`, `add-reminder/index.tsx` | c12 |
+| E5 | c7 (rojo R4) y c19 (rojo R10) | `alerts-canvas-fidelity.test.ts` | c8 y c20 |
 
 - `src/__tests__/profile-canvas-fidelity.test.ts` entra en la lista cerrada de
   ficheros, y solo en c7, c11 y c23, y solo en las aserciones de E1.
+- `src/__tests__/alerts-canvas-fidelity.test.ts` entra en la lista cerrada
+  (22 rutas, no las 21 de la spec firmada), solo en c7 y c19 y solo en la fila
+  `tracking-title` (E5).
 - Los totales de `it` por commit y por feature no cambian. El número de
   commits `(#178 R` tampoco: siguen siendo 25.
-- Los deltas de E1, E2 y E4 se suman a §Deltas de candados, que es el registro
+- Los deltas de E1, E2, E4 y E5 se suman a §Deltas de candados, que es el registro
   de cambios de candados (P12); E3 es un doble de fichero y se suma a su lista
   de dobles.
 - Los comentarios de trazabilidad son `// #178 Rn`; nunca `// #178 E1`
   (HEX_LITERAL de design-drift).
 
-### Aprobación de las Enmiendas E1 a E4
+### Aprobación de las Enmiendas E1 a E5
 
 - [ ] Enmienda E1 aprobada por humano ← gate obligatorio antes de lanzar a Codex
 - [ ] Enmienda E2 aprobada por humano ← gate obligatorio antes de lanzar a Codex
 - [ ] Enmienda E3 aprobada por humano ← gate obligatorio antes de lanzar a Codex
 - [ ] Enmienda E4 aprobada por humano ← gate obligatorio antes de lanzar a Codex
+- [ ] Enmienda E5 aprobada por humano ← gate obligatorio antes de lanzar a Codex

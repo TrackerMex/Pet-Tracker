@@ -1,9 +1,8 @@
 # Handoff a Codex CLI — #178 mobile-routine-canvas-fidelity
 
-> **ESTADO: BORRADOR — no lanzar hasta que el humano firme E1–E4 de la spec.** Las cuatro enmiendas están escritas en
-> `specs/mobile-routine-canvas-fidelity/requirements.md` §Enmiendas E1 a E4 (commit `55515479`; corregidas para #174 en `7aa6779a`) y sus casillas
-> están sin marcar. Este handoff ya las implementa: al firmarlas solo se quita esta línea. Hay además un hueco que la spec
-> no recoge (**E5**, abajo): el leader lo resuelve antes de lanzar.
+> **ESTADO: BORRADOR — no lanzar hasta que el humano firme E1–E5 de la spec.** Las cinco enmiendas están escritas en
+> `specs/mobile-routine-canvas-fidelity/requirements.md` §Enmiendas E1 a E5 (commit `55515479`; corregidas para #174 en `7aa6779a`; E5 añadida al regenerar este handoff) y sus casillas
+> están sin marcar. Este handoff ya las implementa: al firmarlas solo se quita esta línea.
 >
 > **Nota del leader (2026-10-15).** La spec está firmada en el repo (R1–R14). H0 es el último commit que toca este fichero
 > (`git log -1 --format=%H -- progress/handoff_mobile-routine-canvas-fidelity.md`): anota `git rev-parse HEAD` al arrancar. En H0, `origin/main` =
@@ -20,21 +19,15 @@
 >
 > No fija la línea `Tests:` exacta de un rojo. Si un eslabón no cuadra, PARA y reporta. No lo corrijas tú.
 >
-> **Enmiendas E1–E4:** están en la spec (`requirements.md` §Enmiendas E1 a E4 y su tabla «dónde viaja cada delta»); este handoff
+> **Enmiendas E1–E5:** están en la spec (`requirements.md` §Enmiendas E1 a E5 y su tabla «dónde viaja cada delta»); este handoff
 > las aplica tal cual: E1.1 en c7, E1.2 en c11, E1.3 en c23 (`profile-canvas-fidelity.test.ts`); E2 en c11 y c23
 > (`consistency-classnames.test.ts`); E3 en c13 (doble de `PopIn`); E4 en c11 y c12 (`'Vacuna'`/`'Otro'` sin emoji). Con #174
 > fusionada, `text-26` queda `[alerts, profile, reminders]`, `text-13` queda `form-error, add-reminder, alerts, forgot, login, profile,
 > register, reminders, reset-password` y `rounded-tile` queda `[add-reminder, profile]`.
 >
-> **Hueco que la spec NO recoge (E5; BLOQUEANTE; la propuesta es la que este handoff ya implementa):**
-> - `alerts-canvas-fidelity.test.ts` (#174 R12) cierra el inventario `tracking-title` a `['screens/alerts/index.tsx']`. R4 (c8) y
->   R10 (c20) usan `tracking-title` en Recordatorios y Nuevo recordatorio: sin delta, el verde cae en
->   `#174 R12: inventarios › limita tracking-title a su inventario de producción` y la cadena para.
-> - Propuesta: en el rojo de R4 (c7) la lista pasa a `[alerts, reminders]` con `// #178 R4` en la fila nueva, y en el rojo de R10
->   (c19) a `[add-reminder, alerts, reminders]` con `// #178 R10` (orden `LC_ALL=C`). SOLO esa fila. Los otros inventarios de #174
->   (`rounded-10`, `border-b-5`, `tracking-caps`, `text-15`) se midieron en la simulación: ninguna R de #178 los desborda.
-> - Consecuencia: el fichero entra en la lista cerrada (22 rutas, no las 21 de la spec) y solo en c7 y c19. La spec debe enmendarse
->   (§Lista cerrada, §Deltas y la tabla de E1–E4) o el leader decide otra cosa.
+> **E5 (inventario `tracking-title` de #174 R12):** también está en la spec (§Enmiendas E1 a E5, E5). `alerts-canvas-fidelity.test.ts` cierra
+> `tracking-title` a `['screens/alerts/index.tsx']`; R4 (c8) y R10 (c20) lo usan en Recordatorios y Nuevo recordatorio. El delta va en el
+> rojo de R4 (c7) y en el de R10 (c19), SOLO esa fila, en orden `LC_ALL=C`. El fichero entra en la lista cerrada (22 rutas) y solo en c7 y c19.
 >
 > **Este handoff manda sobre `tasks.md` y `design.md` donde discrepan:**
 > 1. **Las cifras agregadas son «base H0 + delta», medidas.** Las de la tabla B de la spec (base `fb5b209f`) están caducas en
@@ -526,7 +519,7 @@ specs/mobile-routine-canvas-fidelity/traceability.md
 specs/mobile-ui-language/design.md
 ```
 
-La primera ruta de `src/__tests__/` (`alerts-canvas-fidelity.test.ts`) entra por E5, que la spec aun no recoge.
+La primera ruta de `src/__tests__/` (`alerts-canvas-fidelity.test.ts`) entra por E5 de la spec.
 
 Excluidos:
 - `feature_list.json`, `progress/current.md` y este handoff;
