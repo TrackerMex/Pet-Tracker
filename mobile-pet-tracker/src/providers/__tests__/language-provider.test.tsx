@@ -66,7 +66,8 @@ describe('#65 R12: el catálogo tiene los dos idiomas y t resuelve claves y par�
         + 2 // #169 R9
         + 7 // #170 R1
         + 3 // #172 R16
-        - 4 + 3, // #173 R13
+        - 4 + 3 // #173 R13
+        + 1, // #174 R2
     );
     expect(spanishKeys).toEqual(englishKeys);
     for (const key of englishKeys) {
@@ -359,7 +360,7 @@ describe('#78 R3: el catálogo trae las claves del centro de alertas', () => {
       ['alerts.justNow', 'Just now', 'Ahora mismo'],
       ['alerts.minutesAgo', '{{minutes}} min ago', 'Hace {{minutes}} min'],
       ['alerts.hoursAgo', '{{hours}} h ago', 'Hace {{hours}} h'],
-      ['alerts.daysAgo', '{{days}} d ago', 'Hace {{days}} d'],
+      ['alerts.daysAgo', '{{days}} days ago', 'Hace {{days}} días'], // #174 R2
       ['home.alertsBell', 'Alerts', 'Alertas'],
       ['home.alertsBellUnread', 'Unread alerts', 'Alertas sin leer'],
     ] as const;
@@ -638,5 +639,36 @@ describe('#172 R16: el copy de las pantallas de cuenta como el canvas', () => {
     expect(languageDesign).toMatch(
       /### §2\.\d+ — Añadidos por #172 — Las pantallas de cuenta como el canvas/,
     );
+  });
+});
+
+
+describe('#174 R2: días con palabra completa', () => {
+  const english = en as Record<string, string>;
+  const spanish = es as Record<string, string>;
+  const languageDesign = readFileSync(
+    join(process.cwd(), '../specs/mobile-ui-language/design.md'),
+    'utf8',
+  );
+
+  it.each([
+    ['alerts.dayAgo', '1 day ago', 'Hace 1 día'],
+    ['alerts.daysAgo', '{{days}} days ago', 'Hace {{days}} días'],
+  ])('declara %s en ambos idiomas', (key, englishValue, spanishValue) => {
+    expect(english[key]).toBe(englishValue);
+    expect(spanish[key]).toBe(spanishValue);
+  });
+
+  it('documenta alerts.dayAgo con el sufijo de #174', () => {
+    expect(languageDesign).toMatch(new RegExp(
+      '\\| — \\| `' + escapeRegExp('alerts.dayAgo') + '`[^\\n]*← añadida por #174 \\(R2\\)',
+    ));
+  });
+
+  it('marca el valor cambiado de alerts.daysAgo', () => {
+    const row = languageDesign.split('\n').find((line) => line.includes('`alerts.daysAgo`'));
+    expect(row).toContain('`{{days}} days ago`');
+    expect(row).toContain('`Hace {{days}} días`');
+    expect(row).toContain('valor cambiado por #174 (R2)');
   });
 });
