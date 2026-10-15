@@ -972,3 +972,86 @@ El título tampoco cambia.
 ### Aprobación de la Enmienda E2
 
 - [x] Enmienda E2 aprobada por humano (fecha: 2026-10-15, vía repo) ← gate obligatorio antes de reanudar a Codex
+
+---
+
+## Enmienda E3 — inventarios de #174 R12 que chocan con R5, R6 y R7 al fusionar main
+
+> Escrita el 2026-10-15 con la ronda de fusión con `main` (#174, `deaf4e6d`)
+> parada en M4c. Registra dos candados de #174 que esta spec no pudo
+> inventariar, porque `alerts-canvas-fidelity.test.ts` nace en `main` después de
+> ella. **No cambia ninguna decisión de comportamiento ni de diseño de la
+> pantalla.** Cambia el alcance de ficheros: ese test entra en la lista cerrada
+> de la fusión. Su casilla va **sin marcar**: el humano reabre el gate solo para
+> esta enmienda.
+
+### Qué se midió
+
+Codex ejecutó M4c una sola vez sobre el árbol fusionado: `exit=1`, 111 suites
+(110 verdes, 1 roja) y 3483 tests (3481 verdes, 2 rojos). Los dos rojos son:
+
+```
+● #174 R12: inventarios › limita text-15 a su inventario de producción
+  Received: [..., "screens/alerts/index.tsx", "screens/docs/index.tsx", "screens/forgot/index.tsx", ...]
+● #174 R12: inventarios › limita tracking-title a su inventario de producción
+  Received: ["screens/alerts/index.tsx", "screens/docs/index.tsx"]
+```
+
+Codex no tocó ningún test. El leader repitió el barrido sin Codex: el mismo
+recorrido que `filesMatching` (ficheros de `src/` sin `__tests__` ni
+`*.test.*`) sobre el árbol fusionado da, para `rounded-10`, `border-b-5` y
+`tracking-caps`, solo `screens/alerts/index.tsx`, así que esas tres filas y
+`declara border-b-5 una sola vez` no ven Documentos. `text-15` y
+`tracking-title` sí: R6 pone `text-15` en el nombre del documento, R7 en el
+título de la zona de subida, y R5 pone `tracking-title` en el título de la
+pantalla. Son las **dos** únicas aserciones de #174 que chocan con #175; el
+resto de sus `it` (enmiendas, carta, grep-limpio de Alertas) no leen Documentos.
+
+### E3.1 — Δ20 (R6): `text-15` incluye Documentos
+
+En `src/__tests__/alerts-canvas-fidelity.test.ts`, la fila `text-15` del
+`it.each` de `describe('#174 R12: inventarios', …)` recibe una línea entre
+`'screens/alerts/index.tsx', // #174 R12: delta sobre la lista medida en H0` y
+`'screens/forgot/index.tsx',` (orden `LC_ALL=C`):
+
+```
+        'screens/docs/index.tsx', // #175 R6
+```
+
+### E3.2 — Δ21 (R5): `tracking-title` incluye Documentos
+
+La fila `tracking-title` pasa de una sola línea
+
+```
+      files: ['screens/alerts/index.tsx'], // #174 R12: H0 sin consumidores
+```
+
+a una por fichero, como `text-15`, con el comentario de #175 en la línea del
+fichero nuevo:
+
+```
+      files: [
+        'screens/alerts/index.tsx', // #174 R12: H0 sin consumidores
+        'screens/docs/index.tsx', // #175 R5
+      ],
+```
+
+Los títulos de los `it` no cambian y no se añade ni se quita ninguno.
+
+### E3.3 — dónde viaja cada delta
+
+- **Los dos van en el commit de fusión**, no en un commit rojo propio: el rojo
+  ya lo demostró M4c (los dos `●` de arriba) y el candado solo se pone al día.
+  Los commits `(#175 R` siguen en **21**.
+- Las cifras de la fusión no se mueven por esta enmienda: **111 suites y 3483
+  tests** (los 2 rojos pasan a verdes; ningún `it` se añade ni se quita). Las
+  cruza el leader contra `origin/main`.
+- La lista cerrada de la fusión pasa de 23 a **24** ficheros: suma
+  `mobile-pet-tracker/src/__tests__/alerts-canvas-fidelity.test.ts`. La spec de
+  #174 no se enmienda: el registro vive aquí, igual que en E2.
+- #178 (E5) y #179 (E1.7) editan filas de este mismo test. La que mergee después
+  de #175 re-mide: es del leader, no de Codex.
+
+### Aprobación de la Enmienda E3
+
+- [ ] Enmienda E3 aprobada por humano ← gate obligatorio antes de repetir la ronda de fusión con Codex

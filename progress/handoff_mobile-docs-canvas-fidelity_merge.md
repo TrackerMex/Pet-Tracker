@@ -5,11 +5,16 @@
 > Esta ronda **solo fusiona `origin/main` en la rama** y resuelve seis conflictos. **No es una feature nueva**: no hay
 > R-id nuevo, ni commits rojo/verde, ni tests nuevos. Una sola salida: **un commit de fusión**, más una nota en el impl.
 >
+> **Segunda corrida (2026-10-15).** La primera paró en M4c con dos rojos de `alerts-canvas-fidelity.test.ts` (#174 R12:
+> `text-15` y `tracking-title` no conocían Documentos). El humano firmó la Enmienda E3 de la spec, que añade **M3b**: una
+> edición exacta de ese test con un script del leader. Es el **único** test que esta ronda toca. La primera corrida se
+> abortó (`git merge --abort`); el informe de su parada está commiteado en el impl, y esta corrida lo continúa.
+>
 > Reglas duras:
 > - Nada de `rebase` (los hashes de `traceability.md` apuntan a commits de la rama).
 > - **No corras `./init.sh` ni e2e.** Otra sesión lo usa y comparte LocalStack y Postgres. Solo jest, typecheck y lint.
-> - Si un eslabón no cuadra, **PARA y reporta**. No toques un test para que cuadre: si un test de #175 o de #174
->   aserta algo que la resolución rompe, es una decisión del leader.
+> - Si un eslabón no cuadra, **PARA y reporta**. No toques un test para que cuadre (salvo la edición literal de M3b):
+>   si un test de #175 o de #174 aserta algo que la resolución rompe, es una decisión del leader.
 > - Cabeceras de este fichero con `# --`: no son comandos.
 > - Rama: `feature/175-mobile-docs-canvas-fidelity`, worktree `/home/claude/sites/Pet-Tracker-wt-175`.
 
@@ -169,6 +174,19 @@ ninguna de las dos quedó fuera de la regla (entre `12. **Escala de radios**` y 
 cd /home/claude/sites/Pet-Tracker-wt-175 && git add docs/ui-guidelines.md specs/mobile-ui-language/design.md mobile-pet-tracker/src/theme/global.css mobile-pet-tracker/src/__tests__/profile-canvas-fidelity.test.ts mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx && test -z "$(git diff --name-only --diff-filter=U)" && test -z "$(git grep -nE '^(<<<<<<<|=======$|>>>>>>>)' -- . ':!progress' | head -1)" && echo M3-ok
 ```
 
+## M3b candado de #174 R12 (Enmienda E3)
+
+`alerts-canvas-fidelity.test.ts` llegó con la fusión y sus filas `text-15` y `tracking-title` no conocen Documentos.
+El script del leader edita solo esas dos filas (hace `assert` de que cada texto aparece exactamente una vez) y se
+añade a la fusión:
+
+```
+# -- M3b candado ACF --
+cd /home/claude/sites/Pet-Tracker-wt-175 && python3 -I progress/handoff_mobile-docs-canvas-fidelity_merge_e3.py mobile-pet-tracker/src/__tests__/alerts-canvas-fidelity.test.ts && git add mobile-pet-tracker/src/__tests__/alerts-canvas-fidelity.test.ts && test "$(grep -cF "'screens/docs/index.tsx', // #175 R6" mobile-pet-tracker/src/__tests__/alerts-canvas-fidelity.test.ts)" = 1 && test "$(grep -cF "'screens/docs/index.tsx', // #175 R5" mobile-pet-tracker/src/__tests__/alerts-canvas-fidelity.test.ts)" = 1 && test "$(grep -cF '// #175 R' mobile-pet-tracker/src/__tests__/alerts-canvas-fidelity.test.ts)" = 2 && echo M3b-ok
+```
+
+Si el script imprime un `AssertionError`, PARA: el fichero no es el de `deaf4e6d` y el leader re-mide.
+
 ## M4 verificación (sin init.sh)
 
 Primero espera a que no haya jest ni eslint de otra sesión (otra sesión corre `init.sh` y la carga da timeouts falsos):
@@ -190,9 +208,9 @@ cd /home/claude/sites/Pet-Tracker-wt-175/mobile-pet-tracker && test ! -e .expo/t
 cd /home/claude/sites/Pet-Tracker-wt-175/mobile-pet-tracker && FORCE_COLOR=0 bunx jest --testTimeout=30000 > /tmp/175-merge-all.txt 2>&1; echo "exit=$?"; grep -E '^(Test Suites|Tests):' /tmp/175-merge-all.txt; grep -E '^  ● ' /tmp/175-merge-all.txt | grep -vxF '  ● Console' | sort | uniq -c
 ```
 
-Esperado: `exit=0`, `Test Suites: N passed, N total`, `Tests: M passed, M total`, y **ningún** `●`. Anota N y M. (Antes de la
-fusión: 110 suites y 3389 + (K − 1252) tests, con K en `progress/impl_mobile-docs-canvas-fidelity.md`. Después van
-sumados los suites y tests de #174; el leader cruza tus cifras con las de `origin/main`.)
+Esperado: `exit=0`, `Test Suites: 111 passed, 111 total`, `Tests: 3483 passed, 3483 total`, y **ningún** `●`. (Son las
+cifras de la primera corrida: 3481 verdes y 2 rojos, que M3b pone en verde sin añadir ni quitar ningún `it`. El leader
+las cruza con las de `origin/main`.) Si las cifras difieren, anota las tuyas y PARA.
 
 El aviso `A worker process has failed to exit gracefully` al final es preexistente: cuéntalo aparte, no es un fallo.
 
@@ -210,20 +228,20 @@ cd /home/claude/sites/Pet-Tracker-wt-175 && git diff --quiet && test -z "$(git l
 
 ## M6 lista cerrada contra main
 
-El merge no cambia **qué ficheros** toca #175 respecto de `main`. Las dos listas deben ser idénticas (23 ficheros; el propio handoff de fusión se excluye de la lista de la derecha, porque se añadió después de `b9aa93d6`):
+El merge solo suma a los ficheros de #175 el que edita M3b. Las dos listas deben ser idénticas (**24** ficheros: los 23 de #175 más `alerts-canvas-fidelity.test.ts`; el handoff de fusión y su script `_e3.py`, añadidos después de `b9aa93d6`, se excluyen de la lista de la derecha):
 
 ```
 # -- M6 lista cerrada --
-cd /home/claude/sites/Pet-Tracker-wt-175 && git diff --name-only deaf4e6d99f46e8dcd3f8cd386e4312b9ce5f739 HEAD | grep -vxF progress/handoff_mobile-docs-canvas-fidelity_merge.md | LC_ALL=C sort > /tmp/175-merge-main.txt && git diff --name-only dea11875 b9aa93d6 | LC_ALL=C sort > /tmp/175-merge-own.txt && wc -l < /tmp/175-merge-main.txt && diff /tmp/175-merge-own.txt /tmp/175-merge-main.txt && echo M6-ok
+cd /home/claude/sites/Pet-Tracker-wt-175 && git diff --name-only deaf4e6d99f46e8dcd3f8cd386e4312b9ce5f739 HEAD | grep -vxF -e progress/handoff_mobile-docs-canvas-fidelity_merge.md -e progress/handoff_mobile-docs-canvas-fidelity_merge_e3.py | LC_ALL=C sort > /tmp/175-merge-main.txt && { git diff --name-only dea11875 b9aa93d6; echo mobile-pet-tracker/src/__tests__/alerts-canvas-fidelity.test.ts; } | LC_ALL=C sort > /tmp/175-merge-own.txt && wc -l < /tmp/175-merge-main.txt && diff /tmp/175-merge-own.txt /tmp/175-merge-main.txt && echo M6-ok
 ```
 
 Si `diff` imprime algo, PARA y reporta.
 
 ## Nota en el impl
 
-Añade al final de `progress/impl_mobile-docs-canvas-fidelity.md` una sección `## Ronda de fusión con main (#174)` con:
-H0m y el hash del merge; la salida de B0, M1 (los seis), cada ancla (`A-ok` … `F-ok`), `M3-ok`, `M4b-ok`, las dos
-líneas de M4c, `M6-ok`; desviaciones («ninguna» si no hubo). Commit con `--only`:
+Añade al final de `progress/impl_mobile-docs-canvas-fidelity.md` una sección `## Ronda de fusión con main (#174), segunda corrida` con:
+H0m y el hash del merge; la salida de B0, M1 (los seis), cada ancla (`A-ok` … `F-ok`), `M3-ok`, `M3b-ok`, `M4b-ok`, las
+dos líneas de M4c, `M6-ok`; desviaciones («ninguna» si no hubo). Commit con `--only`:
 
 ```
 # -- N nota --
@@ -234,11 +252,11 @@ cd /home/claude/sites/Pet-Tracker-wt-175 && git add progress/impl_mobile-docs-ca
 
 - `specs/mobile-docs-canvas-fidelity/*`, `feature_list.json`, `progress/current.md`, `progress/review_*` y este
   handoff son del leader.
-- Ningún test: si uno cae, es una decisión del leader (ver M4c).
+- Ningún test, salvo la edición literal de M3b: si otro cae, es una decisión del leader (ver M4c).
 - No marques la casilla de R11 ni ninguna otra.
 
 ## Criterios de terminado
 
 - Un commit de fusión con dos padres (`H0m` y `deaf4e6d`), y después el commit de la nota.
-- Las seis anclas y M3, M4b, M4c (verde, sin `●`) y M6 en verde.
+- Las seis anclas y M3, M3b, M4b, M4c (verde, sin `●`) y M6 en verde.
 - R11 sigue pendiente del humano.
