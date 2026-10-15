@@ -663,4 +663,4 @@ midieron el 2026-10-15 en `5fae110b` y pasan.
 ## Aprobación
 
 - [x] Aprobado por humano (fecha: 2026-10-13, vía Notion) ← gate obligatorio antes de implementar
-- [ ] Enmienda E1 aprobada por humano (fecha: ____)
+- [x] Enmienda E1 aprobada por humano (fecha: 2026-10-15, vía Notion)
