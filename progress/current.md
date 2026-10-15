@@ -59,9 +59,19 @@
   2026-10-15T18:10:22.800Z; «Rol actual» = Implementer).
 - **Reanudación 2** en el handoff: c16–c20 por parche, con `sondas_e1.py` por
   commit. Después, trazabilidad e informe. H0 sigue en `56a0b84a`.
-- **Siguiente**: Codex corre la Reanudación 2. Luego `./init.sh`, coordinado
-  con Backend (#174) y sites-99, y la ronda 2 del reviewer, que mide a mano la
-  parte UL de S7.3/S7.4 (P2).
+- **Ronda 2** (2026-10-15): Codex terminó la Reanudación 2 sin paradas
+  (`ccf7d49a`..`5043e8e2`). Los cinco test commiteados son idénticos byte a
+  byte a sus parches. `./init.sh` del leader sobre `5043e8e2`, coordinado con
+  Backend y sites-99: exit 0. Backend da 187/1474, el móvil 111/3517 (+11 `it`
+  de E1) y e2e 468/476 (8 omitidos). Reviewer ronda 2 **aprobado** en
+  `c493b149`, sin bloqueantes. O1: el frontmatter de `traceability.md` pasa a
+  approved en el cierre. O3: «66 casos» en `requirements.md:466` queda como
+  historia de c1–c15. `origin/main` (`dea11875`) ya está en la branch. PR #218 abierta.
+- **Siguiente**: el humano corre la prueba de humo de R8 en un dev build de
+  Android y firma la casilla de `requirements.md` §R8. Después viene el cierre:
+  fetch, diff de deriva contra `c493b149`, frontmatter de traceability a
+  approved (O1), `done` en `feature_list.json`, history y Notion en
+  Implementado / Completado.
 - **Pedido del humano** (2026-10-15, tras firmar R21 de #172): validación en
   cliente con mensaje claro en todos los inputs de cuenta, como el correo de
   Crear cuenta, en lugar del error del servidor. Texto literal en
