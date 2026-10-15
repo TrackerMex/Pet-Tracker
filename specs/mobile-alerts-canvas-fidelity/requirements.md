@@ -589,9 +589,10 @@ En `src/__tests__/consistency-classnames.test.ts` › describe
 `'inventaría los cinco secundarios neutros de toda la app'` (el título no cambia) y
 #171 R14 ya cambió el regex a
 `/testID=(?:"([^"]+)"|\{([^}]+)\})/` con `match?.[1] ?? match?.[2]`. El regex que
-prescribía R8 (`\{`([^`]+)`\}`, sin la rama `\{([^}]+)\}`) devuelve `undefined` para
-`secondary.testID`; y el de H0 devuelve `` `${rowId `` para el ack, porque `[^}]+` se
-corta en la primera llave. Se comprobó con node. La línea nueva casa las tres formas:
+prescribía R8, ``/testID=(?:"([^"]+)"|\{`([^`]+)`\})/``, no tiene la rama
+`\{([^}]+)\}` y devuelve `undefined` para `secondary.testID`; el de H0 corta el ack en la
+primera llave (devuelve `${rowId` con una comilla invertida delante), porque `[^}]+` no
+pasa de `}`. Se comprobó con node. La línea nueva casa las tres formas:
 
 ```
         const match = tag.match(/testID=(?:"([^"]+)"|\{`([^`]+)`\}|\{([^}]+)\})/); // #171 R14: testID dinámico; #174 R8: plantilla
