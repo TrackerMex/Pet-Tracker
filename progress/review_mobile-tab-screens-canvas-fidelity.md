@@ -86,3 +86,78 @@ Features: 159/173 completadas | 13 pendientes
 ```
 
 El log solo contiene el aviso conocido de worker force-exit ("A worker process has failed to exit gracefully ...") al final de la suite móvil, preexistente en main. `grep -c "reading 'canceled'"` en el log da 0. Lint y typecheck en verde.
+
+## Ronda 2 — merge de main (#171 + #172) y E8
+Fecha: 2026-10-15
+Veredicto: APROBADO
+
+Delta revisado: merge `51254654` (padres `f4e5d18b` rama #173 y `9547115e` origin/main = #171 + #172) más la enmienda E8. El veredicto de la ronda 1 (APROBADO sobre `91b705ab`) sigue vigente para el código de #173. No se ejecutó `./init.sh` ni la suite completa de jest (denegado al subagente y compite por Postgres/LocalStack): se leyó el log del leader (sección final). Se corrió jest dirigido, un fichero a la vez, y `bunx tsc --noEmit`.
+
+### 1. Sin deriva del código de #173 en mobile-pet-tracker/
+Comparado `git diff $(git merge-base 91b705ab origin/main) 91b705ab -- mobile-pet-tracker/` contra `git diff origin/main HEAD -- mobile-pet-tracker/`, fichero a fichero (líneas `+`/`-` ordenadas y hasheadas).
+- 17 ficheros en el efecto neto de después; el mismo conjunto de antes salvo dos que ya no aparecen porque main los trae idénticos: `assets/fonts/Inter-ExtraBold.ttf` y `src/app/_layout.tsx` (los dos lados añadían el mismo registro de ExtraBold; el efecto neto de #173 sobre ellos desaparece). Ningún fichero nuevo en el neto.
+- 12 ficheros con líneas `+`/`-` idénticas antes y después (`design-drift.test.ts`, `ui-copy-table.ts`, `ui-language.test.ts`, `card.test.tsx`, `pet-switcher.test.tsx`, `card.tsx`, `pet-switcher.tsx`, `catalog.ts`, `profile/index.test.tsx`, `profile/index.tsx`, `font-registration.test.ts`, `global-css.test.ts`).
+- 5 ficheros difieren, todos en la lista permitida: `src/theme/global.css`, `consistency-classnames.test.ts`, `legibility-classnames.test.ts`, `profile-canvas-fidelity.test.ts` (E8) y `language-provider.test.tsx`. Las diferencias son solo las esperadas: en `global.css` desaparecen `--font-extrabold` y `--text-13` del neto (main ya los trae) y quedan `--radius-hero`, `--radius-tile` y `--text-26`; en los candados numéricos, la expresión de main más los deltas de #173; en `language-provider.test.tsx`, el pin `§2.27` pasa a `§2.29` y se apila `- 4 + 3` tras `+ 3 // #172 R16`; en `profile-canvas-fidelity.test.ts`, solo el `it` de `text-13`.
+- Deriva: ninguna. Ningún fichero de producción de #173 (`profile/index.tsx`, `card.tsx`, `pet-switcher.tsx`, `catalog.ts`) cambia de efecto neto.
+- Fuera de mobile: el efecto neto de #173 en docs/specs es el mismo salvo `requirements.md` (+5 líneas: E8, ver punto 4), `progress/` (informes) y `STATUS.md`/`progress/current.md` (resolución de leader).
+
+### 2. Informe del implementer (fallback) contra el árbol
+`progress/merge_main_mobile-tab-screens-canvas-fidelity.md` contrastado:
+- `global.css`: `grep -cF` da 1 para `--text-13:`, `--text-15:`, `--text-17:`, `--text-26:`, `--font-extrabold`, `--radius-hero`, `--radius-tile` y `--text-2xs`; 5 para `--color-confetti-`. Sin duplicados.
+- Inter-ExtraBold: una sola entrada en `src/app/_layout.tsx:35` y una sola `--font-extrabold`; 6 TTF de Inter en `assets/fonts/`.
+- `global-css.test.ts`: los tres describe están (`#173 R2` línea 750, `#173 R2.3` línea 759, `#171 E4` línea 769) más `#172 R1` (línea 62). `git diff origin/main HEAD` del fichero no tiene ninguna línea `-`: no se perdió ni aflojó nada de main.
+- `font-registration.test.ts`: describes `#173 R1` (4 its) y `#172 R6` (1 it) intactos; la única línea `-` es la firma de `readFileSync` ampliada a sobrecargas para `Buffer`, propia de #173 R1 y presente antes del merge.
+- Aserciones de #171, #172, #173: las 20 líneas `-` de main en los seis ficheros son todas expresiones de candado reescritas con el delta de #173 (o la reescritura de #173 de los its de `ChevronRight` y del inventario de primarios con labio). Ninguna aserción de #171/#172 desaparece ni se afloja; los comentarios `// #171 R3`, `// #171 R14`, `// #172 R14` y `// #172 R19` se conservan.
+- Marcadores de conflicto: `grep` de `<<<<<<<`/`>>>>>>>`/`=======` en src, app, assets, specs, docs, STATUS.md y feature_list.json: 0.
+- Pequeña inexactitud del informe (no bloqueante): atribuye `+1 -1` de `primaryRadius` a «#171 R3 y R14, no verificada»; coincide con los comentarios del propio fichero. Los valores y su medición sí cuadran (punto 3).
+
+### 3. Candados numéricos de consistency-classnames y sondas de mutación
+Medición independiente con un script (mismo regex y mismo recorrido que el test, sin `__tests__` ni `*.test.*`) sobre `git archive origin/main` y sobre HEAD:
+
+| Candado | main | HEAD | delta medido | Expresión del test en HEAD |
+|---|---|---|---|---|
+| `rounded-xl bg-accent(?=[\s'"\`])` | 19 | 18 | -1 (#173 R5) | `13+1*7-1-1` = 18 |
+| `bg-accent-soft` | 16 | 15 | -1 (#173 R6) | `16+2+1-1-1-1-1` = 15 |
+| `style={CONTINUOUS_CORNER}` | 36 | 29 | -7 (#173 R10, ProfileTile) | `31+1+4+1-1-7` = 29 |
+| `\bborder-b-4\b` | 20 | 19 | -1 (#173 R5) | `19+1+1-1-1` = 19 |
+| `border-black/25` | 20 | 19 | -1 (#173 R5) | `19+1+1-1-1` = 19 |
+
+Cada valor es la expresión de main más el delta de #173, y la expresión de main reproduce el valor de main. `consistency-classnames.test.ts`: 69/69 verdes.
+
+Sondas de mutación (extra en un fichero de pantalla o componente no-Perfil, jest dirigido, revertida con `git checkout HEAD --`, `git diff --quiet HEAD -- mobile-pet-tracker/` OK tras cada una):
+- M1 `const __probe = 'rounded-xl bg-accent x';` en `src/screens/health/index.tsx`: 3 rojos (`#62 R1` botones primarios en un solo radio, `#98 R10`, `#166 R2` inventario de dieciocho primarios).
+- M2 `bg-accent-soft` extra en `src/components/pet-switcher.tsx`: 2 rojos (`#64 R9` y `#98 R10`).
+- M3 `style={CONTINUOUS_CORNER}` extra en `src/components/card.tsx`: 1 rojo (`#98 R10`). Lo ve el recuento global de `#98 R10`; el recuento por ficheros de `#62 R14` no se movió, y no hace falta.
+- M4 `border-b-4 border-black/25` extra en `src/screens/login/index.tsx`: 1 rojo (`#166 R2` receta del labio fuera de un primario).
+Los cuatro candados se ponen rojos con una clase colada. `legibility-classnames.test.ts` (27/27) y `language-provider.test.tsx` (36/36) en verde; `+1 -1 +1 +1` de #173 apilado tras `+ 1 // #172 R19` en el total de `inkSites` y `- 4 + 3, // #173 R13` tras `+ 3 // #172 R16` en las claves.
+
+### 4. E8
+- Texto: `requirements.md` R2.4 (línea 182) y fila E8 de la tabla (línea 950) ya están commiteados en el merge. R2.4 pasa de «`text-13` solo en Perfil» a «inventario cerrado de seis ficheros»; `text-26` sigue en Perfil.
+- Test: el `it` lista exactamente `components/form-error.tsx`, `screens/forgot`, `screens/login`, `screens/profile`, `screens/register`, `screens/reset-password`, en el orden de `filesMatching`. El `it` de `text-26` no cambió (`git diff` sin líneas `-` ahí).
+- Mutaciones (todas revertidas): `text-13` en un séptimo fichero (`screens/health/index.tsx`) rojo; `text-13` reemplazado por `text-sm` en `form-error.tsx` rojo; lo mismo en `profile/index.tsx` rojo (el inventario se cierra por los dos lados); `text-26` en `screens/health/index.tsx` rojo en el `it` de `text-26` y el de `text-13` sigue verde. Control con comentario sin efecto: 26/26 verdes.
+- Valoración: es una corrección de hecho, no un ensanchamiento. La premisa «solo Perfil» se midió en la base H0 y #172 no había mergeado; tras el merge `text-13` ya vive en esos cinco ficheros, que #173 no escribe. E8 no afloja a regex ni a prefijo: lista seis ficheros exactos y conserva la propiedad que importa (ningún séptimo fichero usa `text-13` ni ninguno distinto de Perfil usa `text-26`). Lo que sí cambia es el sentido del candado: de «reserva» a «inventario cerrado» con granularidad de fichero, así que un uso extra de `text-13` dentro de uno de los cinco ficheros de #172 (o un segundo uso en Perfil) ya no lo detecta este test; añadir o quitar un fichero del conjunto sí lo pone rojo. Queda como el resto de E1 a E7: enmienda factual sin casilla humana propia (O4 de la ronda 1). Conviene que el humano la lea en la PR, sobre todo porque edita texto normativo de R2.4.
+
+### 5. Docs
+- `docs/ui-guidelines.md`: enmiendas en orden `#167`, `#168`, `#171` (línea 527), `#172` (558), `#173` (597); la casilla `- [X] Enmienda #173 aprobada por humano` (línea 609) intacta.
+- `specs/mobile-ui-language/design.md`: `### §2.27` (#171, línea 965), `### §2.28` (#172, 974), `### §2.29 — Añadidos por #173 — Perfil fiel al canvas` (983, claves `profile.gpsLinked`, `profile.gpsNoCollar`, `profile.gpsCollar`) y a continuación `## 3. La infraestructura` (991). Las cuatro retiradas siguen marcadas `← retirada por #173 (R13)`.
+- `language-provider.test.tsx` pina `### §2.29 — Añadidos por #173 — Perfil fiel al canvas`. Sonda: cambiar la cabecera a `§2.27` en `design.md` pone rojos los tres its `declara profile.gps* ...`; revertida.
+- Observación menor (no bloqueante): `docs/ui-guidelines.md` línea 74 atribuye a #173 los tokens `--text-13` y `--text-26`, pero `--text-13` ya lo declaró #172 (junto con `--text-15` y `--text-17`, que la carta no menciona). El test de #173 R14 solo exige las dos cadenas, así que es una imprecisión de redacción, no de comportamiento.
+
+### 6. Ediciones de cierre sin commitear
+`git diff HEAD` en el working tree: `feature_list.json` (una línea, `"status": "in_progress"` a `"done"` en #173), `design.md` y `tasks.md` de la spec (solo el frontmatter `draft` a `approved`) y `traceability.md` (solo la fila R16, de `pendiente` a «prueba de humo en dev build de Android (humano)» con el commit `36abb01c`). `git diff --quiet HEAD -- mobile-pet-tracker/` da 0: no tocan código. Tras la edición, `traceability.md` no tiene ninguna fila «pendiente» (la única aparición de la palabra es la línea de regla). `36abb01c` existe y es ancestro de HEAD (commit del humano del 2026-10-14).
+
+### Observaciones
+Ninguna bloqueante.
+- R16: el humano marcó la casilla de la prueba de humo, pero dejó vacío el campo `temas:` de la línea 966 de `requirements.md` (`... dispositivo: OnePlus Nord 5, temas:)`). R16 pedía claro y oscuro, es y en. Es su firma; el leader puede confirmarlo con el humano antes de la PR.
+- Las deudas O1, O2, O3, O4 y O6 de la ronda 1 siguen igual (no las toca el merge). O3: el frontmatter de `traceability.md` ya está `approved` en HEAD.
+- `specs/mobile-tab-screens-canvas-fidelity/mcheck.py` (script suelto de la spec) ya existía en `91b705ab`; no es del merge.
+
+### Output de ./init.sh (leído, no ejecutado por el reviewer)
+Log del leader sobre HEAD `51254654` con las ediciones de cierre presentes: `.../scratchpad/h173/init-merge-173.log`, línea 47717 `Todo verde. Listo para trabajar.`, `Features: 162/176 completadas`. `grep -c "reading 'canceled'"` da 0.
+```
+Test Suites: 187 passed, 187 total   (backend unitarios)   Tests: 1474 passed
+Test Suites: 2 passed, 2 total       (backend e2e)         Tests: 14 passed
+Test Suites: 110 passed, 110 total   (mobile)              Tests: 3389 passed, Snapshots: 1 passed
+Test Suites: 3 skipped, 30 passed, 30 of 33 total          Tests: 8 skipped, 468 passed, 476 total
+```
+Verificación propia del reviewer: jest dirigido, uno a uno, en verde (`consistency-classnames` 69, `global-css` 58, `font-registration` 8, `legibility-classnames` 27, `language-provider` 36, `profile-canvas-fidelity` 26); `bunx tsc --noEmit` exit 0 sin salida. Working tree de `mobile-pet-tracker/` idéntico a HEAD tras todas las sondas.
