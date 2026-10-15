@@ -259,8 +259,8 @@ export function AlertsScreen() {
           const section = alertSection(item.openedAt, now);
           const firstInSection = index === 0 || alertSection(rows[index - 1].openedAt, now) !== section;
           return firstInSection ? (
-            <View className="gap-4">
-              <Text testID={`alerts-section-${section}`} accessibilityRole="header" className="text-xs font-bold uppercase text-muted">
+            <View className="gap-3">
+              <Text testID={`alerts-section-${section}`} accessibilityRole="header" className="mt-1.5 text-13 font-extrabold uppercase tracking-caps text-muted">
                 {sectionLabels[section]}
               </Text>
               {card}
