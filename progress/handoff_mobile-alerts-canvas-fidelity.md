@@ -61,13 +61,35 @@
 >     Hay **25 commits**. El fichero entra en la lista cerrada (23 rutas). Sigue
 >     «REANUDACION 2», que va antes que la 1. Tu c8 sigue sin commitear en el árbol: **no
 >     lo apartes ni lo toques**.
+> 17. **Enmienda E4 (reanudación 3)**: Codex paró en c7b porque el doble de E3.1 no llega:
+>     `expo-router/testing-library` registra su propio `jest.mock('react-native-reanimated')`
+>     al importarse y pisa el del fichero. E4.1 **sustituye** E3.1: el doble va sobre
+>     `react-native-reanimated/mock` (medido: `1 passed`, tsc 0, lint limpio). Mismo c7b, mismos 25 commits y
+>     misma lista cerrada. Sigue «REANUDACION 3», que va antes que la 2. Tu c8 y tu edición de c7b siguen
+>     sin commitear: **no las apartes**; en c7b cambias tus 6 líneas por las de E4.1.
 
 ```text
 Worktree: /home/claude/sites/Pet-Tracker-wt-174   <- PRIMERA LINEA. Trabaja AQUI y en ningun otro sitio
 Branch:   feature/174-mobile-alerts-canvas-fidelity   (H0 = el commit de asunto `docs(progress): #174 handoff a Codex (H0)`; anotalo en el impl)
 Confirma `pwd` y `git branch --show-current` antes de tocar nada (B0).
 
-== REANUDACION 2 (2026-10-15; Codex paro en c8; Enmienda E3 firmada) ==
+== REANUDACION 3 (2026-10-15; Codex paro en c7b; Enmienda E4 firmada) ==
+Estado de partida: c1-c7 y c5b hechos (cadena=0). Tu c8 (src/screens/alerts/index.tsx con el contador en PopIn) y tu edicion de c7b
+(las 6 lineas de E3.1 en alert-detail.navigation.test.tsx) estan SIN commitear en el arbol: DEJA AMBAS. No hagas stash ni las reescribas.
+Tu parada fue correcta. El mecanismo de E3.1 estaba mal (error del leader): expo-router/testing-library registra su propio
+jest.mock('react-native-reanimated') al importarse y pisa el del fichero. E4.1 dobla el subpath react-native-reanimated/mock.
+B0-B2, las ANCLAS, REANUDACION 1 y RE2-1 ya pasaron: no se repiten. Hazlo en este orden:
+  RE3-1  Entra y comprueba (esperado: rama feature/174-mobile-alerts-canvas-fidelity; ultimo commit el de c7; status con exactamente
+         ` M src/app/__tests__/alert-detail.navigation.test.tsx`, ` M src/screens/alerts/index.tsx` y el `??` de progress/impl_mobile-alerts-canvas-fidelity.md):
+         cd /home/claude/sites/Pet-Tracker-wt-174/mobile-pet-tracker && git branch --show-current && git log --oneline -6 && git status --short
+  RE3-2  c7b: paso 1 a mano (c7b en PASO 1: SUSTITUYE tus 6 lineas por las de E4.1) y paso 2 con el ejecutor, c7b en lugar de cN:
+         cd /home/claude/sites/Pet-Tracker-wt-174/mobile-pet-tracker && bash -c "$(sed -n '/^# -- c7b (paso 2) cadena --$/{n;p;q}' ../progress/handoff_mobile-alerts-canvas-fidelity.md)"; echo "cadena=$?"
+  RE3-3  Relanza la cadena de c8 TAL CUAL con el ejecutor (c8 en lugar de cN). Debe dar cadena=0 sin tocar codigo ni tests.
+         Si da otro rojo: PARA y reporta el `●`, no lo arregles.
+  RE3-4  Sigue con c9 en adelante normalmente. En el impl: anota en Desviaciones las paradas de c8 y c7b.
+Si c7b da cadena distinto de 0: PARA, pega la salida en el impl y no toques c8.
+
+== REANUDACION 2 (2026-10-15; Codex paro en c8; Enmienda E3 firmada) == [RE2-1 ya hecho; RE2-2 SUSTITUIDO por RE3-2; RE2-3 y RE2-4 son RE3-3 y RE3-4]
 Estado de partida: c1-c7 y c5b hechos (cadena=0). Tu c8 (src/screens/alerts/index.tsx con el contador en PopIn) esta SIN
 commitear en el arbol: DEJALO ASI. No lo apartes, no hagas stash, no lo reescribas. Tu parada fue correcta: no es un flake.
 Causa (medida por el leader): el route test src/app/__tests__/alert-detail.navigation.test.tsx monta la lista real; PopIn llama a
@@ -114,7 +136,7 @@ secciones, fila con disco, ack compacto, pildoras, entrada escalonada) y las enm
 Son 25 commits (c1-c23 mas c5b, entre c5 y c6, y c7b, entre c7 y c8), test-primero. Cada R tiene su commit ROJO (solo tests/candados) y despues su commit VERDE
 (solo implementacion), nunca mezclados en el mismo commit. Excepciones declaradas:
   - c22 (R11 verde) es documentacion (docs/ y specs/).
-  - c7b (E3.1) es solo test y nace verde: arregla el route test que el cambio de c8 pondria rojo (ver REANUDACION 2).
+  - c7b (E3.1, corregida por E4.1) es solo test y nace verde: arregla el route test que el cambio de c8 pondria rojo (ver REANUDACION 3).
   - c23 (R12) nace verde; su rojo lo demuestran las sondas S12.1-S12.6, que van DESPUES del commit.
 Guion: specs/mobile-alerts-canvas-fidelity/requirements.md + design.md + tasks.md. Leelos ENTEROS antes de empezar.
 "Rn (k)" en tasks.md = seccion Rn, paso k. Rige docs/ui-guidelines.md.
@@ -283,16 +305,18 @@ c6  _layout.tsx (options title ''), ListHeaderComponent en todos los estados, de
 c7  A (con mockPopIn), PF. En PF aplica E1.1 (text-13): anade 'screens/alerts/index.tsx' ENTRE 'components/form-error.tsx' y
     'screens/forgot/index.tsx', con el comentario `// #174 R4, R6`. R6 NO vuelve a editar esta lista.
     Comprueba (1): grep -cF "'screens/alerts/index.tsx', // #174 R4, R6" src/__tests__/profile-canvas-fidelity.test.ts
-c7b ND SOLO (REANUDACION 2, E3.1). En src/app/__tests__/alert-detail.navigation.test.tsx, justo ANTES de la linea que empieza por
-    `jest.mock('../../hooks/use-push-registration'`, inserta estas 6 lineas byte a byte (nada mas cambia en el fichero):
-        // #174 R4: el mock de reanimated de jest no trae useReducedMotion y PopIn (R4) y HomeEntrance (R10) lo llaman
-        jest.mock('react-native-reanimated', () => ({
-          ...jest.requireActual('react-native-reanimated'),
+c7b ND SOLO (REANUDACION 3, E4.1; sustituye a E3.1). En src/app/__tests__/alert-detail.navigation.test.tsx, justo ANTES de la linea que empieza por
+    `jest.mock('../../hooks/use-push-registration'`, deja estas 6 lineas byte a byte. Si el fichero aun trae las 6 de E3.1 (las de
+    `jest.mock('react-native-reanimated', () => ({`, sin /mock; es como paraste), SUSTITUYELAS por estas; si no, insertalas. Nada mas cambia:
+        // #174 R4: expo-router/testing-library re-mockea reanimated con su /mock al importarse; el doble va sobre ese subpath (PopIn R4 y HomeEntrance R10 llaman a useReducedMotion)
+        jest.mock('react-native-reanimated/mock', () => ({
+          ...jest.requireActual('react-native-reanimated/mock'),
           __esModule: true,
           useReducedMotion: () => false,
         }));
-    Comprueba (1, 1, 1): grep -cF "jest.mock('react-native-reanimated', () => ({" src/app/__tests__/alert-detail.navigation.test.tsx
+    Comprueba (1, 1, 0, 1): grep -cF "jest.mock('react-native-reanimated/mock', () => ({" src/app/__tests__/alert-detail.navigation.test.tsx
       grep -cF "  useReducedMotion: () => false," src/app/__tests__/alert-detail.navigation.test.tsx
+      grep -cF "jest.mock('react-native-reanimated', " src/app/__tests__/alert-detail.navigation.test.tsx     (esta da 0)
       grep -cF "jest.mock('../../hooks/use-push-registration'" src/app/__tests__/alert-detail.navigation.test.tsx
     La cadena de c7b NO corre BASE18 (A sigue rojo por R4): corre solo este fichero, que debe dar 1 passed. Tu c8 sigue sin commitear.
 c8  contador con PopIn. M13 y M25.
@@ -351,9 +375,9 @@ cd /home/claude/sites/Pet-Tracker-wt-174/mobile-pet-tracker && python3 ../specs/
 # -- c7 R4 rojo (paso 1, a mano): escribe SOLO los tests/candados de "R4 (1)" de tasks.md (ningun fichero de produccion); incluye la correccion E1.1 (text-13) de PF --
 # -- c7 (paso 2) cadena --
 cd /home/claude/sites/Pet-Tracker-wt-174/mobile-pet-tracker && { FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/__tests__/account-screens-polish.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/design-drift.test.ts src/__tests__/hero-header-amendments.test.ts src/__tests__/legibility-classnames.test.ts src/__tests__/profile-canvas-fidelity.test.ts src/__tests__/tab-headers-canvas.test.ts src/__tests__/ui-language.test.ts src/app/__tests__/alert-detail.navigation.test.tsx src/app/__tests__/detail-stack.test.tsx src/app/__tests__/layout.test.tsx src/app/__tests__/reminders-alerts-stack.navigation.test.tsx src/components/__tests__/empty-state.test.tsx src/providers/__tests__/language-provider.test.tsx src/screens/alert-detail/index.test.tsx src/screens/alerts/index.test.tsx src/theme/__tests__/global-css.test.ts src/theme/__tests__/motion.test.ts > /tmp/174-c7.txt 2>&1; echo "exit=$?"; } && grep -qE '^Tests: +[0-9]+ failed, ' /tmp/174-c7.txt && test "$(grep -E '^  ● ' /tmp/174-c7.txt | grep -vxF '  ● Console' | grep -cvE '^  ● (#170 R4|#174 R4|#173 R2\.4)\b')" = 0 && grep -E '^  ● ' /tmp/174-c7.txt | grep -qE '#174 R4\b' && ! grep -qE "Test suite failed to run|ReferenceError:|SyntaxError:|Cannot find module|reading 'canceled'|Exceeded timeout" /tmp/174-c7.txt && test ! -e .expo/types/router.d.ts && { bun run typecheck > /tmp/174-tsc.txt 2>&1; true; } && test "$(grep 'error TS' /tmp/174-tsc.txt | grep -cvE '^src/[^(]+\.test\.tsx?\(')" = 0 && { bunx expo lint --no-cache > /tmp/174-lint.txt 2>&1; true; } && ! grep -qF 'Failed to run' /tmp/174-lint.txt && test "$(grep -E '^/' /tmp/174-lint.txt | grep -cvE '\.test\.tsx?$')" = 0 && git add src/screens/alerts/index.test.tsx src/__tests__/profile-canvas-fidelity.test.ts && test "$(git diff --cached --no-renames --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'mobile-pet-tracker/src/__tests__/profile-canvas-fidelity.test.ts mobile-pet-tracker/src/screens/alerts/index.test.tsx ' && git diff --quiet -- . ../docs ../specs && test -z "$(git ls-files --others --exclude-standard -- . ../docs ../specs)" && git commit -m 'test(mobile): #174 R4 rojo — contador en la fila del título'
-# -- c7b E3.1 (paso 1, a mano, REANUDACION 2): anade al route test alert-detail.navigation el doble de reanimated de E3.1 de requirements.md (ningun fichero de produccion; el cambio de c8 SIGUE sin commitear en el arbol) --
+# -- c7b E4.1 (paso 1, a mano, REANUDACION 3): deja en el route test alert-detail.navigation el doble de reanimated /mock de E4.1 de requirements.md (sustituye al de E3.1) (ningun fichero de produccion; el cambio de c8 SIGUE sin commitear en el arbol) --
 # -- c7b (paso 2) cadena --
-cd /home/claude/sites/Pet-Tracker-wt-174/mobile-pet-tracker && test "$(grep -cF "  useReducedMotion: () => false," src/app/__tests__/alert-detail.navigation.test.tsx)" = 1 && test "$(grep -cF "jest.mock('react-native-reanimated', () => ({" src/app/__tests__/alert-detail.navigation.test.tsx)" = 1 && { FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/app/__tests__/alert-detail.navigation.test.tsx > /tmp/174-c7b.txt 2>&1; echo "exit=$?"; } && grep -qE '^Test Suites: +1 passed, 1 total$' /tmp/174-c7b.txt && grep -qE '^Tests: +1 passed, 1 total$' /tmp/174-c7b.txt && test ! -e .expo/types/router.d.ts && bun run typecheck && bunx expo lint --no-cache > /tmp/174-lint.txt 2>&1 && test ! -s /tmp/174-lint.txt && git add src/app/__tests__/alert-detail.navigation.test.tsx && test "$(git diff --cached --no-renames --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'mobile-pet-tracker/src/app/__tests__/alert-detail.navigation.test.tsx ' && test "$(git diff --no-renames --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'mobile-pet-tracker/src/screens/alerts/index.tsx ' && git diff --quiet -- ../docs ../specs && test -z "$(git ls-files --others --exclude-standard -- . ../docs ../specs)" && git commit -m 'test(mobile): #174 R4 el route test de Alertas dobla useReducedMotion de reanimated'
+cd /home/claude/sites/Pet-Tracker-wt-174/mobile-pet-tracker && test "$(grep -cF "  useReducedMotion: () => false," src/app/__tests__/alert-detail.navigation.test.tsx)" = 1 && test "$(grep -cF "jest.mock('react-native-reanimated/mock', () => ({" src/app/__tests__/alert-detail.navigation.test.tsx)" = 1 && test "$(grep -cF "jest.mock('react-native-reanimated', " src/app/__tests__/alert-detail.navigation.test.tsx)" = 0 && { FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/app/__tests__/alert-detail.navigation.test.tsx > /tmp/174-c7b.txt 2>&1; echo "exit=$?"; } && grep -qE '^Test Suites: +1 passed, 1 total$' /tmp/174-c7b.txt && grep -qE '^Tests: +1 passed, 1 total$' /tmp/174-c7b.txt && test ! -e .expo/types/router.d.ts && bun run typecheck && bunx expo lint --no-cache > /tmp/174-lint.txt 2>&1 && test ! -s /tmp/174-lint.txt && git add src/app/__tests__/alert-detail.navigation.test.tsx && test "$(git diff --cached --no-renames --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'mobile-pet-tracker/src/app/__tests__/alert-detail.navigation.test.tsx ' && test "$(git diff --no-renames --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'mobile-pet-tracker/src/screens/alerts/index.tsx ' && git diff --quiet -- ../docs ../specs && test -z "$(git ls-files --others --exclude-standard -- . ../docs ../specs)" && git commit -m 'test(mobile): #174 R4 el route test de Alertas dobla useReducedMotion de reanimated'
 # -- c8 R4 verde (paso 1, a mano): implementa "R4 (2)" de tasks.md (ningun test nuevo) --
 # -- c8 (paso 2) cadena --
 cd /home/claude/sites/Pet-Tracker-wt-174/mobile-pet-tracker && python3 ../specs/mobile-alerts-canvas-fidelity/mcheck.py cierre M13 M25 && { FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/__tests__/account-screens-polish.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/design-drift.test.ts src/__tests__/hero-header-amendments.test.ts src/__tests__/legibility-classnames.test.ts src/__tests__/profile-canvas-fidelity.test.ts src/__tests__/tab-headers-canvas.test.ts src/__tests__/ui-language.test.ts src/app/__tests__/alert-detail.navigation.test.tsx src/app/__tests__/detail-stack.test.tsx src/app/__tests__/layout.test.tsx src/app/__tests__/reminders-alerts-stack.navigation.test.tsx src/components/__tests__/empty-state.test.tsx src/providers/__tests__/language-provider.test.tsx src/screens/alert-detail/index.test.tsx src/screens/alerts/index.test.tsx src/theme/__tests__/global-css.test.ts src/theme/__tests__/motion.test.ts > /tmp/174-c8.txt 2>&1; echo "exit=$?"; } && grep -qE '^Test Suites: +18 passed, 18 total$' /tmp/174-c8.txt && grep -qE '^Tests: +([0-9]+) passed, \1 total$' /tmp/174-c8.txt && test ! -e .expo/types/router.d.ts && bun run typecheck && bunx expo lint --no-cache > /tmp/174-lint.txt 2>&1 && test ! -s /tmp/174-lint.txt && git add src/screens/alerts/index.tsx && test "$(git diff --cached --no-renames --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'mobile-pet-tracker/src/screens/alerts/index.tsx ' && git diff --quiet -- . ../docs ../specs && test -z "$(git ls-files --others --exclude-standard -- . ../docs ../specs)" && git commit -m 'feat(mobile): #174 R4 contador con PopIn junto al título'
@@ -452,7 +476,7 @@ Rellena specs/mobile-alerts-canvas-fidelity/traceability.md:
 cd /home/claude/sites/Pet-Tracker-wt-174/mobile-pet-tracker && git add ../specs/mobile-alerts-canvas-fidelity/traceability.md && test "$(git diff --cached --no-renames --name-only)" = 'specs/mobile-alerts-canvas-fidelity/traceability.md' && git diff --quiet -- . ../docs ../specs && test -z "$(git ls-files --others --exclude-standard -- . ../docs ../specs)" && git commit -m 'docs(mobile): #174 trazabilidad'
 cd /home/claude/sites/Pet-Tracker-wt-174/mobile-pet-tracker && git add ../progress/impl_mobile-alerts-canvas-fidelity.md && git commit --only ../progress/impl_mobile-alerts-canvas-fidelity.md -m 'docs(mobile): informe de implementación de #174'
 # -- K5 lista cerrada contra <H0> --
-cd /home/claude/sites/Pet-Tracker-wt-174/mobile-pet-tracker && test "$(git diff --no-renames --name-only $(git log -1 --format=%H --grep='^docs(progress): #174 handoff a Codex (H0)')..HEAD -- .. | grep -vxE 'feature_list\.json|progress/current\.md|progress/handoff_mobile-alerts-canvas-fidelity\.md|specs/mobile-alerts-canvas-fidelity/(requirements|design|tasks)\.md|specs/mobile-alerts-canvas-fidelity/mcheck\.py|progress/review_mobile-alerts-canvas-fidelity\.md|progress/sweep_174_e[23]\.md' | LC_ALL=C sort | tr '\n' ' ')" = 'docs/ui-guidelines.md mobile-pet-tracker/src/__tests__/alerts-canvas-fidelity.test.ts mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts mobile-pet-tracker/src/__tests__/profile-canvas-fidelity.test.ts mobile-pet-tracker/src/__tests__/ui-copy-table.ts mobile-pet-tracker/src/app/__tests__/alert-detail.navigation.test.tsx mobile-pet-tracker/src/app/__tests__/layout.test.tsx mobile-pet-tracker/src/app/_layout.tsx mobile-pet-tracker/src/i18n/catalog.ts mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx mobile-pet-tracker/src/screens/alerts/index.test.tsx mobile-pet-tracker/src/screens/alerts/index.tsx mobile-pet-tracker/src/theme/__tests__/global-css.test.ts mobile-pet-tracker/src/theme/global.css mobile-pet-tracker/src/utils/alert-meta.ts progress/impl_mobile-alerts-canvas-fidelity.md specs/mobile-alert-detail-screen/requirements.md specs/mobile-alerts-canvas-fidelity/traceability.md specs/mobile-alerts-center/requirements.md specs/mobile-alerts-grouped-and-detail-map/requirements.md specs/mobile-chunky-cta/requirements.md specs/mobile-reminders-alerts-to-stack/requirements.md specs/mobile-ui-language/design.md ' && echo lista-ok
+cd /home/claude/sites/Pet-Tracker-wt-174/mobile-pet-tracker && test "$(git diff --no-renames --name-only $(git log -1 --format=%H --grep='^docs(progress): #174 handoff a Codex (H0)')..HEAD -- .. | grep -vxE 'feature_list\.json|progress/current\.md|progress/handoff_mobile-alerts-canvas-fidelity\.md|specs/mobile-alerts-canvas-fidelity/(requirements|design|tasks)\.md|specs/mobile-alerts-canvas-fidelity/mcheck\.py|progress/review_mobile-alerts-canvas-fidelity\.md|progress/sweep_174_e[234]\.md' | LC_ALL=C sort | tr '\n' ' ')" = 'docs/ui-guidelines.md mobile-pet-tracker/src/__tests__/alerts-canvas-fidelity.test.ts mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts mobile-pet-tracker/src/__tests__/profile-canvas-fidelity.test.ts mobile-pet-tracker/src/__tests__/ui-copy-table.ts mobile-pet-tracker/src/app/__tests__/alert-detail.navigation.test.tsx mobile-pet-tracker/src/app/__tests__/layout.test.tsx mobile-pet-tracker/src/app/_layout.tsx mobile-pet-tracker/src/i18n/catalog.ts mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx mobile-pet-tracker/src/screens/alerts/index.test.tsx mobile-pet-tracker/src/screens/alerts/index.tsx mobile-pet-tracker/src/theme/__tests__/global-css.test.ts mobile-pet-tracker/src/theme/global.css mobile-pet-tracker/src/utils/alert-meta.ts progress/impl_mobile-alerts-canvas-fidelity.md specs/mobile-alert-detail-screen/requirements.md specs/mobile-alerts-canvas-fidelity/traceability.md specs/mobile-alerts-center/requirements.md specs/mobile-alerts-grouped-and-detail-map/requirements.md specs/mobile-chunky-cta/requirements.md specs/mobile-reminders-alerts-to-stack/requirements.md specs/mobile-ui-language/design.md ' && echo lista-ok
    -> lista-ok   (las 23 rutas de §Lista cerrada, abajo; si sale otra, PARA)
 
 == REGLAS CRITICAS ==
@@ -516,7 +540,7 @@ specs/mobile-ui-language/design.md
 Excluidos:
 - `feature_list.json`, `progress/current.md` y este handoff;
 - `specs/mobile-alerts-canvas-fidelity/{requirements,design,tasks}.md` y `mcheck.py`;
-- `progress/review_mobile-alerts-canvas-fidelity.md` y `progress/sweep_174_e2.md` y `progress/sweep_174_e3.md`.
+- `progress/review_mobile-alerts-canvas-fidelity.md` y `progress/sweep_174_e2.md`, `progress/sweep_174_e3.md` y `progress/sweep_174_e4.md`.
 
 Son ficheros del leader.
 
