@@ -14099,3 +14099,402 @@ Salida literal de git status --short, desde la raíz, después de ese commit:
 ```
 
 Solo queda incorporar este informe mediante `git add progress/impl_mobile-account-client-validation.md` y `git commit --only progress/impl_mobile-account-client-validation.md -m 'docs(mobile-account-client-validation): #183 informe de implementación'`, y comprobar después git status --short sin salida.
+
+## Reanudacion 2
+
+Enmienda E1 aprobada en `4046e500`. H0 sigue siendo `56a0b84a67ff6594e5a149d91561e5fca376f36a`; HEAD inicial de esta reanudación: `94ebf827f3a05409a14edd65f217d3e3d169e2a7`. Los siete commits del leader desde `d3ac0fdd` quedan fuera de c16–c20. Se conservan íntegramente las secciones anteriores.
+
+### ANTES DE TOCAR NADA — salida literal
+
+Comando: `pwd`
+
+```text
+/home/claude/sites/Pet-Tracker-wt-183
+```
+
+Comando: `git branch --show-current`
+
+```text
+feature/183-mobile-account-client-validation
+```
+
+Comando: `git status --short`
+
+```text
+```
+
+Comando: `git rev-list --count d3ac0fdd..HEAD`
+
+```text
+7
+```
+
+Comando: `git diff --name-only d3ac0fdd HEAD -- mobile-pet-tracker backend-pet-tracker | wc -l`
+
+```text
+0
+```
+
+Comando: `git status --short`
+
+```text
+```
+
+Comando: `sha256sum progress/e1_mobile-account-client-validation/c1[6-9].patch progress/e1_mobile-account-client-validation/c20.patch`
+
+```text
+6498fa6e2d44d689318876128e496d6f2204529af7c81f5f62e1eb4da71582f1  progress/e1_mobile-account-client-validation/c16.patch
+125b001f3410c7c724472367d10adbe2bd5296d245261fc9f0cb627a584ce56a  progress/e1_mobile-account-client-validation/c17.patch
+494bbd1bdd53e02afce1c639d935c092622e17f0783660e3f3306d8431742599  progress/e1_mobile-account-client-validation/c18.patch
+a1a10fb89095f17aff51a1272441be512b5dcdfd2a1373f750e10c8f116b2e76  progress/e1_mobile-account-client-validation/c19.patch
+db1744205a53add247bbca49560bd95ad7fbff7ff1573d4304a91b230be1efb0  progress/e1_mobile-account-client-validation/c20.patch
+```
+
+Comando: `for c in 16 17 18 19 20; do git apply --check progress/e1_mobile-account-client-validation/c$c.patch; echo "c$c exit=$?"; done`
+
+```text
+c16 exit=0
+c17 exit=0
+c18 exit=0
+c19 exit=0
+c20 exit=0
+```
+
+Los bloques vacíos de `git status --short` corresponden a salida sin líneas.
+
+Base: `bunx jest --testTimeout=30000 --runTestsByPath src/utils/account-rules.test.ts src/screens/login/index.test.tsx src/screens/register/index.test.tsx src/screens/forgot/index.test.tsx src/screens/reset-password/index.test.tsx`. Log completo: `/tmp/e1-183-base.log`.
+
+```text
+exit=0
+Test Suites: 5 passed, 5 total
+Tests:       263 passed, 263 total
+```
+
+Skill cargada en esta reanudación: `ponytail`; el handoff y la spec prevalecen. No se implementan pantallas ni se cambia UI.
+
+### Ejecución c16–c20
+
+Inicio de c16: se aplica únicamente el parche firmado del leader; suite, sondas, TC y LINT antes de cada commit.
+
+#### c16 — gates antes del commit
+
+Parche `c16.patch`: `exit=0`. Suite: `Tests:       71 passed, 71 total`, `exit=0`.
+
+Sondas, salida literal:
+
+```text
+OK  c16 RV5: 1 rojos (esperados 1) | Tests:       1 failed, 70 passed, 71 total
+OK  c16 RV6: 1 rojos (esperados 1) | Tests:       1 failed, 70 passed, 71 total
+OK  c16 RV7: 1 rojos (esperados 1) | Tests:       1 failed, 70 passed, 71 total
+OK  c16 A6: 29 rojos (esperados 29) | Tests:       29 failed, 42 passed, 71 total
+OK  c16 A10: 29 rojos (esperados 29) | Tests:       29 failed, 42 passed, 71 total
+OK  c16 A26: 1 rojos (esperados 1) | Tests:       1 failed, 70 passed, 71 total
+OK  c16 E-loc-_: 1 rojos (esperados 1) | Tests:       1 failed, 70 passed, 71 total
+OK  c16 E-loc--: 1 rojos (esperados 1) | Tests:       1 failed, 70 passed, 71 total
+OK  c16 E-loc-.: 1 rojos (esperados 1) | Tests:       1 failed, 70 passed, 71 total
+OK  c16 E-loc-09: 1 rojos (esperados 1) | Tests:       1 failed, 70 passed, 71 total
+OK  c16 E-loc-plus: 1 rojos (esperados 1) | Tests:       1 failed, 70 passed, 71 total
+OK  c16 B6 E-last-_: 1 rojos (esperados 1) | Tests:       1 failed, 70 passed, 71 total
+OK  c16 E-last-+: 1 rojos (esperados 1) | Tests:       1 failed, 70 passed, 71 total
+OK  c16 E-last--: 1 rojos (esperados 1) | Tests:       1 failed, 70 passed, 71 total
+OK  c16 E-last-09: 1 rojos (esperados 1) | Tests:       1 failed, 70 passed, 71 total
+OK  c16 E-dom1-09: 1 rojos (esperados 1) | Tests:       1 failed, 70 passed, 71 total
+OK  c16 B4 E-dom--: 1 rojos (esperados 1) | Tests:       1 failed, 70 passed, 71 total
+OK  c16 E-dom-09: 1 rojos (esperados 1) | Tests:       1 failed, 70 passed, 71 total
+OK  c16 E-dom+_: 1 rojos (esperados 1) | Tests:       1 failed, 70 passed, 71 total
+OK  c16 B5 E-tld6: 1 rojos (esperados 1) | Tests:       1 failed, 70 passed, 71 total
+OK  c16 S2.1: 9 rojos (esperados 9) | Tests:       9 failed, 62 passed, 71 total
+OK  c16 S2.9: 3 rojos (esperados 3) | Tests:       3 failed, 68 passed, 71 total
+exit=0
+```
+
+Los títulos coinciden exactamente con los del script y las tablas R2/E1. Los casos puros solo aseveran `toStrictEqual`: todos los rojos son de aserción.
+
+Restauración de producción, índice vacío, guarda del router, TC y LINT (en ese orden):
+
+```text
+exit=0
+cached=0
+exit=0
+$ tsc --noEmit
+exit=0
+exit=0
+vacio=0
+```
+
+c16 commiteado: `ccf7d49a427ff02e6917d5dd588bbb668d6de923` — `test(mobile): candados de E1 en account-rules (#183 R2)`. Estado desde la raíz tras el commit:
+
+```text
+ M progress/impl_mobile-account-client-validation.md
+```
+
+Inicio de c17.
+
+#### c17 — gates antes del commit
+
+Parche `c17.patch`: `exit=0`. Suite: `Tests:       40 passed, 40 total`, `exit=0`.
+
+Sondas, salida literal:
+
+```text
+OK  c17 RV8: 1 rojos (esperados 1) | Tests:       1 failed, 39 passed, 40 total
+OK  c17 S3.2: 9 rojos (esperados 9) | Tests:       9 failed, 31 passed, 40 total
+exit=0
+```
+
+Títulos exactos contrastados mediante el script con las tablas R3/E1: RV8 es el nuevo `it` de E1; S3.2 son los nueve casos prescritos. Tipo: aserción en ambos escenarios.
+
+Restauración de producción, índice vacío, guarda del router, TC y LINT (en ese orden):
+
+```text
+exit=0
+cached=0
+exit=0
+$ tsc --noEmit
+exit=0
+exit=0
+vacio=0
+```
+
+c17 commiteado: `7a0cc47318b882dc324e9eab8e3bf077fc8db374` — `test(mobile): candado de E1 en login (#183 R3)`. Estado desde la raíz tras el commit:
+
+```text
+ M progress/impl_mobile-account-client-validation.md
+```
+
+Inicio de c18.
+
+#### c18 — gates antes del commit
+
+Parche `c18.patch`: `exit=0`. Suite: `Tests:       65 passed, 65 total`, `exit=0`.
+
+Sondas, salida literal:
+
+```text
+OK  c18 RV9: 1 rojos (esperados 1) | Tests:       1 failed, 64 passed, 65 total
+OK  c18 S4.4: 25 rojos (esperados 25) | Tests:       25 failed, 40 passed, 65 total
+exit=0
+```
+
+Títulos exactos contrastados mediante el script con R4/E1: RV9 es el nuevo `it`; S4.4 incluye los 20 de R4 y los cinco heredados de #172 R12. Tipo: aserción.
+
+Restauración de producción, índice vacío, guarda del router, TC y LINT (en ese orden):
+
+```text
+exit=0
+cached=0
+exit=0
+$ tsc --noEmit
+exit=0
+exit=0
+vacio=0
+```
+
+c18 commiteado: `19b0ac1bbb28bd56c8e55907ce0f12a25245cdf1` — `test(mobile): candado de E1 en registro (#183 R4)`. Estado desde la raíz tras el commit:
+
+```text
+ M progress/impl_mobile-account-client-validation.md
+```
+
+Inicio de c19.
+
+#### c19 — gates antes del commit
+
+Parche `c19.patch`: `exit=0`. Suite: `Tests:       49 passed, 49 total`, `exit=0`.
+
+Sondas, salida literal:
+
+```text
+OK  c19 RV10: 1 rojos (esperados 1) | Tests:       1 failed, 48 passed, 49 total
+OK  c19 C18: 1 rojos (esperados 1) | Tests:       1 failed, 48 passed, 49 total
+OK  c19 C20: 1 rojos (esperados 1) | Tests:       1 failed, 48 passed, 49 total
+OK  c19 S5.1: 6 rojos (esperados 6) | Tests:       6 failed, 43 passed, 49 total
+OK  c19 S5.3: 6 rojos (esperados 6) | Tests:       6 failed, 43 passed, 49 total
+OK  c19 S7.3: 4 rojos (esperados 4) | Tests:       4 failed, 45 passed, 49 total
+exit=0
+```
+
+Títulos exactos contrastados mediante el script con R5/R7/E1. Tipos: RV10, C18, C20, S5.1 y S7.3 son de aserción; los seis de S5.3 son de consulta (`forgot-email-message` no aparece al quitar `isInvalid`). S7.3 corre solo la pantalla: cuatro rojos, como prescribe E1; la parte de ui-language sigue reservada al reviewer.
+
+Restauración de producción, índice vacío, guarda del router, TC y LINT (en ese orden):
+
+```text
+exit=0
+cached=0
+exit=0
+$ tsc --noEmit
+exit=0
+exit=0
+vacio=0
+```
+
+c19 commiteado: `4ca57efe5be2a7d10af47c4ca6fd3ffd6e34bf47` — `test(mobile): candados de E1 en recuperar (#183 R5, R7)`. Estado desde la raíz tras el commit:
+
+```text
+ M progress/impl_mobile-account-client-validation.md
+```
+
+Inicio de c20.
+
+#### c20 — gates antes del commit
+
+Parche `c20.patch`: `exit=0`. Suite: `Tests:       49 passed, 49 total`, `exit=0`.
+
+Sondas, salida literal:
+
+```text
+OK  c20 RV11: 1 rojos (esperados 1) | Tests:       1 failed, 48 passed, 49 total
+OK  c20 C26: 1 rojos (esperados 1) | Tests:       1 failed, 48 passed, 49 total
+OK  c20 C27: 1 rojos (esperados 1) | Tests:       1 failed, 48 passed, 49 total
+OK  c20 S6.1: 5 rojos (esperados 5) | Tests:       5 failed, 44 passed, 49 total
+OK  c20 S7.4: 2 rojos (esperados 2) | Tests:       2 failed, 47 passed, 49 total
+exit=0
+```
+
+Títulos exactos contrastados mediante el script con R6/R7/E1. Tipo: aserción en los cinco escenarios. S7.4 corre solo la pantalla: dos rojos, como prescribe E1; la parte de ui-language sigue reservada al reviewer.
+
+Restauración de producción, índice vacío, guarda del router, TC y LINT (en ese orden):
+
+```text
+exit=0
+cached=0
+exit=0
+$ tsc --noEmit
+exit=0
+exit=0
+vacio=0
+```
+
+c20 commiteado: `9eea5bf4ad64198241e01dd0c106b6cee90f597c` — `test(mobile): candados de E1 en nueva contraseña (#183 R6, R7)`. Estado desde la raíz tras el commit:
+
+```text
+ M progress/impl_mobile-account-client-validation.md
+```
+
+### Tabla por commit c16–c20
+
+| Paso | Hash | Mensaje literal | Línea Tests: | Sondas | TC | LINT |
+|---|---|---|---|---|---|---|
+| c16 | `ccf7d49a427ff02e6917d5dd588bbb668d6de923` | `test(mobile): candados de E1 en account-rules (#183 R2)` | `Tests:       71 passed, 71 total` | 22 OK, exit=0 | guarda=0, exit=0 | exit=0, vacio=0 |
+| c17 | `7a0cc47318b882dc324e9eab8e3bf077fc8db374` | `test(mobile): candado de E1 en login (#183 R3)` | `Tests:       40 passed, 40 total` | 2 OK, exit=0 | guarda=0, exit=0 | exit=0, vacio=0 |
+| c18 | `19b0ac1bbb28bd56c8e55907ce0f12a25245cdf1` | `test(mobile): candado de E1 en registro (#183 R4)` | `Tests:       65 passed, 65 total` | 2 OK, exit=0 | guarda=0, exit=0 | exit=0, vacio=0 |
+| c19 | `4ca57efe5be2a7d10af47c4ca6fd3ffd6e34bf47` | `test(mobile): candados de E1 en recuperar (#183 R5, R7)` | `Tests:       49 passed, 49 total` | 6 OK, exit=0 | guarda=0, exit=0 | exit=0, vacio=0 |
+| c20 | `9eea5bf4ad64198241e01dd0c106b6cee90f597c` | `test(mobile): candados de E1 en nueva contraseña (#183 R6, R7)` | `Tests:       49 passed, 49 total` | 5 OK, exit=0 | guarda=0, exit=0 | exit=0, vacio=0 |
+
+Los cinco commits contienen exclusivamente su fichero de tests; las 37 sondas restauraron producción. Comienza el cierre de Reanudacion 2.
+
+### Cierre 1 — guardas, TC y LINT
+
+Comando: `bunx jest --testTimeout=30000 --runTestsByPath src/__tests__/account-screens-polish.test.ts src/__tests__/design-drift.test.ts src/__tests__/legibility-classnames.test.ts src/providers/__tests__/language-provider.test.tsx src/__tests__/ui-language.test.ts src/utils/account-rules.test.ts`. Log completo: `/tmp/e1-183-guardas.log`.
+
+```text
+exit=0
+Test Suites: 6 passed, 6 total
+Tests:       252 passed, 252 total
+```
+
+Guarda del router, TC y LINT, salida literal:
+
+```text
+exit=0
+$ tsc --noEmit
+exit=0
+exit=0
+vacio=0
+```
+
+### Cierre 2 — siete suites sin --testTimeout
+
+Comando: `bunx jest --runTestsByPath src/utils/account-rules.test.ts src/screens/login/index.test.tsx src/screens/register/index.test.tsx src/screens/forgot/index.test.tsx src/screens/reset-password/index.test.tsx src/__tests__/ui-language.test.ts src/providers/__tests__/language-provider.test.tsx`. Log completo: `/tmp/e1-183-feature-default.log`.
+
+```text
+exit=0
+Test Suites: 7 passed, 7 total
+Tests:       341 passed, 341 total
+```
+
+Inicia el paso 3: espera prescrita y una sola ejecución de la suite móvil completa.
+
+Incidencia de invocación antes de Cierre 3: se escapó por error la llave final del grupo de shell (`\}`). Bash rechazó el grupo antes de la espera y antes de lanzar Jest. Se comprobó que el log completo anterior coincide byte a byte con su copia y que no existe salida del paso 3. Se corrige únicamente la invocación; no se repite ninguna ejecución de la suite completa.
+
+Salida literal del intento de invocación:
+
+```text
+/bin/bash: -c: line 20: syntax error: unexpected end of file
+```
+
+Exit de la invocación: `2`.
+
+### Cierre 3 — suite móvil completa, una ejecución
+
+Se ejecutó el bucle de espera literal del handoff (hasta 90 iteraciones, `pgrep` de Jest/ESLint/init y `sleep 60`). Esperó a las ejecuciones externas de otras sesiones antes de imprimir `fin-espera`. Después se ejecutó una sola vez:
+
+```sh
+bunx jest --testTimeout=30000 > /tmp/jest-all-183.log 2>&1; echo "exit=$?"; command grep -E '^(Test Suites|Tests):' /tmp/jest-all-183.log
+```
+
+Salida literal de la espera y de la suite:
+
+```text
+fin-espera
+exit=0
+Test Suites: 111 passed, 111 total
+Tests:       3517 passed, 3517 total
+```
+
+Coinciden 3506 + 11 = 3517 tests y las mismas 111 suites. No hubo timeouts ni reintentos de tests o LINT. Apareció el aviso preexistente `A worker process has failed to exit gracefully`, permitido por el handoff.
+
+El log completo de la reanudación anterior se preservó antes de este paso en `/tmp/jest-all-183-reanudacion1-before-e1.log`; el de E1 está en `/tmp/jest-all-183.log`.
+
+### Cierre 4 — anclas y alcance
+
+Anclas medidas durante la espera, con los tests ya commiteados. Salida literal: HomeEntrance, mockIcon, los dos diff contra `56a0b84a`, backend y después `git diff --name-only d3ac0fdd HEAD -- . | sort`, desde `mobile-pet-tracker/`:
+
+```text
+4
+2
+0
+0
+0
+mobile-pet-tracker/src/screens/forgot/index.test.tsx
+mobile-pet-tracker/src/screens/login/index.test.tsx
+mobile-pet-tracker/src/screens/register/index.test.tsx
+mobile-pet-tracker/src/screens/reset-password/index.test.tsx
+mobile-pet-tracker/src/utils/account-rules.test.ts
+```
+
+Anclas por pantalla, contadas por líneas como `grep -cF`; las once filas coinciden con los valores finales de R3–R7:
+
+| Literal | login | register | forgot | reset-password |
+|---|---|---|---|---|
+| `isInvalid={Boolean(fieldErrors.` | 2 | 7 | 1 | 2 |
+| `<FieldError` | 2 | 7 | 1 | 2 |
+| `t(fieldErrors.` | 2 | 7 | 1 | 2 |
+| `const EMAIL_PATTERN` | 0 | 0 | 0 | 0 |
+| `t('forgot.invalidEmail')` | 0 | 0 | 0 | 0 |
+| `t('common.somethingWentWrong')` | 2 | 2 | 1 | 2 |
+| `errors.map(` | 0 | 0 | 0 | 0 |
+| `mapValidationErrors` | 0 | 0 | 0 | 0 |
+| `ApiFieldError` | 0 | 0 | 0 | 0 |
+| `t('validation.checkDetails')` | 1 | 1 | 1 | 1 |
+| `from '../../utils/account-rules'` | 1 | 1 | 1 | 1 |
+
+La comparación final contra `94ebf827` confirma únicamente los cinco tests más trazabilidad e informe. Producción, backend, parches, `sondas_e1.py`, requirements, design y tasks permanecen intactos. Los cinco commits c16–c20 contienen cada uno un solo fichero de tests. La comprobación SHA-256 del prefijo del informe confirma que sus secciones anteriores se conservaron byte a byte.
+
+### Desviaciones de Reanudacion 2
+
+Una incidencia de invocación en Cierre 3: se escapó la llave final del grupo de shell y Bash salió con 2 antes de arrancar Jest. La salida literal y la comprobación del log anterior están arriba. Se corrigió únicamente el comando de shell. La suite completa se ejecutó una sola vez. La espera por procesos externos era la prevista en el handoff.
+
+No se ejecutaron `./init.sh`, push, PR, amend, rebase, merge, prettier, npx ni npm. Los archivos reservados al leader y la casilla humana de R8 permanecen intactos. **R8: pendiente (humano).**
+
+### Cierre documental de E1
+
+Verificaciones y anclas completas. Se incorpora primero la trazabilidad y después este informe mediante el commit `--only` indicado. La comprobación final de `git status --short` se realiza tras el último commit.
+
+Trazabilidad de E1 commiteada: `5bcaf612a88492a0ce2194887e9e838b2338fc4b` — `docs(mobile-account-client-validation): #183 trazabilidad de E1`. Salida literal de `git status --short` desde la raíz después de ese commit:
+
+```text
+ M progress/impl_mobile-account-client-validation.md
+```
+
+Este informe se incorpora con `docs(mobile-account-client-validation): #183 informe de E1`; a continuación se comprueba el árbol limpio.
