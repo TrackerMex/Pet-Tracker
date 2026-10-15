@@ -105,5 +105,9 @@
   c10b, reaplica el parche). c10b simulado en una copia: 2 rojos exactos (el de
   R5 de c10 y `#173 R2.4`); con el parche de c11 el fichero de Perfil pasa; con
   la línea de `text-13` y sin chips falla solo el de `text-13`.
-- **Esperando:** que el humano firme E2 en el repo; entonces `git fetch` y el
-  prompt de reanudación a Codex. Hasta entonces nadie toca `docs/index.tsx`.
+- **E2 firmada** por el humano: `cc0f317f` (2026-10-15, vía repo). Su primer
+  commit (`823238b6`) arrastró con `commit -am` el c11 de Codex; se recreó solo
+  con `requirements.md` (no estaba en remoto) y el parche de c11 sigue intacto
+  en el árbol. `origin/main` sigue en `dea11875`.
+- **Siguiente:** prompt de reanudación a Codex; cuando termine, `init.sh`
+  (permiso del humano) y `reviewer`.
