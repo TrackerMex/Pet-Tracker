@@ -660,7 +660,61 @@ La columna «Base (`788d1f89`)» de §1 y de §3 es la de la firma. Las filas ma
 y la tabla de H0 manda sobre cualquier valor de base que haya caducado. P1–P8 se
 midieron el 2026-10-15 en `5fae110b` y pasan.
 
+## Enmienda E2 — candados preexistentes que la firma no listó
+
+Codex paró en c6 el 2026-10-15 (`cadena=1`): al implementar R3 se puso rojo un `it` preexistente de #155
+que ni §3 ni el bloque «Tests» de R3 nombran. El leader barrió R4–R10 por la misma omisión
+(`progress/sweep_174_e2.md`; cada hallazgo contrastado con el fichero) y encontró dos más. Los tres se
+corrigen aquí **en su sitio**, con el sufijo ` (enmendado por #174 Rn)` que ya usa esta spec. Ningún R-id
+nuevo, ninguna clase ni copy cambian, y la implementación de R3 ya escrita no se toca. **Donde choque con
+los «Tests» de R3, R6 o R7 o con `tasks.md`, manda E2.** El resto de candados que el barrido revisó
+(guards de design-drift, inventarios de clases, `ui-language`, `alert-detail.navigation`, `#78 R4`, `#97 R5`,
+`#170 R4/R5`) quedan verdes sin editar.
+
+### E2.1 — R3: el hueco del vacío de #155 R5
+
+En A, `describe('#155 R5: sin alertas, Pingo duerme')` › `it('queda en el sitio del vacío que sustituye')`
+asevera que los hijos de `slot.parent` (con `slot` = `alerts-empty`) son `['alerts-empty']`. Con el
+`ListHeaderComponent` de R3.2 en todos los estados, `VirtualizedList` pinta antes del vacío el envoltorio
+del encabezado (un `View` sin `testID`), y el árbol recibido es `['View', 'alerts-empty']` (medido por Codex
+en c6).
+
+- El `it` se renombra `'queda en el sitio del vacío que sustituye (enmendado por #174 R3)'`. Su último
+  `expect` pasa a `.toEqual(['View', 'alerts-empty']); // #174 R3: el primer hijo es el envoltorio del ListHeaderComponent`.
+  La línea previa (`slot.parent?.parent?.props.testID` = `alerts-list`) no cambia.
+- Va en un commit rojo propio, **c5b**, entre c5 (ya hecho, no se reescribe) y c6. Rojo en c5b: el `toEqual`
+  espera `['View', 'alerts-empty']` y recibe `['alerts-empty']` (aún no hay encabezado).
+- Candado que se mueve: A › `#155 R5`. El producto no cambia: c6 lo deja verde.
+
+### E2.2 — R6: la cabecera del `it` hermano
+
+En A, `describe('#170 R3: agrupa la lista en Hoy, Esta semana y Anteriores')` ›
+`it('pinta una cabecera por sección con su copy en español')` asevera `className` `toBe('text-xs font-bold
+uppercase text-muted')`. R6.2 fija la cabecera en otra cosa; R6 solo reescribía el `it` hermano `envuelve
+cada cabecera…`.
+
+- El `it` se renombra `'pinta una cabecera por sección con su copy en español (enmendado por #174 R6)'` y
+  su aserción pasa a `toBe('mt-1.5 text-13 font-extrabold uppercase tracking-caps text-muted')`. El copy
+  («Hoy», «Esta semana», «Anteriores») no cambia.
+- Va en el commit rojo de R6 (c11), junto a la reescritura del `it` hermano. Rojo: recibe
+  `text-xs font-bold uppercase text-muted`.
+
+### E2.3 — R7: el bucle de `alterna el tercer hijo…`
+
+En A, `describe('#78 R6: …')` › `it('alterna el tercer hijo entre ack y la píldora traducida')`, el bucle
+`for (const alert of alerts)` asevera `row.props.className` `toContain('min-h-20 flex-row items-center gap-3')`
+y el enlace `toBe('min-h-11 min-w-0 flex-1 gap-1')`. R7.1 quita `min-h-20` y R7.4 cambia el enlace; los
+«Tests» de R7 nombraban solo el `it.each`, `#100 R6` y `#170 R5`.
+
+- El `it` se renombra añadiendo ` (enmendado por #174 R7)`; R8 añade después su propio sufijo detrás del de R7
+  (`… (enmendado por #174 R7) (enmendado por #174 R8)`) y R9 no lo renombra más.
+- En el bucle, la fila pasa a aseverar que su `className` contiene cada una de `flex-row`, `items-center`,
+  `gap-3`, `px-3.5`, `py-3` y `shadow-none` y **no** contiene `min-h-20` ni `shadow-sm`; el enlace pasa a
+  `toBe('min-h-11 min-w-0 flex-1 justify-center gap-0.5')`. La aserción `size-11` del disco no cambia.
+- Va en el commit rojo de R7 (c13). Rojo: la fila recibe `min-h-20`.
+
 ## Aprobación
 
 - [x] Aprobado por humano (fecha: 2026-10-13, vía Notion) ← gate obligatorio antes de implementar
 - [x] Enmienda E1 aprobada por humano (fecha: 2026-10-15, vía Notion)
+- [ ] Enmienda E2 aprobada por humano (fecha: ____, vía Notion)
