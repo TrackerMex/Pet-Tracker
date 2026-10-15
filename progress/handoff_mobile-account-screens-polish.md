@@ -263,3 +263,117 @@ incluida la de comparar el titulo de cada ● con su tabla antes de avanzar (Rea
   docs(mobile-account-screens-polish): #172 trazabilidad completa
   y luego git commit --only ../progress/impl_mobile-account-screens-polish.md -m 'docs(mobile-account-screens-polish): #172 informe de implementación completo'
 ```
+
+## Reanudación 6 — Merge de origin/main (2026-10-15)
+
+La review ronda 2 aprobó #172 (e2745566) y el humano firmó la prueba de humo
+R21 (631826d9). Mientras tanto, #171 se mergeó en main (a288c7dc) y la branch
+ya no mergea limpia: cinco ficheros chocan. La resolución está decidida abajo,
+hunk a hunk; no hay nada que diseñar. No se toca código de #172 fuera de los
+hunks en conflicto.
+
+```text
+Worktree: /home/claude/sites/Pet-Tracker-wt-172   <- PRIMERA LINEA. Trabaja AQUI y en ningun otro sitio
+Branch:   feature/172-mobile-account-screens-polish
+Siguen en vigor las reglas de arriba (init.sh, push, PR, amend, rebase, prettier, JEST/LINT/CARGA), salvo
+"bunx jest sin rutas": en el paso 5 de esta reanudacion se permite UNA vez, tras la espera.
+
+== ANTES DE TOCAR NADA ==
+1. git branch --show-current -> feature/172-mobile-account-screens-polish
+2. git status --short -> sin salida.
+3. git rev-parse HEAD -> el commit del leader que trae esta seccion (padre: 631826d9). Anotalo como M0.
+4. git rev-parse origin/main | cut -c1-8 -> a288c7dc. NO hagas git fetch. Si da otro hash, PARA.
+
+== GUION ==
+1. git merge --no-ff --no-commit origin/main; echo "exit=$?"  -> exit=1 y EXACTAMENTE estos 5 en conflicto
+   (git diff --name-only --diff-filter=U):
+     docs/ui-guidelines.md
+     mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+     mobile-pet-tracker/src/theme/global.css
+     mobile-pet-tracker/src/theme/motion.ts
+     specs/mobile-ui-language/design.md
+   Si hay otro o falta alguno, git merge --abort y PARA.
+
+2. Resuelve cada hunk con Edit, quitando las tres lineas de marcas (<<<<<<< HEAD, =======, >>>>>>> origin/main):
+
+   a) docs/ui-guidelines.md (1 hunk): primero el bloque de origin/main entero ("## Enmienda #171 — confeti..."
+      hasta "- [x] Aprobada por humano (fecha: 2026-10-14)"), despues UNA linea en blanco, despues el bloque de
+      HEAD entero ("## Enmienda #172 — Las pantallas..." hasta "- [x] Enmienda aprobada por humano").
+      Ningun caracter de los dos bloques cambia.
+
+   b) specs/mobile-ui-language/design.md (1 hunk): primero el bloque de origin/main ("### §2.27 — Añadidos por
+      #171 — Celebraciones" y sus 6 lineas de tabla), una linea en blanco, y despues el de HEAD con su encabezado
+      renumerado a:
+        ### §2.28 — Añadidos por #172 — Las pantallas de cuenta como el canvas
+      Las filas de la tabla de #172 no cambian.
+
+   c) mobile-pet-tracker/src/theme/global.css (1 hunk): el hunk queda asi, en este orden:
+        --text-13: 13px;
+        --text-15: 15px;
+        --text-17: 17px;
+        --color-confetti-amber: #F79009;
+        --color-confetti-violet: #7A5AF8;
+        --color-confetti-blue: #2E90FA;
+        --color-confetti-rose: #F04438;
+        --color-confetti-green: #12B76A;
+      (dos espacios de sangria, como el resto de @theme).
+
+   d) mobile-pet-tracker/src/theme/motion.ts (1 hunk): se queda SOLO el lado de origin/main. Las 7 lineas de HEAD
+      (desde "// #172 R4" hasta su "};") se borran: origin/main ya exporta MOTION_PINGO_FLOAT_OFFSET_Y y
+      MOTION_PINGO_FLOAT_TIMING con los mismos valores, y dos exports con el mismo nombre no compilan.
+
+   e) mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts (3 hunks):
+      - Hunk 1 (CONTINUOUS_CORNER, rounded-xl bg-accent y bg-accent-soft): las dos primeras lineas, las de
+        origin/main. La tercera queda asi (las dos features restan uno):
+          expect(count(/bg-accent-soft/g)).toBe(16 + 2 + 1 - 1 - 1 - 1); // #147 R4: meal-time-edit y add-meal-time-button; #105 R11; #168 R5: PetPills pasa a huecos pastel; #172 R14: forgot-lock-tile pasa a bg-accent; #171 R3
+      - Hunk 2 (accentSoftCount):
+          expect(accentSoftCount).toBe(16 + 2 + 1 - 1 - 1 - 1); // #147 R4, #105 R11; #168 R5: PetPills pasa a huecos pastel; #172 R14: forgot-lock-tile pasa a bg-accent; #171 R3
+      - Hunk 3 (labio): #172 suma uno y #171 suma uno y resta uno:
+          expect(count(/\bborder-b-4\b/g)).toBe(19 + 1 + 1 - 1); // #172 R14: forgot-lock-tile (Enmienda #172); #171 R3: ready-map // #171 R14
+          expect(count(/border-black\/25/g)).toBe(19 + 1 + 1 - 1); // #172 R14: forgot-lock-tile (Enmienda #172); #171 R3: ready-map // #171 R14
+      Sangria de 4 espacios, como las lineas vecinas.
+
+3. Anclas, desde la raiz del worktree. Cada una debe dar la cifra indicada; si no, PARA:
+   command grep -cE '^(<<<<<<<|=======|>>>>>>>)' docs/ui-guidelines.md specs/mobile-ui-language/design.md mobile-pet-tracker/src/theme/global.css mobile-pet-tracker/src/theme/motion.ts mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+     -> las cinco lineas acaban en :0
+   command grep -cE '^## Enmienda #17[12] ' docs/ui-guidelines.md -> 2
+   command grep -nE '^## Enmienda #17[12] ' docs/ui-guidelines.md -> la de #171 con numero de linea MENOR que la de #172
+   command grep -cF '### §2.27 — Añadidos por #171 — Celebraciones' specs/mobile-ui-language/design.md -> 1
+   command grep -cF '### §2.28 — Añadidos por #172 — Las pantallas de cuenta como el canvas' specs/mobile-ui-language/design.md -> 1
+   command grep -cF '### §2.27 — Añadidos por #172' specs/mobile-ui-language/design.md -> 0
+   command grep -cE -- '--text-1[357]: 1[357]px;|--color-confetti-' mobile-pet-tracker/src/theme/global.css -> 8
+   command grep -cF 'export const MOTION_PINGO_FLOAT_OFFSET_Y = 10;' mobile-pet-tracker/src/theme/motion.ts -> 1
+   command grep -cF 'export const MOTION_PINGO_FLOAT_TIMING = ' mobile-pet-tracker/src/theme/motion.ts -> 1
+   command grep -cF '// #172 R4' mobile-pet-tracker/src/theme/motion.ts -> 0
+   command grep -cF 'toBe(16 + 2 + 1 - 1 - 1 - 1)' mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts -> 2
+   command grep -cF 'toBe(19 + 1 + 1 - 1)' mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts -> 2
+
+4. cd mobile-pet-tracker. test ! -e .expo/types/router.d.ts; echo "exit=$?" -> exit=0 (si da 1, PARA; NUNCA rm -f).
+   bun run typecheck; echo "exit=$?" -> exit=0
+   bunx expo lint --no-cache > /tmp/lint-172.log 2>&1; echo "exit=$?"; test ! -s /tmp/lint-172.log; echo "vacio=$?"
+     -> exit=0 y vacio=0 (log con "Failed to run": la espera de arriba y UNA repeticion).
+   $J $GUARDAS $BASE $READERS src/components/__tests__/celebration.test.tsx src/theme/__tests__/global-css.test.ts; echo "exit=$?"
+     -> exit=0. Anota la linea Tests:.
+
+5. Suite movil entera, UNA vez. Primero la espera (hasta 90 iteraciones):
+     cd /home/claude/sites/Pet-Tracker-wt-172/mobile-pet-tracker && for i in $(seq 1 90); do pgrep -f 'node_modules/(\.bin/(jest|eslint)|jest-worker)|[i]nit\.sh' > /dev/null || break; sleep 60; done; echo "fin-espera"
+   Despues:
+     bunx jest --testTimeout=30000 > /tmp/jest-all-172.log 2>&1; echo "exit=$?"; command grep -E '^(Test Suites|Tests):' /tmp/jest-all-172.log
+   -> exit=0 y "0 failed" en las dos lineas (el aviso "A worker process has failed to exit gracefully" del final es
+   preexistente y no cuenta). Si hay rojos, NO toques ningun test ni produccion: anota cada titulo ● (sin los
+   "● Console") con su fichero y su primera linea de error, git merge --abort, y PARA.
+
+6. Commit del merge, desde la raiz del worktree, con rutas explicitas:
+     git add docs/ui-guidelines.md specs/mobile-ui-language/design.md mobile-pet-tracker/src/theme/global.css mobile-pet-tracker/src/theme/motion.ts mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+     git diff --name-only --diff-filter=U -> sin salida
+     git commit -m 'chore(mobile): merge de origin/main (#171) en #172'
+     git status --short -> sin salida
+     git log -1 --format='%h %p' -> dos padres: M0 y a288c7dc
+
+== CIERRE ==
+- Anade al final de progress/impl_mobile-account-screens-polish.md una seccion "Reanudacion 6" con M0, el hash del
+  merge, la salida literal de los pasos 1, 3, 4 y 5 y desviaciones ("ninguna" si no hubo). Lo anterior no se toca.
+  git commit --only ../progress/impl_mobile-account-screens-polish.md -m 'docs(mobile-account-screens-polish): #172 informe del merge con main'
+  (desde mobile-pet-tracker; si lo lanzas desde la raiz, la ruta es progress/impl_mobile-account-screens-polish.md).
+- traceability.md, feature_list.json, progress/current.md y el frontmatter de la spec no se tocan.
+```
