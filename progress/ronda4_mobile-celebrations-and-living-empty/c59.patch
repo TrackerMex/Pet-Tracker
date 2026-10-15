@@ -1,0 +1,46 @@
+diff --git a/mobile-pet-tracker/src/components/__tests__/celebration.test.tsx b/mobile-pet-tracker/src/components/__tests__/celebration.test.tsx
+index a2fe2359756656e605b5aab9d28479d9558c2308..54688dd53c5e2840704c9d16b18b12c49ffdc883 100644
+--- a/mobile-pet-tracker/src/components/__tests__/celebration.test.tsx
++++ b/mobile-pet-tracker/src/components/__tests__/celebration.test.tsx
+@@ -25,6 +25,7 @@ describe('#171 R1: la pose celebrate', () => {
+ });
+ 
+ const mockUseReducedMotion = jest.fn<boolean, []>(() => false);
++const mockCancelAnimation = jest.fn();
+ 
+ jest.mock('react-native-safe-area-context', () => ({
+   ...jest.requireActual('react-native-safe-area-context'),
+@@ -32,7 +33,12 @@ jest.mock('react-native-safe-area-context', () => ({
+ }));
+ jest.mock('react-native-reanimated', () => {
+   const actual = jest.requireActual<typeof import('react-native-reanimated')>('react-native-reanimated');
+-  return { ...actual, __esModule: true, useReducedMotion: () => mockUseReducedMotion() };
++  return {
++    ...actual,
++    __esModule: true,
++    useReducedMotion: () => mockUseReducedMotion(),
++    cancelAnimation: (...args: Parameters<typeof actual.cancelAnimation>) => { mockCancelAnimation(...args); return actual.cancelAnimation(...args); },
++  };
+ });
+ jest.mock('react-native-svg', () => {
+   const React = jest.requireActual<typeof import('react')>('react');
+@@ -522,6 +528,19 @@ describe('#171 R20: maquetación del artboard', () => {
+   });
+ });
+ 
++describe('#171 R21: desmontar cancela los bucles', () => {
++  beforeEach(() => { jest.useFakeTimers(); });
++  afterEach(() => { jest.useRealTimers(); });
++
++  it('R21.1 desmontar cancela los 39 bucles', async () => {
++    await renderProbe();
++    await advance(1000);
++    mockCancelAnimation.mockClear();
++    await screen.unmount();
++    expect(mockCancelAnimation).toHaveBeenCalledTimes(39);
++  });
++});
++
+ describe('#171 R8: reduce motion', () => {
+   beforeEach(() => {
+     mockUseReducedMotion.mockReturnValue(true);

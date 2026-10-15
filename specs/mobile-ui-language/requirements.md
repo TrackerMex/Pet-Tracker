@@ -764,3 +764,17 @@ palabra por palabra lo que ve quien elija inglés.
 
 El test de R19 **vigila que estas 9 casillas sigan vacías** hasta que las
 marques tú: si un agente marcase una, la suite se pone roja.
+
+## Enmienda #173 — Perfil fiel al canvas
+
+`mobile-tab-screens-canvas-fidelity` (#173) modifica una decisión que esta spec
+dejó aprobada. La spec de origen es `specs/mobile-tab-screens-canvas-fidelity/`;
+el detalle de la enmienda está en su `requirements.md` §R14.
+
+- Spec enmendada: `mobile-ui-language`
+- Qué cambia: `#65 R14: la fila de idioma muestra el idioma actual como valor`
+- Qué NO cambia: ningún otro requisito de esta spec ni su estado de
+  aprobación. Los tests que cubren lo enmendado se reescriben en #173 (lista
+  en su `tasks.md`).
+
+- [X] Enmienda #173 aprobada por humano

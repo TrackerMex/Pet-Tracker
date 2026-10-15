@@ -56,3 +56,14 @@
   firmar: diff del cuerpo contra el espejo, commit de firma citando página y
   hora. La implementación espera a #173: merge de `origin/main`, `init.sh` con
   aviso a peers, H0 y handoff a Codex (greps de las tablas con `|`, no `\|`).
+
+## Reanudación 2026-10-15 — firma vía Notion, merge de main, en curso
+
+- **Gate:** el humano puso `Estado del gate` = Aprobado en Notion el 2026-10-15
+  (`page_last_edited_at` 2026-10-15T13:56:00.544Z). Diff del cuerpo contra el espejo: solo la casilla
+  marcada, más el cambio de 98c1fbf6 (regex de R3 en bloque de código) que Notion ya trae. Sin comentarios en la página. Firma en `334fcebc`; Notion pasa a `Rol actual` = Implementer.
+- **Feature:** #179 `in_progress`. Merge de `origin/main` (`dea11875`, trae #173)
+  resuelto en `feature_list.json` por id (175, 176, 177, 178, 179, 181 y 184).
+- **Siguiente:** `init.sh` con aviso a peers (LocalStack y Postgres compartidos;
+  esperar a Frontend y a Backend), medir H0 (D y S de la spec) y handoff a Codex
+  (`progress/handoff_*.md`). Un solo `in_progress` por worktree.

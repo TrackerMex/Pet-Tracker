@@ -1,0 +1,58 @@
+diff --git a/mobile-pet-tracker/src/components/__tests__/celebration.test.tsx b/mobile-pet-tracker/src/components/__tests__/celebration.test.tsx
+index 3ff2e9983592941f3e6e1847378a2add6a810e7e..fdde0c295fa61b57afd5b61d24de81aa8a3296dc 100644
+--- a/mobile-pet-tracker/src/components/__tests__/celebration.test.tsx
++++ b/mobile-pet-tracker/src/components/__tests__/celebration.test.tsx
+@@ -446,6 +446,29 @@ describe('#171 R17: anillo de ping', () => {
+   });
+ });
+ 
++describe('#171 R18: flotación de Pingo', () => {
++  beforeEach(() => { jest.useFakeTimers(); });
++  afterEach(() => { jest.useRealTimers(); });
++
++  it('R18.1 Pingo flota desde los 600 ms: 0, -5 y -10 a los 600, 1350 y 2100 ms', async () => {
++    await renderProbe();
++    const samples: number[] = [];
++    for (const step of [600, 750, 750]) {
++      await advance(step);
++      samples.push(animated('probe-pingo').transform[0].translateY as number);
++    }
++    [0, -5, -10].forEach((value, i) => expect(samples[i]).toBeCloseTo(value, 1));
++  });
++
++  it('R18.2 la flotación sigue en bucle: 0 a los 3600 ms y -10 a los 5100 ms', async () => {
++    await renderProbe();
++    await advance(3600);
++    expect(animated('probe-pingo').transform[0].translateY).toBeCloseTo(0, 1);
++    await advance(1500);
++    expect(animated('probe-pingo').transform[0].translateY).toBeCloseTo(-10, 1);
++  });
++});
++
+ describe('#171 R20: maquetación del artboard', () => {
+   it('R20.1 el hero mide 220 con margen superior y Pingo 170', async () => {
+     await renderProbe();
+diff --git a/mobile-pet-tracker/src/theme/__tests__/motion.test.ts b/mobile-pet-tracker/src/theme/__tests__/motion.test.ts
+index aa2385d0d0953e479a1d48d3767747ac8f22db51..bb1d56bb373176aabda647581334309036d0d938 100644
+--- a/mobile-pet-tracker/src/theme/__tests__/motion.test.ts
++++ b/mobile-pet-tracker/src/theme/__tests__/motion.test.ts
+@@ -88,6 +88,8 @@ describe('#152 R1: las duraciones y el preset de movimiento viven en un solo sit
+       'MOTION_FILL_TIMING',
+       'MOTION_FLOAT_OFFSET_Y',
+       'MOTION_FLOAT_TIMING',
++      'MOTION_PINGO_FLOAT_OFFSET_Y',
++      'MOTION_PINGO_FLOAT_TIMING',
+       'MOTION_PING_FROM',
+       'MOTION_PING_TIMING',
+       'MOTION_PING_TO_SCALE',
+@@ -203,4 +205,10 @@ describe('#171 E4: las constantes de la celebración viven en motion.ts', () =>
+   it('declara la duración del ping', () => {
+     expect(require('../motion').MOTION_CELEBRATION_PING_MS).toBe(2200);
+   });
++
++  it('declara la flotación de Pingo', () => {
++    const m = require('../motion');
++    expect(m.MOTION_PINGO_FLOAT_OFFSET_Y).toBe(10);
++    expect(m.MOTION_PINGO_FLOAT_TIMING).toEqual({ duration: 1500, easing: { bezier: [0.42, 0, 0.58, 1] }, reduceMotion: ReduceMotion.System });
++  });
+ });

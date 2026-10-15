@@ -1,11 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
 import { router, type Href, useFocusEffect } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
-import { Button, Skeleton } from 'heroui-native';
-import { useCallback, useState } from 'react';
+import { Button, Skeleton, Switch } from 'heroui-native';
+import { useCallback, useState, type ReactNode } from 'react';
 import { Linking, Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Bell, ChevronRight, FileText, Map as MapIcon, Wifi } from 'reicon-react-native';
+import { Bell, Camera, FileText, Map as MapIcon, Plus, Wifi } from 'reicon-react-native';
 import { useUniwind } from 'uniwind';
 
 import {
@@ -34,28 +34,51 @@ import { useThemeTransition } from '../../theme/theme-transition';
 import { TOUCH_SLOP } from '../../theme/touch-target';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { CATEGORY_SLOTS, type CategorySlot } from '../../utils/category-palette';
+import { HomeEntrance } from '../home/home-entrance';
+
+function formatLastSignal(
+  iso: string | null,
+  nowMs: number,
+  t: ReturnType<typeof useTranslate>,
+  locale: string,
+): string | null {
+  if (iso === null) return null;
+  const s = Math.floor((nowMs - Date.parse(iso)) / 1000);
+  if (s < 60) return t('map.justNow');
+  if (s < 3600) return t('map.agoMinutes', { minutes: Math.floor(s / 60) });
+  if (s < 86400) return t('map.agoHours', { hours: Math.floor(s / 3600) });
+  const date = new Date(iso);
+  return date.getFullYear() === new Date(nowMs).getFullYear()
+    ? date.toLocaleDateString(locale, { day: 'numeric', month: 'short' })
+    : date.toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' });
+}
 
 function InfoRow({
   isLast = false,
   label,
+  tone = 'default',
   value,
 }: {
   isLast?: boolean;
   label: string;
+  tone?: 'default' | 'accent';
   value: string | null;
 }) {
   const t = useTranslate();
+  const valueClassName = tone === 'accent'
+    ? 'flex-1 text-right text-sm font-bold text-accent-strong'
+    : 'flex-1 text-right text-sm font-bold text-foreground';
 
   return (
     <View
       className={
         isLast
-          ? 'flex-row items-center justify-between gap-4 py-3'
-          : 'flex-row items-center justify-between gap-4 border-b border-separator py-3'
+          ? 'flex-row items-center justify-between gap-4 py-2.75'
+          : 'flex-row items-center justify-between gap-4 border-b border-separator py-2.75'
       }
     >
       <Text className="text-sm font-normal text-muted">{label}</Text>
-      <Text className="flex-1 text-right text-sm font-semibold text-foreground">
+      <Text className={valueClassName}>
         {value ?? t('profile.notRegistered')}
       </Text>
     </View>
@@ -65,20 +88,54 @@ function InfoRow({
 function PetPills({ pet }: { pet: PetProfile }) {
   const t = useTranslate();
   const pills: { testID: string; slot: CategorySlot; text: string | null }[] = [
-    { testID: 'profile-pet-chip-sex', slot: 'blue', text: pet.sex },
+    {
+      testID: 'profile-pet-chip-sex',
+      slot: 'blue',
+      text: pet.sex === 'male'
+        ? t('addPet.male')
+        : pet.sex === 'female' ? t('addPet.female') : null,
+    },
     { testID: 'profile-pet-chip-sterilized', slot: 'green', text: pet.sterilized === null ? null : pet.sterilized ? t('profile.sterilized') : t('profile.notSterilized') },
     { testID: 'profile-pet-chip-age', slot: 'amber', text: Number.isFinite(pet.ageMonths) ? t('profile.ageMonths', { months: pet.ageMonths }) : null },
     { testID: 'profile-pet-chip-weight', slot: 'violet', text: pet.currentWeightKg === null ? null : `${pet.currentWeightKg} kg` },
   ];
 
   return (
-    <View testID="profile-pet-chips" className="flex-row flex-wrap justify-center gap-2">
+    <View testID="profile-pet-chips" className="flex-row flex-wrap justify-center gap-1.5">
       {pills.filter(({ text }) => text !== null).map((pill) => (
-        <View key={pill.testID} testID={pill.testID} className={`rounded-full px-3 py-1 ${CATEGORY_SLOTS[pill.slot].surface}`}>
-          <Text className={`text-xs font-bold ${CATEGORY_SLOTS[pill.slot].ink}`}>{pill.text}</Text>
+        <View key={pill.testID} testID={pill.testID} className={`rounded-full px-2.5 py-1.25 ${CATEGORY_SLOTS[pill.slot].surface}`}>
+          <Text className={`text-xs font-extrabold ${CATEGORY_SLOTS[pill.slot].ink}`}>{pill.text}</Text>
         </View>
       ))}
     </View>
+  );
+}
+
+function ProfileTile({ testID, slot, icon, label, onPress }: {
+  testID: string;
+  slot: CategorySlot;
+  icon: ReactNode;
+  label: string;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      testID={testID}
+      accessibilityRole="button"
+      hitSlop={TOUCH_SLOP}
+      style={CONTINUOUS_CORNER}
+      className={`flex-1 gap-1.5 rounded-tile p-3 ${CATEGORY_SLOTS[slot].surface}`}
+      onPress={onPress}
+    >
+      <View
+        testID={`${testID}-icon`}
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+      >
+        {icon}
+      </View>
+      <Text className={`text-sm font-extrabold ${CATEGORY_SLOTS[slot].ink}`}>{label}</Text>
+    </Pressable>
   );
 }
 
@@ -92,7 +149,7 @@ export function ProfileScreen() {
   const { theme } = useUniwind();
   const switchTheme = useThemeTransition();
   const insets = useSafeAreaInsets();
-  const [muted, blue, green, amber, violet] = useThemeColors(['muted', 'category-blue-strong', 'category-green-strong', 'category-amber-strong', 'category-violet-strong']);
+  const [blue, green, amber, violet, accentStrong, accentForeground] = useThemeColors(['category-blue-strong', 'category-green-strong', 'category-amber-strong', 'category-violet-strong', 'accent-strong', 'accent-foreground']);
   const [photoUploading, setPhotoUploading] = useState(false);
   const [photoError, setPhotoError] = useState<string | null>(null);
   const notificationsBlocked = useNotificationsBlocked();
@@ -125,6 +182,9 @@ export function ProfileScreen() {
   const initials = me.data?.kind === 'ok'
     ? [me.data.me.firstName, me.data.me.lastName].map((part) => part.trim().charAt(0)).join('').toUpperCase()
     : '';
+  const useDarkThemeLabel = t('profile.useDarkTheme');
+  const changeLanguageLabel = t('profile.changeLanguage');
+  const currentLanguageName = language === 'es' ? t('profile.languageSpanish') : t('profile.languageEnglish');
 
   async function handleChangePhoto() {
     if (!pet) return;
@@ -180,14 +240,24 @@ export function ProfileScreen() {
     }
   }
 
+  const remindersLink = (
+    <ProfileTile
+      testID="reminders-link"
+      slot="violet"
+      icon={<Bell size={22} color={violet} />}
+      label={t('profile.reminders')}
+      onPress={() => router.push('/reminders' as Href)}
+    />
+  );
+
   return (
     <ScrollView
       testID="screen-profile"
       className="flex-1 bg-background"
       contentInsetAdjustmentBehavior="automatic"
       contentContainerStyle={{
-        padding: 24,
-        gap: 16,
+        padding: 20,
+        gap: 14,
         paddingTop: insets.top + 12,
         paddingBottom: insets.bottom + 96,
       }}
@@ -196,16 +266,24 @@ export function ProfileScreen() {
         <Text testID="profile-title" className="text-3xl font-black tracking-tight text-foreground">
           {t('profile.profile')}
         </Text>
-        <Button
+        <Pressable
           testID="profile-add-pet"
-          className="rounded-xl bg-accent border-b-4 border-black/25"
-          size="sm"
+          accessibilityRole="button"
+          hitSlop={TOUCH_SLOP}
+          className="h-9 flex-row items-center gap-1.5 rounded-full bg-tab-pill px-3.5"
           onPress={() => router.push('/pets/add' as Href)}
         >
-          <Button.Label className="font-bold text-accent-foreground">
+          <View
+            testID="profile-add-pet-icon"
+            accessibilityElementsHidden
+            importantForAccessibility="no-hide-descendants"
+          >
+            <Plus size={16} color={accentStrong} />
+          </View>
+          <Text className="text-sm font-extrabold text-accent-strong">
             {t('profile.addPet')}
-          </Button.Label>
-        </Button>
+          </Text>
+        </Pressable>
       </View>
 
       {notificationsBlocked ? (
@@ -224,6 +302,7 @@ export function ProfileScreen() {
 
       {pets.data?.kind === 'ok' && pets.data.pets.length > 0 ? (
         <PetSwitcher
+          variant="avatars"
           pets={pets.data.pets}
           selectedPetId={selectedPetId}
           onSelect={selectPet}
@@ -244,7 +323,7 @@ export function ProfileScreen() {
 
       {petLoading ? (
         <>
-          <Skeleton testID="profile-hero-skeleton" className="h-52 w-full rounded-card" />
+          <Skeleton testID="profile-hero-skeleton" className="h-52 w-full rounded-hero" />
           <Skeleton testID="pet-info-skeleton" className="h-52 w-full rounded-card" />
         </>
       ) : null}
@@ -263,204 +342,141 @@ export function ProfileScreen() {
 
       {pet ? (
         <>
-          <Card variant="secondary" testID="profile-pet-card" className="items-center gap-3">
-            <PetAvatar name={pet.name} photoUrl={pet.photoUrl} cacheKey={pet.id} size={96} testID="profile-pet-avatar" />
-            <Text testID="profile-pet-name" className="text-2xl font-black text-foreground">
+          <HomeEntrance index={0} testID="profile-entrance-hero"><Card variant="hero" testID="profile-pet-card" className="items-center gap-2.5">
+            <View testID="profile-pet-avatar-ring" className="relative rounded-full border-4 border-surface">
+              <PetAvatar name={pet.name} photoUrl={pet.photoUrl} cacheKey={pet.id} size={96} testID="profile-pet-avatar" />
+              <Pressable
+                testID="change-photo"
+                accessibilityRole="button"
+                accessibilityLabel={t('profile.changePhoto')}
+                accessibilityState={{ disabled: photoUploading }}
+                disabled={photoUploading}
+                hitSlop={TOUCH_SLOP}
+                className="absolute -bottom-0.5 -right-0.5 size-8.5 items-center justify-center rounded-full border-3 border-surface-secondary bg-accent"
+                onPress={() => void handleChangePhoto()}
+              >
+                <Camera size={16} color={accentForeground} />
+              </Pressable>
+            </View>
+            <Text testID="profile-pet-name" className="text-26 font-black text-foreground">
               {pet.name}
             </Text>
             <PetPills pet={pet} />
-          </Card>
-          <Button
-            testID="change-photo"
-            className="rounded-xl bg-accent-soft"
-            variant="secondary"
-            isDisabled={photoUploading}
-            onPress={() => void handleChangePhoto()}
-          >
-            <Button.Label className="font-bold text-accent-strong">
-              {t('profile.changePhoto')}
-            </Button.Label>
-          </Button>
+          </Card></HomeEntrance>
           {photoError ? (
             <Text testID="photo-upload-error" className="text-danger">
               {photoError}
             </Text>
           ) : null}
 
-          <Card testID="pet-info-card" className="gap-0">
-            <Text className="pb-2 text-xs font-semibold uppercase tracking-widest text-muted">
-              {t('profile.information')}
-            </Text>
+          <HomeEntrance index={1} testID="profile-entrance-info"><Card variant="flat" testID="pet-info-card">
             <InfoRow label={t('profile.breed')} value={pet.breed} />
             <InfoRow label={t('profile.microchip')} value={pet.microchip} />
             <InfoRow
               label={t('profile.gpsDevice')}
-              value={pet.device?.model ?? null}
+              value={pet.device ? t('profile.gpsLinked') : t('profile.gpsNoCollar')}
+              tone={pet.device ? 'accent' : 'default'}
             />
             <InfoRow
               isLast
               label={t('profile.lastSignal')}
-              value={
-                pet.lastCommunicationAt
-                  ? new Date(pet.lastCommunicationAt).toLocaleString(locale)
-                  : null
-              }
+              value={formatLastSignal(pet.lastCommunicationAt, detail.dataUpdatedAt, t, locale)}
             />
-          </Card>
+          </Card></HomeEntrance>
 
-          <Pressable
-            accessibilityRole="button"
-            testID="documents-link"
-            hitSlop={TOUCH_SLOP}
-            className="flex-row items-center gap-3 rounded-xl bg-default px-3 py-2"
-            style={CONTINUOUS_CORNER}
-            onPress={() => router.push(`/pets/${pet.id}/docs` as Href)}
-          >
-            <View
-              testID="documents-link-tile"
-              className={`size-9 items-center justify-center rounded-xl ${CATEGORY_SLOTS['blue'].surface}`}
-              style={CONTINUOUS_CORNER}
-              accessibilityElementsHidden
-              importantForAccessibility="no-hide-descendants"
-            >
-              <FileText size={18} color={blue} />
-            </View>
-            <Text className="flex-1 font-semibold text-foreground">
-              {t('profile.documents')}
-            </Text>
-            <ChevronRight size={20} color={muted} />
-          </Pressable>
-
-          <Pressable
-            accessibilityRole="button"
-            testID="pairing-link"
-            className="flex-row items-center gap-3 rounded-xl bg-default px-3 py-2"
-            style={CONTINUOUS_CORNER}
-            onPress={() => router.push('/pairing' as Href)}
-          >
-            <View
-              testID="pairing-link-tile"
-              className={`size-9 items-center justify-center rounded-xl ${CATEGORY_SLOTS['green'].surface}`}
-              style={CONTINUOUS_CORNER}
-              accessibilityElementsHidden
-              importantForAccessibility="no-hide-descendants"
-            >
-              <Wifi size={18} color={green} />
-            </View>
-            <Text className="flex-1 font-semibold text-foreground">
-              {t('profile.gpsSettings')}
-            </Text>
-            <ChevronRight size={20} color={muted} />
-          </Pressable>
-
-          <Pressable
-            accessibilityRole="button"
-            testID="geofences-link"
-            hitSlop={TOUCH_SLOP}
-            className="flex-row items-center gap-3 rounded-xl bg-default px-3 py-2"
-            style={CONTINUOUS_CORNER}
-            onPress={() => router.push(`/pets/${pet.id}/geofences` as Href)}
-          >
-            <View
-              testID="geofences-link-tile"
-              className={`size-9 items-center justify-center rounded-xl ${CATEGORY_SLOTS['amber'].surface}`}
-              style={CONTINUOUS_CORNER}
-              accessibilityElementsHidden
-              importantForAccessibility="no-hide-descendants"
-            >
-              <MapIcon size={18} color={amber} />
-            </View>
-            <Text className="flex-1 font-semibold text-foreground">
-              {t('geofences.title')}
-            </Text>
-            <ChevronRight size={20} color={muted} />
-          </Pressable>
         </>
       ) : null}
 
-      <Pressable
-        accessibilityRole="button"
-        testID="reminders-link"
-        hitSlop={TOUCH_SLOP}
-        className="flex-row items-center gap-3 rounded-xl bg-default px-3 py-2"
-        style={CONTINUOUS_CORNER}
-        onPress={() => router.push('/reminders' as Href)}
-      >
-        <View
-          testID="reminders-link-tile"
-          className={`size-9 items-center justify-center rounded-xl ${CATEGORY_SLOTS['violet'].surface}`}
-          style={CONTINUOUS_CORNER}
-          accessibilityElementsHidden
-          importantForAccessibility="no-hide-descendants"
-        >
-          <Bell size={18} color={violet} />
-        </View>
-        <Text className="flex-1 font-semibold text-foreground">
-          {t('profile.reminders')}
-        </Text>
-        <ChevronRight size={20} color={muted} />
-      </Pressable>
+      <HomeEntrance index={2} testID="profile-entrance-links"><View testID="profile-links" className="gap-2">
+        {pet ? (
+          <>
+            <View testID="profile-links-row-0" className="flex-row gap-2">
+              <ProfileTile
+                testID="documents-link"
+                slot="blue"
+                icon={<FileText size={22} color={blue} />}
+                label={t('profile.documents')}
+                onPress={() => router.push(`/pets/${pet.id}/docs` as Href)}
+              />
+              <ProfileTile
+                testID="pairing-link"
+                slot="green"
+                icon={<Wifi size={22} color={green} />}
+                label={t('profile.gpsCollar')}
+                onPress={() => router.push('/pairing' as Href)}
+              />
+            </View>
+            <View testID="profile-links-row-1" className="flex-row gap-2">
+              <ProfileTile
+                testID="geofences-link"
+                slot="amber"
+                icon={<MapIcon size={22} color={amber} />}
+                label={t('geofences.title')}
+                onPress={() => router.push(`/pets/${pet.id}/geofences` as Href)}
+              />
+              {remindersLink}
+            </View>
+          </>
+        ) : (
+          <View testID="profile-links-row-0" className="flex-row gap-2">
+            {remindersLink}
+          </View>
+        )}
+      </View></HomeEntrance>
 
-      <Card testID="me-card" className="gap-2">
-        <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
-          {t('profile.account')}
-        </Text>
+      <HomeEntrance index={3} testID="profile-entrance-account"><Card variant="flat" testID="me-card">
         {me.data === undefined ? (
-          <Skeleton testID="me-card-skeleton" className="h-12 w-full rounded-xl" />
+          <Skeleton testID="me-card-skeleton" className="my-2.5 h-9 w-full rounded-xl" />
         ) : null}
         {me.data?.kind === 'ok' ? (
-          <View testID="me-identity" className="flex-row items-center gap-3">
+          <View testID="me-identity" className="flex-row items-center gap-2.5 py-2.5">
             {initials ? (
               <View
                 testID="me-avatar"
-                className="size-10 items-center justify-center rounded-full bg-default"
+                className="size-8.5 items-center justify-center rounded-full bg-default"
                 accessibilityElementsHidden
                 importantForAccessibility="no-hide-descendants"
               >
-                <Text testID="me-avatar-initials" className="text-sm font-black text-foreground">
+                <Text testID="me-avatar-initials" className="text-13 font-extrabold text-foreground">
                   {initials}
                 </Text>
               </View>
             ) : null}
-          <View testID="me-identity-text" className="flex-1 gap-1">
-            <Text className="text-lg font-bold text-foreground">
-              {`${me.data.me.firstName} ${me.data.me.lastName}`}
-            </Text>
-            <Text className="font-normal text-muted">{me.data.me.email}</Text>
-          </View>
+            <View testID="me-identity-text" className="flex-1">
+              <Text className="text-sm font-extrabold text-foreground">
+                {`${me.data.me.firstName} ${me.data.me.lastName}`}
+              </Text>
+              <Text className="text-xs font-normal text-muted">{me.data.me.email}</Text>
+            </View>
           </View>
         ) : null}
         {me.data && me.data.kind !== 'ok' && me.data.kind !== 'unauthorized' ? (
-          <Text testID="me-card-state" className="font-normal text-muted">
+          <Text testID="me-card-state" className="py-2.5 font-normal text-muted">
             {t('profile.accountUnavailable')}
           </Text>
         ) : null}
-        <Button
-          testID="theme-toggle"
-          className="mt-2 rounded-xl bg-default"
-          variant="secondary"
-          onPress={() => switchTheme(theme === 'dark' ? 'light' : 'dark')}
-        >
-          <Button.Label className="font-semibold text-foreground">
-            {theme === 'dark'
-              ? t('profile.useLightTheme')
-              : t('profile.useDarkTheme')}
-          </Button.Label>
-        </Button>
-        <Button
+        <View testID="theme-row" className="flex-row items-center justify-between gap-4 border-t border-separator py-2.5">
+          <Text className="text-sm font-semibold text-foreground">{useDarkThemeLabel}</Text>
+          <Switch
+            testID="theme-toggle"
+            isSelected={theme === 'dark'}
+            onSelectedChange={(selected) => switchTheme(selected ? 'dark' : 'light')}
+            accessibilityLabel={useDarkThemeLabel}
+            hitSlop={TOUCH_SLOP}
+          />
+        </View>
+        <Pressable
           testID="language-toggle"
-          accessibilityLabel={t('profile.changeLanguage')}
-          className="mt-2 rounded-xl bg-default"
-          variant="secondary"
+          accessibilityRole="button"
+          accessibilityLabel={changeLanguageLabel}
+          accessibilityValue={{ text: currentLanguageName }}
+          className="flex-row items-center justify-between gap-4 border-t border-separator py-2.5"
           onPress={() => setLanguage(language === 'es' ? 'en' : 'es')}
         >
-          <Button.Label className="font-semibold text-foreground">
-            {language === 'es'
-              ? t('profile.languageEnglish')
-              : t('profile.languageSpanish')}
-          </Button.Label>
-        </Button>
-      </Card>
+          <Text className="text-sm font-semibold text-foreground">{changeLanguageLabel}</Text>
+          <Text testID="language-value" className="text-sm font-extrabold text-accent-strong">{currentLanguageName}</Text>
+        </Pressable>
+      </Card></HomeEntrance>
 
       <Button
         testID="profile-sign-out"
