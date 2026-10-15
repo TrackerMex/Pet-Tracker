@@ -196,4 +196,4 @@ en inglés:
 14. Con el teclado abierto en cada pantalla, el campo enfocado sigue a la vista
     y se puede desplazar hasta el botón, igual que antes.
 
-- [ ] Prueba de humo superada por humano (fecha: ____, dispositivo: ____)
+- [X] Prueba de humo superada por humano (fecha: 2026-10-14, dispositivo: OnePlus Nord 5)
