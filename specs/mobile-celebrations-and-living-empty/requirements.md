@@ -412,7 +412,7 @@ dice otra cosa en el gate.
 
 - [x] Aprobado por humano (fecha: 2026-10-12) ← gate obligatorio antes de implementar
 - [x] Enmienda a la carta de [[design]] §8 aprobada por humano (R15)
-- [X] R16: smoke en dev build de Android completado por humano (fecha: ____)
+- [X] R16: smoke en dev build de Android completado por humano (fecha: 2026-10-14)
 
 ---
 
