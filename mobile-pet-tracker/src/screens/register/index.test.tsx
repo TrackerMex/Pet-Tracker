@@ -206,7 +206,7 @@ describe('R8: register llama a la api y navega', () => {
     );
   });
 
-  it('maps validation errors to fields and unknown paths to the general error', async () => {
+  it('#183 R7: un 400 de validación pinta el aviso genérico y ningún campo', async () => {
     mockRegister.mockResolvedValue({
       kind: 'validation',
       errors: [
@@ -220,15 +220,11 @@ describe('R8: register llama a la api y navega', () => {
     await fillForm();
     await submit();
 
-    expect(screen.getByTestId('register-first-name-error')).toHaveTextContent(
-      'First name is required',
-    );
-    expect(screen.getByTestId('register-email-error')).toHaveTextContent(
-      'Invalid email address',
-    );
-    expect(screen.getByTestId('register-error')).toHaveTextContent(
-      'Terms must be accepted',
-    );
+    expect(screen.getByTestId('register-error')).toHaveTextContent('Algo no cuadra en los datos. Revísalos y vuelve a intentarlo.');
+    for (const message of ['First name is required', 'Invalid email address', 'Terms must be accepted']) {
+      expect(screen.queryByText(message)).toBeNull();
+    }
+    expect(screen.queryAllByTestId(/^register-.+-message-row$/)).toHaveLength(0);
   });
 
   it.each<[RegisterState, string]>([
@@ -407,24 +403,22 @@ describe('#167 R7: Pingo en la cabecera del registro', () => {
 
   it('#172 R10: cada campo con error lleva icono y texto seleccionable', async () => {
     const fields = [
-      ['first-name', 'firstName'], ['last-name', 'lastName'], ['email', 'email'],
-      ['phone', 'phone'], ['country', 'country'], ['password', 'password'],
-      ['password-confirmation', 'passwordConfirmation'],
+      ['first-name', 'Escribe tu nombre'], ['last-name', 'Escribe tus apellidos'],
+      ['email', 'Ingresa un correo electrónico válido'], ['phone', 'Usa al menos 7 caracteres'],
+      ['country', 'Escribe las 2 letras de tu país, como MX'], ['password', 'Usa al menos 8 caracteres'],
+      ['password-confirmation', 'Las contraseñas no coinciden'],
     ] as const;
-    mockRegister.mockResolvedValue({
-      kind: 'validation',
-      errors: [...fields.map(([, path]) => ({ path, message: `${path} no vale` })),
-        { path: 'termsAccepted', message: 'termsAccepted no vale' }],
-    });
+    mockRegister.mockResolvedValue({ kind: 'email-taken' });
     await renderRegister();
-    await fillForm();
+    await fireEvent.press(screen.getByTestId('register-terms'));
+    await fireEvent.changeText(screen.getByTestId('register-password-confirmation'), 'x');
     await submit();
-    for (const [field, path] of fields) {
+    for (const [field, message] of fields) {
       const error = screen.getByTestId(`register-${field}-error`);
       const row = within(error).getByTestId(`register-${field}-message-row`);
       const text = within(row).getByTestId(`register-${field}-message`);
       expect(row.children).toEqual([within(row).getByTestId('icon-alert-circle'), text]);
-      expect(text).toHaveTextContent(`${path} no vale`);
+      expect(text).toHaveTextContent(message);
       expect(text.props.selectable).toBe(true);
     }
     expect(screen.getAllByTestId(/^register-.+-message-row$/)).toHaveLength(7);

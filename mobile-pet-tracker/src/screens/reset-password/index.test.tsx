@@ -228,7 +228,7 @@ describe('R8: el submit completa el reset y mapea los errores', () => {
     },
   );
 
-  it('une por salto de linea todos los mensajes de validacion', async () => {
+  it('#183 R7: un 400 de validación pinta el aviso genérico y no el texto del servidor', async () => {
     mockResetPassword.mockResolvedValue({
       kind: 'validation',
       errors: [
@@ -245,7 +245,7 @@ describe('R8: el submit completa el reset y mapea los errores', () => {
 
     const error = await screen.findByTestId('reset-error');
     expect(error.props.children).toBe(
-      'Password is too short\nPasswords must match',
+      'Algo no cuadra en los datos. Revísalos y vuelve a intentarlo.',
     );
     expect(screen.getByTestId('reset-submit')).toBeVisible();
   });

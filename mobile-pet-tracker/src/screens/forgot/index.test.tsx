@@ -294,7 +294,7 @@ describe('#117 R5: enviar pasa la pantalla a «Revisa tu correo»', () => {
 
 describe('#117 R7: cada kind distinto de ok pinta su copy en forgot-error', () => {
   it.each<[ForgotPasswordState, string]>([
-    [{ kind: 'validation', errors: [{ path: 'email', message: 'Invalid email' }] }, 'Ingresa un correo electrónico válido'],
+    [{ kind: 'validation', errors: [{ path: 'email', message: 'Invalid email' }] }, 'Algo no cuadra en los datos. Revísalos y vuelve a intentarlo.'],
     [{ kind: 'rate-limited' }, 'Demasiados intentos. Inténtalo más tarde.'],
     [{ kind: 'error' }, 'Algo salió mal'],
     [{ kind: 'unreachable', message: 'network down' }, 'No se pudo conectar con el servidor'],
@@ -330,9 +330,9 @@ describe('#117 R7: cada kind distinto de ok pinta su copy en forgot-error', () =
     await waitFor(() => expect(screen.getByTestId('forgot-submit')).not.toBeDisabled());
     await expectFormState('ana@example.com', 'Demasiados intentos. Inténtalo más tarde.');
     await fireEvent.press(screen.getByTestId('forgot-submit'));
-    await waitFor(() => expect(screen.getByTestId('forgot-error')).toHaveTextContent('Ingresa un correo electrónico válido'));
+    await waitFor(() => expect(screen.getByTestId('forgot-error')).toHaveTextContent('Algo no cuadra en los datos. Revísalos y vuelve a intentarlo.'));
     await waitFor(() => expect(screen.getByTestId('forgot-submit')).not.toBeDisabled());
-    await expectFormState('ana@example.com', 'Ingresa un correo electrónico válido');
+    await expectFormState('ana@example.com', 'Algo no cuadra en los datos. Revísalos y vuelve a intentarlo.');
   });
 
   it('un envío posterior que resuelve ok limpia forgot-error y pasa a «Revisa tu correo»', async () => {
@@ -428,7 +428,7 @@ describe('#117 R6: reenviar repite la misma petición', () => {
   });
 
   it.each<[ForgotPasswordState, string]>([
-    [{ kind: 'validation', errors: [{ path: 'email', message: 'Invalid email' }] }, 'Ingresa un correo electrónico válido'],
+    [{ kind: 'validation', errors: [{ path: 'email', message: 'Invalid email' }] }, 'Algo no cuadra en los datos. Revísalos y vuelve a intentarlo.'],
     [{ kind: 'error' }, 'Algo salió mal'],
     [{ kind: 'unreachable', message: 'network down' }, 'No se pudo conectar con el servidor'],
     [{ kind: 'missing-config' }, 'Algo salió mal'],

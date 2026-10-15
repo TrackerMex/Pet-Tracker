@@ -130,7 +130,7 @@ describe('R7: login llama a la api y navega', () => {
     expect(mockRouter.replace).not.toHaveBeenCalled();
   });
 
-  it('shows every backend validation message', async () => {
+  it('#183 R7: un 400 de validación pinta el aviso genérico y nunca el texto del servidor', async () => {
     mockLogin.mockResolvedValue({
       kind: 'validation',
       errors: [
@@ -143,8 +143,10 @@ describe('R7: login llama a la api y navega', () => {
     await submit();
 
     const error = screen.getByTestId('login-error');
-    expect(error).toHaveTextContent(/Invalid email address/);
-    expect(error).toHaveTextContent(/Password is too short/);
+    expect(error).toHaveTextContent('Algo no cuadra en los datos. Revísalos y vuelve a intentarlo.');
+    expect(error).not.toHaveTextContent('Invalid email address');
+    expect(error).not.toHaveTextContent('Password is too short');
+    expect(screen.queryAllByTestId(/^login-.+-message-row$/)).toHaveLength(0);
   });
 
   it('links to register and forgot password', async () => {
