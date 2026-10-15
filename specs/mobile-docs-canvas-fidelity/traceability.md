@@ -43,4 +43,4 @@ en `requirements.md`.
 | Tocar la zona abre el selector; el formulario aparece bajo la lista | |
 | «Reducir movimiento»: las filas entran sin desplazamiento | |
 
-- [ ] Prueba de humo R11 superada por humano (fecha: ____)
+- [X] Prueba de humo R11 superada por humano (fecha: 2026-10-11)
