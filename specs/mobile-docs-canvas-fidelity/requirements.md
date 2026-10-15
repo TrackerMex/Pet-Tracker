@@ -888,3 +888,87 @@ Base H0: `toHaveLength(35 - 1 + 2 + 1 + 16 - 4 + 8)` y título **57**. Tras R7 y
 ### Aprobación de la Enmienda E1
 
 - [x] Enmienda E1 aprobada por humano (fecha: 2026-10-15, vía repo) ← gate obligatorio antes del handoff a Codex
+
+---
+
+## Enmienda E2 — inventarios de #173 R2.4 que chocan con R5 y R8
+
+> Escrita el 2026-10-15 con #175 parada en c11 (`0e71b8a4` es c10; el verde
+> de R5 está sin commitear). Registra dos candados de #173 que la spec firmada
+> no incluyó en §Deltas de candados. **No cambia ninguna decisión de
+> comportamiento ni de diseño de la pantalla.** Cambia el alcance de ficheros:
+> `profile-canvas-fidelity.test.ts` entra en la lista cerrada. Su casilla va
+> **sin marcar**: el humano reabre el gate solo para esta enmienda.
+
+### Qué se midió
+
+Codex paró en c11 (verde de R5) con un único rojo fuera de la lista permitida:
+
+```
+● #173 R2.4: inventario de tamaños nuevos › reserva text-26 al nombre de la mascota en Perfil
+  Received: ["screens/docs/index.tsx", "screens/profile/index.tsx"]
+```
+
+Reproducido dos veces con el fichero aislado; Codex no tocó ningún test.
+La causa es un candado global que la spec no inventarió: `profile-canvas-fidelity.test.ts`
+(#173) reserva `text-26` a Perfil y cierra `text-13` en una lista de ficheros, y
+R5 pone `text-26` en el título de Documentos y R8 pone `text-13` en el chip.
+Barrido de los tests que leen ficheros de `src/` por clase: son las **dos**
+únicas aserciones que chocan con #175, ambas en ese fichero. El resto de sus
+`it` (incluidos `rounded-hero`, `rounded-tile`, `variant="hero"` y `flat`) no
+las ve Documentos.
+
+### E2.1 — Δ18 (R5): `text-26` incluye Documentos
+
+En `src/__tests__/profile-canvas-fidelity.test.ts`, el `it` de
+`describe('#173 R2.4: inventario de tamaños nuevos', …)` cuyo título es
+`'reserva text-26 al nombre de la mascota en Perfil'` pasa de
+
+```
+expect(filesMatching(/\btext-26\b/)).toEqual(['screens/profile/index.tsx']);
+```
+
+a
+
+```
+expect(filesMatching(/\btext-26\b/)).toEqual([
+  'screens/docs/index.tsx', // #175 R5
+  'screens/profile/index.tsx',
+]);
+```
+
+El título **no cambia**: las listas `<SOLO>` de los commits rojos lo nombran por
+`#173 R2.4`, y renombrarlo es deuda de después de que #173 y #175 estén en
+`main`.
+
+### E2.2 — Δ19 (R8): `text-13` incluye Documentos
+
+En el `it` `'limita text-13 a Perfil y a las pantallas de cuenta de #172 (E8)'`
+se inserta una línea entre `'components/form-error.tsx',` y
+`'screens/forgot/index.tsx',` (orden `LC_ALL=C`):
+
+```
+  'screens/docs/index.tsx', // #175 R8
+```
+
+El título tampoco cambia.
+
+### E2.3 — dónde viaja cada delta
+
+- **Δ18 va en un commit rojo nuevo, c10b**, entre c10 y c11. Solo toca el
+  fichero de Perfil. Es rojo porque `docs/index.tsx` aún no tiene `text-26`
+  (R5 verde = c11): el único `●` nuevo es el de `#173 R2.4`. Mensaje:
+  `test(profile): inventario de text-26 con Documentos (#175 R5)`.
+- **Δ19 va en c16**, el rojo de R8, junto a sus otros candados. Es rojo porque
+  el chip con `text-13` llega en c17. Las listas permitidas de c10b y c16
+  añaden `#173 R2.4`.
+- Ningún `it` se añade ni se quita: las cuentas de `it` y los totales de K1–K3
+  no cambian. Los commits `(#175 R` pasan de 20 a **21** y la lista cerrada, de
+  14 a **15** ficheros.
+- Los dos recuentos nuevos se suman a §Deltas de candados, que es el registro
+  de cambios de candados (P12): no se abre ningún bloque «Enmienda» en la spec
+  de #173.
+
+### Aprobación de la Enmienda E2
+
+- [ ] Enmienda E2 aprobada por humano ← gate obligatorio antes de reanudar a Codex
