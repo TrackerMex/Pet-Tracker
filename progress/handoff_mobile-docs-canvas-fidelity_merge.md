@@ -210,11 +210,11 @@ cd /home/claude/sites/Pet-Tracker-wt-175 && git diff --quiet && test -z "$(git l
 
 ## M6 lista cerrada contra main
 
-El merge no cambia **qué ficheros** toca #175 respecto de `main`. Las dos listas deben ser idénticas (23 ficheros):
+El merge no cambia **qué ficheros** toca #175 respecto de `main`. Las dos listas deben ser idénticas (23 ficheros; el propio handoff de fusión se excluye de la lista de la derecha, porque se añadió después de `b9aa93d6`):
 
 ```
 # -- M6 lista cerrada --
-cd /home/claude/sites/Pet-Tracker-wt-175 && git diff --name-only deaf4e6d99f46e8dcd3f8cd386e4312b9ce5f739 HEAD | LC_ALL=C sort > /tmp/175-merge-main.txt && git diff --name-only dea11875 b9aa93d6 | LC_ALL=C sort > /tmp/175-merge-own.txt && wc -l < /tmp/175-merge-main.txt && diff /tmp/175-merge-own.txt /tmp/175-merge-main.txt && echo M6-ok
+cd /home/claude/sites/Pet-Tracker-wt-175 && git diff --name-only deaf4e6d99f46e8dcd3f8cd386e4312b9ce5f739 HEAD | grep -vxF progress/handoff_mobile-docs-canvas-fidelity_merge.md | LC_ALL=C sort > /tmp/175-merge-main.txt && git diff --name-only dea11875 b9aa93d6 | LC_ALL=C sort > /tmp/175-merge-own.txt && wc -l < /tmp/175-merge-main.txt && diff /tmp/175-merge-own.txt /tmp/175-merge-main.txt && echo M6-ok
 ```
 
 Si `diff` imprime algo, PARA y reporta.
