@@ -67,6 +67,17 @@
   `c493b149`, sin bloqueantes. O1: el frontmatter de `traceability.md` pasa a
   approved en el cierre. O3: «66 casos» en `requirements.md:466` queda como
   historia de c1–c15. `origin/main` (`dea11875`) ya está en la branch. PR #218 abierta.
+- **Merge de main** (`580e5920`, trae #174, PR #219): #174 mergeó primero, así
+  que el pacto lo aplica #183. Hubo dos conflictos, resueltos sumando las dos
+  features. En `language-provider.test.tsx` quedan `+ 1 // #174 R2` y luego
+  `+ 9, // #183 R1`, y los dos `describe` completos, byte a byte iguales a los
+  de cada padre. Lo resolvió el subagente `implementer` como excepción trivial
+  de cierre (informe §Cierre — merge de origin/main con #174). En
+  `specs/mobile-ui-language/design.md`, §2.30 queda para #174 y #183 pasa a
+  §2.31, que ningún test ancla. `--remerge-diff` solo trae esas resoluciones,
+  y las pantallas de cuenta y `account-rules` son idénticas a la punta del
+  veredicto. `./init.sh` del leader sobre `580e5920`: exit 0. Backend da
+  187/1474, infra 2/14, el móvil 112/3556 y e2e 468/476 (8 omitidos).
 - **Siguiente**: el humano corre la prueba de humo de R8 en un dev build de
   Android y firma la casilla de `requirements.md` §R8. Después viene el cierre:
   fetch, diff de deriva contra `c493b149`, frontmatter de traceability a
