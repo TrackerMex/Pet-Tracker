@@ -130,3 +130,17 @@
 - **Siguiente:** prompt de reanudación a Codex; cuando termine K1 a K5,
   permiso del humano para `init.sh`, `git fetch`, y `reviewer`. Avisarle del
   flake de Home en c19 (`#98 R7`, `#106 R2`, 221/221 aislado) y de E2.
+
+## Reanudación 2026-10-15 (5) — Codex terminó K1 a K5
+
+- **Validado:** R1 `c20-limpio`; S5 repetida con `-t '#175 R10'` dio
+  `1 failed, 81 skipped, 4 passed, 86 total` y un solo `●` de R10; K1 `its-ok`;
+  K2 1307 tests (25 suites); K3 ALL 110 suites / 3444 tests (3389 + 1307 − 1252),
+  tsc y lint en 0; 21 commits `(#175 R`; árbol limpio. K5 (`lista-ok`) corrida por
+  el leader: las 15 rutas de la lista cerrada, nada más.
+- **Para el reviewer:** el Home flake de c19 (`#98 R7`, `#106 R2` bajo carga,
+  221/221 aislado, un reintento); E2 (c10b); c1 verde sin `it` nuevos; el
+  reviewer ≠ implementer. `origin/main` sigue en `dea11875` (sin #174).
+- **Siguiente:** permiso del humano para `init.sh` (lo corre el leader, tras
+  esperar pgrep), `reviewer` leyendo log + HEAD, `git fetch` antes de las
+  casillas, R11 y casilla de la enmienda de la carta (humano).
