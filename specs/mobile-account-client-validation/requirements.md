@@ -981,7 +981,7 @@ Pasos:
 El aviso genérico de R7 lo cubren los tests. Desde el cliente ya no se puede
 provocar un 400, así que la prueba de humo no lo pide.
 
-- [ ] Prueba de humo superada por humano (fecha: ____, dispositivo: ____)
+- [X] Prueba de humo superada por humano (fecha: 2026-10-15, dispositivo: OnePlus Nord 5)
 
 ## Deltas de candados
 
