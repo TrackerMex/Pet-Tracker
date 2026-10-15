@@ -514,6 +514,7 @@ describe('#78 R6: cada fila de alerta trae su icono, su hueco, su tinta y sus tr
     }
     expect(open.queryByTestId('alert-row-open-status')).toBeNull();
 
+    // #174 R9: una aserción de className exacto por rama, acked y closed
     for (const [status, labelKey, className] of [
       ['acked', 'alerts.statusAcked', 'rounded-full bg-default px-2.5 py-1 text-xs font-bold text-muted'],
       ['closed', 'alerts.statusClosed', 'rounded-full bg-category-green px-2.5 py-1 text-xs font-extrabold text-category-green-strong'],
