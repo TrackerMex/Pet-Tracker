@@ -997,3 +997,97 @@ describe('#175 R10: Documentos sin deriva', () => {
     ]);
   });
 });
+
+describe('#179 R13: Horario e Historial fieles al canvas', () => {
+  const readSource = (name: string) => readFileSync(join(sourceRoot, 'screens', name, 'index.tsx'), 'utf8');
+  const schedule = readSource('meal-schedule');
+  const history = readSource('meals-history');
+  const sources = [schedule, history];
+
+  it('mantiene ambas pantallas sin emojis', () => {
+    for (const source of sources) expect(source).not.toMatch(/\p{Extended_Pictographic}/u);
+  });
+
+  it('importa exactamente los iconos reicon del artboard', () => {
+    expect(schedule.match(/^import \{.*\} from 'reicon-react-native';$/gm)).toEqual([
+      "import { Clock, Sparkles } from 'reicon-react-native';",
+    ]);
+    expect(history.match(/^import \{.*\} from 'reicon-react-native';$/gm)).toEqual([
+      "import { ChevronLeft, ChevronRight } from 'reicon-react-native';",
+    ]);
+  });
+
+  it('no permite escapes de estilo, sombras, radios prohibidos ni acento sin contraste', () => {
+    const forbidden = new RegExp(
+      String.raw`${HEX_LITERAL}|${ARBITRARY_CLASS}|StyleSheet|shadow|elevation|\brounded-(?:2xl|lg|md|sm)\b|\btext-accent\b(?!-)`,
+      'i',
+    );
+    for (const source of sources) expect(source).not.toMatch(forbidden);
+  });
+
+  it('reutiliza entrada, paleta, esquinas y margen táctil compartidos', () => {
+    expect(schedule).toContain("import { HomeEntrance } from '../home/home-entrance';");
+    expect(schedule).toContain("import { CATEGORY_SLOTS } from '../../utils/category-palette';");
+    expect(schedule).toContain("import { TOUCH_SLOP } from '../../theme/touch-target';");
+    expect(history).toContain("import { HomeEntrance } from '../home/home-entrance';");
+    expect(history).toContain("import { TOUCH_SLOP } from '../../theme/touch-target';");
+    expect(history).toContain("import { CONTINUOUS_CORNER, TABULAR_NUMS } from '../../theme/native-styles';");
+  });
+
+  it('limita los márgenes táctiles a Editar y las dos flechas', () => {
+    expect(schedule.match(/hitSlop=\{TOUCH_SLOP\}/g)).toHaveLength(1);
+    expect(history.match(/hitSlop=\{TOUCH_SLOP\}/g)).toHaveLength(2);
+  });
+
+  it('reserva Card flat para la fila y evita la variante accent', () => {
+    expect(history).not.toContain('<Card');
+    expect(history).not.toContain('components/card');
+    expect(schedule.match(/variant="flat"/g)).toHaveLength(1);
+    expect(schedule).not.toContain('variant="accent"');
+  });
+
+  it('reserva mayúsculas para el eyebrow sin tracking-widest', () => {
+    expect(schedule.match(/\buppercase\b/g)).toHaveLength(1);
+    expect(schedule).not.toContain('tracking-widest');
+  });
+
+  it('sitúa el título antes del resumen y los errores antes de las acciones', () => {
+    for (const anchor of ['testID="generate-plan-error"', 'testID="meal-schedule-actions"', 'testID="meal-schedule-heading"', 'testID="meal-schedule-summary"']) {
+      expect(schedule).toContain(anchor);
+    }
+    expect(schedule.indexOf('testID="generate-plan-error"')).toBeLessThan(schedule.indexOf('testID="meal-schedule-actions"'));
+    expect(schedule.indexOf('testID="meal-schedule-heading"')).toBeLessThan(schedule.indexOf('testID="meal-schedule-summary"'));
+  });
+
+  it('limita text-22 a Horario y text-17 al inventario de E1.2', () => {
+    const productionFilesMatching = (pattern: RegExp) => filesMatching(pattern).filter(path => !/\.test\.tsx?$/.test(path)).sort();
+    expect(productionFilesMatching(/\btext-22\b/)).toEqual([
+      join('screens', 'meal-schedule', 'index.tsx'),
+    ]);
+    expect(productionFilesMatching(/\btext-17\b/)).toEqual([
+      join('screens', 'forgot', 'index.tsx'),
+      join('screens', 'login', 'index.tsx'),
+      join('screens', 'meal-schedule', 'index.tsx'),
+      join('screens', 'register', 'index.tsx'),
+      join('screens', 'reset-password', 'index.tsx'),
+    ]);
+  });
+
+  it('fija el número de radios del resumen, mosaico, acciones y paneles', () => {
+    for (const [pattern, count] of [[/\brounded-24\b/g, 1], [/\brounded-14\b/g, 3], [/\brounded-10\b/g, 1]] as const) {
+      expect(schedule.match(pattern)).toHaveLength(count);
+    }
+    expect(history.match(/\brounded-24\b/g)).toHaveLength(2);
+    expect(history.match(/\brounded-14\b/g)).toHaveLength(1);
+  });
+
+  it('ancla las tres etiquetas Text con los literales de E2.3', () => {
+    for (const label of [
+      '<Text className="text-13 font-extrabold text-foreground">',
+      '<Text className="text-15 font-extrabold text-foreground">',
+      '<Text className={`text-15 font-extrabold ${CATEGORY_SLOTS.violet.ink}`}>',
+    ]) {
+      expect(schedule.split(label)).toHaveLength(2);
+    }
+  });
+});
