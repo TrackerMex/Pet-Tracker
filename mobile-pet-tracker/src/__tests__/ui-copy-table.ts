@@ -314,7 +314,7 @@ export const R7_PROFILE: UseRow[] = [
 
 export const R8_REMINDERS: UseRow[] = [
   { file: 'src/app/_layout.tsx', key: 'addReminder.addReminder' }, // #95 R4
-  { file: 'src/app/_layout.tsx', key: 'reminders.reminders' }, // #114 R4
+  { file: 'src/screens/reminders/index.tsx', key: 'reminders.reminders' }, // #178 R4
   { file: 'src/screens/reminders/index.tsx', key: 'reminders.errorForbidden' },
   { file: 'src/screens/reminders/index.tsx', key: 'common.cannotReachServer' },
   { file: 'src/screens/reminders/index.tsx', key: 'common.somethingWentWrong' },

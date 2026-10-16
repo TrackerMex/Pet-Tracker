@@ -210,6 +210,7 @@ describe('#174 R12: inventarios', () => {
       files: [
         'screens/alerts/index.tsx', // #174 R12: H0 sin consumidores
         'screens/docs/index.tsx', // #175 R5
+        'screens/reminders/index.tsx', // #178 R4
       ],
     },
   ])('limita $token a su inventario de producción', ({ pattern, files }) => {

@@ -55,6 +55,7 @@ describe('#173 R2.4: inventario de tamaños nuevos', () => {
       'screens/alerts/index.tsx', // #174 R3
       'screens/docs/index.tsx', // #175 R5
       'screens/profile/index.tsx',
+      'screens/reminders/index.tsx', // #178 R4
     ]);
   });
   it('limita text-13 a Perfil y a las pantallas de cuenta de #172 (E8)', () => {

@@ -25,6 +25,32 @@ import { SelectedPetProvider } from '../../providers/selected-pet-provider';
 import { RemindersScreen } from '.';
 import { renderWithProviders } from '../../../test/render-with-providers';
 
+jest.mock('reicon-react-native', () => {
+  const actual = jest.requireActual<typeof import('reicon-react-native')>('reicon-react-native');
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  const mockIcon = (testID: string) =>
+    function MockIcon(props: Record<string, unknown>) {
+      return React.createElement(View, { testID, ...props });
+    };
+  return {
+    ...actual,
+    Plus: mockIcon('reminders-icon-plus'),
+    Trash: mockIcon('reminders-icon-trash'),
+    Syringe: mockIcon('reminders-icon-syringe'),
+    Drop: mockIcon('reminders-icon-drop'),
+    Pill: mockIcon('reminders-icon-pill'),
+    Stethoscope: mockIcon('reminders-icon-stethoscope'),
+    Weight: mockIcon('reminders-icon-weight'),
+    ForkKnife: mockIcon('reminders-icon-fork-knife'),
+    PinTack: mockIcon('reminders-icon-pin-tack'),
+  };
+});
+
+jest.mock('../../theme/use-theme-colors', () => ({
+  useThemeColors: jest.fn((tokens: string[]) => tokens.map((token) => `color:${token}`)),
+}));
+
 jest.mock('../../api/pets', () => ({
   listPets: jest.fn(),
 }));
@@ -205,21 +231,21 @@ describe('R5: reminders monta con métricas y estados', () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
   });
 
-  describe('#114 R5: el título vive en la cabecera nativa', () => {
-    it('deja Nuevo en su fila y no pinta título en carga ni con filas', async () => {
+  describe('#114 R5 (revertido por #178 R4): el título vive en el contenido', () => {
+    it('deja Nuevo junto al título en carga y con filas', async () => {
       let resolveReminders!: (state: RemindersState) => void;
       mockListReminders.mockReturnValue(new Promise((resolve) => { resolveReminders = resolve; }));
       await renderReminders();
 
       await screen.findByTestId('reminders-loading');
-      expect(screen.queryByText(es['reminders.reminders'])).toBeNull();
+      expect(screen.getByTestId('reminders-title')).toHaveTextContent(es['reminders.reminders']);
       const actions = screen.getByTestId('reminders-actions');
-      expect(actions.props.className).toBe('flex-row justify-end');
+      expect(actions.props.className).toBe('flex-row items-center gap-2'); // #178 R4
       expect(within(actions).getByTestId('reminders-add-link')).toBeVisible();
 
       await act(async () => resolveReminders({ kind: 'ok', reminders: [makeReminder()] }));
       await screen.findByTestId(`reminder-row-${makeReminder().id}`);
-      expect(screen.queryByText(es['reminders.reminders'])).toBeNull();
+      expect(screen.getByTestId('reminders-title')).toHaveTextContent(es['reminders.reminders']);
       expect(screen.getByTestId('reminders-add-link')).toBeVisible();
     });
   });
@@ -233,8 +259,9 @@ describe('R5: reminders monta con métricas y estados', () => {
     expect(
       screen.getByTestId('screen-reminders').props.contentContainerStyle,
     ).toEqual({
-      padding: 24,
-      gap: 16,
+      paddingHorizontal: 20,
+      paddingTop: 24,
+      gap: 14, // #178 R4
       paddingBottom: 48,
     });
     await waitFor(() =>
@@ -313,6 +340,63 @@ describe('R5: reminders monta con métricas y estados', () => {
         'pet-2',
       ),
     );
+  });
+});
+
+describe('#178 R4: marco y título en contenido', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [makeReminder()] });
+  });
+
+  it('usa el marco 20/24/14 bajo la cabecera nativa', async () => {
+    await renderReminders();
+    await screen.findByTestId('reminder-row-reminder-1');
+    expect(screen.getByTestId('screen-reminders').props.contentContainerStyle).toEqual({
+      paddingHorizontal: 20,
+      paddingTop: 24,
+      gap: 14,
+      paddingBottom: 48,
+    });
+  });
+
+  it('coloca título y Nuevo en ese orden dentro de la fila de acciones', async () => {
+    await renderReminders();
+    await screen.findByTestId('reminder-row-reminder-1');
+    const actions = screen.getByTestId('reminders-actions');
+    expect(actions.props.className).toBe('flex-row items-center gap-2');
+    expect(actions.children).toHaveLength(2);
+    expect(within(actions).getAllByTestId(/^reminders-(title|add-link)$/).map((node) => node.props.testID)).toEqual([
+      'reminders-title', 'reminders-add-link',
+    ]);
+  });
+
+  it('pinta Recordatorios como título accesible con la receta del canvas', async () => {
+    await renderReminders();
+    await screen.findByTestId('reminder-row-reminder-1');
+    const title = screen.getByTestId('reminders-title');
+    expect(title).toHaveTextContent('Recordatorios');
+    expect(title.props.accessibilityRole).toBe('header');
+    expect(title.props.className).toBe('flex-1 text-26 font-black tracking-title text-foreground');
+  });
+
+  it('pinta Nuevo compacto con Plus de 16 y tinta accent-foreground', async () => {
+    await renderReminders();
+    await screen.findByTestId('reminder-row-reminder-1');
+    const addLink = screen.getByTestId('reminders-add-link');
+    expect(addLink.props.className).toBe('pressable-feedback__root button__root button__root--variant-primary button__root--size-md rounded-xl bg-accent border-b-4 border-black/25 h-10 gap-1.5 px-3.5');
+    const icon = within(addLink).getByTestId('reminders-icon-plus', { includeHiddenElements: true });
+    expect(icon.props.size).toBe(16);
+    expect(icon.props.color).toBe('color:accent-foreground');
+    expect(within(addLink).getByText('Nuevo')).toBeTruthy();
   });
 });
 
