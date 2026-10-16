@@ -184,6 +184,7 @@ Tres límites, no negociables:
 
     Fuera de la escala, por fidelidad al canvas (#174): `rounded-10` (10 px), ack compacto de fila de Alertas.
     Fuera de la escala, por fidelidad al canvas (#175): `rounded-24` (24 px), zona de subida de Documentos.
+    Fuera de la escala, por fidelidad al canvas (#178): `rounded-14` (14 px), mosaico del icono de la fila de Recordatorios; `rounded-16` (16 px), píldoras de resumen de Recordatorios; `rounded-22` (22 px), fila de Recordatorios, que es un `View` y no un `Card` porque `twMerge` no sustituye `rounded-card` por un radio con nombre de valor.
 
 13. **Botón con cuerpo** (feature #166, 2026-10-11). Los botones de acción
     llevan un labio inferior: un borde inferior más grueso que los
@@ -198,6 +199,7 @@ Tres límites, no negociables:
       `rounded-xl border-2 border-b-6 border-lip-gray bg-surface`
       El gris sale del token `--color-lip-gray` de `src/theme/global.css`,
       nunca de un hex ni de una clase entre corchetes.
+    - **Chip seleccionado** (fidelidad al canvas, #178): cápsula `rounded-full bg-accent border-b-3 border-black/25`; el chip sin seleccionar no lleva labio.
     - **Sin labio**: los tonales (`bg-accent-soft`, `bg-default`), los
       destructivos (`bg-danger`, `variant="danger-soft"`) y las primarias
       de heroui sin color en `className` (reintentos, confirmar alerta en el detalle).
