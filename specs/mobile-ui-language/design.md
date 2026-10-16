@@ -1006,6 +1006,13 @@ copy completa en cada una.
 | — | `docs.categoryOther` | `Other` | `Otros` | ← añadida por #175 (R3) |
 | — | `docs.uploadHint` | `PDF or photo of prescriptions, lab results, and vaccine cards` | `PDF o foto de recetas, análisis y cartillas` | ← añadida por #175 (R3) |
 
+### §2.32 — Añadidos por #178 — Recordatorios del canvas
+
+| # | Clave | `en` | `es` | Origen |
+|---|---|---|---|---|
+| — | `reminders.dueAt` | `{{date}}, {{time}}` | `{{date}}, {{time}}` | ← añadida por #178 (R3) |
+| — | `addReminder.notifyPreview` | `I'll remind you on {{date}} at {{time}}.` | `Te aviso el {{date}} a las {{time}}.` | ← añadida por #178 (R3) |
+
 ## 3. La infraestructura
 
 ### 3.1 Decisiones
