@@ -67,7 +67,9 @@ describe('#65 R12: el catálogo tiene los dos idiomas y t resuelve claves y par�
         + 7 // #170 R1
         + 3 // #172 R16
         - 4 + 3 // #173 R13
-        + 1, // #174 R2
+        + 7 // #175 R3
+        + 1 // #174 R2
+        + 9, // #183 R1
     );
     expect(spanishKeys).toEqual(englishKeys);
     for (const key of englishKeys) {
@@ -195,6 +197,34 @@ describe('#173 R13: Perfil retira cuatro claves y añade tres', () => {
     expect(english[key]).toBeUndefined();
     expect(spanish[key]).toBeUndefined();
     expect(languageDesign).toMatch(new RegExp('`' + escapeRegExp(key) + '`[^\\n]*← retirada por #173 \\(R13\\)'));
+  });
+});
+
+describe('#175 R3: claves de Documentos del canvas', () => {
+  it('declara los siete pares exactos y registra cada clave', () => {
+    const english = en as Record<string, string>;
+    const spanish = es as Record<string, string>;
+    const languageDesign = readFileSync(
+      join(process.cwd(), '../specs/mobile-ui-language/design.md'),
+      'utf8',
+    );
+    const translations = [
+      ['docs.filterAll', 'All', 'Todos'],
+      ['docs.categoryVaccination', 'Vaccination', 'Vacunación'],
+      ['docs.categoryCheckup', 'Checkup', 'Consulta'],
+      ['docs.categoryDeworming', 'Deworming', 'Desparasitación'],
+      ['docs.categoryAnalysis', 'Analysis', 'Análisis'],
+      ['docs.categoryOther', 'Other', 'Otros'],
+      ['docs.uploadHint', 'PDF or photo of prescriptions, lab results, and vaccine cards', 'PDF o foto de recetas, análisis y cartillas'],
+    ] as const;
+
+    for (const [key, englishValue, spanishValue] of translations) {
+      expect(english[key]).toBe(englishValue);
+      expect(spanish[key]).toBe(spanishValue);
+      expect(languageDesign).toMatch(
+        new RegExp('\\| — \\| `' + escapeRegExp(key) + '`[^\\n]*← añadida por #175 \\(R3\\)'),
+      );
+    }
   });
 });
 
@@ -670,5 +700,41 @@ describe('#174 R2: días con palabra completa', () => {
     expect(row).toContain('`{{days}} days ago`');
     expect(row).toContain('`Hace {{days}} días`');
     expect(row).toContain('valor cambiado por #174 (R2)');
+  });
+});
+
+describe('#183 R1: el copy de la validación en cliente', () => {
+  it('#183 R1: declara las claves de validación en los dos idiomas y su registro', () => {
+    const english = en as Record<string, string>;
+    const spanish = es as Record<string, string>;
+    const languageDesign = readFileSync(
+      join(process.cwd(), '../specs/mobile-ui-language/design.md'),
+      'utf8',
+    );
+    const translations = [
+      ['validation.firstNameRequired', 'Enter your first name', 'Escribe tu nombre'],
+      ['validation.lastNameRequired', 'Enter your last name', 'Escribe tus apellidos'],
+      ['validation.passwordRequired', 'Enter your password', 'Escribe tu contraseña'],
+      ['validation.tooShort', 'Use at least {{min}} characters', 'Usa al menos {{min}} caracteres'],
+      ['validation.tooLong', 'Use {{max}} characters or fewer', 'Usa {{max}} caracteres o menos'],
+      ['validation.passwordsDontMatch', "Passwords don't match", 'Las contraseñas no coinciden'],
+      ['validation.countryLength', "Enter your country's 2-letter code, like MX", 'Escribe las 2 letras de tu país, como MX'],
+      ['validation.countryLetters', 'Use only letters A to Z', 'Usa solo letras de la A a la Z'],
+      ['validation.checkDetails', "Something in your details doesn't look right. Check them and try again.", 'Algo no cuadra en los datos. Revísalos y vuelve a intentarlo.'],
+    ] as const;
+
+    for (const [key, englishValue, spanishValue] of translations) {
+      expect(english[key]).toBe(englishValue);
+      expect(spanish[key]).toBe(spanishValue);
+      expect(languageDesign).toMatch(
+        new RegExp(
+          '\\| — \\| `' + escapeRegExp(key) +
+            '`[^\\n]*← añadida por #183 \\(R1\\)',
+        ),
+      );
+    }
+    expect(languageDesign).toMatch(
+      /### §2\.\d+ — Añadidos por #183 — Validación en cliente de las pantallas de cuenta/,
+    );
   });
 });

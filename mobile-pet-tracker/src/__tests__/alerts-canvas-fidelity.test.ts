@@ -197,6 +197,7 @@ describe('#174 R12: inventarios', () => {
       files: [
         'components/celebration.tsx',
         'screens/alerts/index.tsx', // #174 R12: delta sobre la lista medida en H0
+        'screens/docs/index.tsx', // #175 R6
         'screens/forgot/index.tsx',
         'screens/login/index.tsx',
         'screens/register/index.tsx',
@@ -206,7 +207,10 @@ describe('#174 R12: inventarios', () => {
     {
       token: 'tracking-title',
       pattern: /(?<![\w-])tracking-title\b/,
-      files: ['screens/alerts/index.tsx'], // #174 R12: H0 sin consumidores
+      files: [
+        'screens/alerts/index.tsx', // #174 R12: H0 sin consumidores
+        'screens/docs/index.tsx', // #175 R5
+      ],
     },
   ])('limita $token a su inventario de producción', ({ pattern, files }) => {
     expect(filesMatching(pattern)).toEqual(files);

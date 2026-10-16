@@ -1,10 +1,10 @@
 # pet-tracker — Status
 
-**Última actualización**: 2026-10-15
-**Features completadas**: 163/180 (`feature_list.json`)
-**En progreso**: ninguna en esta rama. #174 cerrada en `feature/174-mobile-alerts-canvas-fidelity`, PR #219 pendiente de merge humano.
+**Última actualización**: 2026-10-16
+**Features completadas**: 165/184 (`feature_list.json`)
+**En progreso**: ninguna. #183 y #175 ya están en `main` (PRs #218 y #221); esta rama solo registra #185 y #186.
 
-**Pendientes**: 17 (#60, #129, #144, #150, #151, #154, #160, #163, #164, #165, #176, #177, #180, #181, #184, #185 y #186). **#185 `mobile-docs-upload-form-polish` y #186 `mobile-forms-validation-global` registradas** (2026-10-15, pedido del humano al firmar R11 de #175), sin spec y sin arrancar: la subida de documentos y los errores de validación con componentes globales en toda la app. **#174 `mobile-alerts-canvas-fidelity` cerrada**: la lista de Alertas como su artboard del canvas. Título «Alertas» en el contenido con el contador en `PopIn`, métricas de 20 y 12, secciones con cabecera 13 ExtraBold, fila con disco de categoría y subtítulo en una línea, ack secundario compacto con labio, píldoras Leída y Resuelta, entrada escalonada de las cinco primeras filas, tokens `text-15`, `radius-10` y `--tracking-caps` y copy `alerts.dayAgo`/`alerts.daysAgo` con palabra completa. La carta y cinco specs llevan su enmienda R11 firmada. Cinco enmiendas (E1-E5), reviewer APROBADO en ronda 2 (`d3c5ff94`), smoke R13 firmado por el humano en `4af37a8a`. Pendiente de esta línea: el Detalle de alerta (#180).
+**Pendientes**: 19 (#60, #129, #144, #150, #151, #154, #160, #163, #164, #165, #176, #177, #178, #179, #180, #181, #184, #185 y #186). **#185 `mobile-docs-upload-form-polish` y #186 `mobile-forms-validation-global` registradas** (2026-10-15, pedido del humano al firmar R11 de #175), sin spec y sin arrancar: la subida de documentos y los errores de validación con componentes globales en toda la app. **#183 `mobile-account-client-validation` cerrada**: Iniciar sesión, Crear cuenta, Recuperar contraseña y Nueva contraseña validan en cliente, con un mensaje claro por campo, en lugar de mostrar el texto del servidor. Las reglas viven en el módulo puro `src/utils/account-rules.ts`, idénticas a los DTO del backend. Iniciar sesión y Crear cuenta mandan el correo recortado, y un 400 que llegue igual pinta un aviso genérico. El copy nuevo está en es y en (§2.32 de la spec de idioma). La ronda 1 de Codex se rechazó porque 7 mutaciones no tenían candado. La Enmienda E1, solo tests, se firmó desde Notion (`4046e500`) y la ronda 2 la aprobó el reviewer (`c493b149`). Los merges de main con #174 y #175 suman sus deltas del catálogo, y #183 queda en §2.32. El humano firmó el smoke R8 en `23d816df` (OnePlus Nord 5). Móvil 112/3611 sobre `d9bc5357`.
 
 **En producción**: no
 
@@ -90,6 +90,17 @@ debe listar las 4 URLs de cola.
 
 ## Estado actual
 
+- **`mobile-docs-canvas-fidelity` (#175) done** (2026-10-15, worktree
+  `Pet-Tracker-wt-175`, sesión sites-99): Documentos fiel al artboard
+  `Documentos` del canvas (R1-R11). Codex CLI, c1-c20 test-primero más c10b y
+  las sondas S1-S5, con reanudaciones por E2 (inventarios de #173), por el
+  handoff (S5) y por E3 (la fusión con #174). Reviewer APROBADO R1-R10 sobre
+  `4b2d7e40` y la ronda de fusión con main aprobada en `c53175a7`. Gate:
+  `./init.sh` exit 0 sobre la fusión `7f2027f9` (backend 187/1474, infra
+  2/14, móvil 111/3483, e2e 30 de 33 suites, 8 tests saltados). Smoke R11
+  firmado por el humano en `e1741bb1`. #178 y #179 editan las mismas filas del
+  inventario de `alerts-canvas-fidelity.test.ts`: quien mergee después
+  re-mide.
 - **`mobile-alerts-canvas-fidelity` (#174) done** (2026-10-15, worktree
   `Pet-Tracker-wt-174`, sesión Backend): la lista de Alertas fiel al artboard
   `Alertas` del canvas (R1-R12). Codex CLI, c1-c23 test-primero más las sondas

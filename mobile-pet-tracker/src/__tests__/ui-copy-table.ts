@@ -14,7 +14,6 @@ export const R1_AUTH: UseRow[] = [
   { file: 'src/screens/login/index.tsx', key: 'login.createAccount' },
   { file: 'src/screens/login/index.tsx', key: 'login.forgotPassword' },
   { file: 'src/screens/login/index.tsx', key: 'login.pingoGreeting' }, // #167 R6
-  { file: 'src/screens/forgot/index.tsx', key: 'forgot.invalidEmail' }, // #117 R7
   { file: 'src/screens/forgot/index.tsx', key: 'forgot.tooManyAttempts' }, // #117 R7
   { file: 'src/screens/forgot/index.tsx', key: 'common.cannotReachServer' }, // #117 R7
   { file: 'src/screens/forgot/index.tsx', key: 'common.somethingWentWrong' }, // #117 R7
@@ -42,8 +41,19 @@ export const R1_AUTH: UseRow[] = [
   { file: 'src/screens/register/index.tsx', key: 'register.createAccount' },
   { file: 'src/components/password-input.tsx', key: 'common.showPassword' }, // #172 R16
   { file: 'src/components/password-input.tsx', key: 'common.hidePassword' }, // #172 R16
-  { file: 'src/screens/register/index.tsx', key: 'forgot.invalidEmail' }, // #172 R16
   { file: 'src/components/back-button.tsx', key: 'common.back' }, // #172 R16
+  { file: 'src/utils/account-rules.ts', key: 'forgot.invalidEmail' }, // #183 R2
+  { file: 'src/utils/account-rules.ts', key: 'validation.firstNameRequired' }, // #183 R2
+  { file: 'src/utils/account-rules.ts', key: 'validation.lastNameRequired' }, // #183 R2
+  { file: 'src/utils/account-rules.ts', key: 'validation.passwordRequired' }, // #183 R2
+  { file: 'src/utils/account-rules.ts', key: 'validation.tooShort' }, // #183 R2
+  { file: 'src/utils/account-rules.ts', key: 'validation.tooLong' }, // #183 R2
+  { file: 'src/utils/account-rules.ts', key: 'validation.passwordsDontMatch' }, // #183 R2
+  { file: 'src/utils/account-rules.ts', key: 'validation.countryLength' }, // #183 R2
+  { file: 'src/utils/account-rules.ts', key: 'validation.countryLetters' }, // #183 R2
+  { file: 'src/screens/login/index.tsx', key: 'validation.checkDetails' }, // #183 R7
+  { file: 'src/screens/register/index.tsx', key: 'validation.checkDetails' }, // #183 R7
+  { file: 'src/screens/forgot/index.tsx', key: 'validation.checkDetails' }, // #183 R7
 ];
 
 export const R2_TABS: UseRow[] = [
@@ -286,6 +296,13 @@ export const R7_PROFILE: UseRow[] = [
   { file: 'src/screens/docs/index.tsx', key: 'docs.noDocumentsYet' },
   { file: 'src/screens/docs/index.tsx', key: 'docs.emptyBody' },
   { file: 'src/screens/docs/index.tsx', key: 'docs.couldNotLoadDocuments' },
+  { file: 'src/screens/docs/index.tsx', key: 'docs.uploadHint' }, // #175 R7
+  { file: 'src/screens/docs/index.tsx', key: 'docs.filterAll' }, // #175 R8
+  { file: 'src/screens/docs/index.tsx', key: 'docs.categoryVaccination' }, // #175 R8
+  { file: 'src/screens/docs/index.tsx', key: 'docs.categoryCheckup' }, // #175 R8
+  { file: 'src/screens/docs/index.tsx', key: 'docs.categoryDeworming' }, // #175 R8
+  { file: 'src/screens/docs/index.tsx', key: 'docs.categoryAnalysis' }, // #175 R8
+  { file: 'src/screens/docs/index.tsx', key: 'docs.categoryOther' }, // #175 R8
   { file: 'src/screens/docs/index.tsx', key: 'common.retry' },
   { file: 'src/screens/docs/index.tsx', key: 'docs.upload' }, // #158 R12
   { file: 'src/screens/docs/index.tsx', key: 'docs.upload' }, // #158 R12
@@ -474,6 +491,7 @@ export const R11_RESET: UseRow[] = [
   { file: 'src/screens/reset-password/index.tsx', key: 'resetPassword.confirmNewPassword' },
   { file: 'src/screens/reset-password/index.tsx', key: 'resetPassword.updatePassword' },
   { file: 'src/screens/reset-password/index.tsx', key: 'resetPassword.backToSignIn' }, // #172 R19
+  { file: 'src/screens/reset-password/index.tsx', key: 'validation.checkDetails' }, // #183 R7
 ];
 
 export const R12_ALERTS: UseRow[] = [

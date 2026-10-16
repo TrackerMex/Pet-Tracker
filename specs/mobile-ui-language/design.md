@@ -994,6 +994,32 @@ copy completa en cada una.
 |---|---|---|---|---|
 | — | `alerts.dayAgo` | `1 day ago` | `Hace 1 día` | ← añadida por #174 (R2) |
 
+### §2.31 — Añadidos por #175 — Documentos del canvas
+
+| # | Clave | `en` | `es` | Origen |
+|---|---|---|---|---|
+| — | `docs.filterAll` | `All` | `Todos` | ← añadida por #175 (R3) |
+| — | `docs.categoryVaccination` | `Vaccination` | `Vacunación` | ← añadida por #175 (R3) |
+| — | `docs.categoryCheckup` | `Checkup` | `Consulta` | ← añadida por #175 (R3) |
+| — | `docs.categoryDeworming` | `Deworming` | `Desparasitación` | ← añadida por #175 (R3) |
+| — | `docs.categoryAnalysis` | `Analysis` | `Análisis` | ← añadida por #175 (R3) |
+| — | `docs.categoryOther` | `Other` | `Otros` | ← añadida por #175 (R3) |
+| — | `docs.uploadHint` | `PDF or photo of prescriptions, lab results, and vaccine cards` | `PDF o foto de recetas, análisis y cartillas` | ← añadida por #175 (R3) |
+
+### §2.32 — Añadidos por #183 — Validación en cliente de las pantallas de cuenta
+
+| # | Clave | `en` | `es` | Origen |
+|---|---|---|---|---|
+| — | `validation.firstNameRequired` | `Enter your first name` | `Escribe tu nombre` | ← añadida por #183 (R1) |
+| — | `validation.lastNameRequired` | `Enter your last name` | `Escribe tus apellidos` | ← añadida por #183 (R1) |
+| — | `validation.passwordRequired` | `Enter your password` | `Escribe tu contraseña` | ← añadida por #183 (R1) |
+| — | `validation.tooShort` | `Use at least {{min}} characters` | `Usa al menos {{min}} caracteres` | ← añadida por #183 (R1) |
+| — | `validation.tooLong` | `Use {{max}} characters or fewer` | `Usa {{max}} caracteres o menos` | ← añadida por #183 (R1) |
+| — | `validation.passwordsDontMatch` | `Passwords don't match` | `Las contraseñas no coinciden` | ← añadida por #183 (R1) |
+| — | `validation.countryLength` | `Enter your country's 2-letter code, like MX` | `Escribe las 2 letras de tu país, como MX` | ← añadida por #183 (R1) |
+| — | `validation.countryLetters` | `Use only letters A to Z` | `Usa solo letras de la A a la Z` | ← añadida por #183 (R1) |
+| — | `validation.checkDetails` | `Something in your details doesn't look right. Check them and try again.` | `Algo no cuadra en los datos. Revísalos y vuelve a intentarlo.` | ← añadida por #183 (R1) |
+
 ## 3. La infraestructura
 
 ### 3.1 Decisiones
