@@ -213,6 +213,7 @@ export function RemindersScreen() {
           pose="clipboard"
           title={t('reminders.noRemindersYet')}
           body={t('reminders.emptyBody')}
+          action={{ label: t('reminders.new'), onPress: () => router.push('/add-reminder' as Href) }}
         />
       ) : null}
 
