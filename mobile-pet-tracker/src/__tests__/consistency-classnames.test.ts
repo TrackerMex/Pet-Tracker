@@ -163,7 +163,7 @@ describe('#62 R4: la app solo usa los radios de la escala declarada', () => {
     for (const testId of ['pill-active', 'pill-week', 'pill-inactive']) {
       const pill = openingTagWithTestId(reminders, testId);
 
-      expect(pill).toContain('rounded-xl');
+      expect(pill).toContain('rounded-16'); // #178 R5
     }
   });
 
@@ -404,7 +404,7 @@ describe('#98 R10: los candados que esta feature no mueve', () => {
     expect(food.match(/style=\{CONTINUOUS_CORNER\}/g)).toHaveLength(1);
     expect(count(/style=\{CONTINUOUS_CORNER\}/g)).toBe(31 + 1 + 4 + 1 - 1 - 7); // #41 R9: geofences-link; #168; #170 R8: alert-detail-map; #171 R3: ready-done; #173 R10: ProfileTile
     expect(count(/rounded-xl bg-accent(?=[\s'"`])/g)).toBe(13 + 1 + 1 + 1 + 1 + 1 + 1 + 1 - 1 - 1 - 1); // #171 R3 // #146 R8, #146 R9; #118 R7; #155 R3 // #158 R3: docs-upload; // #158 R5: docs-upload-submit // #171 R14 // #173 R5; #175 R7: docs-upload pasa a zona de subida
-    expect(count(/bg-accent-soft/g)).toBe(16 + 2 + 1 - 1 - 1 - 1 - 1); // #147 R4: meal-time-edit y add-meal-time-button; #105 R11; #168 R5: PetPills pasa a huecos pastel; #172 R14: forgot-lock-tile pasa a bg-accent; #171 R3; #173 R6
+    expect(count(/bg-accent-soft/g)).toBe(16 + 2 + 1 - 1 - 1 - 1 - 1 - 1); // #147 R4: meal-time-edit y add-meal-time-button; #105 R11; #168 R5: PetPills pasa a huecos pastel; #172 R14: forgot-lock-tile pasa a bg-accent; #171 R3; #173 R6; // #178 R5
     expect(home.match(/text-accent-strong\b/g)).toHaveLength(2);
     expect(food.match(/text-accent-strong\b/g)).toHaveLength(1);
     expect(filesMatching(/\brounded-(?:2xl|lg|md|sm)\b/)).toEqual([]);
@@ -470,8 +470,8 @@ describe('#64 R9: el color categórico solo se nombra en el módulo de paleta', 
     const reminders = readSource(join('screens', 'reminders', 'index.tsx'));
     const docs = readSource(join('screens', 'docs', 'index.tsx'));
 
-    expect(accentSoftCount).toBe(16 + 2 + 1 - 1 - 1 - 1 - 1); // #147 R4, #105 R11; #168 R5: PetPills pasa a huecos pastel; #172 R14: forgot-lock-tile pasa a bg-accent; #171 R3; #173 R6
-    expect(reminders.match(/bg-accent-soft/g)).toHaveLength(1);
+    expect(accentSoftCount).toBe(16 + 2 + 1 - 1 - 1 - 1 - 1 - 1); // #147 R4, #105 R11; #168 R5: PetPills pasa a huecos pastel; #172 R14: forgot-lock-tile pasa a bg-accent; #171 R3; #173 R6; // #178 R5
+    expect(reminders.match(/bg-accent-soft/g)).toBeNull(); // #178 R5
     expect(docs.match(/bg-accent-soft/g)).toBeNull();
   });
 });

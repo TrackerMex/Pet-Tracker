@@ -155,6 +155,14 @@ function makeReminder(overrides: Partial<Reminder> = {}): Reminder {
   };
 }
 
+const canvasReminders = [
+  makeReminder({ id: 'a', type: 'vaccine', title: 'Refuerzo de rabia', dueAt: '2027-01-02T15:00:00.000Z', status: 'scheduled' }),
+  makeReminder({ id: 'b', type: 'medication', title: 'Pastilla trimestral', dueAt: '2027-01-21T02:05:00.000Z', status: 'scheduled' }),
+  makeReminder({ id: 'c', type: 'custom', title: 'Baño', dueAt: '2026-12-03T17:30:00.000Z', status: 'sent' }),
+];
+const hostProcess = process.getBuiltinModule('process');
+const originalTimezone = hostProcess.env.TZ;
+
 function RemindersWrapper({ children }: { children: ReactNode }) {
   return (
     <HeroUINativeProvider>
@@ -397,6 +405,63 @@ describe('#178 R4: marco y título en contenido', () => {
     expect(icon.props.size).toBe(16);
     expect(icon.props.color).toBe('color:accent-foreground');
     expect(within(addLink).getByText('Nuevo')).toBeTruthy();
+  });
+});
+
+describe('#178 R5: píldoras de resumen del canvas', () => {
+  beforeAll(() => { hostProcess.env.TZ = 'America/Mexico_City'; });
+  afterAll(() => {
+    if (originalTimezone === undefined) delete hostProcess.env.TZ;
+    else hostProcess.env.TZ = originalTimezone;
+  });
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    jest.useFakeTimers({ now: new Date('2026-12-30T15:00:00.000Z') });
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: canvasReminders });
+  });
+  afterEach(() => {
+    jest.clearAllTimers();
+    jest.useRealTimers();
+  });
+
+  it('agrupa las tres píldoras en el orden activo, semana e inactivo', async () => {
+    await renderReminders();
+    await screen.findByTestId('reminder-row-a');
+    const pills = screen.getByTestId('reminders-pills');
+    expect(pills.props.className).toBe('flex-row gap-2');
+    expect(pills.children).toHaveLength(3);
+    expect(pills.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual([
+      'pill-active', 'pill-week', 'pill-inactive',
+    ]);
+  });
+
+  it('pinta cada cifra y etiqueta con su radio, tinta y orden del canvas', async () => {
+    await renderReminders();
+    await screen.findByTestId('reminder-row-a');
+    const pills = screen.getByTestId('reminders-pills');
+    const cases = [
+      ['pill-active', 'flex-1 rounded-16 px-3 py-2.5 bg-surface-secondary', '2', 'Activos', 'text-2xl font-black text-accent-strong', 'text-xs font-bold text-muted'],
+      ['pill-week', 'flex-1 rounded-16 px-3 py-2.5 bg-category-amber', '1', 'Esta semana', 'text-2xl font-black text-category-amber-strong', 'text-xs font-bold text-category-amber-strong'],
+      ['pill-inactive', 'flex-1 rounded-16 px-3 py-2.5 bg-default', '1', 'Inactivos', 'text-2xl font-black text-muted', 'text-xs font-bold text-muted'],
+    ] as const;
+    for (const [testID, className, value, label, valueClass, labelClass] of cases) {
+      const pill = within(pills).getByTestId(testID);
+      expect(pill.props.className).toBe(className);
+      expect(pill).toHaveStyle({ borderCurve: 'continuous' });
+      expect(pill.children).toHaveLength(2);
+      expect(pill.children[0]).toHaveTextContent(value);
+      expect(pill.children[1]).toHaveTextContent(label);
+      const number = within(pill).getByText(value);
+      expect(number.props.className).toBe(valueClass);
+      expect(number).toHaveStyle({ fontVariant: ['tabular-nums'] });
+      expect(within(pill).getByText(label).props.className).toBe(labelClass);
+    }
   });
 });
 
@@ -1027,17 +1092,17 @@ describe('#127 R3: las tres píldoras de resumen llevan su receta en el árbol',
     ).toStrictEqual([
       {
         testID: 'pill-active',
-        className: 'flex-1 items-center gap-1 rounded-xl bg-accent-soft p-3',
+        className: 'flex-1 rounded-16 px-3 py-2.5 bg-surface-secondary', // #178 R5
         style: { borderCurve: 'continuous' },
       },
       {
         testID: 'pill-week',
-        className: 'flex-1 items-center gap-1 rounded-xl bg-default p-3',
+        className: 'flex-1 rounded-16 px-3 py-2.5 bg-category-amber', // #178 R5
         style: { borderCurve: 'continuous' },
       },
       {
         testID: 'pill-inactive',
-        className: 'flex-1 items-center gap-1 rounded-xl bg-default p-3',
+        className: 'flex-1 rounded-16 px-3 py-2.5 bg-default', // #178 R5
         style: { borderCurve: 'continuous' },
       },
     ]);
