@@ -22,6 +22,42 @@ const { join } = require('path');
 const sourceRoot = join(process.cwd(), 'src');
 const projectRoot = process.cwd();
 
+describe('#178 R2: enmienda de fidelidad al canvas en Recordatorios', () => {
+  const charter = readFileSync(join(process.cwd(), '..', 'docs', 'ui-guidelines.md'), 'utf8');
+  const heading = '## Enmienda de fidelidad al canvas (2026-10-13)';
+
+  it('A: conserva la sección, su firma, las directivas y el tamaño text-11', () => {
+    expect(charter.split(heading)).toHaveLength(2);
+    const section = charter.slice(charter.indexOf(heading) + heading.length);
+    expect(section).toMatch(/- \[[ xX]\] Enmienda de fidelidad al canvas aprobada por humano/);
+    expect(charter).toContain("- **Título en contenido (D-H).** El título de pantalla va dentro del contenido (eyebrow opcional y título); la cabecera nativa del stack queda con `title: ''` y solo aporta el botón de volver.");
+    expect(charter).toContain('- **Iconos reicon (D-I).** Los iconos de la interfaz son componentes de `reicon-react-native` coloreados con un token vía `useThemeColors`; ningún emoji hace de icono. La superficie de categoría acompaña a un icono y a un texto.');
+    expect(charter).toContain('- **Medidas del artboard.** Donde la escala no llega al valor del artboard se usa un token del `@theme` nombrado por su valor y listado en la regla 2 (tamaños y tracking) o en la regla 12 (radios); las clases con corchetes (regla 3) y los radios `2xl`, `lg`, `md` y `sm` (regla 12) siguen prohibidos, y las esquinas que no son cápsula siguen llevando `CONTINUOUS_CORNER`.');
+    expect(charter).not.toContain('- Títulos de pantalla: header del stack cuando exista, no Text suelto.');
+    expect(charter).not.toContain('la superficie siempre acompaña a un emoji y a un texto.');
+    expect(charter.split("- Títulos de pantalla: título en contenido y cabecera nativa con `title: ''` (Enmienda de fidelidad al canvas).")).toHaveLength(2);
+    expect(charter.split('la superficie siempre acompaña a un icono de reicon-react-native y a un texto.')).toHaveLength(2);
+    const sizes = charter.split('\n').find((line) => line.trimStart().startsWith('Tamaños de letra fuera de la escala de Tailwind'));
+    expect(sizes).toContain('`--text-11: 11px`');
+  });
+
+  it('B: enumera el tracking y los tres radios en sus reglas', () => {
+    const tracking = charter.split('\n').find((line) => line.trimStart().startsWith('Tracking fuera de la escala de Tailwind'));
+    expect(tracking).toContain('`--tracking-title: -0.02em`');
+    const radios = charter.slice(charter.indexOf('12. **Escala de radios**'), charter.indexOf('13. **Botón con cuerpo**'));
+    expect(radios).toContain('`rounded-14` (14 px)');
+    expect(radios).toContain('`rounded-16` (16 px)');
+    expect(radios).toContain('`rounded-22` (22 px)');
+  });
+
+  it('C: coloca la receta del chip seleccionado antes de Sin labio', () => {
+    const buttons = charter.slice(charter.indexOf('13. **Botón con cuerpo**'));
+    const chip = '    - **Chip seleccionado** (fidelidad al canvas, #178): cápsula `rounded-full bg-accent border-b-3 border-black/25`; el chip sin seleccionar no lleva labio.';
+    expect(buttons.split(chip)).toHaveLength(2);
+    expect(buttons.indexOf(chip)).toBeLessThan(buttons.indexOf('- **Sin labio**:'));
+  });
+});
+
 describe('#175 R2: enmienda de fidelidad al canvas', () => {
   const charter = readFileSync(join(process.cwd(), '..', 'docs', 'ui-guidelines.md'), 'utf8');
   const heading = '## Enmienda de fidelidad al canvas (2026-10-13)';
