@@ -9327,3 +9327,177 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
   `alerts-canvas-fidelity.test.ts` que #175 ya editó. Quien mergee después
   re-mide con `git merge origin/main`, nunca con rebase (los hashes de la
   trazabilidad).
+
+## #183 `mobile-account-client-validation` — Validación en cliente de las pantallas de cuenta — 2026-10-16
+
+- **Inicio**: 2026-10-15, sesión Frontend (leader), worktree
+  `Pet-Tracker-wt-183`, branch `feature/183-mobile-account-client-validation`.
+- **Base**: nace de la punta de `feature/172-mobile-account-screens-polish`
+  (ec508f88) y no de `origin/main`, porque toca las pantallas que #172 rehízo
+  y #172 aún no está mergeada. Cuando #172 entre en main, se mergea
+  `origin/main` aquí antes del handoff a Codex.
+- **Estado**: spec firmada en `3c7e20c0` (aprobada vía Notion, página
+  `3fa6115a9b27813fa1e7c36705b0a312`, `page_last_edited_at`
+  2026-10-15T14:20:34.100Z; «Rol actual» = Implementer). P1–P8 cerradas con
+  el valor que trae el texto, confirmado por el humano en la sesión.
+  `origin/main` mergeado en `4a4abfed` (#172, #173 y #167 dentro); las
+  pantallas de cuenta no cambiaron desde ec508f88, solo `catalog.ts` y el
+  design de idioma, que la spec ya mide en H0 (B4, B5).
+- **in_progress** (2026-10-15). `./init.sh` corrió después de que #174
+  acabara el suyo y salió con exit 1: backend verde, y en el móvil 10 rojos de
+  3389, todos `Exceeded timeout`, en pet-hero-header (3), meals-history (7) y
+  celebration (1). Ninguna de esas suites la toca #183, y la carga estaba en
+  17 con el jest de Codex en wt-174. Repetidas a solas: exit 0 y 131 passed.
+  Se clasifica como carga. El log rojo está en el scratchpad de la sesión
+  (`init-183-rojo-1.log`).
+- **H0** = el commit que trae
+  `progress/handoff_mobile-account-client-validation.md`. T0 medido: las 8
+  suites de la feature dan 300 passed, y las 12 anclas del handoff salen OK.
+  Hay dos derivas desde la base de la spec (`60dd9eda`). B4 es 402 (399, más
+  `+ 4 // #171 R12`, menos el `- 4 + 3, // #173 R13`), y B5 es §2.29, así que
+  #183 toma §2.30. El delta no cambia.
+- **Parada 1 de Codex en c1** (2026-10-15): la nota del leader decía que B4
+  era 398 y es 402, porque faltó sumar `+ 4 // #171 R12`. Su rojo era el
+  esperado. Se resuelve con la Reanudación 1 del handoff, sin cambiar la spec.
+  El c1 queda sin commitear en el árbol hasta que Codex lo commitee.
+- **Codex terminó** c1–c14, con trazabilidad e informe (HEAD `d3ac0fdd`; c15
+  no aplica). `./init.sh` del leader sobre `d3ac0fdd`, coordinado con Backend
+  y sites-99: exit 0. Backend unit da 187/1474, el móvil 111/3506, y e2e
+  30 suites pasan de 33 (468 tests de 476, 8 omitidos).
+- **Review ronda 1: RECHAZADO** (`00ed2bc4`). La producción es correcta y
+  Codex no se desvió, pero sobreviven 7 mutaciones. E1: «borrar
+  `<pantalla>-error`» de R3–R6 no tiene candado (RV8–RV11). E2: tres reglas
+  de R2 sin candado (apellidos `max` tras trim, país sin trim, confirmación
+  sin trim; RV5–RV7). La causa está en los candados que prescribe la spec, así
+  que hace falta una enmienda.
+- **Barrido exhaustivo** del reviewer (`ae7a50df`): H1–H15.
+- **Enmienda E1 redactada** (2026-10-15): requirements §Enmienda E1, el R2
+  ajustado, tasks §E1 y design.md:201. Son cinco commits solo de tests
+  (c16–c20), que nacen verdes, con sus parches y `sondas_e1.py` en
+  `progress/e1_mobile-account-client-validation/`. Todo se midió en un spike
+  fuera del árbol: 37 sondas con sus rojos exactos, typecheck y eslint
+  limpios, y los guards (252) verdes. Las tablas de sondas previas que
+  cambian con los `it` de E1 están re-medidas.
+- **Pre-check del reviewer** sobre E1 (`20965561`): lista para firma, sin
+  bloqueantes (P1–P4 anotadas en la review).
+- **E1 firmada** en `4046e500` (Notion, `page_last_edited_at`
+  2026-10-15T18:10:22.800Z; «Rol actual» = Implementer).
+- **Reanudación 2** en el handoff: c16–c20 por parche, con `sondas_e1.py` por
+  commit. Después, trazabilidad e informe. H0 sigue en `56a0b84a`.
+- **Ronda 2** (2026-10-15): Codex terminó la Reanudación 2 sin paradas
+  (`ccf7d49a`..`5043e8e2`). Los cinco test commiteados son idénticos byte a
+  byte a sus parches. `./init.sh` del leader sobre `5043e8e2`, coordinado con
+  Backend y sites-99: exit 0. Backend da 187/1474, el móvil 111/3517 (+11 `it`
+  de E1) y e2e 468/476 (8 omitidos). Reviewer ronda 2 **aprobado** en
+  `c493b149`, sin bloqueantes. O1: el frontmatter de `traceability.md` pasa a
+  approved en el cierre. O3: «66 casos» en `requirements.md:466` queda como
+  historia de c1–c15. `origin/main` (`dea11875`) ya está en la branch. PR #218 abierta.
+- **Merge de main** (`580e5920`, trae #174, PR #219): #174 mergeó primero, así
+  que el pacto lo aplica #183. Hubo dos conflictos, resueltos sumando las dos
+  features. En `language-provider.test.tsx` quedan `+ 1 // #174 R2` y luego
+  `+ 9, // #183 R1`, y los dos `describe` completos, byte a byte iguales a los
+  de cada padre. Lo resolvió el subagente `implementer` como excepción trivial
+  de cierre (informe §Cierre — merge de origin/main con #174). En
+  `specs/mobile-ui-language/design.md`, §2.30 queda para #174 y #183 pasa a
+  §2.31, que ningún test ancla. `--remerge-diff` solo trae esas resoluciones,
+  y las pantallas de cuenta y `account-rules` son idénticas a la punta del
+  veredicto. `./init.sh` del leader sobre `580e5920`: exit 0. Backend da
+  187/1474, infra 2/14, el móvil 112/3556 y e2e 468/476 (8 omitidos).
+- **Merge de main en el cierre** (`d9bc5357`, trae #175, PR #221): mismo
+  procedimiento que con #174. En `language-provider.test.tsx` quedan
+  `+ 7 // #175 R3`, `+ 1 // #174 R2` y `+ 9, // #183 R1`. Lo resolvió el
+  subagente `implementer` como excepción trivial de cierre (informe §Cierre —
+  merge de origin/main con #175). En `specs/mobile-ui-language/design.md`,
+  §2.31 queda para #175 y #183 pasa a §2.32. `./init.sh` del leader sobre
+  `d9bc5357`: exit 0. Backend da 187/1474, infra 2/14, el móvil 112/3611 y e2e
+  468/476 (8 omitidos).
+- **Smoke R8** firmado por el humano en `23d816df` (2026-10-15, OnePlus Nord
+  5). Se corrió sobre `35aee814`. #175 no toca las pantallas de cuenta, y las
+  pantallas y `account-rules` siguen idénticas a la punta del veredicto
+  (`c493b149`).
+- **Cierre** (2026-10-16): frontmatter de design, tasks y traceability en
+  approved (O1) y fila R8 de traceability con la firma. #183 pasa a `done` en
+  `feature_list.json`, se actualiza STATUS y Notion queda en Implementado /
+  Completado. La PR #218 la mergea el humano. Tras el merge, se borra el
+  worktree.
+- **Pedido del humano** (2026-10-15, tras firmar R21 de #172): validación en
+  cliente con mensaje claro en todos los inputs de cuenta, como el correo de
+  Crear cuenta, en lugar del error del servidor. Texto literal en
+  `feature_list.json` #183.
+- **Pacto con Backend (#174)**, 2026-10-15: quien mergee segundo hace merge
+  de `origin/main` (no rebase) y suma. #174 añade en `catalog.ts` una sola
+  clave (`alerts.dayAgo`; `alerts.daysAgo` solo cambia de valor), así que la
+  fórmula de `language-provider.test.tsx` gana `+ 1, // #174 R2`. En el
+  design de idioma, #174 crea `### §2.30 — Añadidos por #174 — Alertas fiel
+  al canvas` y anota la fila daysAgo con ` · valor cambiado por #174 (R2)`.
+  Si en H0 la última sección es §2.29, la §2.N de #183 también sale §2.30, y
+  quien mergee segundo la renumera. #183 no toca `src/screens/alerts/` ni
+  `alert-detail/`, y avisa a Backend antes de cualquier `init.sh` o suite
+  móvil completa mientras Codex implementa #174.
+- **Restricción de sites-99** (#178/#179): sus handoffs copian el mock
+  `HomeEntrance` de `src/screens/login/index.test.tsx` y el mock de reicon
+  (`...actual` + `mockIcon(testID)`) de `src/screens/register/index.test.tsx`.
+  #183 no los renombra, mueve ni borra; si hiciera falta, avisar a sites-99.
+
+## #179 `mobile-meal-schedule-canvas-fidelity` — Horario e Historial fieles al canvas — 2026-10-16
+
+- **Inicio**: 2026-10-14, sesión Frontend (leader), worktree
+  `Pet-Tracker-wt-179`, branch `feature/179-mobile-meal-schedule-canvas-fidelity`
+  desde `fb5b209f` (= `origin/main` `788d1f89` más el registro, el explore y el
+  reparto de #175, #178 y #179).
+- **Origen**: tercera de las tres partes en que el humano partió #175 el
+  2026-10-13 (respuestas literales: «Tres features (Recomendado)», «Título en
+  contenido (Recomendado)», «Iconos reicon (Recomendado)», «Píxel exacto, igual
+  que #174 (Recomendado)»). Lleva Horario e Historial al artboard del canvas;
+  #175 se quedó con Documentos y #178 con Recordatorios y Nuevo recordatorio.
+  Explore en `progress/explore_mobile-routine-canvas-fidelity.md`. Orden
+  acordado con la sesión de #181: #178 y #179 mergean primero.
+- **Spec**: R1–R13 automatizables y R14 prueba de humo en dev build de Android
+  con casilla propia. Firmada vía Notion el 2026-10-15 en `334fcebc` (página
+  `3f96115a9b278178ad02e5d0caf6ac68`, `Rol actual` = Implementer).
+- **Enmienda E1** (premisas falsas y candados que la spec firmada no
+  inventarió, `576cfebd`), firmada en `e82f1f35`. Al mergear #174 y #175
+  (`9c3aa7ae`, `44c9b7ec`) se actualizaron E1.1, E1.5 y E1.7 y se regeneró el
+  handoff; H0 = `0aaeda9d`.
+- **Implementación**: Codex CLI, c1–c26 en rojo/verde. Cinco paradas, todas
+  resueltas sin cambiar el diseño: c11 (la guarda `tracking-widest` del
+  handoff contaba 0 donde la pantalla aún tenía 1, `b7ab8696`); c13 (guarda
+  de 28 suites tras el swap de R6, resuelta por la Enmienda E2, etiquetas
+  `Text` y `className` de botones, firmada en `ce5a2df0`, con el commit de
+  corrección c12b); c13 otra vez (una sustitución propia de Codex con
+  sangría errónea falló antes de escribir); un flake ajeno de Perfil
+  (`shows the real account name and email`, 131 passed dos veces, procedimiento
+  «Flake de un it ajeno» autorizado); y las guardas K3 y K5 del handoff
+  (`fe62fc57`, H0 literal y 27 commits).
+- **Verificación del leader** sobre `c7b794db`: `./init.sh` exit 0. Backend
+  187/1474, infra 2/14, móvil 111/3533 y e2e 468/476 (8 omitidos).
+- **Review ronda 1: APROBADO** (`1c9a144e`), R1–R13 y las enmiendas E1 y E2,
+  sin bloqueantes. Observaciones: sangría de `_layout.tsx:99`, una línea de
+  `meal-schedule/index.tsx:53` por encima de 140 columnas y `traceability.md`
+  en `draft` (el leader la pasa a `approved` en el cierre).
+- **Smoke R14** firmado por el humano en `dd60f5c1` (AlexisSM377, 2026-10-16,
+  dev build de Android). El mismo commit marcó también la casilla de la
+  plantilla de la enmienda de la carta en `requirements.md` (línea 919),
+  inofensiva (#65 R19 acepta `[ xX]`).
+- **Merge de main con #183** (PR #218, `f0b636a4`): #183 mergeó antes, así que
+  #179 hizo la ronda de fusión (`4cb9afd5`, handoff `61d0cc6b`; con merge y no
+  rebase para conservar los hashes de la trazabilidad). Tres conflictos
+  resueltos con las líneas del handoff: el título «51 ocurrencias» y la suma de
+  `R6_FOOD` con `+ 3 // #179 R8` en `ui-language.test.ts`; `+ 5 // #179 R3`,
+  `- 2 // #179 R5` y `+ 9, // #183 R1` en `language-provider.test.tsx`; y en
+  `specs/mobile-ui-language/design.md`, §2.32 para #183 y §2.33 para #179. La
+  casilla de plantilla de §6.2 sigue sin marcar. Nota de Codex en el informe
+  (`04284a18`); M6 da los mismos 30 ficheros que el diff `58bf412c..dd60f5c1`.
+  `./init.sh` del leader sobre `04284a18`: exit 0. Backend 187/1474, infra
+  2/14, móvil 112/3661 y e2e 468/476 (8 omitidos).
+- **Review de la ronda de fusión: APROBADO**, sin bloqueantes. `R6_FOOD` = 67,
+  catálogo = 422 claves en en y es, `ALL_USES` = 554 y `SCREEN_FILES` = 33; 4
+  mutaciones plantadas en la zona fundida cayeron en rojo en el `it` esperado.
+- **Cierre** (2026-10-16): frontmatter de `design.md`, `tasks.md` y
+  `traceability.md` en approved, fila R14 de la trazabilidad con la firma,
+  #179 en `done` en `feature_list.json`, STATUS y Notion en Implementado /
+  Completado. La PR la mergea el humano. Tras el merge, se borra el worktree.
+- **Convivencia con #178**: ambas mergean primero. Quien mergee segundo hace
+  merge de `origin/main`, no rebase. Zonas compartidas: tokens
+  `--radius-14` de `global.css`, §2.32/§2.33 del registro de idioma, la
+  frase de radios de la carta y las filas ACF/CC de los candados de deriva.

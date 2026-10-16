@@ -1,5 +1,5 @@
 import { DeviceEventEmitter, Platform } from 'react-native';
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 
@@ -294,7 +294,7 @@ describe('#117 R5: enviar pasa la pantalla a «Revisa tu correo»', () => {
 
 describe('#117 R7: cada kind distinto de ok pinta su copy en forgot-error', () => {
   it.each<[ForgotPasswordState, string]>([
-    [{ kind: 'validation', errors: [{ path: 'email', message: 'Invalid email' }] }, 'Ingresa un correo electrónico válido'],
+    [{ kind: 'validation', errors: [{ path: 'email', message: 'Invalid email' }] }, 'Algo no cuadra en los datos. Revísalos y vuelve a intentarlo.'],
     [{ kind: 'rate-limited' }, 'Demasiados intentos. Inténtalo más tarde.'],
     [{ kind: 'error' }, 'Algo salió mal'],
     [{ kind: 'unreachable', message: 'network down' }, 'No se pudo conectar con el servidor'],
@@ -316,6 +316,14 @@ describe('#117 R7: cada kind distinto de ok pinta su copy en forgot-error', () =
     expect(screen.getByTestId('forgot-submit')).toBeDisabled();
   });
 
+  it('#183 R7: un 400 de validación en recuperar pinta el aviso genérico y ningún mensaje de campo', async () => {
+    mockForgotPassword.mockResolvedValue({ kind: 'validation', errors: [{ path: 'email', message: 'Invalid email' }] });
+    await renderRoute();
+    await submitForgot();
+    expect(await screen.findByTestId('forgot-error')).toHaveTextContent('Algo no cuadra en los datos. Revísalos y vuelve a intentarlo.');
+    expect(screen.queryAllByTestId(/^forgot-.+-message-row$/)).toHaveLength(0);
+  });
+
   it('un reintento desde el formulario que vuelve a fallar pinta el copy del nuevo kind', async () => {
     mockForgotPassword
       .mockResolvedValueOnce({ kind: 'error' })
@@ -330,9 +338,9 @@ describe('#117 R7: cada kind distinto de ok pinta su copy en forgot-error', () =
     await waitFor(() => expect(screen.getByTestId('forgot-submit')).not.toBeDisabled());
     await expectFormState('ana@example.com', 'Demasiados intentos. Inténtalo más tarde.');
     await fireEvent.press(screen.getByTestId('forgot-submit'));
-    await waitFor(() => expect(screen.getByTestId('forgot-error')).toHaveTextContent('Ingresa un correo electrónico válido'));
+    await waitFor(() => expect(screen.getByTestId('forgot-error')).toHaveTextContent('Algo no cuadra en los datos. Revísalos y vuelve a intentarlo.'));
     await waitFor(() => expect(screen.getByTestId('forgot-submit')).not.toBeDisabled());
-    await expectFormState('ana@example.com', 'Ingresa un correo electrónico válido');
+    await expectFormState('ana@example.com', 'Algo no cuadra en los datos. Revísalos y vuelve a intentarlo.');
   });
 
   it('un envío posterior que resuelve ok limpia forgot-error y pasa a «Revisa tu correo»', async () => {
@@ -428,7 +436,7 @@ describe('#117 R6: reenviar repite la misma petición', () => {
   });
 
   it.each<[ForgotPasswordState, string]>([
-    [{ kind: 'validation', errors: [{ path: 'email', message: 'Invalid email' }] }, 'Ingresa un correo electrónico válido'],
+    [{ kind: 'validation', errors: [{ path: 'email', message: 'Invalid email' }] }, 'Algo no cuadra en los datos. Revísalos y vuelve a intentarlo.'],
     [{ kind: 'error' }, 'Algo salió mal'],
     [{ kind: 'unreachable', message: 'network down' }, 'No se pudo conectar con el servidor'],
     [{ kind: 'missing-config' }, 'Algo salió mal'],
@@ -682,4 +690,65 @@ it('#172 R19: el espaciador empuja la CTA al pie en los dos estados', async () =
   await submitForgot();
   await waitFor(() => expect(screen.getByTestId('forgot-title')).toHaveTextContent('Revisa tu correo'));
   expectSpacer('forgot-resend');
+});
+
+describe('#183 R5: recuperar valida en cliente', () => {
+  it.each<[string, string]>([
+    ['alex.example.com', 'Ingresa un correo electrónico válido'],
+    ['alex@example.c', 'Ingresa un correo electrónico válido'],
+    ['ñu@example.com', 'Ingresa un correo electrónico válido'],
+    ['a'.repeat(309) + '@example.com', 'Usa 320 caracteres o menos'],
+  ])('#183 R5: «%s» no llama a la API y marca forgot-email con «%s»', async (email, message) => {
+    mockForgotPassword.mockResolvedValue({ kind: 'error' });
+    await renderRoute();
+    await submitForgot(email);
+    await waitFor(() => expect(screen.getByTestId('forgot-email-message')).toHaveTextContent(message));
+    const text = screen.getByTestId('forgot-email-message');
+    const row = screen.getByTestId('forgot-email-message-row');
+    expect(row.children).toEqual([within(row).getByTestId('icon-alert-circle'), text]);
+    expect(text.props.selectable).toBe(true);
+    expect(screen.queryByTestId('forgot-error')).toBeNull();
+    expect(screen.getByTestId('forgot-title')).toHaveTextContent('Recuperar contraseña');
+    expect(screen.getByTestId('forgot-submit')).not.toBeDisabled();
+    expect(mockForgotPassword).not.toHaveBeenCalled();
+  });
+
+  it('#183 R5: un correo de 320 caracteres pasa como en el DTO y llama a la API', async () => {
+    mockForgotPassword.mockResolvedValue({ kind: 'ok' });
+    await renderRoute();
+    const email = 'a'.repeat(308) + '@example.com';
+    await submitForgot(email);
+    expect(await screen.findByText('Revisa tu correo')).toBeVisible();
+    expect(mockForgotPassword).toHaveBeenCalledWith(apiUrl, { email });
+  });
+
+  it('#183 R5: corregir el correo quita el mensaje y envía el recortado', async () => {
+    mockForgotPassword.mockResolvedValue({ kind: 'error' });
+    await renderRoute();
+    await submitForgot('alex.example.com');
+    await waitFor(() => expect(screen.getByTestId('forgot-email-message')).toHaveTextContent('Ingresa un correo electrónico válido'));
+    mockForgotPassword.mockResolvedValue({ kind: 'ok' });
+    await submitForgot('  Ana@Example.com ');
+    expect(await screen.findByText('Revisa tu correo')).toBeVisible();
+    expect(screen.queryByTestId('forgot-email-message')).toBeNull();
+    expect(mockForgotPassword).toHaveBeenCalledTimes(1);
+    expect(mockForgotPassword).toHaveBeenCalledWith(apiUrl, { email: 'Ana@Example.com' });
+  });
+
+  it('#183 R5: un correo inválido tras un aviso general lo retira, y el corregido quita el mensaje y vuelve a llamar', async () => {
+    mockForgotPassword.mockResolvedValue({ kind: 'error' });
+    await renderRoute();
+    await submitForgot();
+    expect(await screen.findByTestId('forgot-error')).toHaveTextContent('Algo salió mal');
+    await waitFor(() => expect(screen.getByTestId('forgot-submit')).not.toBeDisabled());
+    await submitForgot('alex.example.com');
+    await waitFor(() => expect(screen.getByTestId('forgot-email-message')).toHaveTextContent('Ingresa un correo electrónico válido'));
+    expect(screen.queryByTestId('forgot-error')).toBeNull();
+    expect(mockForgotPassword).toHaveBeenCalledTimes(1);
+    await submitForgot('  Ana@Example.com ');
+    await waitFor(() => expect(screen.getByTestId('forgot-error')).toHaveTextContent('Algo salió mal'));
+    expect(screen.queryByTestId('forgot-email-message')).toBeNull();
+    expect(mockForgotPassword).toHaveBeenCalledTimes(2);
+    expect(mockForgotPassword).toHaveBeenLastCalledWith(apiUrl, { email: 'Ana@Example.com' });
+  });
 });

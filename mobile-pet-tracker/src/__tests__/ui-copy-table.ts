@@ -14,7 +14,6 @@ export const R1_AUTH: UseRow[] = [
   { file: 'src/screens/login/index.tsx', key: 'login.createAccount' },
   { file: 'src/screens/login/index.tsx', key: 'login.forgotPassword' },
   { file: 'src/screens/login/index.tsx', key: 'login.pingoGreeting' }, // #167 R6
-  { file: 'src/screens/forgot/index.tsx', key: 'forgot.invalidEmail' }, // #117 R7
   { file: 'src/screens/forgot/index.tsx', key: 'forgot.tooManyAttempts' }, // #117 R7
   { file: 'src/screens/forgot/index.tsx', key: 'common.cannotReachServer' }, // #117 R7
   { file: 'src/screens/forgot/index.tsx', key: 'common.somethingWentWrong' }, // #117 R7
@@ -42,8 +41,19 @@ export const R1_AUTH: UseRow[] = [
   { file: 'src/screens/register/index.tsx', key: 'register.createAccount' },
   { file: 'src/components/password-input.tsx', key: 'common.showPassword' }, // #172 R16
   { file: 'src/components/password-input.tsx', key: 'common.hidePassword' }, // #172 R16
-  { file: 'src/screens/register/index.tsx', key: 'forgot.invalidEmail' }, // #172 R16
   { file: 'src/components/back-button.tsx', key: 'common.back' }, // #172 R16
+  { file: 'src/utils/account-rules.ts', key: 'forgot.invalidEmail' }, // #183 R2
+  { file: 'src/utils/account-rules.ts', key: 'validation.firstNameRequired' }, // #183 R2
+  { file: 'src/utils/account-rules.ts', key: 'validation.lastNameRequired' }, // #183 R2
+  { file: 'src/utils/account-rules.ts', key: 'validation.passwordRequired' }, // #183 R2
+  { file: 'src/utils/account-rules.ts', key: 'validation.tooShort' }, // #183 R2
+  { file: 'src/utils/account-rules.ts', key: 'validation.tooLong' }, // #183 R2
+  { file: 'src/utils/account-rules.ts', key: 'validation.passwordsDontMatch' }, // #183 R2
+  { file: 'src/utils/account-rules.ts', key: 'validation.countryLength' }, // #183 R2
+  { file: 'src/utils/account-rules.ts', key: 'validation.countryLetters' }, // #183 R2
+  { file: 'src/screens/login/index.tsx', key: 'validation.checkDetails' }, // #183 R7
+  { file: 'src/screens/register/index.tsx', key: 'validation.checkDetails' }, // #183 R7
+  { file: 'src/screens/forgot/index.tsx', key: 'validation.checkDetails' }, // #183 R7
 ];
 
 export const R2_TABS: UseRow[] = [
@@ -179,7 +189,7 @@ export const R5_HEALTH: UseRow[] = [
 ];
 
 export const R6_FOOD: UseRow[] = [
-  { file: 'src/app/_layout.tsx', key: 'mealSchedule.mealSchedule' }, // #95 R4
+  { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.mealSchedule' }, // #179 R4
   { file: 'src/app/(tabs)/food.tsx', key: 'food.food' },
   { file: 'src/app/(tabs)/food.tsx', key: 'common.somethingWentWrong' },
   { file: 'src/app/(tabs)/food.tsx', key: 'common.retry' },
@@ -213,8 +223,8 @@ export const R6_FOOD: UseRow[] = [
   { file: 'src/screens/meal-schedule/index.tsx', key: 'common.somethingWentWrong' },
   { file: 'src/screens/meal-schedule/index.tsx', key: 'common.retry' },
   { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.dailyTarget' },
-  { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.dailyGrams' },
-  { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.mealsPerDay' },
+  { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.perDay' }, // #179 R5
+  { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.mealsPerDayUnit' }, // #179 R5
   { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.timesAndPortions' },
   { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.noMealPlanYet' },
   { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.generatePlan' },
@@ -232,7 +242,10 @@ export const R6_FOOD: UseRow[] = [
   { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.errorTimeNotInPlan' },
   { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.errorDuplicateTime' },
   { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.errorMealLimit' },
-  { file: 'src/app/_layout.tsx', key: 'mealsHistory.mealsHistory' }, // #105 R5
+  { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.activity' }, // #179 R8
+  { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.condition' }, // #179 R8
+  { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.food' }, // #179 R8
+  { file: 'src/screens/meals-history/index.tsx', key: 'mealsHistory.mealsHistory' }, // #179 R9
   { file: 'src/app/(tabs)/food.tsx', key: 'food.mealsHistory' }, // #105 R5
   { file: 'src/app/(tabs)/food.tsx', key: 'food.mealsHistoryLinkSubtitle' }, // #105 R5
   { file: 'src/screens/meals-history/index.tsx', key: 'mealsHistory.previousMonth' }, // #105 R5
@@ -484,6 +497,7 @@ export const R11_RESET: UseRow[] = [
   { file: 'src/screens/reset-password/index.tsx', key: 'resetPassword.confirmNewPassword' },
   { file: 'src/screens/reset-password/index.tsx', key: 'resetPassword.updatePassword' },
   { file: 'src/screens/reset-password/index.tsx', key: 'resetPassword.backToSignIn' }, // #172 R19
+  { file: 'src/screens/reset-password/index.tsx', key: 'validation.checkDetails' }, // #183 R7
 ];
 
 export const R12_ALERTS: UseRow[] = [

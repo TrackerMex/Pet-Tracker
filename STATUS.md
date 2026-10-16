@@ -1,10 +1,10 @@
 # pet-tracker — Status
 
-**Última actualización**: 2026-10-15
-**Features completadas**: 164/181 (`feature_list.json`)
-**En progreso**: ninguna en esta rama. #175 cerrada en `feature/175-mobile-docs-canvas-fidelity`, PR pendiente de merge humano.
+**Última actualización**: 2026-10-16
+**Features completadas**: 166/184 (`feature_list.json`)
+**En progreso**: ninguna en esta rama. #179 cerrada en `feature/179-mobile-meal-schedule-canvas-fidelity`, PR pendiente de merge humano. #183 y #175 ya están en `main` (PRs #218 y #221).
 
-**Pendientes**: 17 (#60, #129, #144, #150, #151, #154, #160, #163, #164, #165, #176, #177, #178, #179, #180, #181 y #184). **#175 `mobile-docs-canvas-fidelity` cerrada**: Documentos como su artboard del canvas. Título en el contenido, chips de filtro por categoría (los tipos fuera de catálogo caen en «Otros»), fila con mosaico de icono, nombre en una línea, fecha formateada y chevron, zona de subida al final, entrada escalonada y candados de deriva (R1-R10). Codex trabajó c1-c20 más c10b y paró tres veces: c11 (enmienda E2, inventarios de #173), S5 (el handoff omitía el `-t` de la sonda) y la fusión con #174 (enmienda E3, filas `text-15` y `tracking-title` del inventario de Alertas). El reviewer aprobó R1-R10 sobre `4b2d7e40` y la ronda de fusión (`c53175a7`); el humano firmó el smoke R11 en `e1741bb1`. Móvil 110/3444 → 111/3483 con #174 dentro.
+**Pendientes**: 18 (#60, #129, #144, #150, #151, #154, #160, #163, #164, #165, #176, #177, #178, #180, #181, #184, #185 y #186). **#185 `mobile-docs-upload-form-polish` y #186 `mobile-forms-validation-global` registradas** (2026-10-15, pedido del humano al firmar R11 de #175), sin spec y sin arrancar: la subida de documentos y los errores de validación con componentes globales en toda la app. **#179 `mobile-meal-schedule-canvas-fidelity` cerrada**: Horario e Historial como sus artboards del canvas. Título en el contenido y resumen, filas con su mosaico, acciones y perfil en píldoras (Horario), y marco, calendario con celdas y panel del día (Historial). Tokens nuevos del artboard, enmienda de fidelidad en la carta y candados de deriva (R1-R13). Codex trabajó c1-c26 y paró cinco veces: c11 (guarda de `tracking-widest` del handoff), c13 (Enmienda E2, etiquetas `Text` y `className` de botones), c13 otra vez (una sustitución propia que falló antes de escribir), un flake ajeno de Perfil (procedimiento autorizado) y las guardas K3 y K5 del handoff. La Enmienda E1 (premisas falsas y candados que la spec firmada no inventarió) y la E2 las firmó el humano (`e82f1f35`, `ce5a2df0`). El reviewer aprobó R1-R13 sobre `c7b794db` (`1c9a144e`) y la ronda de fusión con main (#183) sobre `04284a18`; el humano firmó el smoke R14 en `dd60f5c1`. Móvil 111/3533 en la rama y 112/3661 con #183 dentro (`04284a18`).
 
 **En producción**: no
 

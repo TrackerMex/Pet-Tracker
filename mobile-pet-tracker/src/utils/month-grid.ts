@@ -27,7 +27,7 @@ export function monthGrid(month: string): (string | null)[] {
 export function weekdayHeaders(locale: string): string[] {
   return Array.from({ length: 7 }, (_, index) =>
     new Date(Date.UTC(2024, 0, 1 + index)).toLocaleDateString(locale, {
-      weekday: 'short', timeZone: 'UTC',
+      weekday: 'narrow', timeZone: 'UTC',
     }),
   );
 }

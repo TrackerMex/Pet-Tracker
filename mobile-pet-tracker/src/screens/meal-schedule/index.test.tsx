@@ -92,6 +92,19 @@ jest.mock('@expo/ui/community/datetime-picker', () => {
   };
 });
 
+const mockHomeEntrance = jest.fn<void, [import('react-native').ViewProps & { index: number }]>();
+
+jest.mock('../home/home-entrance', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return {
+    HomeEntrance(props: import('react-native').ViewProps & { index: number }) {
+      mockHomeEntrance(props);
+      return React.createElement(View, props);
+    },
+  };
+});
+
 jest.mock('react-native-safe-area-context', () => ({
   ...jest.requireActual('react-native-safe-area-context'),
   useSafeAreaInsets: () => ({ top: 40, right: 0, bottom: 24, left: 0 }),
@@ -100,13 +113,13 @@ jest.mock('react-native-safe-area-context', () => ({
 jest.mock('reicon-react-native', () => {
   const { View } = jest.requireActual('react-native');
   const icon = (testID: string) =>
-    function MockIcon({ color }: { color?: string }) {
-      return <View testID={testID} style={{ color }} />;
+    function MockIcon({ color, size }: { color?: string; size?: number }) {
+      return <View testID={testID} style={{ color }} {...{ size }} />;
     };
 
   return {
     Clock: icon('meal-schedule-icon-clock'),
-    ForkKnife: icon('meal-schedule-icon-fork-knife'),
+    Sparkles: icon('meal-schedule-icon-sparkles'),
   };
 });
 
@@ -194,10 +207,10 @@ function SelectionProbe() {
   return null;
 }
 
-async function renderMealSchedule(selected = true) {
+async function renderMealSchedule(selected = true, language: 'es' | 'en' = 'es') {
   return renderWithProviders(
     <HeroUINativeProvider>
-      <LanguageProvider initial="es">
+      <LanguageProvider initial={language}>
         <SelectedPetProvider>
           {selected ? <SelectionProbe /> : null}
           <MealScheduleScreen />
@@ -268,7 +281,7 @@ describe('R7: meal schedule muestra horarios y perfil', () => {
     );
     expect(
       screen.getByTestId('screen-meal-schedule').props.contentContainerStyle,
-    ).toEqual({ padding: 24, gap: 16, paddingBottom: 48 });
+    ).toEqual({ paddingHorizontal: 20, paddingTop: 24, gap: 14, paddingBottom: 48 });
 
   });
 
@@ -285,9 +298,9 @@ describe('R7: meal schedule muestra horarios y perfil', () => {
       expect(screen.getByTestId('meal-schedule-summary')).toBeVisible(),
     );
     const summary = within(screen.getByTestId('meal-schedule-summary'));
-    expect(summary.getByText('656 kcal')).toBeVisible();
-    expect(summary.getByText('2 comidas / día')).toBeVisible();
-    expect(summary.getByText('187 g / día')).toBeVisible();
+    expect(summary.getByText('656')).toBeVisible();
+    expect(summary.getByText('comidas / día')).toBeVisible();
+    expect(summary.getByText('187 g')).toBeVisible();
     expect(
       screen.getAllByTestId(/^meal-time-row-/).map(({ props }) => props.testID),
     ).toEqual(['meal-time-row-0', 'meal-time-row-1']);
@@ -297,9 +310,9 @@ describe('R7: meal schedule muestra horarios y perfil', () => {
 
     const profile = within(screen.getByTestId('nutrition-profile-section'));
     expect(profile.getByText('Perfil nutricional')).toBeVisible();
-    expect(profile.getByText('dry')).toBeVisible();
-    expect(profile.getByText('350 kcal / 100 g')).toBeVisible();
-    expect(profile.getByText('medium')).toBeVisible();
+    expect(profile.getByTestId('nutrition-profile-food')).toHaveTextContent('Alimento dry 350 kcal/100 g');
+    expect(profile.getByTestId('nutrition-profile-condition')).toHaveTextContent('Condición 5/9');
+    expect(profile.getByTestId('nutrition-profile-activity')).toHaveTextContent('Actividad medium');
     expect(screen.getByTestId('profile-allergies')).toHaveTextContent(
       'chicken, soy',
     );
@@ -500,7 +513,7 @@ describe('#62 R5: el título de card usa un único tratamiento', () => {
 
     expect(
       (await screen.findByTestId('nutrition-profile-title')).props.className,
-    ).toBe('text-base font-bold text-foreground');
+    ).toBe('mt-1 text-17 font-extrabold text-foreground');
   });
 });
 
@@ -543,7 +556,7 @@ describe('#95 R5: la pantalla no dibuja cabecera propia', () => {
     await waitFor(() => expect(screen.getByTestId('screen-meal-schedule')).toBeVisible());
     await screen.findByTestId('meal-schedule-summary');
     expect(screen.queryByTestId('meal-schedule-back')).toBeNull();
-    expect(screen.queryByText(es['mealSchedule.mealSchedule'])).toBeNull();
+    expect(screen.getAllByText(es['mealSchedule.mealSchedule'])).toHaveLength(1);
   });
 });
 
@@ -557,21 +570,21 @@ describe('#147 R4: solo el owner ve Editar y Añadir comida', () => {
   it('el owner ve Editar en cada fila y Añadir comida bajo la lista', async () => {
     mockGetPet.mockResolvedValue(petState('owner'));
     await renderMealSchedule();
-    await waitFor(() => expect(childTestIds(screen.getByTestId('meal-time-row-1'))).toEqual([undefined, undefined, undefined, 'meal-time-edit-1']));
-    expect(childTestIds(screen.getByTestId('meal-time-row-0'))).toEqual([undefined, undefined, undefined, 'meal-time-edit-0']);
+    await waitFor(() => expect(childTestIds(screen.getByTestId('meal-time-row-1'))).toEqual([undefined, undefined, 'meal-time-edit-1']));
+    expect(childTestIds(screen.getByTestId('meal-time-row-0'))).toEqual([undefined, undefined, 'meal-time-edit-0']);
     expect(mockGetPet).toHaveBeenCalledWith('http://example.test/v1', 'jwt-token', 'pet-1');
-    expect(childTestIds(screen.getByTestId('meal-times-section'))).toEqual([undefined, 'meal-time-row-0', 'meal-time-row-1', 'add-meal-time-button']);
+    expect(childTestIds(screen.getByTestId('meal-times-section'))).toEqual([undefined, 'meal-time-entry-0', 'meal-time-entry-1']);
     for (const [index, label] of [[0, 'Editar horario de las 07:30'], [1, 'Editar horario de las 19:30']] as const) {
       const button = within(screen.getByTestId(`meal-time-row-${index}`)).getByTestId(`meal-time-edit-${index}`);
       expect(button.props.accessibilityLabel).toBe(label);
       expect(within(button).getByText('Editar')).toBeVisible();
-      expect(button.props.className.split(' ')).toEqual(expect.arrayContaining(['min-h-11', 'rounded-xl', 'bg-accent-soft']));
-      expect(within(button).getByText('Editar').props.className.split(' ')).toEqual(expect.arrayContaining(['font-semibold', 'text-accent-strong']));
+      expect(button.props.className.split(' ')).toEqual(expect.arrayContaining(['h-9.75', 'rounded-10', 'border-2', 'border-b-5', 'border-lip-gray', 'bg-surface']));
+      expect(within(button).getByText('Editar').props.className.split(' ')).toEqual(expect.arrayContaining(['text-13', 'font-extrabold', 'text-foreground']));
     }
     const add = screen.getByTestId('add-meal-time-button');
     expect(within(add).getByText('Añadir comida')).toBeVisible();
-    expect(add.props.className.split(' ')).toEqual(expect.arrayContaining(['rounded-xl', 'bg-accent-soft']));
-    expect(within(add).getByText('Añadir comida').props.className.split(' ')).toEqual(expect.arrayContaining(['font-bold', 'text-accent-strong']));
+    expect(add.props.className.split(' ')).toEqual(expect.arrayContaining(['h-13.5', 'rounded-14', 'border-2', 'border-b-6', 'border-lip-gray', 'bg-surface']));
+    expect(within(add).getByText('Añadir comida').props.className.split(' ')).toEqual(expect.arrayContaining(['text-15', 'font-extrabold', 'text-foreground']));
   });
 
   it.each(['family', 'walker', 'vet'] as const)('%s no ve controles de edición', async (role) => {
@@ -579,9 +592,9 @@ describe('#147 R4: solo el owner ve Editar y Añadir comida', () => {
     const { queryClient } = await renderMealSchedule();
     await waitFor(() => {
       expect(queryClient.getQueryData(['pets', 'detail', 'pet-1'])).toEqual(petState(role));
-      expect(childTestIds(screen.getByTestId('meal-times-section'))).toEqual([undefined, 'meal-time-row-0', 'meal-time-row-1']);
+      expect(childTestIds(screen.getByTestId('meal-times-section'))).toEqual([undefined, 'meal-time-entry-0', 'meal-time-entry-1']);
       for (const index of [0, 1]) {
-        expect(childTestIds(screen.getByTestId(`meal-time-row-${index}`))).toEqual([undefined, undefined, undefined]);
+        expect(childTestIds(screen.getByTestId(`meal-time-row-${index}`))).toEqual([undefined, undefined]);
         expect(screen.queryByTestId(`meal-time-edit-${index}`)).toBeNull();
       }
       expect(screen.queryByTestId('add-meal-time-button')).toBeNull();
@@ -592,11 +605,11 @@ describe('#147 R4: solo el owner ve Editar y Añadir comida', () => {
     mockGetPet.mockReturnValue(pending<PetState>());
     await renderMealSchedule();
     await waitFor(() => {
-      expect(childTestIds(screen.getByTestId('meal-times-section'))).toEqual([undefined, 'meal-time-row-0', 'meal-time-row-1']);
+      expect(childTestIds(screen.getByTestId('meal-times-section'))).toEqual([undefined, 'meal-time-entry-0', 'meal-time-entry-1']);
       expect(screen.getByTestId('meal-time-row-1')).toBeVisible();
       expect(mockGetPet).toHaveBeenCalled();
       for (const index of [0, 1]) {
-        expect(childTestIds(screen.getByTestId(`meal-time-row-${index}`))).toEqual([undefined, undefined, undefined]);
+        expect(childTestIds(screen.getByTestId(`meal-time-row-${index}`))).toEqual([undefined, undefined]);
         expect(screen.queryByTestId(`meal-time-edit-${index}`)).toBeNull();
       }
       expect(screen.queryByTestId('add-meal-time-button')).toBeNull();
@@ -608,9 +621,9 @@ describe('#147 R4: solo el owner ve Editar y Añadir comida', () => {
     const { queryClient } = await renderMealSchedule();
     await waitFor(() => {
       expect(queryClient.getQueryData(['pets', 'detail', 'pet-1'])).toEqual({ kind: 'error' });
-      expect(childTestIds(screen.getByTestId('meal-times-section'))).toEqual([undefined, 'meal-time-row-0', 'meal-time-row-1']);
+      expect(childTestIds(screen.getByTestId('meal-times-section'))).toEqual([undefined, 'meal-time-entry-0', 'meal-time-entry-1']);
       for (const index of [0, 1]) {
-        expect(childTestIds(screen.getByTestId(`meal-time-row-${index}`))).toEqual([undefined, undefined, undefined]);
+        expect(childTestIds(screen.getByTestId(`meal-time-row-${index}`))).toEqual([undefined, undefined]);
         expect(screen.queryByTestId(`meal-time-edit-${index}`)).toBeNull();
       }
       expect(screen.queryByTestId('add-meal-time-button')).toBeNull();
@@ -969,7 +982,7 @@ describe('#147 R8: cada error del contrato tiene su mensaje', () => {
     const error = screen.getByTestId('meal-time-error');
     expect(error.props.selectable).toBe(true);
     expect(error.props.className).toBe('text-danger');
-    expect(childTestIds(screen.getByTestId('meal-times-section'))).toEqual([undefined, 'meal-time-row-0', 'meal-time-row-1', 'meal-time-error', 'add-meal-time-button']);
+    expect(childTestIds(screen.getByTestId('meal-times-section'))).toEqual([undefined, 'meal-time-entry-0', 'meal-time-entry-1', 'meal-time-error']);
     await waitFor(() => expect(screen.getByTestId('meal-time-edit-0').props.accessibilityState).not.toEqual(expect.objectContaining({ disabled: true })));
     expect(mockGetNutritionPlan).toHaveBeenCalledTimes(1); // #147 E2.2: ningún refetch si no es ok
     expect(mockGetPet).toHaveBeenCalledTimes(1);
@@ -1048,5 +1061,303 @@ describe('#147 R8: cada error del contrato tiene su mensaje', () => {
     expect(screen.queryByTestId('meal-time-error')).toBeNull();
     expect(mockGetNutritionPlan).toHaveBeenCalledTimes(1);
     expect(mockGetPet).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('#179 R4: marco y título en contenido', () => {
+  beforeEach(() => {
+    mockGetNutritionPlan.mockResolvedValue({ kind: 'not-found' });
+    mockGetNutritionProfile.mockResolvedValue({ kind: 'not-found' });
+  });
+
+  function expectHeading() {
+    const heading = screen.getByTestId('meal-schedule-heading');
+    expect(heading).toHaveTextContent('Horario de comidas');
+    expect(heading).toHaveProp('accessibilityRole', 'header');
+    expect(heading).toHaveProp('className', 'text-2xl font-black tracking-title text-foreground');
+  }
+
+  it('muestra el título antes del contenido mientras carga', async () => {
+    mockGetNutritionPlan.mockReturnValue(pending<NutritionPlanState>());
+    mockGetNutritionProfile.mockReturnValue(pending<NutritionProfileState>());
+    await renderMealSchedule();
+    await screen.findByTestId('meal-schedule-loading');
+    expectHeading();
+    expect(screen.getByTestId('meal-schedule-loading')).toHaveProp('className', 'gap-3.5');
+    expect(screen.getByTestId('screen-meal-schedule')).toHaveProp('contentContainerStyle', {
+      paddingHorizontal: 20, paddingTop: 24, gap: 14, paddingBottom: 48,
+    });
+  });
+
+  it('conserva el título cuando falla la carga', async () => {
+    mockGetNutritionPlan.mockResolvedValue({ kind: 'error' });
+    await renderMealSchedule();
+    await screen.findByTestId('meal-schedule-error');
+    expectHeading();
+  });
+
+  it('muestra un único título con el plan cargado', async () => {
+    mockGetNutritionPlan.mockResolvedValue({ kind: 'ok', plan: makePlan() });
+    mockGetNutritionProfile.mockResolvedValue({ kind: 'ok', profile: makeProfile() });
+    await renderMealSchedule();
+    await screen.findByTestId('meal-schedule-summary');
+    expectHeading();
+    expect(screen.getAllByText('Horario de comidas')).toHaveLength(1);
+  });
+
+  it('conserva el título cuando no hay plan', async () => {
+    await renderMealSchedule();
+    await screen.findByTestId('meal-schedule-empty');
+    expectHeading();
+  });
+});
+
+describe('#179 R5: resumen del artboard', () => {
+  beforeEach(() => {
+    mockGetNutritionPlan.mockResolvedValue({ kind: 'ok', plan: makePlan() });
+    mockGetNutritionProfile.mockResolvedValue({ kind: 'not-found' });
+  });
+
+  it('compone el resumen con eyebrow y tres columnas de valor y etiqueta', async () => {
+    await renderMealSchedule();
+    const summary = await screen.findByTestId('meal-schedule-summary');
+    expect(summary).toHaveProp('className', 'gap-2 rounded-24 bg-accent border-b-5 border-black/25 p-4');
+    expect(summary).toHaveStyle({ borderCurve: 'continuous' });
+    expect(summary.children).toHaveLength(2);
+    const eyebrow = summary.children[0];
+    const columns = summary.children[1];
+    if (typeof eyebrow === 'string' || typeof columns === 'string') throw new Error('Expected summary nodes');
+    expect(eyebrow).toHaveTextContent('Objetivo diario');
+    expect(eyebrow).toHaveProp('className', 'text-xs font-extrabold uppercase tracking-caps text-accent-foreground');
+    expect(columns).toHaveProp('className', 'flex-row gap-2');
+    expect(columns.children).toHaveLength(3);
+    for (const [index, value, label] of [[0, '656', 'kcal'], [1, '187 g', '/ día'], [2, '2', 'comidas / día']] as const) {
+      const column = columns.children[index];
+      if (typeof column === 'string') throw new Error('Expected column');
+      expect(column).toHaveProp('className', 'flex-1');
+      expect(column.children).toHaveLength(2);
+      const valueNode = within(column).getByText(value);
+      const labelNode = within(column).getByText(label);
+      expect(valueNode).toHaveProp('className', 'text-22 font-black text-accent-foreground');
+      expect(labelNode).toHaveProp('className', 'text-xs font-normal text-accent-foreground');
+      expect(column.children[0]).toBe(valueNode);
+      expect(column.children[1]).toBe(labelNode);
+    }
+    expect(mockHomeEntrance).toHaveBeenCalledWith(expect.objectContaining({ testID: 'meal-schedule-summary-entry', index: 0 }));
+    expect(screen.queryByText('656 kcal')).toBeNull();
+    expect(screen.queryByText('187 g / día')).toBeNull();
+    expect(screen.queryByText('2 comidas / día')).toBeNull();
+    expect(within(summary).queryByTestId('meal-schedule-icon-fork-knife')).toBeNull();
+  });
+
+  it('pinta los valores del segundo plan en sus propias columnas', async () => {
+    mockGetNutritionPlan.mockResolvedValue({ kind: 'ok', plan: makePlan({
+      merKcal: 1200, dailyGrams: 300, mealsPerDay: 3, mealTimes: ['07:30', '12:00', '19:30'],
+    }) });
+    await renderMealSchedule();
+    const summary = await screen.findByTestId('meal-schedule-summary');
+    const columns = summary.children[1];
+    if (typeof columns === 'string') throw new Error('Expected columns');
+    expect(columns.children).toHaveLength(3);
+    for (const [index, value] of [[0, '1200'], [1, '300 g'], [2, '3']] as const) {
+      const column = columns.children[index];
+      if (typeof column === 'string') throw new Error('Expected column');
+      expect(within(column).getByText(value)).toBeVisible();
+    }
+  });
+});
+
+describe('#179 R6: filas del artboard', () => {
+  beforeEach(() => {
+    mockGetNutritionPlan.mockResolvedValue({ kind: 'ok', plan: makePlan() });
+    mockGetNutritionProfile.mockResolvedValue({ kind: 'ok', profile: makeProfile() });
+  });
+
+  function expectRows(owner: boolean) {
+    const section = screen.getByTestId('meal-times-section');
+    expect(section).toHaveProp('className', 'gap-3.5');
+    const heading = section.children[0];
+    if (typeof heading === 'string') throw new Error('Expected heading');
+    expect(heading).toHaveTextContent('Horarios y porciones');
+    expect(heading).toHaveProp('className', 'mt-1 text-17 font-extrabold text-foreground');
+    for (const [index, time] of [[0, '07:30'], [1, '19:30']] as const) {
+      const row = screen.getByTestId(`meal-time-row-${index}`);
+      expect(row.children).toHaveLength(owner ? 3 : 2);
+      expect(row.props.className.split(' ')).toEqual(expect.arrayContaining([
+        'rounded-card', 'border', 'border-border', 'bg-surface', 'px-3.5', 'flex-row', 'items-center', 'gap-3', 'py-3',
+      ]));
+      expect(row.props.className.split(' ')).not.toContain('py-1');
+      expect(row.props.className).not.toContain('shadow');
+      const tile = row.children[0];
+      const text = row.children[1];
+      if (typeof tile === 'string' || typeof text === 'string') throw new Error('Expected row nodes');
+      expect(tile).toHaveProp('className', 'size-10.5 items-center justify-center rounded-14 bg-category-amber');
+      expect(tile).toHaveStyle({ borderCurve: 'continuous' });
+      expect(within(tile).getByTestId('meal-schedule-icon-clock')).toHaveProp('size', 20);
+      expect(text).toHaveProp('className', 'flex-1');
+      expect(text.children).toHaveLength(2);
+      expect(within(text).getByText(time)).toHaveProp('className', 'text-lg font-black text-foreground');
+      expect(within(text).getByText('94 g')).toHaveProp('className', 'text-13 font-semibold text-muted');
+      expect(text.children[0]).toHaveTextContent(time);
+      expect(text.children[1]).toHaveTextContent('94 g');
+      expect(mockHomeEntrance).toHaveBeenCalledWith(expect.objectContaining({ testID: `meal-time-entry-${index}`, index: index + 1 }));
+      if (owner) {
+        expect(row.children[2]).toHaveProp('testID', `meal-time-edit-${index}`);
+        const edit = within(row).getByTestId(`meal-time-edit-${index}`);
+        expect((edit.props.className as string).startsWith('pressable-feedback__root button__root ')).toBe(true);
+        expect((edit.props.className as string).endsWith(' h-9.75 rounded-10 border-2 border-b-5 border-lip-gray bg-surface px-3.5')).toBe(true);
+        expect(edit).toHaveProp('hitSlop', { top: 6, bottom: 6, left: 6, right: 6 });
+        expect(within(edit).getByText('Editar')).toHaveProp('className', 'text-13 font-extrabold text-foreground');
+      } else {
+        expect(within(row).queryByTestId(`meal-time-edit-${index}`)).toBeNull();
+      }
+    }
+  }
+
+  it('el dueño ve las dos entradas planas con Editar al final de cada fila', async () => {
+    mockGetPet.mockResolvedValue(petState('owner'));
+    await renderMealSchedule();
+    await screen.findByTestId('meal-time-edit-1');
+    expect(childTestIds(screen.getByTestId('meal-times-section'))).toEqual([
+      undefined, 'meal-time-entry-0', 'meal-time-entry-1',
+    ]);
+    expectRows(true);
+  });
+
+  it('el familiar conserva el mosaico y los dos textos sin controles de edición', async () => {
+    mockGetPet.mockResolvedValue(petState('family'));
+    await renderMealSchedule();
+    await screen.findByTestId('meal-time-row-1');
+    expect(childTestIds(screen.getByTestId('meal-times-section'))).toEqual([
+      undefined, 'meal-time-entry-0', 'meal-time-entry-1',
+    ]);
+    expectRows(false);
+  });
+});
+
+
+describe('#179 R7: acciones del artboard', () => {
+  beforeEach(() => {
+    mockGetNutritionPlan.mockResolvedValue({ kind: 'ok', plan: makePlan() });
+    mockGetNutritionProfile.mockResolvedValue({ kind: 'ok', profile: makeProfile() });
+  });
+
+  function expectGenerate(actions: ReturnType<typeof screen.getByTestId>) {
+    const generate = within(actions).getByTestId('generate-plan-button');
+    expect((generate.props.className as string).startsWith('pressable-feedback__root button__root ')).toBe(true);
+    expect((generate.props.className as string).endsWith(' h-12.5 flex-1 gap-1.5 rounded-14 bg-category-violet')).toBe(true);
+    expect(within(generate).getByText('Generar plan')).toHaveProp('className', 'text-15 font-extrabold text-category-violet-strong');
+    expect(within(generate).getByTestId('meal-schedule-icon-sparkles')).toHaveProp('size', 16);
+  }
+
+  it('el dueño ve Añadir y Generar en ese orden fuera de los horarios', async () => {
+    mockGetPet.mockResolvedValue(petState('owner'));
+    await renderMealSchedule();
+    await screen.findByTestId('meal-time-edit-1');
+    const actions = screen.getByTestId('meal-schedule-actions');
+    expect(actions).toHaveProp('className', 'flex-row gap-2.5');
+    expect(childTestIds(actions)).toEqual(['add-meal-time-button', 'generate-plan-button']);
+    const section = screen.getByTestId('meal-times-section');
+    expect(within(section).queryByTestId('add-meal-time-button')).toBeNull();
+    const add = within(actions).getByTestId('add-meal-time-button');
+    expect((add.props.className as string).startsWith('pressable-feedback__root button__root ')).toBe(true);
+    expect((add.props.className as string).endsWith(' h-13.5 flex-1 rounded-14 border-2 border-b-6 border-lip-gray bg-surface')).toBe(true);
+    expect(within(add).getByText('Añadir comida')).toHaveProp('className', 'text-15 font-extrabold text-foreground');
+    expectGenerate(actions);
+  });
+
+  it('el familiar solo ve Generar ocupando el ancho disponible', async () => {
+    mockGetPet.mockResolvedValue(petState('family'));
+    await renderMealSchedule();
+    await screen.findByTestId('meal-time-row-1');
+    const actions = screen.getByTestId('meal-schedule-actions');
+    expect(childTestIds(actions)).toEqual(['generate-plan-button']);
+    expect(within(actions).queryByTestId('add-meal-time-button')).toBeNull();
+    expect(within(screen.getByTestId('meal-times-section')).queryByTestId('add-meal-time-button')).toBeNull();
+    expectGenerate(actions);
+  });
+
+  it('el dueño sin plan solo ve Generar', async () => {
+    mockGetPet.mockResolvedValue(petState('owner'));
+    mockGetNutritionPlan.mockResolvedValue({ kind: 'not-found' });
+    await renderMealSchedule();
+    await screen.findByTestId('meal-schedule-empty');
+    const actions = screen.getByTestId('meal-schedule-actions');
+    expect(childTestIds(actions)).toEqual(['generate-plan-button']);
+    expect(within(actions).queryByTestId('add-meal-time-button')).toBeNull();
+    expectGenerate(actions);
+  });
+
+  it('el error de generar precede a las acciones como hermano', async () => {
+    mockGenerateNutritionPlan.mockResolvedValue({ kind: 'forbidden' });
+    await renderMealSchedule();
+    await fireEvent.press(await screen.findByTestId('generate-plan-button'));
+    const error = await screen.findByTestId('generate-plan-error');
+    const actions = screen.getByTestId('meal-schedule-actions');
+    expect(error).toHaveTextContent('Solo el dueño puede generar el plan');
+    expect(error.parent).toBe(actions.parent);
+    expect(error.parent!.children.indexOf(error)).toBeLessThan(error.parent!.children.indexOf(actions));
+  });
+});
+
+describe('#179 R8: perfil en píldoras', () => {
+  beforeEach(() => {
+    mockGetNutritionPlan.mockResolvedValue({ kind: 'not-found' });
+    mockGetNutritionProfile.mockResolvedValue({ kind: 'ok', profile: makeProfile() });
+  });
+
+  function expectPills(values: readonly (readonly [string, string, string])[]) {
+    const section = screen.getByTestId('nutrition-profile-section');
+    expect(section).toHaveProp('className', 'gap-2.5');
+    expect(within(section).getByTestId('nutrition-profile-title')).toHaveProp('className', 'mt-1 text-17 font-extrabold text-foreground');
+    const pills = within(section).getByTestId('nutrition-profile-pills');
+    expect(pills).toHaveProp('className', 'flex-row flex-wrap gap-1.5');
+    expect(childTestIds(pills)).toEqual(values.map(([id]) => id));
+    expect(pills.children).toHaveLength(values.length);
+    for (const [id, text, prefix] of values) {
+      const pill = within(pills).getByTestId(id);
+      expect(pill).toHaveProp('className', 'rounded-full bg-default px-2.5 py-1.5 text-xs font-bold text-foreground');
+      expect(pill).toHaveTextContent(text);
+      const label = pill.children[0];
+      if (typeof label === 'string') throw new Error('Expected prefix node');
+      expect(label).toHaveProp('className', 'text-muted');
+      expect(label.children).toEqual([prefix]);
+    }
+    return pills;
+  }
+
+  it('muestra las tres píldoras con condición, prefijos y valores crudos', async () => {
+    await renderMealSchedule();
+    await screen.findByTestId('nutrition-profile-section');
+    expectPills([
+      ['nutrition-profile-activity', 'Actividad medium', 'Actividad '],
+      ['nutrition-profile-condition', 'Condición 5/9', 'Condición '],
+      ['nutrition-profile-food', 'Alimento dry 350 kcal/100 g', 'Alimento '],
+    ]);
+    expect(screen.getByTestId('profile-allergies')).toHaveTextContent('chicken, soy');
+    expect(screen.getByTestId('profile-diseases')).toHaveTextContent('arthritis');
+    expect(screen.queryByText('350 kcal / 100 g')).toBeNull();
+    expect(screen.queryByText('Edad')).toBeNull();
+  });
+
+  it('omite condición nula y conserva las otras dos píldoras', async () => {
+    mockGetNutritionProfile.mockResolvedValue({ kind: 'ok', profile: makeProfile({ bodyCondition: null }) });
+    await renderMealSchedule();
+    await screen.findByTestId('nutrition-profile-section');
+    const pills = expectPills([
+      ['nutrition-profile-activity', 'Actividad medium', 'Actividad '],
+      ['nutrition-profile-food', 'Alimento dry 350 kcal/100 g', 'Alimento '],
+    ]);
+    expect(within(pills).queryByTestId('nutrition-profile-condition')).toBeNull();
+  });
+
+  it('traduce los prefijos al inglés sin traducir los valores del perfil', async () => {
+    await renderMealSchedule(true, 'en');
+    await screen.findByTestId('nutrition-profile-section');
+    expectPills([
+      ['nutrition-profile-activity', 'Activity medium', 'Activity '],
+      ['nutrition-profile-condition', 'Condition 5/9', 'Condition '],
+      ['nutrition-profile-food', 'Food dry 350 kcal/100 g', 'Food '],
+    ]);
   });
 });

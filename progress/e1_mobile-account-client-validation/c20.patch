@@ -1,0 +1,41 @@
+diff --git a/mobile-pet-tracker/src/screens/reset-password/index.test.tsx b/mobile-pet-tracker/src/screens/reset-password/index.test.tsx
+--- a/mobile-pet-tracker/src/screens/reset-password/index.test.tsx
++++ b/mobile-pet-tracker/src/screens/reset-password/index.test.tsx
+@@ -250,6 +250,17 @@
+     expect(screen.getByTestId('reset-submit')).toBeVisible();
+   });
+ 
++  it('#183 R7: un 400 de validación en nueva contraseña no marca ningún campo', async () => {
++    mockResetPassword.mockResolvedValue({
++      kind: 'validation',
++      errors: [{ path: 'passwordConfirmation', message: 'Passwords must match' }],
++    });
++    await renderRoute('reset-token-r8');
++    await submitReset();
++    expect(await screen.findByTestId('reset-error')).toHaveTextContent('Algo no cuadra en los datos. Revísalos y vuelve a intentarlo.');
++    expect(screen.queryAllByTestId(/^reset-password(-confirm)?-message-row$/)).toHaveLength(0);
++  });
++
+   it('deshabilita el boton mientras la peticion esta en vuelo', async () => {
+     let resolveRequest!: (state: ResetPasswordState) => void;
+     mockResetPassword.mockReturnValue(
+@@ -652,4 +663,19 @@
+       token: 'reset-token-r8', password: value, passwordConfirmation: value,
+     });
+   });
++
++  it('#183 R6: un envío inválido tras un aviso general lo retira, y el corregido quita el mensaje y vuelve a llamar', async () => {
++    await renderRoute('reset-token-r8');
++    await submitReset();
++    expect(await screen.findByTestId('reset-error')).toHaveTextContent('Algo salió mal');
++    await waitFor(() => expect(screen.getByTestId('reset-submit')).not.toBeDisabled());
++    await submitReset('1234567');
++    await waitFor(() => expect(screen.getByTestId('reset-password-message')).toHaveTextContent('Usa al menos 8 caracteres'));
++    expect(screen.queryByTestId('reset-error')).toBeNull();
++    expect(mockResetPassword).toHaveBeenCalledTimes(1);
++    await submitReset();
++    await waitFor(() => expect(screen.getByTestId('reset-error')).toHaveTextContent('Algo salió mal'));
++    expect(screen.queryByTestId('reset-password-message')).toBeNull();
++    expect(mockResetPassword).toHaveBeenCalledTimes(2);
++  });
+ });

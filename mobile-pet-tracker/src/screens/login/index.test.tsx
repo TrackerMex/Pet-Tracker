@@ -130,7 +130,7 @@ describe('R7: login llama a la api y navega', () => {
     expect(mockRouter.replace).not.toHaveBeenCalled();
   });
 
-  it('shows every backend validation message', async () => {
+  it('#183 R7: un 400 de validación pinta el aviso genérico y nunca el texto del servidor', async () => {
     mockLogin.mockResolvedValue({
       kind: 'validation',
       errors: [
@@ -143,8 +143,10 @@ describe('R7: login llama a la api y navega', () => {
     await submit();
 
     const error = screen.getByTestId('login-error');
-    expect(error).toHaveTextContent(/Invalid email address/);
-    expect(error).toHaveTextContent(/Password is too short/);
+    expect(error).toHaveTextContent('Algo no cuadra en los datos. Revísalos y vuelve a intentarlo.');
+    expect(error).not.toHaveTextContent('Invalid email address');
+    expect(error).not.toHaveTextContent('Password is too short');
+    expect(screen.queryAllByTestId(/^login-.+-message-row$/)).toHaveLength(0);
   });
 
   it('links to register and forgot password', async () => {
@@ -417,5 +419,102 @@ describe('#167 R6: Pingo saluda en login y la pantalla entra en dos tiempos', ()
       <HeroUINativeProvider><LanguageProvider initial="en"><LoginRoute /></LanguageProvider></HeroUINativeProvider>,
     );
     expect(screen.getByTestId('login-bubble-text')).toHaveTextContent('Good to see you again.');
+  });
+});
+
+describe('#183 R3: login valida en cliente', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockSignIn.mockResolvedValue();
+    mockUseAuth.mockReturnValue({
+      status: 'unauthenticated', token: null, signIn: mockSignIn, signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockLogin.mockResolvedValue({ kind: 'error' });
+  });
+
+  async function expectField(field: 'email' | 'password', message: string) {
+    await waitFor(() => expect(screen.getByTestId(`login-${field}-message`)).toHaveTextContent(message));
+    const text = screen.getByTestId(`login-${field}-message`);
+    const row = screen.getByTestId(`login-${field}-message-row`);
+    expect(row.children).toEqual([within(row).getByTestId('icon-alert-circle'), text]);
+    expect(text.props.selectable).toBe(true);
+  }
+
+  it.each(['', 'alex.example.com', 'alex@example.c', 'ñu@example.com'])('#183 R3: «%s» en login-email no llama a la API y marca el campo', async (email) => {
+    await renderLogin();
+    await submit(email, 'correct horse');
+    await expectField('email', 'Ingresa un correo electrónico válido');
+    expect(screen.queryByTestId('login-password-message')).toBeNull();
+    expect(screen.queryByTestId('login-error')).toBeNull();
+    expect(mockLogin).not.toHaveBeenCalled();
+  });
+
+  it('#183 R3: sin contraseña no llama a la API y marca login-password', async () => {
+    await renderLogin();
+    await submit('alex@example.com', '');
+    await expectField('password', 'Escribe tu contraseña');
+    expect(screen.queryByTestId('login-email-message')).toBeNull();
+    expect(screen.queryByTestId('login-error')).toBeNull();
+    expect(mockLogin).not.toHaveBeenCalled();
+  });
+
+  it('#183 R3: con los dos campos mal pinta los dos mensajes a la vez', async () => {
+    await renderLogin();
+    await submit('alex.example.com', '');
+    await expectField('email', 'Ingresa un correo electrónico válido');
+    await expectField('password', 'Escribe tu contraseña');
+    expect(screen.getAllByTestId(/^login-.+-message-row$/)).toHaveLength(2);
+    expect(screen.queryByTestId('login-error')).toBeNull();
+    expect(mockLogin).not.toHaveBeenCalled();
+  });
+
+  it('#183 R3: una contraseña de un espacio pasa como en el DTO', async () => {
+    mockLogin.mockResolvedValue({ kind: 'ok', accessToken: 'jwt-token' });
+    await renderLogin();
+    await submit('alex@example.com', ' ');
+    expect(mockLogin).toHaveBeenCalledWith(apiUrl, { email: 'alex@example.com', password: ' ' });
+  });
+
+  it('#183 R3: envía a la API el correo sin espacios alrededor', async () => {
+    mockLogin.mockResolvedValue({ kind: 'ok', accessToken: 'jwt-token' });
+    await renderLogin();
+    await submit('  Alex@Example.com  ', 'correct horse');
+    expect(mockLogin).toHaveBeenCalledWith(apiUrl, { email: 'Alex@Example.com', password: 'correct horse' });
+  });
+
+  it('#183 R3: en inglés los dos mensajes dicen «Enter a valid email address» y «Enter your password»', async () => {
+    await render(
+      <HeroUINativeProvider><LanguageProvider initial="en"><LoginRoute /></LanguageProvider></HeroUINativeProvider>,
+    );
+    await submit('alex.example.com', '');
+    await expectField('email', 'Enter a valid email address');
+    await expectField('password', 'Enter your password');
+    expect(screen.queryByTestId('login-error')).toBeNull();
+    expect(mockLogin).not.toHaveBeenCalled();
+  });
+
+  it('#183 R3: corregir y reenviar quita los mensajes y llama una vez a la API', async () => {
+    await renderLogin();
+    await submit('alex.example.com', '');
+    await expectField('email', 'Ingresa un correo electrónico válido');
+    await expectField('password', 'Escribe tu contraseña');
+    mockLogin.mockResolvedValue({ kind: 'ok', accessToken: 'jwt-token' });
+    await submit('alex@example.com', 'correct horse');
+    expect(screen.queryByTestId('login-email-message')).toBeNull();
+    expect(screen.queryByTestId('login-password-message')).toBeNull();
+    expect(mockLogin).toHaveBeenCalledTimes(1);
+  });
+
+  it('#183 R3: un envío inválido tras un aviso general lo retira y no vuelve a llamar a la API', async () => {
+    mockLogin.mockResolvedValue({ kind: 'invalid-credentials' });
+    await renderLogin();
+    await submit();
+    expect(await screen.findByTestId('login-error')).toHaveTextContent('Credenciales inválidas');
+    await waitFor(() => expect(screen.getByTestId('login-submit')).not.toBeDisabled());
+    await submit('', 'correct horse');
+    await expectField('email', 'Ingresa un correo electrónico válido');
+    expect(screen.queryByTestId('login-error')).toBeNull();
+    expect(mockLogin).toHaveBeenCalledTimes(1);
   });
 });

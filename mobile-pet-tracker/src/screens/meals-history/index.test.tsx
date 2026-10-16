@@ -26,14 +26,27 @@ jest.mock('expo-router', () => {
     },
   };
 });
+const mockHomeEntrance = jest.fn<void, [import('react-native').ViewProps & { index: number }]>();
+
+jest.mock('../home/home-entrance', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return {
+    HomeEntrance(props: import('react-native').ViewProps & { index: number }) {
+      mockHomeEntrance(props);
+      return React.createElement(View, props);
+    },
+  };
+});
+
 jest.mock('react-native-safe-area-context', () => ({
   ...jest.requireActual('react-native-safe-area-context'),
   useSafeAreaInsets: () => ({ top: 40, right: 0, bottom: 24, left: 0 }),
 }));
 jest.mock('reicon-react-native', () => {
   const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
-  const icon = (testID: string) => function MockIcon({ color }: { color?: string }) {
-    return <Text testID={testID} style={{ color }} />;
+  const icon = (testID: string) => function MockIcon({ color, size }: { color?: string; size?: number }) {
+    return <Text testID={testID} style={{ color }} {...{ size }} />;
   };
   return {
     ChevronLeft: icon('meals-history-icon-prev'),
@@ -64,10 +77,10 @@ function SelectionProbe() {
   return null;
 }
 
-async function renderHistory(selected = true) {
+async function renderHistory(selected = true, language: 'es' | 'en' = 'es') {
   return renderWithProviders(
     <HeroUINativeProvider>
-      <LanguageProvider initial="es">
+      <LanguageProvider initial={language}>
         <SelectedPetProvider>
           {selected ? <SelectionProbe /> : null}
           <MealsHistoryScreen />
@@ -105,7 +118,7 @@ describe('#105 R9: meals history preserves the four screen states', () => {
     expect(screen.getAllByTestId('meals-history-skeleton')).toHaveLength(1);
     expect(screen.queryByTestId('meals-history-grid')).toBeNull();
     expect(screen.getByTestId('screen-meals-history')).toHaveProp('contentInsetAdjustmentBehavior', 'automatic');
-    expect(screen.getByTestId('screen-meals-history')).toHaveProp('contentContainerStyle', { padding: 24, gap: 16, paddingBottom: 48 });
+    expect(screen.getByTestId('screen-meals-history')).toHaveProp('contentContainerStyle', { paddingHorizontal: 20, paddingTop: 24, gap: 14, paddingBottom: 48 });
   });
 
   it('shows an error and retries until the grid appears', async () => {
@@ -161,7 +174,7 @@ describe('#105 R11: the civil month grid renders six decisions per day', () => {
     await waitFor(() => expect(screen.getByTestId('meals-history-grid')).toBeVisible());
     const weekdays = screen.getByTestId('meals-history-weekdays');
     expect(weekdays.children).toHaveLength(7);
-    const monday = new Date(Date.UTC(2024, 0, 1)).toLocaleDateString('es-MX', { weekday: 'short', timeZone: 'UTC' });
+    const monday = new Date(Date.UTC(2024, 0, 1)).toLocaleDateString('es-MX', { weekday: 'narrow', timeZone: 'UTC' });
     expect(within(weekdays).getByText(monday)).toBeVisible();
     const first = weekdays.children[0];
     expect(typeof first === 'string' ? first : first.children[0]).toBe(monday);
@@ -193,7 +206,7 @@ describe('#105 R11: the civil month grid renders six decisions per day', () => {
     expect(served.children).toHaveLength(2);
     expect(within(served).getByTestId('meals-history-dot')).toBeVisible();
     const empty = screen.getByTestId('meals-history-day-2026-01-06');
-    expect(empty.children).toHaveLength(1);
+    expect(empty.children).toHaveLength(2);
     expect(within(empty).queryByTestId('meals-history-dot')).toBeNull();
     expect(screen.getAllByTestId('meals-history-dot')).toHaveLength(2);
   });
@@ -230,9 +243,9 @@ describe('#105 R11: the civil month grid renders six decisions per day', () => {
       expect(source.lastIndexOf(`testID="${testID}"`)).toBe(anchor);
       return source.slice(source.lastIndexOf('<', anchor), source.indexOf('<', anchor)).split('/>')[0];
     }
-    expect(opening('meals-history-today')).toContain('text-sm font-bold text-accent-strong');
-    expect(opening('meals-history-dot')).toContain('h-1.5 w-1.5 rounded-full bg-accent');
-    expect(source.match(/bg-accent-soft/g)).toHaveLength(1);
+    expect(opening('meals-history-today')).toContain('text-15 font-black text-accent-strong');
+    expect(opening('meals-history-dot')).toContain('size-1.25 rounded-full bg-accent');
+    expect(source.match(/bg-tab-pill/g)).toHaveLength(1);
     expect(source.match(/style=\{TABULAR_NUMS\}/g)).toHaveLength(2);
   });
 });
@@ -384,5 +397,212 @@ describe('#105 R13: tapping a served day reveals its inline detail', () => {
     await fireEvent.press(screen.getByTestId('meals-history-prev'));
     await waitFor(() => expect(screen.getByTestId('meals-history-title')).toHaveTextContent('diciembre de 2025'));
     expect(screen.queryByTestId('meals-history-detail')).toBeNull();
+  });
+});
+
+
+describe('#179 R9: marco y título en contenido', () => {
+  function expectHeading() {
+    const heading = screen.getByTestId('meals-history-heading');
+    expect(heading).toHaveTextContent('Historial de comidas');
+    expect(heading).toHaveProp('accessibilityRole', 'header');
+    expect(heading).toHaveProp('className', 'text-2xl font-black tracking-title text-foreground');
+  }
+
+  it('conserva el marco y el título mientras carga el mes', async () => {
+    mockGetMealsHistory.mockReturnValue(new Promise<MealsHistoryState>(() => undefined));
+    await renderHistory();
+    await screen.findByTestId('meals-history-skeleton');
+    expectHeading();
+    expect(screen.getByTestId('screen-meals-history')).toHaveProp('contentContainerStyle', {
+      paddingHorizontal: 20, paddingTop: 24, gap: 14, paddingBottom: 48,
+    });
+  });
+
+  it('conserva el título en el estado de error', async () => {
+    mockGetMealsHistory.mockResolvedValue({ kind: 'error' });
+    await renderHistory();
+    await screen.findByTestId('meals-history-error');
+    expectHeading();
+  });
+
+  it('muestra un único título cuando el calendario está cargado', async () => {
+    await renderHistory();
+    await screen.findByTestId('meals-history-grid');
+    expectHeading();
+    expect(screen.getAllByText('Historial de comidas')).toHaveLength(1);
+  });
+});
+
+
+describe('#179 R10: calendario del artboard', () => {
+  function expectCalendar(empty: boolean, labels: readonly string[]) {
+    const calendar = screen.getByTestId('meals-history-calendar');
+    expect(calendar).toHaveProp('className', 'gap-2 rounded-24 border border-border bg-surface p-3.5');
+    expect(calendar).toHaveStyle({ borderCurve: 'continuous' });
+    expect(calendar.children).toHaveLength(empty ? 4 : 3);
+    expect(calendar.children.map(child => typeof child === 'string' ? undefined : child.props.testID)).toEqual(
+      empty ? [undefined, 'meals-history-weekdays', 'meals-history-grid', 'meals-history-empty'] : [undefined, 'meals-history-weekdays', 'meals-history-grid'],
+    );
+    expect(mockHomeEntrance).toHaveBeenCalledWith(expect.objectContaining({ testID: 'meals-history-calendar-entry', index: 0 }));
+    const weekdays = within(calendar).getByTestId('meals-history-weekdays');
+    expect(weekdays.children).toHaveLength(7);
+    expect(weekdays.children.map(child => typeof child === 'string' ? child : child.children[0])).toEqual(labels);
+    for (const child of weekdays.children) {
+      expect(child).toHaveProp('className', 'flex-1 text-center text-xs font-bold text-muted');
+    }
+    expect(within(calendar).getByTestId('meals-history-title')).toHaveProp('className', 'text-base font-extrabold text-foreground');
+    for (const direction of ['prev', 'next']) {
+      const arrow = within(calendar).getByTestId(`meals-history-${direction}`);
+      expect(arrow).toHaveProp('className', 'size-10 items-center justify-center rounded-xl bg-default');
+      expect(arrow).toHaveProp('hitSlop', { top: 6, bottom: 6, left: 6, right: 6 });
+      expect(arrow).toHaveStyle({ borderCurve: 'continuous', opacity: 1 });
+      expect(within(arrow).getByTestId(`meals-history-icon-${direction}`)).toHaveProp('size', 18);
+    }
+    return calendar;
+  }
+
+  it('muestra cabecera, días y cuadrícula en un mes con comidas', async () => {
+    await renderHistory();
+    await screen.findByTestId('meals-history-grid');
+    const calendar = expectCalendar(false, ['L', 'M', 'M', 'J', 'V', 'S', 'D']);
+    expect(within(calendar).queryByTestId('meals-history-empty')).toBeNull();
+    expect(screen.queryByTestId('meals-history-detail')).toBeNull();
+  });
+
+  it('añade solo el mensaje del mes vacío después de la cuadrícula', async () => {
+    mockGetMealsHistory.mockResolvedValue({ kind: 'ok', history: history(true) });
+    await renderHistory();
+    await screen.findByTestId('meals-history-grid');
+    const calendar = expectCalendar(true, ['L', 'M', 'M', 'J', 'V', 'S', 'D']);
+    expect(within(calendar).getByTestId('meals-history-empty')).toHaveTextContent('Este mes no se sirvió ninguna comida');
+  });
+
+  it('conserva las siete iniciales inglesas aunque se repitan', async () => {
+    await renderHistory(true, 'en');
+    await screen.findByTestId('meals-history-grid');
+    expectCalendar(false, ['M', 'T', 'W', 'T', 'F', 'S', 'S']);
+  });
+});
+
+
+describe('#179 R11: celdas del artboard', () => {
+  it.each([
+    { label: 'hoy con comidas', date: '2026-01-15', meals: true, selected: false, numberClass: 'text-15 font-black text-accent-strong' },
+    { label: 'hoy sin comidas', date: '2026-01-15', meals: false, selected: false, numberClass: 'text-15 font-black text-accent-strong' },
+    { label: 'pasado con comidas seleccionado', date: '2026-01-05', meals: true, selected: true, numberClass: 'text-15 font-black text-accent-strong' },
+    { label: 'pasado sin comidas seleccionado', date: '2026-01-06', meals: false, selected: true, numberClass: 'text-15 font-black text-accent-strong' },
+    { label: 'pasado con comidas no seleccionado', date: '2026-01-05', meals: true, selected: false, numberClass: 'text-15 font-semibold text-foreground' },
+    { label: 'pasado sin comidas', date: '2026-01-06', meals: false, selected: false, numberClass: 'text-15 font-semibold text-foreground' },
+    { label: 'futuro', date: '2026-01-16', meals: false, selected: false, numberClass: 'text-15 font-medium text-muted' },
+    { label: 'diciembre de 2025 con comidas', date: '2025-12-05', meals: true, selected: false, numberClass: 'text-15 font-semibold text-foreground' },
+  ])('$label', async ({ date, meals, selected, numberClass }) => {
+    mockGetMealsHistory.mockImplementation(async (_url, _token, _pet, from, to) => {
+      const sample = historyRange(from, to);
+      return { kind: 'ok', history: { ...sample, days: sample.days.map(day => ({
+        ...day, mealTimes: day.date === date && meals ? ['08:00'] : [],
+      })) } };
+    });
+    await renderHistory();
+    await screen.findByTestId('meals-history-grid');
+    if (date.startsWith('2025-12')) {
+      await fireEvent.press(screen.getByTestId('meals-history-prev'));
+    }
+    const cell = await screen.findByTestId(`meals-history-day-${date}`);
+    if (meals) {
+      await waitFor(() => expect(within(cell).getByTestId('meals-history-dot')).toBeVisible());
+    }
+    if (selected) {
+      await fireEvent.press(cell);
+      await waitFor(() => expect(cell).toBeSelected());
+    }
+    expect(cell).toHaveProp('className', selected
+      ? 'h-11 flex-1 items-center justify-center gap-0.5 rounded-full bg-tab-pill'
+      : 'h-11 flex-1 items-center justify-center gap-0.5 rounded-full');
+    expect(cell.children).toHaveLength(2);
+    const number = cell.children[0];
+    const marker = cell.children[1];
+    if (typeof number === 'string' || typeof marker === 'string') throw new Error('Expected day nodes');
+    expect(number).toHaveTextContent(String(Number(date.slice(8))));
+    expect(number).toHaveProp('className', numberClass);
+    if (date === '2026-01-15') expect(number).toHaveProp('testID', 'meals-history-today');
+    expect(marker).toHaveProp('testID', meals ? 'meals-history-dot' : 'meals-history-spacer');
+    expect(marker).toHaveProp('className', meals ? 'size-1.25 rounded-full bg-accent' : 'size-1.25');
+  });
+});
+
+describe('#179 R12: panel del día', () => {
+  function expectPanel(count: number, title: string) {
+    const detail = screen.getByTestId('meals-history-detail');
+    expect(detail).toHaveProp('className', 'gap-2.5 rounded-24 bg-surface-secondary p-4');
+    expect(detail).toHaveStyle({ borderCurve: 'continuous' });
+    expect(detail.children).toHaveLength(2);
+    const header = detail.children[0];
+    if (typeof header === 'string') throw new Error('Expected panel header');
+    expect(header).toHaveProp('className', 'flex-row items-center justify-between gap-2');
+    expect(header.children).toHaveLength(count === 0 ? 1 : 2);
+    const heading = within(header).getByTestId('meals-history-detail-title');
+    expect(heading).toHaveTextContent(title);
+    expect(heading).toHaveProp('className', 'flex-1 text-base font-extrabold text-foreground');
+    expect(header.children[0]).toBe(heading);
+    if (count > 0) {
+      const badge = within(header).getByTestId('meals-history-detail-count');
+      expect(header.children[1]).toBe(badge);
+      expect(badge).toHaveProp('className', 'rounded-full bg-accent px-2.5 py-1 text-xs font-extrabold text-accent-foreground');
+      expect(badge).toHaveTextContent(`${count} comidas servidas`);
+    } else {
+      expect(within(header).queryByTestId('meals-history-detail-count')).toBeNull();
+    }
+    expect(mockHomeEntrance).toHaveBeenCalledWith(expect.objectContaining({ testID: 'meals-history-detail-entry', index: 1 }));
+    return detail;
+  }
+
+  function expectTimes(detail: ReturnType<typeof screen.getByTestId>, values: readonly string[]) {
+    const times = within(detail).getByTestId('meals-history-detail-times');
+    expect(detail.children[1]).toBe(times);
+    expect(times).toHaveProp('className', 'flex-row flex-wrap gap-2');
+    expect(times.children).toHaveLength(values.length);
+    times.children.forEach((box, index) => {
+      if (typeof box === 'string') throw new Error('Expected time box');
+      expect(box).toHaveProp('className', 'min-w-20 flex-1 items-center rounded-14 bg-surface p-2.5');
+      expect(box).toHaveStyle({ borderCurve: 'continuous' });
+      expect(box.children).toHaveLength(1);
+      const time = within(box).getByTestId('meals-history-detail-time');
+      expect(time).toHaveTextContent(values[index]);
+      expect(time).toHaveProp('className', 'text-15 font-extrabold text-foreground');
+    });
+  }
+
+  it('separa el panel del calendario y muestra dos horas con badge', async () => {
+    await renderHistory();
+    await screen.findByTestId('meals-history-grid');
+    await fireEvent.press(screen.getByTestId('meals-history-day-2026-01-05'));
+    await screen.findByTestId('meals-history-detail');
+    const calendar = screen.getByTestId('meals-history-calendar');
+    expect(within(calendar).queryByTestId('meals-history-detail')).toBeNull();
+    const detail = expectPanel(2, 'lunes, 5 de enero');
+    expectTimes(detail, ['08:00', '18:30']);
+  });
+
+  it('muestra cabecera sin badge y el mensaje de un día sin comidas', async () => {
+    await renderHistory();
+    await screen.findByTestId('meals-history-grid');
+    await fireEvent.press(screen.getByTestId('meals-history-day-2026-01-06'));
+    await screen.findByTestId('meals-history-detail');
+    const detail = expectPanel(0, 'martes, 6 de enero');
+    expect(detail.children[1]).toHaveProp('testID', 'meals-history-detail-empty');
+    expect(within(detail).getByTestId('meals-history-detail-empty')).toHaveTextContent('Ese día no se sirvió ninguna comida');
+    expect(within(detail).queryByTestId('meals-history-detail-times')).toBeNull();
+  });
+
+  it('conserva cinco cajas de hora en el contenedor que permite envolver', async () => {
+    const sample = history();
+    sample.days[4].mealTimes = ['06:00', '09:00', '12:00', '15:00', '18:00'];
+    mockGetMealsHistory.mockResolvedValue({ kind: 'ok', history: sample });
+    await renderHistory();
+    await screen.findByTestId('meals-history-grid');
+    await fireEvent.press(screen.getByTestId('meals-history-day-2026-01-05'));
+    await screen.findByTestId('meals-history-detail');
+    expectTimes(expectPanel(5, 'lunes, 5 de enero'), ['06:00', '09:00', '12:00', '15:00', '18:00']);
   });
 });

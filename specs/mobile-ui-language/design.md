@@ -469,8 +469,8 @@ añadidas por #68, registradas como delta sobre la tabla existente
 | 160 | `common.somethingWentWrong` | `Something went wrong` | `Algo salió mal` |
 | 163 | `common.retry` | `Retry` | `Reintentar` |
 | 178 | `mealSchedule.dailyTarget` | `Daily target` | `Objetivo diario` |
-| 184 | `mealSchedule.dailyGrams` **(param)** | `{{grams}} g / day` | `{{grams}} g / día` |
-| 190 | `mealSchedule.mealsPerDay` **(param)** | `{{meals}} meals / day` | `{{meals}} comidas / día` |
+| 184 | `mealSchedule.dailyGrams` **(param)** | `{{grams}} g / day` | `{{grams}} g / día` ← retirada por #179 (R5) |
+| 190 | `mealSchedule.mealsPerDay` **(param)** | `{{meals}} meals / day` | `{{meals}} comidas / día` ← retirada por #179 (R5) |
 | 198 | `mealSchedule.timesAndPortions` | `Times and portions` | `Horarios y porciones` |
 | 232 | `mealSchedule.noMealPlanYet` | `No meal plan yet` | `Aún no hay plan de alimentación` |
 | 250 | `mealSchedule.generatePlan` | `Generate plan` | `Generar plan` |
@@ -747,8 +747,8 @@ de unidades o datos** y no entran al catálogo. Enumerados, no estimados:
 | 7 | `pairing/index.tsx:305` | JSX `{selectedPet.name}&apos;s collar is paired. GPS tracking is on.` | `pairing.readySubtitle` | `{{petName}}'s collar is paired. GPS tracking is on.` | `El collar de {{petName}} está vinculado. El rastreo GPS está activo.` |
 | 8 | `food.tsx:150` | JSX `{loadedPlan.merKcal} kcal / day` | `food.dailyKcal` | `{{kcal}} kcal / day` | `{{kcal}} kcal / día` |
 | 9 | `food.tsx:156` | JSX `{loadedPlan.dailyGrams} g / day` | `food.dailyGrams` | `{{grams}} g / day` | `{{grams}} g / día` |
-| 10 | `meal-schedule.tsx:184` | JSX `{loadedPlan.dailyGrams} g / day` | `mealSchedule.dailyGrams` | `{{grams}} g / day` | `{{grams}} g / día` |
-| 11 | `meal-schedule.tsx:190` | JSX `{loadedPlan.mealsPerDay} meals / day` | `mealSchedule.mealsPerDay` | `{{meals}} meals / day` | `{{meals}} comidas / día` |
+| 10 | `meal-schedule.tsx:184` | JSX `{loadedPlan.dailyGrams} g / day` | `mealSchedule.dailyGrams` | `{{grams}} g / day` | `{{grams}} g / día` ← retirada por #179 (R5) |
+| 11 | `meal-schedule.tsx:190` | JSX `{loadedPlan.mealsPerDay} meals / day` | `mealSchedule.mealsPerDay` | `{{meals}} meals / day` | `{{meals}} comidas / día` ← retirada por #179 (R5) |
 
 Los 7 primeros son evidentes: llevan una palabra pegada al número (`ago`,
 `months`, `days`, el genitivo sajón, `Last seen`, `BC`). Los cuatro últimos son
@@ -1006,7 +1006,31 @@ copy completa en cada una.
 | — | `docs.categoryOther` | `Other` | `Otros` | ← añadida por #175 (R3) |
 | — | `docs.uploadHint` | `PDF or photo of prescriptions, lab results, and vaccine cards` | `PDF o foto de recetas, análisis y cartillas` | ← añadida por #175 (R3) |
 
-### §2.32 — Añadidos por #178 — Recordatorios del canvas
+### §2.32 — Añadidos por #183 — Validación en cliente de las pantallas de cuenta
+
+| # | Clave | `en` | `es` | Origen |
+|---|---|---|---|---|
+| — | `validation.firstNameRequired` | `Enter your first name` | `Escribe tu nombre` | ← añadida por #183 (R1) |
+| — | `validation.lastNameRequired` | `Enter your last name` | `Escribe tus apellidos` | ← añadida por #183 (R1) |
+| — | `validation.passwordRequired` | `Enter your password` | `Escribe tu contraseña` | ← añadida por #183 (R1) |
+| — | `validation.tooShort` | `Use at least {{min}} characters` | `Usa al menos {{min}} caracteres` | ← añadida por #183 (R1) |
+| — | `validation.tooLong` | `Use {{max}} characters or fewer` | `Usa {{max}} caracteres o menos` | ← añadida por #183 (R1) |
+| — | `validation.passwordsDontMatch` | `Passwords don't match` | `Las contraseñas no coinciden` | ← añadida por #183 (R1) |
+| — | `validation.countryLength` | `Enter your country's 2-letter code, like MX` | `Escribe las 2 letras de tu país, como MX` | ← añadida por #183 (R1) |
+| — | `validation.countryLetters` | `Use only letters A to Z` | `Usa solo letras de la A a la Z` | ← añadida por #183 (R1) |
+| — | `validation.checkDetails` | `Something in your details doesn't look right. Check them and try again.` | `Algo no cuadra en los datos. Revísalos y vuelve a intentarlo.` | ← añadida por #183 (R1) |
+
+### §2.33 — Añadidos por #179 — Horario e Historial del canvas
+
+| # | Clave | `en` | `es` | Origen |
+|---|---|---|---|---|
+| — | `mealSchedule.perDay` | `/ day` | `/ día` | ← añadida por #179 (R3) |
+| — | `mealSchedule.mealsPerDayUnit` | `meals / day` | `comidas / día` | ← añadida por #179 (R3) |
+| — | `mealSchedule.activity` | `Activity` | `Actividad` | ← añadida por #179 (R3) |
+| — | `mealSchedule.condition` | `Condition` | `Condición` | ← añadida por #179 (R3) |
+| — | `mealSchedule.food` | `Food` | `Alimento` | ← añadida por #179 (R3) |
+
+### §2.34 — Añadidos por #178 — Recordatorios del canvas
 
 | # | Clave | `en` | `es` | Origen |
 |---|---|---|---|---|
