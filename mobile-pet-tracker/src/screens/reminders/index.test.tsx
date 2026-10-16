@@ -1334,6 +1334,58 @@ describe('#178 R7: entrada escalonada y badge', () => {
   });
 });
 
+describe('#178 R8: sheet de borrado del canvas', () => {
+  beforeEach(async () => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: canvasReminders });
+    await renderReminders();
+    await screen.findByTestId('reminder-row-a');
+    await fireEvent.press(screen.getByTestId('reminder-delete-a'));
+  });
+
+  it('centra los cinco hijos del sheet con el marco del canvas', () => {
+    const sheet = screen.getByTestId('reminders-delete-sheet');
+    expect(sheet.props.className).toBe('items-center gap-3 bg-surface px-5 pb-9 pt-3');
+    expect(sheet.children).toHaveLength(5);
+  });
+
+  it('abre el sheet con el mosaico rosa y Trash de 26 en tinta danger', () => {
+    const sheet = screen.getByTestId('reminders-delete-sheet');
+    const tile = within(sheet).getByTestId('reminders-delete-icon');
+    expect(sheet.children[0]).toBe(tile);
+    expect(tile.props.className).toBe('size-14 items-center justify-center rounded-full bg-category-rose');
+    const icon = within(tile).getByTestId('reminders-icon-trash');
+    expect(icon.props.size).toBe(26);
+    expect(icon.props.color).toBe('color:danger');
+  });
+
+  it('centra título, referencia y cuerpo con sus pesos propios', () => {
+    const sheet = screen.getByTestId('reminders-delete-sheet');
+    const title = within(sheet).getByText('¿Eliminar recordatorio?');
+    const reference = within(sheet).getByTestId('reminders-delete-reference');
+    const body = within(sheet).getByText('Esta acción no se puede deshacer.');
+    expect(title.props.className).toBe('text-center text-xl font-black text-foreground');
+    expect(reference.props.className).toBe('text-center text-base font-semibold text-foreground');
+    expect(reference).toHaveTextContent('Refuerzo de rabia');
+    expect(body.props.className).toBe('text-center text-sm font-normal text-muted');
+    expect(sheet.children.slice(1, 4)).toEqual([title, reference, body]);
+  });
+
+  it('termina con las dos acciones en un grupo de ancho completo', () => {
+    const sheet = screen.getByTestId('reminders-delete-sheet');
+    const confirm = within(sheet).getByTestId('reminders-delete-confirm');
+    const actions = confirm.parent;
+    expect(actions?.props.className).toBe('w-full gap-3');
+    expect(sheet.children[4]).toBe(actions);
+    expect(within(actions!).getByTestId('reminders-delete-cancel')).toBeVisible();
+  });
+});
+
 describe('#155 R6: sin recordatorios, Pingo sostiene su lista', () => {
   beforeEach(() => {
     jest.clearAllMocks();
