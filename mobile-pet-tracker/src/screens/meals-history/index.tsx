@@ -35,7 +35,7 @@ function DayCell({ date, today, mealTimes, selected, locale, onPress }: {
   return (
     <Pressable
       testID={`meals-history-day-${date}`}
-      className={`h-11 flex-1 items-center justify-center rounded-full${selected ? ' bg-accent-soft' : ''}`}
+      className={`h-11 flex-1 items-center justify-center gap-0.5 rounded-full${selected ? ' bg-tab-pill' : ''}`}
       disabled={disabled}
       onPress={onPress}
       accessibilityState={{ disabled, selected }}
@@ -44,13 +44,15 @@ function DayCell({ date, today, mealTimes, selected, locale, onPress }: {
       style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
     >
       {date === today ? (
-        <DayNumber testID="meals-history-today" date={date} className="text-sm font-bold text-accent-strong" />
+        <DayNumber testID="meals-history-today" date={date} className="text-15 font-black text-accent-strong" />
       ) : (
-        <DayNumber date={date} className={disabled ? 'text-sm font-semibold text-muted' : 'text-sm font-semibold text-foreground'} />
+        <DayNumber date={date} className={selected ? 'text-15 font-black text-accent-strong' : disabled ? 'text-15 font-medium text-muted' : 'text-15 font-semibold text-foreground'} />
       )}
       {mealTimes.length >= 1 ? (
-        <View testID="meals-history-dot" className="mt-0.5 h-1.5 w-1.5 rounded-full bg-accent" />
-      ) : null}
+        <View testID="meals-history-dot" className="size-1.25 rounded-full bg-accent" />
+      ) : (
+        <View testID="meals-history-spacer" className="size-1.25" />
+      )}
     </Pressable>
   );
 }
