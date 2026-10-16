@@ -344,7 +344,7 @@ describe('#95 R4: cada pantalla de detalle declara su cabecera nativa', () => {
   });
 
   it.each([
-    ['add-reminder', 't:addReminder.addReminder'],
+    ['add-reminder', ''],
     ['pets/add', 't:addPet.addPet'],
     ['pets/[petId]/docs', ''],
     ['weight-log', 't:weightLog.weightLog'],

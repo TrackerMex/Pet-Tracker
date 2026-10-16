@@ -166,7 +166,8 @@ describe('R8: formulario de alta con chips y pickers', () => {
     expect(
       screen.getByTestId('add-reminder-form').props.contentContainerStyle,
     ).toEqual({
-      padding: 24,
+      paddingHorizontal: 20,
+      paddingTop: 24,
       gap: 16,
       paddingBottom: 48,
     });
@@ -216,7 +217,7 @@ describe('R8: formulario de alta con chips y pickers', () => {
 
     expect(screen.queryByTestId('date-picker')).toBeNull();
     expect(
-      screen.getByText(selectedDate.toLocaleDateString('es-MX')),
+      screen.getByText('15 sep 2026'), // #178 R10
     ).toBeVisible();
   });
 
@@ -242,12 +243,7 @@ describe('R8: formulario de alta con chips y pickers', () => {
 
     expect(screen.queryByTestId('time-picker')).toBeNull();
     expect(
-      screen.getByText(
-        selectedTime.toLocaleTimeString('es-MX', {
-          hour: '2-digit',
-          minute: '2-digit',
-        }),
-      ),
+      screen.getByText('14:45'), // #178 R10
     ).toBeVisible();
   });
 
@@ -483,15 +479,86 @@ describe('#62 R12: el placeholder del formulario sale del tema', () => {
   });
 });
 
+describe('#178 R10: marco, título y chips de tipo del canvas', () => {
+  beforeEach(async () => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockCreateReminder.mockReturnValue(pending());
+    await renderAddReminder();
+    await screen.findByTestId('title-input');
+  });
+
+  it('usa el marco 20/24/16 bajo la cabecera nativa', () => {
+    expect(screen.getByTestId('add-reminder-form').props.contentContainerStyle).toEqual({
+      paddingHorizontal: 20, paddingTop: 24, gap: 16, paddingBottom: 48,
+    });
+  });
+
+  it('abre el formulario con Agregar recordatorio como título accesible', () => {
+    const title = screen.getByTestId('add-reminder-title');
+    expect(title).toHaveTextContent('Agregar recordatorio');
+    expect(title.props.accessibilityRole).toBe('header');
+    expect(title.props.className).toBe('text-2xl font-black tracking-title text-foreground');
+    expect(title.parent?.children[0]).toBe(title);
+  });
+
+  it('da a las cinco etiquetas y sus secciones las recetas del canvas', () => {
+    for (const [label, gap] of [
+      ['Tipo', 'gap-2'], ['Título', 'gap-1.5'], ['Fecha', 'flex-1 gap-1.5'],
+      ['Hora', 'flex-1 gap-1.5'], ['Aviso', 'gap-2'],
+    ]) {
+      const text = screen.getByText(label);
+      expect(text.props.className).toBe('text-sm font-extrabold text-foreground');
+      expect(text.parent?.props.className).toBe(gap);
+    }
+  });
+
+  it('pinta Vacuna seleccionada con cápsula, labio y texto sin emoji', () => {
+    const chip = screen.getByTestId('type-chip-vaccine');
+    expect(chip.props.className).toBe('h-9.5 items-center justify-center rounded-full px-3.5 bg-accent border-b-3 border-black/25');
+    expect(chip.props.hitSlop).toEqual(TOUCH_SLOP);
+    expect(chip.props.accessibilityState).toEqual({ selected: true });
+    expect(within(chip).getByText('Vacuna').props.className).toBe('text-sm font-extrabold text-accent-foreground');
+  });
+
+  it('pinta los chips violeta y neutro sin seleccionar con sus tintas', () => {
+    for (const [type, label, surface, ink] of [
+      ['deworming', 'Desparasitación', 'bg-category-violet', 'text-category-violet-strong'],
+      ['custom', 'Otro', 'bg-default', 'text-foreground'],
+    ]) {
+      const chip = screen.getByTestId(`type-chip-${type}`);
+      expect(chip.props.className).toBe(`h-9.5 items-center justify-center rounded-full px-3.5 ${surface}`);
+      expect(chip.props.hitSlop).toEqual(TOUCH_SLOP);
+      expect(chip.props.accessibilityState).toEqual({ selected: false });
+      expect(within(chip).getByText(label).props.className).toBe(`text-sm font-extrabold ${ink}`);
+    }
+  });
+
+  it('invierte las recetas al seleccionar Otro', async () => {
+    await fireEvent.press(screen.getByTestId('type-chip-custom'));
+    const selected = screen.getByTestId('type-chip-custom');
+    const idle = screen.getByTestId('type-chip-vaccine');
+    expect(selected.props.className).toBe('h-9.5 items-center justify-center rounded-full px-3.5 bg-accent border-b-3 border-black/25');
+    expect(selected.props.accessibilityState).toEqual({ selected: true });
+    expect(within(selected).getByText('Otro').props.className).toBe('text-sm font-extrabold text-accent-foreground');
+    expect(idle.props.className).toBe('h-9.5 items-center justify-center rounded-full px-3.5 bg-category-blue');
+    expect(idle.props.accessibilityState).toEqual({ selected: false });
+    expect(within(idle).getByText('Vacuna').props.className).toBe('text-sm font-extrabold text-category-blue-strong');
+  });
+});
+
 describe('#95 R5: la pantalla no dibuja cabecera propia', () => {
-  it('retira el botón y el título del cuerpo', async () => {
+  it('retira el botón; el título vive en el cuerpo (#178 R10)', async () => {
     process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
     mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() });
     mockCreateReminder.mockReturnValue(pending());
     await renderAddReminder();
     await waitFor(() => expect(screen.getByTestId('screen-add-reminder')).toBeVisible());
     expect(screen.queryByTestId('add-reminder-back')).toBeNull();
-    expect(screen.queryByText(es['addReminder.addReminder'])).toBeNull();
+    expect(screen.getByTestId('add-reminder-title')).toHaveTextContent(es['addReminder.addReminder']);
   });
 });
 
