@@ -776,7 +776,7 @@ recordatorio próximo (≤ 10 días), uno lejano y uno enviado o cancelado,
 
 Se firma en su casilla propia:
 
-- [ ] Prueba de humo #178 R14 firmada por: ____ — fecha: ____
+- [X] Prueba de humo #178 R14 firmada por: AlexisSM377 — fecha: 2026-10-16
 
 Si Hermes no formatea `hourCycle: 'h23'` como en Node, el leader enmienda R6,
 R11 y R12 antes de cerrar.
