@@ -1157,3 +1157,93 @@ rojos de R4, R5, R6, R7, R9 y R11. No añade, quita ni renombra ningún `it`.
 ### Aprobación de la Enmienda E1
 
 - [X] Enmienda E1 aprobada por humano ← gate obligatorio antes de lanzar a Codex
+
+## Enmienda E2 — `Button.Label` pierde `text-13` y `text-15`; el `className` del botón lleva prefijos de HeroUI
+
+> Escrita el 2026-10-16, tras la segunda parada de Codex en c13
+> (`progress/impl_mobile-meal-schedule-canvas-fidelity.md`, «Segunda ejecución»).
+> **No cambia ningún valor visual del artboard**: las tres etiquetas
+> conservan sus literales de clase. Cambia el nodo que los lleva (`Text` en
+> lugar de `Button.Label`) y la forma de aserción del `className` de los
+> botones. Su casilla va **sin marcar**: el humano reabre el gate solo para
+> esta enmienda. Cada punto manda sobre el cuerpo de la spec.
+
+### Qué se midió
+
+- `tailwind-merge` 3.6.0 (el de `Button.Label` y de `Card` vía `tv`/`twMerge`)
+  no conoce `text-13` ni `text-15` como tamaño de fuente: los trata como
+  color, y un color posterior los expulsa. Ejecutado en `mobile-pet-tracker/`:
+  `twMerge('text-13 font-extrabold text-foreground')` da
+  `font-extrabold text-foreground`, y lo mismo para `text-15` y `text-17`;
+  `twMerge('text-13 font-extrabold')` conserva `text-13`.
+- Lo que Codex observó en c13 con `Button.Label className="text-13 font-extrabold text-foreground"`:
+  etiqueta `['button__label', 'button__label--variant-secondary', 'button__label--size-sm', 'font-extrabold', 'text-foreground']`
+  (sin `text-13`) y botón
+  `'pressable-feedback__root button__root button__root--variant-secondary button__root--size-sm h-9.75 rounded-10 border-2 border-b-5 border-lip-gray bg-surface px-3.5'`
+  (los prefijos de HeroUI delante, las clases de la spec intactas y en orden).
+- El CSS de HeroUI Native (`button.css`): `button__label--size-sm` fija
+  `text-sm` (14) y `--size-md` `text-base` (16), y `--variant-secondary` pinta
+  `accent-soft-foreground`. Quitar el color de la etiqueta o dejar caer el
+  tamaño no da 13 ni 15 ni `text-foreground`.
+- `docs`, `profile` y `alerts` ya pintan `text-13`/`text-15 font-extrabold text-foreground`
+  en `Text` sueltos, sin pasar por `twMerge`.
+- #172 (`forgot`, `login`, `register`, `reset-password`) pasa
+  `Button.Label className="text-17 font-extrabold text-accent-foreground"`: ese
+  `text-17` es inerte en ejecución (cae al tamaño del botón). Es deuda de
+  #172, fuera del alcance de #179.
+- #178 no se ve afectada: sus `Button.Label` llevan `text-sm`, que `twMerge`
+  sí conoce como tamaño.
+
+### E2.1 — R6 y R7: la etiqueta de los tres botones es un `Text`
+
+Sustituye `Button.Label` por `Text`, con los mismos literales, el mismo texto
+y la misma clave de copy (sin cambio):
+
+| Botón | Etiqueta |
+|---|---|
+| «Editar» (R6) | `<Text className="text-13 font-extrabold text-foreground">` |
+| «Añadir comida» (R7) | `<Text className="text-15 font-extrabold text-foreground">` |
+| «Generar plan» (R7) | ``<Text className={`text-15 font-extrabold ${CATEGORY_SLOTS.violet.ink}`}>`` |
+
+`Text` ya se importa de `react-native` en `screens/meal-schedule/index.tsx`.
+Los demás `Button.Label` de Horario (`font-bold text-accent-strong`,
+`font-bold text-accent-foreground`) no llevan tamaño y no cambian.
+
+### E2.2 — R6 y R7 (tests): el `className` del botón
+
+Donde R6 y R7 piden «`className` literal» del `Button`
+(`meal-time-edit-<n>`, `add-meal-time-button`, `generate-plan-button`), el test
+aserta dos cosas, ambas sobre `button.props.className`:
+
+1. `startsWith('pressable-feedback__root button__root ')`;
+2. `endsWith(' ' + literal)`, con el literal de R6 o R7 (el de «Generar» con
+   `bg-category-violet` escrito literal).
+
+No se aserta la cadena entera: lleva `button__root--variant-<v>` y
+`button__root--size-<s>` de HeroUI, que no son de #179. La etiqueta sí conserva
+`toHaveProp('className', <literal>)`: ahora es un `Text` y no se fusiona.
+`#147 R4` (Δ6) no cambia: su `arrayContaining` ya pasa con ambos nodos.
+
+### E2.3 — R13, punto 11
+
+El punto 11 ancla en el fuente de `screens/meal-schedule/index.tsx` las tres
+etiquetas de E2.1 (`<Text className="text-13 font-extrabold text-foreground">`,
+`<Text className="text-15 font-extrabold text-foreground">` y
+``<Text className={`text-15 font-extrabold ${CATEGORY_SLOTS.violet.ink}`}>``),
+una vez cada una, en lugar de `<Button.Label …>`. El resto del punto no cambia.
+
+### Dónde viaja cada punto
+
+| Enmienda | Commit | Fichero |
+|---|---|---|
+| E2.1 | c13 y c15 (verdes de R6 y R7) | `screens/meal-schedule/index.tsx` |
+| E2.2 | c12 (el rojo de R6 corrige su aserción, antes de c13) y c14 (rojo de R7) | `screens/meal-schedule/index.test.tsx` |
+| E2.3 | c26 (R13) | `__tests__/design-drift.test.ts` |
+
+- Ningún `it` se añade, se quita ni se renombra; ningún fichero entra en la
+  lista cerrada; los recuentos de clases no cambian (la clase es la misma, solo
+  cambia el elemento que la lleva).
+
+### Aprobación de la Enmienda E2
+
+- [ ] Enmienda E2 aprobada por humano ← gate obligatorio antes de que Codex reanude en c12
