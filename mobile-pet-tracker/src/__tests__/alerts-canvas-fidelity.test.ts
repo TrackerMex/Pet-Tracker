@@ -201,6 +201,7 @@ describe('#174 R12: inventarios', () => {
         'screens/forgot/index.tsx',
         'screens/login/index.tsx',
         'screens/meal-schedule/index.tsx', // #179 R7
+        'screens/meals-history/index.tsx', // #179 R11
         'screens/register/index.tsx',
         'screens/reset-password/index.tsx',
       ],

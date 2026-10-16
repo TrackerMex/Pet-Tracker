@@ -206,7 +206,7 @@ describe('#105 R11: the civil month grid renders six decisions per day', () => {
     expect(served.children).toHaveLength(2);
     expect(within(served).getByTestId('meals-history-dot')).toBeVisible();
     const empty = screen.getByTestId('meals-history-day-2026-01-06');
-    expect(empty.children).toHaveLength(1);
+    expect(empty.children).toHaveLength(2);
     expect(within(empty).queryByTestId('meals-history-dot')).toBeNull();
     expect(screen.getAllByTestId('meals-history-dot')).toHaveLength(2);
   });
@@ -243,9 +243,9 @@ describe('#105 R11: the civil month grid renders six decisions per day', () => {
       expect(source.lastIndexOf(`testID="${testID}"`)).toBe(anchor);
       return source.slice(source.lastIndexOf('<', anchor), source.indexOf('<', anchor)).split('/>')[0];
     }
-    expect(opening('meals-history-today')).toContain('text-sm font-bold text-accent-strong');
-    expect(opening('meals-history-dot')).toContain('h-1.5 w-1.5 rounded-full bg-accent');
-    expect(source.match(/bg-accent-soft/g)).toHaveLength(1);
+    expect(opening('meals-history-today')).toContain('text-15 font-black text-accent-strong');
+    expect(opening('meals-history-dot')).toContain('size-1.25 rounded-full bg-accent');
+    expect(source.match(/bg-tab-pill/g)).toHaveLength(1);
     expect(source.match(/style=\{TABULAR_NUMS\}/g)).toHaveLength(2);
   });
 });
@@ -482,5 +482,51 @@ describe('#179 R10: calendario del artboard', () => {
     await renderHistory(true, 'en');
     await screen.findByTestId('meals-history-grid');
     expectCalendar(false, ['M', 'T', 'W', 'T', 'F', 'S', 'S']);
+  });
+});
+
+
+describe('#179 R11: celdas del artboard', () => {
+  it.each([
+    { label: 'hoy con comidas', date: '2026-01-15', meals: true, selected: false, numberClass: 'text-15 font-black text-accent-strong' },
+    { label: 'hoy sin comidas', date: '2026-01-15', meals: false, selected: false, numberClass: 'text-15 font-black text-accent-strong' },
+    { label: 'pasado con comidas seleccionado', date: '2026-01-05', meals: true, selected: true, numberClass: 'text-15 font-black text-accent-strong' },
+    { label: 'pasado sin comidas seleccionado', date: '2026-01-06', meals: false, selected: true, numberClass: 'text-15 font-black text-accent-strong' },
+    { label: 'pasado con comidas no seleccionado', date: '2026-01-05', meals: true, selected: false, numberClass: 'text-15 font-semibold text-foreground' },
+    { label: 'pasado sin comidas', date: '2026-01-06', meals: false, selected: false, numberClass: 'text-15 font-semibold text-foreground' },
+    { label: 'futuro', date: '2026-01-16', meals: false, selected: false, numberClass: 'text-15 font-medium text-muted' },
+    { label: 'diciembre de 2025 con comidas', date: '2025-12-05', meals: true, selected: false, numberClass: 'text-15 font-semibold text-foreground' },
+  ])('$label', async ({ date, meals, selected, numberClass }) => {
+    mockGetMealsHistory.mockImplementation(async (_url, _token, _pet, from, to) => {
+      const sample = historyRange(from, to);
+      return { kind: 'ok', history: { ...sample, days: sample.days.map(day => ({
+        ...day, mealTimes: day.date === date && meals ? ['08:00'] : [],
+      })) } };
+    });
+    await renderHistory();
+    await screen.findByTestId('meals-history-grid');
+    if (date.startsWith('2025-12')) {
+      await fireEvent.press(screen.getByTestId('meals-history-prev'));
+    }
+    const cell = await screen.findByTestId(`meals-history-day-${date}`);
+    if (meals) {
+      await waitFor(() => expect(within(cell).getByTestId('meals-history-dot')).toBeVisible());
+    }
+    if (selected) {
+      await fireEvent.press(cell);
+      await waitFor(() => expect(cell).toBeSelected());
+    }
+    expect(cell).toHaveProp('className', selected
+      ? 'h-11 flex-1 items-center justify-center gap-0.5 rounded-full bg-tab-pill'
+      : 'h-11 flex-1 items-center justify-center gap-0.5 rounded-full');
+    expect(cell.children).toHaveLength(2);
+    const number = cell.children[0];
+    const marker = cell.children[1];
+    if (typeof number === 'string' || typeof marker === 'string') throw new Error('Expected day nodes');
+    expect(number).toHaveTextContent(String(Number(date.slice(8))));
+    expect(number).toHaveProp('className', numberClass);
+    if (date === '2026-01-15') expect(number).toHaveProp('testID', 'meals-history-today');
+    expect(marker).toHaveProp('testID', meals ? 'meals-history-dot' : 'meals-history-spacer');
+    expect(marker).toHaveProp('className', meals ? 'size-1.25 rounded-full bg-accent' : 'size-1.25');
   });
 });
