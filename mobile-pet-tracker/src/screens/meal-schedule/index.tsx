@@ -6,7 +6,7 @@ import { Button, Skeleton } from 'heroui-native';
 import { useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Clock, ForkKnife } from 'reicon-react-native';
+import { Clock } from 'reicon-react-native';
 
 import {
   addMealTime,
@@ -26,6 +26,7 @@ import { useTranslate } from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
 import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
+import { HomeEntrance } from '../home/home-entrance';
 
 function isPlanError(state: NutritionPlanState): boolean {
   return ['error', 'unreachable', 'missing-config'].includes(state.kind);
@@ -47,10 +48,7 @@ function toMealTime(date: Date): string {
 }
 
 function MealScheduleContent({ petId }: { petId: string }) {
-  const [accent, accentForeground] = useThemeColors([
-    'accent-strong',
-    'accent-foreground',
-  ]);
+  const [accent] = useThemeColors(['accent-strong']);
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { signOut, token } = useAuth();
   const t = useTranslate();
@@ -232,35 +230,43 @@ function MealScheduleContent({ petId }: { petId: string }) {
 
       {!hasError && loadedPlan !== null ? (
         <>
-          <Card
-            testID="meal-schedule-summary"
-            variant="accent"
-            className="gap-4"
-          >
-            <View className="flex-row items-center justify-between gap-4">
-              <View className="flex-1 gap-1">
-                <Text className="text-xs font-semibold uppercase tracking-widest text-accent-foreground">
-                  {t('mealSchedule.dailyTarget')}
-                </Text>
-                <Text className="text-3xl font-black text-accent-foreground">
-                  {loadedPlan.merKcal} kcal
-                </Text>
-                <Text className="font-semibold text-accent-foreground">
-                  {t('mealSchedule.dailyGrams', {
-                    grams: loadedPlan.dailyGrams,
-                  })}
-                </Text>
-              </View>
-              <View className="items-end gap-1">
-                <ForkKnife size={24} color={accentForeground} />
-                <Text className="font-bold text-accent-foreground">
-                  {t('mealSchedule.mealsPerDay', {
-                    meals: loadedPlan.mealsPerDay,
-                  })}
-                </Text>
+          <HomeEntrance testID="meal-schedule-summary-entry" index={0}>
+            <View
+              testID="meal-schedule-summary"
+              className="gap-2 rounded-24 bg-accent border-b-5 border-black/25 p-4"
+              style={CONTINUOUS_CORNER}
+            >
+              <Text className="text-xs font-extrabold uppercase tracking-caps text-accent-foreground">
+                {t('mealSchedule.dailyTarget')}
+              </Text>
+              <View className="flex-row gap-2">
+                <View className="flex-1">
+                  <Text className="text-22 font-black text-accent-foreground">
+                    {loadedPlan.merKcal}
+                  </Text>
+                  <Text className="text-xs font-normal text-accent-foreground">
+                    kcal
+                  </Text>
+                </View>
+                <View className="flex-1">
+                  <Text className="text-22 font-black text-accent-foreground">
+                    {`${loadedPlan.dailyGrams} g`}
+                  </Text>
+                  <Text className="text-xs font-normal text-accent-foreground">
+                    {t('mealSchedule.perDay')}
+                  </Text>
+                </View>
+                <View className="flex-1">
+                  <Text className="text-22 font-black text-accent-foreground">
+                    {loadedPlan.mealsPerDay}
+                  </Text>
+                  <Text className="text-xs font-normal text-accent-foreground">
+                    {t('mealSchedule.mealsPerDayUnit')}
+                  </Text>
+                </View>
               </View>
             </View>
-          </Card>
+          </HomeEntrance>
 
           <View testID="meal-times-section" className="gap-3">
             <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
