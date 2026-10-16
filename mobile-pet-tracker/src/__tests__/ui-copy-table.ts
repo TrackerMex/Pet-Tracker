@@ -213,8 +213,8 @@ export const R6_FOOD: UseRow[] = [
   { file: 'src/screens/meal-schedule/index.tsx', key: 'common.somethingWentWrong' },
   { file: 'src/screens/meal-schedule/index.tsx', key: 'common.retry' },
   { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.dailyTarget' },
-  { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.dailyGrams' },
-  { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.mealsPerDay' },
+  { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.perDay' }, // #179 R5
+  { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.mealsPerDayUnit' }, // #179 R5
   { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.timesAndPortions' },
   { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.noMealPlanYet' },
   { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.generatePlan' },

@@ -261,7 +261,7 @@ describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () 
     [join('screens', 'health', 'index.tsx'), 2 + 1], // #168 R3
     [join('app', '(tabs)', 'food.tsx'), 2 - 1], // #168 R8
     [join('screens', 'map', 'index.tsx'), 4],
-    [join('screens', 'meal-schedule', 'index.tsx'), 1],
+    [join('screens', 'meal-schedule', 'index.tsx'), 1 + 1], // #179 R5
     [join('screens', 'weight-log', 'index.tsx'), 1],
     [join('screens', 'docs', 'index.tsx'), 1],
     [join('screens', 'profile', 'index.tsx'), 3 + 1 + 4 - 7], // #41 R9; #168 R6; #173 R10: ProfileTile
@@ -316,7 +316,7 @@ describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () 
     // #138 R3: minus one more, collar-pair-link's corner travels in its own.
     expect(
       directUses.reduce((total, [, count]) => total + count, 2),
-    ).toBe(33 + 1 + 1 - 1 - 1 + 1 + 1 - 1 + 4 + 1 - 1 - 7); // #41 R9: geofences-link; #168 R3, R8, R6; #170 R16; #171 R3: ready-done; #173 R10: ProfileTile
+    ).toBe(33 + 1 + 1 - 1 - 1 + 1 + 1 - 1 + 4 + 1 - 1 - 7 + 1); // #179 R5; #41 R9: geofences-link; #168 R3, R8, R6; #170 R16; #171 R3: ready-done; #173 R10: ProfileTile
   });
 });
 
@@ -402,7 +402,7 @@ describe('#98 R10: los candados que esta feature no mueve', () => {
     // With no match, match() returns null: the ?? [] keeps the count readable.
     expect(home.match(/style=\{CONTINUOUS_CORNER\}/g) ?? []).toHaveLength(0);
     expect(food.match(/style=\{CONTINUOUS_CORNER\}/g)).toHaveLength(1);
-    expect(count(/style=\{CONTINUOUS_CORNER\}/g)).toBe(31 + 1 + 4 + 1 - 1 - 7); // #41 R9: geofences-link; #168; #170 R8: alert-detail-map; #171 R3: ready-done; #173 R10: ProfileTile
+    expect(count(/style=\{CONTINUOUS_CORNER\}/g)).toBe(31 + 1 + 4 + 1 - 1 - 7 + 1); // #179 R5; #41 R9: geofences-link; #168; #170 R8: alert-detail-map; #171 R3: ready-done; #173 R10: ProfileTile
     expect(count(/rounded-xl bg-accent(?=[\s'"`])/g)).toBe(13 + 1 + 1 + 1 + 1 + 1 + 1 + 1 - 1 - 1 - 1); // #171 R3 // #146 R8, #146 R9; #118 R7; #155 R3 // #158 R3: docs-upload; // #158 R5: docs-upload-submit // #171 R14 // #173 R5; #175 R7: docs-upload pasa a zona de subida
     expect(count(/bg-accent-soft/g)).toBe(16 + 2 + 1 - 1 - 1 - 1 - 1); // #147 R4: meal-time-edit y add-meal-time-button; #105 R11; #168 R5: PetPills pasa a huecos pastel; #172 R14: forgot-lock-tile pasa a bg-accent; #171 R3; #173 R6
     expect(home.match(/text-accent-strong\b/g)).toHaveLength(2);
@@ -581,7 +581,7 @@ describe('#166 R2: todo primario sólido lleva el labio detrás de bg-accent', (
     );
 
     expect(count(/\bborder-b-4\b/g)).toBe(19 + 1 + 1 - 1 - 1 - 1); // #172 R14: forgot-lock-tile (Enmienda #172); #171 R3: ready-map // #171 R14 // #173 R5; #175 R7: docs-upload
-    expect(count(/border-black\/25/g)).toBe(19 + 1 + 1 - 1 - 1 - 1); // #172 R14: forgot-lock-tile (Enmienda #172); #171 R3: ready-map // #171 R14 // #173 R5; #175 R7: docs-upload
+    expect(count(/border-black\/25/g)).toBe(19 + 1 + 1 - 1 - 1 - 1 + 1); // #179 R5; #172 R14: forgot-lock-tile (Enmienda #172); #171 R3: ready-map // #171 R14 // #173 R5; #175 R7: docs-upload
   });
 });
 

@@ -184,12 +184,12 @@ describe('#174 R12: inventarios', () => {
     {
       token: 'border-b-5',
       pattern: /(?<![\w-])border-b-5\b/,
-      files: ['screens/alerts/index.tsx'], // #174 R12
+      files: ['screens/alerts/index.tsx', 'screens/meal-schedule/index.tsx'], // #179 R5; #174 R12
     },
     {
       token: 'tracking-caps',
       pattern: /(?<![\w-])tracking-caps\b/,
-      files: ['screens/alerts/index.tsx'], // #174 R12
+      files: ['screens/alerts/index.tsx', 'screens/meal-schedule/index.tsx'], // #179 R5; #174 R12
     },
     {
       token: 'text-15',
@@ -221,7 +221,7 @@ describe('#174 R12: inventarios', () => {
     const count = sourceFiles().reduce((total, path) => (
       total + (readFileSync(path, 'utf8').match(/(?<![\w-])border-b-5\b/g)?.length ?? 0)
     ), 0);
-    expect(count).toBe(1);
+    expect(count).toBe(1 + 1); // #179 R5
   });
 });
 

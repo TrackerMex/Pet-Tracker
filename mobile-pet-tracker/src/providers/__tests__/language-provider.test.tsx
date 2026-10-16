@@ -69,7 +69,8 @@ describe('#65 R12: el cat√°logo tiene los dos idiomas y t resuelve claves y par√
         - 4 + 3 // #173 R13
         + 7 // #175 R3
         + 1 // #174 R2
-        + 5, // #179 R3
+        + 5 // #179 R3
+        - 2, // #179 R5
     );
     expect(spanishKeys).toEqual(englishKeys);
     for (const key of englishKeys) {

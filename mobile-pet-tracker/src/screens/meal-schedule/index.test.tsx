@@ -298,9 +298,9 @@ describe('R7: meal schedule muestra horarios y perfil', () => {
       expect(screen.getByTestId('meal-schedule-summary')).toBeVisible(),
     );
     const summary = within(screen.getByTestId('meal-schedule-summary'));
-    expect(summary.getByText('656 kcal')).toBeVisible();
-    expect(summary.getByText('2 comidas / día')).toBeVisible();
-    expect(summary.getByText('187 g / día')).toBeVisible();
+    expect(summary.getByText('656')).toBeVisible();
+    expect(summary.getByText('comidas / día')).toBeVisible();
+    expect(summary.getByText('187 g')).toBeVisible();
     expect(
       screen.getAllByTestId(/^meal-time-row-/).map(({ props }) => props.testID),
     ).toEqual(['meal-time-row-0', 'meal-time-row-1']);
@@ -1109,5 +1109,60 @@ describe('#179 R4: marco y título en contenido', () => {
     await renderMealSchedule();
     await screen.findByTestId('meal-schedule-empty');
     expectHeading();
+  });
+});
+
+describe('#179 R5: resumen del artboard', () => {
+  beforeEach(() => {
+    mockGetNutritionPlan.mockResolvedValue({ kind: 'ok', plan: makePlan() });
+    mockGetNutritionProfile.mockResolvedValue({ kind: 'not-found' });
+  });
+
+  it('compone el resumen con eyebrow y tres columnas de valor y etiqueta', async () => {
+    await renderMealSchedule();
+    const summary = await screen.findByTestId('meal-schedule-summary');
+    expect(summary).toHaveProp('className', 'gap-2 rounded-24 bg-accent border-b-5 border-black/25 p-4');
+    expect(summary).toHaveStyle({ borderCurve: 'continuous' });
+    expect(summary.children).toHaveLength(2);
+    const eyebrow = summary.children[0];
+    const columns = summary.children[1];
+    if (typeof eyebrow === 'string' || typeof columns === 'string') throw new Error('Expected summary nodes');
+    expect(eyebrow).toHaveTextContent('Objetivo diario');
+    expect(eyebrow).toHaveProp('className', 'text-xs font-extrabold uppercase tracking-caps text-accent-foreground');
+    expect(columns).toHaveProp('className', 'flex-row gap-2');
+    expect(columns.children).toHaveLength(3);
+    for (const [index, value, label] of [[0, '656', 'kcal'], [1, '187 g', '/ día'], [2, '2', 'comidas / día']] as const) {
+      const column = columns.children[index];
+      if (typeof column === 'string') throw new Error('Expected column');
+      expect(column).toHaveProp('className', 'flex-1');
+      expect(column.children).toHaveLength(2);
+      const valueNode = within(column).getByText(value);
+      const labelNode = within(column).getByText(label);
+      expect(valueNode).toHaveProp('className', 'text-22 font-black text-accent-foreground');
+      expect(labelNode).toHaveProp('className', 'text-xs font-normal text-accent-foreground');
+      expect(column.children[0]).toBe(valueNode);
+      expect(column.children[1]).toBe(labelNode);
+    }
+    expect(mockHomeEntrance).toHaveBeenCalledWith(expect.objectContaining({ testID: 'meal-schedule-summary-entry', index: 0 }));
+    expect(screen.queryByText('656 kcal')).toBeNull();
+    expect(screen.queryByText('187 g / día')).toBeNull();
+    expect(screen.queryByText('2 comidas / día')).toBeNull();
+    expect(within(summary).queryByTestId('meal-schedule-icon-fork-knife')).toBeNull();
+  });
+
+  it('pinta los valores del segundo plan en sus propias columnas', async () => {
+    mockGetNutritionPlan.mockResolvedValue({ kind: 'ok', plan: makePlan({
+      merKcal: 1200, dailyGrams: 300, mealsPerDay: 3, mealTimes: ['07:30', '12:00', '19:30'],
+    }) });
+    await renderMealSchedule();
+    const summary = await screen.findByTestId('meal-schedule-summary');
+    const columns = summary.children[1];
+    if (typeof columns === 'string') throw new Error('Expected columns');
+    expect(columns.children).toHaveLength(3);
+    for (const [index, value] of [[0, '1200'], [1, '300 g'], [2, '3']] as const) {
+      const column = columns.children[index];
+      if (typeof column === 'string') throw new Error('Expected column');
+      expect(within(column).getByText(value)).toBeVisible();
+    }
   });
 });
