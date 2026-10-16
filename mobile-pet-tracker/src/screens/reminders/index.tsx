@@ -20,6 +20,7 @@ import {
 import type { Reminder } from '../../api/types';
 import { EmptyState } from '../../components/empty-state';
 import { PetSwitcher } from '../../components/pet-switcher';
+import { PopIn } from '../../components/pop-in';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
 import {
@@ -35,6 +36,7 @@ import { useThemeColors } from '../../theme/use-theme-colors';
 import { CATEGORY_SLOTS } from '../../utils/category-palette';
 import { daysUntil } from '../../utils/reminder-dates';
 import { REMINDER_TYPE_META } from '../../utils/reminder-meta';
+import { HomeEntrance } from '../home/home-entrance';
 
 function isRemindersError(state: RemindersState): boolean {
   return ['error', 'unreachable', 'missing-config', 'not-found'].includes(
@@ -292,7 +294,7 @@ export function RemindersScreen() {
           </View>
 
           <View className="gap-3">
-            {reminders.data.reminders.map((reminder) => {
+            {reminders.data.reminders.map((reminder, i) => {
               const meta = REMINDER_TYPE_META[reminder.type];
               const due = new Date(reminder.dueAt);
               const days = daysUntil(new Date(), due);
@@ -303,69 +305,72 @@ export function RemindersScreen() {
               const time = due.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
 
               return (
-                <View
-                  key={reminder.id}
-                  testID={`reminder-row-${reminder.id}`}
-                  className={`flex-row items-center gap-3 rounded-22 bg-surface p-3.5 ${upcoming ? 'border-2 border-warning-soft' : 'border border-border'}${inactive ? ' opacity-50' : ''}`}
-                  style={CONTINUOUS_CORNER}
-                >
+                <HomeEntrance key={reminder.id} testID={`reminders-entry-${reminder.id}`} index={i}>
                   <View
-                    testID={`reminder-tile-${reminder.id}`}
-                    className={`size-11.5 items-center justify-center rounded-14 ${slot.surface}`}
+                    testID={`reminder-row-${reminder.id}`}
+                    className={`flex-row items-center gap-3 rounded-22 bg-surface p-3.5 ${upcoming ? 'border-2 border-warning-soft' : 'border border-border'}${inactive ? ' opacity-50' : ''}`}
                     style={CONTINUOUS_CORNER}
                   >
-                    <meta.Icon size={22} color={categoryInk[meta.category]} />
-                  </View>
-                  <View className="min-w-0 flex-1 gap-0.75">
-                    <View className="flex-row items-center justify-between">
-                      <Text className={`text-xs font-extrabold ${slot.ink}`}>
-                        {t(meta.labelKey)}
-                      </Text>
-                      {upcoming ? (
-                        <Text
-                          testID={`reminder-upcoming-${reminder.id}`}
-                          className="rounded-full bg-warning-soft px-2 py-0.5 text-2xs font-bold text-warning-strong"
-                        >
-                          {t('reminders.upcoming')}
-                        </Text>
-                      ) : null}
+                    <View
+                      testID={`reminder-tile-${reminder.id}`}
+                      className={`size-11.5 items-center justify-center rounded-14 ${slot.surface}`}
+                      style={CONTINUOUS_CORNER}
+                    >
+                      <meta.Icon size={22} color={categoryInk[meta.category]} />
                     </View>
-                    <Text className="text-base font-extrabold text-foreground">
-                      {reminder.title}
-                    </Text>
-                    <View className="flex-row items-center gap-1">
-                      <Text className="text-13 font-normal text-muted">
-                        {t('reminders.dueAt', { date, time })}
-                      </Text>
-                      {inactive ? (
-                        <Text
-                          testID={`reminder-status-${reminder.id}`}
-                          className="text-13 font-semibold text-muted"
-                        >
-                          {reminder.status === 'sent'
-                            ? t('reminders.sent')
-                            : t('reminders.cancelled')}
+                    <View className="min-w-0 flex-1 gap-0.75">
+                      <View className="flex-row items-center justify-between">
+                        <Text className={`text-xs font-extrabold ${slot.ink}`}>
+                          {t(meta.labelKey)}
                         </Text>
-                      ) : (
+                        {upcoming ? (
+                          <PopIn testID={`reminder-upcoming-pop-${reminder.id}`}>
+                            <Text
+                              testID={`reminder-upcoming-${reminder.id}`}
+                              className="rounded-full bg-warning-soft px-2 py-0.75 text-11 font-extrabold text-warning-strong"
+                            >
+                              {t('reminders.upcoming')}
+                            </Text>
+                          </PopIn>
+                        ) : null}
+                      </View>
+                      <Text className="text-base font-extrabold text-foreground">
+                        {reminder.title}
+                      </Text>
+                      <View className="flex-row items-center gap-1">
                         <Text className="text-13 font-normal text-muted">
-                          {t('reminders.dueInDays', { days })}
+                          {t('reminders.dueAt', { date, time })}
                         </Text>
-                      )}
+                        {inactive ? (
+                          <Text
+                            testID={`reminder-status-${reminder.id}`}
+                            className="text-13 font-semibold text-muted"
+                          >
+                            {reminder.status === 'sent'
+                              ? t('reminders.sent')
+                              : t('reminders.cancelled')}
+                          </Text>
+                        ) : (
+                          <Text className="text-13 font-normal text-muted">
+                            {t('reminders.dueInDays', { days })}
+                          </Text>
+                        )}
+                      </View>
                     </View>
+                    <Button
+                      testID={`reminder-delete-${reminder.id}`}
+                      className="rounded-xl bg-danger-soft"
+                      isDisabled={deletingId === reminder.id}
+                      size="sm"
+                      variant="danger-soft"
+                      onPress={() => confirmDelete(reminder)}
+                    >
+                      <Button.Label className="font-semibold text-danger">
+                        {t('reminders.delete')}
+                      </Button.Label>
+                    </Button>
                   </View>
-                  <Button
-                    testID={`reminder-delete-${reminder.id}`}
-                    className="rounded-xl bg-danger-soft"
-                    isDisabled={deletingId === reminder.id}
-                    size="sm"
-                    variant="danger-soft"
-                    onPress={() => confirmDelete(reminder)}
-                  >
-                    <Button.Label className="font-semibold text-danger">
-                      {t('reminders.delete')}
-                    </Button.Label>
-                  </Button>
-                </View>
+                </HomeEntrance>
               );
             })}
           </View>
