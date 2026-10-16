@@ -226,3 +226,109 @@ Lint sin errores
 Typecheck sin errores
 Todo verde. Listo para trabajar.
 ```
+
+## Ronda de fusión con main (#183 y #179)
+
+Fecha: 2026-10-16
+Veredicto de la ronda: **APROBADO**
+Alcance: solo la fusión `0e86587b` (padres `6603ff6d` y `91af2d9f`) y la nota de Codex en `60d030c2`. No se revisan de
+nuevo R1 a R13 (aprobados en `6950f20a`) ni R14 (firma humana `ecb51395`). HEAD revisado:
+`60d030c2ec1bf7b75f8f7935e1387d54e11753cd`, árbol limpio al empezar y al acabar.
+
+### Comprobaciones pedidas
+
+1. **Padres, sin rebase: cumple.** `git rev-parse 0e86587b^1 0e86587b^2` devuelve
+   `6603ff6d89f412c65a531698554ff35ee5b85d8b` y `91af2d9f9101ca9c99e43852b859255b8db565b2`.
+   `ecb51395` sigue siendo ancestro de HEAD.
+2. **Cero marcadores: cumple.** `git grep -nE '^(<<<<<<<|=======$|>>>>>>>)' -- . ':!progress'` sale vacío (exit 1).
+3. **Los nueve ficheros, leídos contra ambos padres: cumple.** Método: para cada uno, `git diff 6603ff6d 0e86587b` debe
+   traer solo lo de main y `git diff 91af2d9f 0e86587b` solo lo de #178; y comparé los deltas normalizados
+   (`base..6603` contra `main..merge`, y `base..main` contra `6603..merge`).
+   - `theme/global.css`: `--radius-14` queda **una vez** (línea 20; las dos ramas lo añadían), `--radius-16` (21),
+     `--radius-22` (22) y `--text-22` (30). Sin duplicados.
+   - `theme/__tests__/global-css.test.ts`: describes `#178 R1`, `#179 R1` y `#175 R1`, cada uno idéntico a su padre.
+   - `language-provider.test.tsx`: `+ 2 // #178 R3`, `+ 5 // #179 R3`, `- 2 // #179 R5`, `+ 9, // #183 R1`, coma solo en la
+     última; los describes `#178 R3`, `#179 R3` y `#183 R1` presentes. Única diferencia contra los deltas puros: la coma.
+   - `consistency-classnames.test.ts`: reconstruí las cuatro sumas a mano. `directUses`: `-7 + 1 + 1 + 2` (#179) `+ 2`
+     (#178); `CONTINUOUS_CORNER`: `-7 + 1 + 1 + 2 + 2`; `bg-accent-soft` y `accentSoftCount`: 4 restas base + 3 de #178 +
+     3 de #179 = 10; `border-black/25`: `+1` (#178) `+1 -1` (#179). `reminders.match(/bg-accent-soft/g)` queda `toBeNull()`;
+     `rounded-xl bg-accent`, `border-b-4` y la fila de `lip-gray` vienen de #179 sin cambio. Entradas de tabla
+     `reminders 4 + 1`, `add-reminder 3 + 1`, `meal-schedule 1 + 1`, `meals-history 1 + 2` todas presentes.
+   - `alerts-canvas-fidelity.test.ts`: `tracking-title` = `add-reminder`, `alerts`, `docs`, `meal-schedule`,
+     `meals-history`, `reminders` (orden alfabético); el resto de inventarios, de #179, intactos.
+   - `ui-language.test.ts`: títulos de main y recuento de #178 (`50 + 1 - 2 + 1 - 1 + 1 + 1 + 1 + 1`), más las líneas de
+     #183 (`R1_AUTH`, `R11_RESET`, `+ 1 // #183 R2`) y #179 (`R6_FOOD`).
+   - `design-drift.test.ts`: los cuatro describes completos, cada uno idéntico a su padre. Cuenta de `it` por fichero
+     (`main + ours - base`) coincide en los seis ficheros de test conflictivos (97 en design-drift, 31 en language-provider,
+     43 en global-css, 28, 37 y 14 en los demás). La **única** diferencia respecto de una unión pura es el bloque de
+     radios (punto 4).
+   - `docs/ui-guidelines.md`: las dos líneas «Fuera de la escala» (#178 y luego #179) y las dos recetas de botón («Chip
+     seleccionado» y luego «Secundarios de Horario»), ambas antes de «Sin labio»; los tamaños `--text-17` y `--text-22` de main.
+   - `specs/mobile-ui-language/design.md`: `§2.32` (#183), `§2.33` (#179), `§2.34` (#178), este último con sus dos filas
+     de copy intactas. La casilla de la plantilla (`:1478`) sigue sin marcar. Sin referencias a `§2.32` de #178 en
+     `src/` ni en `specs/mobile-routine-canvas-fidelity/`.
+   - Ficheros que se fusionaron solos (`catalog.ts`, `_layout.tsx`, `layout.test.tsx`, `ui-copy-table.ts`, `profile-canvas-fidelity.test.ts`):
+     delta contra cada padre idéntico al delta del otro; sin duplicados. Los ficheros de producción que #178 no toca
+     (`forgot`, `login`, `register`, `reset-password`, `meal-schedule`, `meals-history`, `account-rules.ts`, `month-grid.ts`)
+     son byte a byte los de `91af2d9f`.
+4. **Desviación del candado de radios (`#178 R13`): correcta, y el candado sigue mordiendo.**
+   `src/__tests__/design-drift.test.ts:1099-1115` ya no prohíbe `rounded-14` fuera de Recordatorios: exige
+   `rounded-16|22` en `[]` y `rounded-14` fuera de Recordatorios **exactamente** `meal-schedule` y `meals-history`. Es la
+   única forma de conservar el candado sin tocar la spec, porque main usa `rounded-14` (mismo token) en esas dos pantallas, y
+   no afloja nada más (los conteos exactos dentro de Recordatorios, `1/3/1`, no cambian). Mutaciones propias, una a una,
+   cada una revertida con `git checkout HEAD --` (`git status` limpio y `diff --cached` vacío al acabar); todas ponen en rojo
+   `#178 R13 › reserva los radios 14, 16 y 22 a Recordatorios con su inventario exacto` y nada más:
+   - M1 `rounded-14` en `add-reminder/index.tsx` (tercer fichero) → rojo.
+   - M2 `rounded-16` en `meal-schedule/index.tsx` → rojo.
+   - M3 `rounded-22` en `meals-history/index.tsx` → rojo.
+   - M4 segundo `rounded-14` dentro de `reminders/index.tsx` → rojo.
+   - M5 `rounded-14` en `home/index.tsx` → rojo.
+   - M6 `meal-schedule` pierde sus `rounded-14` (`sed` a `rounded-xl`) → rojo (la lista fuera de Recordatorios se acorta).
+   - M7 `rounded-14` en un `.ts` no `.tsx` (`utils/reminder-meta.ts`) → rojo.
+   Línea base sin mutar: 1 passed. Mutaciones sobre los agregados fusionados: M8 `bg-accent-soft` colado en
+   `reminders/index.tsx` → rojos `#64 R9` y `#98 R10` de consistency-classnames; M9 `tracking-title` en `login/index.tsx`
+   → rojo `#174 R12 › limita tracking-title a su inventario de producción`.
+5. **Lista cerrada M6: cumple.** `git diff --name-only 91af2d9f 0e86587b` menos los dos ficheros del handoff de fusión =
+   `git diff --name-only 58bf412c ecb51395`, 29 ficheros, `diff` vacío. Y el conjunto de ficheros de `src/` que el merge
+   cambia respecto de su primer padre es **exactamente** el que main cambia respecto de la base (22 rutas, incluidos
+   tests): no entra ni sale nada de producción que no venga de main.
+
+### Evidencia de ejecución
+
+- No corrí `./init.sh`. Leí `/tmp/178-init.log` (escrito a las 19:24, posterior a `60d030c2`): exit 0, móvil 112 suites /
+  3717 tests, backend 187 / 1474, infra 2 / 14, e2e 30 de 33 (3 skipped), lint y typecheck verdes; los 40 `●` son todos
+  `Console`. Cifras que coinciden con las de la nota de Codex (M4c) y con las del handoff.
+- Por mi cuenta, sin otro jest ni `router.d.ts` presentes, `-i --testTimeout=30000`:
+  `design-drift`, `consistency-classnames`, `ui-language`, `language-provider`, `global-css`, `alerts-canvas-fidelity` →
+  6 suites, **348 tests**, exit 0, sin `●`. Pantallas `reminders`, `add-reminder`, `meal-schedule`, `meals-history`, `login` y
+  `category-palette` → 6 suites, **288 tests**, exit 0. `bun run typecheck` → exit 0.
+- Ninguna comprobación se apoyó en el informe de Codex: todo lo anterior sale de `git show`/`git diff` y de mis corridas.
+
+### Hallazgos bloqueantes
+
+Ninguno.
+
+### Observaciones (no bloqueantes)
+
+1. **La desviación de R13 aún no consta donde el handoff dice.** El handoff (§M2) la da por «registrada en
+   `traceability.md` y en la PR». `specs/mobile-routine-canvas-fidelity/traceability.md` no menciona `rounded-14` compartido
+   ni la fusión, y `requirements.md:741-742` sigue diciendo «ninguno en otro fichero de `src/`», que el test ya no cumple a
+   la letra. Es del leader (los ficheros de spec no los toca ni Codex ni yo): apuntarlo en `traceability.md` y en la
+   descripción de la PR antes de abrirla.
+2. **Fila R14 de `traceability.md:24` sigue en «pendiente (humano)»** pese a la firma `ecb51395`. La regla de C5 («ninguna
+   fila pendiente») se cumple al cerrar, no en esta ronda; lo actualiza el leader con el cierre.
+3. **El título de `ui-language.test.ts:176` dice «51» y el recuento de la línea 177 suma 53.** Ya venía descuadrado de main
+   (la expresión de main sumaba 50 con título 51) y del veredicto anterior (obs. 5, título 49 con suma 53); es decorativo,
+   no afirma nada. Si el leader quiere limpiarlo, es una línea.
+4. **Acople deliberado entre #178 R13 y los ficheros de #179.** `design-drift.test.ts:1111-1114` nombra `meal-schedule` y
+   `meals-history`: si #179 deja de usar `rounded-14` (o una feature futura lo usa en un tercer fichero) el rojo caerá en
+   el candado de #178. Es el efecto buscado y el mensaje de fallo muestra la lista real. La comparación es de lista
+   ordenada: depende de que `readdirSync` devuelva alfabético (lo hace en Node/libuv); no es un riesgo hoy.
+5. **El «Desviaciones: ninguna» de la nota de Codex** es literal respecto del script, pero la edición de R13 sí es una
+   desviación de la spec de #178 (prescrita por el leader). Se cubre con la obs. 1.
+
+### Veredicto
+
+La fusión es una unión sin pérdida ni duplicación de las aserciones de #178, #179 y #183; el único cambio semántico es el
+candado de radios, correcto y con dientes. **APROBADO** para la ronda de fusión. El veredicto de la implementación
+(R1 a R13, `6950f20a`) y la firma R14 (`ecb51395`) no se alteran.
