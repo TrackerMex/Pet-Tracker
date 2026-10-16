@@ -68,7 +68,8 @@ describe('#65 R12: el catálogo tiene los dos idiomas y t resuelve claves y par�
         + 3 // #172 R16
         - 4 + 3 // #173 R13
         + 7 // #175 R3
-        + 1, // #174 R2
+        + 1 // #174 R2
+        + 5, // #179 R3
     );
     expect(spanishKeys).toEqual(englishKeys);
     for (const key of englishKeys) {
@@ -132,6 +133,27 @@ describe('#65 R12: el catálogo tiene los dos idiomas y t resuelve claves y par�
     expect(screen.getByTestId('missing-param')).toHaveTextContent(
       'Última señal {{date}}',
     );
+  });
+});
+
+describe('#179 R3: claves de Horario e Historial del canvas', () => {
+  it('registra las cinco traducciones exactas y sus filas de copy', () => {
+    const english = en as Record<string, string>;
+    const spanish = es as Record<string, string>;
+    const languageDesign = readFileSync(join(process.cwd(), '../specs/mobile-ui-language/design.md'), 'utf8');
+    const translations = [
+      ['mealSchedule.perDay', '/ day', '/ día'],
+      ['mealSchedule.mealsPerDayUnit', 'meals / day', 'comidas / día'],
+      ['mealSchedule.activity', 'Activity', 'Actividad'],
+      ['mealSchedule.condition', 'Condition', 'Condición'],
+      ['mealSchedule.food', 'Food', 'Alimento'],
+    ] as const;
+
+    for (const [key, englishValue, spanishValue] of translations) {
+      expect(english[key]).toBe(englishValue);
+      expect(spanish[key]).toBe(spanishValue);
+      expect(languageDesign).toMatch(new RegExp('\\| — \\| `' + escapeRegExp(key) + '`[^\\n]*← añadida por #179 \\(R3\\)'));
+    }
   });
 });
 
