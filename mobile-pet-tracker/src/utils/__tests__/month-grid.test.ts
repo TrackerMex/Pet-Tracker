@@ -29,7 +29,7 @@ describe('#105 R10: pure Monday-first month arithmetic', () => {
   });
   it('labels seven weekdays Monday first using UTC in either locale', () => {
     for (const locale of ['es-MX', 'en-US']) {
-      expect(weekdayHeaders(locale)).toEqual(Array.from({ length: 7 }, (_, i) => new Date(Date.UTC(2024, 0, 1 + i)).toLocaleDateString(locale, { weekday: 'short', timeZone: 'UTC' })));
+      expect(weekdayHeaders(locale)).toEqual(Array.from({ length: 7 }, (_, i) => new Date(Date.UTC(2024, 0, 1 + i)).toLocaleDateString(locale, { weekday: 'narrow', timeZone: 'UTC' })));
     }
   });
   it('formats a localized month title', () => {
@@ -41,5 +41,13 @@ describe('#105 R10: pure Monday-first month arithmetic', () => {
   });
   it('seeds the month from the device clock', () => {
     expect(currentMonth(new Date(2026, 0, 15, 12))).toBe('2026-01');
+  });
+});
+
+
+describe('#179 R10: calendario del artboard', () => {
+  it('devuelve las siete iniciales literales en español e inglés', () => {
+    expect(weekdayHeaders('es-MX')).toEqual(['L', 'M', 'M', 'J', 'V', 'S', 'D']);
+    expect(weekdayHeaders('en-US')).toEqual(['M', 'T', 'W', 'T', 'F', 'S', 'S']);
   });
 });

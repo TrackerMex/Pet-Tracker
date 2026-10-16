@@ -71,7 +71,7 @@ Tres límites, no negociables:
    `@theme` de global.css. Existentes: colores semánticos light/dark,
    fuentes Inter, `--radius-card: 20px`, `--text-2xs: 10px`. Si un valor
    nuevo se repite 2+, se añade token — no clase arbitraria.
-   Tamaños de letra fuera de la escala de Tailwind (fidelidad al canvas, #173): `--text-13: 13px`, `--text-26: 26px`, `--text-11: 11px`, `--text-15: 15px`; cada uno es token aunque se use una vez, porque la clase arbitraria está prohibida.
+   Tamaños de letra fuera de la escala de Tailwind (fidelidad al canvas, #173): `--text-13: 13px`, `--text-26: 26px`, `--text-11: 11px`, `--text-15: 15px`, `--text-17: 17px`, `--text-22: 22px`; cada uno es token aunque se use una vez, porque la clase arbitraria está prohibida.
    Tracking fuera de la escala de Tailwind (fidelidad al canvas, #174): `--tracking-title: -0.02em`, `--tracking-caps: 0.06em`, `--tracking-eyebrow: 0.08em`; la clase `tracking-*` va con una clase `text-*` en el mismo elemento, porque uniwind multiplica el `em` por su tamaño.
 3. **Grep-clean permanente** (criterio de aceptación de toda feature móvil):
    - cero hex fuera de `src/theme/`
@@ -184,6 +184,8 @@ Tres límites, no negociables:
 
     Fuera de la escala, por fidelidad al canvas (#174): `rounded-10` (10 px), ack compacto de fila de Alertas.
     Fuera de la escala, por fidelidad al canvas (#175): `rounded-24` (24 px), zona de subida de Documentos.
+    Fuera de la escala, por fidelidad al canvas (#178): `rounded-14` (14 px), mosaico del icono de la fila de Recordatorios; `rounded-16` (16 px), píldoras de resumen de Recordatorios; `rounded-22` (22 px), fila de Recordatorios, que es un `View` y no un `Card` porque `twMerge` no sustituye `rounded-card` por un radio con nombre de valor.
+    Fuera de la escala, por fidelidad al canvas (#179): `rounded-10` (10 px), «Editar» de la fila de Horario; `rounded-14` (14 px), mosaico de la fila y botones de acción de Horario y horas del panel del día de Historial; `rounded-24` (24 px), resumen de Horario y calendario y panel del día de Historial, que son `View` y no `Card` porque `twMerge` no sustituye `rounded-card` por un radio con nombre de valor.
 
 13. **Botón con cuerpo** (feature #166, 2026-10-11). Los botones de acción
     llevan un labio inferior: un borde inferior más grueso que los
@@ -198,6 +200,8 @@ Tres límites, no negociables:
       `rounded-xl border-2 border-b-6 border-lip-gray bg-surface`
       El gris sale del token `--color-lip-gray` de `src/theme/global.css`,
       nunca de un hex ni de una clase entre corchetes.
+    - **Chip seleccionado** (fidelidad al canvas, #178): cápsula `rounded-full bg-accent border-b-3 border-black/25`; el chip sin seleccionar no lleva labio.
+    - **Secundarios de Horario** (fidelidad al canvas, #179): «Editar» `h-9.75 rounded-10 border-2 border-b-5 border-lip-gray bg-surface` y «Añadir comida» `h-13.5 rounded-14 border-2 border-b-6 border-lip-gray bg-surface`, con el labio dentro del alto; «Generar plan» es tonal de la categoría violeta y sin labio, porque el labio del artboard (`rgba(91,63,163,0.35)`) no tiene token.
     - **Sin labio**: los tonales (`bg-accent-soft`, `bg-default`), los
       destructivos (`bg-danger`, `variant="danger-soft"`) y las primarias
       de heroui sin color en `className` (reintentos, confirmar alerta en el detalle).

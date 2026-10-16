@@ -141,7 +141,7 @@ describe('#65 R5: Health resuelve su copy por clave', () => {
 
 describe('#65 R6: Food resuelve su copy por clave', () => {
   it('resuelve las 51 ocurrencias normativas', () => {
-    expect(R6_FOOD).toHaveLength(35 + 3 + 1 - 2 + 1 + 3 + 9 + 11 + 2 + 1); // #105 R5; +1 #95 R4, -2 #95 R5, +1 #113 R3, +3 #147 R8, +9 #147 R9, +2 #155 R4, +1 #155 R9
+    expect(R6_FOOD).toHaveLength(35 + 3 + 1 - 2 + 1 + 3 + 9 + 11 + 2 + 1 + 3); // #105 R5; +1 #95 R4, -2 #95 R5, +1 #113 R3, +3 #147 R8, +9 #147 R9, +2 #155 R4, +1 #155 R9, +3 #179 R8
     checkUses(R6_FOOD);
   });
 });
@@ -174,7 +174,7 @@ describe('#65 R7: Profile resuelve su copy por clave', () => {
 
 describe('#65 R8: Recordatorios resuelve su copy por clave', () => {
   it('resuelve las 51 ocurrencias normativas', () => {
-    expect(R8_REMINDERS).toHaveLength(50 + 1 - 2 + 1 - 1 + 1); // +1 #95 R4, -2 #95 R5, +1 #114 R4, -1 #114 R5, +1 #155 R6
+    expect(R8_REMINDERS).toHaveLength(50 + 1 - 2 + 1 - 1 + 1 + 1 + 1 + 1); // #178 R12 // +1 #95 R4, -2 #95 R5, +1 #114 R4, -1 #114 R5, +1 #155 R6; // #178 R6; #178 R9
     checkUses(R8_REMINDERS);
   });
 });

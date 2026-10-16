@@ -45,7 +45,10 @@ describe('#173 R2: inventario de radios nuevos', () => {
     expect(filesMatching(/\brounded-hero\b/)).toEqual(['components/card.tsx', 'screens/profile/index.tsx']);
   });
   it('reserva rounded-tile a los accesos de Perfil', () => {
-    expect(filesMatching(/\brounded-tile\b/)).toEqual(['screens/profile/index.tsx']);
+    expect(filesMatching(/\brounded-tile\b/)).toEqual([
+      'screens/add-reminder/index.tsx', // #178 R12
+      'screens/profile/index.tsx',
+    ]);
   });
 });
 
@@ -55,17 +58,21 @@ describe('#173 R2.4: inventario de tamaños nuevos', () => {
       'screens/alerts/index.tsx', // #174 R3
       'screens/docs/index.tsx', // #175 R5
       'screens/profile/index.tsx',
+      'screens/reminders/index.tsx', // #178 R4
     ]);
   });
   it('limita text-13 a Perfil y a las pantallas de cuenta de #172 (E8)', () => {
     expect(filesMatching(/\btext-13\b/)).toEqual([
       'components/form-error.tsx',
+      'screens/add-reminder/index.tsx', // #178 R12
       'screens/alerts/index.tsx', // #174 R4, R6
       'screens/docs/index.tsx', // #175 R8
       'screens/forgot/index.tsx',
       'screens/login/index.tsx',
+      'screens/meal-schedule/index.tsx', // #179 R6
       'screens/profile/index.tsx',
       'screens/register/index.tsx',
+      'screens/reminders/index.tsx', // #178 R6
       'screens/reset-password/index.tsx',
     ]);
   });
@@ -78,7 +85,7 @@ describe('#173 R3: Card hero y flat solo en Perfil', () => {
     expect(profile.match(/variant="hero"/g)).toHaveLength(1);
   });
   it('Perfil es el único consumidor de Card flat y lo usa dos veces', () => {
-    expect(filesMatching(/variant="flat"/)).toEqual(['screens/profile/index.tsx']);
+    expect(filesMatching(/variant="flat"/)).toEqual(['screens/meal-schedule/index.tsx', 'screens/profile/index.tsx']); // #179 R6
     const profile = readFileSync(join(sourceRoot, 'screens/profile/index.tsx'), 'utf8');
     expect(profile.match(/variant="flat"/g)).toHaveLength(2);
   });

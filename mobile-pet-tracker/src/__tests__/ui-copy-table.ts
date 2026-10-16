@@ -189,7 +189,7 @@ export const R5_HEALTH: UseRow[] = [
 ];
 
 export const R6_FOOD: UseRow[] = [
-  { file: 'src/app/_layout.tsx', key: 'mealSchedule.mealSchedule' }, // #95 R4
+  { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.mealSchedule' }, // #179 R4
   { file: 'src/app/(tabs)/food.tsx', key: 'food.food' },
   { file: 'src/app/(tabs)/food.tsx', key: 'common.somethingWentWrong' },
   { file: 'src/app/(tabs)/food.tsx', key: 'common.retry' },
@@ -223,8 +223,8 @@ export const R6_FOOD: UseRow[] = [
   { file: 'src/screens/meal-schedule/index.tsx', key: 'common.somethingWentWrong' },
   { file: 'src/screens/meal-schedule/index.tsx', key: 'common.retry' },
   { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.dailyTarget' },
-  { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.dailyGrams' },
-  { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.mealsPerDay' },
+  { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.perDay' }, // #179 R5
+  { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.mealsPerDayUnit' }, // #179 R5
   { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.timesAndPortions' },
   { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.noMealPlanYet' },
   { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.generatePlan' },
@@ -242,7 +242,10 @@ export const R6_FOOD: UseRow[] = [
   { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.errorTimeNotInPlan' },
   { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.errorDuplicateTime' },
   { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.errorMealLimit' },
-  { file: 'src/app/_layout.tsx', key: 'mealsHistory.mealsHistory' }, // #105 R5
+  { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.activity' }, // #179 R8
+  { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.condition' }, // #179 R8
+  { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.food' }, // #179 R8
+  { file: 'src/screens/meals-history/index.tsx', key: 'mealsHistory.mealsHistory' }, // #179 R9
   { file: 'src/app/(tabs)/food.tsx', key: 'food.mealsHistory' }, // #105 R5
   { file: 'src/app/(tabs)/food.tsx', key: 'food.mealsHistoryLinkSubtitle' }, // #105 R5
   { file: 'src/screens/meals-history/index.tsx', key: 'mealsHistory.previousMonth' }, // #105 R5
@@ -323,8 +326,8 @@ export const R7_PROFILE: UseRow[] = [
 ];
 
 export const R8_REMINDERS: UseRow[] = [
-  { file: 'src/app/_layout.tsx', key: 'addReminder.addReminder' }, // #95 R4
-  { file: 'src/app/_layout.tsx', key: 'reminders.reminders' }, // #114 R4
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.addReminder' }, // #178 R10
+  { file: 'src/screens/reminders/index.tsx', key: 'reminders.reminders' }, // #178 R4
   { file: 'src/screens/reminders/index.tsx', key: 'reminders.errorForbidden' },
   { file: 'src/screens/reminders/index.tsx', key: 'common.cannotReachServer' },
   { file: 'src/screens/reminders/index.tsx', key: 'common.somethingWentWrong' },
@@ -334,6 +337,7 @@ export const R8_REMINDERS: UseRow[] = [
   { file: 'src/screens/reminders/index.tsx', key: 'common.retry' },
   { file: 'src/screens/reminders/index.tsx', key: 'reminders.noRemindersYet' },
   { file: 'src/screens/reminders/index.tsx', key: 'reminders.emptyBody' }, // #155 R6
+  { file: 'src/screens/reminders/index.tsx', key: 'reminders.new' }, // #178 R9
   { file: 'src/screens/reminders/index.tsx', key: 'reminders.active' },
   { file: 'src/screens/reminders/index.tsx', key: 'reminders.thisWeek' },
   { file: 'src/screens/reminders/index.tsx', key: 'reminders.inactive' },
@@ -341,6 +345,7 @@ export const R8_REMINDERS: UseRow[] = [
   { file: 'src/screens/reminders/index.tsx', key: 'reminders.cancelled' },
   { file: 'src/screens/reminders/index.tsx', key: 'reminders.sent' },
   { file: 'src/screens/reminders/index.tsx', key: 'reminders.dueInDays' },
+  { file: 'src/screens/reminders/index.tsx', key: 'reminders.dueAt' }, // #178 R6
   { file: 'src/screens/reminders/index.tsx', key: 'reminders.delete' },
   { file: 'src/screens/reminders/index.tsx', key: 'reminders.deleteReminder' },
   { file: 'src/screens/reminders/index.tsx', key: 'reminders.deleteSheetBody' },
@@ -372,6 +377,7 @@ export const R8_REMINDERS: UseRow[] = [
   { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.selectDate' },
   { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.time' },
   { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.alert' },
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.notifyPreview' }, // #178 R12
   { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.saveReminder' },
 ];
 

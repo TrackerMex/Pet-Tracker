@@ -5,6 +5,63 @@ declare const require: (moduleName: 'fs') => {
 const { readFileSync } = require('fs');
 const globalCss = readFileSync(`${process.cwd()}/src/theme/global.css`, 'utf8');
 
+describe('#178 R1: tokens de Recordatorios', () => {
+  it('define los valores exactos del artboard dentro de @theme', () => {
+    expect(parseVariables(extractTheme())).toMatchObject({
+      'text-11': '11px',
+      'text-13': '13px',
+      'text-26': '26px',
+      'radius-14': '14px',
+      'radius-16': '16px',
+      'radius-22': '22px',
+      'radius-tile': '18px',
+      'tracking-title': '-0.02em',
+    });
+  });
+
+  it('declara cada token del artboard una sola vez', () => {
+    const theme = extractTheme();
+    expect(theme.match(/--radius-14:/g) ?? []).toHaveLength(1);
+    expect(theme.match(/--radius-16:/g) ?? []).toHaveLength(1);
+    expect(theme.match(/--radius-22:/g) ?? []).toHaveLength(1);
+    expect(theme.match(/--text-11:/g) ?? []).toHaveLength(1);
+    expect(theme.match(/--tracking-title:/g) ?? []).toHaveLength(1);
+  });
+});
+
+describe('#179 R1: tokens de Horario e Historial', () => {
+  it('define los valores exactos del artboard dentro de @theme', () => {
+    expect(parseVariables(extractTheme())).toMatchObject({
+      'text-13': '13px',
+      'text-15': '15px',
+      'text-17': '17px',
+      'text-22': '22px',
+      'radius-card': '20px',
+      'radius-10': '10px',
+      'radius-14': '14px',
+      'radius-24': '24px',
+      'tracking-title': '-0.02em',
+      'tracking-caps': '0.06em',
+    });
+  });
+
+  it('declara cada token del artboard una sola vez', () => {
+    const theme = extractTheme();
+    for (const pattern of [
+      /--text-15:/g,
+      /--text-17:/g,
+      /--text-22:/g,
+      /--radius-10:/g,
+      /--radius-14:/g,
+      /--radius-24:/g,
+      /--tracking-title:/g,
+      /--tracking-caps:/g,
+    ]) {
+      expect(theme.match(pattern) ?? []).toHaveLength(1);
+    }
+  });
+});
+
 describe('#175 R1: tokens de Documentos', () => {
   it('define los valores exactos del artboard dentro de @theme', () => {
     expect(parseVariables(extractTheme())).toMatchObject({

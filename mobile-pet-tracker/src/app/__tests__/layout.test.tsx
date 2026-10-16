@@ -344,11 +344,11 @@ describe('#95 R4: cada pantalla de detalle declara su cabecera nativa', () => {
   });
 
   it.each([
-    ['add-reminder', 't:addReminder.addReminder'],
+    ['add-reminder', ''],
     ['pets/add', 't:addPet.addPet'],
     ['pets/[petId]/docs', ''],
     ['weight-log', 't:weightLog.weightLog'],
-    ['meal-schedule', 't:mealSchedule.mealSchedule'],
+    ['meal-schedule', ''],
     ['pairing', ''],
   ])('%s usa exactamente las opciones de cabecera acordadas', async (name, title) => {
     await render(<RootLayout />);
@@ -532,7 +532,7 @@ describe('#114 R4: reminders y alerts declaran su cabecera nativa', () => {
   });
 
   it.each([
-    ['reminders', 't:reminders.reminders'],
+    ['reminders', ''],
     ['alerts', ''], // #174 R3
   ])('%s usa exactamente las opciones de cabecera acordadas', async (name, title) => {
     await render(<RootLayout />);
@@ -574,7 +574,7 @@ describe('#105 R8: meals history is the last protected detail', () => {
       : undefined).toEqual([Stack.Screen, 'meals-history']);
     expect(isValidElement<{ options?: unknown }>(detail)
       ? detail.props.options
-      : undefined).toMatchObject({ headerShown: true, title: 't:mealsHistory.mealsHistory' });
+      : undefined).toMatchObject({ headerShown: true, title: '' });
   });
 });
 

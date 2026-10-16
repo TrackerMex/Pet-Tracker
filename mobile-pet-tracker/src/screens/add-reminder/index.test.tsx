@@ -27,6 +27,22 @@ import {
 import { AddReminderScreen } from '.';
 import { TOUCH_SLOP } from '../../theme/touch-target';
 
+jest.mock('reicon-react-native', () => {
+  const actual = jest.requireActual<typeof import('reicon-react-native')>('reicon-react-native');
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  const mockIcon = (testID: string) =>
+    function MockIcon(props: Record<string, unknown>) {
+      return React.createElement(View, { testID, ...props });
+    };
+  return {
+    ...actual,
+    Bell: mockIcon('add-reminder-icon-bell'),
+    Calendar: mockIcon('add-reminder-icon-calendar'),
+    Clock: mockIcon('add-reminder-icon-clock'),
+  };
+});
+
 jest.mock('../../api/reminders', () => ({
   createReminder: jest.fn(),
 }));
@@ -166,7 +182,8 @@ describe('R8: formulario de alta con chips y pickers', () => {
     expect(
       screen.getByTestId('add-reminder-form').props.contentContainerStyle,
     ).toEqual({
-      padding: 24,
+      paddingHorizontal: 20,
+      paddingTop: 24,
       gap: 16,
       paddingBottom: 48,
     });
@@ -182,8 +199,8 @@ describe('R8: formulario de alta con chips y pickers', () => {
     expect(screen.getByTestId('type-chip-vaccine').props.accessibilityState).toEqual({
       selected: true,
     });
-    expect(screen.getByText('💉 Vacuna')).toBeVisible();
-    expect(screen.getByText('📌 Otro')).toBeVisible();
+    expect(screen.getByText('Vacuna')).toBeVisible(); // #178 R6
+    expect(screen.getByText('Otro')).toBeVisible();
     expect(screen.getByTestId('title-input').props.maxLength).toBe(120);
 
     await fireEvent.press(screen.getByTestId('type-chip-custom'));
@@ -216,7 +233,7 @@ describe('R8: formulario de alta con chips y pickers', () => {
 
     expect(screen.queryByTestId('date-picker')).toBeNull();
     expect(
-      screen.getByText(selectedDate.toLocaleDateString('es-MX')),
+      screen.getByText('15 sep 2026'), // #178 R10
     ).toBeVisible();
   });
 
@@ -242,12 +259,7 @@ describe('R8: formulario de alta con chips y pickers', () => {
 
     expect(screen.queryByTestId('time-picker')).toBeNull();
     expect(
-      screen.getByText(
-        selectedTime.toLocaleTimeString('es-MX', {
-          hour: '2-digit',
-          minute: '2-digit',
-        }),
-      ),
+      screen.getByText('14:45'), // #178 R10
     ).toBeVisible();
   });
 
@@ -483,15 +495,86 @@ describe('#62 R12: el placeholder del formulario sale del tema', () => {
   });
 });
 
+describe('#178 R10: marco, título y chips de tipo del canvas', () => {
+  beforeEach(async () => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockCreateReminder.mockReturnValue(pending());
+    await renderAddReminder();
+    await screen.findByTestId('title-input');
+  });
+
+  it('usa el marco 20/24/16 bajo la cabecera nativa', () => {
+    expect(screen.getByTestId('add-reminder-form').props.contentContainerStyle).toEqual({
+      paddingHorizontal: 20, paddingTop: 24, gap: 16, paddingBottom: 48,
+    });
+  });
+
+  it('abre el formulario con Agregar recordatorio como título accesible', () => {
+    const title = screen.getByTestId('add-reminder-title');
+    expect(title).toHaveTextContent('Agregar recordatorio');
+    expect(title.props.accessibilityRole).toBe('header');
+    expect(title.props.className).toBe('text-2xl font-black tracking-title text-foreground');
+    expect(title.parent?.children[0]).toBe(title);
+  });
+
+  it('da a las cinco etiquetas y sus secciones las recetas del canvas', () => {
+    for (const [label, gap] of [
+      ['Tipo', 'gap-2'], ['Título', 'gap-1.5'], ['Fecha', 'gap-1.5'],
+      ['Hora', 'gap-1.5'], ['Aviso', 'gap-2'],
+    ]) {
+      const text = screen.getByText(label);
+      expect(text.props.className).toBe('text-sm font-extrabold text-foreground');
+      expect(text.parent?.props.className.split(' ')).toContain(gap);
+    }
+  });
+
+  it('pinta Vacuna seleccionada con cápsula, labio y texto sin emoji', () => {
+    const chip = screen.getByTestId('type-chip-vaccine');
+    expect(chip.props.className).toBe('h-9.5 items-center justify-center rounded-full px-3.5 bg-accent border-b-3 border-black/25');
+    expect(chip.props.hitSlop).toEqual(TOUCH_SLOP);
+    expect(chip.props.accessibilityState).toEqual({ selected: true });
+    expect(within(chip).getByText('Vacuna').props.className).toBe('text-sm font-extrabold text-accent-foreground');
+  });
+
+  it('pinta los chips violeta y neutro sin seleccionar con sus tintas', () => {
+    for (const [type, label, surface, ink] of [
+      ['deworming', 'Desparasitación', 'bg-category-violet', 'text-category-violet-strong'],
+      ['custom', 'Otro', 'bg-default', 'text-foreground'],
+    ]) {
+      const chip = screen.getByTestId(`type-chip-${type}`);
+      expect(chip.props.className).toBe(`h-9.5 items-center justify-center rounded-full px-3.5 ${surface}`);
+      expect(chip.props.hitSlop).toEqual(TOUCH_SLOP);
+      expect(chip.props.accessibilityState).toEqual({ selected: false });
+      expect(within(chip).getByText(label).props.className).toBe(`text-sm font-extrabold ${ink}`);
+    }
+  });
+
+  it('invierte las recetas al seleccionar Otro', async () => {
+    await fireEvent.press(screen.getByTestId('type-chip-custom'));
+    const selected = screen.getByTestId('type-chip-custom');
+    const idle = screen.getByTestId('type-chip-vaccine');
+    expect(selected.props.className).toBe('h-9.5 items-center justify-center rounded-full px-3.5 bg-accent border-b-3 border-black/25');
+    expect(selected.props.accessibilityState).toEqual({ selected: true });
+    expect(within(selected).getByText('Otro').props.className).toBe('text-sm font-extrabold text-accent-foreground');
+    expect(idle.props.className).toBe('h-9.5 items-center justify-center rounded-full px-3.5 bg-category-blue');
+    expect(idle.props.accessibilityState).toEqual({ selected: false });
+    expect(within(idle).getByText('Vacuna').props.className).toBe('text-sm font-extrabold text-category-blue-strong');
+  });
+});
+
 describe('#95 R5: la pantalla no dibuja cabecera propia', () => {
-  it('retira el botón y el título del cuerpo', async () => {
+  it('retira el botón; el título vive en el cuerpo (#178 R10)', async () => {
     process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
     mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() });
     mockCreateReminder.mockReturnValue(pending());
     await renderAddReminder();
     await waitFor(() => expect(screen.getByTestId('screen-add-reminder')).toBeVisible());
     expect(screen.queryByTestId('add-reminder-back')).toBeNull();
-    expect(screen.queryByText(es['addReminder.addReminder'])).toBeNull();
+    expect(screen.getByTestId('add-reminder-title')).toHaveTextContent(es['addReminder.addReminder']);
   });
 });
 
@@ -532,9 +615,9 @@ describe('#123: pickers de fecha de Nuevo recordatorio en Android a las 20:00 de
 
   describe('#123 R4: Nuevo recordatorio muestra y guarda el día elegido', () => {
     it.each([
-      ['elegir hoy (24 de septiembre) guarda hoy', [2026, 8, 23, 18, 0], [2026, 8, 24], '24/9/2026', new Date(2026, 8, 24, 21, 30).toISOString(), 0],
-      ['elegir el 1 de octubre guarda el 1 de octubre (cruce de mes)', [2026, 8, 30, 18, 0], [2026, 9, 1], '1/10/2026', new Date(2026, 9, 1, 21, 30).toISOString(), 10080],
-      ['elegir el 1 de enero de 2027 guarda el 1 de enero (cruce de año)', [2026, 11, 31, 18, 0], [2027, 0, 1], '1/1/2027', new Date(2027, 0, 1, 21, 30).toISOString(), 10080],
+      ['elegir hoy (24 de septiembre) guarda hoy', [2026, 8, 23, 18, 0], [2026, 8, 24], '24 sep 2026', new Date(2026, 8, 24, 21, 30).toISOString(), 0],
+      ['elegir el 1 de octubre guarda el 1 de octubre (cruce de mes)', [2026, 8, 30, 18, 0], [2026, 9, 1], '1 oct 2026', new Date(2026, 9, 1, 21, 30).toISOString(), 10080],
+      ['elegir el 1 de enero de 2027 guarda el 1 de enero (cruce de año)', [2026, 11, 31, 18, 0], [2027, 0, 1], '1 ene 2027', new Date(2027, 0, 1, 21, 30).toISOString(), 10080],
     ] as [string, number[], number[], string, string, number][])('%s', async (_title, local, utc, etiqueta, dueAt, aviso) => {
       await renderAddReminder();
       await waitFor(() => expect(screen.getByTestId('title-input')).toBeVisible());
@@ -570,8 +653,8 @@ describe('#123: pickers de fecha de Nuevo recordatorio en Android a las 20:00 de
 });
 
 const ADVANCES = [0, 1440, 4320, 10080] as const;
-const CHIP_SELECTED = 'rounded-full border border-accent bg-accent-soft px-3 py-2';
-const CHIP_IDLE = 'rounded-full border border-border bg-default px-3 py-2';
+const CHIP_SELECTED = 'h-9.5 items-center justify-center rounded-full px-3.5 bg-accent border-b-3 border-black/25';
+const CHIP_IDLE = 'h-9.5 items-center justify-center rounded-full px-3.5 bg-default';
 
 function expectAdvanceChips(disabled: boolean[], selected: number) {
   ADVANCES.forEach((minutes, i) => {
@@ -817,5 +900,158 @@ describe('#148 R8: add-reminder entrega el primer toque con el teclado abierto',
     await waitFor(() => expect(screen.getByTestId('screen-add-reminder')).toBeVisible());
 
     expect(screen.getByTestId('add-reminder-form').props.keyboardShouldPersistTaps).toBe('handled');
+  });
+});
+
+describe('#178 R11: título, fecha y hora del canvas', () => {
+  const themeColors = jest.requireActual<typeof import('../../theme/use-theme-colors')>('../../theme/use-theme-colors');
+
+  beforeEach(async () => {
+    jest.clearAllMocks();
+    jest.spyOn(themeColors, 'useThemeColors').mockImplementation(
+      ((tokens: readonly string[]) => tokens.map((token) => `color:${token}`)) as typeof themeColors.useThemeColors,
+    );
+    process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockCreateReminder.mockReturnValue(pending());
+    await renderAddReminder();
+    await screen.findByTestId('title-input');
+  });
+  afterEach(() => { jest.restoreAllMocks(); });
+
+  it('alterna el borde completo del título al recibir y perder foco', async () => {
+    const input = screen.getByTestId('title-input');
+    expect(input.props.className).toBe('h-13 rounded-xl bg-default px-3.5 text-base font-semibold text-foreground border-2 border-transparent');
+    expect(input).toHaveStyle({ borderCurve: 'continuous' });
+    await fireEvent(input, 'focus');
+    expect(screen.getByTestId('title-input').props.className).toBe('h-13 rounded-xl bg-default px-3.5 text-base font-semibold text-foreground border-2 border-accent');
+    await fireEvent(screen.getByTestId('title-input'), 'blur');
+    expect(screen.getByTestId('title-input').props.className).toBe('h-13 rounded-xl bg-default px-3.5 text-base font-semibold text-foreground border-2 border-transparent');
+  });
+
+  it('abre cada campo con su icono de 18 y tinta muted', () => {
+    for (const [fieldID, iconID] of [
+      ['date-field', 'add-reminder-icon-calendar'],
+      ['time-field', 'add-reminder-icon-clock'],
+    ]) {
+      const field = screen.getByTestId(fieldID);
+      expect(field.props.className).toBe('h-13 flex-row items-center gap-2 rounded-xl bg-default px-3.5');
+      expect(field).toHaveStyle({ borderCurve: 'continuous' });
+      expect(field.children).toHaveLength(2);
+      const icon = within(field).getByTestId(iconID);
+      expect(field.children[0]).toBe(icon);
+      expect(icon.props.size).toBe(18);
+      expect(icon.props.color).toBe('color:muted');
+    }
+  });
+
+  it('pinta la fecha vacía como texto base seminegrita y muted', () => {
+    expect(within(screen.getByTestId('date-field')).getByText('Elige una fecha').props.className).toBe('text-base font-semibold text-muted');
+  });
+
+  it('refleja la hora elegida en formato de 24 horas', async () => {
+    await pickTime(20, 5);
+    const time = within(screen.getByTestId('time-field')).getByText('20:05');
+    expect(time.props.className).toBe('text-base font-semibold text-foreground');
+  });
+});
+
+describe('#178 R12: chips de aviso y vista previa', () => {
+  const hostProcess = process.getBuiltinModule('process');
+  const originalTimezone = hostProcess.env.TZ;
+  const themeColors = jest.requireActual<typeof import('../../theme/use-theme-colors')>('../../theme/use-theme-colors');
+
+  beforeAll(() => { hostProcess.env.TZ = 'America/Mexico_City'; });
+  afterAll(() => {
+    if (originalTimezone === undefined) delete hostProcess.env.TZ;
+    else hostProcess.env.TZ = originalTimezone;
+  });
+  beforeEach(() => {
+    jest.clearAllMocks();
+    jest.useFakeTimers({ now: new Date(2026, 11, 20, 10, 0) });
+    setPlatform('android');
+    jest.spyOn(themeColors, 'useThemeColors').mockImplementation(
+      ((tokens: readonly string[]) => tokens.map((token) => `color:${token}`)) as typeof themeColors.useThemeColors,
+    );
+    process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockCreateReminder.mockReturnValue(pending());
+  });
+  afterEach(() => {
+    jest.clearAllTimers();
+    jest.useRealTimers();
+    setPlatform(originalPlatform);
+    jest.restoreAllMocks();
+  });
+
+  it.each([
+    [null, 9, 0, 'Te aviso el 25 dic a las 09:00.'],
+    [1440, 9, 0, 'Te aviso el 31 dic a las 09:00.'],
+    [0, 9, 0, 'Te aviso el 1 ene a las 09:00.'],
+    [4320, 9, 0, 'Te aviso el 29 dic a las 09:00.'],
+    [0, 20, 5, 'Te aviso el 1 ene a las 20:05.'],
+  ] as const)('muestra el aviso efectivo %s a las %s:%s', async (minutes, hours, minute, expected) => {
+    await renderAddReminder();
+    if (minutes === null) expect(screen.queryByTestId('add-reminder-preview')).toBeNull();
+    await pickDate(wallClock([2027, 0, 1, 12, 0], [2027, 0, 1]));
+    await pickTime(hours, minute);
+    if (minutes !== null) await fireEvent.press(screen.getByTestId(`advance-chip-${minutes}`));
+    expect(screen.getByTestId('add-reminder-preview-text')).toHaveTextContent(expected);
+  });
+
+  it('pinta el aviso por defecto y los demás chips con sus recetas y pesos', async () => {
+    await renderAddReminder();
+    await pickDate(wallClock([2027, 0, 1, 12, 0], [2027, 0, 1]));
+    await pickTime(9, 0);
+    expectAdvanceChips([false, false, false, false], 10080);
+    for (const minutes of ADVANCES) {
+      const label = screen.getByTestId(`advance-chip-${minutes}`).children[0];
+      expect(label).toHaveProperty('props.className', minutes === 10080
+        ? 'text-sm font-extrabold text-accent-foreground'
+        : 'text-sm font-extrabold text-foreground');
+    }
+  });
+
+  it('invierte la receta del seleccionado y su etiqueta al elegir un día antes', async () => {
+    await renderAddReminder();
+    await pickDate(wallClock([2027, 0, 1, 12, 0], [2027, 0, 1]));
+    await pickTime(9, 0);
+    await fireEvent.press(screen.getByTestId('advance-chip-1440'));
+    expectAdvanceChips([false, false, false, false], 1440);
+    expect(screen.getByTestId('advance-chip-1440').children[0]).toHaveProperty('props.className', 'text-sm font-extrabold text-accent-foreground');
+    expect(screen.getByTestId('advance-chip-10080').children[0]).toHaveProperty('props.className', 'text-sm font-extrabold text-foreground');
+  });
+
+  it('coloca Bell y el texto en la vista previa entre Aviso y Guardar', async () => {
+    await renderAddReminder();
+    await pickDate(wallClock([2027, 0, 1, 12, 0], [2027, 0, 1]));
+    await pickTime(9, 0);
+    const preview = screen.getByTestId('add-reminder-preview');
+    expect(preview.props.className).toBe('flex-row items-center gap-2.5 rounded-tile bg-surface-secondary px-3.5 py-3');
+    expect(preview).toHaveStyle({ borderCurve: 'continuous' });
+    expect(preview.children).toHaveLength(2);
+    const bell = within(preview).getByTestId('add-reminder-icon-bell');
+    expect(preview.children[0]).toBe(bell);
+    expect(bell.props.size).toBe(20);
+    expect(bell.props.color).toBe('color:accent-strong');
+    const text = within(preview).getByTestId('add-reminder-preview-text');
+    expect(preview.children[1]).toBe(text);
+    expect(text.props.className).toBe('flex-1 text-13 font-semibold text-foreground');
+    const siblings = preview.parent!.children;
+    expect(siblings.indexOf(preview)).toBeGreaterThan(siblings.indexOf(screen.getByText('Aviso').parent!));
+    expect(siblings.indexOf(preview)).toBeLessThan(siblings.indexOf(screen.getByTestId('add-reminder-submit')));
+  });
+
+  it('usa el aviso efectivo cuando los tres anticipados ya pasaron', async () => {
+    jest.setSystemTime(new Date(2026, 11, 31, 10, 0));
+    await renderAddReminder();
+    await pickDate(wallClock([2027, 0, 1, 12, 0], [2027, 0, 1]));
+    await pickTime(9, 0);
+    expect(screen.getByTestId('add-reminder-preview-text')).toHaveTextContent('Te aviso el 1 ene a las 09:00.');
+    expectAdvanceChips([false, true, true, true], 0);
   });
 });
