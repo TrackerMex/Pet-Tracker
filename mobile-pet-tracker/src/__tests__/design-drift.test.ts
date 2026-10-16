@@ -22,6 +22,46 @@ const { join } = require('path');
 const sourceRoot = join(process.cwd(), 'src');
 const projectRoot = process.cwd();
 
+describe('#179 R2: enmienda de fidelidad al canvas en Horario e Historial', () => {
+  const charter = readFileSync(join(process.cwd(), '..', 'docs', 'ui-guidelines.md'), 'utf8');
+  const heading = '## Enmienda de fidelidad al canvas (2026-10-13)';
+  const radiusRule = 'Fuera de la escala, por fidelidad al canvas (#179): `rounded-10` (10 px), «Editar» de la fila de Horario; `rounded-14` (14 px), mosaico de la fila y botones de acción de Horario y horas del panel del día de Historial; `rounded-24` (24 px), resumen de Horario y calendario y panel del día de Historial, que son `View` y no `Card` porque `twMerge` no sustituye `rounded-card` por un radio con nombre de valor.';
+  const actionRule = '    - **Secundarios de Horario** (fidelidad al canvas, #179): «Editar» `h-9.75 rounded-10 border-2 border-b-5 border-lip-gray bg-surface` y «Añadir comida» `h-13.5 rounded-14 border-2 border-b-6 border-lip-gray bg-surface`, con el labio dentro del alto; «Generar plan» es tonal de la categoría violeta y sin labio, porque el labio del artboard (`rgba(91,63,163,0.35)`) no tiene token.';
+
+  it('conserva las directivas, las frases y los tres tamaños de Horario', () => {
+    expect(charter.split(heading)).toHaveLength(2);
+    expect(charter.slice(charter.indexOf(heading) + heading.length)).toMatch(/- \[[ xX]\] Enmienda de fidelidad al canvas aprobada por humano/);
+    expect(charter).toContain("- **Título en contenido (D-H).** El título de pantalla va dentro del contenido (eyebrow opcional y título); la cabecera nativa del stack queda con `title: ''` y solo aporta el botón de volver.");
+    expect(charter).toContain('- **Iconos reicon (D-I).** Los iconos de la interfaz son componentes de `reicon-react-native` coloreados con un token vía `useThemeColors`; ningún emoji hace de icono. La superficie de categoría acompaña a un icono y a un texto.');
+    expect(charter).toContain('- **Medidas del artboard.** Donde la escala no llega al valor del artboard se usa un token del `@theme` nombrado por su valor y listado en la regla 2 (tamaños y tracking) o en la regla 12 (radios); las clases con corchetes (regla 3) y los radios `2xl`, `lg`, `md` y `sm` (regla 12) siguen prohibidos, y las esquinas que no son cápsula siguen llevando `CONTINUOUS_CORNER`.');
+    expect(charter).not.toContain('- Títulos de pantalla: header del stack cuando exista, no Text suelto.');
+    expect(charter).not.toContain('la superficie siempre acompaña a un emoji y a un texto.');
+    expect(charter.split("- Títulos de pantalla: título en contenido y cabecera nativa con `title: ''` (Enmienda de fidelidad al canvas).")).toHaveLength(2);
+    expect(charter.split('la superficie siempre acompaña a un icono de reicon-react-native y a un texto.')).toHaveLength(2);
+    const sizes = charter.split('\n').find((line) => line.trimStart().startsWith('Tamaños de letra fuera de la escala de Tailwind'));
+    expect(sizes).toContain('`--text-15: 15px`');
+    expect(sizes).toContain('`--text-17: 17px`');
+    expect(sizes).toContain('`--text-22: 22px`');
+  });
+
+  it('enumera el tracking y los radios exactos dentro de su regla', () => {
+    const tracking = charter.split('\n').find((line) => line.trimStart().startsWith('Tracking fuera de la escala de Tailwind'));
+    expect(tracking).toContain('`--tracking-title: -0.02em`');
+    expect(tracking).toContain('`--tracking-caps: 0.06em`');
+    const radios = charter.slice(charter.indexOf('12. **Escala de radios**'), charter.indexOf('13. **Botón con cuerpo**'));
+    expect(radios).toContain('`rounded-10` (10 px)');
+    expect(radios).toContain('`rounded-14` (14 px)');
+    expect(radios).toContain('`rounded-24` (24 px)');
+    expect(radios.split(radiusRule)).toHaveLength(2);
+  });
+
+  it('sitúa la receta de secundarios de Horario antes de Sin labio', () => {
+    const actions = charter.slice(charter.indexOf('13. **Botón con cuerpo**'));
+    expect(actions.split(actionRule)).toHaveLength(2);
+    expect(actions.indexOf(actionRule)).toBeLessThan(actions.indexOf('- **Sin labio**:'));
+  });
+});
+
 describe('#175 R2: enmienda de fidelidad al canvas', () => {
   const charter = readFileSync(join(process.cwd(), '..', 'docs', 'ui-guidelines.md'), 'utf8');
   const heading = '## Enmienda de fidelidad al canvas (2026-10-13)';
