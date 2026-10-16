@@ -92,7 +92,7 @@ function RootStack() {
       <Stack.Screen name="(auth)" />
       <Stack.Screen name="reset-password" />
       <Stack.Protected guard={status === 'authenticated'}>
-        <Stack.Screen name="add-reminder" options={{ ...headerOptions, title: t('addReminder.addReminder') }} />
+        <Stack.Screen name="add-reminder" options={{ ...headerOptions, title: '' }} />
         <Stack.Screen name="pets/add" options={{ ...headerOptions, title: t('addPet.addPet') }} />
         <Stack.Screen name="pets/[petId]/docs" options={{ ...headerOptions, title: '' }} />
         <Stack.Screen name="weight-log" options={{ ...headerOptions, title: t('weightLog.weightLog') }} />

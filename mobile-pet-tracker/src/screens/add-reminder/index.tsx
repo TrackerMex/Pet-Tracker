@@ -15,12 +15,15 @@ import {
   useTranslate,
 } from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
+import { CATEGORY_SLOTS } from '../../utils/category-palette';
 import { fromPickerValue, toPickerValue } from '../../utils/date-picker-value';
 import { combineDateAndTime } from '../../utils/reminder-dates';
 import { REMINDER_TYPE_META } from '../../utils/reminder-meta';
 import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { TOUCH_SLOP } from '../../theme/touch-target';
 import { useThemeColors } from '../../theme/use-theme-colors';
+
+const SELECTED_CHIP = 'h-9.5 items-center justify-center rounded-full px-3.5 bg-accent border-b-3 border-black/25';
 
 const ADVANCE_OPTIONS = [
   { minutes: 0, labelKey: 'addReminder.advanceSameDay' },
@@ -140,18 +143,23 @@ function AddReminderContent({ petId }: { petId: string }) {
         keyboardShouldPersistTaps="handled"
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{
-          padding: 24,
+          paddingHorizontal: 20,
+          paddingTop: 24,
           gap: 16,
           paddingBottom: insets.bottom + 24,
         }}
       >
+        <Text testID="add-reminder-title" accessibilityRole="header" className="text-2xl font-black tracking-title text-foreground">
+          {t('addReminder.addReminder')}
+        </Text>
         <View className="gap-2">
-          <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
+          <Text className="text-sm font-extrabold text-foreground">
             {t('addReminder.type')}
           </Text>
           <View className="flex-row flex-wrap gap-2">
             {REMINDER_TYPES.map(([reminderType, meta]) => {
               const selected = type === reminderType;
+              const slot = CATEGORY_SLOTS[meta.category];
 
               return (
                 <Pressable
@@ -162,12 +170,12 @@ function AddReminderContent({ petId }: { petId: string }) {
                   hitSlop={TOUCH_SLOP}
                   className={
                     selected
-                      ? 'rounded-full border border-accent bg-accent-soft px-3 py-2'
-                      : 'rounded-full border border-border bg-default px-3 py-2'
+                      ? SELECTED_CHIP
+                      : `h-9.5 items-center justify-center rounded-full px-3.5 ${slot.surface}`
                   }
                   onPress={() => setType(reminderType)}
                 >
-                  <Text className="text-sm font-semibold text-foreground">
+                  <Text className={`text-sm font-extrabold ${selected ? 'text-accent-foreground' : meta.category === 'neutral' ? 'text-foreground' : slot.ink}`}>
                     {t(meta.labelKey)}
                   </Text>
                 </Pressable>
@@ -176,8 +184,8 @@ function AddReminderContent({ petId }: { petId: string }) {
           </View>
         </View>
 
-        <View className="gap-2">
-          <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
+        <View className="gap-1.5">
+          <Text className="text-sm font-extrabold text-foreground">
             {t('addReminder.title')}
           </Text>
           <TextInput
@@ -193,8 +201,8 @@ function AddReminderContent({ petId }: { petId: string }) {
         </View>
 
         <View className="flex-row gap-3">
-          <View className="flex-1 gap-2">
-            <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
+          <View className="flex-1 gap-1.5">
+            <Text className="text-sm font-extrabold text-foreground">
               {t('addReminder.date')}
             </Text>
             <Pressable
@@ -211,8 +219,8 @@ function AddReminderContent({ petId }: { petId: string }) {
               </Text>
             </Pressable>
           </View>
-          <View className="flex-1 gap-2">
-            <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
+          <View className="flex-1 gap-1.5">
+            <Text className="text-sm font-extrabold text-foreground">
               {t('addReminder.time')}
             </Text>
             <Pressable
@@ -268,7 +276,7 @@ function AddReminderContent({ petId }: { petId: string }) {
         ) : null}
 
         <View className="gap-2">
-          <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
+          <Text className="text-sm font-extrabold text-foreground">
             {t('addReminder.alert')}
           </Text>
           <View className="flex-row flex-wrap gap-2">
