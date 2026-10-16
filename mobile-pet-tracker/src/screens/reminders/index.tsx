@@ -217,14 +217,14 @@ export function RemindersScreen() {
       {reminders.data?.kind === 'ok' &&
       reminders.data.reminders.length > 0 ? (
         <>
-          <View className="flex-row gap-3">
+          <View testID="reminders-pills" className="flex-row gap-2">
             <View
               testID="pill-active"
-              className="flex-1 items-center gap-1 rounded-xl bg-accent-soft p-3"
+              className="flex-1 rounded-16 px-3 py-2.5 bg-surface-secondary"
               style={CONTINUOUS_CORNER}
             >
               <Text
-                className="text-lg font-black text-foreground"
+                className="text-2xl font-black text-accent-strong"
                 style={TABULAR_NUMS}
               >
                 {
@@ -233,17 +233,17 @@ export function RemindersScreen() {
                   ).length
                 }
               </Text>
-              <Text className="text-xs font-normal text-muted">
+              <Text className="text-xs font-bold text-muted">
                 {t('reminders.active')}
               </Text>
             </View>
             <View
               testID="pill-week"
-              className="flex-1 items-center gap-1 rounded-xl bg-default p-3"
+              className={`flex-1 rounded-16 px-3 py-2.5 ${CATEGORY_SLOTS.amber.surface}`}
               style={CONTINUOUS_CORNER}
             >
               <Text
-                className="text-lg font-black text-foreground"
+                className={`text-2xl font-black ${CATEGORY_SLOTS.amber.ink}`}
                 style={TABULAR_NUMS}
               >
                 {
@@ -260,17 +260,17 @@ export function RemindersScreen() {
                   }).length
                 }
               </Text>
-              <Text className="text-xs font-normal text-muted">
+              <Text className={`text-xs font-bold ${CATEGORY_SLOTS.amber.ink}`}>
                 {t('reminders.thisWeek')}
               </Text>
             </View>
             <View
               testID="pill-inactive"
-              className="flex-1 items-center gap-1 rounded-xl bg-default p-3"
+              className="flex-1 rounded-16 px-3 py-2.5 bg-default"
               style={CONTINUOUS_CORNER}
             >
               <Text
-                className="text-lg font-black text-foreground"
+                className="text-2xl font-black text-muted"
                 style={TABULAR_NUMS}
               >
                 {
@@ -279,7 +279,7 @@ export function RemindersScreen() {
                   ).length
                 }
               </Text>
-              <Text className="text-xs font-normal text-muted">
+              <Text className="text-xs font-bold text-muted">
                 {t('reminders.inactive')}
               </Text>
             </View>
