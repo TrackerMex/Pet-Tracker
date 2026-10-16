@@ -25,7 +25,9 @@ import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
 import { CONTINUOUS_CORNER } from '../../theme/native-styles';
+import { TOUCH_SLOP } from '../../theme/touch-target';
 import { useThemeColors } from '../../theme/use-theme-colors';
+import { CATEGORY_SLOTS } from '../../utils/category-palette';
 import { HomeEntrance } from '../home/home-entrance';
 
 function isPlanError(state: NutritionPlanState): boolean {
@@ -48,7 +50,7 @@ function toMealTime(date: Date): string {
 }
 
 function MealScheduleContent({ petId }: { petId: string }) {
-  const [accent] = useThemeColors(['accent-strong']);
+  const [amberStrong] = useThemeColors(['category-amber-strong', 'category-violet-strong']);
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { signOut, token } = useAuth();
   const t = useTranslate();
@@ -268,8 +270,8 @@ function MealScheduleContent({ petId }: { petId: string }) {
             </View>
           </HomeEntrance>
 
-          <View testID="meal-times-section" className="gap-3">
-            <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
+          <View testID="meal-times-section" className="gap-3.5">
+            <Text className="mt-1 text-17 font-extrabold text-foreground">
               {t('mealSchedule.timesAndPortions')}
             </Text>
             {loadedPlan.mealTimes.map((mealTime, index) => {
@@ -278,39 +280,44 @@ function MealScheduleContent({ petId }: { petId: string }) {
               );
 
               return (
-                <Card
-                  key={`${mealTime}-${index}`}
-                  testID={`meal-time-row-${index}`}
-                  className="flex-row items-center gap-3"
-                >
-                  <View
-                    className="size-10 items-center justify-center rounded-xl bg-default"
-                    style={CONTINUOUS_CORNER}
+                <HomeEntrance key={mealTime} testID={`meal-time-entry-${index}`} index={index + 1}>
+                  <Card
+                    testID={`meal-time-row-${index}`}
+                    variant="flat"
+                    className="flex-row items-center gap-3 py-3"
                   >
-                    <Clock size={18} color={accent} />
-                  </View>
-                  <Text className="flex-1 font-bold text-foreground">
-                    {mealTime}
-                  </Text>
-                  <Text className="font-semibold text-muted">
-                    {portionGrams} g
-                  </Text>
-                  {isOwner ? (
-                    <Button
-                      testID={`meal-time-edit-${index}`}
-                      accessibilityLabel={t('mealSchedule.editTimeLabel', { time: mealTime })}
-                      variant="secondary"
-                      size="sm"
-                      isDisabled={editing}
-                      className="min-h-11 rounded-xl bg-accent-soft"
-                      onPress={() => setPicker({ from: mealTime })}
+                    <View
+                      className={`size-10.5 items-center justify-center rounded-14 ${CATEGORY_SLOTS.amber.surface}`}
+                      style={CONTINUOUS_CORNER}
                     >
-                      <Button.Label className="font-semibold text-accent-strong">
-                        {t('mealSchedule.editTime')}
-                      </Button.Label>
-                    </Button>
-                  ) : null}
-                </Card>
+                      <Clock size={20} color={amberStrong} />
+                    </View>
+                    <View className="flex-1">
+                      <Text className="text-lg font-black text-foreground">
+                        {mealTime}
+                      </Text>
+                      <Text className="text-13 font-semibold text-muted">
+                        {portionGrams} g
+                      </Text>
+                    </View>
+                    {isOwner ? (
+                      <Button
+                        testID={`meal-time-edit-${index}`}
+                        accessibilityLabel={t('mealSchedule.editTimeLabel', { time: mealTime })}
+                        variant="secondary"
+                        size="sm"
+                        isDisabled={editing}
+                        hitSlop={TOUCH_SLOP}
+                        className="h-9.75 rounded-10 border-2 border-b-5 border-lip-gray bg-surface px-3.5"
+                        onPress={() => setPicker({ from: mealTime })}
+                      >
+                        <Text className="text-13 font-extrabold text-foreground">
+                          {t('mealSchedule.editTime')}
+                        </Text>
+                      </Button>
+                    ) : null}
+                  </Card>
+                </HomeEntrance>
               );
             })}
             {isOwner && editError !== null ? (
