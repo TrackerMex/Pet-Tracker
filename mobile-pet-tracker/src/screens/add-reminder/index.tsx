@@ -6,6 +6,7 @@ import { Button } from 'heroui-native';
 import { useContext, useEffect, useState } from 'react';
 import { KeyboardAvoidingView, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Calendar, Clock } from 'reicon-react-native';
 
 import { createReminder } from '../../api/reminders';
 import type { ReminderType } from '../../api/types';
@@ -60,9 +61,10 @@ function AddReminderContent({ petId }: { petId: string }) {
   const locale = useLocale();
   const t = useTranslate();
   const insets = useSafeAreaInsets();
-  const [muted] = useThemeColors(['muted']);
+  const [muted] = useThemeColors(['muted', 'accent-strong']);
   const [type, setType] = useState<ReminderType>('vaccine');
   const [title, setTitle] = useState('');
+  const [titleFocused, setTitleFocused] = useState(false);
   const [date, setDate] = useState<Date | null>(null);
   const [time, setTime] = useState(initialTime);
   const [advanceMinutes, setAdvanceMinutes] = useState(10080);
@@ -190,50 +192,55 @@ function AddReminderContent({ petId }: { petId: string }) {
           </Text>
           <TextInput
             testID="title-input"
-            className="rounded-xl bg-default px-4 py-3 text-foreground"
+            className={`h-13 rounded-xl bg-default px-3.5 text-base font-semibold text-foreground border-2 ${titleFocused ? 'border-accent' : 'border-transparent'}`}
             style={CONTINUOUS_CORNER}
             maxLength={120}
             placeholder={t('addReminder.reminderTitle')}
             placeholderTextColor={muted}
             value={title}
             onChangeText={setTitle}
+            onFocus={() => setTitleFocused(true)}
+            onBlur={() => setTitleFocused(false)}
           />
         </View>
 
-        <View className="flex-row gap-3">
-          <View className="flex-1 gap-1.5">
+        <View className="flex-row gap-2.5">
+          <View className="flex-3 gap-1.5">
             <Text className="text-sm font-extrabold text-foreground">
               {t('addReminder.date')}
             </Text>
             <Pressable
               accessibilityRole="button"
               testID="date-field"
-              className="rounded-xl border border-border bg-default px-4 py-3"
+              className="h-13 flex-row items-center gap-2 rounded-xl bg-default px-3.5"
               style={CONTINUOUS_CORNER}
               onPress={() => setShowDatePicker(true)}
             >
-              <Text className={date ? 'text-foreground' : 'text-muted'}>
+              <Calendar size={18} color={muted} />
+              <Text className={`text-base font-semibold ${date ? 'text-foreground' : 'text-muted'}`}>
                 {date
-                  ? date.toLocaleDateString(locale)
+                  ? date.toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' })
                   : t('addReminder.selectDate')}
               </Text>
             </Pressable>
           </View>
-          <View className="flex-1 gap-1.5">
+          <View className="flex-2 gap-1.5">
             <Text className="text-sm font-extrabold text-foreground">
               {t('addReminder.time')}
             </Text>
             <Pressable
               accessibilityRole="button"
               testID="time-field"
-              className="rounded-xl border border-border bg-default px-4 py-3"
+              className="h-13 flex-row items-center gap-2 rounded-xl bg-default px-3.5"
               style={CONTINUOUS_CORNER}
               onPress={() => setShowTimePicker(true)}
             >
-              <Text className="text-foreground">
+              <Clock size={18} color={muted} />
+              <Text className="text-base font-semibold text-foreground">
                 {time.toLocaleTimeString(locale, {
                   hour: '2-digit',
                   minute: '2-digit',
+                  hourCycle: 'h23',
                 })}
               </Text>
             </Pressable>
