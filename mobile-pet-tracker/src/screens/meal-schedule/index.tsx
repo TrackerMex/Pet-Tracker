@@ -401,25 +401,27 @@ function MealScheduleContent({ petId }: { petId: string }) {
         ) : null}
 
         {!hasError && loadedProfile !== null ? (
-          <Card
-            testID="nutrition-profile-section"
-            className="gap-3"
-          >
+          <View testID="nutrition-profile-section" className="gap-2.5">
             <Text
               testID="nutrition-profile-title"
-              className="text-base font-bold text-foreground"
+              className="mt-1 text-17 font-extrabold text-foreground"
             >
               {t('mealSchedule.nutritionProfile')}
             </Text>
-            <View className="flex-row flex-wrap gap-2">
-              <Text className="rounded-full bg-default px-3 py-1 text-sm font-semibold text-foreground">
-                {loadedProfile.foodType}
-              </Text>
-              <Text className="rounded-full bg-default px-3 py-1 text-sm font-semibold text-foreground">
-                {loadedProfile.kcalPer100g} kcal / 100 g
-              </Text>
-              <Text className="rounded-full bg-default px-3 py-1 text-sm font-semibold text-foreground">
+            <View testID="nutrition-profile-pills" className="flex-row flex-wrap gap-1.5">
+              <Text testID="nutrition-profile-activity" className="rounded-full bg-default px-2.5 py-1.5 text-xs font-bold text-foreground">
+                <Text className="text-muted">{`${t('mealSchedule.activity')} `}</Text>
                 {loadedProfile.activityLevel}
+              </Text>
+              {loadedProfile.bodyCondition !== null ? (
+                <Text testID="nutrition-profile-condition" className="rounded-full bg-default px-2.5 py-1.5 text-xs font-bold text-foreground">
+                  <Text className="text-muted">{`${t('mealSchedule.condition')} `}</Text>
+                  {`${loadedProfile.bodyCondition}/9`}
+                </Text>
+              ) : null}
+              <Text testID="nutrition-profile-food" className="rounded-full bg-default px-2.5 py-1.5 text-xs font-bold text-foreground">
+                <Text className="text-muted">{`${t('mealSchedule.food')} `}</Text>
+                {`${loadedProfile.foodType} ${loadedProfile.kcalPer100g} kcal/100 g`}
               </Text>
             </View>
             {loadedProfile.allergies.length > 0 ? (
@@ -432,7 +434,7 @@ function MealScheduleContent({ petId }: { petId: string }) {
                 {loadedProfile.diseases.join(', ')}
               </Text>
             ) : null}
-          </Card>
+          </View>
         ) : null}
 
         {!hasError && profile.data?.kind === 'not-found' ? (
