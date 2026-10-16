@@ -8,6 +8,7 @@ import { Button, Skeleton } from 'heroui-native';
 import { useCallback, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Plus } from 'reicon-react-native';
 
 import { listPets } from '../../api/pets';
 import { petKeys, reminderKeys } from '../../api/query-keys';
@@ -31,6 +32,7 @@ import {
   CONTINUOUS_CORNER,
   TABULAR_NUMS,
 } from '../../theme/native-styles';
+import { useThemeColors } from '../../theme/use-theme-colors';
 import { CATEGORY_SLOTS } from '../../utils/category-palette';
 import { daysUntil } from '../../utils/reminder-dates';
 import { REMINDER_TYPE_META } from '../../utils/reminder-meta';
@@ -48,6 +50,7 @@ export function RemindersScreen() {
   const t = useTranslate();
   const { selectedPetId, selectPet } = useSelectedPet();
   const insets = useSafeAreaInsets();
+  const [accentForeground] = useThemeColors(['accent-foreground']);
   const pets = useQuery({
     queryKey: petKeys.list(),
     queryFn: () => listPets(baseUrl, token ?? ''),
@@ -135,18 +138,27 @@ export function RemindersScreen() {
       className="flex-1 bg-background"
       contentInsetAdjustmentBehavior="automatic"
       contentContainerStyle={{
-        padding: 24,
-        gap: 16,
+        paddingHorizontal: 20,
+        paddingTop: 24,
+        gap: 14,
         paddingBottom: insets.bottom + 24,
       }}
     >
-      <View testID="reminders-actions" className="flex-row justify-end">
+      <View testID="reminders-actions" className="flex-row items-center gap-2">
+        <Text
+          testID="reminders-title"
+          accessibilityRole="header"
+          className="flex-1 text-26 font-black tracking-title text-foreground"
+        >
+          {t('reminders.reminders')}
+        </Text>
         <Button
           testID="reminders-add-link"
-          className="rounded-xl bg-accent border-b-4 border-black/25"
+          className="rounded-xl bg-accent border-b-4 border-black/25 h-10 gap-1.5 px-3.5"
           onPress={() => router.push('/add-reminder' as Href)}
         >
-          <Button.Label className="font-bold text-accent-foreground">
+          <Plus size={16} color={accentForeground} />
+          <Button.Label className="text-sm font-extrabold text-accent-foreground">
             {t('reminders.new')}
           </Button.Label>
         </Button>
