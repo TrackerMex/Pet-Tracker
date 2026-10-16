@@ -6,7 +6,7 @@ import { Button } from 'heroui-native';
 import { useContext, useEffect, useState } from 'react';
 import { KeyboardAvoidingView, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Calendar, Clock } from 'reicon-react-native';
+import { Bell, Calendar, Clock } from 'reicon-react-native';
 
 import { createReminder } from '../../api/reminders';
 import type { ReminderType } from '../../api/types';
@@ -61,7 +61,7 @@ function AddReminderContent({ petId }: { petId: string }) {
   const locale = useLocale();
   const t = useTranslate();
   const insets = useSafeAreaInsets();
-  const [muted] = useThemeColors(['muted', 'accent-strong']);
+  const [muted, accentStrong] = useThemeColors(['muted', 'accent-strong']);
   const [type, setType] = useState<ReminderType>('vaccine');
   const [title, setTitle] = useState('');
   const [titleFocused, setTitleFocused] = useState(false);
@@ -131,6 +131,7 @@ function AddReminderContent({ petId }: { petId: string }) {
 
   const pickedDueAt = date ? combineDateAndTime(date, time) : null;
   const selectedAdvance = effectiveAdvance(pickedDueAt, advanceMinutes, now);
+  const notifyAt = pickedDueAt ? new Date(pickedDueAt.getTime() - selectedAdvance * 60000) : null;
 
   return (
     <KeyboardAvoidingView
@@ -299,10 +300,10 @@ function AddReminderContent({ petId }: { petId: string }) {
                   testID={`advance-chip-${option.minutes}`}
                   hitSlop={TOUCH_SLOP}
                   disabled={disabled}
-                  className={`${selected ? 'rounded-full border border-accent bg-accent-soft px-3 py-2' : 'rounded-full border border-border bg-default px-3 py-2'}${disabled ? ' opacity-50' : ''}`}
+                  className={`${selected ? SELECTED_CHIP : 'h-9.5 items-center justify-center rounded-full px-3.5 bg-default'}${disabled ? ' opacity-50' : ''}`}
                   onPress={() => setAdvanceMinutes(option.minutes)}
                 >
-                  <Text className="text-sm font-semibold text-foreground">
+                  <Text className={`text-sm font-extrabold ${selected ? 'text-accent-foreground' : 'text-foreground'}`}>
                     {t(option.labelKey)}
                   </Text>
                 </Pressable>
@@ -310,6 +311,22 @@ function AddReminderContent({ petId }: { petId: string }) {
             })}
           </View>
         </View>
+
+        {notifyAt ? (
+          <View
+            testID="add-reminder-preview"
+            className="flex-row items-center gap-2.5 rounded-tile bg-surface-secondary px-3.5 py-3"
+            style={CONTINUOUS_CORNER}
+          >
+            <Bell size={20} color={accentStrong} />
+            <Text testID="add-reminder-preview-text" className="flex-1 text-13 font-semibold text-foreground">
+              {t('addReminder.notifyPreview', {
+                date: notifyAt.toLocaleDateString(locale, { day: 'numeric', month: 'short' }),
+                time: notifyAt.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }),
+              })}
+            </Text>
+          </View>
+        ) : null}
 
         <Button
           testID="add-reminder-submit"
