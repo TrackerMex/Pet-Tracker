@@ -26,14 +26,27 @@ jest.mock('expo-router', () => {
     },
   };
 });
+const mockHomeEntrance = jest.fn<void, [import('react-native').ViewProps & { index: number }]>();
+
+jest.mock('../home/home-entrance', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return {
+    HomeEntrance(props: import('react-native').ViewProps & { index: number }) {
+      mockHomeEntrance(props);
+      return React.createElement(View, props);
+    },
+  };
+});
+
 jest.mock('react-native-safe-area-context', () => ({
   ...jest.requireActual('react-native-safe-area-context'),
   useSafeAreaInsets: () => ({ top: 40, right: 0, bottom: 24, left: 0 }),
 }));
 jest.mock('reicon-react-native', () => {
   const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
-  const icon = (testID: string) => function MockIcon({ color }: { color?: string }) {
-    return <Text testID={testID} style={{ color }} />;
+  const icon = (testID: string) => function MockIcon({ color, size }: { color?: string; size?: number }) {
+    return <Text testID={testID} style={{ color }} {...{ size }} />;
   };
   return {
     ChevronLeft: icon('meals-history-icon-prev'),
