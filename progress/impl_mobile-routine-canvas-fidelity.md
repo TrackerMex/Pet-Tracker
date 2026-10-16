@@ -1065,3 +1065,88 @@ mismo fichero del informe y se guarda de nuevo con `--only`.
 - Typecheck y lint limpios; 25 commits de requisitos y lista cerrada de 22 rutas.
 - R1–R13: hecho en trazabilidad. R14: pendiente (humano), casilla sin marcar.
 - Se mantiene la instrucción del handoff: cierre local para el leader, sin init.sh, push, PR ni merge.
+
+## Ronda de fusión con main (#183 y #179)
+
+Ejecutada el 2026-10-16 siguiendo B0, M1, M2 (script y anclas A–H), M3,
+M4a/b/c, M5, M6 y N del handoff de fusión, en ese orden.
+
+- H0m: `6603ff6d89f412c65a531698554ff35ee5b85d8b`.
+- Merge: `0e86587b794981c10d3a97b0d88fa6cfe6a4d6c5`.
+- Primer padre: `6603ff6d89f412c65a531698554ff35ee5b85d8b` (H0m).
+- Segundo padre: `91af2d9f9101ca9c99e43852b859255b8db565b2` (origin/main).
+
+B0 terminó con código 0; rama, origin/main, ancestro y limpieza coincidieron:
+
+```text
+6603ff6d89f412c65a531698554ff35ee5b85d8b
+```
+
+M1 devolvió el código de merge esperado y exactamente los nueve conflictos
+de contenido (todos `UU`, sin add/add ni delete/modify):
+
+```text
+exit=1
+docs/ui-guidelines.md
+mobile-pet-tracker/src/__tests__/alerts-canvas-fidelity.test.ts
+mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+mobile-pet-tracker/src/__tests__/design-drift.test.ts
+mobile-pet-tracker/src/__tests__/ui-language.test.ts
+mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx
+mobile-pet-tracker/src/theme/__tests__/global-css.test.ts
+mobile-pet-tracker/src/theme/global.css
+specs/mobile-ui-language/design.md
+```
+
+M2 se ejecutó exclusivamente con el script del leader, sin ediciones manuales:
+
+```text
+RESOLVE-OK
+A-ok
+B-ok
+C-ok
+D-ok
+E-ok
+F-ok
+G-ok
+H-ok
+```
+
+Se aplicó la resolución prescrita de #178 R13: `rounded-16` y `rounded-22`
+siguen reservados a Recordatorios; `rounded-14` fuera de Recordatorios queda
+limitado a Horario e Historial de #179. La sección de copy de #178 pasa a §2.34.
+
+M3 y M4a/b terminaron con código 0. M4a no encontró Jest, ESLint ni init.sh
+activos; tipos y lint pasaron a la primera, con el log de lint vacío:
+
+```text
+M3-ok
+fin-espera
+M4b-ok
+```
+
+M4c completo pasó a la primera, sin reintentos ni flake:
+
+```text
+exit=0
+Test Suites: 112 passed, 112 total
+Tests:       3717 passed, 3717 total
+```
+
+Ningún `●` de fallo (excluido `Console`) ni `Test suite failed to run`.
+El aviso preexistente `A worker process has failed to exit gracefully`
+apareció una vez y se cuenta aparte.
+
+M5 creó un único commit de fusión, con los dos padres indicados arriba.
+M6 confirmó la igualdad exacta de las listas contra main y contra la firma
+`ecb5139571c42d3a783eb44361ae375c8f057fc4`, excluyendo el handoff de fusión y
+su script según la instrucción:
+
+```text
+29
+M6-ok
+```
+
+Desviaciones: ninguna. Sin rebase, tests nuevos, init.sh ni e2e. No se tocaron
+los worktrees de #184 ni #187. Esta nota se guarda en un commit posterior
+con `--only` sobre este fichero.
