@@ -326,8 +326,8 @@ export const R7_PROFILE: UseRow[] = [
 ];
 
 export const R8_REMINDERS: UseRow[] = [
-  { file: 'src/app/_layout.tsx', key: 'addReminder.addReminder' }, // #95 R4
-  { file: 'src/app/_layout.tsx', key: 'reminders.reminders' }, // #114 R4
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.addReminder' }, // #178 R10
+  { file: 'src/screens/reminders/index.tsx', key: 'reminders.reminders' }, // #178 R4
   { file: 'src/screens/reminders/index.tsx', key: 'reminders.errorForbidden' },
   { file: 'src/screens/reminders/index.tsx', key: 'common.cannotReachServer' },
   { file: 'src/screens/reminders/index.tsx', key: 'common.somethingWentWrong' },
@@ -337,6 +337,7 @@ export const R8_REMINDERS: UseRow[] = [
   { file: 'src/screens/reminders/index.tsx', key: 'common.retry' },
   { file: 'src/screens/reminders/index.tsx', key: 'reminders.noRemindersYet' },
   { file: 'src/screens/reminders/index.tsx', key: 'reminders.emptyBody' }, // #155 R6
+  { file: 'src/screens/reminders/index.tsx', key: 'reminders.new' }, // #178 R9
   { file: 'src/screens/reminders/index.tsx', key: 'reminders.active' },
   { file: 'src/screens/reminders/index.tsx', key: 'reminders.thisWeek' },
   { file: 'src/screens/reminders/index.tsx', key: 'reminders.inactive' },
@@ -344,6 +345,7 @@ export const R8_REMINDERS: UseRow[] = [
   { file: 'src/screens/reminders/index.tsx', key: 'reminders.cancelled' },
   { file: 'src/screens/reminders/index.tsx', key: 'reminders.sent' },
   { file: 'src/screens/reminders/index.tsx', key: 'reminders.dueInDays' },
+  { file: 'src/screens/reminders/index.tsx', key: 'reminders.dueAt' }, // #178 R6
   { file: 'src/screens/reminders/index.tsx', key: 'reminders.delete' },
   { file: 'src/screens/reminders/index.tsx', key: 'reminders.deleteReminder' },
   { file: 'src/screens/reminders/index.tsx', key: 'reminders.deleteSheetBody' },
@@ -375,6 +377,7 @@ export const R8_REMINDERS: UseRow[] = [
   { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.selectDate' },
   { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.time' },
   { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.alert' },
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.notifyPreview' }, // #178 R12
   { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.saveReminder' },
 ];
 

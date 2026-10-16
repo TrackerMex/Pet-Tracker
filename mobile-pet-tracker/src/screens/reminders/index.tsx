@@ -8,6 +8,7 @@ import { Button, Skeleton } from 'heroui-native';
 import { useCallback, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Plus, Trash } from 'reicon-react-native';
 
 import { listPets } from '../../api/pets';
 import { petKeys, reminderKeys } from '../../api/query-keys';
@@ -17,9 +18,9 @@ import {
   type RemindersState,
 } from '../../api/reminders';
 import type { Reminder } from '../../api/types';
-import { Card } from '../../components/card';
 import { EmptyState } from '../../components/empty-state';
 import { PetSwitcher } from '../../components/pet-switcher';
+import { PopIn } from '../../components/pop-in';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
 import {
@@ -31,9 +32,11 @@ import {
   CONTINUOUS_CORNER,
   TABULAR_NUMS,
 } from '../../theme/native-styles';
+import { useThemeColors } from '../../theme/use-theme-colors';
 import { CATEGORY_SLOTS } from '../../utils/category-palette';
 import { daysUntil } from '../../utils/reminder-dates';
 import { REMINDER_TYPE_META } from '../../utils/reminder-meta';
+import { HomeEntrance } from '../home/home-entrance';
 
 function isRemindersError(state: RemindersState): boolean {
   return ['error', 'unreachable', 'missing-config', 'not-found'].includes(
@@ -48,6 +51,14 @@ export function RemindersScreen() {
   const t = useTranslate();
   const { selectedPetId, selectPet } = useSelectedPet();
   const insets = useSafeAreaInsets();
+  const [blueInk, amberInk, greenInk, violetInk, roseInk, muted, accentForeground, danger] = useThemeColors([
+    'category-blue-strong', 'category-amber-strong', 'category-green-strong',
+    'category-violet-strong', 'category-rose-strong', 'muted', 'accent-foreground', 'danger',
+  ]);
+  const categoryInk = {
+    blue: blueInk, amber: amberInk, green: greenInk,
+    violet: violetInk, rose: roseInk, neutral: muted,
+  };
   const pets = useQuery({
     queryKey: petKeys.list(),
     queryFn: () => listPets(baseUrl, token ?? ''),
@@ -135,18 +146,27 @@ export function RemindersScreen() {
       className="flex-1 bg-background"
       contentInsetAdjustmentBehavior="automatic"
       contentContainerStyle={{
-        padding: 24,
-        gap: 16,
+        paddingHorizontal: 20,
+        paddingTop: 24,
+        gap: 14,
         paddingBottom: insets.bottom + 24,
       }}
     >
-      <View testID="reminders-actions" className="flex-row justify-end">
+      <View testID="reminders-actions" className="flex-row items-center gap-2">
+        <Text
+          testID="reminders-title"
+          accessibilityRole="header"
+          className="flex-1 text-26 font-black tracking-title text-foreground"
+        >
+          {t('reminders.reminders')}
+        </Text>
         <Button
           testID="reminders-add-link"
-          className="rounded-xl bg-accent border-b-4 border-black/25"
+          className="rounded-xl bg-accent border-b-4 border-black/25 h-10 gap-1.5 px-3.5"
           onPress={() => router.push('/add-reminder' as Href)}
         >
-          <Button.Label className="font-bold text-accent-foreground">
+          <Plus size={16} color={accentForeground} />
+          <Button.Label className="text-sm font-extrabold text-accent-foreground">
             {t('reminders.new')}
           </Button.Label>
         </Button>
@@ -193,6 +213,7 @@ export function RemindersScreen() {
           pose="clipboard"
           title={t('reminders.noRemindersYet')}
           body={t('reminders.emptyBody')}
+          action={{ label: t('reminders.new'), onPress: () => router.push('/add-reminder' as Href) }}
         />
       ) : null}
 
@@ -205,14 +226,14 @@ export function RemindersScreen() {
       {reminders.data?.kind === 'ok' &&
       reminders.data.reminders.length > 0 ? (
         <>
-          <View className="flex-row gap-3">
+          <View testID="reminders-pills" className="flex-row gap-2">
             <View
               testID="pill-active"
-              className="flex-1 items-center gap-1 rounded-xl bg-accent-soft p-3"
+              className="flex-1 rounded-16 px-3 py-2.5 bg-surface-secondary"
               style={CONTINUOUS_CORNER}
             >
               <Text
-                className="text-lg font-black text-foreground"
+                className="text-2xl font-black text-accent-strong"
                 style={TABULAR_NUMS}
               >
                 {
@@ -221,17 +242,17 @@ export function RemindersScreen() {
                   ).length
                 }
               </Text>
-              <Text className="text-xs font-normal text-muted">
+              <Text className="text-xs font-bold text-muted">
                 {t('reminders.active')}
               </Text>
             </View>
             <View
               testID="pill-week"
-              className="flex-1 items-center gap-1 rounded-xl bg-default p-3"
+              className={`flex-1 rounded-16 px-3 py-2.5 ${CATEGORY_SLOTS.amber.surface}`}
               style={CONTINUOUS_CORNER}
             >
               <Text
-                className="text-lg font-black text-foreground"
+                className={`text-2xl font-black ${CATEGORY_SLOTS.amber.ink}`}
                 style={TABULAR_NUMS}
               >
                 {
@@ -248,17 +269,17 @@ export function RemindersScreen() {
                   }).length
                 }
               </Text>
-              <Text className="text-xs font-normal text-muted">
+              <Text className={`text-xs font-bold ${CATEGORY_SLOTS.amber.ink}`}>
                 {t('reminders.thisWeek')}
               </Text>
             </View>
             <View
               testID="pill-inactive"
-              className="flex-1 items-center gap-1 rounded-xl bg-default p-3"
+              className="flex-1 rounded-16 px-3 py-2.5 bg-default"
               style={CONTINUOUS_CORNER}
             >
               <Text
-                className="text-lg font-black text-foreground"
+                className="text-2xl font-black text-muted"
                 style={TABULAR_NUMS}
               >
                 {
@@ -267,80 +288,90 @@ export function RemindersScreen() {
                   ).length
                 }
               </Text>
-              <Text className="text-xs font-normal text-muted">
+              <Text className="text-xs font-bold text-muted">
                 {t('reminders.inactive')}
               </Text>
             </View>
           </View>
 
           <View className="gap-3">
-            {reminders.data.reminders.map((reminder) => {
+            {reminders.data.reminders.map((reminder, i) => {
               const meta = REMINDER_TYPE_META[reminder.type];
-              const days = daysUntil(new Date(), new Date(reminder.dueAt));
+              const due = new Date(reminder.dueAt);
+              const days = daysUntil(new Date(), due);
               const inactive = reminder.status !== 'scheduled';
+              const upcoming = !inactive && days >= 0 && days <= 10;
+              const slot = CATEGORY_SLOTS[meta.category];
+              const date = due.toLocaleDateString(locale, { day: 'numeric', month: 'short' });
+              const time = due.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
 
               return (
-                <Card
-                  key={reminder.id}
-                  testID={`reminder-row-${reminder.id}`}
-                  className={`min-h-20 flex-row items-center gap-3${inactive ? ' opacity-50' : ''}`}
-                >
+                <HomeEntrance key={reminder.id} testID={`reminders-entry-${reminder.id}`} index={i}>
                   <View
-                    className={`size-11 items-center justify-center rounded-xl ${CATEGORY_SLOTS[meta.category].surface}`}
+                    testID={`reminder-row-${reminder.id}`}
+                    className={`flex-row items-center gap-3 rounded-22 bg-surface p-3.5 ${upcoming ? 'border-2 border-warning-soft' : 'border border-border'}${inactive ? ' opacity-50' : ''}`}
                     style={CONTINUOUS_CORNER}
                   >
-                    <Text className="text-xl">{meta.emoji}</Text>
-                  </View>
-                  <View className="min-w-0 flex-1 gap-1">
-                    <View className="flex-row items-center gap-2">
-                      <Text className="text-xs font-semibold text-muted">
-                        {t(meta.labelKey)}
-                      </Text>
-                      {!inactive && days >= 0 && days <= 10 ? (
-                        <Text
-                          testID={`reminder-upcoming-${reminder.id}`}
-                          className="rounded-full bg-warning-soft px-2 py-0.5 text-2xs font-bold text-warning-strong"
-                        >
-                          {t('reminders.upcoming')}
-                        </Text>
-                      ) : null}
+                    <View
+                      testID={`reminder-tile-${reminder.id}`}
+                      className={`size-11.5 items-center justify-center rounded-14 ${slot.surface}`}
+                      style={CONTINUOUS_CORNER}
+                    >
+                      <meta.Icon size={22} color={categoryInk[meta.category]} />
                     </View>
-                    <Text className="font-bold text-foreground">
-                      {reminder.title}
-                    </Text>
-                    <View className="flex-row items-center gap-1">
-                      <Text className="text-xs font-normal text-muted">
-                        {new Date(reminder.dueAt).toLocaleDateString(locale)}
+                    <View className="min-w-0 flex-1 gap-0.75">
+                      <View className="flex-row items-center justify-between">
+                        <Text className={`text-xs font-extrabold ${slot.ink}`}>
+                          {t(meta.labelKey)}
+                        </Text>
+                        {upcoming ? (
+                          <PopIn testID={`reminder-upcoming-pop-${reminder.id}`}>
+                            <Text
+                              testID={`reminder-upcoming-${reminder.id}`}
+                              className="rounded-full bg-warning-soft px-2 py-0.75 text-11 font-extrabold text-warning-strong"
+                            >
+                              {t('reminders.upcoming')}
+                            </Text>
+                          </PopIn>
+                        ) : null}
+                      </View>
+                      <Text className="text-base font-extrabold text-foreground">
+                        {reminder.title}
                       </Text>
-                      {inactive ? (
-                        <Text
-                          testID={`reminder-status-${reminder.id}`}
-                          className="text-xs font-semibold text-muted"
-                        >
-                          {reminder.status === 'sent'
-                            ? t('reminders.sent')
-                            : t('reminders.cancelled')}
+                      <View className="flex-row items-center gap-1">
+                        <Text className="text-13 font-normal text-muted">
+                          {t('reminders.dueAt', { date, time })}
                         </Text>
-                      ) : (
-                        <Text className="text-xs font-normal text-muted">
-                          {t('reminders.dueInDays', { days })}
-                        </Text>
-                      )}
+                        {inactive ? (
+                          <Text
+                            testID={`reminder-status-${reminder.id}`}
+                            className="text-13 font-semibold text-muted"
+                          >
+                            {reminder.status === 'sent'
+                              ? t('reminders.sent')
+                              : t('reminders.cancelled')}
+                          </Text>
+                        ) : (
+                          <Text className="text-13 font-normal text-muted">
+                            {t('reminders.dueInDays', { days })}
+                          </Text>
+                        )}
+                      </View>
                     </View>
+                    <Button
+                      testID={`reminder-delete-${reminder.id}`}
+                      className="rounded-xl bg-danger-soft"
+                      isDisabled={deletingId === reminder.id}
+                      size="sm"
+                      variant="danger-soft"
+                      onPress={() => confirmDelete(reminder)}
+                    >
+                      <Button.Label className="font-semibold text-danger">
+                        {t('reminders.delete')}
+                      </Button.Label>
+                    </Button>
                   </View>
-                  <Button
-                    testID={`reminder-delete-${reminder.id}`}
-                    className="rounded-xl bg-danger-soft"
-                    isDisabled={deletingId === reminder.id}
-                    size="sm"
-                    variant="danger-soft"
-                    onPress={() => confirmDelete(reminder)}
-                  >
-                    <Button.Label className="font-semibold text-danger">
-                      {t('reminders.delete')}
-                    </Button.Label>
-                  </Button>
-                </Card>
+                </HomeEntrance>
               );
             })}
           </View>
@@ -357,21 +388,27 @@ export function RemindersScreen() {
           <BottomSheetView>
             <View
               testID="reminders-delete-sheet"
-              className="gap-3 bg-surface px-6 pb-8 pt-4"
+              className="items-center gap-3 bg-surface px-5 pb-9 pt-3"
             >
-              <Text className="text-xl font-bold text-foreground">
+              <View
+                testID="reminders-delete-icon"
+                className={`size-14 items-center justify-center rounded-full ${CATEGORY_SLOTS.rose.surface}`}
+              >
+                <Trash size={26} color={danger} />
+              </View>
+              <Text className="text-center text-xl font-black text-foreground">
                 {t('reminders.deleteReminder')}
               </Text>
               <Text
                 testID="reminders-delete-reference"
-                className="text-base font-semibold text-foreground"
+                className="text-center text-base font-semibold text-foreground"
               >
                 {deleteCandidate?.title ?? ''}
               </Text>
-              <Text className="text-sm font-normal text-muted">
+              <Text className="text-center text-sm font-normal text-muted">
                 {t('reminders.deleteSheetBody')}
               </Text>
-              <View className="gap-2 pt-2">
+              <View className="w-full gap-3">
                 <Button
                   testID="reminders-delete-confirm"
                   className="w-full rounded-xl bg-danger"

@@ -1,42 +1,44 @@
+import { Drop, ForkKnife, Pill, PinTack, Stethoscope, Syringe, Weight } from 'reicon-react-native';
+
 import { documentCategory } from '../category-palette';
 import { REMINDER_TYPE_META } from '../reminder-meta';
 
 describe('#64 R5: cada tipo de recordatorio resuelve un único hueco de la paleta', () => {
-  it('conserva label y emoji mientras asigna los siete huecos exactos', () => {
+  it('conserva label e icono mientras asigna los siete huecos exactos', () => {
     expect(REMINDER_TYPE_META).toEqual({
       vaccine: {
         labelKey: 'reminderType.vaccine',
-        emoji: '💉',
+        Icon: Syringe, // #178 R6
         category: 'blue',
       },
       deworming: {
         labelKey: 'reminderType.deworming',
-        emoji: '🪱',
+        Icon: Drop,
         category: 'violet',
       },
       medication: {
         labelKey: 'reminderType.medication',
-        emoji: '💊',
+        Icon: Pill,
         category: 'amber',
       },
       appointment: {
         labelKey: 'reminderType.appointment',
-        emoji: '🩺',
+        Icon: Stethoscope,
         category: 'green',
       },
       weight: {
         labelKey: 'reminderType.weight',
-        emoji: '⚖️',
+        Icon: Weight,
         category: 'neutral',
       },
       food: {
         labelKey: 'reminderType.food',
-        emoji: '🍖',
+        Icon: ForkKnife,
         category: 'rose',
       },
       custom: {
         labelKey: 'reminderType.other',
-        emoji: '📌',
+        Icon: PinTack,
         category: 'neutral',
       },
     });

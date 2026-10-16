@@ -22,6 +22,42 @@ const { join } = require('path');
 const sourceRoot = join(process.cwd(), 'src');
 const projectRoot = process.cwd();
 
+describe('#178 R2: enmienda de fidelidad al canvas en Recordatorios', () => {
+  const charter = readFileSync(join(process.cwd(), '..', 'docs', 'ui-guidelines.md'), 'utf8');
+  const heading = '## Enmienda de fidelidad al canvas (2026-10-13)';
+
+  it('A: conserva la sección, su firma, las directivas y el tamaño text-11', () => {
+    expect(charter.split(heading)).toHaveLength(2);
+    const section = charter.slice(charter.indexOf(heading) + heading.length);
+    expect(section).toMatch(/- \[[ xX]\] Enmienda de fidelidad al canvas aprobada por humano/);
+    expect(charter).toContain("- **Título en contenido (D-H).** El título de pantalla va dentro del contenido (eyebrow opcional y título); la cabecera nativa del stack queda con `title: ''` y solo aporta el botón de volver.");
+    expect(charter).toContain('- **Iconos reicon (D-I).** Los iconos de la interfaz son componentes de `reicon-react-native` coloreados con un token vía `useThemeColors`; ningún emoji hace de icono. La superficie de categoría acompaña a un icono y a un texto.');
+    expect(charter).toContain('- **Medidas del artboard.** Donde la escala no llega al valor del artboard se usa un token del `@theme` nombrado por su valor y listado en la regla 2 (tamaños y tracking) o en la regla 12 (radios); las clases con corchetes (regla 3) y los radios `2xl`, `lg`, `md` y `sm` (regla 12) siguen prohibidos, y las esquinas que no son cápsula siguen llevando `CONTINUOUS_CORNER`.');
+    expect(charter).not.toContain('- Títulos de pantalla: header del stack cuando exista, no Text suelto.');
+    expect(charter).not.toContain('la superficie siempre acompaña a un emoji y a un texto.');
+    expect(charter.split("- Títulos de pantalla: título en contenido y cabecera nativa con `title: ''` (Enmienda de fidelidad al canvas).")).toHaveLength(2);
+    expect(charter.split('la superficie siempre acompaña a un icono de reicon-react-native y a un texto.')).toHaveLength(2);
+    const sizes = charter.split('\n').find((line) => line.trimStart().startsWith('Tamaños de letra fuera de la escala de Tailwind'));
+    expect(sizes).toContain('`--text-11: 11px`');
+  });
+
+  it('B: enumera el tracking y los tres radios en sus reglas', () => {
+    const tracking = charter.split('\n').find((line) => line.trimStart().startsWith('Tracking fuera de la escala de Tailwind'));
+    expect(tracking).toContain('`--tracking-title: -0.02em`');
+    const radios = charter.slice(charter.indexOf('12. **Escala de radios**'), charter.indexOf('13. **Botón con cuerpo**'));
+    expect(radios).toContain('`rounded-14` (14 px)');
+    expect(radios).toContain('`rounded-16` (16 px)');
+    expect(radios).toContain('`rounded-22` (22 px)');
+  });
+
+  it('C: coloca la receta del chip seleccionado antes de Sin labio', () => {
+    const buttons = charter.slice(charter.indexOf('13. **Botón con cuerpo**'));
+    const chip = '    - **Chip seleccionado** (fidelidad al canvas, #178): cápsula `rounded-full bg-accent border-b-3 border-black/25`; el chip sin seleccionar no lleva labio.';
+    expect(buttons.split(chip)).toHaveLength(2);
+    expect(buttons.indexOf(chip)).toBeLessThan(buttons.indexOf('- **Sin labio**:'));
+  });
+});
+
 describe('#179 R2: enmienda de fidelidad al canvas en Horario e Historial', () => {
   const charter = readFileSync(join(process.cwd(), '..', 'docs', 'ui-guidelines.md'), 'utf8');
   const heading = '## Enmienda de fidelidad al canvas (2026-10-13)';
@@ -994,6 +1030,87 @@ describe('#175 R10: Documentos sin deriva', () => {
     expect(imports).toHaveLength(1);
     expect(imports[0][1].split(',').map((name) => name.trim()).sort()).toEqual([
       'ChevronRight', 'FileText', 'Upload',
+    ]);
+  });
+});
+
+describe('#178 R13: Recordatorios sin deriva', () => {
+  const featureFiles = [
+    'screens/reminders/index.tsx',
+    'screens/add-reminder/index.tsx',
+    'utils/reminder-meta.ts',
+  ];
+  const reminders = readFileSync(join(sourceRoot, featureFiles[0]), 'utf8');
+  const addReminder = readFileSync(join(sourceRoot, featureFiles[1]), 'utf8');
+
+  it('no deja emoji en las dos pantallas ni en los metadatos', () => {
+    expect(featureFiles.filter((file) =>
+      /\p{Extended_Pictographic}/u.test(readFileSync(join(sourceRoot, file), 'utf8')),
+    )).toEqual([]);
+  });
+
+  it('importa exactamente los iconos prescritos desde un único import de reicon', () => {
+    const expected: Record<string, string[]> = {
+      'screens/reminders/index.tsx': ['Plus', 'Trash'],
+      'screens/add-reminder/index.tsx': ['Bell', 'Calendar', 'Clock'],
+      'utils/reminder-meta.ts': ['Drop', 'ForkKnife', 'Pill', 'PinTack', 'Stethoscope', 'Syringe', 'Weight'],
+    };
+    for (const [file, icons] of Object.entries(expected)) {
+      const source = readFileSync(join(sourceRoot, file), 'utf8');
+      const imports = [...source.matchAll(/import\s*\{([^}]+)\}\s*from ['"]reicon-react-native['"]/g)];
+      expect(source.match(/from ['"]reicon-react-native['"]/g)).toHaveLength(1);
+      expect(imports).toHaveLength(1);
+      expect(imports[0][1].split(',').map((name) => name.trim()).filter((name) => !name.startsWith('type ')).sort()).toEqual(icons);
+    }
+  });
+
+  it('no deja escapes de estilo, radios vetados ni text-accent suelto', () => {
+    expect(featureFiles.filter((file) => {
+      const source = readFileSync(join(sourceRoot, file), 'utf8');
+      return MEALS_BAR_STYLE_ESCAPES.test(source)
+        || /\brounded-(?:2xl|lg|md|sm)\b|text-accent(?![-\w])/.test(source);
+    })).toEqual([]);
+  });
+
+  it('reutiliza HomeEntrance y PopIn sin Card en Recordatorios', () => {
+    expect(reminders).toContain("from '../home/home-entrance'");
+    expect(reminders).toContain("from '../../components/pop-in'");
+    expect(reminders).not.toContain('<Card');
+    expect(reminders).not.toContain('components/card');
+  });
+
+  it('conserva una sola etiqueta Nuevo con su receta de texto', () => {
+    expect(reminders.split('<Button.Label className="text-sm font-extrabold text-accent-foreground">')).toHaveLength(2);
+  });
+
+  it('sitúa la vista previa después de Aviso y antes de Guardar', () => {
+    const alert = addReminder.indexOf("t('addReminder.alert')");
+    const preview = addReminder.indexOf('testID="add-reminder-preview"');
+    const submit = addReminder.indexOf('testID="add-reminder-submit"');
+    expect(alert).toBeGreaterThanOrEqual(0);
+    expect(preview).toBeGreaterThan(alert);
+    expect(preview).toBeLessThan(submit);
+  });
+
+  it('no recupera uppercase ni tracking-widest en Nuevo recordatorio', () => {
+    expect(addReminder).not.toMatch(/uppercase|tracking-widest/);
+  });
+
+  it('reserva los radios 14, 16 y 22 a Recordatorios con su inventario exacto', () => {
+    for (const [pattern, count] of [
+      [/\brounded-14\b/g, 1], [/\brounded-16\b/g, 3], [/\brounded-22\b/g, 1],
+    ] as const) {
+      expect(reminders.match(pattern) ?? []).toHaveLength(count);
+    }
+    const outsideReminders = (pattern: RegExp) => sourceFiles(sourceRoot).filter((file) =>
+      file !== join(sourceRoot, featureFiles[0])
+      && !/\.test\.tsx?$/.test(file)
+      && pattern.test(readFileSync(file, 'utf8')),
+    ).map((file) => file.slice(sourceRoot.length + 1));
+    expect(outsideReminders(/\brounded-(?:16|22)\b/)).toEqual([]);
+    expect(outsideReminders(/\brounded-14\b/)).toEqual([
+      join('screens', 'meal-schedule', 'index.tsx'), // #179 R13 comparte rounded-14
+      join('screens', 'meals-history', 'index.tsx'), // #179 R13 comparte rounded-14
     ]);
   });
 });

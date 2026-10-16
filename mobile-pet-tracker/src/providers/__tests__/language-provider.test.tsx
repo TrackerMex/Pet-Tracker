@@ -69,6 +69,7 @@ describe('#65 R12: el catálogo tiene los dos idiomas y t resuelve claves y par�
         - 4 + 3 // #173 R13
         + 7 // #175 R3
         + 1 // #174 R2
+        + 2 // #178 R3
         + 5 // #179 R3
         - 2 // #179 R5
         + 9, // #183 R1
@@ -220,6 +221,29 @@ describe('#173 R13: Perfil retira cuatro claves y añade tres', () => {
     expect(english[key]).toBeUndefined();
     expect(spanish[key]).toBeUndefined();
     expect(languageDesign).toMatch(new RegExp('`' + escapeRegExp(key) + '`[^\\n]*← retirada por #173 \\(R13\\)'));
+  });
+});
+
+describe('#178 R3: claves de Recordatorios del canvas', () => {
+  it('declara los dos pares exactos y registra cada clave', () => {
+    const english = en as Record<string, string>;
+    const spanish = es as Record<string, string>;
+    const languageDesign = readFileSync(
+      join(process.cwd(), '../specs/mobile-ui-language/design.md'),
+      'utf8',
+    );
+    const translations = [
+      ['reminders.dueAt', '{{date}}, {{time}}', '{{date}}, {{time}}'],
+      ['addReminder.notifyPreview', "I'll remind you on {{date}} at {{time}}.", 'Te aviso el {{date}} a las {{time}}.'],
+    ] as const;
+
+    for (const [key, englishValue, spanishValue] of translations) {
+      expect(english[key]).toBe(englishValue);
+      expect(spanish[key]).toBe(spanishValue);
+      expect(languageDesign).toMatch(
+        new RegExp('\\| — \\| `' + escapeRegExp(key) + '`[^\\n]*← añadida por #178 \\(R3\\)'),
+      );
+    }
   });
 });
 

@@ -184,6 +184,7 @@ Tres límites, no negociables:
 
     Fuera de la escala, por fidelidad al canvas (#174): `rounded-10` (10 px), ack compacto de fila de Alertas.
     Fuera de la escala, por fidelidad al canvas (#175): `rounded-24` (24 px), zona de subida de Documentos.
+    Fuera de la escala, por fidelidad al canvas (#178): `rounded-14` (14 px), mosaico del icono de la fila de Recordatorios; `rounded-16` (16 px), píldoras de resumen de Recordatorios; `rounded-22` (22 px), fila de Recordatorios, que es un `View` y no un `Card` porque `twMerge` no sustituye `rounded-card` por un radio con nombre de valor.
     Fuera de la escala, por fidelidad al canvas (#179): `rounded-10` (10 px), «Editar» de la fila de Horario; `rounded-14` (14 px), mosaico de la fila y botones de acción de Horario y horas del panel del día de Historial; `rounded-24` (24 px), resumen de Horario y calendario y panel del día de Historial, que son `View` y no `Card` porque `twMerge` no sustituye `rounded-card` por un radio con nombre de valor.
 
 13. **Botón con cuerpo** (feature #166, 2026-10-11). Los botones de acción
@@ -199,6 +200,7 @@ Tres límites, no negociables:
       `rounded-xl border-2 border-b-6 border-lip-gray bg-surface`
       El gris sale del token `--color-lip-gray` de `src/theme/global.css`,
       nunca de un hex ni de una clase entre corchetes.
+    - **Chip seleccionado** (fidelidad al canvas, #178): cápsula `rounded-full bg-accent border-b-3 border-black/25`; el chip sin seleccionar no lleva labio.
     - **Secundarios de Horario** (fidelidad al canvas, #179): «Editar» `h-9.75 rounded-10 border-2 border-b-5 border-lip-gray bg-surface` y «Añadir comida» `h-13.5 rounded-14 border-2 border-b-6 border-lip-gray bg-surface`, con el labio dentro del alto; «Generar plan» es tonal de la categoría violeta y sin labio, porque el labio del artboard (`rgba(91,63,163,0.35)`) no tiene token.
     - **Sin labio**: los tonales (`bg-accent-soft`, `bg-default`), los
       destructivos (`bg-danger`, `variant="danger-soft"`) y las primarias

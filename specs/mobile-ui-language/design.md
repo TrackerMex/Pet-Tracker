@@ -1030,6 +1030,13 @@ copy completa en cada una.
 | — | `mealSchedule.condition` | `Condition` | `Condición` | ← añadida por #179 (R3) |
 | — | `mealSchedule.food` | `Food` | `Alimento` | ← añadida por #179 (R3) |
 
+### §2.34 — Añadidos por #178 — Recordatorios del canvas
+
+| # | Clave | `en` | `es` | Origen |
+|---|---|---|---|---|
+| — | `reminders.dueAt` | `{{date}}, {{time}}` | `{{date}}, {{time}}` | ← añadida por #178 (R3) |
+| — | `addReminder.notifyPreview` | `I'll remind you on {{date}} at {{time}}.` | `Te aviso el {{date}} a las {{time}}.` | ← añadida por #178 (R3) |
+
 ## 3. La infraestructura
 
 ### 3.1 Decisiones

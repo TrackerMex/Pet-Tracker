@@ -9501,3 +9501,60 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
   merge de `origin/main`, no rebase. Zonas compartidas: tokens
   `--radius-14` de `global.css`, §2.32/§2.33 del registro de idioma, la
   frase de radios de la carta y las filas ACF/CC de los candados de deriva.
+
+## #178 `mobile-routine-canvas-fidelity` — Recordatorios y Nuevo recordatorio fieles al canvas — 2026-10-16
+
+- **Inicio**: 2026-10-13, sesión Frontend (leader), worktree
+  `Pet-Tracker-wt-178`, branch `feature/178-mobile-routine-canvas-fidelity`
+  desde `fb5b209f` (= `origin/main` `788d1f89` más el registro, el explore y el
+  reparto de #175, #178 y #179).
+- **Origen**: segunda de las tres partes en que el humano partió #175 el
+  2026-10-13 (respuestas literales: «Tres features (Recomendado)», «Título en
+  contenido (Recomendado)», «Iconos reicon (Recomendado)», «Píxel exacto, igual
+  que #174 (Recomendado)»). Lleva Recordatorios y Nuevo recordatorio al artboard
+  del canvas; #175 se quedó con Documentos y #179 con Horario e Historial.
+  Explore en `progress/explore_mobile-routine-canvas-fidelity.md`.
+- **Spec**: R1–R13 automatizables y R14 prueba de humo en dev build de Android
+  con casilla propia. `spec_ready` en `5e790ab3` (arreglo P3 en `0a881a3e`);
+  firmada vía Notion el 2026-10-15 en `99808696`.
+- **Enmiendas E1 a E5** (premisas falsas y candados heredados que la spec
+  firmada no inventarió; E1 a E4 en `55515479`, E5 en `59a7fc2b` con el
+  inventario `tracking-title` de #174 R12), firmadas por el humano en
+  `165d4946`. Al mergear #175 se regeneró el handoff; H0 = `274ff52d`.
+- **Implementación**: Codex CLI, 25 commits de requisito en rojo/verde con
+  varias paradas, todas resueltas sin cambiar el diseño (c11 y c12 por lint, c20
+  por la preparación incompleta y luego por la fecha y la hora tras un flake
+  ajeno). Excepción anotada de c20: en `f8779f27` (R10 verde) fallan dos `it`
+  de añadir recordatorio (`opens the date picker and reflects the selected date`
+  y `opens the time picker with 09:00 and reflects a new time`; 2 failed / 489
+  passed) y la suite cierra en verde en `03ff8a52` (R11 verde).
+- **Review ronda 1: APROBADO** (`6950f20a`, informe de Codex en `e964f4b9`),
+  R1–R13 sin bloqueantes. Cinco observaciones: recetas sin candado (`flex-3`,
+  `categoryInk`, `justify-between`, `gap-1`), el botón `Nuevo` de `h-10` sin
+  `hitSlop` por debajo de 44 pt, y restos cosméticos de tests.
+- **Smoke R14** firmado por el humano en `ecb51395` (AlexisSM377, 2026-10-16,
+  dev build de Android).
+- **Ronda de fusión con main**: mientras se hacía el smoke mergearon #183 (PR
+  #218), la limpieza de registro de #185 y #186 (PR #220) y #179 (PR #223,
+  `91af2d9f`). Merge y no rebase, para conservar los hashes de la trazabilidad:
+  fusión `0e86587b`, handoff `6603ff6d`, nota de Codex `60d030c2`, veredicto
+  `5e62f7f6`. Nueve conflictos de contenido resueltos por un script del leader
+  (`progress/handoff_mobile-routine-canvas-fidelity_merge_resolve.py`, probado
+  contra el árbol sin resolver y contra 12 mutantes); el árbol de Codex salió
+  idéntico byte a byte al de la simulación del leader. `./init.sh` exit 0:
+  backend 187/1474, infra 2/14, móvil 112/3717 y e2e 468/476 (8 omitidos).
+  Review de la ronda: APROBADO, cinco observaciones sin bloqueo.
+- **Desviación de R13** (decisión del leader): #179 usa `rounded-14` en
+  `meal-schedule` y `meals-history` (mismo token `--radius-14`), así que el
+  candado de radios de #178 se partió en dos: `rounded-16` y `rounded-22` siguen
+  exclusivos de Recordatorios y `rounded-14` fuera de Recordatorios debe ser
+  exactamente esos dos ficheros. El texto de R13 en `requirements.md` no se
+  edita; queda anotado en la trazabilidad.
+- **Cierre** (2026-10-16): frontmatter de `design.md`, `tasks.md` y
+  `traceability.md` en approved, fila R14 de la trazabilidad con la firma,
+  #178 en `done` en `feature_list.json`, STATUS y Notion en Implementado /
+  Completado. La PR la mergea el humano. Tras el merge, se borra el worktree.
+- **Deuda y flakes conocidos**: `R1: me card` de Perfil (deuda #184), Home
+  `#98 R7` bajo carga, líneas de más de 100 columnas en `docs/index.tsx` y el
+  título «51» de `ui-language.test.ts:176` frente a la suma de 53 (decorativo).
+- **Convivencia**: #179 ya está en `main`; no queda otra rama que fusionar antes.

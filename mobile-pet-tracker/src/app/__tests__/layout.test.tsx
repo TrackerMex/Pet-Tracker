@@ -344,7 +344,7 @@ describe('#95 R4: cada pantalla de detalle declara su cabecera nativa', () => {
   });
 
   it.each([
-    ['add-reminder', 't:addReminder.addReminder'],
+    ['add-reminder', ''],
     ['pets/add', 't:addPet.addPet'],
     ['pets/[petId]/docs', ''],
     ['weight-log', 't:weightLog.weightLog'],
@@ -532,7 +532,7 @@ describe('#114 R4: reminders y alerts declaran su cabecera nativa', () => {
   });
 
   it.each([
-    ['reminders', 't:reminders.reminders'],
+    ['reminders', ''],
     ['alerts', ''], // #174 R3
   ])('%s usa exactamente las opciones de cabecera acordadas', async (name, title) => {
     await render(<RootLayout />);

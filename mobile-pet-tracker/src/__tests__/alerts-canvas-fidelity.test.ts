@@ -210,10 +210,12 @@ describe('#174 R12: inventarios', () => {
       token: 'tracking-title',
       pattern: /(?<![\w-])tracking-title\b/,
       files: [
+        'screens/add-reminder/index.tsx', // #178 R10
         'screens/alerts/index.tsx', // #174 R12: H0 sin consumidores
         'screens/docs/index.tsx', // #175 R5
         'screens/meal-schedule/index.tsx', // #179 R4
         'screens/meals-history/index.tsx', // #179 R9
+        'screens/reminders/index.tsx', // #178 R4
       ],
     },
   ])('limita $token a su inventario de producción', ({ pattern, files }) => {
