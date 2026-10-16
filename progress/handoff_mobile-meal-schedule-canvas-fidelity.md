@@ -125,6 +125,33 @@ cd /home/claude/sites/Pet-Tracker-wt-179/mobile-pet-tracker && test "$(grep -cxF
 cd /home/claude/sites/Pet-Tracker-wt-179/mobile-pet-tracker && git apply /tmp/179-c13.diff && echo devuelto=0
 ```
 
+## Reanudación en c13 (tras la tercera parada)
+
+Codex paró por tercera vez en c13: la sustitución a mano de la etiqueta de «Editar» (`Button.Label` → `Text`, E2.1) falló por una sangría mal
+copiada y el ejecutor lanzó después la cadena de c13 sin ella. La guarda de E2.1 la cazó antes de Jest, así que no se cometió nada. No es un defecto
+de la spec: HEAD es c12b y el prep de c13 está intacto. Para que no dependa de la sangría, el cambio de la etiqueta de «Editar» se hace con el
+comando de abajo (busca por contenido, no por espacios) y sustituye **solo** a esa parte del paso 1 de c13; el resto del prep ya está en el árbol.
+
+Orden: las dos líneas de abajo, en orden (la primera no imprime nada; si falla, PARA) → la segunda debe imprimir `swap=0` → la cadena de c13 tal cual
+está escrita, sin tocarla. Anota en `progress/impl_mobile-meal-schedule-canvas-fidelity.md` una sección «Reanudación autorizada en c13» con la salida literal de la segunda línea.
+
+```bash
+# -- c13 swap (1/2): la etiqueta de «Editar» pasa de Button.Label a Text, buscando por contenido (no imprime nada; si falla, PARA) --
+cd /home/claude/sites/Pet-Tracker-wt-179/mobile-pet-tracker && python3 -I - <<'PY'
+p = 'src/screens/meal-schedule/index.tsx'
+s = open(p, encoding='utf-8').read()
+old = '<Button.Label className="text-13 font-extrabold text-foreground">'
+assert s.count(old) == 1
+i = s.index(old)
+j = s.index('</Button.Label>', i)
+s = s[:i] + '<Text className="text-13 font-extrabold text-foreground">' + s[i + len(old):j] + '</Text>' + s[j + len('</Button.Label>'):]
+open(p, 'w', encoding='utf-8').write(s)
+PY
+
+# -- c13 swap (2/2): comprueba (esperado: swap=0) --
+cd /home/claude/sites/Pet-Tracker-wt-179/mobile-pet-tracker && test "$(grep -cF -- '<Text className="text-13 font-extrabold text-foreground">' src/screens/meal-schedule/index.tsx)" = 1 && test "$(grep -cF -- 'Button.Label className="text-13' src/screens/meal-schedule/index.tsx)" = 0 && echo swap=0
+```
+
 ```text
 Worktree: /home/claude/sites/Pet-Tracker-wt-179   <- PRIMERA LINEA. Trabaja AQUI y en ningun otro sitio
 Branch:   feature/179-mobile-meal-schedule-canvas-fidelity   (H0 = git rev-parse HEAD al arrancar; anotalo en el impl)
