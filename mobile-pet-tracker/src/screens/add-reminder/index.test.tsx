@@ -27,6 +27,21 @@ import {
 import { AddReminderScreen } from '.';
 import { TOUCH_SLOP } from '../../theme/touch-target';
 
+jest.mock('reicon-react-native', () => {
+  const actual = jest.requireActual<typeof import('reicon-react-native')>('reicon-react-native');
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  const mockIcon = (testID: string) =>
+    function MockIcon(props: Record<string, unknown>) {
+      return React.createElement(View, { testID, ...props });
+    };
+  return {
+    ...actual,
+    Calendar: mockIcon('add-reminder-icon-calendar'),
+    Clock: mockIcon('add-reminder-icon-clock'),
+  };
+});
+
 jest.mock('../../api/reminders', () => ({
   createReminder: jest.fn(),
 }));
@@ -507,12 +522,12 @@ describe('#178 R10: marco, título y chips de tipo del canvas', () => {
 
   it('da a las cinco etiquetas y sus secciones las recetas del canvas', () => {
     for (const [label, gap] of [
-      ['Tipo', 'gap-2'], ['Título', 'gap-1.5'], ['Fecha', 'flex-1 gap-1.5'],
-      ['Hora', 'flex-1 gap-1.5'], ['Aviso', 'gap-2'],
+      ['Tipo', 'gap-2'], ['Título', 'gap-1.5'], ['Fecha', 'gap-1.5'],
+      ['Hora', 'gap-1.5'], ['Aviso', 'gap-2'],
     ]) {
       const text = screen.getByText(label);
       expect(text.props.className).toBe('text-sm font-extrabold text-foreground');
-      expect(text.parent?.props.className).toBe(gap);
+      expect(text.parent?.props.className.split(' ')).toContain(gap);
     }
   });
 
@@ -599,9 +614,9 @@ describe('#123: pickers de fecha de Nuevo recordatorio en Android a las 20:00 de
 
   describe('#123 R4: Nuevo recordatorio muestra y guarda el día elegido', () => {
     it.each([
-      ['elegir hoy (24 de septiembre) guarda hoy', [2026, 8, 23, 18, 0], [2026, 8, 24], '24/9/2026', new Date(2026, 8, 24, 21, 30).toISOString(), 0],
-      ['elegir el 1 de octubre guarda el 1 de octubre (cruce de mes)', [2026, 8, 30, 18, 0], [2026, 9, 1], '1/10/2026', new Date(2026, 9, 1, 21, 30).toISOString(), 10080],
-      ['elegir el 1 de enero de 2027 guarda el 1 de enero (cruce de año)', [2026, 11, 31, 18, 0], [2027, 0, 1], '1/1/2027', new Date(2027, 0, 1, 21, 30).toISOString(), 10080],
+      ['elegir hoy (24 de septiembre) guarda hoy', [2026, 8, 23, 18, 0], [2026, 8, 24], '24 sep 2026', new Date(2026, 8, 24, 21, 30).toISOString(), 0],
+      ['elegir el 1 de octubre guarda el 1 de octubre (cruce de mes)', [2026, 8, 30, 18, 0], [2026, 9, 1], '1 oct 2026', new Date(2026, 9, 1, 21, 30).toISOString(), 10080],
+      ['elegir el 1 de enero de 2027 guarda el 1 de enero (cruce de año)', [2026, 11, 31, 18, 0], [2027, 0, 1], '1 ene 2027', new Date(2027, 0, 1, 21, 30).toISOString(), 10080],
     ] as [string, number[], number[], string, string, number][])('%s', async (_title, local, utc, etiqueta, dueAt, aviso) => {
       await renderAddReminder();
       await waitFor(() => expect(screen.getByTestId('title-input')).toBeVisible());
@@ -884,5 +899,60 @@ describe('#148 R8: add-reminder entrega el primer toque con el teclado abierto',
     await waitFor(() => expect(screen.getByTestId('screen-add-reminder')).toBeVisible());
 
     expect(screen.getByTestId('add-reminder-form').props.keyboardShouldPersistTaps).toBe('handled');
+  });
+});
+
+describe('#178 R11: título, fecha y hora del canvas', () => {
+  const themeColors = jest.requireActual<typeof import('../../theme/use-theme-colors')>('../../theme/use-theme-colors');
+
+  beforeEach(async () => {
+    jest.clearAllMocks();
+    jest.spyOn(themeColors, 'useThemeColors').mockImplementation(
+      ((tokens: readonly string[]) => tokens.map((token) => `color:${token}`)) as typeof themeColors.useThemeColors,
+    );
+    process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockCreateReminder.mockReturnValue(pending());
+    await renderAddReminder();
+    await screen.findByTestId('title-input');
+  });
+  afterEach(() => { jest.restoreAllMocks(); });
+
+  it('alterna el borde completo del título al recibir y perder foco', async () => {
+    const input = screen.getByTestId('title-input');
+    expect(input.props.className).toBe('h-13 rounded-xl bg-default px-3.5 text-base font-semibold text-foreground border-2 border-transparent');
+    expect(input).toHaveStyle({ borderCurve: 'continuous' });
+    await fireEvent(input, 'focus');
+    expect(screen.getByTestId('title-input').props.className).toBe('h-13 rounded-xl bg-default px-3.5 text-base font-semibold text-foreground border-2 border-accent');
+    await fireEvent(screen.getByTestId('title-input'), 'blur');
+    expect(screen.getByTestId('title-input').props.className).toBe('h-13 rounded-xl bg-default px-3.5 text-base font-semibold text-foreground border-2 border-transparent');
+  });
+
+  it('abre cada campo con su icono de 18 y tinta muted', () => {
+    for (const [fieldID, iconID] of [
+      ['date-field', 'add-reminder-icon-calendar'],
+      ['time-field', 'add-reminder-icon-clock'],
+    ]) {
+      const field = screen.getByTestId(fieldID);
+      expect(field.props.className).toBe('h-13 flex-row items-center gap-2 rounded-xl bg-default px-3.5');
+      expect(field).toHaveStyle({ borderCurve: 'continuous' });
+      expect(field.children).toHaveLength(2);
+      const icon = within(field).getByTestId(iconID);
+      expect(field.children[0]).toBe(icon);
+      expect(icon.props.size).toBe(18);
+      expect(icon.props.color).toBe('color:muted');
+    }
+  });
+
+  it('pinta la fecha vacía como texto base seminegrita y muted', () => {
+    expect(within(screen.getByTestId('date-field')).getByText('Elige una fecha').props.className).toBe('text-base font-semibold text-muted');
+  });
+
+  it('refleja la hora elegida en formato de 24 horas', async () => {
+    await pickTime(20, 5);
+    const time = within(screen.getByTestId('time-field')).getByText('20:05');
+    expect(time.props.className).toBe('text-base font-semibold text-foreground');
   });
 });
