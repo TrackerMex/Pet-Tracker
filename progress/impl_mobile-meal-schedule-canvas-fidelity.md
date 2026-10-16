@@ -1175,3 +1175,98 @@ lista-ok
 K1–K5 quedan validados. Esta reanudación solo ejecutó la guarda de commits de K3, K4 y K5; no repitió implementación, sondas, K1, K2, ALL, typecheck ni lint. No se ejecutaron `./init.sh`, E2E ni push. No se modificaron los ficheros del leader ni se marcaron aprobaciones humanas. R14 sigue «pendiente (humano)».
 
 Se registra este resultado en un commit adicional solo del informe, mediante el mismo `--only` de K4, para conservar el orden K4 → K5 y evitar amend. La trazabilidad permanece en su único commit `14bbb4a3`.
+
+## Ronda de fusión con main (#183)
+
+Fecha: 2026-10-16. Ejecutada la cadena B0 → M1 → M2 A/B/C → M3 → M4a/b/c → M5 → M6 → N del handoff de fusión.
+
+- H0m: `61d0cc6bea4d8fa4c069167a433193bc71373841`.
+- Merge: `4cb9afd50cd2153be9902def7009bf969ab0fb32`.
+- Primer padre: `61d0cc6bea4d8fa4c069167a433193bc71373841` (= H0m).
+- Segundo padre: `f0b636a4d01fa30ecbc8aa0029e4a45fd1f364da` (= origin/main medido).
+
+### B0 y M1
+
+Salida de B0 (estado 0):
+
+```text
+61d0cc6bea4d8fa4c069167a433193bc71373841
+B0-ok
+```
+
+M1 produjo únicamente los tres conflictos de contenido previstos; los tres archivos tenían las etapas 1, 2 y 3 en el índice, sin add/add ni delete/modify. Salida literal:
+
+```text
+Auto-merging feature_list.json
+Auto-merging mobile-pet-tracker/src/__tests__/ui-copy-table.ts
+Auto-merging mobile-pet-tracker/src/__tests__/ui-language.test.ts
+CONFLICT (content): Merge conflict in mobile-pet-tracker/src/__tests__/ui-language.test.ts
+Auto-merging mobile-pet-tracker/src/i18n/catalog.ts
+Auto-merging mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx
+CONFLICT (content): Merge conflict in mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx
+Auto-merging specs/mobile-ui-language/design.md
+CONFLICT (content): Merge conflict in specs/mobile-ui-language/design.md
+Automatic merge failed; fix conflicts and then commit the result.
+exit=1
+mobile-pet-tracker/src/__tests__/ui-language.test.ts
+mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx
+specs/mobile-ui-language/design.md
+```
+
+### M2 y M3
+
+Se aplicaron únicamente las resoluciones prescritas: título 51 y cálculo con +3 de #179 R8; suma +5, -2 y +9 con coma solo al final; §2.32 de #183 seguido de §2.33 de #179. La casilla de la plantilla de §6.2 sigue sin marcar.
+
+Salidas de las anclas y de M3 (estados 0):
+
+```text
+A-ok
+B-ok
+C-ok
+M3-ok
+```
+
+### M4a, M4b y M4c
+
+M4a esperó a que terminaran init.sh, Jest y ESLint de #178. El bucle terminó en estado 0 y la comprobación posterior confirmó que no quedaba ningún proceso coincidente; no se intervino en procesos ni en el worktree ajenos.
+
+```text
+fin-espera
+```
+
+M4b terminó en estado 0; .expo/types/router.d.ts ausente, typecheck verde y /tmp/179m-lint.txt vacío:
+
+```text
+$ tsc --noEmit
+M4b-ok
+```
+
+Salida literal de M4c:
+
+```text
+exit=0
+Test Suites: 112 passed, 112 total
+Tests:       3661 passed, 3661 total
+```
+
+Recuento de fallos `●` excluyendo `● Console`: 0. Un único aviso preexistente `A worker process has failed to exit gracefully`, contado aparte. Reintento y Flake revisados antes de continuar: no se activaron, porque no hubo `Failed to run`, `reading 'canceled'`, `Exceeded timeout`, ni tests fallidos.
+
+### M5 y M6
+
+M5 terminó en estado 0. Hash del merge y sus padres, en el orden HEAD, HEAD^1 y HEAD^2:
+
+```text
+4cb9afd50cd2153be9902def7009bf969ab0fb32
+61d0cc6bea4d8fa4c069167a433193bc71373841
+f0b636a4d01fa30ecbc8aa0029e4a45fd1f364da
+```
+
+M6 terminó en estado 0: las dos listas cerradas contienen los mismos 30 archivos y diff no imprimió diferencias:
+
+```text
+30
+M6-ok
+```
+
+Desviaciones: ninguna. Sin rebase, commits rojo/verde, tests nuevos, init.sh, E2E ni push. La única edición manual fuera de las tres resoluciones es esta nota, que se registra mediante el commit --only de N.
+
