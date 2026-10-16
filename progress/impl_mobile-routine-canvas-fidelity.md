@@ -202,8 +202,7 @@ en el handoff corregido. Las paradas anteriores y el Flake quedan en Desviacione
 | c25 | `acde7bee` | test(mobile): #178 R13 candados de deriva de Recordatorios | R13 | nace verde | `Tests:       1336 passed, 1336 total` |
 
 - S1–S7: un único fallo propio y `limpio=0` en cada sonda.
-- K1–K3: verificados; salidas en Cierre.
-- K4–K5: cierre documental y comprobación de lista cerrada, documentados al final.
+- K1–K5: verificados; salidas literales en Cierre y al final del informe.
 
 ## Desviaciones
 
@@ -930,8 +929,8 @@ La cadena literal de trazabilidad terminó con código 0. Extracto literal:
 ### Desviaciones — registro del resultado de K5
 
 K5 compara contra HEAD e incluye este informe: su salida real solo existe
-tras el primer commit del informe. Se registrará después en un segundo
-commit documental del mismo fichero, usando de nuevo `git commit --only`.
+tras el primer commit del informe. Se registra en una segunda actualización documental
+del mismo fichero, usando de nuevo `git commit --only`.
 
 ## Fallos esperados de los rojos c13–c23
 
@@ -1036,3 +1035,33 @@ Los candados de typecheck y lint de todas estas cadenas pasaron. No se registrar
   ● #64 R9: el color categórico solo se nombra en el módulo de paleta › conserva los usos de bg-accent-soft que sí son acento
 ```
 
+### K4 — commit inicial del informe
+
+La línea literal del handoff terminó con código 0. Extracto literal:
+
+```text
+[feature/178-mobile-routine-canvas-fidelity fc41d00d] docs(mobile-routine-canvas-fidelity): informe de implementación de #178
+ 1 file changed, 1038 insertions(+)
+ create mode 100644 progress/impl_mobile-routine-canvas-fidelity.md
+```
+
+### K5 — lista cerrada contra H0
+
+La línea literal del handoff terminó con código 0 sobre HEAD `fc41d00d`:
+
+```text
+lista-ok
+```
+
+Las 22 rutas coinciden exactamente. Esta actualización registra el
+resultado real de K5 y el commit inicial del informe; solo modifica el
+mismo fichero del informe y se guarda de nuevo con `--only`.
+
+## Estado final para el leader
+
+- c1–c25 commiteados en orden, con la excepción explícita de c20 documentada.
+- S1–S7: un fallo propio y `limpio=0` en cada una.
+- K1–K5: verificados. BASE28: 28 suites, 1336 tests; ALL: 111 suites, 3539 tests.
+- Typecheck y lint limpios; 25 commits de requisitos y lista cerrada de 22 rutas.
+- R1–R13: hecho en trazabilidad. R14: pendiente (humano), casilla sin marcar.
+- Se mantiene la instrucción del handoff: cierre local para el leader, sin init.sh, push, PR ni merge.
