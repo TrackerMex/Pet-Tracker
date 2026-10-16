@@ -168,7 +168,7 @@ function AddReminderContent({ petId }: { petId: string }) {
                   onPress={() => setType(reminderType)}
                 >
                   <Text className="text-sm font-semibold text-foreground">
-                    {`${meta.emoji} ${t(meta.labelKey)}`}
+                    {t(meta.labelKey)}
                   </Text>
                 </Pressable>
               );

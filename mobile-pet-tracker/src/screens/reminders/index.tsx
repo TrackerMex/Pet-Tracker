@@ -18,7 +18,6 @@ import {
   type RemindersState,
 } from '../../api/reminders';
 import type { Reminder } from '../../api/types';
-import { Card } from '../../components/card';
 import { EmptyState } from '../../components/empty-state';
 import { PetSwitcher } from '../../components/pet-switcher';
 import { usePetSelection } from '../../hooks/use-pet-selection';
@@ -50,7 +49,14 @@ export function RemindersScreen() {
   const t = useTranslate();
   const { selectedPetId, selectPet } = useSelectedPet();
   const insets = useSafeAreaInsets();
-  const [accentForeground] = useThemeColors(['accent-foreground']);
+  const [blueInk, amberInk, greenInk, violetInk, roseInk, muted, accentForeground] = useThemeColors([
+    'category-blue-strong', 'category-amber-strong', 'category-green-strong',
+    'category-violet-strong', 'category-rose-strong', 'muted', 'accent-foreground', 'danger',
+  ]);
+  const categoryInk = {
+    blue: blueInk, amber: amberInk, green: greenInk,
+    violet: violetInk, rose: roseInk, neutral: muted,
+  };
   const pets = useQuery({
     queryKey: petKeys.list(),
     queryFn: () => listPets(baseUrl, token ?? ''),
@@ -288,27 +294,34 @@ export function RemindersScreen() {
           <View className="gap-3">
             {reminders.data.reminders.map((reminder) => {
               const meta = REMINDER_TYPE_META[reminder.type];
-              const days = daysUntil(new Date(), new Date(reminder.dueAt));
+              const due = new Date(reminder.dueAt);
+              const days = daysUntil(new Date(), due);
               const inactive = reminder.status !== 'scheduled';
+              const upcoming = !inactive && days >= 0 && days <= 10;
+              const slot = CATEGORY_SLOTS[meta.category];
+              const date = due.toLocaleDateString(locale, { day: 'numeric', month: 'short' });
+              const time = due.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
 
               return (
-                <Card
+                <View
                   key={reminder.id}
                   testID={`reminder-row-${reminder.id}`}
-                  className={`min-h-20 flex-row items-center gap-3${inactive ? ' opacity-50' : ''}`}
+                  className={`flex-row items-center gap-3 rounded-22 bg-surface p-3.5 ${upcoming ? 'border-2 border-warning-soft' : 'border border-border'}${inactive ? ' opacity-50' : ''}`}
+                  style={CONTINUOUS_CORNER}
                 >
                   <View
-                    className={`size-11 items-center justify-center rounded-xl ${CATEGORY_SLOTS[meta.category].surface}`}
+                    testID={`reminder-tile-${reminder.id}`}
+                    className={`size-11.5 items-center justify-center rounded-14 ${slot.surface}`}
                     style={CONTINUOUS_CORNER}
                   >
-                    <Text className="text-xl">{meta.emoji}</Text>
+                    <meta.Icon size={22} color={categoryInk[meta.category]} />
                   </View>
-                  <View className="min-w-0 flex-1 gap-1">
-                    <View className="flex-row items-center gap-2">
-                      <Text className="text-xs font-semibold text-muted">
+                  <View className="min-w-0 flex-1 gap-0.75">
+                    <View className="flex-row items-center justify-between">
+                      <Text className={`text-xs font-extrabold ${slot.ink}`}>
                         {t(meta.labelKey)}
                       </Text>
-                      {!inactive && days >= 0 && days <= 10 ? (
+                      {upcoming ? (
                         <Text
                           testID={`reminder-upcoming-${reminder.id}`}
                           className="rounded-full bg-warning-soft px-2 py-0.5 text-2xs font-bold text-warning-strong"
@@ -317,24 +330,24 @@ export function RemindersScreen() {
                         </Text>
                       ) : null}
                     </View>
-                    <Text className="font-bold text-foreground">
+                    <Text className="text-base font-extrabold text-foreground">
                       {reminder.title}
                     </Text>
                     <View className="flex-row items-center gap-1">
-                      <Text className="text-xs font-normal text-muted">
-                        {new Date(reminder.dueAt).toLocaleDateString(locale)}
+                      <Text className="text-13 font-normal text-muted">
+                        {t('reminders.dueAt', { date, time })}
                       </Text>
                       {inactive ? (
                         <Text
                           testID={`reminder-status-${reminder.id}`}
-                          className="text-xs font-semibold text-muted"
+                          className="text-13 font-semibold text-muted"
                         >
                           {reminder.status === 'sent'
                             ? t('reminders.sent')
                             : t('reminders.cancelled')}
                         </Text>
                       ) : (
-                        <Text className="text-xs font-normal text-muted">
+                        <Text className="text-13 font-normal text-muted">
                           {t('reminders.dueInDays', { days })}
                         </Text>
                       )}
@@ -352,7 +365,7 @@ export function RemindersScreen() {
                       {t('reminders.delete')}
                     </Button.Label>
                   </Button>
-                </Card>
+                </View>
               );
             })}
           </View>
