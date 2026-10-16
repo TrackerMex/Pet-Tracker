@@ -96,6 +96,35 @@ humano y B0 la comprueba. Cada punto manda sobre el cuerpo de la spec. Una sola 
 La Enmienda E2 va tras la E1 en `specs/mobile-meal-schedule-canvas-fidelity/requirements.md` (§Enmienda E2, E2.1–E2.3) y manda sobre el cuerpo de la spec y sobre la E1
 donde discrepan. La escribió el leader tras la segunda parada de Codex (c13). Es la Nota 14.
 
+## Reanudación en c12b (tras la Enmienda E2)
+
+Codex paró dos veces en c13, con c1–c12 cometidos y el prep de c13 sin cometer. c12 (`805dbfdd`) lleva la aserción vieja del botón de «Editar»
+(el `className` entero). Como c12 ya está cometido, la corrección va en un commit propio, **c12b**, entre c12 y c13. Es el único commit fuera de
+c1–c26: el total pasa a **27**. No añade, quita ni renombra ningún `it`. El paso 0 comprueba antes que la
+casilla de E2 está marcada.
+
+Orden: paso 0 (aparta el prep de c13; sin `git stash`, porque el stash es del repo y lo comparten los worktrees) → paso 1 (a mano) → paso 2 (cadena de c12b)
+→ paso 3 (devuelve el prep) → c13 con su cadena, tal cual está escrita (su paso 1 ya incluye E2.1: la etiqueta de «Editar» pasa a `Text`).
+Anota en `progress/impl_mobile-meal-schedule-canvas-fidelity.md` una sección «Reanudación autorizada en c12b» con las salidas literales de los pasos 0, 2 y 3.
+
+```bash
+# -- c12b paso 0: casilla de E2 firmada y prep de c13 apartado (esperado: apartado=0; si la casilla no esta marcada, PARA y avisa al humano) --
+cd /home/claude/sites/Pet-Tracker-wt-179/mobile-pet-tracker && test "$(grep -cE '^- \[[xX]\] Enmienda E2 aprobada por humano' ../specs/mobile-meal-schedule-canvas-fidelity/requirements.md)" = 1 && git diff --no-renames -- src/screens/meal-schedule/index.tsx > /tmp/179-c13.diff && test -s /tmp/179-c13.diff && git checkout HEAD -- src/screens/meal-schedule/index.tsx && git diff --quiet HEAD -- src/screens/meal-schedule/index.tsx && echo apartado=0
+
+# -- c12b paso 1 (a mano): en src/screens/meal-schedule/index.test.tsx, en el `it` `#179 R6: filas del artboard › el dueño ve las dos entradas planas con Editar al final de cada fila`,
+# -- sustituye la linea
+#      expect(edit).toHaveProp('className', 'h-9.75 rounded-10 border-2 border-b-5 border-lip-gray bg-surface px-3.5');
+# -- por estas dos (literales, mismo sangrado; no toques nada mas: ni la linea de la etiqueta ni #147 R4) --
+#      expect((edit.props.className as string).startsWith('pressable-feedback__root button__root ')).toBe(true);
+#      expect((edit.props.className as string).endsWith(' h-9.75 rounded-10 border-2 border-b-5 border-lip-gray bg-surface px-3.5')).toBe(true);
+
+# -- c12b paso 2: cadena (rojo igual que c12: Tests: 25 failed, 1281 passed, 1306 total) --
+cd /home/claude/sites/Pet-Tracker-wt-179/mobile-pet-tracker && test "$(grep -cxF -- '      files: ['\''screens/alerts/index.tsx'\'', '\''screens/meal-schedule/index.tsx'\''], // #179 R6; #174 R12' src/__tests__/alerts-canvas-fidelity.test.ts)" = 1 && test "$(grep -cxF -- '      files: ['\''screens/alerts/index.tsx'\''], // #174 R12' src/__tests__/alerts-canvas-fidelity.test.ts)" = 0 && test "$(grep -cxF -- '    expect(count).toBe(1 + 1 + 1); // #179 R5, R6' src/__tests__/alerts-canvas-fidelity.test.ts)" = 1 && test "$(grep -cxF -- '    expect(count).toBe(1 + 1); // #179 R5' src/__tests__/alerts-canvas-fidelity.test.ts)" = 0 && test "$(grep -cxF -- '      '\''meal-time-edit-${index}'\'', // #179 R6' src/__tests__/consistency-classnames.test.ts)" = 1 && test "$(grep -cxF -- '    expect(accentSoftCount).toBe(16 + 2 + 1 - 1 - 1 - 1 - 1 - 1); // #179 R6; #147 R4, #105 R11; #168 R5: PetPills pasa a huecos pastel; #172 R14: forgot-lock-tile pasa a bg-accent; #171 R3; #173 R6' src/__tests__/consistency-classnames.test.ts)" = 1 && test "$(grep -cxF -- '    expect(accentSoftCount).toBe(16 + 2 + 1 - 1 - 1 - 1 - 1); // #147 R4, #105 R11; #168 R5: PetPills pasa a huecos pastel; #172 R14: forgot-lock-tile pasa a bg-accent; #171 R3; #173 R6' src/__tests__/consistency-classnames.test.ts)" = 0 && test "$(grep -cxF -- '    expect(count(/bg-accent-soft/g)).toBe(16 + 2 + 1 - 1 - 1 - 1 - 1 - 1); // #179 R6; #147 R4: meal-time-edit y add-meal-time-button; #105 R11; #168 R5: PetPills pasa a huecos pastel; #172 R14: forgot-lock-tile pasa a bg-accent; #171 R3; #173 R6' src/__tests__/consistency-classnames.test.ts)" = 1 && test "$(grep -cxF -- '    expect(count(/bg-accent-soft/g)).toBe(16 + 2 + 1 - 1 - 1 - 1 - 1); // #147 R4: meal-time-edit y add-meal-time-button; #105 R11; #168 R5: PetPills pasa a huecos pastel; #172 R14: forgot-lock-tile pasa a bg-accent; #171 R3; #173 R6' src/__tests__/consistency-classnames.test.ts)" = 0 && test "$(grep -cxF -- '    expect(count(/border-lip-gray/g)).toBe(4 + 1 + 1 + 1 + 1 + 1); // #179 R6; #170 R16; #171 R14; #174 R8; #175 R7: borde de la zona de subida' src/__tests__/consistency-classnames.test.ts)" = 1 && test "$(grep -cxF -- '    expect(count(/border-lip-gray/g)).toBe(4 + 1 + 1 + 1 + 1); // #170 R16; #171 R14; #174 R8; #175 R7: borde de la zona de subida' src/__tests__/consistency-classnames.test.ts)" = 0 && test "$(grep -cxF -- '      '\''screens/meal-schedule/index.tsx'\'', // #179 R6' src/__tests__/profile-canvas-fidelity.test.ts)" = 1 && test "$(grep -cxF -- '    expect(filesMatching(/variant="flat"/)).toEqual(['\''screens/meal-schedule/index.tsx'\'', '\''screens/profile/index.tsx'\'']); // #179 R6' src/__tests__/profile-canvas-fidelity.test.ts)" = 1 && test "$(grep -cxF -- '    expect(filesMatching(/variant="flat"/)).toEqual(['\''screens/profile/index.tsx'\'']);' src/__tests__/profile-canvas-fidelity.test.ts)" = 0 && test "$(grep -cE '^\s*it[.(]' src/screens/meal-schedule/index.test.tsx)" = 47 && test "$(grep -cF -- '#179 R6: filas del artboard' src/screens/meal-schedule/index.test.tsx)" = 1 && test "$(grep -cF -- 'expect(edit).toHaveProp('\''className'\'', '\''h-9.75 rounded-10 border-2 border-b-5 border-lip-gray bg-surface px-3.5'\'');' src/screens/meal-schedule/index.test.tsx)" = 0 && test "$(grep -cF -- 'startsWith('\''pressable-feedback__root button__root '\'')' src/screens/meal-schedule/index.test.tsx)" = 1 && test "$(grep -cF -- 'endsWith('\'' h-9.75 rounded-10 border-2 border-b-5 border-lip-gray bg-surface px-3.5'\'')' src/screens/meal-schedule/index.test.tsx)" = 1 && test "$(grep -cF -- 'expect(within(edit).getByText('\''Editar'\'')).toHaveProp('\''className'\'', '\''text-13 font-extrabold text-foreground'\'');' src/screens/meal-schedule/index.test.tsx)" = 1 && { FORCE_COLOR=0 bunx jest --testTimeout=30000 --runTestsByPath src/screens/meal-schedule/index.test.tsx src/screens/meals-history/index.test.tsx src/theme/__tests__/global-css.test.ts src/__tests__/design-drift.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/legibility-classnames.test.ts src/providers/__tests__/language-provider.test.tsx src/__tests__/ui-language.test.ts src/utils/__tests__/month-grid.test.ts src/app/__tests__/layout.test.tsx src/__tests__/profile-canvas-fidelity.test.ts src/__tests__/alerts-canvas-fidelity.test.ts src/__tests__/hero-header-amendments.test.ts src/__tests__/account-screens-polish.test.ts src/__tests__/tab-headers-canvas.test.ts src/__tests__/hosting-artifacts.test.ts src/components/__tests__/empty-state.test.tsx src/components/__tests__/celebration.test.tsx src/screens/welcome/index.test.tsx src/screens/profile/index.test.tsx src/screens/home/index.test.tsx 'src/app/(tabs)/__tests__/food.test.tsx' 'src/app/(tabs)/__tests__/layout.test.tsx' src/theme/__tests__/motion.test.ts src/theme/__tests__/font-registration.test.ts src/app/__tests__/detail-stack.test.tsx src/app/__tests__/detail-stack.guard.test.tsx src/app/__tests__/detail-stack.navigation.test.tsx > /tmp/179-c12b.txt 2>&1; echo "exit=$?"; } && grep -qE '^Tests: +25 failed, 1281 passed, 1306 total$' /tmp/179-c12b.txt && test "$(grep -E '^  ● ' /tmp/179-c12b.txt | grep -vxF '  ● Console' | grep -cvE '^  ● (#179 R6|#166 R3|#173 R2.4|#173 R3|#64 R9|#98 R10|#147 R4|#147 R8|#174 R12|R7: meal schedule)\b')" = 0 && grep -E '^  ● ' /tmp/179-c12b.txt | grep -qE '#179 R6\b' && ! grep -qE "Test suite failed to run|ReferenceError:|SyntaxError:|Cannot find module|reading 'canceled'|Exceeded timeout" /tmp/179-c12b.txt && test ! -e .expo/types/router.d.ts && { bun run typecheck > /tmp/179-tsc.txt 2>&1; true; } && test "$(grep 'error TS' /tmp/179-tsc.txt | grep -cvE '^src/[^(]+\.test\.tsx?\(')" = 0 && { bunx expo lint --no-cache > /tmp/179-lint.txt 2>&1; true; } && ! grep -qF 'Failed to run' /tmp/179-lint.txt && test "$(grep -E '^/' /tmp/179-lint.txt | grep -cvE '\.test\.tsx?$')" = 0 && git add src/screens/meal-schedule/index.test.tsx && test "$(git diff --cached --no-renames --name-only | LC_ALL=C sort | tr '\n' ' ')" = 'mobile-pet-tracker/src/screens/meal-schedule/index.test.tsx ' && git diff --quiet -- . ../docs ../specs && test -z "$(git ls-files --others --exclude-standard -- . ../docs ../specs)" && git commit -m 'test(meal-schedule): aserciones de botones de E2 (#179 R6)'
+
+# -- c12b paso 3: devuelve el prep de c13 (esperado: devuelto=0). Luego sigue en c13 --
+cd /home/claude/sites/Pet-Tracker-wt-179/mobile-pet-tracker && git apply /tmp/179-c13.diff && echo devuelto=0
+```
+
 ```text
 Worktree: /home/claude/sites/Pet-Tracker-wt-179   <- PRIMERA LINEA. Trabaja AQUI y en ningun otro sitio
 Branch:   feature/179-mobile-meal-schedule-canvas-fidelity   (H0 = git rev-parse HEAD al arrancar; anotalo en el impl)
@@ -105,7 +134,7 @@ Implementas #179: las pantallas Horario de comidas e Historial de comidas tomada
 marco 20/24/14, titulo en contenido, resumen verde con labio y tres columnas, filas planas con mosaico ambar y reloj, «Editar» gris
 con labio, «Añadir comida» y «Generar plan» lado a lado y perfil en pildoras. Historial: titulo en contenido, calendario de radio 24
 con flechas cuadradas, celdas con punto o hueco y panel del dia aparte. Mas tres tokens, la enmienda de fidelidad a la carta, cinco
-claves de copy y un candado de deriva. Son 26 commits (c1-c26), test-primero. Cada R tiene su commit ROJO (solo tests/candados) y despues
+claves de copy y un candado de deriva. Son 26 commits (c1-c26) mas el c12b de la Enmienda E2 (27), test-primero. Cada R tiene su commit ROJO (solo tests/candados) y despues
 su commit VERDE (solo implementacion), nunca mezclados en el mismo commit.
 Excepciones declaradas:
   - c1 (dobles de test, T0.4) nace verde: no anade ningun `it` ni toca produccion.
@@ -796,11 +825,11 @@ Son ficheros del leader.
 
 ## Criterios de terminado
 
-- Los 26 commits (c1–c26) están en orden, con los mensajes de arriba. Después van la trazabilidad y el impl.
+- Los 26 commits (c1–c26) más c12b (27 en total) están en orden, con los mensajes de arriba; c12b va entre c12 y c13. Después van la trazabilidad y el impl.
 - Ningún commit mezcla tests rojos con implementación.
 - Todas las cadenas terminaron en `git commit`, sin que fallara ningún eslabón. Si hubo reintentos, están anotados.
 - Las sondas S1–S7 dieron cada una un solo `●`, de `#179 R13`, y `limpio=0`.
-- K1–K5 en verde: BASE28 = K (≥ 1342); ALL = 111 suites y `ALL0 + K − 1292` tests (lo comprueba el leader); typecheck y lint limpios; 26 commits; lista cerrada exacta.
+- K1–K5 en verde: BASE28 = K (≥ 1342); ALL = 111 suites y `ALL0 + K − 1292` tests (lo comprueba el leader); typecheck y lint limpios; 27 commits (c1–c26 y c12b); lista cerrada exacta.
 - R14 queda pendiente del humano. Las dos casillas (enmienda de la carta y R14), sin marcar.
 
 ## Contenido de `progress/impl_mobile-meal-schedule-canvas-fidelity.md`
@@ -809,7 +838,7 @@ Son ficheros del leader.
 2. Tabla de anclas H0 con lo medido. Todas deben coincidir.
 3. Skills que cargaste de verdad, por nombre, y para qué sirvió cada una.
 4. Tabla por commit:
-   - hash, mensaje, R, tipo y línea `Tests:` literal;
+   - hash, mensaje, R, tipo y línea `Tests:` literal (c1–c26 y c12b);
    - en los rojos, además, la lista de `●` (sin `Console`) y si tsc/lint dieron errores en tests: código TS y fichero.
 5. Sondas S1–S7: línea `Tests:`, el `●` y `limpio=` de cada una.
 6. El tratamiento de E1.2 en el punto 9 de R13 (qué listas quedaron en el test).

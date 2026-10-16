@@ -1237,13 +1237,14 @@ una vez cada una, en lugar de `<Button.Label …>`. El resto del punto no cambia
 | Enmienda | Commit | Fichero |
 |---|---|---|
 | E2.1 | c13 y c15 (verdes de R6 y R7) | `screens/meal-schedule/index.tsx` |
-| E2.2 | c12 (el rojo de R6 corrige su aserción, antes de c13) y c14 (rojo de R7) | `screens/meal-schedule/index.test.tsx` |
+| E2.2 | c12b (R6: c12 ya estaba cometido con el literal entero; la corrección va en un commit propio entre c12 y c13) y c14 (rojo de R7) | `screens/meal-schedule/index.test.tsx` |
 | E2.3 | c26 (R13) | `__tests__/design-drift.test.ts` |
 
-- Ningún `it` se añade, se quita ni se renombra; ningún fichero entra en la
+- El total pasa de 26 a 27 commits (c1–c26 y c12b). Ningún `it` se añade, se
+  quita ni se renombra; ningún fichero entra en la
   lista cerrada; los recuentos de clases no cambian (la clase es la misma, solo
   cambia el elemento que la lleva).
 
 ### Aprobación de la Enmienda E2
 
-- [ ] Enmienda E2 aprobada por humano ← gate obligatorio antes de que Codex reanude en c12
+- [ ] Enmienda E2 aprobada por humano ← gate obligatorio antes de que Codex reanude en c12b
