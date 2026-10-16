@@ -8,16 +8,17 @@ import { ChevronLeft, ChevronRight } from 'reicon-react-native';
 
 import { getMealsHistory } from '../../api/nutrition';
 import { nutritionKeys } from '../../api/query-keys';
-import { Card } from '../../components/card';
 import { useAuth } from '../../providers/auth-provider';
 import { useLocale, useTranslate } from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
-import { TABULAR_NUMS } from '../../theme/native-styles';
+import { CONTINUOUS_CORNER, TABULAR_NUMS } from '../../theme/native-styles';
+import { TOUCH_SLOP } from '../../theme/touch-target';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import {
   currentMonth, longDayLabel, monthGrid, monthOf, monthRange,
   monthTitle, shiftMonth, weekdayHeaders,
 } from '../../utils/month-grid';
+import { HomeEntrance } from '../home/home-entrance';
 
 function DayNumber({ date, testID, className }: { date: string; testID?: string; className: string }) {
   return (
@@ -106,92 +107,96 @@ function MealsHistoryContent({ petId }: { petId: string }) {
       case 'ok': {
         const selectedTimes = data.history.days.find(day => day.date === selectedDay)?.mealTimes ?? [];
         content = (
-          <Card className="gap-4">
-            <View className="flex-row items-center justify-between">
-              <Pressable
-                testID="meals-history-prev"
-                onPress={() => {
-                  setVisibleMonth(shiftMonth(visibleMonth, -1));
-                  setSelectedDay(null);
-                }}
-                accessibilityRole="button"
-                accessibilityLabel={t('mealsHistory.previousMonth')}
-                className="h-11 w-11 items-center justify-center rounded-full"
-                style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
-              >
-                <ChevronLeft size={20} color={foreground} />
-              </Pressable>
-              <Text testID="meals-history-title" className="text-base font-bold text-foreground">
-                {monthTitle(visibleMonth, locale)}
-              </Text>
-              <Pressable
-                testID="meals-history-next"
-                disabled={nextDisabled}
-                accessibilityState={{ disabled: nextDisabled }}
-                onPress={() => {
-                  setVisibleMonth(shiftMonth(visibleMonth, 1));
-                  setSelectedDay(null);
-                }}
-                accessibilityRole="button"
-                accessibilityLabel={t('mealsHistory.nextMonth')}
-                className="h-11 w-11 items-center justify-center rounded-full"
-                style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
-              >
-                <ChevronRight size={20} color={nextDisabled ? muted : foreground} />
-              </Pressable>
-            </View>
-            <View testID="meals-history-weekdays" className="flex-row">
-              {weekdayHeaders(locale).map(day => (
-                <Text key={day} className="flex-1 text-center text-xs font-normal text-muted">{day}</Text>
-              ))}
-            </View>
-            <View testID="meals-history-grid" className="gap-1">
-              {Array.from({ length: cells.length / 7 }, (_, row) => (
-                <View key={row} className="flex-row">
-                  {cells.slice(row * 7, row * 7 + 7).map((date, column) => date === null ? (
-                    <View key={column} testID="meals-history-filler" className="h-11 flex-1" />
-                  ) : (
-                    <DayCell
-                      key={date}
-                      onPress={() => setSelectedDay(current => current === date ? null : date)}
-                      date={date}
-                      today={data.history.today}
-                      locale={locale}
-                      selected={date === selectedDay}
-                      mealTimes={data.history.days.find(day => day.date === date)?.mealTimes ?? []}
-                    />
-                  ))}
-                </View>
-              ))}
-            </View>
-            {selectedDay !== null ? (
-              <View testID="meals-history-detail" className="gap-2">
-                <Text testID="meals-history-detail-title" className="text-base font-bold text-foreground">
-                  {longDayLabel(selectedDay, locale)}
+          <HomeEntrance testID="meals-history-calendar-entry" index={0}>
+            <View testID="meals-history-calendar" className="gap-2 rounded-24 border border-border bg-surface p-3.5" style={CONTINUOUS_CORNER}>
+              <View className="flex-row items-center justify-between">
+                <Pressable
+                  testID="meals-history-prev"
+                  onPress={() => {
+                    setVisibleMonth(shiftMonth(visibleMonth, -1));
+                    setSelectedDay(null);
+                  }}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('mealsHistory.previousMonth')}
+                  className="size-10 items-center justify-center rounded-xl bg-default"
+                  hitSlop={TOUCH_SLOP}
+                  style={({ pressed }) => ({ ...CONTINUOUS_CORNER, opacity: pressed ? 0.7 : 1 })}
+                >
+                  <ChevronLeft size={18} color={foreground} />
+                </Pressable>
+                <Text testID="meals-history-title" className="text-base font-extrabold text-foreground">
+                  {monthTitle(visibleMonth, locale)}
                 </Text>
-                {selectedTimes.length === 0 ? (
-                  <Text testID="meals-history-detail-empty" className="text-sm text-muted">
-                    {t('mealsHistory.noMealsOnDay')}
-                  </Text>
-                ) : (
-                  <>
-                    {selectedTimes.map(time => (
-                      <Text key={time} testID="meals-history-detail-time" selectable style={TABULAR_NUMS} className="text-sm font-semibold text-foreground">
-                        {time}
-                      </Text>
-                    ))}
-                    <Text testID="meals-history-detail-count" className="text-xs font-normal text-muted">
-                      {selectedTimes.length === 1 ? t('mealsHistory.servedOne') : t('mealsHistory.servedMany', { count: selectedTimes.length })}
-                    </Text>
-                  </>
-                )}
+                <Pressable
+                  testID="meals-history-next"
+                  disabled={nextDisabled}
+                  accessibilityState={{ disabled: nextDisabled }}
+                  onPress={() => {
+                    setVisibleMonth(shiftMonth(visibleMonth, 1));
+                    setSelectedDay(null);
+                  }}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('mealsHistory.nextMonth')}
+                  className="size-10 items-center justify-center rounded-xl bg-default"
+                  hitSlop={TOUCH_SLOP}
+                  style={({ pressed }) => ({ ...CONTINUOUS_CORNER, opacity: pressed ? 0.7 : 1 })}
+                >
+                  <ChevronRight size={18} color={nextDisabled ? muted : foreground} />
+                </Pressable>
               </View>
-            ) : data.history.days.every(day => day.mealTimes.length === 0) ? (
-              <Text testID="meals-history-empty" className="text-sm text-muted">
-                {t('mealsHistory.emptyMonth')}
-              </Text>
-            ) : null}
-          </Card>
+              <View testID="meals-history-weekdays" className="flex-row">
+                {weekdayHeaders(locale).map((day, index) => (
+                  <Text key={index} className="flex-1 text-center text-xs font-bold text-muted">{day}</Text>
+                ))}
+              </View>
+              <View testID="meals-history-grid" className="gap-1">
+                {Array.from({ length: cells.length / 7 }, (_, row) => (
+                  <View key={row} className="flex-row">
+                    {cells.slice(row * 7, row * 7 + 7).map((date, column) => date === null ? (
+                      <View key={column} testID="meals-history-filler" className="h-11 flex-1" />
+                    ) : (
+                      <DayCell
+                        key={date}
+                        onPress={() => setSelectedDay(current => current === date ? null : date)}
+                        date={date}
+                        today={data.history.today}
+                        locale={locale}
+                        selected={date === selectedDay}
+                        mealTimes={data.history.days.find(day => day.date === date)?.mealTimes ?? []}
+                      />
+                    ))}
+                  </View>
+                ))}
+              </View>
+              {selectedDay !== null ? (
+                <View testID="meals-history-detail" className="gap-2">
+                  <Text testID="meals-history-detail-title" className="text-base font-bold text-foreground">
+                    {longDayLabel(selectedDay, locale)}
+                  </Text>
+                  {selectedTimes.length === 0 ? (
+                    <Text testID="meals-history-detail-empty" className="text-sm text-muted">
+                      {t('mealsHistory.noMealsOnDay')}
+                    </Text>
+                  ) : (
+                    <>
+                      {selectedTimes.map(time => (
+                        <Text key={time} testID="meals-history-detail-time" selectable style={TABULAR_NUMS} className="text-sm font-semibold text-foreground">
+                          {time}
+                        </Text>
+                      ))}
+                      <Text testID="meals-history-detail-count" className="text-xs font-normal text-muted">
+                        {selectedTimes.length === 1 ? t('mealsHistory.servedOne') : t('mealsHistory.servedMany', { count: selectedTimes.length })}
+                      </Text>
+                    </>
+                  )}
+                </View>
+              ) : data.history.days.every(day => day.mealTimes.length === 0) ? (
+                <Text testID="meals-history-empty" className="text-sm text-muted">
+                  {t('mealsHistory.emptyMonth')}
+                </Text>
+              ) : null}
+            </View>
+          </HomeEntrance>
         );
         break;
       }
