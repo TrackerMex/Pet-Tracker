@@ -1,6 +1,6 @@
 ---
 feature: "mobile-meal-schedule-canvas-fidelity"
-status: draft
+status: approved
 tags: [mobile, ui, spec]
 ---
 
@@ -26,7 +26,7 @@ tags: [mobile, ui, spec]
 | R11 | Historial: celdas | MHT › `#179 R11: celdas del artboard` + Δ13, Δ14; CC Δ31 | `84ef314cb167699e6f5789d7f5ac588aca42ec8f` — test(meals-history): celdas del artboard (#179 R11) | `ddae4b4eb12fd320dd547b9a7cd797abf8a68af1` — feat(meals-history): celdas del artboard (#179 R11) | hecho |
 | R12 | Historial: panel del día | MHT › `#179 R12: panel del día`; CC Δ24–Δ26 | `2c695a28e1988fb87e9c4754e88dc2cc3dd78150` — test(meals-history): panel del día (#179 R12) | `56a1960c43729e43f9ee2f86df18fc233f8ad9a4` — feat(meals-history): panel del día (#179 R12) | hecho |
 | R13 | Candados de deriva | `src/__tests__/design-drift.test.ts` › `#179 R13: Horario e Historial fieles al canvas` + sondas | n/a (nace verde; S1–S7: un único fallo de R13 y `limpio=0` cada una) | `e3d053eaa881b43ff2245dff257d8380b2e7fb8e` — test(design-drift): Horario e Historial sin deriva (#179 R13) | hecho |
-| R14 | Prueba de humo humana (dev build de Android) | §Aprobación de requirements.md | n/a | n/a | pendiente (humano) |
+| R14 | Prueba de humo humana (dev build de Android) | §Aprobación de requirements.md | n/a | n/a | firmada por el humano en `dd60f5c1` (2026-10-16) |
 
 ## Firmas humanas
 
@@ -34,4 +34,4 @@ tags: [mobile, ui, spec]
 |---|---|---|
 | Spec aprobada | requirements.md §Aprobación: `- [x] Aprobado por humano (fecha: 2026-10-15)` | aprobada por humano; `334fcebc` |
 | Enmienda R2 | `docs/ui-guidelines.md` §Enmienda de fidelidad al canvas (2026-10-13): firma humana existente de 2026-10-15. El test acepta `[ xX]`; el handoff, nota 7 y c5, exige conservar la firma previa | aprobada previamente por humano; conservada |
-| Humo R14 | requirements.md §Aprobación, `- [ ] Prueba de humo #179 R14 firmada por: ____ — fecha: ____` | pendiente (humano) |
+| Humo R14 | requirements.md §Aprobación, `- [X] Prueba de humo #179 R14 firmada por: AlexisSM377 — fecha: 2026-10-16` | firmada por el humano; `dd60f5c1` |

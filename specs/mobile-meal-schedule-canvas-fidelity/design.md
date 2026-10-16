@@ -1,6 +1,6 @@
 ---
 feature: "mobile-meal-schedule-canvas-fidelity"
-status: draft
+status: approved
 tags: [mobile, ui, spec]
 ---
 
