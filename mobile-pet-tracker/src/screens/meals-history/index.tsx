@@ -203,8 +203,11 @@ function MealsHistoryContent({ petId }: { petId: string }) {
       testID="screen-meals-history"
       className="flex-1 bg-background"
       contentInsetAdjustmentBehavior="automatic"
-      contentContainerStyle={{ padding: 24, gap: 16, paddingBottom: insets.bottom + 24 }}
+      contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 24, gap: 14, paddingBottom: insets.bottom + 24 }}
     >
+      <Text testID="meals-history-heading" accessibilityRole="header" className="text-2xl font-black tracking-title text-foreground">
+        {t('mealsHistory.mealsHistory')}
+      </Text>
       {content}
     </ScrollView>
   );

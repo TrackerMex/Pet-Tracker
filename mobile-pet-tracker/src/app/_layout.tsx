@@ -103,7 +103,7 @@ function RootStack() {
         <Stack.Screen name="alerts/[alertId]" dangerouslySingular options={{ ...headerOptions, title: t('alerts.detailTitle'), contentStyle: { backgroundColor: background } }} />
         <Stack.Screen name="pets/[petId]/geofences" options={{ ...headerOptions, title: t('geofences.title') }} />
         <Stack.Screen name="pets/[petId]/geofence-editor" options={{ ...headerOptions, title: t('geofenceEditor.title') }} />
-        <Stack.Screen name="meals-history" options={{ ...headerOptions, title: t('mealsHistory.mealsHistory') }} />
+        <Stack.Screen name="meals-history" options={{ ...headerOptions, title: '' }} />
       </Stack.Protected>
       <Stack.Protected guard={status !== 'authenticated'}>
         <Stack.Screen name="welcome" />
