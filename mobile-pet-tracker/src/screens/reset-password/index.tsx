@@ -1,7 +1,7 @@
 import { Image } from 'expo-image';
 import { HeaderHeightContext } from 'expo-router/react-navigation';
 import { router, useLocalSearchParams } from 'expo-router';
-import { Button, Label, LinkButton, TextField } from 'heroui-native';
+import { Button, FieldError, Label, LinkButton, TextField } from 'heroui-native';
 import { useContext, useState } from 'react';
 import { KeyboardAvoidingView, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -16,6 +16,7 @@ import { FormError } from '../../components/form-error';
 import { useTranslate } from '../../providers/language-provider';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { HomeEntrance } from '../home/home-entrance';
+import { validateResetPassword, type FieldIssues } from '../../utils/account-rules';
 
 export function ResetPasswordScreen() {
   const headerHeight = useContext(HeaderHeightContext);
@@ -27,18 +28,25 @@ export function ResetPasswordScreen() {
   const [passwordConfirmation, setPasswordConfirmation] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<FieldIssues<'password' | 'passwordConfirmation'>>({});
   const [succeeded, setSucceeded] = useState(false);
   const normalizedToken = token?.trim() ?? '';
 
   async function handleSubmit() {
-    setSubmitting(true);
+    setFieldErrors({});
     setError(null);
+    const values = { password, passwordConfirmation };
+    const issues = validateResetPassword(values);
+    if (Object.keys(issues).length > 0) {
+      setFieldErrors(issues);
+      return;
+    }
+    setSubmitting(true);
 
     try {
       const result = await resetPassword(process.env.EXPO_PUBLIC_API_URL, {
         token: normalizedToken,
-        password,
-        passwordConfirmation,
+        ...values,
       });
 
       switch (result.kind) {
@@ -52,7 +60,7 @@ export function ResetPasswordScreen() {
           setError(t('resetPassword.errorExpiredToken'));
           return;
         case 'validation':
-          setError(result.errors.map(({ message }) => message).join('\n'));
+          setError(t('validation.checkDetails'));
           return;
         case 'unreachable':
           setError(t('common.cannotReachServer'));
@@ -189,7 +197,7 @@ export function ResetPasswordScreen() {
         </HomeEntrance>
 
         <HomeEntrance testID="reset-body" index={1} className="flex-1 gap-4">
-          <TextField>
+          <TextField isInvalid={Boolean(fieldErrors.password)}>
             <Label>
               <Label.Text className="text-13 font-semibold text-muted">
                 {t('resetPassword.newPassword')}
@@ -202,9 +210,12 @@ export function ResetPasswordScreen() {
               value={password}
               onChangeText={setPassword}
             />
+            <FieldError testID="reset-password-error">
+              {fieldErrors.password ? <FormError testID="reset-password-message" message={t(fieldErrors.password.labelKey, fieldErrors.password.params)} /> : null}
+            </FieldError>
           </TextField>
 
-          <TextField>
+          <TextField isInvalid={Boolean(fieldErrors.passwordConfirmation)}>
             <Label>
               <Label.Text className="text-13 font-semibold text-muted">
                 {t('resetPassword.confirmNewPassword')}
@@ -217,6 +228,9 @@ export function ResetPasswordScreen() {
               value={passwordConfirmation}
               onChangeText={setPasswordConfirmation}
             />
+            <FieldError testID="reset-password-confirm-error">
+              {fieldErrors.passwordConfirmation ? <FormError testID="reset-password-confirm-message" message={t(fieldErrors.passwordConfirmation.labelKey, fieldErrors.passwordConfirmation.params)} /> : null}
+            </FieldError>
           </TextField>
 
           {error ? (

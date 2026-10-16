@@ -68,8 +68,8 @@ function checkUses(uses: UseRow[]) {
 }
 
 describe('#65 R1: el grupo (auth) resuelve su copy por clave', () => {
-  it('resuelve las 41 ocurrencias normativas', () => {
-    expect(R1_AUTH).toHaveLength(29 + 7 + 1 + 4); // #117 R10, #167 R6, #172 R16
+  it('resuelve las 51 ocurrencias normativas', () => {
+    expect(R1_AUTH).toHaveLength(29 + 7 + 1 + 4 + 9 - 1 + 3 - 1); // #117 R10, #167 R6, #172 R16, #183 R2, #183 R4, #183 R7
     checkUses(R1_AUTH);
   });
 });
@@ -140,7 +140,7 @@ describe('#65 R5: Health resuelve su copy por clave', () => {
 });
 
 describe('#65 R6: Food resuelve su copy por clave', () => {
-  it('resuelve las 50 ocurrencias normativas', () => {
+  it('resuelve las 51 ocurrencias normativas', () => {
     expect(R6_FOOD).toHaveLength(35 + 3 + 1 - 2 + 1 + 3 + 9 + 11 + 2 + 1); // #105 R5; +1 #95 R4, -2 #95 R5, +1 #113 R3, +3 #147 R8, +9 #147 R9, +2 #155 R4, +1 #155 R9
     checkUses(R6_FOOD);
   });
@@ -173,7 +173,7 @@ describe('#65 R7: Profile resuelve su copy por clave', () => {
 });
 
 describe('#65 R8: Recordatorios resuelve su copy por clave', () => {
-  it('resuelve las 49 ocurrencias normativas', () => {
+  it('resuelve las 51 ocurrencias normativas', () => {
     expect(R8_REMINDERS).toHaveLength(50 + 1 - 2 + 1 - 1 + 1); // +1 #95 R4, -2 #95 R5, +1 #114 R4, -1 #114 R5, +1 #155 R6
     checkUses(R8_REMINDERS);
   });
@@ -194,8 +194,8 @@ describe('#65 R10: el emparejado del collar resuelve su copy por clave', () => {
 });
 
 describe('#65 R11: restablecer contraseña resuelve su copy por clave', () => {
-  it('resuelve las 16 ocurrencias normativas', () => {
-    expect(R11_RESET).toHaveLength(15 + 1); // #172 R19
+  it('resuelve las 17 ocurrencias normativas', () => {
+    expect(R11_RESET).toHaveLength(15 + 1 + 1); // #172 R19, #183 R7
     checkUses(R11_RESET);
   });
 });
@@ -500,6 +500,7 @@ describe('#65 R18: los sitios resuelven por clave y no queda copy suelta', () =>
         + 1 // #134 R6
         + 2 - 2 // #167 R1: salen app/(auth)/login.tsx y app/(auth)/register.tsx, entran screens/login/index.tsx y screens/register/index.tsx
         + 2 // #172 R16: back-button y password-input
+        + 1 // #183 R2: utils/account-rules.ts
     );
 
     for (const file of SCREEN_FILES) {
