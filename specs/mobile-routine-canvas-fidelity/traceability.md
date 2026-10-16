@@ -1,6 +1,6 @@
 ---
 feature: "mobile-routine-canvas-fidelity"
-status: draft
+status: approved
 tags: [mobile, ui, spec]
 ---
 
@@ -21,7 +21,31 @@ tags: [mobile, ui, spec]
 | R11 | `mobile-pet-tracker/src/screens/add-reminder/index.test.tsx::#178 R11: título, fecha y hora del canvas` | `e3a86195` test(mobile): #178 R11 título, fecha y hora del canvas; `03ff8a52` feat(mobile): título, fecha y hora del canvas (#178 R11) | hecho |
 | R12 | `mobile-pet-tracker/src/screens/add-reminder/index.test.tsx::#178 R12: chips de aviso y vista previa` | `2dc68762` test(mobile): #178 R12 chips de aviso y vista previa; `30dd2a5e` feat(mobile): chips de aviso y vista previa (#178 R12) | hecho |
 | R13 | `mobile-pet-tracker/src/__tests__/design-drift.test.ts::#178 R13: Recordatorios sin deriva` | `acde7bee` test(mobile): #178 R13 candados de deriva de Recordatorios | hecho |
-| R14 | prueba de humo humana (`requirements.md` §R14, casilla propia) | pendiente (humano) | pendiente (humano) |
+| R14 | prueba de humo humana (`requirements.md` §R14, casilla propia) | n/a | firmada por el humano en `ecb51395` (2026-10-16) |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente". R14 se cierra
 cuando el humano firma su casilla en `requirements.md`.
+
+## Firmas humanas
+
+| Gate | Dónde | Estado |
+|---|---|---|
+| Spec aprobada | `requirements.md` §Aprobación: `- [x] Aprobado por humano (fecha: 2026-10-15)` | aprobada por humano; `99808696` |
+| Enmiendas E1 a E5 | `requirements.md`, casillas `- [X] Enmienda E1…E5 aprobada por humano` (candados heredados que la spec firmada no inventarió) | aprobadas por humano; `165d4946` (2026-10-15) |
+| Humo R14 | `requirements.md` §R14, `- [X] Prueba de humo #178 R14 firmada por: AlexisSM377 — fecha: 2026-10-16` | firmada por el humano; `ecb51395` |
+
+## Ronda de fusión con main (2026-10-16)
+
+`main` avanzó a `91af2d9f` (#183, la limpieza de registro de #185 y #186, y #179) después de la firma de R14. La rama
+hizo merge, no rebase, para conservar los hashes de esta tabla: fusión `0e86587b` (padres `6603ff6d` y `91af2d9f`),
+handoff `6603ff6d`, nota de Codex `60d030c2`, veredicto del reviewer `5e62f7f6`. Nueve conflictos de contenido,
+resueltos por un script del leader (`progress/handoff_mobile-routine-canvas-fidelity_merge_resolve.py`); el reviewer
+leyó cada fichero contra los dos padres.
+
+**Desviación de R13 (decisión del leader).** El `it` `reserva los radios 14, 16 y 22 a Recordatorios con su inventario
+exacto` de `design-drift.test.ts` exigía que `rounded-14`, `rounded-16` y `rounded-22` no aparecieran en ningún otro
+fichero de `src/` (`requirements.md`, R13: «ninguno en otro fichero de `src/`»). #179 usa `rounded-14` en
+`meal-schedule` y `meals-history` (mismo token `--radius-14`). El candado queda partido en dos: `rounded-16` y
+`rounded-22` siguen exclusivos de Recordatorios, y `rounded-14` fuera de Recordatorios debe ser exactamente esos dos
+ficheros de #179. El texto de R13 en `requirements.md` no se edita. El reviewer lo valoró correcto y con dientes
+(siete mutaciones propias en rojo).

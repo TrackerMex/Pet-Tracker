@@ -1,6 +1,6 @@
 ---
 feature: "mobile-routine-canvas-fidelity"
-status: draft
+status: approved
 tags: [mobile, ui, spec]
 ---
 
