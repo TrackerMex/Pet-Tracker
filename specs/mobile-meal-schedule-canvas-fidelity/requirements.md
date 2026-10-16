@@ -916,7 +916,7 @@ Directiva del humano del 2026-10-13: «el diseño final debe de quedar como el a
 - **Iconos reicon (D-I).** Los iconos de la interfaz son componentes de `reicon-react-native` coloreados con un token vía `useThemeColors`; ningún emoji hace de icono. La superficie de categoría acompaña a un icono y a un texto.
 - **Medidas del artboard.** Donde la escala no llega al valor del artboard se usa un token del `@theme` nombrado por su valor y listado en la regla 2 (tamaños y tracking) o en la regla 12 (radios); las clases con corchetes (regla 3) y los radios `2xl`, `lg`, `md` y `sm` (regla 12) siguen prohibidos, y las esquinas que no son cápsula siguen llevando `CONTINUOUS_CORNER`.
 
-- [ ] Enmienda de fidelidad al canvas aprobada por humano (fecha: ____)
+- [X] Enmienda de fidelidad al canvas aprobada por humano (fecha: 2026-10-16)
 ```
 
 ## Deltas de candados (valor viejo → nuevo)
@@ -1031,7 +1031,7 @@ cambiarlo al firmar; si lo hace, el leader enmienda antes del handoff.
 ## Aprobación
 
 - [x] Aprobado por humano (fecha: 2026-10-15)
-- [ ] Prueba de humo #179 R14 firmada por: ____ — fecha: ____
+- [X] Prueba de humo #179 R14 firmada por: AlexisSM377 — fecha: 2026-10-16
 
 ## Enmienda E1 — premisas de la spec que el árbol desmiente y candados que no inventarió
 
