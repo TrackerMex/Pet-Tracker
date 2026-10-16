@@ -570,16 +570,16 @@ describe('#147 R4: solo el owner ve Editar y Añadir comida', () => {
   it('el owner ve Editar en cada fila y Añadir comida bajo la lista', async () => {
     mockGetPet.mockResolvedValue(petState('owner'));
     await renderMealSchedule();
-    await waitFor(() => expect(childTestIds(screen.getByTestId('meal-time-row-1'))).toEqual([undefined, undefined, undefined, 'meal-time-edit-1']));
-    expect(childTestIds(screen.getByTestId('meal-time-row-0'))).toEqual([undefined, undefined, undefined, 'meal-time-edit-0']);
+    await waitFor(() => expect(childTestIds(screen.getByTestId('meal-time-row-1'))).toEqual([undefined, undefined, 'meal-time-edit-1']));
+    expect(childTestIds(screen.getByTestId('meal-time-row-0'))).toEqual([undefined, undefined, 'meal-time-edit-0']);
     expect(mockGetPet).toHaveBeenCalledWith('http://example.test/v1', 'jwt-token', 'pet-1');
-    expect(childTestIds(screen.getByTestId('meal-times-section'))).toEqual([undefined, 'meal-time-row-0', 'meal-time-row-1', 'add-meal-time-button']);
+    expect(childTestIds(screen.getByTestId('meal-times-section'))).toEqual([undefined, 'meal-time-entry-0', 'meal-time-entry-1', 'add-meal-time-button']);
     for (const [index, label] of [[0, 'Editar horario de las 07:30'], [1, 'Editar horario de las 19:30']] as const) {
       const button = within(screen.getByTestId(`meal-time-row-${index}`)).getByTestId(`meal-time-edit-${index}`);
       expect(button.props.accessibilityLabel).toBe(label);
       expect(within(button).getByText('Editar')).toBeVisible();
-      expect(button.props.className.split(' ')).toEqual(expect.arrayContaining(['min-h-11', 'rounded-xl', 'bg-accent-soft']));
-      expect(within(button).getByText('Editar').props.className.split(' ')).toEqual(expect.arrayContaining(['font-semibold', 'text-accent-strong']));
+      expect(button.props.className.split(' ')).toEqual(expect.arrayContaining(['h-9.75', 'rounded-10', 'border-2', 'border-b-5', 'border-lip-gray', 'bg-surface']));
+      expect(within(button).getByText('Editar').props.className.split(' ')).toEqual(expect.arrayContaining(['text-13', 'font-extrabold', 'text-foreground']));
     }
     const add = screen.getByTestId('add-meal-time-button');
     expect(within(add).getByText('Añadir comida')).toBeVisible();
@@ -592,9 +592,9 @@ describe('#147 R4: solo el owner ve Editar y Añadir comida', () => {
     const { queryClient } = await renderMealSchedule();
     await waitFor(() => {
       expect(queryClient.getQueryData(['pets', 'detail', 'pet-1'])).toEqual(petState(role));
-      expect(childTestIds(screen.getByTestId('meal-times-section'))).toEqual([undefined, 'meal-time-row-0', 'meal-time-row-1']);
+      expect(childTestIds(screen.getByTestId('meal-times-section'))).toEqual([undefined, 'meal-time-entry-0', 'meal-time-entry-1']);
       for (const index of [0, 1]) {
-        expect(childTestIds(screen.getByTestId(`meal-time-row-${index}`))).toEqual([undefined, undefined, undefined]);
+        expect(childTestIds(screen.getByTestId(`meal-time-row-${index}`))).toEqual([undefined, undefined]);
         expect(screen.queryByTestId(`meal-time-edit-${index}`)).toBeNull();
       }
       expect(screen.queryByTestId('add-meal-time-button')).toBeNull();
@@ -605,11 +605,11 @@ describe('#147 R4: solo el owner ve Editar y Añadir comida', () => {
     mockGetPet.mockReturnValue(pending<PetState>());
     await renderMealSchedule();
     await waitFor(() => {
-      expect(childTestIds(screen.getByTestId('meal-times-section'))).toEqual([undefined, 'meal-time-row-0', 'meal-time-row-1']);
+      expect(childTestIds(screen.getByTestId('meal-times-section'))).toEqual([undefined, 'meal-time-entry-0', 'meal-time-entry-1']);
       expect(screen.getByTestId('meal-time-row-1')).toBeVisible();
       expect(mockGetPet).toHaveBeenCalled();
       for (const index of [0, 1]) {
-        expect(childTestIds(screen.getByTestId(`meal-time-row-${index}`))).toEqual([undefined, undefined, undefined]);
+        expect(childTestIds(screen.getByTestId(`meal-time-row-${index}`))).toEqual([undefined, undefined]);
         expect(screen.queryByTestId(`meal-time-edit-${index}`)).toBeNull();
       }
       expect(screen.queryByTestId('add-meal-time-button')).toBeNull();
@@ -621,9 +621,9 @@ describe('#147 R4: solo el owner ve Editar y Añadir comida', () => {
     const { queryClient } = await renderMealSchedule();
     await waitFor(() => {
       expect(queryClient.getQueryData(['pets', 'detail', 'pet-1'])).toEqual({ kind: 'error' });
-      expect(childTestIds(screen.getByTestId('meal-times-section'))).toEqual([undefined, 'meal-time-row-0', 'meal-time-row-1']);
+      expect(childTestIds(screen.getByTestId('meal-times-section'))).toEqual([undefined, 'meal-time-entry-0', 'meal-time-entry-1']);
       for (const index of [0, 1]) {
-        expect(childTestIds(screen.getByTestId(`meal-time-row-${index}`))).toEqual([undefined, undefined, undefined]);
+        expect(childTestIds(screen.getByTestId(`meal-time-row-${index}`))).toEqual([undefined, undefined]);
         expect(screen.queryByTestId(`meal-time-edit-${index}`)).toBeNull();
       }
       expect(screen.queryByTestId('add-meal-time-button')).toBeNull();
@@ -982,7 +982,7 @@ describe('#147 R8: cada error del contrato tiene su mensaje', () => {
     const error = screen.getByTestId('meal-time-error');
     expect(error.props.selectable).toBe(true);
     expect(error.props.className).toBe('text-danger');
-    expect(childTestIds(screen.getByTestId('meal-times-section'))).toEqual([undefined, 'meal-time-row-0', 'meal-time-row-1', 'meal-time-error', 'add-meal-time-button']);
+    expect(childTestIds(screen.getByTestId('meal-times-section'))).toEqual([undefined, 'meal-time-entry-0', 'meal-time-entry-1', 'meal-time-error', 'add-meal-time-button']);
     await waitFor(() => expect(screen.getByTestId('meal-time-edit-0').props.accessibilityState).not.toEqual(expect.objectContaining({ disabled: true })));
     expect(mockGetNutritionPlan).toHaveBeenCalledTimes(1); // #147 E2.2: ningún refetch si no es ok
     expect(mockGetPet).toHaveBeenCalledTimes(1);
@@ -1164,5 +1164,72 @@ describe('#179 R5: resumen del artboard', () => {
       if (typeof column === 'string') throw new Error('Expected column');
       expect(within(column).getByText(value)).toBeVisible();
     }
+  });
+});
+
+describe('#179 R6: filas del artboard', () => {
+  beforeEach(() => {
+    mockGetNutritionPlan.mockResolvedValue({ kind: 'ok', plan: makePlan() });
+    mockGetNutritionProfile.mockResolvedValue({ kind: 'ok', profile: makeProfile() });
+  });
+
+  function expectRows(owner: boolean) {
+    const section = screen.getByTestId('meal-times-section');
+    expect(section).toHaveProp('className', 'gap-3.5');
+    const heading = section.children[0];
+    if (typeof heading === 'string') throw new Error('Expected heading');
+    expect(heading).toHaveTextContent('Horarios y porciones');
+    expect(heading).toHaveProp('className', 'mt-1 text-17 font-extrabold text-foreground');
+    for (const [index, time] of [[0, '07:30'], [1, '19:30']] as const) {
+      const row = screen.getByTestId(`meal-time-row-${index}`);
+      expect(row.children).toHaveLength(owner ? 3 : 2);
+      expect(row.props.className.split(' ')).toEqual(expect.arrayContaining([
+        'rounded-card', 'border', 'border-border', 'bg-surface', 'px-3.5', 'flex-row', 'items-center', 'gap-3', 'py-3',
+      ]));
+      expect(row.props.className.split(' ')).not.toContain('py-1');
+      expect(row.props.className).not.toContain('shadow');
+      const tile = row.children[0];
+      const text = row.children[1];
+      if (typeof tile === 'string' || typeof text === 'string') throw new Error('Expected row nodes');
+      expect(tile).toHaveProp('className', 'size-10.5 items-center justify-center rounded-14 bg-category-amber');
+      expect(tile).toHaveStyle({ borderCurve: 'continuous' });
+      expect(within(tile).getByTestId('meal-schedule-icon-clock')).toHaveProp('size', 20);
+      expect(text).toHaveProp('className', 'flex-1');
+      expect(text.children).toHaveLength(2);
+      expect(within(text).getByText(time)).toHaveProp('className', 'text-lg font-black text-foreground');
+      expect(within(text).getByText('94 g')).toHaveProp('className', 'text-13 font-semibold text-muted');
+      expect(text.children[0]).toHaveTextContent(time);
+      expect(text.children[1]).toHaveTextContent('94 g');
+      expect(mockHomeEntrance).toHaveBeenCalledWith(expect.objectContaining({ testID: `meal-time-entry-${index}`, index: index + 1 }));
+      if (owner) {
+        expect(row.children[2]).toHaveProp('testID', `meal-time-edit-${index}`);
+        const edit = within(row).getByTestId(`meal-time-edit-${index}`);
+        expect(edit).toHaveProp('className', 'h-9.75 rounded-10 border-2 border-b-5 border-lip-gray bg-surface px-3.5');
+        expect(edit).toHaveProp('hitSlop', { top: 6, bottom: 6, left: 6, right: 6 });
+        expect(within(edit).getByText('Editar')).toHaveProp('className', 'text-13 font-extrabold text-foreground');
+      } else {
+        expect(within(row).queryByTestId(`meal-time-edit-${index}`)).toBeNull();
+      }
+    }
+  }
+
+  it('el dueño ve las dos entradas planas con Editar al final de cada fila', async () => {
+    mockGetPet.mockResolvedValue(petState('owner'));
+    await renderMealSchedule();
+    await screen.findByTestId('meal-time-edit-1');
+    expect(childTestIds(screen.getByTestId('meal-times-section'))).toEqual([
+      undefined, 'meal-time-entry-0', 'meal-time-entry-1', 'add-meal-time-button',
+    ]);
+    expectRows(true);
+  });
+
+  it('el familiar conserva el mosaico y los dos textos sin controles de edición', async () => {
+    mockGetPet.mockResolvedValue(petState('family'));
+    await renderMealSchedule();
+    await screen.findByTestId('meal-time-row-1');
+    expect(childTestIds(screen.getByTestId('meal-times-section'))).toEqual([
+      undefined, 'meal-time-entry-0', 'meal-time-entry-1',
+    ]);
+    expectRows(false);
   });
 });
