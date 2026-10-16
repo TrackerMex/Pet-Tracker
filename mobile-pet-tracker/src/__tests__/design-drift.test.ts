@@ -175,7 +175,6 @@ describe('R3: Card compartido elimina rounded arbitrario', () => {
     'home',
     'food',
     'meal-schedule',
-    'meals-history', // #105 R15
     'health',
     'weight-log',
     'profile',

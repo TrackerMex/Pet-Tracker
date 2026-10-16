@@ -77,10 +77,10 @@ function SelectionProbe() {
   return null;
 }
 
-async function renderHistory(selected = true) {
+async function renderHistory(selected = true, language: 'es' | 'en' = 'es') {
   return renderWithProviders(
     <HeroUINativeProvider>
-      <LanguageProvider initial="es">
+      <LanguageProvider initial={language}>
         <SelectedPetProvider>
           {selected ? <SelectionProbe /> : null}
           <MealsHistoryScreen />
@@ -174,7 +174,7 @@ describe('#105 R11: the civil month grid renders six decisions per day', () => {
     await waitFor(() => expect(screen.getByTestId('meals-history-grid')).toBeVisible());
     const weekdays = screen.getByTestId('meals-history-weekdays');
     expect(weekdays.children).toHaveLength(7);
-    const monday = new Date(Date.UTC(2024, 0, 1)).toLocaleDateString('es-MX', { weekday: 'short', timeZone: 'UTC' });
+    const monday = new Date(Date.UTC(2024, 0, 1)).toLocaleDateString('es-MX', { weekday: 'narrow', timeZone: 'UTC' });
     expect(within(weekdays).getByText(monday)).toBeVisible();
     const first = weekdays.children[0];
     expect(typeof first === 'string' ? first : first.children[0]).toBe(monday);
@@ -431,5 +431,56 @@ describe('#179 R9: marco y título en contenido', () => {
     await screen.findByTestId('meals-history-grid');
     expectHeading();
     expect(screen.getAllByText('Historial de comidas')).toHaveLength(1);
+  });
+});
+
+
+describe('#179 R10: calendario del artboard', () => {
+  function expectCalendar(empty: boolean, labels: readonly string[]) {
+    const calendar = screen.getByTestId('meals-history-calendar');
+    expect(calendar).toHaveProp('className', 'gap-2 rounded-24 border border-border bg-surface p-3.5');
+    expect(calendar).toHaveStyle({ borderCurve: 'continuous' });
+    expect(calendar.children).toHaveLength(empty ? 4 : 3);
+    expect(calendar.children.map(child => typeof child === 'string' ? undefined : child.props.testID)).toEqual(
+      empty ? [undefined, 'meals-history-weekdays', 'meals-history-grid', 'meals-history-empty'] : [undefined, 'meals-history-weekdays', 'meals-history-grid'],
+    );
+    expect(mockHomeEntrance).toHaveBeenCalledWith(expect.objectContaining({ testID: 'meals-history-calendar-entry', index: 0 }));
+    const weekdays = within(calendar).getByTestId('meals-history-weekdays');
+    expect(weekdays.children).toHaveLength(7);
+    expect(weekdays.children.map(child => typeof child === 'string' ? child : child.children[0])).toEqual(labels);
+    for (const child of weekdays.children) {
+      expect(child).toHaveProp('className', 'flex-1 text-center text-xs font-bold text-muted');
+    }
+    expect(within(calendar).getByTestId('meals-history-title')).toHaveProp('className', 'text-base font-extrabold text-foreground');
+    for (const direction of ['prev', 'next']) {
+      const arrow = within(calendar).getByTestId(`meals-history-${direction}`);
+      expect(arrow).toHaveProp('className', 'size-10 items-center justify-center rounded-xl bg-default');
+      expect(arrow).toHaveProp('hitSlop', { top: 6, bottom: 6, left: 6, right: 6 });
+      expect(arrow).toHaveStyle({ borderCurve: 'continuous', opacity: 1 });
+      expect(within(arrow).getByTestId(`meals-history-icon-${direction}`)).toHaveProp('size', 18);
+    }
+    return calendar;
+  }
+
+  it('muestra cabecera, días y cuadrícula en un mes con comidas', async () => {
+    await renderHistory();
+    await screen.findByTestId('meals-history-grid');
+    const calendar = expectCalendar(false, ['L', 'M', 'M', 'J', 'V', 'S', 'D']);
+    expect(within(calendar).queryByTestId('meals-history-empty')).toBeNull();
+    expect(screen.queryByTestId('meals-history-detail')).toBeNull();
+  });
+
+  it('añade solo el mensaje del mes vacío después de la cuadrícula', async () => {
+    mockGetMealsHistory.mockResolvedValue({ kind: 'ok', history: history(true) });
+    await renderHistory();
+    await screen.findByTestId('meals-history-grid');
+    const calendar = expectCalendar(true, ['L', 'M', 'M', 'J', 'V', 'S', 'D']);
+    expect(within(calendar).getByTestId('meals-history-empty')).toHaveTextContent('Este mes no se sirvió ninguna comida');
+  });
+
+  it('conserva las siete iniciales inglesas aunque se repitan', async () => {
+    await renderHistory(true, 'en');
+    await screen.findByTestId('meals-history-grid');
+    expectCalendar(false, ['M', 'T', 'W', 'T', 'F', 'S', 'S']);
   });
 });
