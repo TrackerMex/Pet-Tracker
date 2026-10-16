@@ -331,6 +331,7 @@ export const R8_REMINDERS: UseRow[] = [
   { file: 'src/screens/reminders/index.tsx', key: 'reminders.cancelled' },
   { file: 'src/screens/reminders/index.tsx', key: 'reminders.sent' },
   { file: 'src/screens/reminders/index.tsx', key: 'reminders.dueInDays' },
+  { file: 'src/screens/reminders/index.tsx', key: 'reminders.dueAt' }, // #178 R6
   { file: 'src/screens/reminders/index.tsx', key: 'reminders.delete' },
   { file: 'src/screens/reminders/index.tsx', key: 'reminders.deleteReminder' },
   { file: 'src/screens/reminders/index.tsx', key: 'reminders.deleteSheetBody' },

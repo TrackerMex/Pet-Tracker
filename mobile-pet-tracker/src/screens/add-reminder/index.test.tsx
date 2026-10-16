@@ -182,8 +182,8 @@ describe('R8: formulario de alta con chips y pickers', () => {
     expect(screen.getByTestId('type-chip-vaccine').props.accessibilityState).toEqual({
       selected: true,
     });
-    expect(screen.getByText('💉 Vacuna')).toBeVisible();
-    expect(screen.getByText('📌 Otro')).toBeVisible();
+    expect(screen.getByText('Vacuna')).toBeVisible(); // #178 R6
+    expect(screen.getByText('Otro')).toBeVisible();
     expect(screen.getByTestId('title-input').props.maxLength).toBe(120);
 
     await fireEvent.press(screen.getByTestId('type-chip-custom'));

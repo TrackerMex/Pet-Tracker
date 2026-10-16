@@ -465,6 +465,116 @@ describe('#178 R5: píldoras de resumen del canvas', () => {
   });
 });
 
+describe('#178 R6: fila del canvas', () => {
+  beforeAll(() => { hostProcess.env.TZ = 'America/Mexico_City'; });
+  afterAll(() => {
+    if (originalTimezone === undefined) delete hostProcess.env.TZ;
+    else hostProcess.env.TZ = originalTimezone;
+  });
+  beforeEach(() => {
+    jest.clearAllMocks();
+    jest.useFakeTimers({ now: new Date('2026-12-30T15:00:00.000Z') });
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: canvasReminders });
+  });
+  afterEach(() => {
+    jest.clearAllTimers();
+    jest.useRealTimers();
+  });
+
+  it('distingue las recetas de fila próxima, lejana e inactiva', async () => {
+    await renderReminders();
+    await screen.findByTestId('reminder-row-a');
+    for (const [id, className] of [
+      ['a', 'flex-row items-center gap-3 rounded-22 bg-surface p-3.5 border-2 border-warning-soft'],
+      ['b', 'flex-row items-center gap-3 rounded-22 bg-surface p-3.5 border border-border'],
+      ['c', 'flex-row items-center gap-3 rounded-22 bg-surface p-3.5 border border-border opacity-50'],
+    ]) {
+      const row = screen.getByTestId(`reminder-row-${id}`);
+      expect(row.props.className).toBe(className);
+      expect(row).toHaveStyle({ borderCurve: 'continuous' });
+    }
+  });
+
+  it('ordena mosaico, columna y borrar con la anatomía exacta de cada fila', async () => {
+    await renderReminders();
+    await screen.findByTestId('reminder-row-a');
+    for (const id of ['a', 'b', 'c']) {
+      const row = screen.getByTestId(`reminder-row-${id}`);
+      expect(row.children).toHaveLength(3);
+      expect(row.children[0]).toHaveProperty('props.testID', `reminder-tile-${id}`);
+      expect(row.children[1]).toHaveProperty('props.className', 'min-w-0 flex-1 gap-0.75');
+      expect(row.children[1]).toHaveProperty('children.length', 3);
+      expect(row.children[2]).toHaveProperty('props.testID', `reminder-delete-${id}`);
+    }
+  });
+
+  it('da a cada mosaico su único icono, tamaño, superficie y tinta', async () => {
+    await renderReminders();
+    await screen.findByTestId('reminder-row-a');
+    for (const [id, className, iconID, color] of [
+      ['a', 'size-11.5 items-center justify-center rounded-14 bg-category-blue', 'reminders-icon-syringe', 'color:category-blue-strong'],
+      ['b', 'size-11.5 items-center justify-center rounded-14 bg-category-amber', 'reminders-icon-pill', 'color:category-amber-strong'],
+      ['c', 'size-11.5 items-center justify-center rounded-14 bg-default', 'reminders-icon-pin-tack', 'color:muted'],
+    ]) {
+      const tile = screen.getByTestId(`reminder-tile-${id}`);
+      expect(tile.props.className).toBe(className);
+      expect(tile).toHaveStyle({ borderCurve: 'continuous' });
+      expect(tile.children).toHaveLength(1);
+      expect(tile.children[0]).toHaveProperty('props.testID', iconID);
+      const icon = within(tile).getByTestId(iconID);
+      expect(icon.props.size).toBe(22);
+      expect(icon.props.color).toBe(color);
+    }
+  });
+
+  it('pinta tipo y título con sus tintas y pesos propios', async () => {
+    await renderReminders();
+    await screen.findByTestId('reminder-row-a');
+    for (const [id, type, title, typeClass] of [
+      ['a', 'Vacuna', 'Refuerzo de rabia', 'text-xs font-extrabold text-category-blue-strong'],
+      ['b', 'Medicamento', 'Pastilla trimestral', 'text-xs font-extrabold text-category-amber-strong'],
+      ['c', 'Otro', 'Baño', 'text-xs font-extrabold text-muted'],
+    ]) {
+      const row = within(screen.getByTestId(`reminder-row-${id}`));
+      expect(row.getByText(type).props.className).toBe(typeClass);
+      expect(row.getByText(title).props.className).toBe('text-base font-extrabold text-foreground');
+    }
+  });
+
+  it('formatea la fecha y hora próxima y conserva sus días en text-13', async () => {
+    await renderReminders();
+    await screen.findByTestId('reminder-row-a');
+    const row = within(screen.getByTestId('reminder-row-a'));
+    expect(row.getByText('2 ene, 09:00').props.className).toBe('text-13 font-normal text-muted');
+    expect(row.getByText('· en 3 días').props.className).toBe('text-13 font-normal text-muted');
+  });
+
+  it('formatea la hora lejana y la meta inactiva con su estado', async () => {
+    await renderReminders();
+    await screen.findByTestId('reminder-row-a');
+    expect(within(screen.getByTestId('reminder-row-b')).getByText('20 ene, 20:05').props.className).toBe('text-13 font-normal text-muted');
+    const row = within(screen.getByTestId('reminder-row-c'));
+    expect(row.getByText('3 dic, 11:30').props.className).toBe('text-13 font-normal text-muted');
+    const status = row.getByTestId('reminder-status-c');
+    expect(status).toHaveTextContent('Enviado');
+    expect(status.props.className).toBe('text-13 font-semibold text-muted');
+  });
+
+  it('sustituye los emoji de todas las filas por iconos', async () => {
+    await renderReminders();
+    await screen.findByTestId('reminder-row-a');
+    for (const id of ['a', 'b', 'c']) {
+      const row = screen.getByTestId(`reminder-row-${id}`);
+      expect(within(row).queryAllByText(/\p{Extended_Pictographic}/u)).toEqual([]);
+    }
+  });
+});
+
 describe('R6: lista con pills, badges y refetch on focus', () => {
   beforeEach(() => {
     jest.useFakeTimers();
@@ -533,12 +643,13 @@ describe('R6: lista con pills, badges y refetch on focus', () => {
     ]);
 
     const upcoming = within(screen.getByTestId('reminder-row-upcoming'));
-    expect(upcoming.getByText('💉')).toBeVisible();
+    expect(upcoming.getByTestId('reminders-icon-syringe')).toBeVisible(); // #178 R6
     expect(upcoming.getByText('Vacuna')).toBeVisible();
     expect(upcoming.getByText('Rabies booster')).toBeVisible();
+    const due = new Date(reminders[2].dueAt);
     expect(
       upcoming.getByText(
-        new Date(reminders[2].dueAt).toLocaleDateString('es-MX'),
+        `${due.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })}, ${due.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })}`,
       ),
     ).toBeVisible();
     expect(upcoming.getByText('· en 3 días')).toBeVisible();
@@ -604,7 +715,7 @@ describe('#65 R15: la fecha del recordatorio se formatea con el locale del idiom
         expect(screen.getByTestId('reminder-row-reminder-1')).toBeVisible(),
       );
 
-      expect(formatDate).toHaveBeenCalledWith('es-MX');
+    expect(formatDate).toHaveBeenCalledWith('es-MX', { day: 'numeric', month: 'short' }); // #178 R6
     } finally {
       formatDate.mockRestore();
     }
@@ -784,16 +895,16 @@ describe('#64 R7: la fila de recordatorio pinta el icono con el color de su tipo
     const medicationRow = within(
       screen.getByTestId('reminder-row-medication'),
     );
-    const vaccineTile = vaccineRow.getByText('💉').parent;
-    const medicationTile = medicationRow.getByText('💊').parent;
+    const vaccineTile = vaccineRow.getByTestId('reminder-tile-vaccine'); // #178 R6
+    const medicationTile = medicationRow.getByTestId('reminder-tile-medication');
 
     expect(vaccineTile?.props.className).toContain('bg-category-blue');
     expect(medicationTile?.props.className).toContain('bg-category-amber');
     expect(vaccineTile?.props.className).not.toContain('bg-accent-soft');
     expect(medicationTile?.props.className).not.toContain('bg-accent-soft');
-    expect(vaccineRow.getByText('💉')).toBeVisible();
+    expect(vaccineRow.getByTestId('reminders-icon-syringe')).toBeVisible();
     expect(vaccineRow.getByText('Vacuna')).toBeVisible();
-    expect(medicationRow.getByText('💊')).toBeVisible();
+    expect(medicationRow.getByTestId('reminders-icon-pill')).toBeVisible();
     expect(medicationRow.getByText('Medicamento')).toBeVisible();
   });
 });

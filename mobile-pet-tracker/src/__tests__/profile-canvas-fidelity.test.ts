@@ -67,6 +67,7 @@ describe('#173 R2.4: inventario de tamaños nuevos', () => {
       'screens/login/index.tsx',
       'screens/profile/index.tsx',
       'screens/register/index.tsx',
+      'screens/reminders/index.tsx', // #178 R6
       'screens/reset-password/index.tsx',
     ]);
   });
