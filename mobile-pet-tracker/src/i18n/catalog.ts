@@ -1,4 +1,13 @@
 export const en = {
+  'validation.firstNameRequired': 'Enter your first name',
+  'validation.lastNameRequired': 'Enter your last name',
+  'validation.passwordRequired': 'Enter your password',
+  'validation.tooShort': 'Use at least {{min}} characters',
+  'validation.tooLong': 'Use {{max}} characters or fewer',
+  'validation.passwordsDontMatch': "Passwords don't match",
+  'validation.countryLength': "Enter your country's 2-letter code, like MX",
+  'validation.countryLetters': 'Use only letters A to Z',
+  'validation.checkDetails': "Something in your details doesn't look right. Check them and try again.",
   'login.invalidCredentials': 'Invalid credentials',
   'common.cannotReachServer': 'Cannot reach server',
   'common.somethingWentWrong': 'Something went wrong',
@@ -417,6 +426,15 @@ export const en = {
 export type TranslationKey = keyof typeof en;
 
 export const es: Record<TranslationKey, string> = {
+  'validation.firstNameRequired': 'Escribe tu nombre',
+  'validation.lastNameRequired': 'Escribe tus apellidos',
+  'validation.passwordRequired': 'Escribe tu contraseña',
+  'validation.tooShort': 'Usa al menos {{min}} caracteres',
+  'validation.tooLong': 'Usa {{max}} caracteres o menos',
+  'validation.passwordsDontMatch': 'Las contraseñas no coinciden',
+  'validation.countryLength': 'Escribe las 2 letras de tu país, como MX',
+  'validation.countryLetters': 'Usa solo letras de la A a la Z',
+  'validation.checkDetails': 'Algo no cuadra en los datos. Revísalos y vuelve a intentarlo.',
   'login.invalidCredentials': 'Credenciales inválidas',
   'common.cannotReachServer': 'No se pudo conectar con el servidor',
   'common.somethingWentWrong': 'Algo salió mal',

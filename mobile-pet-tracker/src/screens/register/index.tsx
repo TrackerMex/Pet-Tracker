@@ -14,7 +14,6 @@ import { KeyboardAvoidingView, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { login, register } from '../../api/auth';
-import type { FieldError as ApiFieldError } from '../../api/types';
 import { BackButton } from '../../components/back-button';
 import { useAuth } from '../../providers/auth-provider';
 import { PingoFloat } from '../../components/pingo-float';
@@ -23,7 +22,7 @@ import { FormError } from '../../components/form-error';
 import { useTranslate } from '../../providers/language-provider';
 import { HomeEntrance } from '../home/home-entrance';
 
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+import { validateRegister, type FieldIssues, type RegisterValues } from '../../utils/account-rules';
 
 type RegisterField =
   | 'firstName'
@@ -33,42 +32,6 @@ type RegisterField =
   | 'password'
   | 'passwordConfirmation'
   | 'country';
-
-type RegisterFieldErrors = Partial<Record<RegisterField, string>>;
-
-const registerFields = new Set<RegisterField>([
-  'firstName',
-  'lastName',
-  'email',
-  'phone',
-  'password',
-  'passwordConfirmation',
-  'country',
-]);
-
-function isRegisterField(path: string): path is RegisterField {
-  return registerFields.has(path as RegisterField);
-}
-
-function mapValidationErrors(errors: ApiFieldError[]): {
-  fields: RegisterFieldErrors;
-  general: string | null;
-} {
-  const fields: RegisterFieldErrors = {};
-  const general: string[] = [];
-
-  for (const error of errors) {
-    if (isRegisterField(error.path)) {
-      fields[error.path] = fields[error.path]
-        ? `${fields[error.path]}\n${error.message}`
-        : error.message;
-    } else {
-      general.push(error.message);
-    }
-  }
-
-  return { fields, general: general.length > 0 ? general.join('\n') : null };
-}
 
 function deviceTimezone(): string | undefined {
   try {
@@ -90,7 +53,7 @@ export function RegisterScreen() {
   const [country, setCountry] = useState('');
   const [terms, setTerms] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [fieldErrors, setFieldErrors] = useState<RegisterFieldErrors>({});
+  const [fieldErrors, setFieldErrors] = useState<FieldIssues<RegisterField>>({});
   const [generalError, setGeneralError] = useState<string | null>(null);
   const { signIn } = useAuth();
   const t = useTranslate();
@@ -98,21 +61,19 @@ export function RegisterScreen() {
   async function handleSubmit() {
     setFieldErrors({});
     setGeneralError(null);
-    if (!EMAIL_PATTERN.test(email.trim())) {
-      setFieldErrors({ email: t('forgot.invalidEmail') });
+    const values: RegisterValues = {
+      firstName, lastName, email: email.trim(), phone, country, password, passwordConfirmation,
+    };
+    const issues = validateRegister(values);
+    if (Object.keys(issues).length > 0) {
+      setFieldErrors(issues);
       return;
     }
     setSubmitting(true);
 
     try {
       const result = await register(process.env.EXPO_PUBLIC_API_URL, {
-        firstName,
-        lastName,
-        email,
-        phone,
-        password,
-        passwordConfirmation,
-        country,
+        ...values,
         timezone: deviceTimezone(),
         termsAccepted: true,
       });
@@ -120,7 +81,7 @@ export function RegisterScreen() {
       switch (result.kind) {
         case 'ok': {
           const loginResult = await login(process.env.EXPO_PUBLIC_API_URL, {
-            email,
+            email: values.email,
             password,
           });
 
@@ -135,12 +96,9 @@ export function RegisterScreen() {
         case 'email-taken':
           setGeneralError(t('register.emailAlreadyRegistered'));
           return;
-        case 'validation': {
-          const validation = mapValidationErrors(result.errors);
-          setFieldErrors(validation.fields);
-          setGeneralError(validation.general);
+        case 'validation':
+          setGeneralError(t('validation.checkDetails'));
           return;
-        }
         case 'unreachable':
           setGeneralError(t('common.cannotReachServer'));
           return;
@@ -205,7 +163,7 @@ export function RegisterScreen() {
               onChangeText={setFirstName}
             />
             <FieldError testID="register-first-name-error">
-              {fieldErrors.firstName ? <FormError testID="register-first-name-message" message={fieldErrors.firstName} /> : null}
+              {fieldErrors.firstName ? <FormError testID="register-first-name-message" message={t(fieldErrors.firstName.labelKey, fieldErrors.firstName.params)} /> : null}
             </FieldError>
           </TextField>
           <TextField className="flex-1" isInvalid={Boolean(fieldErrors.lastName)}>
@@ -221,7 +179,7 @@ export function RegisterScreen() {
               onChangeText={setLastName}
             />
             <FieldError testID="register-last-name-error">
-              {fieldErrors.lastName ? <FormError testID="register-last-name-message" message={fieldErrors.lastName} /> : null}
+              {fieldErrors.lastName ? <FormError testID="register-last-name-message" message={t(fieldErrors.lastName.labelKey, fieldErrors.lastName.params)} /> : null}
             </FieldError>
           </TextField>
         </View>
@@ -241,7 +199,7 @@ export function RegisterScreen() {
             onChangeText={setEmail}
           />
           <FieldError testID="register-email-error">
-            {fieldErrors.email ? <FormError testID="register-email-message" message={fieldErrors.email} /> : null}
+            {fieldErrors.email ? <FormError testID="register-email-message" message={t(fieldErrors.email.labelKey, fieldErrors.email.params)} /> : null}
           </FieldError>
         </TextField>
 
@@ -260,7 +218,7 @@ export function RegisterScreen() {
               onChangeText={setPhone}
             />
             <FieldError testID="register-phone-error">
-              {fieldErrors.phone ? <FormError testID="register-phone-message" message={fieldErrors.phone} /> : null}
+              {fieldErrors.phone ? <FormError testID="register-phone-message" message={t(fieldErrors.phone.labelKey, fieldErrors.phone.params)} /> : null}
             </FieldError>
           </TextField>
           <TextField className="flex-1" isInvalid={Boolean(fieldErrors.country)}>
@@ -278,7 +236,7 @@ export function RegisterScreen() {
               onChangeText={(value) => setCountry(value.toUpperCase())}
             />
             <FieldError testID="register-country-error">
-              {fieldErrors.country ? <FormError testID="register-country-message" message={fieldErrors.country} /> : null}
+              {fieldErrors.country ? <FormError testID="register-country-message" message={t(fieldErrors.country.labelKey, fieldErrors.country.params)} /> : null}
             </FieldError>
           </TextField>
         </View>
@@ -295,7 +253,7 @@ export function RegisterScreen() {
             onChangeText={setPassword}
           />
           <FieldError testID="register-password-error">
-            {fieldErrors.password ? <FormError testID="register-password-message" message={fieldErrors.password} /> : null}
+            {fieldErrors.password ? <FormError testID="register-password-message" message={t(fieldErrors.password.labelKey, fieldErrors.password.params)} /> : null}
           </FieldError>
         </TextField>
 
@@ -311,7 +269,7 @@ export function RegisterScreen() {
             onChangeText={setPasswordConfirmation}
           />
           <FieldError testID="register-password-confirmation-error">
-            {fieldErrors.passwordConfirmation ? <FormError testID="register-password-confirmation-message" message={fieldErrors.passwordConfirmation} /> : null}
+            {fieldErrors.passwordConfirmation ? <FormError testID="register-password-confirmation-message" message={t(fieldErrors.passwordConfirmation.labelKey, fieldErrors.passwordConfirmation.params)} /> : null}
           </FieldError>
         </TextField>
 

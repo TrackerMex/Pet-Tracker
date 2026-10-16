@@ -1,10 +1,10 @@
 # pet-tracker — Status
 
-**Última actualización**: 2026-10-15
-**Features completadas**: 164/181 (`feature_list.json`)
-**En progreso**: ninguna en esta rama. #175 cerrada en `feature/175-mobile-docs-canvas-fidelity`, PR pendiente de merge humano.
+**Última actualización**: 2026-10-16
+**Features completadas**: 165/184 (`feature_list.json`)
+**En progreso**: ninguna. #183 y #175 ya están en `main` (PRs #218 y #221); esta rama solo registra #185 y #186.
 
-**Pendientes**: 17 (#60, #129, #144, #150, #151, #154, #160, #163, #164, #165, #176, #177, #178, #179, #180, #181 y #184). **#175 `mobile-docs-canvas-fidelity` cerrada**: Documentos como su artboard del canvas. Título en el contenido, chips de filtro por categoría (los tipos fuera de catálogo caen en «Otros»), fila con mosaico de icono, nombre en una línea, fecha formateada y chevron, zona de subida al final, entrada escalonada y candados de deriva (R1-R10). Codex trabajó c1-c20 más c10b y paró tres veces: c11 (enmienda E2, inventarios de #173), S5 (el handoff omitía el `-t` de la sonda) y la fusión con #174 (enmienda E3, filas `text-15` y `tracking-title` del inventario de Alertas). El reviewer aprobó R1-R10 sobre `4b2d7e40` y la ronda de fusión (`c53175a7`); el humano firmó el smoke R11 en `e1741bb1`. Móvil 110/3444 → 111/3483 con #174 dentro.
+**Pendientes**: 19 (#60, #129, #144, #150, #151, #154, #160, #163, #164, #165, #176, #177, #178, #179, #180, #181, #184, #185 y #186). **#185 `mobile-docs-upload-form-polish` y #186 `mobile-forms-validation-global` registradas** (2026-10-15, pedido del humano al firmar R11 de #175), sin spec y sin arrancar: la subida de documentos y los errores de validación con componentes globales en toda la app. **#183 `mobile-account-client-validation` cerrada**: Iniciar sesión, Crear cuenta, Recuperar contraseña y Nueva contraseña validan en cliente, con un mensaje claro por campo, en lugar de mostrar el texto del servidor. Las reglas viven en el módulo puro `src/utils/account-rules.ts`, idénticas a los DTO del backend. Iniciar sesión y Crear cuenta mandan el correo recortado, y un 400 que llegue igual pinta un aviso genérico. El copy nuevo está en es y en (§2.32 de la spec de idioma). La ronda 1 de Codex se rechazó porque 7 mutaciones no tenían candado. La Enmienda E1, solo tests, se firmó desde Notion (`4046e500`) y la ronda 2 la aprobó el reviewer (`c493b149`). Los merges de main con #174 y #175 suman sus deltas del catálogo, y #183 queda en §2.32. El humano firmó el smoke R8 en `23d816df` (OnePlus Nord 5). Móvil 112/3611 sobre `d9bc5357`.
 
 **En producción**: no
 
