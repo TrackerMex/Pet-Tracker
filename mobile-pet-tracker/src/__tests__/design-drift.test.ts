@@ -22,6 +22,46 @@ const { join } = require('path');
 const sourceRoot = join(process.cwd(), 'src');
 const projectRoot = process.cwd();
 
+describe('#179 R2: enmienda de fidelidad al canvas en Horario e Historial', () => {
+  const charter = readFileSync(join(process.cwd(), '..', 'docs', 'ui-guidelines.md'), 'utf8');
+  const heading = '## Enmienda de fidelidad al canvas (2026-10-13)';
+  const radiusRule = 'Fuera de la escala, por fidelidad al canvas (#179): `rounded-10` (10 px), «Editar» de la fila de Horario; `rounded-14` (14 px), mosaico de la fila y botones de acción de Horario y horas del panel del día de Historial; `rounded-24` (24 px), resumen de Horario y calendario y panel del día de Historial, que son `View` y no `Card` porque `twMerge` no sustituye `rounded-card` por un radio con nombre de valor.';
+  const actionRule = '    - **Secundarios de Horario** (fidelidad al canvas, #179): «Editar» `h-9.75 rounded-10 border-2 border-b-5 border-lip-gray bg-surface` y «Añadir comida» `h-13.5 rounded-14 border-2 border-b-6 border-lip-gray bg-surface`, con el labio dentro del alto; «Generar plan» es tonal de la categoría violeta y sin labio, porque el labio del artboard (`rgba(91,63,163,0.35)`) no tiene token.';
+
+  it('conserva las directivas, las frases y los tres tamaños de Horario', () => {
+    expect(charter.split(heading)).toHaveLength(2);
+    expect(charter.slice(charter.indexOf(heading) + heading.length)).toMatch(/- \[[ xX]\] Enmienda de fidelidad al canvas aprobada por humano/);
+    expect(charter).toContain("- **Título en contenido (D-H).** El título de pantalla va dentro del contenido (eyebrow opcional y título); la cabecera nativa del stack queda con `title: ''` y solo aporta el botón de volver.");
+    expect(charter).toContain('- **Iconos reicon (D-I).** Los iconos de la interfaz son componentes de `reicon-react-native` coloreados con un token vía `useThemeColors`; ningún emoji hace de icono. La superficie de categoría acompaña a un icono y a un texto.');
+    expect(charter).toContain('- **Medidas del artboard.** Donde la escala no llega al valor del artboard se usa un token del `@theme` nombrado por su valor y listado en la regla 2 (tamaños y tracking) o en la regla 12 (radios); las clases con corchetes (regla 3) y los radios `2xl`, `lg`, `md` y `sm` (regla 12) siguen prohibidos, y las esquinas que no son cápsula siguen llevando `CONTINUOUS_CORNER`.');
+    expect(charter).not.toContain('- Títulos de pantalla: header del stack cuando exista, no Text suelto.');
+    expect(charter).not.toContain('la superficie siempre acompaña a un emoji y a un texto.');
+    expect(charter.split("- Títulos de pantalla: título en contenido y cabecera nativa con `title: ''` (Enmienda de fidelidad al canvas).")).toHaveLength(2);
+    expect(charter.split('la superficie siempre acompaña a un icono de reicon-react-native y a un texto.')).toHaveLength(2);
+    const sizes = charter.split('\n').find((line) => line.trimStart().startsWith('Tamaños de letra fuera de la escala de Tailwind'));
+    expect(sizes).toContain('`--text-15: 15px`');
+    expect(sizes).toContain('`--text-17: 17px`');
+    expect(sizes).toContain('`--text-22: 22px`');
+  });
+
+  it('enumera el tracking y los radios exactos dentro de su regla', () => {
+    const tracking = charter.split('\n').find((line) => line.trimStart().startsWith('Tracking fuera de la escala de Tailwind'));
+    expect(tracking).toContain('`--tracking-title: -0.02em`');
+    expect(tracking).toContain('`--tracking-caps: 0.06em`');
+    const radios = charter.slice(charter.indexOf('12. **Escala de radios**'), charter.indexOf('13. **Botón con cuerpo**'));
+    expect(radios).toContain('`rounded-10` (10 px)');
+    expect(radios).toContain('`rounded-14` (14 px)');
+    expect(radios).toContain('`rounded-24` (24 px)');
+    expect(radios.split(radiusRule)).toHaveLength(2);
+  });
+
+  it('sitúa la receta de secundarios de Horario antes de Sin labio', () => {
+    const actions = charter.slice(charter.indexOf('13. **Botón con cuerpo**'));
+    expect(actions.split(actionRule)).toHaveLength(2);
+    expect(actions.indexOf(actionRule)).toBeLessThan(actions.indexOf('- **Sin labio**:'));
+  });
+});
+
 describe('#175 R2: enmienda de fidelidad al canvas', () => {
   const charter = readFileSync(join(process.cwd(), '..', 'docs', 'ui-guidelines.md'), 'utf8');
   const heading = '## Enmienda de fidelidad al canvas (2026-10-13)';
@@ -135,7 +175,6 @@ describe('R3: Card compartido elimina rounded arbitrario', () => {
     'home',
     'food',
     'meal-schedule',
-    'meals-history', // #105 R15
     'health',
     'weight-log',
     'profile',
@@ -956,5 +995,99 @@ describe('#175 R10: Documentos sin deriva', () => {
     expect(imports[0][1].split(',').map((name) => name.trim()).sort()).toEqual([
       'ChevronRight', 'FileText', 'Upload',
     ]);
+  });
+});
+
+describe('#179 R13: Horario e Historial fieles al canvas', () => {
+  const readSource = (name: string) => readFileSync(join(sourceRoot, 'screens', name, 'index.tsx'), 'utf8');
+  const schedule = readSource('meal-schedule');
+  const history = readSource('meals-history');
+  const sources = [schedule, history];
+
+  it('mantiene ambas pantallas sin emojis', () => {
+    for (const source of sources) expect(source).not.toMatch(/\p{Extended_Pictographic}/u);
+  });
+
+  it('importa exactamente los iconos reicon del artboard', () => {
+    expect(schedule.match(/^import \{.*\} from 'reicon-react-native';$/gm)).toEqual([
+      "import { Clock, Sparkles } from 'reicon-react-native';",
+    ]);
+    expect(history.match(/^import \{.*\} from 'reicon-react-native';$/gm)).toEqual([
+      "import { ChevronLeft, ChevronRight } from 'reicon-react-native';",
+    ]);
+  });
+
+  it('no permite escapes de estilo, sombras, radios prohibidos ni acento sin contraste', () => {
+    const forbidden = new RegExp(
+      String.raw`${HEX_LITERAL}|${ARBITRARY_CLASS}|StyleSheet|shadow|elevation|\brounded-(?:2xl|lg|md|sm)\b|\btext-accent\b(?!-)`,
+      'i',
+    );
+    for (const source of sources) expect(source).not.toMatch(forbidden);
+  });
+
+  it('reutiliza entrada, paleta, esquinas y margen táctil compartidos', () => {
+    expect(schedule).toContain("import { HomeEntrance } from '../home/home-entrance';");
+    expect(schedule).toContain("import { CATEGORY_SLOTS } from '../../utils/category-palette';");
+    expect(schedule).toContain("import { TOUCH_SLOP } from '../../theme/touch-target';");
+    expect(history).toContain("import { HomeEntrance } from '../home/home-entrance';");
+    expect(history).toContain("import { TOUCH_SLOP } from '../../theme/touch-target';");
+    expect(history).toContain("import { CONTINUOUS_CORNER, TABULAR_NUMS } from '../../theme/native-styles';");
+  });
+
+  it('limita los márgenes táctiles a Editar y las dos flechas', () => {
+    expect(schedule.match(/hitSlop=\{TOUCH_SLOP\}/g)).toHaveLength(1);
+    expect(history.match(/hitSlop=\{TOUCH_SLOP\}/g)).toHaveLength(2);
+  });
+
+  it('reserva Card flat para la fila y evita la variante accent', () => {
+    expect(history).not.toContain('<Card');
+    expect(history).not.toContain('components/card');
+    expect(schedule.match(/variant="flat"/g)).toHaveLength(1);
+    expect(schedule).not.toContain('variant="accent"');
+  });
+
+  it('reserva mayúsculas para el eyebrow sin tracking-widest', () => {
+    expect(schedule.match(/\buppercase\b/g)).toHaveLength(1);
+    expect(schedule).not.toContain('tracking-widest');
+  });
+
+  it('sitúa el título antes del resumen y los errores antes de las acciones', () => {
+    for (const anchor of ['testID="generate-plan-error"', 'testID="meal-schedule-actions"', 'testID="meal-schedule-heading"', 'testID="meal-schedule-summary"']) {
+      expect(schedule).toContain(anchor);
+    }
+    expect(schedule.indexOf('testID="generate-plan-error"')).toBeLessThan(schedule.indexOf('testID="meal-schedule-actions"'));
+    expect(schedule.indexOf('testID="meal-schedule-heading"')).toBeLessThan(schedule.indexOf('testID="meal-schedule-summary"'));
+  });
+
+  it('limita text-22 a Horario y text-17 al inventario de E1.2', () => {
+    const productionFilesMatching = (pattern: RegExp) => filesMatching(pattern).filter(path => !/\.test\.tsx?$/.test(path)).sort();
+    expect(productionFilesMatching(/\btext-22\b/)).toEqual([
+      join('screens', 'meal-schedule', 'index.tsx'),
+    ]);
+    expect(productionFilesMatching(/\btext-17\b/)).toEqual([
+      join('screens', 'forgot', 'index.tsx'),
+      join('screens', 'login', 'index.tsx'),
+      join('screens', 'meal-schedule', 'index.tsx'),
+      join('screens', 'register', 'index.tsx'),
+      join('screens', 'reset-password', 'index.tsx'),
+    ]);
+  });
+
+  it('fija el número de radios del resumen, mosaico, acciones y paneles', () => {
+    for (const [pattern, count] of [[/\brounded-24\b/g, 1], [/\brounded-14\b/g, 3], [/\brounded-10\b/g, 1]] as const) {
+      expect(schedule.match(pattern)).toHaveLength(count);
+    }
+    expect(history.match(/\brounded-24\b/g)).toHaveLength(2);
+    expect(history.match(/\brounded-14\b/g)).toHaveLength(1);
+  });
+
+  it('ancla las tres etiquetas Text con los literales de E2.3', () => {
+    for (const label of [
+      '<Text className="text-13 font-extrabold text-foreground">',
+      '<Text className="text-15 font-extrabold text-foreground">',
+      '<Text className={`text-15 font-extrabold ${CATEGORY_SLOTS.violet.ink}`}>',
+    ]) {
+      expect(schedule.split(label)).toHaveLength(2);
+    }
   });
 });

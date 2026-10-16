@@ -9438,3 +9438,66 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
   `HomeEntrance` de `src/screens/login/index.test.tsx` y el mock de reicon
   (`...actual` + `mockIcon(testID)`) de `src/screens/register/index.test.tsx`.
   #183 no los renombra, mueve ni borra; si hiciera falta, avisar a sites-99.
+
+## #179 `mobile-meal-schedule-canvas-fidelity` — Horario e Historial fieles al canvas — 2026-10-16
+
+- **Inicio**: 2026-10-14, sesión Frontend (leader), worktree
+  `Pet-Tracker-wt-179`, branch `feature/179-mobile-meal-schedule-canvas-fidelity`
+  desde `fb5b209f` (= `origin/main` `788d1f89` más el registro, el explore y el
+  reparto de #175, #178 y #179).
+- **Origen**: tercera de las tres partes en que el humano partió #175 el
+  2026-10-13 (respuestas literales: «Tres features (Recomendado)», «Título en
+  contenido (Recomendado)», «Iconos reicon (Recomendado)», «Píxel exacto, igual
+  que #174 (Recomendado)»). Lleva Horario e Historial al artboard del canvas;
+  #175 se quedó con Documentos y #178 con Recordatorios y Nuevo recordatorio.
+  Explore en `progress/explore_mobile-routine-canvas-fidelity.md`. Orden
+  acordado con la sesión de #181: #178 y #179 mergean primero.
+- **Spec**: R1–R13 automatizables y R14 prueba de humo en dev build de Android
+  con casilla propia. Firmada vía Notion el 2026-10-15 en `334fcebc` (página
+  `3f96115a9b278178ad02e5d0caf6ac68`, `Rol actual` = Implementer).
+- **Enmienda E1** (premisas falsas y candados que la spec firmada no
+  inventarió, `576cfebd`), firmada en `e82f1f35`. Al mergear #174 y #175
+  (`9c3aa7ae`, `44c9b7ec`) se actualizaron E1.1, E1.5 y E1.7 y se regeneró el
+  handoff; H0 = `0aaeda9d`.
+- **Implementación**: Codex CLI, c1–c26 en rojo/verde. Cinco paradas, todas
+  resueltas sin cambiar el diseño: c11 (la guarda `tracking-widest` del
+  handoff contaba 0 donde la pantalla aún tenía 1, `b7ab8696`); c13 (guarda
+  de 28 suites tras el swap de R6, resuelta por la Enmienda E2, etiquetas
+  `Text` y `className` de botones, firmada en `ce5a2df0`, con el commit de
+  corrección c12b); c13 otra vez (una sustitución propia de Codex con
+  sangría errónea falló antes de escribir); un flake ajeno de Perfil
+  (`shows the real account name and email`, 131 passed dos veces, procedimiento
+  «Flake de un it ajeno» autorizado); y las guardas K3 y K5 del handoff
+  (`fe62fc57`, H0 literal y 27 commits).
+- **Verificación del leader** sobre `c7b794db`: `./init.sh` exit 0. Backend
+  187/1474, infra 2/14, móvil 111/3533 y e2e 468/476 (8 omitidos).
+- **Review ronda 1: APROBADO** (`1c9a144e`), R1–R13 y las enmiendas E1 y E2,
+  sin bloqueantes. Observaciones: sangría de `_layout.tsx:99`, una línea de
+  `meal-schedule/index.tsx:53` por encima de 140 columnas y `traceability.md`
+  en `draft` (el leader la pasa a `approved` en el cierre).
+- **Smoke R14** firmado por el humano en `dd60f5c1` (AlexisSM377, 2026-10-16,
+  dev build de Android). El mismo commit marcó también la casilla de la
+  plantilla de la enmienda de la carta en `requirements.md` (línea 919),
+  inofensiva (#65 R19 acepta `[ xX]`).
+- **Merge de main con #183** (PR #218, `f0b636a4`): #183 mergeó antes, así que
+  #179 hizo la ronda de fusión (`4cb9afd5`, handoff `61d0cc6b`; con merge y no
+  rebase para conservar los hashes de la trazabilidad). Tres conflictos
+  resueltos con las líneas del handoff: el título «51 ocurrencias» y la suma de
+  `R6_FOOD` con `+ 3 // #179 R8` en `ui-language.test.ts`; `+ 5 // #179 R3`,
+  `- 2 // #179 R5` y `+ 9, // #183 R1` en `language-provider.test.tsx`; y en
+  `specs/mobile-ui-language/design.md`, §2.32 para #183 y §2.33 para #179. La
+  casilla de plantilla de §6.2 sigue sin marcar. Nota de Codex en el informe
+  (`04284a18`); M6 da los mismos 30 ficheros que el diff `58bf412c..dd60f5c1`.
+  `./init.sh` del leader sobre `04284a18`: exit 0. Backend 187/1474, infra
+  2/14, móvil 112/3661 y e2e 468/476 (8 omitidos).
+- **Review de la ronda de fusión: APROBADO**, sin bloqueantes. `R6_FOOD` = 67,
+  catálogo = 422 claves en en y es, `ALL_USES` = 554 y `SCREEN_FILES` = 33; 4
+  mutaciones plantadas en la zona fundida cayeron en rojo en el `it` esperado.
+- **Cierre** (2026-10-16): frontmatter de `design.md`, `tasks.md` y
+  `traceability.md` en approved, fila R14 de la trazabilidad con la firma,
+  #179 en `done` en `feature_list.json`, STATUS y Notion en Implementado /
+  Completado. La PR la mergea el humano. Tras el merge, se borra el worktree.
+- **Convivencia con #178**: ambas mergean primero. Quien mergee segundo hace
+  merge de `origin/main`, no rebase. Zonas compartidas: tokens
+  `--radius-14` de `global.css`, §2.32/§2.33 del registro de idioma, la
+  frase de radios de la carta y las filas ACF/CC de los candados de deriva.

@@ -179,17 +179,17 @@ describe('#174 R12: inventarios', () => {
     {
       token: 'rounded-10',
       pattern: /(?<![\w-])rounded-10\b/,
-      files: ['screens/alerts/index.tsx'], // #174 R12
+      files: ['screens/alerts/index.tsx', 'screens/meal-schedule/index.tsx'], // #179 R6; #174 R12
     },
     {
       token: 'border-b-5',
       pattern: /(?<![\w-])border-b-5\b/,
-      files: ['screens/alerts/index.tsx'], // #174 R12
+      files: ['screens/alerts/index.tsx', 'screens/meal-schedule/index.tsx'], // #179 R5; #174 R12
     },
     {
       token: 'tracking-caps',
       pattern: /(?<![\w-])tracking-caps\b/,
-      files: ['screens/alerts/index.tsx'], // #174 R12
+      files: ['screens/alerts/index.tsx', 'screens/meal-schedule/index.tsx'], // #179 R5; #174 R12
     },
     {
       token: 'text-15',
@@ -200,6 +200,8 @@ describe('#174 R12: inventarios', () => {
         'screens/docs/index.tsx', // #175 R6
         'screens/forgot/index.tsx',
         'screens/login/index.tsx',
+        'screens/meal-schedule/index.tsx', // #179 R7
+        'screens/meals-history/index.tsx', // #179 R11
         'screens/register/index.tsx',
         'screens/reset-password/index.tsx',
       ],
@@ -210,6 +212,8 @@ describe('#174 R12: inventarios', () => {
       files: [
         'screens/alerts/index.tsx', // #174 R12: H0 sin consumidores
         'screens/docs/index.tsx', // #175 R5
+        'screens/meal-schedule/index.tsx', // #179 R4
+        'screens/meals-history/index.tsx', // #179 R9
       ],
     },
   ])('limita $token a su inventario de producción', ({ pattern, files }) => {
@@ -220,7 +224,7 @@ describe('#174 R12: inventarios', () => {
     const count = sourceFiles().reduce((total, path) => (
       total + (readFileSync(path, 'utf8').match(/(?<![\w-])border-b-5\b/g)?.length ?? 0)
     ), 0);
-    expect(count).toBe(1);
+    expect(count).toBe(1 + 1 + 1); // #179 R5, R6
   });
 });
 

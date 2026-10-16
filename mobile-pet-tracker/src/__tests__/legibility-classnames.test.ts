@@ -126,7 +126,7 @@ describe('#61 R3: ningún texto sobre bg-accent se compone con opacidad', () => 
     expect(source).not.toContain('opacity-80');
   });
 
-  it.each(accentCards)(
+  it.each([accentCards[0]])(
     '%s conserva las dos etiquetas de la card de acento a opacidad plena',
     (path) => {
       const source = readSource(path);
@@ -139,6 +139,16 @@ describe('#61 R3: ningún texto sobre bg-accent se compone con opacidad', () => 
       );
     },
   );
+});
+
+describe('#179 R5: Horario conserva sus etiquetas del resumen a opacidad plena', () => {
+  it('Horario conserva sus etiquetas del resumen a opacidad plena', () => {
+    const source = readSource(join('screens', 'meal-schedule', 'index.tsx'));
+
+    expect(source).toContain('className="text-xs font-extrabold uppercase tracking-caps text-accent-foreground"');
+    expect(source).toContain('className="text-22 font-black text-accent-foreground"');
+    expect(source).toContain('className="text-xs font-normal text-accent-foreground"');
+  });
 });
 
 describe('#61 R4: el acento como tinta usa accent-strong', () => {

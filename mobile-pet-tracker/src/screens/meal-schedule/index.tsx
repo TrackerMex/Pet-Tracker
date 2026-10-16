@@ -6,7 +6,7 @@ import { Button, Skeleton } from 'heroui-native';
 import { useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Clock, ForkKnife } from 'reicon-react-native';
+import { Clock, Sparkles } from 'reicon-react-native';
 
 import {
   addMealTime,
@@ -25,7 +25,10 @@ import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
 import { CONTINUOUS_CORNER } from '../../theme/native-styles';
+import { TOUCH_SLOP } from '../../theme/touch-target';
 import { useThemeColors } from '../../theme/use-theme-colors';
+import { CATEGORY_SLOTS } from '../../utils/category-palette';
+import { HomeEntrance } from '../home/home-entrance';
 
 function isPlanError(state: NutritionPlanState): boolean {
   return ['error', 'unreachable', 'missing-config'].includes(state.kind);
@@ -47,10 +50,7 @@ function toMealTime(date: Date): string {
 }
 
 function MealScheduleContent({ petId }: { petId: string }) {
-  const [accent, accentForeground] = useThemeColors([
-    'accent-strong',
-    'accent-foreground',
-  ]);
+  const [amberStrong, violetStrong] = useThemeColors(['category-amber-strong', 'category-violet-strong']);
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { signOut, token } = useAuth();
   const t = useTranslate();
@@ -188,12 +188,20 @@ function MealScheduleContent({ petId }: { petId: string }) {
       className="flex-1 bg-background"
       contentInsetAdjustmentBehavior="automatic"
       contentContainerStyle={{
-        padding: 24,
-        gap: 16,
+        paddingHorizontal: 20,
+        paddingTop: 24,
+        gap: 14,
         paddingBottom: insets.bottom + 24,
       }}
     >
-      <View testID={loading ? 'meal-schedule-loading' : undefined} className="gap-4">
+      <Text
+        testID="meal-schedule-heading"
+        accessibilityRole="header"
+        className="text-2xl font-black tracking-title text-foreground"
+      >
+        {t('mealSchedule.mealSchedule')}
+      </Text>
+      <View testID={loading ? 'meal-schedule-loading' : undefined} className="gap-3.5">
         {!hasError && plan.data === undefined ? (
           <>
             <Skeleton
@@ -224,38 +232,46 @@ function MealScheduleContent({ petId }: { petId: string }) {
 
       {!hasError && loadedPlan !== null ? (
         <>
-          <Card
-            testID="meal-schedule-summary"
-            variant="accent"
-            className="gap-4"
-          >
-            <View className="flex-row items-center justify-between gap-4">
-              <View className="flex-1 gap-1">
-                <Text className="text-xs font-semibold uppercase tracking-widest text-accent-foreground">
-                  {t('mealSchedule.dailyTarget')}
-                </Text>
-                <Text className="text-3xl font-black text-accent-foreground">
-                  {loadedPlan.merKcal} kcal
-                </Text>
-                <Text className="font-semibold text-accent-foreground">
-                  {t('mealSchedule.dailyGrams', {
-                    grams: loadedPlan.dailyGrams,
-                  })}
-                </Text>
-              </View>
-              <View className="items-end gap-1">
-                <ForkKnife size={24} color={accentForeground} />
-                <Text className="font-bold text-accent-foreground">
-                  {t('mealSchedule.mealsPerDay', {
-                    meals: loadedPlan.mealsPerDay,
-                  })}
-                </Text>
+          <HomeEntrance testID="meal-schedule-summary-entry" index={0}>
+            <View
+              testID="meal-schedule-summary"
+              className="gap-2 rounded-24 bg-accent border-b-5 border-black/25 p-4"
+              style={CONTINUOUS_CORNER}
+            >
+              <Text className="text-xs font-extrabold uppercase tracking-caps text-accent-foreground">
+                {t('mealSchedule.dailyTarget')}
+              </Text>
+              <View className="flex-row gap-2">
+                <View className="flex-1">
+                  <Text className="text-22 font-black text-accent-foreground">
+                    {loadedPlan.merKcal}
+                  </Text>
+                  <Text className="text-xs font-normal text-accent-foreground">
+                    kcal
+                  </Text>
+                </View>
+                <View className="flex-1">
+                  <Text className="text-22 font-black text-accent-foreground">
+                    {`${loadedPlan.dailyGrams} g`}
+                  </Text>
+                  <Text className="text-xs font-normal text-accent-foreground">
+                    {t('mealSchedule.perDay')}
+                  </Text>
+                </View>
+                <View className="flex-1">
+                  <Text className="text-22 font-black text-accent-foreground">
+                    {loadedPlan.mealsPerDay}
+                  </Text>
+                  <Text className="text-xs font-normal text-accent-foreground">
+                    {t('mealSchedule.mealsPerDayUnit')}
+                  </Text>
+                </View>
               </View>
             </View>
-          </Card>
+          </HomeEntrance>
 
-          <View testID="meal-times-section" className="gap-3">
-            <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
+          <View testID="meal-times-section" className="gap-3.5">
+            <Text className="mt-1 text-17 font-extrabold text-foreground">
               {t('mealSchedule.timesAndPortions')}
             </Text>
             {loadedPlan.mealTimes.map((mealTime, index) => {
@@ -264,58 +280,50 @@ function MealScheduleContent({ petId }: { petId: string }) {
               );
 
               return (
-                <Card
-                  key={`${mealTime}-${index}`}
-                  testID={`meal-time-row-${index}`}
-                  className="flex-row items-center gap-3"
-                >
-                  <View
-                    className="size-10 items-center justify-center rounded-xl bg-default"
-                    style={CONTINUOUS_CORNER}
+                <HomeEntrance key={mealTime} testID={`meal-time-entry-${index}`} index={index + 1}>
+                  <Card
+                    testID={`meal-time-row-${index}`}
+                    variant="flat"
+                    className="flex-row items-center gap-3 py-3"
                   >
-                    <Clock size={18} color={accent} />
-                  </View>
-                  <Text className="flex-1 font-bold text-foreground">
-                    {mealTime}
-                  </Text>
-                  <Text className="font-semibold text-muted">
-                    {portionGrams} g
-                  </Text>
-                  {isOwner ? (
-                    <Button
-                      testID={`meal-time-edit-${index}`}
-                      accessibilityLabel={t('mealSchedule.editTimeLabel', { time: mealTime })}
-                      variant="secondary"
-                      size="sm"
-                      isDisabled={editing}
-                      className="min-h-11 rounded-xl bg-accent-soft"
-                      onPress={() => setPicker({ from: mealTime })}
+                    <View
+                      className={`size-10.5 items-center justify-center rounded-14 ${CATEGORY_SLOTS.amber.surface}`}
+                      style={CONTINUOUS_CORNER}
                     >
-                      <Button.Label className="font-semibold text-accent-strong">
-                        {t('mealSchedule.editTime')}
-                      </Button.Label>
-                    </Button>
-                  ) : null}
-                </Card>
+                      <Clock size={20} color={amberStrong} />
+                    </View>
+                    <View className="flex-1">
+                      <Text className="text-lg font-black text-foreground">
+                        {mealTime}
+                      </Text>
+                      <Text className="text-13 font-semibold text-muted">
+                        {portionGrams} g
+                      </Text>
+                    </View>
+                    {isOwner ? (
+                      <Button
+                        testID={`meal-time-edit-${index}`}
+                        accessibilityLabel={t('mealSchedule.editTimeLabel', { time: mealTime })}
+                        variant="secondary"
+                        size="sm"
+                        isDisabled={editing}
+                        hitSlop={TOUCH_SLOP}
+                        className="h-9.75 rounded-10 border-2 border-b-5 border-lip-gray bg-surface px-3.5"
+                        onPress={() => setPicker({ from: mealTime })}
+                      >
+                        <Text className="text-13 font-extrabold text-foreground">
+                          {t('mealSchedule.editTime')}
+                        </Text>
+                      </Button>
+                    ) : null}
+                  </Card>
+                </HomeEntrance>
               );
             })}
             {isOwner && editError !== null ? (
               <Text testID="meal-time-error" selectable className="text-danger">
                 {editError}
               </Text>
-            ) : null}
-            {isOwner ? (
-              <Button
-                testID="add-meal-time-button"
-                isDisabled={editing}
-                variant="secondary"
-                className="rounded-xl bg-accent-soft"
-                onPress={() => setPicker({ from: null })}
-              >
-                <Button.Label className="font-bold text-accent-strong">
-                  {t('mealSchedule.addMeal')}
-                </Button.Label>
-              </Button>
             ) : null}
           </View>
           {picker !== null ? (
@@ -355,16 +363,33 @@ function MealScheduleContent({ petId }: { petId: string }) {
               {generateError}
             </Text>
           ) : null}
-          <Button
-            testID="generate-plan-button"
-            className="rounded-xl bg-accent border-b-4 border-black/25"
-            isDisabled={submitting}
-            onPress={() => void handleGenerate()}
-          >
-            <Button.Label className="font-bold text-accent-foreground">
-              {t('mealSchedule.generatePlan')}
-            </Button.Label>
-          </Button>
+          <View testID="meal-schedule-actions" className="flex-row gap-2.5">
+            {isOwner && loadedPlan !== null ? (
+              <Button
+                testID="add-meal-time-button"
+                isDisabled={editing}
+                variant="secondary"
+                className="h-13.5 flex-1 rounded-14 border-2 border-b-6 border-lip-gray bg-surface"
+                onPress={() => setPicker({ from: null })}
+              >
+                <Text className="text-15 font-extrabold text-foreground">
+                  {t('mealSchedule.addMeal')}
+                </Text>
+              </Button>
+            ) : null}
+            <Button
+              testID="generate-plan-button"
+              variant="tertiary"
+              className={`h-12.5 flex-1 gap-1.5 rounded-14 ${CATEGORY_SLOTS.violet.surface}`}
+              isDisabled={submitting}
+              onPress={() => void handleGenerate()}
+            >
+              <Sparkles size={16} color={violetStrong} />
+              <Text className={`text-15 font-extrabold ${CATEGORY_SLOTS.violet.ink}`}>
+                {t('mealSchedule.generatePlan')}
+              </Text>
+            </Button>
+          </View>
         </View>
       ) : null}
 
@@ -376,25 +401,27 @@ function MealScheduleContent({ petId }: { petId: string }) {
         ) : null}
 
         {!hasError && loadedProfile !== null ? (
-          <Card
-            testID="nutrition-profile-section"
-            className="gap-3"
-          >
+          <View testID="nutrition-profile-section" className="gap-2.5">
             <Text
               testID="nutrition-profile-title"
-              className="text-base font-bold text-foreground"
+              className="mt-1 text-17 font-extrabold text-foreground"
             >
               {t('mealSchedule.nutritionProfile')}
             </Text>
-            <View className="flex-row flex-wrap gap-2">
-              <Text className="rounded-full bg-default px-3 py-1 text-sm font-semibold text-foreground">
-                {loadedProfile.foodType}
-              </Text>
-              <Text className="rounded-full bg-default px-3 py-1 text-sm font-semibold text-foreground">
-                {loadedProfile.kcalPer100g} kcal / 100 g
-              </Text>
-              <Text className="rounded-full bg-default px-3 py-1 text-sm font-semibold text-foreground">
+            <View testID="nutrition-profile-pills" className="flex-row flex-wrap gap-1.5">
+              <Text testID="nutrition-profile-activity" className="rounded-full bg-default px-2.5 py-1.5 text-xs font-bold text-foreground">
+                <Text className="text-muted">{`${t('mealSchedule.activity')} `}</Text>
                 {loadedProfile.activityLevel}
+              </Text>
+              {loadedProfile.bodyCondition !== null ? (
+                <Text testID="nutrition-profile-condition" className="rounded-full bg-default px-2.5 py-1.5 text-xs font-bold text-foreground">
+                  <Text className="text-muted">{`${t('mealSchedule.condition')} `}</Text>
+                  {`${loadedProfile.bodyCondition}/9`}
+                </Text>
+              ) : null}
+              <Text testID="nutrition-profile-food" className="rounded-full bg-default px-2.5 py-1.5 text-xs font-bold text-foreground">
+                <Text className="text-muted">{`${t('mealSchedule.food')} `}</Text>
+                {`${loadedProfile.foodType} ${loadedProfile.kcalPer100g} kcal/100 g`}
               </Text>
             </View>
             {loadedProfile.allergies.length > 0 ? (
@@ -407,7 +434,7 @@ function MealScheduleContent({ petId }: { petId: string }) {
                 {loadedProfile.diseases.join(', ')}
               </Text>
             ) : null}
-          </Card>
+          </View>
         ) : null}
 
         {!hasError && profile.data?.kind === 'not-found' ? (

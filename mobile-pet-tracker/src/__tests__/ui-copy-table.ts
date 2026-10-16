@@ -189,7 +189,7 @@ export const R5_HEALTH: UseRow[] = [
 ];
 
 export const R6_FOOD: UseRow[] = [
-  { file: 'src/app/_layout.tsx', key: 'mealSchedule.mealSchedule' }, // #95 R4
+  { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.mealSchedule' }, // #179 R4
   { file: 'src/app/(tabs)/food.tsx', key: 'food.food' },
   { file: 'src/app/(tabs)/food.tsx', key: 'common.somethingWentWrong' },
   { file: 'src/app/(tabs)/food.tsx', key: 'common.retry' },
@@ -223,8 +223,8 @@ export const R6_FOOD: UseRow[] = [
   { file: 'src/screens/meal-schedule/index.tsx', key: 'common.somethingWentWrong' },
   { file: 'src/screens/meal-schedule/index.tsx', key: 'common.retry' },
   { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.dailyTarget' },
-  { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.dailyGrams' },
-  { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.mealsPerDay' },
+  { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.perDay' }, // #179 R5
+  { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.mealsPerDayUnit' }, // #179 R5
   { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.timesAndPortions' },
   { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.noMealPlanYet' },
   { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.generatePlan' },
@@ -242,7 +242,10 @@ export const R6_FOOD: UseRow[] = [
   { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.errorTimeNotInPlan' },
   { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.errorDuplicateTime' },
   { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.errorMealLimit' },
-  { file: 'src/app/_layout.tsx', key: 'mealsHistory.mealsHistory' }, // #105 R5
+  { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.activity' }, // #179 R8
+  { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.condition' }, // #179 R8
+  { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.food' }, // #179 R8
+  { file: 'src/screens/meals-history/index.tsx', key: 'mealsHistory.mealsHistory' }, // #179 R9
   { file: 'src/app/(tabs)/food.tsx', key: 'food.mealsHistory' }, // #105 R5
   { file: 'src/app/(tabs)/food.tsx', key: 'food.mealsHistoryLinkSubtitle' }, // #105 R5
   { file: 'src/screens/meals-history/index.tsx', key: 'mealsHistory.previousMonth' }, // #105 R5
