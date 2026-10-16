@@ -1247,4 +1247,4 @@ una vez cada una, en lugar de `<Button.Label …>`. El resto del punto no cambia
 
 ### Aprobación de la Enmienda E2
 
-- [ ] Enmienda E2 aprobada por humano ← gate obligatorio antes de que Codex reanude en c12b
+- [X] Enmienda E2 aprobada por humano ← gate obligatorio antes de que Codex reanude en c12b
