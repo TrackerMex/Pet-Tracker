@@ -1386,6 +1386,35 @@ describe('#178 R8: sheet de borrado del canvas', () => {
   });
 });
 
+describe('#178 R9: el vacío ofrece crear', () => {
+  beforeEach(async () => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [] });
+    await renderReminders();
+    await screen.findByTestId('reminders-empty-title');
+  });
+
+  it('ofrece Nuevo dentro del estado vacío', () => {
+    expect(within(screen.getByTestId('reminders-empty')).getByText('Nuevo')).toBeVisible();
+  });
+
+  it('abre el formulario una sola vez desde la acción del vacío', async () => {
+    await fireEvent.press(within(screen.getByTestId('reminders-empty')).getByText('Nuevo'));
+    expect(mockRouter.push).toHaveBeenCalledTimes(1);
+    expect(mockRouter.push).toHaveBeenCalledWith('/add-reminder');
+  });
+
+  it('ofrece la acción del vacío junto al enlace Nuevo de la cabecera', () => {
+    expect(within(screen.getByTestId('reminders-empty')).getByText('Nuevo')).toBeVisible();
+    expect(within(screen.getByTestId('reminders-add-link')).getByText('Nuevo')).toBeVisible();
+  });
+});
+
 describe('#155 R6: sin recordatorios, Pingo sostiene su lista', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -1429,11 +1458,4 @@ describe('#155 R6: sin recordatorios, Pingo sostiene su lista', () => {
     expect(screen.getByTestId('reminders-empty-body')).toHaveTextContent('Cuando crees un recordatorio, te aviso a tiempo.');
   });
 
-  it('no duplica la acción de crear', async () => {
-    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [] });
-    await renderReminders();
-    await screen.findByTestId('reminders-empty-title');
-    expect(screen.queryByTestId('reminders-empty-action')).toBeNull();
-    expect(screen.getByTestId('reminders-add-link')).toBeVisible();
-  });
 });
