@@ -188,12 +188,20 @@ function MealScheduleContent({ petId }: { petId: string }) {
       className="flex-1 bg-background"
       contentInsetAdjustmentBehavior="automatic"
       contentContainerStyle={{
-        padding: 24,
-        gap: 16,
+        paddingHorizontal: 20,
+        paddingTop: 24,
+        gap: 14,
         paddingBottom: insets.bottom + 24,
       }}
     >
-      <View testID={loading ? 'meal-schedule-loading' : undefined} className="gap-4">
+      <Text
+        testID="meal-schedule-heading"
+        accessibilityRole="header"
+        className="text-2xl font-black tracking-title text-foreground"
+      >
+        {t('mealSchedule.mealSchedule')}
+      </Text>
+      <View testID={loading ? 'meal-schedule-loading' : undefined} className="gap-3.5">
         {!hasError && plan.data === undefined ? (
           <>
             <Skeleton
