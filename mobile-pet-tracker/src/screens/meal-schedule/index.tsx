@@ -6,7 +6,7 @@ import { Button, Skeleton } from 'heroui-native';
 import { useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Clock } from 'reicon-react-native';
+import { Clock, Sparkles } from 'reicon-react-native';
 
 import {
   addMealTime,
@@ -50,7 +50,7 @@ function toMealTime(date: Date): string {
 }
 
 function MealScheduleContent({ petId }: { petId: string }) {
-  const [amberStrong] = useThemeColors(['category-amber-strong', 'category-violet-strong']);
+  const [amberStrong, violetStrong] = useThemeColors(['category-amber-strong', 'category-violet-strong']);
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { signOut, token } = useAuth();
   const t = useTranslate();
@@ -325,19 +325,6 @@ function MealScheduleContent({ petId }: { petId: string }) {
                 {editError}
               </Text>
             ) : null}
-            {isOwner ? (
-              <Button
-                testID="add-meal-time-button"
-                isDisabled={editing}
-                variant="secondary"
-                className="rounded-xl bg-accent-soft"
-                onPress={() => setPicker({ from: null })}
-              >
-                <Button.Label className="font-bold text-accent-strong">
-                  {t('mealSchedule.addMeal')}
-                </Button.Label>
-              </Button>
-            ) : null}
           </View>
           {picker !== null ? (
             <Host matchContents>
@@ -376,16 +363,33 @@ function MealScheduleContent({ petId }: { petId: string }) {
               {generateError}
             </Text>
           ) : null}
-          <Button
-            testID="generate-plan-button"
-            className="rounded-xl bg-accent border-b-4 border-black/25"
-            isDisabled={submitting}
-            onPress={() => void handleGenerate()}
-          >
-            <Button.Label className="font-bold text-accent-foreground">
-              {t('mealSchedule.generatePlan')}
-            </Button.Label>
-          </Button>
+          <View testID="meal-schedule-actions" className="flex-row gap-2.5">
+            {isOwner && loadedPlan !== null ? (
+              <Button
+                testID="add-meal-time-button"
+                isDisabled={editing}
+                variant="secondary"
+                className="h-13.5 flex-1 rounded-14 border-2 border-b-6 border-lip-gray bg-surface"
+                onPress={() => setPicker({ from: null })}
+              >
+                <Text className="text-15 font-extrabold text-foreground">
+                  {t('mealSchedule.addMeal')}
+                </Text>
+              </Button>
+            ) : null}
+            <Button
+              testID="generate-plan-button"
+              variant="tertiary"
+              className={`h-12.5 flex-1 gap-1.5 rounded-14 ${CATEGORY_SLOTS.violet.surface}`}
+              isDisabled={submitting}
+              onPress={() => void handleGenerate()}
+            >
+              <Sparkles size={16} color={violetStrong} />
+              <Text className={`text-15 font-extrabold ${CATEGORY_SLOTS.violet.ink}`}>
+                {t('mealSchedule.generatePlan')}
+              </Text>
+            </Button>
+          </View>
         </View>
       ) : null}
 
