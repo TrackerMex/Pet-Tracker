@@ -1,6 +1,6 @@
 ---
 feature: "mobile-account-client-validation"
-status: spec_ready
+status: approved
 tags: [mobile, ui, spec]
 ---
 

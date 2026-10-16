@@ -1,6 +1,6 @@
 ---
 feature: "mobile-account-client-validation"
-status: spec_ready
+status: approved
 tags: [mobile, ui, spec]
 ---
 
@@ -17,7 +17,7 @@ Rutas de test relativas a `mobile-pet-tracker/`. H0: `56a0b84a67ff6594e5a149d915
 | R5 | Lista R5 abajo: 7 casos. | Rojo: `a8fc62c074868a6199ff9591eca2af91064c83d2` — `test(mobile): recuperar valida en cliente (#183 R5)`<br>Verde: `4d87b606ce918cf3d2d3d8ce9cae1bb3dd4fa6e9` — `feat(mobile): recuperar valida en cliente (#183 R5)`<br>E1: `4ca57efe5be2a7d10af47c4ca6fd3ffd6e34bf47` — `test(mobile): candados de E1 en recuperar (#183 R5, R7)` |
 | R6 | Lista R6 abajo: 7 casos + ajuste del heredado del 400. | Rojo: `f874ad4d6fef7ca6e8254eeeaf7de591ffe76192` — `test(mobile): nueva contraseña valida en cliente (#183 R6)`<br>Verde: `3a25aa5b11a57f2211d02307c031a0161161cfa0` — `feat(mobile): nueva contraseña valida en cliente (#183 R6)`<br>E1: `9eea5bf4ad64198241e01dd0c106b6cee90f597c` — `test(mobile): candados de E1 en nueva contraseña (#183 R6, R7)` |
 | R7 | Lista R7 abajo: 10 observaciones reescritas: 6 del 400, 1 legado de campos y 3 de idioma; E1 añade 2 it del 400. | Rojo: `31341795456c9ca7b919c9e79cdb17e0c437b308` — `test(mobile): un 400 pinta el aviso genérico (#183 R7)`<br>Verde: `8b5406bb5748096c203756dd862190351a01fa7f` — `feat(mobile): un 400 pinta el aviso genérico (#183 R7)`<br>E1: `4ca57efe5be2a7d10af47c4ca6fd3ffd6e34bf47` — `test(mobile): candados de E1 en recuperar (#183 R5, R7)`<br>E1: `9eea5bf4ad64198241e01dd0c106b6cee90f597c` — `test(mobile): candados de E1 en nueva contraseña (#183 R6, R7)` |
-| R8 | pendiente (humano): prueba de humo Android, casilla en requirements R8 | pendiente (humano) |
+| R8 | Prueba de humo humana en dev build de Android (OnePlus Nord 5), casilla de requirements R8 firmada el 2026-10-15. | Firma: `23d816df` — `Record successful mobile smoke test` |
 
 ## R1 — it y candados
 
