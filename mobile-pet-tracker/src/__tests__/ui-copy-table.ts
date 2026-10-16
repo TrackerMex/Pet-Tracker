@@ -232,6 +232,9 @@ export const R6_FOOD: UseRow[] = [
   { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.errorTimeNotInPlan' },
   { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.errorDuplicateTime' },
   { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.errorMealLimit' },
+  { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.activity' }, // #179 R8
+  { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.condition' }, // #179 R8
+  { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.food' }, // #179 R8
   { file: 'src/app/_layout.tsx', key: 'mealsHistory.mealsHistory' }, // #105 R5
   { file: 'src/app/(tabs)/food.tsx', key: 'food.mealsHistory' }, // #105 R5
   { file: 'src/app/(tabs)/food.tsx', key: 'food.mealsHistoryLinkSubtitle' }, // #105 R5

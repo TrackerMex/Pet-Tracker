@@ -207,10 +207,10 @@ function SelectionProbe() {
   return null;
 }
 
-async function renderMealSchedule(selected = true) {
+async function renderMealSchedule(selected = true, language: 'es' | 'en' = 'es') {
   return renderWithProviders(
     <HeroUINativeProvider>
-      <LanguageProvider initial="es">
+      <LanguageProvider initial={language}>
         <SelectedPetProvider>
           {selected ? <SelectionProbe /> : null}
           <MealScheduleScreen />
@@ -310,9 +310,9 @@ describe('R7: meal schedule muestra horarios y perfil', () => {
 
     const profile = within(screen.getByTestId('nutrition-profile-section'));
     expect(profile.getByText('Perfil nutricional')).toBeVisible();
-    expect(profile.getByText('dry')).toBeVisible();
-    expect(profile.getByText('350 kcal / 100 g')).toBeVisible();
-    expect(profile.getByText('medium')).toBeVisible();
+    expect(profile.getByTestId('nutrition-profile-food')).toHaveTextContent('Alimento dry 350 kcal/100 g');
+    expect(profile.getByTestId('nutrition-profile-condition')).toHaveTextContent('Condición 5/9');
+    expect(profile.getByTestId('nutrition-profile-activity')).toHaveTextContent('Actividad medium');
     expect(screen.getByTestId('profile-allergies')).toHaveTextContent(
       'chicken, soy',
     );
@@ -513,7 +513,7 @@ describe('#62 R5: el título de card usa un único tratamiento', () => {
 
     expect(
       (await screen.findByTestId('nutrition-profile-title')).props.className,
-    ).toBe('text-base font-bold text-foreground');
+    ).toBe('mt-1 text-17 font-extrabold text-foreground');
   });
 });
 
@@ -1297,5 +1297,67 @@ describe('#179 R7: acciones del artboard', () => {
     expect(error).toHaveTextContent('Solo el dueño puede generar el plan');
     expect(error.parent).toBe(actions.parent);
     expect(error.parent!.children.indexOf(error)).toBeLessThan(error.parent!.children.indexOf(actions));
+  });
+});
+
+describe('#179 R8: perfil en píldoras', () => {
+  beforeEach(() => {
+    mockGetNutritionPlan.mockResolvedValue({ kind: 'not-found' });
+    mockGetNutritionProfile.mockResolvedValue({ kind: 'ok', profile: makeProfile() });
+  });
+
+  function expectPills(values: readonly (readonly [string, string, string])[]) {
+    const section = screen.getByTestId('nutrition-profile-section');
+    expect(section).toHaveProp('className', 'gap-2.5');
+    expect(within(section).getByTestId('nutrition-profile-title')).toHaveProp('className', 'mt-1 text-17 font-extrabold text-foreground');
+    const pills = within(section).getByTestId('nutrition-profile-pills');
+    expect(pills).toHaveProp('className', 'flex-row flex-wrap gap-1.5');
+    expect(childTestIds(pills)).toEqual(values.map(([id]) => id));
+    expect(pills.children).toHaveLength(values.length);
+    for (const [id, text, prefix] of values) {
+      const pill = within(pills).getByTestId(id);
+      expect(pill).toHaveProp('className', 'rounded-full bg-default px-2.5 py-1.5 text-xs font-bold text-foreground');
+      expect(pill).toHaveTextContent(text);
+      const label = pill.children[0];
+      if (typeof label === 'string') throw new Error('Expected prefix node');
+      expect(label).toHaveProp('className', 'text-muted');
+      expect(label.children).toEqual([prefix]);
+    }
+    return pills;
+  }
+
+  it('muestra las tres píldoras con condición, prefijos y valores crudos', async () => {
+    await renderMealSchedule();
+    await screen.findByTestId('nutrition-profile-section');
+    expectPills([
+      ['nutrition-profile-activity', 'Actividad medium', 'Actividad '],
+      ['nutrition-profile-condition', 'Condición 5/9', 'Condición '],
+      ['nutrition-profile-food', 'Alimento dry 350 kcal/100 g', 'Alimento '],
+    ]);
+    expect(screen.getByTestId('profile-allergies')).toHaveTextContent('chicken, soy');
+    expect(screen.getByTestId('profile-diseases')).toHaveTextContent('arthritis');
+    expect(screen.queryByText('350 kcal / 100 g')).toBeNull();
+    expect(screen.queryByText('Edad')).toBeNull();
+  });
+
+  it('omite condición nula y conserva las otras dos píldoras', async () => {
+    mockGetNutritionProfile.mockResolvedValue({ kind: 'ok', profile: makeProfile({ bodyCondition: null }) });
+    await renderMealSchedule();
+    await screen.findByTestId('nutrition-profile-section');
+    const pills = expectPills([
+      ['nutrition-profile-activity', 'Actividad medium', 'Actividad '],
+      ['nutrition-profile-food', 'Alimento dry 350 kcal/100 g', 'Alimento '],
+    ]);
+    expect(within(pills).queryByTestId('nutrition-profile-condition')).toBeNull();
+  });
+
+  it('traduce los prefijos al inglés sin traducir los valores del perfil', async () => {
+    await renderMealSchedule(true, 'en');
+    await screen.findByTestId('nutrition-profile-section');
+    expectPills([
+      ['nutrition-profile-activity', 'Activity medium', 'Activity '],
+      ['nutrition-profile-condition', 'Condition 5/9', 'Condition '],
+      ['nutrition-profile-food', 'Food dry 350 kcal/100 g', 'Food '],
+    ]);
   });
 });
