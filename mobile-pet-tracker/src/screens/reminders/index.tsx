@@ -8,7 +8,7 @@ import { Button, Skeleton } from 'heroui-native';
 import { useCallback, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Plus } from 'reicon-react-native';
+import { Plus, Trash } from 'reicon-react-native';
 
 import { listPets } from '../../api/pets';
 import { petKeys, reminderKeys } from '../../api/query-keys';
@@ -51,7 +51,7 @@ export function RemindersScreen() {
   const t = useTranslate();
   const { selectedPetId, selectPet } = useSelectedPet();
   const insets = useSafeAreaInsets();
-  const [blueInk, amberInk, greenInk, violetInk, roseInk, muted, accentForeground] = useThemeColors([
+  const [blueInk, amberInk, greenInk, violetInk, roseInk, muted, accentForeground, danger] = useThemeColors([
     'category-blue-strong', 'category-amber-strong', 'category-green-strong',
     'category-violet-strong', 'category-rose-strong', 'muted', 'accent-foreground', 'danger',
   ]);
@@ -387,21 +387,27 @@ export function RemindersScreen() {
           <BottomSheetView>
             <View
               testID="reminders-delete-sheet"
-              className="gap-3 bg-surface px-6 pb-8 pt-4"
+              className="items-center gap-3 bg-surface px-5 pb-9 pt-3"
             >
-              <Text className="text-xl font-bold text-foreground">
+              <View
+                testID="reminders-delete-icon"
+                className={`size-14 items-center justify-center rounded-full ${CATEGORY_SLOTS.rose.surface}`}
+              >
+                <Trash size={26} color={danger} />
+              </View>
+              <Text className="text-center text-xl font-black text-foreground">
                 {t('reminders.deleteReminder')}
               </Text>
               <Text
                 testID="reminders-delete-reference"
-                className="text-base font-semibold text-foreground"
+                className="text-center text-base font-semibold text-foreground"
               >
                 {deleteCandidate?.title ?? ''}
               </Text>
-              <Text className="text-sm font-normal text-muted">
+              <Text className="text-center text-sm font-normal text-muted">
                 {t('reminders.deleteSheetBody')}
               </Text>
-              <View className="gap-2 pt-2">
+              <View className="w-full gap-3">
                 <Button
                   testID="reminders-delete-confirm"
                   className="w-full rounded-xl bg-danger"
