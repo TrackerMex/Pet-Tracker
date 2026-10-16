@@ -994,3 +994,79 @@ describe('#175 R10: Documentos sin deriva', () => {
     ]);
   });
 });
+
+describe('#178 R13: Recordatorios sin deriva', () => {
+  const featureFiles = [
+    'screens/reminders/index.tsx',
+    'screens/add-reminder/index.tsx',
+    'utils/reminder-meta.ts',
+  ];
+  const reminders = readFileSync(join(sourceRoot, featureFiles[0]), 'utf8');
+  const addReminder = readFileSync(join(sourceRoot, featureFiles[1]), 'utf8');
+
+  it('no deja emoji en las dos pantallas ni en los metadatos', () => {
+    expect(featureFiles.filter((file) =>
+      /\p{Extended_Pictographic}/u.test(readFileSync(join(sourceRoot, file), 'utf8')),
+    )).toEqual([]);
+  });
+
+  it('importa exactamente los iconos prescritos desde un único import de reicon', () => {
+    const expected: Record<string, string[]> = {
+      'screens/reminders/index.tsx': ['Plus', 'Trash'],
+      'screens/add-reminder/index.tsx': ['Bell', 'Calendar', 'Clock'],
+      'utils/reminder-meta.ts': ['Drop', 'ForkKnife', 'Pill', 'PinTack', 'Stethoscope', 'Syringe', 'Weight'],
+    };
+    for (const [file, icons] of Object.entries(expected)) {
+      const source = readFileSync(join(sourceRoot, file), 'utf8');
+      const imports = [...source.matchAll(/import\s*\{([^}]+)\}\s*from ['"]reicon-react-native['"]/g)];
+      expect(source.match(/from ['"]reicon-react-native['"]/g)).toHaveLength(1);
+      expect(imports).toHaveLength(1);
+      expect(imports[0][1].split(',').map((name) => name.trim()).filter((name) => !name.startsWith('type ')).sort()).toEqual(icons);
+    }
+  });
+
+  it('no deja escapes de estilo, radios vetados ni text-accent suelto', () => {
+    expect(featureFiles.filter((file) => {
+      const source = readFileSync(join(sourceRoot, file), 'utf8');
+      return MEALS_BAR_STYLE_ESCAPES.test(source)
+        || /\brounded-(?:2xl|lg|md|sm)\b|text-accent(?![-\w])/.test(source);
+    })).toEqual([]);
+  });
+
+  it('reutiliza HomeEntrance y PopIn sin Card en Recordatorios', () => {
+    expect(reminders).toContain("from '../home/home-entrance'");
+    expect(reminders).toContain("from '../../components/pop-in'");
+    expect(reminders).not.toContain('<Card');
+    expect(reminders).not.toContain('components/card');
+  });
+
+  it('conserva una sola etiqueta Nuevo con su receta de texto', () => {
+    expect(reminders.split('<Button.Label className="text-sm font-extrabold text-accent-foreground">')).toHaveLength(2);
+  });
+
+  it('sitúa la vista previa después de Aviso y antes de Guardar', () => {
+    const alert = addReminder.indexOf("t('addReminder.alert')");
+    const preview = addReminder.indexOf('testID="add-reminder-preview"');
+    const submit = addReminder.indexOf('testID="add-reminder-submit"');
+    expect(alert).toBeGreaterThanOrEqual(0);
+    expect(preview).toBeGreaterThan(alert);
+    expect(preview).toBeLessThan(submit);
+  });
+
+  it('no recupera uppercase ni tracking-widest en Nuevo recordatorio', () => {
+    expect(addReminder).not.toMatch(/uppercase|tracking-widest/);
+  });
+
+  it('reserva los radios 14, 16 y 22 a Recordatorios con su inventario exacto', () => {
+    for (const [pattern, count] of [
+      [/\brounded-14\b/g, 1], [/\brounded-16\b/g, 3], [/\brounded-22\b/g, 1],
+    ] as const) {
+      expect(reminders.match(pattern) ?? []).toHaveLength(count);
+    }
+    expect(sourceFiles(sourceRoot).filter((file) =>
+      file !== join(sourceRoot, featureFiles[0])
+      && !/\.test\.tsx?$/.test(file)
+      && /\brounded-(?:14|16|22)\b/.test(readFileSync(file, 'utf8')),
+    ).map((file) => file.slice(sourceRoot.length + 1))).toEqual([]);
+  });
+});
