@@ -2,7 +2,7 @@
 
 H0: `0aaeda9d800d053b551f0cc38a9129838357cbc7`.
 
-Estado actual: guarda K3 corregida validada (`commits-ok`); trazabilidad R1–R13 comprometida en `14bbb4a3`, R14 pendiente (humano). Se prepara el commit del informe de K4 y después K5. Los tests y sondas previos permanecen validados; no se repiten. Las secciones de paradas anteriores conservan su evidencia histórica.
+Estado actual: cierre K1–K5 validado. La reanudación dio `commits-ok`; trazabilidad R1–R13 comprometida en `14bbb4a3`, informe con `--only` en `1a071eec` y K5 dio `lista-ok` (23 rutas contra H0). R14 pendiente (humano). Se conservan los resultados previos de tests y sondas, sin repetirlos. Las secciones de paradas anteriores conservan su evidencia histórica.
 
 ## B0 — estado inicial
 
@@ -914,7 +914,7 @@ K4 y K5 **no ejecutados** por esta parada: trazabilidad e informe todavía sin c
 ## Desviaciones
 
 - Cierre K4: la instrucción genérica de dejar vacía la casilla de la carta se aplica a nuevas firmas. Se conserva la firma humana de 2026-10-15 existente en H0, como ordenan la nota 7 y c5, sin tocar `docs/ui-guidelines.md` durante el cierre. R14 permanece sin firmar.
-- K4 exige cometer el informe antes de ejecutar K5. Para registrar la salida real de K5 y dejar el árbol limpio sin amend, se añadirá un commit posterior solo del informe con `--only`.
+- K4 exige cometer el informe antes de ejecutar K5. Para registrar la salida real de K5 y dejar el árbol limpio sin amend, se añade un commit posterior solo del informe con `--only`.
 
 - Parada anterior en K3 (resuelta por el leader en `fe62fc57`): la guarda literal exige 26 commits y mide 27 por c12b, como manda E2. Salida del comando: ninguna; estado 1. Medición: `27`. Todos los checks técnicos anteriores pasaron. No corresponde Reintento/Flake y no se altera el handoff. K4–K5 pendientes; evidencia literal en «Cierre K1–K5».
 
@@ -1140,3 +1140,38 @@ After doing this, you may fix the identity used for this commit with:
 ```
 
 No se ejecutaron las sugerencias de configuración ni amend de Git. A continuación se comete el informe con el `--only` literal de K4 y se ejecuta K5. Su salida se registrará después en el propio informe, con otro commit `--only`, sin amend.
+
+
+### K4 — informe con --only
+
+La línea literal del informe terminó en 0. Salida literal:
+
+```text
+[feature/179-mobile-meal-schedule-canvas-fidelity 1a071eec] docs(mobile-meal-schedule-canvas-fidelity): informe de implementación de #179
+ Committer: Claude <claude@srv1178023.hstgr.cloud>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 1 file changed, 1142 insertions(+)
+ create mode 100644 progress/impl_mobile-meal-schedule-canvas-fidelity.md
+```
+
+### K5 — lista cerrada contra H0
+
+La cadena literal corregida del handoff se ejecutó sobre HEAD `1a071eec`, tras los dos commits de K4. Compara las 23 rutas contra H0 `0aaeda9d800d053b551f0cc38a9129838357cbc7` y excluye los ficheros del leader. Estado 0 y salida literal:
+
+```text
+lista-ok
+```
+
+K1–K5 quedan validados. Esta reanudación solo ejecutó la guarda de commits de K3, K4 y K5; no repitió implementación, sondas, K1, K2, ALL, typecheck ni lint. No se ejecutaron `./init.sh`, E2E ni push. No se modificaron los ficheros del leader ni se marcaron aprobaciones humanas. R14 sigue «pendiente (humano)».
+
+Se registra este resultado en un commit adicional solo del informe, mediante el mismo `--only` de K4, para conservar el orden K4 → K5 y evitar amend. La trazabilidad permanece en su único commit `14bbb4a3`.
