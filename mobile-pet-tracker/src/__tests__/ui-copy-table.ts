@@ -179,7 +179,7 @@ export const R5_HEALTH: UseRow[] = [
 ];
 
 export const R6_FOOD: UseRow[] = [
-  { file: 'src/app/_layout.tsx', key: 'mealSchedule.mealSchedule' }, // #95 R4
+  { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.mealSchedule' }, // #179 R4
   { file: 'src/app/(tabs)/food.tsx', key: 'food.food' },
   { file: 'src/app/(tabs)/food.tsx', key: 'common.somethingWentWrong' },
   { file: 'src/app/(tabs)/food.tsx', key: 'common.retry' },

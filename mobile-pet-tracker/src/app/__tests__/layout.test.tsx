@@ -348,7 +348,7 @@ describe('#95 R4: cada pantalla de detalle declara su cabecera nativa', () => {
     ['pets/add', 't:addPet.addPet'],
     ['pets/[petId]/docs', ''],
     ['weight-log', 't:weightLog.weightLog'],
-    ['meal-schedule', 't:mealSchedule.mealSchedule'],
+    ['meal-schedule', ''],
     ['pairing', ''],
   ])('%s usa exactamente las opciones de cabecera acordadas', async (name, title) => {
     await render(<RootLayout />);

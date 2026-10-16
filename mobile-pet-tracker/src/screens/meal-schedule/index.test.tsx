@@ -281,7 +281,7 @@ describe('R7: meal schedule muestra horarios y perfil', () => {
     );
     expect(
       screen.getByTestId('screen-meal-schedule').props.contentContainerStyle,
-    ).toEqual({ padding: 24, gap: 16, paddingBottom: 48 });
+    ).toEqual({ paddingHorizontal: 20, paddingTop: 24, gap: 14, paddingBottom: 48 });
 
   });
 
@@ -556,7 +556,7 @@ describe('#95 R5: la pantalla no dibuja cabecera propia', () => {
     await waitFor(() => expect(screen.getByTestId('screen-meal-schedule')).toBeVisible());
     await screen.findByTestId('meal-schedule-summary');
     expect(screen.queryByTestId('meal-schedule-back')).toBeNull();
-    expect(screen.queryByText(es['mealSchedule.mealSchedule'])).toBeNull();
+    expect(screen.getAllByText(es['mealSchedule.mealSchedule'])).toHaveLength(1);
   });
 });
 
@@ -1061,5 +1061,53 @@ describe('#147 R8: cada error del contrato tiene su mensaje', () => {
     expect(screen.queryByTestId('meal-time-error')).toBeNull();
     expect(mockGetNutritionPlan).toHaveBeenCalledTimes(1);
     expect(mockGetPet).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('#179 R4: marco y título en contenido', () => {
+  beforeEach(() => {
+    mockGetNutritionPlan.mockResolvedValue({ kind: 'not-found' });
+    mockGetNutritionProfile.mockResolvedValue({ kind: 'not-found' });
+  });
+
+  function expectHeading() {
+    const heading = screen.getByTestId('meal-schedule-heading');
+    expect(heading).toHaveTextContent('Horario de comidas');
+    expect(heading).toHaveProp('accessibilityRole', 'header');
+    expect(heading).toHaveProp('className', 'text-2xl font-black tracking-title text-foreground');
+  }
+
+  it('muestra el título antes del contenido mientras carga', async () => {
+    mockGetNutritionPlan.mockReturnValue(pending<NutritionPlanState>());
+    mockGetNutritionProfile.mockReturnValue(pending<NutritionProfileState>());
+    await renderMealSchedule();
+    await screen.findByTestId('meal-schedule-loading');
+    expectHeading();
+    expect(screen.getByTestId('meal-schedule-loading')).toHaveProp('className', 'gap-3.5');
+    expect(screen.getByTestId('screen-meal-schedule')).toHaveProp('contentContainerStyle', {
+      paddingHorizontal: 20, paddingTop: 24, gap: 14, paddingBottom: 48,
+    });
+  });
+
+  it('conserva el título cuando falla la carga', async () => {
+    mockGetNutritionPlan.mockResolvedValue({ kind: 'error' });
+    await renderMealSchedule();
+    await screen.findByTestId('meal-schedule-error');
+    expectHeading();
+  });
+
+  it('muestra un único título con el plan cargado', async () => {
+    mockGetNutritionPlan.mockResolvedValue({ kind: 'ok', plan: makePlan() });
+    mockGetNutritionProfile.mockResolvedValue({ kind: 'ok', profile: makeProfile() });
+    await renderMealSchedule();
+    await screen.findByTestId('meal-schedule-summary');
+    expectHeading();
+    expect(screen.getAllByText('Horario de comidas')).toHaveLength(1);
+  });
+
+  it('conserva el título cuando no hay plan', async () => {
+    await renderMealSchedule();
+    await screen.findByTestId('meal-schedule-empty');
+    expectHeading();
   });
 });
