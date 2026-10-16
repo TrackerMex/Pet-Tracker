@@ -37,6 +37,7 @@ jest.mock('reicon-react-native', () => {
     };
   return {
     ...actual,
+    Bell: mockIcon('add-reminder-icon-bell'),
     Calendar: mockIcon('add-reminder-icon-calendar'),
     Clock: mockIcon('add-reminder-icon-clock'),
   };
@@ -652,8 +653,8 @@ describe('#123: pickers de fecha de Nuevo recordatorio en Android a las 20:00 de
 });
 
 const ADVANCES = [0, 1440, 4320, 10080] as const;
-const CHIP_SELECTED = 'rounded-full border border-accent bg-accent-soft px-3 py-2';
-const CHIP_IDLE = 'rounded-full border border-border bg-default px-3 py-2';
+const CHIP_SELECTED = 'h-9.5 items-center justify-center rounded-full px-3.5 bg-accent border-b-3 border-black/25';
+const CHIP_IDLE = 'h-9.5 items-center justify-center rounded-full px-3.5 bg-default';
 
 function expectAdvanceChips(disabled: boolean[], selected: number) {
   ADVANCES.forEach((minutes, i) => {
@@ -954,5 +955,103 @@ describe('#178 R11: título, fecha y hora del canvas', () => {
     await pickTime(20, 5);
     const time = within(screen.getByTestId('time-field')).getByText('20:05');
     expect(time.props.className).toBe('text-base font-semibold text-foreground');
+  });
+});
+
+describe('#178 R12: chips de aviso y vista previa', () => {
+  const hostProcess = process.getBuiltinModule('process');
+  const originalTimezone = hostProcess.env.TZ;
+  const themeColors = jest.requireActual<typeof import('../../theme/use-theme-colors')>('../../theme/use-theme-colors');
+
+  beforeAll(() => { hostProcess.env.TZ = 'America/Mexico_City'; });
+  afterAll(() => {
+    if (originalTimezone === undefined) delete hostProcess.env.TZ;
+    else hostProcess.env.TZ = originalTimezone;
+  });
+  beforeEach(() => {
+    jest.clearAllMocks();
+    jest.useFakeTimers({ now: new Date(2026, 11, 20, 10, 0) });
+    setPlatform('android');
+    jest.spyOn(themeColors, 'useThemeColors').mockImplementation(
+      ((tokens: readonly string[]) => tokens.map((token) => `color:${token}`)) as typeof themeColors.useThemeColors,
+    );
+    process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockCreateReminder.mockReturnValue(pending());
+  });
+  afterEach(() => {
+    jest.clearAllTimers();
+    jest.useRealTimers();
+    setPlatform(originalPlatform);
+    jest.restoreAllMocks();
+  });
+
+  it.each([
+    [null, 9, 0, 'Te aviso el 25 dic a las 09:00.'],
+    [1440, 9, 0, 'Te aviso el 31 dic a las 09:00.'],
+    [0, 9, 0, 'Te aviso el 1 ene a las 09:00.'],
+    [4320, 9, 0, 'Te aviso el 29 dic a las 09:00.'],
+    [0, 20, 5, 'Te aviso el 1 ene a las 20:05.'],
+  ] as const)('muestra el aviso efectivo %s a las %s:%s', async (minutes, hours, minute, expected) => {
+    await renderAddReminder();
+    if (minutes === null) expect(screen.queryByTestId('add-reminder-preview')).toBeNull();
+    await pickDate(wallClock([2027, 0, 1, 12, 0], [2027, 0, 1]));
+    await pickTime(hours, minute);
+    if (minutes !== null) await fireEvent.press(screen.getByTestId(`advance-chip-${minutes}`));
+    expect(screen.getByTestId('add-reminder-preview-text')).toHaveTextContent(expected);
+  });
+
+  it('pinta el aviso por defecto y los demás chips con sus recetas y pesos', async () => {
+    await renderAddReminder();
+    await pickDate(wallClock([2027, 0, 1, 12, 0], [2027, 0, 1]));
+    await pickTime(9, 0);
+    expectAdvanceChips([false, false, false, false], 10080);
+    for (const minutes of ADVANCES) {
+      const label = screen.getByTestId(`advance-chip-${minutes}`).children[0];
+      expect(label).toHaveProperty('props.className', minutes === 10080
+        ? 'text-sm font-extrabold text-accent-foreground'
+        : 'text-sm font-extrabold text-foreground');
+    }
+  });
+
+  it('invierte la receta del seleccionado y su etiqueta al elegir un día antes', async () => {
+    await renderAddReminder();
+    await pickDate(wallClock([2027, 0, 1, 12, 0], [2027, 0, 1]));
+    await pickTime(9, 0);
+    await fireEvent.press(screen.getByTestId('advance-chip-1440'));
+    expectAdvanceChips([false, false, false, false], 1440);
+    expect(screen.getByTestId('advance-chip-1440').children[0]).toHaveProperty('props.className', 'text-sm font-extrabold text-accent-foreground');
+    expect(screen.getByTestId('advance-chip-10080').children[0]).toHaveProperty('props.className', 'text-sm font-extrabold text-foreground');
+  });
+
+  it('coloca Bell y el texto en la vista previa entre Aviso y Guardar', async () => {
+    await renderAddReminder();
+    await pickDate(wallClock([2027, 0, 1, 12, 0], [2027, 0, 1]));
+    await pickTime(9, 0);
+    const preview = screen.getByTestId('add-reminder-preview');
+    expect(preview.props.className).toBe('flex-row items-center gap-2.5 rounded-tile bg-surface-secondary px-3.5 py-3');
+    expect(preview).toHaveStyle({ borderCurve: 'continuous' });
+    expect(preview.children).toHaveLength(2);
+    const bell = within(preview).getByTestId('add-reminder-icon-bell');
+    expect(preview.children[0]).toBe(bell);
+    expect(bell.props.size).toBe(20);
+    expect(bell.props.color).toBe('color:accent-strong');
+    const text = within(preview).getByTestId('add-reminder-preview-text');
+    expect(preview.children[1]).toBe(text);
+    expect(text.props.className).toBe('flex-1 text-13 font-semibold text-foreground');
+    const siblings = preview.parent!.children;
+    expect(siblings.indexOf(preview)).toBeGreaterThan(siblings.indexOf(screen.getByText('Aviso').parent!));
+    expect(siblings.indexOf(preview)).toBeLessThan(siblings.indexOf(screen.getByTestId('add-reminder-submit')));
+  });
+
+  it('usa el aviso efectivo cuando los tres anticipados ya pasaron', async () => {
+    jest.setSystemTime(new Date(2026, 11, 31, 10, 0));
+    await renderAddReminder();
+    await pickDate(wallClock([2027, 0, 1, 12, 0], [2027, 0, 1]));
+    await pickTime(9, 0);
+    expect(screen.getByTestId('add-reminder-preview-text')).toHaveTextContent('Te aviso el 1 ene a las 09:00.');
+    expectAdvanceChips([false, true, true, true], 0);
   });
 });

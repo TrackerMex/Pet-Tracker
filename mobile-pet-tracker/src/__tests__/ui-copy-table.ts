@@ -364,6 +364,7 @@ export const R8_REMINDERS: UseRow[] = [
   { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.selectDate' },
   { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.time' },
   { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.alert' },
+  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.notifyPreview' }, // #178 R12
   { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.saveReminder' },
 ];
 
