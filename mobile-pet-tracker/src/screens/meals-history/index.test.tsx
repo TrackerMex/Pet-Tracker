@@ -118,7 +118,7 @@ describe('#105 R9: meals history preserves the four screen states', () => {
     expect(screen.getAllByTestId('meals-history-skeleton')).toHaveLength(1);
     expect(screen.queryByTestId('meals-history-grid')).toBeNull();
     expect(screen.getByTestId('screen-meals-history')).toHaveProp('contentInsetAdjustmentBehavior', 'automatic');
-    expect(screen.getByTestId('screen-meals-history')).toHaveProp('contentContainerStyle', { padding: 24, gap: 16, paddingBottom: 48 });
+    expect(screen.getByTestId('screen-meals-history')).toHaveProp('contentContainerStyle', { paddingHorizontal: 20, paddingTop: 24, gap: 14, paddingBottom: 48 });
   });
 
   it('shows an error and retries until the grid appears', async () => {
@@ -397,5 +397,39 @@ describe('#105 R13: tapping a served day reveals its inline detail', () => {
     await fireEvent.press(screen.getByTestId('meals-history-prev'));
     await waitFor(() => expect(screen.getByTestId('meals-history-title')).toHaveTextContent('diciembre de 2025'));
     expect(screen.queryByTestId('meals-history-detail')).toBeNull();
+  });
+});
+
+
+describe('#179 R9: marco y título en contenido', () => {
+  function expectHeading() {
+    const heading = screen.getByTestId('meals-history-heading');
+    expect(heading).toHaveTextContent('Historial de comidas');
+    expect(heading).toHaveProp('accessibilityRole', 'header');
+    expect(heading).toHaveProp('className', 'text-2xl font-black tracking-title text-foreground');
+  }
+
+  it('conserva el marco y el título mientras carga el mes', async () => {
+    mockGetMealsHistory.mockReturnValue(new Promise<MealsHistoryState>(() => undefined));
+    await renderHistory();
+    await screen.findByTestId('meals-history-skeleton');
+    expectHeading();
+    expect(screen.getByTestId('screen-meals-history')).toHaveProp('contentContainerStyle', {
+      paddingHorizontal: 20, paddingTop: 24, gap: 14, paddingBottom: 48,
+    });
+  });
+
+  it('conserva el título en el estado de error', async () => {
+    mockGetMealsHistory.mockResolvedValue({ kind: 'error' });
+    await renderHistory();
+    await screen.findByTestId('meals-history-error');
+    expectHeading();
+  });
+
+  it('muestra un único título cuando el calendario está cargado', async () => {
+    await renderHistory();
+    await screen.findByTestId('meals-history-grid');
+    expectHeading();
+    expect(screen.getAllByText('Historial de comidas')).toHaveLength(1);
   });
 });

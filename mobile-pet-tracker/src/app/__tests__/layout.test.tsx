@@ -574,7 +574,7 @@ describe('#105 R8: meals history is the last protected detail', () => {
       : undefined).toEqual([Stack.Screen, 'meals-history']);
     expect(isValidElement<{ options?: unknown }>(detail)
       ? detail.props.options
-      : undefined).toMatchObject({ headerShown: true, title: 't:mealsHistory.mealsHistory' });
+      : undefined).toMatchObject({ headerShown: true, title: '' });
   });
 });
 
