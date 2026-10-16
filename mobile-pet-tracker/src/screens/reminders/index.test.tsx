@@ -25,6 +25,29 @@ import { SelectedPetProvider } from '../../providers/selected-pet-provider';
 import { RemindersScreen } from '.';
 import { renderWithProviders } from '../../../test/render-with-providers';
 
+const mockHomeEntrance = jest.fn<void, [import('react-native').ViewProps & { index: number }]>();
+
+jest.mock('../home/home-entrance', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return {
+    HomeEntrance(props: import('react-native').ViewProps & { index: number }) {
+      mockHomeEntrance(props);
+      return React.createElement(View, props);
+    },
+  };
+});
+
+jest.mock('../../components/pop-in', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return {
+    PopIn(props: import('react-native').ViewProps) {
+      return React.createElement(View, props);
+    },
+  };
+});
+
 jest.mock('reicon-react-native', () => {
   const actual = jest.requireActual<typeof import('reicon-react-native')>('reicon-react-native');
   const React = jest.requireActual<typeof import('react')>('react');
@@ -1253,6 +1276,61 @@ describe('#128 R4: el botón destructivo del sheet y su etiqueta llevan su recet
     expect(within(confirm).getByText('Eliminar').props.className).toBe(
       'button__label button__label--variant-danger button__label--size-md font-bold text-danger-foreground',
     );
+  });
+});
+
+describe('#178 R7: entrada escalonada y badge', () => {
+  beforeAll(() => { hostProcess.env.TZ = 'America/Mexico_City'; });
+  afterAll(() => {
+    if (originalTimezone === undefined) delete hostProcess.env.TZ;
+    else hostProcess.env.TZ = originalTimezone;
+  });
+  beforeEach(() => {
+    jest.clearAllMocks();
+    jest.useFakeTimers({ now: new Date('2026-12-30T15:00:00.000Z') });
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: canvasReminders });
+  });
+  afterEach(() => {
+    jest.clearAllTimers();
+    jest.useRealTimers();
+  });
+
+  it('asigna a cada entrada su índice en el orden del fixture', async () => {
+    await renderReminders();
+    await screen.findByTestId('reminder-row-a');
+    for (const [index, id] of ['a', 'b', 'c'].entries()) {
+      expect(mockHomeEntrance).toHaveBeenCalledWith(
+        expect.objectContaining({ testID: `reminders-entry-${id}`, index }),
+      );
+    }
+  });
+
+  it('envuelve cada fila en su propia entrada', async () => {
+    await renderReminders();
+    await screen.findByTestId('reminder-row-a');
+    for (const id of ['a', 'b', 'c']) {
+      expect(within(screen.getByTestId(`reminders-entry-${id}`)).getByTestId(`reminder-row-${id}`)).toBeVisible();
+    }
+  });
+
+  it('envuelve el badge próximo con PopIn y la receta del canvas', async () => {
+    await renderReminders();
+    await screen.findByTestId('reminder-row-a');
+    const badge = within(screen.getByTestId('reminder-upcoming-pop-a')).getByTestId('reminder-upcoming-a');
+    expect(badge).toHaveTextContent('¡Próximo!');
+    expect(badge.props.className).toBe('rounded-full bg-warning-soft px-2 py-0.75 text-11 font-extrabold text-warning-strong');
+  });
+
+  it('reserva el pop para la fila próxima y lo omite en la lejana', async () => {
+    await renderReminders();
+    await screen.findByTestId('reminder-row-a');
+    expect(screen.getByTestId('reminder-upcoming-pop-a')).toBeVisible();
+    expect(screen.queryByTestId('reminder-upcoming-pop-b')).toBeNull();
   });
 });
 
