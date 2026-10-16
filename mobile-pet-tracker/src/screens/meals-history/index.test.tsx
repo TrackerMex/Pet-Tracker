@@ -530,3 +530,79 @@ describe('#179 R11: celdas del artboard', () => {
     expect(marker).toHaveProp('className', meals ? 'size-1.25 rounded-full bg-accent' : 'size-1.25');
   });
 });
+
+describe('#179 R12: panel del día', () => {
+  function expectPanel(count: number, title: string) {
+    const detail = screen.getByTestId('meals-history-detail');
+    expect(detail).toHaveProp('className', 'gap-2.5 rounded-24 bg-surface-secondary p-4');
+    expect(detail).toHaveStyle({ borderCurve: 'continuous' });
+    expect(detail.children).toHaveLength(2);
+    const header = detail.children[0];
+    if (typeof header === 'string') throw new Error('Expected panel header');
+    expect(header).toHaveProp('className', 'flex-row items-center justify-between gap-2');
+    expect(header.children).toHaveLength(count === 0 ? 1 : 2);
+    const heading = within(header).getByTestId('meals-history-detail-title');
+    expect(heading).toHaveTextContent(title);
+    expect(heading).toHaveProp('className', 'flex-1 text-base font-extrabold text-foreground');
+    expect(header.children[0]).toBe(heading);
+    if (count > 0) {
+      const badge = within(header).getByTestId('meals-history-detail-count');
+      expect(header.children[1]).toBe(badge);
+      expect(badge).toHaveProp('className', 'rounded-full bg-accent px-2.5 py-1 text-xs font-extrabold text-accent-foreground');
+      expect(badge).toHaveTextContent(`${count} comidas servidas`);
+    } else {
+      expect(within(header).queryByTestId('meals-history-detail-count')).toBeNull();
+    }
+    expect(mockHomeEntrance).toHaveBeenCalledWith(expect.objectContaining({ testID: 'meals-history-detail-entry', index: 1 }));
+    return detail;
+  }
+
+  function expectTimes(detail: ReturnType<typeof screen.getByTestId>, values: readonly string[]) {
+    const times = within(detail).getByTestId('meals-history-detail-times');
+    expect(detail.children[1]).toBe(times);
+    expect(times).toHaveProp('className', 'flex-row flex-wrap gap-2');
+    expect(times.children).toHaveLength(values.length);
+    times.children.forEach((box, index) => {
+      if (typeof box === 'string') throw new Error('Expected time box');
+      expect(box).toHaveProp('className', 'min-w-20 flex-1 items-center rounded-14 bg-surface p-2.5');
+      expect(box).toHaveStyle({ borderCurve: 'continuous' });
+      expect(box.children).toHaveLength(1);
+      const time = within(box).getByTestId('meals-history-detail-time');
+      expect(time).toHaveTextContent(values[index]);
+      expect(time).toHaveProp('className', 'text-15 font-extrabold text-foreground');
+    });
+  }
+
+  it('separa el panel del calendario y muestra dos horas con badge', async () => {
+    await renderHistory();
+    await screen.findByTestId('meals-history-grid');
+    await fireEvent.press(screen.getByTestId('meals-history-day-2026-01-05'));
+    await screen.findByTestId('meals-history-detail');
+    const calendar = screen.getByTestId('meals-history-calendar');
+    expect(within(calendar).queryByTestId('meals-history-detail')).toBeNull();
+    const detail = expectPanel(2, 'lunes, 5 de enero');
+    expectTimes(detail, ['08:00', '18:30']);
+  });
+
+  it('muestra cabecera sin badge y el mensaje de un día sin comidas', async () => {
+    await renderHistory();
+    await screen.findByTestId('meals-history-grid');
+    await fireEvent.press(screen.getByTestId('meals-history-day-2026-01-06'));
+    await screen.findByTestId('meals-history-detail');
+    const detail = expectPanel(0, 'martes, 6 de enero');
+    expect(detail.children[1]).toHaveProp('testID', 'meals-history-detail-empty');
+    expect(within(detail).getByTestId('meals-history-detail-empty')).toHaveTextContent('Ese día no se sirvió ninguna comida');
+    expect(within(detail).queryByTestId('meals-history-detail-times')).toBeNull();
+  });
+
+  it('conserva cinco cajas de hora en el contenedor que permite envolver', async () => {
+    const sample = history();
+    sample.days[4].mealTimes = ['06:00', '09:00', '12:00', '15:00', '18:00'];
+    mockGetMealsHistory.mockResolvedValue({ kind: 'ok', history: sample });
+    await renderHistory();
+    await screen.findByTestId('meals-history-grid');
+    await fireEvent.press(screen.getByTestId('meals-history-day-2026-01-05'));
+    await screen.findByTestId('meals-history-detail');
+    expectTimes(expectPanel(5, 'lunes, 5 de enero'), ['06:00', '09:00', '12:00', '15:00', '18:00']);
+  });
+});
