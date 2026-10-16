@@ -1204,7 +1204,8 @@ describe('#179 R6: filas del artboard', () => {
       if (owner) {
         expect(row.children[2]).toHaveProp('testID', `meal-time-edit-${index}`);
         const edit = within(row).getByTestId(`meal-time-edit-${index}`);
-        expect(edit).toHaveProp('className', 'h-9.75 rounded-10 border-2 border-b-5 border-lip-gray bg-surface px-3.5');
+        expect((edit.props.className as string).startsWith('pressable-feedback__root button__root ')).toBe(true);
+        expect((edit.props.className as string).endsWith(' h-9.75 rounded-10 border-2 border-b-5 border-lip-gray bg-surface px-3.5')).toBe(true);
         expect(edit).toHaveProp('hitSlop', { top: 6, bottom: 6, left: 6, right: 6 });
         expect(within(edit).getByText('Editar')).toHaveProp('className', 'text-13 font-extrabold text-foreground');
       } else {
