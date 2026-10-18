@@ -791,4 +791,4 @@ Sustituye al arranque de H0 del handoff donde difieran:
 
 ### Aprobación de la enmienda
 
-- [ ] Enmienda #180 E2 aprobada por humano (fecha: ____) ← gate de la enmienda E2 (firma en Notion)
+- [x] Enmienda #180 E2 aprobada por humano (fecha: 2026-10-18) ← gate de la enmienda E2 (firma en Notion, 2026-10-18T06:22:27Z)
