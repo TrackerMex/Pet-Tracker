@@ -102,7 +102,9 @@ tags: [harness, spec]
 ## R8 — Candados agregados y de catálogo
 
 - [ ] (1) Las filas, los recuentos y la lista de R8.1/R8.2 viajan en los commits rojos de R4
-  y R5 (arriba); R8.3 se verifica corriendo `design-drift` y `legibility-classnames`
+  y R5 (arriba). R8.1 a R8.3 se cierran por la vía (b) de C4 declarada en `requirements.md`
+  §R8 (enmienda de 2026-10-18): tres pares de commits, uno por mutación (R8-M1, R8-M2 y
+  R8-M3), cada rojo con su `it` de R8 en rojo y cada verde con la mutación revertida
 - [ ] (2) Sin implementación propia: la dan R4 y R5
 - [ ] (3) `checkUses(ALL_USES)` y la longitud de `SCREEN_FILES` se confirman sin cambios
 

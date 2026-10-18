@@ -36,7 +36,6 @@ Solo el smoke requiere ejecución humana; no se modifica el estado de la feature
 | R9 (A20 y firma tolerante) | `src/__tests__/no-pets-states.test.ts` :: `declara una sola enmienda A20 de #181`, `declara la casilla de aprobación y admite la firma humana`; `docs/ui-guidelines.md` sin cambios | c11 `9fe88151`; c12 `78313d6a` |
 | R10 (mutaciones; X5 equivalente) | Tabla de mediciones de la ronda 2 debajo; X9/X10 en ambas pantallas; S3 verde con X1 | Árbol de referencia `8da45c961ebfaf211e95213f7cf88a107813dc81`; informe de la ronda 2 |
 | B1 (picker de Perfil) | No reproducido: Perfil aislado, combinación de 3 ficheros y 3 corridas completas verdes; instrumentación añadida y revertida | sin arreglo: diagnóstico en el informe |
-| Smoke dev build de Android (humano) | pendiente del humano, conforme al handoff | pendiente del humano |
 
 ## Registro de commits
 

@@ -334,6 +334,7 @@ por `ReferenceError`) y son las que cierran R2 a R5.
   R3.2 y R4.2 usa clases de la escala (`p-6`, `flex-1`, `items-center`, `justify-center`,
   `bg-background`) sin estilo en línea. Candado: `design-drift.test.ts` y
   `legibility-classnames` siguen verdes.
+- **Vía de verificación (C4 punto 3, enmienda de 2026-10-18)**. R8 no añade código de producción: sus candados sobre R4 y R5 se cierran por la vía (b) de C4. Cada mutación se planta a mano sobre `mobile-pet-tracker/src/screens/profile/index.tsx` con el árbol en verde, se versiona en su commit rojo con el `it` de R8 que se pone rojo, y se revierte en su commit verde (C4 punto 5). Los `it` de R8 viven en `src/__tests__/no-pets-states.test.ts`, bajo `describe('#181 R8: …')`. Mutaciones, localizadas por contenido: **R8-M1**, el cuerpo del `EmptyState` `profile-pets-empty` pasa de `common.noPetsBody` a `common.noPetsYet` (cierra R8.1); **R8-M2**, el `EmptyState` `profile-pets-empty` se sustituye por `null` (cierra R8.1 y R8.2); **R8-M3**, se añade el comentario `// #181 E4` (cierra R8.3 y `design-drift`, R9). Una mutación que no pone rojo ningún `it` de R8 es un rechazo.
 
 ### R9 — Enmienda de la carta (excepción nombrada)
 
@@ -487,7 +488,12 @@ de prueba de R3.1, la línea «Qué cambia» de R9.1 (el literal de R9.2 aparece
 (X5 equivalente; X4 a X8 con su sonda). §0.3 D6, §4 y §5 recogen las respuestas del humano del
 mismo día. El resto de requisitos no cambia.
 
+## Enmienda R8 (vía de verificación), 2026-10-18
+
+R8 no declaraba su vía de verificación (C4 punto 3). La declara el bullet «Vía de verificación» de R8. `tasks.md` cambia el texto de R8 (1) para que diga esa misma vía, en vez de verificar R8.3 solo con `design-drift` y `legibility-classnames`. Ningún texto de R8.1 a R8.3 cambia. El resto de requisitos no cambia.
+
 ## Aprobación
 
 - [x] Aprobado por humano (fecha: 2026-10-18) ← gate obligatorio antes de implementar
 - [x] Enmienda de 2026-10-18 aprobada por humano en Notion (fecha: 2026-10-18)
+- [ ] Enmienda R8 (vía de verificación, 2026-10-18) aprobada por humano en Notion (fecha: ____)
