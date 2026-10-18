@@ -83,6 +83,22 @@ async function renderRoute() {
 }
 
 describe('#117 R3: la ruta forgot delega en ForgotScreen', () => {
+  it('#187 R3: el botón forgot-submit pinta su etiqueta a 17 px', async () => {
+      mockForgotPassword.mockResolvedValue({ kind: 'ok' });
+      await renderRoute();
+      expect(within(screen.getByTestId('forgot-submit')).getByText('Enviar enlace de recuperación').props.className)
+        .toBe('text-17 font-extrabold text-accent-foreground');
+  });
+
+  it('#187 R3: el botón forgot-resend pinta su etiqueta a 17 px', async () => {
+      mockForgotPassword.mockResolvedValue({ kind: 'ok' });
+      await renderRoute();
+      await submitForgot();
+      await screen.findByTestId('forgot-resend');
+      expect(within(screen.getByTestId('forgot-resend')).getByText('Reenviar').props.className)
+        .toBe('text-17 font-extrabold text-foreground');
+  });
+
   it.each(['Correo electrónico'])(
     '#187 R2: la etiqueta "%s" de forgot pinta 13 px', async (label) => {
       await renderRoute();

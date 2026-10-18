@@ -97,6 +97,12 @@ describe('R7: login llama a la api y navega', () => {
     } satisfies AuthContextValue);
   });
 
+  it('#187 R3: el botón login-submit pinta su etiqueta a 17 px', async () => {
+      await renderLogin();
+      expect(within(screen.getByTestId('login-submit')).getByText('Iniciar sesión').props.className)
+        .toBe('text-17 font-extrabold text-accent-foreground');
+  });
+
   it.each(['Correo electrónico', 'Contraseña'])(
     '#187 R2: la etiqueta "%s" de login pinta 13 px', async (label) => {
       await renderLogin();

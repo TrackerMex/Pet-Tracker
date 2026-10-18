@@ -20,8 +20,8 @@ const textRecipes = [
   'className="text-15 font-medium text-foreground"',
   'className="text-center text-15 font-normal text-muted"',
   'className="flex-1 text-15 font-bold text-accent-strong"',
-  '<Button.Label className="text-17 font-extrabold text-accent-foreground">',
-  '<Button.Label className="text-17 font-extrabold text-foreground">',
+  '<Text className="text-17 font-extrabold text-accent-foreground">', // #187 R3
+  '<Text className="text-17 font-extrabold text-foreground">', // #187 R3
   'font-bold text-accent-foreground',
   'text-2xl',
   'text-xs',

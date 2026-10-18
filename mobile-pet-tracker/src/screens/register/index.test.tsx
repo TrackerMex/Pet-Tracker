@@ -146,6 +146,12 @@ describe('R8: register llama a la api y navega', () => {
     jest.restoreAllMocks();
   });
 
+  it('#187 R3: el botón register-submit pinta su etiqueta a 17 px', async () => {
+      await renderRegister();
+      expect(within(screen.getByTestId('register-submit')).getByText('Crear cuenta').props.className)
+        .toBe('text-17 font-extrabold text-accent-foreground');
+  });
+
   it.each(['Nombres', 'Apellidos', 'Correo electrónico', 'Teléfono', 'País', 'Contraseña', 'Confirmar contraseña'])(
     '#187 R2: la etiqueta "%s" del registro pinta 13 px', async (label) => {
       await renderRegister();
