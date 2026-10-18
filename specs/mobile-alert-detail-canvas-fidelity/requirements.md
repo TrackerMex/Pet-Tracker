@@ -493,7 +493,7 @@ Features aparte:
 
 ## §6. Prueba de humo (humano)
 
-- [ ] Smoke #180 en dev build de Android (fecha: ____)
+- [X] Smoke #180 en dev build de Android (fecha: 2026-10-18)
 
 ## Aprobación
 
