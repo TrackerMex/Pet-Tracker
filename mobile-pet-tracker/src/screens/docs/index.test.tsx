@@ -9,6 +9,7 @@ import { HeroUINativeProvider } from 'heroui-native';
 import { DeviceEventEmitter, Platform } from 'react-native';
 
 import { getDocumentAsync } from 'expo-document-picker';
+import { router } from 'expo-router';
 import { HeaderHeightContext } from 'expo-router/react-navigation';
 import { openBrowserAsync } from 'expo-web-browser';
 
@@ -68,6 +69,7 @@ jest.mock('../../api/media', () => ({
   uploadPhotoToUrl: jest.fn(),
   confirmPetDocumentUpload: jest.fn(),
 }));
+jest.mock('expo-router', () => ({ router: { push: jest.fn(), back: jest.fn(), dismissTo: jest.fn() } }));
 jest.mock('expo-document-picker', () => ({ getDocumentAsync: jest.fn() }));
 jest.mock('expo-web-browser', () => ({ openBrowserAsync: jest.fn() }));
 jest.mock('../../api/pets', () => ({ getPet: jest.fn() }));
@@ -1362,5 +1364,38 @@ describe('#185 R1: el formulario no es hijo de la lista', () => {
     await waitFor(() => expect(mockGetDocumentAsync).toHaveBeenCalledTimes(1));
     expect(within(screen.getByTestId('screen-docs')).queryByTestId('docs-upload-form')).toBeNull();
     expect(within(screen.getByTestId('docs-keyboard-avoider')).queryByTestId('docs-upload-form')).toBeNull();
+  });
+});
+
+
+describe('#185 R2.1: elegir archivo navega a la pantalla del formulario', () => {
+  it.each([
+    ['vacuna.pdf', 'application/pdf'],
+    ['vacuna.jpg', 'image/jpeg'],
+    ['vacuna.png', 'image/png'],
+  ])('navega una vez con los params de %s', async (name, contentType) => {
+    mockGetDocumentAsync.mockResolvedValueOnce({
+      canceled: false,
+      assets: [{ uri: `file:///cache/${name}`, name, mimeType: contentType, size: 1000, lastModified: 0 }],
+    });
+    await renderDocs();
+    await fireEvent.press(await screen.findByTestId('docs-upload'));
+    expect(router.push).toHaveBeenCalledTimes(1);
+    expect(router.push).toHaveBeenCalledWith({
+      pathname: '/pets/[petId]/docs-upload',
+      params: { petId: 'pet-1', uri: `file:///cache/${name}`, name, mimeType: contentType, size: '1000', contentType },
+    });
+    expect(screen.getByTestId('docs-upload')).toBeVisible();
+  });
+
+  it.each([
+    [{ ...documentAsset, mimeType: 'text/plain', name: 'a.txt' }, 'Choose a PDF, JPEG, or PNG file'],
+    [{ ...documentAsset, size: 10485761 }, 'The file is larger than 10 MB'],
+  ] as const)('no navega al rechazar el archivo: %s', async (asset, error) => {
+    mockGetDocumentAsync.mockResolvedValueOnce({ canceled: false, assets: [asset] });
+    await renderDocs('en');
+    await fireEvent.press(await screen.findByTestId('docs-upload'));
+    expect(screen.getByTestId('docs-action-error')).toHaveTextContent(error);
+    expect(router.push).not.toHaveBeenCalled();
   });
 });
