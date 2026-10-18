@@ -34,6 +34,12 @@ jest.mock('heroui-native', () => {
   ) };
 });
 
+jest.mock('../home/home-entrance', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return { HomeEntrance: (props: Record<string, unknown>) => React.createElement(View, props) };
+});
+
 jest.mock('expo-router', () => ({
   router: { dismissTo: jest.fn(), push: jest.fn() },
 }));
@@ -551,14 +557,14 @@ describe('#170 R8: pinta el mini-mapa con la posición de la alerta', () => {
     await renderDetail();
     expect((await screen.findByTestId('pet-map-double')).props.colorScheme).toBe('dark');
   });
-  it('pinta el mapa tras la tarjeta y antes del ack', async () => {
+  it('pinta el mapa tras la tarjeta y antes del ack (enmendado por #180 R9)', async () => {
     mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ payload: REAL_PAYLOAD })], nextCursor: null });
     await renderDetail();
-    const card = await screen.findByTestId('alert-detail-card');
+    await screen.findByTestId('alert-detail-card');
     screen.getByTestId('alert-detail-map');
-    const children = card.parent!.children.filter((child): child is TestInstance => typeof child !== 'string');
-    const cardIndex = children.findIndex((child) => child.props.testID === 'alert-detail-card');
-    const mapIndex = children.findIndex((child) => child.props.testID === 'alert-detail-map');
+    const children = detailChildren();
+    const cardIndex = children.findIndex((child) => child.props.testID === 'alert-detail-card' || within(child).queryByTestId('alert-detail-card') !== null);
+    const mapIndex = children.findIndex((child) => child.props.testID === 'alert-detail-map' || within(child).queryByTestId('alert-detail-map') !== null);
     const ackIndex = children.findIndex((child) => child.props.testID === 'alert-detail-ack' || within(child).queryByTestId('alert-detail-ack') !== null);
     expect(cardIndex).toBeLessThan(mapIndex);
     expect(mapIndex).toBeLessThan(ackIndex);
@@ -973,4 +979,20 @@ describe('#180 R2: marco y orden', () => {
     if (error) { await fireEvent.press(screen.getByTestId('alert-detail-ack')); await screen.findByTestId('alert-detail-action-error'); }
     expect(detailIds()).toEqual(['alert-detail-title', 'alert-detail-card', ...(zone ? ['alert-detail-map'] : []), 'alert-detail-view-map', 'alert-detail-spacer', ...(error ? ['alert-detail-action-error'] : []), 'alert-detail-ack']);
   });
+});
+
+it('#180 R9.1: el héroe y el mapa entran con HomeEntrance 0 y 1', async () => {
+  mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ geofenceId: 'zone-1', payload: REAL_PAYLOAD })], nextCursor: null });
+  mockListGeofences.mockResolvedValue({ kind: 'ok', geofences: [ZONE] });
+  await renderDetail(); await screen.findByTestId('alert-detail-distance');
+  const heroEntrance = screen.getByTestId('alert-detail-card-entrance');
+  const mapEntrance = screen.getByTestId('alert-detail-map-entrance');
+  expect(heroEntrance.props.index).toBe(0); expect(mapEntrance.props.index).toBe(1);
+  expect(heroEntrance.children).toHaveLength(1); expect(mapEntrance.children).toHaveLength(1);
+  expect(elementChild(heroEntrance, 0) === screen.getByTestId('alert-detail-card')).toBe(true);
+  expect(elementChild(mapEntrance, 0) === screen.getByTestId('alert-detail-map')).toBe(true);
+  expect(detailChildren()[0] === screen.getByTestId('alert-detail-title')).toBe(true);
+  expect(within(heroEntrance).queryByTestId('alert-detail-title')).toBeNull();
+  expect(within(mapEntrance).queryByTestId('alert-detail-title')).toBeNull();
+  expect(detailIds().slice(-2)).toEqual(['alert-detail-spacer', 'alert-detail-ack']);
 });
