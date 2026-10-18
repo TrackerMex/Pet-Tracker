@@ -3376,7 +3376,7 @@
   {
     "id": 185,
     "name": "mobile-docs-upload-form-polish",
-    "status": "in_progress",
+    "status": "done",
     "priority": "P2",
     "description": "Registrada el 2026-10-15 a petición del humano, al firmar la prueba de humo R11 de #175. Texto literal: «en otra feature son pequeños cambios cuando subo un documento selecciono el documneto pero el formulario se queda en la screen de los documentos tambien mejorar los espacios de los inputs el boton de subir documento y cancelar estan pegados». Son tres cambios en el flujo de subida de src/screens/docs/index.tsx. (1) Tras elegir el archivo, el formulario de subida sigue dentro de la pantalla de la lista de documentos y el humano no lo quiere así. Dónde debe vivir en su lugar (pantalla propia, hoja inferior u otra) es una decisión abierta para el gate: la spec la plantea como pregunta con sus consecuencias en Preguntas abiertas y no la infiere. Antes de especificar se mide en el árbol qué hace hoy el flujo (R11 de #175 anota «el formulario aparece bajo la lista»). (2) Mejorar el espaciado entre los inputs del formulario. (3) Los botones «Subir documento» y «Cancelar» están pegados: separarlos. Los errores de validación del formulario no entran aquí: van en #186, que los resuelve con componentes globales. Depende de #175 mergeada (misma pantalla, mismos candados de docs-canvas-fidelity y de la carta): la spec se escribe y se mide con #175 ya en main. Rutas relativas a mobile-pet-tracker/. Todo copy nuevo va a la spec de idioma (specs/mobile-ui-language/design.md, siguiente sección libre) con la voz B de Pingo (docs/ui-guidelines.md §7). Smoke humano en dev build de Android."
   },

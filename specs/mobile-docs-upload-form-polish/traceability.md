@@ -20,7 +20,7 @@ tags: [mobile, ui, spec]
 | R8 | Clases de botón, etiqueta e input intactas | Test-F › `#185 R8: clases de botón, etiqueta e input intactas` (6 filas) | `6efe40f8` (S6 versionada) | `28a4aba4` | Verificado; S6 roja en submit |
 | R9 | Flujo de subida conservado | Test-F › `#185 R9 (antes #158 R5/R6/R7/R8/R9/R11)` (18 it conservados) | `8f101b52` | `c001587b`; refactor `207da00b` | Verificado; 47 it en lista y 26 en Test-F |
 | R10 | Deltas de candados de A | `ui-language.test.ts` › «no deja ningún valor fijo...» / «resuelve cada ocurrencia...» (Δ1/Δ2); `consistency-classnames.test.ts` (Δ3); `detail-stack*.test.tsx` / `layout.test.tsx` (Δ4); `design-drift.test.ts` › `#185 R10: el formulario pertenece a la lista A11` y signOut (Δ5); órdenes de hijos en lista/Test-F (Δ6) | `33250fb7`, `a3fbbf21`, `017dfd6d`; conteo compartido `c55bc36e` | `c001587b`, `8442e279` | Verificado, cuentas globales intactas |
-| R11 | Prueba de humo humana (dev build de Android) | §Prueba de humo R11 | n/a | n/a | Requiere ejecución humana; sin marcar como superada |
+| R11 | Prueba de humo humana (dev build de Android) | §Prueba de humo R11 | n/a | n/a | Superada por el humano (2026-10-18), dev build de Android |
 
 Verificación automática final: **16 suites / 491 tests**, `bunx tsc --noEmit` y `bunx expo lint --no-cache` con exit 0 y logs vacíos. `.expo/types/router.d.ts` ausente antes de cada tsc. Sondas S1–S7 (S2 en dos variantes): ocho mutaciones detectadas y restauradas; S8 no aplica a A. Evidencia H0, comandos, recuentos y commits auxiliares en `progress/impl_mobile-docs-upload-form-polish.md`.
 
