@@ -154,64 +154,80 @@ beforeEach(() => {
   } satisfies AuthContextValue);
 });
 
-describe('#100 R3: el detalle pinta la alerta de la caché de la lista', () => {
-  it.each([
-    ['geofence_exit', 'LocationSlash', 'bg-danger-soft', '--color-danger', 'Salió de la zona'],
-    ['battery_low', 'BatteryLow', 'bg-warning-soft', '--color-warning-strong', 'Batería baja'],
-    ['future_alert_type', 'Bell', 'bg-default', '--color-muted', 'Aviso'],
-  ] as const)(
-    'pinta icono, disco, tinta y etiqueta de $type',
-    async (type, iconName, surface, color, label) => {
-      mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ type })], nextCursor: null });
-      await renderDetail();
 
-      const card = await screen.findByTestId('alert-detail-card');
-      const cardScope = within(card);
-      expect(card.children).toHaveLength(4);
-      expect(elementChild(card, 0).props.testID).toBe('alert-detail-header');
-      expect(elementChild(card, 1).props.testID).toBe('alert-detail-pet');
-      expect(elementChild(card, 2).props.testID).toBe('alert-detail-opened-at');
-      expect(elementChild(card, 3).props.testID).toBe('alert-detail-status');
-      const header = cardScope.getByTestId('alert-detail-header');
-      expect(header.props.className).toBe('flex-row items-center gap-3');
-      const icon = cardScope.getByTestId('alert-detail-icon');
-      expect(icon.props.iconName).toBe(iconName);
-      expect(icon.props.size).toBe(20);
-      expect(icon.props.color).toBe(color);
-      expect(icon.parent?.props.className).toBe(`size-11 items-center justify-center rounded-full ${surface}`);
-      expect(cardScope.getByTestId('alert-detail-type')).toHaveTextContent(label);
-      expect(cardScope.getByTestId('alert-detail-type').props.className).toBe('text-lg font-bold text-foreground');
-      expect(cardScope.getByTestId('alert-detail-pet')).toHaveTextContent('Luna');
-      expect(cardScope.getByTestId('alert-detail-pet').props.selectable).toBe(true);
-      expect(cardScope.getByTestId('alert-detail-pet').props.className).toBe('text-sm font-semibold text-muted');
-    },
-  );
+const HERO_CASES = [
+  ['geofence_exit', 'LocationSlash', 'bg-danger', '--color-danger-foreground', 'bg-category-rose', 'text-category-rose-strong', 'Salió de la zona'],
+  ['battery_low', 'BatteryLow', 'bg-warning-strong', '--color-background', 'bg-category-amber', 'text-category-amber-strong', 'Batería baja'],
+  ['future_alert_type', 'Bell', 'bg-muted', '--color-background', 'bg-default', 'text-muted', 'Aviso'],
+] as const;
+const heroClass = (disc: string) => `rounded-hero p-4.5 ${disc} items-center gap-2 px-4.5 py-5.5`;
+
+describe('#100 R3: el detalle pinta la alerta de la caché (enmendado por #180 R3, E2)', () => {
+  it.each(HERO_CASES)('#180 R3.1/R3.2/R3.3: héroe %s centrado, disco y textos en orden (enmendado por E2)', async (type, iconName, solid, color, disc, ink, label) => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ type })], nextCursor: null });
+    await renderDetail();
+    const card = await screen.findByTestId('alert-detail-card');
+    const scope = within(card);
+    expect(card.props.className).toBe(heroClass(disc));
+    expect(card.props.className).not.toMatch(/bg-surface-secondary|border-2|min-h-44/);
+    expect(card.children).toHaveLength(5);
+    expect(card.children.map(child => typeof child === 'string' ? child : child.props.testID)).toEqual([
+      'alert-detail-disc', 'alert-detail-status', 'alert-detail-type', 'alert-detail-pet', 'alert-detail-opened-at',
+    ]);
+    expect(scope.queryByTestId('alert-detail-header')).toBeNull();
+    const icon = scope.getByTestId('alert-detail-icon');
+    expect(icon.props).toMatchObject({ iconName, size: 34, color });
+    expect(elementChild(card, 0).props.className).toBe(`size-18 items-center justify-center rounded-full ${solid}`);
+    expect(icon.parent?.props.className).toBe(`size-18 items-center justify-center rounded-full ${solid}`);
+    expect(scope.getByTestId('alert-detail-type')).toHaveTextContent(label);
+    expect(scope.getByTestId('alert-detail-type').props.className).toBe('text-22 font-black text-foreground text-center');
+    expect(scope.getByTestId('alert-detail-pet')).toHaveTextContent('Luna');
+    expect(scope.getByTestId('alert-detail-pet').props).toMatchObject({ selectable: true, className: `text-15 font-bold ${ink}` });
+    expect(scope.getByTestId('alert-detail-opened-at').props.className).toBe(`text-13 font-normal ${ink}`);
+  });
 
   it.each([
-    ['open', 'Sin leer'],
-    ['acked', 'Leída'],
-    ['closed', 'Resuelta'],
-  ] as const)('pinta la píldora de $status', async (status, label) => {
+    ['open', 'Sin leer', 'rounded-full px-2.5 py-0.75 text-xs font-extrabold bg-danger text-danger-foreground'],
+    ['acked', 'Leída', 'rounded-full bg-default px-2.5 py-1 text-xs font-bold text-muted'],
+    ['closed', 'Resuelta', 'rounded-full bg-category-green px-2.5 py-1 text-xs font-extrabold text-category-green-strong'],
+  ] as const)('#180 R3.4: píldora %s (enmendado por E2)', async (status, label, className) => {
     mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ status })], nextCursor: null });
     await renderDetail();
     const pill = await screen.findByTestId('alert-detail-status');
     expect(pill).toHaveTextContent(label);
-    expect(pill.props.className).toBe('self-start rounded-full bg-default px-2 py-0.5 text-2xs font-bold text-muted');
+    expect(pill.props.className).toBe(className);
+    if (status === 'open') expect(pill.props.className.split(' ')).not.toContain('bg-default');
+  });
+
+  it('#180 R3.4: píldora de batería abierta ámbar', async () => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ type: 'battery_low' })], nextCursor: null });
+    await renderDetail();
+    expect((await screen.findByTestId('alert-detail-status')).props.className).toBe('rounded-full px-2.5 py-0.75 text-xs font-extrabold bg-warning-strong text-background');
   });
 
   it.each([
-    ['es', '2026-12-31T12:00:00.000Z', /^Detectada el 31\/12\/2026,/],
-    ['en', '2027-01-02T12:00:00.000Z', /^Detected 1\/2\/2027,/],
-  ] as const)('formatea la apertura en $language con el locale del idioma', async (language, openedAt, expected) => {
+    ['es', '2026-12-31T12:00:00.000Z', /^Detectada el 31 dic 2026, \d{2}:\d{2}/],
+    ['en', '2027-01-02T12:00:00.000Z', /^Detected Jan 2, 2027, /],
+  ] as const)('#180 R3.6: apertura en %s con mes corto (enmendado por E2)', async (language, openedAt, expected) => {
     mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ openedAt })], nextCursor: null });
     await renderDetail('alert-1', language);
     const opened = await screen.findByTestId('alert-detail-opened-at');
     expect(opened).toHaveTextContent(expected);
     expect(opened.props.selectable).toBe(true);
-    expect(opened.props.className).toBe('text-sm font-normal text-muted');
+    expect(opened.props.className).toBe('text-13 font-normal text-category-rose-strong');
   });
 
-  it('respeta las métricas A11 bajo cabecera nativa', async () => {
+  it('#180 R3.6: pasa las cinco opciones de fecha al locale', async () => {
+    const spy = jest.spyOn(Date.prototype, 'toLocaleString');
+    try {
+      mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert()], nextCursor: null });
+      await renderDetail();
+      await screen.findByTestId('alert-detail-opened-at');
+      expect(spy).toHaveBeenCalledWith('es-MX', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    } finally { spy.mockRestore(); }
+  });
+
+  it('respeta las métricas A11 bajo cabecera nativa (enmendado por #180 R3, E2)', async () => {
     mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert()], nextCursor: null });
     await renderDetail();
     const card = await screen.findByTestId('alert-detail-card');
@@ -219,7 +235,18 @@ describe('#100 R3: el detalle pinta la alerta de la caché de la lista', () => {
     expect(root.props.className).toBe('flex-1 bg-background');
     expect(root.props.contentInsetAdjustmentBehavior).toBe('automatic');
     expect(root.props.contentContainerStyle).toEqual({ padding: 24, gap: 16, paddingBottom: 48 });
-    expect(card.props.className).toBe('rounded-card bg-surface p-4 shadow-sm min-h-44 gap-3 border-2 border-danger');
+    expect(card.props.className).toBe(heroClass('bg-category-rose'));
+  });
+
+  it('#180 R3.5: tras el ack la píldora pasa a «Leída» y el ping desaparece', async () => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert()], nextCursor: null });
+    mockAckAlert.mockResolvedValue({ kind: 'ok', alert: makeAlert({ status: 'acked' }) });
+    await renderDetail();
+    await fireEvent.press(await screen.findByTestId('alert-detail-ack'));
+    await waitFor(() => {
+      expect(screen.getByTestId('alert-detail-status')).toHaveTextContent('Leída');
+      expect(screen.queryByTestId('alert-detail-ping')).toBeNull();
+    });
   });
 });
 
@@ -431,28 +458,24 @@ describe('#100 R5: el detalle marca leída la alerta', () => {
   });
 });
 
-describe('#170 R6: la tarjeta abierta lleva el borde de su tipo', () => {
-  it.each([
-    { type: 'geofence_exit', className: 'rounded-card bg-surface p-4 shadow-sm min-h-44 gap-3 border-2 border-danger' },
-    { type: 'battery_low', className: 'rounded-card bg-surface p-4 shadow-sm min-h-44 gap-3 border-2 border-warning-strong' },
-    { type: 'mystery_type', className: 'rounded-card bg-surface p-4 shadow-sm min-h-44 gap-3 border-2 border-muted' },
-  ])('abierta $type: $className', async ({ type, className }) => {
+describe('#170 R6: héroe sin borde (enmendado por #180 R3, E2)', () => {
+  it.each(HERO_CASES)('abierta %s: conserva su color sin borde (enmendado por E2)', async (type, _icon, _solid, _color, disc) => {
     mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ type })], nextCursor: null });
     await renderDetail();
-    expect((await screen.findByTestId('alert-detail-card')).props.className).toBe(className);
+    expect((await screen.findByTestId('alert-detail-card')).props.className).toBe(heroClass(disc));
   });
-  it.each(['acked', 'closed'] as const)('%s: conserva la tarjeta sin borde de severidad', async (status) => {
+  it.each(['acked', 'closed'] as const)('%s: conserva el héroe por tipo (enmendado por E2)', async (status) => {
     mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ status })], nextCursor: null });
     await renderDetail();
-    expect((await screen.findByTestId('alert-detail-card')).props.className).toBe('rounded-card border border-border bg-surface p-4 shadow-sm min-h-44 gap-3');
+    expect((await screen.findByTestId('alert-detail-card')).props.className).toBe(heroClass('bg-category-rose'));
   });
-  it.each(['ok', 'already-closed'] as const)('marcada leída en local (%s): pierde el borde de severidad', async (rama) => {
+  it.each(['ok', 'already-closed'] as const)('ack local %s: conserva héroe sin borde (enmendado por E2)', async (rama) => {
     mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert()], nextCursor: null });
     mockAckAlert.mockResolvedValue(rama === 'ok' ? { kind: 'ok', alert: makeAlert({ status: 'acked' }) } : { kind: 'already-closed' });
     await renderDetail();
     await fireEvent.press(await screen.findByTestId('alert-detail-ack'));
     await waitFor(() => expect(screen.getByTestId('alert-detail-status')).toHaveTextContent(rama === 'ok' ? 'Leída' : 'Resuelta'));
-    expect(screen.getByTestId('alert-detail-card').props.className).toBe('rounded-card border border-border bg-surface p-4 shadow-sm min-h-44 gap-3');
+    expect(screen.getByTestId('alert-detail-card').props.className).toBe(heroClass('bg-category-rose'));
   });
 });
 

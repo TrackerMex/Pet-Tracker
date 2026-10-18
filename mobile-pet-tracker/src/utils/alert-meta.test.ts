@@ -11,3 +11,7 @@ const cases = [
 it.each(cases)('#180 R11.1: %s declara los cinco campos del héroe', (type, expected) => {
   expect(alertTypeMeta(type)).toMatchObject(expected);
 });
+
+it.each(cases)('#180 R3.1: %s ya no conserva surface', (type) => {
+  expect(alertTypeMeta(type)).not.toHaveProperty('surface');
+});

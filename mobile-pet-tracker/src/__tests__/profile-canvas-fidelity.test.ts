@@ -66,6 +66,7 @@ describe('#173 R2.4: inventario de tamaños nuevos', () => {
     expect(filesMatching(/\btext-13\b/)).toEqual([
       'components/form-error.tsx',
       'screens/add-reminder/index.tsx', // #178 R12
+      'screens/alert-detail/index.tsx', // #180 R3
       'screens/alerts/index.tsx', // #174 R4, R6
       'screens/docs/index.tsx', // #175 R8
       'screens/forgot/index.tsx',
@@ -80,8 +81,8 @@ describe('#173 R2.4: inventario de tamaños nuevos', () => {
 });
 
 describe('#173 R3: Card hero y flat solo en Perfil', () => {
-  it('Perfil es el único consumidor de Card hero y lo usa una vez', () => {
-    expect(filesMatching(/variant="hero"/)).toEqual(['screens/profile/index.tsx']);
+  it('Perfil y el detalle de alerta son los consumidores de Card hero (enmendado por #180 R3)', () => {
+    expect(filesMatching(/variant="hero"/)).toEqual(['screens/alert-detail/index.tsx', 'screens/profile/index.tsx']);
     const profile = readFileSync(join(sourceRoot, 'screens/profile/index.tsx'), 'utf8');
     expect(profile.match(/variant="hero"/g)).toHaveLength(1);
   });

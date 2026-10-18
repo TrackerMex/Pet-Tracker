@@ -1179,6 +1179,7 @@ describe('#179 R13: Horario e Historial fieles al canvas', () => {
   it('limita text-22 a Horario y text-17 al inventario de E1.2', () => {
     const productionFilesMatching = (pattern: RegExp) => filesMatching(pattern).filter(path => !/\.test\.tsx?$/.test(path)).sort();
     expect(productionFilesMatching(/\btext-22\b/)).toEqual([
+      join('screens', 'alert-detail', 'index.tsx'), // #180 R3
       join('screens', 'meal-schedule', 'index.tsx'),
     ]);
     expect(productionFilesMatching(/\btext-17\b/)).toEqual([
