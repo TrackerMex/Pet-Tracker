@@ -157,7 +157,7 @@ export function AlertDetailScreen({ alertId }: { alertId: string }) {
       testID="screen-alert-detail"
       className={position ? 'flex-1' : 'flex-1 bg-background'}
       contentInsetAdjustmentBehavior="automatic"
-      contentContainerStyle={{ padding: 24, gap: 16, paddingBottom: insets.bottom + 24 }}
+      contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 24, paddingBottom: insets.bottom + 40, gap: 14, flexGrow: 1 }}
     >
       <Text testID="alert-detail-title" accessibilityRole="header" className="text-26 font-black tracking-title text-foreground">
         {t('alerts.detailTitle')}
@@ -179,6 +179,7 @@ export function AlertDetailScreen({ alertId }: { alertId: string }) {
             <Map size={18} color={foreground} />
             <Button.Label className="text-base font-extrabold text-foreground">{t('alerts.viewOnMap')}</Button.Label>
           </Button>
+          <View testID="alert-detail-spacer" className="flex-1" />
           {actionError ? (
             <Text selectable testID="alert-detail-action-error" className="text-danger">
               {actionError}
