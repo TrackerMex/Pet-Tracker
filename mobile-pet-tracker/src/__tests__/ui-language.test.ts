@@ -247,11 +247,12 @@ describe('#78 R12: el centro de alertas resuelve su copy por clave', () => {
 });
 
 describe('#100 R10: el detalle de alerta resuelve su copy por clave', () => {
-  it('registra cada ocurrencia del detalle', () => {
+  it('registra cada ocurrencia del detalle (enmendado por #180 R13.1)', () => {
     expect(R13_ALERT_DETAIL).toHaveLength(11 - 3 + 2 + 1); // #170 R16, #180 R5
     expect(R13_ALERT_DETAIL.every(({ file }) =>
       file === 'src/screens/alert-detail/index.tsx',
     )).toBe(true);
+    expect(readFileSync(join(SOURCE_ROOT, 'src/app/_layout.tsx'), 'utf8')).not.toContain('alerts.detailTitle'); // #180 R13.1, S15
     checkUses(R13_ALERT_DETAIL);
   });
 });
