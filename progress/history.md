@@ -9567,3 +9567,25 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
   firmarlo, review aprobada con `./init.sh` exit 0. Prueba de humo R11 superada
   por el humano en dev build de Android. Cierre: `done` en `feature_list.json`,
   R11 marcada en la spec y la trazabilidad. La PR la mergea el humano.
+
+## Sesión 2026-10-18 — mobile-account-heroui-text-sizes (id: 187)
+
+- **Feature:** `Label.Text` y `Button.Label` de login, register, forgot y
+  reset-password pasan a `Text` plano de react-native (D1 a): 12 etiquetas a 13 px
+  y 5 botones a 17 px, que tailwind-merge de HeroUI 1.0.8 degradaba a 16 px.
+- **Spec:** [[specs/mobile-account-heroui-text-sizes/requirements|spec]]
+- **Acciones:** spec firmada por Notion (D2 y D3 inferidas de la cola del humano);
+  Codex implementó c1-c8 con commits test-primero y paró seis veces, todas
+  resueltas por el humano. Candado AST `heroui-text-size-merge.test.ts` (25 `it`),
+  sondas S1-S17 y sección nueva en `docs/ui-guidelines.md`.
+- **Enmienda E1:** los pisos del `it` 2 de R1 (HeroUI 244 y className 198) eran
+  incumplibles tras el cambio por diseño; bajaron a 227 y 181 (c2b y c2c, solo
+  test). La tabla de sondas omitía colaterales de S9, S14 y S15. Casilla E1 del
+  humano pendiente.
+- **Resultado:** `./init.sh` exit 0 sin pipe sobre `2c02b5a2` (backend 187/1474,
+  móvil 114/3790 = T0 3748 + 42, e2e 468 con 8 omitidos). Reviewer APROBADO
+  (R1-R5) con tres observaciones sin bloqueo.
+- **Commits:** `6d209645` c1 ... `2c02b5a2` c8 (diez commits de Codex); PR abierta,
+  la mergea el humano.
+- **Estado final:** in_progress, a la espera de la Enmienda E1 y del smoke R6
+  (dev build de Android) del humano; entonces `done`.

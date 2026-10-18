@@ -229,7 +229,7 @@ con estos 24 `it` (el 25.º es el de R5):
 | # | Título del `it` | Qué asevera |
 |---|---|---|
 | 1 | `#187 R1: el árbol de producción no pasa text-NN a HeroUI ni a Card` | la lista de hallazgos del árbol real es `[]` |
-| 2 | `#187 R1: el escáner cubre al menos el universo medido` | pisos, no igualdades: elementos HeroUI `>= 244`, ficheros con algún elemento HeroUI `>= 28`, elementos `Card` local `>= 42`, elementos con `className` `>= 198`. Bajarlos exige decisión humana |
+| 2 | `#187 R1: el escáner cubre al menos el universo medido` | pisos, no igualdades: elementos HeroUI `>= 227`, ficheros con algún elemento HeroUI `>= 28`, elementos `Card` local `>= 42`, elementos con `className` `>= 181`. Bajarlos exige decisión humana. Valores enmendados por la Enmienda E1 (§ Aprobación); los firmados eran 244 y 198 |
 | 3 | `#187 R1: Card es el único componente local que fusiona con tailwind-merge` | los ficheros de `src` (sin tests) con `from 'tailwind-merge'` son exactamente `['components/card.tsx']` |
 | 4 | `#187 R1: los className opacos son solo los medidos` | la lista de opacos del árbol real es `['components/password-input.tsx InputGroup.Input']` |
 | 5 | `#187 R1: la premisa sigue viva: cn() de heroui-native descarta text-NN ante un color` | con `cn` de `heroui-native/utils` (`jest.requireActual`; si `tsc` no resuelve el tipo del subpath, tipar con una interfaz local `{ cn: (...inputs: string[]) => string }` y `as unknown as`): `cn('text-13 font-semibold text-muted')` es `'font-semibold text-muted'`; `cn('text-17 font-extrabold text-accent-foreground')` es `'font-extrabold text-accent-foreground'`; `cn('text-17 font-extrabold')` es `'text-17 font-extrabold'`. Las cadenas esperadas están escritas a mano; el oráculo es la librería. Si una actualización de HeroUI lo arregla, este `it` se pone rojo y avisa de que la regla puede relajarse |
@@ -516,6 +516,30 @@ Clasificado viñeta a viñeta; cada premisa está verificada.
 - **Deuda que esta spec no cierra:** las clases fabricadas en ejecución (R1,
   agujero declarado).
 
+## Enmienda E1 (2026-10-18, durante la implementación)
+
+Dos premisas de la spec firmada no se sostenían, y las halló Codex al parar en c3.
+
+1. **Pisos del `it` 2 de R1.** Los pisos de elementos HeroUI (244) y con
+   `className` (198) se midieron sobre la base. R2 y R3 sustituyen 12
+   `Label.Text` y 5 `Button.Label` por `Text` de react-native, que el escáner no
+   cuenta como HeroUI ni como elemento con `className`. Los pisos firmados no
+   podían cumplirse tras el cambio: 244 - 17 = **227** y 198 - 17 = **181**.
+   Medido tras c5: 227 y 181 exactos; ficheros 29 (piso 28) y Card 42 (piso 42).
+   El humano autorizó bajarlos durante la implementación; entraron como c2b
+   (`9c0d0e48`, 227) y c2c (`e613944d`, 181), commits solo de test.
+2. **Tabla de sondas.** Mutaciones que estrechan o ensanchan el universo
+   escaneado hacen caer además otros `it` de R1, y la tabla no los listaba. S9:
+   además cae el `it` 2 (`>= 198`, recibido 196). S14: además cae el `it` 2
+   (`>= 28`, recibido 22) y el `it` 4 (`password-input.tsx InputGroup.Input`
+   desaparece del inventario). S15: caen además P1, P2, P3, P7, P12 y P13 (los
+   tokens de color pasan a contar como ofensores). Son colaterales esperables, no
+   candados rotos; el `it` que nombra la tabla cae en los tres casos.
+
+Fuera de la enmienda queda una observación del reviewer, sin bloqueo: las ramas
+de array, objeto con clave de cadena, `??`/`||` y `as` del escáner no tienen fila
+de corpus propia (candidata a P14+ en una feature futura).
+
 ## Aprobación
 
 - [x] Aprobado por humano (fecha: 2026-10-18) ← gate obligatorio antes de implementar
@@ -528,4 +552,5 @@ Cualquier test o comando que lea esta casilla usa el patrón tolerante
 
 ## Gate humano de cierre
 
+- [ ] Enmienda E1 aprobada por humano (fecha: ____)
 - [ ] Smoke R6 en dev build de Android hecho por el humano (fecha: ____)
