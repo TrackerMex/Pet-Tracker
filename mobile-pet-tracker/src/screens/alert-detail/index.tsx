@@ -9,6 +9,7 @@ import { useUniwind } from 'uniwind';
 import { Map } from 'reicon-react-native';
 
 import { AlertPingRing } from './ping-ring';
+import { HomeEntrance } from '../home/home-entrance';
 
 import { ackAlert } from '../../api/alerts';
 import { listGeofences } from '../../api/geofences';
@@ -164,8 +165,8 @@ export function AlertDetailScreen({ alertId }: { alertId: string }) {
       </Text>
       {alert ? (
         <>
-          {card}
-          {position ? <AlertDetailMap alert={alert} position={position} /> : null}
+          <HomeEntrance index={0} testID="alert-detail-card-entrance">{card}</HomeEntrance>
+          {position ? <HomeEntrance index={1} testID="alert-detail-map-entrance"><AlertDetailMap alert={alert} position={position} /></HomeEntrance> : null}
           <Button
             testID="alert-detail-view-map"
             variant="secondary"
@@ -190,7 +191,6 @@ export function AlertDetailScreen({ alertId }: { alertId: string }) {
               <Button.Label className="text-17 font-extrabold text-accent-foreground">{t('alerts.ack')}</Button.Label>
             </Button>
           ) : null}
-
         </>
       ) : alerts.isPending || alerts.isFetching ? (
         <Skeleton testID="alert-detail-loading" className="h-44 w-full rounded-card" />
