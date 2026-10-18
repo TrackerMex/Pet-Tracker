@@ -1342,3 +1342,25 @@ describe('#175 R9: filtrar por categoría', () => {
     expect(screen.queryByTestId('docs-upload-form')).toBeNull();
   });
 });
+
+
+describe('#185 R1: el formulario no es hijo de la lista', () => {
+  it('mantiene el formulario fuera del scroll y del teclado de la lista con documentos', async () => {
+    mockGetDocumentAsync.mockResolvedValueOnce({ canceled: false, assets: [documentAsset] });
+    await renderDocs();
+    await fireEvent.press(await screen.findByTestId('docs-upload'));
+    await waitFor(() => expect(mockGetDocumentAsync).toHaveBeenCalledTimes(1));
+    expect(within(screen.getByTestId('screen-docs')).queryByTestId('docs-upload-form')).toBeNull();
+    expect(within(screen.getByTestId('docs-keyboard-avoider')).queryByTestId('docs-upload-form')).toBeNull();
+  });
+
+  it('mantiene el formulario fuera del scroll y del teclado de la lista vacía', async () => {
+    mockListPetDocs.mockResolvedValue({ kind: 'ok', docs: [] });
+    mockGetDocumentAsync.mockResolvedValueOnce({ canceled: false, assets: [documentAsset] });
+    await renderDocs();
+    await fireEvent.press(await screen.findByTestId('docs-empty-action'));
+    await waitFor(() => expect(mockGetDocumentAsync).toHaveBeenCalledTimes(1));
+    expect(within(screen.getByTestId('screen-docs')).queryByTestId('docs-upload-form')).toBeNull();
+    expect(within(screen.getByTestId('docs-keyboard-avoider')).queryByTestId('docs-upload-form')).toBeNull();
+  });
+});
