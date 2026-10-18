@@ -363,12 +363,12 @@ describe('#100 R5: el detalle marca leída la alerta', () => {
     mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert()], nextCursor: null });
   });
 
-  it('marca leída una vez y retira el botón', async () => {
+  it('marca leída una vez y retira el botón (enmendado por #180 R7, E2)', async () => {
     mockAckAlert.mockResolvedValue({ kind: 'ok', alert: makeAlert({ status: 'acked' }) });
     await renderDetail();
     const button = await screen.findByTestId('alert-detail-ack');
     expect(button.props.accessibilityRole).toBe('button');
-    expect(button.props.className).toContain('min-h-11');
+    expect(button.props.className).toBe('w-full h-14 rounded-16 bg-accent border-b-4 border-black/25');
     expect(within(button).getByText('Marcar leída')).toBeVisible();
     await fireEvent.press(button);
     await waitFor(() => expect(mockAckAlert).toHaveBeenCalledWith(apiUrl, 'token-1', 'alert-1'));
@@ -906,5 +906,33 @@ describe('#180 R6: CTA Ver en el mapa', () => {
     await renderDetail(); await screen.findByTestId('alert-detail-view-map');
     if (map) expect(screen.getByTestId('alert-detail-map')).toBeOnTheScreen();
     else expect(screen.queryByTestId('alert-detail-map')).toBeNull();
+  });
+});
+
+describe('#180 R7: ack primario', () => {
+  it('#180 R7.1 (enmendado por E1): ack abierto con labio y etiqueta', async () => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert()], nextCursor: null });
+    await renderDetail();
+    const button = await screen.findByTestId('alert-detail-ack');
+    expect(button.props.className).toBe('w-full h-14 rounded-16 bg-accent border-b-4 border-black/25');
+    const label = within(button).getByText('Marcar leída');
+    expect(label.props.className).toBe('text-17 font-extrabold text-accent-foreground');
+  });
+  it.each(['acked', 'closed'] as const)('#180 R7.1 (enmendado por E1): %s no pinta ack', async status => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ status })], nextCursor: null });
+    await renderDetail(); await screen.findByTestId('alert-detail-card');
+    expect(screen.queryByTestId('alert-detail-ack')).toBeNull();
+    expect(screen.getByTestId('alert-detail-view-map')).toBeOnTheScreen();
+  });
+  it('#180 R7.1: el error está inmediatamente antes del ack', async () => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert()], nextCursor: null });
+    mockAckAlert.mockResolvedValue({ kind: 'error' });
+    await renderDetail(); await fireEvent.press(await screen.findByTestId('alert-detail-ack'));
+    const error = await screen.findByTestId('alert-detail-action-error');
+    const content = elementChild(screen.getByTestId('screen-alert-detail'), 0);
+    const errorIndex = content.children.findIndex(child => typeof child !== 'string' && child.props.testID === 'alert-detail-action-error');
+    expect(errorIndex).toBeGreaterThanOrEqual(0);
+    expect(elementChild(content, errorIndex) === error).toBe(true);
+    expect(elementChild(content, errorIndex + 1) === screen.getByTestId('alert-detail-ack')).toBe(true);
   });
 });

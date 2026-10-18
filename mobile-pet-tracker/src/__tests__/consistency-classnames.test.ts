@@ -580,8 +580,8 @@ describe('#166 R2: todo primario sólido lleva el labio detrás de bg-accent', (
       0,
     );
 
-    expect(count(/\bborder-b-4\b/g)).toBe(19 + 1 + 1 - 1 - 1 - 1 - 1); // #179 R7; #172 R14: forgot-lock-tile (Enmienda #172); #171 R3: ready-map // #171 R14 // #173 R5; #175 R7: docs-upload
-    expect(count(/border-black\/25/g)).toBe(19 + 1 + 1 - 1 - 1 - 1 + 1 + 1 - 1); // #178 R10: el chip seleccionado lleva labio (carta §13); #179 R5, R7; #172 R14: forgot-lock-tile (Enmienda #172); #171 R3: ready-map // #171 R14 // #173 R5; #175 R7: docs-upload
+    expect(count(/\bborder-b-4\b/g)).toBe(19 + 1 + 1 - 1 - 1 - 1 - 1 + 1); // #180 R7; #179 R7; #172 R14: forgot-lock-tile (Enmienda #172); #171 R3: ready-map // #171 R14 // #173 R5; #175 R7: docs-upload
+    expect(count(/border-black\/25/g)).toBe(19 + 1 + 1 - 1 - 1 - 1 + 1 + 1 - 1 + 1); // #180 R7; #178 R10: el chip seleccionado lleva labio (carta §13); #179 R5, R7; #172 R14: forgot-lock-tile (Enmienda #172); #171 R3: ready-map // #171 R14 // #173 R5; #175 R7: docs-upload
   });
 });
 
@@ -680,4 +680,10 @@ it('#180 R7.5: «Ver en el mapa» del detalle lleva rounded-16 con su labio gris
   expect(tag).toContain('variant="secondary"');
   expect(tag).toContain('rounded-16 border-2 border-b-6 border-lip-gray bg-surface');
   for (const forbidden of ['rounded-xl', 'border-accent', 'bg-transparent', 'border-black']) expect(tag).not.toContain(forbidden);
+});
+
+it('#180 R7.5: el ack del detalle lleva rounded-16 con su labio', () => {
+  const tag = openingTagWithTestId(readSource(join('screens', 'alert-detail', 'index.tsx')), 'alert-detail-ack');
+  expect(tag).toContain('rounded-16 bg-accent border-b-4 border-black/25');
+  expect(tag).not.toContain('rounded-xl');
 });

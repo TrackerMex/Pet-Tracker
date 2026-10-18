@@ -1185,6 +1185,7 @@ describe('#179 R13: Horario e Historial fieles al canvas', () => {
       join('screens', 'meal-schedule', 'index.tsx'),
     ]);
     expect(productionFilesMatching(/\btext-17\b/)).toEqual([
+      join('screens', 'alert-detail', 'index.tsx'), // #180 R7
       join('screens', 'forgot', 'index.tsx'),
       join('screens', 'login', 'index.tsx'),
       join('screens', 'meal-schedule', 'index.tsx'),
@@ -1210,4 +1211,11 @@ describe('#179 R13: Horario e Historial fieles al canvas', () => {
       expect(schedule.split(label)).toHaveLength(2);
     }
   });
+});
+
+it('#180 R7.4: el detalle usa rounded-16 dos veces y ningún rounded-22 ni rounded-14', () => {
+  const source = readFileSync(join(sourceRoot, 'screens', 'alert-detail', 'index.tsx'), 'utf8');
+  expect(source.match(/\brounded-16\b/g) ?? []).toHaveLength(2);
+  expect(source.match(/\brounded-22\b/g) ?? []).toHaveLength(0);
+  expect(source.match(/\brounded-14\b/g) ?? []).toHaveLength(0);
 });
