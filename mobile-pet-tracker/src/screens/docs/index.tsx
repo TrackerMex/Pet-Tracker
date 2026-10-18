@@ -1,23 +1,18 @@
 import { useQuery } from '@tanstack/react-query';
 import * as DocumentPicker from 'expo-document-picker';
+import { router } from 'expo-router';
 import { HeaderHeightContext } from 'expo-router/react-navigation';
 import { openBrowserAsync } from 'expo-web-browser';
-import { Button, Input, Label, Skeleton, TextField } from 'heroui-native';
-import { useContext, useState } from 'react';
+import { Button, Skeleton } from 'heroui-native';
+import { useContext, useEffect, useState } from 'react';
 import { KeyboardAvoidingView, Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChevronRight, FileText, Upload } from 'reicon-react-native';
 
 import {
-  confirmPetDocumentUpload,
-  createPetDocument,
   DOCUMENT_MAX_BYTES,
   listPetDocs,
   resolveDocumentContentType,
-  uploadPhotoToUrl,
-  type ConfirmPetDocumentUploadState,
-  type CreatePetDocumentState,
-  type DocumentContentType,
   type PetDocument,
 } from '../../api/media';
 import { getPet } from '../../api/pets';
@@ -34,7 +29,6 @@ import {
   documentCategory,
   type CategorySlot,
 } from '../../utils/category-palette';
-import { civilTodayIso } from '../../utils/civil-today-iso';
 import { fmtDate } from '../home/format';
 import { HomeEntrance } from '../home/home-entrance';
 
@@ -55,18 +49,7 @@ const INK_TOKEN: Record<CategorySlot, string> = {
   neutral: 'muted',
 };
 
-type ActionError =
-  | 'file-format'
-  | 'file-too-large'
-  | 'invalid-form'
-  | 'upload-forbidden'
-  | 'upload-failed'
-  | 'unreachable'
-  | 'unknown';
-type SelectedDocument = {
-  asset: DocumentPicker.DocumentPickerAsset;
-  contentType: DocumentContentType;
-};
+type ActionError = 'file-format' | 'file-too-large' | 'unknown';
 
 function DocumentRow({ document, onPress }: { document: PetDocument; onPress: () => void }) {
   const slotName = documentCategory(document.type);
@@ -97,19 +80,13 @@ function DocumentRow({ document, onPress }: { document: PetDocument; onPress: ()
   );
 }
 
-export function DocsScreen({ petId }: { petId: string }) {
+export function DocsScreen({ petId, uploaded }: { petId: string; uploaded?: string }) {
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
-  const { token, signOut } = useAuth();
+  const { token } = useAuth();
   const t = useTranslate();
   const [uploadColor] = useThemeColors(['accent-strong']);
   const insets = useSafeAreaInsets();
   const headerHeight = useContext(HeaderHeightContext);
-  const [selectedDocument, setSelectedDocument] = useState<SelectedDocument | null>(null);
-  const [uploading, setUploading] = useState(false);
-  const [type, setType] = useState('');
-  const [name, setName] = useState('');
-  const [date, setDate] = useState(() => civilTodayIso(undefined));
-  const [vet, setVet] = useState('');
   const [actionError, setActionError] = useState<ActionError | null>(null);
   const [filter, setFilter] = useState<'all' | CategorySlot>('all');
   const pet = useQuery({
@@ -120,6 +97,13 @@ export function DocsScreen({ petId }: { petId: string }) {
     queryKey: mediaKeys.petDocs(petId),
     queryFn: () => listPetDocs(baseUrl, token ?? '', petId),
   });
+  const { refetch: refetchDocs } = docs;
+  useEffect(() => {
+    if (!uploaded) return;
+    void refetchDocs();
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- #185 R2.3: el nonce confirma una subida y reinicia el filtro.
+    setFilter('all');
+  }, [uploaded, refetchDocs]);
   const petName = pet.data?.kind === 'ok' ? pet.data.pet.name : null;
   const presentSlots = FILTER_SLOTS.filter(({ slot }) =>
     docs.data?.kind === 'ok' && docs.data.docs.some((document) => documentCategory(document.type) === slot),
@@ -131,10 +115,6 @@ export function DocsScreen({ petId }: { petId: string }) {
   const actionErrorText = actionError ? {
     'file-format': t('docs.errorFileFormat'),
     'file-too-large': t('docs.errorFileTooLarge'),
-    'invalid-form': t('docs.errorInvalidForm'),
-    'upload-forbidden': t('docs.errorUploadForbidden'),
-    'upload-failed': t('docs.errorUploadFailed'),
-    unreachable: t('common.cannotReachServer'),
     unknown: t('common.somethingWentWrong'),
   }[actionError] : null;
 
@@ -156,92 +136,19 @@ export function DocsScreen({ petId }: { petId: string }) {
         setActionError('file-too-large');
         return;
       }
-      setSelectedDocument({ asset, contentType });
+      router.push({
+        pathname: '/pets/[petId]/docs-upload',
+        params: {
+          petId, uri: asset.uri, name: asset.name, mimeType: asset.mimeType ?? '',
+          size: String(asset.size ?? 0), contentType,
+        },
+      });
     }).catch(() => setActionError('unknown'));
-  }
-
-  function cancelUpload() {
-    setSelectedDocument(null);
-    setType('');
-    setName('');
-    setDate(civilTodayIso(undefined));
-    setVet('');
-    setActionError(null);
   }
 
   function openDocument(document: PetDocument) {
     setActionError(null);
     void openBrowserAsync(document.downloadUrl).catch(() => setActionError('unknown'));
-  }
-
-  async function handleUploadError(
-    kind: Exclude<CreatePetDocumentState['kind'] | ConfirmPetDocumentUploadState['kind'], 'ok'>,
-  ) {
-    switch (kind) {
-      case 'unauthorized':
-        await signOut();
-        break;
-      case 'invalid':
-        setActionError('invalid-form');
-        break;
-      case 'forbidden':
-        setActionError('upload-forbidden');
-        break;
-      case 'unreachable':
-        setActionError('unreachable');
-        break;
-      case 'not-uploaded':
-        setActionError('upload-failed');
-        break;
-      case 'too-large':
-        setActionError('file-too-large');
-        break;
-      default:
-        setActionError('unknown');
-    }
-  }
-
-  async function submitDocument() {
-    if (uploading || !selectedDocument) return;
-    setActionError(null);
-    if (!type.trim() || !name.trim() || !/^\d{4}-\d{2}-\d{2}$/.test(date.trim())) {
-      setActionError('invalid-form');
-      return;
-    }
-    setUploading(true);
-    let readingAsset = true;
-    try {
-      const response = await fetch(selectedDocument.asset.uri);
-      const blob = await response.blob();
-      readingAsset = false;
-      const created = await createPetDocument(baseUrl, token ?? '', petId, {
-        type: type.trim(),
-        name: name.trim(),
-        date: date.trim(),
-        ...(vet.trim() ? { vet: vet.trim() } : {}),
-      });
-      if (created.kind !== 'ok') {
-        await handleUploadError(created.kind);
-        return;
-      }
-      const uploaded = await uploadPhotoToUrl(created.uploadUrl, blob, selectedDocument.contentType);
-      if (uploaded.kind !== 'ok') {
-        setActionError('upload-failed');
-        return;
-      }
-      const confirmed = await confirmPetDocumentUpload(baseUrl, token ?? '', petId, created.documentId);
-      if (confirmed.kind !== 'ok') {
-        await handleUploadError(confirmed.kind);
-        return;
-      }
-      await docs.refetch();
-      setFilter('all');
-      cancelUpload();
-    } catch {
-      setActionError(readingAsset ? 'upload-failed' : 'unknown');
-    } finally {
-      setUploading(false);
-    }
   }
 
   return (
@@ -290,7 +197,7 @@ export function DocsScreen({ petId }: { petId: string }) {
             pose="health"
             title={t('docs.noDocumentsYet')}
             body={t('docs.emptyBody')}
-            action={isOwner && !selectedDocument ? { label: t('docs.upload'), onPress: pickDocument } : undefined}
+            action={isOwner ? { label: t('docs.upload'), onPress: pickDocument } : undefined}
           />
         ) : null}
 
@@ -336,7 +243,7 @@ export function DocsScreen({ petId }: { petId: string }) {
             </Button>
           </Card>
         ) : null}
-        {isOwner && !selectedDocument && docs.data?.kind === 'ok' && docs.data.docs.length > 0 ? (
+        {isOwner && docs.data?.kind === 'ok' && docs.data.docs.length > 0 ? (
           <Pressable
             testID="docs-upload"
             accessibilityRole="button"
@@ -350,87 +257,6 @@ export function DocsScreen({ petId }: { petId: string }) {
             <Text className="text-15 font-extrabold text-foreground">{t('docs.upload')}</Text>
             <Text className="text-center text-xs font-normal text-muted">{t('docs.uploadHint')}</Text>
           </Pressable>
-        ) : null}
-
-        {selectedDocument ? (
-          <View testID="docs-upload-form">
-            <Text testID="docs-upload-file">{selectedDocument.asset.name}</Text>
-            <TextField>
-              <Label className="text-2xs font-semibold text-foreground">
-                <Label.Text className="text-2xs font-semibold text-foreground">
-                  {t('docs.type')}
-                </Label.Text>
-              </Label>
-              <Input
-                testID="docs-type-input"
-                className="rounded-xl bg-default"
-                value={type}
-                onChangeText={setType}
-                maxLength={40}
-              />
-            </TextField>
-            <TextField>
-              <Label className="text-2xs font-semibold text-foreground">
-                <Label.Text className="text-2xs font-semibold text-foreground">
-                  {t('docs.name')}
-                </Label.Text>
-              </Label>
-              <Input
-                testID="docs-name-input"
-                className="rounded-xl bg-default"
-                value={name}
-                onChangeText={setName}
-                maxLength={120}
-              />
-            </TextField>
-            <TextField>
-              <Label className="text-2xs font-semibold text-foreground">
-                <Label.Text className="text-2xs font-semibold text-foreground">
-                  {t('docs.date')}
-                </Label.Text>
-              </Label>
-              <Input
-                testID="docs-date-input"
-                className="rounded-xl bg-default"
-                value={date}
-                onChangeText={setDate}
-                placeholder={t('docs.datePlaceholder')}
-              />
-            </TextField>
-            <TextField>
-              <Label className="text-2xs font-semibold text-foreground">
-                <Label.Text className="text-2xs font-semibold text-foreground">
-                  {t('docs.vet')}
-                </Label.Text>
-              </Label>
-              <Input
-                testID="docs-vet-input"
-                className="rounded-xl bg-default"
-                value={vet}
-                onChangeText={setVet}
-                maxLength={120}
-              />
-            </TextField>
-            <Button
-              testID="docs-upload-submit"
-              className="rounded-xl bg-accent border-b-4 border-black/25"
-              isDisabled={uploading}
-              onPress={() => void submitDocument()}
-            >
-              <Button.Label className="font-bold text-accent-foreground">
-                {t('docs.upload')}
-              </Button.Label>
-            </Button>
-            <Button
-              testID="docs-upload-cancel"
-              className="rounded-xl border-2 border-b-6 border-lip-gray bg-surface"
-              variant="outline"
-              isDisabled={uploading}
-              onPress={cancelUpload}
-            >
-              <Button.Label className="font-semibold">{t('docs.cancel')}</Button.Label>
-            </Button>
-          </View>
         ) : null}
 
         {actionErrorText ? (
