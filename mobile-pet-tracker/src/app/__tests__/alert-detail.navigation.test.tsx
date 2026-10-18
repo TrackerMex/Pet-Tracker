@@ -78,7 +78,7 @@ jest.mock('reicon-react-native', () => {
   const icon = () => function MockIcon(props: Record<string, unknown>) {
     return React.createElement(View, props);
   };
-  return { BatteryLow: icon(), Bell: icon(), LocationSlash: icon() };
+  return { BatteryLow: icon(), Bell: icon(), LocationSlash: icon(), Map: icon() };
 });
 jest.mock('../../theme/use-theme-colors', () => ({
   useThemeColors: (tokens: readonly string[]) => tokens.map((token) => `--color-${token}`),

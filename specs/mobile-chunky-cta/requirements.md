@@ -157,6 +157,8 @@ Test: `src/theme/__tests__/global-css.test.ts`, describe
 
 ### R2. Todo primario sólido lleva el labio
 
+> Enmendado por #180 (ver «Enmienda #180» al final).
+
 - **R2.1** WHEN se pinta cualquiera de los primarios sólidos de M1 THE
   SYSTEM SHALL llevar en su `className` la secuencia contigua
   `rounded-xl bg-accent border-b-4 border-black/25`, con el labio detrás de
@@ -186,6 +188,8 @@ su cadena nueva.
 ### R3. El secundario neutro lleva el labio gris
 
 > Enmendado por #174 (ver «Enmienda #174» al final).
+
+> Enmendado por #180 (ver «Enmienda #180» al final).
 
 - **R3.1** WHEN se pinta `welcome-have-account`, `forgot-resend`,
   `docs-upload-cancel` o `reminders-delete-cancel` THE SYSTEM SHALL llevar
@@ -352,3 +356,15 @@ Detalle y tests en `specs/mobile-alerts-canvas-fidelity/requirements.md`. Los `i
 su sitio con el sufijo `(enmendado por #174 Rn)`.
 
 - [X] Enmienda #174 aprobada por humano
+
+## Enmienda #180 — Detalle de alerta fiel al canvas
+
+> Enmienda de `mobile-chunky-cta` por `mobile-alert-detail-canvas-fidelity` (#180, 2026-10-16). Directiva del humano:
+> «el diseño final debe de quedar como el artifact».
+
+**Qué cambia**: #166 R2: el ack del detalle de alerta es primario sólido con labio (h-14 rounded-16, border-b-4, border-black/25) y queda fuera del inventario de rounded-xl bg-accent; #166 R3: «Ver en el mapa» del detalle pasa a rounded-16.
+
+Detalle y tests en `specs/mobile-alert-detail-canvas-fidelity/requirements.md`. Los `it` citados se reescriben en
+su sitio con el sufijo `(enmendado por #180 Rn)`.
+
+- [X] Enmienda #180 aprobada por humano

@@ -92,12 +92,17 @@ describe('#174 R11: enmiendas', () => {
     expect(source).toMatch(/- \[[ xX]\] Enmienda #174 aprobada por humano/);
   });
 
-  it.each(AMENDED_DOCS.filter(({ anchors }) => anchors.length > 0))('$file marca cada requisito enmendado', ({ file, feature, anchors }) => {
+  it.each(AMENDED_DOCS.filter(({ anchors }) => anchors.length > 0))('$file marca cada requisito enmendado (enmendado por #180 R12)', ({ file, feature, anchors }) => {
     const source = collapse(readRepository(file));
     const marker = feature === 'mobile-alerts-grouped-and-detail-map'
       ? '_(Enmendado por #174.)_'
       : '> Enmendado por #174 (ver «Enmienda #174» al final).';
-    for (const anchor of anchors) expect(source).toContain(`${anchor} ${marker}`);
+    for (const anchor of anchors) {
+      const newer = feature === 'mobile-reminders-alerts-to-stack' && [
+        '### R4 — Cabecera nativa con el look de #95', '### R6 — Métricas bajo cabecera nativa (A11)',
+      ].includes(anchor) ? '> Enmendado por #180 (ver «Enmienda #180» al final). ' : '';
+      expect(source).toContain(`${anchor} ${newer}${marker}`);
+    }
   });
 });
 
@@ -139,9 +144,10 @@ describe('#174 R11: la carta declara los cambios', () => {
     expect(collapse(guidelines.slice(start, end))).toContain('Fuera de la escala, por fidelidad al canvas (#174): `rounded-10` (10 px), ack compacto de fila de Alertas.');
   });
 
-  it('declara el secundario compacto y limita la primaria sin labio al detalle', () => {
+  it('declara el secundario compacto y el reintento sin labio (enmendado por #180 R12)', () => {
     expect(flat).toContain('- **Secundario compacto de fila** (#174): el ack de cada fila abierta de Alertas lleva `h-8.5 rounded-10 border-2 border-b-5 border-lip-gray bg-surface px-3`, etiqueta `text-xs font-extrabold text-foreground` y `hitSlop={TOUCH_SLOP}` (34 + 12 = 46 de diana). Es la única excepción a la receta del secundario neutro; el inventario de #166 R3 lo lista por su `testID`.');
-    expect(flat).toContain('confirmar alerta en el detalle).');
+    expect(flat).toContain('(reintentos).');
+    expect(flat).not.toContain('confirmar alerta en el detalle');
   });
 });
 
@@ -196,6 +202,7 @@ describe('#174 R12: inventarios', () => {
       pattern: /(?<![\w-])text-15\b/,
       files: [
         'components/celebration.tsx',
+        'screens/alert-detail/index.tsx', // #180 R3
         'screens/alerts/index.tsx', // #174 R12: delta sobre la lista medida en H0
         'screens/docs/index.tsx', // #175 R6
         'screens/forgot/index.tsx',
@@ -211,6 +218,7 @@ describe('#174 R12: inventarios', () => {
       pattern: /(?<![\w-])tracking-title\b/,
       files: [
         'screens/add-reminder/index.tsx', // #178 R10
+        'screens/alert-detail/index.tsx', // #180 R1
         'screens/alerts/index.tsx', // #174 R12: H0 sin consumidores
         'screens/docs/index.tsx', // #175 R5
         'screens/meal-schedule/index.tsx', // #179 R4

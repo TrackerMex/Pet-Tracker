@@ -1,0 +1,14 @@
+# review: mobile-alert-detail-canvas-fidelity (E4)
+Fecha: 2026-10-18
+Veredicto: APROBADO (condicionado). Bloqueantes: 0.
+
+Informe del reviewer sobre la corrección E4 (cierra B1 y B2 de `progress/review_mobile-alert-detail-canvas-fidelity.md`). Persistido por el leader desde el informe del reviewer; contenido sin cambios.
+
+- Verdict APROBADO (condicionado). Blockers 0. Date 2026-10-18T19:46:36+00:00. Scope: the E4 correction that closes B1 and B2 of the RECHAZADO review.
+- Red: 13 failures of 127 (11 "Unable to find" the map node; 2 `toEqual` with map absent, the «sin zona» cases). No ReferenceError, TypeError or timeout. Green: index.test.tsx 127/127; alert-detail.navigation.test.tsx 1/1; `tsc --noEmit` clean; `expo lint --no-cache` clean; router.d.ts absent.
+- S31 mutation red-then-revert; index.tsx identical to H0. R13.1 via S15 (`title: t('alerts.detailTitle')` in `src/app/_layout.tsx:103`): `bunx jest src/__tests__/ui-language.test.ts -t 'R13.1' --testTimeout=30000` exit 1, `Tests: 1 failed, 29 skipped, 30 total`, failed assertion at `ui-language.test.ts:255:80`. Control at HEAD: `1 passed`, exit 0.
+- E4.3 measures not recalculated; spot-check M19 = 4 and M25 = 4. Suite count change 125→127 is not counted by any measure.
+- Checklists: C2 `progress/current.md` not updated (leader does it). C3 OK. C4 OK (test-first history c044bf39→1ba58e5a; R13 under E4.1). C5: E4 commits lack the R-id suffix in the commit message, as with the rest of #180; leader must register the exception (O1, non-blocking). C6: requirements.md unchanged since `b55e797b`; pending non-blocking: E4.2 says to replace «solo con zona» and «Sin zona no hay mapa» in R2.3 (lines 164–165) and this was not done. Precedence covers the conflict. Any body edit of R2.3 is a requirement change and needs the gate. C7 N/A. C8: O7 (text-17 with twMerge in HeroUI) is covered by R14.1 in the human smoke.
+- Conditions: (1) init.sh green run by the leader (reviewer denied by classifier); if it fails, the correction is not approved. (2) Leader's recorded decision on C5/O1 and on the R2.3 text (E4.2). (3) For `done`: §6 checkbox marked by the human after the Android smoke (R14), Notion/repo drift resolved, and `progress/current.md` and `progress/history.md` updated by the leader.
+- Observations: O8 Android smoke pending (human). Drift Notion/repo to resolve or accept (noted in current.md: E1 phrase only in Notion, `--text-*` differs, §6 lacked parentheses; the §6 item is now fixed by the resync). Skills conflict for future handoffs (CLAUDE.md requires `expo:expo-overview` for mobile work and for subagents). O3, O6, O9–O11 no change.
+- Disclosures: first jest run had a malformed gate (`pgrep -fq` invalid); later runs used the correct pgrep. `graphify query` from the worktree failed. expo skill loaded late. Jest `--forceExit` was authorized by the handoff. The reviewer edited and committed nothing.

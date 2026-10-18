@@ -50,6 +50,7 @@
       --surface: #FFFFFF;
       --surface-foreground: #0D1117;
       --glass-surface: rgba(255,255,255,0.60);
+      --glass-surface-strong: rgba(255,255,255,0.86);
       --tab-pill: rgba(23,130,85,0.14);
       --surface-secondary: #F0FBF6;
       --surface-secondary-foreground: #0D1117;
@@ -70,6 +71,7 @@
       --color-accent-foreground: #FFFFFF;
       --color-muted: #667085;
       --color-glass-surface: rgba(255,255,255,0.60);
+      --color-glass-surface-strong: rgba(255,255,255,0.86);
       --color-tab-pill: rgba(23,130,85,0.14);
       --color-lip-gray: #E4E7EC;
       --color-danger: #EF4444;
@@ -99,6 +101,7 @@
       --surface: #161B22;
       --surface-foreground: #F7F8FA;
       --glass-surface: rgba(22,27,34,0.60);
+      --glass-surface-strong: rgba(22,27,34,0.86);
       --tab-pill: rgba(23,130,85,0.22);
       --surface-secondary: #12231B;
       --surface-secondary-foreground: #F7F8FA;
@@ -119,6 +122,7 @@
       --color-accent-foreground: #FFFFFF;
       --color-muted: #9CA3AF;
       --color-glass-surface: rgba(22,27,34,0.60);
+      --color-glass-surface-strong: rgba(22,27,34,0.86);
       --color-tab-pill: rgba(23,130,85,0.22);
       --color-lip-gray: #0A0D12;
       --color-danger: #F87171;

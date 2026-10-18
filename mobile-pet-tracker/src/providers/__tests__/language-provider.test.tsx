@@ -72,7 +72,8 @@ describe('#65 R12: el catálogo tiene los dos idiomas y t resuelve claves y par�
         + 2 // #178 R3
         + 5 // #179 R3
         - 2 // #179 R5
-        + 9, // #183 R1
+        + 9 // #183 R1
+        + 1, // #180 R8
     );
     expect(spanishKeys).toEqual(englishKeys);
     for (const key of englishKeys) {
@@ -783,5 +784,21 @@ describe('#183 R1: el copy de la validación en cliente', () => {
     expect(languageDesign).toMatch(
       /### §2\.\d+ — Añadidos por #183 — Validación en cliente de las pantallas de cuenta/,
     );
+  });
+});
+
+
+describe('#180 R8: alerts.mapLabel', () => {
+  it.each([
+    ['alerts.mapLabel', 'Location when leaving {{zone}}', 'Ubicación al salir de la zona {{zone}}'],
+  ])('#180 R8.1: declara %s en ambos idiomas', (key, english, spanish) => {
+    expect((en as Record<string, string>)[key]).toBe(english);
+    expect((es as Record<string, string>)[key]).toBe(spanish);
+  });
+  it.each([
+    ['alerts.mapLabel', 'Location when leaving {{zone}}', 'Ubicación al salir de la zona {{zone}}'],
+  ])('#180 R8.1: documenta %s y sus marcadores', (key, english, spanish) => {
+    const design = readFileSync(join(process.cwd(), '../specs/mobile-ui-language/design.md'), 'utf8');
+    expect(design).toContain('| — | `' + key + '` | `' + english + '` | `' + spanish + '` | ← añadida por #180 (R8)');
   });
 });

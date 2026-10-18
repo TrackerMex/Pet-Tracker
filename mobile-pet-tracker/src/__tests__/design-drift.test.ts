@@ -1108,7 +1108,9 @@ describe('#178 R13: Recordatorios sin deriva', () => {
       && !/\.test\.tsx?$/.test(file)
       && pattern.test(readFileSync(file, 'utf8')),
     ).map((file) => file.slice(sourceRoot.length + 1));
-    expect(outsideReminders(/\brounded-(?:16|22)\b/)).toEqual([]);
+    expect(outsideReminders(/\brounded-(?:16|22)\b/)).toEqual([
+      join('screens', 'alert-detail', 'index.tsx'), // #180 E1 R7.4 comparte rounded-16
+    ]);
     expect(outsideReminders(/\brounded-14\b/)).toEqual([
       join('screens', 'meal-schedule', 'index.tsx'), // #179 R13 comparte rounded-14
       join('screens', 'meals-history', 'index.tsx'), // #179 R13 comparte rounded-14
@@ -1180,9 +1182,11 @@ describe('#179 R13: Horario e Historial fieles al canvas', () => {
   it('limita text-22 a Horario y text-17 al inventario de E1.2', () => {
     const productionFilesMatching = (pattern: RegExp) => filesMatching(pattern).filter(path => !/\.test\.tsx?$/.test(path)).sort();
     expect(productionFilesMatching(/\btext-22\b/)).toEqual([
+      join('screens', 'alert-detail', 'index.tsx'), // #180 R3
       join('screens', 'meal-schedule', 'index.tsx'),
     ]);
     expect(productionFilesMatching(/\btext-17\b/)).toEqual([
+      join('screens', 'alert-detail', 'index.tsx'), // #180 R7
       join('screens', 'forgot', 'index.tsx'),
       join('screens', 'login', 'index.tsx'),
       join('screens', 'meal-schedule', 'index.tsx'),
@@ -1210,6 +1214,12 @@ describe('#179 R13: Horario e Historial fieles al canvas', () => {
   });
 });
 
+it('#180 R7.4: el detalle usa rounded-16 dos veces y ningún rounded-22 ni rounded-14', () => {
+  const source = readFileSync(join(sourceRoot, 'screens', 'alert-detail', 'index.tsx'), 'utf8');
+  expect(source.match(/\brounded-16\b/g) ?? []).toHaveLength(2);
+  expect(source.match(/\brounded-22\b/g) ?? []).toHaveLength(0);
+  expect(source.match(/\brounded-14\b/g) ?? []).toHaveLength(0);
+});
 
 describe('#185 R10: el formulario pertenece a la lista A11', () => {
   it.each(['conventions.md', 'ui-guidelines.md'])('%s declara docs-upload bajo cabecera nativa', (file) => {

@@ -167,7 +167,11 @@ comparan escritas en el propio test, nunca importando una constante de producci�
 
 - **R2.1** THE SYSTEM SHALL declarar `--radius-hero: 28px;` y `--radius-tile: 18px;` en el bloque `@theme` de
   `src/theme/global.css`, justo después de `--radius-card: 20px;`.
-- **R2.2** THE SYSTEM SHALL usar las clases solo donde esta spec lo indica, en ficheros de producción
+- **R2.2**
+
+> Enmendado por #180 (ver «Enmienda #180» al final).
+
+ THE SYSTEM SHALL usar las clases solo donde esta spec lo indica, en ficheros de producción
   (excluye `*.test.ts(x)` y `__tests__/`):
   - `rounded-hero`: exactamente en `components/card.tsx` (variante `hero`, R3) y
     `screens/profile/index.tsx` (`profile-hero-skeleton`, R6);
@@ -179,7 +183,11 @@ comparan escritas en el propio test, nunca importando una constante de producci�
   - Los tamaños de la escala de Tailwind conservan su clase: `text-xs` 12, `text-sm` 14, `text-base` 16,
     `text-lg` 18, `text-2xl` 24 y `text-3xl` 30.
   - Las clases arbitrarias (`text-[13px]`) siguen prohibidas (R15.2).
-- **R2.4** THE SYSTEM SHALL usar `text-26` solo en `screens/profile/index.tsx` entre los ficheros de
+- **R2.4**
+
+> Enmendado por #180 (ver «Enmienda #180» al final).
+
+ THE SYSTEM SHALL usar `text-26` solo en `screens/profile/index.tsx` entre los ficheros de
   producción (mismo alcance que R2.2) y `text-13` solo en un inventario cerrado de seis ficheros:
   - `text-26`: en `profile-pet-name` (R6.1);
   - `text-13`: en `me-avatar-initials` (R11.5) de `screens/profile/index.tsx` y, desde que #172 mergeó
@@ -219,7 +227,11 @@ comparan escritas en el propio test, nunca importando una constante de producci�
   - la variante por defecto `surface`;
   - la fusión `twMerge(variantClassNames[variant], className)`;
   - `StyleSheet.flatten([CONTINUOUS_CORNER, style])`.
-- **R3.3** WHEN Perfil renderiza, THE SYSTEM SHALL usar `variant="hero"` exactamente 1 vez y `variant="flat"`
+- **R3.3**
+
+> Enmendado por #180 (ver «Enmienda #180» al final).
+
+ WHEN Perfil renderiza, THE SYSTEM SHALL usar `variant="hero"` exactamente 1 vez y `variant="flat"`
   exactamente 2 veces en todo `src/` de producción, las tres en `screens/profile/index.tsx`.
 - **Tests**:
   - `src/components/__tests__/card.test.tsx`, describe nuevo `#173 R3: variantes hero y flat sin sombra`.
@@ -964,3 +976,15 @@ bueno y que el árbol desmintió. Detalle y pruebas en `progress/current.md` (Re
 - [X] Enmiendas R14 revisadas (la firma de cada bloque es `- [ ] Enmienda #173 aprobada por humano`, en su
   fichero)
 - [X] Prueba de humo R16 superada en dev build de Android (fecha: 2026-10-14, dispositivo: OnePlus Nord 5, temas:)
+
+## Enmienda #180 — Detalle de alerta fiel al canvas
+
+> Enmienda de `mobile-tab-screens-canvas-fidelity` por `mobile-alert-detail-canvas-fidelity` (#180, 2026-10-16). Directiva del humano:
+> «el diseño final debe de quedar como el artifact».
+
+**Qué cambia**: #173 R2.2/R2.4: el detalle de alerta entra en los inventarios de text-13, text-22 y text-26; #173 R3.3: Perfil y el detalle de alerta son los consumidores de Card hero.
+
+Detalle y tests en `specs/mobile-alert-detail-canvas-fidelity/requirements.md`. Los `it` citados se reescriben en
+su sitio con el sufijo `(enmendado por #180 Rn)`.
+
+- [X] Enmienda #180 aprobada por humano
