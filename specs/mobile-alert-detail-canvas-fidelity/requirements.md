@@ -703,4 +703,4 @@ La casilla de §6 no cambia (`- [ ] Smoke #180 en dev build de Android (fecha: _
 
 ### Aprobación de la enmienda
 
-- [ ] Enmienda #180 aprobada por humano
+- [x] Enmienda #180 aprobada por humano (fecha: 2026-10-18) ← gate de la enmienda E1 (firma en Notion, 2026-10-18T05:05:15Z)
