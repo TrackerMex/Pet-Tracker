@@ -316,7 +316,7 @@ export function ProfileScreen() {
           testID="profile-pets-empty"
           pose="talk"
           title={t('common.noPetsYet')}
-          body={t('common.noPetsYet')}
+          body={t('common.noPetsBody')}
           action={{ label: t('profile.addPet'), onPress: () => router.push('/pets/add') }}
         />
       ) : null}
