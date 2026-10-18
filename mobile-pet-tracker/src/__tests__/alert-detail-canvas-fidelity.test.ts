@@ -25,3 +25,9 @@ it('#180 R5.6: solo la barra de pestañas y el detalle importan expo-blur', () =
   expect(sourceFiles().filter(path => path.endsWith('.tsx') && readFileSync(path, 'utf8').includes("from 'expo-blur'"))
     .map(path => path.slice(sourceRoot.length + 1)).sort()).toEqual(['components/floating-tab-bar.tsx', 'screens/alert-detail/index.tsx']);
 });
+
+it('#180 R3.7: el fichero no nombra las clases de la pantalla anterior', () => {
+  const source = readSource('screens/alert-detail/index.tsx');
+  expect([...source.matchAll(/rounded-card|min-h-44|text-lg|text-2xs|text-sm|h-52([^.0-9]|$)|min-h-11/g)]).toEqual([]);
+  expect(source.match(/bg-default/g)).toHaveLength(1);
+});

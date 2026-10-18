@@ -27,8 +27,8 @@ jest.mock('react-native-reanimated', () => ({
 jest.mock('heroui-native', () => {
   const actual = jest.requireActual<typeof import('heroui-native')>('heroui-native');
   const React = jest.requireActual<typeof import('react')>('react');
-  const { Pressable, Text } = jest.requireActual<typeof import('react-native')>('react-native');
-  return { ...actual, Button: Object.assign(
+  const { Pressable, Text, View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return { ...actual, Skeleton: (props: Record<string, unknown>) => React.createElement(View, props), Button: Object.assign(
     ({ isDisabled, ...props }: Record<string, unknown> & { children?: ReactNode; isDisabled?: boolean }) => React.createElement(Pressable, { ...props, disabled: isDisabled }),
     { Label: (props: Record<string, unknown> & { children?: ReactNode }) => React.createElement(Text, props) },
   ) };
@@ -285,11 +285,11 @@ describe('#100 R3: el detalle pinta la alerta de la caché (enmendado por #180 R
 });
 
 describe('#100 R4: el detalle pinta carga, error y salida sin la alerta', () => {
-  it('pinta solo el esqueleto mientras carga', async () => {
+  it('#180 R10.1: pinta el esqueleto rounded-hero mientras carga (enmendado por E2)', async () => {
     mockListAlerts.mockReturnValue(new Promise<AlertsState>(() => undefined));
     await renderDetail();
     const loading = await screen.findByTestId('alert-detail-loading');
-    expect(loading.props.className).toContain('h-44 w-full rounded-card');
+    expect(loading.props.className).toBe('h-58 w-full rounded-hero');
     expect(screen.queryByTestId('alert-detail-card')).toBeNull();
     expect(screen.queryByTestId('alert-detail-error')).toBeNull();
     expect(mockDismissTo).not.toHaveBeenCalled();
@@ -299,7 +299,7 @@ describe('#100 R4: el detalle pinta carga, error y salida sin la alerta', () => 
     { kind: 'error' },
     { kind: 'unreachable', message: 'network down' },
     { kind: 'missing-config' },
-  ] as AlertsState[])('pinta $kind y reintenta la lista', async (error) => {
+  ] as AlertsState[])('#180 R10.2: pinta $kind y reintenta la lista (enmendado por E2)', async (error) => {
     mockListAlerts
       .mockResolvedValueOnce(error)
       .mockResolvedValue({ kind: 'ok', items: [makeAlert()], nextCursor: null });
@@ -309,7 +309,7 @@ describe('#100 R4: el detalle pinta carga, error y salida sin la alerta', () => 
     expect(errorText.props.selectable).toBe(true);
     expect(errorText.props.className).toBe('text-danger');
     const retry = screen.getByTestId('alert-detail-retry');
-    expect(retry.props.className).toContain('min-h-11');
+    expect(retry.props.className).toBe('h-13');
     expect(within(retry).getByText('Reintentar')).toBeVisible();
     expect(mockDismissTo).not.toHaveBeenCalled();
 
