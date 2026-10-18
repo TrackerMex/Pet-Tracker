@@ -117,9 +117,9 @@ export function ForgotScreen() {
         {!sent ? (
           <TextField className="w-full" isInvalid={Boolean(fieldErrors.email)}>
             <Label>
-              <Label.Text className="text-13 font-semibold text-muted">
+              <Text className="text-13 font-semibold text-muted">
                 {t('forgot.email')}
-              </Label.Text>
+              </Text>
             </Label>
             <Input
               testID="forgot-email"

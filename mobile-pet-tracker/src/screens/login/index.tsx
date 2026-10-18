@@ -108,9 +108,9 @@ export function LoginScreen() {
         <HomeEntrance testID="login-body" index={1} className="flex-1 gap-4">
           <TextField isInvalid={Boolean(fieldErrors.email)}>
             <Label>
-              <Label.Text className="text-13 font-semibold text-muted">
+              <Text className="text-13 font-semibold text-muted">
                 {t('login.email')}
-              </Label.Text>
+              </Text>
             </Label>
             <Input
               testID="login-email"
@@ -127,9 +127,9 @@ export function LoginScreen() {
 
           <TextField isInvalid={Boolean(fieldErrors.password)}>
             <Label>
-              <Label.Text className="text-13 font-semibold text-muted">
+              <Text className="text-13 font-semibold text-muted">
                 {t('login.password')}
-              </Label.Text>
+              </Text>
             </Label>
             <PasswordInput
               testID="login-password"

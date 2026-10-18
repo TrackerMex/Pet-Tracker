@@ -152,9 +152,9 @@ export function RegisterScreen() {
         <View testID="register-names-row" className="flex-row gap-3">
           <TextField className="flex-1" isInvalid={Boolean(fieldErrors.firstName)}>
             <Label>
-              <Label.Text className="text-13 font-semibold text-muted">
+              <Text className="text-13 font-semibold text-muted">
                 {t('register.firstName')}
-              </Label.Text>
+              </Text>
             </Label>
             <Input
               testID="register-first-name"
@@ -168,9 +168,9 @@ export function RegisterScreen() {
           </TextField>
           <TextField className="flex-1" isInvalid={Boolean(fieldErrors.lastName)}>
             <Label>
-              <Label.Text className="text-13 font-semibold text-muted">
+              <Text className="text-13 font-semibold text-muted">
                 {t('register.lastName')}
-              </Label.Text>
+              </Text>
             </Label>
             <Input
               testID="register-last-name"
@@ -186,9 +186,9 @@ export function RegisterScreen() {
 
         <TextField isInvalid={Boolean(fieldErrors.email)}>
           <Label>
-            <Label.Text className="text-13 font-semibold text-muted">
+            <Text className="text-13 font-semibold text-muted">
               {t('register.email')}
-            </Label.Text>
+            </Text>
           </Label>
           <Input
             testID="register-email"
@@ -206,9 +206,9 @@ export function RegisterScreen() {
         <View testID="register-contact-row" className="flex-row gap-3">
           <TextField className="flex-2" isInvalid={Boolean(fieldErrors.phone)}>
             <Label>
-              <Label.Text className="text-13 font-semibold text-muted">
+              <Text className="text-13 font-semibold text-muted">
                 {t('register.phone')}
-              </Label.Text>
+              </Text>
             </Label>
             <Input
               testID="register-phone"
@@ -223,9 +223,9 @@ export function RegisterScreen() {
           </TextField>
           <TextField className="flex-1" isInvalid={Boolean(fieldErrors.country)}>
             <Label>
-              <Label.Text className="text-13 font-semibold text-muted">
+              <Text className="text-13 font-semibold text-muted">
                 {t('register.country')}
-              </Label.Text>
+              </Text>
             </Label>
             <Input
               testID="register-country"
@@ -243,9 +243,9 @@ export function RegisterScreen() {
 
         <TextField isInvalid={Boolean(fieldErrors.password)}>
           <Label>
-            <Label.Text className="text-13 font-semibold text-muted">
+            <Text className="text-13 font-semibold text-muted">
               {t('register.password')}
-            </Label.Text>
+            </Text>
           </Label>
           <PasswordInput
             testID="register-password"
@@ -259,9 +259,9 @@ export function RegisterScreen() {
 
         <TextField isInvalid={Boolean(fieldErrors.passwordConfirmation)}>
           <Label>
-            <Label.Text className="text-13 font-semibold text-muted">
+            <Text className="text-13 font-semibold text-muted">
               {t('register.confirmPassword')}
-            </Label.Text>
+            </Text>
           </Label>
           <PasswordInput
             testID="register-password-confirmation"
