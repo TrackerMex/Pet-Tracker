@@ -175,3 +175,19 @@ text-13 text-muted" />`, 1],
     expect(scan('corpus.tsx', code).findings).toHaveLength(expected);
   });
 });
+
+
+describe('#187 R5: la carta prohíbe text-NN sobre HeroUI', () => {
+  it('#187 R5: la carta fija la regla y la receta con Text plano', () => {
+    const charter = readFileSync(join(process.cwd(), '..', 'docs', 'ui-guidelines.md'), 'utf8');
+    for (const literal of [
+      '## Enmienda #187 — Tamaños de letra sobre componentes de HeroUI',
+      'no se pasa nunca a un componente de',
+      '<Label><Text className="text-13 font-semibold text-muted">',
+      '<Button><Text className="text-17 font-extrabold text-accent-foreground">',
+      'src/__tests__/heroui-text-size-merge.test.ts',
+    ]) {
+      expect(charter).toContain(literal);
+    }
+  });
+});
