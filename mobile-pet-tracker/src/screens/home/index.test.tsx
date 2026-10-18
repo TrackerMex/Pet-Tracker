@@ -7,7 +7,8 @@ import {
 } from '@testing-library/react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
+import { Text } from 'react-native';
 import { Easing, FadeOut, ReduceMotion, withDelay } from 'react-native-reanimated';
 import { Uniwind } from 'uniwind';
 
@@ -5265,5 +5266,73 @@ describe('#155 R4: Inicio sin mascotas presenta a Pingo', () => {
     await fireEvent.press(action);
     expect(mockRouter.push).toHaveBeenCalledTimes(1);
     expect(mockRouter.push).toHaveBeenCalledWith('/pets/add');
+  });
+});
+
+let selectPet181: ((id: string) => void) | undefined;
+
+function SelectionProbe181() {
+  const { selectedPetId, selectPet } = selectedPetHooks.useSelectedPet();
+  useEffect(() => {
+    selectPet181 = selectPet;
+    return () => { selectPet181 = undefined; };
+  }, [selectPet]);
+  return <Text testID="selected-pet-id">{selectedPetId ?? 'none'}</Text>;
+}
+
+describe('#181 R1: home sin mascotas no muestra errores de detalle', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated', token: 'jwt-token',
+      signIn: jest.fn(), signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    mockGetPet.mockResolvedValue({ kind: 'error' });
+    mockGetDailyActivity.mockResolvedValue({ kind: 'error' });
+    mockListReminders.mockResolvedValue({ kind: 'not-found' });
+  });
+
+  afterEach(() => jest.restoreAllMocks());
+
+  it.each(['S1', 'S2', 'S3'] as const)('%s: conserva el vacío sin tarjeta ni reintento', async (scenario) => {
+    if (scenario === 'S3') {
+      const realUseSelectedPet = selectedPetHooks.useSelectedPet;
+      jest.spyOn(selectedPetHooks, 'useSelectedPet').mockImplementation(() => ({
+        ...realUseSelectedPet(), selectedPetId: 'pet-stale', clearPet: () => undefined,
+      }));
+    }
+    const { queryClient } = await renderWithProviders(
+      <><SelectionProbe181 /><HomeScreen /></>, { wrapper: HomeWrapper },
+    );
+    if (scenario === 'S2') {
+      const focus = mockUseFocusEffect.mock.calls.at(-1)?.[0];
+      expect(focus).toBeDefined();
+      await act(async () => { focus?.(); });
+      await waitFor(() => expect(mockGetPet).toHaveBeenCalledWith(apiUrl, 'jwt-token', null));
+    }
+    await screen.findByTestId('home-empty');
+    if (scenario === 'S1') {
+      await act(async () => { selectPet181?.('pet-stale'); });
+      await waitFor(() => expect(screen.getByTestId('selected-pet-id')).toHaveTextContent('none'));
+    }
+    await screen.findByTestId('home-empty');
+    await waitFor(() => expect(queryClient.isFetching()).toBe(0));
+    expect(screen.queryByTestId('pet-hero-error')).toBeNull();
+    expect(screen.queryByTestId('pet-hero-retry')).toBeNull();
+  });
+
+  it('S4: lista unreachable y selección nula ocultan la tarjeta', async () => {
+    mockListPets.mockResolvedValue({ kind: 'unreachable', message: 'offline' });
+    const { queryClient } = await renderWithProviders(<HomeScreen />, { wrapper: HomeWrapper });
+    const focus = mockUseFocusEffect.mock.calls.at(-1)?.[0];
+    expect(focus).toBeDefined();
+    await act(async () => { focus?.(); });
+    await waitFor(() => expect(mockGetPet).toHaveBeenCalledWith(apiUrl, 'jwt-token', null));
+    await screen.findByTestId('home-error');
+    await waitFor(() => expect(queryClient.isFetching()).toBe(0));
+    expect(screen.queryByTestId('pet-hero-error')).toBeNull();
+    expect(screen.queryByTestId('pet-hero-retry')).toBeNull();
   });
 });
