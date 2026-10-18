@@ -166,7 +166,7 @@ export function AlertDetailScreen({ alertId }: { alertId: string }) {
       {alert ? (
         <>
           <HomeEntrance index={0} testID="alert-detail-card-entrance">{card}</HomeEntrance>
-          {position && alert.geofenceId !== null ? <HomeEntrance index={1} testID="alert-detail-map-entrance"><AlertDetailMap alert={alert} position={position} /></HomeEntrance> : null}
+          {position ? <HomeEntrance index={1} testID="alert-detail-map-entrance"><AlertDetailMap alert={alert} position={position} /></HomeEntrance> : null}
           <Button
             testID="alert-detail-view-map"
             variant="secondary"
