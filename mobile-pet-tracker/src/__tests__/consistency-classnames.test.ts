@@ -550,7 +550,7 @@ describe('#166 R2: todo primario sólido lleva el labio detrás de bg-accent', (
     [join('components', 'empty-state.tsx')]: 1,
     [join('screens', 'add-pet', 'index.tsx')]: 1,
     [join('screens', 'add-reminder', 'index.tsx')]: 1,
-    [join('screens', 'docs', 'index.tsx')]: 1, // #175 R7
+    [join('screens', 'docs-upload-form', 'index.tsx')]: 1, // #185 R10
     [join('screens', 'forgot', 'index.tsx')]: 1,
     [join('screens', 'geofence-editor', 'index.tsx')]: 1,
     [join('screens', 'geofences', 'index.tsx')]: 1,
@@ -590,7 +590,7 @@ describe('#166 R3: el secundario neutro lleva el labio gris', () => {
   const rows = [
     [join('screens', 'welcome', 'index.tsx'), 'welcome-have-account', null],
     [join('screens', 'forgot', 'index.tsx'), 'forgot-resend', 'secondary'],
-    [join('screens', 'docs', 'index.tsx'), 'docs-upload-cancel', 'outline'],
+    [join('screens', 'docs-upload-form', 'index.tsx'), 'docs-upload-cancel', 'outline'],
     [join('screens', 'reminders', 'index.tsx'), 'reminders-delete-cancel', 'outline'],
     [join('screens', 'alert-detail', 'index.tsx'), 'alert-detail-view-map', 'secondary'],
   ] as const;

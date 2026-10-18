@@ -8,12 +8,13 @@ describe('#95 R2: las seis rutas de detalle viven en la raíz de src/app', () =>
     ['add-reminder.tsx', '(tabs)/add-reminder.tsx', '../screens/add-reminder'],
     ['pets/add.tsx', '(tabs)/pets/add.tsx', '../../screens/add-pet'],
     ['pets/[petId]/docs.tsx', '(tabs)/pets/[petId]/docs.tsx', '../../../screens/docs'],
+    ['pets/[petId]/docs-upload.tsx', null, '../../../screens/docs-upload-form'], // #185 R10
     ['weight-log.tsx', '(tabs)/weight-log.tsx', '../screens/weight-log'],
     ['meal-schedule.tsx', '(tabs)/meal-schedule.tsx', '../screens/meal-schedule'],
     ['pairing.tsx', '(tabs)/pairing.tsx', '../screens/pairing'],
   ])('%s sustituye a %s con su import correcto', (route, oldRoute, modulePath) => {
     expect(existsSync(join(app, route))).toBe(true);
-    expect(existsSync(join(app, oldRoute))).toBe(false);
+    if (oldRoute !== null) expect(existsSync(join(app, oldRoute))).toBe(false);
     expect(readFileSync(join(app, route), 'utf8')).toContain(`from '${modulePath}'`);
   });
 

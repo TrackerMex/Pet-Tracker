@@ -23,6 +23,9 @@ graphify-out/
 # GitHub PAT
 .github_pat
 
+# Marcador de fin de implementación (scripts/harness/watch-impl.sh)
+progress/impl_*.done
+
 # MCP
 ./.mcp.json
 mpc.json
