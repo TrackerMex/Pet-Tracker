@@ -13,7 +13,7 @@ const textRecipes = [
   'className="text-3xl font-black text-foreground"',
   'className="text-center text-3xl font-black text-foreground"',
   'className="flex-1 text-3xl font-black text-foreground"',
-  '<Label.Text className="text-13 font-semibold text-muted">',
+  '<Text className="text-13 font-semibold text-muted">', // #187 R2
   '<Label>',
   '<Label className=',
   'className="text-15 font-semibold text-foreground"',

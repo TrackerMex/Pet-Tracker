@@ -83,6 +83,13 @@ async function renderRoute() {
 }
 
 describe('#117 R3: la ruta forgot delega en ForgotScreen', () => {
+  it.each(['Correo electrónico'])(
+    '#187 R2: la etiqueta "%s" de forgot pinta 13 px', async (label) => {
+      await renderRoute();
+      expect(screen.getByText(label).props.className).toBe('text-13 font-semibold text-muted');
+    },
+  );
+
   it('renderiza screen-forgot y forgot-form con el título desde la ruta y sin el aviso del stub', async () => {
     mockForgotPassword.mockResolvedValue({ kind: 'ok' });
     await renderRoute();

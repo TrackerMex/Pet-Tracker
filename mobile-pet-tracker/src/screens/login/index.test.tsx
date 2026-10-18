@@ -97,6 +97,13 @@ describe('R7: login llama a la api y navega', () => {
     } satisfies AuthContextValue);
   });
 
+  it.each(['Correo electrónico', 'Contraseña'])(
+    '#187 R2: la etiqueta "%s" de login pinta 13 px', async (label) => {
+      await renderLogin();
+      expect(screen.getByText(label).props.className).toBe('text-13 font-semibold text-muted');
+    },
+  );
+
   it('signs in and replaces the route after a successful login', async () => {
     mockLogin.mockResolvedValue({ kind: 'ok', accessToken: 'jwt-token' });
     await renderLogin();
