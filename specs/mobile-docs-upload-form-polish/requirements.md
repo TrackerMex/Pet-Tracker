@@ -417,11 +417,11 @@ defecto rige R6 (medido en H0).
 
 Rama de P1 (marca **una**):
 
-- [ ] P1 = A, pantalla propia
+- [x] P1 = A, pantalla propia
 - [ ] P1 = B, hoja inferior
 - [ ] P1 = C, otra (descríbela): ____
 
-- [ ] Aprobado por humano
+- [x] Aprobado por humano (Notion, `Estado del gate` = Aprobado, página `3fb6115a9b2781f4a80cc3e7aacbad62`, última edición 2026-10-18T18:39Z)
 
 ## Prueba de humo humana (R11)
 
