@@ -425,4 +425,4 @@ Rama de P1 (marca **una**):
 
 ## Prueba de humo humana (R11)
 
-- [ ] Prueba de humo R11 superada por humano (fecha: ____)
+- [x] Prueba de humo R11 superada por humano (fecha: 2026-10-18)

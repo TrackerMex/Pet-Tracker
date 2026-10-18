@@ -41,4 +41,4 @@ una mascota propia owner. Con teclado abierto en cada paso de los campos.
 | Cancelar no sube nada y deja el filtro como estaba | |
 | Valores 16 / 6 / 12: el humano los confirma o pide otros (P2, P3) | |
 
-- [ ] Prueba de humo R11 superada por humano (fecha: ____)
+- [X] Prueba de humo R11 superada por humano (fecha: 2026-10-18)
