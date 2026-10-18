@@ -197,7 +197,7 @@ export function DocsUploadFormScreen({ petId }: { petId: string }) {
           <View testID="docs-upload-actions" className="gap-3">
             <Button
               testID="docs-upload-submit"
-              className="rounded-xl bg-accent border-b-6 border-black/25"
+              className="rounded-xl bg-accent border-b-4 border-black/25"
               isDisabled={uploading}
               onPress={() => void submitDocument()}
             >
