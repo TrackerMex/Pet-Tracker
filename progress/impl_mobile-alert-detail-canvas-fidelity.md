@@ -503,3 +503,82 @@ Las cinco variaciones de R1 ya estaban incluidas en H0 E3. El delta total compar
 - Sin init.sh de este agente, sin abrir/editar PR, sin merge de PR ni rebase. Se mantienen intactos progress/current.md, progress/history.md, STATUS.md y feature_list.json.
 - El humo Android sigue sin marcar. El humano debe comprobar claro/oscuro, es/en, TalkBack, fecha real en Hermes, ciclo del ping, esquinas y desenfoque sobre expo-maps. No se afirma verificación visual en dispositivo.
 - Trazabilidad completada con hashes en specs/mobile-alert-detail-canvas-fidelity/traceability.md; su commit final se titula `docs(mobile): #180 traceability con hashes`.
+
+## Corrección E4
+
+- Fecha UTC: 2026-10-18T19:07:21+00:00.
+- Confirmación inicial: `pwd` = `/home/claude/sites/Pet-Tracker-wt-180`; `git branch --show-current` = `feature/180-mobile-alert-detail-canvas-fidelity`.
+- H0 E4: `a2524267`. La firma humana `b55e797b` es ancestro del HEAD; el commit de handoff `4c2f3f6c` no cuenta como H0.
+- Alcance: solo R2.3 y S31 (E4.2/E4.6). Seis casos: {con zona, sin zona con posición y geofenceId null, sin posición con payload {}} × {con error de ack, sin error}. El orden incluye mapa siempre que hay posición; la píldora sigue solo con zona. Las esperas asertan el árbol renderizado.
+- Skills cargadas para esta corrección: **ninguna**, conforme al handoff E4. No se cargó ninguna skill de Expo.
+
+### Commits test-primero
+
+1. Rojo `c044bf39` — test(mobile): #180 R2.3 rojo — seis casos del mapa y S31. Incluye el test de seis casos y S31 en una sola línea de producción (`position && alert.geofenceId !== null`).
+2. Verde `1ba58e5a` — fix(mobile): #180 R2.3 revierte S31 — mapa con posición aunque no haya zona. Solo revierte esa línea a `position`; `index.tsx` queda idéntico a H0.
+
+### Evidencia roja de S31
+
+`bunx jest src/screens/alert-detail/index.test.tsx --testTimeout=30000 --forceExit`: exit 1; **13 fallidos, 114 verdes, 127 total**. Fallan los dos casos nuevos «sin zona», los dos de #170 R11 y otros nueve casos que también necesitan mapa sin zona. Ningún ReferenceError. Casos exactos:
+
+- `#170 R8: pinta el mini-mapa con la posición de la alerta › borde válido: con mapa (enmendado por #180 R5, E2)`
+- `#170 R8: pinta el mini-mapa con la posición de la alerta › real del motor: con mapa (enmendado por #180 R5, E2)`
+- `#170 R8: pinta el mini-mapa con la posición de la alerta › pasa colorScheme dark con el tema oscuro`
+- `#170 R8: pinta el mini-mapa con la posición de la alerta › pinta el mapa tras la tarjeta y antes del ack (enmendado por #180 R9)`
+- `#170 R9: ningún fondo encima del mapa › con mapa, la raíz es flex-1 y ningún ancestro del mapa declara fondo`
+- `#170 R11: sin geofenceId pinta el mapa sin zona › geofence_exit sin geofenceId: mapa sin círculo ni distancia, sin consulta`
+- `#170 R11: sin geofenceId pinta el mapa sin zona › battery_low sin geofenceId: mapa sin círculo ni distancia, sin consulta`
+- `#180 R5: mapa con cristal › #180 R5.4: sin ningún nombre omite la etiqueta del mapa`
+- `#180 R6: CTA Ver en el mapa › #180 R6.2: CTA open con mapa true`
+- `#180 R6: CTA Ver en el mapa › #180 R6.2: CTA acked con mapa true`
+- `#180 R6: CTA Ver en el mapa › #180 R6.2: CTA closed con mapa true`
+- `#180 R2: marco y orden › #180 R2.3: ordena título, héroe, mapa, CTA, espaciador, error y ack: sin zona / error true`
+- `#180 R2: marco y orden › #180 R2.3: ordena título, héroe, mapa, CTA, espaciador, error y ack: sin zona / error false`
+
+### Verificación verde
+
+- `bunx jest src/screens/alert-detail/index.test.tsx --testTimeout=30000 --forceExit`: exit 0; **127/127**. Los seis R2.3 y ambos #170 R11 están verdes; R2.1, R2.2 y el resto de tests conservan sus aserciones.
+- `bunx jest src/app/__tests__/alert-detail.navigation.test.tsx --testTimeout=30000`: exit 0; **1/1**, conforme a E4.4. Sin cambios en ese fichero.
+- `test ! -e .expo/types/router.d.ts && bunx tsc --noEmit`: exit 0, sin salida; no se borró ningún archivo generado.
+- `bunx expo lint --no-cache > /tmp/e4-lint.txt 2>&1 && test ! -s /tmp/e4-lint.txt`: exit 0 en el primer intento; log de 0 bytes, sin `Failed to run`.
+- Antes de cada Jest se comprobaron ambos gates globales vacíos. Se esperó a que terminara un init.sh de `Pet-Tracker-wt-185`; no se interrumpieron procesos ajenos.
+- Desviación permitida por el handoff: la primera ejecución roja sin `--forceExit` dio el mismo resumen 13/114/127, pero no terminó y mostró «Jest did not exit one second». Tras el resumen se interrumpió únicamente esa ejecución propia y se repitió con `--forceExit`; también se usó en el verde del mismo fichero. No se cambiaron aserciones ni timeouts por este motivo.
+
+### Medidas frente a H0 E4
+
+Se recalcularon M1–M25 ejecutando sus órdenes sobre un archivo temporal de Git de `a2524267` y sobre el árbol final. **Todas tienen delta 0**. Ninguna mide el número de casos del test: la suite de detalle pasa de 125 a 127 (+2), y R2.3 de cuatro a seis. M19 y M25 siguen en **4 y 4**, objetivos aprobados por E4.3; no son desviaciones. Las medidas e informes históricos anteriores se conservan.
+
+| Medida | H0 E4 | Final | Delta |
+|---|---:|---:|---:|
+| M1 | 8 | 8 | 0 |
+| M2 | 0 | 0 | 0 |
+| M3 | 1 | 1 | 0 |
+| M4 | 11 | 11 | 0 |
+| M5 | 0 | 0 | 0 |
+| M6 | 2 | 2 | 0 |
+| M7 | 5 | 5 | 0 |
+| M8 | 12 | 12 | 0 |
+| M9 | 2 | 2 | 0 |
+| M10 | 6 | 6 | 0 |
+| M11 | 10 | 10 | 0 |
+| M12 | 7 | 7 | 0 |
+| M13 | 3 | 3 | 0 |
+| M14 | 13 | 13 | 0 |
+| M15 | 13 | 13 | 0 |
+| M16 | 15 | 15 | 0 |
+| M17 | 35 | 35 | 0 |
+| M18 | 0 | 0 | 0 |
+| M19 | 4 | 4 | 0 |
+| M20 | 1 | 1 | 0 |
+| M21 | 5 | 5 | 0 |
+| M22 | 2 | 2 | 0 |
+| M23 | 1 | 1 | 0 |
+| M24 | 4 | 4 | 0 |
+| M25 | 4 | 4 | 0 |
+
+### R13.1 y cierre
+
+- R13.1 se mantiene por la excepción humana E4.1 a C4 puntos 2 y 5. No se creó un rojo de R13 ni se repitió S15. Se conserva su evidencia original arriba: primera pasada ciega, candado reforzado y segunda pasada roja en `src/app/_layout.tsx:103`, revertida después. La fila R13 de traceability queda intacta.
+- Un único commit documental final actualiza los hashes de R2 en traceability y añade esta sección. No se reimplementó R1–R13 ni se relanzó su cierre completo.
+- Sin init.sh de este agente, dependencias nuevas, backend/AWS, rebase, merge ni creación/edición de PR. Sin cambios propios en progress/current.md, progress/history.md, STATUS.md, feature_list.json o la casilla de humo. Se preservaron los cambios ajenos preexistentes en progress/current.md y el informe de revisión sin seguimiento.
+- La revisión independiente y el humo Android de R14 siguen a cargo del reviewer y del humano; no se declara la feature done.
