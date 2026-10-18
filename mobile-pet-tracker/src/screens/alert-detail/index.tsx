@@ -6,6 +6,8 @@ import { ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useUniwind } from 'uniwind';
 
+import { AlertPingRing } from './ping-ring';
+
 import { ackAlert } from '../../api/alerts';
 import { listGeofences } from '../../api/geofences';
 import { geofenceKeys } from '../../api/query-keys';
@@ -123,7 +125,10 @@ export function AlertDetailScreen({ alertId }: { alertId: string }) {
     return (
       <Card variant="hero" testID="alert-detail-card" className={`${meta.disc} items-center gap-2 px-4.5 py-5.5`}>
         <View testID="alert-detail-disc" className={`size-18 items-center justify-center rounded-full ${meta.solid}`}>
-          <Icon testID="alert-detail-icon" size={34} color={color} />
+          {alert.status === 'open' ? <AlertPingRing ring={meta.ring} /> : null}
+          <View className={`size-18 items-center justify-center rounded-full ${meta.solid}`}>
+            <Icon testID="alert-detail-icon" size={34} color={color} />
+          </View>
         </View>
         <Text testID="alert-detail-status" className={statusClass}>
           {alert.status === 'acked' ? t('alerts.statusAcked') : alert.status === 'closed' ? t('alerts.statusClosed') : t('alerts.statusOpen')}

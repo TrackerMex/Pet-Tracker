@@ -47,6 +47,9 @@ export const MOTION_POP_SPRING = {
 };
 // #167 R2
 export const MOTION_PING_FROM = 0.55;
+
+// #180 R4.5
+export const MOTION_ALERT_PING_MS = 1800;
 // #167 R2
 export const MOTION_PING_TO_SCALE = 1.5;
 // #167 R2
