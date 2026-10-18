@@ -360,6 +360,9 @@ Reglas críticas:
     veredicto en la mano
 Criterios de aceptación: <los R-ids de requirements.md>
 Al terminar: escribir resultado en progress/impl_<feature>.md
+Última acción: crear progress/impl_<feature>.done con una sola línea: la ruta de
+progress/impl_<feature>.md. Es el marcador que vigila scripts/harness/watch-impl.sh
+y avisa al leader; no lo commitees (está en .gitignore).
 ```
 
 ### Por qué esas dos líneas están ahí (#108, 2026-09-23)
