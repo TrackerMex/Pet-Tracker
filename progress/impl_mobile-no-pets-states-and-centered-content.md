@@ -1,250 +1,273 @@
-# Informe de implementación — #181
+# Informe de implementación — #181, ronda 2
 
-Implementación de R1–R10 completada según la enmienda aprobada `a64859d8`,
-con c1–c13 en orden. Solo queda el smoke Android del humano. No se marca la
-feature done: el gate completo y la revisión corresponden al leader.
-Este informe sustituye el preflight anterior, cuyos bloqueos fueron corregidos
-en la spec y el handoff antes de c1.
+R8 (B2) y las mediciones de mutación (P1) quedan cerrados en esta ronda.
+**B1 no resuelto**: no se encontró una reproducción determinista. No se aplica
+ningún arreglo al picker ni a Perfil. Las tres corridas completas de diagnóstico
+pasan, pero eso no demuestra la causa ni elimina la caída intermitente registrada
+por el leader. La feature sigue a la espera del gate y de la revisión del leader.
 
-## Entorno y base
+## Retracción y entrega
 
-- `pwd`: `/home/claude/sites/Pet-Tracker-wt-181` (coincide).
-- `git branch --show-current`: `feature/181-mobile-no-pets-states-and-centered-content` (coincide).
-- H0: `44acd74b`.
-- HANDOFF: `e10cd68944370b6590c1193fe6665f7f05ad4d9b`.
-- Antes de c1, `git diff --stat 44acd74b HEAD -- docs mobile-pet-tracker` vacío;
-  anclas medidas de nuevo por contenido sobre ese árbol.
-- `node_modules` ya instalado; Bun 1.4.0. No se instalaron dependencias.
-- Leídos requirements completos, design, tasks, traceability e instrucciones
-  de raíz/móvil; arquitectura, convenciones, carta UI y verificación aplicables.
-- Consultada la documentación versionada de [Expo SDK 57](https://docs.expo.dev/versions/v57.0.0/).
+Retiro la alegación de la ronda 1 de una «excepción explícita del handoff» para
+no indexar el informe. Este informe y traceability se entregan commiteados, sin
+excepciones ni cambios pendientes. No se usa el informe como sustituto del gate.
 
-## Resultado
+## Entorno y referencias
 
-El proveedor expone `clearPet` con identidad estable por token. Solo el hook
-decide limpiar, con pantalla enfocada, sin revalidación y lista ok vacía.
-Las listas pendientes o fallidas conservan la selección. Los 17 dobles previos
-se actualizaron y el typecheck pasa.
+- `pwd`: `/home/claude/sites/Pet-Tracker-wt-181`, correcto.
+- Rama: `feature/181-mobile-no-pets-states-and-centered-content`, correcta.
+- `git status --short` inicial: vacío.
+- HANDOFF ronda 2: `f9d4179c53f7a7fe6805fc944eae8b1094efe42b`.
+- Veredicto leído completo: `progress/review_mobile-no-pets-states-and-centered-content.md`, commit `73f5585b`.
+- Spec sin cambios: firma `a64859d8`; leídos R8, R10, §3 y R9.
+- **M1–M19 no se repiten ni se vuelven a medir**. Referencia: sección
+  «M1–M19 antes de c1» de
+  `git show 73f5585b:progress/impl_mobile-no-pets-states-and-centered-content.md`.
+- Las precondiciones R8.1/R8.2 y las cuatro regex de R8.3 se verificaron contra
+  el árbol antes de escribir el describe. Se cumplían y no se cambió producción.
 
-Inicio y Recordatorios sustituyen el scroll por el contenedor exacto
-`flex-1 items-center justify-center p-6 bg-background`. Perfil conserva el
-scroll de cuenta y centra su EmptyState en horizontal, con los dos botones
-«Añadir mascota» previstos. Los errores no conviven con el vacío; Perfil
-suprime además sus esqueletos de mascota en ese estado. Copy, pose y navegación
-se verifican en el árbol. La petición manual con selección nula sigue siendo
-la deuda de #193: no se cambió el refetch al enfocar.
+## Commits de esta ronda y recuentos
 
-## M1–M19 antes de c1
-
-| Ancla | Medida real en H0 | Comparación y resultado |
-|---|---|---|
-| M1 | 1 pet-hero-error | coincide; sigue 1 |
-| M2 | 1 profile-pet-error | coincide; sigue 1 |
-| M3 | 1 reminders-error | coincide; sigue 1 |
-| M4 | 1 condición pets.data.pets.length === 0 en Inicio | coincide; trasladada al retorno anticipado |
-| M5 | EmptyState Inicio / Perfil / Recordatorios = 1 / 0 / 1 | coincide; final 1 / 1 / 2 |
-| M6 | 1 profile-pets-empty, Text | coincide; mismo testID ahora en EmptyState |
-| M7 | 2 recetas exactas de contenedor en Mapa | coincide; Mapa intacto |
-| M8 | 7: food, health, home, map, pairing, profile, reminders | coincide; llamadores intactos |
-| M9 | 14 dobles add-pet / 1 alert-detail | coincide; todos incorporan clearPet |
-| M10 | 2 satisfies SelectedPetContextValue previos en el hook | coincide; ambos incorporan clearPet |
-| M11 | 0 ficheros con clearPet en src | coincide; final 2 ficheros de producción, más tests |
-| M12 | 35 - 1 + 2 + 1 + 16 - 4 + 8 + 1 + 6 = 64 | coincide; final + 2 = 66 |
-| M13 | 50 + 1 - 2 + 1 - 1 + 1 + 1 + 1 + 1 = 53 | coincide; final + 3 = 56 |
-| M14 | 12 vacíos en texto; Perfil incluido | coincide; final 11, sin Perfil |
-| M15 | 8 ficheros; reminders 1, profile ausente | coincide; final 9, reminders 2, profile 1 |
-| M16 | 5 apariciones: fuente 1, tests Perfil 3, empty-state.test 1 | coincide; los 3 tests originales de Perfil no se editaron |
-| M17 | 4 Excepción nombrada en conventions | n de H0 = 4; final n + 1 = 5 |
-| M18 | 0 enmienda A20 en conventions | coincide; final 1 |
-| M19 | 1 selectPet: en el tipo del proveedor | coincide; firma intacta |
-
-La lista final de 9 ficheros de EmptyState se comprobó con Node sobre la
-misma lista que el test compara con `.sort()`: food, alerts, docs, geofences,
-health, home, map, profile, reminders (rutas completas ordenadas).
-`SCREEN_FILES`, `R3_HOME` y `checkUses(ALL_USES)` se conservan.
-
-## Commits y TDD
-
-Los seis commits rojos se cerraron antes de escribir su implementación.
-Todos fallaron por aserción, sin símbolos ausentes. R6/R7 nacieron verdes en
-c10, como prescribe la excepción, y se pusieron rojos al plantar X1.
-Las 13 sondas de c1 quedaron rojas; los tests negativos que ya respetaba H0
-son verdes dentro del commit rojo c2, cuyo requisito sí falla sin implementar.
-
-| Paso | Hash | Mensaje | Verificación en ese paso |
+| Cambio | Commit | Mensaje | Declaraciones de test añadidas |
 |---|---|---|---|
-| c1 | `f08797a6d07fc6c8492047d4a63973bbf3cba456` | test(mobile): prueba estados sin mascotas en trece escenarios (R1) | rojo: 13 fallos por aserción (3 suites) |
-| c2 | `45a13f421909fabdf85c35d942e4dbd2456d74bf` | test(mobile): verifica limpieza y escritor único de selección (R2) | rojo: 5 fallos por aserción y 8 verdes; las condiciones negativas ya se respetaban |
-| c3 | `2f1165f3ba8f3e65b22443a6331322b859c4b8b7` | feat(mobile): limpia la selección cuando la lista queda vacía (R2) | verde: typecheck exit 0; 4 suites / 146 tests |
-| c4 | `c5170de1fa5c4eb0987850fcd74e5d472727945d` | test(mobile): exige el vacío de Inicio fuera del scroll (R3) | rojo: 2 fallos por aserción (incluye el candado anterior enmendado) |
-| c5 | `d74224cce4202d19b1985df77d80fa569e961a85` | feat(mobile): centra el estado de Inicio sin mascotas (R3) | verde: Inicio, 1 suite / 226 tests |
-| c6 | `8822836986d0c43e60a7f61b231eca8a5445684e` | test(mobile): exige el vacío de cuenta en Recordatorios (R4,R8) | rojo: 9 fallos por aserción; 186 verdes |
-| c7 | `f90f7d57c0232643924196a2e900959cad490895` | feat(mobile): centra la cuenta sin mascotas en Recordatorios (R4) | verde: 2 suites / 165 tests; guardas 12 suites / 327 tests |
-| c8 | `c813325545c43ff1ab0a9de6d71e08183082b2a5` | test(mobile): exige el vacío ilustrado dentro de Perfil (R5,R8) | rojo: 10 fallos por aserción; 259 verdes |
-| c9 | `1af399ba1d16419be18c019dd8eb578fe3bcd64b` | feat(mobile): ilustra el vacío de Perfil y oculta sus errores (R5) | verde: 2 suites / 239 tests; guardas 12 suites / 327 tests |
-| c10 | `2af02ae5cc1b0b1b74fcba2a8a8f17def6862d65` | test(mobile): prueba limpieza heredada y primera mascota (R6,R7) | verde desde su creación: 3 sondas; cerradas por X1 |
-| c11 | `9fe88151d7795f49e9c98ecb4597f223a9af615a` | test(mobile): exige la enmienda A20 y su firma tolerante (R9) | rojo: 2 fallos por aserción (cero apariciones y casilla ausente) |
-| c12 | `78313d6a3ef0bf24d55aca8867354394f45ed4e2` | docs(mobile-no-pets-states-and-centered-content): documenta excepción A20 (R9) | verde: 2 tests de A20 |
-| c13 | `6d3233181ebf033c3cbc510c9d1b3c222bc48b71` | docs(mobile-no-pets-states-and-centered-content): registra mutaciones y trazabilidad (R10) | verde: registro empírico R10 y trazabilidad; árbol restaurado, 37 tests nuevos y 329 guardas |
+| B1 | sin commit; sin arreglo | diagnóstico e instrumentación temporal revertida | 0 |
+| R8 | `8da45c961ebfaf211e95213f7cf88a107813dc81` | test(mobile): exige los candados agregados de R8 (R8) | 3 |
+| Informe y trazabilidad | commit que contiene este informe | docs(mobile-no-pets-states-and-centered-content): registra la ronda 2 (R8, R10) | 0 |
 
-Recuentos reales de tests añadidos (expandiendo `it.each`, sin contar el test
-anterior reescrito como uno nuevo):
+El hash del commit de documentación se obtiene sin autorreferencia con
+`git log -1 --format=%H -- progress/impl_mobile-no-pets-states-and-centered-content.md`.
+El hash histórico de c13 se fija en traceability a `6d3233181ebf033c3cbc510c9d1b3c222bc48b71`.
 
-| Paso | Recuento | Desglose |
-|---|---|---|
-| c1 | 13 | S1–S4 en tres pantallas; S5 de Perfil |
-| c2, n2 | 13 | proveedor 3; hook 9 casos de comportamiento + 1 escaneo |
-| c4, n3 | 1 | R3.2; el it de #155 R4 se reescribe sin aumentar el total |
-| c6, n4 | 3 | contenedor/ausencias, copy/pose/acción y rama con mascota |
-| c8, n5 | 2 | vacío ilustrado y centrado/cuenta; la tabla pierde 1 texto y gana 1 recuento, neto 0 |
-| c10 | 3 | Comida, Salud y convergencia de Inicio |
-| c11 | 2 | literal único y casilla tolerante |
-| Total | 37 | todos llevan prefijo de feature y R-id |
+El recuento se comprobó sobre las líneas añadidas de declaraciones de test en
+`git show` del commit R8. Total añadido esta ronda: **3**. En
+`src/__tests__/no-pets-states.test.ts` hay **5 declaraciones locales** (2 de R9
+más 3 de R8). Jest ejecuta **7 casos** en ese fichero porque importar
+`ui-copy-table` registra sus dos auto-tests. Esa diferencia se observó en la
+primera corrida verde y no se ocultó alterando el runner ni el módulo importado.
 
-## R10 — Mutaciones
+## B1 — diagnóstico sin arreglo
 
-Todas se plantaron por separado sobre el árbol verde de c12 `78313d6a3ef0bf24d55aca8867354394f45ed4e2`.
-Tras cada corrida se revirtió su único archivo con
-`git checkout HEAD -- <ruta>` y se comprobó
-`git diff --quiet && git diff --cached --quiet` antes de la siguiente.
-No sobreviven mutaciones. X5 no se plantó: es equivalente, según la enmienda
-aprobada. Los fallos registrados son de aserción, sin ReferenceError ni TypeError.
+Se instrumentó únicamente `src/screens/profile/index.test.tsx`. La fábrica del
+mock usó un Proxy que delegaba al mismo mock y devolvía su valor original.
+Se registró por llamada: nombre de prueba (`currentTestName`), existencia de
+`getMockImplementation()`, resultado de
+`ImagePicker.launchImageLibraryAsync === mockLaunchImageLibrary`, retorno
+inmediato indefinido o no, resolución indefinida o no, flag de mock del timer,
+pila de llamada, y el nombre de prueba al resolver. También se registraron
+beforeEach/afterEach. No se añadieron valores de respuesta ni reintentos.
 
-| Mutación | Cambio plantado | Resultado | Commit de las sondas |
-|---|---|---|---|
-| X1 | quitar la llamada del hook a clearPet | 7 rojo(s); 3 verde(s) | c1 `f08797a6`; c10 `2af02ae5`; c2 `45a13f42` |
-| X2 | quitar el guard isRefreshing | 1 rojo(s); 0 verde(s) | c2 `45a13f42` |
-| X3 | limpiar también en kind no ok | 4 rojo(s); 0 verde(s) | c2 `45a13f42` |
-| X4 | quitar selectedPetId !== null de pet-hero-error | 1 rojo(s); 0 verde(s) | c1 `f08797a6` |
-| X6 | quitar selectedPetId !== null de reminders-error | 1 rojo(s); 0 verde(s) | c1 `f08797a6` |
-| X7 | quitar !petsEmpty de petLoading | 1 rojo(s); 0 verde(s) | c1 `f08797a6` |
-| X8 | quitar selectedPetId !== null de profile-pet-error | 1 rojo(s); 0 verde(s) | c1 `f08797a6` |
-| X9 | devolver el EmptyState de Inicio al scroll, sin retorno anticipado | 2 rojo(s); 0 verde(s) | c4 `c5170de1` |
-| X10 | justify-center por justify-start en Inicio | 1 rojo(s); 1 verde(s) | c4 `c5170de1` |
-| X11 | restaurar Text en profile-pets-empty | 1 rojo(s); 0 verde(s) | c8 `c8133255` |
-| X12 | añadir clearPet() a Inicio | 1 rojo(s); 0 verde(s) | c2 `45a13f42` |
-| X5 | quitar !petsEmpty de reminders-error | equivalente, no plantada; el retorno anticipado impide observar el término | enmienda `a64859d8` |
+Evidencia: `/tmp/181-picker-r2.jsonl` y
+`/tmp/181-r2-picker-instrumentation.patch`. Antes de escribir R8 se revirtió
+con `git checkout HEAD -- src/screens/profile/index.test.tsx` desde mobile y
+se comprobaron ambos diffs vacíos. El fichero de Perfil no tiene cambios en
+esta ronda.
 
-Nombres exactos de los `it` que cayeron:
+Se observaron **30 llamadas y 30 resoluciones** en las cinco ejecuciones
+instrumentadas: implementación presente, identidad igual y valor definido en
+todas; ninguna resolución cambió de prueba. Son cinco llamadas a través de
+la pantalla y una del candado #72 R3 por ejecución. La instrumentación puede
+alterar el timing: no se presenta como prueba de ausencia de una carrera.
 
-### X1
+| Hipótesis | Evidencia y conclusión |
+|---|---|
+| Promesa o efecto previo llega tarde al picker | No hubo llamadas adicionales ni resoluciones durante otra prueba en las ejecuciones observadas. No confirmada; sin corrida fallida no se descarta en general. |
+| Cola Once o espía cambia la implementación/propiedad | En las 30 llamadas hay implementación, identidad estable y resultado definido. La lectura no encuentra una cola Once del picker. No se obtuvo el estado de un fallo que confirme o descarte el origen intermitente. |
+| Carga, timers u orden dentro del worker | Se probaron el fichero aislado, una combinación serial y tres corridas completas paralelas con cachés nuevas. No reprodujeron el fallo; la relación con carga/orden sigue sin determinarse. |
 
-- `src/screens/home/index.test.tsx` :: #181 R1: home sin mascotas no muestra errores de detalle S1: conserva el vacío sin tarjeta ni reintento
-- `src/screens/home/index.test.tsx` :: #181 R7: Inicio converge al crear la primera mascota limpia la selección rancia y selecciona la mascota que llega al revalidar la lista
-- `src/screens/profile/index.test.tsx` :: #181 R1: profile sin mascotas no muestra errores de detalle S1: conserva el vacío sin tarjeta ni reintento
-- `src/screens/reminders/index.test.tsx` :: #181 R1: reminders sin mascotas no muestra errores de detalle S1: conserva el vacío sin tarjeta ni reintento
-- `src/app/(tabs)/__tests__/food.test.tsx` :: #181 R6: food hereda la limpieza de selección elimina la selección rancia y conserva el estado vacío
-- `src/screens/health/index.test.tsx` :: #181 R6: health hereda la limpieza de selección elimina la selección rancia y conserva el estado vacío
-- `src/hooks/use-pet-selection.test.tsx` :: #181 R2: limpieza de la selección R2.2: limpia exactamente una vez con lista ok vacía y selección rancia
+No se halló causa de producción ni se atribuye el problema a código de
+producción por inferencia. Tampoco se introdujo un mockResolvedValue adicional,
+it.skip, reintento de prueba, forceExit o debilitamiento de aserciones.
 
-### X2
+### Corridas y comandos
 
-- `src/hooks/use-pet-selection.test.tsx` :: #181 R2: limpieza de la selección R2.3: no limpia durante la revalidación
+Todas desde el worktree indicado y con `cd` absoluto. En los comandos con
+--runTestsByPath se verificó que Test Suites coincide con el número de rutas.
 
-### X3
+| Corrida | Orden | EXIT | Test Suites | Tests | Fallos |
+|---|---|---|---|---|---|
+| Perfil aislado | `bunx jest --runInBand --runTestsByPath 'src/screens/profile/index.test.tsx'` | 0 | 1 passed, 1 total | 138 passed, 138 total | ninguno |
+| Combinación serial | `bunx jest --runInBand --runTestsByPath 'src/screens/profile/index.test.tsx' 'src/screens/reminders/index.test.tsx' 'src/screens/home/index.test.tsx'` | 0 | 3 passed, 3 total | 429 passed, 429 total | ninguno |
+| Completa 1 | `bun run --cwd mobile-pet-tracker test --cacheDirectory=/tmp/181-jc-1` | 0 | 113 passed, 113 total | 3754 passed, 3754 total | ninguno; Time:        219.538 s |
+| Completa 2 | `bun run --cwd mobile-pet-tracker test --cacheDirectory=/tmp/181-jc-2` | 0 | 113 passed, 113 total | 3754 passed, 3754 total | ninguno; Time:        200.639 s |
+| Completa 3 | `bun run --cwd mobile-pet-tracker test --cacheDirectory=/tmp/181-jc-3` | 0 | 113 passed, 113 total | 3754 passed, 3754 total | ninguno; Time:        198.126 s |
 
-- `src/hooks/use-pet-selection.test.tsx` :: #181 R2: limpieza de la selección R2.3: no limpia con kind error
-- `src/hooks/use-pet-selection.test.tsx` :: #181 R2: limpieza de la selección R2.3: no limpia con kind unreachable
-- `src/hooks/use-pet-selection.test.tsx` :: #181 R2: limpieza de la selección R2.3: no limpia con kind missing-config
-- `src/hooks/use-pet-selection.test.tsx` :: #181 R2: limpieza de la selección R2.3: no limpia con kind unauthorized
+Las completas usan la orden mobile de init.config.sh, que init.sh evalúa en su
+bloque de tests; no se ejecutó init.sh. Antes de cada una, `pgrep -fl '[j]est'`
+salió vacío. Las tres cachés no existían antes de usarlas. Salidas guardadas
+con la redirección y `echo EXIT=$?` prescritos en `/tmp/181-full-1.log`,
+`/tmp/181-full-2.log`, `/tmp/181-full-3.log`; EXIT=0 observado en las tres.
+Una snapshot pasó en cada corrida. Se agotaron las tres de diagnóstico;
+no se hizo la cuarta, reservada a un arreglo que no existe.
 
-### X4
+Logs de aislado y combinación: `/tmp/181-diag-alone.log` y
+`/tmp/181-diag-combo.log`, con sus JSON del mismo prefijo.
+**Orden determinista que reproduzca la caída: ninguna encontrada.**
 
-- `src/screens/home/index.test.tsx` :: #181 R1: home sin mascotas no muestra errores de detalle S4: lista unreachable y selección nula ocultan la tarjeta
+### #114 R5 y #173 R5
 
-### X6
+Se comprobó el log histórico de c1 señalado por el reviewer: #114 R5 fallaba
+buscando `reminders-loading`; #173 R5 buscando `pet-info-card`. Sus mensajes
+son búsquedas agotadas, distintos del TypeError de picked.canceled. Los dos
+describes pasaron en la combinación y en las tres completas de esta ronda.
+**No se comprobó que tengan la misma causa que B1, ni una causa distinta**;
+no se reproducen y esa relación queda abierta.
 
-- `src/screens/reminders/index.test.tsx` :: #181 R1: reminders sin mascotas no muestra errores de detalle S4: lista unreachable y selección nula ocultan la tarjeta
+## R8 — tests nuevos sobre el árbol verde
 
-### X7
+Archivo: `src/__tests__/no-pets-states.test.ts`. Vía (b) de C4 autorizada por
+el handoff, sin enmendar requirements. Los tres casos pasan antes de mutar:
 
-- `src/screens/profile/index.test.tsx` :: #181 R1: profile sin mascotas no muestra errores de detalle S5: lista vacía revalidando y detalle pendiente no muestran esqueletos
+- **Verde** — #181 R8: candados agregados y de catálogo #181 R8.1: conserva las filas del catálogo y el copy de los vacíos
+- **Verde** — #181 R8: candados agregados y de catálogo #181 R8.2: conserva los recuentos de EmptyState en Perfil y Recordatorios
+- **Verde** — #181 R8: candados agregados y de catálogo #181 R8.3: mantiene las tres pantallas sin drift de estilos
 
-### X8
+R8.1 comprueba las filas mediante toContainEqual y las tres regex de copy en
+Perfil y Recordatorios. R8.2 cuenta los EmptyState. R8.3 aplica exactamente las
+cuatro regex prescritas a Inicio, Recordatorios y Perfil, sin relajarlas.
+Cada caso se puso rojo con su mutación R8-M1, R8-M2 o R8-M3, respectivamente.
 
-- `src/screens/profile/index.test.tsx` :: #181 R1: profile sin mascotas no muestra errores de detalle S4: lista unreachable y selección nula ocultan la tarjeta
+## R8 y R10 — mediciones de esta ronda
 
-### X9
+Todas se miden sobre el árbol de `8da45c961ebfaf211e95213f7cf88a107813dc81`, después del commit R8.
+La base de los diez ficheros de referencia pasó sin mutar: 10 suites / 831
+tests. Antes de plantar cada mutación y después de restaurarla con
+`git checkout HEAD -- <ruta>` pasaron `git diff --quiet` y
+`git diff --cached --quiet`. Ninguna mutación se commiteó ni sobrevive.
+Se midieron **16 casos**: tres de R8 y trece de R10, al separar Inicio y
+Recordatorios para X9 y X10. X5 es equivalente y no se planta.
 
-- `src/screens/home/index.test.tsx` :: #155 R4: Inicio sin mascotas presenta a Pingo queda en el sitio del vacío que sustituye (enmendado por #181 R3)
-- `src/screens/home/index.test.tsx` :: #181 R3: Inicio centra el estado sin mascotas fuera del scroll R3.2: el contenedor centrado solo contiene home-empty y sustituye la escena
+Cada corrida usa --runTestsByPath con rutas literales entre comillas simples;
+la ruta de food con (tabs) no se escapó. La cantidad de suites de la tabla
+coincide con la cantidad de ficheros pasados. Se registran todos los tests
+que caen, incluidos los adicionales. No hizo falta ampliar los ficheros de
+referencia: todos los fallos pertenecen a la lista del handoff. Los 38 fallos
+son de aserción, sin errores de compilación, ReferenceError ni TypeError.
 
-### X10
+| Mutación | Cambio | Resultado de suites | Tests rojos / verdes | Archivo :: nombre completo del test que cae | Commit de referencia |
+|---|---|---|---|---|---|
+| R8-M1 | Perfil: body common.noPetsBody → common.noPetsYet | 2 failed, 2 total | 2 / 143 | `src/screens/profile/index.test.tsx` :: #181 R5: Perfil conserva la cuenta y compone el vacío ilustrado R5.1: conserva un único testID y muestra pose talk, copy y acción para añadir<br>`src/__tests__/no-pets-states.test.ts` :: #181 R8: candados agregados y de catálogo #181 R8.1: conserva las filas del catálogo y el copy de los vacíos | `8da45c961ebfaf211e95213f7cf88a107813dc81` |
+| R8-M2 | Perfil: EmptyState de petsEmpty → expresión null | 2 failed, 2 total | 4 / 104 | `src/__tests__/no-pets-states.test.ts` :: #181 R8: candados agregados y de catálogo #181 R8.1: conserva las filas del catálogo y el copy de los vacíos<br>`src/__tests__/no-pets-states.test.ts` :: #181 R8: candados agregados y de catálogo #181 R8.2: conserva los recuentos de EmptyState en Perfil y Recordatorios<br>`src/components/__tests__/empty-state.test.tsx` :: #155 R10: los vacíos que no se ilustran siguen en texto src/screens/profile/index.tsx pinta 1 EmptyState<br>`src/components/__tests__/empty-state.test.tsx` :: #155 R10: los vacíos que no se ilustran siguen en texto ningún otro fichero usa EmptyState | `8da45c961ebfaf211e95213f7cf88a107813dc81` |
+| R8-M3 | Perfil: comentario // #181 E4 | 2 failed, 2 total | 2 / 115 | `src/__tests__/no-pets-states.test.ts` :: #181 R8: candados agregados y de catálogo #181 R8.3: mantiene las tres pantallas sin drift de estilos<br>`src/__tests__/design-drift.test.ts` :: R9: mobile-pets-profile sin drift keeps arbitrary text, hex colors, and StyleSheet out of feature sources | `8da45c961ebfaf211e95213f7cf88a107813dc81` |
+| X1 | Hook: eliminar la línea de clearPet de la rama vacía | 6 failed, 1 passed, 7 total | 7 / 607 | `src/screens/profile/index.test.tsx` :: #181 R1: profile sin mascotas no muestra errores de detalle S1: conserva el vacío sin tarjeta ni reintento<br>`src/screens/home/index.test.tsx` :: #181 R1: home sin mascotas no muestra errores de detalle S1: conserva el vacío sin tarjeta ni reintento<br>`src/screens/home/index.test.tsx` :: #181 R7: Inicio converge al crear la primera mascota limpia la selección rancia y selecciona la mascota que llega al revalidar la lista<br>`src/app/(tabs)/__tests__/food.test.tsx` :: #181 R6: food hereda la limpieza de selección elimina la selección rancia y conserva el estado vacío<br>`src/screens/reminders/index.test.tsx` :: #181 R1: reminders sin mascotas no muestra errores de detalle S1: conserva el vacío sin tarjeta ni reintento<br>`src/screens/health/index.test.tsx` :: #181 R6: health hereda la limpieza de selección elimina la selección rancia y conserva el estado vacío<br>`src/hooks/use-pet-selection.test.tsx` :: #181 R2: limpieza de la selección R2.2: limpia exactamente una vez con lista ok vacía y selección rancia | `8da45c961ebfaf211e95213f7cf88a107813dc81` |
+| X2 | Hook: eliminar la guarda común isRefreshing | 1 failed, 1 total | 3 / 14 | `src/hooks/use-pet-selection.test.tsx` :: R10: usePetSelection respeta el foco y la revalidación no pisa la selección mientras la pantalla enfocada revalida<br>`src/hooks/use-pet-selection.test.tsx` :: #87 R8: usePetSelection acepta la forma mínima y no conoce use-api does not select while the minimal source shape is refreshing<br>`src/hooks/use-pet-selection.test.tsx` :: #181 R2: limpieza de la selección R2.3: no limpia durante la revalidación | `8da45c961ebfaf211e95213f7cf88a107813dc81` |
+| X3 | Hook: llamar clearPet antes de retornar con kind no ok | 1 failed, 1 total | 5 / 12 | `src/hooks/use-pet-selection.test.tsx` :: #181 R2: limpieza de la selección R2.3: no limpia sin datos<br>`src/hooks/use-pet-selection.test.tsx` :: #181 R2: limpieza de la selección R2.3: no limpia con kind error<br>`src/hooks/use-pet-selection.test.tsx` :: #181 R2: limpieza de la selección R2.3: no limpia con kind unreachable<br>`src/hooks/use-pet-selection.test.tsx` :: #181 R2: limpieza de la selección R2.3: no limpia con kind missing-config<br>`src/hooks/use-pet-selection.test.tsx` :: #181 R2: limpieza de la selección R2.3: no limpia con kind unauthorized | `8da45c961ebfaf211e95213f7cf88a107813dc81` |
+| X4 | Inicio: quitar selectedPetId !== null de pet-hero-error | 1 failed, 1 passed, 2 total | 1 / 233 | `src/screens/home/index.test.tsx` :: #181 R1: home sin mascotas no muestra errores de detalle S4: lista unreachable y selección nula ocultan la tarjeta | `8da45c961ebfaf211e95213f7cf88a107813dc81` |
+| X6 | Recordatorios: quitar selectedPetId !== null de reminders-error | 1 failed, 1 passed, 2 total | 1 / 70 | `src/screens/reminders/index.test.tsx` :: #181 R1: reminders sin mascotas no muestra errores de detalle S4: lista unreachable y selección nula ocultan la tarjeta | `8da45c961ebfaf211e95213f7cf88a107813dc81` |
+| X7 | Perfil: quitar && !petsEmpty de petLoading | 1 failed, 1 passed, 2 total | 1 / 144 | `src/screens/profile/index.test.tsx` :: #181 R1: profile sin mascotas no muestra errores de detalle S5: lista vacía revalidando y detalle pendiente no muestran esqueletos | `8da45c961ebfaf211e95213f7cf88a107813dc81` |
+| X8 | Perfil: quitar selectedPetId !== null de profile-pet-error | 1 failed, 1 passed, 2 total | 1 / 144 | `src/screens/profile/index.test.tsx` :: #181 R1: profile sin mascotas no muestra errores de detalle S4: lista unreachable y selección nula ocultan la tarjeta | `8da45c961ebfaf211e95213f7cf88a107813dc81` |
+| X9-home | Inicio: trasladar EmptyState al scroll, sin retorno anticipado | 1 failed, 1 passed, 2 total | 3 / 231 | `src/screens/home/index.test.tsx` :: #155 R4: Inicio sin mascotas presenta a Pingo queda en el sitio del vacío que sustituye (enmendado por #181 R3)<br>`src/screens/home/index.test.tsx` :: #181 R1: home sin mascotas no muestra errores de detalle S3: conserva el vacío sin tarjeta ni reintento<br>`src/screens/home/index.test.tsx` :: #181 R3: Inicio centra el estado sin mascotas fuera del scroll R3.2: el contenedor centrado solo contiene home-empty y sustituye la escena | `8da45c961ebfaf211e95213f7cf88a107813dc81` |
+| X9-reminders | Recordatorios: trasladar EmptyState al scroll, sin retorno anticipado | 1 failed, 1 passed, 2 total | 1 / 70 | `src/screens/reminders/index.test.tsx` :: #181 R4: Recordatorios distingue una cuenta sin mascotas R4.2: centra solo el vacío y retira los controles que necesitan mascota | `8da45c961ebfaf211e95213f7cf88a107813dc81` |
+| X10-home | Inicio: justify-center → justify-start | 1 failed, 1 passed, 2 total | 1 / 233 | `src/screens/home/index.test.tsx` :: #181 R3: Inicio centra el estado sin mascotas fuera del scroll R3.2: el contenedor centrado solo contiene home-empty y sustituye la escena | `8da45c961ebfaf211e95213f7cf88a107813dc81` |
+| X10-reminders | Recordatorios: justify-center → justify-start | 1 failed, 1 passed, 2 total | 1 / 70 | `src/screens/reminders/index.test.tsx` :: #181 R4: Recordatorios distingue una cuenta sin mascotas R4.2: centra solo el vacío y retira los controles que necesitan mascota | `8da45c961ebfaf211e95213f7cf88a107813dc81` |
+| X11 | Perfil: sustituir EmptyState por el Text anterior | 2 failed, 2 total | 4 / 141 | `src/screens/profile/index.test.tsx` :: #181 R5: Perfil conserva la cuenta y compone el vacío ilustrado R5.1: conserva un único testID y muestra pose talk, copy y acción para añadir<br>`src/screens/profile/index.test.tsx` :: #181 R5: Perfil conserva la cuenta y compone el vacío ilustrado R5.2 R5.3: centra en horizontal dentro del scroll y mantiene las acciones de cuenta<br>`src/__tests__/no-pets-states.test.ts` :: #181 R8: candados agregados y de catálogo #181 R8.1: conserva las filas del catálogo y el copy de los vacíos<br>`src/__tests__/no-pets-states.test.ts` :: #181 R8: candados agregados y de catálogo #181 R8.2: conserva los recuentos de EmptyState en Perfil y Recordatorios | `8da45c961ebfaf211e95213f7cf88a107813dc81` |
+| X12 | Inicio: añadir clearPet a la desestructuración y ejecutar clearPet() | 1 failed, 1 passed, 2 total | 1 / 23 | `src/hooks/use-pet-selection.test.tsx` :: #181 R2: limpieza de la selección R2.4: solo proveedor y hook mencionan clearPet en producción | `8da45c961ebfaf211e95213f7cf88a107813dc81` |
+| X5 | Quitar !petsEmpty de reminders-error | equivalente; no plantada | — | El retorno anticipado elimina el scroll cuando petsEmpty es verdadero | `8da45c961ebfaf211e95213f7cf88a107813dc81`; exención de la spec firmada `a64859d8` |
 
-- `src/screens/home/index.test.tsx` :: #181 R3: Inicio centra el estado sin mascotas fuera del scroll R3.2: el contenedor centrado solo contiene home-empty y sustituye la escena
+### X1: S3 permanece verde
 
-### X11
+- `src/screens/profile/index.test.tsx` :: #181 R1: profile sin mascotas no muestra errores de detalle S3: conserva el vacío sin tarjeta ni reintento — **verde**.
+- `src/screens/home/index.test.tsx` :: #181 R1: home sin mascotas no muestra errores de detalle S3: conserva el vacío sin tarjeta ni reintento — **verde**.
+- `src/screens/reminders/index.test.tsx` :: #181 R1: reminders sin mascotas no muestra errores de detalle S3: conserva el vacío sin tarjeta ni reintento — **verde**.
 
-- `src/screens/profile/index.test.tsx` :: #181 R5: Perfil conserva la cuenta y compone el vacío ilustrado R5.1: conserva un único testID y muestra pose talk, copy y acción para añadir
+X2: la guarda eliminada está antes de las ramas y protege tanto la limpieza
+como la selección automática. Por eso caen también las dos pruebas anteriores
+sobre revalidación, además de R2.3. Se plantó la línea real del código, conforme
+al handoff. X3 cae con los cuatro kind exigidos y, adicionalmente, con datos
+indefinidos. X1 hace caer R7 como consecuencia adicional de no limpiar.
 
-### X12
+X4, X6, X7 y X8 caen únicamente en el escenario previsto: S4 de Inicio, S4 de
+Recordatorios, S5 de Perfil y S4 de Perfil, respectivamente. No se atribuye
+su detección a S2 ni a S3. X9-Inicio hace caer además S3 y el candado anterior
+#155 R4 enmendado, porque el retorno anticipado también es su defensa de error.
+X10 conserva verde ese candado anterior y cae la prueba que lee la clase del
+contenedor. X11 cae también en R8.1/R8.2; R8-M2 cae además en el inventario
+compartido, y R8-M3 también en design-drift. Todos esos nombres están en la tabla.
 
-- `src/hooks/use-pet-selection.test.tsx` :: #181 R2: limpieza de la selección R2.4: solo proveedor y hook mencionan clearPet en producción
+Los logs y JSON están en `/tmp/181-r2-<mutación>.log` y
+`/tmp/181-r2-<mutación>.json`; el resumen validado en
+`/tmp/181-r2-mutations.json`. Los archivos probados en cada corrida constan en
+el footer del log y en testResults del JSON. Se ejecutó cada fichero entero,
+sin filtrar nombres ni omitir los casos que podrían detectar otros efectos.
 
-X1 conservó verdes estas tres sondas: `#181 R1: home… S3: conserva el vacío sin
-tarjeta ni reintento`, `#181 R1: profile… S3: conserva el vacío sin tarjeta ni
-reintento` y `#181 R1: reminders… S3: conserva el vacío sin tarjeta ni reintento`.
-Por tanto S3 aísla las defensas de pantalla. X9 detecta también el it de
-#155 R4 enmendado; con X10 ese it sigue verde y cae la prueba de clase del
-contenedor R3.2.
+## Verificación final del árbol restaurado
 
-## Verificación final
+- Typecheck: `test ! -e .expo/types/router.d.ts && bun run typecheck`, **EXIT=0**.
+  No se borró el fichero protegido. Log `/tmp/181-typecheck-r2.txt`.
+- Lint: la cadena exacta del handoff con `bunx expo lint --no-cache`, guarda
+  de Failed to run y tamaño de salida, **EXIT=0 al primer intento**.
+  `/tmp/181-lint-r2.txt`: **0 bytes**. Sin reintentos.
+- Ficheros de referencia antes de mutar: **Test Suites: 10 passed, 10 total**;
+  **Tests: 831 passed, 831 total**, EXIT=0.
+- Ficheros afectados/relevantes tras restaurar:
+  `bunx jest --runInBand --runTestsByPath 'src/screens/profile/index.test.tsx' 'src/__tests__/no-pets-states.test.ts'`:
+  **Test Suites: 2 passed, 2 total**; **Tests: 145 passed, 145 total**,
+  EXIT=0. Son Perfil 138 y no-pets-states 7 casos de ejecución.
+  Log `/tmp/181-r2-final-files.log`.
+- Guardas antes del commit documental: `bunx jest src/__tests__`:
+  **Test Suites: 13 passed, 13 total**;
+  **Tests: 334 passed, 334 total**, EXIT=0.
+  Log `/tmp/181-r2-final-guards.log`.
 
-Todos los comandos se ejecutaron con `cd` absoluto a
-`/home/claude/sites/Pet-Tracker-wt-181/mobile-pet-tracker`.
+El `--json --outputFile=...` añadido a las corridas acotadas y guardas solo
+conserva evidencia, no cambia la selección de tests. El incremento de las
+guardas incluye los tres casos R8 y los dos auto-tests que registra la nueva
+importación de ui-copy-table en no-pets-states.
 
-- `test ! -e .expo/types/router.d.ts && bun run typecheck`: exit 0, antes de
-  c3 y después de c12. No se borró ni generó router.d.ts.
-- Lint: `bunx expo lint --no-cache > /tmp/181-lint.txt 2>&1; ! grep -qF
-  'Failed to run' /tmp/181-lint.txt && test ! -s /tmp/181-lint.txt`: exit 0 al
-  primer intento; archivo de salida de 0 bytes.
-- Jest acotado completo de los archivos afectados: **10 suites / 837 tests,
-  todos verdes**, exit 0. No es la suite completa de mobile ni del repositorio.
-- Guardas `bunx jest src/__tests__`: tras c7, 12 suites / 327 tests; tras c9,
-  12 / 327; tras c12 y después de revertir todas las mutaciones, **13 / 329**,
-  todos verdes y exit 0. Incluye design-drift, legibility y el nuevo test A20.
-- Árbol restaurado: 8 suites / **37 tests nuevos** filtrados con `-t '^#181 R'`,
-  todos verdes, exit 0. Los 578 omitidos en esta corrida son el filtro de
-  nombres, no una exclusión de la corrida previa de 837 tests.
+Ficheros de la base verde de referencia (las 10 rutas literales):
 
-Comando de los 10 ficheros concretos (rutas literales con --runTestsByPath):
+- `src/screens/home/index.test.tsx`.
+- `src/screens/profile/index.test.tsx`.
+- `src/app/(tabs)/__tests__/food.test.tsx`.
+- `src/screens/reminders/index.test.tsx`.
+- `src/screens/health/index.test.tsx`.
+- `src/__tests__/no-pets-states.test.ts`.
+- `src/components/__tests__/empty-state.test.tsx`.
+- `src/hooks/use-pet-selection.test.tsx`.
+- `src/__tests__/design-drift.test.ts`.
+- `src/providers/__tests__/selected-pet-provider.test.tsx`.
 
-```bash
-cd /home/claude/sites/Pet-Tracker-wt-181/mobile-pet-tracker && bunx jest --runInBand --runTestsByPath src/hooks/use-pet-selection.test.tsx src/providers/__tests__/selected-pet-provider.test.tsx src/screens/home/index.test.tsx src/screens/reminders/index.test.tsx src/screens/profile/index.test.tsx 'src/app/(tabs)/__tests__/food.test.tsx' src/screens/health/index.test.tsx src/screens/add-pet/index.test.tsx src/screens/alert-detail/index.test.tsx src/components/__tests__/empty-state.test.tsx
-```
+Archivos ejecutados en cada medición, sin filtros de nombres:
 
-El nuevo `src/__tests__/no-pets-states.test.ts` se ejecutó en c11/c12, en las
-13 suites de guardas y en la corrida final de los 37 tests nuevos. No se
-ocultaron rutas con paréntesis detrás de un filtro regex.
+| Medición | Rutas literales desde mobile-pet-tracker |
+|---|---|
+| R8-M1 | `src/screens/profile/index.test.tsx`; `src/__tests__/no-pets-states.test.ts` |
+| R8-M2 | `src/__tests__/no-pets-states.test.ts`; `src/components/__tests__/empty-state.test.tsx` |
+| R8-M3 | `src/__tests__/no-pets-states.test.ts`; `src/__tests__/design-drift.test.ts` |
+| X1 | `src/screens/profile/index.test.tsx`; `src/__tests__/no-pets-states.test.ts`; `src/screens/home/index.test.tsx`; `src/app/(tabs)/__tests__/food.test.tsx`; `src/screens/reminders/index.test.tsx`; `src/screens/health/index.test.tsx`; `src/hooks/use-pet-selection.test.tsx` |
+| X2 | `src/hooks/use-pet-selection.test.tsx` |
+| X3 | `src/hooks/use-pet-selection.test.tsx` |
+| X4 | `src/screens/home/index.test.tsx`; `src/__tests__/no-pets-states.test.ts` |
+| X6 | `src/screens/reminders/index.test.tsx`; `src/__tests__/no-pets-states.test.ts` |
+| X7 | `src/screens/profile/index.test.tsx`; `src/__tests__/no-pets-states.test.ts` |
+| X8 | `src/screens/profile/index.test.tsx`; `src/__tests__/no-pets-states.test.ts` |
+| X9-home | `src/screens/home/index.test.tsx`; `src/__tests__/no-pets-states.test.ts` |
+| X9-reminders | `src/screens/reminders/index.test.tsx`; `src/__tests__/no-pets-states.test.ts` |
+| X10-home | `src/screens/home/index.test.tsx`; `src/__tests__/no-pets-states.test.ts` |
+| X10-reminders | `src/screens/reminders/index.test.tsx`; `src/__tests__/no-pets-states.test.ts` |
+| X11 | `src/screens/profile/index.test.tsx`; `src/__tests__/no-pets-states.test.ts` |
+| X12 | `src/hooks/use-pet-selection.test.tsx`; `src/__tests__/no-pets-states.test.ts` |
 
-## Skills cargadas
+## Skills, límites y desviaciones
 
-- `ponytail:ponytail` (full).
-- `building-native-ui` (equivalente solicitado de expo-native-ui):
-  `/home/claude/.codex/plugins/cache/openai-curated/expo/11c74d6b/skills/building-native-ui/SKILL.md`.
-- `expo-tailwind-setup`:
-  `/home/claude/.codex/plugins/cache/openai-curated/expo/11c74d6b/skills/expo-tailwind-setup/SKILL.md`.
-- `.agents/skills/appllama-app-design-skill/SKILL.md`.
+- **Ninguna skill cargada en esta ronda**. Es trabajo de tests y mutaciones
+  temporales; no se cargaron skills de Expo ni Appllama, ni se usó su MCP.
+  La carta UI sigue siendo el gate C8 y permanece intacta.
+- B1 no resuelto con diagnóstico completo es el resultado alternativo
+  permitido por el handoff. No hay arreglo ni commit de B1.
+- El cierre de R8 por mutación y sin commit rojo está autorizado por el
+  handoff. Las precondiciones se cumplían antes de escribirlo.
+- X2 se mide en la posición real de su guarda común, como pide el handoff.
+  Los efectos adicionales de X1, X3, X9, X11 y R8 se anotan sin ocultarlos.
+- Las tres completas se usaron solo para B1. Sin suite de backend o infra,
+  init.sh, cambios de dependencias, recursos AWS, stash, otros worktrees,
+  otras ramas, push ni PR.
+- Producción y profile/index.test.tsx quedan idénticos a HANDOFF. Solo se
+  versionan no-pets-states.test.ts, este informe y traceability.md.
+- A20 de docs/conventions, progress/current, STATUS, feature_list y los
+  informes del reviewer no se tocaron. Smoke Android: pendiente del humano.
+- No se verificaron la causa de la caída histórica, su relación con los
+  otros dos timeouts, el gate completo del leader ni el smoke nativo.
 
-No cargadas, según el handoff: `expo-design-system`, `expo-animation`,
-`expo-router`, `expo-overview`; sin sustitutos cercanos. No se llamó al MCP
-Appllama. Se aplicó el patrón del EmptyState compartido y la carta del repo,
-con su excepción al simulator loop: el smoke corresponde al humano.
-
-## Entrega y límites
-
-- No ejecutados `./init.sh`, suite completa, backend ni E2E, por prohibición
-  del handoff. Sin recursos AWS ni cambios de infraestructura compartida.
-- Sin cambios en `docs/ui-guidelines.md`, EmptyState compartido, catálogo i18n,
-  Mapa, backend, progress/current, progress/history, STATUS ni feature_list.
-- Sin PR creada o editada, sin push. Los 13 commits están en la rama indicada.
-- La trazabilidad y el log empírico de mutaciones quedaron commiteados en c13.
-- Este informe se entrega **sin añadir al índice**, excepción explícita del
-  handoff. Así puede incluir el hash real de c13 sin crear un commit c14.
-  Es el único cambio sin commit al cerrar; no hay archivos nuevos sin seguimiento.
-- Única fila pendiente en la trazabilidad: smoke de Android, a ejecutar y
-  firmar por humano. La casilla A20 de conventions permanece vacía tal como
-  exige R9.1; su candado permite firmarla sin romper CI.
-
-Siguiente paso del leader: gate completo en su turno y revisión independiente;
-el humano ejecuta el smoke de cuenta nueva y eliminación de la única mascota.
+Siguiente paso: el leader ejecuta su gate y revisa B1 con este diagnóstico;
+el humano conserva la firma A20 y el smoke. Este informe no declara la
+feature done ni sustituye esas decisiones.
