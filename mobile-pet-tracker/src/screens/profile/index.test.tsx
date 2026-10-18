@@ -1824,3 +1824,43 @@ describe('#181 R1: profile sin mascotas no muestra errores de detalle', () => {
     expect(screen.queryByTestId('pet-info-skeleton')).toBeNull();
   });
 });
+
+describe('#181 R5: Perfil conserva la cuenta y compone el vacío ilustrado', () => {
+  beforeEach(() => {
+    setupProfile168();
+    mockGetMe.mockResolvedValue({ kind: 'error' });
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    mockGetPet.mockResolvedValue({ kind: 'error' });
+  });
+
+  it('R5.1: conserva un único testID y muestra pose talk, copy y acción para añadir', async () => {
+    await renderProfile();
+    await screen.findByTestId('profile-pets-empty-title');
+    expect(screen.getAllByTestId('profile-pets-empty')).toHaveLength(1);
+    expect(screen.getByTestId('profile-pets-empty-title')).toHaveTextContent(es['common.noPetsYet']);
+    expect(screen.getByTestId('profile-pets-empty-body')).toHaveTextContent(es['common.noPetsBody']);
+    expect(screen.getByTestId('profile-pets-empty-pose').props.source).toEqual([
+      expect.objectContaining({ testUri: expect.stringMatching(/pingo-talk\.webp$/) }),
+    ]);
+    const action = screen.getByTestId('profile-pets-empty-action');
+    expect(within(action).getByText(es['profile.addPet'])).toBeVisible();
+    expect(screen.getByTestId('profile-add-pet')).toBeVisible();
+    await fireEvent.press(action);
+    expect(mockRouter.push).toHaveBeenCalledTimes(1);
+    expect(mockRouter.push).toHaveBeenCalledWith('/pets/add');
+  });
+
+  it('R5.2 R5.3: centra en horizontal dentro del scroll y mantiene las acciones de cuenta', async () => {
+    const { queryClient } = await renderProfile();
+    const empty = await screen.findByTestId('profile-pets-empty-title');
+    await waitFor(() => expect(queryClient.isFetching()).toBe(0));
+    expect(empty.parent).toBe(screen.getByTestId('profile-pets-empty'));
+    expect(empty.parent?.props.className).toBe('items-center gap-3 py-8');
+    for (const id of ['screen-profile', 'profile-title', 'profile-add-pet', 'reminders-link', 'me-card', 'profile-sign-out']) {
+      expect(screen.getByTestId(id)).toBeVisible();
+    }
+    for (const id of ['profile-pet-error', 'profile-pet-retry', 'profile-hero-skeleton', 'pet-info-skeleton']) {
+      expect(screen.queryByTestId(id)).toBeNull();
+    }
+  });
+});

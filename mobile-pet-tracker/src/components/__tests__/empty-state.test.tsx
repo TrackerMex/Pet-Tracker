@@ -184,7 +184,6 @@ describe('#155 R10: los vacíos que no se ilustran siguen en texto', () => {
     ['src/screens/meals-history/index.tsx', 'Text', 'meals-history-detail-empty'],
     ['src/screens/meal-schedule/index.tsx', 'Text', 'nutrition-profile-empty'],
     ['src/screens/meal-schedule/index.tsx', 'Text', 'meal-schedule-empty'],
-    ['src/screens/profile/index.tsx', 'Text', 'profile-pets-empty'],
     ['src/screens/weight-log/index.tsx', 'Text', 'weight-log-empty'],
     ['src/screens/map/index.tsx', 'Text', 'map-empty'],
     ['src/screens/map/index.tsx', 'Card', 'map-empty-overlay'],
@@ -200,6 +199,7 @@ describe('#155 R10: los vacíos que no se ilustran siguen en texto', () => {
     ['src/screens/map/index.tsx', 2],
     ['src/screens/alerts/index.tsx', 1],
     ['src/screens/reminders/index.tsx', 2],
+    ['src/screens/profile/index.tsx', 1],
     ['src/screens/docs/index.tsx', 1],
     ['src/screens/geofences/index.tsx', 2],
   ] as const)('%s pinta %i EmptyState', (path, n) => {
@@ -220,6 +220,7 @@ describe('#155 R10: los vacíos que no se ilustran siguen en texto', () => {
       'src/screens/health/index.tsx',
       'src/screens/home/index.tsx',
       'src/screens/map/index.tsx',
+      'src/screens/profile/index.tsx',
       'src/screens/reminders/index.tsx',
     ]);
   });

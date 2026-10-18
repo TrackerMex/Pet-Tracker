@@ -259,6 +259,8 @@ export const R6_FOOD: UseRow[] = [
 ];
 
 export const R7_PROFILE: UseRow[] = [
+  { file: 'src/screens/profile/index.tsx', key: 'common.noPetsBody' }, // #181 R5
+  { file: 'src/screens/profile/index.tsx', key: 'profile.addPet' }, // #181 R5
   { file: 'src/screens/profile/index.tsx', key: 'map.justNow' }, // #173 R9
   { file: 'src/screens/profile/index.tsx', key: 'map.agoMinutes' }, // #173 R9
   { file: 'src/screens/profile/index.tsx', key: 'map.agoHours' }, // #173 R9
