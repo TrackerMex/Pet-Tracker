@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
+import { BlurView } from 'expo-blur';
 import { Button, Skeleton } from 'heroui-native';
 import { useEffect, useRef, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
@@ -40,24 +41,28 @@ function AlertDetailMap({ alert, position }: { alert: Alert; position: MapCoordi
     ? zones.data.geofences.find((zona) => zona.id === alert.geofenceId)
     : undefined;
   const d = zone ? distanceMeters(position, { latitude: zone.centerLat, longitude: zone.centerLng }) : 0;
+  const zoneName = typeof alert.payload.geofenceName === 'string' && alert.payload.geofenceName
+    ? alert.payload.geofenceName : zone?.name;
   return (
-    <>
-      <View testID="alert-detail-map" className="h-52 overflow-hidden rounded-card" style={CONTINUOUS_CORNER}>
-        <PetMap
-          center={position}
-          marker={position}
-          polylines={[]}
-          circles={zone ? [{ id: zone.id, center: { latitude: zone.centerLat, longitude: zone.centerLng }, radius: zone.radiusM }] : []}
-          zoom={zone ? zoomForRadius(d + zone.radiusM) : undefined}
-          colorScheme={theme === 'dark' ? 'dark' : 'light'}
-        />
-      </View>
+    <View testID="alert-detail-map" className="h-52.5 overflow-hidden rounded-24" style={CONTINUOUS_CORNER}
+      accessible={Boolean(zoneName)} accessibilityLabel={zoneName ? t('alerts.mapLabel', { zone: zoneName }) : undefined}>
+      <PetMap
+        center={position}
+        marker={position}
+        polylines={[]}
+        circles={zone ? [{ id: zone.id, center: { latitude: zone.centerLat, longitude: zone.centerLng }, radius: zone.radiusM }] : []}
+        zoom={zone ? zoomForRadius(d + zone.radiusM) : undefined}
+        colorScheme={theme === 'dark' ? 'dark' : 'light'}
+      />
       {zone && Math.round(d - zone.radiusM) >= 1 ? (
-        <Text testID="alert-detail-distance" className="text-sm font-semibold text-foreground" style={TABULAR_NUMS}>
-          {t('alerts.distanceFromZone', { distance: formatDistance(d - zone.radiusM), zone: zone.name })}
-        </Text>
+        <BlurView testID="alert-detail-distance-blur" intensity={48} blurMethod="dimezisBlurViewSdk31Plus"
+          tint={theme === 'dark' ? 'dark' : 'light'} className="absolute bottom-3 left-3 overflow-hidden rounded-full">
+          <Text testID="alert-detail-distance" className="bg-glass-surface-strong px-2.5 py-1.5 text-xs font-bold text-foreground" style={TABULAR_NUMS}>
+            {t('alerts.distanceFromZone', { distance: formatDistance(d - zone.radiusM), zone: zone.name })}
+          </Text>
+        </BlurView>
       ) : null}
-    </>
+    </View>
   );
 }
 
