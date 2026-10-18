@@ -20,6 +20,7 @@ import { CONTINUOUS_CORNER, TABULAR_NUMS } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { settleAlertAck } from '../../utils/alert-ack-outcome';
 import { alertTypeMeta } from '../../utils/alert-meta';
+import { CATEGORY_SLOTS } from '../../utils/category-palette';
 import { alertPosition, distanceMeters, formatDistance } from '../../utils/alert-location';
 import { zoomForRadius } from '../../utils/zoom-for-radius';
 
@@ -66,11 +67,7 @@ export function AlertDetailScreen({ alertId }: { alertId: string }) {
   const t = useTranslate();
   const locale = useLocale();
   const insets = useSafeAreaInsets();
-  const [danger, warningStrong, muted] = useThemeColors([
-    'danger',
-    'warning-strong',
-    'muted',
-  ]);
+  const [dangerForeground, background] = useThemeColors(['danger-foreground', 'background']);
   const [acked, setAcked] = useState<Alert | null>(null);
   const [acking, setAcking] = useState(false);
   const ackingRef = useRef(false);
@@ -117,29 +114,28 @@ export function AlertDetailScreen({ alertId }: { alertId: string }) {
   const card = alert ? (() => {
     const meta = alertTypeMeta(alert.type);
     const Icon = meta.Icon;
-    const color = { danger, 'warning-strong': warningStrong, muted }[meta.ink];
+    const color = { 'danger-foreground': dangerForeground, background }[meta.onSolid];
+    const statusClass = alert.status === 'acked'
+      ? 'rounded-full bg-default px-2.5 py-1 text-xs font-bold text-muted'
+      : alert.status === 'closed'
+        ? `rounded-full ${CATEGORY_SLOTS.green.surface} px-2.5 py-1 text-xs font-extrabold ${CATEGORY_SLOTS.green.ink}`
+        : `rounded-full px-2.5 py-0.75 text-xs font-extrabold ${meta.solid} ${meta.onSolidText}`;
     return (
-      <Card testID="alert-detail-card" className={'min-h-44 gap-3' + (alert.status === 'open' ? ` border-2 ${meta.border}` : '')}>
-        <View testID="alert-detail-header" className="flex-row items-center gap-3">
-          <View className={`size-11 items-center justify-center rounded-full ${meta.surface}`}>
-            <Icon testID="alert-detail-icon" size={20} color={color} />
-          </View>
-          <Text testID="alert-detail-type" className="text-lg font-bold text-foreground">
-            {t(meta.labelKey)}
-          </Text>
+      <Card variant="hero" testID="alert-detail-card" className={`${meta.disc} items-center gap-2 px-4.5 py-5.5`}>
+        <View testID="alert-detail-disc" className={`size-18 items-center justify-center rounded-full ${meta.solid}`}>
+          <Icon testID="alert-detail-icon" size={34} color={color} />
         </View>
-        <Text selectable testID="alert-detail-pet" className="text-sm font-semibold text-muted">
+        <Text testID="alert-detail-status" className={statusClass}>
+          {alert.status === 'acked' ? t('alerts.statusAcked') : alert.status === 'closed' ? t('alerts.statusClosed') : t('alerts.statusOpen')}
+        </Text>
+        <Text testID="alert-detail-type" className="text-22 font-black text-foreground text-center">
+          {t(meta.labelKey)}
+        </Text>
+        <Text selectable testID="alert-detail-pet" className={'text-15 font-bold ' + meta.heroInk}>
           {alert.petName}
         </Text>
-        <Text selectable testID="alert-detail-opened-at" className="text-sm font-normal text-muted">
-          {t('alerts.openedAt', { date: new Date(alert.openedAt).toLocaleString(locale) })}
-        </Text>
-        <Text testID="alert-detail-status" className="self-start rounded-full bg-default px-2 py-0.5 text-2xs font-bold text-muted">
-          {alert.status === 'acked'
-            ? t('alerts.statusAcked')
-            : alert.status === 'closed'
-              ? t('alerts.statusClosed')
-              : t('alerts.statusOpen')}
+        <Text selectable testID="alert-detail-opened-at" className={'text-13 font-normal ' + meta.heroInk}>
+          {t('alerts.openedAt', { date: new Date(alert.openedAt).toLocaleString(locale, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) })}
         </Text>
       </Card>
     );

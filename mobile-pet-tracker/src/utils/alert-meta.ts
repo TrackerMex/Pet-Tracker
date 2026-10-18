@@ -6,7 +6,7 @@ export const ALERT_TYPE_META = {
   geofence_exit: {
     Icon: LocationSlash,
     labelKey: 'alerts.typeGeofenceExit',
-    surface: 'bg-danger-soft',
+
     disc: CATEGORY_SLOTS.rose.surface,
     solid: 'bg-danger',
     onSolid: 'danger-foreground',
@@ -19,7 +19,7 @@ export const ALERT_TYPE_META = {
   battery_low: {
     Icon: BatteryLow,
     labelKey: 'alerts.typeBatteryLow',
-    surface: 'bg-warning-soft',
+
     disc: CATEGORY_SLOTS.amber.surface,
     solid: 'bg-warning-strong',
     onSolid: 'background',
@@ -34,7 +34,7 @@ export const ALERT_TYPE_META = {
 export const UNKNOWN_ALERT_META = {
   Icon: Bell,
   labelKey: 'alerts.typeUnknown',
-  surface: 'bg-default',
+
   disc: CATEGORY_SLOTS.neutral.surface,
   solid: 'bg-muted',
   onSolid: 'background',
