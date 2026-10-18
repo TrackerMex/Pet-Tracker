@@ -1,7 +1,7 @@
 ---
 feature: mobile-alert-detail-canvas-fidelity
 id: 180
-status: draft        # draft | approved
+status: approved      # draft | approved
 tags: [mobile, ui, canvas, alerts, spec]
 ---
 
@@ -22,7 +22,7 @@ tags: [mobile, ui, canvas, alerts, spec]
 | R11 | src/utils/alert-meta.test.ts::#180 R11.1 (cinco campos por tipo); surface retirado en R3 | rojo `66d9afc7` — test(mobile): #180 R11 rojo — campos del héroe en alert-meta; verde `b17379e5` — feat(mobile): #180 R11 campos del héroe en alert-meta |
 | R12 | src/__tests__/alert-detail-canvas-fidelity.test.ts::#180 R12: enmiendas (7 bloques, 15 anclas, carta y §2.35); AC K15 | rojo `4a85717e` — test(mobile): #180 R12 rojo — enmiendas de la carta y de las specs; verde `643daf6d` — docs(mobile): #180 R12 enmiendas y carta del detalle de alerta |
 | R13 | src/__tests__/alert-detail-canvas-fidelity.test.ts::#180 R13.2; src/__tests__/ui-language.test.ts::registra cada ocurrencia del detalle (enmendado por #180 R13.1); 30 mutaciones; suite completa 115/115 y 3796/3796 | `74f0fa9d` — test(mobile): #180 R13 candados agregados (nace verde: R13.1 queda fuera de C4 puntos 2 y 5 por E4.1; verificado por mutación S15, rojo en `src/app/_layout.tsx` y revertida) |
-| R14 | Humo manual de requirements §6 y E1.6: exclusivo del humano, sin ejecutar; casilla desmarcada | Sin commit de smoke de IA; aprobación del contrato: 6f2b8403 / 42222344 |
+| R14 | Humo manual de requirements §6 y E1.6: ejecutado por el humano en su PC, dev build de Android, 2026-10-18; casilla §6 marcada | Sin commit de smoke de IA; aprobación del contrato: 6f2b8403 / 42222344; casilla marcada `32359981` |
 
 ## Enmienda E1 (2026-10-18)
 
@@ -42,7 +42,7 @@ Las filas R4, R5, R6, R7 y R12 de arriba incluyen su parte enmendada por E1 (R4.
 | R7.4 | src/__tests__/design-drift.test.ts::#180 R7.4 y reserva de radios | rojo `cdd18c2d` — test(mobile): #180 R7 rojo — ack primario con labio y rounded-16; verde `e1a0cea0` — feat(mobile): #180 R7 ack primario con labio |
 | R7.5 | src/__tests__/consistency-classnames.test.ts::#180 R7.5: «Ver en el mapa» del detalle lleva rounded-16 con su labio gris / el ack del detalle lleva rounded-16 con su labio | rojo `00a609c6` — test(mobile): #180 R6 rojo — CTA con icono Map, h-13 y rounded-16; verde `d4a38dff` — feat(mobile): #180 R6 CTA Ver en el mapa; rojo `cdd18c2d` — test(mobile): #180 R7 rojo — ack primario con labio y rounded-16; verde `e1a0cea0` — feat(mobile): #180 R7 ack primario con labio |
 | R12 (enmendado por E1) | src/__tests__/alert-detail-canvas-fidelity.test.ts::#180 R12: enmiendas; quince anclas | rojo `4a85717e` — test(mobile): #180 R12 rojo — enmiendas de la carta y de las specs; verde `643daf6d` — docs(mobile): #180 R12 enmiendas y carta del detalle de alerta |
-| R14 (humo, enmendado por E1) | Humo manual de requirements §6 y E1.6: exclusivo del humano, sin ejecutar; casilla desmarcada | Sin commit de smoke de IA; aprobación del contrato: 6f2b8403 / 42222344 |
+| R14 (humo, enmendado por E1) | Humo manual de requirements §6 y E1.6: ejecutado por el humano en su PC, dev build de Android, 2026-10-18; casilla §6 marcada | Sin commit de smoke de IA; aprobación del contrato: 6f2b8403 / 42222344; casilla marcada `32359981` |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente".
 Convención de commit: `feat(<scope>): <desc> (R1,R2)`.
@@ -69,6 +69,6 @@ Nota: la fila R3 de la tabla principal no incluye R3.7; su test cuenta en R10.
 
 Nota: K4 y K5 (LP) siguen en R8.
 
-R14 no se declara superado: el agente deja el humo para el humano y conserva su casilla sin marcar. R1–R13 tienen verificación automática; el veredicto final corresponde al reviewer.
+R14 superado: el humano ejecutó el humo en su PC, en el dev build de Android (2026-10-18), y marcó su casilla en requirements §6 (`32359981`); el agente no lo ejecutó. R1–R13 tienen verificación automática; el veredicto final corresponde al reviewer.
 
 Formato sin cambio semántico para M15/M16/M21: `4933ce00` — style(mobile): #180 R13 separa las props del ack para medidas. Después: DT 125/125, CC 72/72, DD 111/111 y tsc/lint verdes.
