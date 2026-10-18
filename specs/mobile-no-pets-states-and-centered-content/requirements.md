@@ -496,4 +496,4 @@ R8 no declaraba su vía de verificación (C4 punto 3). La declara el bullet «V�
 
 - [x] Aprobado por humano (fecha: 2026-10-18) ← gate obligatorio antes de implementar
 - [x] Enmienda de 2026-10-18 aprobada por humano en Notion (fecha: 2026-10-18)
-- [ ] Enmienda R8 (vía de verificación, 2026-10-18) aprobada por humano en Notion (fecha: ____)
+- [x] Enmienda R8 (vía de verificación, 2026-10-18) aprobada por humano en Notion (fecha: 2026-10-18)
