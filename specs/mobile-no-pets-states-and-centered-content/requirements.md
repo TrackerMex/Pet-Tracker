@@ -1,6 +1,6 @@
 ---
 feature: "mobile-no-pets-states-and-centered-content"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec]
 ---
 
@@ -489,5 +489,5 @@ mismo día. El resto de requisitos no cambia.
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
-- [ ] Enmienda de 2026-10-18 aprobada por humano en Notion (fecha: ____)
+- [x] Aprobado por humano (fecha: 2026-10-18) ← gate obligatorio antes de implementar
+- [x] Enmienda de 2026-10-18 aprobada por humano en Notion (fecha: 2026-10-18)
