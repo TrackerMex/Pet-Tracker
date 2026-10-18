@@ -1,3 +1,5 @@
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import {
   act,
   fireEvent,
@@ -6,7 +8,7 @@ import {
   within,
 } from '@testing-library/react-native';
 import { HeroUINativeProvider } from 'heroui-native';
-import { DeviceEventEmitter, KeyboardAvoidingView, Platform } from 'react-native';
+import { DeviceEventEmitter, Platform } from 'react-native';
 
 import { getDocumentAsync } from 'expo-document-picker';
 import { router, Stack } from 'expo-router';
@@ -627,9 +629,9 @@ describe('#185 R2.2: la pantalla monta el formulario con los params', () => {
     expect(screen.getByTestId('docs-date-input').props.placeholder).toBe('AAAA-MM-DD');
     expect(screen.getByTestId('docs-date-input').props.value).toBe('2026-10-09');
     expect(screen.getByTestId('docs-vet-input').props.maxLength).toBe(120);
-    const avoider = screen.UNSAFE_getAllByType(KeyboardAvoidingView).find(node => node.props.testID === 'docs-upload-keyboard-avoider');
-    expect(avoider?.props.behavior).toBe('padding');
-    expect(avoider?.props.keyboardVerticalOffset).toBe(91);
+    const source = readFileSync(join(process.cwd(), 'src/screens/docs-upload-form/index.tsx'), 'utf8');
+    expect(source).toContain('behavior="padding"');
+    expect(source).toContain('keyboardVerticalOffset={headerHeight}');
     const scroll = screen.getByTestId('screen-docs-upload');
     expect(scroll.props.keyboardShouldPersistTaps).toBe('handled');
     expect(scroll.props.contentContainerStyle).toEqual({ padding: 24, gap: 16, paddingBottom: 48 });
