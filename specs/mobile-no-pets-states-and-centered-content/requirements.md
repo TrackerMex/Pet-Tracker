@@ -478,7 +478,7 @@ la que se le borró su única mascota con la app abierta:
    muestra su ficha.
 5. Mapa sigue igual.
 
-- [ ] Smoke #181 en dev build de Android firmado por humano (fecha: ____)
+- [X] Smoke #181 en dev build de Android firmado por humano (fecha: 2026-10-18)
 
 ## Enmienda de 2026-10-18
 
