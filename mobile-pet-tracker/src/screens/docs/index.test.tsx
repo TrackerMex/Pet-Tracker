@@ -118,16 +118,20 @@ function makePet(): PetProfile {
   };
 }
 
-async function renderDocs(language: 'es' | 'en' = 'es') {
-  return renderWithProviders(
+function docsView(language: 'es' | 'en' = 'es', uploaded?: string) {
+  return (
     <HeroUINativeProvider>
       <LanguageProvider initial={language}>
         <HeaderHeightContext.Provider value={91}>
-          <DocsScreen petId="pet-1" />
+          <DocsScreen petId="pet-1" uploaded={uploaded} />
         </HeaderHeightContext.Provider>
       </LanguageProvider>
-    </HeroUINativeProvider>,
+    </HeroUINativeProvider>
   );
+}
+
+async function renderDocs(language: 'es' | 'en' = 'es', uploaded?: string) {
+  return renderWithProviders(docsView(language, uploaded));
 }
 
 describe('R8: pantalla Docs', () => {
@@ -324,7 +328,7 @@ describe('#87 R9: DocsScreen lee por TanStack Query', () => {
     const { queryClient } = await renderWithProviders(
       <HeroUINativeProvider>
         <LanguageProvider initial="es">
-          <DocsScreen petId="pet-1" />
+          <DocsScreen petId="pet-1" uploaded={uploaded} />
         </LanguageProvider>
       </HeroUINativeProvider>,
     );
@@ -600,23 +604,6 @@ const documentAsset = {
   uri: 'file:///cache/vacuna.pdf', name: 'vacuna.pdf', mimeType: 'application/pdf', size: 1000,
   lastModified: 0,
 };
-
-async function openUploadForm(docs = [docOne]) {
-  mockListPetDocs.mockResolvedValue({ kind: 'ok', docs });
-  mockGetDocumentAsync.mockResolvedValueOnce({ canceled: false, assets: [documentAsset] });
-  await renderDocs();
-  await screen.findByText('Luna');
-  const entry = await screen.findByTestId(docs.length ? 'docs-upload' : 'docs-empty-action');
-  await fireEvent.press(entry);
-  return screen.findByTestId('docs-upload-form');
-}
-
-async function fillDocumentForm() {
-  await fireEvent.changeText(screen.getByTestId('docs-type-input'), 'Vacunación');
-  await fireEvent.changeText(screen.getByTestId('docs-name-input'), 'Antirrábica');
-  await fireEvent.changeText(screen.getByTestId('docs-date-input'), '2026-10-01');
-  await fireEvent.changeText(screen.getByTestId('docs-vet-input'), 'Dra. Pérez');
-}
 
 describe('#158 R10: cualquier miembro abre un documento', () => {
   it.each(['owner', 'family', 'walker', 'vet'] as const)('abre la URL de descarga para %s', async (myRole) => {
@@ -945,15 +932,11 @@ describe('#175 R9: filtrar por categoría', () => {
     const analysis = { ...docOne, id: 'analysis', type: 'Análisis' };
     mockListPetDocs.mockResolvedValueOnce({ kind: 'ok', docs: [analysis, docOne] });
     mockListPetDocs.mockResolvedValueOnce({ kind: 'ok', docs: [analysis, docOne, docTwo] });
-    mockGetDocumentAsync.mockResolvedValueOnce({ canceled: false, assets: [documentAsset] });
-    await renderDocs();
+    const view = await renderDocs();
     await screen.findByTestId('doc-analysis');
     await fireEvent.press(screen.getByTestId('docs-filter-violet'));
     await waitFor(() => expect(screen.getByTestId('docs-filter-violet').props.accessibilityState).toEqual({ selected: true }));
-    await fireEvent.press(screen.getByTestId('docs-upload'));
-    await screen.findByTestId('docs-upload-form');
-    await fillDocumentForm();
-    await fireEvent.press(screen.getByTestId('docs-upload-submit'));
+    await view.rerender(docsView('es', '1')); // #185 R2.3: resultado recibido desde la pantalla de subida
     await screen.findByTestId('doc-doc-2');
     await waitFor(() => expect(screen.getByTestId('docs-filter-all').props.accessibilityState).toEqual({ selected: true }));
     expect(screen.getByTestId('docs-filter-violet').props.accessibilityState).toEqual({ selected: false });
@@ -1016,5 +999,30 @@ describe('#185 R2.1: elegir archivo navega a la pantalla del formulario', () => 
     await fireEvent.press(await screen.findByTestId('docs-upload'));
     expect(screen.getByTestId('docs-action-error')).toHaveTextContent(error);
     expect(router.push).not.toHaveBeenCalled();
+  });
+});
+
+
+describe('#185 R2.3: la lista refresca y vuelve a «Todos» al recibir uploaded', () => {
+  it('refresca una vez por cambio de nonce y restaura Todos', async () => {
+    const view = await renderDocs();
+    await fireEvent.press(await screen.findByTestId('docs-filter-blue'));
+    expect(screen.getByTestId('docs-filter-blue').props.accessibilityState).toEqual({ selected: true });
+    await view.rerender(docsView('es', '1'));
+    await waitFor(() => expect(mockListPetDocs).toHaveBeenCalledTimes(2));
+    expect(screen.getByTestId('docs-filter-all').props.accessibilityState).toEqual({ selected: true });
+    await fireEvent.press(screen.getByTestId('docs-filter-blue'));
+    await view.rerender(docsView('es', '1'));
+    expect(mockListPetDocs).toHaveBeenCalledTimes(2);
+    expect(screen.getByTestId('docs-filter-blue').props.accessibilityState).toEqual({ selected: true });
+  });
+
+  it('no refresca ni reinicia el filtro con uploaded vacío o ausente', async () => {
+    const view = await renderDocs('es', '');
+    await fireEvent.press(await screen.findByTestId('docs-filter-blue'));
+    await view.rerender(docsView('es', ''));
+    await view.rerender(docsView());
+    expect(mockListPetDocs).toHaveBeenCalledTimes(1);
+    expect(screen.getByTestId('docs-filter-blue').props.accessibilityState).toEqual({ selected: true });
   });
 });
