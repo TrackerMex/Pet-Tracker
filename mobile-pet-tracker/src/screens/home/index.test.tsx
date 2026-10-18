@@ -5238,13 +5238,13 @@ describe('#155 R4: Inicio sin mascotas presenta a Pingo', () => {
     mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
   });
 
-  it('queda en el sitio del vacío que sustituye', async () => {
+  it('queda en el sitio del vacío que sustituye (enmendado por #181 R3)', async () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
     await renderHome();
     await screen.findByTestId('home-empty-pose');
     const slot = screen.getByTestId('home-empty');
-    expect(slot.parent?.props.testID).toBe('home-states');
-    expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['Text', 'home-empty']);
+    expect(slot.parent?.props.testID).toBe('home-no-pets-screen');
+    expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['home-empty']);
   });
 
   it('pinta la pose, el título y la frase de Pingo', async () => {
@@ -5334,5 +5334,30 @@ describe('#181 R1: home sin mascotas no muestra errores de detalle', () => {
     await waitFor(() => expect(queryClient.isFetching()).toBe(0));
     expect(screen.queryByTestId('pet-hero-error')).toBeNull();
     expect(screen.queryByTestId('pet-hero-retry')).toBeNull();
+  });
+});
+
+describe('#181 R3: Inicio centra el estado sin mascotas fuera del scroll', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() });
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+  });
+
+  it('R3.2: el contenedor centrado solo contiene home-empty y sustituye la escena', async () => {
+    const { queryClient } = await renderWithProviders(<HomeScreen />, { wrapper: HomeWrapper });
+    const empty = await screen.findByTestId('home-empty');
+    await waitFor(() => expect(queryClient.isFetching()).toBe(0));
+    const container = screen.getByTestId('home-no-pets-screen');
+    expect(container.type).toBe('View');
+    expect(container.props.className).toBe('flex-1 items-center justify-center p-6 bg-background');
+    expect(container.props.style).toBeUndefined();
+    expect(empty.parent).toBe(container);
+    expect(container.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['home-empty']);
+    for (const id of ['screen-home', 'home-states', 'home-content', 'home-alerts-bell']) {
+      expect(screen.queryByTestId(id)).toBeNull();
+    }
+    expect(screen.queryAllByTestId(/^home-entrance-/)).toHaveLength(0);
   });
 });
