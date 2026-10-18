@@ -1,6 +1,38 @@
 # Revisión #181 mobile-no-pets-states-and-centered-content
 
-Veredicto vigente: APROBADO (revisión técnica) en la ronda 3, HEAD revisado 0ac2e9de, con B1 pendiente de rechazo condicionado. Condiciones previas a done: ronda 3, sección «Condiciones antes de done». Historial: ronda 1 RECHAZADO (73f5585b); ronda 2 RECHAZADO (39369bf3), veredicto sin persistir. La ronda 4 (merge de origin/main) queda fuera de esta revisión y se revisa aparte.
+Veredicto vigente: APROBADO (revisión técnica) en la ronda 4, HEAD revisado 89c36e01 (delta 0ac2e9de..89c36e01), con B1 pendiente de rechazo condicionado. Condiciones previas a done: ronda 3, sección «Condiciones antes de done». Historial: ronda 1 RECHAZADO (73f5585b); ronda 2 RECHAZADO (39369bf3), veredicto sin persistir; ronda 3 APROBADO (revisión técnica) en 0ac2e9de; ronda 4 APROBADO (revisión técnica) en 89c36e01.
+
+---
+
+# Ronda 4: APROBADO (revisión técnica) sobre el merge de origin/main
+
+> Persistido por el leader el 2026-10-18 desde el hand-back del reviewer de ronda 4. El reviewer no puede escribir `.md`. Contenido del reviewer sin cambios de veredicto; las observaciones se recogen casi literales.
+
+Fecha: 2026-10-18. HEAD revisado: 89c36e01 (merge de origin/main 17b98872, incluye #180 y #228). Delta revisado: 0ac2e9de..89c36e01. Branch: feature/181-mobile-no-pets-states-and-centered-content. Worktree limpio en 89c36e01.
+
+Veredicto: APROBADO (revisión técnica). Bloqueantes: ninguno.
+
+Alcance: el reviewer no ejecutó init.sh, jest, lint ni e2e. Usó los logs del leader:
+- init.sh con base propia pet_tracker_wt181: EXIT=0 (scratchpad/init-181/init-final-89c36e01.log, L59068). Mobile 117/117 suites y 3871/3871 tests; backend 187/187 suites y 1474/1474 tests; 2/2 suites y 14/14 tests; e2e 30 suites pasadas, 3 saltadas de 33, y 468 tests pasados y 8 saltados de 476. 0 FAIL.
+- lint (expo lint --no-cache): log vacío (scratchpad/init-181/lint-final-89c36e01.log). El código de salida 0 lo registró el leader, no el log.
+- typecheck: EXIT=0 (scratchpad/init-181/typecheck-final-89c36e01.log).
+- feature_list.json: una sola entrada in_progress (181).
+
+Puntos revisados:
+1. Copy y tests de idioma: OK. En ui-language.test.ts, R7 = 68 filas, R8 = 56 y R13 = 11, contadas en ui-copy-table.ts. SCREEN_FILES pasa de 33 a 34 por docs-upload-form/index.tsx, único fichero nuevo en ALL_USES.
+2. Estado de harness: OK. feature_list.json válido, una sola in_progress. Hallazgo en progress/current.md (obs. 2), corregido en el commit de este cierre.
+3. Spec, trazabilidad, TDD y evidencia: OK. requirements.md:497 aprobado por humano (2026-10-18). traceability.md sin filas pendientes. R10 con filas R8-M1 rojo/verde en progress/impl_mobile-no-pets-states-and-centered-content.md. El delta no borra tests, no añade .only ni skip/todo. Los prefijos docs/chore/test de los commits del delta no están listados en docs/conventions.md §Commits (gap ya anotado).
+   B1: no disparado. PASS src/screens/profile/index.test.tsx (L10622) y 0 FAIL en el init de cierre. Una corrida verde no prueba ausencia de flake.
+4. Arquitectura y UI: OK. C3 sin backend ni dominio tocados; C7 sin borrados; C8 grep limpio en el código del delta. docs-upload-form cumple la excepción A11 de docs/conventions.md:620-628; alert-detail/index.tsx:161 coincide con specs/mobile-alert-detail-canvas-fidelity/requirements.md:147.
+
+Observaciones no bloqueantes (ninguna la introduce #181 salvo indicación):
+1. mobile-pet-tracker/src/screens/docs-upload-form/index.tsx no tiene título (ni title ni accessibilityRole="header"); _layout.tsx:98 pone title ''. docs/ui-guidelines.md:248 pide título en contenido con esa cabecera. Ya está en origin/main (marcado como #185 R2 en ui-language.test.ts). Si el artboard de #185 dibuja título, es defecto; si no, omisión aceptada.
+2. Estado documental: progress/current.md:20 estaba caducado (corregido en este cierre). docs/ui-guidelines.md:654 sin marcar «Enmienda #180 aprobada por humano», pese a que 32359981 es ancestro de 89c36e01. progress/handoff_mobile-docs-upload.md:1210, :1214 y :1219 contienen marcadores de conflicto literales; el delta no toca ese fichero. Ambos vienen de origin/main; seguimiento fuera de #181.
+3. ui-language.test.ts:169: el título dice «resuelve las 64 ocurrencias normativas» y la aserción de L170 espera 68. Solo afecta al nombre.
+4. docs-upload-form/index.tsx:126-131: KeyboardAvoidingView con behavior="padding"; el botón primario docs-upload-submit (L197-216) va dentro del ScrollView. Con el teclado abierto no hay garantía de que quede visible. Solo verificable en dispositivo.
+5. La skill expo:expo-tailwind-setup, citada en docs/ui-guidelines.md:15-23, responde «Unknown skill» en esta sesión. Afecta al harness; no reintentado.
+
+Hitos humanos abiertos, no bloquean el veredicto técnico: smoke en dev build de Android (requirements.md:481, [ ]) y casilla A20 (docs/conventions.md:642 y requirements.md:350, [ ]; prerrequisito de done). El tablero de Notion lo actualiza el leader antes de la PR.
 
 ---
 
