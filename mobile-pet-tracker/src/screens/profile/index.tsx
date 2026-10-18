@@ -18,6 +18,7 @@ import { petKeys, userKeys } from '../../api/query-keys';
 import type { PetProfile } from '../../api/types';
 import { getMe } from '../../api/users';
 import { Card } from '../../components/card';
+import { EmptyState } from '../../components/empty-state';
 import { PetAvatar } from '../../components/pet-avatar';
 import { PetSwitcher } from '../../components/pet-switcher';
 import { usePetSelection } from '../../hooks/use-pet-selection';
@@ -178,7 +179,8 @@ export function ProfileScreen() {
   );
 
   const pet = detail.data?.kind === 'ok' ? detail.data.pet : null;
-  const petLoading = pets.data === undefined || (selectedPetId !== null && detail.data === undefined);
+  const petsEmpty = pets.data?.kind === 'ok' && pets.data.pets.length === 0;
+  const petLoading = (pets.data === undefined || (selectedPetId !== null && detail.data === undefined)) && !petsEmpty;
   const initials = me.data?.kind === 'ok'
     ? [me.data.me.firstName, me.data.me.lastName].map((part) => part.trim().charAt(0)).join('').toUpperCase()
     : '';
@@ -309,10 +311,14 @@ export function ProfileScreen() {
         />
       ) : null}
 
-      {pets.data?.kind === 'ok' && pets.data.pets.length === 0 ? (
-        <Text testID="profile-pets-empty" className="font-normal text-muted">
-          {t('common.noPetsYet')}
-        </Text>
+      {petsEmpty ? (
+        <EmptyState
+          testID="profile-pets-empty"
+          pose="talk"
+          title={t('common.noPetsYet')}
+          body={t('common.noPetsBody')}
+          action={{ label: t('profile.addPet'), onPress: () => router.push('/pets/add') }}
+        />
       ) : null}
 
       {pets.data && ['error', 'unreachable', 'missing-config'].includes(pets.data.kind) ? (
@@ -328,7 +334,7 @@ export function ProfileScreen() {
         </>
       ) : null}
 
-      {detail.data && ['error', 'unreachable', 'missing-config'].includes(detail.data.kind) ? (
+      {selectedPetId !== null && !petsEmpty && detail.data && ['error', 'unreachable', 'missing-config'].includes(detail.data.kind) ? (
         <Card testID="profile-pet-error" className="items-start gap-3">
           <Text className="text-danger">{t('profile.couldNotLoadPet')}</Text>
           <Button
