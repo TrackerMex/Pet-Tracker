@@ -16,6 +16,13 @@ import { useSelectedPet } from '../../providers/selected-pet-provider';
 import { renderWithProviders } from '../../../test/render-with-providers';
 import { AlertDetailScreen } from '.';
 
+let mockReducedMotion = false;
+jest.mock('react-native-reanimated', () => ({
+  ...jest.requireActual('react-native-reanimated'), __esModule: true,
+  useReducedMotion: () => mockReducedMotion,
+  withRepeat: jest.fn((animation: unknown) => animation),
+}));
+
 jest.mock('expo-router', () => ({
   router: { dismissTo: jest.fn(), push: jest.fn() },
 }));
@@ -141,6 +148,7 @@ function renderDetail(alertId = 'alert-1', language: 'es' | 'en' = 'es') {
 beforeEach(() => {
   jest.clearAllMocks();
   mockTheme = 'light';
+  mockReducedMotion = false;
   mockListGeofences.mockReset().mockReturnValue(new Promise(() => undefined));
   mockUseSelectedPet.mockReturnValue({ selectedPetId: 'pet-1', selectPet: mockSelectPet });
   mockListAlerts.mockReset();
@@ -776,5 +784,31 @@ describe('#180 R1: título en el contenido', () => {
     const scrollContent = elementChild(screen.getByTestId('screen-alert-detail'), 0);
     expect(elementChild(scrollContent, 0)).toBe(title);
     expect(title.props.className).toBe('text-26 font-black tracking-title text-foreground');
+  });
+});
+
+describe('#180 R4: ping del héroe', () => {
+  it.each(['acked', 'closed'] as const)('#180 R4.2: %s no tiene ping', async status => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ status })], nextCursor: null });
+    await renderDetail();
+    await screen.findByTestId('alert-detail-card');
+    expect(screen.queryByTestId('alert-detail-ping', { includeHiddenElements: true })).toBeNull();
+  });
+  it.each([false, true])('#180 R4.2: abierta con movimiento reducido %s', async reduced => {
+    mockReducedMotion = reduced;
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert()], nextCursor: null });
+    await renderDetail();
+    await screen.findByTestId('alert-detail-card');
+    if (reduced) expect(screen.queryByTestId('alert-detail-ping', { includeHiddenElements: true })).toBeNull();
+    else expect(screen.getByTestId('alert-detail-ping', { includeHiddenElements: true })).toBeOnTheScreen();
+  });
+  it.each([['geofence_exit', 'bg-danger/20'], ['battery_low', 'bg-warning-strong/20'], ['unknown', 'bg-muted/20']])('#180 R4.3: %s usa su anillo detrás del disco', async (type, ring) => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ type })], nextCursor: null });
+    await renderDetail();
+    const ping = await screen.findByTestId('alert-detail-ping');
+    expect(ping.props.className).toBe('absolute size-23 rounded-full ' + ring);
+    const disc = screen.getByTestId('alert-detail-disc');
+    expect(elementChild(disc, 0)).toBe(ping);
+    expect(within(elementChild(disc, 1)).getByTestId('alert-detail-icon')).toBeOnTheScreen();
   });
 });
