@@ -9,20 +9,20 @@ tags: [mobile, ui, canvas, alerts, spec]
 
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
-| R1 | pendiente | pendiente |
-| R2 | pendiente | pendiente |
-| R3 | pendiente | pendiente |
-| R4 | pendiente | pendiente |
-| R5 | pendiente | pendiente |
-| R6 | pendiente | pendiente |
-| R7 | pendiente | pendiente |
-| R8 | pendiente | pendiente |
-| R9 | pendiente | pendiente |
-| R10 | pendiente | pendiente |
-| R11 | pendiente | pendiente |
-| R12 | pendiente | pendiente |
-| R13 | pendiente | pendiente |
-| R14 | pendiente (humo manual, requirements §6) | pendiente |
+| R1 | src/screens/alert-detail/index.test.tsx::#180 R1.2; layout.test.tsx::con título vacío; UL/PF/AC inventarios | rojo `b07bc024` — test(mobile): #180 R1 rojo — título del detalle en el contenido; verde `e37300ec` — feat(mobile): #180 R1 título del detalle en el contenido (D-H) |
+| R2 | src/screens/alert-detail/index.test.tsx::#180 R2.1, R2.2, R2.3 | rojo `3ae25afc` — test(mobile): #180 R2 rojo — marco, espaciador y orden de hijos; verde `e07b671c` — feat(mobile): #180 R2 marco y ack anclado al fondo |
+| R3 | src/screens/alert-detail/index.test.tsx::#180 R3.1/R3.2/R3.3, R3.4, R3.5, R3.6; src/utils/alert-meta.test.ts::#180 R3.1; PF/DD/AC inventarios (R3.7 en R10) | rojo `b9c7b918` — test(mobile): #180 R3 rojo — héroe centrado con disco, píldora y fecha corta; verde `a3d851d5` — feat(mobile): #180 R3 héroe del detalle fiel al canvas |
+| R4 | src/screens/alert-detail/ping-ring.test.tsx::#180 R4.1 (enmendado por E1); src/screens/alert-detail/index.test.tsx::#180 R4.2/R4.3; src/__tests__/alert-detail-canvas-fidelity.test.ts::#180 R4.4/R4.5; src/theme/__tests__/motion.test.ts::#180 R4.5 | rojo `b9e645f2` — test(mobile): #180 R4 rojo — ping del héroe; verde `b897fef4` — feat(mobile): #180 R4 ping del héroe |
+| R5 | src/screens/alert-detail/index.test.tsx::#180 R5.1/R5.2/R5.3/R5.4; src/theme/__tests__/global-css.test.ts::#180 R5.5; src/__tests__/alert-detail-canvas-fidelity.test.ts::#180 R5.6; src/__tests__/ui-language.test.ts::registro de copy (R8.2, E3) | rojo `878bf9bd` — test(mobile): #180 R5 rojo — mapa h-52.5 rounded-24 con píldora de cristal y desenfoque; verde `e11c0893` — feat(mobile): #180 R5 mapa con píldora de distancia |
+| R6 | src/screens/alert-detail/index.test.tsx::#180 R6.1/R6.2; src/__tests__/consistency-classnames.test.ts::#180 R7.5 «Ver en el mapa» | rojo `00a609c6` — test(mobile): #180 R6 rojo — CTA con icono Map, h-13 y rounded-16; verde `d4a38dff` — feat(mobile): #180 R6 CTA Ver en el mapa |
+| R7 | src/screens/alert-detail/index.test.tsx::#180 R7.1 y #100 R5/#134 R2; src/__tests__/consistency-classnames.test.ts::#166 R2 y #180 R7.5 ack; src/__tests__/design-drift.test.ts::#180 R7.4 | rojo `cdd18c2d` — test(mobile): #180 R7 rojo — ack primario con labio y rounded-16; verde `e1a0cea0` — feat(mobile): #180 R7 ack primario con labio |
+| R8 | src/providers/__tests__/language-provider.test.tsx::#180 R8.1 y #65 R12 (catálogo); R8.2 en R5 por E3 | rojo `3785d0c3` — test(mobile): #180 R8 rojo — alerts.mapLabel; verde `a022a8b2` — feat(mobile): #180 R8 alerts.mapLabel |
+| R9 | src/screens/alert-detail/index.test.tsx::#180 R9.1 | rojo `cf07abb5` — test(mobile): #180 R9 rojo — entrada escalonada del héroe y el mapa; verde `81aba5f6` — feat(mobile): #180 R9 entrada escalonada |
+| R10 | src/screens/alert-detail/index.test.tsx::#180 R10.1/R10.2; src/__tests__/alert-detail-canvas-fidelity.test.ts::#180 R3.7; PF inventario rounded-hero | rojo `b5565332` — test(mobile): #180 R10 rojo — esqueleto rounded-hero y reintento h-13; verde `c851eb1e` — feat(mobile): #180 R10 carga y error |
+| R11 | src/utils/alert-meta.test.ts::#180 R11.1 (cinco campos por tipo); surface retirado en R3 | rojo `66d9afc7` — test(mobile): #180 R11 rojo — campos del héroe en alert-meta; verde `b17379e5` — feat(mobile): #180 R11 campos del héroe en alert-meta |
+| R12 | src/__tests__/alert-detail-canvas-fidelity.test.ts::#180 R12: enmiendas (7 bloques, 15 anclas, carta y §2.35); AC K15 | rojo `4a85717e` — test(mobile): #180 R12 rojo — enmiendas de la carta y de las specs; verde `643daf6d` — docs(mobile): #180 R12 enmiendas y carta del detalle de alerta |
+| R13 | src/__tests__/alert-detail-canvas-fidelity.test.ts::#180 R13.2; src/__tests__/ui-language.test.ts::registra cada ocurrencia del detalle (enmendado por #180 R13.1); 30 mutaciones; suite completa 115/115 y 3796/3796 | `74f0fa9d` — test(mobile): #180 R13 candados agregados (rojo bajo S15 y verde al revertir; agregado según tasks.md) |
+| R14 | Humo manual de requirements §6 y E1.6: exclusivo del humano, sin ejecutar; casilla desmarcada | Sin commit de smoke de IA; aprobación del contrato: 6f2b8403 / 42222344 |
 
 ## Enmienda E1 (2026-10-18)
 
@@ -31,18 +31,18 @@ Las filas R4, R5, R6, R7 y R12 de arriba incluyen su parte enmendada por E1 (R4.
 
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
-| R4.1 (enmendado por E1) | pendiente (`ping-ring.test.tsx`, 0 / 900 / 1900 ms) | pendiente |
-| R4.5 | pendiente (`motion.test.ts`; `alert-detail-canvas-fidelity.test.ts`) | pendiente |
-| R5.2 (enmendado por E1) | pendiente (`index.test.tsx`, BlurView) | pendiente |
-| R5.5 | pendiente (`global-css.test.ts`) | pendiente |
-| R5.6 | pendiente (`alert-detail-canvas-fidelity.test.ts`) | pendiente |
-| R6.1 (enmendado por E1) | pendiente (`index.test.tsx`) | pendiente |
-| R7.1 (enmendado por E1) | pendiente (`index.test.tsx`) | pendiente |
-| R7.3 (enmendado por E1) | pendiente (`consistency-classnames.test.ts`: K7 y K8 sin delta, K9 +1) | pendiente |
-| R7.4 | pendiente (`design-drift.test.ts`, K19) | pendiente |
-| R7.5 | pendiente (`consistency-classnames.test.ts`, dos `it`: CTA en R6, ack en R7) | pendiente |
-| R12 (enmendado por E1) | pendiente (`alert-detail-canvas-fidelity.test.ts`, quince anclas) | pendiente |
-| R14 (humo, enmendado por E1) | pendiente (humo manual, requirements § Enmienda E1 E1.6) | pendiente |
+| R4.1 (enmendado por E1) | src/screens/alert-detail/ping-ring.test.tsx::#180 R4.1 (0/900/1900 ms) | rojo `b9e645f2` — test(mobile): #180 R4 rojo — ping del héroe; verde `b897fef4` — feat(mobile): #180 R4 ping del héroe |
+| R4.5 | src/theme/__tests__/motion.test.ts::#180 R4.5; src/__tests__/alert-detail-canvas-fidelity.test.ts::#180 R4.5 | rojo `b9e645f2` — test(mobile): #180 R4 rojo — ping del héroe; verde `b897fef4` — feat(mobile): #180 R4 ping del héroe |
+| R5.2 (enmendado por E1) | src/screens/alert-detail/index.test.tsx::#180 R5.2 (BlurView, tint, clase y umbrales) | rojo `878bf9bd` — test(mobile): #180 R5 rojo — mapa h-52.5 rounded-24 con píldora de cristal y desenfoque; verde `e11c0893` — feat(mobile): #180 R5 mapa con píldora de distancia |
+| R5.5 | src/theme/__tests__/global-css.test.ts::#180 R5.5 | rojo `878bf9bd` — test(mobile): #180 R5 rojo — mapa h-52.5 rounded-24 con píldora de cristal y desenfoque; verde `e11c0893` — feat(mobile): #180 R5 mapa con píldora de distancia |
+| R5.6 | src/__tests__/alert-detail-canvas-fidelity.test.ts::#180 R5.6; diff de package.json/bun.lock vacío | rojo `878bf9bd` — test(mobile): #180 R5 rojo — mapa h-52.5 rounded-24 con píldora de cristal y desenfoque; verde `e11c0893` — feat(mobile): #180 R5 mapa con píldora de distancia |
+| R6.1 (enmendado por E1) | src/screens/alert-detail/index.test.tsx::#180 R6.1 | rojo `00a609c6` — test(mobile): #180 R6 rojo — CTA con icono Map, h-13 y rounded-16; verde `d4a38dff` — feat(mobile): #180 R6 CTA Ver en el mapa |
+| R7.1 (enmendado por E1) | src/screens/alert-detail/index.test.tsx::#180 R7.1 | rojo `cdd18c2d` — test(mobile): #180 R7 rojo — ack primario con labio y rounded-16; verde `e1a0cea0` — feat(mobile): #180 R7 ack primario con labio |
+| R7.3 (enmendado por E1) | src/__tests__/consistency-classnames.test.ts::#62 R1/#166 R2; K7/K8 sin delta, K9 +1 | rojo `cdd18c2d` — test(mobile): #180 R7 rojo — ack primario con labio y rounded-16; verde `e1a0cea0` — feat(mobile): #180 R7 ack primario con labio |
+| R7.4 | src/__tests__/design-drift.test.ts::#180 R7.4 y reserva de radios | rojo `cdd18c2d` — test(mobile): #180 R7 rojo — ack primario con labio y rounded-16; verde `e1a0cea0` — feat(mobile): #180 R7 ack primario con labio |
+| R7.5 | src/__tests__/consistency-classnames.test.ts::#180 R7.5: «Ver en el mapa» del detalle lleva rounded-16 con su labio gris / el ack del detalle lleva rounded-16 con su labio | rojo `00a609c6` — test(mobile): #180 R6 rojo — CTA con icono Map, h-13 y rounded-16; verde `d4a38dff` — feat(mobile): #180 R6 CTA Ver en el mapa; rojo `cdd18c2d` — test(mobile): #180 R7 rojo — ack primario con labio y rounded-16; verde `e1a0cea0` — feat(mobile): #180 R7 ack primario con labio |
+| R12 (enmendado por E1) | src/__tests__/alert-detail-canvas-fidelity.test.ts::#180 R12: enmiendas; quince anclas | rojo `4a85717e` — test(mobile): #180 R12 rojo — enmiendas de la carta y de las specs; verde `643daf6d` — docs(mobile): #180 R12 enmiendas y carta del detalle de alerta |
+| R14 (humo, enmendado por E1) | Humo manual de requirements §6 y E1.6: exclusivo del humano, sin ejecutar; casilla desmarcada | Sin commit de smoke de IA; aprobación del contrato: 6f2b8403 / 42222344 |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente".
 Convención de commit: `feat(<scope>): <desc> (R1,R2)`.
@@ -55,9 +55,9 @@ Filas que E2 añade o cambia. Las de R3, R7 y R13 de arriba siguen como están, 
 
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
-| R3.7 (movido a R10 por E2.1) | pendiente (`alert-detail-canvas-fidelity.test.ts`: rojo y verde en R10) | pendiente |
-| R7.2 (enmendado por E2.2) | pendiente (`index.test.tsx`: #100 R5 en R7; #170 R6 en R3; resto según la tabla de E2.2) | pendiente |
-| R13.2 (enmendado por E2.1) | pendiente (`alert-detail-canvas-fidelity.test.ts`, con `bunx jest`) | pendiente |
+| R3.7 (movido a R10 por E2.1) | src/__tests__/alert-detail-canvas-fidelity.test.ts::#180 R3.7 | rojo `b5565332` — test(mobile): #180 R10 rojo — esqueleto rounded-hero y reintento h-13; verde `c851eb1e` — feat(mobile): #180 R10 carga y error |
+| R7.2 (enmendado por E2.2) | src/screens/alert-detail/index.test.tsx::#100 R5/#134 R2/#170 R6 y R8–R14, comportamiento conservado; visuales enmendadas por E2 | rojo `b9c7b918` — test(mobile): #180 R3 rojo — héroe centrado con disco, píldora y fecha corta; verde `a3d851d5` — feat(mobile): #180 R3 héroe del detalle fiel al canvas; rojo `cdd18c2d` — test(mobile): #180 R7 rojo — ack primario con labio y rounded-16; verde `e1a0cea0` — feat(mobile): #180 R7 ack primario con labio |
+| R13.2 (enmendado por E2.1) | src/__tests__/alert-detail-canvas-fidelity.test.ts::#180 R13.2 y todos los candados C; ejecución individual con bunx (20/20) | `74f0fa9d` — test(mobile): #180 R13 candados agregados; origen C: rojo `b9e645f2` — test(mobile): #180 R4 rojo — ping del héroe; verde `b897fef4` — feat(mobile): #180 R4 ping del héroe |
 
 Nota: la fila R3 de la tabla principal no incluye R3.7; su test cuenta en R10.
 
@@ -65,6 +65,10 @@ Nota: la fila R3 de la tabla principal no incluye R3.7; su test cuenta en R10.
 
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
-| R8.2 (movido a R5 por E3.1) | pendiente (`ui-language.test.ts`: K2 y K3, en el rojo y el verde de R5) | pendiente |
+| R8.2 (movido a R5 por E3.1) | src/__tests__/ui-language.test.ts::registro de R13_ALERT_DETAIL y ALL_USES | rojo `878bf9bd` — test(mobile): #180 R5 rojo — mapa h-52.5 rounded-24 con píldora de cristal y desenfoque; verde `e11c0893` — feat(mobile): #180 R5 mapa con píldora de distancia |
 
 Nota: K4 y K5 (LP) siguen en R8.
+
+R14 no se declara superado: el agente deja el humo para el humano y conserva su casilla sin marcar. R1–R13 tienen verificación automática; el veredicto final corresponde al reviewer.
+
+Formato sin cambio semántico para M15/M16/M21: `4933ce00` — style(mobile): #180 R13 separa las props del ack para medidas. Después: DT 125/125, CC 72/72, DD 111/111 y tsc/lint verdes.
