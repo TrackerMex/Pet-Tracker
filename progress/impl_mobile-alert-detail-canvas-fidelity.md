@@ -1,3 +1,5 @@
+> Estado actual: implementación R1–R13 preparada y verificada; revisión independiente y humo Android por ejecutar. Los bloqueos de las secciones anteriores son históricos.
+
 # Implementación #180 — mobile-alert-detail-canvas-fidelity
 
 **Estado: BLOQUEADO por contradicciones de la spec y del orden TDD. H0 completado; ningún R implementado.**
@@ -269,3 +271,235 @@ Se aplica la instrucción del handoff «Si algo no cuadra con la spec, PARA y re
 | M25 | 1 | 1 | +0 |
 
 Deltas propios de R1: M1 +1, M2 -1, M3 +1, M7 +1 y M12 +1; resto sin cambios. No se ha ejecutado init.sh, no se han modificado dependencias ni archivos reservados al leader, no hay temporales en el worktree, no se ha abierto/editado PR y no se ha marcado el humo humano. No se declara terminada la feature.
+
+## Reanudación tras E3 — 2026-10-18
+
+- Directorio `/home/claude/sites/Pet-Tracker-wt-180`; rama `feature/180-mobile-alert-detail-canvas-fidelity`.
+- H0: `30e36f12`. E3 firmada: `49b607c1`, casilla y log verificados.
+- Fetch/merge: Already up to date. P1–P14 conformes. Medidas iguales a «Al detenerse» de 3c099eaa.
+- Skills cargadas en esta sesión: `ponytail:ponytail`, `building-native-ui`, `expo-tailwind-setup`, `appllama-app-design-skill`, `animate-expo`.
+- Se retoma en R8. R1 conserva b07bc024/e37300ec. E3 resuelve B3.
+
+| Medida | H0 E3 |
+|---|---:|
+| M1 | 8 |
+| M2 | 0 |
+| M3 | 1 |
+| M4 | 10 |
+| M5 | 3 |
+| M6 | 1 |
+| M7 | 5 |
+| M8 | 11 |
+| M9 | 1 |
+| M10 | 5 |
+| M11 | 9 |
+| M12 | 7 |
+| M13 | 2 |
+| M14 | 13 |
+| M15 | 12 |
+| M16 | 14 |
+| M17 | 34 |
+| M18 | 1 |
+| M19 | 2 |
+| M20 | 11 |
+| M21 | 3 |
+| M22 | 1 |
+| M23 | 0 |
+| M24 | 0 |
+| M25 | 1 |
+
+- `3785d0c3` test(mobile): #180 R8 rojo — alerts.mapLabel.
+
+- `a022a8b2` feat(mobile): #180 R8 alerts.mapLabel.
+
+- `66d9afc7` test(mobile): #180 R11 rojo — campos del héroe en alert-meta.
+
+- `b17379e5` feat(mobile): #180 R11 campos del héroe en alert-meta.
+
+- `b9c7b918` test(mobile): #180 R3 rojo — héroe centrado con disco, píldora y fecha corta.
+
+- `a3d851d5` feat(mobile): #180 R3 héroe del detalle fiel al canvas.
+
+- `b9e645f2` test(mobile): #180 R4 rojo — ping del héroe.
+
+- `b897fef4` feat(mobile): #180 R4 ping del héroe.
+
+- `878bf9bd` test(mobile): #180 R5 rojo — mapa h-52.5 rounded-24 con píldora de cristal y desenfoque.
+
+- `e11c0893` feat(mobile): #180 R5 mapa con píldora de distancia.
+
+- `00a609c6` test(mobile): #180 R6 rojo — CTA con icono Map, h-13 y rounded-16.
+
+- `d4a38dff` feat(mobile): #180 R6 CTA Ver en el mapa.
+
+- `cdd18c2d` test(mobile): #180 R7 rojo — ack primario con labio y rounded-16.
+
+- `e1a0cea0` feat(mobile): #180 R7 ack primario con labio.
+
+- `3ae25afc` test(mobile): #180 R2 rojo — marco, espaciador y orden de hijos.
+
+- `e07b671c` feat(mobile): #180 R2 marco y ack anclado al fondo.
+
+- `cf07abb5` test(mobile): #180 R9 rojo — entrada escalonada del héroe y el mapa.
+
+- `81aba5f6` feat(mobile): #180 R9 entrada escalonada.
+
+- `b5565332` test(mobile): #180 R10 rojo — esqueleto rounded-hero y reintento h-13.
+
+- `c851eb1e` feat(mobile): #180 R10 carga y error.
+
+- `4a85717e` test(mobile): #180 R12 rojo — enmiendas de la carta y de las specs.
+
+Nota de medidas documentales (R13.1, tasks.md: «Si algo difiere, anotar y razonar»): R12.1 exige que el bloque canónico de la carta repita `rounded-24` y `rounded-16` en su línea «Qué cambia». Por eso M19 cierra en 4 líneas (base 2 + línea nominal + bloque canónico), frente a 3 de la tabla, y M25 cierra en 4 (base 1 + nominal + viñeta + bloque canónico), frente a 3. No hay consumidores ni valores de diseño adicionales: la línea nominal y la viñeta aparecen una vez cada una, como comprueba R12.2. Se conservan íntegros los literales aprobados y se registra la diferencia de recuento, sin modificar la spec ni falsear medidas.
+
+- `643daf6d` docs(mobile): #180 R12 enmiendas y carta del detalle de alerta.
+
+### Sondas de mutación S1–S30
+
+Se mide cada línea por contenido, se planta una sola mutación, se ejecuta su candado y se revierte con `git checkout HEAD -- <ruta>`.
+
+- S1: ROJO; src/screens/alert-detail/index.test.tsx — Tests:       2 failed, 123 skipped, 125 total. Ancla: `src/screens/alert-detail/index.tsx:161`. Revertida.
+
+- S2: ROJO; src/screens/alert-detail/index.test.tsx — Tests:       1 failed, 123 skipped, 1 passed, 125 total. Ancla: `src/screens/alert-detail/index.tsx:183`. Revertida.
+
+- S3: ROJO; src/screens/alert-detail/index.test.tsx — Tests:       3 failed, 122 skipped, 125 total. Ancla: `src/screens/alert-detail/index.tsx:133`. Revertida.
+
+- S4: ROJO; src/screens/alert-detail/index.test.tsx — Tests:       2 failed, 121 skipped, 2 passed, 125 total. Ancla: `src/screens/alert-detail/index.tsx:131`. Revertida.
+
+- S5: ROJO; src/screens/alert-detail/index.test.tsx — Tests:       1 failed, 122 skipped, 2 passed, 125 total; src/utils/alert-meta.test.ts — Tests:       1 failed, 3 skipped, 2 passed, 6 total. Ancla: `src/utils/alert-meta.ts:25`. Revertida.
+
+- S6: ROJO; src/screens/alert-detail/index.test.tsx — Tests:       1 failed, 121 skipped, 3 passed, 125 total. Ancla: `src/screens/alert-detail/index.tsx:135`. Revertida.
+
+- S7: ROJO; src/screens/alert-detail/index.test.tsx — Tests:       1 failed, 121 skipped, 3 passed, 125 total. Ancla: `src/screens/alert-detail/ping-ring.tsx:17`. Revertida.
+
+- S8: ROJO; src/screens/alert-detail/ping-ring.test.tsx — Tests:       1 failed, 1 skipped, 2 total. Ancla: `src/screens/alert-detail/ping-ring.tsx:12`. Revertida.
+
+- S9: ROJO; src/screens/alert-detail/index.test.tsx — Tests:       2 failed, 119 skipped, 4 passed, 125 total. Ancla: `src/screens/alert-detail/index.tsx:49`. Revertida.
+
+- S10: ROJO; src/screens/alert-detail/index.test.tsx — Tests:       1 failed, 124 skipped, 125 total. Ancla: `src/screens/alert-detail/index.tsx:58`. Revertida.
+
+- S11: ROJO; src/screens/alert-detail/index.test.tsx — Tests:       2 failed, 121 skipped, 2 passed, 125 total. Ancla: `src/screens/alert-detail/index.tsx:46`. Revertida.
+
+- S12: ROJO; src/screens/alert-detail/index.test.tsx — Tests:       1 failed, 124 skipped, 125 total. Ancla: `src/screens/alert-detail/index.tsx:180`. Revertida.
+
+- S13: ROJO; src/screens/alert-detail/index.test.tsx — Tests:       1 failed, 121 skipped, 3 passed, 125 total. Ancla: `src/screens/alert-detail/index.tsx:189`. Revertida.
+
+- S14: ROJO; src/screens/alert-detail/index.test.tsx — Tests:       3 failed, 117 skipped, 5 passed, 125 total. Ancla: `src/screens/alert-detail/index.tsx:184`. Revertida.
+
+S15, primera pasada: LT rojo y UL/K2 verde con el título duplicado en layout (candado ciego). R13.1 añade a K2 la ausencia de alerts.detailTitle en _layout.tsx, sin aflojar el registro de ocurrencias. Se repite S15 antes de continuar; la primera mutación se revirtió en finally.
+
+### Sondas de mutación S1–S30
+
+Se mide cada línea por contenido, se planta una sola mutación, se ejecuta su candado y se revierte con `git checkout HEAD -- <ruta>`.
+
+- S15: ROJO; src/app/__tests__/layout.test.tsx — Tests:       1 failed, 26 skipped, 27 total; src/__tests__/ui-language.test.ts — Tests:       1 failed, 29 skipped, 30 total. Ancla: `src/app/_layout.tsx:103`. Revertida.
+
+- S16: ROJO; src/screens/alert-detail/index.test.tsx — Tests:       1 failed, 124 skipped, 125 total. Ancla: `src/screens/alert-detail/index.tsx:196`. Revertida.
+
+- S17: ROJO; src/__tests__/alert-detail-canvas-fidelity.test.ts — Tests:       1 failed, 19 skipped, 20 total. Ancla: `../docs/ui-guidelines.md:189`. Revertida.
+
+- S18: ROJO; src/__tests__/alert-detail-canvas-fidelity.test.ts — Tests:       1 failed, 19 skipped, 20 total; src/__tests__/alerts-canvas-fidelity.test.ts — Tests:       1 failed, 26 skipped, 27 total. Ancla: `../docs/ui-guidelines.md:208`. Revertida.
+
+- S19: ROJO; src/theme/__tests__/motion.test.ts — Tests:       1 failed, 24 skipped, 25 total; src/screens/alert-detail/ping-ring.test.tsx — Tests:       1 failed, 1 skipped, 2 total. Ancla: `src/theme/motion.ts:52`. Revertida.
+
+- S20: ROJO; src/screens/alert-detail/ping-ring.test.tsx — Tests:       1 failed, 1 skipped, 2 total; src/__tests__/alert-detail-canvas-fidelity.test.ts — Tests:       1 failed, 19 skipped, 20 total. Ancla: `src/screens/alert-detail/ping-ring.tsx:4`. Revertida.
+
+- S21: ROJO; src/screens/alert-detail/index.test.tsx — Tests:       4 failed, 119 skipped, 2 passed, 125 total. Ancla: `src/screens/alert-detail/index.tsx:60`. Revertida.
+
+- S22: ROJO; src/screens/alert-detail/index.test.tsx — Tests:       1 failed, 119 skipped, 5 passed, 125 total. Ancla: `src/screens/alert-detail/index.tsx:60`. Revertida.
+
+- S23: ROJO; src/screens/alert-detail/index.test.tsx — Tests:       1 failed, 119 skipped, 5 passed, 125 total. Ancla: `src/screens/alert-detail/index.tsx:61`. Revertida.
+
+- S24: ROJO; src/screens/alert-detail/index.test.tsx — Tests:       1 failed, 119 skipped, 5 passed, 125 total. Ancla: `src/screens/alert-detail/index.tsx:62`. Revertida.
+
+- S25: ROJO; src/theme/__tests__/global-css.test.ts — Tests:       1 failed, 66 skipped, 2 passed, 69 total. Ancla: `src/theme/global.css:53`. Revertida.
+
+- S26: ROJO; src/__tests__/alert-detail-canvas-fidelity.test.ts — Tests:       1 failed, 19 skipped, 20 total. Ancla: `src/screens/home/index.tsx:1`. Revertida.
+
+- S27: ROJO; src/screens/alert-detail/index.test.tsx — Tests:       1 failed, 124 skipped, 125 total; src/__tests__/consistency-classnames.test.ts — Tests:       1 failed, 70 skipped, 1 passed, 72 total. Ancla: `src/screens/alert-detail/index.tsx:174`. Revertida.
+
+- S28: ROJO; src/screens/alert-detail/index.test.tsx — Tests:       1 failed, 121 skipped, 3 passed, 125 total; src/__tests__/consistency-classnames.test.ts — Tests:       3 failed, 26 skipped, 43 passed, 72 total. Ancla: `src/screens/alert-detail/index.tsx:190`. Revertida.
+
+- S29: ROJO; src/__tests__/consistency-classnames.test.ts — Tests:       2 failed, 68 skipped, 2 passed, 72 total. Ancla: `src/screens/alert-detail/index.tsx:190`. Revertida.
+
+- S30: ROJO; src/__tests__/design-drift.test.ts — Tests:       1 failed, 109 skipped, 1 passed, 111 total. Ancla: `src/screens/alert-detail/index.tsx:174`. Revertida.
+
+- `74f0fa9d` test(mobile): #180 R13 candados agregados.
+
+Cierre de medidas: M15/M16/M21 no contaban el ack porque `grep -v test` descarta toda línea con testID. Se separan las props de su tag en líneas; igualdad del fuente al eliminar whitespace comprobada. Las clases y su orden se conservan. Se repiten DT/CC/DD y tsc/lint; el cambio es solo de formato tras la suite completa.
+
+- `4933ce00` style(mobile): #180 R13 separa las props del ack para medidas.
+
+## Cierre de implementación tras E3
+
+- Fecha UTC: 2026-10-18T07:42:02+00:00.
+- R1–R13 implementados/verificados. R14 no ejecutado: humo exclusivo del humano. La revisión independiente y su init.sh quedan para leader/reviewer; no se declara la feature done.
+- Suite móvil completa: **115 passed, 115 total**; **3796 passed, 3796 total**; 1 passed, 1 total snapshot; 190.864 s. Comando: `bunx jest --testTimeout=30000 --maxWorkers=2`.
+- Nuevos it con timeout normal de 5000 ms: **119 tests verdes**, en 13 ficheros ejecutados individualmente con `bunx jest <fichero> -t "#180"`, sin --testTimeout. Solo DT usa --forceExit (E3).
+- Avisos de worker que no sale limpiamente en la suite completa: 0. Mensajes Force exiting Jest en esa corrida: 0.
+- TypeScript y lint completos verdes tras cada bloque; último check tras el ajuste de R13: exit 0, sin Failed to run.
+- R13/C se ejecutó solo: 20/20; UL reforzado: 30/30. S1–S30 rojas y revertidas; S15 se reforzó según la instrucción de arreglar candados ciegos.
+- Ajuste agregado: `74f0fa9d` — test(mobile): #180 R13 candados agregados.
+- H0 original da0a377e; H0 E2 978f7044; H0 E3 30e36f12. R1 se conserva de la reanudación anterior.
+
+### Pares de commits por requisito
+
+| Requisito | Rojo | Verde |
+|---|---|---|
+| R1 | `b07bc024` | `e37300ec` |
+| R8 | `3785d0c3` | `a022a8b2` |
+| R11 | `66d9afc7` | `b17379e5` |
+| R3 | `b9c7b918` | `a3d851d5` |
+| R4 | `b9e645f2` | `b897fef4` |
+| R5 | `878bf9bd` | `e11c0893` |
+| R6 | `00a609c6` | `d4a38dff` |
+| R7 | `cdd18c2d` | `e1a0cea0` |
+| R2 | `3ae25afc` | `e07b671c` |
+| R9 | `cf07abb5` | `81aba5f6` |
+| R10 | `b5565332` | `c851eb1e` |
+| R12 | `4a85717e` | `643daf6d` |
+
+R13 solo ajusta tests agregados, como indica tasks.md: su nuevo candado falló con S15 plantada y pasó al revertirla; no necesita cambios de producto. R14 no tiene commit de smoke de IA.
+
+### Medidas finales
+
+Las cinco variaciones de R1 ya estaban incluidas en H0 E3. El delta total compara con H0 original; las dos diferencias documentales se explican arriba (bloque canónico de R12.1).
+
+| Medida | H0 original | H0 E3 | Final | Delta total | Resultado |
+|---|---:|---:|---:|---:|---|
+| M1 | 7 | 8 | 8 | +1 | conforme |
+| M2 | 1 | 0 | 0 | -1 | conforme |
+| M3 | 0 | 1 | 1 | +1 | conforme |
+| M4 | 10 | 10 | 11 | +1 | conforme |
+| M5 | 3 | 3 | 0 | -3 | conforme |
+| M6 | 1 | 1 | 2 | +1 | conforme |
+| M7 | 4 | 5 | 5 | +1 | conforme |
+| M8 | 11 | 11 | 12 | +1 | conforme |
+| M9 | 1 | 1 | 2 | +1 | conforme |
+| M10 | 5 | 5 | 6 | +1 | conforme |
+| M11 | 9 | 9 | 10 | +1 | conforme |
+| M12 | 6 | 7 | 7 | +1 | conforme |
+| M13 | 2 | 2 | 3 | +1 | conforme |
+| M14 | 13 | 13 | 13 | +0 | conforme |
+| M15 | 12 | 12 | 13 | +1 | conforme |
+| M16 | 14 | 14 | 15 | +1 | conforme |
+| M17 | 34 | 34 | 35 | +1 | conforme |
+| M18 | 1 | 1 | 0 | -1 | conforme |
+| M19 | 2 | 2 | 4 | +2 | incluye línea canónica R12.1; tabla esperaba 3 |
+| M20 | 11 | 11 | 1 | -10 | conforme |
+| M21 | 3 | 3 | 5 | +2 | conforme |
+| M22 | 1 | 1 | 2 | +1 | conforme |
+| M23 | 0 | 0 | 1 | +1 | conforme |
+| M24 | 0 | 0 | 4 | +4 | conforme |
+| M25 | 1 | 1 | 4 | +3 | incluye línea canónica R12.1; tabla esperaba 3 |
+
+### Skills, sondas y límites de verificación
+
+- Skills: `ponytail:ponytail`, `building-native-ui`, `expo-tailwind-setup`, `appllama-app-design-skill`, `animate-expo`. La carta y la spec aprobada prevalecen.
+- Sondas H0 de Card real, expo-blur real y doble de Welcome con easing: verdes y registradas en las secciones anteriores. Card no requiere fallback. En E3 se repitieron P1–P14 y M1–M25; sin cambios de dependencias ni de Card frente a esas sondas.
+- Ping: indicación del estado abierto, Reanimated en UI thread, solo transform/opacity; ciclo 1800 ms ease-out mediante tokens; sin anillo con movimiento reducido; cancelación al desmontarse.
+- Desviaciones registradas: --forceExit de DT autorizado por E3; espera a gates de otros worktrees; diagnóstico de props de R5 acotado para evitar imprimir internals nativos al fallar; compatibilidad explícita de marcadores #174/#180 en AC; refuerzo S15/K2 en R13; recuentos M19/M25 por el bloque canónico. No se cambiaron valores de diseño.
+- No hay dependencias nuevas, cambios de API/backend/AWS, ni cambios de comportamiento de ack o navegación. `package.json` y `bun.lock` intactos.
+- Sin init.sh de este agente, sin abrir/editar PR, sin merge de PR ni rebase. Se mantienen intactos progress/current.md, progress/history.md, STATUS.md y feature_list.json.
+- El humo Android sigue sin marcar. El humano debe comprobar claro/oscuro, es/en, TalkBack, fecha real en Hermes, ciclo del ping, esquinas y desenfoque sobre expo-maps. No se afirma verificación visual en dispositivo.
+- Trazabilidad completada con hashes en specs/mobile-alert-detail-canvas-fidelity/traceability.md; su commit final se titula `docs(mobile): #180 traceability con hashes`.
