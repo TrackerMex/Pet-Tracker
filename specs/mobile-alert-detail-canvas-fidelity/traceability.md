@@ -48,3 +48,15 @@ Regla: el reviewer no aprueba si alguna fila queda "pendiente".
 Convención de commit: `feat(<scope>): <desc> (R1,R2)`.
 El implementer actualiza esta tabla tras cada commit; el reviewer la valida
 al aprobar (ver [[../../docs/specs|specs]] y [[../../CHECKPOINTS|CHECKPOINTS]] C5).
+
+## Enmienda E2 (2026-10-18)
+
+Filas que E2 añade o cambia. Las de R3, R7 y R13 de arriba siguen como están, con la nota de abajo:
+
+| Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
+|---|---|---|
+| R3.7 (movido a R10 por E2.1) | pendiente (`alert-detail-canvas-fidelity.test.ts`: rojo y verde en R10) | pendiente |
+| R7.2 (enmendado por E2.2) | pendiente (`index.test.tsx`: #100 R5 en R7; #170 R6 en R3; resto según la tabla de E2.2) | pendiente |
+| R13.2 (enmendado por E2.1) | pendiente (`alert-detail-canvas-fidelity.test.ts`, con `bunx jest`) | pendiente |
+
+Nota: la fila R3 de la tabla principal no incluye R3.7; su test cuenta en R10.

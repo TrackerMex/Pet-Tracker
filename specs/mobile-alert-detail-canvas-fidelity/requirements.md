@@ -704,3 +704,91 @@ La casilla de §6 no cambia (`- [ ] Smoke #180 en dev build de Android (fecha: _
 ### Aprobación de la enmienda
 
 - [x] Enmienda #180 aprobada por humano (fecha: 2026-10-18) ← gate de la enmienda E1 (firma en Notion, 2026-10-18T05:05:15Z)
+
+## Enmienda E2 — bloqueo de Codex en H0: contradicciones de contrato
+
+> Escrita el 2026-10-18 tras el reporte «BLOQUEADO» de Codex (`progress/impl_mobile-alert-detail-canvas-fidelity.md`, commit `508f0c04`). Codex paró en H0 con razón: las contradicciones eran reales y no implementó nada. Esta enmienda **no cambia ningún valor de diseño** (ni R1-R14 ni E1): reparte en qué paso TDD se pinta cada aserción, corrige R3.7, R7.2 y R13.2, y fija cómo reanudar. **Donde E2 choque con E1 o con el texto de un R, manda E2.** Las líneas de `index.test.tsx` que se citan son orientativas (H0): se busca por contenido. Su casilla va **sin marcar**; el humano la firma en Notion antes de que Codex reanude.
+
+### E2.1 — R3.7 y el cierre de M20 pasan a R10
+
+R3.7 exige que `index.tsx` no contenga ninguna clase de la pantalla anterior. Tras R3 siguen en el mapa y la distancia (R5), la CTA (R6), el ack (R7), el esqueleto y el reintento (R10). Con ese `it` en R3, el verde de R3 quedaría rojo. Cambios:
+
+- **R3 rojo**: sin el `it` de R3.7.
+- **R3 verde**: sin la aserción `M20 = 1`.
+- **R10 rojo**: añade el `it` `#180 R3.7: el fichero no nombra las clases de la pantalla anterior` en `src/__tests__/alert-detail-canvas-fidelity.test.ts`. Debe quedar rojo ahí, porque el esqueleto y el reintento aún llevan `rounded-card` y `min-h-11`.
+- **R10 verde**: al quitarlas, `M20 = 1` y el `it` de R3.7 pasan a verde. **M20 cierra en R10.** En §2, la columna R de la fila M20 pasa a `R10 (R3.7, enmendado por E2.1)`.
+- **R13.2 (enmendado por E2.1)**: el fichero C existe desde R4 rojo. R13 lo corre entero y solo. Sus candados son R3.7 (en R10), R4.4, R4.5, R5.6, R12 y el grep-limpio de `ping-ring.tsx`. Comando: `bunx jest src/__tests__/alert-detail-canvas-fidelity.test.ts --testTimeout=30000`. Sustituye al `pnpm exec jest --config …`: el móvil va con bun.
+
+### E2.2 — R7.2: qué aserciones se conservan
+
+R7.2 protege los `it` de #100 R5, #134 R2, #170 R6 y R8-R14. Se lee así: se conservan íntegras las **aserciones de comportamiento** del ack (guard `ackingRef`, `settleAlertAck`, `acking`, mensajes de error y salida con `router.dismissTo('/alerts')`). Las **aserciones visuales** que contradicen R2, R3, R5, R6, R7 o R10 se reescriben en el paso que las cambia, con el sufijo `(enmendado por E2)`. Lista cerrada. #134 R2 no cambia. El resto de cada `it` sigue en verde.
+
+| Aserción actual (buscar por contenido) | Motivo | Paso |
+|---|---|---|
+| #100 R5 «marca leída una vez y retira el botón»: `toContain('min-h-11')` sobre el ack | R7.1 (E1): `w-full h-14 rounded-16 bg-accent border-b-4 border-black/25` | R7 rojo |
+| #170 R6, describe completo: bordes `border-danger`, `border-warning-strong`, `border-muted` y `rounded-card border border-border bg-surface p-4 shadow-sm min-h-44 gap-3` | R3.1: el héroe no lleva borde ni `rounded-card` | R3 rojo |
+| #170 R8: `toBe('h-52 overflow-hidden rounded-card')` | R5.1: `h-52.5 overflow-hidden rounded-24` | R5 rojo |
+| #170 R10: `toBe('text-sm font-semibold text-foreground')` en la distancia | R5.2 (E1): clase de la distancia dentro del `BlurView` | R5 rojo |
+| #170 R10 «pinta la distancia bajo el mapa» (`distanceIndex` = `mapIndex + 1`) | R5.2 (E1): la distancia va dentro del mapa | R5 rojo (E2.3) |
+| #170 R15: `toContain('min-h-11')` sobre la CTA | R6.1 (E1): `h-13 rounded-16 …` | R6 rojo (E2.4) |
+| #170 R15 «ordena tarjeta, mapa, distancia, CTA y ack» | R2.3 y R5.2: otro orden de hermanos | R2 rojo y R5 rojo (E2.3) |
+| #100 R4, esqueleto: `toContain('h-44 w-full rounded-card')` | R10.1: `h-58 w-full rounded-hero` | R10 rojo |
+| #100 R4, reintento: `toContain('min-h-11')` | R10.2: `h-13`, sin `min-h-11` | R10 rojo |
+| `index.test.tsx` ~170-186 (hijos y cabecera de la tarjeta) | R3.2 y R3.3 | R3 rojo (E2.7) |
+| ~199 (píldora de estado) | R3.4 | R3 rojo (E2.5) |
+| ~221-222 (métricas y clase de la tarjeta) | R2.1 y R3.1 | R2 rojo y R3 rojo (E2.6) |
+| K16, `#100 R3` (`it.each` de color) | R3.3 y R11.1 | R3 rojo (E2.8) |
+
+### E2.3 — distancia y orden de hermanos
+
+- «pinta la distancia bajo el mapa» (~600-609): en **R5 rojo** se sustituye por el `it` de R5.2 de E1, que aserta `within(map)` y `within(blur)`. Desaparece la comparación de índices de hermanos.
+- «ordena tarjeta, mapa, distancia, CTA y ack» (~717-728): se parte en dos. (a) El `it.each` de R2.3 (cuatro combinaciones: con y sin zona, con y sin error) va en **R2 rojo**. (b) Un `it` nuevo, `#180 R5.2 (enmendado por E1): la distancia cuelga del mapa y no es hermana de la CTA`, va en **R5 rojo**.
+- Verificado sin cambio: los `it` de ~481-482 no tienen `geofenceId`, así que no hay píldora y el `map.children` de ~489 sigue en 1.
+
+### E2.4 — CTA con clase exacta
+
+El `it` de ~696 (`min-h-11` sobre la CTA) pasa, en **R6 rojo**, a la clase exacta de R6.1 (E1): `h-13 rounded-16 border-2 border-b-6 border-lip-gray bg-surface`, sin `min-h-11`.
+
+### E2.5 — píldora de estado
+
+El `toBe` de la píldora reconocida (~199, con `bg-default`) pasa, en **R3 rojo**, a la clase de R3.4 para ese estado: `rounded-full bg-default px-2.5 py-1 text-xs font-bold text-muted`. Sin `self-start`.
+
+### E2.6 — métricas del marco y clase de la tarjeta
+
+- ~221, en **R2 rojo**: `toEqual` del `contentContainerStyle` con `insets.bottom = 0` → `{ paddingHorizontal: 20, paddingTop: 24, paddingBottom: 40, gap: 14, flexGrow: 1 }` (R2.1).
+- ~222, en **R3 rojo**: la tarjeta hero de R3.1 (`Card variant="hero"`, `className` `` `${meta.disc} items-center gap-2 px-4.5 py-5.5` ``). No contiene `rounded-card`, `bg-surface`, `min-h-44` ni borde.
+
+### E2.7 — hijos y cabecera del héroe
+
+En **R3 rojo** (`index.test.tsx`, ~170-186 y ~211):
+
+- La tarjeta tiene `toHaveLength(5)`: disco, píldora, tipo, mascota y fecha, sin cabecera (R3.2). Se retira la aserción de la cabecera `flex-row items-center gap-3`.
+- Padre del icono (disco): `size-18 items-center justify-center rounded-full ${meta.solid}` (R3.3).
+- Tipo: `text-22 font-black text-foreground text-center` (R3.2).
+- Mascota: `text-15 font-bold ${meta.heroInk}` (R3.2).
+- Fecha (~211): `text-13 font-normal ${meta.heroInk}` (R3.2).
+
+### E2.8 — color del icono del héroe
+
+En K16 (`#100 R3`, `it.each`), en **R3 rojo**: se retira la columna `surface` y la del color del icono pasa a `meta.onSolid` (R3.3, R11.1):
+
+- `geofence_exit`: `--color-danger` → `--color-danger-foreground`.
+- `battery_low` y `unknown`: `--color-background`.
+
+### E2.9 — conteo de anclas
+
+En `tasks.md`, H0 paso 4: «las catorce anclas de R12.1» → «las quince anclas de R12.1» (E1.2 suma `### R3.` en `mobile-chunky-cta`).
+
+### E2.10 — reanudación
+
+Sustituye al arranque de H0 del handoff donde difieran:
+
+- H0 es el HEAD al reanudar, no el commit que añade el handoff. Antes de implementar, el log del HEAD debe incluir la firma de esta enmienda: `docs(spec): firma la enmienda E2 de #180 desde Notion`.
+- Repetir M1-M25 y P1-P14 sobre ese H0. Como no hay cambio de código, deben dar la base del reporte «BLOQUEADO». Si una difiere, PARA y reporta.
+- El reporte de reanudación es una sección nueva en `progress/impl_mobile-alert-detail-canvas-fidelity.md`; la sección «BLOQUEADO» se conserva.
+- Solo `bunx`. No `pnpm`, `npx`, `npm` ni `bun add`. No `./init.sh`.
+- El humano relanza Codex solo después de firmar esta enmienda.
+
+### Aprobación de la enmienda
+
+- [ ] Enmienda #180 E2 aprobada por humano (fecha: ____) ← gate de la enmienda E2 (firma en Notion)

@@ -25,7 +25,7 @@ catálogo). `Date.now()` no va en el render (`react-hooks/purity`).
    - cola de la expresión de longitud en LP: `grep -nF ', // #' src/providers/__tests__/language-provider.test.tsx` (K4);
    - `grep -nF 'toHaveLength(13 + 1' src/__tests__/consistency-classnames.test.ts` (K7);
    - `grep -nF "title: 't:alerts.detailTitle'" src/app/__tests__/layout.test.tsx` (K1);
-   - las catorce anclas de R12.1: `grep -cF -e '<ancla>' <spec>` = 1 cada una;
+   - las quince anclas de R12.1: `grep -cF -e '<ancla>' <spec>` = 1 cada una;
    - `grep -c '^### §2\.' ../specs/mobile-ui-language/design.md` → `<N>` = valor + 1 (R12.3);
    - la última `## Enmienda #` de `../docs/ui-guidelines.md`.
 5. Suites de ruta que montan `/alerts/<id>`: correr `alert-detail.navigation`, `alert-detail.notification`,
@@ -77,20 +77,19 @@ catálogo). `Date.now()` no va en el render (`react-hooks/purity`).
 
 ## R3 — Héroe
 
-1. **Rojo**: DT (R3.1-R3.6, K16 sin la columna `surface`, el `it` de ~174 reescrito, el de la fecha enmendado);
-   `alert-meta.test.ts` (`'surface' in meta === false`); C: `alert-detail-canvas-fidelity.test.ts` (R3.7);
+1. **Rojo**: DT (R3.1-R3.6; K16 sin la columna `surface` y con el color de `onSolid` (E2.8); los `it` de ~170-186 y ~211 (E2.7), de ~199 (E2.5) y de ~222 (E2.6) reescritos; el describe #170 R6 reescrito al héroe sin borde (E2.2); el de la fecha enmendado);
+   `alert-meta.test.ts` (`'surface' in meta === false`). El `it` de R3.7 no va aquí (E2.1);
    PF (K10 lista `text-13`, K11 `variant="hero"`), DD (K13 solo `text-22`), AC (K14 `text-15`).
    Commit `test(mobile): #180 R3 rojo — héroe centrado con disco, píldora y fecha corta`.
 2. **Verde**: tarjeta, disco, píldora y fecha en `index.tsx`; quitar `surface` de `alert-meta.ts` (M5 = 0).
-   M6 +1 (salvo fallback), M8 +1, M9 +1, M11 +1, M20 = 1. Commit
+   M6 +1 (salvo fallback), M8 +1, M9 +1, M11 +1 (M20 no cierra aquí, E2.1). Commit
    `feat(mobile): #180 R3 héroe del detalle fiel al canvas`.
 3. **Refactor**: extraer la píldora de estado a una función local si el JSX supera 40 líneas; tests intactos.
 
 ## R4 — Ping
 
 1. **Rojo**: `ping-ring.test.tsx` (A, R4.1 enmendado por E1: 0 / 900 / 1900 ms), `motion.test.ts` (M, R4.5: el
-   valor 1800 y la lista), DT (R4.2 con su control positivo, R4.3), C (R4.4 y R4.5: sin `MOTION_PING_TIMING` ni `1800`
-   en `ping-ring.tsx`). Commit `test(mobile): #180 R4 rojo — ping del héroe`.
+   valor 1800 y la lista), DT (R4.2 con su control positivo, R4.3), C, fichero nuevo `src/__tests__/alert-detail-canvas-fidelity.test.ts` (R4.4 y R4.5: sin `MOTION_PING_TIMING` ni `1800` en `ping-ring.tsx`; grep-limpio de `ping-ring.tsx`, sin emoji ni escapes `\u`). Commit `test(mobile): #180 R4 rojo — ping del héroe`.
 2. **Verde**: `motion.ts` (`MOTION_ALERT_PING_MS`), `ping-ring.tsx` (`withTiming` con
    `{ duration: MOTION_ALERT_PING_MS, ...MOTION_CELEBRATION_EASE_OUT }`) y su uso en la tarjeta detrás del disco
    (M23 +1). Commit `feat(mobile): #180 R4 ping del héroe`.
@@ -98,7 +97,7 @@ catálogo). `Date.now()` no va en el render (`react-hooks/purity`).
 
 ## R5 — Mapa y píldora
 
-1. **Rojo**: DT (R5.1-R5.4; los `it` de ~459/~503/~600 enmendados; doble de `pet-map` registrando `children`; doble
+1. **Rojo**: DT (R5.1-R5.4; los `it` de ~459 (487), ~503, ~552 y ~600-609 enmendados, y el nuevo `#180 R5.2` del orden anidado (E2.3); doble de `pet-map` registrando `children`; doble
    local de `expo-blur` y los `it` de R5.2 enmendado por E1: props del `BlurView`, `it.each` de tema, clase del texto
    y umbrales), G (R5.5, describe nuevo en `global-css.test.ts`), C (R5.6, importadores de `expo-blur`).
    Commit `test(mobile): #180 R5 rojo — mapa h-52.5 rounded-24 con píldora de cristal y desenfoque`.
@@ -109,7 +108,7 @@ catálogo). `Date.now()` no va en el render (`react-hooks/purity`).
 
 ## R6 — CTA
 
-1. **Rojo**: DT (R6.1 enmendado por E1: `h-13 rounded-16 …`, R6.2, K17 `Map` en el doble de reicon); CC (K20: la
+1. **Rojo**: DT (R6.1 enmendado por E1: `h-13 rounded-16 …`, R6.2, el `it` de ~696 con la clase exacta (E2.4), K17 `Map` en el doble de reicon); CC (K20: la
    fila `alert-detail-view-map` sale de `rows` de `#166 R3` y entra el `it` `#180 R7.5: «Ver en el mapa» …`; va
    aquí y no en R7 porque la CTA deja `rounded-xl` en este verde y la fila vieja se pondría roja); DD (K19:
    `outsideReminders(/\brounded-(?:16|22)\b/)` = `[detalle]`). Commit
@@ -119,7 +118,7 @@ catálogo). `Date.now()` no va en el render (`react-hooks/purity`).
 
 ## R7 — Ack primario
 
-1. **Rojo**: DT (R7.1 enmendado por E1: `w-full h-14 rounded-16 bg-accent border-b-4 border-black/25`), CC (K9: los
+1. **Rojo**: DT (R7.1 enmendado por E1: `w-full h-14 rounded-16 bg-accent border-b-4 border-black/25`; el `it` de ~318 con esa clase, E2.2), CC (K9: los
    conteos de `border-b-4` y `border-black/25` de `#166 R2` suben 1; **K7 y K8 sin cambio**; el `it`
    `#180 R7.5: el ack …`), DD (K13 `text-17`; el `it` de R7.4 con rounded-16 = 2, rounded-22 = 0, rounded-14 = 0).
    Commit `test(mobile): #180 R7 rojo — ack primario con labio y rounded-16`.
@@ -131,7 +130,7 @@ catálogo). `Date.now()` no va en el render (`react-hooks/purity`).
 
 (Va después de R5-R7 porque R2.3 asevera nodos que esos requisitos crean.)
 
-1. **Rojo**: DT (R2.1 con y sin `insets.bottom`, R2.2 dos `it`, R2.3 `it.each` de cuatro combinaciones, K18).
+1. **Rojo**: DT (R2.1 con y sin `insets.bottom` y las métricas de ~221 (E2.6); R2.2 dos `it`; R2.3 `it.each` de cuatro combinaciones, que sustituye al orden de ~717 (E2.3); K18).
    Commit `test(mobile): #180 R2 rojo — marco, espaciador y orden de hijos`.
 2. **Verde**: `contentContainerStyle`, espaciador. Commit `feat(mobile): #180 R2 marco y ack anclado al fondo`.
 3. **Refactor**: ninguno.
@@ -145,9 +144,9 @@ catálogo). `Date.now()` no va en el render (`react-hooks/purity`).
 
 ## R10 — Carga y error
 
-1. **Rojo**: DT (R10.1, R10.2), PF (K12 `rounded-hero`). Commit
+1. **Rojo**: DT (R10.1, R10.2; las aserciones de ~231 y ~251 reescritas, E2.2), PF (K12 `rounded-hero`), C (el `it` de R3.7, E2.1: queda rojo aquí porque el esqueleto y el reintento aún llevan `rounded-card` y `min-h-11`). Commit
    `test(mobile): #180 R10 rojo — esqueleto rounded-hero y reintento h-13`.
-2. **Verde**: esqueleto y reintento (M13 +1). Commit `feat(mobile): #180 R10 carga y error`.
+2. **Verde**: esqueleto y reintento (M13 +1); `M20 = 1` (cierre, E2.1: el `it` de R3.7 pasa a verde). Commit `feat(mobile): #180 R10 carga y error`.
 3. **Refactor**: ninguno.
 
 ## R12 — Carta, ui-language y specs
@@ -163,7 +162,7 @@ catálogo). `Date.now()` no va en el render (`react-hooks/purity`).
 
 ## R13 — Cierre de candados
 
-1. Correr todos los candados de §4, los de E1.4 y los que «no cambian pero se re-ejecutan»
+1. Correr el fichero C solo, con `bunx jest src/__tests__/alert-detail-canvas-fidelity.test.ts --testTimeout=30000` (R13.2, E2.1). Correr todos los candados de §4, los de E1.4 y los que «no cambian pero se re-ejecutan»
    (`floating-tab-bar.test.tsx`, `design-drift`, la bienvenida). Cada cifra de cierre = base H0 + delta; en K7 y K8
    el delta es **0**. Si algo difiere, anotar y razonar en `progress/impl_*.md`.
 2. Commit `test(mobile): #180 R13 candados agregados` solo si quedó algo por ajustar.

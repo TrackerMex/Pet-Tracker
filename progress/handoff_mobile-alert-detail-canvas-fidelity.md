@@ -7,16 +7,26 @@ Feature: mobile-alert-detail-canvas-fidelity (#180). Branch: feature/180-mobile-
 Spec aprobada: specs/mobile-alert-detail-canvas-fidelity/requirements.md (status: approved). Firma de la spec base: 6f2b8403 (2026-10-17). Firma de la enmienda E1: 42222344 (2026-10-18).
 Lee también: specs/mobile-alert-detail-canvas-fidelity/design.md (§9 es la E1), tasks.md, traceability.md y docs/ui-guidelines.md (rige la UI móvil).
 
+## Reanudación tras E2 (leer antes que lo demás)
+
+Este handoff se reanuda tras el bloqueo de H0: reporte «BLOQUEADO» en `progress/impl_mobile-alert-detail-canvas-fidelity.md` (commit `508f0c04`). Antes de tocar nada:
+
+- No reanudes sin la firma de la Enmienda E2 (`specs/mobile-alert-detail-canvas-fidelity/requirements.md`, sección «## Enmienda E2»). El log del HEAD debe incluir el commit `docs(spec): firma la enmienda E2 de #180 desde Notion`. Si no está, PARA.
+- H0 es el HEAD al reanudar. Regístralo y repite M1-M25 y P1-P14 sobre ese H0. Si una medida difiere de la base del reporte «BLOQUEADO» sin cambio de código, PARA y reporta.
+- Aplica `tasks.md` con las reasignaciones de E2.1-E2.9: R3.7 se prueba en R10, no en R3; las aserciones de E2.2 se reescriben en los pasos que indica.
+- El reporte de reanudación es una sección nueva en `progress/impl_mobile-alert-detail-canvas-fidelity.md`. No borres la sección «BLOQUEADO».
+- Solo `bunx`. No `pnpm`, `npx`, `npm` ni `bun add`. No ejecutes `./init.sh`.
+
 ## Precedencia
 
-Donde la Enmienda E1 (requirements.md, sección «## Enmienda E1») y el texto de un R choquen, manda E1. R enmendados por E1: R4.1, R5.2, R6.1, R7.1, R7.3, R12, R14.1. R nuevos: R4.5, R5.5, R5.6, R7.4, R7.5. No reabras las decisiones de §0 de requirements.md: las que E1 cambia (D2, D3, D4) se leen con E1; el resto vale tal cual.
+Donde la Enmienda E1 (requirements.md, sección «## Enmienda E1») y el texto de un R choquen, manda E1. R enmendados por E1: R4.1, R5.2, R6.1, R7.1, R7.3, R12, R14.1. R nuevos: R4.5, R5.5, R5.6, R7.4, R7.5. Donde la Enmienda E2 (requirements.md, sección «## Enmienda E2») choque con E1 o con un R, manda E2. No reabras las decisiones de §0 de requirements.md: las que E1 cambia (D2, D3, D4) se leen con E1; el resto vale tal cual.
 
 ## Orden y precondiciones
 
 - Sigue tasks.md en su orden: H0 (pasos 1-10, incluidos los de E1: 7 precondiciones P11-P14, 8 sonda de expo-blur, 9 sonda del ping, 10 orden de la lista de motion.test.ts) y luego los R-id por bloques.
 - Cada requisito: commit rojo (test que nombra el R-id) y commit verde (implementación). Test primero, siempre.
 - Precondiciones P1-P10 (requirements §2) y P11-P14 (requirements, Enmienda E1.3). Si una falla, PARA y reporta. No improvises.
-- H0 es el commit que añade este handoff (el HEAD en el momento en que lo lees). Regístralo en progress/impl_mobile-alert-detail-canvas-fidelity.md.
+- H0 es el HEAD al reanudar (tras E2, no el commit que añade este handoff). Regístralo en progress/impl_mobile-alert-detail-canvas-fidelity.md.
 
 ## Archivos
 
