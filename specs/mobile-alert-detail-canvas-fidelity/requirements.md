@@ -792,3 +792,25 @@ Sustituye al arranque de H0 del handoff donde difieran:
 ### Aprobación de la enmienda
 
 - [x] Enmienda #180 E2 aprobada por humano (fecha: 2026-10-18) ← gate de la enmienda E2 (firma en Notion, 2026-10-18T06:22:27Z)
+
+## Enmienda E3 — `alerts.mapLabel` se registra en R5, no en R8
+
+Motivo: Codex paró en R8 (sección «Resultado de la reanudación», B3, `progress/impl_mobile-alert-detail-canvas-fidelity.md`, commit `3c099eaa`). El leader lo ha verificado:
+
+- `checkUses` (`src/__tests__/ui-language.test.ts`, líneas 42–68) exige que el fichero registrado tenga tantas ocurrencias `t('<clave>')` o `labelKey: '<clave>'` como filas tenga la clave en la tabla de uso.
+- `src/screens/alert-detail/index.tsx` no contiene `alerts.mapLabel` hasta R5.4.
+- Con la fila de R8.2 en R8, el test «registra cada ocurrencia del detalle» (línea 255) y el candado global `checkUses(ALL_USES)` (línea 492) quedan rojos tras el verde de R8. R8 no puede cerrar en verde.
+- `src/providers/__tests__/language-provider.test.tsx` no usa `checkUses` ni `ALL_USES`: K4 y K5 sí caben en R8.
+
+Se mueve la fila a R5, donde se usa. No se implementa R5.4 dentro de R8: en tasks.md, R5.4 va después de R11, R3 y R4.
+
+- **E3.1** La fila `alerts.mapLabel` de `R13_ALERT_DETAIL` (K3) y el `+ 1` de la longitud en UL (K2, R8.2) pasan de R8 a R5. Donde E3 choque con R8.2 o con las filas K2 y K3 de §4, manda E3.
+- **E3.2** R8 queda con el catálogo y LP. Rojo: LP (K4 y K5). Verde: `catalog.ts` (en y es) y `specs/mobile-ui-language/design.md`.
+- **E3.3** R5 rojo añade UL (K2 `+ 1`, comentario `#170 R16, #180 R5`) y K3. R5 verde añade `accessibilityLabel={t('alerts.mapLabel', { zone })}` de R5.4: una sola ocurrencia, que cumple `checkUses`.
+- **E3.4** M4 (+1) se cuenta al cerrar R5, no al cerrar R8. Los valores finales no cambian.
+- **E3.5** La prueba de R8.2 vive en R5 (sección E3 de `traceability.md`).
+- **E3.6** Reanudación: R1 está hecho (`b07bc024` rojo, `e37300ec` verde). Codex retoma en R8. H0 y M1–M25 se miden sobre el HEAD al reanudar; la base es la columna «Al detenerse» del reporte.
+
+### Aprobación de la enmienda E3
+
+- [ ] Enmienda #180 E3 aprobada por humano (fecha: ____) ← gate de la enmienda E3 (firma en Notion)

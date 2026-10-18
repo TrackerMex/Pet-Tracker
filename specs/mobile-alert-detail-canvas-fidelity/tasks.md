@@ -61,7 +61,7 @@ catálogo). `Date.now()` no va en el render (`react-hooks/purity`).
 
 ## R8 — `alerts.mapLabel`
 
-1. **Rojo**: LP (K4 longitud `+ 1`, K5 las dos filas), UL (K2 `+ 1`) y `ui-copy-table.ts` (K3 fila nueva).
+1. **Rojo**: solo LP (K4 longitud `+ 1`, K5 las dos filas). UL (K2) y K3 van en R5 (E3.1-E3.3).
    Commit `test(mobile): #180 R8 rojo — alerts.mapLabel`.
 2. **Verde**: `catalog.ts` (en y es), `specs/mobile-ui-language/design.md` (fila de `alerts.mapLabel`; la nota de
    `alerts.detailTitle` va con R12.3). Commit `feat(mobile): #180 R8 alerts.mapLabel`.
@@ -99,10 +99,10 @@ catálogo). `Date.now()` no va en el render (`react-hooks/purity`).
 
 1. **Rojo**: DT (R5.1-R5.4; los `it` de ~459 (487), ~503, ~552 y ~600-609 enmendados, y el nuevo `#180 R5.2` del orden anidado (E2.3); doble de `pet-map` registrando `children`; doble
    local de `expo-blur` y los `it` de R5.2 enmendado por E1: props del `BlurView`, `it.each` de tema, clase del texto
-   y umbrales), G (R5.5, describe nuevo en `global-css.test.ts`), C (R5.6, importadores de `expo-blur`).
+   y umbrales), G (R5.5, describe nuevo en `global-css.test.ts`), C (R5.6, importadores de `expo-blur`), UL (K2 `+ 1`, `// #170 R16, #180 R5`) y `ui-copy-table.ts` (K3, fila de `alerts.mapLabel`; E3.3).
    Commit `test(mobile): #180 R5 rojo — mapa h-52.5 rounded-24 con píldora de cristal y desenfoque`.
 2. **Verde**: `global.css` (par `glass-surface-strong` en los dos temas, M24 +4), mapa, píldora dentro con
-   `BlurView`, `accessible` + `accessibilityLabel` (M22 +1). Sin `bun add`: `package.json` y lockfile intactos.
+   `BlurView`, `accessible` + `accessibilityLabel={t('alerts.mapLabel', { zone })}` (M22 +1; E3.3). Sin `bun add`: `package.json` y lockfile intactos.
    Commit `feat(mobile): #180 R5 mapa con píldora de distancia`.
 3. **Refactor**: ninguno.
 

@@ -17,9 +17,20 @@ Este handoff se reanuda tras el bloqueo de H0: reporte «BLOQUEADO» en `progres
 - El reporte de reanudación es una sección nueva en `progress/impl_mobile-alert-detail-canvas-fidelity.md`. No borres la sección «BLOQUEADO».
 - Solo `bunx`. No `pnpm`, `npx`, `npm` ni `bun add`. No ejecutes `./init.sh`.
 
+## Reanudación tras E3 (leer antes que lo demás)
+
+Este handoff se reanuda tras el paro en R8 (B3, sección «Resultado de la reanudación» de `progress/impl_mobile-alert-detail-canvas-fidelity.md`, commit `3c099eaa`). R1 ya está hecho: rojo `b07bc024`, verde `e37300ec`. No lo rehagas.
+
+- No reanudes sin la firma de la Enmienda E3 (`specs/mobile-alert-detail-canvas-fidelity/requirements.md`, sección «## Enmienda E3»). El log del HEAD debe incluir `docs(spec): firma la enmienda E3 de #180 desde Notion`. Si no está, PARA.
+- H0 es el HEAD al reanudar. Repite M1-M25 y P1-P14 sobre ese H0. La base es la columna «Al detenerse» del reporte (commit `3c099eaa`). Si una medida difiere sin cambio de código, PARA y reporta.
+- Empieza en R8: rojo solo LP (K4 y K5). Las filas K2 y K3 de `alerts.mapLabel` van en el rojo de R5 (E3.1-E3.3).
+- Jest: `bunx jest <ruta> --testTimeout=30000`. Si un fichero no termina tras el resumen (handles en `alert-detail/index.test.tsx`), añade `--forceExit`, sin tocar aserciones ni timeouts, y repórtalo como desviación.
+- El reporte de la reanudación es otra sección nueva en `progress/impl_mobile-alert-detail-canvas-fidelity.md`. No borres las anteriores.
+- Lo demás de «Reanudación tras E2» sigue vigente: solo `bunx`, no `init.sh`, sin tocar ficheros del leader.
+
 ## Precedencia
 
-Donde la Enmienda E1 (requirements.md, sección «## Enmienda E1») y el texto de un R choquen, manda E1. R enmendados por E1: R4.1, R5.2, R6.1, R7.1, R7.3, R12, R14.1. R nuevos: R4.5, R5.5, R5.6, R7.4, R7.5. Donde la Enmienda E2 (requirements.md, sección «## Enmienda E2») choque con E1 o con un R, manda E2. No reabras las decisiones de §0 de requirements.md: las que E1 cambia (D2, D3, D4) se leen con E1; el resto vale tal cual.
+Donde la Enmienda E1 (requirements.md, sección «## Enmienda E1») y el texto de un R choquen, manda E1. R enmendados por E1: R4.1, R5.2, R6.1, R7.1, R7.3, R12, R14.1. R nuevos: R4.5, R5.5, R5.6, R7.4, R7.5. Donde la Enmienda E2 (requirements.md, sección «## Enmienda E2») choque con E1 o con un R, manda E2. Donde la Enmienda E3 (requirements.md, sección «## Enmienda E3») choque con E2, E1 o con un R, manda E3. No reabras las decisiones de §0 de requirements.md: las que E1 cambia (D2, D3, D4) se leen con E1; el resto vale tal cual.
 
 ## Orden y precondiciones
 

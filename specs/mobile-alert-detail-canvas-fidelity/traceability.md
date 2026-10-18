@@ -60,3 +60,11 @@ Filas que E2 añade o cambia. Las de R3, R7 y R13 de arriba siguen como están, 
 | R13.2 (enmendado por E2.1) | pendiente (`alert-detail-canvas-fidelity.test.ts`, con `bunx jest`) | pendiente |
 
 Nota: la fila R3 de la tabla principal no incluye R3.7; su test cuenta en R10.
+
+## Enmienda E3 (2026-10-18)
+
+| Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
+|---|---|---|
+| R8.2 (movido a R5 por E3.1) | pendiente (`ui-language.test.ts`: K2 y K3, en el rojo y el verde de R5) | pendiente |
+
+Nota: K4 y K5 (LP) siguen en R8.
