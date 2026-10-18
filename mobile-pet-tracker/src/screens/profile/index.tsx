@@ -312,13 +312,7 @@ export function ProfileScreen() {
       ) : null}
 
       {petsEmpty ? (
-        <EmptyState
-          testID="profile-pets-empty"
-          pose="talk"
-          title={t('common.noPetsYet')}
-          body={t('common.noPetsBody')}
-          action={{ label: t('profile.addPet'), onPress: () => router.push('/pets/add') }}
-        />
+        null
       ) : null}
 
       {pets.data && ['error', 'unreachable', 'missing-config'].includes(pets.data.kind) ? (
