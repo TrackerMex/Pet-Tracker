@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useUniwind } from 'uniwind';
+import { Map } from 'reicon-react-native';
 
 import { AlertPingRing } from './ping-ring';
 
@@ -74,7 +75,7 @@ export function AlertDetailScreen({ alertId }: { alertId: string }) {
   const t = useTranslate();
   const locale = useLocale();
   const insets = useSafeAreaInsets();
-  const [dangerForeground, background] = useThemeColors(['danger-foreground', 'background']);
+  const [dangerForeground, background, foreground] = useThemeColors(['danger-foreground', 'background', 'foreground']);
   const [acked, setAcked] = useState<Alert | null>(null);
   const [acking, setAcking] = useState(false);
   const ackingRef = useRef(false);
@@ -169,13 +170,14 @@ export function AlertDetailScreen({ alertId }: { alertId: string }) {
             testID="alert-detail-view-map"
             variant="secondary"
             accessibilityRole="button"
-            className="min-h-11 rounded-xl border-2 border-b-6 border-lip-gray bg-surface"
+            className="h-13 rounded-16 border-2 border-b-6 border-lip-gray bg-surface"
             onPress={() => {
               selectPet(alert.petId);
               router.dismissTo('/map');
             }}
           >
-            <Button.Label>{t('alerts.viewOnMap')}</Button.Label>
+            <Map size={18} color={foreground} />
+            <Button.Label className="text-base font-extrabold text-foreground">{t('alerts.viewOnMap')}</Button.Label>
           </Button>
           {alert.status === 'open' ? (
             <Button testID="alert-detail-ack" accessibilityRole="button" className="min-h-11" isDisabled={acking} onPress={() => void handleAck()}>
