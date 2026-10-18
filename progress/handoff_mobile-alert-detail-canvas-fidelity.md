@@ -1,103 +1,76 @@
-# Handoff a Codex CLI: #180 mobile-alert-detail-canvas-fidelity
+# Handoff a Codex CLI: #180 mobile-alert-detail-canvas-fidelity (corrección E4)
 
 Worktree: /home/claude/sites/Pet-Tracker-wt-180
 Antes de tocar nada, confirma en tu reporte: `pwd` (debe dar /home/claude/sites/Pet-Tracker-wt-180) y `git branch --show-current` (debe dar feature/180-mobile-alert-detail-canvas-fidelity). Si no coincide, PARA.
 
 Feature: mobile-alert-detail-canvas-fidelity (#180). Branch: feature/180-mobile-alert-detail-canvas-fidelity.
-Spec aprobada: specs/mobile-alert-detail-canvas-fidelity/requirements.md (status: approved). Firma de la spec base: 6f2b8403 (2026-10-17). Firma de la enmienda E1: 42222344 (2026-10-18).
-Lee también: specs/mobile-alert-detail-canvas-fidelity/design.md (§9 es la E1), tasks.md, traceability.md y docs/ui-guidelines.md (rige la UI móvil).
+Spec aprobada: specs/mobile-alert-detail-canvas-fidelity/requirements.md (status: approved). Firmas: base 6f2b8403, E1 42222344, E2 e0386f87, E3 49b607c1, E4 b55e797b.
+Lee también: specs/mobile-alert-detail-canvas-fidelity/tasks.md (sección R2 y tabla de sondas), traceability.md, y docs/ui-guidelines.md (rige la UI móvil).
 
-## Reanudación tras E2 (leer antes que lo demás)
+## Reanudación tras E4 (leer antes que lo demás)
 
-Este handoff se reanuda tras el bloqueo de H0: reporte «BLOQUEADO» en `progress/impl_mobile-alert-detail-canvas-fidelity.md` (commit `508f0c04`). Antes de tocar nada:
+Este handoff corrige el veredicto RECHAZADO del reviewer sobre R1–R13 (`progress/review_mobile-alert-detail-canvas-fidelity.md`, bloqueantes B1 y B2). Sustituye al handoff anterior, cuyas reanudaciones E2 y E3 ya están aplicadas.
 
-- No reanudes sin la firma de la Enmienda E2 (`specs/mobile-alert-detail-canvas-fidelity/requirements.md`, sección «## Enmienda E2»). El log del HEAD debe incluir el commit `docs(spec): firma la enmienda E2 de #180 desde Notion`. Si no está, PARA.
-- H0 es el HEAD al reanudar. Regístralo y repite M1-M25 y P1-P14 sobre ese H0. Si una medida difiere de la base del reporte «BLOQUEADO» sin cambio de código, PARA y reporta.
-- Aplica `tasks.md` con las reasignaciones de E2.1-E2.9: R3.7 se prueba en R10, no en R3; las aserciones de E2.2 se reescriben en los pasos que indica.
-- El reporte de reanudación es una sección nueva en `progress/impl_mobile-alert-detail-canvas-fidelity.md`. No borres la sección «BLOQUEADO».
-- Solo `bunx`. No `pnpm`, `npx`, `npm` ni `bun add`. No ejecutes `./init.sh`.
+- Comprueba que el log del HEAD incluye `docs(spec): firma la enmienda E4 de #180 desde Notion` (b55e797b). Si no está, PARA.
+- H0 = a2524267. Es el HEAD al reanudar. No cuenta el commit que añade este handoff. Regístralo en tu reporte.
+- No reimplementes nada. R1–R13 quedan como están. Solo cambian R2.3 (E4.2) y la sonda S31 (E4.6).
+- R2.3 pasa de cuatro a seis casos en el `it.each`: {con zona, sin zona, sin posición} × {con error de ack, sin error}. «Sin zona» = posición sin `geofenceId`. «Sin posición» = payload `{}`. El mapa aparece siempre que hay posición (E4.2, opción a). Sin posición no hay nodo de mapa: el orden se asevera sin él, y el resto no cambia. La píldora de distancia sigue solo con zona (R5).
+- B1 (E4.1): R13.1 queda fuera de C4 puntos 2 y 5. No hagas commit rojo para R13.1 ni lo repitas. Su evidencia de S15 ya está en el reporte original.
+- Medidas: M19 y M25 tienen objetivo 4 (E4.3) y ya están medidas como 4 y 4 en el reporte original. No cambian con esta corrección. Si el paso de cuatro a seis casos cambia el conteo de tests de alguna medida M1–M25, recalcúlala sobre H0 y repórtala como delta. No la trates como desviación.
 
-## Reanudación tras E3 (leer antes que lo demás)
+## Commits (test primero, en este orden)
 
-Este handoff se reanuda tras el paro en R8 (B3, sección «Resultado de la reanudación» de `progress/impl_mobile-alert-detail-canvas-fidelity.md`, commit `3c099eaa`). R1 ya está hecho: rojo `b07bc024`, verde `e37300ec`. No lo rehagas.
+1. **Rojo**: `test(mobile): #180 R2.3 rojo — seis casos del mapa y S31`.
+   - En `mobile-pet-tracker/src/screens/alert-detail/index.test.tsx`: el `it.each` de R2.3 pasa a seis casos. Cada nombre lleva `#180 R2.3`.
+   - En `mobile-pet-tracker/src/screens/alert-detail/index.tsx`: planta S31. La guarda `{position ? <HomeEntrance` pasa a `{position && alert.geofenceId !== null ? <HomeEntrance`. Solo esa línea.
+   - Debe quedar en rojo: los dos casos «sin zona» y el test `#170 R11` del mismo fichero (describe «#170 R11: sin geofenceId pinta el mapa sin zona»). Anota en el reporte qué casos fallan exactamente. Si ninguno falla, PARA y reporta: el candado es ciego.
+2. **Verde**: `fix(mobile): #180 R2.3 revierte S31 — mapa con posición aunque no haya zona`.
+   - Revierte la guarda a `{position ? <HomeEntrance` (el texto de H0). No toques otra línea de producción.
+   - Todos los casos de R2.3 y `#170 R11` quedan en verde.
+3. **Final**: UN commit `docs(mobile): #180 corrección E4 con hashes e informe`, con:
+   - `specs/mobile-alert-detail-canvas-fidelity/traceability.md`: en la fila R2, sustituye «rojo y verde pendientes, hashes en el commit final» por los hashes de los commits 1 y 2. No toques la fila R13.
+   - `progress/impl_mobile-alert-detail-canvas-fidelity.md`: añade la sección «Corrección E4». No borres las anteriores. Incluye H0, los dos commits, los casos que fallaron en rojo, las medidas, y las skills cargadas.
 
-- No reanudes sin la firma de la Enmienda E3 (`specs/mobile-alert-detail-canvas-fidelity/requirements.md`, sección «## Enmienda E3»). El log del HEAD debe incluir `docs(spec): firma la enmienda E3 de #180 desde Notion`. Si no está, PARA.
-- H0 es el HEAD al reanudar. Repite M1-M25 y P1-P14 sobre ese H0. La base es la columna «Al detenerse» del reporte (commit `3c099eaa`). Si una medida difiere sin cambio de código, PARA y reporta.
-- Empieza en R8: rojo solo LP (K4 y K5). Las filas K2 y K3 de `alerts.mapLabel` van en el rojo de R5 (E3.1-E3.3).
-- Jest: `bunx jest <ruta> --testTimeout=30000`. Si un fichero no termina tras el resumen (handles en `alert-detail/index.test.tsx`), añade `--forceExit`, sin tocar aserciones ni timeouts, y repórtalo como desviación.
-- El reporte de la reanudación es otra sección nueva en `progress/impl_mobile-alert-detail-canvas-fidelity.md`. No borres las anteriores.
-- Lo demás de «Reanudación tras E2» sigue vigente: solo `bunx`, no `init.sh`, sin tocar ficheros del leader.
+Commitea siempre con `git commit --only <rutas> -m ...` para no arrastrar ficheros ajenos. Los commits 1 y 2 solo llevan los dos ficheros de código y test. Nada de progress/ ni de specs/ en esos commits.
 
-## Precedencia
+## Skills
 
-Donde la Enmienda E1 (requirements.md, sección «## Enmienda E1») y el texto de un R choquen, manda E1. R enmendados por E1: R4.1, R5.2, R6.1, R7.1, R7.3, R12, R14.1. R nuevos: R4.5, R5.5, R5.6, R7.4, R7.5. Donde la Enmienda E2 (requirements.md, sección «## Enmienda E2») choque con E1 o con un R, manda E2. Donde la Enmienda E3 (requirements.md, sección «## Enmienda E3») choque con E2, E1 o con un R, manda E3. No reabras las decisiones de §0 de requirements.md: las que E1 cambia (D2, D3, D4) se leen con E1; el resto vale tal cual.
-
-## Orden y precondiciones
-
-- Sigue tasks.md en su orden: H0 (pasos 1-10, incluidos los de E1: 7 precondiciones P11-P14, 8 sonda de expo-blur, 9 sonda del ping, 10 orden de la lista de motion.test.ts) y luego los R-id por bloques.
-- Cada requisito: commit rojo (test que nombra el R-id) y commit verde (implementación). Test primero, siempre.
-- Precondiciones P1-P10 (requirements §2) y P11-P14 (requirements, Enmienda E1.3). Si una falla, PARA y reporta. No improvises.
-- H0 es el HEAD al reanudar (tras E2, no el commit que añade este handoff). Regístralo en progress/impl_mobile-alert-detail-canvas-fidelity.md.
-
-## Archivos
-
-Según design.md §2 y la Enmienda E1, todos bajo mobile-pet-tracker/ salvo que se diga otra cosa:
-- src/app/_layout.tsx (title '' en alerts/[alertId])
-- src/screens/alert-detail/index.tsx
-- src/screens/alert-detail/ping-ring.tsx (nuevo)
-- src/theme/motion.ts (MOTION_ALERT_PING_MS)
-- src/theme/global.css (par glass-surface-strong, claro y oscuro)
-- src/utils/alert-meta.ts (y alert-meta.test.ts, nuevo)
-- src/i18n/catalog.ts (alerts.mapLabel)
-- Tests: los que nombran tasks.md y los candados de requirements §4 y E1.4 (K7-K24).
-- Docs (R12): docs/ui-guidelines.md (§12 y §13), las filas de R12.1 de la E1 (specs/mobile-alerts-grouped-and-detail-map/requirements.md, specs/mobile-chunky-cta/requirements.md) y design.md §5 de esta spec.
-- NO tocar: package.json y bun.lock. R5.6 prohíbe dependencias nuevas: expo-blur ~57.0.2 ya está instalada. No ejecutes `bun add`.
-
-## Skills (nombres del catálogo de Codex, no los nuestros)
-
-- No hay skill de router: no cargues ninguna skill de routing (`expo-overview` no existe aquí).
-- `building-native-ui`: UI nativa, safe areas, HIG. Sustituye a expo-native-ui.
-- `expo-tailwind-setup`: uniwind y tokens del tema.
-- `.agents/skills/appllama-app-design-skill`: obligatoria al cambiar una pantalla. La carta (docs/ui-guidelines.md) gana siempre sobre ella.
-- `.agents/skills/animate-expo`: movimiento del ping (R4). El plugin de Codex no tiene skill de animación; las decisiones de movimiento (1800 ms, ease-out, reduce motion, doble de withTiming) están en la spec y mandan sobre la skill.
-- En el reporte, di qué skills cargaste, por su nombre exacto.
-
-## Commits
-
-- Un commit rojo y uno verde por requisito, test primero (C4 de CHECKPOINTS.md). Incluye el R-id en el mensaje.
-- Commitea con `git commit --only <rutas> -m ...` para no arrastrar ficheros ajenos.
-- Al final, UN commit `docs(mobile): #180 traceability con hashes`, con traceability.md, tras el último verde.
-- No metas en los commits TDD ficheros de arnés: progress/*, STATUS.md ni feature_list.json.
+Ninguna skill del catálogo de Codex encaja con esta corrección (cambia un `it.each` y una guarda de render). No cargues ninguna skill de expo: no hay ninguna para esto. Di en el reporte que no cargaste ninguna.
 
 ## Comandos
 
 - Cada cadena empieza con `cd /home/claude/sites/Pet-Tracker-wt-180/mobile-pet-tracker && …` (cd explícito).
-- Jest de un fichero: `bunx jest <ruta> --testTimeout=30000`. Escapa los paréntesis de las rutas (`\(tabs\)`). Antes de correr jest, `pgrep -f '[n]ode_modules/(.bin/jest|jest-worker)'` y `pgrep -f '[i]nit.sh'` deben salir vacíos.
+- Jest: `bunx jest src/screens/alert-detail/index.test.tsx --testTimeout=30000`. Tras el verde, también `bunx jest src/app/__tests__/alert-detail.navigation.test.tsx --testTimeout=30000`: tiene que quedar en verde (E4.4).
+- Antes de correr jest, `pgrep -f '[n]ode_modules/(.bin/jest|jest-worker)'` y `pgrep -f '[i]nit.sh'` deben salir vacíos.
+- Si un fichero no termina tras el resumen, añade `--forceExit`, sin tocar aserciones ni timeouts, y repórtalo como desviación.
+- Tras el verde: `test ! -e .expo/types/router.d.ts && bunx tsc --noEmit`. Si el fichero existe, PARA. Nunca `rm -f`.
+- Tras el verde: `bunx expo lint --no-cache > /tmp/e4-lint.txt 2>&1 && test ! -s /tmp/e4-lint.txt`. Con el árbol limpio, expo lint no imprime nada. Si imprime `Failed to run` (SIGKILL por OOM), sale con código 0 igualmente: cuenta como fallo. Reintenta la cadena entera, como mucho tres veces, tras `pgrep -af '[i]nit\.sh'` vacío. A la tercera, PARA.
+- Solo `bunx`. No `pnpm`, `npx`, `npm` ni `bun add`. Sin dependencias nuevas.
 - NO ejecutes `./init.sh`. Lo corre el leader o el reviewer con permiso del humano.
-- Tras cada verde: `bunx tsc --noEmit`. Antes, `test ! -e .expo/types/router.d.ts`; si el fichero existe, PARA. Nunca `rm -f`.
-- Tras cada verde: `bunx expo lint --no-cache > log 2>&1 && ! grep -qF 'Failed to run' log` (el SIGKILL por OOM sale con código 0).
-- Dependencias: ninguna. No uses npx, npm ni bun add.
-- Sondas (H0 pasos 6, 8 y 9): en ficheros temporales del scratchpad, sin commitear. El doble de expo-blur solo si la sonda del paso 8 da rojo en las rutas: commit propio.
 
 ## Tests
 
 - RNTL 14: `await` en fireEvent, render y act.
-- Esperas: sigue docs/conventions.md §«Esperas sobre el árbol renderizado». Espera a la misma observación que aserta el test. No esperes a la caché de Query ni al contador de un mock y consultes el DOM después.
+- Espera a la misma observación que aserta cada caso (docs/conventions.md §«Esperas sobre el árbol renderizado»). No esperes a la caché de Query ni al contador de un mock.
 - Date.now() no va en el render (react-hooks/purity).
-- Los literales de texto los fija la spec (R8, R12.2 y E1). No inventes copy.
+- Los literales de copy los fija la spec (R8, R12.2 y E1). No inventes copy.
 
 ## Prohibido
 
-- No toques progress/history.md, progress/current.md, STATUS.md ni el campo status de feature_list.json. Son del leader y se escriben tras el veredicto del reviewer.
-- No abras ni edites la PR. No mergees. No hagas rebase. Sí puedes `git merge origin/main` (tasks.md H0 paso 1).
-- No marques la casilla del smoke (§6 de requirements): el smoke en dev build de Android lo hace el humano.
-- Nada de AWS ni cdk.
+- No toques progress/history.md, progress/current.md, STATUS.md ni el campo `status` de feature_list.json. Son del leader y se escriben tras el veredicto del reviewer.
+- No abras ni edites la PR. No mergees. No hagas rebase.
+- No marques la casilla de §6 de requirements (smoke). La prueba en dev build de Android la hace el humano.
+- No toques `backend-pet-tracker/`. Nada de AWS ni cdk.
 - Si el sandbox te deniega un comando, PARA y repórtalo. No lo sustituyas por otro que haga lo mismo.
 
 ## Criterios de aceptación
 
-Todos los R-id de requirements.md, con sus tests: R1-R14 con las enmiendas y los nuevos de la Enmienda E1. Medidas M1-M25 (base de H0 más delta) y candados K de requirements §4 y E1.4.
+- R2.3 (E4.2): seis casos en verde tras el commit 2. S31 comprobada en rojo en el commit 1.
+- R2.1 y R2.2 y el resto de R2 sin cambios.
+- `#170 R11` en verde.
+- `tsc` y lint sin salida.
+- R13.1 como está (E4.1).
 
 ## Al terminar
 
-Escribe progress/impl_mobile-alert-detail-canvas-fidelity.md con: H0 (hash), commits rojo y verde por R-id, medidas base y finales, skills cargadas, resultado de las sondas y cualquier desviación. Si algo no cuadra con la spec, PARA y reporta antes de improvisar. En el chat devuelve solo «listo» y la ruta del fichero.
+Escribe la sección «Corrección E4» en `progress/impl_mobile-alert-detail-canvas-fidelity.md`. En el chat devuelve solo «listo» y la ruta de ese fichero. Si algo no cuadra con la spec, PARA y reporta antes de improvisar.
