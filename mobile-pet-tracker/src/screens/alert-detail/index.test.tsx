@@ -142,7 +142,7 @@ beforeEach(() => {
   jest.clearAllMocks();
   mockTheme = 'light';
   mockListGeofences.mockReset().mockReturnValue(new Promise(() => undefined));
-  mockUseSelectedPet.mockReturnValue({ selectedPetId: 'pet-1', selectPet: mockSelectPet });
+  mockUseSelectedPet.mockReturnValue({ selectedPetId: 'pet-1', selectPet: mockSelectPet, clearPet: jest.fn(), });
   mockListAlerts.mockReset();
   mockAckAlert.mockReset();
   process.env.EXPO_PUBLIC_API_URL = apiUrl;

@@ -81,6 +81,7 @@ describe('R10: usePetSelection respeta el foco y la revalidación', () => {
     mockUseSelectedPet.mockReturnValue({
       selectedPetId: 'pet-new',
       selectPet: mockSelectPet,
+      clearPet: mockClearPet,
     } satisfies SelectedPetContextValue);
   });
 
@@ -137,6 +138,7 @@ describe('#87 R8: usePetSelection acepta la forma mínima y no conoce use-' + 'a
     mockUseSelectedPet.mockReturnValue({
       selectedPetId: 'pet-new',
       selectPet: mockSelectPet,
+      clearPet: mockClearPet,
     } satisfies SelectedPetContextValue);
   });
 

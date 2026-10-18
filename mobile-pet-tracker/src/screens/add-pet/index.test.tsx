@@ -113,7 +113,7 @@ describe('R6: alta de mascota', () => {
       signIn: jest.fn(),
       signOut: jest.fn(),
     } satisfies AuthContextValue);
-    mockUseSelectedPet.mockReturnValue({ selectedPetId: 'pet-1', selectPet });
+    mockUseSelectedPet.mockReturnValue({ selectedPetId: 'pet-1', selectPet, clearPet: jest.fn(), });
     mockCreatePet.mockReturnValue(pending());
   });
 
@@ -241,7 +241,7 @@ describe('R7: foto opcional tras alta', () => {
       signIn: jest.fn(),
       signOut: jest.fn(),
     } satisfies AuthContextValue);
-    mockUseSelectedPet.mockReturnValue({ selectedPetId: null, selectPet });
+    mockUseSelectedPet.mockReturnValue({ selectedPetId: null, selectPet, clearPet: jest.fn(), });
   });
 
   it('uploads a chosen preview only after createPet succeeds', async () => {
@@ -313,7 +313,7 @@ describe('#72 R4: el fallo del picker nombra el invariante roto', () => {
       signIn: jest.fn(),
       signOut: jest.fn(),
     } satisfies AuthContextValue);
-    mockUseSelectedPet.mockReturnValue({ selectedPetId: null, selectPet });
+    mockUseSelectedPet.mockReturnValue({ selectedPetId: null, selectPet, clearPet: jest.fn(), });
     mockCreatePet.mockReturnValue(pending());
     await renderAddPet();
     mockLaunchImageLibrary.mockReset();
@@ -334,7 +334,7 @@ describe('#90 R6: birthDate manda el día civil local del picker, no el UTC', ()
       signIn: jest.fn(),
       signOut: jest.fn(),
     } satisfies AuthContextValue);
-    mockUseSelectedPet.mockReturnValue({ selectedPetId: 'pet-1', selectPet });
+    mockUseSelectedPet.mockReturnValue({ selectedPetId: 'pet-1', selectPet, clearPet: jest.fn(), });
     mockCreatePet.mockReturnValue(pending());
   });
 
@@ -380,7 +380,7 @@ describe('#61 R10: los controles táctiles declaran TOUCH_SLOP', () => {
       signIn: jest.fn(),
       signOut: jest.fn(),
     } satisfies AuthContextValue);
-    mockUseSelectedPet.mockReturnValue({ selectedPetId: 'pet-1', selectPet });
+    mockUseSelectedPet.mockReturnValue({ selectedPetId: 'pet-1', selectPet, clearPet: jest.fn(), });
     mockCreatePet.mockReturnValue(pending());
   });
 
@@ -409,7 +409,7 @@ describe('#62 R11: los chips de especie usan la receta única de chip', () => {
       signIn: jest.fn(),
       signOut: jest.fn(),
     } satisfies AuthContextValue);
-    mockUseSelectedPet.mockReturnValue({ selectedPetId: 'pet-1', selectPet });
+    mockUseSelectedPet.mockReturnValue({ selectedPetId: 'pet-1', selectPet, clearPet: jest.fn(), });
     mockCreatePet.mockReturnValue(pending());
   });
 
@@ -449,7 +449,7 @@ describe('#62 R12: el placeholder del formulario sale del tema', () => {
       signIn: jest.fn(),
       signOut: jest.fn(),
     } satisfies AuthContextValue);
-    mockUseSelectedPet.mockReturnValue({ selectedPetId: 'pet-1', selectPet });
+    mockUseSelectedPet.mockReturnValue({ selectedPetId: 'pet-1', selectPet, clearPet: jest.fn(), });
     mockCreatePet.mockReturnValue(pending());
   });
 
@@ -476,7 +476,7 @@ describe('#95 R5: la pantalla no dibuja cabecera propia', () => {
   it('retira el botón y el título del cuerpo', async () => {
     process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
     mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() });
-    mockUseSelectedPet.mockReturnValue({ selectedPetId: 'pet-1', selectPet });
+    mockUseSelectedPet.mockReturnValue({ selectedPetId: 'pet-1', selectPet, clearPet: jest.fn(), });
     await renderAddPet();
     expect(screen.queryByTestId('add-pet-back')).toBeNull();
     expect(screen.queryByText(es['addPet.addPet'])).toBeNull();
@@ -487,7 +487,7 @@ describe('#95 R6: métricas bajo cabecera nativa', () => {
   it('usa solo el inset inferior del dispositivo', async () => {
     process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
     mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() });
-    mockUseSelectedPet.mockReturnValue({ selectedPetId: 'pet-1', selectPet });
+    mockUseSelectedPet.mockReturnValue({ selectedPetId: 'pet-1', selectPet, clearPet: jest.fn(), });
     await renderAddPet();
     expect(screen.getByTestId('add-pet-form').props.contentContainerStyle).toEqual({
       padding: 24, gap: 16, paddingBottom: 48,
@@ -521,7 +521,7 @@ describe('#123: picker de nacimiento de Añadir mascota en Android a las 20:00 d
       signIn: jest.fn(),
       signOut: jest.fn(),
     } satisfies AuthContextValue);
-    mockUseSelectedPet.mockReturnValue({ selectedPetId: 'pet-1', selectPet });
+    mockUseSelectedPet.mockReturnValue({ selectedPetId: 'pet-1', selectPet, clearPet: jest.fn(), });
     mockCreatePet.mockResolvedValue({ kind: 'ok', pet: { id: 'pet-new', name: 'Nala' } as never });
     setPlatform('android');
   });
@@ -577,7 +577,7 @@ describe('#148 R4: add-pet se aparta del teclado en Android', () => {
       signIn: jest.fn(),
       signOut: jest.fn(),
     } satisfies AuthContextValue);
-    mockUseSelectedPet.mockReturnValue({ selectedPetId: 'pet-1', selectPet });
+    mockUseSelectedPet.mockReturnValue({ selectedPetId: 'pet-1', selectPet, clearPet: jest.fn(), });
     await renderAddPet();
 
     const host = screen.getByTestId('screen-add-pet');
@@ -606,7 +606,7 @@ describe('#148 R8: add-pet entrega el primer toque con el teclado abierto', () =
       signIn: jest.fn(),
       signOut: jest.fn(),
     } satisfies AuthContextValue);
-    mockUseSelectedPet.mockReturnValue({ selectedPetId: 'pet-1', selectPet });
+    mockUseSelectedPet.mockReturnValue({ selectedPetId: 'pet-1', selectPet, clearPet: jest.fn(), });
     await renderAddPet();
 
     expect(screen.getByTestId('add-pet-form').props.keyboardShouldPersistTaps).toBe('handled');
@@ -677,7 +677,7 @@ describe('#171 R4: primera mascota', () => {
     mockUseAuth.mockReturnValue({
       status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn(),
     } satisfies AuthContextValue);
-    mockUseSelectedPet.mockReturnValue({ selectedPetId: null, selectPet });
+    mockUseSelectedPet.mockReturnValue({ selectedPetId: null, selectPet, clearPet: jest.fn(), });
     mockCreatePet.mockResolvedValue({ kind: 'ok', pet: { id: 'pet-new', name: 'Nala' } as never });
   });
 
@@ -753,7 +753,7 @@ describe('#171 R5: variante sin collar', () => {
     mockUseAuth.mockReturnValue({
       status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn(),
     } satisfies AuthContextValue);
-    mockUseSelectedPet.mockReturnValue({ selectedPetId: null, selectPet });
+    mockUseSelectedPet.mockReturnValue({ selectedPetId: null, selectPet, clearPet: jest.fn(), });
     mockCreatePet.mockResolvedValue({ kind: 'ok', pet: { id: 'pet-new', name: 'Nala' } as never });
   });
 
