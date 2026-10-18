@@ -141,7 +141,6 @@ function ProfileTile({ testID, slot, icon, label, onPress }: {
 }
 
 export function ProfileScreen() {
-  // #181 E4
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { signOut, token } = useAuth();
   const { language, setLanguage } = useLanguage();
