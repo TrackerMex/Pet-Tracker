@@ -970,14 +970,18 @@ describe('#180 R2: marco y orden', () => {
     expect(after.indexOf('alert-detail-view-map')).toBe(before.indexOf('alert-detail-view-map'));
     expect(screen.queryByTestId('alert-detail-ack')).toBeNull();
   });
-  it.each([true, false].flatMap(zone => [true, false].map(error => ({ zone, error }))))('#180 R2.3: ordena título, héroe, mapa, CTA, espaciador, error y ack: zona $zone / error $error', async ({ zone, error }) => {
-    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ geofenceId: zone ? 'zone-1' : null, payload: zone ? REAL_PAYLOAD : {} })], nextCursor: null });
+  it.each([
+    { scenario: 'con zona', zone: true, position: true },
+    { scenario: 'sin zona', zone: false, position: true },
+    { scenario: 'sin posición', zone: false, position: false },
+  ].flatMap(scenario => [true, false].map(error => ({ ...scenario, error }))))('#180 R2.3: ordena título, héroe, mapa, CTA, espaciador, error y ack: $scenario / error $error', async ({ zone, position, error }) => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ geofenceId: zone ? 'zone-1' : null, payload: position ? REAL_PAYLOAD : {} })], nextCursor: null });
     mockListGeofences.mockResolvedValue({ kind: 'ok', geofences: [ZONE] });
     mockAckAlert.mockResolvedValue({ kind: 'error' });
     await renderDetail(); await screen.findByTestId('alert-detail-ack');
     if (zone) await screen.findByTestId('alert-detail-distance');
     if (error) { await fireEvent.press(screen.getByTestId('alert-detail-ack')); await screen.findByTestId('alert-detail-action-error'); }
-    expect(detailIds()).toEqual(['alert-detail-title', 'alert-detail-card', ...(zone ? ['alert-detail-map'] : []), 'alert-detail-view-map', 'alert-detail-spacer', ...(error ? ['alert-detail-action-error'] : []), 'alert-detail-ack']);
+    await waitFor(() => expect(detailIds()).toEqual(['alert-detail-title', 'alert-detail-card', ...(position ? ['alert-detail-map'] : []), 'alert-detail-view-map', 'alert-detail-spacer', ...(error ? ['alert-detail-action-error'] : []), 'alert-detail-ack']));
   });
 });
 
