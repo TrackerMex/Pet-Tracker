@@ -737,3 +737,21 @@ describe('#170 R15: Ver en el mapa lleva al Mapa con la mascota de la alerta', (
     expect(mockSelectPet.mock.invocationCallOrder[0]).toBeLessThan(mockDismissTo.mock.invocationCallOrder[0]);
   });
 });
+
+
+describe('#180 R1: título en el contenido', () => {
+  it.each(['carga', 'error', 'con alerta'] as const)('#180 R1.2: título en %s', async (state) => {
+    if (state === 'carga') mockListAlerts.mockReturnValue(new Promise(() => undefined));
+    else if (state === 'error') mockListAlerts.mockResolvedValue({ kind: 'error' });
+    else mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert()], nextCursor: null });
+    const language = state === 'carga' ? 'en' : 'es';
+    await renderDetail('alert-1', language);
+    await screen.findByTestId(state === 'carga' ? 'alert-detail-loading' : state === 'error' ? 'alert-detail-error' : 'alert-detail-card');
+    const title = screen.getByTestId('alert-detail-title');
+    expect(title.props.accessibilityRole).toBe('header');
+    expect(title).toHaveTextContent(language === 'en' ? 'Alert' : 'Alerta');
+    const scrollContent = elementChild(screen.getByTestId('screen-alert-detail'), 0);
+    expect(elementChild(scrollContent, 0)).toBe(title);
+    expect(title.props.className).toBe('text-26 font-black tracking-title text-foreground');
+  });
+});

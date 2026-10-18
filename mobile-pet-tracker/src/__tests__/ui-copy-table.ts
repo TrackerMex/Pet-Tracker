@@ -531,7 +531,7 @@ export const R12_ALERTS: UseRow[] = [
 ];
 
 export const R13_ALERT_DETAIL: UseRow[] = [
-  { file: 'src/app/_layout.tsx', key: 'alerts.detailTitle' },
+  { file: 'src/screens/alert-detail/index.tsx', key: 'alerts.detailTitle' }, // #180 R1
   { file: 'src/screens/alert-detail/index.tsx', key: 'alerts.openedAt' },
   { file: 'src/screens/alert-detail/index.tsx', key: 'alerts.statusOpen' },
   { file: 'src/screens/alert-detail/index.tsx', key: 'alerts.statusAcked' },

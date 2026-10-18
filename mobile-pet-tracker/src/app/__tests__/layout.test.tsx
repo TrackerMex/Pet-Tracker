@@ -417,7 +417,7 @@ describe('#100 R2: la guarda de RootStack declara el detalle de alerta tras aler
       : null).toEqual([Stack.Screen, 'alerts/[alertId]', true]);
   });
 
-  it('le da la cabecera nativa de #95 R4 con el título del detalle', async () => {
+  it('le da la cabecera nativa de #95 R4 con título vacío (enmendado por #180 R1)', async () => {
     await render(<RootLayout />);
     await waitFor(() => expect(jest.mocked(Stack)).toHaveBeenCalled());
     const stack = jest.mocked(Stack).mock.calls.at(-1)?.[0];
@@ -426,7 +426,7 @@ describe('#100 R2: la guarda de RootStack declara el detalle de alerta tras aler
     const detail = Children.toArray(group.props.children)[8];
     expect(isValidElement<{ options?: unknown }>(detail) ? detail.props.options : undefined).toEqual({
       headerShown: true,
-      title: 't:alerts.detailTitle',
+      title: '', // #180 R1
       headerStyle: { backgroundColor: 'token:background' },
       headerTintColor: 'token:foreground',
       headerTitleStyle: { fontFamily: 'Inter-Bold' },

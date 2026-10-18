@@ -250,7 +250,7 @@ describe('#100 R10: el detalle de alerta resuelve su copy por clave', () => {
   it('registra cada ocurrencia del detalle', () => {
     expect(R13_ALERT_DETAIL).toHaveLength(11 - 3 + 2); // #170 R16
     expect(R13_ALERT_DETAIL.every(({ file }) =>
-      file === 'src/app/_layout.tsx' || file === 'src/screens/alert-detail/index.tsx',
+      file === 'src/screens/alert-detail/index.tsx',
     )).toBe(true);
     checkUses(R13_ALERT_DETAIL);
   });

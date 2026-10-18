@@ -211,6 +211,7 @@ describe('#174 R12: inventarios', () => {
       pattern: /(?<![\w-])tracking-title\b/,
       files: [
         'screens/add-reminder/index.tsx', // #178 R10
+        'screens/alert-detail/index.tsx', // #180 R1
         'screens/alerts/index.tsx', // #174 R12: H0 sin consumidores
         'screens/docs/index.tsx', // #175 R5
         'screens/meal-schedule/index.tsx', // #179 R4
