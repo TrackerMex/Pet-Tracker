@@ -106,6 +106,7 @@ describe('#95 R2: push y back apilan y desapilan sobre (tabs)', () => {
     mockAuthState = { status: 'authenticated', token: 'token-a' };
     mockAddReminderMounts = 0;
     const app = renderRouter(routes(), { initialUrl: '/home' });
+    await app;
     await waitFor(() => expect(app.getPathname()).toBe('/home'));
     expect(rootStack(app)).toEqual(['(tabs)']);
 
@@ -113,6 +114,7 @@ describe('#95 R2: push y back apilan y desapilan sobre (tabs)', () => {
       ['/add-reminder', 'add-reminder'],
       ['/pets/add', 'pets/add'],
       ['/pets/pet-1/docs', 'pets/[petId]/docs'],
+      ['/pets/pet-1/docs-upload', 'pets/[petId]/docs-upload'], // #185 R10
       ['/weight-log', 'weight-log'],
       ['/meal-schedule', 'meal-schedule'],
       ['/pairing', 'pairing'],

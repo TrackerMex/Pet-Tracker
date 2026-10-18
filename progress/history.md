@@ -9559,6 +9559,15 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
   título «51» de `ui-language.test.ts:176` frente a la suma de 53 (decorativo).
 - **Convivencia**: #179 ya está en `main`; no queda otra rama que fusionar antes.
 
+- **#185 mobile-docs-upload-form-polish** (2026-10-18): formulario de subida de
+  Documentos movido a pantalla propia (rama A, P1 = A), con 16 px entre campos,
+  6 px etiqueta-input y 12 px entre botones. Spec firmada por Notion (Aprobado);
+  Codex implementó en `Pet-Tracker-wt-185` con commits test-primero por requisito.
+  Primera revisión rechazada solo por frontmatter `draft` en las specs (C6); tras
+  firmarlo, review aprobada con `./init.sh` exit 0. Prueba de humo R11 superada
+  por el humano en dev build de Android. Cierre: `done` en `feature_list.json`,
+  R11 marcada en la spec y la trazabilidad. La PR la mergea el humano.
+
 ## #180 `mobile-alert-detail-canvas-fidelity` — Detalle de alerta fiel al canvas — 2026-10-18
 
 - **Inicio**: registrada el 2026-10-13 al partir #174 (respuesta «Dos» a P-Q19). Sesión leader; worktree `Pet-Tracker-wt-180`; branch `feature/180-mobile-alert-detail-canvas-fidelity`.
@@ -9573,3 +9582,4 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
 - **Drift Notion/repo, pendiente de decisión humana**: (a) callout de cabecera del espejo, solo en Notion (93 palabras, con «Revisa sobre todo 0 decisiones D1 D15», posiblemente truncado); (b) K10, K12 y K14 muestran «ver nota (a)» porque Notion convierte `+ ` al inicio de celda en viñeta; la forma literal va en la nota bajo la tabla K; (c) el diff de palabras halla unas 500 palabras de Notion sin par claro en el repo (zona R11–R12 y tabla K); no confirmado si son duplicados o reordenados; (d) formato: `**sin marcar**` de E1 sin cerrar en Notion y `X`/`x` en la casilla §6. La condición 3 del reviewer («drift resuelto») no se cumple del todo; queda para el merge del humano (aceptar o pedir re-espejo).
 - **Cierre** (2026-10-18): frontmatter de `design.md`, `tasks.md` y `traceability.md` en approved; fila R14 de trazabilidad con el humo; #180 en `done` (168/190); STATUS e historial; `current.md` a plantilla. La PR la mergea el humano; después `git worktree remove` (sin --force) y `git branch -d`.
 - **Convivencia**: #177 comparte la receta del botón en las acciones del detalle; #179 ya está en `main`.
+- **Merge de `origin/main`** (2026-10-18, PR #228 en conflicto con `07329de1`): `progress/history.md` unido con el bloque #185 de `main` antes que este; `design-drift.test.ts` conserva el test #180 R7.4 y el `describe` #185 R10, cada uno con su cierre, sin cambiar ningún texto de test (fallback trivial al subagente `implementer`, anunciado antes de usarlo); `STATUS.md` a 169/190 con 21 pendientes, #185 ya en `main`.

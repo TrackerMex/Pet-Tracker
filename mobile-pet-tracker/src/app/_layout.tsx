@@ -95,6 +95,7 @@ function RootStack() {
         <Stack.Screen name="add-reminder" options={{ ...headerOptions, title: '' }} />
         <Stack.Screen name="pets/add" options={{ ...headerOptions, title: t('addPet.addPet') }} />
         <Stack.Screen name="pets/[petId]/docs" options={{ ...headerOptions, title: '' }} />
+        <Stack.Screen name="pets/[petId]/docs-upload" options={{ ...headerOptions, title: '' }} />
         <Stack.Screen name="weight-log" options={{ ...headerOptions, title: t('weightLog.weightLog') }} />
             <Stack.Screen name="meal-schedule" options={{ ...headerOptions, title: '' }} />
         <Stack.Screen name="pairing" options={{ ...headerOptions, title: '' }} />

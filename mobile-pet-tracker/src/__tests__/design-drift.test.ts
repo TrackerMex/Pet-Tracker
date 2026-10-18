@@ -571,7 +571,8 @@ describe('#87 R19: use-' + 'api no deja huella', () => {
     'screens/meal-schedule/index.tsx': 2, // #147 R8: el 401 de la edición de franjas
     'screens/meals-history/index.tsx': 1, // #105 R15
     'screens/weight-log/index.tsx': 1,
-    'screens/docs/index.tsx': 1, // #158 R9
+    'screens/docs/index.tsx': 0, // #185 R10: solo selector y lectura
+    'screens/docs-upload-form/index.tsx': 1, // #185 R10: la mutación conserva signOut
     'screens/alerts/index.tsx': 0,
     'screens/alert-detail/index.tsx': 0,
     'utils/alert-ack-outcome.ts': 1, // #134 R6
@@ -996,7 +997,7 @@ describe('#171 R13: sin drift en la celebración', () => {
 });
 
 describe('#175 R10: Documentos sin deriva', () => {
-  const featureFiles = ['screens/docs/index.tsx'];
+  const featureFiles = ['screens/docs/index.tsx', 'screens/docs-upload-form/index.tsx']; // #185 R10
 
   it('no deja hex, clases arbitrarias, StyleSheet ni sombras sueltas', () => {
     expect(featureFiles.filter((file) =>
@@ -1218,4 +1219,14 @@ it('#180 R7.4: el detalle usa rounded-16 dos veces y ningún rounded-22 ni round
   expect(source.match(/\brounded-16\b/g) ?? []).toHaveLength(2);
   expect(source.match(/\brounded-22\b/g) ?? []).toHaveLength(0);
   expect(source.match(/\brounded-14\b/g) ?? []).toHaveLength(0);
+});
+
+describe('#185 R10: el formulario pertenece a la lista A11', () => {
+  it.each(['conventions.md', 'ui-guidelines.md'])('%s declara docs-upload bajo cabecera nativa', (file) => {
+    const source = readFileSync(join(projectRoot, '..', 'docs', file), 'utf8');
+    const start = source.indexOf('Excepción nombrada (enmienda A11');
+    const end = source.indexOf('Su', start);
+    expect(start).toBeGreaterThan(-1);
+    expect(source.slice(start, end)).toContain('`pets/[petId]/docs-upload`');
+  });
 });
