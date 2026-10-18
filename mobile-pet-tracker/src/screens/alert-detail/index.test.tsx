@@ -27,10 +27,17 @@ jest.mock('expo-router', () => ({
   router: { dismissTo: jest.fn(), push: jest.fn() },
 }));
 
+const mockMapChildren = jest.fn();
+jest.mock('expo-blur', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return { BlurView: (props: Record<string, unknown>) => React.createElement(View, props) };
+});
+
 jest.mock('../../components/pet-map', () => {
   const React = jest.requireActual<typeof import('react')>('react');
   const { View } = jest.requireActual<typeof import('react-native')>('react-native');
-  return { PetMap: (props: Record<string, unknown>) => React.createElement(View, { ...props, testID: 'pet-map-double' }) };
+  return { PetMap: (props: Record<string, unknown>) => { mockMapChildren(props.children); return React.createElement(View, { ...props, testID: 'pet-map-double' }); } };
 });
 
 jest.mock('../../api/geofences', () => ({
@@ -511,11 +518,11 @@ describe('#170 R8: pinta el mini-mapa con la posición de la alerta', () => {
   it.each([
     { fila: 'borde válido', payload: { position: { lat: 90, lng: -180 } }, position: { latitude: 90, longitude: -180 } },
     { fila: 'real del motor', payload: REAL_PAYLOAD, position: { latitude: 19.4342637, longitude: -99.1332 } },
-  ])('$fila: con mapa', async ({ payload, position }) => {
+  ])('$fila: con mapa (enmendado por #180 R5, E2)', async ({ payload, position }) => {
     mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ payload })], nextCursor: null });
     await renderDetail();
     const map = await screen.findByTestId('alert-detail-map');
-    expect(map.props.className).toBe('h-52 overflow-hidden rounded-card');
+    expect(map.props.className).toBe('h-52.5 overflow-hidden rounded-24');
     expect(map.props.style).toEqual({ borderCurve: 'continuous' });
     expect(map.children).toHaveLength(1);
     const petMap = elementChild(map, 0);
@@ -576,11 +583,11 @@ describe('#170 R10: pinta la zona y la distancia a su borde', () => {
     mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ geofenceId: 'zone-1', payload: REAL_PAYLOAD })], nextCursor: null });
     mockListGeofences.mockResolvedValue({ kind: 'ok', geofences: [ZONE] });
   });
-  it('pinta el círculo, el encuadre y «A 85 m de Casa»', async () => {
+  it('pinta el círculo, el encuadre y «A 85 m de Casa» (enmendado por #180 R5, E2)', async () => {
     await renderDetail();
     const distance = await screen.findByTestId('alert-detail-distance');
     expect(distance).toHaveTextContent('A 85 m de Casa');
-    expect(distance.props.className).toBe('text-sm font-semibold text-foreground');
+    expect(distance.props.className).toBe('bg-glass-surface-strong px-2.5 py-1.5 text-xs font-bold text-foreground');
     expect(distance.props.style).toEqual({ fontVariant: ['tabular-nums'] });
     const map = screen.getByTestId('pet-map-double');
     expect(map.props.circles).toEqual([{ id: 'zone-1', center: { latitude: 19.4326, longitude: -99.1332 }, radius: 100 }]);
@@ -628,15 +635,16 @@ describe('#170 R10: pinta la zona y la distancia a su borde', () => {
       queryClient.clear();
     }
   });
-  it('pinta la distancia bajo el mapa', async () => {
+  it('#180 R5.2 (enmendado por E1): la distancia es un BlurView dentro del mapa', async () => {
     await renderDetail();
     await screen.findByTestId('alert-detail-distance');
-    const card = screen.getByTestId('alert-detail-card');
-    const children = card.parent!.children.filter((child): child is TestInstance => typeof child !== 'string');
-    const mapIndex = children.findIndex((child) => child.props.testID === 'alert-detail-map');
-    const distanceIndex = children.findIndex((child) => child.props.testID === 'alert-detail-distance');
-    expect(mapIndex).toBeGreaterThanOrEqual(0);
-    expect(distanceIndex).toBe(mapIndex + 1);
+    const blur = within(screen.getByTestId('alert-detail-map')).getByTestId('alert-detail-distance-blur');
+    const { intensity, blurMethod, className } = blur.props;
+    expect({ intensity, blurMethod, className }).toEqual({ intensity: 48, blurMethod: 'dimezisBlurViewSdk31Plus', className: 'absolute bottom-3 left-3 overflow-hidden rounded-full' });
+    const distance = within(blur).getByTestId('alert-detail-distance');
+    expect(distance.props.className).toBe('bg-glass-surface-strong px-2.5 py-1.5 text-xs font-bold text-foreground');
+    expect(distance.props.className.split(' ')).not.toContain('bg-glass-surface');
+    expect(distance.props.style).toEqual({ fontVariant: ['tabular-nums'] });
   });
 });
 
@@ -745,7 +753,7 @@ describe('#170 R15: Ver en el mapa lleva al Mapa con la mascota de la alerta', (
     await screen.findByTestId('alert-detail-error');
     expect(screen.queryByTestId('alert-detail-view-map')).toBeNull();
   });
-  it('ordena tarjeta, mapa, distancia, CTA y ack', async () => {
+  it('ordena tarjeta, mapa, CTA y ack (enmendado por #180 R5, E2)', async () => {
     mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ geofenceId: 'zone-1', payload: REAL_PAYLOAD })], nextCursor: null });
     mockListGeofences.mockResolvedValue({ kind: 'ok', geofences: [ZONE] });
     await renderDetail();
@@ -753,7 +761,7 @@ describe('#170 R15: Ver en el mapa lleva al Mapa con la mascota de la alerta', (
     screen.getByTestId('alert-detail-view-map');
     const card = screen.getByTestId('alert-detail-card');
     const children = card.parent!.children.filter((child): child is TestInstance => typeof child !== 'string');
-    const indices = ['alert-detail-card', 'alert-detail-map', 'alert-detail-distance', 'alert-detail-view-map', 'alert-detail-ack'].map((id) => children.findIndex((child) => child.props.testID === id || within(child).queryByTestId(id) !== null));
+    const indices = ['alert-detail-card', 'alert-detail-map', 'alert-detail-view-map', 'alert-detail-ack'].map((id) => children.findIndex((child) => child.props.testID === id || within(child).queryByTestId(id) !== null));
     expect(indices[0]).toBeGreaterThanOrEqual(0);
     for (let index = 1; index < indices.length; index++) expect(indices[index - 1]).toBeLessThan(indices[index]);
   });
@@ -810,5 +818,63 @@ describe('#180 R4: ping del héroe', () => {
     const disc = screen.getByTestId('alert-detail-disc');
     expect(elementChild(disc, 0)).toBe(ping);
     expect(within(elementChild(disc, 1)).getByTestId('alert-detail-icon')).toBeOnTheScreen();
+  });
+});
+
+describe('#180 R5: mapa con cristal', () => {
+  function prepare(payload: Alert['payload'] = REAL_PAYLOAD) {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ geofenceId: 'zone-1', payload })], nextCursor: null });
+    mockListGeofences.mockResolvedValue({ kind: 'ok', geofences: [ZONE] });
+  }
+  it.each(['light', 'dark'] as const)('#180 R5.2 (enmendado por E1): tint del cristal en %s', async theme => {
+    mockTheme = theme; prepare(); await renderDetail();
+    expect((await screen.findByTestId('alert-detail-distance-blur')).props.tint).toBe(theme);
+  });
+  it('#180 R5.2 (enmendado por E1): la distancia cuelga del mapa y no es hermana de la CTA', async () => {
+    prepare(); await renderDetail();
+    const distance = await screen.findByTestId('alert-detail-distance');
+    const map = screen.getByTestId('alert-detail-map');
+    expect(within(map).getByTestId('alert-detail-distance') === distance).toBe(true);
+    expect(distance.parent === screen.getByTestId('alert-detail-view-map').parent).toBe(false);
+  });
+  it.each([[19.43350305, 0], [19.4335057, 1]])('#180 R5.2 (enmendado por E1): umbral redondeado %s / %s m', async (lat, meters) => {
+    prepare({ ...REAL_PAYLOAD, position: { lat, lng: -99.1332 } }); await renderDetail();
+    await waitFor(() => expect(screen.getByTestId('pet-map-double').props.circles).toHaveLength(1));
+    if (meters === 0) {
+      expect(screen.queryByTestId('alert-detail-distance')).toBeNull();
+      expect(screen.queryByTestId('alert-detail-distance-blur')).toBeNull();
+    } else {
+      expect(screen.getByTestId('alert-detail-distance')).toHaveTextContent('A 1 m de Casa');
+      expect(screen.getByTestId('alert-detail-distance-blur')).toBeOnTheScreen();
+    }
+  });
+  it('#180 R5.1/R5.2: batería sin posición no pinta mapa ni cristal y conserva CTA', async () => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ type: 'battery_low', payload: { batteryPct: 12 } })], nextCursor: null });
+    await renderDetail(); await screen.findByTestId('alert-detail-view-map');
+    expect(screen.queryByTestId('alert-detail-map')).toBeNull();
+    expect(screen.queryByTestId('alert-detail-distance')).toBeNull();
+    expect(screen.queryByTestId('alert-detail-distance-blur')).toBeNull();
+  });
+  it('#180 R5.3: PetMap no recibe children', async () => {
+    prepare(); await renderDetail(); await screen.findByTestId('alert-detail-distance');
+    expect(screen.getByTestId('pet-map-double').props.children === undefined).toBe(true);
+    expect(mockMapChildren).toHaveBeenLastCalledWith(undefined);
+  });
+  it.each([['es', 'Ubicación al salir de la zona Casa'], ['en', 'Location when leaving Casa']] as const)('#180 R5.4: prioridad del nombre del payload en %s', async (language, expected) => {
+    prepare(); mockListGeofences.mockResolvedValue({ kind: 'ok', geofences: [{ ...ZONE, name: 'Jardín' }] });
+    await renderDetail('alert-1', language);
+    await screen.findByTestId('alert-detail-distance');
+    const { accessible, accessibilityLabel } = screen.getByTestId('alert-detail-map').props;
+    expect({ accessible, accessibilityLabel }).toEqual({ accessible: true, accessibilityLabel: expected });
+  });
+  it('#180 R5.4: usa el nombre de la zona si falta en el payload', async () => {
+    prepare({ position: REAL_PAYLOAD.position }); await renderDetail(); await screen.findByTestId('alert-detail-distance');
+    expect(screen.getByTestId('alert-detail-map').props.accessibilityLabel).toBe('Ubicación al salir de la zona Casa');
+  });
+  it('#180 R5.4: sin ningún nombre omite la etiqueta del mapa', async () => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ payload: { position: REAL_PAYLOAD.position } })], nextCursor: null });
+    await renderDetail();
+    expect((await screen.findByTestId('alert-detail-map')).props.accessibilityLabel).toBeUndefined();
+    expect(screen.queryByTestId('alert-detail-distance-blur')).toBeNull();
   });
 });

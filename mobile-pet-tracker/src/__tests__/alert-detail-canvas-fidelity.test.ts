@@ -20,3 +20,8 @@ it('#180 R4.5: ping-ring.tsx no usa MOTION_PING_TIMING ni escribe 1800', () => {
 it('#180 R13.2: el ping queda grep-limpio sin emoji ni escapes', () => {
   expect(readSource('screens/alert-detail/ping-ring.tsx')).not.toMatch(/\p{Extended_Pictographic}|\\u[\da-fA-F{]/u);
 });
+
+it('#180 R5.6: solo la barra de pestañas y el detalle importan expo-blur', () => {
+  expect(sourceFiles().filter(path => path.endsWith('.tsx') && readFileSync(path, 'utf8').includes("from 'expo-blur'"))
+    .map(path => path.slice(sourceRoot.length + 1)).sort()).toEqual(['components/floating-tab-bar.tsx', 'screens/alert-detail/index.tsx']);
+});
