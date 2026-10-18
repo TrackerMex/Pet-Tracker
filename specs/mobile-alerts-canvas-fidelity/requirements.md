@@ -380,6 +380,8 @@ con `await`.
 
 ### R11 — Enmiendas a la carta y a specs aprobadas
 
+> Enmendado por #180 (ver «Enmienda #180» al final).
+
 - **R11.1** THE SYSTEM SHALL añadir al final de cada fichero de la tabla el bloque canónico de
   `design.md` §4 (cercado ```` ```markdown ````), sustituyendo `<FEATURE>` y `<QUÉ CAMBIA>`. En la carta va
   detrás de la última sección `## Enmienda #` que exista en H0 (con #173 mergeado,
@@ -444,6 +446,8 @@ con `await`.
 - **Rojo**: el bloque no está en `docs/ui-guidelines.md` (`toContain` falla con el primer fichero).
 
 ### R12 — Candados agregados y grep-limpio
+
+> Enmendado por #180 (ver «Enmienda #180» al final).
 
 - **R12.1** THE SYSTEM SHALL dejar las clases en estos ficheros de producción, y solo en ellos (F, describe
   `#174 R12: inventarios`, regex con `(?<![\w-])` delante, listas ordenadas):
@@ -846,3 +850,15 @@ manda E5.**
 - [x] Enmienda E3 aprobada por humano (fecha: 2026-10-15, vía Notion)
 - [x] Enmienda E4 aprobada por humano (fecha: 2026-10-15, vía Notion)
 - [x] Enmienda E5 aprobada por humano (fecha: 2026-10-15, vía Notion)
+
+## Enmienda #180 — Detalle de alerta fiel al canvas
+
+> Enmienda de `mobile-alerts-canvas-fidelity` por `mobile-alert-detail-canvas-fidelity` (#180, 2026-10-16). Directiva del humano:
+> «el diseño final debe de quedar como el artifact».
+
+**Qué cambia**: #174 R11: la frase de §13 «confirmar alerta en el detalle» deja de existir; #174 R12: los inventarios de text-15 y tracking-title suman el detalle.
+
+Detalle y tests en `specs/mobile-alert-detail-canvas-fidelity/requirements.md`. Los `it` citados se reescriben en
+su sitio con el sufijo `(enmendado por #180 Rn)`.
+
+- [X] Enmienda #180 aprobada por humano
