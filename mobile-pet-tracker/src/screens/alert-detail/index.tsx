@@ -152,6 +152,9 @@ export function AlertDetailScreen({ alertId }: { alertId: string }) {
       contentInsetAdjustmentBehavior="automatic"
       contentContainerStyle={{ padding: 24, gap: 16, paddingBottom: insets.bottom + 24 }}
     >
+      <Text testID="alert-detail-title" accessibilityRole="header" className="text-26 font-black tracking-title text-foreground">
+        {t('alerts.detailTitle')}
+      </Text>
       {alert ? (
         <>
           {card}
