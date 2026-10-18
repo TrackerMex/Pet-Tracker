@@ -813,4 +813,4 @@ Se mueve la fila a R5, donde se usa. No se implementa R5.4 dentro de R8: en task
 
 ### Aprobación de la enmienda E3
 
-- [ ] Enmienda #180 E3 aprobada por humano (fecha: ____) ← gate de la enmienda E3 (firma en Notion)
+- [x] Enmienda #180 E3 aprobada por humano (fecha: 2026-10-17) ← gate de la enmienda E3 (firma en Notion, 2026-10-18T06:55:10Z)
