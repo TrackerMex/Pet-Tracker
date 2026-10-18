@@ -734,3 +734,39 @@ describe('#185 R6: espacio etiqueta-input', () => {
     expect(theme).toContain('--spacing: 0.25rem;');
   });
 });
+
+describe('#185 R8: clases de botón, etiqueta e input intactas', () => {
+  // #185 R8: RNTL 14 expone hosts con clases de HeroUI; la fuente conserva las props exactas.
+  it.each([
+    ['submit', 1, 'rounded-xl bg-accent border-b-4 border-black/25'],
+    ['submitLabel', 1, 'font-bold text-accent-foreground'],
+    ['cancel', 1, 'rounded-xl border-2 border-b-6 border-lip-gray bg-surface'],
+    ['cancelLabel', 1, 'font-semibold'],
+    ['labels', 8, 'text-2xs font-semibold text-foreground'],
+    ['inputs', 4, 'rounded-xl bg-default'],
+  ] as const)('conserva %s sin alterar sus clases', (row, count, expected) => {
+    const source = readFileSync(join(process.cwd(), 'src/screens/docs-upload-form/index.tsx'), 'utf8');
+    const openingTag = (id: string) => {
+      const anchor = source.indexOf(`testID="${id}"`);
+      expect(anchor).toBeGreaterThan(-1);
+      expect(source.lastIndexOf(`testID="${id}"`)).toBe(anchor);
+      return source.slice(source.lastIndexOf('<', anchor), source.indexOf('<', anchor));
+    };
+    const submit = openingTag('docs-upload-submit');
+    const cancel = openingTag('docs-upload-cancel');
+    const buttonLabels = [...source.matchAll(/<Button\.Label\s+className="([^"]+)"/g)];
+    const classes = {
+      submit: [submit.match(/className="([^"]+)"/)?.[1]],
+      submitLabel: [buttonLabels[0]?.[1]],
+      cancel: [cancel.match(/className="([^"]+)"/)?.[1]],
+      cancelLabel: [buttonLabels[1]?.[1]],
+      labels: [...source.matchAll(/<Label(?:\.Text)?\s+className="([^"]+)"/g)].map(match => match[1]),
+      inputs: [...source.matchAll(/<Input\s+[^<]*?className="([^"]+)"/g)].map(match => match[1]),
+    };
+    expect(classes[row]).toHaveLength(count);
+    for (const className of classes[row]) expect(className).toBe(expected);
+    expect(submit).toContain('isDisabled={uploading}');
+    expect(cancel).toContain('isDisabled={uploading}');
+    expect(cancel).toContain('variant="outline"');
+  });
+});
