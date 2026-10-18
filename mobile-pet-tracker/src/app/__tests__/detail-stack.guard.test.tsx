@@ -122,6 +122,7 @@ describe('#95 R3: la guarda protege las seis y deja libres (auth) y reset-passwo
       '/add-reminder',
       '/pets/add',
       '/pets/pet-1/docs',
+      '/pets/pet-1/docs-upload', // #185 R10
       '/weight-log',
       '/meal-schedule',
       '/pairing',
@@ -166,6 +167,7 @@ describe('#149 R3: cerrar sesión en un detalle aterriza en welcome', () => {
     '/add-reminder',
     '/pets/add',
     '/pets/pet-1/docs',
+    '/pets/pet-1/docs-upload', // #185 R10
     '/weight-log',
     '/meal-schedule',
     '/pairing',
