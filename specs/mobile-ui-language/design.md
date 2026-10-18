@@ -1037,6 +1037,12 @@ copy completa en cada una.
 | — | `reminders.dueAt` | `{{date}}, {{time}}` | `{{date}}, {{time}}` | ← añadida por #178 (R3) |
 | — | `addReminder.notifyPreview` | `I'll remind you on {{date}} at {{time}}.` | `Te aviso el {{date}} a las {{time}}.` | ← añadida por #178 (R3) |
 
+### §2.35 — Añadidos por #180
+
+| # | Clave | `en` | `es` | Origen |
+|---|---|---|---|---|
+| — | `alerts.mapLabel` | `Location when leaving {{zone}}` | `Ubicación al salir de la zona {{zone}}` | ← añadida por #180 (R8)
+
 ## 3. La infraestructura
 
 ### 3.1 Decisiones
