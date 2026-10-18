@@ -1,5 +1,6 @@
 import { ReduceMotion } from 'react-native-reanimated';
 import {
+  MOTION_ALERT_PING_MS,
   MOTION_FEEDBACK_MS,
   MOTION_TRANSITION_MS,
   MOTION_SURFACE_MS,
@@ -74,6 +75,7 @@ describe('#152 R1: las duraciones y el preset de movimiento viven en un solo sit
 
   it('no exporta nada más', () => {
     expect(Object.keys(require('../motion')).sort()).toEqual([
+      'MOTION_ALERT_PING_MS',
       'MOTION_BLINK_INTERVAL_MS',
       'MOTION_BLINK_TIMING',
       'MOTION_CELEBRATION_BADGE_DELAY_MS',
@@ -234,4 +236,8 @@ describe('#171 E4: las constantes de la celebración viven en motion.ts', () => 
     expect(m.MOTION_PINGO_FLOAT_OFFSET_Y).toBe(10);
     expect(m.MOTION_PINGO_FLOAT_TIMING).toEqual({ duration: 1500, easing: { bezier: [0.42, 0, 0.58, 1] }, reduceMotion: ReduceMotion.System });
   });
+});
+
+it('#180 R4.5: declara el ping del detalle de alerta en 1800 ms', () => {
+  expect(MOTION_ALERT_PING_MS).toBe(1800);
 });

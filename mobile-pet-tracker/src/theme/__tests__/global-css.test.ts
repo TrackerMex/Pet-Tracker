@@ -882,3 +882,14 @@ describe('#174 R1: tokens del canvas de Alertas', () => {
     }
   });
 });
+
+describe('#180 R5.5: token glass-surface-strong en light y dark', () => {
+  it.each([['light', 'rgba(255,255,255,0.86)'], ['dark', 'rgba(22,27,34,0.86)']] as const)('#180 R5.5: par fuerte en %s', (theme, value) => {
+    expect(parseVariables(extractVariant(theme))).toMatchObject({ 'glass-surface-strong': value, 'color-glass-surface-strong': value });
+  });
+  it('#180 R5.5: conserva el cristal 0.60 de la barra de pestañas', () => {
+    for (const [theme, value] of [['light', 'rgba(255,255,255,0.60)'], ['dark', 'rgba(22,27,34,0.60)']] as const) {
+      expect(parseVariables(extractVariant(theme))).toMatchObject({ 'glass-surface': value, 'color-glass-surface': value });
+    }
+  });
+});
