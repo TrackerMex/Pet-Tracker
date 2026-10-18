@@ -23,6 +23,16 @@ jest.mock('react-native-reanimated', () => ({
   withRepeat: jest.fn((animation: unknown) => animation),
 }));
 
+jest.mock('heroui-native', () => {
+  const actual = jest.requireActual<typeof import('heroui-native')>('heroui-native');
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { Pressable, Text } = jest.requireActual<typeof import('react-native')>('react-native');
+  return { ...actual, Button: Object.assign(
+    ({ isDisabled, ...props }: Record<string, unknown> & { children?: ReactNode; isDisabled?: boolean }) => React.createElement(Pressable, { ...props, disabled: isDisabled }),
+    { Label: (props: Record<string, unknown> & { children?: ReactNode }) => React.createElement(Text, props) },
+  ) };
+});
+
 jest.mock('expo-router', () => ({
   router: { dismissTo: jest.fn(), push: jest.fn() },
 }));
@@ -79,6 +89,7 @@ jest.mock('reicon-react-native', () => {
       );
     };
   return {
+    Map: icon('Map'),
     BatteryLow: icon('BatteryLow'),
     Bell: icon('Bell'),
     LocationSlash: icon('LocationSlash'),
@@ -727,12 +738,12 @@ describe('#170 R15: Ver en el mapa lleva al Mapa con la mascota de la alerta', (
     ['abierta geofence_exit con mapa', { type: 'geofence_exit', status: 'open', payload: REAL_PAYLOAD }],
     ['acked battery_low sin mapa', { type: 'battery_low', status: 'acked', payload: { batteryPct: 12 } }],
     ['closed mystery_type sin mapa', { type: 'mystery_type', status: 'closed', payload: {} }],
-  ] as const)('lo pinta en %s', async (_fila, overrides) => {
+  ] as const)('lo pinta en %s (enmendado por #180 R6, E2)', async (_fila, overrides) => {
     mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert(overrides)], nextCursor: null });
     await renderDetail();
     const button = await screen.findByTestId('alert-detail-view-map');
     expect(button.props.accessibilityRole).toBe('button');
-    expect(button.props.className.split(' ')).toContain('min-h-11');
+    expect(button.props.className).toBe('h-13 rounded-16 border-2 border-b-6 border-lip-gray bg-surface');
     expect(within(button).getByText('Ver en el mapa')).toBeVisible();
   });
   it('dice «View on map» en inglés', async () => {
@@ -876,5 +887,24 @@ describe('#180 R5: mapa con cristal', () => {
     await renderDetail();
     expect((await screen.findByTestId('alert-detail-map')).props.accessibilityLabel).toBeUndefined();
     expect(screen.queryByTestId('alert-detail-distance-blur')).toBeNull();
+  });
+});
+
+describe('#180 R6: CTA Ver en el mapa', () => {
+  it('#180 R6.1 (enmendado por E1): la CTA lleva h-13, rounded-16, labio gris y el icono Map antes de la etiqueta', async () => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert()], nextCursor: null });
+    await renderDetail();
+    const button = await screen.findByTestId('alert-detail-view-map');
+    expect(button.props.className).toBe('h-13 rounded-16 border-2 border-b-6 border-lip-gray bg-surface');
+    expect(button.children).toHaveLength(2);
+    expect(elementChild(button, 0).props).toMatchObject({ iconName: 'Map', size: 18, color: '--color-foreground' });
+    expect(elementChild(button, 1)).toHaveTextContent('Ver en el mapa');
+    expect(elementChild(button, 1).props.className).toBe('text-base font-extrabold text-foreground');
+  });
+  it.each(['open', 'acked', 'closed'].flatMap(status => [true, false].map(map => ({ status, map }))))('#180 R6.2: CTA $status con mapa $map', async ({ status, map }) => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ status, payload: map ? REAL_PAYLOAD : {} })], nextCursor: null });
+    await renderDetail(); await screen.findByTestId('alert-detail-view-map');
+    if (map) expect(screen.getByTestId('alert-detail-map')).toBeOnTheScreen();
+    else expect(screen.queryByTestId('alert-detail-map')).toBeNull();
   });
 });

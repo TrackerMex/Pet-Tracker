@@ -592,7 +592,6 @@ describe('#166 R3: el secundario neutro lleva el labio gris', () => {
     [join('screens', 'forgot', 'index.tsx'), 'forgot-resend', 'secondary'],
     [join('screens', 'docs', 'index.tsx'), 'docs-upload-cancel', 'outline'],
     [join('screens', 'reminders', 'index.tsx'), 'reminders-delete-cancel', 'outline'],
-    [join('screens', 'alert-detail', 'index.tsx'), 'alert-detail-view-map', 'secondary'],
   ] as const;
 
   it.each(rows)('%s pinta %s con la receta del secundario en su tag de apertura', (path, testId, variant) => {
@@ -674,4 +673,11 @@ describe('#166 R4: la carta declara el botón con cuerpo', () => {
       guidelines.indexOf('## Animación (decisiones por defecto)'),
     );
   });
+});
+
+it('#180 R7.5: «Ver en el mapa» del detalle lleva rounded-16 con su labio gris', () => {
+  const tag = openingTagWithTestId(readSource(join('screens', 'alert-detail', 'index.tsx')), 'alert-detail-view-map');
+  expect(tag).toContain('variant="secondary"');
+  expect(tag).toContain('rounded-16 border-2 border-b-6 border-lip-gray bg-surface');
+  for (const forbidden of ['rounded-xl', 'border-accent', 'bg-transparent', 'border-black']) expect(tag).not.toContain(forbidden);
 });

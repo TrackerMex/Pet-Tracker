@@ -1107,7 +1107,9 @@ describe('#178 R13: Recordatorios sin deriva', () => {
       && !/\.test\.tsx?$/.test(file)
       && pattern.test(readFileSync(file, 'utf8')),
     ).map((file) => file.slice(sourceRoot.length + 1));
-    expect(outsideReminders(/\brounded-(?:16|22)\b/)).toEqual([]);
+    expect(outsideReminders(/\brounded-(?:16|22)\b/)).toEqual([
+      join('screens', 'alert-detail', 'index.tsx'), // #180 E1 R7.4 comparte rounded-16
+    ]);
     expect(outsideReminders(/\brounded-14\b/)).toEqual([
       join('screens', 'meal-schedule', 'index.tsx'), // #179 R13 comparte rounded-14
       join('screens', 'meals-history', 'index.tsx'), // #179 R13 comparte rounded-14
