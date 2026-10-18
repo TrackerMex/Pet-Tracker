@@ -193,13 +193,13 @@ export function AlertDetailScreen({ alertId }: { alertId: string }) {
           ) : null}
         </>
       ) : alerts.isPending || alerts.isFetching ? (
-        <Skeleton testID="alert-detail-loading" className="h-44 w-full rounded-card" />
+        <Skeleton testID="alert-detail-loading" className="h-58 w-full rounded-hero" />
       ) : firstPage && ['error', 'unreachable', 'missing-config'].includes(firstPage.kind) ? (
         <>
           <Text selectable testID="alert-detail-error" className="text-danger">
             {t('common.somethingWentWrong')}
           </Text>
-          <Button testID="alert-detail-retry" className="min-h-11" onPress={() => void alerts.refetch()}>
+          <Button testID="alert-detail-retry" className="h-13" onPress={() => void alerts.refetch()}>
             <Button.Label>{t('common.retry')}</Button.Label>
           </Button>
         </>
