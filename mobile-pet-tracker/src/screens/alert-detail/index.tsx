@@ -187,7 +187,13 @@ export function AlertDetailScreen({ alertId }: { alertId: string }) {
             </Text>
           ) : null}
           {alert.status === 'open' ? (
-            <Button testID="alert-detail-ack" accessibilityRole="button" className="w-full h-14 rounded-16 bg-accent border-b-4 border-black/25" isDisabled={acking} onPress={() => void handleAck()}>
+            <Button
+              testID="alert-detail-ack"
+              accessibilityRole="button"
+              className="w-full h-14 rounded-16 bg-accent border-b-4 border-black/25"
+              isDisabled={acking}
+              onPress={() => void handleAck()}
+            >
               <Button.Label className="text-17 font-extrabold text-accent-foreground">{t('alerts.ack')}</Button.Label>
             </Button>
           ) : null}
