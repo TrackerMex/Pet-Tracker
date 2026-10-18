@@ -17,6 +17,7 @@ import { renderWithProviders } from '../../../test/render-with-providers';
 import { AlertDetailScreen } from '.';
 
 let mockReducedMotion = false;
+let mockBottom = 24;
 jest.mock('react-native-reanimated', () => ({
   ...jest.requireActual('react-native-reanimated'), __esModule: true,
   useReducedMotion: () => mockReducedMotion,
@@ -75,7 +76,7 @@ jest.mock('../../providers/auth-provider', () => ({
 
 jest.mock('react-native-safe-area-context', () => ({
   ...jest.requireActual('react-native-safe-area-context'),
-  useSafeAreaInsets: () => ({ top: 40, right: 0, bottom: 24, left: 0 }),
+  useSafeAreaInsets: () => ({ top: 40, right: 0, bottom: mockBottom, left: 0 }),
 }));
 
 jest.mock('reicon-react-native', () => {
@@ -166,6 +167,7 @@ function renderDetail(alertId = 'alert-1', language: 'es' | 'en' = 'es') {
 beforeEach(() => {
   jest.clearAllMocks();
   mockTheme = 'light';
+  mockBottom = 24;
   mockReducedMotion = false;
   mockListGeofences.mockReset().mockReturnValue(new Promise(() => undefined));
   mockUseSelectedPet.mockReturnValue({ selectedPetId: 'pet-1', selectPet: mockSelectPet });
@@ -253,14 +255,14 @@ describe('#100 R3: el detalle pinta la alerta de la caché (enmendado por #180 R
     } finally { spy.mockRestore(); }
   });
 
-  it('respeta las métricas A11 bajo cabecera nativa (enmendado por #180 R3, E2)', async () => {
+  it('respeta las métricas A11 bajo cabecera nativa (enmendado por #180 R2, E2)', async () => {
     mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert()], nextCursor: null });
     await renderDetail();
     const card = await screen.findByTestId('alert-detail-card');
     const root = screen.getByTestId('screen-alert-detail');
     expect(root.props.className).toBe('flex-1 bg-background');
     expect(root.props.contentInsetAdjustmentBehavior).toBe('automatic');
-    expect(root.props.contentContainerStyle).toEqual({ padding: 24, gap: 16, paddingBottom: 48 });
+    expect(root.props.contentContainerStyle).toEqual({ paddingHorizontal: 20, paddingTop: 24, paddingBottom: 64, gap: 14, flexGrow: 1 });
     expect(card.props.className).toBe(heroClass('bg-category-rose'));
   });
 
@@ -764,18 +766,7 @@ describe('#170 R15: Ver en el mapa lleva al Mapa con la mascota de la alerta', (
     await screen.findByTestId('alert-detail-error');
     expect(screen.queryByTestId('alert-detail-view-map')).toBeNull();
   });
-  it('ordena tarjeta, mapa, CTA y ack (enmendado por #180 R5, E2)', async () => {
-    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ geofenceId: 'zone-1', payload: REAL_PAYLOAD })], nextCursor: null });
-    mockListGeofences.mockResolvedValue({ kind: 'ok', geofences: [ZONE] });
-    await renderDetail();
-    expect(await screen.findByTestId('alert-detail-distance')).toHaveTextContent('A 85 m de Casa');
-    screen.getByTestId('alert-detail-view-map');
-    const card = screen.getByTestId('alert-detail-card');
-    const children = card.parent!.children.filter((child): child is TestInstance => typeof child !== 'string');
-    const indices = ['alert-detail-card', 'alert-detail-map', 'alert-detail-view-map', 'alert-detail-ack'].map((id) => children.findIndex((child) => child.props.testID === id || within(child).queryByTestId(id) !== null));
-    expect(indices[0]).toBeGreaterThanOrEqual(0);
-    for (let index = 1; index < indices.length; index++) expect(indices[index - 1]).toBeLessThan(indices[index]);
-  });
+
   it('selecciona la mascota de la alerta y después vuelve al Mapa', async () => {
     mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ petId: 'pet-7' })], nextCursor: null });
     await renderDetail();
@@ -934,5 +925,52 @@ describe('#180 R7: ack primario', () => {
     expect(errorIndex).toBeGreaterThanOrEqual(0);
     expect(elementChild(content, errorIndex) === error).toBe(true);
     expect(elementChild(content, errorIndex + 1) === screen.getByTestId('alert-detail-ack')).toBe(true);
+  });
+});
+
+function detailChildren() {
+  return elementChild(screen.getByTestId('screen-alert-detail'), 0).children.filter((child): child is TestInstance => typeof child !== 'string');
+}
+function detailIds() {
+  return detailChildren().map(child => ['alert-detail-card-entrance', 'alert-detail-map-entrance'].includes(child.props.testID)
+    ? elementChild(child, 0).props.testID : child.props.testID);
+}
+describe('#180 R2: marco y orden', () => {
+  it.each([0, 24])('#180 R2.1: inset inferior %i conserva la holgura de 40', async bottom => {
+    mockBottom = bottom;
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert()], nextCursor: null });
+    await renderDetail(); await screen.findByTestId('alert-detail-card');
+    expect(screen.getByTestId('screen-alert-detail').props.contentContainerStyle).toEqual({ paddingHorizontal: 20, paddingTop: 24, paddingBottom: bottom + 40, gap: 14, flexGrow: 1 });
+  });
+  it('#180 R2.2: el espaciador va entre la CTA y el ack', async () => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert()], nextCursor: null });
+    await renderDetail(); await screen.findByTestId('alert-detail-ack');
+    expect(screen.getByTestId('alert-detail-spacer').props.className).toBe('flex-1');
+    const ids = detailIds();
+    expect(ids.indexOf('alert-detail-spacer')).toBe(ids.indexOf('alert-detail-view-map') + 1);
+    expect(ids.indexOf('alert-detail-ack')).toBe(ids.indexOf('alert-detail-spacer') + 1);
+  });
+  it('#180 R2.2: sin ack el espaciador sigue y la CTA conserva su índice', async () => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert()], nextCursor: null });
+    mockAckAlert.mockResolvedValue({ kind: 'ok', alert: makeAlert({ status: 'acked' }) });
+    await renderDetail(); const ack = await screen.findByTestId('alert-detail-ack');
+    const before = detailIds();
+    expect(before).toContain('alert-detail-spacer');
+    await fireEvent.press(ack);
+    await waitFor(() => expect(screen.getByTestId('alert-detail-status')).toHaveTextContent('Leída'));
+    const after = detailIds();
+    expect(after).toContain('alert-detail-spacer');
+    expect(after.indexOf('alert-detail-spacer')).toBe(before.indexOf('alert-detail-spacer'));
+    expect(after.indexOf('alert-detail-view-map')).toBe(before.indexOf('alert-detail-view-map'));
+    expect(screen.queryByTestId('alert-detail-ack')).toBeNull();
+  });
+  it.each([true, false].flatMap(zone => [true, false].map(error => ({ zone, error }))))('#180 R2.3: ordena título, héroe, mapa, CTA, espaciador, error y ack: zona $zone / error $error', async ({ zone, error }) => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert({ geofenceId: zone ? 'zone-1' : null, payload: zone ? REAL_PAYLOAD : {} })], nextCursor: null });
+    mockListGeofences.mockResolvedValue({ kind: 'ok', geofences: [ZONE] });
+    mockAckAlert.mockResolvedValue({ kind: 'error' });
+    await renderDetail(); await screen.findByTestId('alert-detail-ack');
+    if (zone) await screen.findByTestId('alert-detail-distance');
+    if (error) { await fireEvent.press(screen.getByTestId('alert-detail-ack')); await screen.findByTestId('alert-detail-action-error'); }
+    expect(detailIds()).toEqual(['alert-detail-title', 'alert-detail-card', ...(zone ? ['alert-detail-map'] : []), 'alert-detail-view-map', 'alert-detail-spacer', ...(error ? ['alert-detail-action-error'] : []), 'alert-detail-ack']);
   });
 });
