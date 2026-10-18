@@ -136,7 +136,7 @@ export function DocsUploadFormScreen({ petId }: { petId: string }) {
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={{ padding: 24, gap: 16, paddingBottom: insets.bottom + 24 }}
       >
-        <View testID="docs-upload-form">
+        <View testID="docs-upload-form" className="gap-4">
           <Text testID="docs-upload-file">{fileName}</Text>
           <TextField>
             <Label className="text-2xs font-semibold text-foreground">
