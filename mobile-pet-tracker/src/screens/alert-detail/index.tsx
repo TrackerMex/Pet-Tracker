@@ -179,16 +179,17 @@ export function AlertDetailScreen({ alertId }: { alertId: string }) {
             <Map size={18} color={foreground} />
             <Button.Label className="text-base font-extrabold text-foreground">{t('alerts.viewOnMap')}</Button.Label>
           </Button>
-          {alert.status === 'open' ? (
-            <Button testID="alert-detail-ack" accessibilityRole="button" className="min-h-11" isDisabled={acking} onPress={() => void handleAck()}>
-              <Button.Label>{t('alerts.ack')}</Button.Label>
-            </Button>
-          ) : null}
           {actionError ? (
             <Text selectable testID="alert-detail-action-error" className="text-danger">
               {actionError}
             </Text>
           ) : null}
+          {alert.status === 'open' ? (
+            <Button testID="alert-detail-ack" accessibilityRole="button" className="w-full h-14 rounded-16 bg-accent border-b-4 border-black/25" isDisabled={acking} onPress={() => void handleAck()}>
+              <Button.Label className="text-17 font-extrabold text-accent-foreground">{t('alerts.ack')}</Button.Label>
+            </Button>
+          ) : null}
+
         </>
       ) : alerts.isPending || alerts.isFetching ? (
         <Skeleton testID="alert-detail-loading" className="h-44 w-full rounded-card" />
