@@ -8,7 +8,7 @@ tags: [harness, spec]
 
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
-| R1 (sondas S1/S2/S3 en Inicio, Perfil, Recordatorios) | pendiente | pendiente |
+| R1 (sondas S1 a S4 en Inicio, Perfil, Recordatorios; S5 en Perfil) | pendiente | pendiente |
 | R2.1 (`clearPet` en el proveedor) | pendiente | pendiente |
 | R2.2 (el hook limpia con lista ok y vacía) | pendiente | pendiente |
 | R2.3 (lo que no limpia) | pendiente | pendiente |
@@ -29,7 +29,7 @@ tags: [harness, spec]
 | R8.2 (`empty-state.test`) | pendiente | pendiente |
 | R8.3 (design-drift y legibility) | pendiente | pendiente |
 | R9 (enmienda A20 y candado tolerante) | pendiente | pendiente |
-| R10 (mutaciones X1 a X12) | pendiente | pendiente |
+| R10 (mutaciones X1 a X12; X5 equivalente, sin test) | pendiente | pendiente |
 | Smoke dev build de Android (humano) | pendiente | pendiente |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente".

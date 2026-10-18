@@ -1,6 +1,6 @@
 ---
 feature: "mobile-no-pets-states-and-centered-content"
-status: approved     # draft | approved
+status: draft        # draft | approved
 tags: [harness, spec]
 ---
 
@@ -88,9 +88,9 @@ Correcciones a las premisas de partida (verificadas contra el árbol de H0):
 - **D5.** Alcance obligatorio: Inicio, Perfil y Recordatorios. Comida y Salud llevan una
   sonda cada una (R6) porque llaman `usePetSelection`. Detalle, Mapa y Emparejar van a §4
   clasificados con su premisa verificada.
-- **D6 (abierta, no bloquea).** Cómo llegó el humano a la cuenta sin mascotas (selección
-  rancia tras borrar su única mascota, o cuenta recién creada). Los requisitos cubren **las
-  dos** vías (R1 las prueba por separado), así que la spec no depende de la respuesta.
+- **D6 (respondida 2026-10-18, no bloquea).** La cuenta de referencia es una cuenta recién
+  creada, sin mascotas. Los requisitos cubren **las dos** vías (selección rancia y cuenta
+  nueva sin selección), y R1 las prueba por separado.
 
 - [x] Decisiones de partida D1 a D5 y premisas P1 a P4 confirmadas por humano (fecha: 2026-10-17)
 
@@ -136,7 +136,7 @@ por `ReferenceError`) y son las que cierran R2 a R5.
   en Inicio `pet-hero-error` ni `pet-hero-retry`, en Perfil `profile-pet-error` ni
   `profile-pet-retry`, y en Recordatorios `reminders-error` ni `reminders-retry`, y SHALL
   pintar el estado vacío de cada pantalla (`home-empty`, `profile-pets-empty`,
-  `reminders-no-pets`), en tres escenarios por pantalla:
+  `reminders-no-pets`), en cuatro escenarios por pantalla (S1 a S4) y un quinto solo en Perfil (S5):
   - **S1, selección rancia real**: proveedor real; tras aparecer el estado vacío, el test
     llama a `selectPet('pet-stale')` desde un `SelectionProbe` local (mismo contrato que el
     de `src/screens/profile/index.test.tsx`: `<Text testID="selected-pet-id">` con `none`
@@ -152,19 +152,37 @@ por `ReferenceError`) y son las que cierran R2 a R5.
     `it` R20 de Inicio: capturar el hook real antes del spy y propagar su resultado real)
     devuelve `selectedPetId: 'pet-stale'` y un `clearPet` inerte, de modo que la raíz de R2
     **no puede** enmascarar la red de R3 a R5.
+  - **S4, lista no `ok` con selección nula** (en las tres pantallas): `GET /pets` devuelve
+    `{kind:'unreachable'}`, `selectedPetId` es nulo y el foco se dispara como en S2, con los
+    mismos errores que S2 (`getPet` `{kind:'error'}`, `listReminders` `{kind:'not-found'}`).
+    Sin retorno anticipado la tarjeta sí es alcanzable, así que S4 aísla
+    `selectedPetId !== null`. Antes de las ausencias aserta que `getPet` (Inicio y Perfil) o
+    `listReminders` (Recordatorios) se llamó con `null`. Ancla positiva: `home-error` en
+    Inicio, `screen-reminders` en Recordatorios y `profile-pets-error` en Perfil; después, la
+    espera de R1.2 y la ausencia de `pet-hero-error`, `reminders-error` y `profile-pet-error`.
+  - **S5, detalle pendiente con lista vacía** (solo Perfil): proveedor real; la lista `[]`
+    está en caché y su revalidación queda pendiente hasta el final del `it`. Después,
+    `selectPet('pet-stale')`: con `isRefreshing` la raíz de R2 no limpia, y `getPet` queda
+    pendiente. Sincronización propia, porque `isFetching()` no llega a 0: primero
+    `await waitFor(…)` a que `getPet` se llame con `'pet-stale'`, después el ancla positiva
+    `profile-pets-empty` y la ausencia de `profile-hero-skeleton` y `pet-info-skeleton`.
 - **R1.2 (sincronización)** THE SYSTEM SHALL, en cada sonda de ausencia, anclar primero en
   un nodo positivo (el estado vacío), esperar después
   `await waitFor(() => expect(queryClient.isFetching()).toBe(0))` con el `queryClient` que
   devuelve `renderWithProviders`, y solo entonces aseverar `queryByTestId(…)` igual a
   `null`. Ningún `expect` síncrono tras `render` (regla de `waitFor` de conventions §Tests).
   Un `queryBy…` a `null` sin ancla positivo ni espera sobre el mismo árbol es tautológico y
-  se rechaza.
+  se rechaza. S5 queda fuera de esta regla: su detalle pendiente impide que `isFetching()`
+  llegue a 0, y usa la sincronización propia de S5.
 - **R1.3** Las sondas viven en `src/screens/home/index.test.tsx`,
   `src/screens/reminders/index.test.tsx` y `src/screens/profile/index.test.tsx`, bajo
-  `describe('#181 R1: …')`, con un `it.each` de los tres escenarios por fichero (9 `it`).
+  `describe('#181 R1: …')`: S1, S2 y S3 con un `it.each` por fichero (9 `it`), S4 con un
+  `it` por fichero (3 `it`) y S5 con un `it` en Perfil (1 `it`); son 13 `it`.
   Rojo de partida esperado: los tres escenarios de Inicio rojos por la tarjeta o por la
   selección que sigue puesta; Recordatorios y Perfil rojos porque `findByTestId` del estado
-  vacío agota el tiempo (aserción, no error de símbolo).
+  vacío agota el tiempo (aserción, no error de símbolo). S4 de las tres pantallas y S5 nacen
+  rojos en H0 por aserción: la tarjeta de error aparece con selección nula (S4) y los
+  esqueletos con selección fijada y detalle pendiente (S5).
 
 ### R2 — Raíz: la selección se limpia cuando la lista llega ok y vacía
 
@@ -228,8 +246,8 @@ por `ReferenceError`) y son las que cierran R2 a R5.
   tiene exactamente esa `className` y `['home-empty']` como único hijo; los nodos de la
   lista de R3.2 son `null` (tras ancla positiva); el copy y la acción de `home-empty` (los
   tres `it` de `#155 R4` se conservan salvo el primero, ver §3); R3.3 con el `it` de carga
-  existente sin tocar; R3.1 con las sondas de R1 más un `it` de `selectedPetId` nulo con la
-  lista en `unreachable` (`home-error` presente, `pet-hero-error` ausente).
+  existente sin tocar; R3.1 con la sonda S4 de Inicio de R1 (`selectedPetId` nulo, lista en
+  `unreachable`: `home-error` presente, `pet-hero-error` ausente), sin `it` adicional.
 
 ### R4 — Recordatorios
 
@@ -326,7 +344,7 @@ por `ReferenceError`) y son las que cierran R2 a R5.
   scroll, en un contenedor `flex-1 items-center justify-center p-6 bg-background` sin
   insets, como `map-no-pets`. Recordatorios lo aplica bajo su cabecera nativa (A11). Perfil,
   que conserva su scroll, solo centra en horizontal.» Y el bloque de firma:
-  `- Spec enmendada: docs/conventions.md`, `- Qué cambia: enmienda A20 de #181 R9`,
+  `- Spec enmendada: docs/conventions.md`, `- Qué cambia: excepción A20 de #181 R9`,
   `- Qué NO cambia: A9, A10, A11, ni la excepción de fidelidad al canvas`, y la casilla
   `- [ ] Enmienda A20 aprobada por humano (fecha: ____)`.
 - **R9.2 (candado tolerante)** THE SYSTEM SHALL tener un test
@@ -348,11 +366,11 @@ registra en `progress/impl_mobile-no-pets-states-and-centered-content.md` con el
 | X1 | hook: quitar la llamada a `clearPet` | R2.2 (hook), R1 S1 de las tres pantallas, R6 |
 | X2 | hook: quitar el guard `isRefreshing` de la rama de limpieza | R2.3 con revalidación |
 | X3 | hook: limpiar también con `data.kind !== 'ok'` | R2.3 por cada `kind` |
-| X4 | Inicio: quitar `selectedPetId !== null` de la condición de `pet-hero-error` | R1 S2 y el `it` de lista `unreachable` |
-| X5 | Recordatorios: quitar `!petsEmpty` de `reminders-error` | R1 S3 |
-| X6 | Recordatorios: quitar `selectedPetId !== null` de `reminders-error` | R1 S2 |
-| X7 | Perfil: quitar `!petsEmpty` de `petLoading` | R1 S3 (esqueletos) |
-| X8 | Perfil: quitar `selectedPetId !== null` de `profile-pet-error` | R1 S2 |
+| X4 | Inicio: quitar `selectedPetId !== null` de la condición de `pet-hero-error` | R1 S4 de Inicio (lista `unreachable`) |
+| X5 | Recordatorios: quitar `!petsEmpty` de `reminders-error` | ninguno: mutante equivalente, documentado y no plantado (párrafo siguiente) |
+| X6 | Recordatorios: quitar `selectedPetId !== null` de `reminders-error` | R1 S4 de Recordatorios (lista `unreachable`) |
+| X7 | Perfil: quitar `!petsEmpty` de `petLoading` | R1 S5 de Perfil (esqueletos con detalle pendiente) |
+| X8 | Perfil: quitar `selectedPetId !== null` de `profile-pet-error` | R1 S4 de Perfil (lista `unreachable`) |
 | X9 | Inicio o Recordatorios: sacar el `return` anticipado y dejar el `EmptyState` dentro del scroll | R3.2 / R4.2 (contenedor y único hijo) |
 | X10 | Inicio o Recordatorios: `justify-center` por `justify-start` en el contenedor | R3.2 / R4.2 |
 | X11 | Perfil: devolver el `<Text testID="profile-pets-empty">` | R5.1 |
@@ -360,8 +378,13 @@ registra en `progress/impl_mobile-no-pets-states-and-centered-content.md` con el
 
 X1 se planta además **donde el candado podría no mirar**: en S3 el `clearPet` es inerte y la
 sonda debe seguir verde sin la raíz; si X1 pone rojo S3, S3 no aísla la red de seguridad y la
-sonda se rehace. Las mutaciones X4 a X8 se plantan una a una: cada red tiene que caer por su
-propio escenario (S2 aísla `selectedPetId !== null`, S3 aísla `!petsEmpty`).
+sonda se rehace. Las mutaciones X4 a X8 se plantan una a una y cada una tiene que caer por su
+propio escenario. S2 no aísla `selectedPetId !== null`: con la lista `ok` y vacía, el retorno
+anticipado oculta la tarjeta, así que lo aísla S4 con la lista `unreachable`. S3 no aísla
+`!petsEmpty`: con la lista `ok` y vacía y el detalle ya resuelto, `petLoading` ya es falso, así
+que lo aísla S5 con el detalle pendiente. X5 es equivalente: el retorno anticipado de R4.2 quita
+el `ScrollView` cuando `petsEmpty` es verdadero, así que el término quitado nunca se evalúa en
+falso; no tiene detección observable y no se planta.
 
 ## 3. Candados que se mueven
 
@@ -406,7 +429,8 @@ Clasificado viñeta a viñeta; la premisa de cada una se verificó en H0.
 - **Evitar `GET /pets/null` (guardar el `refetch()` con `selectedPetId === null`)**: *deuda
   registrada, no se arregla aquí.* Exige meter `selectedPetId` en las dependencias del
   `useFocusEffect` (refetch en cada cambio de selección, con `cancelRefetch` entre dobles);
-  R3 a R5 ocultan el síntoma sin ese riesgo. Se propone al leader como feature (§5).
+  R3 a R5 ocultan el síntoma sin ese riesgo. Queda registrada como feature #193 (P2,
+  pending); no entra en #181.
 - **`pet` ok con lista vacía en Perfil**: *no se especifica.* Un backend consistente no
   devuelve una mascota que su propia lista no contiene.
 - **Composición, tamaño de Pingo, receta de botón y copy del `EmptyState`**: *#176 / #177.*
@@ -415,20 +439,23 @@ Clasificado viñeta a viñeta; la premisa de cada una se verificó en H0.
 
 ## 5. Preguntas abiertas (para el humano; no bloquean la firma)
 
-1. **D6**: cómo llegó a la cuenta sin mascotas. Los requisitos cubren las dos vías.
+1. **D6, respondida 2026-10-18**: la cuenta de referencia es una cuenta recién creada, sin
+   mascotas. Las dos vías quedan cubiertas.
 2. **Hallazgo P2b**: la tarjeta aparece también en cuentas nuevas por `refetch()` sobre
-   consultas deshabilitadas. ¿Se registra como feature la guarda de peticiones
-   (`GET /pets/null`)?
+   consultas deshabilitadas. **Respondida 2026-10-18**: la guarda de peticiones
+   (`GET /pets/null`) queda registrada como #193 (P2, pending) y no entra en #181.
 3. **Compuerta `petsEmpty`** (lista `ok` y vacía) en lugar de la literal `petsReady` de Mapa
    (lista no vacía): con la lista cargando o fallida no debe pintarse el vacío.
 4. **Título «Inicio» y botón «Nuevo»** desaparecen en el estado sin mascotas de Inicio y
    Recordatorios (Mapa tampoco los lleva); la cabecera nativa de Recordatorios conserva su
-   título.
-5. **Perfil** se centra solo en horizontal (R5.3). ¿Basta, o se quiere el vacío a pantalla
-   completa con la cuenta fuera de la vista?
+   título. **Respondida 2026-10-18**: sí, desaparecen; la forma exacta por pantalla es la de
+   R3 a R5.
+5. **Perfil** se centra solo en horizontal (R5.3). **Respondida 2026-10-18**: basta; no se
+   quiere pantalla completa.
 6. **CTA duplicada en Perfil**: la cápsula «Añadir mascota» del título y la acción del
-   `EmptyState` coexisten.
-7. **Detalle sin sonda** (§4) y **Comida y Salud no re-centradas**.
+   `EmptyState` coexisten. **Respondida 2026-10-18**: se quedan las dos (R5.1).
+7. **Detalle sin sonda** (§4): **respondida 2026-10-18**, las pantallas de detalle no llevan
+   sondas propias. **Comida y Salud no re-centradas**: sigue como en §4.
 8. **Pose `talk` y testIDs nuevos** en Recordatorios (`reminders-no-pets`,
    `reminders-no-pets-screen`) y en Inicio (`home-no-pets-screen`).
 9. **#190** solo existe en la rama del leader (no en `origin/main` de H0); el solape se
@@ -452,6 +479,15 @@ la que se le borró su única mascota con la app abierta:
 
 - [ ] Smoke #181 en dev build de Android firmado por humano (fecha: ____)
 
+## Enmienda de 2026-10-18
+
+Tras el preflight de Codex (`progress/impl_mobile-no-pets-states-and-centered-content.md`).
+Cambian R1 (sondas S4 en las tres pantallas y S5 en Perfil; S5 queda fuera de R1.2), el texto
+de prueba de R3.1, la línea «Qué cambia» de R9.1 (el literal de R9.2 aparece una vez) y R10
+(X5 equivalente; X4 a X8 con su sonda). §0.3 D6, §4 y §5 recogen las respuestas del humano del
+mismo día. El resto de requisitos no cambia.
+
 ## Aprobación
 
-- [x] Aprobado por humano (fecha: 2026-10-17) ← gate obligatorio antes de implementar
+- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [ ] Enmienda de 2026-10-18 aprobada por humano en Notion (fecha: ____)

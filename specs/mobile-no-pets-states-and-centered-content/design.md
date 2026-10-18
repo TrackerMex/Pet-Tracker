@@ -19,8 +19,11 @@ tags: [harness, spec]
   elimina P2a en origen y arregla además Comida, Salud, Mapa y Emparejar, pero **no puede**
   cubrir P2b, porque ahí `selectedPetId` ya es `null`. La red de seguridad en pantalla
   cubre las dos ramas pero deja la selección rancia viva para el resto de pantallas. Por
-  eso son las dos, y por eso R1 tiene tres escenarios por pantalla: S1 prueba la raíz, S2
-  prueba `selectedPetId !== null` y S3 prueba `!petsEmpty` con la raíz anulada (R1, R10).
+  eso son las dos, y por eso R1 tiene escenarios para cada guarda: S1 prueba la raíz; S2 y
+  S4 prueban `selectedPetId !== null` (S2 con cuenta nueva; S4 con lista `unreachable`, la
+  única forma de alcanzar la tarjeta en Inicio y Recordatorios sin que el retorno anticipado
+  la oculte); S3 prueba que la red aguanta con la raíz anulada; S5 prueba `!petsEmpty` en
+  `petLoading` de Perfil con el detalle pendiente (R1, R10).
 - **`clearPet` como API propia, no `selectPet(null)` (R2.1).** `selectPet(id: string)` es
   hoy total sobre cadenas; ensancharlo a `string | null` obliga a revisar a los siete
   llamadores de `usePetSelection` y a `add-pet`, que lo usa con el id recién creado. Un
@@ -30,7 +33,8 @@ tags: [harness, spec]
   dueño de la selección automática (`#87 R8`); la limpieza es su simétrica y comparte los
   mismos guards de foco y de revalidación. Con `isRefreshing` no se limpia: una lista
   `[]` en caché mientras se revalida puede estar rancia, y limpiar y reseleccionar
-  parpadearía.
+  parpadearía. S5 depende de esa guarda: con la revalidación pendiente, la selección rancia
+  sobrevive hasta que el detalle queda pendiente.
 - **Condición `kind === 'ok'` y lista vacía, nada más (R2.2/R2.3).** Un `error`,
   `unreachable`, `missing-config` o `unauthorized` no dice que la cuenta esté vacía; limpiar
   ahí borraría una selección válida por un fallo de red. R2.3 lo candan rama a rama.
@@ -65,7 +69,8 @@ tags: [harness, spec]
   `if (selectedPetId !== null) refetchDetail()` necesita `selectedPetId` en las
   dependencias del `useFocusEffect`, y eso refetchea en cada cambio de selección (con
   `cancelRefetch` entre dobles, que los tests de Inicio ya vigilan). Es riesgo
-  desproporcionado para un síntoma que R3 a R5 ya ocultan; queda como deuda propuesta.
+  desproporcionado para un síntoma que R3 a R5 ya ocultan; queda registrado como feature
+  #193 (P2, pending).
 - **Candados agregados (R8).** Las filas de `ui-copy-table.ts` y los recuentos de
   `empty-state.test.tsx` se mueven en el **mismo commit rojo** que el requisito que los
   provoca, para que el rojo sea por aserción (conteo) y no por símbolo ausente.
@@ -126,8 +131,8 @@ backend.
 - **Solo la raíz (D2-A):** deja a las cuentas nuevas con tarjeta (P2b).
 - **Solo la red de seguridad (D2-B):** deja viva la selección rancia en Comida, Salud,
   Mapa y Emparejar y obliga a repetir la compuerta en cada pantalla que se añada.
-- **Guardar el `refetch()` vía dependencias del `useFocusEffect`:** ver arriba; se propone
-  como feature aparte.
+- **Guardar el `refetch()` vía dependencias del `useFocusEffect`:** ver arriba; queda
+  registrado como feature #193 (P2, pending).
 - **Envolver solo el `<Text>` de Perfil con un contenedor centrado:** deja el copy plano
   sin Pingo ni CTA y rompe D3.
 - **Sonda de raíz en las pantallas de detalle:** no usan `usePetSelection` (P4).

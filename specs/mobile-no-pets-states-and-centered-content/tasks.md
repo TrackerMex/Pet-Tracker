@@ -16,9 +16,10 @@ tags: [harness, spec]
 
 - Todo en `mobile-pet-tracker/`: `cd` literal a esa carpeta en cada orden. `bun` para todo
   (`bun run typecheck`, `bun run lint`); nunca `npx` ni `npm`. Mobile no tiene prettier.
-- Jest acotado y con paréntesis escapados: `bun x jest --runInBand src/hooks`, y para
-  rutas con `(tabs)` escribir `\(tabs\)` (si no, es una regex y se saltan ficheros en
-  silencio con exit 0).
+- Jest acotado con `bunx jest --runTestsByPath <rutas>`: cada ruta es literal. Las rutas con
+  `(tabs)` van entre comillas simples y sin escapar, p. ej.
+  `'src/app/(tabs)/__tests__/food.test.tsx'`; sin escapar, porque con `--runTestsByPath` no son
+  regex. Guardas: `bunx jest src/__tests__`.
 - `await` en todo `render`, `fireEvent` y `act` de RNTL 14. Esperas con `waitFor` /
   `findBy…`, nunca con `advanceTimersByTime` suelto (conventions §Tests, regla de `waitFor`).
 - El verde de lint va con `--no-cache` y con la guarda de que no aparece `Failed to run`.
@@ -30,9 +31,10 @@ tags: [harness, spec]
 
 ## R1 — Sondas rojas de ausencia de tarjetas (Inicio, Perfil, Recordatorios)
 
-- [ ] (1) Las sondas S1, S2 y S3 de cada pantalla (9 `it`, `describe('#181 R1: …')`) se
-  escriben contra el árbol de H0, con ancla positiva, `queryClient.isFetching()` a 0 y solo
-  entonces `queryBy…` a `null`; el commit queda rojo por aserción
+- [ ] (1) Las sondas S1 a S4 de cada pantalla y S5 de Perfil (13 `it`, `describe('#181 R1: …')`)
+  se escriben contra el árbol de H0; las de ausencia van con ancla positiva,
+  `queryClient.isFetching()` a 0 y solo entonces `queryBy…` a `null` (S5 usa su sincronización
+  propia, R1.2); el commit queda rojo por aserción
 - [ ] (2) Sin implementación en este paso: R1 se cierra con los verdes de R2, R3, R4 y R5
 - [ ] (3) Las sondas se leen una vez más para confirmar que ninguna es tautológica
   (ancla, espera, ausencia sobre el mismo árbol)
@@ -51,9 +53,9 @@ tags: [harness, spec]
 
 ## R3 — Inicio: sin tarjeta y estado centrado
 
-- [ ] (1) Los tests de R3.1 (lista `unreachable` con selección nula), R3.2 (contenedor y
-  único hijo, nodos ausentes) y la reescritura del `it` de `#155 R4` (§3 de requirements)
-  se escriben y fallan por aserción
+- [ ] (1) Los tests de R3.2 (contenedor y único hijo, nodos ausentes) y la reescritura del
+  `it` de `#155 R4` (§3 de requirements) se escriben y fallan por aserción; R3.1 ya lo cubre
+  la sonda S4 de Inicio de R1 (c1), sin `it` nuevo
 - [ ] (2) La condición de `pet-hero-error` exige `selectedPetId !== null` y el retorno
   anticipado con `home-no-pets-screen` se coloca tras todos los hooks; el `EmptyState` sale
   de `home-states`
@@ -118,15 +120,16 @@ tags: [harness, spec]
   con el `it` esperado en rojo por mutación
 - [ ] (2) Cada mutación se planta una a una sobre el árbol verde, se anota el `it` que cae y se
   revierte con `git checkout HEAD -- <ruta>` (diff `--cached` a 0)
-- [ ] (3) Se confirma que ninguna mutación sobrevive y que X1 en S3 no tumba S3
+- [ ] (3) Se confirma que ninguna mutación sobrevive salvo X5 (equivalente, documentada) y
+  que X1 en S3 no tumba S3
 
 ## Plan de commits
 
 | Commit | Contenido | Estado esperado | Tests nuevos acumulados |
 |---|---|---|---|
-| c1 | R1: 9 sondas | rojo | 9 |
-| c2 | R2: tests de proveedor, hook y escaneo | rojo | 9 + n2 |
-| c3 | R2: `clearPet`, hook y 17 dobles | verde en R2; S1 de R6 y parte de R1 | 9 + n2 |
+| c1 | R1: 13 sondas (S1 a S5) | rojo | 13 |
+| c2 | R2: tests de proveedor, hook y escaneo | rojo | 13 + n2 |
+| c3 | R2: `clearPet`, hook y 17 dobles | verde en R2; S1 de R6 y parte de R1 | 13 + n2 |
 | c4 | R3: tests, reescritura `#155 R4` | rojo | + n3 |
 | c5 | R3: Inicio | verde | + n3 |
 | c6 | R4: tests, R8.1 reminders, R8.2 reminders | rojo | + n4 |
