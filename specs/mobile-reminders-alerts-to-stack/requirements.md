@@ -147,6 +147,8 @@ Consecuencias de A, todas visibles en la prueba de humo:
 
 ### R4 — Cabecera nativa con el look de #95
 
+> Enmendado por #180 (ver «Enmienda #180» al final).
+
 > Enmendado por #174 (ver «Enmienda #174» al final).
 
 - **R4**: WHEN se presenta `reminders` o `alerts` THE SYSTEM SHALL mostrar la
@@ -180,6 +182,8 @@ Consecuencias de A, todas visibles en la prueba de humo:
   carga).
 
 ### R6 — Métricas bajo cabecera nativa (A11)
+
+> Enmendado por #180 (ver «Enmienda #180» al final).
 
 > Enmendado por #174 (ver «Enmienda #174» al final).
 
@@ -443,3 +447,15 @@ Detalle y tests en `specs/mobile-alerts-canvas-fidelity/requirements.md`. Los `i
 su sitio con el sufijo `(enmendado por #174 Rn)`.
 
 - [X] Enmienda #174 aprobada por humano
+
+## Enmienda #180 — Detalle de alerta fiel al canvas
+
+> Enmienda de `mobile-reminders-alerts-to-stack` por `mobile-alert-detail-canvas-fidelity` (#180, 2026-10-16). Directiva del humano:
+> «el diseño final debe de quedar como el artifact».
+
+**Qué cambia**: #114 R4: el detalle declara title vacío; #114 R6: el detalle usa padding lateral 20, gap 14 y paddingBottom insets.bottom + 40.
+
+Detalle y tests en `specs/mobile-alert-detail-canvas-fidelity/requirements.md`. Los `it` citados se reescriben en
+su sitio con el sufijo `(enmendado por #180 Rn)`.
+
+- [ ] Enmienda #180 aprobada por humano

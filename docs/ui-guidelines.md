@@ -186,6 +186,7 @@ Tres límites, no negociables:
     Fuera de la escala, por fidelidad al canvas (#175): `rounded-24` (24 px), zona de subida de Documentos.
     Fuera de la escala, por fidelidad al canvas (#178): `rounded-14` (14 px), mosaico del icono de la fila de Recordatorios; `rounded-16` (16 px), píldoras de resumen de Recordatorios; `rounded-22` (22 px), fila de Recordatorios, que es un `View` y no un `Card` porque `twMerge` no sustituye `rounded-card` por un radio con nombre de valor.
     Fuera de la escala, por fidelidad al canvas (#179): `rounded-10` (10 px), «Editar» de la fila de Horario; `rounded-14` (14 px), mosaico de la fila y botones de acción de Horario y horas del panel del día de Historial; `rounded-24` (24 px), resumen de Horario y calendario y panel del día de Historial, que son `View` y no `Card` porque `twMerge` no sustituye `rounded-card` por un radio con nombre de valor.
+    Fuera de la escala, por fidelidad al canvas (#180): `rounded-24` (24 px), mapa del detalle de alerta, que es un View y no un Card; `rounded-16` (16 px), ack y «Ver en el mapa» del detalle de alerta.
 
 13. **Botón con cuerpo** (feature #166, 2026-10-11). Los botones de acción
     llevan un labio inferior: un borde inferior más grueso que los
@@ -204,8 +205,9 @@ Tres límites, no negociables:
     - **Secundarios de Horario** (fidelidad al canvas, #179): «Editar» `h-9.75 rounded-10 border-2 border-b-5 border-lip-gray bg-surface` y «Añadir comida» `h-13.5 rounded-14 border-2 border-b-6 border-lip-gray bg-surface`, con el labio dentro del alto; «Generar plan» es tonal de la categoría violeta y sin labio, porque el labio del artboard (`rgba(91,63,163,0.35)`) no tiene token.
     - **Sin labio**: los tonales (`bg-accent-soft`, `bg-default`), los
       destructivos (`bg-danger`, `variant="danger-soft"`) y las primarias
-      de heroui sin color en `className` (reintentos, confirmar alerta en el detalle).
+      de heroui sin color en `className` (reintentos).
     - **Secundario compacto de fila** (#174): el ack de cada fila abierta de Alertas lleva `h-8.5 rounded-10 border-2 border-b-5 border-lip-gray bg-surface px-3`, etiqueta `text-xs font-extrabold text-foreground` y `hitSlop={TOUCH_SLOP}` (34 + 12 = 46 de diana). Es la única excepción a la receta del secundario neutro; el inventario de #166 R3 lo lista por su `testID`.
+    - Primario del detalle de alerta (#180): ack con labio, h-14 rounded-16, etiqueta text-17 font-extrabold; el secundario «Ver en el mapa» es h-13 rounded-16 con el icono Map.
     La cápsula «Añadir mascota» con `bg-tab-pill` es tonal y no lleva labio (#173).
     Los inventarios que lo verifican viven en
     `src/__tests__/consistency-classnames.test.ts`.
@@ -638,3 +640,15 @@ Detalle y tests en `specs/mobile-alerts-canvas-fidelity/requirements.md`. Los `i
 su sitio con el sufijo `(enmendado por #174 Rn)`.
 
 - [X] Enmienda #174 aprobada por humano
+
+## Enmienda #180 — Detalle de alerta fiel al canvas
+
+> Enmienda de `ui-guidelines` por `mobile-alert-detail-canvas-fidelity` (#180, 2026-10-16). Directiva del humano:
+> «el diseño final debe de quedar como el artifact».
+
+**Qué cambia**: §13: el ack del detalle de alerta es primario con labio, h-14 rounded-16 (sale de «Sin labio»); §12: línea nominal de rounded-24 para el mapa y de rounded-16 para los botones del detalle (#180).
+
+Detalle y tests en `specs/mobile-alert-detail-canvas-fidelity/requirements.md`. Los `it` citados se reescriben en
+su sitio con el sufijo `(enmendado por #180 Rn)`.
+
+- [ ] Enmienda #180 aprobada por humano

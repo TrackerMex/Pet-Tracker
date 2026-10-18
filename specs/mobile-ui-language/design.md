@@ -1043,6 +1043,8 @@ copy completa en cada una.
 |---|---|---|---|---|
 | — | `alerts.mapLabel` | `Location when leaving {{zone}}` | `Ubicación al salir de la zona {{zone}}` | ← añadida por #180 (R8)
 
+`alerts.detailTitle` se pinta ahora en `src/screens/alert-detail/index.tsx`, con cabecera nativa vacía (#180 R12.3).
+
 ## 3. La infraestructura
 
 ### 3.1 Decisiones

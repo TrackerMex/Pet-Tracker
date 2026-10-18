@@ -150,6 +150,8 @@ spec se reescribe antes de aprobarla.
 
 ### R3 — El detalle pinta la alerta desde la caché del listado
 
+> Enmendado por #180 (ver «Enmienda #180» al final).
+
 - **R3**: WHEN `AlertDetailScreen` (`src/screens/alert-detail/index.tsx`)
   recibe un `alertId` que está en alguna página `kind: 'ok'` de la consulta
   `alertKeys.list()` THE SYSTEM SHALL pintar, dentro de un `ScrollView`
@@ -196,6 +198,8 @@ spec se reescribe antes de aprobarla.
   R2 devuelve `null`.
 
 ### R4 — Carga, error y salida sin la alerta
+
+> Enmendado por #180 (ver «Enmienda #180» al final).
 
 - **R4**: WHILE la alerta no está en la caché y la consulta está pendiente o
   recargando THE SYSTEM SHALL pintar **solo** un `Skeleton`
@@ -596,3 +600,15 @@ Detalle y tests en `specs/mobile-alerts-canvas-fidelity/requirements.md`. Los `i
 su sitio con el sufijo `(enmendado por #174 Rn)`.
 
 - [X] Enmienda #174 aprobada por humano
+
+## Enmienda #180 — Detalle de alerta fiel al canvas
+
+> Enmienda de `mobile-alert-detail-screen` por `mobile-alert-detail-canvas-fidelity` (#180, 2026-10-16). Directiva del humano:
+> «el diseño final debe de quedar como el artifact».
+
+**Qué cambia**: #100 R3: la tarjeta es un héroe centrado (disco de 72, píldora, tipo, mascota, fecha con mes corto), sin borde ni cabecera en fila; #100 R4: título en el contenido, esqueleto h-58 y reintento h-13.
+
+Detalle y tests en `specs/mobile-alert-detail-canvas-fidelity/requirements.md`. Los `it` citados se reescriben en
+su sitio con el sufijo `(enmendado por #180 Rn)`.
+
+- [ ] Enmienda #180 aprobada por humano

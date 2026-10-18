@@ -171,7 +171,7 @@ R7.
 
 ### Detalle de alerta (`src/screens/alert-detail/index.tsx`)
 
-- **R6 — Severidad en el detalle.** WHEN la alerta está abierta THE SYSTEM
+- **R6 — Severidad en el detalle.** _(Enmendado por #180.)_ WHEN la alerta está abierta THE SYSTEM
   SHALL dar a `alert-detail-card` `border-2` y el `border` de su tipo (un
   candado por tipo, tres); WHEN está `acked` o `closed` THEN su `className`
   sigue siendo exactamente
@@ -197,7 +197,7 @@ R7.
     `` `${(meters / 1000).toFixed(1)} km` `` (punto decimal en los dos
     idiomas, como `fmtKm` de `src/screens/home/format.ts`).
 
-- **R8 — Mini-mapa.** WHEN la alerta está cargada y `alertPosition(payload)`
+- **R8 — Mini-mapa.** _(Enmendado por #180.)_ WHEN la alerta está cargada y `alertPosition(payload)`
   no es `null` THE SYSTEM SHALL pintar, entre `alert-detail-card` y el CTA de
   R15, un `View` `testID="alert-detail-map"` con `className` exacto
   `h-52 overflow-hidden rounded-card` y `style={CONTINUOUS_CORNER}`, cuyo único
@@ -233,7 +233,7 @@ R7.
   `headerStyle`), para que los huecos entre bloques pinten el token del tema y
   no el gris del tema por defecto de navegación (B14).
 
-- **R10 — Distancia a la zona.** WHEN la posición es válida, `geofenceId` no
+- **R10 — Distancia a la zona.** _(Enmendado por #180.)_ WHEN la posición es válida, `geofenceId` no
   es `null`, `listGeofences(baseUrl, token, alert.petId)` (consulta con clave
   `geofenceKeys.list(alert.petId)`) responde `ok` y su lista contiene una zona
   con `id === alert.geofenceId`, y `Math.round(d - radiusM) >= 1` con
@@ -278,7 +278,7 @@ R7.
   `zoom` de R10 y no pintar `alert-detail-distance`. Un candado por variante:
   posición en el centro (`d = 0`) y a `0,41 m` del borde.
 
-- **R15 — CTA «Ver en el mapa».** WHEN la alerta está cargada (cualquier tipo
+- **R15 — CTA «Ver en el mapa».** _(Enmendado por #180.)_ WHEN la alerta está cargada (cualquier tipo
   y estado, con o sin mapa) THE SYSTEM SHALL pintar, después del mini-mapa y
   de la distancia y antes de `alert-detail-ack`, un `Button`
   `testID="alert-detail-view-map"` con `variant="secondary"`,
@@ -740,3 +740,15 @@ Detalle y tests en `specs/mobile-alerts-canvas-fidelity/requirements.md`. Los `i
 su sitio con el sufijo `(enmendado por #174 Rn)`.
 
 - [X] Enmienda #174 aprobada por humano
+
+## Enmienda #180 — Detalle de alerta fiel al canvas
+
+> Enmienda de `mobile-alerts-grouped-and-detail-map` por `mobile-alert-detail-canvas-fidelity` (#180, 2026-10-16). Directiva del humano:
+> «el diseño final debe de quedar como el artifact».
+
+**Qué cambia**: #170 R6: severidad en el héroe (color por tipo, sin borde); #170 R8: mapa h-52.5 rounded-24; #170 R10: la distancia es una píldora de cristal con desenfoque dentro del mapa; #170 R15: la CTA lleva el icono Map, h-13 y rounded-16.
+
+Detalle y tests en `specs/mobile-alert-detail-canvas-fidelity/requirements.md`. Los `it` citados se reescriben en
+su sitio con el sufijo `(enmendado por #180 Rn)`.
+
+- [ ] Enmienda #180 aprobada por humano
