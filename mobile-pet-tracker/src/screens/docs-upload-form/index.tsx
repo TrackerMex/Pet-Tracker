@@ -194,25 +194,27 @@ export function DocsUploadFormScreen({ petId }: { petId: string }) {
               maxLength={120}
             />
           </TextField>
-          <Button
-            testID="docs-upload-submit"
-            className="rounded-xl bg-accent border-b-4 border-black/25"
-            isDisabled={uploading}
-            onPress={() => void submitDocument()}
-          >
-            <Button.Label className="font-bold text-accent-foreground">
-              {t('docs.upload')}
-            </Button.Label>
-          </Button>
-          <Button
-            testID="docs-upload-cancel"
-            className="rounded-xl border-2 border-b-6 border-lip-gray bg-surface"
-            variant="outline"
-            isDisabled={uploading}
-            onPress={() => router.back()}
-          >
-            <Button.Label className="font-semibold">{t('docs.cancel')}</Button.Label>
-          </Button>
+          <View testID="docs-upload-actions" className="gap-3">
+            <Button
+              testID="docs-upload-submit"
+              className="rounded-xl bg-accent border-b-4 border-black/25"
+              isDisabled={uploading}
+              onPress={() => void submitDocument()}
+            >
+              <Button.Label className="font-bold text-accent-foreground">
+                {t('docs.upload')}
+              </Button.Label>
+            </Button>
+            <Button
+              testID="docs-upload-cancel"
+              className="rounded-xl border-2 border-b-6 border-lip-gray bg-surface"
+              variant="outline"
+              isDisabled={uploading}
+              onPress={() => router.back()}
+            >
+              <Button.Label className="font-semibold">{t('docs.cancel')}</Button.Label>
+            </Button>
+          </View>
         </View>
 
         {actionErrorText ? (
