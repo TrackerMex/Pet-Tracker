@@ -689,3 +689,24 @@ describe('#185 R7: botones separados', () => {
     expect(typeof last === 'object' ? last.props.testID : last).toBe('docs-upload-actions');
   });
 });
+
+describe('#185 R5: espacio entre campos', () => {
+  it('separa seis hijos ordenados con gap-4 sin márgenes locales', async () => {
+    await openUploadForm();
+    const form = screen.getByTestId('docs-upload-form');
+    expect(form.props.className).toBe('gap-4');
+    const children = form.children.map(child => {
+      if (typeof child === 'string') return child;
+      return child.props.testID ?? (child.props.className?.split(/\s+/).includes('text-field__root') ? 'TextField' : child.type);
+    });
+    expect(children).toEqual([
+      'docs-upload-file', 'TextField', 'TextField', 'TextField', 'TextField', 'docs-upload-actions',
+    ]);
+    const fields = form.children.filter(child => typeof child !== 'string' && child.props.className?.split(/\s+/).includes('text-field__root'));
+    expect(fields).toHaveLength(4);
+    for (const field of fields) {
+      if (typeof field === 'string') throw new Error('Expected a TextField');
+      expect(field.props.className).not.toMatch(/\b(?:m[trblxy]?|p[trblxy]?)-/);
+    }
+  });
+});
