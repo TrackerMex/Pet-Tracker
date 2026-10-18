@@ -639,7 +639,7 @@ compite con `bun.lock`. `init.sh` ya corre la parte móvil con
 - Spec enmendada: docs/conventions.md
 - Qué cambia: excepción A20 de #181 R9
 - Qué NO cambia: A9, A10, A11, ni la excepción de fidelidad al canvas
-- [ ] Enmienda A20 aprobada por humano (fecha: ____)
+- [X] Enmienda A20 aprobada por humano (fecha: 2026-10-18)
 
 ## Enmienda #67 — cabecera fotográfica compartida
 
