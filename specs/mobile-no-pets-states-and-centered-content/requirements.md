@@ -1,6 +1,6 @@
 ---
 feature: "mobile-no-pets-states-and-centered-content"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec]
 ---
 
@@ -92,7 +92,7 @@ Correcciones a las premisas de partida (verificadas contra el árbol de H0):
   rancia tras borrar su única mascota, o cuenta recién creada). Los requisitos cubren **las
   dos** vías (R1 las prueba por separado), así que la spec no depende de la respuesta.
 
-- [ ] Decisiones de partida D1 a D5 y premisas P1 a P4 confirmadas por humano (fecha: ____)
+- [x] Decisiones de partida D1 a D5 y premisas P1 a P4 confirmadas por humano (fecha: 2026-10-17)
 
 ## 1. Medidas en H0
 
@@ -454,4 +454,4 @@ la que se le borró su única mascota con la app abierta:
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [x] Aprobado por humano (fecha: 2026-10-17) ← gate obligatorio antes de implementar
