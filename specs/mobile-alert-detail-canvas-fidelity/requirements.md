@@ -1,7 +1,7 @@
 ---
 feature: mobile-alert-detail-canvas-fidelity
 id: 180
-status: draft        # draft | approved
+status: approved      # draft | approved
 tags: [mobile, ui, canvas, alerts, spec]
 ---
 
@@ -497,4 +497,4 @@ Features aparte:
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [x] Aprobado por humano (fecha: 2026-10-17) ← gate obligatorio antes de implementar
