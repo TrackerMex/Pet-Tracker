@@ -199,7 +199,7 @@ describe('#155 R10: los vacíos que no se ilustran siguen en texto', () => {
     ['src/app/(tabs)/food.tsx', 2],
     ['src/screens/map/index.tsx', 2],
     ['src/screens/alerts/index.tsx', 1],
-    ['src/screens/reminders/index.tsx', 1],
+    ['src/screens/reminders/index.tsx', 2],
     ['src/screens/docs/index.tsx', 1],
     ['src/screens/geofences/index.tsx', 2],
   ] as const)('%s pinta %i EmptyState', (path, n) => {

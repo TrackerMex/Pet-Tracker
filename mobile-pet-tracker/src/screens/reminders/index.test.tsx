@@ -1527,3 +1527,50 @@ describe('#181 R1: reminders sin mascotas no muestra errores de detalle', () => 
     expect(screen.queryByTestId('reminders-retry')).toBeNull();
   });
 });
+
+describe('#181 R4: Recordatorios distingue una cuenta sin mascotas', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() });
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [] });
+  });
+
+  it('R4.2: centra solo el vacío y retira los controles que necesitan mascota', async () => {
+    const { queryClient } = await renderReminders();
+    const empty = await screen.findByTestId('reminders-no-pets');
+    await waitFor(() => expect(queryClient.isFetching()).toBe(0));
+    const container = screen.getByTestId('reminders-no-pets-screen');
+    expect(container.type).toBe('View');
+    expect(container.props.className).toBe('flex-1 items-center justify-center p-6 bg-background');
+    expect(container.props.style).toBeUndefined();
+    expect(empty.parent).toBe(container);
+    expect(container.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['reminders-no-pets']);
+    for (const id of ['screen-reminders', 'reminders-actions', 'reminders-empty', 'reminders-pills', 'reminders-delete-host']) {
+      expect(screen.queryByTestId(id)).toBeNull();
+    }
+  });
+
+  it('R4.2: muestra Pingo talk, copy español y una acción hacia pets/add', async () => {
+    await renderReminders();
+    const pose = await screen.findByTestId('reminders-no-pets-pose');
+    expect(pose.props.source).toEqual([expect.objectContaining({ testUri: expect.stringMatching(/pingo-talk\.webp$/) })]);
+    expect(screen.getByTestId('reminders-no-pets-title')).toHaveTextContent(es['common.noPetsYet']);
+    expect(screen.getByTestId('reminders-no-pets-body')).toHaveTextContent(es['common.noPetsBody']);
+    const action = screen.getByTestId('reminders-no-pets-action');
+    expect(within(action).getByText(es['profile.addPet'])).toBeVisible();
+    await fireEvent.press(action);
+    expect(mockRouter.push).toHaveBeenCalledTimes(1);
+    expect(mockRouter.push).toHaveBeenCalledWith('/pets/add');
+  });
+
+  it('R4.3: con mascota mantiene el scroll y el vacío de recordatorios', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    const { queryClient } = await renderReminders();
+    await screen.findByTestId('reminders-empty');
+    await waitFor(() => expect(queryClient.isFetching()).toBe(0));
+    expect(screen.getByTestId('screen-reminders')).toBeVisible();
+    expect(screen.queryByTestId('reminders-no-pets-screen')).toBeNull();
+  });
+});
