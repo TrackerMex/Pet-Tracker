@@ -1,6 +1,6 @@
 ---
 feature: "mobile-docs-upload-form-polish"
-status: draft
+status: approved
 tags: [mobile, ui, spec]
 ---
 
