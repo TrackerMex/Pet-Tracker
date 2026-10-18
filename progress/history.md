@@ -9558,3 +9558,12 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
   `#98 R7` bajo carga, líneas de más de 100 columnas en `docs/index.tsx` y el
   título «51» de `ui-language.test.ts:176` frente a la suma de 53 (decorativo).
 - **Convivencia**: #179 ya está en `main`; no queda otra rama que fusionar antes.
+
+- **#185 mobile-docs-upload-form-polish** (2026-10-18): formulario de subida de
+  Documentos movido a pantalla propia (rama A, P1 = A), con 16 px entre campos,
+  6 px etiqueta-input y 12 px entre botones. Spec firmada por Notion (Aprobado);
+  Codex implementó en `Pet-Tracker-wt-185` con commits test-primero por requisito.
+  Primera revisión rechazada solo por frontmatter `draft` en las specs (C6); tras
+  firmarlo, review aprobada con `./init.sh` exit 0. Prueba de humo R11 superada
+  por el humano en dev build de Android. Cierre: `done` en `feature_list.json`,
+  R11 marcada en la spec y la trazabilidad. La PR la mergea el humano.
