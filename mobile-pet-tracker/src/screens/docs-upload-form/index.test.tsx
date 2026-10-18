@@ -676,3 +676,16 @@ describe('#185 R2.5: params ausentes', () => {
     expect(screen.queryByTestId('docs-upload-form')).toBeNull();
   });
 });
+
+describe('#185 R7: botones separados', () => {
+  it('agrupa submit y cancelar en ese orden con 12 px de separación', async () => {
+    await openUploadForm();
+    const actions = screen.getByTestId('docs-upload-actions');
+    expect(actions.props.className).toBe('gap-3');
+    expect(actions.children.map(child => typeof child === 'string' ? child : child.props.testID)).toEqual([
+      'docs-upload-submit', 'docs-upload-cancel',
+    ]);
+    const last = screen.getByTestId('docs-upload-form').children.at(-1);
+    expect(typeof last === 'object' ? last.props.testID : last).toBe('docs-upload-actions');
+  });
+});
