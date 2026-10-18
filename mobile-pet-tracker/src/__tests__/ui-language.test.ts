@@ -501,6 +501,7 @@ describe('#65 R18: los sitios resuelven por clave y no queda copy suelta', () =>
         + 2 - 2 // #167 R1: salen app/(auth)/login.tsx y app/(auth)/register.tsx, entran screens/login/index.tsx y screens/register/index.tsx
         + 2 // #172 R16: back-button y password-input
         + 1 // #183 R2: utils/account-rules.ts
+        + 1 // #185 R2: screens/docs-upload-form/index.tsx
     );
 
     for (const file of SCREEN_FILES) {
