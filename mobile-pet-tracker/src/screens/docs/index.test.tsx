@@ -6,7 +6,6 @@ import {
   within,
 } from '@testing-library/react-native';
 import { HeroUINativeProvider } from 'heroui-native';
-import { DeviceEventEmitter, Platform } from 'react-native';
 
 import { getDocumentAsync } from 'expo-document-picker';
 import { router } from 'expo-router';
@@ -14,10 +13,7 @@ import { HeaderHeightContext } from 'expo-router/react-navigation';
 import { openBrowserAsync } from 'expo-web-browser';
 
 import {
-  confirmPetDocumentUpload,
-  createPetDocument,
   listPetDocs,
-  uploadPhotoToUrl,
   type PetDocsState,
 } from '../../api/media';
 import { getPet, type PetState } from '../../api/pets';
@@ -65,9 +61,6 @@ jest.mock('../../theme/use-theme-colors', () => ({
 jest.mock('../../api/media', () => ({
   ...jest.requireActual('../../api/media'),
   listPetDocs: jest.fn(),
-  createPetDocument: jest.fn(),
-  uploadPhotoToUrl: jest.fn(),
-  confirmPetDocumentUpload: jest.fn(),
 }));
 jest.mock('expo-router', () => ({ router: { push: jest.fn(), back: jest.fn(), dismissTo: jest.fn() } }));
 jest.mock('expo-document-picker', () => ({ getDocumentAsync: jest.fn() }));
@@ -328,7 +321,7 @@ describe('#87 R9: DocsScreen lee por TanStack Query', () => {
     const { queryClient } = await renderWithProviders(
       <HeroUINativeProvider>
         <LanguageProvider initial="es">
-          <DocsScreen petId="pet-1" uploaded={uploaded} />
+          <DocsScreen petId="pet-1" />
         </LanguageProvider>
       </HeroUINativeProvider>,
     );
@@ -455,15 +448,7 @@ describe('#155 R7: sin documentos, Pingo los guarda', () => {
 
 const mockGetDocumentAsync = jest.mocked(getDocumentAsync);
 const mockOpenBrowserAsync = jest.mocked(openBrowserAsync);
-const mockCreatePetDocument = jest.mocked(createPetDocument);
-const mockUploadPhotoToUrl = jest.mocked(uploadPhotoToUrl);
-const mockConfirmPetDocumentUpload = jest.mocked(confirmPetDocumentUpload);
 const mockSignOut = jest.fn();
-const originalFetch = globalThis.fetch;
-const originalOS = Platform.OS;
-const documentBlob = new Blob(['PDF bytes']);
-const mockAssetBlob = jest.fn();
-const mockAssetFetch = jest.fn();
 const docOne = {
   id: 'doc-1', type: 'Vacunación', name: 'Antirrábica', date: '2026-07-12',
   downloadUrl: 'http://download.test/doc-1.pdf',
@@ -479,19 +464,8 @@ beforeEach(() => {
   mockListPetDocs.mockResolvedValue({ kind: 'ok', docs: [docOne] });
   mockGetDocumentAsync.mockResolvedValue({ canceled: true, assets: null });
   mockOpenBrowserAsync.mockReturnValue(pending());
-  mockCreatePetDocument.mockResolvedValue({ kind: 'ok', documentId: 'doc-2', uploadUrl: 'http://upload.test/doc-2' });
-  mockUploadPhotoToUrl.mockResolvedValue({ kind: 'ok' });
-  mockConfirmPetDocumentUpload.mockResolvedValue({ kind: 'ok' });
-  mockAssetBlob.mockResolvedValue(documentBlob);
-  mockAssetFetch.mockResolvedValue({ blob: mockAssetBlob });
-  globalThis.fetch = mockAssetFetch as unknown as typeof fetch;
 });
 
-afterEach(() => {
-  jest.useRealTimers();
-  globalThis.fetch = originalFetch;
-  (Platform as { OS: string }).OS = originalOS;
-});
 
 function docsChildren() {
   const container = screen.getByTestId('screen-docs').children[0];

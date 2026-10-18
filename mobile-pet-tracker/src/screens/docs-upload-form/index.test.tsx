@@ -22,11 +22,9 @@ import {
   uploadPhotoToUrl,
   type PetDocsState,
 } from '../../api/media';
-import { getPet, type PetState } from '../../api/pets';
-import { mediaKeys, petKeys } from '../../api/query-keys';
+import { getPet } from '../../api/pets';
 import type { PetProfile } from '../../api/types';
-import { es } from '../../i18n/catalog';
-import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
+import { useAuth } from '../../providers/auth-provider';
 import { LanguageProvider } from '../../providers/language-provider';
 import DocsRoute from '../../app/pets/[petId]/docs';
 import DocsUploadRoute from '../../app/pets/[petId]/docs-upload';
@@ -46,6 +44,12 @@ jest.mock('../home/home-entrance', () => {
 });
 
 jest.mock('standard-navigation', () => ({}));
+// #185 R9: renderRouter carga /mock, que omite useReducedMotion en Reanimated 4.
+jest.mock('react-native-reanimated/mock', () => ({
+  ...jest.requireActual('react-native-reanimated/mock'),
+  __esModule: true,
+  useReducedMotion: () => false,
+}));
 jest.mock('expo-linking', () => ({
   ...jest.requireActual('expo-linking'),
   createURL: (path: string) => `yourscheme://${path}`,
@@ -613,6 +617,7 @@ describe('#185 R9 (antes #158 R11): el formulario se aparta del teclado en Andro
 
 describe('#185 R2.2: la pantalla monta el formulario con los params', () => {
   it('conserva archivo, cuatro controles y métricas bajo cabecera nativa', async () => {
+    jest.useFakeTimers();
     jest.setSystemTime(new Date('2026-10-09T12:00:00Z'));
     await openUploadForm();
     expect(screen.getByTestId('docs-upload-file')).toHaveTextContent('vacuna.pdf');
