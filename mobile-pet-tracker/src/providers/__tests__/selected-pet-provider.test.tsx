@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { act, fireEvent, render, renderHook, screen } from '@testing-library/react-native';
 import { Button, Text } from 'react-native';
 
 import { useAuth } from '../auth-provider';
@@ -87,5 +87,42 @@ describe('#95 R1: la selección pertenece a la sesión', () => {
     expect(screen.getByTestId('selected-pet')).toHaveTextContent('pet-1');
     await rerender('token-a');
     expect(screen.getByTestId('selected-pet')).toHaveTextContent('none');
+  });
+});
+
+describe('#181 R2: clearPet pertenece a la sesión', () => {
+  function useSelection() {
+    const value: ReturnType<typeof useSelectedPet> & { clearPet?: () => void } = useSelectedPet();
+    return value;
+  }
+
+  it('R2.1: expone clearPet y borra una mascota seleccionada', async () => {
+    const { result } = await renderHook(useSelection, { wrapper: SelectedPetProvider });
+    expect(typeof result.current.clearPet).toBe('function');
+    await act(async () => { result.current.selectPet('pet-1'); });
+    expect(result.current.selectedPetId).toBe('pet-1');
+    await act(async () => { result.current.clearPet?.(); });
+    expect(result.current.selectedPetId ?? 'none').toBe('none');
+  });
+
+  it('R2.1: conserva la identidad de clearPet entre renders del mismo token', async () => {
+    const view = await renderHook(useSelection, { wrapper: SelectedPetProvider });
+    const clearPet = view.result.current.clearPet;
+    expect(typeof clearPet).toBe('function');
+    await act(async () => { view.result.current.selectPet('pet-1'); });
+    await view.rerender(undefined);
+    expect(view.result.current.clearPet).toBe(clearPet);
+  });
+
+  it('R2.1: cambiar el token reinicia la selección después de limpiar y reseleccionar', async () => {
+    const view = await renderHook(useSelection, { wrapper: SelectedPetProvider });
+    expect(typeof view.result.current.clearPet).toBe('function');
+    await act(async () => { view.result.current.selectPet('pet-1'); });
+    await act(async () => { view.result.current.clearPet?.(); });
+    await act(async () => { view.result.current.selectPet('pet-2'); });
+    expect(view.result.current.selectedPetId).toBe('pet-2');
+    mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'token-b', signIn: jest.fn(), signOut: jest.fn() });
+    await view.rerender(undefined);
+    expect(view.result.current.selectedPetId ?? 'none').toBe('none');
   });
 });
