@@ -36,6 +36,20 @@ catálogo). `Date.now()` no va en el render (`react-hooks/purity`).
    árbol (fichero temporal en el scratchpad, no commiteado) y comprobar que la clase final no contiene
    `bg-surface-secondary`. Anotar el resultado; si contiene, activar el fallback `View` de R3.1.
 
+7. **E1 (P11-P14 y medidas)**: precondiciones P11-P14 y medidas M21-M25 de `requirements.md` § Enmienda E1; M14
+   conserva su base y **no** lleva delta. Si una P falla: **PARA**.
+8. **E1, sonda de `expo-blur`** (fichero temporal en el scratchpad, no commiteado): `render(<BlurView intensity={48} />)`
+   con el módulo **real** bajo jest. Anotar el resultado. Después, las cuatro suites de ruta de `/alerts/<id>`
+   (paso 5): donde den rojo por `expo-blur`, copiar a sus mocks el doble de
+   `src/components/__tests__/floating-tab-bar.test.tsx` (`BlurView: (props) => React.createElement(View, props)`).
+   Commit propio `test(mobile): #180 H0 — doble de expo-blur en las rutas del detalle` solo si hizo falta.
+9. **E1, sonda del ping**: en un `ping-ring.test.tsx` temporal, con el doble de reanimated de Welcome y
+   `{ duration: 1800, ...MOTION_CELEBRATION_EASE_OUT }`, medir `getAnimatedStyle` a 0 / 900 / 1900 ms y confirmar los
+   extremos de R4.1. Si el doble no avanza `withTiming` con `easing`, PARA y avisa al leader (la spec fija los
+   puntos, no la técnica).
+10. **E1, orden de la lista de `motion.test.ts`**: `node -e "console.log(['MOTION_ALERT_PING_MS','MOTION_BLINK_INTERVAL_MS'].sort())"`
+    y comprobar que `MOTION_ALERT_PING_MS` va primera en la lista «no exporta nada más».
+
 ## R1 — Título en el contenido
 
 1. **Rojo**: DT (3 `it` de R1.2), LT (K1), UL (K2, `every(file === detail)`) y `ui-copy-table.ts` (K3, solo
@@ -74,32 +88,43 @@ catálogo). `Date.now()` no va en el render (`react-hooks/purity`).
 
 ## R4 — Ping
 
-1. **Rojo**: `ping-ring.test.tsx` (A, R4.1), DT (R4.2 con su control positivo, R4.3), C (R4.4).
-   Commit `test(mobile): #180 R4 rojo — ping del héroe`.
-2. **Verde**: `ping-ring.tsx` y su uso en la tarjeta detrás del disco. Commit
-   `feat(mobile): #180 R4 ping del héroe`.
+1. **Rojo**: `ping-ring.test.tsx` (A, R4.1 enmendado por E1: 0 / 900 / 1900 ms), `motion.test.ts` (M, R4.5: el
+   valor 1800 y la lista), DT (R4.2 con su control positivo, R4.3), C (R4.4 y R4.5: sin `MOTION_PING_TIMING` ni `1800`
+   en `ping-ring.tsx`). Commit `test(mobile): #180 R4 rojo — ping del héroe`.
+2. **Verde**: `motion.ts` (`MOTION_ALERT_PING_MS`), `ping-ring.tsx` (`withTiming` con
+   `{ duration: MOTION_ALERT_PING_MS, ...MOTION_CELEBRATION_EASE_OUT }`) y su uso en la tarjeta detrás del disco
+   (M23 +1). Commit `feat(mobile): #180 R4 ping del héroe`.
 3. **Refactor**: ninguno.
 
 ## R5 — Mapa y píldora
 
-1. **Rojo**: DT (R5.1-R5.4; los `it` de ~459/~503/~600 enmendados; doble de `pet-map` registrando `children`).
-   Commit `test(mobile): #180 R5 rojo — mapa h-52.5 rounded-24 con píldora de distancia dentro`.
-2. **Verde**: mapa, píldora dentro, `accessible` + `accessibilityLabel`. Commit
-   `feat(mobile): #180 R5 mapa con píldora de distancia`.
+1. **Rojo**: DT (R5.1-R5.4; los `it` de ~459/~503/~600 enmendados; doble de `pet-map` registrando `children`; doble
+   local de `expo-blur` y los `it` de R5.2 enmendado por E1: props del `BlurView`, `it.each` de tema, clase del texto
+   y umbrales), G (R5.5, describe nuevo en `global-css.test.ts`), C (R5.6, importadores de `expo-blur`).
+   Commit `test(mobile): #180 R5 rojo — mapa h-52.5 rounded-24 con píldora de cristal y desenfoque`.
+2. **Verde**: `global.css` (par `glass-surface-strong` en los dos temas, M24 +4), mapa, píldora dentro con
+   `BlurView`, `accessible` + `accessibilityLabel` (M22 +1). Sin `bun add`: `package.json` y lockfile intactos.
+   Commit `feat(mobile): #180 R5 mapa con píldora de distancia`.
 3. **Refactor**: ninguno.
 
 ## R6 — CTA
 
-1. **Rojo**: DT (R6.1, R6.2, K17 `Map` en el doble de reicon). Commit
-   `test(mobile): #180 R6 rojo — CTA con icono Map y h-13`.
-2. **Verde**: la CTA (`h-13`, icono `Map`, etiqueta). Commit `feat(mobile): #180 R6 CTA Ver en el mapa`.
+1. **Rojo**: DT (R6.1 enmendado por E1: `h-13 rounded-16 …`, R6.2, K17 `Map` en el doble de reicon); CC (K20: la
+   fila `alert-detail-view-map` sale de `rows` de `#166 R3` y entra el `it` `#180 R7.5: «Ver en el mapa» …`; va
+   aquí y no en R7 porque la CTA deja `rounded-xl` en este verde y la fila vieja se pondría roja); DD (K19:
+   `outsideReminders(/\brounded-(?:16|22)\b/)` = `[detalle]`). Commit
+   `test(mobile): #180 R6 rojo — CTA con icono Map, h-13 y rounded-16`.
+2. **Verde**: la CTA (`h-13 rounded-16`, icono `Map`, etiqueta; M21 +1). Commit `feat(mobile): #180 R6 CTA Ver en el mapa`.
 3. **Refactor**: ninguno.
 
 ## R7 — Ack primario
 
-1. **Rojo**: DT (R7.1), CC (K7, K8, K9), DD (K13 `text-17`). Commit
-   `test(mobile): #180 R7 rojo — ack primario con labio`.
-2. **Verde**: botón del ack (M10, M14, M15, M16 +1). Commit `feat(mobile): #180 R7 ack primario con labio`.
+1. **Rojo**: DT (R7.1 enmendado por E1: `w-full h-14 rounded-16 bg-accent border-b-4 border-black/25`), CC (K9: los
+   conteos de `border-b-4` y `border-black/25` de `#166 R2` suben 1; **K7 y K8 sin cambio**; el `it`
+   `#180 R7.5: el ack …`), DD (K13 `text-17`; el `it` de R7.4 con rounded-16 = 2, rounded-22 = 0, rounded-14 = 0).
+   Commit `test(mobile): #180 R7 rojo — ack primario con labio y rounded-16`.
+2. **Verde**: botón del ack (M10, M15, M16, M21 +1; **M14 sin delta**). Commit
+   `feat(mobile): #180 R7 ack primario con labio`.
 3. **Refactor**: ninguno.
 
 ## R2 — Marco y orden de hijos
@@ -129,15 +154,18 @@ catálogo). `Date.now()` no va en el render (`react-hooks/purity`).
 
 1. **Rojo**: C (describe `#180 R12: enmiendas`), AC (K15). Commit
    `test(mobile): #180 R12 rojo — enmiendas de la carta y de las specs`.
-2. **Verde**: los bloques de `design.md` §4 en los siete ficheros de R12.1, los marcadores de las anclas, las
-   líneas de la carta de R12.2 (M18 = 0, M19 +1) y `### §2.35` (R12.3, K6). Commit
+   El describe cubre además las novedades de E1: la ancla `### R3.` de `mobile-chunky-cta` (quince anclas), la
+   viñeta y la línea nominal con `rounded-16` y el `<QUÉ CAMBIA>` nuevo de tres filas.
+2. **Verde**: los bloques de `design.md` §4 en los siete ficheros de R12.1, los marcadores de las **quince** anclas,
+   las líneas de la carta de R12.2 con los literales de E1 (M18 = 0, M19 +1, M25 +2) y `### §2.35` (R12.3, K6). Commit
    `docs(mobile): #180 R12 enmiendas y carta del detalle de alerta`.
 3. **Refactor**: ninguno.
 
 ## R13 — Cierre de candados
 
-1. Correr todos los candados de §4 y los que «no cambian pero se re-ejecutan». Cada cifra de cierre = base H0
-   + delta. Si algo difiere, anotar y razonar en `progress/impl_*.md`.
+1. Correr todos los candados de §4, los de E1.4 y los que «no cambian pero se re-ejecutan»
+   (`floating-tab-bar.test.tsx`, `design-drift`, la bienvenida). Cada cifra de cierre = base H0 + delta; en K7 y K8
+   el delta es **0**. Si algo difiere, anotar y razonar en `progress/impl_*.md`.
 2. Commit `test(mobile): #180 R13 candados agregados` solo si quedó algo por ajustar.
 3. Suite entera del móvil con `bunx jest --testTimeout=30000` y, aparte, **sin** ese flag los `it` nuevos
    (`init.sh` usa 5000 ms). El aviso «worker force-exit» es preexistente: contarlo solo en la medida.
@@ -166,5 +194,22 @@ Antes de plantar, medir con `grep -n` la línea exacta (no se cita número).
 | S16 | `Skeleton` con `rounded-card` | R10.1 |
 | S17 | quitar `(#180)` de la línea nominal de la carta | R12 |
 | S18 | volver a poner `confirmar alerta en el detalle).` en la carta | R12 y K15 |
+
+Sondas de E1 (misma técnica):
+
+| # | Mutación | Debe ponerse en rojo |
+|---|---|---|
+| S19 | `MOTION_ALERT_PING_MS` → `2400` en `motion.ts` | R4.5 (M) y R4.1 a 1900 ms (A) |
+| S20 | el anillo vuelve a `MOTION_PING_TIMING` | R4.1 (A) y R4.5 (C) |
+| S21 | la píldora sin `BlurView` (el `Text` directo en el mapa) | R5.2 (los `it` del `BlurView`) |
+| S22 | `intensity={48}` → `24` | R5.2 |
+| S23 | `tint` fijo `'light'` | R5.2 (`it.each` de tema, caso `dark`) |
+| S24 | el texto con `bg-glass-surface` en vez de `-strong` | R5.2 (clase exacta y no contiene el token suelto) |
+| S25 | `--glass-surface-strong` claro → `0.60` | R5.5 (G) |
+| S26 | un segundo fichero de producción importa `expo-blur` | R5.6 (C) |
+| S27 | la CTA vuelve a `rounded-xl` | R6.1 (F) y R7.5 (CC) |
+| S28 | el ack vuelve a `rounded-xl` | R7.1 (F), R7.5 (CC) y K7/K8 (CC) |
+| S29 | el ack con `rounded-16` pero sin `border-b-4` | R7.5 (CC) y los conteos de K9 |
+| S30 | `rounded-22` en la CTA | K19 / R7.4 (DD) |
 
 Si una sonda no se pone en rojo, el candado es ciego: se arregla el candado, no la sonda.

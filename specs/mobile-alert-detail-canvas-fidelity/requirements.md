@@ -498,3 +498,209 @@ Features aparte:
 ## Aprobación
 
 - [x] Aprobado por humano (fecha: 2026-10-17) ← gate obligatorio antes de implementar
+
+## Enmienda E1 — D2, D3, D4 al valor exacto del canvas
+
+> Escrita el 2026-10-18 sobre la spec aprobada (firma del 2026-10-17), por la directiva del humano:
+> «nos debemos acercar al diseño del canvas en D1 a D5; si es necesario cambiar cosas hazlo, igual instalar
+> dependencias». No toca el texto de R1-R14 ni la firma original; **donde E1 y el texto de un R choquen,
+> manda E1**. Su casilla va **sin marcar**: el humano reabre el gate solo para esta enmienda. Fuente única
+> del diseño: el artboard `DetalleAlerta.dc.html` del canvas aprobado
+> (`https://claude.ai/artifact/VqaQQsRTtis9Dbttqy3z7j`). Detalle técnico en `design.md` §9; pasos en
+> `tasks.md` §E1.
+
+### E1.1 Qué decidía §0 y qué decide ahora
+
+| # | Antes (firmado) | Canvas | Ahora (E1) | Requisitos |
+|---|---|---|---|---|
+| D1 | 26 / peso 900 / `tracking-title` | 26 / 900 / -0.02em | **Sin cambio** (ya era el valor exacto) | R1 |
+| D2 | `AlertPingRing` con `MOTION_PING_TIMING` (2400 ms) | 1,8 s, ease-out | **1800 ms con ease-out**: token nuevo `MOTION_ALERT_PING_MS` y `MOTION_CELEBRATION_EASE_OUT` (la misma curva `cubic-bezier(0,0,.58,1)` que el `ease-out` de CSS). Welcome intacto | R4.1 (enmendado por E1), R4.5 |
+| D3 | `bg-glass-surface` (0,60) sin desenfoque, sin dependencia | blanco 0,86 + desenfoque 12 | **`BlurView` de `expo-blur` (ya instalada, sin `bun add`) + relleno nuevo `bg-glass-surface-strong` (0,86)** | R5.2 (enmendado por E1), R5.5, R5.6 |
+| D4 | botones `rounded-xl` hasta que #177 mergee | radio 16 | **`rounded-16` (token existente) en el ack y en «Ver en el mapa»**; alturas `h-14` / `h-13` y etiquetas como en R6/R7 | R6.1 y R7.1 (enmendados por E1), R7.3 (enmendado por E1), R7.4, R7.5 |
+| D5 | `rounded-24`, `h-52.5` | radio 24, alto 210 | **Sin cambio** (ya era el valor exacto) | R5.1 |
+
+D6-D15 **no cambian** (revisión solo informativa, en `progress/spec_E1_180.md`).
+
+### E1.2 Requisitos nuevos y enmendados
+
+Test de cada id: **F** `src/screens/alert-detail/index.test.tsx`; **A** `src/screens/alert-detail/ping-ring.test.tsx`;
+**M** `src/theme/__tests__/motion.test.ts`; **G** `src/theme/__tests__/global-css.test.ts`; **C**
+`src/__tests__/alert-detail-canvas-fidelity.test.ts`; **X** candados agregados (E1.4). Mismas reglas de §3: un
+`it` por rama y por combinación, id en el título; los `it` de R4.1/R5.2/R6.1/R7.1 que cambian llevan el sufijo
+`(enmendado por E1)`.
+
+- **R4.1 (enmendado por E1)** WHILE la alerta está `open` y `useReducedMotion()` es `false`, THE SYSTEM SHALL
+  pintar el anillo `AlertPingRing` como en R4.1, pero con la animación
+  `withTiming(…, { duration: MOTION_ALERT_PING_MS, ...MOTION_CELEBRATION_EASE_OUT })` en bucle
+  (`withRepeat(…, -1, false)`), en lugar de `MOTION_PING_TIMING`. `scale` y `opacity` conservan sus extremos
+  (`MOTION_PING_FROM` a `MOTION_PING_TO_SCALE`; `MOTION_PING_FROM` a `0`).
+  - **Test (A)**: el `it` de R4.1 se reescribe como `#180 R4.1 (enmendado por E1): el anillo late en 1800 ms con
+    ease-out`, con la misma técnica (doble de reanimated de Welcome, `act(async () => { jest.advanceTimersByTime(n) })`,
+    `getAnimatedStyle`): a **0 ms** `{ opacity: 0.55, transform: [{ scale: 0.55 }] }`; a **1900 ms**
+    `{ opacity: 0, transform: [{ scale: 1.5 }] }` (con 2400 ms aún no habría llegado: mata la duración vieja);
+    a **900 ms** ninguno de los dos extremos (`not.toEqual` a cada uno).
+- **R4.5 (nuevo)** THE SYSTEM SHALL exportar de `src/theme/motion.ts` `MOTION_ALERT_PING_MS = 1800` y dejar
+  `MOTION_PING_TIMING` (2400 ms, Welcome) y `MOTION_CELEBRATION_EASE_OUT` sin cambios.
+  - **Test (M)**: `#180 R4.5: declara el ping del detalle de alerta en 1800 ms` (modelo: `'declara la duración del ping'`);
+    la lista del `it` «no exporta nada más» suma `'MOTION_ALERT_PING_MS'` en su sitio `.sort()` (comprobado con
+    `node -e`: va primera, `A` < `B`); los `it` existentes de `MOTION_PING_TIMING` (2400) y de
+    `MOTION_CELEBRATION_EASE_OUT` siguen en verde (control de que Welcome y Celebration no se movieron).
+  - **Test (C)**: `#180 R4.5: ping-ring.tsx no usa MOTION_PING_TIMING ni escribe 1800` (el fuente no contiene
+    `MOTION_PING_TIMING` ni el literal `1800`).
+- **R5.2 (enmendado por E1)** WHILE `Math.round(d - zone.radiusM) >= 1`, THE SYSTEM SHALL pintar la distancia
+  como una píldora de cristal con desenfoque **dentro** del `View` del mapa: un
+  `BlurView` (de `expo-blur`) `testID="alert-detail-distance-blur"`, `intensity={48}`,
+  `blurMethod="dimezisBlurViewSdk31Plus"`, `tint={theme === 'dark' ? 'dark' : 'light'}` (el `theme` de
+  `useUniwind` que ya lee `AlertDetailMap`) y
+  `className="absolute bottom-3 left-3 overflow-hidden rounded-full"`, con un único hijo
+  `Text testID="alert-detail-distance"`,
+  `className="bg-glass-surface-strong px-2.5 py-1.5 text-xs font-bold text-foreground"`,
+  `style={TABULAR_NUMS}` y el texto de `alerts.distanceFromZone`. Sin zona, con distancia < 1 m o sin
+  posición, **no** se pinta ni el `BlurView` ni el texto. (En Android `intensity` 48 equivale a un radio
+  de ~12 px con el `blurReduction` por defecto de 4: es el desenfoque 12 del canvas.)
+  - **Test (F)**, con un doble local de `expo-blur` que renderiza un `View` con las props recibidas (precedente:
+    `floating-tab-bar.test.tsx`):
+    - `#180 R5.2 (enmendado por E1): la distancia es un BlurView dentro del mapa`: `within(map).getByTestId('alert-detail-distance-blur')`
+      con `intensity` 48, `blurMethod` `dimezisBlurViewSdk31Plus` y la `className` exacta; y
+      `within(blur).getByTestId('alert-detail-distance')` (el texto es hijo del desenfoque).
+    - `it.each` tema `light`/`dark` (con `mockTheme`, como el `it` de `colorScheme` del mapa): `tint` `'light'` / `'dark'`.
+    - La clase exacta del texto, y que su lista de clases **no contiene** `bg-glass-surface` suelto
+      (`className.split(' ')`), para no confundir el prefijo de `bg-glass-surface-strong`.
+    - El `it.each` de umbrales 0 m / 1 m sigue vigente y aserta también `queryByTestId('alert-detail-distance-blur')`
+      `null` en 0 m, con su control positivo en 1 m (mismo montaje). Sin zona (batería): ambos `null`.
+- **R5.5 (nuevo)** THE SYSTEM SHALL declarar en `src/theme/global.css`, junto al par `glass-surface` y en los
+  dos temas, el par visual e imperativo del relleno fuerte: claro `--glass-surface-strong: rgba(255,255,255,0.86)`
+  y `--color-glass-surface-strong: rgba(255,255,255,0.86)`; oscuro `rgba(22,27,34,0.86)` en ambos. El par
+  `glass-surface` (0,60) no cambia (lo usa la barra de pestañas).
+  - **Test (G)**: describe `#180 R5.5: token glass-surface-strong en light y dark` con `it.each` de los dos temas
+    (`toMatchObject` sobre `parseVariables(extractVariant(theme))` con las dos claves) y un `it` de control: en los
+    dos temas `glass-surface` sigue siendo `rgba(255,255,255,0.60)` / `rgba(22,27,34,0.60)`.
+- **R5.6 (nuevo)** THE SYSTEM SHALL no añadir ni cambiar dependencias (`expo-blur ~57.0.2` ya está en
+  `package.json` y en `node_modules`; la directiva humana de poder instalar no se usa) y limitar el import de
+  `expo-blur` en código de producción a `src/components/floating-tab-bar.tsx` y
+  `src/screens/alert-detail/index.tsx`.
+  - **Test (C)**: `#180 R5.6: solo la barra de pestañas y el detalle importan expo-blur`: los ficheros `.tsx` de
+    producción (sin tests) cuyo texto contiene `from 'expo-blur'` son exactamente esos dos, en orden `.sort()`.
+    Comprobación del reviewer (no jest): `git diff <H0> -- package.json` y el lockfile, sin cambios.
+- **R6.1 (enmendado por E1)** THE SYSTEM SHALL pintar `alert-detail-view-map` con
+  `className="h-13 rounded-16 border-2 border-b-6 border-lip-gray bg-surface"` (la clase `rounded-xl` de R6.1
+  pasa a `rounded-16`). Icono, etiqueta y acción no cambian.
+  - **Test (F)**: `#180 R6.1 (enmendado por E1): la CTA lleva h-13, rounded-16, labio gris y el icono Map antes
+    de la etiqueta` (la `className` exacta; el resto del `it` de R6.1 igual).
+- **R7.1 (enmendado por E1)** WHILE la alerta está `open`, THE SYSTEM SHALL pintar `alert-detail-ack` con
+  `className="w-full h-14 rounded-16 bg-accent border-b-4 border-black/25"` (la clase `rounded-xl` de R7.1 pasa
+  a `rounded-16`); etiqueta, error de ack y orden no cambian.
+  - **Test (F)**: la clase exacta del botón en el `it` de R7.1, con el sufijo `(enmendado por E1)`.
+- **R7.3 (enmendado por E1)** THE SYSTEM SHALL sumar la pantalla a los inventarios de `border-b-4` y de
+  `border-black/25` (K9, +1 cada uno) y **no** a los de `rounded-xl bg-accent` (K7, K8: sin delta) ni a la
+  receta `rounded-xl … border-lip-gray` de `#166 R3` (R7.5). M14 queda sin delta; M15 y M16 conservan su +1.
+  - **Test (X)**: `#62 R1` y `#166 R2` en verde con **las cifras de H0** (sin `+ 1` por `// #180`); los conteos de
+    `border-b-4` y `border-black/25` de `#166 R2` suben en 1.
+- **R7.4 (nuevo)** THE SYSTEM SHALL nombrar la pantalla del detalle como único consumidor de `rounded-16`
+  fuera de Recordatorios (que conserva sus 3 usos): el radio 16 deja de ser exclusivo de #178.
+  - **Test (X)**: `design-drift.test.ts` › `reserva los radios 14, 16 y 22 a Recordatorios …`:
+    `outsideReminders(/\brounded-(?:16|22)\b/)` pasa de `[]` a
+    `[join('screens', 'alert-detail', 'index.tsx')]` con el comentario `// #180 E1 R7.4 comparte rounded-16`;
+    un `it` hermano `#180 R7.4: el detalle usa rounded-16 dos veces y ningún rounded-22 ni rounded-14` (cuenta con
+    `match(/\brounded-16\b/g)` = 2, `rounded-22` = 0, `rounded-14` = 0). El conteo de Recordatorios (3, 1 y 1)
+    no cambia.
+- **R7.5 (nuevo)** THE SYSTEM SHALL conservar la receta con labio del ack y del secundario aunque ya no casen con
+  las regexes de `rounded-xl`: los dos botones se candan por su tag de apertura.
+  - **Test (X)**: `consistency-classnames.test.ts` › `#166 R3`: la fila `alert-detail-view-map` sale de `rows` (su
+    receta usa `rounded-xl`, que ya no es la suya) y **dos `it` nuevos, uno por botón** (el orden rojo/verde de `tasks.md` los separa: la CTA se pinta en R6 y el
+    ack en R7), que asertan sobre `openingTagWithTestId(readSource(join('screens','alert-detail','index.tsx')), …)`:
+    `#180 R7.5: «Ver en el mapa» del detalle lleva rounded-16 con su labio gris`, con el tag de
+    `alert-detail-view-map` conteniendo `variant="secondary"` y `rounded-16 border-2 border-b-6 border-lip-gray bg-surface`
+    y no `rounded-xl`, `border-accent`, `bg-transparent` ni `border-black`; y
+    `#180 R7.5: el ack del detalle lleva rounded-16 con su labio`, con el tag de `alert-detail-ack` conteniendo
+    `rounded-16 bg-accent border-b-4 border-black/25` y no `rounded-xl`. El `it` de inventario
+    `inventaría los cinco secundarios neutros` conserva `'alert-detail-view-map'` en su lista (lo casa
+    `border-lip-gray`): sin cambio.
+- **R10.2** no cambia: el reintento sigue `h-13` sin radio propio.
+- **R12 (enmendado por E1)** THE SYSTEM SHALL aplicar a R12 estos cambios y ninguno más:
+  - **R12.1, filas**: el `<QUÉ CAMBIA>` de tres filas pasa a:
+    - `docs/ui-guidelines.md`: `§13: el ack del detalle de alerta es primario con labio, h-14 rounded-16 (sale de «Sin labio»); §12: línea nominal de rounded-24 para el mapa y de rounded-16 para los botones del detalle (#180)`;
+    - `specs/mobile-alerts-grouped-and-detail-map/requirements.md`: `#170 R6: severidad en el héroe (color por tipo, sin borde); #170 R8: mapa h-52.5 rounded-24; #170 R10: la distancia es una píldora de cristal con desenfoque dentro del mapa; #170 R15: la CTA lleva el icono Map, h-13 y rounded-16`;
+    - `specs/mobile-chunky-cta/requirements.md`: `#166 R2: el ack del detalle de alerta es primario sólido con labio (h-14 rounded-16, border-b-4, border-black/25) y queda fuera del inventario de rounded-xl bg-accent; #166 R3: «Ver en el mapa» del detalle pasa a rounded-16`.
+  - **R12.1, anclas**: `mobile-chunky-cta` suma la ancla `### R3. El secundario neutro lleva el labio gris`
+    (`grep -cF -e '…' specs/mobile-chunky-cta/requirements.md` da `1` al redactar E1; el implementer lo repite en
+    H0). Su línea `> Enmendado por #180 (ver «Enmienda #180» al final).` va como párrafo propio justo después del
+    encabezado, **detrás** de la de `> Enmendado por #174 …` que ya existe en esa spec. Las anclas de R12.1 pasan de
+    catorce a **quince** (`mobile-chunky-cta` queda con dos).
+  - **R12.2, literales** (sustituyen a los de `design.md` §5, que se actualiza):
+    - §13, viñeta nueva: `Primario del detalle de alerta (#180): ack con labio, h-14 rounded-16, etiqueta text-17 font-extrabold; el secundario «Ver en el mapa» es h-13 rounded-16 con el icono Map.`
+    - §12, línea nominal: ``Fuera de la escala, por fidelidad al canvas (#180): `rounded-24` (24 px), mapa del detalle de alerta, que es un View y no un Card; `rounded-16` (16 px), ack y «Ver en el mapa» del detalle de alerta.``
+    - Medidas: M19 (`rounded-24` en la carta) conserva su `+ 1` (una sola línea nueva); M21 nueva (E1.3).
+  - **Tests (C)**: el `it` «de la carta» de `#180 R12: enmiendas` aserta además la viñeta nueva con `rounded-16`
+    (una vez) y la línea nominal con las dos clases (una vez); el `it` de las anclas de `mobile-chunky-cta`
+    cubre las dos (`### R2.` y `### R3.`); el `it` de fila de `mobile-chunky-cta` usa el `<QUÉ CAMBIA>` nuevo.
+
+### E1.3 Medidas nuevas y medidas que cambian de delta
+
+Se miden en H0 (desde `mobile-pet-tracker/`); cierre = base H0 + delta.
+
+| # | Orden | Base al redactar | Delta | R |
+|---|---|---|---|---|
+| M14 | (ya existe) `grep -rE 'rounded-xl bg-accent' src --include=*.tsx \| grep -v test \| wc -l` | 13 | **0** (antes +1) | R7.3 |
+| M21 | `grep -rE '\brounded-16\b' src --include=*.tsx \| grep -v test \| wc -l` (líneas) | 3 | +2 (ack y CTA) | R6.1, R7.1 |
+| M22 | `grep -rlF "from 'expo-blur'" src --include=*.tsx \| grep -v test \| wc -l` | 1 | +1 | R5.6 |
+| M23 | `grep -cF 'MOTION_ALERT_PING_MS' src/theme/motion.ts` | 0 | +1 | R4.5 |
+| M24 | `grep -cF 'glass-surface-strong' src/theme/global.css` | 0 | +4 (dos por tema) | R5.5 |
+| M25 | `grep -cF 'rounded-16' ../docs/ui-guidelines.md` (líneas) | 1 | +2 (§12 y §13) | R12 |
+
+M15 y M16 (`border-b-4`, `border-black/25`) conservan su `+ 1`; M10 (`text-17`) también.
+
+Precondiciones nuevas (P11-P14; si una falla, PARA como las de §2):
+
+| # | Orden | Debe dar |
+|---|---|---|
+| P11 | `grep -cF '"expo-blur"' package.json` | `1` |
+| P12 | `test -d node_modules/expo-blur; echo $?` | `0` |
+| P13 | `grep -cF 'MOTION_CELEBRATION_EASE_OUT' src/theme/motion.ts` | `1` |
+| P14 | `grep -cF -e '--radius-16: 16px;' src/theme/global.css` | `1` |
+
+### E1.4 Candados (K) que cambian respecto de §4
+
+| # | Fichero › candado | Cambio |
+|---|---|---|
+| K7 | CC › `#62 R1` | **Sin cambio** (antes `+ 1`): el ack ya no casa `rounded-xl bg-accent` (R7.3) |
+| K8 | CC › `#166 R2` `expected` | **Sin cambio** (antes un fichero más, `dieciséis`→`diecisiete`): sigue en 16 ficheros |
+| K9 | CC › `border-b-4` y `border-black/25` | Sin cambio respecto de §4: `+ 1` cada uno (el ack conserva las dos clases) |
+| K19 | DD › reserva de `rounded-14/16/22` | `outsideReminders(/\brounded-(?:16\|22)\b/)` = `[detalle]` y el `it` hermano de R7.4 |
+| K20 | CC › `#166 R3` | sale la fila `alert-detail-view-map` de `rows`; `it` nuevo de R7.5 |
+| K21 | M › `motion.test.ts` | `it` del valor (R4.5) y la lista «no exporta nada más» suma `MOTION_ALERT_PING_MS` |
+| K22 | G › `global-css.test.ts` | describe nuevo de R5.5 |
+| K23 | C › `alert-detail-canvas-fidelity.test.ts` | `it` de R4.5 (ping-ring sin `MOTION_PING_TIMING`) y de R5.6 (importadores de `expo-blur`) |
+| K24 | DT › `index.test.tsx` | doble local de `expo-blur` y los `it` de R5.2; clases exactas de R6.1 y R7.1 |
+
+Candados que no cambian pero se **re-ejecutan** además de los de §4: `floating-tab-bar.test.tsx` (comparte
+`expo-blur` y `glass-surface`), `design-drift` entero, `welcome` (R12 de #167: sigue en 2400 ms) y las cuatro
+suites de ruta que montan `/alerts/<id>`: al importar ahora `expo-blur`, cualquiera que dé rojo por el módulo
+nativo recibe el mismo doble local que `floating-tab-bar.test.tsx` (commit propio, como el del doble de
+reanimated de H0).
+
+### E1.5 Delimitaciones que cambian (sustituyen a las de §5 que nombran D2, D3 y D4)
+
+- Ya **no** se delimitan: el desenfoque 12 y el blanco 0,86 de la píldora de distancia, la duración 1,8 s del
+  ping, el radio 16 de los botones del detalle.
+- Siguen delimitados: el retardo 80 ms de la entrada (D11), el interlineado del `body`, el chevron de back, la
+  receta global 56/16/17-800 y la sombra en `--lip` (es #177: el ack del detalle ya cumple 56 y 16; si #177
+  mergea antes, solo reconcilia `border-b-4 border-black/25` por la sombra de `--lip`), el alfa del anillo de ping
+  (`/20` frente a 0,18 del canvas: ver pregunta 1 de `progress/spec_E1_180.md`).
+
+### E1.6 Prueba de humo (enmienda de R14.1)
+
+Se sustituyen y añaden estos puntos al humo de §6 (dev build de Android, nunca Expo Go; claro y oscuro):
+
+- **R14.1.2**: el anillo late con ciclo de ~1,8 s.
+- **R14.1.4**: la píldora de distancia muestra el desenfoque **sobre el mapa nativo** (el cristal deja de verse
+  plano) y es legible en claro y oscuro. **Riesgo conocido**: el desenfoque de Android se pinta sobre una
+  superficie nativa (`expo-maps`); si no desenfoca o parpadea, el relleno 0,86 mantiene la legibilidad (degrada
+  a píldora opaca) y el humano decide si basta o abre feature.
+- **R14.1.9 (nuevo)**: el ack y «Ver en el mapa» tienen esquina de 16 px y el ack queda a 56 de alto.
+
+La casilla de §6 no cambia (`- [ ] Smoke #180 en dev build de Android (fecha: ____)`).
+
+### Aprobación de la enmienda
+
+- [ ] Enmienda #180 aprobada por humano
