@@ -813,4 +813,48 @@ Se mueve la fila a R5, donde se usa. No se implementa R5.4 dentro de R8: en task
 
 ### Aprobación de la enmienda E3
 
-- [x] Enmienda #180 E3 aprobada por humano (fecha: 2026-10-17) ← gate de la enmienda E3 (firma en Notion, 2026-10-18T06:55:10Z)
+- [x] Enmienda #180 E3 aprobada por humano (fecha: 2026-10-18) ← gate de la enmienda E3 (firma en Notion, 2026-10-18T06:55:10Z)
+
+## Enmienda E4 — corrección tras el veredicto RECHAZADO del reviewer
+
+> Escrita el 2026-10-18 tras el veredicto RECHAZADO del `reviewer` (`progress/review_mobile-alert-detail-canvas-fidelity.md`). Cierra los bloqueantes **B1** y **B2** y las observaciones **O2**, **O4** y **O5**, que pedían decisión humana. Las observaciones O1, O3 y O6–O11 no bloquean y no cambian el alcance de la spec. **Donde E4 choque con E3, E2, E1 o con el texto de un R, manda E4.** Su casilla va **sin marcar**; el humano la firma en Notion antes de que Codex corrija nada.
+
+### E4.1 — B1: candado de R13.1 que nació verde
+
+El candado `not.toContain('alerts.detailTitle')` (`src/__tests__/ui-language.test.ts:255`) entró en `74f0fa9d` sin commit rojo previo: `src/app/_layout.tsx` ya no contenía la clave, que quitó `e37300ec` (R1). Incumple C4 puntos 2 (historia test-primero) y 5 (candado sobre código ya correcto, con mutación versionada en el rojo).
+
+- **Excepción**: para ese candado, y solo para él, se aceptan C4 puntos 2 y 5 tal como están (CHECKPOINTS.md, C4, excepciones). La historia no se reescribe.
+- **Verificación**: R13.1 se verifica por la vía (b) de C4 punto 3 (mutación). La sonda S15 (restaurar `title: t('alerts.detailTitle')` en `src/app/_layout.tsx`) la reprodujo Codex en `progress/impl_mobile-alert-detail-canvas-fidelity.md`: la primera pasada dejó el candado ciego (L389); repetida, dio rojo en `src/app/_layout.tsx:103` (L395) y se revirtió.
+- `traceability.md`, fila R13, se corrige tras la firma para citar esta excepción en lugar de un rojo que no existe.
+
+### E4.2 — B2: R2.3 y el mapa sin zona (opción a)
+
+El código pinta el mapa desde la posición (`src/screens/alert-detail/index.tsx:169`, sin mirar la zona) y #170 R11 lo fija (`src/screens/alert-detail/index.test.tsx:670–680`, «sin geofenceId pinta el mapa sin zona»). R2.3 decía lo contrario, y su `it` usaba payload `{}` para «sin zona», que no tiene posición. Se elige la **opción a**: el mapa aparece si hay posición, con zona o sin ella. La zona solo añade círculo, zoom y píldora de distancia (R5.2, sin cambio). Sin posición no hay mapa.
+
+- **R2.3 (texto)**: sustituye «solo con zona» y «Sin zona no hay mapa» por «mapa (`alert-detail-map`, si hay posición; la píldora de distancia dentro, R5, solo si hay zona)» y «Sin posición no hay mapa y el resto no cambia».
+- **R2.3 (test)**: `it.each` de **seis** casos, {con zona, sin zona, sin posición} × {con error de ack, sin error}. «Sin zona» es una posición sin `geofenceId`; «sin posición» es el payload `{}` de antes. Esperado: `alert-detail-map` presente en los casos con posición y ausente en «sin posición».
+- **S31 (C4 punto 5)**: el `it.each` nace verde sobre código ya correcto. El commit rojo de R2 versiona la mutación S31 en `src/screens/alert-detail/index.tsx`: la guarda del mapa (L169) pasa a `position && alert.geofenceId !== null`. Con S31 caen los dos casos «sin zona». El commit verde revierte S31; el código final no cambia.
+- `#170 R11` no se reescribe: la opción a la hace verdadera, no contradictoria. R7.2 y la lista cerrada de E2.2 no cambian.
+
+### E4.3 — O2: objetivos de M19 y M25
+
+Codex midió M19 = 4 y M25 = 4 (`progress/impl_mobile-alert-detail-canvas-fidelity.md`, L488 y L494) con el bloque canónico de R12.1 (L353 del mismo informe). Esos valores pasan a ser el objetivo:
+
+- **M19** `grep -cF 'rounded-24' ../docs/ui-guidelines.md`: base 2 (L186, L188), delta **+2**, **objetivo 4**. Manda sobre la fila M19 (L106) y sobre «(M19: 2 → 3)» (L398).
+- **M25** `grep -cF 'rounded-16' ../docs/ui-guidelines.md`: base 1 (L187), delta **+3**, **objetivo 4**. Manda sobre la fila M25 (L649).
+
+### E4.4 — O4: K17 también cubre el mock de la suite de navegación
+
+K17 (`+ Map`) nombra solo el mock de `index.test.tsx`. El mismo doble se amplía en `src/app/__tests__/alert-detail.navigation.test.tsx:81` (`Map: icon()`, commit `00a609c6`). Es una ampliación de doble sin cambio de aserciones, que parece necesaria para que la suite monte el detalle (no comprobado sin jest). Se anota como parte de K17. La suite sigue en la lista «no cambia, se re-ejecuta» de §4 y su re-ejecución debe quedar en verde.
+
+### E4.5 — O5: fecha de la casilla de E3
+
+La casilla de E3 decía «fecha: 2026-10-17». La firma es del 2026-10-18 (Notion, 2026-10-18T06:55:10Z). Se corrige el texto de esa casilla.
+
+### E4.6 — Reanudación
+
+Codex no reimplementa nada. En R2 rojo cambia el `it.each` (seis casos) y añade S31; en R2 verde revierte S31. Su informe deja la evidencia de S15 de E4.1. `tasks.md` (R2 pasa de «cuatro combinaciones» a seis, y la tabla de sondas recoge S31), `traceability.md` (filas R2 y R13) y `progress/current.md` se actualizan tras la firma, no en esta enmienda.
+
+### Aprobación de la enmienda E4
+
+- [ ] Enmienda #180 E4 aprobada por humano (fecha: ____) ← gate de la enmienda E4 (firma en Notion, pendiente)
