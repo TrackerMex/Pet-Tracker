@@ -130,7 +130,7 @@ catálogo). `Date.now()` no va en el render (`react-hooks/purity`).
 
 (Va después de R5-R7 porque R2.3 asevera nodos que esos requisitos crean.)
 
-1. **Rojo**: DT (R2.1 con y sin `insets.bottom` y las métricas de ~221 (E2.6); R2.2 dos `it`; R2.3 `it.each` de cuatro combinaciones, que sustituye al orden de ~717 (E2.3); K18).
+1. **Rojo**: DT (R2.1 con y sin `insets.bottom` y las métricas de ~221 (E2.6); R2.2 dos `it`; R2.3 `it.each` de seis combinaciones (E4.2), que sustituye al orden de ~717 (E2.3); K18; S31 entra en este commit rojo).
    Commit `test(mobile): #180 R2 rojo — marco, espaciador y orden de hijos`.
 2. **Verde**: `contentContainerStyle`, espaciador. Commit `feat(mobile): #180 R2 marco y ack anclado al fondo`.
 3. **Refactor**: ninguno.
@@ -210,5 +210,11 @@ Sondas de E1 (misma técnica):
 | S28 | el ack vuelve a `rounded-xl` | R7.1 (F), R7.5 (CC) y K7/K8 (CC) |
 | S29 | el ack con `rounded-16` pero sin `border-b-4` | R7.5 (CC) y los conteos de K9 |
 | S30 | `rounded-22` en la CTA | K19 / R7.4 (DD) |
+
+Sonda de E4 (no se revierte con `git checkout HEAD --`: se planta en el commit rojo de R2 y se revierte en el verde):
+
+| # | Mutación | Debe ponerse en rojo |
+|---|---|---|
+| S31 | en `src/screens/alert-detail/index.tsx`, `{position ? <HomeEntrance` pasa a `{position && alert.geofenceId !== null ? <HomeEntrance` | R2.3 (caso «sin zona») y #170 R11 |
 
 Si una sonda no se pone en rojo, el candado es ciego: se arregla el candado, no la sonda.
