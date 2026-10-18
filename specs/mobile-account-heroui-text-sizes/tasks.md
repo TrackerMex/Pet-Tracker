@@ -1,6 +1,6 @@
 ---
 feature: "mobile-account-heroui-text-sizes"
-status: draft        # draft | approved
+status: approved      # draft | approved
 tags: [mobile, ui, spec]
 ---
 

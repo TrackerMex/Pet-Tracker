@@ -1,6 +1,6 @@
 ---
 feature: "mobile-account-heroui-text-sizes"
-status: draft        # draft | approved
+status: approved      # draft | approved
 tags: [mobile, ui, spec]
 ---
 
@@ -518,10 +518,10 @@ Clasificado viñeta a viñeta; cada premisa está verificada.
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
-- D1 elegida (a o b): ____
-- D2 elegida (a, b o c): ____
-- D3 elegida (orden respecto a #186): ____
+- [x] Aprobado por humano (fecha: 2026-10-18) ← gate obligatorio antes de implementar
+- D1 elegida (a o b): a
+- D2 elegida (a, b o c): a (no marcada en Notion; la cola asignada por el humano pone #187 antes que #177)
+- D3 elegida (orden respecto a #186): #187 primero (no marcada en Notion; misma cola)
 
 Cualquier test o comando que lea esta casilla usa el patrón tolerante
 `^- \[[ xX]\] Aprobado por humano`: con la casilla marcada o sin marcar da `1`.
