@@ -163,9 +163,9 @@ export function LoginScreen() {
             isDisabled={submitting}
             onPress={() => void handleSubmit()}
           >
-            <Button.Label className="text-17 font-extrabold text-accent-foreground">
+            <Text className="text-17 font-extrabold text-accent-foreground">
               {t('login.signIn')}
-            </Button.Label>
+            </Text>
           </Button>
 
           <LinkButton

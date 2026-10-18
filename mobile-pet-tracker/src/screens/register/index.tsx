@@ -294,9 +294,9 @@ export function RegisterScreen() {
           isDisabled={!terms || submitting}
           onPress={() => void handleSubmit()}
         >
-          <Button.Label className="text-17 font-extrabold text-accent-foreground">
+          <Text className="text-17 font-extrabold text-accent-foreground">
             {t('register.createAccount')}
-          </Button.Label>
+          </Text>
         </Button>
       </ScrollView>
     </KeyboardAvoidingView>

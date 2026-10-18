@@ -245,9 +245,9 @@ export function ResetPasswordScreen() {
             isDisabled={submitting}
             onPress={() => void handleSubmit()}
           >
-            <Button.Label className="text-17 font-extrabold text-accent-foreground">
+            <Text className="text-17 font-extrabold text-accent-foreground">
               {t('resetPassword.updatePassword')}
-            </Button.Label>
+            </Text>
           </Button>
           <LinkButton testID="link-login" className="h-13 w-full" onPress={() => router.push('/login')}>
             <LinkButton.Label className="text-base font-bold text-accent-strong">
