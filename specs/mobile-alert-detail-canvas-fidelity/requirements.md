@@ -857,4 +857,4 @@ Codex no reimplementa nada. En R2 rojo cambia el `it.each` (seis casos) y añade
 
 ### Aprobación de la enmienda E4
 
-- [ ] Enmienda #180 E4 aprobada por humano (fecha: ____) ← gate de la enmienda E4 (firma en Notion, pendiente)
+- [x] Enmienda #180 E4 aprobada por humano (fecha: 2026-10-18) ← gate de la enmienda E4 (firma en Notion, 2026-10-18T18:48:14Z)
