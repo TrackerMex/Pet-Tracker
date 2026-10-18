@@ -274,3 +274,109 @@ Todas las corridas con --runTestsByPath respetaron la cuenta de suites.
 - Smoke de Android, firma humana A20, gate completo y aprobación de la feature
   corresponden al humano/leader y no se ejecutaron aquí. No hay fila de smoke
   en traceability ni se declara la feature done.
+
+## Ronda 4: merge de origin/main
+
+**Detenida en el paso 2, antes de resolver el conflicto.** Una lectura auxiliar
+introducida por el agente intentó leer un fichero inexistente y terminó con
+EXIT=1. Se aplica la regla del handoff: «Ante cualquier fallo fuera de lo
+descrito: para, no lo arregles, y escríbelo en el informe».
+
+- Base del handoff y HEAD inicial: `4b96cd0e04a0a083463d5192e0170c449e8ae876`.
+- Rama: `feature/181-mobile-no-pets-states-and-centered-content`.
+- `git status --short` inicial: vacío.
+- `git fetch origin`: EXIT=0.
+- `origin/main` obtenido: `07329de1ce9958d44753aa09cf86b97c7292c605`.
+- `git merge origin/main`: EXIT=1 por el único conflicto previsto,
+  `mobile-pet-tracker/src/__tests__/ui-language.test.ts`, en el expect de
+  `#65 R7: Profile resuelve su copy por clave`. No aparecieron otros conflictos.
+- Antes de editar se leyó `mobile-pet-tracker/AGENTS.md`. Después, la lectura
+  auxiliar `cat mobile-pet-tracker/jest.config.js mobile-pet-tracker/package.json`
+  terminó con EXIT=1. Línea decisiva de la salida:
+
+```text
+cat: mobile-pet-tracker/jest.config.js: No such file or directory
+```
+
+El fallo fue la suposición del agente de que existía ese fichero; no es un
+resultado de Jest ni del typecheck. No se buscó ni se corrigió una configuración
+alternativa y no se continuó con los pasos dependientes.
+
+El merge queda en curso y el conflicto conserva sus marcadores: la línea final
+prescrita todavía no se aplicó y no se ejecutó `git add` para ese fichero.
+No se ejecutaron la prueba aislada, la suite completa ni el typecheck; no hay
+totales ni logs de esas comprobaciones para esta ronda. Tampoco se ejecutaron
+`init.sh` ni E2E de backend.
+
+Hash del merge: no creado. Hash del commit documental de ronda 4: no creado.
+Este informe se deja como cambio sin indexar para no incluirlo en un merge
+incompleto. Los cambios ya indexados proceden del merge automático; la única
+edición manual de esta ronda es esta sección del informe. Sin push ni PR.
+
+## Ronda 4b: continuación del merge
+
+Continuación del merge que quedó abierto en la ronda 4. Se conserva íntegra
+la sección anterior. No hay cambio de comportamiento ni tests nuevos.
+
+### Comprobaciones de partida
+
+Las cuatro órdenes se ejecutaron desde `/home/claude/sites/Pet-Tracker-wt-181`
+antes de editar y terminaron con `EXIT=0`:
+
+| Comprobación | Resultado |
+|---|---|
+| `git rev-parse HEAD` | `4b96cd0e04a0a083463d5192e0170c449e8ae876`, coincide con la base exigida |
+| `git rev-parse MERGE_HEAD` | `07329de1ce9958d44753aa09cf86b97c7292c605`, coincide con origin/main esperado |
+| `git diff --name-only --diff-filter=U` | Solo `mobile-pet-tracker/src/__tests__/ui-language.test.ts` |
+| `git diff --cached --name-only` | 29 rutas; no incluye `progress/current.md` ni `progress/review_mobile-no-pets-states-and-centered-content.md` |
+
+El índice inicial incluía `progress/review_mobile-docs-upload-form-polish.md`,
+procedente de origin/main. Ante la exclusión general `progress/review_*` del
+paso 3, se consultó su interpretación mientras seguían las verificaciones.
+El humano respondió: «Sí, conservar el archivo de origin/main». Se conservó
+sin editar. Antes del commit de merge, el índice seguía teniendo exactamente
+las mismas 29 rutas: ninguna añadida ni retirada frente a la comprobación
+inicial. El informe de #181 no estaba indexado.
+
+### Resolución del conflicto
+
+Se reemplazaron únicamente las dos alternativas y los tres marcadores por
+la línea indicada en el handoff, conservando los dos incrementos de +2:
+
+```ts
+    expect(R7_PROFILE).toHaveLength(35 - 1 + 2 + 1 + 16 - 4 + 8 + 1 + 6 + 2 + 2); // #181 R5 // #185 R10: errorFileTooLarge y somethingWentWrong en ambas pantallas; #95 R5, +2 #99 R3, +1 #41 R9 // #158 R12; - 4 + 8 // #173 R13; #175 R7; #175 R8
+```
+
+No se editó ninguna otra línea del fichero. Se ejecutó
+`git add mobile-pet-tracker/src/__tests__/ui-language.test.ts`.
+La prueba aislada confirmó el conteo de 68; no se ajustó tras ejecutar tests.
+
+### Verificación
+
+Las tres órdenes se ejecutaron desde
+`/home/claude/sites/Pet-Tracker-wt-181/mobile-pet-tracker`, en el orden
+prescrito, sin pipes y con stdout/stderr redirigidos fuera del repositorio.
+Cada log termina con su `EXIT=`. No hubo repeticiones ni fallos.
+
+| Orden | Resultado | Log |
+|---|---|---|
+| `bunx jest --runTestsByPath src/__tests__/ui-language.test.ts` | `EXIT=0`; 1 suite aprobada, 30 tests aprobados; 0 snapshots | `/tmp/181-ronda4b-2026-10-18T21-52-03-047Z-ui-language.log` |
+| `bunx jest` | `EXIT=0`; 114 suites aprobadas, 3790 tests aprobados, 1 snapshot aprobado; 108.129 s | `/tmp/181-ronda4b-2026-10-18T21-52-03-047Z-full.log` |
+| `test ! -e .expo/types/router.d.ts && bun run typecheck` | `EXIT=0`; `tsc --noEmit` completado | `/tmp/181-ronda4b-2026-10-18T21-52-03-047Z-typecheck.log` |
+
+El fichero `.expo/types/router.d.ts` no existía al ejecutar la guarda; no se
+borró ni se generó como parte de esta comprobación.
+
+### Commit del merge y alcance
+
+- Hash del merge: `0d2b45a7031b7a761421f995b3e3186d93f4a0ed`.
+- Mensaje: `Merge origin/main en feature/181 (ui-language: +2 de #181 R5 y +2 de #185 R10)`.
+- Commit creado sin trailers, después de las tres verificaciones verdes.
+- Este informe se añade en el commit documental separado indicado por el handoff.
+- No se volvió a ejecutar `git merge`. Sin rebase, squash, restauración completa
+  con ours/theirs, commits intermedios, `git add -A` ni `git commit -a`.
+- No se ejecutaron `init.sh` ni E2E de backend. Sin push ni PR.
+- Fuera de la línea de resolución, solo se editó manualmente este informe.
+  Los cambios de origin/main se conservaron como parte del merge, incluida
+  la excepción del informe de revisión confirmada por el humano.
+
