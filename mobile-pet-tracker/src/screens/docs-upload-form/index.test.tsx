@@ -22,7 +22,6 @@ import {
   createPetDocument,
   listPetDocs,
   uploadPhotoToUrl,
-  type PetDocsState,
 } from '../../api/media';
 import { getPet } from '../../api/pets';
 import type { PetProfile } from '../../api/types';
