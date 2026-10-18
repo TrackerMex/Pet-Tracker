@@ -710,3 +710,27 @@ describe('#185 R5: espacio entre campos', () => {
     }
   });
 });
+
+describe('#185 R6: espacio etiqueta-input', () => {
+  it.each([
+    [0, 'Tipo', 'docs-type-input'],
+    [1, 'Nombre', 'docs-name-input'],
+    [2, 'Fecha', 'docs-date-input'],
+    [3, 'Veterinario (opcional)', 'docs-vet-input'],
+  ] as const)('conserva los 6 px nativos de HeroUI en %s (%s)', async (index, labelText, inputId) => {
+    await openUploadForm();
+    const field = screen.getByTestId('docs-upload-form').children[index + 1];
+    if (typeof field === 'string') throw new Error('Expected a TextField');
+    expect(field.props.className).toBe('text-field__root');
+    expect(field.children).toHaveLength(2);
+    const [label, input] = field.children;
+    if (typeof label === 'string' || typeof input === 'string') throw new Error('Expected label and input');
+    expect(within(label).getByText(labelText)).toBeVisible();
+    expect(input.props.testID).toBe(inputId);
+    expect(screen.getByTestId(inputId)).toBeVisible();
+    const css = readFileSync(join(process.cwd(), 'node_modules/heroui-native/src/styles/components/text-field.css'), 'utf8');
+    const theme = readFileSync(join(process.cwd(), 'node_modules/tailwindcss/theme.css'), 'utf8');
+    expect(css).toContain('gap: calc(var(--spacing) * 1.5);');
+    expect(theme).toContain('--spacing: 0.25rem;');
+  });
+});
