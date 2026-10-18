@@ -160,3 +160,112 @@ La implementación no ha cambiado. Se repitieron las 25 medidas: todas conservan
 | M23 | 0 | 0 | 0 |
 | M24 | 0 | 0 | 0 |
 | M25 | 1 | 1 | 0 |
+
+## Reanudación tras E2 — 2026-10-18
+
+- `pwd`: `/home/claude/sites/Pet-Tracker-wt-180`.
+- Rama: `feature/180-mobile-alert-detail-canvas-fidelity`.
+- H0: `978f7044` (HEAD al reanudar). Firma E2: `e0386f87`, verificada en el log y casilla marcada.
+- `fetch` y `merge origin/main`: Already up to date.
+- P1–P14: conformes. M1–M25 repetidas sin diferencias frente al informe BLOQUEADO.
+- Skills de la sesión: `ponytail:ponytail`, `building-native-ui`, `expo-tailwind-setup`, `appllama-app-design-skill`, `animate-expo`.
+- B1 y B2 resueltos por E2.1–E2.8. Se conserva íntegro el informe anterior.
+
+| Medida | H0 de reanudación |
+|---|---:|
+| M1 | 7 |
+| M2 | 1 |
+| M3 | 0 |
+| M4 | 10 |
+| M5 | 3 |
+| M6 | 1 |
+| M7 | 4 |
+| M8 | 11 |
+| M9 | 1 |
+| M10 | 5 |
+| M11 | 9 |
+| M12 | 6 |
+| M13 | 2 |
+| M14 | 13 |
+| M15 | 12 |
+| M16 | 14 |
+| M17 | 34 |
+| M18 | 1 |
+| M19 | 2 |
+| M20 | 11 |
+| M21 | 3 |
+| M22 | 1 |
+| M23 | 0 |
+| M24 | 0 |
+| M25 | 1 |
+
+H0 repetido completo: quince anclas y literales sin cambios; 4 suites de ruta verdes antes y después de la sonda BlurView; Card real, BlurView real y ping a 0/900/1900 verdes. Sin dobles adicionales ni fallback. Orden de MOTION_ALERT_PING_MS primero confirmado.
+
+R1 rojo: tres tests de título y candados fallan por las diferencias esperadas. La suite de pantalla acabó sus aserciones pero retuvo handles; se terminó su proceso después del resumen. En las siguientes ejecuciones se usa `--forceExit` además de `--testTimeout=30000` para evitar esa espera preexistente; sin modificar aserciones ni timeouts.
+
+### Resultado de la reanudación: R1 verde; BLOQUEADO antes de R8
+
+| Requisito | Rojo | Verde | Verificación |
+|---|---|---|---|
+| R1.1–R1.3 | `b07bc024` — test(mobile): #180 R1 rojo — título del detalle en el contenido | `e37300ec` — feat(mobile): #180 R1 título del detalle en el contenido (D-H) | 5 suites, 195 tests; tsc y lint verdes |
+
+R1 conserva la cabecera nativa y cambia solo su título a vacío. El título localizado se pinta antes del resto del contenido en carga, error y contenido. Se actualizaron el inventario de copy y los consumidores de text-26/tracking-title. El test de orden consulta el View de contenido que React Native inserta dentro del ScrollView; comprueba su primer elemento, no el envoltorio nativo.
+
+Suites de R1: pantalla 85/85; layout 27/27; ui-language 30/30; profile-canvas-fidelity 26/26; alerts-canvas-fidelity 27/27. Se ejecutaron secuencialmente y con ambos pgrep vacíos antes de cada Jest. `test ! -e .expo/types/router.d.ts` pasó; `bunx tsc --noEmit` y `bunx expo lint --no-cache` terminaron con código 0; el log de lint no contiene `Failed to run` y no emite diagnósticos.
+
+#### B3 — R8 registra una ocurrencia de copy que no existe hasta R5.4
+
+Dependencia localizada al preparar el siguiente paso, sin modificar aún tests ni implementación de R8:
+
+- `tasks.md`, bloque R8 rojo: exige añadir la fila de `alerts.mapLabel` a `R13_ALERT_DETAIL` (`ui-copy-table.ts`, K3), e incrementar la longitud esperada en `ui-language.test.ts` (K2).
+- El verde de R8 solo añade el catálogo y su fila documental. La pantalla recibe la etiqueta accesible en **R5.4**, después de R11, R3 y R4.
+- `src/__tests__/ui-language.test.ts:42–68`, `checkUses`: cada fila del inventario exige exactamente una llamada textual `t('<clave>')` o un campo `labelKey: '<clave>'` en el fichero registrado.
+- El test «registra cada ocurrencia del detalle» llama `checkUses(R13_ALERT_DETAIL)` (línea 255); el candado global también lo comprueba mediante `ALL_USES` (línea 492).
+- En la pantalla después de R1, el mismo cálculo del candado devuelve:
+
+```text
+file: src/screens/alert-detail/index.tsx
+key: alerts.mapLabel
+uses: 0
+expected tras añadir la fila de R8: 1
+```
+
+Añadir traducciones y documentación en R8 no modifica ese resultado: `ui-language` seguiría rojo después de su verde. Es la misma dependencia temporal que E2.1 resolvió para R3.7, pero E2 no reasigna el registro de copy ni el consumidor de `alerts.mapLabel`.
+
+No se adelanta implementación de R5.4, no se añade una llamada ficticia/comentada a `t`, no se deja un candado rojo y no se debilita `checkUses`.
+
+Corrección propuesta para el leader, **no aplicada**: mantener catálogo/LP/documentación en R8 y mover el registro de `alerts.mapLabel` de `ui-copy-table.ts` y la longitud de UL al rojo de R5, donde se implementa su uso en R5.4. Otra opción requiere autorizar expresamente implementar y probar R5.4 en R8.
+
+Se aplica la instrucción del handoff «Si algo no cuadra con la spec, PARA y reporta antes de improvisar». R1 queda revisable en sus dos commits; R8–R13 no se han empezado. No se modifica la spec ni su trazabilidad: el único commit final de traceability con hashes queda reservado para el cierre de la implementación.
+
+### Medidas al detener la reanudación
+
+| Medida | H0 reanudación | Al detenerse | Delta observado |
+|---|---:|---:|---:|
+| M1 | 7 | 8 | +1 |
+| M2 | 1 | 0 | -1 |
+| M3 | 0 | 1 | +1 |
+| M4 | 10 | 10 | +0 |
+| M5 | 3 | 3 | +0 |
+| M6 | 1 | 1 | +0 |
+| M7 | 4 | 5 | +1 |
+| M8 | 11 | 11 | +0 |
+| M9 | 1 | 1 | +0 |
+| M10 | 5 | 5 | +0 |
+| M11 | 9 | 9 | +0 |
+| M12 | 6 | 7 | +1 |
+| M13 | 2 | 2 | +0 |
+| M14 | 13 | 13 | +0 |
+| M15 | 12 | 12 | +0 |
+| M16 | 14 | 14 | +0 |
+| M17 | 34 | 34 | +0 |
+| M18 | 1 | 1 | +0 |
+| M19 | 2 | 2 | +0 |
+| M20 | 11 | 11 | +0 |
+| M21 | 3 | 3 | +0 |
+| M22 | 1 | 1 | +0 |
+| M23 | 0 | 0 | +0 |
+| M24 | 0 | 0 | +0 |
+| M25 | 1 | 1 | +0 |
+
+Deltas propios de R1: M1 +1, M2 -1, M3 +1, M7 +1 y M12 +1; resto sin cambios. No se ha ejecutado init.sh, no se han modificado dependencias ni archivos reservados al leader, no hay temporales en el worktree, no se ha abierto/editado PR y no se ha marcado el humo humano. No se declara terminada la feature.
