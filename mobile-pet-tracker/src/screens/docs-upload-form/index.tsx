@@ -138,7 +138,7 @@ export function DocsUploadFormScreen({ petId }: { petId: string }) {
       >
         <View testID="docs-upload-form" className="gap-4">
           <Text testID="docs-upload-file">{fileName}</Text>
-          <TextField className="gap-1">
+          <TextField>
             <Label className="text-2xs font-semibold text-foreground">
               <Label.Text className="text-2xs font-semibold text-foreground">
                 {t('docs.type')}
