@@ -5361,3 +5361,34 @@ describe('#181 R3: Inicio centra el estado sin mascotas fuera del scroll', () =>
     expect(screen.queryAllByTestId(/^home-entrance-/)).toHaveLength(0);
   });
 });
+
+describe('#181 R7: Inicio converge al crear la primera mascota', () => {
+  it('limpia la selección rancia y selecciona la mascota que llega al revalidar la lista', async () => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() });
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    mockGetPet.mockResolvedValue({ kind: 'error' });
+    mockGetDailyActivity.mockResolvedValue({ kind: 'error' });
+    mockListAlerts.mockResolvedValue({ kind: 'error' });
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [] });
+    const { queryClient } = await renderWithProviders(
+      <><SelectionProbe181 /><HomeScreen /></>, { wrapper: HomeWrapper },
+    );
+    await screen.findByTestId('home-empty');
+    await act(async () => { selectPet181?.('pet-stale'); });
+    await waitFor(() => expect(screen.getByTestId('selected-pet-id')).toHaveTextContent('none'));
+    const createdPet = makePet({ id: 'pet-created', name: 'Nala' });
+    await act(async () => { selectPet181?.(createdPet.id); });
+    await waitFor(() => expect(screen.getByTestId('selected-pet-id')).toHaveTextContent('none'));
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: createdPet });
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [createdPet] });
+    await act(async () => {
+      await queryClient.refetchQueries({ queryKey: petKeys.list() });
+    });
+    await screen.findByTestId(`pet-chip-${createdPet.id}`);
+    await waitFor(() => expect(screen.getByTestId('selected-pet-id')).toHaveTextContent(createdPet.id));
+    await waitFor(() => expect(queryClient.isFetching()).toBe(0));
+    expect(screen.queryByTestId('home-empty')).toBeNull();
+  });
+});

@@ -7,7 +7,8 @@ import {
 } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
+import { Text } from 'react-native';
 import type { TestInstance } from 'test-renderer';
 
 import {
@@ -1093,5 +1094,35 @@ describe('#168 R3: cada vacuna lleva su tile pastel', () => {
       expect(elementChild(column, index)).toBe(node);
       expect(node.props.className).toBe(index === 0 ? 'font-bold text-foreground' : index === 1 ? 'font-normal text-muted' : dateClass);
     });
+  });
+});
+
+let selectPet181: ((id: string) => void) | undefined;
+
+function SelectionProbe181() {
+  const { selectedPetId, selectPet } = selectedPetHooks.useSelectedPet();
+  useEffect(() => {
+    selectPet181 = selectPet;
+    return () => { selectPet181 = undefined; };
+  }, [selectPet]);
+  return <Text testID="selected-pet-id">{selectedPetId ?? 'none'}</Text>;
+}
+
+describe('#181 R6: health hereda la limpieza de selección', () => {
+  it('elimina la selección rancia y conserva el estado vacío', async () => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() });
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    mockListVaccines.mockResolvedValue({ kind: 'error' });
+    mockListWeights.mockResolvedValue({ kind: 'error' });
+    const { queryClient } = await renderWithProviders(
+      <><SelectionProbe181 /><HealthScreen /></>, { wrapper: HealthWrapper },
+    );
+    await screen.findByTestId('health-empty');
+    await act(async () => { selectPet181?.('pet-stale'); });
+    await waitFor(() => expect(screen.getByTestId('selected-pet-id')).toHaveTextContent('none'));
+    await screen.findByTestId('health-empty');
+    await waitFor(() => expect(queryClient.isFetching()).toBe(0));
   });
 });
