@@ -82,8 +82,8 @@ describe('#173 R2.4: inventario de tamaños nuevos', () => {
 });
 
 describe('#173 R3: Card hero y flat solo en Perfil', () => {
-  it('Perfil y el detalle de alerta son los consumidores de Card hero (enmendado por #180 R3)', () => {
-    expect(filesMatching(/variant="hero"/)).toEqual(['screens/alert-detail/index.tsx', 'screens/profile/index.tsx']);
+  it('Perfil y el detalle de alerta son los consumidores de Card hero (enmendado por #180 R3) (enmendado por #176 R2)', () => {
+    expect(filesMatching(/<Card\b[^>]*\bvariant="hero"/s)).toEqual(['screens/alert-detail/index.tsx', 'screens/profile/index.tsx']); // (enmendado por #176 R2)
     const profile = readFileSync(join(sourceRoot, 'screens/profile/index.tsx'), 'utf8');
     expect(profile.match(/variant="hero"/g)).toHaveLength(1);
   });
