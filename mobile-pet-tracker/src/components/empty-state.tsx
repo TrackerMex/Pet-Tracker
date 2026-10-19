@@ -3,6 +3,7 @@ import { Image } from 'expo-image';
 import { Button } from 'heroui-native';
 import { Text, View } from 'react-native';
 import Animated, { useAnimatedStyle, useReducedMotion, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
+import { Plus } from 'reicon-react-native';
 import Svg, { Circle, Ellipse, G } from 'react-native-svg';
 import { useChunkyLip } from '../theme/chunky-lip';
 import { MOTION_FLOAT_OFFSET_Y, MOTION_FLOAT_TIMING } from '../theme/motion';
@@ -32,7 +33,7 @@ type EmptyStateProps = {
 
 export function EmptyState({ testID, pose, title, body, action, variant = 'default' }: EmptyStateProps) {
   const chunkyLip = useChunkyLip();
-  const [accent] = useThemeColors(['accent']);
+  const [accent, accentForeground] = useThemeColors(['accent', 'accent-foreground']);
   const reduceMotion = useReducedMotion();
   const offset = useSharedValue(0);
   const poseSize = variant === 'hero' ? 190 : 160;
@@ -59,6 +60,12 @@ export function EmptyState({ testID, pose, title, body, action, variant = 'defau
   ) : (
     <Animated.View testID={`${testID}-float`} style={floatStyle}>{poseImage}</Animated.View>
   );
+  const actionButton = action ? (
+    <Button testID={`${testID}-action`} className="h-14 rounded-16 bg-accent" style={chunkyLip.primary} onPress={action.onPress}>
+      {variant === 'hero' ? <Plus size={20} color={accentForeground} style={{ marginRight: 8 }} testID={`${testID}-action-icon`} /> : null}
+      <Text className="text-17 font-extrabold text-accent-foreground">{action.label}</Text>
+    </Button>
+  ) : null;
 
   return (
     <View testID={testID} className="items-center gap-3 py-8">
@@ -91,11 +98,9 @@ export function EmptyState({ testID, pose, title, body, action, variant = 'defau
       <Text testID={`${testID}-body`} className={variant === 'hero' ? 'text-center text-15 text-muted' : 'text-center font-normal text-muted'} style={variant === 'hero' ? { maxWidth: 290 } : undefined}>
         {body}
       </Text>
-      {action ? (
-        <Button testID={`${testID}-action`} className="h-14 rounded-16 bg-accent" style={chunkyLip.primary} onPress={action.onPress}>
-          <Text className="text-17 font-extrabold text-accent-foreground">{action.label}</Text>
-        </Button>
-      ) : null}
+      {variant === 'hero' && action ? (
+        <View testID={`${testID}-action-wrap`} className="w-full mt-2.5">{actionButton}</View>
+      ) : actionButton}
     </View>
   );
 }
