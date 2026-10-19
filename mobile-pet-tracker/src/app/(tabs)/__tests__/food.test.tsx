@@ -8,7 +8,8 @@ import {
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
+import { Text } from 'react-native';
 import type { TestInstance } from 'test-renderer';
 import type { CircleProps, SvgProps } from 'react-native-svg';
 import { Easing, ReduceMotion } from 'react-native-reanimated';
@@ -1475,5 +1476,35 @@ describe('#168 R10: el anillo transiciona con reduce motion', () => {
     });
     expect(mockWithTiming).toHaveBeenCalledWith(100, expect.any(Object));
     expect(mockWithTiming).not.toHaveBeenCalledWith(150, expect.anything());
+  });
+});
+
+let selectPet181: ((id: string) => void) | undefined;
+
+function SelectionProbe181() {
+  const { selectedPetId, selectPet } = selectedPetHooks.useSelectedPet();
+  useEffect(() => {
+    selectPet181 = selectPet;
+    return () => { selectPet181 = undefined; };
+  }, [selectPet]);
+  return <Text testID="selected-pet-id">{selectedPetId ?? 'none'}</Text>;
+}
+
+describe('#181 R6: food hereda la limpieza de selección', () => {
+  it('elimina la selección rancia y conserva el estado vacío', async () => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() });
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    mockGetNutritionPlan.mockResolvedValue({ kind: 'error' });
+    const { queryClient } = await renderWithProviders(
+      <><SelectionProbe181 /><FoodScreen /></>, { wrapper: FoodWrapper },
+    );
+    await screen.findByTestId('food-empty');
+    await act(async () => { selectPet181?.('pet-stale'); });
+    await waitFor(() => expect(screen.getByTestId('selected-pet-id')).toHaveTextContent('none'));
+    await screen.findByTestId('food-empty');
+    await waitFor(() => expect(queryClient.isFetching()).toBe(0));
+    expect(screen.queryByTestId('food-plan-error')).toBeNull();
   });
 });

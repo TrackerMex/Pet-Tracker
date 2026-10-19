@@ -28,6 +28,7 @@ import {
   SelectedPetProvider,
   useSelectedPet,
 } from '../../providers/selected-pet-provider';
+import * as selectedPetHooks from '../../providers/selected-pet-provider';
 import { setStoredTheme } from '../../utils/theme-preference';
 import { setStoredLanguage } from '../../utils/language-preference';
 import { ProfileScreen } from '.';
@@ -1748,5 +1749,118 @@ describe('#168 R7 (enmendado por #173 R11): la identidad de la cuenta toma las m
     await renderProfile();
     const state = await screen.findByTestId('me-card-state');
     expect(state.props.className).toBe('py-2.5 font-normal text-muted');
+  });
+});
+
+describe('#181 R1: profile sin mascotas no muestra errores de detalle', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated', token: 'jwt-token',
+      signIn: jest.fn(), signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    mockGetPet.mockResolvedValue({ kind: 'error' });
+    mockGetMe.mockResolvedValue({ kind: 'error' });
+  });
+
+  afterEach(() => jest.restoreAllMocks());
+
+  it.each(['S1', 'S2', 'S3'] as const)('%s: conserva el vacío sin tarjeta ni reintento', async (scenario) => {
+    if (scenario === 'S3') {
+      const realUseSelectedPet = selectedPetHooks.useSelectedPet;
+      jest.spyOn(selectedPetHooks, 'useSelectedPet').mockImplementation(() => ({
+        ...realUseSelectedPet(), selectedPetId: 'pet-stale', clearPet: () => undefined,
+      }));
+    }
+    const { queryClient } = await renderProfile();
+    if (scenario === 'S2') {
+      const focus = mockUseFocusEffect.mock.calls.at(-1)?.[0];
+      expect(focus).toBeDefined();
+      await act(async () => { focus?.(); });
+      await waitFor(() => expect(mockGetPet).toHaveBeenCalledWith(apiUrl, 'jwt-token', null));
+    }
+    await screen.findByTestId('profile-pets-empty');
+    if (scenario === 'S1') {
+      await act(async () => { selectPetFromTest?.('pet-stale'); });
+      await waitFor(() => expect(screen.getByTestId('selected-pet-id')).toHaveTextContent('none'));
+    }
+    await screen.findByTestId('profile-pets-empty');
+    await waitFor(() => expect(queryClient.isFetching()).toBe(0));
+    expect(screen.queryByTestId('profile-pet-error')).toBeNull();
+    expect(screen.queryByTestId('profile-pet-retry')).toBeNull();
+    expect(screen.queryByTestId('profile-hero-skeleton')).toBeNull();
+    expect(screen.queryByTestId('pet-info-skeleton')).toBeNull();
+  });
+
+  it('S4: lista unreachable y selección nula ocultan la tarjeta', async () => {
+    mockListPets.mockResolvedValue({ kind: 'unreachable', message: 'offline' });
+    const { queryClient } = await renderProfile();
+    const focus = mockUseFocusEffect.mock.calls.at(-1)?.[0];
+    expect(focus).toBeDefined();
+    await act(async () => { focus?.(); });
+    await waitFor(() => expect(mockGetPet).toHaveBeenCalledWith(apiUrl, 'jwt-token', null));
+    await screen.findByTestId('profile-pets-error');
+    await waitFor(() => expect(queryClient.isFetching()).toBe(0));
+    expect(screen.queryByTestId('profile-pet-error')).toBeNull();
+    expect(screen.queryByTestId('profile-pet-retry')).toBeNull();
+  });
+
+  it('S5: lista vacía revalidando y detalle pendiente no muestran esqueletos', async () => {
+    const { queryClient } = await renderProfile();
+    await screen.findByTestId('profile-pets-empty');
+    await waitFor(() => expect(queryClient.isFetching()).toBe(0));
+    mockListPets.mockReturnValue(pending<PetsState>());
+    mockGetPet.mockReturnValue(pending<PetState>());
+    await act(async () => {
+      void queryClient.refetchQueries({ queryKey: petKeys.list() });
+    });
+    await waitFor(() => expect(queryClient.isFetching({ queryKey: petKeys.list() })).toBe(1));
+    await act(async () => { selectPetFromTest?.('pet-stale'); });
+    await waitFor(() => expect(mockGetPet).toHaveBeenCalledWith(apiUrl, 'jwt-token', 'pet-stale'));
+    await screen.findByTestId('profile-pets-empty');
+    expect(screen.queryByTestId('profile-hero-skeleton')).toBeNull();
+    expect(screen.queryByTestId('pet-info-skeleton')).toBeNull();
+  });
+});
+
+describe('#181 R5: Perfil conserva la cuenta y compone el vacío ilustrado', () => {
+  beforeEach(() => {
+    setupProfile168();
+    mockGetMe.mockResolvedValue({ kind: 'error' });
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    mockGetPet.mockResolvedValue({ kind: 'error' });
+  });
+
+  it('R5.1: conserva un único testID y muestra pose talk, copy y acción para añadir', async () => {
+    await renderProfile();
+    await screen.findByTestId('profile-pets-empty-title');
+    expect(screen.getAllByTestId('profile-pets-empty')).toHaveLength(1);
+    expect(screen.getByTestId('profile-pets-empty-title')).toHaveTextContent(es['common.noPetsYet']);
+    expect(screen.getByTestId('profile-pets-empty-body')).toHaveTextContent(es['common.noPetsBody']);
+    expect(screen.getByTestId('profile-pets-empty-pose').props.source).toEqual([
+      expect.objectContaining({ testUri: expect.stringMatching(/pingo-talk\.webp$/) }),
+    ]);
+    const action = screen.getByTestId('profile-pets-empty-action');
+    expect(within(action).getByText(es['profile.addPet'])).toBeVisible();
+    expect(screen.getByTestId('profile-add-pet')).toBeVisible();
+    await fireEvent.press(action);
+    expect(mockRouter.push).toHaveBeenCalledTimes(1);
+    expect(mockRouter.push).toHaveBeenCalledWith('/pets/add');
+  });
+
+  it('R5.2 R5.3: centra en horizontal dentro del scroll y mantiene las acciones de cuenta', async () => {
+    const { queryClient } = await renderProfile();
+    const empty = await screen.findByTestId('profile-pets-empty-title');
+    await waitFor(() => expect(queryClient.isFetching()).toBe(0));
+    expect(empty.parent).toBe(screen.getByTestId('profile-pets-empty'));
+    expect(empty.parent?.props.className).toBe('items-center gap-3 py-8');
+    for (const id of ['screen-profile', 'profile-title', 'profile-add-pet', 'reminders-link', 'me-card', 'profile-sign-out']) {
+      expect(screen.getByTestId(id)).toBeVisible();
+    }
+    for (const id of ['profile-pet-error', 'profile-pet-retry', 'profile-hero-skeleton', 'pet-info-skeleton']) {
+      expect(screen.queryByTestId(id)).toBeNull();
+    }
   });
 });

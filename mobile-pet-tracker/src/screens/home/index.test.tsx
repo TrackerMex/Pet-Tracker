@@ -7,7 +7,8 @@ import {
 } from '@testing-library/react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
+import { Text } from 'react-native';
 import { Easing, FadeOut, ReduceMotion, withDelay } from 'react-native-reanimated';
 import { Uniwind } from 'uniwind';
 
@@ -5237,13 +5238,13 @@ describe('#155 R4: Inicio sin mascotas presenta a Pingo', () => {
     mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
   });
 
-  it('queda en el sitio del vacío que sustituye', async () => {
+  it('queda en el sitio del vacío que sustituye (enmendado por #181 R3)', async () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
     await renderHome();
     await screen.findByTestId('home-empty-pose');
     const slot = screen.getByTestId('home-empty');
-    expect(slot.parent?.props.testID).toBe('home-states');
-    expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['Text', 'home-empty']);
+    expect(slot.parent?.props.testID).toBe('home-no-pets-screen');
+    expect(slot.parent?.children.map((child) => (typeof child === 'string' ? child : (child.props.testID ?? child.type)))).toEqual(['home-empty']);
   });
 
   it('pinta la pose, el título y la frase de Pingo', async () => {
@@ -5265,5 +5266,129 @@ describe('#155 R4: Inicio sin mascotas presenta a Pingo', () => {
     await fireEvent.press(action);
     expect(mockRouter.push).toHaveBeenCalledTimes(1);
     expect(mockRouter.push).toHaveBeenCalledWith('/pets/add');
+  });
+});
+
+let selectPet181: ((id: string) => void) | undefined;
+
+function SelectionProbe181() {
+  const { selectedPetId, selectPet } = selectedPetHooks.useSelectedPet();
+  useEffect(() => {
+    selectPet181 = selectPet;
+    return () => { selectPet181 = undefined; };
+  }, [selectPet]);
+  return <Text testID="selected-pet-id">{selectedPetId ?? 'none'}</Text>;
+}
+
+describe('#181 R1: home sin mascotas no muestra errores de detalle', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated', token: 'jwt-token',
+      signIn: jest.fn(), signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    mockGetPet.mockResolvedValue({ kind: 'error' });
+    mockGetDailyActivity.mockResolvedValue({ kind: 'error' });
+    mockListReminders.mockResolvedValue({ kind: 'not-found' });
+  });
+
+  afterEach(() => jest.restoreAllMocks());
+
+  it.each(['S1', 'S2', 'S3'] as const)('%s: conserva el vacío sin tarjeta ni reintento', async (scenario) => {
+    if (scenario === 'S3') {
+      const realUseSelectedPet = selectedPetHooks.useSelectedPet;
+      jest.spyOn(selectedPetHooks, 'useSelectedPet').mockImplementation(() => ({
+        ...realUseSelectedPet(), selectedPetId: 'pet-stale', clearPet: () => undefined,
+      }));
+    }
+    const { queryClient } = await renderWithProviders(
+      <><SelectionProbe181 /><HomeScreen /></>, { wrapper: HomeWrapper },
+    );
+    if (scenario === 'S2') {
+      const focus = mockUseFocusEffect.mock.calls.at(-1)?.[0];
+      expect(focus).toBeDefined();
+      await act(async () => { focus?.(); });
+      await waitFor(() => expect(mockGetPet).toHaveBeenCalledWith(apiUrl, 'jwt-token', null));
+    }
+    await screen.findByTestId('home-empty');
+    if (scenario === 'S1') {
+      await act(async () => { selectPet181?.('pet-stale'); });
+      await waitFor(() => expect(screen.getByTestId('selected-pet-id')).toHaveTextContent('none'));
+    }
+    await screen.findByTestId('home-empty');
+    await waitFor(() => expect(queryClient.isFetching()).toBe(0));
+    expect(screen.queryByTestId('pet-hero-error')).toBeNull();
+    expect(screen.queryByTestId('pet-hero-retry')).toBeNull();
+  });
+
+  it('S4: lista unreachable y selección nula ocultan la tarjeta', async () => {
+    mockListPets.mockResolvedValue({ kind: 'unreachable', message: 'offline' });
+    const { queryClient } = await renderWithProviders(<HomeScreen />, { wrapper: HomeWrapper });
+    const focus = mockUseFocusEffect.mock.calls.at(-1)?.[0];
+    expect(focus).toBeDefined();
+    await act(async () => { focus?.(); });
+    await waitFor(() => expect(mockGetPet).toHaveBeenCalledWith(apiUrl, 'jwt-token', null));
+    await screen.findByTestId('home-error');
+    await waitFor(() => expect(queryClient.isFetching()).toBe(0));
+    expect(screen.queryByTestId('pet-hero-error')).toBeNull();
+    expect(screen.queryByTestId('pet-hero-retry')).toBeNull();
+  });
+});
+
+describe('#181 R3: Inicio centra el estado sin mascotas fuera del scroll', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() });
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+  });
+
+  it('R3.2: el contenedor centrado solo contiene home-empty y sustituye la escena', async () => {
+    const { queryClient } = await renderWithProviders(<HomeScreen />, { wrapper: HomeWrapper });
+    const empty = await screen.findByTestId('home-empty');
+    await waitFor(() => expect(queryClient.isFetching()).toBe(0));
+    const container = screen.getByTestId('home-no-pets-screen');
+    expect(container.type).toBe('View');
+    expect(container.props.className).toBe('flex-1 items-center justify-center p-6 bg-background');
+    expect(container.props.style).toBeUndefined();
+    expect(empty.parent).toBe(container);
+    expect(container.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['home-empty']);
+    for (const id of ['screen-home', 'home-states', 'home-content', 'home-alerts-bell']) {
+      expect(screen.queryByTestId(id)).toBeNull();
+    }
+    expect(screen.queryAllByTestId(/^home-entrance-/)).toHaveLength(0);
+  });
+});
+
+describe('#181 R7: Inicio converge al crear la primera mascota', () => {
+  it('limpia la selección rancia y selecciona la mascota que llega al revalidar la lista', async () => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() });
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    mockGetPet.mockResolvedValue({ kind: 'error' });
+    mockGetDailyActivity.mockResolvedValue({ kind: 'error' });
+    mockListAlerts.mockResolvedValue({ kind: 'error' });
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [] });
+    const { queryClient } = await renderWithProviders(
+      <><SelectionProbe181 /><HomeScreen /></>, { wrapper: HomeWrapper },
+    );
+    await screen.findByTestId('home-empty');
+    await act(async () => { selectPet181?.('pet-stale'); });
+    await waitFor(() => expect(screen.getByTestId('selected-pet-id')).toHaveTextContent('none'));
+    const createdPet = makePet({ id: 'pet-created', name: 'Nala' });
+    await act(async () => { selectPet181?.(createdPet.id); });
+    await waitFor(() => expect(screen.getByTestId('selected-pet-id')).toHaveTextContent('none'));
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: createdPet });
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [createdPet] });
+    await act(async () => {
+      await queryClient.refetchQueries({ queryKey: petKeys.list() });
+    });
+    await screen.findByTestId(`pet-chip-${createdPet.id}`);
+    await waitFor(() => expect(screen.getByTestId('selected-pet-id')).toHaveTextContent(createdPet.id));
+    await waitFor(() => expect(queryClient.isFetching()).toBe(0));
+    expect(screen.queryByTestId('home-empty')).toBeNull();
   });
 });

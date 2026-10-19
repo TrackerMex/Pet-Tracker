@@ -259,6 +259,8 @@ export const R6_FOOD: UseRow[] = [
 ];
 
 export const R7_PROFILE: UseRow[] = [
+  { file: 'src/screens/profile/index.tsx', key: 'common.noPetsBody' }, // #181 R5
+  { file: 'src/screens/profile/index.tsx', key: 'profile.addPet' }, // #181 R5
   { file: 'src/screens/profile/index.tsx', key: 'map.justNow' }, // #173 R9
   { file: 'src/screens/profile/index.tsx', key: 'map.agoMinutes' }, // #173 R9
   { file: 'src/screens/profile/index.tsx', key: 'map.agoHours' }, // #173 R9
@@ -328,6 +330,9 @@ export const R7_PROFILE: UseRow[] = [
 ];
 
 export const R8_REMINDERS: UseRow[] = [
+  { file: 'src/screens/reminders/index.tsx', key: 'common.noPetsYet' }, // #181 R4
+  { file: 'src/screens/reminders/index.tsx', key: 'common.noPetsBody' }, // #181 R4
+  { file: 'src/screens/reminders/index.tsx', key: 'profile.addPet' }, // #181 R4
   { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.addReminder' }, // #178 R10
   { file: 'src/screens/reminders/index.tsx', key: 'reminders.reminders' }, // #178 R4
   { file: 'src/screens/reminders/index.tsx', key: 'reminders.errorForbidden' },

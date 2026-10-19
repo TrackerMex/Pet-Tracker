@@ -140,6 +140,21 @@ export function RemindersScreen() {
     void handleDelete(reminderId);
   }, [deleteCandidate, handleDelete]);
 
+  const petsEmpty = pets.data?.kind === 'ok' && pets.data.pets.length === 0;
+  if (petsEmpty) {
+    return (
+      <View testID="reminders-no-pets-screen" className="flex-1 items-center justify-center p-6 bg-background">
+        <EmptyState
+          testID="reminders-no-pets"
+          pose="talk"
+          title={t('common.noPetsYet')}
+          body={t('common.noPetsBody')}
+          action={{ label: t('profile.addPet'), onPress: () => router.push('/pets/add') }}
+        />
+      </View>
+    );
+  }
+
   return (
     <ScrollView
       testID="screen-reminders"
@@ -192,7 +207,7 @@ export function RemindersScreen() {
         </View>
       ) : null}
 
-      {reminders.data && isRemindersError(reminders.data) ? (
+      {selectedPetId !== null && !petsEmpty && reminders.data && isRemindersError(reminders.data) ? (
         <View className="items-start gap-3">
           <Text testID="reminders-error" className="text-danger">
             {t('common.somethingWentWrong')}
