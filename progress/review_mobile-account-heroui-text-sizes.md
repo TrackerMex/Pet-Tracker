@@ -114,3 +114,12 @@ Alcance: `git diff 2c02b5a2..HEAD` = merge de main (#180, ficheros fuera de #187
 
 ### init.sh
 No lo corre el reviewer; lo corrió el leader sobre dc977961, EXIT=0, log `/tmp/claude-1002/init187d.log` verificado: backend 187 suites/1474; móvil 117 suites/3871; e2e 468 passed (8 skipped); lint y typecheck sin errores; «Todo verde».
+
+## Ronda de fusión 2 (HEAD fedbd81e)
+Fecha: 2026-10-19
+Veredicto: APROBADO
+
+1. Piso: `dc2d5827` cambia solo la línea 127 de `heroui-text-size-merge.test.ts` (`classNameElements >= 182`). El escáner mide en HEAD HeroUI 226, ficheros 29, Card 42, className 182, hallazgos `[]`, opacos solo `password-input.tsx InputGroup.Input`: los pisos 226/28/42/182 coinciden con lo medido.
+2. Documentos: E2 punto 2, fila 232 de requirements.md (`>= 182`) y fila R1 de traceability.md dicen la causa real (+2 de #180 al mergear, -1 del ack) y citan `7bd23dbb` (180 por error) y `dc2d5827` (182). `progress/current.md` coherente. Casilla E2 del humano sigue sin marcar: correcto.
+3. `git diff e40d54b1..HEAD --stat`: el único fichero de código es ese test (1 línea); el resto es `progress/` y `specs/` de #187 (E2, reporte del fallback, mi sección rechazada). Nada más.
+4. Jest `heroui-text-size-merge.test.ts`: 25 passed. init.sh (lo corrió el leader sobre fedbd81e, `/tmp/claude-1002/init187e.log` verificado): backend 1474, móvil 117 suites/3871, e2e 468 (8 omitidos), lint y typecheck sin errores, «Todo verde».
