@@ -9660,6 +9660,6 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
   clasificador y no se ejecutó. El humano firmó la carta y #166, E1, E4 y el smoke
   R14 (dev build de Android).
 - **Commits:** `f99457f9` c1 ... `8c4b541d` c12 (Codex), más las enmiendas.
-  PR abierta, la mergea el humano; después se borra el worktree.
+  PR #231; la mergea el humano, después se borra el worktree.
 - **Desbloquea:** #188, #189 y #191; Backend [43157c] y sites-4c [7c89b3] esperan
   su merge.
