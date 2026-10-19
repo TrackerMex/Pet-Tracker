@@ -1867,7 +1867,6 @@ describe('#181 R1: profile sin mascotas no muestra errores de detalle', () => {
       const focus = mockUseFocusEffect.mock.calls.at(-1)?.[0];
       expect(focus).toBeDefined();
       await act(async () => { focus?.(); });
-      await waitFor(() => expect(mockGetPet).toHaveBeenCalledWith(apiUrl, 'jwt-token', null));
     }
     await screen.findByTestId('profile-pets-empty');
     if (scenario === 'S1') {
@@ -1876,6 +1875,7 @@ describe('#181 R1: profile sin mascotas no muestra errores de detalle', () => {
     }
     await screen.findByTestId('profile-pets-empty');
     await waitFor(() => expect(queryClient.isFetching()).toBe(0));
+    expect(mockGetPet).not.toHaveBeenCalledWith(apiUrl, 'jwt-token', null);
     expect(screen.queryByTestId('profile-pet-error')).toBeNull();
     expect(screen.queryByTestId('profile-pet-retry')).toBeNull();
     expect(screen.queryByTestId('profile-hero-skeleton')).toBeNull();
@@ -1888,9 +1888,9 @@ describe('#181 R1: profile sin mascotas no muestra errores de detalle', () => {
     const focus = mockUseFocusEffect.mock.calls.at(-1)?.[0];
     expect(focus).toBeDefined();
     await act(async () => { focus?.(); });
-    await waitFor(() => expect(mockGetPet).toHaveBeenCalledWith(apiUrl, 'jwt-token', null));
     await screen.findByTestId('profile-pets-error');
     await waitFor(() => expect(queryClient.isFetching()).toBe(0));
+    expect(mockGetPet).not.toHaveBeenCalledWith(apiUrl, 'jwt-token', null);
     expect(screen.queryByTestId('profile-pet-error')).toBeNull();
     expect(screen.queryByTestId('profile-pet-retry')).toBeNull();
   });

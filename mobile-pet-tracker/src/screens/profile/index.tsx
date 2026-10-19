@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { router, type Href, useFocusEffect } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { Button, Skeleton, Switch } from 'heroui-native';
-import { useCallback, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { Linking, Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Bell, Camera, FileText, Map as MapIcon, Plus, Wifi } from 'reicon-react-native';
@@ -147,6 +147,7 @@ export function ProfileScreen() {
   const locale = useLocale();
   const t = useTranslate();
   const { selectedPetId, selectPet } = useSelectedPet();
+  const selectedPetIdRef = useRef<string | null>(selectedPetId);
   const { theme } = useUniwind();
   const switchTheme = useThemeTransition();
   const insets = useSafeAreaInsets();
@@ -171,10 +172,16 @@ export function ProfileScreen() {
   const refetchPets = pets.refetch;
   const refetchDetail = detail.refetch;
 
+  useEffect(() => {
+    selectedPetIdRef.current = selectedPetId;
+  }, [selectedPetId]);
+
   useFocusEffect(
     useCallback(() => {
       refetchPets();
-      refetchDetail();
+      if (selectedPetIdRef.current !== null) {
+        refetchDetail();
+      }
     }, [refetchDetail, refetchPets]),
   );
 

@@ -2,7 +2,7 @@ import { useChunkyLip } from '../../theme/chunky-lip';
 import { useQuery } from '@tanstack/react-query';
 import { router, useFocusEffect } from 'expo-router';
 import { Button, Card as HeroUICard, Skeleton } from 'heroui-native';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import Animated, {
   Easing,
@@ -182,6 +182,7 @@ export function HomeScreen() {
   const t = useTranslate();
   const viewOnMapLabel = t('home.viewOnMap');
   const { selectedPetId, selectPet } = useSelectedPet();
+  const selectedPetIdRef = useRef<string | null>(selectedPetId);
   const [activitySelection, setActivitySelection] = useState<{
     day: DayEntry;
     petId: string;
@@ -285,10 +286,16 @@ export function HomeScreen() {
       ? deviceConnectionState(detail.data.pet.device)
       : null;
 
+  useEffect(() => {
+    selectedPetIdRef.current = selectedPetId;
+  }, [selectedPetId]);
+
   useFocusEffect(
     useCallback(() => {
       refetchPets();
-      refetchDetail();
+      if (selectedPetIdRef.current !== null) {
+        refetchDetail();
+      }
       refetchOpenAlerts();
     }, [refetchDetail, refetchOpenAlerts, refetchPets]),
   );
