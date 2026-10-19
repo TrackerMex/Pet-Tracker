@@ -713,4 +713,4 @@ control y pasa isInvalid al TextField cuando corresponde.
 Cada envío reemplaza los errores de campo; corregir el texto los retira en el
 siguiente envío. Los errores de red conservan su aviso de formulario.
 
-- [ ] Enmienda #186 aprobada por humano
+- [X] Enmienda #186 aprobada por humano
