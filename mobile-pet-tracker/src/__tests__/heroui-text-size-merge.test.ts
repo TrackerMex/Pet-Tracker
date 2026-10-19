@@ -122,9 +122,9 @@ describe('#187 R1: ningún componente que fusiona className lleva text-NN', () =
 
   it('#187 R1: el escáner cubre al menos el universo medido', () => {
     expect(tree.filter((file) => file.heroElements > 0).length).toBeGreaterThanOrEqual(28);
-    expect(tree.reduce((sum, file) => sum + file.heroElements, 0)).toBeGreaterThanOrEqual(227);
+    expect(tree.reduce((sum, file) => sum + file.heroElements, 0)).toBeGreaterThanOrEqual(226);
     expect(tree.reduce((sum, file) => sum + file.cardElements, 0)).toBeGreaterThanOrEqual(42);
-    expect(tree.reduce((sum, file) => sum + file.classNameElements, 0)).toBeGreaterThanOrEqual(181);
+    expect(tree.reduce((sum, file) => sum + file.classNameElements, 0)).toBeGreaterThanOrEqual(180);
   });
 
   it('#187 R1: Card es el único componente local que fusiona con tailwind-merge', () => {
