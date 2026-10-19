@@ -710,4 +710,4 @@ elemento nace en su posición y opacidad finales.
 
 Detalle y tests en `specs/mobile-home-empty-canvas-fidelity/requirements.md`.
 
-- [ ] Enmienda #176 aprobada por humano
+- [X] Enmienda #176 aprobada por humano
