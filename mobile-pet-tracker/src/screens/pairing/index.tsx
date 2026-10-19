@@ -275,6 +275,12 @@ export function PairingScreen() {
           </View>
         ) : null}
 
+        {phase === 'idle' && selectedPet?.device === null ? (
+          <Text testID="pairing-title" className="text-2xl font-black text-foreground">
+            {t('pairing.pairCollar')}
+          </Text>
+        ) : null}
+
         {pets.data === undefined ? (
           <View testID="pairing-skeleton" className="gap-3">
             <Skeleton
@@ -342,10 +348,6 @@ export function PairingScreen() {
 
         {phase === 'idle' && selectedPet?.device === null ? (
           <View className="gap-4">
-            <Text className="text-2xl font-black text-foreground">
-              {t('pairing.pairCollar')}
-            </Text>
-
             <Card variant="secondary">
               <Text
                 testID="pairing-plan-free"
