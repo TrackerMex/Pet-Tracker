@@ -1,192 +1,171 @@
-# Implementación #188 — bloqueada tras la excepción 3
+# Implementación #188 — requisitos implementados, Cierre bloqueado por typecheck
 
-Fecha: 2026-10-19 UTC. Feature incompleta; no apta para aprobar ni mergear. HEAD inicial de la primera reanudación: `1cc2a08f`; de esta reanudación: `db4b8841`. H0 permanece `6dc51ca1`.
+Fecha: 2026-10-19 UTC. H0: `6dc51ca1`; HEAD al reanudar: `3082ff68`. R13 y R1–R14 tienen cobertura verde focalizada. La feature no se declara done: typecheck falla y el Cierre no puede aprobarse. Los reportes anteriores se conservan en git.
 
-Primer comando ejecutado: `cd /home/claude/sites/Pet-Tracker-wt-188 && pwd && git branch --show-current`. Salidas confirmadas:
+## Primer comando y alcance
+
+Primer comando ejecutado, antes de cualquier otra operación:
+
+```bash
+cd /home/claude/sites/Pet-Tracker-wt-188 && pwd && git branch --show-current
+```
+
+Salida confirmada:
 
 ```text
 /home/claude/sites/Pet-Tracker-wt-188
 feature/188-mobile-pairing-pingo-canvas-fidelity
 ```
 
-Leídos íntegramente handoff, requirements (approved, E1 firmada), design y tasks. Primera reanudación: R3 con E1, R4–R6 verdes y R7 funcional, parada en design-drift. Reanudación actual: excepción 3, R7 verde, R8, R9, R10, R11, R12, R14 y Cierre, sin rehacer los bloques previos. Los cambios del leader en current.md y handoff se preservan sin incluirlos en commits. No se ejecuta init.sh ni se abre/edita la PR.
+Se siguieron Reanudación y Excepción 4 del handoff: no se rehacen R13 ni R1–R7 funcionales. Se aplica exclusivamente la cabecera autorizada, se verifica R7 con las tres suites, y se continúa R8, R9, R10, R11, R12, R14 y Cierre. Spec aprobada en `16d27c18`, carta firmada en H0 y E1 de R3 firmada en `1cc2a08f`; D1–D7 cerradas. Leídos requirements, design, tasks, progress/current y entrada #188 de feature_list, arquitectura, convenciones, carta de UI y verificación.
 
-## Premisas y evidencia heredada
+No se ejecutó init.sh, no se abrió/editó PR, no hubo push ni cambios de dependencias, .env o node_modules. Se preservan sin tocar ni commitear los cambios del leader en progress/current.md y progress/handoff_mobile-pairing-pingo-canvas-fidelity.md. El estado de la feature, STATUS y los ficheros de cierre del leader no se modifican.
 
-T0 medido en la ejecución anterior sobre H0: 120 suites; `Tests: 3994 passed, 3994 total`. Ya hay cinco tests nuevos en HEAD (dos R13 y uno por R1/R2/R3); no se vuelve a tratar este HEAD como T0. Anclas de H0: padding:24 = 1, text-2xl = 2, --text-24 = 0; asset collar existente. La ascendencia de cbd964da está confirmada. Se repite la búsqueda de selectores `grep -rn 'TestId(/' mobile-pet-tracker/src`: ninguno absorbe los nuevos IDs, salvo los selectores explícitos ya añadidos por #188 que enumeran sus IDs y se conservan.
+## Base y recuento
 
-Evidencia TDD previa, conservada en git (líneas Tests de las ejecuciones anteriores):
+T0 heredado y medido en H0: 120 suites; `Tests: 3994 passed, 3994 total`, cero skipped. No se interpreta el HEAD ya implementado como T0 ni se repiten las anclas sobre código cambiado. Anclas heredadas: padding:24 = 1, text-2xl = 2, --text-24 = 0, asset collar existente; ascendencia de cbd964da confirmada en la ejecución inicial.
 
-| Commit | Mensaje | Tests: | Alcance |
-|---|---|---|---|
-| a479c7f7 | test(pairing): specify shared ring delays before extraction (R13) | 0 total | rojo: módulo ausente |
-| d9d98844 | refactor(pairing): share welcome ping rings with explicit delays (R13) | 87 passed, 87 total | componente + welcome |
-| 9dc36944 | test(pairing): require collar pose before form content (R1) | 1 failed, 61 passed, 62 total | pairing, rojo esperado |
-| af257a8b | feat(pairing): lead the linking view with collar Pingo (R1) | 62 passed, 62 total | pairing |
-| ef7cd9e3 | test(pairing): require two accent rings behind Pingo (R2) | 1 failed, 62 passed, 63 total | pairing, rojo esperado |
-| 5f24b361 | feat(pairing): place two accent rings behind collar Pingo (R2) | 63 passed, 63 total | pairing |
-| ebf21c95 | test(pairing): specify stagger and exact ping loop boundary (R3) | 1 failed, 63 passed, 64 total | rojo: segundo anillo sin retardo |
-| bb598dbf | feat(pairing): apply ring stagger pending cycle boundary resolution (R3) | 1 failed, 150 passed, 151 total | aserción antigua a 2400 ms bloqueada |
+Total esperado para el Cierre: 3994 + 32 casos propios nuevos + 1 caso autorizado de la excepción 2 = **4027**. Desglose de casos propios: R13=2; R1=1; R2=1; R3=1; R4=1; R5=1; R6=2; R7=1; R8=2; R9=10; R10=2; R11=1; R12=2; R14=5. Pairing pasa de 61 a 88 casos, PingRing aporta dos y la suite nueva aporta tres. La excepción 2 desdobla un caso de it.each de design-drift en dos. No se atribuye ese caso al código productivo.
 
-La corrección E1 nace verde sobre bb598dbf: cambia la aserción a 2400 ms (1.5/0) y añade intervalos estrictos a 2401 ms, leyendo getAnimatedStyle de react-native-reanimated/src/jestUtils. No se modifica la animación para satisfacer la aserción retirada. El rojo original de R3 sigue siendo ebf21c95.
+## Commits y líneas Tests
 
-## Skills cargadas
+Las cifras son las líneas `Tests:` literales de cada verificación previa al commit, salvo la excepción 4, repetida también después del commit. Los rojos son exclusivamente pruebas TDD esperadas o los bloqueos históricos indicados. No se repiten bloques ya implementados.
 
-- ponytail: /home/claude/.codex/plugins/cache/ponytail/ponytail/5.3.2/skills/ponytail/SKILL.md
-- building-native-ui: /home/claude/.codex/plugins/cache/openai-curated/expo/11c74d6b/skills/building-native-ui/SKILL.md
-- expo-tailwind-setup: /home/claude/.codex/plugins/cache/openai-curated/expo/11c74d6b/skills/expo-tailwind-setup/SKILL.md
-- appllama-app-design-skill: .agents/skills/appllama-app-design-skill/SKILL.md
-- animate-expo: .agents/skills/animate-expo/SKILL.md
+| Commit y mensaje | Tests: | Alcance / resultado |
+|---|---|---|
+| `a479c7f7` test(pairing): specify shared ring delays before extraction (R13) | 0 total | rojo: módulo ausente |
+| `d9d98844` refactor(pairing): share welcome ping rings with explicit delays (R13) | 87 passed, 87 total | PingRing + welcome, verde |
+| `9dc36944` test(pairing): require collar pose before form content (R1) | 1 failed, 61 passed, 62 total | pairing, rojo |
+| `af257a8b` feat(pairing): lead the linking view with collar Pingo (R1) | 62 passed, 62 total | pairing, verde |
+| `ef7cd9e3` test(pairing): require two accent rings behind Pingo (R2) | 1 failed, 62 passed, 63 total | pairing, rojo |
+| `5f24b361` feat(pairing): place two accent rings behind collar Pingo (R2) | 63 passed, 63 total | pairing, verde |
+| `ebf21c95` test(pairing): specify stagger and exact ping loop boundary (R3) | 1 failed, 63 passed, 64 total | rojo original R3 |
+| `bb598dbf` feat(pairing): apply ring stagger pending cycle boundary resolution (R3) | 1 failed, 150 passed, 151 total | implementación; aserción vieja bloqueada |
+| `9f831ea3` test(pairing): apply approved cycle boundary amendment (R3) | 151 passed, 151 total | verde por E1, tres suites |
+| `6e5bb3f9` test(pairing): specify Pingo float cycle (R4) | 1 failed, 64 passed, 65 total | pairing, rojo |
+| `3d39f276` feat(pairing): float collar Pingo with shared motion (R4) | 70 passed, 70 total | pairing + PingoFloat, verde |
+| `47363b97` test(pairing): require static rings under reduced motion (R5) | 1 failed, 65 passed, 66 total | pairing, rojo |
+| `aa4687b9` feat(pairing): keep ping rings static with reduced motion (R5) | 153 passed, 153 total | tres suites, verde |
+| `76bc928b` test(pairing): require localized title first in content (R6) | 2 failed, 66 passed, 68 total | pairing, rojo |
+| `150dcf8d` test(pairing): query title order with supported RNTL API (R6) | 2 failed, 66 passed, 68 total | rojo con invocación corregida |
+| `598af73d` feat(pairing): place localized title before pet selection (R6) | 68 passed, 68 total | pairing, verde |
+| `3e0e36cd` test(pairing): require 24 px title token (R7) | 1 failed, 68 passed, 69 total | pairing, rojo |
+| `bcebe008` feat(pairing): apply title token pending design guard resolution (R7) | 2 failed, 252 passed, 254 total | título verde, dos falsos positivos de guarda |
+| `53e9af61` refactor(pairing): spell R2 ring order selector without bracket syntax (R2) | 1 failed, 253 passed, 254 total | excepción 3; C8 verde |
+| `0c717e29` refactor(pairing): cite feature 188 as R1-R14 in describe title (R7) | 254 passed, 254 total | excepción 4; tres suites verdes |
+| `252e7e29` test(pairing): specify localized linking content order (R8) | 2 failed, 69 passed, 71 total | pairing, rojo |
+| `ee3fbc93` feat(pairing): expose label and hint in linking content order (R8) | 71 passed, 71 total | pairing, verde |
+| `e5716f2f` test(pairing): keep unapproved subtitle absent across states (R9) | 81 passed, 81 total | pairing, NV |
+| `97f2b146` test(pairing): require artboard padding in both device states (R10) | 2 failed, 81 passed, 83 total | pairing, rojo |
+| `e2194c67` feat(pairing): apply artboard padding and approved metric assertions (R10) | 269 passed, 269 total | tres suites verdes, excepciones 1 y 2 |
+| `68fb1458` test(pairing): verify catalog copy and registered bilingual keys (R11) | 33 passed, 33 total | suite nueva + ui-language, NV |
+| `94cea37c` test(pairing): guard style sources after bracket mutation check (R12) | 243 passed, 243 total | cinco suites verdes tras mutación revertida |
+| `c0387881` refactor(pairing): inspect copy table without registering its tests (R11) | 33 passed, 33 total | suite nueva + ui-language, verde |
+| `f820d669` test(pairing): preserve paired ready and empty states without hero (R14) | 88 passed, 88 total | pairing, NV |
 
-No faltan skills requeridas. Sin MCP Appllama, según handoff. Patrón: hero decorativo, contenido desplazable, navegación existente; movimiento de primer uso con propósito de deleite, transform/opacity en UI thread y tiempos de spec/carta. H1–H3 en Android y la medida de fps quedan al humano; no se usa Expo Go ni se atribuye verificación visual desde tests.
+Los commits documentales de bloqueo anteriores (`22aff2e9`, `847cff9d`, `bf7af15e`, `db4b8841`, `3082ff68`) quedan en la historia. El commit final de esta ejecución contiene exclusivamente este reporte y traceability.md; su hash no se autorreferencia dentro del propio commit.
 
-## Reanudación: commits y verificaciones
+## Excepción 4 y cierre de R7
 
-Se registran las líneas Tests de cada corrida previa al commit y su alcance a continuación.
-
-- `9f831ea3 test(pairing): apply approved cycle boundary amendment (R3)`
-
-```text
-Test Suites: 3 passed, 3 total
-Tests:       151 passed, 151 total
-```
-
-- `6e5bb3f9 test(pairing): specify Pingo float cycle (R4)`
-
-```text
-Test Suites: 1 failed, 1 total
-Tests:       1 failed, 64 passed, 65 total
-```
-
-- `3d39f276 feat(pairing): float collar Pingo with shared motion (R4)`
-
-```text
-Test Suites: 2 passed, 2 total
-Tests:       70 passed, 70 total
-```
-
-- `47363b97 test(pairing): require static rings under reduced motion (R5)`
-
-```text
-Test Suites: 1 failed, 1 total
-Tests:       1 failed, 65 passed, 66 total
-```
-
-- `aa4687b9 feat(pairing): keep ping rings static with reduced motion (R5)`
-
-```text
-Test Suites: 3 passed, 3 total
-Tests:       153 passed, 153 total
-```
-
-- `76bc928b test(pairing): require localized title first in content (R6)`
-
-```text
-Test Suites: 1 failed, 1 total
-Tests:       2 failed, 66 passed, 68 total
-```
-
-- `150dcf8d test(pairing): query title order with supported RNTL API (R6)`
-
-```text
-Test Suites: 1 failed, 1 total
-Tests:       2 failed, 66 passed, 68 total
-```
-
-- `598af73d feat(pairing): place localized title before pet selection (R6)`
-
-```text
-Test Suites: 1 passed, 1 total
-Tests:       68 passed, 68 total
-```
-
-- `3e0e36cd test(pairing): require 24 px title token (R7)`
-
-```text
-Test Suites: 1 failed, 1 total
-Tests:       1 failed, 68 passed, 69 total
-```
-
-- `bcebe008 feat(pairing): apply title token pending design guard resolution (R7)`
-
-```text
-Test Suites: 1 failed, 2 passed, 3 total
-Tests:       2 failed, 252 passed, 254 total
-```
-
-
-## Reanudación tras db4b8841
-
-El primer comando de esta nueva ejecución volvió a ser exactamente `cd /home/claude/sites/Pet-Tracker-wt-188 && pwd && git branch --show-current`, con las mismas dos salidas confirmadas arriba. Leído el handoff actualizado entero, incluida la línea Reanudación y las excepciones 1–3. Árbol de app/specs inicialmente limpio; solo current.md y handoff tenían cambios del leader. Las skills listadas arriba ya se cargaron íntegramente en esta conversación y se conservan; ninguna requerida falta.
-
-La excepción 3 autoriza exclusivamente sustituir el selector de R2 por alternativas explícitas, conservando el conjunto de IDs y la aserción. No se modifica ninguna guarda por este motivo. Se registra el antes y el después y se conserva la evidencia previa de R7.
-
-Antes de excepción 3 (reproducción, exit 1): `Test Suites: 1 failed, 2 passed, 3 total`; `Tests: 2 failed, 252 passed, 254 total`. Fallan C8 y #68 R18, los dos rojos que recoge la excepción 3; la causa independiente del segundo se precisa abajo.
-
-- `53e9af61 refactor(pairing): spell R2 ring order selector without bracket syntax (R2)`
+Antes de la excepción 4 se reprodujo exactamente el único fallo autorizado:
 
 ```text
 Test Suites: 1 failed, 2 passed, 3 total
 Tests:       1 failed, 253 passed, 254 total
 ```
 
+Se cambia solo `describe('#188: pairing canvas fidelity', …)` por `describe('#188 R1-R14: pairing canvas fidelity', …)`, según Excepción 4 del leader, 2026-10-19 tras `3082ff68`. No se cambia una aserción, un it ni una guarda. El commit propio es `0c717e29` con el mensaje exacto solicitado.
 
-## Resultado de la excepción 3 y nueva parada
+Se ejecuta antes y después del commit:
 
-Se aplicó exactamente el cambio autorizado, en commit propio `53e9af61 refactor(pairing): spell R2 ring order selector without bracket syntax (R2)`: una línea en pairing/index.test.tsx, sin alterar la aserción ni ninguna guarda. El selector conserva el mismo conjunto de testIDs.
-
-Después de la sustitución, la misma corrida focalizada terminó exit 1:
-
-```text
-Test Suites: 1 failed, 2 passed, 3 total
-Tests:       1 failed, 253 passed, 254 total
+```bash
+bun run test --runInBand --runTestsByPath src/screens/pairing/index.test.tsx src/__tests__/design-drift.test.ts src/__tests__/consistency-classnames.test.ts
 ```
 
-Pairing conserva 69/69 verdes; consistency-classnames pasa; C8 ya pasa. Sigue rojo exclusivamente:
-
-`#68 R18: la actividad semanal no mete drift de estilo › keeps arbitrary text, hex colors, and StyleSheet out of feature sources`
-
-Su lista de infractores es `["screens/pairing/index.test.tsx"]`, en design-drift.test.ts:363. La causa exacta se identificó por lectura del patrón real, sin modificarlo: `FEATURE_STYLE_ESCAPES` combina text arbitrario de 10 px, `HEX_LITERAL` y StyleSheet; no incluye `ARBITRARY_CLASS`. `HEX_LITERAL` es `#(?!\d{2,3} R\d)[\da-f]{3,8}\b` y casa con `#188` en pairing/index.test.tsx:1059:
-
-```tsx
-describe('#188: pairing canvas fidelity', () => {
-```
-
-La cita no tiene el sufijo ` R<n>` exigido por la guarda. La lectura del archivo confirma una única coincidencia de HEX_LITERAL: esa cabecera del describe. El reporte de la parada anterior atribuyó ambos fallos al selector de R2; esa atribución era incompleta. C8 se debía al selector, mientras #68 R18 tenía esta causa independiente. Esta reanudación deja corregido el diagnóstico, sin cambiar la cabecera ni la guarda.
-
-El cambio de la cabecera queda fuera de la única línea que autoriza la excepción 3. El usuario ordena parar si una guarda falla fuera de esa excepción; además no se cumple la cifra exigida de 3 suites verdes y 0 fallidos. Se para aquí, sin iniciar R8 ni ninguna tarea posterior. No se repite una corrida tras el commit que guarda la misma sustitución, porque la parada ya se activó al comprobarla antes de commitear.
-
-## Estado de requisitos y verificaciones
-
-- R13, R1–R6 y R7 funcional conservados, sin rehacerlos. R3 mantiene E1 y R4 mantiene PingoFloat y su test intactos.
-- R7: incompleto por el rojo obligatorio de design-drift. La excepción 3 se aplicó; no eliminó el segundo fallo.
-- R8, R9, R10, R11, R12 y R14: no iniciados en esta reanudación. NV: ninguno evaluado; no se atribuyen tests nuevos a R9/R11/R14 sin ejecutarlos.
-- Excepciones 1 y 2 autorizadas para R10: no aplicadas, porque no se alcanzó R10. design-drift.test.ts no se editó.
-- No se creó pairing-canvas-fidelity.test.ts ni se ejecutó la mutación temporal de R12.
-- No se añadió ningún test en esta reanudación. T0 sigue siendo el heredado de 3994; los diez casos añadidos en ejecuciones anteriores siguen en git. No se midió un nuevo total de la suite completa después de T0.
-- Guardas R12: design-drift rojo y consistency-classnames verde en el alcance focalizado. legibility-classnames y heroui-text-size-merge no se ejecutaron aquí.
-- Lint y typecheck: no ejecutados por la parada. No hay verde acreditado ni se invocó tsc sin su preguarda. .expo/types/router.d.ts no se tocó ni borró.
-- Cierre completo, nueva corrida de bun run test y graphify update suspendidos por la parada obligatoria. No se declara done ni se cambia el estado de la feature.
-- `git diff --check`: exit 0. Árbol de mobile-pet-tracker/ y specs/ limpio tras 53e9af61; se comprueba de nuevo tras el commit documental.
-
-## Skills, desviaciones y límites
-
-Las skills cargadas en esta conversación siguen siendo ponytail, building-native-ui, expo-tailwind-setup, appllama-app-design-skill y animate-expo, con las rutas listadas arriba. No falta ninguna requerida. Sin MCP Appllama, conforme al handoff. Se mantienen la carta y los valores aprobados por encima de recomendaciones genéricas; no se rehacen UI ni motion ya implementados.
-
-- Excepción 3 del leader, 2026-10-19 tras db4b8841: aplicada exactamente, en commit propio; líneas Tests antes y después registradas. No se debilita una aserción ni se modifica una guarda.
-- E1 de R3: corrección aprobada que nació verde sobre bb598dbf, no rojo nuevo; el rojo original sigue siendo ebf21c95.
-- Error de lectura de esta reanudación: se intentó leer el archivo nuevo aún inexistente src/__tests__/pairing-canvas-fidelity.test.ts (ENOENT, sin cambios ni verificadores arrancados). No se implementó R11/R12 después de esa lectura. No hubo denegaciones del sandbox.
-- Errores de la reanudación anterior, ya resueltos y conservados en la evidencia: lectura de ui-copy.test.ts inexistente, corregida localizando ui-language.test.ts; consulta findAllByType no disponible en RNTL 14, corregida antes de repetir el rojo de R6 y de su implementación definitiva (150dcf8d y 598af73d).
-- Logs en progress/test-188.log, ignorado por git, según la excepción explícita del handoff; no se ejecutó lint ni se creó un log nuevo de lint.
-- No se ejecutó init.sh, no se regeneraron .env/node_modules ni se añadieron dependencias. No se abrió/editó la PR ni se hizo merge o push.
-- Se preservan sin tocar y sin commitear los cambios previos del leader en progress/current.md y progress/handoff_mobile-pairing-pingo-canvas-fidelity.md.
-- H1–H3, comparación con el canvas y prueba en Android siguen al humano. No se verificaron fps ni fidelidad visual en dispositivo. La compilación uniwind de border-3/size-37.5 permanece acreditada por la primera ejecución, sin repetirla.
-
-## Archivos y entrega
-
-`git diff --name-only 6dc51ca1..HEAD -- mobile-pet-tracker/`, tras 53e9af61:
+Ambas verificaciones posteriores al cambio dan:
 
 ```text
+Test Suites: 3 passed, 3 total
+Tests:       254 passed, 254 total
+```
+
+R7 queda completo funcionalmente y con design-drift/consistency-classnames verdes. El rojo original y el token ya estaban en `3e0e36cd` y `bcebe008`.
+
+## R8–R14 y NV
+
+- R8: los literales es/en de R6 y R8 se contrastaron por las cuatro claves contra catálogo y coinciden exactamente con requirements. El orden visual existente ya coincide. Los dos casos rojos exigen IDs para la etiqueta y la pista; la implementación mínima añade `pairing-activation-code-label` y `pairing-code-hint` para comprobar la secuencia completa, manteniendo el input y el botón. La búsqueda obligatoria de selectores `grep -rn 'TestId(/' mobile-pet-tracker/src` no encuentra selectores previos que cambien su resultado.
+- R9 **NV**: D5(a), R6 y R8 ya omiten subtítulo. Diez escenarios con ancla positiva del mismo árbol: carga, error de mascotas, sin mascotas, vinculación, cuatro estados del plan, error de claim y ready. No se fuerza un rojo ni se cambia implementación.
+- R10: rojo en vinculación y emparejado; paddingHorizontal 20 / paddingVertical 24 en el contenedor compartido, sin ramas para carga. Gap y ambos paddingBottom permanecen intactos. Se aplican las excepciones 1 y 2 en el mismo commit de implementación. El diff de design-drift contiene únicamente el desdoblamiento autorizado del caso padding:24.
+- R11 **NV**: R6/R8 ya usan catálogo. El AST rechaza copy literal en texto JSX y props de texto, verifica las claves directas de t() en es/en y sus filas en la tabla. Las cuatro claves obligatorias deben estar presentes. ui-language verifica también la tabla normativa y las claves dinámicas existentes. No se modifica catálogo ni ui-copy-table. El refactor evita que importar la tabla registre dos it ajenos en la suite nueva; las cifras anteriores conservan esos dos tests importados, y el total final los excluye.
+- R12: dos casos, uno por fuente, con el mismo patrón HEX_LITERAL de design-drift y el patrón de className con corchetes prescrito. La implementación ya cumple tras R7/R10. Se valida el candado con mutación, descrita abajo; las cuatro guardas pasan.
+- R14 **NV**: el gating de R1/R2/R4 ya restringe el hero a vinculación. Cinco casos (tracked/free/unknown, ready, sin mascotas) conservan los testIDs actuales, y comprueban ausencia de Pingo, ambos anillos y flotado después de esperar al nodo positivo correspondiente. No cambia implementación.
+
+R3 conserva E1: la corrección nació verde sobre `bb598dbf`, no es otro rojo TDD. El rojo original es `ebf21c95`; 2400 ms fija 1.5/0 y 2401 ms usa claves exactas e intervalos estrictos leídos mediante getAnimatedStyle. No se toca PingRing para satisfacer la aserción retirada. R4 conserva PingoFloat y su test sin cambios; R5 conserva 0/1500/2400 ms, estilos exactos y reduce motion.
+
+## Prueba de mutación R12
+
+Antes del commit R12 se planta `className="w-[3px]"` en el host de pairing/index.tsx. La suite nueva da exclusivamente el rojo esperado de R12 para ese fichero:
+
+```text
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 4 passed, 5 total
+```
+
+El matcher que falla es `not /className="[^"]*\[/`. Se revierte la mutación y `git diff --exit-code -- mobile-pet-tracker/src/screens/pairing/index.tsx` confirma identidad con HEAD antes de cualquier commit. Después pasan pairing-canvas-fidelity, design-drift, consistency-classnames, legibility-classnames y heroui-text-size-merge:
+
+```text
+Test Suites: 5 passed, 5 total
+Tests:       243 passed, 243 total
+```
+
+Esta cifra precede al refactor R11 que elimina dos tests importados de la tabla; los tres casos propios de la suite nueva permanecen intactos.
+
+## Cierre: parada obligatoria
+
+Se lanzaron, después del último verde, bun run test, typecheck con preguarda, lint sin caché y graphify. Al recibir el fallo de typecheck se detiene toda implementación y no se inicia ninguna otra verificación. Solo se recogen las operaciones ya iniciadas y se documenta el resultado.
+
+**Typecheck: FALLA (exit 2)**. `test ! -e .expo/types/router.d.ts` pasó y después arrancó `bun run typecheck` (`tsc --noEmit`). No existe una denegación del sandbox ni un error de invocación: son diagnósticos reales de TypeScript en fuentes de react-native-reanimated, entre ellos:
+
+```text
+node_modules/react-native-reanimated/src/PropsRegistryGarbageCollector.ts(55,5): error TS2322: Type 'number' is not assignable to type 'Timeout'.
+node_modules/react-native-reanimated/src/ReanimatedModule/NativeReanimated.ts(42,12): error TS7017: Element implicitly has an 'any' type because type 'typeof globalThis' has no index signature.
+node_modules/react-native-reanimated/src/common/style/config.ts(21,14): error TS2740: ... missing ... outline, animationDuration, animationTimingFunction, animationDelay ...
+node_modules/react-native-reanimated/src/commonTypes.ts(172,18): error TS2320: Interface 'StyleProps' cannot simultaneously extend types 'ViewStyle' and 'TextStyle'.
+```
+
+Hay otros TS7017 y TS2345 en esa dependencia. No se corrige código, no se excluyen tests ni se cambia tsconfig/dependencias para eludir el gate. La importación profunda de getAnimatedStyle en pairing/index.test.tsx es un antecedente relevante; no se declara una causa raíz sin verificarla en una sesión autorizada. router.d.ts no se crea ni se borra.
+
+Resultados recogidos de las operaciones ya iniciadas, sin repetir verificadores después del fallo:
+
+- Suite completa `bun run test`: exit 0; `Test Suites: 122 passed, 122 total`; `Tests: 4027 passed, 4027 total`, cero skipped. Coincide con 3994 + 32 + 1. Son 120 suites base + PingRing + pairing-canvas-fidelity. Todos los tests previos pasan con las únicas excepciones autorizadas. Las cuatro guardas R12 también pasan en esta corrida final.
+- Lint: exit 0 con el comando exacto `bunx expo lint --no-cache > ../progress/lint-188.log 2>&1 && test ! -s ../progress/lint-188.log`; log vacío (0 bytes).
+- `graphify update .`: exit 0, extracción AST sin LLM. Genera en graphify-out el grafo con 26512 nodos, 34419 aristas y 1768 comunidades. Advertencia de herramienta: 20 ficheros SQL no contribuyen por faltar tree_sitter_sql; no se añaden dependencias. No afecta a la extracción móvil y no se acredita cobertura SQL.
+
+El último verde de código es f820d669. El commit documental final conserva la línea `Tests: 4027 passed, 4027 total` sin una corrida adicional: no cambia código. El único bloqueo de Cierre observado es typecheck. No se declara todo verde.
+
+## Skills y desviaciones
+
+Skills cargadas en esta ejecución:
+
+- ponytail: `/home/claude/.codex/plugins/cache/ponytail/ponytail/5.3.2/skills/ponytail/SKILL.md`.
+- building-native-ui: `/home/claude/.codex/plugins/cache/openai-curated/expo/11c74d6b/skills/building-native-ui/SKILL.md`.
+- expo-tailwind-setup: `/home/claude/.codex/plugins/cache/openai-curated/expo/11c74d6b/skills/expo-tailwind-setup/SKILL.md`.
+- appllama-app-design-skill: `.agents/skills/appllama-app-design-skill/SKILL.md`.
+- animate-expo: `.agents/skills/animate-expo/SKILL.md`.
+
+No falta ninguna requerida. Las cuatro equivalencias inexistentes de Codex (expo-overview, expo-animation, expo-router, expo-design-system) no se buscan, según handoff. Sin MCP Appllama; se sigue el patrón de carta/spec, sin cambiar sistema de estilos. Movimiento heredado de primer uso con propósito de deleite, transform/opacity en UI thread y tiempos aprobados; no se agregan animaciones en esta reanudación.
+
+Desviaciones autorizadas del handoff: excepción 1 (#95 R6) y excepción 2 (métricas de design-drift), aplicadas en `e2194c67`; excepción 3 (selector R2) conservada en `53e9af61`; excepción 4 (describe) aplicada en `0c717e29`. Antes/después de excepción 3: `Tests: 2 failed, 252 passed, 254 total` → `Tests: 1 failed, 253 passed, 254 total`. E1 es enmienda humana, no un rojo nuevo. Ninguna otra aserción anterior se cambia.
+
+Logs en progress/test-188.log y progress/lint-188.log, ignorados, según la desviación explícita del handoff sobre tasks («fuera del árbol»). Error de invocación de esta ejecución: actualización del reporte usando ruta de raíz desde mobile-pet-tracker dio ENOENT sin modificar archivos; se corrigió desde la raíz. Errores heredados resueltos: ruta ui-copy.test.ts inexistente y findAllByType no disponible en RNTL 14, corregidos en la ejecución anterior. Sin denegaciones del sandbox.
+
+## Ficheros y límites
+
+`git diff --name-only 6dc51ca1..HEAD -- mobile-pet-tracker/` coincide exactamente con los ocho ficheros móviles autorizados:
+
+```text
+mobile-pet-tracker/src/__tests__/design-drift.test.ts
+mobile-pet-tracker/src/__tests__/pairing-canvas-fidelity.test.ts
 mobile-pet-tracker/src/components/__tests__/ping-ring.test.tsx
 mobile-pet-tracker/src/components/ping-ring.tsx
 mobile-pet-tracker/src/screens/pairing/index.test.tsx
@@ -195,8 +174,8 @@ mobile-pet-tracker/src/screens/welcome/index.tsx
 mobile-pet-tracker/src/theme/global.css
 ```
 
-Es un subconjunto de la lista cerrada; los otros archivos autorizados corresponden a bloques no alcanzados. En esta reanudación solo se cambia la línea autorizada de pairing/index.test.tsx. El commit final documental incluye únicamente este reporte y traceability.md con el estado parcial actualizado.
+Árbol móvil/specs limpio tras el último commit de código; git diff --check pasa. El commit final incluye solo este reporte y traceability.md con los hashes y el estado de Cierre bloqueado. No se declara la feature done, ni se atribuye revisión humana o aprobación del reviewer.
 
-El commit final `docs(pairing): record remaining design guard blocker after exception 3` no tiene una corrida nueva; conserva `Tests: 1 failed, 253 passed, 254 total`. Su hash se obtiene con git log, evitando autorreferencia en su propio contenido.
+H1–H3 (Android, reduce motion y comparación con canvas) siguen al humano, igual que fps en release según los límites de la spec. No se verificó fidelidad visual desde tests ni se usó Expo Go. La compilación uniwind de border-3/size-37.5 se conserva acreditada por la ejecución inicial, sin repetirla.
 
-Última acción: crear progress/impl_mobile-pairing-pingo-canvas-fidelity.done con una sola línea, `/home/claude/sites/Pet-Tracker-wt-188/progress/impl_mobile-pairing-pingo-canvas-fidelity.md`. El marcador indica fin de esta ejecución bloqueada, no finalización de #188.
+Última acción de esta ejecución: crear progress/impl_mobile-pairing-pingo-canvas-fidelity.done con una sola línea, `/home/claude/sites/Pet-Tracker-wt-188/progress/impl_mobile-pairing-pingo-canvas-fidelity.md`. El marcador indica que terminó esta ejecución bloqueada, no que se haya aprobado el Cierre.
