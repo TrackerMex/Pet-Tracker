@@ -1,3 +1,4 @@
+import { useChunkyLip } from '../../theme/chunky-lip';
 import { Image } from 'expo-image';
 import { HeaderHeightContext } from 'expo-router/react-navigation';
 import { router } from 'expo-router';
@@ -18,6 +19,7 @@ import { useThemeColors } from '../../theme/use-theme-colors';
 import { validateForgot, type FieldIssues } from '../../utils/account-rules';
 
 export function ForgotScreen() {
+  const chunkyLip = useChunkyLip();
   const headerHeight = useContext(HeaderHeightContext);
   const [accentForeground] = useThemeColors(['accent-foreground']);
   const insets = useSafeAreaInsets();
@@ -102,8 +104,8 @@ export function ForgotScreen() {
         </PingoFloat>
         <PopIn
           testID="forgot-lock-tile"
-          className="size-13 items-center justify-center rounded-xl border-b-4 border-black/25 bg-accent"
-          style={CONTINUOUS_CORNER}
+          className="size-13 items-center justify-center bg-accent rounded-16"
+          style={[CONTINUOUS_CORNER, chunkyLip.primary]}
         >
           <Lock size={26} color={accentForeground} />
         </PopIn>
@@ -146,7 +148,7 @@ export function ForgotScreen() {
         {!sent ? (
           <Button
             testID="forgot-submit"
-            className="w-full h-14 rounded-xl bg-accent border-b-4 border-black/25"
+            className="w-full h-14 rounded-16 bg-accent" style={chunkyLip.primary}
             isDisabled={email.trim() === '' || submitting}
             onPress={() => void submit()}
           >
@@ -160,7 +162,7 @@ export function ForgotScreen() {
           <Button
             testID="forgot-resend"
             variant="secondary"
-            className="w-full h-14 rounded-xl border-2 border-b-6 border-lip-gray bg-surface"
+            className="w-full h-14 rounded-16 border-2 border-lip-gray bg-surface" style={chunkyLip.neutral}
             isDisabled={submitting}
             onPress={() => void send(submittedEmail)}
           >

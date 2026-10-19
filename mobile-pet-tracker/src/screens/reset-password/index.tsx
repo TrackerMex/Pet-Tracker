@@ -1,3 +1,4 @@
+import { useChunkyLip } from '../../theme/chunky-lip';
 import { Image } from 'expo-image';
 import { HeaderHeightContext } from 'expo-router/react-navigation';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -19,6 +20,7 @@ import { HomeEntrance } from '../home/home-entrance';
 import { validateResetPassword, type FieldIssues } from '../../utils/account-rules';
 
 export function ResetPasswordScreen() {
+  const chunkyLip = useChunkyLip();
   const headerHeight = useContext(HeaderHeightContext);
   const [accentForeground] = useThemeColors(['accent-foreground']);
   const { token } = useLocalSearchParams<{ token?: string }>();
@@ -241,7 +243,7 @@ export function ResetPasswordScreen() {
 
           <Button
             testID="reset-submit"
-            className="w-full h-14 rounded-xl bg-accent border-b-4 border-black/25"
+            className="w-full h-14 rounded-16 bg-accent" style={chunkyLip.primary}
             isDisabled={submitting}
             onPress={() => void handleSubmit()}
           >

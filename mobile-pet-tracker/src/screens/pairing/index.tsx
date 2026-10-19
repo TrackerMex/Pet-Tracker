@@ -1,3 +1,4 @@
+import { useChunkyLip } from '../../theme/chunky-lip';
 import { HeaderHeightContext } from 'expo-router/react-navigation';
 import { useQuery } from '@tanstack/react-query';
 import { router, useFocusEffect } from 'expo-router';
@@ -63,6 +64,7 @@ function DeviceRow({
 }
 
 export function PairingScreen() {
+  const chunkyLip = useChunkyLip();
   const headerHeight = useContext(HeaderHeightContext);
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { signOut, token } = useAuth();
@@ -357,13 +359,13 @@ export function PairingScreen() {
 
             <Button
               testID="pairing-submit"
-              className="min-h-11 w-full rounded-xl bg-accent border-b-4 border-black/25"
+              className="w-full h-14 rounded-16 bg-accent" style={chunkyLip.primary}
               isDisabled={code.trim() === '' || claiming}
               onPress={() => void handleClaim()}
             >
-              <Button.Label className="font-bold text-accent-foreground">
+              <Text className="text-17 font-extrabold text-accent-foreground">
                 {t('pairing.pairCollar')}
-              </Button.Label>
+              </Text>
             </Button>
           </View>
         ) : null}

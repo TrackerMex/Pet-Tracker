@@ -73,6 +73,7 @@
       --color-glass-surface: rgba(255,255,255,0.60);
       --color-glass-surface-strong: rgba(255,255,255,0.86);
       --color-tab-pill: rgba(23,130,85,0.14);
+      --color-lip: #0E5E3C;
       --color-lip-gray: #E4E7EC;
       --color-danger: #EF4444;
       --color-warning: #F59E0B;
@@ -124,6 +125,7 @@
       --color-glass-surface: rgba(22,27,34,0.60);
       --color-glass-surface-strong: rgba(22,27,34,0.86);
       --color-tab-pill: rgba(23,130,85,0.22);
+      --color-lip: #0B4D31;
       --color-lip-gray: #0A0D12;
       --color-danger: #F87171;
       --color-warning: #FBBF24;
