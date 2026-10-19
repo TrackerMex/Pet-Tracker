@@ -701,4 +701,4 @@ Los candados anteriores se reescriben en su sitio.
 
 Detalle y tests en `specs/mobile-pairing-pingo-canvas-fidelity/requirements.md`.
 
-- [ ] Enmienda #188 aprobada por humano
+- [X] Enmienda #188 aprobada por humano
