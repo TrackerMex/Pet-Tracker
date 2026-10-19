@@ -114,3 +114,62 @@ R2 no tiene commit rojo ni verde: el resultado no corresponde al rojo autorizado
 - No se ejecutaron `init.sh`, backend, AWS, deploy, push, PR, rebase ni cambios a los ficheros de estado reservados al leader.
 
 Para reanudar hace falta que el leader revise la declaración del rojo de R2 y el handoff para incluir explícitamente el it global de ALL_USES (seis rojos observados), o indique cómo resolver esa discrepancia. No se propone debilitar el candado.
+
+## Reanudación R2 — spec corregida a seis rojos
+
+Comprobación inicial: worktree `/home/claude/sites/Pet-Tracker-wt-186`, rama `feature/186-mobile-forms-validation-global`, HEAD `26c58911` — `docs(#186): R2 declara seis rojos en ui-language, no cinco`. Coincide con lo exigido. El usuario autoriza reanudar después de corregir R2 y el handoff: cuatro bloques, SCREEN_FILES y checkUses(ALL_USES). No se repiten T0 ni R1 y se conserva el historial anterior de este reporte. Skills aplicadas: building-native-ui y ponytail, ya leídas en la sesión anterior.
+
+R2 re-medido: form-rules `Tests:       0 total`, Cannot find module declarado; ui-language `Tests:       6 failed, 24 passed, 30 total` (30 + 0). Coinciden los seis it ya enumerados arriba. Sin cambio de aserciones. Typecheck exit 0; lint exit 0, log vacío.
+
+S2.1: `Tests:       1 failed, 88 passed, 89 total`; rojo previsto: #186 R2: reglas puras de los cuatro formularios › #186 R2: peso «999.99».
+Revertida con `git checkout HEAD -- src/utils/form-rules.ts`; diff HEAD y cached exit 0.
+
+S2.2: `Tests:       4 failed, 85 passed, 89 total`; rojo previsto: #186 R2: reglas puras de los cuatro formularios › #186 R2: fecha de documento «2026-02-30»; #186 R2: reglas puras de los cuatro formularios › #186 R2: fecha de documento «2026-02-29»; #186 R2: reglas puras de los cuatro formularios › #186 R2: fecha del peso «2026-02-30»; #186 R2: reglas puras de los cuatro formularios › #186 R2: fecha del peso «2026-02-29».
+Revertida con `git checkout HEAD -- src/utils/form-rules.ts`; diff HEAD y cached exit 0.
+
+S2.3: `Tests:       1 failed, 88 passed, 89 total`; rojo previsto: #186 R2: reglas puras de los cuatro formularios › #186 R2: recordatorio fecha igual a ahora.
+Revertida con `git checkout HEAD -- src/utils/form-rules.ts`; diff HEAD y cached exit 0.
+
+### R2 verde y commits de la reanudación
+
+- Rojo: `b8c0a517` — `test(mobile): reglas de formulario y filas de copy (#186 R2)`.
+- Verde: `9c2c676f61c29e52fcc351a47a890ab2f0581ef6` — `feat(mobile): form-rules.ts (#186 R2)`.
+- form-rules: `Tests:       89 passed, 89 total` = 0 + 89 it nuevos (suite antes bloqueada por import ausente).
+- ui-language: `Tests:       30 passed, 30 total` = 30 + 0.
+- Typecheck exit 0; lint exit 0 con log vacío antes de cada commit. `account-rules.ts` sin cambios contra H0.
+- Los deltas de copy se conservan: Health 39 + 4 = 43; Profile 68 + 1 = 69; Reminders 56 + 3 = 59; Add-pet 45 + 3 = 48; SCREEN_FILES 34 + 1 = 35.
+
+S2.4: `Tests:       1 failed, 88 passed, 89 total`; rojo previsto: #186 R2: reglas puras de los cuatro formularios › #186 R2: mascota meses inactivos.
+Revertida con `git checkout HEAD -- src/utils/form-rules.ts`; diff HEAD y cached exit 0.
+
+S2.5: `Tests:       1 failed, 88 passed, 89 total`; rojo previsto: #186 R2: reglas puras de los cuatro formularios › #186 R2: fecha de documento « 2026-10-09 ».
+Revertida con `git checkout HEAD -- src/utils/form-rules.ts`; diff HEAD y cached exit 0.
+
+## R3 — preparación y segunda parada obligatoria
+
+Se escribió `mobile-pet-tracker/src/components/__tests__/field-error-message.test.tsx` con los ocho candados de R3: ausencia con null/undefined, traducción española, parámetros, inglés, render dentro/fuera de TextField, rerender de presencia y de clave, e higiene de fuente. Es un fichero nuevo, con base H0 = 0. Se añadió con git add antes de las comprobaciones.
+
+Rojo medido con una sola suite: `Tests:       0 total`; `Cannot find module '../field-error-message' from 'src/components/__tests__/field-error-message.test.tsx'`, tal como declara R3. Log: `/tmp/pet-tracker-186-R3-red.log`. No hay implementación ni commit rojo R3. Los selectores de los candados de contexto y cambio de clave se concretaron por texto antes del commit; las aserciones de R2 no cambiaron. Typecheck y lint finales de este test pasaron: exit 0 y log de lint vacío (`/tmp/pet-tracker-186-R3-red-final-lint.log`).
+
+**Parada por error de invocación del agente.** En una lectura auxiliar se ejecutó desde `mobile-pet-tracker/`:
+
+```bash
+sed -n '485,545p' specs/../src/__tests__/ui-language.test.ts
+```
+
+Resultado: exit 2, `sed: can't read specs/../src/__tests__/ui-language.test.ts: No such file or directory`. El segmento `specs/` no existe dentro de móvil. Es un error de lectura, no un rojo de Jest; no se contabiliza como prueba ni se reintenta con otra ruta. Se aplica literalmente la instrucción de reanudación «un error de invocación = PARA y avisa». Se avisó inmediatamente al usuario y se detuvo la implementación. Se dejó terminar el gate de lint ya iniciado, sin lanzar nuevos tests ni modificar aserciones después de la parada.
+
+El fichero de test R3 se conserva sin commit, retirando solo su entrada del índice. No se creó `src/components/field-error-message.tsx`. No se hicieron S3.1–S3.5: requieren el verde R3. No se empezaron R4–R9.
+
+## Estado actual tras la reanudación
+
+Esta sección actualiza el estado; las secciones anteriores se conservan como historial de la primera parada.
+
+- R1 completo en la sesión anterior; no se repitieron T0 ni R1.
+- R2 completo: rojo `b8c0a517298300fc385bb787513ac71a82878dbc`, verde `9c2c676f61c29e52fcc351a47a890ab2f0581ef6`; hashes comprobados con `git cat-file -e` (exit 0).
+- Nuevos it R2: **89** = base 0 + 89. ui-language conserva 30 + 0. La suite nueva estaba bloqueada por el import declarado; no se atribuyen NV de ejecución a sus casos individuales. Las cinco sondas dieron los rojos previstos y fueron revertidas con diff HEAD/cached exit 0.
+- S2.2 detectó cuatro filas: fechas 2026-02-30 y 2026-02-29, en documento y en peso; ambas fechas están en las tablas declaradas.
+- R3 sin commit y sin verde. R4–R9 sin iniciar. Incremento ejecutado acreditado R3–R9 = 0; no se declaran NV de esos requisitos.
+- Incremento terminado acumulado: R1 +1, R2 +89. T0 3994 + 1 + 89 = **4084 esperado para los commits R1–R2**, no una medición global final. No se ejecutó suite global final por la segunda parada; los tests R3 sin commit dejan ese árbol en rojo por módulo ausente.
+- Único fichero de código/test sin commit al cerrar: `mobile-pet-tracker/src/components/__tests__/field-error-message.test.tsx`. Se conserva para revisión, por lo que el worktree no queda limpio.
+- No se ejecutaron init.sh, backend, AWS, push ni PR. No se tocaron feature_list.json, R10 ni casillas humanas. No se rebasó ni reescribió ningún commit.
