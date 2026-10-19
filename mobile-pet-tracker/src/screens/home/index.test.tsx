@@ -5411,3 +5411,17 @@ describe('#181 R7: Inicio converge al crear la primera mascota', () => {
     expect(screen.queryByTestId('home-empty')).toBeNull();
   });
 });
+
+describe('#190 R11: la burbuja sigue la receta del canvas', () => {
+  beforeEach(setupHomeMotion);
+
+  it('usa View y Text de RN con las clases exactas y un único hijo', async () => {
+    await renderHome();
+    const text = await screen.findByTestId('home-pingo-text');
+    const bubble = screen.getByTestId('home-pingo-bubble');
+    expect(bubble.props.className).toBe('flex-1 rounded-tile rounded-br-4 bg-surface px-3.5 py-3 shadow-sm');
+    expect(bubble.children).toEqual([text]);
+    expect(text.type).toBe('Text');
+    expect(text.props.className).toBe('text-15 font-semibold leading-5.25 text-foreground');
+  });
+});
