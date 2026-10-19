@@ -1,5 +1,6 @@
 import { useChunkyLip } from '../../theme/chunky-lip';
 import { useQuery } from '@tanstack/react-query';
+import { Image } from 'expo-image';
 import { router, useFocusEffect } from 'expo-router';
 import { Button, Card as HeroUICard, Skeleton } from 'heroui-native';
 import { useCallback, useEffect, useState } from 'react';
@@ -423,7 +424,13 @@ export function HomeScreen() {
               >
                 <Text testID="home-pingo-text" className="text-15 font-semibold leading-5.25 text-foreground" />
               </View>
-              <View testID="home-pingo-float" />
+              <View testID="home-pingo-float">
+                <Image
+                  testID="home-pingo"
+                  source={require('../../../assets/images/pingo-talk.webp')}
+                  style={{ width: 64, height: 64 }}
+                />
+              </View>
             </View>
           </HomeEntrance>
         ) : null}
