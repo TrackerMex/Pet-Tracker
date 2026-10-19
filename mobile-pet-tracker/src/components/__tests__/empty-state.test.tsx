@@ -137,8 +137,8 @@ describe('#155 R3: un único componente pinta los vacíos ilustrados', () => {
 
   it('declara el botón primario con labio', () => {
     const source = readFileSync(join(process.cwd(), 'src', 'components', 'empty-state.tsx'), 'utf8');
-    expect(source).toContain('className="rounded-xl bg-accent border-b-4 border-black/25"');
-    expect(source).toContain('className="font-bold text-accent-foreground"');
+    expect(source).toContain('className="h-14 rounded-16 bg-accent"');
+    expect(source).toContain('className="text-17 font-extrabold text-accent-foreground"');
   });
 
   it('con acción pinta pose, título, cuerpo y botón como hijos directos, en ese orden', async () => {
@@ -162,7 +162,7 @@ describe('#155 R3: un único componente pinta los vacíos ilustrados', () => {
   it('declara el botón sin size ni variant', () => {
     const source = readFileSync(join(process.cwd(), 'src', 'components', 'empty-state.tsx'), 'utf8');
     expect(source.match(/<Button[\s>]/g)).toHaveLength(1);
-    expect(source).toContain('<Button testID={`${testID}-action`} className="rounded-xl bg-accent border-b-4 border-black/25" onPress={action.onPress}>');
+    expect(source).toContain('<Button testID={`${testID}-action`} className="h-14 rounded-16 bg-accent" style={chunkyLip.primary} onPress={action.onPress}>');
   });
 });
 
