@@ -1248,4 +1248,19 @@ describe('#188 R1-R14: pairing canvas fidelity', () => {
     expect(screen.queryByTestId('pairing-subtitle', { includeHiddenElements: true })).toBeNull();
   });
 
+  it.each(['linking', 'paired'] as const)('#188 R10: uses 20 px horizontal padding when %s', async (state) => {
+    if (state === 'paired') {
+      mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ device: makeDevice() })] });
+      mockGetPetTracking.mockResolvedValue({ kind: 'ok', tracked: true });
+    }
+    await renderPairing();
+    await screen.findByTestId(state === 'paired' ? 'device-status-card' : 'pairing-title');
+    expect(screen.getByTestId('pairing-form').props.contentContainerStyle).toEqual({
+      paddingHorizontal: 20,
+      paddingVertical: 24,
+      gap: 16,
+      paddingBottom: 48,
+    });
+  });
+
 });
