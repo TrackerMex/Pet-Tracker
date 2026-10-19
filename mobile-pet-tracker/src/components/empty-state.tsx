@@ -85,7 +85,7 @@ export function EmptyState({ testID, pose, title, body, action, variant = 'defau
           <View testID={`${testID}-stage-shadow`} className="absolute bottom-4.5 h-3.5 w-30 rounded-full" style={{ backgroundColor: PINGO_STAGE_SHADOW_COLOR }} />
         </View>
       ) : floatingPose}
-      <Text testID={`${testID}-title`} className="text-center text-lg font-bold text-foreground">
+      <Text testID={`${testID}-title`} className={variant === 'hero' ? 'text-center text-26 font-black tracking-title text-foreground' : 'text-center text-lg font-bold text-foreground'}>
         {title}
       </Text>
       <Text testID={`${testID}-body`} className="text-center font-normal text-muted">
