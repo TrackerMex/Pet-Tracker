@@ -31,7 +31,7 @@ tags: [mobile, ui, spec]
   §«Esperas sobre el árbol renderizado» (esperar a un nodo o a un estado, nunca
   al contador de un mock). `fireEvent` y `act` de RNTL 14 son asíncronos: con
   `await`, o el siguiente `it` hereda un `setState` pendiente. Las sondas del
-  tile y de los botones leen el estilo con `StyleSheet.flatten`.
+  tile y de los botones leen el estilo aplanado (ver Fe de erratas E2).
 - **Rojo bien formado**: solo vale el rojo de la tabla, con el `Expected` y el
   `Received` de la consulta indicada. Un `Unable to find`, un `Found multiple
   elements`, un `Test suite failed to run` (salvo el `Cannot find module
@@ -128,7 +128,7 @@ Cada grupo repite este protocolo, un fichero de test a la vez:
    incluye el prefijo de HeroUI `pressable-feedback__root button__root …`; se
    aserta con `toContain`/`toMatch` de la subcadena de las tablas, no con la
    cadena completa nueva), de etiqueta o de `boxShadow`. Las aserciones nuevas
-   de estilo leen `StyleSheet.flatten(node.props.style)` y comprueban
+   de estilo leen el estilo aplanado (Fe de erratas E2) y comprueban
    `boxShadow[0]` con `offsetY` y `color`; el `color` se afirma contra lo que
    devuelve el hook en esa prueba (el valor real de `useThemeColors`, o el doble
    `--color-lip` / `--color-lip-gray` en `alert-detail`), nunca contra un hex
@@ -216,3 +216,21 @@ da rojo bloquea: el candado es ciego.
 Fuera de la cadena: tras el reviewer, el humano marca «Enmienda #177 aprobada
 por humano» y hace el smoke de R14 en su Android (casilla propia). El leader
 espera ambas antes de dar la feature por `done`.
+
+## Fe de erratas E2 (2026-10-19, hallada por Codex en c6)
+
+`StyleSheet.flatten` está **prohibido** en los tests que `design-drift` vigila
+con `MEALS_BAR_STYLE_ESCAPES` (regex `StyleSheet(?:\.create)?`, insensible a
+mayúsculas): `src/components/__tests__/celebration.test.tsx` (#171 R13.1),
+`src/screens/home/index.test.tsx`, `src/screens/home/weekly-activity-chart.test.tsx`
+y `src/screens/pairing/index.test.tsx` (#68 R18, #69 R13). Ni el `import` ni la
+palabra en un comentario pasan. En esos ficheros, y por simplicidad en todos los
+tests de #177, aplana con un ayudante local sin esa palabra:
+
+    const flat = (s: unknown) => Object.assign({}, ...[s].flat(Infinity).filter(Boolean));
+
+Cambio solo de tests, sin aflojar ningún candado. `celebration.test.tsx` (c5)
+ya usa `StyleSheet`: se corrige en un commit propio
+`test(#177 R3): celebration.test sin StyleSheet (design-drift #171 R13.1)`
+antes de c6 (sin rebasar; el rojo de `design-drift` R13.1 es el de ese commit y
+queda verde con él). Tras cada commit de grupo se corre `design-drift` entero.
