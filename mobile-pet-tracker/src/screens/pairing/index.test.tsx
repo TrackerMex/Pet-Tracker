@@ -1216,4 +1216,36 @@ describe('#188 R1-R14: pairing canvas fidelity', () => {
     expect(form.queryByTestId('pairing-subtitle', { includeHiddenElements: true })).toBeNull();
   });
 
+  it.each([
+    ['loading', 'pairing-skeleton'],
+    ['pets-error', 'pairing-error-pets'],
+    ['no-pets', 'pairing-no-pets'],
+    ['linking', 'pairing-title'],
+    ['paired-loading', 'plan-skeleton'],
+    ['paired-tracked', 'plan-tracked'],
+    ['paired-free', 'plan-free'],
+    ['paired-unknown', 'plan-unknown'],
+    ['claim-error', 'pairing-error'],
+    ['ready', 'pairing-ready'],
+  ] as const)('#188 R9: omits the unapproved subtitle in %s', async (state, anchor) => {
+    if (state === 'loading') mockListPets.mockReturnValue(pending<PetsState>());
+    if (state === 'pets-error') mockListPets.mockResolvedValue({ kind: 'error' });
+    if (state === 'no-pets') mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    if (state.startsWith('paired-')) {
+      mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ device: makeDevice() })] });
+      if (state === 'paired-loading') mockGetPetTracking.mockReturnValue(pending<PetTrackingState>());
+      else if (state === 'paired-unknown') mockGetPetTracking.mockResolvedValue({ kind: 'error' });
+      else mockGetPetTracking.mockResolvedValue({ kind: 'ok', tracked: state === 'paired-tracked' });
+    }
+    if (state === 'ready') mockClaimDevice.mockResolvedValue({ kind: 'ok', device: makeDevice() });
+    if (state === 'claim-error') mockClaimDevice.mockResolvedValue({ kind: 'invalid' });
+    await renderPairing();
+    if (state === 'ready' || state === 'claim-error') {
+      await fireEvent.changeText(await screen.findByTestId('activation-code-input'), 'ACT-001');
+      await fireEvent.press(screen.getByTestId('pairing-submit'));
+    }
+    await screen.findByTestId(anchor);
+    expect(screen.queryByTestId('pairing-subtitle', { includeHiddenElements: true })).toBeNull();
+  });
+
 });
