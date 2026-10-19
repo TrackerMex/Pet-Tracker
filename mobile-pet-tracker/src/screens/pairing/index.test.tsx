@@ -1056,7 +1056,7 @@ jest.mock('expo-haptics', () => ({
 const mockNotificationAsync = jest.mocked(notificationAsync);
 
 
-describe('#188: pairing canvas fidelity', () => {
+describe('#188 R1-R14: pairing canvas fidelity', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockUseReducedMotion.mockReturnValue(false);
