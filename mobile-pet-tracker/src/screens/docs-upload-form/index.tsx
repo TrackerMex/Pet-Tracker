@@ -1,3 +1,4 @@
+import { useChunkyLip } from '../../theme/chunky-lip';
 import { router, useLocalSearchParams } from 'expo-router';
 import { HeaderHeightContext } from 'expo-router/react-navigation';
 import { Button, Input, Label, TextField } from 'heroui-native';
@@ -20,6 +21,7 @@ import { civilTodayIso } from '../../utils/civil-today-iso';
 type ActionError = 'file-too-large' | 'invalid-form' | 'upload-forbidden' | 'upload-failed' | 'unreachable' | 'unknown';
 
 export function DocsUploadFormScreen({ petId }: { petId: string }) {
+  const chunkyLip = useChunkyLip();
   const { uri, name: fileName, contentType } = useLocalSearchParams<{
     uri?: string;
     name?: string;
@@ -197,22 +199,22 @@ export function DocsUploadFormScreen({ petId }: { petId: string }) {
           <View testID="docs-upload-actions" className="gap-3">
             <Button
               testID="docs-upload-submit"
-              className="rounded-xl bg-accent border-b-4 border-black/25"
+              className="h-14 rounded-16 bg-accent" style={chunkyLip.primary}
               isDisabled={uploading}
               onPress={() => void submitDocument()}
             >
-              <Button.Label className="font-bold text-accent-foreground">
+              <Text className="text-17 font-extrabold text-accent-foreground">
                 {t('docs.upload')}
-              </Button.Label>
+              </Text>
             </Button>
             <Button
               testID="docs-upload-cancel"
-              className="rounded-xl border-2 border-b-6 border-lip-gray bg-surface"
+              className="h-14 rounded-16 border-2 border-lip-gray bg-surface" style={chunkyLip.neutral}
               variant="outline"
               isDisabled={uploading}
               onPress={() => router.back()}
             >
-              <Button.Label className="font-semibold">{t('docs.cancel')}</Button.Label>
+              <Text className="text-17 font-extrabold text-foreground">{t('docs.cancel')}</Text>
             </Button>
           </View>
         </View>

@@ -87,19 +87,20 @@ describe('#62 R1: la escala de radios está declarada y el botón primario tiene
     );
   });
 
-  it.each(primaryButtons)('%s aplica rounded-xl a %s en su tag de apertura (#120 R1)', (path, testId) => {
+  it.each(primaryButtons)('%s aplica rounded-16 a %s en su tag de apertura (#120 R1) (enmendado por #177 R10)', (path, testId) => {
     const button = openingTagWithTestId(readSource(path), testId);
 
-    expect(button).toContain('rounded-xl bg-accent');
+    expect(button).toContain('rounded-16 bg-accent');
     expect(button).not.toContain('rounded-2xl');
   });
 
-  it('deja todos los botones primarios sólidos en un único radio', () => {
+  it('deja todos los botones primarios sólidos en un único radio (enmendado por #177 R10)', () => {
     const primaryRadius = sourceFiles().flatMap((path) =>
       readFileSync(path, 'utf8').match(/rounded-xl bg-accent(?=[\s'"`])/g) ?? [],
     );
 
-    expect(primaryRadius).toHaveLength(13 + 1 + 1 + 1 + 1 + 1 + 1 + 1 - 1 - 1 - 1 - 1); // #179 R7; #171 R3: ready-map // #146 R8, #146 R9; #118 R7; #155 R3 // #158 R3: docs-upload; // #158 R5: docs-upload-submit // #171 R14: celebration // #173 R5; #175 R7: docs-upload pasa a zona de subida
+    expect(primaryRadius).toHaveLength(1); // #177 R10
+    expect(sourceFiles().flatMap(path => readFileSync(path, 'utf8').match(/rounded-16 bg-accent(?=[\s'"`])/g) ?? [])).toHaveLength(16);
     expect(filesMatching(/rounded-2xl bg-accent(?=[\s'"`])/)).toEqual([]);
   });
 });
@@ -167,10 +168,10 @@ describe('#62 R4: la app solo usa los radios de la escala declarada', () => {
     }
   });
 
-  it('lleva los tres tiles restantes a rounded-xl', () => {
+  it('lleva los tres tiles restantes a rounded-xl (enmendado por #177 R10)', () => {
     // #168 R8: el tile ForkKnife sale de food.tsx
     expect(readSource(join('screens', 'forgot', 'index.tsx'))).toContain( // #117 R10
-      'size-13 items-center justify-center rounded-xl border-b-4 border-black/25 bg-accent',
+      'size-13 items-center justify-center bg-accent rounded-16',
     );
     expect(readSource(join('screens', 'weight-log', 'index.tsx'))).toContain(
       'size-8 shrink-0 items-center justify-center rounded-xl ${tileClassName}',
@@ -251,7 +252,7 @@ describe('#62 R13: el color imperativo sale siempre de useThemeColors del repo',
 
 describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () => {
   const directUses = [
-    [join('screens', 'forgot', 'index.tsx'), 1], // #117 R10
+    [join('screens', 'forgot', 'index.tsx'), 0], // #177 R10
     [join('components', 'pet-hero-header.tsx'), 1],
     // #136 R3 and #138 R3: the quick action tiles and collar-pair-link spread
     // the corner inside their pressed style, so the Home keeps no direct use.
@@ -284,7 +285,7 @@ describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () 
     );
   });
 
-  it.each(directUses)('%s importa y aplica sus %i esquinas', (path, count) => {
+  it.each(directUses)('%s importa y aplica sus %i esquinas (enmendado por #177 R10)', (path, count) => {
     const source = readSource(path);
     const uses = [...source.matchAll(/style=\{CONTINUOUS_CORNER\}/g)];
 
@@ -303,7 +304,7 @@ describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () 
     }
   });
 
-  it('fusiona la esquina una vez y la entrega a las dos ramas de Card', () => {
+  it('fusiona la esquina una vez y la entrega a las dos ramas de Card (enmendado por #177 R10)', () => {
     const card = readSource(join('components', 'card.tsx'));
 
     expect(card).toContain(
@@ -317,7 +318,7 @@ describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () 
     // #138 R3: minus one more, collar-pair-link's corner travels in its own.
     expect(
       directUses.reduce((total, [, count]) => total + count, 2),
-    ).toBe(33 + 1 + 1 - 1 - 1 + 1 + 1 - 1 + 4 + 1 - 1 - 7 + 1 + 1 + 2 + 2); // #179 R5, R10, R12; #178 R6, R12; #41 R9: geofences-link; #168 R3, R8, R6; #170 R16; #171 R3: ready-done; #173 R10: ProfileTile
+    ).toBe(33 + 1 + 1 - 1 - 1 + 1 + 1 - 1 + 4 + 1 - 1 - 7 + 1 + 1 + 2 + 2 - 1); // #177 R5 // #179 R5, R10, R12; #178 R6, R12; #41 R9: geofences-link; #168 R3, R8, R6; #170 R16; #171 R3: ready-done; #173 R10: ProfileTile
   });
 });
 
@@ -387,7 +388,7 @@ describe('#62 R15: todo contador usa cifras tabulares', () => {
 });
 
 describe('#98 R10: los candados que esta feature no mueve', () => {
-  it('deja CONTINUOUS_CORNER, bg-accent-soft y el acento donde estaban', () => {
+  it('deja CONTINUOUS_CORNER, bg-accent-soft y el acento donde estaban (enmendado por #177 R10)', () => {
     const home = readSource(join('screens', 'home', 'index.tsx'));
     const food = readSource(join('app', '(tabs)', 'food.tsx'));
     const count = (pattern: RegExp) =>
@@ -403,8 +404,8 @@ describe('#98 R10: los candados que esta feature no mueve', () => {
     // With no match, match() returns null: the ?? [] keeps the count readable.
     expect(home.match(/style=\{CONTINUOUS_CORNER\}/g) ?? []).toHaveLength(0);
     expect(food.match(/style=\{CONTINUOUS_CORNER\}/g)).toHaveLength(1);
-    expect(count(/style=\{CONTINUOUS_CORNER\}/g)).toBe(31 + 1 + 4 + 1 - 1 - 7 + 1 + 1 + 2 + 2); // #179 R5, R10, R12; #178 R6, R12; #41 R9: geofences-link; #168; #170 R8: alert-detail-map; #171 R3: ready-done; #173 R10: ProfileTile
-    expect(count(/rounded-xl bg-accent(?=[\s'"`])/g)).toBe(13 + 1 + 1 + 1 + 1 + 1 + 1 + 1 - 1 - 1 - 1 - 1); // #179 R7; #171 R3 // #146 R8, #146 R9; #118 R7; #155 R3 // #158 R3: docs-upload; // #158 R5: docs-upload-submit // #171 R14 // #173 R5; #175 R7: docs-upload pasa a zona de subida
+    expect(count(/style=\{CONTINUOUS_CORNER\}/g)).toBe(31 + 1 + 4 + 1 - 1 - 7 + 1 + 1 + 2 + 2 - 1); // #177 R5 // #179 R5, R10, R12; #178 R6, R12; #41 R9: geofences-link; #168; #170 R8: alert-detail-map; #171 R3: ready-done; #173 R10: ProfileTile
+    expect(count(/rounded-xl bg-accent(?=[\s'"`])/g)).toBe(1); // #177 R10
     expect(count(/bg-accent-soft/g)).toBe(16 + 2 + 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1); // #179 R6, R7, R11; #178 R5, R10, R12; #147 R4: meal-time-edit y add-meal-time-button; #105 R11; #168 R5: PetPills pasa a huecos pastel; #172 R14: forgot-lock-tile pasa a bg-accent; #171 R3; #173 R6
     expect(home.match(/text-accent-strong\b/g)).toHaveLength(2);
     expect(food.match(/text-accent-strong\b/g)).toHaveLength(1);
@@ -544,25 +545,25 @@ describe('#98 R11: la carta y la spec de Food registran la enmienda', () => {
 
 describe('#166 R2: todo primario sólido lleva el labio detrás de bg-accent', () => {
   const expected = {
-    [join('screens', 'login', 'index.tsx')]: 1,
-    [join('screens', 'register', 'index.tsx')]: 1,
-    [join('components', 'celebration.tsx')]: 1, // #171 R14
-    [join('components', 'empty-state.tsx')]: 1,
-    [join('screens', 'add-pet', 'index.tsx')]: 1,
-    [join('screens', 'add-reminder', 'index.tsx')]: 1,
-    [join('screens', 'docs-upload-form', 'index.tsx')]: 1, // #185 R10
-    [join('screens', 'forgot', 'index.tsx')]: 1,
-    [join('screens', 'geofence-editor', 'index.tsx')]: 1,
-    [join('screens', 'geofences', 'index.tsx')]: 1,
-    [join('screens', 'home', 'index.tsx')]: 1,
-    [join('screens', 'pairing', 'index.tsx')]: 1, // #171 R3: ready-map
-    [join('screens', 'reminders', 'index.tsx')]: 1,
-    [join('screens', 'reset-password', 'index.tsx')]: 1,
-    [join('screens', 'weight-log', 'index.tsx')]: 1,
-    [join('screens', 'welcome', 'index.tsx')]: 1,
-  };
+      'components/celebration.tsx': 1,
+      'components/empty-state.tsx': 1,
+      'screens/add-pet/index.tsx': 1,
+      'screens/add-reminder/index.tsx': 1,
+      'screens/alert-detail/index.tsx': 1,
+      'screens/docs-upload-form/index.tsx': 1,
+      'screens/forgot/index.tsx': 1,
+      'screens/geofence-editor/index.tsx': 1,
+      'screens/geofences/index.tsx': 1,
+      'screens/home/index.tsx': 1,
+      'screens/login/index.tsx': 1,
+      'screens/pairing/index.tsx': 1,
+      'screens/register/index.tsx': 1,
+      'screens/reset-password/index.tsx': 1,
+      'screens/weight-log/index.tsx': 1,
+      'screens/welcome/index.tsx': 1,
+    };
 
-  it('inventaría los dieciséis primarios con labio, fichero a fichero', () => {
+  it('inventaría los dieciséis primarios con labio, fichero a fichero (enmendado por #177 R10)', () => {
     const inventory = (pattern: RegExp) => Object.fromEntries(
       sourceFiles().flatMap((path) => {
         const count = (readFileSync(path, 'utf8').match(pattern) ?? []).length;
@@ -570,23 +571,23 @@ describe('#166 R2: todo primario sólido lleva el labio detrás de bg-accent', (
       }),
     );
 
-    expect(inventory(/rounded-xl bg-accent border-b-4 border-black\/25(?=[\s'"`])/g)).toEqual(expected);
-    expect(inventory(/rounded-xl bg-accent(?=[\s'"`])/g)).toEqual(expected);
+    expect(inventory(/rounded-16 bg-accent(?=[\s'"`])/g)).toEqual(expected);
+    expect(inventory(/rounded-xl bg-accent(?=[\s'"`])/g)).toEqual({ 'screens/reminders/index.tsx': 1 });
   });
 
-  it('no deja la receta del labio fuera de un primario salvo el candado de Recuperar', () => {
+  it('no deja la receta del labio fuera de un primario salvo el candado de Recuperar (enmendado por #177 R10)', () => {
     const count = (pattern: RegExp) => sourceFiles().reduce(
       (total, path) => total + (readFileSync(path, 'utf8').match(pattern) ?? []).length,
       0,
     );
 
-    expect(count(/\bborder-b-4\b/g)).toBe(19 + 1 + 1 - 1 - 1 - 1 - 1 + 1); // #180 R7; #179 R7; #172 R14: forgot-lock-tile (Enmienda #172); #171 R3: ready-map // #171 R14 // #173 R5; #175 R7: docs-upload
-    expect(count(/border-black\/25/g)).toBe(19 + 1 + 1 - 1 - 1 - 1 + 1 + 1 - 1 + 1); // #180 R7; #178 R10: el chip seleccionado lleva labio (carta §13); #179 R5, R7; #172 R14: forgot-lock-tile (Enmienda #172); #171 R3: ready-map // #171 R14 // #173 R5; #175 R7: docs-upload
+    expect(count(/\bborder-b-4\b/g)).toBe(0); // #177 R10
+    expect(count(/border-black\/25/g)).toBe(2); // #177 R10
   });
 });
 
 describe('#166 R3: el secundario neutro lleva el labio gris', () => {
-  const recipe = 'rounded-xl border-2 border-b-6 border-lip-gray bg-surface';
+  const recipe = 'h-14 rounded-16 border-2 border-lip-gray bg-surface';
   const rows = [
     [join('screens', 'welcome', 'index.tsx'), 'welcome-have-account', null],
     [join('screens', 'forgot', 'index.tsx'), 'forgot-resend', 'secondary'],
@@ -594,7 +595,7 @@ describe('#166 R3: el secundario neutro lleva el labio gris', () => {
     [join('screens', 'reminders', 'index.tsx'), 'reminders-delete-cancel', 'outline'],
   ] as const;
 
-  it.each(rows)('%s pinta %s con la receta del secundario en su tag de apertura', (path, testId, variant) => {
+  it.each(rows)('%s pinta %s con la receta del secundario en su tag de apertura (enmendado por #177 R10)', (path, testId, variant) => {
     const tag = openingTagWithTestId(readSource(path), testId);
 
     expect(tag).toContain(recipe);
@@ -608,7 +609,7 @@ describe('#166 R3: el secundario neutro lleva el labio gris', () => {
     }
   });
 
-  it('inventaría los cinco secundarios neutros de toda la app', () => {
+  it('inventaría los cinco secundarios neutros de toda la app (enmendado por #177 R10)', () => {
     const testIds = sourceFiles().filter((path) => path.endsWith('.tsx')).flatMap((path) =>
       readFileSync(path, 'utf8').split(/<Button(?=[\s>])/).slice(1).flatMap((part) => {
         const tag = part.split('<')[0];
@@ -637,7 +638,7 @@ describe('#166 R3: el secundario neutro lleva el labio gris', () => {
       0,
     );
     expect(count(/border-lip-gray/g)).toBe(4 + 1 + 1 + 1 + 1 + 1 + 1); // #179 R6, R7; #170 R16; #171 R14; #174 R8; #175 R7: borde de la zona de subida
-    expect(count(/\bborder-b-6\b/g)).toBe(4 + 1 + 1 + 1); // #179 R7; #170 R16; #171 R14
+    expect(count(/\bborder-b-6\b/g)).toBe(1); // #177 R10
   });
 
   it('#174 R8: el ack de fila es el secundario compacto', () => {
@@ -654,16 +655,16 @@ describe('#166 R3: el secundario neutro lleva el labio gris', () => {
 });
 
 describe('#166 R4: la carta declara el botón con cuerpo', () => {
-  it('declara las dos recetas y el orden del labio', () => {
+  it('declara las dos recetas y el orden del labio (enmendado por #177 R10)', () => {
     const guidelines = readFileSync(
       join(process.cwd(), '..', 'docs', 'ui-guidelines.md'),
       'utf8',
     );
 
     expect(guidelines).toContain('13. **Botón con cuerpo** (feature #166, 2026-10-11)');
-    expect(guidelines).toContain('`rounded-xl bg-accent border-b-4 border-black/25`');
-    expect(guidelines).toContain('`rounded-xl border-2 border-b-6 border-lip-gray bg-surface`');
-    expect(guidelines).toContain('El labio va detrás de `bg-accent`, nunca delante');
+    expect(guidelines).toContain('`h-14 rounded-16 bg-accent`');
+    expect(guidelines).toContain('`h-14 rounded-16 border-2 border-lip-gray bg-surface`');
+    expect(guidelines).toContain('El tile del candado lleva `bg-accent` antes de `rounded-16` para no contar como primario');
     expect(guidelines).toContain('`--color-lip-gray`');
     expect(guidelines).toContain('**Sin labio**');
     expect(guidelines.indexOf('12. **Escala de radios**')).toBeLessThan(
@@ -675,15 +676,17 @@ describe('#166 R4: la carta declara el botón con cuerpo', () => {
   });
 });
 
-it('#180 R7.5: «Ver en el mapa» del detalle lleva rounded-16 con su labio gris', () => {
+it('#180 R7.5: «Ver en el mapa» del detalle lleva rounded-16 con su labio gris (enmendado por #177 R10)', () => {
   const tag = openingTagWithTestId(readSource(join('screens', 'alert-detail', 'index.tsx')), 'alert-detail-view-map');
   expect(tag).toContain('variant="secondary"');
-  expect(tag).toContain('rounded-16 border-2 border-b-6 border-lip-gray bg-surface');
+  expect(tag).toContain('rounded-16 border-2 border-lip-gray bg-surface');
+  expect(tag).not.toContain('border-b-6');
   for (const forbidden of ['rounded-xl', 'border-accent', 'bg-transparent', 'border-black']) expect(tag).not.toContain(forbidden);
 });
 
-it('#180 R7.5: el ack del detalle lleva rounded-16 con su labio', () => {
+it('#180 R7.5: el ack del detalle lleva rounded-16 con su labio (enmendado por #177 R10)', () => {
   const tag = openingTagWithTestId(readSource(join('screens', 'alert-detail', 'index.tsx')), 'alert-detail-ack');
-  expect(tag).toContain('rounded-16 bg-accent border-b-4 border-black/25');
+  expect(tag).toContain('rounded-16 bg-accent');
+  expect(tag).not.toContain('border-b-4');
   expect(tag).not.toContain('rounded-xl');
 });

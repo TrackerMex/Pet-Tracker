@@ -16,6 +16,9 @@ import { useSelectedPet } from '../../providers/selected-pet-provider';
 import { renderWithProviders } from '../../../test/render-with-providers';
 import { AlertDetailScreen } from '.';
 
+const flat = (s: unknown) => Object.assign({}, ...[s].flat(Infinity).filter(Boolean));
+
+
 let mockReducedMotion = false;
 let mockBottom = 24;
 jest.mock('react-native-reanimated', () => ({
@@ -375,8 +378,9 @@ describe('#100 R5: el detalle marca leída la alerta', () => {
     mockAckAlert.mockResolvedValue({ kind: 'ok', alert: makeAlert({ status: 'acked' }) });
     await renderDetail();
     const button = await screen.findByTestId('alert-detail-ack');
+    expect(flat(button.props.style)).toMatchObject({ boxShadow: [{ offsetY: 4, color: '--color-lip' }] });
     expect(button.props.accessibilityRole).toBe('button');
-    expect(button.props.className).toBe('w-full h-14 rounded-16 bg-accent border-b-4 border-black/25');
+    expect(button.props.className).toBe('w-full h-14 rounded-16 bg-accent');
     expect(within(button).getByText('Marcar leída')).toBeVisible();
     await fireEvent.press(button);
     await waitFor(() => expect(mockAckAlert).toHaveBeenCalledWith(apiUrl, 'token-1', 'alert-1'));
@@ -750,8 +754,9 @@ describe('#170 R15: Ver en el mapa lleva al Mapa con la mascota de la alerta', (
     mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert(overrides)], nextCursor: null });
     await renderDetail();
     const button = await screen.findByTestId('alert-detail-view-map');
+    expect(flat(button.props.style)).toMatchObject({ boxShadow: [{ offsetY: 4, color: '--color-lip-gray' }] });
     expect(button.props.accessibilityRole).toBe('button');
-    expect(button.props.className).toBe('h-13 rounded-16 border-2 border-b-6 border-lip-gray bg-surface');
+    expect(button.props.className).toBe('h-13 rounded-16 border-2 border-lip-gray bg-surface');
     expect(within(button).getByText('Ver en el mapa')).toBeVisible();
   });
   it('dice «View on map» en inglés', async () => {
@@ -892,7 +897,7 @@ describe('#180 R6: CTA Ver en el mapa', () => {
     mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert()], nextCursor: null });
     await renderDetail();
     const button = await screen.findByTestId('alert-detail-view-map');
-    expect(button.props.className).toBe('h-13 rounded-16 border-2 border-b-6 border-lip-gray bg-surface');
+    expect(button.props.className).toBe('h-13 rounded-16 border-2 border-lip-gray bg-surface');
     expect(button.children).toHaveLength(2);
     expect(elementChild(button, 0).props).toMatchObject({ iconName: 'Map', size: 18, color: '--color-foreground' });
     expect(elementChild(button, 1)).toHaveTextContent('Ver en el mapa');
@@ -911,7 +916,7 @@ describe('#180 R7: ack primario', () => {
     mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert()], nextCursor: null });
     await renderDetail();
     const button = await screen.findByTestId('alert-detail-ack');
-    expect(button.props.className).toBe('w-full h-14 rounded-16 bg-accent border-b-4 border-black/25');
+    expect(button.props.className).toBe('w-full h-14 rounded-16 bg-accent');
     const label = within(button).getByText('Marcar leída');
     expect(label.props.className).toBe('text-17 font-extrabold text-accent-foreground');
   });

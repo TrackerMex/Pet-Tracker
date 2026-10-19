@@ -368,3 +368,15 @@ Detalle y tests en `specs/mobile-alert-detail-canvas-fidelity/requirements.md`. 
 su sitio con el sufijo `(enmendado por #180 Rn)`.
 
 - [X] Enmienda #180 aprobada por humano
+
+
+## Enmienda #177 — Receta global de botones
+
+La feature `mobile-chunky-cta-canvas-fidelity` reemplaza la receta de R2 y R3
+de #166 por la de `specs/mobile-chunky-cta-canvas-fidelity/requirements.md`:
+cuerpo de 56, radio 16, etiqueta Text 17/800 y labio externo sólido mediante
+`useChunkyLip()`, con las excepciones nombradas allí. El candado
+`consistency-classnames.test.ts` se reescribe en su sitio; R2 y R3 anteriores
+se conservan como registro histórico.
+
+- [X] Enmienda #177 aprobada por humano

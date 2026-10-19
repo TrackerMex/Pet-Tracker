@@ -893,3 +893,16 @@ describe('#180 R5.5: token glass-surface-strong en light y dark', () => {
     }
   });
 });
+
+
+describe('#177 R1: global.css declara el labio del primario en los dos temas', () => {
+  it.each([
+    ['light', '#0E5E3C'],
+    ['dark', '#0B4D31'],
+  ] as const)('declara --color-lip exacto en %s', (theme, value) => {
+    const variables = parseVariables(extractVariant(theme));
+    expect(variables).toMatchObject({ 'color-lip': value });
+    expect(variables).toMatchObject({ 'color-lip-gray': theme === 'light' ? '#E4E7EC' : '#0A0D12' });
+    expect(variables).not.toHaveProperty('lip');
+  });
+});

@@ -1005,9 +1005,9 @@ describe('#175 R10: Documentos sin deriva', () => {
     )).toEqual([]);
   });
 
-  it('usa solo los radios card, xl, full y 24', () => {
+  it('usa solo los radios card, xl, full, 24 y 16', () => {
     expect(featureFiles.filter((file) =>
-      /\brounded-(?!(?:card|xl|full|24)\b)[\w-]+/.test(readFileSync(join(sourceRoot, file), 'utf8')),
+      /\brounded-(?!(?:card|xl|full|24|16)\b)[\w-]+/.test(readFileSync(join(sourceRoot, file), 'utf8')), // #177 R10
     )).toEqual([]);
   });
 
@@ -1097,9 +1097,9 @@ describe('#178 R13: Recordatorios sin deriva', () => {
     expect(addReminder).not.toMatch(/uppercase|tracking-widest/);
   });
 
-  it('reserva los radios 14, 16 y 22 a Recordatorios con su inventario exacto', () => {
+  it('reserva los radios 14, 16 y 22 a Recordatorios con su inventario exacto (enmendado por #177 R10)', () => {
     for (const [pattern, count] of [
-      [/\brounded-14\b/g, 1], [/\brounded-16\b/g, 3], [/\brounded-22\b/g, 1],
+      [/\brounded-14\b/g, 1], [/\brounded-16\b/g, 4], [/\brounded-22\b/g, 1],
     ] as const) {
       expect(reminders.match(pattern) ?? []).toHaveLength(count);
     }
@@ -1108,9 +1108,29 @@ describe('#178 R13: Recordatorios sin deriva', () => {
       && !/\.test\.tsx?$/.test(file)
       && pattern.test(readFileSync(file, 'utf8')),
     ).map((file) => file.slice(sourceRoot.length + 1));
-    expect(outsideReminders(/\brounded-(?:16|22)\b/)).toEqual([
-      join('screens', 'alert-detail', 'index.tsx'), // #180 E1 R7.4 comparte rounded-16
-    ]);
+    expect(outsideReminders(/\brounded-22\b/)).toEqual([]);
+    const rounded16 = Object.fromEntries(sourceFiles(sourceRoot).filter(file => file !== join(sourceRoot, featureFiles[0]) && !/\.test\.tsx?$/.test(file)).flatMap(file => {
+      const count = (readFileSync(file, 'utf8').match(/\brounded-16\b/g) ?? []).length;
+      return count ? [[file.slice(sourceRoot.length + 1), count]] : [];
+    }));
+    expect(rounded16).toEqual({
+      'components/celebration.tsx': 2,
+      'components/empty-state.tsx': 1,
+      'screens/add-pet/index.tsx': 1,
+      'screens/add-reminder/index.tsx': 1,
+      'screens/alert-detail/index.tsx': 2,
+      'screens/docs-upload-form/index.tsx': 2,
+      'screens/forgot/index.tsx': 3,
+      'screens/geofence-editor/index.tsx': 1,
+      'screens/geofences/index.tsx': 1,
+      'screens/home/index.tsx': 1,
+      'screens/login/index.tsx': 1,
+      'screens/pairing/index.tsx': 1,
+      'screens/register/index.tsx': 1,
+      'screens/reset-password/index.tsx': 1,
+      'screens/weight-log/index.tsx': 1,
+      'screens/welcome/index.tsx': 2,
+    });
     expect(outsideReminders(/\brounded-14\b/)).toEqual([
       join('screens', 'meal-schedule', 'index.tsx'), // #179 R13 comparte rounded-14
       join('screens', 'meals-history', 'index.tsx'), // #179 R13 comparte rounded-14
@@ -1179,19 +1199,31 @@ describe('#179 R13: Horario e Historial fieles al canvas', () => {
     expect(schedule.indexOf('testID="meal-schedule-heading"')).toBeLessThan(schedule.indexOf('testID="meal-schedule-summary"'));
   });
 
-  it('limita text-22 a Horario y text-17 al inventario de E1.2', () => {
+  it('limita text-22 a Horario y text-17 al inventario de E1.2 (enmendado por #177 R10)', () => {
     const productionFilesMatching = (pattern: RegExp) => filesMatching(pattern).filter(path => !/\.test\.tsx?$/.test(path)).sort();
     expect(productionFilesMatching(/\btext-22\b/)).toEqual([
       join('screens', 'alert-detail', 'index.tsx'), // #180 R3
       join('screens', 'meal-schedule', 'index.tsx'),
     ]);
     expect(productionFilesMatching(/\btext-17\b/)).toEqual([
-      join('screens', 'alert-detail', 'index.tsx'), // #180 R7
-      join('screens', 'forgot', 'index.tsx'),
-      join('screens', 'login', 'index.tsx'),
-      join('screens', 'meal-schedule', 'index.tsx'),
-      join('screens', 'register', 'index.tsx'),
-      join('screens', 'reset-password', 'index.tsx'),
+      'components/celebration.tsx',
+      'components/empty-state.tsx',
+      'screens/add-pet/index.tsx',
+      'screens/add-reminder/index.tsx',
+      'screens/alert-detail/index.tsx',
+      'screens/docs-upload-form/index.tsx',
+      'screens/forgot/index.tsx',
+      'screens/geofence-editor/index.tsx',
+      'screens/geofences/index.tsx',
+      'screens/home/index.tsx',
+      'screens/login/index.tsx',
+      'screens/meal-schedule/index.tsx',
+      'screens/pairing/index.tsx',
+      'screens/register/index.tsx',
+      'screens/reminders/index.tsx',
+      'screens/reset-password/index.tsx',
+      'screens/weight-log/index.tsx',
+      'screens/welcome/index.tsx',
     ]);
   });
 

@@ -9635,3 +9635,31 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
   smoke R6 (dev build de Android).
 - **Estado final:** done. Notion: Implementado / Completado. PR #230; la mergea el
   humano, después se borra el worktree.
+
+## Sesión 2026-10-19 — mobile-chunky-cta-canvas-fidelity (id: 177)
+
+- **Feature:** receta global de botones del canvas en 17 ficheros: alto 56, radio 16,
+  texto 17/800 y labio de sombra con el token `--color-lip` (`#0E5E3C` claro,
+  `#0B4D31` oscuro) por el hook `useChunkyLip()` (`boxShadow`, par asimétrico
+  primario/compacto/neutro). 16 botones primarios, 6 neutros, el compacto de
+  Recordatorios y el tile `forgot-lock-tile`; 15 `Button.Label` pasan a `Text`
+  plano por tailwind-merge. Pisos del candado AST de #187 a 211 y 167.
+- **Spec:** [[specs/mobile-chunky-cta-canvas-fidelity/requirements|spec]]
+- **Acciones:** spec firmada por Notion; Codex implementó c1-c12 con commits
+  test-primero y paró seis veces (T0 sin `node_modules`, c6 por inventarios de imports
+  de #155, ruta de guard inexistente en tasks, `StyleSheet` vetado en tests de
+  `design-drift`, TS2552 propio de G3, lista blanca de radios de #175 R10).
+- **Enmiendas:** E1 (imports de empty-state, #155 R11) y E4 (lista blanca de radios
+  de #175 R10 admite `16`) firmadas por el humano; fe de erratas E2 (`StyleSheet`
+  vetado en tests vigilados, ayudante `flat`) y E3 (it de docs-upload-form omitido
+  en c9, rojo por omisión declarado). El humano escribió «221» en D3: la medida
+  exacta es 211 y R9.1 la fija.
+- **Resultado:** `./init.sh` exit 0 sin pipe sobre `8c4b541d` (backend 187/1474,
+  móvil 120/3994 = T0 3913 + 81, e2e verde). Reviewer APROBADO (R1-R13) sobre
+  `8c4b541d` (`f59e35b6`); su sonda de mutación sobre `chunky-lip.ts` la bloqueó el
+  clasificador y no se ejecutó. El humano firmó la carta y #166, E1, E4 y el smoke
+  R14 (dev build de Android).
+- **Commits:** `f99457f9` c1 ... `8c4b541d` c12 (Codex), más las enmiendas.
+  PR #231; la mergea el humano, después se borra el worktree.
+- **Desbloquea:** #188, #189 y #191; Backend [43157c] y sites-4c [7c89b3] esperan
+  su merge.
