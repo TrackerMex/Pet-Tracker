@@ -876,6 +876,21 @@ los commits previos (cuentas de handoff encadenadas).
 corolario. **La enmienda se marca como pendiente de firma del humano**; el
 implementer no marca la casilla.
 
+**Enmienda E2 (2026-10-19, hallada por la suite global tras R9).** Dos candados
+ajenos dependen de lo que R1–R9 cambian y la spec no los listaba:
+
+- `#65 R20` (`ui-language.test.ts`, «inserta el punto 6 literal de §6.3») exige que
+  `docs/ui-guidelines.md` contenga el bloque canónico de
+  `specs/mobile-ui-language/design.md` §6.3. Al corregir el corolario en la carta
+  (apartado 4), el mismo texto se **espeja en ese bloque** de `design.md`, palabra
+  por palabra. Lo hace el leader (es documentación); el test no se toca.
+- `#187 R1` (`heroui-text-size-merge.test.ts`, «el escáner cubre al menos el universo
+  medido (enmendado por #177 R9)») fija un mínimo de 211 elementos HeroUI. R8 sustituye
+  doce `FieldError` de cuenta por uno solo en `field-error-message.tsx`:
+  211 − 12 + 1 = **200**. El mínimo baja de 211 a 200 en ese único literal, con el
+  comentario `// #186 R8: 211 - 12 + 1`; el resto del `it` (28 ficheros, 42 Card) no
+  cambia. Es un cambio de test aprobado por esta enmienda, no un ajuste para ocultar un rojo.
+
 **Sondas** (en el verde de R9):
 
 | Sonda | Mutación | Rojos esperados |

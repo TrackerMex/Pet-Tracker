@@ -1514,12 +1514,11 @@ Tres corolarios que nadie debe confundir con lo anterior:
 - **El idioma del código no cambia.** Nombres de variables, funciones, tipos,
   ficheros, `testID`, rutas y **las claves del catálogo** siguen en inglés, y
   los mensajes de commit también (`docs/conventions.md` §Commits).
-- **El backend sigue devolviendo validaciones en inglés, en los dos idiomas.**
-  Se ve en `login-error`, `register-*-error`, `weight-form-error` y
-  `reset-error`, porque son mensajes de Zod de `backend-pet-tracker/`.
-  Traducirlos es una feature de backend. Al revés, las advertencias
-  nutricionales del backend ya llegan en español y se muestran tal cual — y en
-  inglés también, porque tampoco se traducen.
+- **Los formularios muestran sus validaciones en el idioma de la app.**
+  Los mensajes de validación del servidor se resuelven mediante el catálogo móvil,
+  como aviso genérico o mensaje de campo, sin mostrar texto crudo.
+  Las advertencias nutricionales del backend ya llegan en español y se muestran
+  tal cual — y en inglés también, porque tampoco se traducen.
 - **Los valores de enum que la API devuelve se pintan crudos**: `document.type`,
   `foodType`, `activityLevel`. Siguen en inglés en los dos
   idiomas. Mapearlos es cambio de conducta y va a feature propia.
