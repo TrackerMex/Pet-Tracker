@@ -11,7 +11,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
 import { Alert, DeviceEventEmitter, Platform } from 'react-native';
-import { getAnimatedStyle } from 'react-native-reanimated/src/jestUtils';
+import { getAnimatedStyle } from 'react-native-reanimated';
 
 import {
   claimDevice,
