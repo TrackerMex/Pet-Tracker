@@ -1574,3 +1574,12 @@ Tres corolarios que nadie debe confundir con lo anterior:
 - **Mapear los 5 enums de la API de paso.** Cambio de conducta sobre datos.
   Declarado en [[requirements]] §Fuera de alcance 2 con sus 5 sitios exactos,
   para que la brecha se vea y no se descubra en el smoke.
+
+### §2.36 — Añadidos por #186 — Validación de formularios de mascota, recordatorio, documento y peso
+
+| Pantalla | Clave | Inglés | Español | Origen |
+|---|---|---|---|---|
+| — | `validation.required` | `This field is required` | `Este campo es obligatorio` | ← añadida por #186 (R1) |
+| — | `validation.invalidDate` | `Enter a valid date as YYYY-MM-DD` | `Escribe una fecha válida con formato AAAA-MM-DD` | ← añadida por #186 (R1) |
+| — | `validation.weightRange` | `Weight must be above 0 and at most 999.99 kg` | `El peso debe ser mayor que 0 y como máximo 999,99 kg` | ← añadida por #186 (R1) |
+| — | `validation.bodyConditionRange` | `Body condition is a whole number from 1 to 9` | `La condición corporal es un número entero del 1 al 9` | ← añadida por #186 (R1) |
