@@ -140,8 +140,12 @@ Cada grupo repite este protocolo, un fichero de test a la vez:
    solo si ya no se usa en el fichero, y no cambia el `t('…')` ni el texto.
 3. Tras el feat: correr los ficheros colocados del grupo (verde) y los cuatro
    guards enteros, uno a uno: `src/__tests__/design-drift.test.ts`,
-   `legibility-classnames.test.ts`, `ui-copy-table.test.ts`,
-   `profile-canvas-fidelity.test.ts`; y `heroui-text-size-merge.test.ts` (verde).
+   `legibility-classnames.test.ts`, `ui-language.test.ts`,
+   `no-pets-states.test.ts`, `profile-canvas-fidelity.test.ts`; y
+   `heroui-text-size-merge.test.ts` (verde). (Fe de erratas: la «ui-copy-table»
+   de las demás specs es `src/__tests__/ui-copy-table.ts`, una tabla de datos
+   sin `it`; sus dos consumidores son `ui-language.test.ts` y
+   `no-pets-states.test.ts`, y esos son los guards que se corren.)
 4. `bun run typecheck` y el lint de las reglas. Un mock de
    `use-theme-colors` o de `uniwind` que deje al hook sin su color da `undefined`
    y no lanza (R2.4); pero si alguna prueba colocada falla con el hook, se
