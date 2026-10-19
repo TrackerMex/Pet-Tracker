@@ -273,3 +273,130 @@ Anclas de cierre de los requisitos terminados, medidas sobre sus fuentes intacta
 Total esperado de los commits terminados R1–R4: T0 3994 + 1 + 89 + 10 + 11 = **4105**, no medido globalmente en esta reanudación. El rojo R5 añade otros 5 it (4110 si todos pasaran); no se acredita total global final por la parada. No se ejecuta una suite final para presentar el árbol como verde.
 
 Se conservan tres ficheros de implementación R5 sin commit para revisión; índice vacío al cerrar. El worktree no queda limpio por la parada. No se tocaron los ficheros de estado del leader, las casillas humanas ni R10. No se ejecutaron init.sh, backend, AWS, push, PR ni rebase. Se cerrará solo reporte/trazabilidad en el commit de documentación, y el marcador .done referirá a este reporte incompleto.
+
+## Reanudación R5 — migración de los dos casos cliente de #125
+
+Comprobados worktree y rama: `/home/claude/sites/Pet-Tracker-wt-186`, `feature/186-mobile-forms-validation-global`. HEAD inicial `e36c65da` — `docs(#186): R5 reescribe los dos it de #125 que validan fecha en cliente`. Se leyó R5 enmendado. No se repiten R1–R4 ni T0; se mantienen building-native-ui y ponytail, ya cargadas. La producción y copy R5 se aparcan en `/tmp/pet-tracker-186-R5-production-resume.patch` y se restituyen esos tres archivos a HEAD para medir el rojo. Se sustituyen solo las dos consultas a add-reminder-error de #125 por esperas al mensaje de fecha, conservando títulos, fechas, chips y ausencia de llamada a la API.
+
+### R5 rojo adicional de #125
+
+Producción aparcada: `Tests:       8 failed, 57 passed, 65 total` = 65 + 0. Solo los seis casos ya previstos y los dos #125 autorizados por la enmienda. Todos por aserción, sin errores de consulta. El diff de test contiene únicamente las dos sustituciones de selector/espera; no cambian fechas, chips ni contadores. Typecheck exit 0; lint exit 0, log vacío. Tras el commit de test se restaura el patch de los tres ficheros de producción/copy.
+
+R5: rojo adicional `16d5421c` — `test(mobile): migra dos it de #125 al mensaje de fecha (#186 R5)`. Con la producción restaurada: fichero completo `Tests:       65 passed, 65 total` = 65 + 0 y ui-language `Tests:       30 passed, 30 total` = 30 + 0. Typecheck y lint exit 0, log vacío. El incremento R5 sobre H0 sigue siendo 60 + 5 = 65, sin tests añadidos en la enmienda. Se conservan las fechas, los chips y los tests de 400 del servidor. S5.2 se ejecutará sobre el caso explícito `#186 R5: el 400` (filtro -t) para aislar el candado 4; las demás sondas ejecutan el fichero completo.
+
+S5.1: `Tests:       1 failed, 64 passed, 65 total`; rojo previsto: R9: guardar con validación y degradación por kind › #186 R5: fecha ausente muestra su error bajo la columna.
+Revertida con `git checkout HEAD -- src/screens/add-reminder/index.tsx`; diff HEAD y cached exit 0.
+
+S5.2: `Tests:       1 failed, 64 skipped, 65 total`; rojo previsto: R9: guardar con validación y degradación por kind › #186 R5: el 400 sigue como aviso de formulario sin mensajes de campo.
+Revertida con `git checkout HEAD -- src/screens/add-reminder/index.tsx`; diff HEAD y cached exit 0.
+
+S5.3: `Tests:       4 failed, 61 passed, 65 total`; rojo previsto: R9: guardar con validación y degradación por kind › #186 R5: título vacío muestra su error de campo sin bloquear; R9: guardar con validación y degradación por kind › #186 R5: fecha ausente muestra su error bajo la columna; R9: guardar con validación y degradación por kind › #186 R5: fecha pasada muestra su error de campo sin bloquear; R9: guardar con validación y degradación por kind › #186 R5: conserva los mensajes hasta reenviar y después manda el payload recortado.
+Revertida con `git checkout HEAD -- src/screens/add-reminder/index.tsx`; diff HEAD y cached exit 0.
+
+R5 verde: `611e8cd54bf592bdb2a691db01e1f6ba7589ed18` — `feat(mobile): validación por campo en recordatorios (#186 R5)`. S5.1–S5.3 detectadas y revertidas con checkout HEAD y diff HEAD/cached en 0. S5.2 usa solo el nuevo caso explícito de 400 (64 omitidos); S5.3 también detecta la imposibilidad de reenviar tras el bloqueo indebido. El fichero entero pasó 65/65 antes del verde, incluidos los dos #125 enmendados.
+
+## R6 — Subir documento
+
+Rojo: `Tests:       9 failed, 70 passed, 79 total` = 73 previos + 6 nuevos. Se reescriben los tres casos #185 R9 de entrada inválida, los dos de orden/limpieza con lista y la fila Error de R6 del test de limpiar el error anterior: todos validaban el mismo error cliente genérico que ahora va al campo (candado 1). La fila Error de R9 conserva el aviso servidor y nace verde. Los tres nuevos inválidos (calendario, simultáneos, estado de HeroUI) fallan; NV nuevos: fecha con espacios que ya enviaba date recortada, 400 servidor y maxLength. Se conservan sin cambios #185 R5, R6 y R8. El estado isInvalid de Input se observa en la clase nativa android:border-danger (no se añade ninguna clase a producción); vet no la recibe. Typecheck/lint exit 0, log vacío.
+
+R6 rojo `824d143b`; verde medido sobre el fichero entero: `Tests:       79 passed, 79 total` = 73 + 6, sin it antiguo fallido. Typecheck/lint exit 0, log vacío. No hay delta de copy en R6: docs.errorInvalidForm sigue en la rama del 400 y su fila no se quita. S6.1 se filtra al nuevo caso explícito de 400; S6.4 al caso de fecha con espacios (mutación del argumento de pantalla que rechaza whitespace en vez de permitir el recorte del módulo puro). S6.2/S6.3 ejecutan el fichero entero. Los filtros no cambian el verde completo acreditado.
+
+S6.1: `Tests:       1 failed, 78 skipped, 79 total`; rojo previsto: #186 R6: errores de campos y contrato del documento › #186 R6: el 400 conserva el aviso genérico sin mensajes de campo.
+Revertida con `git checkout HEAD -- src/screens/docs-upload-form/index.tsx`; diff HEAD y cached exit 0.
+
+S6.2: `Tests:       1 failed, 78 passed, 79 total`; rojo previsto: #185 R9 (antes #158 R6): validación antes de leer o crear › #186 R6: rechaza tipo solo con espacios bajo su campo sin llamadas.
+Revertida con `git checkout HEAD -- src/screens/docs-upload-form/index.tsx`; diff HEAD y cached exit 0.
+
+S6.3: `Tests:       1 failed, 78 passed, 79 total`; rojo previsto: #186 R6: errores de campos y contrato del documento › #186 R6: el estado inválido de HeroUI marca tipo pero no veterinario.
+Revertida con `git checkout HEAD -- src/screens/docs-upload-form/index.tsx`; diff HEAD y cached exit 0.
+
+S6.4: `Tests:       1 failed, 78 skipped, 79 total`; rojo previsto: #186 R6: errores de campos y contrato del documento › #186 R6: fecha recortada se envía una vez sin mensajes de campo.
+Revertida con `git checkout HEAD -- src/screens/docs-upload-form/index.tsx`; diff HEAD y cached exit 0.
+
+R6 verde `7e8c048ad1baf9bbfbc9a3ac58d57f7d191acc2e` — `feat(mobile): validación por campo en documentos (#186 R6)`. S6.1–S6.4 detectadas y revertidas con checkout HEAD y diff HEAD/cached exit 0. No hay it viejo fallido en el verde completo 79/79. Incremento R6: +6.
+
+## R7 — Registrar peso
+
+Rojo: `Tests:       16 failed, 54 passed, 70 total` = 58 previos + 12 nuevos. Se reescriben el peso no numérico, el 400 mixto, el 400 de fecha mal formada y las filas peso no numérico/validation de #169 R11; las otras filas conservan sus datos y aserciones. El 400 mixto usa peso cliente válido 12.4 para poder ejercitar la respuesta del servidor (1000 ahora debe rechazarse localmente). NV nuevo: condición corporal en blanco, ya cubierta por «omits body condition when its field is blank»; el caso nuevo la prueba con espacios. Los otros 11 nuevos y los 5 reescritos autorizados dan las 16 aserciones rojas. Typecheck/lint exit 0, log vacío.
+
+R7 rojo `71913afe`; verde medido sobre fichero completo `Tests:       70 passed, 70 total` = 58 + 12, y ui-language `Tests:       30 passed, 30 total` = 30 + 0. Typecheck/lint exit 0, log vacío. R5_HEALTH queda en 39 + 4 (R2) - 1 + 1 (R7) = 43. Se mantiene case 'validation': y el candado de la rama ok sin cambios. Ningún it viejo no listado falla.
+
+S7.1: `Tests:       4 failed, 66 passed, 70 total`; rojo previsto: R9: alta de peso con degradación por kind › #186 R7: el 400 mixto separa fecha futura y aviso genérico sin texto crudo; R9: alta de peso con degradación por kind › #186 R7: el 400 de fecha mal formada muestra el genérico sin texto crudo; R9: alta de peso con degradación por kind › #186 R7: un 400 solo de fecha futura queda únicamente en el campo; #169 R11: ni toast ni háptico fuera de la rama ok › #186 R7: rama validation: ni toast ni háptico.
+Revertida con `git checkout HEAD -- src/screens/weight-log/index.tsx`; diff HEAD y cached exit 0.
+
+S7.2: `Tests:       1 failed, 69 passed, 70 total`; rojo previsto: R9: alta de peso con degradación por kind › #186 R7: peso «72,5» respeta decimal y rango.
+Revertida con `git checkout HEAD -- src/screens/weight-log/index.tsx`; diff HEAD y cached exit 0.
+
+S7.3: `Tests:       1 failed, 69 passed, 70 total`; rojo previsto: R9: alta de peso con degradación por kind › #186 R7: fecha « 2026-08-20 » es real y se envía recortada.
+Revertida con `git checkout HEAD -- src/screens/weight-log/index.tsx`; diff HEAD y cached exit 0.
+
+S7.4: `Tests:       2 failed, 68 passed, 70 total`; rojo previsto: R9: alta de peso con degradación por kind › #186 R7: el 400 mixto separa fecha futura y aviso genérico sin texto crudo; R9: alta de peso con degradación por kind › #186 R7: un 400 solo de fecha futura queda únicamente en el campo.
+Revertida con `git checkout HEAD -- src/screens/weight-log/index.tsx`; diff HEAD y cached exit 0.
+
+S7.5: `Tests:       6 failed, 64 passed, 70 total`; rojo previsto: R9: alta de peso con degradación por kind › omits body condition when its field is blank (#90 R3); R9: alta de peso con degradación por kind › #186 R7: peso «72,5» respeta decimal y rango; R9: alta de peso con degradación por kind › #186 R7: fecha « 2026-08-20 » es real y se envía recortada; R9: alta de peso con degradación por kind › #186 R7: condición corporal «  » valida y omite blanco; #90 R3: la fecha por defecto sale de la zona del perfil › usa Pacific/Kiritimati para el valor visible, el payload y el reset; #90 R3: la fecha por defecto sale de la zona del perfil › usa Pacific/Pago_Pago para el valor visible, el payload y el reset.
+Revertida con `git checkout HEAD -- src/screens/weight-log/index.tsx`; diff HEAD y cached exit 0.
+
+S7.6: `Tests:       1 failed, 69 passed, 70 total`; rojo previsto: R9: alta de peso con degradación por kind › #186 R7: peso no numérico queda en su campo y el botón sigue habilitado.
+Revertida con `git checkout HEAD -- src/screens/weight-log/index.tsx`; diff HEAD y cached exit 0.
+
+R7 verde `f6c9f27c074e15a17033b2a7b00b2a7aa043c6b2` — `feat(mobile): validación de peso y errores traducidos (#186 R7)`. Las seis sondas detectadas y revertidas con checkout HEAD y diff HEAD/cached exit 0. S7.1 incluye el 400 solo de fecha futura; S7.5 también detecta payloads de los tests anteriores de omisión y zona horaria porque mandar bodyCondition=0 en blanco agrega un campo que debía omitirse. Todos esos fallos son de payload, sin errores de consulta. Incremento R7: +12.
+
+## R8 — Migración transparente de cuenta
+
+Rojo del candado 3: `Tests:       1 failed, 1 total` = 0 + 1 en forms-validation-global. Falla por conteo FieldErrorMessage ausente, como declara la spec. NV de los candados 1 y 2: tests #183/#172 sin cambios respecto a H0 y los siete isInvalid de registro conservados; no se crean tests nuevos para esas garantías ya existentes. Typecheck/lint exit 0, log vacío. #177 ya estaba mergeada en la base H0.
+
+Desviación de implementación R8: el script de sustitución asumió un import de FieldError en una línea. Aplicó login y se detuvo con una comprobación de formato al llegar al import multilínea de register. No fue un error de invocación/ENOENT ni un rojo nuevo: el candado 3 seguía rojo porque la migración estaba incompleta (primer intento de verde: 1 failed, 1 total; no se ejecutaron las suites posteriores). Se corrigió la transformación de imports, se restituyó solo el login parcial a HEAD y se reaplicó la pasada sobre las cuatro pantallas, sin cambiar aserciones. Se repiten typecheck/lint y las suites completas antes de acreditar el verde. La actualización intermedia que dijo «ningún archivo escrito» fue imprecisa; se corrigió expresamente: login sí había sido escrito.
+
+R8 rojo `15c77b1c`. Verde final acreditado (seis ejecuciones individuales, un Jest a la vez):
+
+| Fichero | Tests del verde R8 |
+|---|---|
+| forms-validation-global | `Tests:       1 passed, 1 total` = 0 + 1 |
+| login | `Tests:       43 passed, 43 total` = tests intactos, +0 |
+| register | `Tests:       73 passed, 73 total` = tests intactos, +0 |
+| forgot | `Tests:       52 passed, 52 total` = tests intactos, +0 |
+| reset-password | `Tests:       52 passed, 52 total` = tests intactos, +0 |
+| account-screens-polish | `Tests:       13 passed, 13 total` = tests intactos, +0 |
+
+Typecheck y lint finales exit 0, log vacío. El diff H0 de esos cinco ficheros de tests es vacío; no cambian los mocks HomeEntrance ni reicon. El test de registro conserva siete filas y el candado #172 R10 conserva los siete isInvalid. Los conteos FieldErrorMessage de cuenta son 0 + (1 import + usos) = login 3, register 8, forgot 2, reset-password 3. Solo se migraron los doce bloques; FormError genérico permanece.
+
+Las sondas S8.1/S8.2 se filtran a los tests previos concretos que consultan el ID renombrado o el mensaje eliminado. Como esos tests no se pueden editar, sus getByTestId detectan la eliminación deliberada del nodo: se valida el ID exacto del error de consulta esperado de la sonda, distinto del rojo TDD inicial por aserción. S8.3 usa el candado de import/conteo. Los resultados se registran a continuación.
+
+S8.1: `Tests:       1 failed, 72 skipped, 73 total`; filtro `#172 R10: cada campo con error`; #167 R7: Pingo en la cabecera del registro › #172 R10: cada campo con error lleva icono y texto seleccionable. La sonda elimina/renombra deliberadamente el nodo register-phone-error; el test previo inmutable lo detecta con su getByTestId (error de consulta esperado de esta mutación, no un error del rojo TDD).
+Revertida con checkout HEAD; diff HEAD y cached exit 0.
+
+S8.2: `Tests:       1 failed, 42 skipped, 43 total`; filtro `#183 R3: con los dos campos mal`; #183 R3: login valida en cliente › #183 R3: con los dos campos mal pinta los dos mensajes a la vez. La sonda elimina/renombra deliberadamente el nodo login-email-message; el test previo inmutable lo detecta con su getByTestId (error de consulta esperado de esta mutación, no un error del rojo TDD).
+Revertida con checkout HEAD; diff HEAD y cached exit 0.
+
+S8.3: `Tests:       1 failed, 1 total`; filtro `#186 R8:`; #186 R8: las pantallas de cuenta usan el componente compartido › #186 R8: conserva los conteos y ninguna pantalla importa FieldError.
+Revertida con checkout HEAD; diff HEAD y cached exit 0.
+
+R8 verde `729473d59d9c6952ac2733ece93691879c565e7d` — `feat(mobile): pantallas de cuenta usan FieldErrorMessage (#186 R8)`. Las tres sondas detectadas y revertidas con checkout HEAD y diff HEAD/cached exit 0. El test de registro que contiene la comprobación de siete filas detecta el ID de teléfono renombrado; S8.2 detecta el mensaje de correo retirado y S8.3 el import prohibido. Ninguna aserción de cuenta cambió. Incremento R8: +1.
+
+## R9 — Carta de UI y candados globales
+
+Rojo: `Tests:       4 failed, 4 passed, 8 total` = 1 previo de R8 + 7 nuevos. Fallan solo los cuatro candados de la carta, por aserción. Nacen verdes los tres it de higiene (único importador, universo mínimo y conteos de las cuatro pantallas), porque R4–R8 ya migraron; se cruzan con los tests de pantalla previos y el candado R8, que también sigue verde. Variante P2=A, migrar las cuatro pantallas. Typecheck y lint exit 0, log vacío. No cambia aún docs/ui-guidelines.md.
+
+
+## Parada R9 — error de invocación antes del commit rojo
+
+Bash devolvió exit 2: `syntax error near unexpected token &&`. El comando del agente cerraba un heredoc de Python, escribía una cabecera de comentario y dejaba `&& git add ... && git commit ...` al inicio de la línea siguiente. Python sí llegó a validar el log y añadir la sección R9 anterior; el commit no llegó a ejecutarse. No es un rojo de Jest ni una lectura auxiliar fallida. Se aplica la regla de parada del handoff para errores de invocación de comandos que escriben ficheros/commitean. Se avisó al usuario y no se reintentó el commit ni se inició el verde.
+
+El rojo R9 sigue acreditado en `/tmp/pet-tracker-186-R9-red.log`: `Tests:       4 failed, 4 passed, 8 total`; typecheck exit 0 y lint exit 0 con `/tmp/pet-tracker-186-R9-red-lint.log` vacío. No hay hashes rojo/verde R9. `docs/ui-guidelines.md` sigue idéntico a HEAD. Los siete nuevos it de R9 permanecen sin commit en `src/__tests__/forms-validation-global.test.ts`. S9.1–S9.4 no se ejecutaron: requieren el commit verde. Ninguna aserción se ajustó para ocultar un fallo.
+
+## Estado vigente al cerrar esta reanudación
+
+Esta sección sustituye los estados de cierre anteriores sin borrar el historial.
+
+- R1–R8 implementados con commits separados y todas sus sondas detectadas y revertidas. R5–R7 pasaron cada fichero completo antes de sus verdes: recordatorios 65/65, documentos 79/79, peso 70/70; no queda un it antiguo fallido no listado. R8 pasó las cuatro suites de cuenta intactas y account-screens-polish.
+- R5 rojo adicional `16d5421c0f4d0a228225eb3569d5938f591e40a0`; verde `611e8cd54bf592bdb2a691db01e1f6ba7589ed18`.
+- R6 rojo `824d143b8ad8663e400aa476c47748f73d4761c0`; verde `7e8c048ad1baf9bbfbc9a3ac58d57f7d191acc2e`.
+- R7 rojo `71913afe044178d05ca9aff3902775a109cbba57`; verde `f6c9f27c074e15a17033b2a7b00b2a7aa043c6b2`.
+- R8 rojo `15c77b1c1fbd77360c0529b5d98352f5a0074fda`; verde `729473d59d9c6952ac2733ece93691879c565e7d`.
+- R9 pendiente desde el commit rojo; el fichero de candados tiene el rojo esperado sin commit. No se tocó la carta ni su casilla humana. R10 no se ejecutó ni se marcó.
+- Nuevos it terminados: R1 +1, R2 +89, R3 +10, R4 +11, R5 +5, R6 +6, R7 +12, R8 +1: **+135**. R9 añade **+7 preparados sin commit**. T0 3994 + 135 = 4129 esperado para el árbol verde R8; con los 7 preparados serían 4136 al completar R9. Son cuentas, no mediciones globales finales. No se repitió T0 ni se ejecutó la suite global final por esta parada.
+- ui-language conserva 30 tests; sus rojos R2 fueron exactamente **seis**, ya corregidos por el humano y detallados arriba. Skills conservadas: building-native-ui y ponytail; ninguna otra de Expo, appllama o animate-expo.
+- Se verificaron con `git cat-file -e <hash>^{commit}` H0 y los 17 hashes TDD reales de R1–R8 (incluido el rojo adicional R5); exit 0. Los hashes completos figuran en traceability.md y en este reporte.
+- Comprobado diff H0 vacío para los cuatro tests de cuenta, account-screens-polish, FormError, account-rules, package.json, bun.lock, app.json, backend y los archivos de estado reservados al leader. Los mocks HomeEntrance/reicon quedan intactos. Índice vacío antes del cierre documental.
+- No se ejecutaron init.sh, backend, AWS, deploy, push, PR ni rebase. No se tocó feature_list.json ni se marcó ninguna casilla humana. La feature no se declara done. El marcador ignorado .done apunta a este reporte de ejecución incompleta, para que el leader vea la parada.
+- El worktree conserva únicamente el test R9 preparado sin commit tras el cierre de reporte/trazabilidad; no se mezclará con ese commit documental.
