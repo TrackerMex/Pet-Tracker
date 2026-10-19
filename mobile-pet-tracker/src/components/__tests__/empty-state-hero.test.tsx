@@ -167,3 +167,21 @@ it('#176 R13: entra en cuatro bloques con retrasos de 0, 60, 120 y 180 ms', asyn
     expect(blockStyle(suffix)).toEqual({ opacity: 1, transform: [{ translateY: 0 }] });
   }
 });
+
+
+it('#176 R7: reduce motion nace en el estado final y no inicia entrada ni flotación', async () => {
+  mockUseReducedMotion.mockReturnValue(true);
+  await renderProbe({ variant: 'hero', action: { label: 'Acción', onPress: jest.fn() } });
+  for (const suffix of ['stage', 'title-enter', 'body-enter', 'action-wrap']) {
+    expect(blockStyle(suffix)).toEqual({ opacity: 1, transform: [{ translateY: 0 }] });
+  }
+  const float = screen.getByTestId('home-empty-float');
+  expect(getAnimatedStyle(float)).toEqual({ transform: [{ translateY: 0 }] });
+  for (const elapsed of [1500, 8500]) {
+    await act(async () => { jest.advanceTimersByTime(elapsed); });
+    expect(getAnimatedStyle(float)).toEqual({ transform: [{ translateY: 0 }] });
+    for (const suffix of ['stage', 'title-enter', 'body-enter', 'action-wrap']) {
+      expect(blockStyle(suffix)).toEqual({ opacity: 1, transform: [{ translateY: 0 }] });
+    }
+  }
+});
