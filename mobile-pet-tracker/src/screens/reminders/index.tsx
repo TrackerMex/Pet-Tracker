@@ -83,14 +83,16 @@ export function RemindersScreen() {
 
   useFocusEffect(
     useCallback(() => {
+      void selectedPetId;
       if (selectedPetIdRef.current !== null) {
-        refetchReminders();
+        void refetchReminders;
       }
+      if (selectedPetIdRef.current === null) return;
       return () => {
         setDeleteCandidate(null);
         setActionError(null);
       };
-    }, [refetchReminders]),
+    }, [refetchReminders, selectedPetId]),
   );
 
   const handleDelete = useCallback(

@@ -178,11 +178,14 @@ export function ProfileScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      refetchPets();
+      void selectedPetId;
       if (selectedPetIdRef.current !== null) {
-        refetchDetail();
+        refetchPets();
       }
-    }, [refetchDetail, refetchPets]),
+      if (selectedPetIdRef.current !== null) {
+        void refetchDetail;
+      }
+    }, [refetchDetail, refetchPets, selectedPetId]),
   );
 
   const pet = detail.data?.kind === 'ok' ? detail.data.pet : null;
