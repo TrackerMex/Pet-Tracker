@@ -1125,4 +1125,21 @@ describe('#188: pairing canvas fidelity', () => {
     }
   });
 
+  it('#188 R4: floats Pingo from 0 to -10 and back over 3000 ms', async () => {
+    jest.useFakeTimers();
+    try {
+      await renderPairing();
+      const pingo = await screen.findByTestId('pairing-pingo', { includeHiddenElements: true });
+      const float = screen.getByTestId('pairing-pingo-float', { includeHiddenElements: true });
+      expect(within(float).getByTestId('pairing-pingo', { includeHiddenElements: true })).toBe(pingo);
+      expect(float).toHaveAnimatedStyle({ transform: [{ translateY: 0 }] }, { shouldMatchAllProps: true });
+      await act(async () => { jest.advanceTimersByTime(1500); });
+      expect(float).toHaveAnimatedStyle({ transform: [{ translateY: -10 }] }, { shouldMatchAllProps: true });
+      await act(async () => { jest.advanceTimersByTime(1500); });
+      expect(float).toHaveAnimatedStyle({ transform: [{ translateY: 0 }] }, { shouldMatchAllProps: true });
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
 });
