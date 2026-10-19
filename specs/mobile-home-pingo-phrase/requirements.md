@@ -1,6 +1,6 @@
 ---
 feature: "mobile-home-pingo-phrase"
-status: draft        # draft | approved
+status: approved      # draft | approved
 tags: [harness, spec]
 ---
 
@@ -53,9 +53,9 @@ Tres decisiones abiertas desde el registro de #190. Esta spec propone un defecto
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
-- [ ] H1 contenido de la frase: confirmo el defecto (a), o lo sustituyo por: ____
-- [ ] H2 cuándo se muestra: confirmo el defecto, o lo sustituyo por: ____
-- [ ] H3 pose placeholder `pingo-talk.webp`: confirmada, o la sustituyo por: ____
-- [ ] Enmienda #190 de `docs/ui-guidelines.md` aprobada por humano (precondición de R5; sin ella R5 no se implementa)
+- [x] Aprobado por humano (fecha: 2026-10-19) ← gate obligatorio antes de implementar
+- [x] H1 contenido de la frase: confirmo el defecto (a), o lo sustituyo por: ____
+- [x] H2 cuándo se muestra: confirmo el defecto, o lo sustituyo por: ____
+- [x] H3 pose placeholder `pingo-talk.webp`: confirmada, o la sustituyo por: ____
+- [x] Enmienda #190 de `docs/ui-guidelines.md` aprobada por humano (precondición de R5; sin ella R5 no se implementa)
 - [ ] Smoke de R15 hecho y aprobado por el humano en dev build Android (cierre, no gate de implementación)
