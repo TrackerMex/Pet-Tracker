@@ -5352,13 +5352,13 @@ describe('#181 R3: Inicio centra el estado sin mascotas fuera del scroll', () =>
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
   });
 
-  it('R3.2: el contenedor centrado solo contiene home-empty y sustituye la escena', async () => {
+  it('R3.2: el contenedor centrado solo contiene home-empty y sustituye la escena (enmendado por #176 R3)', async () => {
     const { queryClient } = await renderWithProviders(<HomeScreen />, { wrapper: HomeWrapper });
     const empty = await screen.findByTestId('home-empty');
     await waitFor(() => expect(queryClient.isFetching()).toBe(0));
     const container = screen.getByTestId('home-no-pets-screen');
     expect(container.type).toBe('View');
-    expect(container.props.className).toBe('flex-1 items-center justify-center p-6 bg-background');
+    expect(container.props.className).toBe('flex-1 items-center justify-center px-5 py-6 bg-background'); // (enmendado por #176 R3)
     expect(container.props.style).toBeUndefined();
     expect(empty.parent).toBe(container);
     expect(container.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['home-empty']);
