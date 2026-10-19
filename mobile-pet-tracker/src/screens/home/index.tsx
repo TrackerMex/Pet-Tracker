@@ -415,7 +415,7 @@ export function HomeScreen() {
       <View testID="home-content" style={{ paddingHorizontal: 24, gap: 16 }}>
         {hasPets && selectedPetId !== null && detail.data?.kind === 'ok' && activity.data !== undefined ? (
           <HomeEntrance index={0} testID="home-entrance-pingo">
-            <View testID="home-pingo-phrase">
+            <View testID="home-pingo-phrase" className="flex-row items-end gap-2.5">
               <View
                 testID="home-pingo-bubble"
                 className="flex-1 rounded-tile rounded-br-4 bg-surface px-3.5 py-3 shadow-sm"
@@ -423,6 +423,7 @@ export function HomeScreen() {
               >
                 <Text testID="home-pingo-text" className="text-15 font-semibold leading-5.25 text-foreground" />
               </View>
+              <View testID="home-pingo-float" />
             </View>
           </HomeEntrance>
         ) : null}
