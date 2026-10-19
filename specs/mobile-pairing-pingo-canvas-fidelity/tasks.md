@@ -7,7 +7,7 @@ tags: [harness, spec]
 # Tareas — [[mobile-pairing-pingo-canvas-fidelity]]
 
 > Orden: T0 y luego un bloque por requisito. Cada bloque: (1) test rojo que nombra el R-id en el `it`, (2) implementación mínima, (3) refactor. Un bloque no empieza hasta que el anterior esté en verde. Requisitos en [[requirements]]; filas en [[traceability]].
-> Precondición: D1 a D7 cerradas por el humano, y #177 mergeada antes de cerrar la feature.
+> Precondición: D1 a D7 cerradas por el humano. #177 ya mergeada en `origin/main` (cbd964da): cumplida.
 
 ## T0 — Premisas (sin código)
 

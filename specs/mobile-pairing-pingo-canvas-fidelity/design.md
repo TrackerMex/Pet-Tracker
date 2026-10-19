@@ -47,7 +47,7 @@ Todo bajo `mobile-pet-tracker/`, por capa:
 
 ## Dependencias y coordinación
 
-- **#177 (receta del botón, pendiente)**: bloquea el cierre de la feature. El botón `pairing-submit` recibe su receta de #177; #188 no la redefine ni la prueba. Orden: #177 mergeada antes de cerrar #188.
+- **#177 (receta del botón, mergeada)**: en `origin/main` desde cbd964da (PR #231); no bloquea el cierre. El botón `pairing-submit` recibe su receta de #177; #188 no la redefine ni la prueba. Orden: cumplido (#177 mergeada antes de cerrar #188).
 - **#186 (input de código y FieldError global, pendiente)**: solapa con `activation-code-input`. D7 fija que #188 no toca el input.
 - **#181 (cerrada)**: ya centra `pairing-no-pets`. #188 no lo toca (R14).
 - **#178 (cerrada)**: origen del título de 24 px y peso 900 (D-H) y de la regla `--text-<px>`.

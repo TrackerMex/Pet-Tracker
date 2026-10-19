@@ -71,7 +71,7 @@ Términos usados abajo:
 
 ## Fuera de alcance
 
-- Receta visual del botón `pairing-submit` (alto 56 px, radio 16, 17 px con peso 800, sombra `--lip`): pertenece a #177, que bloquea esta feature. #188 no la define ni la prueba.
+- Receta visual del botón `pairing-submit` (alto 56 px, radio 16, 17 px con peso 800, sombra `--lip`): pertenece a #177, ya mergeada en `origin/main` (cbd964da) y no bloquea esta feature. #188 no la define ni la prueba.
 - Input de código (alto, borde, tipografía monoespaciada, mayúsculas) y FieldError global: #186. Ver D7.
 - Estado sin mascotas `pairing-no-pets` y su centrado: #181, ya cerrada. #188 no lo toca (R14).
 - Stepper «pasos con progreso»: fuera por defecto (D1).
