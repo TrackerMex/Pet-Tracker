@@ -94,3 +94,12 @@ it('#176 R8: hero muestra el título recibido a 26 px y peso 900', async () => {
   expect(title.props.className).toBe('text-center text-26 font-black tracking-title text-foreground');
   expect(title).toHaveTextContent('Título de prueba');
 });
+
+
+it('#176 R9: hero limita el cuerpo de 15 px a 290 px', async () => {
+  await renderProbe();
+  const body = screen.getByTestId('home-empty-body');
+  expect(body.props.className).toBe('text-center text-15 text-muted');
+  expect(StyleSheet.flatten(body.props.style)).toEqual({ maxWidth: 290 });
+  expect(body).toHaveTextContent('Cuerpo de prueba.');
+});
