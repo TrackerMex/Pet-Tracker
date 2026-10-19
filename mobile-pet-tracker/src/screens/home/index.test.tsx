@@ -5274,6 +5274,18 @@ describe('#155 R4: Inicio sin mascotas presenta a Pingo', () => {
     const empty = await screen.findByTestId('home-empty');
     expect(within(empty).queryByTestId('home-empty-stage')).not.toBeNull();
   });
+
+  it.each([
+    ['es', 'Aún no tienes mascotas', 'Añade a tu mascota y te ayudo a saber dónde está y cómo está.', 'Añadir mascota'],
+    ['en', 'No pets yet', "Add your pet and I'll help you know where they are and how they're doing.", 'Add pet'],
+  ] as const)('#176 R10: conserva el copy de Inicio en %s (NV)', async (language, title, body, label) => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    await renderWithProviders(<HomeScreen />, { wrapper: language === 'es' ? HomeWrapper : HomeWrapperEn });
+    const renderedTitle = await screen.findByTestId('home-empty-title');
+    expect(renderedTitle.props.children).toBe(title);
+    expect(screen.getByTestId('home-empty-body').props.children).toBe(body);
+    expect(within(screen.getByTestId('home-empty-action')).getByText(label).props.children).toBe(label);
+  });
 });
 
 let selectPet181: ((id: string) => void) | undefined;
