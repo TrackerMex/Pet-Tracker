@@ -462,8 +462,31 @@ handoff, sin tocar las aserciones: `Expected "../theme/chunky-lip"` en (a) y el 
    solo da `empty-state.test.tsx` (los de `design-drift` miran `reicon-react-native` en Horario y el
    historial, fuera de alcance, y el de `weekly-activity-chart` mira otro fichero).
 
+## Enmienda E4 (2026-10-19, hallada por Codex en c10)
+
+R3 manda `rounded-16` en el botón primario y el neutro de `screens/docs-upload-form/index.tsx`. El
+`it` «usa solo los radios card, xl, full y 24» de `#175 R10` (`design-drift.test.ts`, regex
+`/\brounded-(?!(?:card|xl|full|24)\b)[\w-]+/` sobre `screens/docs/index.tsx` y
+`screens/docs-upload-form/index.tsx`) cae con ese radio. R10 lo omitió: su grep de H0 localiza por
+receta antigua, y este candado es una lista blanca de radios, no una aserción de la receta. Codex
+paró en c10 conforme al handoff (`design-drift`: 1 failed, 112 passed, 113 total).
+
+1. **Qué cambia.** Punto 14 de R10: la lista blanca de ese `it` gana `16`
+   (`(?:card|xl|full|24|16)`) y el título pasa a «usa solo los radios card, xl, full, 24 y 16». Es un
+   aflojamiento de un radio, el que R3 exige; `docs/index.tsx` no usa `rounded-16`.
+2. **Cómo se aplica.** Un commit de test propio antes del feat de G3
+   (`test(#177 R10): lista blanca de radios de #175 R10 admite 16 (R10)`). Es **NV, aflojamiento
+   declarado** (admite un radio que el fichero ya usa por el código de G3 en el árbol sin commit; no
+   hay rojo previo que medir sin `git checkout`). Cuenta de `it`: 0.
+3. **Verificado.** Barrido de los guards con G3 en el árbol: `legibility-classnames`, `ui-language`,
+   `no-pets-states`, `profile-canvas-fidelity`, `heroui-text-size-merge`, `account-screens-polish` y
+   `alert-detail-canvas-fidelity` en verde; `consistency-classnames` (#166 R4, carta) y
+   `chunky-cta-canvas-fidelity` (R11.1 a R11.5) caen solo por la carta, que cierra c11. Ninguna otra
+   lista blanca de radios: `git grep -nE "rounded-\(\?!"` sobre los tests solo da esta.
+
 ## Gate humano de cierre
 
 - [ ] Enmienda #177 aprobada por humano (carta y #166; fecha: ____)
 - [x] Enmienda E1 aprobada por humano (inventarios de imports de empty-state; fecha: 2026-10-19)
+- [ ] Enmienda E4 aprobada por humano (lista blanca de radios de #175 R10; fecha: ____)
 - [ ] Smoke R14 en dev build de Android hecho por el humano (fecha: ____)
