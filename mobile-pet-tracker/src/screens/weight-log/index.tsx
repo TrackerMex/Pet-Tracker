@@ -26,6 +26,9 @@ import { healthKeys, userKeys } from '../../api/query-keys';
 import { getMe } from '../../api/users';
 import { Card } from '../../components/card';
 import { WeightChart } from '../../components/weight-chart';
+import { FieldErrorMessage } from '../../components/field-error-message';
+import type { FieldIssues } from '../../utils/account-rules';
+import { parseDecimal, validateWeight } from '../../utils/form-rules';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
@@ -96,6 +99,7 @@ function WeightLogContent({ petId }: { petId: string }) {
   const [bodyConditionText, setBodyConditionText] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<FieldIssues<'weight' | 'measuredAt' | 'bodyCondition'>>({});
   const [toastVisible, setToastVisible] = useState(false);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => () => {
@@ -118,21 +122,20 @@ function WeightLogContent({ petId }: { petId: string }) {
   const toneColors = { success, danger, muted };
 
   async function handleSubmit() {
-    const weightKg = parseFloat(weightText);
-    if (Number.isNaN(weightKg)) {
-      setFormError(t('weightLog.enterValidWeight'));
-      return;
-    }
+    setFormError(null);
+    const issues = validateWeight({ weight: weightText, measuredAt, bodyCondition: bodyConditionText });
+    setFieldErrors(issues);
+    if (Object.keys(issues).length > 0) return;
+    const weightKg = parseDecimal(weightText);
 
     setSubmitting(true);
-    setFormError(null);
 
     try {
       const result = await createWeight(baseUrl, token ?? '', petId, {
         weightKg,
-        measuredAt,
+        measuredAt: measuredAt.trim(),
         ...(bodyConditionText.trim()
-          ? { bodyCondition: Number(bodyConditionText) }
+          ? { bodyCondition: Number(bodyConditionText.trim()) }
           : {}),
       });
 
@@ -150,18 +153,18 @@ function WeightLogContent({ petId }: { petId: string }) {
           void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
           weights.refetch();
           return;
-        case 'validation':
-          setFormError(
-            result.errors
-              .map(({ path, message }) =>
-                path === 'measuredAt' &&
-                message === MEASURED_AT_IN_FUTURE_MESSAGE
-                  ? t('weightLog.dateCannotBeAfterToday')
-                  : message,
-              )
-              .join('\n'),
+        case 'validation': {
+          const futureErrors = result.errors.filter(({ path, message }) =>
+            path === 'measuredAt' && message === MEASURED_AT_IN_FUTURE_MESSAGE,
           );
+          if (futureErrors.length > 0) {
+            setFieldErrors({ measuredAt: { labelKey: 'weightLog.dateCannotBeAfterToday' } });
+          }
+          if (futureErrors.length < result.errors.length) {
+            setFormError(t('validation.checkDetails'));
+          }
           return;
+        }
         case 'forbidden':
           setFormError(t('weightLog.errorForbidden'));
           return;
@@ -231,7 +234,7 @@ function WeightLogContent({ petId }: { petId: string }) {
 
         {weights.data?.kind === 'ok' ? (
           <Card className="gap-4">
-            <TextField>
+            <TextField isInvalid={Boolean(fieldErrors.weight)}>
               <Label className="text-2xs font-semibold text-foreground">
                 {t('weightLog.weight')}
               </Label>
@@ -243,8 +246,9 @@ function WeightLogContent({ petId }: { petId: string }) {
                 value={weightText}
                 onChangeText={setWeightText}
               />
+              <FieldErrorMessage testID="weight-input" issue={fieldErrors.weight} />
             </TextField>
-            <TextField>
+            <TextField isInvalid={Boolean(fieldErrors.measuredAt)}>
               <Label className="text-2xs font-semibold text-foreground">
                 {t('weightLog.measuredAt')}
               </Label>
@@ -255,8 +259,9 @@ function WeightLogContent({ petId }: { petId: string }) {
                 value={measuredAt}
                 onChangeText={setMeasuredAtDraft}
               />
+              <FieldErrorMessage testID="weight-date-input" issue={fieldErrors.measuredAt} />
             </TextField>
-            <TextField>
+            <TextField isInvalid={Boolean(fieldErrors.bodyCondition)}>
               <Label className="text-2xs font-semibold text-foreground">
                 {t('weightLog.bodyCondition')}
               </Label>
@@ -268,6 +273,7 @@ function WeightLogContent({ petId }: { petId: string }) {
                 value={bodyConditionText}
                 onChangeText={setBodyConditionText}
               />
+              <FieldErrorMessage testID="weight-bc-input" issue={fieldErrors.bodyCondition} />
             </TextField>
 
             {formError ? (

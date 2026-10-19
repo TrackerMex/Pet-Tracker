@@ -167,10 +167,10 @@ function SelectionProbe() {
   return null;
 }
 
-async function renderWeightLog(selected = true) {
+async function renderWeightLog(selected = true, language: 'en' | 'es' = 'es') {
   return renderWithProviders(
     <HeroUINativeProvider>
-      <LanguageProvider initial="es">
+      <LanguageProvider initial={language}>
         <SelectedPetProvider>
           {selected ? <SelectionProbe /> : null}
           <HeaderHeightContext.Provider value={91}>
@@ -380,7 +380,7 @@ describe('R9: alta de peso con degradación por kind', () => {
     );
   });
 
-  it('rejects an invalid weight without calling the API', async () => {
+  it('#186 R7: peso no numérico queda en su campo y el botón sigue habilitado', async () => {
     mockCreateWeight.mockResolvedValue({ kind: 'error' });
 
     await renderWeightLog();
@@ -388,9 +388,9 @@ describe('R9: alta de peso con degradación por kind', () => {
     await fireEvent.changeText(screen.getByTestId('weight-input'), 'not-a-number');
     await fireEvent.press(screen.getByTestId('weight-submit'));
 
-    expect(screen.getByTestId('weight-form-error')).toHaveTextContent(
-      'Introduce un peso válido',
-    );
+    await waitFor(() => expect(screen.queryByTestId('weight-input-message')).toHaveTextContent('Introduce un peso válido'));
+    expect(screen.queryByTestId('weight-form-error')).toBeNull();
+    expect(screen.getByTestId('weight-submit')).not.toBeDisabled();
     expect(mockCreateWeight).not.toHaveBeenCalled();
   });
 
@@ -452,7 +452,7 @@ describe('R9: alta de peso con degradación por kind', () => {
     );
   });
 
-  it('joins backend validation messages, translating the future-date one (#90 R5)', async () => {
+  it('#186 R7: el 400 mixto separa fecha futura y aviso genérico sin texto crudo', async () => {
     mockCreateWeight.mockResolvedValue({
       kind: 'validation',
       errors: [
@@ -466,17 +466,15 @@ describe('R9: alta de peso con degradación por kind', () => {
 
     await renderWeightLog();
     await waitFor(() => expect(screen.getByTestId('weight-input')).toBeVisible());
-    await fireEvent.changeText(screen.getByTestId('weight-input'), '1000');
+    await fireEvent.changeText(screen.getByTestId('weight-input'), '12.4');
     await fireEvent.press(screen.getByTestId('weight-submit'));
 
-    await waitFor(() =>
-      expect(screen.getByTestId('weight-form-error').props.children).toBe(
-        'Weight is too high\nLa fecha no puede ser posterior a hoy',
-      ),
-    );
+    await waitFor(() => expect(screen.queryByTestId('weight-date-input-message')).toHaveTextContent('La fecha no puede ser posterior a hoy'));
+    expect(screen.queryByTestId('weight-form-error')).toHaveTextContent('Algo no cuadra en los datos. Revísalos y vuelve a intentarlo.');
+    expect(screen.queryByText(/Weight is too high/)).toBeNull();
   });
 
-  it('keeps a malformed-date validation message raw (#90 R5)', async () => {
+  it('#186 R7: el 400 de fecha mal formada muestra el genérico sin texto crudo', async () => {
     mockCreateWeight.mockResolvedValue({
       kind: 'validation',
       errors: [{ path: 'measuredAt', message: 'Invalid ISO date' }],
@@ -487,11 +485,8 @@ describe('R9: alta de peso con degradación por kind', () => {
     await fireEvent.changeText(screen.getByTestId('weight-input'), '12.4');
     await fireEvent.press(screen.getByTestId('weight-submit'));
 
-    await waitFor(() =>
-      expect(screen.getByTestId('weight-form-error').props.children).toBe(
-        'Invalid ISO date',
-      ),
-    );
+    await waitFor(() => expect(screen.queryByTestId('weight-form-error')).toHaveTextContent('Algo no cuadra en los datos. Revísalos y vuelve a intentarlo.'));
+    expect(screen.queryByText(/Invalid ISO date/)).toBeNull();
   });
 
   it.each([
@@ -513,6 +508,98 @@ describe('R9: alta de peso con degradación por kind', () => {
     await waitFor(() =>
       expect(screen.getByTestId('weight-form-error')).toHaveTextContent(message),
     );
+  });
+
+  it.each([
+    ['0', 'El peso debe ser mayor que 0 y como máximo 999,99 kg'],
+    ['1000', 'El peso debe ser mayor que 0 y como máximo 999,99 kg'],
+    ['12abc', 'Introduce un peso válido'],
+    ['72,5', null],
+  ])('#186 R7: peso «%s» respeta decimal y rango', async (weight, message) => {
+    mockCreateWeight.mockReturnValue(pending());
+    await renderWeightLog();
+    await screen.findByTestId('weight-input');
+    await fireEvent.changeText(screen.getByTestId('weight-input'), weight!);
+    await fireEvent.changeText(screen.getByTestId('weight-date-input'), '2026-08-20');
+    await fireEvent.press(screen.getByTestId('weight-submit'));
+    if (message !== null) {
+      await waitFor(() => expect(screen.queryByTestId('weight-input-message')).toHaveTextContent(message));
+      expect(mockCreateWeight).not.toHaveBeenCalled();
+    } else {
+      await waitFor(() => expect(screen.getByTestId('weight-submit')).toBeDisabled());
+      expect(mockCreateWeight).toHaveBeenCalledWith(apiUrl, 'jwt-token', 'pet-1', { weightKg: 72.5, measuredAt: '2026-08-20' });
+    }
+  });
+
+  it.each([
+    ['2026-02-30', 'Escribe una fecha válida con formato AAAA-MM-DD'],
+    [' 2026-08-20 ', null],
+  ])('#186 R7: fecha «%s» es real y se envía recortada', async (date, message) => {
+    mockCreateWeight.mockReturnValue(pending());
+    await renderWeightLog();
+    await screen.findByTestId('weight-input');
+    await fireEvent.changeText(screen.getByTestId('weight-input'), '12.4');
+    await fireEvent.changeText(screen.getByTestId('weight-date-input'), date!);
+    await fireEvent.press(screen.getByTestId('weight-submit'));
+    if (message !== null) {
+      await waitFor(() => expect(screen.queryByTestId('weight-date-input-message')).toHaveTextContent(message));
+      expect(mockCreateWeight).not.toHaveBeenCalled();
+    } else {
+      await waitFor(() => expect(screen.getByTestId('weight-submit')).toBeDisabled());
+      expect(mockCreateWeight).toHaveBeenCalledWith(apiUrl, 'jwt-token', 'pet-1', { weightKg: 12.4, measuredAt: '2026-08-20' });
+    }
+  });
+
+  it.each([
+    ['10', 'La condición corporal es un número entero del 1 al 9'],
+    ['abc', 'La condición corporal es un número entero del 1 al 9'],
+    ['  ', null],
+  ])('#186 R7: condición corporal «%s» valida y omite blanco', async (body, message) => {
+    mockCreateWeight.mockReturnValue(pending());
+    await renderWeightLog();
+    await screen.findByTestId('weight-input');
+    await fireEvent.changeText(screen.getByTestId('weight-input'), '12.4');
+    await fireEvent.changeText(screen.getByTestId('weight-date-input'), '2026-08-20');
+    await fireEvent.changeText(screen.getByTestId('weight-bc-input'), body!);
+    await fireEvent.press(screen.getByTestId('weight-submit'));
+    if (message !== null) {
+      await waitFor(() => expect(screen.queryByTestId('weight-bc-input-message')).toHaveTextContent(message));
+      expect(mockCreateWeight).not.toHaveBeenCalled();
+    } else {
+      await waitFor(() => expect(screen.getByTestId('weight-submit')).toBeDisabled());
+      expect(mockCreateWeight).toHaveBeenCalledWith(apiUrl, 'jwt-token', 'pet-1', { weightKg: 12.4, measuredAt: '2026-08-20' });
+    }
+  });
+
+  it('#186 R7: muestra simultáneamente las tres filas inválidas', async () => {
+    await renderWeightLog();
+    await screen.findByTestId('weight-input');
+    await fireEvent.changeText(screen.getByTestId('weight-input'), 'abc');
+    await fireEvent.changeText(screen.getByTestId('weight-date-input'), 'bad-date');
+    await fireEvent.changeText(screen.getByTestId('weight-bc-input'), '10');
+    await fireEvent.press(screen.getByTestId('weight-submit'));
+    await waitFor(() => expect(screen.queryByTestId('weight-input-message')).toHaveTextContent('Introduce un peso válido'));
+    expect(screen.queryByTestId('weight-input-message-row')).not.toBeNull();
+    expect(screen.queryByTestId('weight-date-input-message-row')).not.toBeNull();
+    expect(screen.queryByTestId('weight-bc-input-message-row')).not.toBeNull();
+  });
+
+  it('#186 R7: un 400 solo de fecha futura queda únicamente en el campo', async () => {
+    mockCreateWeight.mockResolvedValue({ kind: 'validation', errors: [{ path: 'measuredAt', message: 'measuredAt is too far in the future' }] });
+    await renderWeightLog();
+    await screen.findByTestId('weight-input');
+    await fireEvent.changeText(screen.getByTestId('weight-input'), '12.4');
+    await fireEvent.press(screen.getByTestId('weight-submit'));
+    await waitFor(() => expect(screen.queryByTestId('weight-date-input-message')).toHaveTextContent('La fecha no puede ser posterior a hoy'));
+    expect(screen.queryByTestId('weight-form-error')).toBeNull();
+  });
+
+  it('#186 R7: peso fuera de rango se traduce al inglés', async () => {
+    await renderWeightLog(true, 'en');
+    await screen.findByTestId('weight-input');
+    await fireEvent.changeText(screen.getByTestId('weight-input'), '0');
+    await fireEvent.press(screen.getByTestId('weight-submit'));
+    await waitFor(() => expect(screen.queryByTestId('weight-input-message')).toHaveTextContent('Weight must be above 0 and at most 999.99 kg'));
   });
 
   it('disables submit while the request is pending', async () => {
@@ -988,7 +1075,7 @@ describe('#169 R11: ni toast ni háptico fuera de la rama ok', () => {
 
   const cases: [string, CreateWeightState | null, string | null][] = [
     ['peso no numérico', null, 'Introduce un peso válido'],
-    ['validation', { kind: 'validation', errors: [{ path: 'weightKg', message: 'weightKg must be positive' }] }, 'weightKg must be positive'],
+    ['validation', { kind: 'validation', errors: [{ path: 'weightKg', message: 'weightKg must be positive' }] }, 'Algo no cuadra en los datos. Revísalos y vuelve a intentarlo.'],
     ['forbidden', { kind: 'forbidden' }, 'Solo el dueño puede registrar pesos'],
     ['unreachable', { kind: 'unreachable', message: 'x' }, 'No se pudo conectar con el servidor'],
     ['unauthorized', { kind: 'unauthorized' }, null],
@@ -997,7 +1084,7 @@ describe('#169 R11: ni toast ni háptico fuera de la rama ok', () => {
     ['excepción', null, 'Algo salió mal'],
   ];
 
-  it.each(cases)('rama %s: ni toast ni háptico', async (branch, result, message) => {
+  it.each(cases)('#186 R7: rama %s: ni toast ni háptico', async (branch, result, message) => {
     if (branch === 'excepción') {
       mockCreateWeight.mockRejectedValue(new Error('boom'));
     } else if (result !== null) {
@@ -1011,13 +1098,16 @@ describe('#169 R11: ni toast ni háptico fuera de la rama ok', () => {
 
     if (branch === 'unauthorized') {
       await waitFor(() => expect(mockUseAuth().signOut).toHaveBeenCalledTimes(1));
+    } else if (branch === 'peso no numérico') {
+      await waitFor(() => expect(screen.queryByTestId('weight-input-message')).toHaveTextContent('Introduce un peso válido'));
+      expect(screen.queryByTestId('weight-form-error')).toBeNull();
+      expect(mockCreateWeight).not.toHaveBeenCalled();
     } else {
       await waitFor(() => {
-        expect(screen.getByTestId('weight-form-error')).toHaveTextContent(message!);
+        expect(screen.queryByTestId('weight-form-error')).toHaveTextContent(message!);
         expect(screen.getByTestId('weight-form-error')).toBeVisible();
       });
       expect(screen.getByTestId('weight-form-error')).toHaveTextContent(message!);
-      if (branch === 'peso no numérico') expect(mockCreateWeight).not.toHaveBeenCalled();
     }
     expect(screen.queryByTestId('weight-toast')).toBeNull();
     expect(mockHaptics.notificationAsync).not.toHaveBeenCalled();

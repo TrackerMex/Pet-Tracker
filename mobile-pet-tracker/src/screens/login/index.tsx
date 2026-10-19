@@ -2,7 +2,7 @@ import { useChunkyLip } from '../../theme/chunky-lip';
 import { Image } from 'expo-image';
 import { HeaderHeightContext } from 'expo-router/react-navigation';
 import { router } from 'expo-router';
-import { Button, FieldError, Input, Label, LinkButton, TextField } from 'heroui-native';
+import { Button, Input, Label, LinkButton, TextField } from 'heroui-native';
 import { useContext, useState } from 'react';
 import { KeyboardAvoidingView, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -13,6 +13,7 @@ import { BackButton } from '../../components/back-button';
 import { useAuth } from '../../providers/auth-provider';
 import { PasswordInput } from '../../components/password-input';
 import { FormError } from '../../components/form-error';
+import { FieldErrorMessage } from '../../components/field-error-message';
 import { useTranslate } from '../../providers/language-provider';
 import { HomeEntrance } from '../home/home-entrance';
 import { validateLogin, type FieldIssues } from '../../utils/account-rules';
@@ -122,9 +123,7 @@ export function LoginScreen() {
               value={email}
               onChangeText={setEmail}
             />
-            <FieldError testID="login-email-error">
-              {fieldErrors.email ? <FormError testID="login-email-message" message={t(fieldErrors.email.labelKey, fieldErrors.email.params)} /> : null}
-            </FieldError>
+            <FieldErrorMessage testID="login-email" issue={fieldErrors.email} />
           </TextField>
 
           <TextField isInvalid={Boolean(fieldErrors.password)}>
@@ -138,9 +137,7 @@ export function LoginScreen() {
               value={password}
               onChangeText={setPassword}
             />
-            <FieldError testID="login-password-error">
-              {fieldErrors.password ? <FormError testID="login-password-message" message={t(fieldErrors.password.labelKey, fieldErrors.password.params)} /> : null}
-            </FieldError>
+            <FieldErrorMessage testID="login-password" issue={fieldErrors.password} />
           </TextField>
 
           <LinkButton
