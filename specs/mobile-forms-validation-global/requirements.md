@@ -1,6 +1,6 @@
 ---
 feature: "mobile-forms-validation-global"
-status: draft
+status: approved
 tags: [mobile, ui, spec]
 ---
 
@@ -1019,4 +1019,4 @@ recomendación como **valor por defecto marcado**, y la respuesta es del humano.
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [x] Aprobado por humano (fecha: 2026-10-19) ← gate obligatorio antes de implementar
