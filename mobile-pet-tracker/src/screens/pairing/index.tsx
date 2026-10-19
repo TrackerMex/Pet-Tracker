@@ -1,4 +1,5 @@
 import { useChunkyLip } from '../../theme/chunky-lip';
+import { Image } from 'expo-image';
 import { HeaderHeightContext } from 'expo-router/react-navigation';
 import { useQuery } from '@tanstack/react-query';
 import { router, useFocusEffect } from 'expo-router';
@@ -31,6 +32,8 @@ import {
 import { useSelectedPet } from '../../providers/selected-pet-provider';
 import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { connectivityLabelKey } from '../../utils/device-connectivity';
+
+const PAIRING_PINGO_SOURCE = require('../../../assets/images/pingo-collar.webp');
 
 function isPetsError(state: PetsState): boolean {
   return ['error', 'unreachable', 'missing-config'].includes(state.kind);
@@ -257,6 +260,12 @@ export function PairingScreen() {
           paddingBottom: insets.bottom + 24,
         }}
       >
+        {phase === 'idle' && selectedPet?.device === null ? (
+          <View className="items-center justify-center" accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+            <Image testID="pairing-pingo" source={PAIRING_PINGO_SOURCE} style={{ width: 150, height: 150 }} contentFit="contain" />
+          </View>
+        ) : null}
+
         {pets.data === undefined ? (
           <View testID="pairing-skeleton" className="gap-3">
             <Skeleton
