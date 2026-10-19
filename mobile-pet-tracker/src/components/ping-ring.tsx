@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import Animated, {
   cancelAnimation,
   useAnimatedStyle,
+  useReducedMotion,
   useSharedValue,
   withDelay,
   withRepeat,
@@ -11,17 +12,20 @@ import Animated, {
 import { MOTION_PING_FROM, MOTION_PING_TO_SCALE, MOTION_PING_TIMING } from '@/theme/motion';
 
 export function PingRing({ testID, delay, className }: { testID: string; delay: number; className: string }) {
-  const scale = useSharedValue(MOTION_PING_FROM);
-  const opacity = useSharedValue(MOTION_PING_FROM);
+  const reduceMotion = useReducedMotion();
+  const scale = useSharedValue(reduceMotion ? 1 : MOTION_PING_FROM);
+  const opacity = useSharedValue(reduceMotion ? 0.3 : MOTION_PING_FROM);
 
   useEffect(() => {
-    scale.set(withDelay(delay, withRepeat(withTiming(MOTION_PING_TO_SCALE, MOTION_PING_TIMING), -1, false)));
-    opacity.set(withDelay(delay, withRepeat(withTiming(0, MOTION_PING_TIMING), -1, false)));
+    if (!reduceMotion) {
+      scale.set(withDelay(delay, withRepeat(withTiming(MOTION_PING_TO_SCALE, MOTION_PING_TIMING), -1, false)));
+      opacity.set(withDelay(delay, withRepeat(withTiming(0, MOTION_PING_TIMING), -1, false)));
+    }
     return () => {
       cancelAnimation(scale);
       cancelAnimation(opacity);
     };
-  }, [delay, opacity, scale]);
+  }, [delay, opacity, reduceMotion, scale]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     opacity: opacity.get(),
