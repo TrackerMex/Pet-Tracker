@@ -1,6 +1,6 @@
 ---
 feature: "mobile-add-pet-two-steps"
-status: draft        # draft | approved
+status: approved      # draft | approved
 tags: [mobile, ui, spec]
 ---
 
@@ -42,7 +42,7 @@ elige la alternativa, la enmienda de la spec es solo la que cada bloque indica.
   grupo coherente (identidad / salud).
 - **Alternativa**: mover la edad al paso 1 (el paso 2 sería solo opcionales). Cambia
   R4, R7 y R8 y deja a «Continuar» validando nombre y edad.
-- [ ] D1 confirmada por el humano (valor por defecto) — fecha: ____
+- [x] D1 confirmada por el humano (valor por defecto) — fecha: 2026-10-19
 
 ### Decisión humana pendiente D2 — Botón atrás del paso 2
 
@@ -54,7 +54,7 @@ elige la alternativa, la enmienda de la spec es solo la que cada bloque indica.
   de dos pasos.
 - **Alternativa**: atrás sale siempre de la pantalla. Se borra R9 y el
   `usePreventRemove` de design.md.
-- [ ] D2 confirmada por el humano (valor por defecto) — fecha: ____
+- [x] D2 confirmada por el humano (valor por defecto) — fecha: 2026-10-19
 
 ### Decisión humana pendiente D3 — ¿Habla Pingo en cada paso?
 
@@ -66,7 +66,7 @@ elige la alternativa, la enmienda de la spec es solo la que cada bloque indica.
 - **Alternativa**: una frase corta en el paso 2 con `{{petName}}` (por ejemplo
   «Ahora cuéntame de la salud de {{petName}}.»). Añade una clave
   `addPet.pingoStep2` (+1 en el catálogo y en la fórmula de R1) y un `it` en R8.
-- [ ] D3 confirmada por el humano (valor por defecto) — fecha: ____
+- [x] D3 confirmada por el humano (valor por defecto) — fecha: 2026-10-19
 
 ### Decisión humana pendiente D4 — ¿Cuándo se valida?
 
@@ -77,7 +77,7 @@ elige la alternativa, la enmienda de la spec es solo la que cada bloque indica.
   nombre vacío se descubriría en el paso 2 sin campo a la vista.
 - **Alternativa**: validar todo solo al guardar y, si falla el nombre, volver al paso 1.
   Quita R7 y añade un retorno al paso 1 en R8.
-- [ ] D4 confirmada por el humano (valor por defecto) — fecha: ____
+- [x] D4 confirmada por el humano (valor por defecto) — fecha: 2026-10-19
 
 ### Decisión humana pendiente D5 — Selecciones iniciales
 
@@ -88,7 +88,7 @@ elige la alternativa, la enmienda de la spec es solo la que cada bloque indica.
   enviaría datos que el usuario no eligió.
 - **Alternativa**: arrancar con Hembra y Mediano marcados como el artboard. Cambia R5
   y el payload de la prueba de R10.
-- [ ] D5 confirmada por el humano (valor por defecto) — fecha: ____
+- [x] D5 confirmada por el humano (valor por defecto) — fecha: 2026-10-19
 
 ## Base medida
 
@@ -427,4 +427,4 @@ El humano las revisa en el gate junto con la spec; ninguna cierra una decisión.
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [x] Aprobado por humano (fecha: 2026-10-19) ← gate obligatorio antes de implementar
