@@ -9689,5 +9689,5 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
   conocida, log en `/tmp/claude-1002/pet-186-init-red1.log`. Reviewer APROBADO R1-R9 sobre
   `276a58fa` (`2b40f25a`). El humano firmó el smoke R10 (dev build de Android, `7f803509`) y
   la enmienda de la carta (`50cc7875`).
-- **Estado final:** done. Notion: Implementado / Completado. La PR la mergea el humano,
+- **Estado final:** done. Notion: Implementado / Completado. La PR #234 la mergea el humano,
   después se borra el worktree.
