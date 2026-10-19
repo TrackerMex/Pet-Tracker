@@ -188,19 +188,32 @@ Tres límites, no negociables:
     Fuera de la escala, por fidelidad al canvas (#179): `rounded-10` (10 px), «Editar» de la fila de Horario; `rounded-14` (14 px), mosaico de la fila y botones de acción de Horario y horas del panel del día de Historial; `rounded-24` (24 px), resumen de Horario y calendario y panel del día de Historial, que son `View` y no `Card` porque `twMerge` no sustituye `rounded-card` por un radio con nombre de valor.
     Fuera de la escala, por fidelidad al canvas (#180): `rounded-24` (24 px), mapa del detalle de alerta, que es un View y no un Card; `rounded-16` (16 px), ack y «Ver en el mapa» del detalle de alerta.
 
+    Fuera de la escala, por fidelidad al canvas (#177): `rounded-16` es el radio de todo botón de 56 de alto y del tile del candado; el compacto de 40 conserva `rounded-xl`.
+
 13. **Botón con cuerpo** (feature #166, 2026-10-11). Los botones de acción
-    llevan un labio inferior: un borde inferior más grueso que los
-    laterales, nunca una sombra.
-    - **Primario sólido** (todo `Button` con `rounded-xl bg-accent`):
-      `rounded-xl bg-accent border-b-4 border-black/25`
-      El labio va detrás de `bg-accent`, nunca delante: el recuento de
-      primarios de `consistency-classnames` busca `rounded-xl bg-accent`
-      seguido de espacio o comilla.
+    llevan un labio inferior: una sombra sólida sin desenfoque en `--lip`
+    (`--color-lip`, `--color-lip-gray`) que cuelga fuera del cuerpo. El hook
+    `useChunkyLip()` resuelve los tokens de cada tema y entrega los estilos.
+    - **Primario sólido**: `h-14 rounded-16 bg-accent`, con
+      `style={chunkyLip.primary}` y etiqueta `Text`
+      `text-17 font-extrabold text-accent-foreground`; cuerpo de 56 y labio de 4.
     - **Secundario neutro** (`variant="outline"` o `variant="secondary"`
       sin relleno tonal, y el secundario de Bienvenida):
-      `rounded-xl border-2 border-b-6 border-lip-gray bg-surface`
-      El gris sale del token `--color-lip-gray` de `src/theme/global.css`,
-      nunca de un hex ni de una clase entre corchetes.
+      `h-14 rounded-16 border-2 border-lip-gray bg-surface`, con
+      `style={chunkyLip.neutral}` y labio gris de 4. La etiqueta es `Text`
+      `text-17 font-extrabold text-foreground`; «Ya tengo cuenta» conserva
+      `text-17 font-bold text-accent-strong`. «Ver en el mapa» del detalle
+      conserva `h-13` y su `Button.Label` `text-base font-extrabold text-foreground`.
+    - **Compacto**: `reminders-add-link` conserva `h-10`, `rounded-xl`,
+      `gap-1.5 px-3.5`, su icono y `Button.Label` `text-sm font-extrabold text-accent-foreground`;
+      usa `style={chunkyLip.primaryCompact}` (`chunkyLip.primaryCompact`, labio de 3).
+    - **Tile con labio**: `forgot-lock-tile` conserva su tamaño y lleva
+      `bg-accent rounded-16`, con `style={[CONTINUOUS_CORNER, chunkyLip.primary]}`.
+      El tile del candado lleva `bg-accent` antes de `rounded-16` para no contar como primario.
+    - **Deshabilitado**: `h-14 rounded-16 bg-default`, etiqueta
+      `text-17 font-extrabold text-muted`, sin labio; lo aplica #189.
+    El tamaño 17 se pinta con `Text` plano de React Native por la regla de la
+    Enmienda #187; no se pasa `text-17` a `Button.Label`.
     - **Chip seleccionado** (fidelidad al canvas, #178): cápsula `rounded-full bg-accent border-b-3 border-black/25`; el chip sin seleccionar no lleva labio.
     - **Secundarios de Horario** (fidelidad al canvas, #179): «Editar» `h-9.75 rounded-10 border-2 border-b-5 border-lip-gray bg-surface` y «Añadir comida» `h-13.5 rounded-14 border-2 border-b-6 border-lip-gray bg-surface`, con el labio dentro del alto; «Generar plan» es tonal de la categoría violeta y sin labio, porque el labio del artboard (`rgba(91,63,163,0.35)`) no tiene token.
     - **Sin labio**: los tonales (`bg-accent-soft`, `bg-default`), los
@@ -582,10 +595,10 @@ de 4 px. Iniciar sesión no flota: Pingo saluda con su burbuja. Ninguna otra
 pantalla usa `PingoFloat` sin una enmienda propia.
 
 **El candado lleva labio.** El tile del candado de Recuperar
-(`forgot-lock-tile`) es un tile acento con labio: `rounded-xl border-b-4
-border-black/25 bg-accent`. Es la única excepción a la regla de que solo los
-botones llevan labio, y el labio va delante de `bg-accent` para no contar como
-primario.
+(`forgot-lock-tile`) es un tile acento con labio: `bg-accent rounded-16`, con
+`style={[CONTINUOUS_CORNER, chunkyLip.primary]}`. Es la única excepción a la
+regla de que solo los botones llevan labio. El tile del candado lleva
+`bg-accent` antes de `rounded-16` para no contar como primario.
 
 **La CTA va al pie.** En las cuatro pantallas, la CTA se ancla al pie con un
 espaciador `flex-1` y el contenido deja de centrarse en vertical. Esto revierte
@@ -660,3 +673,21 @@ su sitio con el sufijo `(enmendado por #180 Rn)`.
 3. Las tallas de Tailwind (`text-xs`, `text-sm`, `text-2xs`...) no se ven afectadas y siguen valiendo sobre `Label.Text` y `Button.Label`.
 4. El candado no ve una clase fabricada en ejecución (`text-${n}`): no se construyen tamaños así.
 5. El candado es `src/__tests__/heroui-text-size-merge.test.ts` (#187 R1).
+
+
+## Enmienda #177 — Receta global de botones
+
+> Enmienda de `ui-guidelines` por `mobile-chunky-cta-canvas-fidelity` (#177).
+> Directiva del humano: «el diseño final debe de quedar como el artifact».
+
+**Qué cambia**: §12 y §13 fijan cuerpo de 56, radio 16, etiqueta Text 17/800 y
+labio externo sólido mediante `useChunkyLip()`; Bienvenida «Ya tengo cuenta»
+usa 17/700. El compacto conserva 40 y labio de 3, y el tile adopta el labio de 4.
+Chip, ack compacto de fila, Horario, tarjeta de resumen, tonales, destructivos
+y reintentos conservan sus recetas. La variante deshabilitada se documenta
+para #189; la hoja de eliminar recordatorio conserva el par asimétrico.
+
+Detalle y tests en `specs/mobile-chunky-cta-canvas-fidelity/requirements.md`.
+Los candados anteriores se reescriben en su sitio.
+
+- [ ] Enmienda #177 aprobada por humano
