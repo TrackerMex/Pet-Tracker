@@ -111,3 +111,19 @@ Retoma así, **antes** del paso 3 de arriba (feat R2):
    Commit de test (NV, declarado): `test(mobile-home-empty): assert the CTA under reduced motion instead of waiting (R13)`.
 4. Reaplica el parche, mide `228 passed, 228 total` y commitea el feat R2 como indicaba el paso 3. Sigue
    con R3, R10, R11, suite y cierre. El reporte debe registrar el `waitFor` fallido como desviación.
+
+## Corrección 3 (tercera parada: candado de alcance de R2)
+
+El grep literal `grep -rn 'variant="hero"' src/screens` da tres líneas porque `Card variant="hero"` de
+`profile/index.tsx:351` y `alert-detail/index.tsx:135` ya existía en origin/main: el candado de la spec
+estaba mal formulado, no la implementación. `tasks.md` §R2 ya trae el candado corregido. Tienes el commit
+de test `84067097` y el parche de R2 aplicado y verde (228/228); solo falta el commit feat R2. Retoma:
+
+1. Anclas: `git status --short` → las mismas dos líneas; `ls progress/impl_mobile-home-empty-canvas-fidelity.done 2>&1 | grep -c 'No such file'` → `1`.
+   Anota el nuevo `H0=$(git rev-parse HEAD)`.
+2. Candado corregido, desde `mobile-pet-tracker/`:
+   `grep -rn 'variant="hero"' src/screens | grep -v 'Card variant="hero"' | cut -d: -f1` → exactamente `src/screens/home/index.tsx`.
+3. Commit feat R2 (`feat(mobile-home-empty): render Home's empty state as the hero (R2)`), con typecheck y lint
+   como siempre. No repitas jest de Inicio si el árbol no cambió desde la medición de 228 verdes.
+4. Sigue con R3, R10, R11, suite completa y cierre (pasos 4 a 8 de la continuación). Registra el candado
+   literal fallido como desviación (hueco de spec, no de implementación).

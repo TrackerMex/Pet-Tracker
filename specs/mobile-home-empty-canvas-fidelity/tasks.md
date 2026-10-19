@@ -40,7 +40,7 @@ Cada enmienda lleva el comentario `(enmendado por #176 R<n>)` y no cambia nada m
 
 ## R2 - Inicio usa la variante hero
 
-- [ ] (1) Escribir test que falla para R2 en `src/screens/home/index.test.tsx` (con la cuenta sin mascotas, como los «#155 R4» existentes): `home-empty` se renderiza en variante hero; se comprueba por efecto observable, `home-empty-stage` existe dentro de `home-empty`. Candado de alcance: `grep -rn 'variant="hero"' src/screens` devuelve solo `src/screens/home/index.tsx`.
+- [ ] (1) Escribir test que falla para R2 en `src/screens/home/index.test.tsx` (con la cuenta sin mascotas, como los «#155 R4» existentes): `home-empty` se renderiza en variante hero; se comprueba por efecto observable, `home-empty-stage` existe dentro de `home-empty`. Candado de alcance: `grep -rn 'variant="hero"' src/screens | grep -v 'Card variant="hero"'` devuelve una sola línea, de `src/screens/home/index.tsx` (el filtro excluye `Card variant="hero"` de `profile/index.tsx:351` y `alert-detail/index.tsx:135`, que ya existían en origin/main y son otra familia de componentes; el grep literal sin filtro da tres líneas y no vale).
 - [ ] (2) Implementación mínima que lo pasa: `variant="hero"` en el `EmptyState` de `src/screens/home/index.tsx`.
 - [ ] (3) Refactor con tests verdes.
 
