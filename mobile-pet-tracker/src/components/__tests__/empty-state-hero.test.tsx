@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react-native';
 import { HeroUINativeProvider } from 'heroui-native';
+import { getAnimatedStyle } from 'react-native-reanimated';
 
 import { EmptyState } from '../empty-state';
 
@@ -39,4 +40,17 @@ it('#176 R1: sin variant y con default conserva el vacío sin escenario ni icono
     }
     await result.unmount();
   }
+});
+
+it('#176 R4: hero dibuja talk a 190×190 sin dimensiones en el estilo de flotación', async () => {
+  await renderProbe();
+  const pose = screen.getByTestId('home-empty-pose');
+  expect(pose.props.style).toEqual({ width: 190, height: 190 });
+  expect(pose.props.contentFit).toBe('contain');
+  expect(pose.props.source).toEqual([
+    expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/pingo-talk\.webp$/) }),
+  ]);
+  const floatStyle = getAnimatedStyle(screen.getByTestId('home-empty-float'));
+  expect(floatStyle).not.toHaveProperty('width');
+  expect(floatStyle).not.toHaveProperty('height');
 });
