@@ -1,6 +1,6 @@
 ---
 feature: "mobile-pairing-pingo-canvas-fidelity"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec]
 ---
 
@@ -14,7 +14,7 @@ tags: [harness, spec]
 
 Feature #188. Lleva la vista de vinculación de `mobile-pet-tracker/src/screens/pairing/index.tsx` a la fidelidad del artboard «Vincular collar (19)» del canvas aprobado. Fuente: `project/Vincular.dc.html` dentro del canvas vivo `https://claude.ai/artifact/VqaQQsRTtis9Dbttqy3z7j`. El HTML guardado en disco es la carcasa del runtime y no contiene artboards.
 
-Estado de partida, verificado contra d799d714 por contenido: la pantalla no tiene Pingo, ni Reanimated, ni `PingoFloat`; el título de la rama sin dispositivo usa `text-2xl`; el contenedor desplazable usa `padding: 24`; el banner de plan gratuito y la pista de la caja ya existen con claves de catálogo. En `src/theme/global.css` no existen los tokens `--text-24` ni `--text-2xl`. El asset `pingo-collar.webp` sí existe en `mobile-pet-tracker/assets/images/`.
+Estado de partida, verificado contra cbd964da por contenido: la pantalla no tiene Pingo, ni Reanimated, ni `PingoFloat`; el título de la rama sin dispositivo usa `text-2xl`; el contenedor desplazable usa `padding: 24`; el banner de plan gratuito y la pista de la caja ya existen con claves de catálogo. En `src/theme/global.css` no existen los tokens `--text-24` ni `--text-2xl`. El asset `pingo-collar.webp` sí existe en `mobile-pet-tracker/assets/images/`.
 
 Referencia de exploración: `progress/explore_canvas-parity-2026-10-16.md`, sección «N4 — mobile-pairing-pingo-canvas-fidelity».
 
@@ -105,14 +105,14 @@ Cada decisión tiene opciones, recomendación y requisito afectado. El spec_auth
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
-- [ ] D1 cerrada por humano: stepper fuera de #188 o feature aparte
-- [ ] D2 cerrada por humano: reduce motion con anillos en reposo (a) o sin pintar anillos (b)
-- [ ] D3 cerrada por humano: extracción de `PingRing` y reparto ampliado a welcome
-- [ ] D4 cerrada por humano: token `text-24` nuevo (a), `text-26` (b) o `text-2xl` (c)
-- [ ] D5 cerrada por humano: sin subtítulo (a) o clave nueva con literal aprobado (b)
-- [ ] D6 cerrada por humano: margen 20 px como excepción nombrada (a) o 24 px (b)
-- [ ] D7 cerrada por humano: solapes con #186 y #181
+- [x] Aprobado por humano (fecha: 2026-10-19) ← gate obligatorio antes de implementar
+- [x] D1 cerrada por humano: stepper fuera de #188 (recomendado)
+- [x] D2 cerrada por humano: reduce motion con anillos en reposo (a)
+- [x] D3 cerrada por humano: extracción de `PingRing` y reparto ampliado a welcome (a)
+- [x] D4 cerrada por humano: token `text-24` nuevo (a)
+- [x] D5 cerrada por humano: sin subtítulo (a)
+- [x] D6 cerrada por humano: margen 20 px como excepción nombrada (a)
+- [x] D7 cerrada por humano: solapes con #186 y #181 (recomendado)
 - [ ] H1 verificado en dispositivo por el humano: anillos de 2400 ms con el segundo a 1200 ms de retardo y flotado de 3000 ms por ciclo, en build de desarrollo Android (no Expo Go, no VPS)
 - [ ] H2 verificado en dispositivo por el humano: con «Quitar animaciones» activo, la vista se ve como fija D2
 - [ ] H3 verificado por el humano: comparación lado a lado con el artboard «Vincular collar (19)», incluida la amplitud del flotado (diferencia declarada)
