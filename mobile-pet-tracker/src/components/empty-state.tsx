@@ -88,7 +88,7 @@ export function EmptyState({ testID, pose, title, body, action, variant = 'defau
       <Text testID={`${testID}-title`} className={variant === 'hero' ? 'text-center text-26 font-black tracking-title text-foreground' : 'text-center text-lg font-bold text-foreground'}>
         {title}
       </Text>
-      <Text testID={`${testID}-body`} className="text-center font-normal text-muted">
+      <Text testID={`${testID}-body`} className={variant === 'hero' ? 'text-center text-15 text-muted' : 'text-center font-normal text-muted'} style={variant === 'hero' ? { maxWidth: 290 } : undefined}>
         {body}
       </Text>
       {action ? (
