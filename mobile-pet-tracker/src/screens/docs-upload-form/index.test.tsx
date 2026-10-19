@@ -292,7 +292,7 @@ describe('#185 R9 (antes #158 R5): selector y formulario de subida', () => {
     expect(screen.getByTestId('docs-upload-file')).toHaveTextContent('vacuna.pdf');
   });
 
-  it('declara las props, clases y fecha civil de los controles', async () => {
+  it('declara las props, clases y fecha civil de los controles (enmendado por #177 R10)', async () => {
     jest.useFakeTimers();
     jest.setSystemTime(new Date('2026-10-09T12:00:00Z'));
     await openUploadForm();
@@ -316,18 +316,18 @@ describe('#185 R9 (antes #158 R5): selector y formulario de subida', () => {
     expect(screen.getByTestId('docs-date-input').props.placeholder).toBe('AAAA-MM-DD');
     const submit = screen.getByTestId('docs-upload-submit');
     expect(submit).toHaveTextContent('Subir documento');
-    expect(submit.props.className).toEqual(expect.stringContaining('rounded-xl'));
+    expect(submit.props.className).toEqual(expect.stringContaining('h-14 rounded-16 bg-accent'));
     expect(submit.props.className).toEqual(expect.stringContaining('bg-accent'));
     const submitLabel = within(submit).getByText('Subir documento');
-    expect(submitLabel.props.className).toEqual(expect.stringContaining('font-bold'));
+    expect(submitLabel.props.className).toEqual(expect.stringContaining('text-17 font-extrabold'));
     expect(submitLabel.props.className).toEqual(expect.stringContaining('text-accent-foreground'));
     const cancel = screen.getByTestId('docs-upload-cancel');
     expect(cancel).toHaveTextContent('Cancelar');
-    expect(cancel.props.className).toEqual(expect.stringContaining('rounded-xl'));
+    expect(cancel.props.className).toEqual(expect.stringContaining('h-14 rounded-16 border-2 border-lip-gray bg-surface'));
     expect(cancel.props.className).toEqual(expect.stringContaining('button__root--variant-outline'));
     const cancelLabel = within(cancel).getByText('Cancelar');
-    expect(cancelLabel.props.className).toEqual(expect.stringContaining('font-semibold'));
-    expect(cancelLabel.props.className).toEqual(expect.stringContaining('button__label--variant-outline'));
+    expect(cancelLabel.props.className).toEqual(expect.stringContaining('text-17 font-extrabold'));
+    expect(cancelLabel.props.className).toEqual(expect.stringContaining('text-foreground'));
   });
 
   it.each([{ docs: [] }, { docs: [docOne] }])('cancelar reinicia los campos sin red con lista %j', async ({ docs }) => {
