@@ -113,3 +113,5 @@ Orden: R9, R8, R11, R1, R2, R3, R4, R6, R10, R7, R13, R12, R5, R14.
 - R4 rojo `66d23db9`: 1 fallo por pose ausente, resto 245/245. A partir de este verde se usa `--silent` en Jest para omitir los avisos informativos preexistentes de HeroUI; se siguen ejecutando los ficheros enteros, sin filtros `-t`, con `FORCE_COLOR=0` y logs fuera del árbol.
 - R4 verde `9bb6ec8e`: 246/246, tsc exit 0; source de expo-image y estilo 64×64 comprobados en el árbol.
 - R6 rojo `cf06f56d`: dos fallos esperados, la tabla de retrasos y el escenario sin semanal/última posición. Se enmiendan los títulos de las dos pruebas de #152 y la tabla de siete retrasos con `(enmendado por #190 R6)`.
+- R6 verde `c2f1a30f`: 247/247, tsc exit 0. Índices fijos 0..6.
+- R10 rojo `3fac2a91`: cuatro fallos esperados por texto vacío. Prueba de ES→EN sin recarga de las cinco queries, distancia/comidas, respaldo sin tracking y comidas con actividad error/nombre del detalle. No se encontró ningún `getByText` ambiguo por Luna/Milo que requiriera enmienda; la suite entera lo comprobará en verde.

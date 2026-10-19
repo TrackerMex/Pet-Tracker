@@ -84,6 +84,7 @@ import {
 } from './format';
 import { CollarBatteryBar } from './collar-battery-bar';
 import { HomeEntrance, homeEntering } from './home-entrance';
+import { homePingoPhrase } from './pingo-phrase';
 import { WeeklyActivityChart } from './weekly-activity-chart';
 
 const WEEKLY_ACTIVITY_SKELETON_HEIGHT = 408;
@@ -286,6 +287,15 @@ export function HomeScreen() {
       ? deviceConnectionState(detail.data.pet.device)
       : null;
 
+  const pingoPhrase =
+    hasPets && selectedPetId !== null && detail.data?.kind === 'ok' && activity.data !== undefined
+      ? homePingoPhrase({
+          petName: detail.data.pet.name,
+          distanceM: today?.distanceM ?? null,
+          meals: mealsToday,
+        })
+      : null;
+
   useFocusEffect(
     useCallback(() => {
       refetchPets();
@@ -414,7 +424,7 @@ export function HomeScreen() {
       )}
 
       <View testID="home-content" style={{ paddingHorizontal: 24, gap: 16 }}>
-        {hasPets && selectedPetId !== null && detail.data?.kind === 'ok' && activity.data !== undefined ? (
+        {pingoPhrase !== null ? (
           <HomeEntrance index={0} testID="home-entrance-pingo">
             <View testID="home-pingo-phrase" className="flex-row items-end gap-2.5">
               <View
@@ -422,7 +432,9 @@ export function HomeScreen() {
                 className="flex-1 rounded-tile rounded-br-4 bg-surface px-3.5 py-3 shadow-sm"
                 style={CONTINUOUS_CORNER}
               >
-                <Text testID="home-pingo-text" className="text-15 font-semibold leading-5.25 text-foreground" />
+                <Text testID="home-pingo-text" className="text-15 font-semibold leading-5.25 text-foreground" selectable>
+                  {t(pingoPhrase.labelKey, pingoPhrase.params)}
+                </Text>
               </View>
               <View testID="home-pingo-float">
                 <Image
