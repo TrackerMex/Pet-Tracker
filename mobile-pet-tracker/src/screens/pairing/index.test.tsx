@@ -11,7 +11,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
 import { Alert, DeviceEventEmitter, Platform } from 'react-native';
-import { getAnimatedStyle } from 'react-native-reanimated';
+import { getAnimatedStyle } from 'react-native-reanimated/src/jestUtils';
 
 import {
   claimDevice,
@@ -1090,7 +1090,7 @@ describe('#188: pairing canvas fidelity', () => {
   });
 
 
-  it('#188 R3: staggers the ping loop and resets at 2400 ms', async () => {
+  it('#188 R3: staggers the ping loop and resets at 2401 ms', async () => {
     jest.useFakeTimers();
     try {
       await renderPairing();
@@ -1109,7 +1109,17 @@ describe('#188: pairing canvas fidelity', () => {
       expect(ring0).toHaveAnimatedStyle({ opacity: style.opacity, transform: [{ scale }] }, { shouldMatchAllProps: true });
       expect(ring1).toHaveAnimatedStyle({ opacity: 0.55, transform: [{ scale: 0.55 }] }, { shouldMatchAllProps: true });
       await act(async () => { jest.advanceTimersByTime(1800); });
-      expect(ring0).toHaveAnimatedStyle({ opacity: 0.55, transform: [{ scale: 0.55 }] }, { shouldMatchAllProps: true });
+      expect(ring0).toHaveAnimatedStyle({ opacity: 0, transform: [{ scale: 1.5 }] }, { shouldMatchAllProps: true });
+      await act(async () => { jest.advanceTimersByTime(1); });
+      const restarted = getAnimatedStyle(ring0);
+      expect(Object.keys(restarted).sort()).toEqual(['opacity', 'transform']);
+      expect(restarted.transform).toHaveLength(1);
+      expect(Object.keys(restarted.transform![0])).toEqual(['scale']);
+      const restartedScale = (restarted.transform as [{ scale: number }])[0].scale;
+      expect(restartedScale).toBeGreaterThan(0.55);
+      expect(restartedScale).toBeLessThan(0.6);
+      expect(restarted.opacity).toBeGreaterThan(0.5);
+      expect(restarted.opacity).toBeLessThan(0.55);
     } finally {
       jest.useRealTimers();
     }
