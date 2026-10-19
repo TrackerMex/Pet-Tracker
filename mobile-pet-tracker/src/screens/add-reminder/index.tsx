@@ -1,3 +1,4 @@
+import { useChunkyLip } from '../../theme/chunky-lip';
 import { HeaderHeightContext } from 'expo-router/react-navigation';
 import { Host } from '@expo/ui';
 import ExpoDateTimePicker from '@expo/ui/community/datetime-picker';
@@ -55,6 +56,7 @@ function initialTime(): Date {
 }
 
 function AddReminderContent({ petId }: { petId: string }) {
+  const chunkyLip = useChunkyLip();
   const headerHeight = useContext(HeaderHeightContext);
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { signOut, token } = useAuth();
@@ -330,13 +332,13 @@ function AddReminderContent({ petId }: { petId: string }) {
 
         <Button
           testID="add-reminder-submit"
-          className="rounded-xl bg-accent border-b-4 border-black/25"
+          className="h-14 rounded-16 bg-accent" style={chunkyLip.primary}
           isDisabled={submitting}
           onPress={() => void handleSubmit()}
         >
-          <Button.Label className="font-bold text-accent-foreground">
+          <Text className="text-17 font-extrabold text-accent-foreground">
             {t('addReminder.saveReminder')}
-          </Button.Label>
+          </Text>
         </Button>
 
         {formError ? (

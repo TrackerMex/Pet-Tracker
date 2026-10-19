@@ -1,3 +1,4 @@
+import { useChunkyLip } from '../../theme/chunky-lip';
 import { HeaderHeightContext } from 'expo-router/react-navigation';
 import { Redirect } from 'expo-router';
 import * as Haptics from 'expo-haptics';
@@ -79,6 +80,7 @@ function isWeightsError(state: WeightsState): boolean {
 }
 
 function WeightLogContent({ petId }: { petId: string }) {
+  const chunkyLip = useChunkyLip();
   const headerHeight = useContext(HeaderHeightContext);
   const [success, danger, muted] = useThemeColors([
     'success',
@@ -276,13 +278,13 @@ function WeightLogContent({ petId }: { petId: string }) {
 
             <Button
               testID="weight-submit"
-              className="rounded-xl bg-accent border-b-4 border-black/25"
+              className="h-14 rounded-16 bg-accent" style={chunkyLip.primary}
               isDisabled={submitting}
               onPress={() => void handleSubmit()}
             >
-              <Button.Label className="font-bold text-accent-foreground">
+              <Text className="text-17 font-extrabold text-accent-foreground">
                 {t('weightLog.logWeight')}
-              </Button.Label>
+              </Text>
             </Button>
           </Card>
         ) : null}
