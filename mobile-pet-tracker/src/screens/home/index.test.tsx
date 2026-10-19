@@ -25,9 +25,9 @@ import {
 } from '../../api/query-keys';
 import { listReminders, type RemindersState } from '../../api/reminders';
 import type { Alert, DayEntry, PetProfile, Reminder } from '../../api/types';
-import { es } from '../../i18n/catalog';
+import { es, type Language } from '../../i18n/catalog';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
-import { LanguageProvider } from '../../providers/language-provider';
+import { LanguageProvider, useLanguage } from '../../providers/language-provider';
 import { SelectedPetProvider } from '../../providers/selected-pet-provider';
 import * as selectedPetHooks from '../../providers/selected-pet-provider';
 import { MOTION_FILL_TIMING } from '../../theme/motion';
@@ -5583,5 +5583,55 @@ describe('#190 R6: los índices son fijos aunque falte un bloque', () => {
       screen.getByTestId(id).props.entering({});
       expect(jest.mocked(withDelay).mock.calls.map(([ms]) => ms)).toEqual([delay, delay]);
     }
+  });
+});
+
+let changeLanguage190: ((language: Language) => void) | undefined;
+
+function LanguageProbe190() {
+  const { setLanguage } = useLanguage();
+  useEffect(() => {
+    changeLanguage190 = setLanguage;
+    return () => { changeLanguage190 = undefined; };
+  }, [setLanguage]);
+  return null;
+}
+
+function HomeLanguageWrapper190({ children }: { children: ReactNode }) {
+  return <HomeWrapper><LanguageProbe190 />{children}</HomeWrapper>;
+}
+
+describe('#190 R10: la frase usa los datos de Inicio y reacciona al idioma', () => {
+  beforeEach(setupHomeMotion);
+
+  it('traduce la misma frase sin recargar ninguna query', async () => {
+    await renderWithProviders(<HomeScreen />, { wrapper: HomeLanguageWrapper190 });
+    const text = await screen.findByTestId('home-pingo-text');
+    expect(text).toHaveTextContent('Luna ya caminó 2.4 km hoy.');
+    const queries = [mockListPets, mockGetPet, mockGetDailyActivity, mockListReminders, mockListAlerts];
+    const calls = queries.map((query) => query.mock.calls.length);
+    expect(changeLanguage190).toBeDefined();
+    await act(async () => { changeLanguage190?.('en'); });
+    expect(screen.getByTestId('home-pingo-text')).toHaveTextContent('Luna has walked 2.4 km today.');
+    expect(queries.map((query) => query.mock.calls.length)).toEqual(calls);
+  });
+
+  it('combina distancia y comidas del detalle actual', async () => {
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makeMotionPet(82, { mealsToday: { served: 1, total: 2 } }) });
+    await renderHome();
+    expect(await screen.findByTestId('home-pingo-text')).toHaveTextContent('Luna ya caminó 2.4 km hoy y lleva 1 de 2 comidas.');
+  });
+
+  it('usa el respaldo cuando no hay tracking ni comidas', async () => {
+    mockGetDailyActivity.mockResolvedValue({ kind: 'no-tracking' });
+    await renderHome();
+    expect(await screen.findByTestId('home-pingo-text')).toHaveTextContent('Estoy pendiente de Luna.');
+  });
+
+  it('usa las comidas y el nombre del detalle aunque falle la actividad', async () => {
+    mockGetDailyActivity.mockResolvedValue({ kind: 'error' });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makeMotionPet(82, { name: 'Milo', mealsToday: { served: 3, total: 2 } }) });
+    await renderHome();
+    expect(await screen.findByTestId('home-pingo-text')).toHaveTextContent('Milo lleva 3 de 2 comidas hoy.');
   });
 });
