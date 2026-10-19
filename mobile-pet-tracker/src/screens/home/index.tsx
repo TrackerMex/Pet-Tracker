@@ -413,6 +413,20 @@ export function HomeScreen() {
       )}
 
       <View testID="home-content" style={{ paddingHorizontal: 24, gap: 16 }}>
+        {detail.data !== undefined && activity.data !== undefined ? (
+          <HomeEntrance index={0} testID="home-entrance-pingo">
+            <View testID="home-pingo-phrase">
+              <View
+                testID="home-pingo-bubble"
+                className="flex-1 rounded-tile rounded-br-4 bg-surface px-3.5 py-3 shadow-sm"
+                style={CONTINUOUS_CORNER}
+              >
+                <Text testID="home-pingo-text" className="text-15 font-semibold leading-5.25 text-foreground" />
+              </View>
+            </View>
+          </HomeEntrance>
+        ) : null}
+
         {selectedPetId !== null && (detail.data?.kind === 'error' || detail.data?.kind === 'unreachable') ? (
           <HeroUICard testID="pet-hero-error" className="items-start gap-3 p-4">
             <Text className="text-danger">
@@ -430,13 +444,6 @@ export function HomeScreen() {
         {selectedPetId ? (
           <HomeEntrance index={0} testID="home-entrance-summary">
             <Card testID="summary-card" className="gap-4">
-              <View
-                testID="home-pingo-bubble"
-                className="flex-1 rounded-tile rounded-br-4 bg-surface px-3.5 py-3 shadow-sm"
-                style={CONTINUOUS_CORNER}
-              >
-                <Text testID="home-pingo-text" className="text-15 font-semibold leading-5.25 text-foreground" />
-              </View>
               <Text
                 testID="summary-card-title"
                 className="text-base font-bold text-foreground"
