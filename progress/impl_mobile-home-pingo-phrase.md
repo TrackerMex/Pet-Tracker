@@ -111,3 +111,5 @@ Orden: R9, R8, R11, R1, R2, R3, R4, R6, R10, R7, R13, R12, R5, R14.
 - R2 verde `a88a8895`: 244/244, tsc exit 0.
 - R3 rojo `0f11fd80`: 1 fallo por receta de fila ausente; verde `39c9edde`: 245/245, tsc exit 0.
 - R4 rojo `66d23db9`: 1 fallo por pose ausente, resto 245/245. A partir de este verde se usa `--silent` en Jest para omitir los avisos informativos preexistentes de HeroUI; se siguen ejecutando los ficheros enteros, sin filtros `-t`, con `FORCE_COLOR=0` y logs fuera del árbol.
+- R4 verde `9bb6ec8e`: 246/246, tsc exit 0; source de expo-image y estilo 64×64 comprobados en el árbol.
+- R6 rojo `cf06f56d`: dos fallos esperados, la tabla de retrasos y el escenario sin semanal/última posición. Se enmiendan los títulos de las dos pruebas de #152 y la tabla de siete retrasos con `(enmendado por #190 R6)`.
