@@ -173,3 +173,103 @@ Esta sección actualiza el estado; las secciones anteriores se conservan como hi
 - Incremento terminado acumulado: R1 +1, R2 +89. T0 3994 + 1 + 89 = **4084 esperado para los commits R1–R2**, no una medición global final. No se ejecutó suite global final por la segunda parada; los tests R3 sin commit dejan ese árbol en rojo por módulo ausente.
 - Único fichero de código/test sin commit al cerrar: `mobile-pet-tracker/src/components/__tests__/field-error-message.test.tsx`. Se conserva para revisión, por lo que el worktree no queda limpio.
 - No se ejecutaron init.sh, backend, AWS, push ni PR. No se tocaron feature_list.json, R10 ni casillas humanas. No se rebasó ni reescribió ningún commit.
+
+## Reanudación R3 — aclaración de lecturas auxiliares
+
+Rama verificada: `feature/186-mobile-forms-validation-global`; HEAD inicial `2c8a8a35` — `docs(#186): una lectura auxiliar fallida no es parada`. Se releyó el handoff actualizado. El error de lectura auxiliar de la sesión anterior queda documentado como desviación, ya no como bloqueo de implementación. No se repiten T0, R1 ni R2. Se mantienen las skills building-native-ui y ponytail, ya cargadas.
+
+### R3 rojo (reanudación)
+
+`Tests:       0 total`, Cannot find module ../field-error-message declarado. Typecheck exit 0; lint exit 0 con log vacío. Base del fichero nuevo = 0.
+
+S3.1: `Tests:       6 failed, 4 passed, 10 total`; rojo previsto: #186 R3: FieldErrorMessage › #186 R3: traduce al español y conserva fila, icono y testIDs; #186 R3: FieldErrorMessage › #186 R3: interpola los parámetros; #186 R3: FieldErrorMessage › #186 R3: traduce al inglés; #186 R3: FieldErrorMessage › #186 R3: pinta dentro de TextField=false y fuera junto a un TextInput; #186 R3: FieldErrorMessage › #186 R3: rerender retira y vuelve a añadir los tres nodos; #186 R3: FieldErrorMessage › #186 R3: rerender sustituye la clave sin dejar el texto anterior.
+Revertida con `git checkout HEAD -- src/components/field-error-message.tsx`; diff HEAD y cached exit 0.
+
+### R3 verde
+
+Rojo `6e20aea1` — `test(mobile): FieldErrorMessage (#186 R3)`; verde `a8bd53e285426113279d68efc64789d6e941e85f` — `feat(mobile): FieldErrorMessage (#186 R3)`. `Tests:       10 passed, 10 total` = 0 + 10 it nuevos. El candado de contexto confirma que FieldError con isInvalid local pinta fuera de TextField, además de dentro. Typecheck exit 0 y lint sin salida, exit 0. El componente no añade clases, estilos ni copy literal; FormError permanece intacto. Los tests de ausencia y rerender también se estrenaron después del Cannot find module declarado, sin NV de ejecución previa.
+
+S3.2: `Tests:       7 failed, 3 passed, 10 total`; rojo previsto: #186 R3: FieldErrorMessage › #186 R3: traduce al español y conserva fila, icono y testIDs; #186 R3: FieldErrorMessage › #186 R3: interpola los parámetros; #186 R3: FieldErrorMessage › #186 R3: traduce al inglés; #186 R3: FieldErrorMessage › #186 R3: pinta dentro de TextField=true y fuera junto a un TextInput; #186 R3: FieldErrorMessage › #186 R3: pinta dentro de TextField=false y fuera junto a un TextInput; #186 R3: FieldErrorMessage › #186 R3: rerender retira y vuelve a añadir los tres nodos; #186 R3: FieldErrorMessage › #186 R3: rerender sustituye la clave sin dejar el texto anterior.
+Revertida con `git checkout HEAD -- src/components/field-error-message.tsx`; diff HEAD y cached exit 0.
+
+S3.3: `Tests:       1 failed, 9 passed, 10 total`; rojo previsto: #186 R3: FieldErrorMessage › #186 R3: interpola los parámetros.
+Revertida con `git checkout HEAD -- src/components/field-error-message.tsx`; diff HEAD y cached exit 0.
+
+S3.4: `Tests:       4 failed, 6 passed, 10 total`; rojo previsto: #186 R3: FieldErrorMessage › #186 R3: traduce al español y conserva fila, icono y testIDs; #186 R3: FieldErrorMessage › #186 R3: interpola los parámetros; #186 R3: FieldErrorMessage › #186 R3: traduce al inglés; #186 R3: FieldErrorMessage › #186 R3: rerender retira y vuelve a añadir los tres nodos.
+Revertida con `git checkout HEAD -- src/components/field-error-message.tsx`; diff HEAD y cached exit 0.
+
+S3.5: `Tests:       1 failed, 9 passed, 10 total`; rojo previsto: #186 R3: FieldErrorMessage › #186 R3: envuelve las primitivas sin estilos propios y usa RuleIssue como tipo.
+Revertida con `git checkout HEAD -- src/components/field-error-message.tsx`; diff HEAD y cached exit 0.
+
+Las sondas R3 se ejecutaron en a8bd53e2 y todas se revirtieron con diff HEAD/cached exit 0. S3.1 y S3.2 también hacen caer los casos de parámetros, contexto y rerender que comparten el render/traducción del mensaje; todos son candados funcionales enumerados en R3 y sus nombres exactos están registrados arriba. S3.3 da solo el caso de parámetros; S3.4 exactamente los cuatro casos de ID previstos; S3.5 solo higiene. Sin errores de consulta ni de arranque.
+
+## R4 — Añadir mascota
+
+Rojo: `Tests:       11 failed, 41 passed, 52 total` = 41 previos + 11 nuevos. Se reescribió el it previo de modos de edad como candado 1 y el del 400 como candado 7. Fallan solo los candados 1–6 y 9 de R4. NV: candado 7 ya estaba cubierto por «shows a backend error without losing typed values», ahora conserva también el literal y ausencia de filas; candado 8 (maxLength) nuevo, nace verde por los topes existentes. El botón expone su estado mediante accessibilityState.disabled y el matcher not.toBeDisabled lo comprueba. Typecheck y lint exit 0, log vacío.
+
+R4 verde: `Tests:       52 passed, 52 total` = 41 + 11; ui-language `Tests:       30 passed, 30 total` = 30 + 0. Rojo `062d5c21`. Se movieron las tres reglas al módulo puro, sin cambiar clases; el 400 queda en formulario. R9_ADD_PET: 45 + 3 (R2) - 3 (R4) = 45. Typecheck y lint exit 0, sin salida de lint.
+
+S4.1: `Tests:       1 failed, 51 passed, 52 total`; rojo previsto: R6: alta de mascota › #186 R4: el mensaje de birth-date-field es el último hermano del control.
+Revertida con `git checkout HEAD -- src/screens/add-pet/index.tsx`; diff HEAD y cached exit 0.
+
+S4.2: `Tests:       2 failed, 50 passed, 52 total`; rojo previsto: R6: alta de mascota › #186 R4: nombre vacío muestra su mensaje sin bloquear el botón ni llamar a la API; R6: alta de mascota › #186 R4: corregir conserva el mensaje hasta reenviar y luego manda el mismo payload.
+Revertida con `git checkout HEAD -- src/screens/add-pet/index.tsx`; diff HEAD y cached exit 0.
+
+S4.3: `Tests:       3 failed, 49 passed, 52 total`; rojo previsto: R6: alta de mascota › #186 R4: nombre y fecha inválidos muestran las dos filas a la vez; R6: alta de mascota › #186 R4: el mensaje de birth-date-field es el último hermano del control; R6: alta de mascota › #186 R4: el mensaje de approx-age-input es el último hermano del control.
+Revertida con `git checkout HEAD -- src/screens/add-pet/index.tsx`; diff HEAD y cached exit 0.
+
+S4.4: `Tests:       1 failed, 51 passed, 52 total`; rojo previsto: R6: alta de mascota › #186 R4: el 400 conserva el aviso de formulario y los valores sin mensajes de campo.
+Revertida con `git checkout HEAD -- src/screens/add-pet/index.tsx`; diff HEAD y cached exit 0.
+
+S4.5: `Tests:       1 failed, 51 passed, 52 total`; rojo previsto: R6: alta de mascota › #186 R4: conserva maxLength 120 120 32 y 3.
+Revertida con `git checkout HEAD -- src/screens/add-pet/index.tsx`; diff HEAD y cached exit 0.
+
+R4 verde: `02eb1dbcc568daa9ad90d8c977452572185400f9`. S4.1–S4.5 detectadas y revertidas; S4.2 también detecta que un envío inválido bloquea la corrección posterior, y S4.3 detecta además la ausencia de los mensajes de fecha/edad en los candados de colocación. Todos corresponden a los candados funcionales declarados en R4. Sin errores de consulta ni de arranque.
+
+## R5 — Añadir recordatorio
+
+Rojo: `Tests:       6 failed, 59 passed, 65 total` = 60 previos + 5 nuevos. Se reescriben los tres it de título/fecha cliente. Fallan esos tres y los nuevos de errores simultáneos, persistencia y traducción. NV nuevos: el del 400 sin mensajes de campo y maxLength. Los dos it previos del 400 y su tabla no cambian. La colocación se asevera en el caso de fecha ausente; el candado previo de dos hijos de date-field continúa verde sin cambios. El contador de API se consulta después del mensaje/estado del árbol. Typecheck y lint exit 0, log de lint vacío.
+
+## R5 — parada durante el intento verde
+
+Rojo R5: `a7f8e58a401c43605f9989251b5e8737fc554a53` — `test(mobile): validación por campo en recordatorios (#186 R5)`.
+
+Tras implementar validateReminder y los dos FieldErrorMessage, la suite completa dio `Tests:       2 failed, 63 passed, 65 total` (60 + 5), sin timeout. Los seis it que fallaban en el rojo previsto ahora pasan; fallan dos it antiguos no declarados como migrables:
+
+1. `#125: avisos que ya pasaron en Nuevo recordatorio › #125 R3: los chips de aviso cuyo momento ya pasó quedan desactivados y la selección baja al mayor aviso aún futuro › a la hora exacta del recordatorio todos cuentan como pasados y el formulario lo rechaza`.
+2. `#125: avisos que ya pasaron en Nuevo recordatorio › #125 R6: la elección explícita del aviso se conserva al cambiar fecha u hora (Enmienda E1) › con todos los chips desactivados sigue marcada la elección, no un valor fijo`.
+
+Ambos fallan con `Unable to find an element with testID: add-reminder-error`. El árbol del log sí contiene `date-field-message` con `La fecha debe ser futura`. No es un fallo intermitente ni de tiempo: los tests buscan el aviso antiguo después de una validación cliente de fecha vencida. El primero contiene la rama `enviado === null` con `mockCreateReminder.not.toHaveBeenCalled()` y el segundo también espera que la API no sea llamada. Por tanto **no son casos de 400 del servidor**. R5 describe dos it de las líneas aproximadas 719/848 como casos de 400 que no deben cambiar; esta clasificación no coincide con esos tests de #125.
+
+Se activa la parada del handoff por `Unable to find` y por it no listado. Se avisó al usuario inmediatamente después de diagnosticar el log. **No se ajustaron esas dos aserciones**, no se alteraron sus fechas/chips y no se emitió commit verde R5. Los tests del 400 existentes siguen sin cambios.
+
+- Log completo: `/tmp/pet-tracker-186-R5-green.log`.
+- Typecheck de la producción R5: exit 0. Lint: exit 0, log vacío `/tmp/pet-tracker-186-R5-green-lint.log`.
+- No se ejecutó ui-language después de este intento, porque el encadenamiento se detuvo con la suite de pantalla fallida. Su último resultado acreditado es R4: 30/30.
+- Producción R5 y deltas de copy conservados **sin commit**: `src/screens/add-reminder/index.tsx`, `src/__tests__/ui-copy-table.ts`, `src/__tests__/ui-language.test.ts`.
+- Delta de copy preparado, no acreditado por un verde R5: R8_REMINDERS 56 + 3 (R2) - 3 (R5) = 56.
+- S5.1–S5.3 no ejecutadas: exigen el commit verde de R5, que no existe.
+- R6–R9 no iniciados; sin cambios en sus ficheros ni sondas ejecutadas.
+
+Para reanudar, la spec/handoff debe aclarar la migración de las dos aserciones cliente de #125 al mensaje de fecha, manteniendo intactas las verificaciones de chips y de ausencia de llamada a la API, y distinguirlas de los casos de 400 del servidor.
+
+## Estado actual de esta reanudación
+
+Las secciones anteriores se conservan como historial. Estado vigente: R1–R4 completos, R5 detenido durante el intento verde, R6–R9 sin iniciar.
+
+| R | Rojo | Verde | Incremento de it terminado |
+|---|---|---|---|
+| R1 | `41cb99f82f691250efeb3dde33db87b15fc64ce8` | `883d172244401c7241da72e7d687b7e995ab9e14` | +1 |
+| R2 | `b8c0a517298300fc385bb787513ac71a82878dbc` | `9c2c676f61c29e52fcc351a47a890ab2f0581ef6` | +89 |
+| R3 | `6e20aea15a37bf36bff241be0ca725244b9ee47d` | `a8bd53e285426113279d68efc64789d6e941e85f` | +10 |
+| R4 | `062d5c217242481864ce84ebca2d34635d422be0` | `02eb1dbcc568daa9ad90d8c977452572185400f9` | +11 |
+| R5 | `a7f8e58a401c43605f9989251b5e8737fc554a53` | sin commit | +5 escritos, sin cierre verde |
+| R6–R9 | no iniciados | no iniciados | +0 |
+
+H0 y todos estos hashes se verificaron con `git cat-file -e <hash>^{commit}` (exit 0). No se repitieron T0, R1 ni R2.
+
+Anclas de cierre de los requisitos terminados, medidas sobre sus fuentes intactas: R3 `className` = 0; R4 FieldErrorMessage = 4, `t('addPet.nameIsRequired')` = 0, `t('addPet.checkPetDetails')` = 1, `testID="add-pet-error"` = 1, maxLength = 4. S3.1–S3.5 y S4.1–S4.5 quedaron revertidas con checkout HEAD y ambas comprobaciones de diff en 0. Los resultados exactos de cada sonda están arriba.
+
+Total esperado de los commits terminados R1–R4: T0 3994 + 1 + 89 + 10 + 11 = **4105**, no medido globalmente en esta reanudación. El rojo R5 añade otros 5 it (4110 si todos pasaran); no se acredita total global final por la parada. No se ejecuta una suite final para presentar el árbol como verde.
+
+Se conservan tres ficheros de implementación R5 sin commit para revisión; índice vacío al cerrar. El worktree no queda limpio por la parada. No se tocaron los ficheros de estado del leader, las casillas humanas ni R10. No se ejecutaron init.sh, backend, AWS, push, PR ni rebase. Se cerrará solo reporte/trazabilidad en el commit de documentación, y el marcador .done referirá a este reporte incompleto.
