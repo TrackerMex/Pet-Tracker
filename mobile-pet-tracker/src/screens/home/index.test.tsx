@@ -5532,3 +5532,17 @@ describe('#190 R2: no hay frase antes de conocer la mascota y la actividad', () 
     ]);
   });
 });
+
+describe('#190 R3: la fila alinea burbuja y pose al borde inferior', () => {
+  beforeEach(setupHomeMotion);
+
+  it('tiene la clase exacta y solo burbuja y envoltorio de pose, en orden', async () => {
+    await renderHome();
+    await screen.findByTestId('home-pingo-text');
+    const row = screen.getByTestId('home-pingo-phrase');
+    expect(row.props.className).toBe('flex-row items-end gap-2.5');
+    expect(row.children).toEqual([
+      screen.getByTestId('home-pingo-bubble'), screen.getByTestId('home-pingo-float'),
+    ]);
+  });
+});
