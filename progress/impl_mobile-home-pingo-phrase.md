@@ -99,3 +99,5 @@ Supuestos confirmados antes de los rojos: compilación Tailwind + compilador nat
 ## Ejecución por requisito
 
 Orden: R9, R8, R11, R1, R2, R3, R4, R6, R10, R7, R13, R12, R5, R14.
+
+- R9 rojo `f6240159`: 9 fallos esperados (cuatro claves ausentes y recuento 429 frente a 433); tsc exit 0. Logs `/tmp/pet190-R9-red*.log`.
