@@ -79,3 +79,38 @@ Tests:       8 skipped, 468 passed, 476 total (e2e)
 ✅ Todo verde. Listo para trabajar.
 ```
 El aviso `A worker process has failed to exit gracefully` aparece una vez (preexistente, según tasks.md).
+
+## Ronda de fusión (HEAD dc977961)
+Fecha: 2026-10-19
+Veredicto: RECHAZADO (un punto, de arreglo trivial: el piso de `className` se bajó de más y la Enmienda E2 lo documenta con una premisa falsa)
+
+Alcance: `git diff 2c02b5a2..HEAD` = merge de main (#180, ficheros fuera de #187) + `7bd23dbb`, `e40d54b1`, `dc977961` + la firma humana `c59f293d` (solo las dos casillas E1/R6). `git diff 52e03302..HEAD --stat` (lo propio de #187 tras el merge) son exactamente 6 ficheros: el test, `alert-detail/index.tsx`, `progress/current.md`, `progress/impl_..._e2.md`, `requirements.md`, `traceability.md`. No se coló nada más.
+
+### Medición del escáner (copia del escáner del test, ejecutada sobre `git archive` de cada commit)
+| commit | ficheros HeroUI | elementos HeroUI | Card | className | hallazgos |
+|---|---|---|---|---|---|
+| 2c02b5a2 (aprobado) | 29 | 227 | 42 | 181 | 0 |
+| 52e03302 (merge #180) | 29 | 227 | 42 | 183 | 1 (`alert-detail Button.Label text-17`) |
+| HEAD dc977961 | 29 | **226** | 42 | **182** | 0 |
+
+- HeroUI 226: exacto. Ficheros (28, medido 29) y Card (42): sin cambio, como dice E2.
+- **className 180: NO es exacto.** Medido en HEAD = **182**. #180 aportó +2 elementos con `className` (181 -> 183) y el ack retirado resta 1 (183 -> 182). El piso original 181 seguía pasando (182 >= 181): bajarlo no era necesario. Con 180 el candado de universo tolera que el escáner pierda 2 elementos con `className` sin avisar (con 181 toleraba 1; el criterio de E1 era fijar el piso en lo medido).
+- La Enmienda E2 punto 2 (requirements.md) y la fila R1 de traceability dicen que el piso «pasa de 181 a 180 porque sale otro `Button.Label` con `className`»: la premisa omite el +2 de #180. La autorización del humano («Sí: 226 y 180») se dio sobre esa cifra errónea.
+- Arreglo pedido (solo decisión humana, es un piso): `heroui-text-size-merge.test.ts` `classNameElements` `>= 182` (o dejar 181, que ni siquiera exigía cambio) y corregir E2 punto 2, la fila 232 y la fila R1 de traceability a la cifra elegida y a su causa real (+2 de #180, -1 del ack). El piso HeroUI 226 queda como está.
+
+### e40d54b1 (R3, sitio 18)
+- Diff de una línea en `screens/alert-detail/index.tsx:197`: `Button.Label` -> `Text` con `className="text-17 font-extrabold text-accent-foreground"`, idéntica a la receta de R3 (`screens/login/index.tsx:166`). `Text` ya estaba importado de `react-native` (línea 6). Sin otros cambios de producción desde 52e03302.
+- Los botones `text-base` y de reintento del fichero no se tocaron.
+
+### R1 sigue siendo candado real
+- Con 7bd23dbb (ack aún `Button.Label text-17`) el escáner da el hallazgo `screens/alert-detail/index.tsx Button.Label text-17`: el `it` 1 habría fallado sobre la línea vieja (rojo real, no tautológico; es el mismo que dejó init.sh en rojo tras el merge). Con e40d54b1 la lista es `[]`. Opacos siguen siendo solo `password-input.tsx InputGroup.Input`.
+- Jest (uno a la vez, ejecutado por el reviewer): `heroui-text-size-merge.test.ts` 25 passed; `screens/alert-detail/index.test.tsx` 127 passed.
+
+### E2 y casillas
+- Enmienda E2 presente; casilla «Enmienda E2 aprobada por humano» sin marcar: correcto, la firma es del humano. E1 y Smoke R6 marcadas por el humano en `c59f293d` (fecha 2026-10-18), commit de AlexisSM377, no del agente.
+- traceability.md: ninguna fila «pendiente» salvo R6 (humano), como en la ronda anterior. R1 y R3 citan `7bd23dbb` y `e40d54b1`.
+- C4: `7bd23dbb` (test) precede a `e40d54b1` (feat) pero aquí el test no estaba en rojo por sí mismo: el rojo lo daba el `it` 1 desde el merge; orden test-primero respetado en el historial.
+- C7: N/A.
+
+### init.sh
+No lo corre el reviewer; lo corrió el leader sobre dc977961, EXIT=0, log `/tmp/claude-1002/init187d.log` verificado: backend 187 suites/1474; móvil 117 suites/3871; e2e 468 passed (8 skipped); lint y typecheck sin errores; «Todo verde».
