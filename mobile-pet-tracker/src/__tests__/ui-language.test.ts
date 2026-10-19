@@ -133,8 +133,8 @@ describe('#65 R4: Map resuelve su copy por clave', () => {
 });
 
 describe('#65 R5: Health resuelve su copy por clave', () => {
-  it('resuelve las 32 ocurrencias normativas', () => {
-    expect(R5_HEALTH).toHaveLength(32 + 1 + 1 - 2 + 3 + 2 + 1 + 1); // +1 #90 R5, +1 #95 R4, -2 #95 R5, +3 #115 R1, +2 #155 R4, +1 #169 R6, +1 #169 R10
+  it('#186 R2: resuelve las 43 ocurrencias normativas', () => {
+    expect(R5_HEALTH).toHaveLength(32 + 1 + 1 - 2 + 3 + 2 + 1 + 1 + 4); // #186 R2 // +1 #90 R5, +1 #95 R4, -2 #95 R5, +3 #115 R1, +2 #155 R4, +1 #169 R6, +1 #169 R10
     checkUses(R5_HEALTH);
   });
 });
@@ -166,22 +166,22 @@ describe('#98 R9: el copy de comidas servidas queda registrado', () => {
 });
 
 describe('#65 R7: Profile resuelve su copy por clave', () => {
-  it('resuelve las 64 ocurrencias normativas', () => {
-    expect(R7_PROFILE).toHaveLength(35 - 1 + 2 + 1 + 16 - 4 + 8 + 1 + 6 + 2 + 2); // #181 R5 // #185 R10: errorFileTooLarge y somethingWentWrong en ambas pantallas; #95 R5, +2 #99 R3, +1 #41 R9 // #158 R12; - 4 + 8 // #173 R13; #175 R7; #175 R8
+  it('#186 R2: resuelve las 69 ocurrencias normativas', () => {
+    expect(R7_PROFILE).toHaveLength(35 - 1 + 2 + 1 + 16 - 4 + 8 + 1 + 6 + 2 + 2 + 1); // #186 R2 // #181 R5 // #185 R10: errorFileTooLarge y somethingWentWrong en ambas pantallas; #95 R5, +2 #99 R3, +1 #41 R9 // #158 R12; - 4 + 8 // #173 R13; #175 R7; #175 R8
     checkUses(R7_PROFILE);
   });
 });
 
 describe('#65 R8: Recordatorios resuelve su copy por clave', () => {
-  it('resuelve las 51 ocurrencias normativas', () => {
-    expect(R8_REMINDERS).toHaveLength(50 + 1 - 2 + 1 - 1 + 1 + 1 + 1 + 1 + 3); // #181 R4 // #178 R12 // +1 #95 R4, -2 #95 R5, +1 #114 R4, -1 #114 R5, +1 #155 R6; // #178 R6; #178 R9
+  it('#186 R2: resuelve las 59 ocurrencias normativas', () => {
+    expect(R8_REMINDERS).toHaveLength(50 + 1 - 2 + 1 - 1 + 1 + 1 + 1 + 1 + 3 + 3); // #186 R2 // #181 R4 // #178 R12 // +1 #95 R4, -2 #95 R5, +1 #114 R4, -1 #114 R5, +1 #155 R6; // #178 R6; #178 R9
     checkUses(R8_REMINDERS);
   });
 });
 
 describe('#65 R9: el alta de mascota resuelve su copy por clave', () => {
-  it('resuelve las 45 ocurrencias normativas', () => {
-    expect(R9_ADD_PET).toHaveLength(42 + 1 - 2 + 4); // +1 #95 R4, -2 #95 R5, +4 #171 R12
+  it('#186 R2: resuelve las 48 ocurrencias normativas', () => {
+    expect(R9_ADD_PET).toHaveLength(42 + 1 - 2 + 4 + 3); // #186 R2 // +1 #95 R4, -2 #95 R5, +4 #171 R12
     checkUses(R9_ADD_PET);
   });
 });
@@ -503,6 +503,7 @@ describe('#65 R18: los sitios resuelven por clave y no queda copy suelta', () =>
         + 2 // #172 R16: back-button y password-input
         + 1 // #183 R2: utils/account-rules.ts
         + 1 // #185 R2: screens/docs-upload-form/index.tsx
+        + 1 // #186 R2: utils/form-rules.ts
     );
 
     for (const file of SCREEN_FILES) {
