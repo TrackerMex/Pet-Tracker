@@ -773,7 +773,7 @@ describe('#125: avisos que ya pasaron en Nuevo recordatorio', () => {
       expectAdvanceChips(desactivados, seleccionado);
       await fireEvent.press(screen.getByTestId('add-reminder-submit'));
       if (enviado === null) {
-        expect(screen.getByTestId('add-reminder-error')).toHaveTextContent('La fecha debe ser futura');
+        await waitFor(() => expect(screen.queryByTestId('date-field-message')).toHaveTextContent('La fecha debe ser futura'));
         expect(mockCreateReminder).not.toHaveBeenCalled();
       } else {
         await waitFor(() => expect(mockCreateReminder).toHaveBeenCalledWith(
@@ -902,7 +902,7 @@ describe('#125: avisos que ya pasaron en Nuevo recordatorio', () => {
       await pickTime(8, 0);
       expectAdvanceChips([true, true, true, true], 1440);
       await fireEvent.press(screen.getByTestId('add-reminder-submit'));
-      expect(screen.getByTestId('add-reminder-error')).toHaveTextContent('La fecha debe ser futura');
+      await waitFor(() => expect(screen.queryByTestId('date-field-message')).toHaveTextContent('La fecha debe ser futura'));
       expect(mockCreateReminder).not.toHaveBeenCalled();
     });
   });
