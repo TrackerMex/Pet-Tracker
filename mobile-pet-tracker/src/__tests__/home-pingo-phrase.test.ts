@@ -39,3 +39,26 @@ describe('#190 R12: los ficheros de la frase permanecen grep-clean', () => {
     expect(source).not.toMatch(/\p{Extended_Pictographic}/u);
   });
 });
+
+describe('#190 R14: la carta incorpora la enmienda aprobada', () => {
+  it('copia el texto completo tras la Enmienda 186 y deja la casilla para el humano', () => {
+    const guidelines = read('../docs/ui-guidelines.md');
+    const heading = '## Enmienda #190 — Burbuja de Pingo en Inicio';
+    const index = guidelines.indexOf(heading);
+    expect(index).toBeGreaterThan(guidelines.indexOf('## Enmienda #186'));
+    expect(guidelines.match(/^## Enmienda #190 /gm)).toHaveLength(1);
+    expect(guidelines.slice(index).split('\n## ')[0].trim()).toBe([
+      heading,
+      '',
+      '> Enmienda de `ui-guidelines` por `mobile-home-pingo-phrase` (#190). Directiva del humano: «el diseño final como el artifact».',
+      '',
+      '**Pingo flota en la burbuja de Inicio.** Con mascota seleccionada, la pose de la burbuja de Pingo de Inicio (`home-pingo`) usa `PingoFloat` (`src/components/pingo-float.tsx`) con `MOTION_PINGO_FLOAT_OFFSET_Y` (10 px) y `MOTION_PINGO_FLOAT_TIMING` (1500 ms por tramo). Con reduce motion no arranca. Esta enmienda no autoriza `PingoFloat` en ninguna otra pantalla.',
+      '',
+      '**Escala de radios.** Se añade `--radius-4: 4px` (`rounded-br-4`), la esquina de la «cola» de la burbuja. Un solo uso hoy.',
+      '',
+      '**La burbuja de Pingo.** `View` de superficie con radio 18 px (`rounded-tile`) y 4 px en la esquina inferior derecha, texto `text-15 font-semibold leading-5.25`. La frase sale de claves `home.pingoPhrase*`, en voz B.',
+      '',
+      '- [ ] Enmienda #190 aprobada por humano',
+    ].join('\n'));
+  });
+});
