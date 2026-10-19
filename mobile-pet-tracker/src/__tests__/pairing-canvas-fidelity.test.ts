@@ -1,7 +1,6 @@
 import * as ts from 'typescript';
 
 import { en, es, type TranslationKey } from '../i18n/catalog';
-import { R10_PAIRING } from './ui-copy-table';
 
 declare function require(moduleName: 'fs'): {
   readFileSync: (path: string, encoding: 'utf8') => string;
@@ -26,6 +25,7 @@ it('#188 R11: resolves visible copy through bilingual catalog keys registered fo
   const tree = ts.createSourceFile(pairingFile, readSource(pairingFile), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   const keys = new Set<TranslationKey>();
   const looseCopy: string[] = [];
+  const copyTable = readSource('src/__tests__/ui-copy-table.ts');
   const textProps = new Set(['title', 'body', 'label', 'placeholder', 'accessibilityLabel', 'accessibilityHint', 'description']);
   const catalogCopy = new Set<string>([...Object.values(en), ...Object.values(es)]);
 
@@ -59,7 +59,7 @@ it('#188 R11: resolves visible copy through bilingual catalog keys registered fo
     expect(es[key]).toEqual(expect.any(String));
     expect(en[key].trim()).not.toBe('');
     expect(es[key].trim()).not.toBe('');
-    expect(R10_PAIRING).toContainEqual({ file: pairingFile, key });
+    expect(copyTable).toContain(`{ file: '${pairingFile}', key: '${key}' }`);
   }
 });
 
