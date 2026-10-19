@@ -18,6 +18,7 @@ const POSES = {
 };
 
 type EmptyStateProps = {
+  variant?: 'default' | 'hero';
   testID: string;
   pose: EmptyStatePose;
   title: string;
