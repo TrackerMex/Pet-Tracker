@@ -569,12 +569,20 @@ del título.
    `date-field-message` dice `Elige una fecha` y, con fecha pasada,
    `date-field-message` dice `La fecha debe ser futura`. En los tres,
    `createReminder` no se llama, `add-reminder-error` no existe y
-   `add-reminder-submit` sigue habilitado.
+   `add-reminder-submit` sigue habilitado. **También reescribe los dos `it` de
+   #125** que validan la fecha vencida en el cliente
+   (`a la hora exacta del recordatorio todos cuentan como pasados y el formulario
+   lo rechaza`, rama `enviado === null` del `it.each` de #125 R3, y `con todos
+   los chips desactivados sigue marcada la elección, no un valor fijo`, de #125
+   R6): donde hoy leen `add-reminder-error` con `La fecha debe ser futura`, leen
+   `date-field-message` con ese mismo texto. Se **conservan** sus aserciones de
+   chips y `createReminder` no llamado. (Enmienda 2026-10-19: la primera
+   redacción no los listó; Codex los midió en rojo en el verde de R5.)
 2. Título vacío **y** fecha sin elegir: las dos filas existen a la vez.
 3. Un mensaje se queda hasta la pulsación siguiente y se reemplaza; con todo
    válido, `createReminder` se llama una vez con el mismo payload de hoy y no
    queda ningún `*-message-row`.
-4. **Los dos `it` del 400** (~719 y ~848, y la tabla de ~405-418) **no cambian**:
+4. **Los `it` del 400 del servidor** (los que simulan `{ kind: 'invalid' }`, localizados por contenido, no por línea, y la tabla de ~405-418) **no cambian**; no son los dos de #125 del candado 1, que validan en cliente:
    `add-reminder-error` dice `La fecha debe ser futura` con `{ kind: 'invalid' }`
    y no hay ningún mensaje de campo.
 5. Colocación: `within(columnaFecha).getByTestId('date-field-message')`, y el
