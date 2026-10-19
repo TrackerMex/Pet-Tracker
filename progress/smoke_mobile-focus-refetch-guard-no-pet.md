@@ -23,11 +23,11 @@ El log de la API no sirve: el backend no registra peticiones. La pestaña Networ
 
 | # | Cuenta | Acción | Esperado | OK/KO | URL vista / nota |
 |---|---|---|---|---|---|
-| A1 | A | Entrar y esperar Inicio. Repetir 3 veces: Inicio, Perfil, Recordatorios | Filtro `null` vacío al final. Las peticiones de lista (mascotas, alertas) pueden salir: no son el problema | | |
-| B1 | B | Entrar y esperar Inicio con mascota. Filtro `pets`. Enfocar Inicio 2 veces | Cada foco sale `GET …/v1/pets/<id>` | | |
-| B2 | B | Enfocar Perfil 2 veces | Cada foco sale `GET …/v1/pets/<id>` | | |
-| B3 | B | Enfocar Recordatorios 2 veces | Cada foco sale `GET …/v1/pets/<id>/reminders` | | |
-| B4 | B | Cerrar la app del todo y reabrirla, sin cambiar de pestaña | Anotar si el detalle de Inicio carga solo (responde Q1) | | |
+| A1 | A | Entrar y esperar Inicio. Repetir 3 veces: Inicio, Perfil, Recordatorios | Filtro `null` vacío al final. Las peticiones de lista (mascotas, alertas) pueden salir: no son el problema | OK | |
+| B1 | B | Entrar y esperar Inicio con mascota. Filtro `pets`. Enfocar Inicio 2 veces | Cada foco sale `GET …/v1/pets/<id>` | OK | |
+| B2 | B | Enfocar Perfil 2 veces | Cada foco sale `GET …/v1/pets/<id>` | OK | |
+| B3 | B | Enfocar Recordatorios 2 veces | Cada foco sale `GET …/v1/pets/<id>/reminders` | OK | |
+| B4 | B | Cerrar la app del todo y reabrirla, sin cambiar de pestaña | Anotar si el detalle de Inicio carga solo (responde Q1) | OK | |
 
 KO en A1 si aparece cualquier URL con `null`, por ejemplo `…/v1/pets/null` o `…/v1/pets/null/reminders`. Copiar esa URL en la columna de nota.
 
