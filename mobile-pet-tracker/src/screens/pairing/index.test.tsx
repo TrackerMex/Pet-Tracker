@@ -1072,4 +1072,20 @@ describe('#188: pairing canvas fidelity', () => {
     );
     expect(visuals[0].props.testID).toBe('pairing-pingo');
   });
+
+  it('#188 R2: draws exactly two accent rings behind Pingo', async () => {
+    await renderPairing();
+    await screen.findByTestId('pairing-pingo', { includeHiddenElements: true });
+    for (const index of [0, 1]) {
+      const ring = screen.getByTestId(`pairing-ring-${index}`, { includeHiddenElements: true });
+      expect(ring.props.className.split(' ')).toEqual(expect.arrayContaining([
+        'size-37.5', 'rounded-full', 'border-3', 'border-accent',
+      ]));
+    }
+    expect(screen.queryByTestId('pairing-ring-2', { includeHiddenElements: true })).toBeNull();
+    const stage = screen.getByTestId('pairing-ring-0', { includeHiddenElements: true }).parent!;
+    expect(within(stage).getAllByTestId(/^pairing-(ring-[01]|pingo)$/, { includeHiddenElements: true })
+      .map((node) => node.props.testID)).toEqual(['pairing-ring-0', 'pairing-ring-1', 'pairing-pingo']);
+  });
+
 });
