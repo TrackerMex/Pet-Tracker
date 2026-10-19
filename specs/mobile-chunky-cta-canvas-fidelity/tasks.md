@@ -234,3 +234,21 @@ ya usa `StyleSheet`: se corrige en un commit propio
 `test(#177 R3): celebration.test sin StyleSheet (design-drift #171 R13.1)`
 antes de c6 (sin rebasar; el rojo de `design-drift` R13.1 es el de ese commit y
 queda verde con él). Tras cada commit de grupo se corre `design-drift` entero.
+
+## Fe de erratas E3 (2026-10-19, hallada por Codex en c10)
+
+c9 omitió un `it` colocado más que afirma la receta antigua:
+`#185 R9 (antes #158 R5)` en `src/screens/docs-upload-form/index.test.tsx`
+(`rounded-xl` de Subir y Cancelar, `font-bold` del primario, `font-semibold` y
+`button__label--variant-outline` del cancelar). R10 ya cubre su intención
+(pruebas colocadas que afirman la receta antigua de los 17 ficheros), así que
+no hace falta Enmienda ni firma. Se enmienda la aserción al valor nuevo de R3/R4
+(clases `h-14 rounded-16 bg-accent` / `h-14 rounded-16 border-2 border-lip-gray
+bg-surface`, etiqueta `Text` 17/800); las aserciones de inputs, labels de campo
+y fecha civil del mismo `it` NO se tocan. Como el código de G3 ya está en el
+árbol sin commit, el commit de test va primero con `git commit --only <ruta>`,
+se declara **rojo por omisión** (log `/tmp/177-c10-2.log`) y no se pretende
+historial rojo→verde. Igual para cualquier otra aserción colocada de la receta
+antigua que aparezca en los ficheros de G3 al correrlos uno a uno: se declara
+en el reporte con su log y se enmienda en commit de test propio antes del feat
+de G3. Cualquier rojo que NO sea una aserción de la receta antigua sigue siendo PARA.
