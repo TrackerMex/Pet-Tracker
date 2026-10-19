@@ -231,7 +231,7 @@ describe('#155 R11: los vacíos no traen movimiento ni dependencias', () => {
   it('EmptyState solo importa de react, react-native, expo-image, heroui-native, Reanimated y el tema de movimiento (enmendado por #177 R10) (enmendado por #176 R5)', () => {
     const source = readFileSync(join(process.cwd(), 'src', 'components', 'empty-state.tsx'), 'utf8');
     for (const [, specifier] of source.matchAll(/from '([^']+)'/g)) {
-      expect(['react', 'react-native', 'expo-image', 'heroui-native', 'react-native-reanimated', '../theme/chunky-lip', '../theme/motion', 'react-native-svg', '../theme/pingo-stage', '../theme/use-theme-colors', './pingo-float']).toContain(specifier);
+      expect(['react', 'react-native', 'expo-image', 'heroui-native', 'react-native-reanimated', '../theme/chunky-lip', '../theme/motion', 'react-native-svg', '../theme/pingo-stage', '../theme/use-theme-colors', './pingo-float', 'reicon-react-native']).toContain(specifier);
     }
   });
 
@@ -243,6 +243,7 @@ describe('#155 R11: los vacíos no traen movimiento ni dependencias', () => {
       "import { Button } from 'heroui-native';",
       "import { Text, View } from 'react-native';",
       "import Animated, { useAnimatedStyle, useReducedMotion, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';",
+      "import { Plus } from 'reicon-react-native';", // (enmendado por #176 R12)
       "import Svg, { Circle, Ellipse, G } from 'react-native-svg';", // (enmendado por #176 R5)
       "import { useChunkyLip } from '../theme/chunky-lip';",
       "import { MOTION_FLOAT_OFFSET_Y, MOTION_FLOAT_TIMING } from '../theme/motion';",

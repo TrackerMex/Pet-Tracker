@@ -1,4 +1,4 @@
-import { act, render, screen, within } from '@testing-library/react-native';
+import { act, fireEvent, render, screen, within } from '@testing-library/react-native';
 import { HeroUINativeProvider } from 'heroui-native';
 import { StyleSheet } from 'react-native';
 import { getAnimatedStyle } from 'react-native-reanimated';
@@ -12,6 +12,21 @@ jest.mock('react-native-reanimated', () => ({
   __esModule: true,
   useReducedMotion: () => mockUseReducedMotion(),
 }));
+
+jest.mock('../../theme/use-theme-colors', () => ({
+  useThemeColors: (tokens: string[]) => {
+    const colors: Record<string, string> = {
+      accent: '#178255', 'accent-foreground': '#FFFFFF', lip: '#0E5E3C', 'lip-gray': '#E4E7EC',
+    };
+    return tokens.map((token) => colors[token] ?? '#0D1117');
+  },
+}));
+
+jest.mock('reicon-react-native', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return { Plus: (props: Record<string, unknown>) => React.createElement(View, props) };
+});
 
 type ProbeOptions = {
   variant?: 'default' | 'hero';
@@ -102,4 +117,25 @@ it('#176 R9: hero limita el cuerpo de 15 px a 290 px', async () => {
   expect(body.props.className).toBe('text-center text-15 text-muted');
   expect(StyleSheet.flatten(body.props.style)).toEqual({ maxWidth: 290 });
   expect(body).toHaveTextContent('Cuerpo de prueba.');
+});
+
+
+it('#176 R12: envuelve la acción completa y antepone Plus sin cambiar la receta del botón', async () => {
+  const onPress = jest.fn();
+  await renderProbe({ variant: 'hero', action: { label: 'Acción de prueba', onPress } });
+  expect(screen.queryByTestId('home-empty-action-wrap')).not.toBeNull();
+  const wrap = screen.getByTestId('home-empty-action-wrap');
+  expect(wrap.props.className).toBe('w-full mt-2.5');
+  expect(wrap.children).toEqual([screen.getByTestId('home-empty-action')]);
+  const button = screen.getByTestId('home-empty-action');
+  const icon = within(button).getByTestId('home-empty-action-icon');
+  const label = within(button).getByText('Acción de prueba');
+  expect(button.children.slice(-2)).toEqual([icon, label]);
+  expect(icon.props).toMatchObject({ size: 20, color: '#FFFFFF', style: { marginRight: 8 } });
+  expect(label.props.className).toBe('text-17 font-extrabold text-accent-foreground');
+  expect(label.props.children).toBe('Acción de prueba');
+  const { readFileSync } = jest.requireActual<typeof import('fs')>('fs');
+  expect(readFileSync('src/components/empty-state.tsx', 'utf8')).not.toMatch(/<Button[^>]*(w-full|mt-2\.5)/);
+  await fireEvent.press(button);
+  expect(onPress).toHaveBeenCalledTimes(1);
 });
