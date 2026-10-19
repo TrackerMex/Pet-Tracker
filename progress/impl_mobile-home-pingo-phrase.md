@@ -104,3 +104,5 @@ Orden: R9, R8, R11, R1, R2, R3, R4, R6, R10, R7, R13, R12, R5, R14.
 - R9 verde `4b4990cf`: 55/55 tests (dos suites), tsc exit 0.
 - R8 rojo `bd12aaff`: 14 fallos esperados por módulo todavía inexistente; R9 sigue verde. Verde `ea7071f0`: 22/22, tsc exit 0 en ambas cadenas.
 - R11 rojo `8e4387dc`: faltan burbuja y token (2 fallos); 230 tests anteriores de Inicio pasan. La receta se monta primero dentro del resumen y R1 la moverá a su entrada propia; así se prueba R11 antes de implementar R1 según el orden exigido.
+- R11 verde `21c6c350`: 232/232 (Inicio + candado nuevo), tsc exit 0. `View` conserva `CONTINUOUS_CORNER`.
+- Dependencia de inventarios R1/R6: para que el verde R1 pueda pasar la suite entera de Inicio, la igualdad exacta de hijos de `home-content` y `homeEnteringIds` deben admitir la entrada nueva ya en su rojo R1. Se conservan todos los ids y el orden; se añade únicamente Pingo, con comentario `(enmendado por #190 R1)`. El resto de R6 (siete retrasos y ausencia de bloques) sigue en su turno. No sería posible introducir un séptimo hijo en R1 y conservar simultáneamente la expectativa de seis hasta R6.

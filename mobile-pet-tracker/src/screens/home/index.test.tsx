@@ -4732,12 +4732,13 @@ async function renderMotionHome(): Promise<void> {
 describe('#152 R5: la Home envuelve cada bloque en su entrada escalonada', () => {
   beforeEach(setupHomeMotion);
 
-  it('pinta los seis envoltorios como hijos directos y en orden', async () => {
+  it('pinta los siete envoltorios como hijos directos y en orden (enmendado por #190 R1)', async () => {
     await renderMotionHome();
     const ids = screen.getByTestId('home-content').children.flatMap(
       (child) => typeof child === 'string' ? [] : [child.props.testID],
     );
     expect(ids).toEqual([
+      'home-entrance-pingo', // (enmendado por #190 R1)
       'home-entrance-summary',
       'home-entrance-collar',
       'home-entrance-quick-actions',
@@ -4849,6 +4850,7 @@ describe('#152 R5: la Home envuelve cada bloque en su entrada escalonada', () =>
 
   const homeEnteringIds = [
     'pet-avatar-fallback-pet-1',
+    'home-entrance-pingo', // (enmendado por #190 R1)
     'home-entrance-summary',
     'summary-reveal',
     'home-entrance-collar',
@@ -5423,5 +5425,27 @@ describe('#190 R11: la burbuja sigue la receta del canvas', () => {
     expect(bubble.children).toEqual([text]);
     expect(text.type).toBe('Text');
     expect(text.props.className).toBe('text-15 font-semibold leading-5.25 text-foreground');
+  });
+});
+
+describe('#190 R1: la frase es el primer bloque con datos completos', () => {
+  beforeEach(setupHomeMotion);
+
+  it.each<DailyActivityState>([
+    { kind: 'ok', days: [makeDay()], weekComparison: { distanceM: null, activeMinutes: null, walkCount: null } },
+    { kind: 'unauthorized' },
+    { kind: 'no-tracking' },
+    { kind: 'error' },
+  ])('pinta la entrada y su único hijo con actividad $kind', async (activity) => {
+    mockGetDailyActivity.mockResolvedValue(activity);
+    await renderHome();
+    await screen.findByTestId('home-pingo-text');
+    const content = screen.getByTestId('home-content');
+    const entrance = screen.getByTestId('home-entrance-pingo');
+    expect(content.children.slice(0, 2)).toEqual([entrance, screen.getByTestId('home-entrance-summary')]);
+    expect(entrance.children).toEqual([screen.getByTestId('home-pingo-phrase')]);
+    jest.mocked(withDelay).mockClear();
+    expect(entrance.props.entering({}).initialValues).toEqual({ opacity: 0, transform: [{ translateY: 12 }] });
+    expect(jest.mocked(withDelay).mock.calls.map(([ms]) => ms)).toEqual([0, 0]);
   });
 });
