@@ -694,6 +694,25 @@ Los candados anteriores se reescriben en su sitio.
 
 - [X] Enmienda #177 aprobada por humano
 
+## Enmienda #176 — Inicio sin mascota como el canvas
+
+> Enmienda de `ui-guidelines` por `mobile-home-empty-canvas-fidelity` (#176).
+> Directiva del humano: «el Inicio sin mascota debe de quedar como el artifact».
+
+**Pingo flota en el vacío de Inicio.** El estado sin mascota de Inicio
+(variante `hero` de `EmptyState`) usa `PingoFloat`
+(`src/components/pingo-float.tsx`) con `MOTION_PINGO_FLOAT_OFFSET_Y` (10 px) y
+`MOTION_PINGO_FLOAT_TIMING` (1500 ms por tramo). Con reduce motion no arranca.
+Esta enmienda no autoriza `PingoFloat` en ninguna otra pantalla, y la variante
+`default` de `EmptyState` conserva su flotación de 4 px (`MOTION_FLOAT_*`).
+
+**Reduce motion en la entrada.** La entrada escalonada de la variante `hero`
+(escenario, título, cuerpo y CTA) tampoco arranca con reduce motion: cada
+elemento nace en su posición y opacidad finales.
+
+Detalle y tests en `specs/mobile-home-empty-canvas-fidelity/requirements.md`.
+
+- [X] Enmienda #176 aprobada por humano
 
 ## Enmienda #186 — Errores de validación de formularios
 

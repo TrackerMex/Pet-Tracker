@@ -5248,6 +5248,7 @@ describe('#155 R4: Inicio sin mascotas presenta a Pingo', () => {
   });
 
   it('pinta la pose, el título y la frase de Pingo', async () => {
+    mockUseReducedMotion.mockReturnValue(true); // (enmendado por #176 R13)
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
     await renderHome();
     const pose = await screen.findByTestId('home-empty-pose');
@@ -5266,6 +5267,24 @@ describe('#155 R4: Inicio sin mascotas presenta a Pingo', () => {
     await fireEvent.press(action);
     expect(mockRouter.push).toHaveBeenCalledTimes(1);
     expect(mockRouter.push).toHaveBeenCalledWith('/pets/add');
+  });
+  it('#176 R2: Inicio sin mascotas usa hero dentro de home-empty', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    await renderHome();
+    const empty = await screen.findByTestId('home-empty');
+    expect(within(empty).queryByTestId('home-empty-stage')).not.toBeNull();
+  });
+
+  it.each([
+    ['es', 'Aún no tienes mascotas', 'Añade a tu mascota y te ayudo a saber dónde está y cómo está.', 'Añadir mascota'],
+    ['en', 'No pets yet', "Add your pet and I'll help you know where they are and how they're doing.", 'Add pet'],
+  ] as const)('#176 R10: conserva el copy de Inicio en %s (NV)', async (language, title, body, label) => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    await renderWithProviders(<HomeScreen />, { wrapper: language === 'es' ? HomeWrapper : HomeWrapperEn });
+    const renderedTitle = await screen.findByTestId('home-empty-title');
+    expect(renderedTitle.props.children).toBe(title);
+    expect(screen.getByTestId('home-empty-body').props.children).toBe(body);
+    expect(within(screen.getByTestId('home-empty-action')).getByText(label).props.children).toBe(label);
   });
 });
 
@@ -5345,13 +5364,13 @@ describe('#181 R3: Inicio centra el estado sin mascotas fuera del scroll', () =>
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
   });
 
-  it('R3.2: el contenedor centrado solo contiene home-empty y sustituye la escena', async () => {
+  it('R3.2: el contenedor centrado solo contiene home-empty y sustituye la escena (enmendado por #176 R3)', async () => {
     const { queryClient } = await renderWithProviders(<HomeScreen />, { wrapper: HomeWrapper });
     const empty = await screen.findByTestId('home-empty');
     await waitFor(() => expect(queryClient.isFetching()).toBe(0));
     const container = screen.getByTestId('home-no-pets-screen');
     expect(container.type).toBe('View');
-    expect(container.props.className).toBe('flex-1 items-center justify-center p-6 bg-background');
+    expect(container.props.className).toBe('flex-1 items-center justify-center px-5 py-6 bg-background'); // (enmendado por #176 R3)
     expect(container.props.style).toBeUndefined();
     expect(empty.parent).toBe(container);
     expect(container.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual(['home-empty']);
