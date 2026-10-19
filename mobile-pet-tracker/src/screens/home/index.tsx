@@ -53,6 +53,7 @@ import {
   type PetHeroStatusTone,
 } from '../../components/pet-hero-header';
 import { PetSwitcher } from '../../components/pet-switcher';
+import { PingoFloat } from '../../components/pingo-float';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import type { TranslationKey } from '../../i18n/catalog';
 import { useAuth } from '../../providers/auth-provider';
@@ -436,13 +437,13 @@ export function HomeScreen() {
                   {t(pingoPhrase.labelKey, pingoPhrase.params)}
                 </Text>
               </View>
-              <View testID="home-pingo-float">
+              <PingoFloat testID="home-pingo-float">
                 <Image
                   testID="home-pingo"
                   source={require('../../../assets/images/pingo-talk.webp')}
                   style={{ width: 64, height: 64 }}
                 />
-              </View>
+              </PingoFloat>
             </View>
           </HomeEntrance>
         ) : null}
