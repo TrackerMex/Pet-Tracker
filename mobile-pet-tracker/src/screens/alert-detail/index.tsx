@@ -194,7 +194,7 @@ export function AlertDetailScreen({ alertId }: { alertId: string }) {
               isDisabled={acking}
               onPress={() => void handleAck()}
             >
-              <Button.Label className="text-17 font-extrabold text-accent-foreground">{t('alerts.ack')}</Button.Label>
+              <Text className="text-17 font-extrabold text-accent-foreground">{t('alerts.ack')}</Text>
             </Button>
           ) : null}
         </>

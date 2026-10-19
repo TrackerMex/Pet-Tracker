@@ -199,9 +199,9 @@ export function ResetPasswordScreen() {
         <HomeEntrance testID="reset-body" index={1} className="flex-1 gap-4">
           <TextField isInvalid={Boolean(fieldErrors.password)}>
             <Label>
-              <Label.Text className="text-13 font-semibold text-muted">
+              <Text className="text-13 font-semibold text-muted">
                 {t('resetPassword.newPassword')}
-              </Label.Text>
+              </Text>
             </Label>
             <PasswordInput
               testID="reset-password"
@@ -217,9 +217,9 @@ export function ResetPasswordScreen() {
 
           <TextField isInvalid={Boolean(fieldErrors.passwordConfirmation)}>
             <Label>
-              <Label.Text className="text-13 font-semibold text-muted">
+              <Text className="text-13 font-semibold text-muted">
                 {t('resetPassword.confirmNewPassword')}
-              </Label.Text>
+              </Text>
             </Label>
             <PasswordInput
               testID="reset-password-confirm"
@@ -245,9 +245,9 @@ export function ResetPasswordScreen() {
             isDisabled={submitting}
             onPress={() => void handleSubmit()}
           >
-            <Button.Label className="text-17 font-extrabold text-accent-foreground">
+            <Text className="text-17 font-extrabold text-accent-foreground">
               {t('resetPassword.updatePassword')}
-            </Button.Label>
+            </Text>
           </Button>
           <LinkButton testID="link-login" className="h-13 w-full" onPress={() => router.push('/login')}>
             <LinkButton.Label className="text-base font-bold text-accent-strong">

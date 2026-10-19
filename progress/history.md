@@ -9603,3 +9603,35 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
 - **Convivencia**: #180 ya en `main` (PR #228). El conflicto de `ui-language.test.ts` con #185 quedó resuelto en el merge.
 - **Cierre** (2026-10-18): `current.md` a plantilla; STATUS a 169/191 con #181 en progreso y #193 registrada. La PR la mergea el humano; después, `git worktree remove` (sin `--force`) y `git branch -d`.
 - **Cierre final** (2026-10-19): smoke Android firmado por el humano en `643f89e7` y casilla A20 firmada en `d929326a` (`docs/conventions.md:642`). `specs/.../requirements.md:350` queda sin marcar a propósito: es el texto de la plantilla citado dentro de R9.1 aprobado, y los requisitos aprobados no se modifican. Reviewer ronda 4 APROBADO sobre `89c36e01`. B1 no reapareció en tres corridas completas (`be91b980`, `89c36e01` y cierre); eso no prueba que el flake haya desaparecido. `init.sh` de cierre sobre `d929326a` más este commit: EXIT=0, 0 FAIL; backend 187/187 suites y 1474 tests; infra 2/2 y 14; móvil 117/117 y 3871; e2e 30 suites (3 omitidas) y 468 tests (8 omitidos); lint y typecheck sin errores. Frontmatter `approved` en `design.md`, `tasks.md` y `traceability.md`. `feature_list.json` #181 a `done` (170/191, 21 pendientes). PR #229 abierta sobre `feature/181-mobile-no-pets-states-and-centered-content`: la mergea el humano; después, `git worktree remove` (sin `--force`) y `git branch -d`.
+
+## Sesión 2026-10-18 — mobile-account-heroui-text-sizes (id: 187)
+
+- **Feature:** `Label.Text` y `Button.Label` de login, register, forgot y
+  reset-password pasan a `Text` plano de react-native (D1 a): 12 etiquetas a 13 px
+  y 5 botones a 17 px, que tailwind-merge de HeroUI 1.0.8 degradaba a 16 px.
+- **Spec:** [[specs/mobile-account-heroui-text-sizes/requirements|spec]]
+- **Acciones:** spec firmada por Notion (D2 y D3 inferidas de la cola del humano);
+  Codex implementó c1-c8 con commits test-primero y paró seis veces, todas
+  resueltas por el humano. Candado AST `heroui-text-size-merge.test.ts` (25 `it`),
+  sondas S1-S17 y sección nueva en `docs/ui-guidelines.md`.
+- **Enmienda E1:** los pisos del `it` 2 de R1 (HeroUI 244 y className 198) eran
+  incumplibles tras el cambio por diseño; bajaron a 227 y 181 (c2b y c2c, solo
+  test). La tabla de sondas omitía colaterales de S9, S14 y S15. Casilla E1 del
+  humano pendiente.
+- **Resultado:** `./init.sh` exit 0 sin pipe sobre `2c02b5a2` (backend 187/1474,
+  móvil 114/3790 = T0 3748 + 42, e2e 468 con 8 omitidos). Reviewer APROBADO
+  (R1-R5) con tres observaciones sin bloqueo.
+- **Commits:** `6d209645` c1 ... `2c02b5a2` c8 (diez commits de Codex); PR abierta,
+  la mergea el humano.
+- **Enmienda E2** (2026-10-19): el merge de main trajo el ack de #180 con
+  `Button.Label text-17` (sitio 18). Fallback al subagente `implementer` (cambio
+  trivial; Codex no): `7bd23dbb` y `dc2d5827` (pisos HeroUI 226 y className 182,
+  solo test, aplicados por el humano) y `e40d54b1` (ack con `Text` plano). El
+  reviewer rechazó la primera ronda de fusión porque `7bd23dbb` fijó className en
+  180 omitiendo el +2 de #180; corregido a 182. Segunda ronda APROBADA sobre
+  `fedbd81e`.
+- **Resultado final:** `./init.sh` exit 0 sin pipe tras el merge de #181 (backend
+  187/1474, móvil 118/3913, e2e 468 con 8 omitidos). El humano firmó E1, E2 y el
+  smoke R6 (dev build de Android).
+- **Estado final:** done. Notion: Implementado / Completado. PR #230; la mergea el
+  humano, después se borra el worktree.

@@ -113,6 +113,19 @@ describe('R5: la ruta /reset-password recibe el token del deep link', () => {
     jest.clearAllMocks();
   });
 
+  it('#187 R3: el botón reset-submit pinta su etiqueta a 17 px', async () => {
+      await renderRoute('reset-token-187');
+      expect(within(screen.getByTestId('reset-submit')).getByText('Actualizar contraseña').props.className)
+        .toBe('text-17 font-extrabold text-accent-foreground');
+  });
+
+  it.each(['Nueva contraseña', 'Confirmar nueva contraseña'])(
+    '#187 R2: la etiqueta "%s" de reset-password pinta 13 px', async (label) => {
+      await renderRoute('reset-token-187');
+      expect(screen.getByText(label).props.className).toBe('text-13 font-semibold text-muted');
+    },
+  );
+
   it('renderiza el formulario cuando recibe un token', async () => {
     await renderRoute('reset-token-r5');
 

@@ -117,9 +117,9 @@ export function ForgotScreen() {
         {!sent ? (
           <TextField className="w-full" isInvalid={Boolean(fieldErrors.email)}>
             <Label>
-              <Label.Text className="text-13 font-semibold text-muted">
+              <Text className="text-13 font-semibold text-muted">
                 {t('forgot.email')}
-              </Label.Text>
+              </Text>
             </Label>
             <Input
               testID="forgot-email"
@@ -150,9 +150,9 @@ export function ForgotScreen() {
             isDisabled={email.trim() === '' || submitting}
             onPress={() => void submit()}
           >
-            <Button.Label className="text-17 font-extrabold text-accent-foreground">
+            <Text className="text-17 font-extrabold text-accent-foreground">
               {t('forgot.sendRecoveryLink')}
-            </Button.Label>
+            </Text>
           </Button>
         ) : null}
 
@@ -164,9 +164,9 @@ export function ForgotScreen() {
             isDisabled={submitting}
             onPress={() => void send(submittedEmail)}
           >
-            <Button.Label className="text-17 font-extrabold text-foreground">
+            <Text className="text-17 font-extrabold text-foreground">
               {t('forgot.resend')}
-            </Button.Label>
+            </Text>
           </Button>
         ) : null}
 

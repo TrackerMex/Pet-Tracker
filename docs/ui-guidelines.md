@@ -652,3 +652,11 @@ Detalle y tests en `specs/mobile-alert-detail-canvas-fidelity/requirements.md`. 
 su sitio con el sufijo `(enmendado por #180 Rn)`.
 
 - [ ] Enmienda #180 aprobada por humano
+
+## Enmienda #187 — Tamaños de letra sobre componentes de HeroUI
+
+1. **Un `text-<n>` de la escala propia (`text-11`, `text-13`, `text-15`, `text-17`, `text-22`, `text-26`) no se pasa nunca a un componente de `heroui-native` ni a `Card`.** `tailwind-merge` toma esas clases por color y las descarta si detrás va otra clase de color (`text-muted`, `text-accent-foreground`...), así que el texto cae a `text-base` (16 px) sin avisar. Medido con `heroui-native` 1.0.8.
+2. **El texto con uno de esos tamaños se pinta con `Text` de `react-native`, como hijo del componente:** `<Label><Text className="text-13 font-semibold text-muted">...</Text></Label>` y `<Button><Text className="text-17 font-extrabold text-accent-foreground">...</Text></Button>`.
+3. Las tallas de Tailwind (`text-xs`, `text-sm`, `text-2xs`...) no se ven afectadas y siguen valiendo sobre `Label.Text` y `Button.Label`.
+4. El candado no ve una clase fabricada en ejecución (`text-${n}`): no se construyen tamaños así.
+5. El candado es `src/__tests__/heroui-text-size-merge.test.ts` (#187 R1).
