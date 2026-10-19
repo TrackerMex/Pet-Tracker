@@ -125,4 +125,4 @@ Salida esperada: vacía. No escribir `#NNN` en comentarios de esos ficheros: el 
 ## Cierre
 
 - [ ] Trazabilidad: las 14 filas de `traceability.md` con test y commit reales.
-- [ ] Smoke en dispositivo (dev build Android, no Expo Go): lo corre el humano, fuera del ciclo automatizado.
+- [X] Smoke en dispositivo (dev build Android, no Expo Go): lo corre el humano, fuera del ciclo automatizado.
