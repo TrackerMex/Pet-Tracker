@@ -1,6 +1,6 @@
 ---
 feature: "mobile-chunky-cta-canvas-fidelity"
-status: draft        # draft | approved
+status: approved      # draft | approved
 tags: [mobile, ui, spec]
 ---
 
