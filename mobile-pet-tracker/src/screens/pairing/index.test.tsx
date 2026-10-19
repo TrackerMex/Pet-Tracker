@@ -216,7 +216,8 @@ describe('R4: /pairing monta en el Stack raíz con selector de mascota y estados
 
     expect(screen.getByTestId('screen-pairing')).toBeVisible();
     expect(screen.getByTestId('pairing-form').props.contentContainerStyle).toEqual({
-      padding: 24,
+      paddingHorizontal: 20,
+      paddingVertical: 24,
       gap: 16,
       paddingBottom: 48,
     });

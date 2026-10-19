@@ -260,7 +260,8 @@ export function PairingScreen() {
         keyboardShouldPersistTaps="handled"
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{
-          padding: 24,
+          paddingHorizontal: 20,
+          paddingVertical: 24,
           gap: 16,
           paddingBottom: insets.bottom + 24,
         }}

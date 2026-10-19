@@ -320,7 +320,8 @@ describe('R11 (mobile-device-pairing): pairing usa el Card compartido y las dime
   });
 
   it.each([
-    'padding: 24',
+    'paddingHorizontal: 20',
+    'paddingVertical: 24',
     'gap: 16',
     'insets.bottom + 24',
   ])('keeps the uniform screen metric %s', (metric) => {
