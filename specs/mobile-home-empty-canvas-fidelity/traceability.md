@@ -21,6 +21,7 @@ tags: [harness, spec]
 | R11 | pendiente | pendiente |
 | R12 | pendiente | pendiente |
 | R13 | pendiente | pendiente |
+| R14 | pendiente | pendiente |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente".
 Convención de commit: `feat(<scope>): <desc> (R1,R2)`.
