@@ -691,3 +691,14 @@ Detalle y tests en `specs/mobile-chunky-cta-canvas-fidelity/requirements.md`.
 Los candados anteriores se reescriben en su sitio.
 
 - [X] Enmienda #177 aprobada por humano
+
+## Enmienda #188 — Anillos de la vinculación de collar
+
+> Enmienda de `ui-guidelines` por `mobile-pairing-pingo-canvas-fidelity` (#188, 2026-10-19).
+> Directiva del humano: «el diseño final como el artifact» y «Píxel exacto».
+
+**Qué cambia**: la vista de vinculación sin dispositivo de `pairing` usa dos anillos con `PingRing` (`src/components/ping-ring.tsx`): escala de 0.55 a 1.5, opacidad de 0.55 a 0, 2400 ms, retardo de 1200 ms en el segundo, borde de 3 px en `accent`, 150 px. Bajo reduce motion, los anillos quedan en reposo (escala 1, opacidad 0.3). Esta enmienda cubre solo esa vista: la regla de #167, «Ninguna otra pantalla usa anillos de ping sin una enmienda propia», sigue vigente para el resto de pantallas.
+
+Detalle y tests en `specs/mobile-pairing-pingo-canvas-fidelity/requirements.md`.
+
+- [ ] Enmienda #188 aprobada por humano
