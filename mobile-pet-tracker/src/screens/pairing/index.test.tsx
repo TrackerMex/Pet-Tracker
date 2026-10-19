@@ -1193,4 +1193,27 @@ describe('#188 R1-R14: pairing canvas fidelity', () => {
     expect(title.props.className).not.toContain('[');
   });
 
+  it.each([
+    ['es', 'Plan gratuito — solo salud. Vincula un collar con plan activo para ver el mapa.', 'Código de activación', 'Impreso en la caja del collar'],
+    ['en', 'Free plan — health only. Pair a collar with an active plan to see the map.', 'Activation code', 'Printed on the collar box'],
+  ] as const)('#188 R8: orders the %s linking content and preserves its exact copy', async (language, plan, label, hint) => {
+    await renderWithProviders(
+      <LanguageProvider initial={language}><PairingRoute /></LanguageProvider>,
+      { wrapper: PairingWrapper },
+    );
+    await screen.findByTestId('pairing-title');
+    const form = within(screen.getByTestId('pairing-form'));
+    expect(form.getAllByTestId(
+      /^(pairing-pingo|pairing-title|pairing-plan-free|pairing-activation-code-label|activation-code-input|pairing-code-hint|pairing-submit)$/,
+      { includeHiddenElements: true },
+    ).map((node) => node.props.testID)).toEqual([
+      'pairing-pingo', 'pairing-title', 'pairing-plan-free', 'pairing-activation-code-label',
+      'activation-code-input', 'pairing-code-hint', 'pairing-submit',
+    ]);
+    expect(form.getByTestId('pairing-plan-free')).toHaveTextContent(plan, { exact: true });
+    expect(form.getByTestId('pairing-activation-code-label')).toHaveTextContent(label, { exact: true });
+    expect(form.getByTestId('pairing-code-hint')).toHaveTextContent(hint, { exact: true });
+    expect(form.queryByTestId('pairing-subtitle', { includeHiddenElements: true })).toBeNull();
+  });
+
 });
