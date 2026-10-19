@@ -1,7 +1,7 @@
 ---
 feature: mobile-geofences-canvas-fidelity
 id: 189
-status: draft      # draft | approved
+status: approved    # draft | approved
 tags: [mobile, ui, canvas, geofences, spec]
 ---
 
@@ -485,4 +485,4 @@ En el dev build Android del PC del humano, claro y oscuro, con dueño y con un r
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [x] Aprobado por humano (fecha: 2026-10-19) ← gate obligatorio antes de implementar
