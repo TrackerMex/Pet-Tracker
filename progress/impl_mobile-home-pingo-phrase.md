@@ -126,3 +126,25 @@ Orden: R9, R8, R11, R1, R2, R3, R4, R6, R10, R7, R13, R12, R5, R14.
 - R5 rojo `ccbde7b2`: 2 fallos esperados, 252 verdes. Los dos modos usan `toHaveAnimatedStyle` con `shouldMatchAllProps: true`; se distingue `withRepeat(-10, -1, true)` del pulso de estado, se comprueban 1500 ms y la curva 0.42/0/0.58/1 con valores esperados escritos a mano. Gate: casilla de la Enmienda #190 firmada en requirements.md; no se reabre.
 - R5 verde `3ab42802`: 284/284 (Inicio 254 + PingoFloat 5 + motion 25), tsc exit 0. No se tocan `pingo-float.tsx`, `home-entrance.tsx` ni `motion.ts`.
 - R14 rojo `6fb84202`: 1 fallo por enmienda ausente, otros 4 verdes. El verde copia literalmente el bloque de design.md tras la Enmienda #186, incluida la casilla sin marcar que corresponde al humano; la autorización previa vive en requirements.md.
+
+## Tests enmendados
+
+- `src/providers/__tests__/language-provider.test.tsx`: fórmula 429→433, `+ 4 // #190 R9`, rojo R9.
+- `src/screens/home/index.test.tsx`: inventario exacto de hijos de `home-content` y `homeEnteringIds` suma Pingo en el rojo R1 (dependencia explicada arriba); título siete envoltorios y tabla completa 0..360 en rojo R6. Comentarios `(enmendado por #190 R1/R6)` en las líneas respectivas. Las demás listas cerradas permanecen iguales. No hubo que acotar ninguna aserción por ambigüedad del copy en R10.
+- `src/__tests__/alerts-canvas-fidelity.test.ts`: añade Inicio entre forgot y login al inventario de `text-15`, verde R13.
+- `src/__tests__/ui-copy-table.ts`: cuatro filas nuevas en `R3_HOME` para el helper; `ALL_USES` continúa sumándose por bloques, verde R13.
+- `src/__tests__/ui-language.test.ts`: `R3_HOME` 55→59 y `SCREEN_FILES` 35→36, verde R13. Todos estos inventarios llevan el comentario de enmienda.
+- Ninguna otra suite existente se enmienda. Los tests nuevos están en los dos ficheros autorizados y el describe de Inicio por requisito.
+
+## Smoke Android R15 — reservado al humano
+
+1. Usar el dev build Android existente de SDK 57 con el entorno local del runbook, una cuenta con mascota y los datos de detalle/actividad resueltos. Desde `mobile-pet-tracker/`, iniciar Metro con `bunx expo start --dev-client --lan` y abrir ese bundle en el dev build. No se generan builds ni recursos AWS en esta entrega.
+2. En modo claro, abrir Inicio con mascota: burbuja como primer bloque bajo el hero y antes del resumen; texto 15/600, interlínea 21 px, legible en hasta tres líneas con los datos de prueba; tres esquinas de 18 px y cola de 4 px abajo a la derecha. Pingo a 64×64 a la derecha, alineado al borde inferior, con 10 px de separación. Flota 10 px, 1,5 s por tramo y vuelta invertida. Comprobar frases con distancia/comidas y respaldo cuando faltan; la frase espera a detalle + actividad y no cambia por la llegada tardía de esta última.
+3. Repetir en modo oscuro; revisar superficie, texto, contraste y sombra. Cambiar ES↔EN y comprobar la misma información sin refresco ni carga nueva.
+4. Activar reduce motion en Android y volver a abrir la app. Pingo permanece en translateY 0 sin bucle; la entrada no desplaza ni escala, conserva el fundido. Comprobar también carga, error, cuenta sin mascotas y sin selección: no hay burbuja.
+5. Comparar la zona con el artboard Inicio aprobado, respetando las divergencias firmadas (bloque bajo hero bleed, entrada HomeEntrance y copy disponible sin hora de siguiente comida). Solo el humano marca su casilla de R15 en `requirements.md`; también queda sin marcar la casilla de la Enmienda #190 en la carta, tal como pide el handoff. Esta entrega no declara cerrada la feature.
+
+## Validación final
+
+- R14 verde `be7edead`: 5/5, tsc exit 0; texto literal y ubicación de la enmienda comprobados.
+- Primer lint: detectó `react/no-children-prop` en la construcción del probe de R9 con `React.createElement`. Se corrige únicamente la forma de pasar su hijo, sin cambiar los literales ni las aserciones. Se repetirá lint y la suite completa de ese fichero antes de commitear la corrección.

@@ -51,10 +51,11 @@ describe('#190 R9: las cuatro frases tienen el copy aprobado', () => {
 
   it.each(phrases)('%s se interpola en ambos idiomas con useTranslate', async (key, _english, _spanish, englishText, spanishText) => {
     for (const [language, expected] of [['en', englishText], ['es', spanishText]] as [Language, string][]) {
-      const view = await render(createElement(LanguageProvider, {
-        initial: language,
-        children: createElement(PhraseProbe, { labelKey: key as TranslationKey }),
-      }));
+      const view = await render(createElement(LanguageProvider,
+        // React's overload requires children in props even when passed below.
+        { initial: language } as Parameters<typeof LanguageProvider>[0],
+        createElement(PhraseProbe, { labelKey: key as TranslationKey }),
+      ));
       expect(screen.getByTestId('phrase')).toHaveTextContent(expected);
       await view.unmount();
     }
