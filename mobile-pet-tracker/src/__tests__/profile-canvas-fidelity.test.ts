@@ -44,9 +44,10 @@ describe('#173 R2: inventario de radios nuevos', () => {
   it('reserva rounded-hero al Card compartido y el skeleton de Perfil', () => {
     expect(filesMatching(/\brounded-hero\b/)).toEqual(['components/card.tsx', 'screens/alert-detail/index.tsx', 'screens/profile/index.tsx']); // #180 R10
   });
-  it('reserva rounded-tile a los accesos de Perfil', () => {
+  it('reserva rounded-tile a sus consumidores aprobados (enmendado por #190 R13)', () => {
     expect(filesMatching(/\brounded-tile\b/)).toEqual([
       'screens/add-reminder/index.tsx', // #178 R12
+      'screens/home/index.tsx', // (enmendado por #190 R13)
       'screens/profile/index.tsx',
     ]);
   });

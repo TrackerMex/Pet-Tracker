@@ -134,7 +134,9 @@ Orden: R9, R8, R11, R1, R2, R3, R4, R6, R10, R7, R13, R12, R5, R14.
 - `src/__tests__/alerts-canvas-fidelity.test.ts`: añade Inicio entre forgot y login al inventario de `text-15`, verde R13.
 - `src/__tests__/ui-copy-table.ts`: cuatro filas nuevas en `R3_HOME` para el helper; `ALL_USES` continúa sumándose por bloques, verde R13.
 - `src/__tests__/ui-language.test.ts`: `R3_HOME` 55→59 y `SCREEN_FILES` 35→36, verde R13. Todos estos inventarios llevan el comentario de enmienda.
-- Ninguna otra suite existente se enmienda. Los tests nuevos están en los dos ficheros autorizados y el describe de Inicio por requisito.
+- `src/__tests__/consistency-classnames.test.ts` (excepción de inventario autorizada en el handoff): Home tiene 1 uso directo de CONTINUOUS_CORNER en vez de 0; total de producción 34→35. Se conservan todos los demás recuentos y guardas.
+- `src/__tests__/profile-canvas-fidelity.test.ts` (misma excepción): el inventario exacto y ordenado de `rounded-tile` suma únicamente `screens/home/index.tsx` entre add-reminder y profile. Ambos ficheros llevan `(enmendado por #190 R13)`.
+- Los tests nuevos están en los dos ficheros autorizados y el describe de Inicio por requisito.
 
 ## Smoke Android R15 — reservado al humano
 
@@ -148,3 +150,6 @@ Orden: R9, R8, R11, R1, R2, R3, R4, R6, R10, R7, R13, R12, R5, R14.
 
 - R14 verde `be7edead`: 5/5, tsc exit 0; texto literal y ubicación de la enmienda comprobados.
 - Primer lint: detectó `react/no-children-prop` en la construcción del probe de R9 con `React.createElement`. Se corrige únicamente la forma de pasar su hijo, sin cambiar los literales ni las aserciones. Se repetirá lint y la suite completa de ese fichero antes de commitear la corrección.
+- Corrección de lint R9 `debf4467`: 69/69 (frases + language-provider), tsc y lint exit 0. El overload de React exige el tipo con children aun cuando se pasa en el tercer argumento; se documenta esa aserción de tipo en el test.
+- Primera suite móvil completa final: 126 suites, 4197 tests verdes y 3 fallos, todos inventarios que la burbuja desplaza. Repetidos los dos ficheros enteros: mismos 3 fallos / 95 verdes, exit 1 (`/tmp/pet190-extra-inventory-red.log`). Son los usos directos de CONTINUOUS_CORNER de Home (0→1) y globales (34→35), y el inventario exacto de rounded-tile (+Home). Se aplica la excepción explícita del handoff para otros inventarios y se enmiendan solo esos deltas; no cambia producción ni se relaja ningún otro candado.
+- Al sincronizar directUses se expone también su suma congelada con las dos ramas de Card (36→37). Se actualiza ese cuarto candado agregado por el mismo +1 de la burbuja; primer intento específico 1 fallo / 97 verdes, sin commit (`/tmp/pet190-R13-extra-green.log`, después sustituido por la corrida final del conjunto). No cambia ningún otro comportamiento.
