@@ -1,6 +1,6 @@
 ---
 feature: "mobile-pairing-pingo-canvas-fidelity"
-status: approved     # draft | approved
+status: draft        # draft | approved
 tags: [harness, spec]
 ---
 
@@ -44,7 +44,7 @@ Este bloque va primero: R2 y R3 usan el componente.
 
 ## R3 — Animación de los anillos
 
-1. Test rojo `it('R3: ...')` en `src/screens/pairing/index.test.tsx`, con `toHaveAnimatedStyle` y `shouldMatchAllProps: true`. Valores literales, no importados de `src/theme/motion.ts`: en t = 0 ms, ambos anillos escala 0.55 y opacidad 0.55; en t = 600 ms, el anillo 0 con valores intermedios y el anillo 1 con 0.55 y 0.55; en t = 2400 ms, el anillo 0 vuelve a 0.55 y 0.55.
+1. Test rojo `it('R3: ...')` en `src/screens/pairing/index.test.tsx`, con `toHaveAnimatedStyle` y `shouldMatchAllProps: true`. Valores literales, no importados de `src/theme/motion.ts`: en t = 0 ms, ambos anillos escala 0.55 y opacidad 0.55; en t = 600 ms, el anillo 0 con valores intermedios y el anillo 1 con 0.55 y 0.55; en t = 2400 ms, el anillo 0 vale escala 1.5 y opacidad 0 (valor final del ciclo). En t = 2401 ms (E1 de `requirements.md`), el anillo 0 ha reiniciado: escala entre 0.55 y 0.6 y opacidad entre 0.5 y 0.55, comprobado por desigualdades sobre el estilo leído, con claves exactas `opacity` y `transform`.
 2. Implementación mínima en `PingRing`: `withDelay` (1200 ms en el anillo 1, 0 en el anillo 0), `withRepeat` infinito sin reversa, `withTiming` con `MOTION_PING_TIMING`, escala de `MOTION_PING_FROM` a `MOTION_PING_TO_SCALE`, opacidad de `MOTION_PING_FROM` a 0, y `cancelAnimation` en la limpieza.
 3. Refactor: una sola función de animación compartida; ningún `Color` en los estilos animados.
 

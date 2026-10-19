@@ -1,6 +1,6 @@
 ---
 feature: "mobile-pairing-pingo-canvas-fidelity"
-status: approved     # draft | approved
+status: draft        # draft | approved
 tags: [harness, spec]
 ---
 
@@ -98,10 +98,21 @@ Cada decisión tiene opciones, recomendación y requisito afectado. El spec_auth
 ## Supuestos de entorno
 
 - Tests Jest con React Native Testing Library 14 en el worktree de la feature: `fireEvent` y `act` se esperan con `await`.
-- Los valores de tiempo de los tests son literales y se declaran como múltiplos de la duración real del movimiento.
+- Los valores de tiempo de los tests son literales y salen de la duración real del movimiento. R3 mide el reinicio del ciclo en 2401 ms, no en 2400 ms (E1).
 - El worktree no tiene `graphify-out/graph.json`; la búsqueda de código se hace con grep acotado.
 - El smoke de dispositivo (H1 y H2) lo corre el humano en el build de desarrollo Android de su PC. No se usa Expo Go ni la VPS. Esta feature no mide 60 fps en build release: queda como limitación declarada.
 - Reduce motion en Android se activa con el ajuste del sistema «Quitar animaciones» (en inglés «Remove animations»). Los tests lo simulan con el mock de `useReducedMotion`.
+
+## Enmiendas
+
+### E1 — R3: el reinicio del ciclo se mide a 2401 ms, no a 2400 ms
+
+- **Qué cambia**: la cláusula de R3 para t = 2400 ms. Donde R3 dice que en t = 2400 ms el anillo 0 vuelve a 0.55 y 0.55, E1 la sustituye: en t = 2400 ms el anillo 0 vale escala 1.5 y opacidad 0, que es el valor final del ciclo. El resto de R3 no cambia: los valores de t = 0 ms y t = 600 ms, el retardo de 1200 ms del anillo 1, `MOTION_PING_TIMING` y la repetición infinita sin reversa.
+- **Por qué**: `withRepeat` sobre `withTiming` con `MOTION_PING_TIMING` entrega el valor final en el instante 2400 ms, y el ciclo siguiente arranca justo después, desde 0.55. Medido con temporizadores falsos de Jest sobre la vista de vinculación (2026-10-19): 2400 ms → escala 1.5, opacidad 0; 2401 ms → escala 0.5517, opacidad 0.5490; 2402 ms → escala 0.5534, opacidad 0.5480; 2416 ms → escala 0.5774, opacidad 0.5341.
+- **Qué exige R3 en t = 2401 ms**:
+  - Escala estrictamente entre 0.55 y 0.6, y opacidad estrictamente entre 0.5 y 0.55.
+  - Se comprueba con desigualdades sobre el estilo leído, con claves exactas `opacity` y `transform`; no con `toHaveAnimatedStyle`. Los límites son literales en el test, no importados de `src/theme/motion.ts`.
+- **Por qué intervalos**: a 2401 ms el valor depende de la curva y del reloj. El intervalo exige solo que el ciclo haya reiniciado desde 0.55 y avance hacia 1.5. Un anillo sin reinicio (queda en 1.5 y 0), uno con reversa o un anillo 0 con retardo de 1200 ms quedan fuera de ambos intervalos a 2401 ms.
 
 ## Aprobación
 
@@ -113,6 +124,7 @@ Cada decisión tiene opciones, recomendación y requisito afectado. El spec_auth
 - [x] D5 cerrada por humano: sin subtítulo (a)
 - [x] D6 cerrada por humano: margen 20 px como excepción nombrada (a)
 - [x] D7 cerrada por humano: solapes con #186 y #181 (recomendado)
+- [ ] E1 aprobada por humano (Notion, «Estado del gate» = Aprobado)
 - [ ] H1 verificado en dispositivo por el humano: anillos de 2400 ms con el segundo a 1200 ms de retardo y flotado de 3000 ms por ciclo, en build de desarrollo Android (no Expo Go, no VPS)
 - [ ] H2 verificado en dispositivo por el humano: con «Quitar animaciones» activo, la vista se ve como fija D2
 - [ ] H3 verificado por el humano: comparación lado a lado con el artboard «Vincular collar (19)», incluida la amplitud del flotado (diferencia declarada)

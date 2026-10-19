@@ -1,6 +1,6 @@
 ---
 feature: "mobile-pairing-pingo-canvas-fidelity"
-status: approved     # draft | approved
+status: draft        # draft | approved
 tags: [harness, spec]
 ---
 
