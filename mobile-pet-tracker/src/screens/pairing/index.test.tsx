@@ -1093,7 +1093,7 @@ describe('#188: pairing canvas fidelity', () => {
     }
     expect(screen.queryByTestId('pairing-ring-2', { includeHiddenElements: true })).toBeNull();
     const stage = screen.getByTestId('pairing-ring-0', { includeHiddenElements: true }).parent!;
-    expect(within(stage).getAllByTestId(/^pairing-(ring-[01]|pingo)$/, { includeHiddenElements: true })
+    expect(within(stage).getAllByTestId(/^pairing-(ring-0|ring-1|pingo)$/, { includeHiddenElements: true })
       .map((node) => node.props.testID)).toEqual(['pairing-ring-0', 'pairing-ring-1', 'pairing-pingo']);
   });
 
