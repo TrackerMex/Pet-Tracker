@@ -170,7 +170,7 @@ export const R5_HEALTH: UseRow[] = [
   { file: 'src/screens/health/index.tsx', key: 'home.nextVaccineDays' },
   { file: 'src/screens/health/index.tsx', key: 'home.nextVaccineDaysLeft' },
   { file: 'src/screens/health/index.tsx', key: 'home.nextVaccineToday' },
-  { file: 'src/screens/weight-log/index.tsx', key: 'weightLog.enterValidWeight' },
+  { file: 'src/screens/weight-log/index.tsx', key: 'validation.checkDetails' }, // #186 R7
   { file: 'src/screens/weight-log/index.tsx', key: 'weightLog.errorForbidden' },
   { file: 'src/screens/weight-log/index.tsx', key: 'common.cannotReachServer' },
   { file: 'src/screens/weight-log/index.tsx', key: 'common.somethingWentWrong' },
