@@ -5546,3 +5546,19 @@ describe('#190 R3: la fila alinea burbuja y pose al borde inferior', () => {
     ]);
   });
 });
+
+describe('#190 R4: Pingo usa su pose decorativa de 64 px', () => {
+  beforeEach(setupHomeMotion);
+
+  it('pinta pingo-talk como único hijo directo del envoltorio y sin etiqueta', async () => {
+    await renderHome();
+    await screen.findByTestId('home-pingo-text');
+    const pose = screen.getByTestId('home-pingo');
+    expect(screen.getByTestId('home-pingo-float').children).toEqual([pose]);
+    expect(pose.props.source).toEqual([
+      expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/pingo-talk\.webp$/) }),
+    ]);
+    expect(pose.props.style).toEqual({ width: 64, height: 64 });
+    expect(pose.props.accessibilityLabel).toBeUndefined();
+  });
+});
