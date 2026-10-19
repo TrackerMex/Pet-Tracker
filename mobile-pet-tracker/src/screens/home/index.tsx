@@ -302,9 +302,10 @@ export function HomeScreen() {
 
   if (pets.data?.kind === 'ok' && pets.data.pets.length === 0) {
     return (
-      <View testID="home-no-pets-screen" className="flex-1 items-center justify-center p-6 bg-background">
+      <View testID="home-no-pets-screen" className="flex-1 items-center justify-center px-5 py-6 bg-background">
         <EmptyState
           testID="home-empty"
+          variant="hero"
           pose="talk"
           title={t('common.noPetsYet')}
           body={t('common.noPetsBody')}

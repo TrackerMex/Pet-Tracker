@@ -82,7 +82,10 @@ Tres límites, no negociables:
    (surface | accent | secondary | hero | flat — usa `--radius-card`, NUNCA heredar `--radius`
    de heroui/shadcn, bug #46), `pet-switcher.tsx` (selector de mascota,
    siempre este), `floating-tab-bar.tsx`, `weight-chart.tsx`, `pet-map.tsx`
-   (adapta el contrato del tab Map a la API nativa de `expo-maps`). Regla de
+   (adapta el contrato del tab Map a la API nativa de `expo-maps`), y
+   `field-error-message.tsx` (`FieldErrorMessage({ testID, issue })`,
+   `testID: string`, `issue?: RuleIssue | null`; testIDs `<base>-error`,
+   `<base>-message` y `<base>-message-row`). Regla de
    extracción: ≥2 pantallas + rol nombrable + API menor que implementación.
    Promoción: inline → `src/screens/<x>/` → `src/components/`.
    Las variantes `hero` y `flat` no llevan sombra y solo las usa Perfil (#173).
@@ -347,12 +350,11 @@ Tres corolarios que nadie debe confundir con lo anterior:
 - **El idioma del código no cambia.** Nombres de variables, funciones, tipos,
   ficheros, `testID`, rutas y **las claves del catálogo** siguen en inglés, y
   los mensajes de commit también (`docs/conventions.md` §Commits).
-- **El backend sigue devolviendo validaciones en inglés, en los dos idiomas.**
-  Se ve en `login-error`, `register-*-error`, `weight-form-error` y
-  `reset-error`, porque son mensajes de Zod de `backend-pet-tracker/`.
-  Traducirlos es una feature de backend. Al revés, las advertencias
-  nutricionales del backend ya llegan en español y se muestran tal cual — y en
-  inglés también, porque tampoco se traducen.
+- **Los formularios muestran sus validaciones en el idioma de la app.**
+  Los mensajes de validación del servidor se resuelven mediante el catálogo móvil,
+  como aviso genérico o mensaje de campo, sin mostrar texto crudo.
+  Las advertencias nutricionales del backend ya llegan en español y se muestran
+  tal cual — y en inglés también, porque tampoco se traducen.
 - **Los valores de enum que la API devuelve se pintan crudos**: `document.type`,
   `foodType`, `activityLevel`. Siguen en inglés en los dos
   idiomas. Mapearlos es cambio de conducta y va a feature propia.
@@ -691,3 +693,43 @@ Detalle y tests en `specs/mobile-chunky-cta-canvas-fidelity/requirements.md`.
 Los candados anteriores se reescriben en su sitio.
 
 - [X] Enmienda #177 aprobada por humano
+
+## Enmienda #176 — Inicio sin mascota como el canvas
+
+> Enmienda de `ui-guidelines` por `mobile-home-empty-canvas-fidelity` (#176).
+> Directiva del humano: «el Inicio sin mascota debe de quedar como el artifact».
+
+**Pingo flota en el vacío de Inicio.** El estado sin mascota de Inicio
+(variante `hero` de `EmptyState`) usa `PingoFloat`
+(`src/components/pingo-float.tsx`) con `MOTION_PINGO_FLOAT_OFFSET_Y` (10 px) y
+`MOTION_PINGO_FLOAT_TIMING` (1500 ms por tramo). Con reduce motion no arranca.
+Esta enmienda no autoriza `PingoFloat` en ninguna otra pantalla, y la variante
+`default` de `EmptyState` conserva su flotación de 4 px (`MOTION_FLOAT_*`).
+
+**Reduce motion en la entrada.** La entrada escalonada de la variante `hero`
+(escenario, título, cuerpo y CTA) tampoco arranca con reduce motion: cada
+elemento nace en su posición y opacidad finales.
+
+Detalle y tests en `specs/mobile-home-empty-canvas-fidelity/requirements.md`.
+
+- [X] Enmienda #176 aprobada por humano
+
+## Enmienda #186 — Errores de validación de formularios
+
+El componente compartido `src/components/field-error-message.tsx` ofrece
+`FieldErrorMessage({ testID, issue })`, con `testID: string` e
+`issue?: RuleIssue | null`. La base de testID es la del control: el componente
+deriva `<base>-error`, `<base>-message` y `<base>-message-row` (contenedor, texto
+traducido y fila con icono). Sin issue no deja nodos. La pantalla conserva el
+control y pasa isInvalid al TextField cuando corresponde.
+
+- todo campo de texto que valide en cliente pinta su mensaje con
+  `FieldErrorMessage`, debajo del control, y la validación se hace al pulsar
+  enviar con reglas puras de `src/utils/`.
+- el texto crudo de un error del servidor no se muestra nunca en pantalla:
+  un 400 cae en `validation.checkDetails` o en un mensaje de campo traducido.
+
+Cada envío reemplaza los errores de campo; corregir el texto los retira en el
+siguiente envío. Los errores de red conservan su aviso de formulario.
+
+- [X] Enmienda #186 aprobada por humano

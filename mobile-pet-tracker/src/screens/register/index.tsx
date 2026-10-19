@@ -5,7 +5,6 @@ import { router } from 'expo-router';
 import {
   Button,
   Checkbox,
-  FieldError,
   Input,
   Label,
   TextField,
@@ -20,6 +19,7 @@ import { useAuth } from '../../providers/auth-provider';
 import { PingoFloat } from '../../components/pingo-float';
 import { PasswordInput } from '../../components/password-input';
 import { FormError } from '../../components/form-error';
+import { FieldErrorMessage } from '../../components/field-error-message';
 import { useTranslate } from '../../providers/language-provider';
 import { HomeEntrance } from '../home/home-entrance';
 
@@ -164,9 +164,7 @@ export function RegisterScreen() {
               value={firstName}
               onChangeText={setFirstName}
             />
-            <FieldError testID="register-first-name-error">
-              {fieldErrors.firstName ? <FormError testID="register-first-name-message" message={t(fieldErrors.firstName.labelKey, fieldErrors.firstName.params)} /> : null}
-            </FieldError>
+            <FieldErrorMessage testID="register-first-name" issue={fieldErrors.firstName} />
           </TextField>
           <TextField className="flex-1" isInvalid={Boolean(fieldErrors.lastName)}>
             <Label>
@@ -180,9 +178,7 @@ export function RegisterScreen() {
               value={lastName}
               onChangeText={setLastName}
             />
-            <FieldError testID="register-last-name-error">
-              {fieldErrors.lastName ? <FormError testID="register-last-name-message" message={t(fieldErrors.lastName.labelKey, fieldErrors.lastName.params)} /> : null}
-            </FieldError>
+            <FieldErrorMessage testID="register-last-name" issue={fieldErrors.lastName} />
           </TextField>
         </View>
 
@@ -200,9 +196,7 @@ export function RegisterScreen() {
             value={email}
             onChangeText={setEmail}
           />
-          <FieldError testID="register-email-error">
-            {fieldErrors.email ? <FormError testID="register-email-message" message={t(fieldErrors.email.labelKey, fieldErrors.email.params)} /> : null}
-          </FieldError>
+          <FieldErrorMessage testID="register-email" issue={fieldErrors.email} />
         </TextField>
 
         <View testID="register-contact-row" className="flex-row gap-3">
@@ -219,9 +213,7 @@ export function RegisterScreen() {
               value={phone}
               onChangeText={setPhone}
             />
-            <FieldError testID="register-phone-error">
-              {fieldErrors.phone ? <FormError testID="register-phone-message" message={t(fieldErrors.phone.labelKey, fieldErrors.phone.params)} /> : null}
-            </FieldError>
+            <FieldErrorMessage testID="register-phone" issue={fieldErrors.phone} />
           </TextField>
           <TextField className="flex-1" isInvalid={Boolean(fieldErrors.country)}>
             <Label>
@@ -237,9 +229,7 @@ export function RegisterScreen() {
               value={country}
               onChangeText={(value) => setCountry(value.toUpperCase())}
             />
-            <FieldError testID="register-country-error">
-              {fieldErrors.country ? <FormError testID="register-country-message" message={t(fieldErrors.country.labelKey, fieldErrors.country.params)} /> : null}
-            </FieldError>
+            <FieldErrorMessage testID="register-country" issue={fieldErrors.country} />
           </TextField>
         </View>
 
@@ -254,9 +244,7 @@ export function RegisterScreen() {
             value={password}
             onChangeText={setPassword}
           />
-          <FieldError testID="register-password-error">
-            {fieldErrors.password ? <FormError testID="register-password-message" message={t(fieldErrors.password.labelKey, fieldErrors.password.params)} /> : null}
-          </FieldError>
+          <FieldErrorMessage testID="register-password" issue={fieldErrors.password} />
         </TextField>
 
         <TextField isInvalid={Boolean(fieldErrors.passwordConfirmation)}>
@@ -270,9 +258,7 @@ export function RegisterScreen() {
             value={passwordConfirmation}
             onChangeText={setPasswordConfirmation}
           />
-          <FieldError testID="register-password-confirmation-error">
-            {fieldErrors.passwordConfirmation ? <FormError testID="register-password-confirmation-message" message={t(fieldErrors.passwordConfirmation.labelKey, fieldErrors.passwordConfirmation.params)} /> : null}
-          </FieldError>
+          <FieldErrorMessage testID="register-password-confirmation" issue={fieldErrors.passwordConfirmation} />
         </TextField>
 
         <View className="flex-row items-center gap-3">

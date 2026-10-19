@@ -9663,3 +9663,55 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
   PR #231; la mergea el humano, después se borra el worktree.
 - **Desbloquea:** #188, #189 y #191; Backend [43157c] y sites-4c [7c89b3] esperan
   su merge.
+
+## Sesión 2026-10-19 — mobile-home-empty-canvas-fidelity (id: 176)
+
+- **Feature:** Inicio sin mascota como el artboard del canvas: variante `hero` de
+  `EmptyState` solo en Inicio (pose 190, escenario con disco, tres huellas SVG y sombra,
+  `PingoFloat` de 10 px, título 26/900, cuerpo 15, CTA a ancho completo con `Plus`),
+  entrada escalonada de cuatro bloques con valores compartidos, reduce motion en estado
+  final desde el primer fotograma y `px-5 py-6` en `home-no-pets-screen`.
+- **Spec:** [[specs/mobile-home-empty-canvas-fidelity/requirements|spec]]
+- **Acciones:** spec reconciliada con #177/#181 y firmada por Notion; Enmienda #176 de
+  `docs/ui-guidelines.md` firmada por el humano; Codex implementó R1-R14 con commits
+  test-primero y paró tres veces: el `it` #155 R4 bajo la entrada R13 (el `waitFor` no
+  sirve, en jest el nodo host conserva opacidad 0; se enmendó con reduce motion) y el
+  candado de alcance de R2, que contaba `Card variant="hero"` preexistente. Ambos eran
+  huecos de la spec, corregidos en `tasks.md`.
+- **Enmiendas:** inventario de Card hero de #173 (acotado a `<Card`) y #61 R4 de
+  legibilidad (`accent` solo en `components/empty-state.tsx`), con commits de test
+  posteriores al `feat` (B1 del reviewer).
+- **Resultado:** `./init.sh` exit 0 sin pipe sobre `b473bb74` (backend 187/1474, móvil
+  121/4007 = T0 3994 + 13, e2e verde). Reviewer APROBADO sin Críticos ni Altos; M1
+  (geometría de huellas D3 sin candado, verificada a mano) y M2 (retrasos exactos de R13
+  sin candado) quedan como deuda. El humano firmó el smoke en dev build de Android.
+- **Commits:** `d2031494` (R1) ... `f432334f` (Codex), más las correcciones de la spec.
+  PR abierta, la mergea el humano; después se borra el worktree.
+
+## Sesión 2026-10-19 — mobile-forms-validation-global (id: 186)
+
+- **Feature:** componente `FieldErrorMessage` (`src/components/field-error-message.tsx`) y reglas
+  puras `src/utils/form-rules.ts` en Añadir mascota, Nuevo recordatorio, Subir documento y
+  Registrar peso: mensaje traducido bajo cada campo, validación al pulsar enviar, errores
+  simultáneos y el texto crudo del servidor nunca en pantalla (un 400 cae en
+  `validation.checkDetails` o en un mensaje de campo). Las cuatro pantallas de cuenta migran
+  al componente compartido sin cambiar sus tests. Enmienda #186 en la carta de UI.
+- **Spec:** [[specs/mobile-forms-validation-global/requirements|spec]]
+- **Acciones:** spec firmada por Notion; Codex implementó R1-R9 con commits test-primero y
+  paró cinco veces (R2 seis rojos en ui-language y no cinco, lectura auxiliar fallida en R3,
+  dos it de #125 que validan fecha en cliente en R5, error de sintaxis de Bash antes del commit
+  rojo de R9, y suite global en rojo). Cada parada se resolvió enmendando spec o handoff.
+- **Enmiendas:** R2 (seis rojos), R5 (los dos it de #125), E2 (la suite global destapó
+  `#65 R20`, que exige el corolario espejo en `specs/mobile-ui-language/design.md` §6.3, y
+  `#187 R1`, cuyo mínimo de elementos HeroUI baja de 211 a 200 = 211 - 12 + 1). E2 la aplicó
+  el leader (docs) y el `implementer` en fallback (una línea, `22d64701`); no se reabrió el
+  gate de Notion para ella.
+- **Resultado:** `./init.sh` exit 0 sin pipe sobre `50cc7875` (backend 187/1474, móvil
+  123/4136 = T0 3994 + 142, e2e verde). El primer `init.sh` dio 1 rojo en
+  `profile/index.test.tsx` («shows the real account name and email», fichero sin tocar por
+  #186), que pasó 3 de 3 sueltos y en la repetición con la perf-cache limpia: flake sin causa
+  conocida, log en `/tmp/claude-1002/pet-186-init-red1.log`. Reviewer APROBADO R1-R9 sobre
+  `276a58fa` (`2b40f25a`). El humano firmó el smoke R10 (dev build de Android, `7f803509`) y
+  la enmienda de la carta (`50cc7875`).
+- **Estado final:** done. Notion: Implementado / Completado. La PR #234 la mergea el humano,
+  después se borra el worktree.
