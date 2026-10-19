@@ -202,6 +202,7 @@ describe('#174 R12: inventarios', () => {
       pattern: /(?<![\w-])text-15\b/,
       files: [
         'components/celebration.tsx',
+        'components/empty-state.tsx', // (enmendado por #176 R9)
         'screens/alert-detail/index.tsx', // #180 R3
         'screens/alerts/index.tsx', // #174 R12: delta sobre la lista medida en H0
         'screens/docs/index.tsx', // #175 R6
@@ -217,6 +218,7 @@ describe('#174 R12: inventarios', () => {
       token: 'tracking-title',
       pattern: /(?<![\w-])tracking-title\b/,
       files: [
+        'components/empty-state.tsx', // (enmendado por #176 R8)
         'screens/add-reminder/index.tsx', // #178 R10
         'screens/alert-detail/index.tsx', // #180 R1
         'screens/alerts/index.tsx', // #174 R12: H0 sin consumidores

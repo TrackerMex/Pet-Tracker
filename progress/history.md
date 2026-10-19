@@ -9663,3 +9663,27 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
   PR #231; la mergea el humano, después se borra el worktree.
 - **Desbloquea:** #188, #189 y #191; Backend [43157c] y sites-4c [7c89b3] esperan
   su merge.
+
+## Sesión 2026-10-19 — mobile-home-empty-canvas-fidelity (id: 176)
+
+- **Feature:** Inicio sin mascota como el artboard del canvas: variante `hero` de
+  `EmptyState` solo en Inicio (pose 190, escenario con disco, tres huellas SVG y sombra,
+  `PingoFloat` de 10 px, título 26/900, cuerpo 15, CTA a ancho completo con `Plus`),
+  entrada escalonada de cuatro bloques con valores compartidos, reduce motion en estado
+  final desde el primer fotograma y `px-5 py-6` en `home-no-pets-screen`.
+- **Spec:** [[specs/mobile-home-empty-canvas-fidelity/requirements|spec]]
+- **Acciones:** spec reconciliada con #177/#181 y firmada por Notion; Enmienda #176 de
+  `docs/ui-guidelines.md` firmada por el humano; Codex implementó R1-R14 con commits
+  test-primero y paró tres veces: el `it` #155 R4 bajo la entrada R13 (el `waitFor` no
+  sirve, en jest el nodo host conserva opacidad 0; se enmendó con reduce motion) y el
+  candado de alcance de R2, que contaba `Card variant="hero"` preexistente. Ambos eran
+  huecos de la spec, corregidos en `tasks.md`.
+- **Enmiendas:** inventario de Card hero de #173 (acotado a `<Card`) y #61 R4 de
+  legibilidad (`accent` solo en `components/empty-state.tsx`), con commits de test
+  posteriores al `feat` (B1 del reviewer).
+- **Resultado:** `./init.sh` exit 0 sin pipe sobre `b473bb74` (backend 187/1474, móvil
+  121/4007 = T0 3994 + 13, e2e verde). Reviewer APROBADO sin Críticos ni Altos; M1
+  (geometría de huellas D3 sin candado, verificada a mano) y M2 (retrasos exactos de R13
+  sin candado) quedan como deuda. El humano firmó el smoke en dev build de Android.
+- **Commits:** `d2031494` (R1) ... `f432334f` (Codex), más las correcciones de la spec.
+  PR abierta, la mergea el humano; después se borra el worktree.
