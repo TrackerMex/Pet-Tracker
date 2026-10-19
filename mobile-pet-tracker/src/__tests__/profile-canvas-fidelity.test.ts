@@ -53,8 +53,9 @@ describe('#173 R2: inventario de radios nuevos', () => {
 });
 
 describe('#173 R2.4: inventario de tamaños nuevos', () => {
-  it('reserva text-26 al nombre de la mascota en Perfil', () => {
+  it('reserva text-26 al nombre de la mascota en Perfil (enmendado por #176 R8)', () => {
     expect(filesMatching(/\btext-26\b/)).toEqual([
+      'components/empty-state.tsx', // (enmendado por #176 R8)
       'screens/alert-detail/index.tsx', // #180 R1
       'screens/alerts/index.tsx', // #174 R3
       'screens/docs/index.tsx', // #175 R5

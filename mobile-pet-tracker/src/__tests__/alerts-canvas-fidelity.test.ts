@@ -217,6 +217,7 @@ describe('#174 R12: inventarios', () => {
       token: 'tracking-title',
       pattern: /(?<![\w-])tracking-title\b/,
       files: [
+        'components/empty-state.tsx', // (enmendado por #176 R8)
         'screens/add-reminder/index.tsx', // #178 R10
         'screens/alert-detail/index.tsx', // #180 R1
         'screens/alerts/index.tsx', // #174 R12: H0 sin consumidores

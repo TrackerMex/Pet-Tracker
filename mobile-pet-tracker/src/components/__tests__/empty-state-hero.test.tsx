@@ -86,3 +86,11 @@ it('#176 R6: hero flota solo 10 px con PingoFloat en un ciclo de tres segundos',
   const source = readFileSync('src/components/empty-state.tsx', 'utf8');
   expect(source).toMatch(/if \(variant === 'default' && !reduceMotion\)/);
 });
+
+
+it('#176 R8: hero muestra el título recibido a 26 px y peso 900', async () => {
+  await renderProbe();
+  const title = screen.getByTestId('home-empty-title');
+  expect(title.props.className).toBe('text-center text-26 font-black tracking-title text-foreground');
+  expect(title).toHaveTextContent('Título de prueba');
+});
