@@ -1046,3 +1046,30 @@ jest.mock('expo-haptics', () => ({
   NotificationFeedbackType: { Success: 'mock-success', Error: 'mock-error' },
 }));
 const mockNotificationAsync = jest.mocked(notificationAsync);
+
+
+describe('#188: pairing canvas fidelity', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+  });
+
+  it('#188 R1: shows the collar pose as the first visual content', async () => {
+    await renderPairing();
+    const pingo = await screen.findByTestId('pairing-pingo', { includeHiddenElements: true });
+    expect(pingo.props.source).toEqual([
+      expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/pingo-collar\.webp$/) }),
+    ]);
+    expect(JSON.stringify(pingo.props.source)).not.toContain('pingo-wave.webp');
+    expect(pingo.props.contentFit).toBe('contain');
+    const visuals = within(screen.getByTestId('pairing-form')).getAllByTestId(
+      /^(pairing-pingo|pet-chip-pet-1|pairing-plan-free|activation-code-input|pairing-submit)$/,
+      { includeHiddenElements: true },
+    );
+    expect(visuals[0].props.testID).toBe('pairing-pingo');
+  });
+});
