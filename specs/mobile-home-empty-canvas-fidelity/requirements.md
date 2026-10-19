@@ -1,6 +1,6 @@
 ---
 feature: "mobile-home-empty-canvas-fidelity"
-status: draft        # draft | approved
+status: approved      # draft | approved
 tags: [harness, spec]
 ---
 
@@ -44,4 +44,4 @@ Alcance: estado sin mascota de la pantalla Inicio (`home-no-pets-screen` y `home
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [x] Aprobado por humano (fecha: 2026-10-19) ← gate obligatorio antes de implementar
