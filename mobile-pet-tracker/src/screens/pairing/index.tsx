@@ -276,7 +276,7 @@ export function PairingScreen() {
         ) : null}
 
         {phase === 'idle' && selectedPet?.device === null ? (
-          <Text testID="pairing-title" className="text-2xl font-black text-foreground">
+          <Text testID="pairing-title" className="text-24 font-black text-foreground">
             {t('pairing.pairCollar')}
           </Text>
         ) : null}
