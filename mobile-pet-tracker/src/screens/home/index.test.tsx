@@ -5256,7 +5256,7 @@ describe('#155 R4: Inicio sin mascotas presenta a Pingo', () => {
     ]);
     expect(screen.getByTestId('home-empty-title')).toHaveTextContent('Aún no tienes mascotas');
     expect(screen.getByTestId('home-empty-body')).toHaveTextContent('Añade a tu mascota y te ayudo a saber dónde está y cómo está.');
-    expect(within(screen.getByTestId('home-empty-action')).getByText('Añadir mascota')).toBeVisible();
+    await waitFor(() => expect(within(screen.getByTestId('home-empty-action')).getByText('Añadir mascota')).toBeVisible()); // (enmendado por #176 R13)
   });
 
   it('lleva a añadir mascota', async () => {
