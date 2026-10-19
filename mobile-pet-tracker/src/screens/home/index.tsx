@@ -430,6 +430,13 @@ export function HomeScreen() {
         {selectedPetId ? (
           <HomeEntrance index={0} testID="home-entrance-summary">
             <Card testID="summary-card" className="gap-4">
+              <View
+                testID="home-pingo-bubble"
+                className="flex-1 rounded-tile rounded-br-4 bg-surface px-3.5 py-3 shadow-sm"
+                style={CONTINUOUS_CORNER}
+              >
+                <Text testID="home-pingo-text" className="text-15 font-semibold leading-5.25 text-foreground" />
+              </View>
               <Text
                 testID="summary-card-title"
                 className="text-base font-bold text-foreground"
