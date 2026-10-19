@@ -26,13 +26,13 @@ type EmptyStateProps = {
   action?: { label: string; onPress: () => void };
 };
 
-export function EmptyState({ testID, pose, title, body, action }: EmptyStateProps) {
+export function EmptyState({ testID, pose, title, body, action, variant = 'default' }: EmptyStateProps) {
   const chunkyLip = useChunkyLip();
   const reduceMotion = useReducedMotion();
   const offset = useSharedValue(0);
+  const poseSize = variant === 'hero' ? 190 : 160;
   const floatStyle = useAnimatedStyle(() => ({
-    width: 160,
-    height: 160,
+    ...(variant === 'default' ? { width: 160, height: 160 } : {}),
     transform: [{ translateY: offset.get() }],
   }));
   useEffect(() => {
@@ -47,7 +47,7 @@ export function EmptyState({ testID, pose, title, body, action }: EmptyStateProp
         <Image
           testID={`${testID}-pose`}
           source={POSES[pose]}
-          style={{ width: 160, height: 160 }}
+          style={{ width: poseSize, height: poseSize }}
           contentFit="contain"
         />
       </Animated.View>
