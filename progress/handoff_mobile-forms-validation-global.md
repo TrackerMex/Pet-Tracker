@@ -59,7 +59,8 @@ Ninguna clase `className` nueva ni cambiada (R3, §Sin clases nuevas).
   que las cuentas de sus candados 5 y 6 cuadren). R8 no tiene verde sin rojo: su rojo es el candado 3 de
   `forms-validation-global.test.ts`; los candados 1 y 2 nacen verdes y se declaran.
   Un rojo que no es el que la spec declara (`Unable to find`, `Found multiple elements`,
-  `Test suite failed to run` salvo los `Cannot find module` declarados de R2 y R3, un `it` no listado) =
+  `Test suite failed to run` salvo los `Cannot find module` declarados de R2 y R3, un `it` no listado; en R2
+  los rojos de `ui-language.test.ts` son **seis**, cuatro bloques + SCREEN_FILES + `checkUses(ALL_USES)`) =
   **PARA y avisa**; no ajustes la aserción. Los nacidos en verde (NV) se cruzan con los `it` previos y se
   declaran en el reporte.
 - Cada comando de móvil empieza por `cd "$(git rev-parse --show-toplevel)/mobile-pet-tracker" &&` en la
@@ -108,7 +109,7 @@ anótalos por R.
 
 Escribe el resultado en `progress/impl_mobile-forms-validation-global.md`: H0, T0, el `Tests:` de cada
 fichero tras cada commit, los hashes de cada rojo y verde, las skills cargadas, el resultado de cada sonda,
-los NV declarados, el número exacto de `it` rojos de `ui-language.test.ts` en R2 (se esperan cinco), y cada
+los NV declarados, el número exacto de `it` rojos de `ui-language.test.ts` en R2 (se esperan seis: cuatro bloques, SCREEN_FILES y `checkUses(ALL_USES)`), y cada
 parada o desviación.
 Última acción: crear `progress/impl_mobile-forms-validation-global.done` con una sola línea: la ruta de
 `progress/impl_mobile-forms-validation-global.md`. Es el marcador que vigila

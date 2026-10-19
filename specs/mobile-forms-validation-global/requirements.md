@@ -387,11 +387,14 @@ que mueve una fórmula.
 | Suite / `it` | Tipo |
 |---|---|
 | `src/utils/form-rules.test.ts` (todo) | la suite no arranca: `Cannot find module './form-rules'` |
-| `ui-language.test.ts`: `it` que resuelven los bloques `R5_HEALTH`, `R7_PROFILE`, `R8_REMINDERS`, `R9_ADD_PET` y el que cuenta `SCREEN_FILES` | ENOENT al leer `src/utils/form-rules.ts` (y longitud) |
+| `ui-language.test.ts`: `it` que resuelven los bloques `R5_HEALTH`, `R7_PROFILE`, `R8_REMINDERS`, `R9_ADD_PET`, el que cuenta `SCREEN_FILES` y el que corre `checkUses(ALL_USES)` («resuelve cada ocurrencia de la tabla contra la clave exacta», R18) | ENOENT al leer `src/utils/form-rules.ts` (y longitud) |
 
 El implementer mide el número exacto de `it` rojos en `ui-language.test.ts` y lo
-deja escrito en `progress/impl_mobile-forms-validation-global.md`; se espera
-que sean los cinco de la tabla.
+deja escrito en `progress/impl_mobile-forms-validation-global.md`; se esperan
+**seis**: los cuatro bloques, el de `SCREEN_FILES` y el de `ALL_USES` (este
+último lee `form-rules.ts` porque `ALL_USES` incluye los bloques ampliados; la
+primera redacción de la spec lo omitió y contó cinco, corregido el 2026-10-19
+al medir Codex el rojo).
 
 **Verde.** Se crea `form-rules.ts` con las constantes y los cuatro validadores.
 Las suites quedan en verde.
