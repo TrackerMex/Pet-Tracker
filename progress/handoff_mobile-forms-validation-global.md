@@ -65,6 +65,8 @@ Ninguna clase `className` nueva ni cambiada (R3, §Sin clases nuevas).
   declaran en el reporte.
 - Cada comando de móvil empieza por `cd "$(git rev-parse --show-toplevel)/mobile-pet-tracker" &&` en la
   misma cadena. Un error de invocación (ENOENT del fichero que ibas a crear) no es un rojo: PARA y avisa.
+  Un fallo de una lectura auxiliar (`sed`, `cat`, `grep` con ruta mal escrita) NO es parada: anótalo en el
+  reporte y relee con la ruta correcta. Solo paran los comandos que ejecutan tests, crean o tocan ficheros.
   Móvil es `bun` (`bunx jest <ruta>`, `bun run typecheck`); nunca `npx` ni `npm i -g`.
 - **Un fichero de jest a la vez**, `bunx jest <ruta>`; nunca dos jest a la vez. La ruta con paréntesis es
   regex: no pases rutas con `(tabs)`. Si un `it` agota el tiempo con la máquina cargada, repite el fichero
