@@ -62,3 +62,13 @@ it('#188 R11: resolves visible copy through bilingual catalog keys registered fo
     expect(R10_PAIRING).toContainEqual({ file: pairingFile, key });
   }
 });
+
+it.each([
+  pairingFile,
+  'src/components/ping-ring.tsx',
+])('#188 R12: keeps hex colors and bracket classes out of %s', (file) => {
+  const source = readSource(file);
+  const hexLiteral = /#(?!\d{2,3} R\d)[\da-f]{3,8}\b/i;
+  expect(source).not.toMatch(hexLiteral);
+  expect(source).not.toMatch(/className="[^"]*\[/);
+});
