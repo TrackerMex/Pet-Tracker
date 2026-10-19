@@ -1,6 +1,6 @@
 ---
 feature: "mobile-focus-refetch-guard-no-pet"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec]
 ---
 
@@ -92,4 +92,4 @@ Ninguna bloquea la firma. El humano las contesta antes o durante el smoke.
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [x] Aprobado por humano (fecha: 2026-10-19) ← gate obligatorio antes de implementar
