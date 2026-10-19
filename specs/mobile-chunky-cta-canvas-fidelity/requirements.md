@@ -361,6 +361,8 @@ Prueba de piso exacto (parte de la cadena, no un `it`): tras c10, con los pisos 
 12. `#172 R20`: la literal `w-full h-14 rounded-xl bg-accent border-b-4 border-black/25` (recuentos `[login 1, register 1, forgot 1, reset-password 1, password-input 0]`) pasa a `w-full h-14 rounded-16 bg-accent`, y `w-full h-14 rounded-xl border-2 border-b-6 border-lip-gray bg-surface` (forgot 1) pasa a `w-full h-14 rounded-16 border-2 border-lip-gray bg-surface`. El resto de literales de ese `it` y **toda** la tabla `textRecipes` (compartida con #187) **no se tocan**.
 
 `src/__tests__/heroui-text-size-merge.test.ts`: R9.1.
+`src/components/__tests__/empty-state.test.tsx` (Enmienda E1, 2026-10-19):
+13. `#155 R11`, `describe` «los vacíos no traen movimiento ni dependencias», dos `it`: (a) «EmptyState solo importa de react, react-native, expo-image, heroui-native, Reanimated y el tema de movimiento»: la lista de especificadores admitidos gana `'../theme/chunky-lip'`; (b) «EmptyState importa exactamente lo de la flotación»: la lista de imports gana `"import { useChunkyLip } from '../theme/chunky-lip';"` **inmediatamente antes** de `"import { MOTION_FLOAT_OFFSET_Y, MOTION_FLOAT_TIMING } from '../theme/motion';"`, y `toHaveLength(6)` de `require(` no cambia. Los dos títulos pasan a terminar en `(enmendado por #177 R10)`. El tercer `it` del `describe` (sin `LayoutAnimation`, `transition`, `animate-`, `entering=` ni `exiting=`) no se toca.
 
 Pruebas colocadas que afirman `className` o etiquetas viejas (se reescriben para pasar con la receta nueva; no cambia su intención): `src/components/__tests__/celebration.test.tsx`, `src/components/__tests__/empty-state.test.tsx`, `src/screens/welcome/index.test.tsx`, `login`, `register`, `forgot` (con el bloque `#167 R9` del tile), `reset-password`, `geofences`, `geofence-editor`, `reminders`, `home`, `alert-detail`, `docs-upload-form`, `add-reminder`, `pairing` y, solo si el grep de H0 las encuentra con la receta vieja, `alerts` y `meal-schedule`. El grep de H0 que las localiza:
 
@@ -435,7 +437,33 @@ Firmado en Notion (página 3fe6115a-9b27-81dd-ab23-d801d30c762b, `Estado del gat
 Cualquier test o comando que lea esta casilla usa el patrón tolerante
 `^- \[[ xX]\] Aprobado por humano`: con la casilla marcada o sin marcar da `1`.
 
+## Enmienda E1 (2026-10-19, hallada por Codex en c6)
+
+R7.4 manda que `components/empty-state.tsx` llame a `useChunkyLip()`, y por tanto lo importe. Dos
+`it` de #155 R11 en `src/components/__tests__/empty-state.test.tsx` fijan la lista **exacta** de
+imports de ese fichero y caen con ese import. R10 los omitió porque su grep de H0 localiza el
+fichero por `className` y etiqueta, no por inventarios de imports. Codex paró en c6 conforme al
+handoff, sin tocar las aserciones: `Expected "../theme/chunky-lip"` en (a) y el import añadido en
+(b), ambos medidos en `/tmp/177-c6-1.log` del impl.
+
+1. **Qué cambia.** El punto 13 de R10: los dos `it` admiten el import del hook, en la posición dicha.
+   Es un aflojamiento mínimo (un especificador más) que el propio R7.4 exige. No cambia ningún
+   valor de la receta ni de los pisos.
+2. **Cómo se aplica (commit c5b, test-primero).** Antes de c6, un commit
+   `test(#177 R10): candados de imports de #155 R11 admiten useChunkyLip (R10)` que reescribe solo esos
+   dos `it`. Rojo esperado: (b) cae (el fichero aún no importa el hook; `Received` sin la línea);
+   (a) es **NV, aflojamiento declarado** (admite un especificador que aún no aparece). Para medir
+   el rojo con los siete ficheros de producción de G1 ya editados sin commit: guardar el parche con
+   `git diff -- <los 7 ficheros> > <patch fuera del árbol>`, `git checkout HEAD -- <los 7 ficheros>`,
+   medir y commitear c5b, y reaplicar con `git apply <patch>`; sin `git stash`. Cuenta de `it`: 0
+   (reescribe en su sitio).
+3. **Verificado.** No hay más inventarios de imports de los ficheros de producción de esta feature:
+   `git grep -nE "matchAll\(/from|match\(/\^import|importa exactamente|solo importa"` sobre los tests
+   solo da `empty-state.test.tsx` (los de `design-drift` miran `reicon-react-native` en Horario y el
+   historial, fuera de alcance, y el de `weekly-activity-chart` mira otro fichero).
+
 ## Gate humano de cierre
 
 - [ ] Enmienda #177 aprobada por humano (carta y #166; fecha: ____)
+- [ ] Enmienda E1 aprobada por humano (inventarios de imports de empty-state; fecha: ____)
 - [ ] Smoke R14 en dev build de Android hecho por el humano (fecha: ____)

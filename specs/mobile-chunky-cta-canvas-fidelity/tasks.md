@@ -87,6 +87,7 @@ que ya se conocen de antemano se nombran aquí. Los mensajes llevan el sufijo
 | c3 | `test(#177 R9): pisos de #187 a 211 y 167 (R9)` | en `heroui-text-size-merge.test.ts` el piso 226 a 211 y 182 a 167; título del `it` con `(enmendado por #177 R9)` | 0 | **NV, aflojamiento declarado** (hoy 226 y 182 superan 211 y 167); necesita D3 aprobada |
 | c4 | `test(#177 R3): candados de la receta, inventarios y carta (R3-R8,R10-R12)` | `chunky-cta-canvas-fidelity.test.ts` nuevo (72 `it`) y los `it` globales reescritos de R10 puntos 1 a 12 | 72 | ver «Rojo de c4» |
 | c5 | `test(#177 R3): pruebas de G1 con la receta nueva (R3,R4,R5,R6)` | pruebas colocadas de `celebration`, `empty-state`, `welcome`, `login`, `register`, `forgot` (incluye el tile `#167 R9`), `reset-password` | 0 | las aserciones de `className`, etiqueta o estilo reescritas |
+| c5b | `test(#177 R10): candados de imports de #155 R11 admiten useChunkyLip (R10)` | Enmienda E1: los dos `it` de imports de `components/__tests__/empty-state.test.tsx` (ver [[requirements]] R10 punto 13) | 0 | (b) rojo con `Received` sin el import del hook; (a) **NV, aflojamiento declarado** |
 | c6 | `feat(#177 R3): botones de G1 con labio y Text 17/800 (R3,R4,R5,R6)` | los 7 ficheros de producción de G1 | 0 | 0 en G1 |
 | c7 | `test(#177 R3): pruebas de G2 con la receta nueva (R3,R4,R6)` | `pairing`, `home`, `alert-detail` | 0 | idem |
 | c8 | `feat(#177 R3): botones de G2 con labio y Text 17/800 (R3,R4,R6)` | los 3 ficheros de G2 | 0 | 0 en G2 |
