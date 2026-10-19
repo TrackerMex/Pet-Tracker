@@ -379,4 +379,4 @@ cuerpo de 56, radio 16, etiqueta Text 17/800 y labio externo sólido mediante
 `consistency-classnames.test.ts` se reescribe en su sitio; R2 y R3 anteriores
 se conservan como registro histórico.
 
-- [ ] Enmienda #177 aprobada por humano
+- [X] Enmienda #177 aprobada por humano

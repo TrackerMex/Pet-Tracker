@@ -690,4 +690,4 @@ para #189; la hoja de eliminar recordatorio conserva el par asimétrico.
 Detalle y tests en `specs/mobile-chunky-cta-canvas-fidelity/requirements.md`.
 Los candados anteriores se reescriben en su sitio.
 
-- [ ] Enmienda #177 aprobada por humano
+- [X] Enmienda #177 aprobada por humano
