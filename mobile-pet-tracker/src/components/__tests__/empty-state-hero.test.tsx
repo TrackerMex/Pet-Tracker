@@ -185,3 +185,20 @@ it('#176 R7: reduce motion nace en el estado final y no inicia entrada ni flotac
     }
   }
 });
+
+
+it('#176 R14: hero ocupa el ancho útil con gap de 14 y los hijos en orden, con o sin acción', async () => {
+  for (const action of [{ label: 'Acción', onPress: jest.fn() }, undefined]) {
+    const result = await renderProbe({ variant: 'hero', action });
+    const root = screen.getByTestId('home-empty');
+    expect(root.props.className).toBe('w-full items-center gap-3.5');
+    expect(root.children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual([
+      'home-empty-stage', 'home-empty-title-enter', 'home-empty-body-enter',
+      ...(action ? ['home-empty-action-wrap'] : []),
+    ]);
+    expect(within(screen.getByTestId('home-empty-title-enter')).getByTestId('home-empty-title')).toBeOnTheScreen();
+    expect(within(screen.getByTestId('home-empty-body-enter')).getByTestId('home-empty-body')).toBeOnTheScreen();
+    if (!action) expect(screen.queryByTestId('home-empty-action-wrap')).toBeNull();
+    await result.unmount();
+  }
+});
