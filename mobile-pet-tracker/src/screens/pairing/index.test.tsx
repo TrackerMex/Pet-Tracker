@@ -11,6 +11,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
 import { Alert, DeviceEventEmitter, Platform } from 'react-native';
+import { getAnimatedStyle } from 'react-native-reanimated';
 
 import {
   claimDevice,
@@ -1086,6 +1087,32 @@ describe('#188: pairing canvas fidelity', () => {
     const stage = screen.getByTestId('pairing-ring-0', { includeHiddenElements: true }).parent!;
     expect(within(stage).getAllByTestId(/^pairing-(ring-[01]|pingo)$/, { includeHiddenElements: true })
       .map((node) => node.props.testID)).toEqual(['pairing-ring-0', 'pairing-ring-1', 'pairing-pingo']);
+  });
+
+
+  it('#188 R3: staggers the ping loop and resets at 2400 ms', async () => {
+    jest.useFakeTimers();
+    try {
+      await renderPairing();
+      const ring0 = await screen.findByTestId('pairing-ring-0', { includeHiddenElements: true });
+      const ring1 = screen.getByTestId('pairing-ring-1', { includeHiddenElements: true });
+      for (const ring of [ring0, ring1]) {
+        expect(ring).toHaveAnimatedStyle({ opacity: 0.55, transform: [{ scale: 0.55 }] }, { shouldMatchAllProps: true });
+      }
+      await act(async () => { jest.advanceTimersByTime(600); });
+      const style = getAnimatedStyle(ring0);
+      const scale = (style.transform as [{ scale: number }])[0].scale;
+      expect(scale).toBeGreaterThan(0.55);
+      expect(scale).toBeLessThan(1.5);
+      expect(style.opacity).toBeGreaterThan(0);
+      expect(style.opacity).toBeLessThan(0.55);
+      expect(ring0).toHaveAnimatedStyle({ opacity: style.opacity, transform: [{ scale }] }, { shouldMatchAllProps: true });
+      expect(ring1).toHaveAnimatedStyle({ opacity: 0.55, transform: [{ scale: 0.55 }] }, { shouldMatchAllProps: true });
+      await act(async () => { jest.advanceTimersByTime(1800); });
+      expect(ring0).toHaveAnimatedStyle({ opacity: 0.55, transform: [{ scale: 0.55 }] }, { shouldMatchAllProps: true });
+    } finally {
+      jest.useRealTimers();
+    }
   });
 
 });
