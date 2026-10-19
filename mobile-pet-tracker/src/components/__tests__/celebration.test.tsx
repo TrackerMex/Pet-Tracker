@@ -2,7 +2,6 @@ import { act, fireEvent, render, screen, within } from '@testing-library/react-n
 import { NotificationFeedbackType, notificationAsync } from 'expo-haptics';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
-import { StyleSheet } from 'react-native';
 import { getAnimatedStyle } from 'react-native-reanimated';
 
 import { Celebration } from '../celebration';
@@ -10,6 +9,7 @@ import { en, es } from '../../i18n/catalog';
 
 const { readFileSync } = jest.requireActual<typeof import('fs')>('fs');
 const { join } = jest.requireActual<typeof import('path')>('path');
+const flat = (s: unknown) => Object.assign({}, ...[s].flat(Infinity).filter(Boolean));
 
 describe('#171 R1: la pose celebrate', () => {
   it('pingo-celebrate.webp es WebP con alfa, sin animación, 1024 × 1024 y como mucho 100000 bytes', () => {
@@ -182,14 +182,14 @@ describe('#171 R14: botones con labio', () => {
   it('R14.1 el primario lleva la receta y la etiqueta del acento', async () => {
     await renderProbe();
     expect(screen.getByTestId('probe-primary').props.className).toBe('w-full h-14 rounded-16 bg-accent');
-    expect(StyleSheet.flatten(screen.getByTestId('probe-primary').props.style)).toMatchObject({ boxShadow: [{ offsetY: 4, color: 'sentinel-lip' }] });
+    expect(flat(screen.getByTestId('probe-primary').props.style)).toMatchObject({ boxShadow: [{ offsetY: 4, color: 'sentinel-lip' }] });
     expect(screen.getByText('Ver en el mapa').props.className).toBe('text-17 font-extrabold text-accent-foreground');
   });
 
   it('R14.2 el secundario lleva el labio gris sin variant y su etiqueta', async () => {
     await renderProbe();
     expect(screen.getByTestId('probe-secondary').props.className).toBe('w-full h-14 rounded-16 border-2 border-lip-gray bg-surface');
-    expect(StyleSheet.flatten(screen.getByTestId('probe-secondary').props.style)).toMatchObject({ boxShadow: [{ offsetY: 4, color: 'sentinel-lip-gray' }] });
+    expect(flat(screen.getByTestId('probe-secondary').props.style)).toMatchObject({ boxShadow: [{ offsetY: 4, color: 'sentinel-lip-gray' }] });
     expect(screen.getByTestId('probe-secondary').props.variant).toBeUndefined();
     expect(screen.getByText('Listo').props.className).toBe('text-17 font-extrabold text-foreground');
   });
