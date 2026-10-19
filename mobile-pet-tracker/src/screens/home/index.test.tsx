@@ -9,7 +9,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import { useEffect, type ReactNode } from 'react';
 import { Text } from 'react-native';
-import { Easing, FadeOut, ReduceMotion, withDelay, withSpring } from 'react-native-reanimated';
+import { Easing, FadeOut, ReduceMotion, withDelay, withRepeat, withSpring } from 'react-native-reanimated';
 import { Uniwind } from 'uniwind';
 
 import {
@@ -5655,5 +5655,35 @@ describe('#190 R7: reduce motion conserva solo la entrada sin desplazamiento', (
     const bubble = screen.getByTestId('home-pingo-bubble');
     expect(bubble.props.entering).toBeUndefined();
     expect(bubble.props.style).toEqual({ borderCurve: 'continuous' });
+  });
+});
+
+describe('#190 R5: la pose reutiliza PingoFloat', () => {
+  beforeEach(setupHomeMotion);
+
+  it('usa Animated.View y repite solo translateY -10 en tramos de 1500 ms invertidos', async () => {
+    await renderHome();
+    await screen.findByTestId('home-pingo-text');
+    const float = screen.getByTestId('home-pingo-float');
+    expect(float).toHaveAnimatedStyle({ transform: [{ translateY: -10 }] }, { shouldMatchAllProps: true });
+    expect(jest.mocked(withRepeat)).toHaveBeenCalledWith(-10, -1, true);
+    const timing = mockWithTiming.mock.calls.find(([value]) => value === -10)?.[1];
+    expect(timing).toEqual(expect.objectContaining({ duration: 1500, reduceMotion: ReduceMotion.System }));
+    const actualEasing = (timing as { easing: ReturnType<typeof Easing.bezier> }).easing.factory();
+    const expectedEasing = Easing.bezier(0.42, 0, 0.58, 1).factory();
+    for (const point of [0.25, 0.5, 0.75]) expect(actualEasing(point)).toBeCloseTo(expectedEasing(point), 6);
+    const source = readFileSync(join(process.cwd(), 'src/screens/home/index.tsx'), 'utf8');
+    const anchor = source.indexOf('testID="home-pingo-float"');
+    expect(source.lastIndexOf('testID="home-pingo-float"')).toBe(anchor);
+    expect(source.slice(source.lastIndexOf('<', anchor), anchor)).toMatch(/^<PingoFloat\s/);
+  });
+
+  it('con reduce motion solo tiene translateY cero y no arranca el bucle de Pingo', async () => {
+    mockUseReducedMotion.mockReturnValue(true);
+    await renderHome();
+    await screen.findByTestId('home-pingo-text');
+    expect(screen.getByTestId('home-pingo-float')).toHaveAnimatedStyle({ transform: [{ translateY: 0 }] }, { shouldMatchAllProps: true });
+    expect(jest.mocked(withRepeat)).not.toHaveBeenCalledWith(-10, -1, true);
+    expect(mockWithTiming.mock.calls.filter(([value]) => value === -10)).toEqual([]);
   });
 });
