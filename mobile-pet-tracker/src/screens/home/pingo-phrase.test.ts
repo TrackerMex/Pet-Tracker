@@ -60,3 +60,33 @@ describe('#190 R9: las cuatro frases tienen el copy aprobado', () => {
     }
   });
 });
+
+describe('#190 R8: homePingoPhrase elige por distancia y plan', () => {
+  const cases = [
+    [2350, { served: 1, total: 2 }, 'home.pingoPhraseWalkMeals', { petName: 'Luna', km: '2.4 km', served: 1, total: 2 }],
+    [2350, null, 'home.pingoPhraseWalk', { petName: 'Luna', km: '2.4 km' }],
+    [2350, { served: 0, total: 0 }, 'home.pingoPhraseWalk', { petName: 'Luna', km: '2.4 km' }],
+    [null, { served: 1, total: 2 }, 'home.pingoPhraseMeals', { petName: 'Luna', served: 1, total: 2 }],
+    [0, { served: 1, total: 2 }, 'home.pingoPhraseMeals', { petName: 'Luna', served: 1, total: 2 }],
+    [99, { served: 1, total: 2 }, 'home.pingoPhraseMeals', { petName: 'Luna', served: 1, total: 2 }],
+    [null, null, 'home.pingoPhraseCalm', { petName: 'Luna' }],
+    [0, { served: 0, total: 0 }, 'home.pingoPhraseCalm', { petName: 'Luna' }],
+    [99, null, 'home.pingoPhraseCalm', { petName: 'Luna' }],
+    [-1, null, 'home.pingoPhraseCalm', { petName: 'Luna' }],
+    [100, null, 'home.pingoPhraseWalk', { petName: 'Luna', km: '0.1 km' }],
+    [100, { served: 3, total: 2 }, 'home.pingoPhraseWalkMeals', { petName: 'Luna', km: '0.1 km', served: 3, total: 2 }],
+    [null, { served: 3, total: 2 }, 'home.pingoPhraseMeals', { petName: 'Luna', served: 3, total: 2 }],
+    [2350, { served: 0, total: -1 }, 'home.pingoPhraseWalk', { petName: 'Luna', km: '2.4 km' }],
+  ] as const;
+
+  it.each(cases)('distancia %s, comidas %s → %s', (distanceM, meals, labelKey, params) => {
+    const { homePingoPhrase } = jest.requireActual<{
+      homePingoPhrase: (input: {
+        petName: string;
+        distanceM: number | null;
+        meals: { served: number; total: number } | null;
+      }) => { labelKey: TranslationKey; params: Record<string, string | number> };
+    }>('./pingo-phrase');
+    expect(homePingoPhrase({ petName: 'Luna', distanceM, meals })).toEqual({ labelKey, params });
+  });
+});
