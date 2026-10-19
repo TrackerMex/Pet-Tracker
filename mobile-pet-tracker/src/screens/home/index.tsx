@@ -1,3 +1,4 @@
+import { useChunkyLip } from '../../theme/chunky-lip';
 import { useQuery } from '@tanstack/react-query';
 import { router, useFocusEffect } from 'expo-router';
 import { Button, Card as HeroUICard, Skeleton } from 'heroui-native';
@@ -174,6 +175,7 @@ function dueCountdown(
 }
 
 export function HomeScreen() {
+  const chunkyLip = useChunkyLip();
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { token } = useAuth();
   const locale = useLocale();
@@ -659,12 +661,12 @@ export function HomeScreen() {
         {activity.data?.kind === 'ok' && selectedToday ? (
           <Button
             testID="weekly-activity-day-map"
-            className="min-h-11 w-full rounded-xl bg-accent border-b-4 border-black/25"
+            className="w-full h-14 rounded-16 bg-accent" style={chunkyLip.primary}
             onPress={() => router.push('/map')}
           >
-            <Button.Label className="font-bold text-accent-foreground">
+            <Text className="text-17 font-extrabold text-accent-foreground">
               {viewOnMapLabel}
-            </Button.Label>
+            </Text>
           </Button>
         ) : null}
 

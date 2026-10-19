@@ -1,0 +1,271 @@
+interface DirectoryEntry {
+  name: string;
+  isDirectory: () => boolean;
+}
+declare function require(name: 'fs'): {
+  readdirSync: (path: string, options: { withFileTypes: true }) => DirectoryEntry[];
+  readFileSync: (path: string, encoding: 'utf8') => string;
+};
+declare function require(name: 'path'): { join: (...paths: string[]) => string };
+
+const { readdirSync, readFileSync } = require('fs');
+const { join } = require('path');
+const sourceRoot = join(process.cwd(), 'src');
+function sourceFiles(directory = sourceRoot): string[] {
+  return readdirSync(directory, { withFileTypes: true }).flatMap(entry => {
+    const path = join(directory, entry.name);
+    if (entry.isDirectory()) return entry.name === '__tests__' ? [] : sourceFiles(path);
+    return /\.tsx?$/.test(entry.name) && !/\.test\.tsx?$/.test(entry.name) ? [path] : [];
+  }).sort();
+}
+const sources = Object.fromEntries(sourceFiles().map(path => [path.slice(sourceRoot.length + 1), readFileSync(path, 'utf8')]));
+const readSource = (path: string) => sources[path];
+function openingTagWithTestId(source: string, anchor: string): string {
+  const index = source.indexOf(anchor);
+  expect(index).toBeGreaterThan(-1);
+  expect(source.lastIndexOf(anchor)).toBe(index);
+  return source.slice(source.lastIndexOf('<', index), source.indexOf('<', index)).split('/>')[0];
+}
+function elementWithTestId(source: string, anchor: string): string {
+  const tag = openingTagWithTestId(source, anchor);
+  const start = source.indexOf(tag);
+  return source.slice(start, source.indexOf('</Button>', start) + '</Button>'.length);
+}
+const literalId = (id: string) => `testID="${id}"`;
+const idOf = (tag: string) => {
+  const match = tag.match(/testID=(?:"([^"]+)"|\{`([^`]+)`\}|\{([^}]+)\})/);
+  return match?.[1] ?? match?.[2] ?? match?.[3] ?? '<sin testID>';
+};
+const buttons = Object.entries(sources).flatMap(([path, source]) => source.split(/<Button(?=[\s>])/).slice(1).map(part => ({ path, tag: part.split('<')[0] })));
+const idsWhere = (predicate: (tag: string) => boolean) => buttons.filter(({ tag }) => predicate(tag)).map(({ tag }) => idOf(tag)).sort();
+function inventory(pattern: RegExp): Record<string, number> {
+  return Object.fromEntries(Object.entries(sources).flatMap(([path, source]) => {
+    const count = (source.match(pattern) ?? []).length;
+    return count ? [[path, count]] : [];
+  }));
+}
+const count = (pattern: RegExp) => Object.values(inventory(pattern)).reduce((sum, n) => sum + n, 0);
+
+const CTA_ROWS = [
+  ['screens/login/index.tsx', literalId('login-submit'), 'w-full h-14 rounded-16 bg-accent', ['isDisabled={submitting}', 'onPress={() => void handleSubmit()}']],
+  ['screens/register/index.tsx', literalId('register-submit'), 'w-full h-14 rounded-16 bg-accent', ['isDisabled={!terms || submitting}', 'onPress={() => void handleSubmit()}']],
+  ['screens/forgot/index.tsx', literalId('forgot-submit'), 'w-full h-14 rounded-16 bg-accent', ["isDisabled={email.trim() === '' || submitting}", 'onPress={() => void submit()}']],
+  ['screens/reset-password/index.tsx', literalId('reset-submit'), 'w-full h-14 rounded-16 bg-accent', ['isDisabled={submitting}', 'onPress={() => void handleSubmit()}']],
+  ['screens/alert-detail/index.tsx', literalId('alert-detail-ack'), 'w-full h-14 rounded-16 bg-accent', ['accessibilityRole="button"', 'isDisabled={acking}', 'onPress={() => void handleAck()}']],
+  ['screens/welcome/index.tsx', literalId('welcome-get-started'), 'w-full h-14 rounded-16 bg-accent', ["onPress={() => router.push('/register')}"]],
+  ['screens/pairing/index.tsx', literalId('pairing-submit'), 'w-full h-14 rounded-16 bg-accent', ["isDisabled={code.trim() === '' || claiming}", 'onPress={() => void handleClaim()}']],
+  ['screens/home/index.tsx', literalId('weekly-activity-day-map'), 'w-full h-14 rounded-16 bg-accent', ["onPress={() => router.push('/map')}"]],
+  ['components/celebration.tsx', 'testID={primary.testID}', 'w-full h-14 rounded-16 bg-accent', ['onPress={primary.onPress}']],
+  ['components/empty-state.tsx', 'testID={`${testID}-action`}', 'h-14 rounded-16 bg-accent', ['onPress={action.onPress}']],
+  ['screens/add-pet/index.tsx', literalId('add-pet-submit'), 'h-14 rounded-16 bg-accent', ['isDisabled={submitting}', 'onPress={() => void handleSubmit()}']],
+  ['screens/add-reminder/index.tsx', literalId('add-reminder-submit'), 'h-14 rounded-16 bg-accent', ['isDisabled={submitting}', 'onPress={() => void handleSubmit()}']],
+  ['screens/docs-upload-form/index.tsx', literalId('docs-upload-submit'), 'h-14 rounded-16 bg-accent', ['isDisabled={uploading}', 'onPress={() => void submitDocument()}']],
+  ['screens/geofence-editor/index.tsx', literalId('geofence-editor-save'), 'h-14 rounded-16 bg-accent', ["isDisabled={busy || name.trim() === ''}", 'onPress={() => void save()}']],
+  ['screens/geofences/index.tsx', literalId('geofences-add'), 'h-14 rounded-16 bg-accent', ['isDisabled={busy || atLimit}']],
+  ['screens/weight-log/index.tsx', literalId('weight-submit'), 'h-14 rounded-16 bg-accent', ['isDisabled={submitting}', 'onPress={() => void handleSubmit()}']],
+] as const;
+const NEUTRAL_ROWS = [
+  ['screens/welcome/index.tsx', literalId('welcome-have-account'), 'w-full h-14 rounded-16 border-2 border-lip-gray bg-surface', null, 'Text', 'text-17 font-bold text-accent-strong', ["onPress={() => router.push('/login')}"]],
+  ['screens/forgot/index.tsx', literalId('forgot-resend'), 'w-full h-14 rounded-16 border-2 border-lip-gray bg-surface', 'secondary', 'Text', 'text-17 font-extrabold text-foreground', ['isDisabled={submitting}', 'onPress={() => void send(submittedEmail)}']],
+  ['components/celebration.tsx', 'testID={secondary.testID}', 'w-full h-14 rounded-16 border-2 border-lip-gray bg-surface', null, 'Text', 'text-17 font-extrabold text-foreground', ['onPress={secondary.onPress}']],
+  ['screens/docs-upload-form/index.tsx', literalId('docs-upload-cancel'), 'h-14 rounded-16 border-2 border-lip-gray bg-surface', 'outline', 'Text', 'text-17 font-extrabold text-foreground', ['isDisabled={uploading}', 'onPress={() => router.back()}']],
+  ['screens/reminders/index.tsx', literalId('reminders-delete-cancel'), 'w-full h-14 rounded-16 border-2 border-lip-gray bg-surface', 'outline', 'Text', 'text-17 font-extrabold text-foreground', ['onPress={dismissDeleteSheet}']],
+  ['screens/alert-detail/index.tsx', literalId('alert-detail-view-map'), 'h-13 rounded-16 border-2 border-lip-gray bg-surface', 'secondary', 'Button.Label', 'text-base font-extrabold text-foreground', ['accessibilityRole="button"']],
+] as const;
+const primaryIds = CTA_ROWS.map(([, anchor]) => idOf(anchor)).sort();
+const neutralIds = NEUTRAL_ROWS.map(([, anchor]) => idOf(anchor)).sort();
+const ctaFiles = CTA_ROWS.map(([path]) => path).sort();
+const consumers = [...ctaFiles, 'screens/reminders/index.tsx'].sort();
+const neutralInventory = ['${rowId}-ack', 'add-meal-time-button', 'alert-detail-view-map', 'docs-upload-cancel', 'forgot-resend', 'meal-time-edit-${index}', 'reminders-delete-cancel', 'secondary.testID', 'welcome-have-account'];
+const radii = {
+  'components/celebration.tsx': 2,
+  'components/empty-state.tsx': 1,
+  'screens/add-pet/index.tsx': 1,
+  'screens/add-reminder/index.tsx': 1,
+  'screens/alert-detail/index.tsx': 2,
+  'screens/docs-upload-form/index.tsx': 2,
+  'screens/forgot/index.tsx': 3,
+  'screens/geofence-editor/index.tsx': 1,
+  'screens/geofences/index.tsx': 1,
+  'screens/home/index.tsx': 1,
+  'screens/login/index.tsx': 1,
+  'screens/pairing/index.tsx': 1,
+  'screens/register/index.tsx': 1,
+  'screens/reminders/index.tsx': 4,
+  'screens/reset-password/index.tsx': 1,
+  'screens/weight-log/index.tsx': 1,
+  'screens/welcome/index.tsx': 2,
+};
+
+it.each(CTA_ROWS)('#177 R3.1: %s pinta la receta cta de %s', (path, anchor, classes, keeps) => {
+  const tag = openingTagWithTestId(readSource(path), anchor);
+  expect(tag).toContain(`className="${classes}"`);
+  expect(tag).toContain('style={chunkyLip.primary}');
+  for (const keep of keeps) expect(tag).toContain(keep);
+  for (const forbidden of ['border-b-4', 'border-black', 'rounded-xl', 'min-h-11']) expect(tag).not.toContain(forbidden);
+});
+it.each(CTA_ROWS)('#177 R3.2: %s pinta la etiqueta Text 17/800 de %s', (path, anchor) => {
+  const element = elementWithTestId(readSource(path), anchor);
+  expect(element).toContain('<Text className="text-17 font-extrabold text-accent-foreground">');
+  expect(element).not.toContain('Button.Label');
+  expect(readSource(path)).toMatch(/import \{[^}]*\bText\b[^}]*\} from 'react-native';/);
+});
+it('#177 R3.3: el inventario de Button con bg-accent está cerrado', () => {
+  expect(idsWhere(tag => /\bbg-accent(?=[\s'"`])/.test(tag))).toEqual([...primaryIds, 'reminders-add-link'].sort());
+});
+it.each(NEUTRAL_ROWS)('#177 R4.1: %s pinta la receta neutra de %s', (path, anchor, classes, variant, _label, _labelClasses, keeps) => {
+  const tag = openingTagWithTestId(readSource(path), anchor);
+  expect(tag).toContain(`className="${classes}"`);
+  expect(tag).toContain('style={chunkyLip.neutral}');
+  if (variant === null) expect(tag).not.toContain('variant=');
+  else expect(tag).toContain(`variant="${variant}"`);
+  for (const keep of keeps) expect(tag).toContain(keep);
+  for (const forbidden of ['border-b-6', 'border-b-4', 'border-black', 'border-accent', 'bg-transparent', 'rounded-xl']) expect(tag).not.toContain(forbidden);
+});
+it.each(NEUTRAL_ROWS)('#177 R4.2: %s pinta la etiqueta de %s', (path, anchor, _classes, _variant, label, classes) => {
+  const element = elementWithTestId(readSource(path), anchor);
+  expect(element).toContain(`<${label} className="${classes}">`);
+  if (label === 'Text') {
+    expect(element).not.toContain('Button.Label');
+    expect(readSource(path)).toMatch(/import \{[^}]*\bText\b[^}]*\} from 'react-native';/);
+  } else expect(element).toContain('<Map size={18} color={foreground} />');
+});
+it('#177 R4.3: conserva los nueve secundarios neutros', () => {
+  expect(idsWhere(tag => ((tag.includes('variant="outline"') || tag.includes('variant="secondary"')) && !tag.includes('bg-accent-soft') && !tag.includes('bg-default')) || tag.includes('border-lip-gray'))).toEqual(neutralInventory);
+});
+it('#177 R5.1: el compacto conserva talla, etiqueta e icono con labio de tres', () => {
+  const source = readSource('screens/reminders/index.tsx');
+  const tag = openingTagWithTestId(source, literalId('reminders-add-link'));
+  expect(tag).toContain('className="rounded-xl bg-accent h-10 gap-1.5 px-3.5"');
+  expect(tag).toContain('style={chunkyLip.primaryCompact}');
+  expect(tag).not.toMatch(/border-b-4|border-black\/25/);
+  const element = elementWithTestId(source, literalId('reminders-add-link'));
+  expect(element).toContain('<Button.Label className="text-sm font-extrabold text-accent-foreground">');
+  expect(element).toContain('<Plus size={16} color={accentForeground} />');
+});
+it('#177 R5.2: el tile conserva la esquina y recibe el labio con el orden exacto', () => {
+  const tag = openingTagWithTestId(readSource('screens/forgot/index.tsx'), literalId('forgot-lock-tile'));
+  expect(tag).toContain('className="size-13 items-center justify-center bg-accent rounded-16"');
+  expect(tag).toContain('style={[CONTINUOUS_CORNER, chunkyLip.primary]}');
+  expect(tag).not.toMatch(/border-b-4|border-black\/25/);
+});
+it('#177 R6.2: recuentos de etiquetas', () => {
+  // #177 R6
+  expect(count(/<Button\.Label/g)).toBe(35 - 15);
+  expect(count(/Button\.Label/g)).toBe(82 - 30);
+  expect(count(/text-17/g)).toBe(8 + 15);
+  expect(count(/<Text className="text-17 font-extrabold text-accent-foreground">/g)).toBe(5 + 11);
+  expect(count(/text-17 font-extrabold text-foreground/g)).toBe(3 + 3);
+  expect(count(/<Text className="text-17 font-bold text-accent-strong">/g)).toBe(0 + 1);
+});
+it('#177 R7.1: inventarios de los labios de borde restantes', () => {
+  expect(inventory(/border-b-4/g)).toEqual({});
+  expect(inventory(/border-black\/25/g)).toEqual({ 'screens/add-reminder/index.tsx': 1, 'screens/meal-schedule/index.tsx': 1 });
+  expect(inventory(/\bborder-b-6\b/g)).toEqual({ 'screens/meal-schedule/index.tsx': 1 });
+  expect(count(/border-lip-gray/g)).toBe(10);
+});
+it('#177 R7.2: inventarios de las dos recetas de primario', () => {
+  expect(inventory(/rounded-16 bg-accent(?=[\s'"`])/g)).toEqual(Object.fromEntries(ctaFiles.map(path => [path, 1])));
+  expect(inventory(/rounded-xl bg-accent(?=[\s'"`])/g)).toEqual({ 'screens/reminders/index.tsx': 1 });
+});
+it('#177 R7.3: inventario de los veintiséis radios de dieciséis', () => {
+  expect(inventory(/\brounded-16\b/g)).toEqual(radii);
+  expect(count(/\brounded-16\b/g)).toBe(26);
+});
+it('#177 R7.4: solo la definición y los diecisiete consumidores usan el hook', () => {
+  expect(Object.keys(inventory(/useChunkyLip/g)).sort()).toEqual([...consumers, 'theme/chunky-lip.ts'].sort());
+  for (const path of consumers) expect((readSource(path).match(/const chunkyLip = useChunkyLip\(\);/g) ?? []).length).toBe(1);
+});
+it('#177 R7.5: inventario de los tres estilos y el tile', () => {
+  expect(inventory(/style=\{chunkyLip\.primary\}/g)).toEqual(Object.fromEntries(ctaFiles.map(path => [path, 1])));
+  expect(inventory(/style=\{chunkyLip\.neutral\}/g)).toEqual(Object.fromEntries(NEUTRAL_ROWS.map(([path]) => [path, 1]).sort()));
+  expect(inventory(/style=\{chunkyLip\.primaryCompact\}/g)).toEqual({ 'screens/reminders/index.tsx': 1 });
+  expect(inventory(/chunkyLip\.primary\b/g)).toEqual(Object.fromEntries(ctaFiles.map(path => [path, path === 'screens/forgot/index.tsx' ? 2 : 1])));
+});
+it.each([
+  ['primary', primaryIds], ['neutral', neutralIds], ['primaryCompact', ['reminders-add-link']],
+] as const)('#177 R8.1: solo la tabla recibe chunkyLip.%s', (style, ids) => {
+  expect(idsWhere(tag => tag.includes(`style={chunkyLip.${style}}`))).toEqual(ids);
+});
+it('#177 R8.2: Alertas y Horario quedan fuera de useChunkyLip', () => {
+  for (const path of ['screens/alerts/index.tsx', 'screens/meal-schedule/index.tsx']) expect(readSource(path)).not.toMatch(/chunkyLip|useChunkyLip/);
+});
+it.each([
+  ['screens/alerts/index.tsx', 'h-8.5 rounded-10 border-2 border-b-5 border-lip-gray bg-surface px-3'],
+  ['screens/meal-schedule/index.tsx', 'h-13.5 flex-1 rounded-14 border-2 border-b-6 border-lip-gray bg-surface'],
+  ['screens/meal-schedule/index.tsx', 'h-9.75 rounded-10 border-2 border-b-5 border-lip-gray bg-surface px-3.5'],
+  ['screens/add-reminder/index.tsx', 'border-b-3 border-black/25'],
+  ['screens/meal-schedule/index.tsx', 'border-b-5 border-black/25'],
+  ['screens/meal-schedule/index.tsx', 'variant="tertiary"'],
+])('#177 R8.3: %s conserva el ancla positiva %s', (path, anchor) => {
+  expect(readSource(path).split(anchor).length - 1).toBe(1);
+});
+it('#177 R8.4: destructivos, tonales y reintentos no reciben labio', () => {
+  const excluded = ['device-unpair', 'reminders-delete-confirm', 'profile-sign-out', 'add-pet-photo', 'geofence-editor-delete', 'lost-mode-button'];
+  const tags = buttons.filter(({ tag }) => excluded.includes(idOf(tag)) || /-retry$/.test(idOf(tag)));
+  for (const id of excluded) expect(tags.some(({ tag }) => idOf(tag) === id)).toBe(true);
+  for (const { tag } of tags) expect(tag).not.toMatch(/chunkyLip|border-b-/);
+});
+
+const preservedLines = [
+  "    - **Chip seleccionado** (fidelidad al canvas, #178): cápsula `rounded-full bg-accent border-b-3 border-black/25`; el chip sin seleccionar no lleva labio.",
+  "    - **Secundarios de Horario** (fidelidad al canvas, #179): «Editar» `h-9.75 rounded-10 border-2 border-b-5 border-lip-gray bg-surface` y «Añadir comida» `h-13.5 rounded-14 border-2 border-b-6 border-lip-gray bg-surface`, con el labio dentro del alto; «Generar plan» es tonal de la categoría violeta y sin labio, porque el labio del artboard (`rgba(91,63,163,0.35)`) no tiene token.",
+  "    - **Sin labio**: los tonales (`bg-accent-soft`, `bg-default`), los",
+  "    - **Secundario compacto de fila** (#174): el ack de cada fila abierta de Alertas lleva `h-8.5 rounded-10 border-2 border-b-5 border-lip-gray bg-surface px-3`, etiqueta `text-xs font-extrabold text-foreground` y `hitSlop={TOUCH_SLOP}` (34 + 12 = 46 de diana). Es la única excepción a la receta del secundario neutro; el inventario de #166 R3 lo lista por su `testID`.",
+  "    - Primario del detalle de alerta (#180): ack con labio, h-14 rounded-16, etiqueta text-17 font-extrabold; el secundario «Ver en el mapa» es h-13 rounded-16 con el icono Map."
+];
+const guidelines = readFileSync(join(process.cwd(), '..', 'docs/ui-guidelines.md'), 'utf8');
+const bodyRule = guidelines.split('13. **Botón con cuerpo**')[1].split('## Animación (decisiones por defecto)')[0];
+it('#177 R11.1: la carta declara la receta global y conserva sus excepciones', () => {
+  for (const literal of [
+    'sombra sólida sin desenfoque', '`--lip`', '`--color-lip`', '`--color-lip-gray`', 'fuera del cuerpo',
+    '`h-14 rounded-16 bg-accent`', '`style={chunkyLip.primary}`', '`text-17 font-extrabold text-accent-foreground`',
+    '`h-14 rounded-16 border-2 border-lip-gray bg-surface`', '`style={chunkyLip.neutral}`',
+    '**Compacto**', '`reminders-add-link`', '`chunkyLip.primaryCompact`', '**Tile con labio**', '`forgot-lock-tile`',
+    '**Deshabilitado**', '`h-14 rounded-16 bg-default`', '`text-17 font-extrabold text-muted`', '#189', 'Text', 'Enmienda #187',
+    'El tile del candado lleva `bg-accent` antes de `rounded-16` para no contar como primario',
+  ]) expect(bodyRule).toContain(literal);
+  for (const line of preservedLines) expect(bodyRule).toContain(line);
+});
+it('#177 R11.2: la carta nombra el radio global fuera de la escala', () => {
+  const rule = guidelines.split('\n').find(line => line.includes('Fuera de la escala, por fidelidad al canvas (#177):')) ?? '';
+  for (const literal of ['rounded-16', '56', 'tile del candado', '40', 'rounded-xl']) expect(rule).toContain(literal);
+  expect(guidelines).toContain('**Control, tile, input, botón y píldora de dato** → `rounded-xl`');
+});
+it('#177 R11.3: la enmienda de cuenta actualiza el tile y retira la receta vieja', () => {
+  const paragraph = guidelines.split('**El candado lleva labio.**')[1].split('**La CTA va al pie.**')[0];
+  expect(paragraph).toContain('`bg-accent rounded-16`');
+  expect(paragraph).toContain('`style={[CONTINUOUS_CORNER, chunkyLip.primary]}`');
+  expect(paragraph).not.toContain('border-b-4');
+  for (const section of guidelines.split(/(?=^## )/m)) {
+    if (/^## Enmienda #(?:172|174|180)\b/.test(section)) continue;
+    const lines = section.split('\n').filter(line => !line.includes('**Chip seleccionado**'));
+    expect(lines.join('\n')).not.toContain('border-b-4');
+  }
+});
+it('#177 R11.4: la carta añade la enmienda sin autoaprobarla', () => {
+  const section = guidelines.split('## Enmienda #177 — Receta global de botones')[1] ?? '';
+  expect(section).toContain('Directiva del humano');
+  expect(section).toContain('**Qué cambia**');
+  expect(section).toContain('specs/mobile-chunky-cta-canvas-fidelity/requirements.md');
+  expect(section).toMatch(/^- \[[ xX]\] Enmienda #177 aprobada por humano/m);
+});
+it('#177 R11.5: la spec de #166 añade el bloque de sustitución', () => {
+  const oldSpec = readFileSync(join(process.cwd(), '..', 'specs/mobile-chunky-cta/requirements.md'), 'utf8');
+  const section = oldSpec.split('## Enmienda #177 — Receta global de botones')[1] ?? '';
+  for (const literal of ['R2', 'R3', 'reemplaza', 'consistency-classnames.test.ts', 'en su sitio', 'mobile-chunky-cta-canvas-fidelity']) expect(section).toContain(literal);
+  expect(section).toMatch(/^- \[[ xX]\] Enmienda #177 aprobada por humano/m);
+});
+it('#177 R12.1/R12.2: los dieciocho ficheros respetan los guards de la carta', () => {
+  for (const path of [...consumers, 'theme/chunky-lip.ts']) {
+    const source = readSource(path);
+    expect(source).not.toMatch(/(?:bg|text|border|rounded|h|w|size|p|m|gap)-\[[^\]]+\]/);
+    expect(source).not.toMatch(/#[\dA-Fa-f]{3,8}\b(?! R\d)/);
+    expect(source).not.toMatch(/StyleSheet|shadowColor|shadowOffset|shadowOpacity|shadowRadius|elevation\s*:/);
+  }
+  expect('chunky-lip.ts useChunkyLip').not.toContain('shadow');
+});
+it('#177 R12.3: cada comentario de la feature nombra su requisito', () => {
+  for (const path of [...consumers, 'theme/chunky-lip.ts']) expect(readSource(path)).not.toMatch(/#177(?! R\d)/);
+  expect((readSource('screens/welcome/index.tsx').match(/text-accent-strong/g) ?? []).length).toBe(2);
+});

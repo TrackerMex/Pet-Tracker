@@ -292,7 +292,7 @@ describe('#185 R9 (antes #158 R5): selector y formulario de subida', () => {
     expect(screen.getByTestId('docs-upload-file')).toHaveTextContent('vacuna.pdf');
   });
 
-  it('declara las props, clases y fecha civil de los controles', async () => {
+  it('declara las props, clases y fecha civil de los controles (enmendado por #177 R10)', async () => {
     jest.useFakeTimers();
     jest.setSystemTime(new Date('2026-10-09T12:00:00Z'));
     await openUploadForm();
@@ -316,18 +316,18 @@ describe('#185 R9 (antes #158 R5): selector y formulario de subida', () => {
     expect(screen.getByTestId('docs-date-input').props.placeholder).toBe('AAAA-MM-DD');
     const submit = screen.getByTestId('docs-upload-submit');
     expect(submit).toHaveTextContent('Subir documento');
-    expect(submit.props.className).toEqual(expect.stringContaining('rounded-xl'));
+    expect(submit.props.className).toEqual(expect.stringContaining('h-14 rounded-16 bg-accent'));
     expect(submit.props.className).toEqual(expect.stringContaining('bg-accent'));
     const submitLabel = within(submit).getByText('Subir documento');
-    expect(submitLabel.props.className).toEqual(expect.stringContaining('font-bold'));
+    expect(submitLabel.props.className).toEqual(expect.stringContaining('text-17 font-extrabold'));
     expect(submitLabel.props.className).toEqual(expect.stringContaining('text-accent-foreground'));
     const cancel = screen.getByTestId('docs-upload-cancel');
     expect(cancel).toHaveTextContent('Cancelar');
-    expect(cancel.props.className).toEqual(expect.stringContaining('rounded-xl'));
+    expect(cancel.props.className).toEqual(expect.stringContaining('h-14 rounded-16 border-2 border-lip-gray bg-surface'));
     expect(cancel.props.className).toEqual(expect.stringContaining('button__root--variant-outline'));
     const cancelLabel = within(cancel).getByText('Cancelar');
-    expect(cancelLabel.props.className).toEqual(expect.stringContaining('font-semibold'));
-    expect(cancelLabel.props.className).toEqual(expect.stringContaining('button__label--variant-outline'));
+    expect(cancelLabel.props.className).toEqual(expect.stringContaining('text-17 font-extrabold'));
+    expect(cancelLabel.props.className).toEqual(expect.stringContaining('text-foreground'));
   });
 
   it.each([{ docs: [] }, { docs: [docOne] }])('cancelar reinicia los campos sin red con lista %j', async ({ docs }) => {
@@ -737,10 +737,10 @@ describe('#185 R6: espacio etiqueta-input', () => {
 describe('#185 R8: clases de botón, etiqueta e input intactas', () => {
   // #185 R8: RNTL 14 expone hosts con clases de HeroUI; la fuente conserva las props exactas.
   it.each([
-    ['submit', 1, 'rounded-xl bg-accent border-b-4 border-black/25'],
-    ['submitLabel', 1, 'font-bold text-accent-foreground'],
-    ['cancel', 1, 'rounded-xl border-2 border-b-6 border-lip-gray bg-surface'],
-    ['cancelLabel', 1, 'font-semibold'],
+    ['submit', 1, 'h-14 rounded-16 bg-accent'],
+    ['submitLabel', 1, 'text-17 font-extrabold text-accent-foreground'],
+    ['cancel', 1, 'h-14 rounded-16 border-2 border-lip-gray bg-surface'],
+    ['cancelLabel', 1, 'text-17 font-extrabold text-foreground'],
     ['labels', 8, 'text-2xs font-semibold text-foreground'],
     ['inputs', 4, 'rounded-xl bg-default'],
   ] as const)('conserva %s sin alterar sus clases', (row, count, expected) => {
@@ -753,7 +753,10 @@ describe('#185 R8: clases de botón, etiqueta e input intactas', () => {
     };
     const submit = openingTag('docs-upload-submit');
     const cancel = openingTag('docs-upload-cancel');
-    const buttonLabels = [...source.matchAll(/<Button\.Label\s+className="([^"]+)"/g)];
+    const buttonLabels = [submit, cancel].map(tag => {
+      const start = source.indexOf(tag);
+      return source.slice(start, source.indexOf('</Button>', start)).match(/<(?:Button\.Label|Text)\s+className="([^"]+)"/);
+    });
     const classes = {
       submit: [submit.match(/className="([^"]+)"/)?.[1]],
       submitLabel: [buttonLabels[0]?.[1]],
