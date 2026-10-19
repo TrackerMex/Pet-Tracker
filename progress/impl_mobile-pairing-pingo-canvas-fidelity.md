@@ -179,3 +179,33 @@ mobile-pet-tracker/src/theme/global.css
 H1–H3 (Android, reduce motion y comparación con canvas) siguen al humano, igual que fps en release según los límites de la spec. No se verificó fidelidad visual desde tests ni se usó Expo Go. La compilación uniwind de border-3/size-37.5 se conserva acreditada por la ejecución inicial, sin repetirla.
 
 Última acción de esta ejecución: crear progress/impl_mobile-pairing-pingo-canvas-fidelity.done con una sola línea, `/home/claude/sites/Pet-Tracker-wt-188/progress/impl_mobile-pairing-pingo-canvas-fidelity.md`. El marcador indica que terminó esta ejecución bloqueada, no que se haya aprobado el Cierre.
+
+## Excepción 5 (import, typecheck)
+
+Estado: superada por el leader. El paso 4 se reejecutó con el criterio correcto (ver abajo). Commit A: `c0e2c93a`, `refactor(pairing): read animated style from the public reanimated entry (R3)`. Commit B: `traceability.md` y este reporte, con el hash de A. La parada del paso 4 se conserva como registro: el criterio «sin errores» del encargo era erróneo, porque esa línea la imprime `init.sh`; `expo lint` no imprime nada en verde.
+
+Cambio (línea 14 de `mobile-pet-tracker/src/screens/pairing/index.test.tsx`, único cambio del diff):
+
+- antes: `import { getAnimatedStyle } from 'react-native-reanimated/src/jestUtils';`
+- después: `import { getAnimatedStyle } from 'react-native-reanimated';`
+
+Verificación, secuencial y sin pipes:
+
+1. `git diff` del fichero: un único cambio, en la línea 14.
+2. `bun run --cwd /home/claude/sites/Pet-Tracker-wt-188/mobile-pet-tracker typecheck` (`tsc --noEmit`): código de salida 0.
+3. `bun run --cwd /home/claude/sites/Pet-Tracker-wt-188/mobile-pet-tracker test -- src/screens/pairing/index.test.tsx`: código de salida 0. bun descarta el `--` y ejecuta `jest src/screens/pairing/index.test.tsx`, así que solo corre ese fichero. Resultado: `PASS src/screens/pairing/index.test.tsx`, `Test Suites: 1 passed, 1 total`, `Tests:       88 passed, 88 total`, sin skipped ni fallidos.
+4. `bun run --cwd /home/claude/sites/Pet-Tracker-wt-188/mobile-pet-tracker lint > /home/claude/sites/Pet-Tracker-wt-188/progress/lint-188-exc5.log 2>&1; echo $?`: código de salida 0. Contenido literal del log:
+
+```text
+$ expo lint
+```
+
+El log no contiene la línea «sin errores» que exige el encargo. Esa única línea es la cabecera que bun imprime al ejecutar un script; expo lint no imprimió nada más. Según el encargo, un log sin esa línea es fallo, así que el paso 4 falla y no se hace commit.
+
+Datos para decidir: el cierre anterior de este branch aceptó `bunx expo lint --no-cache` con código 0 y log de 0 bytes (sin cabecera de bun). Esta corrida, con código 0 y sin salida de eslint, no separa un lint limpio de un SIGKILL por OOM que sale 0, riesgo conocido de expo lint.
+
+Diagnóstico adicional, no sustituye al gate: `bunx eslint --no-cache src/screens/pairing/index.test.tsx` en `mobile-pet-tracker`: código de salida 0, sin salida.
+
+`graphify update .` tras el cambio: código de salida 0 (solo toca `graphify-out/`, ignorado por git).
+
+Lint del leader sobre el mismo cambio: `bunx expo lint --no-cache > progress/lint-188-exc5.log 2>&1`, código de salida 0, log de 0 bytes, sin `Failed to run` ni `SIGKILL`. La verificación completa del HEAD de cierre queda en `progress/init-188.log` y `progress/init-188.exit`.
