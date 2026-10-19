@@ -109,10 +109,10 @@ function SelectionProbe() {
   return null;
 }
 
-async function renderAddReminder(selected = true) {
+async function renderAddReminder(selected = true, language: 'en' | 'es' = 'es') {
   return render(
     <HeroUINativeProvider>
-      <LanguageProvider initial="es">
+      <LanguageProvider initial={language}>
         <SelectedPetProvider>
           {selected ? <SelectionProbe /> : null}
           <HeaderHeightContext.Provider value={91}>
@@ -315,7 +315,7 @@ describe('R9: guardar con validación y degradación por kind', () => {
     jest.useRealTimers();
   });
 
-  it('requires a non-blank title without calling the API', async () => {
+  it('#186 R5: título vacío muestra su error de campo sin bloquear', async () => {
     mockCreateReminder.mockResolvedValue({ kind: 'error' });
     await renderAddReminder();
     await waitFor(() => expect(screen.getByTestId('title-input')).toBeVisible());
@@ -323,13 +323,13 @@ describe('R9: guardar con validación y degradación por kind', () => {
     await fireEvent.changeText(screen.getByTestId('title-input'), '   ');
     await fireEvent.press(screen.getByTestId('add-reminder-submit'));
 
-    expect(screen.getByTestId('add-reminder-error')).toHaveTextContent(
-      'El título es obligatorio',
-    );
+    await waitFor(() => expect(screen.queryByTestId('title-input-message')).toHaveTextContent('El título es obligatorio'));
+    expect(screen.queryByTestId('add-reminder-error')).toBeNull();
+    expect(screen.getByTestId('add-reminder-submit')).not.toBeDisabled();
     expect(mockCreateReminder).not.toHaveBeenCalled();
   });
 
-  it('requires a selected date without calling the API', async () => {
+  it('#186 R5: fecha ausente muestra su error bajo la columna', async () => {
     mockCreateReminder.mockResolvedValue({ kind: 'error' });
     await renderAddReminder();
     await waitFor(() => expect(screen.getByTestId('title-input')).toBeVisible());
@@ -337,13 +337,18 @@ describe('R9: guardar con validación y degradación por kind', () => {
     await fireEvent.changeText(screen.getByTestId('title-input'), 'Rabies');
     await fireEvent.press(screen.getByTestId('add-reminder-submit'));
 
-    expect(screen.getByTestId('add-reminder-error')).toHaveTextContent(
-      'Elige una fecha',
-    );
+    await waitFor(() => expect(screen.queryByTestId('date-field-message')).toHaveTextContent('Elige una fecha'));
+    expect(screen.queryByTestId('add-reminder-error')).toBeNull();
+    expect(screen.getByTestId('add-reminder-submit')).not.toBeDisabled();
+    const field = screen.getByTestId('date-field');
+    expect(field.children).toHaveLength(2);
+    expect(field.parent!.props.className).toBe('flex-3 gap-1.5');
+    expect(within(field.parent!).queryByTestId('date-field-message')).toHaveTextContent('Elige una fecha');
+    expect(within(field).queryByTestId('date-field-message')).toBeNull();
     expect(mockCreateReminder).not.toHaveBeenCalled();
   });
 
-  it('rejects a combined date-time that is not in the future', async () => {
+  it('#186 R5: fecha pasada muestra su error de campo sin bloquear', async () => {
     mockCreateReminder.mockResolvedValue({ kind: 'error' });
     await renderAddReminder();
     await waitFor(() => expect(screen.getByTestId('title-input')).toBeVisible());
@@ -352,9 +357,9 @@ describe('R9: guardar con validación y degradación por kind', () => {
     await pickDate(new Date(2026, 7, 24, 12, 0));
     await fireEvent.press(screen.getByTestId('add-reminder-submit'));
 
-    expect(screen.getByTestId('add-reminder-error')).toHaveTextContent(
-      'La fecha debe ser futura',
-    );
+    await waitFor(() => expect(screen.queryByTestId('date-field-message')).toHaveTextContent('La fecha debe ser futura'));
+    expect(screen.queryByTestId('add-reminder-error')).toBeNull();
+    expect(screen.getByTestId('add-reminder-submit')).not.toBeDisabled();
     expect(mockCreateReminder).not.toHaveBeenCalled();
   });
 
@@ -433,6 +438,58 @@ describe('R9: guardar con validación y degradación por kind', () => {
       screen.getByTestId('add-reminder-submit').props.accessibilityState,
     ).toEqual(expect.objectContaining({ disabled: true }));
   });
+  it('#186 R5: título y fecha inválidos muestran las dos filas', async () => {
+    await renderAddReminder();
+    await screen.findByTestId('title-input');
+    await fireEvent.press(screen.getByTestId('add-reminder-submit'));
+    await waitFor(() => expect(screen.queryByTestId('title-input-message')).toHaveTextContent('El título es obligatorio'));
+    expect(screen.queryByTestId('title-input-message-row')).not.toBeNull();
+    expect(screen.queryByTestId('date-field-message-row')).not.toBeNull();
+    expect(mockCreateReminder).not.toHaveBeenCalled();
+  });
+
+  it('#186 R5: conserva los mensajes hasta reenviar y después manda el payload recortado', async () => {
+    mockCreateReminder.mockReturnValue(pending());
+    await renderAddReminder();
+    await screen.findByTestId('title-input');
+    await fireEvent.press(screen.getByTestId('add-reminder-submit'));
+    await waitFor(() => expect(screen.queryByTestId('title-input-message')).toHaveTextContent('El título es obligatorio'));
+    await fireEvent.changeText(screen.getByTestId('title-input'), ' Rabies ');
+    await pickDate(new Date(2026, 7, 25, 12, 0));
+    expect(screen.queryByTestId('title-input-message')).toHaveTextContent('El título es obligatorio');
+    await fireEvent.press(screen.getByTestId('add-reminder-submit'));
+    await waitFor(() => expect(screen.getByTestId('add-reminder-submit')).toBeDisabled());
+    expect(screen.queryAllByTestId(/-message-row$/)).toHaveLength(0);
+    expect(mockCreateReminder).toHaveBeenCalledTimes(1);
+    expect(mockCreateReminder).toHaveBeenCalledWith('http://example.test/v1', 'jwt-token', 'pet-1', {
+      type: 'vaccine', title: 'Rabies', dueAt: new Date(2026, 7, 25, 9, 0).toISOString(), advanceMinutes: 0,
+    });
+  });
+
+  it('#186 R5: el 400 sigue como aviso de formulario sin mensajes de campo', async () => {
+    mockCreateReminder.mockResolvedValue({ kind: 'invalid' });
+    await renderAddReminder();
+    await screen.findByTestId('title-input');
+    await fireEvent.changeText(screen.getByTestId('title-input'), 'Rabies');
+    await pickDate(new Date(2026, 7, 25, 12, 0));
+    await fireEvent.press(screen.getByTestId('add-reminder-submit'));
+    await waitFor(() => expect(screen.queryByTestId('add-reminder-error')).toHaveTextContent('La fecha debe ser futura'));
+    expect(screen.queryAllByTestId(/-message-row$/)).toHaveLength(0);
+  });
+
+  it('#186 R5: conserva maxLength 120 en el título', async () => {
+    await renderAddReminder();
+    await screen.findByTestId('title-input');
+    expect(screen.getByTestId('title-input').props.maxLength).toBe(120);
+  });
+
+  it('#186 R5: el título inválido se traduce al inglés', async () => {
+    await renderAddReminder(true, 'en');
+    await screen.findByTestId('title-input');
+    await fireEvent.press(screen.getByTestId('add-reminder-submit'));
+    await waitFor(() => expect(screen.queryByTestId('title-input-message')).toHaveTextContent('Title is required'));
+  });
+
 });
 
 describe('#61 R10: los controles táctiles declaran TOUCH_SLOP', () => {
