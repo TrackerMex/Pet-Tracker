@@ -139,3 +139,31 @@ it('#176 R12: envuelve la acción completa y antepone Plus sin cambiar la receta
   await fireEvent.press(button);
   expect(onPress).toHaveBeenCalledTimes(1);
 });
+
+
+function blockStyle(suffix: string) {
+  expect(screen.queryByTestId(`home-empty-${suffix}`)).not.toBeNull();
+  const node = screen.getByTestId(`home-empty-${suffix}`);
+  expect(node.props.style).toBeDefined();
+  return getAnimatedStyle(node) as { opacity: number; transform: [{ translateY: number }] };
+}
+
+it('#176 R13: entra en cuatro bloques con retrasos de 0, 60, 120 y 180 ms', async () => {
+  await renderProbe({ variant: 'hero', action: { label: 'Acción', onPress: jest.fn() } });
+  const blocks = ['stage', 'title-enter', 'body-enter', 'action-wrap'];
+  for (const suffix of blocks) {
+    expect(blockStyle(suffix)).toEqual({ opacity: 0, transform: [{ translateY: 12 }] });
+  }
+  await act(async () => { jest.advanceTimersByTime(100); });
+  expect(blockStyle('action-wrap').opacity).toBe(0);
+  await act(async () => { jest.advanceTimersByTime(100); });
+  const opacities = blocks.map((suffix) => blockStyle(suffix).opacity);
+  expect(opacities[0]).toBeGreaterThan(opacities[1]);
+  expect(opacities[1]).toBeGreaterThan(opacities[2]);
+  expect(opacities[2]).toBeGreaterThanOrEqual(opacities[3]);
+  expect(opacities[3]).toBeGreaterThanOrEqual(0);
+  await act(async () => { jest.advanceTimersByTime(800); });
+  for (const suffix of blocks) {
+    expect(blockStyle(suffix)).toEqual({ opacity: 1, transform: [{ translateY: 0 }] });
+  }
+});

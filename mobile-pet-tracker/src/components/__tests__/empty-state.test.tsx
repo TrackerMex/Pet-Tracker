@@ -242,11 +242,11 @@ describe('#155 R11: los vacíos no traen movimiento ni dependencias', () => {
       "import { Image } from 'expo-image';",
       "import { Button } from 'heroui-native';",
       "import { Text, View } from 'react-native';",
-      "import Animated, { useAnimatedStyle, useReducedMotion, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';",
+      "import Animated, { useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withRepeat, withSpring, withTiming } from 'react-native-reanimated';", // (enmendado por #176 R13)
       "import { Plus } from 'reicon-react-native';", // (enmendado por #176 R12)
       "import Svg, { Circle, Ellipse, G } from 'react-native-svg';", // (enmendado por #176 R5)
       "import { useChunkyLip } from '../theme/chunky-lip';",
-      "import { MOTION_FLOAT_OFFSET_Y, MOTION_FLOAT_TIMING } from '../theme/motion';",
+      "import { MOTION_ENTRANCE_OFFSET_Y, MOTION_FADE_TIMING, MOTION_FLOAT_OFFSET_Y, MOTION_FLOAT_TIMING, MOTION_SETTLE_SPRING, MOTION_STAGGER_MS } from '../theme/motion';", // (enmendado por #176 R13)
       "import { PINGO_STAGE_PAW_OPACITY, PINGO_STAGE_SHADOW_COLOR } from '../theme/pingo-stage';", // (enmendado por #176 R5)
       "import { useThemeColors } from '../theme/use-theme-colors';", // (enmendado por #176 R5)
       "import { PingoFloat } from './pingo-float';", // (enmendado por #176 R6)
