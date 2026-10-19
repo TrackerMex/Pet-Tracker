@@ -229,7 +229,7 @@ con estos 24 `it` (el 25.º es el de R5):
 | # | Título del `it` | Qué asevera |
 |---|---|---|
 | 1 | `#187 R1: el árbol de producción no pasa text-NN a HeroUI ni a Card` | la lista de hallazgos del árbol real es `[]` |
-| 2 | `#187 R1: el escáner cubre al menos el universo medido` | pisos, no igualdades: elementos HeroUI `>= 227`, ficheros con algún elemento HeroUI `>= 28`, elementos `Card` local `>= 42`, elementos con `className` `>= 181`. Bajarlos exige decisión humana. Valores enmendados por la Enmienda E1 (§ Aprobación); los firmados eran 244 y 198 |
+| 2 | `#187 R1: el escáner cubre al menos el universo medido` | pisos, no igualdades: elementos HeroUI `>= 226`, ficheros con algún elemento HeroUI `>= 28`, elementos `Card` local `>= 42`, elementos con `className` `>= 180`. Bajarlos exige decisión humana. Valores enmendados por las Enmiendas E1 y E2 (§ Aprobación); los firmados eran 244 y 198 (E1: 227 y 181) |
 | 3 | `#187 R1: Card es el único componente local que fusiona con tailwind-merge` | los ficheros de `src` (sin tests) con `from 'tailwind-merge'` son exactamente `['components/card.tsx']` |
 | 4 | `#187 R1: los className opacos son solo los medidos` | la lista de opacos del árbol real es `['components/password-input.tsx InputGroup.Input']` |
 | 5 | `#187 R1: la premisa sigue viva: cn() de heroui-native descarta text-NN ante un color` | con `cn` de `heroui-native/utils` (`jest.requireActual`; si `tsc` no resuelve el tipo del subpath, tipar con una interfaz local `{ cn: (...inputs: string[]) => string }` y `as unknown as`): `cn('text-13 font-semibold text-muted')` es `'font-semibold text-muted'`; `cn('text-17 font-extrabold text-accent-foreground')` es `'font-extrabold text-accent-foreground'`; `cn('text-17 font-extrabold')` es `'text-17 font-extrabold'`. Las cadenas esperadas están escritas a mano; el oráculo es la librería. Si una actualización de HeroUI lo arregla, este `it` se pone rojo y avisa de que la regla puede relajarse |
@@ -540,6 +540,23 @@ Fuera de la enmienda queda una observación del reviewer, sin bloqueo: las ramas
 de array, objeto con clave de cadena, `??`/`||` y `as` del escáner no tienen fila
 de corpus propia (candidata a P14+ en una feature futura).
 
+## Enmienda E2 (2026-10-19, tras mergear origin/main)
+
+El merge de `origin/main` trajo #180, cuyo ack de `screens/alert-detail/index.tsx`
+usaba `Button.Label className="text-17 ..."`: el mismo defecto que R3 corrige en
+cinco botones, ahora en un sitio 18 que la base medida no conocía. El `it` 1 de R1
+lo halló (un hallazgo, `Button.Label text-17`) y `init.sh` salió en rojo.
+
+1. **Sitio 18.** El ack pasa a `Text` plano de react-native con la misma receta
+   (`text-17 font-extrabold text-accent-foreground`), commit
+   `e40d54b1` (`feat(#187 R3)`). Los botones `text-base` y de reintento del mismo
+   fichero no se tocan.
+2. **Pisos del `it` 2 de R1.** Sale otro `Button.Label` con `className`, así que
+   los pisos pasan de 227 a **226** (elementos HeroUI) y de 181 a **180**
+   (elementos con `className`). Ficheros (28) y Card (42) no cambian. Commit solo
+   de test `7bd23dbb`, autorizado por el humano (respuesta «Sí: 226 y 180») y
+   aplicado por él.
+
 ## Aprobación
 
 - [x] Aprobado por humano (fecha: 2026-10-18) ← gate obligatorio antes de implementar
@@ -553,4 +570,5 @@ Cualquier test o comando que lea esta casilla usa el patrón tolerante
 ## Gate humano de cierre
 
 - [X] Enmienda E1 aprobada por humano (fecha: 2026-10-18)
+- [ ] Enmienda E2 aprobada por humano (fecha: ____)
 - [X] Smoke R6 en dev build de Android hecho por el humano (fecha: 2026-10-18)
