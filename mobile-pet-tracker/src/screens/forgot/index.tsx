@@ -2,7 +2,7 @@ import { useChunkyLip } from '../../theme/chunky-lip';
 import { Image } from 'expo-image';
 import { HeaderHeightContext } from 'expo-router/react-navigation';
 import { router } from 'expo-router';
-import { Button, FieldError, Input, Label, LinkButton, TextField } from 'heroui-native';
+import { Button, Input, Label, LinkButton, TextField } from 'heroui-native';
 import { useContext, useState } from 'react';
 import { KeyboardAvoidingView, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -13,6 +13,7 @@ import { BackButton } from '../../components/back-button';
 import { PopIn } from '../../components/pop-in';
 import { PingoFloat } from '../../components/pingo-float';
 import { FormError } from '../../components/form-error';
+import { FieldErrorMessage } from '../../components/field-error-message';
 import { useTranslate } from '../../providers/language-provider';
 import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
@@ -133,9 +134,7 @@ export function ForgotScreen() {
               value={email}
               onChangeText={setEmail}
             />
-            <FieldError testID="forgot-email-error">
-              {fieldErrors.email ? <FormError testID="forgot-email-message" message={t(fieldErrors.email.labelKey, fieldErrors.email.params)} /> : null}
-            </FieldError>
+            <FieldErrorMessage testID="forgot-email" issue={fieldErrors.email} />
           </TextField>
         ) : null}
 
