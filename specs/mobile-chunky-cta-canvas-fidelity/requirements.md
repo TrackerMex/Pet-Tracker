@@ -1,6 +1,6 @@
 ---
 feature: "mobile-chunky-cta-canvas-fidelity"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [mobile, ui, spec]
 ---
 
@@ -419,18 +419,19 @@ La casilla propia está en «Gate humano de cierre» y no la marca ningún agent
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
-- D1 elegida (a, b o c): ____
-- D2 elegida (una altura de 56, o excepciones): ____
-- D3 elegida (sí a 211/167, o no): ____
-- D4 elegida (compacto y tile dentro, o fuera): ____
-- D5 elegida (fuera y feature posterior, o dentro): ____
-- D6 elegida (empty-state solo receta, o con `w-full`): ____
-- D7 elegida (17/700 o 17/800): ____
-- D8 elegida (variante en la carta, o también el `Eliminar` con sombra): ____
-- D9 elegida (valores del token, o los cambia): ____
-- D10 elegida (par asimétrico, o `confirm` sube a 56): ____
+- [x] Aprobado por humano (fecha: 2026-10-18) ← gate obligatorio antes de implementar
+- D1 elegida (a, b o c): a
+- D2 elegida (una altura de 56, o excepciones): una altura de 56
+- D3 elegida (sí a 211/167, o no): sí a 211/167 (el humano escribió «221/167»; 221 es errata: la medida exacta es 211 y R9.1 la fija así)
+- D4 elegida (compacto y tile dentro, o fuera): compacto y tile dentro
+- D5 elegida (fuera y feature posterior, o dentro): fuera y feature posterior
+- D6 elegida (empty-state solo receta, o con `w-full`): solo receta (recomendación)
+- D7 elegida (17/700 o 17/800): 17/700
+- D8 elegida (variante en la carta, o también el `Eliminar` con sombra): variante en la carta
+- D9 elegida (valores del token, o los cambia): valores del token tal cual (`#0E5E3C` / `#0B4D31`)
+- D10 elegida (par asimétrico, o `confirm` sube a 56): par asimétrico
 
+Firmado en Notion (página 3fe6115a-9b27-81dd-ab23-d801d30c762b, `Estado del gate` = Aprobado, última edición 2026-10-19T01:40:01Z, cuenta del humano).
 Cualquier test o comando que lea esta casilla usa el patrón tolerante
 `^- \[[ xX]\] Aprobado por humano`: con la casilla marcada o sin marcar da `1`.
 
