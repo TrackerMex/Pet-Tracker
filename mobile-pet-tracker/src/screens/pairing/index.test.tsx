@@ -70,6 +70,13 @@ const mockReleaseDevice = jest.mocked(releaseDevice);
 const mockUseAuth = jest.mocked(useAuth);
 const mockRouter = jest.mocked(router);
 const mockUseFocusEffect = jest.mocked(useFocusEffect);
+const mockUseReducedMotion = jest.fn<boolean, []>(() => false);
+
+jest.mock('react-native-reanimated', () => ({
+  ...jest.requireActual('react-native-reanimated'),
+  __esModule: true,
+  useReducedMotion: () => mockUseReducedMotion(),
+}));
 
 function makePet(overrides: Partial<PetProfile> = {}): PetProfile {
   return {
@@ -1052,6 +1059,7 @@ const mockNotificationAsync = jest.mocked(notificationAsync);
 describe('#188: pairing canvas fidelity', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockUseReducedMotion.mockReturnValue(false);
     process.env.EXPO_PUBLIC_API_URL = apiUrl;
     mockUseAuth.mockReturnValue({
       status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn(),
@@ -1138,6 +1146,26 @@ describe('#188: pairing canvas fidelity', () => {
       await act(async () => { jest.advanceTimersByTime(1500); });
       expect(float).toHaveAnimatedStyle({ transform: [{ translateY: 0 }] }, { shouldMatchAllProps: true });
     } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it('#188 R5: keeps rings and Pingo at rest with reduced motion at 0, 1500 and 2400 ms', async () => {
+    jest.useFakeTimers();
+    mockUseReducedMotion.mockReturnValue(true);
+    try {
+      await renderPairing();
+      const float = await screen.findByTestId('pairing-pingo-float', { includeHiddenElements: true });
+      const rings = [0, 1].map((index) => screen.getByTestId(`pairing-ring-${index}`, { includeHiddenElements: true }));
+      for (const elapsed of [0, 1500, 900]) {
+        await act(async () => { jest.advanceTimersByTime(elapsed); });
+        for (const ring of rings) {
+          expect(ring).toHaveAnimatedStyle({ opacity: 0.3, transform: [{ scale: 1 }] }, { shouldMatchAllProps: true });
+        }
+        expect(float).toHaveAnimatedStyle({ transform: [{ translateY: 0 }] }, { shouldMatchAllProps: true });
+      }
+    } finally {
+      mockUseReducedMotion.mockReturnValue(false);
       jest.useRealTimers();
     }
   });
