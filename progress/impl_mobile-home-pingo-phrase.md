@@ -118,3 +118,5 @@ Orden: R9, R8, R11, R1, R2, R3, R4, R6, R10, R7, R13, R12, R5, R14.
 - R10 verde `22219e18`: 273/273 en Inicio y función/copy (251 + 22), tsc exit 0. Sin enmiendas de ambigüedad necesarias.
 - R7 nace verde porque ya lo implementa `HomeEntrance` (permitido por el handoff): el test comprueba inicial translateY 0, fundido opacidad 0→1, retraso 0 y ausencia de escala/entrada propia en la burbuja; no se modifica producción.
 - Inventarios medidos antes de R13 (log `/tmp/pet190-inventory-before.log`): `R3_HOME=55`, `ALL_USES=570`, `SCREEN_FILES=35`. La suma esperada será 59 / 574 / 36.
+- R7 verde único `922f73cb`: 252/252, tsc exit 0; sin rojo artificial y sin producción tocada.
+- R13 rojo `5d3d019b`: 2 fallos esperados (tabla de cuatro claves ausente e inventario de `text-15` sin Inicio), 57 tests verdes. El verde sincroniza las tres listas prescritas y conserva los candados por igualdad exacta. `ALL_USES` mantiene su suma automática por bloques.
