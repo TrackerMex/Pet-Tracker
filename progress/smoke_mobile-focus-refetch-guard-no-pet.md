@@ -33,10 +33,10 @@ KO en A1 si aparece cualquier URL con `null`, por ejemplo `…/v1/pets/null` o `
 
 ## Q1: arranque en frío con mascotas
 
-Respuesta: ____ (¿el detalle de Inicio carga solo tras el arranque en frío, o hace falta cambiar de pestaña?)
+Respuesta: El arranque en frío con mascotas carga el detalle de inicio (¿el detalle de Inicio carga solo tras el arranque en frío, o hace falta cambiar de pestaña?)
 
 ## Casilla de cierre
 
-- [ ] CC4 smoke OK (cuentas A y B, fecha: ____)
+- [X] CC4 smoke OK (cuentas A y B, fecha: 2026-10-19)
 
 Marcar con `[x]` y commitear en la rama de la feature. `done` en `feature_list.json` solo tras esta casilla. El reviewer ya dio APROBADO en `progress/review_mobile-focus-refetch-guard-no-pet.md`.
