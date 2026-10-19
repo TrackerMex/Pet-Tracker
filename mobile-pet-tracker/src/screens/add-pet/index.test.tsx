@@ -75,10 +75,10 @@ function pending<T>(): Promise<T> {
   return new Promise(() => undefined);
 }
 
-async function renderAddPet() {
+async function renderAddPet(language: 'en' | 'es' = 'es') {
   return renderWithProviders(
     <HeroUINativeProvider>
-      <LanguageProvider initial="es">
+      <LanguageProvider initial={language}>
         <HeaderHeightContext.Provider value={91}>
           <AddPetScreen />
         </HeaderHeightContext.Provider>
@@ -190,15 +190,12 @@ describe('R6: alta de mascota', () => {
     ));
   });
 
-  it('validates exactly one age mode without posting', async () => {
-    mockCreatePet.mockResolvedValue({ kind: 'error' });
+  it('#186 R4: nombre vacío muestra su mensaje sin bloquear el botón ni llamar a la API', async () => {
     await renderAddPet();
-    await fireEvent.changeText(screen.getByTestId('name-input'), 'Luna');
     await fireEvent.press(screen.getByTestId('add-pet-submit'));
-
-    expect(screen.getByTestId('add-pet-error')).toHaveTextContent(
-      'Elige una fecha de nacimiento',
-    );
+    await waitFor(() => expect(screen.queryByTestId('name-input-message')).toHaveTextContent('El nombre es obligatorio'));
+    expect(screen.queryByTestId('add-pet-error')).toBeNull();
+    expect(screen.getByTestId('add-pet-submit')).not.toBeDisabled();
     expect(mockCreatePet).not.toHaveBeenCalled();
   });
 
@@ -217,7 +214,7 @@ describe('R6: alta de mascota', () => {
     expect(screen.getByTestId('approx-age-input').props.value).toBe('12');
   });
 
-  it('shows a backend error without losing typed values', async () => {
+  it('#186 R4: el 400 conserva el aviso de formulario y los valores sin mensajes de campo', async () => {
     mockCreatePet.mockResolvedValue({ kind: 'invalid' });
     await renderAddPet();
     await fireEvent.changeText(screen.getByTestId('name-input'), 'Luna');
@@ -225,10 +222,99 @@ describe('R6: alta de mascota', () => {
     await fireEvent.changeText(screen.getByTestId('approx-age-input'), '12');
     await fireEvent.press(screen.getByTestId('add-pet-submit'));
 
-    await waitFor(() => expect(screen.getByTestId('add-pet-error')).toBeVisible());
+    await waitFor(() => expect(screen.queryByTestId('add-pet-error')).toHaveTextContent('Revisa los datos de la mascota'));
+    expect(screen.queryAllByTestId(/-message-row$/)).toHaveLength(0);
     expect(screen.getByTestId('name-input').props.value).toBe('Luna');
     expect(screen.getByTestId('approx-age-input').props.value).toBe('12');
   });
+  it.each([
+    ['birthDate', 'birth-date-field', 'Elige una fecha de nacimiento'],
+    ['months', 'approx-age-input', 'Introduce una edad de 0 a 480 meses'],
+  ] as const)('#186 R4: edad en modo %s muestra el mensaje de %s', async (mode, base, message) => {
+    await renderAddPet();
+    await fireEvent.changeText(screen.getByTestId('name-input'), 'Luna');
+    if (mode === 'months') {
+      await fireEvent.press(screen.getByTestId('age-mode-months'));
+      await fireEvent.changeText(screen.getByTestId('approx-age-input'), '500');
+    }
+    await fireEvent.press(screen.getByTestId('add-pet-submit'));
+    await waitFor(() => expect(screen.queryByTestId(`${base}-message`)).toHaveTextContent(message));
+    expect(screen.queryByTestId('add-pet-error')).toBeNull();
+    expect(mockCreatePet).not.toHaveBeenCalled();
+  });
+
+  it('#186 R4: nombre y fecha inválidos muestran las dos filas a la vez', async () => {
+    await renderAddPet();
+    await fireEvent.press(screen.getByTestId('add-pet-submit'));
+    await waitFor(() => expect(screen.queryByTestId('name-input-message')).toHaveTextContent('El nombre es obligatorio'));
+    expect(screen.queryByTestId('name-input-message-row')).not.toBeNull();
+    expect(screen.queryByTestId('birth-date-field-message-row')).not.toBeNull();
+    expect(mockCreatePet).not.toHaveBeenCalled();
+  });
+
+  it('#186 R4: corregir conserva el mensaje hasta reenviar y luego manda el mismo payload', async () => {
+    await renderAddPet();
+    await fireEvent.press(screen.getByTestId('age-mode-months'));
+    await fireEvent.changeText(screen.getByTestId('approx-age-input'), '12');
+    await fireEvent.press(screen.getByTestId('add-pet-submit'));
+    await waitFor(() => expect(screen.queryByTestId('name-input-message')).toHaveTextContent('El nombre es obligatorio'));
+    await fireEvent.changeText(screen.getByTestId('name-input'), ' Luna ');
+    expect(screen.queryByTestId('name-input-message')).toHaveTextContent('El nombre es obligatorio');
+    await fireEvent.press(screen.getByTestId('add-pet-submit'));
+    await waitFor(() => expect(screen.getByTestId('add-pet-submit')).toBeDisabled());
+    expect(screen.queryAllByTestId(/-message-row$/)).toHaveLength(0);
+    expect(mockCreatePet).toHaveBeenCalledTimes(1);
+    expect(mockCreatePet).toHaveBeenCalledWith('http://example.test/v1', 'jwt-token', {
+      name: 'Luna', species: 'dog', approxAgeMonths: 12,
+    });
+  });
+
+  it.each(['birthDate', 'months'] as const)('#186 R4: modo %s no pinta el mensaje del modo inactivo', async (mode) => {
+    await renderAddPet();
+    if (mode === 'months') {
+      await fireEvent.press(screen.getByTestId('age-mode-months'));
+      await fireEvent.changeText(screen.getByTestId('approx-age-input'), '12');
+    }
+    await fireEvent.press(screen.getByTestId('add-pet-submit'));
+    await waitFor(() => expect(screen.queryByTestId('name-input-message')).toHaveTextContent('El nombre es obligatorio'));
+    expect(screen.queryByTestId(mode === 'months' ? 'birth-date-field-message' : 'approx-age-input-message')).toBeNull();
+  });
+
+  it.each([
+    ['name-input', 'El nombre es obligatorio'],
+    ['birth-date-field', 'Elige una fecha de nacimiento'],
+    ['approx-age-input', 'Introduce una edad de 0 a 480 meses'],
+  ])('#186 R4: el mensaje de %s es el último hermano del control', async (base, message) => {
+    await renderAddPet();
+    if (base === 'approx-age-input') {
+      await fireEvent.press(screen.getByTestId('age-mode-months'));
+      await fireEvent.changeText(screen.getByTestId('approx-age-input'), '500');
+    }
+    await fireEvent.press(screen.getByTestId('add-pet-submit'));
+    await waitFor(() => expect(screen.queryByTestId(`${base}-message`)).toHaveTextContent(message));
+    const control = screen.getByTestId(base);
+    const wrapper = control.parent!;
+    expect(wrapper.props.className).toBe('gap-2');
+    expect(within(wrapper).queryByTestId(`${base}-message`)).toHaveTextContent(message);
+    expect(wrapper.children[wrapper.children.length - 1]).toBe(screen.getByTestId(`${base}-error`));
+    expect(within(control).queryByTestId(`${base}-message`)).toBeNull();
+  });
+
+  it('#186 R4: conserva maxLength 120 120 32 y 3', async () => {
+    await renderAddPet();
+    expect(screen.getByTestId('name-input').props.maxLength).toBe(120);
+    expect(screen.getByTestId('breed-input').props.maxLength).toBe(120);
+    expect(screen.getByTestId('microchip-input').props.maxLength).toBe(32);
+    await fireEvent.press(screen.getByTestId('age-mode-months'));
+    expect(screen.getByTestId('approx-age-input').props.maxLength).toBe(3);
+  });
+
+  it('#186 R4: el mensaje del nombre se traduce al inglés', async () => {
+    await renderAddPet('en');
+    await fireEvent.press(screen.getByTestId('add-pet-submit'));
+    await waitFor(() => expect(screen.queryByTestId('name-input-message')).toHaveTextContent('Name is required'));
+  });
+
 });
 
 describe('R7: foto opcional tras alta', () => {
