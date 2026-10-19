@@ -1752,6 +1752,94 @@ describe('#168 R7 (enmendado por #173 R11): la identidad de la cuenta toma las m
   });
 });
 
+describe('Perfil: refetch de foco con selección vigente', () => {
+  let selectedPetId: string | null;
+
+  beforeEach(() => {
+    setupProfile168();
+    selectedPetId = null;
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    mockGetMe.mockResolvedValue({ kind: 'error' });
+    const realUseSelectedPet = selectedPetHooks.useSelectedPet;
+    jest.spyOn(selectedPetHooks, 'useSelectedPet').mockImplementation(() => ({
+      ...realUseSelectedPet(), selectedPetId,
+    }));
+  });
+
+  afterEach(() => jest.restoreAllMocks());
+
+  describe('#193 R4: Perfil sin mascota no pide detalle al enfocar', () => {
+    it('no llama a getPet durante el foco con selección nula', async () => {
+      const { queryClient } = await renderProfile();
+      await screen.findByTestId('profile-pets-empty');
+      await waitFor(() => expect(queryClient.isFetching()).toBe(0));
+      const before = mockGetPet.mock.calls.length;
+      const focus = mockUseFocusEffect.mock.calls.at(-1)?.[0];
+      expect(focus).toBeDefined();
+
+      await act(async () => { focus?.(); });
+
+      expect(mockGetPet.mock.calls.slice(before)).toEqual([]);
+    });
+  });
+
+  describe('#193 R5: Perfil con mascota refresca el detalle al enfocar', () => {
+    it('la callback original pide una vez el id seleccionado después del montaje', async () => {
+      mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+      const view = await renderProfile();
+      await screen.findByTestId('pet-chip-pet-1');
+      await waitFor(() => expect(view.queryClient.isFetching()).toBe(0));
+      const focus = mockUseFocusEffect.mock.calls.at(-1)?.[0];
+      expect(focus).toBeDefined();
+      selectedPetId = 'pet-1';
+      await view.rerender(<ProfileScreen />);
+      await waitFor(() => expect(screen.getByTestId('profile-pet-name')).toHaveTextContent('Luna'));
+      await waitFor(() => expect(view.queryClient.isFetching()).toBe(0));
+      const before = mockGetPet.mock.calls.length;
+
+      await act(async () => { focus?.(); });
+
+      expect(mockGetPet.mock.calls.slice(before)).toEqual([[apiUrl, 'jwt-token', 'pet-1']]);
+    });
+  });
+
+  describe('#193 R6: Perfil sin mascota conserva el refetch de la lista', () => {
+    it('llama una vez a listPets durante el foco', async () => {
+      const { queryClient } = await renderProfile();
+      await screen.findByTestId('profile-pets-empty');
+      await waitFor(() => expect(queryClient.isFetching()).toBe(0));
+      const before = mockListPets.mock.calls.length;
+      const focus = mockUseFocusEffect.mock.calls.at(-1)?.[0];
+      expect(focus).toBeDefined();
+
+      await act(async () => { focus?.(); });
+
+      expect(mockListPets.mock.calls.slice(before)).toEqual([[apiUrl, 'jwt-token']]);
+    });
+  });
+
+  describe('#193 R10: Perfil conserva la identidad de su callback de foco', () => {
+    it('mantiene la misma función al seleccionar y deseleccionar una mascota', async () => {
+      mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+      const view = await renderProfile();
+      await screen.findByTestId('pet-chip-pet-1');
+      await waitFor(() => expect(view.queryClient.isFetching()).toBe(0));
+      const focus = mockUseFocusEffect.mock.calls.at(-1)?.[0];
+      expect(focus).toBeDefined();
+
+      selectedPetId = 'pet-1';
+      await view.rerender(<ProfileScreen />);
+      await waitFor(() => expect(screen.getByTestId('profile-pet-name')).toHaveTextContent('Luna'));
+      expect(Object.is(focus, mockUseFocusEffect.mock.calls.at(-1)?.[0])).toBe(true);
+
+      selectedPetId = null;
+      await view.rerender(<ProfileScreen />);
+      await waitFor(() => expect(screen.getByTestId('selected-pet-id')).toHaveTextContent('none'));
+      expect(Object.is(focus, mockUseFocusEffect.mock.calls.at(-1)?.[0])).toBe(true);
+    });
+  });
+});
+
 describe('#181 R1: profile sin mascotas no muestra errores de detalle', () => {
   beforeEach(() => {
     jest.clearAllMocks();

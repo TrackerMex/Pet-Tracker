@@ -1477,6 +1477,123 @@ function SelectionProbe181() {
   return <Text testID="selected-pet-id">{selectedPetId ?? 'none'}</Text>;
 }
 
+describe('Recordatorios: refetch de foco con selección vigente', () => {
+  let selectedPetId: string | null;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    selectedPetId = null;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated', token: 'jwt-token',
+      signIn: jest.fn(), signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [makeReminder()] });
+    mockDeleteReminder.mockResolvedValue({ kind: 'error' });
+    const realUseSelectedPet = selectedPetHooks.useSelectedPet;
+    jest.spyOn(selectedPetHooks, 'useSelectedPet').mockImplementation(() => ({
+      ...realUseSelectedPet(), selectedPetId,
+    }));
+  });
+
+  afterEach(() => jest.restoreAllMocks());
+
+  describe('#193 R7: sin mascota no pide recordatorios al enfocar', () => {
+    it('no llama a listReminders durante el foco con selección nula', async () => {
+      const { queryClient } = await renderReminders();
+      await screen.findByTestId('reminders-no-pets');
+      await waitFor(() => expect(queryClient.isFetching()).toBe(0));
+      const before = mockListReminders.mock.calls.length;
+      const focus = mockUseFocusEffect.mock.calls.at(-1)?.[0];
+      expect(focus).toBeDefined();
+
+      await act(async () => { focus?.(); });
+
+      expect(mockListReminders.mock.calls.slice(before)).toEqual([]);
+    });
+  });
+
+  describe('#193 R8: con mascota refresca los recordatorios al enfocar', () => {
+    it('la callback original pide una vez el id seleccionado después del montaje', async () => {
+      mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+      const view = await renderReminders();
+      await screen.findByTestId('pet-chip-pet-1');
+      await waitFor(() => expect(view.queryClient.isFetching()).toBe(0));
+      const focus = mockUseFocusEffect.mock.calls.at(-1)?.[0];
+      expect(focus).toBeDefined();
+      selectedPetId = 'pet-1';
+      await view.rerender(<RemindersScreen />);
+      await screen.findByTestId('reminder-row-reminder-1');
+      await waitFor(() => expect(view.queryClient.isFetching()).toBe(0));
+      const before = mockListReminders.mock.calls.length;
+
+      await act(async () => { focus?.(); });
+
+      expect(mockListReminders.mock.calls.slice(before)).toEqual([[apiUrl, 'jwt-token', 'pet-1']]);
+    });
+  });
+
+  describe('#193 R9: perder foco sin mascota limpia confirmación y error', () => {
+    it.each(['confirmación', 'error'] as const)('limpia %s tras cambiar la selección a null', async (state) => {
+      selectedPetId = 'pet-1';
+      mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+      const view = await renderWithProviders(
+        <><SelectionProbe181 /><RemindersScreen /></>, { wrapper: RemindersWrapper },
+      );
+      await screen.findByTestId('reminder-row-reminder-1');
+      await waitFor(() => expect(view.queryClient.isFetching()).toBe(0));
+      const visibleId = state === 'confirmación' ? 'reminders-delete-sheet' : 'reminders-action-error';
+      if (state === 'confirmación') {
+        await fireEvent.press(screen.getByTestId('reminder-delete-reminder-1'));
+      } else {
+        await confirmDelete('reminder-1');
+      }
+      await screen.findByTestId(visibleId);
+
+      selectedPetId = null;
+      await view.rerender(<><SelectionProbe181 /><RemindersScreen /></>);
+      await waitFor(() => expect(screen.getByTestId('selected-pet-id')).toHaveTextContent('none'));
+      expect(screen.getByTestId(visibleId)).toBeVisible();
+      const focus = mockUseFocusEffect.mock.calls.at(-1)?.[0];
+      expect(focus).toBeDefined();
+      const cleanups: (() => void)[] = [];
+      await act(async () => {
+        const cleanup = focus?.();
+        if (typeof cleanup === 'function') cleanups.push(cleanup);
+      });
+
+      await blurScreen(cleanups);
+
+      expect(screen.queryByTestId('reminders-delete-sheet')).toBeNull();
+      expect(screen.queryByTestId('reminders-action-error')).toBeNull();
+    });
+  });
+
+  describe('#193 R10: Recordatorios conserva la identidad de su callback de foco', () => {
+    it('mantiene la misma función al seleccionar y deseleccionar una mascota', async () => {
+      mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+      const view = await renderWithProviders(
+        <><SelectionProbe181 /><RemindersScreen /></>, { wrapper: RemindersWrapper },
+      );
+      await screen.findByTestId('pet-chip-pet-1');
+      await waitFor(() => expect(view.queryClient.isFetching()).toBe(0));
+      const focus = mockUseFocusEffect.mock.calls.at(-1)?.[0];
+      expect(focus).toBeDefined();
+
+      selectedPetId = 'pet-1';
+      await view.rerender(<><SelectionProbe181 /><RemindersScreen /></>);
+      await screen.findByTestId('reminder-row-reminder-1');
+      expect(Object.is(focus, mockUseFocusEffect.mock.calls.at(-1)?.[0])).toBe(true);
+
+      selectedPetId = null;
+      await view.rerender(<><SelectionProbe181 /><RemindersScreen /></>);
+      await waitFor(() => expect(screen.getByTestId('selected-pet-id')).toHaveTextContent('none'));
+      expect(Object.is(focus, mockUseFocusEffect.mock.calls.at(-1)?.[0])).toBe(true);
+    });
+  });
+});
+
 describe('#181 R1: reminders sin mascotas no muestra errores de detalle', () => {
   beforeEach(() => {
     jest.clearAllMocks();
