@@ -5267,6 +5267,12 @@ describe('#155 R4: Inicio sin mascotas presenta a Pingo', () => {
     expect(mockRouter.push).toHaveBeenCalledTimes(1);
     expect(mockRouter.push).toHaveBeenCalledWith('/pets/add');
   });
+  it('#176 R2: Inicio sin mascotas usa hero dentro de home-empty', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    await renderHome();
+    const empty = await screen.findByTestId('home-empty');
+    expect(within(empty).queryByTestId('home-empty-stage')).not.toBeNull();
+  });
 });
 
 let selectPet181: ((id: string) => void) | undefined;
