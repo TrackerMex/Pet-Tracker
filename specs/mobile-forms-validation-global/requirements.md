@@ -927,7 +927,7 @@ PC** (no en la VPS, no en Expo Go), que cubre los cuatro formularios:
 **Casilla del humano** (gate propio, distinto del de la spec y del de la
 enmienda de la carta):
 
-- [ ] Prueba de humo en dev build de Android hecha por el humano (fecha: ____)
+- [X] Prueba de humo en dev build de Android hecha por el humano (fecha: 2026-10-19)
 
 El reviewer **no marca esta casilla**: puede aprobar el código, y la feature no
 pasa a `done` hasta que el humano cierre R10 (CLAUDE.md, reglas del leader).
