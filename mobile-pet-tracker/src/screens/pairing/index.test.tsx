@@ -10,7 +10,7 @@ import { notificationAsync } from 'expo-haptics';
 import { router, useFocusEffect } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
-import { Alert, DeviceEventEmitter, Platform } from 'react-native';
+import { Alert, DeviceEventEmitter, Platform, Text } from 'react-native';
 import { getAnimatedStyle } from 'react-native-reanimated/src/jestUtils';
 
 import {
@@ -1168,6 +1168,21 @@ describe('#188: pairing canvas fidelity', () => {
       mockUseReducedMotion.mockReturnValue(false);
       jest.useRealTimers();
     }
+  });
+
+  it.each([
+    ['es', 'Vincular collar'],
+    ['en', 'Pair collar'],
+  ] as const)('#188 R6: places the %s title first inside the scroll content', async (language, title) => {
+    await renderWithProviders(
+      <LanguageProvider initial={language}><PairingRoute /></LanguageProvider>,
+      { wrapper: PairingWrapper },
+    );
+    const form = screen.getByTestId('pairing-form');
+    const heading = await within(form).findByTestId('pairing-title');
+    expect(heading).toHaveTextContent(title, { exact: true });
+    const texts = form.findAllByType(Text);
+    expect(texts[0].props.testID).toBe('pairing-title');
   });
 
 });
