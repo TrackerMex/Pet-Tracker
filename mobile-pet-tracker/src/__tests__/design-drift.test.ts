@@ -1005,9 +1005,9 @@ describe('#175 R10: Documentos sin deriva', () => {
     )).toEqual([]);
   });
 
-  it('usa solo los radios card, xl, full y 24', () => {
+  it('usa solo los radios card, xl, full, 24 y 16', () => {
     expect(featureFiles.filter((file) =>
-      /\brounded-(?!(?:card|xl|full|24)\b)[\w-]+/.test(readFileSync(join(sourceRoot, file), 'utf8')),
+      /\brounded-(?!(?:card|xl|full|24|16)\b)[\w-]+/.test(readFileSync(join(sourceRoot, file), 'utf8')), // #177 R10
     )).toEqual([]);
   });
 
