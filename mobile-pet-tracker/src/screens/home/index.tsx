@@ -413,7 +413,7 @@ export function HomeScreen() {
       )}
 
       <View testID="home-content" style={{ paddingHorizontal: 24, gap: 16 }}>
-        {detail.data !== undefined && activity.data !== undefined ? (
+        {hasPets && selectedPetId !== null && detail.data?.kind === 'ok' && activity.data !== undefined ? (
           <HomeEntrance index={0} testID="home-entrance-pingo">
             <View testID="home-pingo-phrase">
               <View
