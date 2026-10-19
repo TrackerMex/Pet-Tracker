@@ -17,3 +17,15 @@ describe('#190 R11: token de la cola de la burbuja', () => {
     expect(css).toMatch(/--radius-tile: 18px;\s*--radius-4: 4px;/);
   });
 });
+
+describe('#190 R13: las claves de la frase están en el inventario de Inicio', () => {
+  it('registra las cuatro claves del helper una sola vez y en el orden aprobado', () => {
+    const keys = [...read('src/__tests__/ui-copy-table.ts').matchAll(
+      /file: 'src\/screens\/home\/pingo-phrase\.ts', key: '([^']+)'/g,
+    )].map((match) => match[1]);
+    expect(keys).toEqual([
+      'home.pingoPhraseWalkMeals', 'home.pingoPhraseWalk',
+      'home.pingoPhraseMeals', 'home.pingoPhraseCalm',
+    ]);
+  });
+});
