@@ -8,6 +8,7 @@ import { useChunkyLip } from '../theme/chunky-lip';
 import { MOTION_FLOAT_OFFSET_Y, MOTION_FLOAT_TIMING } from '../theme/motion';
 import { PINGO_STAGE_PAW_OPACITY, PINGO_STAGE_SHADOW_COLOR } from '../theme/pingo-stage';
 import { useThemeColors } from '../theme/use-theme-colors';
+import { PingoFloat } from './pingo-float';
 
 export type EmptyStatePose = 'talk' | 'sleep' | 'clipboard' | 'health' | 'collar' | 'food';
 
@@ -40,20 +41,23 @@ export function EmptyState({ testID, pose, title, body, action, variant = 'defau
     transform: [{ translateY: offset.get() }],
   }));
   useEffect(() => {
-    if (!reduceMotion) {
+    if (variant === 'default' && !reduceMotion) {
       offset.set(withRepeat(withTiming(-MOTION_FLOAT_OFFSET_Y, MOTION_FLOAT_TIMING), -1, true));
     }
-  }, [offset, reduceMotion]);
+  }, [offset, reduceMotion, variant]);
 
-  const floatingPose = (
-    <Animated.View testID={`${testID}-float`} style={floatStyle}>
+  const poseImage = (
         <Image
           testID={`${testID}-pose`}
           source={POSES[pose]}
           style={{ width: poseSize, height: poseSize }}
           contentFit="contain"
         />
-    </Animated.View>
+  );
+  const floatingPose = variant === 'hero' ? (
+    <PingoFloat testID={`${testID}-float`}>{poseImage}</PingoFloat>
+  ) : (
+    <Animated.View testID={`${testID}-float`} style={floatStyle}>{poseImage}</Animated.View>
   );
 
   return (
