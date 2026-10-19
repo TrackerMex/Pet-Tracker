@@ -14,6 +14,9 @@ import {
   type CreatePetDocumentState,
   type DocumentContentType,
 } from '../../api/media';
+import { FieldErrorMessage } from '../../components/field-error-message';
+import type { FieldIssues } from '../../utils/account-rules';
+import { validateDocument } from '../../utils/form-rules';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
 import { civilTodayIso } from '../../utils/civil-today-iso';
@@ -38,6 +41,7 @@ export function DocsUploadFormScreen({ petId }: { petId: string }) {
   const [date, setDate] = useState(() => civilTodayIso(undefined));
   const [vet, setVet] = useState('');
   const [actionError, setActionError] = useState<ActionError | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<FieldIssues<'type' | 'name' | 'date'>>({});
   const actionErrorText = actionError ? {
     'file-too-large': t('docs.errorFileTooLarge'),
     'invalid-form': t('docs.errorInvalidForm'),
@@ -81,10 +85,9 @@ export function DocsUploadFormScreen({ petId }: { petId: string }) {
   async function submitDocument() {
     if (uploading || !uri || !fileName) return;
     setActionError(null);
-    if (!type.trim() || !name.trim() || !/^\d{4}-\d{2}-\d{2}$/.test(date.trim())) {
-      setActionError('invalid-form');
-      return;
-    }
+    const issues = validateDocument({ type, name, date });
+    setFieldErrors(issues);
+    if (Object.keys(issues).length > 0) return;
     setUploading(true);
     let readingAsset = true;
     try {
@@ -140,7 +143,7 @@ export function DocsUploadFormScreen({ petId }: { petId: string }) {
       >
         <View testID="docs-upload-form" className="gap-4">
           <Text testID="docs-upload-file">{fileName}</Text>
-          <TextField>
+          <TextField isInvalid={Boolean(fieldErrors.type)}>
             <Label className="text-2xs font-semibold text-foreground">
               <Label.Text className="text-2xs font-semibold text-foreground">
                 {t('docs.type')}
@@ -153,8 +156,9 @@ export function DocsUploadFormScreen({ petId }: { petId: string }) {
               onChangeText={setType}
               maxLength={40}
             />
+            <FieldErrorMessage testID="docs-type-input" issue={fieldErrors.type} />
           </TextField>
-          <TextField>
+          <TextField isInvalid={Boolean(fieldErrors.name)}>
             <Label className="text-2xs font-semibold text-foreground">
               <Label.Text className="text-2xs font-semibold text-foreground">
                 {t('docs.name')}
@@ -167,8 +171,9 @@ export function DocsUploadFormScreen({ petId }: { petId: string }) {
               onChangeText={setName}
               maxLength={120}
             />
+            <FieldErrorMessage testID="docs-name-input" issue={fieldErrors.name} />
           </TextField>
-          <TextField>
+          <TextField isInvalid={Boolean(fieldErrors.date)}>
             <Label className="text-2xs font-semibold text-foreground">
               <Label.Text className="text-2xs font-semibold text-foreground">
                 {t('docs.date')}
@@ -181,6 +186,7 @@ export function DocsUploadFormScreen({ petId }: { petId: string }) {
               onChangeText={setDate}
               placeholder={t('docs.datePlaceholder')}
             />
+            <FieldErrorMessage testID="docs-date-input" issue={fieldErrors.date} />
           </TextField>
           <TextField>
             <Label className="text-2xs font-semibold text-foreground">
