@@ -1,3 +1,4 @@
+import { useChunkyLip } from '../theme/chunky-lip';
 import { useEffect } from 'react';
 import { NotificationFeedbackType, notificationAsync } from 'expo-haptics';
 import { Image } from 'expo-image';
@@ -20,6 +21,7 @@ type CelebrationProps = {
 };
 
 export function Celebration({ testID, title, body, details, primary, secondary }: CelebrationProps) {
+  const chunkyLip = useChunkyLip();
   const insets = useSafeAreaInsets();
   const height = useWindowDimensions().height;
   const reduceMotion = useReducedMotion();
@@ -155,11 +157,11 @@ export function Celebration({ testID, title, body, details, primary, secondary }
           </Animated.View>
         ) : null}
         <Animated.View testID={`${testID}-actions`} className="mt-auto w-full gap-3" style={actionsStyle}>
-          <Button testID={primary.testID} className="min-h-11 w-full rounded-xl bg-accent border-b-4 border-black/25" onPress={primary.onPress}>
-            <Button.Label className="font-bold text-accent-foreground">{primary.label}</Button.Label>
+          <Button testID={primary.testID} className="w-full h-14 rounded-16 bg-accent" style={chunkyLip.primary} onPress={primary.onPress}>
+            <Text className="text-17 font-extrabold text-accent-foreground">{primary.label}</Text>
           </Button>
-          <Button testID={secondary.testID} className="min-h-11 w-full rounded-xl border-2 border-b-6 border-lip-gray bg-surface" onPress={secondary.onPress}>
-            <Button.Label className="font-bold text-foreground">{secondary.label}</Button.Label>
+          <Button testID={secondary.testID} className="w-full h-14 rounded-16 border-2 border-lip-gray bg-surface" style={chunkyLip.neutral} onPress={secondary.onPress}>
+            <Text className="text-17 font-extrabold text-foreground">{secondary.label}</Text>
           </Button>
         </Animated.View>
       </View>

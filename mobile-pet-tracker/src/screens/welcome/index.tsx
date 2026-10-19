@@ -1,3 +1,4 @@
+import { useChunkyLip } from '../../theme/chunky-lip';
 import { Image } from 'expo-image';
 import { Redirect, router } from 'expo-router';
 import { Button } from 'heroui-native';
@@ -53,6 +54,7 @@ function PingRing({ index }: { index: number }) {
 }
 
 export function WelcomeScreen() {
+  const chunkyLip = useChunkyLip();
   const { status } = useAuth();
   const t = useTranslate();
   const insets = useSafeAreaInsets();
@@ -127,11 +129,11 @@ export function WelcomeScreen() {
         </View>
         <Text testID="welcome-brand" className="text-3xl font-bold text-foreground">{t('welcome.brand')}</Text>
         <Text testID="welcome-tagline" className="text-center text-base text-muted">{t('welcome.tagline')}</Text>
-        <Button testID="welcome-get-started" className="w-full rounded-xl bg-accent border-b-4 border-black/25" onPress={() => router.push('/register')}>
-          <Button.Label className="font-bold text-accent-foreground">{t('welcome.getStarted')}</Button.Label>
+        <Button testID="welcome-get-started" className="w-full h-14 rounded-16 bg-accent" style={chunkyLip.primary} onPress={() => router.push('/register')}>
+          <Text className="text-17 font-extrabold text-accent-foreground">{t('welcome.getStarted')}</Text>
         </Button>
-        <Button testID="welcome-have-account" className="w-full rounded-xl border-2 border-b-6 border-lip-gray bg-surface" onPress={() => router.push('/login')}>
-          <Button.Label className="font-semibold text-accent-strong">{t('welcome.haveAccount')}</Button.Label>
+        <Button testID="welcome-have-account" className="w-full h-14 rounded-16 border-2 border-lip-gray bg-surface" style={chunkyLip.neutral} onPress={() => router.push('/login')}>
+          <Text className="text-17 font-bold text-accent-strong">{t('welcome.haveAccount')}</Text>
         </Button>
         <Text testID="welcome-legal" className="text-center text-xs text-muted">{t('welcome.legalNotice')}</Text>
       </Animated.View>
