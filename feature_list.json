@@ -3411,7 +3411,7 @@
   {
     "id": 190,
     "name": "mobile-home-pingo-phrase",
-    "status": "spec_ready",
+    "status": "in_progress",
     "priority": "P2",
     "description": "Artboard Inicio (6), hueco C5. Burbuja de Pingo con frase bajo el hero (imagen + texto), clave nueva home.* en EN y ES, entrada con HomeEntrance, honra reduceMotion. Ficheros dueños: src/screens/home/index.tsx, catalog.ts, ui-copy-table.ts, pose en assets (pingo-talk.webp). Va tras #176 y #181 (mismo screen); #129 si usa datos de nutrición. Decisiones abiertas del humano ANTES de especificar: (1) contenido de la frase: el canvas dice «Rocky ya caminó 2.3 km hoy. Le falta la comida de las 18:00.» pero MealsToday es solo {served,total} sin hora; opciones (a) frase con lo disponible, (b) consultar el plan de nutrición desde Inicio, (c) pool de frases fijas por estado; (2) cuándo se muestra; (3) pose placeholder. Voz B gana en copy. Registrada el 2026-10-16 desde la re-auditoría de paridad con el canvas aprobado (https://claude.ai/artifact/VqaQQsRTtis9Dbttqy3z7j), informe progress/explore_canvas-parity-2026-10-16.md (base 44acd74b). Reglas del humano: «el diseño final como el artifact» y «Píxel exacto». Va después de #177 (receta de botón) y #187; coordina con #186. Verificar cada ancla del informe contra el árbol al arrancar (los recuentos caducan). Registrada sin spec; no se arranca."
   },
