@@ -115,3 +115,6 @@ Orden: R9, R8, R11, R1, R2, R3, R4, R6, R10, R7, R13, R12, R5, R14.
 - R6 rojo `cf06f56d`: dos fallos esperados, la tabla de retrasos y el escenario sin semanal/última posición. Se enmiendan los títulos de las dos pruebas de #152 y la tabla de siete retrasos con `(enmendado por #190 R6)`.
 - R6 verde `c2f1a30f`: 247/247, tsc exit 0. Índices fijos 0..6.
 - R10 rojo `3fac2a91`: cuatro fallos esperados por texto vacío. Prueba de ES→EN sin recarga de las cinco queries, distancia/comidas, respaldo sin tracking y comidas con actividad error/nombre del detalle. No se encontró ningún `getByText` ambiguo por Luna/Milo que requiriera enmienda; la suite entera lo comprobará en verde.
+- R10 verde `22219e18`: 273/273 en Inicio y función/copy (251 + 22), tsc exit 0. Sin enmiendas de ambigüedad necesarias.
+- R7 nace verde porque ya lo implementa `HomeEntrance` (permitido por el handoff): el test comprueba inicial translateY 0, fundido opacidad 0→1, retraso 0 y ausencia de escala/entrada propia en la burbuja; no se modifica producción.
+- Inventarios medidos antes de R13 (log `/tmp/pet190-inventory-before.log`): `R3_HOME=55`, `ALL_USES=570`, `SCREEN_FILES=35`. La suma esperada será 59 / 574 / 36.

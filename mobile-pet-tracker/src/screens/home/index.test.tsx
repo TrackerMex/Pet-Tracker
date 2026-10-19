@@ -9,7 +9,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import { useEffect, type ReactNode } from 'react';
 import { Text } from 'react-native';
-import { Easing, FadeOut, ReduceMotion, withDelay } from 'react-native-reanimated';
+import { Easing, FadeOut, ReduceMotion, withDelay, withSpring } from 'react-native-reanimated';
 import { Uniwind } from 'uniwind';
 
 import {
@@ -5633,5 +5633,27 @@ describe('#190 R10: la frase usa los datos de Inicio y reacciona al idioma', () 
     mockGetPet.mockResolvedValue({ kind: 'ok', pet: makeMotionPet(82, { name: 'Milo', mealsToday: { served: 3, total: 2 } }) });
     await renderHome();
     expect(await screen.findByTestId('home-pingo-text')).toHaveTextContent('Milo lleva 3 de 2 comidas hoy.');
+  });
+});
+
+describe('#190 R7: reduce motion conserva solo la entrada sin desplazamiento', () => {
+  beforeEach(setupHomeMotion);
+
+  it('parte de translateY cero, conserva el fundido y no añade escala a la burbuja', async () => {
+    mockUseReducedMotion.mockReturnValue(true);
+    await renderHome();
+    await screen.findByTestId('home-pingo-text');
+    mockWithTiming.mockClear();
+    jest.mocked(withSpring).mockClear();
+    jest.mocked(withDelay).mockClear();
+    const recipe = screen.getByTestId('home-entrance-pingo').props.entering({});
+    expect(recipe.initialValues).toEqual({ opacity: 0, transform: [{ translateY: 0 }] });
+    expect(recipe.animations).toEqual({ opacity: 1, transform: [{ translateY: 0 }] });
+    expect(mockWithTiming).toHaveBeenCalledWith(1, expect.objectContaining({ duration: 250, reduceMotion: ReduceMotion.Never }));
+    expect(jest.mocked(withDelay).mock.calls.map(([ms]) => ms)).toEqual([0, 0]);
+    expect(jest.mocked(withSpring).mock.calls.map(([value]) => value)).toEqual([0]);
+    const bubble = screen.getByTestId('home-pingo-bubble');
+    expect(bubble.props.entering).toBeUndefined();
+    expect(bubble.props.style).toEqual({ borderCurve: 'continuous' });
   });
 });
