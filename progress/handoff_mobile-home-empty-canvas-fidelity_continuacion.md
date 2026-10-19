@@ -85,3 +85,29 @@ comentario `(enmendado por #176 R13)`. No cambies ninguna otra aserción, espera
 - Última acción: crear `progress/impl_mobile-home-empty-canvas-fidelity.done` con una línea: la ruta del
   reporte. Solo cuando la cadena esté completa y la suite en verde; si te paras, el marcador va igual, pero
   el reporte debe decir `BLOQUEADO` en su primera línea.
+
+## Corrección 2 (tras la segunda parada)
+
+El `waitFor` no arregla el `it`: el diagnóstico del leader mostró que en jest el estilo del nodo host de
+`home-empty-action-wrap` se queda en opacidad 0 aunque pase el tiempo (solo `getAnimatedStyle` ve la
+animada). La enmienda correcta es reduce motion en ese `it` (R7: estado final desde el primer fotograma).
+`tasks.md` §Tests enmendados ya lo dice. El commit `314d1407` (waitFor) se queda en la historia, no se
+rebasa; se corrige con un commit de test nuevo.
+
+Retoma así, **antes** del paso 3 de arriba (feat R2):
+
+1. Anclas: `git status --short` → las mismas dos líneas (` M …/home/index.tsx` y `?? progress/impl_…md`);
+   `git diff --numstat -- mobile-pet-tracker/src/screens/home/index.tsx` → `1<TAB>0<TAB>…`;
+   `ls progress/impl_mobile-home-empty-canvas-fidelity.done 2>&1 | grep -c 'No such file'` → `1`
+   (el leader lo borra antes de pasarte esto; si existe, PARA). Anota el nuevo `H0=$(git rev-parse HEAD)`.
+2. En `src/screens/home/index.test.tsx`, `it` «pinta la pose, el título y la frase de Pingo»: añade como
+   primera línea `mockUseReducedMotion.mockReturnValue(true); // (enmendado por #176 R13)` y restaura la
+   última aserción a `expect(within(screen.getByTestId('home-empty-action')).getByText('Añadir mascota')).toBeVisible();`
+   (sin `waitFor`). Nada más.
+3. Mide con el cambio de producción presente: esperado `228 passed, 228 total`. Guarda el diff
+   (`git diff -- mobile-pet-tracker/src/screens/home/index.tsx > /tmp/pet-176-R2.patch`), revierte
+   (`git checkout HEAD -- mobile-pet-tracker/src/screens/home/index.tsx`, y comprueba diffs de trabajo e
+   índice vacíos) y mide: esperado `1 failed, 227 passed, 228 total` (solo el `it` de R2). Typecheck y lint.
+   Commit de test (NV, declarado): `test(mobile-home-empty): assert the CTA under reduced motion instead of waiting (R13)`.
+4. Reaplica el parche, mide `228 passed, 228 total` y commitea el feat R2 como indicaba el paso 3. Sigue
+   con R3, R10, R11, suite y cierre. El reporte debe registrar el `waitFor` fallido como desviación.
