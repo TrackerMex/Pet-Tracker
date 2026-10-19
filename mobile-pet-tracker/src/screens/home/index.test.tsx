@@ -5449,3 +5449,86 @@ describe('#190 R1: la frase es el primer bloque con datos completos', () => {
     expect(jest.mocked(withDelay).mock.calls.map(([ms]) => ms)).toEqual([0, 0]);
   });
 });
+
+describe('#190 R2: no hay frase antes de conocer la mascota y la actividad', () => {
+  beforeEach(setupHomeMotion);
+
+  function expectNoPhrase() {
+    for (const id of ['home-entrance-pingo', 'home-pingo-phrase', 'home-pingo-bubble', 'home-pingo-text', 'home-pingo-float', 'home-pingo']) {
+      expect(screen.queryByTestId(id)).toBeNull();
+    }
+  }
+
+  it('omite todos los nodos sin selección', async () => {
+    const selection = jest.spyOn(selectedPetHooks, 'useSelectedPet').mockReturnValue({
+      selectedPetId: null, selectPet: jest.fn(), clearPet: jest.fn(),
+    });
+    try {
+      await renderHome();
+      await screen.findByTestId('home-hero-actions');
+      expectNoPhrase();
+    } finally {
+      selection.mockRestore();
+    }
+  });
+
+  it('omite todos los nodos sin mascotas', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    await renderHome();
+    await screen.findByTestId('home-empty-title');
+    expectNoPhrase();
+  });
+
+  it.each(['loading', 'error'] as const)('omite la frase con mascotas en %s aunque la selección tenga detalle y actividad', async (state) => {
+    const selection = jest.spyOn(selectedPetHooks, 'useSelectedPet').mockReturnValue({
+      selectedPetId: 'pet-1', selectPet: jest.fn(), clearPet: jest.fn(),
+    });
+    if (state === 'loading') mockListPets.mockReturnValue(pending<PetsState>());
+    else mockListPets.mockResolvedValue({ kind: 'error' });
+    try {
+      await renderHome();
+      await screen.findByTestId(state === 'loading' ? 'home-loading' : 'home-error');
+      await screen.findByTestId('summary-distance');
+      await screen.findByTestId('collar-status');
+      expectNoPhrase();
+    } finally {
+      selection.mockRestore();
+    }
+  });
+
+  it('omite todos los nodos mientras carga el detalle', async () => {
+    mockGetPet.mockReturnValue(pending<PetState>());
+    await renderHome();
+    await screen.findByTestId('summary-distance');
+    expectNoPhrase();
+  });
+
+  it.each<PetState>([
+    { kind: 'error' },
+    { kind: 'unreachable', message: 'offline' },
+  ])('omite todos los nodos con detalle $kind', async (detail) => {
+    mockGetPet.mockResolvedValue(detail);
+    await renderHome();
+    await screen.findByTestId('pet-hero-error');
+    await screen.findByTestId('summary-distance');
+    expectNoPhrase();
+  });
+
+  it('omite todos los nodos mientras carga la actividad', async () => {
+    mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
+    await renderHome();
+    await screen.findByTestId('collar-status');
+    expect(screen.getByTestId('summary-skeleton')).toBeTruthy();
+    expectNoPhrase();
+  });
+
+  it('conserva los seis bloques existentes cuando la frase no aparece', async () => {
+    mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
+    await renderHome();
+    await screen.findByTestId('last-position-card');
+    expect(screen.getByTestId('home-content').children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual([
+      'home-entrance-summary', 'home-entrance-collar', 'home-entrance-quick-actions',
+      'home-entrance-weekly', 'home-entrance-reminders', 'home-entrance-last-position',
+    ]);
+  });
+});
