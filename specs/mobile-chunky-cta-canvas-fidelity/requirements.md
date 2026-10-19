@@ -486,7 +486,7 @@ paró en c10 conforme al handoff (`design-drift`: 1 failed, 112 passed, 113 tota
 
 ## Gate humano de cierre
 
-- [ ] Enmienda #177 aprobada por humano (carta y #166; fecha: ____)
+- [X] Enmienda #177 aprobada por humano (carta y #166; fecha: 2026-10-19)
 - [x] Enmienda E1 aprobada por humano (inventarios de imports de empty-state; fecha: 2026-10-19)
 - [x] Enmienda E4 aprobada por humano (lista blanca de radios de #175 R10; fecha: 2026-10-19)
-- [ ] Smoke R14 en dev build de Android hecho por el humano (fecha: ____)
+- [X] Smoke R14 en dev build de Android hecho por el humano (fecha: 2026-10-19)
