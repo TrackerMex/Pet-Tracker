@@ -6,7 +6,7 @@ Texto de CC4 (spec): smoke en el dev build Android del humano, no en Expo Go ni 
 
 - Rama: `feature/193-mobile-focus-refetch-guard-no-pet`
 - Commit probado: `4e62343a` (si antes se mergea `origin/main`, anotar el HEAD nuevo)
-- Dispositivo y fecha: ____
+- Dispositivo y fecha: OnePlus Nord 5 (fecha: 2026-10-19)
 
 ## Preparación
 
