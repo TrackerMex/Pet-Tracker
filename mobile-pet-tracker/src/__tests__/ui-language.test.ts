@@ -180,8 +180,8 @@ describe('#65 R8: Recordatorios resuelve su copy por clave', () => {
 });
 
 describe('#65 R9: el alta de mascota resuelve su copy por clave', () => {
-  it('#186 R2: resuelve las 48 ocurrencias normativas', () => {
-    expect(R9_ADD_PET).toHaveLength(42 + 1 - 2 + 4 + 3); // #186 R2 // +1 #95 R4, -2 #95 R5, +4 #171 R12
+  it('#186 R4: resuelve las 45 ocurrencias normativas', () => {
+    expect(R9_ADD_PET).toHaveLength(42 + 1 - 2 + 4 + 3 - 3); // #186 R4 // #186 R2 // +1 #95 R4, -2 #95 R5, +4 #171 R12
     checkUses(R9_ADD_PET);
   });
 });
