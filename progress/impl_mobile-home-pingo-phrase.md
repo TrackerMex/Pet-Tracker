@@ -153,3 +153,62 @@ Orden: R9, R8, R11, R1, R2, R3, R4, R6, R10, R7, R13, R12, R5, R14.
 - Corrección de lint R9 `debf4467`: 69/69 (frases + language-provider), tsc y lint exit 0. El overload de React exige el tipo con children aun cuando se pasa en el tercer argumento; se documenta esa aserción de tipo en el test.
 - Primera suite móvil completa final: 126 suites, 4197 tests verdes y 3 fallos, todos inventarios que la burbuja desplaza. Repetidos los dos ficheros enteros: mismos 3 fallos / 95 verdes, exit 1 (`/tmp/pet190-extra-inventory-red.log`). Son los usos directos de CONTINUOUS_CORNER de Home (0→1) y globales (34→35), y el inventario exacto de rounded-tile (+Home). Se aplica la excepción explícita del handoff para otros inventarios y se enmiendan solo esos deltas; no cambia producción ni se relaja ningún otro candado.
 - Al sincronizar directUses se expone también su suma congelada con las dos ramas de Card (36→37). Se actualiza ese cuarto candado agregado por el mismo +1 de la burbuja; primer intento específico 1 fallo / 97 verdes, sin commit (`/tmp/pet190-R13-extra-green.log`, después sustituido por la corrida final del conjunto). No cambia ningún otro comportamiento.
+- Inventarios adicionales R13 `3ec3305b`: 98/98 (dos suites), tsc exit 0; lint global repetido exit 0.
+- Segunda corrida completa: inventarios verdes, 4199/4200 tests; fallo en `src/screens/profile/index.test.tsx::R1: me card::shows the real account name and email`. Espera a `me-card` y consulta inmediatamente `Ada Lovelace`, cuando el contenedor puede existir sin resolver el perfil. Esa misma suite pasó tanto en la base como en la primera corrida completa final; no se modifica ese test de comportamiento fuera de alcance. Se repite el conjunto entero para comprobar la intermitencia antes de atribuir una regresión (`/tmp/pet190-final-full-green.log`).
+- Repetición completa confirmada: 126/126 suites, 4200/4200 tests y 1/1 snapshot, exit 0 (`/tmp/pet190-final-full-confirmed.log`). Perfil pasó en esta corrida completa; la espera de su test queda documentada como intermitencia observada, sin afirmar un origen preexistente ni alterar comportamiento ajeno a #190.
+
+## Historial de commits por requisito
+
+| Requisito | Commits, en orden |
+|---|---|
+| R9 | `f6240159 test(home): lock bilingual Pingo phrases (R9)`<br>`4b4990cf feat(home): add approved Pingo copy in both languages (R9)`<br>`debf4467 test(home): pass the translation probe as a React child (R9)` |
+| R8 | `bd12aaff test(home): cover phrase priorities and distance boundaries (R8)`<br>`ea7071f0 feat(home): select Pingo phrase from existing daily data (R8)` |
+| R11 | `8e4387dc test(home): lock bubble typography and corner token (R11)`<br>`21c6c350 feat(home): add token-based Pingo bubble styling (R11)` |
+| R1 | `a17112f3 test(home): require Pingo as the first resolved home block (R1)`<br>`cd54083c feat(home): place Pingo before the home summary (R1)` |
+| R2 | `da577a0c test(home): hide Pingo across incomplete and failed states (R2)`<br>`a88a8895 feat(home): gate Pingo on resolved pet and activity data (R2)` |
+| R3 | `0f11fd80 test(home): lock Pingo row order and alignment (R3)`<br>`39c9edde feat(home): align the bubble and Pingo pose in one row (R3)` |
+| R4 | `66d23db9 test(home): lock the decorative Pingo image and size (R4)`<br>`9bb6ec8e feat(home): render the approved decorative Pingo pose (R4)` |
+| R6 | `cf06f56d test(home): shift stagger delays and preserve missing block slots (R6)`<br>`c2f1a30f feat(home): stagger all seven home blocks at fixed indices (R6)` |
+| R10 | `3fac2a91 test(home): translate live Pingo phrases without refetching (R10)`<br>`22219e18 feat(home): render localized Pingo phrases from loaded data (R10)` |
+| R7 | `922f73cb test(home): preserve the reduced-motion Pingo entrance (R7)` |
+| R13 | `5d3d019b test(home): require the four Pingo copy inventory entries (R13)`<br>`26ac6d6b feat(home): align copy and typography inventories for Pingo (R13)`<br>`3ec3305b feat(home): align Pingo radius and continuous-corner inventories (R13)` |
+| R12 | `cfe3092a test(home): enforce grep-clean Pingo sources (R12)` |
+| R5 | `ccbde7b2 test(home): require Pingo float and reduced-motion behavior (R5)`<br>`3ab42802 feat(home): reuse PingoFloat for the home phrase pose (R5)` |
+| R14 | `6fb84202 test(home): lock the complete Pingo UI amendment text (R14)`<br>`be7edead feat(home): document the approved Pingo UI amendment (R14)` |
+
+
+## Resultado entregado
+
+- R1–R14 implementados y verificados; R15 reservado al humano. Dos ajustes posteriores a la secuencia principal: lint del probe R9 (`debf4467`) e inventarios extra autorizados de R13 (`3ec3305b`). No se reescribe el historial rojo/verde.
+- Suite completa final: `FORCE_COLOR=0 bun run test --runInBand --silent`, exit 0 (`/tmp/pet190-final-full-confirmed.log`):
+
+```text
+Test Suites: 126 passed, 126 total
+Tests:       4200 passed, 4200 total
+Snapshots:   1 passed, 1 total
+```
+
+- `bun run lint`: exit 0 (`/tmp/pet190-final-lint-green.log`). `bunx tsc --noEmit`: exit 0 en cada cadena de commit; el commit final de trazabilidad vuelve a encadenar el candado completo y tsc. `router.d.ts` ausente en todas las guardas, nunca borrado.
+- `git diff --check`: verde. El diff de producción contra `origin/main=14ec7307` contiene exactamente `src/screens/home/index.tsx`, `src/screens/home/pingo-phrase.ts`, `src/i18n/catalog.ts` y `src/theme/global.css`; backend, motion compartido, dependencias, STATUS/progress del leader y feature_list permanecen intactos.
+- La trazabilidad se rellena una sola vez tras el último verde, en el commit final `docs(home): trazabilidad de #190`. La feature sigue `in_progress`; no se declara done ni se ejecuta `init.sh`. El leader conserva el gate global y la PR. R15 y las casillas humanas no se marcan.
+
+Lista completa contrastada al cierre con `git diff --name-only 845cc339..HEAD` (H0):
+
+```text
+docs/ui-guidelines.md
+mobile-pet-tracker/src/__tests__/alerts-canvas-fidelity.test.ts
+mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+mobile-pet-tracker/src/__tests__/home-pingo-phrase.test.ts
+mobile-pet-tracker/src/__tests__/profile-canvas-fidelity.test.ts
+mobile-pet-tracker/src/__tests__/ui-copy-table.ts
+mobile-pet-tracker/src/__tests__/ui-language.test.ts
+mobile-pet-tracker/src/i18n/catalog.ts
+mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx
+mobile-pet-tracker/src/screens/home/index.test.tsx
+mobile-pet-tracker/src/screens/home/index.tsx
+mobile-pet-tracker/src/screens/home/pingo-phrase.test.ts
+mobile-pet-tracker/src/screens/home/pingo-phrase.ts
+mobile-pet-tracker/src/theme/global.css
+progress/impl_mobile-home-pingo-phrase.md
+specs/mobile-home-pingo-phrase/traceability.md
+```
