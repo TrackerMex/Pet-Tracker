@@ -104,11 +104,11 @@ it.each([
   ['forgot', 'screens/forgot/index.tsx', [1, 0, 1, 0, 1]],
   ['reset-password', 'screens/reset-password/index.tsx', [0, 0, 1, 0, 0]],
   ['password-input', 'components/password-input.tsx', [1, 0, 0, 0, 0]],
-] as const)('#172 R20: %s pinta la CTA de 56 y los inputs de 52', (_name, path, counts) => {
+] as const)('#172 R20: %s pinta la CTA de 56 y los inputs de 52 (enmendado por #177 R10)', (_name, path, counts) => {
   const source = readFileSync(join(sourceRoot, path), 'utf8');
-  expect(source.split('w-full h-14 rounded-xl bg-accent border-b-4 border-black/25').length - 1).toBe(counts[2]);
+  expect(source.split('w-full h-14 rounded-16 bg-accent').length - 1).toBe(counts[2]);
   expect(source.split('className="h-13 rounded-xl bg-default"').length - 1).toBe(counts[0]);
   expect(source.split('className="rounded-xl bg-default"').length - 1).toBe(counts[1]);
   expect(source.split('w-full rounded-xl').length - 1).toBe(counts[3]);
-  expect(source.split('w-full h-14 rounded-xl border-2 border-b-6 border-lip-gray bg-surface').length - 1).toBe(counts[4]);
+  expect(source.split('w-full h-14 rounded-16 border-2 border-lip-gray bg-surface').length - 1).toBe(counts[4]);
 });

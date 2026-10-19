@@ -137,8 +137,8 @@ describe('#155 R3: un único componente pinta los vacíos ilustrados', () => {
 
   it('declara el botón primario con labio', () => {
     const source = readFileSync(join(process.cwd(), 'src', 'components', 'empty-state.tsx'), 'utf8');
-    expect(source).toContain('className="rounded-xl bg-accent border-b-4 border-black/25"');
-    expect(source).toContain('className="font-bold text-accent-foreground"');
+    expect(source).toContain('className="h-14 rounded-16 bg-accent"');
+    expect(source).toContain('className="text-17 font-extrabold text-accent-foreground"');
   });
 
   it('con acción pinta pose, título, cuerpo y botón como hijos directos, en ese orden', async () => {
@@ -162,7 +162,7 @@ describe('#155 R3: un único componente pinta los vacíos ilustrados', () => {
   it('declara el botón sin size ni variant', () => {
     const source = readFileSync(join(process.cwd(), 'src', 'components', 'empty-state.tsx'), 'utf8');
     expect(source.match(/<Button[\s>]/g)).toHaveLength(1);
-    expect(source).toContain('<Button testID={`${testID}-action`} className="rounded-xl bg-accent border-b-4 border-black/25" onPress={action.onPress}>');
+    expect(source).toContain('<Button testID={`${testID}-action`} className="h-14 rounded-16 bg-accent" style={chunkyLip.primary} onPress={action.onPress}>');
   });
 });
 
@@ -228,14 +228,14 @@ describe('#155 R10: los vacíos que no se ilustran siguen en texto', () => {
 
 
 describe('#155 R11: los vacíos no traen movimiento ni dependencias', () => {
-  it('EmptyState solo importa de react, react-native, expo-image, heroui-native, Reanimated y el tema de movimiento', () => {
+  it('EmptyState solo importa de react, react-native, expo-image, heroui-native, Reanimated y el tema de movimiento (enmendado por #177 R10)', () => {
     const source = readFileSync(join(process.cwd(), 'src', 'components', 'empty-state.tsx'), 'utf8');
     for (const [, specifier] of source.matchAll(/from '([^']+)'/g)) {
-      expect(['react', 'react-native', 'expo-image', 'heroui-native', 'react-native-reanimated', '../theme/motion']).toContain(specifier);
+      expect(['react', 'react-native', 'expo-image', 'heroui-native', 'react-native-reanimated', '../theme/chunky-lip', '../theme/motion']).toContain(specifier);
     }
   });
 
-  it('EmptyState importa exactamente lo de la flotación', () => {
+  it('EmptyState importa exactamente lo de la flotación (enmendado por #177 R10)', () => {
     const source = readFileSync(join(process.cwd(), 'src', 'components', 'empty-state.tsx'), 'utf8');
     expect(source.match(/^import\b.*$/gm)).toEqual([
       "import { useEffect } from 'react';",
@@ -243,6 +243,7 @@ describe('#155 R11: los vacíos no traen movimiento ni dependencias', () => {
       "import { Button } from 'heroui-native';",
       "import { Text, View } from 'react-native';",
       "import Animated, { useAnimatedStyle, useReducedMotion, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';",
+      "import { useChunkyLip } from '../theme/chunky-lip';",
       "import { MOTION_FLOAT_OFFSET_Y, MOTION_FLOAT_TIMING } from '../theme/motion';",
     ]);
     expect(source.match(/\brequire\(/g)).toHaveLength(6);

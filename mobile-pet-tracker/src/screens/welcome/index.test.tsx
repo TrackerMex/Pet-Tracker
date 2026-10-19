@@ -279,9 +279,9 @@ describe('R7', () => {
 
   it('es el botón primario del repo', async () => {
     await renderWelcome();
-    expect(screen.getByTestId('welcome-get-started').props.className).toBe('w-full rounded-xl bg-accent border-b-4 border-black/25');
+    expect(screen.getByTestId('welcome-get-started').props.className).toBe('w-full h-14 rounded-16 bg-accent');
     expect(screen.getByText('Comenzar ahora')).toBeOnTheScreen();
-    expect(screen.getByText('Comenzar ahora').props.className).toBe('font-bold text-accent-foreground');
+    expect(screen.getByText('Comenzar ahora').props.className).toBe('text-17 font-extrabold text-accent-foreground');
   });
 });
 
@@ -297,8 +297,8 @@ describe('R8', () => {
 
   it('es un botón de superficie con labio gris y tinta accent-strong', async () => {
     await renderWelcome();
-    expect(screen.getByTestId('welcome-have-account').props.className).toBe('w-full rounded-xl border-2 border-b-6 border-lip-gray bg-surface');
-    expect(screen.getByText('Ya tengo una cuenta').props.className).toBe('font-semibold text-accent-strong');
+    expect(screen.getByTestId('welcome-have-account').props.className).toBe('w-full h-14 rounded-16 border-2 border-lip-gray bg-surface');
+    expect(screen.getByText('Ya tengo una cuenta').props.className).toBe('text-17 font-bold text-accent-strong');
   });
 });
 
@@ -457,8 +457,8 @@ describe('#153 R6: Pingo se pinta con su pose y su capa de parpadeo', () => {
 describe('#153 R7: el CTA primario tiene cuerpo', () => {
   it('declara el labio en el CTA primario', async () => {
     await renderWelcome('es');
-    expect(screen.getByTestId('welcome-get-started').props.className).toBe('w-full rounded-xl bg-accent border-b-4 border-black/25');
-    expect(screen.getByText('Comenzar ahora').props.className).toBe('font-bold text-accent-foreground');
+    expect(screen.getByTestId('welcome-get-started').props.className).toBe('w-full h-14 rounded-16 bg-accent');
+    expect(screen.getByText('Comenzar ahora').props.className).toBe('text-17 font-extrabold text-accent-foreground');
   });
 
 });
@@ -703,7 +703,8 @@ describe('#166 R3: el CTA secundario lleva el labio gris', () => {
   it('lleva el labio gris en el CTA secundario', async () => {
     await renderWelcome();
     const secondary = screen.getByTestId('welcome-have-account');
-    expect(secondary.props.className).toContain('border-b-6');
+    expect(secondary.props.className).toContain('h-14 rounded-16');
+    expect(secondary.props.className).not.toContain('border-b-6');
     expect(secondary.props.className).toContain('border-lip-gray');
     expect(secondary.props.className).toContain('bg-surface');
     expect(secondary.props.className).not.toContain('border-black');

@@ -1,3 +1,4 @@
+import { useChunkyLip } from '../../theme/chunky-lip';
 import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { Button, Skeleton, Switch } from 'heroui-native';
@@ -14,6 +15,7 @@ import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
 
 export function GeofencesScreen({ petId }: { petId: string }) {
+  const chunkyLip = useChunkyLip();
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { signOut, token } = useAuth();
   const t = useTranslate();
@@ -149,9 +151,9 @@ export function GeofencesScreen({ petId }: { petId: string }) {
       )}
       {isOwner && geofences.data?.kind === 'ok' ? (
         <>
-        <Button testID="geofences-add" className="rounded-xl bg-accent border-b-4 border-black/25" isDisabled={busy || atLimit}
+        <Button testID="geofences-add" className="h-14 rounded-16 bg-accent" style={chunkyLip.primary} isDisabled={busy || atLimit}
           onPress={() => router.push({ pathname: '/pets/[petId]/geofence-editor', params: { petId } })}>
-          <Button.Label className="font-bold text-accent-foreground">{t('geofenceEditor.add')}</Button.Label>
+          <Text className="text-17 font-extrabold text-accent-foreground">{t('geofenceEditor.add')}</Text>
         </Button>
         {atLimit ? <Text testID="geofences-limit" className="text-sm font-normal text-muted">{t('geofenceEditor.limitNotice', { max: GEOFENCE_MAX_PER_PET })}</Text> : null}
         </>

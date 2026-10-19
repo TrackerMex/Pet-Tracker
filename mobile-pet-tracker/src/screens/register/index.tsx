@@ -1,3 +1,4 @@
+import { useChunkyLip } from '../../theme/chunky-lip';
 import { Image } from 'expo-image';
 import { HeaderHeightContext } from 'expo-router/react-navigation';
 import { router } from 'expo-router';
@@ -42,6 +43,7 @@ function deviceTimezone(): string | undefined {
 }
 
 export function RegisterScreen() {
+  const chunkyLip = useChunkyLip();
   const headerHeight = useContext(HeaderHeightContext);
   const insets = useSafeAreaInsets();
   const [firstName, setFirstName] = useState('');
@@ -290,7 +292,7 @@ export function RegisterScreen() {
 
         <Button
           testID="register-submit"
-          className="w-full h-14 rounded-xl bg-accent border-b-4 border-black/25"
+          className="w-full h-14 rounded-16 bg-accent" style={chunkyLip.primary}
           isDisabled={!terms || submitting}
           onPress={() => void handleSubmit()}
         >
