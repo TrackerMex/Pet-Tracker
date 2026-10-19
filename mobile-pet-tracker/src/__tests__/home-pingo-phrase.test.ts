@@ -29,3 +29,13 @@ describe('#190 R13: las claves de la frase están en el inventario de Inicio', (
     ]);
   });
 });
+
+describe('#190 R12: los ficheros de la frase permanecen grep-clean', () => {
+  it.each(['src/screens/home/index.tsx', 'src/screens/home/pingo-phrase.ts'])('%s no contiene escapes visuales ni emoji', (file) => {
+    const source = read(file);
+    expect(source).not.toMatch(/#[\da-f]{3,8}\b/i);
+    expect(source).not.toMatch(/\b[\w-]+-\[[^\]\r\n]+\]/);
+    expect(source).not.toMatch(/StyleSheet\.create|\b(?:elevation|shadowColor|shadowOffset|shadowOpacity|shadowRadius)\b/);
+    expect(source).not.toMatch(/\p{Extended_Pictographic}/u);
+  });
+});
