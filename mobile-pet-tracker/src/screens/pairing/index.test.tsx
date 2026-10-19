@@ -1264,4 +1264,33 @@ describe('#188 R1-R14: pairing canvas fidelity', () => {
     });
   });
 
+  it.each([
+    ['tracked', 'plan-tracked'],
+    ['free', 'plan-free'],
+    ['unknown', 'plan-unknown'],
+    ['ready', 'pairing-ready'],
+    ['no-pets', 'pairing-no-pets'],
+  ] as const)('#188 R14: preserves %s without the linking hero', async (state, anchor) => {
+    const paired = state === 'tracked' || state === 'free' || state === 'unknown';
+    if (paired) {
+      mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet({ device: makeDevice() })] });
+      mockGetPetTracking.mockResolvedValue(state === 'unknown' ? { kind: 'error' } : { kind: 'ok', tracked: state === 'tracked' });
+    }
+    if (state === 'no-pets') mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    if (state === 'ready') mockClaimDevice.mockResolvedValue({ kind: 'ok', device: makeDevice() });
+    await renderPairing();
+    if (state === 'ready') {
+      await fireEvent.changeText(await screen.findByTestId('activation-code-input'), 'ACT-001');
+      await fireEvent.press(screen.getByTestId('pairing-submit'));
+    }
+    expect(await screen.findByTestId(anchor)).toBeOnTheScreen();
+    if (paired) {
+      expect(screen.getByTestId('device-status-card')).toBeOnTheScreen();
+      expect(screen.getByTestId('device-unpair')).toBeOnTheScreen();
+    }
+    for (const testID of ['pairing-pingo', 'pairing-ring-0', 'pairing-ring-1', 'pairing-pingo-float']) {
+      expect(screen.queryByTestId(testID, { includeHiddenElements: true })).toBeNull();
+    }
+  });
+
 });
