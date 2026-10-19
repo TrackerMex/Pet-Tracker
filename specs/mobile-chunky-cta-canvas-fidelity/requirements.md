@@ -465,5 +465,5 @@ handoff, sin tocar las aserciones: `Expected "../theme/chunky-lip"` en (a) y el 
 ## Gate humano de cierre
 
 - [ ] Enmienda #177 aprobada por humano (carta y #166; fecha: ____)
-- [ ] Enmienda E1 aprobada por humano (inventarios de imports de empty-state; fecha: ____)
+- [x] Enmienda E1 aprobada por humano (inventarios de imports de empty-state; fecha: 2026-10-19)
 - [ ] Smoke R14 en dev build de Android hecho por el humano (fecha: ____)
