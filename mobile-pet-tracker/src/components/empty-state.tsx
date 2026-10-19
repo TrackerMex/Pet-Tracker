@@ -99,7 +99,7 @@ export function EmptyState({ testID, pose, title, body, action, variant = 'defau
   ) : null;
 
   return (
-    <View testID={testID} className="items-center gap-3 py-8">
+    <View testID={testID} className={variant === 'hero' ? 'w-full items-center gap-3.5' : 'items-center gap-3 py-8'}>
       {variant === 'hero' ? (
         <Animated.View testID={`${testID}-stage`} className="h-65 w-70 items-center justify-center" style={stageStyle}>
           <View testID={`${testID}-stage-disc`} className="absolute size-60 rounded-full bg-surface-secondary" />
