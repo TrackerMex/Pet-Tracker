@@ -5248,6 +5248,7 @@ describe('#155 R4: Inicio sin mascotas presenta a Pingo', () => {
   });
 
   it('pinta la pose, el título y la frase de Pingo', async () => {
+    mockUseReducedMotion.mockReturnValue(true); // (enmendado por #176 R13)
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
     await renderHome();
     const pose = await screen.findByTestId('home-empty-pose');
@@ -5256,7 +5257,7 @@ describe('#155 R4: Inicio sin mascotas presenta a Pingo', () => {
     ]);
     expect(screen.getByTestId('home-empty-title')).toHaveTextContent('Aún no tienes mascotas');
     expect(screen.getByTestId('home-empty-body')).toHaveTextContent('Añade a tu mascota y te ayudo a saber dónde está y cómo está.');
-    await waitFor(() => expect(within(screen.getByTestId('home-empty-action')).getByText('Añadir mascota')).toBeVisible()); // (enmendado por #176 R13)
+    expect(within(screen.getByTestId('home-empty-action')).getByText('Añadir mascota')).toBeVisible();
   });
 
   it('lleva a añadir mascota', async () => {
