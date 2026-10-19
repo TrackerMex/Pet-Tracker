@@ -4,66 +4,87 @@ Fecha: 2026-10-19 (UTC).
 
 ## Entorno y premisas
 
-- Ruta confirmada por `pwd`: `/home/claude/sites/Pet-Tracker-wt-188`.
-- Branch confirmada: `feature/188-mobile-pairing-pingo-canvas-fidelity`.
-- H0 del handoff: `bac73dd7`. HEAD al empezar: `0942de54755b14a2a1521dcef50419a88d9949f7` (bookkeeping del leader).
-- Árbol limpio al empezar; `git merge-base --is-ancestor cbd964da HEAD`: exit 0.
-- Spec aprobada, D1–D7 cerradas; leídos requirements, design y tasks, arquitectura, convenciones y carta de UI (incluida su enmienda de anillos).
-- Anclas T0: `padding: 24` = 1; `text-2xl` = 2; `--text-24` = 0; `pingo-collar.webp` existe. Coinciden.
-- Los cuatro literales de R6/R8 coinciden en es/en con el catálogo, y sus claves ya figuran en `ui-copy-table.ts`.
-- Ejecutada la búsqueda prescrita `grep -rn 'TestId(/' mobile-pet-tracker/src`: ningún selector absorbe los cuatro testIDs nuevos propuestos. No se han creado testIDs.
-- No se ejecutó `./init.sh`; no se regeneraron `.env` ni `node_modules`.
+- `pwd`: `/home/claude/sites/Pet-Tracker-wt-188`.
+- Branch: `feature/188-mobile-pairing-pingo-canvas-fidelity`.
+- H0 del handoff: `6dc51ca1`; HEAD inicial: `22aff2e94cfdf0a0501ab8d7631061df489c9665` (reporte del bloqueo anterior).
+- `git merge-base --is-ancestor cbd964da HEAD`: exit 0.
+- Cambios previos del leader en progress/current.md y el handoff: preservados. Ningún otro cambio al arrancar.
+- Spec aprobada y D1–D7 cerradas; enmienda de UI firmada. Leídos requirements, design, tasks, arquitectura, convenciones, verificación y carta de UI.
+- Anclas T0: padding 24 = 1 línea, text-2xl = 2 líneas, --text-24 = 0 líneas; asset collar existe. Literales es/en R6/R8 coinciden con catálogo y tabla de copy.
+- Búsqueda de selectores regex antes de crear testIDs: ninguno absorbe los nuevos IDs.
+- No se ejecuta init.sh, no se regeneran .env ni dependencias; cierre general y PR corresponden al leader.
 
-## Bloqueo que requiere al leader
+## Skills cargadas
 
-**T0 no coincide con la cifra obligatoria del handoff.** El comando exacto `bun run test > ../progress/test-188.log 2>&1`, desde `mobile-pet-tracker`, terminó con exit 0 y estas líneas:
+- ponytail: /home/claude/.codex/plugins/cache/ponytail/ponytail/5.3.2/skills/ponytail/SKILL.md.
+- building-native-ui: /home/claude/.codex/.tmp/plugins/plugins/expo/skills/building-native-ui/SKILL.md.
+- expo-tailwind-setup: /home/claude/.codex/.tmp/plugins/plugins/expo/skills/expo-tailwind-setup/SKILL.md.
+- appllama-app-design-skill: .agents/skills/appllama-app-design-skill/SKILL.md.
+- animate-expo: .agents/skills/animate-expo/SKILL.md.
+- Skills requeridas no encontradas: ninguna. Sin MCP Appllama; smoke H1–H3 reservado al humano según carta y spec.
+- Documentación versionada consultada: https://docs.expo.dev/versions/v57.0.0/ y https://docs.expo.dev/versions/v57.0.0/sdk/image/.
+- Movimiento: vinculación ocasional / primer uso, propósito deleite; Reanimated en UI thread, transform y opacity, valores de spec y motion.ts.
+
+## TDD y commits
+
+T0 terminó con exit 0:
 
 ```text
 Test Suites: 120 passed, 120 total
 Tests:       3994 passed, 3994 total
 ```
 
-El handoff exige 476 total (468 passed, 8 skipped) y ordena parar si T0 no da 476. No se añadió ni modificó ningún test: 3994 es la base real de este worktree. La spec / el handoff deben reconciliar la referencia antes de implementar.
+Coincide con la referencia corregida del handoff. Log: progress/test-188.log (ignorado).
 
-**Conflicto adicional detectado por lectura, sin modificar código ni tests:**
+Commits TDD: ninguno. R13 y los siguientes bloques no se iniciaron al detectar por lectura una aserción previa incompatible con R10. No hay líneas Tests por commit de implementación ni NV que evaluar. El único commit de esta sesión contiene este reporte.
 
-`mobile-pet-tracker/src/screens/pairing/index.test.tsx:204`, test previo `renders the real route with uniform metrics and a dimensioned skeleton (#95 R6)`, compara el objeto completo `contentContainerStyle` de `pairing-form` con:
+## Bloqueo nuevo: guarda de design-drift incompatible con R10
+
+Archivo: mobile-pet-tracker/src/__tests__/design-drift.test.ts, líneas 311–327.
+Describe: `R11 (mobile-device-pairing): pairing usa el Card compartido y las dimensiones uniformes`.
+Test parametrizado afectado: `keeps the uniform screen metric padding: 24`.
 
 ```ts
-{ padding: 24, gap: 16, paddingBottom: 48 }
+it.each([
+  'padding: 24',
+  'gap: 16',
+  'insets.bottom + 24',
+])('keeps the uniform screen metric %s', (metric) => {
+  expect(pairingSource).toContain(metric);
+});
 ```
 
-R10 y design §8 / tasks §R10 mandan sustituir en el mismo contenedor `padding: 24` por `paddingHorizontal: 20` y `paddingVertical: 24`, conservando gap y paddingBottom. Esa sustitución rompe la igualdad exacta del test existente. El test monta el estado de carga; la implementación prescrita modifica el contenedor compartido, también durante la carga.
+La única aparición de `padding: 24` en pairing/index.tsx está en el contentContainerStyle de pairing-form. R10 y design §8 / tasks §R10 ordenan sustituirla por `paddingHorizontal: 20` y `paddingVertical: 24`. Tras esa sustitución, esta guarda previa queda roja.
 
-El handoff §Cierre y tasks §Cierre ordenan **parar y reportar si una aserción previa choca con la spec**. Por ello se detecta y devuelve el conflicto antes de implementar R13 o alterar esa aserción. No se añadió una rama de padding condicional para sortearlo.
+Confirmación de solo lectura, ejecutada con bun: se leyó el archivo en memoria y se aplicó exclusivamente la sustitución prescrita por R10 sobre una cadena. Resultado:
 
-El leader debe reconciliar la referencia T0 y la spec con esa aserción previa, y actualizar el handoff antes de reanudar.
+```json
+{"anchorOccurrences":1,"currentGuard":true,"afterPrescribedR10Guard":false}
+```
 
-## Verificación
+No se escribió ni mutó código ni tests para obtener esa evidencia. La suite completa T0 confirma que la guarda actual pasa sobre la base.
 
-- T0: exit 0, `Tests:       3994 passed, 3994 total`. Las 120 suites pasan, incluida la de pairing. La cifra incumple la guarda de referencia de 476.
-- Commits TDD: ninguno; no hay línea `Tests:` por commit.
-- NV: no evaluados (R9, R11 y R14 no iniciados).
-- Lint, typecheck, guardas R12, sonda `w-[3px]` y `graphify update .`: no ejecutados; implementación detenida antes de cambiar código.
-- Sin cambios en tests previos, código, traceability, ficheros de cierre del leader ni PR.
-- `git diff --name-only bac73dd7..HEAD -- . ':!feature_list.json' ':!progress/current.md' ':!progress/handoff_mobile-pairing-pingo-canvas-fidelity.md'` antes del commit del reporte: sin salida. El único fichero nuevo de esta sesión es este reporte y pertenece a la lista permitida.
+La excepción del handoff (leader, 2026-10-19, referencia 22aff2e9) autoriza únicamente cambiar el objeto esperado del test previo #95 R6 en screens/pairing/index.test.tsx. Declara explícitamente: «Es la única aserción previa que cambia». No autoriza modificar design-drift.test.ts, que además está fuera de la lista cerrada de archivos.
 
-## Skills
+El cierre del handoff exige: «cualquier otra aserción previa que choque con la spec, PARA y reporta». Por eso se para antes de implementar R13. No se conserva el literal en un comentario ni se introduce una rama de padding para sortear la guarda.
 
-Cargadas:
+El leader debe reconciliar esa guarda con R10 y ampliar el handoff para autorizar el cambio de design-drift.test.ts. Cambio concreto necesario para revisión: sustituir el caso `padding: 24` de este inventario por los casos `paddingHorizontal: 20` y `paddingVertical: 24`, conservando gap y paddingBottom. No se ha aplicado ese cambio.
 
-- `building-native-ui`: `/home/claude/.codex/plugins/cache/openai-curated/expo/11c74d6b/skills/building-native-ui/SKILL.md`.
-- `expo-tailwind-setup`: `/home/claude/.codex/plugins/cache/openai-curated/expo/11c74d6b/skills/expo-tailwind-setup/SKILL.md`.
-- `appllama-app-design-skill`: `.agents/skills/appllama-app-design-skill/SKILL.md`.
-- `animate-expo`: `.agents/skills/animate-expo/SKILL.md`.
-- `ponytail`: `/home/claude/.codex/plugins/cache/ponytail/ponytail/5.3.2/skills/ponytail/SKILL.md`.
+## Verificación y cierre del implementador
 
-Skills requeridas no encontradas: ninguna. No se buscaron `expo-overview`, `expo-animation`, `expo-router` ni `expo-design-system`, tal como manda el handoff. No se usó MCP de Appllama ni Expo Go; el smoke Android H1–H3 sigue correspondiendo al humano.
+- Anclas, literales, branch y ruta: coinciden; base de tests 3994/3994, 120 suites verdes.
+- Sin implementación parcial; código, tests, catálogo, traceability y estado de feature intactos.
+- Lint, typecheck, mutación R12 y graphify: no ejecutados, al parar antes de cambiar código. H1–H3 siguen pendientes del humano.
+- No se ejecutó init.sh, ni se abrió/editó la PR, ni se tocaron los archivos de cierre del leader.
+- Diff desde H0 excluyendo archivos del leader con el comando del handoff: solo progress/impl_mobile-pairing-pingo-canvas-fidelity.md. El reporte es el único archivo propio modificado.
+- El marcador ignorado .done se escribe como última acción del cierre; indica que terminó esta ejecución bloqueada, no que se implementó la feature.
 
-## Incidencias de invocación y desviaciones
+## Incidencias y desviaciones
 
-- Un intento de leer ponytail en `/home/claude/.agents/skills/ponytail/SKILL.md` devolvió ENOENT; corregido leyendo la ruta del catálogo indicada arriba. No se modificó ningún fichero.
-- La lectura de `package.json` junto con globs `jest.config.*` y `jest.setup.*` devolvió ENOENT para esos globs. La configuración real de Jest está en `package.json`; se leyó su setup en `test/jest-setup.js`. No arrancó ningún verificador en esa invocación ni se modificó ningún fichero.
-- Log T0 en `progress/test-188.log`, ignorado por git, conforme a la excepción del handoff.
-- Sesión detenida por la discrepancia T0 y la guarda de aserciones previas. No hay implementación parcial.
-- No se rellenó traceability con requisitos no implementados. El único commit de esta sesión contiene este reporte de bloqueo; no hay commits de implementación que trazar.
+- Antes de leer el handoff ejecuté pwd y una búsqueda de archivos. El comando exacto exigido como primero se ejecutó tras la lectura y confirmó ruta y branch; no fue el primer comando real de la sesión.
+- Lectura con globs inexistentes jest.config.* / jest.setup.*: ENOENT sin cambios ni verificadores arrancados. Configuración correcta en package.json y test/jest-setup.js.
+- Primera búsqueda de skills sin directorios ocultos: corregida con rg --files --hidden.
+- apply_patch rechazó borrar y añadir el mismo reporte en un parche; sin cambios. Corregido escribiendo el reporte existente.
+- Logs en progress/*.log ignorados, según handoff. Cambios previos del leader preservados.
+
+- La nueva guarda se detectó por lectura sin ejecutar una versión mutada de la suite, porque el handoff exige parar ante otro conflicto previo. La simulación de sustitución fue solo en memoria.
