@@ -12,6 +12,7 @@ import { useAuth } from './auth-provider';
 export interface SelectedPetContextValue {
   selectedPetId: string | null;
   selectPet: (id: string) => void;
+  clearPet: () => void;
 }
 
 const SelectedPetContext = createContext<SelectedPetContextValue | undefined>(
@@ -29,9 +30,10 @@ export function SelectedPetProvider({ children }: { children: ReactNode }) {
   }
   const selectedPetId = selection.token === token ? selection.petId : null;
   const selectPet = useCallback((id: string) => setSelection({ token, petId: id }), [token]);
+  const clearPet = useCallback(() => setSelection({ token, petId: null }), [token]);
   const value = useMemo(
-    () => ({ selectedPetId, selectPet }),
-    [selectPet, selectedPetId],
+    () => ({ selectedPetId, selectPet, clearPet }),
+    [clearPet, selectPet, selectedPetId],
   );
 
   return (

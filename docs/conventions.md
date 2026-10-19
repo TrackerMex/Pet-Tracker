@@ -629,6 +629,18 @@ compite con `bun.lock`. `init.sh` ya corre la parte móvil con
 
   **Excepción nombrada (fidelidad al canvas, 2026-10-13)**: una pantalla llevada al canvas aprobado (directiva del humano «el diseño final debe de quedar como el artifact») usa las métricas de su artboard: padding lateral 20 en vez de 24 y el `gap` que el artboard dibuja. El resto de reglas de esta viñeta se mantiene; la spec de cada pantalla nombra sus valores.
 
+  **Excepción nombrada (enmienda A20 de #181, 2026-10-16)**: el estado sin mascotas
+  de una pantalla (`EmptyState` de `common.noPetsYet`) no lleva las métricas de
+  scroll de esta viñeta: se pinta, en lugar del scroll, en un contenedor
+  `flex-1 items-center justify-center p-6 bg-background` sin insets, como
+  `map-no-pets`. Recordatorios lo aplica bajo su cabecera nativa (A11). Perfil,
+  que conserva su scroll, solo centra en horizontal.
+
+- Spec enmendada: docs/conventions.md
+- Qué cambia: excepción A20 de #181 R9
+- Qué NO cambia: A9, A10, A11, ni la excepción de fidelidad al canvas
+- [X] Enmienda A20 aprobada por humano (fecha: 2026-10-18)
+
 ## Enmienda #67 — cabecera fotográfica compartida
 
 `mobile-pet-hero-header` (#67) modifica una decisión que esta spec dejó

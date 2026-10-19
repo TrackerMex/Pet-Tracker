@@ -291,6 +291,23 @@ export function HomeScreen() {
     }, [refetchDetail, refetchOpenAlerts, refetchPets]),
   );
 
+  if (pets.data?.kind === 'ok' && pets.data.pets.length === 0) {
+    return (
+      <View testID="home-no-pets-screen" className="flex-1 items-center justify-center p-6 bg-background">
+        <EmptyState
+          testID="home-empty"
+          pose="talk"
+          title={t('common.noPetsYet')}
+          body={t('common.noPetsBody')}
+          action={{
+            label: t('profile.addPet'),
+            onPress: () => router.push('/pets/add'),
+          }}
+        />
+      </View>
+    );
+  }
+
   return (
     <ScrollView
       testID="screen-home"
@@ -389,24 +406,11 @@ export function HomeScreen() {
               </Button>
             </View>
           ) : null}
-
-          {pets.data?.kind === 'ok' && pets.data.pets.length === 0 ? (
-            <EmptyState
-              testID="home-empty"
-              pose="talk"
-              title={t('common.noPetsYet')}
-              body={t('common.noPetsBody')}
-              action={{
-                label: t('profile.addPet'),
-                onPress: () => router.push('/pets/add'),
-              }}
-            />
-          ) : null}
         </View>
       )}
 
       <View testID="home-content" style={{ paddingHorizontal: 24, gap: 16 }}>
-        {detail.data?.kind === 'error' || detail.data?.kind === 'unreachable' ? (
+        {selectedPetId !== null && (detail.data?.kind === 'error' || detail.data?.kind === 'unreachable') ? (
           <HeroUICard testID="pet-hero-error" className="items-start gap-3 p-4">
             <Text className="text-danger">
               {t('common.somethingWentWrong')}

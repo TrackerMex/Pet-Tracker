@@ -167,14 +167,14 @@ describe('#98 R9: el copy de comidas servidas queda registrado', () => {
 
 describe('#65 R7: Profile resuelve su copy por clave', () => {
   it('resuelve las 64 ocurrencias normativas', () => {
-    expect(R7_PROFILE).toHaveLength(35 - 1 + 2 + 1 + 16 - 4 + 8 + 1 + 6 + 2); // #185 R10: errorFileTooLarge y somethingWentWrong en ambas pantallas; #95 R5, +2 #99 R3, +1 #41 R9 // #158 R12; - 4 + 8 // #173 R13; #175 R7; #175 R8
+    expect(R7_PROFILE).toHaveLength(35 - 1 + 2 + 1 + 16 - 4 + 8 + 1 + 6 + 2 + 2); // #181 R5 // #185 R10: errorFileTooLarge y somethingWentWrong en ambas pantallas; #95 R5, +2 #99 R3, +1 #41 R9 // #158 R12; - 4 + 8 // #173 R13; #175 R7; #175 R8
     checkUses(R7_PROFILE);
   });
 });
 
 describe('#65 R8: Recordatorios resuelve su copy por clave', () => {
   it('resuelve las 51 ocurrencias normativas', () => {
-    expect(R8_REMINDERS).toHaveLength(50 + 1 - 2 + 1 - 1 + 1 + 1 + 1 + 1); // #178 R12 // +1 #95 R4, -2 #95 R5, +1 #114 R4, -1 #114 R5, +1 #155 R6; // #178 R6; #178 R9
+    expect(R8_REMINDERS).toHaveLength(50 + 1 - 2 + 1 - 1 + 1 + 1 + 1 + 1 + 3); // #181 R4 // #178 R12 // +1 #95 R4, -2 #95 R5, +1 #114 R4, -1 #114 R5, +1 #155 R6; // #178 R6; #178 R9
     checkUses(R8_REMINDERS);
   });
 });
