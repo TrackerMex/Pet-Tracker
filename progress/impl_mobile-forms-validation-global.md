@@ -384,19 +384,74 @@ Bash devolvió exit 2: `syntax error near unexpected token &&`. El comando del a
 
 El rojo R9 sigue acreditado en `/tmp/pet-tracker-186-R9-red.log`: `Tests:       4 failed, 4 passed, 8 total`; typecheck exit 0 y lint exit 0 con `/tmp/pet-tracker-186-R9-red-lint.log` vacío. No hay hashes rojo/verde R9. `docs/ui-guidelines.md` sigue idéntico a HEAD. Los siete nuevos it de R9 permanecen sin commit en `src/__tests__/forms-validation-global.test.ts`. S9.1–S9.4 no se ejecutaron: requieren el commit verde. Ninguna aserción se ajustó para ocultar un fallo.
 
-## Estado vigente al cerrar esta reanudación
+## Reanudación R9 — aclaración del error de sintaxis
 
-Esta sección sustituye los estados de cierre anteriores sin borrar el historial.
+Comprobación inicial: `pwd` = `/home/claude/sites/Pet-Tracker-wt-186`; rama `feature/186-mobile-forms-validation-global`; HEAD `21ee99c9` — `docs(#186): un error de sintaxis de Bash antes de commitear no es parada`. Se releyeron el handoff enmendado y R9. La parada anterior por sintaxis de Bash queda como desviación del agente, resuelta por la aclaración humana; el test seguía sin commit y la carta seguía intacta. Se mantienen building-native-ui y ponytail, ya cargadas. No se repiten T0 ni R1–R8.
 
-- R1–R8 implementados con commits separados y todas sus sondas detectadas y revertidas. R5–R7 pasaron cada fichero completo antes de sus verdes: recordatorios 65/65, documentos 79/79, peso 70/70; no queda un it antiguo fallido no listado. R8 pasó las cuatro suites de cuenta intactas y account-screens-polish.
-- R5 rojo adicional `16d5421c0f4d0a228225eb3569d5938f591e40a0`; verde `611e8cd54bf592bdb2a691db01e1f6ba7589ed18`.
-- R6 rojo `824d143b8ad8663e400aa476c47748f73d4761c0`; verde `7e8c048ad1baf9bbfbc9a3ac58d57f7d191acc2e`.
-- R7 rojo `71913afe044178d05ca9aff3902775a109cbba57`; verde `f6c9f27c074e15a17033b2a7b00b2a7aa043c6b2`.
-- R8 rojo `15c77b1c1fbd77360c0529b5d98352f5a0074fda`; verde `729473d59d9c6952ac2733ece93691879c565e7d`.
-- R9 pendiente desde el commit rojo; el fichero de candados tiene el rojo esperado sin commit. No se tocó la carta ni su casilla humana. R10 no se ejecutó ni se marcó.
-- Nuevos it terminados: R1 +1, R2 +89, R3 +10, R4 +11, R5 +5, R6 +6, R7 +12, R8 +1: **+135**. R9 añade **+7 preparados sin commit**. T0 3994 + 135 = 4129 esperado para el árbol verde R8; con los 7 preparados serían 4136 al completar R9. Son cuentas, no mediciones globales finales. No se repitió T0 ni se ejecutó la suite global final por esta parada.
-- ui-language conserva 30 tests; sus rojos R2 fueron exactamente **seis**, ya corregidos por el humano y detallados arriba. Skills conservadas: building-native-ui y ponytail; ninguna otra de Expo, appllama o animate-expo.
-- Se verificaron con `git cat-file -e <hash>^{commit}` H0 y los 17 hashes TDD reales de R1–R8 (incluido el rojo adicional R5); exit 0. Los hashes completos figuran en traceability.md y en este reporte.
-- Comprobado diff H0 vacío para los cuatro tests de cuenta, account-screens-polish, FormError, account-rules, package.json, bun.lock, app.json, backend y los archivos de estado reservados al leader. Los mocks HomeEntrance/reicon quedan intactos. Índice vacío antes del cierre documental.
-- No se ejecutaron init.sh, backend, AWS, deploy, push, PR ni rebase. No se tocó feature_list.json ni se marcó ninguna casilla humana. La feature no se declara done. El marcador ignorado .done apunta a este reporte de ejecución incompleta, para que el leader vea la parada.
-- El worktree conserva únicamente el test R9 preparado sin commit tras el cierre de reporte/trazabilidad; no se mezclará con ese commit documental.
+Rojo R9 re-medido con un único Jest: `Tests:       4 failed, 4 passed, 8 total` = 1 previo R8 + 7 nuevos R9. Solo fallan los cuatro candados de la carta por aserción. Log `/tmp/pet-tracker-186-R9-resume-red.log`. No cambia ninguna aserción ni se añade producción al commit rojo.
+
+Commit rojo R9: `5c5e40b1ed122afc0f70f96179bd342052198094` — `test(mobile): carta de UI y candados globales (#186 R9)`. Únicamente el fichero de test, +62/-2 líneas. Antes del commit: router.d.ts ausente, typecheck exit 0, lint exit 0 con log vacío. git add y git commit se ejecutaron en órdenes separadas y simples.
+
+Verde medido antes del commit de enmienda: forms-validation-global `Tests:       8 passed, 8 total` = 1 previo + 7 nuevos; design-drift `Tests:       113 passed, 113 total` = 113 + 0; account-screens-polish `Tests:       13 passed, 13 total` = 13 + 0. Las tres ejecuciones fueron individuales, sin solapar Jest. Los tres it R9 de higiene y el previo R8 nacieron verdes porque los commits R4–R8 ya cubrían importaciones y usos; no sustituyen un rojo de la carta. La enmienda mantiene la casilla humana sin marcar.
+
+Commit verde R9: `8b4dd3a0e7db236dd961211bd43110fdda8a8722` — `docs(ui): enmienda #186 (#186 R9)`. Solo docs/ui-guidelines.md: contrato y testIDs en el punto 4, corolario corregido y enmienda con las dos reglas literales. Antes del commit: router.d.ts ausente, typecheck exit 0, lint exit 0 y log vacío. Logs del verde: `/tmp/pet-tracker-186-R9-resume-green.log`, `/tmp/pet-tracker-186-R9-resume-design-drift.log`, `/tmp/pet-tracker-186-R9-resume-account-screens-polish.log` y `/tmp/pet-tracker-186-R9-resume-green-lint.log`. Ambos hashes R9 comprobados con git cat-file -e, exit 0.
+
+### Sondas R9 sobre el commit verde
+
+Un Jest individual por mutación; ninguna sonda produce errores de consulta ni de arranque.
+
+| Sonda | Mutación y único candado rojo | Resultado |
+|---|---|---|
+| S9.1 | Retirar la línea de la casilla; «la carta trae la enmienda y su casilla» | `Tests:       1 failed, 7 passed, 8 total` |
+| S9.2 | Restituir la frase vieja del corolario; «el corolario del backend ya no cita login-error ni weight-form-error como pantallas que muestran el texto del servidor» | `Tests:       1 failed, 7 passed, 8 total` |
+| S9.3 | Añadir import de FieldError a add-reminder; «solo el componente importa FieldError de heroui-native» | `Tests:       1 failed, 7 passed, 8 total` |
+| S9.4 | Retirar import de FieldErrorMessage de weight-log; «cada pantalla de formulario usa el componente» | `Tests:       1 failed, 7 passed, 8 total` |
+
+Tras S9.1 y S9.2: git checkout HEAD -- docs/ui-guidelines.md, git diff --quiet HEAD -- docs/ui-guidelines.md y git diff --cached --quiet, todos exit 0. Tras S9.3: los mismos comandos con mobile-pet-tracker/src/screens/add-reminder/index.tsx, todos exit 0. Tras S9.4: los mismos comandos con mobile-pet-tracker/src/screens/weight-log/index.tsx, todos exit 0. Las mutaciones se ejecutaron en órdenes separadas; no se commiteó ninguna. Logs `/tmp/pet-tracker-186-R9-resume-S9.1.log` a `/tmp/pet-tracker-186-R9-resume-S9.4.log`.
+
+Anclas R9 finales: cabecera 0 + 1 = 1; casilla 0 + 1 = 1, sin marcar; menciones de field-error-message.tsx 0 + 2 = 2. Ningún cambio pendiente de producción después de las sondas. Incremento R9 terminado: +7 it.
+
+## Suite global final — medición única y parada por rojos no declarados
+
+Una única ejecución de `bun run test`, sin pipe, sobre el verde R9 y con las sondas restituidas. Log fuera del árbol: `/tmp/pet-tracker-186-final.log`. Resultado exit 1:
+
+```text
+Test Suites: 4 failed, 119 passed, 123 total
+Tests:       6 failed, 4130 passed, 4136 total
+Snapshots:   1 passed, 1 total
+Time:        453.328 s
+```
+
+La cuenta **4136 coincide exactamente** con T0 3994 + 135 de R1–R8 + 7 de R9. No se repitió T0 ni se lanzó otra global. La suite final no está verde.
+
+| Fichero | Fallos observados |
+|---|---|
+| src/screens/map/index.test.tsx | #116 R6, batería 100: timeout 5000 ms; siguiente fila 82: esperaba 82%, recibió 100% |
+| src/components/__tests__/celebration.test.tsx | #171 R6.6 y R7.4: dos timeouts de 60000 ms |
+| src/__tests__/ui-language.test.ts | #65 R20, «inserta el punto 6 literal de §6.3 en §Dirección de arte»: el corolario nuevo ya no coincide con el bloque canónico antiguo |
+| src/__tests__/heroui-text-size-merge.test.ts | #187 R1, «el escáner cubre al menos el universo medido (enmendado por #177 R9)»: mínimo 211 elementos HeroUI frente a 200 observados |
+
+Los dos últimos son rojos estáticos no declarados por R9 y obligan a **parar y avisar**. No se ajustan aserciones ni se cambia producción después de detectarlos. #65 R20 lee el bloque canónico de specs/mobile-ui-language/design.md §6.3, que aún contiene el corolario viejo; el alcance aprobado solo autorizaba §2.36 en R1. El candado #187 cuenta elementos HeroUI, además de vigilar clases: la migración de doce FieldError de cuenta a un único FieldError del componente compartido concuerda con el descenso neto de once, 211 - 12 + 1 = 200. Ese fichero no está en la lista cerrada de alcance y la spec decía que no cambiaba.
+
+Durante la ejecución se observó carga del servidor 122.82 / 82.63 / 38.10 (`uptime`, 16:34:19 UTC). Se anunció que los timeouts se repetirían por fichero, sin flags, conforme al handoff, pero al terminar aparecieron los dos bloqueos estáticos anteriores. Por la orden de parada ya no se ejecutaron repeticiones aisladas: los timeouts y la aserción posterior de map quedan sin confirmar. No se atribuyen a regresión ni se acreditan verdes. Map, celebration y heroui-text-size-merge mantienen diff H0 vacío.
+
+## Estado vigente — cierre de esta reanudación
+
+Esta sección reemplaza el estado vigente anterior; el historial de paradas y reanudaciones se conserva arriba.
+
+- R1–R9 tienen commits rojo y verde separados, con todas las sondas S1.1–S9.4 detectadas y revertidas. R9 pasó localmente 8/8, design-drift 113/113 y account-screens-polish 13/13; typecheck y lint exit 0 antes de sus dos commits, logs de lint vacíos, router.d.ts ausente. La verificación global final queda bloqueada por los rojos no declarados descritos arriba. No se declara la feature done.
+- R5–R7 pasaron los ficheros completos antes de sus verdes: recordatorios 65/65, documentos 79/79 y peso 70/70. R8 pasó las cuatro suites de cuenta intactas. No se repitieron esos ciclos ni sus sondas en esta reanudación.
+- Nuevos it por R: R1 +1, R2 +89, R3 +10, R4 +11, R5 +5, R6 +6, R7 +12, R8 +1, R9 +7: **+142**. Total medido **4136 = 3994 + 142**, con 4130 pases y 6 fallos; 123 suites = 120 previas + 3 nuevas.
+- NV y cruces con tests previos se detallan en cada R. R9 aporta tres NV (importador único, universo mínimo, usos en formularios) y conserva verde el previo R8. Los rojos R2 de ui-language fueron exactamente **seis**, no cinco.
+- Skills conservadas: building-native-ui y ponytail. Ninguna otra skill de Expo, appllama o animate-expo. H0 permanece `9a94f741f8bcde3d06239d7d712187761560e9df` y T0 permanece 3994, sin nuevas mediciones de base.
+- H0 y los 17 hashes TDD de R1–R8 se verificaron en las sesiones anteriores; los dos nuevos hashes R9 se comprobaron con git cat-file -e en esta reanudación, ambos exit 0. traceability.md contiene los 19 hashes reales.
+- R10 y la firma de la enmienda permanecen pendientes del humano, sin marcar. No se ejecutaron init.sh, backend, AWS, deploy, push, PR ni rebase; no se tocaron los archivos de estado reservados al leader ni las aserciones de los dos candados que bloquean el cierre.
+- No queda producción ni tests sin commit. Solo reporte y trazabilidad se agrupan en el commit documental final; el marcador ignorado .done apunta a este reporte de ejecución detenida por la verificación global.
+
+| R | Rojo | Verde |
+|---|---|---|
+| R5 | Inicial a7f8e58a401c43605f9989251b5e8737fc554a53; adicional 16d5421c0f4d0a228225eb3569d5938f591e40a0 | 611e8cd54bf592bdb2a691db01e1f6ba7589ed18 |
+| R6 | 824d143b8ad8663e400aa476c47748f73d4761c0 | 7e8c048ad1baf9bbfbc9a3ac58d57f7d191acc2e |
+| R7 | 71913afe044178d05ca9aff3902775a109cbba57 | f6c9f27c074e15a17033b2a7b00b2a7aa043c6b2 |
+| R8 | 15c77b1c1fbd77360c0529b5d98352f5a0074fda | 729473d59d9c6952ac2733ece93691879c565e7d |
+| R9 | 5c5e40b1ed122afc0f70f96179bd342052198094 | 8b4dd3a0e7db236dd961211bd43110fdda8a8722 |
