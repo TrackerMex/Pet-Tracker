@@ -231,7 +231,7 @@ describe('#155 R11: los vacíos no traen movimiento ni dependencias', () => {
   it('EmptyState solo importa de react, react-native, expo-image, heroui-native, Reanimated y el tema de movimiento (enmendado por #177 R10) (enmendado por #176 R5)', () => {
     const source = readFileSync(join(process.cwd(), 'src', 'components', 'empty-state.tsx'), 'utf8');
     for (const [, specifier] of source.matchAll(/from '([^']+)'/g)) {
-      expect(['react', 'react-native', 'expo-image', 'heroui-native', 'react-native-reanimated', '../theme/chunky-lip', '../theme/motion', 'react-native-svg', '../theme/pingo-stage', '../theme/use-theme-colors']).toContain(specifier);
+      expect(['react', 'react-native', 'expo-image', 'heroui-native', 'react-native-reanimated', '../theme/chunky-lip', '../theme/motion', 'react-native-svg', '../theme/pingo-stage', '../theme/use-theme-colors', './pingo-float']).toContain(specifier);
     }
   });
 
@@ -248,6 +248,7 @@ describe('#155 R11: los vacíos no traen movimiento ni dependencias', () => {
       "import { MOTION_FLOAT_OFFSET_Y, MOTION_FLOAT_TIMING } from '../theme/motion';",
       "import { PINGO_STAGE_PAW_OPACITY, PINGO_STAGE_SHADOW_COLOR } from '../theme/pingo-stage';", // (enmendado por #176 R5)
       "import { useThemeColors } from '../theme/use-theme-colors';", // (enmendado por #176 R5)
+      "import { PingoFloat } from './pingo-float';", // (enmendado por #176 R6)
     ]);
     expect(source.match(/\brequire\(/g)).toHaveLength(6);
   });

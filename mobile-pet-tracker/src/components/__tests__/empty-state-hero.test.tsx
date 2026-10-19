@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react-native';
+import { act, render, screen, within } from '@testing-library/react-native';
 import { HeroUINativeProvider } from 'heroui-native';
 import { StyleSheet } from 'react-native';
 import { getAnimatedStyle } from 'react-native-reanimated';
@@ -69,4 +69,20 @@ it('#176 R4: hero dibuja talk a 190×190 sin dimensiones en el estilo de flotaci
   const floatStyle = getAnimatedStyle(screen.getByTestId('home-empty-float'));
   expect(floatStyle).not.toHaveProperty('width');
   expect(floatStyle).not.toHaveProperty('height');
+});
+
+
+it('#176 R6: hero flota solo 10 px con PingoFloat en un ciclo de tres segundos', async () => {
+  await renderProbe();
+  const float = screen.getByTestId('home-empty-float');
+  expect(within(float).getByTestId('home-empty-pose')).toBeOnTheScreen();
+  expect(getAnimatedStyle(float)).toEqual({ transform: [{ translateY: 0 }] });
+  for (const [elapsed, expected] of [[750, -5], [750, -10], [1500, 0]]) {
+    await act(async () => { jest.advanceTimersByTime(elapsed); });
+    const style = getAnimatedStyle(float) as { transform: [{ translateY: number }] };
+    expect(style.transform[0].translateY).toBeCloseTo(expected, 0);
+  }
+  const { readFileSync } = jest.requireActual<typeof import('fs')>('fs');
+  const source = readFileSync('src/components/empty-state.tsx', 'utf8');
+  expect(source).toMatch(/if \(variant === 'default' && !reduceMotion\)/);
 });
