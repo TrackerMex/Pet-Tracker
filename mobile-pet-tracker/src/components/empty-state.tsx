@@ -51,10 +51,11 @@ export function EmptyState({ testID, pose, title, body, action, variant = 'defau
   const chunkyLip = useChunkyLip();
   const [accent, accentForeground] = useThemeColors(['accent', 'accent-foreground']);
   const reduceMotion = useReducedMotion();
-  const stageStyle = useHeroEntrance(0, variant === 'hero');
-  const titleStyle = useHeroEntrance(1, variant === 'hero');
-  const bodyStyle = useHeroEntrance(2, variant === 'hero');
-  const actionStyle = useHeroEntrance(3, variant === 'hero');
+  const animateHero = variant === 'hero' && !reduceMotion;
+  const stageStyle = useHeroEntrance(0, animateHero);
+  const titleStyle = useHeroEntrance(1, animateHero);
+  const bodyStyle = useHeroEntrance(2, animateHero);
+  const actionStyle = useHeroEntrance(3, animateHero);
   const offset = useSharedValue(0);
   const poseSize = variant === 'hero' ? 190 : 160;
   const floatStyle = useAnimatedStyle(() => ({
