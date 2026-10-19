@@ -737,10 +737,10 @@ describe('#185 R6: espacio etiqueta-input', () => {
 describe('#185 R8: clases de botón, etiqueta e input intactas', () => {
   // #185 R8: RNTL 14 expone hosts con clases de HeroUI; la fuente conserva las props exactas.
   it.each([
-    ['submit', 1, 'rounded-xl bg-accent border-b-4 border-black/25'],
-    ['submitLabel', 1, 'font-bold text-accent-foreground'],
-    ['cancel', 1, 'rounded-xl border-2 border-b-6 border-lip-gray bg-surface'],
-    ['cancelLabel', 1, 'font-semibold'],
+    ['submit', 1, 'h-14 rounded-16 bg-accent'],
+    ['submitLabel', 1, 'text-17 font-extrabold text-accent-foreground'],
+    ['cancel', 1, 'h-14 rounded-16 border-2 border-lip-gray bg-surface'],
+    ['cancelLabel', 1, 'text-17 font-extrabold text-foreground'],
     ['labels', 8, 'text-2xs font-semibold text-foreground'],
     ['inputs', 4, 'rounded-xl bg-default'],
   ] as const)('conserva %s sin alterar sus clases', (row, count, expected) => {
@@ -753,7 +753,10 @@ describe('#185 R8: clases de botón, etiqueta e input intactas', () => {
     };
     const submit = openingTag('docs-upload-submit');
     const cancel = openingTag('docs-upload-cancel');
-    const buttonLabels = [...source.matchAll(/<Button\.Label\s+className="([^"]+)"/g)];
+    const buttonLabels = [submit, cancel].map(tag => {
+      const start = source.indexOf(tag);
+      return source.slice(start, source.indexOf('</Button>', start)).match(/<(?:Button\.Label|Text)\s+className="([^"]+)"/);
+    });
     const classes = {
       submit: [submit.match(/className="([^"]+)"/)?.[1]],
       submitLabel: [buttonLabels[0]?.[1]],

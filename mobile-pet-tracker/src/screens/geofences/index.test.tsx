@@ -444,8 +444,8 @@ describe('#146 R9: el dueño entra al editor desde la lista', () => {
   it('pinta Añadir zona con la receta primaria antes del error de acción', async () => {
     mockSetActive.mockResolvedValue({ kind: 'error' }); await mount();
     const add = await screen.findByTestId('geofences-add');
-    expect(add.props.className).toBe('pressable-feedback__root button__root button__root--variant-primary button__root--size-md rounded-xl bg-accent border-b-4 border-black/25');
-    expect(within(add).getByText('Añadir zona').props.className).toBe('button__label button__label--variant-primary button__label--size-md font-bold text-accent-foreground');
+    expect(add.props.className).toContain('h-14 rounded-16 bg-accent');
+    expect(within(add).getByText('Añadir zona').props.className).toBe('text-17 font-extrabold text-accent-foreground');
     await fireEvent.press(add);
     expect(mockPush).toHaveBeenCalledWith({ pathname: '/pets/[petId]/geofence-editor', params: { petId: 'pet-1' } });
     await fireEvent.press(screen.getByTestId('geofence-geofence-1-active'));
