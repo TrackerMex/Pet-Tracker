@@ -574,5 +574,5 @@ Cualquier test o comando que lea esta casilla usa el patrón tolerante
 ## Gate humano de cierre
 
 - [X] Enmienda E1 aprobada por humano (fecha: 2026-10-18)
-- [ ] Enmienda E2 aprobada por humano (fecha: ____)
+- [X] Enmienda E2 aprobada por humano (fecha: 2026-10-18)
 - [X] Smoke R6 en dev build de Android hecho por el humano (fecha: 2026-10-18)
