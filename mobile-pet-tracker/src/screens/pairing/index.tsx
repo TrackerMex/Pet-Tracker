@@ -359,7 +359,7 @@ export function PairingScreen() {
             </Card>
 
             <View className="gap-2">
-              <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
+              <Text testID="pairing-activation-code-label" className="text-xs font-semibold uppercase tracking-widest text-muted">
                 {t('pairing.activationCode')}
               </Text>
               <TextInput
@@ -372,7 +372,7 @@ export function PairingScreen() {
                 value={code}
                 onChangeText={setCode}
               />
-              <Text className="text-sm font-normal text-muted">
+              <Text testID="pairing-code-hint" className="text-sm font-normal text-muted">
                 {t('pairing.printedOnCollarBox')}
               </Text>
             </View>
