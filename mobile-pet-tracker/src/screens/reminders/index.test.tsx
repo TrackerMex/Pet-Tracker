@@ -27,6 +27,9 @@ import * as selectedPetHooks from '../../providers/selected-pet-provider';
 import { RemindersScreen } from '.';
 import { renderWithProviders } from '../../../test/render-with-providers';
 
+const flat = (s: unknown) => Object.assign({}, ...[s].flat(Infinity).filter(Boolean));
+
+
 const mockHomeEntrance = jest.fn<void, [import('react-native').ViewProps & { index: number }]>();
 
 jest.mock('../home/home-entrance', () => {
@@ -425,7 +428,8 @@ describe('#178 R4: marco y título en contenido', () => {
     await renderReminders();
     await screen.findByTestId('reminder-row-reminder-1');
     const addLink = screen.getByTestId('reminders-add-link');
-    expect(addLink.props.className).toBe('pressable-feedback__root button__root button__root--variant-primary button__root--size-md rounded-xl bg-accent border-b-4 border-black/25 h-10 gap-1.5 px-3.5');
+    expect(flat(addLink.props.style)).toMatchObject({ boxShadow: [{ offsetY: 3, color: 'color:lip' }] });
+    expect(addLink.props.className).toContain('rounded-xl bg-accent h-10 gap-1.5 px-3.5');
     const icon = within(addLink).getByTestId('reminders-icon-plus', { includeHiddenElements: true });
     expect(icon.props.size).toBe(16);
     expect(icon.props.color).toBe('color:accent-foreground');

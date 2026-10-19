@@ -1,3 +1,4 @@
+import { useChunkyLip } from '../../theme/chunky-lip';
 import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { BlurView } from 'expo-blur';
@@ -69,6 +70,7 @@ function AlertDetailMap({ alert, position }: { alert: Alert; position: MapCoordi
 }
 
 export function AlertDetailScreen({ alertId }: { alertId: string }) {
+  const chunkyLip = useChunkyLip();
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { signOut, token } = useAuth();
   const { selectPet } = useSelectedPet();
@@ -171,7 +173,7 @@ export function AlertDetailScreen({ alertId }: { alertId: string }) {
             testID="alert-detail-view-map"
             variant="secondary"
             accessibilityRole="button"
-            className="h-13 rounded-16 border-2 border-b-6 border-lip-gray bg-surface"
+            className="h-13 rounded-16 border-2 border-lip-gray bg-surface" style={chunkyLip.neutral}
             onPress={() => {
               selectPet(alert.petId);
               router.dismissTo('/map');
@@ -190,7 +192,7 @@ export function AlertDetailScreen({ alertId }: { alertId: string }) {
             <Button
               testID="alert-detail-ack"
               accessibilityRole="button"
-              className="w-full h-14 rounded-16 bg-accent border-b-4 border-black/25"
+              className="w-full h-14 rounded-16 bg-accent" style={chunkyLip.primary}
               isDisabled={acking}
               onPress={() => void handleAck()}
             >

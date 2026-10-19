@@ -3,6 +3,7 @@ import { Image } from 'expo-image';
 import { Button } from 'heroui-native';
 import { Text, View } from 'react-native';
 import Animated, { useAnimatedStyle, useReducedMotion, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
+import { useChunkyLip } from '../theme/chunky-lip';
 import { MOTION_FLOAT_OFFSET_Y, MOTION_FLOAT_TIMING } from '../theme/motion';
 
 export type EmptyStatePose = 'talk' | 'sleep' | 'clipboard' | 'health' | 'collar' | 'food';
@@ -25,6 +26,7 @@ type EmptyStateProps = {
 };
 
 export function EmptyState({ testID, pose, title, body, action }: EmptyStateProps) {
+  const chunkyLip = useChunkyLip();
   const reduceMotion = useReducedMotion();
   const offset = useSharedValue(0);
   const floatStyle = useAnimatedStyle(() => ({
@@ -55,8 +57,8 @@ export function EmptyState({ testID, pose, title, body, action }: EmptyStateProp
         {body}
       </Text>
       {action ? (
-        <Button testID={`${testID}-action`} className="rounded-xl bg-accent border-b-4 border-black/25" onPress={action.onPress}>
-          <Button.Label className="font-bold text-accent-foreground">{action.label}</Button.Label>
+        <Button testID={`${testID}-action`} className="h-14 rounded-16 bg-accent" style={chunkyLip.primary} onPress={action.onPress}>
+          <Text className="text-17 font-extrabold text-accent-foreground">{action.label}</Text>
         </Button>
       ) : null}
     </View>

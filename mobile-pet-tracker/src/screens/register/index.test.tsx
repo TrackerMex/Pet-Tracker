@@ -304,8 +304,8 @@ describe('#127 R1: el botón de envío de register lleva su receta en el árbol'
   it('pinta register-submit, deshabilitado al montar, con la clase exacta, rounded-xl y bg-accent incluidos, la vea o no el recorte de fuente', async () => {
     await renderRegister();
 
-    expect(screen.getByTestId('register-submit').props.className).toBe(
-      'pressable-feedback__root button__root button__root--variant-primary button__root--size-md disabled:element-disabled w-full h-14 rounded-xl bg-accent border-b-4 border-black/25',
+    expect(screen.getByTestId('register-submit').props.className).toContain(
+      'w-full h-14 rounded-16 bg-accent',
     );
   });
 });

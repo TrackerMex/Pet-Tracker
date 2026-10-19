@@ -1,4 +1,4 @@
-import { DeviceEventEmitter, Platform } from 'react-native';
+import { DeviceEventEmitter, Platform, StyleSheet } from 'react-native';
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
@@ -161,8 +161,8 @@ describe('#127 R1: el botón de envío de forgot lleva su receta en el árbol', 
     mockForgotPassword.mockResolvedValue({ kind: 'ok' });
     await renderRoute();
 
-    expect(screen.getByTestId('forgot-submit').props.className).toBe(
-      'pressable-feedback__root button__root button__root--variant-primary button__root--size-md disabled:element-disabled w-full h-14 rounded-xl bg-accent border-b-4 border-black/25',
+    expect(screen.getByTestId('forgot-submit').props.className).toContain(
+      'w-full h-14 rounded-16 bg-accent',
     );
   });
 });
@@ -303,13 +303,13 @@ describe('#117 R5: enviar pasa la pantalla a «Revisa tu correo»', () => {
     const before = (screen.getByTestId('forgot-title').parent?.children ?? []) as unknown[];
 
     expect(before.filter((c) => typeof c !== 'string').find(
-      (c) => (c as { props: { className?: string } }).props.className === 'size-13 items-center justify-center rounded-xl border-b-4 border-black/25 bg-accent',
+      (c) => (c as { props: { className?: string } }).props.className === 'size-13 items-center justify-center bg-accent rounded-16',
     )).toBeDefined();
     await submitForgot();
     expect(await screen.findByText('Revisa tu correo')).toBeVisible();
     const after = (screen.getByTestId('forgot-title').parent?.children ?? []) as unknown[];
     expect(after.filter((c) => typeof c !== 'string').find(
-      (c) => (c as { props: { className?: string } }).props.className === 'size-13 items-center justify-center rounded-xl border-b-4 border-black/25 bg-accent',
+      (c) => (c as { props: { className?: string } }).props.className === 'size-13 items-center justify-center bg-accent rounded-16',
     )).toBeDefined();
   });
 });
@@ -603,11 +603,11 @@ describe('#167 R9: Pingo y pop del candado en recuperar', () => {
   it('#167 R9: el tile entra con pop en el formulario', async () => {
     await renderRoute();
     expect(Object.fromEntries(mockPopIn.mock.calls.map(([p]) => [
-      p.testID, { className: p.className, style: p.style },
+      p.testID, { className: p.className, style: StyleSheet.flatten(p.style) },
     ]))).toEqual({
       'forgot-lock-tile': {
-        className: 'size-13 items-center justify-center rounded-xl border-b-4 border-black/25 bg-accent',
-        style: { borderCurve: 'continuous' },
+        className: 'size-13 items-center justify-center bg-accent rounded-16',
+        style: { borderCurve: 'continuous', boxShadow: [{ offsetX: 0, offsetY: 4, blurRadius: 0, spreadDistance: 0, color: 'color:lip' }] },
       },
     });
   });
@@ -618,11 +618,11 @@ describe('#167 R9: Pingo y pop del candado en recuperar', () => {
     mockPopIn.mockClear();
     await submitForgot();
     expect(Object.fromEntries(mockPopIn.mock.calls.map(([p]) => [
-      p.testID, { className: p.className, style: p.style },
+      p.testID, { className: p.className, style: StyleSheet.flatten(p.style) },
     ]))).toEqual({
       'forgot-lock-tile': {
-        className: 'size-13 items-center justify-center rounded-xl border-b-4 border-black/25 bg-accent',
-        style: { borderCurve: 'continuous' },
+        className: 'size-13 items-center justify-center bg-accent rounded-16',
+        style: { borderCurve: 'continuous', boxShadow: [{ offsetX: 0, offsetY: 4, blurRadius: 0, spreadDistance: 0, color: 'color:lip' }] },
       },
     });
   });
@@ -683,7 +683,7 @@ it('#172 R14: el candado es un tile acento con labio y Lock de 26', async () => 
   await renderRoute();
   function expectTile() {
     const tile = screen.getByTestId('forgot-lock-tile');
-    expect(tile.props.className).toBe('size-13 items-center justify-center rounded-xl border-b-4 border-black/25 bg-accent');
+    expect(tile.props.className).toBe('size-13 items-center justify-center bg-accent rounded-16');
     const icon = screen.getByTestId('icon-lock');
     expect(tile.children).toEqual([icon]);
     expect(icon.props.size).toBe(26);

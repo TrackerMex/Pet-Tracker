@@ -1,3 +1,4 @@
+import { useChunkyLip } from '../../theme/chunky-lip';
 import {
   BottomSheet,
   BottomSheetView,
@@ -45,6 +46,7 @@ function isRemindersError(state: RemindersState): boolean {
 }
 
 export function RemindersScreen() {
+  const chunkyLip = useChunkyLip();
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { signOut, token } = useAuth();
   const locale = useLocale();
@@ -177,7 +179,7 @@ export function RemindersScreen() {
         </Text>
         <Button
           testID="reminders-add-link"
-          className="rounded-xl bg-accent border-b-4 border-black/25 h-10 gap-1.5 px-3.5"
+          className="rounded-xl bg-accent h-10 gap-1.5 px-3.5" style={chunkyLip.primaryCompact}
           onPress={() => router.push('/add-reminder' as Href)}
         >
           <Plus size={16} color={accentForeground} />
@@ -436,13 +438,13 @@ export function RemindersScreen() {
                 </Button>
                 <Button
                   testID="reminders-delete-cancel"
-                  className="w-full rounded-xl border-2 border-b-6 border-lip-gray bg-surface"
+                  className="w-full h-14 rounded-16 border-2 border-lip-gray bg-surface" style={chunkyLip.neutral}
                   variant="outline"
                   onPress={dismissDeleteSheet}
                 >
-                  <Button.Label className="font-semibold">
+                  <Text className="text-17 font-extrabold text-foreground">
                     {t('reminders.cancel')}
-                  </Button.Label>
+                  </Text>
                 </Button>
               </View>
             </View>
