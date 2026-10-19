@@ -1,6 +1,6 @@
 ---
 feature: "mobile-forms-validation-global"
-status: draft
+status: approved
 tags: [mobile, ui, spec]
 ---
 
