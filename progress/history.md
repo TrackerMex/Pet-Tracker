@@ -9623,5 +9623,15 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
   (R1-R5) con tres observaciones sin bloqueo.
 - **Commits:** `6d209645` c1 ... `2c02b5a2` c8 (diez commits de Codex); PR abierta,
   la mergea el humano.
-- **Estado final:** in_progress, a la espera de la Enmienda E1 y del smoke R6
-  (dev build de Android) del humano; entonces `done`.
+- **Enmienda E2** (2026-10-19): el merge de main trajo el ack de #180 con
+  `Button.Label text-17` (sitio 18). Fallback al subagente `implementer` (cambio
+  trivial; Codex no): `7bd23dbb` y `dc2d5827` (pisos HeroUI 226 y className 182,
+  solo test, aplicados por el humano) y `e40d54b1` (ack con `Text` plano). El
+  reviewer rechazó la primera ronda de fusión porque `7bd23dbb` fijó className en
+  180 omitiendo el +2 de #180; corregido a 182. Segunda ronda APROBADA sobre
+  `fedbd81e`.
+- **Resultado final:** `./init.sh` exit 0 sin pipe tras el merge de #181 (backend
+  187/1474, móvil 118/3913, e2e 468 con 8 omitidos). El humano firmó E1, E2 y el
+  smoke R6 (dev build de Android).
+- **Estado final:** done. Notion: Implementado / Completado. PR #230; la mergea el
+  humano, después se borra el worktree.
