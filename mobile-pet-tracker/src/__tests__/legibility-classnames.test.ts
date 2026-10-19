@@ -190,10 +190,10 @@ describe('#61 R4: el acento como tinta usa accent-strong', () => {
     expect(filesMatching(/text-accent(?![-\w])/)).toEqual([]);
   });
 
-  it('no deja ninguna llamada a useThemeColors pidiendo accent', () => {
+  it('reserva las peticiones de accent a las huellas de EmptyState (enmendado por #176 R5)', () => {
     const requestsAccent = /useThemeColors\(\s*\[[^\]]*'accent'[^\]]*\]/;
 
-    expect(filesMatching(requestsAccent)).toEqual([]);
+    expect(filesMatching(requestsAccent)).toEqual(['components/empty-state.tsx']); // (enmendado por #176 R5)
   });
 });
 
