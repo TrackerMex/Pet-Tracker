@@ -1223,10 +1223,11 @@ describe('#188 R1-R14: pairing canvas fidelity', () => {
     }
   });
 
-  it('#188 R7: gives the title the 24 px token and black weight', async () => {
+  it('#188 R7/R16: gives the title the 28 px token and black weight', async () => {
     await renderPairing();
     const title = await screen.findByTestId('pairing-title');
-    expect(title.props.className.split(' ')).toEqual(expect.arrayContaining(['text-24', 'font-black']));
+    expect(title.props.className.split(' ')).toEqual(expect.arrayContaining(['text-28', 'font-black']));
+    expect(title.props.className).not.toContain('text-24');
     expect(title.props.className).not.toContain('text-2xl');
     expect(title.props.className).not.toContain('[');
   });

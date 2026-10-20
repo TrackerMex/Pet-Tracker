@@ -275,7 +275,7 @@ export function PairingScreen() {
                 <Image testID="pairing-pingo" source={PAIRING_PINGO_SOURCE} style={{ width: 120, aspectRatio: 1 }} contentFit="contain" />
               </PingoFloat>
             </View>
-            <Text testID="pairing-title" className="text-24 font-black text-foreground">
+            <Text testID="pairing-title" className="text-center text-28 font-black tracking-title text-foreground">
               {t('pairing.pairCollar')}
             </Text>
           </View>
