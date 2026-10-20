@@ -744,4 +744,4 @@ siguiente envío. Los errores de red conservan su aviso de formulario.
 
 **La burbuja de Pingo.** `View` de superficie con radio 18 px (`rounded-tile`) y 4 px en la esquina inferior derecha, texto `text-15 font-semibold leading-5.25`. La frase sale de claves `home.pingoPhrase*`, en voz B.
 
-- [ ] Enmienda #190 aprobada por humano
+- [X] Enmienda #190 aprobada por humano
