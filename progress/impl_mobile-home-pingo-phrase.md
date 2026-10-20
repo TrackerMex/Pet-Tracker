@@ -212,3 +212,56 @@ mobile-pet-tracker/src/theme/global.css
 progress/impl_mobile-home-pingo-phrase.md
 specs/mobile-home-pingo-phrase/traceability.md
 ```
+
+# Ronda 2 — casilla de la enmienda
+
+## Base
+
+Capturada antes de editar el test. `git status --short` no imprimió líneas.
+
+```text
+$ pwd
+/home/claude/sites/Pet-Tracker-wt-190
+$ git branch --show-current
+feature/190-mobile-home-pingo-phrase
+$ git rev-parse --short HEAD
+402c9bc4
+$ git status --short
+(vacío)
+```
+
+H0R2: `402c9bc4` (`docs(#190): handoff ronda 2 a Codex (casilla de la enmienda tolerante)`). Anclas A1–A5 verificadas: `1`, `1`, `1`, `1`, `ok`.
+
+## Sondas y verificación
+
+Comando de las sondas: `FORCE_COLOR=0 bunx jest --runInBand --silent --runTestsByPath src/__tests__/home-pingo-phrase.test.ts` (cwd `mobile-pet-tracker/`); cada salida se guardó en `/tmp/pet190-r2-Sn.log` y, tras revertir, `ui-guidelines.md` quedó sin diff, el índice sin cambios y A1 volvió a `1`. El diff no puede estar globalmente vacío durante estas comprobaciones porque esta sección requerida ya modifica este mismo impl; ese archivo es el único diff previo de documentación.
+
+| Sonda | Mutación temporal en la carta | Salida esperada | Exit | Resultado |
+|---|---|---:|---:|---|
+| S0 | Marcar `[x]` con el test original | 1 fallo R14, 4 verdes | 1 | Conforme |
+| S1 | Casilla `[ ]` original | 5/5 | 0 | Conforme |
+| S2 | Casilla `[x]` | 5/5 | 0 | Conforme |
+| S3 | Casilla `[X]` | 5/5 | 0 | Conforme |
+| S4 | Quitar la casilla | R14 falla | 1 | Conforme |
+| S5 | Cambiar texto a «aprobada por el humano» | R14 falla | 1 | Conforme |
+| S6 | `[x]` y cambiar «Un solo uso hoy.» por «Dos usos hoy.» | R14 falla | 1 | Conforme |
+| S7 | Añadir una segunda casilla idéntica | R14 falla | 1 | Conforme |
+
+Verificaciones finales desde `mobile-pet-tracker/`:
+
+- `FORCE_COLOR=0 bunx jest --runInBand --silent --runTestsByPath src/__tests__/home-pingo-phrase.test.ts`: exit 0, 1 suite y 5 tests pasados (`/tmp/pet190-r2-final-jest.log`).
+- `bunx tsc --noEmit`: exit 0 (`/tmp/pet190-r2-final-tsc.log`).
+- `bun run lint`: exit 0 y `grep -ciE 'killed|sigkill|error|warning' /tmp/pet190-r2-final-lint.log` = 0.
+- `git diff --check`: sin errores. `router.d.ts` sigue ausente y A1 sigue en 1.
+- `./init.sh` (ejecutado por el requisito de entrada de `AGENTS.md`): exit 0; build, 126 suites/4200 tests móviles, 30 suites/468 tests e2e, lint y typecheck verdes. Avisó de seis claves ausentes en `.env` y de soporte futuro de AWS SDK para Node 22; no modificó archivos del proyecto.
+
+## Commits y archivos tocados
+
+H0R2: `402c9bc4`. Commit del test: `5f14c907` (`test(home): tolerate the signed amendment checkbox (R14)`). El segundo commit contiene únicamente este registro documental.
+
+```text
+mobile-pet-tracker/src/__tests__/home-pingo-phrase.test.ts
+progress/impl_mobile-home-pingo-phrase.md
+```
+
+La feature permanece `in_progress`; R15 y las casillas humanas siguen pendientes.
