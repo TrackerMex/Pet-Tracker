@@ -6,7 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { Button } from 'heroui-native';
-import { Camera } from 'reicon-react-native';
+import { Calendar, Camera } from 'reicon-react-native';
 import { useContext, useEffect, useState } from 'react';
 import { KeyboardAvoidingView, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -409,11 +409,12 @@ export function AddPetScreen() {
             <Pressable
               accessibilityRole="button"
               testID="birth-date-field"
-              className="h-12 rounded-xl border-2 border-transparent bg-default px-3.5"
+              className="h-12 flex-row items-center gap-2 rounded-xl border-2 border-transparent bg-default px-3.5"
               style={CONTINUOUS_CORNER}
               onPress={() => setShowDatePicker(true)}
             >
-              <Text className={birthDate ? 'text-foreground' : 'text-muted'}>
+              <Calendar size={18} color={muted} />
+              <Text className={`text-15 font-semibold ${birthDate ? 'text-foreground' : 'text-muted'}`}>
                 {birthDate
                   ? birthDate.toLocaleDateString(locale)
                   : t('addPet.selectBirthDate')}
