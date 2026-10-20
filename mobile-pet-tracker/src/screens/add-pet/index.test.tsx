@@ -117,21 +117,37 @@ describe('R6: alta de mascota', () => {
     mockCreatePet.mockReturnValue(pending());
   });
 
-  it('renders the complete two-section form and deterministic preview', async () => {
+  it('#191 R4: el paso 1 pinta foto, burbuja y datos básicos', async () => {
     await renderAddPet();
-
-    expect(screen.getByTestId('screen-add-pet')).toBeVisible();
+    const photo = screen.getByTestId('add-pet-photo');
+    expect(photo.props.className).toBe('size-22 items-center justify-center rounded-full border-2 border-dashed border-accent bg-surface-secondary');
+    expect(photo.props.accessibilityRole).toBe('button');
+    expect(photo.props.accessibilityLabel).toBe(es['addPet.choosePhoto']);
+    expect(photo.props.hitSlop).toEqual(TOUCH_SLOP);
+    expect(photo).not.toBeDisabled();
+    expect(within(photo).getByText(es['addPet.choosePhoto']).props.className).toBe('text-11 font-extrabold text-accent-strong');
+    expect(screen.queryByTestId('pet-avatar')).toBeNull();
+    const bubble = screen.getByTestId('add-pet-bubble');
+    expect(bubble.props.className).toBe('flex-1 rounded-tile bg-surface-secondary px-3 py-2.5');
+    expect(bubble).toHaveStyle({ borderCurve: 'continuous' });
+    expect(bubble.parent!.props.className).toBe('flex-row items-center gap-3.5');
+    expect(screen.getByTestId('add-pet-bubble-tail').props.className).toBe('absolute -left-1.5 top-5.5 size-3 rotate-45 bg-surface-secondary');
+    expect(screen.getByTestId('add-pet-bubble-text')).toHaveTextContent('Hola. Cuéntame de tu nuevo compañero.');
+    expect(screen.getByTestId('add-pet-bubble-text').props.className).toBe('text-13 font-semibold text-foreground');
     expect(screen.getByText('Datos básicos')).toBeVisible();
-    expect(screen.getByText('Datos médicos')).toBeVisible();
-    expect(screen.getByTestId('species-dog').props.accessibilityState).toEqual({ selected: true });
-    expect(screen.getByTestId('species-cat')).toBeVisible();
-    expect(screen.getByTestId('name-input')).toBeVisible();
-    expect(screen.getByTestId('breed-input')).toBeVisible();
-    expect(screen.getByTestId('sex-female')).toBeVisible();
-    expect(screen.getByTestId('size-large')).toBeVisible();
-    expect(screen.getByTestId('sterilized-true')).toBeVisible();
-    expect(screen.getByTestId('microchip-input')).toBeVisible();
+    const ids = ['add-pet-photo', 'add-pet-bubble', 'species-dog', 'species-cat', 'name-input', 'breed-input', 'sex-female', 'sex-male', 'size-small', 'size-medium', 'size-large', 'add-pet-continue'];
+    expect(within(screen.getByTestId('add-pet-form')).getAllByTestId(new RegExp('^(' + ids.join('|') + ')$')).map(node => node.props.testID)).toEqual(ids);
+    for (const id of ['age-mode-date', 'age-mode-months', 'birth-date-field', 'sterilized-true', 'microchip-input', 'add-pet-submit']) {
+      expect(screen.queryByTestId(id)).toBeNull();
+    }
+    mockLaunchImageLibrary.mockResolvedValue({ canceled: false, assets: [{ uri: 'file:///luna.jpg', mimeType: 'image/jpeg' } as never] });
+    await pressPickPhoto();
+    await waitFor(() => expect(screen.getByTestId('pet-avatar').props.photoUrl).toBe('file:///luna.jpg'));
+    expect(within(screen.getByTestId('add-pet-photo')).getByTestId('pet-avatar').props.size).toBe(88);
     expect(screen.getByTestId('pet-avatar').props.name).toBe('Mascota');
+    expect(within(screen.getByTestId('add-pet-photo')).queryByText(es['addPet.choosePhoto'])).toBeNull();
+    await fireEvent.changeText(screen.getByTestId('name-input'), ' Luna ');
+    expect(screen.getByTestId('pet-avatar').props.name).toBe('Luna');
   });
 
   it('#191 R5: Tipo, Sexo y Tamaño usan el selector', async () => {
