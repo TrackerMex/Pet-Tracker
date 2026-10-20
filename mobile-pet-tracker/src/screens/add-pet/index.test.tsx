@@ -180,6 +180,25 @@ describe('R6: alta de mascota', () => {
     }
   });
 
+  it('#191 R13: el campo de fecha usa la receta de fecha de add-reminder', async () => {
+    await renderAddPet();
+    const muted = screen.getByTestId('name-input').props.placeholderTextColor;
+    await goToStep2();
+    const date = screen.getByTestId('birth-date-field');
+    expect(date.props.className).toBe('h-12 flex-row items-center gap-2 rounded-xl border-2 border-transparent bg-default px-3.5');
+    expect(date).toHaveStyle({ borderCurve: 'continuous' });
+    expect(date.props.accessibilityRole).toBe('button');
+    expect(date.props.children[0].type.displayName).toBe('Calendar');
+    expect(date.props.children[0].props).toMatchObject({ size: 18, color: muted });
+    expect(within(date).getByText(es['addPet.selectBirthDate']).props.className).toBe('text-15 font-semibold text-muted');
+    expect(date.props.className.split(' ')[0]).toBe('h-12');
+    await fireEvent.press(date);
+    await fireEvent(screen.getByTestId('birth-date-picker'), 'onValueChange', {}, new Date(2024, 3, 9, 12));
+    expect(within(screen.getByTestId('birth-date-field')).getByText('9/4/2024').props.className).toBe('text-15 font-semibold text-foreground');
+    await fireEvent.press(screen.getByTestId('age-mode-months'));
+    expect(screen.getByTestId('approx-age-input').props.className.split(' ')[0]).toBe('h-12');
+  });
+
   it('#191 R3: el indicador de paso muestra el primero con un segmento lleno', async () => {
     await renderAddPet();
     expect(screen.getByTestId('add-pet-step-label')).toHaveTextContent('1 de 2');
@@ -866,7 +885,7 @@ describe('#191 R6: métricas y receta de campos', () => {
     await goToStep2();
     metrics();
     const date = screen.getByTestId('birth-date-field');
-    expect(date.props.className).toBe('h-12 rounded-xl border-2 border-transparent bg-default px-3.5');
+    expect(date.props.className).toBe('h-12 flex-row items-center gap-2 rounded-xl border-2 border-transparent bg-default px-3.5');
     expect(date).toHaveStyle({ borderCurve: 'continuous' });
     expect(date.parent!.props.className).toBe('gap-1.5');
     expect(within(date.parent!).getByText(es['addPet.age']).props.className).toBe('text-13 font-extrabold text-foreground');
