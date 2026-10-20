@@ -9,7 +9,7 @@ import {
 import { notificationAsync } from 'expo-haptics';
 import { router, useFocusEffect } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
-import type { ReactNode } from 'react';
+import { type ReactNode, useEffect } from 'react';
 import { Alert, DeviceEventEmitter, Platform } from 'react-native';
 import { getAnimatedStyle } from 'react-native-reanimated';
 
@@ -144,7 +144,10 @@ function pending<T>(): Promise<T> {
 let selectPairingPet: ReturnType<typeof useSelectedPet>['selectPet'];
 
 function PairingSelectionProbe() {
-  selectPairingPet = useSelectedPet().selectPet;
+  const { selectPet } = useSelectedPet();
+  useEffect(() => {
+    selectPairingPet = selectPet;
+  }, [selectPet]);
   return null;
 }
 
