@@ -253,9 +253,6 @@ export function AddPetScreen() {
             size={104}
             testID="pet-avatar"
           />
-          <Text className="font-semibold text-muted">
-            {t('addPet.avatarPreview')}
-          </Text>
           <Button
             testID="add-pet-photo"
             className="rounded-xl bg-accent-soft"
