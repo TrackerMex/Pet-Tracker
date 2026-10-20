@@ -406,7 +406,6 @@ export const R9_ADD_PET: UseRow[] = [
   { file: 'src/screens/add-pet/index.tsx', key: 'common.somethingWentWrong' },
   { file: 'src/screens/add-pet/index.tsx', key: 'common.somethingWentWrong' },
   { file: 'src/screens/add-pet/index.tsx', key: 'addPet.pet' },
-  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.avatarPreview' },
   { file: 'src/screens/add-pet/index.tsx', key: 'addPet.choosePhoto' },
   { file: 'src/screens/add-pet/index.tsx', key: 'addPet.basicDetails' },
   { file: 'src/screens/add-pet/index.tsx', key: 'addPet.species' },
