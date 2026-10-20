@@ -123,7 +123,7 @@ describe('#187 R1: ningún componente que fusiona className lleva text-NN', () =
   it('#187 R1: el escáner cubre al menos el universo medido (enmendado por #177 R9)', () => {
     expect(tree.filter((file) => file.heroElements > 0).length).toBeGreaterThanOrEqual(28);
     expect(tree.reduce((sum, file) => sum + file.heroElements, 0)).toBeGreaterThanOrEqual(200); // #186 R8: 211 - 12 + 1
-    expect(tree.reduce((sum, file) => sum + file.cardElements, 0)).toBeGreaterThanOrEqual(42);
+    expect(tree.reduce((sum, file) => sum + file.cardElements, 0)).toBeGreaterThanOrEqual(41); // #188 R18: 42 - 1 (el banner de vinculación deja de ser Card)
     expect(tree.reduce((sum, file) => sum + file.classNameElements, 0)).toBeGreaterThanOrEqual(167);
   });
 
