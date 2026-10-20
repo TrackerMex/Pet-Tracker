@@ -215,6 +215,29 @@ describe('R6: alta de mascota', () => {
     expect(mockCreatePet).not.toHaveBeenCalled();
   });
 
+  it.each([
+    ['birthDate', 'birth-date-field', 'Elige una fecha de nacimiento'],
+    ['months', 'approx-age-input', 'Introduce una edad de 0 a 480 meses'],
+  ] as const)('#191 R8: el paso 2 pinta datos médicos y guarda en modo %s', async (mode, base, message) => {
+    await renderAddPet();
+    await fireEvent.changeText(screen.getByTestId('name-input'), 'Luna');
+    await fireEvent.press(screen.getByTestId('add-pet-continue'));
+    await screen.findByTestId('add-pet-submit');
+    expect(screen.getByText('Datos médicos')).toBeVisible();
+    for (const id of ['age-mode-date', 'age-mode-months', 'birth-date-field', 'sterilized-true', 'sterilized-false', 'microchip-input', 'add-pet-submit']) expect(screen.getByTestId(id)).toBeVisible();
+    for (const id of ['add-pet-photo', 'add-pet-bubble', 'name-input', 'breed-input', 'species-dog', 'sex-female', 'size-small', 'add-pet-continue']) expect(screen.queryByTestId(id)).toBeNull();
+    if (mode === 'months') {
+      await fireEvent.press(screen.getByTestId('age-mode-months'));
+      await fireEvent.changeText(screen.getByTestId('approx-age-input'), '481');
+      expect(screen.queryByTestId('birth-date-field')).toBeNull();
+    }
+    await fireEvent.press(screen.getByTestId('add-pet-submit'));
+    await waitFor(() => expect(screen.getByTestId(`${base}-message`)).toHaveTextContent(message));
+    expect(screen.getByTestId('add-pet-step-label')).toHaveTextContent('2 de 2');
+    expect(screen.queryByTestId(mode === 'months' ? 'birth-date-field-message' : 'approx-age-input-message')).toBeNull();
+    expect(mockCreatePet).not.toHaveBeenCalled();
+  });
+
   it('uses Host + community DateTimePicker and keeps exactly birthDate', async () => {
     mockCreatePet.mockResolvedValue({
       kind: 'ok',
