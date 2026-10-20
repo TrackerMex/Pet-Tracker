@@ -267,19 +267,18 @@ export function PairingScreen() {
         }}
       >
         {phase === 'idle' && selectedPet?.device === null ? (
-          <View className="items-center justify-center" accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-            <PingRing testID="pairing-ring-0" delay={0} className={PAIRING_RING_CLASS_NAME} />
-            <PingRing testID="pairing-ring-1" delay={PAIRING_ARTBOARD_RING_DELAY_MS} className={PAIRING_RING_CLASS_NAME} />
-            <PingoFloat testID="pairing-pingo-float">
-              <Image testID="pairing-pingo" source={PAIRING_PINGO_SOURCE} style={{ width: 150, height: 150 }} contentFit="contain" />
-            </PingoFloat>
+          <View testID="pairing-hero-group" className="items-center gap-2.5">
+            <View testID="pairing-hero" className="h-37.5 w-50 items-center justify-center" accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+              <PingRing testID="pairing-ring-0" delay={0} className={PAIRING_RING_CLASS_NAME} />
+              <PingRing testID="pairing-ring-1" delay={PAIRING_ARTBOARD_RING_DELAY_MS} className={PAIRING_RING_CLASS_NAME} />
+              <PingoFloat testID="pairing-pingo-float">
+                <Image testID="pairing-pingo" source={PAIRING_PINGO_SOURCE} style={{ width: 120, aspectRatio: 1 }} contentFit="contain" />
+              </PingoFloat>
+            </View>
+            <Text testID="pairing-title" className="text-24 font-black text-foreground">
+              {t('pairing.pairCollar')}
+            </Text>
           </View>
-        ) : null}
-
-        {phase === 'idle' && selectedPet?.device === null ? (
-          <Text testID="pairing-title" className="text-24 font-black text-foreground">
-            {t('pairing.pairCollar')}
-          </Text>
         ) : null}
 
         {pets.data === undefined ? (
