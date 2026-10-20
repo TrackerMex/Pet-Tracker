@@ -1,6 +1,6 @@
 ---
 feature: "mobile-profile-followups"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec]
 ---
 
@@ -69,4 +69,4 @@ Los números de línea y los ids de mutación M1, M41, M46 y M58 son de #173 sob
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [x] Aprobado por humano (fecha: 2026-10-20) ← gate obligatorio antes de implementar
