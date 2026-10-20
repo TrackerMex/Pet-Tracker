@@ -9744,5 +9744,5 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
   `approved` solo en `requirements.md`. Un flake de `#173 R9` visto una vez en B no reapareció en
   `7a470b7e`; si reaparece, parar con el log entero. El handoff `29a8482d` no declara
   `expo-overview` ni `expo-router`; sin impacto visible en esta feature.
-- **Estado final:** done. Notion: Implementado / Completado. La PR la mergea el humano; después se
+- **Estado final:** done. Notion: Implementado / Completado. La PR #235 la mergea el humano; después se
   borra el worktree.
