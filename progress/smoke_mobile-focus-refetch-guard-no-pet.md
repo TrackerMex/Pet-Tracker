@@ -5,7 +5,7 @@ CC4 lo cierra el humano en su dev build Android; el reviewer no lo ejecuta. Esta
 Texto de CC4 (spec): smoke en el dev build Android del humano, no en Expo Go ni en la VPS. Con una cuenta sin mascotas, al enfocar Inicio, Perfil y Recordatorios no sale ninguna petición con id nulo. Con una cuenta con mascota, el detalle se refresca al enfocar.
 
 - Rama: `feature/193-mobile-focus-refetch-guard-no-pet`
-- Commit probado: `4e62343a` (si antes se mergea `origin/main`, anotar el HEAD nuevo)
+- Commit probado: `4e62343a`. Tras mergear `origin/main` (`14ec7307`), HEAD `7a470b7e`: A1 repetida sobre `7a470b7e`.
 - Dispositivo y fecha: OnePlus Nord 5 (fecha: 2026-10-19)
 
 ## Preparación
@@ -23,7 +23,7 @@ El log de la API no sirve: el backend no registra peticiones. La pestaña Networ
 
 | # | Cuenta | Acción | Esperado | OK/KO | URL vista / nota |
 |---|---|---|---|---|---|
-| A1 | A | Entrar y esperar Inicio. Repetir 3 veces: Inicio, Perfil, Recordatorios | Filtro `null` vacío al final. Las peticiones de lista (mascotas, alertas) pueden salir: no son el problema | OK | |
+| A1 | A | Entrar y esperar Inicio. Repetir 3 veces: Inicio, Perfil, Recordatorios | Filtro `null` vacío al final. Las peticiones de lista (mascotas, alertas) pueden salir: no son el problema | OK | Repetida sobre `7a470b7e` (2026-10-20), confirmado por el humano. |
 | B1 | B | Entrar y esperar Inicio con mascota. Filtro `pets`. Enfocar Inicio 2 veces | Cada foco sale `GET …/v1/pets/<id>` | OK | |
 | B2 | B | Enfocar Perfil 2 veces | Cada foco sale `GET …/v1/pets/<id>` | OK | |
 | B3 | B | Enfocar Recordatorios 2 veces | Cada foco sale `GET …/v1/pets/<id>/reminders` | OK | |
@@ -34,6 +34,14 @@ KO en A1 si aparece cualquier URL con `null`, por ejemplo `…/v1/pets/null` o `
 ## Q1: arranque en frío con mascotas
 
 Respuesta: El arranque en frío con mascotas carga el detalle de inicio (¿el detalle de Inicio carga solo tras el arranque en frío, o hace falta cambiar de pestaña?)
+
+## Q2: checklist de autocrítica
+
+Respuesta: No aplica. CC2 fija que el diff solo toca imports, la ref de `selectedPetId` con su efecto y la guarda dentro de la callback de foco, sin cambios de JSX ni de estilos. El reviewer lo declaró no aplicable en la pasada de cierre sobre `7a470b7e`.
+
+## Q3: criterio de cierre del smoke
+
+Respuesta: Sí. CC4 es criterio de cierre: el smoke en el dev build Android debe cubrir la cuenta sin mascotas, además de la cuenta con mascota. CC1 a CC3 no bastan. El humano lo firmó con las cuentas A (sin mascotas) y B (con mascota).
 
 ## Casilla de cierre
 

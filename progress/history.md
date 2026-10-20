@@ -9715,3 +9715,34 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
   la enmienda de la carta (`50cc7875`).
 - **Estado final:** done. Notion: Implementado / Completado. La PR #234 la mergea el humano,
   después se borra el worktree.
+
+## Sesión 2026-10-20 — mobile-focus-refetch-guard-no-pet (id: 193)
+
+- **Feature:** Inicio, Perfil y Recordatorios no piden el detalle de la mascota ni la lista de
+  recordatorios al enfocarse sin mascota seleccionada (`selectedPetId === null`). Una ref
+  sincronizada por efecto y la guarda dentro de la callback de foco; sin cambios de JSX, estilos
+  ni dependencias. Antes, `refetch()` de TanStack Query v5 ejecutaba el `queryFn` aunque
+  `enabled` fuera false, y una cuenta sin mascotas enviaba `GET /pets/null`.
+- **Spec:** [[specs/mobile-focus-refetch-guard-no-pet/requirements|spec]], aprobada por el humano
+  el 2026-10-19 (firma `00925f6a`). Q1 la contestó el humano en el smoke; Q2 no aplica (CC2); Q3
+  sí (CC4).
+- **Acciones:** handoff a Codex (`29a8482d`). Codex: A `b7622910` (tests R1 a R11, rojo en R1, R4
+  y R7), B `8ebb6a13` (feat), C `cc3667f7` (mutaciones de control), D `c1094e6a` (revert de C) y
+  docs `4e62343a`. Merge de `origin/main` (`14ec7307`, con #176 y #186) en `7a470b7e`, sin
+  conflictos.
+- **Enmiendas:** en B se actualizaron seis aserciones existentes de #181 R1 (dos por pantalla)
+  que pedían el id nulo; el handoff lo autoriza (L58) y `design.md` lo prevé.
+- **Resultado:** `./init.sh` exit 0 en `7a470b7e`: backend 187/187 suites y 1474/1474 tests;
+  móvil 124/124 suites y 4163/4163 tests; e2e sin fallos; typecheck y lint sin errores (lint rc 0,
+  log vacío). Reviewer: primera pasada RECHAZADO sobre `4e62343a` (`current.md` obsoleto,
+  corregido); segunda pasada APROBADO sobre `4e62343a`; pasada de cierre APROBADO sobre
+  `7a470b7e`, 0 bloqueantes. Smoke CC4 firmado por el humano en OnePlus Nord 5 (2026-10-19) con
+  las cuentas A (sin mascotas) y B (con mascota), en `cc51f37e` y `8dafe2d2`. A1 repetida sobre
+  `7a470b7e`: OK (2026-10-20).
+- **Notas no bloqueantes:** el commit C no lleva la lista de R-id (lo prescribe el handoff; sin
+  acción). `design.md`, `tasks.md` y `traceability.md` quedan en `status: draft`; C6 exige
+  `approved` solo en `requirements.md`. Un flake de `#173 R9` visto una vez en B no reapareció en
+  `7a470b7e`; si reaparece, parar con el log entero. El handoff `29a8482d` no declara
+  `expo-overview` ni `expo-router`; sin impacto visible en esta feature.
+- **Estado final:** done. Notion: Implementado / Completado. La PR la mergea el humano; después se
+  borra el worktree.
