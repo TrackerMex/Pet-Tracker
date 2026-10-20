@@ -290,6 +290,7 @@ export function PairingScreen() {
           paddingVertical: 24,
           gap: 16,
           paddingBottom: insets.bottom + 24,
+          ...(isLinking ? { flexGrow: 1 } : {}),
         }}
       >
         {isLinking && selectedPet && pets.data?.kind === 'ok' ? (
@@ -377,7 +378,7 @@ export function PairingScreen() {
         ) : null}
 
         {phase === 'idle' && selectedPet?.device === null ? (
-          <View className="gap-4">
+          <View className="gap-4" style={{ flexGrow: 1 }}>
             <View className="flex-row items-start gap-2.5 rounded-tile bg-default px-3.5 py-3">
               <View testID="pairing-plan-icon" className="mt-px">
                 <InfoCircle size={20} color={muted} />
@@ -411,6 +412,8 @@ export function PairingScreen() {
                 {t('pairing.printedOnCollarBox')}
               </Text>
             </View>
+
+            <View testID="pairing-submit-spacer" style={{ flexGrow: 1 }} />
 
             <Button
               testID="pairing-submit"

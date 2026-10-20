@@ -1441,6 +1441,7 @@ describe('#188 R1-R14: pairing canvas fidelity', () => {
       paddingVertical: 24,
       gap: 16,
       paddingBottom: 48,
+      ...(state === 'linking' ? { flexGrow: 1 } : {}),
     });
   });
 
