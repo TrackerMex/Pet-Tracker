@@ -58,4 +58,4 @@ Tres decisiones abiertas desde el registro de #190. Esta spec propone un defecto
 - [x] H2 cuándo se muestra: confirmo el defecto, o lo sustituyo por: ____
 - [x] H3 pose placeholder `pingo-talk.webp`: confirmada, o la sustituyo por: ____
 - [x] Enmienda #190 de `docs/ui-guidelines.md` aprobada por humano (precondición de R5; sin ella R5 no se implementa)
-- [ ] Smoke de R15 hecho y aprobado por el humano en dev build Android (cierre, no gate de implementación)
+- [X] Smoke de R15 hecho y aprobado por el humano en dev build Android (cierre, no gate de implementación)
