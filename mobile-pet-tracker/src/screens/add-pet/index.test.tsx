@@ -1,4 +1,4 @@
-import { HeaderHeightContext } from 'expo-router/react-navigation';
+import { HeaderHeightContext, usePreventRemove } from 'expo-router/react-navigation';
 import { act, fireEvent, screen, waitFor, within } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import { notificationAsync } from 'expo-haptics';
@@ -16,6 +16,12 @@ import { useSelectedPet } from '../../providers/selected-pet-provider';
 import { AddPetScreen } from '.';
 import { TOUCH_SLOP } from '../../theme/touch-target';
 import { renderWithProviders } from '../../../test/render-with-providers';
+
+jest.mock('expo-router/react-navigation', () => ({
+  ...jest.requireActual('expo-router/react-navigation'),
+  usePreventRemove: jest.fn(),
+  __esModule: true,
+}));
 
 jest.mock('../../api/pets', () => ({ createPet: jest.fn(), listPets: jest.fn() }));
 jest.mock('../../api/media', () => ({
@@ -61,6 +67,7 @@ jest.mock('react-native-safe-area-context', () => ({
 }));
 
 const mockCreatePet = jest.mocked(createPet);
+const mockUsePreventRemove = jest.mocked(usePreventRemove);
 const mockListPets = jest.mocked(listPets);
 const mockNotificationAsync = jest.mocked(notificationAsync);
 const mockLaunchImageLibrary = jest.mocked(ImagePicker.launchImageLibraryAsync);
@@ -242,6 +249,127 @@ describe('R6: alta de mascota', () => {
     expect(screen.getByTestId('add-pet-step-label')).toHaveTextContent('2 de 2');
     expect(screen.queryByTestId(mode === 'months' ? 'birth-date-field-message' : 'approx-age-input-message')).toBeNull();
     expect(mockCreatePet).not.toHaveBeenCalled();
+  });
+
+  describe('#191 R9: atrás en el paso 2 vuelve al 1 con los datos', () => {
+    beforeEach(() => {
+      mockRouter.back.mockReset();
+      mockRouter.replace.mockReset();
+    });
+    afterEach(() => {
+      mockRouter.back.mockReset();
+      mockRouter.replace.mockReset();
+    });
+
+    function removal() {
+      const call = mockUsePreventRemove.mock.lastCall;
+      expect(call).toBeDefined();
+      return call!;
+    }
+    async function backToBasics() {
+      const lastCall = removal();
+      await act(async () => lastCall[1]({ data: { action: { type: 'GO_BACK' } } }));
+    }
+
+    it('no intercepta el paso 1 y sí el paso 2', async () => {
+      await renderAddPet();
+      expect(removal()[0]).toBe(false);
+      await goToStep2();
+      expect(removal()[0]).toBe(true);
+    });
+
+    it('conserva todos los valores y limpia el aviso al volver', async () => {
+      mockCreatePet.mockResolvedValue({ kind: 'invalid' });
+      mockLaunchImageLibrary.mockResolvedValue({ canceled: false, assets: [{ uri: 'file:///luna-back.jpg', mimeType: 'image/jpeg' } as never] });
+      await renderAddPet();
+      await fireEvent.press(screen.getByTestId('species-cat'));
+      await fireEvent.changeText(screen.getByTestId('breed-input'), 'Mestiza');
+      await fireEvent.press(screen.getByTestId('sex-female'));
+      await fireEvent.press(screen.getByTestId('size-large'));
+      await pressPickPhoto();
+      await waitFor(() => expect(screen.getByTestId('pet-avatar').props.photoUrl).toBe('file:///luna-back.jpg'));
+      await goToStep2('Luna');
+      await fireEvent.press(screen.getByTestId('birth-date-field'));
+      const picker = within(screen.getByTestId('expo-ui-picker-host')).getByTestId('birth-date-picker');
+      await fireEvent(picker, 'onValueChange', {}, new Date(2024, 3, 9, 12));
+      await fireEvent.press(screen.getByTestId('age-mode-months'));
+      await fireEvent.changeText(screen.getByTestId('approx-age-input'), '24');
+      await fireEvent.press(screen.getByTestId('sterilized-true'));
+      await fireEvent.changeText(screen.getByTestId('microchip-input'), '123');
+      await fireEvent.press(screen.getByTestId('add-pet-submit'));
+      await screen.findByTestId('add-pet-error');
+      await backToBasics();
+      expect(screen.getByTestId('add-pet-step-label')).toHaveTextContent('1 de 2');
+      expect(screen.getByTestId('name-input').props.value).toBe('Luna');
+      expect(screen.getByTestId('breed-input').props.value).toBe('Mestiza');
+      for (const id of ['species-cat', 'sex-female', 'size-large']) expect(screen.getByTestId(id).props.accessibilityState).toEqual({ selected: true });
+      expect(screen.getByTestId('pet-avatar').props.photoUrl).toBe('file:///luna-back.jpg');
+      expect(screen.queryByTestId('add-pet-error')).toBeNull();
+      expect(screen.queryAllByTestId(/-message-row$/)).toHaveLength(0);
+      await goToStep2('Luna');
+      expect(screen.getByTestId('age-mode-months').props.accessibilityState).toEqual({ selected: true });
+      expect(screen.getByTestId('approx-age-input').props.value).toBe('24');
+      expect(screen.getByTestId('sterilized-true').props.accessibilityState).toEqual({ selected: true });
+      expect(screen.getByTestId('microchip-input').props.value).toBe('123');
+      expect(screen.queryByTestId('add-pet-error')).toBeNull();
+      await fireEvent.press(screen.getByTestId('age-mode-date'));
+      expect(within(screen.getByTestId('birth-date-field')).getByText('9/4/2024')).toBeVisible();
+      expect(mockRouter.back).not.toHaveBeenCalled();
+    });
+
+    it('ignora el callback mientras createPet sigue pendiente', async () => {
+      mockCreatePet.mockReturnValue(pending());
+      await renderAddPet();
+      await goToStep2();
+      await fireEvent.press(screen.getByTestId('age-mode-months'));
+      await fireEvent.changeText(screen.getByTestId('approx-age-input'), '12');
+      await fireEvent.press(screen.getByTestId('add-pet-submit'));
+      await waitFor(() => expect(screen.getByTestId('add-pet-submit')).toBeDisabled());
+      expect(removal()[0]).toBe(false);
+      await backToBasics();
+      expect(screen.getByTestId('add-pet-step-label')).toHaveTextContent('2 de 2');
+      expect(screen.getByTestId('add-pet-submit')).toBeDisabled();
+      expect(screen.queryByTestId('name-input')).toBeNull();
+    });
+
+    it('llama router.back tras guardar con prevent ya falso', async () => {
+      let preventAtExit: boolean | undefined;
+      mockRouter.back.mockImplementation(() => { preventAtExit = mockUsePreventRemove.mock.lastCall?.[0]; });
+      mockCreatePet.mockResolvedValue({ kind: 'ok', pet: { id: 'pet-new', name: 'Luna' } as never });
+      await renderAddPet();
+      await goToStep2();
+      await fireEvent.press(screen.getByTestId('age-mode-months'));
+      await fireEvent.changeText(screen.getByTestId('approx-age-input'), '12');
+      await fireEvent.press(screen.getByTestId('add-pet-submit'));
+      await waitFor(() => expect(screen.getByTestId('add-pet-submit')).not.toBeDisabled());
+      expect(mockRouter.back).toHaveBeenCalledTimes(1);
+      expect(preventAtExit).toBe(false);
+    });
+
+    it.each(['later', 'pair'] as const)('la celebración deja salir por %s con prevent falso', async (action) => {
+      let preventAtExit: boolean | undefined;
+      const capture = () => { preventAtExit = mockUsePreventRemove.mock.lastCall?.[0]; };
+      mockRouter.back.mockImplementation(capture);
+      mockRouter.replace.mockImplementation(capture);
+      mockCreatePet.mockResolvedValue({ kind: 'ok', pet: { id: 'pet-new', name: 'Luna' } as never });
+      await renderWithPetList({ kind: 'ok', pets: [] });
+      await goToStep2();
+      await fireEvent.press(screen.getByTestId('age-mode-months'));
+      await fireEvent.changeText(screen.getByTestId('approx-age-input'), '12');
+      await fireEvent.press(screen.getByTestId('add-pet-submit'));
+      await screen.findByTestId('add-pet-celebration-modal');
+      expect(removal()[0]).toBe(false);
+      await fireEvent.press(screen.getByTestId(`add-pet-celebration-${action}`));
+      expect(preventAtExit).toBe(false);
+      if (action === 'later') {
+        expect(mockRouter.back).toHaveBeenCalledTimes(1);
+        expect(mockRouter.replace).not.toHaveBeenCalled();
+      } else {
+        expect(mockRouter.replace).toHaveBeenCalledTimes(1);
+        expect(mockRouter.replace).toHaveBeenCalledWith('/pairing');
+        expect(mockRouter.back).not.toHaveBeenCalled();
+      }
+    });
   });
 
   it('uses Host + community DateTimePicker and keeps exactly birthDate', async () => {
