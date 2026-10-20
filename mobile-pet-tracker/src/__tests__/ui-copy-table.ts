@@ -394,6 +394,7 @@ export const R8_REMINDERS: UseRow[] = [
 ];
 
 export const R9_ADD_PET: UseRow[] = [
+  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.stepProgress' }, // #191 R3
   { file: 'src/utils/form-rules.ts', key: 'addPet.nameIsRequired' }, // #186 R2
   { file: 'src/utils/form-rules.ts', key: 'addPet.chooseBirthDate' }, // #186 R2
   { file: 'src/utils/form-rules.ts', key: 'addPet.errorAgeRange' }, // #186 R2

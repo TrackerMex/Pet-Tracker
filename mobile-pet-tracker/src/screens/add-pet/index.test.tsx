@@ -151,6 +151,33 @@ describe('R6: alta de mascota', () => {
     }
   });
 
+  it('#191 R3: el indicador de paso muestra el primero con un segmento lleno', async () => {
+    await renderAddPet();
+    expect(screen.getByTestId('add-pet-step-label')).toHaveTextContent('1 de 2');
+    expect(screen.getByTestId('add-pet-step-label').props.className).toBe('text-13 font-extrabold text-muted');
+    const bar = screen.getByTestId('add-pet-step-bar');
+    expect(bar.props.accessibilityRole).toBe('progressbar');
+    expect(bar.props.accessibilityValue).toEqual({ min: 1, max: 2, now: 1 });
+    expect(bar.props.className).toBe('flex-row gap-1.5');
+    expect(within(bar).getAllByTestId(/^add-pet-step-segment-/)).toHaveLength(2);
+    expect(screen.getByTestId('add-pet-step-segment-1').props.className).toBe('h-1.5 flex-1 rounded-full bg-accent');
+    expect(screen.getByTestId('add-pet-step-segment-2').props.className).toBe('h-1.5 flex-1 rounded-full bg-lip-gray');
+  });
+
+  it('#191 R3: el indicador de paso llena ambos segmentos en el segundo', async () => {
+    await renderAddPet();
+    await fireEvent.changeText(screen.getByTestId('name-input'), 'Luna');
+    await fireEvent.press(screen.getByTestId('add-pet-continue'));
+    expect(screen.getByTestId('add-pet-step-label')).toHaveTextContent('2 de 2');
+    expect(screen.getByTestId('add-pet-step-bar').props.accessibilityValue).toEqual({ min: 1, max: 2, now: 2 });
+    for (const n of [1, 2]) expect(screen.getByTestId(`add-pet-step-segment-${n}`).props.className).toBe('h-1.5 flex-1 rounded-full bg-accent');
+  });
+
+  it('#191 R3: el indicador de paso se traduce al inglés', async () => {
+    await renderAddPet('en');
+    expect(screen.getByTestId('add-pet-step-label')).toHaveTextContent('1 of 2');
+  });
+
   it('uses Host + community DateTimePicker and keeps exactly birthDate', async () => {
     mockCreatePet.mockResolvedValue({
       kind: 'ok',
