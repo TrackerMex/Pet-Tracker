@@ -33,7 +33,7 @@ Cada fila se planta a mano en el fichero indicado, se corre **solo** el test nom
 |---|---|---|---|---|
 | X1 | borrar la línea `disabled={photoUploading}` | `src/screens/profile/index.tsx` | tras el commit de test de R1, antes de R2 | R1: la sonda `onStartShouldSetResponder()` (esperaba `false`) y el contador (`launchImageLibraryAsync` 2 veces) |
 | X2 | la misma que X1 | `src/screens/profile/index.tsx` | tras el verde de R2 | R1: solo la sonda; el contador sigue en 1 por la guardia |
-| X3 | `disabled={false}` (control siempre pulsable) | `src/screens/profile/index.tsx` | tras R2 | R1: solo la sonda (esperaba `false`); `accessibilityState` sigue en `{ disabled: true }` por su propia prop y el contador sigue en 1 por la guardia |
+| X3 | `disabled={false}` (control siempre pulsable) | `src/screens/profile/index.tsx` | tras R2 | R1: rojo antes de la sonda, en la espera de `accessibilityState` (medido en #184: RN impone `disabled: false` sobre esa prop); el contador sigue en 1 por la guardia |
 | X4 | quitar la guardia: borrar `if (photoBusyRef.current) return;` | `src/screens/profile/index.tsx` | tras R2 | R2: doble toque con el picker abierto (2 llamadas, esperaba 1) |
 | X5 | no liberar nunca: borrar `photoBusyRef.current = false;` | `src/screens/profile/index.tsx` | tras R2 | R2: todos los `it.each` de liberación (una fila por salida); el doble toque sigue verde |
 | X6 | liberar solo en el `finally` interno (zona ciega) | `src/screens/profile/index.tsx` | tras R2 | R2: las filas de liberación `picker cancelado` y `formato no soportado` (salen antes del `try` interno); las demás salidas siguen verdes |
