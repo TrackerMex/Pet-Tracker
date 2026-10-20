@@ -409,7 +409,7 @@ describe('R6: alta de mascota', () => {
     await waitFor(() => expect(screen.queryByTestId(`${base}-message`)).toHaveTextContent(message));
     const control = screen.getByTestId(base);
     const wrapper = control.parent!;
-    expect(wrapper.props.className).toBe('gap-2');
+    expect(wrapper.props.className).toBe('gap-1.5');
     expect(within(wrapper).queryByTestId(`${base}-message`)).toHaveTextContent(message);
     expect(wrapper.children.map(child => typeof child === 'string' ? child : child.props.testID).at(-1)).toBe(`${base}-error`);
     expect(within(control).queryByTestId(`${base}-message`)).toBeNull();
@@ -711,15 +711,43 @@ describe('#191 R2: el título vive en el contenido', () => {
   });
 });
 
-describe('#95 R6: métricas bajo cabecera nativa', () => {
-  it('usa solo el inset inferior del dispositivo', async () => {
+describe('#191 R6: métricas y receta de campos', () => {
+  it('aplica las métricas, etiquetas y controles exactos en ambos pasos', async () => {
     process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
     mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() });
-    mockUseSelectedPet.mockReturnValue({ selectedPetId: 'pet-1', selectPet, clearPet: jest.fn(), });
+    mockUseSelectedPet.mockReturnValue({ selectedPetId: 'pet-1', selectPet, clearPet: jest.fn() });
     await renderAddPet();
-    expect(screen.getByTestId('add-pet-form').props.contentContainerStyle).toEqual({
-      padding: 24, gap: 16, paddingBottom: 48,
-    });
+    const metrics = () => expect(screen.getByTestId('add-pet-form').props.contentContainerStyle).toEqual({ paddingHorizontal: 20, paddingTop: 12, gap: 12, paddingBottom: 48 });
+    const inputClasses = 'h-12 rounded-xl border-2 border-transparent bg-default px-3.5 text-15 font-semibold text-foreground';
+    const checkInput = (id: string, label: string, maxLength: number) => {
+      const input = screen.getByTestId(id);
+      expect(input.props.className).toBe(inputClasses);
+      expect(input.props.maxLength).toBe(maxLength);
+      expect(input).toHaveStyle({ borderCurve: 'continuous' });
+      expect(input.parent!.props.className).toBe('gap-1.5');
+      expect(within(input.parent!).getByText(label).props.className).toBe('text-13 font-extrabold text-foreground');
+    };
+    metrics();
+    checkInput('name-input', es['addPet.name'], 120);
+    checkInput('breed-input', es['addPet.breed'], 120);
+    for (const [id, label] of [['species-dog', es['addPet.species']], ['sex-female', es['addPet.sex']], ['size-small', es['addPet.size']]]) {
+      const wrapper = screen.getByTestId(id).parent!.parent!;
+      expect(wrapper.props.className).toBe('gap-1.5');
+      expect(within(wrapper).getByText(label).props.className).toBe('text-13 font-extrabold text-foreground');
+    }
+    await goToStep2();
+    metrics();
+    const date = screen.getByTestId('birth-date-field');
+    expect(date.props.className).toBe('h-12 rounded-xl border-2 border-transparent bg-default px-3.5');
+    expect(date).toHaveStyle({ borderCurve: 'continuous' });
+    expect(date.parent!.props.className).toBe('gap-1.5');
+    expect(within(date.parent!).getByText(es['addPet.age']).props.className).toBe('text-13 font-extrabold text-foreground');
+    const sterilized = screen.getByTestId('sterilized-true').parent!.parent!;
+    expect(sterilized.props.className).toBe('gap-1.5');
+    expect(within(sterilized).getByText(es['addPet.sterilized']).props.className).toBe('text-13 font-extrabold text-foreground');
+    checkInput('microchip-input', es['addPet.microchip'], 32);
+    await fireEvent.press(screen.getByTestId('age-mode-months'));
+    checkInput('approx-age-input', es['addPet.age'], 3);
   });
 });
 
