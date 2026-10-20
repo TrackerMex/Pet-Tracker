@@ -29,7 +29,7 @@ import type { PetProfile } from '../../api/types';
 import PairingRoute from '../../app/pairing';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import { LanguageProvider } from '../../providers/language-provider';
-import { SelectedPetProvider } from '../../providers/selected-pet-provider';
+import { SelectedPetProvider, useSelectedPet } from '../../providers/selected-pet-provider';
 import { renderWithProviders } from '../../../test/render-with-providers';
 
 jest.mock('../../api/devices', () => ({
@@ -126,11 +126,19 @@ function pending<T>(): Promise<T> {
   return new Promise(() => undefined);
 }
 
+let selectPairingPet: ReturnType<typeof useSelectedPet>['selectPet'];
+
+function PairingSelectionProbe() {
+  selectPairingPet = useSelectedPet().selectPet;
+  return null;
+}
+
 function PairingWrapper({ children }: { children: ReactNode }) {
   return (
     <HeroUINativeProvider>
       <LanguageProvider initial="es">
         <SelectedPetProvider>
+          <PairingSelectionProbe />
           <HeaderHeightContext.Provider value={91}>
             {children}
           </HeaderHeightContext.Provider>
@@ -1066,6 +1074,75 @@ describe('#188 R1-R14: pairing canvas fidelity', () => {
       status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn(),
     } satisfies AuthContextValue);
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+  });
+
+  it('#188 R17: shows only the selected pet avatar above the hero', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet(), makePet({ id: 'pet-2', name: 'Milo' })] });
+    await renderPairing();
+    const avatar = await screen.findByTestId('pairing-pet-avatar');
+    expect(screen.getAllByTestId('pairing-pet-avatar')).toHaveLength(1);
+    expect(avatar.props.accessibilityLabel).toBe('Luna');
+    expect(avatar.props.onPress).toBeUndefined();
+    expect(avatar.props.accessibilityRole).not.toBe('button');
+    expect(avatar.props.className.split(' ')).toEqual(expect.arrayContaining([
+      'rounded-full', 'border-2', 'border-accent', 'p-0.75',
+    ]));
+    const row = screen.getByTestId('pairing-pet-row');
+    expect(row.props.className.split(' ')).toEqual(expect.arrayContaining(['w-full', 'flex-row', 'justify-end']));
+    expect(row.children).toEqual([avatar]);
+    expect(within(screen.getByTestId('pairing-form')).getAllByTestId(
+      /^(pairing-pet-avatar|pairing-pingo)$/,
+      { includeHiddenElements: true },
+    ).map((node) => node.props.testID)).toEqual(['pairing-pet-avatar', 'pairing-pingo']);
+    expect(screen.queryAllByTestId(/^pet-chip-/)).toHaveLength(0);
+  });
+
+  it('#188 R17: renders the initial or the photo on the palette slot of the selected pet', async () => {
+    const pets = [makePet({ name: 'luna' }), makePet({ id: 'pet-2', name: 'milo' })];
+    mockListPets.mockResolvedValue({ kind: 'ok', pets });
+    const app = await renderPairing();
+    await screen.findByTestId('pairing-pet-avatar');
+    expect(screen.getByTestId('pairing-pet-avatar-fallback')).toHaveTextContent('L', { exact: true });
+    expect(screen.getByTestId('pairing-pet-avatar-fallback').props.className.split(' ')).toEqual(expect.arrayContaining([
+      'text-sm', 'font-extrabold', 'text-category-amber-strong',
+    ]));
+    expect(screen.getByTestId('pairing-pet-avatar-disc').props.className.split(' ')).toEqual(expect.arrayContaining([
+      'size-9', 'items-center', 'justify-center', 'overflow-hidden', 'rounded-full', 'bg-category-amber',
+    ]));
+    await act(() => selectPairingPet('pet-2'));
+    await waitFor(() => expect(screen.getByTestId('pairing-pet-avatar').props.accessibilityLabel).toBe('milo'));
+    expect(screen.getByTestId('pairing-pet-avatar-fallback')).toHaveTextContent('M', { exact: true });
+    expect(screen.getByTestId('pairing-pet-avatar-disc').props.className).toContain('bg-category-violet');
+    expect(screen.getByTestId('pairing-pet-avatar-fallback').props.className).toContain('text-category-violet-strong');
+    const photoPets = [pets[0], { ...pets[1], photoUrl: 'https://example.test/milo.jpg' }];
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: photoPets });
+    await act(() => app.queryClient.setQueryData(petKeys.list(), { kind: 'ok', pets: photoPets }));
+    const photo = await screen.findByTestId('pairing-pet-avatar-image');
+    expect(photo.props.source).toEqual({ uri: 'https://example.test/milo.jpg', cacheKey: 'pet-2' });
+    expect(photo).toHaveStyle({ width: 36, height: 36 });
+    expect(screen.queryByTestId('pairing-pet-avatar-fallback')).toBeNull();
+  });
+
+  it('#188 R17: keeps the full pet switcher outside the linking view', async () => {
+    for (const state of ['paired', 'ready']) {
+      mockListPets.mockResolvedValue({ kind: 'ok', pets: [
+        makePet({ device: state === 'paired' ? makeDevice() : null }),
+        makePet({ id: 'pet-2', name: 'Milo', device: state === 'paired' ? makeDevice() : null }),
+      ] });
+      mockGetPetTracking.mockResolvedValue({ kind: 'ok', tracked: true });
+      mockClaimDevice.mockResolvedValue({ kind: 'ok', device: makeDevice() });
+      const app = await renderPairing();
+      if (state === 'ready') {
+        await fireEvent.changeText(await screen.findByTestId('activation-code-input'), 'ACT-001');
+        await fireEvent.press(screen.getByTestId('pairing-submit'));
+      }
+      await screen.findByTestId(state === 'paired' ? 'device-status-card' : 'pairing-ready');
+      expect(screen.getByTestId('pet-chip-pet-1')).toBeOnTheScreen();
+      expect(screen.getByTestId('pet-chip-pet-2')).toBeOnTheScreen();
+      expect(screen.queryByTestId('pairing-pet-avatar')).toBeNull();
+      expect(screen.queryByTestId('pairing-pet-row')).toBeNull();
+      await app.unmount();
+    }
   });
 
   it('#188 R15: groups a 200 × 150 hero box and the title with a 10 px gap', async () => {
