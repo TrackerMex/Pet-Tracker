@@ -83,7 +83,7 @@ function OptionalChip<T extends string | boolean>({
 
 function FieldLabel({ children }: { children: string }) {
   return (
-    <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
+    <Text className="text-13 font-extrabold text-foreground">
       {children}
     </Text>
   );
@@ -282,7 +282,7 @@ export function AddPetScreen() {
           {t('addPet.basicDetails')}
         </Text>
 
-        <View className="gap-2">
+        <View className="gap-1.5">
           <FieldLabel>{t('addPet.species')}</FieldLabel>
           <SegmentedControl<Species>
             options={[
@@ -294,11 +294,11 @@ export function AddPetScreen() {
           />
         </View>
 
-        <View className="gap-2">
+        <View className="gap-1.5">
           <FieldLabel>{t('addPet.name')}</FieldLabel>
           <TextInput
             testID="name-input"
-            className="rounded-xl bg-default px-4 py-3 text-foreground"
+            className="h-12 rounded-xl border-2 border-transparent bg-default px-3.5 text-15 font-semibold text-foreground"
             style={CONTINUOUS_CORNER}
             maxLength={120}
             placeholder={t('addPet.petName')}
@@ -309,11 +309,11 @@ export function AddPetScreen() {
           <FieldErrorMessage testID="name-input" issue={fieldErrors.name} />
         </View>
 
-        <View className="gap-2">
+        <View className="gap-1.5">
           <FieldLabel>{t('addPet.breed')}</FieldLabel>
           <TextInput
             testID="breed-input"
-            className="rounded-xl bg-default px-4 py-3 text-foreground"
+            className="h-12 rounded-xl border-2 border-transparent bg-default px-3.5 text-15 font-semibold text-foreground"
             style={CONTINUOUS_CORNER}
             maxLength={120}
             placeholder={t('addPet.optional')}
@@ -323,7 +323,7 @@ export function AddPetScreen() {
           />
         </View>
 
-        <View className="gap-2">
+        <View className="gap-1.5">
           <FieldLabel>{t('addPet.sex')}</FieldLabel>
           <SegmentedControl<Sex>
             options={[
@@ -336,7 +336,7 @@ export function AddPetScreen() {
           />
         </View>
 
-        <View className="gap-2">
+        <View className="gap-1.5">
           <FieldLabel>{t('addPet.size')}</FieldLabel>
           <SegmentedControl<PetSize>
             options={[
@@ -368,7 +368,7 @@ export function AddPetScreen() {
           {t('addPet.medicalDetails')}
         </Text>
 
-        <View className="gap-2">
+        <View className="gap-1.5">
           <FieldLabel>{t('addPet.age')}</FieldLabel>
           <View className="flex-row gap-2">
             {([
@@ -396,7 +396,7 @@ export function AddPetScreen() {
             <Pressable
               accessibilityRole="button"
               testID="birth-date-field"
-              className="rounded-xl border border-border bg-default px-4 py-3"
+              className="h-12 rounded-xl border-2 border-transparent bg-default px-3.5"
               style={CONTINUOUS_CORNER}
               onPress={() => setShowDatePicker(true)}
             >
@@ -409,7 +409,7 @@ export function AddPetScreen() {
           ) : (
             <TextInput
               testID="approx-age-input"
-              className="rounded-xl bg-default px-4 py-3 text-foreground"
+              className="h-12 rounded-xl border-2 border-transparent bg-default px-3.5 text-15 font-semibold text-foreground"
               style={CONTINUOUS_CORNER}
               inputMode="numeric"
               maxLength={3}
@@ -440,7 +440,7 @@ export function AddPetScreen() {
           </Host>
         ) : null}
 
-        <View className="gap-2">
+        <View className="gap-1.5">
           <FieldLabel>{t('addPet.sterilized')}</FieldLabel>
           <View className="flex-row gap-2">
             <OptionalChip current={sterilized} label={t('addPet.yes')} testID="sterilized-true" value={true} onSelect={setSterilized} />
@@ -448,11 +448,11 @@ export function AddPetScreen() {
           </View>
         </View>
 
-        <View className="gap-2">
+        <View className="gap-1.5">
           <FieldLabel>{t('addPet.microchip')}</FieldLabel>
           <TextInput
             testID="microchip-input"
-            className="rounded-xl bg-default px-4 py-3 text-foreground"
+            className="h-12 rounded-xl border-2 border-transparent bg-default px-3.5 text-15 font-semibold text-foreground"
             style={CONTINUOUS_CORNER}
             maxLength={32}
             placeholder={t('addPet.optional')}
@@ -489,13 +489,15 @@ export function AddPetScreen() {
       keyboardVerticalOffset={headerHeight}
     >
       <ScrollView
+        key={step}
         testID="add-pet-form"
         className="flex-1 bg-background"
         keyboardShouldPersistTaps="handled"
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{
-          padding: 24,
-          gap: 16,
+          paddingHorizontal: 20,
+          paddingTop: 12,
+          gap: 12,
           paddingBottom: insets.bottom + 24,
         }}
       >
