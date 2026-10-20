@@ -207,6 +207,7 @@ describe('#174 R12: inventarios', () => {
         'screens/alerts/index.tsx', // #174 R12: delta sobre la lista medida en H0
         'screens/docs/index.tsx', // #175 R6
         'screens/forgot/index.tsx',
+        'screens/home/index.tsx', // #190 R13 (enmendado por #190 R13)
         'screens/login/index.tsx',
         'screens/meal-schedule/index.tsx', // #179 R7
         'screens/meals-history/index.tsx', // #179 R11

@@ -65,6 +65,11 @@ export const R2_TABS: UseRow[] = [
 ];
 
 export const R3_HOME: UseRow[] = [
+  // (enmendado por #190 R13): las cuatro frases viven en el helper puro.
+  { file: 'src/screens/home/pingo-phrase.ts', key: 'home.pingoPhraseWalkMeals' },
+  { file: 'src/screens/home/pingo-phrase.ts', key: 'home.pingoPhraseWalk' },
+  { file: 'src/screens/home/pingo-phrase.ts', key: 'home.pingoPhraseMeals' },
+  { file: 'src/screens/home/pingo-phrase.ts', key: 'home.pingoPhraseCalm' },
   { file: 'src/screens/home/index.tsx', key: 'home.noLocationDataYet' },
   { file: 'src/screens/home/index.tsx', key: 'home.lastSeen' },
   { file: 'src/screens/home/index.tsx', key: 'home.home' },

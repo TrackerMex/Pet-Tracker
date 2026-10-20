@@ -9746,3 +9746,32 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
   `expo-overview` ni `expo-router`; sin impacto visible en esta feature.
 - **Estado final:** done. Notion: Implementado / Completado. La PR #235 la mergea el humano; después se
   borra el worktree.
+
+## Sesión 2026-10-20 — mobile-home-pingo-phrase (id: 190)
+
+- **Feature:** Inicio gana una burbuja de Pingo bajo el hero: frase en voz B y en ES/EN a partir de
+  datos ya cargados (distancia de hoy y comidas), con frase de respaldo cuando faltan. Solo con
+  mascota seleccionada y con detalle y actividad resueltos. Pose `pingo-talk.webp` 64×64 con
+  `PingoFloat` (10 px, 1,5 s; inmóvil con reduce motion), séptimo bloque de la entrada
+  escalonada de `HomeEntrance` (índices fijos 0..6), token `--radius-4` para la cola y enmienda
+  #190 en `docs/ui-guidelines.md`.
+- **Spec:** [[specs/mobile-home-pingo-phrase/requirements|spec]], firmada por el humano vía Notion
+  (`81a964bc`, 2026-10-19). H1 a H3 y la Enmienda #190 firmadas.
+- **Acciones:** handoff a Codex (`845cc339`). Codex: pares rojo/verde por requisito en el orden
+  R9, R8, R11, R1, R2, R3, R4, R6, R10, R7, R13, R12, R5, R14 (R7 y R12 nacen verdes, con mutación
+  plantada en R12), más lint del probe R9 (`debf4467`), inventarios extra de R13 (`3ec3305b`) y
+  trazabilidad (`3fa9b613`). El reviewer APROBÓ R1-R14 con ~45 mutaciones fallidas por su
+  aserción. Hallazgo: el candado R14 comparaba la casilla `- [ ]` literal; ronda 2 de Codex
+  (`5f14c907`, solo test, sondas S0-S7) con la casilla aparte y tolerante a `[ xX]`. Merge de la
+  firma del humano (`b34082e1`, casillas con `[X]`) y de `origin/main` (`0ae4df6f`, con #193); un
+  conflicto mecánico en `home/index.tsx` (los dos bloques se conservan) lo resolvió el
+  `implementer` (fallback documentado; `progress/impl_merge_190_conflict.md`).
+- **Resultado:** `./init.sh` exit 0 en `a811d244`: backend 187/187 suites y 1474/1474 tests; móvil
+  126/126 suites y 4214/4214 tests; e2e 468 passed; typecheck y lint sin errores.
+- **Notas no bloqueantes:** el flake de `profile/index.test.tsx` (`R1: me card`) es preexistente
+  (1 de 8 en `origin/main` limpio, 0 de 8 en #190); el `selectable` de la burbuja no está en la
+  spec ni en ningún test; `traceability.md` queda en `status: draft`. Codex lanzó `init.sh` pese
+  al handoff (lo pide `AGENTS.md`).
+- **Drift tras el veredicto:** el veredicto es sobre `3fa9b613`; después solo cambian el test de la
+  ronda 2 (revisado por el leader con sondas), la firma del humano y el merge de main.
+- **Estado final:** done. Notion: Implementado / Completado. La PR #236 la mergea el humano; después se borra el worktree.

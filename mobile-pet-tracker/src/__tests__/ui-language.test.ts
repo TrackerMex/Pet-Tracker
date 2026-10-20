@@ -86,7 +86,7 @@ describe('#65 R3: Home resuelve su copy por clave', () => {
   // #68 añade el delta medido de weekly-activity-chart, sin recontar la base.
   // #73 añade `home.unknown` para distinguir espera inicial de desconexión.
   it('#71 R11: registra el copy de accesos rápidos sobre los deltas heredados', () => {
-    expect(R3_HOME).toHaveLength(21 + 15 + 1 + 4 + 7 + 2 + 1 + 2 + 2); // +2 #155 R4
+    expect(R3_HOME).toHaveLength(21 + 15 + 1 + 4 + 7 + 2 + 1 + 2 + 2 + 4); // +2 #155 R4; +4 #190 R9/R13 (enmendado por #190 R13)
     checkUses(R3_HOME);
   });
 });
@@ -504,6 +504,7 @@ describe('#65 R18: los sitios resuelven por clave y no queda copy suelta', () =>
         + 1 // #183 R2: utils/account-rules.ts
         + 1 // #185 R2: screens/docs-upload-form/index.tsx
         + 1 // #186 R2: utils/form-rules.ts
+        + 1 // #190 R13: screens/home/pingo-phrase.ts (enmendado por #190 R13)
     );
 
     for (const file of SCREEN_FILES) {
