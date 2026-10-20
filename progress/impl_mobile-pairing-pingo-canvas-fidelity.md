@@ -217,9 +217,9 @@ Diagnóstico adicional, no sustituye al gate: `bunx eslint --no-cache src/screen
 
 Lint del leader sobre el mismo cambio: `bunx expo lint --no-cache > progress/lint-188-exc5.log 2>&1`, código de salida 0, log de 0 bytes, sin `Failed to run` ni `SIGKILL`. La verificación completa del HEAD de cierre queda en `progress/init-188.log` y `progress/init-188.exit`.
 
-## Excepciones C4 pendientes de firma humana
+## Excepciones C4: evidencia de cada firma
 
-El reviewer rechazó `1ec2046d` (`progress/review_188.md`). Los hallazgos C4 piden decisión humana: excepción firmada por requisito, o enmienda de la spec que declare la vía (b) de CHECKPOINTS.md C4 (líneas 46–54). El leader no firma nada. La evidencia de rojo por aserción la aporta la prueba de mutación que Codex ejecuta con `progress/handoff_mutacion_mobile-pairing-pingo-canvas-fidelity.md` en `/home/claude/sites/Pet-Tracker-wt-188-probe`. Su informe se escribe en `progress/mutacion_mobile-pairing-pingo-canvas-fidelity.md`; hasta que exista, la evidencia de cada fila está pendiente.
+El reviewer rechazó `ec882bae` (veredicto guardado en el commit `9ef8bf47`). Los hallazgos C4 pedían decisión humana: excepción firmada por requisito, o enmienda de la spec que declare la vía (b) de CHECKPOINTS.md C4 (líneas 46–54). El leader no firma nada. La evidencia de rojo por aserción está en `progress/mutacion_mobile-pairing-pingo-canvas-fidelity.md`, producida por la prueba de mutación de Codex en `/home/claude/sites/Pet-Tracker-wt-188-probe` según `progress/handoff_mutacion_mobile-pairing-pingo-canvas-fidelity.md`.
 
 - **R9** (`e5716f2f`, NV): nace verde. D5(a), R6 y R8 ya omiten el subtítulo, sin commit rojo. Evidencia: M1 (línea nueva tras `index.tsx:283`) → rojo esperado en `index.test.tsx:1249`.
 - **R11** (`68fb1458`, NV; refactor `c0387881`): nace verde por R6/R8. Evidencia: M2 (texto literal en el botón, `index.tsx:388`) → rojo esperado en `pairing-canvas-fidelity.test.ts:53`.
@@ -229,7 +229,7 @@ El reviewer rechazó `1ec2046d` (`progress/review_188.md`). Los hallazgos C4 pid
 
 ## Convención de commits (M-2)
 
-`docs/conventions.md` §Commits lista ahora `test`, `docs` y `chore`. `feat`, `fix`, `refactor` y `test` que tocan la feature llevan `(R<n>)`; `docs` y `chore` no. Los ocho commits sin `(R<n>)` (`22aff2e9`, `847cff9d`, `bf7af15e`, `db4b8841`, `3082ff68`, `863da0dc`, `4fb7fd9a`, `1cc2a08f`) son todos `docs(...)` y cumplen la convención nueva. `4fb7fd9a` y `1cc2a08f` usan `docs(#188)` en vez de `docs(pairing)`. No se reescriben: cambiarían los hashes de la trazabilidad.
+`docs/conventions.md` §Commits lista ahora `test`, `docs` y `chore`. `feat`, `fix`, `refactor` y `test` que tocan la feature llevan `(R<n>)`; `docs` y `chore` no. Los commits de la rama sin `(R<n>)` son `docs(...)` y cumplen la convención nueva: `22aff2e9`, `847cff9d`, `bf7af15e`, `db4b8841`, `3082ff68`, `863da0dc`, `4fb7fd9a`, `1cc2a08f`, `d99797e2`, `9ef8bf47` y `db3bd5e3`. Quedan fuera de M-2 (decisión humana, C5): `8166167c` (asunto en inglés, sin tipo) y los merges de `origin/main` (`50e56e44`, `44a16473`). `4fb7fd9a` y `1cc2a08f` usan `docs(#188)` en vez de `docs(pairing)`. No se reescriben: cambiarían los hashes de la trazabilidad.
 
 ## Firmas humanas pendientes
 
