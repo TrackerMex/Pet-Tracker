@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { Button } from 'heroui-native';
+import { Camera } from 'reicon-react-native';
 import { useContext, useState } from 'react';
 import { KeyboardAvoidingView, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -23,7 +24,7 @@ import { SegmentedControl } from '../../components/segmented-control';
 import { PetAvatar } from '../../components/pet-avatar';
 import { FieldErrorMessage } from '../../components/field-error-message';
 import type { FieldIssues } from '../../utils/account-rules';
-import { validateAddPet } from '../../utils/form-rules';
+import { validateAddPet, validateAddPetBasics } from '../../utils/form-rules';
 import { useAuth } from '../../providers/auth-provider';
 import {
   useLocale,
@@ -101,7 +102,9 @@ export function AddPetScreen() {
   const t = useTranslate();
   const { selectPet } = useSelectedPet();
   const insets = useSafeAreaInsets();
-  const [muted] = useThemeColors(['muted']);
+  const [muted, accentStrong] = useThemeColors(['muted', 'accent-strong']);
+  const choosePhotoLabel = t('addPet.choosePhoto');
+  const [step, setStep] = useState<1 | 2>(1);
   const [species, setSpecies] = useState<Species>('dog');
   const [name, setName] = useState('');
   const [breed, setBreed] = useState('');
@@ -163,6 +166,14 @@ export function AddPetScreen() {
       photoAsset.contentType,
     );
     return uploaded.kind === 'ok';
+  }
+
+  function handleContinue() {
+    const issues = validateAddPetBasics({ name });
+    setFieldErrors(issues);
+    if (Object.keys(issues).length > 0) return;
+    setFormError(null);
+    setStep(2);
   }
 
   async function handleSubmit() {
@@ -229,51 +240,43 @@ export function AddPetScreen() {
     }
   }
 
-  return (
-    <KeyboardAvoidingView
-      testID="screen-add-pet"
-      className="flex-1"
-      behavior="padding"
-      keyboardVerticalOffset={headerHeight}
-    >
-      <ScrollView
-        testID="add-pet-form"
-        className="flex-1 bg-background"
-        keyboardShouldPersistTaps="handled"
-        contentInsetAdjustmentBehavior="automatic"
-        contentContainerStyle={{
-          padding: 24,
-          gap: 16,
-          paddingBottom: insets.bottom + 24,
-        }}
-      >
-        <Text testID="add-pet-title" accessibilityRole="header" className="text-2xl font-black tracking-title text-foreground">
-          {t('addPet.addPet')}
-        </Text>
-        <View className="items-center gap-2">
-          <PetAvatar
-            name={name.trim() || t('addPet.pet')}
-            photoUrl={photoAsset?.uri ?? null}
-            size={104}
-            testID="pet-avatar"
-          />
-          <Button
+  function renderPhotoError() {
+    return photoError ? <Text testID="photo-upload-error" className="text-danger">{photoError}</Text> : null;
+  }
+
+  function renderStep1() {
+    return (
+      <>
+        <View className="flex-row items-center gap-3.5">
+          <Pressable
             testID="add-pet-photo"
-            className="rounded-xl bg-accent-soft"
-            variant="secondary"
-            isDisabled={submitting}
+            className="size-22 items-center justify-center rounded-full border-2 border-dashed border-accent bg-surface-secondary"
+            accessibilityRole="button"
+            accessibilityLabel={choosePhotoLabel}
+            hitSlop={TOUCH_SLOP}
+            disabled={submitting}
             onPress={() => void handlePickPhoto()}
           >
-            <Button.Label className="font-bold text-accent-strong">
-              {t('addPet.choosePhoto')}
-            </Button.Label>
-          </Button>
-          {photoError ? (
-            <Text testID="photo-upload-error" className="text-danger">
-              {photoError}
-            </Text>
-          ) : null}
+            {photoAsset ? (
+              <PetAvatar
+                testID="pet-avatar"
+                name={name.trim() || t('addPet.pet')}
+                photoUrl={photoAsset.uri}
+                size={88}
+              />
+            ) : (
+              <>
+                <Camera size={26} color={accentStrong} />
+                <Text className="text-11 font-extrabold text-accent-strong">{choosePhotoLabel}</Text>
+              </>
+            )}
+          </Pressable>
+          <View testID="add-pet-bubble" className="flex-1 rounded-tile bg-surface-secondary px-3 py-2.5" style={CONTINUOUS_CORNER}>
+            <View testID="add-pet-bubble-tail" className="absolute -left-1.5 top-5.5 size-3 rotate-45 bg-surface-secondary" />
+            <Text testID="add-pet-bubble-text" className="text-13 font-semibold text-foreground">{t('addPet.pingoGreeting')}</Text>
+          </View>
         </View>
+        {renderPhotoError()}
 
         <Text className="text-lg font-bold text-foreground">
           {t('addPet.basicDetails')}
@@ -347,6 +350,20 @@ export function AddPetScreen() {
           />
         </View>
 
+        <Button
+          testID="add-pet-continue"
+          className="h-14 rounded-16 bg-accent" style={chunkyLip.primary}
+          onPress={() => handleContinue()}
+        >
+          <Text className="text-17 font-extrabold text-accent-foreground">{t('addPet.continue')}</Text>
+        </Button>
+      </>
+    );
+  }
+
+  function renderStep2() {
+    return (
+      <>
         <Text className="text-lg font-bold text-foreground">
           {t('addPet.medicalDetails')}
         </Text>
@@ -459,6 +476,44 @@ export function AddPetScreen() {
         {formError ? (
           <Text testID="add-pet-error" className="text-danger">{formError}</Text>
         ) : null}
+        {renderPhotoError()}
+      </>
+    );
+  }
+
+  return (
+    <KeyboardAvoidingView
+      testID="screen-add-pet"
+      className="flex-1"
+      behavior="padding"
+      keyboardVerticalOffset={headerHeight}
+    >
+      <ScrollView
+        testID="add-pet-form"
+        className="flex-1 bg-background"
+        keyboardShouldPersistTaps="handled"
+        contentInsetAdjustmentBehavior="automatic"
+        contentContainerStyle={{
+          padding: 24,
+          gap: 16,
+          paddingBottom: insets.bottom + 24,
+        }}
+      >
+        <View className="flex-row items-center justify-between gap-3">
+          <View className="flex-1">
+            <Text testID="add-pet-title" accessibilityRole="header" className="text-2xl font-black tracking-title text-foreground">
+              {t('addPet.addPet')}
+            </Text>
+          </View>
+          <Text testID="add-pet-step-label" className="text-13 font-extrabold text-muted">
+            {t('addPet.stepProgress', { current: step, total: 2 })}
+          </Text>
+        </View>
+        <View testID="add-pet-step-bar" accessibilityRole="progressbar" accessibilityValue={{ min: 1, max: 2, now: step }} className="flex-row gap-1.5">
+          <View testID="add-pet-step-segment-1" className="h-1.5 flex-1 rounded-full bg-accent" />
+          <View testID="add-pet-step-segment-2" className={step === 2 ? 'h-1.5 flex-1 rounded-full bg-accent' : 'h-1.5 flex-1 rounded-full bg-lip-gray'} />
+        </View>
+        {step === 1 ? renderStep1() : renderStep2()}
       </ScrollView>
       {celebratePetName !== null ? (
         <Celebration
