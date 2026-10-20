@@ -9774,4 +9774,4 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
   al handoff (lo pide `AGENTS.md`).
 - **Drift tras el veredicto:** el veredicto es sobre `3fa9b613`; después solo cambian el test de la
   ronda 2 (revisado por el leader con sondas), la firma del humano y el merge de main.
-- **Estado final:** done. La PR la mergea el humano; después se borra el worktree.
+- **Estado final:** done. Notion: Implementado / Completado. La PR #236 la mergea el humano; después se borra el worktree.
