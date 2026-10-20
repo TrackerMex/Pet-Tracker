@@ -1,6 +1,6 @@
-# Implementación #188 — requisitos implementados, Cierre bloqueado por typecheck
+# Implementación #188 — requisitos implementados; reviewer RECHAZADO sobre `1ec2046d`
 
-Fecha: 2026-10-19 UTC. H0: `6dc51ca1`; HEAD al reanudar: `3082ff68`. R13 y R1–R14 tienen cobertura verde focalizada. La feature no se declara done: typecheck falla y el Cierre no puede aprobarse. Los reportes anteriores se conservan en git.
+Fecha: 2026-10-19 UTC. H0: `6dc51ca1`; HEAD al reanudar: `3082ff68`; typecheck verde desde la excepción 5 (`c0e2c93a`). R13 y R1–R14 tienen cobertura verde focalizada. La feature no se declara done: el veredicto está en `progress/review_188.md` y los hallazgos C4 esperan decisión humana. Los reportes anteriores se conservan en git.
 
 ## Primer comando y alcance
 
@@ -120,11 +120,11 @@ Tests:       243 passed, 243 total
 
 Esta cifra precede al refactor R11 que elimina dos tests importados de la tabla; los tres casos propios de la suite nueva permanecen intactos.
 
-## Cierre: parada obligatoria
+## Cierre: parada obligatoria (registro; resuelta con la excepción 5)
 
 Se lanzaron, después del último verde, bun run test, typecheck con preguarda, lint sin caché y graphify. Al recibir el fallo de typecheck se detiene toda implementación y no se inicia ninguna otra verificación. Solo se recogen las operaciones ya iniciadas y se documenta el resultado.
 
-**Typecheck: FALLA (exit 2)**. `test ! -e .expo/types/router.d.ts` pasó y después arrancó `bun run typecheck` (`tsc --noEmit`). No existe una denegación del sandbox ni un error de invocación: son diagnósticos reales de TypeScript en fuentes de react-native-reanimated, entre ellos:
+**Typecheck: FALLA (exit 2) en la parada; corregido con la excepción 5 (`c0e2c93a`)**. `test ! -e .expo/types/router.d.ts` pasó y después arrancó `bun run typecheck` (`tsc --noEmit`). No existe una denegación del sandbox ni un error de invocación: son diagnósticos reales de TypeScript en fuentes de react-native-reanimated, entre ellos:
 
 ```text
 node_modules/react-native-reanimated/src/PropsRegistryGarbageCollector.ts(55,5): error TS2322: Type 'number' is not assignable to type 'Timeout'.
@@ -133,7 +133,7 @@ node_modules/react-native-reanimated/src/common/style/config.ts(21,14): error TS
 node_modules/react-native-reanimated/src/commonTypes.ts(172,18): error TS2320: Interface 'StyleProps' cannot simultaneously extend types 'ViewStyle' and 'TextStyle'.
 ```
 
-Hay otros TS7017 y TS2345 en esa dependencia. No se corrige código, no se excluyen tests ni se cambia tsconfig/dependencias para eludir el gate. La importación profunda de getAnimatedStyle en pairing/index.test.tsx es un antecedente relevante; no se declara una causa raíz sin verificarla en una sesión autorizada. router.d.ts no se crea ni se borra.
+Hay otros TS7017 y TS2345 en esa dependencia. No se corrige código, no se excluyen tests ni se cambia tsconfig/dependencias para eludir el gate. La importación profunda de getAnimatedStyle en pairing/index.test.tsx era la causa: el leader la sustituyó por el import público en la excepción 5 (`c0e2c93a`) y el typecheck pasa sobre `1ec2046d`. router.d.ts no se crea ni se borra.
 
 Resultados recogidos de las operaciones ya iniciadas, sin repetir verificadores después del fallo:
 
@@ -141,7 +141,14 @@ Resultados recogidos de las operaciones ya iniciadas, sin repetir verificadores 
 - Lint: exit 0 con el comando exacto `bunx expo lint --no-cache > ../progress/lint-188.log 2>&1 && test ! -s ../progress/lint-188.log`; log vacío (0 bytes).
 - `graphify update .`: exit 0, extracción AST sin LLM. Genera en graphify-out el grafo con 26512 nodos, 34419 aristas y 1768 comunidades. Advertencia de herramienta: 20 ficheros SQL no contribuyen por faltar tree_sitter_sql; no se añaden dependencias. No afecta a la extracción móvil y no se acredita cobertura SQL.
 
-El último verde de código es f820d669. El commit documental final conserva la línea `Tests: 4027 passed, 4027 total` sin una corrida adicional: no cambia código. El único bloqueo de Cierre observado es typecheck. No se declara todo verde.
+El último verde de código es f820d669. El commit documental final conserva la línea `Tests: 4027 passed, 4027 total` sin una corrida adicional: no cambia código. Ese bloqueo quedó resuelto con la excepción 5; el estado vigente está en la sección siguiente.
+
+## Estado actual (leader, tras `1ec2046d`)
+
+- `init.sh` sobre `1ec2046d`: exit 0 (`progress/init-188.exit`, `progress/init-188.log`). Lint y Typecheck verdes.
+- Lint gate `bun run --cwd mobile-pet-tracker lint` (= `expo lint`): exit 0 (`progress/lint-188-gate.log`). `expo lint` sin argumentos lintea solo `src` en este proyecto (`node_modules/@expo/cli/build/src/lint/lintAsync.js`: `DEFAULT_INPUTS` = `src`, `app`, `components`; solo existe `src`). Sale 0 también si eslint muere por SIGKILL, así que la prueba positiva es la de alcance: `bunx eslint --no-cache --format json src` → exit 0, 239 ficheros, 0 errores, 0 avisos (`progress/lint-188-gate-scope.log`).
+- Fuera del gate: `bunx eslint --no-cache --format json .` → exit 1, 2 errores `no-undef` en `mobile-pet-tracker/test/blobatar-bridge.js:4` (`__dirname`) y `mobile-pet-tracker/test/jest-setup.js:1` (`jest`). Esos ficheros y `eslint.config.js` son idénticos en `origin/main` y la rama no los toca: deuda previa, no de #188 (`progress/lint-188-eslint.log`).
+- Reviewer sobre `1ec2046d`: RECHAZADO (`progress/review_188.md`). Abiertos: C4-1 (R9, R11, R14), C4-2 (R12) y C4-3 (R6), pendientes de decisión humana. M-1 queda cubierto por la prueba de alcance; lo confirma el reviewer en la siguiente pasada.
 
 ## Skills y desviaciones
 
@@ -178,7 +185,7 @@ mobile-pet-tracker/src/theme/global.css
 
 H1–H3 (Android, reduce motion y comparación con canvas) siguen al humano, igual que fps en release según los límites de la spec. No se verificó fidelidad visual desde tests ni se usó Expo Go. La compilación uniwind de border-3/size-37.5 se conserva acreditada por la ejecución inicial, sin repetirla.
 
-Última acción de esta ejecución: crear progress/impl_mobile-pairing-pingo-canvas-fidelity.done con una sola línea, `/home/claude/sites/Pet-Tracker-wt-188/progress/impl_mobile-pairing-pingo-canvas-fidelity.md`. El marcador indica que terminó esta ejecución bloqueada, no que se haya aprobado el Cierre.
+Corrección: esta frase anunciaba la creación de `progress/impl_mobile-pairing-pingo-canvas-fidelity.done`. El fichero no existe en `progress/` y no se crea; la afirmación se retira.
 
 ## Excepción 5 (import, typecheck)
 
@@ -209,3 +216,38 @@ Diagnóstico adicional, no sustituye al gate: `bunx eslint --no-cache src/screen
 `graphify update .` tras el cambio: código de salida 0 (solo toca `graphify-out/`, ignorado por git).
 
 Lint del leader sobre el mismo cambio: `bunx expo lint --no-cache > progress/lint-188-exc5.log 2>&1`, código de salida 0, log de 0 bytes, sin `Failed to run` ni `SIGKILL`. La verificación completa del HEAD de cierre queda en `progress/init-188.log` y `progress/init-188.exit`.
+
+## Excepciones C4 pendientes de firma humana
+
+El reviewer rechazó `1ec2046d` (`progress/review_188.md`). Los hallazgos C4 piden decisión humana: excepción firmada por requisito, o enmienda de la spec que declare la vía (b) de CHECKPOINTS.md C4 (líneas 46–54). El leader no firma nada. La evidencia de rojo por aserción la aporta la prueba de mutación que Codex ejecuta con `progress/handoff_mutacion_mobile-pairing-pingo-canvas-fidelity.md` en `/home/claude/sites/Pet-Tracker-wt-188-probe`. Su informe se escribe en `progress/mutacion_mobile-pairing-pingo-canvas-fidelity.md`; hasta que exista, la evidencia de cada fila está pendiente.
+
+- **R9** (`e5716f2f`, NV): nace verde. D5(a), R6 y R8 ya omiten el subtítulo, sin commit rojo. Evidencia: M1 (línea nueva tras `index.tsx:283`) → rojo esperado en `index.test.tsx:1249`.
+- **R11** (`68fb1458`, NV; refactor `c0387881`): nace verde por R6/R8. Evidencia: M2 (texto literal en el botón, `index.tsx:388`) → rojo esperado en `pairing-canvas-fidelity.test.ts:53`.
+- **R14** (`f820d669`, NV): nace verde; el gating de R1/R2/R4 ya restringe el hero. Evidencia: M5 (condición del hero sin `device === null`, `index.tsx:269`) → rojo esperado en `index.test.tsx:1292`.
+- **R12** (`94cea37c`): la mutación `className="w-[3px]"` se revirtió antes del commit y no quedó versionada; `tasks.md:101` contradice C4 punto 5. Evidencia: M3 (`index.tsx:270`, rojo en `pairing-canvas-fidelity.test.ts:73`) y M4 (hex en `ping-ring.tsx`, rojo en `:72`).
+- **R6** (`76bc928b`): rojo inválido, `findAllByType` no existe en RNTL 14. El rojo válido es `150dcf8d`. Propuesta: excepción que acepte `150dcf8d` como rojo de R6. El handoff no incluye mutación de R6.
+
+## Convención de commits (M-2)
+
+`docs/conventions.md` §Commits lista ahora `test`, `docs` y `chore`. `feat`, `fix`, `refactor` y `test` que tocan la feature llevan `(R<n>)`; `docs` y `chore` no. Los ocho commits sin `(R<n>)` (`22aff2e9`, `847cff9d`, `bf7af15e`, `db4b8841`, `3082ff68`, `863da0dc`, `4fb7fd9a`, `1cc2a08f`) son todos `docs(...)` y cumplen la convención nueva. `4fb7fd9a` y `1cc2a08f` usan `docs(#188)` en vez de `docs(pairing)`. No se reescriben: cambiarían los hashes de la trazabilidad.
+
+## Firmas humanas pendientes
+
+Solo el humano marca estas casillas, con su commit de firma. El leader no marca ninguna.
+
+- [ ] C4 · R6: aceptar `150dcf8d` como rojo válido de R6. Aprobado por humano (fecha: ____)
+- [ ] C4 · R9: excepción o enmienda vía (b), con la evidencia de M1. Aprobado por humano (fecha: ____)
+- [ ] C4 · R11: excepción o enmienda vía (b), con la evidencia de M2. Aprobado por humano (fecha: ____)
+- [ ] C4 · R12: excepción por la mutación no versionada, con la evidencia de M3 y M4. Aprobado por humano (fecha: ____)
+- [ ] C4 · R14: excepción o enmienda vía (b), con la evidencia de M5. Aprobado por humano (fecha: ____)
+- [ ] M-4 · excepción 1: padding de `#95 R6` en `index.test.tsx` (`e2194c67`). Aprobado por humano (fecha: ____)
+- [ ] M-4 · excepción 2: guarda design-drift `padding: 24` (`e2194c67`). Aprobado por humano (fecha: ____)
+- [ ] M-4 · excepción 3: selector R2 sin corchetes (`53e9af61`). Aprobado por humano (fecha: ____)
+- [ ] M-4 · excepción 4: cabecera del describe `#188 R1-R14` (`0c717e29`). Aprobado por humano (fecha: ____)
+- [ ] M-4 · excepción 5: import público de reanimated (`c0e2c93a`, `index.test.tsx:14`). Aprobado por humano (fecha: ____)
+- [ ] B-5 · Supuestos reformulados en `4fb7fd9a` (`specs/mobile-pairing-pingo-canvas-fidelity/requirements.md:101`). Confirmado por humano (fecha: ____)
+- [ ] M-2 · convención de commits de `docs/conventions.md` §Commits. Confirmado por humano (fecha: ____)
+- [ ] Merge con `origin/main`: unión de las tres enmiendas de `docs/ui-guidelines.md` (#176 y #186 de main, #188 de la rama). Revisado por humano (fecha: ____)
+- [ ] H1 · build de desarrollo Android: anillos de 2400 ms y flotado (`requirements.md:128`). Verificado por humano (fecha: ____)
+- [ ] H2 · dispositivo con «Quitar animaciones» activo (`requirements.md:129`). Verificado por humano (fecha: ____)
+- [ ] H3 · comparación lado a lado con el artboard «Vincular collar (19)» (`requirements.md:130`). Verificado por humano (fecha: ____)
