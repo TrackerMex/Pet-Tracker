@@ -463,4 +463,4 @@ El humano las revisa en el gate junto con la spec; ninguna cierra una decisión.
 ## Aprobación
 
 - [x] Aprobado por humano (fecha: 2026-10-19) ← gate obligatorio antes de implementar
-- [ ] Enmienda E1 (R13) aprobada por humano (fecha: ____) ← gate obligatorio antes de implementar R13
+- [X] Enmienda E1 (R13) aprobada por humano (fecha: 2026-10-20) ← gate obligatorio antes de implementar R13
