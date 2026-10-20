@@ -148,6 +148,7 @@ export function ProfileScreen() {
   const t = useTranslate();
   const { selectedPetId, selectPet } = useSelectedPet();
   const selectedPetIdRef = useRef<string | null>(selectedPetId);
+  const photoBusyRef = useRef<boolean>(false);
   const { theme } = useUniwind();
   const switchTheme = useThemeTransition();
   const insets = useSafeAreaInsets();
@@ -198,54 +199,60 @@ export function ProfileScreen() {
   async function handleChangePhoto() {
     if (!pet) return;
 
-    setPhotoError(null);
-    const picked = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      quality: 0.8,
-    });
-    if (picked.canceled || !picked.assets[0]) return;
-
-    const asset = picked.assets[0];
-    const contentType = resolvePhotoContentType(asset.mimeType, asset.uri);
-    if (!contentType) {
-      setPhotoError(t('profile.errorPhotoFormat'));
-      return;
-    }
-
-    setPhotoUploading(true);
+    if (photoBusyRef.current) return;
+    photoBusyRef.current = true;
     try {
-      const requested = await requestPhotoUploadUrl(
-        baseUrl,
-        token ?? '',
-        pet.id,
-        contentType,
-      );
-      if (requested.kind === 'unauthorized') {
-        await signOut();
-        return;
-      }
-      if (requested.kind !== 'ok') {
-        setPhotoError(t('profile.couldNotUploadPhoto'));
+      setPhotoError(null);
+      const picked = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        quality: 0.8,
+      });
+      if (picked.canceled || !picked.assets[0]) return;
+
+      const asset = picked.assets[0];
+      const contentType = resolvePhotoContentType(asset.mimeType, asset.uri);
+      if (!contentType) {
+        setPhotoError(t('profile.errorPhotoFormat'));
         return;
       }
 
-      const assetResponse = await fetch(asset.uri);
-      const body = await assetResponse.blob();
-      const uploaded = await uploadPhotoToUrl(
-        requested.uploadUrl,
-        body,
-        contentType,
-      );
-      if (uploaded.kind !== 'ok') {
-        setPhotoError(t('profile.couldNotUploadPhoto'));
-        return;
-      }
+      setPhotoUploading(true);
+      try {
+        const requested = await requestPhotoUploadUrl(
+          baseUrl,
+          token ?? '',
+          pet.id,
+          contentType,
+        );
+        if (requested.kind === 'unauthorized') {
+          await signOut();
+          return;
+        }
+        if (requested.kind !== 'ok') {
+          setPhotoError(t('profile.couldNotUploadPhoto'));
+          return;
+        }
 
-      detail.refetch();
-    } catch {
-      setPhotoError(t('profile.couldNotUploadPhoto'));
+        const assetResponse = await fetch(asset.uri);
+        const body = await assetResponse.blob();
+        const uploaded = await uploadPhotoToUrl(
+          requested.uploadUrl,
+          body,
+          contentType,
+        );
+        if (uploaded.kind !== 'ok') {
+          setPhotoError(t('profile.couldNotUploadPhoto'));
+          return;
+        }
+
+        detail.refetch();
+      } catch {
+        setPhotoError(t('profile.couldNotUploadPhoto'));
+      } finally {
+        setPhotoUploading(false);
+      }
     } finally {
-      setPhotoUploading(false);
+      photoBusyRef.current = false;
     }
   }
 
