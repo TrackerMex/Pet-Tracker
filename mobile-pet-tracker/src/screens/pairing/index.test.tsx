@@ -27,6 +27,7 @@ import {
 } from '../../api/subscriptions';
 import type { PetProfile } from '../../api/types';
 import PairingRoute from '../../app/pairing';
+import { Card } from '../../components/card';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import { LanguageProvider } from '../../providers/language-provider';
 import { SelectedPetProvider, useSelectedPet } from '../../providers/selected-pet-provider';
@@ -58,6 +59,21 @@ jest.mock('expo-router', () => ({
 jest.mock('react-native-safe-area-context', () => ({
   ...jest.requireActual('react-native-safe-area-context'),
   useSafeAreaInsets: () => ({ top: 40, right: 0, bottom: 24, left: 0 }),
+}));
+
+jest.mock('reicon-react-native', () => {
+  const actual = jest.requireActual<typeof import('reicon-react-native')>('reicon-react-native');
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return {
+    ...actual,
+    InfoCircle: (props: Record<string, unknown>) => React.createElement(View, { testID: 'icon-info-circle', ...props }),
+    Package: (props: Record<string, unknown>) => React.createElement(View, { testID: 'icon-package', ...props }),
+  };
+});
+
+jest.mock('../../theme/use-theme-colors', () => ({
+  useThemeColors: (tokens: string[]) => tokens.map((token) => `color:${token}`),
 }));
 
 const originalOS = Platform.OS;
@@ -1073,6 +1089,37 @@ describe('#188 R1-R14: pairing canvas fidelity', () => {
       status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn(),
     } satisfies AuthContextValue);
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+  });
+
+  it('#188 R18: renders the free-plan banner with an info icon and a bold lead', async () => {
+    for (const [language, lead, body] of [
+      ['es', 'Plan gratuito — solo salud.', 'Vincula un collar con plan activo para ver el mapa.'],
+      ['en', 'Free plan — health only.', 'Pair a collar with an active plan to see the map.'],
+    ] as const) {
+      const app = await renderWithProviders(
+        <LanguageProvider initial={language}><PairingRoute /></LanguageProvider>,
+        { wrapper: PairingWrapper },
+      );
+      const text = await screen.findByTestId('pairing-plan-free');
+      expect(text.props.className.split(' ')).toEqual(expect.arrayContaining([
+        'flex-1', 'text-13', 'font-normal', 'leading-4.75', 'text-muted',
+      ]));
+      expect(text.props.selectable).toBe(true);
+      expect(text).toHaveTextContent(`${lead} ${body}`, { exact: true });
+      const heading = within(text).getByText(lead, { exact: true });
+      expect(heading.props.className.split(' ')).toEqual(expect.arrayContaining(['font-bold', 'text-foreground']));
+      const iconBox = screen.getByTestId('pairing-plan-icon');
+      const banner = text.parent!;
+      expect(banner.children).toEqual([iconBox, text]);
+      expect(banner.props.className.split(' ')).toEqual(expect.arrayContaining([
+        'flex-row', 'items-start', 'gap-2.5', 'rounded-tile', 'bg-default', 'px-3.5', 'py-3',
+      ]));
+      expect(banner.findAllByType(Card)).toHaveLength(0);
+      expect(banner.props.style).toBeUndefined();
+      expect(iconBox.props.className).toBe('mt-px');
+      expect(within(iconBox).getByTestId('icon-info-circle').props).toMatchObject({ size: 20, color: 'color:muted' });
+      await app.unmount();
+    }
   });
 
   it('#188 R17: shows only the selected pet avatar above the hero', async () => {
