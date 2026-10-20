@@ -247,6 +247,9 @@ export function AddPetScreen() {
           paddingBottom: insets.bottom + 24,
         }}
       >
+        <Text testID="add-pet-title" accessibilityRole="header" className="text-2xl font-black tracking-title text-foreground">
+          {t('addPet.addPet')}
+        </Text>
         <View className="items-center gap-2">
           <PetAvatar
             name={name.trim() || t('addPet.pet')}
