@@ -254,10 +254,9 @@ describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () 
   const directUses = [
     [join('screens', 'forgot', 'index.tsx'), 0], // #177 R10
     [join('components', 'pet-hero-header.tsx'), 1],
-    // #136 R3 and #138 R3: the quick action tiles and collar-pair-link spread
-    // the corner inside their pressed style, so the Home keeps no direct use.
-    // The row stays at 0 to lock that and the import.
-    [join('screens', 'home', 'index.tsx'), 0],
+    // #136 R3 and #138 R3 keep their corners inside the pressed style.
+    // #190 R13: the Pingo bubble adds one direct continuous corner.
+    [join('screens', 'home', 'index.tsx'), 1], // (enmendado por #190 R13)
     [join('screens', 'home', 'weekly-activity-chart.tsx'), 1],
     [join('screens', 'health', 'index.tsx'), 2 + 1], // #168 R3
     [join('app', '(tabs)', 'food.tsx'), 2 - 1], // #168 R8
@@ -285,7 +284,7 @@ describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () 
     );
   });
 
-  it.each(directUses)('%s importa y aplica sus %i esquinas (enmendado por #177 R10)', (path, count) => {
+  it.each(directUses)('%s importa y aplica sus %i esquinas (enmendado por #177 R10) (enmendado por #190 R13)', (path, count) => {
     const source = readSource(path);
     const uses = [...source.matchAll(/style=\{CONTINUOUS_CORNER\}/g)];
 
@@ -304,7 +303,7 @@ describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () 
     }
   });
 
-  it('fusiona la esquina una vez y la entrega a las dos ramas de Card (enmendado por #177 R10)', () => {
+  it('fusiona la esquina una vez y la entrega a las dos ramas de Card (enmendado por #177 R10) (enmendado por #190 R13)', () => {
     const card = readSource(join('components', 'card.tsx'));
 
     expect(card).toContain(
@@ -318,7 +317,7 @@ describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () 
     // #138 R3: minus one more, collar-pair-link's corner travels in its own.
     expect(
       directUses.reduce((total, [, count]) => total + count, 2),
-    ).toBe(33 + 1 + 1 - 1 - 1 + 1 + 1 - 1 + 4 + 1 - 1 - 7 + 1 + 1 + 2 + 2 - 1); // #177 R5 // #179 R5, R10, R12; #178 R6, R12; #41 R9: geofences-link; #168 R3, R8, R6; #170 R16; #171 R3: ready-done; #173 R10: ProfileTile
+    ).toBe(33 + 1 + 1 - 1 - 1 + 1 + 1 - 1 + 4 + 1 - 1 - 7 + 1 + 1 + 2 + 2 - 1 + 1); // (enmendado por #190 R13) #177 R5 // #179 R5, R10, R12; #178 R6, R12; #41 R9: geofences-link; #168 R3, R8, R6; #170 R16; #171 R3: ready-done; #173 R10: ProfileTile
   });
 });
 
@@ -388,7 +387,7 @@ describe('#62 R15: todo contador usa cifras tabulares', () => {
 });
 
 describe('#98 R10: los candados que esta feature no mueve', () => {
-  it('deja CONTINUOUS_CORNER, bg-accent-soft y el acento donde estaban (enmendado por #177 R10)', () => {
+  it('deja CONTINUOUS_CORNER, bg-accent-soft y el acento donde estaban (enmendado por #177 R10) (enmendado por #190 R13)', () => {
     const home = readSource(join('screens', 'home', 'index.tsx'));
     const food = readSource(join('app', '(tabs)', 'food.tsx'));
     const count = (pattern: RegExp) =>
@@ -400,11 +399,10 @@ describe('#98 R10: los candados que esta feature no mueve', () => {
 
     // #136 R3: the tiles' corner moved into their pressed style, one direct
     // use less in the Home and in the repo.
-    // #138 R3: collar-pair-link's corner moved too, so the Home has none left.
-    // With no match, match() returns null: the ?? [] keeps the count readable.
-    expect(home.match(/style=\{CONTINUOUS_CORNER\}/g) ?? []).toHaveLength(0);
+    // #138 R3 moved collar-pair-link's corner too; #190 R13 adds the bubble's.
+    expect(home.match(/style=\{CONTINUOUS_CORNER\}/g) ?? []).toHaveLength(1); // (enmendado por #190 R13)
     expect(food.match(/style=\{CONTINUOUS_CORNER\}/g)).toHaveLength(1);
-    expect(count(/style=\{CONTINUOUS_CORNER\}/g)).toBe(31 + 1 + 4 + 1 - 1 - 7 + 1 + 1 + 2 + 2 - 1); // #177 R5 // #179 R5, R10, R12; #178 R6, R12; #41 R9: geofences-link; #168; #170 R8: alert-detail-map; #171 R3: ready-done; #173 R10: ProfileTile
+    expect(count(/style=\{CONTINUOUS_CORNER\}/g)).toBe(31 + 1 + 4 + 1 - 1 - 7 + 1 + 1 + 2 + 2 - 1 + 1); // (enmendado por #190 R13) #177 R5 // #179 R5, R10, R12; #178 R6, R12; #41 R9: geofences-link; #168; #170 R8: alert-detail-map; #171 R3: ready-done; #173 R10: ProfileTile
     expect(count(/rounded-xl bg-accent(?=[\s'"`])/g)).toBe(1); // #177 R10
     expect(count(/bg-accent-soft/g)).toBe(16 + 2 + 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1 - 1); // #179 R6, R7, R11; #178 R5, R10, R12; #147 R4: meal-time-edit y add-meal-time-button; #105 R11; #168 R5: PetPills pasa a huecos pastel; #172 R14: forgot-lock-tile pasa a bg-accent; #171 R3; #173 R6
     expect(home.match(/text-accent-strong\b/g)).toHaveLength(2);

@@ -734,6 +734,18 @@ siguiente envío. Los errores de red conservan su aviso de formulario.
 
 - [X] Enmienda #186 aprobada por humano
 
+## Enmienda #190 — Burbuja de Pingo en Inicio
+
+> Enmienda de `ui-guidelines` por `mobile-home-pingo-phrase` (#190). Directiva del humano: «el diseño final como el artifact».
+
+**Pingo flota en la burbuja de Inicio.** Con mascota seleccionada, la pose de la burbuja de Pingo de Inicio (`home-pingo`) usa `PingoFloat` (`src/components/pingo-float.tsx`) con `MOTION_PINGO_FLOAT_OFFSET_Y` (10 px) y `MOTION_PINGO_FLOAT_TIMING` (1500 ms por tramo). Con reduce motion no arranca. Esta enmienda no autoriza `PingoFloat` en ninguna otra pantalla.
+
+**Escala de radios.** Se añade `--radius-4: 4px` (`rounded-br-4`), la esquina de la «cola» de la burbuja. Un solo uso hoy.
+
+**La burbuja de Pingo.** `View` de superficie con radio 18 px (`rounded-tile`) y 4 px en la esquina inferior derecha, texto `text-15 font-semibold leading-5.25`. La frase sale de claves `home.pingoPhrase*`, en voz B.
+
+- [X] Enmienda #190 aprobada por humano
+
 ## Enmienda #188 — Anillos de la vinculación de collar
 
 > Enmienda de `ui-guidelines` por `mobile-pairing-pingo-canvas-fidelity` (#188, 2026-10-19).

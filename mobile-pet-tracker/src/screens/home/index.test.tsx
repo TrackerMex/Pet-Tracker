@@ -9,7 +9,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import { useEffect, type ReactNode } from 'react';
 import { Text } from 'react-native';
-import { Easing, FadeOut, ReduceMotion, withDelay } from 'react-native-reanimated';
+import { Easing, FadeOut, ReduceMotion, withDelay, withRepeat, withSpring } from 'react-native-reanimated';
 import { Uniwind } from 'uniwind';
 
 import {
@@ -25,9 +25,9 @@ import {
 } from '../../api/query-keys';
 import { listReminders, type RemindersState } from '../../api/reminders';
 import type { Alert, DayEntry, PetProfile, Reminder } from '../../api/types';
-import { es } from '../../i18n/catalog';
+import { es, type Language } from '../../i18n/catalog';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
-import { LanguageProvider } from '../../providers/language-provider';
+import { LanguageProvider, useLanguage } from '../../providers/language-provider';
 import { SelectedPetProvider } from '../../providers/selected-pet-provider';
 import * as selectedPetHooks from '../../providers/selected-pet-provider';
 import { MOTION_FILL_TIMING } from '../../theme/motion';
@@ -4732,12 +4732,13 @@ async function renderMotionHome(): Promise<void> {
 describe('#152 R5: la Home envuelve cada bloque en su entrada escalonada', () => {
   beforeEach(setupHomeMotion);
 
-  it('pinta los seis envoltorios como hijos directos y en orden', async () => {
+  it('pinta los siete envoltorios como hijos directos y en orden (enmendado por #190 R6)', async () => {
     await renderMotionHome();
     const ids = screen.getByTestId('home-content').children.flatMap(
       (child) => typeof child === 'string' ? [] : [child.props.testID],
     );
     expect(ids).toEqual([
+      'home-entrance-pingo', // (enmendado por #190 R1)
       'home-entrance-summary',
       'home-entrance-collar',
       'home-entrance-quick-actions',
@@ -4761,15 +4762,16 @@ describe('#152 R5: la Home envuelve cada bloque en su entrada escalonada', () =>
     }
   });
 
-  it('escalona las entradas cada 60 ms en el orden de los bloques', async () => {
+  it('escalona las entradas cada 60 ms en el orden de los bloques (enmendado por #190 R6)', async () => {
     await renderMotionHome();
     for (const [id, delay] of [
-      ['home-entrance-summary', 0],
-      ['home-entrance-collar', 60],
-      ['home-entrance-quick-actions', 120],
-      ['home-entrance-weekly', 180],
-      ['home-entrance-reminders', 240],
-      ['home-entrance-last-position', 300],
+      ['home-entrance-pingo', 0], // (enmendado por #190 R6)
+      ['home-entrance-summary', 60],
+      ['home-entrance-collar', 120],
+      ['home-entrance-quick-actions', 180],
+      ['home-entrance-weekly', 240],
+      ['home-entrance-reminders', 300],
+      ['home-entrance-last-position', 360],
     ] as const) {
       jest.mocked(withDelay).mockClear();
       screen.getByTestId(id).props.entering({});
@@ -4849,6 +4851,7 @@ describe('#152 R5: la Home envuelve cada bloque en su entrada escalonada', () =>
 
   const homeEnteringIds = [
     'pet-avatar-fallback-pet-1',
+    'home-entrance-pingo', // (enmendado por #190 R1)
     'home-entrance-summary',
     'summary-reveal',
     'home-entrance-collar',
@@ -5510,5 +5513,278 @@ describe('#181 R7: Inicio converge al crear la primera mascota', () => {
     await waitFor(() => expect(screen.getByTestId('selected-pet-id')).toHaveTextContent(createdPet.id));
     await waitFor(() => expect(queryClient.isFetching()).toBe(0));
     expect(screen.queryByTestId('home-empty')).toBeNull();
+  });
+});
+
+describe('#190 R11: la burbuja sigue la receta del canvas', () => {
+  beforeEach(setupHomeMotion);
+
+  it('usa View y Text de RN con las clases exactas y un único hijo', async () => {
+    await renderHome();
+    const text = await screen.findByTestId('home-pingo-text');
+    const bubble = screen.getByTestId('home-pingo-bubble');
+    expect(bubble.props.className).toBe('flex-1 rounded-tile rounded-br-4 bg-surface px-3.5 py-3 shadow-sm');
+    expect(bubble.children).toEqual([text]);
+    expect(text.type).toBe('Text');
+    expect(text.props.className).toBe('text-15 font-semibold leading-5.25 text-foreground');
+  });
+});
+
+describe('#190 R1: la frase es el primer bloque con datos completos', () => {
+  beforeEach(setupHomeMotion);
+
+  it.each<DailyActivityState>([
+    { kind: 'ok', days: [makeDay()], weekComparison: { distanceM: null, activeMinutes: null, walkCount: null } },
+    { kind: 'unauthorized' },
+    { kind: 'no-tracking' },
+    { kind: 'error' },
+  ])('pinta la entrada y su único hijo con actividad $kind', async (activity) => {
+    mockGetDailyActivity.mockResolvedValue(activity);
+    await renderHome();
+    await screen.findByTestId('home-pingo-text');
+    const content = screen.getByTestId('home-content');
+    const entrance = screen.getByTestId('home-entrance-pingo');
+    expect(content.children.slice(0, 2)).toEqual([entrance, screen.getByTestId('home-entrance-summary')]);
+    expect(entrance.children).toEqual([screen.getByTestId('home-pingo-phrase')]);
+    jest.mocked(withDelay).mockClear();
+    expect(entrance.props.entering({}).initialValues).toEqual({ opacity: 0, transform: [{ translateY: 12 }] });
+    expect(jest.mocked(withDelay).mock.calls.map(([ms]) => ms)).toEqual([0, 0]);
+  });
+});
+
+describe('#190 R2: no hay frase antes de conocer la mascota y la actividad', () => {
+  beforeEach(setupHomeMotion);
+
+  function expectNoPhrase() {
+    for (const id of ['home-entrance-pingo', 'home-pingo-phrase', 'home-pingo-bubble', 'home-pingo-text', 'home-pingo-float', 'home-pingo']) {
+      expect(screen.queryByTestId(id)).toBeNull();
+    }
+  }
+
+  it('omite todos los nodos sin selección', async () => {
+    const selection = jest.spyOn(selectedPetHooks, 'useSelectedPet').mockReturnValue({
+      selectedPetId: null, selectPet: jest.fn(), clearPet: jest.fn(),
+    });
+    try {
+      await renderHome();
+      await screen.findByTestId('home-hero-actions');
+      expectNoPhrase();
+    } finally {
+      selection.mockRestore();
+    }
+  });
+
+  it('omite todos los nodos sin mascotas', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    await renderHome();
+    await screen.findByTestId('home-empty-title');
+    expectNoPhrase();
+  });
+
+  it.each(['loading', 'error'] as const)('omite la frase con mascotas en %s aunque la selección tenga detalle y actividad', async (state) => {
+    const selection = jest.spyOn(selectedPetHooks, 'useSelectedPet').mockReturnValue({
+      selectedPetId: 'pet-1', selectPet: jest.fn(), clearPet: jest.fn(),
+    });
+    if (state === 'loading') mockListPets.mockReturnValue(pending<PetsState>());
+    else mockListPets.mockResolvedValue({ kind: 'error' });
+    try {
+      await renderHome();
+      await screen.findByTestId(state === 'loading' ? 'home-loading' : 'home-error');
+      await screen.findByTestId('summary-distance');
+      await screen.findByTestId('collar-status');
+      expectNoPhrase();
+    } finally {
+      selection.mockRestore();
+    }
+  });
+
+  it('omite todos los nodos mientras carga el detalle', async () => {
+    mockGetPet.mockReturnValue(pending<PetState>());
+    await renderHome();
+    await screen.findByTestId('summary-distance');
+    expectNoPhrase();
+  });
+
+  it.each<PetState>([
+    { kind: 'error' },
+    { kind: 'unreachable', message: 'offline' },
+  ])('omite todos los nodos con detalle $kind', async (detail) => {
+    mockGetPet.mockResolvedValue(detail);
+    await renderHome();
+    await screen.findByTestId('pet-hero-error');
+    await screen.findByTestId('summary-distance');
+    expectNoPhrase();
+  });
+
+  it('omite todos los nodos mientras carga la actividad', async () => {
+    mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
+    await renderHome();
+    await screen.findByTestId('collar-status');
+    expect(screen.getByTestId('summary-skeleton')).toBeTruthy();
+    expectNoPhrase();
+  });
+
+  it('conserva los seis bloques existentes cuando la frase no aparece', async () => {
+    mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
+    await renderHome();
+    await screen.findByTestId('last-position-card');
+    expect(screen.getByTestId('home-content').children.map((child) => typeof child === 'string' ? child : child.props.testID)).toEqual([
+      'home-entrance-summary', 'home-entrance-collar', 'home-entrance-quick-actions',
+      'home-entrance-weekly', 'home-entrance-reminders', 'home-entrance-last-position',
+    ]);
+  });
+});
+
+describe('#190 R3: la fila alinea burbuja y pose al borde inferior', () => {
+  beforeEach(setupHomeMotion);
+
+  it('tiene la clase exacta y solo burbuja y envoltorio de pose, en orden', async () => {
+    await renderHome();
+    await screen.findByTestId('home-pingo-text');
+    const row = screen.getByTestId('home-pingo-phrase');
+    expect(row.props.className).toBe('flex-row items-end gap-2.5');
+    expect(row.children).toEqual([
+      screen.getByTestId('home-pingo-bubble'), screen.getByTestId('home-pingo-float'),
+    ]);
+  });
+});
+
+describe('#190 R4: Pingo usa su pose decorativa de 64 px', () => {
+  beforeEach(setupHomeMotion);
+
+  it('pinta pingo-talk como único hijo directo del envoltorio y sin etiqueta', async () => {
+    await renderHome();
+    await screen.findByTestId('home-pingo-text');
+    const pose = screen.getByTestId('home-pingo');
+    expect(screen.getByTestId('home-pingo-float').children).toEqual([pose]);
+    expect(pose.props.source).toEqual([
+      expect.objectContaining({ testUri: expect.stringMatching(/assets\/images\/pingo-talk\.webp$/) }),
+    ]);
+    expect(pose.props.style).toEqual({ width: 64, height: 64 });
+    expect(pose.props.accessibilityLabel).toBeUndefined();
+  });
+});
+
+describe('#190 R6: los índices son fijos aunque falte un bloque', () => {
+  beforeEach(setupHomeMotion);
+
+  it('conserva los huecos del collar sin última posición y de la actividad ausente', async () => {
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet() });
+    mockGetDailyActivity.mockResolvedValue({ kind: 'error' });
+    await renderHome();
+    await screen.findByTestId('home-pingo-text');
+    expect(screen.queryByTestId('home-entrance-weekly')).toBeNull();
+    expect(screen.queryByTestId('home-entrance-last-position')).toBeNull();
+    for (const [id, delay] of [
+      ['home-entrance-pingo', 0], ['home-entrance-summary', 60],
+      ['home-entrance-collar', 120], ['home-entrance-quick-actions', 180],
+      ['home-entrance-reminders', 300],
+    ] as const) {
+      jest.mocked(withDelay).mockClear();
+      screen.getByTestId(id).props.entering({});
+      expect(jest.mocked(withDelay).mock.calls.map(([ms]) => ms)).toEqual([delay, delay]);
+    }
+  });
+});
+
+let changeLanguage190: ((language: Language) => void) | undefined;
+
+function LanguageProbe190() {
+  const { setLanguage } = useLanguage();
+  useEffect(() => {
+    changeLanguage190 = setLanguage;
+    return () => { changeLanguage190 = undefined; };
+  }, [setLanguage]);
+  return null;
+}
+
+function HomeLanguageWrapper190({ children }: { children: ReactNode }) {
+  return <HomeWrapper><LanguageProbe190 />{children}</HomeWrapper>;
+}
+
+describe('#190 R10: la frase usa los datos de Inicio y reacciona al idioma', () => {
+  beforeEach(setupHomeMotion);
+
+  it('traduce la misma frase sin recargar ninguna query', async () => {
+    await renderWithProviders(<HomeScreen />, { wrapper: HomeLanguageWrapper190 });
+    const text = await screen.findByTestId('home-pingo-text');
+    expect(text).toHaveTextContent('Luna ya caminó 2.4 km hoy.');
+    const queries = [mockListPets, mockGetPet, mockGetDailyActivity, mockListReminders, mockListAlerts];
+    const calls = queries.map((query) => query.mock.calls.length);
+    expect(changeLanguage190).toBeDefined();
+    await act(async () => { changeLanguage190?.('en'); });
+    expect(screen.getByTestId('home-pingo-text')).toHaveTextContent('Luna has walked 2.4 km today.');
+    expect(queries.map((query) => query.mock.calls.length)).toEqual(calls);
+  });
+
+  it('combina distancia y comidas del detalle actual', async () => {
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makeMotionPet(82, { mealsToday: { served: 1, total: 2 } }) });
+    await renderHome();
+    expect(await screen.findByTestId('home-pingo-text')).toHaveTextContent('Luna ya caminó 2.4 km hoy y lleva 1 de 2 comidas.');
+  });
+
+  it('usa el respaldo cuando no hay tracking ni comidas', async () => {
+    mockGetDailyActivity.mockResolvedValue({ kind: 'no-tracking' });
+    await renderHome();
+    expect(await screen.findByTestId('home-pingo-text')).toHaveTextContent('Estoy pendiente de Luna.');
+  });
+
+  it('usa las comidas y el nombre del detalle aunque falle la actividad', async () => {
+    mockGetDailyActivity.mockResolvedValue({ kind: 'error' });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makeMotionPet(82, { name: 'Milo', mealsToday: { served: 3, total: 2 } }) });
+    await renderHome();
+    expect(await screen.findByTestId('home-pingo-text')).toHaveTextContent('Milo lleva 3 de 2 comidas hoy.');
+  });
+});
+
+describe('#190 R7: reduce motion conserva solo la entrada sin desplazamiento', () => {
+  beforeEach(setupHomeMotion);
+
+  it('parte de translateY cero, conserva el fundido y no añade escala a la burbuja', async () => {
+    mockUseReducedMotion.mockReturnValue(true);
+    await renderHome();
+    await screen.findByTestId('home-pingo-text');
+    mockWithTiming.mockClear();
+    jest.mocked(withSpring).mockClear();
+    jest.mocked(withDelay).mockClear();
+    const recipe = screen.getByTestId('home-entrance-pingo').props.entering({});
+    expect(recipe.initialValues).toEqual({ opacity: 0, transform: [{ translateY: 0 }] });
+    expect(recipe.animations).toEqual({ opacity: 1, transform: [{ translateY: 0 }] });
+    expect(mockWithTiming).toHaveBeenCalledWith(1, expect.objectContaining({ duration: 250, reduceMotion: ReduceMotion.Never }));
+    expect(jest.mocked(withDelay).mock.calls.map(([ms]) => ms)).toEqual([0, 0]);
+    expect(jest.mocked(withSpring).mock.calls.map(([value]) => value)).toEqual([0]);
+    const bubble = screen.getByTestId('home-pingo-bubble');
+    expect(bubble.props.entering).toBeUndefined();
+    expect(bubble.props.style).toEqual({ borderCurve: 'continuous' });
+  });
+});
+
+describe('#190 R5: la pose reutiliza PingoFloat', () => {
+  beforeEach(setupHomeMotion);
+
+  it('usa Animated.View y repite solo translateY -10 en tramos de 1500 ms invertidos', async () => {
+    await renderHome();
+    await screen.findByTestId('home-pingo-text');
+    const float = screen.getByTestId('home-pingo-float');
+    expect(float).toHaveAnimatedStyle({ transform: [{ translateY: -10 }] }, { shouldMatchAllProps: true });
+    expect(jest.mocked(withRepeat)).toHaveBeenCalledWith(-10, -1, true);
+    const timing = mockWithTiming.mock.calls.find(([value]) => value === -10)?.[1];
+    expect(timing).toEqual(expect.objectContaining({ duration: 1500, reduceMotion: ReduceMotion.System }));
+    const actualEasing = (timing as { easing: ReturnType<typeof Easing.bezier> }).easing.factory();
+    const expectedEasing = Easing.bezier(0.42, 0, 0.58, 1).factory();
+    for (const point of [0.25, 0.5, 0.75]) expect(actualEasing(point)).toBeCloseTo(expectedEasing(point), 6);
+    const source = readFileSync(join(process.cwd(), 'src/screens/home/index.tsx'), 'utf8');
+    const anchor = source.indexOf('testID="home-pingo-float"');
+    expect(source.lastIndexOf('testID="home-pingo-float"')).toBe(anchor);
+    expect(source.slice(source.lastIndexOf('<', anchor), anchor)).toMatch(/^<PingoFloat\s/);
+  });
+
+  it('con reduce motion solo tiene translateY cero y no arranca el bucle de Pingo', async () => {
+    mockUseReducedMotion.mockReturnValue(true);
+    await renderHome();
+    await screen.findByTestId('home-pingo-text');
+    expect(screen.getByTestId('home-pingo-float')).toHaveAnimatedStyle({ transform: [{ translateY: 0 }] }, { shouldMatchAllProps: true });
+    expect(jest.mocked(withRepeat)).not.toHaveBeenCalledWith(-10, -1, true);
+    expect(mockWithTiming.mock.calls.filter(([value]) => value === -10)).toEqual([]);
   });
 });
