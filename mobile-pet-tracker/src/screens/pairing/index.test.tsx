@@ -27,7 +27,6 @@ import {
 } from '../../api/subscriptions';
 import type { PetProfile } from '../../api/types';
 import PairingRoute from '../../app/pairing';
-import { Card } from '../../components/card';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import { LanguageProvider } from '../../providers/language-provider';
 import { SelectedPetProvider, useSelectedPet } from '../../providers/selected-pet-provider';
@@ -1114,7 +1113,8 @@ describe('#188 R1-R14: pairing canvas fidelity', () => {
       expect(banner.props.className.split(' ')).toEqual(expect.arrayContaining([
         'flex-row', 'items-start', 'gap-2.5', 'rounded-tile', 'bg-default', 'px-3.5', 'py-3',
       ]));
-      expect(banner.findAllByType(Card)).toHaveLength(0);
+      expect(banner.type).toBe('View');
+      expect(banner.props.className).toBe('flex-row items-start gap-2.5 rounded-tile bg-default px-3.5 py-3');
       expect(banner.props.style).toBeUndefined();
       expect(iconBox.props.className).toBe('mt-px');
       expect(within(iconBox).getByTestId('icon-info-circle').props).toMatchObject({ size: 20, color: 'color:muted' });

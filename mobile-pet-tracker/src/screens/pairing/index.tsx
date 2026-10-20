@@ -14,6 +14,7 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { InfoCircle } from 'reicon-react-native';
 
 import { claimDevice, releaseDevice } from '../../api/devices';
 import { listPets, type PetsState } from '../../api/pets';
@@ -34,6 +35,7 @@ import {
 } from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
 import { CONTINUOUS_CORNER } from '../../theme/native-styles';
+import { useThemeColors } from '../../theme/use-theme-colors';
 import { connectivityLabelKey } from '../../utils/device-connectivity';
 import { CATEGORY_SLOTS } from '../../utils/category-palette';
 
@@ -95,6 +97,7 @@ function DeviceRow({
 
 export function PairingScreen() {
   const chunkyLip = useChunkyLip();
+  const [muted] = useThemeColors(['muted']);
   const headerHeight = useContext(HeaderHeightContext);
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { signOut, token } = useAuth();
@@ -375,15 +378,20 @@ export function PairingScreen() {
 
         {phase === 'idle' && selectedPet?.device === null ? (
           <View className="gap-4">
-            <Card variant="secondary">
+            <View className="flex-row items-start gap-2.5 rounded-tile bg-default px-3.5 py-3">
+              <View testID="pairing-plan-icon" className="mt-px">
+                <InfoCircle size={20} color={muted} />
+              </View>
               <Text
                 testID="pairing-plan-free"
-                className="text-sm font-normal text-foreground"
+                className="flex-1 text-13 font-normal leading-4.75 text-muted"
                 selectable
               >
-                {t('pairing.freePlanPairPrompt')}
+                <Text className="font-bold text-foreground">{t('pairing.freePlanPairLead')}</Text>
+                {' '}
+                {t('pairing.freePlanPairBody')}
               </Text>
-            </Card>
+            </View>
 
             <View className="gap-2">
               <Text testID="pairing-activation-code-label" className="text-xs font-semibold uppercase tracking-widest text-muted">

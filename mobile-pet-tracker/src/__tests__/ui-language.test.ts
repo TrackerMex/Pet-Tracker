@@ -188,7 +188,7 @@ describe('#65 R9: el alta de mascota resuelve su copy por clave', () => {
 
 describe('#65 R10: el emparejado del collar resuelve su copy por clave', () => {
   it('resuelve las ocurrencias normativas y el delta de conectividad', () => {
-    expect(R10_PAIRING).toHaveLength(42 + 2 + 1 + 4 - 1); // +4 #94 E1: la tabla del Mapa comparte el util; -1 #95 R5
+    expect(R10_PAIRING).toHaveLength(42 + 2 + 1 + 4 - 1 + 1); // +4 #94 E1: la tabla del Mapa comparte el util; -1 #95 R5; #188 R18: -1 fila Prompt, +2 filas Lead y Body
     checkUses(R10_PAIRING);
   });
 });

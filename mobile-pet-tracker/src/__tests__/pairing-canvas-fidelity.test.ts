@@ -28,7 +28,7 @@ it('#188 R16/R20: declares the new theme tokens', () => {
   expect(theme).toContain('--font-mono: monospace');
 });
 
-it('#188 R11: resolves visible copy through bilingual catalog keys registered for pairing', () => {
+it('#188 R11/R18: resolves visible copy through bilingual catalog keys registered for pairing', () => {
   const tree = ts.createSourceFile(pairingFile, readSource(pairingFile), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   const keys = new Set<TranslationKey>();
   const looseCopy: string[] = [];
@@ -59,8 +59,11 @@ it('#188 R11: resolves visible copy through bilingual catalog keys registered fo
 
   expect(looseCopy).toEqual([]);
   expect([...keys]).toEqual(expect.arrayContaining([
-    'pairing.pairCollar', 'pairing.freePlanPairPrompt', 'pairing.activationCode', 'pairing.printedOnCollarBox',
+    'pairing.pairCollar', 'pairing.freePlanPairLead', 'pairing.freePlanPairBody', 'pairing.activationCode', 'pairing.printedOnCollarBox',
   ]));
+  expect(readSource('src/i18n/catalog.ts')).not.toContain('pairing.freePlanPairPrompt');
+  expect(readSource(pairingFile)).not.toContain('pairing.freePlanPairPrompt');
+  expect(copyTable).not.toContain('pairing.freePlanPairPrompt');
   for (const key of keys) {
     expect(en[key]).toEqual(expect.any(String));
     expect(es[key]).toEqual(expect.any(String));
