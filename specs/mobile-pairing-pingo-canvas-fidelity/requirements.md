@@ -114,6 +114,36 @@ Cada decisión tiene opciones, recomendación y requisito afectado. El spec_auth
   - Se comprueba con desigualdades sobre el estilo leído, con claves exactas `opacity` y `transform`; no con `toHaveAnimatedStyle`. Los límites son literales en el test, no importados de `src/theme/motion.ts`.
 - **Por qué intervalos**: a 2401 ms el valor depende de la curva y del reloj. El intervalo exige solo que el ciclo haya reiniciado desde 0.55 y avance hacia 1.5. Un anillo sin reinicio (queda en 1.5 y 0), uno con reversa o un anillo 0 con retardo de 1200 ms quedan fuera de ambos intervalos a 2401 ms.
 
+### E2 — Geometría del artboard: R15–R19 y decisiones ED1–ED4
+
+- **Qué cambia**: añade R15 a R19 y las decisiones ED1 a ED4. R16 sustituye la cláusula de tamaño de R7 cuando ED1 es (a) o (b). R17 es la única excepción a «primer elemento visual» de R1. El resto de R1–R14 no cambia.
+- **Por qué**: en el dispositivo, la vista de vinculación no coincide con el artboard «Vincular collar (19)» (`project/Vincular.dc.html`, versión 1792513497-a876). Las diferencias son: título sin centrar, Pingo a 150 px (el artboard usa 120 px), selector de mascota entre título y banner (el artboard no lo tiene ahí), botón «Vincular collar» sin anclar al fondo y banner de plan gratuito con otro aspecto. D4 y R7 dan 24 px para el título y atribuyen esa cifra al artboard; el artboard declara `font-size: 28px` en el `h1`. La premisa era incorrecta, y ED1 la decide.
+- **Requisitos nuevos**: R15 a R19 se numeran a continuación de R14 y siguen la misma notación. Los literales de copy salen del catálogo, sin texto nuevo.
+
+- **R15**: WHILE la vista de vinculación está activa THE SYSTEM SHALL agrupar el hero y `pairing-title` en un bloque vertical con 10 px de separación. El hero es una caja de 200 × 150 px que centra los anillos de R2 y `pairing-pingo`; `pairing-pingo` mide 120 px de ancho y alto proporcional a la imagen; el bloque se centra en horizontal.
+  - Test: el contenedor del hero mide 200 × 150 px; `pairing-pingo` mide 120 px de ancho y no tiene alto fijo; el hero y `pairing-title` son hermanos dentro de un contenedor con `gap` de 10 px.
+
+- **R16**: WHILE la vista de vinculación está activa THE SYSTEM SHALL mostrar `pairing-title` centrado en horizontal, con peso 900, espaciado `tracking-title` (−0.02 em) y el tamaño que fije ED1 (recomendado: 28 px, con el token nuevo `--text-28: 28px` en `src/theme/global.css`). Esta cláusula sustituye la de tamaño de R7 cuando ED1 es (a) o (b).
+  - Test: el className de `pairing-title` contiene `text-center`, `font-black`, `tracking-title` y la clase de tamaño de ED1; no contiene `text-2xl` ni `[`.
+
+- **R17**: WHERE ED2 es (a) WHILE la vista de vinculación está activa Y hay mascotas THE SYSTEM SHALL mostrar el selector `PetSwitcher` con `variant="avatars"` en una fila superior alineada a la derecha, encima de `pairing-pingo`, en lugar de entre `pairing-title` y `pairing-plan-free`. Esta fila es la única excepción a «primer elemento visual» de R1. En los demás estados el selector no cambia de sitio.
+  - Test: con al menos una mascota, los `pet-chip-<id>` aparecen antes que `pairing-pingo` en el árbol; ninguno aparece entre `pairing-title` y `pairing-plan-free`.
+
+- **R18**: WHILE la vista de vinculación está activa THE SYSTEM SHALL mostrar `pairing-plan-free` como banner a ancho completo: fondo `bg-default`, radio `rounded-tile` (18 px), relleno de 12 px arriba y abajo y de 14 px a los lados, icono informativo de 20 px en color `muted` a la izquierda y 10 px de separación hasta el texto. El texto es de 13 px (`text-13`) en color `muted`, a 16 px de `pairing-title` y de la etiqueta del código. El literal es el de `pairing.freePlanPairPrompt`, sin negrita, salvo que ED4 sea (b).
+  - Test: `pairing-plan-free` tiene `text-13` y `text-muted`; su contenedor tiene `bg-default` y `rounded-tile`; el icono mide 20 px.
+
+- **R19**: WHILE la vista de vinculación está activa THE SYSTEM SHALL anclar `pairing-submit` al borde inferior del contenido: el `contentContainerStyle` de `pairing-form` tiene `flexGrow: 1` y un espaciador con `flexGrow: 1` precede a `pairing-submit`. La receta visual de `pairing-submit` de #177 no cambia.
+  - Test: el `contentContainerStyle` de `pairing-form` tiene `flexGrow` 1 en la vista de vinculación; el elemento inmediatamente anterior a `pairing-submit` es un espaciador con `flexGrow` 1; `pairing-submit` es el último elemento del formulario.
+
+- **Decisiones**: ED1 a ED4 las cierra el humano en Notion antes de firmar E2. Recomendado: (a) en todas.
+- **ED1 Tamaño del título**. (a) 28 px con el token nuevo `--text-28: 28px` en `global.css`; recomendado, es el valor del artboard. (b) 26 px con `text-26`, que ya existe; 2 px menos que el artboard. (c) 24 px según D4; diferencia declarada. Afecta a: R16, R7.
+- **ED2 Selector de mascota**. (a) Fila superior con `variant="avatars"`, solo en la vista de vinculación; recomendado. Hipótesis por confirmar: el «R» de la cabecera del artboard es el mismo control. (b) Se queda entre título y banner; diferencia declarada. Afecta a: R17, R18.
+- **ED3 Etiqueta, input y pista**. (a) Se quedan con la receta de #186, como dice D7; recomendado. Diferencias declaradas frente al artboard: etiqueta de 14 px en peso 800 sin mayúsculas; input de 60 px con borde de 2 px en `accent` y 24 px monoespaciado en peso 900; pista de 12 px en peso 600 con icono de 14 px. (b) Pasan a #188 como R20 y D7 se reabre. Afecta a: R8, Fuera de alcance.
+- **ED4 Negrita del banner**. (a) Texto único del catálogo, sin negrita; recomendado. (b) `pairing.freePlanPairPrompt` se parte en dos claves con el mismo texto, para poner en negrita «Plan gratuito — solo salud.». Afecta a: R8, R11, R18.
+
+- **Diferencias declaradas que E2 no corrige**: cabecera nativa con atrás en lugar de la fila de cabecera del artboard (la ruta sigue con `title: ''`); margen inferior de `insets.bottom + 24` en lugar de 40 px; entrada animada `rise` de 400 ms del artboard, que esta spec no fija.
+- **Antes de implementar**: E2 necesita su propia aprobación (ver §Aprobación). `design.md`, `tasks.md` y `traceability.md` no cubren R15–R19; se actualizan tras aprobar E2 y antes del handoff a Codex.
+
 ## Aprobación
 
 - [x] Aprobado por humano (fecha: 2026-10-19) ← gate obligatorio antes de implementar
@@ -125,6 +155,7 @@ Cada decisión tiene opciones, recomendación y requisito afectado. El spec_auth
 - [x] D6 cerrada por humano: margen 20 px como excepción nombrada (a)
 - [x] D7 cerrada por humano: solapes con #186 y #181 (recomendado)
 - [x] E1 aprobada por humano (Notion, «Estado del gate» = Aprobado)
+- [ ] E2 aprobada por humano (Notion, «Estado del gate» = Aprobado), con ED1–ED4 cerradas por humano. Gate obligatorio antes de implementar E2.
 - [ ] H1 verificado en dispositivo por el humano: anillos de 2400 ms con el segundo a 1200 ms de retardo y flotado de 3000 ms por ciclo, en build de desarrollo Android (no Expo Go, no VPS)
 - [ ] H2 verificado en dispositivo por el humano: con «Quitar animaciones» activo, la vista se ve como fija D2
 - [ ] H3 verificado por el humano: comparación lado a lado con el artboard «Vincular collar (19)», incluida la amplitud del flotado (diferencia declarada)
