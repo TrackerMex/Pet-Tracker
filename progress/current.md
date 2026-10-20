@@ -14,12 +14,13 @@
 - Pendiente, en orden:
   1. Hecho (2026-10-20): commits de contenido `65531000`, firma de E2 `6a5317b2`, `docs/ui-guidelines.md` `189e641a` (su casilla «Enmienda #188 (E2) aprobada por humano» sigue sin firmar); push a la rama; re-espejo en Notion con `Rol actual` = Implementer (`page_last_edited_at` 2026-10-20T18:24:46.769Z).
   2. Hecho: `progress/handoff_mobile-pairing-pingo-canvas-fidelity-e2.md` escrito. Mientras Codex implemente, el leader no toca `mobile-pet-tracker/`.
-  3. Humano: lanzar Codex con el handoff. Nombres de skills de Codex del catálogo de `leader.md`; `expo-overview` no existe en Codex.
-  4. Leader: `init.sh` sobre el HEAD de Codex (el reviewer no puede correrlo).
-  5. Reviewer sobre el HEAD nuevo. Hasta su APROBADO no hay `done`.
+  3. Hecho (2026-10-20): Codex implementó R15–R20 y las cinco migraciones de inventarios de tasks.md (cierre `22c4991c`; 12 rutas móviles; 128 suites / 4256 tests).
+  4. Hecho (2026-10-20): `init.sh` sobre `22c4991c`: exit 0 (`progress/init-188-22c4991c.log`; los `.exit` no se commitean).
+  5. Hecho (2026-10-20): reviewer APROBADO sobre `22c4991c` (`progress/review_188.md`; 4 hallazgos no bloqueantes: R17 solo candada los índices 0 y 1 del ciclo de colores, candado de tokens de `global.css` por texto, corrección de test dentro de `a2a68b97`, avatar sin `accessible`). Seguimiento, no bloquea.
   6. Humano, smoke: H1 (anillos de 2400 ms y flotado), H2 (con «Quitar animaciones») y H3 (lado a lado con el artboard, con ED1–ED4 aplicadas).
   7. Tras el veredicto y las firmas: `done` en `feature_list.json`, entrada en `progress/history.md`, `STATUS.md` (177/191), Notion Implementado/Completado y merge de PR #232 (lo hace el humano).
-- Reviewer: el APROBADO sobre `db3bd5e3` (`progress/review_188.md`) ya no sirve para cerrar. El subagente sobre `ab78eb09` se paró sin veredicto.
+- Reviewer: APROBADO sobre `22c4991c` (ronda E2). El de `db3bd5e3` queda como historia al final de `progress/review_188.md`. Cualquier commit nuevo en `mobile-pet-tracker/`, `backend-pet-tracker/` o `infra/` exige relanzarlo; antes de `done`, drift check desde `22c4991c`.
+- Bloquean `done`: casilla `Enmienda #188 (E2) aprobada por humano` (`docs/ui-guidelines.md:769`) y H1–H3 (smoke humano en dev build Android).
 - Firmas de §Firmas humanas en `impl` L254–257: están `[X]` desde `ab78eb09`, pero su texto dice «Firma pendiente». Es texto anterior a la firma; no se reescribe.
 - Fuera de #188, en main: `progress/handoff_mobile-docs-upload.md` tiene marcadores de conflicto (L1210, L1214, L1219). No lo introduce #188.
 - Seguimiento, no bloquea: B-3 (`screens/pairing/index.test.tsx:1118`, aserción circular) y B-4 (`components/ping-ring.tsx` L15, rama reduce-motion inalcanzable en producción).
