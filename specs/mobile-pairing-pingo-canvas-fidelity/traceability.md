@@ -22,11 +22,21 @@ tags: [harness, spec]
 | R12 | src/__tests__/pairing-canvas-fidelity.test.ts::#188 R12: keeps hex colors and bracket classes out of %s (dos fuentes); cuatro suites de guardas | `94cea37c` test(pairing): guard style sources after bracket mutation check (R12) [mutación w-[3px] detectada en rojo y revertida antes del commit; cinco suites verdes 243/243] |
 | R13 | src/components/__tests__/ping-ring.test.tsx::#188 R13: applies the %i ms delay to both animated properties (800 y 1600); src/screens/welcome/index.test.tsx sin cambios | `a479c7f7` test(pairing): specify shared ring delays before extraction (R13) [rojo]; `d9d98844` refactor(pairing): share welcome ping rings with explicit delays (R13) [verde] |
 | R14 | src/screens/pairing/index.test.tsx::#188 R14: preserves %s without the linking hero (tracked/free/unknown/ready/no-pets) | `f820d669` test(pairing): preserve paired ready and empty states without hero (R14) [NV, gating R1/R2/R4; verde 88/88] |
+| R15 | src/screens/pairing/index.test.tsx::#188 R15: groups a 200 × 150 hero box and the title with a 10 px gap | pendiente |
+| R16 | src/screens/pairing/index.test.tsx::#188 R7/R16: gives the title the 28 px token and black weight (renombra el test de R7); src/screens/pairing/index.test.tsx::#188 R16: centers the title at 28 px with black weight and title tracking; src/__tests__/pairing-canvas-fidelity.test.ts::#188 R16/R20: declares the new theme tokens | pendiente |
+| R17 | src/screens/pairing/index.test.tsx::#188 R17: shows only the selected pet avatar above the hero; #188 R17: renders the initial or the photo on the palette slot of the selected pet; #188 R17: keeps the full pet switcher outside the linking view | pendiente |
+| R18 | src/screens/pairing/index.test.tsx::#188 R18: renders the free-plan banner with an info icon and a bold lead; src/__tests__/pairing-canvas-fidelity.test.ts::#188 R11: resolves visible copy through bilingual catalog keys registered for pairing (lista migrada a Lead y Body) | pendiente |
+| R19 | src/screens/pairing/index.test.tsx::#188 R19: anchors the submit button to the bottom edge; #188 R10: uses 20 px horizontal padding when %s (migrado: flexGrow 1 en linking) | pendiente |
+| R20 | src/screens/pairing/index.test.tsx::#188 R20: styles label, code input and hint like the artboard; src/__tests__/pairing-canvas-fidelity.test.ts::#188 R16/R20: declares the new theme tokens | pendiente |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente".
 Convención de commit: `feat(<scope>): <desc> (R1,R2)`.
 El implementer actualiza esta tabla tras cada commit; el reviewer la valida
 al aprobar (ver [[../../docs/specs|specs]] y [[../../CHECKPOINTS|CHECKPOINTS]] C5).
+
+## Estado de E2 (2026-10-20)
+
+R15–R20 (enmienda E2) están pendientes de implementar: sus filas dicen «pendiente» y no hay commit hasta que Codex los registre. Las migraciones de aserciones previas que E2 autoriza están en `tasks.md` §Migraciones autorizadas de E2. El estado de la sección siguiente describe la ejecución de R1–R14 y no cambia.
 
 ## Estado al cerrar esta ejecución (2026-10-19, tras excepción 5)
 

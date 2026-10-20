@@ -7,8 +7,9 @@ tags: [harness, spec]
 # Tareas — [[mobile-pairing-pingo-canvas-fidelity]]
 
 > Orden: T0 y luego un bloque por requisito. Cada bloque: (1) test rojo que nombra el R-id en el `it`, (2) implementación mínima, (3) refactor. Un bloque no empieza hasta que el anterior esté en verde. Requisitos en [[requirements]]; filas en [[traceability]].
-> Precondición: D1 a D7 cerradas por el humano y firma en `requirements.md`. #177 ya mergeada en `origin/main` (cbd964da): cumplida.
+> Precondición: D1 a D7 cerradas por el humano y firma en `requirements.md`. #177 ya mergeada en `origin/main` (cbd964da): cumplida. Para R15 a R20, la firma de E2 (ED1 a ED4 cerradas) en `requirements.md` §Aprobación.
 > Las rutas `src/…` son relativas a `mobile-pet-tracker/`.
+> R1 a R14 ya están implementados y trazados (ver [[traceability]]). T0-E2 y los bloques R15 a R20 se añaden con E2; no se rehace nada de R1 a R14 salvo las migraciones de aserciones que lista §Migraciones autorizadas de E2.
 
 ## T0 — Premisas (sin código)
 
@@ -108,9 +109,87 @@ Este bloque va primero: R2 y R3 usan el componente.
 2. Implementación mínima: montar el hero solo en la rama de vinculación.
 3. Refactor: ninguno.
 
+## T0-E2 — Premisas de E2 (sin código)
+
+- Antes de tocar nada: `git status --short` sin cambios en `mobile-pet-tracker/` y `H0-E2 = git rev-parse HEAD`.
+- Anclas con `grep -cF` (cuenta líneas), salida esperada entre paréntesis. Si una cifra no coincide, parar y devolver al leader:
+  - `--text-24` en `src/theme/global.css` (1); `--text-28` (0); `--tracking-code` (0); `--font-mono` (0); `--tracking-title` (1).
+  - `freePlanPairPrompt` en `src/i18n/catalog.ts` (2: es y en); `freePlanPairLead` en `src/i18n/catalog.ts` (0).
+  - `freePlanPairPrompt` en `src/__tests__/ui-copy-table.ts` (1), en `src/__tests__/pairing-canvas-fidelity.test.ts` (1) y en `src/screens/pairing/index.tsx` (1).
+  - `PetSwitcher` en `src/screens/pairing/index.tsx` (2: el import y el uso); `text-24 font-black text-foreground` en el mismo fichero (1); `pairing-hero` (0); `pairing-pet-row` (0).
+  - `CATEGORY_SLOTS` en `src/utils/category-palette.ts` (1).
+  - `assets/images/pingo-collar.webp` existe y mide 1024 × 1024 (`R15` depende de `aspectRatio: 1`).
+- Base de tests: `bun run test` una vez en `mobile-pet-tracker`, salida fuera del árbol. Anotar la línea `Tests:` como T0-E2.
+- Paquetes: `reicon-react-native` exporta `InfoCircle` y `Package` (comprobado por el leader). No se añade ninguna dependencia.
+
+## Migraciones autorizadas de E2
+
+Los requisitos de E2 chocan con estas aserciones previas. Cada migración la autoriza esta spec con la aserción nueva exacta; hay que registrarla en `progress/impl_*.md` con el nombre del `it`, la aserción cambiada y el R-id. Cualquier otra aserción previa que falle: parar y devolver al leader. Se citan por título, no por número de línea.
+
+En `src/screens/pairing/index.test.tsx`:
+
+- `limpia actionError al seleccionar otra mascota` y `submits the trimmed code exactly once for the selected pet` (R17): en la vista de vinculación ya no hay `pet-chip-*`. La mascota 2 se selecciona con una sonda de prueba dentro de `PairingWrapper` que llama `useSelectedPet().selectPet('pet-2')` dentro de `await act`, en lugar de pulsar `pet-chip-pet-2`. En el segundo, la espera sobre `pet-chip-pet-1` con `accessibilityState` `{ selected: true }` pasa a esperar que `pairing-pet-avatar` tenga `accessibilityLabel` `Luna`. El resto de aserciones de cada test (`petId: 'pet-2'`, el código `ACT-002`, el error limpio) no cambian.
+- `uses the shared pet switcher and changes the selected pet` (R17): se traslada al estado emparejado (las dos mascotas con `device: makeDevice()` y `mockGetPetTracking` resuelto), donde `PetSwitcher` sigue montado. Las aserciones sobre `pet-chip-*` no cambian.
+- `#188 R6: places the %s title first inside the scroll content` (R17): `texts[0]` excluye el texto `pairing-pet-avatar-fallback`; el título sigue siendo el primer texto del contenido tras el avatar.
+- `#188 R7: gives the title the 24 px token and black weight` (R16): se renombra `#188 R7/R16: gives the title the 28 px token and black weight`; espera `text-28` y `font-black`, y que no contenga `text-24`, `text-2xl` ni `[`.
+- `#188 R10: uses 20 px horizontal padding when %s` (R19): en la vista de vinculación (`linking`) el objeto esperado gana `flexGrow: 1` (queda `{ paddingHorizontal: 20, paddingVertical: 24, gap: 16, paddingBottom: 48, flexGrow: 1 }`); en `paired`, sin cambios.
+
+En `src/__tests__/pairing-canvas-fidelity.test.ts`:
+
+- `#188 R11: resolves visible copy through bilingual catalog keys registered for pairing` (R18): en la lista de claves, `pairing.freePlanPairPrompt` se sustituye por `pairing.freePlanPairLead` y `pairing.freePlanPairBody`.
+
+En otros ficheros (guardas existentes, mismas claves de cambio que R18/R20):
+
+- `src/__tests__/ui-language.test.ts`: `expect(R10_PAIRING).toHaveLength(42 + 2 + 1 + 4 - 1)` pasa a `42 + 2 + 1 + 4 - 1 + 1`, con el comentario `#188 R18: -1 fila Prompt, +2 filas Lead y Body`. Las entradas de `ui-copy-table.ts` cambian así: se borra la de `pairing.freePlanPairPrompt` y se añaden `{ file: 'src/screens/pairing/index.tsx', key: 'pairing.freePlanPairLead' }` y la de `pairing.freePlanPairBody`.
+- `src/__tests__/design-drift.test.ts`: la guarda de `rounded-14` (`outsideReminders(/\brounded-14\b/)`) añade `join('screens', 'pairing', 'index.tsx'), // #188 R20 comparte rounded-14` a la lista de ficheros esperados, en orden alfabético (después de `meals-history`).
+- `consistency-classnames`: sin cambios (el banner no lleva `CONTINUOUS_CORNER`; el input conserva el suyo y el recuento de `pairing` sigue en 1).
+
+Quedan fuera de las migraciones y deben seguir en verde sin editarse: `limpia la vista ready y el código al seleccionar otra mascota` (tras reclamar, la fase es `ready` y `PetSwitcher` sigue montado), `#188 R1` y `#188 R8` (sus regex de testIDs no incluyen los nodos nuevos), `#188 R2`, `shows the exact free-plan note and constrained activation-code field`, `renders the real route with uniform metrics and a dimensioned skeleton (#95 R6)` (estado de carga: `flexGrow` solo se añade cuando `phase === 'idle' && selectedPet?.device === null`), y los candados de `design-drift` sobre el import de `Card` y de `PetSwitcher` (siguen en uso en los demás estados).
+
+Las guardas de `design-drift` que acotan `pairing` exigen que sigan en el fichero los literales `paddingHorizontal: 20`, `paddingVertical: 24`, `gap: 16` e `insets.bottom + 24`, y prohíben `insets.top + 12` e `insets.bottom + 96`: no los cambies.
+
+## R15 — Hero de 200 × 150 y grupo con el título
+
+1. Test rojo `it('#188 R15: groups a 200 × 150 hero box and the title with a 10 px gap')` en `src/screens/pairing/index.test.tsx`, con los valores literales de R15: `pairing-hero` con `w-50` y `h-37.5`; `pairing-pingo` con `width` 120, `aspectRatio` 1 y sin `height`; `pairing-hero` y `pairing-title` hijos directos de `pairing-hero-group`, que tiene `items-center` y `gap-2.5`; los anillos y `pairing-pingo-float` hijos de `pairing-hero` en el orden de R2.
+2. Implementación mínima en `src/screens/pairing/index.tsx`: `pairing-hero-group` (`View items-center gap-2.5`) con `pairing-hero` (`View h-37.5 w-50 items-center justify-center` y las props de accesibilidad que ocultan el hero) y `pairing-title`. `pairing-pingo` pasa a `{ width: 120, aspectRatio: 1 }`, con `contentFit="contain"`.
+3. Refactor: ninguno. El test de R2 (anillos antes que `pairing-pingo`) y el de R4 siguen en verde sin editarse.
+
+## R16 — Título de 28 px centrado
+
+1. Test rojo `it('#188 R16: centers the title at 28 px with black weight and title tracking')`: el className de `pairing-title` contiene `text-center`, `text-28`, `font-black`, `tracking-title` y `text-foreground`; no contiene `text-24`, `text-2xl` ni `[`. Test de tokens `it('#188 R16/R20: declares the new theme tokens')` en `src/__tests__/pairing-canvas-fidelity.test.ts`: lee `src/theme/global.css` y comprueba que contiene `--text-28: 28px`, `--tracking-code: 0.14em` y `--font-mono: monospace`. Este segundo test puede tardar hasta R20 en ponerse en verde; hasta entonces falla por `--tracking-code` y `--font-mono`, y se anota en el reporte.
+2. Implementación mínima: añadir `--text-28: 28px` a `@theme` de `src/theme/global.css`, junto a `--text-24` y `--text-26`; el título usa `text-center text-28 font-black tracking-title text-foreground`. Migra `#188 R7` como indica §Migraciones autorizadas, y en `traceability.md` la fila R7 cita el nombre nuevo del test (sin tocar sus hashes).
+3. Refactor: ninguno. Ejecutar `design-drift` y `consistency-classnames`.
+
+## R17 — Fila superior con el avatar de la mascota seleccionada
+
+1. Tests rojos (`src/screens/pairing/index.test.tsx`, con `useSelectedPet` seleccionando cada mascota mediante la sonda de §Migraciones autorizadas):
+   - `it('#188 R17: shows only the selected pet avatar above the hero')`: con dos mascotas y la primera seleccionada, existe exactamente un `pairing-pet-avatar`, aparece en el árbol antes que `pairing-pingo`, su `accessibilityLabel` es el nombre de la primera, no tiene `onPress` y no existe ningún `pet-chip-*`; el anillo lleva `rounded-full`, `border-2`, `border-accent` y `p-0.75`.
+   - `it('#188 R17: renders the initial or the photo on the palette slot of the selected pet')`: sin foto, `pairing-pet-avatar-fallback` muestra la inicial en mayúscula y el disco (`pairing-pet-avatar-disc`) usa `size-9`, `rounded-full` y `bg-category-amber` con la primera y `bg-category-violet` con la segunda; con foto existe `pairing-pet-avatar-image` y no existe el de inicial.
+   - `it('#188 R17: keeps the full pet switcher outside the linking view')`: en el estado emparejado y en `ready` con dos mascotas existen `pet-chip-<id>` y no existe `pairing-pet-avatar` ni `pairing-pet-row`.
+2. Implementación mínima en `src/screens/pairing/index.tsx`: función local `PairingPetAvatar` (sin fichero nuevo) según `design.md` decisión 13; `PetSwitcher` solo se monta si hay mascotas y no es la vista de vinculación.
+3. Refactor: el arreglo del hueco (`['amber', 'violet', 'blue', 'green', 'rose'] as const`) va en una constante local con nombre. Migra los tests que lista §Migraciones autorizadas.
+
+## R18 — Banner del plan gratuito
+
+1. Test rojo `it('#188 R18: renders the free-plan banner with an info icon and a bold lead')`, con `reicon-react-native` simulado en el fichero de test (el mock expone `size` y `color` de `InfoCircle` y `Package`, como `form-error.test.tsx` con `AlertCircle`): `pairing-plan-free` tiene `text-13`, `font-normal`, `leading-4.75` y `text-muted`, y su texto completo es el de R8 en es y en; el `Text` anidado del lead tiene `font-bold` y `text-foreground`; el padre directo del icono y del texto tiene `bg-default`, `rounded-tile` y `gap-2.5` y no es un `Card`; el icono se renderiza con `size` 20 y el color de `muted`. Para la ausencia de la clave vieja, `it('#188 R11/R18: resolves visible copy …')` (migrado) comprueba que `pairing.freePlanPairPrompt` ya no está.
+2. Implementación mínima: en `catalog.ts` (es y en) se borra `pairing.freePlanPairPrompt` y se añaden `pairing.freePlanPairLead` («Plan gratuito — solo salud.» / «Free plan — health only.») y `pairing.freePlanPairBody` («Vincula un collar con plan activo para ver el mapa.» / «Pair a collar with an active plan to see the map.»); en `ui-copy-table.ts` se sustituye la entrada. El banner es el `View` de `design.md` decisión 14, con `InfoCircle` de `reicon-react-native` (20 px, color de `useThemeColors(['muted'])`) dentro de un `View mt-px` con testID `pairing-plan-icon`.
+3. Refactor: ninguno. El candado de copy suelto de R11 solo admite `{' '}` por quedar vacío al recortarlo; si el candado falla por otra cosa, parar.
+
+## R19 — Botón anclado al fondo
+
+1. Test rojo `it('#188 R19: anchors the submit button to the bottom edge')`: el `contentContainerStyle` de `pairing-form` tiene `flexGrow: 1` en la vista de vinculación y no lo tiene en el estado emparejado; el elemento inmediatamente anterior a `pairing-submit` es `pairing-submit-spacer`, con `flexGrow: 1`; `pairing-submit` es el último elemento del formulario.
+2. Implementación mínima: `contentContainerStyle` gana `flexGrow: 1` solo en la vista de vinculación; el envoltorio del formulario lleva `style={{ flexGrow: 1 }}`; `View testID="pairing-submit-spacer" style={{ flexGrow: 1 }}` justo antes de `pairing-submit`. La receta del botón (#177) no se toca.
+3. Refactor: ninguno. Migra `#188 R10` como indica §Migraciones autorizadas.
+
+## R20 — Etiqueta, input y pista del código
+
+1. Test rojo `it('#188 R20: styles label, code input and hint like the artboard')`: los className de etiqueta, input y pista contienen las clases de R20 y ninguna de las que pierden (`uppercase`, `tracking-widest`, `text-xs` y `font-semibold` en la etiqueta; `min-h-12`, `rounded-xl` y `py-3` en el input); el contenedor de los tres tiene `gap-1.5`; el input conserva `autoCapitalize="characters"`, `autoCorrect={false}`, `maxLength={64}`, `value` y `onChangeText`; el icono `Package` se renderiza con `size` 14 y el color de `muted`; al escribir `  ACT-002  ` el valor del input sigue siendo el escrito y `claimDevice` recibe `ACT-002`. El test de tokens de R16 (`#188 R16/R20: declares the new theme tokens`) pasa a verde en este bloque.
+2. Implementación mínima: añadir `--tracking-code: 0.14em` y `--font-mono: monospace` a `@theme` de `src/theme/global.css`; aplicar las recetas de R20 en `src/screens/pairing/index.tsx`. Si uniwind no compila `font-mono` con ese token, parar y devolver al leader: no se inventa otra familia.
+3. Refactor: ninguno. Ejecutar `design-drift` (migración de `rounded-14` de §Migraciones autorizadas) y `consistency-classnames`.
+
 ## Cierre
 
-- `bun run test` en `mobile-pet-tracker`: en verde, con el total = T0 + los `it` nuevos. Los tests previos de `pairing` pasan; si una aserción previa choca con la spec, parar y devolver al leader.
+- `bun run test` en `mobile-pet-tracker`: en verde, con el total = T0 + los `it` nuevos. Los tests previos de `pairing` pasan; si una aserción previa choca con la spec, parar y devolver al leader. Para E2, total = T0-E2 + los `it` nuevos de R15 a R20 (R15: 1; R16: 2, el de clases y el de tokens; R17: 3; R18: 1; R19: 1; R20: 1; en total 9) + los `it` que se renombran no suman ni restan.
 - Guardas de R12 en verde.
 - Typecheck: `test ! -e .expo/types/router.d.ts` antes de `bun run typecheck`.
 - Lint: `bunx expo lint --no-cache > <log> 2>&1 && test ! -s <log>`, con el log fuera del árbol.
