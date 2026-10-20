@@ -575,14 +575,18 @@ describe('#62 R12: el placeholder del formulario sale del tema', () => {
   });
 });
 
-describe('#95 R5: la pantalla no dibuja cabecera propia', () => {
-  it('retira el botón y el título del cuerpo', async () => {
+describe('#191 R2: el título vive en el contenido', () => {
+  it('pinta el título antes de la foto y conserva el botón atrás nativo', async () => {
     process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
     mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() });
     mockUseSelectedPet.mockReturnValue({ selectedPetId: 'pet-1', selectPet, clearPet: jest.fn(), });
     await renderAddPet();
     expect(screen.queryByTestId('add-pet-back')).toBeNull();
-    expect(screen.queryByText(es['addPet.addPet'])).toBeNull();
+    const title = screen.getByTestId('add-pet-title');
+    expect(title).toHaveTextContent(es['addPet.addPet']);
+    expect(title.props.accessibilityRole).toBe('header');
+    expect(title.props.className).toBe('text-2xl font-black tracking-title text-foreground');
+    expect(within(screen.getByTestId('add-pet-form')).getAllByTestId(/^add-pet-(title|photo)$/).map(node => node.props.testID)).toEqual(['add-pet-title', 'add-pet-photo']);
   });
 });
 
