@@ -756,3 +756,14 @@ siguiente envío. Los errores de red conservan su aviso de formulario.
 Detalle y tests en `specs/mobile-pairing-pingo-canvas-fidelity/requirements.md`.
 
 - [X] Enmienda #188 aprobada por humano
+
+## Enmienda #188 (E2) — Geometría de la vinculación de collar
+
+> Enmienda de `ui-guidelines` por `mobile-pairing-pingo-canvas-fidelity` (#188, E2, 2026-10-20).
+> Directiva del humano: «aplicalas tal cual como en artboard».
+
+**Qué cambia**: el input del código de activación de `pairing` usa `rounded-14` (14 px, `--radius-14`) con `h-15`, `border-2 border-accent` y `bg-default`, como el artboard «Vincular collar (19)». El avatar de la mascota de la fila superior usa el anillo de 2 px en `accent` con 3 px de separación (`border-2 border-accent p-0.75`), el mismo que el selector de avatares, y no es interactivo. El código se muestra en `font-mono` (`--font-mono: monospace`, familia genérica de Android) con `tracking-code` (0.14 em); no combina con `font-black` porque los pesos del proyecto son familias de fuente. Esta enmienda cubre solo esta pantalla: `rounded-14` sigue nombrado como excepción solo para las pantallas que ya lo citan.
+
+Detalle y tests en `specs/mobile-pairing-pingo-canvas-fidelity/requirements.md` (R15 a R20).
+
+- [ ] Enmienda #188 (E2) aprobada por humano
