@@ -46,6 +46,7 @@ describe('#173 R2: inventario de radios nuevos', () => {
   });
   it('reserva rounded-tile a los accesos de Perfil', () => {
     expect(filesMatching(/\brounded-tile\b/)).toEqual([
+      'screens/add-pet/index.tsx', // #191 R11
       'screens/add-reminder/index.tsx', // #178 R12
       'screens/profile/index.tsx',
     ]);
@@ -66,6 +67,7 @@ describe('#173 R2.4: inventario de tamaños nuevos', () => {
   it('limita text-13 a Perfil y a las pantallas de cuenta de #172 (E8)', () => {
     expect(filesMatching(/\btext-13\b/)).toEqual([
       'components/form-error.tsx',
+      'screens/add-pet/index.tsx', // #191 R11
       'screens/add-reminder/index.tsx', // #178 R12
       'screens/alert-detail/index.tsx', // #180 R3
       'screens/alerts/index.tsx', // #174 R4, R6
