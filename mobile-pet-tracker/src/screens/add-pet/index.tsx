@@ -19,6 +19,7 @@ import {
 import { createPet, listPets, type CreatePetInput } from '../../api/pets';
 import { petKeys } from '../../api/query-keys';
 import { Celebration } from '../../components/celebration';
+import { SegmentedControl } from '../../components/segmented-control';
 import { PetAvatar } from '../../components/pet-avatar';
 import { FieldErrorMessage } from '../../components/field-error-message';
 import type { FieldIssues } from '../../utils/account-rules';
@@ -277,27 +278,14 @@ export function AddPetScreen() {
 
         <View className="gap-2">
           <FieldLabel>{t('addPet.species')}</FieldLabel>
-          <View className="flex-row gap-2">
-            {(['dog', 'cat'] as const).map((value) => (
-              <Pressable
-                key={value}
-                accessibilityRole="button"
-                accessibilityState={{ selected: species === value }}
-                testID={`species-${value}`}
-                hitSlop={TOUCH_SLOP}
-                className={
-                  species === value
-                    ? 'rounded-full border border-accent bg-accent-soft px-3 py-2'
-                    : 'rounded-full border border-border bg-default px-3 py-2'
-                }
-                onPress={() => setSpecies(value)}
-              >
-                <Text className="text-sm font-semibold text-foreground">
-                  {value === 'dog' ? t('addPet.dog') : t('addPet.cat')}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
+          <SegmentedControl<Species>
+            options={[
+              { value: 'dog', label: t('addPet.dog'), testID: 'species-dog' },
+              { value: 'cat', label: t('addPet.cat'), testID: 'species-cat' },
+            ]}
+            value={species}
+            onSelect={(value) => { if (value !== null) setSpecies(value); }}
+          />
         </View>
 
         <View className="gap-2">
@@ -331,19 +319,29 @@ export function AddPetScreen() {
 
         <View className="gap-2">
           <FieldLabel>{t('addPet.sex')}</FieldLabel>
-          <View className="flex-row gap-2">
-            <OptionalChip current={sex} label={t('addPet.female')} testID="sex-female" value="female" onSelect={setSex} />
-            <OptionalChip current={sex} label={t('addPet.male')} testID="sex-male" value="male" onSelect={setSex} />
-          </View>
+          <SegmentedControl<Sex>
+            options={[
+              { value: 'female', label: t('addPet.female'), testID: 'sex-female' },
+              { value: 'male', label: t('addPet.male'), testID: 'sex-male' },
+            ]}
+            value={sex}
+            onSelect={setSex}
+            allowEmpty
+          />
         </View>
 
         <View className="gap-2">
           <FieldLabel>{t('addPet.size')}</FieldLabel>
-          <View className="flex-row flex-wrap gap-2">
-            <OptionalChip current={size} label={t('addPet.small')} testID="size-small" value="small" onSelect={setSize} />
-            <OptionalChip current={size} label={t('addPet.medium')} testID="size-medium" value="medium" onSelect={setSize} />
-            <OptionalChip current={size} label={t('addPet.large')} testID="size-large" value="large" onSelect={setSize} />
-          </View>
+          <SegmentedControl<PetSize>
+            options={[
+              { value: 'small', label: t('addPet.small'), testID: 'size-small' },
+              { value: 'medium', label: t('addPet.medium'), testID: 'size-medium' },
+              { value: 'large', label: t('addPet.large'), testID: 'size-large' },
+            ]}
+            value={size}
+            onSelect={setSize}
+            allowEmpty
+          />
         </View>
 
         <Text className="text-lg font-bold text-foreground">
