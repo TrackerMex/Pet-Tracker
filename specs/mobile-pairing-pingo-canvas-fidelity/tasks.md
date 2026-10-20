@@ -148,6 +148,20 @@ Quedan fuera de las migraciones y deben seguir en verde sin editarse: `limpia la
 
 Las guardas de `design-drift` que acotan `pairing` exigen que sigan en el fichero los literales `paddingHorizontal: 20`, `paddingVertical: 24`, `gap: 16` e `insets.bottom + 24`, y prohíben `insets.top + 12` e `insets.bottom + 96`: no los cambies.
 
+### Migraciones descubiertas en el Cierre (2026-10-20)
+
+Codex cerró R15 a R20 y paró en `bun run test` completo con cinco aserciones previas rojas fuera de la lista anterior (leader las reprodujo con `--runTestsByPath` sobre esos cuatro ficheros). Son inventarios globales que cuentan o enumeran consumidores, y E2 cambia a uno de ellos. Las autoriza el leader con la aserción nueva exacta; cada una se registra en `progress/impl_*.md` con el nombre del `it`, la aserción cambiada y el R-id. Se citan por título. Ninguna relaja un candado: todas registran un consumidor real nuevo o una baja real.
+
+- `src/__tests__/heroui-text-size-merge.test.ts`, `#187 R1: el escáner cubre al menos el universo medido (enmendado por #177 R9)` (R18): el banner del plan gratuito en la vista de vinculación deja de ser un `Card`, y el recuento de `Card` baja de 42 a 41. Solo cambia la línea de `cardElements`: `toBeGreaterThanOrEqual(42)` pasa a `toBeGreaterThanOrEqual(41)`, con el comentario `// #188 R18: 42 - 1 (el banner de vinculación deja de ser Card)`. No se tocan el escáner ni las otras tres cifras.
+- `src/providers/__tests__/language-provider.test.tsx`, `mantiene la base más las claves de #68 y los mismos marcadores en ambos idiomas` (R18): el catálogo pasa de 433 a 434 claves por -1 `pairing.freePlanPairPrompt` y +2 `pairing.freePlanPairLead`/`pairing.freePlanPairBody`. La suma termina hoy en `+ 4, // #190 R9 (enmendado por #190 R9)`; esa línea pasa a `+ 4 // #190 R9 (enmendado por #190 R9)` y se añade debajo `+ 1, // #188 R18: -1 Prompt, +2 Lead y Body`.
+- `src/__tests__/alerts-canvas-fidelity.test.ts`, `limita tracking-title a su inventario de producción` (R16): la lista de `tracking-title` añade `'screens/pairing/index.tsx', // #188 R16` entre `screens/meals-history/index.tsx` y `screens/reminders/index.tsx`.
+- `src/__tests__/profile-canvas-fidelity.test.ts`, `reserva rounded-tile a sus consumidores aprobados (enmendado por #190 R13)` (R18): la lista añade `'screens/pairing/index.tsx', // #188 R18` entre `screens/home/index.tsx` y `screens/profile/index.tsx`.
+- `src/__tests__/profile-canvas-fidelity.test.ts`, `limita text-13 a Perfil y a las pantallas de cuenta de #172 (E8)` (R18): la lista añade `'screens/pairing/index.tsx', // #188 R18` entre `screens/meal-schedule/index.tsx` y `screens/profile/index.tsx`.
+
+Estos cuatro ficheros pasan a la lista cerrada de archivos de la ronda. Un solo commit `test(pairing): ...` los reúne (no hay rojo previo: son aserciones ya vigentes que E2 dejó desactualizadas, y la implementación ya está en `4b8622b8`; regístralo como migración, no como NV). Cualquier otra aserción previa que falle tras ellas: parar y devolver al leader.
+
+También queda autorizado, con el mismo registro, el cambio de `PairingSelectionProbe` en `src/screens/pairing/index.test.tsx` (la captura de `selectPairingPet` pasa a un `useEffect` por la regla `react-hooks/globals` del lint); commit propio `refactor(pairing): capture the selection probe in an effect (R17)`.
+
 ## R15 — Hero de 200 × 150 y grupo con el título
 
 1. Test rojo `it('#188 R15: groups a 200 × 150 hero box and the title with a 10 px gap')` en `src/screens/pairing/index.test.tsx`, con los valores literales de R15: `pairing-hero` con `w-50` y `h-37.5`; `pairing-pingo` con `width` 120, `aspectRatio` 1 y sin `height`; `pairing-hero` y `pairing-title` hijos directos de `pairing-hero-group`, que tiene `items-center` y `gap-2.5`; los anillos y `pairing-pingo-float` hijos de `pairing-hero` en el orden de R2.
