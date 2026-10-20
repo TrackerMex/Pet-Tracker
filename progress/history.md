@@ -9775,3 +9775,28 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
 - **Drift tras el veredicto:** el veredicto es sobre `3fa9b613`; después solo cambian el test de la
   ronda 2 (revisado por el leader con sondas), la firma del humano y el merge de main.
 - **Estado final:** done. Notion: Implementado / Completado. La PR #236 la mergea el humano; después se borra el worktree.
+
+## Sesión 2026-10-20 — mobile-profile-followups (id: 184)
+
+- **Feature:** deuda de Perfil de #173 (O1, O2, O6) y el flake del me-card. Candados de test para
+  `disabled={photoUploading}` de `change-photo` (sonda `onStartShouldSetResponder`), `size` 40 y
+  `cacheKey` por mascota de `PetSwitcher avatars` y la `className` exacta de `profile-sign-out`; el
+  it `R1: me card` espera con `findByText`. Único cambio de producción: guardia de reentrada
+  `photoBusyRef` (más `finally` externo) en `handleChangePhoto`; sin cambios de JSX.
+- **Spec:** [[specs/mobile-profile-followups/requirements|spec]], firmada por el humano vía Notion
+  (`816a66bb`, 2026-10-20). R2 incluida por defecto de la spec; sin enmiendas.
+- **Acciones:** handoff a Codex (`6a581de8`). Siete commits test-primero: R5, R1, R3, R4, R2 rojo
+  (`5221b327`, doble toque: 2 llamadas al picker), R2 verde (`1dbda4bd`) y trazabilidad
+  (`d9fc677d`). R1, R3, R4 y R5 nacen verdes, con 15 mutaciones (X1-X15) plantadas por Codex y
+  tres repetidas por el reviewer (X1, X3, X5, X9), todas rojas.
+- **Resultado:** `./init.sh` exit 0 en `d9fc677d`: backend 187/187 suites y 1474/1474 tests; móvil
+  126/126 suites y 4225/4225 tests; e2e 468 passed (log del scratchpad). Reviewer APROBADO sobre
+  `d9fc677d`, 0 bloqueantes (`progress/review_mobile-profile-followups.md`).
+- **Notas no bloqueantes:** X3 (`disabled={false}`) falla antes de la sonda, en la espera de
+  `accessibilityState`; no hay zona ciega y la celda de `design.md` se corrigió al cierre.
+  `traceability.md` queda en `status: draft`. Codex lanzó `init.sh` en el arranque y lo detuvo
+  (exit 143) antes de los tests. El `init.sh` de línea base salió rojo solo por carga (load 44, un
+  peer corriendo jest); sin carga, verde.
+- **Sin skills de Expo:** ninguna aplicaba (una ref y tests RN, sin diseño ni UI nueva).
+- **Estado final:** done. Notion: Implementado / Completado. La PR #237 la mergea el humano; después se
+  borra el worktree.

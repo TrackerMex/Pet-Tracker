@@ -379,8 +379,7 @@ describe('R1: me card', () => {
 
     await renderProfile();
 
-    await waitFor(() => expect(screen.getByTestId('me-card')).toBeVisible());
-    expect(screen.getByText('Ada Lovelace')).toBeVisible();
+    expect(await screen.findByText('Ada Lovelace')).toBeVisible();
     expect(screen.getByText('ada@example.test')).toBeVisible();
     expect(mockGetMe).toHaveBeenCalledWith(apiUrl, 'jwt-token');
   });
@@ -1950,5 +1949,186 @@ describe('#181 R5: Perfil conserva la cuenta y compone el vacío ilustrado', () 
     for (const id of ['profile-pet-error', 'profile-pet-retry', 'profile-hero-skeleton', 'pet-info-skeleton']) {
       expect(screen.queryByTestId(id)).toBeNull();
     }
+  });
+});
+
+describe('#184 R1: la cámara no responde mientras sube', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: mockSignOut,
+    } satisfies AuthContextValue);
+    mockSignOut.mockResolvedValue();
+    mockGetMe.mockReturnValue(pending<MeState>());
+    const pet = makePet({ photoUrl: 'http://example.test/old.jpg' });
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+  });
+
+  it('#184 R1: no responde a toques durante la subida', async () => {
+    let finish!: (value: { kind: 'error' }) => void;
+    const requested = new Promise<{ kind: 'error' }>((resolve) => { finish = resolve; });
+    mockLaunchImageLibrary.mockResolvedValue({
+      canceled: false,
+      assets: [{ uri: 'file:///luna.webp', mimeType: 'image/webp' } as never],
+    });
+    mockRequestPhotoUploadUrl.mockReturnValue(requested);
+    await renderProfile();
+    await screen.findByTestId('profile-pet-card');
+    expect(screen.getByTestId('change-photo').props.onStartShouldSetResponder()).toBe(true);
+
+    await fireEvent.press(screen.getByTestId('change-photo'));
+
+    await waitFor(() => expect(screen.getByTestId('change-photo').props.accessibilityState).toEqual({ disabled: true }));
+    expect(screen.getByTestId('change-photo').props.onStartShouldSetResponder()).toBe(false);
+    await fireEvent.press(screen.getByTestId('change-photo'));
+    expect(mockLaunchImageLibrary).toHaveBeenCalledTimes(1);
+    expect(mockRequestPhotoUploadUrl).toHaveBeenCalledTimes(1);
+    await act(async () => { finish({ kind: 'error' }); });
+    await screen.findByTestId('photo-upload-error');
+    expect(screen.getByTestId('change-photo').props.onStartShouldSetResponder()).toBe(true);
+  });
+});
+
+describe('#184 R4: cerrar sesión conserva su botón danger-soft', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: mockSignOut,
+    } satisfies AuthContextValue);
+    mockSignOut.mockResolvedValue();
+    mockGetMe.mockReturnValue(pending<MeState>());
+    const pet = makePet({ photoUrl: 'http://example.test/old.jpg' });
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+  });
+
+  it('#184 R4: conserva la variante y las clases', async () => {
+    await renderProfile();
+    await screen.findByTestId('profile-sign-out');
+
+    expect(screen.getByTestId('profile-sign-out').props.className).toBe('pressable-feedback__root button__root button__root--variant-danger-soft button__root--size-md rounded-xl bg-danger-soft');
+  });
+});
+
+describe('#184 R2: handleChangePhoto ignora toques mientras hay uno en curso', () => {
+  const originalFetch = globalThis.fetch;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: mockSignOut,
+    } satisfies AuthContextValue);
+    mockSignOut.mockResolvedValue();
+    mockGetMe.mockReturnValue(pending<MeState>());
+    const pet = makePet({ photoUrl: 'http://example.test/old.jpg' });
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+  });
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+  });
+
+  it('#184 R2: un segundo toque con el picker abierto no lanza otro picker', async () => {
+    mockLaunchImageLibrary.mockReturnValue(pending<ImagePicker.ImagePickerResult>());
+    await renderProfile();
+    await screen.findByTestId('profile-pet-card');
+
+    await fireEvent.press(screen.getByTestId('change-photo'));
+    await fireEvent.press(screen.getByTestId('change-photo'));
+
+    expect(mockLaunchImageLibrary).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([
+    'picker cancelado',
+    'formato no soportado',
+    'URL denegada',
+    'sesión caducada',
+    'subida rechazada',
+    'excepción al leer el asset',
+    'subida correcta',
+  ])('#184 R2: libera la guardia tras %s', async (salida) => {
+    mockLaunchImageLibrary.mockResolvedValue({
+      canceled: false,
+      assets: [{ uri: 'file:///luna.webp', mimeType: 'image/webp' } as never],
+    });
+    mockRequestPhotoUploadUrl.mockResolvedValue({
+      kind: 'ok',
+      uploadUrl: 'http://localstack.test/upload',
+      expiresInSeconds: 600,
+    });
+    mockUploadPhotoToUrl.mockResolvedValue({ kind: 'ok' });
+
+    switch (salida) {
+      case 'picker cancelado':
+        mockLaunchImageLibrary.mockResolvedValue({ canceled: true, assets: null });
+        break;
+      case 'formato no soportado':
+        mockLaunchImageLibrary.mockResolvedValue({
+          canceled: false,
+          assets: [{ uri: 'file:///luna.gif', mimeType: 'image/gif' } as never],
+        });
+        break;
+      case 'URL denegada':
+        mockRequestPhotoUploadUrl.mockResolvedValue({ kind: 'error' });
+        break;
+      case 'sesión caducada':
+        mockRequestPhotoUploadUrl.mockResolvedValue({ kind: 'unauthorized' });
+        break;
+      case 'subida rechazada':
+      case 'subida correcta':
+        globalThis.fetch = jest.fn().mockResolvedValue({
+          blob: jest.fn().mockResolvedValue(new Blob(['x'], { type: 'image/webp' })),
+        });
+        if (salida === 'subida rechazada') {
+          mockUploadPhotoToUrl.mockResolvedValue({ kind: 'error' });
+        } else {
+          mockGetPet
+            .mockResolvedValueOnce({ kind: 'ok', pet: makePet({ photoUrl: 'http://example.test/old.jpg' }) })
+            .mockResolvedValue({ kind: 'ok', pet: makePet({ photoUrl: 'http://example.test/new.jpg' }) });
+        }
+        break;
+      case 'excepción al leer el asset':
+        globalThis.fetch = jest.fn().mockRejectedValue(new Error('boom'));
+        break;
+    }
+
+    await renderProfile();
+    await screen.findByTestId('profile-pet-card');
+
+    await fireEvent.press(screen.getByTestId('change-photo'));
+
+    if (salida === 'subida correcta') {
+      await waitFor(() => expect(screen.getByTestId('profile-pet-avatar').props.source).toEqual([
+        { uri: 'http://example.test/new.jpg', cacheKey: 'pet-1' },
+      ]));
+      expect(mockGetPet).toHaveBeenCalledTimes(2);
+    } else if (salida !== 'picker cancelado' && salida !== 'sesión caducada') {
+      expect(await screen.findByTestId('photo-upload-error')).toBeVisible();
+    }
+    if (salida !== 'picker cancelado') {
+      await waitFor(() => expect(screen.getByTestId('change-photo').props.accessibilityState).toEqual({ disabled: false }));
+    }
+    if (salida === 'sesión caducada') {
+      expect(mockSignOut).toHaveBeenCalledTimes(1);
+    }
+
+    await fireEvent.press(screen.getByTestId('change-photo'));
+
+    expect(mockLaunchImageLibrary).toHaveBeenCalledTimes(2);
   });
 });
