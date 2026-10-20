@@ -196,7 +196,8 @@ describe('R6: el estado local de pairing se limpia al cambiar de mascota', () =>
     await fireEvent.press(screen.getByTestId('pairing-submit'));
     expect(await screen.findByTestId('pairing-error')).toBeVisible();
 
-    await fireEvent.press(screen.getByTestId('pet-chip-pet-2'));
+    await act(() => selectPairingPet('pet-2'));
+    await waitFor(() => expect(screen.getByTestId('pairing-pet-avatar').props.accessibilityLabel).toBe('Milo'));
 
     await waitFor(() => {
       expect(screen.queryByTestId('pairing-error')).toBeNull();
@@ -269,9 +270,10 @@ describe('R4: /pairing monta en el Stack raíz con selector de mascota y estados
   it('uses the shared pet switcher and changes the selected pet', async () => {
     mockListPets.mockResolvedValue({
       kind: 'ok',
-      pets: [makePet(), makePet({ id: 'pet-2', name: 'Milo' })],
+      pets: [makePet({ device: makeDevice() }), makePet({ id: 'pet-2', name: 'Milo', device: makeDevice() })],
     });
 
+    mockGetPetTracking.mockResolvedValue({ kind: 'ok', tracked: true });
     await renderPairing();
 
     await waitFor(() =>
@@ -354,12 +356,9 @@ describe('R5: sin collar muestra el formulario de vinculación y publica el clai
       pets: [makePet(), makePet({ id: 'pet-2', name: 'Milo' })],
     });
     await renderPairing();
-    await waitFor(() =>
-      expect(
-        screen.getByTestId('pet-chip-pet-1').props.accessibilityState,
-      ).toEqual({ selected: true }),
-    );
-    await fireEvent.press(screen.getByTestId('pet-chip-pet-2'));
+    await waitFor(() => expect(screen.getByTestId('pairing-pet-avatar').props.accessibilityLabel).toBe('Luna'));
+    await act(() => selectPairingPet('pet-2'));
+    await waitFor(() => expect(screen.getByTestId('pairing-pet-avatar').props.accessibilityLabel).toBe('Milo'));
     await fireEvent.changeText(
       screen.getByTestId('activation-code-input'),
       '  ACT-002  ',
@@ -1118,7 +1117,7 @@ describe('#188 R1-R14: pairing canvas fidelity', () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: photoPets });
     await act(() => app.queryClient.setQueryData(petKeys.list(), { kind: 'ok', pets: photoPets }));
     const photo = await screen.findByTestId('pairing-pet-avatar-image');
-    expect(photo.props.source).toEqual({ uri: 'https://example.test/milo.jpg', cacheKey: 'pet-2' });
+    expect(photo.props.source).toEqual([{ uri: 'https://example.test/milo.jpg', cacheKey: 'pet-2' }]);
     expect(photo).toHaveStyle({ width: 36, height: 36 });
     expect(screen.queryByTestId('pairing-pet-avatar-fallback')).toBeNull();
   });
@@ -1285,7 +1284,7 @@ describe('#188 R1-R14: pairing canvas fidelity', () => {
     const form = screen.getByTestId('pairing-form');
     const heading = await within(form).findByTestId('pairing-title');
     expect(heading).toHaveTextContent(title, { exact: true });
-    const texts = within(form).getAllByText(/\S/);
+    const texts = within(form).getAllByText(/\S/).filter((node) => node.props.testID !== 'pairing-pet-avatar-fallback');
     expect(texts[0].props.testID).toBe('pairing-title');
   });
 

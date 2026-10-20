@@ -19,9 +19,10 @@ import { claimDevice, releaseDevice } from '../../api/devices';
 import { listPets, type PetsState } from '../../api/pets';
 import { deviceKeys, petKeys } from '../../api/query-keys';
 import { getPetTracking, type PetTrackingState } from '../../api/subscriptions';
-import type { DeviceStatus } from '../../api/types';
+import type { DeviceStatus, PetProfile } from '../../api/types';
 import { Card } from '../../components/card';
 import { Celebration } from '../../components/celebration';
+import { PetAvatar } from '../../components/pet-avatar';
 import { PetSwitcher } from '../../components/pet-switcher';
 import { PingRing } from '@/components/ping-ring';
 import { PingoFloat } from '@/components/pingo-float';
@@ -34,11 +35,32 @@ import {
 import { useSelectedPet } from '../../providers/selected-pet-provider';
 import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { connectivityLabelKey } from '../../utils/device-connectivity';
+import { CATEGORY_SLOTS } from '../../utils/category-palette';
 
 // #188 R3: the collar artboard staggers its second ring by half a cycle.
 const PAIRING_ARTBOARD_RING_DELAY_MS = 1200;
 const PAIRING_RING_CLASS_NAME = 'size-37.5 rounded-full border-3 border-accent';
 const PAIRING_PINGO_SOURCE = require('../../../assets/images/pingo-collar.webp');
+const PAIRING_AVATAR_SLOTS = ['amber', 'violet', 'blue', 'green', 'rose'] as const;
+
+function PairingPetAvatar({ pet, index }: { pet: PetProfile; index: number }) {
+  const slot = PAIRING_AVATAR_SLOTS[index % PAIRING_AVATAR_SLOTS.length];
+  return (
+    <View testID="pairing-pet-row" className="w-full flex-row justify-end">
+      <View testID="pairing-pet-avatar" accessibilityLabel={pet.name} className="rounded-full border-2 border-accent p-0.75">
+        <View testID="pairing-pet-avatar-disc" className={`size-9 items-center justify-center overflow-hidden rounded-full ${CATEGORY_SLOTS[slot].surface}`}>
+          {pet.photoUrl ? (
+            <PetAvatar name={pet.name} photoUrl={pet.photoUrl} size={36} cacheKey={pet.id} testID="pairing-pet-avatar-image" />
+          ) : (
+            <Text testID="pairing-pet-avatar-fallback" className={`text-sm font-extrabold ${CATEGORY_SLOTS[slot].ink}`}>
+              {pet.name.charAt(0).toUpperCase()}
+            </Text>
+          )}
+        </View>
+      </View>
+    </View>
+  );
+}
 
 function isPetsError(state: PetsState): boolean {
   return ['error', 'unreachable', 'missing-config'].includes(state.kind);
@@ -103,6 +125,7 @@ export function PairingScreen() {
       ? pets.data.pets.find(({ id }) => id === selectedPetId)
       : undefined;
   const hasSelectedDevice = selectedPet?.device != null;
+  const isLinking = phase === 'idle' && selectedPet?.device === null;
   const connectivityKey = connectivityLabelKey(
     selectedPet?.device?.connectivity ?? null,
   );
@@ -266,6 +289,10 @@ export function PairingScreen() {
           paddingBottom: insets.bottom + 24,
         }}
       >
+        {isLinking && selectedPet && pets.data?.kind === 'ok' ? (
+          <PairingPetAvatar pet={selectedPet} index={pets.data.pets.findIndex(({ id }) => id === selectedPet.id)} />
+        ) : null}
+
         {phase === 'idle' && selectedPet?.device === null ? (
           <View testID="pairing-hero-group" className="items-center gap-2.5">
             <View testID="pairing-hero" className="h-37.5 w-50 items-center justify-center" accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
@@ -318,7 +345,7 @@ export function PairingScreen() {
           </Text>
         ) : null}
 
-        {pets.data?.kind === 'ok' && pets.data.pets.length > 0 ? (
+        {pets.data?.kind === 'ok' && pets.data.pets.length > 0 && !isLinking ? (
           <PetSwitcher
             pets={pets.data.pets}
             selectedPetId={selectedPetId}
