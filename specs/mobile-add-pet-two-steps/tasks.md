@@ -80,6 +80,12 @@ tags: [mobile, ui, spec]
 - [ ] (2) Implementación mínima: sección «Enmienda #191» y línea de radios en `docs/ui-guidelines.md`, casilla **sin marcar**
 - [ ] (3) Refactor con tests verdes; `init.sh` completo en verde
 
+## R13 — Campo de fecha (Enmienda E1)
+
+- [ ] (1) Test rojo: `#191 R13` en `index.test.tsx` y reescritura de las aserciones de R6 sobre `birth-date-field`
+- [ ] (2) Implementación mínima: receta de R13 en `add-pet/index.tsx` (import `Calendar`); medir los candados de R11 y PARAR si alguno se mueve
+- [ ] (3) Refactor con tests verdes; `init.sh` completo en verde
+
 ## R12 — Cierre humano
 
 - [ ] (1) No hay test: el `reviewer` comprueba las casillas de §Cierre del humano

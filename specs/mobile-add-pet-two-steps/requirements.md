@@ -382,6 +382,41 @@ de elemento), `add-pet-bubble`, `add-pet-bubble-tail`, `add-pet-bubble-text` y
   - Test: no automático; el `reviewer` comprueba que las dos casillas están marcadas
     con fecha por el humano.
 
+- **R13** (Enmienda E1, 2026-10-20: campo de fecha de nacimiento; origen: smoke Android
+  del humano, «el input de fecha quedó raro, cambia por otro diseño»). THE SYSTEM SHALL
+  pintar `birth-date-field` con la receta del campo de fecha de `add-reminder`
+  (`date-field`: `Pressable` en fila, centrado, con icono `Calendar` de `reicon-react-native`),
+  a la altura del `TextInput` de meses: `className="h-12 flex-row items-center gap-2
+  rounded-xl border-2 border-transparent bg-default px-3.5"` más `style={CONTINUOUS_CORNER}`,
+  con hijos `<Calendar size={18} color={muted} />` y `<Text className="text-15
+  font-semibold text-foreground">` (`text-muted` en lugar de `text-foreground` mientras no
+  haya fecha). El texto sigue siendo `birthDate.toLocaleDateString(locale)` o
+  `t('addPet.selectBirthDate')`, sin cambiar de formato. Esto **sustituye** solo la parte de
+  R6 que prescribía para `birth-date-field` la receta de `TextInput` sin `flex-row
+  items-center`; el resto de R6 (los `TextInput`, las etiquetas, `contentContainerStyle`) no
+  cambia. THE SYSTEM SHALL conservar `testID`, `accessibilityRole="button"`, el `onPress`
+  que abre el selector, el `FieldErrorMessage` de debajo y la misma altura `h-12` que
+  `approx-age-input`, de modo que alternar entre «Fecha de nacimiento» y «Meses» no cambie
+  la altura de la fila de edad ni empuje `add-pet-submit`.
+  - Test: `index.test.tsx::#191 R13: el campo de fecha usa la receta de fecha de
+    add-reminder` (`className` completo y `style` de `birth-date-field`; hijo `Calendar`
+    de tamaño 18; clase del `Text` con fecha y sin fecha; `birth-date-field` y
+    `approx-age-input` empiezan ambos por `h-12`). **Reescribe** las aserciones de R6 que
+    afirmaban la receta anterior de `birth-date-field` y conserva las que leen su texto
+    con `within(...).getByText` (`9/4/2024`, etiquetas es/en).
+  - Si algún candado de R11 (`consistency-classnames`, `alerts-canvas-fidelity`,
+    `design-drift`, `profile-canvas-fidelity`, `chunky-cta-canvas-fidelity`,
+    `heroui-text-size-merge`) cambia de cifra por esta receta, el implementador PARA,
+    anota el delta medido en su reporte y espera aclaración humana antes de tocar el
+    candado (misma regla que durante R5).
+
+- **D6** (abierta, sin requisito): el humano también vio que «el botón cambia de posición»
+  y no ha precisado cuándo. En el código, `<Host>` del selector de fecha y la altura de los
+  controles de edad son iguales a antes de #191 salvo lo que R13 unifica. Mientras el humano
+  no diga si pasa al alternar Fecha/Meses, al abrir o cerrar el selector o en otro momento,
+  esta enmienda **no** prescribe nada sobre ello. Si el smoke tras R13 sigue mostrando el
+  salto, se enmienda otra vez con el momento exacto.
+
 ### Desviaciones conscientes del canvas
 
 El humano las revisa en el gate junto con la spec; ninguna cierra una decisión.
@@ -428,3 +463,4 @@ El humano las revisa en el gate junto con la spec; ninguna cierra una decisión.
 ## Aprobación
 
 - [x] Aprobado por humano (fecha: 2026-10-19) ← gate obligatorio antes de implementar
+- [ ] Enmienda E1 (R13) aprobada por humano (fecha: ____) ← gate obligatorio antes de implementar R13
