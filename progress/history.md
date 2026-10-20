@@ -9798,5 +9798,5 @@ Sesión Backend, worktree `Pet-Tracker-wt-icon`, branch
   (exit 143) antes de los tests. El `init.sh` de línea base salió rojo solo por carga (load 44, un
   peer corriendo jest); sin carga, verde.
 - **Sin skills de Expo:** ninguna aplicaba (una ref y tests RN, sin diseño ni UI nueva).
-- **Estado final:** done. Notion: Implementado / Completado. La PR la mergea el humano; después se
+- **Estado final:** done. Notion: Implementado / Completado. La PR #237 la mergea el humano; después se
   borra el worktree.
