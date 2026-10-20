@@ -12,8 +12,8 @@
   - H1–H3 vuelven a `[ ]` en `specs/mobile-pairing-pingo-canvas-fidelity/requirements.md` L128–130 y en `progress/impl_mobile-pairing-pingo-canvas-fidelity.md` L251–253 (commit `eed6fa58`). Se retiran las firmas de `ab78eb09`.
 - Enmienda E2 (`requirements.md`, §Enmiendas): añade R15–R20 con la geometría del artboard y cierra ED1–ED4. Aprobada en Notion (página `3fe6115a-9b27-8138-8b8a-f251f23b7c31`): `Estado del gate` = Aprobado, `page_last_edited_at` 2026-10-20T17:55:45.832Z. Lectura del leader de la instrucción del humano: ED1 (a) 28 px, ED2 (a) un solo avatar (el de la mascota seleccionada, sin listado), ED3 (b) etiqueta/input/pista pasan a #188 como R20, ED4 (b) `pairing.freePlanPairPrompt` se parte en Lead y Body. El texto de R17, R18 y R20 lo derivó el leader; el espejo que el humano vio tenía R17 con `PetSwitcher variant="avatars"` y no tenía R20.
 - Pendiente, en orden:
-  1. Leader: commits de contenido (design/tasks/traceability), commit de firma de E2 (`requirements.md`) y commit de `docs/ui-guidelines.md`; push a la rama; re-espejo en Notion con `Rol actual` = Implementer.
-  2. Leader: escribir `progress/handoff_mobile-pairing-pingo-canvas-fidelity-e2.md` y dárselo al humano.
+  1. Hecho (2026-10-20): commits de contenido `65531000`, firma de E2 `6a5317b2`, `docs/ui-guidelines.md` `189e641a` (su casilla «Enmienda #188 (E2) aprobada por humano» sigue sin firmar); push a la rama; re-espejo en Notion con `Rol actual` = Implementer (`page_last_edited_at` 2026-10-20T18:24:46.769Z).
+  2. Hecho: `progress/handoff_mobile-pairing-pingo-canvas-fidelity-e2.md` escrito. Mientras Codex implemente, el leader no toca `mobile-pet-tracker/`.
   3. Humano: lanzar Codex con el handoff. Nombres de skills de Codex del catálogo de `leader.md`; `expo-overview` no existe en Codex.
   4. Leader: `init.sh` sobre el HEAD de Codex (el reviewer no puede correrlo).
   5. Reviewer sobre el HEAD nuevo. Hasta su APROBADO no hay `done`.
