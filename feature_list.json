@@ -3418,7 +3418,7 @@
   {
     "id": 191,
     "name": "mobile-add-pet-two-steps",
-    "status": "spec_ready",
+    "status": "in_progress",
     "priority": "P2",
     "description": "Artboard Nueva mascota (22), hueco C9. Stepper «1 de 2» con barra de 2 segmentos; paso 1 con foto + burbuja de Pingo y Datos básicos (Tipo, Nombre, Raza, Sexo, Tamaño) + Continuar; paso 2 con lo que hoy es Detalles médicos (edad, esterilizado, microchip) + Guardar mascota; la celebración final ya existe (#171, add-pet-celebration). Ficheros dueños: src/screens/add-pet/index.tsx (index.test.tsx cambia mucho), la Stack.Screen pets/add de _layout.tsx, catalog.ts, ui-copy-table.ts, SCREEN_FILES si hay fichero nuevo. Va tras #186 para reutilizar el componente de validación; solape con la deuda mobile-add-pet-photo-test-flake. Decisiones abiertas del humano: el canvas NO dibuja el paso 2, la partición es una inferencia a confirmar; botón atrás del paso 2 (¿conserva datos?); ¿Pingo habla por paso?; validación al pasar de paso o solo al guardar. Registrada el 2026-10-16 desde la re-auditoría de paridad con el canvas aprobado (https://claude.ai/artifact/VqaQQsRTtis9Dbttqy3z7j), informe progress/explore_canvas-parity-2026-10-16.md (base 44acd74b). Reglas del humano: «el diseño final como el artifact» y «Píxel exacto». Va después de #177 (receta de botón) y #187; coordina con #186. Verificar cada ancla del informe contra el árbol al arrancar (los recuentos caducan). Registrada sin spec; no se arranca."
   },
