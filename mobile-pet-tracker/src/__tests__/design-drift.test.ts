@@ -153,6 +153,24 @@ const PAIRING_STYLE_ESCAPES = new RegExp(
   String.raw`${HEX_LITERAL}|${ARBITRARY_CLASS}|StyleSheet\.create|${SHADOW_ESCAPES}`,
   'i',
 );
+
+describe('#193 R11: grep-clean de Inicio, Perfil y Recordatorios', () => {
+  const featureFiles = [
+    'screens/home/index.tsx',
+    'screens/profile/index.tsx',
+    'screens/reminders/index.tsx',
+  ];
+
+  it('mantiene las tres pantallas sin escapes de estilo literales', () => {
+    const violations = featureFiles.flatMap((relativePath) => {
+      const contents = readFileSync(join(sourceRoot, relativePath), 'utf8');
+      return PAIRING_STYLE_ESCAPES.test(contents) ? [relativePath] : [];
+    });
+
+    expect(violations).toEqual([]);
+  });
+});
+
 const MEALS_BAR_STYLE_ESCAPES = new RegExp(
   String.raw`${HEX_LITERAL}|${ARBITRARY_CLASS}|StyleSheet(?:\.create)?|${SHADOW_ESCAPES}`,
   'i',
