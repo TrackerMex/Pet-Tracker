@@ -10,7 +10,7 @@ import { notificationAsync } from 'expo-haptics';
 import { router, useFocusEffect } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
-import { Alert, DeviceEventEmitter, Platform, StyleSheet } from 'react-native';
+import { Alert, DeviceEventEmitter, Platform } from 'react-native';
 import { getAnimatedStyle } from 'react-native-reanimated';
 
 import {
@@ -1090,7 +1090,8 @@ describe('#188 R1-R14: pairing canvas fidelity', () => {
     ]);
     const pingo = screen.getByTestId('pairing-pingo', { includeHiddenElements: true });
     expect(pingo).toHaveStyle({ width: 120, aspectRatio: 1 });
-    expect(StyleSheet.flatten(pingo.props.style).height).toBeUndefined();
+    const style = Object.assign({}, ...[pingo.props.style].flat(Infinity));
+    expect(style).not.toHaveProperty('height');
   });
 
   it('#188 R1: shows the collar pose as the first visual content', async () => {
