@@ -134,6 +134,23 @@ describe('R6: alta de mascota', () => {
     expect(screen.getByTestId('pet-avatar').props.name).toBe('Mascota');
   });
 
+  it('#191 R5: Tipo, Sexo y Tamaño usan el selector', async () => {
+    await renderAddPet();
+    expect(screen.getByTestId('species-dog').props.accessibilityState).toEqual({ selected: true });
+    for (const id of ['sex-female', 'sex-male', 'size-small', 'size-medium', 'size-large']) {
+      expect(screen.getByTestId(id).props.accessibilityState).toEqual({ selected: false });
+      expect(screen.getByTestId(id).parent!.props.className).toBe('flex-row gap-1 rounded-14 bg-default p-1');
+    }
+    await fireEvent.press(screen.getByTestId('species-dog'));
+    expect(screen.getByTestId('species-dog').props.accessibilityState).toEqual({ selected: true });
+    for (const id of ['sex-male', 'size-medium']) {
+      await fireEvent.press(screen.getByTestId(id));
+      expect(screen.getByTestId(id).props.accessibilityState).toEqual({ selected: true });
+      await fireEvent.press(screen.getByTestId(id));
+      expect(screen.getByTestId(id).props.accessibilityState).toEqual({ selected: false });
+    }
+  });
+
   it('uses Host + community DateTimePicker and keeps exactly birthDate', async () => {
     mockCreatePet.mockResolvedValue({
       kind: 'ok',
@@ -485,7 +502,7 @@ describe('#61 R10: los controles táctiles declaran TOUCH_SLOP', () => {
   });
 });
 
-describe('#62 R11: los chips de especie usan la receta única de chip', () => {
+describe('#62 R11: los selectores de especie usan la receta segmentada (enmendado por #191 R5)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
@@ -507,10 +524,10 @@ describe('#62 R11: los chips de especie usan la receta única de chip', () => {
 
     const chip = screen.getByTestId(testID);
 
-    expect(chip.props.className).toContain('px-3 py-2');
+    expect(chip.props.className).toBe('h-9.5 flex-1 items-center justify-center rounded-10' + (testID === 'species-dog' ? ' bg-surface shadow-sm' : ''));
     expect(chip.props.className).not.toContain('px-4');
     expect(within(chip).getByText(label).props.className).toBe(
-      'text-sm font-semibold text-foreground',
+      testID === 'species-dog' ? 'text-sm font-extrabold text-accent-strong' : 'text-sm font-extrabold text-muted',
     );
     expect(chip.props.hitSlop).toEqual(TOUCH_SLOP);
   });
