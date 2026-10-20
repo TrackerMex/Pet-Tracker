@@ -5299,6 +5299,107 @@ function SelectionProbe181() {
   return <Text testID="selected-pet-id">{selectedPetId ?? 'none'}</Text>;
 }
 
+describe('Inicio: refetch de foco con selección vigente', () => {
+  let selectedPetId: string | null;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    selectedPetId = null;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated', token: 'jwt-token',
+      signIn: jest.fn(), signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet() });
+    mockGetDailyActivity.mockResolvedValue({ kind: 'error' });
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [] });
+    const realUseSelectedPet = selectedPetHooks.useSelectedPet;
+    jest.spyOn(selectedPetHooks, 'useSelectedPet').mockImplementation(() => ({
+      ...realUseSelectedPet(), selectedPetId,
+    }));
+  });
+
+  afterEach(() => jest.restoreAllMocks());
+
+  describe('#193 R1: Inicio sin mascota no pide detalle al enfocar', () => {
+    it('no llama a getPet durante el foco con selección nula', async () => {
+      const { queryClient } = await renderWithProviders(<HomeScreen />, { wrapper: HomeWrapper });
+      await screen.findByTestId('home-empty');
+      await waitFor(() => expect(queryClient.isFetching()).toBe(0));
+      const before = mockGetPet.mock.calls.length;
+      const focus = mockUseFocusEffect.mock.calls.at(-1)?.[0];
+      expect(focus).toBeDefined();
+
+      await act(async () => { focus?.(); });
+
+      expect(mockGetPet.mock.calls.slice(before)).toEqual([]);
+    });
+  });
+
+  describe('#193 R2: Inicio con mascota refresca el detalle al enfocar', () => {
+    it('la callback original pide una vez el id seleccionado después del montaje', async () => {
+      mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+      const view = await renderWithProviders(
+        <><SelectionProbe181 /><HomeScreen /></>, { wrapper: HomeWrapper },
+      );
+      await screen.findByTestId('pet-chip-pet-1');
+      await waitFor(() => expect(view.queryClient.isFetching()).toBe(0));
+      const focus = mockUseFocusEffect.mock.calls.at(-1)?.[0];
+      expect(focus).toBeDefined();
+      selectedPetId = 'pet-1';
+      await view.rerender(<><SelectionProbe181 /><HomeScreen /></>);
+      await waitFor(() => expect(screen.getByTestId('pet-hero-name')).toHaveTextContent('Luna'));
+      await waitFor(() => expect(view.queryClient.isFetching()).toBe(0));
+      const before = mockGetPet.mock.calls.length;
+
+      await act(async () => { focus?.(); });
+
+      expect(mockGetPet.mock.calls.slice(before)).toEqual([[apiUrl, 'jwt-token', 'pet-1']]);
+    });
+  });
+
+  describe('#193 R3: Inicio sin mascota conserva los refetch generales', () => {
+    it('llama una vez a listPets y listAlerts durante el foco', async () => {
+      const { queryClient } = await renderWithProviders(<HomeScreen />, { wrapper: HomeWrapper });
+      await screen.findByTestId('home-empty');
+      await waitFor(() => expect(queryClient.isFetching()).toBe(0));
+      const petsBefore = mockListPets.mock.calls.length;
+      const alertsBefore = mockListAlerts.mock.calls.length;
+      const focus = mockUseFocusEffect.mock.calls.at(-1)?.[0];
+      expect(focus).toBeDefined();
+
+      await act(async () => { focus?.(); });
+
+      expect(mockListPets.mock.calls.slice(petsBefore)).toEqual([[apiUrl, 'jwt-token']]);
+      expect(mockListAlerts.mock.calls.slice(alertsBefore)).toEqual([[apiUrl, 'jwt-token', 'open']]);
+    });
+  });
+
+  describe('#193 R10: Inicio conserva la identidad de su callback de foco', () => {
+    it('mantiene la misma función al seleccionar y deseleccionar una mascota', async () => {
+      mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+      const view = await renderWithProviders(
+        <><SelectionProbe181 /><HomeScreen /></>, { wrapper: HomeWrapper },
+      );
+      await screen.findByTestId('pet-chip-pet-1');
+      await waitFor(() => expect(view.queryClient.isFetching()).toBe(0));
+      const focus = mockUseFocusEffect.mock.calls.at(-1)?.[0];
+      expect(focus).toBeDefined();
+
+      selectedPetId = 'pet-1';
+      await view.rerender(<><SelectionProbe181 /><HomeScreen /></>);
+      await waitFor(() => expect(screen.getByTestId('pet-hero-name')).toHaveTextContent('Luna'));
+      expect(Object.is(focus, mockUseFocusEffect.mock.calls.at(-1)?.[0])).toBe(true);
+
+      selectedPetId = null;
+      await view.rerender(<><SelectionProbe181 /><HomeScreen /></>);
+      await waitFor(() => expect(screen.getByTestId('selected-pet-id')).toHaveTextContent('none'));
+      expect(Object.is(focus, mockUseFocusEffect.mock.calls.at(-1)?.[0])).toBe(true);
+    });
+  });
+});
+
 describe('#181 R1: home sin mascotas no muestra errores de detalle', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -5329,7 +5430,6 @@ describe('#181 R1: home sin mascotas no muestra errores de detalle', () => {
       const focus = mockUseFocusEffect.mock.calls.at(-1)?.[0];
       expect(focus).toBeDefined();
       await act(async () => { focus?.(); });
-      await waitFor(() => expect(mockGetPet).toHaveBeenCalledWith(apiUrl, 'jwt-token', null));
     }
     await screen.findByTestId('home-empty');
     if (scenario === 'S1') {
@@ -5338,6 +5438,7 @@ describe('#181 R1: home sin mascotas no muestra errores de detalle', () => {
     }
     await screen.findByTestId('home-empty');
     await waitFor(() => expect(queryClient.isFetching()).toBe(0));
+    expect(mockGetPet).not.toHaveBeenCalledWith(apiUrl, 'jwt-token', null);
     expect(screen.queryByTestId('pet-hero-error')).toBeNull();
     expect(screen.queryByTestId('pet-hero-retry')).toBeNull();
   });
@@ -5348,9 +5449,9 @@ describe('#181 R1: home sin mascotas no muestra errores de detalle', () => {
     const focus = mockUseFocusEffect.mock.calls.at(-1)?.[0];
     expect(focus).toBeDefined();
     await act(async () => { focus?.(); });
-    await waitFor(() => expect(mockGetPet).toHaveBeenCalledWith(apiUrl, 'jwt-token', null));
     await screen.findByTestId('home-error');
     await waitFor(() => expect(queryClient.isFetching()).toBe(0));
+    expect(mockGetPet).not.toHaveBeenCalledWith(apiUrl, 'jwt-token', null);
     expect(screen.queryByTestId('pet-hero-error')).toBeNull();
     expect(screen.queryByTestId('pet-hero-retry')).toBeNull();
   });

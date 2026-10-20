@@ -6,7 +6,7 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { router, type Href, useFocusEffect } from 'expo-router';
 import { Button, Skeleton } from 'heroui-native';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Plus, Trash } from 'reicon-react-native';
@@ -52,6 +52,7 @@ export function RemindersScreen() {
   const locale = useLocale();
   const t = useTranslate();
   const { selectedPetId, selectPet } = useSelectedPet();
+  const selectedPetIdRef = useRef<string | null>(selectedPetId);
   const insets = useSafeAreaInsets();
   const [blueInk, amberInk, greenInk, violetInk, roseInk, muted, accentForeground, danger] = useThemeColors([
     'category-blue-strong', 'category-amber-strong', 'category-green-strong',
@@ -76,9 +77,15 @@ export function RemindersScreen() {
   const [deleteCandidate, setDeleteCandidate] = useState<Reminder | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
 
+  useEffect(() => {
+    selectedPetIdRef.current = selectedPetId;
+  }, [selectedPetId]);
+
   useFocusEffect(
     useCallback(() => {
-      refetchReminders();
+      if (selectedPetIdRef.current !== null) {
+        refetchReminders();
+      }
       return () => {
         setDeleteCandidate(null);
         setActionError(null);
