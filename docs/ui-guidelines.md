@@ -193,6 +193,8 @@ Tres límites, no negociables:
 
     Fuera de la escala, por fidelidad al canvas (#177): `rounded-16` es el radio de todo botón de 56 de alto y del tile del candado; el compacto de 40 conserva `rounded-xl`.
 
+    Fuera de la escala, por fidelidad al canvas (#191): `rounded-10` (10 px) y `rounded-14` (14 px), segmentos y contenedor del selector segmentado de Nueva mascota; `rounded-tile` (18 px) de la burbuja de Pingo, que es un `View` y no un `Card`.
+
 13. **Botón con cuerpo** (feature #166, 2026-10-11). Los botones de acción
     llevan un labio inferior: una sombra sólida sin desenfoque en `--lip`
     (`--color-lip`, `--color-lip-gray`) que cuelga fuera del cuerpo. El hook
@@ -733,3 +735,54 @@ Cada envío reemplaza los errores de campo; corregir el texto los retira en el
 siguiente envío. Los errores de red conservan su aviso de formulario.
 
 - [X] Enmienda #186 aprobada por humano
+
+
+## Enmienda #191 — Nueva mascota en dos pasos
+
+Nueva mascota conserva una sola ruta con cabecera nativa de título vacío y dos
+pasos que se desmontan al cambiar. Atrás desde el segundo vuelve al primero
+con todos los valores; la salida después de guardar respeta la celebración.
+
+- **Indicador**: título `text-2xl font-black tracking-title text-foreground` y
+  progreso `text-13 font-extrabold text-muted`. Barra `flex-row gap-1.5` con dos
+  segmentos `h-1.5 flex-1 rounded-full`; el primero usa `bg-accent` y el segundo
+  `bg-lip-gray` hasta llegar al paso 2, cuando ambos usan `bg-accent`.
+  Declara `accessibilityRole="progressbar"` y valor de 1 a 2.
+- **Foto y burbuja**: fila `flex-row items-center gap-3.5`. La foto es un
+  `Pressable` `size-22 items-center justify-center rounded-full border-2
+  border-dashed border-accent bg-surface-secondary`, con cámara de 26 y etiqueta
+  `text-11 font-extrabold text-accent-strong`; muestra el avatar de 88 solo
+  cuando hay foto. La burbuja es un `View` `flex-1 rounded-tile
+  bg-surface-secondary px-3 py-2.5`, con `CONTINUOUS_CORNER`, cola `absolute
+  -left-1.5 top-5.5 size-3 rotate-45 bg-surface-secondary` y texto `text-13
+  font-semibold text-foreground`.
+- **Selector segmentado**: `SegmentedControl` compartido para Tipo, Sexo y
+  Tamaño. Contenedor `flex-row gap-1 rounded-14 bg-default p-1`; opciones
+  `Pressable` `h-9.5 flex-1 items-center justify-center rounded-10`, ambos con
+  `CONTINUOUS_CORNER`. El activo añade `bg-surface shadow-sm`; etiqueta
+  `text-sm font-extrabold text-accent-strong`, o `text-muted` si está inactivo.
+  Declara `TOUCH_SLOP`, rol botón y estado seleccionado. Tipo siempre conserva
+  una selección; Sexo y Tamaño permiten deseleccionar.
+- **Métricas por fidelidad al canvas**: contenido con `paddingHorizontal: 20`,
+  `paddingTop: 12`, `gap: 12` y `paddingBottom: insets.bottom + 24`. Cada campo
+  usa `gap-1.5`, etiqueta `text-13 font-extrabold text-foreground` e input
+  `h-12 rounded-xl border-2 border-transparent bg-default px-3.5`, esquina
+  continua y `text-15 font-semibold text-foreground` en los `TextInput`.
+  Los límites siguen siendo 120, 120, 3 y 32. `ScrollView key={step}` devuelve
+  el scroll arriba al cambiar de paso. Continuar y Guardar usan la receta
+  primaria con labio de la regla 13 al final del contenido.
+
+Desviaciones conscientes del canvas aprobadas en la spec:
+
+- Pingo dice «Hola. Cuéntame de tu nuevo compañero.»: el saludo termina en punto.
+- El CTA termina el `ScrollView`; no hay pie fijo con degradado ni dependencia nueva.
+- El segmento activo usa `shadow-sm`, el token de sombra disponible.
+- La burbuja conserva el interlineado de `text-13`; no se añade un valor arbitrario de 1.4.
+- Los pasos cambian sin animación nueva.
+- El botón atrás pertenece a la cabecera nativa con `title: ''`.
+- `paddingTop: 12` sustituye los 56 del canvas porque la cabecera consume el inset superior.
+
+Los candados de `src/__tests__/add-pet-two-steps.test.ts` verifican esta
+ampliación y los inventarios de la pantalla y el selector.
+
+- [ ] Enmienda #191 aprobada por humano
