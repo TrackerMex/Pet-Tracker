@@ -4,6 +4,7 @@ import { router } from 'expo-router';
 import { notificationAsync } from 'expo-haptics';
 import { HeroUINativeProvider } from 'heroui-native';
 import * as ImagePicker from 'expo-image-picker';
+import { Children, isValidElement } from 'react';
 import { DeviceEventEmitter, Platform } from 'react-native';
 
 import { requestPhotoUploadUrl, uploadPhotoToUrl } from '../../api/media';
@@ -188,8 +189,11 @@ describe('R6: alta de mascota', () => {
     expect(date.props.className).toBe('h-12 flex-row items-center gap-2 rounded-xl border-2 border-transparent bg-default px-3.5');
     expect(date).toHaveStyle({ borderCurve: 'continuous' });
     expect(date.props.accessibilityRole).toBe('button');
-    expect(date.props.children[0].type.displayName).toBe('Calendar');
-    expect(date.props.children[0].props).toMatchObject({ size: 18, color: muted });
+    const children = Children.toArray(date.props.children).filter(isValidElement<{ size?: number; color?: string }>);
+    const calendar = children.find(child => child.props.size === 18);
+    expect(calendar?.type).toHaveProperty('displayName', 'Calendar');
+    expect(calendar?.props).toMatchObject({ size: 18, color: muted });
+    expect(children[0]?.props).toMatchObject({ size: 18, color: muted });
     expect(within(date).getByText(es['addPet.selectBirthDate']).props.className).toBe('text-15 font-semibold text-muted');
     expect(date.props.className.split(' ')[0]).toBe('h-12');
     await fireEvent.press(date);
